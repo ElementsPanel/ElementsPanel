@@ -10,16 +10,21 @@ export interface DesktopIconProps {
     icon: Component | string;
     color?: string;
     selected?: boolean;
+    x: number;
+    y: number;
 }
 
 const props = withDefaults(defineProps<DesktopIconProps>(), {
     color: "var(--color-blue-5)",
-    selected: false
+    selected: false,
+    x: 0,
+    y: 0
 });
 
 const emit = defineEmits<{
     (e: "open", id: string): void;
     (e: "select", id: string): void;
+    (e: "dragstart", id: string, clientX: number, clientY: number): void;
 }>();
 
 const iconStyle = computed(() => ({
@@ -35,11 +40,16 @@ const handleDblClick = () => {
 const handleClick = () => {
     emit("select", props.id);
 };
+
+const handleMouseDown = (e: MouseEvent) => {
+    emit("dragstart", props.id, e.clientX, e.clientY);
+};
 </script>
 
 <template>
-    <div class="desktop-icon" :class="{ 'desktop-icon--selected': selected }" @click.stop="handleClick"
-        @dblclick.stop="handleDblClick">
+    <div class="desktop-icon" :class="{ 'desktop-icon--selected': selected }"
+        :style="{ left: x + 'px', top: y + 'px' }" @click.stop="handleClick" @dblclick.stop="handleDblClick"
+        @mousedown.stop="handleMouseDown">
         <div class="desktop-icon__graphic" :style="iconStyle">
             <component :is="icon" v-if="isComponent" class="desktop-icon__anticon" />
             <img v-else-if="typeof icon === 'string' && icon.endsWith('.svg')" :src="icon" alt="icon"
@@ -52,6 +62,7 @@ const handleClick = () => {
 
 <style lang="scss" scoped>
 .desktop-icon {
+    position: absolute;
     display: flex;
     flex-direction: column;
     align-items: center;

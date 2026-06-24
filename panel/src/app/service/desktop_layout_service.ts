@@ -27,8 +27,15 @@ export interface IDesktopWindowLayout {
     fileName?: string;
 }
 
+export interface IDesktopIconPosition {
+    id: string;
+    x: number;
+    y: number;
+}
+
 export interface IDesktopLayout {
     windows: IDesktopWindowLayout[];
+    icons?: IDesktopIconPosition[];
     updatedAt: number;
 }
 
@@ -68,6 +75,22 @@ export function setDesktopLayout(userUuid: string, layout: IDesktopLayout): void
             }
             if (typeof win.width !== "number" || typeof win.height !== "number") {
                 throw new Error("Invalid window size");
+            }
+        }
+        if (layout.icons != null) {
+            if (!Array.isArray(layout.icons)) {
+                throw new Error("Invalid desktop layout: icons must be an array");
+            }
+            if (layout.icons.length > 100) {
+                throw new Error("Too many icons in layout (max 100)");
+            }
+            for (const icon of layout.icons) {
+                if (typeof icon.id !== "string" || icon.id.length > 100) {
+                    throw new Error("Invalid icon id");
+                }
+                if (typeof icon.x !== "number" || typeof icon.y !== "number") {
+                    throw new Error("Invalid icon position");
+                }
             }
         }
         layout.updatedAt = Date.now();

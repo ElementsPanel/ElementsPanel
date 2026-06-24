@@ -37,6 +37,7 @@ import DesktopWindow from "@/widgets/desktop/DesktopWindow.vue";
 import {
     AppstoreOutlined,
     BuildOutlined,
+    ClearOutlined,
     CloseOutlined,
     CloseSquareOutlined,
     CloudDownloadOutlined,
@@ -68,7 +69,7 @@ const { execute: executeLogout } = logoutUser();
 const { getSettingsConfig } = useLayoutConfigStore();
 const { isDarkTheme } = useAppConfigStore();
 
-//─── Wallpaper Background ───
+//─── Wallpaper ───
 const backgroundImageUrl = ref<string>("");
 
 const wallpaperStyle = computed<CSSProperties>(() => {
@@ -93,18 +94,17 @@ onMounted(async () => {
             backgroundImageUrl.value = settings.theme.backgroundImage;
         }
     } catch (e) {
-        // Silently ignore – fallback to solid color
+        // Silently ignore
     }
 });
 
-//─── Login Overlay ───
+//─── Login ───
 const showLoginOverlay = ref(!isLogged.value);
 
 const handleLoginSuccess = () => {
     showLoginOverlay.value = false;
 };
 
-// Watch for login state changes to load layout after login
 watch(isLogged, (logged) => {
     if (logged) {
         loadDesktopLayout();
@@ -201,6 +201,156 @@ const selectIcon = (id: string) => {
     selectedIconId.value = id;
 };
 
+//─── Icon Positions ───
+const iconPositions = reactive<Map<string, { x: number; y: number }>>(new Map());
+
+const DEFAULT_ICON_START_X = 16;
+const DEFAULT_ICON_START_Y = 16;
+const ICON_COL_WIDTH = 94;
+const ICON_ROW_HEIGHT = 104;
+
+function snapToGrid(x: number, y: number): { x: number; y: number } {
+    const snappedX = Math.round((x - DEFAULT_ICON_START_X) / ICON_COL_WIDTH) * ICON_COL_WIDTH + DEFAULT_ICON_START_X;
+    const snappedY = Math.round((y - DEFAULT_ICON_START_Y) / ICON_ROW_HEIGHT) * ICON_ROW_HEIGHT + DEFAULT_ICON_START_Y;
+    return { x: Math.max(0, snappedX), y: Math.max(0, snappedY) };
+}
+
+function getDefaultPosition(index: number): { x: number; y: number } {
+    return {
+        x: DEFAULT_ICON_START_X + (index % 12) * ICON_COL_WIDTH,
+        y: DEFAULT_ICON_START_Y + Math.floor(index / 12) * ICON_ROW_HEIGHT
+    };
+}
+
+function getIconGridX(id: string): number {
+    const pos = iconPositions.get(id);
+    if (pos) return pos.x;
+    const idx = desktopApps.value.findIndex(a => a.id === id);
+    return getDefaultPosition(idx >= 0 ? idx : 0).x;
+}
+
+function getIconGridY(id: string): number {
+    const pos = iconPositions.get(id);
+    if (pos) return pos.y;
+    const idx = desktopApps.value.findIndex(a => a.id === id);
+    return getDefaultPosition(idx >= 0 ? idx : 0).y;
+}
+
+function getOccupiedGrid(excludeId: string): Set<string> {
+    const occupied = new Set<string>();
+    for (const app of desktopApps.value) {
+        if (app.id === excludeId) continue;
+        const gx = getIconGridX(app.id);
+        const gy = getIconGridY(app.id);
+        const col = Math.round((gx - DEFAULT_ICON_START_X) / ICON_COL_WIDTH);
+        const row = Math.round((gy - DEFAULT_ICON_START_Y) / ICON_ROW_HEIGHT);
+        occupied.add(`${col},${row}`);
+    }
+    return occupied;
+}
+
+function findEmptyCell(col: number, row: number, excludeId: string): { col: number; row: number } {
+    const occupied = getOccupiedGrid(excludeId);
+    if (!occupied.has(`${col},${row}`)) return { col, row };
+    for (let r = 0; r < 50; r++) {
+        for (let c = 0; c < 12; c++) {
+            if (!occupied.has(`${c},${r}`)) return { col: c, row: r };
+        }
+    }
+    return { col, row };
+}
+
+//─── Drag State ───
+const DRAG_THRESHOLD = 5;
+
+const isDragging = ref(false);
+const dragOffsetX = ref(0);
+const dragOffsetY = ref(0);
+
+// Pending: mousedown happened but hasn't crossed threshold yet
+const pendingDragId = ref<string | null>(null);
+const pendingStartX = ref(0);
+const pendingStartY = ref(0);
+
+const ghostX = ref(0);
+const ghostY = ref(0);
+
+const dropX = ref(0);
+const dropY = ref(0);
+const dropValid = ref(false);
+
+function commitDragStart(id: string, clientX: number, clientY: number) {
+    selectedIconId.value = id;
+    originX.value = getIconGridX(id);
+    originY.value = getIconGridY(id);
+    dragOffsetX.value = clientX - originX.value;
+    dragOffsetY.value = clientY - originY.value;
+    ghostX.value = clientX - dragOffsetX.value;
+    ghostY.value = clientY - dragOffsetY.value;
+    droppingIconId.value = id;
+    isDragging.value = true;
+    dropValid.value = true;
+    pendingDragId.value = null;
+}
+
+const droppingIconId = ref<string | null>(null);
+const originX = ref(0);
+const originY = ref(0);
+
+const handleIconDragStart = (id: string, clientX: number, clientY: number) => {
+    selectedIconId.value = id;
+    pendingDragId.value = id;
+    pendingStartX.value = clientX;
+    pendingStartY.value = clientY;
+};
+
+const handleDesktopMouseMove = (e: MouseEvent) => {
+    if (pendingDragId.value && !isDragging.value) {
+        const dx = e.clientX - pendingStartX.value;
+        const dy = e.clientY - pendingStartY.value;
+        if (Math.sqrt(dx * dx + dy * dy) >= DRAG_THRESHOLD) {
+            commitDragStart(pendingDragId.value, pendingStartX.value, pendingStartY.value);
+        }
+        return;
+    }
+
+    if (!isDragging.value || !droppingIconId.value) return;
+    ghostX.value = e.clientX - dragOffsetX.value;
+    ghostY.value = e.clientY - dragOffsetY.value;
+    const snapped = snapToGrid(ghostX.value, ghostY.value);
+    dropX.value = snapped.x;
+    dropY.value = snapped.y;
+    const targetCol = Math.round((snapped.x - DEFAULT_ICON_START_X) / ICON_COL_WIDTH);
+    const targetRow = Math.round((snapped.y - DEFAULT_ICON_START_Y) / ICON_ROW_HEIGHT);
+    const occupied = getOccupiedGrid(droppingIconId.value);
+    dropValid.value = !occupied.has(`${targetCol},${targetRow}`);
+};
+
+const handleDesktopMouseUp = () => {
+    if (pendingDragId.value && !isDragging.value) {
+        pendingDragId.value = null;
+        return;
+    }
+
+    if (!isDragging.value || !droppingIconId.value) return;
+    isDragging.value = false;
+
+    const targetCol = Math.round((dropX.value - DEFAULT_ICON_START_X) / ICON_COL_WIDTH);
+    const targetRow = Math.round((dropY.value - DEFAULT_ICON_START_Y) / ICON_ROW_HEIGHT);
+    const empty = findEmptyCell(targetCol, targetRow, droppingIconId.value);
+    const finalX = DEFAULT_ICON_START_X + empty.col * ICON_COL_WIDTH;
+    const finalY = DEFAULT_ICON_START_Y + empty.row * ICON_ROW_HEIGHT;
+
+    iconPositions.set(droppingIconId.value, { x: finalX, y: finalY });
+    droppingIconId.value = null;
+    saveDesktopLayout();
+};
+
+const resetIconPositions = () => {
+    iconPositions.clear();
+    saveDesktopLayout();
+};
+
 //─── Window Management ───
 interface WindowState {
     id: string;
@@ -226,7 +376,7 @@ const windows = reactive<Map<string, WindowState>>(new Map());
 let nextZIndex = 100;
 let windowOffset = 0;
 
-// ─── Desktop Layout Persistence ───
+// ─── Layout Persistence ───
 const { execute: executeGetLayout } = getDesktopLayoutConfig();
 const { execute: executeSaveLayout } = setDesktopLayoutConfig();
 
@@ -257,11 +407,15 @@ const saveDesktopLayout = () => {
                     fileName: win.fileName
                 });
             });
+            const iconList: any[] = [];
+            iconPositions.forEach((pos, id) => {
+                iconList.push({ id, x: pos.x, y: pos.y });
+            });
             await executeSaveLayout({
-                data: { windows: windowList, updatedAt: Date.now() }
+                data: { windows: windowList, icons: iconList, updatedAt: Date.now() }
             });
         } catch (e) {
-            // Silently ignore save errors
+            // Silently ignore
         }
     }, 500);
 };
@@ -322,14 +476,22 @@ const loadDesktopLayout = async () => {
                 });
             }
         }
+        if (layout && Array.isArray(layout.icons)) {
+            iconPositions.clear();
+            for (const icon of layout.icons) {
+                if (typeof icon.id === "string" && typeof icon.x === "number" && typeof icon.y === "number") {
+                    iconPositions.set(icon.id, { x: icon.x, y: icon.y });
+                }
+            }
+        }
         layoutLoaded = true;
     } catch (e) {
         layoutLoaded = true;
-        // Silently ignore load errors
+        // Silently ignore
     }
 };
 
-// Load layout on mount if already logged in
+// Load layout on mount
 onMounted(async () => {
     if (isLogged.value) {
         await loadDesktopLayout();
@@ -860,7 +1022,7 @@ const toggleWindow = (id: string) => {
     }
 };
 
-// ─── Handle window moved/resized events fromDesktopWindow ───
+// ─── Window events ───
 const handleWindowMoved = (id: string, newX: number, newY: number) => {
     const win = windows.get(id);
     if (win) {
@@ -929,7 +1091,7 @@ const handleReorderWindows = (newOrder: string[]) => {
     });
 };
 
-// ─── Navigate to Route ───
+// ─── Route ───
 const navigateToRoute = (appId: string) => {
     const app = desktopApps.value.find((a) => a.id === appId);
     if (app?.route) {
@@ -987,6 +1149,17 @@ const ctxMenuItems = computed<ContextMenuItem[]>(() => {
         items.push({ divider: true } as any);
     }
 
+    if (!ctxMenu.targetWindowId) {
+        items.push({
+            label: "重置图标位置",
+            icon: markRaw(ClearOutlined),
+            action: () => {
+                resetIconPositions();
+            }
+        });
+        items.push({ divider: true } as any);
+    }
+
     items.push({
         label: t("TXT_CODE_DESKTOP_CLOSE_ALL"),
         icon: markRaw(CloseSquareOutlined),
@@ -1036,7 +1209,7 @@ const onDesktopClick = () => {
     ctxMenu.visible = false;
 };
 
-// ─── Exit Desktop ───
+// ─── Exit ───
 const exitDesktop = async () => {
     await executeLogout();
     window.location.reload();
@@ -1049,11 +1222,33 @@ const username = computed(() => appState.userInfo?.userName || "User");
     <div class="desktop-container" @click="onDesktopClick" @contextmenu="onDesktopContextMenu">
         <div class="desktop-wallpaper" :style="wallpaperStyle"></div>
         <Transition name="desktop-fade">
-            <div v-if="!showLoginOverlay" class="desktop-content-wrapper">
+            <div v-if="!showLoginOverlay" class="desktop-content-wrapper" @mousemove="handleDesktopMouseMove"
+                @mouseup="handleDesktopMouseUp">
                 <div class="desktop-icons">
-                    <DesktopIcon v-for="app in desktopApps" :key="app.id" :id="app.id" :label="app.label"
-                        :icon="app.icon" :color="app.color" :selected="selectedIconId === app.id" @select="selectIcon"
-                        @open="openWindow" />
+                    <DesktopIcon v-for="(app, index) in desktopApps" :key="app.id" :id="app.id" :label="app.label"
+                        :icon="app.icon" :color="app.color" :selected="selectedIconId === app.id"
+                        :x="iconPositions.get(app.id)?.x ?? getDefaultPosition(index).x"
+                        :y="iconPositions.get(app.id)?.y ?? getDefaultPosition(index).y" @select="selectIcon"
+                        @open="openWindow" @dragstart="handleIconDragStart" />
+
+                    <!-- Drop indicator -->
+                    <div v-if="isDragging && dropValid" class="drop-indicator"
+                        :style="{ left: dropX + 'px', top: dropY + 'px' }">
+                        <div class="drop-indicator__highlight"></div>
+                    </div>
+
+                    <!-- Ghost -->
+                    <div v-if="isDragging && droppingIconId" class="drag-ghost"
+                        :style="{ left: ghostX + 'px', top: ghostY + 'px' }">
+                        <template v-for="app in desktopApps" :key="app.id">
+                            <div v-if="app.id === droppingIconId" class="drag-ghost__inner">
+                                <component :is="app.icon" v-if="typeof app.icon !== 'string'"
+                                    class="drag-ghost__icon" />
+                                <span v-else class="drag-ghost__emoji">{{ app.icon }}</span>
+                                <span class="drag-ghost__label">{{ app.label }}</span>
+                            </div>
+                        </template>
+                    </div>
                 </div>
 
                 <TransitionGroup name="desktop-window-group">
@@ -1181,14 +1376,75 @@ const username = computed(() => appState.userInfo?.userName || "User");
 .desktop-icons {
     position: relative;
     z-index: 1;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, 90px);
-    grid-auto-rows: 100px;
-    gap: 4px;
-    padding: 16px;
-    align-content: start;
+    width: 100%;
     height: calc(100vh - 48px);
-    overflow-y: auto;
+    overflow: hidden;
+}
+
+/* Drag Ghost */
+.drag-ghost {
+    position: absolute;
+    z-index: 9999;
+    pointer-events: none;
+    user-select: none;
+}
+
+.drag-ghost__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 90px;
+    padding: 8px 4px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    opacity: 0.65;
+    transform: scale(1.05);
+}
+
+.drag-ghost__icon {
+    font-size: 42px;
+    color: #fff;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+    margin-bottom: 6px;
+}
+
+.drag-ghost__emoji {
+    font-size: 42px;
+    line-height: 1;
+    margin-bottom: 6px;
+}
+
+.drag-ghost__label {
+    font-size: 11px;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    text-align: center;
+    line-height: 1.3;
+    max-width: 84px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Drop Indicator */
+.drop-indicator {
+    position: absolute;
+    z-index: 9998;
+    pointer-events: none;
+    width: 90px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.drop-indicator__highlight {
+    width: 74px;
+    height: 74px;
+    border-radius: 12px;
+    border: 2px dashed rgba(255, 255, 255, 0.45);
+    background: rgba(255, 255, 255, 0.06);
 }
 
 .window-inner-content {
