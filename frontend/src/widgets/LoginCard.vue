@@ -395,7 +395,6 @@ onMounted(async () => {
 .glitch {
   position: relative;
   font-weight: 600;
-  animation: glitch-trigger 4s infinite;
 
   &::before,
   &::after {
@@ -413,93 +412,10 @@ onMounted(async () => {
 
   &::before {
     color: #ff0040;
-    animation: glitch-anim-1 4s infinite;
   }
 
   &::after {
     color: #00ffff;
-    animation: glitch-anim-2 4s infinite;
-  }
-}
-
-@keyframes glitch-trigger {
-
-  0%,
-  96% {
-    transform: translate(0);
-  }
-
-  97%,
-  100% {
-    transform: translate(-1px, 1px);
-  }
-}
-
-@keyframes glitch-anim-1 {
-
-  0%,
-  96% {
-    transform: translate(0);
-    opacity: 0;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  }
-
-  97% {
-    transform: translate(-2px, -2px);
-    opacity: 0.7;
-    clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
-  }
-
-  98% {
-    transform: translate(2px, 1px);
-    opacity: 0.8;
-    clip-path: polygon(0 35%, 100% 35%, 100% 70%, 0 70%);
-  }
-
-  99% {
-    transform: translate(-1px, 2px);
-    opacity: 0.9;
-    clip-path: polygon(0 70%, 100% 70%, 100% 100%, 0 100%);
-  }
-
-  100% {
-    transform: translate(0);
-    opacity: 0;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  }
-}
-
-@keyframes glitch-anim-2 {
-
-  0%,
-  96% {
-    transform: translate(0);
-    opacity: 0;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  }
-
-  97% {
-    transform: translate(2px, 1px);
-    opacity: 0.6;
-    clip-path: polygon(0 0, 100% 0, 100% 25%, 0 25%);
-  }
-
-  98% {
-    transform: translate(-2px, -1px);
-    opacity: 0.7;
-    clip-path: polygon(0 25%, 100% 25%, 100% 75%, 0 75%);
-  }
-
-  99% {
-    transform: translate(1px, -2px);
-    opacity: 0.8;
-    clip-path: polygon(0 75%, 100% 75%, 100% 100%, 0 100%);
-  }
-
-  100% {
-    transform: translate(0);
-    opacity: 0;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
   }
 }
 </style>
