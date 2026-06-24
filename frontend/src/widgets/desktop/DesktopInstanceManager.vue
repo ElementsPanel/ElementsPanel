@@ -1154,7 +1154,7 @@ onUnmounted(() => {
 
 .dim-dialog-fade-enter-active,
 .dim-dialog-fade-leave-active {
-    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.25s cubic-bezier(0.25, 0.10, 0.25, 1.00);
 }
 
 .dim-dialog-fade-enter-from,

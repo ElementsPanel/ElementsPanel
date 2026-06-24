@@ -61,13 +61,8 @@ const handleMenuItemClick = (path: string) => {
   <div class="fab-container">
     <Transition name="fab-panel">
       <div v-if="isExpanded" class="fab-menu-panel">
-        <button
-          v-for="item in menus"
-          :key="item.path"
-          class="fab-menu-item"
-          :class="{ 'fab-menu-item--active': isActive(item.path) }"
-          @click="handleMenuItemClick(item.path)"
-        >
+        <button v-for="item in menus" :key="item.path" class="fab-menu-item"
+          :class="{ 'fab-menu-item--active': isActive(item.path) }" @click="handleMenuItemClick(item.path)">
           <span class="fab-menu-icon-wrap">
             <component :is="getRouteIcon(item.path)" class="fab-menu-icon" />
           </span>
@@ -75,12 +70,8 @@ const handleMenuItemClick = (path: string) => {
       </div>
     </Transition>
 
-    <button
-      aria-label="Toggle navigation menu"
-      class="fab-ball"
-      :class="{ 'fab-ball--expanded': isExpanded }"
-      @click="toggleMenu"
-    >
+    <button aria-label="Toggle navigation menu" class="fab-ball" :class="{ 'fab-ball--expanded': isExpanded }"
+      @click="toggleMenu">
       <Transition name="fab-icon" mode="out-in">
         <CloseOutlined v-if="isExpanded" class="fab-ball-icon" />
         <MenuOutlined v-else class="fab-ball-icon" />
@@ -108,7 +99,7 @@ const handleMenuItemClick = (path: string) => {
   gap: 10px;
   pointer-events: none;
 
-  > * {
+  >* {
     pointer-events: auto;
   }
 }
@@ -230,6 +221,7 @@ const handleMenuItemClick = (path: string) => {
 .fab-backdrop-leave-active {
   transition: opacity 0.25s ease;
 }
+
 .fab-backdrop-enter-from,
 .fab-backdrop-leave-to {
   opacity: 0;
@@ -238,13 +230,15 @@ const handleMenuItemClick = (path: string) => {
 .fab-panel-enter-active {
   transition:
     opacity 0.22s ease,
-    transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform 0.22s cubic-bezier(0.25, 0.10, 0.25, 1.00);
 }
+
 .fab-panel-leave-active {
   transition:
     opacity 0.18s ease,
     transform 0.18s ease;
 }
+
 .fab-panel-enter-from,
 .fab-panel-leave-to {
   opacity: 0;
@@ -257,10 +251,12 @@ const handleMenuItemClick = (path: string) => {
     opacity 0.15s ease,
     transform 0.15s ease;
 }
+
 .fab-icon-enter-from {
   opacity: 0;
   transform: rotate(-90deg) scale(0.6);
 }
+
 .fab-icon-leave-to {
   opacity: 0;
   transform: rotate(90deg) scale(0.6);

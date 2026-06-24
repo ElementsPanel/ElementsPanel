@@ -146,7 +146,7 @@ onUnmounted(() => {
 }
 
 .ctx-menu-enter-active {
-    transition: opacity 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: opacity 0.15s cubic-bezier(0.25, 0.10, 0.25, 1.00), transform 0.15s cubic-bezier(0.25, 0.10, 0.25, 1.00);
 }
 
 .ctx-menu-leave-active {
