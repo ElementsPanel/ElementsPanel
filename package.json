@@ -1,6 +1,7 @@
 {
-  "name": "mcsmanager-workspace",
+  "name": "elements-workspace",
   "version": "1.0.0",
+  "description": "ElementsPanel workspace — a fork of the MCSManager project",
   "scripts": {
     "daemon": "cd daemon &&  npm run dev",
     "frontend": "cd frontend && npm run dev",

@@ -1,6 +1,7 @@
 {
-  "name": "mcsmanager-ui",
+  "name": "elements-ui",
   "version": "1.0.0",
+  "description": "ElementsPanel frontend UI — a fork of the MCSManager project",
   "scripts": {
     "dev": "vite --host",
     "build": "run-p type-check build-only",
