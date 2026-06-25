@@ -5,17 +5,14 @@ const TERMINAL_HISTORY_KEY = "TERMINAL_HISTORY_KEY";
 
 const useGlobalHistory = createGlobalState(() => {
   const history = ref<string[]>([]);
-  return { history };
+  const commandInputValue = ref<string>("");
+  const focusHistoryList = ref(false);
+  const selectLocation = ref(0);
+  return { history, commandInputValue, focusHistoryList, selectLocation };
 });
 
 export function useCommandHistory() {
-  const { history } = useGlobalHistory();
-
-  const commandInputValue = ref<string>("");
-
-  const focusHistoryList = ref(false);
-
-  const selectLocation = ref(0);
+  const { history, commandInputValue, focusHistoryList, selectLocation } = useGlobalHistory();
 
   const setHistory = (text: string) => {
     if (!text) return;
