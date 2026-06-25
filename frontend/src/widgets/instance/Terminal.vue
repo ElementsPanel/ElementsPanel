@@ -25,6 +25,7 @@ import {
   CloudDownloadOutlined,
   CloudServerOutlined,
   DownOutlined,
+  FileTextOutlined,
   InfoCircleOutlined,
   InteractionOutlined,
   LaptopOutlined,
@@ -35,10 +36,11 @@ import {
   RedoOutlined
 } from "@ant-design/icons-vue";
 import { Modal } from "ant-design-vue";
-import { computed, h, onUnmounted } from "vue";
+import { computed, h, onUnmounted, ref } from "vue";
 import { GLOBAL_INSTANCE_NAME } from "../../config/const";
 import { useTerminal, type UseTerminalHook } from "../../hooks/useTerminal";
 import { arrayFilter } from "../../tools/array";
+import InstanceLogDialog from "./dialogs/InstanceLogDialog.vue";
 
 const props = defineProps<{
   card: LayoutCard;
@@ -257,6 +259,8 @@ const getInstanceName = computed(() => {
 onUnmounted(() => {
   if (checkRunningTimer) clearTimeout(checkRunningTimer);
 });
+
+const instanceLogDialogRef = ref<InstanceType<typeof InstanceLogDialog>>();
 </script>
 
 <template>
@@ -304,6 +308,11 @@ onUnmounted(() => {
         </template>
         <template #right>
           <div v-if="!isPhone">
+            <a-tooltip :title="t('TXT_CODE_f6a33629')">
+              <a-button type="text" class="log-btn mr-8" @click="instanceLogDialogRef?.openDialog()">
+                <FileTextOutlined />
+              </a-button>
+            </a-tooltip>
             <template v-for="item in [...quickOperations, ...instanceOperations]" :key="item.title">
               <a-button v-if="item.noConfirm" class="ml-8" :class="item.class ? item.class : ''"
                 :danger="item.type === 'danger'" :disabled="isOpenInstanceLoading" @click="item.click">
@@ -322,6 +331,11 @@ onUnmounted(() => {
           <a-dropdown v-else>
             <template #overlay>
               <a-menu>
+                <a-menu-item @click="instanceLogDialogRef?.openDialog()">
+                  <FileTextOutlined />
+                  {{ t("TXT_CODE_f6a33629") }}
+                </a-menu-item>
+                <a-menu-divider />
                 <a-menu-item v-for="item in [...quickOperations, ...instanceOperations]" :key="item.title"
                   @click="item.click">
                   <component :is="item.icon" />
@@ -363,6 +377,10 @@ onUnmounted(() => {
       </span>
     </template>
     <template #operator>
+      <span class="mr-2">
+        <IconBtn :icon="FileTextOutlined" :title="t('TXT_CODE_f6a33629')"
+          @click="instanceLogDialogRef?.openDialog()"></IconBtn>
+      </span>
       <span v-for="item in quickOperations" :key="item.title" size="default" class="mr-2" v-bind="item.props">
         <IconBtn :icon="item.icon" :title="item.title" @click="item.click"></IconBtn>
       </span>
@@ -385,6 +403,13 @@ onUnmounted(() => {
         :daemon-id="daemonId" :height="card.height" />
     </template>
   </CardPanel>
+  <InstanceLogDialog
+    v-if="instanceId && daemonId"
+    ref="instanceLogDialogRef"
+    :instance-id="instanceId"
+    :daemon-id="daemonId"
+    :instance-name="getInstanceName"
+  />
 </template>
 
 <style lang="scss" scoped>

@@ -98,4 +98,20 @@ router.get("/operation_logs", permission({ level: ROLE.ADMIN }), async (ctx) => 
   ctx.body = await operationLogger.get(limit);
 });
 
+// [Top-level Permission]
+// Get operation logs for a specific instance
+router.get("/instance_operation_logs", permission({ level: ROLE.USER, token: false }), async (ctx) => {
+  const instanceId = ctx?.query?.instanceId as string;
+  const daemonId = ctx?.query?.daemonId as string;
+  const limit = +(ctx?.query?.limit || 50);
+
+  if (!instanceId || !daemonId)
+    return ctx.throw(400, "instanceId and daemonId are required.");
+
+  if (isNaN(limit) || limit <= 0 || limit > 200)
+    return ctx.throw(400, "Invalid limit value. It must be a number between 1 and 200.");
+
+  ctx.body = await operationLogger.getByInstance(instanceId, daemonId, limit);
+});
+
 export default router;

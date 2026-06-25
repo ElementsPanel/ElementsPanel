@@ -72,6 +72,20 @@ class OperationLogger {
     return this.#storage.tail<OperationLoggerItem>("global", limit);
   }
 
+  async getByInstance(instanceId: string, daemonId: string, limit = 50) {
+    // Flush buffer to ensure recent logs are included
+    const currentBuffer = this.#buffer;
+    this.#buffer = new Map();
+    await this.flushAsync(currentBuffer);
+
+    // Read all logs and filter by instance + daemon
+    const allLogs = await this.#storage.query("global", (entry: any) => {
+      return entry.instance_id === instanceId && entry.daemon_id === daemonId;
+    });
+
+    return allLogs.slice(-limit) as OperationLoggerItem[];
+  }
+
   info<T extends keyof OperationLoggerItemPayload>(type: T, payload: CleanPayload<T>) {
     return this.log(type, payload, "info");
   }
