@@ -89,6 +89,7 @@ events.on("crashed", (data: { exitCode: number }) => {
       data: {
         daemonId: daemonId,
         instanceId: instanceId,
+        instanceName: state.value?.config?.nickname || state.value?.config?.name,
         exitCode: data?.exitCode
       }
     })
