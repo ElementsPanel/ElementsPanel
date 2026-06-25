@@ -18,6 +18,7 @@ import {
     ControlOutlined,
     DashboardOutlined,
     FieldTimeOutlined,
+    FileTextOutlined,
     FolderOpenOutlined,
     UsbOutlined,
     UsergroupDeleteOutlined
@@ -30,6 +31,7 @@ import InstanceFundamentalDetail from "../instance/dialogs/InstanceFundamentalDe
 import McPingSettings from "../instance/dialogs/McPingSettings.vue";
 import PingConfig from "../instance/dialogs/PingConfig.vue";
 import RconSettings from "../instance/dialogs/RconSettings.vue";
+import DesktopInstanceLog from "./DesktopInstanceLog.vue";
 
 const props = defineProps<{
     instanceId: string;
@@ -58,6 +60,7 @@ const eventConfigDialog = ref<InstanceType<typeof EventConfig>>();
 const pingConfigDialog = ref<InstanceType<typeof PingConfig>>();
 const instanceDetailsDialog = ref<InstanceType<typeof InstanceDetail>>();
 const instanceFundamentalDetailDialog = ref<InstanceType<typeof InstanceFundamentalDetail>>();
+const instanceLogDialog = ref<InstanceType<typeof DesktopInstanceLog>>();
 
 const { instanceInfo, execute, isGlobalTerminal } = useInstanceInfo({
     instanceId: props.instanceId,
@@ -245,6 +248,10 @@ watch(instanceInfo, (cfg, oldCfg) => {
             <div v-for="btn in btns" :key="btn.title" class="dim-mgr-btn" :title="btn.title" @click="btn.click">
                 <component :is="btn.icon" />
             </div>
+            <div class="dim-mgr-btn dim-mgr-btn--log" :title="t('TXT_CODE_f6a33629')"
+                @click="instanceLogDialog?.openDialog()" style="margin-left: auto;">
+                <FileTextOutlined />
+            </div>
         </div>
     </div>
 
@@ -265,6 +272,9 @@ watch(instanceInfo, (cfg, oldCfg) => {
 
     <McPingSettings ref="mcSettingsDialog" :instance-info="instanceInfo" :instance-id="props.instanceId"
         :daemon-id="props.daemonId" @update="refreshInstanceInfo" />
+
+    <DesktopInstanceLog ref="instanceLogDialog" :instance-id="props.instanceId" :daemon-id="props.daemonId"
+        :instance-name="instanceInfo?.config?.nickname || instanceInfo?.config?.name" />
 
 </template>
 
