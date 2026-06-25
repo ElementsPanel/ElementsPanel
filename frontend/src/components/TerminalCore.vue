@@ -4,6 +4,7 @@ import { useCommandHistory } from "@/hooks/useCommandHistory";
 import { useXhrPollError } from "@/hooks/useXhrPollError";
 import { t } from "@/lang/i18n";
 import { getInstanceOutputLog } from "@/services/apis/instance";
+import { logInstanceCrash } from "@/services/apis/operationLog";
 import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import { CodeOutlined, DeleteOutlined, LoadingOutlined } from "@ant-design/icons-vue";
 import { Terminal } from "@xterm/xterm";
@@ -80,6 +81,18 @@ events.on("opened", () => {
 
 events.on("stopped", () => {
   message.success(t("TXT_CODE_efb6d377"));
+});
+
+events.on("crashed", (data: { exitCode: number }) => {
+  logInstanceCrash()
+    .execute({
+      data: {
+        daemonId: daemonId,
+        instanceId: instanceId,
+        exitCode: data?.exitCode
+      }
+    })
+    .catch(() => {});
 });
 
 events.on("error", (error: Error) => {

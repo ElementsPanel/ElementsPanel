@@ -111,6 +111,9 @@ export default class Instance extends EventEmitter {
   private outputLoopTask?: NodeJS.Timeout;
   private outputBuffer: CircularBuffer<string>;
 
+  // Track whether the current stop was initiated by a user action (stop/kill command)
+  private userRequestedStop = false;
+
   // When initializing an instance, the instance must be initialized through uuid and configuration class, otherwise the instance will be unavailable
   constructor(instanceUuid: string, config: InstanceConfig) {
     super();
@@ -350,6 +353,7 @@ export default class Instance extends EventEmitter {
   // Trigger the open event and bind the data and exit events, etc.
   started(process: IInstanceProcess) {
     this.config.lastDatetime = Date.now();
+    this.userRequestedStop = false;
     const outputCode = this.config.terminalOption.pty ? "utf-8" : this.config.oe;
     process.on("data", (text: any) => {
       this.pushOutput(iconv.decode(text, outputCode));
@@ -382,7 +386,9 @@ export default class Instance extends EventEmitter {
     if (this.instanceStatus != Instance.STATUS_STOP) {
       this.instanceStatus = Instance.STATUS_STOP;
       this.startTimestamp = 0;
-      this.emit("exit", code);
+      const isCrash = !this.userRequestedStop;
+      this.userRequestedStop = false;
+      this.emit("exit", { code, isCrash });
       StorageSubsystem.store("InstanceConfig", this.instanceUuid, this.config);
     }
 
@@ -420,6 +426,14 @@ export default class Instance extends EventEmitter {
 
   ignoreEventTaskOnce() {
     if (this.config.eventTask) this.config.eventTask.ignore = true;
+  }
+
+  setUserRequestedStop(value: boolean) {
+    this.userRequestedStop = value;
+  }
+
+  getUserRequestedStop() {
+    return this.userRequestedStop;
   }
 
   // custom output method, formatting

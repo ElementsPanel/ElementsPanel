@@ -32,6 +32,11 @@ export type InstanceKillOptions = {
   type: "instance_kill";
 } & InstanceGeneralOptions;
 
+export type InstanceCrashOptions = {
+  type: "instance_crash";
+  exit_code: number;
+} & InstanceGeneralOptions;
+
 export type InstanceConfigChangeOptions = {
   type: "instance_config_change";
 } & InstanceGeneralOptions;
@@ -118,6 +123,7 @@ export type OperationLoggerItem =
   | InstanceRestartOptions
   | InstanceUpdateOptions
   | InstanceKillOptions
+  | InstanceCrashOptions
   | InstanceConfigChangeOptions
   | InstanceCreateOptions
   | InstanceDeleteOptions

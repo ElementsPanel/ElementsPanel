@@ -10,6 +10,7 @@ export default class GeneralKillCommand extends InstanceCommand {
 
   async exec(instance: Instance) {
     if (instance.status() === Instance.STATUS_STOP) return;
+    instance.setUserRequestedStop(true);
 
     // The program must run for more than 6 seconds before it can be forced to stop!
     const waitTime = instance.startTimestamp + 6 * 1000 - Date.now();

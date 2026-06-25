@@ -56,6 +56,10 @@ const renderMap: OperationRenderer = {
     text: t("TXT_CODE_ee54440"),
     data: [item.operator_name || item.operation_id, item.instance_name || item.instance_id]
   }),
+  instance_crash: (item) => ({
+    text: t("TXT_CODE_86c4b2f5"),
+    data: [item.instance_name || item.instance_id, String(item.exit_code)]
+  }),
   instance_config_change: (item) => ({
     text: t("TXT_CODE_30fcc19a"),
     data: [item.operator_name || item.operation_id, item.instance_name || item.instance_id]
@@ -172,7 +176,7 @@ const fetchLogs = async () => {
     });
     logs.value = (data.value || []).reverse();
   } catch (err: any) {
-    message.error(err?.message || "Failed to fetch instance logs");
+    message.error(err?.message || t("TXT_CODE_4a689666"));
     logs.value = [];
   } finally {
     loading.value = false;

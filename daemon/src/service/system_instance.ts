@@ -178,14 +178,15 @@ class InstanceSubsystem extends EventEmitter {
     instance.on("data", (...arr) => {
       this.emit("data", instance.instanceUuid, ...arr);
     });
-    instance.on("exit", (...arr) => {
+    instance.on("exit", (exitData: { code: number; isCrash: boolean }) => {
       this.emit(
         "exit",
         {
           instanceUuid: instance.instanceUuid,
-          instanceName: instance.config.nickname
-        },
-        ...arr
+          instanceName: instance.config.nickname,
+          exitCode: exitData.code,
+          isCrash: exitData.isCrash
+        }
       );
     });
     instance.on("open", (...arr) => {

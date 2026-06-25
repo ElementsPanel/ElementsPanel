@@ -114,4 +114,28 @@ router.get("/instance_operation_logs", permission({ level: ROLE.USER, token: fal
   ctx.body = await operationLogger.getByInstance(instanceId, daemonId, limit);
 });
 
+// [Top-level Permission]
+// Log an instance crash / unexpected exit
+router.post("/instance_crash", permission({ level: ROLE.USER, token: false }), async (ctx) => {
+  const body = ctx.request.body || {};
+  const instanceId = body?.instanceId as string;
+  const daemonId = body?.daemonId as string;
+  const instanceName = body?.instanceName as string;
+  const exitCode = +(body?.exitCode ?? -1);
+
+  if (!instanceId || !daemonId)
+    return ctx.throw(400, "instanceId and daemonId are required.");
+
+  operationLogger.error("instance_crash", {
+    daemon_id: daemonId,
+    instance_id: instanceId,
+    instance_name: instanceName || instanceId,
+    exit_code: exitCode,
+    operator_ip: ctx.ip,
+    operator_name: ctx.session?.["userName"] || ""
+  });
+
+  ctx.body = { ok: true };
+});
+
 export default router;

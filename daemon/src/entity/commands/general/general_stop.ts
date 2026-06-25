@@ -8,6 +8,7 @@ export default class GeneralStopCommand extends InstanceCommand {
   }
 
   async exec(instance: Instance) {
+    instance.setUserRequestedStop(true);
     const stopCommand = instance.config.stopCommand;
     if (instance.status() === Instance.STATUS_STOP || !instance.process)
       return instance.failure(new Error($t("TXT_CODE_general_stop.notRunning")));

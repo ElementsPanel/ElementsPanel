@@ -4,6 +4,7 @@ export enum OperationLoggerAction {
   InstanceRestart = "instance_restart",
   InstanceUpdate = "instance_update",
   InstanceKill = "instance_kill",
+  InstanceCrash = "instance_crash",
   InstanceConfigChange = "instance_config_change",
   InstanceCreate = "instance_create",
   InstanceDelete = "instance_delete",
@@ -57,6 +58,11 @@ export type InstanceUpdateOptions = {
 
 export type InstanceKillOptions = {
   type: "instance_kill";
+} & InstanceGeneralOptions;
+
+export type InstanceCrashOptions = {
+  type: "instance_crash";
+  exit_code: number;
 } & InstanceGeneralOptions;
 
 export type InstanceConfigChangeOptions = {
@@ -157,6 +163,7 @@ export type OperationLoggerItem =
   | InstanceRestartOptions
   | InstanceUpdateOptions
   | InstanceKillOptions
+  | InstanceCrashOptions
   | InstanceConfigChangeOptions
   | InstanceCreateOptions
   | InstanceDeleteOptions

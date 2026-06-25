@@ -26,3 +26,18 @@ export const getInstanceOperationLog = useDefineApi<
   url: "/api/overview/instance_operation_logs",
   method: "GET"
 });
+
+export const logInstanceCrash = useDefineApi<
+  {
+    data: {
+      daemonId: string;
+      instanceId: string;
+      instanceName?: string;
+      exitCode?: number;
+    };
+  },
+  { ok: boolean }
+>({
+  url: "/api/overview/instance_crash",
+  method: "POST"
+});

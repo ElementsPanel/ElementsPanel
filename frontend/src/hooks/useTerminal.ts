@@ -131,6 +131,13 @@ export function useTerminal() {
       events.emit("stopped");
     });
 
+    socket.on("instance/crashed", (packet) => {
+      const data = packet?.data || {};
+      events.emit("crashed", {
+        exitCode: data.exitCode ?? -1
+      });
+    });
+
     socket.on("instance/opened", () => {
       events.emit("opened");
     });

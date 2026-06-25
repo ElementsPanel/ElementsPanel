@@ -47,10 +47,12 @@ InstanceSubsystem.on("data", (instanceUuid: string, text: string) => {
 
 // instance exit event
 InstanceSubsystem.on("exit", (obj: any) => {
+  const eventName = obj.isCrash ? "instance/crashed" : "instance/stopped";
   InstanceSubsystem.forEachForward(obj.instanceUuid, (socket) => {
-    protocol.msg(new RouterContext(null, socket), "instance/stopped", {
+    protocol.msg(new RouterContext(null, socket), eventName, {
       instanceUuid: obj.instanceUuid,
-      instanceName: obj.instanceName
+      instanceName: obj.instanceName,
+      exitCode: obj.exitCode
     });
   });
 });
