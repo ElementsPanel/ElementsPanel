@@ -29,6 +29,10 @@ const renderMap: OperationRenderer = {
     text: t("TXT_CODE_fa7002ef"),
     data: [item.operator_name || item.operation_id, item.instance_name || item.instance_id]
   }),
+  instance_auto_restart: (item) => ({
+    text: t("TXT_CODE_c29e18f4"),
+    data: [item.instance_name || item.instance_id]
+  }),
   instance_update: (item) => ({
     text: t("TXT_CODE_e1454ba7"),
     data: [item.operator_name || item.operation_id, item.instance_name || item.instance_id]

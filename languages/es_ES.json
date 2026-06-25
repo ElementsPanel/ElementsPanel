@@ -1394,6 +1394,7 @@
   "TXT_CODE_868df02c": "Acerca de los archivos DockerFile",
   "TXT_CODE_86ab6e1e": "Deshabilitar las actualizaciones del bloque de hongos",
   "TXT_CODE_86c4b2f5": "La instancia <<instance_name>> se cerró inesperadamente (código de salida: <<exit_code>>)",
+  "TXT_CODE_c29e18f4": "La instancia <<instance_name>> se reinició automáticamente tras un fallo",
   "TXT_CODE_86caaf6c": "Opciones avanzadas",
   "TXT_CODE_86e0cccc": "La dirección debe completarse",
   "TXT_CODE_86ff658a": "La configuración de SSL, proxy inverso, etc. requiere soporte adicional para el protocolo Websocket.",

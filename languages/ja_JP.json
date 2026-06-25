@@ -1394,6 +1394,7 @@
   "TXT_CODE_868df02c": "DockerFile ファイルについて",
   "TXT_CODE_86ab6e1e": "マッシュルームブロックのアップデートを無効にする",
   "TXT_CODE_86c4b2f5": "インスタンス <<instance_name>> が異常終了しました（終了コード: <<exit_code>>）",
+  "TXT_CODE_c29e18f4": "インスタンス <<instance_name>> がクラッシュ後に自動再起動しました",
   "TXT_CODE_86caaf6c": "高度なオプション",
   "TXT_CODE_86e0cccc": "アドレスに記入する必要があります",
   "TXT_CODE_86ff658a": "SSL、リバース プロキシなどを構成するには、Websocket プロトコルの追加サポートが必要です。",

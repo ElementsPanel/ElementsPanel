@@ -1394,6 +1394,7 @@
   "TXT_CODE_868df02c": "À propos des fichiers DockerFile",
   "TXT_CODE_86ab6e1e": "Désactiver les mises à jour du bloc champignon",
   "TXT_CODE_86c4b2f5": "L'instance <<instance_name>> s'est arrêtée de manière inattendue (code de sortie: <<exit_code>>)",
+  "TXT_CODE_c29e18f4": "L'instance <<instance_name>> a redémarré automatiquement après un crash",
   "TXT_CODE_86caaf6c": "Options avancées",
   "TXT_CODE_86e0cccc": "L'adresse doit être remplie",
   "TXT_CODE_86ff658a": "La configuration de SSL, du proxy inverse, etc. nécessite une prise en charge supplémentaire du protocole Websocket.",

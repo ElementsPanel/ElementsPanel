@@ -1394,6 +1394,7 @@
   "TXT_CODE_868df02c": "Sobre DockerFile",
   "TXT_CODE_86ab6e1e": "Desativar Atualizações de Bloco de Cogumelo",
   "TXT_CODE_86c4b2f5": "Instância <<instance_name>> encerrada inesperadamente (código de saída: <<exit_code>>)",
+  "TXT_CODE_c29e18f4": "Instância <<instance_name>> foi reiniciada automaticamente após falha",
   "TXT_CODE_86caaf6c": "Opções Avançadas",
   "TXT_CODE_86e0cccc": "O endereço deve ser preenchido",
   "TXT_CODE_86ff658a": "Configure SSL, proxy reverso, etc., exigem suporte adicional para o protocolo Websocket.",

@@ -142,6 +142,13 @@ export function useTerminal() {
       events.emit("opened");
     });
 
+    socket.on("instance/auto_restarted", (packet) => {
+      const data = packet?.data || {};
+      events.emit("autoRestarted", {
+        restartCount: data.restartCount
+      });
+    });
+
     socket.on("stream/auth", (packet) => {
       const data = packet.data;
       if (data === true) {

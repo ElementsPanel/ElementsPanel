@@ -76,3 +76,14 @@ InstanceSubsystem.on("failure", (obj: any) => {
     });
   });
 });
+
+// Instance auto-restart event (triggered when daemon auto-restarts after crash)
+InstanceSubsystem.on("autoRestarted", (obj: any) => {
+  InstanceSubsystem.forEachForward(obj.instanceUuid, (socket) => {
+    protocol.msg(new RouterContext(null, socket), "instance/auto_restarted", {
+      instanceUuid: obj.instanceUuid,
+      instanceName: obj.instanceName,
+      restartCount: obj.restartCount
+    });
+  });
+});

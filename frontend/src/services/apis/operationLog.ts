@@ -41,3 +41,17 @@ export const logInstanceCrash = useDefineApi<
   url: "/api/overview/instance_crash",
   method: "POST"
 });
+
+export const logInstanceAutoRestart = useDefineApi<
+  {
+    data: {
+      daemonId: string;
+      instanceId: string;
+      instanceName?: string;
+    };
+  },
+  { ok: boolean }
+>({
+  url: "/api/overview/instance_auto_restart",
+  method: "POST"
+});

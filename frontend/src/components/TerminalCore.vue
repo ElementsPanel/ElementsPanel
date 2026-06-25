@@ -4,7 +4,7 @@ import { useCommandHistory } from "@/hooks/useCommandHistory";
 import { useXhrPollError } from "@/hooks/useXhrPollError";
 import { t } from "@/lang/i18n";
 import { getInstanceOutputLog } from "@/services/apis/instance";
-import { logInstanceCrash } from "@/services/apis/operationLog";
+import { logInstanceCrash, logInstanceAutoRestart } from "@/services/apis/operationLog";
 import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import { CodeOutlined, DeleteOutlined, LoadingOutlined } from "@ant-design/icons-vue";
 import { Terminal } from "@xterm/xterm";
@@ -12,6 +12,12 @@ import { message } from "ant-design-vue";
 import { onMounted, ref } from "vue";
 import { encodeConsoleColor, type UseTerminalHook } from "../hooks/useTerminal";
 import { getRandomId } from "../tools/randId";
+
+// Module-level dedup: prevent duplicate crash/restart logs across multiple TerminalCore instances
+let lastCrashLogTime = 0;
+const CRASH_LOG_DEDUP_MS = 8000;
+let lastAutoRestartLogTime = 0;
+const AUTO_RESTART_LOG_DEDUP_MS = 8000;
 
 const props = defineProps<{
   instanceId: string;
@@ -84,6 +90,9 @@ events.on("stopped", () => {
 });
 
 events.on("crashed", (data: { exitCode: number }) => {
+  const now = Date.now();
+  if (now - lastCrashLogTime < CRASH_LOG_DEDUP_MS) return;
+  lastCrashLogTime = now;
   logInstanceCrash()
     .execute({
       data: {
@@ -91,6 +100,21 @@ events.on("crashed", (data: { exitCode: number }) => {
         instanceId: instanceId,
         instanceName: state.value?.config?.nickname || state.value?.config?.name,
         exitCode: data?.exitCode
+      }
+    })
+    .catch(() => {});
+});
+
+events.on("autoRestarted", () => {
+  const now = Date.now();
+  if (now - lastAutoRestartLogTime < AUTO_RESTART_LOG_DEDUP_MS) return;
+  lastAutoRestartLogTime = now;
+  logInstanceAutoRestart()
+    .execute({
+      data: {
+        daemonId: daemonId,
+        instanceId: instanceId,
+        instanceName: state.value?.config?.nickname || state.value?.config?.name
       }
     })
     .catch(() => {});

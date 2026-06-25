@@ -1394,6 +1394,7 @@
   "TXT_CODE_868df02c": "Über DockerFile-Dateien",
   "TXT_CODE_86ab6e1e": "Deaktivieren Sie Mushroom-Block-Updates",
   "TXT_CODE_86c4b2f5": "Instanz <<instance_name>> unerwartet abgestürzt (Exit-Code: <<exit_code>>)",
+  "TXT_CODE_c29e18f4": "Instanz <<instance_name>> wurde nach Absturz automatisch neu gestartet",
   "TXT_CODE_86caaf6c": "Erweiterte Optionen",
   "TXT_CODE_86e0cccc": "Adresse muss ausgefüllt werden",
   "TXT_CODE_86ff658a": "Die Konfiguration von SSL, Reverse-Proxy usw. erfordert zusätzliche Unterstützung für das Websocket-Protokoll.",

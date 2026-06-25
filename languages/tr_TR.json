@@ -1394,6 +1394,7 @@
   "TXT_CODE_868df02c": "DockerFile Hakkında",
   "TXT_CODE_86ab6e1e": "Mantar Blok Güncellemelerini Devre Dışı Bırak",
   "TXT_CODE_86c4b2f5": "Örnek <<instance_name>> beklenmedik şekilde sonlandı (çıkış kodu: <<exit_code>>)",
+  "TXT_CODE_c29e18f4": "Örnek <<instance_name>> çöktü ve otomatik olarak yeniden başlatıldı",
   "TXT_CODE_86caaf6c": "Gelişmiş Seçenekler",
   "TXT_CODE_86e0cccc": "Adres doldurulmalı",
   "TXT_CODE_86ff658a": "Websocket protokolü için ek destek gerektiren SSL, ters proxy vb. yapılandırın.",

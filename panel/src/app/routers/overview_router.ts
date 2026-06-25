@@ -138,4 +138,26 @@ router.post("/instance_crash", permission({ level: ROLE.USER, token: false }), a
   ctx.body = { ok: true };
 });
 
+// [Top-level Permission]
+// Log an instance auto-restart (triggered by daemon after crash)
+router.post("/instance_auto_restart", permission({ level: ROLE.USER, token: false }), async (ctx) => {
+  const body = ctx.request.body || {};
+  const instanceId = body?.instanceId as string;
+  const daemonId = body?.daemonId as string;
+  const instanceName = body?.instanceName as string;
+
+  if (!instanceId || !daemonId)
+    return ctx.throw(400, "instanceId and daemonId are required.");
+
+  operationLogger.log("instance_auto_restart", {
+    daemon_id: daemonId,
+    instance_id: instanceId,
+    instance_name: instanceName || instanceId,
+    operator_ip: ctx.ip,
+    operator_name: ""
+  });
+
+  ctx.body = { ok: true };
+});
+
 export default router;

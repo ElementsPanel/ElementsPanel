@@ -209,6 +209,13 @@ class InstanceSubsystem extends EventEmitter {
         ...arr
       );
     });
+    instance.on("autoRestarted", (data: { count: number }) => {
+      this.emit("autoRestarted", {
+        instanceUuid: instance.instanceUuid,
+        instanceName: instance.config.nickname,
+        restartCount: data.count
+      });
+    });
   }
 
   removeInstance(instanceUuid: string, deleteFile: boolean) {

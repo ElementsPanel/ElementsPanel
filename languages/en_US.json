@@ -1397,6 +1397,7 @@
   "TXT_CODE_868df02c": "About DockerFiles",
   "TXT_CODE_86ab6e1e": "Disable Mushroom Block Updates",
   "TXT_CODE_86c4b2f5": "Instance <<instance_name>> crashed unexpectedly (exit code: <<exit_code>>)",
+  "TXT_CODE_c29e18f4": "Instance <<instance_name>> crashed and automatically restarted",
   "TXT_CODE_86caaf6c": "Advanced Options",
   "TXT_CODE_86e0cccc": "Address must be filled in",
   "TXT_CODE_86ff658a": "Configure SSL, reverse proxy, etc., this requires additional support for the Websocket protocol.",

@@ -2,6 +2,7 @@ export enum OperationLoggerAction {
   InstanceStart = "instance_start",
   InstanceStop = "instance_stop",
   InstanceRestart = "instance_restart",
+  InstanceAutoRestart = "instance_auto_restart",
   InstanceUpdate = "instance_update",
   InstanceKill = "instance_kill",
   InstanceCrash = "instance_crash",
@@ -50,6 +51,10 @@ export type InstanceStopOptions = {
 
 export type InstanceRestartOptions = {
   type: "instance_restart";
+} & InstanceGeneralOptions;
+
+export type InstanceAutoRestartOptions = {
+  type: "instance_auto_restart";
 } & InstanceGeneralOptions;
 
 export type InstanceUpdateOptions = {
@@ -161,6 +166,7 @@ export type OperationLoggerItem =
   | InstanceStartOptions
   | InstanceStopOptions
   | InstanceRestartOptions
+  | InstanceAutoRestartOptions
   | InstanceUpdateOptions
   | InstanceKillOptions
   | InstanceCrashOptions

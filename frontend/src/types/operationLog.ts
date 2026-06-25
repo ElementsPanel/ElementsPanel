@@ -24,6 +24,10 @@ export type InstanceRestartOptions = {
   type: "instance_restart";
 } & InstanceGeneralOptions;
 
+export type InstanceAutoRestartOptions = {
+  type: "instance_auto_restart";
+} & InstanceGeneralOptions;
+
 export type InstanceUpdateOptions = {
   type: "instance_update";
 } & InstanceGeneralOptions;
@@ -121,6 +125,7 @@ export type OperationLoggerItem =
   | InstanceStartOptions
   | InstanceStopOptions
   | InstanceRestartOptions
+  | InstanceAutoRestartOptions
   | InstanceUpdateOptions
   | InstanceKillOptions
   | InstanceCrashOptions

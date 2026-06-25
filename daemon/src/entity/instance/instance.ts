@@ -402,6 +402,7 @@ export default class Instance extends EventEmitter {
           .then(() => {
             this.autoRestartCount++;
             this.println($t("TXT_CODE_instanceConf.info"), $t("TXT_CODE_instanceConf.autoRestart"));
+            this.emit("autoRestarted", { count: this.autoRestartCount });
           })
           .catch((err) => {
             this.println(

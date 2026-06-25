@@ -1397,6 +1397,7 @@
   "TXT_CODE_868df02c": "关于 DockerFile 文件",
   "TXT_CODE_86ab6e1e": "禁用蘑菇方块更新",
   "TXT_CODE_86c4b2f5": "实例 <<instance_name>> 异常退出（退出码: <<exit_code>>）",
+  "TXT_CODE_c29e18f4": "实例 <<instance_name>> 崩溃后自动重启",
   "TXT_CODE_86caaf6c": "高级选项",
   "TXT_CODE_86e0cccc": "地址必须填写",
   "TXT_CODE_86ff658a": "配置 SSL，反向代理等，需要额外支持 Websocket 协议。",

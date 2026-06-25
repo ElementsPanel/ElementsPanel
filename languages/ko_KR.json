@@ -1394,6 +1394,7 @@
   "TXT_CODE_868df02c": "DockerFile 파일 정보",
   "TXT_CODE_86ab6e1e": "버섯 블록 업데이트 비활성화",
   "TXT_CODE_86c4b2f5": "인스턴스 <<instance_name>> 이(가) 비정상 종료되었습니다 (종료 코드: <<exit_code>>)",
+  "TXT_CODE_c29e18f4": "인스턴스 <<instance_name>> 이(가) 충돌 후 자동 재시작되었습니다",
   "TXT_CODE_86caaf6c": "고급 옵션",
   "TXT_CODE_86e0cccc": "주소를 작성해야합니다",
   "TXT_CODE_86ff658a": "SSL, 역방향 프록시 등을 구성하려면 Websocket 프로토콜에 대한 추가 지원이 필요합니다.",
