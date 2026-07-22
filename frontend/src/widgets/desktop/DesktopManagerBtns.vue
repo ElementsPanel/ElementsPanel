@@ -274,7 +274,7 @@ watch(instanceInfo, (cfg, oldCfg) => {
         :daemon-id="props.daemonId" @update="refreshInstanceInfo" />
 
     <DesktopInstanceLog ref="instanceLogDialog" :instance-id="props.instanceId" :daemon-id="props.daemonId"
-        :instance-name="instanceInfo?.config?.nickname || instanceInfo?.config?.name" />
+        :instance-name="instanceInfo?.config?.nickname" />
 
 </template>
 

@@ -98,7 +98,7 @@ events.on("crashed", (data: { exitCode: number }) => {
       data: {
         daemonId: daemonId,
         instanceId: instanceId,
-        instanceName: state.value?.config?.nickname || state.value?.config?.name,
+        instanceName: state.value?.config?.nickname,
         exitCode: data?.exitCode
       }
     })
@@ -114,7 +114,7 @@ events.on("autoRestarted", () => {
       data: {
         daemonId: daemonId,
         instanceId: instanceId,
-        instanceName: state.value?.config?.nickname || state.value?.config?.name
+        instanceName: state.value?.config?.nickname
       }
     })
     .catch(() => {});
