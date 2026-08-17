@@ -4,7 +4,7 @@ import { useScreen } from "@/hooks/useScreen";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 
 import { Button, Input, Select, Table } from "ant-design-vue";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted } from "vue";
 import { RouterView, useRoute } from "vue-router";
 import AppBottomNav from "./components/AppBottomNav.vue";
 import AppConfigProvider from "./components/AppConfigProvider.vue";
@@ -38,20 +38,6 @@ const designModeNavStyle = computed(() => {
 
 const isLoginPage = computed(() => route.path === '/login');
 const isDesktopPage = computed(() => route.path === '/desktop');
-const justLoggedIn = ref(false);
-const transitionName = ref('page-fade');
-
-watch(() => route.path, (newPath, oldPath) => {
-  if (oldPath === '/login' && newPath !== '/login') {
-    transitionName.value = 'login-fade';
-    justLoggedIn.value = true;
-    setTimeout(() => {
-      justLoggedIn.value = false; transitionName.value = 'page-fade';
-    }, 1000);
-  } else {
-    transitionName.value = 'page-fade';
-  }
-});
 
 onMounted(async () => {
   setLoadingTitle("Loading application settings...");
@@ -64,14 +50,12 @@ onMounted(async () => {
   <AppConfigProvider :has-bg-image="hasBgImage">
     <!-- App Container -->
     <div class="global-app-container">
-      <AppSidebarMenu v-if="useSidebarLayout && !isLoginPage && !isDesktopPage" :style="designModeNavStyle"
-        :class="{ 'app-header-login-anim': justLoggedIn }" />
+      <AppSidebarMenu v-if="useSidebarLayout && !isLoginPage && !isDesktopPage" :style="designModeNavStyle" />
       <main class="main-content" :class="{ 'app-layout-sidebar-only': useSidebarLayout && !isDesktopPage }">
-        <AppHeader v-if="!useSidebarLayout && !isLoginPage && !isDesktopPage" :style="designModeNavStyle"
-          :class="{ 'app-header-login-anim': justLoggedIn }" />
+        <AppHeader v-if="!useSidebarLayout && !isLoginPage && !isDesktopPage" :style="designModeNavStyle" />
         <Breadcrumbs v-if="!isLoginPage && !isDesktopPage" />
         <RouterView v-slot="{ Component, route }">
-          <transition :name="transitionName" mode="out-in">
+          <transition name="page-fade" mode="out-in">
             <component :is="Component" :key="route.fullPath" />
           </transition>
         </RouterView>
@@ -95,45 +79,5 @@ onMounted(async () => {
 .page-fade-enter-from,
 .page-fade-leave-to {
   opacity: 0;
-}
-
-/* Login specific transitions */
-.login-fade-leave-active {
-  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-.login-fade-leave-to {
-  opacity: 0;
-}
-
-.login-fade-enter-active {
-  transition: all 2.0s cubic-bezier(0.00, 0.00, 0.00, 1.00);
-}
-
-.login-fade-enter-from {
-  opacity: 0;
-  transform: scale(1.1);
-}
-
-.login-fade-enter-to {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* Header Slide-Down Animation when app loads (after login) */
-.app-header-login-anim {
-  animation: headerSlideDown 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
-}
-
-@keyframes headerSlideDown {
-  from {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
 }
 </style>
