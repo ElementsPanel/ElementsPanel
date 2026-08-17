@@ -3,6 +3,7 @@ import { GlobalVariable } from "mcsmanager-common";
 import { $t } from "../i18n";
 import { getUuidByApiKey, ILLEGAL_ACCESS_KEY, isAjax, logout } from "../service/passport_service";
 import userSystem from "../service/user_service";
+import { checkSafeName } from "../utils/safe";
 
 /**
  * @description Request speed limit, 8 requests per second
@@ -72,6 +73,10 @@ export default (parameter: IPermissionCfg) => {
     const key = ctx.request?.header["x-request-api-key"] || ctx.query.apikey;
     if (key) {
       const apiKey = String(key);
+      // Validate apiKey: only A-Z, a-z, 0-9 are allowed
+      if (!checkSafeName(apiKey)) {
+        return apiError(ctx);
+      }
       const user = getUuidByApiKey(apiKey);
       if (user && user.permission >= Number(parameter.level)) {
         return await next();

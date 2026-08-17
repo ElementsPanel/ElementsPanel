@@ -8,6 +8,7 @@ import { systemConfig } from "../setting";
 import { logger } from "./log";
 import { timeUuid } from "./password";
 import userSystem from "./user_service";
+import { checkSafeName } from "../utils/safe";
 
 export const BAN_IP_COUNT = "banip";
 export const LOGIN_FAILED_KEY = "loginFailed";
@@ -220,10 +221,12 @@ export function checkBanIp(ctx: Koa.ParameterizedContext) {
   return true;
 }
 
-export function getUuidByApiKey(apiKey: string) {
+export function getUuidByApiKey(unsafeApiKey: string) {
+  // Validate apiKey: only A-Z, a-z, 0-9 are allowed
+  if (!checkSafeName(unsafeApiKey)) return null;
   const pageData = userSystem.getQueryWrapper().selectPage(
     {
-      apiKey
+      apiKey: unsafeApiKey
     },
     1,
     1
