@@ -35,7 +35,7 @@ import { useLocalStorage } from "@vueuse/core";
 import { message, Modal } from "ant-design-vue";
 import type { Key } from "ant-design-vue/es/table/interface";
 import { v4 } from "uuid";
-import { computed, createVNode, onMounted, reactive, ref, type VNodeRef } from "vue";
+import { computed, createVNode, onMounted, onUnmounted, reactive, ref, type VNodeRef } from "vue";
 
 export function getFileConfigAddr(config: { addr: string; remoteMappings?: RemoteMappingEntry[] }) {
   let addr = config.addr;
@@ -449,57 +449,57 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
   };
 
   const deleteFile = async (file?: string) => {
+    if (deleteDialog.value.show || deleteDialog.value.loading) return;
+
+    let files: string[];
+    if (isMultiple.value) {
+      files = selectionData.value?.map((item) => currentPath.value + item.name) ?? [];
+    } else if (file) {
+      files = [currentPath.value + file];
+    } else {
+      files = selectionData.value?.map((item) => currentPath.value + item.name) ?? [];
+    }
+    if (files.length === 0) return reportErrorMsg(t("TXT_CODE_b152cd75"));
+
     deleteDialog.value.file = file;
     deleteDialog.value.show = true;
-    return new Promise<void>((resolve) => {
-      deleteDialog.value.resolve = (confirmed: boolean) => {
-        deleteDialog.value.show = false;
-        deleteDialog.value.resolve = null;
-        if (!confirmed) {
-          resolve();
-          return;
-        }
-        const { execute } = deleteFileApi();
-        const useDeleteFileApi = async (files: string[]) => {
-          try {
-            await execute({
-              params: {
-                uuid: instanceId || "",
-                daemonId: daemonId || ""
-              },
-              data: {
-                targets: files
-              }
-            });
-            await getFileList();
-            message.success(t("TXT_CODE_cae10a08"));
-            if (dataSource?.value?.length === 0 && operationForm.value.current > 1) {
-              operationForm.value.current -= 1;
-              await getFileList();
-            }
-          } catch (error: any) {
-            reportErrorMsg(error.message);
-          }
-        };
-
-        (async () => {
-          if (!isMultiple.value) {
-            // one file
-            await useDeleteFileApi([currentPath.value + file]);
-          } else {
-            // more file
-            if (!selectionData.value) {
-              reportErrorMsg(t("TXT_CODE_f41ad30a"));
-              resolve();
-              return;
-            }
-            await useDeleteFileApi(selectionData.value.map((e) => currentPath.value + e.name));
-          }
-          resolve();
-        })();
-      };
+    const confirmed = await new Promise<boolean>((resolve) => {
+      deleteDialog.value.resolve = resolve;
     });
+    deleteDialog.value.show = false;
+    deleteDialog.value.resolve = null;
+    if (!confirmed) return;
+
+    deleteDialog.value.loading = true;
+    const { execute } = deleteFileApi();
+    try {
+      await execute({
+        params: {
+          uuid: instanceId || "",
+          daemonId: daemonId || ""
+        },
+        data: {
+          targets: files
+        }
+      });
+      await getFileList();
+      message.success(t("TXT_CODE_cae10a08"));
+      if (dataSource?.value?.length === 0 && operationForm.value.current > 1) {
+        operationForm.value.current -= 1;
+        await getFileList();
+      }
+    } catch (error: any) {
+      reportErrorMsg(error.message);
+    } finally {
+      deleteDialog.value.loading = false;
+    }
   };
+
+  onUnmounted(() => {
+    if (deleteDialog.value.show) {
+      deleteDialog.value.resolve?.(false);
+    }
+  });
 
   const zipFile = async (showLoadingDialog = true) => {
     if (!selectionData.value || selectionData.value.length === 0)

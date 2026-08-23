@@ -725,7 +725,7 @@ const performDragSelection = (e: MouseEvent) => {
     }
 };
 
-const onTableMouseUp = () => {
+const finishDragSelection = (restoreFocus = true) => {
     if (isDragSelecting.value) {
         isDragSelecting.value = false;
         isDragAdditive.value = false;
@@ -734,7 +734,7 @@ const onTableMouseUp = () => {
             cancelAnimationFrame(dragSelectRafId);
             dragSelectRafId = null;
         }
-        if (dfmRootRef.value) {
+        if (restoreFocus && dfmRootRef.value) {
             if (!dfmRootRef.value.hasAttribute('tabindex')) {
                 dfmRootRef.value.setAttribute('tabindex', '-1');
             }
@@ -743,8 +743,15 @@ const onTableMouseUp = () => {
     }
 };
 
+const onTableMouseUp = () => finishDragSelection();
+
 const windowWidth = ref(window.innerWidth);
 const windowHeight = ref(window.innerHeight);
+const updateWindowSize = () => {
+    windowWidth.value = window.innerWidth;
+    windowHeight.value = window.innerHeight;
+};
+const handleWindowBlur = () => finishDragSelection(false);
 
 const handleKeyboardShortcut = (e: KeyboardEvent) => {
     if (dfmRootRef.value && !dfmRootRef.value.contains(e.target as Node)) {
@@ -802,19 +809,18 @@ const handleKeyboardShortcut = (e: KeyboardEvent) => {
 
     if (e.key === 'Delete' || e.key === 'Del') {
         e.preventDefault();
+        if (e.repeat || deleteDialog.value.show || deleteDialog.value.loading) return;
         if (!selectionData.value || selectionData.value.length === 0) return;
+        finishDragSelection(false);
         const file = selectionData.value.length === 1 ? selectionData.value[0].name : undefined;
-        deleteFile(file);
+        void deleteFile(file);
         return;
     }
 };
 
 onMounted(async () => {
-    const updateWindowSize = () => {
-        windowWidth.value = window.innerWidth;
-        windowHeight.value = window.innerHeight;
-    };
     window.addEventListener('resize', updateWindowSize);
+    window.addEventListener('blur', handleWindowBlur);
 
     await getFileStatus();
     dialog.value.loading = true;
@@ -837,6 +843,7 @@ onMounted(async () => {
 onUnmounted(() => {
     if (task) clearInterval(task);
     task = undefined;
+    finishDragSelection(false);
     if (dragSelectRafId !== null) {
         cancelAnimationFrame(dragSelectRafId);
         dragSelectRafId = null;
@@ -844,10 +851,8 @@ onUnmounted(() => {
     document.removeEventListener('mousemove', onTableMouseMove);
     document.removeEventListener('mouseup', onTableMouseUp);
     document.removeEventListener('keydown', handleKeyboardShortcut);
-    window.removeEventListener('resize', () => {
-        windowWidth.value = window.innerWidth;
-        windowHeight.value = window.innerHeight;
-    });
+    window.removeEventListener('resize', updateWindowSize);
+    window.removeEventListener('blur', handleWindowBlur);
 });
 </script>
 
