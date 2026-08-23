@@ -34,7 +34,9 @@ const DEFAULT_CONFIG = {
   enableSoftShutdown: true,
   softShutdownSkipDocker: true,
   softShutdownWaitSeconds: 10,
-  instanceBackupPath: ""
+  instanceBackupPath: "",
+  instanceBackupFormat: "zip",
+  instanceBackupCompressionLevel: 9
 };
 
 const SPEED_RATE_OPTIONS = [
@@ -98,6 +100,7 @@ const openDialog = (data?: ComputedNodeInfo, uuid?: string) => {
     editMode.value = true;
     dialog.uuid = uuid;
     dialog.data = {
+      ..._.cloneDeep(DEFAULT_CONFIG),
       ...data,
       ...data.config,
       port: data.port, // connection port
@@ -338,6 +341,27 @@ defineExpose({ openDialog });
             </a-typography-paragraph>
             <a-input v-model:value="dialog.data.instanceBackupPath" placeholder="data/backups" />
           </a-form-item>
+          <a-row :gutter="[24, 24]">
+            <a-col :span="12">
+              <a-form-item :label="t('TXT_CODE_e06c1cea')" name="instanceBackupFormat">
+                <a-select v-model:value="dialog.data.instanceBackupFormat">
+                  <a-select-option value="zip">ZIP</a-select-option>
+                  <a-select-option value="tar.gz">TAR.GZ</a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col :span="12">
+              <a-form-item :label="t('TXT_CODE_743ed87f')" name="instanceBackupCompressionLevel">
+                <a-input-number
+                  v-model:value="dialog.data.instanceBackupCompressionLevel"
+                  :min="0"
+                  :max="9"
+                  :precision="0"
+                  class="w-100"
+                />
+              </a-form-item>
+            </a-col>
+          </a-row>
           <a-form-item :label="t('TXT_CODE_bbe23ee7')" name="remoteMappings">
             <a-typography-paragraph>
               <a-typography-text type="secondary">

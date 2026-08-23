@@ -21,6 +21,8 @@ class Config {
   public defaultInstancePath = "";
   public defaultJavaDataPath = "";
   public instanceBackupPath = "data/backups";
+  public instanceBackupFormat = "zip";
+  public instanceBackupCompressionLevel = 9;
   public allocatablePortRange = [10010, 65500];
   public currentAllocatablePort = 10010;
   public portAssignInterval = 5;

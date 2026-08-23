@@ -59,7 +59,9 @@ routerApp.on("info/overview", async (ctx) => {
       enableSoftShutdown: globalConfiguration.config.enableSoftShutdown,
       softShutdownSkipDocker: globalConfiguration.config.softShutdownSkipDocker,
       softShutdownWaitSeconds: globalConfiguration.config.softShutdownWaitSeconds,
-      instanceBackupPath: globalConfiguration.config.instanceBackupPath
+      instanceBackupPath: globalConfiguration.config.instanceBackupPath,
+      instanceBackupFormat: globalConfiguration.config.instanceBackupFormat,
+      instanceBackupCompressionLevel: globalConfiguration.config.instanceBackupCompressionLevel
     },
     features: {
       instanceBackup: true
@@ -83,6 +85,8 @@ routerApp.on("info/setting", async (ctx, data) => {
   const softShutdownSkipDocker = toBoolean(data.softShutdownSkipDocker);
   const softShutdownWaitSeconds = toNumber(data.softShutdownWaitSeconds);
   const instanceBackupPath = toText(data.instanceBackupPath);
+  const instanceBackupFormat = toText(data.instanceBackupFormat);
+  const instanceBackupCompressionLevel = toNumber(data.instanceBackupCompressionLevel);
   if (language) {
     logger.warn($t("TXT_CODE_66e32091"), language);
     i18next.changeLanguage(language);
@@ -122,6 +126,17 @@ routerApp.on("info/setting", async (ctx, data) => {
   }
   if (instanceBackupPath != null) {
     globalConfiguration.config.instanceBackupPath = instanceBackupPath;
+  }
+  if (instanceBackupFormat === "zip" || instanceBackupFormat === "tar.gz") {
+    globalConfiguration.config.instanceBackupFormat = instanceBackupFormat;
+  }
+  if (
+    instanceBackupCompressionLevel != null &&
+    Number.isInteger(instanceBackupCompressionLevel) &&
+    instanceBackupCompressionLevel >= 0 &&
+    instanceBackupCompressionLevel <= 9
+  ) {
+    globalConfiguration.config.instanceBackupCompressionLevel = instanceBackupCompressionLevel;
   }
   globalConfiguration.store();
   protocol.response(ctx, true);

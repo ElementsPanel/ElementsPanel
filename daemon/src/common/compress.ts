@@ -4,6 +4,7 @@ import { t } from "i18next";
 import { ProcessWrapper } from "mcsmanager-common";
 import StreamZip from "node-stream-zip";
 import path from "path";
+import { extract, list } from "tar";
 import { promisify } from "util";
 import { GOLANG_ZIP_PATH, SEVEN_ZIP_PATH, ZIP_TIMEOUT_SECONDS } from "../const";
 import { $t } from "../i18n";
@@ -85,20 +86,51 @@ export async function decompress(
 }
 
 /**
- * Decompress a zip file with progress tracking
+ * Decompress a ZIP or TAR.GZ archive with progress tracking.
  */
 export async function decompressWithProgress(
-  zipPath: string,
+  archivePath: string,
   dest: string,
   onProgress?: (percent: number) => void,
   fileCode?: string
 ): Promise<boolean> {
-  if (!checkFileName(zipPath) || !checkFileName(dest))
+  if (!checkFileName(archivePath) || !checkFileName(dest))
     throw new Error(COMPRESS_ERROR_MSG.invalidName);
 
   await fs.ensureDir(dest);
 
-  const zip = new StreamZip.async({ file: zipPath });
+  if (archivePath.toLowerCase().endsWith(".tar.gz")) {
+    let totalSize = 0;
+    await list({
+      file: archivePath,
+      onReadEntry: (entry) => {
+        totalSize += entry.size;
+      }
+    });
+
+    let processedSize = 0;
+    let lastPercent = -1;
+    await extract({
+      file: archivePath,
+      cwd: dest,
+      onReadEntry: (entry) => {
+        entry.on("data", (chunk) => {
+          processedSize += Buffer.byteLength(chunk);
+          if (onProgress && totalSize > 0) {
+            const percent = Math.min(100, Math.floor((processedSize / totalSize) * 100));
+            if (percent !== lastPercent) {
+              lastPercent = percent;
+              onProgress(percent);
+            }
+          }
+        });
+      }
+    });
+    onProgress?.(100);
+    return true;
+  }
+
+  const zip = new StreamZip.async({ file: archivePath });
 
   try {
     const entries = await zip.entries();

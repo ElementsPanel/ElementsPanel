@@ -59,11 +59,18 @@ export class InstanceBackupTask extends AsyncTask {
                 "-" + String(now.getSeconds()).padStart(2, '0');
 
             const backupId = v4().split("-")[0];
-            this.backupFileName = `${backupId}-${dateStr}.zip`;
+            const backupFormat = globalConfiguration.config.instanceBackupFormat === "tar.gz"
+                ? "tar.gz"
+                : "zip";
+            const configuredLevel = globalConfiguration.config.instanceBackupCompressionLevel;
+            const compressionLevel = Number.isInteger(configuredLevel)
+                ? Math.min(9, Math.max(0, configuredLevel))
+                : 9;
+            this.backupFileName = `${backupId}-${dateStr}.${backupFormat}`;
 
             const instanceBackupDir = path.join(this.backupPath, this.instance.instanceUuid);
             await fs.ensureDir(instanceBackupDir);
-            const targetZipPath = path.join(instanceBackupDir, this.backupFileName);
+            const targetArchivePath = path.join(instanceBackupDir, this.backupFileName);
 
             const instanceCwd = this.instance.absoluteCwdPath();
 
@@ -136,8 +143,10 @@ export class InstanceBackupTask extends AsyncTask {
                 this.instance.println("INFO", $t("TXT_CODE_INSTANCE_BACKUP_EXCLUDED", { num: String(blacklistedCount) }));
             }
             
-            const output = fs.createWriteStream(targetZipPath);
-            const archive = archiver('zip', { zlib: { level: 9 } });
+            const output = fs.createWriteStream(targetArchivePath);
+            const archive = backupFormat === "tar.gz"
+                ? archiver("tar", { gzip: true, gzipOptions: { level: compressionLevel } })
+                : archiver("zip", { zlib: { level: compressionLevel } });
             
             archive.pipe(output);
             
@@ -181,7 +190,7 @@ export class InstanceBackupTask extends AsyncTask {
             this.instance.print("\n");
 
             this.instance.println("INFO", $t("TXT_CODE_INSTANCE_BACKUP_SUCCESS", { name: this.backupFileName }));
-            logger.info(`Instance backup success: ${this.instance.config.nickname} -> ${targetZipPath}`);
+            logger.info(`Instance backup success: ${this.instance.config.nickname} -> ${targetArchivePath}`);
 
             this.stop();
         } catch (error: any) {

@@ -470,7 +470,7 @@ routerApp.on("instance/backup/list", async (ctx, data) => {
     const files = await fs.readdir(instanceBackupDir);
     const backups = [];
     for (const file of files) {
-      if (file.endsWith(".zip")) {
+      if (file.endsWith(".zip") || file.endsWith(".tar.gz")) {
         const filePath = path.join(instanceBackupDir, file);
         const stat = await fs.stat(filePath);
         backups.push({
@@ -551,9 +551,9 @@ routerApp.on("instance/backup/restore", async (ctx, data) => {
     if (!customBackupPath) {
       customBackupPath = path.join(process.cwd(), "data/backups");
     }
-    const zipPath = path.join(path.normalize(customBackupPath), instanceUuid, backupName);
+    const archivePath = path.join(path.normalize(customBackupPath), instanceUuid, backupName);
 
-    if (!fs.existsSync(zipPath)) {
+    if (!fs.existsSync(archivePath)) {
       throw new Error($t("TXT_CODE_Instance_router.accessFileErr"));
     }
 
@@ -566,7 +566,7 @@ routerApp.on("instance/backup/restore", async (ctx, data) => {
         const destDir = instance.absoluteCwdPath();
         const progressPrefix = `\x1b[K\r`;
         let lastPercent = -1;
-        await decompressWithProgress(zipPath, destDir, (percent: number) => {
+        await decompressWithProgress(archivePath, destDir, (percent: number) => {
           if (percent !== lastPercent) {
             lastPercent = percent;
             const barLength = 30;

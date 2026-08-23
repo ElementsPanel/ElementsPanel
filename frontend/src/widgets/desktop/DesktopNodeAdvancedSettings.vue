@@ -32,6 +32,8 @@ export interface AdvancedSettingsData {
     softShutdownSkipDocker: boolean;
     softShutdownWaitSeconds: number;
     instanceBackupPath: string;
+    instanceBackupFormat: string;
+    instanceBackupCompressionLevel: number;
     daemonPort: number;
     remoteMappings: IPanelOverviewRemoteMappingResponse[];
 }
@@ -60,6 +62,8 @@ const form = reactive<AdvancedSettingsData>({
     softShutdownSkipDocker: true,
     softShutdownWaitSeconds: 10,
     instanceBackupPath: "",
+    instanceBackupFormat: "zip",
+    instanceBackupCompressionLevel: 9,
     daemonPort: 24444,
     remoteMappings: []
 });
@@ -73,6 +77,8 @@ const resetForm = () => {
     form.softShutdownSkipDocker = true;
     form.softShutdownWaitSeconds = 10;
     form.instanceBackupPath = "";
+    form.instanceBackupFormat = "zip";
+    form.instanceBackupCompressionLevel = 9;
     form.daemonPort = 24444;
     form.remoteMappings = [];
 };
@@ -96,6 +102,8 @@ const fetchNodeConfig = async () => {
                 form.softShutdownSkipDocker = cfg.softShutdownSkipDocker;
                 form.softShutdownWaitSeconds = cfg.softShutdownWaitSeconds;
                 form.instanceBackupPath = cfg.instanceBackupPath;
+                form.instanceBackupFormat = cfg.instanceBackupFormat ?? "zip";
+                form.instanceBackupCompressionLevel = cfg.instanceBackupCompressionLevel ?? 9;
                 form.daemonPort = cfg.port;
             }
             if (nodeInfo?.remoteMappings) {
@@ -145,7 +153,9 @@ const saveSettings = async () => {
                     enableSoftShutdown: form.enableSoftShutdown,
                     softShutdownSkipDocker: form.softShutdownSkipDocker,
                     softShutdownWaitSeconds: form.softShutdownWaitSeconds,
-                    instanceBackupPath: form.instanceBackupPath
+                    instanceBackupPath: form.instanceBackupPath,
+                    instanceBackupFormat: form.instanceBackupFormat,
+                    instanceBackupCompressionLevel: form.instanceBackupCompressionLevel
                 },
                 daemonPort: form.daemonPort,
                 remoteMappings: form.remoteMappings
@@ -233,6 +243,20 @@ const saveSettings = async () => {
                     <span class="dn-form-hint">{{ t("TXT_CODE_INSTANCE_BACKUP_PATH_HINT") }}</span>
                     <input v-model="form.instanceBackupPath" type="text" class="dn-form-input"
                         placeholder="data/backups" />
+                </div>
+
+                <div class="dn-form-group">
+                    <label class="dn-form-label">{{ t("TXT_CODE_e06c1cea") }}</label>
+                    <select v-model="form.instanceBackupFormat" class="dn-form-select">
+                        <option value="zip">ZIP</option>
+                        <option value="tar.gz">TAR.GZ</option>
+                    </select>
+                </div>
+
+                <div class="dn-form-group">
+                    <label class="dn-form-label">{{ t("TXT_CODE_743ed87f") }}</label>
+                    <input v-model.number="form.instanceBackupCompressionLevel" type="number" min="0" max="9"
+                        step="1" class="dn-form-input" />
                 </div>
 
                 <div class="dn-form-group">
