@@ -393,8 +393,8 @@ const closeAdvancedSettings = () => {
                                     :title="t('TXT_CODE_DESKTOP_NODES_EDIT')" @click="openEditDialog(node)">
                                     <EditOutlined />
                                 </button>
-                                <button class="dn-action-btn dn-action-btn--advanced"
-                                    :title="t('TXT_CODE_DESKTOP_NODES_ADVANCED')" @click="openAdvancedSettings(node)">
+                                <button class="dn-action-btn dn-action-btn--advanced" :title="t('TXT_CODE_31a1d824')"
+                                    @click="openAdvancedSettings(node)">
                                     <SettingOutlined />
                                 </button>
                                 <button class="dn-action-btn dn-action-btn--delete"
