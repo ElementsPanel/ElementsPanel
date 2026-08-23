@@ -3,6 +3,11 @@ import StorageSubsystem from "../common/system_storage";
 import Instance from "../entity/instance/instance";
 import { $t } from "../i18n";
 import { sleep } from "../utils/sleep";
+import { TaskCenter } from "./async_task_service";
+import {
+  createInstanceBackupTask,
+  InstanceBackupTask
+} from "./async_task_service/instance_backup";
 import logger from "./log";
 import FileManager from "./system_file";
 import InstanceSubsystem from "./system_instance";
@@ -13,7 +18,8 @@ export enum ScheduleActionTypeEnum {
   Stop = "stop",
   Start = "start",
   Restart = "restart",
-  Kill = "kill"
+  Kill = "kill",
+  Backup = "backup"
 }
 
 export const ScheduleTypeEnum = {
@@ -244,6 +250,14 @@ class InstanceControlSubsystem {
         }
         if (actionType === ScheduleActionTypeEnum.Kill) {
           await instance.execPreset("kill");
+          continue;
+        }
+        if (actionType === ScheduleActionTypeEnum.Backup) {
+          const runningBackup = TaskCenter.getTasks(InstanceBackupTask.TYPE).find(
+            (task) => task.toObject().instanceUuid === instanceUuid && task.status() === 1
+          );
+          const backupTask = runningBackup ?? createInstanceBackupTask(instance);
+          await (backupTask as InstanceBackupTask).wait();
           continue;
         }
 

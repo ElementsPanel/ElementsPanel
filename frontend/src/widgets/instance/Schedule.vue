@@ -82,8 +82,7 @@ const columns: AntColumnsType[] = [
     dataIndex: "action",
     key: "action",
     minWidth: 180,
-    customRender: (e: { text: "delay" | "command" | "stop" | "start" | "restart" | "kill" }) =>
-      ScheduleActionType[e.text]
+    customRender: (e: { text: keyof typeof ScheduleActionType }) => ScheduleActionType[e.text]
   },
   {
     align: "center",

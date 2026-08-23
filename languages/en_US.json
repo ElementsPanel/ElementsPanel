@@ -1835,7 +1835,7 @@
   "TXT_CODE_HYTALE_CONFIG_DESC": "General Hytale Server Config",
   "TXT_CODE_HYTALE_CONFIG_INFO": "Hytale Server Config",
   "TXT_CODE_INSTALLED": "Installed",
-  "TXT_CODE_INSTANCE_BACKUP": "Instance Backup",
+  "TXT_CODE_INSTANCE_BACKUP": "Backup Instance",
   "TXT_CODE_INSTANCE_BACKUP_COMPLETED": "Backup completed",
   "TXT_CODE_INSTANCE_BACKUP_COMPRESSING": "Compressing instance files, please wait...",
   "TXT_CODE_INSTANCE_BACKUP_CREATE": "New Backup",
