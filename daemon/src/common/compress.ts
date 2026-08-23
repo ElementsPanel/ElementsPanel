@@ -114,8 +114,11 @@ export async function decompressWithProgress(
       file: archivePath,
       cwd: dest,
       onReadEntry: (entry) => {
-        entry.on("data", (chunk) => {
-          processedSize += Buffer.byteLength(chunk);
+        // Do not attach a `data` listener here. tar registers this callback before
+        // its own extraction listener, so consuming data here can drain an entry
+        // before the destination file stream is ready and corrupt restored files.
+        entry.once("end", () => {
+          processedSize += entry.size;
           if (onProgress && totalSize > 0) {
             const percent = Math.min(100, Math.floor((processedSize / totalSize) * 100));
             if (percent !== lastPercent) {
