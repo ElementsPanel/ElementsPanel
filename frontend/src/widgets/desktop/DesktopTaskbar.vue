@@ -292,7 +292,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
     width: 420px;
     height: 360px;
     display: flex;
-    background: var(--desktop-menu-bg);
+    background: var(--desktop-start-menu-bg);
     backdrop-filter: saturate(180%) blur(24px);
     border-radius: 12px;
     border: 1px solid var(--desktop-menu-border);
@@ -308,7 +308,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
         flex-direction: column;
         align-items: center;
         padding: 10px 6px;
-        background: var(--desktop-taskbar-bg);
+        background: var(--desktop-start-menu-bg);
         border-right: 1px solid var(--desktop-menu-divider);
     }
 
