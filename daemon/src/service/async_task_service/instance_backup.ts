@@ -1,12 +1,16 @@
 import archiver from "archiver";
+import { spawn } from "child_process";
 import fs from "fs-extra";
+import os from "os";
 import path from "path";
 import { v4 } from "uuid";
 import { GitignoreMatcher } from "../../common/gitignore_matcher";
+import { SEVEN_ZIP_PATH, ZIP_TIMEOUT_SECONDS } from "../../const";
 import { globalConfiguration } from "../../entity/config";
 import Instance from "../../entity/instance/instance";
 import { $t } from "../../i18n";
 import logger from "../log";
+import { check7zipStatus } from "../seven_zip_service";
 import { AsyncTask, IAsyncTaskJSON, TaskCenter } from "./index";
 
 export class InstanceBackupTask extends AsyncTask {
@@ -59,8 +63,9 @@ export class InstanceBackupTask extends AsyncTask {
                 "-" + String(now.getSeconds()).padStart(2, '0');
 
             const backupId = v4().split("-")[0];
-            const backupFormat = globalConfiguration.config.instanceBackupFormat === "tar.gz"
-                ? "tar.gz"
+            const configuredFormat = globalConfiguration.config.instanceBackupFormat;
+            const backupFormat = configuredFormat === "tar.gz" || configuredFormat === "7z"
+                ? configuredFormat
                 : "zip";
             const configuredLevel = globalConfiguration.config.instanceBackupCompressionLevel;
             const compressionLevel = Number.isInteger(configuredLevel)
@@ -143,50 +148,138 @@ export class InstanceBackupTask extends AsyncTask {
                 this.instance.println("INFO", $t("TXT_CODE_INSTANCE_BACKUP_EXCLUDED", { num: String(blacklistedCount) }));
             }
             
-            const output = fs.createWriteStream(targetArchivePath);
-            const archive = backupFormat === "tar.gz"
-                ? archiver("tar", { gzip: true, gzipOptions: { level: compressionLevel } })
-                : archiver("zip", { zlib: { level: compressionLevel } });
-            
-            archive.pipe(output);
-            
-            for (const file of allFiles) {
-                archive.file(path.join(instanceCwd, file.filePath), { name: file.filePath });
-            }
-            
-            let lastPercent = -1;
             const progressPrefix = `\x1b[K\r`;
-            
-            const progressInterval = setInterval(() => {
-                const processedBytes = archive.pointer();
-                const percent = totalSize > 0 ? Math.floor((processedBytes / totalSize) * 100) : 0;
-                if (percent !== lastPercent) {
-                    lastPercent = percent;
-                    const barLength = 30;
-                    const filled = Math.floor((percent / 100) * barLength);
-                    const empty = barLength - filled;
-                    const bar = '[' + '#'.repeat(filled) + ' '.repeat(empty) + ']';
-                    const progressText = `${progressPrefix}${bar} ${percent}%`;
-                    this.instance.print(progressText);
+            let lastPercent = -1;
+            const printProgress = (percent: number) => {
+                const normalizedPercent = Math.min(100, Math.max(0, Math.floor(percent)));
+                if (normalizedPercent <= lastPercent) return;
+                lastPercent = normalizedPercent;
+                const barLength = 30;
+                const filled = Math.floor((normalizedPercent / 100) * barLength);
+                const empty = barLength - filled;
+                const bar = '[' + '#'.repeat(filled) + ' '.repeat(empty) + ']';
+                this.instance.print(`${progressPrefix}${bar} ${normalizedPercent}%`);
+            };
+
+            if (backupFormat === "7z") {
+                if (!await check7zipStatus()) {
+                    throw new Error($t("TXT_CODE_a0ede210"));
                 }
-            }, 200);
-            
-            await new Promise<void>((resolve, reject) => {
-                output.on('close', () => {
-                    clearInterval(progressInterval);
-                    const barLength = 30;
-                    const bar = '[' + '#'.repeat(barLength) + ']';
-                    const progressText = `${progressPrefix}${bar} 100%`;
-                    this.instance.print(progressText);
-                    resolve();
+
+                // The 7-Zip process runs from the instance directory so that the
+                // relative paths in the list file keep their directory layout.
+                // Resolve the archive destination first; otherwise a relative
+                // backup path would be resolved relative to the instance cwd.
+                const absoluteTargetArchivePath = path.resolve(targetArchivePath);
+                const listFilePath = path.join(os.tmpdir(), `elements-panel-instance-backup-${backupId}.lst`);
+                try {
+                    await fs.writeFile(
+                        listFilePath,
+                        allFiles.map((file) => file.filePath.replace(/\\/g, "/")).join("\n"),
+                        "utf8"
+                    );
+                    const result = await new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
+                        const child = spawn(SEVEN_ZIP_PATH, [
+                            "a",
+                            absoluteTargetArchivePath,
+                            "-t7z",
+                            `-mx=${compressionLevel}`,
+                            "-scsUTF-8",
+                            "-spd",
+                            "-bsp1",
+                            `@${listFilePath}`
+                        ], {
+                            cwd: instanceCwd,
+                            windowsHide: true
+                        });
+                        let stdout = "";
+                        let stderr = "";
+                        let progressOutput = "";
+                        let settled = false;
+                        const timeout = setTimeout(() => {
+                            child.kill();
+                            if (!settled) {
+                                settled = true;
+                                reject(new Error($t("TXT_CODE_1d1ec400")));
+                            }
+                        }, ZIP_TIMEOUT_SECONDS * 1000);
+                        const consume = (chunk: Buffer, isStderr: boolean) => {
+                            const text = chunk.toString();
+                            if (isStderr) stderr += text;
+                            else {
+                                stdout += text;
+                                progressOutput = `${progressOutput}${text}`.slice(-128);
+                                const matches = progressOutput.match(/(?:^|\D)(\d{1,3})%/g) || [];
+                                for (const match of matches) {
+                                    const percent = Number(match.match(/\d+/)?.[0]);
+                                    if (Number.isFinite(percent)) printProgress(percent);
+                                }
+                                const lastPercentIndex = progressOutput.lastIndexOf("%");
+                                if (lastPercentIndex >= 0) {
+                                    progressOutput = progressOutput.slice(lastPercentIndex + 1);
+                                }
+                            }
+                        };
+                        printProgress(0);
+                        child.stdout.on("data", (chunk: Buffer) => consume(chunk, false));
+                        child.stderr.on("data", (chunk: Buffer) => consume(chunk, true));
+                        child.on("error", (error) => {
+                            clearTimeout(timeout);
+                            if (!settled) {
+                                settled = true;
+                                reject(error);
+                            }
+                        });
+                        child.on("close", (code) => {
+                            clearTimeout(timeout);
+                            if (settled) return;
+                            settled = true;
+                            if (code === 0) resolve({ stdout, stderr });
+                            else reject(new Error(`${stdout}\n${stderr}`.trim() || `7-Zip exited with code ${code}`));
+                        });
+                    });
+                    const output = `${result.stdout}\n${result.stderr}`;
+                    const archiveStat = await fs.stat(absoluteTargetArchivePath).catch(() => null);
+                    if (!archiveStat?.isFile() || archiveStat.size === 0) {
+                        throw new Error(output.trim() || $t("TXT_CODE_11ecd5a9"));
+                    }
+                    printProgress(100);
+                } catch (error) {
+                    await fs.remove(absoluteTargetArchivePath).catch(() => undefined);
+                    throw error;
+                } finally {
+                    await fs.remove(listFilePath).catch(() => undefined);
+                }
+            } else {
+                const output = fs.createWriteStream(targetArchivePath);
+                const archive = backupFormat === "tar.gz"
+                    ? archiver("tar", { gzip: true, gzipOptions: { level: compressionLevel } })
+                    : archiver("zip", { zlib: { level: compressionLevel } });
+
+                archive.pipe(output);
+                for (const file of allFiles) {
+                    archive.file(path.join(instanceCwd, file.filePath), { name: file.filePath });
+                }
+
+                const progressInterval = setInterval(() => {
+                    const processedBytes = archive.pointer();
+                    printProgress(totalSize > 0 ? (processedBytes / totalSize) * 100 : 0);
+                }, 200);
+
+                await new Promise<void>((resolve, reject) => {
+                    output.on("close", () => {
+                        clearInterval(progressInterval);
+                        printProgress(100);
+                        resolve();
+                    });
+                    archive.on("error", (err) => {
+                        clearInterval(progressInterval);
+                        reject(err);
+                    });
+                    archive.finalize();
                 });
-                archive.on('error', (err) => {
-                    clearInterval(progressInterval);
-                    reject(err);
-                });
-                archive.finalize();
-            });
-            
+            }
+
             this.instance.print("\n");
 
             this.instance.println("INFO", $t("TXT_CODE_INSTANCE_BACKUP_SUCCESS", { name: this.backupFileName }));

@@ -1,4 +1,4 @@
-import { exec, execFile } from "child_process";
+import { execFile, spawn } from "child_process";
 import fs from "fs-extra";
 import { t } from "i18next";
 import { ProcessWrapper } from "mcsmanager-common";
@@ -16,7 +16,6 @@ import {
   isZipFormat
 } from "../service/seven_zip_service";
 
-const execPromise = promisify(exec);
 const execFilePromise = promisify(execFile);
 
 export interface ArchiveEntryInfo {
@@ -177,7 +176,7 @@ export async function listArchiveEntries(
 }
 
 /**
- * Decompress a ZIP or TAR.GZ archive with progress tracking.
+ * Decompress a ZIP, TAR.GZ, or 7Z archive with progress tracking.
  */
 export async function decompressWithProgress(
   archivePath: string,
@@ -190,7 +189,9 @@ export async function decompressWithProgress(
 
   await fs.ensureDir(dest);
 
-  if (archivePath.toLowerCase().endsWith(".tar.gz")) {
+  const lowerArchivePath = archivePath.toLowerCase();
+
+  if (lowerArchivePath.endsWith(".tar.gz")) {
     let totalSize = 0;
     await list({
       file: archivePath,
@@ -222,6 +223,17 @@ export async function decompressWithProgress(
     });
     onProgress?.(100);
     return true;
+  }
+
+  if (lowerArchivePath.endsWith(".7z")) {
+    if (!await check7zipStatus()) {
+      throw new Error($t("TXT_CODE_a0ede210"));
+    }
+    return await use7zip(archivePath, dest, onProgress);
+  }
+
+  if (!lowerArchivePath.endsWith(".zip")) {
+    throw new Error($t("TXT_CODE_69c42450", { fileExt: getFileExtension(archivePath) }));
   }
 
   const zip = new StreamZip.async({ file: archivePath });
@@ -306,35 +318,101 @@ export async function decompressWithProgress(
 /**
  * Decompress using 7zip
  */
-async function use7zip(sourceZip: string, destDir: string): Promise<boolean> {
+async function use7zip(
+  sourceZip: string,
+  destDir: string,
+  onProgress?: (percent: number) => void
+): Promise<boolean> {
   try {
-    const sourceDir = path.dirname(sourceZip);
-    const normalizedDest = path.normalize(destDir);
-    const normalizedSource = path.normalize(sourceDir);
+    const absoluteSourceZip = path.resolve(sourceZip);
+    const absoluteDestDir = path.resolve(destDir);
+    const workingDir = path.dirname(absoluteSourceZip);
 
-    let command: string;
-    let workingDir: string;
-
-    await fs.ensureDir(destDir);
-    command = `"${SEVEN_ZIP_PATH}" x "${sourceZip}" "-o${destDir}" -aoa`;
-    workingDir = sourceDir;
+    await fs.ensureDir(absoluteDestDir);
+    const command = `"${SEVEN_ZIP_PATH}" x "${absoluteSourceZip}" "-o${absoluteDestDir}" -aoa -bsp1`;
     logger.info($t("TXT_CODE_35d2ee7a", { command }));
 
-    const { stdout, stderr } = await execPromise(command, {
-      cwd: workingDir,
-      timeout: ZIP_TIMEOUT_SECONDS * 1000
+    onProgress?.(0);
+    const { stdout, stderr } = await new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
+      const child = spawn(SEVEN_ZIP_PATH, [
+        "x",
+        absoluteSourceZip,
+        `-o${absoluteDestDir}`,
+        "-aoa",
+        "-bsp1"
+      ], {
+        cwd: workingDir,
+        windowsHide: true
+      });
+      let stdout = "";
+      let stderr = "";
+      let progressOutput = "";
+      let lastProgress = -1;
+      let settled = false;
+      const timeout = setTimeout(() => {
+        child.kill();
+        if (!settled) {
+          settled = true;
+          reject(new Error($t("TXT_CODE_1d1ec400")));
+        }
+      }, ZIP_TIMEOUT_SECONDS * 1000);
+      const consume = (chunk: Buffer, isStderr: boolean) => {
+        const text = chunk.toString();
+        if (isStderr) {
+          stderr += text;
+          return;
+        }
+        stdout += text;
+        progressOutput = `${progressOutput}${text}`.slice(-128);
+        const matches = progressOutput.match(/(?:^|\D)(\d{1,3})%/g) || [];
+        for (const match of matches) {
+          const percent = Number(match.match(/\d+/)?.[0]);
+          if (Number.isFinite(percent)) {
+            const normalizedPercent = Math.min(100, percent);
+            if (normalizedPercent >= lastProgress) {
+              lastProgress = normalizedPercent;
+              onProgress?.(normalizedPercent);
+            }
+          }
+        }
+        const lastPercentIndex = progressOutput.lastIndexOf("%");
+        if (lastPercentIndex >= 0) {
+          progressOutput = progressOutput.slice(lastPercentIndex + 1);
+        }
+      };
+      child.stdout.on("data", (chunk: Buffer) => consume(chunk, false));
+      child.stderr.on("data", (chunk: Buffer) => consume(chunk, true));
+      child.on("error", (error) => {
+        clearTimeout(timeout);
+        if (!settled) {
+          settled = true;
+          reject(error);
+        }
+      });
+      child.on("close", (code) => {
+        clearTimeout(timeout);
+        if (settled) return;
+        settled = true;
+        if (code === 0) {
+          resolve({ stdout, stderr });
+        } else {
+          reject(new Error(`Command failed: ${stdout}\n${stderr}`.trim()));
+        }
+      });
     });
 
+    const output = `${stdout}\n${stderr}`;
+
     const hasErrors =
-      stdout.includes("ERRORS:") ||
-      stdout.includes("ERROR:") ||
-      stdout.includes("Open Errors:") ||
-      stdout.includes("Missing volume") ||
-      stdout.includes("Data Error") ||
-      stdout.includes("Archives with Errors:");
+      output.includes("ERRORS:") ||
+      output.includes("ERROR:") ||
+      output.includes("Open Errors:") ||
+      output.includes("Missing volume") ||
+      output.includes("Data Error") ||
+      output.includes("Archives with Errors:");
 
     if (hasErrors) {
-      const errorLines = stdout
+      const errorLines = output
         .split("\n")
         .filter(
           (line) =>
@@ -346,16 +424,16 @@ async function use7zip(sourceZip: string, destDir: string): Promise<boolean> {
         );
 
       let cleanErrorMsg: string;
-      if (stdout.includes("Missing volume")) {
-        const volumeMatch = stdout.match(/Missing volume\s*:\s*([^\s\n]+)/);
+      if (output.includes("Missing volume")) {
+        const volumeMatch = output.match(/Missing volume\s*:\s*([^\s\n]+)/);
         if (volumeMatch) {
           cleanErrorMsg = $t("TXT_CODE_c0401ba7", { file: volumeMatch[1] });
         } else {
           cleanErrorMsg = $t("TXT_CODE_908a4ace");
         }
-      } else if (stdout.includes("Data Error")) {
+      } else if (output.includes("Data Error")) {
         cleanErrorMsg = $t("TXT_CODE_b1ef1d4a");
-      } else if (stdout.includes("Open Errors")) {
+      } else if (output.includes("Open Errors")) {
         cleanErrorMsg = $t("TXT_CODE_5778848e");
       } else {
         const firstError = errorLines[0]?.trim() || $t("TXT_CODE_11ecd5a9");
@@ -366,14 +444,16 @@ async function use7zip(sourceZip: string, destDir: string): Promise<boolean> {
       throw new Error($t("TXT_CODE_ec7fc405", { message: cleanErrorMsg }));
     }
 
+    onProgress?.(100);
+
     if (stderr && stderr.trim()) {
       logger.warn($t("TXT_CODE_8a9c6364", { warning: stderr }));
     }
 
-    if (stdout.includes("Everything is Ok")) {
+    if (output.includes("Everything is Ok")) {
       logger.info($t("TXT_CODE_e96a91cd"));
     } else {
-      const resultLines = stdout
+      const resultLines = output
         .split("\n")
         .filter((line) => line.trim())
         .slice(-3);

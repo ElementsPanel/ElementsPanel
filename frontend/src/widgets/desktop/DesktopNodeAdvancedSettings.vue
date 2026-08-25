@@ -250,6 +250,7 @@ const saveSettings = async () => {
                     <select v-model="form.instanceBackupFormat" class="dn-form-select">
                         <option value="zip">ZIP</option>
                         <option value="tar.gz">TAR.GZ</option>
+                        <option value="7z">7Z</option>
                     </select>
                 </div>
 

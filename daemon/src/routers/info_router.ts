@@ -127,7 +127,7 @@ routerApp.on("info/setting", async (ctx, data) => {
   if (instanceBackupPath != null) {
     globalConfiguration.config.instanceBackupPath = instanceBackupPath;
   }
-  if (instanceBackupFormat === "zip" || instanceBackupFormat === "tar.gz") {
+  if (instanceBackupFormat === "zip" || instanceBackupFormat === "tar.gz" || instanceBackupFormat === "7z") {
     globalConfiguration.config.instanceBackupFormat = instanceBackupFormat;
   }
   if (

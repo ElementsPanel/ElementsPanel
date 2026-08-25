@@ -470,7 +470,12 @@ routerApp.on("instance/backup/list", async (ctx, data) => {
     const files = await fs.readdir(instanceBackupDir);
     const backups = [];
     for (const file of files) {
-      if (file.endsWith(".zip") || file.endsWith(".tar.gz")) {
+      const lowerFileName = file.toLowerCase();
+      if (
+        lowerFileName.endsWith(".zip") ||
+        lowerFileName.endsWith(".tar.gz") ||
+        lowerFileName.endsWith(".7z")
+      ) {
         const filePath = path.join(instanceBackupDir, file);
         const stat = await fs.stat(filePath);
         backups.push({

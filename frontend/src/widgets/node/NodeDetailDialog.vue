@@ -347,6 +347,7 @@ defineExpose({ openDialog });
                 <a-select v-model:value="dialog.data.instanceBackupFormat">
                   <a-select-option value="zip">ZIP</a-select-option>
                   <a-select-option value="tar.gz">TAR.GZ</a-select-option>
+                  <a-select-option value="7z">7Z</a-select-option>
                 </a-select>
               </a-form-item>
             </a-col>
