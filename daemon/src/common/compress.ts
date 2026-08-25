@@ -63,11 +63,6 @@ export async function decompress(
     throw new Error(COMPRESS_ERROR_MSG.invalidName);
 
   const tryUnzip = async () => {
-    if (!isZipFormat(zipPath)) {
-      const fileExt = getFileExtension(zipPath);
-      throw new Error($t("TXT_CODE_69c42450", { fileExt: fileExt }));
-    }
-
     if (isMultiVolume(zipPath)) {
       throw new Error($t("TXT_CODE_91d066aa"));
     }
@@ -83,16 +78,14 @@ export async function decompress(
     }
   };
 
-  if (!await check7zipStatus()) {
-    try {
-      return await use7zip(zipPath, dest);
-    } catch (error) {
-      // if 7zip is not working, try to use unzip
-      return await tryUnzip();
-    }
-  } else {
+  if (isZipFormat(zipPath)) {
     return await tryUnzip();
   }
+
+  if (!await check7zipStatus()) {
+    throw new Error($t("TXT_CODE_a0ede210"));
+  }
+  return await use7zip(zipPath, dest);
 }
 
 /**
