@@ -36,6 +36,7 @@ export interface IDesktopIconPosition {
 export interface IDesktopLayout {
     windows: IDesktopWindowLayout[];
     icons?: IDesktopIconPosition[];
+    shortcuts?: string[];
     updatedAt: number;
 }
 
@@ -90,6 +91,19 @@ export function setDesktopLayout(userUuid: string, layout: IDesktopLayout): void
                 }
                 if (typeof icon.x !== "number" || typeof icon.y !== "number") {
                     throw new Error("Invalid icon position");
+                }
+            }
+        }
+        if (layout.shortcuts != null) {
+            if (!Array.isArray(layout.shortcuts)) {
+                throw new Error("Invalid desktop layout: shortcuts must be an array");
+            }
+            if (layout.shortcuts.length > 100) {
+                throw new Error("Too many shortcuts in layout (max 100)");
+            }
+            for (const shortcut of layout.shortcuts) {
+                if (typeof shortcut !== "string" || shortcut.length > 100) {
+                    throw new Error("Invalid desktop shortcut id");
                 }
             }
         }

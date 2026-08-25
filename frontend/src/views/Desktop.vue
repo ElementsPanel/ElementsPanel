@@ -37,7 +37,6 @@ import DesktopWindow from "@/widgets/desktop/DesktopWindow.vue";
 import {
     AppstoreOutlined,
     BuildOutlined,
-    ClearOutlined,
     CloseOutlined,
     CloseSquareOutlined,
     CloudDownloadOutlined,
@@ -45,6 +44,7 @@ import {
     CodeOutlined,
     ControlOutlined,
     DashboardOutlined,
+    DeleteOutlined,
     DesktopOutlined,
     EditOutlined,
     FieldTimeOutlined,
@@ -60,7 +60,7 @@ import {
     UsergroupDeleteOutlined,
     UserOutlined
 } from "@ant-design/icons-vue";
-import { computed, markRaw, onMounted, reactive, ref, watch, type Component, type CSSProperties } from "vue";
+import { computed, markRaw, onMounted, onUnmounted, reactive, ref, watch, type Component, type CSSProperties } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -123,7 +123,7 @@ interface DesktopApp {
     windowContent?: string;
 }
 
-const desktopApps = computed<DesktopApp[]>(() => {
+const availableDesktopApps = computed<DesktopApp[]>(() => {
     const apps: DesktopApp[] = [
         {
             id: "instances",
@@ -195,6 +195,14 @@ const desktopApps = computed<DesktopApp[]>(() => {
     return apps;
 });
 
+const desktopShortcutIds = reactive(new Set<string>());
+const shortcutsLoaded = ref(false);
+
+const desktopApps = computed<DesktopApp[]>(() => {
+    if (!shortcutsLoaded.value) return [];
+    return availableDesktopApps.value.filter((app) => desktopShortcutIds.has(app.id));
+});
+
 const selectedIconId = ref<string | null>(null);
 
 const selectIcon = (id: string) => {
@@ -203,6 +211,7 @@ const selectIcon = (id: string) => {
 
 //─── Icon Positions ───
 const iconPositions = reactive<Map<string, { x: number; y: number }>>(new Map());
+const desktopIconsRef = ref<HTMLElement | null>(null);
 
 const DEFAULT_ICON_START_X = 16;
 const DEFAULT_ICON_START_Y = 16;
@@ -222,18 +231,21 @@ function getDefaultPosition(index: number): { x: number; y: number } {
     };
 }
 
+function getDefaultPositionForApp(id: string): { x: number; y: number } {
+    const index = availableDesktopApps.value.findIndex((app) => app.id === id);
+    return getDefaultPosition(index >= 0 ? index : 0);
+}
+
 function getIconGridX(id: string): number {
     const pos = iconPositions.get(id);
     if (pos) return pos.x;
-    const idx = desktopApps.value.findIndex(a => a.id === id);
-    return getDefaultPosition(idx >= 0 ? idx : 0).x;
+    return getDefaultPositionForApp(id).x;
 }
 
 function getIconGridY(id: string): number {
     const pos = iconPositions.get(id);
     if (pos) return pos.y;
-    const idx = desktopApps.value.findIndex(a => a.id === id);
-    return getDefaultPosition(idx >= 0 ? idx : 0).y;
+    return getDefaultPositionForApp(id).y;
 }
 
 function getOccupiedGrid(excludeId: string): Set<string> {
@@ -346,9 +358,47 @@ const handleDesktopMouseUp = () => {
     saveDesktopLayout();
 };
 
-const resetIconPositions = () => {
-    iconPositions.clear();
+const removeDesktopShortcut = (id: string) => {
+    if (!desktopShortcutIds.has(id)) return;
+    desktopShortcutIds.delete(id);
+    iconPositions.delete(id);
+    if (selectedIconId.value === id) {
+        selectedIconId.value = null;
+    }
     saveDesktopLayout();
+};
+
+const handleStartMenuAppDrop = (event: DragEvent) => {
+    const appId = event.dataTransfer?.getData("application/x-elements-desktop-app")
+        || event.dataTransfer?.getData("text/plain")
+        || "";
+    const target = event.currentTarget as HTMLElement | null;
+    if (!target) return;
+
+    const rect = target.getBoundingClientRect();
+    addDesktopShortcutAt(appId, event.clientX - rect.left, event.clientY - rect.top);
+};
+
+const addDesktopShortcutAt = (appId: string, clientX: number, clientY: number) => {
+    if (!appId || !availableDesktopApps.value.some((app) => app.id === appId)) return;
+
+    const snapped = snapToGrid(clientX - 45, clientY - 50);
+    const targetCol = Math.max(0, Math.round((snapped.x - DEFAULT_ICON_START_X) / ICON_COL_WIDTH));
+    const targetRow = Math.max(0, Math.round((snapped.y - DEFAULT_ICON_START_Y) / ICON_ROW_HEIGHT));
+    const empty = findEmptyCell(targetCol, targetRow, appId);
+
+    desktopShortcutIds.add(appId);
+    iconPositions.set(appId, {
+        x: DEFAULT_ICON_START_X + empty.col * ICON_COL_WIDTH,
+        y: DEFAULT_ICON_START_Y + empty.row * ICON_ROW_HEIGHT
+    });
+    selectedIconId.value = appId;
+    saveDesktopLayout();
+};
+
+const handleTaskbarAppDrop = (appId: string, clientX: number, clientY: number) => {
+    const rect = desktopIconsRef.value?.getBoundingClientRect();
+    addDesktopShortcutAt(appId, clientX - (rect?.left || 0), clientY - (rect?.top || 0));
 };
 
 //─── Window Management ───
@@ -412,7 +462,12 @@ const saveDesktopLayout = () => {
                 iconList.push({ id, x: pos.x, y: pos.y });
             });
             await executeSaveLayout({
-                data: { windows: windowList, icons: iconList, updatedAt: Date.now() }
+                data: {
+                    windows: windowList,
+                    icons: iconList,
+                    shortcuts: [...desktopShortcutIds],
+                    updatedAt: Date.now()
+                }
             });
         } catch (e) {
             // Silently ignore
@@ -449,6 +504,21 @@ const loadDesktopLayout = async () => {
     try {
         const result = await executeGetLayout();
         const layout = result?.value;
+        const availableAppIds = new Set(availableDesktopApps.value.map((app) => app.id));
+        desktopShortcutIds.clear();
+        if (layout && Array.isArray(layout.shortcuts)) {
+            for (const id of layout.shortcuts) {
+                if (typeof id === "string" && availableAppIds.has(id)) {
+                    desktopShortcutIds.add(id);
+                }
+            }
+        } else {
+            for (const id of availableAppIds) {
+                desktopShortcutIds.add(id);
+            }
+        }
+        shortcutsLoaded.value = true;
+
         if (layout && Array.isArray(layout.windows) && layout.windows.length > 0) {
             windows.clear();
             for (const win of layout.windows) {
@@ -479,13 +549,16 @@ const loadDesktopLayout = async () => {
         if (layout && Array.isArray(layout.icons)) {
             iconPositions.clear();
             for (const icon of layout.icons) {
-                if (typeof icon.id === "string" && typeof icon.x === "number" && typeof icon.y === "number") {
+                if (desktopShortcutIds.has(icon.id) && typeof icon.x === "number" && typeof icon.y === "number") {
                     iconPositions.set(icon.id, { x: icon.x, y: icon.y });
                 }
             }
         }
         layoutLoaded = true;
     } catch (e) {
+        desktopShortcutIds.clear();
+        availableDesktopApps.value.forEach((app) => desktopShortcutIds.add(app.id));
+        shortcutsLoaded.value = true;
         layoutLoaded = true;
         // Silently ignore
     }
@@ -499,7 +572,7 @@ onMounted(async () => {
 });
 
 const openWindow = (appId: string) => {
-    const app = desktopApps.value.find((a) => a.id === appId);
+    const app = availableDesktopApps.value.find((a) => a.id === appId);
     if (!app) return;
 
     const existing = windows.get(appId);
@@ -1093,7 +1166,7 @@ const handleReorderWindows = (newOrder: string[]) => {
 
 // ─── Route ───
 const navigateToRoute = (appId: string) => {
-    const app = desktopApps.value.find((a) => a.id === appId);
+    const app = availableDesktopApps.value.find((a) => a.id === appId);
     if (app?.route) {
         router.push(app.route);
     }
@@ -1105,11 +1178,22 @@ const ctxMenu = reactive({
     x: 0,
     y: 0,
     targetWindowId: null as string | null,
+    targetShortcutId: null as string | null,
     isTitlebar: false
 });
 
 const ctxMenuItems = computed<ContextMenuItem[]>(() => {
     const items: ContextMenuItem[] = [];
+
+    if (ctxMenu.targetShortcutId) {
+        const shortcutId = ctxMenu.targetShortcutId;
+        items.push({
+            label: t("TXT_CODE_DESKTOP_REMOVE_SHORTCUT"),
+            icon: markRaw(DeleteOutlined),
+            action: () => removeDesktopShortcut(shortcutId)
+        });
+        return items;
+    }
 
     if (ctxMenu.targetWindowId) {
         if (ctxMenu.isTitlebar) {
@@ -1149,17 +1233,6 @@ const ctxMenuItems = computed<ContextMenuItem[]>(() => {
         items.push({ divider: true } as any);
     }
 
-    if (!ctxMenu.targetWindowId) {
-        items.push({
-            label: "重置图标位置",
-            icon: markRaw(ClearOutlined),
-            action: () => {
-                resetIconPositions();
-            }
-        });
-        items.push({ divider: true } as any);
-    }
-
     items.push({
         label: t("TXT_CODE_DESKTOP_CLOSE_ALL"),
         icon: markRaw(CloseSquareOutlined),
@@ -1178,6 +1251,7 @@ const onDesktopContextMenu = (e: MouseEvent) => {
     ctxMenu.x = e.clientX;
     ctxMenu.y = e.clientY;
     ctxMenu.targetWindowId = null;
+    ctxMenu.targetShortcutId = null;
     ctxMenu.isTitlebar = false;
     ctxMenu.visible = true;
 };
@@ -1187,6 +1261,7 @@ const onTaskbarContextMenu = (e: MouseEvent, id: string) => {
     ctxMenu.x = e.clientX;
     ctxMenu.y = e.clientY;
     ctxMenu.targetWindowId = id;
+    ctxMenu.targetShortcutId = null;
     ctxMenu.isTitlebar = false;
     ctxMenu.visible = true;
 };
@@ -1196,9 +1271,37 @@ const onTitlebarContextMenu = (e: MouseEvent, id: string) => {
     ctxMenu.x = e.clientX;
     ctxMenu.y = e.clientY;
     ctxMenu.targetWindowId = id;
+    ctxMenu.targetShortcutId = null;
     ctxMenu.isTitlebar = true;
     ctxMenu.visible = true;
 };
+
+const onIconContextMenu = (e: MouseEvent, id: string) => {
+    selectedIconId.value = id;
+    ctxMenu.x = e.clientX;
+    ctxMenu.y = e.clientY;
+    ctxMenu.targetWindowId = null;
+    ctxMenu.targetShortcutId = id;
+    ctxMenu.isTitlebar = false;
+    ctxMenu.visible = true;
+};
+
+const onDesktopKeyDown = (event: KeyboardEvent) => {
+    if (event.key !== "Delete" || !selectedIconId.value) return;
+
+    const target = event.target as HTMLElement | null;
+    if (target?.closest("input, textarea, select, [contenteditable]")) return;
+
+    event.preventDefault();
+    removeDesktopShortcut(selectedIconId.value);
+    ctxMenu.visible = false;
+};
+
+onMounted(() => document.addEventListener("keydown", onDesktopKeyDown));
+onUnmounted(() => {
+    document.removeEventListener("keydown", onDesktopKeyDown);
+    if (saveLayoutTimer) clearTimeout(saveLayoutTimer);
+});
 
 const closeContextMenu = () => {
     ctxMenu.visible = false;
@@ -1224,12 +1327,12 @@ const username = computed(() => appState.userInfo?.userName || "User");
         <Transition name="desktop-fade">
             <div v-if="!showLoginOverlay" class="desktop-content-wrapper" @mousemove="handleDesktopMouseMove"
                 @mouseup="handleDesktopMouseUp">
-                <div class="desktop-icons">
-                    <DesktopIcon v-for="(app, index) in desktopApps" :key="app.id" :id="app.id" :label="app.label"
+                <div ref="desktopIconsRef" class="desktop-icons" @dragover.prevent @drop.prevent="handleStartMenuAppDrop">
+                    <DesktopIcon v-for="app in desktopApps" :key="app.id" :id="app.id" :label="app.label"
                         :icon="app.icon" :color="app.color" :selected="selectedIconId === app.id"
-                        :x="iconPositions.get(app.id)?.x ?? getDefaultPosition(index).x"
-                        :y="iconPositions.get(app.id)?.y ?? getDefaultPosition(index).y" @select="selectIcon"
-                        @open="openWindow" @dragstart="handleIconDragStart" />
+                        :x="iconPositions.get(app.id)?.x ?? getDefaultPositionForApp(app.id).x"
+                        :y="iconPositions.get(app.id)?.y ?? getDefaultPositionForApp(app.id).y" @select="selectIcon"
+                        @open="openWindow" @dragstart="handleIconDragStart" @contextmenu="onIconContextMenu" />
 
                     <!-- Drop indicator -->
                     <div v-if="isDragging && dropValid" class="drop-indicator"
@@ -1346,7 +1449,9 @@ const username = computed(() => appState.userInfo?.userName || "User");
                         </div>
                     </DesktopWindow>
                 </TransitionGroup>
-                <DesktopTaskbar :windows="taskbarWindows" :username="username" @toggle-window="toggleWindow"
+                <DesktopTaskbar :windows="taskbarWindows" :apps="availableDesktopApps" :username="username"
+                    @toggle-window="toggleWindow" @open-app="openWindow"
+                    @add-shortcut="handleTaskbarAppDrop"
                     @exit-desktop="exitDesktop" @open-user-info="openUserInfoWindow"
                     @reorder-windows="handleReorderWindows" @contextmenu-window="onTaskbarContextMenu" />
                 <DesktopContextMenu :visible="ctxMenu.visible" :x="ctxMenu.x" :y="ctxMenu.y" :items="ctxMenuItems"

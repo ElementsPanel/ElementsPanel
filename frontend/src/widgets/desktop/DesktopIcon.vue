@@ -25,6 +25,7 @@ const emit = defineEmits<{
     (e: "open", id: string): void;
     (e: "select", id: string): void;
     (e: "dragstart", id: string, clientX: number, clientY: number): void;
+    (e: "contextmenu", event: MouseEvent, id: string): void;
 }>();
 
 const iconStyle = computed(() => ({
@@ -42,14 +43,19 @@ const handleClick = () => {
 };
 
 const handleMouseDown = (e: MouseEvent) => {
+    if (e.button !== 0) return;
     emit("dragstart", props.id, e.clientX, e.clientY);
+};
+
+const handleContextMenu = (e: MouseEvent) => {
+    emit("contextmenu", e, props.id);
 };
 </script>
 
 <template>
     <div class="desktop-icon" :class="{ 'desktop-icon--selected': selected }"
         :style="{ left: x + 'px', top: y + 'px' }" @click.stop="handleClick" @dblclick.stop="handleDblClick"
-        @mousedown.stop="handleMouseDown">
+        @mousedown.stop="handleMouseDown" @contextmenu.stop.prevent="handleContextMenu">
         <div class="desktop-icon__graphic" :style="iconStyle">
             <component :is="icon" v-if="isComponent" class="desktop-icon__anticon" />
             <img v-else-if="typeof icon === 'string' && icon.endsWith('.svg')" :src="icon" alt="icon"

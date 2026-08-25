@@ -16,13 +16,23 @@ export interface TaskbarWindow {
     active: boolean;
 }
 
+export interface TaskbarApp {
+    id: string;
+    label: string;
+    icon: Component | string;
+    color?: string;
+}
+
 const props = defineProps<{
     windows: TaskbarWindow[];
+    apps: TaskbarApp[];
     username: string;
 }>();
 
 const emit = defineEmits<{
     (e: "toggle-window", id: string): void;
+    (e: "open-app", id: string): void;
+    (e: "add-shortcut", id: string, clientX: number, clientY: number): void;
     (e: "open-start-menu"): void;
     (e: "exit-desktop"): void;
     (e: "open-user-info"): void;
@@ -113,6 +123,26 @@ const handleToggleTheme = () => {
     setTheme(isDarkTheme.value ? AppTheme.LIGHT : AppTheme.DARK);
 };
 
+const handleOpenApp = (id: string) => {
+    startMenuOpen.value = false;
+    emit("open-app", id);
+};
+
+const handleAppDragStart = (app: TaskbarApp, event: DragEvent) => {
+    if (!event.dataTransfer) return;
+    event.dataTransfer.effectAllowed = "copy";
+    event.dataTransfer.setData("application/x-elements-desktop-app", app.id);
+    event.dataTransfer.setData("text/plain", app.id);
+};
+
+const handleAppDrop = (event: DragEvent) => {
+    const appId = event.dataTransfer?.getData("application/x-elements-desktop-app")
+        || event.dataTransfer?.getData("text/plain");
+    if (!appId) return;
+    startMenuOpen.value = false;
+    emit("add-shortcut", appId, event.clientX, event.clientY);
+};
+
 const isComponentIcon = (icon: Component | string): boolean => typeof icon !== "string";
 
 const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
@@ -130,31 +160,31 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
 
         <Transition name="start-menu">
             <div v-if="startMenuOpen" class="taskbar__start-menu" @click.stop>
-                <div class="start-menu__header" @click="handleOpenUserInfo" style="cursor: pointer;">
-                    <span class="start-menu__user-icon">
-                        <UserOutlined />
-                    </span>
-                    <span class="start-menu__username">{{ username }}</span>
+                <div class="start-menu__sidebar">
+                    <button class="start-menu__function-btn" type="button" :title="username"
+                        @click="handleOpenUserInfo"><UserOutlined /></button>
+                    <div class="start-menu__sidebar-spacer"></div>
+                    <button class="start-menu__function-btn" type="button"
+                        :title="isDarkTheme ? t('TXT_CODE_673eac8e') : t('TXT_CODE_5e4a370d')"
+                        @click="handleToggleTheme"><SwapOutlined /></button>
+                    <button class="start-menu__function-btn" type="button" :title="t('TXT_CODE_DESKTOP_EXIT')"
+                        @click="handleSwitchToNormalMode"><AppstoreOutlined /></button>
+                    <button class="start-menu__function-btn" type="button" :title="t('TXT_CODE_2c69ab15')"
+                        @click="handleExitDesktop"><LogoutOutlined /></button>
                 </div>
-                <div class="start-menu__divider"></div>
-                <div class="start-menu__item" @click="handleToggleTheme">
-                    <span class="start-menu__item-icon">
-                        <SwapOutlined />
-                    </span>
-                    <span>{{ isDarkTheme ? t("TXT_CODE_673eac8e") : t("TXT_CODE_5e4a370d") }}</span>
-                </div>
-                <div class="start-menu__divider"></div>
-                <div class="start-menu__item" @click="handleSwitchToNormalMode">
-                    <span class="start-menu__item-icon">
-                        <AppstoreOutlined />
-                    </span>
-                    <span>{{ t("TXT_CODE_DESKTOP_EXIT") }}</span>
-                </div>
-                <div class="start-menu__item" @click="handleExitDesktop">
-                    <span class="start-menu__item-icon">
-                        <LogoutOutlined />
-                    </span>
-                    <span>{{ t("TXT_CODE_2c69ab15") }}</span>
+                <div class="start-menu__apps-panel">
+                    <div class="start-menu__apps">
+                        <div v-for="app in apps" :key="app.id" class="start-menu__item start-menu__app-item"
+                            draggable="true" @dragstart="handleAppDragStart(app, $event)" @click="handleOpenApp(app.id)">
+                            <span class="start-menu__item-icon">
+                                <component :is="app.icon" v-if="isComponentIcon(app.icon)" />
+                                <img v-else-if="typeof app.icon === 'string' && app.icon.endsWith('.svg')" :src="app.icon"
+                                    alt="icon" />
+                                <template v-else>{{ app.icon }}</template>
+                            </span>
+                            <span>{{ app.label }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </Transition>
@@ -188,7 +218,8 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
         </div>
     </div>
 
-    <div v-if="startMenuOpen" class="start-menu-overlay" @click="startMenuOpen = false"></div>
+    <div v-if="startMenuOpen" class="start-menu-overlay" @click="startMenuOpen = false" @dragover.prevent
+        @drop.prevent="handleAppDrop"></div>
 </template>
 
 <style lang="scss" scoped>
@@ -244,7 +275,9 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
     position: fixed;
     bottom: 56px;
     left: 8px;
-    width: 280px;
+    width: 420px;
+    height: 360px;
+    display: flex;
     background: var(--desktop-menu-bg);
     backdrop-filter: saturate(180%) blur(24px);
     border-radius: 12px;
@@ -254,33 +287,51 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
     overflow: hidden;
     color: var(--desktop-menu-text);
 
-    .start-menu__header {
+    .start-menu__sidebar {
+        width: 56px;
+        flex: 0 0 56px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px 6px;
+        background: var(--desktop-taskbar-bg);
+        border-right: 1px solid var(--desktop-menu-divider);
+    }
+
+    .start-menu__sidebar-spacer {
+        flex: 1;
+    }
+
+    .start-menu__function-btn {
+        width: 36px;
+        height: 36px;
+        margin: 3px 0;
+        border: 0;
+        border-radius: 6px;
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 16px;
-        transition: background-color 0.15s;
+        justify-content: center;
+        color: var(--desktop-menu-text);
+        background: transparent;
+        cursor: pointer;
+        font-size: 17px;
 
         &:hover {
-            background-color: var(--desktop-menu-hover);
+            background: var(--desktop-menu-hover);
         }
     }
 
-    .start-menu__user-icon {
-        font-size: 28px;
+    .start-menu__apps-panel {
+        flex: 1;
+        min-width: 0;
         display: flex;
-        align-items: center;
+        flex-direction: column;
     }
 
-    .start-menu__username {
-        font-size: 14px;
-        font-weight: 500;
-    }
-
-    .start-menu__divider {
-        height: 1px;
-        background: var(--desktop-menu-divider);
-        margin: 0 12px;
+    .start-menu__apps {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px 8px;
     }
 
     .start-menu__item {
@@ -300,6 +351,21 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
             font-size: 16px;
             display: flex;
             align-items: center;
+            color: var(--desktop-menu-text);
+
+            img {
+                width: 16px;
+                height: 16px;
+                object-fit: contain;
+            }
+        }
+    }
+
+    .start-menu__app-item {
+        cursor: grab;
+
+        &:active {
+            cursor: grabbing;
         }
     }
 }
