@@ -30,7 +30,7 @@
   // Desktop mode theme variables
   --desktop-bg-color: rgba(245, 245, 245, 0.85);
   --desktop-window-bg: rgba(255, 255, 255, 0.92);
-  --desktop-window-border: rgba(0, 0, 0, 0.08);
+  --desktop-window-border: rgba(0, 0, 0, 0.18);
   --desktop-window-shadow: rgba(0, 0, 0, 0.12);
   --desktop-window-titlebar-bg: rgba(0, 0, 0, 0.04);
   --desktop-window-text: var(--color-gray-10);
@@ -52,11 +52,11 @@
   --desktop-icon-selected-border: rgba(0, 0, 0, 0.25);
   --desktop-icon-shadow: transparent;
   --desktop-menu-bg: rgba(255, 255, 255, 0.95);
-  --desktop-menu-border: rgba(0, 0, 0, 0.08);
+  --desktop-menu-border: rgba(0, 0, 0, 0.16);
   --desktop-menu-shadow: rgba(0, 0, 0, 0.15);
   --desktop-menu-text: rgba(0, 0, 0, 0.85);
   --desktop-menu-hover: rgba(0, 0, 0, 0.06);
-  --desktop-menu-divider: rgba(0, 0, 0, 0.08);
+  --desktop-menu-divider: rgba(0, 0, 0, 0.12);
   --desktop-login-overlay: rgba(255, 255, 255, 0.15);
   --desktop-login-input-bg: rgba(0, 0, 0, 0.04);
   --desktop-login-input-border: rgba(0, 0, 0, 0.08);
