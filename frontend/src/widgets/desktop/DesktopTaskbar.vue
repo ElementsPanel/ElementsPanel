@@ -3,10 +3,15 @@ import { router } from "@/config/router";
 import { t } from "@/lang/i18n";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { AppTheme } from "@/types/const";
-import { AppstoreOutlined, LogoutOutlined, SwapOutlined, UserOutlined } from "@ant-design/icons-vue";
+import {
+    AppstoreOutlined,
+    BgColorsOutlined,
+    LogoutOutlined,
+    UserOutlined
+} from "@ant-design/icons-vue";
 import { ref, type Component } from "vue";
 
-const { isDarkTheme, setTheme } = useAppConfigStore();
+const { currentTheme, isDarkTheme, setTheme } = useAppConfigStore();
 
 export interface TaskbarWindow {
     id: string;
@@ -118,9 +123,8 @@ const handleOpenUserInfo = () => {
     emit("open-user-info");
 };
 
-const handleToggleTheme = () => {
-    startMenuOpen.value = false;
-    setTheme(isDarkTheme.value ? AppTheme.LIGHT : AppTheme.DARK);
+const handleThemeMenuClick = ({ key }: { key: string | number }) => {
+    setTheme(Number(key) as AppTheme);
 };
 
 const handleOpenApp = (id: string) => {
@@ -164,9 +168,19 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
                     <button class="start-menu__function-btn" type="button" :title="username"
                         @click="handleOpenUserInfo"><UserOutlined /></button>
                     <div class="start-menu__sidebar-spacer"></div>
-                    <button class="start-menu__function-btn" type="button"
-                        :title="isDarkTheme ? t('TXT_CODE_673eac8e') : t('TXT_CODE_5e4a370d')"
-                        @click="handleToggleTheme"><SwapOutlined /></button>
+                    <a-dropdown placement="topRight">
+                        <button class="start-menu__function-btn" type="button" :title="t('TXT_CODE_5d88a9b')"
+                            @click.prevent>
+                            <BgColorsOutlined />
+                        </button>
+                        <template #overlay>
+                            <a-menu :selected-keys="[String(currentTheme)]" @click="handleThemeMenuClick">
+                                <a-menu-item :key="AppTheme.AUTO">{{ t("TXT_CODE_dc8de4ff") }}</a-menu-item>
+                                <a-menu-item :key="AppTheme.LIGHT">{{ t("TXT_CODE_673eac8e") }}</a-menu-item>
+                                <a-menu-item :key="AppTheme.DARK">{{ t("TXT_CODE_5e4a370d") }}</a-menu-item>
+                            </a-menu>
+                        </template>
+                    </a-dropdown>
                     <button class="start-menu__function-btn" type="button" :title="t('TXT_CODE_DESKTOP_EXIT')"
                         @click="handleSwitchToNormalMode"><AppstoreOutlined /></button>
                     <button class="start-menu__function-btn" type="button" :title="t('TXT_CODE_2c69ab15')"
