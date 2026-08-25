@@ -1,4 +1,4 @@
-import { exec } from "child_process";
+import { exec, execFile } from "child_process";
 import fs from "fs-extra";
 import { t } from "i18next";
 import { ProcessWrapper } from "mcsmanager-common";
@@ -17,6 +17,17 @@ import {
 } from "../service/seven_zip_service";
 
 const execPromise = promisify(exec);
+const execFilePromise = promisify(execFile);
+
+export interface ArchiveEntryInfo {
+  name: string;
+  size: number;
+  compressedSize: number;
+  time: string;
+  type: number;
+}
+
+const MAX_ARCHIVE_PREVIEW_ENTRIES = 10000;
 
 const COMPRESS_ERROR_MSG = {
   invalidName: t("TXT_CODE_3aa9f36"),
@@ -83,6 +94,86 @@ export async function decompress(
   } else {
     return await tryUnzip();
   }
+}
+
+/**
+ * Read archive metadata without extracting the archive.  This is intentionally
+ * limited to metadata so the file manager can safely preview large archives.
+ */
+export async function listArchiveEntries(
+  archivePath: string,
+  fileCode?: string
+): Promise<ArchiveEntryInfo[]> {
+  if (!checkFileName(archivePath)) throw new Error(COMPRESS_ERROR_MSG.invalidName);
+
+  const lowerPath = archivePath.toLowerCase();
+  const isTar = /\.(tar|tar\.gz|tar\.xz|tar\.bz2)$/.test(lowerPath);
+
+  if (isTar) {
+    const entries: ArchiveEntryInfo[] = [];
+    await list({
+      file: archivePath,
+      onReadEntry: (entry) => {
+        if (entries.length >= MAX_ARCHIVE_PREVIEW_ENTRIES) return;
+        entries.push({
+          name: entry.path,
+          size: entry.size || 0,
+          compressedSize: 0,
+          time: entry.mtime?.toISOString?.() || new Date().toISOString(),
+          type: entry.type === "Directory" ? 0 : 1
+        });
+      }
+    });
+    return entries;
+  }
+
+  if (lowerPath.endsWith(".zip")) {
+    const zip = new StreamZip.async({ file: archivePath, nameEncoding: fileCode || "utf8" });
+    try {
+      const entries = await zip.entries();
+      return Object.values(entries)
+        .slice(0, MAX_ARCHIVE_PREVIEW_ENTRIES)
+        .map((entry) => ({
+          name: entry.name,
+          size: entry.size || 0,
+          compressedSize: entry.compressedSize || 0,
+          time: new Date(entry.time || Date.now()).toISOString(),
+          type: entry.isDirectory ? 0 : 1
+        }));
+    } finally {
+      await zip.close();
+    }
+  }
+
+  if (await check7zipStatus()) {
+    const result = await execFilePromise(
+      SEVEN_ZIP_PATH,
+      ["l", "-slt", "-sccUTF-8", archivePath],
+      { cwd: path.dirname(archivePath), timeout: ZIP_TIMEOUT_SECONDS * 1000, maxBuffer: 10 * 1024 * 1024 }
+    );
+    const output = String(result.stdout || "");
+    const parsed: ArchiveEntryInfo[] = [];
+    for (const block of output.split(/\r?\n(?=-{5,}\r?\n)/)) {
+      const get = (key: string) => block.match(new RegExp(`^${key} = (.*)$`, "m"))?.[1] ?? "";
+      const name = get("Path");
+      if (!name || name === archivePath || name === path.basename(archivePath)) continue;
+      const folder = get("Folder") === "+" || get("Attributes").includes("D");
+      const size = Number(get("Size")) || 0;
+      const compressedSize = Number(get("Packed Size")) || 0;
+      const modified = get("Modified");
+      parsed.push({
+        name,
+        size,
+        compressedSize,
+        time: modified ? new Date(modified).toISOString() : new Date().toISOString(),
+        type: folder ? 0 : 1
+      });
+      if (parsed.length >= MAX_ARCHIVE_PREVIEW_ENTRIES) break;
+    }
+    return parsed;
+  }
+
+  throw new Error($t("TXT_CODE_69c42450", { fileExt: path.extname(archivePath).slice(1) || "unknown" }));
 }
 
 /**

@@ -2242,6 +2242,8 @@
   "TXT_CODE_a6453188": "Please select the decompression mode",
   "TXT_CODE_a64da7c4": "Auto Restart",
   "TXT_CODE_a64f3007": "Unzip",
+  "TXT_CODE_ARCHIVE_PREVIEW": "Preview archive",
+  "TXT_CODE_ARCHIVE_COMPRESSED_SIZE": "Compressed size",
   "TXT_CODE_a65c65c2": "Therefore, Public IP or Domain (except for localhost) must be used for daemon connection.",
   "TXT_CODE_a66ea585": "Maximum Attack Damage",
   "TXT_CODE_a674a475": "Number of inconsistencies needed before reporting abnormal behavior",

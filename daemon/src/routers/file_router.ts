@@ -50,6 +50,17 @@ routerApp.on("file/list", async (ctx, data) => {
   }
 });
 
+// Preview archive contents without extracting the archive
+routerApp.on("file/preview", async (ctx, data) => {
+  try {
+    const fileManager = getFileManager(data.instanceUuid);
+    const entries = await fileManager.previewArchive(data.target, data.code);
+    protocol.response(ctx, { items: entries, total: entries.length });
+  } catch (error: any) {
+    protocol.responseError(ctx, error);
+  }
+});
+
 // File chmod (only Linux)
 routerApp.on("file/chmod", async (ctx, data) => {
   try {

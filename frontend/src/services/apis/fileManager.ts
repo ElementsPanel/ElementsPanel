@@ -30,6 +30,31 @@ export const fileList = useDefineApi<
   method: "GET"
 });
 
+export const previewArchive = useDefineApi<
+  {
+    params: {
+      daemonId: string;
+      uuid: string;
+      target: string;
+      code?: string;
+    };
+  },
+  {
+    items: {
+      name: string;
+      size: number;
+      compressedSize: number;
+      time: string;
+      type: number;
+    }[];
+    total: number;
+  }
+>({
+  url: "/api/files/preview",
+  method: "GET",
+  timeout: Number.MAX_SAFE_INTEGER
+});
+
 export const getFileStatus = useDefineApi<
   {
     params: {

@@ -6,6 +6,14 @@ export interface DataType {
   mode: number;
 }
 
+export interface ArchiveEntry {
+  name: string;
+  size: number;
+  compressedSize: number;
+  time: string;
+  type: number;
+}
+
 export interface OperationForm {
   name: string;
   current: number;

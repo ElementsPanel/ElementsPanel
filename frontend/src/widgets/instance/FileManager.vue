@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BetweenMenus from "@/components/BetweenMenus.vue";
+import ArchivePreview from "@/components/ArchivePreview.vue";
 import CardPanel from "@/components/CardPanel.vue";
 import { useDownloadFileDialog } from "@/components/fc";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
@@ -89,6 +90,9 @@ const {
   oneSelected,
   isImage,
   showImage,
+  archivePreview,
+  previewArchiveFile,
+  closeArchivePreview,
   deleteDialog
 } = useFileManager(instanceId, daemonId);
 
@@ -257,6 +261,7 @@ const editFile = (fileName: string) => {
 
 const handleClickFile = async (file: DataType) => {
   if (file.type === 0) return rowClickTable(file.name, file.type);
+  if (isCompressFile(file.name)) return previewArchiveFile(file.name);
   const fileExtName = getFileExtName(file.name);
   if (isImage(fileExtName)) return showImage(file);
   return editFile(file.name);
@@ -283,6 +288,13 @@ const menuList = (record: DataType) =>
         }
       ],
       condition: () => !isMultiple.value
+    },
+    {
+      label: t("TXT_CODE_ARCHIVE_PREVIEW"),
+      key: "previewArchive",
+      icon: h(FileZipOutlined),
+      onClick: () => previewArchiveFile(record.name),
+      condition: () => !isMultiple.value && record.type === 1 && isCompressFile(record.name)
     },
     {
       label: t("TXT_CODE_a64f3007"),
@@ -662,6 +674,17 @@ onUnmounted(() => {
         </a-checkbox>
       </a-spin>
     </a-space>
+  </a-modal>
+
+  <a-modal
+    v-model:open="archivePreview.show"
+    :title="`${t('TXT_CODE_ARCHIVE_PREVIEW')}: ${archivePreview.title}`"
+    :width="960"
+    :footer="null"
+    destroy-on-close
+    @cancel="closeArchivePreview"
+  >
+    <ArchivePreview :entries="archivePreview.entries" :loading="archivePreview.loading" />
   </a-modal>
 
   <!-- Delete Confirm Dialog -->

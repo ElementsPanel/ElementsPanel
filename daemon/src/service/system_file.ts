@@ -3,7 +3,7 @@ import iconv from "iconv-lite";
 import { ProcessWrapper } from "mcsmanager-common";
 import os from "os";
 import path from "path";
-import { compress, decompress } from "../common/compress";
+import { compress, decompress, listArchiveEntries, type ArchiveEntryInfo } from "../common/compress";
 import { globalConfiguration } from "../entity/config";
 import { $t, i18next } from "../i18n";
 import { normalizedJoin } from "../tools/filepath";
@@ -239,6 +239,12 @@ export default class FileManager {
     if (!this.check(sourceZip) || !this.checkPath(destDir)) throw new Error(ERROR_MSG_01);
     this.zipFileCheck(this.toAbsolutePath(sourceZip));
     return await decompress(this.toAbsolutePath(sourceZip), this.toAbsolutePath(destDir), code);
+  }
+
+  async previewArchive(sourceZip: string, code?: string): Promise<ArchiveEntryInfo[]> {
+    if (!this.check(sourceZip)) throw new Error(ERROR_MSG_01);
+    this.zipFileCheck(this.toAbsolutePath(sourceZip));
+    return await listArchiveEntries(this.toAbsolutePath(sourceZip), code || this.fileCode);
   }
 
   async zip(sourceZip: string, files: string[], code?: string) {

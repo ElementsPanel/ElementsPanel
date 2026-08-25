@@ -2243,6 +2243,8 @@
   "TXT_CODE_a6453188": "请选择解压模式",
   "TXT_CODE_a64da7c4": "自动重启",
   "TXT_CODE_a64f3007": "解压",
+  "TXT_CODE_ARCHIVE_PREVIEW": "预览压缩包",
+  "TXT_CODE_ARCHIVE_COMPRESSED_SIZE": "压缩后大小",
   "TXT_CODE_a65c65c2": "因此必须避免使用除 localhost 外的局域网段任何 IP，必须使用外网 IP 或域名进行连接。",
   "TXT_CODE_a66ea585": "最大攻击伤害",
   "TXT_CODE_a674a475": "报告异常行为之前所需的数据不一致的数量",

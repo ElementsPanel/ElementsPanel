@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useFileManager } from "@/hooks/useFileManager";
+import ArchivePreview from "@/components/ArchivePreview.vue";
 import { useRightClickMenu } from "@/hooks/useRightClickMenu";
 import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
@@ -91,6 +92,9 @@ const {
     pushSelected,
     selectionData,
     loadingWindow,
+    archivePreview,
+    previewArchiveFile,
+    closeArchivePreview,
     deleteDialog
 } = useFileManager(props.instanceId, props.daemonId, props.sessionId || "");
 
@@ -318,6 +322,7 @@ const editFile = (fileName: string) => {
 
 const handleClickFile = async (file: DataType) => {
     if (file.type === 0) return rowClickTable(file.name, file.type);
+    if (isCompressFile(file.name)) return previewArchiveFile(file.name);
     const fileExtName = getFileExtName(file.name);
     if (isImage(fileExtName)) {
         const path = currentPath.value + file.name;
@@ -347,6 +352,13 @@ const menuList = (record: DataType) =>
                 }
             ],
             condition: () => !isMultiple.value
+        },
+        {
+            label: t("TXT_CODE_ARCHIVE_PREVIEW"),
+            key: "previewArchive",
+            icon: h(FileZipOutlined),
+            onClick: () => previewArchiveFile(record.name),
+            condition: () => !isMultiple.value && record.type === 1 && isCompressFile(record.name)
         },
         {
             label: t("TXT_CODE_a64f3007"),
@@ -1039,6 +1051,19 @@ onUnmounted(() => {
                 </div>
             </a-spin>
         </div>
+
+        <Teleport to="body">
+            <Transition name="dfm-dialog-fade">
+                <DesktopWindow v-if="archivePreview.show" id="file-manager-archive-preview"
+                    :title="`${t('TXT_CODE_ARCHIVE_PREVIEW')}: ${archivePreview.title}`" :icon="FileZipOutlined"
+                    :visible="archivePreview.show" :minimized="false" :maximized="false" :active="true"
+                    :initial-width="960" :initial-height="620" :initial-x="Math.max(20, windowWidth / 2 - 480)"
+                    :initial-y="Math.max(20, windowHeight / 2 - 310)" :z-index="10002" :show-minimize="false"
+                    :show-maximize="false" :resizable="false" @close="closeArchivePreview">
+                    <ArchivePreview compact :entries="archivePreview.entries" :loading="archivePreview.loading" />
+                </DesktopWindow>
+            </Transition>
+        </Teleport>
 
         <Teleport to="body">
             <Transition name="dfm-dialog-fade">

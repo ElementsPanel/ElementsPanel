@@ -14,6 +14,7 @@ import {
   fileList as getFileListApi,
   getFileStatus as getFileStatusApi,
   moveFile as moveFileApi,
+  previewArchive as previewArchiveApi,
   touchFile as touchFileApi,
   uploadAddress
 } from "@/services/apis/fileManager";
@@ -23,6 +24,7 @@ import { mapDaemonAddress, parseForwardAddress, type RemoteMappingEntry } from "
 import { removeTrail } from "@/tools/string";
 import { reportErrorMsg } from "@/tools/validator";
 import type {
+  ArchiveEntry,
   Breadcrumb,
   DataType,
   DownloadFileConfigItem,
@@ -261,6 +263,13 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     text: ""
   });
 
+  const archivePreview = ref({
+    show: false,
+    loading: false,
+    title: "",
+    entries: [] as ArchiveEntry[]
+  });
+
   const deleteDialog = ref({
     show: false,
     loading: false,
@@ -276,6 +285,36 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
 
   const hideLoadingWindow = () => {
     loadingWindow.value.show = false;
+  };
+
+  const previewArchiveFile = async (name: string) => {
+    archivePreview.value = {
+      show: true,
+      loading: true,
+      title: name,
+      entries: []
+    };
+    try {
+      const { execute } = previewArchiveApi();
+      const res = await execute({
+        params: {
+          daemonId: daemonId || "",
+          uuid: instanceId || "",
+          target: currentPath.value + name,
+          code: "utf-8"
+        }
+      });
+      archivePreview.value.entries = res.value?.items || [];
+    } catch (error: any) {
+      archivePreview.value.show = false;
+      reportErrorMsg(error.message);
+    } finally {
+      archivePreview.value.loading = false;
+    }
+  };
+
+  const closeArchivePreview = () => {
+    archivePreview.value.show = false;
   };
 
   const openDialog = (
@@ -1039,6 +1078,9 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     oneSelected,
     isImage,
     showImage,
-    loadingWindow
+    loadingWindow,
+    archivePreview,
+    previewArchiveFile,
+    closeArchivePreview
   };
 };

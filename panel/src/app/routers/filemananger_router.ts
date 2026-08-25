@@ -81,6 +81,31 @@ router.get(
   }
 );
 
+router.get(
+  "/preview",
+  permission({ level: ROLE.USER, speedLimit: false }),
+  validator({
+    query: { daemonId: String, uuid: String, target: String, code: String }
+  }),
+  async (ctx) => {
+    try {
+      const daemonId = String(ctx.query.daemonId);
+      const instanceUuid = String(ctx.query.uuid);
+      const target = String(ctx.query.target);
+      const code = String(ctx.query.code || "utf-8");
+      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
+      const result = await new RemoteRequest(remoteService).request("file/preview", {
+        instanceUuid,
+        target,
+        code
+      });
+      ctx.body = result;
+    } catch (err) {
+      ctx.body = err;
+    }
+  }
+);
+
 router.put(
   "/chmod",
   permission({ level: ROLE.USER }),
