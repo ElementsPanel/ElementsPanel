@@ -332,6 +332,9 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
         flex: 1;
         overflow-y: auto;
         padding: 10px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
     }
 
     .start-menu__item {
@@ -340,6 +343,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
         gap: 10px;
         padding: 12px 16px;
         cursor: pointer;
+        border-radius: 8px;
         font-size: 13px;
         transition: background-color 0.15s;
 
@@ -362,11 +366,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
     }
 
     .start-menu__app-item {
-        cursor: grab;
-
-        &:active {
-            cursor: grabbing;
-        }
+        cursor: default;
     }
 }
 
