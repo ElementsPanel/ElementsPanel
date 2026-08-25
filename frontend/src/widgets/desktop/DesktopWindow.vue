@@ -367,6 +367,7 @@ onUnmounted(() => {
     align-items: center;
     gap: 2px;
     flex-shrink: 0;
+    transform: translateX(3px);
 }
 
 .window__control {
