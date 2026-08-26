@@ -45,36 +45,28 @@ export const getFileExtName = (fileName: string) => {
 
 /**
  * Check if the file is a decompressible archive format
- * Supports common single volume archives: .7z, .zip, .rar, .tar.gz, .iso, .cab, etc.
- * Supports common multi-volume archives: .7z.001, .part1.rar, .rar + .r00, .zip + .z01, etc.
+ * Supports the single-volume formats handled by the daemon's archive service.
  */
 export const isCompressFile = (fileName: string): boolean => {
   const lowerFileName = fileName.toLowerCase();
-  
-  const singleVolumeExts = ['7z', 'zip', 'rar', 'tar.gz', 'iso', 'cab', 'tar', 'gz', 'tar.xz', 'bz2', 'tar.bz2'];
-  
-  for (const ext of singleVolumeExts) {
-    if (lowerFileName.endsWith('.' + ext)) {
-      return true;
-    }
+  const supportedExtensions = [
+    ".tar.bz2",
+    ".tar.xz",
+    ".tar.gz",
+    ".7z",
+    ".zip",
+    ".rar",
+    ".iso",
+    ".cab",
+    ".tar",
+    ".gz",
+    ".bz2"
+  ];
+
+  if (supportedExtensions.some((extension) => lowerFileName.endsWith(extension))) {
+    return true;
   }
-  
-  if (/\.7z\.\d+$/i.test(lowerFileName)) {
-    return lowerFileName.endsWith('.001');
-  }
-  
-  if (/\.part\d+\.rar$/i.test(lowerFileName)) {
-    return /\.part1\.rar$/i.test(lowerFileName);
-  }
-  
-  if (/\.r\d{2}$/i.test(lowerFileName)) {
-    return false;
-  }
-  
-  if (/\.z\d{2}$/i.test(lowerFileName)) {
-    return false;
-  }
-  
+
   return false;
 };
 

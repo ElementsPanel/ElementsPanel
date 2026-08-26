@@ -28,6 +28,20 @@ export interface ArchiveEntryInfo {
 
 const MAX_ARCHIVE_PREVIEW_ENTRIES = 10000;
 
+const SUPPORTED_ARCHIVE_EXTENSIONS = [
+  ".tar.bz2",
+  ".tar.xz",
+  ".tar.gz",
+  ".7z",
+  ".zip",
+  ".rar",
+  ".iso",
+  ".cab",
+  ".tar",
+  ".gz",
+  ".bz2"
+];
+
 const COMPRESS_ERROR_MSG = {
   invalidName: t("TXT_CODE_3aa9f36"),
   exitErr: t("TXT_CODE_2be83d36"),
@@ -41,6 +55,13 @@ function checkFileName(fileName: string) {
     if (fileName.includes(iterator)) return false;
   }
   return true;
+}
+
+export function isSupportedArchiveFile(fileName: string): boolean {
+  const lowerFileName = fileName.toLowerCase();
+  return (
+    SUPPORTED_ARCHIVE_EXTENSIONS.some((extension) => lowerFileName.endsWith(extension))
+  );
 }
 
 export async function compress(
@@ -61,6 +82,9 @@ export async function decompress(
 ): Promise<boolean> {
   if (!checkFileName(zipPath) || !checkFileName(dest))
     throw new Error(COMPRESS_ERROR_MSG.invalidName);
+  if (!isSupportedArchiveFile(zipPath)) {
+    throw new Error($t("TXT_CODE_69c42450", { fileExt: getFileExtension(zipPath) }));
+  }
 
   const tryUnzip = async () => {
     if (isMultiVolume(zipPath)) {
@@ -97,9 +121,12 @@ export async function listArchiveEntries(
   fileCode?: string
 ): Promise<ArchiveEntryInfo[]> {
   if (!checkFileName(archivePath)) throw new Error(COMPRESS_ERROR_MSG.invalidName);
+  if (!isSupportedArchiveFile(archivePath)) {
+    throw new Error($t("TXT_CODE_69c42450", { fileExt: getFileExtension(archivePath) }));
+  }
 
   const lowerPath = archivePath.toLowerCase();
-  const isTar = /\.(tar|tar\.gz|tar\.xz|tar\.bz2)$/.test(lowerPath);
+  const isTar = /\.(tar|tar\.gz)$/.test(lowerPath);
 
   if (isTar) {
     const entries: ArchiveEntryInfo[] = [];

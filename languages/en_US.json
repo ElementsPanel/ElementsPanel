@@ -1215,7 +1215,7 @@
   "TXT_CODE_76d59e8": "Set to true to make downward bubble columns generate instead of upward bubble columns when soul sand is placed/generated under water-source blocks.",
   "TXT_CODE_77000411": "Image",
   "TXT_CODE_7702d818": "Sneak and right-click a strider with a saddle on it's back to remove it with this option enabled",
-  "TXT_CODE_77083c51": "Mount extra host directories into the container. Variables {mcsm_workspace} (working directory) and {mcsm_instance_id} (instance ID) are supported.",
+  "TXT_CODE_77083c51": "Mount extra host directories into the container. Variables &lbrace;mcsm_workspace&rbrace; (working directory) and &lbrace;mcsm_instance_id&rbrace; (instance ID) are supported.",
   "TXT_CODE_772bb48a": "eg: Java 18+",
   "TXT_CODE_772c4961": "Amount of damage per second crystals deal to phantoms. Value of 1.0 is half a heart",
   "TXT_CODE_773f36a0": "Upload Successful.",

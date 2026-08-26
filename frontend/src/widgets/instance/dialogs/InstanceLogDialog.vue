@@ -148,9 +148,25 @@ const getColorByLevel = (level: OperationLoggerItem["operation_level"]) => {
 const generateTextByItem = (item: OperationLoggerItem) => {
   const handler = renderMap[item.type];
   if (!handler) return t("TXT_CODE_43df9305");
-  const { text, data } = handler(item as any);
-  let i = 0;
-  return text.replace(/\<\<\s*[\w_]+\s*\>\>/g, () => data[i++] ?? "--");
+  const { text } = handler(item as any);
+  const values: Record<string, string> = {
+    operator_name: item.operator_name || item.operation_id,
+    instance_name: "instance_name" in item ? item.instance_name || item.instance_id : "",
+    file: "file" in item ? item.file || "" : "",
+    task_name: "task_name" in item ? item.task_name : "",
+    exit_code: "exit_code" in item ? String(item.exit_code) : "",
+    daemon_id: "daemon_id" in item ? item.daemon_id : "",
+    target_user_name: "target_user_name" in item ? item.target_user_name : "",
+    login_result:
+      "login_result" in item
+        ? item.login_result
+          ? t("TXT_CODE_43fcaf94")
+          : t("TXT_CODE_56c686f8")
+        : ""
+  };
+  return text.replace(/\<\<\s*([\w_]+)\s*\>\>/g, (_match, name: string) => {
+    return values[name] || "--";
+  });
 };
 
 // ==================== Computed ====================

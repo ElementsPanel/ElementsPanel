@@ -52,12 +52,33 @@ routerApp.on("file/list", async (ctx, data) => {
 
 // Preview archive contents without extracting the archive
 routerApp.on("file/preview", async (ctx, data) => {
+  const maxFileTask = globalConfiguration.config.maxFileTask;
+  const instance = InstanceSubsystem.getInstance(data.instanceUuid);
+  let taskStarted = false;
   try {
+    if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+    if (instance.info.fileLock >= maxFileTask) {
+      throw new Error(
+        $t("TXT_CODE_file_router.unzipLimit", {
+          maxFileTask,
+          fileLock: instance.info.fileLock
+        })
+      );
+    }
+
     const fileManager = getFileManager(data.instanceUuid);
+    instance.info.fileLock++;
+    globalEnv.fileTaskCount++;
+    taskStarted = true;
     const entries = await fileManager.previewArchive(data.target, data.code);
     protocol.response(ctx, { items: entries, total: entries.length });
   } catch (error: any) {
     protocol.responseError(ctx, error);
+  } finally {
+    if (instance && taskStarted) {
+      instance.info.fileLock = Math.max(0, instance.info.fileLock - 1);
+      globalEnv.fileTaskCount = Math.max(0, globalEnv.fileTaskCount - 1);
+    }
   }
 });
 

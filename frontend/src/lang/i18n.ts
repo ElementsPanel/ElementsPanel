@@ -50,6 +50,10 @@ export const SUPPORTED_LANGS = [
   {
     label: `한국어`,
     value: `ko_kr`
+  },
+  {
+    label: `Türkçe`,
+    value: `tr_tr`
   }
 ];
 

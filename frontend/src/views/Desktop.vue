@@ -534,10 +534,10 @@ const loadDesktopLayout = async () => {
                     maximized: win.maximized || false,
                     zIndex,
                     content: win.content,
-                    initialX: win.x || 100,
-                    initialY: win.y || 60,
-                    initialWidth: win.width || 800,
-                    initialHeight: win.height || 500,
+                    initialX: win.x ?? 100,
+                    initialY: win.y ?? 60,
+                    initialWidth: win.width ?? 800,
+                    initialHeight: win.height ?? 500,
                     instanceId: win.instanceId,
                     daemonId: win.daemonId,
                     type: win.type,
@@ -1162,6 +1162,7 @@ const handleReorderWindows = (newOrder: string[]) => {
     newWindowsMap.forEach((win, id) => {
         windows.set(id, win);
     });
+    saveDesktopLayout();
 };
 
 // ─── Route ───

@@ -9,7 +9,7 @@ import {
     LogoutOutlined,
     UserOutlined
 } from "@ant-design/icons-vue";
-import { ref, type Component } from "vue";
+import { onBeforeUnmount, ref, type Component } from "vue";
 
 const { currentTheme, isDarkTheme, setTheme } = useAppConfigStore();
 
@@ -98,7 +98,8 @@ const updateTime = () => {
 };
 
 updateTime();
-setInterval(updateTime, 10000);
+const timeTimer = window.setInterval(updateTime, 10000);
+onBeforeUnmount(() => window.clearInterval(timeTimer));
 
 const startMenuOpen = ref(false);
 

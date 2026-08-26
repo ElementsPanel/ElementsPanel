@@ -28,6 +28,31 @@ import { ROLE } from "../service/protocol";
 import FileManager from "../service/system_file";
 import uploadManager from "../service/upload_manager";
 
+function getInstanceBackupPath(instanceUuid: string, backupName: unknown): string {
+  if (typeof backupName !== "string" || !backupName || path.basename(backupName) !== backupName) {
+    throw new Error($t("TXT_CODE_Instance_router.accessFileErr"));
+  }
+
+  let customBackupPath = globalConfiguration.config.instanceBackupPath;
+  if (!customBackupPath) {
+    customBackupPath = path.join(process.cwd(), "data/backups");
+  }
+
+  const backupRoot = path.resolve(customBackupPath);
+  const instanceBackupDir = path.resolve(backupRoot, instanceUuid);
+  const archivePath = path.resolve(instanceBackupDir, backupName);
+  const relativePath = path.relative(instanceBackupDir, archivePath);
+  if (
+    !relativePath ||
+    relativePath === ".." ||
+    relativePath.startsWith(".." + path.sep) ||
+    path.isAbsolute(relativePath)
+  ) {
+    throw new Error($t("TXT_CODE_Instance_router.accessFileErr"));
+  }
+  return archivePath;
+}
+
 // Some instances operate router authentication middleware
 routerApp.use((event, ctx, data, next) => {
   if (event === "instance/new" && data) return next();
@@ -504,11 +529,7 @@ routerApp.on("instance/backup/delete", async (ctx, data) => {
     const instance = InstanceSubsystem.getInstance(instanceUuid);
     if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
 
-    let customBackupPath = globalConfiguration.config.instanceBackupPath;
-    if (!customBackupPath) {
-      customBackupPath = path.join(process.cwd(), "data/backups");
-    }
-    const filePath = path.join(path.normalize(customBackupPath), instanceUuid, backupName);
+    const filePath = getInstanceBackupPath(instanceUuid, backupName);
 
     if (fs.existsSync(filePath)) {
       await fs.remove(filePath);
@@ -552,11 +573,7 @@ routerApp.on("instance/backup/restore", async (ctx, data) => {
       }
     }
 
-    let customBackupPath = globalConfiguration.config.instanceBackupPath;
-    if (!customBackupPath) {
-      customBackupPath = path.join(process.cwd(), "data/backups");
-    }
-    const archivePath = path.join(path.normalize(customBackupPath), instanceUuid, backupName);
+    const archivePath = getInstanceBackupPath(instanceUuid, backupName);
 
     if (!fs.existsSync(archivePath)) {
       throw new Error($t("TXT_CODE_Instance_router.accessFileErr"));
