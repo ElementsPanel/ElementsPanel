@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import BetweenMenus from "@/components/BetweenMenus.vue";
 import ArchivePreview from "@/components/ArchivePreview.vue";
+import BetweenMenus from "@/components/BetweenMenus.vue";
 import CardPanel from "@/components/CardPanel.vue";
 import { useDownloadFileDialog } from "@/components/fc";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
@@ -401,18 +401,30 @@ onUnmounted(() => {
       <a-col :span="24">
         <BetweenMenus>
           <template v-if="!isPhone" #left>
-            <a-typography-title class="mb-0" :level="4">
+            <a-typography-title class="mb-0 toolbar-title" :level="4">
               {{ card.title }}
             </a-typography-title>
           </template>
           <template #right>
-            <a-typography-text v-if="selectedRowKeys.length">
-              {{
-                `${t("TXT_CODE_7b2c5414")} ${String(selectedRowKeys.length)} ${t(
-                  "TXT_CODE_5cd3b4bd"
-                )}`
-              }}
-            </a-typography-text>
+            <span class="selected-count" :class="{ 'selected-count-empty': !selectedRowKeys.length }"
+              :aria-hidden="!selectedRowKeys.length">
+              <a-typography-text>
+                {{
+                  `${t("TXT_CODE_7b2c5414")} ${String(selectedRowKeys.length)} ${t(
+                    "TXT_CODE_5cd3b4bd"
+                  )}`
+                }}
+              </a-typography-text>
+            </span>
+
+            <div class="search-input">
+              <a-input v-model:value.trim.lazy="operationForm.name" :placeholder="t('TXT_CODE_7cad42a5')" allow-clear
+                @change="handleSearchChange()">
+                <template #suffix>
+                  <search-outlined />
+                </template>
+              </a-input>
+            </div>
 
             <a-button type="dashed" @click="() => downloadFromURLFile()">
               <download-outlined />
@@ -466,16 +478,6 @@ onUnmounted(() => {
                 <DownOutlined />
               </a-button>
             </a-dropdown>
-          </template>
-          <template #center>
-            <div class="search-input">
-              <a-input v-model:value.trim.lazy="operationForm.name" :placeholder="t('TXT_CODE_7cad42a5')" allow-clear
-                @change="handleSearchChange()">
-                <template #suffix>
-                  <search-outlined />
-                </template>
-              </a-input>
-            </div>
           </template>
         </BetweenMenus>
       </a-col>
@@ -560,9 +562,9 @@ onUnmounted(() => {
                 };
               }
                 " @change="
-                    (e: any) =>
-                      handleTableChange({ current: e.current || 0, pageSize: e.pageSize || 0 })
-                  ">
+                  (e: any) =>
+                    handleTableChange({ current: e.current || 0, pageSize: e.pageSize || 0 })
+                ">
                 <template #bodyCell="{ column, record }">
                   <template v-if="column.key === 'name'">
                     <a-button type="link" class="file-name" @click="handleClickFile(record as DataType)">
@@ -676,14 +678,8 @@ onUnmounted(() => {
     </a-space>
   </a-modal>
 
-  <a-modal
-    v-model:open="archivePreview.show"
-    :title="`${t('TXT_CODE_ARCHIVE_PREVIEW')}: ${archivePreview.title}`"
-    :width="960"
-    :footer="null"
-    destroy-on-close
-    @cancel="closeArchivePreview"
-  >
+  <a-modal v-model:open="archivePreview.show" :title="`${t('TXT_CODE_ARCHIVE_PREVIEW')}: ${archivePreview.title}`"
+    :width="960" :footer="null" destroy-on-close @cancel="closeArchivePreview">
     <ArchivePreview :entries="archivePreview.entries" :loading="archivePreview.loading" />
   </a-modal>
 
@@ -699,10 +695,41 @@ onUnmounted(() => {
 </template>
 
 <style lang="scss" scoped>
+.selected-count {
+  white-space: nowrap;
+}
+
+.selected-count-empty {
+  visibility: hidden;
+}
+
+.toolbar-title {
+  white-space: nowrap;
+}
+
 .search-input {
-  transition: all 0.4s;
-  text-align: center;
-  width: 50%;
+  flex: 0 1 260px;
+  min-width: 120px;
+  max-width: 320px;
+}
+
+@media (min-width: 993px) {
+
+  .container :deep(.between-menus-container),
+  .container :deep(.menus-item-left),
+  .container :deep(.menus-item-right) {
+    flex-wrap: nowrap;
+  }
+
+  .container :deep(.menus-item-left) {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .container :deep(.menus-item-right) {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
 }
 
 .file-name {
@@ -723,14 +750,13 @@ onUnmounted(() => {
 
 @media (max-width: 992px) {
   .search-input {
-    transition: all 0.4s;
-    text-align: center;
-    width: 100% !important;
+    flex: 1 1 100%;
+    max-width: none;
   }
-}
 
-.search-input:hover {
-  width: 100%;
+  .container :deep(.menus-item-right) {
+    justify-content: flex-start;
+  }
 }
 
 .file-breadcrumbs {
