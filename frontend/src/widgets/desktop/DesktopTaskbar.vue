@@ -4,7 +4,6 @@ import { t } from "@/lang/i18n";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { AppTheme } from "@/types/const";
 import {
-    AppstoreOutlined,
     BgColorsOutlined,
     LogoutOutlined,
     UserOutlined
@@ -175,11 +174,12 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
             <div v-if="startMenuOpen" class="taskbar__start-menu" @click.stop>
                 <div class="start-menu__sidebar">
                     <button class="start-menu__function-btn" type="button" :title="username"
-                        @click="handleOpenUserInfo"><UserOutlined /></button>
+                        @click="handleOpenUserInfo">
+                        <UserOutlined />
+                    </button>
                     <div class="start-menu__sidebar-spacer"></div>
                     <a-dropdown placement="topRight">
-                        <button class="start-menu__function-btn" type="button" :title="t('TXT_CODE_5d88a9b')"
-                            @click.prevent>
+                        <button class="start-menu__function-btn" type="button" @click.prevent>
                             <BgColorsOutlined />
                         </button>
                         <template #overlay>
@@ -191,8 +191,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
                         </template>
                     </a-dropdown>
                     <a-dropdown placement="topRight">
-                        <button class="start-menu__function-btn" type="button" :title="t('TXT_CODE_2c69ab15')"
-                            @click.prevent>
+                        <button class="start-menu__function-btn" type="button" @click.prevent>
                             <LogoutOutlined />
                         </button>
                         <template #overlay>
@@ -210,11 +209,12 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
                 <div class="start-menu__apps-panel">
                     <div class="start-menu__apps">
                         <div v-for="app in apps" :key="app.id" class="start-menu__item start-menu__app-item"
-                            draggable="true" @dragstart="handleAppDragStart(app, $event)" @click="handleOpenApp(app.id)">
+                            draggable="true" @dragstart="handleAppDragStart(app, $event)"
+                            @click="handleOpenApp(app.id)">
                             <span class="start-menu__item-icon">
                                 <component :is="app.icon" v-if="isComponentIcon(app.icon)" />
-                                <img v-else-if="typeof app.icon === 'string' && app.icon.endsWith('.svg')" :src="app.icon"
-                                    alt="icon" />
+                                <img v-else-if="typeof app.icon === 'string' && app.icon.endsWith('.svg')"
+                                    :src="app.icon" alt="icon" />
                                 <template v-else>{{ app.icon }}</template>
                             </span>
                             <span>{{ app.label }}</span>
