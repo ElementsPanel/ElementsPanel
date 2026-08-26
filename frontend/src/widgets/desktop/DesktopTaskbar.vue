@@ -127,6 +127,14 @@ const handleThemeMenuClick = ({ key }: { key: string | number }) => {
     setTheme(Number(key) as AppTheme);
 };
 
+const handleAccountMenuClick = ({ key }: { key: string | number }) => {
+    if (String(key) === "exit-desktop") {
+        handleSwitchToNormalMode();
+    } else if (String(key) === "logout") {
+        handleExitDesktop();
+    }
+};
+
 const handleOpenApp = (id: string) => {
     startMenuOpen.value = false;
     emit("open-app", id);
@@ -181,10 +189,22 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
                             </a-menu>
                         </template>
                     </a-dropdown>
-                    <button class="start-menu__function-btn" type="button" :title="t('TXT_CODE_DESKTOP_EXIT')"
-                        @click="handleSwitchToNormalMode"><AppstoreOutlined /></button>
-                    <button class="start-menu__function-btn" type="button" :title="t('TXT_CODE_2c69ab15')"
-                        @click="handleExitDesktop"><LogoutOutlined /></button>
+                    <a-dropdown placement="topRight">
+                        <button class="start-menu__function-btn" type="button" :title="t('TXT_CODE_2c69ab15')"
+                            @click.prevent>
+                            <LogoutOutlined />
+                        </button>
+                        <template #overlay>
+                            <a-menu @click="handleAccountMenuClick">
+                                <a-menu-item key="exit-desktop">
+                                    {{ t("TXT_CODE_DESKTOP_EXIT") }}
+                                </a-menu-item>
+                                <a-menu-item key="logout">
+                                    {{ t("TXT_CODE_2c69ab15") }}
+                                </a-menu-item>
+                            </a-menu>
+                        </template>
+                    </a-dropdown>
                 </div>
                 <div class="start-menu__apps-panel">
                     <div class="start-menu__apps">
