@@ -30,7 +30,7 @@ html {
   opacity: 0.5;
   border: 1px dashed #5f5f5f;
   transform: scale(1.02);
-  border-radius: 6px;
+  border-radius: 12px;
   background-color: var(--drag-background-color);
 }
 
@@ -39,7 +39,7 @@ html {
 }
 
 .global-card-container-shadow {
-  border-radius: 6px;
+  border-radius: 12px;
 }
 
 .global-action-float-enter-active,
@@ -106,7 +106,7 @@ html {
 .global-markdown-html {
   img {
     border: 0;
-    border-radius: 6px;
+    border-radius: 12px;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -219,7 +219,7 @@ html {
 
 .package-image-container {
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 .package-info {
