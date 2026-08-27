@@ -7,12 +7,14 @@
     "dev": "nodemon --watch src --ext ts,js --exec \"npm run build && node --enable-source-maps production/app.js\"",
     "build": "webpack --config webpack.config.js"
   },
-  "homepage": "https://mcsmanager.com/",
-  "author": "https://github.com/yumao233",
+  "author": "Csituka_D <694428809@qq.com> (https://github.com/JessDaodao)",
+  "contributors": [
+    "Yumao <unitwk@outlook.com> (https://github.com/yumao233)"
+  ],
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MCSManager/MCSManager"
+    "url": "https://github.com/Equestriarcadia/ElementsPanel"
   },
   "_moduleAliases": {
     "@languages": "../languages"
