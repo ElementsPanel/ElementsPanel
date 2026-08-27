@@ -35,7 +35,8 @@ const routePathIcons: Record<string, Component> = {
   "/_open_page": LinkOutlined
 };
 
-const getRouteIcon = (path: string): Component => routePathIcons[path] ?? MenuOutlined;
+const getRouteIcon = (item: (typeof menus.value)[number]): Component | string =>
+  item.meta.icon ?? routePathIcons[item.path] ?? MenuOutlined;
 
 const isActive = (path: string): boolean => {
   if (route.path === path) return true;
@@ -64,7 +65,7 @@ const handleMenuItemClick = (path: string) => {
         <button v-for="item in menus" :key="item.path" class="fab-menu-item"
           :class="{ 'fab-menu-item--active': isActive(item.path) }" @click="handleMenuItemClick(item.path)">
           <span class="fab-menu-icon-wrap">
-            <component :is="getRouteIcon(item.path)" class="fab-menu-icon" />
+            <component :is="getRouteIcon(item)" class="fab-menu-icon" />
           </span>
         </button>
       </div>

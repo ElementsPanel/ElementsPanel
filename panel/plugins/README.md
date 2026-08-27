@@ -46,7 +46,8 @@ export default {
     registerLayoutCard,
     registerLocaleMessages,
     registerAppMenu,
-    registerLoginAction
+    registerLoginAction,
+    registerDesktopApp
   }) {
     // register additional Vue behavior here
   }
@@ -56,6 +57,50 @@ export default {
 Routes may set `meta.public` to bypass login checks and `meta.immersive` to hide
 the normal panel shell. Definition objects may also provide `appMenus` and
 `loginActions` arrays directly.
+
+A plugin can expose its configuration UI to the `config` plugin by exporting a
+Vue component. The component owns its form state, validation, API calls and
+persistence, so plugin-specific settings do not need to be coupled to the panel
+core.
+
+```ts
+import PluginConfig from "./PluginConfig.vue";
+
+export default {
+  configuration: {
+    component: PluginConfig
+  }
+};
+```
+
+Desktop applications can be declared statically through `desktopApps` or at
+runtime through `context.registerDesktopApp()`. Each application must provide a
+globally unique `id` and either a `component` to render inside a Desktop window,
+or a `route` to open directly. A component may also provide a route so the same
+page is available in both the normal panel and Desktop modes.
+
+```ts
+import ExamplePage from "./ExamplePage.vue";
+import { AppstoreOutlined } from "@ant-design/icons-vue";
+
+export default {
+  desktopApps: [
+    {
+      id: "example",
+      label: "Example",
+      icon: AppstoreOutlined,
+      route: "/example",
+      component: ExamplePage,
+      initialWidth: 960,
+      initialHeight: 600
+    }
+  ]
+};
+```
+
+Configuration components, routes, menus and Desktop applications disappear
+with their owning frontend plugin. The Desktop plugin also closes open windows
+whose application registration has been removed.
 
 Set `enabled` to `false` to skip a plugin. Plugins are loaded in ascending
 `priority` order and a failed plugin is reported without stopping the

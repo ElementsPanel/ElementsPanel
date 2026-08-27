@@ -6,6 +6,7 @@ import InstallPage from "@/views/Install.vue";
 import LayoutContainer from "@/views/LayoutContainer.vue";
 import LoginPage from "@/views/Login.vue";
 import SsoBindLogin from "@/views/SsoBindLogin.vue";
+import type { Component } from "vue";
 import {
   createRouter,
   createWebHashHistory,
@@ -14,7 +15,7 @@ import {
 } from "vue-router";
 
 export interface RouterMetaInfo {
-  icon?: string;
+  icon?: Component | string;
   mainMenu?: boolean;
   permission?: number;
   redirect?:

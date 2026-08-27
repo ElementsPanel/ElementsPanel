@@ -1,4 +1,4 @@
-import { shallowReactive, type App, type Component } from "vue";
+import { ref, shallowReactive, type App, type Component } from "vue";
 import type { Pinia } from "pinia";
 import type { RouteRecordName, RouteRecordRaw, Router } from "vue-router";
 import { LAYOUT_CARD_TYPES } from "./config";
@@ -31,6 +31,7 @@ export interface PanelFrontendPluginContext {
   registerLocaleMessages: (locale: string, messages: Record<string, unknown>) => void;
   registerAppMenu: (menu: PanelFrontendAppMenu) => void;
   registerLoginAction: (action: PanelFrontendLoginAction) => void;
+  registerDesktopApp: (desktopApp: PanelFrontendDesktopApp) => void;
 }
 
 export interface PanelFrontendAppMenuItem {
@@ -58,6 +59,22 @@ export interface PanelFrontendLoginAction {
   condition?: boolean | (() => boolean);
 }
 
+export interface PanelFrontendPluginConfiguration {
+  component: Component;
+}
+
+export interface PanelFrontendDesktopApp {
+  id: string;
+  label: string | (() => string);
+  icon: Component | string;
+  color?: string;
+  route?: string;
+  component?: Component;
+  condition?: boolean | (() => boolean);
+  initialWidth?: number;
+  initialHeight?: number;
+}
+
 export interface PanelFrontendPluginDefinition {
   routes?: RouteRecordRaw[];
   components?: Record<string, Component>;
@@ -65,6 +82,8 @@ export interface PanelFrontendPluginDefinition {
   localeMessages?: Record<string, Record<string, unknown>>;
   appMenus?: PanelFrontendAppMenu[];
   loginActions?: PanelFrontendLoginAction[];
+  desktopApps?: PanelFrontendDesktopApp[];
+  configuration?: PanelFrontendPluginConfiguration;
   setup?: (context: PanelFrontendPluginContext) => unknown;
   ready?: (context: PanelFrontendPluginContext) => unknown;
   dispose?: (context: PanelFrontendPluginContext) => unknown;
@@ -86,6 +105,7 @@ export interface LoadedPanelFrontendPlugin {
   context?: PanelFrontendPluginContext;
   error?: Error;
   ready: boolean;
+  configuration?: PanelFrontendPluginConfiguration;
 }
 
 interface InternalLoadedPanelFrontendPlugin extends LoadedPanelFrontendPlugin {
@@ -111,6 +131,11 @@ interface ComponentRegistrationState {
   registrations: ComponentRegistration[];
 }
 
+interface DesktopAppRegistration {
+  owner: InternalLoadedPanelFrontendPlugin;
+  desktopApp: PanelFrontendDesktopApp;
+}
+
 interface PanelFrontendPluginRuntime {
   load: (id: string) => Promise<LoadedPanelFrontendPlugin>;
   unload: (id: string) => Promise<boolean>;
@@ -128,6 +153,8 @@ declare global {
 const loadedPlugins = shallowReactive<InternalLoadedPanelFrontendPlugin[]>([]);
 const appMenus = shallowReactive<PanelFrontendAppMenu[]>([]);
 const loginActions = shallowReactive<PanelFrontendLoginAction[]>([]);
+const desktopAppRegistrations = shallowReactive<DesktopAppRegistration[]>([]);
+const routeRevision = ref(0);
 const pluginSources = new Map<string, PanelFrontendPluginSource>();
 const localeBaseMessages = new Map<string, Record<string, unknown>>();
 const localeRegistrations: LocaleRegistration[] = [];
@@ -387,15 +414,38 @@ function registerLayoutCard(
   registerComponent(plugin, name, component);
 }
 
+function registerDesktopApp(
+  plugin: InternalLoadedPanelFrontendPlugin,
+  desktopApp: PanelFrontendDesktopApp
+) {
+  const id = desktopApp.id.trim();
+  if (!id) throw new Error(`Panel frontend plugin "${plugin.metadata.id}" has an invalid desktop app id.`);
+  if (desktopAppRegistrations.some((registration) => registration.desktopApp.id === id)) {
+    throw new Error(`Panel frontend desktop app id is already registered: ${id}`);
+  }
+  if (!desktopApp.component && !desktopApp.route) {
+    throw new Error(
+      `Panel frontend plugin "${plugin.metadata.id}" desktop app "${id}" requires a component or route.`
+    );
+  }
+  const registration = { owner: plugin, desktopApp: { ...desktopApp, id } };
+  desktopAppRegistrations.push(registration);
+  plugin.cleanups.push(() => removeItem(desktopAppRegistrations, registration));
+}
+
 function registerRoute(plugin: InternalLoadedPanelFrontendPlugin, route: RouteRecordRaw) {
   const existingRoutes = new Set(router.getRoutes());
   const removeRoute = router.addRoute(route);
+  routeRevision.value += 1;
   const addedRoutes = router.getRoutes().filter((record) => !existingRoutes.has(record));
   addedRoutes.forEach((record) => {
     plugin.routePaths.add(record.path);
     if (record.name !== undefined) plugin.routeNames.add(record.name);
   });
-  plugin.cleanups.push(removeRoute);
+  plugin.cleanups.push(() => {
+    removeRoute();
+    routeRevision.value += 1;
+  });
 }
 
 function createContext(plugin: InternalLoadedPanelFrontendPlugin): PanelFrontendPluginContext {
@@ -418,7 +468,8 @@ function createContext(plugin: InternalLoadedPanelFrontendPlugin): PanelFrontend
     registerLoginAction: (action) => {
       loginActions.push(action);
       plugin.cleanups.push(() => removeItem(loginActions, action));
-    }
+    },
+    registerDesktopApp: (desktopApp) => registerDesktopApp(plugin, desktopApp)
   };
   return context;
 }
@@ -458,7 +509,7 @@ async function installPluginSource(source: PanelFrontendPluginSource, cacheKey?:
   const existing = loadedPlugins.find((plugin) => plugin.metadata.id === source.metadata.id);
   if (existing) return existing;
 
-  const plugin: InternalLoadedPanelFrontendPlugin = {
+  const plugin = shallowReactive<InternalLoadedPanelFrontendPlugin>({
     source,
     metadata: source.metadata,
     directory: source.directory,
@@ -467,13 +518,16 @@ async function installPluginSource(source: PanelFrontendPluginSource, cacheKey?:
     routeNames: new Set(),
     routePaths: new Set(),
     ready: false
-  };
+  });
   loadedPlugins.push(plugin);
   try {
     if (!import.meta.env.DEV) plugin.cleanups.push(await loadStyles(source));
     plugin.module = await source.load(cacheKey);
     plugin.context = createContext(plugin);
     const definition = getDefinition(plugin.module);
+    if (definition.configuration?.component) {
+      plugin.configuration = definition.configuration;
+    }
     definition.routes?.forEach(plugin.context.registerRoute);
     Object.entries(definition.components || {}).forEach(([name, component]) => {
       plugin.context!.registerComponent(name, component);
@@ -486,6 +540,7 @@ async function installPluginSource(source: PanelFrontendPluginSource, cacheKey?:
     });
     definition.appMenus?.forEach(plugin.context.registerAppMenu);
     definition.loginActions?.forEach(plugin.context.registerLoginAction);
+    definition.desktopApps?.forEach(plugin.context.registerDesktopApp);
     if (typeof definition.setup === "function") {
       const setupCleanup = await definition.setup(plugin.context);
       if (typeof setupCleanup === "function") plugin.cleanups.push(setupCleanup as () => void);
@@ -566,6 +621,7 @@ export async function setupPanelFrontendPlugins(app: App, pinia: Pinia) {
   }
   appMenus.length = 0;
   loginActions.length = 0;
+  desktopAppRegistrations.length = 0;
   await refreshPanelFrontendPlugins();
 
   window.ElementsPanelPlugins = {
@@ -605,6 +661,18 @@ export function getPanelFrontendAppMenus(): readonly PanelFrontendAppMenu[] {
   return appMenus;
 }
 
+export function getPanelFrontendRouteRevision(): number {
+  return routeRevision.value;
+}
+
 export function getPanelFrontendLoginActions(): readonly PanelFrontendLoginAction[] {
   return loginActions;
+}
+
+export function getPanelFrontendDesktopApps(): readonly PanelFrontendDesktopApp[] {
+  const desktopApps = new Map<string, PanelFrontendDesktopApp>();
+  for (const registration of desktopAppRegistrations) {
+    desktopApps.set(registration.desktopApp.id, registration.desktopApp);
+  }
+  return [...desktopApps.values()];
 }

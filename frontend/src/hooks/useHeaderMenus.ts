@@ -1,5 +1,5 @@
 import { router, type RouterMetaInfo } from "@/config/router";
-import { getPanelFrontendAppMenus } from "@/plugins";
+import { getPanelFrontendAppMenus, getPanelFrontendRouteRevision } from "@/plugins";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { t } from "@/lang/i18n";
 import { logoutUser } from "@/services/apis/index";
@@ -32,6 +32,7 @@ export type SidebarRouteEntry = {
   type: "route";
   path: string;
   name: string | symbol | undefined;
+  icon?: Component | string;
   customClass?: string[];
 };
 
@@ -85,6 +86,7 @@ export function useHeaderMenus() {
   };
 
   const menus = computed(() => {
+    getPanelFrontendRouteRevision();
     return router
       .getRoutes()
       .filter((v) => {
@@ -280,6 +282,7 @@ export function useHeaderMenus() {
       type: "route",
       path: r.path,
       name: r.name,
+      icon: (r.meta as RouterMetaInfo).icon,
       customClass: Array.isArray(r.customClass) ? r.customClass : []
     }));
     const divider: SidebarDividerEntry = { type: "divider" };

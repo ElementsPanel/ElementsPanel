@@ -5,6 +5,10 @@ import { getDesktopLayoutConfig, setDesktopLayoutConfig } from "./api";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
+import {
+    getPanelFrontendDesktopApps,
+    type PanelFrontendDesktopApp
+} from "@/plugins";
 import type { ContextMenuItem } from "./widgets/desktop/DesktopContextMenu.vue";
 import DesktopContextMenu from "./widgets/desktop/DesktopContextMenu.vue";
 import DesktopEventConfig from "./widgets/desktop/DesktopEventConfig.vue";
@@ -121,7 +125,33 @@ interface DesktopApp {
     color: string;
     route?: string;
     windowContent?: string;
+    component?: Component;
+    initialWidth?: number;
+    initialHeight?: number;
 }
+
+const getDesktopAppLabel = (app: PanelFrontendDesktopApp) =>
+    typeof app.label === "function" ? app.label() : app.label;
+
+const pluginDesktopApps = computed<DesktopApp[]>(() =>
+    getPanelFrontendDesktopApps()
+        .filter((app) =>
+            typeof app.condition === "function"
+                ? app.condition()
+                : app.condition === undefined || app.condition
+        )
+        .map((app) => ({
+            id: app.id,
+            label: getDesktopAppLabel(app),
+            icon: typeof app.icon === "string" ? app.icon : markRaw(app.icon),
+            color: app.color || "#1677ff",
+            route: app.route,
+            windowContent: `panel-plugin:${app.id}`,
+            component: app.component ? markRaw(app.component) : undefined,
+            initialWidth: app.initialWidth,
+            initialHeight: app.initialHeight
+        }))
+);
 
 const availableDesktopApps = computed<DesktopApp[]>(() => {
     const apps: DesktopApp[] = [
@@ -189,10 +219,11 @@ const availableDesktopApps = computed<DesktopApp[]>(() => {
                 icon: markRaw(AppstoreOutlined),
                 color: "#1677ff",
                 windowContent: "my-apps"
-            }
+            },
+            ...pluginDesktopApps.value
         ];
     }
-    return apps;
+    return [...apps, ...pluginDesktopApps.value];
 });
 
 const desktopShortcutIds = reactive(new Set<string>());
@@ -420,6 +451,7 @@ interface WindowState {
     type?: string;
     filePath?: string;
     fileName?: string;
+    component?: Component;
 }
 
 const windows = reactive<Map<string, WindowState>>(new Map());
@@ -475,6 +507,34 @@ const saveDesktopLayout = () => {
     }, 500);
 };
 
+let registeredPluginDesktopAppIds = new Set(pluginDesktopApps.value.map((app) => app.id));
+
+watch(
+    pluginDesktopApps,
+    (apps) => {
+        const nextIds = new Set(apps.map((app) => app.id));
+        let layoutChanged = false;
+
+        for (const id of registeredPluginDesktopAppIds) {
+            if (nextIds.has(id)) continue;
+            layoutChanged = desktopShortcutIds.delete(id) || layoutChanged;
+            layoutChanged = iconPositions.delete(id) || layoutChanged;
+            if (selectedIconId.value === id) selectedIconId.value = null;
+
+            const content = `panel-plugin:${id}`;
+            for (const [windowId, win] of windows) {
+                if (win.content !== content) continue;
+                windows.delete(windowId);
+                layoutChanged = true;
+            }
+        }
+
+        registeredPluginDesktopAppIds = nextIds;
+        if (layoutChanged) saveDesktopLayout();
+    },
+    { flush: "sync" }
+);
+
 const ICON_MAP: Record<string, Component> = {
     "instances": markRaw(DesktopOutlined),
     "overview": markRaw(DashboardOutlined),
@@ -522,7 +582,11 @@ const loadDesktopLayout = async () => {
         if (layout && Array.isArray(layout.windows) && layout.windows.length > 0) {
             windows.clear();
             for (const win of layout.windows) {
-                const icon = ICON_MAP[win.content] || markRaw(DesktopOutlined);
+                const desktopApp = availableDesktopApps.value.find(
+                    (app) => app.windowContent === win.content
+                );
+                if (win.content.startsWith("panel-plugin:") && !desktopApp?.component) continue;
+                const icon = desktopApp?.icon || ICON_MAP[win.content] || markRaw(DesktopOutlined);
                 const zIndex = typeof win.zIndex === "number" ? win.zIndex : ++nextZIndex;
                 if (zIndex > nextZIndex) nextZIndex = zIndex;
                 windows.set(win.id, {
@@ -542,7 +606,8 @@ const loadDesktopLayout = async () => {
                     daemonId: win.daemonId,
                     type: win.type,
                     filePath: win.filePath,
-                    fileName: win.fileName
+                    fileName: win.fileName,
+                    component: desktopApp?.component
                 });
             }
         }
@@ -575,6 +640,11 @@ const openWindow = (appId: string) => {
     const app = availableDesktopApps.value.find((a) => a.id === appId);
     if (!app) return;
 
+    if (!app.component && app.windowContent?.startsWith("panel-plugin:") && app.route) {
+        void router.push(app.route);
+        return;
+    }
+
     const existing = windows.get(appId);
     if (existing) {
         existing.minimized = false;
@@ -598,8 +668,9 @@ const openWindow = (appId: string) => {
         content: app.windowContent || "default",
         initialX: offsetX,
         initialY: offsetY,
-        initialWidth: 980,
-        initialHeight: 580
+        initialWidth: app.initialWidth || 980,
+        initialHeight: app.initialHeight || 580,
+        component: app.component
     });
     saveDesktopLayout();
 };
@@ -1443,6 +1514,8 @@ const username = computed(() => appState.userInfo?.userName || "User");
                                 @open-console="openInstanceConsole" />
 
                             <DesktopUserInfo v-else-if="win.content === 'user-info'" />
+
+                            <component :is="win.component" v-else-if="win.component" />
 
                             <div v-else class="window-page">
                                 <p>{{ win.title }}</p>

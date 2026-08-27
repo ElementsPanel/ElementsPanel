@@ -47,8 +47,10 @@ const routePathIcons: Record<string, Component> = {
   "/_open_page": LinkOutlined
 };
 
-const getRouteIcon = (path: string): Component => {
-  return routePathIcons[path] ?? MenuOutlined;
+const getRouteIcon = (
+  entry: Extract<SidebarEntry, { type: "route" }>
+): Component | string => {
+  return entry.icon ?? routePathIcons[entry.path] ?? MenuOutlined;
 };
 
 const getItemKey = (entry: SidebarEntry, index: number): string => {
@@ -76,7 +78,7 @@ const onAppDropdownClick = (item: SidebarAppDropdownEntry, info: { key: Key }) =
         <a v-else-if="entry.type === 'route'" class="sidebar-item"
           :class="[entry.customClass, { 'sidebar-item-active': isRouteActive(entry.path) }]"
           @click.prevent="handleToPage(entry.path)">
-          <component :is="getRouteIcon(entry.path)" class="sidebar-item-icon" />
+          <component :is="getRouteIcon(entry)" class="sidebar-item-icon" />
           <span class="sidebar-item-text">{{ entry.name }}</span>
         </a>
 
