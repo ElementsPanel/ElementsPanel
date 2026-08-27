@@ -36,6 +36,12 @@ export async function middleware(
   ctx.response.set("X-Powered-By", "MCSManager");
   ctx.response.set("X-Version", getVersion());
 
+  // Frontend plugin manifests are regular JSON resources, not API responses.
+  // Keep the array shape intact so the browser can discover compiled plugins.
+  if (ctx.path === "/plugins/manifest.json") {
+    return;
+  }
+
   // Serialize and display when sending Error class
   if (ctx.body instanceof Error) {
     const error = ctx.body as Error;

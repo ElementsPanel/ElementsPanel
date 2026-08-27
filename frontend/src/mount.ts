@@ -12,7 +12,7 @@ import { createApp } from "vue";
 import { createPinia } from "pinia";
 
 import { router } from "./config/router";
-import { getI18nInstance } from "@/lang/i18n";
+import { getI18nInstance, t } from "@/lang/i18n";
 import App from "./App.vue";
 
 import { userInfoApi } from "./services/apis";
@@ -31,7 +31,14 @@ export async function mountApp() {
     const info = await reqUserInfo();
     updateUserInfo(info.value);
   } catch (err) {
-    console.error("Init user info Error:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    const expectedAuthErrors = [
+      t("TXT_CODE_permission.forbidden"),
+      t("TXT_CODE_permission.forbiddenTokenError")
+    ];
+    if (!expectedAuthErrors.includes(message)) {
+      console.error("Init user info Error:", err);
+    }
   } finally {
     const app = createApp(App);
     const pinia = createPinia();

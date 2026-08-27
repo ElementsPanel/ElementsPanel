@@ -3,13 +3,20 @@ import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import { DesktopOutlined } from "@ant-design/icons-vue";
 import DesktopPage from "./Desktop.vue";
-import "./theme.scss";
+import themeCss from "./theme.scss?inline";
 
 const openDesktop = () => {
   window.location.hash = "#/desktop";
 };
 
 export default {
+  setup() {
+    const style = document.createElement("style");
+    style.dataset.panelPlugin = "desktop";
+    style.textContent = themeCss;
+    document.head.appendChild(style);
+    return () => style.remove();
+  },
   routes: [
     {
       path: "/desktop",

@@ -1,6 +1,6 @@
-import type { App, Component } from "vue";
+import { shallowReactive, type App, type Component } from "vue";
 import type { Pinia } from "pinia";
-import type { RouteRecordRaw, Router } from "vue-router";
+import type { RouteRecordName, RouteRecordRaw, Router } from "vue-router";
 import { LAYOUT_CARD_TYPES } from "./config";
 import { router } from "./config/router";
 import { getI18nInstance } from "./lang/i18n";
@@ -70,17 +70,79 @@ export interface PanelFrontendPluginDefinition {
   dispose?: (context: PanelFrontendPluginContext) => unknown;
 }
 
+interface PanelFrontendPluginSource {
+  metadata: PanelFrontendPluginMetadata;
+  directory: string;
+  assetDirectory: string;
+  entry?: string;
+  styles?: string[];
+  load: (cacheKey?: string) => Promise<Record<string, unknown>>;
+}
+
 export interface LoadedPanelFrontendPlugin {
   metadata: PanelFrontendPluginMetadata;
   directory: string;
   module: Record<string, unknown>;
   context?: PanelFrontendPluginContext;
   error?: Error;
+  ready: boolean;
 }
 
-const loadedPlugins: LoadedPanelFrontendPlugin[] = [];
-const appMenus: PanelFrontendAppMenu[] = [];
-const loginActions: PanelFrontendLoginAction[] = [];
+interface InternalLoadedPanelFrontendPlugin extends LoadedPanelFrontendPlugin {
+  source: PanelFrontendPluginSource;
+  cleanups: Array<() => void | Promise<void>>;
+  routeNames: Set<RouteRecordName>;
+  routePaths: Set<string>;
+}
+
+interface LocaleRegistration {
+  owner: InternalLoadedPanelFrontendPlugin;
+  locale: string;
+  messages: Record<string, unknown>;
+}
+
+interface ComponentRegistration {
+  owner: InternalLoadedPanelFrontendPlugin;
+  component: Component;
+}
+
+interface ComponentRegistrationState {
+  original?: Component;
+  registrations: ComponentRegistration[];
+}
+
+interface PanelFrontendPluginRuntime {
+  load: (id: string) => Promise<LoadedPanelFrontendPlugin>;
+  unload: (id: string) => Promise<boolean>;
+  reload: (id: string) => Promise<LoadedPanelFrontendPlugin>;
+  refresh: () => Promise<readonly PanelFrontendPluginMetadata[]>;
+  loaded: () => readonly LoadedPanelFrontendPlugin[];
+}
+
+declare global {
+  interface Window {
+    ElementsPanelPlugins?: PanelFrontendPluginRuntime;
+  }
+}
+
+const loadedPlugins = shallowReactive<InternalLoadedPanelFrontendPlugin[]>([]);
+const appMenus = shallowReactive<PanelFrontendAppMenu[]>([]);
+const loginActions = shallowReactive<PanelFrontendLoginAction[]>([]);
+const pluginSources = new Map<string, PanelFrontendPluginSource>();
+const localeBaseMessages = new Map<string, Record<string, unknown>>();
+const localeRegistrations: LocaleRegistration[] = [];
+const componentRegistrations = new Map<string, ComponentRegistrationState>();
+const layoutCardRegistrations = new Map<string, ComponentRegistrationState>();
+
+let runtimeApp: App | undefined;
+let runtimePinia: Pinia | undefined;
+let pluginsReady = false;
+let beforeUnloadRegistered = false;
+
+function cloneMessages<T>(value: T): T {
+  if (value === undefined) return value;
+  return JSON.parse(JSON.stringify(value)) as T;
+}
 
 function getDefinition(module: any): PanelFrontendPluginDefinition {
   if (module?.default && typeof module.default === "object") {
@@ -92,7 +154,276 @@ function getDefinition(module: any): PanelFrontendPluginDefinition {
   return module || {};
 }
 
-async function runHook(plugin: LoadedPanelFrontendPlugin, hook: "ready" | "dispose") {
+function normalizeMetadata(value: Record<string, unknown>): PanelFrontendPluginMetadata | null {
+  const id = typeof value.id === "string" ? value.id.trim() : "";
+  if (!id) return null;
+  return { ...value, id } as PanelFrontendPluginMetadata;
+}
+
+function toPluginUrl(value: string, manifestUrl: URL): string {
+  return new URL(value, manifestUrl).href;
+}
+
+async function loadStyles(source: PanelFrontendPluginSource) {
+  const links: HTMLLinkElement[] = [];
+  try {
+    await Promise.all(
+      (source.styles || []).map(
+        (href) =>
+          new Promise<void>((resolve, reject) => {
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = href;
+            link.dataset.panelPlugin = source.metadata.id;
+            link.addEventListener("load", () => resolve(), { once: true });
+            link.addEventListener(
+              "error",
+              () => reject(new Error(`Failed to load panel plugin stylesheet: ${href}`)),
+              { once: true }
+            );
+            document.head.appendChild(link);
+            links.push(link);
+          })
+      )
+    );
+  } catch (error) {
+    links.forEach((link) => link.remove());
+    throw error;
+  }
+  return () => links.forEach((link) => link.remove());
+}
+
+function removePluginStyles(source: PanelFrontendPluginSource) {
+  document
+    .querySelectorAll<HTMLStyleElement>(
+      `style[data-panel-plugin=${JSON.stringify(source.metadata.id)}]`
+    )
+    .forEach((style) => style.remove());
+  for (const href of source.styles || []) {
+    const normalizedHref = new URL(href, document.baseURI).href;
+    document.querySelectorAll<HTMLLinkElement>("link[rel='stylesheet']").forEach((link) => {
+      try {
+        if (new URL(link.href, document.baseURI).href === normalizedHref) link.remove();
+      } catch {
+        // Ignore malformed third-party stylesheet URLs.
+      }
+    });
+  }
+}
+
+async function fetchProductionPluginSources(): Promise<PanelFrontendPluginSource[]> {
+  const manifestUrl = new URL("plugins/manifest.json", document.baseURI);
+  const response = await fetch(manifestUrl.href, { cache: "no-store" });
+  if (!response.ok) {
+    if (response.status === 404) return [];
+    throw new Error(`Failed to load panel plugin manifest: HTTP ${response.status}`);
+  }
+  const responseBody = await response.json();
+  // Older panel builds may still pass the manifest through the standard API
+  // envelope. Accept both the raw array and `{ data: [...] }` forms.
+  const manifest = Array.isArray(responseBody) ? responseBody : responseBody?.data;
+  if (!Array.isArray(manifest)) throw new Error("Invalid panel plugin manifest.");
+
+  const sources: PanelFrontendPluginSource[] = [];
+  for (const item of manifest) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+    const metadata = normalizeMetadata((item as any).metadata || item);
+    const entry = typeof (item as any).entry === "string" ? (item as any).entry : "";
+    if (!metadata || metadata.enabled === false || !entry) continue;
+    const entryUrl = toPluginUrl(entry, manifestUrl);
+    const styles = Array.isArray((item as any).styles)
+      ? (item as any).styles
+          .filter((style: unknown): style is string => typeof style === "string")
+          .map((style: string) => toPluginUrl(style, manifestUrl))
+      : [];
+    sources.push({
+      metadata,
+      directory:
+        typeof (item as any).directory === "string" ? (item as any).directory : metadata.id,
+      assetDirectory:
+        typeof (item as any).assetDirectory === "string"
+          ? (item as any).assetDirectory
+          : metadata.id,
+      entry: entryUrl,
+      styles,
+      load: async (cacheKey) => {
+        const url = new URL(entryUrl);
+        if (cacheKey) url.searchParams.set("panel_plugin_reload", cacheKey);
+        return import(/* @vite-ignore */ url.href) as Promise<Record<string, unknown>>;
+      }
+    });
+  }
+  return sources;
+}
+
+async function discoverPluginSources() {
+  const sources = import.meta.env.DEV
+    ? (panelPluginModules as PanelFrontendPluginSource[])
+    : await fetchProductionPluginSources();
+  const uniqueSources = new Map<string, PanelFrontendPluginSource>();
+  for (const source of sources) {
+    const metadata = normalizeMetadata(source.metadata);
+    if (!metadata || metadata.enabled === false || uniqueSources.has(metadata.id)) continue;
+    uniqueSources.set(metadata.id, { ...source, metadata });
+  }
+  return [...uniqueSources.values()].sort(
+    (a, b) =>
+      (Number(a.metadata.priority) || 0) - (Number(b.metadata.priority) || 0) ||
+      a.metadata.id.localeCompare(b.metadata.id)
+  );
+}
+
+function removeItem<T>(items: T[], item: T) {
+  const index = items.indexOf(item);
+  if (index >= 0) items.splice(index, 1);
+}
+
+function reapplyLocale(locale: string) {
+  const i18n = getI18nInstance();
+  const baseMessages = cloneMessages(localeBaseMessages.get(locale) || {});
+  (i18n.global as any).setLocaleMessage(locale, baseMessages);
+  localeRegistrations
+    .filter((registration) => registration.locale === locale)
+    .forEach((registration) => {
+      (i18n.global as any).mergeLocaleMessage(locale, cloneMessages(registration.messages));
+    });
+}
+
+function registerLocaleMessages(
+  plugin: InternalLoadedPanelFrontendPlugin,
+  locale: string,
+  messages: Record<string, unknown>
+) {
+  if (!localeBaseMessages.has(locale)) {
+    localeBaseMessages.set(
+      locale,
+      cloneMessages((getI18nInstance().global as any).getLocaleMessage(locale) || {})
+    );
+  }
+  const registration = { owner: plugin, locale, messages: cloneMessages(messages) };
+  localeRegistrations.push(registration);
+  reapplyLocale(locale);
+  plugin.cleanups.push(() => {
+    removeItem(localeRegistrations, registration);
+    reapplyLocale(locale);
+  });
+}
+
+function applyComponentRegistration(
+  app: App,
+  name: string,
+  states: Map<string, ComponentRegistrationState>
+) {
+  const state = states.get(name);
+  if (!state) return;
+  const latest = state.registrations[state.registrations.length - 1]?.component;
+  if (latest) {
+    app.component(name, latest);
+  } else if (state.original) {
+    app.component(name, state.original);
+    states.delete(name);
+  } else {
+    delete app._context.components[name];
+    states.delete(name);
+  }
+}
+
+function registerComponent(
+  plugin: InternalLoadedPanelFrontendPlugin,
+  name: string,
+  component: Component
+) {
+  const app = plugin.context!.app;
+  let state = componentRegistrations.get(name);
+  if (!state) {
+    state = { original: app.component(name), registrations: [] };
+    componentRegistrations.set(name, state);
+  }
+  const registration = { owner: plugin, component };
+  state.registrations.push(registration);
+  applyComponentRegistration(app, name, componentRegistrations);
+  plugin.cleanups.push(() => {
+    const current = componentRegistrations.get(name);
+    if (!current) return;
+    removeItem(current.registrations, registration);
+    applyComponentRegistration(app, name, componentRegistrations);
+  });
+}
+
+function applyLayoutCardRegistration(name: string) {
+  const state = layoutCardRegistrations.get(name);
+  if (!state) return;
+  const latest = state.registrations[state.registrations.length - 1]?.component;
+  if (latest) {
+    LAYOUT_CARD_TYPES[name] = latest;
+  } else if (state.original) {
+    LAYOUT_CARD_TYPES[name] = state.original;
+    layoutCardRegistrations.delete(name);
+  } else {
+    delete LAYOUT_CARD_TYPES[name];
+    layoutCardRegistrations.delete(name);
+  }
+}
+
+function registerLayoutCard(
+  plugin: InternalLoadedPanelFrontendPlugin,
+  name: string,
+  component: Component
+) {
+  let state = layoutCardRegistrations.get(name);
+  if (!state) {
+    state = { original: LAYOUT_CARD_TYPES[name], registrations: [] };
+    layoutCardRegistrations.set(name, state);
+  }
+  const registration = { owner: plugin, component };
+  state.registrations.push(registration);
+  applyLayoutCardRegistration(name);
+  plugin.cleanups.push(() => {
+    const current = layoutCardRegistrations.get(name);
+    if (!current) return;
+    removeItem(current.registrations, registration);
+    applyLayoutCardRegistration(name);
+  });
+  registerComponent(plugin, name, component);
+}
+
+function registerRoute(plugin: InternalLoadedPanelFrontendPlugin, route: RouteRecordRaw) {
+  const existingRoutes = new Set(router.getRoutes());
+  const removeRoute = router.addRoute(route);
+  const addedRoutes = router.getRoutes().filter((record) => !existingRoutes.has(record));
+  addedRoutes.forEach((record) => {
+    plugin.routePaths.add(record.path);
+    if (record.name !== undefined) plugin.routeNames.add(record.name);
+  });
+  plugin.cleanups.push(removeRoute);
+}
+
+function createContext(plugin: InternalLoadedPanelFrontendPlugin): PanelFrontendPluginContext {
+  if (!runtimeApp || !runtimePinia) throw new Error("Panel plugin runtime has not been initialized.");
+  const context: PanelFrontendPluginContext = {
+    app: runtimeApp,
+    pinia: runtimePinia,
+    router,
+    i18n: getI18nInstance(),
+    metadata: plugin.metadata,
+    directory: plugin.directory,
+    registerRoute: (route) => registerRoute(plugin, route),
+    registerComponent: (name, component) => registerComponent(plugin, name, component),
+    registerLayoutCard: (name, component) => registerLayoutCard(plugin, name, component),
+    registerLocaleMessages: (locale, messages) => registerLocaleMessages(plugin, locale, messages),
+    registerAppMenu: (menu) => {
+      appMenus.push(menu);
+      plugin.cleanups.push(() => removeItem(appMenus, menu));
+    },
+    registerLoginAction: (action) => {
+      loginActions.push(action);
+      plugin.cleanups.push(() => removeItem(loginActions, action));
+    }
+  };
+  return context;
+}
+
+async function runHook(plugin: InternalLoadedPanelFrontendPlugin, hook: "ready" | "dispose") {
   if (plugin.error || !plugin.context) return;
   const callback = getDefinition(plugin.module)[hook];
   if (typeof callback !== "function") return;
@@ -103,72 +434,167 @@ async function runHook(plugin: LoadedPanelFrontendPlugin, hook: "ready" | "dispo
   }
 }
 
-export async function setupPanelFrontendPlugins(app: App, pinia: Pinia) {
-  loadedPlugins.length = 0;
-  appMenus.length = 0;
-  loginActions.length = 0;
-  for (const source of panelPluginModules) {
-    const plugin: LoadedPanelFrontendPlugin = {
-      metadata: source.metadata as PanelFrontendPluginMetadata,
-      directory: source.directory,
-      module: source.module
-    };
+async function cleanupPlugin(plugin: InternalLoadedPanelFrontendPlugin) {
+  for (const cleanup of [...plugin.cleanups].reverse()) {
     try {
-      const context: PanelFrontendPluginContext = {
-        app,
-        pinia,
-        router,
-        i18n: getI18nInstance(),
-        metadata: plugin.metadata,
-        directory: plugin.directory,
-        registerRoute: (route) => router.addRoute(route),
-        registerComponent: (name, component) => app.component(name, component),
-        registerLayoutCard: (name, component) => {
-          LAYOUT_CARD_TYPES[name] = component;
-          app.component(name, component);
-        },
-        registerLocaleMessages: (locale, messages) => {
-          (getI18nInstance().global as any).mergeLocaleMessage(locale, messages);
-        },
-        registerAppMenu: (menu) => appMenus.push(menu),
-        registerLoginAction: (action) => loginActions.push(action)
-      };
-      plugin.context = context;
-      const definition = getDefinition(plugin.module);
-      definition.routes?.forEach(context.registerRoute);
-      Object.entries(definition.components || {}).forEach(([name, component]) => {
-        context.registerComponent(name, component);
-      });
-      Object.entries(definition.layoutCards || {}).forEach(([name, component]) => {
-        context.registerLayoutCard(name, component);
-      });
-      Object.entries(definition.localeMessages || {}).forEach(([locale, messages]) => {
-        context.registerLocaleMessages(locale, messages);
-      });
-      definition.appMenus?.forEach(context.registerAppMenu);
-      definition.loginActions?.forEach(context.registerLoginAction);
-      if (typeof definition.setup === "function") await definition.setup(context);
-      loadedPlugins.push(plugin);
-      console.info(`Panel frontend plugin loaded: ${plugin.metadata.id}`);
-    } catch (error: any) {
-      plugin.error = error instanceof Error ? error : new Error(String(error));
-      loadedPlugins.push(plugin);
-      console.error(`Panel frontend plugin failed to load: ${plugin.metadata.id}`, error);
+      await cleanup();
+    } catch (error) {
+      console.error(`Panel frontend plugin cleanup failed: ${plugin.metadata.id}`, error);
     }
   }
+  removePluginStyles(plugin.source);
+  plugin.cleanups.length = 0;
+}
 
-  window.addEventListener(
-    "beforeunload",
-    () => {
-      for (const plugin of [...loadedPlugins].reverse()) void runHook(plugin, "dispose");
-    },
-    { once: true }
+function isCurrentPluginRoute(plugin: InternalLoadedPanelFrontendPlugin) {
+  return router.currentRoute.value.matched.some(
+    (record) =>
+      plugin.routePaths.has(record.path) ||
+      (record.name !== undefined && plugin.routeNames.has(record.name))
   );
 }
 
+async function installPluginSource(source: PanelFrontendPluginSource, cacheKey?: string) {
+  const existing = loadedPlugins.find((plugin) => plugin.metadata.id === source.metadata.id);
+  if (existing) return existing;
+
+  const plugin: InternalLoadedPanelFrontendPlugin = {
+    source,
+    metadata: source.metadata,
+    directory: source.directory,
+    module: {},
+    cleanups: [],
+    routeNames: new Set(),
+    routePaths: new Set(),
+    ready: false
+  };
+  loadedPlugins.push(plugin);
+  try {
+    if (!import.meta.env.DEV) plugin.cleanups.push(await loadStyles(source));
+    plugin.module = await source.load(cacheKey);
+    plugin.context = createContext(plugin);
+    const definition = getDefinition(plugin.module);
+    definition.routes?.forEach(plugin.context.registerRoute);
+    Object.entries(definition.components || {}).forEach(([name, component]) => {
+      plugin.context!.registerComponent(name, component);
+    });
+    Object.entries(definition.layoutCards || {}).forEach(([name, component]) => {
+      plugin.context!.registerLayoutCard(name, component);
+    });
+    Object.entries(definition.localeMessages || {}).forEach(([locale, messages]) => {
+      plugin.context!.registerLocaleMessages(locale, messages);
+    });
+    definition.appMenus?.forEach(plugin.context.registerAppMenu);
+    definition.loginActions?.forEach(plugin.context.registerLoginAction);
+    if (typeof definition.setup === "function") {
+      const setupCleanup = await definition.setup(plugin.context);
+      if (typeof setupCleanup === "function") plugin.cleanups.push(setupCleanup as () => void);
+    }
+    if (pluginsReady) {
+      await runHook(plugin, "ready");
+      plugin.ready = true;
+    }
+    console.info(`Panel frontend plugin loaded: ${plugin.metadata.id}`);
+  } catch (error: any) {
+    plugin.error = error instanceof Error ? error : new Error(String(error));
+    await cleanupPlugin(plugin);
+    console.error(`Panel frontend plugin failed to load: ${plugin.metadata.id}`, error);
+  }
+  return plugin;
+}
+
+export async function refreshPanelFrontendPlugins() {
+  const sources = await discoverPluginSources();
+  const nextSources = new Map(sources.map((source) => [source.metadata.id, source]));
+  pluginSources.clear();
+  nextSources.forEach((source, id) => pluginSources.set(id, source));
+  if (runtimeApp && runtimePinia) {
+    for (const plugin of [...loadedPlugins].reverse()) {
+      if (!nextSources.has(plugin.metadata.id)) {
+        await unloadPanelFrontendPlugin(plugin.metadata.id);
+      }
+    }
+    for (const source of sources) {
+      if (!loadedPlugins.some((plugin) => plugin.metadata.id === source.metadata.id)) {
+        await installPluginSource(source);
+      }
+    }
+  }
+  return sources.map((source) => source.metadata) as readonly PanelFrontendPluginMetadata[];
+}
+
+export async function loadPanelFrontendPlugin(id: string): Promise<LoadedPanelFrontendPlugin> {
+  if (!runtimeApp || !runtimePinia) throw new Error("Panel plugin runtime has not been initialized.");
+  let source = pluginSources.get(id);
+  if (!source && !import.meta.env.DEV) {
+    await refreshPanelFrontendPlugins();
+    source = pluginSources.get(id);
+  }
+  if (!source) throw new Error(`Panel frontend plugin not found: ${id}`);
+  return installPluginSource(source);
+}
+
+export async function unloadPanelFrontendPlugin(id: string): Promise<boolean> {
+  const plugin = loadedPlugins.find((candidate) => candidate.metadata.id === id);
+  if (!plugin) return false;
+  if (isCurrentPluginRoute(plugin)) await router.replace("/404");
+  await runHook(plugin, "dispose");
+  await cleanupPlugin(plugin);
+  removeItem(loadedPlugins, plugin);
+  console.info(`Panel frontend plugin unloaded: ${plugin.metadata.id}`);
+  return true;
+}
+
+export async function reloadPanelFrontendPlugin(id: string): Promise<LoadedPanelFrontendPlugin> {
+  await unloadPanelFrontendPlugin(id);
+  if (!import.meta.env.DEV) {
+    const sources = await discoverPluginSources();
+    pluginSources.clear();
+    sources.forEach((source) => pluginSources.set(source.metadata.id, source));
+  }
+  const source = pluginSources.get(id);
+  if (!source) throw new Error(`Panel frontend plugin not found: ${id}`);
+  return installPluginSource(source, `${Date.now()}`);
+}
+
+export async function setupPanelFrontendPlugins(app: App, pinia: Pinia) {
+  runtimeApp = app;
+  runtimePinia = pinia;
+  pluginsReady = false;
+  for (const plugin of [...loadedPlugins].reverse()) {
+    await unloadPanelFrontendPlugin(plugin.metadata.id);
+  }
+  appMenus.length = 0;
+  loginActions.length = 0;
+  await refreshPanelFrontendPlugins();
+
+  window.ElementsPanelPlugins = {
+    load: loadPanelFrontendPlugin,
+    unload: unloadPanelFrontendPlugin,
+    reload: reloadPanelFrontendPlugin,
+    refresh: refreshPanelFrontendPlugins,
+    loaded: getLoadedPanelFrontendPlugins
+  };
+
+  if (!beforeUnloadRegistered) {
+    beforeUnloadRegistered = true;
+    window.addEventListener(
+      "beforeunload",
+      () => {
+        for (const plugin of [...loadedPlugins].reverse()) void runHook(plugin, "dispose");
+      },
+      { once: true }
+    );
+  }
+}
+
 export async function runPanelFrontendPluginHook(hook: "ready" | "dispose") {
-  const plugins = hook === "dispose" ? [...loadedPlugins].reverse() : loadedPlugins;
-  for (const plugin of plugins) await runHook(plugin, hook);
+  if (hook === "ready") pluginsReady = true;
+  const plugins = hook === "dispose" ? [...loadedPlugins].reverse() : [...loadedPlugins];
+  for (const plugin of plugins) {
+    await runHook(plugin, hook);
+    if (hook === "ready" && !plugin.error) plugin.ready = true;
+  }
 }
 
 export function getLoadedPanelFrontendPlugins(): readonly LoadedPanelFrontendPlugin[] {

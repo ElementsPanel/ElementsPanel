@@ -40,7 +40,8 @@ mv "${BASE_PATH}/panel/production/app.js" "${BASE_PATH}/production-code/web"
 mv "${BASE_PATH}/panel/production/app.js.map" "${BASE_PATH}/production-code/web"
 cp -f "${BASE_PATH}/panel/package.json" "${BASE_PATH}/production-code/web/package.json"
 cp -f "${BASE_PATH}/panel/package-lock.json" "${BASE_PATH}/production-code/web/package-lock.json"
-if [ -d "${BASE_PATH}/panel/plugins" ]; then cp -R "${BASE_PATH}/panel/plugins" "${BASE_PATH}/production-code/web/plugins"; fi
+node scripts/package-panel-plugins.mjs
+rm -rf "${BASE_PATH}/frontend/dist/plugins"
 
 mv "${BASE_PATH}"/frontend/dist/* "${BASE_PATH}/production-code/web/public"
 

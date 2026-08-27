@@ -2,6 +2,7 @@ import fs from "fs-extra";
 import http from "http";
 import https from "https";
 import Koa from "koa";
+import koaMount from "koa-mount";
 import koaBody, { HttpMethodEnum } from "koa-body";
 import session from "koa-session";
 import koaStatic from "koa-static";
@@ -201,6 +202,85 @@ async function main() {
   }
   app.use(protocolMiddleware);
   await loadPanelPlugins(app);
+  const pluginDirectory = path.join(process.cwd(), "plugins");
+  const discoverFrontendPlugins = () => {
+    const manifest: any[] = [];
+    if (!fs.existsSync(pluginDirectory)) return manifest;
+    for (const item of fs.readdirSync(pluginDirectory, { withFileTypes: true })) {
+      if (!item.isDirectory() || !/^[a-zA-Z0-9_-]+$/.test(item.name)) continue;
+      const folder = item.name;
+      const installedPluginDirectory = path.join(pluginDirectory, folder);
+      const metadataPath = path.join(installedPluginDirectory, "plugin.json");
+      if (!fs.existsSync(metadataPath)) continue;
+      try {
+        const metadata = fs.readJsonSync(metadataPath);
+        if (typeof metadata?.id !== "string" || !metadata.id.trim()) continue;
+        const frontend = [metadata?.frontend, metadata?.ui].find(
+          (entry) => typeof entry === "string" && entry.length > 0
+        );
+        if (metadata?.enabled === false || typeof frontend !== "string") continue;
+        const frontendDirectory = path.join(installedPluginDirectory, "frontend");
+        const frontendEntryPath = path.resolve(installedPluginDirectory, frontend);
+        if (
+          !frontendEntryPath.startsWith(`${path.resolve(frontendDirectory)}${path.sep}`) ||
+          !fs.existsSync(frontendEntryPath)
+        )
+          continue;
+        const relativeEntry = path.relative(installedPluginDirectory, frontendEntryPath);
+        const styles = Array.isArray(metadata.styles)
+          ? metadata.styles
+              .filter((style: unknown) => typeof style === "string")
+              .map((style: string) => path.resolve(installedPluginDirectory, style))
+              .filter(
+                (stylePath: string) =>
+                  stylePath.startsWith(`${path.resolve(frontendDirectory)}${path.sep}`) &&
+                  fs.existsSync(stylePath)
+              )
+              .map(
+                (stylePath: string) =>
+                  `./${folder}/${path
+                    .relative(installedPluginDirectory, stylePath)
+                    .split(path.sep)
+                    .join("/")}`
+              )
+          : [];
+        manifest.push({
+          metadata,
+          directory: metadata.id,
+          assetDirectory: folder,
+          entry: `./${folder}/${relativeEntry.split(path.sep).join("/")}`,
+          styles
+        });
+      } catch (error) {
+        logger.error(`Failed to load compiled frontend plugin: ${folder}`, error);
+      }
+    }
+    return manifest.sort(
+      (a, b) =>
+        (Number(a.metadata.priority) || 0) - (Number(b.metadata.priority) || 0) ||
+        String(a.metadata.id).localeCompare(String(b.metadata.id))
+    );
+  };
+  app.use(async (ctx, next) => {
+    if (ctx.path === "/plugins/manifest.json") {
+      ctx.set("Cache-Control", "no-store");
+      ctx.type = "application/json";
+      ctx.body = discoverFrontendPlugins();
+      return;
+    }
+    const match = ctx.path.match(/^\/plugins\/([a-zA-Z0-9_-]+)\/frontend(?:\/|$)/);
+    if (!match) return next();
+    const folder = match[1];
+    if (!discoverFrontendPlugins().some((plugin) => plugin.assetDirectory === folder)) {
+      return next();
+    }
+    return koaMount(
+      `/plugins/${folder}/frontend`,
+      koaStatic(path.join(pluginDirectory, folder, "frontend"), {
+        maxAge: 10 * 24 * 60 * 60
+      })
+    )(ctx, next);
+  });
   app.use(
     koaStatic(path.join(process.cwd(), "public"), {
       maxAge: 10 * 24 * 60 * 60

@@ -38,7 +38,8 @@ copy ".\panel\production\app.js.map" ".\production-code\web\app.js.map"
 copy ".\panel\package.json" ".\production-code\web\package.json"
 copy ".\panel\package-lock.json" ".\production-code\web\package-lock.json"
 
-if exist ".\panel\plugins" xcopy ".\panel\plugins" ".\production-code\web\plugins" /E /I /H /Y
+call node scripts\package-panel-plugins.mjs
+if exist ".\frontend\dist\plugins" rd /s /q ".\frontend\dist\plugins"
 
 xcopy ".\frontend\dist" ".\production-code\web\public" /E /I /H /Y
 
