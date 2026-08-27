@@ -1,4 +1,4 @@
-import { fileURLToPath, pathToFileURL, URL } from "node:url";
+import { fileURLToPath, URL } from "node:url";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -7,7 +7,7 @@ import vueJsx from "@vitejs/plugin-vue-jsx";
 import { visualizer } from "rollup-plugin-visualizer";
 import { AntDesignVueResolver } from "unplugin-vue-components/resolvers";
 import Components from "unplugin-vue-components/vite";
-import { defineConfig } from "vite";
+import { defineConfig, normalizePath } from "vite";
 
 const PANEL_PLUGINS_MODULE_ID = "virtual:panel-plugins";
 const RESOLVED_PANEL_PLUGINS_MODULE_ID = `\0${PANEL_PLUGINS_MODULE_ID}`;
@@ -116,7 +116,7 @@ function panelPlugins() {
       );
       const imports = plugins.map(
         (plugin, index) =>
-          `import * as plugin${index} from ${JSON.stringify(pathToFileURL(plugin.entry).href)};`
+          `import * as plugin${index} from ${JSON.stringify(`/@fs/${normalizePath(plugin.entry)}`)};`
       );
       const entries = plugins.map(
         (plugin, index) =>
@@ -208,7 +208,16 @@ export default defineConfig({
     visualizer({ emitFile: true, filename: "stats.html" })
   ],
   resolve: {
-    dedupe: ["vue", "vue-router", "pinia"],
+    dedupe: [
+      "@ant-design/icons-vue",
+      "@vueuse/core",
+      "ant-design-vue",
+      "dayjs",
+      "lodash",
+      "pinia",
+      "vue",
+      "vue-router"
+    ],
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
       "@languages": fileURLToPath(new URL("../languages", import.meta.url))

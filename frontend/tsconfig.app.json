@@ -6,6 +6,8 @@
     "src/**/*.vue",
     "src/config/**/*",
     "src/lang/**/*.json",
+    "../panel/plugins/**/*.ts",
+    "../panel/plugins/**/*.vue",
     "ant.d.ts",
     "components.d.ts",
     "../common/global.d.ts"
@@ -16,7 +18,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@languages": ["../languages/*"]
+      "@languages": ["../languages/*"],
+      "lodash": ["./node_modules/@types/lodash/index.d.ts"],
+      "*": ["./node_modules/*"]
     },
     "moduleResolution": "node",
     "types": ["node"]

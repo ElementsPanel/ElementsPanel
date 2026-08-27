@@ -36,8 +36,8 @@ const designModeNavStyle = computed(() => {
   };
 });
 
-const isLoginPage = computed(() => route.path === '/login');
-const isDesktopPage = computed(() => route.path === '/desktop');
+const isLoginPage = computed(() => route.path === "/login");
+const isImmersivePage = computed(() => route.meta.immersive === true);
 
 onMounted(async () => {
   setLoadingTitle("Loading application settings...");
@@ -50,10 +50,10 @@ onMounted(async () => {
   <AppConfigProvider :has-bg-image="hasBgImage">
     <!-- App Container -->
     <div class="global-app-container">
-      <AppSidebarMenu v-if="useSidebarLayout && !isLoginPage && !isDesktopPage" :style="designModeNavStyle" />
-      <main class="main-content" :class="{ 'app-layout-sidebar-only': useSidebarLayout && !isDesktopPage }">
-        <AppHeader v-if="!useSidebarLayout && !isLoginPage && !isDesktopPage" :style="designModeNavStyle" />
-        <Breadcrumbs v-if="!isLoginPage && !isDesktopPage" />
+      <AppSidebarMenu v-if="useSidebarLayout && !isLoginPage && !isImmersivePage" :style="designModeNavStyle" />
+      <main class="main-content" :class="{ 'app-layout-sidebar-only': useSidebarLayout && !isImmersivePage }">
+        <AppHeader v-if="!useSidebarLayout && !isLoginPage && !isImmersivePage" :style="designModeNavStyle" />
+        <Breadcrumbs v-if="!isLoginPage && !isImmersivePage" />
         <RouterView v-slot="{ Component, route }">
           <transition name="page-fade" mode="out-in">
             <component :is="Component" :key="route.fullPath" />
@@ -63,7 +63,7 @@ onMounted(async () => {
     </div>
 
     <!-- Mobile Bottom Navigation -->
-    <AppBottomNav v-if="isPhone && !useSidebarLayout && !isLoginPage && !isDesktopPage" />
+    <AppBottomNav v-if="isPhone && !useSidebarLayout && !isLoginPage && !isImmersivePage" />
 
     <!-- Global Components -->
     <component :is="component" v-for="(component, index) in GLOBAL_COMPONENTS" :key="index" />

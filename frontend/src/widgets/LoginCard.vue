@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import CardPanel from "@/components/CardPanel.vue";
 import { router } from "@/config/router";
+import { getPanelFrontendLoginActions } from "@/plugins";
 import { t } from "@/lang/i18n";
 import { loginPageInfo, loginUser, ssoConfig, type SsoPublicConfig } from "@/services/apis";
 import { useAppStateStore } from "@/stores/useAppStateStore";
@@ -8,13 +9,12 @@ import { markdownToHTML } from "@/tools/safe";
 import { reportErrorMsg } from "@/tools/validator";
 import type { LayoutCard } from "@/types";
 import {
-  DesktopOutlined,
   LockOutlined,
   LoginOutlined,
   UserOutlined
 } from "@ant-design/icons-vue";
 import { message, Modal } from "ant-design-vue";
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 
 const { state: pageInfoResult, execute } = loginPageInfo();
 const ssoInfo = ref<SsoPublicConfig | null>(null);
@@ -31,6 +31,18 @@ const formData = reactive({
 
 const { execute: login } = loginUser();
 const { updateUserInfo, isAdmin, state: appConfig } = useAppStateStore();
+const loginActions = computed(() =>
+  getPanelFrontendLoginActions()
+    .filter((action) =>
+      typeof action.condition === "function"
+        ? action.condition()
+        : action.condition === undefined || action.condition
+    )
+    .map((action) => ({
+      ...action,
+      title: typeof action.title === "function" ? action.title() : action.title
+    }))
+);
 
 const loading = ref(false);
 const is2Fa = ref(false);
@@ -137,14 +149,16 @@ onMounted(async () => {
     <CardPanel class="login-panel">
       <template #body>
         <div class="login-panel-body">
-          <div style="position: absolute; top: 24px; right: 24px; z-index: 10;">
-            <a-tooltip :title="t('TXT_CODE_DESKTOP_MODE')">
-              <a-button type="text" @click="router.push('/desktop')">
-                <template #icon>
-                  <DesktopOutlined />
-                </template>
-              </a-button>
-            </a-tooltip>
+          <div v-if="loginActions.length" style="position: absolute; top: 24px; right: 24px; z-index: 10;">
+            <template v-for="(action, index) in loginActions" :key="index">
+              <a-tooltip :title="action.title">
+                <a-button type="text" @click="action.click()">
+                  <template #icon>
+                    <component :is="action.icon" v-if="action.icon" />
+                  </template>
+                </a-button>
+              </a-tooltip>
+            </template>
           </div>
           <a-typography-title :level="3" class="mb-20 glitch-wrapper">
             <div class="glitch" :data-text="props.card?.title ? props.card?.title : t('TXT_CODE_3ba5ad')">

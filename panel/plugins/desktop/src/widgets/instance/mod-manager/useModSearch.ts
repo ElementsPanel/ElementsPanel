@@ -16,7 +16,8 @@ export function useModSearch(
   daemonId: string,
   getMods: () => any[],
   loadMods: () => Promise<void>,
-  folders: Ref<string[]>
+  folders: Ref<string[]>,
+  isDesktop?: boolean
 ) {
   const searchFilters = useLocalStorage("mcs_mod_search_filters", {
     query: "",
@@ -34,6 +35,14 @@ export function useModSearch(
   const searchLimit = useLocalStorage("mcs_mod_search_limit", 10);
 
   const mcVersions = ref<string[]>([]);
+
+  // Desktop mode: reactive state for the save-location dialog
+  const saveLocationDialog = ref({
+    show: false,
+    detectedType: "mod" as "mod" | "plugin",
+    resolve: null as ((value: "mod" | "plugin") => void) | null,
+    reject: null as ((reason: any) => void) | null
+  });
 
   const loaderOptions = computed(() => [
     {
@@ -223,52 +232,69 @@ export function useModSearch(
     const hasPlugins = folders.value.includes("plugins");
 
     if (hasMods && hasPlugins) {
-      try {
-        finalType = await new Promise((resolve, reject) => {
-          const modal = Modal.confirm({
-            title: t("TXT_CODE_MOD_SELECT_SAVE_DIR"),
-            icon: createVNode(ExclamationCircleOutlined),
-            content: "",
-            footer: createVNode("div", { style: "text-align: right; margin-top: 20px;" }, [
-              createVNode(
-                Button,
-                {
-                  onClick: () => {
-                    modal.destroy();
-                    reject(new Error("Cancelled"));
-                  }
-                },
-                { default: () => t("TXT_CODE_a0451c97") }
-              ),
-              createVNode(
-                Button,
-                {
-                  type: detectedType === "mod" ? "primary" : "default",
-                  style: "margin-left: 8px",
-                  onClick: () => {
-                    modal.destroy();
-                    resolve("mod");
-                  }
-                },
-                { default: () => t("TXT_CODE_MOD") }
-              ),
-              createVNode(
-                Button,
-                {
-                  type: detectedType === "plugin" ? "primary" : "default",
-                  style: "margin-left: 8px",
-                  onClick: () => {
-                    modal.destroy();
-                    resolve("plugin");
-                  }
-                },
-                { default: () => t("TXT_CODE_PLUGIN") }
-              )
-            ])
+      if (isDesktop) {
+        // Desktop mode: use reactive DesktopWindow dialog
+        try {
+          finalType = await new Promise<"mod" | "plugin">((resolve, reject) => {
+            saveLocationDialog.value = {
+              show: true,
+              detectedType: detectedType as "mod" | "plugin",
+              resolve,
+              reject
+            };
           });
-        });
-      } catch (e) {
-        return; // User cancelled
+        } catch (e) {
+          return; // User cancelled
+        }
+      } else {
+        // Mobile/web mode: use Modal.confirm
+        try {
+          finalType = await new Promise((resolve, reject) => {
+            const modal = Modal.confirm({
+              title: t("TXT_CODE_MOD_SELECT_SAVE_DIR"),
+              icon: createVNode(ExclamationCircleOutlined),
+              content: "",
+              footer: createVNode("div", { style: "text-align: right; margin-top: 20px;" }, [
+                createVNode(
+                  Button,
+                  {
+                    onClick: () => {
+                      modal.destroy();
+                      reject(new Error("Cancelled"));
+                    }
+                  },
+                  { default: () => t("TXT_CODE_a0451c97") }
+                ),
+                createVNode(
+                  Button,
+                  {
+                    type: detectedType === "mod" ? "primary" : "default",
+                    style: "margin-left: 8px",
+                    onClick: () => {
+                      modal.destroy();
+                      resolve("mod");
+                    }
+                  },
+                  { default: () => t("TXT_CODE_MOD") }
+                ),
+                createVNode(
+                  Button,
+                  {
+                    type: detectedType === "plugin" ? "primary" : "default",
+                    style: "margin-left: 8px",
+                    onClick: () => {
+                      modal.destroy();
+                      resolve("plugin");
+                    }
+                  },
+                  { default: () => t("TXT_CODE_PLUGIN") }
+                )
+              ])
+            });
+          });
+        } catch (e) {
+          return; // User cancelled
+        }
       }
     } else if (hasPlugins && !hasMods) {
       finalType = "plugin";
@@ -363,6 +389,8 @@ export function useModSearch(
     showVersionModal,
     sortedVersions,
     showVersions,
-    onDownload
+    onDownload,
+    // Desktop mode: save location dialog state
+    saveLocationDialog
   };
 }

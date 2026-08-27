@@ -38,8 +38,8 @@ import {
 } from "@ant-design/icons-vue";
 import { Modal } from "ant-design-vue";
 import { computed, h, onUnmounted, ref } from "vue";
-import { GLOBAL_INSTANCE_NAME } from "../../config/const";
-import { arrayFilter } from "../../tools/array";
+import { GLOBAL_INSTANCE_NAME } from "@/config/const";
+import { arrayFilter } from "@/tools/array";
 import DesktopManagerBtns from "./DesktopManagerBtns.vue";
 
 type DialogPanel = "none" | "file-manager" | "mod-manager" | "schedule" | "server-config";

@@ -27,47 +27,6 @@
 
   --inner-card-hover-bg: linear-gradient(135deg, #e8e8e8 0%, #d4d4d4 100%);
 
-  // Desktop mode theme variables
-  --desktop-bg-color: rgba(245, 245, 245, 0.85);
-  --desktop-window-bg: rgba(255, 255, 255, 0.92);
-  --desktop-window-border: rgba(0, 0, 0, 0.18);
-  --desktop-window-shadow: rgba(0, 0, 0, 0.12);
-  --desktop-window-titlebar-bg: rgba(0, 0, 0, 0.04);
-  --desktop-window-text: var(--color-gray-10);
-  --desktop-window-text-secondary: rgba(0, 0, 0, 0.55);
-  --desktop-window-text-muted: rgba(0, 0, 0, 0.35);
-  --desktop-window-control-hover: rgba(0, 0, 0, 0.06);
-  --desktop-window-control-close-hover-bg: #e81123;
-  --desktop-window-control-close-hover-text: #fff;
-  --desktop-taskbar-bg: rgba(235, 235, 235, 0.88);
-  --desktop-taskbar-border: rgba(0, 0, 0, 0.06);
-  --desktop-taskbar-text: rgba(0, 0, 0, 0.75);
-  --desktop-taskbar-text-active: #000;
-  --desktop-taskbar-btn-hover: rgba(0, 0, 0, 0.06);
-  --desktop-taskbar-btn-active: rgba(0, 0, 0, 0.1);
-  --desktop-taskbar-drag-indicator: rgba(0, 0, 0, 0.6);
-  --desktop-icon-text: rgba(0, 0, 0, 0.85);
-  --desktop-icon-hover: rgba(0, 0, 0, 0.06);
-  --desktop-icon-selected: rgba(0, 0, 0, 0.12);
-  --desktop-icon-selected-border: rgba(0, 0, 0, 0.25);
-  --desktop-icon-shadow: transparent;
-  --desktop-menu-bg: rgba(255, 255, 255, 0.95);
-  --desktop-start-menu-bg: #ffffff;
-  --desktop-menu-border: rgba(0, 0, 0, 0.16);
-  --desktop-menu-shadow: rgba(0, 0, 0, 0.15);
-  --desktop-menu-text: rgba(0, 0, 0, 0.85);
-  --desktop-menu-hover: rgba(0, 0, 0, 0.06);
-  --desktop-menu-divider: rgba(0, 0, 0, 0.12);
-  --desktop-login-overlay: rgba(255, 255, 255, 0.15);
-  --desktop-login-input-bg: rgba(0, 0, 0, 0.04);
-  --desktop-login-input-border: rgba(0, 0, 0, 0.08);
-  --desktop-login-input-border-focus: rgba(22, 119, 255, 0.6);
-  --desktop-login-input-text: var(--color-gray-10);
-  --desktop-login-input-placeholder: rgba(0, 0, 0, 0.25);
-  --desktop-login-footer-text: rgba(0, 0, 0, 0.25);
-  --desktop-login-footer-link: rgba(0, 0, 0, 0.4);
-  --desktop-login-footer-link-hover: rgba(0, 0, 0, 0.6);
-  --desktop-resize-handle-color: rgba(0, 0, 0, 0.2);
 }
 
 .app-light-base-color {

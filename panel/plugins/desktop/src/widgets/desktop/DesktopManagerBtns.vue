@@ -24,13 +24,13 @@ import {
     UsergroupDeleteOutlined
 } from "@ant-design/icons-vue";
 import { computed, ref, watch } from "vue";
-import { arrayFilter } from "../../tools/array";
-import EventConfig from "../instance/dialogs/EventConfig.vue";
-import InstanceDetail from "../instance/dialogs/InstanceDetail.vue";
-import InstanceFundamentalDetail from "../instance/dialogs/InstanceFundamentalDetail.vue";
-import McPingSettings from "../instance/dialogs/McPingSettings.vue";
-import PingConfig from "../instance/dialogs/PingConfig.vue";
-import RconSettings from "../instance/dialogs/RconSettings.vue";
+import { arrayFilter } from "@/tools/array";
+import EventConfig from "@/widgets/instance/dialogs/EventConfig.vue";
+import InstanceDetail from "@/widgets/instance/dialogs/InstanceDetail.vue";
+import InstanceFundamentalDetail from "@/widgets/instance/dialogs/InstanceFundamentalDetail.vue";
+import McPingSettings from "@/widgets/instance/dialogs/McPingSettings.vue";
+import PingConfig from "@/widgets/instance/dialogs/PingConfig.vue";
+import RconSettings from "@/widgets/instance/dialogs/RconSettings.vue";
 import DesktopInstanceLog from "./DesktopInstanceLog.vue";
 
 const props = defineProps<{

@@ -18,8 +18,9 @@ frontend entry is compiled into the web application by Vite.
 Both entries are optional. A backend module exports `setup(context)` (or
 `install(context)`) and may also export `ready(context)` and `dispose(context)`.
 The panel backend context exposes the Koa `app`, `router`, panel `config`, core
-`services`, `registerRoute`, `registerRouter`, `registerMiddleware`, `metadata`,
-`directory`, and `logger`.
+`services`, the shared `middleware.permission` function and `roles`,
+`registerRoute`, `registerRouter`, `registerMiddleware`, `metadata`, `directory`,
+and `logger`.
 Backend entries must be Node-loadable JavaScript (`.js`, `.cjs`, or `.mjs`).
 
 The frontend module exports `setup(context)` or a definition object. Its
@@ -36,12 +37,18 @@ export default {
     registerRoute,
     registerComponent,
     registerLayoutCard,
-    registerLocaleMessages
+    registerLocaleMessages,
+    registerAppMenu,
+    registerLoginAction
   }) {
     // register additional Vue behavior here
   }
 };
 ```
+
+Routes may set `meta.public` to bypass login checks and `meta.immersive` to hide
+the normal panel shell. Definition objects may also provide `appMenus` and
+`loginActions` arrays directly.
 
 Set `enabled` to `false` to skip a plugin. Plugins are loaded in ascending
 `priority` order and a failed plugin is reported without stopping the

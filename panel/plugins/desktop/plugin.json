@@ -1,0 +1,9 @@
+{
+  "id": "desktop",
+  "name": "Desktop Mode",
+  "version": "1.0.0",
+  "description": "Provides the immersive desktop interface and per-user desktop layout storage.",
+  "priority": 100,
+  "backend": "src/backend/index.cjs",
+  "frontend": "src/frontend.ts"
+}

@@ -11,10 +11,6 @@ import { $t, i18next } from "../i18n";
 import { speedLimit } from "../middleware/limit";
 import permission from "../middleware/permission";
 import {
-  getDesktopLayout,
-  setDesktopLayout
-} from "../service/desktop_layout_service";
-import {
   getFrontendLayoutConfig,
   resetFrontendLayoutConfig,
   setFrontendLayoutConfig
@@ -227,33 +223,6 @@ router.post("/layout", permission({ level: ROLE.ADMIN }), async (ctx) => {
 // Reset frontend layout
 router.delete("/layout", permission({ level: ROLE.ADMIN }), async (ctx) => {
   resetFrontendLayoutConfig();
-  ctx.body = true;
-});
-
-// [Logged-in User]
-// Get user's desktop window layout
-router.get("/desktop_layout", permission({ level: ROLE.USER }), async (ctx) => {
-  const userUuid = ctx.session?.["uuid"];
-  if (!userUuid) {
-    ctx.status = 403;
-    ctx.body = "User not logged in";
-    return;
-  }
-  const layout = getDesktopLayout(userUuid);
-  ctx.body = layout || { windows: [], updatedAt: 0 };
-});
-
-// [Logged-in User]
-// Save user's desktop window layout
-router.post("/desktop_layout", permission({ level: ROLE.USER }), async (ctx) => {
-  const userUuid = ctx.session?.["uuid"];
-  if (!userUuid) {
-    ctx.status = 403;
-    ctx.body = "User not logged in";
-    return;
-  }
-  const layout = ctx.request.body;
-  setDesktopLayout(userUuid, layout);
   ctx.body = true;
 });
 

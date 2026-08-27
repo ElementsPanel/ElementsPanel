@@ -36,9 +36,9 @@ export async function mountApp() {
     const app = createApp(App);
     const pinia = createPinia();
     app.use(pinia);
-    app.use(router);
     app.use(getI18nInstance());
     await setupPanelFrontendPlugins(app, pinia);
+    app.use(router);
     app.mount("#app-mount-point");
     await runPanelFrontendPluginHook("ready");
   }

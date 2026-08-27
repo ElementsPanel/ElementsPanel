@@ -4,6 +4,8 @@ import Router from "@koa/router";
 import path from "path";
 import { pathToFileURL } from "url";
 import { systemConfig } from "./setting";
+import { ROLE } from "./entity/user";
+import permission from "./middleware/permission";
 import { logger } from "./service/log";
 import SystemRemoteService from "./service/remote_service";
 import SystemUser from "./service/user_service";
@@ -32,6 +34,10 @@ export interface PanelPluginContext {
     remote: typeof SystemRemoteService;
     users: typeof SystemUser;
   };
+  middleware: {
+    permission: typeof permission;
+  };
+  roles: typeof ROLE;
   registerRouter: (router: Router) => void;
   registerRoute: (path: string, method: string, handler: Koa.Middleware) => void;
   registerMiddleware: (middleware: Koa.Middleware) => void;
@@ -184,6 +190,10 @@ export async function loadPanelPlugins(app: Koa): Promise<LoadedPanelPlugin[]> {
           remote: SystemRemoteService,
           users: SystemUser
         },
+        middleware: {
+          permission
+        },
+        roles: ROLE,
         registerRouter: (pluginRouter) => {
           app.use(pluginRouter.routes()).use(pluginRouter.allowedMethods());
         },

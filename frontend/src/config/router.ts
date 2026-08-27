@@ -2,7 +2,6 @@ import { $t as t } from "@/lang/i18n";
 import { topProgressBar } from "@/services/TopProgressBar";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import type { LoginUserInfo } from "@/types/user";
-import DesktopPage from "@/views/Desktop.vue";
 import InstallPage from "@/views/Install.vue";
 import LayoutContainer from "@/views/LayoutContainer.vue";
 import LoginPage from "@/views/Login.vue";
@@ -27,6 +26,8 @@ export interface RouterMetaInfo {
   onlyDisplayEditMode?: boolean;
   customClass?: string[];
   condition?: () => boolean;
+  public?: boolean;
+  immersive?: boolean;
   breadcrumbs?: Array<{
     name: string;
     path: string;
@@ -328,15 +329,6 @@ const originRouterConfig: RouterConfig[] = [
         return appConfig.settings.businessMode;
       }
     }
-  },
-  {
-    path: "/desktop",
-    name: t("TXT_CODE_DESKTOP_MODE"),
-    component: DesktopPage,
-    meta: {
-      permission: ROLE.GUEST,
-      mainMenu: false
-    }
   }
 ];
 
@@ -408,7 +400,8 @@ router.beforeEach(async (to, from, next) => {
   if (
     toRoutePath.includes("_open_page") ||
     toRoutePath.startsWith("/sso/") ||
-    ["/shop", "/login", "/install", "/404", "/desktop"].includes(toRoutePath)
+    to.meta.public === true ||
+    ["/shop", "/login", "/install", "/404"].includes(toRoutePath)
   ) {
     return next();
   }

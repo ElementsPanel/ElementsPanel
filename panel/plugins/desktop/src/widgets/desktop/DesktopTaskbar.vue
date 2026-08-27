@@ -3,6 +3,7 @@ import { router } from "@/config/router";
 import { t } from "@/lang/i18n";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { AppTheme } from "@/types/const";
+import { desktopIconDarkUrl, desktopIconUrl } from "../../assets";
 import {
     BgColorsOutlined,
     LogoutOutlined,
@@ -166,7 +167,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
     <div class="desktop-taskbar">
         <div class="taskbar__start" :class="{ 'taskbar__start--active': startMenuOpen }" @click="toggleStartMenu">
             <span class="taskbar__start-icon">
-                <img :src="isDarkTheme ? '/desktop-icon.svg' : '/desktop-icon-b.svg'" alt="Start" />
+                <img :src="isDarkTheme ? desktopIconUrl : desktopIconDarkUrl" alt="Start" />
             </span>
         </div>
 

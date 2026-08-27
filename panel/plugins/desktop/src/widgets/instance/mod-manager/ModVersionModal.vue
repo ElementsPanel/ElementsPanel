@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
+import DesktopWindow from "../../desktop/DesktopWindow.vue";
 import {
+  AppstoreOutlined,
   CheckCircleOutlined,
   CloudDownloadOutlined,
   LoadingOutlined,
   WarningOutlined
 } from "@ant-design/icons-vue";
 import { Button, Modal, Table, Tag } from "ant-design-vue";
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 const props = defineProps<{
   visible: boolean;
@@ -17,11 +19,28 @@ const props = defineProps<{
   versionsLoading: boolean;
   searchFilters: any;
   mods: any[];
+  isDesktop?: boolean;
 }>();
 
 const emit = defineEmits(["update:visible", "download"]);
 
 const { isPhone } = useScreen();
+
+const windowWidth = ref(window.innerWidth);
+const windowHeight = ref(window.innerHeight);
+
+const updateWindowSize = () => {
+  windowWidth.value = window.innerWidth;
+  windowHeight.value = window.innerHeight;
+};
+
+onMounted(() => {
+  window.addEventListener('resize', updateWindowSize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateWindowSize);
+});
 
 // Track the version ID being downloaded
 const downloadingVersionId = ref<string | number | null>(null);
@@ -139,7 +158,57 @@ const columns = computed(() => {
 </script>
 
 <template>
-  <Modal :visible="visible" :title="t('TXT_CODE_VERSION_SELECT')" :footer="null"
+  <template v-if="isDesktop">
+    <Teleport to="body">
+      <Transition name="du-dialog-fade">
+        <DesktopWindow v-if="visible" id="mod-version-dialog" :title="t('TXT_CODE_VERSION_SELECT')"
+          :icon="AppstoreOutlined" :visible="visible" :minimized="false" :maximized="false" :active="true"
+          :initial-width="900" :initial-height="600" :initial-x="windowWidth / 2 - 450"
+          :initial-y="windowHeight / 2 - 300" :z-index="10001" :show-minimize="false" :show-maximize="false"
+          :resizable="false" @close="emit('update:visible', false)">
+          <div class="desktop-modal-content">
+            <a-typography class="mb-8" type="secondary">
+              <a-typography-text>
+                <WarningOutlined />
+                {{ $t("TXT_CODE_6111bc9e") }}
+              </a-typography-text>
+            </a-typography>
+            <Table :loading="versionsLoading" :data-source="sortedVersions" :columns="columns" row-key="id"
+              :size="isPhone ? 'small' : 'middle'">
+              <template #bodyCell="{ column, record }">
+                <template v-if="column.key === 'game_versions'">
+                  <Tag v-for="v in record.game_versions?.slice(0, 3)" :key="v"
+                    :color="v === searchFilters?.version ? 'blue' : ''">
+                    {{ v }}
+                  </Tag>
+                </template>
+                <template v-if="column.key === 'loaders'">
+                  <Tag v-for="l in record.loaders" :key="l"
+                    :color="l.toLowerCase() === searchFilters?.loader?.toLowerCase() ? 'green' : 'orange'">
+                    {{ l }}
+                  </Tag>
+                </template>
+                <template v-if="column.key === 'action'">
+                  <Button type="text" size="small" class="opacity-60 hover:opacity-100"
+                    :disabled="isInstalled(record) || downloadingVersionId === record.id"
+                    :loading="downloadingVersionId === record.id"
+                    :title="isInstalled(record) ? t('TXT_CODE_INSTALLED') : t('TXT_CODE_DOWNLOAD')"
+                    :class="{ 'text-green-500': isInstalled(record) }" @click="handleDownload(record)">
+                    <template #icon>
+                      <loading-outlined v-if="downloadingVersionId === record.id" style="font-size: 16px" />
+                      <check-circle-outlined v-else-if="isInstalled(record)" style="font-size: 16px" />
+                      <cloud-download-outlined v-else style="font-size: 16px" />
+                    </template>
+                  </Button>
+                </template>
+              </template>
+            </Table>
+          </div>
+        </DesktopWindow>
+      </Transition>
+    </Teleport>
+  </template>
+  <Modal v-else :visible="visible" :title="t('TXT_CODE_VERSION_SELECT')" :footer="null"
     :width="isPhone ? '100%' : '900px'" @update:visible="(val) => emit('update:visible', val)">
     <a-typography class="mb-8" type="secondary">
       <a-typography-text>
@@ -179,3 +248,24 @@ const columns = computed(() => {
     </Table>
   </Modal>
 </template>
+
+<style scoped>
+.desktop-modal-content {
+  padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--desktop-window-bg, #fff);
+  color: var(--desktop-window-text, #000);
+}
+
+.du-dialog-fade-enter-active,
+.du-dialog-fade-leave-active {
+  transition: all 0.25s cubic-bezier(0.25, 0.10, 0.25, 1.00);
+}
+
+.du-dialog-fade-enter-from,
+.du-dialog-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+</style>

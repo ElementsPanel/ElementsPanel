@@ -29,6 +29,33 @@ export interface PanelFrontendPluginContext {
   registerComponent: (name: string, component: Component) => void;
   registerLayoutCard: (name: string, component: Component) => void;
   registerLocaleMessages: (locale: string, messages: Record<string, unknown>) => void;
+  registerAppMenu: (menu: PanelFrontendAppMenu) => void;
+  registerLoginAction: (action: PanelFrontendLoginAction) => void;
+}
+
+export interface PanelFrontendAppMenuItem {
+  value: string | number;
+  title: string | (() => string);
+}
+
+export interface PanelFrontendAppMenu {
+  title: string | (() => string);
+  leftSideTitle?: string | (() => string);
+  iconText?: string;
+  icon?: Component;
+  click: (...args: any[]) => unknown;
+  conditions?: boolean | (() => boolean);
+  onlyPC?: boolean;
+  onlyHeader?: boolean;
+  customClass?: string[];
+  menus?: PanelFrontendAppMenuItem[];
+}
+
+export interface PanelFrontendLoginAction {
+  title: string | (() => string);
+  icon?: Component;
+  click: () => unknown;
+  condition?: boolean | (() => boolean);
 }
 
 export interface PanelFrontendPluginDefinition {
@@ -36,6 +63,8 @@ export interface PanelFrontendPluginDefinition {
   components?: Record<string, Component>;
   layoutCards?: Record<string, Component>;
   localeMessages?: Record<string, Record<string, unknown>>;
+  appMenus?: PanelFrontendAppMenu[];
+  loginActions?: PanelFrontendLoginAction[];
   setup?: (context: PanelFrontendPluginContext) => unknown;
   ready?: (context: PanelFrontendPluginContext) => unknown;
   dispose?: (context: PanelFrontendPluginContext) => unknown;
@@ -50,6 +79,8 @@ export interface LoadedPanelFrontendPlugin {
 }
 
 const loadedPlugins: LoadedPanelFrontendPlugin[] = [];
+const appMenus: PanelFrontendAppMenu[] = [];
+const loginActions: PanelFrontendLoginAction[] = [];
 
 function getDefinition(module: any): PanelFrontendPluginDefinition {
   if (module?.default && typeof module.default === "object") {
@@ -74,6 +105,8 @@ async function runHook(plugin: LoadedPanelFrontendPlugin, hook: "ready" | "dispo
 
 export async function setupPanelFrontendPlugins(app: App, pinia: Pinia) {
   loadedPlugins.length = 0;
+  appMenus.length = 0;
+  loginActions.length = 0;
   for (const source of panelPluginModules) {
     const plugin: LoadedPanelFrontendPlugin = {
       metadata: source.metadata as PanelFrontendPluginMetadata,
@@ -96,7 +129,9 @@ export async function setupPanelFrontendPlugins(app: App, pinia: Pinia) {
         },
         registerLocaleMessages: (locale, messages) => {
           (getI18nInstance().global as any).mergeLocaleMessage(locale, messages);
-        }
+        },
+        registerAppMenu: (menu) => appMenus.push(menu),
+        registerLoginAction: (action) => loginActions.push(action)
       };
       plugin.context = context;
       const definition = getDefinition(plugin.module);
@@ -110,6 +145,8 @@ export async function setupPanelFrontendPlugins(app: App, pinia: Pinia) {
       Object.entries(definition.localeMessages || {}).forEach(([locale, messages]) => {
         context.registerLocaleMessages(locale, messages);
       });
+      definition.appMenus?.forEach(context.registerAppMenu);
+      definition.loginActions?.forEach(context.registerLoginAction);
       if (typeof definition.setup === "function") await definition.setup(context);
       loadedPlugins.push(plugin);
       console.info(`Panel frontend plugin loaded: ${plugin.metadata.id}`);
@@ -136,4 +173,12 @@ export async function runPanelFrontendPluginHook(hook: "ready" | "dispose") {
 
 export function getLoadedPanelFrontendPlugins(): readonly LoadedPanelFrontendPlugin[] {
   return loadedPlugins;
+}
+
+export function getPanelFrontendAppMenus(): readonly PanelFrontendAppMenu[] {
+  return appMenus;
+}
+
+export function getPanelFrontendLoginActions(): readonly PanelFrontendLoginAction[] {
+  return loginActions;
 }

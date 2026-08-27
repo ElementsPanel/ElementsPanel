@@ -1,4 +1,5 @@
 import { router, type RouterMetaInfo } from "@/config/router";
+import { getPanelFrontendAppMenus } from "@/plugins";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { t } from "@/lang/i18n";
 import { logoutUser } from "@/services/apis/index";
@@ -13,7 +14,6 @@ import {
   BgColorsOutlined,
   BuildOutlined,
   CloseCircleOutlined,
-  DesktopOutlined,
   GithubFilled,
   LogoutOutlined,
   RedoOutlined,
@@ -113,8 +113,8 @@ export function useHeaderMenus() {
       }));
   });
 
-  const appMenus = computed(() => {
-    return [
+  const appMenus = computed<any[]>(() => {
+    const coreMenus = [
       {
         iconText: "",
         title: "GitHub",
@@ -229,15 +229,6 @@ export function useHeaderMenus() {
         onlyPC: true
       },
       {
-        title: t("TXT_CODE_DESKTOP_MODE"),
-        icon: DesktopOutlined,
-        click: () => {
-          router.push("/desktop");
-        },
-        conditions: !containerState.isDesignMode && isLogged.value,
-        onlyPC: true
-      },
-      {
         title: t("TXT_CODE_8c3164c9"),
         icon: UserOutlined,
         click: () => {
@@ -264,6 +255,23 @@ export function useHeaderMenus() {
         onlyPC: false
       }
     ];
+    const pluginMenus = getPanelFrontendAppMenus().map((item) => ({
+      ...item,
+      title: typeof item.title === "function" ? item.title() : item.title,
+      leftSideTitle:
+        typeof item.leftSideTitle === "function" ? item.leftSideTitle() : item.leftSideTitle,
+      conditions:
+        typeof item.conditions === "function"
+          ? item.conditions()
+          : item.conditions === undefined
+          ? true
+          : item.conditions,
+      menus: item.menus?.map((menu) => ({
+        value: menu.value,
+        title: typeof menu.title === "function" ? menu.title() : menu.title
+      }))
+    }));
+    return [...coreMenus, ...pluginMenus];
   });
 
   /** Sidebar config: route menu + divider + app menu, rendered in one loop */

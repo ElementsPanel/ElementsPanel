@@ -2,9 +2,11 @@
 import { router } from "@/config/router";
 import { t } from "@/lang/i18n";
 import { loginUser } from "@/services/apis";
+import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { sleep } from "@/tools/common";
 import { reportErrorMsg } from "@/tools/validator";
+import { desktopIconDarkUrl, desktopIconUrl } from "../../assets";
 import {
     AppstoreOutlined,
     LoadingOutlined,
@@ -26,6 +28,7 @@ const formData = reactive({
 
 const { execute: login } = loginUser();
 const { updateUserInfo } = useAppStateStore();
+const { isDarkTheme } = useAppConfigStore();
 
 const loginStep = ref(0);
 const is2Fa = ref(false);
@@ -126,7 +129,7 @@ const handleNext = async () => {
             <div class="window__titlebar" @mousedown="onMouseDown">
                 <div class="window__titlebar-left">
                     <span class="window__icon">
-                        <img class="window__logo-img" src="/desktop-icon.svg" alt="logo" />
+                        <img class="window__logo-img" :src="isDarkTheme ? desktopIconUrl : desktopIconDarkUrl" alt="logo" />
                     </span>
                     <span class="window__title">ElementsPanel</span>
                 </div>
@@ -245,11 +248,6 @@ const handleNext = async () => {
 .window__logo-img {
     width: 14px;
     height: 14px;
-    content: url("/desktop-icon.svg");
-}
-
-body:not(.app-dark-theme) .window__logo-img {
-    content: url("/desktop-icon-b.svg");
 }
 
 .window__title {
