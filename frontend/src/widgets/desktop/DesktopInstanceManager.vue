@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useInstanceTagSearch, useInstanceTagTips } from "@/hooks/useInstanceTag";
 import { t } from "@/lang/i18n";
 import { remoteInstances, remoteNodeList } from "@/services/apis";
 import {
@@ -57,6 +58,16 @@ const operatingIds = ref<Set<string>>(new Set());
 
 const multipleMode = ref(false);
 const selectedInstance = ref<InstanceDetail[]>([]);
+
+const { updateTagTips, tagTips } = useInstanceTagTips();
+const {
+    tags: selectedTags,
+    setRefreshFn,
+    selectTag,
+    removeTag,
+    isTagSelected,
+    clearTags
+} = useInstanceTagSearch();
 
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -168,12 +179,14 @@ const fetchInstances = async (silent = false) => {
                 page: currentPage.value,
                 page_size: pageSize,
                 instance_name: searchText.value.trim() || undefined,
-                status: statusFilter.value !== "all" ? statusFilter.value : undefined
+                status: statusFilter.value !== "all" ? statusFilter.value : undefined,
+                tag: JSON.stringify(selectedTags.value)
             }
         });
         if (res.value) {
             instances.value = res.value.data || [];
             totalPages.value = res.value.maxPage || 1;
+            updateTagTips(res.value.allTags || []);
         }
     } catch (err) {
         console.error("Failed to fetch instances:", err);
@@ -434,6 +447,7 @@ onMounted(async () => {
 
     await fetchNodes();
     await fetchInstances();
+    setRefreshFn(fetchInstances);
     refreshTimer = setInterval(() => fetchInstances(true), 10000);
 });
 
@@ -552,6 +566,17 @@ onUnmounted(() => {
                     {{ selectedNode.available ? t("TXT_CODE_DESKTOP_IM_ONLINE") : t("TXT_CODE_DESKTOP_IM_OFFLINE") }}
                 </span>
             </div>
+        </div>
+
+        <div v-if="tagTips && tagTips.length > 0" class="dim-tags">
+            <a-tag v-if="selectedTags.length > 0" color="red" class="dim-tag" @click="clearTags">
+                {{ t("TXT_CODE_7333c7f7") }}
+            </a-tag>
+            <a-tag v-for="item in tagTips" :key="item" class="dim-tag"
+                :class="{ 'dim-tag--active': isTagSelected(item) }"
+                @click="isTagSelected(item) ? removeTag(item) : selectTag(item)">
+                {{ item }}
+            </a-tag>
         </div>
 
         <div class="dim-list" :class="{ 'dim-list--loading': loading }">
@@ -904,6 +929,39 @@ onUnmounted(() => {
     &__offline {
         color: #ff4d4f;
         font-weight: 500;
+    }
+}
+
+.dim-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--desktop-window-border);
+
+    .dim-tag {
+        background: var(--desktop-window-titlebar-bg);
+        border: 1px solid var(--desktop-window-border);
+        color: var(--desktop-window-text-secondary);
+        margin: 0;
+        padding: 2px 10px;
+        border-radius: 10px;
+        font-size: 11px;
+        line-height: 18px;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+            border-color: rgba(22, 119, 255, 0.5);
+            color: var(--desktop-window-text);
+        }
+
+        &--active {
+            background: rgba(22, 119, 255, 0.15);
+            border-color: rgba(22, 119, 255, 0.6);
+            color: #1677ff;
+        }
     }
 }
 
