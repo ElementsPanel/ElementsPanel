@@ -1,6 +1,6 @@
 {
-  "watch": ["src"],
-  "ext": "ts,js",
+  "watch": ["src", "plugins"],
+  "ext": "ts,js,cjs,mjs,json",
   "ignore": ["src/**/*.spec.ts", "src/**/*.test.ts", "node_modules/**/*", "production/**/*"],
   "exec": "npm run build && node --enable-source-maps production/app.js",
   "env": {

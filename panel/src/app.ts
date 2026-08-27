@@ -16,6 +16,7 @@ import { $t } from "./app/i18n";
 import { mountRouters } from "./app/index";
 import { preCheckMiddleware } from "./app/middleware/precheck";
 import { middleware as protocolMiddleware } from "./app/middleware/protocol";
+import { loadPanelPlugins, runPanelPluginHook } from "./app/plugins";
 import { logger } from "./app/service/log";
 import SystemRemoteService from "./app/service/remote_service";
 import SystemUser from "./app/service/user_service";
@@ -71,6 +72,7 @@ function setupHttp(
 
 async function processExit() {
   try {
+    await runPanelPluginHook("dispose");
     logger.warn($t("TXT_CODE_cea5dba1"));
     logger.warn($t("TXT_CODE_b0aa2db9"));
   } catch (err) {
@@ -198,6 +200,7 @@ async function main() {
     });
   }
   app.use(protocolMiddleware);
+  await loadPanelPlugins(app);
   app.use(
     koaStatic(path.join(process.cwd(), "public"), {
       maxAge: 10 * 24 * 60 * 60
@@ -223,9 +226,11 @@ async function main() {
       systemConfig.httpPort,
       systemConfig.httpIp
     );
+  await runPanelPluginHook("ready");
 }
 
-main().catch((err) => {
+main().catch(async (err) => {
+  await runPanelPluginHook("dispose");
   logger.error("main() error:", err);
   process.exit(0);
 });

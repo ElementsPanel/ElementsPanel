@@ -54,6 +54,9 @@ export function initKoa() {
       }
     });
   }
-  koaApp.use(koaRouter.routes()).use(koaRouter.allowedMethods());
   return koaApp;
+}
+
+export function mountCoreRouter(koaApp: Koa) {
+  koaApp.use(koaRouter.routes()).use(koaRouter.allowedMethods());
 }

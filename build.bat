@@ -31,10 +31,14 @@ copy ".\daemon\production\app.js.map" ".\production-code\daemon\app.js.map"
 copy ".\daemon\package.json" ".\production-code\daemon\package.json"
 copy ".\daemon\package-lock.json" ".\production-code\daemon\package-lock.json"
 
+if exist ".\daemon\plugins" xcopy ".\daemon\plugins" ".\production-code\daemon\plugins" /E /I /H /Y
+
 copy ".\panel\production\app.js" ".\production-code\web\app.js"
 copy ".\panel\production\app.js.map" ".\production-code\web\app.js.map"
 copy ".\panel\package.json" ".\production-code\web\package.json"
 copy ".\panel\package-lock.json" ".\production-code\web\package-lock.json"
+
+if exist ".\panel\plugins" xcopy ".\panel\plugins" ".\production-code\web\plugins" /E /I /H /Y
 
 xcopy ".\frontend\dist" ".\production-code\web\public" /E /I /H /Y
 

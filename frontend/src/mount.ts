@@ -17,6 +17,7 @@ import App from "./App.vue";
 
 import { userInfoApi } from "./services/apis";
 import { useAppStateStore } from "./stores/useAppStateStore";
+import { runPanelFrontendPluginHook, setupPanelFrontendPlugins } from "./plugins";
 
 window.addEventListener("unhandledrejection", function (event) {
   console.error("Unhandled promise rejection:", event.reason);
@@ -33,9 +34,12 @@ export async function mountApp() {
     console.error("Init user info Error:", err);
   } finally {
     const app = createApp(App);
-    app.use(createPinia());
+    const pinia = createPinia();
+    app.use(pinia);
     app.use(router);
     app.use(getI18nInstance());
+    await setupPanelFrontendPlugins(app, pinia);
     app.mount("#app-mount-point");
+    await runPanelFrontendPluginHook("ready");
   }
 }
