@@ -219,10 +219,10 @@ const instanceCounts = computed(() => {
 const getStatusText = (status: INSTANCE_STATUS_CODE): string => {
     const map: Record<INSTANCE_STATUS_CODE, string> = {
         [INSTANCE_STATUS_CODE.BUSY]: t("TXT_CODE_342a04a9"),
-        [INSTANCE_STATUS_CODE.STOPPED]: t("TXT_CODE_DESKTOP_IM_STOPPED"),
-        [INSTANCE_STATUS_CODE.STOPPING]: t("TXT_CODE_DESKTOP_IM_STOPPING"),
-        [INSTANCE_STATUS_CODE.STARTING]: t("TXT_CODE_DESKTOP_IM_STARTING"),
-        [INSTANCE_STATUS_CODE.RUNNING]: t("TXT_CODE_DESKTOP_IM_RUNNING")
+        [INSTANCE_STATUS_CODE.STOPPED]: t("TXT_CODE_4ef6b040"),
+        [INSTANCE_STATUS_CODE.STOPPING]: t("TXT_CODE_a409b8a9"),
+        [INSTANCE_STATUS_CODE.STARTING]: t("TXT_CODE_175b570d"),
+        [INSTANCE_STATUS_CODE.RUNNING]: t("TXT_CODE_bdb620b9")
     };
     return map[status] || t("TXT_CODE_DESKTOP_IM_UNKNOWN");
 };
@@ -576,16 +576,16 @@ onUnmounted(() => {
                     <select v-model="statusFilter" class="dim-select__input">
                         <option value="all">{{ t("TXT_CODE_DESKTOP_IM_ALL_STATUS") }}</option>
                         <option :value="String(INSTANCE_STATUS_CODE.RUNNING)">
-                            {{ t("TXT_CODE_DESKTOP_IM_RUNNING") }}
+                            {{ t("TXT_CODE_bdb620b9") }}
                         </option>
                         <option :value="String(INSTANCE_STATUS_CODE.STOPPED)">
-                            {{ t("TXT_CODE_DESKTOP_IM_STOPPED") }}
+                            {{ t("TXT_CODE_4ef6b040") }}
                         </option>
                         <option :value="String(INSTANCE_STATUS_CODE.STARTING)">
-                            {{ t("TXT_CODE_DESKTOP_IM_STARTING") }}
+                            {{ t("TXT_CODE_175b570d") }}
                         </option>
                         <option :value="String(INSTANCE_STATUS_CODE.STOPPING)">
-                            {{ t("TXT_CODE_DESKTOP_IM_STOPPING") }}
+                            {{ t("TXT_CODE_a409b8a9") }}
                         </option>
                     </select>
                 </div>
@@ -647,11 +647,11 @@ onUnmounted(() => {
             </div>
             <div class="dim-stats__item">
                 <span class="dim-stats__dot dim-stats__dot--running"></span>
-                <span>{{ t("TXT_CODE_DESKTOP_IM_RUNNING") }}: {{ instanceCounts.running }}</span>
+                <span>{{ t("TXT_CODE_bdb620b9") }}: {{ instanceCounts.running }}</span>
             </div>
             <div class="dim-stats__item">
                 <span class="dim-stats__dot dim-stats__dot--stopped"></span>
-                <span>{{ t("TXT_CODE_DESKTOP_IM_STOPPED") }}: {{ instanceCounts.stopped }}</span>
+                <span>{{ t("TXT_CODE_4ef6b040") }}: {{ instanceCounts.stopped }}</span>
             </div>
             <div v-if="selectedNode" class="dim-stats__node">
                 <span>
@@ -734,7 +734,7 @@ onUnmounted(() => {
                     </button>
                     <button v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING"
                         class="dim-action dim-action--restart" :disabled="isOperating(instance.instanceUuid)"
-                        :title="t('TXT_CODE_DESKTOP_IM_RESTART')" @click.stop="handleRestart(instance.instanceUuid)">
+                        :title="t('TXT_CODE_47dcfa5')" @click.stop="handleRestart(instance.instanceUuid)">
                         <ReloadOutlined />
                     </button>
                     <button v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" class="dim-action dim-action--stop"

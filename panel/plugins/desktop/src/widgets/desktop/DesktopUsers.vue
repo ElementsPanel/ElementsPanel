@@ -339,7 +339,7 @@ const saveAssignedInstances = async () => {
 };
 
 const permissionLabel = (perm: number): string => {
-    if (perm >= 10) return t("TXT_CODE_DESKTOP_USERS_ADMIN");
+    if (perm >= 10) return t("TXT_CODE_cd978243");
     if (perm >= 1) return t("TXT_CODE_DESKTOP_USERS_USER");
     return "--";
 };
@@ -379,7 +379,7 @@ const getInstanceStatusLabel = (status: number): string => {
                         <th class="du-table__col--name">{{ t("TXT_CODE_DESKTOP_USERS_USERNAME") }}</th>
                         <th class="du-table__col--perm">{{ t("TXT_CODE_DESKTOP_USERS_PERMISSION") }}</th>
                         <th class="du-table__col--time">{{ t("TXT_CODE_DESKTOP_USERS_REGISTER_TIME") }}</th>
-                        <th class="du-table__col--time">{{ t("TXT_CODE_DESKTOP_USERS_LOGIN_TIME") }}</th>
+                        <th class="du-table__col--time">{{ t("TXT_CODE_d7ee9ba") }}</th>
                         <th class="du-table__col--inst">{{ t("TXT_CODE_DESKTOP_USERS_INSTANCES") }}</th>
                         <th class="du-table__col--badge">2FA</th>
                         <th class="du-table__col--badge">SSO</th>
@@ -489,7 +489,7 @@ const getInstanceStatusLabel = (status: number): string => {
                                 <div class="du-radio-group">
                                     <label class="du-radio" :class="{ 'du-radio--active': form.permission >= 10 }">
                                         <input v-model="form.permission" type="radio" name="perm" :value="10" />
-                                        <span>{{ t("TXT_CODE_DESKTOP_USERS_ADMIN") }}</span>
+                                        <span>{{ t("TXT_CODE_cd978243") }}</span>
                                     </label>
                                     <label class="du-radio"
                                         :class="{ 'du-radio--active': form.permission >= 1 && form.permission < 10 }">
@@ -502,7 +502,7 @@ const getInstanceStatusLabel = (status: number): string => {
                         </div>
                         <div class="du-dialog__footer">
                             <button class="du-btn du-btn--default" @click="closeDialog">
-                                {{ t("TXT_CODE_DESKTOP_USERS_CANCEL") }}
+                                {{ t("TXT_CODE_a0451c97") }}
                             </button>
                             <button class="du-btn du-btn--primary" :disabled="saving" @click="saveUser">
                                 {{ t("TXT_CODE_DESKTOP_USERS_SAVE") }}
@@ -530,7 +530,7 @@ const getInstanceStatusLabel = (status: number): string => {
                         </div>
                         <div class="du-dialog__footer">
                             <button class="du-btn du-btn--default" @click="cancelDelete">
-                                {{ t("TXT_CODE_DESKTOP_USERS_CANCEL") }}
+                                {{ t("TXT_CODE_a0451c97") }}
                             </button>
                             <button class="du-btn du-btn--primary"
                                 style="background: var(--color-red-5); border-color: var(--color-red-5);"
@@ -648,7 +648,7 @@ const getInstanceStatusLabel = (status: number): string => {
                         </div>
                         <div class="du-assign-footer">
                             <button class="du-btn du-btn--default" @click="closeAssignDialog">
-                                {{ t("TXT_CODE_DESKTOP_USERS_CANCEL") }}
+                                {{ t("TXT_CODE_a0451c97") }}
                             </button>
                             <button class="du-btn du-btn--primary" :disabled="assignSaving"
                                 @click="saveAssignedInstances">

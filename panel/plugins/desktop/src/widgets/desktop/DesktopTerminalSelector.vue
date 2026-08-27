@@ -82,8 +82,8 @@ const openConsole = (node: NodeStatus) => {
                         <div class="dts-card__status">
                             <CheckCircleOutlined v-if="node.available" class="status-icon status-icon--yes" />
                             <CloseCircleOutlined v-else class="status-icon status-icon--no" />
-                            {{ node.available ? (t("TXT_CODE_DESKTOP_NODES_ONLINE") || 'Online') :
-                                (t("TXT_CODE_DESKTOP_NODES_OFFLINE") || 'Offline') }}
+                            {{ node.available ? (t("TXT_CODE_823bfe63") || 'Online') :
+                                (t("TXT_CODE_66ce073e") || 'Offline') }}
                         </div>
                     </div>
                 </div>

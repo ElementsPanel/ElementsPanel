@@ -322,7 +322,7 @@ const closeAdvancedSettings = () => {
                         <th class="dn-table__col--status">{{ t("TXT_CODE_DESKTOP_NODES_STATUS") }}</th>
                         <th class="dn-table__col--socket">{{ t("TXT_CODE_DESKTOP_NODES_SOCKET") }}</th>
                         <th class="dn-table__col--version">{{ t("TXT_CODE_81634069") }}</th>
-                        <th class="dn-table__col--name">{{ t("TXT_CODE_DESKTOP_NODES_REMARKS") }}</th>
+                        <th class="dn-table__col--name">{{ t("TXT_CODE_b8e8e6f5") }}</th>
                         <th class="dn-table__col--ip">{{ t("TXT_CODE_DESKTOP_NODES_IP") }}</th>
                         <th class="dn-table__col--port">{{ t("TXT_CODE_DESKTOP_NODES_PORT") }}</th>
                         <th class="dn-table__col--prefix">{{ t("TXT_CODE_693f31d6") }}</th>
@@ -420,10 +420,10 @@ const closeAdvancedSettings = () => {
                         <div class="dn-dialog__body">
                             <div class="dn-form-group">
                                 <label class="dn-form-label">
-                                    {{ t("TXT_CODE_DESKTOP_NODES_REMARKS") }}
+                                    {{ t("TXT_CODE_b8e8e6f5") }}
                                 </label>
                                 <input v-model="form.remarks" class="dn-form-input"
-                                    :placeholder="t('TXT_CODE_DESKTOP_NODES_REMARKS')" />
+                                    :placeholder="t('TXT_CODE_b8e8e6f5')" />
                             </div>
                             <div class="dn-form-group">
                                 <label class="dn-form-label">
@@ -464,7 +464,7 @@ const closeAdvancedSettings = () => {
                         </div>
                         <div class="dn-dialog__footer">
                             <button class="dn-btn dn-btn--default" @click="closeDialog">
-                                {{ t("TXT_CODE_DESKTOP_NODES_CANCEL") }}
+                                {{ t("TXT_CODE_a0451c97") }}
                             </button>
                             <button class="dn-btn dn-btn--primary" :disabled="saving" @click="saveNode">
                                 {{ t("TXT_CODE_DESKTOP_NODES_SAVE") }}
@@ -495,7 +495,7 @@ const closeAdvancedSettings = () => {
                         </div>
                         <div class="dn-dialog__footer">
                             <button class="dn-btn dn-btn--default" @click="cancelDelete">
-                                {{ t("TXT_CODE_DESKTOP_NODES_CANCEL") }}
+                                {{ t("TXT_CODE_a0451c97") }}
                             </button>
                             <button class="dn-btn dn-btn--primary"
                                 style="background: var(--color-red-5); border-color: var(--color-red-5);"

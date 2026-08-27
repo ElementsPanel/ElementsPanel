@@ -1139,7 +1139,7 @@ onUnmounted(() => {
                         </div>
                         <div class="dfm-dialog__footer">
                             <button class="dfm-btn dfm-btn--default" @click="dialog.cancel()">
-                                {{ t("TXT_CODE_DESKTOP_USERS_CANCEL") }}
+                                {{ t("TXT_CODE_a0451c97") }}
                             </button>
                             <button class="dfm-btn dfm-btn--primary" :disabled="dialog.loading" @click="dialog.ok()">
                                 {{ t("TXT_CODE_DESKTOP_USERS_SAVE") }}
