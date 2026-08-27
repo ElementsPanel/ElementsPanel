@@ -303,9 +303,9 @@ onUnmounted(() => {
                     </div>
                     <div class="ma-instance__meta">
                         <span class="ma-instance__expire"
-                            :title="instance.endTime ? new Date(instance.endTime).toLocaleString() : t('TXT_CODE_DESKTOP_IM_PERMANENT')">
+                            :title="instance.endTime ? new Date(instance.endTime).toLocaleString() : t('TXT_CODE_abc080d')">
                             {{ instance.endTime ? new Date(instance.endTime).toLocaleString() :
-                                t('TXT_CODE_DESKTOP_IM_PERMANENT') }}
+                                t('TXT_CODE_abc080d') }}
                         </span>
                         <span v-if="instance.config?.type" class="ma-instance__type">
                             {{ instance.config.type }}
@@ -323,7 +323,7 @@ onUnmounted(() => {
 
                 <div class="ma-instance__actions">
                     <button v-if="instance.status === INSTANCE_STATUS_CODE.STOPPED" class="ma-action ma-action--start"
-                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_DESKTOP_IM_START')"
+                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_57245e94')"
                         @click.stop="handleStart(instance.instanceUuid, instance.daemonId)">
                         <CaretRightOutlined />
                     </button>
@@ -333,7 +333,7 @@ onUnmounted(() => {
                         <ReloadOutlined />
                     </button>
                     <button v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" class="ma-action ma-action--stop"
-                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_DESKTOP_IM_STOP')"
+                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_b1dedda3')"
                         @click.stop="handleStop(instance.instanceUuid, instance.daemonId)">
                         <StopOutlined />
                     </button>
@@ -341,7 +341,7 @@ onUnmounted(() => {
                         instance.status === INSTANCE_STATUS_CODE.RUNNING ||
                         instance.status === INSTANCE_STATUS_CODE.STOPPING
                     " class="ma-action ma-action--kill" :disabled="isOperating(instance.instanceUuid)"
-                        :title="t('TXT_CODE_DESKTOP_IM_KILL')"
+                        :title="t('TXT_CODE_7b67813a')"
                         @click.stop="handleKill(instance.instanceUuid, instance.daemonId)">
                         <CloseCircleOutlined />
                     </button>

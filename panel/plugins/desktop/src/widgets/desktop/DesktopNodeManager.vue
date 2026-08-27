@@ -319,12 +319,12 @@ const closeAdvancedSettings = () => {
             <table class="dn-table">
                 <thead>
                     <tr>
-                        <th class="dn-table__col--status">{{ t("TXT_CODE_DESKTOP_NODES_STATUS") }}</th>
+                        <th class="dn-table__col--status">{{ t("TXT_CODE_759fb403") }}</th>
                         <th class="dn-table__col--socket">{{ t("TXT_CODE_DESKTOP_NODES_SOCKET") }}</th>
                         <th class="dn-table__col--version">{{ t("TXT_CODE_81634069") }}</th>
                         <th class="dn-table__col--name">{{ t("TXT_CODE_b8e8e6f5") }}</th>
                         <th class="dn-table__col--ip">{{ t("TXT_CODE_DESKTOP_NODES_IP") }}</th>
-                        <th class="dn-table__col--port">{{ t("TXT_CODE_DESKTOP_NODES_PORT") }}</th>
+                        <th class="dn-table__col--port">{{ t("TXT_CODE_f49149d0") }}</th>
                         <th class="dn-table__col--prefix">{{ t("TXT_CODE_693f31d6") }}</th>
                         <th class="dn-table__col--actions">{{ t("TXT_CODE_OPERATE") }}</th>
                     </tr>
@@ -398,7 +398,7 @@ const closeAdvancedSettings = () => {
                                     <SettingOutlined />
                                 </button>
                                 <button class="dn-action-btn dn-action-btn--delete"
-                                    :title="t('TXT_CODE_DESKTOP_NODES_DELETE')" @click="confirmDelete(node)">
+                                    :title="t('TXT_CODE_8b937b23')" @click="confirmDelete(node)">
                                     <DeleteOutlined />
                                 </button>
                             </div>
@@ -434,10 +434,10 @@ const closeAdvancedSettings = () => {
                             </div>
                             <div class="dn-form-group">
                                 <label class="dn-form-label">
-                                    {{ t("TXT_CODE_DESKTOP_NODES_PORT") }}
+                                    {{ t("TXT_CODE_f49149d0") }}
                                 </label>
                                 <input v-model="form.port" type="number" class="dn-form-input"
-                                    :placeholder="t('TXT_CODE_DESKTOP_NODES_PORT')" />
+                                    :placeholder="t('TXT_CODE_f49149d0')" />
                             </div>
                             <div class="dn-form-group">
                                 <label class="dn-form-label">
@@ -467,7 +467,7 @@ const closeAdvancedSettings = () => {
                                 {{ t("TXT_CODE_a0451c97") }}
                             </button>
                             <button class="dn-btn dn-btn--primary" :disabled="saving" @click="saveNode">
-                                {{ t("TXT_CODE_DESKTOP_NODES_SAVE") }}
+                                {{ t("TXT_CODE_abfe9512") }}
                             </button>
                         </div>
                     </div>
@@ -478,7 +478,7 @@ const closeAdvancedSettings = () => {
         <Teleport to="body">
             <Transition name="dn-dialog-fade">
                 <DesktopWindow v-if="showDeleteConfirm" id="node-delete-dialog"
-                    :title="t('TXT_CODE_DESKTOP_NODES_DELETE')" :icon="ExclamationCircleOutlined"
+                    :title="t('TXT_CODE_8b937b23')" :icon="ExclamationCircleOutlined"
                     :visible="showDeleteConfirm" :minimized="false" :maximized="false" :active="true"
                     :initial-width="400" :initial-height="200" :initial-x="windowWidth / 2 - 200"
                     :initial-y="windowHeight / 2 - 100" :z-index="10002" :show-minimize="false" :show-maximize="false"
@@ -500,7 +500,7 @@ const closeAdvancedSettings = () => {
                             <button class="dn-btn dn-btn--primary"
                                 style="background: var(--color-red-5); border-color: var(--color-red-5);"
                                 :disabled="saving" @click="executeDelete">
-                                {{ t("TXT_CODE_DESKTOP_NODES_DELETE") }}
+                                {{ t("TXT_CODE_8b937b23") }}
                             </button>
                         </div>
                     </div>

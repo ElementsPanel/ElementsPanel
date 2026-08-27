@@ -563,11 +563,11 @@ onUnmounted(() => {
         <div class="dim-toolbar">
             <div class="dim-toolbar__left">
                 <div class="dim-select">
-                    <label class="dim-select__label">{{ t("TXT_CODE_DESKTOP_IM_NODE") }}:</label>
+                    <label class="dim-select__label">{{ t("TXT_CODE_e076d90b") }}:</label>
                     <select v-model="selectedNodeId" class="dim-select__input">
                         <option v-for="node in nodes" :key="node.uuid" :value="node.uuid">
                             {{ node.remarks || node.ip }}:{{ node.port }}
-                            {{ node.available ? "" : ` (${t("TXT_CODE_DESKTOP_IM_OFFLINE")})` }}
+                            {{ node.available ? "" : ` (${t("TXT_CODE_66ce073e")})` }}
                         </option>
                     </select>
                 </div>
@@ -658,7 +658,7 @@ onUnmounted(() => {
                     <ApiOutlined /> {{ selectedNode.remarks || selectedNode.ip }}
                 </span>
                 <span :class="selectedNode.available ? 'dim-stats__online' : 'dim-stats__offline'">
-                    {{ selectedNode.available ? t("TXT_CODE_DESKTOP_IM_ONLINE") : t("TXT_CODE_DESKTOP_IM_OFFLINE") }}
+                    {{ selectedNode.available ? t("TXT_CODE_823bfe63") : t("TXT_CODE_66ce073e") }}
                 </span>
             </div>
         </div>
@@ -703,9 +703,9 @@ onUnmounted(() => {
                     </div>
                     <div class="dim-instance__meta">
                         <span class="dim-instance__expire"
-                            :title="instance.config.endTime ? new Date(instance.config.endTime).toLocaleString() : t('TXT_CODE_DESKTOP_IM_PERMANENT')">
+                            :title="instance.config.endTime ? new Date(instance.config.endTime).toLocaleString() : t('TXT_CODE_abc080d')">
                             {{ instance.config.endTime ? new Date(instance.config.endTime).toLocaleString() :
-                                t('TXT_CODE_DESKTOP_IM_PERMANENT') }}
+                                t('TXT_CODE_abc080d') }}
                         </span>
                         <span v-if="instance.config.type" class="dim-instance__type">
                             {{ instance.config.type }}
@@ -728,7 +728,7 @@ onUnmounted(() => {
                         <TagsOutlined />
                     </button>
                     <button v-if="instance.status === INSTANCE_STATUS_CODE.STOPPED" class="dim-action dim-action--start"
-                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_DESKTOP_IM_START')"
+                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_57245e94')"
                         @click.stop="handleStart(instance.instanceUuid)">
                         <CaretRightOutlined />
                     </button>
@@ -738,7 +738,7 @@ onUnmounted(() => {
                         <ReloadOutlined />
                     </button>
                     <button v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" class="dim-action dim-action--stop"
-                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_DESKTOP_IM_STOP')"
+                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_b1dedda3')"
                         @click.stop="handleStop(instance.instanceUuid)">
                         <StopOutlined />
                     </button>
@@ -746,7 +746,7 @@ onUnmounted(() => {
                         instance.status === INSTANCE_STATUS_CODE.RUNNING ||
                         instance.status === INSTANCE_STATUS_CODE.STOPPING
                     " class="dim-action dim-action--kill" :disabled="isOperating(instance.instanceUuid)"
-                        :title="t('TXT_CODE_DESKTOP_IM_KILL')" @click.stop="handleKill(instance.instanceUuid)">
+                        :title="t('TXT_CODE_7b67813a')" @click.stop="handleKill(instance.instanceUuid)">
                         <CloseCircleOutlined />
                     </button>
                 </div>
@@ -760,7 +760,7 @@ onUnmounted(() => {
             <span class="dim-pagination__info">{{ currentPage }} / {{ totalPages }}</span>
             <button class="dim-btn dim-btn--sm" :disabled="currentPage >= totalPages"
                 @click="currentPage++; fetchInstances()">
-                {{ t("TXT_CODE_DESKTOP_IM_NEXT") }}
+                {{ t("TXT_CODE_5e9022f8") }}
                 <RightOutlined />
             </button>
         </div>

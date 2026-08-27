@@ -340,7 +340,7 @@ const saveAssignedInstances = async () => {
 
 const permissionLabel = (perm: number): string => {
     if (perm >= 10) return t("TXT_CODE_cd978243");
-    if (perm >= 1) return t("TXT_CODE_DESKTOP_USERS_USER");
+    if (perm >= 1) return t("TXT_CODE_eb880db2");
     return "--";
 };
 
@@ -376,11 +376,11 @@ const getInstanceStatusLabel = (status: number): string => {
             <table class="du-table">
                 <thead>
                     <tr>
-                        <th class="du-table__col--name">{{ t("TXT_CODE_DESKTOP_USERS_USERNAME") }}</th>
-                        <th class="du-table__col--perm">{{ t("TXT_CODE_DESKTOP_USERS_PERMISSION") }}</th>
-                        <th class="du-table__col--time">{{ t("TXT_CODE_DESKTOP_USERS_REGISTER_TIME") }}</th>
+                        <th class="du-table__col--name">{{ t("TXT_CODE_eb9fcdad") }}</th>
+                        <th class="du-table__col--perm">{{ t("TXT_CODE_511aea70") }}</th>
+                        <th class="du-table__col--time">{{ t("TXT_CODE_c5c56801") }}</th>
                         <th class="du-table__col--time">{{ t("TXT_CODE_d7ee9ba") }}</th>
-                        <th class="du-table__col--inst">{{ t("TXT_CODE_DESKTOP_USERS_INSTANCES") }}</th>
+                        <th class="du-table__col--inst">{{ t("TXT_CODE_e21473bc") }}</th>
                         <th class="du-table__col--badge">2FA</th>
                         <th class="du-table__col--badge">SSO</th>
                         <th class="du-table__col--actions">{{ t("TXT_CODE_OPERATE") }}</th>
@@ -424,12 +424,12 @@ const getInstanceStatusLabel = (status: number): string => {
                         <td class="du-table__col--actions">
                             <div class="du-action-btns">
                                 <button class="du-action-btn du-action-btn--assign"
-                                    :title="t('TXT_CODE_DESKTOP_USERS_ASSIGN_INSTANCE')"
+                                    :title="t('TXT_CODE_9393b484')"
                                     @click="openAssignDialog(user)">
                                     <LinkOutlined />
                                 </button>
                                 <button class="du-action-btn du-action-btn--edit"
-                                    :title="t('TXT_CODE_DESKTOP_USERS_EDIT')" @click="openEditDialog(user)">
+                                    :title="t('TXT_CODE_79f9a172')" @click="openEditDialog(user)">
                                     <EditOutlined />
                                 </button>
                                 <button class="du-action-btn du-action-btn--delete"
@@ -449,14 +449,14 @@ const getInstanceStatusLabel = (status: number): string => {
             </button>
             <span class="du-page-info">{{ currentPage }} / {{ maxPage }}</span>
             <button class="du-page-btn" :disabled="currentPage >= maxPage" @click="nextPage">
-                {{ t("TXT_CODE_DESKTOP_IM_NEXT") }}
+                {{ t("TXT_CODE_5e9022f8") }}
             </button>
         </div>
 
         <Teleport to="body">
             <Transition name="du-dialog-fade">
                 <DesktopWindow v-if="showDialog" id="user-edit-dialog"
-                    :title="dialogMode === 'add' ? t('TXT_CODE_DESKTOP_USERS_ADD') : t('TXT_CODE_DESKTOP_USERS_EDIT')"
+                    :title="dialogMode === 'add' ? t('TXT_CODE_DESKTOP_USERS_ADD') : t('TXT_CODE_79f9a172')"
                     :icon="dialogMode === 'add' ? PlusOutlined : EditOutlined" :visible="showDialog" :minimized="false"
                     :maximized="false" :active="true" :initial-width="420" :initial-height="335"
                     :initial-x="windowWidth / 2 - 210" :initial-y="windowHeight / 2 - 190" :z-index="10001"
@@ -465,15 +465,15 @@ const getInstanceStatusLabel = (status: number): string => {
                         <div class="du-dialog__body">
                             <div class="du-form-group">
                                 <label class="du-form-label">
-                                    <UserOutlined /> {{ t("TXT_CODE_DESKTOP_USERS_USERNAME") }}
+                                    <UserOutlined /> {{ t("TXT_CODE_eb9fcdad") }}
                                 </label>
                                 <input v-model="form.username" class="du-form-input" autocomplete="new-password"
-                                    :placeholder="t('TXT_CODE_DESKTOP_USERS_USERNAME')"
+                                    :placeholder="t('TXT_CODE_eb9fcdad')"
                                     :disabled="dialogMode === 'edit'" />
                             </div>
                             <div class="du-form-group">
                                 <label class="du-form-label">
-                                    <KeyOutlined /> {{ t("TXT_CODE_DESKTOP_USERS_PASSWORD") }}
+                                    <KeyOutlined /> {{ t("TXT_CODE_551b0348") }}
                                 </label>
                                 <input v-model="form.password" type="password" class="du-form-input"
                                     autocomplete="new-password"
@@ -484,7 +484,7 @@ const getInstanceStatusLabel = (status: number): string => {
                             </div>
                             <div class="du-form-group">
                                 <label class="du-form-label">
-                                    <SafetyOutlined /> {{ t("TXT_CODE_DESKTOP_USERS_PERMISSION") }}
+                                    <SafetyOutlined /> {{ t("TXT_CODE_511aea70") }}
                                 </label>
                                 <div class="du-radio-group">
                                     <label class="du-radio" :class="{ 'du-radio--active': form.permission >= 10 }">
@@ -494,7 +494,7 @@ const getInstanceStatusLabel = (status: number): string => {
                                     <label class="du-radio"
                                         :class="{ 'du-radio--active': form.permission >= 1 && form.permission < 10 }">
                                         <input v-model="form.permission" type="radio" name="perm" :value="1" />
-                                        <span>{{ t("TXT_CODE_DESKTOP_USERS_USER") }}</span>
+                                        <span>{{ t("TXT_CODE_eb880db2") }}</span>
                                     </label>
                                 </div>
                             </div>
@@ -505,7 +505,7 @@ const getInstanceStatusLabel = (status: number): string => {
                                 {{ t("TXT_CODE_a0451c97") }}
                             </button>
                             <button class="du-btn du-btn--primary" :disabled="saving" @click="saveUser">
-                                {{ t("TXT_CODE_DESKTOP_USERS_SAVE") }}
+                                {{ t("TXT_CODE_abfe9512") }}
                             </button>
                         </div>
                     </div>
@@ -546,7 +546,7 @@ const getInstanceStatusLabel = (status: number): string => {
         <Teleport to="body">
             <Transition name="du-dialog-fade">
                 <DesktopWindow v-if="showAssignDialog" id="user-assign-dialog"
-                    :title="t('TXT_CODE_DESKTOP_USERS_ASSIGN_INSTANCE')" :icon="LinkOutlined"
+                    :title="t('TXT_CODE_9393b484')" :icon="LinkOutlined"
                     :visible="showAssignDialog" :minimized="false" :maximized="false" :active="true"
                     :initial-width="780" :initial-height="560" :initial-x="windowWidth / 2 - 390"
                     :initial-y="windowHeight / 2 - 280" :z-index="10003" :show-minimize="false" :show-maximize="false"
@@ -641,7 +641,7 @@ const getInstanceStatusLabel = (status: number): string => {
                                     }}</span>
                                     <button class="du-page-btn" :disabled="assignForm.currentPage >= instances.maxPage"
                                         @click="assignForm.currentPage++; loadRemoteInstances()">
-                                        {{ t("TXT_CODE_DESKTOP_IM_NEXT") }}
+                                        {{ t("TXT_CODE_5e9022f8") }}
                                     </button>
                                 </div>
                             </div>
@@ -652,7 +652,7 @@ const getInstanceStatusLabel = (status: number): string => {
                             </button>
                             <button class="du-btn du-btn--primary" :disabled="assignSaving"
                                 @click="saveAssignedInstances">
-                                {{ t("TXT_CODE_DESKTOP_USERS_SAVE") }}
+                                {{ t("TXT_CODE_abfe9512") }}
                             </button>
                         </div>
                     </div>

@@ -157,14 +157,14 @@ const availableDesktopApps = computed<DesktopApp[]>(() => {
     const apps: DesktopApp[] = [
         {
             id: "instances",
-            label: t("TXT_CODE_DESKTOP_INSTANCES"),
+            label: t("TXT_CODE_e21473bc"),
             icon: markRaw(DesktopOutlined),
             color: "#1677ff",
             route: "/instances", windowContent: "instances"
         },
         {
             id: "overview",
-            label: t("TXT_CODE_DESKTOP_OVERVIEW"),
+            label: t("TXT_CODE_84fbe277"),
             icon: markRaw(DashboardOutlined),
             color: "#52c41a",
             route: "/overview",
@@ -172,7 +172,7 @@ const availableDesktopApps = computed<DesktopApp[]>(() => {
         },
         {
             id: "users",
-            label: t("TXT_CODE_DESKTOP_USERS"),
+            label: t("TXT_CODE_1deaa2dd"),
             icon: markRaw(TeamOutlined),
             color: "#722ed1",
             route: "/users",
@@ -188,7 +188,7 @@ const availableDesktopApps = computed<DesktopApp[]>(() => {
         },
         {
             id: "market",
-            label: t("TXT_CODE_DESKTOP_MARKET"),
+            label: t("TXT_CODE_27594db8"),
             icon: markRaw(ShoppingOutlined),
             color: "#eb2f96",
             route: "/market",
@@ -196,7 +196,7 @@ const availableDesktopApps = computed<DesktopApp[]>(() => {
         },
         {
             id: "settings",
-            label: t("TXT_CODE_DESKTOP_SETTINGS"),
+            label: t("TXT_CODE_3fe97dcc"),
             icon: markRaw(SettingOutlined),
             color: "#13c2c2",
             route: "/settings",
@@ -204,7 +204,7 @@ const availableDesktopApps = computed<DesktopApp[]>(() => {
         },
         {
             id: "terminal",
-            label: t("TXT_CODE_DESKTOP_TERMINAL"),
+            label: t("TXT_CODE_524e3036"),
             icon: markRaw(CodeOutlined),
             color: "#434343",
             windowContent: "terminal"
@@ -1281,7 +1281,7 @@ const ctxMenuItems = computed<ContextMenuItem[]>(() => {
                     }
                 });
                 items.push({
-                    label: win.maximized ? (t("TXT_CODE_DESKTOP_RESTORE")) : (t("TXT_CODE_DESKTOP_MAXIMIZE")),
+                    label: win.maximized ? (t("TXT_CODE_INSTANCE_BACKUP_RESTORE")) : (t("TXT_CODE_DESKTOP_MAXIMIZE")),
                     icon: markRaw(win.maximized ? FullscreenExitOutlined : FullscreenOutlined),
                     action: () => {
                         if (ctxMenu.targetWindowId) {
@@ -1294,7 +1294,7 @@ const ctxMenuItems = computed<ContextMenuItem[]>(() => {
         }
 
         items.push({
-            label: t("TXT_CODE_DESKTOP_CLOSE"),
+            label: t("TXT_CODE_a7e9d4e"),
             icon: markRaw(CloseOutlined),
             action: () => {
                 if (ctxMenu.targetWindowId) {

@@ -96,7 +96,7 @@ const memColor = computed(() => {
                 </div>
                 <div class="ov-stat-card__body">
                     <div class="ov-stat-card__value">{{ remoteCount.available }} / {{ remoteCount.total }}</div>
-                    <div class="ov-stat-card__label">{{ t("TXT_CODE_DESKTOP_IM_NODE") }}</div>
+                    <div class="ov-stat-card__label">{{ t("TXT_CODE_e076d90b") }}</div>
                 </div>
                 <div class="ov-stat-card__extra">
                     <span class="ov-stat-card__online">
