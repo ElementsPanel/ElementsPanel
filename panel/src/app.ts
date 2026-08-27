@@ -2,8 +2,8 @@ import fs from "fs-extra";
 import http from "http";
 import https from "https";
 import Koa from "koa";
-import koaMount from "koa-mount";
 import koaBody, { HttpMethodEnum } from "koa-body";
+import koaMount from "koa-mount";
 import session from "koa-session";
 import koaStatic from "koa-static";
 import { removeTrail } from "mcsmanager-common";
@@ -113,7 +113,7 @@ async function main() {
 |   __| | -_|     | -_|   |  _|_ -|   __| .'|   | -_| |
 |_____|_|___|_|_|_|___|_|_|_| |___|__|  |__,|_|_|___|_|
 
- + Copyright ${new Date().getFullYear()} EQAD Network
+ + Copyright ${new Date().getFullYear()} ElementsPanel
  + Based on MCSManager
  + Version ${VERSION}
 `);
@@ -229,20 +229,20 @@ async function main() {
         const relativeEntry = path.relative(installedPluginDirectory, frontendEntryPath);
         const styles = Array.isArray(metadata.styles)
           ? metadata.styles
-              .filter((style: unknown) => typeof style === "string")
-              .map((style: string) => path.resolve(installedPluginDirectory, style))
-              .filter(
-                (stylePath: string) =>
-                  stylePath.startsWith(`${path.resolve(frontendDirectory)}${path.sep}`) &&
-                  fs.existsSync(stylePath)
-              )
-              .map(
-                (stylePath: string) =>
-                  `./${folder}/${path
-                    .relative(installedPluginDirectory, stylePath)
-                    .split(path.sep)
-                    .join("/")}`
-              )
+            .filter((style: unknown) => typeof style === "string")
+            .map((style: string) => path.resolve(installedPluginDirectory, style))
+            .filter(
+              (stylePath: string) =>
+                stylePath.startsWith(`${path.resolve(frontendDirectory)}${path.sep}`) &&
+                fs.existsSync(stylePath)
+            )
+            .map(
+              (stylePath: string) =>
+                `./${folder}/${path
+                  .relative(installedPluginDirectory, stylePath)
+                  .split(path.sep)
+                  .join("/")}`
+            )
           : [];
         manifest.push({
           metadata,

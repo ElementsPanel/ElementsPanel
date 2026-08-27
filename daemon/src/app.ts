@@ -30,7 +30,7 @@ console.log(`
 |   __| | -_|     | -_|   |  _|_ -|   __| .'|   | -_| |
 |_____|_|___|_|_|_|___|_|_|_| |___|__|  |__,|_|_|___|_|
 
- + Copyright ${new Date().getFullYear()} EQAD Network
+ + Copyright ${new Date().getFullYear()} ElementsPanel
  + Based on MCSManager
  + Version ${VERSION}
 `);
