@@ -11,7 +11,8 @@ import {
     killInstance,
     openInstance,
     restartInstance,
-    stopInstance
+    stopInstance,
+    updateInstanceConfig
 } from "@/services/apis/instance";
 import { reportErrorMsg } from "@/tools/validator";
 import type { InstanceDetail, NodeStatus } from "@/types";
@@ -38,11 +39,12 @@ import {
     RightOutlined,
     SearchOutlined,
     StopOutlined,
+    TagsOutlined,
     TeamOutlined,
     WarningOutlined
 } from "@ant-design/icons-vue";
 import { notification } from "ant-design-vue";
-import { computed, onMounted, onUnmounted, ref, type Component } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, type Component } from "vue";
 import DesktopWindow from "./DesktopWindow.vue";
 
 const nodes = ref<NodeStatus[]>([]);
@@ -84,6 +86,99 @@ const deleteDialog = ref<{
     uuids: [],
     paths: []
 });
+
+const tagDialog = ref<{
+    show: boolean;
+    instanceId: string;
+    daemonId: string;
+    tags: string[];
+    newTagVisible: boolean;
+    newTagValue: string;
+    saving: boolean;
+}>({
+    show: false,
+    instanceId: "",
+    daemonId: "",
+    tags: [],
+    newTagVisible: false,
+    newTagValue: "",
+    saving: false
+});
+
+const tagInputRef = ref<HTMLInputElement | null>(null);
+
+const tagSuggestions = computed(() =>
+    tagTips.value.filter((tag) => !tagDialog.value.tags.includes(tag))
+);
+
+const openTagDialog = (instance: InstanceDetail) => {
+    tagDialog.value = {
+        show: true,
+        instanceId: instance.instanceUuid,
+        daemonId: selectedNodeId.value,
+        tags: [...(instance.config?.tag || [])],
+        newTagVisible: false,
+        newTagValue: "",
+        saving: false
+    };
+};
+
+const closeTagDialog = () => {
+    tagDialog.value.show = false;
+};
+
+const removeInstanceTag = (tag: string) => {
+    tagDialog.value.tags = tagDialog.value.tags.filter((v) => v !== tag);
+};
+
+const showNewTagInput = () => {
+    tagDialog.value.newTagVisible = true;
+    nextTick(() => {
+        tagInputRef.value?.focus();
+    });
+};
+
+const confirmNewTag = () => {
+    const value = tagDialog.value.newTagValue.trim();
+    if (value && !tagDialog.value.tags.includes(value)) {
+        tagDialog.value.tags = [...tagDialog.value.tags, value].sort();
+    }
+    tagDialog.value.newTagVisible = false;
+    tagDialog.value.newTagValue = "";
+};
+
+const addSuggestionTag = (tag: string) => {
+    if (!tagDialog.value.tags.includes(tag)) {
+        tagDialog.value.tags = [...tagDialog.value.tags, tag].sort();
+    }
+};
+
+const saveInstanceTags = async () => {
+    if (!tagDialog.value.instanceId) return;
+    tagDialog.value.saving = true;
+    try {
+        const { execute } = updateInstanceConfig();
+        await execute({
+            params: {
+                uuid: tagDialog.value.instanceId,
+                daemonId: tagDialog.value.daemonId
+            },
+            data: {
+                tag: tagDialog.value.tags
+            }
+        });
+        tagDialog.value.show = false;
+        notification.success({
+            message: t("TXT_CODE_a7907771")
+        });
+        await fetchInstances(true);
+    } catch (err: any) {
+        console.error(err);
+        reportErrorMsg(err.message);
+    } finally {
+        tagDialog.value.saving = false;
+    }
+};
 
 const windowWidth = ref(window.innerWidth);
 const windowHeight = ref(window.innerHeight);
@@ -626,6 +721,10 @@ onUnmounted(() => {
                 </div>
 
                 <div class="dim-instance__actions">
+                    <button class="dim-action dim-action--tag" :title="t('TXT_CODE_78e88c3f')"
+                        @click.stop="openTagDialog(instance)">
+                        <TagsOutlined />
+                    </button>
                     <button v-if="instance.status === INSTANCE_STATUS_CODE.STOPPED" class="dim-action dim-action--start"
                         :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_DESKTOP_IM_START')"
                         @click.stop="handleStart(instance.instanceUuid)">
@@ -663,6 +762,65 @@ onUnmounted(() => {
                 <RightOutlined />
             </button>
         </div>
+
+        <Teleport to="body">
+            <Transition name="dim-dialog-fade">
+                <DesktopWindow v-if="tagDialog.show" id="instance-manager-tag-dialog" :title="t('TXT_CODE_a2544278')"
+                    :icon="TagsOutlined" :visible="tagDialog.show" :minimized="false" :maximized="false" :active="true"
+                    :initial-width="440" :initial-height="420" :initial-x="windowWidth / 2 - 220"
+                    :initial-y="windowHeight / 2 - 180" :z-index="10007" :show-minimize="false" :show-maximize="false"
+                    :resizable="false" @close="closeTagDialog">
+                    <div class="dim-dialog-content">
+                        <div class="dim-dialog__body">
+                            <p class="dim-dialog__desc dim-dialog__desc--left">{{ t("TXT_CODE_f84ae54f") }}</p>
+                            <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
+                                {{ t("TXT_CODE_2c1337d") }}
+                            </p>
+                            <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
+                                {{ t("TXT_CODE_e26d53d5") }}
+                            </p>
+                            <div class="dim-tag-editor">
+                                <span v-for="tag in tagDialog.tags" :key="tag" class="dim-tag-editor__tag">
+                                    {{ tag }}
+                                    <CloseOutlined class="dim-tag-editor__remove" @click="removeInstanceTag(tag)" />
+                                </span>
+                                <input v-if="tagDialog.newTagVisible" ref="tagInputRef" v-model="tagDialog.newTagValue"
+                                    type="text" class="dim-tag-editor__input" @blur="confirmNewTag"
+                                    @keyup.enter="confirmNewTag" />
+                                <button v-else class="dim-tag-editor__add" @click="showNewTagInput">
+                                    <PlusOutlined /> {{ t("TXT_CODE_3dd66d98") }}
+                                </button>
+                            </div>
+                            <template v-if="tagSuggestions.length > 0">
+                                <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--strong">
+                                    {{ t("TXT_CODE_67d1ea21") }}
+                                </p>
+                                <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
+                                    {{ t("TXT_CODE_3ecee271") }}
+                                </p>
+                                <div class="dim-tag-editor">
+                                    <span v-for="tag in tagSuggestions" :key="tag" class="dim-tag-editor__tag dim-tag-editor__tag--option"
+                                        @click="addSuggestionTag(tag)">
+                                        {{ tag }}
+                                    </span>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="dim-dialog__footer">
+                            <button class="dim-btn dim-btn--default" :disabled="tagDialog.saving"
+                                @click="closeTagDialog">
+                                {{ t("TXT_CODE_a0451c97") }}
+                            </button>
+                            <button class="dim-btn dim-btn--primary" :disabled="tagDialog.saving"
+                                @click="saveInstanceTags">
+                                <LoadingOutlined v-if="tagDialog.saving" />
+                                {{ t("TXT_CODE_d507abff") }}
+                            </button>
+                        </div>
+                    </div>
+                </DesktopWindow>
+            </Transition>
+        </Teleport>
 
         <Teleport to="body">
             <Transition name="dim-dialog-fade">
@@ -1194,6 +1352,87 @@ onUnmounted(() => {
             background: rgba(255, 77, 79, 0.2);
         }
     }
+
+    &--tag {
+        color: #722ed1;
+
+        &:hover:not(:disabled) {
+            background: rgba(114, 46, 209, 0.2);
+        }
+    }
+}
+
+.dim-tag-editor {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 12px 0;
+
+    &__tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: var(--desktop-window-titlebar-bg);
+        border: 1px solid rgba(22, 119, 255, 0.4);
+        border-radius: 10px;
+        color: var(--desktop-window-text);
+        font-size: 12px;
+        padding: 2px 10px;
+        line-height: 18px;
+        user-select: none;
+
+        &--option {
+            cursor: pointer;
+            border-color: var(--desktop-window-border);
+            color: var(--desktop-window-text-secondary);
+
+            &:hover {
+                border-color: rgba(22, 119, 255, 0.6);
+                color: var(--desktop-window-text);
+            }
+        }
+    }
+
+    &__remove {
+        font-size: 10px;
+        cursor: pointer;
+        opacity: 0.6;
+
+        &:hover {
+            opacity: 1;
+            color: #ff4d4f;
+        }
+    }
+
+    &__add {
+        background: var(--desktop-window-titlebar-bg);
+        border: 1px dashed var(--desktop-window-border);
+        border-radius: 10px;
+        color: var(--desktop-window-text-secondary);
+        font-size: 12px;
+        padding: 2px 10px;
+        line-height: 18px;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+            border-color: rgba(22, 119, 255, 0.6);
+            color: var(--desktop-window-text);
+        }
+    }
+
+    &__input {
+        background: var(--desktop-window-titlebar-bg);
+        border: 1px solid rgba(22, 119, 255, 0.6);
+        border-radius: 10px;
+        color: var(--desktop-window-text);
+        font-size: 12px;
+        padding: 2px 10px;
+        line-height: 18px;
+        width: 110px;
+        outline: none;
+    }
 }
 
 .dim-pagination {
@@ -1253,6 +1492,21 @@ onUnmounted(() => {
     font-size: 14px;
     text-align: center;
     line-height: 1.6;
+
+    &--left {
+        text-align: left;
+    }
+
+    &--muted {
+        color: var(--desktop-window-text-secondary);
+        font-size: 12px;
+    }
+
+    &--strong {
+        margin-top: 12px;
+        font-size: 13px;
+        font-weight: 500;
+    }
 }
 
 .dim-dialog__path {
