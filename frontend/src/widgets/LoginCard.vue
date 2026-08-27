@@ -4,14 +4,11 @@ import { router } from "@/config/router";
 import { t } from "@/lang/i18n";
 import { loginPageInfo, loginUser, ssoConfig, type SsoPublicConfig } from "@/services/apis";
 import { useAppStateStore } from "@/stores/useAppStateStore";
-import { sleep } from "@/tools/common";
 import { markdownToHTML } from "@/tools/safe";
 import { reportErrorMsg } from "@/tools/validator";
 import type { LayoutCard } from "@/types";
 import {
-  CheckCircleOutlined,
   DesktopOutlined,
-  LoadingOutlined,
   LockOutlined,
   LoginOutlined,
   UserOutlined
@@ -35,29 +32,28 @@ const formData = reactive({
 const { execute: login } = loginUser();
 const { updateUserInfo, isAdmin, state: appConfig } = useAppStateStore();
 
-const loginStep = ref(0);
+const loading = ref(false);
 const is2Fa = ref(false);
 
 const handleLogin = async () => {
   if (!formData.username.trim() || !formData.password.trim()) {
     return message.error(t("TXT_CODE_c846074d"));
   }
+  if (loading.value) return;
+  loading.value = true;
   try {
-    loginStep.value++;
-    await sleep(600);
     const result = await login({
       data: formData
     });
     if (result.value === "NEED_2FA") {
-      loginStep.value = 0;
+      loading.value = false;
       is2Fa.value = true;
       return;
     }
     is2Fa.value = false;
-    await sleep(600);
     await handleNext();
   } catch (error: any) {
-    loginStep.value = 0;
+    loading.value = false;
     reportErrorMsg(error);
   }
 };
@@ -65,12 +61,10 @@ const handleLogin = async () => {
 const handleNext = async () => {
   try {
     await updateUserInfo();
-    loginStep.value++;
-    await sleep(1000);
     loginSuccess();
   } catch (error: any) {
+    loading.value = false;
     console.error(error);
-    loginStep.value = 0;
     Modal.error({
       title: t("TXT_CODE_da2fb99a"),
       content: t("TXT_CODE_6e718abe")
@@ -79,7 +73,6 @@ const handleNext = async () => {
 };
 
 const loginSuccess = () => {
-  loginStep.value++;
   if (isAdmin.value) {
     router.push({
       path: "/"
@@ -138,14 +131,12 @@ onMounted(async () => {
 <template>
   <!-- eslint-disable vue/no-v-html -->
   <div :class="{
-    logging: loginStep === 1,
-    loginDone: loginStep === 3,
     'w-100': true,
     'h-100': true
   }">
     <CardPanel class="login-panel">
       <template #body>
-        <div v-show="loginStep === 0" class="login-panel-body">
+        <div class="login-panel-body">
           <div style="position: absolute; top: 24px; right: 24px; z-index: 10;">
             <a-tooltip :title="t('TXT_CODE_DESKTOP_MODE')">
               <a-button type="text" @click="router.push('/desktop')">
@@ -224,7 +215,7 @@ onMounted(async () => {
                     @click="openBuyInstanceDialog">
                     {{ t("TXT_CODE_5a408a5e") }}
                   </a-button>
-                  <a-button size="large" type="primary" style="min-width: 95px" @click="handleLogin">
+                  <a-button size="large" type="primary" style="min-width: 95px" :loading="loading" @click="handleLogin">
                     {{ t("TXT_CODE_d2c1a316") }}
                   </a-button>
                 </div>
@@ -246,19 +237,6 @@ onMounted(async () => {
                 </a-button>
               </div>
             </template>
-          </div>
-        </div>
-        <div v-show="loginStep === 1" class="login-panel-body flex-center">
-          <div style="text-align: center">
-            <LoadingOutlined class="logging-icon" :style="{ fontSize: '62px', fontWeight: 800 }" />
-          </div>
-        </div>
-        <div v-show="loginStep >= 2" class="login-panel-body flex-center">
-          <div style="text-align: center">
-            <CheckCircleOutlined class="login-success-icon" :style="{
-              fontSize: '62px',
-              color: 'var(--color-green-6)'
-            }" />
           </div>
         </div>
       </template>
@@ -284,16 +262,11 @@ onMounted(async () => {
 </style>
 
 <style lang="scss" scoped>
-.logging {
-  .login-panel {
-    transform: scale(0.94);
-  }
-}
-
 .login-panel {
   margin: 0 auto;
   transition: all 0.4s;
   width: 100%;
+  border-radius: 12px;
   // backdrop-filter: saturate(120%) blur(12px);
   background-color: var(--login-panel-bg);
 
@@ -312,78 +285,6 @@ onMounted(async () => {
   a {
     color: var(--color-gray-7) !important;
     text-decoration: underline;
-  }
-}
-
-.logging-icon {
-  animation: opacityAnimation 0.4s;
-}
-
-.login-success-icon {
-  animation: scaleAnimation 0.4s;
-}
-
-@keyframes opacityAnimation {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes scaleAnimation {
-  0% {
-    transform: scale(0);
-  }
-
-  100% {
-    transform: scale(1);
-  }
-}
-
-@keyframes moveAnimation {
-  0% {
-    transform: translate(0, 0);
-  }
-
-  25% {
-    transform: translate(0, 8px);
-  }
-
-  50% {
-    transform: translate(8px, 8px);
-  }
-
-  75% {
-    transform: translate(8px, 0);
-  }
-
-  100% {
-    transform: translate(0, 0);
-  }
-}
-
-@keyframes moveAnimation2 {
-  0% {
-    transform: translate(0, 0);
-  }
-
-  25% {
-    transform: translate(0, 2px);
-  }
-
-  50% {
-    transform: translate(2px, 2px);
-  }
-
-  75% {
-    transform: translate(2px, 0);
-  }
-
-  100% {
-    transform: translate(0, 0);
   }
 }
 
