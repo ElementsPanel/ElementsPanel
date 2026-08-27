@@ -665,6 +665,10 @@ export function getPanelFrontendRouteRevision(): number {
   return routeRevision.value;
 }
 
+export function isPanelFrontendPluginRoute(path: string): boolean {
+  return loadedPlugins.some((plugin) => plugin.routePaths.has(path));
+}
+
 export function getPanelFrontendLoginActions(): readonly PanelFrontendLoginAction[] {
   return loginActions;
 }

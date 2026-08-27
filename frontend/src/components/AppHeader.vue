@@ -13,7 +13,7 @@ const route = useRoute();
 const { containerState } = useLayoutContainerStore();
 const { logoImage } = useAppConfigStore();
 
-const { menus, appMenus, handleToPage } = useHeaderMenus();
+const { menus, headerMenus, appMenus, headerAppMenus, handleToPage } = useHeaderMenus();
 
 /** Whether route menu item is active (current path equals or is child of this path) */
 const isRouteActive = (path: string): boolean => {
@@ -52,7 +52,7 @@ const openPhoneMenu = (b = false) => {
         </a>
 
         <div
-          v-for="item in menus"
+          v-for="item in headerMenus"
           :key="item.path"
           class="nav-button"
           :class="[item.customClass, { 'nav-button-active': isRouteActive(item.path) }]"
@@ -62,7 +62,7 @@ const openPhoneMenu = (b = false) => {
         </div>
       </nav>
       <div class="btns">
-        <div v-for="(item, index) in appMenus as any" :key="index">
+        <div v-for="(item, index) in headerAppMenus as any" :key="index">
           <a-dropdown v-if="item.menus && item.conditions" placement="bottom">
             <div
               :class="item.customClass"

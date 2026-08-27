@@ -1,5 +1,9 @@
 import { router, type RouterMetaInfo } from "@/config/router";
-import { getPanelFrontendAppMenus, getPanelFrontendRouteRevision } from "@/plugins";
+import {
+  getPanelFrontendAppMenus,
+  getPanelFrontendRouteRevision,
+  isPanelFrontendPluginRoute
+} from "@/plugins";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { t } from "@/lang/i18n";
 import { logoutUser } from "@/services/apis/index";
@@ -115,7 +119,19 @@ export function useHeaderMenus() {
       }));
   });
 
-  const appMenus = computed<any[]>(() => {
+  const headerMenus = computed(() => {
+    const coreMenus = menus.value.filter((menu) => !isPanelFrontendPluginRoute(menu.path));
+    const pluginMenus = menus.value.filter((menu) => isPanelFrontendPluginRoute(menu.path));
+    const settingsIndex = coreMenus.findIndex((menu) => menu.path === "/settings");
+    if (settingsIndex < 0) return [...coreMenus, ...pluginMenus];
+    return [
+      ...coreMenus.slice(0, settingsIndex + 1),
+      ...pluginMenus,
+      ...coreMenus.slice(settingsIndex + 1)
+    ];
+  });
+
+  const appMenuGroups = computed(() => {
     const coreMenus = [
       {
         iconText: "",
@@ -273,7 +289,23 @@ export function useHeaderMenus() {
         title: typeof menu.title === "function" ? menu.title() : menu.title
       }))
     }));
+    return { coreMenus, pluginMenus };
+  });
+
+  const appMenus = computed<any[]>(() => {
+    const { coreMenus, pluginMenus } = appMenuGroups.value;
     return [...coreMenus, ...pluginMenus];
+  });
+
+  const headerAppMenus = computed<any[]>(() => {
+    const { coreMenus, pluginMenus } = appMenuGroups.value;
+    const themeIndex = coreMenus.findIndex((menu) => menu.icon === BgColorsOutlined);
+    if (themeIndex < 0) return [...coreMenus, ...pluginMenus];
+    return [
+      ...coreMenus.slice(0, themeIndex),
+      ...[...pluginMenus].reverse(),
+      ...coreMenus.slice(themeIndex)
+    ];
   });
 
   /** Sidebar config: route menu + divider + app menu, rendered in one loop */
@@ -310,5 +342,5 @@ export function useHeaderMenus() {
     return [...routeEntries, divider, ...appEntries];
   });
 
-  return { menus, appMenus, sidebarItems, handleToPage };
+  return { menus, headerMenus, appMenus, headerAppMenus, sidebarItems, handleToPage };
 }

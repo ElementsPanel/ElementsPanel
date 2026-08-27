@@ -95,12 +95,18 @@ const selectPlugin = (plugin: LoadedPanelFrontendPlugin) => {
   color: var(--text-color);
 }
 
-:global(.app-dark-theme) .plugin-config-page {
+:global(.app-dark-theme .plugin-config-page) {
   --plugin-config-divider-color: rgba(255, 255, 255, 0.1);
 }
 
-:global(.desktop-container) .plugin-config-page {
-  background: var(--desktop-window-bg);
+:global(.desktop-container .plugin-config-page) {
+  --plugin-config-surface-color: #FFFFFF;
+
+  background: var(--plugin-config-surface-color);
+}
+
+:global(.app-dark-theme .desktop-container .plugin-config-page) {
+  --plugin-config-surface-color: #1F1F27;
 }
 
 .plugin-config-sidebar {
@@ -109,6 +115,11 @@ const selectPlugin = (plugin: LoadedPanelFrontendPlugin) => {
   overflow-y: auto;
   border-right: 1px solid var(--plugin-config-divider-color);
   background: var(--background-color);
+}
+
+:global(.desktop-container .plugin-config-sidebar),
+:global(.desktop-container .plugin-config-content) {
+  background: var(--plugin-config-surface-color);
 }
 
 .plugin-config-heading {
