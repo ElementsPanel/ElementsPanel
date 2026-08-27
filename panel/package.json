@@ -1,7 +1,7 @@
 {
   "name": "elements-panel",
-  "version": "10.12.6",
-  "daemonVersion": "4.12.3",
+  "version": "0.1.0",
+  "daemonVersion": "0.1.0",
   "description": "ElementsPanel backend API — a fork of the MCSManager project, connects and controls all Daemon nodes and provides API services for the frontend",
   "scripts": {
     "dev": "nodemon --watch src --ext ts,js --exec \"npm run build && node --enable-source-maps production/app.js\"",

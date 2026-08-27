@@ -114,7 +114,7 @@ const selectPlugin = (plugin: LoadedPanelFrontendPlugin) => {
   padding: 16px 10px;
   overflow-y: auto;
   border-right: 1px solid var(--plugin-config-divider-color);
-  background: var(--background-color);
+  background: var(--background-color-white);
 }
 
 :global(.desktop-container .plugin-config-sidebar),
@@ -144,6 +144,10 @@ const selectPlugin = (plugin: LoadedPanelFrontendPlugin) => {
   cursor: pointer;
   text-align: left;
   transition: background 0.2s ease;
+}
+
+.plugin-config-item + .plugin-config-item {
+  margin-top: 6px;
 }
 
 .plugin-config-item:hover,
