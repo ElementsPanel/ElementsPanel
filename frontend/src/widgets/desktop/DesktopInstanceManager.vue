@@ -709,7 +709,7 @@ onUnmounted(() => {
                         </span>
                         <span v-if="instance.config.type" class="dim-instance__type">
                             {{ instance.config.type }}
-                        </span><span v-if="
+                        </span> <span v-if="
                             instance.info?.currentPlayers !== undefined &&
                             instance.info?.maxPlayers !== undefined &&
                             instance.info.maxPlayers > 0 &&
@@ -717,6 +717,8 @@ onUnmounted(() => {
                         " class="dim-instance__players">
                             <TeamOutlined /> {{ instance.info.currentPlayers }}/{{ instance.info.maxPlayers }}
                         </span>
+                        <span v-for="tag in instance.config?.tag || []" :key="tag" class="dim-instance__tag">{{ tag
+                        }}</span>
                     </div>
                 </div>
 
@@ -799,7 +801,8 @@ onUnmounted(() => {
                                     {{ t("TXT_CODE_3ecee271") }}
                                 </p>
                                 <div class="dim-tag-editor">
-                                    <span v-for="tag in tagSuggestions" :key="tag" class="dim-tag-editor__tag dim-tag-editor__tag--option"
+                                    <span v-for="tag in tagSuggestions" :key="tag"
+                                        class="dim-tag-editor__tag dim-tag-editor__tag--option"
                                         @click="addSuggestionTag(tag)">
                                         {{ tag }}
                                     </span>
@@ -1215,6 +1218,22 @@ onUnmounted(() => {
         margin-bottom: 4px;
     }
 
+    &__tag {
+        background: var(--desktop-window-titlebar-bg);
+        border: 1px solid var(--desktop-window-border);
+        border-radius: 8px;
+        color: var(--desktop-window-text-secondary);
+        font-size: 10px;
+        padding: 1px 8px;
+        line-height: 16px;
+        white-space: nowrap;
+        user-select: none;
+    }
+
+    &__tag+&__tag {
+        margin-left: -8px;
+    }
+
     &__status {
         font-size: 12px;
         line-height: 1;
@@ -1267,6 +1286,7 @@ onUnmounted(() => {
         gap: 12px;
         font-size: 11px;
         color: var(--desktop-window-text-secondary);
+        flex-wrap: wrap;
     }
 
     &__expire {
