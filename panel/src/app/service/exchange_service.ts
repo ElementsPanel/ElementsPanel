@@ -5,8 +5,8 @@ import { customAlphabet } from "nanoid";
 import { $t } from "../i18n";
 import RemoteRequest from "../service/remote_command";
 import RemoteServiceSubsystem from "../service/remote_service";
-import { requireAuthProvider } from "../service/auth_provider";
 import { getInstancesByUuid, IAdvancedInstanceInfo } from "./instance_service";
+import { getRequestGuard, requireGuardFeature } from "./request_guard";
 
 // A commercial platform for selling instances released by the MCSManager Dev Team.
 // Currently, it only supports some countries and regions.
@@ -188,7 +188,7 @@ export async function buyOrRenewInstance(
     );
     if (!newInstanceId) throw new Error(t("TXT_CODE_728fdabf"));
 
-    const users = requireAuthProvider("Business mode redeem").users;
+    const users = requireGuardFeature("Business mode redeem", getRequestGuard().users);
     let user = users.getUserByUserName(username);
     let newPassword = "";
 
@@ -279,7 +279,10 @@ export async function queryInstanceByUserId(
 ): Promise<IInstanceInfoProtocol[]> {
   const name = parseUserName(params.username) || "";
   const targetDaemonId = toText(params.node_id) ?? undefined;
-  const user = requireAuthProvider("Business mode redeem").users.getUserByUserName(name);
+  const user = requireGuardFeature(
+    "Business mode redeem",
+    getRequestGuard().users
+  ).getUserByUserName(name);
   if (!user) throw new Error(t("TXT_CODE_903b6c50"));
 
   const { instances = [] } = await getInstancesByUuid(user.uuid, targetDaemonId, true);

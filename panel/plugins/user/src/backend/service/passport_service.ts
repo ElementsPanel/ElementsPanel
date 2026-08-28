@@ -3,8 +3,23 @@ import { authenticator } from "otplib";
 import QRCode from "qrcode";
 import { v4 } from "uuid";
 import { User } from "../entity/user";
-import { $t, globalVariable, logger, ROLE, statsKeys, systemConfig } from "../runtime";
+import { $t, globalVariable, logger, ROLE, systemConfig } from "../runtime";
 import userSystem from "./user_service";
+
+// Counters reported by the panel overview through RequestGuard.stats().
+export const BAN_IP_COUNT = "banip";
+export const LOGIN_FAILED_KEY = "loginFailed";
+export const ILLEGAL_ACCESS_KEY = "illegalAccess";
+export const LOGIN_COUNT = "loginCount";
+export const LOGIN_FAILED_COUNT_KEY = "loginFailedCount";
+
+const statsKeys = () => ({
+  BAN_IP_COUNT,
+  LOGIN_FAILED_KEY,
+  ILLEGAL_ACCESS_KEY,
+  LOGIN_COUNT,
+  LOGIN_FAILED_COUNT_KEY
+});
 
 export function timeUuid() {
   let uuid = v4().replace(/-/gim, "");

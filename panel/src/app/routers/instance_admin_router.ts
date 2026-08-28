@@ -7,15 +7,13 @@ import { ROLE } from "../entity/user";
 import { $t } from "../i18n";
 import permission from "../middleware/permission";
 import validator from "../middleware/validator";
+import { getRequestGuard as guard } from "../service/request_guard";
 import { multiOperationForwarding } from "../service/instance_service";
 import { logger } from "../service/log";
 import { operationLogger } from "../service/operation_logger";
-import { getUserUuid } from "../service/passport_service";
 import { timeUuid } from "../service/password";
-import { isHaveInstanceByUuid, isTopPermissionByUuid } from "../service/permission_service";
 import RemoteRequest from "../service/remote_command";
 import RemoteServiceSubsystem from "../service/remote_service";
-import userStore from "../service/user_store";
 import { systemConfig } from "../setting";
 
 const router = new Router({ prefix: "/instance" });
@@ -30,7 +28,7 @@ router.get(
     try {
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
-      if (!isHaveInstanceByUuid(getUserUuid(ctx), daemonId, instanceUuid))
+      if (!guard().canAccessInstance(ctx, daemonId, instanceUuid))
         throw new Error($t("TXT_CODE_permission.forbidden"));
       const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
       const result = await new RemoteRequest(remoteService).request("instance/detail", {
@@ -61,7 +59,7 @@ router.post(
         daemon_id: daemonId,
         instance_id: result.instanceUuid,
         operator_ip: ctx.ip,
-        operator_name: ctx.session?.["userName"],
+        operator_name: guard().identify(ctx).userName,
         instance_name: result.nickname
       });
     } catch (err) {
@@ -90,7 +88,7 @@ router.post(
         daemon_id: daemonId,
         instance_id: newInstanceUuid,
         operator_ip: ctx.ip,
-        operator_name: ctx.session?.["userName"],
+        operator_name: guard().identify(ctx).userName,
         instance_name: result.nickname
       });
       // Send a cross-end file upload task to the daemon
@@ -137,7 +135,7 @@ router.put(
         daemon_id: daemonId,
         instance_id: instanceUuid,
         operator_ip: ctx.ip,
-        operator_name: ctx.session?.["userName"],
+        operator_name: guard().identify(ctx).userName,
         instance_name: config.nickname
       });
       ctx.body = result;
@@ -164,7 +162,7 @@ router.delete(
       const instanceIds = instanceUuids.map((uuid: string) => {
         return { instanceUuid: uuid, daemonId };
       });
-      userStore()?.deleteUserInstances(null, instanceIds, true);
+      guard().users?.deleteUserInstances(null, instanceIds, true);
       const result = await new RemoteRequest(remoteService).request("instance/delete", {
         instanceUuids,
         deleteFile
@@ -176,7 +174,7 @@ router.delete(
             daemon_id: daemonId,
             instance_id: e.instanceUuid,
             operator_ip: ctx.ip,
-            operator_name: ctx.session?.["userName"],
+            operator_name: guard().identify(ctx).userName,
             instance_name: e.nickname
           },
           "error"
@@ -206,7 +204,7 @@ router.post("/multi_open", permission({ level: ROLE.ADMIN }), async (ctx) => {
               daemon_id: daemonId,
               instance_id: instance.instanceUuid,
               operator_ip: ctx.ip,
-              operator_name: ctx.session?.["userName"],
+              operator_name: guard().identify(ctx).userName,
               instance_name: instance.nickname
             });
           });
@@ -236,7 +234,7 @@ router.post("/multi_stop", permission({ level: ROLE.ADMIN }), async (ctx) => {
               daemon_id: daemonId,
               instance_id: instance.instanceUuid,
               operator_ip: ctx.ip,
-              operator_name: ctx.session?.["userName"],
+              operator_name: guard().identify(ctx).userName,
               instance_name: instance.nickname
             });
           });
@@ -264,7 +262,7 @@ router.post("/multi_kill", permission({ level: ROLE.ADMIN }), async (ctx) => {
               daemon_id: daemonId,
               instance_id: instance.instanceUuid,
               operator_ip: ctx.ip,
-              operator_name: ctx.session?.["userName"],
+              operator_name: guard().identify(ctx).userName,
               instance_name: instance.nickname
             });
           });
@@ -292,7 +290,7 @@ router.post("/multi_restart", permission({ level: ROLE.ADMIN }), async (ctx) => 
               daemon_id: daemonId,
               instance_id: instance.instanceUuid,
               operator_ip: ctx.ip,
-              operator_name: ctx.session?.["userName"],
+              operator_name: guard().identify(ctx).userName,
               instance_name: instance.nickname
             });
           });
@@ -308,7 +306,7 @@ router.post("/multi_restart", permission({ level: ROLE.ADMIN }), async (ctx) => 
 // [Top-level Permission]
 // Get quick install list
 router.get("/quick_install_list", permission({ level: ROLE.USER }), async (ctx) => {
-  if (systemConfig?.allowUsePreset === false && !isTopPermissionByUuid(getUserUuid(ctx))) {
+  if (systemConfig?.allowUsePreset === false && !guard().identify(ctx).elevated) {
     ctx.status = 403;
     ctx.body = new Error($t("TXT_CODE_b5a47731"));
     return;

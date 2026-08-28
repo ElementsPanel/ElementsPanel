@@ -3,10 +3,9 @@ import { ROLE } from "../entity/user";
 import { $t } from "../i18n";
 import permission from "../middleware/permission";
 import validator from "../middleware/validator";
+import { getRequestGuard as guard } from "../service/request_guard";
 import { operationLogger } from "../service/operation_logger";
-import { getUserPermission, getUserUuid } from "../service/passport_service";
 import { timeUuid } from "../service/password";
-import { isHaveInstanceByUuid, isTopPermissionByUuid } from "../service/permission_service";
 import RemoteRequest from "../service/remote_command";
 import RemoteServiceSubsystem from "../service/remote_service";
 import { systemConfig } from "../setting";
@@ -16,13 +15,12 @@ const router = new Router({ prefix: "/files" });
 router.use(async (ctx, next) => {
   const instanceUuid = String(ctx.query.uuid);
   const daemonId = String(ctx.query.daemonId);
-  const userUuid = getUserUuid(ctx);
-  if (systemConfig?.canFileManager === false && getUserPermission(ctx) < 10) {
+  if (systemConfig?.canFileManager === false && !guard().identify(ctx).elevated) {
     ctx.status = 403;
     ctx.body = new Error($t("TXT_CODE_router.file.off"));
     return;
   }
-  if (isHaveInstanceByUuid(userUuid, daemonId, instanceUuid)) {
+  if (guard().canAccessInstance(ctx, daemonId, instanceUuid)) {
     await next();
   } else {
     ctx.status = 403;
@@ -44,7 +42,7 @@ router.get(
       const result = await new RemoteRequest(remoteService).request("file/status", {
         instanceUuid
       });
-      if (!isTopPermissionByUuid(getUserUuid(ctx))) delete result.disk;
+      if (!guard().identify(ctx).elevated) delete result.disk;
       ctx.body = result;
     } catch (err) {
       ctx.body = err;
@@ -227,7 +225,7 @@ router.put(
       );
       operationLogger.log("instance_file_update", {
         operator_ip: ctx.ip,
-        operator_name: ctx.session?.["userName"],
+        operator_name: guard().identify(ctx).userName,
         instance_id: instanceUuid,
         daemon_id: daemonId,
         file: target
@@ -282,7 +280,7 @@ router.post(
 
       operationLogger.log("instance_file_download_from_url", {
         operator_ip: ctx.ip,
-        operator_name: ctx.session?.["userName"],
+        operator_name: guard().identify(ctx).userName,
         instance_id: instanceUuid,
         daemon_id: daemonId,
         url: url,
@@ -337,7 +335,7 @@ router.delete(
       });
       operationLogger.log("instance_file_delete", {
         operator_ip: ctx.ip,
-        operator_name: ctx.session?.["userName"],
+        operator_name: guard().identify(ctx).userName,
         instance_id: String(instanceUuid),
         daemon_id: daemonId,
         file: targets
@@ -407,7 +405,7 @@ router.all(
       });
       operationLogger.log("instance_file_download", {
         operator_ip: ctx.ip,
-        operator_name: ctx.session?.["userName"],
+        operator_name: guard().identify(ctx).userName,
         instance_id: instanceUuid,
         daemon_id: daemonId,
         file: fileName
@@ -447,7 +445,7 @@ router.all(
       });
       operationLogger.log("instance_file_upload", {
         operator_ip: ctx.ip,
-        operator_name: ctx.session?.["userName"],
+        operator_name: guard().identify(ctx).userName,
         instance_id: instanceUuid,
         daemon_id: daemonId
       });

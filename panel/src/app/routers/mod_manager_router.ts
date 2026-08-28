@@ -4,9 +4,8 @@ import { $t } from "../i18n";
 import { requestConcurrencyLimiter, speedLimit } from "../middleware/limit";
 import permission from "../middleware/permission";
 import validator from "../middleware/validator";
+import { getRequestGuard as guard } from "../service/request_guard";
 import { modManagerService } from "../service/mod_manager_service";
-import { getUserPermission, getUserUuid } from "../service/passport_service";
-import { isHaveInstanceByUuid } from "../service/permission_service";
 import RemoteRequest from "../service/remote_command";
 import RemoteServiceSubsystem from "../service/remote_service";
 import { systemConfig } from "../setting";
@@ -27,10 +26,9 @@ router.use(async (ctx, next) => {
 
   const instanceUuid = ctx.query.uuid || ctx.request.body?.uuid;
   const daemonId = ctx.query.daemonId || ctx.request.body?.daemonId;
-  const userUuid = getUserUuid(ctx);
 
   // Check global file manager setting
-  if (systemConfig?.canFileManager === false && getUserPermission(ctx) < 10) {
+  if (systemConfig?.canFileManager === false && !guard().identify(ctx).elevated) {
     ctx.status = 403;
     ctx.body = new Error($t("TXT_CODE_router.file.off"));
     return;
@@ -38,7 +36,7 @@ router.use(async (ctx, next) => {
 
   // Check instance access
   if (instanceUuid && daemonId) {
-    if (isHaveInstanceByUuid(userUuid, String(daemonId), String(instanceUuid))) {
+    if (guard().canAccessInstance(ctx, String(daemonId), String(instanceUuid))) {
       await next();
     } else {
       ctx.status = 403;

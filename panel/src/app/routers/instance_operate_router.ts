@@ -5,11 +5,10 @@ import { $t } from "../i18n";
 import { speedLimit } from "../middleware/limit";
 import permission from "../middleware/permission";
 import validator from "../middleware/validator";
+import { getRequestGuard as guard } from "../service/request_guard";
 import { checkInstanceAdvancedParams, getAppMarketList } from "../service/instance_service";
 import { operationLogger } from "../service/operation_logger";
-import { getUserUuid } from "../service/passport_service";
 import { timeUuid } from "../service/password";
-import { isHaveInstanceByUuid, isTopPermissionByUuid } from "../service/permission_service";
 import RemoteRequest, { RemoteRequestTimeoutError } from "../service/remote_command";
 import RemoteServiceSubsystem from "../service/remote_service";
 import { systemConfig } from "../setting";
@@ -20,8 +19,7 @@ const router = new Router({ prefix: "/protected_instance" });
 router.use(async (ctx, next) => {
   const instanceUuid = String(ctx.query.uuid);
   const daemonId = String(ctx.query.daemonId);
-  const userUuid = getUserUuid(ctx);
-  if (isHaveInstanceByUuid(userUuid, daemonId, instanceUuid)) {
+  if (guard().canAccessInstance(ctx, daemonId, instanceUuid)) {
     await next();
   } else {
     ctx.status = 403;
@@ -47,7 +45,7 @@ router.all(
         daemon_id: daemonId,
         instance_id: instanceUuid,
         operator_ip: ctx.ip,
-        operator_name: ctx.session?.["userName"],
+        operator_name: guard().identify(ctx).userName,
         instance_name: result?.instances?.[0]?.nickname
       });
       ctx.body = result;
@@ -79,7 +77,7 @@ router.all(
         daemon_id: daemonId,
         instance_id: instanceUuid,
         operator_ip: ctx.ip,
-        operator_name: ctx.session?.["userName"],
+        operator_name: guard().identify(ctx).userName,
         instance_name: result?.instances?.[0]?.nickname
       });
       ctx.body = result;
@@ -131,7 +129,7 @@ router.all(
         daemon_id: daemonId,
         instance_id: instanceUuid,
         operator_ip: ctx.ip,
-        operator_name: ctx.session?.["userName"],
+        operator_name: guard().identify(ctx).userName,
         instance_name: result?.instances?.[0]?.nickname
       });
       ctx.body = result;
@@ -159,7 +157,7 @@ router.all(
         daemon_id: daemonId,
         instance_id: instanceUuid,
         operator_ip: ctx.ip,
-        operator_name: ctx.session?.["userName"],
+        operator_name: guard().identify(ctx).userName,
         instance_name: result?.instances?.[0]?.nickname
       });
       ctx.body = result;
@@ -190,7 +188,7 @@ router.post(
       const needTopPermissionTask = ["quick_install"];
       if (
         needTopPermissionTask.includes(taskName) &&
-        !isTopPermissionByUuid(ctx.session?.["uuid"])
+        !guard().identify(ctx).elevated
       ) {
         throw new Error("illegal access");
       }
@@ -200,7 +198,7 @@ router.post(
         instanceUuid,
         taskName,
         parameter,
-        role: ctx.session?.["role"] as ROLE
+        role: guard().identify(ctx).role
       });
       ctx.body = result;
     } catch (err) {
@@ -252,7 +250,7 @@ router.all(
       const taskId = parameter.taskId;
       // If no taskId specified, non-admin users get empty result
       if (!taskId) {
-        if (!isTopPermissionByUuid(getUserUuid(ctx))) {
+        if (!guard().identify(ctx).elevated) {
           ctx.body = [];
           return;
         }
@@ -409,7 +407,7 @@ router.put(
 
       let instanceTags: string[] | null = null;
 
-      if (config.tag instanceof Array && isTopPermissionByUuid(getUserUuid(ctx))) {
+      if (config.tag instanceof Array && guard().identify(ctx).elevated) {
         instanceTags = (config.tag as any[]).map((tag: any) => {
           const tmp = String(tag).trim();
           if (tmp.length > 20) throw new Error($t("TXT_CODE_1556989"));
@@ -461,7 +459,7 @@ router.put(
       const fileCode = toText(config.fileCode);
       const stopCommand = config.stopCommand ? toText(config.stopCommand) : null;
       const remoteService = RemoteServiceSubsystem.getInstance(daemonId || "");
-      const isTopPermission = isTopPermissionByUuid(getUserUuid(ctx));
+      const isTopPermission = guard().identify(ctx).elevated;
 
       let advancedConfig = {};
       advancedConfig = checkInstanceAdvancedParams(config, isTopPermission);
@@ -539,7 +537,7 @@ router.post(
     body: { description: String, title: String }
   }),
   async (ctx) => {
-    if (systemConfig?.allowUsePreset === false && !isTopPermissionByUuid(getUserUuid(ctx))) {
+    if (systemConfig?.allowUsePreset === false && !guard().identify(ctx).elevated) {
       ctx.status = 403;
       ctx.body = new Error($t("TXT_CODE_b5a47731"));
       return;
@@ -572,7 +570,7 @@ router.post(
         taskName: "install_instance",
         instanceUuid,
         parameter: targetPresetConfig,
-        role: ctx.session?.["role"] as ROLE
+        role: guard().identify(ctx).role
       });
       ctx.body = true;
     } catch (err) {

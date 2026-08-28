@@ -1,42 +1,31 @@
 import Koa from "koa";
-import { $t } from "../i18n";
-import { getPanelAuthProvider, type IPermissionCfg } from "../service/auth_provider";
+import { getRequestGuard, type GuardedRoute } from "../service/request_guard";
 
-// Failed callback
-export function verificationFailed(ctx: Koa.ParameterizedContext) {
-  ctx.status = 403;
-  ctx.body = `${$t("TXT_CODE_permission.forbidden")}`;
-}
+export type { GuardedRoute };
 
-export type { IPermissionCfg };
-
-// Routers build their middleware at module load time, long before plugins are
-// loaded, so this factory resolves the provider per request instead. With no
-// provider registered the panel is unauthenticated and every request passes.
+// Routes declare what they require; the installed guard decides what that
+// means. Routers build their middleware at module load time, long before any
+// plugin has loaded, so the guard is resolved per request instead.
 const middlewareCache = new WeakMap<object, Map<string, Koa.Middleware>>();
 
-function resolveMiddleware(parameter: IPermissionCfg): Koa.Middleware | undefined {
-  const provider = getPanelAuthProvider();
-  if (!provider) return undefined;
-  let cache = middlewareCache.get(provider);
+function resolveMiddleware(route: GuardedRoute): Koa.Middleware {
+  const guard = getRequestGuard();
+  let cache = middlewareCache.get(guard);
   if (!cache) {
     cache = new Map();
-    middlewareCache.set(provider, cache);
+    middlewareCache.set(guard, cache);
   }
-  const key = `${parameter.token}:${parameter.level}:${parameter.speedLimit}`;
+  const key = `${route.token}:${route.level}:${route.speedLimit}`;
   let middleware = cache.get(key);
   if (!middleware) {
-    middleware = provider.permission(parameter);
+    middleware = guard.guardRoute(route);
     cache.set(key, middleware);
   }
   return middleware;
 }
 
-// Basic user permission middleware
-export default (parameter: IPermissionCfg) => {
+export default (route: GuardedRoute) => {
   return async (ctx: Koa.ParameterizedContext, next: Koa.Next) => {
-    const middleware = resolveMiddleware(parameter);
-    if (!middleware) return await next();
-    return await middleware(ctx, next);
+    return await resolveMiddleware(route)(ctx, next);
   };
 };

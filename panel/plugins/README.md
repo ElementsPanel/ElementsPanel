@@ -21,14 +21,16 @@ The panel backend context exposes the Koa `app`, `router`, panel `config`,
 `storage`, core `services` (`remote` for the remote service subsystem,
 `remoteRequest` for the daemon request helper, `users`, `operationLogger`,
 `instances`, `sso`), the shared `middleware` (`permission` and `validator`),
-`common` (`GlobalVariable` and the auth counter keys), `i18n`, `roles`,
-`registerRoute`, `registerRouter`, `registerMiddleware`, `registerAuthProvider`,
+`common` (`GlobalVariable`), `i18n`, `roles`,
+`registerRoute`, `registerRouter`, `registerMiddleware`, `registerRequestGuard`,
 `metadata`, `directory`, and `logger`.
 
-`registerAuthProvider(provider)` hands the plugin control of authentication for
-the whole panel; with no provider registered the panel runs unauthenticated. It
-is cleared automatically when the owning plugin is disposed. See
-`plugins/user`.
+`registerRequestGuard(guard)` hands the plugin request authorization for the
+whole panel: route guarding, caller identity, instance ownership, upload
+permission and the auth counters the overview reports. The core implements none
+of that itself and has no "is auth enabled" branch anywhere — it just asks the
+installed guard, and serves every request while none is installed. The guard is
+cleared automatically when the owning plugin is disposed. See `plugins/user`.
 
 Backend entries are written in TypeScript at `src/backend/index.ts`.
 `panel/webpack.plugins.config.js` compiles every such entry to

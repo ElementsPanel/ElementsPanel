@@ -17,7 +17,7 @@ so a second copy would create a second storage subsystem and system config.
 Everything it needs is injected through the plugin context and read via
 `src/backend/runtime.ts`.
 
-`setup()` initializes the user store and calls `context.registerAuthProvider()`,
+`setup()` initializes the user store and calls `context.registerRequestGuard()`,
 which is what switches the whole panel from "open" to "authenticated". It then
 mounts:
 
@@ -43,21 +43,32 @@ bootstrap, before any plugin has loaded.
 
 ### What the core keeps
 
-The core keeps thin delegating shims so the 17 routers that call
-`permission({ level })` at module load need no changes:
+Only an extension point, in `src/app/service/request_guard.ts`: the
+`RequestGuard` interface and an `UNGUARDED` null object describing what "nobody
+is guarding this panel" means. There is no policy and no `if (authEnabled)`
+branch anywhere in the core — `getRequestGuard()` always returns a guard, so
+every call site is unconditional.
 
-- `src/app/service/auth_provider.ts` — the registry and the `PanelAuthProvider`
-  interface.
-- `src/app/middleware/permission.ts` ��� passes every request through when no
-  provider is registered.
-- `src/app/service/permission_service.ts` — instance ownership; answers "yes"
-  when there is no provider.
-- `src/app/service/passport_service.ts` — session readers, plus the counter keys
-  that `overview_router` reports and this plugin increments.
-- `src/app/service/user_store.ts` — optional access to the user records.
+`src/backend/guard.ts` implements the whole interface:
 
-Business-mode redeem (`instance_exchange_router`) genuinely needs accounts, so
-it fails with a clear error rather than degrading.
+| Guard member | Owns |
+| --- | --- |
+| `guardRoute(route)` | rate limit, API key, token, ban list, permission level |
+| `identify(ctx)` | session / API key → uuid, user name, role, elevation |
+| `canAccessInstance` | instance ownership |
+| `canUpload` | admin-only multipart uploads |
+| `isInstalled` | whether a first administrator exists |
+| `stats` | the login counters the panel overview reports |
+| `accounts`, `users` | session establishment and the user records |
+
+The core's `middleware/permission.ts` is pure late binding: routers declare
+requirements at module load, long before plugins exist, so the guard is resolved
+per request.
+
+Business-mode redeem (`instance_exchange_router`) and the redeem flow in
+`service/exchange_service.ts` genuinely need accounts, so they declare a hard
+dependency through `requireGuardFeature()` and fail with a clear error instead of
+behaving as if everyone were an administrator.
 
 ## Frontend
 

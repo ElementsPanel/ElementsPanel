@@ -25,5 +25,4 @@ export const $t = (key: string, options?: any): string =>
   core().i18n.$t(key, options) as unknown as string;
 export const i18next = () => core().i18n.i18next;
 export const globalVariable = () => core().common.GlobalVariable;
-export const statsKeys = () => core().common.authStatsKeys;
 export const ROLE = () => core().roles;

@@ -4,9 +4,8 @@ import { ROLE } from "../entity/user";
 import { $t } from "../i18n";
 import permission from "../middleware/permission";
 import validator from "../middleware/validator";
+import { getRequestGuard as guard } from "../service/request_guard";
 import { operationLogger } from "../service/operation_logger";
-import { getUserUuid } from "../service/passport_service";
-import { isHaveInstanceByUuid } from "../service/permission_service";
 import RemoteRequest from "../service/remote_command";
 import RemoteServiceSubsystem from "../service/remote_service";
 const router = new Router({ prefix: "/protected_schedule" });
@@ -15,8 +14,7 @@ const router = new Router({ prefix: "/protected_schedule" });
 router.use(async (ctx, next) => {
   const instanceUuid = String(ctx.query.uuid);
   const daemonId = String(ctx.query.daemonId);
-  const userUuid = getUserUuid(ctx);
-  if (isHaveInstanceByUuid(userUuid, daemonId, instanceUuid)) {
+  if (guard().canAccessInstance(ctx, daemonId, instanceUuid)) {
     await next();
   } else {
     ctx.status = 403;
@@ -70,7 +68,7 @@ router.post(
 
       operationLogger.log("instance_task_create", {
         operator_ip: ctx.ip,
-        operator_name: ctx.session?.["userName"],
+        operator_name: guard().identify(ctx).userName,
         instance_id: instanceUuid,
         daemon_id: daemonId,
         task_name: name
@@ -107,7 +105,7 @@ router.delete(
 
       operationLogger.log("instance_task_delete", {
         operator_ip: ctx.ip,
-        operator_name: ctx.session?.["userName"],
+        operator_name: guard().identify(ctx).userName,
         instance_id: instanceUuid,
         daemon_id: daemonId,
         task_name: name

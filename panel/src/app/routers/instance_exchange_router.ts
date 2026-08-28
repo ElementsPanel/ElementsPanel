@@ -14,10 +14,10 @@ import {
   requestUseRedeem
 } from "../service/exchange_service";
 import { logger } from "../service/log";
-import { loginSuccess } from "../service/passport_service";
 import UserSSOService from "../service/user_sso_service";
 import { systemConfig } from "../setting";
 import { execWithMutexId } from "../utils/sync";
+import { getRequestGuard as guard, requireGuardFeature } from "../service/request_guard";
 
 const router = new Router({ prefix: "/exchange" });
 
@@ -73,7 +73,7 @@ router.get(
     }&from=sso`;
     if (UserSSOService.verifySSOToken(userName, token)) {
       logger.warn("SSO login: username: %s, token: %s, redirect: %s", userName, token, redirect);
-      loginSuccess(ctx, userName);
+      requireGuardFeature("Account login", guard().accounts).loginSuccess(ctx, userName);
       return ctx.redirect(redirect);
     } else {
       throw new Error($t("TXT_CODE_13411df7"));

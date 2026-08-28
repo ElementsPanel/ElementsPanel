@@ -1,28 +1,23 @@
 import { Context } from "koa";
-import { ROLE } from "../entity/user";
 import { $t } from "../i18n";
-import { isAuthEnabled } from "../service/auth_provider";
 import { singletonMemoryRedis } from "../service/mini_redis";
-import { getUserFromCtx, getUserUuid } from "../service/passport_service";
+import { getRequestGuard } from "../service/request_guard";
 import { execWithMutexId } from "../utils/sync";
 
 const SPEED_LIMIT_KEY = "SpeedLimit";
 
+// Per-caller rate limiting. The identity comes from whichever guard is
+// installed; unguarded panels have a single anonymous, elevated caller.
 export function speedLimit(seconds: number, errMsg?: string) {
   return async (ctx: Context, next: Function) => {
-    // Without the "user" plugin there is nobody to rate limit.
-    if (!isAuthEnabled()) return await next();
-
     const requestPath = ctx.URL.pathname;
-    const user = getUserFromCtx(ctx);
+    const identity = getRequestGuard().identify(ctx);
 
-    if (!user) throw new Error($t("TXT_CODE_permission.forbidden"));
-
-    if (user.permission === ROLE.ADMIN) {
+    if (identity.elevated) {
       return await next();
     }
 
-    const speedCheckKey = `${SPEED_LIMIT_KEY}:${user.uuid}:${requestPath}`;
+    const speedCheckKey = `${SPEED_LIMIT_KEY}:${identity.uuid || "_anonymous_"}:${requestPath}`;
     const isExist = singletonMemoryRedis.get<boolean>(speedCheckKey);
 
     if (isExist) {
@@ -42,7 +37,7 @@ export function speedLimit(seconds: number, errMsg?: string) {
 
 export function requestConcurrencyLimiter(url: string) {
   return async (ctx: Context, next: Function) => {
-    const userId = getUserUuid(ctx) || "_anonymous_";
+    const userId = getRequestGuard().identify(ctx).uuid || "_anonymous_";
     const key = `UserConcurrencyLimiter:${userId}:${url}`;
     return await execWithMutexId(key, async () => {
       return await next();

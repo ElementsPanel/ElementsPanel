@@ -1,6 +1,7 @@
 import Router from "@koa/router";
 import { ROLE } from "../entity/user";
 import permission from "../middleware/permission";
+import { getRequestGuard as guard } from "../service/request_guard";
 import RemoteRequest from "../service/remote_command";
 import RemoteServiceSubsystem from "../service/remote_service";
 
@@ -9,14 +10,11 @@ const router = new Router({ prefix: "/java_manager" });
 import { $t } from "../i18n";
 import { speedLimit } from "../middleware/limit";
 import validator from "../middleware/validator";
-import { getUserUuid } from "../service/passport_service";
-import { isHaveInstanceByUuid } from "../service/permission_service";
 
 router.use(async (ctx, next) => {
   const daemonId = String(ctx.query.daemonId);
   const instanceId = String(ctx.query.instanceId);
-  const userUuid = getUserUuid(ctx);
-  if (isHaveInstanceByUuid(userUuid, daemonId, instanceId)) {
+  if (guard().canAccessInstance(ctx, daemonId, instanceId)) {
     await next();
   } else {
     throw new Error($t("TXT_CODE_eb401a37"));

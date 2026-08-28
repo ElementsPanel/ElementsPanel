@@ -3,13 +3,8 @@ import { GlobalVariable, systemInfo } from "mcsmanager-common";
 import os from "os";
 import { ROLE } from "../entity/user";
 import permission from "../middleware/permission";
+import { getRequestGuard as guard } from "../service/request_guard";
 import { operationLogger } from "../service/operation_logger";
-import {
-  BAN_IP_COUNT,
-  ILLEGAL_ACCESS_KEY,
-  LOGIN_COUNT,
-  LOGIN_FAILED_COUNT_KEY
-} from "../service/passport_service";
 import RemoteRequest from "../service/remote_command";
 import RemoteServiceSubsystem from "../service/remote_service";
 import VisualDataSubsystem from "../service/visual_data";
@@ -53,12 +48,7 @@ router.get("/", permission({ level: ROLE.USER, token: false }), async (ctx) => {
       memory: process.memoryUsage().rss,
       cwd: selfInfo.cwd
     },
-    record: {
-      logined: GlobalVariable.get(LOGIN_COUNT, 0),
-      illegalAccess: GlobalVariable.get(ILLEGAL_ACCESS_KEY, 0),
-      banips: GlobalVariable.get(BAN_IP_COUNT, 0),
-      loginFailed: GlobalVariable.get(LOGIN_FAILED_COUNT_KEY, 0)
-    },
+    record: guard().stats(),
     system: {
       user: os.userInfo(),
       time: new Date().getTime(),
@@ -132,7 +122,7 @@ router.post("/instance_crash", permission({ level: ROLE.USER, token: false }), a
     instance_name: instanceName || instanceId,
     exit_code: exitCode,
     operator_ip: ctx.ip,
-    operator_name: ctx.session?.["userName"] || ""
+    operator_name: guard().identify(ctx).userName
   });
 
   ctx.body = { ok: true };

@@ -1,9 +1,10 @@
 import Koa from "koa";
-import type { IPermissionCfg } from "../../../../../src/app/service/auth_provider";
-import { $t, globalVariable, statsKeys } from "../runtime";
+import type { GuardedRoute } from "../../../../../src/app/service/request_guard";
+import { $t, globalVariable } from "../runtime";
 import {
   checkSafeName,
   getUuidByApiKey,
+  ILLEGAL_ACCESS_KEY,
   isAjax,
   logout
 } from "../service/passport_service";
@@ -54,7 +55,7 @@ function tooFast(ctx: Koa.ParameterizedContext) {
 }
 
 // Basic user permission middleware
-export default function permission(parameter: IPermissionCfg): Koa.Middleware {
+export default function permission(parameter: GuardedRoute): Koa.Middleware {
   return async (ctx: Koa.ParameterizedContext, next: Koa.Next) => {
     if (
       (parameter.speedLimit == null || parameter.speedLimit === true) &&
@@ -114,7 +115,7 @@ export default function permission(parameter: IPermissionCfg): Koa.Middleware {
 
     // record the number of unauthorized access
     const GlobalVariable = globalVariable();
-    const key2 = statsKeys().ILLEGAL_ACCESS_KEY;
+    const key2 = ILLEGAL_ACCESS_KEY;
     GlobalVariable.set(key2, GlobalVariable.get(key2, 0) + 1);
     return verificationFailed(ctx);
   };
