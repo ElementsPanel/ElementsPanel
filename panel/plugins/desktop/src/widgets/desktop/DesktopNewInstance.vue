@@ -3,7 +3,7 @@ import { openNodeSelectDialog } from "@/components/fc/index";
 import { QUICKSTART_METHOD } from "@/hooks/widgets/quickStartFlow";
 import { t } from "@/lang/i18n";
 import CreateInstanceForm from "@/widgets/setupApp/CreateInstanceForm.vue";
-import { FileZipOutlined, FolderOpenOutlined } from "@ant-design/icons-vue";
+import { FileZipOutlined, FolderOpenOutlined, BlockOutlined } from "@ant-design/icons-vue";
 import { ref } from "vue";
 
 const emit = defineEmits<{
@@ -51,6 +51,16 @@ const handleInstallAction = async (createMethod: QUICKSTART_METHOD) => {
                 <div class="dni-option__content">
                     <h4>{{ t("TXT_CODE_a3efb1cc") }}</h4>
                     <p>{{ t("TXT_CODE_f09da050") }}</p>
+                </div>
+            </div>
+
+            <div class="dni-option" @click="handleInstallAction(QUICKSTART_METHOD.DOCKER)">
+                <div class="dni-option__icon dni-option__icon--docker">
+                    <BlockOutlined />
+                </div>
+                <div class="dni-option__content">
+                    <h4>{{ t("TXT_CODE_bae487e4") }}</h4>
+                    <p>{{ t("TXT_CODE_256e5825") }}</p>
                 </div>
             </div>
 
@@ -134,6 +144,11 @@ const handleInstallAction = async (createMethod: QUICKSTART_METHOD) => {
         &--import {
             background: rgba(22, 119, 255, 0.15);
             color: #1677ff;
+        }
+
+        &--docker {
+            background: rgba(19, 194, 194, 0.15);
+            color: #13c2c2;
         }
 
         &--exist {
