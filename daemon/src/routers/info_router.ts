@@ -3,16 +3,15 @@ import * as protocol from "../service/protocol";
 import { routerApp } from "../service/router";
 import InstanceSubsystem from "../service/system_instance";
 
-import fs from "fs-extra";
-import i18next from "i18next";
-import { systemInfo, toBoolean, toNumber, toText } from "mcsmanager-common";
-import { LOCAL_PRESET_LANG_PATH } from "../const";
+import { systemInfo } from "mcsmanager-common";
 import { globalConfiguration } from "../entity/config";
-import { $t } from "../i18n";
 import { DockerManager } from "../service/docker_service";
 import logger from "../service/log";
 import VisualDataSubsystem from "../service/system_visual_data";
 import { getVersion } from "../service/version";
+
+// Writing this configuration back ("info/setting") belongs to the daemon-side
+// node plugin, see daemon/plugins/node.
 
 // Get the basic information of the daemon system
 routerApp.on("info/overview", async (ctx) => {
@@ -69,75 +68,4 @@ routerApp.on("info/overview", async (ctx) => {
     dockerPlatforms
   };
   protocol.response(ctx, info);
-});
-
-routerApp.on("info/setting", async (ctx, data) => {
-  const language = toText(data.language);
-  const uploadSpeedRate = toNumber(data.uploadSpeedRate);
-  const downloadSpeedRate = toNumber(data.downloadSpeedRate);
-  const maxDownloadFromUrlFileCount = toNumber(data.maxDownloadFromUrlFileCount);
-  const portRangeStart = toNumber(data.portRangeStart);
-  const portRangeEnd = toNumber(data.portRangeEnd);
-  const portAssignInterval = toNumber(data.portAssignInterval);
-  const port = toNumber(data.port);
-  const outputBufferSize = toNumber(data.outputBufferSize);
-  const enableSoftShutdown = toBoolean(data.enableSoftShutdown);
-  const softShutdownSkipDocker = toBoolean(data.softShutdownSkipDocker);
-  const softShutdownWaitSeconds = toNumber(data.softShutdownWaitSeconds);
-  const instanceBackupPath = toText(data.instanceBackupPath);
-  const instanceBackupFormat = toText(data.instanceBackupFormat);
-  const instanceBackupCompressionLevel = toNumber(data.instanceBackupCompressionLevel);
-  if (language) {
-    logger.warn($t("TXT_CODE_66e32091"), language);
-    i18next.changeLanguage(language);
-    fs.remove(LOCAL_PRESET_LANG_PATH, () => { });
-    globalConfiguration.config.language = language;
-  }
-  if (uploadSpeedRate != null && uploadSpeedRate >= 0) {
-    globalConfiguration.config.uploadSpeedRate = uploadSpeedRate;
-  }
-  if (downloadSpeedRate != null && downloadSpeedRate >= 0) {
-    globalConfiguration.config.downloadSpeedRate = downloadSpeedRate;
-  }
-  if (maxDownloadFromUrlFileCount != null && maxDownloadFromUrlFileCount >= 0) {
-    globalConfiguration.config.maxDownloadFromUrlFileCount = maxDownloadFromUrlFileCount;
-  }
-  if (portRangeStart != null && portRangeEnd != null && portRangeStart < portRangeEnd) {
-    globalConfiguration.config.allocatablePortRange = [portRangeStart, portRangeEnd];
-    globalConfiguration.config.currentAllocatablePort = portRangeStart;
-  }
-  if (portAssignInterval != null && portAssignInterval > 0) {
-    globalConfiguration.config.portAssignInterval = portAssignInterval;
-  }
-  if (port && port > 0 && port < 65535) {
-    globalConfiguration.config.port = port;
-  }
-  if (outputBufferSize != null && outputBufferSize >= 16 && outputBufferSize <= 4096) {
-    globalConfiguration.config.outputBufferSize = outputBufferSize;
-  }
-  if (enableSoftShutdown != null) {
-    globalConfiguration.config.enableSoftShutdown = enableSoftShutdown;
-  }
-  if (softShutdownSkipDocker != null) {
-    globalConfiguration.config.softShutdownSkipDocker = softShutdownSkipDocker;
-  }
-  if (softShutdownWaitSeconds != null && softShutdownWaitSeconds >= 1 && softShutdownWaitSeconds <= 600) {
-    globalConfiguration.config.softShutdownWaitSeconds = softShutdownWaitSeconds;
-  }
-  if (instanceBackupPath != null) {
-    globalConfiguration.config.instanceBackupPath = instanceBackupPath;
-  }
-  if (instanceBackupFormat === "zip" || instanceBackupFormat === "tar.gz" || instanceBackupFormat === "7z") {
-    globalConfiguration.config.instanceBackupFormat = instanceBackupFormat;
-  }
-  if (
-    instanceBackupCompressionLevel != null &&
-    Number.isInteger(instanceBackupCompressionLevel) &&
-    instanceBackupCompressionLevel >= 0 &&
-    instanceBackupCompressionLevel <= 9
-  ) {
-    globalConfiguration.config.instanceBackupCompressionLevel = instanceBackupCompressionLevel;
-  }
-  globalConfiguration.store();
-  protocol.response(ctx, true);
 });

@@ -18,7 +18,13 @@ The module exports `setup(context)` (or `install(context)`) and may also export
 `ready(context)` and `dispose(context)`. The setup context contains the Koa `app`, a plugin `router`,
 `registerRoute`, `registerRouter`, `registerMiddleware`, `registerProtocolHandler`,
 `registerProtocolMiddleware`, `routerApp` for Socket.io protocol events,
-`protocol`, the daemon `config`, the instance subsystem, and `logger`.
+`protocol`, the daemon `config`, `saveConfig()` to persist it, `setLanguage()`,
+the instance subsystem, and `logger`.
 
 Set `enabled` to `false` to skip a plugin. Plugins are loaded in ascending
 `priority` order and a failed plugin is reported without stopping the daemon.
+
+## Bundled plugins
+
+`node` owns the `info/setting` protocol event, which is how the panel's node
+plugin writes this daemon's configuration. See `panel/plugins/node`.

@@ -1,9 +1,12 @@
 import fs from "fs-extra";
+import i18next from "i18next";
 import Koa from "koa";
 import Router from "@koa/router";
 import path from "path";
 import { pathToFileURL } from "url";
+import { LOCAL_PRESET_LANG_PATH } from "../const";
 import { globalConfiguration } from "../entity/config";
+import { $t } from "../i18n";
 import InstanceSubsystem from "./system_instance";
 import * as protocol from "./protocol";
 import { routerApp } from "./router";
@@ -37,6 +40,10 @@ export interface DaemonPluginContext {
     handler: (event: string, ctx: any, data: any, next: Function) => void
   ) => void;
   registerMiddleware: (middleware: Koa.Middleware) => void;
+  /** Persist the daemon configuration after mutating `config`. */
+  saveConfig: () => void;
+  /** Switch the daemon language and drop the bootstrap language preset file. */
+  setLanguage: (language: string) => void;
   metadata: DaemonPluginMetadata;
   directory: string;
   logger: typeof logger;
@@ -179,6 +186,14 @@ export async function loadDaemonPlugins(app: Koa): Promise<LoadedDaemonPlugin[]>
         registerProtocolHandler: (event, handler) => routerApp.on(event, handler),
         registerProtocolMiddleware: (handler) => routerApp.use(handler),
         registerMiddleware: (middleware) => app.use(middleware),
+        saveConfig: () => globalConfiguration.store(),
+        setLanguage: (language) => {
+          if (!language) return;
+          logger.warn($t("TXT_CODE_66e32091"), language);
+          i18next.changeLanguage(language);
+          fs.remove(LOCAL_PRESET_LANG_PATH, () => {});
+          globalConfiguration.config.language = language;
+        },
         metadata: plugin.metadata,
         directory: plugin.directory,
         logger

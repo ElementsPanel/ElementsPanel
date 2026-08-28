@@ -6,7 +6,10 @@ import { pathToFileURL } from "url";
 import { systemConfig } from "./setting";
 import { ROLE } from "./entity/user";
 import permission from "./middleware/permission";
+import validator from "./middleware/validator";
 import { logger } from "./service/log";
+import { operationLogger } from "./service/operation_logger";
+import RemoteRequest from "./service/remote_command";
 import SystemRemoteService from "./service/remote_service";
 import SystemUser from "./service/user_service";
 
@@ -33,9 +36,13 @@ export interface PanelPluginContext {
   services: {
     remote: typeof SystemRemoteService;
     users: typeof SystemUser;
+    /** Sends a Socket.io request to a single daemon and awaits its response. */
+    remoteRequest: typeof RemoteRequest;
+    operationLogger: typeof operationLogger;
   };
   middleware: {
     permission: typeof permission;
+    validator: typeof validator;
   };
   roles: typeof ROLE;
   registerRouter: (router: Router) => void;
@@ -188,10 +195,13 @@ export async function loadPanelPlugins(app: Koa): Promise<LoadedPanelPlugin[]> {
         config: systemConfig!,
         services: {
           remote: SystemRemoteService,
-          users: SystemUser
+          users: SystemUser,
+          remoteRequest: RemoteRequest,
+          operationLogger
         },
         middleware: {
-          permission
+          permission,
+          validator
         },
         roles: ROLE,
         registerRouter: (pluginRouter) => {

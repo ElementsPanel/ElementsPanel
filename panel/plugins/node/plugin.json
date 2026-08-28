@@ -2,7 +2,8 @@
   "id": "node",
   "name": "Node Management",
   "version": "1.0.0",
-  "description": "Provides node management pages, image management, layout cards, and the Desktop node manager.",
+  "description": "Provides node management pages, image management, layout cards, the Desktop node manager and the node management API.",
   "priority": 200,
+  "backend": "src/backend/index.cjs",
   "frontend": "src/frontend.ts"
 }

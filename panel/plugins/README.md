@@ -18,9 +18,10 @@ the frontend entry is compiled by Vite as a separately loadable plugin entry.
 Both entries are optional. A backend module exports `setup(context)` (or
 `install(context)`) and may also export `ready(context)` and `dispose(context)`.
 The panel backend context exposes the Koa `app`, `router`, panel `config`, core
-`services`, the shared `middleware.permission` function and `roles`,
-`registerRoute`, `registerRouter`, `registerMiddleware`, `metadata`, `directory`,
-and `logger`.
+`services` (`remote` for the remote service subsystem, `remoteRequest` for the
+daemon request helper, `users`, `operationLogger`), the shared `middleware`
+(`permission` and `validator`) and `roles`, `registerRoute`, `registerRouter`,
+`registerMiddleware`, `metadata`, `directory`, and `logger`.
 Backend entries must be Node-loadable JavaScript (`.js`, `.cjs`, or `.mjs`).
 
 The frontend module exports `setup(context)` or a definition object. Its

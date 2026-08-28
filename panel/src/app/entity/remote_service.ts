@@ -92,7 +92,15 @@ export default class RemoteService {
       const res = await new RemoteRequest(this).request("auth", this.config.apiKey, 5000, true);
       if (res === true) {
         this.available = true;
-        await this.setLanguage();
+        try {
+          await this.setLanguage();
+        } catch (error: any) {
+          // "info/setting" belongs to the daemon-side node plugin. A daemon
+          // without it stays usable, it just keeps its own language.
+          logger.warn(
+            `Failed to push the panel language to the daemon, the daemon node plugin may be missing: ${daemonInfo}`
+          );
+        }
 
         try {
           const info: any = await new RemoteRequest(this).request("info/overview");

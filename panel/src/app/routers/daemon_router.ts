@@ -2,31 +2,14 @@ import Router from "@koa/router";
 import { ROLE } from "../entity/user";
 import permission from "../middleware/permission";
 import validator from "../middleware/validator";
-import { operationLogger } from "../service/operation_logger";
 import RemoteRequest from "../service/remote_command";
 import RemoteServiceSubsystem from "../service/remote_service";
 
+// Node (daemon) management lives in the "node" panel plugin, which owns
+// /api/service/remote_service(s)* and /api/service/link_remote_service.
+// Only instance browsing stays here, because the core frontend uses it to pick
+// instances regardless of whether the node plugin is installed.
 const router = new Router({ prefix: "/service" });
-
-// [Top-level Permission]
-// Get the list of remote services
-// Contains only service information, not a list of instance information
-router.get("/remote_services_list", permission({ level: ROLE.ADMIN }), async (ctx) => {
-  const result = new Array();
-  for (const iterator of RemoteServiceSubsystem.services.entries()) {
-    const remoteService = iterator[1];
-    result.push({
-      uuid: remoteService.uuid,
-      ip: remoteService.config.ip,
-      port: remoteService.config.port,
-      prefix: remoteService.config.prefix,
-      available: remoteService.available,
-      remarks: remoteService.config.remarks,
-      brand: remoteService.config.brand
-    });
-  }
-  ctx.body = result;
-});
 
 // [Top-level Permission]
 // Query the daemon for the specified instance
@@ -58,154 +41,6 @@ router.get(
       }
     });
     ctx.body = result;
-  }
-);
-
-// [Top-level Permission]
-// Get remote server system information
-router.get("/remote_services_system", permission({ level: ROLE.ADMIN }), async (ctx) => {
-  const result = new Array();
-  for (const iterator of RemoteServiceSubsystem.services.entries()) {
-    const remoteService = iterator[1];
-    let instancesInfo = null;
-    try {
-      instancesInfo = await new RemoteRequest(remoteService).request("info/overview");
-    } catch (err) {
-      continue;
-    }
-    result.push(instancesInfo);
-  }
-  ctx.body = result;
-});
-
-// [Top-level Permission]
-// Get remote server instance information (browse too large)
-router.get("/remote_services", permission({ level: ROLE.ADMIN }), async (ctx) => {
-  const result = new Array();
-  for (const iterator of RemoteServiceSubsystem.services.entries()) {
-    const remoteService = iterator[1];
-    let instancesInfo = [];
-    try {
-      instancesInfo = await new RemoteRequest(remoteService).request("instance/overview");
-    } catch (err) {
-      // ignore request errors
-    }
-    // send remote command if connection is available
-    result.push({
-      uuid: remoteService.uuid,
-      ip: remoteService.config.ip,
-      port: remoteService.config.port,
-      prefix: remoteService.config.prefix,
-      available: remoteService.available,
-      remarks: remoteService.config.remarks,
-      brand: remoteService.config.brand,
-      instances: instancesInfo
-    });
-  }
-  ctx.body = result;
-});
-
-// [Top-level Permission]
-// add remote service
-router.post(
-  "/remote_service",
-  permission({ level: ROLE.ADMIN }),
-  validator({ body: { apiKey: String, port: Number, ip: String, remarks: String } }),
-  async (ctx) => {
-    const parameter = ctx.request.body;
-    // do asynchronous registration
-    const instance = await RemoteServiceSubsystem.registerRemoteService({
-      apiKey: parameter.apiKey,
-      port: parameter.port,
-      ip: parameter.ip,
-      prefix: parameter.prefix ?? "",
-      remarks: parameter.remarks ?? ""
-    });
-
-    operationLogger.log("daemon_create", {
-      operator_ip: ctx.ip,
-      operator_name: ctx.session?.["userName"],
-      daemon_id: instance.uuid
-    });
-
-    ctx.body = instance.uuid;
-  }
-);
-
-// [Top-level Permission]
-// Modify remote service parameters
-router.put(
-  "/remote_service",
-  permission({ level: ROLE.ADMIN }),
-  validator({ query: { uuid: String } }),
-  async (ctx) => {
-    const uuid = String(ctx.request.query.uuid);
-    const parameter = ctx.request.body || {};
-    const daemonSetting = parameter?.setting || {};
-    const daemon = RemoteServiceSubsystem.getInstance(uuid);
-
-    if (daemonSetting && daemon?.available) {
-      await new RemoteRequest(daemon).request("info/setting", {
-        ...daemonSetting,
-        port: parameter.daemonPort
-      });
-    }
-
-    if (!RemoteServiceSubsystem.services.has(uuid)) throw new Error("Instance does not exist");
-
-    await RemoteServiceSubsystem.edit(uuid, {
-      port: parameter.port,
-      ip: parameter.ip,
-      prefix: parameter.prefix ?? "",
-      apiKey: parameter.apiKey,
-      remarks: parameter.remarks,
-      remoteMappings: parameter.remoteMappings ?? [],
-    });
-
-    operationLogger.log("daemon_config_change", {
-      operator_ip: ctx.ip,
-      operator_name: ctx.session?.["userName"],
-      daemon_id: uuid
-    });
-
-    ctx.body = true;
-  }
-);
-
-// [Top-level Permission]
-// delete remote service
-router.delete(
-  "/remote_service",
-  permission({ level: ROLE.ADMIN }),
-  validator({ query: { uuid: String } }),
-  async (ctx) => {
-    const uuid = String(ctx.request.query.uuid);
-    if (!RemoteServiceSubsystem.services.has(uuid)) throw new Error("Instance does not exist");
-    await RemoteServiceSubsystem.deleteRemoteService(uuid);
-    operationLogger.log("daemon_remove", {
-      operator_ip: ctx.ip,
-      operator_name: ctx.session?.["userName"],
-      daemon_id: uuid
-    });
-    ctx.body = true;
-  }
-);
-
-// [Top-level Permission]
-// connect to remote instance
-router.get(
-  "/link_remote_service",
-  permission({ level: ROLE.ADMIN }),
-  validator({ query: { uuid: String } }),
-  async (ctx) => {
-    const uuid = String(ctx.request.query.uuid);
-    if (!RemoteServiceSubsystem.services.has(uuid)) throw new Error("Instance does not exist");
-    try {
-      RemoteServiceSubsystem.getInstance(uuid)?.connect();
-      ctx.body = true;
-    } catch (error: any) {
-      ctx.body = error;
-    }
   }
 );
 
