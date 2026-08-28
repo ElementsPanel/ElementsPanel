@@ -1,17 +1,20 @@
 import Router from "@koa/router";
 import type { PanelPluginContext } from "../../../../src/app/plugins";
 import { createRequestGuard } from "./guard";
+import createAuthSettingsRouter from "./routers/auth_settings_router";
 import createGeneralUserRouter from "./routers/general_user_router";
 import createLoginRouter from "./routers/login_router";
 import createManageUserRouter from "./routers/manage_user_router";
 import createSsoRouter from "./routers/sso_router";
 import createUserOverviewRouter from "./routers/user_overview_router";
 import { setPluginContext } from "./runtime";
+import { initAuthSettings } from "./service/auth_settings";
 import userSystem from "./service/user_service";
 
 export async function setup(context: PanelPluginContext) {
   setPluginContext(context);
 
+  await initAuthSettings();
   await userSystem.initialize();
 
   // From here on the whole panel is guarded. Removing this plugin removes the
@@ -28,6 +31,7 @@ export async function setup(context: PanelPluginContext) {
     createLoginRouter(),
     createGeneralUserRouter(),
     createUserOverviewRouter(),
+    createAuthSettingsRouter(),
     createSsoRouter()
   ]) {
     apiRouter.use(router.routes()).use(router.allowedMethods());

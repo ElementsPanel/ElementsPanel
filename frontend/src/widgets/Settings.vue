@@ -14,7 +14,6 @@ import { arrayFilter } from "@/tools/array";
 import { reportErrorMsg } from "@/tools/validator";
 import type { LayoutCard, Settings } from "@/types";
 import {
-  ApiOutlined,
   BankOutlined,
   BookOutlined,
   BugOutlined,
@@ -70,13 +69,6 @@ limitations under the License.`;
 
 const formData = ref<MySettings>();
 
-const ssoSnapshot = ref({
-  ssoType: "",
-  ssoIssuer: "",
-  ssoUserinfoUrl: "",
-  ssoUserIdField: ""
-});
-
 /** Current sidebar position choice; persisted in layout config theme. */
 const sidebarPosition = ref<"left" | "right">("left");
 
@@ -125,11 +117,6 @@ const menus = arrayFilter([
     icon: LockOutlined
   },
   {
-    title: t("TXT_CODE_SSO_TAB_TITLE"),
-    key: "sso",
-    icon: ApiOutlined
-  },
-  {
     title: t("TXT_CODE_46cb40d5"),
     key: "sponsor",
     icon: MoneyCollectOutlined,
@@ -159,21 +146,6 @@ const allYesNo = [
     value: false
   }
 ];
-
-const totpDriftOptions = ref([
-  {
-    label: t("TXT_CODE_718c9310"),
-    value: 0
-  },
-  {
-    label: "30 s",
-    value: 1
-  },
-  {
-    label: "60 s",
-    value: 2
-  }
-]);
 
 const aboutLinks = arrayFilter([
   {
@@ -300,81 +272,6 @@ const startDesignUI = async () => {
   });
 };
 
-const ssoMode = computed({
-  get(): string {
-    const fd = formData.value as any;
-    if (!fd?.ssoEnabled) return "disabled";
-    return fd.ssoType === "oauth2" ? "oauth2" : "oidc";
-  },
-  set(val: string) {
-    const fd = formData.value as any;
-    if (!fd) return;
-    if (val === "disabled") {
-      fd.ssoEnabled = false;
-    } else {
-      fd.ssoEnabled = true;
-      fd.ssoType = val;
-    }
-  }
-});
-
-const isSsoIdentityChanged = (): boolean => {
-  const fd = formData.value as any;
-  if (!fd) return false;
-  const snap = ssoSnapshot.value;
-  const curType = fd.ssoType || "oidc";
-  if (curType !== snap.ssoType) return true;
-  if (curType === "oidc" && (fd.ssoIssuer || "") !== snap.ssoIssuer) return true;
-  if (curType === "oauth2") {
-    if ((fd.ssoUserinfoUrl || "") !== snap.ssoUserinfoUrl) return true;
-    if ((fd.ssoUserIdField || "id") !== snap.ssoUserIdField) return true;
-  }
-  return false;
-};
-
-const doSubmitSso = async () => {
-  await submit(false);
-  const fd = formData.value as any;
-  if (fd) {
-    ssoSnapshot.value = {
-      ssoType: fd.ssoType || "oidc",
-      ssoIssuer: fd.ssoIssuer || "",
-      ssoUserinfoUrl: fd.ssoUserinfoUrl || "",
-      ssoUserIdField: fd.ssoUserIdField || "id"
-    };
-  }
-};
-
-const submitSso = async () => {
-  const fd = formData.value as any;
-  if (fd?.ssoEnabled) {
-    if (!fd.ssoClientId?.trim() || !fd.ssoClientSecret?.trim()) {
-      return message.error(t("TXT_CODE_SSO_ENABLE_REQUIRES_CONFIG"));
-    }
-    if (fd.ssoType === "oauth2") {
-      if (!fd.ssoAuthorizeUrl?.trim() || !fd.ssoTokenUrl?.trim() || !fd.ssoUserinfoUrl?.trim()) {
-        return message.error(t("TXT_CODE_SSO_OAUTH2_REQUIRES_URLS"));
-      }
-    } else {
-      if (!fd.ssoIssuer?.trim()) {
-        return message.error(t("TXT_CODE_SSO_ENABLE_REQUIRES_CONFIG"));
-      }
-    }
-  }
-  if (isSsoIdentityChanged()) {
-    Modal.confirm({
-      title: t("TXT_CODE_SSO_IDENTITY_CHANGE_TITLE"),
-      content: t("TXT_CODE_SSO_IDENTITY_CHANGE_CONFIRM"),
-      okType: "danger",
-      async onOk() {
-        await doSubmitSso();
-      }
-    });
-    return;
-  }
-  await doSubmitSso();
-};
-
 const leftMenusPanelRef = ref<InstanceType<typeof LeftMenusPanel>>();
 
 const toTemplate = {
@@ -397,13 +294,6 @@ onMounted(async () => {
   const res = await execute();
   const cfg = await getSettingsConfig();
   formData.value = res.value!;
-  const fd = formData.value as any;
-  ssoSnapshot.value = {
-    ssoType: fd.ssoType || "oidc",
-    ssoIssuer: fd.ssoIssuer || "",
-    ssoUserinfoUrl: fd.ssoUserinfoUrl || "",
-    ssoUserIdField: fd.ssoUserIdField || "id"
-  };
   if (cfg?.theme?.logoImage) {
     formData.value.logoUrl = cfg.theme.logoImage;
   }
@@ -580,16 +470,6 @@ onUnmounted(() => {
                     <p v-if="containerState.isDesignMode">
                       {{ t("TXT_CODE_3b24a247") }}
                     </p>
-                  </a-form-item>
-
-                  <a-form-item>
-                    <a-typography-title :level="5">{{ t("TXT_CODE_b5b33dd4") }}</a-typography-title>
-                    <a-typography-paragraph>
-                      <a-typography-text type="secondary">
-                        {{ t("TXT_CODE_c26e5fb7") }}
-                      </a-typography-text>
-                    </a-typography-paragraph>
-                    <a-textarea v-model:value="formData.loginInfo" :rows="4" :placeholder="t('TXT_CODE_4ea93630')" />
                   </a-form-item>
 
                   <div class="button mb-24">
@@ -789,226 +669,8 @@ onUnmounted(() => {
                       :placeholder="t('TXT_CODE_4ea93630')" />
                   </a-form-item>
 
-                  <a-form-item>
-                    <a-typography-title :level="5">
-                      {{ t("TXT_CODE_1d67c9c6") }}
-                    </a-typography-title>
-                    <a-typography-paragraph>
-                      <a-typography-text type="secondary">
-                        {{ t("TXT_CODE_745fc959") }}
-                      </a-typography-text>
-                    </a-typography-paragraph>
-
-                    <a-select v-model:value.prop="(formData as any).loginCheckIp" style="max-width: 320px">
-                      <a-select-option v-for="item in allYesNo" :key="item.value" :value="item.value">
-                        {{ item.label }}
-                      </a-select-option>
-                    </a-select>
-                  </a-form-item>
-
-                  <a-form-item>
-                    <a-typography-title :level="5">
-                      {{ t("TXT_CODE_b026be33") }}
-                    </a-typography-title>
-                    <a-typography-paragraph>
-                      <a-typography-text type="secondary">
-                        {{ t("TXT_CODE_a77b1a21") }}
-                      </a-typography-text>
-                    </a-typography-paragraph>
-
-                    <a-select v-model:value="formData.totpDriftToleranceSteps" style="max-width: 320px">
-                      <a-select-option v-for="item in totpDriftOptions" :key="item.value" :value="item.value">
-                        {{ item.label }}
-                      </a-select-option>
-                    </a-select>
-                  </a-form-item>
-
                   <div class="button">
                     <a-button type="primary" :loading="submitIsLoading" @click="submit(false)">
-                      {{ t("TXT_CODE_abfe9512") }}
-                    </a-button>
-                  </div>
-                </a-form>
-              </div>
-            </div>
-          </template>
-
-          <template #sso>
-            <div class="content-box" :style="{ maxHeight: card.height }">
-              <a-typography-title :level="4" class="mb-24">
-                {{ t("TXT_CODE_SSO_TAB_TITLE") }}
-              </a-typography-title>
-              <div style="text-align: left">
-                <a-form :model="formData" layout="vertical">
-                  <a-form-item>
-                    <a-typography-title :level="5">
-                      {{ t("TXT_CODE_SSO_ENABLE") }}
-                    </a-typography-title>
-                    <a-typography-paragraph type="secondary">
-                      {{ t("TXT_CODE_SSO_ENABLE_DESC") }}
-                    </a-typography-paragraph>
-                    <a-select v-model:value="ssoMode" style="max-width: 320px">
-                      <a-select-option value="disabled">
-                        {{ t("TXT_CODE_718c9310") }}
-                      </a-select-option>
-                      <a-select-option value="oidc">OpenID Connect (OIDC)</a-select-option>
-                      <a-select-option value="oauth2">OAuth 2.0</a-select-option>
-                    </a-select>
-                  </a-form-item>
-
-                  <template v-if="(formData as any).ssoEnabled">
-                    <a-form-item>
-                      <a-typography-title :level="5">
-                        {{ t("TXT_CODE_SSO_PROVIDER_NAME") }}
-                      </a-typography-title>
-                      <a-typography-paragraph type="secondary">
-                        {{ t("TXT_CODE_SSO_PROVIDER_NAME_DESC") }}
-                      </a-typography-paragraph>
-                      <a-input v-model:value="(formData as any).ssoProviderName" style="max-width: 320px"
-                        :placeholder="t('TXT_CODE_4ea93630')" />
-                    </a-form-item>
-
-                    <a-form-item>
-                      <a-typography-title :level="5">
-                        {{ t("TXT_CODE_SSO_ICON_URL") }}
-                      </a-typography-title>
-                      <a-typography-paragraph type="secondary">
-                        {{ t("TXT_CODE_SSO_ICON_URL_DESC") }}
-                      </a-typography-paragraph>
-                      <a-input v-model:value="(formData as any).ssoIconUrl" style="max-width: 320px"
-                        :placeholder="t('TXT_CODE_4ea93630')" />
-                    </a-form-item>
-
-                    <!-- OIDC-specific: Issuer URL -->
-                    <a-form-item v-if="ssoMode === 'oidc'">
-                      <a-typography-title :level="5">
-                        {{ t("TXT_CODE_SSO_ISSUER") }}
-                      </a-typography-title>
-                      <a-typography-paragraph type="secondary">
-                        {{ t("TXT_CODE_SSO_ISSUER_DESC") }}
-                      </a-typography-paragraph>
-                      <a-input v-model:value="(formData as any).ssoIssuer" style="max-width: 480px"
-                        placeholder="https://accounts.example.com" />
-                    </a-form-item>
-
-                    <!-- OAuth 2.0-specific fields -->
-                    <template v-if="ssoMode === 'oauth2'">
-                      <a-form-item>
-                        <a-typography-title :level="5">
-                          {{ t("TXT_CODE_SSO_AUTHORIZE_URL") }}
-                        </a-typography-title>
-                        <a-typography-paragraph type="secondary">
-                          {{ t("TXT_CODE_SSO_AUTHORIZE_URL_DESC") }}
-                        </a-typography-paragraph>
-                        <a-input v-model:value="(formData as any).ssoAuthorizeUrl" style="max-width: 480px"
-                          placeholder="https://github.com/login/oauth/authorize" />
-                      </a-form-item>
-
-                      <a-form-item>
-                        <a-typography-title :level="5">
-                          {{ t("TXT_CODE_SSO_TOKEN_URL") }}
-                        </a-typography-title>
-                        <a-typography-paragraph type="secondary">
-                          {{ t("TXT_CODE_SSO_TOKEN_URL_DESC") }}
-                        </a-typography-paragraph>
-                        <a-input v-model:value="(formData as any).ssoTokenUrl" style="max-width: 480px"
-                          placeholder="https://github.com/login/oauth/access_token" />
-                      </a-form-item>
-
-                      <a-form-item>
-                        <a-typography-title :level="5">
-                          {{ t("TXT_CODE_SSO_USERINFO_URL") }}
-                        </a-typography-title>
-                        <a-typography-paragraph type="secondary">
-                          {{ t("TXT_CODE_SSO_USERINFO_URL_DESC") }}
-                        </a-typography-paragraph>
-                        <a-input v-model:value="(formData as any).ssoUserinfoUrl" style="max-width: 480px"
-                          placeholder="https://api.github.com/user" />
-                      </a-form-item>
-
-                      <a-form-item>
-                        <a-typography-title :level="5">
-                          {{ t("TXT_CODE_SSO_USER_ID_FIELD") }}
-                        </a-typography-title>
-                        <a-typography-paragraph type="secondary">
-                          {{ t("TXT_CODE_SSO_USER_ID_FIELD_DESC") }}
-                        </a-typography-paragraph>
-                        <a-input v-model:value="(formData as any).ssoUserIdField" style="max-width: 320px"
-                          placeholder="id" />
-                      </a-form-item>
-
-                      <a-form-item>
-                        <a-typography-title :level="5">
-                          {{ t("TXT_CODE_SSO_SCOPES") }}
-                        </a-typography-title>
-                        <a-typography-paragraph type="secondary">
-                          {{ t("TXT_CODE_SSO_SCOPES_DESC") }}
-                        </a-typography-paragraph>
-                        <a-input v-model:value="(formData as any).ssoScopes" style="max-width: 320px"
-                          placeholder="read:user" />
-                      </a-form-item>
-                    </template>
-
-                    <a-form-item>
-                      <a-typography-title :level="5">Client ID</a-typography-title>
-                      <a-typography-paragraph type="secondary">
-                        {{ t("TXT_CODE_SSO_CLIENT_ID_DESC") }}
-                      </a-typography-paragraph>
-                      <a-input v-model:value="(formData as any).ssoClientId" style="max-width: 480px"
-                        :placeholder="t('TXT_CODE_4ea93630')" />
-                    </a-form-item>
-
-                    <a-form-item>
-                      <a-typography-title :level="5">Client Secret</a-typography-title>
-                      <a-typography-paragraph type="secondary">
-                        {{ t("TXT_CODE_SSO_CLIENT_SECRET_DESC") }}
-                      </a-typography-paragraph>
-                      <a-input-password v-model:value="(formData as any).ssoClientSecret" style="max-width: 480px"
-                        :placeholder="t('TXT_CODE_4ea93630')" />
-                    </a-form-item>
-
-                    <a-form-item>
-                      <a-typography-title :level="5">
-                        {{ t("TXT_CODE_SSO_CALLBACK_URL") }}
-                      </a-typography-title>
-                      <a-typography-paragraph type="secondary">
-                        {{ t("TXT_CODE_SSO_CALLBACK_URL_DESC") }}
-                      </a-typography-paragraph>
-                      <a-input v-model:value="(formData as any).ssoCallbackUrl" style="max-width: 480px"
-                        placeholder="https://your-panel.com/api/auth/sso/callback" />
-                    </a-form-item>
-
-                    <a-form-item>
-                      <a-typography-title :level="5">
-                        {{ t("TXT_CODE_SSO_ONLY_MODE") }}
-                      </a-typography-title>
-                      <a-typography-paragraph type="secondary">
-                        {{ t("TXT_CODE_SSO_ONLY_MODE_DESC") }}
-                      </a-typography-paragraph>
-                      <a-select v-model:value.prop="(formData as any).ssoOnlyMode" style="max-width: 320px">
-                        <a-select-option v-for="item in allYesNo" :key="item.value" :value="item.value">
-                          {{ item.label }}
-                        </a-select-option>
-                      </a-select>
-                    </a-form-item>
-
-                    <a-form-item>
-                      <a-typography-title :level="5">
-                        {{ t("TXT_CODE_SSO_AUTO_REDIRECT") }}
-                      </a-typography-title>
-                      <a-typography-paragraph type="secondary">
-                        {{ t("TXT_CODE_SSO_AUTO_REDIRECT_DESC") }}
-                      </a-typography-paragraph>
-                      <a-select v-model:value.prop="(formData as any).ssoAutoRedirect" style="max-width: 320px">
-                        <a-select-option v-for="item in allYesNo" :key="item.value" :value="item.value">
-                          {{ item.label }}
-                        </a-select-option>
-                      </a-select>
-                    </a-form-item>
-                  </template>
-
-                  <div class="button">
-                    <a-button type="primary" :loading="submitIsLoading" @click="submitSso">
                       {{ t("TXT_CODE_abfe9512") }}
                     </a-button>
                   </div>

@@ -1,22 +1,24 @@
 import Router from "@koa/router";
 import Koa from "koa";
-import { core, $t, logger, operationLogger, ROLE, systemConfig } from "../runtime";
+import { $t, logger, operationLogger, ROLE } from "../runtime";
+import { core } from "../runtime";
+import {
+  buildAuthorizationUrl,
+  generateCodeVerifier,
+  generateNonce,
+  generateState,
+  getCallbackUrl,
+  getPublicSsoConfig,
+  handleOAuth2Callback,
+  handleOIDCCallback
+} from "../service/sso_service";
+import { authSettings } from "../service/auth_settings";
 import permission from "../middleware/permission";
 import { checkBanIp, loginSuccess } from "../service/passport_service";
 import userSystem, { TwoFactorError } from "../service/user_service";
 
 export default function createSsoRouter() {
   const validator = core().middleware.validator;
-  const {
-    buildAuthorizationUrl,
-    generateCodeVerifier,
-    generateNonce,
-    generateState,
-    getCallbackUrl,
-    getPublicSsoConfig,
-    handleOIDCCallback,
-    handleOAuth2Callback
-  } = core().services.sso;
   const router = new Router({ prefix: "/auth/sso" });
 
   // [Public] Return SSO configuration (no secrets)
@@ -33,7 +35,7 @@ export default function createSsoRouter() {
     "/authorize",
     permission({ token: false, level: null }),
     async (ctx: Koa.ParameterizedContext) => {
-      if (!systemConfig()?.ssoEnabled) {
+      if (!authSettings().ssoEnabled) {
         ctx.status = 403;
         ctx.body = "SSO is not enabled";
         return;
@@ -76,7 +78,7 @@ export default function createSsoRouter() {
     "/callback",
     permission({ token: false, level: null }),
     async (ctx: Koa.ParameterizedContext) => {
-      if (!systemConfig()?.ssoEnabled) {
+      if (!authSettings().ssoEnabled) {
         ctx.status = 403;
         ctx.body = "SSO is not enabled";
         return;
@@ -99,7 +101,7 @@ export default function createSsoRouter() {
       delete ctx.session["ssoTimestamp"];
       ctx.session.save();
 
-      const isOAuth2 = systemConfig()?.ssoType === "oauth2";
+      const isOAuth2 = authSettings().ssoType === "oauth2";
       if (!expectedState || !codeVerifier || (!isOAuth2 && !expectedNonce)) {
         ctx.redirect("/#/login?sso_error=invalid_sso_session");
         return;
@@ -191,7 +193,7 @@ export default function createSsoRouter() {
     permission({ token: false, level: null }),
     validator({ body: { username: String, password: String } }),
     async (ctx: Koa.ParameterizedContext) => {
-      if (!systemConfig()?.ssoEnabled) {
+      if (!authSettings().ssoEnabled) {
         ctx.status = 403;
         ctx.body = "SSO is not enabled";
         return;
@@ -232,7 +234,7 @@ export default function createSsoRouter() {
       const code = String(ctx.request.body.code || "");
 
       try {
-        const totpDrift = systemConfig()?.totpDriftToleranceSteps || 0;
+        const totpDrift = authSettings().totpDriftToleranceSteps || 0;
         userSystem.checkUser({ userName, passWord }, code || undefined, totpDrift);
       } catch (err) {
         if (err instanceof TwoFactorError && !code) {
@@ -275,7 +277,7 @@ export default function createSsoRouter() {
     "/bind-current",
     permission({ level: ROLE().USER }),
     async (ctx: Koa.ParameterizedContext) => {
-      if (!systemConfig()?.ssoEnabled) {
+      if (!authSettings().ssoEnabled) {
         ctx.status = 403;
         ctx.body = "SSO is not enabled";
         return;

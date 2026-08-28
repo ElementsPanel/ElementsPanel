@@ -1,6 +1,7 @@
 import Router from "@koa/router";
 import Koa from "koa";
-import { core, $t, logger, operationLogger, ROLE, systemConfig } from "../runtime";
+import { core, $t, logger, operationLogger, ROLE } from "../runtime";
+import { authSettings } from "../service/auth_settings";
 import permission from "../middleware/permission";
 import { check, checkBanIp, login, logout } from "../service/passport_service";
 import userSystem, { TwoFactorError } from "../service/user_service";
@@ -16,8 +17,8 @@ export default function createLoginRouter() {
     permission({ token: false, level: null }),
     validator({ body: { username: String, password: String } }),
     async (ctx: Koa.ParameterizedContext) => {
-      const config = systemConfig();
-      if (config?.ssoEnabled && config?.ssoOnlyMode) {
+      const config = authSettings();
+      if (config.ssoEnabled && config.ssoOnlyMode) {
         ctx.body = new Error("Password login is disabled. Please use SSO.");
         return;
       }
@@ -66,7 +67,7 @@ export default function createLoginRouter() {
     permission({ token: false, level: null, speedLimit: false }),
     async (ctx: Koa.ParameterizedContext) => {
       ctx.body = {
-        loginInfo: systemConfig()?.loginInfo
+        loginInfo: authSettings().loginInfo
       };
     }
   );

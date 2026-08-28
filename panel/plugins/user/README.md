@@ -30,6 +30,7 @@ mounts:
 | `GET` `POST` `PUT` `DELETE` | `/api/auth` (account CRUD) |
 | `GET` | `/api/auth/search`, `/api/auth/token`, `/api/auth/query_username` |
 | `GET` | `/api/auth/overview` |
+| `GET` `PUT` | `/api/auth/settings` (authentication settings) |
 | `PUT` | `/api/auth/update`, `/api/auth/api` |
 | `POST` | `/api/auth/bind2fa`, `/api/auth/confirm2fa` |
 | `GET` `POST` `PUT` | `/api/auth/sso/*` |
@@ -69,6 +70,24 @@ Business-mode redeem (`instance_exchange_router`) and the redeem flow in
 `service/exchange_service.ts` genuinely need accounts, so they declare a hard
 dependency through `requireGuardFeature()` and fail with a clear error instead of
 behaving as if everyone were an administrator.
+
+## Settings
+
+Login page text, the login IP limit, the 2FA drift tolerance and the entire SSO
+block used to sit in the panel's `SystemConfig` and on the Settings page. They
+are authentication settings, so this plugin owns them: `entity/auth_settings.ts`
+defines them, `service/auth_settings.ts` stores them under `AuthSettings/config`
+and `routers/auth_settings_router.ts` serves `/api/auth/settings`. The SSO
+provider plumbing (`service/sso_service.ts`) moved across with them.
+
+On first start the plugin copies the values out of the panel's stored
+`SystemConfig` once, so upgrades keep their configuration. `/api/auth/status` no
+longer reports SSO at all; anything that needs to know asks the plugin's public
+`/api/auth/sso/config`.
+
+They are edited through the `config` plugin's page — this plugin exports a
+`configuration.component` (`src/PluginConfig.vue`) rather than adding a tab to
+the panel Settings page.
 
 ## Frontend
 

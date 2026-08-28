@@ -1,0 +1,33 @@
+// Authentication settings, owned by this plugin. They used to live in the
+// panel's SystemConfig; `service/auth_settings.ts` migrates them across once.
+
+export default class AuthSettings {
+  // Text shown on the login page
+  loginInfo: string = "";
+
+  // Ban an IP after repeated login failures
+  loginCheckIp: boolean = true;
+
+  // TOTP drift tolerance, in steps (30 seconds)
+  totpDriftToleranceSteps: number = 0;
+
+  // SSO / OpenID Connect / OAuth 2.0
+  ssoEnabled = false;
+  ssoType: "oidc" | "oauth2" = "oidc";
+  ssoOnlyMode = false;
+  ssoAutoRedirect = false;
+  ssoProviderName = "";
+  ssoIconUrl = "";
+  // OIDC-specific
+  ssoIssuer = "";
+  // OAuth 2.0-specific
+  ssoAuthorizeUrl = "";
+  ssoTokenUrl = "";
+  ssoUserinfoUrl = "";
+  ssoUserIdField = "id";
+  ssoScopes = "";
+  // Shared
+  ssoClientId = "";
+  ssoClientSecret = "";
+  ssoCallbackUrl = "";
+}

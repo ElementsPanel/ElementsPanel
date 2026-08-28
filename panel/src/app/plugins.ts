@@ -23,7 +23,6 @@ import {
   type RequestGuard,
   type UserRecords
 } from "./service/request_guard";
-import * as ssoService from "./service/sso_service";
 
 export interface PanelPluginMetadata {
   id: string;
@@ -55,8 +54,6 @@ export interface PanelPluginContext {
     remoteRequest: typeof RemoteRequest;
     operationLogger: typeof operationLogger;
     instances: { getInstancesByUuid: typeof getInstancesByUuid };
-    /** OIDC/OAuth2 plumbing driven by the panel's SSO settings. */
-    sso: typeof ssoService;
   };
   middleware: {
     permission: typeof permission;
@@ -234,8 +231,7 @@ export async function loadPanelPlugins(app: Koa): Promise<LoadedPanelPlugin[]> {
           },
           remoteRequest: RemoteRequest,
           operationLogger,
-          instances: { getInstancesByUuid },
-          sso: ssoService
+          instances: { getInstancesByUuid }
         },
         middleware: {
           permission,

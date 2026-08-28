@@ -86,9 +86,6 @@ export interface Settings {
   maxCompress: number;
   maxDownload: number;
   zipType: number;
-  totpDriftToleranceSteps: number;
-  loginCheckIp: boolean;
-  loginInfo: string;
   canFileManager: boolean;
   language: string;
   presetPackAddr: string;
@@ -100,15 +97,6 @@ export interface Settings {
   allowJavaManager: boolean;
   registerCode: string;
   panelId: string;
-  ssoEnabled: boolean;
-  ssoOnlyMode: boolean;
-  ssoAutoRedirect: boolean;
-  ssoProviderName: string;
-  ssoIconUrl: string;
-  ssoIssuer: string;
-  ssoClientId: string;
-  ssoClientSecret: string;
-  ssoCallbackUrl: string;
 }
 
 export interface ImageInfo {
@@ -268,7 +256,5 @@ export interface PanelStatus {
     allowChangeCmd: boolean;
     allowJavaManager: boolean;
     panelId: string;
-    ssoEnabled: boolean;
-    ssoOnlyMode: boolean;
   };
 }

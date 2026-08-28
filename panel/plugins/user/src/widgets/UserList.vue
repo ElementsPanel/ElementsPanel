@@ -18,6 +18,7 @@ import {
   editUserInfo,
   ssoUnbind as ssoUnbindApi
 } from "@/services/apis";
+import { ssoConfig } from "../api";
 import type { LayoutCard } from "@/types/index";
 import type { BaseUserInfo, EditUserInfo } from "@/types/user";
 import _ from "lodash";
@@ -43,6 +44,18 @@ const { execute, isLoading: getUserInfoLoading } = getUserInfo();
 const { toPage } = useAppRouters();
 const { isPhone } = useScreen();
 const { state: appState } = useAppStateStore();
+
+// SSO settings belong to this plugin, so ask its own public endpoint rather
+// than the panel status payload.
+const ssoEnabled = ref(false);
+onMounted(async () => {
+  try {
+    const res = await ssoConfig().execute();
+    ssoEnabled.value = Boolean(res.value?.enabled);
+  } catch {
+    ssoEnabled.value = false;
+  }
+});
 
 const operationForm = ref({
   name: "",
@@ -98,7 +111,7 @@ const columns = computed(() => {
       dataIndex: "ssoBound",
       key: "ssoBound",
       minWidth: 100,
-      condition: () => !isPhone.value && appState.settings.ssoEnabled
+      condition: () => !isPhone.value && ssoEnabled.value
     },
     {
       align: "center",
@@ -504,7 +517,7 @@ onMounted(async () => {
                             {{ t("TXT_CODE_4d934e3a") }}
                           </a-menu-item>
                           <a-menu-item
-                            v-if="appState.settings.ssoEnabled && record.ssoBound"
+                            v-if="ssoEnabled && record.ssoBound"
                             key="sso_unbind"
                             @click="showSsoUnbindConfirm(record)"
                           >

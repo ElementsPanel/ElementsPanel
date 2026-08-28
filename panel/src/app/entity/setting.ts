@@ -1,4 +1,6 @@
 // @Entity
+// Authentication settings (login page text, login IP limit, 2FA tolerance and
+// the whole SSO block) belong to the "user" plugin and live in its own store.
 export default class SystemConfig {
   // HTTP service port, IP and path prefix
   httpPort: number = 23333;
@@ -31,15 +33,6 @@ export default class SystemConfig {
   // Decompression implementation form
   zipType: number = 1;
 
-  // TOTP drift tolerance, in steps (30 seconds)
-  totpDriftToleranceSteps: number = 0;
-
-  // Login times IP limit
-  loginCheckIp: boolean = true;
-
-  // login Copyright Information
-  loginInfo: string = "";
-
   // Whether to open the file management function for ordinary users
   canFileManager = true;
 
@@ -71,26 +64,6 @@ export default class SystemConfig {
   panelId = "";
   registerCode = "";
   // -----
-
-  // SSO / OpenID Connect / OAuth 2.0
-  ssoEnabled = false;
-  ssoType: "oidc" | "oauth2" = "oidc";
-  ssoOnlyMode = false;
-  ssoAutoRedirect = false;
-  ssoProviderName = "";
-  ssoIconUrl = "";
-  // OIDC-specific
-  ssoIssuer = "";
-  // OAuth 2.0-specific
-  ssoAuthorizeUrl = "";
-  ssoTokenUrl = "";
-  ssoUserinfoUrl = "";
-  ssoUserIdField = "id";
-  ssoScopes = "";
-  // Shared
-  ssoClientId = "";
-  ssoClientSecret = "";
-  ssoCallbackUrl = "";
 
   // Whether to enable SSL/TLS (HTTPS)
   ssl = false;

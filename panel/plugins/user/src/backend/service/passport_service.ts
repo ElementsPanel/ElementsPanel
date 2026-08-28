@@ -3,7 +3,8 @@ import { authenticator } from "otplib";
 import QRCode from "qrcode";
 import { v4 } from "uuid";
 import { User } from "../entity/user";
-import { $t, globalVariable, logger, ROLE, systemConfig } from "../runtime";
+import { $t, globalVariable, logger, ROLE } from "../runtime";
+import { authSettings } from "./auth_settings";
 import userSystem from "./user_service";
 
 // Counters reported by the panel overview through RequestGuard.stats().
@@ -80,7 +81,7 @@ export function login(
   const ip = getLoginIp(ctx);
   // check user information
   try {
-    const totpDriftToleranceSteps = systemConfig()?.totpDriftToleranceSteps || 0;
+    const totpDriftToleranceSteps = authSettings().totpDriftToleranceSteps || 0;
     userSystem.checkUser({ userName, passWord }, twoFACode, totpDriftToleranceSteps);
     // The number of errors to reset this IP after successful login
     const ipMap = GlobalVariable.get(keys.LOGIN_FAILED_KEY);
@@ -248,7 +249,7 @@ export function checkBanIp(ctx: Koa.ParameterizedContext) {
 
   const ip = getLoginIp(ctx);
 
-  if (ipMap[ip] > 10 && systemConfig()?.loginCheckIp === true) {
+  if (ipMap[ip] > 10 && authSettings().loginCheckIp === true) {
     if (ipMap[ip] != 999) {
       // record the number of bans
       GlobalVariable.set(keys.BAN_IP_COUNT, GlobalVariable.get(keys.BAN_IP_COUNT, 0) + 1);

@@ -34,9 +34,7 @@ router.all(
         businessId: systemConfig?.businessId || null,
         allowChangeCmd: systemConfig?.allowChangeCmd || false,
         allowJavaManager: systemConfig?.allowJavaManager ?? true,
-        panelId: systemConfig?.panelId || null,
-        ssoEnabled: systemConfig?.ssoEnabled || false,
-        ssoOnlyMode: systemConfig?.ssoOnlyMode || false
+        panelId: systemConfig?.panelId || null
       } as Partial<SystemConfig>
     };
   }

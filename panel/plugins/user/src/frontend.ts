@@ -1,6 +1,7 @@
 import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugins";
 import * as userApi from "./api";
+import PluginConfig from "./PluginConfig.vue";
 import MyselfInfoDialog from "./components/MyselfInfoDialog.vue";
 import DesktopLoginWindow from "./desktop/DesktopLoginWindow.vue";
 import DesktopUserInfo from "./desktop/DesktopUserInfo.vue";
@@ -19,6 +20,10 @@ const ROLE_USER = 1;
 const ROLE_GUEST = 0;
 
 export default {
+  // Authentication settings are edited through the `config` plugin's page.
+  configuration: {
+    component: PluginConfig
+  },
   layoutCards: {
     LoginCard,
     UserList,

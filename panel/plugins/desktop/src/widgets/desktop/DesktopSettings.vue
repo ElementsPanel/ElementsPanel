@@ -6,7 +6,6 @@ import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
 import type { Settings } from "@/types";
 import {
-    ApiOutlined,
     LockOutlined,
     PicLeftOutlined,
     ProjectOutlined,
@@ -34,18 +33,10 @@ const saveError = ref("");
 
 const sidebarPosition = ref<"left" | "right">("left");
 
-const ssoSnapshot = ref({
-    ssoType: "",
-    ssoIssuer: "",
-    ssoUserinfoUrl: "",
-    ssoUserIdField: ""
-});
-
 const tabs = [
     { key: "baseInfo", title: t("TXT_CODE_cdd555be"), icon: ProjectOutlined },
     { key: "ui", title: t("TXT_CODE_1c18acc0"), icon: PicLeftOutlined },
     { key: "security", title: t("TXT_CODE_9c3ca8f"), icon: LockOutlined },
-    { key: "sso", title: t("TXT_CODE_SSO_TAB_TITLE"), icon: ApiOutlined },
     { key: "about", title: t("TXT_CODE_3b4b656d"), icon: QuestionCircleOutlined }
 ];
 
@@ -54,12 +45,6 @@ const allLanguages = SUPPORTED_LANGS;
 const allYesNo = [
     { label: t("TXT_CODE_52c8a730"), value: true },
     { label: t("TXT_CODE_718c9310"), value: false }
-];
-
-const totpDriftOptions = [
-    { label: t("TXT_CODE_718c9310"), value: 0 },
-    { label: "30 s", value: 1 },
-    { label: "60 s", value: 2 }
 ];
 
 const sidebarPositionOptions = [
@@ -74,13 +59,6 @@ onMounted(async () => {
         formData.value = res.value!;
         const fd = formData.value as any;
 
-        ssoSnapshot.value = {
-            ssoType: fd.ssoType || "oidc",
-            ssoIssuer: fd.ssoIssuer || "",
-            ssoUserinfoUrl: fd.ssoUserinfoUrl || "",
-            ssoUserIdField: fd.ssoUserIdField || "id"
-        };
-
         if (cfg?.theme?.logoImage) formData.value.logoUrl = cfg.theme.logoImage;
         if (cfg?.theme?.backgroundImage) formData.value.bgUrl = cfg.theme.backgroundImage;
         formData.value.pageTitle = cfg?.theme?.pageTitle || t("TXT_CODE_47ae8ee6");
@@ -90,24 +68,6 @@ onMounted(async () => {
         }
     } catch (error) {
         console.error("Failed to load settings", error);
-    }
-});
-
-const ssoMode = computed({
-    get(): string {
-        const fd = formData.value as any;
-        if (!fd?.ssoEnabled) return "disabled";
-        return fd.ssoType === "oauth2" ? "oauth2" : "oidc";
-    },
-    set(val: string) {
-        const fd = formData.value as any;
-        if (!fd) return;
-        if (val === "disabled") {
-            fd.ssoEnabled = false;
-        } else {
-            fd.ssoEnabled = true;
-            fd.ssoType = val;
-        }
     }
 });
 
@@ -175,40 +135,8 @@ const submit = async (needReload: boolean = true) => {
     }
 };
 
-const submitSso = async () => {
-    const fd = formData.value as any;
-    if (fd?.ssoEnabled) {
-        if (!fd.ssoClientId?.trim() || !fd.ssoClientSecret?.trim()) {
-            return showMessage(t("TXT_CODE_SSO_ENABLE_REQUIRES_CONFIG"), true);
-        }
-        if (fd.ssoType === "oauth2") {
-            if (!fd.ssoAuthorizeUrl?.trim() || !fd.ssoTokenUrl?.trim() || !fd.ssoUserinfoUrl?.trim()) {
-                return showMessage(t("TXT_CODE_SSO_OAUTH2_REQUIRES_URLS"), true);
-            }
-        } else {
-            if (!fd.ssoIssuer?.trim()) {
-                return showMessage(t("TXT_CODE_SSO_ENABLE_REQUIRES_CONFIG"), true);
-            }
-        }
-    }
-
-    await submit(false);
-    if (fd) {
-        ssoSnapshot.value = {
-            ssoType: fd.ssoType || "oidc",
-            ssoIssuer: fd.ssoIssuer || "",
-            ssoUserinfoUrl: fd.ssoUserinfoUrl || "",
-            ssoUserIdField: fd.ssoUserIdField || "id"
-        };
-    }
-};
-
 const handleSave = () => {
-    if (activeTab.value === 'sso') {
-        submitSso();
-    } else {
-        submit(activeTab.value === 'ui');
-    }
+    submit(activeTab.value === 'ui');
 };
 
 const ApacheLicense = `Copyright ${new Date().getFullYear()} MCSManager
@@ -302,13 +230,6 @@ limitations under the License.`;
                             <p class="ds-desc">{{ t("TXT_CODE_b305236a") }}</p>
                             <input v-model="formData.pageTitle" class="ds-input"
                                 :placeholder="t('TXT_CODE_4ea93630')" />
-                        </div>
-
-                        <div class="ds-form-group">
-                            <label class="ds-label">{{ t("TXT_CODE_b5b33dd4") }}</label>
-                            <p class="ds-desc">{{ t("TXT_CODE_c26e5fb7") }}</p>
-                            <textarea v-model="formData.loginInfo" class="ds-textarea" rows="4"
-                                :placeholder="t('TXT_CODE_4ea93630')"></textarea>
                         </div>
 
                         <div class="ds-form-group">
@@ -407,139 +328,6 @@ limitations under the License.`;
                             </select>
                         </div>
 
-                        <div class="ds-form-group">
-                            <label class="ds-label">{{ t("TXT_CODE_1d67c9c6") }}</label>
-                            <p class="ds-desc">{{ t("TXT_CODE_745fc959") }}</p>
-                            <select v-model="(formData as any).loginCheckIp" class="ds-select">
-                                <option v-for="item in allYesNo" :key="String(item.value)" :value="item.value">{{
-                                    item.label }}
-                                </option>
-                            </select>
-                        </div>
-
-                        <div class="ds-form-group">
-                            <label class="ds-label">{{ t("TXT_CODE_b026be33") }}</label>
-                            <p class="ds-desc">{{ t("TXT_CODE_a77b1a21") }}</p>
-                            <select v-model="formData.totpDriftToleranceSteps" class="ds-select">
-                                <option v-for="item in totpDriftOptions" :key="item.value" :value="item.value">{{
-                                    item.label }}</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div v-show="activeTab === 'sso'" class="ds-form">
-                        <h2 class="ds-title">{{ t("TXT_CODE_SSO_TAB_TITLE") }}</h2>
-
-                        <div class="ds-form-group">
-                            <label class="ds-label">{{ t("TXT_CODE_SSO_ENABLE") }}</label>
-                            <p class="ds-desc">{{ t("TXT_CODE_SSO_ENABLE_DESC") }}</p>
-                            <select v-model="ssoMode" class="ds-select">
-                                <option value="disabled">{{ t("TXT_CODE_718c9310") }}</option>
-                                <option value="oidc">OpenID Connect (OIDC)</option>
-                                <option value="oauth2">OAuth 2.0</option>
-                            </select>
-                        </div>
-
-                        <template v-if="(formData as any).ssoEnabled">
-                            <div class="ds-form-group">
-                                <label class="ds-label">{{ t("TXT_CODE_SSO_PROVIDER_NAME") }}</label>
-                                <p class="ds-desc">{{ t("TXT_CODE_SSO_PROVIDER_NAME_DESC") }}</p>
-                                <input v-model="(formData as any).ssoProviderName" class="ds-input"
-                                    :placeholder="t('TXT_CODE_4ea93630')" />
-                            </div>
-
-                            <div class="ds-form-group">
-                                <label class="ds-label">{{ t("TXT_CODE_SSO_ICON_URL") }}</label>
-                                <p class="ds-desc">{{ t("TXT_CODE_SSO_ICON_URL_DESC") }}</p>
-                                <input v-model="(formData as any).ssoIconUrl" class="ds-input"
-                                    :placeholder="t('TXT_CODE_4ea93630')" />
-                            </div>
-
-                            <div v-if="ssoMode === 'oidc'" class="ds-form-group">
-                                <label class="ds-label">{{ t("TXT_CODE_SSO_ISSUER") }}</label>
-                                <p class="ds-desc">{{ t("TXT_CODE_SSO_ISSUER_DESC") }}</p>
-                                <input v-model="(formData as any).ssoIssuer" class="ds-input"
-                                    placeholder="https://accounts.example.com" />
-                            </div>
-
-                            <template v-if="ssoMode === 'oauth2'">
-                                <div class="ds-form-group">
-                                    <label class="ds-label">{{ t("TXT_CODE_SSO_AUTHORIZE_URL") }}</label>
-                                    <p class="ds-desc">{{ t("TXT_CODE_SSO_AUTHORIZE_URL_DESC") }}</p>
-                                    <input v-model="(formData as any).ssoAuthorizeUrl" class="ds-input"
-                                        placeholder="https://github.com/login/oauth/authorize" />
-                                </div>
-
-                                <div class="ds-form-group">
-                                    <label class="ds-label">{{ t("TXT_CODE_SSO_TOKEN_URL") }}</label>
-                                    <p class="ds-desc">{{ t("TXT_CODE_SSO_TOKEN_URL_DESC") }}</p>
-                                    <input v-model="(formData as any).ssoTokenUrl" class="ds-input"
-                                        placeholder="https://github.com/login/oauth/access_token" />
-                                </div>
-
-                                <div class="ds-form-group">
-                                    <label class="ds-label">{{ t("TXT_CODE_SSO_USERINFO_URL") }}</label>
-                                    <p class="ds-desc">{{ t("TXT_CODE_SSO_USERINFO_URL_DESC") }}</p>
-                                    <input v-model="(formData as any).ssoUserinfoUrl" class="ds-input"
-                                        placeholder="https://api.github.com/user" />
-                                </div>
-
-                                <div class="ds-form-group">
-                                    <label class="ds-label">{{ t("TXT_CODE_SSO_USER_ID_FIELD") }}</label>
-                                    <p class="ds-desc">{{ t("TXT_CODE_SSO_USER_ID_FIELD_DESC") }}</p>
-                                    <input v-model="(formData as any).ssoUserIdField" class="ds-input"
-                                        placeholder="id" />
-                                </div>
-
-                                <div class="ds-form-group">
-                                    <label class="ds-label">{{ t("TXT_CODE_SSO_SCOPES") }}</label>
-                                    <p class="ds-desc">{{ t("TXT_CODE_SSO_SCOPES_DESC") }}</p>
-                                    <input v-model="(formData as any).ssoScopes" class="ds-input"
-                                        placeholder="read:user" />
-                                </div>
-                            </template>
-
-                            <div class="ds-form-group">
-                                <label class="ds-label">Client ID</label>
-                                <p class="ds-desc">{{ t("TXT_CODE_SSO_CLIENT_ID_DESC") }}</p>
-                                <input v-model="(formData as any).ssoClientId" class="ds-input"
-                                    :placeholder="t('TXT_CODE_4ea93630')" />
-                            </div>
-
-                            <div class="ds-form-group">
-                                <label class="ds-label">Client Secret</label>
-                                <p class="ds-desc">{{ t("TXT_CODE_SSO_CLIENT_SECRET_DESC") }}</p>
-                                <input v-model="(formData as any).ssoClientSecret" type="password" class="ds-input"
-                                    :placeholder="t('TXT_CODE_4ea93630')" />
-                            </div>
-
-                            <div class="ds-form-group">
-                                <label class="ds-label">{{ t("TXT_CODE_SSO_CALLBACK_URL") }}</label>
-                                <p class="ds-desc">{{ t("TXT_CODE_SSO_CALLBACK_URL_DESC") }}</p>
-                                <input v-model="(formData as any).ssoCallbackUrl" class="ds-input"
-                                    placeholder="https://your-panel.com/api/auth/sso/callback" />
-                            </div>
-
-                            <div class="ds-form-group">
-                                <label class="ds-label">{{ t("TXT_CODE_SSO_ONLY_MODE") }}</label>
-                                <p class="ds-desc">{{ t("TXT_CODE_SSO_ONLY_MODE_DESC") }}</p>
-                                <select v-model="(formData as any).ssoOnlyMode" class="ds-select">
-                                    <option v-for="item in allYesNo" :key="String(item.value)" :value="item.value">{{
-                                        item.label
-                                    }}</option>
-                                </select>
-                            </div>
-
-                            <div class="ds-form-group">
-                                <label class="ds-label">{{ t("TXT_CODE_SSO_AUTO_REDIRECT") }}</label>
-                                <p class="ds-desc">{{ t("TXT_CODE_SSO_AUTO_REDIRECT_DESC") }}</p>
-                                <select v-model="(formData as any).ssoAutoRedirect" class="ds-select">
-                                    <option v-for="item in allYesNo" :key="String(item.value)" :value="item.value">{{
-                                        item.label
-                                    }}</option>
-                                </select>
-                            </div>
-                        </template>
                     </div>
 
                     <div v-show="activeTab === 'about'" class="ds-form">
