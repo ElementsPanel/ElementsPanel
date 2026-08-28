@@ -18,6 +18,7 @@ import {
 } from "./service/passport_service";
 import { isHaveInstance, isTopPermission } from "./service/permission_service";
 import userSystem from "./service/user_service";
+
 // The complete authorization policy for the panel. The core holds none of it:
 // it only asks whichever guard is installed, and serves everything when there
 // is none.
