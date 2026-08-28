@@ -1,0 +1,15 @@
+{
+  "TXT_CODE_DESKTOP_NODES": "Nós",
+  "TXT_CODE_DESKTOP_NODES_ADD": "Adicionar nó",
+  "TXT_CODE_DESKTOP_NODES_APIKEY": "Chave API",
+  "TXT_CODE_DESKTOP_NODES_APIKEY_HELP": "Deixe vazio para manter o valor atual",
+  "TXT_CODE_DESKTOP_NODES_APIKEY_REQUIRED": "A chave API é obrigatória",
+  "TXT_CODE_DESKTOP_NODES_DELETE_CONFIRM": "Tem certeza de que deseja excluir o nó {name}?",
+  "TXT_CODE_DESKTOP_NODES_EDIT": "Editar nó",
+  "TXT_CODE_DESKTOP_NODES_IP": "Endereço IP",
+  "TXT_CODE_DESKTOP_NODES_IP_REQUIRED": "O endereço IP é obrigatório",
+  "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "Nenhum nó encontrado",
+  "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "A porta é obrigatória",
+  "TXT_CODE_DESKTOP_NODES_SEARCH": "Pesquisar nós...",
+  "TXT_CODE_DESKTOP_NODES_SOCKET": "Conexão direta"
+}

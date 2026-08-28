@@ -237,38 +237,6 @@ const originRouterConfig: RouterConfig[] = [
     ]
   },
   {
-    path: "/node",
-    name: t("TXT_CODE_e076d90b"),
-    component: LayoutContainer,
-    meta: {
-      permission: ROLE.ADMIN,
-      mainMenu: true
-    },
-    children: [
-      {
-        path: "/node/image",
-        name: t("TXT_CODE_e6c30866"),
-        component: LayoutContainer,
-        meta: {
-          permission: ROLE.ADMIN,
-          mainMenu: false
-        },
-        children: [
-          {
-            path: "/node/image/new",
-            name: t("TXT_CODE_3d09f0ac"),
-            component: LayoutContainer,
-            meta: {
-              permission: ROLE.ADMIN,
-              mainMenu: false
-            }
-          }
-        ]
-      }
-    ]
-  },
-
-  {
     path: "/settings",
     name: t("TXT_CODE_b5c7b82d"),
     component: LayoutContainer,

@@ -6,7 +6,6 @@ import {
 } from "@/hooks/useHeaderMenus";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import {
-  ApartmentOutlined,
   AppstoreOutlined,
   AreaChartOutlined,
   LinkOutlined,
@@ -39,7 +38,6 @@ const routePathIcons: Record<string, Component> = {
   "/market": ShopOutlined,
   "/overview": AreaChartOutlined,
   "/users": TeamOutlined,
-  "/node": ApartmentOutlined,
   "/settings": SettingOutlined,
   "/customer": UserOutlined,
   "/login": LoginOutlined,

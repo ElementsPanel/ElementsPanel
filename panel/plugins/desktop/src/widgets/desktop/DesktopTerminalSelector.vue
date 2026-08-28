@@ -59,7 +59,7 @@ const openConsole = (node: NodeStatus) => {
                 <div class="dts-search-input-wrap">
                     <SearchOutlined class="dts-search-icon" />
                     <input v-model="searchQuery" class="dts-search-input"
-                        :placeholder="t('TXT_CODE_DESKTOP_NODES_SEARCH') || 'Search nodes...'" />
+                        :placeholder="t('TXT_CODE_461d1a01') || 'Search nodes...'" />
                 </div>
             </div>
         </div>
@@ -69,7 +69,7 @@ const openConsole = (node: NodeStatus) => {
                 {{ t("TXT_CODE_b197be11") }}
             </div>
             <div v-else-if="!filteredNodes.length" class="dts-empty">
-                {{ t("TXT_CODE_DESKTOP_NODES_NO_RESULTS") || 'No nodes found' }}
+                {{ t("TXT_CODE_5415f009") || 'No nodes found' }}
             </div>
             <div v-else class="dts-grid">
                 <div v-for="node in filteredNodes" :key="node.uuid" class="dts-card"

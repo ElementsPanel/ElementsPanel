@@ -1,0 +1,15 @@
+{
+  "TXT_CODE_DESKTOP_NODES": "Düğümler",
+  "TXT_CODE_DESKTOP_NODES_ADD": "Düğüm ekle",
+  "TXT_CODE_DESKTOP_NODES_APIKEY": "API anahtarı",
+  "TXT_CODE_DESKTOP_NODES_APIKEY_HELP": "Değiştirmemek için boş bırakın",
+  "TXT_CODE_DESKTOP_NODES_APIKEY_REQUIRED": "API anahtarı gereklidir",
+  "TXT_CODE_DESKTOP_NODES_DELETE_CONFIRM": "{name} düğümünü silmek istiyor musunuz?",
+  "TXT_CODE_DESKTOP_NODES_EDIT": "Düğümü düzenle",
+  "TXT_CODE_DESKTOP_NODES_IP": "IP adresi",
+  "TXT_CODE_DESKTOP_NODES_IP_REQUIRED": "IP adresi gereklidir",
+  "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "Düğüm bulunamadı",
+  "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "Bağlantı noktası gereklidir",
+  "TXT_CODE_DESKTOP_NODES_SEARCH": "Düğüm ara...",
+  "TXT_CODE_DESKTOP_NODES_SOCKET": "Doğrudan bağlantı"
+}

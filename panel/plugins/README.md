@@ -44,6 +44,7 @@ export default {
     registerRoute,
     registerComponent,
     registerLayoutCard,
+    registerLayoutCardPoolItem,
     registerLocaleMessages,
     registerAppMenu,
     registerLoginAction,
@@ -56,7 +57,9 @@ export default {
 
 Routes may set `meta.public` to bypass login checks and `meta.immersive` to hide
 the normal panel shell. Definition objects may also provide `appMenus` and
-`loginActions` arrays directly.
+`loginActions` arrays directly. Layout-card plugins may expose components with
+`layoutCards` and add removable entries to the design-mode card picker with
+`layoutCardPoolItems` or `context.registerLayoutCardPoolItem()`.
 
 A plugin can expose its configuration UI to the `config` plugin by exporting a
 Vue component. The component owns its form state, validation, API calls and

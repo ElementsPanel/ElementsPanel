@@ -1,0 +1,15 @@
+{
+  "TXT_CODE_DESKTOP_NODES": "Knoten",
+  "TXT_CODE_DESKTOP_NODES_ADD": "Knoten hinzufügen",
+  "TXT_CODE_DESKTOP_NODES_APIKEY": "API-Schlüssel",
+  "TXT_CODE_DESKTOP_NODES_APIKEY_HELP": "Leer lassen, um unverändert zu bleiben",
+  "TXT_CODE_DESKTOP_NODES_APIKEY_REQUIRED": "API-Schlüssel ist erforderlich",
+  "TXT_CODE_DESKTOP_NODES_DELETE_CONFIRM": "Möchten Sie den Knoten {name} wirklich löschen?",
+  "TXT_CODE_DESKTOP_NODES_EDIT": "Knoten bearbeiten",
+  "TXT_CODE_DESKTOP_NODES_IP": "IP-Adresse",
+  "TXT_CODE_DESKTOP_NODES_IP_REQUIRED": "IP-Adresse ist erforderlich",
+  "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "Keine Knoten gefunden",
+  "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "Port ist erforderlich",
+  "TXT_CODE_DESKTOP_NODES_SEARCH": "Knoten suchen...",
+  "TXT_CODE_DESKTOP_NODES_SOCKET": "Direktverbindung"
+}

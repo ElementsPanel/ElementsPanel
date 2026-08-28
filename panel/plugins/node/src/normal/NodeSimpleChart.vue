@@ -3,7 +3,7 @@ import { t } from "@/lang/i18n";
 import { getRandomId } from "@/tools/randId";
 import { Flex } from "ant-design-vue";
 import { onMounted, watch } from "vue";
-import { useSimpleChart } from "../hooks/useOverviewChart";
+import { useSimpleChart } from "@/hooks/useOverviewChart";
 
 const props = defineProps<{
   cpuData: number[];

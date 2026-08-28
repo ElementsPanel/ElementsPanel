@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import CardPanel from "@/components/CardPanel.vue";
 import IconBtn from "@/components/IconBtn.vue";
-import NodeSimpleChart from "@/components/NodeSimpleChart.vue";
+import NodeSimpleChart from "../NodeSimpleChart.vue";
 import { GLOBAL_INSTANCE_UUID } from "@/config/const";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { useLayoutCardTools } from "@/hooks/useCardTools";

@@ -1,0 +1,15 @@
+{
+  "TXT_CODE_DESKTOP_NODES": "Nœuds",
+  "TXT_CODE_DESKTOP_NODES_ADD": "Ajouter un nœud",
+  "TXT_CODE_DESKTOP_NODES_APIKEY": "Clé API",
+  "TXT_CODE_DESKTOP_NODES_APIKEY_HELP": "Laissez vide pour conserver la valeur actuelle",
+  "TXT_CODE_DESKTOP_NODES_APIKEY_REQUIRED": "La clé API est obligatoire",
+  "TXT_CODE_DESKTOP_NODES_DELETE_CONFIRM": "Voulez-vous vraiment supprimer le nœud {name} ?",
+  "TXT_CODE_DESKTOP_NODES_EDIT": "Modifier le nœud",
+  "TXT_CODE_DESKTOP_NODES_IP": "Adresse IP",
+  "TXT_CODE_DESKTOP_NODES_IP_REQUIRED": "L’adresse IP est obligatoire",
+  "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "Aucun nœud trouvé",
+  "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "Le port est obligatoire",
+  "TXT_CODE_DESKTOP_NODES_SEARCH": "Rechercher des nœuds...",
+  "TXT_CODE_DESKTOP_NODES_SOCKET": "Connexion directe"
+}

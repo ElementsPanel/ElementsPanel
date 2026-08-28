@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import NodeRemoteMappingEdit from "@/components/NodeRemoteMappingEdit.vue";
+import NodeRemoteMappingEdit from "../normal/NodeRemoteMappingEdit.vue";
 import { t } from "@/lang/i18n";
 import { editNode, overviewInfo } from "@/services/apis";
 import type { NodeStatus } from "@/types";

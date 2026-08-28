@@ -26,7 +26,6 @@ import DesktopMcPing from "./widgets/desktop/DesktopMcPing.vue";
 import DesktopModManager from "./widgets/desktop/DesktopModManager.vue";
 import DesktopMyApps from "./widgets/desktop/DesktopMyApps.vue";
 import DesktopNewInstance from "./widgets/desktop/DesktopNewInstance.vue";
-import DesktopNodeManager from "./widgets/desktop/DesktopNodeManager.vue";
 import DesktopOverview from "./widgets/desktop/DesktopOverview.vue";
 import DesktopSchedule from "./widgets/desktop/DesktopSchedule.vue";
 import DesktopServerConfig from "./widgets/desktop/DesktopServerConfig.vue";
@@ -44,7 +43,6 @@ import {
     CloseOutlined,
     CloseSquareOutlined,
     CloudDownloadOutlined,
-    ClusterOutlined,
     CodeOutlined,
     ControlOutlined,
     DashboardOutlined,
@@ -177,14 +175,6 @@ const availableDesktopApps = computed<DesktopApp[]>(() => {
             color: "#722ed1",
             route: "/users",
             windowContent: "users"
-        },
-        {
-            id: "nodes",
-            label: t("TXT_CODE_DESKTOP_NODES"),
-            icon: markRaw(ClusterOutlined),
-            color: "#fa8c16",
-            route: "/node",
-            windowContent: "nodes"
         },
         {
             id: "market",
@@ -539,7 +529,6 @@ const ICON_MAP: Record<string, Component> = {
     "instances": markRaw(DesktopOutlined),
     "overview": markRaw(DashboardOutlined),
     "users": markRaw(TeamOutlined),
-    "nodes": markRaw(ClusterOutlined),
     "market": markRaw(ShoppingOutlined),
     "settings": markRaw(SettingOutlined),
     "terminal": markRaw(CodeOutlined),
@@ -583,7 +572,7 @@ const loadDesktopLayout = async () => {
             windows.clear();
             for (const win of layout.windows) {
                 const desktopApp = availableDesktopApps.value.find(
-                    (app) => app.windowContent === win.content
+                    (app) => app.windowContent === win.content || app.id === win.content
                 );
                 if (win.content.startsWith("panel-plugin:") && !desktopApp?.component) continue;
                 const icon = desktopApp?.icon || ICON_MAP[win.content] || markRaw(DesktopOutlined);
@@ -597,7 +586,7 @@ const loadDesktopLayout = async () => {
                     minimized: false,
                     maximized: win.maximized || false,
                     zIndex,
-                    content: win.content,
+                    content: desktopApp?.windowContent || win.content,
                     initialX: win.x ?? 100,
                     initialY: win.y ?? 60,
                     initialWidth: win.width ?? 800,
@@ -1503,8 +1492,6 @@ const username = computed(() => appState.userInfo?.userName || "User");
                             <DesktopOverview v-else-if="win.content === 'overview'" />
 
                             <DesktopUsers v-else-if="win.content === 'users'" />
-
-                            <DesktopNodeManager v-else-if="win.content === 'nodes'" />
 
                             <DesktopSettings v-else-if="win.content === 'settings'" />
 

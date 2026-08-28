@@ -1,0 +1,15 @@
+{
+  "TXT_CODE_DESKTOP_NODES": "Nodes",
+  "TXT_CODE_DESKTOP_NODES_ADD": "Add Node",
+  "TXT_CODE_DESKTOP_NODES_APIKEY": "API Key",
+  "TXT_CODE_DESKTOP_NODES_APIKEY_HELP": "Leave empty to keep unchanged",
+  "TXT_CODE_DESKTOP_NODES_APIKEY_REQUIRED": "API Key is required",
+  "TXT_CODE_DESKTOP_NODES_DELETE_CONFIRM": "Are you sure you want to delete node {name}?",
+  "TXT_CODE_DESKTOP_NODES_EDIT": "Edit Node",
+  "TXT_CODE_DESKTOP_NODES_IP": "IP Address",
+  "TXT_CODE_DESKTOP_NODES_IP_REQUIRED": "IP is required",
+  "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "No nodes found",
+  "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "Port is required",
+  "TXT_CODE_DESKTOP_NODES_SEARCH": "Search nodes...",
+  "TXT_CODE_DESKTOP_NODES_SOCKET": "Direct connection"
+}

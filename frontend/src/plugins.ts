@@ -1,7 +1,11 @@
 import { ref, shallowReactive, type App, type Component } from "vue";
 import type { Pinia } from "pinia";
 import type { RouteRecordName, RouteRecordRaw, Router } from "vue-router";
-import { LAYOUT_CARD_TYPES } from "./config";
+import {
+  LAYOUT_CARD_TYPES,
+  PLUGIN_LAYOUT_CARD_POOL_FACTORIES,
+  type LayoutCardPoolItemFactory
+} from "./config";
 import { router } from "./config/router";
 import { getI18nInstance } from "./lang/i18n";
 import { panelPluginModules } from "virtual:panel-plugins";
@@ -28,6 +32,7 @@ export interface PanelFrontendPluginContext {
   registerRoute: (route: RouteRecordRaw) => void;
   registerComponent: (name: string, component: Component) => void;
   registerLayoutCard: (name: string, component: Component) => void;
+  registerLayoutCardPoolItem: (createItem: LayoutCardPoolItemFactory) => void;
   registerLocaleMessages: (locale: string, messages: Record<string, unknown>) => void;
   registerAppMenu: (menu: PanelFrontendAppMenu) => void;
   registerLoginAction: (action: PanelFrontendLoginAction) => void;
@@ -79,6 +84,7 @@ export interface PanelFrontendPluginDefinition {
   routes?: RouteRecordRaw[];
   components?: Record<string, Component>;
   layoutCards?: Record<string, Component>;
+  layoutCardPoolItems?: LayoutCardPoolItemFactory[];
   localeMessages?: Record<string, Record<string, unknown>>;
   appMenus?: PanelFrontendAppMenu[];
   loginActions?: PanelFrontendLoginAction[];
@@ -460,6 +466,10 @@ function createContext(plugin: InternalLoadedPanelFrontendPlugin): PanelFrontend
     registerRoute: (route) => registerRoute(plugin, route),
     registerComponent: (name, component) => registerComponent(plugin, name, component),
     registerLayoutCard: (name, component) => registerLayoutCard(plugin, name, component),
+    registerLayoutCardPoolItem: (createItem) => {
+      PLUGIN_LAYOUT_CARD_POOL_FACTORIES.push(createItem);
+      plugin.cleanups.push(() => removeItem(PLUGIN_LAYOUT_CARD_POOL_FACTORIES, createItem));
+    },
     registerLocaleMessages: (locale, messages) => registerLocaleMessages(plugin, locale, messages),
     registerAppMenu: (menu) => {
       appMenus.push(menu);
@@ -535,6 +545,7 @@ async function installPluginSource(source: PanelFrontendPluginSource, cacheKey?:
     Object.entries(definition.layoutCards || {}).forEach(([name, component]) => {
       plugin.context!.registerLayoutCard(name, component);
     });
+    definition.layoutCardPoolItems?.forEach(plugin.context.registerLayoutCardPoolItem);
     Object.entries(definition.localeMessages || {}).forEach(([locale, messages]) => {
       plugin.context!.registerLocaleMessages(locale, messages);
     });

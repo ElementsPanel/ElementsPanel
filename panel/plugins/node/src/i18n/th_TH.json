@@ -1,0 +1,15 @@
+{
+  "TXT_CODE_DESKTOP_NODES": "โหนด",
+  "TXT_CODE_DESKTOP_NODES_ADD": "เพิ่มโหนด",
+  "TXT_CODE_DESKTOP_NODES_APIKEY": "คีย์ API",
+  "TXT_CODE_DESKTOP_NODES_APIKEY_HELP": "เว้นว่างไว้เพื่อไม่เปลี่ยนแปลง",
+  "TXT_CODE_DESKTOP_NODES_APIKEY_REQUIRED": "ต้องระบุคีย์ API",
+  "TXT_CODE_DESKTOP_NODES_DELETE_CONFIRM": "ต้องการลบโหนด {name} หรือไม่",
+  "TXT_CODE_DESKTOP_NODES_EDIT": "แก้ไขโหนด",
+  "TXT_CODE_DESKTOP_NODES_IP": "ที่อยู่ IP",
+  "TXT_CODE_DESKTOP_NODES_IP_REQUIRED": "ต้องระบุที่อยู่ IP",
+  "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "ไม่พบโหนด",
+  "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "ต้องระบุพอร์ต",
+  "TXT_CODE_DESKTOP_NODES_SEARCH": "ค้นหาโหนด...",
+  "TXT_CODE_DESKTOP_NODES_SOCKET": "เชื่อมต่อโดยตรง"
+}

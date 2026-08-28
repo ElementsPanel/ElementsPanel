@@ -19,16 +19,16 @@ const { containerState } = useLayoutContainerStore();
 
 const route = useRoute();
 
-const display = computed(() => {
-  cardPool = getCardPool()
+const cardPool = computed(() =>
+  getCardPool()
     .filter((v) => (v.onlyPath ? v.onlyPath.includes(route.path) : true))
-    .filter((v) => !v.disableAdd);
-  return containerState.showNewCardDialog;
-});
+    .filter((v) => !v.disableAdd)
+);
+
+const display = computed(() => containerState.showNewCardDialog);
 
 const paramsDialog = ref<InstanceType<typeof Params>>();
 
-let cardPool = getCardPool();
 const currentPageRole = route.meta.permission as ROLE;
 
 const insertCardToLayout = async (card: NewCardItem) => {

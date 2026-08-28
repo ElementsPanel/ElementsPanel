@@ -3,8 +3,6 @@ import { getRandomId } from "@/tools/randId";
 import type { LayoutCard } from "@/types";
 import DefaultCard from "@/widgets/DefaultCard.vue";
 import EmptyCard from "@/widgets/EmptyCard.vue";
-import ImageManager from "@/widgets/imageManager/index.vue";
-import NewImage from "@/widgets/imageManager/NewImage.vue";
 import InstanceBaseInfo from "@/widgets/instance/BaseInfo.vue";
 import InstanceCommandHistory from "@/widgets/instance/CommandHistory.vue";
 import InstanceFileManager from "@/widgets/instance/FileManager.vue";
@@ -21,9 +19,6 @@ import InstanceList from "@/widgets/InstanceList.vue";
 import LoginCard from "@/widgets/LoginCard.vue";
 import MarketEditor from "@/widgets/market/editor.vue";
 import Market from "@/widgets/market/index.vue";
-import NodeItem from "@/widgets/node/NodeItem.vue";
-import NodeList from "@/widgets/NodeList.vue";
-import NodeOverview from "@/widgets/NodeOverview.vue";
 import OperationLogCard from "@/widgets/OperationLogCard.vue";
 import Carousel from "@/widgets/others/Carousel.vue";
 import ClockCard from "@/widgets/others/ClockCard.vue";
@@ -51,9 +46,10 @@ import UserStatusBlock from "@/widgets/UserStatusBlock.vue";
 import { NEW_CARD_TYPE } from "../types/index";
 import { LayoutCardHeight } from "./originLayoutConfig";
 import { ROLE } from "./router";
+import { shallowReactive } from "vue";
 
 // Register specified Vue components for each card.
-export const LAYOUT_CARD_TYPES: { [key: string]: any } = {
+export const LAYOUT_CARD_TYPES: { [key: string]: any } = shallowReactive({
   LoginCard,
   Page404,
   TitleCard,
@@ -61,12 +57,9 @@ export const LAYOUT_CARD_TYPES: { [key: string]: any } = {
   DataOverview,
   StatusBlock,
   QuickStart,
-  NodeOverview,
   RequestChart,
   InstanceChart,
   InstanceList,
-  NodeList,
-  NodeItem,
   Settings,
   UserList,
   Terminal,
@@ -88,8 +81,6 @@ export const LAYOUT_CARD_TYPES: { [key: string]: any } = {
   ClockCard,
   UserStatusBlock,
   UserInstanceList,
-  ImageManager,
-  NewImage,
   Schedule,
   InstanceShortcut,
   DefaultCard,
@@ -100,12 +91,16 @@ export const LAYOUT_CARD_TYPES: { [key: string]: any } = {
   OperationLogCard,
   Market,
   MarketEditor
-};
+});
 
 export interface NewCardItem extends LayoutCard {
   category: NEW_CARD_TYPE;
   permission: ROLE;
 }
+
+export type LayoutCardPoolItemFactory = () => NewCardItem;
+
+export const PLUGIN_LAYOUT_CARD_POOL_FACTORIES = shallowReactive<LayoutCardPoolItemFactory[]>([]);
 
 export function getLayoutCardPool() {
   const LAYOUT_CARD_POOL: NewCardItem[] = [
@@ -475,17 +470,6 @@ export function getLayoutCardPool() {
     {
       id: getRandomId(),
       permission: ROLE.ADMIN,
-      type: "NodeOverview",
-      title: t("TXT_CODE_4bedec2a"),
-      meta: {},
-      width: 12,
-      description: t("TXT_CODE_2a8dc13f"),
-      height: LayoutCardHeight.BIG,
-      category: NEW_CARD_TYPE.DATA
-    },
-    {
-      id: getRandomId(),
-      permission: ROLE.ADMIN,
       type: "OperationLogCard",
       title: t("TXT_CODE_f6a33629"),
       meta: {},
@@ -515,29 +499,6 @@ export function getLayoutCardPool() {
       description: t("TXT_CODE_d628e631"),
       height: LayoutCardHeight.MEDIUM,
       category: NEW_CARD_TYPE.INSTANCE
-    },
-    {
-      id: getRandomId(),
-      permission: ROLE.ADMIN,
-      meta: {},
-      type: "NodeItem",
-      title: t("TXT_CODE_def287e0"),
-      width: 6,
-      description: t("TXT_CODE_abe0862e"),
-      height: LayoutCardHeight.MEDIUM,
-      category: NEW_CARD_TYPE.INSTANCE,
-      params: [
-        {
-          field: "daemonId",
-          label: t("TXT_CODE_72cfab69"),
-          type: "string"
-        },
-        {
-          field: "instance",
-          label: t("TXT_CODE_e7cad65f"),
-          type: "instance"
-        }
-      ]
     },
     {
       id: getRandomId(),
@@ -612,5 +573,5 @@ export function getLayoutCardPool() {
       category: NEW_CARD_TYPE.OTHER
     }
   ];
-  return LAYOUT_CARD_POOL;
+  return [...LAYOUT_CARD_POOL, ...PLUGIN_LAYOUT_CARD_POOL_FACTORIES.map((createItem) => createItem())];
 }
