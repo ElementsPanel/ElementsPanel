@@ -1,4 +1,4 @@
-import { getPanelFrontendService } from "@/plugins";
+import { getPanelFrontendService } from "@/pluginServices";
 import type { ComputedNodeInfo, ComputedOverviewResponse } from "./useOverviewInfo";
 import type { ComputedRef, Ref } from "vue";
 

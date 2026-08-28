@@ -1,4 +1,4 @@
-import { getPanelFrontendService } from "@/plugins";
+import { getPanelFrontendService } from "@/pluginServices";
 import type { Ref } from "vue";
 import type { NodeStatus } from "@/types";
 

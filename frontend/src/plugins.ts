@@ -8,7 +8,13 @@ import {
 } from "./config";
 import { router } from "./config/router";
 import { getI18nInstance } from "./lang/i18n";
+import {
+  getPanelFrontendService,
+  panelFrontendServiceRegistrations as serviceRegistrations
+} from "./pluginServices";
 import { panelPluginModules } from "virtual:panel-plugins";
+
+export { getPanelFrontendService } from "./pluginServices";
 
 export interface PanelFrontendPluginMetadata {
   id: string;
@@ -146,11 +152,6 @@ interface DesktopAppRegistration {
   desktopApp: PanelFrontendDesktopApp;
 }
 
-interface ServiceRegistration {
-  owner: InternalLoadedPanelFrontendPlugin;
-  service: unknown;
-}
-
 interface PanelFrontendPluginRuntime {
   load: (id: string) => Promise<LoadedPanelFrontendPlugin>;
   unload: (id: string) => Promise<boolean>;
@@ -169,7 +170,6 @@ const loadedPlugins = shallowReactive<InternalLoadedPanelFrontendPlugin[]>([]);
 const appMenus = shallowReactive<PanelFrontendAppMenu[]>([]);
 const loginActions = shallowReactive<PanelFrontendLoginAction[]>([]);
 const desktopAppRegistrations = shallowReactive<DesktopAppRegistration[]>([]);
-const serviceRegistrations = new Map<string, ServiceRegistration>();
 const routeRevision = ref(0);
 const pluginSources = new Map<string, PanelFrontendPluginSource>();
 const localeBaseMessages = new Map<string, Record<string, unknown>>();
@@ -723,12 +723,4 @@ export function getPanelFrontendDesktopApps(): readonly PanelFrontendDesktopApp[
     desktopApps.set(registration.desktopApp.id, registration.desktopApp);
   }
   return [...desktopApps.values()];
-}
-
-/**
- * Resolve a service exposed by a loaded panel plugin. Services are removed when
- * their owning plugin is unloaded, so callers should resolve them at use time.
- */
-export function getPanelFrontendService<T = unknown>(name: string): T | undefined {
-  return serviceRegistrations.get(name.trim())?.service as T | undefined;
 }
