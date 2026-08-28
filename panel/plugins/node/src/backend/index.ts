@@ -1,27 +1,43 @@
-const Router = require("@koa/router");
+import Router from "@koa/router";
+import type Koa from "koa";
+import type { PanelPluginContext } from "../../../../src/app/plugins";
 
 // Panel side of the node plugin. It owns every HTTP route the node management
 // UI talks to; the panel core only keeps the remote service subsystem itself,
 // because instance routing, sockets and the overview all depend on it.
-module.exports.setup = function setupNodePlugin(context) {
+
+interface RemoteServiceLike {
+  uuid: string;
+  available: boolean;
+  config: {
+    ip: string;
+    port: number;
+    prefix: string;
+    remarks: string;
+    brand?: string;
+  };
+  connect: () => void;
+}
+
+function describeNode(remoteService: RemoteServiceLike) {
+  return {
+    uuid: remoteService.uuid,
+    ip: remoteService.config.ip,
+    port: remoteService.config.port,
+    prefix: remoteService.config.prefix,
+    available: remoteService.available,
+    remarks: remoteService.config.remarks,
+    brand: remoteService.config.brand
+  };
+}
+
+export function setup(context: PanelPluginContext) {
   const router = new Router({ prefix: "/api/service" });
   const remoteServices = context.services.remote;
   const RemoteRequest = context.services.remoteRequest;
   const operationLogger = context.services.operationLogger;
   const validator = context.middleware.validator;
   const requireAdmin = context.middleware.permission({ level: context.roles.ADMIN });
-
-  function describeNode(remoteService) {
-    return {
-      uuid: remoteService.uuid,
-      ip: remoteService.config.ip,
-      port: remoteService.config.port,
-      prefix: remoteService.config.prefix,
-      available: remoteService.available,
-      remarks: remoteService.config.remarks,
-      brand: remoteService.config.brand
-    };
-  }
 
   // Get the list of remote services.
   // Contains only service information, not a list of instance information.
@@ -71,7 +87,7 @@ module.exports.setup = function setupNodePlugin(context) {
     "/remote_service",
     requireAdmin,
     validator({ body: { apiKey: String, port: Number, ip: String, remarks: String } }),
-    async (ctx) => {
+    async (ctx: Koa.ParameterizedContext) => {
       const parameter = ctx.request.body;
       // do asynchronous registration
       const instance = await remoteServices.registerRemoteService({
@@ -97,7 +113,7 @@ module.exports.setup = function setupNodePlugin(context) {
     "/remote_service",
     requireAdmin,
     validator({ query: { uuid: String } }),
-    async (ctx) => {
+    async (ctx: Koa.ParameterizedContext) => {
       const uuid = String(ctx.request.query.uuid);
       const parameter = ctx.request.body || {};
       const daemonSetting = parameter?.setting || {};
@@ -136,7 +152,7 @@ module.exports.setup = function setupNodePlugin(context) {
     "/remote_service",
     requireAdmin,
     validator({ query: { uuid: String } }),
-    async (ctx) => {
+    async (ctx: Koa.ParameterizedContext) => {
       const uuid = String(ctx.request.query.uuid);
       if (!remoteServices.services.has(uuid)) throw new Error("Instance does not exist");
       await remoteServices.deleteRemoteService(uuid);
@@ -154,7 +170,7 @@ module.exports.setup = function setupNodePlugin(context) {
     "/link_remote_service",
     requireAdmin,
     validator({ query: { uuid: String } }),
-    async (ctx) => {
+    async (ctx: Koa.ParameterizedContext) => {
       const uuid = String(ctx.request.query.uuid);
       if (!remoteServices.services.has(uuid)) throw new Error("Instance does not exist");
       try {
@@ -167,4 +183,4 @@ module.exports.setup = function setupNodePlugin(context) {
   );
 
   context.registerRouter(router);
-};
+}

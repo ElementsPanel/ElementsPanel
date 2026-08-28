@@ -13,7 +13,7 @@ well.
 
 ## Backend
 
-`src/backend/index.cjs` owns every HTTP route the node UI talks to:
+`src/backend/index.ts` owns every HTTP route the node UI talks to:
 
 | Method | Route |
 | --- | --- |

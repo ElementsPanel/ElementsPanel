@@ -10,7 +10,7 @@ the frontend entry is compiled by Vite as a separately loadable plugin entry.
   "name": "Example plugin",
   "version": "1.0.0",
   "priority": 100,
-  "backend": "src/index.js",
+  "backend": "backend/index.cjs",
   "frontend": "src/frontend.ts"
 }
 ```
@@ -30,16 +30,21 @@ the whole panel; with no provider registered the panel runs unauthenticated. It
 is cleared automatically when the owning plugin is disposed. See
 `plugins/user`.
 
-Backend entries must be Node-loadable JavaScript (`.js`, `.cjs`, or `.mjs`).
-Small backends can be hand-written `.cjs` (see `plugins/desktop` and
-`plugins/node`). Larger ones can be written in TypeScript at
-`src/backend/index.ts`; `panel/webpack.plugins.config.js` compiles every such
-entry to `<plugin>/backend/index.cjs` during `npm run build`, externalizing the
-panel's runtime dependencies so the plugin shares its module instances.
+Backend entries are written in TypeScript at `src/backend/index.ts`.
+`panel/webpack.plugins.config.js` compiles every such entry to
+`<plugin>/backend/index.cjs` during `npm run build` in `panel/`, externalizing
+the panel's runtime dependencies so the plugin shares its module instances.
 Compiled backends are gitignored build output — point `plugin.json` at
-`backend/index.cjs`. A TypeScript backend must not import panel core modules;
-they are bundled into `app.js`, so importing them would compile a second copy of
-each singleton. Take what you need from the context instead.
+`backend/index.cjs`.
+
+A backend must not import panel core modules: they are bundled into `app.js`, so
+importing them would compile a second copy of each singleton (storage, system
+config, i18n). Take what you need from the context instead; only `import type`
+from the core is safe, because types are erased.
+
+The loader itself accepts any Node-loadable JavaScript (`.js`, `.cjs`, `.mjs`),
+so a hand-written entry still works if you have a reason to skip the compile
+step.
 
 The frontend module exports `setup(context)` or a definition object. Its
 `directory` context field is the logical plugin id. During a production build,

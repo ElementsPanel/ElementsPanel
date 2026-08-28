@@ -1,33 +1,35 @@
+import type { DaemonPluginContext } from "../../../../src/service/plugins";
+
 // Daemon side of the node plugin. It owns "info/setting", the protocol event
 // the panel node plugin uses to write this node's configuration. The daemon
 // core only reports its configuration through "info/overview".
 
-// Inlined from mcsmanager-common, which is bundled into the daemon at build
-// time and therefore not requirable from a runtime plugin.
-function isEmpty(value) {
+// Inlined from mcsmanager-common so the plugin does not depend on how the
+// daemon bundles it.
+function isEmpty(value: unknown) {
   return value === null || value === undefined;
 }
 
-function toText(value) {
+function toText(value: unknown): string | null {
   if (isEmpty(value)) return null;
   return String(value);
 }
 
-function toNumber(value) {
+function toNumber(value: unknown): number | null {
   if (isEmpty(value)) return null;
   if (isNaN(Number(value))) return null;
   return Number(value);
 }
 
-function toBoolean(value) {
+function toBoolean(value: unknown): boolean | null {
   if (isEmpty(value)) return null;
   return Boolean(value);
 }
 
 const BACKUP_FORMATS = ["zip", "tar.gz", "7z"];
 
-module.exports.setup = function setupNodeDaemonPlugin(context) {
-  context.registerProtocolHandler("info/setting", async (ctx, data) => {
+export function setup(context: DaemonPluginContext) {
+  context.registerProtocolHandler("info/setting", async (ctx: any, data: any) => {
     const config = context.config;
     const payload = data || {};
 
@@ -88,7 +90,7 @@ module.exports.setup = function setupNodeDaemonPlugin(context) {
     if (instanceBackupPath != null) {
       config.instanceBackupPath = instanceBackupPath;
     }
-    if (BACKUP_FORMATS.includes(instanceBackupFormat)) {
+    if (instanceBackupFormat != null && BACKUP_FORMATS.includes(instanceBackupFormat)) {
       config.instanceBackupFormat = instanceBackupFormat;
     }
     if (
@@ -103,4 +105,4 @@ module.exports.setup = function setupNodeDaemonPlugin(context) {
     context.saveConfig();
     context.protocol.response(ctx, true);
   });
-};
+}

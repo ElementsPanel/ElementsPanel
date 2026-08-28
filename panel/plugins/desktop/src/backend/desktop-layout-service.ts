@@ -1,16 +1,43 @@
-const fs = require("node:fs");
-const path = require("node:path");
+import fs from "node:fs";
+import path from "node:path";
+import type { PanelPluginContext } from "../../../../src/app/plugins";
 
 const DESKTOP_LAYOUT_DIR = "desktop_layouts";
 
-function getLayoutFile(userUuid) {
+type Logger = PanelPluginContext["logger"];
+
+export interface DesktopWindowLayout {
+  id: string;
+  content: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  [key: string]: unknown;
+}
+
+export interface DesktopIconLayout {
+  id: string;
+  x: number;
+  y: number;
+  [key: string]: unknown;
+}
+
+export interface DesktopLayout {
+  windows: DesktopWindowLayout[];
+  icons?: DesktopIconLayout[];
+  shortcuts?: string[];
+  updatedAt?: number;
+}
+
+function getLayoutFile(userUuid: string) {
   if (typeof userUuid !== "string" || !/^[a-zA-Z0-9_-]{1,128}$/.test(userUuid)) {
     throw new Error("Invalid user UUID");
   }
   return path.join(process.cwd(), "data", DESKTOP_LAYOUT_DIR, `${userUuid}.json`);
 }
 
-function getDesktopLayout(userUuid, logger) {
+export function getDesktopLayout(userUuid: string, logger: Logger): DesktopLayout | null {
   const file = getLayoutFile(userUuid);
   try {
     if (!fs.existsSync(file)) return null;
@@ -21,7 +48,7 @@ function getDesktopLayout(userUuid, logger) {
   }
 }
 
-function validateDesktopLayout(layout) {
+function validateDesktopLayout(layout: DesktopLayout) {
   if (!Array.isArray(layout?.windows)) {
     throw new Error("Invalid desktop layout: windows must be an array");
   }
@@ -73,7 +100,7 @@ function validateDesktopLayout(layout) {
   }
 }
 
-function setDesktopLayout(userUuid, layout, logger) {
+export function setDesktopLayout(userUuid: string, layout: DesktopLayout, logger: Logger) {
   try {
     validateDesktopLayout(layout);
     layout.updatedAt = Date.now();
@@ -85,5 +112,3 @@ function setDesktopLayout(userUuid, layout, logger) {
     throw error;
   }
 }
-
-module.exports = { getDesktopLayout, setDesktopLayout };

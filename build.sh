@@ -34,7 +34,7 @@ mv "${BASE_PATH}/daemon/production/app.js" "${BASE_PATH}/production-code/daemon"
 mv "${BASE_PATH}/daemon/production/app.js.map" "${BASE_PATH}/production-code/daemon"
 cp -f "${BASE_PATH}/daemon/package.json" "${BASE_PATH}/production-code/daemon/package.json"
 cp -f "${BASE_PATH}/daemon/package-lock.json" "${BASE_PATH}/production-code/daemon/package-lock.json"
-if [ -d "${BASE_PATH}/daemon/plugins" ]; then cp -R "${BASE_PATH}/daemon/plugins" "${BASE_PATH}/production-code/daemon/plugins"; fi
+node scripts/package-daemon-plugins.mjs
 
 mv "${BASE_PATH}/panel/production/app.js" "${BASE_PATH}/production-code/web"
 mv "${BASE_PATH}/panel/production/app.js.map" "${BASE_PATH}/production-code/web"

@@ -1,8 +1,7 @@
 # Daemon plugins
 
-Each child directory is one daemon plugin. A plugin contains `plugin.json` and
-a `src` directory. The daemon entry must be a Node-loadable JavaScript module
-(`.js`, `.cjs`, or `.mjs`) and defaults to `src/index.js`.
+Each child directory is one daemon plugin. A source plugin contains
+`plugin.json` and a `src` directory.
 
 ```json
 {
@@ -10,9 +9,25 @@ a `src` directory. The daemon entry must be a Node-loadable JavaScript module
   "name": "Example daemon plugin",
   "version": "1.0.0",
   "priority": 100,
-  "daemon": "src/index.js"
+  "backend": "backend/index.cjs"
 }
 ```
+
+Entries are written in TypeScript at `src/backend/index.ts`.
+`daemon/webpack.plugins.config.js` compiles every such entry to
+`<plugin>/backend/index.cjs` during `npm run build` in `daemon/`, externalizing
+the daemon's runtime dependencies so the plugin shares its module instances.
+Compiled backends are gitignored build output, and
+`scripts/package-daemon-plugins.mjs` copies only them plus a rewritten
+`plugin.json` into `production-code/daemon/plugins/` — `src/` is not shipped.
+
+A plugin must not import daemon core modules: they are bundled into `app.js`, so
+importing them would compile a second copy of each singleton. Take what you need
+from the context instead; only `import type` from the core is safe.
+
+The loader accepts `daemon`, `backend`, `main` or `entry` as the metadata field,
+and any Node-loadable JavaScript (`.js`, `.cjs`, `.mjs`), so a hand-written entry
+still works if you have a reason to skip the compile step.
 
 The module exports `setup(context)` (or `install(context)`) and may also export
 `ready(context)` and `dispose(context)`. The setup context contains the Koa `app`, a plugin `router`,

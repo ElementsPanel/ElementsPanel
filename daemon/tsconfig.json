@@ -36,6 +36,7 @@
   },
   "include": [
     "src/**/*",
+    "plugins/*/src/backend/**/*",
     "../common/global.d.ts"
   ]
 }

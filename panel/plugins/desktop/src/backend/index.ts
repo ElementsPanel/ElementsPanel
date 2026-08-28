@@ -1,11 +1,13 @@
-const Router = require("@koa/router");
-const { getDesktopLayout, setDesktopLayout } = require("./desktop-layout-service.cjs");
+import Router from "@koa/router";
+import type Koa from "koa";
+import type { PanelPluginContext } from "../../../../src/app/plugins";
+import { getDesktopLayout, setDesktopLayout } from "./desktop-layout-service";
 
-module.exports.setup = function setupDesktopPlugin(context) {
+export function setup(context: PanelPluginContext) {
   const router = new Router({ prefix: "/api/overview" });
   const requireUser = context.middleware.permission({ level: context.roles.USER });
 
-  router.get("/desktop_layout", requireUser, async (ctx) => {
+  router.get("/desktop_layout", requireUser, async (ctx: Koa.ParameterizedContext) => {
     const userUuid = ctx.session?.uuid;
     if (!userUuid) {
       ctx.status = 403;
@@ -15,7 +17,7 @@ module.exports.setup = function setupDesktopPlugin(context) {
     ctx.body = getDesktopLayout(userUuid, context.logger) || { windows: [], updatedAt: 0 };
   });
 
-  router.post("/desktop_layout", requireUser, async (ctx) => {
+  router.post("/desktop_layout", requireUser, async (ctx: Koa.ParameterizedContext) => {
     const userUuid = ctx.session?.uuid;
     if (!userUuid) {
       ctx.status = 403;
@@ -27,4 +29,4 @@ module.exports.setup = function setupDesktopPlugin(context) {
   });
 
   context.registerRouter(router);
-};
+}

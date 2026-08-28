@@ -4,5 +4,5 @@
   "version": "1.0.0",
   "description": "Applies the node configuration pushed by the panel node plugin.",
   "priority": 200,
-  "daemon": "src/index.cjs"
+  "backend": "backend/index.cjs"
 }
