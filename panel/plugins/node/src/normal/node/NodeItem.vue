@@ -8,7 +8,7 @@ import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useOverviewInfo, type ComputedNodeInfo } from "@/hooks/useOverviewInfo";
 import { SocketStatus, useSocketIoClient } from "@/hooks/useSocketIo";
 import { t } from "@/lang/i18n";
-import { connectNode } from "@/services/apis";
+import { connectNode } from "../../api";
 import { arrayFilter } from "@/tools/array";
 import { reportErrorMsg } from "@/tools/validator";
 import { hasVersionUpdate } from "@/tools/version";

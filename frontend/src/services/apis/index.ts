@@ -1,6 +1,7 @@
 import { useDefineApi } from "@/stores/useDefineApi";
-import type { InstanceDetail, NodeStatus, PanelStatus, Settings } from "@/types";
+import type { InstanceDetail, PanelStatus, Settings } from "@/types";
 import type { BaseUserInfo, EditUserInfo, LoginUserInfo, UserInstance } from "@/types/user";
+export { addNode, connectNode, deleteNode, editNode, remoteNodeList } from "./node";
 
 export const panelInstall = useDefineApi<
   {
@@ -77,10 +78,6 @@ export const userInfoApiAdvanced = useDefineApi<
   BaseUserInfo
 >({
   url: "/api/auth/"
-});
-
-export const remoteNodeList = useDefineApi<any, NodeStatus[]>({
-  url: "/api/service/remote_services_list"
 });
 
 export const remoteInstances = useDefineApi<
@@ -191,65 +188,6 @@ export const updateUserInstance = useDefineApi<
 
 export const overviewInfo = useDefineApi<any, IPanelOverviewResponse>({
   url: "/api/overview"
-});
-
-export const editNode = useDefineApi<
-  {
-    params: {
-      uuid: string;
-    };
-    data: {
-      apiKey?: string;
-      ip?: string;
-      port?: number;
-      prefix?: string;
-      remarks?: string;
-      setting?: any;
-    };
-  },
-  any
->({
-  url: "/api/service/remote_service",
-  method: "PUT"
-});
-
-export const addNode = useDefineApi<
-  {
-    data: {
-      ip: string;
-      port: number;
-      remarks: string;
-      apiKey: string;
-    };
-  },
-  any
->({
-  url: "/api/service/remote_service",
-  method: "POST"
-});
-
-export const deleteNode = useDefineApi<
-  {
-    params: {
-      uuid: string;
-    };
-  },
-  any
->({
-  url: "/api/service/remote_service",
-  method: "DELETE"
-});
-
-export const connectNode = useDefineApi<
-  {
-    params: {
-      uuid: string;
-    };
-  },
-  any
->({
-  url: "/api/service/link_remote_service",
-  method: "GET"
 });
 
 export interface SsoPublicConfig {

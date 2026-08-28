@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import NodeRemoteMappingEdit from "../NodeRemoteMappingEdit.vue";
 import type { ComputedNodeInfo } from "@/hooks/useOverviewInfo";
-import { useRemoteNode } from "@/hooks/useRemoteNode";
+import { useRemoteNode } from "../../hooks/useRemoteNode";
 import { t } from "@/lang/i18n";
 import { getValidatorErrorMsg, isLocalNetworkIP, reportErrorMsg } from "@/tools/validator";
 import { message, type FormInstance } from "ant-design-vue";

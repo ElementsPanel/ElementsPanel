@@ -13,6 +13,8 @@ import NodeOverview from "./normal/NodeOverview.vue";
 import ImageManager from "./image/index.vue";
 import NewImage from "./image/NewImage.vue";
 import DesktopNodeManager from "./desktop/DesktopNodeManager.vue";
+import * as nodeApi from "./api";
+import { useRemoteNode } from "./hooks/useRemoteNode";
 import deDE from "./i18n/de_DE.json";
 import enUS from "./i18n/en_US.json";
 import esES from "./i18n/es_ES.json";
@@ -83,6 +85,8 @@ const nodeCardPoolItems: LayoutCardPoolItemFactory[] = [
 export default {
   localeMessages,
   setup(context: PanelFrontendPluginContext) {
+    context.registerService("node.api", nodeApi);
+    context.registerService("node.useRemoteNode", useRemoteNode);
     context.registerRoute({
       path: "/node",
       name: t("TXT_CODE_e076d90b"),

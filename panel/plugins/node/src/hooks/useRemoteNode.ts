@@ -1,0 +1,82 @@
+import { useOverviewInfo, type ComputedNodeInfo } from "@/hooks/useOverviewInfo";
+import { computed, ref } from "vue";
+import { addNode as addNodeApi, connectNode, deleteNode as deleteNodeApi, editNode as editNodeApi } from "../api";
+
+export interface RemoteNodeDetail {
+  ip: string;
+  port: number;
+  prefix: string;
+  remarks: string;
+  apiKey?: string;
+  language: string;
+  uploadSpeedRate: number;
+  downloadSpeedRate: number;
+  portRangeStart: number;
+  portRangeEnd: number;
+  portAssignInterval: number;
+  enableSoftShutdown: boolean;
+  softShutdownSkipDocker: boolean;
+  softShutdownWaitSeconds: number;
+}
+
+export function useRemoteNode() {
+  const operationForm = ref({ name: "", current: 1, pageSize: 8, total: 0 });
+  const ALL = "all";
+  const currentStatus = ref<any>(ALL);
+  const { state, refresh } = useOverviewInfo();
+  const refreshLoading = ref(false);
+
+  const filterByName = (node: ComputedNodeInfo) =>
+    operationForm.value.name !== ""
+      ? node.remarks.toLowerCase().includes(operationForm.value.name.toLowerCase())
+      : true;
+
+  const remoteNodes = computed(() => {
+    const nodeList = state.value?.remote;
+    const filteredNodes =
+      nodeList?.filter(
+        (node) =>
+          (currentStatus.value === ALL || node.available === currentStatus.value) &&
+          filterByName(node)
+      ) || [];
+    operationForm.value.total = filteredNodes.length;
+    const startIndex = (operationForm.value.current - 1) * operationForm.value.pageSize;
+    const sliceFilteredNodes = filteredNodes.slice(startIndex, startIndex + operationForm.value.pageSize);
+    if (sliceFilteredNodes.length === 0 && operationForm.value.current > 1) {
+      operationForm.value.current -= 1;
+      refresh();
+    }
+    return sliceFilteredNodes;
+  });
+
+  const addNode = async (data: any) => {
+    await addNodeApi().execute({ data });
+    await refresh(true);
+  };
+
+  const deleteNode = async (uuid: string) => {
+    await deleteNodeApi().execute({ params: { uuid } });
+    await refresh(true);
+  };
+
+  const updateNode = async (uuid: string, data: any) => {
+    const { execute } = editNodeApi();
+    const { execute: tryConnectNode } = connectNode();
+    await execute({ params: { uuid }, data });
+    await tryConnectNode({ params: { uuid } });
+    await refresh(true);
+  };
+
+  return {
+    response: state,
+    remoteNodes,
+    operationForm,
+    currentStatus,
+    refreshLoading,
+    refresh,
+    addNode,
+    deleteNode,
+    updateNode
+  };
+}
+

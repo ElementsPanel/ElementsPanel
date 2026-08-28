@@ -1,11 +1,8 @@
-import { useOverviewInfo, type ComputedNodeInfo } from "@/hooks/useOverviewInfo";
-import {
-  addNode as addNodeApi,
-  connectNode,
-  deleteNode as deleteNodeApi,
-  editNode as editNodeApi
-} from "@/services/apis";
-import { computed, ref } from "vue";
+import { getPanelFrontendService } from "@/plugins";
+import type { ComputedNodeInfo, ComputedOverviewResponse } from "./useOverviewInfo";
+import type { ComputedRef, Ref } from "vue";
+
+export type { ComputedNodeInfo } from "./useOverviewInfo";
 
 export interface RemoteNodeDetail {
   ip: string;
@@ -24,91 +21,22 @@ export interface RemoteNodeDetail {
   softShutdownWaitSeconds: number;
 }
 
+export interface RemoteNodeHook {
+  response: Ref<ComputedOverviewResponse | undefined>;
+  remoteNodes: ComputedRef<ComputedNodeInfo[]>;
+  operationForm: Ref<{ name: string; current: number; pageSize: number; total: number }>;
+  currentStatus: Ref<any>;
+  refreshLoading: Ref<boolean>;
+  refresh: (forceRequest?: boolean) => Promise<ComputedOverviewResponse | undefined>;
+  addNode: (data: any) => Promise<void>;
+  deleteNode: (uuid: string) => Promise<void>;
+  updateNode: (uuid: string, data: any) => Promise<void>;
+}
+
 export function useRemoteNode() {
-  const operationForm = ref({
-    name: "",
-    current: 1,
-    pageSize: 8,
-    total: 0
-  });
-  const ALL = "all";
-  const currentStatus = ref<any>(ALL);
-  const { state, refresh } = useOverviewInfo();
-  const refreshLoading = ref(false);
-
-  const filterByName = (node: ComputedNodeInfo) => {
-    return operationForm.value.name !== ""
-      ? node.remarks.toLowerCase().includes(operationForm.value.name.toLowerCase())
-      : true;
-  };
-
-  const remoteNodes = computed(() => {
-    const nodeList = state.value?.remote;
-
-    const filteredNodes =
-      nodeList?.filter(
-        (node) =>
-          (currentStatus.value === ALL || node.available === currentStatus.value) &&
-          filterByName(node)
-      ) || [];
-
-    operationForm.value.total = filteredNodes.length || 0;
-
-    const startIndex = (operationForm.value.current - 1) * operationForm.value.pageSize;
-    const endIndex = startIndex + operationForm.value.pageSize;
-
-    const sliceFilteredNodes = filteredNodes.slice(startIndex, endIndex);
-
-    if (sliceFilteredNodes.length === 0 && operationForm.value.current > 1) {
-      operationForm.value.current -= 1;
-      refresh();
-    }
-
-    return sliceFilteredNodes;
-  });
-
-  const addNode = async (data: any) => {
-    await addNodeApi().execute({
-      data
-    });
-    await refresh(true);
-  };
-
-  const deleteNode = async (uuid: string) => {
-    await deleteNodeApi().execute({
-      params: {
-        uuid
-      }
-    });
-    await refresh(true);
-  };
-
-  const updateNode = async (uuid: string, data: any) => {
-    const { execute } = editNodeApi();
-    const { execute: tryConnectNode } = connectNode();
-    await execute({
-      params: {
-        uuid
-      },
-      data
-    });
-    await tryConnectNode({
-      params: {
-        uuid
-      }
-    });
-    await refresh(true);
-  };
-
-  return {
-    response: state,
-    remoteNodes,
-    operationForm,
-    currentStatus,
-    refreshLoading,
-    refresh,
-    addNode,
-    deleteNode,
-    updateNode
-  };
+  const hook = getPanelFrontendService<() => RemoteNodeHook>("node.useRemoteNode");
+  if (!hook) {
+    throw new Error('Panel frontend plugin "node" is not loaded.');
+  }
+  return hook();
 }

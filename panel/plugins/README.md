@@ -48,12 +48,21 @@ export default {
     registerLocaleMessages,
     registerAppMenu,
     registerLoginAction,
-    registerDesktopApp
+    registerDesktopApp,
+    registerService,
+    getService
   }) {
     // register additional Vue behavior here
   }
 };
 ```
+
+Plugins can expose runtime services for other plugins and panel compatibility
+facades with `registerService(name, value)`. Services are scoped to the owning
+plugin and are removed automatically when that plugin is unloaded. Other
+plugins can resolve them through `context.getService(name)` (or the exported
+`getPanelFrontendService(name)`) at call time so dynamic plugin unload/reload
+remains safe.
 
 Routes may set `meta.public` to bypass login checks and `meta.immersive` to hide
 the normal panel shell. Definition objects may also provide `appMenus` and

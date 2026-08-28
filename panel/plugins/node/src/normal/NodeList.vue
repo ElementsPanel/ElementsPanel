@@ -6,7 +6,7 @@ import { reportErrorMsg } from "@/tools/validator";
 import type { LayoutCard } from "@/types/index";
 import { ClusterOutlined, SearchOutlined } from "@ant-design/icons-vue";
 import { ref } from "vue";
-import { useRemoteNode } from "@/hooks/useRemoteNode";
+import { useRemoteNode } from "../hooks/useRemoteNode";
 import NodeDetailDialog from "./node/NodeDetailDialog.vue";
 import NodeItem from "./node/NodeItem.vue";
 

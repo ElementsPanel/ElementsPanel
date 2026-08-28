@@ -37,6 +37,10 @@ export interface PanelFrontendPluginContext {
   registerAppMenu: (menu: PanelFrontendAppMenu) => void;
   registerLoginAction: (action: PanelFrontendLoginAction) => void;
   registerDesktopApp: (desktopApp: PanelFrontendDesktopApp) => void;
+  /** Register a runtime service that other plugins or the panel can consume. */
+  registerService: (name: string, service: unknown) => void;
+  /** Read a service exposed by another loaded plugin. */
+  getService: <T = unknown>(name: string) => T | undefined;
 }
 
 export interface PanelFrontendAppMenuItem {
@@ -142,6 +146,11 @@ interface DesktopAppRegistration {
   desktopApp: PanelFrontendDesktopApp;
 }
 
+interface ServiceRegistration {
+  owner: InternalLoadedPanelFrontendPlugin;
+  service: unknown;
+}
+
 interface PanelFrontendPluginRuntime {
   load: (id: string) => Promise<LoadedPanelFrontendPlugin>;
   unload: (id: string) => Promise<boolean>;
@@ -160,6 +169,7 @@ const loadedPlugins = shallowReactive<InternalLoadedPanelFrontendPlugin[]>([]);
 const appMenus = shallowReactive<PanelFrontendAppMenu[]>([]);
 const loginActions = shallowReactive<PanelFrontendLoginAction[]>([]);
 const desktopAppRegistrations = shallowReactive<DesktopAppRegistration[]>([]);
+const serviceRegistrations = new Map<string, ServiceRegistration>();
 const routeRevision = ref(0);
 const pluginSources = new Map<string, PanelFrontendPluginSource>();
 const localeBaseMessages = new Map<string, Record<string, unknown>>();
@@ -439,6 +449,26 @@ function registerDesktopApp(
   plugin.cleanups.push(() => removeItem(desktopAppRegistrations, registration));
 }
 
+function registerService(
+  plugin: InternalLoadedPanelFrontendPlugin,
+  name: string,
+  service: unknown
+) {
+  const normalizedName = name.trim();
+  if (!normalizedName) {
+    throw new Error(`Panel frontend plugin "${plugin.metadata.id}" registered an empty service name.`);
+  }
+  const existing = serviceRegistrations.get(normalizedName);
+  if (existing && existing.owner !== plugin) {
+    throw new Error(`Panel frontend service name is already registered: ${normalizedName}`);
+  }
+  serviceRegistrations.set(normalizedName, { owner: plugin, service });
+  plugin.cleanups.push(() => {
+    const current = serviceRegistrations.get(normalizedName);
+    if (current?.owner === plugin) serviceRegistrations.delete(normalizedName);
+  });
+}
+
 function registerRoute(plugin: InternalLoadedPanelFrontendPlugin, route: RouteRecordRaw) {
   const existingRoutes = new Set(router.getRoutes());
   const removeRoute = router.addRoute(route);
@@ -479,7 +509,9 @@ function createContext(plugin: InternalLoadedPanelFrontendPlugin): PanelFrontend
       loginActions.push(action);
       plugin.cleanups.push(() => removeItem(loginActions, action));
     },
-    registerDesktopApp: (desktopApp) => registerDesktopApp(plugin, desktopApp)
+    registerDesktopApp: (desktopApp) => registerDesktopApp(plugin, desktopApp),
+    registerService: (name, service) => registerService(plugin, name, service),
+    getService: <T = unknown>(name: string) => getPanelFrontendService<T>(name)
   };
   return context;
 }
@@ -633,6 +665,7 @@ export async function setupPanelFrontendPlugins(app: App, pinia: Pinia) {
   appMenus.length = 0;
   loginActions.length = 0;
   desktopAppRegistrations.length = 0;
+  serviceRegistrations.clear();
   await refreshPanelFrontendPlugins();
 
   window.ElementsPanelPlugins = {
@@ -690,4 +723,12 @@ export function getPanelFrontendDesktopApps(): readonly PanelFrontendDesktopApp[
     desktopApps.set(registration.desktopApp.id, registration.desktopApp);
   }
   return [...desktopApps.values()];
+}
+
+/**
+ * Resolve a service exposed by a loaded panel plugin. Services are removed when
+ * their owning plugin is unloaded, so callers should resolve them at use time.
+ */
+export function getPanelFrontendService<T = unknown>(name: string): T | undefined {
+  return serviceRegistrations.get(name.trim())?.service as T | undefined;
 }

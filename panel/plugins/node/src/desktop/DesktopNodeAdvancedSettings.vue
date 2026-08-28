@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import NodeRemoteMappingEdit from "../normal/NodeRemoteMappingEdit.vue";
 import { t } from "@/lang/i18n";
-import { editNode, overviewInfo } from "@/services/apis";
+import { editNode } from "../api";
+import { overviewInfo } from "@/services/apis";
 import type { NodeStatus } from "@/types";
 import { SettingOutlined } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";

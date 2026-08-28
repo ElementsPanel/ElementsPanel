@@ -2,7 +2,7 @@
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { makeSocketIo, SocketStatus } from "@/hooks/useSocketIo";
 import { t } from "@/lang/i18n";
-import { addNode, connectNode, deleteNode, editNode, remoteNodeList } from "@/services/apis";
+import { addNode, connectNode, deleteNode, editNode, remoteNodeList } from "../api";
 import { hasVersionUpdate } from "@/tools/version";
 import type { NodeStatus } from "@/types";
 import {
