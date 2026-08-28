@@ -3,6 +3,7 @@ import { topProgressBar } from "@/services/TopProgressBar";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import type { LoginUserInfo } from "@/types/user";
 import InstallPage from "@/views/Install.vue";
+import CreateInstancePage from "@/views/CreateInstance.vue";
 import LayoutContainer from "@/views/LayoutContainer.vue";
 import LoginPage from "@/views/Login.vue";
 import SsoBindLogin from "@/views/SsoBindLogin.vue";
@@ -172,6 +173,23 @@ const originRouterConfig: RouterConfig[] = [
     ]
   },
   {
+    path: "/instances/create",
+    name: t("TXT_CODE_5a74975b"),
+    component: CreateInstancePage,
+    meta: {
+      permission: ROLE.ADMIN,
+      mainMenu: false,
+      breadcrumbs: [
+        {
+          name: t("TXT_CODE_e21473bc"),
+          path: "/instances",
+          mainMenu: true,
+          permission: ROLE.ADMIN
+        }
+      ]
+    }
+  },
+  {
     path: "/market",
     name: t("TXT_CODE_27594db8"),
     component: LayoutContainer,
@@ -338,7 +356,7 @@ function routersConfigOptimize(
   list: Array<{ name: string; path: string; permission: number }> = []
 ) {
   for (const r of config) {
-    r.meta.breadcrumbs = list;
+    r.meta.breadcrumbs ??= list;
     if (r.children && r.children instanceof Array) {
       const newList = JSON.parse(JSON.stringify(list));
       newList.push({

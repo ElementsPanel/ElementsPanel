@@ -143,12 +143,7 @@ const handleChangeNode = async (item: NodeStatus) => {
 };
 
 const toCreateAppPage = () => {
-  router.push({
-    path: "/market",
-    query: {
-      daemonId: currentRemoteNode.value?.uuid
-    }
-  });
+  router.push("/instances/create");
 };
 
 const toMarketPage = () => {
