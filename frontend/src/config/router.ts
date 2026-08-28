@@ -2,11 +2,8 @@ import { $t as t } from "@/lang/i18n";
 import { topProgressBar } from "@/services/TopProgressBar";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import type { LoginUserInfo } from "@/types/user";
-import InstallPage from "@/views/Install.vue";
 import CreateInstancePage from "@/views/CreateInstance.vue";
 import LayoutContainer from "@/views/LayoutContainer.vue";
-import LoginPage from "@/views/Login.vue";
-import SsoBindLogin from "@/views/SsoBindLogin.vue";
 import type { Component } from "vue";
 import {
   createRouter,
@@ -63,15 +60,6 @@ export enum ROLE {
 }
 
 const originRouterConfig: RouterConfig[] = [
-  {
-    path: "/install",
-    name: t("TXT_CODE_82d650be"),
-    component: InstallPage,
-    meta: {
-      permission: ROLE.GUEST,
-      mainMenu: false
-    }
-  },
   {
     path: "/quickstart",
     name: t("TXT_CODE_2799a1dd"),
@@ -218,25 +206,6 @@ const originRouterConfig: RouterConfig[] = [
     }
   },
   {
-    path: "/users",
-    name: t("TXT_CODE_1deaa2dd"),
-    component: LayoutContainer,
-    meta: {
-      mainMenu: true,
-      permission: ROLE.ADMIN
-    },
-    children: [
-      {
-        path: "/users/resources",
-        name: t("TXT_CODE_236f70aa"),
-        component: LayoutContainer,
-        meta: {
-          permission: ROLE.ADMIN
-        }
-      }
-    ]
-  },
-  {
     path: "/settings",
     name: t("TXT_CODE_b5c7b82d"),
     component: LayoutContainer,
@@ -244,15 +213,6 @@ const originRouterConfig: RouterConfig[] = [
       permission: ROLE.ADMIN,
       mainMenu: true,
       customClass: ["nav-button-success"]
-    }
-  },
-  {
-    path: "/user",
-    name: t("TXT_CODE_8c3164c9"),
-    component: LayoutContainer,
-    meta: {
-      permission: ROLE.ADMIN,
-      mainMenu: false
     }
   },
   {
@@ -275,16 +235,6 @@ const originRouterConfig: RouterConfig[] = [
     }
   },
   {
-    path: "/login",
-    name: t("TXT_CODE_24873a8a"),
-    component: LoginPage,
-    meta: {
-      permission: ROLE.GUEST,
-      onlyDisplayEditMode: true,
-      customClass: ["nav-button-warning"]
-    }
-  },
-  {
     path: "/_open_page",
     name: t("TXT_CODE_2cf59872"),
     component: LayoutContainer,
@@ -293,15 +243,6 @@ const originRouterConfig: RouterConfig[] = [
       mainMenu: true,
       onlyDisplayEditMode: true,
       customClass: ["nav-button-warning"]
-    }
-  },
-  {
-    path: "/sso/bind",
-    name: t("TXT_CODE_SSO_BIND_TITLE"),
-    component: SsoBindLogin,
-    meta: {
-      permission: ROLE.GUEST,
-      mainMenu: false
     }
   },
   {
@@ -346,8 +287,11 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   topProgressBar.start();
-  const { state, updateUserInfo, isAdmin } = useAppStateStore();
+  const { state, updateUserInfo, isAdmin, authEnabled } = useAppStateStore();
 
+  // Without the "user" plugin the panel has no login and no install wizard, so
+  // every visitor is already an administrator.
+  const requiresLogin = authEnabled.value;
   const userPermission = state.userInfo?.permission ?? 0;
   const toPagePermission = Number(to.meta.permission ?? 0);
   const fromRoutePath = router.currentRoute.value.path.trim();
@@ -363,7 +307,7 @@ router.beforeEach(async (to, from, next) => {
     toPagePermission
   );
 
-  if (!state.isInstall && toRoutePath !== "/install") {
+  if (requiresLogin && !state.isInstall && toRoutePath !== "/install") {
     return next("/install");
   }
 
@@ -393,13 +337,13 @@ router.beforeEach(async (to, from, next) => {
     return next();
   }
 
-  if (!state.isInstall) {
+  if (requiresLogin && !state.isInstall) {
     return next("/install");
   }
 
   if (!to.name) return next("/404");
 
-  if (!state.userInfo?.token) return next("/login");
+  if (requiresLogin && !state.userInfo?.token) return next("/login");
 
   if (toPagePermission > userPermission && userPermission !== ROLE.ADMIN) {
     return next("/customer");

@@ -18,7 +18,7 @@ import {
 import { logger } from "../service/log";
 import { operationLogger } from "../service/operation_logger";
 import remoteService from "../service/remote_service";
-import userSystem from "../service/user_service";
+import userStore from "../service/user_store";
 import { saveSystemConfig, systemConfig } from "../setting";
 import { checkBusinessMode } from "../version";
 
@@ -150,7 +150,7 @@ router.put("/setting", permission({ level: ROLE.ADMIN }), async (ctx) => {
       const userIdFieldChanged = ssoType === "oauth2" && systemConfig.ssoUserIdField !== prevSsoUserIdField;
 
       if (typeChanged || issuerChanged || userinfoChanged || userIdFieldChanged) {
-        const count = await userSystem.unbindAllSso();
+        const count = (await userStore()?.unbindAllSso()) ?? 0;
         if (count > 0) {
           logger.warn(`[SSO] Identity-critical config changed, unbound ${count} SSO user(s).`);
         }
@@ -192,7 +192,7 @@ router.put("/setting", permission({ level: ROLE.ADMIN }), async (ctx) => {
 // Update config when install
 router.put("/install", async (ctx) => {
   const config = ctx.request.body;
-  if (userSystem.objects.size === 0 && systemConfig) {
+  if ((userStore()?.size() ?? 0) === 0 && systemConfig) {
     if (config.language != null) {
       logger.warn($t("TXT_CODE_e29a9317"), config.language);
       systemConfig.language = String(config.language);

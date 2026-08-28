@@ -1,6 +1,7 @@
 import { Context } from "koa";
 import { ROLE } from "../entity/user";
 import { $t } from "../i18n";
+import { isAuthEnabled } from "../service/auth_provider";
 import { singletonMemoryRedis } from "../service/mini_redis";
 import { getUserFromCtx, getUserUuid } from "../service/passport_service";
 import { execWithMutexId } from "../utils/sync";
@@ -9,6 +10,9 @@ const SPEED_LIMIT_KEY = "SpeedLimit";
 
 export function speedLimit(seconds: number, errMsg?: string) {
   return async (ctx: Context, next: Function) => {
+    // Without the "user" plugin there is nobody to rate limit.
+    if (!isAuthEnabled()) return await next();
+
     const requestPath = ctx.URL.pathname;
     const user = getUserFromCtx(ctx);
 

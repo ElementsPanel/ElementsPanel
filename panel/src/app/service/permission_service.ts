@@ -1,7 +1,15 @@
-import userSystem from "./user_service";
-import { User } from "../entity/user";
+import { getPanelAuthProvider, type AuthUser } from "./auth_provider";
 
-export function isHaveInstance(user: User, daemonId: string, instanceUuid: string) {
+// Instance ownership checks. The lookups delegate to the "user" plugin; without
+// it the panel is unauthenticated, so every caller is an anonymous
+// administrator and owns everything.
+
+export function isTopPermission(user: AuthUser) {
+  if (!user) return false;
+  return user.permission >= 10;
+}
+
+export function isHaveInstance(user: AuthUser, daemonId: string, instanceUuid: string) {
   if (isTopPermission(user)) return true;
   if (user && user.instances) {
     for (const v of user.instances) {
@@ -11,23 +19,18 @@ export function isHaveInstance(user: User, daemonId: string, instanceUuid: strin
   return false;
 }
 
-export function isTopPermission(user: User) {
-  if (!user) return false;
-  return user.permission >= 10;
-}
-
 export function isTopPermissionByUuid(uuid: string) {
-  const user = userSystem.getInstance(uuid);
-  if (!user) return false;
-  return isTopPermission(user);
+  const provider = getPanelAuthProvider();
+  if (!provider) return true;
+  return provider.isTopPermissionByUuid(uuid);
 }
 
 export function isHaveInstanceByUuid(uuid: string, daemonId: string, instanceUuid: string) {
-  const user = userSystem.getInstance(uuid);
-  if (!user) return false;
-  return isHaveInstance(user, daemonId, instanceUuid);
+  const provider = getPanelAuthProvider();
+  if (!provider) return true;
+  return provider.isHaveInstanceByUuid(uuid, daemonId, instanceUuid);
 }
 
 export function getUserByUserName(userName: string) {
-  return userSystem.getUserByUserName(userName);
+  return getPanelAuthProvider()?.users.getUserByUserName(userName);
 }

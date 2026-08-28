@@ -4,8 +4,8 @@
   "daemonVersion": "0.1.0",
   "description": "ElementsPanel backend API — a fork of the MCSManager project, connects and controls all Daemon nodes and provides API services for the frontend",
   "scripts": {
-    "dev": "nodemon --watch src --ext ts,js --exec \"npm run build && node --enable-source-maps production/app.js\"",
-    "build": "webpack --config webpack.config.js"
+    "dev": "nodemon --watch src --watch plugins --ext ts,js --exec \"npm run build && node --enable-source-maps production/app.js\"",
+    "build": "webpack --config webpack.config.js && webpack --config webpack.plugins.config.js"
   },
   "author": "Csituka_D <694428809@qq.com> (https://github.com/JessDaodao)",
   "contributors": [

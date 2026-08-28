@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import { logoutUser } from "@/services/apis/index";
 import { getDesktopLayoutConfig, setDesktopLayoutConfig } from "./api";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
+import { getPanelFrontendService } from "@/pluginServices";
+import { logoutUser } from "@/services/apis/index";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
 import {
@@ -20,7 +21,6 @@ import DesktopInstanceBackup from "./widgets/desktop/DesktopInstanceBackup.vue";
 import DesktopInstanceConsole from "./widgets/desktop/DesktopInstanceConsole.vue";
 import DesktopInstanceManager from "./widgets/desktop/DesktopInstanceManager.vue";
 import DesktopJavaManager from "./widgets/desktop/DesktopJavaManager.vue";
-import DesktopLoginWindow from "./widgets/desktop/DesktopLoginWindow.vue";
 import DesktopMarket from "./widgets/desktop/DesktopMarket.vue";
 import DesktopMcPing from "./widgets/desktop/DesktopMcPing.vue";
 import DesktopModManager from "./widgets/desktop/DesktopModManager.vue";
@@ -34,8 +34,6 @@ import type { TaskbarWindow } from "./widgets/desktop/DesktopTaskbar.vue";
 import DesktopTaskbar from "./widgets/desktop/DesktopTaskbar.vue";
 import DesktopTermConfig from "./widgets/desktop/DesktopTermConfig.vue";
 import DesktopTerminalSelector from "./widgets/desktop/DesktopTerminalSelector.vue";
-import DesktopUserInfo from "./widgets/desktop/DesktopUserInfo.vue";
-import DesktopUsers from "./widgets/desktop/DesktopUsers.vue";
 import DesktopWindow from "./widgets/desktop/DesktopWindow.vue";
 import {
     AppstoreOutlined,
@@ -66,8 +64,17 @@ import { computed, markRaw, onMounted, onUnmounted, reactive, ref, watch, type C
 import { useRouter } from "vue-router";
 
 const router = useRouter();
-const { state: appState, isAdmin, isLogged } = useAppStateStore();
-const { execute: executeLogout } = logoutUser();
+const { state: appState, isAdmin, isLogged, authEnabled } = useAppStateStore();
+
+// Login, account and user-management windows are owned by the "user" plugin.
+// Without it the panel has no authentication, so they simply do not exist.
+const desktopLoginWindow = computed(() =>
+    getPanelFrontendService<Component>("user.desktopLoginWindow")
+);
+const desktopUsersWindow = computed(() => getPanelFrontendService<Component>("user.desktopUsers"));
+const desktopUserInfoWindow = computed(() =>
+    getPanelFrontendService<Component>("user.desktopUserInfo")
+);
 const { getSettingsConfig } = useLayoutConfigStore();
 const { isDarkTheme } = useAppConfigStore();
 
@@ -101,7 +108,7 @@ onMounted(async () => {
 });
 
 //─── Login ───
-const showLoginOverlay = ref(!isLogged.value);
+const showLoginOverlay = ref(authEnabled.value && !isLogged.value);
 
 const handleLoginSuccess = () => {
     showLoginOverlay.value = false;
@@ -110,7 +117,7 @@ const handleLoginSuccess = () => {
 watch(isLogged, (logged) => {
     if (logged) {
         loadDesktopLayout();
-    } else {
+    } else if (authEnabled.value) {
         showLoginOverlay.value = true;
     }
 });
@@ -169,14 +176,6 @@ const availableDesktopApps = computed<DesktopApp[]>(() => {
             windowContent: "overview"
         },
         {
-            id: "users",
-            label: t("TXT_CODE_1deaa2dd"),
-            icon: markRaw(TeamOutlined),
-            color: "#722ed1",
-            route: "/users",
-            windowContent: "users"
-        },
-        {
             id: "market",
             label: t("TXT_CODE_27594db8"),
             icon: markRaw(ShoppingOutlined),
@@ -212,6 +211,16 @@ const availableDesktopApps = computed<DesktopApp[]>(() => {
             },
             ...pluginDesktopApps.value
         ];
+    }
+    if (desktopUsersWindow.value) {
+        apps.push({
+            id: "users",
+            label: t("TXT_CODE_1deaa2dd"),
+            icon: markRaw(TeamOutlined),
+            color: "#722ed1",
+            route: "/users",
+            windowContent: "users"
+        });
     }
     return [...apps, ...pluginDesktopApps.value];
 });
@@ -1086,6 +1095,7 @@ const openNewInstanceWindow = () => {
 };
 
 const openUserInfoWindow = () => {
+    if (!desktopUserInfoWindow.value) return;
     const windowId = "user-info";
     const existing = windows.get(windowId);
 
@@ -1375,7 +1385,7 @@ const onDesktopClick = () => {
 
 // ─── Exit ───
 const exitDesktop = async () => {
-    await executeLogout();
+    if (authEnabled.value) await logoutUser().execute();
     window.location.reload();
 };
 
@@ -1491,7 +1501,7 @@ const username = computed(() => appState.userInfo?.userName || "User");
 
                             <DesktopOverview v-else-if="win.content === 'overview'" />
 
-                            <DesktopUsers v-else-if="win.content === 'users'" />
+                            <component :is="desktopUsersWindow" v-else-if="win.content === 'users' && desktopUsersWindow" />
 
                             <DesktopSettings v-else-if="win.content === 'settings'" />
 
@@ -1500,7 +1510,8 @@ const username = computed(() => appState.userInfo?.userName || "User");
                             <DesktopTerminalSelector v-else-if="win.content === 'terminal'"
                                 @open-console="openInstanceConsole" />
 
-                            <DesktopUserInfo v-else-if="win.content === 'user-info'" />
+                            <component :is="desktopUserInfoWindow"
+                                v-else-if="win.content === 'user-info' && desktopUserInfoWindow" />
 
                             <component :is="win.component" v-else-if="win.component" />
 
@@ -1520,7 +1531,8 @@ const username = computed(() => appState.userInfo?.userName || "User");
             </div>
         </Transition>
         <Transition name="login-fade">
-            <DesktopLoginWindow v-if="showLoginOverlay" @login-success="handleLoginSuccess" />
+            <component :is="desktopLoginWindow" v-if="showLoginOverlay && desktopLoginWindow"
+                @login-success="handleLoginSuccess" />
         </Transition>
     </div>
 </template>

@@ -15,7 +15,7 @@ import { timeUuid } from "../service/password";
 import { isHaveInstanceByUuid, isTopPermissionByUuid } from "../service/permission_service";
 import RemoteRequest from "../service/remote_command";
 import RemoteServiceSubsystem from "../service/remote_service";
-import userSystem from "../service/user_service";
+import userStore from "../service/user_store";
 import { systemConfig } from "../setting";
 
 const router = new Router({ prefix: "/instance" });
@@ -164,7 +164,7 @@ router.delete(
       const instanceIds = instanceUuids.map((uuid: string) => {
         return { instanceUuid: uuid, daemonId };
       });
-      userSystem.deleteUserInstances(null, instanceIds, true);
+      userStore()?.deleteUserInstances(null, instanceIds, true);
       const result = await new RemoteRequest(remoteService).request("instance/delete", {
         instanceUuids,
         deleteFile

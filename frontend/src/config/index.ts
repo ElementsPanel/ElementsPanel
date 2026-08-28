@@ -16,7 +16,6 @@ import InstanceShortcut from "@/widgets/instance/Shortcut.vue";
 import Terminal from "@/widgets/instance/Terminal.vue";
 import InstanceChart from "@/widgets/InstanceChart.vue";
 import InstanceList from "@/widgets/InstanceList.vue";
-import LoginCard from "@/widgets/LoginCard.vue";
 import MarketEditor from "@/widgets/market/editor.vue";
 import Market from "@/widgets/market/index.vue";
 import OperationLogCard from "@/widgets/OperationLogCard.vue";
@@ -38,10 +37,6 @@ import QuickStartFlow from "@/widgets/setupApp/QuickStartFlow.vue";
 import ShelvesCard from "@/widgets/ShelvesCard.vue";
 import StatusBlock from "@/widgets/StatusBlock.vue";
 import TitleCard from "@/widgets/TitleCard.vue";
-import UserAccessSettings from "@/widgets/user/AccessSettings.vue";
-import UserInstanceList from "@/widgets/UserInstanceList.vue";
-import UserList from "@/widgets/UserList.vue";
-import UserStatusBlock from "@/widgets/UserStatusBlock.vue";
 
 import { NEW_CARD_TYPE } from "../types/index";
 import { LayoutCardHeight } from "./originLayoutConfig";
@@ -50,7 +45,6 @@ import { shallowReactive } from "vue";
 
 // Register specified Vue components for each card.
 export const LAYOUT_CARD_TYPES: { [key: string]: any } = shallowReactive({
-  LoginCard,
   Page404,
   TitleCard,
   EmptyCard,
@@ -61,7 +55,6 @@ export const LAYOUT_CARD_TYPES: { [key: string]: any } = shallowReactive({
   InstanceChart,
   InstanceList,
   Settings,
-  UserList,
   Terminal,
   InstanceManagerBtns,
   InstanceBaseInfo,
@@ -71,7 +64,6 @@ export const LAYOUT_CARD_TYPES: { [key: string]: any } = shallowReactive({
   InstanceServerConfigFile,
   InstanceFileManager,
   InstanceModManager,
-  UserAccessSettings,
   ImageBox,
   QuickStartFlow,
   McPreset,
@@ -79,8 +71,6 @@ export const LAYOUT_CARD_TYPES: { [key: string]: any } = shallowReactive({
   TextCard,
   LinkCard,
   ClockCard,
-  UserStatusBlock,
-  UserInstanceList,
   Schedule,
   InstanceShortcut,
   DefaultCard,

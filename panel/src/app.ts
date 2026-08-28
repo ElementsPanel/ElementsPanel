@@ -20,7 +20,6 @@ import { middleware as protocolMiddleware } from "./app/middleware/protocol";
 import { loadPanelPlugins, runPanelPluginHook } from "./app/plugins";
 import { logger } from "./app/service/log";
 import SystemRemoteService from "./app/service/remote_service";
-import SystemUser from "./app/service/user_service";
 import versionAdapter from "./app/service/version_adapter";
 import { initSystemConfig, systemConfig } from "./app/setting";
 import { checkBusinessMode, getVersion, initVersionManager } from "./app/version";
@@ -123,8 +122,8 @@ async function main() {
 
   checkBusinessMode();
 
-  // Initialize services
-  await SystemUser.initialize();
+  // Initialize services. The user subsystem is initialized by the "user"
+  // plugin, which owns it.
   await SystemRemoteService.initialize();
 
   const app = new Koa({

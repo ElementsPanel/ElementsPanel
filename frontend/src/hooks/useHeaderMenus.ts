@@ -73,8 +73,7 @@ export function useHeaderMenus() {
   const { toPage } = useAppRouters();
   const { setTheme } = useAppConfigStore();
   const { state: appTools } = useAppToolsStore();
-  const { isAdmin, state: appState, isLogged } = useAppStateStore();
-  const { execute } = logoutUser();
+  const { isAdmin, state: appState, isLogged, authEnabled } = useAppStateStore();
 
   const openNewCardDialog = (): void => {
     containerState.showNewCardDialog = true;
@@ -252,7 +251,7 @@ export function useHeaderMenus() {
         click: () => {
           appTools.showUserInfoDialog = true;
         },
-        conditions: !containerState.isDesignMode && isLogged.value,
+        conditions: !containerState.isDesignMode && authEnabled.value && isLogged.value,
         onlyPC: false
       },
       {
@@ -262,14 +261,15 @@ export function useHeaderMenus() {
           Modal.confirm({
             title: t("TXT_CODE_9654b91c"),
             async onOk() {
-              await execute();
+              await logoutUser().execute();
               message.success(t("TXT_CODE_11673d8c"));
               setTimeout(() => (window.location.href = "/"), 400);
             }
           });
         },
         customClass: ["nav-button-danger"],
-        conditions: !containerState.isDesignMode && isLogged.value,
+        // Nothing to log out of when the "user" plugin is absent.
+        conditions: !containerState.isDesignMode && authEnabled.value && isLogged.value,
         onlyPC: false
       }
     ];

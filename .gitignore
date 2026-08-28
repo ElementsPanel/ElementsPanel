@@ -14,6 +14,8 @@ lib/
 production/
 .DS_Store
 production-code/
+# Compiled plugin backends (built from plugins/*/src/backend/index.ts)
+panel/plugins/*/backend/
 test.js
 .idea/
 ai-api.key

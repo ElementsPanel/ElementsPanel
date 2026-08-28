@@ -1,17 +1,36 @@
 import fs from "fs-extra";
+import i18next from "i18next";
 import Koa from "koa";
 import Router from "@koa/router";
+import { GlobalVariable } from "mcsmanager-common";
 import path from "path";
 import { pathToFileURL } from "url";
+import Storage from "./common/storage/sys_storage";
 import { systemConfig } from "./setting";
 import { ROLE } from "./entity/user";
+import { $t } from "./i18n";
 import permission from "./middleware/permission";
 import validator from "./middleware/validator";
+import {
+  clearPanelAuthProvider,
+  getPanelAuthProvider,
+  setPanelAuthProvider,
+  type AuthUserStore,
+  type PanelAuthProvider
+} from "./service/auth_provider";
+import { getInstancesByUuid } from "./service/instance_service";
 import { logger } from "./service/log";
 import { operationLogger } from "./service/operation_logger";
+import {
+  BAN_IP_COUNT,
+  ILLEGAL_ACCESS_KEY,
+  LOGIN_COUNT,
+  LOGIN_FAILED_COUNT_KEY,
+  LOGIN_FAILED_KEY
+} from "./service/passport_service";
 import RemoteRequest from "./service/remote_command";
 import SystemRemoteService from "./service/remote_service";
-import SystemUser from "./service/user_service";
+import * as ssoService from "./service/sso_service";
 
 export interface PanelPluginMetadata {
   id: string;
@@ -33,21 +52,48 @@ export interface PanelPluginContext {
   app: Koa;
   router: Router;
   config: NonNullable<typeof systemConfig>;
+  /** Persistent entity storage, shared with the panel core. */
+  storage: typeof Storage;
   services: {
     remote: typeof SystemRemoteService;
-    users: typeof SystemUser;
+    /** User records, once the "user" plugin has registered its auth provider. */
+    users: AuthUserStore | undefined;
     /** Sends a Socket.io request to a single daemon and awaits its response. */
     remoteRequest: typeof RemoteRequest;
     operationLogger: typeof operationLogger;
+    instances: { getInstancesByUuid: typeof getInstancesByUuid };
+    /** OIDC/OAuth2 plumbing driven by the panel's SSO settings. */
+    sso: typeof ssoService;
   };
   middleware: {
     permission: typeof permission;
     validator: typeof validator;
   };
+  /**
+   * Process-wide counters shared with the core. `routers/overview_router.ts`
+   * reports the auth keys that the "user" plugin increments.
+   */
+  common: {
+    GlobalVariable: typeof GlobalVariable;
+    authStatsKeys: {
+      BAN_IP_COUNT: string;
+      ILLEGAL_ACCESS_KEY: string;
+      LOGIN_COUNT: string;
+      LOGIN_FAILED_COUNT_KEY: string;
+      LOGIN_FAILED_KEY: string;
+    };
+  };
+  i18n: { $t: typeof $t; i18next: typeof i18next };
   roles: typeof ROLE;
   registerRouter: (router: Router) => void;
   registerRoute: (path: string, method: string, handler: Koa.Middleware) => void;
   registerMiddleware: (middleware: Koa.Middleware) => void;
+  /**
+   * Take over authentication for the whole panel. Without a registered provider
+   * the panel runs unauthenticated. Cleared automatically when the plugin is
+   * disposed.
+   */
+  registerAuthProvider: (provider: PanelAuthProvider) => void;
   metadata: PanelPluginMetadata;
   directory: string;
   logger: typeof logger;
@@ -80,6 +126,7 @@ const entryCandidates = [
 
 let loadedPlugins: LoadedPanelPlugin[] = [];
 let pluginsDisposed = false;
+let authProviderOwner: string | undefined;
 
 function readMetadata(directory: string): PanelPluginMetadata | null {
   for (const file of metadataFiles) {
@@ -146,6 +193,8 @@ export async function loadPanelPlugins(app: Koa): Promise<LoadedPanelPlugin[]> {
   const directory = path.resolve(process.cwd(), "plugins");
   loadedPlugins = [];
   pluginsDisposed = false;
+  authProviderOwner = undefined;
+  clearPanelAuthProvider();
   if (!fs.existsSync(directory)) return loadedPlugins;
 
   const plugins: DiscoveredPanelPlugin[] = [];
@@ -193,17 +242,37 @@ export async function loadPanelPlugins(app: Koa): Promise<LoadedPanelPlugin[]> {
         app,
         router,
         config: systemConfig!,
+        storage: Storage,
         services: {
           remote: SystemRemoteService,
-          users: SystemUser,
+          get users() {
+            return getPanelAuthProvider()?.users;
+          },
           remoteRequest: RemoteRequest,
-          operationLogger
+          operationLogger,
+          instances: { getInstancesByUuid },
+          sso: ssoService
         },
         middleware: {
           permission,
           validator
         },
+        common: {
+          GlobalVariable,
+          authStatsKeys: {
+            BAN_IP_COUNT,
+            ILLEGAL_ACCESS_KEY,
+            LOGIN_COUNT,
+            LOGIN_FAILED_COUNT_KEY,
+            LOGIN_FAILED_KEY
+          }
+        },
+        i18n: { $t, i18next },
         roles: ROLE,
+        registerAuthProvider: (authProvider) => {
+          setPanelAuthProvider(authProvider);
+          authProviderOwner = plugin.metadata.id;
+        },
         registerRouter: (pluginRouter) => {
           app.use(pluginRouter.routes()).use(pluginRouter.allowedMethods());
         },
@@ -225,6 +294,12 @@ export async function loadPanelPlugins(app: Koa): Promise<LoadedPanelPlugin[]> {
       logger.info(`Panel plugin loaded: ${plugin.metadata.id}`);
     } catch (error: any) {
       loaded.error = error instanceof Error ? error : new Error(String(error));
+      // A plugin that failed halfway must not leave the panel enforcing an
+      // auth provider it never finished wiring up.
+      if (authProviderOwner === plugin.metadata.id) {
+        authProviderOwner = undefined;
+        clearPanelAuthProvider();
+      }
       loadedPlugins.push(loaded);
       logger.error(`Panel plugin failed to load: ${plugin.metadata.id}`, error);
     }
@@ -244,6 +319,10 @@ export async function runPanelPluginHook(hook: "ready" | "dispose"): Promise<voi
   }
   const plugins = hook === "dispose" ? [...loadedPlugins].reverse() : loadedPlugins;
   for (const plugin of plugins) {
+    if (hook === "dispose" && authProviderOwner === plugin.metadata.id) {
+      authProviderOwner = undefined;
+      clearPanelAuthProvider();
+    }
     if (plugin.error) continue;
     const module: any = plugin.module;
     const callback = module?.[hook] ?? module?.default?.[hook];

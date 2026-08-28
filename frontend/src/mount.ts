@@ -15,7 +15,6 @@ import { router } from "./config/router";
 import { getI18nInstance, t } from "@/lang/i18n";
 import App from "./App.vue";
 
-import { userInfoApi } from "./services/apis";
 import { useAppStateStore } from "./stores/useAppStateStore";
 import { runPanelFrontendPluginHook, setupPanelFrontendPlugins } from "./plugins";
 
@@ -26,10 +25,17 @@ window.addEventListener("unhandledrejection", function (event) {
 const { updateUserInfo } = useAppStateStore();
 
 export async function mountApp() {
+  const app = createApp(App);
+  const pinia = createPinia();
+  app.use(pinia);
+  app.use(getI18nInstance());
+
+  // Plugins first: the "user" plugin owns the account API and the login route,
+  // so the session below cannot be restored until it has registered them.
+  await setupPanelFrontendPlugins(app, pinia);
+
   try {
-    const { execute: reqUserInfo } = userInfoApi();
-    const info = await reqUserInfo();
-    updateUserInfo(info.value);
+    await updateUserInfo();
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     const expectedAuthErrors = [
@@ -39,14 +45,9 @@ export async function mountApp() {
     if (!expectedAuthErrors.includes(message)) {
       console.error("Init user info Error:", err);
     }
-  } finally {
-    const app = createApp(App);
-    const pinia = createPinia();
-    app.use(pinia);
-    app.use(getI18nInstance());
-    await setupPanelFrontendPlugins(app, pinia);
-    app.use(router);
-    app.mount("#app-mount-point");
-    await runPanelFrontendPluginHook("ready");
   }
+
+  app.use(router);
+  app.mount("#app-mount-point");
+  await runPanelFrontendPluginHook("ready");
 }

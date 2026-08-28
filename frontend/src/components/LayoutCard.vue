@@ -25,14 +25,18 @@ onErrorCaptured((error: Error) => {
     :id="'layout-card-container-' + card.id"
     class="layout-card-container transition-all-6 global-drag-animation"
   >
-    <component
-      :is="componentMap[card.type]"
-      v-if="!loadError"
-      style="height: 100%"
-      :card="props.card"
-    ></component>
+    <!-- An unknown type means the plugin that owned this card is not installed;
+         render nothing rather than an error box. -->
+    <template v-if="componentMap[card.type]">
+      <component
+        :is="componentMap[card.type]"
+        v-if="!loadError"
+        style="height: 100%"
+        :card="props.card"
+      ></component>
 
-    <CardError v-else :error="cardError" :title="card.title"></CardError>
+      <CardError v-else :error="cardError" :title="card.title"></CardError>
+    </template>
   </div>
 </template>
 

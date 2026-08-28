@@ -5,7 +5,7 @@ import { customAlphabet } from "nanoid";
 import { $t } from "../i18n";
 import RemoteRequest from "../service/remote_command";
 import RemoteServiceSubsystem from "../service/remote_service";
-import user_service from "../service/user_service";
+import { requireAuthProvider } from "../service/auth_provider";
 import { getInstancesByUuid, IAdvancedInstanceInfo } from "./instance_service";
 
 // A commercial platform for selling instances released by the MCSManager Dev Team.
@@ -188,15 +188,16 @@ export async function buyOrRenewInstance(
     );
     if (!newInstanceId) throw new Error(t("TXT_CODE_728fdabf"));
 
-    let user = user_service.getUserByUserName(username);
+    const users = requireAuthProvider("Business mode redeem").users;
+    let user = users.getUserByUserName(username);
     let newPassword = "";
 
     await handler.onCreateConfirm?.(newInstanceId);
 
     if (user) {
-      await user_service.edit(user.uuid, {
+      await users.edit(user.uuid, {
         instances: [
-          ...user.instances,
+          ...(user.instances ?? []),
           {
             instanceUuid: newInstanceId,
             daemonId: node_id
@@ -205,7 +206,7 @@ export async function buyOrRenewInstance(
       });
     } else {
       newPassword = getNanoId(12);
-      user = await user_service.create({
+      user = await users.create({
         userName: username,
         passWord: newPassword,
         permission: 1,
@@ -278,7 +279,7 @@ export async function queryInstanceByUserId(
 ): Promise<IInstanceInfoProtocol[]> {
   const name = parseUserName(params.username) || "";
   const targetDaemonId = toText(params.node_id) ?? undefined;
-  const user = user_service.getUserByUserName(name);
+  const user = requireAuthProvider("Business mode redeem").users.getUserByUserName(name);
   if (!user) throw new Error(t("TXT_CODE_903b6c50"));
 
   const { instances = [] } = await getInstancesByUuid(user.uuid, targetDaemonId, true);

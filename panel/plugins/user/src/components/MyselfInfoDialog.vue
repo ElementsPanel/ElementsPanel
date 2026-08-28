@@ -9,7 +9,7 @@ import { reportErrorMsg } from "@/tools/validator";
 import type { FormInstance } from "ant-design-vue";
 import { message } from "ant-design-vue";
 import { reactive, ref } from "vue";
-import { bind2FA } from "../services/apis/user";
+import { bind2FA } from "../api";
 const { state, updateUserInfo } = useAppStateStore();
 const { state: tools } = useAppToolsStore();
 

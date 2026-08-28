@@ -6,7 +6,7 @@ import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { sleep } from "@/tools/common";
 import { reportErrorMsg } from "@/tools/validator";
-import { desktopIconDarkUrl, desktopIconUrl } from "../../assets";
+import { desktopIconDarkUrl, desktopIconUrl } from "../assets";
 import {
     AppstoreOutlined,
     LoadingOutlined,

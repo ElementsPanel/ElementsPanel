@@ -43,6 +43,11 @@ export interface PanelFrontendPluginContext {
   registerAppMenu: (menu: PanelFrontendAppMenu) => void;
   registerLoginAction: (action: PanelFrontendLoginAction) => void;
   registerDesktopApp: (desktopApp: PanelFrontendDesktopApp) => void;
+  /**
+   * Mount a component for the lifetime of the app, alongside the panel's own
+   * dialog providers. Use for global overlays that have no route or card.
+   */
+  registerGlobalComponent: (component: Component) => void;
   /** Register a runtime service that other plugins or the panel can consume. */
   registerService: (name: string, service: unknown) => void;
   /** Read a service exposed by another loaded plugin. */
@@ -99,6 +104,7 @@ export interface PanelFrontendPluginDefinition {
   appMenus?: PanelFrontendAppMenu[];
   loginActions?: PanelFrontendLoginAction[];
   desktopApps?: PanelFrontendDesktopApp[];
+  globalComponents?: Component[];
   configuration?: PanelFrontendPluginConfiguration;
   setup?: (context: PanelFrontendPluginContext) => unknown;
   ready?: (context: PanelFrontendPluginContext) => unknown;
@@ -152,6 +158,11 @@ interface DesktopAppRegistration {
   desktopApp: PanelFrontendDesktopApp;
 }
 
+interface GlobalComponentRegistration {
+  owner: InternalLoadedPanelFrontendPlugin;
+  component: Component;
+}
+
 interface PanelFrontendPluginRuntime {
   load: (id: string) => Promise<LoadedPanelFrontendPlugin>;
   unload: (id: string) => Promise<boolean>;
@@ -170,6 +181,7 @@ const loadedPlugins = shallowReactive<InternalLoadedPanelFrontendPlugin[]>([]);
 const appMenus = shallowReactive<PanelFrontendAppMenu[]>([]);
 const loginActions = shallowReactive<PanelFrontendLoginAction[]>([]);
 const desktopAppRegistrations = shallowReactive<DesktopAppRegistration[]>([]);
+const globalComponentRegistrations = shallowReactive<GlobalComponentRegistration[]>([]);
 const routeRevision = ref(0);
 const pluginSources = new Map<string, PanelFrontendPluginSource>();
 const localeBaseMessages = new Map<string, Record<string, unknown>>();
@@ -510,6 +522,11 @@ function createContext(plugin: InternalLoadedPanelFrontendPlugin): PanelFrontend
       plugin.cleanups.push(() => removeItem(loginActions, action));
     },
     registerDesktopApp: (desktopApp) => registerDesktopApp(plugin, desktopApp),
+    registerGlobalComponent: (component) => {
+      const registration = { owner: plugin, component };
+      globalComponentRegistrations.push(registration);
+      plugin.cleanups.push(() => removeItem(globalComponentRegistrations, registration));
+    },
     registerService: (name, service) => registerService(plugin, name, service),
     getService: <T = unknown>(name: string) => getPanelFrontendService<T>(name)
   };
@@ -584,6 +601,7 @@ async function installPluginSource(source: PanelFrontendPluginSource, cacheKey?:
     definition.appMenus?.forEach(plugin.context.registerAppMenu);
     definition.loginActions?.forEach(plugin.context.registerLoginAction);
     definition.desktopApps?.forEach(plugin.context.registerDesktopApp);
+    definition.globalComponents?.forEach(plugin.context.registerGlobalComponent);
     if (typeof definition.setup === "function") {
       const setupCleanup = await definition.setup(plugin.context);
       if (typeof setupCleanup === "function") plugin.cleanups.push(setupCleanup as () => void);
@@ -665,6 +683,7 @@ export async function setupPanelFrontendPlugins(app: App, pinia: Pinia) {
   appMenus.length = 0;
   loginActions.length = 0;
   desktopAppRegistrations.length = 0;
+  globalComponentRegistrations.length = 0;
   serviceRegistrations.clear();
   await refreshPanelFrontendPlugins();
 
@@ -715,6 +734,10 @@ export function isPanelFrontendPluginRoute(path: string): boolean {
 
 export function getPanelFrontendLoginActions(): readonly PanelFrontendLoginAction[] {
   return loginActions;
+}
+
+export function getPanelFrontendGlobalComponents(): readonly Component[] {
+  return globalComponentRegistrations.map((registration) => registration.component);
 }
 
 export function getPanelFrontendDesktopApps(): readonly PanelFrontendDesktopApp[] {

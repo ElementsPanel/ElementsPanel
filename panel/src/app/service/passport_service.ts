@@ -1,14 +1,13 @@
 import Koa from "koa";
-import { GlobalVariable } from "mcsmanager-common";
-import { authenticator } from "otplib";
-import QRCode from "qrcode";
-import { ROLE, User } from "../entity/user";
-import { $t } from "../i18n";
-import { systemConfig } from "../setting";
-import { logger } from "./log";
-import { timeUuid } from "./password";
-import userSystem from "./user_service";
-import { checkSafeName } from "../utils/safe";
+import { ROLE } from "../entity/user";
+import { getPanelAuthProvider, requireAuthProvider, type AuthUser } from "./auth_provider";
+
+// Session/identity readers used across the panel core. The implementations live
+// in the "user" plugin; the fallbacks below describe an unauthenticated panel,
+// where every caller is an anonymous administrator.
+//
+// The counter keys stay here because `routers/overview_router.ts` reports them
+// while the plugin is the one incrementing them (through `context.common`).
 
 export const BAN_IP_COUNT = "banip";
 export const LOGIN_FAILED_KEY = "loginFailed";
@@ -16,173 +15,20 @@ export const ILLEGAL_ACCESS_KEY = "illegalAccess";
 export const LOGIN_COUNT = "loginCount";
 export const LOGIN_FAILED_COUNT_KEY = "loginFailedCount";
 
-export function login(
-  ctx: Koa.ParameterizedContext,
-  userName: string,
-  passWord: string,
-  twoFACode?: string
-): string {
-  // record the number of login requests
-  GlobalVariable.set(LOGIN_COUNT, GlobalVariable.get(LOGIN_COUNT, 0) + 1);
-  const ip = getLoginIp(ctx);
-  // check user information
-  try {
-    const totpDriftToleranceSteps = systemConfig?.totpDriftToleranceSteps || 0;
-    userSystem.checkUser({ userName, passWord }, twoFACode, totpDriftToleranceSteps);
-    // The number of errors to reset this IP after successful login
-    const ipMap = GlobalVariable.get(LOGIN_FAILED_KEY);
-    if (ipMap) delete ipMap[ip || ""];
-
-    // Session Session state changes to logged in
-    return loginSuccess(ctx, userName);
-  } catch (err) {
-    // record the number of login failures
-    GlobalVariable.set(LOGIN_FAILED_COUNT_KEY, GlobalVariable.get(LOGIN_FAILED_COUNT_KEY, 0) + 1);
-    if (ctx.session) {
-      ctx.session["login"] = null;
-      ctx.session["token"] = null;
-      ctx.session.save();
-    }
-    logger.info(`[LOGIN] IP: ${ip}, Try login ${userName} failed!`);
-    throw err;
-  }
-}
-
-export function loginSuccess(ctx: Koa.ParameterizedContext, userName: string) {
-  const ip = getLoginIp(ctx);
-  const user = userSystem.getUserByUserName(userName);
-  if (!user) throw new Error($t("TXT_CODE_router.login.nameOrPassError"));
-  if (!ctx.session) throw new Error("Session is Null!");
-
-  user.loginTime = new Date().toLocaleString();
-  ctx.session["login"] = true;
-  ctx.session["userName"] = userName;
-  ctx.session["uuid"] = user.uuid;
-  ctx.session["role"] = user.permission === 10 ? ROLE.ADMIN : ROLE.USER;
-  ctx.session["token"] = timeUuid();
-  ctx.session.save();
-
-  logger.info($t("TXT_CODE_42036f92"));
-  logger.info(`[LOGIN] IP: ${ip} Login ${userName} successful!`);
-  logger.info(`[LOGIN] Token: ${ctx.session["token"]}`);
-  logger.info($t("TXT_CODE_42036f92"));
-
-  return String(ctx.session["token"]);
-}
-
-export function getLoginIp(ctx: Koa.ParameterizedContext) {
-  return ctx.ip ?? "";
-}
-
-export async function bind2FA(ctx: Koa.ParameterizedContext) {
-  if (!ctx.session) throw new Error("Session is Null!");
-  const userName = ctx.session["userName"];
-  const user = userSystem.getUserByUserName(userName);
-  if (!user) throw new Error("User is Null!");
-  try {
-    const secret = authenticator.generateSecret();
-    const qrCode = await QRCode.toDataURL(
-      authenticator.keyuri(userName, "ElementsPanel", secret)
-    );
-    userSystem.edit(user.uuid, { secret, open2FA: false });
-    return qrCode;
-  } catch (err) {
-    user.secret = "";
-  }
-}
-
-export async function confirm2FaQRCode(userUuid: string, isEnable: boolean) {
-  await userSystem.edit(userUuid, {
-    open2FA: isEnable
-  });
-}
-
-export function check(ctx: Koa.ParameterizedContext) {
-  if (!ctx.session) return false;
-  if (ctx.session["login"] && ctx.session["userName"] && ctx.session["token"]) return true;
-  return false;
-}
-
-export function logout(ctx: Koa.ParameterizedContext): boolean {
-  if (!ctx.session) return false;
-  ctx.session["login"] = null;
-  ctx.session["userName"] = null;
-  ctx.session["uuid"] = null;
-  ctx.session["token"] = null;
-  ctx.session.maxAge = 0;
-  ctx.session.save();
-  return true;
-}
-
-export async function register(
-  ctx: Koa.ParameterizedContext,
-  userName: string,
-  passWord: string,
-  permission: number
-) {
-  let f = true;
-  // Check for duplicate usernames.
-  userSystem.objects.forEach((user) => {
-    if (user && user.userName == userName) f = false;
-  });
-  if (f) {
-    // Next. UUID and other data will be automatically generated.
-    const { uuid } = await userSystem.create({
-      userName,
-      passWord,
-      permission
-    });
-
-    return {
-      uuid,
-      userName,
-      permission
-    };
-  }
-  return false;
-}
-
-export function getUserPermission(ctx: Koa.ParameterizedContext): number {
-  let user: User | undefined | null = undefined;
-  if (isApiRequest(ctx)) {
-    user = getUuidByApiKey(getApiKey(ctx));
-  } else {
-    user = userSystem.getInstance(ctx.session?.["uuid"] || "");
-  }
-  if (!user) return 0;
-  return user.permission ?? 0;
-}
-
-export function getUserNameBySession(ctx: Koa.ParameterizedContext): string {
-  if (isApiRequest(ctx)) {
-    const user = getUuidByApiKey(getApiKey(ctx));
-    return user ? user.userName : "";
-  }
-  return ctx.session?.["userName"];
-}
-
-export function getUserFromCtx(ctx: Koa.ParameterizedContext) {
-  try {
-    if (isApiRequest(ctx)) {
-      const user = getUuidByApiKey(getApiKey(ctx));
-      return user || undefined;
-    }
-    return userSystem.getInstance(ctx.session?.["uuid"] || "") || undefined;
-  } catch (error) {
-    return undefined;
-  }
+export function getUserFromCtx(ctx: Koa.ParameterizedContext): AuthUser | undefined {
+  return getPanelAuthProvider()?.getUserFromCtx(ctx);
 }
 
 export function getUserUuid(ctx: Koa.ParameterizedContext): string {
-  if (isApiRequest(ctx)) {
-    const user = getUuidByApiKey(getApiKey(ctx));
-    if (user && user.uuid) {
-      return user.uuid;
-    } else {
-      return "";
-    }
-  }
-  return ctx.session?.["uuid"] || "";
+  return getPanelAuthProvider()?.getUserUuid(ctx) ?? "";
+}
+
+export function getUserPermission(ctx: Koa.ParameterizedContext): number {
+  return getPanelAuthProvider()?.getUserPermission(ctx) ?? ROLE.ADMIN;
+}
+
+export function getUserNameBySession(ctx: Koa.ParameterizedContext): string {
+  return getPanelAuthProvider()?.getUserNameBySession(ctx) ?? "";
 }
 
 export function getToken(ctx: Koa.ParameterizedContext): string {
@@ -196,51 +42,33 @@ export function isAjax(ctx: Koa.ParameterizedContext) {
   );
 }
 
-export function checkBanIp(ctx: Koa.ParameterizedContext) {
-  if (!GlobalVariable.map.has(LOGIN_FAILED_KEY)) GlobalVariable.set(LOGIN_FAILED_KEY, {});
-  // This IpMap also needs to be used when logging in
-  const ipMap = GlobalVariable.get(LOGIN_FAILED_KEY);
-
-  const ip = getLoginIp(ctx);
-
-  if (ipMap[ip] > 10 && systemConfig?.loginCheckIp === true) {
-    if (ipMap[ip] != 999) {
-      // record the number of bans
-      GlobalVariable.set(BAN_IP_COUNT, GlobalVariable.get(BAN_IP_COUNT, 0) + 1);
-      setTimeout(() => {
-        delete ipMap[ip];
-        // delete the number of bans
-        GlobalVariable.set(BAN_IP_COUNT, GlobalVariable.get(BAN_IP_COUNT, 1) - 1);
-      }, 1000 * 60 * 10);
-    }
-    ipMap[ip] = 999;
-    return false;
-  }
-  if (!isNaN(Number(ipMap[ip]))) ipMap[ip] = Number(ipMap[ip]) + 1;
-  else ipMap[ip] = 1;
-  return true;
-}
-
-export function getUuidByApiKey(unsafeApiKey: string) {
-  // Validate apiKey: only A-Z, a-z, 0-9 are allowed
-  if (!checkSafeName(unsafeApiKey)) return null;
-  const pageData = userSystem.getQueryWrapper().selectPage(
-    {
-      apiKey: unsafeApiKey
-    },
-    1,
-    1
-  );
-  if (pageData.total === 1) {
-    return pageData.data[0];
-  }
-  return null;
-}
-
 export function isApiRequest(ctx: Koa.ParameterizedContext) {
   return ctx.query.apikey || ctx.request?.header["x-request-api-key"] ? true : false;
 }
 
 export function getApiKey(ctx: Koa.ParameterizedContext) {
   return String(ctx.query.apikey || ctx.request?.header["x-request-api-key"] || "");
+}
+
+export function getLoginIp(ctx: Koa.ParameterizedContext) {
+  return ctx.ip ?? "";
+}
+
+// Account creation and session establishment cannot degrade: the redeem flow in
+// `instance_exchange_router` needs real accounts.
+export function loginSuccess(ctx: Koa.ParameterizedContext, userName: string): string {
+  return requireAuthProvider("Account login").loginSuccess(ctx, userName);
+}
+
+export function register(
+  ctx: Koa.ParameterizedContext,
+  userName: string,
+  passWord: string,
+  permission: number
+) {
+  return requireAuthProvider("Account registration").register(ctx, userName, passWord, permission);
+}
+
+export function checkBanIp(ctx: Koa.ParameterizedContext) {
+  return getPanelAuthProvider()?.checkBanIp(ctx) ?? true;
 }

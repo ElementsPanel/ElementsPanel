@@ -1,5 +1,6 @@
 import { Context } from "koa";
 import { ROLE } from "../entity/user";
+import { isAuthEnabled } from "../service/auth_provider";
 import { getUserFromCtx } from "../service/passport_service";
 
 export function isUploadRequest(ctx: Context) {
@@ -13,7 +14,7 @@ export function isUploadRequest(ctx: Context) {
  * occupying machine disk space.
  */
 export async function preCheckMiddleware(ctx: Context, next: () => Promise<void>) {
-  if (isUploadRequest(ctx)) {
+  if (isAuthEnabled() && isUploadRequest(ctx)) {
     const user = getUserFromCtx(ctx);
     const isAdmin = user?.permission === ROLE.ADMIN;
     if (!isAdmin) throw new Error("Access denied: Invalid multipart/form-data request!");

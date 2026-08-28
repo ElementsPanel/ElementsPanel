@@ -4,11 +4,8 @@ import { LocalFileSource, QueryWrapper } from "mcsmanager-common";
 import md5 from "md5";
 import { authenticator } from "otplib";
 import { v4 } from "uuid";
-import Storage from "../common/storage/sys_storage";
-import { IUser } from "../entity/entity_interface";
-import { IUserApp, User, UserPassWordType } from "../entity/user";
-import { $t } from "../i18n";
-import { logger } from "./log";
+import { IUserApp, IUserCredentials, IUserInfo, User, UserPassWordType } from "../entity/user";
+import { $t, logger, storage } from "../runtime";
 
 export class TwoFactorError extends Error {}
 
@@ -16,14 +13,14 @@ class UserSubsystem {
   public readonly objects: Map<string, User> = new Map();
 
   async initialize() {
-    for (const uuid of await Storage.getStorage().list("User")) {
-      const user = (await Storage.getStorage().load("User", User, uuid)) as User;
+    for (const uuid of await storage().getStorage().list("User")) {
+      const user = (await storage().getStorage().load("User", User, uuid)) as User;
       this.objects.set(uuid, user);
     }
-    logger.info($t("TXT_CODE_systemUser.userCount", { n: this.objects.size }));
+    logger().info($t("TXT_CODE_systemUser.userCount", { n: this.objects.size }));
   }
 
-  async create(config: IUser): Promise<User> {
+  async create(config: IUserInfo): Promise<User> {
     const newUuid = v4().replace(/-/gim, "");
     // Initialize necessary user data
     const instance = new User();
@@ -33,7 +30,7 @@ class UserSubsystem {
     this.setInstance(newUuid, instance);
     await this.edit(instance.uuid, config);
     // Persistently save user information
-    await Storage.getStorage().store("User", instance.uuid, instance);
+    await storage().getStorage().store("User", instance.uuid, instance);
     return instance;
   }
 
@@ -56,7 +53,7 @@ class UserSubsystem {
       instance.passWordType = UserPassWordType.bcrypt;
       instance.passWord = bcrypt.hashSync(config.passWord, 10);
     }
-    await Storage.getStorage().store("User", uuid, instance);
+    await storage().getStorage().store("User", uuid, instance);
   }
 
   validatePassword(password = "") {
@@ -65,17 +62,17 @@ class UserSubsystem {
     return reg.test(password);
   }
 
-  check2FA(code: string, user: IUser, totpDriftToleranceSteps: number = 0) {
+  check2FA(code: string, user: IUserCredentials, totpDriftToleranceSteps: number = 0) {
     if (!user.secret)
       throw new Error("Please contact the administrator to reset the account password");
     authenticator.options = { window: totpDriftToleranceSteps };
-    const delta = authenticator.checkDelta(code, user?.secret);
+    const delta = authenticator.checkDelta(code, user.secret);
     return delta != null;
   }
 
-  checkUser(info: IUser, code2FA?: string, totpDriftToleranceSteps: number = 0) {
+  checkUser(info: IUserCredentials, code2FA?: string, totpDriftToleranceSteps: number = 0) {
     const inputPassword = info.passWord || "";
-    for (const [uuid, user] of this.objects) {
+    for (const [, user] of this.objects) {
       if (user.userName === info.userName) {
         if (
           user.open2FA &&
@@ -116,6 +113,7 @@ class UserSubsystem {
       });
     });
   }
+
   deleteUserInstances(uuid: string | null, instanceIds: IUserApp[], allUsers = false) {
     if (uuid && allUsers) {
       throw new Error("Type error, The uuid and allUsers cannot be true at the same time.");
@@ -165,7 +163,7 @@ class UserSubsystem {
   async deleteInstance(uuid: string) {
     if (this.hasInstance(uuid)) {
       this.objects.delete(uuid);
-      await Storage.getStorage().delete("User", uuid);
+      await storage().getStorage().delete("User", uuid);
     }
   }
 
@@ -181,7 +179,7 @@ class UserSubsystem {
     if (!instance) return;
     instance.ssoSub = "";
     instance.ssoBound = false;
-    await Storage.getStorage().store("User", uuid, instance);
+    await storage().getStorage().store("User", uuid, instance);
   }
 
   async unbindAllSso(): Promise<number> {
@@ -190,7 +188,7 @@ class UserSubsystem {
       if (user.ssoBound || user.ssoSub) {
         user.ssoSub = "";
         user.ssoBound = false;
-        await Storage.getStorage().store("User", uuid, user);
+        await storage().getStorage().store("User", uuid, user);
         count++;
       }
     }
@@ -202,7 +200,7 @@ class UserSubsystem {
     if (!instance) throw new Error("User not found");
     instance.ssoSub = ssoSub;
     instance.ssoBound = true;
-    await Storage.getStorage().store("User", uuid, instance);
+    await storage().getStorage().store("User", uuid, instance);
   }
 
   getQueryWrapper() {

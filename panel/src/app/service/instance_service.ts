@@ -6,7 +6,7 @@ import path from "path";
 import { MARKET_CACHE_FILE_PATH, SAVE_DIR_PATH } from "../const";
 import RemoteRequest from "../service/remote_command";
 import RemoteServiceSubsystem from "../service/remote_service";
-import userSystem from "../service/user_service";
+import userStore from "../service/user_store";
 import { systemConfig } from "../setting";
 
 export enum INSTANCE_STATUS {
@@ -71,7 +71,7 @@ export async function getInstancesByUuid(
   targetDaemonId?: string,
   advanced: boolean = false
 ) {
-  const user = userSystem.getInstance(uuid);
+  const user = userStore()?.getInstance(uuid);
   if (!user) throw new Error("The UID does not exist");
 
   // Advanced functions are optional, analyze each instance data

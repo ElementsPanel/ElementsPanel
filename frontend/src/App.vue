@@ -12,7 +12,7 @@ import AppHeader from "./components/AppHeader.vue";
 import AppSidebarMenu from "./components/AppSidebarMenu.vue";
 import Breadcrumbs from "./components/Breadcrumbs.vue";
 import InputDialogProvider from "./components/InputDialogProvider.vue";
-import MyselfInfoDialog from "./components/MyselfInfoDialog.vue";
+import { getPanelFrontendGlobalComponents } from "./plugins";
 import { useAppStateStore } from "./stores/useAppStateStore";
 import { useLayoutContainerStore } from "./stores/useLayoutContainerStore";
 import { closeAppLoading, setLoadingTitle } from "./tools/dom";
@@ -23,7 +23,13 @@ const { state: appState } = useAppStateStore();
 const { isPhone } = useScreen();
 const route = useRoute();
 
-const GLOBAL_COMPONENTS = [InputDialogProvider, MyselfInfoDialog, UploadBubble];
+// The account dialog is contributed by the "user" plugin via
+// registerGlobalComponent, so it disappears with the plugin.
+const GLOBAL_COMPONENTS = computed(() => [
+  InputDialogProvider,
+  UploadBubble,
+  ...getPanelFrontendGlobalComponents()
+]);
 
 [Button, Select, Input, Table].forEach((element) => {
   element.props.size.default = "large";

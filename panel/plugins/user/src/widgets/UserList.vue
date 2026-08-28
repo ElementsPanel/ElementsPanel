@@ -7,8 +7,8 @@ import type { Rule } from "ant-design-vue/es/form";
 import { throttle } from "lodash";
 import CardPanel from "@/components/CardPanel.vue";
 import BetweenMenus from "@/components/BetweenMenus.vue";
-import { useScreen } from "../hooks/useScreen";
-import { arrayFilter } from "../tools/array";
+import { useScreen } from "@/hooks/useScreen";
+import { arrayFilter } from "@/tools/array";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import {
@@ -21,9 +21,9 @@ import {
 import type { LayoutCard } from "@/types/index";
 import type { BaseUserInfo, EditUserInfo } from "@/types/user";
 import _ from "lodash";
-import type { AntColumnsType, AntTableCell } from "../types/ant";
+import type { AntColumnsType, AntTableCell } from "@/types/ant";
 import type { Key } from "ant-design-vue/es/_util/type";
-import { PASSWORD_REGEX } from "../tools/validator";
+import { PASSWORD_REGEX } from "@/tools/validator";
 import { PERMISSION_MAP } from "@/config/const";
 import { reportErrorMsg } from "@/tools/validator";
 

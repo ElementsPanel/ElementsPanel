@@ -5,7 +5,7 @@ import type { LayoutCard } from "@/types";
 import { userInfoApi } from "@/services/apis/index";
 import { useRouter } from "vue-router";
 import { INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@/types/const";
-import { parseTimestamp } from "../tools/time";
+import { parseTimestamp } from "@/tools/time";
 
 defineProps<{
   card: LayoutCard;

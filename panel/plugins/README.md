@@ -17,12 +17,29 @@ the frontend entry is compiled by Vite as a separately loadable plugin entry.
 
 Both entries are optional. A backend module exports `setup(context)` (or
 `install(context)`) and may also export `ready(context)` and `dispose(context)`.
-The panel backend context exposes the Koa `app`, `router`, panel `config`, core
-`services` (`remote` for the remote service subsystem, `remoteRequest` for the
-daemon request helper, `users`, `operationLogger`), the shared `middleware`
-(`permission` and `validator`) and `roles`, `registerRoute`, `registerRouter`,
-`registerMiddleware`, `metadata`, `directory`, and `logger`.
+The panel backend context exposes the Koa `app`, `router`, panel `config`,
+`storage`, core `services` (`remote` for the remote service subsystem,
+`remoteRequest` for the daemon request helper, `users`, `operationLogger`,
+`instances`, `sso`), the shared `middleware` (`permission` and `validator`),
+`common` (`GlobalVariable` and the auth counter keys), `i18n`, `roles`,
+`registerRoute`, `registerRouter`, `registerMiddleware`, `registerAuthProvider`,
+`metadata`, `directory`, and `logger`.
+
+`registerAuthProvider(provider)` hands the plugin control of authentication for
+the whole panel; with no provider registered the panel runs unauthenticated. It
+is cleared automatically when the owning plugin is disposed. See
+`plugins/user`.
+
 Backend entries must be Node-loadable JavaScript (`.js`, `.cjs`, or `.mjs`).
+Small backends can be hand-written `.cjs` (see `plugins/desktop` and
+`plugins/node`). Larger ones can be written in TypeScript at
+`src/backend/index.ts`; `panel/webpack.plugins.config.js` compiles every such
+entry to `<plugin>/backend/index.cjs` during `npm run build`, externalizing the
+panel's runtime dependencies so the plugin shares its module instances.
+Compiled backends are gitignored build output — point `plugin.json` at
+`backend/index.cjs`. A TypeScript backend must not import panel core modules;
+they are bundled into `app.js`, so importing them would compile a second copy of
+each singleton. Take what you need from the context instead.
 
 The frontend module exports `setup(context)` or a definition object. Its
 `directory` context field is the logical plugin id. During a production build,
@@ -50,6 +67,7 @@ export default {
     registerAppMenu,
     registerLoginAction,
     registerDesktopApp,
+    registerGlobalComponent,
     registerService,
     getService
   }) {
@@ -57,6 +75,11 @@ export default {
   }
 };
 ```
+
+`registerGlobalComponent(component)` (or a `globalComponents` array on the
+definition) mounts a component for the lifetime of the app, alongside the
+panel's own dialog providers. Use it for global overlays that belong to no
+route or card — `plugins/user` registers its account dialog this way.
 
 Plugins can expose runtime services for other plugins and panel compatibility
 facades with `registerService(name, value)`. Services are scoped to the owning
