@@ -2,9 +2,7 @@
 import CardPanel from "@/components/CardPanel.vue";
 import Loading from "@/components/Loading.vue";
 import { router } from "@/config/router";
-import { useMarketPackages } from "@/hooks/useMarketPackages";
 import { t } from "@/lang/i18n";
-import { setSettingInfo } from "@/services/apis";
 import { uploadFile } from "@/services/apis/layout";
 import { useAppToolsStore } from "@/stores/useAppToolsStore";
 import { filterEmptyFields } from "@/tools/object";
@@ -27,7 +25,9 @@ import {
 import { Flex, message, Modal, type UploadProps } from "ant-design-vue";
 import axios from "axios";
 import { h, onMounted, ref } from "vue";
-import InstanceDetail from "../instance/dialogs/InstanceDetail.vue";
+import InstanceDetail from "@/widgets/instance/dialogs/InstanceDetail.vue";
+import { updateMarketSettings } from "../api";
+import { useMarketPackages } from "../hooks/useMarketPackages";
 
 const isNewTemplate = Boolean(router.currentRoute.value.query.newTemplate as string);
 
@@ -50,7 +50,7 @@ const {
   fetchTemplate
 } = useMarketPackages();
 const { execute: execUpload, state: fileName, isLoading: upLoading } = uploadFile();
-const { execute: saveSettings, isLoading: saveSetLoading } = setSettingInfo();
+const { execute: saveSettings, isLoading: saveSetLoading } = updateMarketSettings();
 
 const fileList = ref<any>([]);
 const beforeUpload: UploadProps["beforeUpload"] = (file) => {

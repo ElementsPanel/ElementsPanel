@@ -35,8 +35,21 @@ The module exports `setup(context)` (or `install(context)`) and may also export
 `registerProtocolMiddleware`, `routerApp` for Socket.io protocol events,
 `protocol`, the daemon `config`, `saveConfig()` to persist it, `setLanguage()`,
 the instance subsystem, the `Instance` class, `asyncTask` services, backup
-helpers, `translate()`, and `logger`. Plugins can extend the core dispatchers
-with `registerAsyncTask()`, `registerScheduleAction()`, and `registerFeature()`.
+helpers, package-`install` helpers, `translate()`, and `logger`. Plugins can
+extend the core dispatchers with `registerAsyncTask()`,
+`registerScheduleAction()`, `registerPresetCommand()`, and `registerFeature()`.
+
+`registerAsyncTask(taskName, registration)` accepts `requiresInstance: false`
+for a task that builds its own instance rather than acting on an existing one,
+and `requiredRole` for the minimum caller role the panel must report. The
+`instance/asynchronous` dispatcher reads both off the registration, so it holds
+no knowledge of any particular task.
+
+`registerPresetCommand(preset, factory)` supplies the command behind one instance
+preset. `FunctionDispatcher` applies these after its own defaults, so a plugin
+can provide a preset the core has no implementation for — `install`, owned by
+`plugins/market` — or replace one it does. Without the owning plugin the preset
+is simply absent and `execPreset` does nothing.
 
 ## Translations
 
@@ -62,3 +75,7 @@ plugin writes this daemon's configuration. See `panel/plugins/node`.
 `instance_backup` asynchronous task, the scheduled `backup` action, and the
 `instanceBackup` feature flag. It ships the console lines and errors it prints
 in `src/i18n/`. See `panel/plugins/backup`.
+
+`market` owns the `quick_install` asynchronous task and the `install` instance
+preset — the two ways a market package reaches an instance. See
+`panel/plugins/market`.

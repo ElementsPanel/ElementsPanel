@@ -9,15 +9,19 @@ import {
   useVolumeEditDialog
 } from "@/components/fc";
 import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
-import { SEARCH_ALL_KEY, useMarketPackages, type FilterOption } from "@/hooks/useMarketPackages";
 import { useScreen } from "@/hooks/useScreen";
 import { isCN, t } from "@/lang/i18n";
 import { getNetworkModeList } from "@/services/apis/envImage";
 import { updateAnyInstanceConfig } from "@/services/apis/instance";
 import { dockerPortsArray } from "@/tools/common";
 import { reportErrorMsg } from "@/tools/validator";
-import type { DockerNetworkModes, InstanceDetail, QuickStartPackages } from "@/types";
-import { defaultQuickStartPackages, TERMINAL_CODE } from "@/types/const";
+import type {
+  DockerNetworkModes,
+  FilterOption,
+  InstanceDetail,
+  QuickStartPackages
+} from "@/types";
+import { defaultQuickStartPackages, SEARCH_ALL_KEY, TERMINAL_CODE } from "@/types/const";
 import { CheckOutlined, CloseOutlined } from "@ant-design/icons-vue";
 import type { FormInstance } from "ant-design-vue";
 import { message } from "ant-design-vue";
@@ -161,7 +165,12 @@ const formRules = computed<Record<string, any>>(() => ({
 }));
 
 const templateIndex = ref<number>(-1);
-const { languageOptions } = useMarketPackages();
+// The two languages a market package can declare. Only used to label the
+// package's own language field, so it does not need the catalogue.
+const languageOptions: FilterOption[] = [
+  { label: "简体中文", value: "zh_cn" },
+  { label: "English", value: "en_us" }
+];
 
 const initFormDetail = () => {
   if (props.instanceInfo) {

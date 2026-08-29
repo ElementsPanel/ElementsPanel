@@ -9,6 +9,7 @@ import Storage from "./common/storage/sys_storage";
 import { saveSystemConfig, systemConfig } from "./setting";
 import { ROLE } from "./entity/user";
 import { $t } from "./i18n";
+import { speedLimit } from "./middleware/limit";
 import permission from "./middleware/permission";
 import instanceAccess from "./middleware/instance_access";
 import validator from "./middleware/validator";
@@ -22,6 +23,7 @@ import {
   getRequestGuard,
   setRequestGuard,
   type RequestGuard,
+  type RequestIdentity,
   type UserRecords
 } from "./service/request_guard";
 import {
@@ -57,6 +59,12 @@ export interface PanelPluginContext {
     remote: typeof SystemRemoteService;
     /** User records, once a guard plugin has registered them. */
     users: UserRecords | undefined;
+    /**
+     * Who is calling the current request, as reported by the installed guard.
+     * Anonymous callers read back as an elevated administrator, because that is
+     * what an unguarded panel means.
+     */
+    identify: (ctx: Koa.ParameterizedContext) => RequestIdentity;
     /** Sends a Socket.io request to a single daemon and awaits its response. */
     remoteRequest: typeof RemoteRequest;
     operationLogger: typeof operationLogger;
@@ -66,6 +74,8 @@ export interface PanelPluginContext {
     instanceAccess: typeof instanceAccess;
     permission: typeof permission;
     validator: typeof validator;
+    /** Per-caller rate limit; elevated callers pass through. */
+    speedLimit: typeof speedLimit;
   };
   /** Process-wide counters, shared with the core. */
   common: {
@@ -251,6 +261,7 @@ export async function loadPanelPlugins(app: Koa): Promise<LoadedPanelPlugin[]> {
           get users() {
             return getRequestGuard().users;
           },
+          identify: (requestCtx) => getRequestGuard().identify(requestCtx),
           remoteRequest: RemoteRequest,
           operationLogger,
           instances: { getInstancesByUuid }
@@ -258,7 +269,8 @@ export async function loadPanelPlugins(app: Koa): Promise<LoadedPanelPlugin[]> {
         middleware: {
           instanceAccess,
           permission,
-          validator
+          validator,
+          speedLimit
         },
         common: {
           GlobalVariable

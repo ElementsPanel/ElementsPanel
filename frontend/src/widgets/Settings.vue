@@ -17,13 +17,11 @@ import {
   BankOutlined,
   BookOutlined,
   BugOutlined,
-  EditOutlined,
   GithubOutlined,
   LockOutlined,
   MessageOutlined,
   MoneyCollectOutlined,
   PicLeftOutlined,
-  PlusOutlined,
   ProjectOutlined,
   QuestionCircleOutlined
 } from "@ant-design/icons-vue";
@@ -274,22 +272,6 @@ const startDesignUI = async () => {
 
 const leftMenusPanelRef = ref<InstanceType<typeof LeftMenusPanel>>();
 
-const toTemplate = {
-  path: "/market/editor",
-  new: () =>
-    router.push({
-      path: toTemplate.path,
-      query: {
-        newTemplate: "true"
-      }
-    }),
-  edit: () =>
-    router.push({
-      path: toTemplate.path,
-      query: {}
-    })
-};
-
 onMounted(async () => {
   const res = await execute();
   const cfg = await getSettingsConfig();
@@ -361,24 +343,6 @@ onUnmounted(() => {
                     </a-typography-paragraph>
                     <a-input v-model:value="formData.httpPort" style="max-width: 320px"
                       :placeholder="t('TXT_CODE_4ea93630')" />
-                  </a-form-item>
-
-                  <a-form-item>
-                    <a-typography-title :level="5">{{ t("TXT_CODE_6265ae47") }}</a-typography-title>
-                    <a-typography-paragraph type="secondary">
-                      {{ t("TXT_CODE_24c4768a") }}
-                    </a-typography-paragraph>
-                    <a-input v-model:value="formData.presetPackAddr" :placeholder="t('TXT_CODE_4ea93630')"
-                      style="max-width: 320px" />
-
-                    <a-button class="mx-8" type="primary" @click="toTemplate.edit">
-                      {{ t("TXT_CODE_ad207008") }}
-                      <EditOutlined />
-                    </a-button>
-                    <a-button @click="toTemplate.new">
-                      {{ t("TXT_CODE_53499d7") }}
-                      <PlusOutlined />
-                    </a-button>
                   </a-form-item>
 
                   <a-form-item>
@@ -583,22 +547,6 @@ onUnmounted(() => {
                       </a-typography-text>
                     </a-typography-paragraph>
                     <a-select v-model:value.prop="(formData as any).canFileManager" style="max-width: 320px">
-                      <a-select-option v-for="item in allYesNo" :key="item.value" :value="item.value">
-                        {{ item.label }}
-                      </a-select-option>
-                    </a-select>
-                  </a-form-item>
-
-                  <a-form-item>
-                    <a-typography-title :level="5">
-                      {{ t("TXT_CODE_3c93920b") }}
-                    </a-typography-title>
-                    <a-typography-paragraph>
-                      <a-typography-text type="secondary">
-                        {{ t("TXT_CODE_bc2e52a0") }}
-                      </a-typography-text>
-                    </a-typography-paragraph>
-                    <a-select v-model:value.prop="(formData as any).allowUsePreset" style="max-width: 320px">
                       <a-select-option v-for="item in allYesNo" :key="item.value" :value="item.value">
                         {{ item.label }}
                       </a-select-option>

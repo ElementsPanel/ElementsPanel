@@ -24,7 +24,9 @@ The panel backend context exposes the Koa `app`, `router`, panel `config`,
 `common` (`GlobalVariable`), `i18n`, `roles`,
 `registerRoute`, `registerRouter`, `registerMiddleware`, `registerRequestGuard`,
 `registerInstallationState`, `registerLocaleMessages`, `saveConfig`,
-`metadata`, `directory`, and `logger`.
+`metadata`, `directory`, and `logger`. `services.identify(ctx)` reports who is
+calling the current request, and `middleware.speedLimit(seconds)` applies the
+core's per-caller rate limit.
 
 `registerRequestGuard(guard)` hands the plugin request authorization for the
 whole panel: route guarding, caller identity, instance ownership, upload
@@ -108,6 +110,7 @@ export default {
     registerDesktopApp,
     registerInstanceAction,
     registerScheduleAction,
+    registerTerminalAction,
     registerGlobalComponent,
     registerService,
     getService
@@ -201,6 +204,24 @@ Plugins can add schedule action types with `scheduleActions` or
 translated `title`, and optionally an input placeholder or visibility
 condition. The normal and Desktop schedule editors consume these registrations,
 so disabling the owning plugin removes its action from both editors.
+
+Buttons in the terminal's instance-operations row come from `terminalActions` or
+`context.registerTerminalAction()`. Each action gets the state the terminal
+itself has — `instanceId`, `daemonId`, `instanceInfo`, `isStopped`, `isRunning`,
+`isDockerMode`, `isGlobalTerminal` and `clearTerminal()` — in both `click` and
+`condition`, so one registration serves the normal terminal and a Desktop
+console window. `plugins/market` registers its reinstall-from-a-package button
+this way.
+
+```ts
+context.registerTerminalAction({
+  id: "example-reinstall",
+  title: () => "Reinstall",
+  icon: InteractionOutlined,
+  click: ({ daemonId, instanceId, clearTerminal }) => { /* ... */ },
+  condition: ({ isStopped, isGlobalTerminal }) => isStopped && !isGlobalTerminal
+});
+```
 
 Configuration components, routes, menus and Desktop applications disappear
 with their owning frontend plugin. The Desktop plugin also closes open windows

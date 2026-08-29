@@ -1,0 +1,19 @@
+{
+  "TXT_CODE_1562f6cf": "All installation operations have been completed. Please try to start the instance...",
+  "TXT_CODE_47d56d0d": "Instance update failed! Reason:",
+  "TXT_CODE_4eccdde8": "Configuration built successfully!",
+  "TXT_CODE_5b0e93b5": "The installation cannot be started because there are other asynchronous tasks in progress. Please terminate other tasks on the terminal page first!",
+  "TXT_CODE_906c5d6a": "Deletion Completed!",
+  "TXT_CODE_9b4985d3": "Instance updated successfully!",
+  "TXT_CODE_9df98e2": "Building configuration...",
+  "TXT_CODE_ac225d07": "Build instance parameters:",
+  "TXT_CODE_b135e9bd": "Downloading...",
+  "TXT_CODE_b9ca022b": "Installing instance files, please wait patiently...",
+  "TXT_CODE_cbc235ad": "Clearing the existing files of the instance, please wait patiently...",
+  "TXT_CODE_e166bc2f": "The installation task is starting...",
+  "TXT_CODE_e4a926bf": "Uncompressing files...",
+  "TXT_CODE_e577c77c": "Updating the instance...",
+  "TXT_CODE_e5ba712d": "Building the server as a preset package:",
+  "TXT_CODE_f8145844": "This application template cannot be used for reinstallation. Instances created using Docker containers cannot be reinstalled as normal templates. Please select a preset package with the Docker label for reinstallation. If you do need to install other templates, please contact the administrator to manually turn off the containerization settings of the instance.",
+  "TXT_CODE_quick_install.unzipError": "Unzip Failed"
+}

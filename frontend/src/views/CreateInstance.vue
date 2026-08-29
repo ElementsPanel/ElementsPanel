@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { openNodeSelectDialog } from "@/components/fc/index";
 import CardPanel from "@/components/CardPanel.vue";
+import InstallOptionButton from "@/components/InstallOptionButton.vue";
 import { router } from "@/config/router";
 import { QUICKSTART_METHOD } from "@/hooks/widgets/quickStartFlow";
 import { t } from "@/lang/i18n";
-import InstallOptionButton from "@/widgets/market/InstallOptionButton.vue";
 import CreateInstanceForm from "@/widgets/setupApp/CreateInstanceForm.vue";
 import {
   AppstoreAddOutlined,

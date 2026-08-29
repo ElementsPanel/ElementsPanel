@@ -192,7 +192,7 @@ class JavaManager {
 
 const javaManager = new JavaManager();
 
-InstanceSubsystem.on("open", (obj: { instanceUuid: string }) => {
+const handleOpenInstance = (obj: { instanceUuid: string }) => {
   const instanceUuid = obj.instanceUuid;
   const config = InstanceSubsystem.getInstance(instanceUuid)?.config;
   if (!config) return;
@@ -202,7 +202,7 @@ InstanceSubsystem.on("open", (obj: { instanceUuid: string }) => {
 
   const java = javaManager.getJava(javaId);
   if (java && !java.usingInstances.includes(instanceUuid)) java.usingInstances.push(instanceUuid);
-});
+};
 
 const handleStopInstance = (obj: { instanceUuid: string }) => {
   const instanceUuid = obj.instanceUuid;
@@ -217,7 +217,19 @@ const handleStopInstance = (obj: { instanceUuid: string }) => {
     java.usingInstances.filter((uuid) => uuid !== instanceUuid);
 };
 
-InstanceSubsystem.on("exit", handleStopInstance);
-InstanceSubsystem.on("failure", handleStopInstance);
+/**
+ * Track which instances are using which Java runtime.
+ *
+ * Called from the daemon entry rather than at module load: the instance
+ * subsystem imports the dispatcher, which imports `Instance`, which imports
+ * this module, so at load time `InstanceSubsystem` may still be an in-flight
+ * module with no exports yet. No instance can emit these events before startup
+ * finishes, so subscribing there is both safe and order-independent.
+ */
+export function registerJavaManagerInstanceHooks() {
+  InstanceSubsystem.on("open", handleOpenInstance);
+  InstanceSubsystem.on("exit", handleStopInstance);
+  InstanceSubsystem.on("failure", handleStopInstance);
+}
 
 export default javaManager;

@@ -178,25 +178,6 @@ const originRouterConfig: RouterConfig[] = [
     }
   },
   {
-    path: "/market",
-    name: t("TXT_CODE_27594db8"),
-    component: LayoutContainer,
-    meta: {
-      mainMenu: true,
-      permission: ROLE.ADMIN
-    },
-    children: [
-      {
-        path: "editor",
-        name: t("TXT_CODE_54275b9c"),
-        component: LayoutContainer,
-        meta: {
-          permission: ROLE.ADMIN
-        }
-      }
-    ]
-  },
-  {
     path: "/overview",
     name: t("TXT_CODE_84fbe277"),
     component: LayoutContainer,

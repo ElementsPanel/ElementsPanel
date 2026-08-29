@@ -4,7 +4,7 @@ import * as fs from "fs-extra";
 import path from "path";
 import { v4 } from "uuid";
 import FileManager from "../../../../daemon/src/service/system_file";
-import { MARKET_CACHE_FILE_PATH, SAVE_DIR_PATH } from "../const";
+import { SAVE_DIR_PATH } from "../const";
 import SystemConfig from "../entity/setting";
 import { ROLE } from "../entity/user";
 import { $t, i18next } from "../i18n";
@@ -49,7 +49,6 @@ router.put("/setting", permission({ level: ROLE.ADMIN }), async (ctx) => {
     if (config.forwardType != null) systemConfig.forwardType = Number(config.forwardType);
     if (config.dataPort != null) systemConfig.dataPort = Number(config.dataPort);
     if (config.canFileManager != null) systemConfig.canFileManager = Boolean(config.canFileManager);
-    if (config.allowUsePreset != null) systemConfig.allowUsePreset = Boolean(config.allowUsePreset);
 
     if (config.businessMode != null) systemConfig.businessMode = Boolean(config.businessMode);
     if (config.businessId != null) systemConfig.businessId = String(config.businessId);
@@ -57,14 +56,6 @@ router.put("/setting", permission({ level: ROLE.ADMIN }), async (ctx) => {
     if (config.allowJavaManager != null) systemConfig.allowJavaManager = Boolean(config.allowJavaManager);
     if (config.registerCode != null) systemConfig.registerCode = String(config.registerCode);
     if (config.panelId != null) systemConfig.panelId = String(config.panelId);
-
-    if (config.presetPackAddr != null) {
-      // clear cache
-      fs.remove(MARKET_CACHE_FILE_PATH).catch((err) => {
-        logger.warn(`Failed to clear preset pack cache file at ${MARKET_CACHE_FILE_PATH}: ${err}`);
-      });
-      systemConfig.presetPackAddr = String(config.presetPackAddr);
-    }
 
     if (config.language != null) {
       logger.warn($t("TXT_CODE_e29a9317"), config.language);

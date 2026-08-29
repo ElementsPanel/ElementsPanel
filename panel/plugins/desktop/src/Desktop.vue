@@ -22,7 +22,6 @@ import DesktopImageViewer from "./widgets/desktop/DesktopImageViewer.vue";
 import DesktopInstanceConsole from "./widgets/desktop/DesktopInstanceConsole.vue";
 import DesktopInstanceManager from "./widgets/desktop/DesktopInstanceManager.vue";
 import DesktopJavaManager from "./widgets/desktop/DesktopJavaManager.vue";
-import DesktopMarket from "./widgets/desktop/DesktopMarket.vue";
 import DesktopMcPing from "./widgets/desktop/DesktopMcPing.vue";
 import DesktopModManager from "./widgets/desktop/DesktopModManager.vue";
 import DesktopMyApps from "./widgets/desktop/DesktopMyApps.vue";
@@ -54,7 +53,6 @@ import {
     MinusOutlined,
     PictureOutlined,
     SettingOutlined,
-    ShoppingOutlined,
     TeamOutlined,
     UsbOutlined,
     UsergroupDeleteOutlined,
@@ -181,14 +179,6 @@ const availableDesktopApps = computed<DesktopApp[]>(() => {
             color: "#52c41a",
             route: "/overview",
             windowContent: "overview"
-        },
-        {
-            id: "market",
-            label: t("TXT_CODE_27594db8"),
-            icon: markRaw(ShoppingOutlined),
-            color: "#eb2f96",
-            route: "/market",
-            windowContent: "market"
         },
         {
             id: "settings",
@@ -567,7 +557,6 @@ const ICON_MAP: Record<string, Component> = {
     "instances": markRaw(DesktopOutlined),
     "overview": markRaw(DashboardOutlined),
     "users": markRaw(TeamOutlined),
-    "market": markRaw(ShoppingOutlined),
     "settings": markRaw(SettingOutlined),
     "terminal": markRaw(CodeOutlined),
     "my-apps": markRaw(AppstoreOutlined),
@@ -1560,15 +1549,17 @@ const username = computed(() => appState.userInfo?.userName || "User");
 
                             <DesktopSettings v-else-if="win.content === 'settings'" />
 
-                            <DesktopMarket v-else-if="win.content === 'market'" @open-console="openInstanceConsole" />
-
                             <DesktopTerminalSelector v-else-if="win.content === 'terminal'"
                                 @open-console="openInstanceConsole" />
 
                             <component :is="desktopUserInfoWindow"
                                 v-else-if="win.content === 'user-info' && desktopUserInfoWindow" />
 
-                            <component :is="win.component" v-else-if="win.component" />
+                            <component
+                                :is="win.component"
+                                v-else-if="win.component"
+                                @close="closeWindow(win.id)"
+                                @open-console="openInstanceConsole" />
 
                             <div v-else class="window-page">
                                 <p>{{ win.title }}</p>

@@ -1,0 +1,8 @@
+{
+  "id": "market",
+  "name": "App Market",
+  "version": "1.0.0",
+  "description": "Owns the market package install tasks: creating an instance from a package and reinstalling an existing one.",
+  "priority": 100,
+  "backend": "backend/index.cjs"
+}

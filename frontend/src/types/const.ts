@@ -230,3 +230,10 @@ export const defaultQuickStartPackages: QuickStartPackages = {
   tags: [],
   isSummary: false
 };
+
+/**
+ * Sentinel used by the app market's filters to mean "no filter". It lives here
+ * because the instance-detail dialog, which the market editor reuses to edit a
+ * package's instance configuration, filters it out of the option lists.
+ */
+export const SEARCH_ALL_KEY = "ALL";

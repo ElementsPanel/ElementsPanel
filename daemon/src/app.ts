@@ -8,9 +8,9 @@ import { GOLANG_ZIP_PATH, LOCAL_PRESET_LANG_PATH, PTY_PATH } from "./const";
 import { globalConfiguration } from "./entity/config";
 import { $t, i18next } from "./i18n";
 import "./service/async_task_service";
-import "./service/async_task_service/quick_install";
 import { checkDependencies } from "./service/dependencies";
 import * as koa from "./service/http";
+import { registerJavaManagerInstanceHooks } from "./service/java_manager";
 import logger from "./service/log";
 import { loadDaemonPlugins, runDaemonPluginHook } from "./service/plugins";
 import * as protocol from "./service/protocol";
@@ -55,6 +55,10 @@ if (fs.existsSync(LOCAL_PRESET_LANG_PATH)) {
 logger.info($t("TXT_CODE_app.welcome"));
 
 async function main() {
+  // Instance event subscriptions that cannot be made at module load, because
+  // the modules making them are part of an import cycle with the subsystem.
+  registerJavaManagerInstanceHooks();
+
   // Initialize HTTP service
   const koaApp = koa.initKoa();
 

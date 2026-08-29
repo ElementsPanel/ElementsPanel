@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import CardPanel from "@/components/CardPanel.vue";
-import { openMarketDialog, openRenewalDialog } from "@/components/fc";
+import { openRenewalDialog } from "@/components/fc";
 import IconBtn from "@/components/IconBtn.vue";
 import TerminalCore from "@/components/TerminalCore.vue";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { INSTANCE_TYPE_TRANSLATION, verifyEULA } from "@/hooks/useInstance";
 import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
+import { buildPanelFrontendTerminalButtons } from "@/plugins";
 import {
   killInstance,
   openInstance,
@@ -14,7 +15,6 @@ import {
   stopInstance,
   updateInstance
 } from "@/services/apis/instance";
-import { useAppStateStore } from "@/stores/useAppStateStore";
 import { sleep } from "@/tools/common";
 import { reportErrorMsg } from "@/tools/validator";
 import type { LayoutCard } from "@/types";
@@ -27,7 +27,6 @@ import {
   DownOutlined,
   FileTextOutlined,
   InfoCircleOutlined,
-  InteractionOutlined,
   LaptopOutlined,
   LoadingOutlined,
   MoneyCollectOutlined,
@@ -47,7 +46,6 @@ const props = defineProps<{
 }>();
 
 const { isPhone } = useScreen();
-const { state, isAdmin } = useAppStateStore();
 const { getMetaOrRouteValue } = useLayoutCardTools(props.card);
 
 // The `useTerminal` is shared by this component and `TerminalCore`.
@@ -211,27 +209,6 @@ const instanceOperations = computed(() =>
       condition: () => isStopped.value && updateCmd.value
     },
     {
-      title: t("TXT_CODE_b19ed1dd"),
-      icon: InteractionOutlined,
-      noConfirm: true,
-      click: async () => {
-        try {
-          clearTerminal();
-          await openMarketDialog(daemonId ?? "", instanceId ?? "", {
-            autoInstall: true,
-            onlyDockerTemplate: isDockerMode.value
-          });
-        } catch (error: any) {
-          // ignore
-        }
-      },
-      props: {},
-      condition: () =>
-        isStopped.value &&
-        (state.settings.allowUsePreset || isAdmin.value) &&
-        !isGlobalTerminal.value
-    },
-    {
       title: t("TXT_CODE_f77093c8"),
       icon: MoneyCollectOutlined,
       noConfirm: true,
@@ -244,7 +221,19 @@ const instanceOperations = computed(() =>
       },
       props: {},
       condition: () => !!instanceInfo.value?.config?.category
-    }
+    },
+    // Plugin-supplied terminal buttons, e.g. the market's reinstall tool.
+    ...buildPanelFrontendTerminalButtons({
+      mode: "normal",
+      instanceId: instanceId ?? "",
+      daemonId: daemonId ?? "",
+      instanceInfo: instanceInfo.value,
+      isStopped: isStopped.value,
+      isRunning: isRunning.value,
+      isGlobalTerminal: isGlobalTerminal.value,
+      isDockerMode: isDockerMode.value,
+      clearTerminal
+    })
   ])
 );
 

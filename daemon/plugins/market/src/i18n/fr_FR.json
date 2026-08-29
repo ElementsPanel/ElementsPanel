@@ -1,0 +1,19 @@
+{
+  "TXT_CODE_1562f6cf": "Toutes les opérations d'installation ont été terminées. \nVeuillez essayer de démarrer l'instance ...",
+  "TXT_CODE_47d56d0d": "La mise à jour de l'instance a échoué! \nRaison:",
+  "TXT_CODE_4eccdde8": "Configuration construite avec succès!",
+  "TXT_CODE_5b0e93b5": "L'installation ne peut pas être démarrée car il existe d'autres tâches asynchrones en cours. \nVeuillez d'abord mettre fin à d'autres tâches sur la page du terminal!",
+  "TXT_CODE_906c5d6a": "Suppression terminée !",
+  "TXT_CODE_9b4985d3": "Instance mise à jour avec succès!",
+  "TXT_CODE_9df98e2": "Configuration du bâtiment ...",
+  "TXT_CODE_ac225d07": "Paramètres de l'instance de package de build :",
+  "TXT_CODE_b135e9bd": "Téléchargement...",
+  "TXT_CODE_b9ca022b": "Installation des fichiers d'instance, veuillez patienter patiemment...",
+  "TXT_CODE_cbc235ad": "Effacement des fichiers existants de l'instance, veuillez patienter patiemment...",
+  "TXT_CODE_e166bc2f": "La tâche d'installation commence ...",
+  "TXT_CODE_e4a926bf": "Fichiers non comprimés ...",
+  "TXT_CODE_e577c77c": "Mise à jour de l'instance ...",
+  "TXT_CODE_e5ba712d": "Construire le serveur comme package par défaut :",
+  "TXT_CODE_f8145844": "Ce modèle d'application ne peut pas être utilisé pour la réinstallation. \nLes instances créées à l'aide de conteneurs Docker ne peuvent pas être réinstallées comme modèles normaux. \nVeuillez sélectionner un package prédéfini avec l'étiquette Docker pour la réinstallation. \nSi vous avez besoin d'installer d'autres modèles, veuillez contacter l'administrateur pour désactiver manuellement les paramètres de contenerisation de l'instance.",
+  "TXT_CODE_quick_install.unzipError": "Échec de la décompression de l'archive"
+}

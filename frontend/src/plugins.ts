@@ -45,6 +45,7 @@ export interface PanelFrontendPluginContext {
   registerDesktopApp: (desktopApp: PanelFrontendDesktopApp) => void;
   registerInstanceAction: (action: PanelFrontendInstanceAction) => void;
   registerScheduleAction: (action: PanelFrontendScheduleAction) => void;
+  registerTerminalAction: (action: PanelFrontendTerminalAction) => void;
   /**
    * Mount a component for the lifetime of the app, alongside the panel's own
    * dialog providers. Use for global overlays that have no route or card.
@@ -124,6 +125,38 @@ export interface PanelFrontendScheduleAction {
   condition?: () => boolean;
 }
 
+/**
+ * State a terminal action's `click` and `condition` are given. It mirrors what
+ * the terminal itself knows about the instance in front of the user, so a
+ * plugin button behaves the same in the normal terminal and in a Desktop
+ * console window.
+ */
+export interface PanelFrontendTerminalActionContext {
+  mode: "normal" | "desktop";
+  instanceId: string;
+  daemonId: string;
+  instanceInfo: unknown;
+  isStopped: boolean;
+  isRunning: boolean;
+  isGlobalTerminal: boolean;
+  isDockerMode: boolean;
+  clearTerminal: () => void;
+}
+
+/** A button a plugin adds to the terminal's instance-operations row. */
+export interface PanelFrontendTerminalAction {
+  id: string;
+  title: string | (() => string);
+  icon: Component;
+  /** Matches the core buttons: "default" | "danger". */
+  type?: string;
+  class?: string;
+  noConfirm?: boolean;
+  props?: Record<string, unknown>;
+  click: (context: PanelFrontendTerminalActionContext) => unknown;
+  condition?: (context: PanelFrontendTerminalActionContext) => boolean;
+}
+
 export interface PanelFrontendPluginDefinition {
   routes?: RouteRecordRaw[];
   components?: Record<string, Component>;
@@ -135,6 +168,7 @@ export interface PanelFrontendPluginDefinition {
   desktopApps?: PanelFrontendDesktopApp[];
   instanceActions?: PanelFrontendInstanceAction[];
   scheduleActions?: PanelFrontendScheduleAction[];
+  terminalActions?: PanelFrontendTerminalAction[];
   globalComponents?: Component[];
   configuration?: PanelFrontendPluginConfiguration;
   setup?: (context: PanelFrontendPluginContext) => unknown;
@@ -199,6 +233,11 @@ interface ScheduleActionRegistration {
   action: PanelFrontendScheduleAction;
 }
 
+interface TerminalActionRegistration {
+  owner: InternalLoadedPanelFrontendPlugin;
+  action: PanelFrontendTerminalAction;
+}
+
 interface GlobalComponentRegistration {
   owner: InternalLoadedPanelFrontendPlugin;
   component: Component;
@@ -224,6 +263,7 @@ const loginActions = shallowReactive<PanelFrontendLoginAction[]>([]);
 const desktopAppRegistrations = shallowReactive<DesktopAppRegistration[]>([]);
 const instanceActionRegistrations = shallowReactive<InstanceActionRegistration[]>([]);
 const scheduleActionRegistrations = shallowReactive<ScheduleActionRegistration[]>([]);
+const terminalActionRegistrations = shallowReactive<TerminalActionRegistration[]>([]);
 const globalComponentRegistrations = shallowReactive<GlobalComponentRegistration[]>([]);
 const routeRevision = ref(0);
 const pluginSources = new Map<string, PanelFrontendPluginSource>();
@@ -541,6 +581,22 @@ function registerScheduleAction(
   plugin.cleanups.push(() => removeItem(scheduleActionRegistrations, registration));
 }
 
+function registerTerminalAction(
+  plugin: InternalLoadedPanelFrontendPlugin,
+  action: PanelFrontendTerminalAction
+) {
+  const id = action.id.trim();
+  if (!id) {
+    throw new Error(`Panel frontend plugin "${plugin.metadata.id}" has an invalid terminal action id.`);
+  }
+  if (terminalActionRegistrations.some((registration) => registration.action.id === id)) {
+    throw new Error(`Panel frontend terminal action id is already registered: ${id}`);
+  }
+  const registration = { owner: plugin, action: { ...action, id } };
+  terminalActionRegistrations.push(registration);
+  plugin.cleanups.push(() => removeItem(terminalActionRegistrations, registration));
+}
+
 function registerService(
   plugin: InternalLoadedPanelFrontendPlugin,
   name: string,
@@ -604,6 +660,7 @@ function createContext(plugin: InternalLoadedPanelFrontendPlugin): PanelFrontend
     registerDesktopApp: (desktopApp) => registerDesktopApp(plugin, desktopApp),
     registerInstanceAction: (action) => registerInstanceAction(plugin, action),
     registerScheduleAction: (action) => registerScheduleAction(plugin, action),
+    registerTerminalAction: (action) => registerTerminalAction(plugin, action),
     registerGlobalComponent: (component) => {
       const registration = { owner: plugin, component };
       globalComponentRegistrations.push(registration);
@@ -685,6 +742,7 @@ async function installPluginSource(source: PanelFrontendPluginSource, cacheKey?:
     definition.desktopApps?.forEach(plugin.context.registerDesktopApp);
     definition.instanceActions?.forEach(plugin.context.registerInstanceAction);
     definition.scheduleActions?.forEach(plugin.context.registerScheduleAction);
+    definition.terminalActions?.forEach(plugin.context.registerTerminalAction);
     definition.globalComponents?.forEach(plugin.context.registerGlobalComponent);
     if (typeof definition.setup === "function") {
       const setupCleanup = await definition.setup(plugin.context);
@@ -769,6 +827,7 @@ export async function setupPanelFrontendPlugins(app: App, pinia: Pinia) {
   desktopAppRegistrations.length = 0;
   instanceActionRegistrations.length = 0;
   scheduleActionRegistrations.length = 0;
+  terminalActionRegistrations.length = 0;
   globalComponentRegistrations.length = 0;
   serviceRegistrations.clear();
   await refreshPanelFrontendPlugins();
@@ -840,4 +899,28 @@ export function getPanelFrontendInstanceActions(): readonly PanelFrontendInstanc
 
 export function getPanelFrontendScheduleActions(): readonly PanelFrontendScheduleAction[] {
   return scheduleActionRegistrations.map((registration) => registration.action);
+}
+
+export function getPanelFrontendTerminalActions(): readonly PanelFrontendTerminalAction[] {
+  return terminalActionRegistrations.map((registration) => registration.action);
+}
+
+/**
+ * Turn the registered terminal actions into the button descriptors both
+ * terminals already render. Keeping the adapter here means the two call sites
+ * stay identical and neither has to know how a registration is shaped.
+ */
+export function buildPanelFrontendTerminalButtons(
+  context: PanelFrontendTerminalActionContext
+) {
+  return getPanelFrontendTerminalActions().map((action) => ({
+    title: typeof action.title === "function" ? action.title() : action.title,
+    icon: action.icon,
+    type: action.type ?? "default",
+    class: action.class,
+    noConfirm: action.noConfirm ?? true,
+    props: action.props ?? {},
+    click: () => action.click(context),
+    condition: () => (action.condition ? action.condition(context) : true)
+  }));
 }

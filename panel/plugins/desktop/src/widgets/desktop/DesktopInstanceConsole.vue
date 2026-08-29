@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { openMarketDialog, openRenewalDialog } from "@/components/fc";
+import { openRenewalDialog } from "@/components/fc";
 import TerminalCore from "@/components/TerminalCore.vue";
 import { INSTANCE_TYPE_TRANSLATION, verifyEULA } from "@/hooks/useInstance";
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { useTerminal, type UseTerminalHook } from "@/hooks/useTerminal";
 import { t } from "@/lang/i18n";
+import { buildPanelFrontendTerminalButtons } from "@/plugins";
 import {
     killInstance,
     openInstance,
@@ -12,7 +13,6 @@ import {
     stopInstance,
     updateInstance
 } from "@/services/apis/instance";
-import { useAppStateStore } from "@/stores/useAppStateStore";
 import { sleep } from "@/tools/common";
 import { reportErrorMsg } from "@/tools/validator";
 import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS } from "@/types/const";
@@ -28,7 +28,6 @@ import {
     FieldTimeOutlined,
     FolderOpenOutlined,
     InfoCircleOutlined,
-    InteractionOutlined,
     LaptopOutlined,
     LoadingOutlined,
     MoneyCollectOutlined,
@@ -60,8 +59,6 @@ const emit = defineEmits<{
     (e: "open-java-manager", instanceId: string, daemonId: string): void;
     (e: "open-instance-action", actionId: string, instanceId: string, daemonId: string): void;
 }>();
-
-const { state, isAdmin } = useAppStateStore();
 
 const terminalHook: UseTerminalHook = useTerminal();
 const {
@@ -236,27 +233,6 @@ const instanceOperations = computed(() =>
             condition: () => isStopped.value && updateCmd.value
         },
         {
-            title: t("TXT_CODE_b19ed1dd"),
-            icon: InteractionOutlined,
-            noConfirm: true,
-            click: async () => {
-                try {
-                    clearTerminal();
-                    await openMarketDialog(props.daemonId, props.instanceId, {
-                        autoInstall: true,
-                        onlyDockerTemplate: isDockerMode.value
-                    });
-                } catch (error: any) {
-                    // ignore
-                }
-            },
-            props: {},
-            condition: () =>
-                isStopped.value &&
-                (state.settings.allowUsePreset || isAdmin.value) &&
-                !isGlobalTerminal.value
-        },
-        {
             title: t("TXT_CODE_f77093c8"),
             icon: MoneyCollectOutlined,
             noConfirm: true,
@@ -270,6 +246,18 @@ const instanceOperations = computed(() =>
             props: {},
             condition: () => !!instanceInfo.value?.config?.category
         },
+        // Plugin-supplied terminal buttons, e.g. the market's reinstall tool.
+        ...buildPanelFrontendTerminalButtons({
+            mode: "desktop",
+            instanceId: props.instanceId,
+            daemonId: props.daemonId,
+            instanceInfo: instanceInfo.value,
+            isStopped: isStopped.value,
+            isRunning: isRunning.value,
+            isGlobalTerminal: isGlobalTerminal.value,
+            isDockerMode: isDockerMode.value,
+            clearTerminal
+        })
     ])
 );
 

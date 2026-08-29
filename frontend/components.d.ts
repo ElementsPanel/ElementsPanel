@@ -101,6 +101,7 @@ declare module 'vue' {
     IframeModal: typeof import('./src/components/IframeModal/index.vue')['default']
     InnerCard: typeof import('./src/components/InnerCard.vue')['default']
     InputDialogProvider: typeof import('./src/components/InputDialogProvider.vue')['default']
+    InstallOptionButton: typeof import('./src/components/InstallOptionButton.vue')['default']
     InstanceConfigEditor: typeof import('./src/components/InstanceConfigEditor.vue')['default']
     KvOptionsDialog: typeof import('./src/components/fc/KvOptionsDialog.vue')['default']
     LayoutCard: typeof import('./src/components/LayoutCard.vue')['default']

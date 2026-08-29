@@ -1,0 +1,19 @@
+{
+  "TXT_CODE_1562f6cf": "Alle Installationsvorgänge wurden abgeschlossen. \nBitte versuchen Sie, die Instanz zu starten ...",
+  "TXT_CODE_47d56d0d": "Instanz -Update fehlgeschlagen! \nGrund:",
+  "TXT_CODE_4eccdde8": "Konfiguration erfolgreich erstellt!",
+  "TXT_CODE_5b0e93b5": "Die Installation kann nicht gestartet werden, da andere asynchrone Aufgaben in Arbeit sind. \nBitte beenden Sie zuerst andere Aufgaben auf der Terminalseite!",
+  "TXT_CODE_906c5d6a": "Löschung abgeschlossen!",
+  "TXT_CODE_9b4985d3": "Instanz erfolgreich aktualisiert!",
+  "TXT_CODE_9df98e2": "Konfiguration aufbauen ...",
+  "TXT_CODE_ac225d07": "Parameter der Build-Paketinstanz:",
+  "TXT_CODE_b135e9bd": "Herunterladen ...",
+  "TXT_CODE_b9ca022b": "Instanzdateien werden installiert, bitte warten Sie geduldig ...",
+  "TXT_CODE_cbc235ad": "Die vorhandenen Dateien der Instanz werden gelöscht. Bitte warten Sie geduldig ...",
+  "TXT_CODE_e166bc2f": "Die Installationsaufgabe beginnt ...",
+  "TXT_CODE_e4a926bf": "Unkomprimierende Dateien ...",
+  "TXT_CODE_e577c77c": "Aktualisieren der Instanz ...",
+  "TXT_CODE_e5ba712d": "Build-Server als Standardpaket:",
+  "TXT_CODE_f8145844": "Diese Anwendungsvorlage kann nicht zur Neuinstallation verwendet werden. \nMit Docker -Containern erstellte Instanzen können nicht als normale Vorlagen neu installiert werden. \nBitte wählen Sie ein voreingestelltes Paket mit dem Docker -Label zur Neuinstallation aus. \nWenn Sie andere Vorlagen installieren müssen, wenden Sie sich bitte an den Administrator, um die Containerisierungseinstellungen der Instanz manuell auszuschalten.",
+  "TXT_CODE_quick_install.unzipError": "Das Dekomprimieren des Archivs ist fehlgeschlagen"
+}

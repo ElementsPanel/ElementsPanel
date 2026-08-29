@@ -1,20 +1,16 @@
 import { getCurrentLang, t } from "@/lang/i18n";
-import { quickInstallListAddr } from "@/services/apis/instance";
 import { reportErrorMsg } from "@/tools/validator";
-import type { QuickStartPackages } from "@/types";
+import type { FilterOption, QuickStartPackages } from "@/types";
+import { SEARCH_ALL_KEY } from "@/types/const";
 import { Modal } from "ant-design-vue";
 import { computed, reactive, ref } from "vue";
-import type { ComputedNodeInfo } from "./useOverviewInfo";
+import type { ComputedNodeInfo } from "@/hooks/useOverviewInfo";
+import { quickInstallListAddr } from "../api";
 
-// Constants
-export const SEARCH_ALL_KEY = "ALL";
+export { SEARCH_ALL_KEY };
+export type { FilterOption };
 
 // Types
-export interface FilterOption {
-  label: string;
-  value: string;
-}
-
 export interface SearchForm {
   language: string;
   category: string;

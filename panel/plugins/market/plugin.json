@@ -1,0 +1,9 @@
+{
+  "id": "market",
+  "name": "App Market",
+  "version": "1.0.0",
+  "description": "Provides the application market: package browsing, one-click instance creation, reinstall-from-package and the custom market editor.",
+  "priority": 175,
+  "backend": "backend/index.cjs",
+  "frontend": "src/frontend.ts"
+}

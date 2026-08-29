@@ -36,15 +36,8 @@ export default class SystemConfig {
   // Whether to open the file management function for ordinary users
   canFileManager = true;
 
-  // Whether to allow template-based instance reset, which may pose a security risk.
-  // If you use Docker and need commercial functionality, you can try turning this feature on and testing it.
-  allowUsePreset = false;
-
   // Panel display language
   language = "en_us";
-
-  // Quick installation address
-  presetPackAddr = "https://script.mcsmanager.com/market-v2.json";
 
   // Redis address (Experimental Features)
   redisUrl = "";

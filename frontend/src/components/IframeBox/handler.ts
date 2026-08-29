@@ -4,8 +4,8 @@ import { requestBuyInstance } from "@/services/apis/redeem";
 import { setUserApiKey } from "@/services/apis/user";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useAppStateStore } from "@/stores/useAppStateStore";
+import { getPanelFrontendService } from "@/pluginServices";
 import { openIframeModal } from "../IframeModal/useIframeModal";
-import { openMarketDialog } from "../fc";
 
 export interface RemoteAppDaemon {
   nodeId: number;
@@ -128,6 +128,11 @@ export const iframeRouters: Record<string, IframeRouterHandler<any>> = {
     return JSON.parse(JSON.stringify(res.value));
   },
   OpenMarketDialog: async (data: any) => {
+    // Provided by the `market` plugin; without it there is no market to open.
+    const openMarketDialog = getPanelFrontendService<
+      (daemonId?: string, instanceId?: string, options?: any) => Promise<unknown>
+    >("market.openMarketDialog");
+    if (!openMarketDialog) throw new Error("The market plugin is not installed.");
     const res = await openMarketDialog(data?.daemonId, data?.instanceId, data?.options);
     if (!res) return res;
     return JSON.parse(JSON.stringify(res));

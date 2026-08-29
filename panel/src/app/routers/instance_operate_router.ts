@@ -7,12 +7,11 @@ import instanceAccess from "../middleware/instance_access";
 import permission from "../middleware/permission";
 import validator from "../middleware/validator";
 import { getRequestGuard as guard } from "../service/request_guard";
-import { checkInstanceAdvancedParams, getAppMarketList } from "../service/instance_service";
+import { checkInstanceAdvancedParams } from "../service/instance_service";
 import { operationLogger } from "../service/operation_logger";
 import { timeUuid } from "../service/password";
 import RemoteRequest, { RemoteRequestTimeoutError } from "../service/remote_command";
 import RemoteServiceSubsystem from "../service/remote_service";
-import { systemConfig } from "../setting";
 
 const router = new Router({ prefix: "/protected_instance" });
 
@@ -512,59 +511,6 @@ router.get(
         }
       }
       ctx.body = result;
-    } catch (err) {
-      ctx.body = err;
-    }
-  }
-);
-
-// [Low-level Permission]
-// Reinstall the instance
-router.post(
-  "/install_instance",
-  speedLimit(3),
-  permission({ level: ROLE.USER, speedLimit: true }),
-  validator({
-    query: { daemonId: String, uuid: String },
-    body: { description: String, title: String }
-  }),
-  async (ctx) => {
-    if (systemConfig?.allowUsePreset === false && !guard().identify(ctx).elevated) {
-      ctx.status = 403;
-      ctx.body = new Error($t("TXT_CODE_b5a47731"));
-      return;
-    }
-    try {
-      const daemonId = String(ctx.query.daemonId);
-      const instanceUuid = String(ctx.query.uuid);
-
-      // Use "description" and "title" as Package ID
-      // Do NOT use other parameters from frontend, it may be a malicious attack
-      const description = String(ctx.request.body.description);
-      const title = String(ctx.request.body.title);
-
-      const presetUrl = systemConfig?.presetPackAddr;
-      if (!presetUrl) throw new Error("Preset Addr is empty!");
-
-      const presetConfig = await getAppMarketList();
-      const packages = presetConfig?.packages || [];
-
-      if (!(packages instanceof Array)) throw new Error("Preset Config is not array!");
-
-      // Find the target preset config
-      const targetPresetConfig = packages.find(
-        (v) => v.title === title && v.description === description
-      );
-      if (!targetPresetConfig) throw new Error("Preset Config is not found!");
-
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      new RemoteRequest(remoteService).request("instance/asynchronous", {
-        taskName: "install_instance",
-        instanceUuid,
-        parameter: targetPresetConfig,
-        role: guard().identify(ctx).role
-      });
-      ctx.body = true;
     } catch (err) {
       ctx.body = err;
     }

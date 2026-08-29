@@ -88,9 +88,7 @@ export interface Settings {
   zipType: number;
   canFileManager: boolean;
   language: string;
-  presetPackAddr: string;
   redisUrl: string;
-  allowUsePreset: boolean;
   businessMode: boolean;
   businessId: string;
   allowChangeCmd: boolean;
@@ -250,11 +248,20 @@ export interface PanelStatus {
   versionChange?: boolean;
   settings: {
     canFileManager: boolean;
-    allowUsePreset: boolean;
     businessMode: boolean;
     businessId: string;
     allowChangeCmd: boolean;
     allowJavaManager: boolean;
     panelId: string;
   };
+}
+
+/**
+ * One entry of an app-market filter dropdown. Shared with the core
+ * instance-detail dialog, which renders these lists when the market editor
+ * reuses it to edit a package.
+ */
+export interface FilterOption {
+  label: string;
+  value: string;
 }

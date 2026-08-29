@@ -11,10 +11,6 @@ import { arrayUnique, toNumber } from "mcsmanager-common";
 import ProcessInfoCommand from "../entity/commands/process_info";
 import { ProcessConfig } from "../entity/instance/process_config";
 import { TaskCenter } from "../service/async_task_service";
-import {
-  createQuickInstallTask,
-  QuickInstallTask
-} from "../service/async_task_service/quick_install";
 import downloadManager from "../service/download_manager";
 import { IInstanceDetail } from "../service/interfaces";
 import { modService } from "../service/mod_service";
@@ -420,26 +416,28 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
       });
   }
 
-  // Quick install Minecraft server task
-  // Why not use the ".execPreset("install", parameter)" that already exists in Instance?
-  // Because the instance has not yet been created at this stage.
-  if (taskName === "quick_install" && role === ROLE.ADMIN) {
-    const newInstanceName = String(parameter.newInstanceName);
-    const targetLink = String(parameter.targetLink);
-    logger.info(`Quick install: Name: ${newInstanceName} | Download: ${targetLink}`);
-    const task = createQuickInstallTask(targetLink, newInstanceName, parameter.setupInfo);
-    return protocol.response(ctx, task.toObject());
-  }
-
+  // Plugin-supplied tasks. The dispatcher knows nothing about what any of them
+  // do — the registration carries the role it needs and whether it operates on
+  // an existing instance.
   const registeredTask = getDaemonAsyncTaskRegistration(taskName);
-  if (registeredTask && instance) {
-    const runningTask = TaskCenter.getTasks(registeredTask.type).find(
-      (task) => task.toObject().instanceUuid === instanceUuid && task.status() === 1
-    );
-    if (runningTask) return protocol.response(ctx, runningTask.toObject());
-    const task = registeredTask.create(instance, parameter);
-    TaskCenter.addTask(task);
-    return protocol.response(ctx, task.toObject());
+  if (registeredTask) {
+    if (registeredTask.requiredRole != null && role < registeredTask.requiredRole) {
+      return protocol.error(ctx, "instance/asynchronous", $t("TXT_CODE_permission.forbidden"));
+    }
+    // A task that builds its own instance, such as creating one from a market
+    // package, declares `requiresInstance: false` and is handed no instance.
+    const needsInstance = registeredTask.requiresInstance !== false;
+    if (!needsInstance || instance) {
+      const runningTask = instance
+        ? TaskCenter.getTasks(registeredTask.type).find(
+            (task) => task.toObject().instanceUuid === instanceUuid && task.status() === 1
+          )
+        : undefined;
+      if (runningTask) return protocol.response(ctx, runningTask.toObject());
+      const task = registeredTask.create(instance as Instance, parameter);
+      TaskCenter.addTask(task);
+      return protocol.response(ctx, task.toObject());
+    }
   }
 
   protocol.response(ctx, true);
@@ -481,10 +479,7 @@ routerApp.on("instance/stop_asynchronous", (ctx, data) => {
 routerApp.on("instance/query_asynchronous", (ctx, data) => {
   const taskId = data.parameter.taskId as string | undefined;
   const taskName = data.taskName as string;
-  const type =
-    taskName === "quick_install"
-      ? QuickInstallTask.TYPE
-      : getDaemonAsyncTaskRegistration(taskName)?.type;
+  const type = getDaemonAsyncTaskRegistration(taskName)?.type;
   if (!type) return protocol.response(ctx, []);
   if (!taskId) {
     const result = [];

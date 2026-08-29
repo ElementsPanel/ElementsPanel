@@ -8,9 +8,14 @@ import { LOCAL_PRESET_LANG_PATH, SEVEN_ZIP_PATH, ZIP_TIMEOUT_SECONDS } from "../
 import { decompressWithProgress } from "../common/compress";
 import { globalConfiguration } from "../entity/config";
 import Instance from "../entity/instance/instance";
+import InstanceConfig from "../entity/instance/Instance_config";
+import InstanceCommand from "../entity/commands/base/command";
+import { getCommonHeaders } from "../common/network";
 import { $t } from "../i18n";
 import { GitignoreMatcher } from "../common/gitignore_matcher";
 import InstanceSubsystem from "./system_instance";
+import { getFileManager } from "./file_router_service";
+import { InstanceUpdateAction } from "./instance_update_action";
 import * as protocol from "./protocol";
 import { routerApp } from "./router";
 import logger from "./log";
@@ -21,12 +26,15 @@ import {
   clearDaemonPluginRegistrations,
   registerDaemonAsyncTask,
   registerDaemonFeature,
+  registerDaemonPresetCommand,
   registerDaemonScheduleAction
 } from "./plugin_registry";
 import type {
   DaemonAsyncTaskRegistration,
+  DaemonPresetCommandFactory,
   DaemonScheduleActionHandler
 } from "./plugin_registry";
+import type { IPresetCommand } from "../entity/commands/dispatcher";
 
 export interface DaemonPluginMetadata {
   id: string;
@@ -61,6 +69,14 @@ export interface DaemonPluginContext {
     sevenZipPath: string;
     zipTimeoutSeconds: number;
   };
+  /** What a market-package install needs from the core. */
+  install: {
+    InstanceConfig: typeof InstanceConfig;
+    InstanceCommand: typeof InstanceCommand;
+    InstanceUpdateAction: typeof InstanceUpdateAction;
+    getFileManager: typeof getFileManager;
+    getCommonHeaders: typeof getCommonHeaders;
+  };
   translate: typeof $t;
   registerRouter: (router: Router) => void;
   registerRoute: (path: string, method: string, handler: Koa.Middleware) => void;
@@ -75,6 +91,15 @@ export interface DaemonPluginContext {
   ) => void;
   registerScheduleAction: (actionType: string, handler: DaemonScheduleActionHandler) => void;
   registerFeature: (feature: string) => void;
+  /**
+   * Supply the command behind one instance preset. Applied by
+   * `FunctionDispatcher` after the core's own defaults, so a plugin can provide
+   * a preset the core has none for (`install`) or replace one it does.
+   */
+  registerPresetCommand: (
+    preset: IPresetCommand,
+    createCommand: DaemonPresetCommandFactory
+  ) => void;
   /**
    * Merge the plugin's own translations into the daemon i18n instance, keyed by
    * locale (`en_us`, `zh_cn`, ...). A plugin that owns strings ships them in
@@ -226,6 +251,13 @@ export async function loadDaemonPlugins(app: Koa): Promise<LoadedDaemonPlugin[]>
           sevenZipPath: SEVEN_ZIP_PATH,
           zipTimeoutSeconds: ZIP_TIMEOUT_SECONDS
         },
+        install: {
+          InstanceConfig,
+          InstanceCommand,
+          InstanceUpdateAction,
+          getFileManager,
+          getCommonHeaders
+        },
         translate: $t,
         registerRouter: (pluginRouter) => {
           app.use(pluginRouter.routes()).use(pluginRouter.allowedMethods());
@@ -247,6 +279,9 @@ export async function loadDaemonPlugins(app: Koa): Promise<LoadedDaemonPlugin[]>
         },
         registerFeature: (feature) => {
           registerDaemonFeature(feature);
+        },
+        registerPresetCommand: (preset, createCommand) => {
+          registerDaemonPresetCommand(preset, createCommand);
         },
         registerLocaleMessages: (messages) => {
           for (const [locale, resources] of Object.entries(messages ?? {})) {

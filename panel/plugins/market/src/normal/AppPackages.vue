@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import FadeUpAnimation from "@/components/FadeUpAnimation.vue";
 import Loading from "@/components/Loading.vue";
-import { SEARCH_ALL_KEY, useMarketPackages } from "@/hooks/useMarketPackages";
 import { t } from "@/lang/i18n";
 import type { QuickStartPackages } from "@/types";
 import { computed, onMounted } from "vue";
+import { SEARCH_ALL_KEY, useMarketPackages } from "../hooks/useMarketPackages";
 import PackageDetailTable from "./PackageDetailTable.vue";
 
 const props = defineProps<{

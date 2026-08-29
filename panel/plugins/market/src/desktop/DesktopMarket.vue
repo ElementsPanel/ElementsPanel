@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { openNodeSelectDialog } from "@/components/fc";
-import { SEARCH_ALL_KEY, useMarketPackages } from "@/hooks/useMarketPackages";
 import { t } from "@/lang/i18n";
 import { getDockerHubImagePlatforms } from "@/services/apis/envImage";
 import { createAsyncTask } from "@/services/apis/instance";
 import { reportErrorMsg } from "@/tools/validator";
 import type { QuickStartPackages } from "@/types";
+import { SEARCH_ALL_KEY, useMarketPackages } from "../hooks/useMarketPackages";
 import {
     ArrowLeftOutlined,
     CloudDownloadOutlined,

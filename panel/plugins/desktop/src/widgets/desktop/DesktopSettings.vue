@@ -190,13 +190,6 @@ limitations under the License.`;
                         </div>
 
                         <div class="ds-form-group">
-                            <label class="ds-label">{{ t("TXT_CODE_6265ae47") }}</label>
-                            <p class="ds-desc">{{ t("TXT_CODE_24c4768a") }}</p>
-                            <input v-model="formData.presetPackAddr" class="ds-input"
-                                :placeholder="t('TXT_CODE_4ea93630')" />
-                        </div>
-
-                        <div class="ds-form-group">
                             <label class="ds-label">{{ t("TXT_CODE_514e064a") }}</label>
                             <p class="ds-desc">{{ t("TXT_CODE_328191e") }}</p>
                             <input v-model="formData.httpIp" class="ds-input" :placeholder="t('TXT_CODE_4ea93630')" />
@@ -275,16 +268,6 @@ limitations under the License.`;
                             <label class="ds-label">{{ t("TXT_CODE_adab942e") }}</label>
                             <p class="ds-desc">{{ t("TXT_CODE_ceb783a9") }}<br />{{ t("TXT_CODE_e5b7522d") }}</p>
                             <select v-model="(formData as any).canFileManager" class="ds-select">
-                                <option v-for="item in allYesNo" :key="String(item.value)" :value="item.value">{{
-                                    item.label }}
-                                </option>
-                            </select>
-                        </div>
-
-                        <div class="ds-form-group">
-                            <label class="ds-label">{{ t("TXT_CODE_3c93920b") }}</label>
-                            <p class="ds-desc">{{ t("TXT_CODE_bc2e52a0") }}</p>
-                            <select v-model="(formData as any).allowUsePreset" class="ds-select">
                                 <option v-for="item in allYesNo" :key="String(item.value)" :value="item.value">{{
                                     item.label }}
                                 </option>

@@ -4,7 +4,6 @@ import type {
   InstanceDetail,
   JsonData,
   NewScheduleTask,
-  QuickStartTemplate,
   Schedule
 } from "@/types";
 
@@ -232,11 +231,6 @@ export const createInstance = useDefineApi<
   url: "/api/instance"
 });
 
-export const quickInstallListAddr = useDefineApi<any, QuickStartTemplate>({
-  url: "/api/instance/quick_install_list",
-  method: "GET"
-});
-
 export const createAsyncTask = useDefineApi<
   {
     params: {
@@ -456,20 +450,3 @@ export const scheduleCreate = useDefineApi<
   method: "POST"
 });
 
-export const reinstallInstance = useDefineApi<
-  {
-    params: {
-      daemonId: string;
-      uuid: string;
-    };
-    data: {
-      targetUrl?: string;
-      title: string;
-      description: string;
-    };
-  },
-  boolean
->({
-  url: "/api/protected_instance/install_instance",
-  method: "POST"
-});

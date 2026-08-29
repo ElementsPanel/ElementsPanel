@@ -2,7 +2,7 @@
 import { router } from "@/config/router";
 import { t } from "@/lang/i18n";
 import type { LayoutCard } from "@/types";
-import McPreset from "@/widgets/setupApp/McPreset.vue";
+import McPreset from "./McPreset.vue";
 import { DatabaseOutlined } from "@ant-design/icons-vue";
 import { Divider, Flex } from "ant-design-vue";
 import Link from "ant-design-vue/es/typography/Link";

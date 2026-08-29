@@ -1,9 +1,9 @@
 import Instance from "../instance/instance";
+import { getDaemonPresetCommands } from "../../service/plugin_registry";
 import InstanceCommand from "./base/command";
 import DockerResizeCommand from "./docker/docker_pty_resize";
 import DockerStartCommand from "./docker/docker_start";
 import GeneralSendCommand from "./general/general_command";
-import GeneralInstallCommand from "./general/general_install";
 import GeneralKillCommand from "./general/general_kill";
 import GeneralRestartCommand from "./general/general_restart";
 import GeneralStartCommand from "./general/general_start";
@@ -53,7 +53,6 @@ export default class FunctionDispatcher extends InstanceCommand {
     instance.setPreset("restart", new GeneralRestartCommand());
     instance.setPreset("update", new GeneralUpdateCommand());
     instance.setPreset("refreshPlayers", new NullCommand());
-    instance.setPreset("install", new GeneralInstallCommand());
     instance.lifeCycleTaskManager.registerLifeCycleTask(new InstanceDiskCheckTask());
 
     // Preset the basic operation mode according to the instance startup type
@@ -80,6 +79,13 @@ export default class FunctionDispatcher extends InstanceCommand {
     if (instance.config.type.includes(Instance.TYPE_MINECRAFT_JAVA)) {
       instance.setPreset("refreshPlayers", new PingJavaMinecraftServerCommand());
       instance.lifeCycleTaskManager.registerLifeCycleTask(new PingMinecraftServerTask());
+    }
+
+    // Plugin-supplied presets go last so a plugin can add one the core has no
+    // implementation for — `install`, owned by the market plugin — or override
+    // one it does.
+    for (const [preset, createCommand] of getDaemonPresetCommands()) {
+      instance.setPreset(preset, createCommand());
     }
   }
 }

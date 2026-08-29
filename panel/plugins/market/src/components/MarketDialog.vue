@@ -1,15 +1,21 @@
 <script setup lang="ts">
-import type { OpenMarketDialogProps } from "@/components/fc";
 import { useDialog } from "@/hooks/useDialog";
 import { t } from "@/lang/i18n";
-import { reinstallInstance } from "@/services/apis/instance";
 import { reportErrorMsg } from "@/tools/validator";
-import type { MountComponent, QuickStartPackages } from "@/types";
-import AppPackages from "@/widgets/setupApp/AppPackages.vue";
+import type { QuickStartPackages } from "@/types";
 import { Modal } from "ant-design-vue";
 import { ref } from "vue";
+import { reinstallInstance } from "../api";
+import type { OpenMarketDialogProps } from "../market-dialog";
+import AppPackages from "../normal/AppPackages.vue";
 
-interface Props extends OpenMarketDialogProps, MountComponent<QuickStartPackages> {}
+// The two callbacks `useMountComponent` injects, spelled out rather than taken
+// from the core `MountComponent<T>`: the SFC compiler resolves `defineProps`
+// types itself, and it cannot follow the `@/` alias from a plugin directory.
+interface Props extends OpenMarketDialogProps {
+  destroyComponent?: (delay?: number) => void;
+  emitResult?: (data?: QuickStartPackages) => void;
+}
 
 const props = defineProps<Props>();
 

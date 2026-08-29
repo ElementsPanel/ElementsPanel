@@ -22,6 +22,7 @@ import BetweenMenus from "@/components/BetweenMenus.vue";
 import { router } from "@/config/router";
 import { useInstanceTagSearch, useInstanceTagTips } from "@/hooks/useInstanceTag";
 import { useScreen } from "@/hooks/useScreen";
+import { getPanelFrontendRouteRevision } from "@/plugins";
 import { remoteInstances, remoteNodeList } from "@/services/apis";
 import {
   batchDelete,
@@ -154,6 +155,13 @@ const toMarketPage = () => {
     }
   });
 };
+
+// The market page belongs to the `market` plugin, so the empty-state shortcut
+// to it only exists while that plugin is installed.
+const marketAvailable = computed(() => {
+  getPanelFrontendRouteRevision();
+  return router.getRoutes().some((route) => route.path === "/market");
+});
 
 const toNodesPage = () => {
   router.push({
@@ -537,7 +545,7 @@ onMounted(async () => {
           <Empty :description="t('TXT_CODE_5415f009')" />
         </div>
         <div class="mt-20">
-          <a-button type="primary" @click="toMarketPage">
+          <a-button v-if="marketAvailable" type="primary" @click="toMarketPage">
             {{ t("TXT_CODE_871cb8bc") }}
           </a-button>
         </div>
