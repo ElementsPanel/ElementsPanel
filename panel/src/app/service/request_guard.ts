@@ -85,8 +85,6 @@ export interface RequestGuard {
     instanceUuid: string
   ): boolean;
   canUpload(ctx: Koa.ParameterizedContext): boolean;
-  /** False only while the panel still needs its first administrator. */
-  isInstalled(): boolean;
   stats(): AuthStats;
   accounts?: AccountService;
   users?: UserRecords;
@@ -107,7 +105,6 @@ const UNGUARDED: RequestGuard = {
   identify: () => ANONYMOUS,
   canAccessInstance: () => true,
   canUpload: () => true,
-  isInstalled: () => true,
   stats: () => NO_STATS
 };
 

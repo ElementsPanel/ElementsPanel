@@ -6,7 +6,7 @@ import { GlobalVariable } from "mcsmanager-common";
 import path from "path";
 import { pathToFileURL } from "url";
 import Storage from "./common/storage/sys_storage";
-import { systemConfig } from "./setting";
+import { saveSystemConfig, systemConfig } from "./setting";
 import { ROLE } from "./entity/user";
 import { $t } from "./i18n";
 import permission from "./middleware/permission";
@@ -23,6 +23,11 @@ import {
   type RequestGuard,
   type UserRecords
 } from "./service/request_guard";
+import {
+  clearInstallationState,
+  setInstallationState,
+  type InstallationState
+} from "./service/installation_state";
 
 export interface PanelPluginMetadata {
   id: string;
@@ -44,6 +49,7 @@ export interface PanelPluginContext {
   app: Koa;
   router: Router;
   config: NonNullable<typeof systemConfig>;
+  saveConfig: () => void;
   /** Persistent entity storage, shared with the panel core. */
   storage: typeof Storage;
   services: {
@@ -75,6 +81,8 @@ export interface PanelPluginContext {
    * served. Cleared automatically when the owning plugin is disposed.
    */
   registerRequestGuard: (guard: RequestGuard) => void;
+  /** Supply the first-run completion state. Defaults to installed when absent. */
+  registerInstallationState: (state: InstallationState) => void;
   metadata: PanelPluginMetadata;
   directory: string;
   logger: typeof logger;
@@ -108,6 +116,7 @@ const entryCandidates = [
 let loadedPlugins: LoadedPanelPlugin[] = [];
 let pluginsDisposed = false;
 let guardOwner: string | undefined;
+let installationStateOwner: string | undefined;
 
 function readMetadata(directory: string): PanelPluginMetadata | null {
   for (const file of metadataFiles) {
@@ -175,7 +184,9 @@ export async function loadPanelPlugins(app: Koa): Promise<LoadedPanelPlugin[]> {
   loadedPlugins = [];
   pluginsDisposed = false;
   guardOwner = undefined;
+  installationStateOwner = undefined;
   clearRequestGuard();
+  clearInstallationState();
   if (!fs.existsSync(directory)) return loadedPlugins;
 
   const plugins: DiscoveredPanelPlugin[] = [];
@@ -223,6 +234,7 @@ export async function loadPanelPlugins(app: Koa): Promise<LoadedPanelPlugin[]> {
         app,
         router,
         config: systemConfig!,
+        saveConfig: () => saveSystemConfig(systemConfig!),
         storage: Storage,
         services: {
           remote: SystemRemoteService,
@@ -245,6 +257,10 @@ export async function loadPanelPlugins(app: Koa): Promise<LoadedPanelPlugin[]> {
         registerRequestGuard: (requestGuard) => {
           setRequestGuard(requestGuard);
           guardOwner = plugin.metadata.id;
+        },
+        registerInstallationState: (installationState) => {
+          setInstallationState(installationState);
+          installationStateOwner = plugin.metadata.id;
         },
         registerRouter: (pluginRouter) => {
           app.use(pluginRouter.routes()).use(pluginRouter.allowedMethods());
@@ -273,6 +289,10 @@ export async function loadPanelPlugins(app: Koa): Promise<LoadedPanelPlugin[]> {
         guardOwner = undefined;
         clearRequestGuard();
       }
+      if (installationStateOwner === plugin.metadata.id) {
+        installationStateOwner = undefined;
+        clearInstallationState();
+      }
       loadedPlugins.push(loaded);
       logger.error(`Panel plugin failed to load: ${plugin.metadata.id}`, error);
     }
@@ -295,6 +315,10 @@ export async function runPanelPluginHook(hook: "ready" | "dispose"): Promise<voi
     if (hook === "dispose" && guardOwner === plugin.metadata.id) {
       guardOwner = undefined;
       clearRequestGuard();
+    }
+    if (hook === "dispose" && installationStateOwner === plugin.metadata.id) {
+      installationStateOwner = undefined;
+      clearInstallationState();
     }
     if (plugin.error) continue;
     const module: any = plugin.module;

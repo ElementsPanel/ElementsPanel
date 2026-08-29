@@ -11,3 +11,8 @@ export const updateOobeSettings = useDefineApi<
   url: "/api/overview/install",
   method: "PUT"
 });
+
+export const completeOobe = useDefineApi<any, boolean>({
+  url: "/api/overview/complete",
+  method: "POST"
+});

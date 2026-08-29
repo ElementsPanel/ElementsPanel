@@ -104,7 +104,8 @@ const handleSsoLogin = () => {
 
 onMounted(async () => {
   await execute();
-  if (!appConfig.isInstall) router.push({ path: "/install" });
+  const hasInstallRoute = router.getRoutes().some((route) => route.path === "/install");
+  if (!appConfig.isInstall && hasInstallRoute) router.push({ path: "/install" });
 
   try {
     const res = await ssoConfig().execute();

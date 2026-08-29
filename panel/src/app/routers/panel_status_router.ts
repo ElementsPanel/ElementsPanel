@@ -6,7 +6,7 @@ import SystemConfig from "../entity/setting";
 import { ROLE } from "../entity/user";
 import permission from "../middleware/permission";
 import validator from "../middleware/validator";
-import { getRequestGuard } from "../service/request_guard";
+import { getInstallationState } from "../service/installation_state";
 import { systemConfig } from "../setting";
 
 // Bootstrap endpoints that must stay in the core: the frontend reads /status
@@ -20,9 +20,9 @@ router.all(
   "/status",
   permission({ token: false, level: null, speedLimit: false }),
   async (ctx: Koa.ParameterizedContext) => {
-    // Without the "user" plugin the panel has no accounts to create, so it is
-    // never "waiting to be installed".
-    const isInstall = getRequestGuard().isInstalled();
+    // First-run state is supplied by the OOBE plugin. Without that plugin the
+    // panel is already installed and must never redirect to a missing wizard.
+    const isInstall = getInstallationState().isInstalled();
     ctx.body = {
       versionChange: GlobalVariable.get("versionChange", null),
       isInstall,

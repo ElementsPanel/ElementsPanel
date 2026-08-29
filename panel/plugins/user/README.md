@@ -1,9 +1,9 @@
 # User Management
 
 > **Removing this plugin removes panel authentication.** The panel then treats
-> every request as an anonymous administrator: no login page, no install
-> wizard, and every API open. That is the intended, documented behaviour — the
-> default build ships with this plugin installed.
+> every request as an anonymous administrator and every API is open. The OOBE
+> plugin remains available but skips its optional administrator-account step.
+> The default build ships with this plugin installed.
 
 Owns login, multi-user management, permissions, 2FA, API keys and SSO, on both
 the panel backend and the frontend (including Desktop mode).
@@ -58,7 +58,6 @@ every call site is unconditional.
 | `identify(ctx)` | session / API key → uuid, user name, role, elevation |
 | `canAccessInstance` | instance ownership |
 | `canUpload` | admin-only multipart uploads |
-| `isInstalled` | whether a first administrator exists |
 | `stats` | the login counters the panel overview reports |
 | `accounts`, `users` | session establishment and the user records |
 
@@ -115,7 +114,8 @@ per-plugin copies, the same convention the `node` plugin uses.
 The standalone `oobe` plugin owns `/install` and injects
 `user.oobeCreateAdminAccount` for the administrator-account step. The account
 form, validation and `/api/auth/install` request therefore remain owned by this
-plugin even though the surrounding first-run flow does not.
+plugin even though the surrounding first-run flow does not. If this plugin is
+absent, OOBE skips that optional step and can still complete normally.
 
 i18n reuses the existing keys in `languages/*.json`; this plugin ships no
 translations of its own.

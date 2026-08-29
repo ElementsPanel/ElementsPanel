@@ -12,7 +12,8 @@ export default {
       component: InstallPage,
       meta: {
         permission: ROLE_GUEST,
-        mainMenu: false
+        mainMenu: false,
+        public: true
       }
     });
   }

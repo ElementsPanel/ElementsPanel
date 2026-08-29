@@ -69,8 +69,6 @@ export function createRequestGuard(): RequestGuard {
     // Unrestricted multipart uploads would let any account fill the disk.
     canUpload: (ctx) => getUserFromCtx(ctx)?.permission === ROLE().ADMIN,
 
-    isInstalled: () => userSystem.objects.size > 0,
-
     stats(): AuthStats {
       const GlobalVariable = globalVariable();
       return {

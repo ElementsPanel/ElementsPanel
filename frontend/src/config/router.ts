@@ -296,6 +296,8 @@ router.beforeEach(async (to, from, next) => {
   const toPagePermission = Number(to.meta.permission ?? 0);
   const fromRoutePath = router.currentRoute.value.path.trim();
   const toRoutePath = to.path.trim();
+  const hasInstallRoute = router.getRoutes().some((route) => route.path === "/install");
+  const requiresOobe = hasInstallRoute && !state.isInstall;
   console.info(
     "Router Changed:",
     fromRoutePath,
@@ -307,7 +309,7 @@ router.beforeEach(async (to, from, next) => {
     toPagePermission
   );
 
-  if (requiresLogin && !state.isInstall && toRoutePath !== "/install") {
+  if (requiresOobe && toRoutePath !== "/install") {
     return next("/install");
   }
 
@@ -332,13 +334,9 @@ router.beforeEach(async (to, from, next) => {
     toRoutePath.includes("_open_page") ||
     toRoutePath.startsWith("/sso/") ||
     to.meta.public === true ||
-    ["/shop", "/login", "/install", "/404"].includes(toRoutePath)
+    ["/shop", "/login", "/404"].includes(toRoutePath)
   ) {
     return next();
-  }
-
-  if (requiresLogin && !state.isInstall) {
-    return next("/install");
   }
 
   if (!to.name) return next("/404");

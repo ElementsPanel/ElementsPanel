@@ -12,7 +12,7 @@ import { getPanelFrontendService } from "@/pluginServices";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { ArrowRightOutlined } from "@ant-design/icons-vue";
 import { computed, reactive, ref, type Component } from "vue";
-import { updateOobeSettings } from "./api";
+import { completeOobe, updateOobeSettings } from "./api";
 
 const skeletons = [
   { span: 6, rows: 4 },
@@ -26,7 +26,7 @@ const skeletons = [
   { span: 16, rows: 6 }
 ];
 
-const { state: appState } = useAppStateStore();
+const { state: appState, updatePanelStatus } = useAppStateStore();
 const createAdminAccount = computed(() =>
   getPanelFrontendService<Component>("user.oobeCreateAdminAccount")
 );
@@ -52,13 +52,26 @@ const continueFromLanguage = async () => {
   step.value++;
 };
 
-const finishOobe = () => {
-  toPage({
-    path: "/",
-    query: {
-      from_install: 1
-    }
-  }).then(() => window.location.reload());
+const startOobe = () => {
+  step.value = createAdminAccount.value ? 2 : 3;
+};
+
+const finishLoading = ref(false);
+const finishOobe = async () => {
+  try {
+    finishLoading.value = true;
+    await completeOobe().execute();
+    await updatePanelStatus();
+    await toPage({
+      path: "/",
+      query: {
+        from_install: 1
+      }
+    });
+    window.location.reload();
+  } finally {
+    finishLoading.value = false;
+  }
 };
 </script>
 
@@ -137,12 +150,11 @@ const finishOobe = () => {
         </a-button>
         <a-button
           v-else
-          :disabled="!createAdminAccount"
           class="mt-45 mb-45"
           type="primary"
           size="large"
           style="min-width: 160px; height: 48px; font-size: 16px"
-          @click="step = 2"
+          @click="startOobe"
         >
           {{ t("TXT_CODE_351aaf7") }}
         </a-button>
@@ -172,6 +184,7 @@ const finishOobe = () => {
           <a-button
             type="primary"
             size="large"
+            :loading="finishLoading"
             style="min-width: 160px; height: 48px; font-size: 16px"
             @click="finishOobe"
           >
