@@ -96,6 +96,7 @@ export enum ScheduleActionTypeEnum {
   Start = "start",
   Restart = "restart",
   Kill = "kill",
+  /** Provided by the optional backup plugin. */
   Backup = "backup"
 }
 
@@ -111,8 +112,7 @@ export const ScheduleActionType = {
   [ScheduleActionTypeEnum.Stop]: t("TXT_CODE_148d6467"),
   [ScheduleActionTypeEnum.Start]: t("TXT_CODE_8c7318b3"),
   [ScheduleActionTypeEnum.Restart]: t("TXT_CODE_77cc12da"),
-  [ScheduleActionTypeEnum.Kill]: t("TXT_CODE_1c36c8f2"),
-  [ScheduleActionTypeEnum.Backup]: t("TXT_CODE_INSTANCE_BACKUP")
+  [ScheduleActionTypeEnum.Kill]: t("TXT_CODE_1c36c8f2")
 };
 
 export const ScheduleType = {

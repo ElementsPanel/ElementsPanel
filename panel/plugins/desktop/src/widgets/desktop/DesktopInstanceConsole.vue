@@ -58,7 +58,7 @@ const emit = defineEmits<{
     (e: "open-term-config", instanceId: string, daemonId: string): void;
     (e: "open-mc-ping", instanceId: string, daemonId: string): void;
     (e: "open-java-manager", instanceId: string, daemonId: string): void;
-    (e: "open-backup", instanceId: string, daemonId: string): void;
+    (e: "open-instance-action", actionId: string, instanceId: string, daemonId: string): void;
 }>();
 
 const { state, isAdmin } = useAppStateStore();
@@ -494,7 +494,7 @@ onUnmounted(() => {
             @open-term-config="emit('open-term-config', instanceId, daemonId)"
             @open-mc-ping="emit('open-mc-ping', instanceId, daemonId)"
             @open-java-manager="emit('open-java-manager', instanceId, daemonId)"
-            @open-backup="emit('open-backup', instanceId, daemonId)" />
+            @open-instance-action="(actionId: string) => emit('open-instance-action', actionId, instanceId, daemonId)" />
     </div>
 </template>
 

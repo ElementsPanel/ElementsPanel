@@ -8,7 +8,9 @@ import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
 import {
     getPanelFrontendDesktopApps,
-    type PanelFrontendDesktopApp
+    getPanelFrontendInstanceActions,
+    type PanelFrontendDesktopApp,
+    type PanelFrontendInstanceAction
 } from "@/plugins";
 import type { ContextMenuItem } from "./widgets/desktop/DesktopContextMenu.vue";
 import DesktopContextMenu from "./widgets/desktop/DesktopContextMenu.vue";
@@ -17,7 +19,6 @@ import DesktopFileEditor from "./widgets/desktop/DesktopFileEditor.vue";
 import DesktopFileManager from "./widgets/desktop/DesktopFileManager.vue";
 import DesktopIcon from "./widgets/desktop/DesktopIcon.vue";
 import DesktopImageViewer from "./widgets/desktop/DesktopImageViewer.vue";
-import DesktopInstanceBackup from "./widgets/desktop/DesktopInstanceBackup.vue";
 import DesktopInstanceConsole from "./widgets/desktop/DesktopInstanceConsole.vue";
 import DesktopInstanceManager from "./widgets/desktop/DesktopInstanceManager.vue";
 import DesktopJavaManager from "./widgets/desktop/DesktopJavaManager.vue";
@@ -40,7 +41,6 @@ import {
     BuildOutlined,
     CloseOutlined,
     CloseSquareOutlined,
-    CloudDownloadOutlined,
     CodeOutlined,
     ControlOutlined,
     DashboardOutlined,
@@ -160,6 +160,10 @@ const pluginDesktopApps = computed<DesktopApp[]>(() =>
             initialHeight: app.initialHeight
         }))
 );
+
+const pluginInstanceActions = computed<PanelFrontendInstanceAction[]>(() => [
+    ...getPanelFrontendInstanceActions()
+]);
 
 const availableDesktopApps = computed<DesktopApp[]>(() => {
     const apps: DesktopApp[] = [
@@ -537,6 +541,28 @@ watch(
     { flush: "sync" }
 );
 
+let registeredInstanceActionIds = new Set(pluginInstanceActions.value.map((action) => action.id));
+
+watch(
+    pluginInstanceActions,
+    (actions) => {
+        const nextIds = new Set(actions.map((action) => action.id));
+        let layoutChanged = false;
+        for (const id of registeredInstanceActionIds) {
+            if (nextIds.has(id)) continue;
+            const content = `instance-action:${id}`;
+            for (const [windowId, win] of windows) {
+                if (win.content !== content) continue;
+                windows.delete(windowId);
+                layoutChanged = true;
+            }
+        }
+        registeredInstanceActionIds = nextIds;
+        if (layoutChanged) saveDesktopLayout();
+    },
+    { flush: "sync" }
+);
+
 const ICON_MAP: Record<string, Component> = {
     "instances": markRaw(DesktopOutlined),
     "overview": markRaw(DashboardOutlined),
@@ -557,8 +583,7 @@ const ICON_MAP: Record<string, Component> = {
     "new-instance": markRaw(DesktopOutlined),
     "user-info": markRaw(UserOutlined),
     "mc-ping": markRaw(UsergroupDeleteOutlined),
-    "mod-manager": markRaw(UsbOutlined),
-    "backup": markRaw(CloudDownloadOutlined)
+    "mod-manager": markRaw(UsbOutlined)
 };
 
 const loadDesktopLayout = async () => {
@@ -586,8 +611,22 @@ const loadDesktopLayout = async () => {
                 const desktopApp = availableDesktopApps.value.find(
                     (app) => app.windowContent === win.content || app.id === win.content
                 );
+                const instanceActionId =
+                    win.content === "backup"
+                        ? "backup"
+                        : typeof win.content === "string" && win.content.startsWith("instance-action:")
+                        ? win.content.slice("instance-action:".length)
+                        : undefined;
+                const instanceAction = instanceActionId
+                    ? pluginInstanceActions.value.find((action) => action.id === instanceActionId)
+                    : undefined;
                 if (win.content.startsWith("panel-plugin:") && !desktopApp?.component) continue;
-                const icon = desktopApp?.icon || ICON_MAP[win.content] || markRaw(DesktopOutlined);
+                if (instanceActionId && !instanceAction?.desktopComponent) continue;
+                const icon =
+                    desktopApp?.icon ||
+                    (instanceAction?.icon ? markRaw(instanceAction.icon) : undefined) ||
+                    ICON_MAP[win.content] ||
+                    markRaw(DesktopOutlined);
                 const zIndex = typeof win.zIndex === "number" ? win.zIndex : ++nextZIndex;
                 if (zIndex > nextZIndex) nextZIndex = zIndex;
                 windows.set(win.id, {
@@ -598,7 +637,10 @@ const loadDesktopLayout = async () => {
                     minimized: false,
                     maximized: win.maximized || false,
                     zIndex,
-                    content: desktopApp?.windowContent || win.content,
+                    content:
+                        instanceActionId
+                            ? `instance-action:${instanceActionId}`
+                            : desktopApp?.windowContent || win.content,
                     initialX: win.x ?? 100,
                     initialY: win.y ?? 60,
                     initialWidth: win.width ?? 800,
@@ -608,7 +650,11 @@ const loadDesktopLayout = async () => {
                     type: win.type,
                     filePath: win.filePath,
                     fileName: win.fileName,
-                    component: desktopApp?.component
+                    component:
+                        desktopApp?.component ||
+                        (instanceAction?.desktopComponent
+                            ? markRaw(instanceAction.desktopComponent)
+                            : undefined)
                 });
             }
         }
@@ -1031,8 +1077,13 @@ const openModManagerWindow = (instanceId: string, daemonId: string) => {
     saveDesktopLayout();
 };
 
-const openBackupWindow = (instanceId: string, daemonId: string) => {
-    const windowId = `backup-${instanceId}`;
+const openInstanceActionWindow = (actionId: string, instanceId: string, daemonId: string) => {
+    const action = pluginInstanceActions.value.find(
+        (candidate) => candidate.id === actionId && candidate.desktopComponent
+    );
+    if (!action?.desktopComponent) return;
+
+    const windowId = `instance-action-${actionId}-${instanceId}`;
     const existing = windows.get(windowId);
 
     if (existing) {
@@ -1048,19 +1099,20 @@ const openBackupWindow = (instanceId: string, daemonId: string) => {
 
     windows.set(windowId, {
         id: windowId,
-        title: t("TXT_CODE_INSTANCE_BACKUP"),
-        icon: markRaw(CloudDownloadOutlined),
+        title: typeof action.title === "function" ? action.title() : action.title,
+        icon: markRaw(action.icon),
         visible: true,
         minimized: false,
         maximized: false,
         zIndex: ++nextZIndex,
-        content: "backup",
+        content: `instance-action:${action.id}`,
         initialX: offsetX,
         initialY: offsetY,
-        initialWidth: 700,
-        initialHeight: 500,
+        initialWidth: action.desktopInitialWidth || 700,
+        initialHeight: action.desktopInitialHeight || 500,
         instanceId: instanceId,
-        daemonId: daemonId
+        daemonId: daemonId,
+        component: markRaw(action.desktopComponent)
     });
     saveDesktopLayout();
 };
@@ -1452,10 +1504,10 @@ const username = computed(() => appState.userInfo?.userName || "User");
                                 @open-mod-manager="openModManagerWindow" @open-schedule="openScheduleWindow"
                                 @open-event-config="openEventConfigWindow" @open-term-config="openTermConfigWindow"
                                 @open-mc-ping="openMcPingWindow" @open-java-manager="openJavaManagerWindow"
-                                @open-backup="openBackupWindow" />
+                                @open-instance-action="openInstanceActionWindow" />
 
-                            <DesktopInstanceBackup
-                                v-else-if="win.content === 'backup' && win.instanceId && win.daemonId" :visible="true"
+                            <component :is="win.component"
+                                v-else-if="win.content.startsWith('instance-action:') && win.component && win.instanceId && win.daemonId"
                                 :instance-uuid="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)"
                                 @open-file-editor="(filePath: string, fileName: string) => openFileEditorWindow(win.instanceId!, win.daemonId!, filePath, fileName)" />
 

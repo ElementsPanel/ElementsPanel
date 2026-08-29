@@ -10,6 +10,7 @@ import { saveSystemConfig, systemConfig } from "./setting";
 import { ROLE } from "./entity/user";
 import { $t } from "./i18n";
 import permission from "./middleware/permission";
+import instanceAccess from "./middleware/instance_access";
 import validator from "./middleware/validator";
 import { getInstancesByUuid } from "./service/instance_service";
 import { logger } from "./service/log";
@@ -62,6 +63,7 @@ export interface PanelPluginContext {
     instances: { getInstancesByUuid: typeof getInstancesByUuid };
   };
   middleware: {
+    instanceAccess: typeof instanceAccess;
     permission: typeof permission;
     validator: typeof validator;
   };
@@ -246,6 +248,7 @@ export async function loadPanelPlugins(app: Koa): Promise<LoadedPanelPlugin[]> {
           instances: { getInstancesByUuid }
         },
         middleware: {
+          instanceAccess,
           permission,
           validator
         },

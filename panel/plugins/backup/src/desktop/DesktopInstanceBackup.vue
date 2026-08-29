@@ -3,11 +3,9 @@ import { t } from "@/lang/i18n";
 import { fileContent, touchFile } from "@/services/apis/fileManager";
 import {
     createAsyncTask,
-    deleteBackup,
-    getBackupList,
-    queryAsyncTask,
-    restoreBackup
+    queryAsyncTask
 } from "@/services/apis/instance";
+import { getPanelFrontendService } from "@/pluginServices";
 import {
     CloudDownloadOutlined,
     DeleteOutlined,
@@ -19,8 +17,12 @@ import {
     SyncOutlined
 } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
-import { onMounted, onUnmounted, ref } from "vue";
-import DesktopWindow from "./DesktopWindow.vue";
+import { computed, onMounted, onUnmounted, ref, type Component } from "vue";
+import { deleteBackup, getBackupList, restoreBackup } from "../api";
+
+const desktopWindowComponent = computed(() =>
+    getPanelFrontendService<Component>("desktop.window")
+);
 
 const props = defineProps<{
     instanceUuid: string;
@@ -357,7 +359,8 @@ onUnmounted(() => {
 
         <Teleport to="body">
             <Transition name="ds-dialog-fade">
-                <DesktopWindow v-if="deleteDialog.show" id="backup-delete-dialog" :title="t('TXT_CODE_71155575')"
+                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && deleteDialog.show"
+                    id="backup-delete-dialog" :title="t('TXT_CODE_71155575')"
                     :icon="ExclamationCircleOutlined" :visible="deleteDialog.show" :minimized="false" :maximized="false"
                     :active="true" :initial-width="400" :initial-height="200" :initial-x="windowWidth / 2 - 200"
                     :initial-y="windowHeight / 2 - 100" :z-index="10006" :show-minimize="false" :show-maximize="false"
@@ -381,13 +384,14 @@ onUnmounted(() => {
                             </button>
                         </div>
                     </div>
-                </DesktopWindow>
+                </component>
             </Transition>
         </Teleport>
 
         <Teleport to="body">
             <Transition name="ds-dialog-fade">
-                <DesktopWindow v-if="restoreDialog.show" id="backup-restore-dialog"
+                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && restoreDialog.show"
+                    id="backup-restore-dialog"
                     :title="t('TXT_CODE_INSTANCE_BACKUP_RESTORE')" :icon="ExclamationCircleOutlined"
                     :visible="restoreDialog.show" :minimized="false" :maximized="false" :active="true"
                     :initial-width="400" :initial-height="250" :initial-x="windowWidth / 2 - 200"
@@ -411,13 +415,14 @@ onUnmounted(() => {
                             </button>
                         </div>
                     </div>
-                </DesktopWindow>
+                </component>
             </Transition>
         </Teleport>
 
         <Teleport to="body">
             <Transition name="ds-dialog-fade">
-                <DesktopWindow v-if="epbaklstConfirmDialog.show" id="backup-epbaklst-confirm-dialog"
+                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && epbaklstConfirmDialog.show"
+                    id="backup-epbaklst-confirm-dialog"
                     :title="t('TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST')" :icon="ExclamationCircleOutlined"
                     :visible="epbaklstConfirmDialog.show" :minimized="false" :maximized="false" :active="true"
                     :initial-width="400" :initial-height="200" :initial-x="windowWidth / 2 - 200"
@@ -441,13 +446,14 @@ onUnmounted(() => {
                             </button>
                         </div>
                     </div>
-                </DesktopWindow>
+                </component>
             </Transition>
         </Teleport>
 
         <Teleport to="body">
             <Transition name="ds-dialog-fade">
-                <DesktopWindow v-if="backupConfirmDialog.show" id="backup-confirm-dialog"
+                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && backupConfirmDialog.show"
+                    id="backup-confirm-dialog"
                     :title="t('TXT_CODE_INSTANCE_BACKUP_CREATE')" :icon="ExclamationCircleOutlined"
                     :visible="backupConfirmDialog.show" :minimized="false" :maximized="false" :active="true"
                     :initial-width="400" :initial-height="200" :initial-x="windowWidth / 2 - 200"
@@ -471,7 +477,7 @@ onUnmounted(() => {
                             </button>
                         </div>
                     </div>
-                </DesktopWindow>
+                </component>
             </Transition>
         </Teleport>
     </div>

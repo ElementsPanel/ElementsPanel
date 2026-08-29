@@ -8,12 +8,15 @@ import {
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { useServerConfig } from "@/hooks/useServerConfig";
 import { t } from "@/lang/i18n";
+import {
+    getPanelFrontendInstanceActions,
+    type PanelFrontendInstanceActionContext
+} from "@/plugins";
 import { modListApi } from "@/services/apis/modManager";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import {
     AppstoreAddOutlined,
     BuildOutlined,
-    CloudDownloadOutlined,
     CodeOutlined,
     ControlOutlined,
     DashboardOutlined,
@@ -47,7 +50,7 @@ const emit = defineEmits<{
     (e: "open-term-config"): void;
     (e: "open-mc-ping"): void;
     (e: "open-java-manager"): void;
-    (e: "open-backup"): void;
+    (e: "open-instance-action", actionId: string): void;
 }>();
 
 const { isAdmin, state } = useAppStateStore();
@@ -69,6 +72,10 @@ const { instanceInfo, execute, isGlobalTerminal } = useInstanceInfo({
 });
 
 const { serverConfigFiles, refresh: refreshServerConfig } = useServerConfig();
+
+const desktopInstanceActions = computed(() =>
+    getPanelFrontendInstanceActions().filter((action) => action.desktopComponent)
+);
 
 const folders = ref<string[]>([]);
 const foldersLoaded = ref(false);
@@ -111,6 +118,21 @@ const refreshInstanceInfo = async () => {
 
 const btns = computed(() => {
     if (!instanceInfo.value) return [];
+    const daemon = overviewState.value?.remote?.find((item: any) => item.uuid === props.daemonId);
+    const actionContext: PanelFrontendInstanceActionContext = {
+        mode: "desktop",
+        instanceId: props.instanceId,
+        daemonId: props.daemonId,
+        instanceInfo: instanceInfo.value,
+        daemon,
+        isGlobalTerminal: isGlobalTerminal.value
+    };
+    const pluginActions = desktopInstanceActions.value.map((action) => ({
+        title: typeof action.title === "function" ? action.title() : action.title,
+        icon: action.icon,
+        condition: () => action.condition?.(actionContext) ?? true,
+        click: () => emit("open-instance-action", action.id)
+    }));
     return arrayFilter([
         {
             title: t("TXT_CODE_d07742fe"),
@@ -220,17 +242,7 @@ const btns = computed(() => {
                 instanceFundamentalDetailDialog.value?.openDialog();
             }
         },
-        {
-            title: t("TXT_CODE_INSTANCE_BACKUP"),
-            icon: CloudDownloadOutlined,
-            condition: () => {
-                const daemon = overviewState.value?.remote?.find((v: any) => v.uuid === props.daemonId) as any;
-                return !isGlobalTerminal.value && daemon?.features?.instanceBackup;
-            },
-            click: () => {
-                emit("open-backup");
-            }
-        }
+        ...pluginActions
     ]);
 });
 

@@ -2,6 +2,7 @@
 import { useSchedule } from "@/hooks/useSchedule";
 import { t } from "@/lang/i18n";
 import { padZero } from "@/tools/common";
+import { getPanelFrontendScheduleActions } from "@/plugins";
 import type { Schedule, ScheduleAction, ScheduleTaskForm } from "@/types";
 import { ScheduleActionType, ScheduleCreateType, ScheduleType } from "@/types/const";
 import {
@@ -15,7 +16,7 @@ import {
 import { notification } from "ant-design-vue";
 import dayjs from "dayjs";
 import _ from "lodash";
-import { h, onMounted, onUnmounted, reactive, ref } from "vue";
+import { computed, h, onMounted, onUnmounted, reactive, ref } from "vue";
 import DesktopWindow from "./DesktopWindow.vue";
 
 const getPopupContainer = (triggerNode: HTMLElement) => {
@@ -44,6 +45,15 @@ const {
     parseTaskTime,
     createState
 } = useSchedule(props.instanceId, props.daemonId);
+
+const scheduleActionTypes = computed(() => {
+    const types: Record<string, string> = { ...ScheduleActionType };
+    for (const action of getPanelFrontendScheduleActions()) {
+        if (action.condition && !action.condition()) continue;
+        types[action.type] = typeof action.title === "function" ? action.title() : action.title;
+    }
+    return types;
+});
 
 const windowWidth = ref(window.innerWidth);
 const windowHeight = ref(window.innerHeight);
@@ -167,7 +177,11 @@ const getInputPlaceholder = (action: ScheduleAction) => {
     if (action.type === "command") {
         return t("TXT_CODE_8ff89011");
     }
-    return;
+    const pluginAction = getPanelFrontendScheduleActions().find((item) => item.type === action.type);
+    if (!pluginAction?.inputPlaceholder) return;
+    return typeof pluginAction.inputPlaceholder === "function"
+        ? pluginAction.inputPlaceholder()
+        : pluginAction.inputPlaceholder;
 };
 
 const addEmptyAction = () => {
@@ -235,7 +249,7 @@ onMounted(async () => {
                         <div class="dschedule-item__name">{{ item.name }}</div>
                         <div class="dschedule-item__meta">
                             <span v-if="item.actions && item.actions.length" class="dschedule-item__tag ds-tag--action">
-                                {{ ScheduleActionType[item.actions[0].type as keyof typeof ScheduleActionType] }}
+                                {{ scheduleActionTypes[item.actions[0].type] ?? item.actions[0].type }}
                             </span>
                             <span class="dschedule-item__tag ds-tag--type">
                                 {{ ScheduleType[item.type as keyof typeof ScheduleType] }}
@@ -348,7 +362,7 @@ onMounted(async () => {
                                     <a-col :span="6">
                                         <a-select v-model:value="action.type" @change="action.payload = ''"
                                             :getPopupContainer="getPopupContainer">
-                                            <a-select-option v-for="(type, i) in ScheduleActionType" :key="i"
+                                            <a-select-option v-for="(type, i) in scheduleActionTypes" :key="i"
                                                 :value="i">
                                                 {{ type }}
                                             </a-select-option>

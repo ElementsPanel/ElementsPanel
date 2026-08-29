@@ -34,7 +34,9 @@ The module exports `setup(context)` (or `install(context)`) and may also export
 `registerRoute`, `registerRouter`, `registerMiddleware`, `registerProtocolHandler`,
 `registerProtocolMiddleware`, `routerApp` for Socket.io protocol events,
 `protocol`, the daemon `config`, `saveConfig()` to persist it, `setLanguage()`,
-the instance subsystem, and `logger`.
+the instance subsystem, the `Instance` class, `asyncTask` services, backup
+helpers, `translate()`, and `logger`. Plugins can extend the core dispatchers
+with `registerAsyncTask()`, `registerScheduleAction()`, and `registerFeature()`.
 
 Set `enabled` to `false` to skip a plugin. Plugins are loaded in ascending
 `priority` order and a failed plugin is reported without stopping the daemon.
@@ -43,3 +45,7 @@ Set `enabled` to `false` to skip a plugin. Plugins are loaded in ascending
 
 `node` owns the `info/setting` protocol event, which is how the panel's node
 plugin writes this daemon's configuration. See `panel/plugins/node`.
+
+`backup` owns instance backup and restore protocol events, the
+`instance_backup` asynchronous task, the scheduled `backup` action, and the
+`instanceBackup` feature flag. See `panel/plugins/backup`.

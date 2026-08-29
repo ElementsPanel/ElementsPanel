@@ -1,6 +1,5 @@
 import fs from "fs-extra";
 import path from "path";
-import { globalConfiguration } from "../entity/config";
 import Instance from "../entity/instance/instance";
 import { $t } from "../i18n";
 import logger from "../service/log";
@@ -9,49 +8,20 @@ import { routerApp } from "../service/router";
 import InstanceSubsystem from "../service/system_instance";
 
 import { arrayUnique, toNumber } from "mcsmanager-common";
-import { decompressWithProgress } from "../common/compress";
 import ProcessInfoCommand from "../entity/commands/process_info";
 import { ProcessConfig } from "../entity/instance/process_config";
 import { TaskCenter } from "../service/async_task_service";
-import {
-  createInstanceBackupTask,
-  InstanceBackupTask
-} from "../service/async_task_service/instance_backup";
 import {
   createQuickInstallTask,
   QuickInstallTask
 } from "../service/async_task_service/quick_install";
 import downloadManager from "../service/download_manager";
-import { IInstanceDetail, IJson } from "../service/interfaces";
+import { IInstanceDetail } from "../service/interfaces";
 import { modService } from "../service/mod_service";
+import { getDaemonAsyncTaskRegistration } from "../service/plugin_registry";
 import { ROLE } from "../service/protocol";
 import FileManager from "../service/system_file";
 import uploadManager from "../service/upload_manager";
-
-function getInstanceBackupPath(instanceUuid: string, backupName: unknown): string {
-  if (typeof backupName !== "string" || !backupName || path.basename(backupName) !== backupName) {
-    throw new Error($t("TXT_CODE_Instance_router.accessFileErr"));
-  }
-
-  let customBackupPath = globalConfiguration.config.instanceBackupPath;
-  if (!customBackupPath) {
-    customBackupPath = path.join(process.cwd(), "data/backups");
-  }
-
-  const backupRoot = path.resolve(customBackupPath);
-  const instanceBackupDir = path.resolve(backupRoot, instanceUuid);
-  const archivePath = path.resolve(instanceBackupDir, backupName);
-  const relativePath = path.relative(instanceBackupDir, archivePath);
-  if (
-    !relativePath ||
-    relativePath === ".." ||
-    relativePath.startsWith(".." + path.sep) ||
-    path.isAbsolute(relativePath)
-  ) {
-    throw new Error($t("TXT_CODE_Instance_router.accessFileErr"));
-  }
-  return archivePath;
-}
 
 // Some instances operate router authentication middleware
 routerApp.use((event, ctx, data, next) => {
@@ -461,162 +431,18 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
     return protocol.response(ctx, task.toObject());
   }
 
-  // Instance backup task
-  if (taskName === "instance_backup" && instance) {
-    const tasks = TaskCenter.getTasks(InstanceBackupTask.TYPE);
-    for (const t of tasks) {
-      if (t.toObject().instanceUuid === instanceUuid && t.status() === 1) {
-        return protocol.response(ctx, t.toObject());
-      }
-    }
-    const task = createInstanceBackupTask(instance);
+  const registeredTask = getDaemonAsyncTaskRegistration(taskName);
+  if (registeredTask && instance) {
+    const runningTask = TaskCenter.getTasks(registeredTask.type).find(
+      (task) => task.toObject().instanceUuid === instanceUuid && task.status() === 1
+    );
+    if (runningTask) return protocol.response(ctx, runningTask.toObject());
+    const task = registeredTask.create(instance, parameter);
+    TaskCenter.addTask(task);
     return protocol.response(ctx, task.toObject());
   }
 
   protocol.response(ctx, true);
-});
-
-routerApp.on("instance/backup/list", async (ctx, data) => {
-  const instanceUuid = data.instanceUuid;
-  try {
-    const instance = InstanceSubsystem.getInstance(instanceUuid);
-    if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
-
-    let customBackupPath = globalConfiguration.config.instanceBackupPath;
-    if (!customBackupPath) {
-      customBackupPath = path.join(process.cwd(), "data/backups");
-    }
-    const instanceBackupDir = path.join(path.normalize(customBackupPath), instanceUuid);
-
-    if (!fs.existsSync(instanceBackupDir)) {
-      return protocol.response(ctx, []);
-    }
-
-    const files = await fs.readdir(instanceBackupDir);
-    const backups = [];
-    for (const file of files) {
-      const lowerFileName = file.toLowerCase();
-      if (
-        lowerFileName.endsWith(".zip") ||
-        lowerFileName.endsWith(".tar.gz") ||
-        lowerFileName.endsWith(".7z")
-      ) {
-        const filePath = path.join(instanceBackupDir, file);
-        const stat = await fs.stat(filePath);
-        backups.push({
-          name: file,
-          size: stat.size,
-          time: new Date(stat.birthtimeMs || stat.ctimeMs).toLocaleString()
-        });
-      }
-    }
-    // Sort by create time desc
-    backups.sort((a, b) => {
-      const statA = fs.statSync(path.join(instanceBackupDir, a.name));
-      const statB = fs.statSync(path.join(instanceBackupDir, b.name));
-      return (statB.birthtimeMs || statB.ctimeMs) - (statA.birthtimeMs || statA.ctimeMs);
-    });
-    protocol.response(ctx, backups);
-  } catch (err: any) {
-    protocol.responseError(ctx, err);
-  }
-});
-
-routerApp.on("instance/backup/delete", async (ctx, data) => {
-  const instanceUuid = data.instanceUuid;
-  const backupName = data.backupName;
-  try {
-    const instance = InstanceSubsystem.getInstance(instanceUuid);
-    if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
-
-    const filePath = getInstanceBackupPath(instanceUuid, backupName);
-
-    if (fs.existsSync(filePath)) {
-      await fs.remove(filePath);
-    }
-    protocol.response(ctx, true);
-  } catch (err: any) {
-    protocol.responseError(ctx, err);
-  }
-});
-
-routerApp.on("instance/backup/restore", async (ctx, data) => {
-  const instanceUuid = data.instanceUuid;
-  const backupName = data.backupName;
-  try {
-    const instance = InstanceSubsystem.getInstance(instanceUuid);
-    if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
-
-    if (instance.status() !== Instance.STATUS_STOP) {
-      if (instance.status() === Instance.STATUS_BUSY) {
-        throw new Error($t("TXT_CODE_instanceConf.instanceBusy"));
-      }
-
-      if (
-        instance.status() === Instance.STATUS_RUNNING ||
-        instance.status() === Instance.STATUS_STARTING
-      ) {
-        instance.println("INFO", $t("TXT_CODE_INSTANCE_BACKUP_STOPPING"));
-        await instance.execPreset("stop");
-      }
-
-      let stopSuccess = false;
-      for (let i = 0; i < 60; i++) {
-        if (instance.status() === Instance.STATUS_STOP) {
-          stopSuccess = true;
-          break;
-        }
-        await new Promise((r) => setTimeout(r, 1000));
-      }
-      if (!stopSuccess) {
-        throw new Error($t("TXT_CODE_INSTANCE_BACKUP_STOP_TIMEOUT"));
-      }
-    }
-
-    const archivePath = getInstanceBackupPath(instanceUuid, backupName);
-
-    if (!fs.existsSync(archivePath)) {
-      throw new Error($t("TXT_CODE_Instance_router.accessFileErr"));
-    }
-
-    instance.status(Instance.STATUS_BUSY);
-    instance.println("INFO", $t("TXT_CODE_INSTANCE_BACKUP_RESTORING"));
-
-    // Start restoration in background
-    (async () => {
-      try {
-        const destDir = instance.absoluteCwdPath();
-        const progressPrefix = `\x1b[K\r`;
-        let lastPercent = -1;
-        await decompressWithProgress(archivePath, destDir, (percent: number) => {
-          if (percent !== lastPercent) {
-            lastPercent = percent;
-            const barLength = 30;
-            const filled = Math.floor((percent / 100) * barLength);
-            const empty = barLength - filled;
-            const bar = '[' + '#'.repeat(filled) + ' '.repeat(empty) + ']';
-            const progressText = `${progressPrefix}${bar} ${percent}%`;
-            instance.print(progressText);
-          }
-        }, instance.config.fileCode);
-        instance.print("\n");
-        instance.println("INFO", $t("TXT_CODE_INSTANCE_BACKUP_RESTORE_SUCCESS"));
-      } catch (err: any) {
-        instance.print("\n");
-        logger.error($t("TXT_CODE_INSTANCE_BACKUP_RESTORE_FAILED", { err: err.message }));
-        instance.println(
-          "ERROR",
-          $t("TXT_CODE_INSTANCE_BACKUP_RESTORE_FAILED", { err: err.message })
-        );
-      } finally {
-        instance.status(Instance.STATUS_STOP);
-      }
-    })();
-
-    protocol.response(ctx, true);
-  } catch (err: any) {
-    protocol.responseError(ctx, err);
-  }
 });
 
 // Terminate the execution of complex asynchronous tasks
@@ -655,11 +481,11 @@ routerApp.on("instance/stop_asynchronous", (ctx, data) => {
 routerApp.on("instance/query_asynchronous", (ctx, data) => {
   const taskId = data.parameter.taskId as string | undefined;
   const taskName = data.taskName as string;
-  const taskNameTypeMap: IJson<string> = {
-    quick_install: QuickInstallTask.TYPE,
-    instance_backup: InstanceBackupTask.TYPE
-  };
-  const type = String(taskNameTypeMap[taskName] || QuickInstallTask.TYPE);
+  const type =
+    taskName === "quick_install"
+      ? QuickInstallTask.TYPE
+      : getDaemonAsyncTaskRegistration(taskName)?.type;
+  if (!type) return protocol.response(ctx, []);
   if (!taskId) {
     const result = [];
     for (const task of TaskCenter.getTasks(type)) {

@@ -6,13 +6,14 @@ import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useSchedule } from "@/hooks/useSchedule";
 import { useScreen } from "@/hooks/useScreen";
 import { t as $t, t } from "@/lang/i18n";
+import { getPanelFrontendScheduleActions } from "@/plugins";
 import { padZero } from "@/tools/common";
 import { ScheduleActionType, ScheduleCreateType, ScheduleType } from "@/types/const";
 import type { LayoutCard, Schedule } from "@/types/index";
 import NewSchedule from "@/widgets/instance/dialogs/NewSchedule.vue";
 import { DeleteOutlined, EditOutlined, FieldTimeOutlined } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import type { AntColumnsType } from "../../types/ant";
 
 const props = defineProps<{
@@ -29,6 +30,15 @@ const { getScheduleList, schedules, scheduleListLoading, deleteSchedule } = useS
   String(instanceId),
   String(daemonId)
 );
+
+const scheduleActionTypes = computed(() => {
+  const types: Record<string, string> = { ...ScheduleActionType };
+  for (const action of getPanelFrontendScheduleActions()) {
+    if (action.condition && !action.condition()) continue;
+    types[action.type] = typeof action.title === "function" ? action.title() : action.title;
+  }
+  return types;
+});
 
 const timeRender = (text: string, schedule: Schedule) => {
   const formatFunctions = {
@@ -82,7 +92,7 @@ const columns: AntColumnsType[] = [
     dataIndex: "action",
     key: "action",
     minWidth: 180,
-    customRender: (e: { text: keyof typeof ScheduleActionType }) => ScheduleActionType[e.text]
+    customRender: (e: { text: string }) => scheduleActionTypes.value[e.text] ?? e.text
   },
   {
     align: "center",

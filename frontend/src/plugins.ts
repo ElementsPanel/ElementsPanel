@@ -43,6 +43,8 @@ export interface PanelFrontendPluginContext {
   registerAppMenu: (menu: PanelFrontendAppMenu) => void;
   registerLoginAction: (action: PanelFrontendLoginAction) => void;
   registerDesktopApp: (desktopApp: PanelFrontendDesktopApp) => void;
+  registerInstanceAction: (action: PanelFrontendInstanceAction) => void;
+  registerScheduleAction: (action: PanelFrontendScheduleAction) => void;
   /**
    * Mount a component for the lifetime of the app, alongside the panel's own
    * dialog providers. Use for global overlays that have no route or card.
@@ -95,6 +97,33 @@ export interface PanelFrontendDesktopApp {
   initialHeight?: number;
 }
 
+export interface PanelFrontendInstanceActionContext {
+  mode: "normal" | "desktop";
+  instanceId: string;
+  daemonId: string;
+  instanceInfo: unknown;
+  daemon?: unknown;
+  isGlobalTerminal: boolean;
+}
+
+export interface PanelFrontendInstanceAction {
+  id: string;
+  title: string | (() => string);
+  icon: Component;
+  normalComponent?: Component;
+  desktopComponent?: Component;
+  condition?: (context: PanelFrontendInstanceActionContext) => boolean;
+  desktopInitialWidth?: number;
+  desktopInitialHeight?: number;
+}
+
+export interface PanelFrontendScheduleAction {
+  type: string;
+  title: string | (() => string);
+  inputPlaceholder?: string | (() => string);
+  condition?: () => boolean;
+}
+
 export interface PanelFrontendPluginDefinition {
   routes?: RouteRecordRaw[];
   components?: Record<string, Component>;
@@ -104,6 +133,8 @@ export interface PanelFrontendPluginDefinition {
   appMenus?: PanelFrontendAppMenu[];
   loginActions?: PanelFrontendLoginAction[];
   desktopApps?: PanelFrontendDesktopApp[];
+  instanceActions?: PanelFrontendInstanceAction[];
+  scheduleActions?: PanelFrontendScheduleAction[];
   globalComponents?: Component[];
   configuration?: PanelFrontendPluginConfiguration;
   setup?: (context: PanelFrontendPluginContext) => unknown;
@@ -158,6 +189,16 @@ interface DesktopAppRegistration {
   desktopApp: PanelFrontendDesktopApp;
 }
 
+interface InstanceActionRegistration {
+  owner: InternalLoadedPanelFrontendPlugin;
+  action: PanelFrontendInstanceAction;
+}
+
+interface ScheduleActionRegistration {
+  owner: InternalLoadedPanelFrontendPlugin;
+  action: PanelFrontendScheduleAction;
+}
+
 interface GlobalComponentRegistration {
   owner: InternalLoadedPanelFrontendPlugin;
   component: Component;
@@ -181,6 +222,8 @@ const loadedPlugins = shallowReactive<InternalLoadedPanelFrontendPlugin[]>([]);
 const appMenus = shallowReactive<PanelFrontendAppMenu[]>([]);
 const loginActions = shallowReactive<PanelFrontendLoginAction[]>([]);
 const desktopAppRegistrations = shallowReactive<DesktopAppRegistration[]>([]);
+const instanceActionRegistrations = shallowReactive<InstanceActionRegistration[]>([]);
+const scheduleActionRegistrations = shallowReactive<ScheduleActionRegistration[]>([]);
 const globalComponentRegistrations = shallowReactive<GlobalComponentRegistration[]>([]);
 const routeRevision = ref(0);
 const pluginSources = new Map<string, PanelFrontendPluginSource>();
@@ -461,6 +504,43 @@ function registerDesktopApp(
   plugin.cleanups.push(() => removeItem(desktopAppRegistrations, registration));
 }
 
+function registerInstanceAction(
+  plugin: InternalLoadedPanelFrontendPlugin,
+  action: PanelFrontendInstanceAction
+) {
+  const id = action.id.trim();
+  if (!id) {
+    throw new Error(`Panel frontend plugin "${plugin.metadata.id}" has an invalid instance action id.`);
+  }
+  if (instanceActionRegistrations.some((registration) => registration.action.id === id)) {
+    throw new Error(`Panel frontend instance action id is already registered: ${id}`);
+  }
+  if (!action.normalComponent && !action.desktopComponent) {
+    throw new Error(
+      `Panel frontend plugin "${plugin.metadata.id}" instance action "${id}" requires a normal or desktop component.`
+    );
+  }
+  const registration = { owner: plugin, action: { ...action, id } };
+  instanceActionRegistrations.push(registration);
+  plugin.cleanups.push(() => removeItem(instanceActionRegistrations, registration));
+}
+
+function registerScheduleAction(
+  plugin: InternalLoadedPanelFrontendPlugin,
+  action: PanelFrontendScheduleAction
+) {
+  const type = action.type.trim();
+  if (!type) {
+    throw new Error(`Panel frontend plugin "${plugin.metadata.id}" has an invalid schedule action type.`);
+  }
+  if (scheduleActionRegistrations.some((registration) => registration.action.type === type)) {
+    throw new Error(`Panel frontend schedule action type is already registered: ${type}`);
+  }
+  const registration = { owner: plugin, action: { ...action, type } };
+  scheduleActionRegistrations.push(registration);
+  plugin.cleanups.push(() => removeItem(scheduleActionRegistrations, registration));
+}
+
 function registerService(
   plugin: InternalLoadedPanelFrontendPlugin,
   name: string,
@@ -522,6 +602,8 @@ function createContext(plugin: InternalLoadedPanelFrontendPlugin): PanelFrontend
       plugin.cleanups.push(() => removeItem(loginActions, action));
     },
     registerDesktopApp: (desktopApp) => registerDesktopApp(plugin, desktopApp),
+    registerInstanceAction: (action) => registerInstanceAction(plugin, action),
+    registerScheduleAction: (action) => registerScheduleAction(plugin, action),
     registerGlobalComponent: (component) => {
       const registration = { owner: plugin, component };
       globalComponentRegistrations.push(registration);
@@ -601,6 +683,8 @@ async function installPluginSource(source: PanelFrontendPluginSource, cacheKey?:
     definition.appMenus?.forEach(plugin.context.registerAppMenu);
     definition.loginActions?.forEach(plugin.context.registerLoginAction);
     definition.desktopApps?.forEach(plugin.context.registerDesktopApp);
+    definition.instanceActions?.forEach(plugin.context.registerInstanceAction);
+    definition.scheduleActions?.forEach(plugin.context.registerScheduleAction);
     definition.globalComponents?.forEach(plugin.context.registerGlobalComponent);
     if (typeof definition.setup === "function") {
       const setupCleanup = await definition.setup(plugin.context);
@@ -683,6 +767,8 @@ export async function setupPanelFrontendPlugins(app: App, pinia: Pinia) {
   appMenus.length = 0;
   loginActions.length = 0;
   desktopAppRegistrations.length = 0;
+  instanceActionRegistrations.length = 0;
+  scheduleActionRegistrations.length = 0;
   globalComponentRegistrations.length = 0;
   serviceRegistrations.clear();
   await refreshPanelFrontendPlugins();
@@ -746,4 +832,12 @@ export function getPanelFrontendDesktopApps(): readonly PanelFrontendDesktopApp[
     desktopApps.set(registration.desktopApp.id, registration.desktopApp);
   }
   return [...desktopApps.values()];
+}
+
+export function getPanelFrontendInstanceActions(): readonly PanelFrontendInstanceAction[] {
+  return instanceActionRegistrations.map((registration) => registration.action);
+}
+
+export function getPanelFrontendScheduleActions(): readonly PanelFrontendScheduleAction[] {
+  return scheduleActionRegistrations.map((registration) => registration.action);
 }

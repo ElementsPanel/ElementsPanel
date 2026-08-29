@@ -10,6 +10,10 @@ import {
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { useServerConfig } from "@/hooks/useServerConfig";
 import { t } from "@/lang/i18n";
+import {
+  getPanelFrontendInstanceActions,
+  type PanelFrontendInstanceActionContext
+} from "@/plugins";
 import { modListApi } from "@/services/apis/modManager";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import type { LayoutCard } from "@/types";
@@ -17,7 +21,6 @@ import {
   AppstoreAddOutlined,
   ArrowRightOutlined,
   BuildOutlined,
-  CloudDownloadOutlined,
   CodeOutlined,
   ControlOutlined,
   DashboardOutlined,
@@ -27,12 +30,11 @@ import {
   UsergroupDeleteOutlined
 } from "@ant-design/icons-vue";
 
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, type ComponentPublicInstance } from "vue";
 import type { RouteLocationPathRaw } from "vue-router";
 import { useLayoutCardTools } from "../../hooks/useCardTools";
 import { arrayFilter } from "../../tools/array";
 import EventConfig from "./dialogs/EventConfig.vue";
-import InstanceBackupModal from "./dialogs/InstanceBackupModal.vue";
 import InstanceDetail from "./dialogs/InstanceDetail.vue";
 import InstanceFundamentalDetail from "./dialogs/InstanceFundamentalDetail.vue";
 import JavaManager from "./dialogs/JavaManager.vue";
@@ -49,7 +51,8 @@ const eventConfigDialog = ref<InstanceType<typeof EventConfig>>();
 const pingConfigDialog = ref<InstanceType<typeof PingConfig>>();
 const instanceDetailsDialog = ref<InstanceType<typeof InstanceDetail>>();
 const instanceFundamentalDetailDialog = ref<InstanceType<typeof InstanceFundamentalDetail>>();
-const instanceBackupDialog = ref<InstanceType<typeof InstanceBackupModal>>();
+type InstanceActionHandle = ComponentPublicInstance & { open?: () => void };
+const instanceActionRefs = new Map<string, InstanceActionHandle>();
 
 const { toPage: toOtherPager } = useAppRouters();
 
@@ -72,6 +75,22 @@ const { instanceInfo, execute, isGlobalTerminal } = useInstanceInfo({
 
 const { serverConfigFiles, refresh: refreshServerConfig } = useServerConfig();
 const { state: overviewState } = useOverviewInfo();
+
+const normalInstanceActions = computed(() =>
+  getPanelFrontendInstanceActions().filter((action) => action.normalComponent)
+);
+
+const setInstanceActionRef = (id: string, component: unknown) => {
+  if (component) {
+    instanceActionRefs.set(id, component as InstanceActionHandle);
+  } else {
+    instanceActionRefs.delete(id);
+  }
+};
+
+const openInstanceAction = (id: string) => {
+  instanceActionRefs.get(id)?.open?.();
+};
 
 const folders = ref<string[]>([]);
 const foldersLoaded = ref(false);
@@ -124,6 +143,21 @@ const refreshInstanceInfo = async () => {
 
 const btns = computed(() => {
   if (!instanceInfo.value) return [];
+  const daemon = overviewState.value?.remote?.find((item: any) => item.uuid === daemonId);
+  const actionContext: PanelFrontendInstanceActionContext = {
+    mode: "normal",
+    instanceId: instanceId ?? "",
+    daemonId: daemonId ?? "",
+    instanceInfo: instanceInfo.value,
+    daemon,
+    isGlobalTerminal: isGlobalTerminal.value
+  };
+  const pluginActions = normalInstanceActions.value.map((action) => ({
+    title: typeof action.title === "function" ? action.title() : action.title,
+    icon: action.icon,
+    condition: () => action.condition?.(actionContext) ?? true,
+    click: () => openInstanceAction(action.id)
+  }));
   return arrayFilter([
     {
       title: t("TXT_CODE_d07742fe"),
@@ -250,18 +284,7 @@ const btns = computed(() => {
         instanceFundamentalDetailDialog.value?.openDialog();
       }
     },
-    {
-      title: t("TXT_CODE_INSTANCE_BACKUP"),
-      icon: CloudDownloadOutlined,
-      condition: () => {
-        if (isGlobalTerminal.value) return false;
-        const daemon = (overviewState.value?.remote?.find((v: any) => v.uuid === daemonId) as any);
-        return !!(daemon?.features?.instanceBackup);
-      },
-      click: () => {
-        instanceBackupDialog.value?.open();
-      }
-    }
+    ...pluginActions
   ]);
 });
 
@@ -320,8 +343,11 @@ watch(instanceInfo, (cfg, oldCfg) => {
   <JavaManager ref="javaManagerDialog" :instance-info="instanceInfo" :daemon-id="daemonId" :instance-id="instanceId"
     @update="refreshInstanceInfo" />
 
-  <InstanceBackupModal v-if="instanceId && daemonId" ref="instanceBackupDialog" :instance-uuid="instanceId"
-    :daemon-id="daemonId" @close="refreshInstanceInfo" />
+  <template v-if="instanceId && daemonId">
+    <component v-for="action in normalInstanceActions" :is="action.normalComponent" :key="action.id"
+      :ref="(component: unknown) => setInstanceActionRef(action.id, component)" :instance-uuid="instanceId"
+      :daemon-id="daemonId" @close="refreshInstanceInfo" />
+  </template>
 </template>
 
 <style lang="scss" scoped>

@@ -7,6 +7,7 @@ import { systemInfo } from "mcsmanager-common";
 import { globalConfiguration } from "../entity/config";
 import { DockerManager } from "../service/docker_service";
 import logger from "../service/log";
+import { hasDaemonFeature } from "../service/plugin_registry";
 import VisualDataSubsystem from "../service/system_visual_data";
 import { getVersion } from "../service/version";
 
@@ -63,7 +64,7 @@ routerApp.on("info/overview", async (ctx) => {
       instanceBackupCompressionLevel: globalConfiguration.config.instanceBackupCompressionLevel
     },
     features: {
-      instanceBackup: true
+      instanceBackup: hasDaemonFeature("instanceBackup")
     },
     dockerPlatforms
   };

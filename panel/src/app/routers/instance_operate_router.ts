@@ -3,6 +3,7 @@ import { isEmpty, toBoolean, toNumber, toText } from "mcsmanager-common";
 import { ROLE } from "../entity/user";
 import { $t } from "../i18n";
 import { speedLimit } from "../middleware/limit";
+import instanceAccess from "../middleware/instance_access";
 import permission from "../middleware/permission";
 import validator from "../middleware/validator";
 import { getRequestGuard as guard } from "../service/request_guard";
@@ -16,16 +17,7 @@ import { systemConfig } from "../setting";
 const router = new Router({ prefix: "/protected_instance" });
 
 // Routing permission verification middleware
-router.use(async (ctx, next) => {
-  const instanceUuid = String(ctx.query.uuid);
-  const daemonId = String(ctx.query.daemonId);
-  if (guard().canAccessInstance(ctx, daemonId, instanceUuid)) {
-    await next();
-  } else {
-    ctx.status = 403;
-    ctx.body = $t("TXT_CODE_permission.forbiddenInstance");
-  }
-});
+router.use(instanceAccess);
 
 // [Low-level Permission]
 // Enable instance routing
@@ -573,70 +565,6 @@ router.post(
         role: guard().identify(ctx).role
       });
       ctx.body = true;
-    } catch (err) {
-      ctx.body = err;
-    }
-  }
-);
-
-// [Low-level Permission]
-// Get backup list
-router.get(
-  "/backup",
-  permission({ level: ROLE.USER }),
-  validator({ query: { daemonId: String, uuid: String } }),
-  async (ctx) => {
-    try {
-      const daemonId = String(ctx.query.daemonId);
-      const instanceUuid = String(ctx.query.uuid);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      ctx.body = await new RemoteRequest(remoteService).request("instance/backup/list", {
-        instanceUuid
-      });
-    } catch (err) {
-      ctx.body = err;
-    }
-  }
-);
-
-// [Low-level Permission]
-// Delete backup
-router.delete(
-  "/backup",
-  permission({ level: ROLE.USER }),
-  validator({ query: { daemonId: String, uuid: String, backupName: String } }),
-  async (ctx) => {
-    try {
-      const daemonId = String(ctx.query.daemonId);
-      const instanceUuid = String(ctx.query.uuid);
-      const backupName = String(ctx.query.backupName);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      ctx.body = await new RemoteRequest(remoteService).request("instance/backup/delete", {
-        instanceUuid,
-        backupName
-      });
-    } catch (err) {
-      ctx.body = err;
-    }
-  }
-);
-
-// [Low-level Permission]
-// Restore backup
-router.post(
-  "/backup/restore",
-  permission({ level: ROLE.USER }),
-  validator({ query: { daemonId: String, uuid: String, backupName: String } }),
-  async (ctx) => {
-    try {
-      const daemonId = String(ctx.query.daemonId);
-      const instanceUuid = String(ctx.query.uuid);
-      const backupName = String(ctx.query.backupName);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      ctx.body = await new RemoteRequest(remoteService).request("instance/backup/restore", {
-        instanceUuid,
-        backupName
-      });
     } catch (err) {
       ctx.body = err;
     }

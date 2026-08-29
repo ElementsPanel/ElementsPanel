@@ -4,13 +4,29 @@ import Koa from "koa";
 import Router from "@koa/router";
 import path from "path";
 import { pathToFileURL } from "url";
-import { LOCAL_PRESET_LANG_PATH } from "../const";
+import { LOCAL_PRESET_LANG_PATH, SEVEN_ZIP_PATH, ZIP_TIMEOUT_SECONDS } from "../const";
+import { decompressWithProgress } from "../common/compress";
 import { globalConfiguration } from "../entity/config";
+import Instance from "../entity/instance/instance";
 import { $t } from "../i18n";
+import { GitignoreMatcher } from "../common/gitignore_matcher";
 import InstanceSubsystem from "./system_instance";
 import * as protocol from "./protocol";
 import { routerApp } from "./router";
 import logger from "./log";
+import { AsyncTask, TaskCenter } from "./async_task_service";
+import type { IAsyncTask } from "./async_task_service";
+import { check7zipStatus } from "./seven_zip_service";
+import {
+  clearDaemonPluginRegistrations,
+  registerDaemonAsyncTask,
+  registerDaemonFeature,
+  registerDaemonScheduleAction
+} from "./plugin_registry";
+import type {
+  DaemonAsyncTaskRegistration,
+  DaemonScheduleActionHandler
+} from "./plugin_registry";
 
 export interface DaemonPluginMetadata {
   id: string;
@@ -33,6 +49,19 @@ export interface DaemonPluginContext {
   protocol: typeof protocol;
   config: typeof globalConfiguration.config;
   instances: typeof InstanceSubsystem;
+  Instance: typeof Instance;
+  asyncTask: {
+    AsyncTask: typeof AsyncTask;
+    TaskCenter: typeof TaskCenter;
+  };
+  backup: {
+    GitignoreMatcher: typeof GitignoreMatcher;
+    decompressWithProgress: typeof decompressWithProgress;
+    check7zipStatus: typeof import("./seven_zip_service").check7zipStatus;
+    sevenZipPath: string;
+    zipTimeoutSeconds: number;
+  };
+  translate: typeof $t;
   registerRouter: (router: Router) => void;
   registerRoute: (path: string, method: string, handler: Koa.Middleware) => void;
   registerProtocolHandler: (event: string, handler: (ctx: any, data: any) => void) => void;
@@ -40,6 +69,12 @@ export interface DaemonPluginContext {
     handler: (event: string, ctx: any, data: any, next: Function) => void
   ) => void;
   registerMiddleware: (middleware: Koa.Middleware) => void;
+  registerAsyncTask: (
+    taskName: string,
+    registration: DaemonAsyncTaskRegistration
+  ) => void;
+  registerScheduleAction: (actionType: string, handler: DaemonScheduleActionHandler) => void;
+  registerFeature: (feature: string) => void;
   /** Persist the daemon configuration after mutating `config`. */
   saveConfig: () => void;
   /** Switch the daemon language and drop the bootstrap language preset file. */
@@ -135,6 +170,7 @@ export async function loadDaemonPlugins(app: Koa): Promise<LoadedDaemonPlugin[]>
   const directory = path.resolve(process.cwd(), "plugins");
   loadedPlugins = [];
   pluginsDisposed = false;
+  clearDaemonPluginRegistrations();
   if (!fs.existsSync(directory)) return loadedPlugins;
 
   const plugins: Array<{ metadata: DaemonPluginMetadata; directory: string; entry: string }> = [];
@@ -174,6 +210,16 @@ export async function loadDaemonPlugins(app: Koa): Promise<LoadedDaemonPlugin[]>
         protocol,
         config: globalConfiguration.config,
         instances: InstanceSubsystem,
+        Instance,
+        asyncTask: { AsyncTask, TaskCenter },
+        backup: {
+          GitignoreMatcher,
+          decompressWithProgress,
+          check7zipStatus,
+          sevenZipPath: SEVEN_ZIP_PATH,
+          zipTimeoutSeconds: ZIP_TIMEOUT_SECONDS
+        },
+        translate: $t,
         registerRouter: (pluginRouter) => {
           app.use(pluginRouter.routes()).use(pluginRouter.allowedMethods());
         },
@@ -186,6 +232,15 @@ export async function loadDaemonPlugins(app: Koa): Promise<LoadedDaemonPlugin[]>
         registerProtocolHandler: (event, handler) => routerApp.on(event, handler),
         registerProtocolMiddleware: (handler) => routerApp.use(handler),
         registerMiddleware: (middleware) => app.use(middleware),
+        registerAsyncTask: (taskName, registration) => {
+          registerDaemonAsyncTask(taskName, registration);
+        },
+        registerScheduleAction: (actionType, handler) => {
+          registerDaemonScheduleAction(actionType, handler);
+        },
+        registerFeature: (feature) => {
+          registerDaemonFeature(feature);
+        },
         saveConfig: () => globalConfiguration.store(),
         setLanguage: (language) => {
           if (!language) return;

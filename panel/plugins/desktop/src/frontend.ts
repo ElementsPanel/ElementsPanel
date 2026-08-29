@@ -4,6 +4,7 @@ import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import { DesktopOutlined } from "@ant-design/icons-vue";
 import DesktopPage from "./Desktop.vue";
+import DesktopWindow from "./widgets/desktop/DesktopWindow.vue";
 import deDE from "./i18n/de_DE.json";
 import enUS from "./i18n/en_US.json";
 import esES from "./i18n/es_ES.json";
@@ -56,6 +57,8 @@ export default {
         immersive: true
       }
     });
+
+    context.registerService("desktop.window", DesktopWindow);
 
     return () => style.remove();
   },

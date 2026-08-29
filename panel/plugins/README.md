@@ -20,7 +20,7 @@ Both entries are optional. A backend module exports `setup(context)` (or
 The panel backend context exposes the Koa `app`, `router`, panel `config`,
 `storage`, core `services` (`remote` for the remote service subsystem,
 `remoteRequest` for the daemon request helper, `users`, `operationLogger`,
-`instances`, `sso`), the shared `middleware` (`permission` and `validator`),
+`instances`, `sso`), the shared `middleware` (`instanceAccess`, `permission` and `validator`),
 `common` (`GlobalVariable`), `i18n`, `roles`,
 `registerRoute`, `registerRouter`, `registerMiddleware`, `registerRequestGuard`,
 `registerInstallationState`, `saveConfig`, `metadata`, `directory`, and
@@ -80,6 +80,8 @@ export default {
     registerAppMenu,
     registerLoginAction,
     registerDesktopApp,
+    registerInstanceAction,
+    registerScheduleAction,
     registerGlobalComponent,
     registerService,
     getService
@@ -146,6 +148,33 @@ export default {
   ]
 };
 ```
+
+Instance tools that are specific to a plugin can be exposed in both panel modes
+through `instanceActions` or `context.registerInstanceAction()`. The action's
+`normalComponent` and `desktopComponent` receive `instanceUuid` and `daemonId`
+props. Normal components should expose an `open()` method; Desktop components
+are mounted inside a Desktop window and may emit `close` and
+`open-file-editor(filePath, fileName)` when those integrations are needed. An
+optional `condition(context)` controls whether the tool is shown for the
+current instance. Unloading the owning plugin removes its action and closes
+open Desktop windows for it.
+
+```ts
+context.registerInstanceAction({
+  id: "example-tool",
+  title: () => "Example tool",
+  icon: ExampleIcon,
+  normalComponent: NormalTool,
+  desktopComponent: DesktopTool,
+  condition: ({ isGlobalTerminal }) => !isGlobalTerminal
+});
+```
+
+Plugins can add schedule action types with `scheduleActions` or
+`context.registerScheduleAction()`. Each action supplies a wire `type`, a
+translated `title`, and optionally an input placeholder or visibility
+condition. The normal and Desktop schedule editors consume these registrations,
+so disabling the owning plugin removes its action from both editors.
 
 Configuration components, routes, menus and Desktop applications disappear
 with their owning frontend plugin. The Desktop plugin also closes open windows

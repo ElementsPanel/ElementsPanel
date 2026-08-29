@@ -3,10 +3,7 @@ import { t } from "@/lang/i18n";
 import { fileContent, touchFile } from "@/services/apis/fileManager";
 import {
     createAsyncTask,
-    deleteBackup,
-    getBackupList,
-    queryAsyncTask,
-    restoreBackup
+    queryAsyncTask
 } from "@/services/apis/instance";
 import {
     CloudDownloadOutlined,
@@ -19,7 +16,8 @@ import {
 } from "@ant-design/icons-vue";
 import { message, Modal } from "ant-design-vue";
 import { h, onUnmounted, ref } from "vue";
-import FileEditor from "./FileEditor.vue";
+import FileEditor from "@/widgets/instance/dialogs/FileEditor.vue";
+import { deleteBackup, getBackupList, restoreBackup } from "../api";
 
 const props = defineProps<{
     instanceUuid: string;

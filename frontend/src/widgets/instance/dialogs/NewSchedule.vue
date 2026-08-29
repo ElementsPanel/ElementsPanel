@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useSchedule } from "@/hooks/useSchedule";
+import { getPanelFrontendScheduleActions } from "@/plugins";
 import { t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";
 import type { Schedule, ScheduleAction, ScheduleTaskForm } from "@/types";
@@ -13,7 +14,7 @@ import { MinusCircleOutlined, PlusCircleOutlined } from "@ant-design/icons-vue";
 import { Flex, notification } from "ant-design-vue";
 import dayjs from "dayjs";
 import _ from "lodash";
-import { h, reactive, ref } from "vue";
+import { computed, h, reactive, ref } from "vue";
 
 const props = defineProps<{
   daemonId: string;
@@ -86,6 +87,15 @@ const defaultTask: ScheduleTaskForm = {
 
 let newTask = reactive<ScheduleTaskForm>(_.cloneDeep(defaultTask));
 
+const scheduleActionTypes = computed(() => {
+  const types: Record<string, string> = { ...ScheduleActionType };
+  for (const action of getPanelFrontendScheduleActions()) {
+    if (action.condition && !action.condition()) continue;
+    types[action.type] = typeof action.title === "function" ? action.title() : action.title;
+  }
+  return types;
+});
+
 const create = {
   [ScheduleCreateType.INTERVAL]: (newTask: ScheduleTaskForm) => createTaskTypeInterval(newTask),
   [ScheduleCreateType.CYCLE]: (newTask: ScheduleTaskForm) => createTaskTypeCycle(newTask),
@@ -99,7 +109,11 @@ const getInputPlaceholder = (action: ScheduleAction) => {
   if (action.type === ScheduleActionTypeEnum.Command) {
     return t("TXT_CODE_8ff89011");
   }
-  return;
+  const pluginAction = getPanelFrontendScheduleActions().find((item) => item.type === action.type);
+  if (!pluginAction?.inputPlaceholder) return;
+  return typeof pluginAction.inputPlaceholder === "function"
+    ? pluginAction.inputPlaceholder()
+    : pluginAction.inputPlaceholder;
 };
 const submit = async () => {
   try {
@@ -271,7 +285,7 @@ defineExpose({
                 :dropdown-match-select-width="false"
                 @change="action.payload = ''"
               >
-                <a-select-option v-for="(type, i) in ScheduleActionType" :key="i" :value="i">
+                <a-select-option v-for="(type, i) in scheduleActionTypes" :key="i" :value="i">
                   {{ type }}
                 </a-select-option>
               </a-select>
