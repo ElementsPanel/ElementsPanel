@@ -4,7 +4,7 @@ import { useOverviewChart } from "../hooks/useOverviewChart";
 import { getRandomId } from "@/tools/randId";
 import { watch } from "vue";
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
-import type { JsonData } from "../types/index";
+import type { JsonData } from "@/types";
 
 defineProps<{
   card: LayoutCard;
@@ -16,7 +16,7 @@ const { state } = useOverviewInfo();
 const chart = useOverviewChart(domId);
 
 watch(state, () => {
-  const source = state.value?.chart.request;
+  const source = state.value?.chart?.request;
   if (!source || !chart) return;
   const MAX_TIME = source.length - 1;
   for (const key in source) {

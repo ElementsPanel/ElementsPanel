@@ -5,9 +5,9 @@ import { ROLE } from "../entity/user";
 import permission from "../middleware/permission";
 import { getRequestGuard as guard } from "../service/request_guard";
 import { operationLogger } from "../service/operation_logger";
+import { collectOverviewExtras } from "../service/overview_registry";
 import RemoteRequest from "../service/remote_command";
 import RemoteServiceSubsystem from "../service/remote_service";
-import VisualDataSubsystem from "../service/visual_data";
 import { getVersion, specifiedDaemonVersion } from "../version";
 
 const router = new Router({ prefix: "/overview" });
@@ -64,28 +64,12 @@ router.get("/", permission({ level: ROLE.USER, token: false }), async (ctx) => {
       uptime: os.uptime(),
       cpu: selfInfo.cpuUsage
     },
-    chart: {
-      system: VisualDataSubsystem.getSystemChartArray(),
-      request: VisualDataSubsystem.getStatusChartArray()
-    },
     remoteCount: RemoteServiceSubsystem.count(),
     remote: remoteInfoList
   };
 
-  ctx.body = overviewData;
-});
-
-// [Top-level Permission]
-// Get user operation logs
-router.get("/operation_logs", permission({ level: ROLE.ADMIN }), async (ctx) => {
-  const limit = +(ctx?.query?.limit || 20);
-
-  if (isNaN(limit)) return ctx.throw(400, "Invalid limit value. It must be a number.");
-
-  if (limit <= 0 || limit > 200)
-    return ctx.throw(400, "Invalid limit value. It must be between 1 and 200.");
-
-  ctx.body = await operationLogger.get(limit);
+  // Plugin-contributed fields, e.g. the monitoring plugin's chart history.
+  ctx.body = { ...overviewData, ...(await collectOverviewExtras()) };
 });
 
 // [Top-level Permission]

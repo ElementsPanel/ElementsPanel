@@ -23,10 +23,10 @@ The panel backend context exposes the Koa `app`, `router`, panel `config`,
 `instances`, `sso`), the shared `middleware` (`instanceAccess`, `permission` and `validator`),
 `common` (`GlobalVariable`), `i18n`, `roles`,
 `registerRoute`, `registerRouter`, `registerMiddleware`, `registerRequestGuard`,
-`registerInstallationState`, `registerLocaleMessages`, `saveConfig`,
-`metadata`, `directory`, and `logger`. `services.identify(ctx)` reports who is
-calling the current request, and `middleware.speedLimit(seconds)` applies the
-core's per-caller rate limit.
+`registerInstallationState`, `registerLocaleMessages`, `registerOverviewProvider`,
+`saveConfig`, `metadata`, `directory`, and `logger`. `services.identify(ctx)`
+reports who is calling the current request, and
+`middleware.speedLimit(seconds)` applies the core's per-caller rate limit.
 
 `registerRequestGuard(guard)` hands the plugin request authorization for the
 whole panel: route guarding, caller identity, instance ownership, upload
@@ -39,6 +39,12 @@ cleared automatically when the owning plugin is disposed. See `plugins/user`.
 reported as `isInstall` by `/api/auth/status`. The core defaults to installed,
 so removing the owning plugin cannot redirect the frontend to a route that no
 longer exists. See `plugins/oobe`.
+
+`registerOverviewProvider(provider)` merges extra fields into
+`GET /api/overview`. The core reports only what the whole panel reads that route
+for — the nodes, the panel process and the host it runs on. Anything collected
+purely to be displayed goes in a plugin: `plugins/monitor` contributes the
+`chart` field this way, and it disappears with the plugin.
 
 Backend entries are written in TypeScript at `src/backend/index.ts`.
 `panel/webpack.plugins.config.js` compiles every such entry to

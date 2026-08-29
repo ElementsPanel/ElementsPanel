@@ -37,7 +37,13 @@ The module exports `setup(context)` (or `install(context)`) and may also export
 the instance subsystem, the `Instance` class, `asyncTask` services, backup
 helpers, package-`install` helpers, `translate()`, and `logger`. Plugins can
 extend the core dispatchers with `registerAsyncTask()`,
-`registerScheduleAction()`, `registerPresetCommand()`, and `registerFeature()`.
+`registerScheduleAction()`, `registerPresetCommand()`, `registerFeature()`, and
+`registerOverviewProvider()`.
+
+`registerOverviewProvider(provider)` merges extra fields into the
+`info/overview` payload the panel reads. The core reports what the panel needs to
+route and describe this daemon; anything collected on top of that — the
+monitoring plugin's CPU/memory history — is contributed here.
 
 `registerAsyncTask(taskName, registration)` accepts `requiresInstance: false`
 for a task that builds its own instance rather than acting on an existing one,
@@ -79,3 +85,6 @@ in `src/i18n/`. See `panel/plugins/backup`.
 `market` owns the `quick_install` asynchronous task and the `install` instance
 preset — the two ways a market package reaches an instance. See
 `panel/plugins/market`.
+
+`monitor` samples this host's CPU and memory and contributes the history to
+`info/overview` as `cpuMemChart`. See `panel/plugins/monitor`.

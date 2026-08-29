@@ -7,8 +7,7 @@ import { systemInfo } from "mcsmanager-common";
 import { globalConfiguration } from "../entity/config";
 import { DockerManager } from "../service/docker_service";
 import logger from "../service/log";
-import { hasDaemonFeature } from "../service/plugin_registry";
-import VisualDataSubsystem from "../service/system_visual_data";
+import { collectDaemonOverviewExtras, hasDaemonFeature } from "../service/plugin_registry";
 import { getVersion } from "../service/version";
 
 // Writing this configuration back ("info/setting") belongs to the daemon-side
@@ -45,7 +44,6 @@ routerApp.on("info/overview", async (ctx) => {
       total
     },
     system: systemInfo(),
-    cpuMemChart: VisualDataSubsystem.getSystemChartArray(),
     config: {
       language: globalConfiguration.config.language,
       uploadSpeedRate: globalConfiguration.config.uploadSpeedRate,
@@ -68,5 +66,6 @@ routerApp.on("info/overview", async (ctx) => {
     },
     dockerPlatforms
   };
-  protocol.response(ctx, info);
+  // Plugin-contributed fields, e.g. the monitoring plugin's cpuMemChart.
+  protocol.response(ctx, { ...info, ...(await collectDaemonOverviewExtras()) });
 });

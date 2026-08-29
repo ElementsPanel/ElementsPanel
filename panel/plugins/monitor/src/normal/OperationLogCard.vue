@@ -3,7 +3,7 @@ import CardPanel from "@/components/CardPanel.vue";
 import { t } from "@/lang/i18n";
 import type { LayoutCard } from "@/types";
 
-import { useOperationLog } from "@/hooks/useOperationLog";
+import { useOperationLog } from "../hooks/useOperationLog";
 import dayjs from "dayjs";
 import { onMounted } from "vue";
 

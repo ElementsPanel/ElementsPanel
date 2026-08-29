@@ -31,6 +31,11 @@ import {
   setInstallationState,
   type InstallationState
 } from "./service/installation_state";
+import {
+  clearOverviewProviders,
+  registerOverviewProvider,
+  type OverviewProvider
+} from "./service/overview_registry";
 
 export interface PanelPluginMetadata {
   id: string;
@@ -103,6 +108,13 @@ export interface PanelPluginContext {
   registerRequestGuard: (guard: RequestGuard) => void;
   /** Supply the first-run completion state. Defaults to installed when absent. */
   registerInstallationState: (state: InstallationState) => void;
+  /**
+   * Contribute extra fields to `GET /api/overview`. The core reports only what
+   * the whole panel needs; a plugin that collects more — the monitoring plugin's
+   * CPU and request history, say — adds it here, and it disappears with the
+   * plugin. Cleared automatically when the owning plugin is disposed.
+   */
+  registerOverviewProvider: (provider: OverviewProvider) => void;
   metadata: PanelPluginMetadata;
   directory: string;
   logger: typeof logger;
@@ -137,6 +149,7 @@ let loadedPlugins: LoadedPanelPlugin[] = [];
 let pluginsDisposed = false;
 let guardOwner: string | undefined;
 let installationStateOwner: string | undefined;
+const overviewProviderCleanups: Array<() => void> = [];
 
 function readMetadata(directory: string): PanelPluginMetadata | null {
   for (const file of metadataFiles) {
@@ -205,8 +218,10 @@ export async function loadPanelPlugins(app: Koa): Promise<LoadedPanelPlugin[]> {
   pluginsDisposed = false;
   guardOwner = undefined;
   installationStateOwner = undefined;
+  overviewProviderCleanups.length = 0;
   clearRequestGuard();
   clearInstallationState();
+  clearOverviewProviders();
   if (!fs.existsSync(directory)) return loadedPlugins;
 
   const plugins: DiscoveredPanelPlugin[] = [];
@@ -285,6 +300,9 @@ export async function loadPanelPlugins(app: Koa): Promise<LoadedPanelPlugin[]> {
           setInstallationState(installationState);
           installationStateOwner = plugin.metadata.id;
         },
+        registerOverviewProvider: (provider) => {
+          overviewProviderCleanups.push(registerOverviewProvider(provider));
+        },
         registerRouter: (pluginRouter) => {
           app.use(pluginRouter.routes()).use(pluginRouter.allowedMethods());
         },
@@ -337,6 +355,7 @@ export async function runPanelPluginHook(hook: "ready" | "dispose"): Promise<voi
   if (hook === "dispose") {
     if (pluginsDisposed) return;
     pluginsDisposed = true;
+    for (const cleanup of overviewProviderCleanups.splice(0)) cleanup();
   }
   const plugins = hook === "dispose" ? [...loadedPlugins].reverse() : loadedPlugins;
   for (const plugin of plugins) {

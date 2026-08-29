@@ -1,6 +1,5 @@
 import Koa from "koa";
 import { Stream } from "stream";
-import VisualDataSubsystem from "../service/visual_data";
 import { systemConfig } from "../setting";
 import { getVersion } from "../version";
 
@@ -9,11 +8,6 @@ export async function middleware(
   ctx: Koa.ParameterizedContext<Koa.DefaultState, Koa.DefaultContext, any>,
   next: Function
 ): Promise<void> {
-  // Increase the number of interface requests
-  if (ctx.url.startsWith("/api/")) {
-    VisualDataSubsystem.addRequestCount();
-  }
-
   // Compatible with version 9.X API parameters
   if (ctx.query?.remote_uuid) ctx.query.daemonId = ctx.query.remote_uuid;
   if (ctx.query?.daemon_id) ctx.query.daemonId = ctx.query.daemon_id;

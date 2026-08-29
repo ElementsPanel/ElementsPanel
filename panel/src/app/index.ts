@@ -3,7 +3,6 @@ import Koa from "koa";
 
 import "./service/remote_service";
 import "./service/user_statistics";
-import "./service/visual_data";
 
 import serviceRouter from "./routers/daemon_router";
 import environmentRouter from "./routers/environment_router";

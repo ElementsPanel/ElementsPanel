@@ -16,7 +16,6 @@ import { loadDaemonPlugins, runDaemonPluginHook } from "./service/plugins";
 import * as protocol from "./service/protocol";
 import * as router from "./service/router";
 import InstanceSubsystem from "./service/system_instance";
-import "./service/system_visual_data";
 import uploadManager from "./service/upload_manager";
 import { getVersion, initVersionManager } from "./service/version";
 import versionAdapter from "./service/version_adapter";

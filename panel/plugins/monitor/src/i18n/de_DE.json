@@ -1,0 +1,23 @@
+{
+  "TXT_CODE_190ecd56": "Durchschnittliche Systemlast",
+  "TXT_CODE_413b9c01": "Node.js Version",
+  "TXT_CODE_48382669": "Panel-Host-Ressourcen",
+  "TXT_CODE_4ab6a0b5": "Browserzeit",
+  "TXT_CODE_4b7eba50": "Online-Knoten/Gesamtknoten",
+  "TXT_CODE_4df7e9bd": "Hostname",
+  "TXT_CODE_6f659da2": "Zustandsdiagramm zur Analyse der letzten Periode des Panels",
+  "TXT_CODE_77d038f7": "Die von der Panel-Seite verwendete Speichermenge",
+  "TXT_CODE_8201d2c6": "Anzahl der Ausführungen/Gesamtzahl aller Instanzen",
+  "TXT_CODE_84fbe277": "Überblick",
+  "TXT_CODE_856bd2f3": "Anzahl der vorübergehend blockierten IPs",
+  "TXT_CODE_871fb0d6": "Fehlgeschlagene Anmeldungen : Erfolgreiche Anmeldungen",
+  "TXT_CODE_a0e70887": "Entsprechende Knotenversion",
+  "TXT_CODE_af21e6b": "Panel-Version",
+  "TXT_CODE_b4a9d04a": "Anzahl der Knoten online",
+  "TXT_CODE_b4d8588": "Systemversion",
+  "TXT_CODE_da8f97a7": "Zugriff gesperrt",
+  "TXT_CODE_edf84830": "Systemtyp",
+  "TXT_CODE_f4244bbf": "Panel-Host-CPU, RAM-Nutzung",
+  "TXT_CODE_f54e6d1f": "Panelzeit",
+  "TXT_CODE_fdb6c369": "Benutzername des Prozesses"
+}

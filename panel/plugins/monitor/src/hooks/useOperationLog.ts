@@ -1,7 +1,7 @@
 import { computed, ref } from "vue";
-import { getOperationLog } from "@/services/apis/operationLog";
 import { t } from "@/lang/i18n";
 import type { OperationLoggerItem } from "@/types/operationLog";
+import { getOperationLog } from "../api";
 
 type TextRenderResult = {
   text: string;

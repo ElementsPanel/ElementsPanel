@@ -2,7 +2,6 @@
 import { useHeaderMenus } from "@/hooks/useHeaderMenus";
 import {
   AppstoreOutlined,
-  AreaChartOutlined,
   CloseOutlined,
   LinkOutlined,
   LoginOutlined,
@@ -22,7 +21,6 @@ const isExpanded = ref(false);
 
 const routePathIcons: Record<string, Component> = {
   "/instances": AppstoreOutlined,
-  "/overview": AreaChartOutlined,
   "/users": TeamOutlined,
   "/settings": SettingOutlined,
   "/customer": UserOutlined,

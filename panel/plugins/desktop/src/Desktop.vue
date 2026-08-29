@@ -26,7 +26,6 @@ import DesktopMcPing from "./widgets/desktop/DesktopMcPing.vue";
 import DesktopModManager from "./widgets/desktop/DesktopModManager.vue";
 import DesktopMyApps from "./widgets/desktop/DesktopMyApps.vue";
 import DesktopNewInstance from "./widgets/desktop/DesktopNewInstance.vue";
-import DesktopOverview from "./widgets/desktop/DesktopOverview.vue";
 import DesktopSchedule from "./widgets/desktop/DesktopSchedule.vue";
 import DesktopServerConfig from "./widgets/desktop/DesktopServerConfig.vue";
 import DesktopSettings from "./widgets/desktop/DesktopSettings.vue";
@@ -171,14 +170,6 @@ const availableDesktopApps = computed<DesktopApp[]>(() => {
             icon: markRaw(DesktopOutlined),
             color: "#1677ff",
             route: "/instances", windowContent: "instances"
-        },
-        {
-            id: "overview",
-            label: t("TXT_CODE_84fbe277"),
-            icon: markRaw(DashboardOutlined),
-            color: "#52c41a",
-            route: "/overview",
-            windowContent: "overview"
         },
         {
             id: "settings",
@@ -555,7 +546,6 @@ watch(
 
 const ICON_MAP: Record<string, Component> = {
     "instances": markRaw(DesktopOutlined),
-    "overview": markRaw(DashboardOutlined),
     "users": markRaw(TeamOutlined),
     "settings": markRaw(SettingOutlined),
     "terminal": markRaw(CodeOutlined),
@@ -1542,8 +1532,6 @@ const username = computed(() => appState.userInfo?.userName || "User");
                                 v-else-if="win.content === 'image-viewer' && win.instanceId && win.daemonId && win.filePath && win.fileName"
                                 :instance-id="win.instanceId" :daemon-id="win.daemonId" :file-path="win.filePath"
                                 :file-name="win.fileName" @close="closeWindow(win.id)" />
-
-                            <DesktopOverview v-else-if="win.content === 'overview'" />
 
                             <component :is="desktopUsersWindow" v-else-if="win.content === 'users' && desktopUsersWindow" />
 

@@ -1,0 +1,23 @@
+{
+  "TXT_CODE_190ecd56": "리눅스 로드",
+  "TXT_CODE_413b9c01": "노드 환경 버전",
+  "TXT_CODE_48382669": "패널 호스트 리소스",
+  "TXT_CODE_4ab6a0b5": "브라우저 시간",
+  "TXT_CODE_4b7eba50": "온라인 노드/전체 노드",
+  "TXT_CODE_4df7e9bd": "호스트 이름",
+  "TXT_CODE_6f659da2": "패널의 최근 기간을 분석하는 데 사용되는 상태 다이어그램",
+  "TXT_CODE_77d038f7": "패널 측에서 사용하는 메모리 양",
+  "TXT_CODE_8201d2c6": "실행 횟수/모든 인스턴스의 총 개수",
+  "TXT_CODE_84fbe277": "개요",
+  "TXT_CODE_856bd2f3": "일시적으로 차단된 IP 수",
+  "TXT_CODE_871fb0d6": "로그인 실패 횟수 : 로그인 성공 횟수",
+  "TXT_CODE_a0e70887": "해당 노드 버전",
+  "TXT_CODE_af21e6b": "패널 버전",
+  "TXT_CODE_b4a9d04a": "온라인 노드 수",
+  "TXT_CODE_b4d8588": "시스템 버전",
+  "TXT_CODE_da8f97a7": "차단된 액세스",
+  "TXT_CODE_edf84830": "시스템 유형",
+  "TXT_CODE_f4244bbf": "패널 호스트 CPU, RAM 사용량",
+  "TXT_CODE_f54e6d1f": "패널 시간",
+  "TXT_CODE_fdb6c369": "프로세스 사용자 이름"
+}

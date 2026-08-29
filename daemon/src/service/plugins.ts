@@ -26,11 +26,13 @@ import {
   clearDaemonPluginRegistrations,
   registerDaemonAsyncTask,
   registerDaemonFeature,
+  registerDaemonOverviewProvider,
   registerDaemonPresetCommand,
   registerDaemonScheduleAction
 } from "./plugin_registry";
 import type {
   DaemonAsyncTaskRegistration,
+  DaemonOverviewProvider,
   DaemonPresetCommandFactory,
   DaemonScheduleActionHandler
 } from "./plugin_registry";
@@ -100,6 +102,11 @@ export interface DaemonPluginContext {
     preset: IPresetCommand,
     createCommand: DaemonPresetCommandFactory
   ) => void;
+  /**
+   * Contribute extra fields to the `info/overview` payload the panel reads.
+   * Used by `plugins/monitor` for the CPU/memory history the panel charts.
+   */
+  registerOverviewProvider: (provider: DaemonOverviewProvider) => void;
   /**
    * Merge the plugin's own translations into the daemon i18n instance, keyed by
    * locale (`en_us`, `zh_cn`, ...). A plugin that owns strings ships them in
@@ -282,6 +289,9 @@ export async function loadDaemonPlugins(app: Koa): Promise<LoadedDaemonPlugin[]>
         },
         registerPresetCommand: (preset, createCommand) => {
           registerDaemonPresetCommand(preset, createCommand);
+        },
+        registerOverviewProvider: (provider) => {
+          registerDaemonOverviewProvider(provider);
         },
         registerLocaleMessages: (messages) => {
           for (const [locale, resources] of Object.entries(messages ?? {})) {

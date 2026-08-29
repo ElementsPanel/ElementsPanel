@@ -1,0 +1,8 @@
+{
+  "id": "monitor",
+  "name": "Data Monitoring",
+  "version": "1.0.0",
+  "description": "Samples this daemon's CPU and memory usage and reports the history to the panel.",
+  "priority": 125,
+  "backend": "backend/index.cjs"
+}
