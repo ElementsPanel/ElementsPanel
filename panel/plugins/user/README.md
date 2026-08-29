@@ -104,12 +104,12 @@ Registered by `src/frontend.ts`:
   `UserAccessSettings`
 - Global component `MyselfInfoDialog`
 - Services `user.api`, `user.desktopLoginWindow`, `user.desktopUsers`,
-  `user.desktopUserInfo`
+  `user.desktopUserInfo`, `user.desktopStartMenuAvatar`
 
-The Desktop plugin resolves the three window services at render time and hides
-the login overlay, the "Users" icon and the account window when they are
-missing. `src/desktop/DesktopWindow.vue` and `src/assets.ts` are per-plugin
-copies, the same convention the `node` plugin uses.
+The Desktop plugin resolves these services at render time and hides the login
+overlay, the "Users" icon, the account window and the start-menu avatar when
+they are missing. `src/desktop/DesktopWindow.vue` and `src/assets.ts` are
+per-plugin copies, the same convention the `node` plugin uses.
 
 i18n reuses the existing keys in `languages/*.json`; this plugin ships no
 translations of its own.

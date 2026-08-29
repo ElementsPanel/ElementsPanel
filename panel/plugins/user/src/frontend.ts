@@ -1,5 +1,6 @@
 import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugins";
+import { UserOutlined } from "@ant-design/icons-vue";
 import * as userApi from "./api";
 import PluginConfig from "./PluginConfig.vue";
 import MyselfInfoDialog from "./components/MyselfInfoDialog.vue";
@@ -40,6 +41,7 @@ export default {
     context.registerService("user.desktopLoginWindow", DesktopLoginWindow);
     context.registerService("user.desktopUsers", DesktopUsers);
     context.registerService("user.desktopUserInfo", DesktopUserInfo);
+    context.registerService("user.desktopStartMenuAvatar", UserOutlined);
 
     context.registerRoute({
       path: "/login",

@@ -75,6 +75,9 @@ const desktopUsersWindow = computed(() => getPanelFrontendService<Component>("us
 const desktopUserInfoWindow = computed(() =>
     getPanelFrontendService<Component>("user.desktopUserInfo")
 );
+const desktopStartMenuAvatar = computed(() =>
+    getPanelFrontendService<Component>("user.desktopStartMenuAvatar")
+);
 const { getSettingsConfig } = useLayoutConfigStore();
 const { isDarkTheme } = useAppConfigStore();
 
@@ -1522,6 +1525,7 @@ const username = computed(() => appState.userInfo?.userName || "User");
                     </DesktopWindow>
                 </TransitionGroup>
                 <DesktopTaskbar :windows="taskbarWindows" :apps="availableDesktopApps" :username="username"
+                    :user-avatar="desktopStartMenuAvatar"
                     @toggle-window="toggleWindow" @open-app="openWindow"
                     @add-shortcut="handleTaskbarAppDrop"
                     @exit-desktop="exitDesktop" @open-user-info="openUserInfoWindow"

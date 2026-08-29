@@ -6,8 +6,7 @@ import { AppTheme } from "@/types/const";
 import { desktopIconDarkUrl, desktopIconUrl } from "../../assets";
 import {
     BgColorsOutlined,
-    LogoutOutlined,
-    UserOutlined
+    LogoutOutlined
 } from "@ant-design/icons-vue";
 import { onBeforeUnmount, ref, type Component } from "vue";
 
@@ -32,6 +31,7 @@ const props = defineProps<{
     windows: TaskbarWindow[];
     apps: TaskbarApp[];
     username: string;
+    userAvatar?: Component;
 }>();
 
 const emit = defineEmits<{
@@ -174,9 +174,9 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
         <Transition name="start-menu">
             <div v-if="startMenuOpen" class="taskbar__start-menu" @click.stop>
                 <div class="start-menu__sidebar">
-                    <button class="start-menu__function-btn" type="button" :title="username"
+                    <button v-if="userAvatar" class="start-menu__function-btn" type="button" :title="username"
                         @click="handleOpenUserInfo">
-                        <UserOutlined />
+                        <component :is="userAvatar" />
                     </button>
                     <div class="start-menu__sidebar-spacer"></div>
                     <a-dropdown placement="topRight">
