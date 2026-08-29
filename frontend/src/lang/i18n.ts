@@ -1,6 +1,5 @@
 // I18n init configuration (Frontend)
 
-import { updateSettings } from "@/services/apis";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { createI18n, type I18n } from "vue-i18n";
 
@@ -64,15 +63,6 @@ let i18n: I18n;
 export function toStandardLang(lang?: string) {
   if (!lang) return "en_us";
   return lang.replace("-", "_").toLowerCase();
-}
-
-export async function initInstallPageFlow(language: string) {
-  await updateSettings().execute({
-    data: {
-      language
-    }
-  });
-  return language;
 }
 
 // I18n init configuration

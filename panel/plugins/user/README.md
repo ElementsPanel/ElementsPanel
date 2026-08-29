@@ -99,17 +99,23 @@ installed.
 
 Registered by `src/frontend.ts`:
 
-- Routes `/login`, `/install`, `/sso/bind`, `/users` (+ `/users/resources`), `/user`
+- Routes `/login`, `/sso/bind`, `/users` (+ `/users/resources`), `/user`
 - Layout cards `LoginCard`, `UserList`, `UserStatusBlock`, `UserInstanceList`,
   `UserAccessSettings`
 - Global component `MyselfInfoDialog`
 - Services `user.api`, `user.desktopLoginWindow`, `user.desktopUsers`,
-  `user.desktopUserInfo`, `user.desktopStartMenuAvatar`
+  `user.desktopUserInfo`, `user.desktopStartMenuAvatar`,
+  `user.oobeCreateAdminAccount`
 
 The Desktop plugin resolves these services at render time and hides the login
 overlay, the "Users" icon, the account window and the start-menu avatar when
 they are missing. `src/desktop/DesktopWindow.vue` and `src/assets.ts` are
 per-plugin copies, the same convention the `node` plugin uses.
+
+The standalone `oobe` plugin owns `/install` and injects
+`user.oobeCreateAdminAccount` for the administrator-account step. The account
+form, validation and `/api/auth/install` request therefore remain owned by this
+plugin even though the surrounding first-run flow does not.
 
 i18n reuses the existing keys in `languages/*.json`; this plugin ships no
 translations of its own.

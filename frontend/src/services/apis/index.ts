@@ -28,18 +28,6 @@ export {
   type SsoPublicConfig
 } from "./user";
 
-export const updateSettings = useDefineApi<
-  {
-    data: {
-      language: string;
-    };
-  },
-  any
->({
-  url: "/api/overview/install",
-  method: "PUT"
-});
-
 export const panelStatus = useDefineApi<any, PanelStatus>({
   url: "/api/auth/status",
   method: "GET"

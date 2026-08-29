@@ -86,24 +86,6 @@ router.put("/setting", permission({ level: ROLE.ADMIN }), async (ctx) => {
   ctx.body = new Error($t("TXT_CODE_e4d6cc20"));
 });
 
-// [Public Permission]
-// Update config when install
-router.put("/install", async (ctx) => {
-  const config = ctx.request.body;
-  if ((guard().users?.size() ?? 0) === 0 && systemConfig) {
-    if (config.language != null) {
-      logger.warn($t("TXT_CODE_e29a9317"), config.language);
-      systemConfig.language = String(config.language);
-      i18next.changeLanguage(systemConfig.language.toLowerCase());
-      remoteService.changeDaemonLanguage(systemConfig.language);
-    }
-    saveSystemConfig(systemConfig);
-    ctx.body = "OK";
-    return;
-  }
-  ctx.body = new Error($t("TXT_CODE_d37f0418"));
-});
-
 // [Public router]
 router.get("/layout", async (ctx) => {
   ctx.body = getFrontendLayoutConfig();

@@ -289,8 +289,8 @@ router.beforeEach(async (to, from, next) => {
   topProgressBar.start();
   const { state, updateUserInfo, isAdmin, authEnabled } = useAppStateStore();
 
-  // Without the "user" plugin the panel has no login and no install wizard, so
-  // every visitor is already an administrator.
+  // The user plugin supplies authentication and the account-creation step used
+  // by the OOBE plugin. Without it every visitor is already an administrator.
   const requiresLogin = authEnabled.value;
   const userPermission = state.userInfo?.permission ?? 0;
   const toPagePermission = Number(to.meta.permission ?? 0);
@@ -361,4 +361,3 @@ router.afterEach(() => {
 });
 
 export { originRouterConfig, router };
-

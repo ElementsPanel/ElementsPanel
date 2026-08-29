@@ -3,18 +3,16 @@ import CardPanel from "@/components/CardPanel.vue";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import {
   getInitLanguage,
-  initInstallPageFlow,
   setLanguage,
   SUPPORTED_LANGS,
   t,
   toStandardLang
 } from "@/lang/i18n";
-import { panelInstall } from "@/services/apis";
+import { getPanelFrontendService } from "@/pluginServices";
 import { useAppStateStore } from "@/stores/useAppStateStore";
-import { reportErrorMsg } from "@/tools/validator";
 import { ArrowRightOutlined } from "@ant-design/icons-vue";
-import type { FormInstance } from "ant-design-vue";
-import { reactive, ref } from "vue";
+import { computed, reactive, ref, type Component } from "vue";
+import { updateOobeSettings } from "./api";
 
 const skeletons = [
   { span: 6, rows: 4 },
@@ -28,56 +26,33 @@ const skeletons = [
   { span: 16, rows: 6 }
 ];
 
-const { updateUserInfo, updatePanelStatus, state: appState } = useAppStateStore();
+const { state: appState } = useAppStateStore();
+const createAdminAccount = computed(() =>
+  getPanelFrontendService<Component>("user.oobeCreateAdminAccount")
+);
 
 const step = ref(0);
 const { toPage } = useAppRouters();
-const formRef = ref<FormInstance>();
 const formData = reactive({
-  username: "",
-  password: "",
   language: getInitLanguage()
 });
 
-const { execute: createAdminUser } = panelInstall();
-const installLoading = ref(false);
-const createUser = async () => {
-  try {
-    installLoading.value = true;
-    await formRef.value?.validate();
-    await createAdminUser({
-      data: formData
-    });
-    await updatePanelStatus();
-    await updateUserInfo();
-    step.value++;
-  } catch (err: any) {
-    err.errorFields?.forEach((field: any) => {
-      field?.errors?.forEach((error: any) => {
-        reportErrorMsg(error);
-      });
-    });
-  } finally {
-    installLoading.value = false;
-  }
-};
-
-const setLang = (lang: string) => {
+const setLang = async (lang: string) => {
   lang = toStandardLang(lang);
-  initInstallPageFlow(lang);
+  await updateOobeSettings().execute({
+    data: {
+      language: lang
+    }
+  });
   setLanguage(formData.language, false);
 };
 
-const toQuickStart = () => {
-  toPage({
-    path: "/market",
-    query: {
-      from_install: 1
-    }
-  }).then(() => window.location.reload());
+const continueFromLanguage = async () => {
+  await setLang(formData.language);
+  step.value++;
 };
 
-const toOverview = () => {
+const finishOobe = () => {
   toPage({
     path: "/",
     query: {
@@ -129,12 +104,7 @@ const toOverview = () => {
             type="primary"
             size="large"
             style="min-width: 160px; height: 48px; font-size: 16px"
-            @click="
-              () => {
-                setLang(formData.language);
-                step++;
-              }
-            "
+            @click="continueFromLanguage"
           >
             {{ t("TXT_CODE_5e9022f8") }}
             <ArrowRightOutlined />
@@ -167,6 +137,7 @@ const toOverview = () => {
         </a-button>
         <a-button
           v-else
+          :disabled="!createAdminAccount"
           class="mt-45 mb-45"
           type="primary"
           size="large"
@@ -181,82 +152,31 @@ const toOverview = () => {
   <div v-if="step === 2" class="install-page-container">
     <CardPanel :full-height="false" class="install-panel">
       <template #body>
-        <a-typography>
-          <a-typography-title :level="3">
-            {{ t("TXT_CODE_f880b5ad") }}
-          </a-typography-title>
-          <a-typography-paragraph>
-            <a-typography-text>
-              {{ t("TXT_CODE_3a056dc8") }}
-            </a-typography-text>
-          </a-typography-paragraph>
-        </a-typography>
-        <a-form ref="formRef" :model="formData" :label-col="{ span: 4 }" autocomplete="off">
-          <a-form-item
-            name="username"
-            :rules="[{ required: true, message: t('TXT_CODE_2695488c') }]"
-          >
-            <a-input
-              v-model:value="formData.username"
-              autocomplete="off"
-              :placeholder="t('TXT_CODE_eb9fcdad')"
-            />
-          </a-form-item>
-
-          <a-form-item
-            name="password"
-            :rules="[
-              {
-                required: true,
-                pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{9,36}$/,
-                message: t('TXT_CODE_ad533c70')
-              }
-            ]"
-          >
-            <a-input-password
-              v-model:value="formData.password"
-              autocomplete="off"
-              :placeholder="t('TXT_CODE_551b0348')"
-            />
-          </a-form-item>
-
-          <a-form-item :wrapper-col="{ span: 16 }">
-            <a-button :loading="installLoading" type="primary" @click="createUser">
-              {{ t("TXT_CODE_11d5caea") }}
-            </a-button>
-          </a-form-item>
-        </a-form>
+        <component
+          :is="createAdminAccount"
+          v-if="createAdminAccount"
+          @complete="step = 3"
+        />
       </template>
     </CardPanel>
   </div>
   <div v-if="step === 3" class="install-page-container">
     <CardPanel :full-height="false" class="install-panel">
       <template #body>
-        <a-typography>
+        <a-typography style="text-align: center">
           <a-typography-title :level="3">
             {{ t("TXT_CODE_97be50a8") }}
           </a-typography-title>
-          <a-typography-paragraph>
-            <a-typography-text>
-              {{ t("TXT_CODE_cd923ade") }}
-            </a-typography-text>
-          </a-typography-paragraph>
         </a-typography>
-        <div class="final-btn mb-15" @click="toQuickStart">
-          <a-typography-title :level="5">
-            {{ t("TXT_CODE_6f98ccd7") }}
-          </a-typography-title>
-          <a-typography-text>
-            {{ t("TXT_CODE_b5ca0563") }}
-          </a-typography-text>
-        </div>
-        <div class="final-btn" @click="toOverview">
-          <a-typography-title :level="5">
-            {{ t("TXT_CODE_b69550bf") }}
-          </a-typography-title>
-          <a-typography-text>
-            {{ t("TXT_CODE_95df80df") }}
-          </a-typography-text>
+        <div class="text-center mt-35 mb-5">
+          <a-button
+            type="primary"
+            size="large"
+            style="min-width: 160px; height: 48px; font-size: 16px"
+            @click="finishOobe"
+          >
+            {{ t("TXT_CODE_31e92ef3") }}
+          </a-button>
         </div>
       </template>
     </CardPanel>
@@ -352,16 +272,6 @@ const toOverview = () => {
     opacity: 1 !important;
   }
 
-  .language-check {
-    background: #1890ff;
-    border-color: #1890ff;
-  }
-
-  .check-icon {
-    opacity: 1;
-    transform: scale(1);
-  }
-
   .language-label {
     text-align: center;
     color: #1890ff;
@@ -376,62 +286,10 @@ const toOverview = () => {
   gap: 12px;
 }
 
-.language-check {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 0px solid var(--color-gray-4);
-  background-color: var(--color-gray-1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.3s ease;
-}
-
-.check-icon {
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-  opacity: 0;
-  transform: scale(0);
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
 .language-label {
   font-size: 15px;
   font-weight: 500;
   color: var(--color-text-1);
   transition: all 0.3s ease;
-}
-
-.final-btn {
-  padding: 10px 12px;
-  border: 1px solid var(--color-gray-2);
-  background-color: var(--color-gray-2);
-
-  cursor: pointer;
-  user-select: none;
-  transition: all 0.4s;
-  border-radius: 6px;
-
-  &:hover {
-    border: 1px solid var(--color-gray-8);
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.16);
-  }
-}
-
-@keyframes scaleAnimation {
-  0% {
-    transform: scale(1);
-  }
-  20% {
-    transform: scale(0.9);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1.6);
-    opacity: 0;
-  }
 }
 </style>

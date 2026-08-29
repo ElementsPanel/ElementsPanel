@@ -7,7 +7,7 @@ import MyselfInfoDialog from "./components/MyselfInfoDialog.vue";
 import DesktopLoginWindow from "./desktop/DesktopLoginWindow.vue";
 import DesktopUserInfo from "./desktop/DesktopUserInfo.vue";
 import DesktopUsers from "./desktop/DesktopUsers.vue";
-import InstallPage from "./views/Install.vue";
+import OobeCreateAdminAccount from "./oobe/OobeCreateAdminAccount.vue";
 import LoginPage from "./views/Login.vue";
 import SsoBindLogin from "./views/SsoBindLogin.vue";
 import UserAccessSettings from "./widgets/AccessSettings.vue";
@@ -42,6 +42,7 @@ export default {
     context.registerService("user.desktopUsers", DesktopUsers);
     context.registerService("user.desktopUserInfo", DesktopUserInfo);
     context.registerService("user.desktopStartMenuAvatar", UserOutlined);
+    context.registerService("user.oobeCreateAdminAccount", OobeCreateAdminAccount);
 
     context.registerRoute({
       path: "/login",
@@ -51,16 +52,6 @@ export default {
         permission: ROLE_GUEST,
         onlyDisplayEditMode: true,
         customClass: ["nav-button-warning"]
-      }
-    });
-
-    context.registerRoute({
-      path: "/install",
-      name: t("TXT_CODE_82d650be"),
-      component: InstallPage,
-      meta: {
-        permission: ROLE_GUEST,
-        mainMenu: false
       }
     });
 
