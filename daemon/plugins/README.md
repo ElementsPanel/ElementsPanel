@@ -38,6 +38,18 @@ the instance subsystem, the `Instance` class, `asyncTask` services, backup
 helpers, `translate()`, and `logger`. Plugins can extend the core dispatchers
 with `registerAsyncTask()`, `registerScheduleAction()`, and `registerFeature()`.
 
+## Translations
+
+A plugin owns the strings only it uses. They live in `<plugin>/src/i18n/`, one
+JSON file per language, next to an `index.ts` that exports them as
+`localeMessages` keyed by the daemon's locale codes (`en_us`, `zh_cn`, ...).
+Pass that object to `context.registerLocaleMessages()` as the first thing
+`setup()` does, before any code path that can log or throw translated text.
+
+The root `languages/` catalogue keeps only what the daemon core uses, plus the
+strings shared with it. When you add a string, add it to every language file in
+the folder that owns it — see `plugins/backup`.
+
 Set `enabled` to `false` to skip a plugin. Plugins are loaded in ascending
 `priority` order and a failed plugin is reported without stopping the daemon.
 
@@ -48,4 +60,5 @@ plugin writes this daemon's configuration. See `panel/plugins/node`.
 
 `backup` owns instance backup and restore protocol events, the
 `instance_backup` asynchronous task, the scheduled `backup` action, and the
-`instanceBackup` feature flag. See `panel/plugins/backup`.
+`instanceBackup` feature flag. It ships the console lines and errors it prints
+in `src/i18n/`. See `panel/plugins/backup`.

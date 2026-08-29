@@ -77,6 +77,14 @@ export interface PanelPluginContext {
   registerRoute: (path: string, method: string, handler: Koa.Middleware) => void;
   registerMiddleware: (middleware: Koa.Middleware) => void;
   /**
+   * Merge the plugin's own translations into the panel i18n instance, keyed by
+   * locale (`en_us`, `zh_cn`, ...). A plugin that owns strings ships them in
+   * `src/i18n` instead of the shared `languages` catalogue, so installing or
+   * removing the plugin takes them with it. Backend code only reloads with the
+   * panel process, so the messages stay registered for its lifetime.
+   */
+  registerLocaleMessages: (messages: Record<string, Record<string, unknown>>) => void;
+  /**
    * Take over request authorization for the whole panel: route guarding, caller
    * identity, instance ownership and upload permission. The panel core holds no
    * policy of its own, so until a plugin registers a guard every request is
@@ -275,6 +283,11 @@ export async function loadPanelPlugins(app: Koa): Promise<LoadedPanelPlugin[]> {
           register.call(router, routePath, handler);
         },
         registerMiddleware: (middleware) => app.use(middleware),
+        registerLocaleMessages: (messages) => {
+          for (const [locale, resources] of Object.entries(messages ?? {})) {
+            i18next.addResourceBundle(locale, "translation", resources, true, true);
+          }
+        },
         metadata: plugin.metadata,
         directory: plugin.directory,
         logger

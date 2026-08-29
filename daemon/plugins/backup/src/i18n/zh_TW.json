@@ -1,0 +1,13 @@
+{
+  "TXT_CODE_INSTANCE_BACKUP_COMPRESSING": "正在壓縮實例文件...",
+  "TXT_CODE_INSTANCE_BACKUP_EXCLUDED": "已有 {{num}} 个文件/目錄被 .epbaklst 規則排除",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED": "實例備份失败：{{err}}",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_FAILED": "備份恢復失败：{{err}}",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_SUCCESS": "備份恢復成功！",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORING": "正在恢復備份...",
+  "TXT_CODE_INSTANCE_BACKUP_START": "開始備份實例...",
+  "TXT_CODE_INSTANCE_BACKUP_STOPPING": "正在停止實例...",
+  "TXT_CODE_INSTANCE_BACKUP_STOP_TIMEOUT": "停止實例超時，備份已取消。",
+  "TXT_CODE_INSTANCE_BACKUP_SUCCESS": "實例備份成功：{{name}}",
+  "TXT_CODE_instanceConf.instanceBusy": "目前實例正處於忙碌狀態，無法執行任何動作."
+}

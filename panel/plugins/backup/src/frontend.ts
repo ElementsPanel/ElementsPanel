@@ -2,9 +2,11 @@ import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugins";
 import { CloudDownloadOutlined } from "@ant-design/icons-vue";
 import DesktopInstanceBackup from "./desktop/DesktopInstanceBackup.vue";
+import { localeMessages } from "./i18n";
 import InstanceBackupModal from "./normal/InstanceBackupModal.vue";
 
 export default {
+  localeMessages,
   setup(context: PanelFrontendPluginContext) {
     context.registerScheduleAction({
       type: "backup",

@@ -1,0 +1,21 @@
+{
+  "TXT_CODE_INSTANCE_BACKUP": "Copia de seguridad de instancia",
+  "TXT_CODE_INSTANCE_BACKUP_COMPLETED": "Copia completada",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE": "Nueva copia",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE_CONFIRM": "¿Seguro que quieres crear una copia nueva? ¡La instancia se detendrá!",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE": "Eliminar",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM": "¿Seguro que quieres eliminar la copia {name}?",
+  "TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST": "Editar .epbaklst",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATED": ".epbaklst creado",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM": "El archivo .epbaklst no existe. ¿Quieres crearlo?",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_DELETE": "No se pudo eliminar la copia de seguridad.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_FETCH": "No se pudo cargar la lista de copias de seguridad.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_RESTORE": "No se pudo restaurar la copia de seguridad.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_START": "No se pudo iniciar la tarea de copia",
+  "TXT_CODE_INSTANCE_BACKUP_INTRO": "Pulsa el botón inferior para crear una copia de la instancia actual.",
+  "TXT_CODE_INSTANCE_BACKUP_LIST": "Lista de copias",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE": "Restaurar",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_CONFIRM": "¿Seguro que quieres restaurar la copia {name} en la instancia actual? Los archivos existentes se sobrescribirán.",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_STARTED": "Tarea de restauración iniciada.",
+  "TXT_CODE_INSTANCE_BACKUP_STARTED": "Tarea de copia iniciada"
+}

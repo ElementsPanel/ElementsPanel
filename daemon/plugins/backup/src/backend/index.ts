@@ -6,8 +6,11 @@ import path from "path";
 import { v4 } from "uuid";
 import type { DaemonPluginContext } from "../../../../src/service/plugins";
 import type InstanceEntity from "../../../../src/entity/instance/instance";
+import { localeMessages } from "../i18n";
 
 export function setup(context: DaemonPluginContext) {
+  context.registerLocaleMessages(localeMessages);
+
   const { AsyncTask, TaskCenter } = context.asyncTask;
   const { GitignoreMatcher, decompressWithProgress, check7zipStatus, sevenZipPath, zipTimeoutSeconds } =
     context.backup;

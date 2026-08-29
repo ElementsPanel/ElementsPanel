@@ -1,6 +1,5 @@
 {
   "TXT_CODE_DESKTOP_CLOSE_ALL": "Fechar todas as janelas",
-  "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Remover da área de trabalho",
   "TXT_CODE_DESKTOP_EXIT": "Sair da área de trabalho",
   "TXT_CODE_DESKTOP_IM_ALL_STATUS": "Todos os status",
   "TXT_CODE_DESKTOP_IM_LOADING": "Carregando instâncias...",
@@ -11,22 +10,11 @@
   "TXT_CODE_DESKTOP_IM_TOTAL": "Total",
   "TXT_CODE_DESKTOP_IM_UNKNOWN": "Desconhecido",
   "TXT_CODE_DESKTOP_IM_UNNAMED": "Sem nome",
-  "TXT_CODE_DESKTOP_LOGGING_IN": "Entrando...",
   "TXT_CODE_DESKTOP_MAXIMIZE": "Maximizar",
   "TXT_CODE_DESKTOP_MINIMIZE": "Minimizar",
   "TXT_CODE_DESKTOP_MODE": "Modo desktop",
   "TXT_CODE_DESKTOP_MY_APPS": "Minha Aplicação",
   "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Escolha uma forma de criar sua nova instância",
-  "TXT_CODE_DESKTOP_USERS_ADD": "Adicionar usuário",
-  "TXT_CODE_DESKTOP_USERS_ASSIGNED": "Atribuído",
-  "TXT_CODE_DESKTOP_USERS_ASSIGN_SUCCESS": "Instâncias atribuídas com sucesso",
-  "TXT_CODE_DESKTOP_USERS_BROWSE_INSTANCES": "Procurar instâncias",
-  "TXT_CODE_DESKTOP_USERS_DELETE": "Excluir usuário",
-  "TXT_CODE_DESKTOP_USERS_DELETE_CONFIRM": "Tem certeza de que deseja excluir o usuário {name}?",
-  "TXT_CODE_DESKTOP_USERS_NO_ASSIGNED": "Nenhuma instância atribuída",
-  "TXT_CODE_DESKTOP_USERS_NO_RESULTS": "Nenhum usuário encontrado",
-  "TXT_CODE_DESKTOP_USERS_PASSWORD_HELP": "Deixe vazio para manter a senha atual",
-  "TXT_CODE_DESKTOP_USERS_PASSWORD_REQUIRED": "Novos usuários precisam de uma senha",
-  "TXT_CODE_DESKTOP_USERS_SEARCH": "Pesquisar usuários...",
-  "TXT_CODE_DESKTOP_USERS_USERNAME_REQUIRED": "O nome de usuário é obrigatório"
+  "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Remover da área de trabalho",
+  "TXT_CODE_DESKTOP_RESTORE": "Restaurar"
 }

@@ -1,0 +1,21 @@
+{
+  "TXT_CODE_INSTANCE_BACKUP": "Örneği yedekle",
+  "TXT_CODE_INSTANCE_BACKUP_COMPLETED": "Yedekleme tamamlandı",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE": "Yeni yedek",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE_CONFIRM": "Yeni bir yedek oluşturmak istediğinizden emin misiniz? Örnek durdurulacak!",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE": "Sil",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM": "{name} yedeğini silmek istiyor musunuz?",
+  "TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST": ".epbaklst dosyasını düzenle",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATED": ".epbaklst oluşturuldu",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM": ".epbaklst dosyası yok. Oluşturulsun mu?",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_DELETE": "Yedek silinemedi.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_FETCH": "Yedek listesi yüklenemedi.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_RESTORE": "Yedek geri yüklenemedi.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_START": "Yedekleme görevi başlatılamadı",
+  "TXT_CODE_INSTANCE_BACKUP_INTRO": "Geçerli örneği yedeklemek için aşağıdaki düğmeye tıklayın.",
+  "TXT_CODE_INSTANCE_BACKUP_LIST": "Yedek listesi",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE": "Geri yükle",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_CONFIRM": "{name} yedeği geçerli örneğe geri yüklensin mi? Mevcut dosyaların üzerine yazılacak.",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_STARTED": "Geri yükleme görevi başlatıldı.",
+  "TXT_CODE_INSTANCE_BACKUP_STARTED": "Yedekleme görevi başlatıldı"
+}

@@ -1,6 +1,5 @@
 {
   "TXT_CODE_DESKTOP_CLOSE_ALL": "Close All Windows",
-  "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Remove from Desktop",
   "TXT_CODE_DESKTOP_EXIT": "Exit Desktop",
   "TXT_CODE_DESKTOP_IM_ALL_STATUS": "All Status",
   "TXT_CODE_DESKTOP_IM_LOADING": "Loading instances...",
@@ -11,22 +10,11 @@
   "TXT_CODE_DESKTOP_IM_TOTAL": "Total",
   "TXT_CODE_DESKTOP_IM_UNKNOWN": "Unknown",
   "TXT_CODE_DESKTOP_IM_UNNAMED": "Unnamed",
-  "TXT_CODE_DESKTOP_LOGGING_IN": "Logging in...",
   "TXT_CODE_DESKTOP_MAXIMIZE": "Maximize",
   "TXT_CODE_DESKTOP_MINIMIZE": "Minimize",
   "TXT_CODE_DESKTOP_MODE": "Desktop Mode",
   "TXT_CODE_DESKTOP_MY_APPS": "My Apps",
   "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Choose a way to create your new instance",
-  "TXT_CODE_DESKTOP_USERS_ADD": "Add User",
-  "TXT_CODE_DESKTOP_USERS_ASSIGNED": "Assigned",
-  "TXT_CODE_DESKTOP_USERS_ASSIGN_SUCCESS": "Instances assigned successfully",
-  "TXT_CODE_DESKTOP_USERS_BROWSE_INSTANCES": "Browse Instances",
-  "TXT_CODE_DESKTOP_USERS_DELETE": "Delete User",
-  "TXT_CODE_DESKTOP_USERS_DELETE_CONFIRM": "Are you sure you want to delete user {name}?",
-  "TXT_CODE_DESKTOP_USERS_NO_ASSIGNED": "No instances assigned",
-  "TXT_CODE_DESKTOP_USERS_NO_RESULTS": "No users found",
-  "TXT_CODE_DESKTOP_USERS_PASSWORD_HELP": "Leave blank to keep current password",
-  "TXT_CODE_DESKTOP_USERS_PASSWORD_REQUIRED": "Password is required for new users",
-  "TXT_CODE_DESKTOP_USERS_SEARCH": "Search users...",
-  "TXT_CODE_DESKTOP_USERS_USERNAME_REQUIRED": "Username is required"
+  "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Remove from Desktop",
+  "TXT_CODE_DESKTOP_RESTORE": "Restore"
 }

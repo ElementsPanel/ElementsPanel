@@ -1,6 +1,5 @@
 {
   "TXT_CODE_DESKTOP_CLOSE_ALL": "Fermer toutes les fenêtres",
-  "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Supprimer du bureau",
   "TXT_CODE_DESKTOP_EXIT": "Quitter le bureau",
   "TXT_CODE_DESKTOP_IM_ALL_STATUS": "Tous les états",
   "TXT_CODE_DESKTOP_IM_LOADING": "Chargement des instances...",
@@ -11,22 +10,11 @@
   "TXT_CODE_DESKTOP_IM_TOTAL": "Total",
   "TXT_CODE_DESKTOP_IM_UNKNOWN": "Inconnu",
   "TXT_CODE_DESKTOP_IM_UNNAMED": "Sans nom",
-  "TXT_CODE_DESKTOP_LOGGING_IN": "Connexion...",
   "TXT_CODE_DESKTOP_MAXIMIZE": "Agrandir",
   "TXT_CODE_DESKTOP_MINIMIZE": "Réduire",
   "TXT_CODE_DESKTOP_MODE": "Mode bureau",
   "TXT_CODE_DESKTOP_MY_APPS": "mon application",
   "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Choisissez une méthode pour créer votre nouvelle instance",
-  "TXT_CODE_DESKTOP_USERS_ADD": "Ajouter un utilisateur",
-  "TXT_CODE_DESKTOP_USERS_ASSIGNED": "Attribué",
-  "TXT_CODE_DESKTOP_USERS_ASSIGN_SUCCESS": "Instances attribuées avec succès",
-  "TXT_CODE_DESKTOP_USERS_BROWSE_INSTANCES": "Parcourir les instances",
-  "TXT_CODE_DESKTOP_USERS_DELETE": "Supprimer l’utilisateur",
-  "TXT_CODE_DESKTOP_USERS_DELETE_CONFIRM": "Voulez-vous vraiment supprimer l’utilisateur {name} ?",
-  "TXT_CODE_DESKTOP_USERS_NO_ASSIGNED": "Aucune instance attribuée",
-  "TXT_CODE_DESKTOP_USERS_NO_RESULTS": "Aucun utilisateur trouvé",
-  "TXT_CODE_DESKTOP_USERS_PASSWORD_HELP": "Laissez vide pour conserver le mot de passe actuel",
-  "TXT_CODE_DESKTOP_USERS_PASSWORD_REQUIRED": "Un mot de passe est requis pour les nouveaux utilisateurs",
-  "TXT_CODE_DESKTOP_USERS_SEARCH": "Rechercher des utilisateurs...",
-  "TXT_CODE_DESKTOP_USERS_USERNAME_REQUIRED": "Le nom d’utilisateur est obligatoire"
+  "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Supprimer du bureau",
+  "TXT_CODE_DESKTOP_RESTORE": "Restaurer"
 }

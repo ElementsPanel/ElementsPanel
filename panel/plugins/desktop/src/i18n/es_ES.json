@@ -1,6 +1,5 @@
 {
   "TXT_CODE_DESKTOP_CLOSE_ALL": "Cerrar todas las ventanas",
-  "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Eliminar del escritorio",
   "TXT_CODE_DESKTOP_EXIT": "Salir del escritorio",
   "TXT_CODE_DESKTOP_IM_ALL_STATUS": "Todos los estados",
   "TXT_CODE_DESKTOP_IM_LOADING": "Cargando instancias...",
@@ -11,22 +10,11 @@
   "TXT_CODE_DESKTOP_IM_TOTAL": "Total",
   "TXT_CODE_DESKTOP_IM_UNKNOWN": "Desconocido",
   "TXT_CODE_DESKTOP_IM_UNNAMED": "Sin nombre",
-  "TXT_CODE_DESKTOP_LOGGING_IN": "Iniciando sesión...",
   "TXT_CODE_DESKTOP_MAXIMIZE": "Maximizar",
   "TXT_CODE_DESKTOP_MINIMIZE": "Minimizar",
   "TXT_CODE_DESKTOP_MODE": "Modo escritorio",
   "TXT_CODE_DESKTOP_MY_APPS": "mi aplicación",
   "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Elige un método para crear tu nueva instancia",
-  "TXT_CODE_DESKTOP_USERS_ADD": "Añadir usuario",
-  "TXT_CODE_DESKTOP_USERS_ASSIGNED": "Asignado",
-  "TXT_CODE_DESKTOP_USERS_ASSIGN_SUCCESS": "Instancias asignadas correctamente",
-  "TXT_CODE_DESKTOP_USERS_BROWSE_INSTANCES": "Examinar instancias",
-  "TXT_CODE_DESKTOP_USERS_DELETE": "Eliminar usuario",
-  "TXT_CODE_DESKTOP_USERS_DELETE_CONFIRM": "¿Seguro que quieres eliminar al usuario {name}?",
-  "TXT_CODE_DESKTOP_USERS_NO_ASSIGNED": "No hay instancias asignadas",
-  "TXT_CODE_DESKTOP_USERS_NO_RESULTS": "No se encontraron usuarios",
-  "TXT_CODE_DESKTOP_USERS_PASSWORD_HELP": "Déjalo vacío para conservar la contraseña actual",
-  "TXT_CODE_DESKTOP_USERS_PASSWORD_REQUIRED": "Los usuarios nuevos deben tener una contraseña",
-  "TXT_CODE_DESKTOP_USERS_SEARCH": "Buscar usuarios...",
-  "TXT_CODE_DESKTOP_USERS_USERNAME_REQUIRED": "El nombre de usuario es obligatorio"
+  "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Eliminar del escritorio",
+  "TXT_CODE_DESKTOP_RESTORE": "Restaurar"
 }

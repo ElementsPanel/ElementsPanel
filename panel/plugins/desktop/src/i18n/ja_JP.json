@@ -1,6 +1,5 @@
 {
   "TXT_CODE_DESKTOP_CLOSE_ALL": "すべてのウィンドウを閉じる",
-  "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "デスクトップから削除",
   "TXT_CODE_DESKTOP_EXIT": "デスクトップを終了",
   "TXT_CODE_DESKTOP_IM_ALL_STATUS": "すべてのステータス",
   "TXT_CODE_DESKTOP_IM_LOADING": "インスタンスを読み込み中...",
@@ -11,22 +10,11 @@
   "TXT_CODE_DESKTOP_IM_TOTAL": "合計",
   "TXT_CODE_DESKTOP_IM_UNKNOWN": "不明",
   "TXT_CODE_DESKTOP_IM_UNNAMED": "名前なし",
-  "TXT_CODE_DESKTOP_LOGGING_IN": "ログイン中...",
   "TXT_CODE_DESKTOP_MAXIMIZE": "最大化",
   "TXT_CODE_DESKTOP_MINIMIZE": "最小化",
   "TXT_CODE_DESKTOP_MODE": "デスクトップモード",
   "TXT_CODE_DESKTOP_MY_APPS": "アプリケーション一覧",
   "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "新しいインスタンスの作成方法を選択してください",
-  "TXT_CODE_DESKTOP_USERS_ADD": "ユーザーを追加",
-  "TXT_CODE_DESKTOP_USERS_ASSIGNED": "割り当て済み",
-  "TXT_CODE_DESKTOP_USERS_ASSIGN_SUCCESS": "インスタンスを割り当てました",
-  "TXT_CODE_DESKTOP_USERS_BROWSE_INSTANCES": "インスタンスを参照",
-  "TXT_CODE_DESKTOP_USERS_DELETE": "ユーザーを削除",
-  "TXT_CODE_DESKTOP_USERS_DELETE_CONFIRM": "ユーザー {name} を削除しますか？",
-  "TXT_CODE_DESKTOP_USERS_NO_ASSIGNED": "割り当てられたインスタンスはありません",
-  "TXT_CODE_DESKTOP_USERS_NO_RESULTS": "ユーザーが見つかりません",
-  "TXT_CODE_DESKTOP_USERS_PASSWORD_HELP": "現在のパスワードを維持する場合は空欄にしてください",
-  "TXT_CODE_DESKTOP_USERS_PASSWORD_REQUIRED": "新規ユーザーにはパスワードが必要です",
-  "TXT_CODE_DESKTOP_USERS_SEARCH": "ユーザーを検索...",
-  "TXT_CODE_DESKTOP_USERS_USERNAME_REQUIRED": "ユーザー名は必須です"
+  "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "デスクトップから削除",
+  "TXT_CODE_DESKTOP_RESTORE": "復元"
 }

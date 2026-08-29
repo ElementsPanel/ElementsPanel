@@ -1,0 +1,13 @@
+{
+  "TXT_CODE_INSTANCE_BACKUP_COMPRESSING": "กำลังบีบอัดไฟล์อินสแตนซ์ โปรดรอ...",
+  "TXT_CODE_INSTANCE_BACKUP_EXCLUDED": "ยกเว้นไฟล์/ไดเรกทอรี {{num}} รายการตามกฎ .epbaklst",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED": "สำรองข้อมูลอินสแตนซ์ล้มเหลว: {{err}}",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_FAILED": "กู้คืนข้อมูลสำรองล้มเหลว: {{err}}",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_SUCCESS": "กู้คืนข้อมูลสำรองสำเร็จ!",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORING": "กำลังกู้คืนข้อมูลสำรอง...",
+  "TXT_CODE_INSTANCE_BACKUP_START": "กำลังเริ่มสำรองข้อมูลอินสแตนซ์...",
+  "TXT_CODE_INSTANCE_BACKUP_STOPPING": "กำลังหยุดอินสแตนซ์...",
+  "TXT_CODE_INSTANCE_BACKUP_STOP_TIMEOUT": "หยุดอินสแตนซ์หมดเวลา ยกเลิกการสำรองข้อมูลแล้ว",
+  "TXT_CODE_INSTANCE_BACKUP_SUCCESS": "สำรองข้อมูลอินสแตนซ์สำเร็จ! ไฟล์: {{name}}",
+  "TXT_CODE_instanceConf.instanceBusy": "อินสแตนซ์ปัจจุบันกำลังยุ่งและไม่สามารถดำเนินการใดๆ ได้"
+}

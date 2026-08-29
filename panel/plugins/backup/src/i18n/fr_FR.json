@@ -1,0 +1,21 @@
+{
+  "TXT_CODE_INSTANCE_BACKUP": "Sauvegarde de l’instance",
+  "TXT_CODE_INSTANCE_BACKUP_COMPLETED": "Sauvegarde terminée",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE": "Nouvelle sauvegarde",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE_CONFIRM": "Voulez-vous vraiment créer une nouvelle sauvegarde ? L’instance sera arrêtée !",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE": "Supprimer",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM": "Voulez-vous vraiment supprimer la sauvegarde {name} ?",
+  "TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST": "Modifier .epbaklst",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATED": ".epbaklst créé",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM": "Le fichier .epbaklst n’existe pas. Voulez-vous le créer ?",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_DELETE": "Échec de la suppression de la sauvegarde.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_FETCH": "Échec du chargement de la liste des sauvegardes.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_RESTORE": "Échec de la restauration de la sauvegarde.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_START": "Impossible de démarrer la tâche de sauvegarde",
+  "TXT_CODE_INSTANCE_BACKUP_INTRO": "Cliquez sur le bouton ci-dessous pour sauvegarder l’instance actuelle.",
+  "TXT_CODE_INSTANCE_BACKUP_LIST": "Liste des sauvegardes",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE": "Restaurer",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_CONFIRM": "Voulez-vous vraiment restaurer la sauvegarde {name} dans l’instance actuelle ? Les fichiers existants seront écrasés.",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_STARTED": "Tâche de restauration démarrée.",
+  "TXT_CODE_INSTANCE_BACKUP_STARTED": "Tâche de sauvegarde démarrée"
+}

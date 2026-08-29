@@ -1,0 +1,21 @@
+{
+  "TXT_CODE_INSTANCE_BACKUP": "Instanz sichern",
+  "TXT_CODE_INSTANCE_BACKUP_COMPLETED": "Sicherung abgeschlossen",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE": "Neue Sicherung",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE_CONFIRM": "Möchten Sie wirklich eine neue Sicherung erstellen? Dadurch wird die Instanz angehalten!",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE": "Entfernen",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM": "Möchten Sie die Sicherung {name} wirklich löschen?",
+  "TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST": ".epbaklst bearbeiten",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATED": ".epbaklst erstellt",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM": "Die Datei .epbaklst existiert nicht. Möchten Sie sie erstellen?",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_DELETE": "Sicherung konnte nicht gelöscht werden.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_FETCH": "Sicherungsliste konnte nicht geladen werden.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_RESTORE": "Sicherung konnte nicht wiederhergestellt werden.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_START": "Sicherungsaufgabe konnte nicht gestartet werden",
+  "TXT_CODE_INSTANCE_BACKUP_INTRO": "Klicken Sie unten, um die aktuelle Instanz zu sichern.",
+  "TXT_CODE_INSTANCE_BACKUP_LIST": "Sicherungsliste",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE": "Wiederherstellen",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_CONFIRM": "Möchten Sie die Sicherung {name} wirklich in der aktuellen Instanz wiederherstellen? Dabei werden vorhandene Dateien überschrieben.",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_STARTED": "Wiederherstellungsaufgabe gestartet.",
+  "TXT_CODE_INSTANCE_BACKUP_STARTED": "Sicherungsaufgabe gestartet"
+}

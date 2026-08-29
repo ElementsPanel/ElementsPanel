@@ -1,0 +1,21 @@
+{
+  "TXT_CODE_INSTANCE_BACKUP": "Создать резервную копию",
+  "TXT_CODE_INSTANCE_BACKUP_COMPLETED": "Резервное копирование завершено",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE": "Новая резервная копия",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE_CONFIRM": "Создать новую резервную копию? Экземпляр будет остановлен!",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE": "Удалить",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM": "Удалить резервную копию {name}?",
+  "TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST": "Изменить .epbaklst",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATED": ".epbaklst создан",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM": "Файл .epbaklst не существует. Создать его?",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_DELETE": "Не удалось удалить резервную копию.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_FETCH": "Не удалось загрузить список резервных копий.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_RESTORE": "Не удалось восстановить резервную копию.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_START": "Не удалось запустить задачу резервного копирования",
+  "TXT_CODE_INSTANCE_BACKUP_INTRO": "Нажмите кнопку ниже, чтобы создать резервную копию текущего экземпляра.",
+  "TXT_CODE_INSTANCE_BACKUP_LIST": "Список резервных копий",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE": "Восстановить",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_CONFIRM": "Восстановить резервную копию {name} в текущий экземпляр? Существующие файлы будут перезаписаны.",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_STARTED": "Задача восстановления запущена.",
+  "TXT_CODE_INSTANCE_BACKUP_STARTED": "Задача резервного копирования запущена"
+}

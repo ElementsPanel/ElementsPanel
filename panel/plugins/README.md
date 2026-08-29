@@ -23,8 +23,8 @@ The panel backend context exposes the Koa `app`, `router`, panel `config`,
 `instances`, `sso`), the shared `middleware` (`instanceAccess`, `permission` and `validator`),
 `common` (`GlobalVariable`), `i18n`, `roles`,
 `registerRoute`, `registerRouter`, `registerMiddleware`, `registerRequestGuard`,
-`registerInstallationState`, `saveConfig`, `metadata`, `directory`, and
-`logger`.
+`registerInstallationState`, `registerLocaleMessages`, `saveConfig`,
+`metadata`, `directory`, and `logger`.
 
 `registerRequestGuard(guard)` hands the plugin request authorization for the
 whole panel: route guarding, caller identity, instance ownership, upload
@@ -53,6 +53,32 @@ from the core is safe, because types are erased.
 The loader itself accepts any Node-loadable JavaScript (`.js`, `.cjs`, `.mjs`),
 so a hand-written entry still works if you have a reason to skip the compile
 step.
+
+## Translations
+
+A plugin owns the strings only it uses. They live in `<plugin>/src/i18n/`, one
+JSON file per language, next to an `index.ts` that exports them as
+`localeMessages` keyed by the panel's locale codes (`en_us`, `zh_cn`, ...):
+
+```ts
+import enUS from "./en_US.json";
+import zhCN from "./zh_CN.json";
+
+export const localeMessages = { en_us: enUS, zh_cn: zhCN };
+```
+
+The frontend definition passes that object as `localeMessages` (or calls
+`context.registerLocaleMessages(locale, messages)`), and a backend that logs or
+throws translated text calls `context.registerLocaleMessages(localeMessages)`
+before anything else in `setup()`. Both merge on top of the shared catalogue, so
+a plugin's strings arrive and leave with the plugin. Frontend registrations are
+undone when the plugin unloads; backend code only reloads with the panel
+process, so its messages stay registered for the process lifetime.
+
+The root `languages/` catalogue keeps only what the panel core uses, plus the
+strings shared by more than one plugin. When you add a string, add it to every
+language file in the folder that owns it — see `plugins/user`, `plugins/oobe`,
+`plugins/backup`, `plugins/node` and `plugins/desktop`.
 
 The frontend module exports `setup(context)` or a definition object. Its
 `directory` context field is the logical plugin id. During a production build,

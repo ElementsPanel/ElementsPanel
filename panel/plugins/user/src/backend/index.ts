@@ -1,5 +1,6 @@
 import Router from "@koa/router";
 import type { PanelPluginContext } from "../../../../src/app/plugins";
+import { localeMessages } from "../i18n";
 import { createRequestGuard } from "./guard";
 import createAuthSettingsRouter from "./routers/auth_settings_router";
 import createGeneralUserRouter from "./routers/general_user_router";
@@ -13,6 +14,10 @@ import userSystem from "./service/user_service";
 
 export async function setup(context: PanelPluginContext) {
   setPluginContext(context);
+
+  // Before anything that logs or throws: this plugin's strings live here, not
+  // in the panel catalogue.
+  context.registerLocaleMessages(localeMessages);
 
   await initAuthSettings();
   await userSystem.initialize();

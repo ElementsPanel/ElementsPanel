@@ -1,0 +1,21 @@
+{
+  "TXT_CODE_INSTANCE_BACKUP": "Backup Instance",
+  "TXT_CODE_INSTANCE_BACKUP_COMPLETED": "Backup completed",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE": "New Backup",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE_CONFIRM": "Are you sure you want to create a new backup? This action will stop the instance!",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE": "Delete",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM": "Are you sure you want to delete backup {name}?",
+  "TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST": "Edit .epbaklst",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATED": "Created .epbaklst",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM": "The .epbaklst file does not exist. Would you like to create it?",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_DELETE": "Failed to delete the backup.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_FETCH": "Failed to load the backup list.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_RESTORE": "Failed to restore the backup.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_START": "Failed to start backup task",
+  "TXT_CODE_INSTANCE_BACKUP_INTRO": "Click the button below to start backing up the current instance.",
+  "TXT_CODE_INSTANCE_BACKUP_LIST": "Backup List",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE": "Restore",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_CONFIRM": "Are you sure you want to restore backup {name} to the current instance? This will overwrite existing files.",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_STARTED": "Backup restoration task started.",
+  "TXT_CODE_INSTANCE_BACKUP_STARTED": "Backup task started"
+}

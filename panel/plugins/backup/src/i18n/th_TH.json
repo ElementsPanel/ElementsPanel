@@ -1,0 +1,21 @@
+{
+  "TXT_CODE_INSTANCE_BACKUP": "สำรองข้อมูลอินสแตนซ์",
+  "TXT_CODE_INSTANCE_BACKUP_COMPLETED": "สำรองข้อมูลเสร็จแล้ว",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE": "ข้อมูลสำรองใหม่",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE_CONFIRM": "ต้องการสร้างข้อมูลสำรองใหม่หรือไม่ อินสแตนซ์จะถูกหยุด",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE": "ลบ",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM": "ต้องการลบข้อมูลสำรอง {name} หรือไม่",
+  "TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST": "แก้ไข .epbaklst",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATED": "สร้าง .epbaklst แล้ว",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM": "ไม่มีไฟล์ .epbaklst ต้องการสร้างหรือไม่",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_DELETE": "ไม่สามารถลบข้อมูลสำรองได้",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_FETCH": "ไม่สามารถโหลดรายการข้อมูลสำรองได้",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_RESTORE": "ไม่สามารถกู้คืนข้อมูลสำรองได้",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_START": "เริ่มงานสำรองข้อมูลไม่สำเร็จ",
+  "TXT_CODE_INSTANCE_BACKUP_INTRO": "คลิกปุ่มด้านล่างเพื่อสำรองข้อมูลอินสแตนซ์ปัจจุบัน",
+  "TXT_CODE_INSTANCE_BACKUP_LIST": "รายการข้อมูลสำรอง",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE": "กู้คืน",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_CONFIRM": "ต้องการกู้คืนข้อมูลสำรอง {name} ไปยังอินสแตนซ์ปัจจุบันหรือไม่ ไฟล์เดิมจะถูกเขียนทับ",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_STARTED": "เริ่มงานกู้คืนแล้ว",
+  "TXT_CODE_INSTANCE_BACKUP_STARTED": "เริ่มงานสำรองข้อมูลแล้ว"
+}

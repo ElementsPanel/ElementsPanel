@@ -1,0 +1,21 @@
+{
+  "TXT_CODE_INSTANCE_BACKUP": "インスタンスをバックアップ",
+  "TXT_CODE_INSTANCE_BACKUP_COMPLETED": "バックアップ完了",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE": "新しいバックアップ",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE_CONFIRM": "新しいバックアップを作成しますか？インスタンスは停止します！",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE": "削除",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM": "バックアップ {name} を削除しますか？",
+  "TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST": ".epbaklstを編集",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATED": ".epbaklstを作成しました",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM": ".epbaklstファイルがありません。作成しますか？",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_DELETE": "バックアップの削除に失敗しました。",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_FETCH": "バックアップ一覧の取得に失敗しました。",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_RESTORE": "バックアップの復元に失敗しました。",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_START": "バックアップタスクを開始できませんでした",
+  "TXT_CODE_INSTANCE_BACKUP_INTRO": "下のボタンをクリックして現在のインスタンスをバックアップします。",
+  "TXT_CODE_INSTANCE_BACKUP_LIST": "バックアップ一覧",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE": "復元",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_CONFIRM": "バックアップ {name} を現在のインスタンスに復元しますか？既存のファイルは上書きされます。",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_STARTED": "復元タスクを開始しました。",
+  "TXT_CODE_INSTANCE_BACKUP_STARTED": "バックアップタスクを開始しました"
+}

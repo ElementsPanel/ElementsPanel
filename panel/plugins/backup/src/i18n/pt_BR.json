@@ -1,0 +1,21 @@
+{
+  "TXT_CODE_INSTANCE_BACKUP": "Backup da instância",
+  "TXT_CODE_INSTANCE_BACKUP_COMPLETED": "Backup concluído",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE": "Novo backup",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE_CONFIRM": "Tem certeza de que deseja criar um novo backup? A instância será parada!",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE": "Excluir",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM": "Tem certeza de que deseja excluir o backup {name}?",
+  "TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST": "Editar .epbaklst",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATED": ".epbaklst criado",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM": "O arquivo .epbaklst não existe. Deseja criá-lo?",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_DELETE": "Falha ao excluir o backup.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_FETCH": "Falha ao carregar a lista de backups.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_RESTORE": "Falha ao restaurar o backup.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_START": "Falha ao iniciar a tarefa de backup",
+  "TXT_CODE_INSTANCE_BACKUP_INTRO": "Clique no botão abaixo para fazer backup da instância atual.",
+  "TXT_CODE_INSTANCE_BACKUP_LIST": "Lista de backups",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE": "Restaurar",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_CONFIRM": "Tem certeza de que deseja restaurar o backup {name} na instância atual? Os arquivos existentes serão sobrescritos.",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_STARTED": "Tarefa de restauração iniciada.",
+  "TXT_CODE_INSTANCE_BACKUP_STARTED": "Tarefa de backup iniciada"
+}

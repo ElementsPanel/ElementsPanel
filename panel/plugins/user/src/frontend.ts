@@ -7,6 +7,7 @@ import MyselfInfoDialog from "./components/MyselfInfoDialog.vue";
 import DesktopLoginWindow from "./desktop/DesktopLoginWindow.vue";
 import DesktopUserInfo from "./desktop/DesktopUserInfo.vue";
 import DesktopUsers from "./desktop/DesktopUsers.vue";
+import { localeMessages } from "./i18n";
 import OobeCreateAdminAccount from "./oobe/OobeCreateAdminAccount.vue";
 import LoginPage from "./views/Login.vue";
 import SsoBindLogin from "./views/SsoBindLogin.vue";
@@ -25,6 +26,7 @@ export default {
   configuration: {
     component: PluginConfig
   },
+  localeMessages,
   layoutCards: {
     LoginCard,
     UserList,

@@ -7,3 +7,14 @@ routes under `/api/protected_instance/backup`.
 
 The generic asynchronous-task and file-editor APIs remain in the panel core;
 the backup plugin composes them to run backup jobs and edit `.epbaklst`.
+
+## Translations
+
+`src/i18n/` holds the strings for the backup UI, passed to the panel as
+`localeMessages` by `src/frontend.ts`. The lines an instance prints while a
+backup runs belong to `daemon/plugins/backup`, which ships its own catalogue —
+the two never share a key.
+
+`TXT_CODE_INSTANCE_BACKUP_RESTORE` moved here with the rest; the Desktop
+plugin, which had been reusing it for its restore-window button, now has its
+own `TXT_CODE_DESKTOP_RESTORE`.

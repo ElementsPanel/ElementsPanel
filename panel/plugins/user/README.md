@@ -117,5 +117,15 @@ form, validation and `/api/auth/install` request therefore remain owned by this
 plugin even though the surrounding first-run flow does not. If this plugin is
 absent, OOBE skips that optional step and can still complete normally.
 
-i18n reuses the existing keys in `languages/*.json`; this plugin ships no
-translations of its own.
+## Translations
+
+`src/i18n/` holds every string only this plugin uses — the login and account
+pages, the user list, the SSO settings block, the Desktop user windows and the
+messages the backend logs or throws. `src/frontend.ts` passes them to the panel
+as `localeMessages`; `src/backend/index.ts` registers the same catalogue with
+the panel's i18next instance before it initializes anything, so a router that
+throws a translated error never depends on the root `languages/` catalogue.
+
+Strings shared with the panel core or with another plugin (the `desktop`
+window chrome, for instance) stay in `languages/*.json`. Adding a string here
+means adding it to all twelve files in `src/i18n/`.

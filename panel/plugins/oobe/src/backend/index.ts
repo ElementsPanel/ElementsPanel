@@ -1,5 +1,6 @@
 import Router from "@koa/router";
 import type { PanelPluginContext } from "../../../../src/app/plugins";
+import { localeMessages } from "../i18n";
 
 class OobeState {
   completed = false;
@@ -9,6 +10,8 @@ const CATEGORY = "OobeState";
 const ID = "config";
 
 export async function setup(context: PanelPluginContext) {
+  context.registerLocaleMessages(localeMessages);
+
   const storage = context.storage.getStorage();
   const users = context.services.users;
   const stored = (await storage.load(CATEGORY, OobeState, ID)) as OobeState | null;

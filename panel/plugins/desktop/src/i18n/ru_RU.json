@@ -1,6 +1,5 @@
 {
   "TXT_CODE_DESKTOP_CLOSE_ALL": "Закрыть все окна",
-  "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Удалить с рабочего стола",
   "TXT_CODE_DESKTOP_EXIT": "Выйти с рабочего стола",
   "TXT_CODE_DESKTOP_IM_ALL_STATUS": "Все статусы",
   "TXT_CODE_DESKTOP_IM_LOADING": "Загрузка экземпляров...",
@@ -11,22 +10,11 @@
   "TXT_CODE_DESKTOP_IM_TOTAL": "Всего",
   "TXT_CODE_DESKTOP_IM_UNKNOWN": "Неизвестно",
   "TXT_CODE_DESKTOP_IM_UNNAMED": "Без имени",
-  "TXT_CODE_DESKTOP_LOGGING_IN": "Вход...",
   "TXT_CODE_DESKTOP_MAXIMIZE": "Развернуть",
   "TXT_CODE_DESKTOP_MINIMIZE": "Свернуть",
   "TXT_CODE_DESKTOP_MODE": "Режим рабочего стола",
   "TXT_CODE_DESKTOP_MY_APPS": "Мое приложение",
   "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Выберите способ создания нового экземпляра",
-  "TXT_CODE_DESKTOP_USERS_ADD": "Добавить пользователя",
-  "TXT_CODE_DESKTOP_USERS_ASSIGNED": "Назначено",
-  "TXT_CODE_DESKTOP_USERS_ASSIGN_SUCCESS": "Экземпляры назначены",
-  "TXT_CODE_DESKTOP_USERS_BROWSE_INSTANCES": "Просмотреть экземпляры",
-  "TXT_CODE_DESKTOP_USERS_DELETE": "Удалить пользователя",
-  "TXT_CODE_DESKTOP_USERS_DELETE_CONFIRM": "Удалить пользователя {name}?",
-  "TXT_CODE_DESKTOP_USERS_NO_ASSIGNED": "Нет назначенных экземпляров",
-  "TXT_CODE_DESKTOP_USERS_NO_RESULTS": "Пользователи не найдены",
-  "TXT_CODE_DESKTOP_USERS_PASSWORD_HELP": "Оставьте пустым, чтобы сохранить текущий пароль",
-  "TXT_CODE_DESKTOP_USERS_PASSWORD_REQUIRED": "Для новых пользователей требуется пароль",
-  "TXT_CODE_DESKTOP_USERS_SEARCH": "Поиск пользователей...",
-  "TXT_CODE_DESKTOP_USERS_USERNAME_REQUIRED": "Имя пользователя обязательно"
+  "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Удалить с рабочего стола",
+  "TXT_CODE_DESKTOP_RESTORE": "Восстановить"
 }

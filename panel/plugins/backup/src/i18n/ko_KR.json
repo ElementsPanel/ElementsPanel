@@ -1,0 +1,21 @@
+{
+  "TXT_CODE_INSTANCE_BACKUP": "인스턴스 백업",
+  "TXT_CODE_INSTANCE_BACKUP_COMPLETED": "백업 완료",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE": "새 백업",
+  "TXT_CODE_INSTANCE_BACKUP_CREATE_CONFIRM": "새 백업을 만드시겠습니까? 인스턴스가 중지됩니다!",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE": "제거",
+  "TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM": "백업 {name}을(를) 삭제하시겠습니까?",
+  "TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST": ".epbaklst 편집",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATED": ".epbaklst 생성됨",
+  "TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM": ".epbaklst 파일이 없습니다. 생성하시겠습니까?",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_DELETE": "백업을 삭제하지 못했습니다.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_FETCH": "백업 목록을 불러오지 못했습니다.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_RESTORE": "백업을 복원하지 못했습니다.",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED_START": "백업 작업을 시작하지 못했습니다",
+  "TXT_CODE_INSTANCE_BACKUP_INTRO": "아래 버튼을 눌러 현재 인스턴스를 백업하세요.",
+  "TXT_CODE_INSTANCE_BACKUP_LIST": "백업 목록",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE": "복원",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_CONFIRM": "백업 {name}을(를) 현재 인스턴스로 복원하시겠습니까? 기존 파일을 덮어씁니다.",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_STARTED": "복원 작업이 시작되었습니다.",
+  "TXT_CODE_INSTANCE_BACKUP_STARTED": "백업 작업이 시작되었습니다"
+}

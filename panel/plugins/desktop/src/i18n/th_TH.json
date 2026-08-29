@@ -1,6 +1,5 @@
 {
   "TXT_CODE_DESKTOP_CLOSE_ALL": "ปิดหน้าต่างทั้งหมด",
-  "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "ลบออกจากเดสก์ท็อป",
   "TXT_CODE_DESKTOP_EXIT": "ออกจากเดสก์ท็อป",
   "TXT_CODE_DESKTOP_IM_ALL_STATUS": "ทุกสถานะ",
   "TXT_CODE_DESKTOP_IM_LOADING": "กำลังโหลดอินสแตนซ์...",
@@ -11,22 +10,11 @@
   "TXT_CODE_DESKTOP_IM_TOTAL": "ทั้งหมด",
   "TXT_CODE_DESKTOP_IM_UNKNOWN": "ไม่ทราบ",
   "TXT_CODE_DESKTOP_IM_UNNAMED": "ไม่มีชื่อ",
-  "TXT_CODE_DESKTOP_LOGGING_IN": "กำลังเข้าสู่ระบบ...",
   "TXT_CODE_DESKTOP_MAXIMIZE": "ขยาย",
   "TXT_CODE_DESKTOP_MINIMIZE": "ย่อ",
   "TXT_CODE_DESKTOP_MODE": "โหมดเดสก์ท็อป",
   "TXT_CODE_DESKTOP_MY_APPS": "แอปพลิเคชันของฉัน",
   "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "เลือกวิธีสร้างอินสแตนซ์ใหม่",
-  "TXT_CODE_DESKTOP_USERS_ADD": "เพิ่มผู้ใช้",
-  "TXT_CODE_DESKTOP_USERS_ASSIGNED": "มอบหมายแล้ว",
-  "TXT_CODE_DESKTOP_USERS_ASSIGN_SUCCESS": "มอบหมายอินสแตนซ์สำเร็จ",
-  "TXT_CODE_DESKTOP_USERS_BROWSE_INSTANCES": "เรียกดูอินสแตนซ์",
-  "TXT_CODE_DESKTOP_USERS_DELETE": "ลบผู้ใช้",
-  "TXT_CODE_DESKTOP_USERS_DELETE_CONFIRM": "ต้องการลบผู้ใช้ {name} หรือไม่",
-  "TXT_CODE_DESKTOP_USERS_NO_ASSIGNED": "ไม่มีอินสแตนซ์ที่มอบหมาย",
-  "TXT_CODE_DESKTOP_USERS_NO_RESULTS": "ไม่พบผู้ใช้",
-  "TXT_CODE_DESKTOP_USERS_PASSWORD_HELP": "เว้นว่างไว้เพื่อคงรหัสผ่านปัจจุบัน",
-  "TXT_CODE_DESKTOP_USERS_PASSWORD_REQUIRED": "ผู้ใช้ใหม่ต้องมีรหัสผ่าน",
-  "TXT_CODE_DESKTOP_USERS_SEARCH": "ค้นหาผู้ใช้...",
-  "TXT_CODE_DESKTOP_USERS_USERNAME_REQUIRED": "ต้องระบุชื่อผู้ใช้"
+  "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "ลบออกจากเดสก์ท็อป",
+  "TXT_CODE_DESKTOP_RESTORE": "กู้คืน"
 }

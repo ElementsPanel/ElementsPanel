@@ -1,6 +1,5 @@
 {
   "TXT_CODE_DESKTOP_CLOSE_ALL": "Alle Fenster schließen",
-  "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Vom Desktop entfernen",
   "TXT_CODE_DESKTOP_EXIT": "Desktop verlassen",
   "TXT_CODE_DESKTOP_IM_ALL_STATUS": "Alle Status",
   "TXT_CODE_DESKTOP_IM_LOADING": "Instanzen werden geladen...",
@@ -11,22 +10,11 @@
   "TXT_CODE_DESKTOP_IM_TOTAL": "Gesamt",
   "TXT_CODE_DESKTOP_IM_UNKNOWN": "Unbekannt",
   "TXT_CODE_DESKTOP_IM_UNNAMED": "Unbenannt",
-  "TXT_CODE_DESKTOP_LOGGING_IN": "Anmeldung...",
   "TXT_CODE_DESKTOP_MAXIMIZE": "Maximieren",
   "TXT_CODE_DESKTOP_MINIMIZE": "Minimieren",
   "TXT_CODE_DESKTOP_MODE": "Desktop-Modus",
   "TXT_CODE_DESKTOP_MY_APPS": "meine Bewerbung",
   "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Wählen Sie eine Methode zum Erstellen Ihrer neuen Instanz",
-  "TXT_CODE_DESKTOP_USERS_ADD": "Benutzer hinzufügen",
-  "TXT_CODE_DESKTOP_USERS_ASSIGNED": "Zugewiesen",
-  "TXT_CODE_DESKTOP_USERS_ASSIGN_SUCCESS": "Instanzen erfolgreich zugewiesen",
-  "TXT_CODE_DESKTOP_USERS_BROWSE_INSTANCES": "Instanzen durchsuchen",
-  "TXT_CODE_DESKTOP_USERS_DELETE": "Benutzer löschen",
-  "TXT_CODE_DESKTOP_USERS_DELETE_CONFIRM": "Möchten Sie den Benutzer {name} wirklich löschen?",
-  "TXT_CODE_DESKTOP_USERS_NO_ASSIGNED": "Keine Instanzen zugewiesen",
-  "TXT_CODE_DESKTOP_USERS_NO_RESULTS": "Keine Benutzer gefunden",
-  "TXT_CODE_DESKTOP_USERS_PASSWORD_HELP": "Leer lassen, um das aktuelle Passwort beizubehalten",
-  "TXT_CODE_DESKTOP_USERS_PASSWORD_REQUIRED": "Für neue Benutzer ist ein Passwort erforderlich",
-  "TXT_CODE_DESKTOP_USERS_SEARCH": "Benutzer suchen...",
-  "TXT_CODE_DESKTOP_USERS_USERNAME_REQUIRED": "Benutzername ist erforderlich"
+  "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Vom Desktop entfernen",
+  "TXT_CODE_DESKTOP_RESTORE": "Wiederherstellen"
 }

@@ -1,0 +1,13 @@
+{
+  "TXT_CODE_INSTANCE_BACKUP_COMPRESSING": "Instanzdateien werden komprimiert, bitte warten...",
+  "TXT_CODE_INSTANCE_BACKUP_EXCLUDED": "{{num}} Dateien/Verzeichnisse durch .epbaklst-Regeln ausgeschlossen",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED": "Instanzsicherung fehlgeschlagen: {{err}}",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_FAILED": "Wiederherstellung der Sicherung fehlgeschlagen: {{err}}",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_SUCCESS": "Sicherung erfolgreich wiederhergestellt!",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORING": "Sicherung wird wiederhergestellt...",
+  "TXT_CODE_INSTANCE_BACKUP_START": "Instanzsicherung wird gestartet...",
+  "TXT_CODE_INSTANCE_BACKUP_STOPPING": "Instanz wird angehalten...",
+  "TXT_CODE_INSTANCE_BACKUP_STOP_TIMEOUT": "Zeitüberschreitung beim Anhalten der Instanz, Sicherung abgebrochen.",
+  "TXT_CODE_INSTANCE_BACKUP_SUCCESS": "Instanzsicherung erfolgreich! Datei: {{name}}",
+  "TXT_CODE_instanceConf.instanceBusy": "Die Instanz befindet sich derzeit in einem ausgelasteten Zustand und kann keine Aktionen ausführen."
+}

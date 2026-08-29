@@ -75,6 +75,13 @@ export interface DaemonPluginContext {
   ) => void;
   registerScheduleAction: (actionType: string, handler: DaemonScheduleActionHandler) => void;
   registerFeature: (feature: string) => void;
+  /**
+   * Merge the plugin's own translations into the daemon i18n instance, keyed by
+   * locale (`en_us`, `zh_cn`, ...). A plugin that owns strings ships them in
+   * `src/i18n` instead of the shared `languages` catalogue, so installing or
+   * removing the plugin takes them with it.
+   */
+  registerLocaleMessages: (messages: Record<string, Record<string, unknown>>) => void;
   /** Persist the daemon configuration after mutating `config`. */
   saveConfig: () => void;
   /** Switch the daemon language and drop the bootstrap language preset file. */
@@ -240,6 +247,11 @@ export async function loadDaemonPlugins(app: Koa): Promise<LoadedDaemonPlugin[]>
         },
         registerFeature: (feature) => {
           registerDaemonFeature(feature);
+        },
+        registerLocaleMessages: (messages) => {
+          for (const [locale, resources] of Object.entries(messages ?? {})) {
+            i18next.addResourceBundle(locale, "translation", resources, true, true);
+          }
         },
         saveConfig: () => globalConfiguration.store(),
         setLanguage: (language) => {

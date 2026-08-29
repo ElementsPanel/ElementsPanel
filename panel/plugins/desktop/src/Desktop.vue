@@ -1335,7 +1335,7 @@ const ctxMenuItems = computed<ContextMenuItem[]>(() => {
                     }
                 });
                 items.push({
-                    label: win.maximized ? (t("TXT_CODE_INSTANCE_BACKUP_RESTORE")) : (t("TXT_CODE_DESKTOP_MAXIMIZE")),
+                    label: win.maximized ? (t("TXT_CODE_DESKTOP_RESTORE")) : (t("TXT_CODE_DESKTOP_MAXIMIZE")),
                     icon: markRaw(win.maximized ? FullscreenExitOutlined : FullscreenOutlined),
                     action: () => {
                         if (ctxMenu.targetWindowId) {

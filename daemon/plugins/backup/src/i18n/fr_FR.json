@@ -1,0 +1,13 @@
+{
+  "TXT_CODE_INSTANCE_BACKUP_COMPRESSING": "Compression des fichiers de l’instance, veuillez patienter...",
+  "TXT_CODE_INSTANCE_BACKUP_EXCLUDED": "{{num}} fichiers/répertoires exclus par les règles .epbaklst",
+  "TXT_CODE_INSTANCE_BACKUP_FAILED": "Échec de la sauvegarde de l’instance : {{err}}",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_FAILED": "Échec de la restauration : {{err}}",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORE_SUCCESS": "Sauvegarde restaurée avec succès !",
+  "TXT_CODE_INSTANCE_BACKUP_RESTORING": "Restauration de la sauvegarde...",
+  "TXT_CODE_INSTANCE_BACKUP_START": "Démarrage de la sauvegarde de l’instance...",
+  "TXT_CODE_INSTANCE_BACKUP_STOPPING": "Arrêt de l’instance...",
+  "TXT_CODE_INSTANCE_BACKUP_STOP_TIMEOUT": "Délai d’arrêt de l’instance dépassé, sauvegarde annulée.",
+  "TXT_CODE_INSTANCE_BACKUP_SUCCESS": "Sauvegarde de l’instance réussie ! Fichier : {{name}}",
+  "TXT_CODE_instanceConf.instanceBusy": "L'instance est actuellement dans un état occupé et ne peut effectuer aucune action."
+}
