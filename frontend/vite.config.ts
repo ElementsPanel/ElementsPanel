@@ -399,6 +399,7 @@ export default defineConfig({
       "@vueuse/core",
       "ant-design-vue",
       "dayjs",
+      "echarts",
       "lodash",
       "pinia",
       "vue",
