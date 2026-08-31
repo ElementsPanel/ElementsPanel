@@ -1,6 +1,5 @@
 {
   "id": "monitor",
-  "name": "Data Monitoring",
   "version": "1.0.0",
   "description": "Provides the data monitoring page: panel and host status, CPU/request charts, node status tiles and the operation log.",
   "priority": 125,

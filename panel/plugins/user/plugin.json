@@ -1,6 +1,5 @@
 {
   "id": "user",
-  "name": "User Management",
   "version": "1.0.0",
   "description": "Owns panel authentication: login, multi-user management, permissions and SSO. Removing this plugin leaves the panel open with no login.",
   "priority": 50,

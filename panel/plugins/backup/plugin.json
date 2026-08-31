@@ -1,6 +1,5 @@
 {
   "id": "backup",
-  "name": "Instance Backup",
   "version": "1.0.0",
   "description": "Provides instance backup management in normal and Desktop modes.",
   "priority": 150,

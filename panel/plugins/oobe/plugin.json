@@ -1,6 +1,5 @@
 {
   "id": "oobe",
-  "name": "Out-of-Box Experience",
   "version": "1.0.0",
   "description": "Provides the panel first-run experience and composes setup steps supplied by other plugins.",
   "priority": 75,

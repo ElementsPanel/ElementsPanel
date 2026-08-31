@@ -97,8 +97,7 @@ const toggle = (plugin: PluginRecord, enabled: boolean) => {
           }"
           @click="selectedId = plugin.id"
         >
-          <span class="plugin-config-item-name">{{ plugin.name || plugin.id }}</span>
-          <span class="plugin-config-item-id">
+          <span class="plugin-config-item-name">
             {{ plugin.id }}
             <span v-if="!plugin.enabled" class="plugin-config-item-tag">
               {{ t("TXT_CODE_PLUGIN_DISABLE") }}
@@ -227,8 +226,7 @@ const toggle = (plugin: PluginRecord, enabled: boolean) => {
   background: rgba(22, 119, 255, 0.12);
 }
 
-.plugin-config-item-off .plugin-config-item-name,
-.plugin-config-item-off .plugin-config-item-id {
+.plugin-config-item-off .plugin-config-item-name {
   opacity: 0.42;
 }
 
@@ -239,15 +237,6 @@ const toggle = (plugin: PluginRecord, enabled: boolean) => {
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.plugin-config-item-id {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text-color);
-  font-size: 11px;
-  opacity: 0.58;
 }
 
 .plugin-config-item-tag {

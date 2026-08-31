@@ -1,6 +1,5 @@
 {
   "id": "node",
-  "name": "Node Management",
   "version": "1.0.0",
   "description": "Provides node management pages, image management, layout cards, the Desktop node manager and the node management API.",
   "priority": 200,

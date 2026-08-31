@@ -1,6 +1,5 @@
 {
   "id": "config",
-  "name": "Plugin Configuration",
   "version": "1.0.0",
   "description": "Provides a central configuration page for loaded panel plugins.",
   "priority": 10000,
