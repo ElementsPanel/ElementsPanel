@@ -1,4 +1,13 @@
 {
   "TXT_CODE_PLUGIN_CONFIG": "Plugin-Konfiguration",
-  "TXT_CODE_PLUGIN_NO_CONFIG": "Dieses Plugin hat keine konfigurierbaren Optionen."
+  "TXT_CODE_PLUGIN_DISABLE": "Aus",
+  "TXT_CODE_PLUGIN_DISABLED": "Plugin deaktiviert",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Alles, was dieses Plugin beisteuert – Seiten, Karten, Menüs und API-Routen – wird sofort entfernt. Die Einstellung wird gespeichert und bleibt nach einem Neustart erhalten.",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "{name} deaktivieren?",
+  "TXT_CODE_PLUGIN_ENABLE": "Ein",
+  "TXT_CODE_PLUGIN_ENABLED": "Plugin aktiviert",
+  "TXT_CODE_PLUGIN_IS_DISABLED": "Dieses Plugin ist deaktiviert. Seine Seiten, Routen und API sind erst nach dem Aktivieren wieder verfügbar.",
+  "TXT_CODE_PLUGIN_LOAD_FAILED": "Dieses Plugin konnte nicht geladen werden",
+  "TXT_CODE_PLUGIN_NO_CONFIG": "Dieses Plugin hat keine konfigurierbaren Optionen.",
+  "TXT_CODE_PLUGIN_SELF_DISABLE": "Die Plugin-Verwaltung kann sich nicht selbst deaktivieren. Setze stattdessen enabled auf false in ihrer plugin.json."
 }

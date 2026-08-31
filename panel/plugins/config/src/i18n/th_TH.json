@@ -1,4 +1,13 @@
 {
   "TXT_CODE_PLUGIN_CONFIG": "การกำหนดค่าปลั๊กอิน",
-  "TXT_CODE_PLUGIN_NO_CONFIG": "ปลั๊กอินนี้ไม่มีตัวเลือกที่กำหนดค่าได้"
+  "TXT_CODE_PLUGIN_DISABLE": "ปิด",
+  "TXT_CODE_PLUGIN_DISABLED": "ปิดใช้งานปลั๊กอินแล้ว",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "ทุกอย่างที่ปลั๊กอินนี้ให้มา ทั้งหน้า การ์ด เมนู และเส้นทาง API จะถูกลบออกทันที การตั้งค่านี้จะถูกบันทึกไว้ จึงยังปิดอยู่หลังรีสตาร์ท",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "ปิดใช้งาน {name} หรือไม่?",
+  "TXT_CODE_PLUGIN_ENABLE": "เปิด",
+  "TXT_CODE_PLUGIN_ENABLED": "เปิดใช้งานปลั๊กอินแล้ว",
+  "TXT_CODE_PLUGIN_IS_DISABLED": "ปลั๊กอินนี้ถูกปิดใช้งาน หน้า เส้นทาง และ API จะใช้ไม่ได้จนกว่าจะเปิดใช้งานอีกครั้ง",
+  "TXT_CODE_PLUGIN_LOAD_FAILED": "โหลดปลั๊กอินนี้ไม่สำเร็จ",
+  "TXT_CODE_PLUGIN_NO_CONFIG": "ปลั๊กอินนี้ไม่มีตัวเลือกที่กำหนดค่าได้",
+  "TXT_CODE_PLUGIN_SELF_DISABLE": "ตัวจัดการปลั๊กอินปิดใช้งานตัวเองไม่ได้ กรุณาตั้ง enabled เป็น false ใน plugin.json ของมันแทน"
 }

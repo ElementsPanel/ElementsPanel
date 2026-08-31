@@ -1,4 +1,13 @@
 {
   "TXT_CODE_PLUGIN_CONFIG": "Настройка плагинов",
-  "TXT_CODE_PLUGIN_NO_CONFIG": "У этого плагина нет настраиваемых параметров."
+  "TXT_CODE_PLUGIN_DISABLE": "Выкл",
+  "TXT_CODE_PLUGIN_DISABLED": "Плагин отключён",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Всё, что добавляет этот плагин — страницы, карточки, меню и маршруты API — будет удалено сразу. Настройка сохраняется, поэтому он останется отключённым после перезапуска.",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "Отключить {name}?",
+  "TXT_CODE_PLUGIN_ENABLE": "Вкл",
+  "TXT_CODE_PLUGIN_ENABLED": "Плагин включён",
+  "TXT_CODE_PLUGIN_IS_DISABLED": "Этот плагин отключён. Его страницы, маршруты и API недоступны, пока он не будет включён снова.",
+  "TXT_CODE_PLUGIN_LOAD_FAILED": "Не удалось загрузить этот плагин",
+  "TXT_CODE_PLUGIN_NO_CONFIG": "У этого плагина нет настраиваемых параметров.",
+  "TXT_CODE_PLUGIN_SELF_DISABLE": "Менеджер плагинов не может отключить сам себя. Укажите enabled: false в его plugin.json."
 }

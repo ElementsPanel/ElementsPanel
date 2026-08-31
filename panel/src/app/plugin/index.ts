@@ -31,4 +31,9 @@ export type {
   PanelRemoteService,
   PanelSettingsService
 } from "./context";
-export type { LoadedPanelPlugin, PanelFrontendPluginEntry, PanelPluginModule } from "./loader";
+export type {
+  LoadedPanelPlugin,
+  PanelFrontendPluginEntry,
+  PanelPluginModule,
+  PanelPluginRecord
+} from "./loader";

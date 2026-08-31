@@ -16,7 +16,12 @@ import { saveSystemConfig, systemConfig } from "../setting";
 import { ctx } from "./context";
 import { I18nService } from "./i18n";
 import { KoaService } from "./koa";
-import { getLoadedPanelPlugins, getPanelFrontendManifest } from "./loader";
+import {
+  getLoadedPanelPlugins,
+  getPanelFrontendManifest,
+  getPanelPluginInventory,
+  setPanelPluginEnabled
+} from "./loader";
 import { OverviewService } from "./overview";
 
 /**
@@ -71,7 +76,9 @@ export function installPanelPluginServices(app: Koa) {
     get loaded() {
       return getLoadedPanelPlugins();
     },
-    frontendManifest: getPanelFrontendManifest
+    frontendManifest: getPanelFrontendManifest,
+    inventory: getPanelPluginInventory,
+    setEnabled: setPanelPluginEnabled
   });
 
   ctx.plugin(I18nService);

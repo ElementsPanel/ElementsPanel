@@ -1,4 +1,13 @@
 {
   "TXT_CODE_PLUGIN_CONFIG": "插件設定",
-  "TXT_CODE_PLUGIN_NO_CONFIG": "此插件沒有可設定項目"
+  "TXT_CODE_PLUGIN_DISABLE": "停用",
+  "TXT_CODE_PLUGIN_DISABLED": "外掛已停用",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "該外掛提供的頁面、卡片、選單與介面都會立即移除。此設定會被儲存，重啟後仍保持停用。",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "確定停用 {name}？",
+  "TXT_CODE_PLUGIN_ENABLE": "啟用",
+  "TXT_CODE_PLUGIN_ENABLED": "外掛已啟用",
+  "TXT_CODE_PLUGIN_IS_DISABLED": "此外掛已停用，重新啟用前其頁面、路由與介面皆不可用。",
+  "TXT_CODE_PLUGIN_LOAD_FAILED": "此外掛載入失敗",
+  "TXT_CODE_PLUGIN_NO_CONFIG": "此插件沒有可設定項目",
+  "TXT_CODE_PLUGIN_SELF_DISABLE": "外掛管理本身無法被停用，請改為在其 plugin.json 中把 enabled 設為 false。"
 }

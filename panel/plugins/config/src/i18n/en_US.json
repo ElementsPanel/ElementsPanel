@@ -1,4 +1,13 @@
 {
   "TXT_CODE_PLUGIN_CONFIG": "Plugin Configuration",
-  "TXT_CODE_PLUGIN_NO_CONFIG": "This plugin has no configurable options."
+  "TXT_CODE_PLUGIN_DISABLE": "Off",
+  "TXT_CODE_PLUGIN_DISABLED": "Plugin disabled",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Everything this plugin contributes — pages, cards, menus and API routes — is removed at once. The setting is saved, so it stays off after a restart.",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "Disable {name}?",
+  "TXT_CODE_PLUGIN_ENABLE": "On",
+  "TXT_CODE_PLUGIN_ENABLED": "Plugin enabled",
+  "TXT_CODE_PLUGIN_IS_DISABLED": "This plugin is disabled. Its pages, routes and API are unavailable until it is enabled again.",
+  "TXT_CODE_PLUGIN_LOAD_FAILED": "This plugin failed to load",
+  "TXT_CODE_PLUGIN_NO_CONFIG": "This plugin has no configurable options.",
+  "TXT_CODE_PLUGIN_SELF_DISABLE": "The plugin manager cannot disable itself. Set enabled to false in its plugin.json instead."
 }

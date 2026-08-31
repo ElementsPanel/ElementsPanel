@@ -16,7 +16,11 @@ import type RemoteRequest from "../service/remote_command";
 import type SystemRemoteService from "../service/remote_service";
 import type { AuthStats, RequestGuard, RequestIdentity, UserRecords } from "../service/request_guard";
 import type { systemConfig } from "../setting";
-import type { LoadedPanelPlugin, PanelFrontendPluginEntry } from "./loader";
+import type {
+  LoadedPanelPlugin,
+  PanelFrontendPluginEntry,
+  PanelPluginRecord
+} from "./loader";
 
 /**
  * The panel's cordis container, and the complete list of what a plugin can see.
@@ -107,11 +111,19 @@ export interface PanelOverviewService {
   collect(): Promise<Record<string, unknown>>;
 }
 
-/** What is loaded, for the panel's own reporting and for the frontend manifest. */
+/** What is installed and what is loaded, plus the switch that decides. */
 export interface PanelPluginsService {
   readonly loaded: readonly LoadedPanelPlugin[];
   /** The manifest the browser fetches to discover frontend entries. */
   frontendManifest(): PanelFrontendPluginEntry[];
+  /** Every installed plugin, disabled ones included. */
+  inventory(): PanelPluginRecord[];
+  /**
+   * Turns a plugin on or off: persists the switch in its `plugin.json` and
+   * applies it to the running panel. Disabling disposes the backend scope, so
+   * its routes, middleware, timers and services go with it.
+   */
+  setEnabled(id: string, enabled: boolean): Promise<PanelPluginRecord>;
 }
 
 /** First-run completion, reported as `isInstall` by `/api/auth/status`. */

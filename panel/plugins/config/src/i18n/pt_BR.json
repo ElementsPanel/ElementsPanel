@@ -1,4 +1,13 @@
 {
   "TXT_CODE_PLUGIN_CONFIG": "Configuracao de plugins",
-  "TXT_CODE_PLUGIN_NO_CONFIG": "Este plugin nao possui opcoes configuraveis."
+  "TXT_CODE_PLUGIN_DISABLE": "Inativo",
+  "TXT_CODE_PLUGIN_DISABLED": "Plugin desativado",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Tudo o que este plugin fornece — páginas, cartões, menus e rotas de API — é removido de imediato. A configuração é salva, então ele continuará desativado após reiniciar.",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "Desativar {name}?",
+  "TXT_CODE_PLUGIN_ENABLE": "Ativo",
+  "TXT_CODE_PLUGIN_ENABLED": "Plugin ativado",
+  "TXT_CODE_PLUGIN_IS_DISABLED": "Este plugin está desativado. Suas páginas, rotas e API ficam indisponíveis até ser ativado novamente.",
+  "TXT_CODE_PLUGIN_LOAD_FAILED": "Falha ao carregar este plugin",
+  "TXT_CODE_PLUGIN_NO_CONFIG": "Este plugin nao possui opcoes configuraveis.",
+  "TXT_CODE_PLUGIN_SELF_DISABLE": "O gerenciador de plugins não pode desativar a si mesmo. Defina enabled como false no plugin.json dele."
 }

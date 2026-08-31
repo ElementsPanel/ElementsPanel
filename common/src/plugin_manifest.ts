@@ -44,6 +44,12 @@ export interface DiscoverPluginsOptions {
   /** Relative entries tried when no `entryFields` value is set. */
   entryCandidates?: string[];
   /**
+   * Include plugins whose manifest sets `enabled: false`. Loaders leave this
+   * off; the plugin inventory the panel reports turns it on, because a disabled
+   * plugin still has to be listed to be enabled again.
+   */
+  includeDisabled?: boolean;
+  /**
    * Report a plugin that could not be used. Discovery never throws: one broken
    * plugin directory must not stop the others from loading.
    */
@@ -103,8 +109,8 @@ export function resolvePluginEntry(
 
 /**
  * Lists the usable plugins below `root`, in load order: ascending `priority`,
- * then by id so the order is stable. Disabled plugins and duplicate ids are
- * dropped. A plugin whose manifest names an entry that cannot be resolved is
+ * then by id so the order is stable. Duplicate ids are dropped, and disabled
+ * ones too unless `includeDisabled` says otherwise. A plugin whose manifest names an entry that cannot be resolved is
  * dropped too; one that names none keeps `entry` undefined, because a plugin may
  * legitimately contribute to only one side of the panel.
  */
@@ -120,7 +126,8 @@ export function discoverPlugins(
     if (!item.isDirectory()) continue;
     const directory = path.join(root, item.name);
     const manifest = readPluginManifest(directory, options.onWarning);
-    if (!manifest || manifest.enabled === false) continue;
+    if (!manifest) continue;
+    if (manifest.enabled === false && !options.includeDisabled) continue;
     if (seenIds.has(manifest.id)) {
       options.onWarning?.(`Ignoring duplicate plugin id: ${manifest.id}`);
       continue;

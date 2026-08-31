@@ -88,7 +88,7 @@ and skipped; the panel keeps running.
 | `ctx.instances` | `getByUuid`. |
 | `ctx.globals` | Process-wide counters shared with the core. |
 | `ctx.overview` | `provide(fn)` to add fields to `GET /api/overview`. |
-| `ctx.plugins` | `loaded`, and the frontend manifest the browser fetches. |
+| `ctx.plugins` | `loaded`, `inventory()`, `setEnabled()`, and the frontend manifest the browser fetches. |
 | `ctx.guard` | Request authorization. **Provided by `plugins/user`.** |
 | `ctx.installation` | First-run state. **Provided by `plugins/oobe`.** |
 
@@ -114,6 +114,16 @@ reports only what the whole panel reads that route for — the nodes, the panel
 process and the host it runs on. Anything collected purely to be displayed goes
 in a plugin: `plugins/monitor` contributes the `chart` field this way, and it
 disappears with the plugin.
+
+`ctx.plugins.setEnabled(id, enabled)` is the switch behind the plugin manager
+page. It writes `enabled` into the plugin's `plugin.json` — the manifest is the
+source of truth, because that is what the loaders and the frontend manifest
+endpoint read — and applies the change to the running panel: disabling disposes
+the backend scope, enabling requires the entry module afresh so a plugin that
+keeps module-level state starts from a clean one. `ctx.plugins.inventory()` lists
+every installed plugin, disabled ones included, because a disabled plugin still
+has to be listed to be enabled again. `plugins/config` exposes both over HTTP and
+drives them from its page.
 
 ## Naming inside a plugin
 
@@ -294,8 +304,11 @@ contain any plugin implementation.
 A packaged plugin is installed or removed by copying or deleting its directory.
 The browser runtime exposes `window.ElementsPanelPlugins` with `load(id)`,
 `unload(id)`, `reload(id)`, `refresh()` and `loaded()`, so a production plugin can
-be enabled, disabled or replaced without rebuilding the panel. Call `refresh()`
-after copying or deleting a directory to reconcile the running frontend.
+be replaced without rebuilding the panel. Call `refresh()` after copying or
+deleting a directory to reconcile the running frontend.
 
-Backend entries load when the panel process starts; adding, deleting or changing
-backend code requires restarting it.
+Turning a plugin off does not need any of that: the plugin manager page has a
+switch per plugin, and it applies to both halves at once — the panel disposes the
+backend scope, and the page calls `refresh()` so the browser reconciles against
+the manifest. Adding, deleting or changing plugin *code* still requires
+restarting the panel process.

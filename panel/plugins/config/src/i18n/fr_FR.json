@@ -1,4 +1,13 @@
 {
   "TXT_CODE_PLUGIN_CONFIG": "Configuration des plugins",
-  "TXT_CODE_PLUGIN_NO_CONFIG": "Ce plugin ne comporte aucune option configurable."
+  "TXT_CODE_PLUGIN_DISABLE": "Désactivé",
+  "TXT_CODE_PLUGIN_DISABLED": "Extension désactivée",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Tout ce que cette extension fournit — pages, cartes, menus et routes API — est retiré immédiatement. Le réglage est enregistré : elle restera désactivée après un redémarrage.",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "Désactiver {name} ?",
+  "TXT_CODE_PLUGIN_ENABLE": "Activé",
+  "TXT_CODE_PLUGIN_ENABLED": "Extension activée",
+  "TXT_CODE_PLUGIN_IS_DISABLED": "Cette extension est désactivée. Ses pages, routes et API ne sont pas disponibles avant sa réactivation.",
+  "TXT_CODE_PLUGIN_LOAD_FAILED": "Le chargement de cette extension a échoué",
+  "TXT_CODE_PLUGIN_NO_CONFIG": "Ce plugin ne comporte aucune option configurable.",
+  "TXT_CODE_PLUGIN_SELF_DISABLE": "Le gestionnaire d extensions ne peut pas se désactiver lui-même. Définissez plutôt enabled à false dans son plugin.json."
 }

@@ -1,4 +1,13 @@
 {
   "TXT_CODE_PLUGIN_CONFIG": "Configuracion de plugins",
-  "TXT_CODE_PLUGIN_NO_CONFIG": "Este plugin no tiene opciones configurables."
+  "TXT_CODE_PLUGIN_DISABLE": "Desactivado",
+  "TXT_CODE_PLUGIN_DISABLED": "Complemento desactivado",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Todo lo que aporta este complemento (páginas, tarjetas, menús y rutas de API) se elimina de inmediato. El ajuste se guarda, así que seguirá desactivado tras reiniciar.",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "¿Desactivar {name}?",
+  "TXT_CODE_PLUGIN_ENABLE": "Activado",
+  "TXT_CODE_PLUGIN_ENABLED": "Complemento activado",
+  "TXT_CODE_PLUGIN_IS_DISABLED": "Este complemento está desactivado. Sus páginas, rutas y API no están disponibles hasta que se vuelva a activar.",
+  "TXT_CODE_PLUGIN_LOAD_FAILED": "No se pudo cargar este complemento",
+  "TXT_CODE_PLUGIN_NO_CONFIG": "Este plugin no tiene opciones configurables.",
+  "TXT_CODE_PLUGIN_SELF_DISABLE": "El gestor de complementos no puede desactivarse a sí mismo. Establece enabled en false en su plugin.json."
 }
