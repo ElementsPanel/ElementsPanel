@@ -2,7 +2,7 @@
   "TXT_CODE_PLUGIN_CONFIG": "插件設定",
   "TXT_CODE_PLUGIN_DISABLE": "停用",
   "TXT_CODE_PLUGIN_DISABLED": "外掛已停用",
-  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "該外掛提供的頁面、卡片、選單與介面都會立即移除。此設定會被儲存，重啟後仍保持停用。",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "該外掛提供的頁面、卡片、選單與介面都會立即移除。",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "確定停用 {name}？",
   "TXT_CODE_PLUGIN_ENABLE": "啟用",
   "TXT_CODE_PLUGIN_ENABLED": "外掛已啟用",

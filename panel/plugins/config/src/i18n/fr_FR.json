@@ -2,7 +2,7 @@
   "TXT_CODE_PLUGIN_CONFIG": "Configuration des plugins",
   "TXT_CODE_PLUGIN_DISABLE": "Désactivé",
   "TXT_CODE_PLUGIN_DISABLED": "Extension désactivée",
-  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Tout ce que cette extension fournit — pages, cartes, menus et routes API — est retiré immédiatement. Le réglage est enregistré : elle restera désactivée après un redémarrage.",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Tout ce que cette extension fournit — pages, cartes, menus et routes API — est retiré immédiatement.",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "Désactiver {name} ?",
   "TXT_CODE_PLUGIN_ENABLE": "Activé",
   "TXT_CODE_PLUGIN_ENABLED": "Extension activée",

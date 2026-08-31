@@ -2,7 +2,7 @@
   "TXT_CODE_PLUGIN_CONFIG": "การกำหนดค่าปลั๊กอิน",
   "TXT_CODE_PLUGIN_DISABLE": "ปิด",
   "TXT_CODE_PLUGIN_DISABLED": "ปิดใช้งานปลั๊กอินแล้ว",
-  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "ทุกอย่างที่ปลั๊กอินนี้ให้มา ทั้งหน้า การ์ด เมนู และเส้นทาง API จะถูกลบออกทันที การตั้งค่านี้จะถูกบันทึกไว้ จึงยังปิดอยู่หลังรีสตาร์ท",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "ทุกอย่างที่ปลั๊กอินนี้ให้มา ทั้งหน้า การ์ด เมนู และเส้นทาง API จะถูกลบออกทันที",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "ปิดใช้งาน {name} หรือไม่?",
   "TXT_CODE_PLUGIN_ENABLE": "เปิด",
   "TXT_CODE_PLUGIN_ENABLED": "เปิดใช้งานปลั๊กอินแล้ว",

@@ -2,7 +2,7 @@
   "TXT_CODE_PLUGIN_CONFIG": "Eklenti Yapilandirmasi",
   "TXT_CODE_PLUGIN_DISABLE": "Kapalı",
   "TXT_CODE_PLUGIN_DISABLED": "Eklenti devre dışı bırakıldı",
-  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Bu eklentinin sağladığı her şey — sayfalar, kartlar, menüler ve API yolları — hemen kaldırılır. Ayar kaydedilir, bu yüzden yeniden başlatmadan sonra da kapalı kalır.",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Bu eklentinin sağladığı her şey — sayfalar, kartlar, menüler ve API yolları — hemen kaldırılır.",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "{name} devre dışı bırakılsın mı?",
   "TXT_CODE_PLUGIN_ENABLE": "Açık",
   "TXT_CODE_PLUGIN_ENABLED": "Eklenti etkinleştirildi",

@@ -99,10 +99,11 @@ const toggle = (plugin: PluginRecord, enabled: boolean) => {
         >
           <span class="plugin-config-item-name">
             {{ plugin.id }}
-            <span v-if="!plugin.enabled" class="plugin-config-item-tag">
-              {{ t("TXT_CODE_PLUGIN_DISABLE") }}
-            </span>
           </span>
+          <span v-if="!plugin.enabled" class="plugin-config-item-tag">
+            {{ t("TXT_CODE_PLUGIN_DISABLE") }}
+          </span>
+          <span class="plugin-config-item-dot"></span>
         </button>
         <div v-if="!plugins.length" class="plugin-config-empty">{{ t("TXT_CODE_NO_DATA") }}</div>
       </div>
@@ -204,9 +205,9 @@ const toggle = (plugin: PluginRecord, enabled: boolean) => {
 .plugin-config-item {
   display: flex;
   width: 100%;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 3px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   padding: 10px;
   border: 0;
   border-radius: 6px;
@@ -231,7 +232,8 @@ const toggle = (plugin: PluginRecord, enabled: boolean) => {
 }
 
 .plugin-config-item-name {
-  max-width: 100%;
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
   font-size: 14px;
   font-weight: 500;
@@ -239,7 +241,20 @@ const toggle = (plugin: PluginRecord, enabled: boolean) => {
   white-space: nowrap;
 }
 
+.plugin-config-item-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+}
+
+.plugin-config-item-off .plugin-config-item-dot {
+  background: var(--color-gray-6);
+}
+
 .plugin-config-item-tag {
+  flex-shrink: 0;
   padding: 0 5px;
   border-radius: 3px;
   background: rgba(0, 0, 0, 0.08);
