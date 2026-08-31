@@ -573,10 +573,6 @@ const loadDesktopLayout = async () => {
                     desktopShortcutIds.add(id);
                 }
             }
-        } else {
-            for (const id of availableAppIds) {
-                desktopShortcutIds.add(id);
-            }
         }
         shortcutsLoaded.value = true;
 
@@ -644,7 +640,6 @@ const loadDesktopLayout = async () => {
         layoutLoaded = true;
     } catch (e) {
         desktopShortcutIds.clear();
-        availableDesktopApps.value.forEach((app) => desktopShortcutIds.add(app.id));
         shortcutsLoaded.value = true;
         layoutLoaded = true;
         // Silently ignore
