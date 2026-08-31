@@ -32,6 +32,7 @@ const props = defineProps<{
     apps: TaskbarApp[];
     username: string;
     userAvatar?: Component;
+    covered?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -164,66 +165,12 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
 </script>
 
 <template>
-    <div class="desktop-taskbar">
+    <div class="desktop-taskbar" :class="{ 'desktop-taskbar--docked': covered }">
         <div class="taskbar__start" :class="{ 'taskbar__start--active': startMenuOpen }" @click="toggleStartMenu">
             <span class="taskbar__start-icon">
                 <img :src="isDarkTheme ? desktopIconUrl : desktopIconDarkUrl" alt="Start" />
             </span>
         </div>
-
-        <Transition name="start-menu">
-            <div v-if="startMenuOpen" class="taskbar__start-menu" @click.stop>
-                <div class="start-menu__sidebar">
-                    <button v-if="userAvatar" class="start-menu__function-btn" type="button" :title="username"
-                        @click="handleOpenUserInfo">
-                        <component :is="userAvatar" />
-                    </button>
-                    <div class="start-menu__sidebar-spacer"></div>
-                    <a-dropdown placement="topRight">
-                        <button class="start-menu__function-btn" type="button" @click.prevent>
-                            <BgColorsOutlined />
-                        </button>
-                        <template #overlay>
-                            <a-menu :selected-keys="[String(currentTheme)]" @click="handleThemeMenuClick">
-                                <a-menu-item :key="AppTheme.AUTO">{{ t("TXT_CODE_dc8de4ff") }}</a-menu-item>
-                                <a-menu-item :key="AppTheme.LIGHT">{{ t("TXT_CODE_673eac8e") }}</a-menu-item>
-                                <a-menu-item :key="AppTheme.DARK">{{ t("TXT_CODE_5e4a370d") }}</a-menu-item>
-                            </a-menu>
-                        </template>
-                    </a-dropdown>
-                    <a-dropdown placement="topRight">
-                        <button class="start-menu__function-btn" type="button" @click.prevent>
-                            <LogoutOutlined />
-                        </button>
-                        <template #overlay>
-                            <a-menu @click="handleAccountMenuClick">
-                                <a-menu-item key="exit-desktop">
-                                    {{ t("TXT_CODE_DESKTOP_EXIT") }}
-                                </a-menu-item>
-                                <a-menu-item key="logout">
-                                    {{ t("TXT_CODE_2c69ab15") }}
-                                </a-menu-item>
-                            </a-menu>
-                        </template>
-                    </a-dropdown>
-                </div>
-                <div class="start-menu__apps-panel">
-                    <div class="start-menu__apps">
-                        <div v-for="app in apps" :key="app.id" class="start-menu__item start-menu__app-item"
-                            draggable="true" @dragstart="handleAppDragStart(app, $event)"
-                            @click="handleOpenApp(app.id)">
-                            <span class="start-menu__item-icon">
-                                <component :is="app.icon" v-if="isComponentIcon(app.icon)" />
-                                <img v-else-if="typeof app.icon === 'string' && app.icon.endsWith('.svg')"
-                                    :src="app.icon" alt="icon" />
-                                <template v-else>{{ app.icon }}</template>
-                            </span>
-                            <span>{{ app.label }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Transition>
 
         <div class="taskbar__windows">
             <TransitionGroup name="taskbar-window-list">
@@ -256,23 +203,94 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
 
     <div v-if="startMenuOpen" class="start-menu-overlay" @click="startMenuOpen = false" @dragover.prevent
         @drop.prevent="handleAppDrop"></div>
+
+    <Transition name="start-menu">
+        <div v-if="startMenuOpen" class="taskbar__start-menu" :class="{ 'taskbar__start-menu--docked': covered }"
+            @click.stop>
+            <div class="start-menu__sidebar">
+                <button v-if="userAvatar" class="start-menu__function-btn" type="button" :title="username"
+                    @click="handleOpenUserInfo">
+                    <component :is="userAvatar" />
+                </button>
+                <div class="start-menu__sidebar-spacer"></div>
+                <a-dropdown placement="topRight">
+                    <button class="start-menu__function-btn" type="button" @click.prevent>
+                        <BgColorsOutlined />
+                    </button>
+                    <template #overlay>
+                        <a-menu :selected-keys="[String(currentTheme)]" @click="handleThemeMenuClick">
+                            <a-menu-item :key="AppTheme.AUTO">{{ t("TXT_CODE_dc8de4ff") }}</a-menu-item>
+                            <a-menu-item :key="AppTheme.LIGHT">{{ t("TXT_CODE_673eac8e") }}</a-menu-item>
+                            <a-menu-item :key="AppTheme.DARK">{{ t("TXT_CODE_5e4a370d") }}</a-menu-item>
+                        </a-menu>
+                    </template>
+                </a-dropdown>
+                <a-dropdown placement="topRight">
+                    <button class="start-menu__function-btn" type="button" @click.prevent>
+                        <LogoutOutlined />
+                    </button>
+                    <template #overlay>
+                        <a-menu @click="handleAccountMenuClick">
+                            <a-menu-item key="exit-desktop">
+                                {{ t("TXT_CODE_DESKTOP_EXIT") }}
+                            </a-menu-item>
+                            <a-menu-item key="logout">
+                                {{ t("TXT_CODE_2c69ab15") }}
+                            </a-menu-item>
+                        </a-menu>
+                    </template>
+                </a-dropdown>
+            </div>
+            <div class="start-menu__apps-panel">
+                <div class="start-menu__apps">
+                    <div v-for="app in apps" :key="app.id" class="start-menu__item start-menu__app-item"
+                        draggable="true" @dragstart="handleAppDragStart(app, $event)" @click="handleOpenApp(app.id)">
+                        <span class="start-menu__item-icon">
+                            <component :is="app.icon" v-if="isComponentIcon(app.icon)" />
+                            <img v-else-if="typeof app.icon === 'string' && app.icon.endsWith('.svg')" :src="app.icon"
+                                alt="icon" />
+                            <template v-else>{{ app.icon }}</template>
+                        </span>
+                        <span>{{ app.label }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Transition>
 </template>
 
 <style lang="scss" scoped>
+$taskbar-inset: 10px;
+
 .desktop-taskbar {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: $taskbar-inset;
+    left: $taskbar-inset;
+    right: $taskbar-inset;
     height: 48px;
     background: var(--desktop-taskbar-bg);
     backdrop-filter: saturate(180%) blur(20px);
     display: flex;
     align-items: center;
     z-index: 99999;
-    border-top: 1px solid var(--desktop-taskbar-border);
+    border: 1px solid var(--desktop-taskbar-border);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px var(--desktop-menu-shadow);
     padding: 0 4px;
     user-select: none;
+    transition: bottom 0.2s ease, left 0.2s ease, right 0.2s ease, border-radius 0.2s ease,
+        box-shadow 0.2s ease;
+
+    &--docked {
+        bottom: 0;
+        left: 0;
+        right: 0;
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+        border-bottom: 0;
+        box-shadow: none;
+    }
 }
 
 .taskbar__start {
@@ -309,8 +327,8 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
 
 .taskbar__start-menu {
     position: fixed;
-    bottom: 56px;
-    left: 8px;
+    bottom: 66px;
+    left: $taskbar-inset;
     width: 420px;
     height: 360px;
     display: flex;
@@ -322,6 +340,12 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
     z-index: 100000;
     overflow: hidden;
     color: var(--desktop-menu-text);
+    transition: bottom 0.2s ease, left 0.2s ease;
+
+    &--docked {
+        bottom: 56px;
+        left: 8px;
+    }
 
     .start-menu__sidebar {
         width: 56px;
