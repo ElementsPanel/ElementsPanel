@@ -162,19 +162,14 @@ const toggle = (plugin: PluginRecord, enabled: boolean) => {
 
 <style lang="scss" scoped>
 .plugin-config-page {
-  --plugin-config-divider-color: rgba(0, 0, 0, 0.12);
-
   display: flex;
   width: 100%;
   min-height: min(720px, calc(100vh - 140px));
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--background-color-white);
+  backdrop-filter: saturate(180%) blur(20px);
   color: var(--text-color);
-}
-
-:global(.app-dark-theme .plugin-config-page) {
-  --plugin-config-divider-color: rgba(255, 255, 255, 0.1);
 }
 
 :global(.desktop-container .plugin-config-page) {
@@ -191,7 +186,6 @@ const toggle = (plugin: PluginRecord, enabled: boolean) => {
   flex: 0 0 240px;
   padding: 16px 10px;
   overflow-y: auto;
-  border-right: 1px solid var(--plugin-config-divider-color);
   background: var(--background-color-white);
 }
 
@@ -336,8 +330,6 @@ const toggle = (plugin: PluginRecord, enabled: boolean) => {
   .plugin-config-sidebar {
     flex-basis: auto;
     max-height: 220px;
-    border-right: 0;
-    border-bottom: 1px solid var(--plugin-config-divider-color);
   }
 
   .plugin-config-content {

@@ -158,7 +158,7 @@ const currentCardCategory = ref<NEW_CARD_TYPE>(NEW_CARD_TYPE.COMMON);
   right: 24px;
   top: 24px;
   background-color: var(--new-card-list-background-color-menu);
-  backdrop-filter: saturate(100%) blur(12px);
+  backdrop-filter: saturate(180%) blur(20px);
   padding: 16px 0px;
   border-radius: 6px;
   border: 1px dashed var(--gray-border-color);
@@ -178,7 +178,7 @@ const currentCardCategory = ref<NEW_CARD_TYPE>(NEW_CARD_TYPE.COMMON);
   padding: 24px;
 
   background-color: var(--new-card-list-background-color);
-  backdrop-filter: saturate(100%) blur(12px);
+  backdrop-filter: saturate(180%) blur(20px);
   z-index: 998;
   overflow-y: auto;
 

@@ -2,7 +2,7 @@
 
 .bg-extend-css {
   .card-panel {
-    backdrop-filter: blur(3px);
+    backdrop-filter: saturate(180%) blur(20px);
   }
 
   .ant-table,
@@ -18,7 +18,16 @@
   .card-panel,
   .ant-pagination-item {
     background-color: var(--level-1-bg-color) !important;
-    backdrop-filter: blur(3px) !important;
+    backdrop-filter: saturate(180%) blur(20px) !important;
+  }
+
+  .ant-card {
+    background-color: var(--level-1-bg-color) !important;
+    backdrop-filter: saturate(180%) blur(20px) !important;
+  }
+
+  .inner-card-wrapper {
+    backdrop-filter: saturate(180%) blur(20px) !important;
   }
 
   .ant-btn-default {
@@ -37,9 +46,10 @@
   }
 
   .ant-input-affix-wrapper,
-  .ant-select-selector {
+  .ant-select-selector,
+  .ant-input {
     background-color: var(--level-1-bg-color) !important;
-    backdrop-filter: blur(3px) !important;
+    backdrop-filter: saturate(180%) blur(20px) !important;
   }
 
   .ant-modal-content {
@@ -69,7 +79,7 @@
 
   .terminal-wrapper {
     background-color: rgba(0, 0, 0, 0.8) !important;
-    backdrop-filter: blur(3px) !important;
+    backdrop-filter: saturate(180%) blur(20px) !important;
   }
 
   .app-header-content-for-phone {
@@ -90,7 +100,7 @@
 
   .terminal-wrapper {
     background-color: var(--level-1-bg-color) !important;
-    backdrop-filter: blur(3px) !important;
+    backdrop-filter: saturate(180%) blur(20px) !important;
   }
 }
 
