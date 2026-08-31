@@ -198,7 +198,6 @@ export function getPanelFrontendManifest(): PanelFrontendPluginEntry[] {
 /** One installed plugin, as the plugin manager page lists it. */
 export interface PanelPluginRecord {
   id: string;
-  name?: string;
   version?: string;
   description?: string;
   priority?: number;
@@ -230,7 +229,6 @@ export function getPanelPluginInventory(): PanelPluginRecord[] {
       fields.some((field) => typeof plugin.manifest[field] === "string");
     return {
       id: plugin.manifest.id,
-      name: plugin.manifest.name,
       version: plugin.manifest.version,
       description: plugin.manifest.description,
       priority: plugin.manifest.priority,

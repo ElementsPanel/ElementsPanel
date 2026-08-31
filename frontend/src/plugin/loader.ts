@@ -16,7 +16,6 @@ import { panelPluginModules } from "virtual:panel-plugins";
 
 export interface PanelFrontendPluginMetadata {
   id: string;
-  name?: string;
   version?: string;
   description?: string;
   enabled?: boolean;

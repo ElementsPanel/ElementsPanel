@@ -6,7 +6,6 @@ import { useDefineApi } from "@/stores/useDefineApi";
 /** One installed plugin, as the panel reports it. */
 export interface PluginRecord {
   id: string;
-  name?: string;
   version?: string;
   description?: string;
   priority?: number;

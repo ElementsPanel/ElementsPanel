@@ -13,7 +13,6 @@ import path from "node:path";
 
 export interface PluginManifest {
   id: string;
-  name?: string;
   version?: string;
   description?: string;
   /** Set to false to skip the plugin entirely. */
@@ -70,11 +69,7 @@ export function readPluginManifest(
       const value = JSON.parse(fs.readFileSync(filePath, "utf8")) as Record<string, unknown> | null;
       if (!value || typeof value !== "object" || Array.isArray(value)) return null;
       const id =
-        typeof value.id === "string"
-          ? value.id
-          : typeof value.name === "string"
-          ? value.name
-          : path.basename(directory);
+        typeof value.id === "string" ? value.id : path.basename(directory);
       if (!id.trim()) return null;
       return { ...value, id: id.trim() } as PluginManifest;
     } catch (error) {

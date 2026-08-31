@@ -73,7 +73,7 @@ const apply = async (plugin: PluginRecord, enabled: boolean) => {
 const toggle = (plugin: PluginRecord, enabled: boolean) => {
   if (enabled) return apply(plugin, true);
   Modal.confirm({
-    title: t("TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE", { name: plugin.name || plugin.id }),
+    title: t("TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE", { name: plugin.id }),
     content: t("TXT_CODE_PLUGIN_DISABLE_CONFIRM"),
     okButtonProps: { danger: true },
     onOk: () => apply(plugin, false)
@@ -111,7 +111,7 @@ const toggle = (plugin: PluginRecord, enabled: boolean) => {
         <template v-if="selectedPlugin">
           <div class="plugin-config-title-row">
             <div>
-              <h2>{{ selectedPlugin.name || selectedPlugin.id }}</h2>
+              <h2>{{ selectedPlugin.id }}</h2>
               <p v-if="selectedPlugin.description" class="plugin-config-description">
                 {{ selectedPlugin.description }}
               </p>
