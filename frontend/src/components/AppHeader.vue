@@ -8,6 +8,11 @@ import { h } from "vue";
 import { useRoute } from "vue-router";
 import CardPanel from "./CardPanel.vue";
 
+defineProps<{
+  /** One-shot entrance animation after a successful login */
+  loginEnter?: boolean;
+}>();
+
 const route = useRoute();
 const { containerState } = useLayoutContainerStore();
 const { logoImage } = useAppConfigStore();
@@ -29,7 +34,7 @@ const openPhoneMenu = (b = false) => {
 </script>
 
 <template>
-  <header class="app-header-wrapper">
+  <header class="app-header-wrapper" :class="{ 'login-enter-header': loginEnter }">
     <div v-if="!isPhone" class="app-header-content">
       <nav class="btns">
         <a href="." style="margin-right: 12px">
@@ -89,7 +94,7 @@ const openPhoneMenu = (b = false) => {
   <div v-if="!isPhone" style="height: 80px"></div>
 
   <!-- Menus for phone -->
-  <header v-if="isPhone" class="app-header-content-for-phone">
+  <header v-if="isPhone" class="app-header-content-for-phone" :class="{ 'login-enter-header': loginEnter }">
     <CardPanel class="card-panel">
       <template #body>
         <div style="display: flex; justify-content: space-between; align-items: center">
