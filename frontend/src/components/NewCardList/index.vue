@@ -165,7 +165,7 @@ const currentCardCategory = ref<NEW_CARD_TYPE>(NEW_CARD_TYPE.COMMON);
 }
 .card-container-wrapper {
   border: 1px dashed var(--gray-border-color);
-  border-radius: 6px;
+  border-radius: 12px;
   padding: 16px;
   overflow: auto;
 }

@@ -117,6 +117,6 @@ onMounted(() => {
   top: 0;
   bottom: 0;
   right: 0;
-  border-radius: 6px;
+  border-radius: 12px;
 }
 </style>

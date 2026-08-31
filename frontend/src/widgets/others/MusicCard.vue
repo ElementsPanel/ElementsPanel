@@ -181,7 +181,7 @@ onMounted(() => {
   top: 0;
   width: 100%;
   height: 100%;
-  border-radius: 6px;
+  border-radius: 12px;
   background-color: rgba(0, 0, 0, 0.3);
   color: #fff;
   text-shadow: 0 0 10px #000;

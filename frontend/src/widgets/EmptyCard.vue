@@ -16,7 +16,7 @@
   .layout-card-container {
     border: 1px dashed var(--gray-border-color);
     background-color: var(--color-gray-3);
-    border-radius: 6px;
+    border-radius: 12px;
     height: 100%;
   }
 }

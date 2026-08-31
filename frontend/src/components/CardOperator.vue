@@ -111,7 +111,7 @@ let btns = arrayFilter([
   font-size: 12px;
   border: 1px dashed var(--gray-border-color);
   font-size: 12px;
-  border-radius: 6px;
+  border-radius: 12px;
   transition: all 0.4s;
 }
 

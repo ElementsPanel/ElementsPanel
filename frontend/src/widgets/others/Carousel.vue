@@ -231,7 +231,7 @@ const save = async () => {
 <style scoped lang="scss">
 img {
   border: 0;
-  border-radius: 6px;
+  border-radius: 12px;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -262,7 +262,7 @@ img {
 }
 
 :deep(.slick-slider) {
-  border-radius: 6px;
+  border-radius: 12px;
   background: #364d79;
   overflow: hidden;
 }

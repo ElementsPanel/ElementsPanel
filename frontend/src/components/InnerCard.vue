@@ -60,7 +60,7 @@ const props = defineProps<{
     background 0.35s ease,
     border-color 0.35s ease,
     box-shadow 0.35s ease;
-  border-radius: 6px;
+  border-radius: 12px;
 }
 
 .inner-card-wrapper:hover {
