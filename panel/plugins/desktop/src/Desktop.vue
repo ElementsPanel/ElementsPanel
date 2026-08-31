@@ -74,13 +74,18 @@ const backgroundImageUrl = ref<string>("");
 
 const wallpaperStyle = computed<CSSProperties>(() => {
     if (!backgroundImageUrl.value) {
-        return { backgroundColor: "var(--desktop-bg-color, #232429)" };
+        // The fallback only applies before the plugin's theme.scss is injected;
+        // keep it on the same side as the active theme so it cannot flash light.
+        const fallback = isDarkTheme.value ? "#232429" : "#f5f5f5";
+        return { backgroundColor: `var(--desktop-bg-color, ${fallback})` };
     }
+    // A bare color is not a valid background-image layer: it invalidates the whole
+    // declaration and the wallpaper disappears. Use a flat gradient instead.
     const overlay = isDarkTheme.value
         ? "rgba(0,0,0,0.65)"
         : "rgba(255,255,255,0.2)";
     return {
-        backgroundImage: `${overlay}, url(${backgroundImageUrl.value})`,
+        backgroundImage: `linear-gradient(${overlay}, ${overlay}), url(${backgroundImageUrl.value})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat"

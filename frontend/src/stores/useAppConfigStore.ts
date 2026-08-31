@@ -2,12 +2,32 @@
 import logo from "@/assets/logo.svg";
 import logoB from "@/assets/logo_b.svg";
 import { getCurrentLang, setLanguage } from "@/lang/i18n";
-import { AppTheme, THEME_KEY } from "@/types/const";
+import { AppTheme, THEME_AUTO_MIGRATED_KEY, THEME_KEY } from "@/types/const";
 import { createGlobalState, useBreakpoints, useLocalStorage, usePreferredDark } from "@vueuse/core";
 import { theme as antTheme } from "ant-design-vue";
 import type { ThemeConfig } from "ant-design-vue/es/config-provider/context";
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useLayoutConfigStore } from "./useLayoutConfig";
+
+/**
+ * Older builds defaulted to LIGHT and wrote that value on the very first visit,
+ * so an upgraded browser keeps rendering the light background even on a dark
+ * system. Rewrite that one stored value to AUTO, once: a light theme picked
+ * after this has run is left alone.
+ */
+const migrateLegacyLightDefault = () => {
+  try {
+    if (localStorage.getItem(THEME_AUTO_MIGRATED_KEY)) return;
+    localStorage.setItem(THEME_AUTO_MIGRATED_KEY, "1");
+    if (Number(localStorage.getItem(THEME_KEY)) === AppTheme.LIGHT) {
+      localStorage.setItem(THEME_KEY, String(AppTheme.AUTO));
+    }
+  } catch {
+    // Storage can be unavailable (private mode, blocked cookies): nothing to migrate.
+  }
+};
+
+migrateLegacyLightDefault();
 
 export const useAppConfigStore = createGlobalState(() => {
   const isPreferredDark = usePreferredDark();

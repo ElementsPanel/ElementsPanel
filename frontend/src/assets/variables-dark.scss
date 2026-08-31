@@ -1,6 +1,8 @@
 .app-dark-theme {
   @extend .app-dark-base-color;
 
+  color-scheme: dark;
+
   --vscode-bg-color: rgb(32, 32, 32);
   --blue-background-color: rgb(35, 36, 41);
 

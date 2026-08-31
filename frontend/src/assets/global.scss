@@ -1,5 +1,15 @@
 @import "./xterm.scss";
 
+// `--background-color` only exists on the theme class that initAppTheme() puts on
+// <body>, so until that happens (and on <html>, which never carries the class)
+// the canvas falls back to the UA default — white. Letting the UA follow the
+// system keeps that window dark on a dark desktop instead of flashing light.
+// The theme classes narrow this to the theme actually in use, which also makes
+// native widgets and scrollbars match.
+html {
+  color-scheme: light dark;
+}
+
 body,
 html {
   min-height: 100%;

@@ -10,6 +10,13 @@ export enum AppTheme {
 
 export const THEME_KEY = "THEME_KEY";
 
+/**
+ * Marks that the legacy stored theme has been migrated once. Before AUTO became
+ * the default, a first visit persisted LIGHT, which is indistinguishable from a
+ * deliberate light choice — so the migration runs exactly once.
+ */
+export const THEME_AUTO_MIGRATED_KEY = "THEME_AUTO_MIGRATED";
+
 export const CARD_FIXED_HEIGHT = 200;
 
 export const TERMINAL_CODE = [
