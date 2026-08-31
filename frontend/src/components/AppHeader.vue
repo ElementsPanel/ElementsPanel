@@ -215,7 +215,7 @@ const openPhoneMenu = (b = false) => {
     margin-top: 8px;
 
     button {
-      color: var(--color-always-white) !important;
+      color: var(--app-header-text-color) !important;
     }
   }
 
