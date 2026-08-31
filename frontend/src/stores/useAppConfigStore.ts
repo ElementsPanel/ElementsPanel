@@ -38,7 +38,9 @@ export const useAppConfigStore = createGlobalState(() => {
     return isDarkTheme.value ? logo : logoB;
   });
 
-  const currentTheme = useLocalStorage<AppTheme>(THEME_KEY, AppTheme.LIGHT);
+  // Default to AUTO so a fresh visit follows the system dark mode
+  // (index.html's loading screen already does the same).
+  const currentTheme = useLocalStorage<AppTheme>(THEME_KEY, AppTheme.AUTO);
 
   const hasBgImage = ref(false);
 
@@ -84,7 +86,7 @@ export const useAppConfigStore = createGlobalState(() => {
     document.body.classList.remove("app-light-theme");
   };
 
-  const resetTheme = () => (currentTheme.value = AppTheme.LIGHT);
+  const resetTheme = () => (currentTheme.value = AppTheme.AUTO);
 
   const initAppTheme = async () => {
     if (
