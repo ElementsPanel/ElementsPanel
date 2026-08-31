@@ -5,6 +5,7 @@ import { ctx } from "@/plugin/context";
 import { t } from "@/lang/i18n";
 import { loginPageInfo, loginUser, ssoConfig, type SsoPublicConfig } from "@/services/apis";
 import { useAppStateStore } from "@/stores/useAppStateStore";
+import { sleep } from "@/tools/common";
 import { markdownToHTML } from "@/tools/safe";
 import { reportErrorMsg } from "@/tools/validator";
 import type { LayoutCard } from "@/types";
@@ -46,6 +47,8 @@ const loginActions = computed(() =>
 
 const loading = ref(false);
 const is2Fa = ref(false);
+// Fade the card out before navigating away after a successful login
+const fadeOut = ref(false);
 
 const handleLogin = async () => {
   if (!formData.username.trim() || !formData.password.trim()) {
@@ -73,7 +76,7 @@ const handleLogin = async () => {
 const handleNext = async () => {
   try {
     await updateUserInfo();
-    loginSuccess();
+    await loginSuccess();
   } catch (error: any) {
     loading.value = false;
     console.error(error);
@@ -84,7 +87,9 @@ const handleNext = async () => {
   }
 };
 
-const loginSuccess = () => {
+const loginSuccess = async () => {
+  fadeOut.value = true;
+  await sleep(420);
   if (isAdmin.value) {
     router.push({
       path: "/"
@@ -147,7 +152,7 @@ onMounted(async () => {
     'w-100': true,
     'h-100': true
   }">
-    <CardPanel class="login-panel">
+    <CardPanel class="login-panel" :class="{ 'login-card-fading': fadeOut }">
       <template #body>
         <div class="login-panel-body">
           <div v-if="loginActions.length" style="position: absolute; top: 24px; right: 24px; z-index: 10;">
@@ -290,6 +295,11 @@ onMounted(async () => {
     padding: 28px 24px;
     min-height: 322px;
   }
+}
+
+.login-card-fading {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .mcsmanager-link {

@@ -140,11 +140,11 @@ onMounted(async () => {
 // component re-creation cannot replay it, and `both` keeps everything
 // hidden during the delay.
 .login-enter-header {
-  animation: login-header-slide-in 0.4s ease-out 0.3s both;
+  animation: login-header-slide-in 0.4s cubic-bezier(0.25, 0.1, 0.25, 1) 0.3s both;
 }
 
 .login-enter-content {
-  animation: login-content-fade-in 0.4s ease-out 1s both;
+  animation: login-content-fade-in 0.4s cubic-bezier(0.25, 0.1, 0.25, 1) 1s both;
 }
 
 @media (prefers-reduced-motion: reduce) {
