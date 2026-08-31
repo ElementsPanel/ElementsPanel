@@ -5,6 +5,5 @@
   "description": "Provides the immersive desktop interface and per-user desktop layout storage.",
   "priority": 100,
   "backend": "backend/index.cjs",
-  "frontend": "src/frontend.ts",
-  "enabled": false
+  "frontend": "src/frontend.ts"
 }

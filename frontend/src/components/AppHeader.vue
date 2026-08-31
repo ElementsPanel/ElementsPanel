@@ -4,8 +4,7 @@ import { useScreen } from "@/hooks/useScreen";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import { MenuUnfoldOutlined } from "@ant-design/icons-vue";
-import { useScroll } from "@vueuse/core";
-import { computed, h } from "vue";
+import { h } from "vue";
 import { useRoute } from "vue-router";
 import CardPanel from "./CardPanel.vue";
 
@@ -22,18 +21,6 @@ const isRouteActive = (path: string): boolean => {
   return route.path.startsWith(path + "/");
 };
 
-const { y } = useScroll(document.body);
-
-const isScroll = computed(() => {
-  return y.value > 10;
-});
-
-const headerStyle = computed(() => {
-  return {
-    "--header-height": isScroll.value ? "60px" : "64px"
-  };
-});
-
 const { isPhone } = useScreen();
 
 const openPhoneMenu = (b = false) => {
@@ -42,7 +29,7 @@ const openPhoneMenu = (b = false) => {
 </script>
 
 <template>
-  <header class="app-header-wrapper" :style="headerStyle">
+  <header class="app-header-wrapper">
     <div v-if="!isPhone" class="app-header-content">
       <nav class="btns">
         <a href="." style="margin-right: 12px">
@@ -99,7 +86,7 @@ const openPhoneMenu = (b = false) => {
       </div>
     </div>
   </header>
-  <div v-if="!isPhone" style="height: 64px"></div>
+  <div v-if="!isPhone" style="height: 80px"></div>
 
   <!-- Menus for phone -->
   <header v-if="isPhone" class="app-header-content-for-phone">
@@ -226,7 +213,6 @@ const openPhoneMenu = (b = false) => {
 }
 
 .app-header-wrapper {
-  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -235,14 +221,12 @@ const openPhoneMenu = (b = false) => {
   color: var(--app-header-text-color);
 
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  border-radius: 12px;
 
   z-index: 20;
-
-  // Smooth height transition
-  transition: height 0.3s ease-in-out;
 
   .app-header-content {
     @extend .global-app-container;
@@ -251,10 +235,7 @@ const openPhoneMenu = (b = false) => {
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    height: var(--header-height);
-
-    // Smooth height transition
-    transition: height 0.3s ease-in-out;
+    height: 64px;
 
     .btns {
       display: flex;
