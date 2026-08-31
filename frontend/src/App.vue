@@ -135,7 +135,7 @@ onMounted(async () => {
 }
 
 // Post-login entrance: header slides down from the top edge after 0.3s,
-// the whole content area (breadcrumbs + page) fades in after 0.5s. The
+// the whole content area (breadcrumbs + page) fades in after 0.8s. The
 // animation lives on a stable wrapper that never re-mounts, so inner
 // component re-creation cannot replay it, and `both` keeps everything
 // hidden during the delay.
@@ -144,7 +144,7 @@ onMounted(async () => {
 }
 
 .login-enter-content {
-  animation: login-content-fade-in 0.4s cubic-bezier(0.25, 0.1, 0.25, 1) 1s both;
+  animation: login-content-fade-in 0.4s cubic-bezier(0.25, 0.1, 0.25, 1) 0.8s both;
 }
 
 @media (prefers-reduced-motion: reduce) {
