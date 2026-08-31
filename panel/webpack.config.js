@@ -1,6 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 const nodeExternals = require("webpack-node-externals");
+const cordisExternals = require("../scripts/webpack-cordis-externals.cjs");
 
 /**
  * Auto-detect ESM-only packages and bundle them
@@ -43,6 +44,8 @@ module.exports = {
   },
   externalsPresets: { node: true },
   externals: [
+    // One cordis instance, shared with every plugin bundle. See the module.
+    cordisExternals,
     nodeExternals({
       allowlist: ["mcsmanager-common", isEsmPackage]
     })

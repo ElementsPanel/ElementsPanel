@@ -1,5 +1,4 @@
-import Router from "@koa/router";
-import type { PanelPluginContext } from "../../../../src/app/plugins";
+import type { PanelPluginContext } from "../../../../src/app/plugin";
 import { localeMessages } from "../i18n";
 import { createRequestGuard } from "./guard";
 import createAuthSettingsRouter from "./routers/auth_settings_router";
@@ -12,25 +11,42 @@ import { setPluginContext } from "./runtime";
 import { initAuthSettings } from "./service/auth_settings";
 import userSystem from "./service/user_service";
 
-export async function setup(context: PanelPluginContext) {
-  setPluginContext(context);
+// Authentication for the whole panel: accounts, sessions, SSO and the
+// authorization policy every core route is checked against. The core holds none
+// of it — it asks `ctx.guard`, and serves every request while nothing provides
+// one.
+
+export const inject = [
+  "koa",
+  "i18n",
+  "storage",
+  "settings",
+  "middleware",
+  "roles",
+  "instances",
+  "operations",
+  "globals"
+];
+
+export async function apply(ctx: PanelPluginContext) {
+  setPluginContext(ctx);
 
   // Before anything that logs or throws: this plugin's strings live here, not
   // in the panel catalogue.
-  context.registerLocaleMessages(localeMessages);
+  ctx.i18n.define(localeMessages);
 
   await initAuthSettings();
   await userSystem.initialize();
 
-  // From here on the whole panel is guarded. Removing this plugin removes the
-  // policy with it, which is the documented behaviour.
-  context.registerRequestGuard(createRequestGuard());
+  // From here on the whole panel is guarded. Unloading this plugin removes the
+  // service, and with it the policy, which is the documented behaviour.
+  ctx.set("guard", createRequestGuard());
 
   // Nested under a single /api router, in the same order the core used to mount
   // them: several of these share the "/auth/" path and only differ by method,
   // so a flat registration would let one router's allowedMethods() answer 405
   // before the next router got a chance to match.
-  const apiRouter = new Router({ prefix: "/api" });
+  const apiRouter = ctx.koa.router("/api");
   for (const router of [
     createManageUserRouter(),
     createLoginRouter(),
@@ -41,5 +57,4 @@ export async function setup(context: PanelPluginContext) {
   ]) {
     apiRouter.use(router.routes()).use(router.allowedMethods());
   }
-  context.registerRouter(apiRouter);
 }

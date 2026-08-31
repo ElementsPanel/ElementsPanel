@@ -1,10 +1,17 @@
-import type { PanelPluginContext } from "../../../../src/app/plugins";
+import type { PanelPluginContext } from "../../../../src/app/plugin";
 
 /**
- * The panel core is bundled into `app.js`, so this plugin cannot import its
- * singletons directly — doing so would compile a second copy of the storage
- * subsystem, the system config and the i18n instance. Everything the plugin
- * needs is injected once by `setup()` and read through the accessors below.
+ * This plugin's private handle on its cordis context.
+ *
+ * The panel core is bundled into `app.js`, so a plugin cannot import its
+ * singletons: doing so would compile a second copy of the storage subsystem, the
+ * system config and the i18n instance. The only channel is the context
+ * `apply()` receives, and this plugin has fourteen modules that need something
+ * from it — threading a parameter through all of them would say nothing the
+ * accessors below do not.
+ *
+ * A plugin with only a handful of such call sites should pass `ctx` as an
+ * argument instead; see `plugins/market`.
  */
 let context: PanelPluginContext | undefined;
 
@@ -18,11 +25,11 @@ export function core(): PanelPluginContext {
 }
 
 export const storage = () => core().storage;
-export const systemConfig = () => core().config;
+export const systemConfig = () => core().settings.config;
 export const logger = () => core().logger;
-export const operationLogger = () => core().services.operationLogger;
+export const operationLogger = () => core().operations;
 export const $t = (key: string, options?: any): string =>
   core().i18n.$t(key, options) as unknown as string;
 export const i18next = () => core().i18n.i18next;
-export const globalVariable = () => core().common.GlobalVariable;
+export const globalVariable = () => core().globals;
 export const ROLE = () => core().roles;

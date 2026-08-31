@@ -1,5 +1,4 @@
 import { fileURLToPath, URL } from "node:url";
-import fs from "node:fs";
 import path from "node:path";
 
 import vue from "@vitejs/plugin-vue";
@@ -8,6 +7,7 @@ import { visualizer } from "rollup-plugin-visualizer";
 import { AntDesignVueResolver } from "unplugin-vue-components/resolvers";
 import Components from "unplugin-vue-components/vite";
 import { defineConfig, normalizePath, type Plugin } from "vite";
+import { discoverPlugins } from "../common/src/plugin_manifest";
 
 const PANEL_PLUGINS_MODULE_ID = "virtual:panel-plugins";
 const RESOLVED_PANEL_PLUGINS_MODULE_ID = `\0${PANEL_PLUGINS_MODULE_ID}`;
@@ -25,79 +25,29 @@ interface DiscoveredPanelPlugin {
 }
 
 function discoverPanelPlugins(): DiscoveredPanelPlugin[] {
-  const plugins: DiscoveredPanelPlugin[] = [];
-  if (!fs.existsSync(PANEL_PLUGINS_DIRECTORY)) return plugins;
-
-  const pluginIds = new Set<string>();
-  for (const item of fs.readdirSync(PANEL_PLUGINS_DIRECTORY, { withFileTypes: true })) {
-    if (!item.isDirectory()) continue;
-    const directory = path.join(PANEL_PLUGINS_DIRECTORY, item.name);
-    const metadataPath = ["plugin.json", "manifest.json", "package.json"]
-      .map((file) => path.join(directory, file))
-      .find((file) => fs.existsSync(file));
-    if (!metadataPath) continue;
-
-    let metadata: Record<string, unknown>;
-    try {
-      metadata = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
-      if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) continue;
-    } catch (error) {
-      console.warn(`Failed to read panel plugin metadata: ${metadataPath}`, error);
-      continue;
-    }
-    if (metadata.enabled === false) continue;
-    const id =
-      typeof metadata.id === "string"
-        ? metadata.id.trim()
-        : typeof metadata.name === "string"
-        ? metadata.name.trim()
-        : item.name;
-    if (!id || pluginIds.has(id)) {
-      console.warn(`Ignoring duplicate or invalid panel plugin id: ${id}`);
-      continue;
-    }
-    pluginIds.add(id);
-
-    const configuredEntry = [metadata.frontend, metadata.ui].find(
-      (entry): entry is string => typeof entry === "string" && entry.length > 0
-    );
-    const candidates = configuredEntry
-      ? [configuredEntry]
-      : [
-          "src/frontend.ts",
-          "src/frontend.tsx",
-          "src/frontend.js",
-          "src/frontend.jsx",
-          "src/index.ts",
-          "src/index.tsx"
-        ];
-    const entry = candidates
-      .map((candidate) => path.resolve(directory, candidate))
-      .find(
-        (candidate) =>
-          candidate.startsWith(`${path.resolve(directory)}${path.sep}`) && fs.existsSync(candidate)
-      );
-    if (!entry) {
-      if (configuredEntry) {
-        console.warn(`Panel plugin "${id}" has no valid frontend entry module.`);
-      }
-      continue;
-    }
-    plugins.push({
-      metadata: { ...metadata, id },
-      directory,
-      folder: item.name,
-      entry,
-      buildEntryId: `${RESOLVED_PANEL_PLUGIN_BUILD_ENTRY_PREFIX}${item.name}`
-    });
-  }
-
-  plugins.sort(
-    (a, b) =>
-      (Number(a.metadata.priority) || 0) - (Number(b.metadata.priority) || 0) ||
-      String(a.metadata.id).localeCompare(String(b.metadata.id))
-  );
-  return plugins;
+  // Discovery is shared with the panel and daemon backends, so the four places
+  // that read `plugin.json` cannot drift apart. Only the entry field and the
+  // build-time extras are specific to this side.
+  return discoverPlugins(PANEL_PLUGINS_DIRECTORY, {
+    entryFields: ["frontend", "ui"],
+    entryCandidates: [
+      "src/frontend.ts",
+      "src/frontend.tsx",
+      "src/frontend.js",
+      "src/frontend.jsx",
+      "src/index.ts",
+      "src/index.tsx"
+    ],
+    onWarning: (message, error) => console.warn(message, error)
+  })
+    .filter((plugin) => plugin.entry)
+    .map((plugin) => ({
+      metadata: plugin.manifest as Record<string, unknown>,
+      directory: plugin.directory,
+      folder: plugin.folder,
+      entry: plugin.entry!,
+      buildEntryId: `${RESOLVED_PANEL_PLUGIN_BUILD_ENTRY_PREFIX}${plugin.folder}`
+    }));
 }
 
 function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
@@ -160,8 +110,9 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
         const folder = id.slice(RESOLVED_PANEL_PLUGIN_BUILD_ENTRY_PREFIX.length);
         const plugin = plugins.find((candidate) => candidate.folder === folder);
         if (!plugin) return;
-        const entry = JSON.stringify(normalizePath(plugin.entry));
-        return `export * from ${entry}; import pluginDefault from ${entry}; export default pluginDefault;`;
+        // A plugin exports `apply` and optionally `inject`, both named, so the
+        // chunk only re-exports; requiring a default export would break it.
+        return `export * from ${JSON.stringify(normalizePath(plugin.entry))};`;
       }
       if (id !== RESOLVED_PANEL_PLUGINS_MODULE_ID) return;
       if (isBuild) return "export const panelPluginModules = [];";
@@ -398,6 +349,9 @@ export default defineConfig({
       "@ant-design/icons-vue",
       "@vueuse/core",
       "ant-design-vue",
+      // One cordis instance: a plugin chunk and the main bundle must share the
+      // container, or a plugin would register its services on a copy of it.
+      "cordis",
       "dayjs",
       "echarts",
       "lodash",

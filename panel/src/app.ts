@@ -17,7 +17,9 @@ import { $t } from "./app/i18n";
 import { mountRouters } from "./app/index";
 import { preCheckMiddleware } from "./app/middleware/precheck";
 import { middleware as protocolMiddleware } from "./app/middleware/protocol";
-import { loadPanelPlugins, runPanelPluginHook } from "./app/plugins";
+import { ctx as panel } from "./app/plugin/context";
+import { installPanelPluginServices } from "./app/plugin/install";
+import { loadPanelPlugins } from "./app/plugin/loader";
 import { logger } from "./app/service/log";
 import SystemRemoteService from "./app/service/remote_service";
 import versionAdapter from "./app/service/version_adapter";
@@ -72,7 +74,7 @@ function setupHttp(
 
 async function processExit() {
   try {
-    await runPanelPluginHook("dispose");
+    await panel.stop();
     logger.warn($t("TXT_CODE_cea5dba1"));
     logger.warn($t("TXT_CODE_b0aa2db9"));
   } catch (err) {
@@ -200,77 +202,26 @@ async function main() {
     });
   }
   app.use(protocolMiddleware);
-  await loadPanelPlugins(app);
+
+  // The plugin container owns everything past this point: services first, so
+  // that a plugin can use them, then the plugins themselves. `ctx.koa` mounts
+  // the two composed stacks a plugin adds middleware and routers to, which is
+  // why it has to be installed before `mountRouters` puts the core last.
+  installPanelPluginServices(app);
+  await loadPanelPlugins();
+
   const pluginDirectory = path.join(process.cwd(), "plugins");
-  const discoverFrontendPlugins = () => {
-    const manifest: any[] = [];
-    if (!fs.existsSync(pluginDirectory)) return manifest;
-    for (const item of fs.readdirSync(pluginDirectory, { withFileTypes: true })) {
-      if (!item.isDirectory() || !/^[a-zA-Z0-9_-]+$/.test(item.name)) continue;
-      const folder = item.name;
-      const installedPluginDirectory = path.join(pluginDirectory, folder);
-      const metadataPath = path.join(installedPluginDirectory, "plugin.json");
-      if (!fs.existsSync(metadataPath)) continue;
-      try {
-        const metadata = fs.readJsonSync(metadataPath);
-        if (typeof metadata?.id !== "string" || !metadata.id.trim()) continue;
-        const frontend = [metadata?.frontend, metadata?.ui].find(
-          (entry) => typeof entry === "string" && entry.length > 0
-        );
-        if (metadata?.enabled === false || typeof frontend !== "string") continue;
-        const frontendDirectory = path.join(installedPluginDirectory, "frontend");
-        const frontendEntryPath = path.resolve(installedPluginDirectory, frontend);
-        if (
-          !frontendEntryPath.startsWith(`${path.resolve(frontendDirectory)}${path.sep}`) ||
-          !fs.existsSync(frontendEntryPath)
-        )
-          continue;
-        const relativeEntry = path.relative(installedPluginDirectory, frontendEntryPath);
-        const styles = Array.isArray(metadata.styles)
-          ? metadata.styles
-            .filter((style: unknown) => typeof style === "string")
-            .map((style: string) => path.resolve(installedPluginDirectory, style))
-            .filter(
-              (stylePath: string) =>
-                stylePath.startsWith(`${path.resolve(frontendDirectory)}${path.sep}`) &&
-                fs.existsSync(stylePath)
-            )
-            .map(
-              (stylePath: string) =>
-                `./${folder}/${path
-                  .relative(installedPluginDirectory, stylePath)
-                  .split(path.sep)
-                  .join("/")}`
-            )
-          : [];
-        manifest.push({
-          metadata,
-          directory: metadata.id,
-          assetDirectory: folder,
-          entry: `./${folder}/${relativeEntry.split(path.sep).join("/")}`,
-          styles
-        });
-      } catch (error) {
-        logger.error(`Failed to load compiled frontend plugin: ${folder}`, error);
-      }
-    }
-    return manifest.sort(
-      (a, b) =>
-        (Number(a.metadata.priority) || 0) - (Number(b.metadata.priority) || 0) ||
-        String(a.metadata.id).localeCompare(String(b.metadata.id))
-    );
-  };
   app.use(async (ctx, next) => {
     if (ctx.path === "/plugins/manifest.json") {
       ctx.set("Cache-Control", "no-store");
       ctx.type = "application/json";
-      ctx.body = discoverFrontendPlugins();
+      ctx.body = panel.plugins.frontendManifest();
       return;
     }
     const match = ctx.path.match(/^\/plugins\/([a-zA-Z0-9_-]+)\/frontend(?:\/|$)/);
     if (!match) return next();
     const folder = match[1];
-    if (!discoverFrontendPlugins().some((plugin) => plugin.assetDirectory === folder)) {
+    if (!panel.plugins.frontendManifest().some((plugin) => plugin.assetDirectory === folder)) {
       return next();
     }
     return koaMount(
@@ -305,11 +256,11 @@ async function main() {
       systemConfig.httpPort,
       systemConfig.httpIp
     );
-  await runPanelPluginHook("ready");
+  await panel.start();
 }
 
 main().catch(async (err) => {
-  await runPanelPluginHook("dispose");
+  await panel.stop();
   logger.error("main() error:", err);
   process.exit(0);
 });

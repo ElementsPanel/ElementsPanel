@@ -7,7 +7,7 @@ import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { INSTANCE_TYPE_TRANSLATION, verifyEULA } from "@/hooks/useInstance";
 import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
-import { buildPanelFrontendTerminalButtons } from "@/plugins";
+import { ctx } from "@/plugin/context";
 import {
   killInstance,
   openInstance,
@@ -223,7 +223,7 @@ const instanceOperations = computed(() =>
       condition: () => !!instanceInfo.value?.config?.category
     },
     // Plugin-supplied terminal buttons, e.g. the market's reinstall tool.
-    ...buildPanelFrontendTerminalButtons({
+    ...ctx.actions.terminalButtons({
       mode: "normal",
       instanceId: instanceId ?? "",
       daemonId: daemonId ?? "",

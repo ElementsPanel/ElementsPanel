@@ -17,13 +17,13 @@ charts: 60 samples of host CPU/memory, and 60 samples of "API requests in the
 last ten seconds" alongside the instance counts at that moment. Both used to be
 a panel core singleton (`service/visual_data.ts`).
 
-`setup()` wires three things:
+`apply()` wires three things:
 
 | Registration | What it does |
 | --- | --- |
-| `registerOverviewProvider()` | Adds the `chart` field to `GET /api/overview` |
-| `registerMiddleware()` | Counts `/api/` requests for the request chart |
-| `registerRouter()` | `GET /api/monitor/operation_logs` |
+| `ctx.overview.provide()` | Adds the `chart` field to `GET /api/overview` |
+| `ctx.koa.use()` | Counts `/api/` requests for the request chart |
+| `ctx.koa.router()` | `GET /api/monitor/operation_logs` |
 
 The request counter lives here rather than in the core response middleware: the
 request rate exists only to be charted. Koa runs the plugin's middleware for

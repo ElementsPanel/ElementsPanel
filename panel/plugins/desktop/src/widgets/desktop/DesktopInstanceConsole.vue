@@ -5,7 +5,7 @@ import { INSTANCE_TYPE_TRANSLATION, verifyEULA } from "@/hooks/useInstance";
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { useTerminal, type UseTerminalHook } from "@/hooks/useTerminal";
 import { t } from "@/lang/i18n";
-import { buildPanelFrontendTerminalButtons } from "@/plugins";
+import { ctx } from "@/plugin/context";
 import {
     killInstance,
     openInstance,
@@ -247,7 +247,7 @@ const instanceOperations = computed(() =>
             condition: () => !!instanceInfo.value?.config?.category
         },
         // Plugin-supplied terminal buttons, e.g. the market's reinstall tool.
-        ...buildPanelFrontendTerminalButtons({
+        ...ctx.actions.terminalButtons({
             mode: "desktop",
             instanceId: props.instanceId,
             daemonId: props.daemonId,

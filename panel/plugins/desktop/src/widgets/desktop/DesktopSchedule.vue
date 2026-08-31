@@ -2,7 +2,7 @@
 import { useSchedule } from "@/hooks/useSchedule";
 import { t } from "@/lang/i18n";
 import { padZero } from "@/tools/common";
-import { getPanelFrontendScheduleActions } from "@/plugins";
+import { ctx } from "@/plugin/context";
 import type { Schedule, ScheduleAction, ScheduleTaskForm } from "@/types";
 import { ScheduleActionType, ScheduleCreateType, ScheduleType } from "@/types/const";
 import {
@@ -48,7 +48,7 @@ const {
 
 const scheduleActionTypes = computed(() => {
     const types: Record<string, string> = { ...ScheduleActionType };
-    for (const action of getPanelFrontendScheduleActions()) {
+    for (const action of ctx.actions.schedules) {
         if (action.condition && !action.condition()) continue;
         types[action.type] = typeof action.title === "function" ? action.title() : action.title;
     }
@@ -177,7 +177,7 @@ const getInputPlaceholder = (action: ScheduleAction) => {
     if (action.type === "command") {
         return t("TXT_CODE_8ff89011");
     }
-    const pluginAction = getPanelFrontendScheduleActions().find((item) => item.type === action.type);
+    const pluginAction = ctx.actions.schedules.find((item) => item.type === action.type);
     if (!pluginAction?.inputPlaceholder) return;
     return typeof pluginAction.inputPlaceholder === "function"
         ? pluginAction.inputPlaceholder()

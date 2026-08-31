@@ -1,4 +1,4 @@
-import { getPanelFrontendService } from "@/pluginServices";
+import { usePluginService } from "@/plugin/context";
 import type { BaseUserInfo, EditUserInfo, LoginUserInfo, UserInstance } from "@/types/user";
 import type { Ref } from "vue";
 
@@ -12,8 +12,8 @@ import type { Ref } from "vue";
  * nothing should be calling these — guard with `isUserPluginLoaded()` or with
  * `useAppStateStore().authEnabled`.
  *
- * Imports `@/pluginServices` rather than `@/plugins` on purpose: the latter
- * pulls the whole card/route registry into the app entry graph.
+ * Imports `@/plugin/context` rather than `@/plugin` on purpose: the barrel pulls
+ * the whole card and route registry into the app entry graph.
  */
 
 export interface ApiCall<P, T> {
@@ -76,15 +76,15 @@ export interface UserPluginApi {
 }
 
 export function isUserPluginLoaded(): boolean {
-  return getPanelFrontendService<UserPluginApi>("user.api") != null;
+  return usePluginService("user") != null;
 }
 
 function resolveUserApi(): UserPluginApi {
-  const api = getPanelFrontendService<UserPluginApi>("user.api");
-  if (!api) {
+  const user = usePluginService<{ api: UserPluginApi }>("user");
+  if (!user) {
     throw new Error('Panel frontend plugin "user" is not loaded.');
   }
-  return api;
+  return user.api;
 }
 
 export const panelInstall = () => resolveUserApi().panelInstall();

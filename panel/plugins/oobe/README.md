@@ -17,7 +17,7 @@ redirects to a missing `/install` page.
 ## Translations
 
 `src/i18n/` holds the welcome, completion and "already installed" strings.
-`src/frontend.ts` passes them to the panel as `localeMessages` and
+`src/frontend.ts` passes them to the panel with `ctx.i18n.define()` and
 `src/backend/index.ts` registers the same catalogue with i18next, so the
 language bootstrap endpoint can answer in the caller's language. Every locale
 ships with the plugin rather than being loaded on demand, because the install

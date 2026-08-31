@@ -6,8 +6,8 @@ packages.
 
 | Registration | What it does |
 | --- | --- |
-| `registerAsyncTask("quick_install", …)` | Creates a new instance around a package |
-| `registerPresetCommand("install", …)` | Reinstalls an existing instance from a package |
+| `ctx.tasks.register("quick_install", …)` | Creates a new instance around a package |
+| `ctx.presets.register("install", …)` | Reinstalls an existing instance from a package |
 
 `quick_install` declares `requiresInstance: false` — the instance does not exist
 yet, the task builds it — and `requiredRole: 10`, so only an administrator can

@@ -1,9 +1,5 @@
 import { router, type RouterMetaInfo } from "@/config/router";
-import {
-  getPanelFrontendAppMenus,
-  getPanelFrontendRouteRevision,
-  isPanelFrontendPluginRoute
-} from "@/plugins";
+import { ctx } from "@/plugin/context";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { t } from "@/lang/i18n";
 import { logoutUser } from "@/services/apis/index";
@@ -89,7 +85,7 @@ export function useHeaderMenus() {
   };
 
   const menus = computed(() => {
-    getPanelFrontendRouteRevision();
+    void ctx.routes.revision;
     return router
       .getRoutes()
       .filter((v) => {
@@ -119,8 +115,8 @@ export function useHeaderMenus() {
   });
 
   const headerMenus = computed(() => {
-    const coreMenus = menus.value.filter((menu) => !isPanelFrontendPluginRoute(menu.path));
-    const pluginMenus = menus.value.filter((menu) => isPanelFrontendPluginRoute(menu.path));
+    const coreMenus = menus.value.filter((menu) => !ctx.routes.isPluginRoute(menu.path));
+    const pluginMenus = menus.value.filter((menu) => ctx.routes.isPluginRoute(menu.path));
     const settingsIndex = coreMenus.findIndex((menu) => menu.path === "/settings");
     if (settingsIndex < 0) return [...coreMenus, ...pluginMenus];
     return [
@@ -273,7 +269,7 @@ export function useHeaderMenus() {
         onlyPC: false
       }
     ];
-    const pluginMenus = getPanelFrontendAppMenus().map((item) => ({
+    const pluginMenus = ctx.menus.appMenus.map((item) => ({
       ...item,
       title: typeof item.title === "function" ? item.title() : item.title,
       leftSideTitle:

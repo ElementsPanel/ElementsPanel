@@ -4,21 +4,23 @@ import fs from "fs-extra";
 import os from "os";
 import path from "path";
 import { v4 } from "uuid";
-import type { DaemonPluginContext } from "../../../../src/service/plugins";
+import type { DaemonPluginContext } from "../../../../src/plugin";
 import type InstanceEntity from "../../../../src/entity/instance/instance";
 import { localeMessages } from "../i18n";
 
-export function setup(context: DaemonPluginContext) {
-  context.registerLocaleMessages(localeMessages);
+export const inject = ["i18n", "protocol", "instances", "tasks", "schedules", "features", "archive", "settings"];
 
-  const { AsyncTask, TaskCenter } = context.asyncTask;
+export function apply(ctx: DaemonPluginContext) {
+  ctx.i18n.define(localeMessages);
+
+  const { AsyncTask, Center: TaskCenter } = ctx.tasks;
   const { GitignoreMatcher, decompressWithProgress, check7zipStatus, sevenZipPath, zipTimeoutSeconds } =
-    context.backup;
-  const Instance = context.Instance;
-  const t = context.translate;
-  const protocol = context.protocol;
-  const instances = context.instances;
-  const logger = context.logger;
+    ctx.archive;
+  const Instance = ctx.instances.Instance;
+  const t = ctx.i18n.$t;
+  const protocol = ctx.protocol;
+  const instances = ctx.instances.subsystem;
+  const logger = ctx.logger;
   type InstanceBackupMatcher = InstanceType<typeof GitignoreMatcher>;
 
   class InstanceBackupTask extends AsyncTask {
@@ -37,7 +39,7 @@ export function setup(context: DaemonPluginContext) {
       try {
         this.instance.println("INFO", t("TXT_CODE_INSTANCE_BACKUP_START"));
 
-        const configuredPath = context.config.instanceBackupPath;
+        const configuredPath = ctx.settings.config.instanceBackupPath;
         this.backupPath = path.normalize(configuredPath || path.join(process.cwd(), "data/backups"));
         await fs.ensureDir(this.backupPath);
 
@@ -71,10 +73,10 @@ export function setup(context: DaemonPluginContext) {
           "-" +
           String(now.getSeconds()).padStart(2, "0");
         const backupId = v4().split("-")[0];
-        const configuredFormat = context.config.instanceBackupFormat;
+        const configuredFormat = ctx.settings.config.instanceBackupFormat;
         const backupFormat =
           configuredFormat === "tar.gz" || configuredFormat === "7z" ? configuredFormat : "zip";
-        const configuredLevel = context.config.instanceBackupCompressionLevel;
+        const configuredLevel = ctx.settings.config.instanceBackupCompressionLevel;
         const compressionLevel = Number.isInteger(configuredLevel)
           ? Math.min(9, Math.max(0, configuredLevel))
           : 9;
@@ -314,7 +316,7 @@ export function setup(context: DaemonPluginContext) {
       throw new Error(t("TXT_CODE_Instance_router.accessFileErr"));
     }
     const backupRoot = path.resolve(
-      context.config.instanceBackupPath || path.join(process.cwd(), "data/backups")
+      ctx.settings.config.instanceBackupPath || path.join(process.cwd(), "data/backups")
     );
     const instanceBackupDir = path.resolve(backupRoot, instanceUuid);
     const archivePath = path.resolve(instanceBackupDir, backupName);
@@ -330,11 +332,11 @@ export function setup(context: DaemonPluginContext) {
     return archivePath;
   };
 
-  context.registerAsyncTask("instance_backup", {
+  ctx.tasks.register("instance_backup", {
     type: InstanceBackupTask.TYPE,
     create: createBackupTask
   });
-  context.registerScheduleAction("backup", async (instance) => {
+  ctx.schedules.register("backup", async (instance) => {
     const runningBackup = TaskCenter.getTasks(InstanceBackupTask.TYPE).find(
       (task) => task.toObject().instanceUuid === instance.instanceUuid && task.status() === 1
     );
@@ -343,15 +345,15 @@ export function setup(context: DaemonPluginContext) {
     await (backupTask as unknown as { wait(): Promise<void> }).wait();
   });
 
-  context.registerProtocolHandler("instance/backup/list", async (ctx, data) => {
+  ctx.protocol.on("instance/backup/list", async (routerCtx, data) => {
     try {
       const instanceUuid = data.instanceUuid;
       if (!instances.getInstance(instanceUuid)) throw new Error(t("TXT_CODE_3bfb9e04"));
       const instanceBackupDir = path.join(
-        path.normalize(context.config.instanceBackupPath || path.join(process.cwd(), "data/backups")),
+        path.normalize(ctx.settings.config.instanceBackupPath || path.join(process.cwd(), "data/backups")),
         instanceUuid
       );
-      if (!fs.existsSync(instanceBackupDir)) return protocol.response(ctx, []);
+      if (!fs.existsSync(instanceBackupDir)) return protocol.response(routerCtx, []);
       const backups: Array<{ name: string; size: number; time: string }> = [];
       for (const file of await fs.readdir(instanceBackupDir)) {
         const lowerFileName = file.toLowerCase();
@@ -368,24 +370,24 @@ export function setup(context: DaemonPluginContext) {
         const statB = fs.statSync(path.join(instanceBackupDir, b.name));
         return (statB.birthtimeMs || statB.ctimeMs) - (statA.birthtimeMs || statA.ctimeMs);
       });
-      protocol.response(ctx, backups);
+      protocol.response(routerCtx, backups);
     } catch (error: any) {
-      protocol.responseError(ctx, error);
+      protocol.responseError(routerCtx, error);
     }
   });
 
-  context.registerProtocolHandler("instance/backup/delete", async (ctx, data) => {
+  ctx.protocol.on("instance/backup/delete", async (routerCtx, data) => {
     try {
       if (!instances.getInstance(data.instanceUuid)) throw new Error(t("TXT_CODE_3bfb9e04"));
       const filePath = getBackupPath(data.instanceUuid, data.backupName);
       if (fs.existsSync(filePath)) await fs.remove(filePath);
-      protocol.response(ctx, true);
+      protocol.response(routerCtx, true);
     } catch (error: any) {
-      protocol.responseError(ctx, error);
+      protocol.responseError(routerCtx, error);
     }
   });
 
-  context.registerProtocolHandler("instance/backup/restore", async (ctx, data) => {
+  ctx.protocol.on("instance/backup/restore", async (routerCtx, data) => {
     try {
       const instance = instances.getInstance(data.instanceUuid);
       if (!instance) throw new Error(t("TXT_CODE_3bfb9e04"));
@@ -439,11 +441,11 @@ export function setup(context: DaemonPluginContext) {
           instance.status(Instance.STATUS_STOP);
         }
       })();
-      protocol.response(ctx, true);
+      protocol.response(routerCtx, true);
     } catch (error: any) {
-      protocol.responseError(ctx, error);
+      protocol.responseError(routerCtx, error);
     }
   });
 
-  context.registerFeature("instanceBackup");
+  ctx.features.add("instanceBackup");
 }

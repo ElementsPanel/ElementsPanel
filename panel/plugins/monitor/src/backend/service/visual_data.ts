@@ -1,5 +1,5 @@
 import { systemInfo } from "mcsmanager-common";
-import type { PanelPluginContext } from "../../../../../src/app/plugins";
+import type { PanelPluginContext } from "../../../../../src/app/plugin";
 
 const SAMPLE_INTERVAL_MS = 1000 * 10;
 const HISTORY_SIZE = 60;
@@ -32,10 +32,13 @@ export class VisualDataHistory {
   });
 
   private requestCount = 0;
-  private systemTimer?: NodeJS.Timeout;
-  private requestTimer?: NodeJS.Timeout;
 
-  constructor(private readonly context: PanelPluginContext) {}
+  constructor(private readonly ctx: PanelPluginContext) {
+    // cordis owns the timers: they are effects of this plugin’s scope, so they
+    // stop when the plugin unloads and there is nothing to tear down by hand.
+    ctx.setInterval(() => this.sampleSystem(), SAMPLE_INTERVAL_MS);
+    ctx.setInterval(() => void this.sampleRequests(), SAMPLE_INTERVAL_MS);
+  }
 
   /** Called by this plugin's middleware for every `/api/` request. */
   addRequestCount() {
@@ -60,8 +63,8 @@ export class VisualDataHistory {
     // one round of daemon requests. An unreachable node simply contributes zero.
     let totalInstance = 0;
     let runningInstance = 0;
-    const RemoteRequest = this.context.services.remoteRequest;
-    for (const [, remoteService] of this.context.services.remote.services.entries()) {
+    const RemoteRequest = this.ctx.remote.Request;
+    for (const [, remoteService] of this.ctx.remote.services.services.entries()) {
       try {
         const info = await new RemoteRequest(remoteService).request("info/overview");
         if (!info?.instance) continue;
@@ -74,19 +77,6 @@ export class VisualDataHistory {
     this.requestSamples.shift();
     this.requestSamples.push({ value: this.requestCount, totalInstance, runningInstance });
     this.requestCount = 0;
-  }
-
-  start() {
-    if (this.systemTimer) return;
-    this.systemTimer = setInterval(() => this.sampleSystem(), SAMPLE_INTERVAL_MS);
-    this.requestTimer = setInterval(() => void this.sampleRequests(), SAMPLE_INTERVAL_MS);
-  }
-
-  stop() {
-    if (this.systemTimer) clearInterval(this.systemTimer);
-    if (this.requestTimer) clearInterval(this.requestTimer);
-    this.systemTimer = undefined;
-    this.requestTimer = undefined;
   }
 
   toChart() {

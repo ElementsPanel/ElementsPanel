@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import {
-  getLoadedPanelFrontendPlugins,
-  type LoadedPanelFrontendPlugin
-} from "@/plugins";
+import { ctx } from "@/plugin/context";
+import type { LoadedPanelFrontendPlugin } from "@/plugin";
 import { t } from "@/lang/i18n";
 import { computed, ref, watch } from "vue";
 
-const loadedPlugins = getLoadedPanelFrontendPlugins();
+// Every loaded plugin is listed; the ones that contributed a settings form
+// through `ctx.settings.page()` also get a form rendered.
 const selectedId = ref("");
 
 const plugins = computed(() =>
-  [...loadedPlugins].sort(
+  [...ctx.plugins.loaded].sort(
     (a, b) =>
       (Number(a.metadata.priority) || 0) - (Number(b.metadata.priority) || 0) ||
       a.metadata.id.localeCompare(b.metadata.id)
@@ -19,6 +18,10 @@ const plugins = computed(() =>
 
 const selectedPlugin = computed<LoadedPanelFrontendPlugin | undefined>(() =>
   plugins.value.find((plugin) => plugin.metadata.id === selectedId.value)
+);
+
+const selectedForm = computed(() =>
+  ctx.settings.pages.find((page) => page.id === selectedId.value)?.component
 );
 
 watch(
@@ -70,8 +73,8 @@ const selectPlugin = (plugin: LoadedPanelFrontendPlugin) => {
           </span>
         </div>
 
-        <div v-if="selectedPlugin.configuration?.component" class="plugin-config-form">
-          <component :is="selectedPlugin.configuration.component" />
+        <div v-if="selectedForm" class="plugin-config-form">
+          <component :is="selectedForm" />
         </div>
         <div v-else class="plugin-config-no-config">
           {{ t("TXT_CODE_PLUGIN_NO_CONFIG") }}

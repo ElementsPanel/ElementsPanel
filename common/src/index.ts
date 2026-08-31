@@ -25,6 +25,18 @@ export {
 
 export { arrayUnique } from "./array";
 
+export {
+  discoverPlugins,
+  readPluginManifest,
+  resolvePluginEntry,
+  sortPlugins
+} from "./plugin_manifest";
+export type {
+  DiscoveredPlugin,
+  DiscoverPluginsOptions,
+  PluginManifest
+} from "./plugin_manifest";
+
 export { removeTrail } from "./string_utils";
 
 export {

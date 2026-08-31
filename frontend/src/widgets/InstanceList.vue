@@ -22,7 +22,7 @@ import BetweenMenus from "@/components/BetweenMenus.vue";
 import { router } from "@/config/router";
 import { useInstanceTagSearch, useInstanceTagTips } from "@/hooks/useInstanceTag";
 import { useScreen } from "@/hooks/useScreen";
-import { getPanelFrontendRouteRevision } from "@/plugins";
+import { ctx } from "@/plugin/context";
 import { remoteInstances, remoteNodeList } from "@/services/apis";
 import {
   batchDelete,
@@ -159,7 +159,7 @@ const toMarketPage = () => {
 // The market page belongs to the `market` plugin, so the empty-state shortcut
 // to it only exists while that plugin is installed.
 const marketAvailable = computed(() => {
-  getPanelFrontendRouteRevision();
+  void ctx.routes.revision;
   return router.getRoutes().some((route) => route.path === "/market");
 });
 

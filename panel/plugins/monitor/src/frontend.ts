@@ -1,5 +1,5 @@
 import { t } from "@/lang/i18n";
-import type { PanelFrontendPluginContext, PanelFrontendPluginDefinition } from "@/plugins";
+import type { PanelFrontendPluginContext } from "@/plugin";
 import type { LayoutCardPoolItemFactory } from "@/config";
 import { LayoutCardHeight } from "@/config/originLayoutConfig";
 import LayoutContainer from "@/views/LayoutContainer.vue";
@@ -32,7 +32,7 @@ const statusBlock = (title: () => string, type: string): LayoutCardPoolItemFacto
   });
 };
 
-const monitorCardPoolItems: LayoutCardPoolItemFactory[] = [
+const cardPoolItems: LayoutCardPoolItemFactory[] = [
   statusBlock(() => t("TXT_CODE_b4a9d04a"), "node"),
   statusBlock(() => t("TXT_CODE_88e9361a"), "instance"),
   statusBlock(() => t("TXT_CODE_db64faf6"), "users"),
@@ -83,39 +83,38 @@ const monitorCardPoolItems: LayoutCardPoolItemFactory[] = [
   })
 ];
 
-export default {
-  localeMessages,
-  layoutCards: {
-    DataOverview,
-    StatusBlock,
-    RequestChart,
-    InstanceChart,
-    OperationLogCard
-  },
-  layoutCardPoolItems: monitorCardPoolItems,
-  desktopApps: [
-    {
-      id: "overview",
-      label: () => t("TXT_CODE_84fbe277"),
-      icon: DashboardOutlined,
-      color: "#52c41a",
-      route: "/overview",
-      component: DesktopOverview,
-      condition: () => useAppStateStore().isAdmin.value,
-      initialWidth: 1000,
-      initialHeight: 640
+export const inject = ["i18n", "routes", "ui", "desktop"];
+
+export function apply(ctx: PanelFrontendPluginContext) {
+  ctx.i18n.define(localeMessages);
+
+  ctx.ui.layoutCard("DataOverview", DataOverview);
+  ctx.ui.layoutCard("StatusBlock", StatusBlock);
+  ctx.ui.layoutCard("RequestChart", RequestChart);
+  ctx.ui.layoutCard("InstanceChart", InstanceChart);
+  ctx.ui.layoutCard("OperationLogCard", OperationLogCard);
+  cardPoolItems.forEach((createItem) => ctx.ui.layoutCardPoolItem(createItem));
+
+  ctx.routes.add({
+    path: "/overview",
+    name: t("TXT_CODE_84fbe277"),
+    component: LayoutContainer,
+    meta: {
+      mainMenu: true,
+      permission: ROLE_ADMIN,
+      icon: AreaChartOutlined
     }
-  ],
-  setup(context: PanelFrontendPluginContext) {
-    context.registerRoute({
-      path: "/overview",
-      name: t("TXT_CODE_84fbe277"),
-      component: LayoutContainer,
-      meta: {
-        mainMenu: true,
-        permission: ROLE_ADMIN,
-        icon: AreaChartOutlined
-      }
-    });
-  }
-} satisfies PanelFrontendPluginDefinition;
+  });
+
+  ctx.desktop.app({
+    id: "overview",
+    label: () => t("TXT_CODE_84fbe277"),
+    icon: DashboardOutlined,
+    color: "#52c41a",
+    route: "/overview",
+    component: DesktopOverview,
+    condition: () => useAppStateStore().isAdmin.value,
+    initialWidth: 1000,
+    initialHeight: 640
+  });
+}

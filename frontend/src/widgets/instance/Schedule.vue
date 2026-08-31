@@ -6,7 +6,7 @@ import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useSchedule } from "@/hooks/useSchedule";
 import { useScreen } from "@/hooks/useScreen";
 import { t as $t, t } from "@/lang/i18n";
-import { getPanelFrontendScheduleActions } from "@/plugins";
+import { ctx } from "@/plugin/context";
 import { padZero } from "@/tools/common";
 import { ScheduleActionType, ScheduleCreateType, ScheduleType } from "@/types/const";
 import type { LayoutCard, Schedule } from "@/types/index";
@@ -33,7 +33,7 @@ const { getScheduleList, schedules, scheduleListLoading, deleteSchedule } = useS
 
 const scheduleActionTypes = computed(() => {
   const types: Record<string, string> = { ...ScheduleActionType };
-  for (const action of getPanelFrontendScheduleActions()) {
+  for (const action of ctx.actions.schedules) {
     if (action.condition && !action.condition()) continue;
     types[action.type] = typeof action.title === "function" ? action.title() : action.title;
   }

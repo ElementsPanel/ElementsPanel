@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import CardPanel from "@/components/CardPanel.vue";
 import { router } from "@/config/router";
-import { getPanelFrontendLoginActions } from "@/plugins";
+import { ctx } from "@/plugin/context";
 import { t } from "@/lang/i18n";
 import { loginPageInfo, loginUser, ssoConfig, type SsoPublicConfig } from "@/services/apis";
 import { useAppStateStore } from "@/stores/useAppStateStore";
@@ -32,7 +32,7 @@ const formData = reactive({
 const { execute: login } = loginUser();
 const { updateUserInfo, isAdmin, state: appConfig } = useAppStateStore();
 const loginActions = computed(() =>
-  getPanelFrontendLoginActions()
+  ctx.menus.loginActions
     .filter((action) =>
       typeof action.condition === "function"
         ? action.condition()

@@ -1,5 +1,5 @@
 import { ClusterOutlined } from "@ant-design/icons-vue";
-import type { PanelFrontendPluginContext, PanelFrontendPluginDefinition } from "@/plugins";
+import type { PanelFrontendPluginContext } from "@/plugin";
 import type { LayoutCardPoolItemFactory } from "@/config";
 import LayoutContainer from "@/views/LayoutContainer.vue";
 import { t } from "@/lang/i18n";
@@ -15,33 +15,7 @@ import NewImage from "./image/NewImage.vue";
 import DesktopNodeManager from "./desktop/DesktopNodeManager.vue";
 import * as nodeApi from "./api";
 import { useRemoteNode } from "./hooks/useRemoteNode";
-import deDE from "./i18n/de_DE.json";
-import enUS from "./i18n/en_US.json";
-import esES from "./i18n/es_ES.json";
-import frFR from "./i18n/fr_FR.json";
-import jaJP from "./i18n/ja_JP.json";
-import koKR from "./i18n/ko_KR.json";
-import ptBR from "./i18n/pt_BR.json";
-import ruRU from "./i18n/ru_RU.json";
-import thTH from "./i18n/th_TH.json";
-import trTR from "./i18n/tr_TR.json";
-import zhCN from "./i18n/zh_CN.json";
-import zhTW from "./i18n/zh_TW.json";
-
-const localeMessages = {
-  de_de: deDE,
-  en_us: enUS,
-  es_es: esES,
-  fr_fr: frFR,
-  ja_jp: jaJP,
-  ko_kr: koKR,
-  pt_br: ptBR,
-  ru_ru: ruRU,
-  th_th: thTH,
-  tr_tr: trTR,
-  zh_cn: zhCN,
-  zh_tw: zhTW
-};
+import { localeMessages } from "./i18n";
 
 const ADMIN_PERMISSION = 10;
 
@@ -82,80 +56,79 @@ const nodeCardPoolItems: LayoutCardPoolItemFactory[] = [
   })
 ];
 
-export default {
-  localeMessages,
-  setup(context: PanelFrontendPluginContext) {
-    context.registerService("node.api", nodeApi);
-    context.registerService("node.useRemoteNode", useRemoteNode);
-    context.registerRoute({
-      path: "/node",
-      name: t("TXT_CODE_e076d90b"),
-      component: LayoutContainer,
-      meta: {
-        permission: ADMIN_PERMISSION,
-        mainMenu: true,
-        icon: ClusterOutlined
-      }
-    });
-    context.registerRoute({
-      path: "/node/image",
-      name: t("TXT_CODE_e6c30866"),
-      component: LayoutContainer,
-      meta: {
-        permission: ADMIN_PERMISSION,
-        mainMenu: false,
-        breadcrumbs: [
-          {
-            name: t("TXT_CODE_e076d90b"),
-            path: "/node",
-            mainMenu: true,
-            permission: ADMIN_PERMISSION
-          }
-        ]
-      }
-    });
-    context.registerRoute({
-      path: "/node/image/new",
-      name: t("TXT_CODE_3d09f0ac"),
-      component: LayoutContainer,
-      meta: {
-        permission: ADMIN_PERMISSION,
-        mainMenu: false,
-        breadcrumbs: [
-          {
-            name: t("TXT_CODE_e076d90b"),
-            path: "/node",
-            mainMenu: true,
-            permission: ADMIN_PERMISSION
-          },
-          {
-            name: t("TXT_CODE_e6c30866"),
-            path: "/node/image",
-            permission: ADMIN_PERMISSION
-          }
-        ]
-      }
-    });
-  },
-  layoutCards: {
-    NodeList,
-    NodeItem,
-    NodeOverview,
-    ImageManager,
-    NewImage
-  },
-  layoutCardPoolItems: nodeCardPoolItems,
-  desktopApps: [
-    {
-      id: "nodes",
-      label: () => t("TXT_CODE_e076d90b"),
-      icon: ClusterOutlined,
-      color: "#fa8c16",
-      route: "/node",
-      component: DesktopNodeManager,
-      condition: () => useAppStateStore().isAdmin.value,
-      initialWidth: 980,
-      initialHeight: 580
+export const inject = ["i18n", "routes", "ui", "desktop"];
+
+export function apply(ctx: PanelFrontendPluginContext) {
+  ctx.i18n.define(localeMessages);
+
+  // The node API and the remote-node hook. `services/apis/node.ts` and
+  // `hooks/useRemoteNode.ts` resolve these at call time, so the panel degrades
+  // instead of breaking when this plugin is not installed.
+  ctx.set("node", { api: nodeApi, useRemoteNode });
+
+  ctx.ui.layoutCard("NodeList", NodeList);
+  ctx.ui.layoutCard("NodeItem", NodeItem);
+  ctx.ui.layoutCard("NodeOverview", NodeOverview);
+  ctx.ui.layoutCard("ImageManager", ImageManager);
+  ctx.ui.layoutCard("NewImage", NewImage);
+  nodeCardPoolItems.forEach((createItem) => ctx.ui.layoutCardPoolItem(createItem));
+
+  const nodeBreadcrumb = {
+    name: t("TXT_CODE_e076d90b"),
+    path: "/node",
+    mainMenu: true,
+    permission: ADMIN_PERMISSION
+  };
+
+  ctx.routes.add({
+    path: "/node",
+    name: t("TXT_CODE_e076d90b"),
+    component: LayoutContainer,
+    meta: {
+      permission: ADMIN_PERMISSION,
+      mainMenu: true,
+      icon: ClusterOutlined
     }
-  ]
-} satisfies PanelFrontendPluginDefinition;
+  });
+
+  ctx.routes.add({
+    path: "/node/image",
+    name: t("TXT_CODE_e6c30866"),
+    component: LayoutContainer,
+    meta: {
+      permission: ADMIN_PERMISSION,
+      mainMenu: false,
+      breadcrumbs: [nodeBreadcrumb]
+    }
+  });
+
+  ctx.routes.add({
+    path: "/node/image/new",
+    name: t("TXT_CODE_3d09f0ac"),
+    component: LayoutContainer,
+    meta: {
+      permission: ADMIN_PERMISSION,
+      mainMenu: false,
+      breadcrumbs: [
+        nodeBreadcrumb,
+        {
+          name: t("TXT_CODE_e6c30866"),
+          path: "/node/image",
+          permission: ADMIN_PERMISSION
+        }
+      ]
+    }
+  });
+
+  ctx.desktop.app({
+    id: "nodes",
+    label: () => t("TXT_CODE_e076d90b"),
+    icon: ClusterOutlined,
+    color: "#fa8c16",
+    route: "/node",
+    component: DesktopNodeManager,
+    condition: () => useAppStateStore().isAdmin.value,
+    initialWidth: 980,
+    initialHeight: 580
+  });
+}

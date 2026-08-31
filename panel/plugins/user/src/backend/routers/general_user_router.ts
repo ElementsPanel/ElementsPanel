@@ -18,7 +18,7 @@ import userSystem from "../service/user_service";
 
 export default function createGeneralUserRouter() {
   const validator = core().middleware.validator;
-  const { getInstancesByUuid } = core().services.instances;
+  const { getByUuid: getInstancesByUuid } = core().instances;
   const router = new Router({ prefix: "/auth" });
 
   // [Low-level Permission]

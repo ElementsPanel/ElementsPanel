@@ -10,10 +10,8 @@ import {
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { useServerConfig } from "@/hooks/useServerConfig";
 import { t } from "@/lang/i18n";
-import {
-  getPanelFrontendInstanceActions,
-  type PanelFrontendInstanceActionContext
-} from "@/plugins";
+import { ctx } from "@/plugin/context";
+import type { PanelFrontendInstanceActionContext } from "@/plugin";
 import { modListApi } from "@/services/apis/modManager";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import type { LayoutCard } from "@/types";
@@ -77,7 +75,7 @@ const { serverConfigFiles, refresh: refreshServerConfig } = useServerConfig();
 const { state: overviewState } = useOverviewInfo();
 
 const normalInstanceActions = computed(() =>
-  getPanelFrontendInstanceActions().filter((action) => action.normalComponent)
+  ctx.actions.instances.filter((action) => action.normalComponent)
 );
 
 const setInstanceActionRef = (id: string, component: unknown) => {

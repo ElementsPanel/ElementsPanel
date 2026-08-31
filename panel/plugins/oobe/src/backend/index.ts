@@ -1,6 +1,9 @@
-import Router from "@koa/router";
-import type { PanelPluginContext } from "../../../../src/app/plugins";
+import type { PanelPluginContext } from "../../../../src/app/plugin";
 import { localeMessages } from "../i18n";
+
+// First-run setup. It owns the "is the panel installed" answer the frontend
+// reads from `/api/auth/status`; the core defaults to installed, so removing
+// this plugin cannot redirect the browser to a route that no longer exists.
 
 class OobeState {
   completed = false;
@@ -9,11 +12,13 @@ class OobeState {
 const CATEGORY = "OobeState";
 const ID = "config";
 
-export async function setup(context: PanelPluginContext) {
-  context.registerLocaleMessages(localeMessages);
+export const inject = ["koa", "i18n", "storage", "settings", "remote", "identity"];
 
-  const storage = context.storage.getStorage();
-  const users = context.services.users;
+export async function apply(ctx: PanelPluginContext) {
+  ctx.i18n.define(localeMessages);
+
+  const storage = ctx.storage.getStorage();
+  const users = ctx.identity.users;
   const stored = (await storage.load(CATEGORY, OobeState, ID)) as OobeState | null;
   const state = stored ?? new OobeState();
 
@@ -32,39 +37,37 @@ export async function setup(context: PanelPluginContext) {
     }
   }
 
-  context.registerInstallationState({
-    isInstalled: () => state.completed
-  });
+  // `ctx.set()` from inside a plugin belongs to that plugin: the service is
+  // removed when it unloads, and the core falls back to "installed".
+  ctx.set("installation", { isInstalled: () => state.completed });
 
-  const router = new Router({ prefix: "/api/overview" });
+  const router = ctx.koa.router("/api/overview");
 
-  router.put("/install", async (ctx) => {
-    const config = (ctx.request.body ?? {}) as { language?: unknown };
+  router.put("/install", async (requestCtx) => {
+    const config = (requestCtx.request.body ?? {}) as { language?: unknown };
     if (!state.completed) {
       if (config.language != null) {
-        context.logger.warn(context.i18n.$t("TXT_CODE_e29a9317"), config.language);
-        context.config.language = String(config.language);
-        await context.i18n.i18next.changeLanguage(context.config.language.toLowerCase());
-        context.services.remote.changeDaemonLanguage(context.config.language);
+        ctx.logger.warn(ctx.i18n.$t("TXT_CODE_e29a9317"), config.language);
+        ctx.settings.config.language = String(config.language);
+        await ctx.i18n.i18next.changeLanguage(ctx.settings.config.language.toLowerCase());
+        ctx.remote.services.changeDaemonLanguage(ctx.settings.config.language);
       }
-      context.saveConfig();
-      ctx.body = "OK";
+      ctx.settings.save();
+      requestCtx.body = "OK";
       return;
     }
-    ctx.body = new Error(context.i18n.$t("TXT_CODE_d37f0418"));
+    requestCtx.body = new Error(ctx.i18n.$t("TXT_CODE_d37f0418"));
   });
 
-  router.post("/complete", async (ctx) => {
-    const currentUsers = context.services.users;
+  router.post("/complete", async (requestCtx) => {
+    const currentUsers = ctx.identity.users;
     if (currentUsers && currentUsers.size() === 0) {
-      ctx.status = 409;
-      ctx.body = false;
+      requestCtx.status = 409;
+      requestCtx.body = false;
       return;
     }
     state.completed = true;
     await storage.store(CATEGORY, ID, state);
-    ctx.body = true;
+    requestCtx.body = true;
   });
-
-  context.registerRouter(router);
 }

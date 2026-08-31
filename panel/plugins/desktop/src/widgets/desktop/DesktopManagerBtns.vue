@@ -8,10 +8,8 @@ import {
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { useServerConfig } from "@/hooks/useServerConfig";
 import { t } from "@/lang/i18n";
-import {
-    getPanelFrontendInstanceActions,
-    type PanelFrontendInstanceActionContext
-} from "@/plugins";
+import { ctx } from "@/plugin/context";
+import type { PanelFrontendInstanceActionContext } from "@/plugin";
 import { modListApi } from "@/services/apis/modManager";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import {
@@ -74,7 +72,7 @@ const { instanceInfo, execute, isGlobalTerminal } = useInstanceInfo({
 const { serverConfigFiles, refresh: refreshServerConfig } = useServerConfig();
 
 const desktopInstanceActions = computed(() =>
-    getPanelFrontendInstanceActions().filter((action) => action.desktopComponent)
+    ctx.actions.instances.filter((action) => action.desktopComponent)
 );
 
 const folders = ref<string[]>([]);

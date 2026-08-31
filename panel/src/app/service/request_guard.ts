@@ -1,5 +1,6 @@
 import Koa from "koa";
 import { ROLE } from "../entity/user";
+import { ctx as panel } from "../plugin/context";
 
 /**
  * The panel core does not implement authentication. A guard plugin — see
@@ -8,8 +9,7 @@ import { ROLE } from "../entity/user";
  *
  * Only the shape of a guard and the "no guard installed" null object live here.
  * There is deliberately no core branch anywhere else that asks whether
- * authentication is enabled. Keep this module dependency-free so it can be
- * imported from anywhere.
+ * authentication is enabled.
  */
 
 /** Everything the panel knows about the caller of a request. */
@@ -108,19 +108,13 @@ const UNGUARDED: RequestGuard = {
   stats: () => NO_STATS
 };
 
-let guard: RequestGuard = UNGUARDED;
-
-export function setRequestGuard(value: RequestGuard) {
-  guard = value;
-}
-
-export function clearRequestGuard() {
-  guard = UNGUARDED;
-}
-
-/** Always returns a guard, so call sites never branch on whether one exists. */
+/**
+ * Always returns a guard, so call sites never branch on whether one exists.
+ * `plugins/user` provides `ctx.guard`; while nothing does, the panel is
+ * unguarded and every request is served.
+ */
 export function getRequestGuard(): RequestGuard {
-  return guard;
+  return panel.get("guard") ?? UNGUARDED;
 }
 
 /**

@@ -1,6 +1,6 @@
 import fs from "fs-extra";
 import type InstanceEntity from "../../../../src/entity/instance/instance";
-import type { DaemonPluginContext } from "../../../../src/service/plugins";
+import type { DaemonPluginContext } from "../../../../src/plugin";
 import type { QuickInstallTask, QuickInstallTaskClass } from "./quick_install";
 
 /**
@@ -9,12 +9,11 @@ import type { QuickInstallTask, QuickInstallTaskClass } from "./quick_install";
  * preset exists only while this plugin is loaded.
  */
 export function createInstallCommandClass(
-  context: DaemonPluginContext,
+  ctx: DaemonPluginContext,
   QuickInstallTask: QuickInstallTaskClass
 ) {
-  const { InstanceCommand } = context.install;
-  const Instance = context.Instance;
-  const $t = context.translate;
+  const { Command: InstanceCommand, Instance } = ctx.instances;
+  const $t = ctx.i18n.$t;
 
   return class MarketInstallCommand extends InstanceCommand {
     private installTask?: QuickInstallTask;

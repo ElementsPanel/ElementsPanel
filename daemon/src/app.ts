@@ -12,7 +12,9 @@ import { checkDependencies } from "./service/dependencies";
 import * as koa from "./service/http";
 import { registerJavaManagerInstanceHooks } from "./service/java_manager";
 import logger from "./service/log";
-import { loadDaemonPlugins, runDaemonPluginHook } from "./service/plugins";
+import { ctx as daemon } from "./plugin/context";
+import { installDaemonPluginServices } from "./plugin/install";
+import { loadDaemonPlugins } from "./plugin/loader";
 import * as protocol from "./service/protocol";
 import * as router from "./service/router";
 import InstanceSubsystem from "./service/system_instance";
@@ -67,7 +69,12 @@ async function main() {
     // When Koa is attacked by a short connection flood, it is easy for error messages to swipe the screen, which may indirectly affect the operation of some applications
   });
 
-  await loadDaemonPlugins(koaApp);
+  // The plugin container owns everything past this point: services first, so
+  // that a plugin can use them, then the plugins themselves. `ctx.koa` mounts
+  // the two composed stacks a plugin adds middleware and routers to, which is
+  // why it has to be installed before the core router goes last.
+  installDaemonPluginServices(koaApp);
+  await loadDaemonPlugins();
   koa.mountCoreRouter(koaApp);
 
   let httpServer: http.Server | https.Server;
@@ -156,7 +163,7 @@ async function main() {
   logger.info($t("TXT_CODE_app.exitTip"));
   logger.info("----------------------------");
   console.log("");
-  await runDaemonPluginHook("ready");
+  await daemon.start();
 
   let isExiting = false;
   async function listenExitSig(signal: string, isForce = true) {
@@ -177,7 +184,7 @@ async function main() {
       } else {
         logger.warn($t("TXT_CODE_4ffdc91d", { signal }));
         isExiting = true;
-        await runDaemonPluginHook("dispose");
+        await daemon.stop();
 
         if (isForce || !config.enableSoftShutdown) {
           // Force mode
@@ -214,7 +221,7 @@ async function main() {
 }
 
 main().catch(async (err) => {
-  await runDaemonPluginHook("dispose");
+  await daemon.stop();
   logger.error("main() error:", err);
   process.exit(1);
 });

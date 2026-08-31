@@ -6,7 +6,8 @@
     "cypress.config.*",
     "nightwatch.conf.*",
     "playwright.config.*",
-    "../common/global.d.ts"
+    "../common/global.d.ts",
+    "../common/src/plugin_manifest.ts"
   ],
   "compilerOptions": {
     "composite": true,

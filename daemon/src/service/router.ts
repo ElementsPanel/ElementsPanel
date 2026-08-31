@@ -32,6 +32,12 @@ class RouterApp extends EventEmitter {
     this.middlewares.push(fn);
   }
 
+  /** Counterpart of `use`, so a plugin's middleware leaves with the plugin. */
+  unuse(fn: (event: string, ctx: RouterContext, data: any, next: Function) => void) {
+    const index = this.middlewares.indexOf(fn);
+    if (index >= 0) this.middlewares.splice(index, 1);
+  }
+
   getMiddlewares() {
     return this.middlewares;
   }

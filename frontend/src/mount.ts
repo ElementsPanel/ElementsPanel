@@ -16,7 +16,8 @@ import { getI18nInstance, t } from "@/lang/i18n";
 import App from "./App.vue";
 
 import { useAppStateStore } from "./stores/useAppStateStore";
-import { runPanelFrontendPluginHook, setupPanelFrontendPlugins } from "./plugins";
+import { ctx } from "./plugin/context";
+import { setupPanelFrontendPlugins } from "./plugin/install";
 
 window.addEventListener("unhandledrejection", function (event) {
   console.error("Unhandled promise rejection:", event.reason);
@@ -49,5 +50,7 @@ export async function mountApp() {
 
   app.use(router);
   app.mount("#app-mount-point");
-  await runPanelFrontendPluginHook("ready");
+  // The app is mounted and the session restored: plugins that were waiting for
+  // either can run now.
+  await ctx.start();
 }

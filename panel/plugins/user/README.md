@@ -17,7 +17,7 @@ so a second copy would create a second storage subsystem and system config.
 Everything it needs is injected through the plugin context and read via
 `src/backend/runtime.ts`.
 
-`setup()` initializes the user store and calls `context.registerRequestGuard()`,
+`apply()` initializes the user store and calls `ctx.set("guard", ...)`,
 which is what switches the whole panel from "open" to "authenticated". It then
 mounts:
 
@@ -85,7 +85,7 @@ longer reports SSO at all; anything that needs to know asks the plugin's public
 `/api/auth/sso/config`.
 
 They are edited through the `config` plugin's page — this plugin exports a
-`configuration.component` (`src/PluginConfig.vue`) rather than adding a tab to
+`ctx.settings.page()` (`src/PluginConfig.vue`) rather than adding a tab to
 the panel Settings page.
 
 ## Frontend
@@ -122,9 +122,9 @@ absent, OOBE skips that optional step and can still complete normally.
 `src/i18n/` holds every string only this plugin uses — the login and account
 pages, the user list, the SSO settings block, the Desktop user windows and the
 messages the backend logs or throws. `src/frontend.ts` passes them to the panel
-as `localeMessages`; `src/backend/index.ts` registers the same catalogue with
-the panel's i18next instance before it initializes anything, so a router that
-throws a translated error never depends on the root `languages/` catalogue.
+with `ctx.i18n.define()`, and `src/backend/index.ts` does the same on the panel's
+i18next instance before it initializes anything, so a router that throws a
+translated error never depends on the root `languages/` catalogue.
 
 Strings shared with the panel core or with another plugin (the `desktop`
 window chrome, for instance) stay in `languages/*.json`. Adding a string here

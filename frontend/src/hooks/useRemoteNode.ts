@@ -1,4 +1,4 @@
-import { getPanelFrontendService } from "@/pluginServices";
+import { usePluginService } from "@/plugin/context";
 import type { ComputedNodeInfo, ComputedOverviewResponse } from "./useOverviewInfo";
 import type { ComputedRef, Ref } from "vue";
 
@@ -34,9 +34,9 @@ export interface RemoteNodeHook {
 }
 
 export function useRemoteNode() {
-  const hook = getPanelFrontendService<() => RemoteNodeHook>("node.useRemoteNode");
-  if (!hook) {
+  const node = usePluginService<{ useRemoteNode: () => RemoteNodeHook }>("node");
+  if (!node) {
     throw new Error('Panel frontend plugin "node" is not loaded.');
   }
-  return hook();
+  return node.useRemoteNode();
 }

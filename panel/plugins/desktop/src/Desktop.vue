@@ -2,16 +2,12 @@
 import { t } from "@/lang/i18n";
 import { getDesktopLayoutConfig, setDesktopLayoutConfig } from "./api";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
-import { getPanelFrontendService } from "@/pluginServices";
+import { ctx, usePluginService } from "@/plugin/context";
+import type { FrontendUserService } from "@/plugin";
 import { logoutUser } from "@/services/apis/index";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
-import {
-    getPanelFrontendDesktopApps,
-    getPanelFrontendInstanceActions,
-    type PanelFrontendDesktopApp,
-    type PanelFrontendInstanceAction
-} from "@/plugins";
+import type { PanelFrontendDesktopApp, PanelFrontendInstanceAction } from "@/plugin";
 import type { ContextMenuItem } from "./widgets/desktop/DesktopContextMenu.vue";
 import DesktopContextMenu from "./widgets/desktop/DesktopContextMenu.vue";
 import DesktopEventConfig from "./widgets/desktop/DesktopEventConfig.vue";
@@ -65,16 +61,11 @@ const { state: appState, isAdmin, isLogged, authEnabled } = useAppStateStore();
 
 // Login, account and user-management windows are owned by the "user" plugin.
 // Without it the panel has no authentication, so they simply do not exist.
-const desktopLoginWindow = computed(() =>
-    getPanelFrontendService<Component>("user.desktopLoginWindow")
-);
-const desktopUsersWindow = computed(() => getPanelFrontendService<Component>("user.desktopUsers"));
-const desktopUserInfoWindow = computed(() =>
-    getPanelFrontendService<Component>("user.desktopUserInfo")
-);
-const desktopStartMenuAvatar = computed(() =>
-    getPanelFrontendService<Component>("user.desktopStartMenuAvatar")
-);
+const user = computed(() => usePluginService<FrontendUserService>("user"));
+const desktopLoginWindow = computed(() => user.value?.desktopLoginWindow);
+const desktopUsersWindow = computed(() => user.value?.desktopUsers);
+const desktopUserInfoWindow = computed(() => user.value?.desktopUserInfo);
+const desktopStartMenuAvatar = computed(() => user.value?.desktopStartMenuAvatar);
 const { getSettingsConfig } = useLayoutConfigStore();
 const { isDarkTheme } = useAppConfigStore();
 
@@ -139,7 +130,7 @@ const getDesktopAppLabel = (app: PanelFrontendDesktopApp) =>
     typeof app.label === "function" ? app.label() : app.label;
 
 const pluginDesktopApps = computed<DesktopApp[]>(() =>
-    getPanelFrontendDesktopApps()
+    ctx.desktop.apps
         .filter((app) =>
             typeof app.condition === "function"
                 ? app.condition()
@@ -159,7 +150,7 @@ const pluginDesktopApps = computed<DesktopApp[]>(() =>
 );
 
 const pluginInstanceActions = computed<PanelFrontendInstanceAction[]>(() => [
-    ...getPanelFrontendInstanceActions()
+    ...ctx.actions.instances
 ]);
 
 const availableDesktopApps = computed<DesktopApp[]>(() => {

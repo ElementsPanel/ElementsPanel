@@ -1,4 +1,4 @@
-import { getPanelFrontendService } from "@/pluginServices";
+import { usePluginService } from "@/plugin/context";
 import type { Ref } from "vue";
 import type { NodeStatus } from "@/types";
 
@@ -18,11 +18,11 @@ export interface NodePluginApi {
 }
 
 function resolveNodeApi(): NodePluginApi {
-  const api = getPanelFrontendService<NodePluginApi>("node.api");
-  if (!api) {
+  const node = usePluginService<{ api: NodePluginApi }>("node");
+  if (!node) {
     throw new Error('Panel frontend plugin "node" is not loaded.');
   }
-  return api;
+  return node.api;
 }
 
 export const remoteNodeList = () => resolveNodeApi().remoteNodeList();

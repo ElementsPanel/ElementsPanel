@@ -1,5 +1,5 @@
 import Instance from "../instance/instance";
-import { getDaemonPresetCommands } from "../../service/plugin_registry";
+import { ctx as daemon } from "../../plugin/context";
 import InstanceCommand from "./base/command";
 import DockerResizeCommand from "./docker/docker_pty_resize";
 import DockerStartCommand from "./docker/docker_start";
@@ -84,7 +84,7 @@ export default class FunctionDispatcher extends InstanceCommand {
     // Plugin-supplied presets go last so a plugin can add one the core has no
     // implementation for — `install`, owned by the market plugin — or override
     // one it does.
-    for (const [preset, createCommand] of getDaemonPresetCommands()) {
+    for (const [preset, createCommand] of daemon.presets.entries()) {
       instance.setPreset(preset, createCommand());
     }
   }

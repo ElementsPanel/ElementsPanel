@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useSchedule } from "@/hooks/useSchedule";
-import { getPanelFrontendScheduleActions } from "@/plugins";
+import { ctx } from "@/plugin/context";
 import { t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";
 import type { Schedule, ScheduleAction, ScheduleTaskForm } from "@/types";
@@ -89,7 +89,7 @@ let newTask = reactive<ScheduleTaskForm>(_.cloneDeep(defaultTask));
 
 const scheduleActionTypes = computed(() => {
   const types: Record<string, string> = { ...ScheduleActionType };
-  for (const action of getPanelFrontendScheduleActions()) {
+  for (const action of ctx.actions.schedules) {
     if (action.condition && !action.condition()) continue;
     types[action.type] = typeof action.title === "function" ? action.title() : action.title;
   }
@@ -109,7 +109,7 @@ const getInputPlaceholder = (action: ScheduleAction) => {
   if (action.type === ScheduleActionTypeEnum.Command) {
     return t("TXT_CODE_8ff89011");
   }
-  const pluginAction = getPanelFrontendScheduleActions().find((item) => item.type === action.type);
+  const pluginAction = ctx.actions.schedules.find((item) => item.type === action.type);
   if (!pluginAction?.inputPlaceholder) return;
   return typeof pluginAction.inputPlaceholder === "function"
     ? pluginAction.inputPlaceholder()

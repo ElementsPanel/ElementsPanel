@@ -1,8 +1,8 @@
 # Panel plugins
 
 Each child directory is one panel plugin. A source plugin contains `plugin.json`
-and a `src` directory. The backend entry is loaded by the panel process, while
-the frontend entry is compiled by Vite as a separately loadable plugin entry.
+and a `src` directory. The backend entry is loaded by the panel process; the
+frontend entry is compiled by Vite as a separately loadable chunk.
 
 ```json
 {
@@ -15,58 +15,153 @@ the frontend entry is compiled by Vite as a separately loadable plugin entry.
 }
 ```
 
-Both entries are optional. A backend module exports `setup(context)` (or
-`install(context)`) and may also export `ready(context)` and `dispose(context)`.
-The panel backend context exposes the Koa `app`, `router`, panel `config`,
-`storage`, core `services` (`remote` for the remote service subsystem,
-`remoteRequest` for the daemon request helper, `users`, `operationLogger`,
-`instances`, `sso`), the shared `middleware` (`instanceAccess`, `permission` and `validator`),
-`common` (`GlobalVariable`), `i18n`, `roles`,
-`registerRoute`, `registerRouter`, `registerMiddleware`, `registerRequestGuard`,
-`registerInstallationState`, `registerLocaleMessages`, `registerOverviewProvider`,
-`saveConfig`, `metadata`, `directory`, and `logger`. `services.identify(ctx)`
-reports who is calling the current request, and
-`middleware.speedLimit(seconds)` applies the core's per-caller rate limit.
+Both entries are optional. Set `enabled` to `false` to skip a plugin.
 
-`registerRequestGuard(guard)` hands the plugin request authorization for the
-whole panel: route guarding, caller identity, instance ownership, upload
-permission and the auth counters the overview reports. The core implements none
-of that itself and has no "is auth enabled" branch anywhere — it just asks the
-installed guard, and serves every request while none is installed. The guard is
-cleared automatically when the owning plugin is disposed. See `plugins/user`.
+## The plugin shape
 
-`registerInstallationState(state)` lets a first-run plugin supply the value
-reported as `isInstall` by `/api/auth/status`. The core defaults to installed,
-so removing the owning plugin cannot redirect the frontend to a route that no
-longer exists. See `plugins/oobe`.
+The panel's plugin system is [cordis](https://github.com/cordiverse/cordis). A
+plugin is a module that exports `apply`, and optionally `inject`:
 
-`registerOverviewProvider(provider)` merges extra fields into
-`GET /api/overview`. The core reports only what the whole panel reads that route
-for — the nodes, the panel process and the host it runs on. Anything collected
-purely to be displayed goes in a plugin: `plugins/monitor` contributes the
-`chart` field this way, and it disappears with the plugin.
+```ts
+import type { PanelPluginContext } from "../../../../src/app/plugin";
+import { localeMessages } from "../i18n";
 
-Backend entries are written in TypeScript at `src/backend/index.ts`.
-`panel/webpack.plugins.config.js` compiles every such entry to
-`<plugin>/backend/index.cjs` during `npm run build` in `panel/`, externalizing
-the panel's runtime dependencies so the plugin shares its module instances.
-Compiled backends are gitignored build output — point `plugin.json` at
-`backend/index.cjs`.
+export const inject = ["koa", "i18n", "middleware", "roles"];
 
-A backend must not import panel core modules: they are bundled into `app.js`, so
-importing them would compile a second copy of each singleton (storage, system
-config, i18n). Take what you need from the context instead; only `import type`
-from the core is safe, because types are erased.
+export function apply(ctx: PanelPluginContext) {
+  ctx.i18n.define(localeMessages);
 
-The loader itself accepts any Node-loadable JavaScript (`.js`, `.cjs`, `.mjs`),
-so a hand-written entry still works if you have a reason to skip the compile
-step.
+  const router = ctx.koa.router("/api/example");
+  router.get("/", ctx.middleware.permission({ level: ctx.roles.ADMIN }), async (requestCtx) => {
+    requestCtx.body = "hello";
+  });
+}
+```
+
+There is no `setup`, no `dispose` and no lifecycle to implement. `apply` may be
+`async`. Three rules follow from cordis and are worth internalising:
+
+- **Everything you register is an effect of your own scope.** Routes, middleware,
+  timers, overview providers, translations and services are all undone when the
+  plugin is unloaded. Do not write cleanup code, and do not return a disposer
+  from `apply` — cordis v3 ignores it. If you need to undo something cordis does
+  not know about, wrap it yourself:
+
+  ```ts
+  ctx.effect(() => {
+    const handle = openSomething();
+    return () => handle.close();
+  });
+  ```
+
+- **`inject` lists what you cannot work without.** cordis keeps the plugin
+  inactive until every injected service exists, and disposes it again if one goes
+  away. For something optional, use `ctx.inject(["thing"], (scoped) => { ... })`
+  around just the part that needs it, or read `ctx.get("thing")` and degrade.
+
+- **`ctx.logger` and the timers are cordis's.** `ctx.logger.info(...)` logs under
+  your plugin's id; `ctx.setTimeout`, `ctx.setInterval`, `ctx.sleep`,
+  `ctx.throttle` and `ctx.debounce` are cancelled when the plugin unloads, so a
+  sampler needs no `stop()`.
+
+Plugins are loaded in ascending `priority` order. Use `inject` to express real
+dependencies; `priority` only fixes a deterministic order among plugins that do
+not depend on each other — Koa middleware order, route match order, i18n merge
+precedence and layout-card override precedence. A plugin that fails is reported
+and skipped; the panel keeps running.
+
+## The backend context
+
+| Service | What it gives you |
+| --- | --- |
+| `ctx.logger` | Named logger. `ctx.logger("sub")` for a sub-logger. |
+| `ctx.timer` | `setTimeout` / `setInterval` / `sleep` / `throttle` / `debounce`, mixed onto `ctx`. |
+| `ctx.koa` | `app`, `use(middleware)`, `router(prefix?)`. Both are removed on unload. |
+| `ctx.settings` | `config` (the panel configuration) and `save()`. |
+| `ctx.storage` | The panel's entity storage, file- or Redis-backed. |
+| `ctx.i18n` | `$t`, `i18next`, and `define(messages)` for the plugin's own strings. |
+| `ctx.middleware` | `permission`, `validator`, `instanceAccess`, `speedLimit`. |
+| `ctx.roles` | The role constants (`ADMIN`, `USER`, ...). |
+| `ctx.remote` | `services` (the node subsystem) and `Request` (the daemon request helper). |
+| `ctx.identity` | `of(requestCtx)`, `users`, `stats` — whoever the installed guard reports. |
+| `ctx.operations` | The operation logger. |
+| `ctx.instances` | `getByUuid`. |
+| `ctx.globals` | Process-wide counters shared with the core. |
+| `ctx.overview` | `provide(fn)` to add fields to `GET /api/overview`. |
+| `ctx.plugins` | `loaded`, and the frontend manifest the browser fetches. |
+| `ctx.guard` | Request authorization. **Provided by `plugins/user`.** |
+| `ctx.installation` | First-run state. **Provided by `plugins/oobe`.** |
+
+`src/app/plugin/context.ts` is the authoritative declaration of all of this.
+
+Two of these are provided by plugins rather than by the core, with `ctx.set()`:
+
+`ctx.set("guard", guard)` hands the plugin request authorization for the whole
+panel — route guarding, caller identity, instance ownership, upload permission
+and the auth counters the overview reports. The core implements none of that and
+has no "is auth enabled" branch anywhere: it asks the installed guard, and serves
+every request while none is installed. See `plugins/user`.
+
+`ctx.set("installation", state)` supplies the value reported as `isInstall` by
+`/api/auth/status`. The core defaults to installed, so removing the owning plugin
+cannot redirect the frontend to a route that no longer exists. See `plugins/oobe`.
+
+Both leave with their plugin, because a service registered inside `apply` belongs
+to that plugin's scope.
+
+`ctx.overview.provide(fn)` merges extra fields into `GET /api/overview`. The core
+reports only what the whole panel reads that route for — the nodes, the panel
+process and the host it runs on. Anything collected purely to be displayed goes
+in a plugin: `plugins/monitor` contributes the `chart` field this way, and it
+disappears with the plugin.
+
+## Naming inside a plugin
+
+`ctx` is the plugin context. Koa's own context is different, so hoist what a
+route handler needs before declaring routes:
+
+```ts
+const requireAdmin = ctx.middleware.permission({ level: ctx.roles.ADMIN });
+router.get("/x", requireAdmin, async (requestCtx) => { ... });
+```
+
+Name a Koa handler's parameter `requestCtx` when the handler also needs the
+plugin context. Where it does not, `ctx` is fine — TypeScript will reject
+`ctx.roles` on a Koa context, so the two cannot be confused silently.
+
+## Reaching `ctx` from deep inside a plugin
+
+A plugin's own modules take `ctx` as an argument — see
+`plugins/market/src/backend/service/market_settings.ts`. A plugin with many such
+modules may instead keep one private context holder; `plugins/user` does, in
+`src/backend/runtime.ts`, because fourteen modules there need something from the
+context and a parameter through all of them would say nothing the holder does
+not.
+
+## What a backend must not import
+
+A backend must not import panel core modules at runtime: they are bundled into
+`app.js`, so importing one would compile a second copy of that singleton — the
+storage subsystem, the system config, the i18n instance. The same goes for
+`cordis` itself: a second `Context` class is a second container, and the plugin's
+services would be invisible to the panel. Only `import type` from either, because
+types are erased.
+
+Backend entries are TypeScript at `src/backend/index.ts`.
+`panel/webpack.plugins.config.js` compiles each one to `<plugin>/backend/index.cjs`
+during `npm run build` in `panel/`, keeping the panel's runtime dependencies —
+including cordis — external so the plugin shares its module instances. Compiled
+backends are gitignored build output; point `plugin.json` at `backend/index.cjs`.
+
+The loader accepts `panel`, `backend`, `main` or `entry` as the metadata field,
+and any Node-loadable JavaScript, so a hand-written entry works if you have a
+reason to skip the compile step.
 
 ## Translations
 
 A plugin owns the strings only it uses. They live in `<plugin>/src/i18n/`, one
 JSON file per language, next to an `index.ts` that exports them as
-`localeMessages` keyed by the panel's locale codes (`en_us`, `zh_cn`, ...):
+`localeMessages` keyed by the panel's locale codes:
 
 ```ts
 import enUS from "./en_US.json";
@@ -75,175 +170,132 @@ import zhCN from "./zh_CN.json";
 export const localeMessages = { en_us: enUS, zh_cn: zhCN };
 ```
 
-The frontend definition passes that object as `localeMessages` (or calls
-`context.registerLocaleMessages(locale, messages)`), and a backend that logs or
-throws translated text calls `context.registerLocaleMessages(localeMessages)`
-before anything else in `setup()`. Both merge on top of the shared catalogue, so
-a plugin's strings arrive and leave with the plugin. Frontend registrations are
-undone when the plugin unloads; backend code only reloads with the panel
-process, so its messages stay registered for the process lifetime.
+Pass that to `ctx.i18n.define(localeMessages)` as the first thing `apply()` does,
+before any code path that can log or throw translated text. Registration is an
+effect: the panel snapshots the base catalogue and re-applies base plus every
+live registration on each change, so a plugin's strings — including any that
+override a core string — arrive and leave with the plugin.
 
-The root `languages/` catalogue keeps only what the panel core uses, plus the
-strings shared by more than one plugin. When you add a string, add it to every
-language file in the folder that owns it — see `plugins/user`, `plugins/oobe`,
-`plugins/backup`, `plugins/node` and `plugins/desktop`.
+The root `languages/` catalogue keeps only what the panel core uses, plus strings
+shared by more than one plugin. When you add a string, add it to every language
+file in the folder that owns it.
 
-The frontend module exports `setup(context)` or a definition object. Its
-`directory` context field is the logical plugin id. During a production build,
-each frontend entry is emitted below `dist/plugins/<plugin-folder>/`. The
-collection scripts turn every source plugin into a distributable directory at
-`production-code/web/plugins/<plugin-folder>/`. A production plugin contains
-only its rewritten `plugin.json`, executable `backend/` files and compiled
-`frontend/` files; `src/` is not copied. The panel generates
-`/plugins/manifest.json` directly from installed plugin metadata and serves
-each frontend directory at `/plugins/<plugin-folder>/frontend/`. The main
-bundle does not contain the plugin implementation.
+## The frontend
+
+The frontend entry has the same shape — `apply(ctx)` plus optional `inject` —
+against a different set of services:
 
 ```ts
-export default {
-  routes: [{ path: "/example", component: ExamplePage }],
-  components: { ExamplePage },
-  setup({
-    app,
-    router,
-    registerRoute,
-    registerComponent,
-    registerLayoutCard,
-    registerLayoutCardPoolItem,
-    registerLocaleMessages,
-    registerAppMenu,
-    registerLoginAction,
-    registerDesktopApp,
-    registerInstanceAction,
-    registerScheduleAction,
-    registerTerminalAction,
-    registerGlobalComponent,
-    registerService,
-    getService
-  }) {
-    // register additional Vue behavior here
-  }
-};
-```
-
-`registerGlobalComponent(component)` (or a `globalComponents` array on the
-definition) mounts a component for the lifetime of the app, alongside the
-panel's own dialog providers. Use it for global overlays that belong to no
-route or card — `plugins/user` registers its account dialog this way.
-
-Plugins can expose runtime services for other plugins and panel compatibility
-facades with `registerService(name, value)`. Services are scoped to the owning
-plugin and are removed automatically when that plugin is unloaded. Other
-plugins can resolve them through `context.getService(name)` (or the exported
-`getPanelFrontendService(name)`) at call time so dynamic plugin unload/reload
-remains safe.
-
-Routes may set `meta.public` to bypass login checks and `meta.immersive` to hide
-the normal panel shell. Definition objects may also provide `appMenus` and
-`loginActions` arrays directly. Layout-card plugins may expose components with
-`layoutCards` and add removable entries to the design-mode card picker with
-`layoutCardPoolItems` or `context.registerLayoutCardPoolItem()`.
-
-A plugin can expose its configuration UI to the `config` plugin by exporting a
-Vue component. The component owns its form state, validation, API calls and
-persistence, so plugin-specific settings do not need to be coupled to the panel
-core.
-
-```ts
-import PluginConfig from "./PluginConfig.vue";
-
-export default {
-  configuration: {
-    component: PluginConfig
-  }
-};
-```
-
-Desktop applications can be declared statically through `desktopApps` or at
-runtime through `context.registerDesktopApp()`. Each application must provide a
-globally unique `id` and either a `component` to render inside a Desktop window,
-or a `route` to open directly. A component may also provide a route so the same
-page is available in both the normal panel and Desktop modes.
-
-```ts
+import type { PanelFrontendPluginContext } from "@/plugin";
+import { localeMessages } from "./i18n";
 import ExamplePage from "./ExamplePage.vue";
-import { AppstoreOutlined } from "@ant-design/icons-vue";
 
-export default {
-  desktopApps: [
-    {
-      id: "example",
-      label: "Example",
-      icon: AppstoreOutlined,
-      route: "/example",
-      component: ExamplePage,
-      initialWidth: 960,
-      initialHeight: 600
-    }
-  ]
-};
+export const inject = ["i18n", "routes", "ui"];
+
+export function apply(ctx: PanelFrontendPluginContext) {
+  ctx.i18n.define(localeMessages);
+  ctx.ui.layoutCard("ExampleCard", ExampleCard);
+  ctx.routes.add({ path: "/example", component: ExamplePage });
+}
 ```
 
-Instance tools that are specific to a plugin can be exposed in both panel modes
-through `instanceActions` or `context.registerInstanceAction()`. The action's
+| Service | What it gives you |
+| --- | --- |
+| `ctx.logger`, `ctx.timer` | As on the backend. |
+| `ctx.vue` | `app`, `pinia`, `router`. Stored raw; never make a context reactive. |
+| `ctx.i18n` | `instance`, `define(messages)`. |
+| `ctx.routes` | `add(route)`, `revision`, `isPluginRoute(path)`, `ownerOf(path)`. |
+| `ctx.ui` | `component`, `layoutCard`, `layoutCardPoolItem`, `globalComponent`. |
+| `ctx.menus` | `app(menu)`, `login(action)`, and the arrays the shell renders. |
+| `ctx.actions` | `instance`, `schedule`, `terminal`, and `terminalButtons(state)`. |
+| `ctx.desktop` | `app(desktopApp)`, `apps`, `window`, `provideWindow(component)`. |
+| `ctx.settings` | `page(component)`, `pages` — the plugin settings page. |
+| `ctx.plugins` | `loaded`, `load`, `unload`, `reload`, `refresh`. |
+| `ctx.user` | Account API and windows. **Provided by `plugins/user`.** |
+| `ctx.market` | Package picker and API. **Provided by `plugins/market`.** |
+| `ctx.node` | Node API and hook. **Provided by `plugins/node`.** |
+
+`frontend/src/plugin/context.ts` is the authoritative declaration of all of this.
+
+Routes may set `meta.public` to bypass login checks, `meta.immersive` to hide the
+panel shell, `meta.mainMenu` to appear in navigation and `meta.icon` for its
+icon. Menu entries are derived from routes, so there is nothing else to register.
+
+`ctx.ui.layoutCard(name, component)` registers a card the layout engine renders
+by name, and stacks over a core card of the same name so the original is restored
+on unload. `ctx.ui.layoutCardPoolItem(factory)` adds an entry to the design-mode
+card picker. `ctx.ui.globalComponent(component)` mounts a component for the
+lifetime of the plugin, alongside the panel's own dialog providers — for global
+overlays that belong to no route or card.
+
+`ctx.desktop.app({...})` adds an application to Desktop mode. The registry is
+core-owned even though Desktop mode is itself a plugin, because an application
+belongs to whichever plugin owns the page: registering unconditionally is correct,
+and the entry is simply inert while `plugins/desktop` is not installed. An
+application needs a globally unique `id` and either a `component` to render
+inside a Desktop window or a `route` to open directly.
+
+`ctx.settings.page(component)` contributes the plugin's own settings form to the
+`config` plugin's page, labelled with the plugin's id. The component owns its
+form state, validation, API calls and persistence, so plugin settings are never
+coupled to the panel core.
+
+`ctx.actions.instance({...})` adds an instance tool to both panel modes. Its
 `normalComponent` and `desktopComponent` receive `instanceUuid` and `daemonId`
-props. Normal components should expose an `open()` method; Desktop components
-are mounted inside a Desktop window and may emit `close` and
-`open-file-editor(filePath, fileName)` when those integrations are needed. An
-optional `condition(context)` controls whether the tool is shown for the
-current instance. Unloading the owning plugin removes its action and closes
-open Desktop windows for it.
+props; normal components should expose an `open()` method, Desktop components are
+mounted inside a Desktop window and may emit `close` and
+`open-file-editor(filePath, fileName)`. `ctx.actions.schedule({...})` adds a
+scheduled-task type, and `ctx.actions.terminal({...})` a button in the terminal's
+instance-operations row — the latter gets the state the terminal itself has
+(`instanceId`, `daemonId`, `instanceInfo`, `isStopped`, `isRunning`,
+`isDockerMode`, `isGlobalTerminal`, `clearTerminal()`) in both `click` and
+`condition`, so one registration serves the normal terminal and a Desktop console.
+
+A frontend plugin *may* import `cordis` and panel core modules at runtime: it is
+compiled into the same Vite module graph, and `cordis` is deduplicated, so there
+is only ever one container. Importing `@/...` core code is the normal way to
+build a page.
+
+## Cross-plugin services
+
+A plugin exposes an API to other plugins and to the panel core with
+`ctx.set(name, value)`. The service belongs to the plugin's scope, so it is
+removed when the plugin unloads. Consumers resolve it at use time and degrade
+when it is absent:
 
 ```ts
-context.registerInstanceAction({
-  id: "example-tool",
-  title: () => "Example tool",
-  icon: ExampleIcon,
-  normalComponent: NormalTool,
-  desktopComponent: DesktopTool,
-  condition: ({ isGlobalTerminal }) => !isGlobalTerminal
-});
+import { usePluginService } from "@/plugin/context";
+import type { FrontendUserService } from "@/plugin";
+
+const user = computed(() => usePluginService<FrontendUserService>("user"));
 ```
 
-Plugins can add schedule action types with `scheduleActions` or
-`context.registerScheduleAction()`. Each action supplies a wire `type`, a
-translated `title`, and optionally an input placeholder or visibility
-condition. The normal and Desktop schedule editors consume these registrations,
-so disabling the owning plugin removes its action from both editors.
+`usePluginService` is reactive — a `computed()` over it re-evaluates when the
+owning plugin is loaded or unloaded. A plugin that cannot work at all without
+another's service should `inject` it instead and let cordis handle the ordering.
 
-Buttons in the terminal's instance-operations row come from `terminalActions` or
-`context.registerTerminalAction()`. Each action gets the state the terminal
-itself has — `instanceId`, `daemonId`, `instanceInfo`, `isStopped`, `isRunning`,
-`isDockerMode`, `isGlobalTerminal` and `clearTerminal()` — in both `click` and
-`condition`, so one registration serves the normal terminal and a Desktop
-console window. `plugins/market` registers its reinstall-from-a-package button
-this way.
+`ctx.set()` hands the value over as it is, so a service may be any object,
+including a class instance with `#private` fields. (The core's own `provide`
+helper is careful about this for the opposite reason: `ctx.provide(name, value)`
+would make every read of the value return a proxy, and a method that uses a
+`#private` field or a `WeakMap` keyed by `this` would then fail.)
 
-```ts
-context.registerTerminalAction({
-  id: "example-reinstall",
-  title: () => "Reinstall",
-  icon: InteractionOutlined,
-  click: ({ daemonId, instanceId, clearTerminal }) => { /* ... */ },
-  condition: ({ isStopped, isGlobalTerminal }) => isStopped && !isGlobalTerminal
-});
-```
+## Production and hot plug
 
-Configuration components, routes, menus and Desktop applications disappear
-with their owning frontend plugin. The Desktop plugin also closes open windows
-whose application registration has been removed.
+During a production build each frontend entry is emitted below
+`dist/plugins/<plugin-folder>/`. The collection scripts turn every source plugin
+into a distributable directory at `production-code/web/plugins/<plugin-folder>/`
+containing only its rewritten `plugin.json`, executable `backend/` files and
+compiled `frontend/` files; `src/` is not copied. The panel generates
+`/plugins/manifest.json` from installed plugin metadata and serves each frontend
+directory at `/plugins/<plugin-folder>/frontend/`. The main bundle does not
+contain any plugin implementation.
 
-Set `enabled` to `false` to skip a plugin. Plugins are loaded in ascending
-`priority` order and a failed plugin is reported without stopping the
-application. The browser runtime exposes `window.ElementsPanelPlugins` with
-`load(id)`, `unload(id)`, `reload(id)`, `refresh()` and `loaded()` methods, so a
-production plugin can be enabled, disabled or replaced without rebuilding the
-main application. Call `refresh()` after copying or deleting a plugin directory
-to reconcile the running frontend. Backend entries still load when the panel
-process starts; adding, deleting or changing backend code requires restarting
-the panel process.
+A packaged plugin is installed or removed by copying or deleting its directory.
+The browser runtime exposes `window.ElementsPanelPlugins` with `load(id)`,
+`unload(id)`, `reload(id)`, `refresh()` and `loaded()`, so a production plugin can
+be enabled, disabled or replaced without rebuilding the panel. Call `refresh()`
+after copying or deleting a directory to reconcile the running frontend.
 
-A packaged plugin can be installed or removed by copying or deleting its whole
-directory under `production-code/web/plugins/`. Its `plugin.json` uses runtime
-entries such as `backend/index.cjs` and `frontend/frontend-<hash>.js`, rather
-than source paths.
+Backend entries load when the panel process starts; adding, deleting or changing
+backend code requires restarting it.

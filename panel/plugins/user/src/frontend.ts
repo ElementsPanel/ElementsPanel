@@ -1,5 +1,5 @@
 import { t } from "@/lang/i18n";
-import type { PanelFrontendPluginContext } from "@/plugins";
+import type { PanelFrontendPluginContext } from "@/plugin";
 import { UserOutlined } from "@ant-design/icons-vue";
 import * as userApi from "./api";
 import PluginConfig from "./PluginConfig.vue";
@@ -21,82 +21,83 @@ const ROLE_ADMIN = 10;
 const ROLE_USER = 1;
 const ROLE_GUEST = 0;
 
-export default {
-  // Authentication settings are edited through the `config` plugin's page.
-  configuration: {
-    component: PluginConfig
-  },
-  localeMessages,
-  layoutCards: {
-    LoginCard,
-    UserList,
-    UserStatusBlock,
-    UserInstanceList,
-    UserAccessSettings
-  },
-  globalComponents: [MyselfInfoDialog],
-  setup(context: PanelFrontendPluginContext) {
-    // Everything the panel core needs from the account API, resolved lazily so
-    // unloading this plugin takes authentication with it. The Desktop plugin
-    // picks up the three windows below through the same registry.
-    context.registerService("user.api", userApi);
-    context.registerService("user.desktopLoginWindow", DesktopLoginWindow);
-    context.registerService("user.desktopUsers", DesktopUsers);
-    context.registerService("user.desktopUserInfo", DesktopUserInfo);
-    context.registerService("user.desktopStartMenuAvatar", UserOutlined);
-    context.registerService("user.oobeCreateAdminAccount", OobeCreateAdminAccount);
+export const inject = ["i18n", "routes", "ui", "settings"];
 
-    context.registerRoute({
-      path: "/login",
-      name: t("TXT_CODE_24873a8a"),
-      component: LoginPage,
-      meta: {
-        permission: ROLE_GUEST,
-        onlyDisplayEditMode: true,
-        customClass: ["nav-button-warning"]
-      }
-    });
+export function apply(ctx: PanelFrontendPluginContext) {
+  ctx.i18n.define(localeMessages);
 
-    context.registerRoute({
-      path: "/sso/bind",
-      name: t("TXT_CODE_SSO_BIND_TITLE"),
-      component: SsoBindLogin,
-      meta: {
-        permission: ROLE_GUEST,
-        mainMenu: false
-      }
-    });
+  // Everything the panel core needs from the account API, plus the windows the
+  // Desktop and OOBE plugins mount. Resolved at call time, so unloading this
+  // plugin takes authentication with it.
+  ctx.set("user", {
+    api: userApi,
+    desktopLoginWindow: DesktopLoginWindow,
+    desktopUsers: DesktopUsers,
+    desktopUserInfo: DesktopUserInfo,
+    desktopStartMenuAvatar: UserOutlined,
+    oobeCreateAdminAccount: OobeCreateAdminAccount
+  });
 
-    context.registerRoute({
-      path: "/users",
-      name: t("TXT_CODE_1deaa2dd"),
-      component: () => import("@/views/LayoutContainer.vue"),
-      meta: {
-        mainMenu: true,
-        permission: ROLE_ADMIN
-      },
-      children: [
-        {
-          path: "/users/resources",
-          name: t("TXT_CODE_236f70aa"),
-          component: () => import("@/views/LayoutContainer.vue"),
-          meta: {
-            permission: ROLE_ADMIN
-          }
+  // Authentication settings are edited on the `config` plugin's page.
+  ctx.settings.page(PluginConfig);
+
+  ctx.ui.layoutCard("LoginCard", LoginCard);
+  ctx.ui.layoutCard("UserList", UserList);
+  ctx.ui.layoutCard("UserStatusBlock", UserStatusBlock);
+  ctx.ui.layoutCard("UserInstanceList", UserInstanceList);
+  ctx.ui.layoutCard("UserAccessSettings", UserAccessSettings);
+  ctx.ui.globalComponent(MyselfInfoDialog);
+
+  ctx.routes.add({
+    path: "/login",
+    name: t("TXT_CODE_24873a8a"),
+    component: LoginPage,
+    meta: {
+      permission: ROLE_GUEST,
+      onlyDisplayEditMode: true,
+      customClass: ["nav-button-warning"]
+    }
+  });
+
+  ctx.routes.add({
+    path: "/sso/bind",
+    name: t("TXT_CODE_SSO_BIND_TITLE"),
+    component: SsoBindLogin,
+    meta: {
+      permission: ROLE_GUEST,
+      mainMenu: false
+    }
+  });
+
+  ctx.routes.add({
+    path: "/users",
+    name: t("TXT_CODE_1deaa2dd"),
+    component: () => import("@/views/LayoutContainer.vue"),
+    meta: {
+      mainMenu: true,
+      permission: ROLE_ADMIN
+    },
+    children: [
+      {
+        path: "/users/resources",
+        name: t("TXT_CODE_236f70aa"),
+        component: () => import("@/views/LayoutContainer.vue"),
+        meta: {
+          permission: ROLE_ADMIN
         }
-      ]
-    });
-
-    context.registerRoute({
-      path: "/user",
-      name: t("TXT_CODE_8c3164c9"),
-      component: () => import("@/views/LayoutContainer.vue"),
-      meta: {
-        permission: ROLE_ADMIN,
-        mainMenu: false
       }
-    });
-  }
-};
+    ]
+  });
+
+  ctx.routes.add({
+    path: "/user",
+    name: t("TXT_CODE_8c3164c9"),
+    component: () => import("@/views/LayoutContainer.vue"),
+    meta: {
+      permission: ROLE_ADMIN,
+      mainMenu: false
+    }
+  });
+}
 
 export { ROLE_ADMIN, ROLE_GUEST, ROLE_USER };

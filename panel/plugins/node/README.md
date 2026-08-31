@@ -27,8 +27,7 @@ well.
 
 The remote service subsystem itself stays in the panel core, because instance
 routing, sockets, the overview and the exchange service all depend on it. The
-plugin reaches it through `context.services.remote` and
-`context.services.remoteRequest`. `/api/service/remote_service_instances` also
+plugin reaches it through `ctx.remote.services` and `ctx.remote.Request`. `/api/service/remote_service_instances` also
 stays in the core, since the core frontend browses instances with it whether or
 not this plugin is installed.
 

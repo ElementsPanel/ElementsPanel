@@ -1,5 +1,4 @@
-import Router from "@koa/router";
-import type { PanelPluginContext } from "../../../../src/app/plugins";
+import type { PanelPluginContext } from "../../../../src/app/plugin";
 import { localeMessages } from "../i18n";
 import { VisualDataHistory } from "./service/visual_data";
 
@@ -9,45 +8,36 @@ import { VisualDataHistory } from "./service/visual_data";
 // what the rest of the panel reads it for — and this plugin contributes the
 // `chart` field to it.
 
-let history: VisualDataHistory | undefined;
+export const inject = ["i18n", "koa", "overview", "middleware", "roles", "operations", "remote"];
 
-export function setup(context: PanelPluginContext) {
-  context.registerLocaleMessages(localeMessages);
+export function apply(ctx: PanelPluginContext) {
+  ctx.i18n.define(localeMessages);
 
-  history = new VisualDataHistory(context);
-  history.start();
+  const history = new VisualDataHistory(ctx);
 
   // Counted here rather than in the core response middleware: the request rate
   // only exists to be charted. Runs for every request regardless of where in
   // the middleware chain the plugin was mounted.
-  context.registerMiddleware(async (ctx, next) => {
-    if (ctx.url.startsWith("/api/")) history?.addRequestCount();
+  ctx.koa.use(async (requestCtx, next) => {
+    if (requestCtx.url.startsWith("/api/")) history.addRequestCount();
     await next();
   });
 
-  context.registerOverviewProvider(() => ({ chart: history?.toChart() }));
-
-  const router = new Router({ prefix: "/api/monitor" });
+  ctx.overview.provide(() => ({ chart: history.toChart() }));
 
   // The panel-wide operation log the monitoring page lists. Per-instance logs
   // stay in the core: the instance pages read those whether or not the
   // monitoring page exists.
+  const router = ctx.koa.router("/api/monitor");
   router.get(
     "/operation_logs",
-    context.middleware.permission({ level: context.roles.ADMIN }),
-    async (ctx) => {
-      const limit = Number(ctx.query?.limit ?? 20);
+    ctx.middleware.permission({ level: ctx.roles.ADMIN }),
+    async (requestCtx) => {
+      const limit = Number(requestCtx.query?.limit ?? 20);
       if (!Number.isFinite(limit) || limit <= 0 || limit > 200) {
-        return ctx.throw(400, "Invalid limit value. It must be a number between 1 and 200.");
+        return requestCtx.throw(400, "Invalid limit value. It must be a number between 1 and 200.");
       }
-      ctx.body = await context.services.operationLogger.get(limit);
+      requestCtx.body = await ctx.operations.get(limit);
     }
   );
-
-  context.registerRouter(router);
-}
-
-export function dispose() {
-  history?.stop();
-  history = undefined;
 }

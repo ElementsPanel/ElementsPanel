@@ -11,7 +11,7 @@ the backup plugin composes them to run backup jobs and edit `.epbaklst`.
 ## Translations
 
 `src/i18n/` holds the strings for the backup UI, passed to the panel as
-`localeMessages` by `src/frontend.ts`. The lines an instance prints while a
+`ctx.i18n.define()` by `src/frontend.ts`. The lines an instance prints while a
 backup runs belong to `daemon/plugins/backup`, which ships its own catalogue —
 the two never share a key.
 

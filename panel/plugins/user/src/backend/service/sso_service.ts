@@ -4,8 +4,8 @@ import { core, logger } from "../runtime";
 import { authSettings } from "./auth_settings";
 import crypto from "crypto";
 
-const corePrefix = () => core().config?.prefix || "";
-const corePort = () => core().config?.httpPort || 23333;
+const corePrefix = () => core().settings.config?.prefix || "";
+const corePort = () => core().settings.config?.httpPort || 23333;
 
 // ─── OIDC Cache ───
 

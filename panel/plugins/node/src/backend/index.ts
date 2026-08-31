@@ -1,6 +1,5 @@
-import Router from "@koa/router";
 import type Koa from "koa";
-import type { PanelPluginContext } from "../../../../src/app/plugins";
+import type { PanelPluginContext } from "../../../../src/app/plugin";
 
 // Panel side of the node plugin. It owns every HTTP route the node management
 // UI talks to; the panel core only keeps the remote service subsystem itself,
@@ -31,13 +30,15 @@ function describeNode(remoteService: RemoteServiceLike) {
   };
 }
 
-export function setup(context: PanelPluginContext) {
-  const router = new Router({ prefix: "/api/service" });
-  const remoteServices = context.services.remote;
-  const RemoteRequest = context.services.remoteRequest;
-  const operationLogger = context.services.operationLogger;
-  const validator = context.middleware.validator;
-  const requireAdmin = context.middleware.permission({ level: context.roles.ADMIN });
+export const inject = ["koa", "middleware", "roles", "remote", "operations"];
+
+export function apply(ctx: PanelPluginContext) {
+  const router = ctx.koa.router("/api/service");
+  const remoteServices = ctx.remote.services;
+  const RemoteRequest = ctx.remote.Request;
+  const operationLogger = ctx.operations;
+  const validator = ctx.middleware.validator;
+  const requireAdmin = ctx.middleware.permission({ level: ctx.roles.ADMIN });
 
   // Get the list of remote services.
   // Contains only service information, not a list of instance information.
@@ -181,6 +182,4 @@ export function setup(context: PanelPluginContext) {
       }
     }
   );
-
-  context.registerRouter(router);
 }

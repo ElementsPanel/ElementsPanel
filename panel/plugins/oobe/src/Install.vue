@@ -8,10 +8,11 @@ import {
   t,
   toStandardLang
 } from "@/lang/i18n";
-import { getPanelFrontendService } from "@/pluginServices";
+import { usePluginService } from "@/plugin/context";
+import type { FrontendUserService } from "@/plugin";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { ArrowRightOutlined } from "@ant-design/icons-vue";
-import { computed, reactive, ref, type Component } from "vue";
+import { computed, reactive, ref } from "vue";
 import { completeOobe, updateOobeSettings } from "./api";
 
 const skeletons = [
@@ -27,8 +28,8 @@ const skeletons = [
 ];
 
 const { state: appState, updatePanelStatus } = useAppStateStore();
-const createAdminAccount = computed(() =>
-  getPanelFrontendService<Component>("user.oobeCreateAdminAccount")
+const createAdminAccount = computed(
+  () => usePluginService<FrontendUserService>("user")?.oobeCreateAdminAccount
 );
 
 const step = ref(0);

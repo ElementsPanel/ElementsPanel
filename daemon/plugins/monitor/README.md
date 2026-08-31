@@ -2,10 +2,10 @@
 
 Samples this host's CPU and memory usage every three seconds, keeps the last 200
 samples, and contributes them to `info/overview` as `cpuMemChart` through
-`context.registerOverviewProvider()`. The daemon core collects no history of its
+`ctx.overview.provide()`. The daemon core collects no history of its
 own.
 
-`setup()` starts the sampler; `dispose()` stops it, so unloading the plugin
+`apply()` starts the sampler with `ctx.setInterval()`, so unloading the plugin
 leaves no timer behind.
 
 Without this plugin the daemon stays fully usable and still reports its *current*

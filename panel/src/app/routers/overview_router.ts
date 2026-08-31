@@ -5,7 +5,7 @@ import { ROLE } from "../entity/user";
 import permission from "../middleware/permission";
 import { getRequestGuard as guard } from "../service/request_guard";
 import { operationLogger } from "../service/operation_logger";
-import { collectOverviewExtras } from "../service/overview_registry";
+import { ctx as panel } from "../plugin/context";
 import RemoteRequest from "../service/remote_command";
 import RemoteServiceSubsystem from "../service/remote_service";
 import { getVersion, specifiedDaemonVersion } from "../version";
@@ -69,7 +69,7 @@ router.get("/", permission({ level: ROLE.USER, token: false }), async (ctx) => {
   };
 
   // Plugin-contributed fields, e.g. the monitoring plugin's chart history.
-  ctx.body = { ...overviewData, ...(await collectOverviewExtras()) };
+  ctx.body = { ...overviewData, ...(await panel.overview.collect()) };
 });
 
 // [Top-level Permission]

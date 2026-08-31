@@ -14,7 +14,7 @@ import { TaskCenter } from "../service/async_task_service";
 import downloadManager from "../service/download_manager";
 import { IInstanceDetail } from "../service/interfaces";
 import { modService } from "../service/mod_service";
-import { getDaemonAsyncTaskRegistration } from "../service/plugin_registry";
+import { ctx as daemon } from "../plugin/context";
 import { ROLE } from "../service/protocol";
 import FileManager from "../service/system_file";
 import uploadManager from "../service/upload_manager";
@@ -419,7 +419,7 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
   // Plugin-supplied tasks. The dispatcher knows nothing about what any of them
   // do — the registration carries the role it needs and whether it operates on
   // an existing instance.
-  const registeredTask = getDaemonAsyncTaskRegistration(taskName);
+  const registeredTask = daemon.tasks.get(taskName);
   if (registeredTask) {
     if (registeredTask.requiredRole != null && role < registeredTask.requiredRole) {
       return protocol.error(ctx, "instance/asynchronous", $t("TXT_CODE_permission.forbidden"));
@@ -479,7 +479,7 @@ routerApp.on("instance/stop_asynchronous", (ctx, data) => {
 routerApp.on("instance/query_asynchronous", (ctx, data) => {
   const taskId = data.parameter.taskId as string | undefined;
   const taskName = data.taskName as string;
-  const type = getDaemonAsyncTaskRegistration(taskName)?.type;
+  const type = daemon.tasks.get(taskName)?.type;
   if (!type) return protocol.response(ctx, []);
   if (!taskId) {
     const result = [];

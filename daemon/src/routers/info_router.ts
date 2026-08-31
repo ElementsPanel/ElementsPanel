@@ -7,7 +7,7 @@ import { systemInfo } from "mcsmanager-common";
 import { globalConfiguration } from "../entity/config";
 import { DockerManager } from "../service/docker_service";
 import logger from "../service/log";
-import { collectDaemonOverviewExtras, hasDaemonFeature } from "../service/plugin_registry";
+import { ctx as daemon } from "../plugin/context";
 import { getVersion } from "../service/version";
 
 // Writing this configuration back ("info/setting") belongs to the daemon-side
@@ -62,10 +62,10 @@ routerApp.on("info/overview", async (ctx) => {
       instanceBackupCompressionLevel: globalConfiguration.config.instanceBackupCompressionLevel
     },
     features: {
-      instanceBackup: hasDaemonFeature("instanceBackup")
+      instanceBackup: daemon.features.has("instanceBackup")
     },
     dockerPlatforms
   };
   // Plugin-contributed fields, e.g. the monitoring plugin's cpuMemChart.
-  protocol.response(ctx, { ...info, ...(await collectDaemonOverviewExtras()) });
+  protocol.response(ctx, { ...info, ...(await daemon.overview.collect()) });
 });

@@ -1,5 +1,5 @@
 import { t } from "@/lang/i18n";
-import type { PanelFrontendPluginContext, PanelFrontendPluginDefinition } from "@/plugins";
+import type { PanelFrontendPluginContext } from "@/plugin";
 import type { LayoutCardPoolItemFactory } from "@/config";
 import { LayoutCardHeight } from "@/config/originLayoutConfig";
 import LayoutContainer from "@/views/LayoutContainer.vue";
@@ -45,84 +45,77 @@ const marketCardPoolItems: LayoutCardPoolItemFactory[] = [
   })
 ];
 
-export default {
-  // Market source and install-permission settings are edited through the
-  // `config` plugin's page rather than the panel Settings page.
-  configuration: {
-    component: PluginConfig
-  },
-  localeMessages,
-  layoutCards: {
-    Market,
-    MarketEditor,
-    McPreset
-  },
-  layoutCardPoolItems: marketCardPoolItems,
-  terminalActions: [
-    {
-      id: "market-reinstall",
-      title: () => t("TXT_CODE_b19ed1dd"),
-      icon: InteractionOutlined,
-      click: async ({ daemonId, instanceId, isDockerMode, clearTerminal }) => {
-        try {
-          clearTerminal();
-          await openMarketDialog(daemonId, instanceId, {
-            autoInstall: true,
-            onlyDockerTemplate: isDockerMode
-          });
-        } catch (error: any) {
-          // Closing the picker is not an error.
-        }
-      },
-      condition: ({ isStopped, isGlobalTerminal }) =>
-        isStopped &&
-        !isGlobalTerminal &&
-        (getAllowUsePreset() || useAppStateStore().isAdmin.value)
-    }
-  ],
-  desktopApps: [
-    {
-      id: "market",
-      label: () => t("TXT_CODE_27594db8"),
-      icon: ShopOutlined,
-      color: "#722ed1",
-      route: "/market",
-      component: DesktopMarket,
-      condition: () => useAppStateStore().isAdmin.value,
-      initialWidth: 1100,
-      initialHeight: 680
-    }
-  ],
-  setup(context: PanelFrontendPluginContext) {
-    // Exposed so the core terminal bridge and other plugins can open the
-    // package picker without importing this plugin's source.
-    context.registerService("market.api", marketApi);
-    context.registerService("market.openMarketDialog", openMarketDialog);
-    context.registerService("market.useMarketPackages", useMarketPackages);
+export const inject = ["i18n", "routes", "ui", "actions", "desktop", "settings"];
 
-    context.registerRoute({
-      path: "/market",
-      name: t("TXT_CODE_27594db8"),
-      component: LayoutContainer,
-      meta: {
-        mainMenu: true,
-        permission: ROLE_ADMIN,
-        icon: ShopOutlined
-      },
-      children: [
-        {
-          path: "editor",
-          name: t("TXT_CODE_54275b9c"),
-          component: LayoutContainer,
-          meta: {
-            permission: ROLE_ADMIN
-          }
+export function apply(ctx: PanelFrontendPluginContext) {
+  ctx.i18n.define(localeMessages);
+
+  // Exposed so the core terminal bridge and other plugins can open the package
+  // picker without importing this plugin's source.
+  ctx.set("market", { api: marketApi, openMarketDialog, useMarketPackages });
+
+  // Market source and install-permission settings are edited on the `config`
+  // plugin's page rather than the panel Settings page.
+  ctx.settings.page(PluginConfig);
+
+  ctx.ui.layoutCard("Market", Market);
+  ctx.ui.layoutCard("MarketEditor", MarketEditor);
+  ctx.ui.layoutCard("McPreset", McPreset);
+  marketCardPoolItems.forEach((createItem) => ctx.ui.layoutCardPoolItem(createItem));
+
+  ctx.actions.terminal({
+    id: "market-reinstall",
+    title: () => t("TXT_CODE_b19ed1dd"),
+    icon: InteractionOutlined,
+    click: async ({ daemonId, instanceId, isDockerMode, clearTerminal }) => {
+      try {
+        clearTerminal();
+        await openMarketDialog(daemonId, instanceId, {
+          autoInstall: true,
+          onlyDockerTemplate: isDockerMode
+        });
+      } catch (error: any) {
+        // Closing the picker is not an error.
+      }
+    },
+    condition: ({ isStopped, isGlobalTerminal }) =>
+      isStopped && !isGlobalTerminal && (getAllowUsePreset() || useAppStateStore().isAdmin.value)
+  });
+
+  ctx.routes.add({
+    path: "/market",
+    name: t("TXT_CODE_27594db8"),
+    component: LayoutContainer,
+    meta: {
+      mainMenu: true,
+      permission: ROLE_ADMIN,
+      icon: ShopOutlined
+    },
+    children: [
+      {
+        path: "editor",
+        name: t("TXT_CODE_54275b9c"),
+        component: LayoutContainer,
+        meta: {
+          permission: ROLE_ADMIN
         }
-      ]
-    });
-  },
-  ready() {
-    // The session exists by now, so the install permission can be resolved.
-    void refreshMarketPermission();
-  }
-} satisfies PanelFrontendPluginDefinition;
+      }
+    ]
+  });
+
+  ctx.desktop.app({
+    id: "market",
+    label: () => t("TXT_CODE_27594db8"),
+    icon: ShopOutlined,
+    color: "#722ed1",
+    route: "/market",
+    component: DesktopMarket,
+    condition: () => useAppStateStore().isAdmin.value,
+    initialWidth: 1100,
+    initialHeight: 680
+  });
+
+  // The session exists once the app has started, so the install permission can
+  // be resolved then and not before.
+  ctx.on("ready", () => void refreshMarketPermission());
+}

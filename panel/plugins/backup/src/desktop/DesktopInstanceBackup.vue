@@ -5,7 +5,7 @@ import {
     createAsyncTask,
     queryAsyncTask
 } from "@/services/apis/instance";
-import { getPanelFrontendService } from "@/pluginServices";
+import { ctx } from "@/plugin/context";
 import {
     CloudDownloadOutlined,
     DeleteOutlined,
@@ -17,12 +17,10 @@ import {
     SyncOutlined
 } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
-import { computed, onMounted, onUnmounted, ref, type Component } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { deleteBackup, getBackupList, restoreBackup } from "../api";
 
-const desktopWindowComponent = computed(() =>
-    getPanelFrontendService<Component>("desktop.window")
-);
+const desktopWindowComponent = computed(() => ctx.desktop.window);
 
 const props = defineProps<{
     instanceUuid: string;

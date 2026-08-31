@@ -4,7 +4,7 @@ import Instance from "../entity/instance/instance";
 import { $t } from "../i18n";
 import { sleep } from "../utils/sleep";
 import logger from "./log";
-import { getDaemonScheduleActionHandler } from "./plugin_registry";
+import { ctx as daemon } from "../plugin/context";
 import FileManager from "./system_file";
 import InstanceSubsystem from "./system_instance";
 
@@ -247,7 +247,7 @@ class InstanceControlSubsystem {
           await instance.execPreset("kill");
           continue;
         }
-        const pluginAction = getDaemonScheduleActionHandler(actionType);
+        const pluginAction = daemon.schedules.get(actionType);
         if (pluginAction) {
           await pluginAction(instance, payload);
           continue;

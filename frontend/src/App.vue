@@ -12,7 +12,7 @@ import AppHeader from "./components/AppHeader.vue";
 import AppSidebarMenu from "./components/AppSidebarMenu.vue";
 import Breadcrumbs from "./components/Breadcrumbs.vue";
 import InputDialogProvider from "./components/InputDialogProvider.vue";
-import { getPanelFrontendGlobalComponents } from "./plugins";
+import { ctx } from "./plugin/context";
 import { useAppStateStore } from "./stores/useAppStateStore";
 import { useLayoutContainerStore } from "./stores/useLayoutContainerStore";
 import { closeAppLoading, setLoadingTitle } from "./tools/dom";
@@ -23,12 +23,12 @@ const { state: appState } = useAppStateStore();
 const { isPhone } = useScreen();
 const route = useRoute();
 
-// The account dialog is contributed by the "user" plugin via
-// registerGlobalComponent, so it disappears with the plugin.
+// The account dialog is contributed by the "user" plugin through
+// `ctx.ui.globalComponent()`, so it disappears with the plugin.
 const GLOBAL_COMPONENTS = computed(() => [
   InputDialogProvider,
   UploadBubble,
-  ...getPanelFrontendGlobalComponents()
+  ...ctx.ui.globalComponents
 ]);
 
 [Button, Select, Input, Table].forEach((element) => {

@@ -1,4 +1,4 @@
-import type { DaemonPluginContext } from "../../../../src/service/plugins";
+import type { DaemonPluginContext } from "../../../../src/plugin";
 
 // Daemon side of the node plugin. It owns "info/setting", the protocol event
 // the panel node plugin uses to write this node's configuration. The daemon
@@ -28,9 +28,11 @@ function toBoolean(value: unknown): boolean | null {
 
 const BACKUP_FORMATS = ["zip", "tar.gz", "7z"];
 
-export function setup(context: DaemonPluginContext) {
-  context.registerProtocolHandler("info/setting", async (ctx: any, data: any) => {
-    const config = context.config;
+export const inject = ["protocol", "settings"];
+
+export function apply(ctx: DaemonPluginContext) {
+  ctx.protocol.on("info/setting", async (routerCtx: any, data: any) => {
+    const config = ctx.settings.config;
     const payload = data || {};
 
     const language = toText(payload.language);
@@ -50,7 +52,7 @@ export function setup(context: DaemonPluginContext) {
     const instanceBackupCompressionLevel = toNumber(payload.instanceBackupCompressionLevel);
 
     if (language) {
-      context.setLanguage(language);
+      ctx.settings.setLanguage(language);
     }
     if (uploadSpeedRate != null && uploadSpeedRate >= 0) {
       config.uploadSpeedRate = uploadSpeedRate;
@@ -102,7 +104,7 @@ export function setup(context: DaemonPluginContext) {
       config.instanceBackupCompressionLevel = instanceBackupCompressionLevel;
     }
 
-    context.saveConfig();
-    context.protocol.response(ctx, true);
+    ctx.settings.save();
+    ctx.protocol.response(routerCtx, true);
   });
 }

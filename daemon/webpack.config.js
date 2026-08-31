@@ -1,5 +1,6 @@
 const path = require("path");
 const nodeExternals = require("webpack-node-externals");
+const cordisExternals = require("../scripts/webpack-cordis-externals.cjs");
 
 /**
  * @type {import('webpack').Configuration}
@@ -26,6 +27,8 @@ module.exports = {
   },
   externalsPresets: { node: true },
   externals: [
+    // One cordis instance, shared with every plugin bundle. See the module.
+    cordisExternals,
     nodeExternals({
       allowlist: ["mcsmanager-common"]
     })

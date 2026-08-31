@@ -5,7 +5,7 @@ import { pipeline, Readable } from "stream";
 import { v4 } from "uuid";
 import type InstanceEntity from "../../../../src/entity/instance/instance";
 import type { IAsyncTaskJSON } from "../../../../src/service/async_task_service";
-import type { DaemonPluginContext } from "../../../../src/service/plugins";
+import type { DaemonPluginContext } from "../../../../src/plugin";
 
 /**
  * Downloads a market package into an instance directory, unpacks it and applies
@@ -13,16 +13,21 @@ import type { DaemonPluginContext } from "../../../../src/service/plugins";
  * the market and when reinstalling an existing one.
  *
  * The class is built inside a factory because it extends `AsyncTask`, which the
- * plugin can only reach through the setup context — importing the daemon core
- * directly would compile a second task subsystem.
+ * plugin can only reach through its context — importing the daemon core directly
+ * would compile a second task subsystem.
  */
-export function createQuickInstallTaskClass(context: DaemonPluginContext) {
-  const { AsyncTask } = context.asyncTask;
-  const Instance = context.Instance;
-  const { InstanceConfig, InstanceUpdateAction, getFileManager, getCommonHeaders } = context.install;
-  const $t = context.translate;
-  const logger = context.logger;
-  const instances = context.instances;
+export function createQuickInstallTaskClass(ctx: DaemonPluginContext) {
+  const { AsyncTask } = ctx.tasks;
+  const {
+    Instance,
+    Config: InstanceConfig,
+    UpdateAction: InstanceUpdateAction,
+    fileManager: getFileManager,
+    headers: getCommonHeaders,
+    subsystem: instances
+  } = ctx.instances;
+  const $t = ctx.i18n.$t;
+  const logger = ctx.logger;
   type InstanceUpdateTask = InstanceType<typeof InstanceUpdateAction>;
 
   return class QuickInstallTask extends AsyncTask {
