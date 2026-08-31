@@ -100,9 +100,6 @@ const toggle = (plugin: PluginRecord, enabled: boolean) => {
           <span class="plugin-config-item-name">
             {{ plugin.id }}
           </span>
-          <span v-if="!plugin.enabled" class="plugin-config-item-tag">
-            {{ t("TXT_CODE_PLUGIN_DISABLE") }}
-          </span>
           <span class="plugin-config-item-dot"></span>
         </button>
         <div v-if="!plugins.length" class="plugin-config-empty">{{ t("TXT_CODE_NO_DATA") }}</div>
@@ -251,19 +248,6 @@ const toggle = (plugin: PluginRecord, enabled: boolean) => {
 
 .plugin-config-item-off .plugin-config-item-dot {
   background: var(--color-gray-6);
-}
-
-.plugin-config-item-tag {
-  flex-shrink: 0;
-  padding: 0 5px;
-  border-radius: 3px;
-  background: rgba(0, 0, 0, 0.08);
-  font-size: 10px;
-  line-height: 15px;
-}
-
-:global(.app-dark-theme) .plugin-config-item-tag {
-  background: rgba(255, 255, 255, 0.14);
 }
 
 .plugin-config-empty,
