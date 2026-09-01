@@ -190,18 +190,6 @@ limitations under the License.`;
                         </div>
 
                         <div class="ds-form-group">
-                            <label class="ds-label">{{ t("TXT_CODE_7f0017d2") }}</label>
-                            <p class="ds-desc">{{ t("TXT_CODE_233624ad") }}</p>
-                            <input v-model="formData.httpPort" class="ds-input" :placeholder="t('TXT_CODE_4ea93630')" />
-                        </div>
-
-                        <div class="ds-form-group">
-                            <label class="ds-label">{{ t("TXT_CODE_514e064a") }}</label>
-                            <p class="ds-desc">{{ t("TXT_CODE_328191e") }}</p>
-                            <input v-model="formData.httpIp" class="ds-input" :placeholder="t('TXT_CODE_4ea93630')" />
-                        </div>
-
-                        <div class="ds-form-group">
                             <label class="ds-label">Panel ID</label>
                             <p class="ds-desc">
                                 {{ t("TXT_CODE_e2976753") }}<br />
