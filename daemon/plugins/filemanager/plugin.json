@@ -1,0 +1,8 @@
+{
+  "id": "filemanager",
+  "name": "File Manager",
+  "version": "1.0.0",
+  "description": "Owns the daemon's file subsystem: the sandboxed FileManager, chunked uploads, the file/* protocol events and the upload/download HTTP routes. Provides ctx.files, so instance creation, the Java manager, SteamCMD and the mod service reach instance files through it.",
+  "priority": 30,
+  "backend": "backend/index.cjs"
+}

@@ -1,0 +1,8 @@
+{
+  "TXT_CODE_file_router.instanceNotExist": "Instanz {{instanceUuid}} existiert nicht",
+  "TXT_CODE_file_router.unzipLimit": "Die maximale Anzahl gleichzeitiger Dekomprimierungsaufgaben wurde überschritten. Maximal sind {{maxFileTask}} zulässig; derzeit werden {{fileLock}} Aufgaben ausgeführt.",
+  "TXT_CODE_file_router_service.instanceNotExit": "Instanz {{uuid}} existiert nicht",
+  "TXT_CODE_system_file.execLimit": "Maximale Dateibearbeitungsgrenze überschritten",
+  "TXT_CODE_system_file.illegalAccess": "Falscher Zugriffspfad",
+  "TXT_CODE_system_file.unzipLimit": "Die Dateidekomprimierung unterstützt nur die Dekomprimierung von Dateien bis zu {{max}} GB. Wenn Sie die Obergrenze ändern müssen, gehen Sie bitte zur Datei data/Config/global.json."
+}

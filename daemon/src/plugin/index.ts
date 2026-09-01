@@ -22,6 +22,8 @@ export type {
   DaemonArchiveService,
   DaemonAsyncTaskRegistration,
   DaemonFeaturesService,
+  DaemonFileManager,
+  DaemonFilesService,
   DaemonI18nService,
   DaemonInstancesService,
   DaemonKoaService,
@@ -43,6 +45,8 @@ export type {
   DaemonSettingsSchema,
   DaemonSettingsService,
   DaemonTasksService,
+  DaemonTransferService,
+  DaemonUploadTask,
   DaemonWebsocketService
 } from "./context";
 export type { DaemonPluginEntry, DaemonPluginModule, DaemonPluginRecord } from "./loader";

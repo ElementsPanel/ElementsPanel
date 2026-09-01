@@ -3,7 +3,6 @@ import formidable from "formidable";
 import * as fs from "fs-extra";
 import path from "path";
 import { v4 } from "uuid";
-import FileManager from "../../../../daemon/src/service/system_file";
 import { SAVE_DIR_PATH } from "../const";
 import SystemConfig from "../entity/setting";
 import { ROLE } from "../entity/user";
@@ -23,6 +22,15 @@ import { checkBusinessMode } from "../version";
 import { remoteSubsystem } from "../service/remote_access";
 
 const router = new Router({ prefix: "/overview" });
+
+/**
+ * The panel used to borrow this from the daemon's source tree — a cross-process
+ * import of a module that now belongs to a daemon plugin. An uploaded asset's
+ * name is the panel's own business, so it checks it itself.
+ */
+function isSafeFileName(fileName: string) {
+  return !/[\/:*?"<>|]/.test(fileName) && !fileName.includes("..") && fileName.length > 0;
+}
 
 // [Top-level Permission]
 // Get panel configuration items
@@ -108,7 +116,7 @@ router.post("/upload_assets", permission({ level: ROLE.ADMIN }), async (ctx) => 
     if (!tmpFile.filepath || !fs.existsSync(tmpFile.filepath))
       throw new Error($t("TXT_CODE_1a499109"));
     const newFileName = v4() + path.extname(tmpFile.originalFilename || "");
-    if (!FileManager.checkFileName(newFileName))
+    if (!isSafeFileName(newFileName))
       throw new Error("Access denied: Malformed file name");
     const saveDirPath = path.join(process.cwd(), SAVE_DIR_PATH);
     if (!fs.existsSync(saveDirPath)) fs.mkdirsSync(saveDirPath);

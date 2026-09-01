@@ -1,0 +1,8 @@
+{
+  "TXT_CODE_file_router.instanceNotExist": "实例 {{instanceUuid}} 不存在",
+  "TXT_CODE_file_router.unzipLimit": "超出最大同时解压缩任务量，最大准许{{maxFileTask}}个，目前有{{fileLock}}个任务正在进行，请耐心等待",
+  "TXT_CODE_file_router_service.instanceNotExit": "实例 {{uuid}} 不存在",
+  "TXT_CODE_system_file.execLimit": "超出最大文件编辑限制",
+  "TXT_CODE_system_file.illegalAccess": "非法访问路径",
+  "TXT_CODE_system_file.unzipLimit": "文件解压缩只支持最大 {{max}}GB 文件的解压缩，如需改变上限请前往 data/Config/global.json 文件"
+}

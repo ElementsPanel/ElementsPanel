@@ -1,9 +1,9 @@
 import fs from "fs-extra";
 import path from "path";
 import * as lockfile from "proper-lockfile";
-import logger from "../service/log";
-import FileManager from "../service/system_file";
-import uploadManager from "../service/upload_manager";
+import FileManager from "./system_file";
+import { logger } from "./runtime";
+import uploadManager from "./upload_manager";
 
 type ChunkRange = { start: number; end: number };
 
@@ -100,7 +100,7 @@ export default class FileWriter {
     this.addWrittenRange(offset, offset + chunk.length);
     if (this.isFullyCovered()) {
       this.done().catch((e) => {
-        logger.error("Error completing file upload:", e);
+        logger().error("Error completing file upload:", e);
       }); // async
     }
   }
@@ -116,12 +116,12 @@ export default class FileWriter {
       uploadManager.delete(this.id);
     }
 
-    logger.info("Browser Uploaded File:", this.path);
+    logger().info("Browser Uploaded File:", this.path);
 
     if (this.unzip) {
       const instanceFiles = new FileManager(this.cwd);
       await instanceFiles.unzip(this.path, ".", this.zipCode);
-      logger.info("File unzipped:", this.path);
+      logger().info("File unzipped:", this.path);
     }
   }
 
@@ -135,7 +135,7 @@ export default class FileWriter {
       uploadManager.delete(this.id);
     }
     await fs.remove(this.path);
-    logger.info("Browser Upload Task Stopped:", this.path);
+    logger().info("Browser Upload Task Stopped:", this.path);
   }
 
   private addWrittenRange(start: number, end: number): void {

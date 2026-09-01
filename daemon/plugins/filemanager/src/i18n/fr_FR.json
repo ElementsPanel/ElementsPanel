@@ -1,0 +1,8 @@
+{
+  "TXT_CODE_file_router.instanceNotExist": "L'instance {{instanceUuid}} n'existe pas",
+  "TXT_CODE_file_router.unzipLimit": "Le nombre maximum de tâches de décompression simultanées a été dépassé. Le maximum autorisé est de {{maxFileTask}}. Il y a actuellement {{fileLock}} tâches en cours.",
+  "TXT_CODE_file_router_service.instanceNotExit": "L'instance {{uuid}} n'existe pas",
+  "TXT_CODE_system_file.execLimit": "Limite maximale de modification de fichier dépassée",
+  "TXT_CODE_system_file.illegalAccess": "Mauvais chemin d'accès",
+  "TXT_CODE_system_file.unzipLimit": "La décompression de fichiers ne prend en charge que la décompression de fichiers jusqu'à {{max}} Go. Si vous devez modifier la limite supérieure, veuillez accéder au fichier data/Config/global.json."
+}

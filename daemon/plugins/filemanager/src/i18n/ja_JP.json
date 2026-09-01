@@ -1,0 +1,8 @@
+{
+  "TXT_CODE_file_router.instanceNotExist": "インスタンス {{instanceUuid}} は存在しません",
+  "TXT_CODE_file_router.unzipLimit": "同時解凍タスクの最大数は {{maxFileTask}} を超えています。現在進行中のタスクは {{fileLock}} です。しばらくお待ちください。",
+  "TXT_CODE_file_router_service.instanceNotExit": "インスタンス {{uuid}} は存在しません",
+  "TXT_CODE_system_file.execLimit": "ファイル編集の最大制限を超えました",
+  "TXT_CODE_system_file.illegalAccess": "間違ったアクセスパス",
+  "TXT_CODE_system_file.unzipLimit": "ファイルの解凍では、最大 {{max}} GB のファイルの解凍のみがサポートされます。上限を変更する必要がある場合は、data/Config/global.json ファイルに移動してください。"
+}

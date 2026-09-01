@@ -58,19 +58,28 @@ Set `enabled` to `false` to skip one.
 | `ctx.middleware` | `uploadSpeedLimit`, `uploadFileCheck` — the base middleware the web server mounts ahead of the body parser. |
 | `ctx.protocol` | `on(event, handler)`, `use(middleware)`, `response`, `responseError`, `error`, `msg`, `ROLE`, `IGNORE`. |
 | `ctx.instances` | `subsystem`, `Instance`, `Config`, `Command`, `UpdateAction`, `fileManager`, `headers`. |
+| `ctx.transfer` | `passports`, `downloads`, `sendFile` — what a file transfer needs from the core. |
 | `ctx.tasks` | `AsyncTask`, `Center`, `register(name, registration)`, `get(name)`. |
 | `ctx.presets` | `register(preset, factory)`, `entries()`. |
 | `ctx.schedules` | `register(actionType, handler)`, `get(actionType)`. |
 | `ctx.features` | `add(feature)`, `has(feature)`. |
 | `ctx.overview` | `provide(fn)` to add fields to `info/overview`. |
-| `ctx.archive` | `GitignoreMatcher`, `decompressWithProgress`, `check7zipStatus`, `sevenZipPath`, `zipTimeoutSeconds`. |
+| `ctx.archive` | `GitignoreMatcher`, `compress`, `decompress`, `listArchiveEntries`, `decompressWithProgress`, `check7zipStatus`, `sevenZipPath`, `zipTimeoutSeconds`. |
 | `ctx.plugins` | `loaded`, `inventory()`, `setEnabled(id, enabled)`. |
+| `ctx.files` | `FileManager`, `uploads`, `getFileManager`, `getWindowsDisks`. **Provided by `plugins/filemanager`.** |
 | `ctx.koa` | `app`, `use(middleware)`, `router(prefix?)` for plugins that serve HTTP. **Provided by `plugins/server`.** |
 | `ctx.websocket` | `io`, the Socket.io server. **Provided by `plugins/server`.** |
 
 `src/plugin/context.ts` is the authoritative declaration of all of this.
 
-The last two are the daemon's network layer, provided by `plugins/server` with
+`ctx.set("files", ...)` is the file subsystem. `plugins/filemanager` owns the
+sandboxed `FileManager`, the chunked uploads, the `file/*` events and the
+upload/download routes; the core resolves the primitives at use time through
+`src/service/file_access.ts`, because instance creation, the Java manager,
+SteamCMD and the mod service all have to touch files too. Without that plugin the
+daemon cannot read or write an instance's files at all.
+
+The network services are provided by `plugins/server` with
 `ctx.set()` rather than by the core. That plugin creates the Koa application,
 mounts the base middleware, binds the HTTP/HTTPS listener and runs the Socket.io
 server; the core keeps its own HTTP router and its own connection handling and

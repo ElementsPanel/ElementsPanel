@@ -1,0 +1,8 @@
+{
+  "TXT_CODE_file_router.instanceNotExist": "實例 {{instanceUuid}} 不存在",
+  "TXT_CODE_file_router.unzipLimit": "超出最大同時解壓縮任務量，最大允許{{maxFileTask}}個，目前有{{fileLock}}個任務正在進行，請耐心等待",
+  "TXT_CODE_file_router_service.instanceNotExit": "實例 {{uuid}} 不存在",
+  "TXT_CODE_system_file.execLimit": "超出最大檔案編輯限制",
+  "TXT_CODE_system_file.illegalAccess": "錯誤存取路徑",
+  "TXT_CODE_system_file.unzipLimit": "檔案解壓縮只支援最大 {{max}}GB 檔案的解壓縮，如需改變上限請前往 data/Config/global.json 檔案"
+}

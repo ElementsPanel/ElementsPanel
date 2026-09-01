@@ -13,7 +13,6 @@ import { loadDaemonPlugins } from "./plugin/loader";
 import * as protocol from "./service/protocol";
 import * as router from "./service/router";
 import InstanceSubsystem from "./service/system_instance";
-import uploadManager from "./service/upload_manager";
 import { getVersion, initVersionManager } from "./service/version";
 import versionAdapter from "./service/version_adapter";
 
@@ -132,7 +131,6 @@ async function main() {
         logger.warn($t("TXT_CODE_4ffdc91d", { signal }));
         logger.info($t("TXT_CODE_app.forcedShutdown"));
         await InstanceSubsystem.exit(true); // Force close all instances
-        await uploadManager.exit();
         logger.info($t("TXT_CODE_dff680b7"));
         process.exit(0);
       } else {
@@ -151,7 +149,6 @@ async function main() {
           );
         }
 
-        await uploadManager.exit();
         logger.info($t("TXT_CODE_dff680b7"));
         process.exit(0);
       }

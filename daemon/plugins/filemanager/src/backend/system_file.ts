@@ -3,12 +3,12 @@ import iconv from "iconv-lite";
 import { ProcessWrapper } from "mcsmanager-common";
 import os from "os";
 import path from "path";
-import { compress, decompress, listArchiveEntries, type ArchiveEntryInfo } from "../common/compress";
-import { globalConfiguration } from "../entity/config";
-import { $t, i18next } from "../i18n";
-import { normalizedJoin } from "../tools/filepath";
+import type { ArchiveEntryInfo } from "../../../../src/common/compress";
+import { normalizedJoin } from "./filepath";
+import { $t, archive, settings } from "./runtime";
 
-const ERROR_MSG_01 = $t("TXT_CODE_system_file.illegalAccess");
+/** Resolved per use: the module is required before `apply()` runs. */
+const ERROR_MSG_01 = () => $t("TXT_CODE_system_file.illegalAccess");
 const MAX_EDIT_SIZE = 1024 * 1024 * 5;
 
 interface IFile {
@@ -30,7 +30,7 @@ export default class FileManager {
     }
     if (!fileCode) {
       this.fileCode = "utf-8";
-      if (i18next.language == "zh_cn") this.fileCode = "gbk";
+      if (settings().config.language === "zh_cn") this.fileCode = "gbk";
     }
   }
 
@@ -62,7 +62,7 @@ export default class FileManager {
       topAbsolutePath !== "/" &&
       topAbsolutePath !== "\\"
     )
-      throw new Error(ERROR_MSG_01);
+      throw new Error(ERROR_MSG_01());
     return finalPath;
   }
 
@@ -93,7 +93,7 @@ export default class FileManager {
   }
 
   cd(dirName: string) {
-    if (!this.check(dirName)) throw new Error(ERROR_MSG_01);
+    if (!this.check(dirName)) throw new Error(ERROR_MSG_01());
     this.cwd = normalizedJoin(this.cwd, dirName);
   }
 
@@ -161,7 +161,7 @@ export default class FileManager {
   }
 
   async chmod(fileName: string, chmodValue: number, deep: boolean) {
-    if (!this.check(fileName) || isNaN(parseInt(chmodValue as any))) throw new Error(ERROR_MSG_01);
+    if (!this.check(fileName) || isNaN(parseInt(chmodValue as any))) throw new Error(ERROR_MSG_01());
     const absPath = this.toAbsolutePath(fileName);
     const defaultPath = "/bin/chmod";
     let file = "chmod";
@@ -174,7 +174,7 @@ export default class FileManager {
   }
 
   async readFile(fileName: string) {
-    if (!this.check(fileName)) throw new Error(ERROR_MSG_01);
+    if (!this.check(fileName)) throw new Error(ERROR_MSG_01());
     const absPath = this.toAbsolutePath(fileName);
     const buf = await fs.readFile(absPath);
     const text = iconv.decode(buf, this.fileCode || "utf-8");
@@ -182,34 +182,34 @@ export default class FileManager {
   }
 
   async writeFile(fileName: string, data: string) {
-    if (!this.check(fileName)) throw new Error(ERROR_MSG_01);
+    if (!this.check(fileName)) throw new Error(ERROR_MSG_01());
     const absPath = this.toAbsolutePath(fileName);
     const buf = iconv.encode(data, this.fileCode || "utf-8");
     return await fs.writeFile(absPath, buf);
   }
 
   async newFile(fileName: string) {
-    // if (!FileManager.checkFileName(fileName)) throw new Error(ERROR_MSG_01);
-    if (!this.checkPath(fileName)) throw new Error(ERROR_MSG_01);
+    // if (!FileManager.checkFileName(fileName)) throw new Error(ERROR_MSG_01());
+    if (!this.checkPath(fileName)) throw new Error(ERROR_MSG_01());
     const target = this.toAbsolutePath(fileName);
     fs.createFile(target);
   }
 
   async copy(target1: string, target2: string) {
-    if (!this.checkPath(target2) || !this.check(target1)) throw new Error(ERROR_MSG_01);
+    if (!this.checkPath(target2) || !this.check(target1)) throw new Error(ERROR_MSG_01());
     const targetPath = this.toAbsolutePath(target1);
     target2 = this.toAbsolutePath(target2);
     return await fs.copy(targetPath, target2);
   }
 
   mkdir(target: string) {
-    if (!this.checkPath(target)) throw new Error(ERROR_MSG_01);
+    if (!this.checkPath(target)) throw new Error(ERROR_MSG_01());
     const targetPath = this.toAbsolutePath(target);
     return fs.mkdirSync(targetPath);
   }
 
   async delete(target: string): Promise<boolean> {
-    if (!this.check(target)) throw new Error(ERROR_MSG_01);
+    if (!this.check(target)) throw new Error(ERROR_MSG_01());
     const targetPath = this.toAbsolutePath(target);
     return new Promise((r, j) => {
       fs.remove(targetPath, (err) => {
@@ -220,8 +220,8 @@ export default class FileManager {
   }
 
   async move(target: string, destPath: string) {
-    if (!this.check(target)) throw new Error(ERROR_MSG_01);
-    if (!this.checkPath(destPath)) throw new Error(ERROR_MSG_01);
+    if (!this.check(target)) throw new Error(ERROR_MSG_01());
+    if (!this.checkPath(destPath)) throw new Error(ERROR_MSG_01());
     const targetPath = this.toAbsolutePath(target);
     destPath = this.toAbsolutePath(destPath);
     await fs.move(targetPath, destPath);
@@ -229,28 +229,28 @@ export default class FileManager {
 
   private zipFileCheck(path: string) {
     const fileInfo = fs.statSync(path);
-    const MAX_ZIP_GB = globalConfiguration.config.maxZipFileSize;
+    const MAX_ZIP_GB = settings().config.maxZipFileSize;
     if (fileInfo.size > 1024 * 1024 * 1024 * MAX_ZIP_GB)
       throw new Error($t("TXT_CODE_system_file.unzipLimit", { max: MAX_ZIP_GB }));
   }
 
   async unzip(sourceZip: string, destDir: string, code?: string) {
     if (!code) code = this.fileCode;
-    if (!this.check(sourceZip) || !this.checkPath(destDir)) throw new Error(ERROR_MSG_01);
+    if (!this.check(sourceZip) || !this.checkPath(destDir)) throw new Error(ERROR_MSG_01());
     this.zipFileCheck(this.toAbsolutePath(sourceZip));
-    return await decompress(this.toAbsolutePath(sourceZip), this.toAbsolutePath(destDir), code);
+    return await archive().decompress(this.toAbsolutePath(sourceZip), this.toAbsolutePath(destDir), code);
   }
 
   async previewArchive(sourceZip: string, code?: string): Promise<ArchiveEntryInfo[]> {
-    if (!this.check(sourceZip)) throw new Error(ERROR_MSG_01);
+    if (!this.check(sourceZip)) throw new Error(ERROR_MSG_01());
     this.zipFileCheck(this.toAbsolutePath(sourceZip));
-    return await listArchiveEntries(this.toAbsolutePath(sourceZip), code || this.fileCode);
+    return await archive().listArchiveEntries(this.toAbsolutePath(sourceZip), code || this.fileCode);
   }
 
   async zip(sourceZip: string, files: string[], code?: string) {
     if (!code) code = this.fileCode;
-    if (!this.checkPath(sourceZip)) throw new Error(ERROR_MSG_01);
-    const MAX_ZIP_GB = globalConfiguration.config.maxZipFileSize;
+    if (!this.checkPath(sourceZip)) throw new Error(ERROR_MSG_01());
+    const MAX_ZIP_GB = settings().config.maxZipFileSize;
     const MAX_TOTAL_FIELS_SIZE = 1024 * 1024 * 1024 * MAX_ZIP_GB;
     const sourceZipPath = this.toAbsolutePath(sourceZip);
     const filesPath = [];
@@ -265,11 +265,11 @@ export default class FileManager {
     }
     if (totalSize > MAX_TOTAL_FIELS_SIZE)
       throw new Error($t("TXT_CODE_system_file.unzipLimit", { max: MAX_ZIP_GB }));
-    return await compress(sourceZipPath, filesPath, code);
+    return await archive().compress(sourceZipPath, filesPath, code);
   }
 
   async edit(target: string, data?: string) {
-    if (!this.check(target)) throw new Error(ERROR_MSG_01);
+    if (!this.check(target)) throw new Error(ERROR_MSG_01());
     if (data || typeof data === "string") {
       return await this.writeFile(target, data);
     } else {
@@ -283,8 +283,8 @@ export default class FileManager {
   }
 
   rename(target: string, newName: string) {
-    if (!this.check(target)) throw new Error(ERROR_MSG_01);
-    if (!this.checkPath(newName)) throw new Error(ERROR_MSG_01);
+    if (!this.check(target)) throw new Error(ERROR_MSG_01());
+    if (!this.checkPath(newName)) throw new Error(ERROR_MSG_01());
     const targetPath = this.toAbsolutePath(target);
     const newPath = this.toAbsolutePath(newName);
     fs.renameSync(targetPath, newPath);

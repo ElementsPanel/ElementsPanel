@@ -1,0 +1,8 @@
+{
+  "TXT_CODE_file_router.instanceNotExist": "A instância {{instanceUuid}} não existe",
+  "TXT_CODE_file_router.unzipLimit": "Excedido o número máximo de tarefas de descompressão simultâneas. O máximo permitido é {{maxFileTask}}, e atualmente, {{fileLock}} tarefas estão em andamento. Por favor, seja paciente.",
+  "TXT_CODE_file_router_service.instanceNotExit": "A instância {{uuid}} não existe",
+  "TXT_CODE_system_file.execLimit": "Limite máximo de edição de arquivos excedido",
+  "TXT_CODE_system_file.illegalAccess": "Caminho de acesso ilegal",
+  "TXT_CODE_system_file.unzipLimit": "A descompactação de arquivos suporta apenas arquivos de até {{max}}GB. Para alterar esse limite, vá até o arquivo data/Config/global.json."
+}

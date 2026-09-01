@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import type { Context } from "cordis";
 import { LOCAL_PRESET_LANG_PATH, SEVEN_ZIP_PATH, ZIP_TIMEOUT_SECONDS } from "../const";
-import { decompressWithProgress } from "../common/compress";
+import { compress, decompress, decompressWithProgress, listArchiveEntries } from "../common/compress";
 import { GitignoreMatcher } from "../common/gitignore_matcher";
 import { getCommonHeaders } from "../common/network";
 import { globalConfiguration } from "../entity/config";
@@ -11,9 +11,12 @@ import InstanceCommand from "../entity/commands/base/command";
 import i18next from "i18next";
 import { $t } from "../i18n";
 import { uploadFileCheckMiddleware, uploadSpeedLimitMiddleware } from "../middlewares/precheck";
-import { getFileManager } from "../service/file_router_service";
 import { InstanceUpdateAction } from "../service/instance_update_action";
+import downloadManager from "../service/download_manager";
+import { files } from "../service/file_access";
 import logger from "../service/log";
+import { missionPassport } from "../service/mission_passport";
+import { sendFile } from "../utils/speed_limit";
 import { check7zipStatus } from "../service/seven_zip_service";
 import InstanceSubsystem from "../service/system_instance";
 import { ctx } from "./context";
@@ -73,15 +76,24 @@ export function installDaemonPluginServices() {
     Config: InstanceConfig,
     Command: InstanceCommand,
     UpdateAction: InstanceUpdateAction,
-    fileManager: getFileManager,
+    // Resolved at call time: the file primitives belong to `plugins/filemanager`.
+    fileManager: (instanceUuid: string) => files().getFileManager(instanceUuid),
     headers: getCommonHeaders
   });
   provide("middleware", {
     uploadFileCheck: uploadFileCheckMiddleware,
     uploadSpeedLimit: uploadSpeedLimitMiddleware
   });
+  provide("transfer", {
+    passports: missionPassport,
+    downloads: downloadManager,
+    sendFile
+  });
   provide("archive", {
     GitignoreMatcher,
+    compress,
+    decompress,
+    listArchiveEntries,
     decompressWithProgress,
     check7zipStatus,
     sevenZipPath: SEVEN_ZIP_PATH,

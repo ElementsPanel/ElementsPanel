@@ -5,7 +5,7 @@ import path from "path";
 import toml from 'smol-toml';
 import yaml from "yaml";
 import downloadManager from "./download_manager";
-import { getFileManager } from "./file_router_service";
+import { files } from "./file_access";
 import logger from "./log";
 
 export interface ModInfo {
@@ -169,7 +169,7 @@ export class ModService {
     if (pageSize < 1) pageSize = 10;
     if (page < 1) page = 1;
 
-    const fileManager = getFileManager(instanceUuid);
+    const fileManager = files().getFileManager(instanceUuid);
 
     // if (!FileManager.checkFileName(folder ?? "")) {
     //   throw new Error("Invalid folder name");
@@ -287,7 +287,7 @@ export class ModService {
   }
 
   public async toggleMod(instanceUuid: string, fileName: string): Promise<void> {
-    const fileManager = getFileManager(instanceUuid);
+    const fileManager = files().getFileManager(instanceUuid);
     if (!fileManager.checkPath(fileName)) throw new Error("Invalid file name");
     const rootDir = fileManager.toAbsolutePath(".");
 
@@ -317,7 +317,7 @@ export class ModService {
   }
 
   public async deleteMod(instanceUuid: string, fileName: string): Promise<void> {
-    const fileManager = getFileManager(instanceUuid);
+    const fileManager = files().getFileManager(instanceUuid);
     if (!fileManager.checkPath(fileName)) throw new Error("Invalid file name");
     const rootDir = fileManager.toAbsolutePath(".");
 
@@ -346,7 +346,7 @@ export class ModService {
     type: "mod" | "plugin",
     options: { fallbackUrl?: string } = {}
   ) {
-    const fileManager = getFileManager(instanceUuid);
+    const fileManager = files().getFileManager(instanceUuid);
     const rootDir = fileManager.toAbsolutePath(".");
 
     // Determine the save directory based on what exists (case-sensitive check for Linux)
@@ -378,7 +378,7 @@ export class ModService {
     type: "mod" | "plugin",
     fileName?: string
   ): Promise<ModConfigFile[]> {
-    const fileManager = getFileManager(instanceUuid);
+    const fileManager = files().getFileManager(instanceUuid);
     if (fileName && !fileManager.checkPath(fileName)) throw new Error("Invalid file name");
     if (modId && !fileManager.checkPath(modId)) throw new Error("Invalid mod ID");
     const rootDir = fileManager.toAbsolutePath(".");

@@ -1,4 +1,4 @@
-import FileWriter from "../entity/file_writer";
+import FileWriter from "./file_writer";
 import { v4 } from "uuid";
 
 class UploadManager {

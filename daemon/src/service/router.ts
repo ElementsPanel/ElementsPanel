@@ -81,7 +81,6 @@ export function navigation(socket: Socket) {
 // gates every event below, and it loads before the server starts listening, so no
 // socket is ever routed without it.
 import "../routers/environment_router";
-import "../routers/file_router";
 import "../routers/info_router";
 import "../routers/instance_event_router";
 import "../routers/Instance_router";
