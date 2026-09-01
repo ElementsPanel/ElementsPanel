@@ -1,9 +1,8 @@
 import { t } from "i18next";
 import { toText } from "mcsmanager-common";
-import RemoteRequest from "../service/remote_command";
-import RemoteServiceSubsystem from "../service/remote_service";
 import { systemConfig } from "../setting";
 import { getRequestGuard as guard } from "./request_guard";
+import { remoteRequest, remoteSubsystem } from "./remote_access";
 
 export enum INSTANCE_STATUS {
   BUSY = -1,
@@ -76,7 +75,7 @@ export async function getInstancesByUuid(
     const instances = user.instances;
     for (const iterator of instances) {
       if (targetDaemonId && targetDaemonId !== iterator.daemonId) continue;
-      const remoteService = RemoteServiceSubsystem.getInstance(iterator.daemonId);
+      const remoteService = remoteSubsystem().getInstance(iterator.daemonId);
       if (!remoteService || !remoteService.available) {
         // If the remote service doesn't exist at all, load a deleted prompt
         resInstances.push({
@@ -99,7 +98,7 @@ export async function getInstancesByUuid(
       }
       // Note: UUID can be integrated here to save the returned traffic, and this optimization will not be done for the time being
       try {
-        let instancesInfo = await new RemoteRequest(remoteService).request("instance/section", {
+        let instancesInfo = await remoteRequest(remoteService).request("instance/section", {
           instanceUuids: [iterator.instanceUuid]
         });
         if (!instancesInfo || instancesInfo.length === 0) continue;

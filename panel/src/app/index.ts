@@ -1,7 +1,6 @@
 import Router from "@koa/router";
 import Koa from "koa";
 
-import "./service/remote_service";
 import "./service/user_statistics";
 
 import serviceRouter from "./routers/daemon_router";

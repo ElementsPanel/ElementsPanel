@@ -6,8 +6,7 @@ import permission from "../middleware/permission";
 import validator from "../middleware/validator";
 import { getRequestGuard as guard } from "../service/request_guard";
 import { operationLogger } from "../service/operation_logger";
-import RemoteRequest from "../service/remote_command";
-import RemoteServiceSubsystem from "../service/remote_service";
+import { remoteRequest, remoteSubsystem } from "../service/remote_access";
 const router = new Router({ prefix: "/protected_schedule" });
 
 // Routing permission verification middleware
@@ -32,7 +31,7 @@ router.get(
     try {
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
-      const list = await new RemoteRequest(RemoteServiceSubsystem.getInstance(daemonId)).request(
+      const list = await remoteRequest(remoteSubsystem().getInstance(daemonId)).request(
         "schedule/list",
         {
           instanceUuid
@@ -74,7 +73,7 @@ router.post(
         task_name: name
       });
 
-      ctx.body = await new RemoteRequest(RemoteServiceSubsystem.getInstance(daemonId)).request(
+      ctx.body = await remoteRequest(remoteSubsystem().getInstance(daemonId)).request(
         "schedule/register",
         {
           instanceUuid,
@@ -111,7 +110,7 @@ router.delete(
         task_name: name
       });
 
-      ctx.body = await new RemoteRequest(RemoteServiceSubsystem.getInstance(daemonId)).request(
+      ctx.body = await remoteRequest(remoteSubsystem().getInstance(daemonId)).request(
         "schedule/delete",
         {
           instanceUuid,

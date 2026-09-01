@@ -2,8 +2,7 @@ import Router from "@koa/router";
 import { ROLE } from "../entity/user";
 import permission from "../middleware/permission";
 import validator from "../middleware/validator";
-import RemoteRequest from "../service/remote_command";
-import RemoteServiceSubsystem from "../service/remote_service";
+import { remoteRequest, remoteSubsystem } from "../service/remote_access";
 
 // Node (daemon) management lives in the "node" panel plugin, which owns
 // /api/service/remote_service(s)* and /api/service/link_remote_service.
@@ -24,14 +23,14 @@ router.get(
     const instanceName = ctx.query.instance_name;
     const status = ctx.query.status;
     const tag = String(ctx.query.tag);
-    const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
+    const remoteService = remoteSubsystem().getInstance(daemonId);
     let tagList: string[] = [];
     try {
       tagList = JSON.parse(tag);
     } catch (error) {
       // ignore
     }
-    const result = await new RemoteRequest(remoteService).request("instance/select", {
+    const result = await remoteRequest(remoteService).request("instance/select", {
       page,
       pageSize,
       condition: {

@@ -1,19 +1,18 @@
-import { Context } from "cordis";
-import type Koa from "koa";
 import type Router from "@koa/router";
+import { Context } from "cordis";
 import type i18next from "i18next";
+import type Koa from "koa";
 import type { GlobalVariable } from "mcsmanager-common";
 import type Storage from "../common/storage/sys_storage";
+import type { IRemoteService, RemoteMappingEntry } from "../entity/entity_interface";
 import type { ROLE } from "../entity/user";
 import type { $t } from "../i18n";
+import type instanceAccess from "../middleware/instance_access";
 import type { speedLimit } from "../middleware/limit";
 import type permission from "../middleware/permission";
-import type instanceAccess from "../middleware/instance_access";
 import type validator from "../middleware/validator";
 import type { getInstancesByUuid } from "../service/instance_service";
 import type { operationLogger } from "../service/operation_logger";
-import type RemoteRequest from "../service/remote_command";
-import type SystemRemoteService from "../service/remote_service";
 import type { AuthStats, RequestGuard, RequestIdentity, UserRecords } from "../service/request_guard";
 import type { systemConfig } from "../setting";
 import type {
@@ -80,10 +79,71 @@ export interface PanelMiddlewareService {
   readonly speedLimit: typeof speedLimit;
 }
 
-/** The daemon nodes: the subsystem that tracks them and the request helper. */
+/** The stored configuration of one daemon node, as the panel reads it. */
+export interface PanelRemoteNodeConfig {
+  ip: string;
+  port: number;
+  prefix: string;
+  remarks: string;
+  apiKey: string;
+  brand: string;
+  remoteMappings: RemoteMappingEntry[];
+  /** `ip:port`. */
+  readonly addr: string;
+  /** The prefix, trimmed and without a trailing slash. */
+  readonly canonicalPrefix: string;
+  /** `addr` plus `canonicalPrefix` — what a client is told to connect to. */
+  readonly fullAddr: string;
+  /** The mappings in the `{ addr, prefix }` shape responses use. */
+  getConvertedRemoteMappings(): Array<{
+    from: { addr: string; prefix: string };
+    to: { addr: string; prefix: string };
+  }>;
+}
+
+/** One daemon node: its identity, its connection state and its socket. */
+export interface PanelRemoteNode {
+  readonly uuid: string;
+  /** Whether the daemon is connected *and* authenticated. */
+  readonly available: boolean;
+  readonly config: PanelRemoteNodeConfig;
+  connect(): void;
+  disconnect(): void;
+  refreshReconnect(): void;
+  setLanguage(language?: string): Promise<unknown>;
+}
+
+/** The set of daemon nodes this panel knows about. */
+export interface PanelRemoteSubsystem {
+  readonly services: ReadonlyMap<string, PanelRemoteNode>;
+  getInstance(uuid: string): PanelRemoteNode | undefined;
+  count(): { available: number; total: number };
+  changeDaemonLanguage(language: string): void;
+  registerRemoteService(config: IRemoteService): Promise<PanelRemoteNode>;
+  deleteRemoteService(uuid: string): Promise<void>;
+  edit(uuid: string, config: IRemoteService): Promise<void>;
+  newInstance(config: IRemoteService): Promise<PanelRemoteNode>;
+  initConnectLocalhost(key?: string): Promise<PanelRemoteNode | undefined>;
+}
+
+/** One request/response round trip to a daemon over its socket. */
+export interface PanelRemoteRequest {
+  request<T = any>(event: string, data?: any, timeout?: number, force?: boolean): Promise<T>;
+}
+
+/**
+ * The daemon nodes: the subsystem that tracks them and the request helper.
+ *
+ * **Provided by `plugins/node`.** The core declares only the shape it needs and
+ * resolves it at use time through `service/remote_access.ts`, so removing that
+ * plugin removes the panel's ability to reach a daemon rather than breaking the
+ * build.
+ */
 export interface PanelRemoteService {
-  readonly services: typeof SystemRemoteService;
-  readonly Request: typeof RemoteRequest;
+  readonly services: PanelRemoteSubsystem;
+  readonly Request: new (service?: PanelRemoteNode) => PanelRemoteRequest;
+  /** The error a timed-out request throws, so a caller can recognise it. */
+  readonly RequestTimeoutError: new (msg: string) => Error;
 }
 
 /**
@@ -141,7 +201,6 @@ declare module "cordis" {
     i18n: PanelI18nService;
     middleware: PanelMiddlewareService;
     roles: typeof ROLE;
-    remote: PanelRemoteService;
     identity: PanelIdentityService;
     operations: typeof operationLogger;
     instances: { getByUuid: typeof getInstancesByUuid };
@@ -157,6 +216,11 @@ declare module "cordis" {
      * nothing, so almost every plugin injects it.
      */
     koa: PanelKoaService;
+    /**
+     * The daemon nodes. Provided by `plugins/node`, which owns the subsystem —
+     * the panel reaches no daemon without it.
+     */
+    remote: PanelRemoteService;
     /** Request authorization for the whole panel. Provided by `plugins/user`. */
     guard: RequestGuard;
     /** First-run state. Provided by `plugins/oobe`. */

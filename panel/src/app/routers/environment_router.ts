@@ -4,8 +4,7 @@ import { normalizeDockerPlatform } from "mcsmanager-common";
 import { ROLE } from "../entity/user";
 import permission from "../middleware/permission";
 import validator from "../middleware/validator";
-import RemoteRequest from "../service/remote_command";
-import RemoteServiceSubsystem from "../service/remote_service";
+import { remoteRequest, remoteSubsystem } from "../service/remote_access";
 
 const router = new Router({ prefix: "/environment" });
 
@@ -18,8 +17,8 @@ router.get(
   async (ctx) => {
     try {
       const daemonId = String(ctx.query.daemonId);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("environment/images", {});
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("environment/images", {});
       ctx.body = result;
     } catch (err) {
       ctx.body = err;
@@ -37,8 +36,8 @@ router.post(
     try {
       const daemonId = String(ctx.query.daemonId);
       const config = ctx.request.body;
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request(
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request(
         "environment/new_image",
         config
       );
@@ -59,8 +58,8 @@ router.delete(
     try {
       const daemonId = String(ctx.query.daemonId);
       const imageId = String(ctx.query.imageId);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("environment/del_image", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("environment/del_image", {
         imageId
       });
       ctx.body = result;
@@ -79,8 +78,8 @@ router.get(
   async (ctx) => {
     try {
       const daemonId = String(ctx.query.daemonId);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("environment/containers", {});
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("environment/containers", {});
       ctx.body = result;
     } catch (err) {
       ctx.body = err;
@@ -97,8 +96,8 @@ router.get(
   async (ctx) => {
     try {
       const daemonId = String(ctx.query.daemonId);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("environment/networkModes", {});
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("environment/networkModes", {});
       ctx.body = result;
     } catch (err) {
       ctx.body = err;
@@ -115,8 +114,8 @@ router.get(
   async (ctx) => {
     try {
       const daemonId = String(ctx.query.daemonId);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("environment/progress", {});
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("environment/progress", {});
       ctx.body = result;
     } catch (err) {
       ctx.body = err;
@@ -138,8 +137,8 @@ router.post(
         ctx.body = { status: 400, message: "Image name is required" };
         return;
       }
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("environment/image_platforms", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("environment/image_platforms", {
         imageName
       });
       ctx.body = result;

@@ -6,9 +6,8 @@ import validator from "../middleware/validator";
 import { getRequestGuard as guard } from "../service/request_guard";
 import { operationLogger } from "../service/operation_logger";
 import { timeUuid } from "../service/password";
-import RemoteRequest from "../service/remote_command";
-import RemoteServiceSubsystem from "../service/remote_service";
 import { systemConfig } from "../setting";
+import { remoteRequest, remoteSubsystem } from "../service/remote_access";
 
 const router = new Router({ prefix: "/files" });
 
@@ -38,8 +37,8 @@ router.get(
     try {
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("file/status", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("file/status", {
         instanceUuid
       });
       if (!guard().identify(ctx).elevated) delete result.disk;
@@ -64,8 +63,8 @@ router.get(
       const page = Math.max(0, Number(ctx.query.page) || 0);
       const pageSize = Math.min(100, Math.max(1, Number(ctx.query.page_size) || 10));
       const fileName = String(ctx.query.file_name);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("file/list", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("file/list", {
         instanceUuid,
         target,
         pageSize,
@@ -91,8 +90,8 @@ router.get(
       const instanceUuid = String(ctx.query.uuid);
       const target = String(ctx.query.target);
       const code = String(ctx.query.code || "utf-8");
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("file/preview", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("file/preview", {
         instanceUuid,
         target,
         code
@@ -118,8 +117,8 @@ router.put(
       const target = String(ctx.request.body.target);
       const chmod = Number(ctx.request.body.chmod);
       const deep = Boolean(ctx.request.body.deep);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("file/chmod", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("file/chmod", {
         target,
         instanceUuid,
         chmod,
@@ -146,9 +145,9 @@ router.put(
       const targets = (ctx.request.body.targets as string[]).map((target) => String(target));
       const chmod = Number(ctx.request.body.chmod);
       const deep = Boolean(ctx.request.body.deep);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
+      const remoteService = remoteSubsystem().getInstance(daemonId);
       const timeout = Math.min(5 * 60 * 1000, Math.max(15 * 1000, targets.length * 2 * 1000));
-      const result = await new RemoteRequest(remoteService).request("file/chmod_batch", {
+      const result = await remoteRequest(remoteService).request("file/chmod_batch", {
         targets,
         instanceUuid,
         chmod,
@@ -170,8 +169,8 @@ router.post(
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
       const target = String(ctx.request.body.target);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("file/touch", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("file/touch", {
         target,
         instanceUuid
       });
@@ -191,8 +190,8 @@ router.post(
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
       const target = String(ctx.request.body.target);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("file/mkdir", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("file/mkdir", {
         target,
         instanceUuid
       });
@@ -213,8 +212,8 @@ router.put(
       const instanceUuid = String(ctx.query.uuid);
       const target = String(ctx.request.body.target);
       const text = ctx.request.body.text;
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request(
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request(
         "file/edit",
         {
           instanceUuid,
@@ -246,8 +245,8 @@ router.post(
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
       const targets = ctx.request.body.targets as [];
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("file/copy", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("file/copy", {
         instanceUuid,
         targets
       });
@@ -272,7 +271,7 @@ router.post(
       const url = String(ctx.request.body.url);
       const fileName = String(ctx.request.body.file_name);
 
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
+      const remoteService = remoteSubsystem().getInstance(daemonId);
       if (!remoteService) throw new Error($t("TXT_CODE_dd559000") + ` Daemon ID: ${daemonId}`);
 
       const downloadId = timeUuid();
@@ -287,7 +286,7 @@ router.post(
         fileName: fileName
       });
 
-      await new RemoteRequest(remoteService).request("file/download_from_url", {
+      await remoteRequest(remoteService).request("file/download_from_url", {
         url,
         fileName,
         instanceUuid
@@ -307,8 +306,8 @@ router.put(
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
       const targets = ctx.request.body.targets as [];
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("file/move", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("file/move", {
         instanceUuid,
         targets
       });
@@ -328,8 +327,8 @@ router.delete(
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = ctx.query.uuid;
       const targets = ctx.request.body.targets;
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("file/delete", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("file/delete", {
         instanceUuid,
         targets
       });
@@ -362,8 +361,8 @@ router.post(
       const targets = ctx.request.body.targets;
       const type = Number(ctx.request.body.type);
       const code = String(ctx.request.body.code);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const res = await new RemoteRequest(remoteService).request(
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const res = await remoteRequest(remoteService).request(
         "file/compress",
         {
           instanceUuid,
@@ -390,12 +389,12 @@ router.all(
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
       const fileName = String(ctx.query.file_name);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
+      const remoteService = remoteSubsystem().getInstance(daemonId);
       if (!remoteService) throw new Error($t("TXT_CODE_dd559000") + ` Daemon ID: ${daemonId}`);
       const addr = remoteService.config.fullAddr;
       const remoteMappings = remoteService.config.getConvertedRemoteMappings();
       const password = timeUuid();
-      await new RemoteRequest(remoteService).request("passport/register", {
+      await remoteRequest(remoteService).request("passport/register", {
         name: "download",
         password: password,
         parameter: {
@@ -430,12 +429,12 @@ router.all(
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
       const uploadDir = String(ctx.query.upload_dir);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
+      const remoteService = remoteSubsystem().getInstance(daemonId);
       if (!remoteService) throw new Error($t("TXT_CODE_dd559000") + ` Daemon ID: ${daemonId}`);
       const addr = remoteService.config.fullAddr;
       const remoteMappings = remoteService.config.getConvertedRemoteMappings();
       const password = timeUuid();
-      await new RemoteRequest(remoteService).request("passport/register", {
+      await remoteRequest(remoteService).request("passport/register", {
         name: "upload",
         password: password,
         parameter: {

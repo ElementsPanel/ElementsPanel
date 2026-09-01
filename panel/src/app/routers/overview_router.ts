@@ -6,9 +6,8 @@ import permission from "../middleware/permission";
 import { getRequestGuard as guard } from "../service/request_guard";
 import { operationLogger } from "../service/operation_logger";
 import { ctx as panel } from "../plugin/context";
-import RemoteRequest from "../service/remote_command";
-import RemoteServiceSubsystem from "../service/remote_service";
 import { getVersion, specifiedDaemonVersion } from "../version";
+import { remoteRequest, remoteSubsystem } from "../service/remote_access";
 
 const router = new Router({ prefix: "/overview" });
 
@@ -16,11 +15,11 @@ const router = new Router({ prefix: "/overview" });
 // Control panel home page information overview routing
 router.get("/", permission({ level: ROLE.USER, token: false }), async (ctx) => {
   // Get the information of the remote service concurrently
-  const requestTasks = Array.from(RemoteServiceSubsystem.services.entries()).map(
+  const requestTasks = Array.from(remoteSubsystem().services.entries()).map(
     async ([_, remoteService]) => {
       let remoteInfo: any = {};
       try {
-        remoteInfo = await new RemoteRequest(remoteService).request("info/overview");
+        remoteInfo = await remoteRequest(remoteService).request("info/overview");
       } catch (err) {
         // ignore request errors and continue looping
       }
@@ -64,7 +63,7 @@ router.get("/", permission({ level: ROLE.USER, token: false }), async (ctx) => {
       uptime: os.uptime(),
       cpu: selfInfo.cpuUsage
     },
-    remoteCount: RemoteServiceSubsystem.count(),
+    remoteCount: remoteSubsystem().count(),
     remote: remoteInfoList
   };
 

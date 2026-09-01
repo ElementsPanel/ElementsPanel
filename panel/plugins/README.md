@@ -81,7 +81,6 @@ and skipped; the panel keeps running.
 | `ctx.i18n` | `$t`, `i18next`, and `define(messages)` for the plugin's own strings. |
 | `ctx.middleware` | `permission`, `validator`, `instanceAccess`, `speedLimit`. |
 | `ctx.roles` | The role constants (`ADMIN`, `USER`, ...). |
-| `ctx.remote` | `services` (the node subsystem) and `Request` (the daemon request helper). |
 | `ctx.identity` | `of(requestCtx)`, `users`, `stats` — whoever the installed guard reports. |
 | `ctx.operations` | The operation logger. |
 | `ctx.instances` | `getByUuid`. |
@@ -89,12 +88,13 @@ and skipped; the panel keeps running.
 | `ctx.overview` | `provide(fn)` to add fields to `GET /api/overview`. |
 | `ctx.plugins` | `loaded`, `inventory()`, `setEnabled()`, and the frontend manifest the browser fetches. |
 | `ctx.koa` | `app`, `use(middleware)`, `router(prefix?)`. Both are removed on unload. **Provided by `plugins/server`.** |
+| `ctx.remote` | `services` (the node subsystem), `Request` (the daemon request helper) and `RequestTimeoutError`. **Provided by `plugins/node`.** |
 | `ctx.guard` | Request authorization. **Provided by `plugins/user`.** |
 | `ctx.installation` | First-run state. **Provided by `plugins/oobe`.** |
 
 `src/app/plugin/context.ts` is the authoritative declaration of all of this.
 
-Three of these are provided by plugins rather than by the core, with `ctx.set()`:
+Four of these are provided by plugins rather than by the core, with `ctx.set()`:
 
 `ctx.set("koa", ...)` is the web server itself. `plugins/server` creates the Koa
 application, mounts the base middleware, serves the static assets and binds the
@@ -104,6 +104,16 @@ The panel therefore listens on nothing without it, which is why `plugins/config`
 refuses to disable it and why almost every plugin injects it. A plugin that
 provides a service cannot inject it — see `plugins/server`, which reaches its own
 `koa` with `ctx.inject()` instead.
+
+`ctx.set("remote", ...)` is the panel's connection to its daemons. `plugins/node`
+owns the whole subsystem — the sockets, the stored node configuration, the
+authentication and the reconnect timer — so every node log line is written by
+that plugin's `ctx.logger` and prefixed `node`. The core declares only the shape
+it needs and resolves it at use time through `service/remote_access.ts`
+(`remoteSubsystem()`, `remoteRequest(node)`, `isRemoteRequestTimeout(error)`),
+which throws a clear error while no plugin provides one: unlike an unguarded
+panel, "no daemons" is not a state a route can answer in. It loads at
+`priority: 20` because `oobe`, `monitor`, `backup` and `market` all inject it.
 
 `ctx.set("guard", guard)` hands the plugin request authorization for the whole
 panel — route guarding, caller identity, instance ownership, upload permission
@@ -115,7 +125,7 @@ every request while none is installed. See `plugins/user`.
 `/api/auth/status`. The core defaults to installed, so removing the owning plugin
 cannot redirect the frontend to a route that no longer exists. See `plugins/oobe`.
 
-All three leave with their plugin, because a service registered inside `apply`
+All four leave with their plugin, because a service registered inside `apply`
 belongs to that plugin's scope.
 
 `ctx.overview.provide(fn)` merges extra fields into `GET /api/overview`. The core

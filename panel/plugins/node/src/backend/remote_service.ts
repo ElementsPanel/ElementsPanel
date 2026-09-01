@@ -1,11 +1,10 @@
 import fs from "fs-extra";
 import path from "path";
-import Storage from "../common/storage/sys_storage";
-import { IRemoteService, RemoteServiceConfig } from "../entity/entity_interface";
-import RemoteService from "../entity/remote_service";
-import { $t } from "../i18n";
-import { UniversalRemoteSubsystem } from "./base/urs";
-import { logger } from "./log";
+import type { IRemoteService } from "../../../../src/app/entity/entity_interface";
+import { UniversalRemoteSubsystem } from "./remote_base";
+import { RemoteServiceConfig } from "./remote_config";
+import RemoteService from "./remote_entity";
+import { $t, core, logger, storage } from "./runtime";
 
 // The RemoteServiceSubsystem will be one of the most important systems
 // main function is to store remote services everywhere
@@ -14,12 +13,10 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
   async initialize() {
     // If it is the first startup, it will automatically try to connect to "LocalHost",
     // otherwise it will automatically read from the configuration file and connect to all remote services.
-    for (const uuid of await Storage.getStorage().list("RemoteServiceConfig")) {
-      const config = (await Storage.getStorage().load(
-        "RemoteServiceConfig",
-        RemoteServiceConfig,
-        uuid
-      )) as RemoteServiceConfig;
+    for (const uuid of await storage().getStorage().list("RemoteServiceConfig")) {
+      const config = (await storage()
+        .getStorage()
+        .load("RemoteServiceConfig", RemoteServiceConfig, uuid)) as RemoteServiceConfig;
       const newService = new RemoteService(uuid, config);
       this.setInstance(uuid, newService);
       newService.connect();
@@ -30,10 +27,11 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
       await this.initConnectLocalhost("");
     }
 
-    logger.info($t("TXT_CODE_systemRemoteService.nodeCount", { n: this.services.size }));
+    logger().info($t("TXT_CODE_systemRemoteService.nodeCount", { n: this.services.size }));
 
-    // Register for periodic connection status checks
-    setInterval(() => this.connectionStatusCheckTask(), 1000 * 60);
+    // Register for periodic connection status checks. `ctx.setInterval` is
+    // cancelled when the plugin unloads, so the check leaves with it.
+    core().setInterval(() => this.connectionStatusCheckTask(), 1000 * 60);
   }
 
   // Register a NEW remote service to system and connect it.
@@ -45,7 +43,7 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
   async registerRemoteService(config: IRemoteService) {
     const instance = await this.newInstance(config);
     if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
-    await Storage.getStorage().store("RemoteServiceConfig", instance.uuid, instance.config);
+    await storage().getStorage().store("RemoteServiceConfig", instance.uuid, instance.config);
     instance.connect();
     return instance;
   }
@@ -55,7 +53,7 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
     if (this.getInstance(uuid)) {
       this.getInstance(uuid)?.disconnect();
       this.deleteInstance(uuid);
-      await Storage.getStorage().delete("RemoteServiceConfig", uuid);
+      await storage().getStorage().delete("RemoteServiceConfig", uuid);
     }
   }
 
@@ -81,7 +79,7 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
     if (config.prefix != null) instance.config.prefix = config.prefix;
     if (config.apiKey) instance.config.apiKey = config.apiKey;
     if (config.remoteMappings != null) instance.config.remoteMappings = config.remoteMappings;
-    await Storage.getStorage().store("RemoteServiceConfig", instance.uuid, instance.config);
+    await storage().getStorage().store("RemoteServiceConfig", instance.uuid, instance.config);
   }
 
   // Scannce localhost service
@@ -93,9 +91,9 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
     const localKeyFilePath = path.normalize(
       path.join(process.cwd(), "../daemon/data/Config/global.json")
     );
-    logger.info($t("TXT_CODE_systemRemoteService.loadDaemonTitle", { localKeyFilePath }));
+    logger().info($t("TXT_CODE_systemRemoteService.loadDaemonTitle", { localKeyFilePath }));
     if (fs.existsSync(localKeyFilePath)) {
-      logger.info($t("TXT_CODE_systemRemoteService.autoCheckDaemon"));
+      logger().info($t("TXT_CODE_systemRemoteService.autoCheckDaemon"));
       const localDaemonConfig = JSON.parse(
         fs.readFileSync(localKeyFilePath, { encoding: "utf-8" })
       );
@@ -106,10 +104,12 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
       const port = 24444;
       return await this.registerRemoteService({ apiKey: key, port, ip });
     }
-    logger.warn($t("TXT_CODE_systemRemoteService.error"));
+    logger().warn($t("TXT_CODE_systemRemoteService.error"));
 
-    // After 5 seconds, determine whether the daemon has been connected until a daemon is connected
-    setTimeout(() => {
+    // After 5 seconds, determine whether the daemon has been connected until a
+    // daemon is connected. `ctx.setTimeout` is cancelled when the plugin
+    // unloads, so a panel without this plugin stops retrying.
+    core().setTimeout(() => {
       if (this.services.size === 0) return this.initConnectLocalhost();
     }, 5 * 1000);
   }
@@ -128,7 +128,7 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
   connectionStatusCheckTask() {
     this.services?.forEach((v) => {
       if (v && v.available === false) {
-        logger.warn(
+        logger().warn(
           `Daemon exception detected: ${v.config.remarks} ${v.config.ip}:${v.config.port}, reconnecting...`
         );
         return v.connect();

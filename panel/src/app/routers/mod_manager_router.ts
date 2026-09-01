@@ -6,10 +6,9 @@ import permission from "../middleware/permission";
 import validator from "../middleware/validator";
 import { getRequestGuard as guard } from "../service/request_guard";
 import { modManagerService } from "../service/mod_manager_service";
-import RemoteRequest from "../service/remote_command";
-import RemoteServiceSubsystem from "../service/remote_service";
 import { systemConfig } from "../setting";
 import { checkSafeUrl } from "../utils/url";
+import { remoteRequest, remoteSubsystem } from "../service/remote_access";
 
 const router = new Router({ prefix: "/mod" });
 
@@ -69,8 +68,8 @@ router.get(
       const page = Math.max(1, Number(ctx.query.page) || 1);
       const pageSize = Math.min(50, Math.max(1, Number(ctx.query.pageSize) || 50));
       const folder = ctx.query.folder ? String(ctx.query.folder) : undefined;
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("instance/mods/list", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("instance/mods/list", {
         instanceUuid,
         page,
         pageSize,
@@ -190,8 +189,8 @@ router.post(
         return;
       }
 
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("instance/mods/install", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("instance/mods/install", {
         instanceUuid: uuid,
         url,
         fileName,
@@ -216,16 +215,16 @@ router.post(
   async (ctx) => {
     try {
       const { daemonId, uuid, fileName, type, uploadId } = ctx.request.body;
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
+      const remoteService = remoteSubsystem().getInstance(daemonId);
       if (type === "download") {
-        const result = await new RemoteRequest(remoteService).request("file/download_stop", {
+        const result = await remoteRequest(remoteService).request("file/download_stop", {
           instanceUuid: uuid,
           fileName
         });
         ctx.body = result;
       } else {
         // Upload stop is handled by deleting the file or specific upload task
-        const result = await new RemoteRequest(remoteService).request("file/delete", {
+        const result = await remoteRequest(remoteService).request("file/delete", {
           instanceUuid: uuid,
           targets: [fileName]
         });
@@ -247,8 +246,8 @@ router.get(
   async (ctx) => {
     try {
       const { daemonId, uuid, modId, type, fileName } = ctx.query;
-      const remoteService = RemoteServiceSubsystem.getInstance(String(daemonId));
-      const result = await new RemoteRequest(remoteService).request("instance/mods/config_files", {
+      const remoteService = remoteSubsystem().getInstance(String(daemonId));
+      const result = await remoteRequest(remoteService).request("instance/mods/config_files", {
         instanceUuid: uuid,
         modId,
         type,
@@ -271,8 +270,8 @@ router.post(
   async (ctx) => {
     try {
       const { daemonId, uuid, fileName } = ctx.request.body;
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("instance/mods/toggle", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("instance/mods/toggle", {
         instanceUuid: uuid,
         fileName
       });
@@ -293,8 +292,8 @@ router.post(
   async (ctx) => {
     try {
       const { daemonId, uuid, fileName } = ctx.request.body;
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("instance/mods/delete", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("instance/mods/delete", {
         instanceUuid: uuid,
         fileName
       });

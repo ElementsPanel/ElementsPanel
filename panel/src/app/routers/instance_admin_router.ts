@@ -8,8 +8,7 @@ import { getRequestGuard as guard } from "../service/request_guard";
 import { multiOperationForwarding } from "../service/instance_service";
 import { operationLogger } from "../service/operation_logger";
 import { timeUuid } from "../service/password";
-import RemoteRequest from "../service/remote_command";
-import RemoteServiceSubsystem from "../service/remote_service";
+import { remoteRequest, remoteSubsystem } from "../service/remote_access";
 
 const router = new Router({ prefix: "/instance" });
 
@@ -25,8 +24,8 @@ router.get(
       const instanceUuid = String(ctx.query.uuid);
       if (!guard().canAccessInstance(ctx, daemonId, instanceUuid))
         throw new Error($t("TXT_CODE_permission.forbidden"));
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("instance/detail", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("instance/detail", {
         instanceUuid
       });
       ctx.body = result;
@@ -47,8 +46,8 @@ router.post(
     try {
       const daemonId = String(ctx.query.daemonId);
       const config = ctx.request.body;
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("instance/new", config);
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("instance/new", config);
       ctx.body = result;
       operationLogger.log("instance_create", {
         daemon_id: daemonId,
@@ -74,9 +73,9 @@ router.post(
       const daemonId = String(ctx.query.daemonId);
       // const uploadDir = String(ctx.query.upload_dir);
       const config = ctx.request.body;
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
+      const remoteService = remoteSubsystem().getInstance(daemonId);
       if (!remoteService) throw new Error($t("TXT_CODE_dd559000") + ` Daemon ID: ${daemonId}`);
-      const result = await new RemoteRequest(remoteService).request("instance/new", config);
+      const result = await remoteRequest(remoteService).request("instance/new", config);
       const newInstanceUuid = result.instanceUuid;
       if (!newInstanceUuid) throw new Error($t("TXT_CODE_router.instance.createError"));
       operationLogger.log("instance_create", {
@@ -90,7 +89,7 @@ router.post(
       const addr = remoteService.config.fullAddr;
       const remoteMappings = remoteService.config.getConvertedRemoteMappings();
       const password = timeUuid();
-      await new RemoteRequest(remoteService).request("passport/register", {
+      await remoteRequest(remoteService).request("passport/register", {
         name: "upload",
         password: password,
         parameter: {
@@ -121,8 +120,8 @@ router.put(
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
       const config = ctx.request.body;
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("instance/update", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("instance/update", {
         instanceUuid,
         config
       });
@@ -151,14 +150,14 @@ router.delete(
       const daemonId = String(ctx.query.daemonId);
       const instanceUuids = ctx.request.body.uuids;
       const deleteFile = ctx.request.body.deleteFile;
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
+      const remoteService = remoteSubsystem().getInstance(daemonId);
       if (!instanceUuids || !Array.isArray(instanceUuids))
         throw new Error("Type error, invalid uuids or daemonId");
       const instanceIds = instanceUuids.map((uuid: string) => {
         return { instanceUuid: uuid, daemonId };
       });
       guard().users?.deleteUserInstances(null, instanceIds, true);
-      const result = await new RemoteRequest(remoteService).request("instance/delete", {
+      const result = await remoteRequest(remoteService).request("instance/delete", {
         instanceUuids,
         deleteFile
       });
@@ -188,8 +187,8 @@ router.post("/multi_open", permission({ level: ROLE.ADMIN }), async (ctx) => {
   try {
     const instances = ctx.request.body;
     multiOperationForwarding(instances, async (daemonId: string, instanceUuids: string[]) => {
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      new RemoteRequest(remoteService)
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      remoteRequest(remoteService)
         .request("instance/open", {
           instanceUuids
         })
@@ -218,8 +217,8 @@ router.post("/multi_stop", permission({ level: ROLE.ADMIN }), async (ctx) => {
   try {
     const instances = ctx.request.body;
     multiOperationForwarding(instances, async (daemonId: string, instanceUuids: string[]) => {
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      new RemoteRequest(remoteService)
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      remoteRequest(remoteService)
         .request("instance/stop", {
           instanceUuids
         })
@@ -248,8 +247,8 @@ router.post("/multi_kill", permission({ level: ROLE.ADMIN }), async (ctx) => {
   try {
     const instances = ctx.request.body;
     multiOperationForwarding(instances, async (daemonId: string, instanceUuids: string[]) => {
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      new RemoteRequest(remoteService)
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      remoteRequest(remoteService)
         .request("instance/kill", { instanceUuids })
         .then((e) => {
           e.instances.forEach((instance: { instanceUuid: string; nickname: string }) => {
@@ -276,8 +275,8 @@ router.post("/multi_restart", permission({ level: ROLE.ADMIN }), async (ctx) => 
   try {
     const instances = ctx.request.body;
     multiOperationForwarding(instances, async (daemonId: string, instanceUuids: string[]) => {
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      new RemoteRequest(remoteService)
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      remoteRequest(remoteService)
         .request("instance/restart", { instanceUuids })
         .then((e) => {
           e.instances.forEach((instance: { instanceUuid: string; nickname: string }) => {

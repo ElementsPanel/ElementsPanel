@@ -1,9 +1,17 @@
 import type Koa from "koa";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
+import RemoteRequest, { RemoteRequestTimeoutError } from "./remote_command";
+import remoteServices from "./remote_service";
+import { setPluginContext } from "./runtime";
 
-// Panel side of the node plugin. It owns every HTTP route the node management
-// UI talks to; the panel core only keeps the remote service subsystem itself,
-// because instance routing, sockets and the overview all depend on it.
+// Panel side of the node plugin. It owns the remote-node subsystem itself — the
+// daemon connections, their stored configuration and the request helper — and
+// every HTTP route the node management UI talks to.
+//
+// The subsystem is handed to everyone else as `ctx.remote`, which is why this is
+// the one plugin the panel cannot reach a daemon without: the core resolves it
+// through `service/remote_access.ts` and every other plugin injects it. It
+// therefore loads early, ahead of the plugins that do.
 
 interface RemoteServiceLike {
   uuid: string;
@@ -30,12 +38,32 @@ function describeNode(remoteService: RemoteServiceLike) {
   };
 }
 
-export const inject = ["koa", "middleware", "roles", "remote", "operations"];
+export const inject = ["koa", "i18n", "storage", "settings", "middleware", "roles", "operations"];
 
-export function apply(ctx: PanelPluginContext) {
+export async function apply(ctx: PanelPluginContext) {
+  // Before anything else: the subsystem's modules read the logger, the storage,
+  // the panel configuration and `$t` through this handle.
+  setPluginContext(ctx);
+
+  // Loads every stored node and starts connecting. Awaited, so `ctx.remote` is
+  // never handed over half-initialised.
+  await remoteServices.initialize();
+
+  // `ctx.set()` from inside a plugin belongs to that plugin: the subsystem — and
+  // with it the panel's ability to reach any daemon — leaves when this plugin
+  // unloads. The core reads it through `remoteSubsystem()`, which says so.
+  ctx.set("remote", {
+    services: remoteServices,
+    Request: RemoteRequest,
+    RequestTimeoutError: RemoteRequestTimeoutError
+  });
+
+  ctx.effect(() => () => {
+    // Sockets are not cordis effects, so closing them is this plugin's job.
+    for (const service of remoteServices.services.values()) service.disconnect();
+  });
+
   const router = ctx.koa.router("/api/service");
-  const remoteServices = ctx.remote.services;
-  const RemoteRequest = ctx.remote.Request;
   const operationLogger = ctx.operations;
   const validator = ctx.middleware.validator;
   const requireAdmin = ctx.middleware.permission({ level: ctx.roles.ADMIN });

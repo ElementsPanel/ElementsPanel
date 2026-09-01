@@ -1,7 +1,7 @@
 import { v4 } from "uuid";
-import { IPacket, IRequestPacket } from "../entity/entity_interface";
-import RemoteService from "../entity/remote_service";
-import { $t } from "../i18n";
+import type { IPacket, IRequestPacket } from "../../../../src/app/entity/entity_interface";
+import RemoteService from "./remote_entity";
+import { $t } from "./runtime";
 
 class RemoteError extends Error {
   constructor(msg: string) {

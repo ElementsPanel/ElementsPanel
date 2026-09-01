@@ -1,8 +1,6 @@
 import { JsonlStorageSubsystem } from "./../common/storage/jsonl_storage";
 import { v4 } from "uuid";
 import type { OperationLoggerItem, OperationLoggerItemPayload } from "../../types/operation_logger";
-import RemoteRequest from "./remote_command";
-import RemoteServiceSubsystem from "./remote_service";
 
 type CleanPayload<T extends keyof OperationLoggerItemPayload> = Omit<
   OperationLoggerItemPayload[T],

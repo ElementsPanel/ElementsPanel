@@ -2,14 +2,13 @@ import Router from "@koa/router";
 import { ROLE } from "../entity/user";
 import permission from "../middleware/permission";
 import { getRequestGuard as guard } from "../service/request_guard";
-import RemoteRequest from "../service/remote_command";
-import RemoteServiceSubsystem from "../service/remote_service";
 
 const router = new Router({ prefix: "/java_manager" });
 
 import { $t } from "../i18n";
 import { speedLimit } from "../middleware/limit";
 import validator from "../middleware/validator";
+import { remoteRequest, remoteSubsystem } from "../service/remote_access";
 
 router.use(async (ctx, next) => {
   const daemonId = String(ctx.query.daemonId);
@@ -27,8 +26,8 @@ router.get(
   validator({ query: { daemonId: String, instanceId: String } }),
   async (ctx) => {
     const daemonId = String(ctx.query.daemonId);
-    const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-    const response = await new RemoteRequest(remoteService).request("java_manager/list");
+    const remoteService = remoteSubsystem().getInstance(daemonId);
+    const response = await remoteRequest(remoteService).request("java_manager/list");
     ctx.body = response;
   }
 );
@@ -48,8 +47,8 @@ router.post(
   }),
   async (ctx) => {
     const daemonId = String(ctx.query.daemonId);
-    const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-    const response = await new RemoteRequest(remoteService).request("java_manager/add", {
+    const remoteService = remoteSubsystem().getInstance(daemonId);
+    const response = await remoteRequest(remoteService).request("java_manager/add", {
       name: ctx.request.body.name,
       path: ctx.request.body.path
     });
@@ -73,8 +72,8 @@ router.post(
   }),
   async (ctx) => {
     const daemonId = String(ctx.query.daemonId);
-    const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-    const response = await new RemoteRequest(remoteService).request("java_manager/download", {
+    const remoteService = remoteSubsystem().getInstance(daemonId);
+    const response = await remoteRequest(remoteService).request("java_manager/download", {
       name: ctx.request.body.name,
       version: ctx.request.body.version
     });
@@ -96,9 +95,9 @@ router.post(
   }),
   async (ctx) => {
     const daemonId = String(ctx.query.daemonId);
-    const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
+    const remoteService = remoteSubsystem().getInstance(daemonId);
 
-    const response = await new RemoteRequest(remoteService).request("java_manager/using", {
+    const response = await remoteRequest(remoteService).request("java_manager/using", {
       instanceId: ctx.query.instanceId,
       id: ctx.request.body.id
     });
@@ -119,9 +118,9 @@ router.delete(
   }),
   async (ctx) => {
     const daemonId = String(ctx.query.daemonId);
-    const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
+    const remoteService = remoteSubsystem().getInstance(daemonId);
 
-    const response = await new RemoteRequest(remoteService).request("java_manager/delete", {
+    const response = await remoteRequest(remoteService).request("java_manager/delete", {
       id: ctx.request.body.id
     });
     ctx.body = response;

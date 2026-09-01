@@ -18,9 +18,9 @@ import {
 import { getRequestGuard as guard } from "../service/request_guard";
 import { logger } from "../service/log";
 import { operationLogger } from "../service/operation_logger";
-import remoteService from "../service/remote_service";
 import { saveSystemConfig, systemConfig } from "../setting";
 import { checkBusinessMode } from "../version";
+import { remoteSubsystem } from "../service/remote_access";
 
 const router = new Router({ prefix: "/overview" });
 
@@ -57,7 +57,7 @@ router.put("/setting", permission({ level: ROLE.ADMIN }), async (ctx) => {
       logger.warn($t("TXT_CODE_e29a9317"), config.language);
       systemConfig.language = String(config.language);
       await i18next.changeLanguage(systemConfig.language.toLowerCase());
-      remoteService.changeDaemonLanguage(systemConfig.language);
+      remoteSubsystem().changeDaemonLanguage(systemConfig.language);
     }
 
     operationLogger.log("system_config_change", {

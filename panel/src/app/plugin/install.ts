@@ -9,8 +9,6 @@ import instanceAccess from "../middleware/instance_access";
 import validator from "../middleware/validator";
 import { getInstancesByUuid } from "../service/instance_service";
 import { operationLogger } from "../service/operation_logger";
-import RemoteRequest from "../service/remote_command";
-import SystemRemoteService from "../service/remote_service";
 import { getRequestGuard } from "../service/request_guard";
 import { saveSystemConfig, systemConfig } from "../setting";
 import { ctx } from "./context";
@@ -47,9 +45,10 @@ function provide<K extends keyof Context & string>(name: K, value: Context[K]) {
  * classes, because a registration has to belong to the plugin that made it.
  * `logger` and the timer helpers come from cordis itself.
  *
- * `koa`, `guard` and `installation` are deliberately absent: they are provided
- * by plugins with `ctx.set()`. `koa` comes from `plugins/server`, which owns the
- * whole web server; the other two are read through a core accessor that falls
+ * `koa`, `remote`, `guard` and `installation` are deliberately absent: they are
+ * provided by plugins with `ctx.set()`. `koa` comes from `plugins/server`, which
+ * owns the whole web server, and `remote` from `plugins/node`, which owns the
+ * daemon connections; the other two are read through a core accessor that falls
  * back to a default so the panel works without the owning plugin.
  */
 export function installPanelPluginServices() {
@@ -57,7 +56,6 @@ export function installPanelPluginServices() {
   provide("storage", Storage);
   provide("middleware", { permission, validator, instanceAccess, speedLimit });
   provide("roles", ROLE);
-  provide("remote", { services: SystemRemoteService, Request: RemoteRequest });
   provide("identity", {
     of: (requestCtx: Koa.ParameterizedContext) => getRequestGuard().identify(requestCtx),
     // Getters: the guard arrives with a plugin, after this runs, and can be

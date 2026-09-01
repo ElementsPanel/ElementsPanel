@@ -6,7 +6,6 @@ import { ctx as panel } from "./app/plugin/context";
 import { installPanelPluginServices } from "./app/plugin/install";
 import { loadPanelPlugins } from "./app/plugin/loader";
 import { logger } from "./app/service/log";
-import SystemRemoteService from "./app/service/remote_service";
 import versionAdapter from "./app/service/version_adapter";
 import { initSystemConfig, systemConfig } from "./app/setting";
 import { checkBusinessMode, getVersion, initVersionManager } from "./app/version";
@@ -63,14 +62,11 @@ async function main() {
 
   checkBusinessMode();
 
-  // Initialize services. The user subsystem is initialized by the "user"
-  // plugin, which owns it.
-  await SystemRemoteService.initialize();
-
   // The plugin container owns everything past this point: services first, so
-  // that a plugin can use them, then the plugins themselves. The web server —
-  // the Koa application, its base middleware, the static assets and the
-  // listener — is the "server" plugin, and it is what provides `ctx.koa`.
+  // that a plugin can use them, then the plugins themselves. Two of the panel's
+  // foundations are plugins now — the web server (`ctx.koa`, `plugins/server`)
+  // and the daemon connections (`ctx.remote`, `plugins/node`) — and both are
+  // established during this load, before anything can ask for them.
   installPanelPluginServices();
   await loadPanelPlugins();
 

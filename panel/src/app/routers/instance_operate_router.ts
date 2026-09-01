@@ -10,8 +10,7 @@ import { getRequestGuard as guard } from "../service/request_guard";
 import { checkInstanceAdvancedParams } from "../service/instance_service";
 import { operationLogger } from "../service/operation_logger";
 import { timeUuid } from "../service/password";
-import RemoteRequest, { RemoteRequestTimeoutError } from "../service/remote_command";
-import RemoteServiceSubsystem from "../service/remote_service";
+import { isRemoteRequestTimeout, remoteRequest, remoteSubsystem } from "../service/remote_access";
 
 const router = new Router({ prefix: "/protected_instance" });
 
@@ -28,8 +27,8 @@ router.all(
     try {
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("instance/open", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("instance/open", {
         instanceUuids: [instanceUuid]
       });
       operationLogger.log("instance_start", {
@@ -41,7 +40,7 @@ router.all(
       });
       ctx.body = result;
     } catch (err) {
-      if (err instanceof RemoteRequestTimeoutError) {
+      if (isRemoteRequestTimeout(err)) {
         ctx.body = {};
         return;
       }
@@ -60,8 +59,8 @@ router.all(
     try {
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("instance/stop", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("instance/stop", {
         instanceUuids: [instanceUuid]
       });
       operationLogger.log("instance_stop", {
@@ -90,8 +89,8 @@ router.all(
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
       const command = String(ctx.query.command);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("instance/command", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("instance/command", {
         instanceUuid,
         command
       });
@@ -112,8 +111,8 @@ router.all(
     try {
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("instance/restart", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("instance/restart", {
         instanceUuids: [instanceUuid]
       });
       operationLogger.log("instance_restart", {
@@ -140,8 +139,8 @@ router.all(
     try {
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("instance/kill", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("instance/kill", {
         instanceUuids: [instanceUuid]
       });
       operationLogger.warning("instance_kill", {
@@ -184,8 +183,8 @@ router.post(
         throw new Error("illegal access");
       }
 
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request("instance/asynchronous", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request("instance/asynchronous", {
         instanceUuid,
         taskName,
         parameter,
@@ -211,9 +210,9 @@ router.all(
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
       const parameter = ctx.request.body;
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
+      const remoteService = remoteSubsystem().getInstance(daemonId);
       // No permission check is required because "Parameter.TaskId" is not easily obtained.
-      const result = await new RemoteRequest(remoteService).request("instance/stop_asynchronous", {
+      const result = await remoteRequest(remoteService).request("instance/stop_asynchronous", {
         instanceUuid,
         parameter
       });
@@ -246,8 +245,8 @@ router.all(
           return;
         }
       }
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      ctx.body = await new RemoteRequest(remoteService).request("instance/query_asynchronous", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      ctx.body = await remoteRequest(remoteService).request("instance/query_asynchronous", {
         instanceUuid,
         taskName,
         parameter
@@ -268,13 +267,13 @@ router.post(
     try {
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
+      const remoteService = remoteSubsystem().getInstance(daemonId);
       if (!remoteService) throw new Error($t("TXT_CODE_dd559000") + ` Daemon ID: ${daemonId}`);
       const addr = remoteService.config.addr;
       const prefix = remoteService.config.prefix;
       const remoteMappings = remoteService.config.getConvertedRemoteMappings();
       const password = timeUuid();
-      await new RemoteRequest(remoteService).request("passport/register", {
+      await remoteRequest(remoteService).request("passport/register", {
         name: "stream_channel",
         password: password,
         parameter: {
@@ -304,8 +303,8 @@ router.post(
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
       const files = ctx.request.body.files;
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request(
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request(
         "instance/process_config/list",
         {
           instanceUuid,
@@ -331,8 +330,8 @@ router.get(
       const instanceUuid = String(ctx.query.uuid);
       const fileName = String(ctx.query.fileName);
       const type = String(ctx.query.type);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request(
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request(
         "instance/process_config/file",
         {
           instanceUuid,
@@ -361,8 +360,8 @@ router.put(
       const fileName = String(ctx.query.fileName);
       const type = String(ctx.query.type);
       const config = ctx.request.body;
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      const result = await new RemoteRequest(remoteService).request(
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      const result = await remoteRequest(remoteService).request(
         "instance/process_config/file",
         {
           instanceUuid,
@@ -449,13 +448,13 @@ router.put(
       const ie = !isEmpty(config.ie) ? toText(config?.ie) : null;
       const fileCode = toText(config.fileCode);
       const stopCommand = config.stopCommand ? toText(config.stopCommand) : null;
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId || "");
+      const remoteService = remoteSubsystem().getInstance(daemonId || "");
       const isTopPermission = guard().identify(ctx).elevated;
 
       let advancedConfig = {};
       advancedConfig = checkInstanceAdvancedParams(config, isTopPermission);
 
-      new RemoteRequest(remoteService).request("instance/update", {
+      remoteRequest(remoteService).request("instance/update", {
         instanceUuid,
         config: {
           pingConfig: !isEmpty(config.pingConfig) ? pingConfig : null,
@@ -492,8 +491,8 @@ router.get(
     try {
       const daemonId = String(ctx.query.daemonId);
       const instanceUuid = String(ctx.query.uuid);
-      const remoteService = RemoteServiceSubsystem.getInstance(daemonId);
-      let result = await new RemoteRequest(remoteService).request("instance/outputlog", {
+      const remoteService = remoteSubsystem().getInstance(daemonId);
+      let result = await remoteRequest(remoteService).request("instance/outputlog", {
         instanceUuid
       });
       if (ctx.query.size) {

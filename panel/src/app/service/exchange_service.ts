@@ -3,10 +3,9 @@ import { t } from "i18next";
 import { toNumber, toText } from "mcsmanager-common";
 import { customAlphabet } from "nanoid";
 import { $t } from "../i18n";
-import RemoteRequest from "../service/remote_command";
-import RemoteServiceSubsystem from "../service/remote_service";
 import { getInstancesByUuid, IAdvancedInstanceInfo } from "./instance_service";
 import { getRequestGuard, requireGuardFeature } from "./request_guard";
+import { remoteRequest, remoteSubsystem } from "./remote_access";
 
 // A commercial platform for selling instances released by the MCSManager Dev Team.
 // Currently, it only supports some countries and regions.
@@ -165,12 +164,12 @@ export async function buyOrRenewInstance(
   const hours = toNumber(params.hours) ?? 0;
   const payload: Partial<IGlobalInstanceConfig> = params.payload ?? {};
 
-  const remoteService = RemoteServiceSubsystem.getInstance(node_id || "");
+  const remoteService = remoteSubsystem().getInstance(node_id || "");
   if (!remoteService?.available) {
     throw new Error(t("TXT_CODE_bed32084"));
   }
 
-  const remoteRequest = new RemoteRequest(remoteService);
+  const daemonRequest = remoteRequest(remoteService);
 
   if (request_action === RequestAction.BUY) {
     payload.category = params.category_id || 0;
@@ -182,7 +181,7 @@ export async function buyOrRenewInstance(
     }
 
     payload.nickname = "App-" + username + "-" + getNanoId(6);
-    const { instanceUuid: newInstanceId, config: newInstanceConfig } = await remoteRequest.request(
+    const { instanceUuid: newInstanceId, config: newInstanceConfig } = await daemonRequest.request(
       "instance/new",
       payload
     );
@@ -231,7 +230,7 @@ export async function buyOrRenewInstance(
   }
 
   if (request_action === RequestAction.RENEW) {
-    const instanceInfo = await remoteRequest.request("instance/detail", {
+    const instanceInfo = await daemonRequest.request("instance/detail", {
       instanceUuid: instance_id
     });
 
@@ -256,7 +255,7 @@ export async function buyOrRenewInstance(
 
     await handler.onCreateConfirm?.(instance_id);
 
-    await remoteRequest.request("instance/update", {
+    await daemonRequest.request("instance/update", {
       instanceUuid: instance_id,
       config: config
     });
@@ -294,12 +293,12 @@ export async function queryInstanceByUserId(
 
 export async function getNodeStatus(params: Record<string, any>): Promise<INodeStatusProtocol> {
   const nodeId = toText(params.node_id) ?? "";
-  const remoteService = RemoteServiceSubsystem.getInstance(nodeId);
+  const remoteService = remoteSubsystem().getInstance(nodeId);
   if (!remoteService?.available) {
     throw new Error(t("TXT_CODE_bed32084"));
   }
-  const remoteRequest = new RemoteRequest(remoteService);
-  const remoteInfo = await remoteRequest.request("info/overview");
+  const daemonRequest = remoteRequest(remoteService);
+  const remoteInfo = await daemonRequest.request("info/overview");
   remoteInfo.uuid = remoteService.uuid;
   remoteInfo.available = remoteService.available;
 
