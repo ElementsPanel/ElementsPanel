@@ -45,18 +45,9 @@ class MissionPassport {
   }
 }
 
-const LOGIN_BY_TOP_LEVEL = "TOP_LEVEL";
+// The top-level login — the panel presenting the daemon key — belongs to
+// `plugins/auth`, which owns its own session type and marks the session itself.
 const LOGIN_FROM_STREAM = "STREAM";
-
-// This function must be executed after successful login
-function loginSuccessful(ctx: RouterContext, key: string) {
-  ctx.session.key = key;
-  ctx.session.login = true;
-  ctx.session.id = ctx.socket.id;
-  ctx.session.type = LOGIN_BY_TOP_LEVEL;
-  ctx.session.stream = {};
-  return ctx.session;
-}
 
 function streamLoginSuccessful(ctx: RouterContext, instanceUuid: string) {
   ctx.session.id = ctx.socket.id;
@@ -71,11 +62,4 @@ function streamLoginSuccessful(ctx: RouterContext, instanceUuid: string) {
 
 const missionPassport = new MissionPassport();
 
-export {
-  missionPassport,
-  IMission,
-  LOGIN_BY_TOP_LEVEL,
-  LOGIN_FROM_STREAM,
-  loginSuccessful,
-  streamLoginSuccessful
-};
+export { missionPassport, IMission, LOGIN_FROM_STREAM, streamLoginSuccessful };

@@ -77,8 +77,9 @@ export function navigation(socket: Socket) {
   routerApp.emitRouter("connection", ctx, null);
 }
 
-// The authentication routing order must be the first load. These routing orders cannot be changed without authorization
-import "../routers/auth_router";
+// Authentication is `plugins/auth`: it registers the top-level middleware that
+// gates every event below, and it loads before the server starts listening, so no
+// socket is ever routed without it.
 import "../routers/environment_router";
 import "../routers/file_router";
 import "../routers/info_router";

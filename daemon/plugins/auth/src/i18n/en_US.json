@@ -1,0 +1,6 @@
+{
+  "TXT_CODE_auth_router.access": "Session {{id}} ({{address}}) has successfully authenticated",
+  "TXT_CODE_auth_router.disconnect": "Session {{id}} ({{address}}) disconnected due to prolonged unauthentication",
+  "TXT_CODE_auth_router.illegalAccess": "Illegal access",
+  "TXT_CODE_auth_router.notAccess": "Session {{id}} ({{address}}) attempted unauthorized access to {{event}} and has been blocked."
+}

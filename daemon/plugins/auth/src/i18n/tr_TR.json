@@ -1,0 +1,6 @@
+{
+  "TXT_CODE_auth_router.access": "Oturum {{id}} ({{address}}) kimliği başarıyla doğrulandı",
+  "TXT_CODE_auth_router.disconnect": "Oturum {{id}} ({{address}}) uzun süreli kimlik doğrulaması nedeniyle bağlantısı kesildi",
+  "TXT_CODE_auth_router.illegalAccess": "Yasadışı erişim",
+  "TXT_CODE_auth_router.notAccess": "Oturum {{id}} ({{address}}) {{event}}'a yetkisiz erişim girişiminde bulundu ve engellendi."
+}

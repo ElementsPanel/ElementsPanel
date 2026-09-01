@@ -1,0 +1,6 @@
+{
+  "TXT_CODE_auth_router.access": "Sitzung {{id}}({{address}}) Identitätsüberprüfung erfolgreich",
+  "TXT_CODE_auth_router.disconnect": "Die Sitzung {{id}}({{address}}) wurde aufgrund einer langen Zeitspanne ohne Identitätsüberprüfung getrennt.",
+  "TXT_CODE_auth_router.illegalAccess": "Unautorisierter Zugriff",
+  "TXT_CODE_auth_router.notAccess": "Sitzung {{id}}({{address}}) hat versucht, unbefugt auf {{event}} zuzugreifen und ist jetzt blockiert."
+}

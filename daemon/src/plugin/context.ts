@@ -189,6 +189,8 @@ export interface DaemonProtocolService {
   readonly error: typeof protocol.error;
   readonly msg: typeof protocol.msg;
   readonly ROLE: typeof protocol.ROLE;
+  /** Marker an error message carries to keep `error()` from printing it. */
+  readonly IGNORE: string;
 }
 
 /** The instances this daemon runs, and the pieces needed to build a new one. */

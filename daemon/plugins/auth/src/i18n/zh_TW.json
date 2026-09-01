@@ -1,0 +1,6 @@
+{
+  "TXT_CODE_auth_router.access": "會話 {{id}}({{address}}) 驗證身分成功",
+  "TXT_CODE_auth_router.disconnect": "會話 {{id}}({{address}}) 因長時間未驗證身分而中斷連線",
+  "TXT_CODE_auth_router.illegalAccess": "未經允許的存取",
+  "TXT_CODE_auth_router.notAccess": "會話 {{id}}({{address}}) 試圖無權限存取 {{event}} 現已封鎖."
+}

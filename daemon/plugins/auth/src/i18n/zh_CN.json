@@ -1,0 +1,6 @@
+{
+  "TXT_CODE_auth_router.access": "会话 {{id}}({{address}}) 验证身份成功",
+  "TXT_CODE_auth_router.disconnect": "会话 {{id}}({{address}}) 因长时间未验证身份而断开连接",
+  "TXT_CODE_auth_router.illegalAccess": "非法访问",
+  "TXT_CODE_auth_router.notAccess": "会话 {{id}}({{address}}) 试图无权限访问 {{event}} 现已阻止."
+}

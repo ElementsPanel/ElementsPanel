@@ -1,0 +1,6 @@
+{
+  "TXT_CODE_auth_router.access": "세션 {{id}}({{address}}) 신원 확인 성공",
+  "TXT_CODE_auth_router.disconnect": "장기간 신원이 확인되지 않아 세션 {{id}}({{address}})의 연결이 끊어졌습니다.",
+  "TXT_CODE_auth_router.illegalAccess": "승인되지 않은 접근",
+  "TXT_CODE_auth_router.notAccess": "세션 {{id}}({{address}})이(가) {{event}}에 대한 무단 액세스를 시도하여 현재 차단되었습니다."
+}

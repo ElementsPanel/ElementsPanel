@@ -1,4 +1,5 @@
 import { Service, type Context } from "cordis";
+import { IGNORE } from "../const";
 import { routerApp } from "../service/router";
 import * as protocol from "../service/protocol";
 import type RouterContext from "../entity/ctx";
@@ -18,6 +19,7 @@ export class ProtocolService extends Service implements DaemonProtocolService {
   readonly error = protocol.error;
   readonly msg = protocol.msg;
   readonly ROLE = protocol.ROLE;
+  readonly IGNORE = IGNORE;
 
   constructor(ctx: Context) {
     super(ctx, "protocol", true);

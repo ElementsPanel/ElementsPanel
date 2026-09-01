@@ -56,7 +56,7 @@ Set `enabled` to `false` to skip one.
 | `ctx.i18n` | `$t` and `define(messages)` for the plugin's own strings. |
 | `ctx.settingsForm` | `declare({ fields, read, write })` — the plugin's configuration, which the panel renders. |
 | `ctx.middleware` | `uploadSpeedLimit`, `uploadFileCheck` — the base middleware the web server mounts ahead of the body parser. |
-| `ctx.protocol` | `on(event, handler)`, `use(middleware)`, `response`, `responseError`, `error`, `msg`, `ROLE`. |
+| `ctx.protocol` | `on(event, handler)`, `use(middleware)`, `response`, `responseError`, `error`, `msg`, `ROLE`, `IGNORE`. |
 | `ctx.instances` | `subsystem`, `Instance`, `Config`, `Command`, `UpdateAction`, `fileManager`, `headers`. |
 | `ctx.tasks` | `AsyncTask`, `Center`, `register(name, registration)`, `get(name)`. |
 | `ctx.presets` | `register(preset, factory)`, `entries()`. |
@@ -95,6 +95,15 @@ preset. `FunctionDispatcher` applies these after its own defaults, so a plugin c
 provide a preset the core has no implementation for — `install`, owned by
 `plugins/market` — or replace one it does. Without the owning plugin the preset is
 simply absent and `execPreset` does nothing.
+
+Authentication is not on this list, because it is not a service: `plugins/auth`
+owns it by registering the top-level `ctx.protocol.use()` middleware that gates
+every event, plus the `auth` event itself. The core has no "is authentication
+enabled" branch anywhere — without that plugin the daemon has no opinion on who is
+calling, and answers everything to anyone who speaks the protocol. It loads at
+`priority: 20`, ahead of every plugin that registers handlers, and the daemon does
+not listen until `plugins/server` binds on `ready`, so no socket is ever routed
+unguarded.
 
 `ctx.protocol.on()` has one limitation worth knowing: `service/router.ts` copies
 the handler list onto each socket as it connects, so a handler registered after a
