@@ -9,6 +9,13 @@
   "TXT_CODE_PLUGIN_ESSENTIAL_DISABLE": "ไม่สามารถปิดใช้งานเว็บเซิร์ฟเวอร์จากแผงควบคุมที่ตัวมันเองให้บริการอยู่ กรุณาตั้ง enabled เป็น false ใน plugin.json ของมันแทน",
   "TXT_CODE_PLUGIN_IS_DISABLED": "ปลั๊กอินนี้ถูกปิดใช้งาน หน้า เส้นทาง และ API จะใช้ไม่ได้จนกว่าจะเปิดใช้งานอีกครั้ง",
   "TXT_CODE_PLUGIN_LOAD_FAILED": "โหลดปลั๊กอินนี้ไม่สำเร็จ",
+  "TXT_CODE_PLUGIN_NODE_LIST_FAILED": "ไม่สามารถแสดงรายการปลั๊กอินของโหนดนี้ได้ แผงควบคุมต้องมีปลั๊กอิน node และโหนดต้องมีปลั๊กอิน config",
+  "TXT_CODE_PLUGIN_NODE_NOT_FOUND": "ไม่มีโหนดนี้",
+  "TXT_CODE_PLUGIN_NODE_NO_CONFIG": "ปลั๊กอินของดีมอนไม่มีส่วนฝั่งเบราว์เซอร์ จึงไม่มีอะไรให้ตั้งค่าที่นี่ และถูกจัดการอยู่บนโหนดของมันเอง",
+  "TXT_CODE_PLUGIN_NODE_OFFLINE": "ไม่ได้เชื่อมต่อ",
+  "TXT_CODE_PLUGIN_NODE_SELECT": "เลือกโหนด",
   "TXT_CODE_PLUGIN_NO_CONFIG": "ปลั๊กอินนี้ไม่มีตัวเลือกที่กำหนดค่าได้",
+  "TXT_CODE_PLUGIN_SCOPE_NODE": "โหนด",
+  "TXT_CODE_PLUGIN_SCOPE_PANEL": "แผงควบคุม",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "ตัวจัดการปลั๊กอินปิดใช้งานตัวเองไม่ได้ กรุณาตั้ง enabled เป็น false ใน plugin.json ของมันแทน"
 }

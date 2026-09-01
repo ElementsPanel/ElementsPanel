@@ -1,0 +1,5 @@
+{
+  "TXT_CODE_DAEMON_PLUGIN_ESSENTIAL_DISABLE": "Der Webserver kann nicht aus der Ferne deaktiviert werden: Das Panel würde die Verbindung verlieren, über die es diesen Daemon verwaltet. Setze enabled auf dem Host in seiner plugin.json auf false.",
+  "TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED": "Eine Plugin-ID ist erforderlich.",
+  "TXT_CODE_DAEMON_PLUGIN_SELF_DISABLE": "Die Plugin-Verwaltung kann sich nicht selbst deaktivieren: Das Panel würde die Events verlieren, mit denen es diesen Daemon verwaltet. Setze enabled auf dem Host in seiner plugin.json auf false."
+}

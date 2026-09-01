@@ -1,0 +1,5 @@
+{
+  "TXT_CODE_DAEMON_PLUGIN_ESSENTIAL_DISABLE": "Веб-сервер нельзя отключить удалённо: панель потеряет соединение, через которое управляет этим демоном. Укажите enabled: false в его plugin.json на хосте.",
+  "TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED": "Требуется идентификатор плагина.",
+  "TXT_CODE_DAEMON_PLUGIN_SELF_DISABLE": "Менеджер плагинов не может отключить сам себя: панель потеряет события, через которые управляет этим демоном. Укажите enabled: false в его plugin.json на хосте."
+}

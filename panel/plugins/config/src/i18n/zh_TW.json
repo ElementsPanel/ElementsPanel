@@ -9,6 +9,13 @@
   "TXT_CODE_PLUGIN_ESSENTIAL_DISABLE": "Web 伺服器無法從它自己提供的頁面上停用，請改為在其 plugin.json 中把 enabled 設為 false。",
   "TXT_CODE_PLUGIN_IS_DISABLED": "此外掛已停用，重新啟用前其頁面、路由與介面皆不可用。",
   "TXT_CODE_PLUGIN_LOAD_FAILED": "此外掛載入失敗",
+  "TXT_CODE_PLUGIN_NODE_LIST_FAILED": "無法讀取該節點的外掛清單。面板需要 node 外掛，節點自身需要 config 外掛。",
+  "TXT_CODE_PLUGIN_NODE_NOT_FOUND": "該節點不存在。",
+  "TXT_CODE_PLUGIN_NODE_NO_CONFIG": "守護行程外掛沒有瀏覽器端，因此這裡沒有可設定項目，它由所在節點自己管理。",
+  "TXT_CODE_PLUGIN_NODE_OFFLINE": "未連線",
+  "TXT_CODE_PLUGIN_NODE_SELECT": "選擇節點",
   "TXT_CODE_PLUGIN_NO_CONFIG": "此插件沒有可設定項目",
+  "TXT_CODE_PLUGIN_SCOPE_NODE": "節點",
+  "TXT_CODE_PLUGIN_SCOPE_PANEL": "面板",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "外掛管理本身無法被停用，請改為在其 plugin.json 中把 enabled 設為 false。"
 }

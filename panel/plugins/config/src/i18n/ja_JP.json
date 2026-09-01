@@ -9,6 +9,13 @@
   "TXT_CODE_PLUGIN_ESSENTIAL_DISABLE": "Web サーバーは、それ自身が配信しているパネルからは無効にできません。plugin.json で enabled を false に設定してください。",
   "TXT_CODE_PLUGIN_IS_DISABLED": "このプラグインは無効です。再度有効にするまで、ページ・ルート・API は利用できません。",
   "TXT_CODE_PLUGIN_LOAD_FAILED": "このプラグインの読み込みに失敗しました",
+  "TXT_CODE_PLUGIN_NODE_LIST_FAILED": "このノードのプラグイン一覧を取得できませんでした。パネル側に node プラグイン、ノード側に config プラグインが必要です。",
+  "TXT_CODE_PLUGIN_NODE_NOT_FOUND": "そのノードは存在しません。",
+  "TXT_CODE_PLUGIN_NODE_NO_CONFIG": "デーモンプラグインにはブラウザ側がないため、ここに設定項目はありません。所属するノード上で管理されます。",
+  "TXT_CODE_PLUGIN_NODE_OFFLINE": "未接続",
+  "TXT_CODE_PLUGIN_NODE_SELECT": "ノードを選択",
   "TXT_CODE_PLUGIN_NO_CONFIG": "このプラグインには設定可能な項目がありません。",
+  "TXT_CODE_PLUGIN_SCOPE_NODE": "ノード",
+  "TXT_CODE_PLUGIN_SCOPE_PANEL": "パネル",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "プラグイン管理自身は無効にできません。plugin.json で enabled を false に設定してください。"
 }

@@ -18,7 +18,7 @@ import { check7zipStatus } from "../service/seven_zip_service";
 import InstanceSubsystem from "../service/system_instance";
 import { ctx } from "./context";
 import { I18nService } from "./i18n";
-import { getLoadedDaemonPlugins } from "./loader";
+import { getDaemonPluginInventory, getLoadedDaemonPlugins, setDaemonPluginEnabled } from "./loader";
 import { ProtocolService } from "./protocol";
 import {
   FeaturesService,
@@ -89,7 +89,9 @@ export function installDaemonPluginServices() {
   provide("plugins", {
     get loaded() {
       return getLoadedDaemonPlugins();
-    }
+    },
+    inventory: getDaemonPluginInventory,
+    setEnabled: setDaemonPluginEnabled
   });
 
   ctx.plugin(I18nService);

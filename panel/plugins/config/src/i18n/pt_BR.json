@@ -9,6 +9,13 @@
   "TXT_CODE_PLUGIN_ESSENTIAL_DISABLE": "O servidor web não pode ser desativado pelo painel que ele mesmo serve. Defina enabled como false no plugin.json dele.",
   "TXT_CODE_PLUGIN_IS_DISABLED": "Este plugin está desativado. Suas páginas, rotas e API ficam indisponíveis até ser ativado novamente.",
   "TXT_CODE_PLUGIN_LOAD_FAILED": "Falha ao carregar este plugin",
+  "TXT_CODE_PLUGIN_NODE_LIST_FAILED": "Não foi possível listar os plugins deste nó. O painel precisa do plugin node e o nó do plugin config.",
+  "TXT_CODE_PLUGIN_NODE_NOT_FOUND": "Esse nó não existe.",
+  "TXT_CODE_PLUGIN_NODE_NO_CONFIG": "Um plugin de daemon não tem metade no navegador, então não há nada a configurar aqui. Ele é administrado no próprio nó.",
+  "TXT_CODE_PLUGIN_NODE_OFFLINE": "não conectado",
+  "TXT_CODE_PLUGIN_NODE_SELECT": "Selecionar um nó",
   "TXT_CODE_PLUGIN_NO_CONFIG": "Este plugin nao possui opcoes configuraveis.",
+  "TXT_CODE_PLUGIN_SCOPE_NODE": "Nós",
+  "TXT_CODE_PLUGIN_SCOPE_PANEL": "Painel",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "O gerenciador de plugins não pode desativar a si mesmo. Defina enabled como false no plugin.json dele."
 }

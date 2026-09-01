@@ -9,6 +9,13 @@
   "TXT_CODE_PLUGIN_ESSENTIAL_DISABLE": "Le serveur web ne peut pas être désactivé depuis le panneau qu il sert lui-même. Définissez plutôt enabled à false dans son plugin.json.",
   "TXT_CODE_PLUGIN_IS_DISABLED": "Cette extension est désactivée. Ses pages, routes et API ne sont pas disponibles avant sa réactivation.",
   "TXT_CODE_PLUGIN_LOAD_FAILED": "Le chargement de cette extension a échoué",
+  "TXT_CODE_PLUGIN_NODE_LIST_FAILED": "Impossible de lister les extensions de ce nœud. Le panneau a besoin de son extension node, et le nœud de son extension config.",
+  "TXT_CODE_PLUGIN_NODE_NOT_FOUND": "Ce nœud n existe pas.",
+  "TXT_CODE_PLUGIN_NODE_NO_CONFIG": "Une extension de démon n a pas de partie navigateur, il n y a donc rien à configurer ici. Elle est administrée sur son propre nœud.",
+  "TXT_CODE_PLUGIN_NODE_OFFLINE": "non connecté",
+  "TXT_CODE_PLUGIN_NODE_SELECT": "Sélectionner un nœud",
   "TXT_CODE_PLUGIN_NO_CONFIG": "Ce plugin ne comporte aucune option configurable.",
+  "TXT_CODE_PLUGIN_SCOPE_NODE": "Nœuds",
+  "TXT_CODE_PLUGIN_SCOPE_PANEL": "Panneau",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "Le gestionnaire d extensions ne peut pas se désactiver lui-même. Définissez plutôt enabled à false dans son plugin.json."
 }

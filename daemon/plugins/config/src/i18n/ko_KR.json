@@ -1,0 +1,5 @@
+{
+  "TXT_CODE_DAEMON_PLUGIN_ESSENTIAL_DISABLE": "웹 서버는 원격으로 비활성화할 수 없습니다. 패널이 이 데몬을 관리하는 연결을 잃게 됩니다. 호스트에서 plugin.json의 enabled 를 false 로 설정하세요.",
+  "TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED": "플러그인 ID가 필요합니다.",
+  "TXT_CODE_DAEMON_PLUGIN_SELF_DISABLE": "플러그인 관리는 자신을 비활성화할 수 없습니다. 패널이 이 데몬을 관리하는 이벤트를 잃게 됩니다. 호스트에서 plugin.json의 enabled 를 false 로 설정하세요."
+}

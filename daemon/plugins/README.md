@@ -63,7 +63,7 @@ Set `enabled` to `false` to skip one.
 | `ctx.features` | `add(feature)`, `has(feature)`. |
 | `ctx.overview` | `provide(fn)` to add fields to `info/overview`. |
 | `ctx.archive` | `GitignoreMatcher`, `decompressWithProgress`, `check7zipStatus`, `sevenZipPath`, `zipTimeoutSeconds`. |
-| `ctx.plugins` | `loaded`. |
+| `ctx.plugins` | `loaded`, `inventory()`, `setEnabled(id, enabled)`. |
 | `ctx.koa` | `app`, `use(middleware)`, `router(prefix?)` for plugins that serve HTTP. **Provided by `plugins/server`.** |
 | `ctx.websocket` | `io`, the Socket.io server. **Provided by `plugins/server`.** |
 
@@ -100,6 +100,22 @@ the handler list onto each socket as it connects, so a handler registered after 
 client connected is invisible to that client. Plugins load before the server
 starts listening, so this only constrains hot-reloading a plugin on a running
 daemon.
+
+`ctx.plugins.setEnabled(id, enabled)` is the switch behind the panel's plugin
+manager page. It writes `enabled` into that plugin's `plugin.json` — the manifest
+is the source of truth, because that is what the loader reads — and applies the
+change to the running daemon: disabling disposes the plugin's scope, so its
+protocol handlers, tasks, presets, schedules and timers go with it, and enabling
+requires the entry module afresh so a plugin that keeps module-level state starts
+from a clean one. `ctx.plugins.inventory()` lists every installed plugin, disabled
+ones included, because a disabled plugin still has to be listed to be enabled
+again. `plugins/config` exposes both over the protocol; the panel's own `config`
+plugin is what drives them.
+
+Note the router limitation above applies here too: a plugin enabled on a running
+daemon registers its protocol handlers, but the panel's already-connected socket
+took its handler list at connect time. Reconnecting the node — or restarting the
+daemon — is what makes those events reachable.
 
 ## Naming inside a plugin
 

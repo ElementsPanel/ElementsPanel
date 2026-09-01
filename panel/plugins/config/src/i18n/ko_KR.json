@@ -9,6 +9,13 @@
   "TXT_CODE_PLUGIN_ESSENTIAL_DISABLE": "웹 서버는 자신이 제공하는 패널에서 비활성화할 수 없습니다. plugin.json에서 enabled 를 false 로 설정하세요.",
   "TXT_CODE_PLUGIN_IS_DISABLED": "이 플러그인은 비활성화되어 있습니다. 다시 활성화할 때까지 페이지, 경로, API를 사용할 수 없습니다.",
   "TXT_CODE_PLUGIN_LOAD_FAILED": "이 플러그인을 불러오지 못했습니다",
+  "TXT_CODE_PLUGIN_NODE_LIST_FAILED": "이 노드의 플러그인 목록을 가져올 수 없습니다. 패널에는 node 플러그인이, 노드에는 config 플러그인이 필요합니다.",
+  "TXT_CODE_PLUGIN_NODE_NOT_FOUND": "해당 노드가 존재하지 않습니다.",
+  "TXT_CODE_PLUGIN_NODE_NO_CONFIG": "데몬 플러그인은 브라우저 측이 없어 여기에서 설정할 항목이 없습니다. 해당 노드에서 관리됩니다.",
+  "TXT_CODE_PLUGIN_NODE_OFFLINE": "연결되지 않음",
+  "TXT_CODE_PLUGIN_NODE_SELECT": "노드 선택",
   "TXT_CODE_PLUGIN_NO_CONFIG": "이 플러그인에는 구성 가능한 옵션이 없습니다.",
+  "TXT_CODE_PLUGIN_SCOPE_NODE": "노드",
+  "TXT_CODE_PLUGIN_SCOPE_PANEL": "패널",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "플러그인 관리자는 자신을 비활성화할 수 없습니다. plugin.json에서 enabled 를 false 로 설정하세요."
 }

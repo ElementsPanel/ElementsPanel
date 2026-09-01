@@ -22,7 +22,7 @@ import type { InstanceUpdateAction } from "../service/instance_update_action";
 import type * as protocol from "../service/protocol";
 import type { check7zipStatus } from "../service/seven_zip_service";
 import type InstanceSubsystem from "../service/system_instance";
-import type { DaemonPluginEntry } from "./loader";
+import type { DaemonPluginEntry, DaemonPluginRecord } from "./loader";
 
 /**
  * The daemon's cordis container, and the complete list of what a plugin can see.
@@ -188,8 +188,17 @@ export interface DaemonArchiveService {
   readonly zipTimeoutSeconds: number;
 }
 
+/** What is installed, what is running, and the switch that decides. */
 export interface DaemonPluginsService {
   readonly loaded: readonly DaemonPluginEntry[];
+  /** Every installed plugin, disabled ones included. */
+  inventory(): DaemonPluginRecord[];
+  /**
+   * Turns a plugin on or off: persists the switch in its `plugin.json` and
+   * applies it to the running daemon. Disabling disposes the plugin's scope, so
+   * its protocol handlers, tasks, timers and services go with it.
+   */
+  setEnabled(id: string, enabled: boolean): Promise<DaemonPluginRecord>;
 }
 
 declare module "cordis" {

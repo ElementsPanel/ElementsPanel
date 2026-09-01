@@ -1,6 +1,12 @@
+import fs from "fs-extra";
 import path from "path";
 import { pathToFileURL } from "url";
-import { discoverPlugins, type PluginManifest } from "mcsmanager-common";
+import {
+  discoverPlugins,
+  sortPlugins,
+  type DiscoveredPlugin,
+  type PluginManifest
+} from "mcsmanager-common";
 import type { ForkScope } from "cordis";
 import { ctx, type DaemonPluginContext } from "./context";
 import logger from "../service/log";
@@ -74,6 +80,56 @@ async function loadModule(entry: string): Promise<unknown> {
   }
 }
 
+/** Requires one plugin's entry module and hands it to cordis. */
+async function installPlugin(plugin: DiscoveredPlugin): Promise<DaemonPluginEntry> {
+  const record: DaemonPluginEntry = { ...plugin };
+  if (!plugin.entry) {
+    logger.warn(`Daemon plugin "${plugin.manifest.id}" has no entry module.`);
+    return record;
+  }
+  try {
+    const module = toModule(await loadModule(plugin.entry), plugin.manifest.id);
+    if (!module) return record;
+    // Plugins are applied one at a time, in `priority` order, and an `async
+    // apply()` is awaited before the next plugin starts, so a plugin can rely
+    // on what an earlier one set up.
+    //
+    // cordis catches a synchronous throw from `apply()` and cancels the scope
+    // itself, so the wrapper keeps a copy of it: without that, a plugin that
+    // failed on its first line would still be reported as loaded.
+    let applied: unknown;
+    let thrown: unknown;
+    // The manifest id is the plugin's name, so `ctx.name` — which is what
+    // appears in its log lines — always matches `plugin.json`.
+    record.fork = ctx.plugin(
+      {
+        ...module,
+        name: plugin.manifest.id,
+        apply: (...args) => {
+          try {
+            return (applied = module.apply(...args));
+          } catch (error) {
+            thrown = error;
+            throw error;
+          }
+        }
+      },
+      plugin.manifest.config
+    );
+    if (thrown) throw thrown;
+    await applied;
+    logger.info(`Daemon plugin loaded: ${plugin.manifest.id}`);
+  } catch (error: any) {
+    // Failure is atomic: whatever the plugin managed to register before it
+    // threw goes with its scope, so a half-loaded plugin never stays behind.
+    record.error = error instanceof Error ? error : new Error(String(error));
+    record.fork?.dispose();
+    record.fork = undefined;
+    logger.error(`Daemon plugin failed to load: ${plugin.manifest.id}`, error);
+  }
+  return record;
+}
+
 /** Discovers, requires and installs every enabled plugin, in manifest order. */
 export async function loadDaemonPlugins(): Promise<readonly DaemonPluginEntry[]> {
   loaded.length = 0;
@@ -82,58 +138,118 @@ export async function loadDaemonPlugins(): Promise<readonly DaemonPluginEntry[]>
     entryCandidates: ENTRY_CANDIDATES,
     onWarning: (message, error) => logger.warn(message, error)
   });
-
-  for (const plugin of discovered) {
-    const record: DaemonPluginEntry = { ...plugin };
-    loaded.push(record);
-    if (!plugin.entry) {
-      logger.warn(`Daemon plugin "${plugin.manifest.id}" has no entry module.`);
-      continue;
-    }
-    try {
-      const module = toModule(await loadModule(plugin.entry), plugin.manifest.id);
-      if (!module) continue;
-      // Plugins are applied one at a time, in `priority` order, and an `async
-      // apply()` is awaited before the next plugin starts, so a plugin can rely
-      // on what an earlier one set up.
-      //
-      // cordis catches a synchronous throw from `apply()` and cancels the scope
-      // itself, so the wrapper keeps a copy of it: without that, a plugin that
-      // failed on its first line would still be reported as loaded.
-      let applied: unknown;
-      let thrown: unknown;
-      // The manifest id is the plugin's name, so `ctx.name` — which is what
-      // appears in its log lines — always matches `plugin.json`.
-      record.fork = ctx.plugin(
-        {
-          ...module,
-          name: plugin.manifest.id,
-          apply: (...args) => {
-            try {
-              return (applied = module.apply(...args));
-            } catch (error) {
-              thrown = error;
-              throw error;
-            }
-          }
-        },
-        plugin.manifest.config
-      );
-      if (thrown) throw thrown;
-      await applied;
-      logger.info(`Daemon plugin loaded: ${plugin.manifest.id}`);
-    } catch (error: any) {
-      // Failure is atomic: whatever the plugin managed to register before it
-      // threw goes with its scope, so a half-loaded plugin never stays behind.
-      record.error = error instanceof Error ? error : new Error(String(error));
-      record.fork?.dispose();
-      record.fork = undefined;
-      logger.error(`Daemon plugin failed to load: ${plugin.manifest.id}`, error);
-    }
-  }
+  for (const plugin of discovered) loaded.push(await installPlugin(plugin));
   return loaded;
 }
 
 export function getLoadedDaemonPlugins(): readonly DaemonPluginEntry[] {
   return loaded;
+}
+
+/** One installed plugin, as the panel's plugin manager lists it. */
+export interface DaemonPluginRecord {
+  id: string;
+  name?: string;
+  version?: string;
+  description?: string;
+  priority?: number;
+  /** False only when `plugin.json` says so; that is the persisted switch. */
+  enabled: boolean;
+  /** Whether the manifest names an entry module at all. */
+  hasEntry: boolean;
+  /** Whether the plugin is running in this process right now. */
+  running: boolean;
+  /** Why it is not running, when it should be. */
+  error?: string;
+}
+
+/**
+ * Every installed plugin, disabled ones included — a disabled plugin still has
+ * to be listed for the switch to turn it back on. Entry resolution is skipped on
+ * purpose: the inventory describes what is installed, not what compiled.
+ */
+export function getDaemonPluginInventory(): DaemonPluginRecord[] {
+  return discoverPlugins(PLUGINS_DIRECTORY(), {
+    entryFields: [],
+    includeDisabled: true,
+    onWarning: (message, error) => logger.warn(message, error)
+  }).map((plugin) => {
+    const running = loaded.find((item) => item.manifest.id === plugin.manifest.id);
+    return {
+      id: plugin.manifest.id,
+      name: typeof plugin.manifest.name === "string" ? plugin.manifest.name : undefined,
+      version: plugin.manifest.version,
+      description: plugin.manifest.description,
+      priority: plugin.manifest.priority,
+      enabled: plugin.manifest.enabled !== false,
+      hasEntry: ENTRY_FIELDS.some((field) => typeof plugin.manifest[field] === "string"),
+      running: Boolean(running?.fork),
+      error: running?.error?.message
+    };
+  });
+}
+
+/**
+ * Turns a plugin on or off: persists the switch in its `plugin.json` and applies
+ * it to the running daemon.
+ *
+ * The manifest is the source of truth, because that is what the loader reads.
+ * Disabling disposes the plugin's scope, which takes its protocol handlers,
+ * tasks, timers and services with it; enabling requires the entry module afresh,
+ * so a plugin that keeps module-level state starts from a clean one.
+ */
+export async function setDaemonPluginEnabled(
+  id: string,
+  enabled: boolean
+): Promise<DaemonPluginRecord> {
+  const plugin = discoverPlugins(PLUGINS_DIRECTORY(), {
+    entryFields: ENTRY_FIELDS,
+    entryCandidates: ENTRY_CANDIDATES,
+    includeDisabled: true,
+    onWarning: (message, error) => logger.warn(message, error)
+  }).find((item) => item.manifest.id === id);
+  if (!plugin) throw new Error(`Daemon plugin not found: ${id}`);
+
+  await writeEnabled(plugin, enabled);
+
+  const index = loaded.findIndex((item) => item.manifest.id === id);
+  if (!enabled) {
+    if (index >= 0) {
+      loaded[index].fork?.dispose();
+      loaded.splice(index, 1);
+    }
+    logger.info(`Daemon plugin disabled: ${id}`);
+  } else if (index < 0) {
+    if (plugin.entry) {
+      // Drop the cached module so a re-enabled plugin starts from fresh
+      // module-level state instead of the copy its previous run left behind.
+      const runtimeRequire = eval("require") as NodeRequire;
+      delete runtimeRequire.cache[plugin.entry];
+    }
+    loaded.push(
+      await installPlugin({ ...plugin, manifest: { ...plugin.manifest, enabled: true } })
+    );
+    sortPlugins(loaded);
+    logger.info(`Daemon plugin enabled: ${id}`);
+  }
+
+  const record = getDaemonPluginInventory().find((item) => item.id === id);
+  if (!record) throw new Error(`Daemon plugin not found: ${id}`);
+  return record;
+}
+
+/**
+ * Writes the switch into `plugin.json`. An enabled plugin has the key removed
+ * rather than set to `true`, so a manifest only carries the flag while it is
+ * actually holding a plugin back.
+ */
+async function writeEnabled(plugin: DiscoveredPlugin, enabled: boolean) {
+  const file = ["plugin.json", "manifest.json", "package.json"]
+    .map((name) => path.join(plugin.directory, name))
+    .find((candidate) => fs.existsSync(candidate));
+  if (!file) throw new Error(`Daemon plugin has no manifest file: ${plugin.manifest.id}`);
+  const manifest = await fs.readJson(file);
+  if (enabled) delete manifest.enabled;
+  else manifest.enabled = false;
+  await fs.writeFile(file, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
 }

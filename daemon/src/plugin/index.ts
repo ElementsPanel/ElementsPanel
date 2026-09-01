@@ -39,4 +39,4 @@ export type {
   DaemonTasksService,
   DaemonWebsocketService
 } from "./context";
-export type { DaemonPluginEntry, DaemonPluginModule } from "./loader";
+export type { DaemonPluginEntry, DaemonPluginModule, DaemonPluginRecord } from "./loader";

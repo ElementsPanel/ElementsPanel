@@ -4,22 +4,64 @@ import { t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";
 import { message, Modal } from "ant-design-vue";
 import { computed, onMounted, ref, watch } from "vue";
-import { pluginList, setPluginEnabled, type PluginRecord } from "./api";
+import {
+  nodeList,
+  nodePluginList,
+  pluginList,
+  setNodePluginEnabled,
+  setPluginEnabled,
+  type NodePluginRecord,
+  type NodeSummary,
+  type PluginRecord
+} from "./api";
 
 // The panel reports what is installed, because `plugin.json` is where the enable
 // switch lives; a disabled plugin has to stay listed for the switch to turn it
 // back on. The settings form beside the list is whatever the selected plugin
 // contributed through `ctx.settings.page()`.
+//
+// The same page administers each connected node's plugins, through the daemon's
+// own `config` plugin. A daemon plugin has no browser half, so that scope shows
+// the switch and what the daemon reports about it, and nothing else.
+
+type Scope = "panel" | "node";
+
+const scope = ref<Scope>("panel");
 
 const loading = ref(true);
 const pending = ref<string>("");
 const plugins = ref<PluginRecord[]>([]);
 const selectedId = ref("");
 
-const selectedPlugin = computed(() => plugins.value.find((item) => item.id === selectedId.value));
+const nodes = ref<NodeSummary[]>([]);
+const selectedNodeId = ref("");
+const nodePlugins = ref<NodePluginRecord[]>([]);
+const nodeSelectedId = ref("");
+/** Why the node scope has nothing to show, when it has nothing to show. */
+const nodeError = ref("");
 
-const selectedForm = computed(
-  () => ctx.settings.pages.find((page) => page.id === selectedId.value)?.component
+const selectedNode = computed(() => nodes.value.find((item) => item.uuid === selectedNodeId.value));
+
+const currentList = computed<Array<PluginRecord | NodePluginRecord>>(() =>
+  scope.value === "panel" ? plugins.value : nodePlugins.value
+);
+
+const currentId = computed({
+  get: () => (scope.value === "panel" ? selectedId.value : nodeSelectedId.value),
+  set: (value: string) => {
+    if (scope.value === "panel") selectedId.value = value;
+    else nodeSelectedId.value = value;
+  }
+});
+
+const selectedPlugin = computed(() =>
+  currentList.value.find((item) => item.id === currentId.value)
+);
+
+const selectedForm = computed(() =>
+  scope.value === "panel"
+    ? ctx.settings.pages.find((page) => page.id === selectedId.value)?.component
+    : undefined
 );
 
 const load = async () => {
@@ -35,7 +77,65 @@ const load = async () => {
   }
 };
 
+/**
+ * The node routes exist only while `plugins/node` does, so a failure here is the
+ * expected answer on a panel without it rather than something to shout about.
+ */
+const loadNodes = async () => {
+  loading.value = true;
+  nodeError.value = "";
+  try {
+    const { execute } = nodeList();
+    const res = await execute();
+    nodes.value = res.value ?? [];
+    if (!nodes.value.some((item) => item.uuid === selectedNodeId.value)) {
+      selectedNodeId.value = nodes.value.find((item) => item.available)?.uuid || "";
+    }
+  } catch (error: any) {
+    nodes.value = [];
+    selectedNodeId.value = "";
+    nodeError.value = error?.message ?? String(error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const loadNodePlugins = async () => {
+  nodePlugins.value = [];
+  if (!selectedNodeId.value) return;
+  loading.value = true;
+  nodeError.value = "";
+  try {
+    const { execute } = nodePluginList();
+    const res = await execute({ params: { daemonId: selectedNodeId.value } });
+    nodePlugins.value = res.value ?? [];
+  } catch (error: any) {
+    nodeError.value = error?.message ?? String(error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+/**
+ * Toggling a plugin reconnects the node, because that is what makes a daemon
+ * rebind its protocol events. The list is therefore re-read with a few retries:
+ * the first attempt often lands while the socket is still coming back up.
+ */
+const reloadNodePluginsAfterToggle = async () => {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    await loadNodePlugins();
+    if (!nodeError.value) return;
+    await new Promise((resolve) => setTimeout(resolve, 700));
+  }
+};
+
 onMounted(load);
+
+watch(scope, (value) => {
+  if (value === "node" && !nodes.value.length && !nodeError.value) loadNodes();
+});
+
+watch(selectedNodeId, () => loadNodePlugins());
 
 watch(
   plugins,
@@ -46,6 +146,12 @@ watch(
   },
   { immediate: true }
 );
+
+watch(nodePlugins, (value) => {
+  if (!value.some((item) => item.id === nodeSelectedId.value)) {
+    nodeSelectedId.value = value[0]?.id || "";
+  }
+});
 
 const apply = async (plugin: PluginRecord, enabled: boolean) => {
   pending.value = plugin.id;
@@ -67,45 +173,100 @@ const apply = async (plugin: PluginRecord, enabled: boolean) => {
 };
 
 /**
+ * The daemon applies the switch itself and answers with the updated record, so
+ * there is nothing for the browser to reconcile — only the list to re-read.
+ */
+const applyNode = async (plugin: NodePluginRecord, enabled: boolean) => {
+  pending.value = plugin.id;
+  try {
+    const { execute } = setNodePluginEnabled();
+    await execute({
+      params: { daemonId: selectedNodeId.value },
+      data: { id: plugin.id, enabled }
+    });
+    message.success(t(enabled ? "TXT_CODE_PLUGIN_ENABLED" : "TXT_CODE_PLUGIN_DISABLED"));
+  } catch (error: any) {
+    reportErrorMsg(error?.message ?? String(error));
+  } finally {
+    pending.value = "";
+    await reloadNodePluginsAfterToggle();
+  }
+};
+
+/**
  * Enabling is immediate; disabling asks first, because it removes whatever the
  * plugin contributed — including, for some plugins, authentication itself.
  */
-const toggle = (plugin: PluginRecord, enabled: boolean) => {
-  if (enabled) return apply(plugin, true);
+const toggle = (plugin: PluginRecord | NodePluginRecord, enabled: boolean) => {
+  const commit = () =>
+    scope.value === "panel"
+      ? apply(plugin as PluginRecord, enabled)
+      : applyNode(plugin as NodePluginRecord, enabled);
+  if (enabled) return commit();
   Modal.confirm({
     title: t("TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE", { name: plugin.id }),
     content: t("TXT_CODE_PLUGIN_DISABLE_CONFIRM"),
     okButtonProps: { danger: true },
-    onOk: () => apply(plugin, false)
+    onOk: commit
   });
 };
+
+const nodeLabel = (node: NodeSummary) =>
+  `${node.remarks || `${node.ip}:${node.port}`}${
+    node.available ? "" : ` (${t("TXT_CODE_PLUGIN_NODE_OFFLINE")})`
+  }`;
 </script>
 
 <template>
   <a-spin :spinning="loading">
     <div class="plugin-config-page">
       <div class="plugin-config-sidebar">
+        <a-radio-group v-model:value="scope" class="plugin-config-scope" button-style="solid">
+          <a-radio-button value="panel">{{ t("TXT_CODE_PLUGIN_SCOPE_PANEL") }}</a-radio-button>
+          <a-radio-button value="node">{{ t("TXT_CODE_PLUGIN_SCOPE_NODE") }}</a-radio-button>
+        </a-radio-group>
+
+        <a-select
+          v-if="scope === 'node'"
+          v-model:value="selectedNodeId"
+          class="plugin-config-node-select"
+          :placeholder="t('TXT_CODE_PLUGIN_NODE_SELECT')"
+        >
+          <a-select-option v-for="node in nodes" :key="node.uuid" :value="node.uuid">
+            {{ nodeLabel(node) }}
+          </a-select-option>
+        </a-select>
+
         <div class="plugin-config-heading">{{ t("TXT_CODE_PLUGIN_LIST") }}</div>
         <button
-          v-for="plugin in plugins"
+          v-for="plugin in currentList"
           :key="plugin.id"
           type="button"
           class="plugin-config-item"
           :class="{
-            'plugin-config-item-active': plugin.id === selectedId,
+            'plugin-config-item-active': plugin.id === currentId,
             'plugin-config-item-off': !plugin.enabled
           }"
-          @click="selectedId = plugin.id"
+          @click="currentId = plugin.id"
         >
           <span class="plugin-config-item-name">
             {{ plugin.id }}
           </span>
           <span class="plugin-config-item-dot"></span>
         </button>
-        <div v-if="!plugins.length" class="plugin-config-empty">{{ t("TXT_CODE_NO_DATA") }}</div>
+        <div v-if="!currentList.length" class="plugin-config-empty">{{ t("TXT_CODE_NO_DATA") }}</div>
       </div>
 
       <div class="plugin-config-content">
+        <a-alert
+          v-if="scope === 'node' && nodeError"
+          class="plugin-config-alert"
+          type="warning"
+          show-icon
+          :message="t('TXT_CODE_PLUGIN_NODE_LIST_FAILED')"
+          :description="nodeError"
+        />
+
         <template v-if="selectedPlugin">
           <div class="plugin-config-title-row">
             <div>
@@ -115,6 +276,9 @@ const toggle = (plugin: PluginRecord, enabled: boolean) => {
               </p>
             </div>
             <div class="plugin-config-meta">
+              <span v-if="scope === 'node' && selectedNode" class="plugin-config-version">
+                {{ nodeLabel(selectedNode) }}
+              </span>
               <span v-if="selectedPlugin.version" class="plugin-config-version">
                 {{ t("TXT_CODE_VERSION") }} {{ selectedPlugin.version }}
               </span>
@@ -148,10 +312,10 @@ const toggle = (plugin: PluginRecord, enabled: boolean) => {
             <component :is="selectedForm" />
           </div>
           <div v-else class="plugin-config-no-config">
-            {{ t("TXT_CODE_PLUGIN_NO_CONFIG") }}
+            {{ scope === "node" ? t("TXT_CODE_PLUGIN_NODE_NO_CONFIG") : t("TXT_CODE_PLUGIN_NO_CONFIG") }}
           </div>
         </template>
-        <div v-else class="plugin-config-no-config">{{ t("TXT_CODE_NO_DATA") }}</div>
+        <div v-else-if="!nodeError" class="plugin-config-no-config">{{ t("TXT_CODE_NO_DATA") }}</div>
       </div>
     </div>
   </a-spin>
@@ -189,6 +353,22 @@ const toggle = (plugin: PluginRecord, enabled: boolean) => {
 :global(.desktop-container .plugin-config-sidebar),
 :global(.desktop-container .plugin-config-content) {
   background: var(--plugin-config-surface-color);
+}
+
+.plugin-config-scope {
+  display: flex;
+  width: 100%;
+  padding: 0 10px 12px;
+}
+
+.plugin-config-scope :deep(.ant-radio-button-wrapper) {
+  flex: 1;
+  text-align: center;
+}
+
+.plugin-config-node-select {
+  width: calc(100% - 20px);
+  margin: 0 10px;
 }
 
 .plugin-config-heading {

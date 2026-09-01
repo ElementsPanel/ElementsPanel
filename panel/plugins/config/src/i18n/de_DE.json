@@ -9,6 +9,13 @@
   "TXT_CODE_PLUGIN_ESSENTIAL_DISABLE": "Der Webserver kann nicht über das Panel deaktiviert werden, das er selbst bereitstellt. Setze stattdessen enabled auf false in seiner plugin.json.",
   "TXT_CODE_PLUGIN_IS_DISABLED": "Dieses Plugin ist deaktiviert. Seine Seiten, Routen und API sind erst nach dem Aktivieren wieder verfügbar.",
   "TXT_CODE_PLUGIN_LOAD_FAILED": "Dieses Plugin konnte nicht geladen werden",
+  "TXT_CODE_PLUGIN_NODE_LIST_FAILED": "Die Plugins dieses Knotens konnten nicht aufgelistet werden. Das Panel benötigt sein node-Plugin, der Knoten selbst sein config-Plugin.",
+  "TXT_CODE_PLUGIN_NODE_NOT_FOUND": "Dieser Knoten existiert nicht.",
+  "TXT_CODE_PLUGIN_NODE_NO_CONFIG": "Ein Daemon-Plugin hat keine Browser-Hälfte, daher gibt es hier nichts zu konfigurieren. Es wird auf seinem eigenen Knoten verwaltet.",
+  "TXT_CODE_PLUGIN_NODE_OFFLINE": "nicht verbunden",
+  "TXT_CODE_PLUGIN_NODE_SELECT": "Knoten auswählen",
   "TXT_CODE_PLUGIN_NO_CONFIG": "Dieses Plugin hat keine konfigurierbaren Optionen.",
+  "TXT_CODE_PLUGIN_SCOPE_NODE": "Knoten",
+  "TXT_CODE_PLUGIN_SCOPE_PANEL": "Panel",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "Die Plugin-Verwaltung kann sich nicht selbst deaktivieren. Setze stattdessen enabled auf false in ihrer plugin.json."
 }

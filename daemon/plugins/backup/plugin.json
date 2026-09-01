@@ -4,5 +4,6 @@
   "version": "1.0.0",
   "description": "Provides instance backup and restore operations.",
   "priority": 100,
-  "backend": "backend/index.cjs"
+  "backend": "backend/index.cjs",
+  "enabled": false
 }

@@ -1,0 +1,5 @@
+{
+  "TXT_CODE_DAEMON_PLUGIN_ESSENTIAL_DISABLE": "El servidor web no puede desactivarse de forma remota: el panel perdería la conexión con la que administra este demonio. Establece enabled en false en su plugin.json en el host.",
+  "TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED": "Se requiere un id de complemento.",
+  "TXT_CODE_DAEMON_PLUGIN_SELF_DISABLE": "La gestión de complementos no puede desactivarse a sí misma: el panel perdería los eventos con los que administra este demonio. Establece enabled en false en su plugin.json en el host."
+}
