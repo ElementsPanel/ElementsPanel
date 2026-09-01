@@ -2,7 +2,7 @@
   "TXT_CODE_PLUGIN_CONFIG": "Configuracion de plugins",
   "TXT_CODE_PLUGIN_DISABLE": "Desactivado",
   "TXT_CODE_PLUGIN_DISABLED": "Complemento desactivado",
-  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Todo lo que aporta este complemento (páginas, tarjetas, menús y rutas de API) se elimina de inmediato.",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Todo lo que aporta este complemento se elimina de inmediato.",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "¿Desactivar {name}?",
   "TXT_CODE_PLUGIN_ENABLE": "Activado",
   "TXT_CODE_PLUGIN_ENABLED": "Complemento activado",

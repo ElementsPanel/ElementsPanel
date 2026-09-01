@@ -2,7 +2,7 @@
   "TXT_CODE_PLUGIN_CONFIG": "插件配置",
   "TXT_CODE_PLUGIN_DISABLE": "禁用",
   "TXT_CODE_PLUGIN_DISABLED": "插件已禁用",
-  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "该插件提供的页面、卡片、菜单与接口都会立即移除。",
+  "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "该插件提供的所有组件都会被立即移除。",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "确定禁用 {name}？",
   "TXT_CODE_PLUGIN_ENABLE": "启用",
   "TXT_CODE_PLUGIN_ENABLED": "插件已启用",
