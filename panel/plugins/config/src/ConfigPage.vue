@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ctx } from "@/plugin/context";
 import { t } from "@/lang/i18n";
+import { ctx } from "@/plugin/context";
 import { reportErrorMsg } from "@/tools/validator";
 import { message, Modal } from "ant-design-vue";
 import { computed, onMounted, ref, watch } from "vue";
@@ -269,8 +269,7 @@ const toggle = (plugin: PluginRecord | NodePluginRecord, enabled: boolean) => {
 };
 
 const nodeLabel = (node: NodeSummary) =>
-  `${node.remarks || `${node.ip}:${node.port}`}${
-    node.available ? "" : ` (${t("TXT_CODE_PLUGIN_NODE_OFFLINE")})`
+  `${node.remarks || `${node.ip}:${node.port}`}${node.available ? "" : ` (${t("TXT_CODE_PLUGIN_NODE_OFFLINE")})`
   }`;
 </script>
 
@@ -283,29 +282,18 @@ const nodeLabel = (node: NodeSummary) =>
           <a-radio-button value="node">{{ t("TXT_CODE_PLUGIN_SCOPE_NODE") }}</a-radio-button>
         </a-radio-group>
 
-        <a-select
-          v-if="scope === 'node'"
-          v-model:value="selectedNodeId"
-          class="plugin-config-node-select"
-          :placeholder="t('TXT_CODE_PLUGIN_NODE_SELECT')"
-        >
+        <a-select v-if="scope === 'node'" v-model:value="selectedNodeId" class="plugin-config-node-select"
+          :placeholder="t('TXT_CODE_PLUGIN_NODE_SELECT')">
           <a-select-option v-for="node in nodes" :key="node.uuid" :value="node.uuid">
             {{ nodeLabel(node) }}
           </a-select-option>
         </a-select>
 
         <div class="plugin-config-heading">{{ t("TXT_CODE_PLUGIN_LIST") }}</div>
-        <button
-          v-for="plugin in currentList"
-          :key="plugin.id"
-          type="button"
-          class="plugin-config-item"
-          :class="{
-            'plugin-config-item-active': plugin.id === currentId,
-            'plugin-config-item-off': !plugin.enabled
-          }"
-          @click="currentId = plugin.id"
-        >
+        <button v-for="plugin in currentList" :key="plugin.id" type="button" class="plugin-config-item" :class="{
+          'plugin-config-item-active': plugin.id === currentId,
+          'plugin-config-item-off': !plugin.enabled
+        }" @click="currentId = plugin.id">
           <span class="plugin-config-item-name">
             {{ plugin.id }}
           </span>
@@ -315,14 +303,8 @@ const nodeLabel = (node: NodeSummary) =>
       </div>
 
       <div class="plugin-config-content">
-        <a-alert
-          v-if="scope === 'node' && nodeError"
-          class="plugin-config-alert"
-          type="warning"
-          show-icon
-          :message="t('TXT_CODE_PLUGIN_NODE_LIST_FAILED')"
-          :description="nodeError"
-        />
+        <a-alert v-if="scope === 'node' && nodeError" class="plugin-config-alert" type="warning" show-icon
+          :message="t('TXT_CODE_PLUGIN_NODE_LIST_FAILED')" :description="nodeError" />
 
         <template v-if="selectedPlugin">
           <div class="plugin-config-title-row">
@@ -339,40 +321,21 @@ const nodeLabel = (node: NodeSummary) =>
               <span v-if="selectedPlugin.version" class="plugin-config-version">
                 {{ t("TXT_CODE_VERSION") }} {{ selectedPlugin.version }}
               </span>
-              <a-switch
-                :checked="selectedPlugin.enabled"
-                :loading="pending === selectedPlugin.id"
-                :checked-children="t('TXT_CODE_PLUGIN_ENABLE')"
-                :un-checked-children="t('TXT_CODE_PLUGIN_DISABLE')"
-                @change="toggle(selectedPlugin, !selectedPlugin.enabled)"
-              />
+              <a-switch :checked="selectedPlugin.enabled" :loading="pending === selectedPlugin.id"
+                :checked-children="t('TXT_CODE_PLUGIN_ENABLE')" :un-checked-children="t('TXT_CODE_PLUGIN_DISABLE')"
+                @change="toggle(selectedPlugin, !selectedPlugin.enabled)" />
             </div>
           </div>
 
-          <a-alert
-            v-if="!selectedPlugin.enabled"
-            class="plugin-config-alert"
-            type="warning"
-            show-icon
-            :message="t('TXT_CODE_PLUGIN_IS_DISABLED')"
-          />
-          <a-alert
-            v-else-if="selectedPlugin.error"
-            class="plugin-config-alert"
-            type="error"
-            show-icon
-            :message="t('TXT_CODE_PLUGIN_LOAD_FAILED')"
-            :description="selectedPlugin.error"
-          />
+          <a-alert v-if="!selectedPlugin.enabled" class="plugin-config-alert" type="warning" show-icon
+            :message="t('TXT_CODE_PLUGIN_IS_DISABLED')" />
+          <a-alert v-else-if="selectedPlugin.error" class="plugin-config-alert" type="error" show-icon
+            :message="t('TXT_CODE_PLUGIN_LOAD_FAILED')" :description="selectedPlugin.error" />
 
           <a-spin :spinning="schemaLoading">
             <div v-if="schema && schema.fields.length" class="plugin-config-form">
-              <SchemaForm
-                :fields="schema.fields"
-                :values="schema.values"
-                :saving="savingSettings"
-                @save="saveSettings"
-              />
+              <SchemaForm :fields="schema.fields" :values="schema.values" :saving="savingSettings"
+                @save="saveSettings" />
             </div>
             <div v-else-if="!schemaLoading" class="plugin-config-no-config">
               {{ t("TXT_CODE_PLUGIN_NO_CONFIG") }}
@@ -459,7 +422,7 @@ const nodeLabel = (node: NodeSummary) =>
   transition: background 0.2s ease;
 }
 
-.plugin-config-item + .plugin-config-item {
+.plugin-config-item+.plugin-config-item {
   margin-top: 6px;
 }
 
