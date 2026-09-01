@@ -16,14 +16,19 @@ import type { DaemonFilesService } from "../plugin/context";
  */
 const MISSING = "Instance file access requires a daemon plugin that provides the file subsystem.";
 
-/** The file primitives. Throws when no plugin provides them. */
-export function files(): DaemonFilesService {
+/**
+ * The file primitives. Throws when no plugin provides them.
+ *
+ * Named like the panel's `remoteSubsystem()` rather than plainly `files`, which
+ * collided with the locals several routers already had.
+ */
+export function fileSubsystem(): DaemonFilesService {
   const service = daemon.get("files");
   if (!service) throw new Error(MISSING);
   return service;
 }
 
 /** Whether a file subsystem is installed at all. */
-export function hasFiles(): boolean {
+export function hasFileSubsystem(): boolean {
   return Boolean(daemon.get("files"));
 }

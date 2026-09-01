@@ -4,14 +4,14 @@ import path from "path";
 import { pipeline, Readable } from "stream";
 import { STEAM_CMD_PATH, SYSTEM_TYPE, WINDOWS_STEAM_CMD_URL } from "../const";
 import logger from "../service/log";
-import { files } from "../service/file_access";
+import { fileSubsystem } from "../service/file_access";
 import { getCommonHeaders } from "../common/network";
 
 export async function initSteamCmd() {
   try {
     if (!fs.existsSync(STEAM_CMD_PATH) && SYSTEM_TYPE === "win32") {
       const zipPath = await downloadSteam(WINDOWS_STEAM_CMD_URL);
-      await new (files().FileManager)().unzip(zipPath, "lib", "utf-8");
+      await new (fileSubsystem().FileManager)().unzip(zipPath, "lib", "utf-8");
       await fs.remove(zipPath);
     }
   } catch (error) {

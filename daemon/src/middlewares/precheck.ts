@@ -2,7 +2,7 @@ import { Context } from "koa";
 import { globalConfiguration } from "../entity/config";
 import logger from "../service/log";
 import { missionPassport } from "../service/mission_passport";
-import { hasFiles, files } from "../service/file_access";
+import { fileSubsystem, hasFileSubsystem } from "../service/file_access";
 import { proxyIncomingMessage } from "../utils/speed_limit";
 
 export function isUploadRequest(ctx: Context) {
@@ -30,7 +30,7 @@ export async function uploadFileCheckMiddleware(ctx: Context, next: () => Promis
       uploadKey = pathSegments[pathSegments.length - 1] || "";
 
       // No file subsystem means no uploads at all, so there is nothing to allow.
-      const pieceWriter = hasFiles() ? files().uploads.get(uploadKey) : null;
+      const pieceWriter = hasFileSubsystem() ? fileSubsystem().uploads.get(uploadKey) : null;
       const uploadMission = missionPassport.getMission(uploadKey, "upload");
 
       if (pieceWriter || uploadMission) {

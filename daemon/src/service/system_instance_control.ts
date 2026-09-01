@@ -3,7 +3,7 @@ import StorageSubsystem from "../common/system_storage";
 import Instance from "../entity/instance/instance";
 import { $t } from "../i18n";
 import { sleep } from "../utils/sleep";
-import { files } from "./file_access";
+import { fileSubsystem } from "./file_access";
 import logger from "./log";
 import { ctx as daemon } from "../plugin/context";
 import InstanceSubsystem from "./system_instance";
@@ -112,7 +112,7 @@ class InstanceControlSubsystem {
       throw new Error($t("TXT_CODE_system_instance_control.execLimit"));
     if (!this.checkTask(key, task.name))
       throw new Error($t("TXT_CODE_system_instance_control.existRepeatTask"));
-    if (!files().FileManager.checkFileName(task.name))
+    if (!fileSubsystem().FileManager.checkFileName(task.name))
       throw new Error($t("TXT_CODE_system_instance_control.illegalName"));
     if (task.actions?.length > 10) throw new Error($t("TXT_CODE_3e107108"));
     if (needStore)

@@ -13,7 +13,7 @@ import { $t } from "../i18n";
 import { uploadFileCheckMiddleware, uploadSpeedLimitMiddleware } from "../middlewares/precheck";
 import { InstanceUpdateAction } from "../service/instance_update_action";
 import downloadManager from "../service/download_manager";
-import { files } from "../service/file_access";
+import { fileSubsystem } from "../service/file_access";
 import logger from "../service/log";
 import { missionPassport } from "../service/mission_passport";
 import { sendFile } from "../utils/speed_limit";
@@ -77,7 +77,7 @@ export function installDaemonPluginServices() {
     Command: InstanceCommand,
     UpdateAction: InstanceUpdateAction,
     // Resolved at call time: the file primitives belong to `plugins/filemanager`.
-    fileManager: (instanceUuid: string) => files().getFileManager(instanceUuid),
+    fileManager: (instanceUuid: string) => fileSubsystem().getFileManager(instanceUuid),
     headers: getCommonHeaders
   });
   provide("middleware", {

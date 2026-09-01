@@ -12,7 +12,7 @@ import ProcessInfoCommand from "../entity/commands/process_info";
 import { ProcessConfig } from "../entity/instance/process_config";
 import { TaskCenter } from "../service/async_task_service";
 import downloadManager from "../service/download_manager";
-import { files } from "../service/file_access";
+import { fileSubsystem } from "../service/file_access";
 import { IInstanceDetail } from "../service/interfaces";
 import { modService } from "../service/mod_service";
 import { ctx as daemon } from "../plugin/context";
@@ -508,7 +508,7 @@ routerApp.on("instance/process_config/list", (ctx, data) => {
   try {
     const instance = InstanceSubsystem.getInstance(instanceUuid);
     if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
-    const fileManager = new (files().FileManager)(instance.absoluteCwdPath());
+    const fileManager = new (fileSubsystem().FileManager)(instance.absoluteCwdPath());
     for (const filePath of files) {
       if (fileManager.check(filePath)) {
         result.push({
@@ -532,7 +532,7 @@ routerApp.on("instance/process_config/file", (ctx, data) => {
   try {
     const instance = InstanceSubsystem.getInstance(instanceUuid);
     if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
-    const fileManager = new (files().FileManager)(instance.absoluteCwdPath());
+    const fileManager = new (fileSubsystem().FileManager)(instance.absoluteCwdPath());
     if (!fileManager.check(fileName)) throw new Error($t("TXT_CODE_Instance_router.accessFileErr"));
     const filePath = path.normalize(path.join(instance.absoluteCwdPath(), fileName));
     const processConfig = new ProcessConfig({
@@ -592,7 +592,7 @@ routerApp.on("instance/mods/list", async (ctx, data) => {
     }
 
     const uploadTasks = [];
-    for (const [id, writer] of files().uploads.getUploads()) {
+    for (const [id, writer] of fileSubsystem().uploads.getUploads()) {
       if (writer.cwd === instanceUuid || writer.path.includes(instanceUuid)) {
         uploadTasks.push({
           id,

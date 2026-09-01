@@ -6,7 +6,7 @@ import { commandStringToArray } from "../entity/commands/base/command_parser";
 import { JavaInfo } from "../entity/commands/java/java_manager";
 import { $t } from "../i18n";
 import downloadManager from "../service/download_manager";
-import { files } from "../service/file_access";
+import { fileSubsystem } from "../service/file_access";
 import javaManager from "../service/java_manager";
 import logger from "../service/log";
 import * as protocol from "../service/protocol";
@@ -21,7 +21,7 @@ routerApp.on("java_manager/add", async (ctx, data) => {
   const info = new JavaInfo(data.name, Date.now());
 
   try {
-    if (!files().FileManager.checkFileName(data.name)) throw new Error($t("TXT_CODE_b623b66f"));
+    if (!fileSubsystem().FileManager.checkFileName(data.name)) throw new Error($t("TXT_CODE_b623b66f"));
 
     if (javaManager.exists(info.fullname)) throw new Error($t("TXT_CODE_79cf0302"));
     info.path = path.normalize(data.path);
@@ -58,7 +58,7 @@ routerApp.on("java_manager/download", async (ctx, data) => {
     if (!java) return;
 
     if (fileName.endsWith(".zip")) {
-      const fileManager = new (files().FileManager)(javaPath, "UTF-8");
+      const fileManager = new (fileSubsystem().FileManager)(javaPath, "UTF-8");
       await fileManager.unzip(fileName, ".", "UTF-8");
 
       const extractDir = path.join(javaPath, path.basename(fileName, ".zip"));
