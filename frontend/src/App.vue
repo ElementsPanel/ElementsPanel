@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import UploadBubble from "@/components/UploadBubble.vue";
 import { useScreen } from "@/hooks/useScreen";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 
@@ -23,13 +22,10 @@ const { state: appState } = useAppStateStore();
 const { isPhone } = useScreen();
 const route = useRoute();
 
-// The account dialog is contributed by the "user" plugin through
-// `ctx.ui.globalComponent()`, so it disappears with the plugin.
-const GLOBAL_COMPONENTS = computed(() => [
-  InputDialogProvider,
-  UploadBubble,
-  ...ctx.ui.globalComponents
-]);
+// Overlays that belong to no route. The account dialog comes from the "user"
+// plugin and the upload bubble from "filemanager", both through
+// `ctx.ui.globalComponent()`, so each disappears with its plugin.
+const GLOBAL_COMPONENTS = computed(() => [InputDialogProvider, ...ctx.ui.globalComponents]);
 
 [Button, Select, Input, Table].forEach((element) => {
   element.props.size.default = "large";

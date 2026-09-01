@@ -2,7 +2,7 @@
 import Editor from "@/components/Editor.vue";
 import { useKeyboardEvents } from "@/hooks/useKeyboardEvents";
 import { t } from "@/lang/i18n";
-import { fileContent } from "@/services/apis/fileManager";
+import { fileContent } from "../api";
 import { reportErrorMsg } from "@/tools/validator";
 import { message } from "ant-design-vue";
 import { onMounted, ref } from "vue";

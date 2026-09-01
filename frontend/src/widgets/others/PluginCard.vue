@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { useUploadFileDialog } from "@/components/fc";
+import type { FrontendFileManagerService } from "@/plugin";
+import { usePluginService } from "@/plugin/context";
 import { t } from "@/lang/i18n";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import axios from "axios";
@@ -23,7 +24,10 @@ const originUrl = ref(getMetaValue<string>("url", ""));
 let sandbox: ProxySandBox;
 
 const uploadHtmlFile = async () => {
-  originUrl.value = await useUploadFileDialog();
+  // The file picker belongs to `plugins/filemanager`; without it this answers
+  // with an empty path and nothing is loaded.
+  const pick = usePluginService<FrontendFileManagerService>("filemanager");
+  originUrl.value = (await pick?.useUploadFileDialog()) ?? "";
   setMetaValue("url", originUrl.value);
   await loadRemoteHtml();
 };

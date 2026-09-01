@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { t } from "@/lang/i18n";
-import { useFileManager } from "@/hooks/useFileManager";
+import { useFileManager } from "../hooks/useFileManager";
 
 const props = defineProps<{
   emitResult: () => void;

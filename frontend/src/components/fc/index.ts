@@ -6,22 +6,21 @@ import KvOptionsDialogVue from "@/components/fc/KvOptionsDialog.vue";
 import SelectInstances from "@/components/fc/SelectInstances.vue";
 import { t } from "@/lang/i18n";
 import type { AntColumnsType } from "@/types/ant";
-import type { DownloadFileConfigItem } from "@/types/fileManager";
 import type { AddJavaConfigItem, DownloadJavaConfigItem } from "@/types/javaManager";
 import DeleteInstanceDialog from "@/widgets/instance/dialogs/DeleteInstanceDialog.vue";
-import ImageViewerDialog from "@/widgets/instance/dialogs/ImageViewer.vue";
 import AddJavaDialog from "./AddJavaDialog.vue";
 import DockerCapabilityDialogVue from "./DockerCapabilityDialog.vue";
 import DockerDeviceDialogVue from "./DockerDeviceDialog.vue";
 import DockerPortDialog from "./DockerPortDialog.vue";
 import DockerVersionSelectDialog from "./DockerVersionSelectDialog.vue";
-import DownloadFileDialogVue from "./DownloadFileDialog.vue";
 import DownloadJavaDialog from "./DownloadJavaDialog.vue";
 import NodeSelectDialog from "./NodeSelectDialog.vue";
 import RenewalDialog from "./RenewalDialog.vue";
 import TagsDialog from "./TagsDialog.vue";
 import TaskLoadingDialog from "./TaskLoadingDialog.vue";
-import UploadFileDialogVue from "./UploadFileDialog.vue";
+
+// The file manager's own dialogs — upload, download-from-URL and the image
+// viewer — moved to `plugins/filemanager`, which owns the components they mount.
 
 interface DockerConfigItem {
   host: string;
@@ -50,16 +49,6 @@ interface DockerDeviceItem {
   PathOnHost: string;
   PathInContainer: string;
   CgroupPermissions: string;
-}
-
-export async function useDownloadFileDialog() {
-  return (
-    (await useMountComponent().mount<DownloadFileConfigItem>(DownloadFileDialogVue)) || undefined
-  );
-}
-
-export async function useUploadFileDialog() {
-  return (await useMountComponent().mount<string>(UploadFileDialogVue)) || "";
 }
 
 export async function useSelectInstances(data: UserInstance[] = []) {
@@ -217,17 +206,6 @@ export async function openInstanceTagsEditor(
 
 export async function useDeleteInstanceDialog(instanceId: string, daemonId: string) {
   return await useMountComponent({ instanceId, daemonId }).mount<boolean>(DeleteInstanceDialog);
-}
-
-export async function useImageViewerDialog(
-  instanceId: string,
-  daemonId: string,
-  fileName: string,
-  frontDir: string
-) {
-  return await useMountComponent({ instanceId, daemonId, fileName, frontDir }).mount(
-    ImageViewerDialog
-  );
 }
 
 export async function openRenewalDialog(instanceId: string, daemonId: string, productId: number) {

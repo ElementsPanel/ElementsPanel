@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import { fileContent, touchFile } from "@/services/apis/fileManager";
+import type { FrontendFileManagerService } from "@/plugin";
+import { usePluginService } from "@/plugin/context";
 import {
     createAsyncTask,
     queryAsyncTask
@@ -15,8 +16,7 @@ import {
     SyncOutlined
 } from "@ant-design/icons-vue";
 import { message, Modal } from "ant-design-vue";
-import { h, onUnmounted, ref } from "vue";
-import FileEditor from "@/widgets/instance/dialogs/FileEditor.vue";
+import { computed, h, onUnmounted, ref } from "vue";
 import { deleteBackup, getBackupList, restoreBackup } from "../api";
 
 const props = defineProps<{
@@ -34,7 +34,32 @@ const taskId = ref<string | null>(null);
 const taskStatus = ref<number>(0);
 const backupList = ref<{ name: string; size: number; time: string }[]>([]);
 const listLoading = ref(false);
-const fileEditorDialog = ref<InstanceType<typeof FileEditor>>();
+const fileEditorDialog = ref<any>();
+
+/**
+ * The file API belongs to `plugins/filemanager`. A backup that edits an
+ * instance file needs it; without the plugin the edit path is unavailable
+ * rather than broken.
+ */
+const fileApi = () => {
+    const service = usePluginService<FrontendFileManagerService>("filemanager");
+    if (!service) throw new Error("filemanager plugin is not installed");
+    return service.api as {
+        fileContent: () => { execute: (config?: any) => Promise<any> };
+        touchFile: () => { execute: (config?: any) => Promise<any> };
+    };
+};
+
+
+/**
+ * The file editor belongs to `plugins/filemanager`. Resolved through a
+ * `computed` so the dialog appears and disappears with the plugin; without it
+ * the button that opens it simply has nothing to open.
+ */
+const fileEditorComponent = computed(
+  () => usePluginService<FrontendFileManagerService>("filemanager")?.FileEditor
+);
+
 let timer: any = null;
 
 const fetchBackupList = async () => {
@@ -208,7 +233,7 @@ const handleEditEpbaklst = async () => {
     const filePath = ".epbaklst";
     const fileName = ".epbaklst";
     try {
-        const { execute: readFile } = fileContent();
+        const { execute: readFile } = fileApi().fileContent();
         const res = await readFile({
             params: {
                 daemonId: props.daemonId,
@@ -226,7 +251,7 @@ const handleEditEpbaklst = async () => {
             content: t("TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM"),
             onOk: async () => {
                 try {
-                    const { execute: createFile } = touchFile();
+                    const { execute: createFile } = fileApi().touchFile();
                     await createFile({
                         params: {
                             daemonId: props.daemonId,
@@ -236,7 +261,7 @@ const handleEditEpbaklst = async () => {
                             target: filePath
                         }
                     });
-                    const { execute: writeFile } = fileContent();
+                    const { execute: writeFile } = fileApi().fileContent();
                     await writeFile({
                         params: {
                             daemonId: props.daemonId,
@@ -342,7 +367,7 @@ defineExpose({ open });
         </div>
     </a-modal>
 
-    <FileEditor v-if="daemonId && instanceUuid" ref="fileEditorDialog" :daemon-id="daemonId"
+    <component :is="fileEditorComponent" v-if="fileEditorComponent && daemonId && instanceUuid" ref="fileEditorDialog" :daemon-id="daemonId"
         :instance-id="instanceUuid" />
 </template>
 

@@ -14,7 +14,8 @@ import {
 } from "@ant-design/icons-vue";
 import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import FileEditor from "./dialogs/FileEditor.vue";
+import type { FrontendFileManagerService } from "@/plugin";
+import { usePluginService } from "@/plugin/context";
 import LocalModTable from "./mod-manager/LocalModTable.vue";
 import ModConfigModal from "./mod-manager/ModConfigModal.vue";
 import ModFloatingTools from "./mod-manager/ModFloatingTools.vue";
@@ -239,6 +240,16 @@ const {
 } = useModUpload(instanceId!, daemonId!, activeKey, loadMods);
 
 const FileEditorDialog = ref();
+
+/**
+ * The file editor belongs to `plugins/filemanager`. Resolved through a
+ * `computed` so the dialog appears and disappears with the plugin; without it
+ * the button that opens it simply has nothing to open.
+ */
+const fileEditorComponent = computed(
+  () => usePluginService<FrontendFileManagerService>("filemanager")?.FileEditor
+);
+
 
 const { showConfigModal, currentMod, configFiles, configLoading, openConfig, editFile } =
   useModConfig(instanceId!, daemonId!, FileEditorDialog);
@@ -638,7 +649,7 @@ onMounted(async () => {
               <ModConfigModal v-model:visible="showConfigModal" :current-mod="currentMod" :config-files="configFiles"
                 :config-loading="configLoading" @edit="editFile" />
 
-              <FileEditor ref="FileEditorDialog" :daemon-id="daemonId!" :instance-id="instanceId!" />
+              <component :is="fileEditorComponent" v-if="fileEditorComponent" ref="FileEditorDialog" :daemon-id="daemonId!" :instance-id="instanceId!" />
             </div>
           </template>
         </CardPanel>

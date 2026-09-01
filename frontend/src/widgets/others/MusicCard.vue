@@ -1,6 +1,7 @@
 <!-- eslint-disable no-unused-vars -->
 <script setup lang="ts">
-import { useUploadFileDialog } from "@/components/fc";
+import type { FrontendFileManagerService } from "@/plugin";
+import { usePluginService } from "@/plugin/context";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { t } from "@/lang/i18n";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
@@ -26,6 +27,14 @@ const { getMetaValue, setMetaValue } = useLayoutCardTools(prop.card);
 const musicUrl = ref(getMetaValue<string>("musicUrl", ""));
 
 const timeLineId = `timeline-${getRandomId()}`;
+
+/**
+ * The file picker belongs to `plugins/filemanager`. Without it there is nothing
+ * to pick a file with, so the dialog answers with an empty path and the caller's
+ * existing "no path" branch takes over.
+ */
+const useUploadFileDialog = async () =>
+  (await usePluginService<FrontendFileManagerService>("filemanager")?.useUploadFileDialog()) ?? "";
 
 enum UploadType {
   File = "FILE",

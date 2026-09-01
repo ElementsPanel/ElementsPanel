@@ -2,15 +2,15 @@
 import ArchivePreview from "@/components/ArchivePreview.vue";
 import BetweenMenus from "@/components/BetweenMenus.vue";
 import CardPanel from "@/components/CardPanel.vue";
-import { useDownloadFileDialog } from "@/components/fc";
+import { useDownloadFileDialog } from "../dialogs";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
-import { useFileManager } from "@/hooks/useFileManager";
+import { useFileManager } from "../hooks/useFileManager";
 import { useRightClickMenu } from "@/hooks/useRightClickMenu";
 import { useScreen } from "@/hooks/useScreen";
 import { getCurrentLang, t } from "@/lang/i18n";
-import uploadService from "@/services/uploadService";
+import uploadService from "../services/uploadService";
 import { arrayFilter } from "@/tools/array";
-import { filterFileName, getFileExtName, getFileIcon, isCompressFile } from "@/tools/fileManager";
+import { filterFileName, getFileExtName, getFileIcon, isCompressFile } from "../tools/fileManager";
 import { convertFileSize } from "@/tools/fileSize";
 import type { LayoutCard } from "@/types";
 import type { AntColumnsType } from "@/types/ant";
@@ -38,7 +38,7 @@ import {
 import { Modal, type ItemType, type UploadChangeParam, type UploadProps } from "ant-design-vue";
 import dayjs from "dayjs";
 import { computed, h, onMounted, onUnmounted, ref, watch, type CSSProperties } from "vue";
-import FileEditor from "./dialogs/FileEditor.vue";
+import FileEditor from "./FileEditor.vue";
 
 const props = defineProps<{
   card: LayoutCard;

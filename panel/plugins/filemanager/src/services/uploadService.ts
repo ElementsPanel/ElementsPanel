@@ -2,7 +2,7 @@ import { t } from "@/lang/i18n";
 import {
   uploadFile as uploadFileApi,
   uploadFilePiece as uploadFilePieceApi
-} from "@/services/apis/fileManager";
+} from "../api";
 import { reportErrorMsg } from "@/tools/validator";
 import { message } from "ant-design-vue";
 import { ref, type Ref } from "vue";

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import { fileContent, touchFile } from "@/services/apis/fileManager";
+import type { FrontendFileManagerService } from "@/plugin";
+import { usePluginService } from "@/plugin/context";
 import {
     createAsyncTask,
     queryAsyncTask
@@ -19,6 +20,20 @@ import {
 import { message } from "ant-design-vue";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { deleteBackup, getBackupList, restoreBackup } from "../api";
+
+/**
+ * The file API belongs to `plugins/filemanager`. A backup that edits an
+ * instance file needs it; without the plugin the edit path is unavailable
+ * rather than broken.
+ */
+const fileApi = () => {
+    const service = usePluginService<FrontendFileManagerService>("filemanager");
+    if (!service) throw new Error("filemanager plugin is not installed");
+    return service.api as {
+        fileContent: () => { execute: (config?: any) => Promise<any> };
+        touchFile: () => { execute: (config?: any) => Promise<any> };
+    };
+};
 
 const desktopWindowComponent = computed(() => ctx.desktop.window);
 
@@ -203,7 +218,7 @@ const handleEditEpbaklst = async () => {
     const filePath = ".epbaklst";
     const fileName = ".epbaklst";
     try {
-        const { execute: readFile } = fileContent();
+        const { execute: readFile } = fileApi().fileContent();
         const res = await readFile({
             params: {
                 daemonId: props.daemonId,
@@ -223,7 +238,7 @@ const handleEditEpbaklst = async () => {
                 epbaklstConfirmDialog.value.show = false;
                 if (val) {
                     try {
-                        const { execute: createFile } = touchFile();
+                        const { execute: createFile } = fileApi().touchFile();
                         await createFile({
                             params: {
                                 daemonId: props.daemonId,
@@ -233,7 +248,7 @@ const handleEditEpbaklst = async () => {
                                 target: filePath
                             }
                         });
-                        const { execute: writeFile } = fileContent();
+                        const { execute: writeFile } = fileApi().fileContent();
                         await writeFile({
                             params: {
                                 daemonId: props.daemonId,

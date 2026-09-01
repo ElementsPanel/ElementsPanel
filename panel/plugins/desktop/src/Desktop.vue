@@ -3,7 +3,7 @@ import { t } from "@/lang/i18n";
 import { getDesktopLayoutConfig, setDesktopLayoutConfig } from "./api";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { ctx, usePluginService } from "@/plugin/context";
-import type { FrontendUserService } from "@/plugin";
+import type { FrontendFileManagerService, FrontendUserService } from "@/plugin";
 import { logoutUser } from "@/services/apis/index";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
@@ -11,10 +11,7 @@ import type { PanelFrontendDesktopApp, PanelFrontendInstanceAction } from "@/plu
 import type { ContextMenuItem } from "./widgets/desktop/DesktopContextMenu.vue";
 import DesktopContextMenu from "./widgets/desktop/DesktopContextMenu.vue";
 import DesktopEventConfig from "./widgets/desktop/DesktopEventConfig.vue";
-import DesktopFileEditor from "./widgets/desktop/DesktopFileEditor.vue";
-import DesktopFileManager from "./widgets/desktop/DesktopFileManager.vue";
 import DesktopIcon from "./widgets/desktop/DesktopIcon.vue";
-import DesktopImageViewer from "./widgets/desktop/DesktopImageViewer.vue";
 import DesktopInstanceConsole from "./widgets/desktop/DesktopInstanceConsole.vue";
 import DesktopInstanceManager from "./widgets/desktop/DesktopInstanceManager.vue";
 import DesktopJavaManager from "./widgets/desktop/DesktopJavaManager.vue";
@@ -66,6 +63,14 @@ const desktopLoginWindow = computed(() => user.value?.desktopLoginWindow);
 const desktopUsersWindow = computed(() => user.value?.desktopUsers);
 const desktopUserInfoWindow = computed(() => user.value?.desktopUserInfo);
 const desktopStartMenuAvatar = computed(() => user.value?.desktopStartMenuAvatar);
+
+// The file manager, its editor and the image viewer are owned by the
+// "filemanager" plugin. Without it those windows have nothing to render, and the
+// menu entries that open them are hidden the same way the account ones are.
+const fileManager = computed(() => usePluginService<FrontendFileManagerService>("filemanager"));
+const desktopFileManagerWindow = computed(() => fileManager.value?.DesktopFileManager);
+const desktopFileEditorWindow = computed(() => fileManager.value?.DesktopFileEditor);
+const desktopImageViewerWindow = computed(() => fileManager.value?.DesktopImageViewer);
 const { getSettingsConfig } = useLayoutConfigStore();
 const { isDarkTheme } = useAppConfigStore();
 
@@ -1515,19 +1520,19 @@ const username = computed(() => appState.userInfo?.userName || "User");
                                 :instance-id="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)"
                                 @open-file-editor="(filePath: string, fileName: string) => openFileEditorWindow(win.instanceId!, win.daemonId!, filePath, fileName)" />
 
-                            <DesktopFileManager
-                                v-else-if="win.content === 'file-manager' && win.instanceId && win.daemonId"
+                            <component :is="desktopFileManagerWindow"
+                                v-else-if="win.content === 'file-manager' && desktopFileManagerWindow && win.instanceId && win.daemonId"
                                 :instance-id="win.instanceId" :daemon-id="win.daemonId" :session-id="win.id"
                                 @open-file-editor="(filePath: string, fileName: string) => openFileEditorWindow(win.instanceId!, win.daemonId!, filePath, fileName)"
                                 @open-image-viewer="(filePath: string, fileName: string) => openImageViewerWindow(win.instanceId!, win.daemonId!, filePath, fileName)" />
 
-                            <DesktopFileEditor
-                                v-else-if="win.content === 'file-editor' && win.instanceId && win.daemonId && win.filePath && win.fileName"
+                            <component :is="desktopFileEditorWindow"
+                                v-else-if="win.content === 'file-editor' && desktopFileEditorWindow && win.instanceId && win.daemonId && win.filePath && win.fileName"
                                 :instance-id="win.instanceId" :daemon-id="win.daemonId" :file-path="win.filePath"
                                 :file-name="win.fileName" @close="closeWindow(win.id)" />
 
-                            <DesktopImageViewer
-                                v-else-if="win.content === 'image-viewer' && win.instanceId && win.daemonId && win.filePath && win.fileName"
+                            <component :is="desktopImageViewerWindow"
+                                v-else-if="win.content === 'image-viewer' && desktopImageViewerWindow && win.instanceId && win.daemonId && win.filePath && win.fileName"
                                 :instance-id="win.instanceId" :daemon-id="win.daemonId" :file-path="win.filePath"
                                 :file-name="win.fileName" @close="closeWindow(win.id)" />
 

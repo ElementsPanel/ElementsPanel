@@ -1,7 +1,8 @@
 {
   "id": "filemanager",
   "version": "1.0.0",
-  "description": "Owns the panel's file manager: every /api/files route, the instance file manager card and its Desktop window.",
+  "description": "Owns the file manager: every /api/files route, the instance file manager card and its Desktop window, the file editor, the image viewer, the upload queue and the upload/download dialogs.",
   "priority": 120,
-  "backend": "backend/index.cjs"
+  "backend": "backend/index.cjs",
+  "frontend": "src/frontend.ts"
 }

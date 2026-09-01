@@ -243,6 +243,40 @@ export interface FrontendDesktopService {
   provideWindow(component: Component): () => void;
 }
 
+/**
+ * The file manager. Provided by `plugins/filemanager`.
+ *
+ * It publishes more than a page: the upload queue the settings page and the
+ * create-instance form drive, the file editor the mod manager and the backup
+ * plugin open, the dialogs the panel mounts on demand, and the filename helpers
+ * the code editor and archive preview use. Every consumer resolves it with
+ * `usePluginService` and degrades when the plugin is absent.
+ */
+export interface FrontendFileManagerService {
+  readonly api: Record<string, unknown>;
+  readonly useFileManager: (...args: any[]) => any;
+  readonly getFileConfigAddr: (...args: any[]) => any;
+  readonly uploadService: any;
+  readonly UploadFiles: any;
+  readonly getFileIcon: (fileName: string, type?: number) => string;
+  readonly getFileExtName: (fileName: string) => string;
+  readonly filterFileName: (fileName: string) => string;
+  readonly isCompressFile: (fileName: string) => boolean;
+  readonly FileEditor: Component;
+  readonly ImageViewer: Component;
+  readonly DesktopFileManager: Component;
+  readonly DesktopFileEditor: Component;
+  readonly DesktopImageViewer: Component;
+  useUploadFileDialog(): Promise<string>;
+  useDownloadFileDialog(): Promise<any>;
+  useImageViewerDialog(
+    instanceId: string,
+    daemonId: string,
+    fileName: string,
+    frontDir: string
+  ): Promise<any>;
+}
+
 /** Accounts and sessions. Provided by `plugins/user`. */
 export interface FrontendUserService {
   readonly api: UserPluginApi;
@@ -287,6 +321,7 @@ declare module "cordis" {
     user: FrontendUserService;
     market: FrontendMarketService;
     node: FrontendNodeService;
+    filemanager: FrontendFileManagerService;
   }
 }
 

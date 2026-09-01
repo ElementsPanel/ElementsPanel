@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { useFileManager } from "@/hooks/useFileManager";
+import { useFileManager } from "../hooks/useFileManager";
 import ArchivePreview from "@/components/ArchivePreview.vue";
 import { useRightClickMenu } from "@/hooks/useRightClickMenu";
 import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
-import uploadService from "@/services/uploadService";
+import uploadService from "../services/uploadService";
 import { arrayFilter } from "@/tools/array";
-import { filterFileName, getFileExtName, getFileIcon, isCompressFile } from "@/tools/fileManager";
+import { filterFileName, getFileExtName, getFileIcon, isCompressFile } from "../tools/fileManager";
 import { convertFileSize } from "@/tools/fileSize";
 import type { AntColumnsType } from "@/types/ant";
 import type { DataType } from "@/types/fileManager";
@@ -34,7 +34,14 @@ import { type ItemType, type UploadChangeParam, type UploadProps } from "ant-des
 import type { Key } from "ant-design-vue/es/table/interface";
 import dayjs from "dayjs";
 import { computed, h, onMounted, onUnmounted, ref, watch, type CSSProperties } from "vue";
-import DesktopWindow from "./DesktopWindow.vue";
+import { ctx as panel } from "@/plugin/context";
+
+/**
+ * The shell Desktop mode mounts a component inside. `plugins/desktop` supplies it
+ * through the core-owned registry, so this plugin never reaches into another
+ * plugin's source tree for it.
+ */
+const desktopWindow = computed(() => panel.desktop.window);
 
 const props = defineProps<{
     instanceId: string;
@@ -1054,20 +1061,20 @@ onUnmounted(() => {
 
         <Teleport to="body">
             <Transition name="dfm-dialog-fade">
-                <DesktopWindow v-if="archivePreview.show" id="file-manager-archive-preview"
+                <component :is="desktopWindow" v-if="archivePreview.show" id="file-manager-archive-preview"
                     :title="`${t('TXT_CODE_ARCHIVE_PREVIEW')}: ${archivePreview.title}`" :icon="FileZipOutlined"
                     :visible="archivePreview.show" :minimized="false" :maximized="false" :active="true"
                     :initial-width="960" :initial-height="620" :initial-x="Math.max(20, windowWidth / 2 - 480)"
                     :initial-y="Math.max(20, windowHeight / 2 - 310)" :z-index="10002" :show-minimize="false"
                     :show-maximize="false" :resizable="false" @close="closeArchivePreview">
                     <ArchivePreview compact :entries="archivePreview.entries" :loading="archivePreview.loading" />
-                </DesktopWindow>
+                </component>
             </Transition>
         </Teleport>
 
         <Teleport to="body">
             <Transition name="dfm-dialog-fade">
-                <DesktopWindow v-if="dialog.show" id="file-manager-dialog" :title="dialog.title" :icon="FileOutlined"
+                <component :is="desktopWindow" v-if="dialog.show" id="file-manager-dialog" :title="dialog.title" :icon="FileOutlined"
                     :visible="dialog.show" :minimized="false" :maximized="false" :active="true" :initial-width="420"
                     :initial-height="380" :initial-x="windowWidth / 2 - 210" :initial-y="windowHeight / 2 - 190"
                     :z-index="10002" :show-minimize="false" :show-maximize="false" :resizable="false"
@@ -1146,13 +1153,13 @@ onUnmounted(() => {
                             </button>
                         </div>
                     </div>
-                </DesktopWindow>
+                </component>
             </Transition>
         </Teleport>
 
         <Teleport to="body">
             <Transition name="dfm-dialog-fade">
-                <DesktopWindow v-if="downloadDialog.show" id="file-manager-download-dialog"
+                <component :is="desktopWindow" v-if="downloadDialog.show" id="file-manager-download-dialog"
                     :title="t('TXT_CODE_f27b68b3')" :icon="DownloadOutlined" :visible="downloadDialog.show"
                     :minimized="false" :maximized="false" :active="true" :initial-width="400" :initial-height="280"
                     :initial-x="windowWidth / 2 - 200" :initial-y="windowHeight / 2 - 140" :z-index="10002"
@@ -1184,13 +1191,13 @@ onUnmounted(() => {
                             </button>
                         </div>
                     </div>
-                </DesktopWindow>
+                </component>
             </Transition>
         </Teleport>
 
         <Teleport to="body">
             <Transition name="dfm-dialog-fade">
-                <DesktopWindow v-if="loadingWindow.show" id="file-manager-loading-dialog" :title="loadingWindow.title"
+                <component :is="desktopWindow" v-if="loadingWindow.show" id="file-manager-loading-dialog" :title="loadingWindow.title"
                     :icon="FileZipOutlined" :visible="loadingWindow.show" :minimized="false" :maximized="false"
                     :active="true" :initial-width="360" :initial-height="180" :initial-x="windowWidth / 2 - 180"
                     :initial-y="windowHeight / 2 - 90" :z-index="10003" :show-minimize="false" :show-maximize="false"
@@ -1202,13 +1209,13 @@ onUnmounted(() => {
                             <p style="margin: 0; color: var(--desktop-window-text);">{{ loadingWindow.text }}</p>
                         </div>
                     </div>
-                </DesktopWindow>
+                </component>
             </Transition>
         </Teleport>
 
         <Teleport to="body">
             <Transition name="dfm-dialog-fade">
-                <DesktopWindow v-if="uploadConfirmDialog.show" id="file-manager-upload-confirm-dialog"
+                <component :is="desktopWindow" v-if="uploadConfirmDialog.show" id="file-manager-upload-confirm-dialog"
                     :title="t('TXT_CODE_52bc24ec')" :icon="ExclamationCircleOutlined"
                     :visible="uploadConfirmDialog.show" :minimized="false" :maximized="false" :active="true"
                     :initial-width="400" :initial-height="200" :initial-x="windowWidth / 2 - 200"
@@ -1229,13 +1236,13 @@ onUnmounted(() => {
                             </button>
                         </div>
                     </div>
-                </DesktopWindow>
+                </component>
             </Transition>
         </Teleport>
 
         <Teleport to="body">
             <Transition name="dfm-dialog-fade">
-                <DesktopWindow v-if="overwriteDialog.show" id="file-manager-overwrite-dialog"
+                <component :is="desktopWindow" v-if="overwriteDialog.show" id="file-manager-overwrite-dialog"
                     :title="t('TXT_CODE_99ca8563')" :icon="ExclamationCircleOutlined" :visible="overwriteDialog.show"
                     :minimized="false" :maximized="false" :active="true" :initial-width="400" :initial-height="240"
                     :initial-x="windowWidth / 2 - 200" :initial-y="windowHeight / 2 - 120" :z-index="10005"
@@ -1264,13 +1271,13 @@ onUnmounted(() => {
                             </button>
                         </div>
                     </div>
-                </DesktopWindow>
+                </component>
             </Transition>
         </Teleport>
 
         <Teleport to="body">
             <Transition name="dfm-dialog-fade">
-                <DesktopWindow v-if="deleteDialog.show" id="file-manager-delete-dialog" :title="t('TXT_CODE_71155575')"
+                <component :is="desktopWindow" v-if="deleteDialog.show" id="file-manager-delete-dialog" :title="t('TXT_CODE_71155575')"
                     :icon="ExclamationCircleOutlined" :visible="deleteDialog.show" :minimized="false" :maximized="false"
                     :active="true" :initial-width="400" :initial-height="200" :initial-x="windowWidth / 2 - 200"
                     :initial-y="windowHeight / 2 - 100" :z-index="10006" :show-minimize="false" :show-maximize="false"
@@ -1294,7 +1301,7 @@ onUnmounted(() => {
                             </button>
                         </div>
                     </div>
-                </DesktopWindow>
+                </component>
             </Transition>
         </Teleport>
 

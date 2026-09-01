@@ -91,7 +91,6 @@ declare module 'vue' {
     DockerDeviceDialog: typeof import('./src/components/fc/DockerDeviceDialog.vue')['default']
     DockerPortDialog: typeof import('./src/components/fc/DockerPortDialog.vue')['default']
     DockerVersionSelectDialog: typeof import('./src/components/fc/DockerVersionSelectDialog.vue')['default']
-    DownloadFileDialog: typeof import('./src/components/fc/DownloadFileDialog.vue')['default']
     DownloadJavaDialog: typeof import('./src/components/fc/DownloadJavaDialog.vue')['default']
     Editor: typeof import('./src/components/Editor.vue')['default']
     Empty: typeof import('./src/components/Empty.vue')['default']
@@ -130,8 +129,6 @@ declare module 'vue' {
     TerminalTags: typeof import('./src/components/TerminalTags.vue')['default']
     TerminalTopTags: typeof import('./src/components/TerminalTopTags.vue')['default']
     TextContainer: typeof import('./src/components/TextContainer.vue')['default']
-    UploadBubble: typeof import('./src/components/UploadBubble.vue')['default']
-    UploadFileDialog: typeof import('./src/components/fc/UploadFileDialog.vue')['default']
     UploadTaskProgress: typeof import('./src/components/UploadTaskProgress.vue')['default']
     WarningDialog: typeof import('./src/components/fc/WarningDialog.vue')['default']
   }

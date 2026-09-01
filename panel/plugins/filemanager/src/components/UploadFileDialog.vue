@@ -5,12 +5,19 @@ import { t } from "@/lang/i18n";
 import { FolderOpenOutlined } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
 import { uploadFile } from "@/services/apis/layout";
-import type { MountComponent } from "../../types/index";
 import { reportErrorMsg } from "@/tools/validator";
 
 const { execute } = uploadFile();
 
-const props = defineProps<MountComponent>();
+// The two callbacks `useMountComponent` injects, spelled out rather than taken
+// from the core `MountComponent<T>`: the SFC compiler resolves `defineProps`
+// types itself, and it cannot follow the `@/` alias from a plugin directory.
+interface Props {
+  destroyComponent(delay?: number): void;
+  emitResult(data?: any): void;
+}
+
+const props = defineProps<Props>();
 const uploadControl = new AbortController();
 const open = ref(false);
 const percentComplete = ref(0);

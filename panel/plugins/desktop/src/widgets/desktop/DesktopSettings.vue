@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { useUploadFileDialog } from "@/components/fc";
+import type { FrontendFileManagerService } from "@/plugin";
+import { usePluginService } from "@/plugin/context";
 import { SUPPORTED_LANGS, t } from "@/lang/i18n";
 import { setSettingInfo, settingInfo } from "@/services/apis";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
@@ -70,6 +71,13 @@ onMounted(async () => {
         console.error("Failed to load settings", error);
     }
 });
+
+/**
+ * The file picker belongs to `plugins/filemanager`. Without it this answers with
+ * an empty path and the existing "no url" branches leave the images alone.
+ */
+const useUploadFileDialog = async () =>
+    (await usePluginService<FrontendFileManagerService>("filemanager")?.useUploadFileDialog()) ?? "";
 
 const uploadLogo = async () => {
     if (formData.value) {

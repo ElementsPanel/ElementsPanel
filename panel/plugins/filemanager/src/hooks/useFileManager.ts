@@ -1,4 +1,5 @@
-import { openLoadingDialog, useImageViewerDialog } from "@/components/fc";
+import { openLoadingDialog } from "@/components/fc";
+import { useImageViewerDialog } from "../dialogs";
 import OverwriteFilesPopUpContent from "@/components/OverwriteFilesPopUpContent.vue";
 
 import { t } from "@/lang/i18n";
@@ -17,8 +18,8 @@ import {
   previewArchive as previewArchiveApi,
   touchFile as touchFileApi,
   uploadAddress
-} from "@/services/apis/fileManager";
-import uploadService from "@/services/uploadService";
+} from "../api";
+import uploadService from "../services/uploadService";
 import { number2permission, permission2number } from "@/tools/permission";
 import { mapDaemonAddress, parseForwardAddress, type RemoteMappingEntry } from "@/tools/protocol";
 import { removeTrail } from "@/tools/string";

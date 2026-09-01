@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useFileManager } from "@/hooks/useFileManager";
+import { useFileManager } from "../hooks/useFileManager";
 import { t } from "@/lang/i18n";
 import { onMounted, ref } from "vue";
 

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { getFileConfigAddr } from "@/hooks/useFileManager";
 import { INSTANCE_TYPE_TRANSLATION, TYPE_MINECRAFT_BUNGEECORD } from "@/hooks/useInstance";
 import { QUICKSTART_ACTION_TYPE, QUICKSTART_METHOD } from "@/hooks/widgets/quickStartFlow";
 import { t } from "@/lang/i18n";
 import { createInstance as createInstanceApi, uploadAddress } from "@/services/apis/instance";
-import uploadService, { UploadFiles } from "@/services/uploadService";
+import type { FrontendFileManagerService } from "@/plugin";
+import { usePluginService } from "@/plugin/context";
 import { parseForwardAddress } from "@/tools/protocol";
 import { reportErrorMsg } from "@/tools/validator";
 import { defaultInstanceInfo } from "@/types/const";
@@ -111,8 +111,15 @@ const finalConfirm = async () => {
   });
 };
 
+/**
+ * Uploading an instance pack is the file manager's upload queue, so it belongs to
+ * `plugins/filemanager`. Without it the pack-upload path is unavailable; every
+ * other way of creating an instance still works.
+ */
+const fileManager = usePluginService<FrontendFileManagerService>("filemanager");
+
 const uploadStarted = ref(false);
-const uploadFileInstance = ref<UploadFiles>();
+const uploadFileInstance = ref<any>();
 let uploadStartCallback: (() => void) | undefined = undefined;
 let uploadEndCallback: (() => void) | undefined = undefined;
 onUnmounted(() => {
@@ -125,7 +132,8 @@ onUnmounted(() => {
 const { state: cfg, execute: getCfg } = uploadAddress();
 const percentComplete = computed(() => {
   if (!uploadStarted.value) return 0;
-  const uploadData = uploadService.uiData.value;
+  const uploadData = fileManager?.uploadService.uiData.value;
+  if (!uploadData) return 0;
   if (!uploadData.current) return 0;
   return (uploadData.current[0] / uploadData.current[1]) * 100;
 });
@@ -139,7 +147,7 @@ const percentText = () => {
     return t("TXT_CODE_b625dbf0") + percentComplete.value.toFixed(0) + "%";
   } else {
     return t("TXT_CODE_f63c4be2", {
-      n: uploadService.getFileNth(uploadFileInstance.value.id || "")
+      n: fileManager?.uploadService.getFileNth(uploadFileInstance.value.id || "")
     });
   }
 };
@@ -162,8 +170,9 @@ const selectedFile = async () => {
     uploadStartCallback = () => {
       uploadStarted.value = true;
     };
-    const addr = parseForwardAddress(getFileConfigAddr(cfg.value), "http");
-    const task = uploadService.append(
+    if (!fileManager) throw new Error(t("TXT_CODE_e8ce38c2"));
+    const addr = parseForwardAddress(fileManager.getFileConfigAddr(cfg.value), "http");
+    const task = fileManager.uploadService.append(
       uFile.value!,
       addr,
       cfg.value.password,
@@ -172,7 +181,7 @@ const selectedFile = async () => {
         unzip: isImportMode,
         code: zipCode.value
       },
-      (task) => {
+      (task: any) => {
         task.addCallback("start", uploadStartCallback!);
       }
     );

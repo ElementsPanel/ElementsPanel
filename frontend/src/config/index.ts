@@ -5,7 +5,6 @@ import DefaultCard from "@/widgets/DefaultCard.vue";
 import EmptyCard from "@/widgets/EmptyCard.vue";
 import InstanceBaseInfo from "@/widgets/instance/BaseInfo.vue";
 import InstanceCommandHistory from "@/widgets/instance/CommandHistory.vue";
-import InstanceFileManager from "@/widgets/instance/FileManager.vue";
 import InstanceManagerBtns from "@/widgets/instance/ManagerBtns.vue";
 import InstanceModManager from "@/widgets/instance/ModManager.vue";
 import InstancePerformance from "@/widgets/instance/Performance.vue";
@@ -50,7 +49,6 @@ export const LAYOUT_CARD_TYPES: { [key: string]: any } = shallowReactive({
   InstanceCommandHistory,
   InstanceServerConfigOverview,
   InstanceServerConfigFile,
-  InstanceFileManager,
   InstanceModManager,
   ImageBox,
   QuickStartFlow,
@@ -236,34 +234,6 @@ export function getLayoutCardPool() {
       width: 3,
       description: t("TXT_CODE_3fce7ccb"),
       height: LayoutCardHeight.SMALL,
-      category: NEW_CARD_TYPE.INSTANCE,
-      params: [
-        {
-          field: "instanceId",
-          label: t("TXT_CODE_e6a5c12b"),
-          type: "string"
-        },
-        {
-          field: "daemonId",
-          label: t("TXT_CODE_72cfab69"),
-          type: "string"
-        },
-        {
-          field: "instance",
-          label: t("TXT_CODE_cb043d10"),
-          type: "instance"
-        }
-      ]
-    },
-    {
-      id: getRandomId(),
-      permission: ROLE.USER,
-      meta: {},
-      type: "InstanceFileManager",
-      title: t("TXT_CODE_72cce10b"),
-      width: 12,
-      description: t("TXT_CODE_f49b2787"),
-      height: LayoutCardHeight.MEDIUM,
       category: NEW_CARD_TYPE.INSTANCE,
       params: [
         {

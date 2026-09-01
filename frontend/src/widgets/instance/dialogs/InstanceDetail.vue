@@ -5,9 +5,10 @@ import {
   useDockerEnvEditDialog,
   useDockerLabelEditDialog,
   usePortEditDialog,
-  useUploadFileDialog,
   useVolumeEditDialog
 } from "@/components/fc";
+import type { FrontendFileManagerService } from "@/plugin";
+import { usePluginService } from "@/plugin/context";
 import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
 import { useScreen } from "@/hooks/useScreen";
 import { isCN, t } from "@/lang/i18n";
@@ -479,7 +480,10 @@ const handleEditDockerConfig = async (
 };
 
 const handleUploadImg = async () => {
-  const url = await useUploadFileDialog();
+  // The file picker belongs to `plugins/filemanager`; without it nothing is
+  // picked and the image field is left as it was.
+  const pick = usePluginService<FrontendFileManagerService>("filemanager");
+  const url = (await pick?.useUploadFileDialog()) ?? "";
   if (url && formData.value.template) formData.value.template.image = url;
 };
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { getFileExtName } from "@/tools/fileManager";
+import { usePluginService } from "@/plugin/context";
+import type { FrontendFileManagerService } from "@/plugin";
 import { getRandomId } from "@/tools/randId";
 import { css } from "@codemirror/lang-css";
 import { html } from "@codemirror/lang-html";
@@ -45,7 +46,10 @@ let animationFrameId = 0;
 const jsonLintExtensions = [lintGutter(), linter(jsonParseLinter())];
 
 const getLanguageExtension = () => {
-  const ext = getFileExtName(props.filename);
+  // The filename helpers belong to `plugins/filemanager`. Without it the editor
+  // still edits; it just cannot tell which language to highlight.
+  const fileManager = usePluginService<FrontendFileManagerService>("filemanager");
+  const ext = fileManager?.getFileExtName(props.filename) ?? "";
   const isJSON = ["json", "json5"].includes(ext);
 
   const languagesMap = [

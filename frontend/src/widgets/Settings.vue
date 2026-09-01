@@ -3,8 +3,9 @@ import { getProPanelUrl } from "@/components/IframeBox/config";
 import IframeBox from "@/components/IframeBox/index.vue";
 import LeftMenusPanel from "@/components/LeftMenusPanel.vue";
 import Loading from "@/components/Loading.vue";
-import { useUploadFileDialog } from "@/components/fc";
 import { router } from "@/config/router";
+import type { FrontendFileManagerService } from "@/plugin";
+import { usePluginService } from "@/plugin/context";
 import { SUPPORTED_LANGS, isCN, t } from "@/lang/i18n";
 import { setSettingInfo, settingInfo } from "@/services/apis";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
@@ -193,6 +194,13 @@ const handleSavePageTitle = async () => {
     }
   });
 };
+
+/**
+ * The file picker belongs to `plugins/filemanager`. Without it this answers with
+ * an empty path and the existing "no url" branch below leaves the image alone.
+ */
+const useUploadFileDialog = async () =>
+  (await usePluginService<FrontendFileManagerService>("filemanager")?.useUploadFileDialog()) ?? "";
 
 const uploadLogo = async () => {
   const body = document.querySelector("body");

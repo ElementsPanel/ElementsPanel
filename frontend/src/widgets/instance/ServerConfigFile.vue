@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { t } from "@/lang/i18n";
 import type { LayoutCard } from "@/types";
 import { useScreen } from "@/hooks/useScreen";
@@ -10,7 +10,8 @@ import { useAppRouters } from "@/hooks/useAppRouters";
 import { toUnicode } from "@/tools/common";
 import Loading from "@/components/Loading.vue";
 import configComponent from "@/components/InstanceConfigEditor.vue";
-import FileEditor from "./dialogs/FileEditor.vue";
+import type { FrontendFileManagerService } from "@/plugin";
+import { usePluginService } from "@/plugin/context";
 import { useKeyboardEvents } from "@/hooks/useKeyboardEvents";
 import { reportErrorMsg } from "@/tools/validator";
 
@@ -99,7 +100,17 @@ const { removeKeydownListener, startKeydownListener } = useKeyboardEvents(
   save
 );
 
-const FileEditorDialog = ref<InstanceType<typeof FileEditor>>();
+const FileEditorDialog = ref<any>();
+
+/**
+ * The file editor belongs to `plugins/filemanager`. Resolved through a
+ * `computed` so the dialog appears and disappears with the plugin; without it
+ * the button that opens it simply has nothing to open.
+ */
+const fileEditorComponent = computed(
+  () => usePluginService<FrontendFileManagerService>("filemanager")?.FileEditor
+);
+
 const toEditRawFile = async () => {
   try {
     removeKeydownListener();
@@ -165,8 +176,9 @@ onMounted(async () => {
     </a-row>
   </div>
 
-  <FileEditor
-    v-if="daemonId && instanceId"
+  <component
+    :is="fileEditorComponent"
+    v-if="fileEditorComponent && daemonId && instanceId"
     ref="FileEditorDialog"
     :daemon-id="daemonId"
     :instance-id="instanceId"

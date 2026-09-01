@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import { getFileIcon } from "@/tools/fileManager";
+import { usePluginService } from "@/plugin/context";
+import type { FrontendFileManagerService } from "@/plugin";
 import { convertFileSize } from "@/tools/fileSize";
 import type { ArchiveEntry } from "@/types/fileManager";
 import dayjs from "dayjs";
@@ -10,6 +11,15 @@ type ArchiveTreeEntry = ArchiveEntry & {
   key: string;
   children?: ArchiveTreeEntry[];
 };
+
+/**
+ * The file-type icons belong to `plugins/filemanager`. Reading the service
+ * through a `computed` keeps the preview reactive to the plugin being loaded or
+ * unloaded; without it the rows simply show no icon.
+ */
+const fileManager = computed(() => usePluginService<FrontendFileManagerService>("filemanager"));
+const getFileIcon = (name: string, type?: number) =>
+  fileManager.value?.getFileIcon(name, type);
 
 const props = defineProps<{
   entries: ArchiveEntry[];

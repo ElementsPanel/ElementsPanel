@@ -4,9 +4,16 @@ import { reportValidatorError } from "@/tools/validator";
 import type { DownloadFileConfigItem } from "@/types/fileManager";
 import { Flex } from "ant-design-vue";
 import { ref, watch } from "vue";
-import type { MountComponent } from "../../types/index";
 
-const props = defineProps<MountComponent>();
+// The two callbacks `useMountComponent` injects, spelled out rather than taken
+// from the core `MountComponent<T>`: the SFC compiler resolves `defineProps`
+// types itself, and it cannot follow the `@/` alias from a plugin directory.
+interface Props {
+  destroyComponent(delay?: number): void;
+  emitResult(data?: any): void;
+}
+
+const props = defineProps<Props>();
 
 const open = ref(true);
 const dataSource = ref<DownloadFileConfigItem>({

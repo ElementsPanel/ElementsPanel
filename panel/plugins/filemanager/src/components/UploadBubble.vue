@@ -2,7 +2,7 @@
 import { t } from "@/lang/i18n";
 import { CloudUploadOutlined } from "@ant-design/icons-vue";
 import { FloatButton } from "ant-design-vue";
-import uploadService from "@/services/uploadService";
+import uploadService from "../services/uploadService";
 import { computed } from "vue";
 
 const uploadData = uploadService.uiData;
