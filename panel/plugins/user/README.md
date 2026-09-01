@@ -58,6 +58,7 @@ every call site is unconditional.
 | `identify(ctx)` | session / API key → uuid, user name, role, elevation |
 | `canAccessInstance` | instance ownership |
 | `canUpload` | admin-only multipart uploads |
+| `accessPolicy` | ordinary-user command, file-manager and Java-manager capabilities |
 | `stats` | the login counters the panel overview reports |
 | `accounts`, `users` | session establishment and the user records |
 
@@ -72,21 +73,22 @@ behaving as if everyone were an administrator.
 
 ## Settings
 
-Login page text, the login IP limit, the 2FA drift tolerance and the entire SSO
-block used to sit in the panel's `SystemConfig` and on the Settings page. They
-are authentication settings, so this plugin owns them: `entity/auth_settings.ts`
-defines them, `service/auth_settings.ts` stores them under `AuthSettings/config`
-and `routers/auth_settings_router.ts` serves `/api/auth/settings`. The SSO
-provider plumbing (`service/sso_service.ts`) moved across with them.
+Login page text, the login IP limit, the 2FA drift tolerance, the ordinary-user
+capability switches and the entire SSO block used to sit in the panel's
+`SystemConfig` and on the Settings page. This plugin now owns all of them:
+`entity/auth_settings.ts` defines them, `service/auth_settings.ts` stores them
+under `AuthSettings/config` and `routers/auth_settings_router.ts` serves
+`/api/auth/settings`. The SSO provider plumbing (`service/sso_service.ts`) moved
+across with them.
 
 On first start the plugin copies the values out of the panel's stored
 `SystemConfig` once, so upgrades keep their configuration. `/api/auth/status` no
 longer reports SSO at all; anything that needs to know asks the plugin's public
 `/api/auth/sso/config`.
 
-They are edited through the `config` plugin's page — this plugin exports a
-`ctx.settings.page()` (`src/PluginConfig.vue`) rather than adding a tab to
-the panel Settings page.
+They are edited through the `config` plugin's generic page. This plugin declares
+the form with `ctx.settingsForm.declare()`, including its read and write handlers,
+rather than adding a tab to the panel Settings page.
 
 ## Frontend
 

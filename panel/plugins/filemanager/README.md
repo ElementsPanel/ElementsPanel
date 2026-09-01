@@ -17,10 +17,11 @@ No bytes pass through the panel. Each route forwards to the daemon that holds th
 instance, over `ctx.remote`; the browser then uploads to and downloads from that
 daemon directly, which is what the passport routes are for.
 
-Two checks sit in front of every route: the panel-wide `canFileManager` switch,
-and `ctx.middleware.instanceAccess` for whether this caller may touch this
-instance at all. The second is the shared middleware, so the answer comes from
-whichever guard is installed rather than from a copy of the rule kept here.
+Two checks sit in front of every route: the user plugin's `canFileManager`
+access-policy switch, exposed through `ctx.identity`, and
+`ctx.middleware.instanceAccess` for whether this caller may touch this instance
+at all. Both answers come from whichever guard is installed rather than from a
+copy of the rules kept here.
 
 ## Frontend
 

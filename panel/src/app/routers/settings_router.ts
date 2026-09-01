@@ -43,11 +43,9 @@ router.get("/setting", permission({ level: ROLE.ADMIN }), async (ctx) => {
 router.put("/setting", permission({ level: ROLE.ADMIN }), async (ctx) => {
   const config = ctx.request.body as Partial<SystemConfig>;
   if (config && systemConfig) {
-    // The HTTP server's own fields — port, binding IP, path prefix, SSL, CORS
-    // and the reverse proxy — are edited by the "server" plugin, which owns the
-    // web server they configure. The three "what may an ordinary user do"
-    // switches — allowChangeCmd, canFileManager, allowJavaManager — are edited by
-    // the "user" plugin, which owns the authorization policy they belong to.
+    // The HTTP server's own fields are edited by the "server" plugin, while
+    // authentication and ordinary-user capabilities belong to the "user"
+    // plugin. This route only accepts settings still owned by the panel core.
     if (config.gzip != null) systemConfig.gzip = config.gzip;
     if (config.maxCompress != null) systemConfig.maxCompress = config.maxCompress;
     if (config.maxDownload != null) systemConfig.maxDownload = config.maxDownload;

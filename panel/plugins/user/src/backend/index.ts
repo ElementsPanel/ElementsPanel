@@ -226,26 +226,8 @@ export async function apply(ctx: PanelPluginContext) {
         visibleWhen: "ssoEnabled"
       }
     ],
-    // Two stores, one form. The authentication settings are this plugin's own
-    // record; the three "what may an ordinary user do" switches stay in
-    // `SystemConfig`, because the file manager, the Java manager and the
-    // instance routes read them — but deciding them is the guard's business, so
-    // the form that edits them belongs here.
-    read: () => ({
-      ...readAuthSettings(),
-      allowChangeCmd: ctx.settings.config.allowChangeCmd,
-      canFileManager: ctx.settings.config.canFileManager,
-      allowJavaManager: ctx.settings.config.allowJavaManager
-    }),
-    write: async (values) => {
-      await applyAuthSettings(values);
-      const config = ctx.settings.config;
-      if (values.allowChangeCmd != null) config.allowChangeCmd = Boolean(values.allowChangeCmd);
-      if (values.canFileManager != null) config.canFileManager = Boolean(values.canFileManager);
-      if (values.allowJavaManager != null) {
-        config.allowJavaManager = Boolean(values.allowJavaManager);
-      }
-      ctx.settings.save();
-    }
+    // Every field is read, validated and persisted by this plugin.
+    read: readAuthSettings,
+    write: applyAuthSettings
   });
 }

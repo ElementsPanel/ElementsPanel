@@ -86,13 +86,10 @@ export interface Settings {
   maxCompress: number;
   maxDownload: number;
   zipType: number;
-  canFileManager: boolean;
   language: string;
   redisUrl: string;
   businessMode: boolean;
   businessId: string;
-  allowChangeCmd: boolean;
-  allowJavaManager: boolean;
   registerCode: string;
   panelId: string;
 }

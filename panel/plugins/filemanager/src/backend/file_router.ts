@@ -6,8 +6,7 @@ import {
   middleware,
   operations,
   remote,
-  roles,
-  settings
+  roles
 } from "./runtime";
 
 /** The upload/download passport key. Its own copy of the core's `timeUuid`. */
@@ -27,11 +26,10 @@ export function registerFileRoutes() {
   const validator = middleware().validator;
   const ROLE = roles();
 
-  // Whether the file manager is open to ordinary users at all is a panel-wide
-  // switch; who may reach a particular instance is the guard's call, and that is
-  // exactly what the shared `instanceAccess` middleware asks.
+  // The user plugin decides whether ordinary users may open the file manager;
+  // the same guard also decides who may reach a particular instance.
   router.use(async (ctx, next) => {
-    if (settings().config.canFileManager === false && !identity().of(ctx).elevated) {
+    if (!identity().accessPolicy.canFileManager && !identity().of(ctx).elevated) {
       ctx.status = 403;
       ctx.body = new Error($t("TXT_CODE_router.file.off"));
       return;

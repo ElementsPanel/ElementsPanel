@@ -1,6 +1,5 @@
 import { t } from "i18next";
 import { toText } from "mcsmanager-common";
-import { systemConfig } from "../setting";
 import { getRequestGuard as guard } from "./request_guard";
 import { remoteRequest, remoteSubsystem } from "./remote_access";
 
@@ -147,7 +146,7 @@ export function checkInstanceAdvancedParams(
   config: IGlobalInstanceConfig,
   isTopPermission: boolean = false
 ) {
-  const canChangeCmd = systemConfig?.allowChangeCmd;
+  const canChangeCmd = guard().accessPolicy().allowChangeCmd;
   if (!isTopPermission) {
     if (!canChangeCmd) return {};
     if (config.processType !== "docker") return {};
@@ -165,5 +164,4 @@ export function checkInstanceAdvancedParams(
     }
   };
 }
-
 

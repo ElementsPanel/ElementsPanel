@@ -75,6 +75,13 @@ export interface AuthStats {
   loginFailed: number;
 }
 
+/** User-facing capabilities decided by the installed authorization policy. */
+export interface UserAccessPolicy {
+  allowChangeCmd: boolean;
+  canFileManager: boolean;
+  allowJavaManager: boolean;
+}
+
 export interface RequestGuard {
   /** Decides whether a request may reach a route that declared requirements. */
   guardRoute(route: GuardedRoute): Koa.Middleware;
@@ -85,6 +92,7 @@ export interface RequestGuard {
     instanceUuid: string
   ): boolean;
   canUpload(ctx: Koa.ParameterizedContext): boolean;
+  accessPolicy(): UserAccessPolicy;
   stats(): AuthStats;
   accounts?: AccountService;
   users?: UserRecords;
@@ -98,6 +106,11 @@ const ANONYMOUS: RequestIdentity = {
 };
 
 const NO_STATS: AuthStats = { logined: 0, illegalAccess: 0, banips: 0, loginFailed: 0 };
+const UNGUARDED_ACCESS: UserAccessPolicy = {
+  allowChangeCmd: false,
+  canFileManager: true,
+  allowJavaManager: true
+};
 
 /** What "nobody is guarding this panel" means. Not a policy — the absence of one. */
 const UNGUARDED: RequestGuard = {
@@ -105,6 +118,7 @@ const UNGUARDED: RequestGuard = {
   identify: () => ANONYMOUS,
   canAccessInstance: () => true,
   canUpload: () => true,
+  accessPolicy: () => UNGUARDED_ACCESS,
   stats: () => NO_STATS
 };
 

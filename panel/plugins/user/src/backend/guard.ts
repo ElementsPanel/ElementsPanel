@@ -16,6 +16,7 @@ import {
   LOGIN_FAILED_COUNT_KEY,
   loginSuccess
 } from "./service/passport_service";
+import { authSettings } from "./service/auth_settings";
 import { isHaveInstance, isTopPermission } from "./service/permission_service";
 import userSystem from "./service/user_service";
 
@@ -68,6 +69,15 @@ export function createRequestGuard(): RequestGuard {
 
     // Unrestricted multipart uploads would let any account fill the disk.
     canUpload: (ctx) => getUserFromCtx(ctx)?.permission === ROLE().ADMIN,
+
+    accessPolicy() {
+      const settings = authSettings();
+      return {
+        allowChangeCmd: settings.allowChangeCmd,
+        canFileManager: settings.canFileManager,
+        allowJavaManager: settings.allowJavaManager
+      };
+    },
 
     stats(): AuthStats {
       const GlobalVariable = globalVariable();

@@ -5,6 +5,12 @@ import { logger, storage } from "../runtime";
 
 const CATEGORY = "AuthSettings";
 const ID = "config";
+const CURRENT_MIGRATION_VERSION = 1;
+const ACCESS_POLICY_KEYS: Array<keyof AuthSettings> = [
+  "allowChangeCmd",
+  "canFileManager",
+  "allowJavaManager"
+];
 
 // The panel used to keep these fields in its own SystemConfig. That file is
 // written by the core's file-backed storage, so the one-time migration reads it
@@ -13,13 +19,13 @@ const LEGACY_CONFIG_FILE = path.join(process.cwd(), "data", "SystemConfig", "con
 
 let settings = new AuthSettings();
 
-function migrateFromSystemConfig(): boolean {
+function migrateFromSystemConfig(keys: Array<keyof AuthSettings>): boolean {
   try {
     if (!fs.existsSync(LEGACY_CONFIG_FILE)) return false;
     const legacy = JSON.parse(fs.readFileSync(LEGACY_CONFIG_FILE, "utf8"));
     if (!legacy || typeof legacy !== "object") return false;
     let migrated = false;
-    for (const key of Object.keys(settings) as Array<keyof AuthSettings>) {
+    for (const key of keys) {
       if (legacy[key] === undefined) continue;
       (settings as any)[key] = legacy[key];
       migrated = true;
@@ -35,15 +41,20 @@ export async function initAuthSettings() {
   const stored = (await storage().getStorage().load(CATEGORY, AuthSettings, ID)) as
     | AuthSettings
     | null;
-  if (stored) {
-    settings = stored;
-    return;
+  settings = stored ?? new AuthSettings();
+
+  let shouldSave = !stored;
+  const migrationKeys = stored
+    ? ACCESS_POLICY_KEYS
+    : (Object.keys(settings) as Array<keyof AuthSettings>);
+  if (settings.migrationVersion < CURRENT_MIGRATION_VERSION) {
+    if (migrateFromSystemConfig(migrationKeys)) {
+      logger().info("Migrated authentication settings from the panel configuration.");
+    }
+    settings.migrationVersion = CURRENT_MIGRATION_VERSION;
+    shouldSave = true;
   }
-  settings = new AuthSettings();
-  if (migrateFromSystemConfig()) {
-    logger().info("Migrated authentication settings from the panel configuration.");
-  }
-  await saveAuthSettings();
+  if (shouldSave) await saveAuthSettings();
 }
 
 export function authSettings(): AuthSettings {

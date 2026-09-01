@@ -17,7 +17,8 @@ function assertHttpUrl(url: string, name: string) {
 
 /** The settings as the form reads them: the client secret is write-only. */
 export function readAuthSettings() {
-  return { ...authSettings(), ssoClientSecret: SECRET_PLACEHOLDER };
+  const { migrationVersion: _migrationVersion, ...settings } = authSettings();
+  return { ...settings, ssoClientSecret: SECRET_PLACEHOLDER };
 }
 
 /**
@@ -39,7 +40,6 @@ export async function applyAuthSettings(values: Record<string, unknown>) {
     }
     settings.totpDriftToleranceSteps = steps;
   }
-
   // Snapshot identity-critical SSO fields before applying changes
   const prevSsoType = settings.ssoType || "oidc";
   const prevSsoIssuer = settings.ssoIssuer;
@@ -155,6 +155,11 @@ export async function applyAuthSettings(values: Record<string, unknown>) {
     const cbUrl = String(config.ssoCallbackUrl);
     assertHttpUrl(cbUrl, "Callback URL");
     settings.ssoCallbackUrl = cbUrl;
+  }
+  if (config.allowChangeCmd != null) settings.allowChangeCmd = Boolean(config.allowChangeCmd);
+  if (config.canFileManager != null) settings.canFileManager = Boolean(config.canFileManager);
+  if (config.allowJavaManager != null) {
+    settings.allowJavaManager = Boolean(config.allowJavaManager);
   }
   await saveAuthSettings();
 }

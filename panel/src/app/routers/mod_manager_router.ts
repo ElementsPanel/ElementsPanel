@@ -6,7 +6,6 @@ import permission from "../middleware/permission";
 import validator from "../middleware/validator";
 import { getRequestGuard as guard } from "../service/request_guard";
 import { modManagerService } from "../service/mod_manager_service";
-import { systemConfig } from "../setting";
 import { checkSafeUrl } from "../utils/url";
 import { remoteRequest, remoteSubsystem } from "../service/remote_access";
 
@@ -27,7 +26,7 @@ router.use(async (ctx, next) => {
   const daemonId = ctx.query.daemonId || ctx.request.body?.daemonId;
 
   // Check global file manager setting
-  if (systemConfig?.canFileManager === false && !guard().identify(ctx).elevated) {
+  if (!guard().accessPolicy().canFileManager && !guard().identify(ctx).elevated) {
     ctx.status = 403;
     ctx.body = new Error($t("TXT_CODE_router.file.off"));
     return;

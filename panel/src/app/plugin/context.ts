@@ -13,7 +13,13 @@ import type permission from "../middleware/permission";
 import type validator from "../middleware/validator";
 import type { getInstancesByUuid } from "../service/instance_service";
 import type { operationLogger } from "../service/operation_logger";
-import type { AuthStats, RequestGuard, RequestIdentity, UserRecords } from "../service/request_guard";
+import type {
+  AuthStats,
+  RequestGuard,
+  RequestIdentity,
+  UserAccessPolicy,
+  UserRecords
+} from "../service/request_guard";
 import type { systemConfig } from "../setting";
 import type {
   LoadedPanelPlugin,
@@ -230,12 +236,13 @@ export interface PanelRemoteService {
 }
 
 /**
- * Who is calling, as reported by whichever guard is installed. Always present:
- * an unguarded panel reports one anonymous, elevated caller, so no consumer has
- * to branch on whether authentication exists.
+ * Identity and user capabilities reported by whichever guard is installed.
+ * Always present: an unguarded panel reports one anonymous, elevated caller,
+ * so no consumer has to branch on whether authentication exists.
  */
 export interface PanelIdentityService {
   of(requestCtx: Koa.ParameterizedContext): RequestIdentity;
+  readonly accessPolicy: UserAccessPolicy;
   /** Account records, present only while a guard plugin provides them. */
   readonly users: UserRecords | undefined;
   readonly stats: AuthStats;

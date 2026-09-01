@@ -61,6 +61,9 @@ export function installPanelPluginServices() {
     of: (requestCtx: Koa.ParameterizedContext) => getRequestGuard().identify(requestCtx),
     // Getters: the guard arrives with a plugin, after this runs, and can be
     // removed again while the panel is running.
+    get accessPolicy() {
+      return getRequestGuard().accessPolicy();
+    },
     get users() {
       return getRequestGuard().users;
     },

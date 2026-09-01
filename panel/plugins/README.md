@@ -82,7 +82,7 @@ and skipped; the panel keeps running.
 | `ctx.i18n` | `$t`, `i18next`, and `define(messages)` for the plugin's own strings. |
 | `ctx.middleware` | `permission`, `validator`, `instanceAccess`, `speedLimit`. |
 | `ctx.roles` | The role constants (`ADMIN`, `USER`, ...). |
-| `ctx.identity` | `of(requestCtx)`, `users`, `stats` — whoever the installed guard reports. |
+| `ctx.identity` | `of(requestCtx)`, `accessPolicy`, `users`, `stats` — identity and capabilities reported by the installed guard. |
 | `ctx.operations` | The operation logger. |
 | `ctx.instances` | `getByUuid`. |
 | `ctx.globals` | Process-wide counters shared with the core. |

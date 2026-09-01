@@ -16,7 +16,6 @@ export function initSystemConfig() {
   if (systemConfig.language) i18next.changeLanguage(systemConfig.language);
   if (!systemConfig.panelId) {
     systemConfig.panelId = v4();
-    saveSystemConfig(systemConfig);
   }
 }
 

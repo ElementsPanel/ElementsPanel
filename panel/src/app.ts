@@ -7,7 +7,7 @@ import { installPanelPluginServices } from "./app/plugin/install";
 import { loadPanelPlugins } from "./app/plugin/loader";
 import { logger } from "./app/service/log";
 import versionAdapter from "./app/service/version_adapter";
-import { initSystemConfig, systemConfig } from "./app/setting";
+import { initSystemConfig, saveSystemConfig, systemConfig } from "./app/setting";
 import { checkBusinessMode, getVersion, initVersionManager } from "./app/version";
 
 async function processExit() {
@@ -60,8 +60,6 @@ async function main() {
   // Detect whether the configuration file is from an older version and update it if so.
   versionAdapter.detectConfig();
 
-  checkBusinessMode();
-
   // The plugin container owns everything past this point: services first, so
   // that a plugin can use them, then the plugins themselves. Two of the panel's
   // foundations are plugins now — the web server (`ctx.koa`, `plugins/server`)
@@ -69,6 +67,12 @@ async function main() {
   // established during this load, before anything can ask for them.
   installPanelPluginServices();
   await loadPanelPlugins();
+
+  // Authentication settings migrate from the legacy SystemConfig during
+  // plugin loading. Persist the core config only after that migration has had
+  // a chance to read the old fields, which also removes those legacy keys.
+  if (systemConfig) saveSystemConfig(systemConfig);
+  checkBusinessMode();
 
   // The core's own routers go on last, after every plugin's middleware and
   // routers and after the static handlers — the order the panel had before any

@@ -20,7 +20,6 @@ export function core(): PanelPluginContext {
 }
 
 export const koa = () => core().koa;
-export const settings = () => core().settings;
 export const middleware = () => core().middleware;
 export const roles = () => core().roles;
 export const remote = () => core().remote;

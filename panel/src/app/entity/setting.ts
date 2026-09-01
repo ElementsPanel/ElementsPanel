@@ -1,6 +1,6 @@
 // @Entity
-// Authentication settings (login page text, login IP limit, 2FA tolerance and
-// the whole SSO block) belong to the "user" plugin and live in its own store.
+// Authentication settings and ordinary-user capability switches belong to the
+// "user" plugin and live in its own store.
 export default class SystemConfig {
   // HTTP service port, IP and path prefix
   httpPort: number = 23333;
@@ -33,20 +33,11 @@ export default class SystemConfig {
   // Decompression implementation form
   zipType: number = 1;
 
-  // Whether to open the file management function for ordinary users
-  canFileManager = true;
-
   // Panel display language
   language = "en_us";
 
   // Redis address (Experimental Features)
   redisUrl = "";
-
-  // Whether to allow users to edit the start & update command of Docker instances
-  allowChangeCmd = false;
-
-  // Whether to allow normal users to use the Java environment management feature
-  allowJavaManager = true;
 
   // -----
   // After it is enabled, you can connect to the redeem.mcsmanager.com platform
