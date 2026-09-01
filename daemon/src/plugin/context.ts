@@ -1,6 +1,7 @@
 import { Context } from "cordis";
 import type Koa from "koa";
 import type Router from "@koa/router";
+import type { Server as SocketIOServer } from "socket.io";
 import type { GitignoreMatcher } from "../common/gitignore_matcher";
 import type { decompressWithProgress } from "../common/compress";
 import type { getCommonHeaders } from "../common/network";
@@ -11,6 +12,10 @@ import type InstanceCommand from "../entity/commands/base/command";
 import type { IPresetCommand } from "../entity/commands/dispatcher";
 import type RouterContext from "../entity/ctx";
 import type { $t } from "../i18n";
+import type {
+  uploadFileCheckMiddleware,
+  uploadSpeedLimitMiddleware
+} from "../middlewares/precheck";
 import type { AsyncTask, IAsyncTask, TaskCenter } from "../service/async_task_service";
 import type { getFileManager } from "../service/file_router_service";
 import type { InstanceUpdateAction } from "../service/instance_update_action";
@@ -51,11 +56,34 @@ export interface DaemonI18nService {
 /**
  * The daemon's Koa application, for the few plugins that serve HTTP directly.
  * `use()` and `router()` are scoped to the calling plugin.
+ *
+ * Provided by `plugins/server`, which owns the application itself.
  */
 export interface DaemonKoaService {
   readonly app: Koa;
   use(middleware: Koa.Middleware): () => void;
   router(prefix?: string): Router;
+}
+
+/**
+ * The Socket.io server the panel connects to. Provided by `plugins/server`; the
+ * core attaches its own connection handling to it, and a plugin that needs to
+ * reach every connected client directly can do the same.
+ */
+export interface DaemonWebsocketService {
+  readonly io: SocketIOServer;
+}
+
+/**
+ * The base Koa middleware the web server mounts ahead of the body parser.
+ *
+ * Both consult the upload subsystem — the passports that authorize an upload and
+ * the configured rate limit — so the core owns them and hands them over, rather
+ * than the server plugin reaching into that subsystem itself.
+ */
+export interface DaemonMiddlewareService {
+  readonly uploadFileCheck: typeof uploadFileCheckMiddleware;
+  readonly uploadSpeedLimit: typeof uploadSpeedLimitMiddleware;
 }
 
 /**
@@ -168,7 +196,7 @@ declare module "cordis" {
   interface Context {
     settings: DaemonSettingsService;
     i18n: DaemonI18nService;
-    koa: DaemonKoaService;
+    middleware: DaemonMiddlewareService;
     protocol: DaemonProtocolService;
     instances: DaemonInstancesService;
     tasks: DaemonTasksService;
@@ -178,6 +206,11 @@ declare module "cordis" {
     overview: DaemonOverviewService;
     archive: DaemonArchiveService;
     plugins: DaemonPluginsService;
+
+    // Provided by `plugins/server`, the daemon's network layer. Without it the
+    // daemon listens on nothing, so `inject` them rather than assuming.
+    koa: DaemonKoaService;
+    websocket: DaemonWebsocketService;
   }
 }
 

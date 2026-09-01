@@ -54,7 +54,7 @@ Set `enabled` to `false` to skip one.
 | `ctx.timer` | `setTimeout` / `setInterval` / `sleep` / `throttle` / `debounce`, mixed onto `ctx`. |
 | `ctx.settings` | `config`, `save()`, `setLanguage(lang)`. |
 | `ctx.i18n` | `$t` and `define(messages)` for the plugin's own strings. |
-| `ctx.koa` | `app`, `use(middleware)`, `router(prefix?)` for plugins that serve HTTP. |
+| `ctx.middleware` | `uploadSpeedLimit`, `uploadFileCheck` — the base middleware the web server mounts ahead of the body parser. |
 | `ctx.protocol` | `on(event, handler)`, `use(middleware)`, `response`, `responseError`, `error`, `msg`, `ROLE`. |
 | `ctx.instances` | `subsystem`, `Instance`, `Config`, `Command`, `UpdateAction`, `fileManager`, `headers`. |
 | `ctx.tasks` | `AsyncTask`, `Center`, `register(name, registration)`, `get(name)`. |
@@ -64,8 +64,19 @@ Set `enabled` to `false` to skip one.
 | `ctx.overview` | `provide(fn)` to add fields to `info/overview`. |
 | `ctx.archive` | `GitignoreMatcher`, `decompressWithProgress`, `check7zipStatus`, `sevenZipPath`, `zipTimeoutSeconds`. |
 | `ctx.plugins` | `loaded`. |
+| `ctx.koa` | `app`, `use(middleware)`, `router(prefix?)` for plugins that serve HTTP. **Provided by `plugins/server`.** |
+| `ctx.websocket` | `io`, the Socket.io server. **Provided by `plugins/server`.** |
 
 `src/plugin/context.ts` is the authoritative declaration of all of this.
+
+The last two are the daemon's network layer, provided by `plugins/server` with
+`ctx.set()` rather than by the core. That plugin creates the Koa application,
+mounts the base middleware, binds the HTTP/HTTPS listener and runs the Socket.io
+server; the core keeps its own HTTP router and its own connection handling and
+mounts them onto `ctx.koa.app` and `ctx.websocket.io` through
+`daemon.inject(...)` once the plugin has provided them. The daemon is therefore
+reachable over nothing without it. A plugin that provides a service cannot inject
+it — see `plugins/server`, which leaves both names out of its own `inject` list.
 
 `ctx.overview.provide(fn)` merges extra fields into the `info/overview` payload
 the panel reads. The core reports what the panel needs to route and describe this

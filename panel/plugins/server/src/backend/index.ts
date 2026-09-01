@@ -205,14 +205,22 @@ export function apply(ctx: PanelPluginContext) {
   let httpServer: http.Server | https.Server | undefined;
 
   ctx.on("ready", () => {
-    if (config.ssl) {
-      const options = {
-        cert: fs.readFileSync(path.join(config.sslPemPath)),
-        key: fs.readFileSync(path.join(config.sslKeyPath))
-      };
-      httpServer = https.createServer(options, app.callback());
-    } else {
-      httpServer = http.createServer(app.callback());
+    try {
+      if (config.ssl) {
+        const options = {
+          cert: fs.readFileSync(path.join(config.sslPemPath)),
+          key: fs.readFileSync(path.join(config.sslKeyPath))
+        };
+        httpServer = https.createServer(options, app.callback());
+      } else {
+        httpServer = http.createServer(app.callback());
+      }
+    } catch (error) {
+      // A panel that cannot build its listener is of no use to anyone, and
+      // failing quietly here would leave it running and unreachable.
+      ctx.logger.error($t("TXT_CODE_app.httpSetupError"));
+      ctx.logger.error(error);
+      return process.exit(1);
     }
 
     httpServer.on("error", (err) => {

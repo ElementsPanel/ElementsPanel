@@ -25,6 +25,7 @@ export type {
   DaemonI18nService,
   DaemonInstancesService,
   DaemonKoaService,
+  DaemonMiddlewareService,
   DaemonOverviewProvider,
   DaemonOverviewService,
   DaemonPluginContext,
@@ -35,6 +36,7 @@ export type {
   DaemonScheduleActionHandler,
   DaemonSchedulesService,
   DaemonSettingsService,
-  DaemonTasksService
+  DaemonTasksService,
+  DaemonWebsocketService
 } from "./context";
 export type { DaemonPluginEntry, DaemonPluginModule } from "./loader";

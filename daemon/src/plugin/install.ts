@@ -1,5 +1,4 @@
 import fs from "fs-extra";
-import type Koa from "koa";
 import type { Context } from "cordis";
 import { LOCAL_PRESET_LANG_PATH, SEVEN_ZIP_PATH, ZIP_TIMEOUT_SECONDS } from "../const";
 import { decompressWithProgress } from "../common/compress";
@@ -11,6 +10,7 @@ import InstanceConfig from "../entity/instance/Instance_config";
 import InstanceCommand from "../entity/commands/base/command";
 import i18next from "i18next";
 import { $t } from "../i18n";
+import { uploadFileCheckMiddleware, uploadSpeedLimitMiddleware } from "../middlewares/precheck";
 import { getFileManager } from "../service/file_router_service";
 import { InstanceUpdateAction } from "../service/instance_update_action";
 import logger from "../service/log";
@@ -18,7 +18,6 @@ import { check7zipStatus } from "../service/seven_zip_service";
 import InstanceSubsystem from "../service/system_instance";
 import { ctx } from "./context";
 import { I18nService } from "./i18n";
-import { KoaService } from "./koa";
 import { getLoadedDaemonPlugins } from "./loader";
 import { ProtocolService } from "./protocol";
 import {
@@ -51,8 +50,11 @@ function provide<K extends keyof Context & string>(name: K, value: Context[K]) {
  * accept registrations from plugins are `Service` classes, because a registration
  * has to belong to the plugin that made it. `logger` and the timer helpers come
  * from cordis itself.
+ *
+ * `koa` and `websocket` are deliberately absent: they are the daemon's network
+ * layer, provided by `plugins/server` with `ctx.set()`.
  */
-export function installDaemonPluginServices(app: Koa) {
+export function installDaemonPluginServices() {
   provide("settings", {
     config: globalConfiguration.config,
     save: () => globalConfiguration.store(),
@@ -72,6 +74,10 @@ export function installDaemonPluginServices(app: Koa) {
     UpdateAction: InstanceUpdateAction,
     fileManager: getFileManager,
     headers: getCommonHeaders
+  });
+  provide("middleware", {
+    uploadFileCheck: uploadFileCheckMiddleware,
+    uploadSpeedLimit: uploadSpeedLimitMiddleware
   });
   provide("archive", {
     GitignoreMatcher,
@@ -93,5 +99,4 @@ export function installDaemonPluginServices(app: Koa) {
   ctx.plugin(SchedulesService);
   ctx.plugin(FeaturesService);
   ctx.plugin(OverviewService);
-  ctx.plugin(KoaService, app);
 }

@@ -1,9 +1,4 @@
 import fs from "fs-extra";
-import http from "http";
-import https from "https";
-import { removeTrail } from "mcsmanager-common";
-import path from "path";
-import { Server, Socket } from "socket.io";
 import { GOLANG_ZIP_PATH, LOCAL_PRESET_LANG_PATH, PTY_PATH } from "./const";
 import { globalConfiguration } from "./entity/config";
 import { $t, i18next } from "./i18n";
@@ -60,53 +55,37 @@ async function main() {
   // the modules making them are part of an import cycle with the subsystem.
   registerJavaManagerInstanceHooks();
 
-  // Initialize HTTP service
-  const koaApp = koa.initKoa();
-
-  // Listen for Koa errors
-  koaApp.on("error", (error) => {
-    // Block all Koa framework error
-    // When Koa is attacked by a short connection flood, it is easy for error messages to swipe the screen, which may indirectly affect the operation of some applications
-  });
-
   // The plugin container owns everything past this point: services first, so
-  // that a plugin can use them, then the plugins themselves. `ctx.koa` mounts
-  // the two composed stacks a plugin adds middleware and routers to, which is
-  // why it has to be installed before the core router goes last.
-  installDaemonPluginServices(koaApp);
+  // that a plugin can use them, then the plugins themselves. The daemon's
+  // network layer — the Koa application, its base middleware, the listener and
+  // the Socket.io server — is the "server" plugin, and it is what provides
+  // `ctx.koa` and `ctx.websocket`.
+  installDaemonPluginServices();
   await loadDaemonPlugins();
-  koa.mountCoreRouter(koaApp);
 
-  let httpServer: http.Server | https.Server;
-  if (config.ssl) {
-    const options = {
-      cert: fs.readFileSync(path.join(config.sslPemPath)),
-      key: fs.readFileSync(path.join(config.sslKeyPath))
-    };
-    httpServer = https.createServer(options, koaApp.callback());
-  } else {
-    httpServer = http.createServer(koaApp.callback());
-  }
-
-  httpServer.on("error", (err) => {
-    logger.error($t("TXT_CODE_app.httpSetupError"));
-    logger.error(err);
-    process.exit(1);
+  // The core's own HTTP router goes on last, after every plugin's middleware and
+  // routers — the order the daemon had before any of this was disposable.
+  daemon.inject(["koa"], (scoped) => {
+    koa.mountCoreRouter(scoped.koa.app);
   });
-  httpServer.listen(config.port, config.ip);
 
-  // Initialize Websocket service to HTTP service
-  const io = new Server(httpServer, {
-    serveClient: false,
-    pingInterval: 1000 * 20,
-    pingTimeout: 1000 * 10,
-    cookie: false,
-    path: removeTrail(config.prefix, "/") + "/socket.io",
-    cors: {
-      origin: "*",
-      methods: ["GET", "POST", "PUT", "DELETE"]
-    },
-    maxHttpBufferSize: 1e8
+  // The daemon's real API is Socket.io, and this is where the core claims it:
+  // the server plugin owns the transport, the core owns what a connection means.
+  // Registered before anything listens, so no client can arrive unrouted.
+  daemon.inject(["websocket"], (scoped) => {
+    scoped.websocket.io.on("connection", (socket) => {
+      protocol.addGlobalSocket(socket);
+      router.navigation(socket);
+
+      socket.on("error", (err) => {
+        logger.error("Connection(): Socket.io Error:", err);
+      });
+
+      socket.on("disconnect", () => {
+        protocol.delGlobalSocket(socket);
+        for (const name of socket.eventNames()) socket.removeAllListeners(name);
+      });
+    });
   });
 
   // Initialize application instance system
@@ -128,21 +107,6 @@ async function main() {
     }
   })();
 
-  // Initialize Websocket server
-  io.on("connection", (socket: Socket) => {
-    protocol.addGlobalSocket(socket);
-    router.navigation(socket);
-
-    socket.on("error", (err) => {
-      logger.error("Connection(): Socket.io Error:", err);
-    });
-
-    socket.on("disconnect", () => {
-      protocol.delGlobalSocket(socket);
-      for (const name of socket.eventNames()) socket.removeAllListeners(name);
-    });
-  });
-
   process.on("uncaughtException", function (err) {
     logger.error(`Error: UncaughtException:`, err);
   });
@@ -151,18 +115,8 @@ async function main() {
     logger.error(`Error: UnhandledRejection:`, reason, p);
   });
 
-  logger.info("----------------------------");
-  logger.info($t("TXT_CODE_app.started"));
-  logger.info($t("TXT_CODE_app.doc"));
-  let appHost = $t("TXT_CODE_app.host", { port: config.port });
-  if (config.ssl) appHost = appHost.replace("http", "https");
-  logger.info(appHost);
-  logger.info($t("TXT_CODE_app.configPathTip", { path: "" }));
-  logger.info($t("TXT_CODE_app.password", { key: config.key }));
-  logger.info($t("TXT_CODE_app.passwordTip"));
-  logger.info($t("TXT_CODE_app.exitTip"));
-  logger.info("----------------------------");
-  console.log("");
+  // Starts the container, which is what makes the server plugin bind its
+  // listener and print where the daemon can be reached.
   await daemon.start();
 
   let isExiting = false;
