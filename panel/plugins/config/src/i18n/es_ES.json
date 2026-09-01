@@ -6,6 +6,7 @@
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "¿Desactivar {name}?",
   "TXT_CODE_PLUGIN_ENABLE": "Activado",
   "TXT_CODE_PLUGIN_ENABLED": "Complemento activado",
+  "TXT_CODE_PLUGIN_ESSENTIAL_DISABLE": "El servidor web no puede desactivarse desde el panel que él mismo sirve. Establece enabled en false en su plugin.json.",
   "TXT_CODE_PLUGIN_IS_DISABLED": "Este complemento está desactivado. Sus páginas, rutas y API no están disponibles hasta que se vuelva a activar.",
   "TXT_CODE_PLUGIN_LOAD_FAILED": "No se pudo cargar este complemento",
   "TXT_CODE_PLUGIN_NO_CONFIG": "Este plugin no tiene opciones configurables.",

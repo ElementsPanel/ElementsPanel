@@ -1,0 +1,22 @@
+{
+  "TXT_CODE_233624ad": "Port d'accès à la page Web, veuillez remplir des nombres purs, le port par défaut est le port 23333.",
+  "TXT_CODE_2b85af6d": "Si vous accédez au panneau via un proxy inverse, activez cette option. Le panneau récupérera votre adresse IP réelle depuis un en-tête de requête précis.",
+  "TXT_CODE_328191e": "Il convient aux situations où l'hôte dispose de plusieurs cartes réseau et de plusieurs adresses IP. Si vous n'avez qu'une seule adresse IP publique, veuillez ne pas définir cet élément.",
+  "TXT_CODE_405cd346": "Interface API de requête inter-domaines",
+  "TXT_CODE_514e064a": "IP de liaison du panneau",
+  "TXT_CODE_6655c905": "La réponse HTTP ajoutera access-control-allow-origin: *, ce qui peut réduire la sécurité mais améliorer l'évolutivité du développement.",
+  "TXT_CODE_66aeac82": "En-tête de requête du proxy inverse",
+  "TXT_CODE_7f0017d2": "Port de connexion du panneau",
+  "TXT_CODE_SERVER_PREFIX": "Préfixe de chemin",
+  "TXT_CODE_SERVER_PREFIX_TIP": "Sert le panneau sous un sous-chemin, par exemple /panel. Laissez vide pour le servir à la racine.",
+  "TXT_CODE_SERVER_RESTART_TIP": "Ces paramètres sont appliqués au démarrage du serveur web. Redémarrez le panneau pour qu'une modification prenne effet.",
+  "TXT_CODE_SERVER_SSL": "Activer SSL/TLS (HTTPS)",
+  "TXT_CODE_SERVER_SSL_KEY": "Fichier de clé privée (.key)",
+  "TXT_CODE_SERVER_SSL_KEY_TIP": "Chemin vers le fichier de clé privée, absolu ou relatif au répertoire du panneau.",
+  "TXT_CODE_SERVER_SSL_PEM": "Fichier de certificat (.pem)",
+  "TXT_CODE_SERVER_SSL_PEM_TIP": "Chemin vers le fichier de certificat, absolu ou relatif au répertoire du panneau.",
+  "TXT_CODE_SERVER_SSL_TIP": "Sert le panneau en HTTPS à l'aide du certificat ci-dessous. Les deux fichiers sont requis.",
+  "TXT_CODE_SERVER_TITLE": "Serveur web",
+  "TXT_CODE_f0789d81": "Mode proxy inverse",
+  "TXT_CODE_fd8bc51f": "Lorsque le mode proxy inverse est activé, le panneau récupère l’adresse IP réelle de l’utilisateur depuis cet en-tête de requête."
+}

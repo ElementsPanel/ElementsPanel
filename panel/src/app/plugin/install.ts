@@ -15,7 +15,6 @@ import { getRequestGuard } from "../service/request_guard";
 import { saveSystemConfig, systemConfig } from "../setting";
 import { ctx } from "./context";
 import { I18nService } from "./i18n";
-import { KoaService } from "./koa";
 import {
   getLoadedPanelPlugins,
   getPanelFrontendManifest,
@@ -43,16 +42,17 @@ function provide<K extends keyof Context & string>(name: K, value: Context[K]) {
  * Wires the panel's singletons onto the container, once, at startup.
  *
  * A service that only hands a plugin something the core already owns is a plain
- * builtin value: there is nothing to scope and nothing to dispose. The three
- * that accept registrations from plugins — `koa`, `i18n` and `overview` — are
- * `Service` classes, because a registration has to belong to the plugin that
- * made it. `logger` and the timer helpers come from cordis itself.
+ * builtin value: there is nothing to scope and nothing to dispose. The two that
+ * accept registrations from plugins — `i18n` and `overview` — are `Service`
+ * classes, because a registration has to belong to the plugin that made it.
+ * `logger` and the timer helpers come from cordis itself.
  *
- * `guard` and `installation` are deliberately absent: they are provided by
- * plugins with `ctx.set()`, and read through a core accessor that falls back to
- * a default so the panel works without the owning plugin.
+ * `koa`, `guard` and `installation` are deliberately absent: they are provided
+ * by plugins with `ctx.set()`. `koa` comes from `plugins/server`, which owns the
+ * whole web server; the other two are read through a core accessor that falls
+ * back to a default so the panel works without the owning plugin.
  */
-export function installPanelPluginServices(app: Koa) {
+export function installPanelPluginServices() {
   provide("settings", { config: systemConfig!, save: () => saveSystemConfig(systemConfig!) });
   provide("storage", Storage);
   provide("middleware", { permission, validator, instanceAccess, speedLimit });
@@ -83,5 +83,4 @@ export function installPanelPluginServices(app: Koa) {
 
   ctx.plugin(I18nService);
   ctx.plugin(OverviewService);
-  ctx.plugin(KoaService, app);
 }

@@ -1,0 +1,22 @@
+{
+  "TXT_CODE_233624ad": "Puerto de acceso a la página web, complete números puros, el puerto predeterminado es el puerto 23333.",
+  "TXT_CODE_2b85af6d": "Si accedes al panel mediante un proxy inverso, activa esta opción. El panel obtendrá tu IP real de una cabecera de solicitud específica.",
+  "TXT_CODE_328191e": "Es adecuado para situaciones en las que el host tiene varias tarjetas de red y varias direcciones IP. Si solo tiene una IP pública, no configure este elemento.",
+  "TXT_CODE_405cd346": "Interfaz API de solicitud entre dominios",
+  "TXT_CODE_514e064a": "IP de unión del panel",
+  "TXT_CODE_6655c905": "La respuesta HTTP agregará access-control-allow-origin: *, lo que puede reducir la seguridad pero mejorar la escalabilidad del desarrollo.",
+  "TXT_CODE_66aeac82": "Cabecera de solicitud del proxy inverso",
+  "TXT_CODE_7f0017d2": "Puerto de conexión del panel",
+  "TXT_CODE_SERVER_PREFIX": "Prefijo de ruta",
+  "TXT_CODE_SERVER_PREFIX_TIP": "Sirve el panel bajo una subruta, por ejemplo /panel. Déjelo vacío para servirlo desde la raíz.",
+  "TXT_CODE_SERVER_RESTART_TIP": "Estos ajustes se aplican al iniciar el servidor web. Reinicie el panel para que un cambio surta efecto.",
+  "TXT_CODE_SERVER_SSL": "Activar SSL/TLS (HTTPS)",
+  "TXT_CODE_SERVER_SSL_KEY": "Archivo de clave privada (.key)",
+  "TXT_CODE_SERVER_SSL_KEY_TIP": "Ruta al archivo de clave privada, absoluta o relativa al directorio del panel.",
+  "TXT_CODE_SERVER_SSL_PEM": "Archivo de certificado (.pem)",
+  "TXT_CODE_SERVER_SSL_PEM_TIP": "Ruta al archivo de certificado, absoluta o relativa al directorio del panel.",
+  "TXT_CODE_SERVER_SSL_TIP": "Sirve el panel por HTTPS usando el certificado de abajo. Ambos archivos son obligatorios.",
+  "TXT_CODE_SERVER_TITLE": "Servidor web",
+  "TXT_CODE_f0789d81": "Modo proxy inverso",
+  "TXT_CODE_fd8bc51f": "Cuando el modo de proxy inverso está activo, el panel obtiene la IP real del usuario desde esta cabecera de solicitud."
+}

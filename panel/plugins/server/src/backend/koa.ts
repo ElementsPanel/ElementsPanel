@@ -1,20 +1,25 @@
-import { Service, type Context } from "cordis";
 import Router from "@koa/router";
-import compose from "koa-compose";
+import { Service, type Context } from "cordis";
 import { remove } from "cosmokit";
+import compose from "koa-compose";
 import type Koa from "koa";
-import type { PanelKoaService } from "./context";
+import type { PanelKoaService } from "../../../../src/app/plugin";
 
 /**
  * Plugin-owned Koa wiring.
  *
- * `app.use()` cannot be undone, so the core mounts two permanent middlewares —
- * one for plugin middleware, one for plugin routers — and this service adds to
- * the lists behind them. That is what makes a plugin's routes disappear when it
- * unloads: each plugin gets its own `Router` instead of sharing a mutable one.
+ * `app.use()` cannot be undone, so this plugin mounts two permanent middlewares
+ * onto its own application — one for plugin middleware, one for plugin routers —
+ * and this service adds to the lists behind them. That is what makes a plugin's
+ * routes disappear when it unloads: each plugin gets its own `Router` instead of
+ * sharing a mutable one.
  *
  * Middleware runs before routers, and the core's own routers are mounted after
  * both, which is the order the panel had before any of this was disposable.
+ *
+ * The service is registered from inside `apply()`, so it belongs to this
+ * plugin's scope: unloading the server takes `ctx.koa` with it, and every plugin
+ * that injected it is disposed in turn.
  */
 export class KoaService extends Service implements PanelKoaService {
   private readonly middlewares: Koa.Middleware[] = [];

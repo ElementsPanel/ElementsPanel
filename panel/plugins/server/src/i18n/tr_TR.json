@@ -1,0 +1,22 @@
+{
+  "TXT_CODE_233624ad": "Web erişim bağlantı noktası, lütfen sayısal bir değer girin. Varsayılan bağlantı noktası 23333'tür.",
+  "TXT_CODE_2b85af6d": "Panele ters proxy üzerinden erişiyorsanız bu seçeneği etkinleştirin. Panel gerçek IP adresinizi belirtilen istek başlığından alır.",
+  "TXT_CODE_328191e": "Çok IP'li bir ortamda kullanışlı olabilir.  Ana bilgisayarda yalnızca bir IP varsa, lütfen boş bırakın.",
+  "TXT_CODE_405cd346": "Cross-Origin Request API Interface",
+  "TXT_CODE_514e064a": "Panel Bağlayıcı IP",
+  "TXT_CODE_6655c905": "HTTP yanıtları 'access-control-allow-origin: *' içerir, bu da güvenliği azaltabilir ancak daha fazla geliştirmeye izin verir.",
+  "TXT_CODE_66aeac82": "Ters proxy istek başlığı",
+  "TXT_CODE_7f0017d2": "Panel Bağlantı Noktası",
+  "TXT_CODE_SERVER_PREFIX": "Yol Ön Eki",
+  "TXT_CODE_SERVER_PREFIX_TIP": "Paneli bir alt yolda sunar, örneğin /panel. Kök dizinden sunmak için boş bırakın.",
+  "TXT_CODE_SERVER_RESTART_TIP": "Bu ayarlar web sunucusu başlatılırken uygulanır. Bir değişikliğin etkili olması için paneli yeniden başlatın.",
+  "TXT_CODE_SERVER_SSL": "SSL/TLS (HTTPS) etkinleştir",
+  "TXT_CODE_SERVER_SSL_KEY": "Özel anahtar dosyası (.key)",
+  "TXT_CODE_SERVER_SSL_KEY_TIP": "Özel anahtar dosyasının yolu; mutlak ya da panel dizinine göre göreli olabilir.",
+  "TXT_CODE_SERVER_SSL_PEM": "Sertifika dosyası (.pem)",
+  "TXT_CODE_SERVER_SSL_PEM_TIP": "Sertifika dosyasının yolu; mutlak ya da panel dizinine göre göreli olabilir.",
+  "TXT_CODE_SERVER_SSL_TIP": "Paneli aşağıdaki sertifikayı kullanarak HTTPS üzerinden sunar. Her iki dosya da gereklidir.",
+  "TXT_CODE_SERVER_TITLE": "Web Sunucusu",
+  "TXT_CODE_f0789d81": "Ters Proxy Modu",
+  "TXT_CODE_fd8bc51f": "Ters proxy modu etkin olduğunda panel, kullanıcının gerçek IP adresini bu istek başlığından alır."
+}

@@ -1,0 +1,22 @@
+{
+  "TXT_CODE_233624ad": "Porta de acesso web, por favor, insira um valor numérico. A porta padrão é 23333.",
+  "TXT_CODE_2b85af6d": "Se você acessa o painel por um proxy reverso, ative esta opção. O painel obterá seu IP real de um cabeçalho de solicitação específico.",
+  "TXT_CODE_328191e": "Pode ser útil em um ambiente multi-IP. Se houver apenas um IP disponível no host, por favor, deixe-o vazio.",
+  "TXT_CODE_405cd346": "Interface de API de Solicitação de Origem Cruzada",
+  "TXT_CODE_514e064a": "IP de Vinculação do Painel",
+  "TXT_CODE_6655c905": "As respostas HTTP incluirão 'access-control-allow-origin: *,' o que pode reduzir a segurança, mas permitir o desenvolvimento adicional.",
+  "TXT_CODE_66aeac82": "Cabeçalho de solicitação do proxy reverso",
+  "TXT_CODE_7f0017d2": "Porta do Painel",
+  "TXT_CODE_SERVER_PREFIX": "Prefixo de Caminho",
+  "TXT_CODE_SERVER_PREFIX_TIP": "Serve o painel em um subcaminho, por exemplo /panel. Deixe vazio para servir a partir da raiz.",
+  "TXT_CODE_SERVER_RESTART_TIP": "Estas configurações são aplicadas quando o servidor web inicia. Reinicie o painel para que uma alteração tenha efeito.",
+  "TXT_CODE_SERVER_SSL": "Ativar SSL/TLS (HTTPS)",
+  "TXT_CODE_SERVER_SSL_KEY": "Arquivo de chave privada (.key)",
+  "TXT_CODE_SERVER_SSL_KEY_TIP": "Caminho do arquivo de chave privada, absoluto ou relativo ao diretório do painel.",
+  "TXT_CODE_SERVER_SSL_PEM": "Arquivo de certificado (.pem)",
+  "TXT_CODE_SERVER_SSL_PEM_TIP": "Caminho do arquivo de certificado, absoluto ou relativo ao diretório do painel.",
+  "TXT_CODE_SERVER_SSL_TIP": "Serve o painel via HTTPS usando o certificado abaixo. Ambos os arquivos são obrigatórios.",
+  "TXT_CODE_SERVER_TITLE": "Servidor Web",
+  "TXT_CODE_f0789d81": "Modo de Proxy Reverso",
+  "TXT_CODE_fd8bc51f": "Quando o modo de proxy reverso está ativado, o painel obtém o IP real do usuário deste cabeçalho de solicitação."
+}

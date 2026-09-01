@@ -35,13 +35,9 @@ router.get("/setting", permission({ level: ROLE.ADMIN }), async (ctx) => {
 router.put("/setting", permission({ level: ROLE.ADMIN }), async (ctx) => {
   const config = ctx.request.body as Partial<SystemConfig>;
   if (config && systemConfig) {
-    if (config.httpIp != null) systemConfig.httpIp = config.httpIp;
-    if (config.httpPort != null) systemConfig.httpPort = config.httpPort;
-    if (config.prefix != null) systemConfig.prefix = config.prefix;
-    if (config.reverseProxyMode != null) systemConfig.reverseProxyMode = config.reverseProxyMode;
-    if (config.reverseProxyHeader != null)
-      systemConfig.reverseProxyHeader = config.reverseProxyHeader;
-    if (config.crossDomain != null) systemConfig.crossDomain = config.crossDomain;
+    // The HTTP server's own fields — port, binding IP, path prefix, SSL, CORS
+    // and the reverse proxy — are edited by the "server" plugin, which owns the
+    // web server they configure.
     if (config.gzip != null) systemConfig.gzip = config.gzip;
     if (config.maxCompress != null) systemConfig.maxCompress = config.maxCompress;
     if (config.maxDownload != null) systemConfig.maxDownload = config.maxDownload;

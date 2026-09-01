@@ -6,6 +6,7 @@
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "確定停用 {name}？",
   "TXT_CODE_PLUGIN_ENABLE": "啟用",
   "TXT_CODE_PLUGIN_ENABLED": "外掛已啟用",
+  "TXT_CODE_PLUGIN_ESSENTIAL_DISABLE": "Web 伺服器無法從它自己提供的頁面上停用，請改為在其 plugin.json 中把 enabled 設為 false。",
   "TXT_CODE_PLUGIN_IS_DISABLED": "此外掛已停用，重新啟用前其頁面、路由與介面皆不可用。",
   "TXT_CODE_PLUGIN_LOAD_FAILED": "此外掛載入失敗",
   "TXT_CODE_PLUGIN_NO_CONFIG": "此插件沒有可設定項目",

@@ -57,9 +57,11 @@ export interface PanelI18nService {
 
 /**
  * The panel's Koa application. `use()` and `router()` are scoped to the calling
- * plugin: both are removed when it unloads, which is why the core mounts one
- * composed stack for each of them at startup rather than calling `app.use()` per
- * registration.
+ * plugin: both are removed when it unloads, which is why the web server mounts
+ * one composed stack for each of them when it starts rather than calling
+ * `app.use()` per registration.
+ *
+ * Provided by `plugins/server`, which owns the application itself.
  */
 export interface PanelKoaService {
   readonly app: Koa;
@@ -137,7 +139,6 @@ declare module "cordis" {
     settings: PanelSettingsService;
     storage: typeof Storage;
     i18n: PanelI18nService;
-    koa: PanelKoaService;
     middleware: PanelMiddlewareService;
     roles: typeof ROLE;
     remote: PanelRemoteService;
@@ -150,6 +151,12 @@ declare module "cordis" {
 
     // Provided by plugins. Read them through the core accessor that falls back
     // to a default, or `inject` them from a plugin that cannot work without one.
+    /**
+     * The Koa application every route in the panel is mounted on. Provided by
+     * `plugins/server`, the web server — without it the panel listens on
+     * nothing, so almost every plugin injects it.
+     */
+    koa: PanelKoaService;
     /** Request authorization for the whole panel. Provided by `plugins/user`. */
     guard: RequestGuard;
     /** First-run state. Provided by `plugins/oobe`. */

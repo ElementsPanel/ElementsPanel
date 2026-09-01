@@ -6,6 +6,7 @@
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "{name} deaktivieren?",
   "TXT_CODE_PLUGIN_ENABLE": "Ein",
   "TXT_CODE_PLUGIN_ENABLED": "Plugin aktiviert",
+  "TXT_CODE_PLUGIN_ESSENTIAL_DISABLE": "Der Webserver kann nicht über das Panel deaktiviert werden, das er selbst bereitstellt. Setze stattdessen enabled auf false in seiner plugin.json.",
   "TXT_CODE_PLUGIN_IS_DISABLED": "Dieses Plugin ist deaktiviert. Seine Seiten, Routen und API sind erst nach dem Aktivieren wieder verfügbar.",
   "TXT_CODE_PLUGIN_LOAD_FAILED": "Dieses Plugin konnte nicht geladen werden",
   "TXT_CODE_PLUGIN_NO_CONFIG": "Dieses Plugin hat keine konfigurierbaren Optionen.",

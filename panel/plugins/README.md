@@ -76,7 +76,6 @@ and skipped; the panel keeps running.
 | --- | --- |
 | `ctx.logger` | Named logger. `ctx.logger("sub")` for a sub-logger. |
 | `ctx.timer` | `setTimeout` / `setInterval` / `sleep` / `throttle` / `debounce`, mixed onto `ctx`. |
-| `ctx.koa` | `app`, `use(middleware)`, `router(prefix?)`. Both are removed on unload. |
 | `ctx.settings` | `config` (the panel configuration) and `save()`. |
 | `ctx.storage` | The panel's entity storage, file- or Redis-backed. |
 | `ctx.i18n` | `$t`, `i18next`, and `define(messages)` for the plugin's own strings. |
@@ -89,12 +88,22 @@ and skipped; the panel keeps running.
 | `ctx.globals` | Process-wide counters shared with the core. |
 | `ctx.overview` | `provide(fn)` to add fields to `GET /api/overview`. |
 | `ctx.plugins` | `loaded`, `inventory()`, `setEnabled()`, and the frontend manifest the browser fetches. |
+| `ctx.koa` | `app`, `use(middleware)`, `router(prefix?)`. Both are removed on unload. **Provided by `plugins/server`.** |
 | `ctx.guard` | Request authorization. **Provided by `plugins/user`.** |
 | `ctx.installation` | First-run state. **Provided by `plugins/oobe`.** |
 
 `src/app/plugin/context.ts` is the authoritative declaration of all of this.
 
-Two of these are provided by plugins rather than by the core, with `ctx.set()`:
+Three of these are provided by plugins rather than by the core, with `ctx.set()`:
+
+`ctx.set("koa", ...)` is the web server itself. `plugins/server` creates the Koa
+application, mounts the base middleware, serves the static assets and binds the
+listener; the core keeps only its own API routers and mounts them onto
+`ctx.koa.app` through `ctx.inject(["koa"], ...)` once the plugin has provided it.
+The panel therefore listens on nothing without it, which is why `plugins/config`
+refuses to disable it and why almost every plugin injects it. A plugin that
+provides a service cannot inject it — see `plugins/server`, which reaches its own
+`koa` with `ctx.inject()` instead.
 
 `ctx.set("guard", guard)` hands the plugin request authorization for the whole
 panel — route guarding, caller identity, instance ownership, upload permission
@@ -106,8 +115,8 @@ every request while none is installed. See `plugins/user`.
 `/api/auth/status`. The core defaults to installed, so removing the owning plugin
 cannot redirect the frontend to a route that no longer exists. See `plugins/oobe`.
 
-Both leave with their plugin, because a service registered inside `apply` belongs
-to that plugin's scope.
+All three leave with their plugin, because a service registered inside `apply`
+belongs to that plugin's scope.
 
 `ctx.overview.provide(fn)` merges extra fields into `GET /api/overview`. The core
 reports only what the whole panel reads that route for — the nodes, the panel

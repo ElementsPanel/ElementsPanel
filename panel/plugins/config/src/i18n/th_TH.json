@@ -6,6 +6,7 @@
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "ปิดใช้งาน {name} หรือไม่?",
   "TXT_CODE_PLUGIN_ENABLE": "เปิด",
   "TXT_CODE_PLUGIN_ENABLED": "เปิดใช้งานปลั๊กอินแล้ว",
+  "TXT_CODE_PLUGIN_ESSENTIAL_DISABLE": "ไม่สามารถปิดใช้งานเว็บเซิร์ฟเวอร์จากแผงควบคุมที่ตัวมันเองให้บริการอยู่ กรุณาตั้ง enabled เป็น false ใน plugin.json ของมันแทน",
   "TXT_CODE_PLUGIN_IS_DISABLED": "ปลั๊กอินนี้ถูกปิดใช้งาน หน้า เส้นทาง และ API จะใช้ไม่ได้จนกว่าจะเปิดใช้งานอีกครั้ง",
   "TXT_CODE_PLUGIN_LOAD_FAILED": "โหลดปลั๊กอินนี้ไม่สำเร็จ",
   "TXT_CODE_PLUGIN_NO_CONFIG": "ปลั๊กอินนี้ไม่มีตัวเลือกที่กำหนดค่าได้",

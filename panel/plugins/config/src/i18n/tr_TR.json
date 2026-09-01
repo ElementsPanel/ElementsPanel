@@ -6,6 +6,7 @@
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "{name} devre dışı bırakılsın mı?",
   "TXT_CODE_PLUGIN_ENABLE": "Açık",
   "TXT_CODE_PLUGIN_ENABLED": "Eklenti etkinleştirildi",
+  "TXT_CODE_PLUGIN_ESSENTIAL_DISABLE": "Web sunucusu, kendisinin sunduğu panel üzerinden devre dışı bırakılamaz. Bunun yerine plugin.json dosyasında enabled değerini false yapın.",
   "TXT_CODE_PLUGIN_IS_DISABLED": "Bu eklenti devre dışı. Yeniden etkinleştirilene kadar sayfaları, yolları ve API si kullanılamaz.",
   "TXT_CODE_PLUGIN_LOAD_FAILED": "Bu eklenti yüklenemedi",
   "TXT_CODE_PLUGIN_NO_CONFIG": "Bu eklentinin yapilandirilabilir secenegi yok.",

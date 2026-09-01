@@ -337,24 +337,6 @@ onUnmounted(() => {
                   </a-form-item>
 
                   <a-form-item>
-                    <a-typography-title :level="5">{{ t("TXT_CODE_7f0017d2") }}</a-typography-title>
-                    <a-typography-paragraph type="secondary">
-                      {{ t("TXT_CODE_233624ad") }}
-                    </a-typography-paragraph>
-                    <a-input v-model:value="formData.httpPort" style="max-width: 320px"
-                      :placeholder="t('TXT_CODE_4ea93630')" />
-                  </a-form-item>
-
-                  <a-form-item>
-                    <a-typography-title :level="5">{{ t("TXT_CODE_514e064a") }}</a-typography-title>
-                    <a-typography-paragraph type="secondary">
-                      {{ t("TXT_CODE_328191e") }}
-                    </a-typography-paragraph>
-                    <a-input v-model:value="formData.httpIp" style="max-width: 320px"
-                      :placeholder="t('TXT_CODE_4ea93630')" />
-                  </a-form-item>
-
-                  <a-form-item>
                     <a-typography-title :level="5">Panel ID</a-typography-title>
                     <a-typography-paragraph type="secondary">
                       {{ t("TXT_CODE_e2976753") }}
@@ -567,54 +549,6 @@ onUnmounted(() => {
                         {{ item.label }}
                       </a-select-option>
                     </a-select>
-                  </a-form-item>
-
-                  <a-form-item>
-                    <a-typography-title :level="5">
-                      {{ t("TXT_CODE_405cd346") }}
-                    </a-typography-title>
-                    <a-typography-paragraph>
-                      <a-typography-text type="secondary">
-                        {{ t("TXT_CODE_6655c905") }}
-                      </a-typography-text>
-                    </a-typography-paragraph>
-
-                    <a-select v-model:value.prop="(formData as any).crossDomain" style="max-width: 320px">
-                      <a-select-option v-for="item in allYesNo" :key="item.value" :value="item.value">
-                        {{ item.label }}
-                      </a-select-option>
-                    </a-select>
-                  </a-form-item>
-
-                  <a-form-item>
-                    <a-typography-title :level="5">
-                      {{ t("TXT_CODE_f0789d81") }}
-                    </a-typography-title>
-                    <a-typography-paragraph>
-                      <a-typography-text type="secondary">
-                        {{ t("TXT_CODE_2b85af6d") }}
-                      </a-typography-text>
-                    </a-typography-paragraph>
-
-                    <a-select v-model:value.prop="(formData as any).reverseProxyMode" style="max-width: 320px">
-                      <a-select-option v-for="item in allYesNo" :key="item.value" :value="item.value">
-                        {{ item.label }}
-                      </a-select-option>
-                    </a-select>
-                  </a-form-item>
-
-                  <a-form-item v-show="(formData as any).reverseProxyMode">
-                    <a-typography-title :level="5">
-                      {{ t("TXT_CODE_66aeac82") }}
-                    </a-typography-title>
-                    <a-typography-paragraph>
-                      <a-typography-text type="secondary">
-                        {{ t("TXT_CODE_fd8bc51f") }}
-                      </a-typography-text>
-                    </a-typography-paragraph>
-
-                    <a-input v-model:value="(formData as any).reverseProxyHeader" style="max-width: 320px"
-                      :placeholder="t('TXT_CODE_4ea93630')" />
                   </a-form-item>
 
                   <div class="button">

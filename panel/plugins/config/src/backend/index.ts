@@ -9,6 +9,12 @@ import { localeMessages } from "../i18n";
 /** Turning this plugin off would remove the page the request came from. */
 const SELF = "config";
 
+/**
+ * Turning the web server off would remove the connection the request came in
+ * over, and with it every route that could turn it back on.
+ */
+const ESSENTIAL = "server";
+
 export const inject = ["koa", "i18n", "middleware", "roles", "plugins"];
 
 export function apply(ctx: PanelPluginContext) {
@@ -33,6 +39,8 @@ export function apply(ctx: PanelPluginContext) {
       // Thrown rather than answered: the panel's response protocol turns an
       // Error into the standard envelope, which is what the page reports.
       if (id === SELF && !enabled) throw new Error(ctx.i18n.$t("TXT_CODE_PLUGIN_SELF_DISABLE"));
+      if (id === ESSENTIAL && !enabled)
+        throw new Error(ctx.i18n.$t("TXT_CODE_PLUGIN_ESSENTIAL_DISABLE"));
       requestCtx.body = await ctx.plugins.setEnabled(id, enabled);
     }
   );

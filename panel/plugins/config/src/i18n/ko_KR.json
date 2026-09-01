@@ -6,6 +6,7 @@
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE": "{name}을(를) 비활성화할까요?",
   "TXT_CODE_PLUGIN_ENABLE": "켜짐",
   "TXT_CODE_PLUGIN_ENABLED": "플러그인을 활성화했습니다",
+  "TXT_CODE_PLUGIN_ESSENTIAL_DISABLE": "웹 서버는 자신이 제공하는 패널에서 비활성화할 수 없습니다. plugin.json에서 enabled 를 false 로 설정하세요.",
   "TXT_CODE_PLUGIN_IS_DISABLED": "이 플러그인은 비활성화되어 있습니다. 다시 활성화할 때까지 페이지, 경로, API를 사용할 수 없습니다.",
   "TXT_CODE_PLUGIN_LOAD_FAILED": "이 플러그인을 불러오지 못했습니다",
   "TXT_CODE_PLUGIN_NO_CONFIG": "이 플러그인에는 구성 가능한 옵션이 없습니다.",
