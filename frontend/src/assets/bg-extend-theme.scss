@@ -59,8 +59,10 @@
 
   .ant-modal-title,
   .ant-modal-header,
-  .ant-input-affix-wrapper>.ant-input {
+  .ant-input-affix-wrapper>.ant-input,
+  .ant-input-affix-wrapper .ant-input {
     background-color: rgba(0, 0, 0, 0) !important;
+    backdrop-filter: none !important;
   }
 }
 
