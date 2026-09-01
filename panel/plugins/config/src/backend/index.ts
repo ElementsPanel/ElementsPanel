@@ -21,7 +21,7 @@ const SELF = "config";
  */
 const ESSENTIAL = "server";
 
-export const inject = ["koa", "i18n", "middleware", "roles", "plugins"];
+export const inject = ["koa", "i18n", "middleware", "roles", "plugins", "settingsForm"];
 
 export function apply(ctx: PanelPluginContext) {
   ctx.i18n.define(localeMessages);
@@ -32,8 +32,32 @@ export function apply(ctx: PanelPluginContext) {
   // Everything installed, disabled plugins included: the page needs to list one
   // to be able to enable it again.
   router.get("/", requireAdmin, async (requestCtx) => {
-    requestCtx.body = ctx.plugins.inventory();
+    const declared = new Set(ctx.settingsForm.declared());
+    requestCtx.body = ctx.plugins.inventory().map((record) => ({
+      ...record,
+      // So the page can say "no configurable options" without a round trip.
+      hasSettings: declared.has(record.id)
+    }));
   });
+
+  // One plugin's form and its current values, as its own backend describes them.
+  // `null` when it declared nothing.
+  router.get("/settings", requireAdmin, async (requestCtx) => {
+    requestCtx.body = await ctx.settingsForm.read(String(requestCtx.request.query.id ?? ""));
+  });
+
+  router.put(
+    "/settings",
+    requireAdmin,
+    ctx.middleware.validator({ query: { id: String } }),
+    async (requestCtx: Koa.ParameterizedContext) => {
+      const id = String(requestCtx.request.query.id);
+      // The plugin's own `write()` validates: this route knows nothing about
+      // what any particular plugin's values mean.
+      await ctx.settingsForm.write(id, (requestCtx.request.body ?? {}) as Record<string, unknown>);
+      requestCtx.body = true;
+    }
+  );
 
   router.put(
     "/enabled",
@@ -108,6 +132,34 @@ export function apply(ctx: PanelPluginContext) {
         node.refreshReconnect();
 
         requestCtx.body = record;
+      }
+    );
+
+    // A daemon plugin's configuration, described by the plugin itself and
+    // rendered by the same generic form. Nothing about the form lives here.
+    nodeRouter.get(
+      "/settings",
+      requireAdmin,
+      ctx.middleware.validator({ query: { daemonId: String, id: String } }),
+      async (requestCtx: Koa.ParameterizedContext) => {
+        requestCtx.body = await new RemoteRequest(nodeOf(requestCtx)).request("plugin/config", {
+          id: String(requestCtx.request.query.id)
+        });
+      }
+    );
+
+    nodeRouter.put(
+      "/settings",
+      requireAdmin,
+      ctx.middleware.validator({ query: { daemonId: String, id: String } }),
+      async (requestCtx: Koa.ParameterizedContext) => {
+        requestCtx.body = await new RemoteRequest(nodeOf(requestCtx)).request(
+          "plugin/config/write",
+          {
+            id: String(requestCtx.request.query.id),
+            values: (requestCtx.request.body ?? {}) as Record<string, unknown>
+          }
+        );
       }
     );
   });

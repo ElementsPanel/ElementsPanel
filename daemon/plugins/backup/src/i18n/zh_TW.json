@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_DBACKUP_FORMAT": "壓縮格式",
+  "TXT_CODE_DBACKUP_LEVEL": "壓縮等級",
+  "TXT_CODE_DBACKUP_LEVEL_TIP": "0 表示只打包不壓縮，9 為最高壓縮率。tar.gz 與 7z 自帶等級時會忽略此項。",
+  "TXT_CODE_DBACKUP_PATH": "備份目錄",
+  "TXT_CODE_DBACKUP_PATH_TIP": "實例備份的存放位置。相對路徑相對於守護行程目錄；留空則為 data/backups。",
   "TXT_CODE_INSTANCE_BACKUP_COMPRESSING": "正在壓縮實例文件...",
   "TXT_CODE_INSTANCE_BACKUP_EXCLUDED": "已有 {{num}} 个文件/目錄被 .epbaklst 規則排除",
   "TXT_CODE_INSTANCE_BACKUP_FAILED": "實例備份失败：{{err}}",

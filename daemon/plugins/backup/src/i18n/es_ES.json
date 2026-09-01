@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_DBACKUP_FORMAT": "Formato de archivo",
+  "TXT_CODE_DBACKUP_LEVEL": "Nivel de compresión",
+  "TXT_CODE_DBACKUP_LEVEL_TIP": "0 almacena sin comprimir, 9 comprime al máximo. Se ignora en tar.gz y 7z cuando fijan el suyo.",
+  "TXT_CODE_DBACKUP_PATH": "Directorio de copias",
+  "TXT_CODE_DBACKUP_PATH_TIP": "Dónde se escriben las copias de seguridad. Las rutas relativas se resuelven desde el directorio del demonio; vacío significa data/backups.",
   "TXT_CODE_INSTANCE_BACKUP_COMPRESSING": "Comprimiendo los archivos de la instancia, espera...",
   "TXT_CODE_INSTANCE_BACKUP_EXCLUDED": "{{num}} archivos/directorios excluidos por las reglas de .epbaklst",
   "TXT_CODE_INSTANCE_BACKUP_FAILED": "Error al crear la copia de la instancia: {{err}}",

@@ -19,13 +19,21 @@ const SELF = "config";
  */
 const ESSENTIAL = "server";
 
-export const inject = ["protocol", "i18n", "plugins"];
+export const inject = ["protocol", "i18n", "plugins", "settingsForm"];
 
 export function apply(ctx: DaemonPluginContext) {
   ctx.i18n.define(localeMessages);
 
   ctx.protocol.on("plugin/list", (routerCtx) => {
-    ctx.protocol.response(routerCtx, ctx.plugins.inventory());
+    const declared = new Set(ctx.settingsForm.declared());
+    ctx.protocol.response(
+      routerCtx,
+      ctx.plugins.inventory().map((record) => ({
+        ...record,
+        // So the panel can say "no configurable options" without a round trip.
+        hasSettings: declared.has(record.id)
+      }))
+    );
   });
 
   ctx.protocol.on("plugin/enabled", async (routerCtx, data) => {
@@ -45,6 +53,32 @@ export function apply(ctx: DaemonPluginContext) {
       // The panel turns this into the error its page reports; an unhandled throw
       // from an async handler would reach nobody, because `emitRouter` only
       // catches the synchronous part.
+      ctx.protocol.responseError(routerCtx, error);
+    }
+  });
+
+  // The configuration of one of this daemon's plugins, described by the plugin
+  // itself. The panel renders the description; nothing about the form lives
+  // there, which is the only way a daemon plugin can have a settings page at all.
+  ctx.protocol.on("plugin/config", async (routerCtx, data) => {
+    try {
+      const id = String((data as { id?: unknown })?.id ?? "");
+      if (!id) throw new Error(ctx.i18n.$t("TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED"));
+      ctx.protocol.response(routerCtx, await ctx.settingsForm.read(id));
+    } catch (error: any) {
+      ctx.protocol.responseError(routerCtx, error);
+    }
+  });
+
+  ctx.protocol.on("plugin/config/write", async (routerCtx, data) => {
+    try {
+      const payload = (data ?? {}) as { id?: unknown; values?: unknown };
+      const id = String(payload.id ?? "");
+      if (!id) throw new Error(ctx.i18n.$t("TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED"));
+      const values = (payload.values ?? {}) as Record<string, unknown>;
+      await ctx.settingsForm.write(id, values);
+      ctx.protocol.response(routerCtx, true);
+    } catch (error: any) {
       ctx.protocol.responseError(routerCtx, error);
     }
   });

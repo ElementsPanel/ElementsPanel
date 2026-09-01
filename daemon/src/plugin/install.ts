@@ -20,6 +20,7 @@ import { ctx } from "./context";
 import { I18nService } from "./i18n";
 import { getDaemonPluginInventory, getLoadedDaemonPlugins, setDaemonPluginEnabled } from "./loader";
 import { ProtocolService } from "./protocol";
+import { SettingsFormService } from "./settings";
 import {
   FeaturesService,
   OverviewService,
@@ -95,6 +96,7 @@ export function installDaemonPluginServices() {
   });
 
   ctx.plugin(I18nService);
+  ctx.plugin(SettingsFormService);
   ctx.plugin(ProtocolService);
   ctx.plugin(TasksService);
   ctx.plugin(PresetsService);

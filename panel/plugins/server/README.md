@@ -39,11 +39,14 @@ disable it for that reason.
 
 ## Settings
 
-`GET`/`PUT /api/server/settings` read and write the nine fields this plugin owns
-in the panel configuration: port, listening address, path prefix, SSL and its two
-file paths, CORS and the two reverse-proxy fields. They stay in `SystemConfig`
-rather than moving to a plugin store, because the panel has to know its port
-before any plugin has loaded.
+The nine fields this plugin owns in the panel configuration — port, listening
+address, path prefix, SSL and its two file paths, CORS and the two reverse-proxy
+fields — are **declared**, not drawn: `ctx.settingsForm.declare(...)` describes
+them and the plugin manager renders that description. This plugin therefore ships
+no browser half at all, which is the same position a daemon plugin is in.
+
+The values stay in `SystemConfig` rather than moving to a plugin store, because
+the panel has to know its port before any plugin has loaded.
 
 Nothing is rebound live — the listener, the proxy mode and the path prefix are
 all fixed when the plugin starts, so a change takes effect on the next restart,

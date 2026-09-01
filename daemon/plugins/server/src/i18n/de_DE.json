@@ -1,0 +1,13 @@
+{
+  "TXT_CODE_DSERVER_IP": "Binding-IP",
+  "TXT_CODE_DSERVER_IP_TIP": "Nützlich auf einem Host mit mehreren Adressen. Leer lassen, um auf allen zu lauschen.",
+  "TXT_CODE_DSERVER_PATH_TIP": "Absolut oder relativ zum Daemon-Verzeichnis.",
+  "TXT_CODE_DSERVER_PORT": "Daemon-Port",
+  "TXT_CODE_DSERVER_PORT_TIP": "Der Port, über den sich das Panel verbindet. Wird beim Start des Daemons angewendet, eine Änderung erfordert also einen Neustart.",
+  "TXT_CODE_DSERVER_PREFIX": "Pfadpräfix",
+  "TXT_CODE_DSERVER_PREFIX_TIP": "Betreibt den Daemon unter einem Unterpfad, zum Beispiel /daemon. Leer lassen für das Stammverzeichnis.",
+  "TXT_CODE_DSERVER_SSL": "SSL/TLS aktivieren",
+  "TXT_CODE_DSERVER_SSL_KEY": "Datei mit privatem Schlüssel (.key)",
+  "TXT_CODE_DSERVER_SSL_PEM": "Zertifikatsdatei (.pem)",
+  "TXT_CODE_DSERVER_SSL_TIP": "Über HTTPS und WSS mit dem untenstehenden Zertifikat bereitstellen. Beide Dateien sind erforderlich."
+}

@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_DBACKUP_FORMAT": "Formato do arquivo",
+  "TXT_CODE_DBACKUP_LEVEL": "Nível de compressão",
+  "TXT_CODE_DBACKUP_LEVEL_TIP": "0 armazena sem compactar, 9 compacta ao máximo. Ignorado por tar.gz e 7z que definem o seu.",
+  "TXT_CODE_DBACKUP_PATH": "Diretório de backups",
+  "TXT_CODE_DBACKUP_PATH_TIP": "Onde os backups de instâncias são gravados. Caminhos relativos partem do diretório do daemon; vazio significa data/backups.",
   "TXT_CODE_INSTANCE_BACKUP_COMPRESSING": "Compactando os arquivos da instância, aguarde...",
   "TXT_CODE_INSTANCE_BACKUP_EXCLUDED": "{{num}} arquivos/diretórios excluídos pelas regras de .epbaklst",
   "TXT_CODE_INSTANCE_BACKUP_FAILED": "Falha no backup da instância: {{err}}",

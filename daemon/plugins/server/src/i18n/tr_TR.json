@@ -1,0 +1,13 @@
+{
+  "TXT_CODE_DSERVER_IP": "Dinleme IP si",
+  "TXT_CODE_DSERVER_IP_TIP": "Birden fazla adresi olan bir makinede kullanışlıdır. Hepsini dinlemek için boş bırakın.",
+  "TXT_CODE_DSERVER_PATH_TIP": "Mutlak ya da daemon dizinine göre göreli.",
+  "TXT_CODE_DSERVER_PORT": "Daemon bağlantı noktası",
+  "TXT_CODE_DSERVER_PORT_TIP": "Panelin bağlandığı bağlantı noktası. Daemon başlatılırken uygulanır, bu yüzden değişiklik için yeniden başlatma gerekir.",
+  "TXT_CODE_DSERVER_PREFIX": "Yol ön eki",
+  "TXT_CODE_DSERVER_PREFIX_TIP": "Daemon u bir alt yolda sunar, örneğin /daemon. Kök için boş bırakın.",
+  "TXT_CODE_DSERVER_SSL": "SSL/TLS etkinleştir",
+  "TXT_CODE_DSERVER_SSL_KEY": "Özel anahtar dosyası (.key)",
+  "TXT_CODE_DSERVER_SSL_PEM": "Sertifika dosyası (.pem)",
+  "TXT_CODE_DSERVER_SSL_TIP": "Aşağıdaki sertifikayla HTTPS ve WSS üzerinden sun. Her iki dosya da gereklidir."
+}

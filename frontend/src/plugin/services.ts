@@ -13,7 +13,6 @@ import type {
   FrontendI18nService,
   FrontendMenusService,
   FrontendRoutesService,
-  FrontendSettingsService,
   FrontendUiService,
   FrontendVueService,
   PanelFrontendAppMenu,
@@ -382,29 +381,3 @@ export class DesktopService extends Service implements FrontendDesktopService {
   }
 }
 
-/**
- * The plugin settings page.
- *
- * Core-owned for the same reason as the Desktop registry: a form belongs to the
- * plugin that contributed it. `plugins/config` renders `pages`; without it the
- * forms are registered and unreachable, which is the same trade the Desktop
- * registry makes.
- */
-export class SettingsService extends Service implements FrontendSettingsService {
-  readonly pages = shallowReactive<{ id: string; component: Component }[]>([]);
-
-  constructor(ctx: Context) {
-    super(ctx, "settings", true);
-  }
-
-  page(component: Component) {
-    // `ctx.name` is the calling plugin, so a form is attributed without the
-    // caller repeating its own id. The page reads the plugin's display name and
-    // description from the manifest instead.
-    const entry = { id: this.ctx.name, component };
-    return this.ctx.effect(() => {
-      this.pages.push(entry);
-      return () => remove(this.pages, entry);
-    });
-  }
-}

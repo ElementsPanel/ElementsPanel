@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_DBACKUP_FORMAT": "アーカイブ形式",
+  "TXT_CODE_DBACKUP_LEVEL": "圧縮レベル",
+  "TXT_CODE_DBACKUP_LEVEL_TIP": "0 は無圧縮で格納、9 が最高圧縮です。独自のレベルを持つ tar.gz と 7z では無視されます。",
+  "TXT_CODE_DBACKUP_PATH": "バックアップ先ディレクトリ",
+  "TXT_CODE_DBACKUP_PATH_TIP": "インスタンスのバックアップの保存先。相対パスはデーモンディレクトリ基準です。空欄の場合は data/backups になります。",
   "TXT_CODE_INSTANCE_BACKUP_COMPRESSING": "インスタンスファイルを圧縮中です。お待ちください...",
   "TXT_CODE_INSTANCE_BACKUP_EXCLUDED": ".epbaklstルールにより{{num}}個のファイル/ディレクトリを除外しました",
   "TXT_CODE_INSTANCE_BACKUP_FAILED": "インスタンスのバックアップに失敗しました：{{err}}",

@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_DBACKUP_FORMAT": "รูปแบบไฟล์บีบอัด",
+  "TXT_CODE_DBACKUP_LEVEL": "ระดับการบีบอัด",
+  "TXT_CODE_DBACKUP_LEVEL_TIP": "0 คือเก็บโดยไม่บีบอัด 9 คือบีบอัดสูงสุด จะถูกละเว้นสำหรับ tar.gz และ 7z ที่กำหนดระดับของตัวเอง",
+  "TXT_CODE_DBACKUP_PATH": "ไดเรกทอรีสำรองข้อมูล",
+  "TXT_CODE_DBACKUP_PATH_TIP": "ตำแหน่งที่เก็บข้อมูลสำรองของอินสแตนซ์ เส้นทางแบบสัมพัทธ์อ้างอิงจากไดเรกทอรีของดีมอน เว้นว่างไว้จะเป็น data/backups",
   "TXT_CODE_INSTANCE_BACKUP_COMPRESSING": "กำลังบีบอัดไฟล์อินสแตนซ์ โปรดรอ...",
   "TXT_CODE_INSTANCE_BACKUP_EXCLUDED": "ยกเว้นไฟล์/ไดเรกทอรี {{num}} รายการตามกฎ .epbaklst",
   "TXT_CODE_INSTANCE_BACKUP_FAILED": "สำรองข้อมูลอินสแตนซ์ล้มเหลว: {{err}}",

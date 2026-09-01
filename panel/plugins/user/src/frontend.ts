@@ -2,7 +2,6 @@ import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugin";
 import { UserOutlined } from "@ant-design/icons-vue";
 import * as userApi from "./api";
-import PluginConfig from "./PluginConfig.vue";
 import MyselfInfoDialog from "./components/MyselfInfoDialog.vue";
 import DesktopLoginWindow from "./desktop/DesktopLoginWindow.vue";
 import DesktopUserInfo from "./desktop/DesktopUserInfo.vue";
@@ -21,7 +20,7 @@ const ROLE_ADMIN = 10;
 const ROLE_USER = 1;
 const ROLE_GUEST = 0;
 
-export const inject = ["i18n", "routes", "ui", "settings"];
+export const inject = ["i18n", "routes", "ui"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
@@ -38,8 +37,8 @@ export function apply(ctx: PanelFrontendPluginContext) {
     oobeCreateAdminAccount: OobeCreateAdminAccount
   });
 
-  // Authentication settings are edited on the `config` plugin's page.
-  ctx.settings.page(PluginConfig);
+  // Authentication settings are declared by this plugin's backend, so the plugin
+  // manager renders them and this half contributes no form.
 
   ctx.ui.layoutCard("LoginCard", LoginCard);
   ctx.ui.layoutCard("UserList", UserList);

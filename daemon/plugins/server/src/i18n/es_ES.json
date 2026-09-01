@@ -1,0 +1,13 @@
+{
+  "TXT_CODE_DSERVER_IP": "IP de escucha",
+  "TXT_CODE_DSERVER_IP_TIP": "Útil en un host con varias direcciones. Déjelo vacío para escuchar en todas.",
+  "TXT_CODE_DSERVER_PATH_TIP": "Absoluta, o relativa al directorio del demonio.",
+  "TXT_CODE_DSERVER_PORT": "Puerto del demonio",
+  "TXT_CODE_DSERVER_PORT_TIP": "El puerto por el que se conecta el panel. Se aplica al iniciar el demonio, así que un cambio requiere reiniciarlo.",
+  "TXT_CODE_DSERVER_PREFIX": "Prefijo de ruta",
+  "TXT_CODE_DSERVER_PREFIX_TIP": "Sirve el demonio bajo una subruta, por ejemplo /daemon. Déjelo vacío para servirlo desde la raíz.",
+  "TXT_CODE_DSERVER_SSL": "Activar SSL/TLS",
+  "TXT_CODE_DSERVER_SSL_KEY": "Archivo de clave privada (.key)",
+  "TXT_CODE_DSERVER_SSL_PEM": "Archivo de certificado (.pem)",
+  "TXT_CODE_DSERVER_SSL_TIP": "Servir por HTTPS y WSS usando el certificado de abajo. Ambos archivos son obligatorios."
+}

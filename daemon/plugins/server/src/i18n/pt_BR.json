@@ -1,0 +1,13 @@
+{
+  "TXT_CODE_DSERVER_IP": "IP de escuta",
+  "TXT_CODE_DSERVER_IP_TIP": "Útil em um host com vários endereços. Deixe vazio para escutar em todos.",
+  "TXT_CODE_DSERVER_PATH_TIP": "Absoluto, ou relativo ao diretório do daemon.",
+  "TXT_CODE_DSERVER_PORT": "Porta do daemon",
+  "TXT_CODE_DSERVER_PORT_TIP": "A porta pela qual o painel se conecta. Aplicada quando o daemon inicia, então uma alteração exige reiniciá-lo.",
+  "TXT_CODE_DSERVER_PREFIX": "Prefixo de caminho",
+  "TXT_CODE_DSERVER_PREFIX_TIP": "Serve o daemon em um subcaminho, por exemplo /daemon. Deixe vazio para a raiz.",
+  "TXT_CODE_DSERVER_SSL": "Ativar SSL/TLS",
+  "TXT_CODE_DSERVER_SSL_KEY": "Arquivo de chave privada (.key)",
+  "TXT_CODE_DSERVER_SSL_PEM": "Arquivo de certificado (.pem)",
+  "TXT_CODE_DSERVER_SSL_TIP": "Servir via HTTPS e WSS usando o certificado abaixo. Ambos os arquivos são obrigatórios."
+}

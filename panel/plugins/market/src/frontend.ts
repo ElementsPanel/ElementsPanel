@@ -15,7 +15,6 @@ import { openMarketDialog } from "./market-dialog";
 import Market from "./normal/Market.vue";
 import MarketEditor from "./normal/MarketEditor.vue";
 import McPreset from "./normal/McPreset.vue";
-import PluginConfig from "./PluginConfig.vue";
 import { getAllowUsePreset, refreshMarketPermission } from "./runtime";
 
 const ROLE_ADMIN = 10;
@@ -45,7 +44,7 @@ const marketCardPoolItems: LayoutCardPoolItemFactory[] = [
   })
 ];
 
-export const inject = ["i18n", "routes", "ui", "actions", "desktop", "settings"];
+export const inject = ["i18n", "routes", "ui", "actions", "desktop"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
@@ -54,9 +53,8 @@ export function apply(ctx: PanelFrontendPluginContext) {
   // picker without importing this plugin's source.
   ctx.set("market", { api: marketApi, openMarketDialog, useMarketPackages });
 
-  // Market source and install-permission settings are edited on the `config`
-  // plugin's page rather than the panel Settings page.
-  ctx.settings.page(PluginConfig);
+  // The market's own settings are declared by its backend, so the plugin manager
+  // renders them with the generic form and this half contributes no page for them.
 
   ctx.ui.layoutCard("Market", Market);
   ctx.ui.layoutCard("MarketEditor", MarketEditor);

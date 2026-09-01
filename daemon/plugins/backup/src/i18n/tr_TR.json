@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_DBACKUP_FORMAT": "Arşiv biçimi",
+  "TXT_CODE_DBACKUP_LEVEL": "Sıkıştırma düzeyi",
+  "TXT_CODE_DBACKUP_LEVEL_TIP": "0 sıkıştırmadan saklar, 9 en çok sıkıştırır. Kendi düzeyini belirleyen tar.gz ve 7z için yok sayılır.",
+  "TXT_CODE_DBACKUP_PATH": "Yedek dizini",
+  "TXT_CODE_DBACKUP_PATH_TIP": "Örnek yedeklerinin yazılacağı yer. Göreli yollar daemon dizinine göre çözümlenir; boş bırakılırsa data/backups kullanılır.",
   "TXT_CODE_INSTANCE_BACKUP_COMPRESSING": "Örnek dosyaları sıkıştırılıyor, lütfen bekleyin...",
   "TXT_CODE_INSTANCE_BACKUP_EXCLUDED": ".epbaklst kurallarıyla {{num}} dosya/dizin hariç tutuldu",
   "TXT_CODE_INSTANCE_BACKUP_FAILED": "Örnek yedekleme başarısız: {{err}}",

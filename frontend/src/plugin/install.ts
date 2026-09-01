@@ -8,7 +8,6 @@ import {
   I18nService,
   MenusService,
   RoutesService,
-  SettingsService,
   UiService,
   VueService
 } from "./services";
@@ -45,7 +44,6 @@ export async function setupPanelFrontendPlugins(app: App, pinia: Pinia) {
   ctx.plugin(MenusService);
   ctx.plugin(ActionsService);
   ctx.plugin(DesktopService);
-  ctx.plugin(SettingsService);
   // Declared with no value and then set, so the object is stored as it is:
   // `ctx.provide(name, value)` would stamp cordis's tracker onto it and every
   // read would return a proxy. Only the `Service` classes need that tracing.

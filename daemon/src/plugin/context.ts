@@ -47,6 +47,90 @@ export interface DaemonSettingsService {
   setLanguage(language: string): void;
 }
 
+/** What a declared setting renders as. `link` reads and writes nothing. */
+export type DaemonSettingFieldType =
+  | "string"
+  /** Multi-line string. */
+  | "text"
+  | "number"
+  | "boolean"
+  | "select"
+  | "link";
+
+export interface DaemonSettingOption {
+  value: string | number | boolean;
+  label: string;
+}
+
+/**
+ * One row of a plugin's configuration form, described rather than drawn.
+ *
+ * Labels are plain strings, already translated: the panel renders this form, and
+ * the browser has no copy of a daemon plugin's catalogue. Whoever declares the
+ * field resolves it, in whatever language the panel last pushed to this daemon.
+ */
+export interface DaemonSettingField {
+  /** The key in `read()`'s result and `write()`'s argument. Absent for `link`. */
+  key?: string;
+  type: DaemonSettingFieldType;
+  title: string;
+  description?: string;
+  placeholder?: string;
+  /** `number`: inclusive bounds, enforced by the form and by `write()`. */
+  min?: number;
+  max?: number;
+  /** `select`: the allowed values. */
+  options?: DaemonSettingOption[];
+  /** `string`: render as a password input. */
+  secret?: boolean;
+  /**
+   * Shown only while every listed condition holds. A condition is either a field
+   * name, true when that field is truthy, or `"name=value"`, true when that
+   * field's value stringifies to `value`.
+   */
+  visibleWhen?: string | string[];
+  /** `link`: a panel route the form offers as a button. */
+  route?: string;
+}
+
+/**
+ * A plugin's configuration, as its backend declares it.
+ *
+ * `fields` is a function so that it is resolved per request: a plugin's titles
+ * come from its own catalogue, and the daemon's language changes when the panel
+ * pushes a new one.
+ */
+export interface DaemonSettingsDeclaration {
+  fields(): DaemonSettingField[];
+  read(): Record<string, unknown> | Promise<Record<string, unknown>>;
+  write(values: Record<string, unknown>): void | Promise<void>;
+}
+
+/** One plugin's form and its current values, as the panel fetches them. */
+export interface DaemonSettingsSchema {
+  id: string;
+  fields: DaemonSettingField[];
+  values: Record<string, unknown>;
+}
+
+/**
+ * The register of plugin configuration forms.
+ *
+ * A daemon plugin has no browser half at all, so it cannot ship a component for
+ * its settings. It describes them here instead, and the panel's plugin manager
+ * renders the description with the same generic form it uses for its own plugins.
+ */
+export interface DaemonSettingsFormService {
+  /** Declares the calling plugin's form. An effect: it leaves with the plugin. */
+  declare(declaration: DaemonSettingsDeclaration): () => void;
+  /** The ids that declared a form, in declaration order. */
+  declared(): string[];
+  /** One plugin's fields and values, or `null` when it declared nothing. */
+  read(id: string): Promise<DaemonSettingsSchema | null>;
+  /** Hands `values` to that plugin's own `write()`. */
+  write(id: string, values: Record<string, unknown>): Promise<void>;
+}
+
 export interface DaemonI18nService {
   readonly $t: typeof $t;
   /** Merge the plugin's translations, keyed by locale. Removed on unload. */
@@ -204,6 +288,7 @@ export interface DaemonPluginsService {
 declare module "cordis" {
   interface Context {
     settings: DaemonSettingsService;
+    settingsForm: DaemonSettingsFormService;
     i18n: DaemonI18nService;
     middleware: DaemonMiddlewareService;
     protocol: DaemonProtocolService;

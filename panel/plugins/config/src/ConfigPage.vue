@@ -7,22 +7,28 @@ import { computed, onMounted, ref, watch } from "vue";
 import {
   nodeList,
   nodePluginList,
+  nodePluginSettings,
   pluginList,
+  pluginSettings,
   setNodePluginEnabled,
   setPluginEnabled,
+  updateNodePluginSettings,
+  updatePluginSettings,
   type NodePluginRecord,
   type NodeSummary,
-  type PluginRecord
+  type PluginRecord,
+  type SettingsSchema
 } from "./api";
+import SchemaForm from "./SchemaForm.vue";
 
 // The panel reports what is installed, because `plugin.json` is where the enable
 // switch lives; a disabled plugin has to stay listed for the switch to turn it
-// back on. The settings form beside the list is whatever the selected plugin
-// contributed through `ctx.settings.page()`.
+// back on.
 //
-// The same page administers each connected node's plugins, through the daemon's
-// own `config` plugin. A daemon plugin has no browser half, so that scope shows
-// the switch and what the daemon reports about it, and nothing else.
+// The form beside the list is not a component any plugin shipped: a plugin
+// describes its configuration on its backend, and this page renders that
+// description. That is the only reason a daemon plugin can have a settings form
+// at all — the browser holds no copy of a daemon plugin.
 
 type Scope = "panel" | "node";
 
@@ -58,11 +64,59 @@ const selectedPlugin = computed(() =>
   currentList.value.find((item) => item.id === currentId.value)
 );
 
-const selectedForm = computed(() =>
-  scope.value === "panel"
-    ? ctx.settings.pages.find((page) => page.id === selectedId.value)?.component
-    : undefined
-);
+/** The selected plugin's declared form, or null when it declared none. */
+const schema = ref<SettingsSchema | null>(null);
+const schemaLoading = ref(false);
+const savingSettings = ref(false);
+
+const loadSchema = async () => {
+  schema.value = null;
+  const id = currentId.value;
+  if (!id) return;
+  if (scope.value === "node" && !selectedNodeId.value) return;
+  schemaLoading.value = true;
+  try {
+    if (scope.value === "panel") {
+      const { execute } = pluginSettings();
+      const res = await execute({ params: { id } });
+      schema.value = res.value ?? null;
+    } else {
+      const { execute } = nodePluginSettings();
+      const res = await execute({ params: { daemonId: selectedNodeId.value, id } });
+      schema.value = res.value ?? null;
+    }
+  } catch (error: any) {
+    // A plugin that declared nothing is the common case; a real failure is
+    // reported by the list above, which uses the same connection.
+    schema.value = null;
+  } finally {
+    schemaLoading.value = false;
+  }
+};
+
+const saveSettings = async () => {
+  if (!schema.value) return;
+  savingSettings.value = true;
+  try {
+    const values = schema.value.values;
+    if (scope.value === "panel") {
+      const { execute } = updatePluginSettings();
+      await execute({ params: { id: schema.value.id }, data: values });
+    } else {
+      const { execute } = updateNodePluginSettings();
+      await execute({
+        params: { daemonId: selectedNodeId.value, id: schema.value.id },
+        data: values
+      });
+    }
+    message.success(t("TXT_CODE_d3de39b4"));
+    await loadSchema();
+  } catch (error: any) {
+    reportErrorMsg(error?.message ?? String(error));
+  } finally {
+    savingSettings.value = false;
+  }
+};
 
 const load = async () => {
   loading.value = true;
@@ -152,6 +206,9 @@ watch(nodePlugins, (value) => {
     nodeSelectedId.value = value[0]?.id || "";
   }
 });
+
+// Whatever is selected, its form comes from the backend that declared it.
+watch([scope, currentId, selectedNodeId], () => loadSchema(), { immediate: true });
 
 const apply = async (plugin: PluginRecord, enabled: boolean) => {
   pending.value = plugin.id;
@@ -308,12 +365,19 @@ const nodeLabel = (node: NodeSummary) =>
             :description="selectedPlugin.error"
           />
 
-          <div v-if="selectedForm" class="plugin-config-form">
-            <component :is="selectedForm" />
-          </div>
-          <div v-else class="plugin-config-no-config">
-            {{ scope === "node" ? t("TXT_CODE_PLUGIN_NODE_NO_CONFIG") : t("TXT_CODE_PLUGIN_NO_CONFIG") }}
-          </div>
+          <a-spin :spinning="schemaLoading">
+            <div v-if="schema && schema.fields.length" class="plugin-config-form">
+              <SchemaForm
+                :fields="schema.fields"
+                :values="schema.values"
+                :saving="savingSettings"
+                @save="saveSettings"
+              />
+            </div>
+            <div v-else-if="!schemaLoading" class="plugin-config-no-config">
+              {{ t("TXT_CODE_PLUGIN_NO_CONFIG") }}
+            </div>
+          </a-spin>
         </template>
         <div v-else-if="!nodeError" class="plugin-config-no-config">{{ t("TXT_CODE_NO_DATA") }}</div>
       </div>

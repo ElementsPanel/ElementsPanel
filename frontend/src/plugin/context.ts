@@ -243,18 +243,6 @@ export interface FrontendDesktopService {
   provideWindow(component: Component): () => void;
 }
 
-/**
- * The plugin settings page. Core-owned for the same reason as the Desktop
- * registry: a form belongs to the plugin that contributed it. `plugins/config`
- * renders `pages`.
- */
-export interface FrontendSettingsService {
-  /** Contributes the calling plugin's own settings form. */
-  page(component: Component): () => void;
-  /** One entry per plugin that contributed a form, keyed by its plugin id. */
-  readonly pages: readonly { id: string; component: Component }[];
-}
-
 /** Accounts and sessions. Provided by `plugins/user`. */
 export interface FrontendUserService {
   readonly api: UserPluginApi;
@@ -293,7 +281,6 @@ declare module "cordis" {
     actions: FrontendActionsService;
     plugins: FrontendPluginsService;
     desktop: FrontendDesktopService;
-    settings: FrontendSettingsService;
 
     // Provided by plugins. Read them with `usePluginService()` for graceful
     // degradation, or `inject` them from a plugin that cannot work without one.

@@ -30,7 +30,6 @@ export type {
   FrontendNodeService,
   FrontendPluginsService,
   FrontendRoutesService,
-  FrontendSettingsService,
   FrontendUiService,
   FrontendUserService,
   FrontendVueService,

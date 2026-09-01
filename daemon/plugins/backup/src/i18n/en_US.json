@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_DBACKUP_FORMAT": "Archive Format",
+  "TXT_CODE_DBACKUP_LEVEL": "Compression Level",
+  "TXT_CODE_DBACKUP_LEVEL_TIP": "0 stores without compressing, 9 compresses hardest. Ignored by tar.gz and 7z presets that set their own.",
+  "TXT_CODE_DBACKUP_PATH": "Backup Directory",
+  "TXT_CODE_DBACKUP_PATH_TIP": "Where instance backups are written. Relative paths resolve against the daemon directory; empty means data/backups.",
   "TXT_CODE_INSTANCE_BACKUP_COMPRESSING": "Compressing instance files, please wait...",
   "TXT_CODE_INSTANCE_BACKUP_EXCLUDED": "{{num}} files/directories excluded by .epbaklst rules",
   "TXT_CODE_INSTANCE_BACKUP_FAILED": "Instance backup failed: {{err}}",

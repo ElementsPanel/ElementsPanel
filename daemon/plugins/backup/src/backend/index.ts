@@ -8,10 +8,60 @@ import type { DaemonPluginContext } from "../../../../src/plugin";
 import type InstanceEntity from "../../../../src/entity/instance/instance";
 import { localeMessages } from "../i18n";
 
-export const inject = ["i18n", "protocol", "instances", "tasks", "schedules", "features", "archive", "settings"];
+export const inject = ["i18n", "protocol", "instances", "tasks", "schedules", "features", "archive", "settings", "settingsForm"];
 
 export function apply(ctx: DaemonPluginContext) {
   ctx.i18n.define(localeMessages);
+
+  const BACKUP_FORMATS = ["zip", "tar.gz", "7z"];
+
+  // Described, not drawn. The three fields a backup actually reads live in the
+  // daemon configuration, and the panel's plugin manager renders this
+  // declaration; there is no browser half of a daemon plugin to put a form in.
+  ctx.settingsForm.declare({
+    fields: () => [
+      {
+        key: "instanceBackupPath",
+        type: "string",
+        title: ctx.i18n.$t("TXT_CODE_DBACKUP_PATH"),
+        description: ctx.i18n.$t("TXT_CODE_DBACKUP_PATH_TIP")
+      },
+      {
+        key: "instanceBackupFormat",
+        type: "select",
+        title: ctx.i18n.$t("TXT_CODE_DBACKUP_FORMAT"),
+        options: BACKUP_FORMATS.map((format) => ({ value: format, label: format }))
+      },
+      {
+        key: "instanceBackupCompressionLevel",
+        type: "number",
+        title: ctx.i18n.$t("TXT_CODE_DBACKUP_LEVEL"),
+        description: ctx.i18n.$t("TXT_CODE_DBACKUP_LEVEL_TIP"),
+        min: 0,
+        max: 9
+      }
+    ],
+    read: () => ({
+      instanceBackupPath: ctx.settings.config.instanceBackupPath,
+      instanceBackupFormat: ctx.settings.config.instanceBackupFormat,
+      instanceBackupCompressionLevel: ctx.settings.config.instanceBackupCompressionLevel
+    }),
+    write: (values) => {
+      const config = ctx.settings.config;
+      if (values.instanceBackupPath != null) {
+        config.instanceBackupPath = String(values.instanceBackupPath);
+      }
+      const format = values.instanceBackupFormat;
+      if (typeof format === "string" && BACKUP_FORMATS.includes(format)) {
+        config.instanceBackupFormat = format;
+      }
+      const level = Number(values.instanceBackupCompressionLevel);
+      if (Number.isInteger(level) && level >= 0 && level <= 9) {
+        config.instanceBackupCompressionLevel = level;
+      }
+      ctx.settings.save();
+    }
+  });
 
   const { AsyncTask, Center: TaskCenter } = ctx.tasks;
   const { GitignoreMatcher, decompressWithProgress, check7zipStatus, sevenZipPath, zipTimeoutSeconds } =

@@ -1,0 +1,13 @@
+{
+  "TXT_CODE_DSERVER_IP": "IP прослушивания",
+  "TXT_CODE_DSERVER_IP_TIP": "Полезно на хосте с несколькими адресами. Оставьте пустым, чтобы слушать все.",
+  "TXT_CODE_DSERVER_PATH_TIP": "Абсолютный или относительно каталога демона.",
+  "TXT_CODE_DSERVER_PORT": "Порт демона",
+  "TXT_CODE_DSERVER_PORT_TIP": "Порт, по которому подключается панель. Применяется при запуске демона, поэтому изменение требует перезапуска.",
+  "TXT_CODE_DSERVER_PREFIX": "Префикс пути",
+  "TXT_CODE_DSERVER_PREFIX_TIP": "Обслуживать демона по вложенному пути, например /daemon. Оставьте пустым для корня.",
+  "TXT_CODE_DSERVER_SSL": "Включить SSL/TLS",
+  "TXT_CODE_DSERVER_SSL_KEY": "Файл закрытого ключа (.key)",
+  "TXT_CODE_DSERVER_SSL_PEM": "Файл сертификата (.pem)",
+  "TXT_CODE_DSERVER_SSL_TIP": "Обслуживать по HTTPS и WSS с указанным ниже сертификатом. Оба файла обязательны."
+}

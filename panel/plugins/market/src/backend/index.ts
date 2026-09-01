@@ -8,7 +8,16 @@ import { initMarketSettings, marketSettings, saveMarketSettings } from "./servic
 // that point at it, and the reinstall-from-package route. The panel core keeps
 // nothing market-specific: the matching daemon plugin owns the install tasks.
 
-export const inject = ["koa", "i18n", "storage", "middleware", "roles", "remote", "identity"];
+export const inject = [
+  "koa",
+  "i18n",
+  "storage",
+  "settingsForm",
+  "middleware",
+  "roles",
+  "remote",
+  "identity"
+];
 
 export async function apply(ctx: PanelPluginContext) {
   ctx.i18n.define(localeMessages);
@@ -89,15 +98,10 @@ export async function apply(ctx: PanelPluginContext) {
     }
   );
 
-  router.get("/settings", requireAdmin, async (requestCtx) => {
-    requestCtx.body = { ...marketSettings() };
-  });
-
-  router.put("/settings", requireAdmin, async (requestCtx: Koa.ParameterizedContext) => {
-    const body = (requestCtx.request.body ?? {}) as Record<string, unknown>;
+  async function writeMarketSettings(values: Record<string, unknown>) {
     const settings = marketSettings();
-    if (body.presetPackAddr != null) {
-      const address = String(body.presetPackAddr);
+    if (values.presetPackAddr != null) {
+      const address = String(values.presetPackAddr);
       if (address !== settings.presetPackAddr) {
         // A new source must not answer from the previous one's cache.
         await clearMarketCache().catch((error) =>
@@ -106,8 +110,44 @@ export async function apply(ctx: PanelPluginContext) {
       }
       settings.presetPackAddr = address;
     }
-    if (body.allowUsePreset != null) settings.allowUsePreset = Boolean(body.allowUsePreset);
+    if (values.allowUsePreset != null) settings.allowUsePreset = Boolean(values.allowUsePreset);
     await saveMarketSettings(ctx);
+  }
+
+  // The catalogue editor writes the path of a freshly uploaded template here.
+  // It is the same write the declared form performs, reached from the market's
+  // own page rather than from the plugin manager.
+  router.put("/settings", requireAdmin, async (requestCtx: Koa.ParameterizedContext) => {
+    await writeMarketSettings((requestCtx.request.body ?? {}) as Record<string, unknown>);
     requestCtx.body = true;
+  });
+
+  // Described, not drawn: the market's two settings are rendered by the plugin
+  // manager's generic form, the same one that renders a daemon plugin's
+  // configuration. The two buttons that used to sit beside them are `link`
+  // fields, because a route is all they ever were.
+  ctx.settingsForm.declare({
+    fields: () => [
+      {
+        key: "presetPackAddr",
+        type: "string",
+        title: ctx.i18n.$t("TXT_CODE_6265ae47"),
+        description: ctx.i18n.$t("TXT_CODE_24c4768a")
+      },
+      {
+        key: "allowUsePreset",
+        type: "boolean",
+        title: ctx.i18n.$t("TXT_CODE_3c93920b"),
+        description: ctx.i18n.$t("TXT_CODE_bc2e52a0")
+      },
+      { type: "link", title: ctx.i18n.$t("TXT_CODE_ad207008"), route: "/market/editor" },
+      {
+        type: "link",
+        title: ctx.i18n.$t("TXT_CODE_53499d7"),
+        route: "/market/editor?newTemplate=true"
+      }
+    ],
+    read: () => ({ ...marketSettings() }),
+    write: writeMarketSettings
   });
 }

@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_DBACKUP_FORMAT": "Archivformat",
+  "TXT_CODE_DBACKUP_LEVEL": "Kompressionsstufe",
+  "TXT_CODE_DBACKUP_LEVEL_TIP": "0 speichert ohne Kompression, 9 komprimiert am stärksten. Wird von tar.gz- und 7z-Voreinstellungen mit eigener Stufe ignoriert.",
+  "TXT_CODE_DBACKUP_PATH": "Backup-Verzeichnis",
+  "TXT_CODE_DBACKUP_PATH_TIP": "Wohin Instanz-Backups geschrieben werden. Relative Pfade gelten ab dem Daemon-Verzeichnis; leer bedeutet data/backups.",
   "TXT_CODE_INSTANCE_BACKUP_COMPRESSING": "Instanzdateien werden komprimiert, bitte warten...",
   "TXT_CODE_INSTANCE_BACKUP_EXCLUDED": "{{num}} Dateien/Verzeichnisse durch .epbaklst-Regeln ausgeschlossen",
   "TXT_CODE_INSTANCE_BACKUP_FAILED": "Instanzsicherung fehlgeschlagen: {{err}}",

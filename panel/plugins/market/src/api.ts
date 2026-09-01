@@ -45,12 +45,10 @@ export const marketPublicConfig = useDefineApi<any, { allowUsePreset: boolean }>
   method: "GET"
 });
 
-/** Administrator settings, edited through the plugin's configuration page. */
-export const marketSettings = useDefineApi<any, MarketSettings>({
-  url: "/api/market/settings",
-  method: "GET"
-});
-
+/**
+ * Points the catalogue at a freshly uploaded template. The rest of the market's
+ * settings are declared by its backend and edited on the plugin manager page.
+ */
 export const updateMarketSettings = useDefineApi<{ data: Partial<MarketSettings> }, boolean>({
   url: "/api/market/settings",
   method: "PUT"

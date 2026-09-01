@@ -45,7 +45,7 @@ const SETTING_KEYS = [
   "reverseProxyHeader"
 ] as const;
 
-export const inject = ["i18n", "settings", "globals", "plugins"];
+export const inject = ["i18n", "settings", "settingsForm", "globals", "plugins"];
 
 export function apply(ctx: PanelPluginContext) {
   ctx.i18n.define(localeMessages);
@@ -153,25 +153,84 @@ export function apply(ctx: PanelPluginContext) {
 
   app.use(koaStatic(path.join(process.cwd(), "public"), { maxAge: STATIC_MAX_AGE }));
 
-  // The settings page for this plugin. `koa` is resolved here rather than
-  // injected, because injecting a service the plugin itself provides would never
-  // resolve.
-  ctx.inject(["koa", "middleware", "roles"], (scoped) => {
-    const router = scoped.koa.router("/api/server");
-    const requireAdmin = scoped.middleware.permission({ level: scoped.roles.ADMIN });
-
-    router.get("/settings", requireAdmin, async (requestCtx) => {
-      const settings: Record<string, unknown> = {};
-      for (const key of SETTING_KEYS) settings[key] = config[key];
-      requestCtx.body = settings;
-    });
-
-    router.put("/settings", requireAdmin, async (requestCtx) => {
-      const body = (requestCtx.request.body ?? {}) as Record<string, unknown>;
-
+  // Described, not drawn: the panel's plugin manager renders this declaration
+  // with the same generic form it uses for a daemon plugin's configuration, so
+  // this plugin ships no browser half at all.
+  //
+  // Nothing is rebound live — the listener, the proxy mode and the path prefix
+  // are all fixed when this plugin starts — so the port's description says that a
+  // change takes effect on the next restart, as it always has.
+  ctx.settingsForm.declare({
+    fields: () => [
+      {
+        key: "httpPort",
+        type: "number",
+        title: $t("TXT_CODE_7f0017d2"),
+        description: `${$t("TXT_CODE_233624ad")} ${$t("TXT_CODE_SERVER_RESTART_TIP")}`,
+        min: 1,
+        max: 65535
+      },
+      {
+        key: "httpIp",
+        type: "string",
+        title: $t("TXT_CODE_514e064a"),
+        description: $t("TXT_CODE_328191e")
+      },
+      {
+        key: "prefix",
+        type: "string",
+        title: $t("TXT_CODE_SERVER_PREFIX"),
+        description: $t("TXT_CODE_SERVER_PREFIX_TIP")
+      },
+      {
+        key: "ssl",
+        type: "boolean",
+        title: $t("TXT_CODE_SERVER_SSL"),
+        description: $t("TXT_CODE_SERVER_SSL_TIP")
+      },
+      {
+        key: "sslPemPath",
+        type: "string",
+        title: $t("TXT_CODE_SERVER_SSL_PEM"),
+        description: $t("TXT_CODE_SERVER_SSL_PEM_TIP"),
+        visibleWhen: "ssl"
+      },
+      {
+        key: "sslKeyPath",
+        type: "string",
+        title: $t("TXT_CODE_SERVER_SSL_KEY"),
+        description: $t("TXT_CODE_SERVER_SSL_KEY_TIP"),
+        visibleWhen: "ssl"
+      },
+      {
+        key: "crossDomain",
+        type: "boolean",
+        title: $t("TXT_CODE_405cd346"),
+        description: $t("TXT_CODE_6655c905")
+      },
+      {
+        key: "reverseProxyMode",
+        type: "boolean",
+        title: $t("TXT_CODE_f0789d81"),
+        description: $t("TXT_CODE_2b85af6d")
+      },
+      {
+        key: "reverseProxyHeader",
+        type: "string",
+        title: $t("TXT_CODE_66aeac82"),
+        description: $t("TXT_CODE_fd8bc51f"),
+        visibleWhen: "reverseProxyMode"
+      }
+    ],
+    read: () => {
+      const values: Record<string, unknown> = {};
+      for (const key of SETTING_KEYS) values[key] = config[key];
+      return values;
+    },
+    write: (values) => {
       // Checked before anything is written: a rejected request must not leave
       // the running configuration holding a port the panel cannot bind.
-      const port = body.httpPort == null ? config.httpPort : Number(body.httpPort);
+      const port = values.httpPort == null ? config.httpPort : Number(values.httpPort);
       if (!Number.isInteger(port) || port <= 0 || port > 65535) {
         throw new Error($t("TXT_CODE_e4d6cc20"));
       }
@@ -180,22 +239,20 @@ export function apply(ctx: PanelPluginContext) {
       // prefix, no certificate — so they are assigned whenever they are present
       // rather than validated as required.
       config.httpPort = port;
-      if (body.httpIp != null) config.httpIp = String(body.httpIp);
-      if (body.prefix != null) config.prefix = String(body.prefix);
-      if (body.ssl != null) config.ssl = Boolean(body.ssl);
-      if (body.sslPemPath != null) config.sslPemPath = String(body.sslPemPath);
-      if (body.sslKeyPath != null) config.sslKeyPath = String(body.sslKeyPath);
-      if (body.crossDomain != null) config.crossDomain = Boolean(body.crossDomain);
-      if (body.reverseProxyMode != null) config.reverseProxyMode = Boolean(body.reverseProxyMode);
-      if (body.reverseProxyHeader != null)
-        config.reverseProxyHeader = String(body.reverseProxyHeader);
-
+      if (values.httpIp != null) config.httpIp = String(values.httpIp);
+      if (values.prefix != null) config.prefix = String(values.prefix);
+      if (values.ssl != null) config.ssl = Boolean(values.ssl);
+      if (values.sslPemPath != null) config.sslPemPath = String(values.sslPemPath);
+      if (values.sslKeyPath != null) config.sslKeyPath = String(values.sslKeyPath);
+      if (values.crossDomain != null) config.crossDomain = Boolean(values.crossDomain);
+      if (values.reverseProxyMode != null) {
+        config.reverseProxyMode = Boolean(values.reverseProxyMode);
+      }
+      if (values.reverseProxyHeader != null) {
+        config.reverseProxyHeader = String(values.reverseProxyHeader);
+      }
       ctx.settings.save();
-      // Nothing is rebound live: the listener, the proxy mode and the path
-      // prefix are all fixed when this plugin starts, so the panel has to be
-      // restarted for a change to take effect — as it always has.
-      requestCtx.body = true;
-    });
+    }
   });
 
   // Bound on `ready`, not here: the core mounts its own routers after every

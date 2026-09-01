@@ -35,6 +35,12 @@ export type {
   DaemonProtocolService,
   DaemonScheduleActionHandler,
   DaemonSchedulesService,
+  DaemonSettingField,
+  DaemonSettingFieldType,
+  DaemonSettingOption,
+  DaemonSettingsDeclaration,
+  DaemonSettingsFormService,
+  DaemonSettingsSchema,
   DaemonSettingsService,
   DaemonTasksService,
   DaemonWebsocketService

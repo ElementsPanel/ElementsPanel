@@ -1,0 +1,13 @@
+{
+  "TXT_CODE_DSERVER_IP": "IP d écoute",
+  "TXT_CODE_DSERVER_IP_TIP": "Utile sur un hôte doté de plusieurs adresses. Laissez vide pour écouter sur toutes.",
+  "TXT_CODE_DSERVER_PATH_TIP": "Absolu, ou relatif au répertoire du démon.",
+  "TXT_CODE_DSERVER_PORT": "Port du démon",
+  "TXT_CODE_DSERVER_PORT_TIP": "Le port par lequel le panneau se connecte. Appliqué au démarrage du démon, une modification demande donc un redémarrage.",
+  "TXT_CODE_DSERVER_PREFIX": "Préfixe de chemin",
+  "TXT_CODE_DSERVER_PREFIX_TIP": "Sert le démon sous un sous-chemin, par exemple /daemon. Laissez vide pour la racine.",
+  "TXT_CODE_DSERVER_SSL": "Activer SSL/TLS",
+  "TXT_CODE_DSERVER_SSL_KEY": "Fichier de clé privée (.key)",
+  "TXT_CODE_DSERVER_SSL_PEM": "Fichier de certificat (.pem)",
+  "TXT_CODE_DSERVER_SSL_TIP": "Servir en HTTPS et WSS avec le certificat ci-dessous. Les deux fichiers sont requis."
+}

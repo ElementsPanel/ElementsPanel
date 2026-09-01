@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_DBACKUP_FORMAT": "압축 형식",
+  "TXT_CODE_DBACKUP_LEVEL": "압축 수준",
+  "TXT_CODE_DBACKUP_LEVEL_TIP": "0은 압축 없이 저장하고 9는 가장 강하게 압축합니다. 자체 수준을 쓰는 tar.gz와 7z에서는 무시됩니다.",
+  "TXT_CODE_DBACKUP_PATH": "백업 디렉터리",
+  "TXT_CODE_DBACKUP_PATH_TIP": "인스턴스 백업을 저장할 위치입니다. 상대 경로는 데몬 디렉터리를 기준으로 하며, 비워 두면 data/backups 입니다.",
   "TXT_CODE_INSTANCE_BACKUP_COMPRESSING": "인스턴스 파일을 압축하는 중입니다. 잠시 기다려 주세요...",
   "TXT_CODE_INSTANCE_BACKUP_EXCLUDED": ".epbaklst 규칙으로 {{num}}개 파일/디렉터리 제외",
   "TXT_CODE_INSTANCE_BACKUP_FAILED": "인스턴스 백업 실패: {{err}}",

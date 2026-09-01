@@ -77,6 +77,7 @@ and skipped; the panel keeps running.
 | `ctx.logger` | Named logger. `ctx.logger("sub")` for a sub-logger. |
 | `ctx.timer` | `setTimeout` / `setInterval` / `sleep` / `throttle` / `debounce`, mixed onto `ctx`. |
 | `ctx.settings` | `config` (the panel configuration) and `save()`. |
+| `ctx.settingsForm` | `declare({ fields, read, write })` — the plugin's own configuration form, described rather than drawn. |
 | `ctx.storage` | The panel's entity storage, file- or Redis-backed. |
 | `ctx.i18n` | `$t`, `i18next`, and `define(messages)` for the plugin's own strings. |
 | `ctx.middleware` | `permission`, `validator`, `instanceAccess`, `speedLimit`. |
@@ -238,7 +239,6 @@ export function apply(ctx: PanelFrontendPluginContext) {
 | `ctx.menus` | `app(menu)`, `login(action)`, and the arrays the shell renders. |
 | `ctx.actions` | `instance`, `schedule`, `terminal`, and `terminalButtons(state)`. |
 | `ctx.desktop` | `app(desktopApp)`, `apps`, `window`, `provideWindow(component)`. |
-| `ctx.settings` | `page(component)`, `pages` — the plugin settings page. |
 | `ctx.plugins` | `loaded`, `load`, `unload`, `reload`, `refresh`. |
 | `ctx.user` | Account API and windows. **Provided by `plugins/user`.** |
 | `ctx.market` | Package picker and API. **Provided by `plugins/market`.** |
@@ -264,10 +264,32 @@ and the entry is simply inert while `plugins/desktop` is not installed. An
 application needs a globally unique `id` and either a `component` to render
 inside a Desktop window or a `route` to open directly.
 
-`ctx.settings.page(component)` contributes the plugin's own settings form to the
-`config` plugin's page, labelled with the plugin's id. The component owns its
-form state, validation, API calls and persistence, so plugin settings are never
-coupled to the panel core.
+A plugin's own settings are **declared on its backend**, not drawn in the browser:
+
+```ts
+ctx.settingsForm.declare({
+  fields: () => [
+    { key: "httpPort", type: "number", title: $t("..."), min: 1, max: 65535 },
+    { key: "ssl", type: "boolean", title: $t("...") },
+    { key: "sslPemPath", type: "string", title: $t("..."), visibleWhen: "ssl" },
+    { type: "link", title: $t("Edit template"), route: "/market/editor" }
+  ],
+  read: () => ({ ...currentValues }),
+  write: (values) => { /* validate and persist */ }
+});
+```
+
+`plugins/config` renders that description with one generic form. Labels are plain
+strings the declaring side has already translated, and `fields` is a function so
+it is resolved per request — which is what makes the panel's language switch
+apply, and what lets the *daemon* declare its plugins' settings the same way: the
+browser holds no copy of a daemon plugin's catalogue, or of a daemon plugin at
+all. Field types are `string` (with `secret` for a password input), `text`,
+`number` (`min`/`max`), `boolean`, `select` (`options`) and `link` (a route the
+form offers as a button). `visibleWhen` takes a field name, or `"name=value"`, or
+an array of either that must all hold.
+
+Validation belongs in `write()`, on the backend, so there is one copy of it.
 
 `ctx.actions.instance({...})` adds an instance tool to both panel modes. Its
 `normalComponent` and `desktopComponent` receive `instanceUuid` and `daemonId`

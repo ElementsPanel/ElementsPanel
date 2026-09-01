@@ -227,35 +227,6 @@ export const ssoUnbind = useDefineApi<
   method: "PUT"
 });
 
-export interface AuthSettings {
-  loginInfo: string;
-  loginCheckIp: boolean;
-  totpDriftToleranceSteps: number;
-  ssoEnabled: boolean;
-  ssoType: "oidc" | "oauth2";
-  ssoOnlyMode: boolean;
-  ssoAutoRedirect: boolean;
-  ssoProviderName: string;
-  ssoIconUrl: string;
-  ssoIssuer: string;
-  ssoAuthorizeUrl: string;
-  ssoTokenUrl: string;
-  ssoUserinfoUrl: string;
-  ssoUserIdField: string;
-  ssoScopes: string;
-  ssoClientId: string;
-  ssoClientSecret: string;
-  ssoCallbackUrl: string;
-}
 
-export const getAuthSettings = useDefineApi<any, AuthSettings>({
-  url: "/api/auth/settings",
-  method: "GET"
-});
-
-export const setAuthSettings = useDefineApi<{ data: Partial<AuthSettings> }, string>({
-  url: "/api/auth/settings",
-  method: "PUT"
-});
 
 export type { SsoPublicConfig };

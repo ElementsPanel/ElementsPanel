@@ -29,6 +29,12 @@ export type {
   PanelPluginContext,
   PanelPluginsService,
   PanelRemoteService,
+  PanelSettingField,
+  PanelSettingFieldType,
+  PanelSettingOption,
+  PanelSettingsDeclaration,
+  PanelSettingsFormService,
+  PanelSettingsSchema,
   PanelSettingsService
 } from "./context";
 export type {

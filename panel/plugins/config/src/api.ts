@@ -17,6 +17,54 @@ export interface PluginRecord {
   running: boolean;
   /** Why the backend half is not running, when it should be. */
   error?: string;
+  /** Whether the plugin declared a configuration form. */
+  hasSettings?: boolean;
+}
+
+// A plugin describes its configuration on its backend rather than shipping a
+// component for it, so the page renders every form — panel and node alike — from
+// the same description.
+
+/** What a declared setting renders as. `link` reads and writes nothing. */
+export type SettingFieldType =
+  | "string"
+  /** Multi-line string. */
+  | "text"
+  | "number"
+  | "boolean"
+  | "select"
+  | "link";
+
+export interface SettingOption {
+  value: string | number | boolean;
+  label: string;
+}
+
+/** One row of a plugin's form, with its labels already translated. */
+export interface SettingField {
+  key?: string;
+  type: SettingFieldType;
+  title: string;
+  description?: string;
+  placeholder?: string;
+  min?: number;
+  max?: number;
+  options?: SettingOption[];
+  secret?: boolean;
+  /**
+   * Shown only while every listed condition holds: a field name (truthy) or
+   * `"name=value"`.
+   */
+  visibleWhen?: string | string[];
+  /** `link`: a frontend route the form offers as a button. */
+  route?: string;
+}
+
+/** One plugin's form and its current values. */
+export interface SettingsSchema {
+  id: string;
+  fields: SettingField[];
+  values: Record<string, unknown>;
 }
 
 /** Every installed plugin, disabled ones included. */
@@ -31,6 +79,23 @@ export const setPluginEnabled = useDefineApi<
   PluginRecord
 >({
   url: "/api/plugins/enabled",
+  method: "PUT"
+});
+
+/** One panel plugin's declared form and values, or `null` when it declared none. */
+export const pluginSettings = useDefineApi<
+  { params: { id: string } },
+  SettingsSchema | null
+>({
+  url: "/api/plugins/settings",
+  method: "GET"
+});
+
+export const updatePluginSettings = useDefineApi<
+  { params: { id: string }; data: Record<string, unknown> },
+  boolean
+>({
+  url: "/api/plugins/settings",
   method: "PUT"
 });
 
@@ -61,6 +126,8 @@ export interface NodePluginRecord {
   running: boolean;
   /** Why it is not running, when it should be. */
   error?: string;
+  /** Whether the plugin declared a configuration form. */
+  hasSettings?: boolean;
 }
 
 /** The nodes this panel can administer. */
@@ -84,5 +151,22 @@ export const setNodePluginEnabled = useDefineApi<
   NodePluginRecord
 >({
   url: "/api/plugins/node/enabled",
+  method: "PUT"
+});
+
+/** One daemon plugin's declared form and values, straight from that daemon. */
+export const nodePluginSettings = useDefineApi<
+  { params: { daemonId: string; id: string } },
+  SettingsSchema | null
+>({
+  url: "/api/plugins/node/settings",
+  method: "GET"
+});
+
+export const updateNodePluginSettings = useDefineApi<
+  { params: { daemonId: string; id: string }; data: Record<string, unknown> },
+  boolean
+>({
+  url: "/api/plugins/node/settings",
   method: "PUT"
 });

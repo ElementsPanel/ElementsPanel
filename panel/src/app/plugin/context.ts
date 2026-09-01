@@ -36,10 +36,93 @@ import type {
  */
 export const ctx = new Context();
 
+/** What a declared setting renders as. `link` reads and writes nothing. */
+export type PanelSettingFieldType =
+  | "string"
+  /** Multi-line string. */
+  | "text"
+  | "number"
+  | "boolean"
+  | "select"
+  | "link";
+
+export interface PanelSettingOption {
+  value: string | number | boolean;
+  label: string;
+}
+
+/**
+ * One row of a plugin's configuration form, described rather than drawn.
+ *
+ * Labels are plain strings, already translated: the daemon's plugins are
+ * rendered by this same form, and the browser has no copy of a daemon plugin's
+ * catalogue. Whoever declares the field resolves it.
+ */
+export interface PanelSettingField {
+  /** The key in `read()`'s result and `write()`'s argument. Absent for `link`. */
+  key?: string;
+  type: PanelSettingFieldType;
+  title: string;
+  description?: string;
+  placeholder?: string;
+  /** `number`: inclusive bounds, enforced by the form and by `write()`. */
+  min?: number;
+  max?: number;
+  /** `select`: the allowed values. */
+  options?: PanelSettingOption[];
+  /** `string`: render as a password input. */
+  secret?: boolean;
+  /**
+   * Shown only while every listed condition holds. A condition is either a field
+   * name, true when that field is truthy, or `"name=value"`, true when that
+   * field's value stringifies to `value`.
+   */
+  visibleWhen?: string | string[];
+  /** `link`: a frontend route the form offers as a button. */
+  route?: string;
+}
+
+/**
+ * A plugin's configuration, as its backend declares it.
+ *
+ * `fields` is a function so that it is resolved per request: a plugin's titles
+ * come from its own catalogue, and the panel's language can change while it runs.
+ */
+export interface PanelSettingsDeclaration {
+  fields(): PanelSettingField[];
+  read(): Record<string, unknown> | Promise<Record<string, unknown>>;
+  write(values: Record<string, unknown>): void | Promise<void>;
+}
+
+/** One plugin's form and its current values, as the page fetches them. */
+export interface PanelSettingsSchema {
+  id: string;
+  fields: PanelSettingField[];
+  values: Record<string, unknown>;
+}
+
 /** Panel settings, plus the call that persists them. */
 export interface PanelSettingsService {
   readonly config: NonNullable<typeof systemConfig>;
   save(): void;
+}
+
+/**
+ * The register of plugin configuration forms.
+ *
+ * A plugin describes its settings here instead of shipping a component for them,
+ * which is what lets one generic form render a panel plugin's configuration and a
+ * daemon plugin's alike — the browser has no copy of a daemon plugin at all.
+ */
+export interface PanelSettingsFormService {
+  /** Declares the calling plugin's form. An effect: it leaves with the plugin. */
+  declare(declaration: PanelSettingsDeclaration): () => void;
+  /** The ids that declared a form, in declaration order. */
+  declared(): string[];
+  /** One plugin's fields and values, or `null` when it declared nothing. */
+  read(id: string): Promise<PanelSettingsSchema | null>;
+  /** Hands `values` to that plugin's own `write()`. */
+  write(id: string, values: Record<string, unknown>): Promise<void>;
 }
 
 /** Translation, and the way a plugin contributes its own strings. */
@@ -197,6 +280,7 @@ declare module "cordis" {
   interface Context {
     // Core services, always present.
     settings: PanelSettingsService;
+    settingsForm: PanelSettingsFormService;
     storage: typeof Storage;
     i18n: PanelI18nService;
     middleware: PanelMiddlewareService;

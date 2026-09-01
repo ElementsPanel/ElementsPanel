@@ -1,8 +1,7 @@
 {
   "id": "server",
   "version": "1.0.0",
-  "description": "Owns the panel's HTTP layer: the Koa application, the base middleware stack, the static assets and the HTTP/HTTPS listener. Provides ctx.koa, so every other plugin's routes go through it.",
+  "description": "Owns the panel's HTTP layer: the Koa application, the base middleware stack, the static assets and the HTTP/HTTPS listener. Provides ctx.koa, so every other plugin's routes go through it. Its own configuration is declared on the backend, so it ships no browser half.",
   "priority": 10,
-  "backend": "backend/index.cjs",
-  "frontend": "src/frontend.ts"
+  "backend": "backend/index.cjs"
 }

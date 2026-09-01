@@ -54,6 +54,7 @@ Set `enabled` to `false` to skip one.
 | `ctx.timer` | `setTimeout` / `setInterval` / `sleep` / `throttle` / `debounce`, mixed onto `ctx`. |
 | `ctx.settings` | `config`, `save()`, `setLanguage(lang)`. |
 | `ctx.i18n` | `$t` and `define(messages)` for the plugin's own strings. |
+| `ctx.settingsForm` | `declare({ fields, read, write })` — the plugin's configuration, which the panel renders. |
 | `ctx.middleware` | `uploadSpeedLimit`, `uploadFileCheck` — the base middleware the web server mounts ahead of the body parser. |
 | `ctx.protocol` | `on(event, handler)`, `use(middleware)`, `response`, `responseError`, `error`, `msg`, `ROLE`. |
 | `ctx.instances` | `subsystem`, `Instance`, `Config`, `Command`, `UpdateAction`, `fileManager`, `headers`. |
@@ -100,6 +101,14 @@ the handler list onto each socket as it connects, so a handler registered after 
 client connected is invisible to that client. Plugins load before the server
 starts listening, so this only constrains hot-reloading a plugin on a running
 daemon.
+
+`ctx.settingsForm.declare({ fields, read, write })` is how a daemon plugin gets a
+settings page at all. It has no browser half to put a form in, so it describes the
+form instead — the same description a panel plugin uses, documented in
+`panel/plugins/README.md` — and the panel's plugin manager renders it. Labels are
+resolved by `fields()` per request, in whatever language the panel last pushed
+here, and validation lives in `write()`. `plugins/config` carries the description
+to the panel and the values back.
 
 `ctx.plugins.setEnabled(id, enabled)` is the switch behind the panel's plugin
 manager page. It writes `enabled` into that plugin's `plugin.json` — the manifest
