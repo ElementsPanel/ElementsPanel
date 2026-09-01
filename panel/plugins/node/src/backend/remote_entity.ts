@@ -133,10 +133,15 @@ export default class RemoteService {
     return await this.auth(this.config.apiKey);
   }
 
-  disconnect() {
+  /**
+   * Tears the socket down without logging.
+   *
+   * The plugin's disposer closes every node on shutdown, and by then its cordis
+   * scope — and with it `ctx.logger` — is already gone, so the quiet half is
+   * separated from the announced one.
+   */
+  close() {
     if (this.socket) {
-      const daemonInfo = this.getDaemonInfo();
-      logger().info($t("TXT_CODE_daemonInfo.closed", { v: daemonInfo }));
       this.socket.removeAllListeners();
       this.socket.disconnect();
       this.socket.close();
@@ -144,6 +149,13 @@ export default class RemoteService {
     }
     this.socket = undefined;
     this.available = false;
+  }
+
+  disconnect() {
+    if (this.socket) {
+      logger().info($t("TXT_CODE_daemonInfo.closed", { v: this.getDaemonInfo() }));
+    }
+    this.close();
   }
 
   refreshReconnect() {

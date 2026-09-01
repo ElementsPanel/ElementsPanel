@@ -23,9 +23,27 @@ export function core(): PanelPluginContext {
   return context;
 }
 
+type PluginLogger = PanelPluginContext["logger"];
+
+/**
+ * `ctx.logger` is bound to the plugin's own cordis scope, so it is gone the
+ * moment that scope is disposed — and this plugin's disposer runs *then*, closing
+ * every daemon socket, which is a code path that logs. Shutting the panel down
+ * must not fail on a log line, and there is nothing left to log with, so it goes
+ * nowhere instead.
+ */
+const SILENT = {
+  info() {},
+  warn() {},
+  error() {},
+  debug() {},
+  success() {},
+  extend: () => SILENT
+} as unknown as PluginLogger;
+
 export const storage = () => core().storage;
 export const systemConfig = () => core().settings.config;
-export const logger = () => core().logger;
+export const logger = (): PluginLogger => core().logger ?? SILENT;
 export const $t = (key: string, options?: any): string =>
   core().i18n.$t(key, options) as unknown as string;
 export const i18next = () => core().i18n.i18next;

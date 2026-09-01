@@ -64,7 +64,9 @@ export async function apply(ctx: PanelPluginContext) {
 
   ctx.effect(() => () => {
     // Sockets are not cordis effects, so closing them is this plugin's job.
-    for (const service of remoteServices.services.values()) service.disconnect();
+    // `close()` rather than `disconnect()`: this runs while the scope is being
+    // disposed, when there is no `ctx.logger` left to announce it with.
+    for (const service of remoteServices.services.values()) service.close();
   });
 
   const router = ctx.koa.router("/api/service");
