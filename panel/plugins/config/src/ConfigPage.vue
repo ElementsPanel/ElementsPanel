@@ -395,7 +395,7 @@ const nodeLabel = (node: NodeSummary) =>
 
 .plugin-config-node-select {
   width: calc(100% - 20px);
-  margin: 0 10px;
+  margin: 0 10px 12px;
 }
 
 .plugin-config-heading {
