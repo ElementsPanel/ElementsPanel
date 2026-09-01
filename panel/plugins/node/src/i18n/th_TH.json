@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_3d94ea16": "ซ็อกเก็ตของโหนดผิดปกติ กรุณาลองเชื่อมต่อใหม่ในการจัดการโหนด!",
+  "TXT_CODE_7c650d80": "การเชื่อมต่อโหนดล้มเหลว กรุณาติดต่อผู้ดูแลระบบเพื่อตรวจสอบสถานะของโหนดระยะไกล!",
   "TXT_CODE_DESKTOP_NODES": "โหนด",
   "TXT_CODE_DESKTOP_NODES_ADD": "เพิ่มโหนด",
   "TXT_CODE_DESKTOP_NODES_APIKEY": "คีย์ API",
@@ -11,5 +13,23 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "ไม่พบโหนด",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "ต้องระบุพอร์ต",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "ค้นหาโหนด...",
-  "TXT_CODE_DESKTOP_NODES_SOCKET": "เชื่อมต่อโดยตรง"
+  "TXT_CODE_DESKTOP_NODES_SOCKET": "เชื่อมต่อโดยตรง",
+  "TXT_CODE_b7d38e78": "โหนดระยะไกลไม่พร้อมใช้งาน! \nโปรดติดต่อผู้ดูแลระบบเพื่อไปที่รายการโหนดเพื่อตรวจสอบสถานะของโหนดระยะไกล!",
+  "TXT_CODE_bd99b64e": "หมดเวลาการร้องขอ! \nกรุณาติดต่อผู้ดูแลระบบเพื่อตรวจสอบสถานะเครือข่ายของโหนด, IP:",
+  "TXT_CODE_ca8072bd": "การเริ่มต้นล้มเหลว โหนดระยะไกลไม่มีอยู่!",
+  "TXT_CODE_daemonInfo.authError": "Daemon ระยะไกล {{- v}} เกิดข้อผิดพลาดในการตรวจสอบคีย์",
+  "TXT_CODE_daemonInfo.authFailure": "Daemon ระยะไกล {{- v}} การตรวจสอบคีย์ถูกปฏิเสธ",
+  "TXT_CODE_daemonInfo.authSuccess": "Daemon ระยะไกล {{- v}} การตรวจสอบคีย์สำเร็จ",
+  "TXT_CODE_daemonInfo.closed": "ตัดการเชื่อมต่อจาก Daemon ระยะไกล {{- v}}",
+  "TXT_CODE_daemonInfo.connect": "เชื่อมต่อกับ Daemon ระยะไกล {{- v}}",
+  "TXT_CODE_daemonInfo.connectError": "เกิดข้อผิดพลาดในการเชื่อมต่อกับ Daemonระยะไกล: {{- v}}",
+  "TXT_CODE_daemonInfo.disconnect": "ตัดการเชื่อมต่อจาก Daemon ระยะไกล {{- v}}",
+  "TXT_CODE_daemonInfo.replaceConnect": "ผู้ใช้เริ่มคำขอการเชื่อมต่อซ้ำ กำลังรีเซ็ตการกำหนดค่าการเชื่อมต่อ",
+  "TXT_CODE_daemonInfo.resetConnect": "ผู้ใช้เริ่มการเชื่อมต่อใหม่กับ Daemon ระยะไกลที่มีอยู่แล้ว กำลังรีเซ็ตช่องการเชื่อมต่อ",
+  "TXT_CODE_daemonInfo.setLanguage": "ตั้งค่าภาษา Daemon",
+  "TXT_CODE_daemonInfo.tryConnect": "กำลังพยายามเชื่อมต่อกับ Daemon ระยะไกล",
+  "TXT_CODE_systemRemoteService.autoCheckDaemon": "ตรวจพบ Daemon ในเครื่อง กำลังรับคีย์และพอร์ตโดยอัตโนมัติ...",
+  "TXT_CODE_systemRemoteService.error": "ไม่สามารถรับการตั้งค่า Daemon ในเครื่องโดยอัตโนมัติ กรุณาเชื่อมต่อ Daemon ผ่านแผงควบคุมด้วยตนเอง เยี่ยมชม https://docs.mcsmanager.com/ สำหรับข้อมูลเพิ่มเติม",
+  "TXT_CODE_systemRemoteService.loadDaemonTitle": "กำลังพยายามอ่าน Daemon ในเครื่อง {{localKeyFilePath}}",
+  "TXT_CODE_systemRemoteService.nodeCount": "จำนวน Daemon ระยะไกล: {{n}}"
 }

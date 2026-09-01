@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_3d94ea16": "The node Socket is abnormal, please try to reconnect in the node management!",
+  "TXT_CODE_7c650d80": "Node connection failed, please contact the administrator to check the status of the remote node!",
   "TXT_CODE_DESKTOP_NODES": "Nodes",
   "TXT_CODE_DESKTOP_NODES_ADD": "Add Node",
   "TXT_CODE_DESKTOP_NODES_APIKEY": "API Key",
@@ -11,5 +13,23 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "No nodes found",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "Port is required",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "Search nodes...",
-  "TXT_CODE_DESKTOP_NODES_SOCKET": "Direct connection"
+  "TXT_CODE_DESKTOP_NODES_SOCKET": "Direct connection",
+  "TXT_CODE_b7d38e78": "The remote node is unavailable! \nPlease contact the administrator to go to the node list to check the status of the remote node!",
+  "TXT_CODE_bd99b64e": "Request timeout! \nPlease contact the administrator to check the node network status, IP:",
+  "TXT_CODE_ca8072bd": "Initialization failed, the remote node does not exist!",
+  "TXT_CODE_daemonInfo.authError": "Remote daemon {{- v}} key validation error",
+  "TXT_CODE_daemonInfo.authFailure": "Remote daemon {{- v}} key validation denied",
+  "TXT_CODE_daemonInfo.authSuccess": "Remote daemon {{- v}} key validation successful",
+  "TXT_CODE_daemonInfo.closed": "Disconnected remote daemon {{- v}}",
+  "TXT_CODE_daemonInfo.connect": "Connected to remote daemon {{- v}}",
+  "TXT_CODE_daemonInfo.connectError": "Error connecting to remote daemon: {{- v}}",
+  "TXT_CODE_daemonInfo.disconnect": "Disconnected from remote daemon {{- v}}",
+  "TXT_CODE_daemonInfo.replaceConnect": "User initiated a duplicate connection request, resetting connection configuration",
+  "TXT_CODE_daemonInfo.resetConnect": "User initiated reconnection to an already available remote daemon, resetting connection channel",
+  "TXT_CODE_daemonInfo.setLanguage": "Set daemon language",
+  "TXT_CODE_daemonInfo.tryConnect": "Attempting to connect to remote daemon",
+  "TXT_CODE_systemRemoteService.autoCheckDaemon": "Detected local daemon, automatically obtaining key and port...",
+  "TXT_CODE_systemRemoteService.error": "Unable to automatically retrieve local daemon configuration. Please manually connect the daemon through the panel. Visit https://docs.mcsmanager.com/ for more information.",
+  "TXT_CODE_systemRemoteService.loadDaemonTitle": "Attempting to read local daemon {{localKeyFilePath}}",
+  "TXT_CODE_systemRemoteService.nodeCount": "Number of remote daemons: {{n}}"
 }

@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_3d94ea16": "El socket del nodo es anormal, intente volver a conectarse en la administración del nodo.",
+  "TXT_CODE_7c650d80": "La conexión del nodo falló. Comuníquese con el administrador para verificar el estado del nodo remoto.",
   "TXT_CODE_DESKTOP_NODES": "Nodos",
   "TXT_CODE_DESKTOP_NODES_ADD": "Añadir nodo",
   "TXT_CODE_DESKTOP_NODES_APIKEY": "Clave API",
@@ -11,5 +13,23 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "No se encontraron nodos",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "El puerto es obligatorio",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "Buscar nodos...",
-  "TXT_CODE_DESKTOP_NODES_SOCKET": "Conexión directa"
+  "TXT_CODE_DESKTOP_NODES_SOCKET": "Conexión directa",
+  "TXT_CODE_b7d38e78": "¡El nodo remoto no se puede utilizar! \n¡Comuníquese con el administrador para verificar el estado del nodo remoto en la lista de nodos!",
+  "TXT_CODE_bd99b64e": "¡Tiempo de espera agotado! \nComuníquese con el administrador para verificar el estado de la red del nodo, IP del nodo:",
+  "TXT_CODE_ca8072bd": "La inicialización falló, ¡el nodo remoto no existe!",
+  "TXT_CODE_daemonInfo.authError": "Error de verificación de clave del nodo remoto {{- v}}",
+  "TXT_CODE_daemonInfo.authFailure": "Se rechazó la verificación de clave del nodo remoto {{- v}}",
+  "TXT_CODE_daemonInfo.authSuccess": "Verificación exitosa de la clave del nodo remoto {{- v}}",
+  "TXT_CODE_daemonInfo.closed": "Desconectar activamente el nodo remoto {{- v}}",
+  "TXT_CODE_daemonInfo.connect": "El nodo remoto {{- v}} está conectado",
+  "TXT_CODE_daemonInfo.connectError": "Error al conectarse al nodo remoto: {{- v}}",
+  "TXT_CODE_daemonInfo.disconnect": "El nodo remoto {{- v}} está inactivo",
+  "TXT_CODE_daemonInfo.replaceConnect": "El usuario inició una solicitud de conexión repetida y ahora restablece la configuración de la conexión.",
+  "TXT_CODE_daemonInfo.resetConnect": "El usuario inicia la reconexión al nodo remoto que ya está disponible y se restablece el canal de conexión.",
+  "TXT_CODE_daemonInfo.setLanguage": "Establecer idioma de nodo",
+  "TXT_CODE_daemonInfo.tryConnect": "Intentando conectarse al nodo remoto",
+  "TXT_CODE_systemRemoteService.autoCheckDaemon": "Demonio local detectado, obteniendo automáticamente la clave y el puerto de conexión...",
+  "TXT_CODE_systemRemoteService.error": "El archivo de configuración del demonio local no se puede obtener automáticamente. Vaya al panel para conectar manualmente el demonio. Vaya a https://docs.mcsmanager.com/ para obtener más información.",
+  "TXT_CODE_systemRemoteService.loadDaemonTitle": "Intentando leer el demonio local {{localKeyFilePath}}",
+  "TXT_CODE_systemRemoteService.nodeCount": "Número de nodos remotos: {{n}}"
 }

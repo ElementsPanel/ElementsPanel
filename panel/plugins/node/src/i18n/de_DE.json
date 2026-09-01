@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_3d94ea16": "Der Knoten-Socket ist abnormal, bitte versuchen Sie, die Verbindung in der Knotenverwaltung wiederherzustellen!",
+  "TXT_CODE_7c650d80": "Die Knotenverbindung ist fehlgeschlagen. Bitte wenden Sie sich an den Administrator, um den Status des Remote-Knotens zu überprüfen!",
   "TXT_CODE_DESKTOP_NODES": "Knoten",
   "TXT_CODE_DESKTOP_NODES_ADD": "Knoten hinzufügen",
   "TXT_CODE_DESKTOP_NODES_APIKEY": "API-Schlüssel",
@@ -11,5 +13,23 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "Keine Knoten gefunden",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "Port ist erforderlich",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "Knoten suchen...",
-  "TXT_CODE_DESKTOP_NODES_SOCKET": "Direktverbindung"
+  "TXT_CODE_DESKTOP_NODES_SOCKET": "Direktverbindung",
+  "TXT_CODE_b7d38e78": "Der Remote-Knoten kann nicht verwendet werden! \nBitte wenden Sie sich an den Administrator, um den Status des Remote-Knotens in der Knotenliste zu überprüfen!",
+  "TXT_CODE_bd99b64e": "Zeitüberschreitung der Anforderung! \nBitte wenden Sie sich an den Administrator, um den Netzwerkstatus des Knotens und die Knoten-IP zu überprüfen:",
+  "TXT_CODE_ca8072bd": "Die Initialisierung ist fehlgeschlagen, der Remote-Knoten existiert nicht!",
+  "TXT_CODE_daemonInfo.authError": "Fehler bei der Schlüsselüberprüfung des Remote-Knotens {{- v}}",
+  "TXT_CODE_daemonInfo.authFailure": "Schlüsselüberprüfung des Remote-Knotens {{- v}} abgelehnt",
+  "TXT_CODE_daemonInfo.authSuccess": "Schlüsselüberprüfung des Remote-Knotens {{- v}} erfolgreich",
+  "TXT_CODE_daemonInfo.closed": "Trennen Sie aktiv den Remote-Knoten {{- v}}",
+  "TXT_CODE_daemonInfo.connect": "Der Remote-Knoten {{- v}} ist verbunden",
+  "TXT_CODE_daemonInfo.connectError": "Fehler beim Herstellen der Verbindung zum Remote-Knoten: {{- v}}",
+  "TXT_CODE_daemonInfo.disconnect": "Der Remote-Knoten {{- v}} ist ausgefallen",
+  "TXT_CODE_daemonInfo.replaceConnect": "Der Benutzer hat eine wiederholte Verbindungsanfrage initiiert und setzt nun die Verbindungskonfiguration zurück.",
+  "TXT_CODE_daemonInfo.resetConnect": "Der Benutzer initiiert die erneute Verbindung zum bereits verfügbaren Remote-Knoten und der Verbindungskanal wird zurückgesetzt.",
+  "TXT_CODE_daemonInfo.setLanguage": "Knotensprache festlegen",
+  "TXT_CODE_daemonInfo.tryConnect": "Es wird versucht, eine Verbindung zum Remote-Knoten herzustellen",
+  "TXT_CODE_systemRemoteService.autoCheckDaemon": "Lokaler Daemon erkannt, erhält automatisch Schlüssel und Verbindungsport ...",
+  "TXT_CODE_systemRemoteService.error": "Die lokale Daemon-Konfigurationsdatei kann nicht automatisch abgerufen werden. Gehen Sie zu https://docs.mcsmanager.com/, um mehr zu erfahren.",
+  "TXT_CODE_systemRemoteService.loadDaemonTitle": "Versucht, den lokalen Daemon {{localKeyFilePath}} zu lesen",
+  "TXT_CODE_systemRemoteService.nodeCount": "Anzahl entfernter Knoten: {{n}}"
 }

@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_3d94ea16": "Соединение сокета узла ненормально, попробуйте переподключиться в управлении узлом!",
+  "TXT_CODE_7c650d80": "Не удалось подключиться к узлу, пожалуйста, свяжитесь с администратором для проверки состояния удаленного узла!",
   "TXT_CODE_DESKTOP_NODES": "Узлы",
   "TXT_CODE_DESKTOP_NODES_ADD": "Добавить узел",
   "TXT_CODE_DESKTOP_NODES_APIKEY": "Ключ API",
@@ -11,5 +13,23 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "Узлы не найдены",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "Порт обязателен",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "Поиск узлов...",
-  "TXT_CODE_DESKTOP_NODES_SOCKET": "Прямое подключение"
+  "TXT_CODE_DESKTOP_NODES_SOCKET": "Прямое подключение",
+  "TXT_CODE_b7d38e78": "Удаленный узел недоступен! \nПожалуйста, свяжитесь с администратором, чтобы в списке узлов проверить состояние удаленного узла!",
+  "TXT_CODE_bd99b64e": "Тайм-аут запроса! \nПожалуйста, свяжитесь с администратором для проверки состояния сети узла, IP:",
+  "TXT_CODE_ca8072bd": "Инициализация не удалась, удаленный узел не существует!",
+  "TXT_CODE_daemonInfo.authError": "Ошибка проверки ключа удаленного демона {{- v}}",
+  "TXT_CODE_daemonInfo.authFailure": "Проверка ключа удаленного демона {{- v}} отклонена",
+  "TXT_CODE_daemonInfo.authSuccess": "Проверка ключа удаленного демона {{- v}} успешна",
+  "TXT_CODE_daemonInfo.closed": "Отключение удаленного демона {{- v}}",
+  "TXT_CODE_daemonInfo.connect": "Соединение с удаленным демоном {{- v}}",
+  "TXT_CODE_daemonInfo.connectError": "Ошибка соединения с удаленным демоном: {{- v}}",
+  "TXT_CODE_daemonInfo.disconnect": "Отключение от удаленного демона {{- v}}",
+  "TXT_CODE_daemonInfo.replaceConnect": "Пользователь инициировал дублирующий запрос на подключение, сброс конфигурации соединения",
+  "TXT_CODE_daemonInfo.resetConnect": "Пользователь инициировал переподключение к уже доступному удаленному демону, сброс канала соединения",
+  "TXT_CODE_daemonInfo.setLanguage": "Установить язык демона",
+  "TXT_CODE_daemonInfo.tryConnect": "Попытка подключения к удаленному демону",
+  "TXT_CODE_systemRemoteService.autoCheckDaemon": "Обнаружен локальный демон, автоматически получаю ключ и порт...",
+  "TXT_CODE_systemRemoteService.error": "Не удалось автоматически получить конфигурацию локального демона. Пожалуйста, подключите демон вручную через панель. Для получения дополнительной информации посетите https://docs.mcsmanager.com/",
+  "TXT_CODE_systemRemoteService.loadDaemonTitle": "Пытаюсь прочитать локальный демон {{localKeyFilePath}}",
+  "TXT_CODE_systemRemoteService.nodeCount": "Количество удаленных демонов: {{n}}"
 }

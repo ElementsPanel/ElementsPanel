@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_3d94ea16": "節點 Socket 異常，請嘗試在節點管理中重新連線！",
+  "TXT_CODE_7c650d80": "節點連線失敗，請聯絡管理員檢查遠端節點狀態！",
   "TXT_CODE_DESKTOP_NODES": "节点管理",
   "TXT_CODE_DESKTOP_NODES_ADD": "添加節點",
   "TXT_CODE_DESKTOP_NODES_APIKEY": "API 金鑰",
@@ -11,5 +13,23 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "未找到節點",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "連接埠為必填",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "搜索節點...",
-  "TXT_CODE_DESKTOP_NODES_SOCKET": "直接連線"
+  "TXT_CODE_DESKTOP_NODES_SOCKET": "直接連線",
+  "TXT_CODE_b7d38e78": "遠端節點無法使用！請聯絡管理員前往節點清單檢查遠端節點狀態！",
+  "TXT_CODE_bd99b64e": "請求逾時！請聯絡管理員檢查節點網路狀態，節點IP：",
+  "TXT_CODE_ca8072bd": "初始化失敗，遠端節點不存在！",
+  "TXT_CODE_daemonInfo.authError": "遠端節點 {{- v}} 金鑰驗證錯誤",
+  "TXT_CODE_daemonInfo.authFailure": "遠端節點 {{- v}} 金鑰驗證拒絕",
+  "TXT_CODE_daemonInfo.authSuccess": "遠端節點 {{- v}} 金鑰驗證成功",
+  "TXT_CODE_daemonInfo.closed": "主動斷開遠端節點 {{- v}} ",
+  "TXT_CODE_daemonInfo.connect": "遠端節點 {{- v}} 已連接",
+  "TXT_CODE_daemonInfo.connectError": "連接遠端節點錯誤：{{- v}} ",
+  "TXT_CODE_daemonInfo.disconnect": "遠端節點 {{- v}} 已中斷",
+  "TXT_CODE_daemonInfo.replaceConnect": "使用者啟動重複連線請求，現正重設連線設定",
+  "TXT_CODE_daemonInfo.resetConnect": "使用者啟動重連已可用狀態的遠端節點，正在重設連線通道",
+  "TXT_CODE_daemonInfo.setLanguage": "設定節點語言",
+  "TXT_CODE_daemonInfo.tryConnect": "正在嘗試連線遠端節點",
+  "TXT_CODE_systemRemoteService.autoCheckDaemon": "偵測到本機守護程式，正在自動取得金鑰與連接埠...",
+  "TXT_CODE_systemRemoteService.error": "無法自動取得本機守護程式設定檔，請前往面板手動連線守護程式，前往 https://docs.mcsmanager.com/ 了解更多。",
+  "TXT_CODE_systemRemoteService.loadDaemonTitle": "正在嘗試讀取本機守護程式 {{localKeyFilePath}}",
+  "TXT_CODE_systemRemoteService.nodeCount": "遠端節點數：{{n}}"
 }

@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_3d94ea16": "节点 Socket 异常，请尝试在节点管理中重新连接！",
+  "TXT_CODE_7c650d80": "节点连接失败，请联系管理员检查远程节点状态！",
   "TXT_CODE_DESKTOP_NODES": "节点管理",
   "TXT_CODE_DESKTOP_NODES_ADD": "添加节点",
   "TXT_CODE_DESKTOP_NODES_APIKEY": "API密钥",
@@ -11,5 +13,23 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "未找到节点",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "端口不能为空",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "搜索节点...",
-  "TXT_CODE_DESKTOP_NODES_SOCKET": "直连"
+  "TXT_CODE_DESKTOP_NODES_SOCKET": "直连",
+  "TXT_CODE_b7d38e78": "远程节点不可用！请联系管理员前往节点列表检查远程节点状态！",
+  "TXT_CODE_bd99b64e": "请求超时！请联系管理员检查节点网络状态，节点IP：",
+  "TXT_CODE_ca8072bd": "初始化失败，远程节点不存在！",
+  "TXT_CODE_daemonInfo.authError": "远程节点 {{- v}} 密钥验证错误",
+  "TXT_CODE_daemonInfo.authFailure": "远程节点 {{- v}} 密钥验证拒绝",
+  "TXT_CODE_daemonInfo.authSuccess": "远程节点 {{- v}} 密钥验证通过",
+  "TXT_CODE_daemonInfo.closed": "主动断开远程节点 {{- v}} ",
+  "TXT_CODE_daemonInfo.connect": "远程节点 {{- v}} 已连接",
+  "TXT_CODE_daemonInfo.connectError": "连接远程节点错误：{{- v}} ",
+  "TXT_CODE_daemonInfo.disconnect": "远程节点 {{- v}} 已断开",
+  "TXT_CODE_daemonInfo.replaceConnect": "用户发起重复连接请求，现进行重置连接配置",
+  "TXT_CODE_daemonInfo.resetConnect": "用户发起重连已可用状态的远程节点，正在重置连接通道",
+  "TXT_CODE_daemonInfo.setLanguage": "设置节点语言",
+  "TXT_CODE_daemonInfo.tryConnect": "正在尝试连接远程节点",
+  "TXT_CODE_systemRemoteService.autoCheckDaemon": "检测到本地守护进程，正在自动获取密钥和端口...",
+  "TXT_CODE_systemRemoteService.error": "无法自动获取本地守护进程配置文件，请前往面板手动连接守护进程，前往 https://docs.mcsmanager.com/ 了解更多。",
+  "TXT_CODE_systemRemoteService.loadDaemonTitle": "正在尝试读取本地守护进程 {{localKeyFilePath}}",
+  "TXT_CODE_systemRemoteService.nodeCount": "远程节点数：{{n}}"
 }

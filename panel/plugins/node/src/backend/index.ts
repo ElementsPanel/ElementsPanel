@@ -1,5 +1,6 @@
 import type Koa from "koa";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
+import { localeMessages } from "../i18n";
 import RemoteRequest, { RemoteRequestTimeoutError } from "./remote_command";
 import remoteServices from "./remote_service";
 import { setPluginContext } from "./runtime";
@@ -42,8 +43,11 @@ export const inject = ["koa", "i18n", "storage", "settings", "middleware", "role
 
 export async function apply(ctx: PanelPluginContext) {
   // Before anything else: the subsystem's modules read the logger, the storage,
-  // the panel configuration and `$t` through this handle.
+  // the panel configuration and `$t` through this handle, and every string they
+  // translate — the connection, authentication and timeout messages — belongs to
+  // this plugin, so the catalogue has to be registered before the first log line.
   setPluginContext(ctx);
+  ctx.i18n.define(localeMessages);
 
   // Loads every stored node and starts connecting. Awaited, so `ctx.remote` is
   // never handed over half-initialised.

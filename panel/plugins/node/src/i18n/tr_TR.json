@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_3d94ea16": "Düğüm Soketi anormal, lütfen düğüm yönetiminde yeniden bağlanmayı deneyin!",
+  "TXT_CODE_7c650d80": "Düğüm bağlantısı başarısız oldu, lütfen uzak düğümün durumunu kontrol etmek için yöneticiye başvurun!",
   "TXT_CODE_DESKTOP_NODES": "Düğümler",
   "TXT_CODE_DESKTOP_NODES_ADD": "Düğüm ekle",
   "TXT_CODE_DESKTOP_NODES_APIKEY": "API anahtarı",
@@ -11,5 +13,23 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "Düğüm bulunamadı",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "Bağlantı noktası gereklidir",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "Düğüm ara...",
-  "TXT_CODE_DESKTOP_NODES_SOCKET": "Doğrudan bağlantı"
+  "TXT_CODE_DESKTOP_NODES_SOCKET": "Doğrudan bağlantı",
+  "TXT_CODE_b7d38e78": "Uzak düğüm kullanılamıyor! \nUzak düğümün durumunu kontrol etmek üzere düğüm listesine gitmek için lütfen yöneticiyle iletişime geçin!",
+  "TXT_CODE_bd99b64e": "İstek zaman aşımı! \nLütfen düğüm ağ durumunu kontrol etmek için yöneticiye başvurun, IP:",
+  "TXT_CODE_ca8072bd": "Başlatma başarısız oldu, uzak düğüm mevcut değil!",
+  "TXT_CODE_daemonInfo.authError": "Uzak daemon {{- v}} anahtar doğrulama hatası",
+  "TXT_CODE_daemonInfo.authFailure": "Remote daemon {{- v}} key validation denied",
+  "TXT_CODE_daemonInfo.authSuccess": "Uzak daemon {{- v}} anahtar doğrulaması başarılı",
+  "TXT_CODE_daemonInfo.closed": "Bağlantısı kesilen uzak arka plan programı {{- v}}",
+  "TXT_CODE_daemonInfo.connect": "Uzak arka plan programına bağlandı {{- v}}",
+  "TXT_CODE_daemonInfo.connectError": "Uzak daemon'a bağlanırken hata oluştu: {{- v}}",
+  "TXT_CODE_daemonInfo.disconnect": "Uzak arka plan programıyla bağlantı kesildi {{- v}}",
+  "TXT_CODE_daemonInfo.replaceConnect": "Kullanıcı yinelenen bir bağlantı isteği başlattı, bağlantı yapılandırması sıfırlanıyor",
+  "TXT_CODE_daemonInfo.resetConnect": "Kullanıcı zaten mevcut olan bir uzak daemon'a yeniden bağlanmayı başlattı, bağlantı kanalını sıfırlıyor",
+  "TXT_CODE_daemonInfo.setLanguage": "Daemon dilini ayarla",
+  "TXT_CODE_daemonInfo.tryConnect": "Uzak daemon'a bağlanılmaya çalışılıyor",
+  "TXT_CODE_systemRemoteService.autoCheckDaemon": "Yerel daemon algılandı, otomatik olarak anahtar ve port alınıyor...",
+  "TXT_CODE_systemRemoteService.error": "Yerel daemon yapılandırması otomatik olarak alınamıyor. Lütfen daemon'u panel üzerinden manuel olarak bağlayın. Daha fazla bilgi için https://docs.mcsmanager.com/ adresini ziyaret edin.",
+  "TXT_CODE_systemRemoteService.loadDaemonTitle": "Attempting to read local daemon {{localKeyFilePath}}",
+  "TXT_CODE_systemRemoteService.nodeCount": "Uzak daemon sayısı: {{n}}"
 }

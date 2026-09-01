@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_3d94ea16": "Le socket du nœud est anormal, veuillez essayer de vous reconnecter dans la gestion des nœuds !",
+  "TXT_CODE_7c650d80": "La connexion du nœud a échoué, veuillez contacter l'administrateur pour vérifier l'état du nœud distant !",
   "TXT_CODE_DESKTOP_NODES": "Nœuds",
   "TXT_CODE_DESKTOP_NODES_ADD": "Ajouter un nœud",
   "TXT_CODE_DESKTOP_NODES_APIKEY": "Clé API",
@@ -11,5 +13,23 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "Aucun nœud trouvé",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "Le port est obligatoire",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "Rechercher des nœuds...",
-  "TXT_CODE_DESKTOP_NODES_SOCKET": "Connexion directe"
+  "TXT_CODE_DESKTOP_NODES_SOCKET": "Connexion directe",
+  "TXT_CODE_b7d38e78": "Le nœud distant ne peut pas être utilisé ! \nVeuillez contacter l'administrateur pour vérifier l'état du nœud distant dans la liste des nœuds !",
+  "TXT_CODE_bd99b64e": "La demande a expiré ! \nVeuillez contacter l'administrateur pour vérifier l'état du réseau du nœud, l'adresse IP du nœud :",
+  "TXT_CODE_ca8072bd": "L'initialisation a échoué, le nœud distant n'existe pas !",
+  "TXT_CODE_daemonInfo.authError": "Erreur de vérification de clé du nœud distant {{- v}}",
+  "TXT_CODE_daemonInfo.authFailure": "Vérification de la clé du nœud distant {{- v}} rejetée",
+  "TXT_CODE_daemonInfo.authSuccess": "Vérification de la clé du nœud distant {{- v}} réussie",
+  "TXT_CODE_daemonInfo.closed": "Déconnectez activement le nœud distant {{- v}}",
+  "TXT_CODE_daemonInfo.connect": "Le nœud distant {{- v}} est connecté",
+  "TXT_CODE_daemonInfo.connectError": "Erreur de connexion au nœud distant : {{- v}}",
+  "TXT_CODE_daemonInfo.disconnect": "Le nœud distant {{- v}} est en panne",
+  "TXT_CODE_daemonInfo.replaceConnect": "L'utilisateur a lancé une demande de connexion répétée et réinitialise désormais la configuration de la connexion.",
+  "TXT_CODE_daemonInfo.resetConnect": "L'utilisateur initie la reconnexion au nœud distant déjà disponible et le canal de connexion est en cours de réinitialisation.",
+  "TXT_CODE_daemonInfo.setLanguage": "Définir la langue du nœud",
+  "TXT_CODE_daemonInfo.tryConnect": "Essayer de se connecter au nœud distant",
+  "TXT_CODE_systemRemoteService.autoCheckDaemon": "Démon local détecté, obtenant automatiquement la clé et le port de connexion...",
+  "TXT_CODE_systemRemoteService.error": "Le fichier de configuration du démon local ne peut pas être obtenu automatiquement. Veuillez accéder au panneau pour connecter manuellement le démon. Accédez à https://docs.mcsmanager.com/ pour en savoir plus.",
+  "TXT_CODE_systemRemoteService.loadDaemonTitle": "Essayer de lire le démon local {{localKeyFilePath}}",
+  "TXT_CODE_systemRemoteService.nodeCount": "Nombre de nœuds distants : {{n}}"
 }
