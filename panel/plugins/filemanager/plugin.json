@@ -1,0 +1,7 @@
+{
+  "id": "filemanager",
+  "version": "1.0.0",
+  "description": "Owns the panel's file manager: every /api/files route, the instance file manager card and its Desktop window.",
+  "priority": 120,
+  "backend": "backend/index.cjs"
+}
