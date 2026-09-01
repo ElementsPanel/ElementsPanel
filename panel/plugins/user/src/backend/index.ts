@@ -99,6 +99,24 @@ export async function apply(ctx: PanelPluginContext) {
         ]
       },
       {
+        key: "allowChangeCmd",
+        type: "boolean",
+        title: $t("TXT_CODE_a583cae4"),
+        description: $t("TXT_CODE_bfbdf579")
+      },
+      {
+        key: "canFileManager",
+        type: "boolean",
+        title: $t("TXT_CODE_adab942e"),
+        description: `${$t("TXT_CODE_ceb783a9")} ${$t("TXT_CODE_e5b7522d")}`
+      },
+      {
+        key: "allowJavaManager",
+        type: "boolean",
+        title: $t("TXT_CODE_ALLOW_JAVA_MANAGER"),
+        description: $t("TXT_CODE_ALLOW_JAVA_MANAGER_DESC")
+      },
+      {
         key: "ssoEnabled",
         type: "boolean",
         title: $t("TXT_CODE_SSO_ENABLE"),
@@ -208,7 +226,26 @@ export async function apply(ctx: PanelPluginContext) {
         visibleWhen: "ssoEnabled"
       }
     ],
-    read: readAuthSettings,
-    write: applyAuthSettings
+    // Two stores, one form. The authentication settings are this plugin's own
+    // record; the three "what may an ordinary user do" switches stay in
+    // `SystemConfig`, because the file manager, the Java manager and the
+    // instance routes read them — but deciding them is the guard's business, so
+    // the form that edits them belongs here.
+    read: () => ({
+      ...readAuthSettings(),
+      allowChangeCmd: ctx.settings.config.allowChangeCmd,
+      canFileManager: ctx.settings.config.canFileManager,
+      allowJavaManager: ctx.settings.config.allowJavaManager
+    }),
+    write: async (values) => {
+      await applyAuthSettings(values);
+      const config = ctx.settings.config;
+      if (values.allowChangeCmd != null) config.allowChangeCmd = Boolean(values.allowChangeCmd);
+      if (values.canFileManager != null) config.canFileManager = Boolean(values.canFileManager);
+      if (values.allowJavaManager != null) {
+        config.allowJavaManager = Boolean(values.allowJavaManager);
+      }
+      ctx.settings.save();
+    }
   });
 }

@@ -19,7 +19,6 @@ import {
   BookOutlined,
   BugOutlined,
   GithubOutlined,
-  LockOutlined,
   MessageOutlined,
   MoneyCollectOutlined,
   PicLeftOutlined,
@@ -109,11 +108,6 @@ const menus = arrayFilter([
     title: t("TXT_CODE_1c18acc0"),
     key: "ui",
     icon: PicLeftOutlined
-  },
-  {
-    title: t("TXT_CODE_9c3ca8f"),
-    key: "security",
-    icon: LockOutlined
   },
   {
     title: t("TXT_CODE_46cb40d5"),
@@ -486,84 +480,6 @@ onUnmounted(() => {
                       {{ t("TXT_CODE_50d471b2") }}
                     </a-button>
                   </a-form-item>
-                </a-form>
-              </div>
-            </div>
-          </template>
-
-          <template #security>
-            <div class="content-box" :style="{ maxHeight: card.height }">
-              <a-typography-title :level="4" class="mb-24">
-                {{ t("TXT_CODE_9c3ca8f") }}
-              </a-typography-title>
-              <div style="text-align: left">
-                <a-form :model="formData" layout="vertical">
-                  <a-typography-title :level="5">
-                    {{ t("TXT_CODE_ef0ce2e") }}
-                  </a-typography-title>
-                  <a-typography-paragraph>
-                    <a-typography-text type="secondary">
-                      {{ t("TXT_CODE_fcde7b2e") }}
-                      <br />
-                      {{ t("TXT_CODE_af19b7b5") }}
-                    </a-typography-text>
-                  </a-typography-paragraph>
-
-                  <a-form-item>
-                    <a-typography-title :level="5">
-                      {{ t("TXT_CODE_a583cae4") }}
-                    </a-typography-title>
-                    <a-typography-paragraph>
-                      <a-typography-text type="secondary">
-                        {{ t("TXT_CODE_bfbdf579") }}
-                      </a-typography-text>
-                    </a-typography-paragraph>
-                    <a-select v-model:value.prop="(formData as any).allowChangeCmd" style="max-width: 320px">
-                      <a-select-option v-for="item in allYesNo" :key="item.value" :value="item.value">
-                        {{ item.label }}
-                      </a-select-option>
-                    </a-select>
-                  </a-form-item>
-
-                  <a-form-item>
-                    <a-typography-title :level="5">
-                      {{ t("TXT_CODE_adab942e") }}
-                    </a-typography-title>
-                    <a-typography-paragraph>
-                      <a-typography-text type="secondary">
-                        {{ t("TXT_CODE_ceb783a9") }}
-                        <br />
-                        {{ t("TXT_CODE_e5b7522d") }}
-                      </a-typography-text>
-                    </a-typography-paragraph>
-                    <a-select v-model:value.prop="(formData as any).canFileManager" style="max-width: 320px">
-                      <a-select-option v-for="item in allYesNo" :key="item.value" :value="item.value">
-                        {{ item.label }}
-                      </a-select-option>
-                    </a-select>
-                  </a-form-item>
-
-                  <a-form-item>
-                    <a-typography-title :level="5">
-                      {{ t("TXT_CODE_ALLOW_JAVA_MANAGER") }}
-                    </a-typography-title>
-                    <a-typography-paragraph>
-                      <a-typography-text type="secondary">
-                        {{ t("TXT_CODE_ALLOW_JAVA_MANAGER_DESC") }}
-                      </a-typography-text>
-                    </a-typography-paragraph>
-                    <a-select v-model:value.prop="(formData as any).allowJavaManager" style="max-width: 320px">
-                      <a-select-option v-for="item in allYesNo" :key="item.value" :value="item.value">
-                        {{ item.label }}
-                      </a-select-option>
-                    </a-select>
-                  </a-form-item>
-
-                  <div class="button">
-                    <a-button type="primary" :loading="submitIsLoading" @click="submit(false)">
-                      {{ t("TXT_CODE_abfe9512") }}
-                    </a-button>
-                  </div>
                 </a-form>
               </div>
             </div>

@@ -7,7 +7,6 @@ import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
 import type { Settings } from "@/types";
 import {
-    LockOutlined,
     PicLeftOutlined,
     ProjectOutlined,
     QuestionCircleOutlined,
@@ -37,7 +36,6 @@ const sidebarPosition = ref<"left" | "right">("left");
 const tabs = [
     { key: "baseInfo", title: t("TXT_CODE_cdd555be"), icon: ProjectOutlined },
     { key: "ui", title: t("TXT_CODE_1c18acc0"), icon: PicLeftOutlined },
-    { key: "security", title: t("TXT_CODE_9c3ca8f"), icon: LockOutlined },
     { key: "about", title: t("TXT_CODE_3b4b656d"), icon: QuestionCircleOutlined }
 ];
 
@@ -256,69 +254,6 @@ limitations under the License.`;
                                 </button>
                             </div>
                         </div>
-                    </div>
-
-                    <div v-show="activeTab === 'security'" class="ds-form">
-                        <h2 class="ds-title">{{ t("TXT_CODE_9c3ca8f") }}</h2>
-                        <p class="ds-desc ds-mb-4">{{ t("TXT_CODE_fcde7b2e") }}<br />{{ t("TXT_CODE_af19b7b5") }}</p>
-
-                        <div class="ds-form-group">
-                            <label class="ds-label">{{ t("TXT_CODE_a583cae4") }}</label>
-                            <p class="ds-desc">{{ t("TXT_CODE_bfbdf579") }}</p>
-                            <select v-model="(formData as any).allowChangeCmd" class="ds-select">
-                                <option v-for="item in allYesNo" :key="String(item.value)" :value="item.value">{{
-                                    item.label }}
-                                </option>
-                            </select>
-                        </div>
-
-                        <div class="ds-form-group">
-                            <label class="ds-label">{{ t("TXT_CODE_adab942e") }}</label>
-                            <p class="ds-desc">{{ t("TXT_CODE_ceb783a9") }}<br />{{ t("TXT_CODE_e5b7522d") }}</p>
-                            <select v-model="(formData as any).canFileManager" class="ds-select">
-                                <option v-for="item in allYesNo" :key="String(item.value)" :value="item.value">{{
-                                    item.label }}
-                                </option>
-                            </select>
-                        </div>
-
-                        <div class="ds-form-group">
-                            <label class="ds-label">{{ t("TXT_CODE_405cd346") }}</label>
-                            <p class="ds-desc">{{ t("TXT_CODE_6655c905") }}</p>
-                            <select v-model="(formData as any).crossDomain" class="ds-select">
-                                <option v-for="item in allYesNo" :key="String(item.value)" :value="item.value">{{
-                                    item.label }}
-                                </option>
-                            </select>
-                        </div>
-
-                        <div class="ds-form-group">
-                            <label class="ds-label">{{ t("TXT_CODE_f0789d81") }}</label>
-                            <p class="ds-desc">{{ t("TXT_CODE_2b85af6d") }}</p>
-                            <select v-model="(formData as any).reverseProxyMode" class="ds-select">
-                                <option v-for="item in allYesNo" :key="String(item.value)" :value="item.value">{{
-                                    item.label }}
-                                </option>
-                            </select>
-                        </div>
-
-                        <div v-show="(formData as any).reverseProxyMode" class="ds-form-group">
-                            <label class="ds-label">{{ t("TXT_CODE_66aeac82") }}</label>
-                            <p class="ds-desc">{{ t("TXT_CODE_fd8bc51f") }}</p>
-                            <input v-model="(formData as any).reverseProxyHeader" class="ds-input"
-                                :placeholder="t('TXT_CODE_4ea93630')" />
-                        </div>
-
-                        <div class="ds-form-group">
-                            <label class="ds-label">{{ t("TXT_CODE_ALLOW_JAVA_MANAGER") }}</label>
-                            <p class="ds-desc">{{ t("TXT_CODE_ALLOW_JAVA_MANAGER_DESC") }}</p>
-                            <select v-model="(formData as any).allowJavaManager" class="ds-select">
-                                <option v-for="item in allYesNo" :key="String(item.value)" :value="item.value">{{
-                                    item.label }}
-                                </option>
-                            </select>
-                        </div>
-
                     </div>
 
                     <div v-show="activeTab === 'about'" class="ds-form">

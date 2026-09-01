@@ -45,19 +45,18 @@ router.put("/setting", permission({ level: ROLE.ADMIN }), async (ctx) => {
   if (config && systemConfig) {
     // The HTTP server's own fields — port, binding IP, path prefix, SSL, CORS
     // and the reverse proxy — are edited by the "server" plugin, which owns the
-    // web server they configure.
+    // web server they configure. The three "what may an ordinary user do"
+    // switches — allowChangeCmd, canFileManager, allowJavaManager — are edited by
+    // the "user" plugin, which owns the authorization policy they belong to.
     if (config.gzip != null) systemConfig.gzip = config.gzip;
     if (config.maxCompress != null) systemConfig.maxCompress = config.maxCompress;
     if (config.maxDownload != null) systemConfig.maxDownload = config.maxDownload;
     if (config.zipType != null) systemConfig.zipType = config.zipType;
     if (config.forwardType != null) systemConfig.forwardType = Number(config.forwardType);
     if (config.dataPort != null) systemConfig.dataPort = Number(config.dataPort);
-    if (config.canFileManager != null) systemConfig.canFileManager = Boolean(config.canFileManager);
 
     if (config.businessMode != null) systemConfig.businessMode = Boolean(config.businessMode);
     if (config.businessId != null) systemConfig.businessId = String(config.businessId);
-    if (config.allowChangeCmd != null) systemConfig.allowChangeCmd = Boolean(config.allowChangeCmd);
-    if (config.allowJavaManager != null) systemConfig.allowJavaManager = Boolean(config.allowJavaManager);
     if (config.registerCode != null) systemConfig.registerCode = String(config.registerCode);
     if (config.panelId != null) systemConfig.panelId = String(config.panelId);
 
