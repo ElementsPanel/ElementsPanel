@@ -236,7 +236,6 @@ export interface ScheduleTaskForm extends NewScheduleTask {
 }
 
 export interface PanelStatus {
-  isInstall: boolean;
   language: string;
   versionChange?: boolean;
   settings: {

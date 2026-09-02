@@ -1,9 +1,12 @@
 # User Management
 
 > **Removing this plugin removes panel authentication.** The panel then treats
-> every request as an anonymous administrator and every API is open. The OOBE
-> plugin remains available but skips its optional administrator-account step.
-> The default build ships with this plugin installed.
+> every request as an anonymous administrator and every API is open. The default
+> build ships with this plugin installed.
+
+On the first initialization, when no account exists, this plugin creates the
+administrator `epanel` with a random 10-character password. The password is
+printed to the process console once immediately after it is persisted.
 
 Owns login, multi-user management, permissions, 2FA, API keys and SSO, on both
 the panel backend and the frontend (including Desktop mode).
@@ -26,7 +29,6 @@ mounts:
 | `POST` | `/api/auth/login` |
 | `GET` | `/api/auth/logout` |
 | `ALL` | `/api/auth/login_info` |
-| `ALL` | `/api/auth/install` |
 | `GET` `POST` `PUT` `DELETE` | `/api/auth` (account CRUD) |
 | `GET` | `/api/auth/search`, `/api/auth/token`, `/api/auth/query_username` |
 | `GET` | `/api/auth/overview` |
@@ -100,19 +102,12 @@ Registered by `src/frontend.ts`:
   `UserAccessSettings`
 - Global component `MyselfInfoDialog`
 - Services `user.api`, `user.desktopLoginWindow`, `user.desktopUsers`,
-  `user.desktopUserInfo`, `user.desktopStartMenuAvatar`,
-  `user.oobeCreateAdminAccount`
+  `user.desktopUserInfo`, `user.desktopStartMenuAvatar`
 
 The Desktop plugin resolves these services at render time and hides the login
 overlay, the "Users" icon, the account window and the start-menu avatar when
 they are missing. `src/desktop/DesktopWindow.vue` and `src/assets.ts` are
 per-plugin copies, the same convention the `node` plugin uses.
-
-The standalone `oobe` plugin owns `/install` and injects
-`user.oobeCreateAdminAccount` for the administrator-account step. The account
-form, validation and `/api/auth/install` request therefore remain owned by this
-plugin even though the surrounding first-run flow does not. If this plugin is
-absent, OOBE skips that optional step and can still complete normally.
 
 ## Translations
 

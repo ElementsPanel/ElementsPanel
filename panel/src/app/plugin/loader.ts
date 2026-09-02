@@ -98,9 +98,8 @@ async function installPlugin(plugin: DiscoveredPlugin): Promise<LoadedPanelPlugi
   try {
     const module = toModule(await loadModule(plugin.entry), plugin.manifest.id);
     if (!module) return record;
-    // Plugins are applied one at a time, in `priority` order, and an `async
-    // apply()` is awaited before the next plugin starts — `oobe` reads the
-    // account records `user` initializes, and cordis does not order them.
+    // Plugins are applied one at a time, in `priority` order, and an async
+    // `apply()` is awaited before the next plugin starts.
     //
     // cordis catches a synchronous throw from `apply()` and cancels the scope
     // itself, so the wrapper keeps a copy of it: without that, a plugin that

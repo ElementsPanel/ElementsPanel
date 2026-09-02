@@ -47,7 +47,7 @@ the build, and every connection log line is prefixed `node` because it is this
 plugin's `ctx.logger` writing it.
 
 That is also why the plugin loads at `priority: 20`, right after
-`plugins/server`: `oobe`, `monitor`, `backup` and `market` all inject `remote`,
+`plugins/server`: `monitor`, `backup` and `market` all inject `remote`,
 and it has to exist before they apply.
 
 `/api/service/remote_service_instances` stays in the core, since the core

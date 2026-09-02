@@ -32,7 +32,6 @@ export interface SsoPublicConfig {
 }
 
 export interface UserPluginApi {
-  panelInstall: () => ApiCall<{ data: { username: string; password: string } }, any>;
   loginUser: () => ApiCall<
     { data: { username: string; password: string; code?: string } } | undefined,
     string
@@ -87,7 +86,6 @@ function resolveUserApi(): UserPluginApi {
   return user.api;
 }
 
-export const panelInstall = () => resolveUserApi().panelInstall();
 export const loginUser = () => resolveUserApi().loginUser();
 export const loginPageInfo = () => resolveUserApi().loginPageInfo();
 export const logoutUser = () => resolveUserApi().logoutUser();

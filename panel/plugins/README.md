@@ -91,11 +91,10 @@ and skipped; the panel keeps running.
 | `ctx.koa` | `app`, `use(middleware)`, `router(prefix?)`. Both are removed on unload. **Provided by `plugins/server`.** |
 | `ctx.remote` | `services` (the node subsystem), `Request` (the daemon request helper) and `RequestTimeoutError`. **Provided by `plugins/node`.** |
 | `ctx.guard` | Request authorization. **Provided by `plugins/user`.** |
-| `ctx.installation` | First-run state. **Provided by `plugins/oobe`.** |
 
 `src/app/plugin/context.ts` is the authoritative declaration of all of this.
 
-Four of these are provided by plugins rather than by the core, with `ctx.set()`:
+Three of these are provided by plugins rather than by the core, with `ctx.set()`:
 
 `ctx.set("koa", ...)` is the web server itself. `plugins/server` creates the Koa
 application, mounts the base middleware, serves the static assets and binds the
@@ -114,7 +113,7 @@ it needs and resolves it at use time through `service/remote_access.ts`
 (`remoteSubsystem()`, `remoteRequest(node)`, `isRemoteRequestTimeout(error)`),
 which throws a clear error while no plugin provides one: unlike an unguarded
 panel, "no daemons" is not a state a route can answer in. It loads at
-`priority: 20` because `oobe`, `monitor`, `backup` and `market` all inject it.
+`priority: 20` because `monitor`, `backup` and `market` all inject it.
 
 `ctx.set("guard", guard)` hands the plugin request authorization for the whole
 panel — route guarding, caller identity, instance ownership, upload permission
@@ -122,11 +121,7 @@ and the auth counters the overview reports. The core implements none of that and
 has no "is auth enabled" branch anywhere: it asks the installed guard, and serves
 every request while none is installed. See `plugins/user`.
 
-`ctx.set("installation", state)` supplies the value reported as `isInstall` by
-`/api/auth/status`. The core defaults to installed, so removing the owning plugin
-cannot redirect the frontend to a route that no longer exists. See `plugins/oobe`.
-
-All four leave with their plugin, because a service registered inside `apply`
+All three leave with their plugin, because a service registered inside `apply`
 belongs to that plugin's scope.
 
 `ctx.overview.provide(fn)` merges extra fields into `GET /api/overview`. The core

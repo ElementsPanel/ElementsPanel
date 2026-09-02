@@ -7,7 +7,6 @@ import DesktopLoginWindow from "./desktop/DesktopLoginWindow.vue";
 import DesktopUserInfo from "./desktop/DesktopUserInfo.vue";
 import DesktopUsers from "./desktop/DesktopUsers.vue";
 import { localeMessages } from "./i18n";
-import OobeCreateAdminAccount from "./oobe/OobeCreateAdminAccount.vue";
 import LoginPage from "./views/Login.vue";
 import SsoBindLogin from "./views/SsoBindLogin.vue";
 import UserAccessSettings from "./widgets/AccessSettings.vue";
@@ -25,16 +24,15 @@ export const inject = ["i18n", "routes", "ui"];
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
 
-  // Everything the panel core needs from the account API, plus the windows the
-  // Desktop and OOBE plugins mount. Resolved at call time, so unloading this
-  // plugin takes authentication with it.
+  // Everything the panel core needs from the account API and the windows the
+  // Desktop plugin mounts. Resolved at call time, so unloading this plugin
+  // takes authentication with it.
   ctx.set("user", {
     api: userApi,
     desktopLoginWindow: DesktopLoginWindow,
     desktopUsers: DesktopUsers,
     desktopUserInfo: DesktopUserInfo,
-    desktopStartMenuAvatar: UserOutlined,
-    oobeCreateAdminAccount: OobeCreateAdminAccount
+    desktopStartMenuAvatar: UserOutlined
   });
 
   // Authentication settings are declared by this plugin's backend, so the plugin

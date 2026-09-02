@@ -296,7 +296,6 @@ export interface FrontendUserService {
   readonly desktopUsers: Component;
   readonly desktopUserInfo: Component;
   readonly desktopStartMenuAvatar: Component;
-  readonly oobeCreateAdminAccount: Component;
 }
 
 /** The app market. Provided by `plugins/market`. */

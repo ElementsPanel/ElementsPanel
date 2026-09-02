@@ -21,7 +21,6 @@
 export type {
   PanelI18nService,
   PanelIdentityService,
-  PanelInstallationService,
   PanelKoaService,
   PanelMiddlewareService,
   PanelOverviewProvider,

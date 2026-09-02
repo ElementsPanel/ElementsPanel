@@ -31,7 +31,7 @@ const formData = reactive({
 });
 
 const { execute: login } = loginUser();
-const { updateUserInfo, isAdmin, state: appConfig } = useAppStateStore();
+const { updateUserInfo, isAdmin } = useAppStateStore();
 const loginActions = computed(() =>
   ctx.menus.loginActions
     .filter((action) =>
@@ -105,8 +105,6 @@ const handleSsoLogin = () => {
 
 onMounted(async () => {
   await execute();
-  const hasInstallRoute = router.getRoutes().some((route) => route.path === "/install");
-  if (!appConfig.isInstall && hasInstallRoute) router.push({ path: "/install" });
 
   try {
     const res = await ssoConfig().execute();

@@ -14,7 +14,6 @@ export {
   loginPageInfo,
   loginUser,
   logoutUser,
-  panelInstall,
   queryUsername,
   setUserApiKey,
   ssoBindCurrent,

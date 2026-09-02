@@ -1,13 +1,38 @@
 import bcrypt from "bcryptjs";
+import { randomInt } from "crypto";
 import { t } from "i18next";
 import { LocalFileSource, QueryWrapper } from "mcsmanager-common";
 import md5 from "md5";
 import { authenticator } from "otplib";
 import { v4 } from "uuid";
 import { IUserApp, IUserCredentials, IUserInfo, User, UserPassWordType } from "../entity/user";
-import { $t, logger, storage } from "../runtime";
+import { $t, logger, ROLE, storage } from "../runtime";
 
 export class TwoFactorError extends Error {}
+
+const PASSWORD_GROUPS = [
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+  "abcdefghijklmnopqrstuvwxyz",
+  "0123456789"
+];
+const PASSWORD_CHARACTERS = PASSWORD_GROUPS.join("");
+
+function randomCharacter(characters: string): string {
+  return characters[randomInt(characters.length)];
+}
+
+function generateDefaultPassword(): string {
+  const characters = [
+    ...PASSWORD_GROUPS.map(randomCharacter),
+    ...Array.from({ length: 7 }, () => randomCharacter(PASSWORD_CHARACTERS))
+  ];
+
+  for (let index = characters.length - 1; index > 0; index--) {
+    const swapIndex = randomInt(index + 1);
+    [characters[index], characters[swapIndex]] = [characters[swapIndex], characters[index]];
+  }
+  return characters.join("");
+}
 
 class UserSubsystem {
   public readonly objects: Map<string, User> = new Map();
@@ -16,6 +41,20 @@ class UserSubsystem {
     for (const uuid of await storage().getStorage().list("User")) {
       const user = (await storage().getStorage().load("User", User, uuid)) as User;
       this.objects.set(uuid, user);
+    }
+    if (this.objects.size === 0) {
+      const passWord = generateDefaultPassword();
+      await this.create({
+        userName: "epanel",
+        passWord,
+        permission: ROLE().ADMIN
+      });
+      console.log(`
+ElementsPanel default administrator created.
+Username: epanel
+Password: ${passWord}
+This password is shown only once.
+`);
     }
     logger().info($t("TXT_CODE_systemUser.userCount", { n: this.objects.size }));
   }

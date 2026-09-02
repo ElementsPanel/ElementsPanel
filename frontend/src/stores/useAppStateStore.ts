@@ -28,7 +28,6 @@ export const useAppStateStore = createGlobalState(() => {
   const language = useLocalStorage(LANGUAGE_KEY, toStandardLang(window.navigator.language));
   const state: AppStateInfo = reactive<AppStateInfo>({
     userInfo: null,
-    isInstall: true,
     versionChange: false,
     language: language.value,
     settings: {
@@ -73,14 +72,11 @@ export const useAppStateStore = createGlobalState(() => {
   const updatePanelStatus = async () => {
     const { state } = useAppStateStore();
     const panelStatusRes = await panelStatus().execute();
-    state.isInstall = panelStatusRes.value?.isInstall ?? true;
     state.versionChange = panelStatusRes.value?.versionChange ? true : false;
     if (panelStatusRes.value?.settings) {
       state.settings = panelStatusRes.value?.settings;
     }
-    if (state.isInstall) {
-      state.language = language.value = toStandardLang(panelStatusRes.value?.language);
-    }
+    state.language = language.value = toStandardLang(panelStatusRes.value?.language);
     console.info("Window.navigator.language:", window.navigator.language);
     console.info("Panel Language:", state.language);
   };

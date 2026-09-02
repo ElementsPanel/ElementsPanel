@@ -53,7 +53,7 @@ i18next.init({
     pt_br: {
       translation: pt_BR
     },
-    th_TH: {
+    th_th: {
       translation: th_TH
     },
     tr_tr: {

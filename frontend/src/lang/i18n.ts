@@ -1,6 +1,5 @@
 // I18n init configuration (Frontend)
 
-import { useAppStateStore } from "@/stores/useAppStateStore";
 import { createI18n, type I18n } from "vue-i18n";
 
 // DO NOT I18N
@@ -69,7 +68,6 @@ export function toStandardLang(lang?: string) {
 // If you want to add the language of your own country, you need to add the code here.
 const messages: Record<string, any> = {};
 async function initI18n(lang: string) {
-  const { state } = useAppStateStore();
   lang = toStandardLang(lang);
 
   const langFiles = import.meta.glob("../../../languages/*.json");
@@ -77,16 +75,9 @@ async function initI18n(lang: string) {
     const langFile = langFiles[path];
     if (typeof langFile !== "function") continue;
 
-    if (state.isInstall) {
-      if (!toStandardLang(path).includes(lang)) continue;
-      messages[lang] = await langFiles[path]();
-      break;
-    }
-
-    for (const l of SUPPORTED_LANGS) {
-      if (!toStandardLang(path).includes(l.value)) continue;
-      messages[l.value] = await langFiles[path]();
-    }
+    if (!toStandardLang(path).includes(lang)) continue;
+    messages[lang] = await langFiles[path]();
+    break;
   }
 
   i18n = createI18n({
@@ -124,16 +115,6 @@ const getCurrentLang = (): string => {
   return searchSupportLanguage(curLang);
 };
 
-// Only for first install page
-const getInitLanguage = (): string => {
-  const curLang = String(i18n.global.locale).toLowerCase();
-  const lang = searchSupportLanguage(curLang);
-  if (lang !== "zh_cn" && lang !== "zh_tw") {
-    return "en_us";
-  }
-  return lang;
-};
-
 const isCN = () => {
   return (
     getCurrentLang() === "zh_cn" ||
@@ -156,7 +137,6 @@ const t = $t;
 export {
   $t,
   getCurrentLang,
-  getInitLanguage,
   getSupportLanguages,
   initI18n,
   isCN,

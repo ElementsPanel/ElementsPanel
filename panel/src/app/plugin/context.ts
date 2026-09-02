@@ -283,11 +283,6 @@ export interface PanelPluginsService {
   setEnabled(id: string, enabled: boolean): Promise<PanelPluginRecord>;
 }
 
-/** First-run completion, reported as `isInstall` by `/api/auth/status`. */
-export interface PanelInstallationService {
-  isInstalled(): boolean;
-}
-
 declare module "cordis" {
   interface Context {
     // Core services, always present.
@@ -319,8 +314,6 @@ declare module "cordis" {
     remote: PanelRemoteService;
     /** Request authorization for the whole panel. Provided by `plugins/user`. */
     guard: RequestGuard;
-    /** First-run state. Provided by `plugins/oobe`. */
-    installation: PanelInstallationService;
   }
 }
 

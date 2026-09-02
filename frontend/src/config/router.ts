@@ -240,15 +240,12 @@ router.beforeEach(async (to, from, next) => {
   topProgressBar.start();
   const { state, updateUserInfo, isAdmin, authEnabled } = useAppStateStore();
 
-  // The user plugin supplies authentication and the account-creation step used
-  // by the OOBE plugin. Without it every visitor is already an administrator.
+  // Without the user plugin every visitor is an anonymous administrator.
   const requiresLogin = authEnabled.value;
   const userPermission = state.userInfo?.permission ?? 0;
   const toPagePermission = Number(to.meta.permission ?? 0);
   const fromRoutePath = router.currentRoute.value.path.trim();
   const toRoutePath = to.path.trim();
-  const hasInstallRoute = router.getRoutes().some((route) => route.path === "/install");
-  const requiresOobe = hasInstallRoute && !state.isInstall;
   console.info(
     "Router Changed:",
     fromRoutePath,
@@ -259,10 +256,6 @@ router.beforeEach(async (to, from, next) => {
     "toPagePermission:",
     toPagePermission
   );
-
-  if (requiresOobe && toRoutePath !== "/install") {
-    return next("/install");
-  }
 
   if (to.meta?.redirect) {
     if (typeof to.meta.redirect === "function") {

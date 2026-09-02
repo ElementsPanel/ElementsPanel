@@ -5,7 +5,6 @@ import { GlobalVariable } from "mcsmanager-common";
 import { ROLE } from "../entity/user";
 import permission from "../middleware/permission";
 import validator from "../middleware/validator";
-import { getInstallationState } from "../service/installation_state";
 import { getRequestGuard } from "../service/request_guard";
 import { systemConfig } from "../setting";
 
@@ -20,13 +19,9 @@ router.all(
   "/status",
   permission({ token: false, level: null, speedLimit: false }),
   async (ctx: Koa.ParameterizedContext) => {
-    // First-run state is supplied by the OOBE plugin. Without that plugin the
-    // panel is already installed and must never redirect to a missing wizard.
-    const isInstall = getInstallationState().isInstalled();
     const accessPolicy = getRequestGuard().accessPolicy();
     ctx.body = {
       versionChange: GlobalVariable.get("versionChange", null),
-      isInstall,
       language: systemConfig?.language || null,
       settings: {
         canFileManager: accessPolicy.canFileManager,

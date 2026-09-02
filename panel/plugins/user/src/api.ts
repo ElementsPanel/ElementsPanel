@@ -6,19 +6,6 @@ import type { SsoPublicConfig } from "@/services/apis/user";
 // (see frontend/src/services/apis/user.ts) so nothing outside this plugin has
 // to know they exist.
 
-export const panelInstall = useDefineApi<
-  {
-    data: {
-      username: string;
-      password: string;
-    };
-  },
-  any
->({
-  url: "/api/auth/install",
-  method: "POST"
-});
-
 export const loginUser = useDefineApi<
   | {
       data: {

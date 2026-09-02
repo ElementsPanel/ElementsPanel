@@ -46,11 +46,11 @@ function provide<K extends keyof Context & string>(name: K, value: Context[K]) {
  * are `Service` classes, because a registration has to belong to the plugin that
  * made it. `logger` and the timer helpers come from cordis itself.
  *
- * `koa`, `remote`, `guard` and `installation` are deliberately absent: they are
+ * `koa`, `remote` and `guard` are deliberately absent: they are
  * provided by plugins with `ctx.set()`. `koa` comes from `plugins/server`, which
  * owns the whole web server, and `remote` from `plugins/node`, which owns the
- * daemon connections; the other two are read through a core accessor that falls
- * back to a default so the panel works without the owning plugin.
+ * daemon connections; the guard is read through a core accessor that falls back
+ * to a default so the panel works without the owning plugin.
  */
 export function installPanelPluginServices() {
   provide("settings", { config: systemConfig!, save: () => saveSystemConfig(systemConfig!) });
