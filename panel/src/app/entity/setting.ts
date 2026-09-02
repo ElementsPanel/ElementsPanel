@@ -39,16 +39,6 @@ export default class SystemConfig {
   // Redis address (Experimental Features)
   redisUrl = "";
 
-  // -----
-  // After it is enabled, you can connect to the redeem.mcsmanager.com platform
-  // to sell instances based on redeem
-  // (this feature may not be available in some countries)
-  businessMode = false;
-  businessId = "";
-  panelId = "";
-  registerCode = "";
-  // -----
-
   // Whether to enable SSL/TLS (HTTPS)
   ssl = false;
   // SSL certificate file path (.pem)

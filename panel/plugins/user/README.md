@@ -66,11 +66,6 @@ The core's `middleware/permission.ts` is pure late binding: routers declare
 requirements at module load, long before plugins exist, so the guard is resolved
 per request.
 
-Business-mode redeem (`instance_exchange_router`) and the redeem flow in
-`service/exchange_service.ts` genuinely need accounts, so they declare a hard
-dependency through `requireGuardFeature()` and fail with a clear error instead of
-behaving as if everyone were an administrator.
-
 ## Settings
 
 Login page text, the login IP limit, the 2FA drift tolerance, the ordinary-user

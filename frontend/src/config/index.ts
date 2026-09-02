@@ -24,7 +24,6 @@ import Page404 from "@/widgets/Page404.vue";
 import QuickStart from "@/widgets/QuickStart.vue";
 import Settings from "@/widgets/Settings.vue";
 import QuickStartFlow from "@/widgets/setupApp/QuickStartFlow.vue";
-import ShelvesCard from "@/widgets/ShelvesCard.vue";
 import TitleCard from "@/widgets/TitleCard.vue";
 
 import { NEW_CARD_TYPE } from "../types/index";
@@ -57,8 +56,7 @@ export const LAYOUT_CARD_TYPES: { [key: string]: any } = shallowReactive({
   DefaultCard,
   Carousel,
   PluginCard,
-  MusicCard,
-  ShelvesCard
+  MusicCard
 });
 
 export interface NewCardItem extends LayoutCard {
@@ -320,17 +318,6 @@ export function getLayoutCardPool() {
       width: 4,
       description: t("TXT_CODE_cb84b22"),
       height: LayoutCardHeight.SMALL,
-      category: NEW_CARD_TYPE.COMMON
-    },
-    {
-      id: getRandomId(),
-      permission: ROLE.GUEST,
-      meta: {},
-      type: "ShelvesCard",
-      title: t("TXT_CODE_b99cae18"),
-      width: 8,
-      description: t("TXT_CODE_163e2d0a"),
-      height: LayoutCardHeight.MEDIUM,
       category: NEW_CARD_TYPE.COMMON
     }
   ];

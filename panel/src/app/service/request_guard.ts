@@ -63,7 +63,7 @@ export interface UserRecords {
   unbindAllSso(): Promise<number>;
 }
 
-/** Session establishment, needed by the business-mode redeem flow. */
+/** Session establishment for authentication-backed routes. */
 export interface AccountService {
   loginSuccess(ctx: Koa.ParameterizedContext, userName: string): string;
 }

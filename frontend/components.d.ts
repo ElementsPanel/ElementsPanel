@@ -113,7 +113,6 @@ declare module 'vue' {
     OverwriteFilesPopUpContent: typeof import('./src/components/OverwriteFilesPopUpContent.vue')['default']
     Params: typeof import('./src/components/NewCardList/params.vue')['default']
     PlaceHolderCard: typeof import('./src/components/PlaceHolderCard.vue')['default']
-    RenewalDialog: typeof import('./src/components/fc/RenewalDialog.vue')['default']
     ResponsiveLayoutGroup: typeof import('./src/components/ResponsiveLayoutGroup.vue')['default']
     RightMenu: typeof import('./src/components/fc/RightMenu.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

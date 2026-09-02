@@ -8,7 +8,7 @@ import { loadPanelPlugins } from "./app/plugin/loader";
 import { logger } from "./app/service/log";
 import versionAdapter from "./app/service/version_adapter";
 import { initSystemConfig, saveSystemConfig, systemConfig } from "./app/setting";
-import { checkBusinessMode, getVersion, initVersionManager } from "./app/version";
+import { getVersion, initVersionManager } from "./app/version";
 
 async function processExit() {
   try {
@@ -72,7 +72,6 @@ async function main() {
   // plugin loading. Persist the core config only after that migration has had
   // a chance to read the old fields, which also removes those legacy keys.
   if (systemConfig) saveSystemConfig(systemConfig);
-  checkBusinessMode();
 
   // The core's own routers go on last, after every plugin's middleware and
   // routers and after the static handlers — the order the panel had before any

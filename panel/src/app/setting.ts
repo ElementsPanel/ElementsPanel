@@ -3,7 +3,6 @@
 import SystemConfig from "./entity/setting";
 import StorageSystem from "./common/system_storage";
 import { i18next } from "./i18n";
-import { v4 } from "uuid";
 let systemConfig: SystemConfig | null = null;
 
 // System persistence configuration table
@@ -14,9 +13,6 @@ export function initSystemConfig() {
     StorageSystem.store("SystemConfig", "config", systemConfig);
   }
   if (systemConfig.language) i18next.changeLanguage(systemConfig.language);
-  if (!systemConfig.panelId) {
-    systemConfig.panelId = v4();
-  }
 }
 
 export function saveSystemConfig(_systemConfig: SystemConfig) {

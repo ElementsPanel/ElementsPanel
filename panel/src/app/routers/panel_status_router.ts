@@ -30,11 +30,8 @@ router.all(
       language: systemConfig?.language || null,
       settings: {
         canFileManager: accessPolicy.canFileManager,
-        businessMode: systemConfig?.businessMode || false,
-        businessId: systemConfig?.businessId || null,
         allowChangeCmd: accessPolicy.allowChangeCmd,
-        allowJavaManager: accessPolicy.allowJavaManager,
-        panelId: systemConfig?.panelId || null
+        allowJavaManager: accessPolicy.allowJavaManager
       }
     };
   }

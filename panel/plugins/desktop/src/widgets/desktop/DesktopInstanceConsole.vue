@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { openRenewalDialog } from "@/components/fc";
 import { INSTANCE_TYPE_TRANSLATION, verifyEULA } from "@/hooks/useInstance";
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { t } from "@/lang/i18n";
@@ -28,7 +27,6 @@ import {
     InfoCircleOutlined,
     LaptopOutlined,
     LoadingOutlined,
-    MoneyCollectOutlined,
     PauseCircleOutlined,
     PlayCircleOutlined,
     RedoOutlined
@@ -152,7 +150,7 @@ const quickOperations = computed(() =>
             title: t("TXT_CODE_b1dedda3"),
             icon: PauseCircleOutlined,
             type: "default",
-            click: async () => {
+            click: async (): Promise<void> => {
                 try {
                     await stopInstance().execute({
                         params: {
@@ -179,7 +177,7 @@ const instanceOperations = computed(() =>
             icon: RedoOutlined,
             type: "default",
             noConfirm: false,
-            click: async () => {
+            click: async (): Promise<void> => {
                 try {
                     await restartInstance().execute({
                         params: {
@@ -198,7 +196,7 @@ const instanceOperations = computed(() =>
             icon: CloseOutlined,
             type: "danger",
             class: "color-warning",
-            click: async () => {
+            click: async (): Promise<void> => {
                 try {
                     await killInstance().execute({
                         params: {
@@ -216,7 +214,7 @@ const instanceOperations = computed(() =>
             title: t("TXT_CODE_40ca4f2"),
             type: "default",
             icon: CloudDownloadOutlined,
-            click: async () => {
+            click: async (): Promise<void> => {
                 try {
                     clearTerminal();
                     await updateInstance().execute({
@@ -234,20 +232,6 @@ const instanceOperations = computed(() =>
                 }
             },
             condition: () => isStopped.value && updateCmd.value
-        },
-        {
-            title: t("TXT_CODE_f77093c8"),
-            icon: MoneyCollectOutlined,
-            noConfirm: true,
-            click: async () => {
-                await openRenewalDialog(
-                    instanceInfo.value?.instanceUuid ?? "",
-                    props.daemonId,
-                    instanceInfo.value?.config.category ?? 0
-                );
-            },
-            props: {},
-            condition: () => !!instanceInfo.value?.config?.category
         },
         // Plugin-supplied terminal buttons, e.g. the market's reinstall tool.
         ...ctx.actions.terminalButtons({

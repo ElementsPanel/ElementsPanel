@@ -6,7 +6,6 @@ import "./service/user_statistics";
 import serviceRouter from "./routers/daemon_router";
 import environmentRouter from "./routers/environment_router";
 import instanceRouter from "./routers/instance_admin_router";
-import exchangeRouter from "./routers/instance_exchange_router";
 import userInstanceRouter from "./routers/instance_operate_router";
 import modManagerRouter from "./routers/mod_manager_router";
 import overviewRouter from "./routers/overview_router";
@@ -26,7 +25,6 @@ export function mountRouters(app: Koa<Koa.DefaultState, Koa.DefaultContext>) {
   apiRouter.use(scheduleRouter.routes()).use(scheduleRouter.allowedMethods());
   apiRouter.use(settingsRouter.routes()).use(settingsRouter.allowedMethods());
   apiRouter.use(environmentRouter.routes()).use(environmentRouter.allowedMethods());
-  apiRouter.use(exchangeRouter.routes()).use(exchangeRouter.allowedMethods());
   apiRouter.use(modManagerRouter.routes()).use(modManagerRouter.allowedMethods());
 
   app.use(apiRouter.routes()).use(apiRouter.allowedMethods());

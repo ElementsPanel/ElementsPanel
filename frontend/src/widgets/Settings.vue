@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import { getProPanelUrl } from "@/components/IframeBox/config";
-import IframeBox from "@/components/IframeBox/index.vue";
 import LeftMenusPanel from "@/components/LeftMenusPanel.vue";
 import Loading from "@/components/Loading.vue";
-import { router } from "@/config/router";
 import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
 import { SUPPORTED_LANGS, isCN, t } from "@/lang/i18n";
@@ -26,7 +23,7 @@ import {
   QuestionCircleOutlined
 } from "@ant-design/icons-vue";
 import { Modal, message, notification } from "ant-design-vue";
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 
 defineProps<{
   card: LayoutCard;
@@ -42,7 +39,6 @@ interface MySettings extends Settings {
   pageTitle?: string;
   logoUrl?: string;
   bgUrl?: string;
-  proLicenseKey?: string;
 }
 
 /** Main app navigation layout: "left" = sidebar, "right" = top header only. Synced from theme config. */
@@ -92,18 +88,6 @@ const menus = arrayFilter([
     key: "baseInfo",
     icon: ProjectOutlined
   },
-  // {
-  //   title: t("TXT_CODE_574ed474"),
-  //   key: "pro",
-  //   icon: SketchOutlined,
-  //   condition: () => isCN()
-  // },
-  // {
-  //   title: t("TXT_CODE_caf8ebb7"),
-  //   key: "redeem",
-  //   icon: KeyOutlined,
-  //   condition: () => isCN()
-  // },
   {
     title: t("TXT_CODE_1c18acc0"),
     key: "ui",
@@ -292,21 +276,6 @@ onMounted(async () => {
   if (cfg?.theme?.sidebarPosition === "left" || cfg?.theme?.sidebarPosition === "right") {
     sidebarPosition.value = cfg.theme.sidebarPosition;
   }
-  setTimeout(() => {
-    if (router.currentRoute.value.query.tab === "pro") {
-      leftMenusPanelRef.value?.setActiveKey("pro");
-    }
-  }, 100);
-});
-
-onUnmounted(() => {
-  const route = router.currentRoute.value;
-  router.replace({
-    query: {
-      ...route.query,
-      tab: undefined
-    }
-  });
 });
 </script>
 
@@ -336,21 +305,6 @@ onUnmounted(() => {
                         {{ item.label }}
                       </a-select-option>
                     </a-select>
-                  </a-form-item>
-
-                  <a-form-item>
-                    <a-typography-title :level="5">Panel ID</a-typography-title>
-                    <a-typography-paragraph type="secondary">
-                      {{ t("TXT_CODE_e2976753") }}
-                      <br />
-                      <span v-if="formData.panelId">
-                        {{ t("TXT_CODE_e56cced3") }}
-                      </span>
-                      <span v-else>
-                        {{ t("TXT_CODE_699b4b66") }}
-                      </span>
-                    </a-typography-paragraph>
-                    <a-input v-model:value="formData.panelId" :placeholder="t('TXT_CODE_4ea93630')" />
                   </a-form-item>
 
                   <div class="button">
@@ -483,14 +437,6 @@ onUnmounted(() => {
                 </a-form>
               </div>
             </div>
-          </template>
-
-          <template #pro>
-            <IframeBox :src="getProPanelUrl('/status')" :height="card.height" />
-          </template>
-
-          <template #redeem>
-            <IframeBox :src="getProPanelUrl('/')" :height="card.height" />
           </template>
 
           <template #about>

@@ -32,10 +32,7 @@ export const useAppStateStore = createGlobalState(() => {
     versionChange: false,
     language: language.value,
     settings: {
-      panelId: "",
       canFileManager: false,
-      businessMode: false,
-      businessId: "",
       allowChangeCmd: false,
       allowJavaManager: true
     }

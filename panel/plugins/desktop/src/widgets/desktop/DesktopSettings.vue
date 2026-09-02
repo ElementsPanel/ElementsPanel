@@ -13,7 +13,7 @@ import {
     SaveOutlined,
     UploadOutlined
 } from "@ant-design/icons-vue";
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 
 const { execute, isReady } = settingInfo();
 const { execute: submitExecute, isLoading: submitIsLoading } = setSettingInfo();
@@ -189,14 +189,6 @@ limitations under the License.`;
                             </select>
                         </div>
 
-                        <div class="ds-form-group">
-                            <label class="ds-label">Panel ID</label>
-                            <p class="ds-desc">
-                                {{ t("TXT_CODE_e2976753") }}<br />
-                                {{ formData.panelId ? t("TXT_CODE_e56cced3") : t("TXT_CODE_699b4b66") }}
-                            </p>
-                            <input v-model="formData.panelId" class="ds-input" :placeholder="t('TXT_CODE_4ea93630')" />
-                        </div>
                     </div>
 
                     <div v-show="activeTab === 'ui'" class="ds-form">

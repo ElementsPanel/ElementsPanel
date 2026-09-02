@@ -88,10 +88,6 @@ export interface Settings {
   zipType: number;
   language: string;
   redisUrl: string;
-  businessMode: boolean;
-  businessId: string;
-  registerCode: string;
-  panelId: string;
 }
 
 export interface ImageInfo {
@@ -245,11 +241,8 @@ export interface PanelStatus {
   versionChange?: boolean;
   settings: {
     canFileManager: boolean;
-    businessMode: boolean;
-    businessId: string;
     allowChangeCmd: boolean;
     allowJavaManager: boolean;
-    panelId: string;
   };
 }
 

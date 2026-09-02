@@ -7,7 +7,6 @@ import { SAVE_DIR_PATH } from "../const";
 import SystemConfig from "../entity/setting";
 import { ROLE } from "../entity/user";
 import { $t, i18next } from "../i18n";
-import { speedLimit } from "../middleware/limit";
 import permission from "../middleware/permission";
 import {
   getFrontendLayoutConfig,
@@ -18,7 +17,6 @@ import { getRequestGuard as guard } from "../service/request_guard";
 import { logger } from "../service/log";
 import { operationLogger } from "../service/operation_logger";
 import { saveSystemConfig, systemConfig } from "../setting";
-import { checkBusinessMode } from "../version";
 import { remoteSubsystem } from "../service/remote_access";
 
 const router = new Router({ prefix: "/overview" });
@@ -53,11 +51,6 @@ router.put("/setting", permission({ level: ROLE.ADMIN }), async (ctx) => {
     if (config.forwardType != null) systemConfig.forwardType = Number(config.forwardType);
     if (config.dataPort != null) systemConfig.dataPort = Number(config.dataPort);
 
-    if (config.businessMode != null) systemConfig.businessMode = Boolean(config.businessMode);
-    if (config.businessId != null) systemConfig.businessId = String(config.businessId);
-    if (config.registerCode != null) systemConfig.registerCode = String(config.registerCode);
-    if (config.panelId != null) systemConfig.panelId = String(config.panelId);
-
     if (config.language != null) {
       logger.warn($t("TXT_CODE_e29a9317"), config.language);
       systemConfig.language = String(config.language);
@@ -71,7 +64,6 @@ router.put("/setting", permission({ level: ROLE.ADMIN }), async (ctx) => {
     });
 
     saveSystemConfig(systemConfig);
-    checkBusinessMode();
     ctx.body = "OK";
     return;
   }
@@ -129,15 +121,5 @@ router.post("/upload_assets", permission({ level: ROLE.ADMIN }), async (ctx) => 
     }
   }
 });
-
-router.post(
-  "/refresh_business_mode",
-  speedLimit(5),
-  permission({ level: ROLE.ADMIN }),
-  async (ctx) => {
-    await checkBusinessMode();
-    ctx.body = "OK";
-  }
-);
 
 export default router;

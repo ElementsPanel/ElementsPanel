@@ -12,7 +12,6 @@ import DockerDeviceDialogVue from "./DockerDeviceDialog.vue";
 import DockerPortDialog from "./DockerPortDialog.vue";
 import DockerVersionSelectDialog from "./DockerVersionSelectDialog.vue";
 import NodeSelectDialog from "./NodeSelectDialog.vue";
-import RenewalDialog from "./RenewalDialog.vue";
 import TagsDialog from "./TagsDialog.vue";
 import TaskLoadingDialog from "./TaskLoadingDialog.vue";
 
@@ -203,12 +202,6 @@ export async function openInstanceTagsEditor(
 
 export async function useDeleteInstanceDialog(instanceId: string, daemonId: string) {
   return await useMountComponent({ instanceId, daemonId }).mount<boolean>(DeleteInstanceDialog);
-}
-
-export async function openRenewalDialog(instanceId: string, daemonId: string, productId: number) {
-  return useMountComponent({ instanceId, daemonId, productId })
-    .load<InstanceType<typeof RenewalDialog>>(RenewalDialog)
-    .openDialog();
 }
 
 export async function openNodeSelectDialog(targetPlatforms?: string[]) {

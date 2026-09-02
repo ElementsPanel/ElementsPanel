@@ -216,19 +216,6 @@ const originRouterConfig: RouterConfig[] = [
       onlyDisplayEditMode: true,
       customClass: ["nav-button-warning"]
     }
-  },
-  {
-    path: "/shop",
-    name: t("TXT_CODE_5a408a5e"),
-    component: LayoutContainer,
-    meta: {
-      permission: ROLE.GUEST,
-      mainMenu: true,
-      condition: () => {
-        const { state: appConfig } = useAppStateStore();
-        return appConfig.settings.businessMode;
-      }
-    }
   }
 ];
 
@@ -306,7 +293,7 @@ router.beforeEach(async (to, from, next) => {
     toRoutePath.includes("_open_page") ||
     toRoutePath.startsWith("/sso/") ||
     to.meta.public === true ||
-    ["/shop", "/login", "/404"].includes(toRoutePath)
+    ["/login", "/404"].includes(toRoutePath)
   ) {
     return next();
   }
