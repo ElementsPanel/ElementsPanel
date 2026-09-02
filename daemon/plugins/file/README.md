@@ -33,7 +33,7 @@ answering with a clear error rather than breaking the build.
 
 `ctx.transfer` is the counterpart: the core hands over the passports that
 authorize a transfer (`routers/passport_router.ts` issues them and
-`routers/stream_router.ts` checks them too), the URL downloader the Java manager
+`plugins/terminal` checks the stream passport), the URL downloader the Java manager
 and mod service share, and the rate-limited file sender. `ctx.archive` carries the
 compression helpers, extended here with `compress`, `decompress` and
 `listArchiveEntries`.

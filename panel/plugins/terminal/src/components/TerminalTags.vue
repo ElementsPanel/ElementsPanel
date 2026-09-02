@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { TagInfo } from "./interface";
+import type { TagInfo } from "@/components/interface";
 
 defineProps<{
   tags: TagInfo[];

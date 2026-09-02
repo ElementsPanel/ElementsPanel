@@ -1,7 +1,7 @@
 import { GLOBAL_INSTANCE_NAME } from "@/config/const";
-import { useCommandHistory } from "@/hooks/useCommandHistory";
+import { useCommandHistory } from "./useCommandHistory";
 import { t } from "@/lang/i18n";
-import { setUpTerminalStreamChannel } from "@/services/apis/instance";
+import { setUpTerminalStreamChannel } from "../api";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { mapDaemonAddress, parseForwardAddress } from "@/tools/protocol";
 import type { InstanceDetail } from "@/types";
@@ -14,7 +14,7 @@ import { Terminal } from "@xterm/xterm";
 import EventEmitter from "eventemitter3";
 import type { Socket } from "socket.io-client";
 import { computed, onMounted, onUnmounted, ref, unref } from "vue";
-import { makeSocketIo } from "./useSocketIo";
+import { makeSocketIo } from "@/hooks/useSocketIo";
 
 export const TERM_COLOR = {
   TERM_RESET: "\x1B[0m",

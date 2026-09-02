@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAppRouters } from "@/hooks/useAppRouters";
 import {
+    TYPE_MINECRAFT_JAVA,
     TYPE_STEAM_SERVER_UNIVERSAL,
     useInstanceInfo
 } from "@/hooks/useInstance";

@@ -9,7 +9,6 @@ import validator from "../middleware/validator";
 import { getRequestGuard as guard } from "../service/request_guard";
 import { checkInstanceAdvancedParams } from "../service/instance_service";
 import { operationLogger } from "../service/operation_logger";
-import { timeUuid } from "../service/password";
 import { isRemoteRequestTimeout, remoteRequest, remoteSubsystem } from "../service/remote_access";
 
 const router = new Router({ prefix: "/protected_instance" });
@@ -258,41 +257,6 @@ router.all(
 );
 
 // [Low-level Permission]
-// Request to establish a data stream dedicated channel with the daemon
-router.post(
-  "/stream_channel",
-  permission({ level: ROLE.USER }),
-  validator({ query: { daemonId: String, uuid: String } }),
-  async (ctx) => {
-    try {
-      const daemonId = String(ctx.query.daemonId);
-      const instanceUuid = String(ctx.query.uuid);
-      const remoteService = remoteSubsystem().getInstance(daemonId);
-      if (!remoteService) throw new Error($t("TXT_CODE_dd559000") + ` Daemon ID: ${daemonId}`);
-      const addr = remoteService.config.addr;
-      const prefix = remoteService.config.prefix;
-      const remoteMappings = remoteService.config.getConvertedRemoteMappings();
-      const password = timeUuid();
-      await remoteRequest(remoteService).request("passport/register", {
-        name: "stream_channel",
-        password: password,
-        parameter: {
-          instanceUuid
-        }
-      });
-      ctx.body = {
-        password,
-        addr,
-        prefix,
-        remoteMappings
-      };
-    } catch (err) {
-      ctx.body = err;
-    }
-  }
-);
-
-// [Low-level Permission]
 // Get the instance configuration file list based on the file list
 router.post(
   "/process_config/list",
@@ -475,41 +439,6 @@ router.put(
         }
       });
       ctx.body = true;
-    } catch (err) {
-      ctx.body = err;
-    }
-  }
-);
-
-// [Low-level Permission]
-// Get the terminal log of an instance
-router.get(
-  "/outputlog",
-  permission({ level: ROLE.USER, speedLimit: false }),
-  validator({ query: { daemonId: String, uuid: String } }),
-  async (ctx) => {
-    try {
-      const daemonId = String(ctx.query.daemonId);
-      const instanceUuid = String(ctx.query.uuid);
-      const remoteService = remoteSubsystem().getInstance(daemonId);
-      let result = await remoteRequest(remoteService).request("instance/outputlog", {
-        instanceUuid
-      });
-      if (ctx.query.size) {
-        let size,
-          sizeStr = ctx.query.size;
-        if (sizeStr instanceof Array) {
-          sizeStr = sizeStr[0];
-        }
-        size = parseInt(sizeStr);
-        if (sizeStr.toLowerCase().endsWith("kb")) {
-          size *= 1024;
-        }
-        if (result.length > size) {
-          result = result.slice(-size);
-        }
-      }
-      ctx.body = result;
     } catch (err) {
       ctx.body = err;
     }

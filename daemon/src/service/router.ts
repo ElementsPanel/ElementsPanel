@@ -86,6 +86,5 @@ import "../routers/instance_event_router";
 import "../routers/Instance_router";
 import "../routers/passport_router";
 import "../routers/schedule_router";
-import "../routers/stream_router";
 
 logger.info($t("TXT_CODE_router.initComplete"));

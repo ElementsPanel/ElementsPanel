@@ -1,5 +1,3 @@
-import RouterContext from "../entity/ctx";
-
 interface IMission {
   name: string;
   parameter: any;
@@ -45,21 +43,6 @@ class MissionPassport {
   }
 }
 
-// The top-level login — the panel presenting the daemon key — belongs to
-// `plugins/auth`, which owns its own session type and marks the session itself.
-const LOGIN_FROM_STREAM = "STREAM";
-
-function streamLoginSuccessful(ctx: RouterContext, instanceUuid: string) {
-  ctx.session.id = ctx.socket.id;
-  ctx.session.login = true;
-  ctx.session.type = LOGIN_FROM_STREAM;
-  ctx.session.stream = {
-    check: true,
-    instanceUuid
-  };
-  return ctx.session;
-}
-
 const missionPassport = new MissionPassport();
 
-export { missionPassport, IMission, LOGIN_FROM_STREAM, streamLoginSuccessful };
+export { missionPassport, IMission };

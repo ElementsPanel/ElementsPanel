@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import connectErrorImage from "@/assets/daemon_connection_error.png";
-import { useCommandHistory } from "@/hooks/useCommandHistory";
+import { useCommandHistory } from "../hooks/useCommandHistory";
 import { useXhrPollError } from "@/hooks/useXhrPollError";
 import { t } from "@/lang/i18n";
-import { getInstanceOutputLog } from "@/services/apis/instance";
+import { getInstanceOutputLog } from "../api";
 import { logInstanceCrash, logInstanceAutoRestart } from "@/services/apis/operationLog";
 import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import { CodeOutlined, DeleteOutlined, LoadingOutlined } from "@ant-design/icons-vue";
@@ -11,7 +11,7 @@ import { Terminal } from "@xterm/xterm";
 import { message } from "ant-design-vue";
 import { onMounted, ref } from "vue";
 import { encodeConsoleColor, type UseTerminalHook } from "../hooks/useTerminal";
-import { getRandomId } from "../tools/randId";
+import { getRandomId } from "@/tools/randId";
 
 // Module-level dedup: prevent duplicate crash/restart logs across multiple TerminalCore instances
 let lastCrashLogTime = 0;

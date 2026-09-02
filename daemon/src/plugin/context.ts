@@ -296,8 +296,8 @@ export interface DaemonArchiveService {
  * file sender and the temp-file cleanup.
  *
  * These stay in the core because other features use them too — `passport_router`
- * issues passports, `stream_router` checks them, and the Java manager and mod
- * service download by URL.
+ * issues passports, `plugins/terminal` checks stream passports, and the Java
+ * manager and mod service download by URL.
  */
 export interface DaemonTransferService {
   readonly passports: typeof missionPassport;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import CardPanel from "@/components/CardPanel.vue";
-import TerminalTopTags from "@/components/TerminalTopTags.vue";
+import { usePluginService, type FrontendTerminalService } from "@/plugin/context";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useInstanceInfo } from "@/hooks/useInstance";
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
@@ -11,6 +11,8 @@ import { computed, onMounted } from "vue";
 const props = defineProps<{
     card: LayoutCard;
 }>();
+
+const terminalService = computed(() => usePluginService<FrontendTerminalService>("terminal"));
 
 const { getMetaOrRouteValue } = useLayoutCardTools(props.card);
 
@@ -74,7 +76,7 @@ onMounted(async () => {
             {{ card.title }}
         </template>
         <template #body>
-            <TerminalTopTags v-if="!isDisplayStopped && displayInfo" :info="displayInfo"
+            <component :is="terminalService?.TerminalTopTags" v-if="terminalService && !isDisplayStopped && displayInfo" :info="displayInfo"
                 :is-stopped="isDisplayStopped" />
             <div v-else style="text-align: center; color: var(--color-gray-6); padding: 10px 0;">
                 {{ t("TXT_CODE_NO_DATA") }}

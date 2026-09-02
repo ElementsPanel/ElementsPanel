@@ -4,7 +4,6 @@ import type { LayoutCard } from "@/types";
 import DefaultCard from "@/widgets/DefaultCard.vue";
 import EmptyCard from "@/widgets/EmptyCard.vue";
 import InstanceBaseInfo from "@/widgets/instance/BaseInfo.vue";
-import InstanceCommandHistory from "@/widgets/instance/CommandHistory.vue";
 import InstanceManagerBtns from "@/widgets/instance/ManagerBtns.vue";
 import InstanceModManager from "@/widgets/instance/ModManager.vue";
 import InstancePerformance from "@/widgets/instance/Performance.vue";
@@ -12,7 +11,6 @@ import Schedule from "@/widgets/instance/Schedule.vue";
 import InstanceServerConfigFile from "@/widgets/instance/ServerConfigFile.vue";
 import InstanceServerConfigOverview from "@/widgets/instance/ServerConfigOverview.vue";
 import InstanceShortcut from "@/widgets/instance/Shortcut.vue";
-import Terminal from "@/widgets/instance/Terminal.vue";
 import InstanceList from "@/widgets/InstanceList.vue";
 import Carousel from "@/widgets/others/Carousel.vue";
 import ClockCard from "@/widgets/others/ClockCard.vue";
@@ -42,11 +40,9 @@ export const LAYOUT_CARD_TYPES: { [key: string]: any } = shallowReactive({
   QuickStart,
   InstanceList,
   Settings,
-  Terminal,
   InstanceManagerBtns,
   InstanceBaseInfo,
   InstancePerformance,
-  InstanceCommandHistory,
   InstanceServerConfigOverview,
   InstanceServerConfigFile,
   InstanceModManager,
@@ -98,39 +94,6 @@ export function getLayoutCardPool() {
       height: LayoutCardHeight.AUTO,
       category: NEW_CARD_TYPE.COMMON
     },
-
-    {
-      id: getRandomId(),
-      permission: ROLE.USER,
-      type: "Terminal",
-      title: t("TXT_CODE_71a51d19"),
-      width: 6,
-      description: t("TXT_CODE_10a6d36f"),
-      height: LayoutCardHeight.BIG,
-      category: NEW_CARD_TYPE.INSTANCE,
-      meta: {
-        viewType: "card"
-      },
-      params: [
-        {
-          field: "instanceId",
-          label: t("TXT_CODE_e6a5c12b"),
-          type: "string"
-        },
-        {
-          field: "daemonId",
-          label: t("TXT_CODE_72cfab69"),
-          type: "string"
-        },
-        {
-          field: "instance",
-          label: t("TXT_CODE_cb043d10"),
-          type: "instance"
-        }
-      ]
-    },
-
-
 
     {
       id: getRandomId(),
@@ -261,34 +224,6 @@ export function getLayoutCardPool() {
       title: t("TXT_CODE_5476e012"),
       width: 4,
       description: t("TXT_CODE_5476e012"),
-      height: LayoutCardHeight.MINI,
-      category: NEW_CARD_TYPE.INSTANCE,
-      params: [
-        {
-          field: "instanceId",
-          label: t("TXT_CODE_e6a5c12b"),
-          type: "string"
-        },
-        {
-          field: "daemonId",
-          label: t("TXT_CODE_72cfab69"),
-          type: "string"
-        },
-        {
-          field: "instance",
-          label: t("TXT_CODE_cb043d10"),
-          type: "instance"
-        }
-      ]
-    },
-    {
-      id: getRandomId(),
-      permission: ROLE.USER,
-      meta: {},
-      type: "InstanceCommandHistory",
-      title: t("TXT_CODE_cmd_history"), // "历史命令"
-      width: 4,
-      description: t("TXT_CODE_cmd_history"),
       height: LayoutCardHeight.MINI,
       category: NEW_CARD_TYPE.INSTANCE,
       params: [

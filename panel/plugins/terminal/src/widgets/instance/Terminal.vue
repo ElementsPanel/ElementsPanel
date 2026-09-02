@@ -2,7 +2,7 @@
 import CardPanel from "@/components/CardPanel.vue";
 import { openRenewalDialog } from "@/components/fc";
 import IconBtn from "@/components/IconBtn.vue";
-import TerminalCore from "@/components/TerminalCore.vue";
+import TerminalCore from "../../components/TerminalCore.vue";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { INSTANCE_TYPE_TRANSLATION, verifyEULA } from "@/hooks/useInstance";
 import { useScreen } from "@/hooks/useScreen";
@@ -36,9 +36,9 @@ import {
 } from "@ant-design/icons-vue";
 import { Modal } from "ant-design-vue";
 import { computed, h, onUnmounted, ref } from "vue";
-import { GLOBAL_INSTANCE_NAME } from "../../config/const";
+import { GLOBAL_INSTANCE_NAME } from "@/config/const";
 import { useTerminal, type UseTerminalHook } from "../../hooks/useTerminal";
-import { arrayFilter } from "../../tools/array";
+import { arrayFilter } from "@/tools/array";
 import InstanceLogDialog from "./dialogs/InstanceLogDialog.vue";
 
 const props = defineProps<{

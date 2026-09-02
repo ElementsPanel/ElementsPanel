@@ -1,0 +1,8 @@
+{
+  "id": "terminal",
+  "version": "1.0.0",
+  "description": "Provides the instance terminal, command history and terminal stream client.",
+  "priority": 90,
+  "frontend": "src/frontend.ts",
+  "backend": "backend/index.cjs"
+}

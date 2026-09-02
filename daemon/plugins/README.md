@@ -69,6 +69,7 @@ Set `enabled` to `false` to skip one.
 | `ctx.archive` | `GitignoreMatcher`, `compress`, `decompress`, `listArchiveEntries`, `decompressWithProgress`, `check7zipStatus`, `sevenZipPath`, `zipTimeoutSeconds`. |
 | `ctx.plugins` | `loaded`, `inventory()`, `setEnabled(id, enabled)`. |
 | `ctx.files` | `FileManager`, `uploads`, `getFileManager`, `getWindowsDisks`. **Provided by `plugins/file`.** |
+| `plugins/terminal` | Owns the `stream/*` protocol events and `instance/outputlog`. |
 | `ctx.koa` | `app`, `use(middleware)`, `router(prefix?)` for plugins that serve HTTP. **Provided by `plugins/server`.** |
 | `ctx.websocket` | `io`, the Socket.io server. **Provided by `plugins/server`.** |
 

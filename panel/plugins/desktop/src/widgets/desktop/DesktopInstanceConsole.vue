@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { openRenewalDialog } from "@/components/fc";
-import TerminalCore from "@/components/TerminalCore.vue";
 import { INSTANCE_TYPE_TRANSLATION, verifyEULA } from "@/hooks/useInstance";
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
-import { useTerminal, type UseTerminalHook } from "@/hooks/useTerminal";
 import { t } from "@/lang/i18n";
-import { ctx } from "@/plugin/context";
+import { ctx, usePluginService, type FrontendTerminalService } from "@/plugin/context";
 import {
     killInstance,
     openInstance,
@@ -59,7 +57,10 @@ const emit = defineEmits<{
     (e: "open-instance-action", actionId: string, instanceId: string, daemonId: string): void;
 }>();
 
-const terminalHook: UseTerminalHook = useTerminal();
+const terminalService = usePluginService<FrontendTerminalService>("terminal");
+if (!terminalService) throw new Error("The terminal plugin is required by Desktop mode.");
+const TerminalCore = terminalService.TerminalCore;
+const terminalHook = terminalService.useTerminal();
 const {
     state: instanceInfo,
     isStopped,
@@ -130,7 +131,10 @@ const toOpenInstance = async () => {
 };
 
 const updateCmd = computed(() => (instanceInfo.value?.config.updateCommand ? true : false));
-const instanceStatusText = computed(() => INSTANCE_STATUS[instanceInfo.value?.status ?? -1]);
+const instanceStatusText = computed(() => {
+    const status = Number(instanceInfo.value?.status ?? -1) as keyof typeof INSTANCE_STATUS;
+    return INSTANCE_STATUS[status];
+});
 
 const quickOperations = computed(() =>
     arrayFilter([
@@ -395,7 +399,7 @@ onUnmounted(() => {
 
         <div class="dim-body">
             <div v-if="activeDialog === 'none'" class="dim-list">
-                <TerminalCore :use-terminal-hook="terminalHook" :instance-id="instanceId" :daemon-id="daemonId"
+                <component :is="TerminalCore" :use-terminal-hook="terminalHook" :instance-id="instanceId" :daemon-id="daemonId"
                     height="100%" />
             </div>
 

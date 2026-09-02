@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import CardPanel from "@/components/CardPanel.vue";
-import { useCommandHistory } from "@/hooks/useCommandHistory";
+import { useCommandHistory } from "../../hooks/useCommandHistory";
 import { t } from "@/lang/i18n";
 import type { LayoutCard } from "@/types";
 import { CodeOutlined, DeleteOutlined } from "@ant-design/icons-vue";

@@ -7,39 +7,6 @@ import type {
   Schedule
 } from "@/types";
 
-export interface MissionPassportResponse {
-  addr: string;
-  password: string;
-  prefix: string;
-  remoteMappings: RemoteMappingEntry[];
-}
-
-export const setUpTerminalStreamChannel = useDefineApi<
-  {
-    params: {
-      daemonId: string;
-      uuid: string;
-    };
-  },
-  MissionPassportResponse
->({
-  url: "/api/protected_instance/stream_channel",
-  method: "POST"
-});
-
-export const getInstanceOutputLog = useDefineApi<
-  {
-    params: {
-      uuid: string;
-      daemonId: string;
-    };
-  },
-  string
->({
-  url: "/api/protected_instance/outputlog",
-  method: "GET"
-});
-
 export const getInstanceInfo = useDefineApi<
   {
     params: {
@@ -449,4 +416,3 @@ export const scheduleCreate = useDefineApi<
   url: "/api/protected_schedule",
   method: "POST"
 });
-

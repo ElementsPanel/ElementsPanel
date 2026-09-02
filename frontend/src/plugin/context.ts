@@ -277,6 +277,18 @@ export interface FrontendFileManagerService {
   ): Promise<any>;
 }
 
+/** The instance terminal and its stream client. Provided by `plugins/terminal`. */
+export interface FrontendTerminalService {
+  readonly api: Record<string, unknown>;
+  readonly Terminal: Component;
+  readonly TerminalCore: Component;
+  readonly TerminalTags: Component;
+  readonly TerminalTopTags: Component;
+  readonly useTerminal: (...args: any[]) => any;
+  readonly useCommandHistory: (...args: any[]) => any;
+  readonly encodeConsoleColor: (text: string) => string;
+}
+
 /** Accounts and sessions. Provided by `plugins/user`. */
 export interface FrontendUserService {
   readonly api: UserPluginApi;
@@ -322,6 +334,7 @@ declare module "cordis" {
     market: FrontendMarketService;
     node: FrontendNodeService;
     file: FrontendFileManagerService;
+    terminal: FrontendTerminalService;
   }
 }
 

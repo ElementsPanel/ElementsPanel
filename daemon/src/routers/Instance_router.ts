@@ -555,23 +555,6 @@ routerApp.on("instance/process_config/file", (ctx, data) => {
   }
 });
 
-// Get instance terminal log
-routerApp.on("instance/outputlog", async (ctx, data) => {
-  const instanceUuid = data.instanceUuid;
-  try {
-    const filePath = path.join(InstanceSubsystem.LOG_DIR, `${instanceUuid}.log`);
-    if (fs.existsSync(filePath)) {
-      const text = await fs.readFile(filePath, { encoding: "utf-8" });
-      return protocol.response(ctx, text);
-    }
-    protocol.responseError(ctx, new Error($t("TXT_CODE_Instance_router.terminalLogNotExist")), {
-      disablePrint: true
-    });
-  } catch (err: any) {
-    protocol.responseError(ctx, err);
-  }
-});
-
 routerApp.on("instance/mods/list", async (ctx, data) => {
   const instanceUuid = data.instanceUuid;
   const page = Number(data.page) || 1;
