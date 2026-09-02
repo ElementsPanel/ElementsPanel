@@ -1,4 +1,3 @@
-import { useAppStateStore } from "@/stores/useAppStateStore";
 import { reportErrorMsg } from "@/tools/validator";
 import type { AxiosError, AxiosRequestConfig } from "axios";
 import axios from "axios";
@@ -6,10 +5,15 @@ import EventEmitter from "eventemitter3";
 import _ from "lodash";
 
 axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
+let authToken: string | undefined;
+
+export function setAuthToken(token?: string) {
+  authToken = token;
+}
+
 axios.interceptors.request.use(async (config) => {
-  const { state } = useAppStateStore();
   if (!config.params) config.params = {};
-  config.params.token = state.userInfo?.token;
+  config.params.token = authToken;
   return config;
 });
 

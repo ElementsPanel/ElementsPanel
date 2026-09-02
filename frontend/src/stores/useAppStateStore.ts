@@ -1,4 +1,5 @@
 import { LANGUAGE_KEY, toStandardLang } from "@/lang/i18n";
+import { setAuthToken } from "@/services/apiService";
 import { panelStatus } from "@/services/apis";
 import { isUserPluginLoaded, userInfoApi } from "@/services/apis/user";
 import type { PanelStatus } from "@/types";
@@ -46,19 +47,23 @@ export const useAppStateStore = createGlobalState(() => {
   const authEnabled = computed(() => isUserPluginLoaded());
   const isAdmin = computed(() => state.userInfo?.permission === 10);
   const isLogged = computed(() => Number(state.userInfo?.permission) > 0);
+  const setStateUserInfo = (userInfo: LoginUserInfo | null) => {
+    state.userInfo = userInfo;
+    setAuthToken(userInfo?.token);
+  };
 
   const updateUserInfo = async (userInfo?: LoginUserInfo) => {
     if (!authEnabled.value) {
-      state.userInfo = { ...ANONYMOUS_ADMIN };
+      setStateUserInfo({ ...ANONYMOUS_ADMIN });
       return;
     }
     try {
       if (userInfo) {
-        state.userInfo = userInfo;
+        setStateUserInfo(userInfo);
       } else {
         const info = await userInfoApi().execute();
         if (info.value) {
-          state.userInfo = info.value;
+          setStateUserInfo(info.value);
         } else {
           throw new Error("Failed to get user information from server!");
         }
