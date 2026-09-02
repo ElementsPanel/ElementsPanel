@@ -1,0 +1,18 @@
+{
+  "TXT_CODE_d23631cb": "Paramètres de la console",
+  "TXT_CODE_ef650d57": "Console analogique",
+  "TXT_CODE_feeea328": "Bénéficiez d’une interactivité totale sur la console en simulant un redirecteur de console. \nY compris l'utilisation des touches de fonction Tab, Ctrl, etc.",
+  "TXT_CODE_d6e7f572": "En cas de problème d'utilisation, il est recommandé de le fermer.",
+  "TXT_CODE_e1a3b150": "Rendu des couleurs frontal",
+  "TXT_CODE_6a515e35": "La page Web ajoutera automatiquement un rendu des couleurs au contenu de sortie, et les couleurs rendues risquent de ne pas être complètement correctes.",
+  "TXT_CODE_1295831e": "Si la fonction de rendu des couleurs entre en conflit avec la fonction de couleur du logiciel, vous pouvez désactiver cette fonction.",
+  "TXT_CODE_b91a94f9": "Symbole de retour chariot d'exécution d'instruction",
+  "TXT_CODE_5b2daea0": "Si rien ne se passe lorsque vous entrez une commande et appuyez sur Entrée, vous pouvez essayer d'ajuster cette option.",
+  "TXT_CODE_b94f13ce": "Sous la plate-forme Windows, il s'agit généralement de \"retour chariot et saut de ligne\", et sous la plate-forme Linux/MacOS, il s'agit généralement de \"saut de ligne\".",
+  "TXT_CODE_449d1581": "Encodage d'entrée et de sortie",
+  "TXT_CODE_d16d82ab": "Si le contenu de la console est tronqué, vous pouvez essayer de modifier l'encodage pour résoudre le problème.",
+  "TXT_CODE_bd2559f3": "Encodage des entrées de la console",
+  "TXT_CODE_6e96b2a9": "Encodage de sortie de console",
+  "TXT_CODE_365aabd4": "symbole de nouvelle ligne",
+  "TXT_CODE_20cec54": "symbole de saut de ligne de retour chariot"
+}

@@ -15,6 +15,7 @@ import Terminal from "./widgets/instance/Terminal.vue";
 import TermConfig from "./widgets/instance/dialogs/TermConfig.vue";
 import DesktopTermConfig from "./desktop/DesktopTermConfig.vue";
 import { CodeOutlined } from "@ant-design/icons-vue";
+import { localeMessages } from "./i18n";
 
 const instanceParams: ILayoutCardParams[] = [
   { field: "instanceId", label: t("TXT_CODE_e6a5c12b"), type: "string" },
@@ -48,9 +49,11 @@ const commandHistoryCard: LayoutCardPoolItemFactory = () => ({
   params: instanceParams
 });
 
-export const inject = ["ui", "actions"];
+export const inject = ["ui", "actions", "i18n"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
+  ctx.i18n.define(localeMessages);
+
   ctx.set("terminal", {
     api: terminalApi,
     Terminal,

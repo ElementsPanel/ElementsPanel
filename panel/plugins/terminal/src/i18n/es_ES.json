@@ -1,0 +1,18 @@
+{
+  "TXT_CODE_d23631cb": "Configuración de la consola",
+  "TXT_CODE_ef650d57": "consola analógica",
+  "TXT_CODE_feeea328": "Obtenga interactividad total de la consola simulando un reenviador de consola. \nIncluyendo el uso de teclas de función Tab, Ctrl, etc.",
+  "TXT_CODE_d6e7f572": "Si hay algún problema con el uso, se recomienda cerrarlo.",
+  "TXT_CODE_e1a3b150": "Representación de color frontal",
+  "TXT_CODE_6a515e35": "La página web agregará automáticamente reproducción de color al contenido de salida y es posible que los colores representados no sean completamente correctos.",
+  "TXT_CODE_1295831e": "Si la función de reproducción cromática entra en conflicto con la función de color del software, puede desactivar esta función.",
+  "TXT_CODE_b91a94f9": "Símbolo de retorno de carro de ejecución de instrucción",
+  "TXT_CODE_5b2daea0": "Si no sucede nada cuando ingresa un comando y presiona Enter, puede intentar ajustar esta opción.",
+  "TXT_CODE_b94f13ce": "En la plataforma Windows, suele ser \"retorno de carro y avance de línea\", y en la plataforma Linux/MacOS, suele ser \"avance de línea\".",
+  "TXT_CODE_449d1581": "Codificación de entrada y salida.",
+  "TXT_CODE_d16d82ab": "Si el contenido de la consola es confuso, puedes intentar modificar la codificación para resolver el problema.",
+  "TXT_CODE_bd2559f3": "Codificación de entrada de consola",
+  "TXT_CODE_6e96b2a9": "Codificación de salida de consola",
+  "TXT_CODE_365aabd4": "símbolo de nueva línea",
+  "TXT_CODE_20cec54": "símbolo de avance de línea de retorno de carro"
+}
