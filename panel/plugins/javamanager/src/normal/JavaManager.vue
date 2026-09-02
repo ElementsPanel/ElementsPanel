@@ -4,7 +4,6 @@ import { t } from "@/lang/i18n";
 import { updateInstanceConfig } from "@/services/apis/instance";
 import { addJava, deleteJava, downloadJava, getJavaList, usingJava } from "../api";
 import { parseTimestamp } from "@/tools/time";
-import type { InstanceDetail } from "@/types";
 import type { AntColumnsType } from "@/types/ant";
 import type { JavaInfo, JavaRuntime } from "../types";
 import {
@@ -16,8 +15,16 @@ import {
 import { message } from "ant-design-vue";
 import { computed, h, ref, type Ref } from "vue";
 
+interface InstanceInfo {
+  config: {
+    java: {
+      id: string;
+    };
+  };
+}
+
 const props = defineProps<{
-  instanceInfo?: InstanceDetail;
+  instanceInfo?: InstanceInfo;
   daemonId?: string;
   instanceUuid?: string;
   instanceId?: string;

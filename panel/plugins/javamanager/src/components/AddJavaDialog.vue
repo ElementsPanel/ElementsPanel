@@ -2,9 +2,15 @@
 import { t } from "@/lang/i18n";
 import type { AddJavaConfigItem } from "../types";
 import { ref } from "vue";
-import type { MountComponent } from "@/types";
 
-const props = defineProps<MountComponent>();
+// Keep these callbacks local instead of importing MountComponent from the core
+// alias: the SFC compiler cannot resolve that alias from a plugin directory.
+interface Props {
+  destroyComponent(delay?: number): void;
+  emitResult(data?: AddJavaConfigItem): void;
+}
+
+const props = defineProps<Props>();
 const dataSource = ref<AddJavaConfigItem>({
   name: "",
   path: ""

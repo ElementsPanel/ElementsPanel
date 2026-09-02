@@ -4,9 +4,15 @@ import { t } from "@/lang/i18n";
 import type { DownloadJavaConfigItem } from "../types";
 import { Flex } from "ant-design-vue";
 import { computed, ref } from "vue";
-import type { MountComponent } from "@/types";
 
-const props = defineProps<MountComponent>();
+// Keep these callbacks local instead of importing MountComponent from the core
+// alias: the SFC compiler cannot resolve that alias from a plugin directory.
+interface Props {
+  destroyComponent(delay?: number): void;
+  emitResult(data?: DownloadJavaConfigItem): void;
+}
+
+const props = defineProps<Props>();
 
 const open = ref(true);
 const selectedIndex = ref<number | null>(null);
