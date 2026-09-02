@@ -1,4 +1,4 @@
-# filemanager
+# file
 
 The daemon's file subsystem.
 

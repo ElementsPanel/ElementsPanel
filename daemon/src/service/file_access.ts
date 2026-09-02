@@ -4,7 +4,7 @@ import type { DaemonFilesService } from "../plugin/context";
 /**
  * How the daemon core reaches instance files.
  *
- * The file subsystem is not core: it belongs to `plugins/filemanager`, which owns
+ * The file subsystem is not core: it belongs to `plugins/file`, which owns
  * the `FileManager`, the chunked uploads, the `file/*` protocol events and the
  * upload/download HTTP routes, and hands the primitives over with
  * `ctx.set("files", ...)`. The core resolves them here, at use time, so that

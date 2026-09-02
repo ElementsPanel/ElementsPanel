@@ -71,11 +71,11 @@ onMounted(async () => {
 });
 
 /**
- * The file picker belongs to `plugins/filemanager`. Without it this answers with
+ * The file picker belongs to `plugins/file`. Without it this answers with
  * an empty path and the existing "no url" branches leave the images alone.
  */
 const useUploadFileDialog = async () =>
-    (await usePluginService<FrontendFileManagerService>("filemanager")?.useUploadFileDialog()) ?? "";
+    (await usePluginService<FrontendFileManagerService>("file")?.useUploadFileDialog()) ?? "";
 
 const uploadLogo = async () => {
     if (formData.value) {

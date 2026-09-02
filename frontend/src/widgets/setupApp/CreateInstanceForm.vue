@@ -113,10 +113,10 @@ const finalConfirm = async () => {
 
 /**
  * Uploading an instance pack is the file manager's upload queue, so it belongs to
- * `plugins/filemanager`. Without it the pack-upload path is unavailable; every
+ * `plugins/file`. Without it the pack-upload path is unavailable; every
  * other way of creating an instance still works.
  */
-const fileManager = usePluginService<FrontendFileManagerService>("filemanager");
+const fileManager = usePluginService<FrontendFileManagerService>("file");
 
 const uploadStarted = ref(false);
 const uploadFileInstance = ref<any>();

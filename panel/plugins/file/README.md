@@ -1,10 +1,10 @@
-# filemanager
+# file
 
 The file manager, both halves of it.
 
 Nothing about reading or writing an instance's files is left in the panel core:
 the routes, the card, the editor, the viewer, the upload queue and the dialogs all
-live here, and the matching `daemon/plugins/filemanager` owns the daemon end.
+live here, and the matching `daemon/plugins/file` owns the daemon end.
 
 ## Backend
 
@@ -43,7 +43,7 @@ puts it back in the design-mode picker.
 
 ## What it publishes
 
-`ctx.set("filemanager", ...)` — the API, the hook, the upload queue, the filename
+`ctx.set("file", ...)` — the API, the hook, the upload queue, the filename
 helpers, the three components and the three dialog openers. Everything that used
 to `import` one of those now resolves the service with `usePluginService` and
 degrades when it is absent:
@@ -65,7 +65,7 @@ the other's source tree.
 
 ## Daemon side
 
-`daemon/plugins/filemanager` owns the fourteen `file/*` protocol events these
+`daemon/plugins/file` owns the fourteen `file/*` protocol events these
 routes call, the upload/download HTTP routes the passports authorize, and the
 sandboxed `FileManager` the rest of the daemon touches files through. Neither half
 is useful without the other: a panel with this plugin talking to a daemon without

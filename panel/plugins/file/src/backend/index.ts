@@ -6,7 +6,7 @@ import { setPluginContext } from "./runtime";
 // to; the bytes themselves never pass through here — each route forwards to the
 // daemon that holds the instance, over the node subsystem.
 //
-// The daemon half is `daemon/plugins/filemanager`, which owns the `file/*`
+// The daemon half is `daemon/plugins/file`, which owns the `file/*`
 // protocol events and the upload/download HTTP routes these forward to.
 
 export const inject = [

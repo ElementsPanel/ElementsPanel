@@ -480,9 +480,9 @@ const handleEditDockerConfig = async (
 };
 
 const handleUploadImg = async () => {
-  // The file picker belongs to `plugins/filemanager`; without it nothing is
+  // The file picker belongs to `plugins/file`; without it nothing is
   // picked and the image field is left as it was.
-  const pick = usePluginService<FrontendFileManagerService>("filemanager");
+  const pick = usePluginService<FrontendFileManagerService>("file");
   const url = (await pick?.useUploadFileDialog()) ?? "";
   if (url && formData.value.template) formData.value.template.image = url;
 };

@@ -1,5 +1,5 @@
 {
-  "id": "javamanager",
+  "id": "java",
   "version": "1.0.0",
   "description": "Provides Java runtime management for instance terminals in normal and Desktop modes.",
   "priority": 130,

@@ -63,9 +63,9 @@ const desktopUserInfoWindow = computed(() => user.value?.desktopUserInfo);
 const desktopStartMenuAvatar = computed(() => user.value?.desktopStartMenuAvatar);
 
 // The file manager, its editor and the image viewer are owned by the
-// "filemanager" plugin. Without it those windows have nothing to render, and the
+// "file" plugin. Without it those windows have nothing to render, and the
 // menu entries that open them are hidden the same way the account ones are.
-const fileManager = computed(() => usePluginService<FrontendFileManagerService>("filemanager"));
+const fileManager = computed(() => usePluginService<FrontendFileManagerService>("file"));
 const desktopFileManagerWindow = computed(() => fileManager.value?.DesktopFileManager);
 const desktopFileEditorWindow = computed(() => fileManager.value?.DesktopFileEditor);
 const desktopImageViewerWindow = computed(() => fileManager.value?.DesktopImageViewer);

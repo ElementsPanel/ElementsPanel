@@ -37,13 +37,13 @@ const listLoading = ref(false);
 const fileEditorDialog = ref<any>();
 
 /**
- * The file API belongs to `plugins/filemanager`. A backup that edits an
+ * The file API belongs to `plugins/file`. A backup that edits an
  * instance file needs it; without the plugin the edit path is unavailable
  * rather than broken.
  */
 const fileApi = () => {
-    const service = usePluginService<FrontendFileManagerService>("filemanager");
-    if (!service) throw new Error("filemanager plugin is not installed");
+    const service = usePluginService<FrontendFileManagerService>("file");
+    if (!service) throw new Error("file plugin is not installed");
     return service.api as {
         fileContent: () => { execute: (config?: any) => Promise<any> };
         touchFile: () => { execute: (config?: any) => Promise<any> };
@@ -52,12 +52,12 @@ const fileApi = () => {
 
 
 /**
- * The file editor belongs to `plugins/filemanager`. Resolved through a
+ * The file editor belongs to `plugins/file`. Resolved through a
  * `computed` so the dialog appears and disappears with the plugin; without it
  * the button that opens it simply has nothing to open.
  */
 const fileEditorComponent = computed(
-  () => usePluginService<FrontendFileManagerService>("filemanager")?.FileEditor
+  () => usePluginService<FrontendFileManagerService>("file")?.FileEditor
 );
 
 let timer: any = null;

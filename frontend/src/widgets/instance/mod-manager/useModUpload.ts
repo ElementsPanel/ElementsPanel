@@ -12,9 +12,9 @@ export function useModUpload(
   loadMods: () => void
 ) {
   // Uploading a mod is uploading a file, and both the queue and the picker
-  // belong to `plugins/filemanager`. Without it the drop zone and the upload
+  // belong to `plugins/file`. Without it the drop zone and the upload
   // button do nothing rather than throwing.
-  const fileManager = usePluginService<FrontendFileManagerService>("filemanager");
+  const fileManager = usePluginService<FrontendFileManagerService>("file");
   const uploadService = fileManager?.uploadService;
   const selectedFiles = fileManager?.useFileManager(instanceId, daemonId)?.selectedFiles;
   const opacity = ref(false);

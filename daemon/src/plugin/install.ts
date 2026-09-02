@@ -80,7 +80,7 @@ export function installDaemonPluginServices() {
     Command: InstanceCommand,
     UpdateAction: InstanceUpdateAction,
     commandStringToArray,
-    // Resolved at call time: the file primitives belong to `plugins/filemanager`.
+    // Resolved at call time: the file primitives belong to `plugins/file`.
     fileManager: (instanceUuid: string) => fileSubsystem().getFileManager(instanceUuid),
     headers: getCommonHeaders
   });

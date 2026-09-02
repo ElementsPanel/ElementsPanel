@@ -29,12 +29,12 @@ const musicUrl = ref(getMetaValue<string>("musicUrl", ""));
 const timeLineId = `timeline-${getRandomId()}`;
 
 /**
- * The file picker belongs to `plugins/filemanager`. Without it there is nothing
+ * The file picker belongs to `plugins/file`. Without it there is nothing
  * to pick a file with, so the dialog answers with an empty path and the caller's
  * existing "no path" branch takes over.
  */
 const useUploadFileDialog = async () =>
-  (await usePluginService<FrontendFileManagerService>("filemanager")?.useUploadFileDialog()) ?? "";
+  (await usePluginService<FrontendFileManagerService>("file")?.useUploadFileDialog()) ?? "";
 
 enum UploadType {
   File = "FILE",

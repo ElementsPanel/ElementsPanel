@@ -13,11 +13,11 @@ type ArchiveTreeEntry = ArchiveEntry & {
 };
 
 /**
- * The file-type icons belong to `plugins/filemanager`. Reading the service
+ * The file-type icons belong to `plugins/file`. Reading the service
  * through a `computed` keeps the preview reactive to the plugin being loaded or
  * unloaded; without it the rows simply show no icon.
  */
-const fileManager = computed(() => usePluginService<FrontendFileManagerService>("filemanager"));
+const fileManager = computed(() => usePluginService<FrontendFileManagerService>("file"));
 const getFileIcon = (name: string, type?: number) =>
   fileManager.value?.getFileIcon(name, type);
 

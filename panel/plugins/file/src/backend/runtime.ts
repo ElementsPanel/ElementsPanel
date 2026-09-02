@@ -15,7 +15,7 @@ export function setPluginContext(value: PanelPluginContext) {
 }
 
 export function core(): PanelPluginContext {
-  if (!context) throw new Error("The filemanager plugin has not been initialized yet.");
+  if (!context) throw new Error("The file plugin has not been initialized yet.");
   return context;
 }
 

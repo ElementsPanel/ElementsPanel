@@ -19,7 +19,7 @@ export function setPluginContext(value: DaemonPluginContext) {
 }
 
 export function core(): DaemonPluginContext {
-  if (!context) throw new Error("The filemanager plugin has not been initialized yet.");
+  if (!context) throw new Error("The file plugin has not been initialized yet.");
   return context;
 }
 

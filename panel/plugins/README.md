@@ -243,7 +243,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 | `ctx.user` | Account API and windows. **Provided by `plugins/user`.** |
 | `ctx.market` | Package picker and API. **Provided by `plugins/market`.** |
 | `ctx.node` | Node API and hook. **Provided by `plugins/node`.** |
-| `ctx.filemanager` | File API, hook, upload queue, filename helpers, editor/viewer components and the file dialogs. **Provided by `plugins/filemanager`.** |
+| `ctx.file` | File API, hook, upload queue, filename helpers, editor/viewer components and the file dialogs. **Provided by `plugins/file`.** |
 
 `frontend/src/plugin/context.ts` is the authoritative declaration of all of this.
 

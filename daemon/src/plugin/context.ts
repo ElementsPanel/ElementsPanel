@@ -305,7 +305,7 @@ export interface DaemonTransferService {
   readonly sendFile: typeof sendFile;
 }
 
-/** Java runtime management supplied by `plugins/javamanager`. */
+/** Java runtime management supplied by `plugins/java`. */
 export interface DaemonJavaManagerService {
   list(): IJavaRuntime[];
   getJava(id: string): IJavaRuntime | undefined;
@@ -342,7 +342,7 @@ export interface DaemonUploadTask {
 /**
  * The daemon's file primitives.
  *
- * **Provided by `plugins/filemanager`.** The core declares only the shape its own
+ * **Provided by `plugins/file`.** The core declares only the shape its own
  * few callers need — instance creation, the Java manager, SteamCMD, the mod
  * service — and resolves it at use time through `service/file_access.ts`, so
  * removing that plugin removes the daemon's ability to touch instance files
@@ -398,7 +398,7 @@ declare module "cordis" {
     // Provided by `plugins/server`, the daemon's network layer. Without it the
     // daemon listens on nothing, so `inject` them rather than assuming.
     /**
-     * The file primitives. Provided by `plugins/filemanager`, which owns the
+     * The file primitives. Provided by `plugins/file`, which owns the
      * whole file subsystem — instance files are unreachable without it.
      */
     files: DaemonFilesService;

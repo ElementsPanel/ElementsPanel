@@ -22,7 +22,7 @@ import { filterFileName, getFileExtName, getFileIcon, isCompressFile } from "./t
 // dialogs the panel mounts on demand.
 //
 // Everything another plugin or the panel core needs of it is published as
-// `ctx.set("filemanager", ...)`: the upload dialog the settings page opens for a
+// `ctx.set("file", ...)`: the upload dialog the settings page opens for a
 // logo, the file editor the mod manager and the backup plugin open, the
 // extension helpers the code editor uses. Those callers resolve it with
 // `usePluginService` and degrade when it is absent, which is what makes this
@@ -51,7 +51,7 @@ const fileManagerCard: LayoutCardPoolItemFactory = () => ({
 export const inject = ["ui"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
-  ctx.set("filemanager", {
+  ctx.set("file", {
     api: fileManagerApi,
     useFileManager,
     getFileConfigAddr,

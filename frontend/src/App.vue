@@ -23,7 +23,7 @@ const { isPhone } = useScreen();
 const route = useRoute();
 
 // Overlays that belong to no route. The account dialog comes from the "user"
-// plugin and the upload bubble from "filemanager", both through
+// plugin and the upload bubble from "file", both through
 // `ctx.ui.globalComponent()`, so each disappears with its plugin.
 const GLOBAL_COMPONENTS = computed(() => [InputDialogProvider, ...ctx.ui.globalComponents]);
 

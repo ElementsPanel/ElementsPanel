@@ -15,7 +15,7 @@ import scheduleRouter from "./routers/schedule_router";
 import settingsRouter from "./routers/settings_router";
 
 // Login, account management and SSO are mounted by the "user" panel plugin, and
-// the file manager by the "filemanager" one.
+// the file manager by the "file" one.
 export function mountRouters(app: Koa<Koa.DefaultState, Koa.DefaultContext>) {
   const apiRouter = new Router({ prefix: "/api" });
   apiRouter.use(overviewRouter.routes()).use(overviewRouter.allowedMethods());

@@ -24,9 +24,9 @@ const originUrl = ref(getMetaValue<string>("url", ""));
 let sandbox: ProxySandBox;
 
 const uploadHtmlFile = async () => {
-  // The file picker belongs to `plugins/filemanager`; without it this answers
+  // The file picker belongs to `plugins/file`; without it this answers
   // with an empty path and nothing is loaded.
-  const pick = usePluginService<FrontendFileManagerService>("filemanager");
+  const pick = usePluginService<FrontendFileManagerService>("file");
   originUrl.value = (await pick?.useUploadFileDialog()) ?? "";
   setMetaValue("url", originUrl.value);
   await loadRemoteHtml();

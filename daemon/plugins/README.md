@@ -59,7 +59,7 @@ Set `enabled` to `false` to skip one.
 | `ctx.middleware` | `uploadSpeedLimit`, `uploadFileCheck` — the base middleware the web server mounts ahead of the body parser. |
 | `ctx.protocol` | `on(event, handler)`, `use(middleware)`, `response`, `responseError`, `error`, `msg`, `ROLE`, `IGNORE`. |
 | `ctx.instances` | `subsystem`, `Instance`, `Config`, `Command`, `UpdateAction`, `commandStringToArray`, `fileManager`, `headers`. |
-| `ctx.javaManager` | The optional Java runtime service, provided by `plugins/javamanager`. |
+| `ctx.javaManager` | The optional Java runtime service, provided by `plugins/java`. |
 | `ctx.transfer` | `passports`, `downloads`, `sendFile` — what a file transfer needs from the core. |
 | `ctx.tasks` | `AsyncTask`, `Center`, `register(name, registration)`, `get(name)`. |
 | `ctx.presets` | `register(preset, factory)`, `entries()`. |
@@ -68,13 +68,13 @@ Set `enabled` to `false` to skip one.
 | `ctx.overview` | `provide(fn)` to add fields to `info/overview`. |
 | `ctx.archive` | `GitignoreMatcher`, `compress`, `decompress`, `listArchiveEntries`, `decompressWithProgress`, `check7zipStatus`, `sevenZipPath`, `zipTimeoutSeconds`. |
 | `ctx.plugins` | `loaded`, `inventory()`, `setEnabled(id, enabled)`. |
-| `ctx.files` | `FileManager`, `uploads`, `getFileManager`, `getWindowsDisks`. **Provided by `plugins/filemanager`.** |
+| `ctx.files` | `FileManager`, `uploads`, `getFileManager`, `getWindowsDisks`. **Provided by `plugins/file`.** |
 | `ctx.koa` | `app`, `use(middleware)`, `router(prefix?)` for plugins that serve HTTP. **Provided by `plugins/server`.** |
 | `ctx.websocket` | `io`, the Socket.io server. **Provided by `plugins/server`.** |
 
 `src/plugin/context.ts` is the authoritative declaration of all of this.
 
-`ctx.set("files", ...)` is the file subsystem. `plugins/filemanager` owns the
+`ctx.set("files", ...)` is the file subsystem. `plugins/file` owns the
 sandboxed `FileManager`, the chunked uploads, the `file/*` events and the
 upload/download routes; the core resolves the primitives at use time through
 `src/service/file_access.ts`, because instance creation, the Java manager,
@@ -203,6 +203,6 @@ preset — the two ways a market package reaches an instance. See
 `monitor` samples this host's CPU and memory and contributes the history to
 `info/overview` as `cpuMemChart`. See `panel/plugins/monitor`.
 
-`javamanager` owns Java runtime installation and selection, the `java_manager/*`
+`java` owns Java runtime installation and selection, the `java_manager/*`
 protocol events and the `{mcsm_java}` command expansion. See
-`daemon/plugins/javamanager`.
+`daemon/plugins/java`.

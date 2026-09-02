@@ -1,5 +1,5 @@
 {
-  "id": "filemanager",
+  "id": "file",
   "version": "1.0.0",
   "description": "Owns the file manager: every /api/files route, the instance file manager card and its Desktop window, the file editor, the image viewer, the upload queue and the upload/download dialogs.",
   "priority": 120,

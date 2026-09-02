@@ -244,7 +244,7 @@ export interface FrontendDesktopService {
 }
 
 /**
- * The file manager. Provided by `plugins/filemanager`.
+ * The file manager. Provided by `plugins/file`.
  *
  * It publishes more than a page: the upload queue the settings page and the
  * create-instance form drive, the file editor the mod manager and the backup
@@ -321,7 +321,7 @@ declare module "cordis" {
     user: FrontendUserService;
     market: FrontendMarketService;
     node: FrontendNodeService;
-    filemanager: FrontendFileManagerService;
+    file: FrontendFileManagerService;
   }
 }
 
