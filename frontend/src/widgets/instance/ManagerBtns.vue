@@ -35,7 +35,6 @@ import { arrayFilter } from "../../tools/array";
 import EventConfig from "./dialogs/EventConfig.vue";
 import InstanceDetail from "./dialogs/InstanceDetail.vue";
 import InstanceFundamentalDetail from "./dialogs/InstanceFundamentalDetail.vue";
-import JavaManager from "./dialogs/JavaManager.vue";
 import McPingSettings from "./dialogs/McPingSettings.vue";
 import PingConfig from "./dialogs/PingConfig.vue";
 import RconSettings from "./dialogs/RconSettings.vue";
@@ -44,7 +43,6 @@ import TermConfig from "./dialogs/TermConfig.vue";
 const terminalConfigDialog = ref<InstanceType<typeof TermConfig>>();
 const rconSettingsDialog = ref<InstanceType<typeof RconSettings>>();
 const mcSettingsDialog = ref<InstanceType<typeof McPingSettings>>();
-const javaManagerDialog = ref<InstanceType<typeof JavaManager>>();
 const eventConfigDialog = ref<InstanceType<typeof EventConfig>>();
 const pingConfigDialog = ref<InstanceType<typeof PingConfig>>();
 const instanceDetailsDialog = ref<InstanceType<typeof InstanceDetail>>();
@@ -203,21 +201,6 @@ const btns = computed(() => {
     },
 
     {
-      title: t("TXT_CODE_3fee13ed"),
-      icon: BuildOutlined,
-      click: () => {
-        javaManagerDialog.value?.openDialog();
-      },
-      condition: () => {
-        const isJavaGeneral =
-          (instanceInfo.value?.config.type.includes(TYPE_MINECRAFT_JAVA) &&
-            instanceInfo.value?.config.processType === "general") ??
-          false;
-        if (!isJavaGeneral) return false;
-        return state.settings.allowJavaManager || isAdmin.value;
-      }
-    },
-    {
       title: t("TXT_CODE_656a85d8"),
       icon: BuildOutlined,
       click: () => {
@@ -338,13 +321,10 @@ watch(instanceInfo, (cfg, oldCfg) => {
   <McPingSettings ref="mcSettingsDialog" :instance-info="instanceInfo" :instance-id="instanceId" :daemon-id="daemonId"
     @update="refreshInstanceInfo" />
 
-  <JavaManager ref="javaManagerDialog" :instance-info="instanceInfo" :daemon-id="daemonId" :instance-id="instanceId"
-    @update="refreshInstanceInfo" />
-
   <template v-if="instanceId && daemonId">
     <component v-for="action in normalInstanceActions" :is="action.normalComponent" :key="action.id"
       :ref="(component: unknown) => setInstanceActionRef(action.id, component)" :instance-uuid="instanceId"
-      :daemon-id="daemonId" @close="refreshInstanceInfo" />
+      :instance-info="instanceInfo" :daemon-id="daemonId" @close="refreshInstanceInfo" />
   </template>
 </template>
 

@@ -1,0 +1,8 @@
+{
+  "id": "javamanager",
+  "version": "1.0.0",
+  "description": "Provides Java runtime management for instance terminals in normal and Desktop modes.",
+  "priority": 130,
+  "backend": "backend/index.cjs",
+  "frontend": "src/frontend.ts"
+}

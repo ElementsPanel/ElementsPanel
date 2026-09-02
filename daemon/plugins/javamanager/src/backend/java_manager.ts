@@ -2,25 +2,30 @@ import axios from "axios";
 import fs from "fs-extra";
 import os from "os";
 import path from "path";
-import StorageSubsystem from "../common/system_storage";
-import { JavaInfo } from "../entity/commands/java/java_manager";
-import { globalConfiguration } from "../entity/config";
-import { $t } from "../i18n";
-import InstanceSubsystem from "./system_instance";
+import { JavaInfo } from "./java_info";
+
+export interface JavaManagerDependencies {
+  defaultJavaDataPath?: string;
+  storage: { store(category: string, id: string, value: unknown): void };
+  translate(key: string): string;
+}
+
+export type JavaManagerInfo = IJavaInfo & { name: string; version?: string };
 
 class JavaManager {
   private javaDataDir = "";
   public readonly javaList = new Map<string, IJavaRuntime>();
+  public readonly ready: Promise<void>;
 
-  constructor() {
+  constructor(private readonly dependencies: JavaManagerDependencies) {
     let javaDataDir = path.join(process.cwd(), "data/JavaData");
-    if (globalConfiguration.config.defaultJavaDataPath) {
-      javaDataDir = path.normalize(globalConfiguration.config.defaultJavaDataPath);
+    if (dependencies.defaultJavaDataPath) {
+      javaDataDir = path.normalize(dependencies.defaultJavaDataPath);
     }
     if (!fs.existsSync(javaDataDir)) fs.mkdirsSync(javaDataDir);
     this.javaDataDir = path.normalize(javaDataDir);
 
-    this.loadJavaList();
+    this.ready = this.loadJavaList();
   }
 
   public getJavaDataDir() {
@@ -65,7 +70,7 @@ class JavaManager {
     return this.javaList.has(id);
   }
 
-  async getJavaDownloadUrl(info: JavaInfo) {
+  async getJavaDownloadUrl(info: JavaManagerInfo) {
     switch (info.name) {
       case "zulu": {
         let platform: string = os.platform();
@@ -102,11 +107,11 @@ class JavaManager {
     }
   }
 
-  addJava(info: JavaInfo) {
+  addJava(info: JavaManagerInfo) {
     const javaPath = path.join(this.javaDataDir, info.fullname);
     if (!fs.existsSync(javaPath)) fs.mkdirsSync(javaPath);
 
-    StorageSubsystem.store(`JavaData/${info.fullname}`, "java_info", {
+    this.dependencies.storage.store(`JavaData/${info.fullname}`, "java_info", {
       name: info.name,
       path: info.path,
       version: info.version,
@@ -121,11 +126,11 @@ class JavaManager {
     });
   }
 
-  updateJavaInfo(info: JavaInfo) {
+  updateJavaInfo(info: JavaManagerInfo) {
     const javaPath = path.join(this.javaDataDir, info.fullname);
     if (!fs.existsSync(javaPath)) return;
 
-    StorageSubsystem.store(`JavaData/${info.fullname}`, "java_info", {
+    this.dependencies.storage.store(`JavaData/${info.fullname}`, "java_info", {
       name: info.name,
       path: info.path,
       version: info.version,
@@ -136,11 +141,11 @@ class JavaManager {
 
   async getJavaRuntimeCommand(id: string) {
     const java = this.getJava(id);
-    if (!java) throw new Error($t("TXT_CODE_77ce8542"));
-    if (java.info.downloading) throw new Error($t("TXT_CODE_45d02bb7"));
+    if (!java) throw new Error(this.dependencies.translate("TXT_CODE_77ce8542"));
+    if (java.info.downloading) throw new Error(this.dependencies.translate("TXT_CODE_45d02bb7"));
 
     let javaPath = java.info.path ?? java.path;
-    if (!javaPath) throw new Error($t("TXT_CODE_82c8bca3"));
+    if (!javaPath) throw new Error(this.dependencies.translate("TXT_CODE_82c8bca3"));
 
     // For macOS, if Java is within a .jdk bundle, use the Contents/Home/bin/java path
     if (os.platform() === "darwin") {
@@ -175,13 +180,13 @@ class JavaManager {
 
   async removeJava(id: string) {
     const java = this.getJava(id);
-    if (!java) throw new Error($t("TXT_CODE_77ce8542"));
+    if (!java) throw new Error(this.dependencies.translate("TXT_CODE_77ce8542"));
 
-    // if (java.info.downloading) throw new Error($t("TXT_CODE_887fee99"));
-    if (java.usingInstances.length) throw new Error($t("TXT_CODE_ea8ea5d1"));
+    if (java.usingInstances.length)
+      throw new Error(this.dependencies.translate("TXT_CODE_ea8ea5d1"));
 
     let javaPath = java.path;
-    if (!javaPath) throw new Error($t("TXT_CODE_82c8bca3"));
+    if (!javaPath) throw new Error(this.dependencies.translate("TXT_CODE_82c8bca3"));
 
     await fs.remove(javaPath);
     this.javaList.delete(id);
@@ -190,46 +195,4 @@ class JavaManager {
   }
 }
 
-const javaManager = new JavaManager();
-
-const handleOpenInstance = (obj: { instanceUuid: string }) => {
-  const instanceUuid = obj.instanceUuid;
-  const config = InstanceSubsystem.getInstance(instanceUuid)?.config;
-  if (!config) return;
-
-  const javaId = config.java.id;
-  if (!javaId) return;
-
-  const java = javaManager.getJava(javaId);
-  if (java && !java.usingInstances.includes(instanceUuid)) java.usingInstances.push(instanceUuid);
-};
-
-const handleStopInstance = (obj: { instanceUuid: string }) => {
-  const instanceUuid = obj.instanceUuid;
-  const config = InstanceSubsystem.getInstance(instanceUuid)?.config;
-  if (!config) return;
-
-  const javaId = config.java.id;
-  if (!javaId) return;
-
-  const java = javaManager.getJava(javaId);
-  if (java && !java.usingInstances.includes(instanceUuid))
-    java.usingInstances.filter((uuid) => uuid !== instanceUuid);
-};
-
-/**
- * Track which instances are using which Java runtime.
- *
- * Called from the daemon entry rather than at module load: the instance
- * subsystem imports the dispatcher, which imports `Instance`, which imports
- * this module, so at load time `InstanceSubsystem` may still be an in-flight
- * module with no exports yet. No instance can emit these events before startup
- * finishes, so subscribing there is both safe and order-independent.
- */
-export function registerJavaManagerInstanceHooks() {
-  InstanceSubsystem.on("open", handleOpenInstance);
-  InstanceSubsystem.on("exit", handleStopInstance);
-  InstanceSubsystem.on("failure", handleStopInstance);
-}
-
-export default javaManager;
+export { JavaManager };

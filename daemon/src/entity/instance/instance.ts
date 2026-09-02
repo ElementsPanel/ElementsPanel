@@ -8,7 +8,7 @@ import { CircularBuffer } from "../../common/string_cache";
 import StorageSubsystem from "../../common/system_storage";
 import { STEAM_CMD_PATH } from "../../const";
 import { $t } from "../../i18n";
-import javaManager from "../../service/java_manager";
+import { javaManagerSubsystem } from "../../service/java_access";
 import logger from "../../service/log";
 import InstanceCommand from "../commands/base/command";
 import { commandStringToArray } from "../commands/base/command_parser";
@@ -556,7 +556,10 @@ export default class Instance extends EventEmitter {
 
     const javaId = this.config.java.id;
     if (javaId) {
-      text = text.replace(/\{mcsm_java\}/gim, await javaManager.getJavaRuntimeCommand(javaId));
+      text = text.replace(
+        /\{mcsm_java\}/gim,
+        await javaManagerSubsystem().getJavaRuntimeCommand(javaId)
+      );
     }
 
     const ports = Array.from(

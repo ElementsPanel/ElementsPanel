@@ -1,0 +1,8 @@
+{
+  "id": "javamanager",
+  "name": "Java Manager",
+  "version": "1.0.0",
+  "description": "Provides Java runtime installation, selection and command expansion for instances.",
+  "priority": 130,
+  "backend": "backend/index.cjs"
+}

@@ -3,6 +3,7 @@ import type Koa from "koa";
 import type Router from "@koa/router";
 import type { Server as SocketIOServer } from "socket.io";
 import type { GitignoreMatcher } from "../common/gitignore_matcher";
+import type StorageSubsystem from "../common/system_storage";
 import type {
   compress,
   decompress,
@@ -17,6 +18,7 @@ import type { globalConfiguration } from "../entity/config";
 import type Instance from "../entity/instance/instance";
 import type InstanceConfig from "../entity/instance/Instance_config";
 import type InstanceCommand from "../entity/commands/base/command";
+import type { commandStringToArray } from "../entity/commands/base/command_parser";
 import type { IPresetCommand } from "../entity/commands/dispatcher";
 import type RouterContext from "../entity/ctx";
 import type { $t } from "../i18n";
@@ -53,6 +55,9 @@ export interface DaemonSettingsService {
   /** Switch the daemon language and drop the bootstrap language preset file. */
   setLanguage(language: string): void;
 }
+
+/** Local storage shared by daemon plugins without importing daemon core. */
+export type DaemonStorageService = typeof StorageSubsystem;
 
 /** What a declared setting renders as. `link` reads and writes nothing. */
 export type DaemonSettingFieldType =
@@ -209,6 +214,7 @@ export interface DaemonInstancesService {
   readonly UpdateAction: typeof InstanceUpdateAction;
   readonly fileManager: (instanceUuid: string) => DaemonFileManager;
   readonly headers: typeof getCommonHeaders;
+  readonly commandStringToArray: typeof commandStringToArray;
 }
 
 export interface DaemonAsyncTaskRegistration {
@@ -299,6 +305,19 @@ export interface DaemonTransferService {
   readonly sendFile: typeof sendFile;
 }
 
+/** Java runtime management supplied by `plugins/javamanager`. */
+export interface DaemonJavaManagerService {
+  list(): IJavaRuntime[];
+  getJava(id: string): IJavaRuntime | undefined;
+  exists(id: string): boolean;
+  getJavaDataDir(): string;
+  getJavaDownloadUrl(info: IJavaInfo & { name: string; version?: string }): Promise<string | undefined>;
+  addJava(info: IJavaInfo & { name: string; version?: string }): void;
+  updateJavaInfo(info: IJavaInfo & { name: string; version?: string }): void;
+  getJavaRuntimeCommand(id: string): Promise<string>;
+  removeJava(id: string): Promise<boolean>;
+}
+
 /** One instance's working directory, as the core and its plugins use it. */
 export interface DaemonFileManager {
   check(destPath: string): boolean;
@@ -360,6 +379,7 @@ export interface DaemonPluginsService {
 declare module "cordis" {
   interface Context {
     settings: DaemonSettingsService;
+    storage: DaemonStorageService;
     settingsForm: DaemonSettingsFormService;
     i18n: DaemonI18nService;
     middleware: DaemonMiddlewareService;
@@ -372,6 +392,7 @@ declare module "cordis" {
     overview: DaemonOverviewService;
     archive: DaemonArchiveService;
     transfer: DaemonTransferService;
+    javaManager: DaemonJavaManagerService;
     plugins: DaemonPluginsService;
 
     // Provided by `plugins/server`, the daemon's network layer. Without it the

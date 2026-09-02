@@ -1,5 +1,5 @@
 import { useDefineApi } from "@/stores/useDefineApi";
-import type { JavaRuntime } from "@/types/javaManager";
+import type { JavaRuntime } from "./types";
 
 export const getJavaList = useDefineApi<
   {

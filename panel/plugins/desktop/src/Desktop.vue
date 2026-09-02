@@ -14,7 +14,6 @@ import DesktopEventConfig from "./widgets/desktop/DesktopEventConfig.vue";
 import DesktopIcon from "./widgets/desktop/DesktopIcon.vue";
 import DesktopInstanceConsole from "./widgets/desktop/DesktopInstanceConsole.vue";
 import DesktopInstanceManager from "./widgets/desktop/DesktopInstanceManager.vue";
-import DesktopJavaManager from "./widgets/desktop/DesktopJavaManager.vue";
 import DesktopMcPing from "./widgets/desktop/DesktopMcPing.vue";
 import DesktopModManager from "./widgets/desktop/DesktopModManager.vue";
 import DesktopMyApps from "./widgets/desktop/DesktopMyApps.vue";
@@ -29,7 +28,6 @@ import DesktopTerminalSelector from "./widgets/desktop/DesktopTerminalSelector.v
 import DesktopWindow from "./widgets/desktop/DesktopWindow.vue";
 import {
     AppstoreOutlined,
-    BuildOutlined,
     CloseOutlined,
     CloseSquareOutlined,
     CodeOutlined,
@@ -559,7 +557,6 @@ const ICON_MAP: Record<string, Component> = {
     "schedule": markRaw(FieldTimeOutlined),
     "event-config": markRaw(DashboardOutlined),
     "term-config": markRaw(CodeOutlined),
-    "java-manager": markRaw(BuildOutlined),
     "new-instance": markRaw(DesktopOutlined),
     "user-info": markRaw(UserOutlined),
     "mc-ping": markRaw(UsergroupDeleteOutlined),
@@ -590,6 +587,8 @@ const loadDesktopLayout = async () => {
                 const instanceActionId =
                     win.content === "backup"
                         ? "backup"
+                        : win.content === "java-manager"
+                        ? "java-manager"
                         : typeof win.content === "string" && win.content.startsWith("instance-action:")
                         ? win.content.slice("instance-action:".length)
                         : undefined;
@@ -944,40 +943,6 @@ const openTermConfigWindow = (instanceId: string, daemonId: string) => {
         initialY: offsetY,
         initialWidth: 700,
         initialHeight: 500,
-        instanceId: instanceId,
-        daemonId: daemonId
-    });
-    saveDesktopLayout();
-};
-
-const openJavaManagerWindow = (instanceId: string, daemonId: string) => {
-    const windowId = `java-manager-${instanceId}`;
-    const existing = windows.get(windowId);
-
-    if (existing) {
-        existing.minimized = false;
-        existing.visible = true;
-        focusWindow(windowId);
-        return;
-    }
-
-    windowOffset = (windowOffset + 1) % 8;
-    const offsetX = 120 + windowOffset * 30;
-    const offsetY = 80 + windowOffset * 30;
-
-    windows.set(windowId, {
-        id: windowId,
-        title: t("TXT_CODE_3fee13ed"),
-        icon: markRaw(BuildOutlined),
-        visible: true,
-        minimized: false,
-        maximized: false,
-        zIndex: ++nextZIndex,
-        content: "java-manager",
-        initialX: offsetX,
-        initialY: offsetY,
-        initialWidth: 800,
-        initialHeight: 600,
         instanceId: instanceId,
         daemonId: daemonId
     });
@@ -1485,7 +1450,7 @@ const username = computed(() => appState.userInfo?.userName || "User");
                                 @open-server-config="openServerConfigWindow" @open-file-manager="openFileManagerWindow"
                                 @open-mod-manager="openModManagerWindow" @open-schedule="openScheduleWindow"
                                 @open-event-config="openEventConfigWindow" @open-term-config="openTermConfigWindow"
-                                @open-mc-ping="openMcPingWindow" @open-java-manager="openJavaManagerWindow"
+                                @open-mc-ping="openMcPingWindow"
                                 @open-instance-action="openInstanceActionWindow" />
 
                             <component :is="win.component"
@@ -1509,10 +1474,6 @@ const username = computed(() => appState.userInfo?.userName || "User");
                                 :instance-id="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)" />
 
                             <DesktopMcPing v-else-if="win.content === 'mc-ping' && win.instanceId && win.daemonId"
-                                :instance-id="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)" />
-
-                            <DesktopJavaManager
-                                v-else-if="win.content === 'java-manager' && win.instanceId && win.daemonId"
                                 :instance-id="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)" />
 
                             <DesktopModManager

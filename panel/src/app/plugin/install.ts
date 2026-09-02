@@ -59,6 +59,8 @@ export function installPanelPluginServices() {
   provide("roles", ROLE);
   provide("identity", {
     of: (requestCtx: Koa.ParameterizedContext) => getRequestGuard().identify(requestCtx),
+    canAccessInstance: (requestCtx: Koa.ParameterizedContext, daemonId: string, instanceUuid: string) =>
+      getRequestGuard().canAccessInstance(requestCtx, daemonId, instanceUuid),
     // Getters: the guard arrives with a plugin, after this runs, and can be
     // removed again while the panel is running.
     get accessPolicy() {

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { useAddJavaDialog, useDownloadJavaDialog } from "@/components/fc";
+import { useAddJavaDialog, useDownloadJavaDialog } from "../dialogs";
 import { t } from "@/lang/i18n";
 import { updateInstanceConfig } from "@/services/apis/instance";
-import { addJava, deleteJava, downloadJava, getJavaList, usingJava } from "@/services/apis/javaManager";
+import { addJava, deleteJava, downloadJava, getJavaList, usingJava } from "../api";
 import { parseTimestamp } from "@/tools/time";
 import type { InstanceDetail } from "@/types";
 import type { AntColumnsType } from "@/types/ant";
-import type { JavaInfo, JavaRuntime } from "@/types/javaManager";
+import type { JavaInfo, JavaRuntime } from "../types";
 import {
   DeleteOutlined,
   DownloadOutlined,
@@ -14,13 +14,16 @@ import {
   ReloadOutlined
 } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
-import { h, ref, type Ref } from "vue";
+import { computed, h, ref, type Ref } from "vue";
 
 const props = defineProps<{
   instanceInfo?: InstanceDetail;
   daemonId?: string;
+  instanceUuid?: string;
   instanceId?: string;
 }>();
+
+const resolvedInstanceId = computed(() => props.instanceUuid ?? props.instanceId ?? "");
 
 const columns: AntColumnsType[] = [
   {
@@ -72,7 +75,7 @@ const refreshJavaList = async (out: boolean = false) => {
     const list = await getJavaList().execute({
       params: {
         daemonId: props.daemonId ?? "",
-        instanceId: props.instanceId ?? ""
+        instanceId: resolvedInstanceId.value
       }
     });
     javaList.value = list.value;
@@ -91,7 +94,7 @@ const handleDownloadJava = async () => {
     await downloadJava().execute({
       params: {
         daemonId: props.daemonId ?? "",
-        instanceId: props.instanceId ?? ""
+        instanceId: resolvedInstanceId.value
 
       },
       data: {
@@ -133,7 +136,7 @@ const handleDeleteJava = async (info: JavaInfo) => {
     await deleteJava().execute({
       params: {
         daemonId: props.daemonId ?? "",
-        instanceId: props.instanceId ?? ""
+        instanceId: resolvedInstanceId.value
       },
       data: {
         id: info.fullname
@@ -150,7 +153,7 @@ const handleUsingJava = async (info: JavaInfo) => {
     await usingJava().execute({
       params: {
         daemonId: props.daemonId ?? "",
-        instanceId: props.instanceId ?? ""
+        instanceId: resolvedInstanceId.value
       },
       data: {
         id: info.fullname
@@ -168,6 +171,7 @@ const handleUsingJava = async (info: JavaInfo) => {
 };
 
 defineExpose({
+  open: openDialog,
   openDialog
 });
 </script>

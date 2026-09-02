@@ -242,6 +242,11 @@ export interface PanelRemoteService {
  */
 export interface PanelIdentityService {
   of(requestCtx: Koa.ParameterizedContext): RequestIdentity;
+  canAccessInstance(
+    requestCtx: Koa.ParameterizedContext,
+    daemonId: string,
+    instanceUuid: string
+  ): boolean;
   readonly accessPolicy: UserAccessPolicy;
   /** Account records, present only while a guard plugin provides them. */
   readonly users: UserRecords | undefined;

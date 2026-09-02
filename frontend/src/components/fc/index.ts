@@ -6,14 +6,11 @@ import KvOptionsDialogVue from "@/components/fc/KvOptionsDialog.vue";
 import SelectInstances from "@/components/fc/SelectInstances.vue";
 import { t } from "@/lang/i18n";
 import type { AntColumnsType } from "@/types/ant";
-import type { AddJavaConfigItem, DownloadJavaConfigItem } from "@/types/javaManager";
 import DeleteInstanceDialog from "@/widgets/instance/dialogs/DeleteInstanceDialog.vue";
-import AddJavaDialog from "./AddJavaDialog.vue";
 import DockerCapabilityDialogVue from "./DockerCapabilityDialog.vue";
 import DockerDeviceDialogVue from "./DockerDeviceDialog.vue";
 import DockerPortDialog from "./DockerPortDialog.vue";
 import DockerVersionSelectDialog from "./DockerVersionSelectDialog.vue";
-import DownloadJavaDialog from "./DownloadJavaDialog.vue";
 import NodeSelectDialog from "./NodeSelectDialog.vue";
 import RenewalDialog from "./RenewalDialog.vue";
 import TagsDialog from "./TagsDialog.vue";
@@ -227,16 +224,4 @@ export async function openDockerVersionSelectDialog() {
       DockerVersionSelectDialog
     );
   return dialog!.openDialog();
-}
-
-export async function useAddJavaDialog() {
-  return (await useMountComponent().mount<AddJavaConfigItem>(AddJavaDialog)) || undefined;
-}
-
-export async function useDownloadJavaDialog(installedJavaList?: string[]) {
-  return (
-    (await useMountComponent({ installedJavaList }).mount<DownloadJavaConfigItem>(
-      DownloadJavaDialog
-    )) || undefined
-  );
 }

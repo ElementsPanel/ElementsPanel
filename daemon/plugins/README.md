@@ -53,11 +53,13 @@ Set `enabled` to `false` to skip one.
 | `ctx.logger` | Named logger. `ctx.logger("sub")` for a sub-logger. |
 | `ctx.timer` | `setTimeout` / `setInterval` / `sleep` / `throttle` / `debounce`, mixed onto `ctx`. |
 | `ctx.settings` | `config`, `save()`, `setLanguage(lang)`. |
+| `ctx.storage` | The daemon's entity storage, shared with core-owned instance configuration. |
 | `ctx.i18n` | `$t` and `define(messages)` for the plugin's own strings. |
 | `ctx.settingsForm` | `declare({ fields, read, write })` — the plugin's configuration, which the panel renders. |
 | `ctx.middleware` | `uploadSpeedLimit`, `uploadFileCheck` — the base middleware the web server mounts ahead of the body parser. |
 | `ctx.protocol` | `on(event, handler)`, `use(middleware)`, `response`, `responseError`, `error`, `msg`, `ROLE`, `IGNORE`. |
-| `ctx.instances` | `subsystem`, `Instance`, `Config`, `Command`, `UpdateAction`, `fileManager`, `headers`. |
+| `ctx.instances` | `subsystem`, `Instance`, `Config`, `Command`, `UpdateAction`, `commandStringToArray`, `fileManager`, `headers`. |
+| `ctx.javaManager` | The optional Java runtime service, provided by `plugins/javamanager`. |
 | `ctx.transfer` | `passports`, `downloads`, `sendFile` — what a file transfer needs from the core. |
 | `ctx.tasks` | `AsyncTask`, `Center`, `register(name, registration)`, `get(name)`. |
 | `ctx.presets` | `register(preset, factory)`, `entries()`. |
@@ -200,3 +202,7 @@ preset — the two ways a market package reaches an instance. See
 
 `monitor` samples this host's CPU and memory and contributes the history to
 `info/overview` as `cpuMemChart`. See `panel/plugins/monitor`.
+
+`javamanager` owns Java runtime installation and selection, the `java_manager/*`
+protocol events and the `{mcsm_java}` command expansion. See
+`daemon/plugins/javamanager`.

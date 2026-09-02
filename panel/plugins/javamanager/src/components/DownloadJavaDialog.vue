@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import JavaIcon from "@/assets/components/java.png";
+import JavaIcon from "../assets/java.png";
 import { t } from "@/lang/i18n";
-import type { DownloadJavaConfigItem } from "@/types/javaManager";
+import type { DownloadJavaConfigItem } from "../types";
 import { Flex } from "ant-design-vue";
 import { computed, ref } from "vue";
-import type { MountComponent } from "../../types/index";
+import type { MountComponent } from "@/types";
 
 const props = defineProps<MountComponent>();
 

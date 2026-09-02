@@ -62,7 +62,8 @@ routerApp.on("info/overview", async (ctx) => {
       instanceBackupCompressionLevel: globalConfiguration.config.instanceBackupCompressionLevel
     },
     features: {
-      instanceBackup: daemon.features.has("instanceBackup")
+      instanceBackup: daemon.features.has("instanceBackup"),
+      javaManager: daemon.features.has("javaManager")
     },
     dockerPlatforms
   };

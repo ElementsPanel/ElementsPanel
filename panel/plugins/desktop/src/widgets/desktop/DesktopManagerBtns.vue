@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useAppRouters } from "@/hooks/useAppRouters";
 import {
-    TYPE_MINECRAFT_JAVA,
     TYPE_STEAM_SERVER_UNIVERSAL,
     useInstanceInfo
 } from "@/hooks/useInstance";
@@ -47,7 +46,6 @@ const emit = defineEmits<{
     (e: "open-event-config"): void;
     (e: "open-term-config"): void;
     (e: "open-mc-ping"): void;
-    (e: "open-java-manager"): void;
     (e: "open-instance-action", actionId: string): void;
 }>();
 
@@ -169,18 +167,6 @@ const btns = computed(() => {
                 if (!foldersLoaded.value) return false;
                 return folders.value && folders.value.length > 0;
             }
-        },
-        {
-            title: t("TXT_CODE_3fee13ed"),
-            icon: BuildOutlined,
-            click: () => {
-                emit("open-java-manager");
-            },
-            condition: () =>
-                (instanceInfo.value?.config.type.includes(TYPE_MINECRAFT_JAVA) &&
-                    instanceInfo.value?.config.processType === "general" &&
-                    (state.settings.allowJavaManager || isAdmin.value)) ??
-                false
         },
         {
             title: t("TXT_CODE_656a85d8"),

@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
-import { updateInstanceConfig } from "@/services/apis/instance";
-import { addJava, deleteJava, downloadJava, getJavaList, usingJava } from "@/services/apis/javaManager";
+import { addJava, deleteJava, downloadJava, getJavaList, usingJava } from "../api";
 import { parseTimestamp } from "@/tools/time";
 import type { AntColumnsType } from "@/types/ant";
-import type { AddJavaConfigItem, DownloadJavaConfigItem, JavaInfo, JavaRuntime } from "@/types/javaManager";
+import type { AddJavaConfigItem, DownloadJavaConfigItem, JavaInfo, JavaRuntime } from "../types";
 import {
     AppstoreOutlined,
     BuildOutlined,
@@ -15,19 +13,21 @@ import {
     ReloadOutlined
 } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
-import { h, ref, type Ref } from "vue";
-import DesktopWindow from "./DesktopWindow.vue";
+import { computed, h, onUnmounted, ref, type Ref } from "vue";
+import { ctx } from "@/plugin/context";
 
 const props = defineProps<{
-    instanceId: string;
+    instanceUuid?: string;
+    instanceId?: string;
     daemonId: string;
 }>();
+
+const resolvedInstanceId = computed(() => props.instanceUuid ?? props.instanceId ?? "");
+const desktopWindowComponent = computed(() => ctx.desktop.window);
 
 const emit = defineEmits<{
     (e: "close"): void;
 }>();
-
-const { isPhone } = useScreen();
 
 const columns: AntColumnsType[] = [
     {
@@ -62,16 +62,12 @@ const columns: AntColumnsType[] = [
 ];
 
 const javaList: Ref<JavaRuntime[] | undefined> = ref([]);
-const isLoading = ref(false);
-
-const { isLoading: updateLoading } = updateInstanceConfig();
-
 const refreshJavaList = async (out: boolean = false) => {
     try {
         const list = await getJavaList().execute({
             params: {
                 daemonId: props.daemonId ?? "",
-                instanceId: props.instanceId ?? ""
+                instanceId: resolvedInstanceId.value
             }
         });
         javaList.value = list.value;
@@ -167,7 +163,7 @@ const handleDownloadJava = async () => {
             await downloadJava().execute({
                 params: {
                     daemonId: props.daemonId ?? "",
-                    instanceId: props.instanceId ?? ""
+                    instanceId: resolvedInstanceId.value
                 },
                 data: {
                     name: data.name,
@@ -212,7 +208,7 @@ const handleDeleteJava = async (info: JavaInfo) => {
         await deleteJava().execute({
             params: {
                 daemonId: props.daemonId ?? "",
-                instanceId: props.instanceId ?? ""
+                instanceId: resolvedInstanceId.value
             },
             data: {
                 id: info.fullname
@@ -229,7 +225,7 @@ const handleUsingJava = async (info: JavaInfo) => {
         await usingJava().execute({
             params: {
                 daemonId: props.daemonId ?? "",
-                instanceId: props.instanceId ?? ""
+                instanceId: resolvedInstanceId.value
             },
             data: {
                 id: info.fullname
@@ -248,7 +244,8 @@ const updateWindowSize = () => {
     windowWidth.value = window.innerWidth;
     windowHeight.value = window.innerHeight;
 };
-window.addEventListener('resize', updateWindowSize);
+window.addEventListener("resize", updateWindowSize);
+onUnmounted(() => window.removeEventListener("resize", updateWindowSize));
 </script>
 
 <template>
@@ -306,7 +303,7 @@ window.addEventListener('resize', updateWindowSize);
 
         <Teleport to="body">
             <Transition name="dfm-dialog-fade">
-                <DesktopWindow v-if="addJavaDialog.show" id="java-manager-add-dialog" :title="t('TXT_CODE_8900e7ee')"
+                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && addJavaDialog.show" id="java-manager-add-dialog" :title="t('TXT_CODE_8900e7ee')"
                     :icon="BuildOutlined" :visible="addJavaDialog.show" :minimized="false" :maximized="false"
                     :active="true" :initial-width="420" :initial-height="315" :initial-x="windowWidth / 2 - 210"
                     :initial-y="windowHeight / 2 - 140" :z-index="10002" :show-minimize="false" :show-maximize="false"
@@ -333,13 +330,13 @@ window.addEventListener('resize', updateWindowSize);
                             </button>
                         </div>
                     </div>
-                </DesktopWindow>
+                </component>
             </Transition>
         </Teleport>
 
         <Teleport to="body">
             <Transition name="dfm-dialog-fade">
-                <DesktopWindow v-if="downloadJavaDialog.show" id="java-manager-download-dialog"
+                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && downloadJavaDialog.show" id="java-manager-download-dialog"
                     :title="t('TXT_CODE_84588601')" :icon="DownloadOutlined" :visible="downloadJavaDialog.show"
                     :minimized="false" :maximized="false" :active="true" :initial-width="700" :initial-height="460"
                     :initial-x="windowWidth / 2 - 350" :initial-y="windowHeight / 2 - 230" :z-index="10002"
@@ -373,7 +370,7 @@ window.addEventListener('resize', updateWindowSize);
                             </button>
                         </div>
                     </div>
-                </DesktopWindow>
+                </component>
             </Transition>
         </Teleport>
     </div>

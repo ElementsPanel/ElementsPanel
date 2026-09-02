@@ -5,9 +5,11 @@ import { compress, decompress, decompressWithProgress, listArchiveEntries } from
 import { GitignoreMatcher } from "../common/gitignore_matcher";
 import { getCommonHeaders } from "../common/network";
 import { globalConfiguration } from "../entity/config";
+import StorageSubsystem from "../common/system_storage";
 import Instance from "../entity/instance/instance";
 import InstanceConfig from "../entity/instance/Instance_config";
 import InstanceCommand from "../entity/commands/base/command";
+import { commandStringToArray } from "../entity/commands/base/command_parser";
 import i18next from "i18next";
 import { $t } from "../i18n";
 import { uploadFileCheckMiddleware, uploadSpeedLimitMiddleware } from "../middlewares/precheck";
@@ -70,12 +72,14 @@ export function installDaemonPluginServices() {
       globalConfiguration.config.language = language;
     }
   });
+  provide("storage", StorageSubsystem);
   provide("instances", {
     subsystem: InstanceSubsystem,
     Instance,
     Config: InstanceConfig,
     Command: InstanceCommand,
     UpdateAction: InstanceUpdateAction,
+    commandStringToArray,
     // Resolved at call time: the file primitives belong to `plugins/filemanager`.
     fileManager: (instanceUuid: string) => fileSubsystem().getFileManager(instanceUuid),
     headers: getCommonHeaders

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import type { AddJavaConfigItem } from "@/types/javaManager";
+import type { AddJavaConfigItem } from "../types";
 import { ref } from "vue";
-import type { MountComponent } from "../../types/index";
+import type { MountComponent } from "@/types";
 
 const props = defineProps<MountComponent>();
 const dataSource = ref<AddJavaConfigItem>({
