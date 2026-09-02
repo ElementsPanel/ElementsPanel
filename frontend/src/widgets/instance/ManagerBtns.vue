@@ -19,11 +19,9 @@ import {
   AppstoreAddOutlined,
   ArrowRightOutlined,
   BuildOutlined,
-  CodeOutlined,
   ControlOutlined,
   DashboardOutlined,
   FieldTimeOutlined,
-  FolderOpenOutlined,
   UsbOutlined,
   UsergroupDeleteOutlined
 } from "@ant-design/icons-vue";
@@ -38,9 +36,7 @@ import InstanceFundamentalDetail from "./dialogs/InstanceFundamentalDetail.vue";
 import McPingSettings from "./dialogs/McPingSettings.vue";
 import PingConfig from "./dialogs/PingConfig.vue";
 import RconSettings from "./dialogs/RconSettings.vue";
-import TermConfig from "./dialogs/TermConfig.vue";
 
-const terminalConfigDialog = ref<InstanceType<typeof TermConfig>>();
 const rconSettingsDialog = ref<InstanceType<typeof RconSettings>>();
 const mcSettingsDialog = ref<InstanceType<typeof McPingSettings>>();
 const eventConfigDialog = ref<InstanceType<typeof EventConfig>>();
@@ -175,14 +171,6 @@ const btns = computed(() => {
       }
     },
     {
-      title: t("TXT_CODE_ae533703"),
-      icon: FolderOpenOutlined,
-      click: () => {
-        toPage({ path: "/instances/terminal/files" });
-      },
-      condition: () => state.settings.canFileManager || isAdmin.value
-    },
-    {
       title: t("TXT_CODE_MOD_MANAGER"),
       icon: UsbOutlined,
       click: () => {
@@ -229,13 +217,6 @@ const btns = computed(() => {
       icon: DashboardOutlined,
       click: () => {
         eventConfigDialog.value?.openDialog();
-      }
-    },
-    {
-      title: t("TXT_CODE_d23631cb"),
-      icon: CodeOutlined,
-      click: () => {
-        terminalConfigDialog.value?.openDialog();
       }
     },
     {
@@ -300,9 +281,6 @@ watch(instanceInfo, (cfg, oldCfg) => {
     </template>
   </CardPanel>
 
-  <TermConfig ref="terminalConfigDialog" :instance-info="instanceInfo" :instance-id="instanceId" :daemon-id="daemonId"
-    @update="refreshInstanceInfo" />
-
   <EventConfig ref="eventConfigDialog" :instance-info="instanceInfo" :instance-id="instanceId" :daemon-id="daemonId"
     @update="refreshInstanceInfo" />
 
@@ -324,7 +302,8 @@ watch(instanceInfo, (cfg, oldCfg) => {
   <template v-if="instanceId && daemonId">
     <component v-for="action in normalInstanceActions" :is="action.normalComponent" :key="action.id"
       :ref="(component: unknown) => setInstanceActionRef(action.id, component)" :instance-uuid="instanceId"
-      :instance-info="instanceInfo" :daemon-id="daemonId" @close="refreshInstanceInfo" />
+      :instance-info="instanceInfo" :daemon-id="daemonId" @close="refreshInstanceInfo"
+      @update="refreshInstanceInfo" />
   </template>
 </template>
 

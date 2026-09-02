@@ -12,6 +12,9 @@ import { useCommandHistory } from "./hooks/useCommandHistory";
 import { encodeConsoleColor, useTerminal } from "./hooks/useTerminal";
 import CommandHistory from "./widgets/instance/CommandHistory.vue";
 import Terminal from "./widgets/instance/Terminal.vue";
+import TermConfig from "./widgets/instance/dialogs/TermConfig.vue";
+import DesktopTermConfig from "./desktop/DesktopTermConfig.vue";
+import { CodeOutlined } from "@ant-design/icons-vue";
 
 const instanceParams: ILayoutCardParams[] = [
   { field: "instanceId", label: t("TXT_CODE_e6a5c12b"), type: "string" },
@@ -45,7 +48,7 @@ const commandHistoryCard: LayoutCardPoolItemFactory = () => ({
   params: instanceParams
 });
 
-export const inject = ["ui"];
+export const inject = ["ui", "actions"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.set("terminal", {
@@ -63,4 +66,14 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.ui.layoutCard("InstanceCommandHistory", CommandHistory);
   ctx.ui.layoutCardPoolItem(terminalCard);
   ctx.ui.layoutCardPoolItem(commandHistoryCard);
+
+  ctx.actions.instance({
+    id: "terminal-config",
+    title: () => t("TXT_CODE_d23631cb"),
+    icon: CodeOutlined,
+    normalComponent: TermConfig,
+    desktopComponent: DesktopTermConfig,
+    desktopInitialWidth: 700,
+    desktopInitialHeight: 500
+  });
 }

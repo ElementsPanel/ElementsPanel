@@ -10,6 +10,7 @@ import { TERMINAL_CODE } from "@/types/const";
 
 const props = defineProps<{
   instanceInfo?: InstanceDetail;
+  instanceUuid?: string;
   instanceId?: string;
   daemonId?: string;
 }>();
@@ -24,13 +25,14 @@ const openDialog = () => {
   options.value = props.instanceInfo;
 };
 
+const resolvedInstanceId = computed(() => props.instanceUuid ?? props.instanceId ?? "");
 const { execute, isLoading } = updateInstanceConfig();
 
 const submit = async () => {
   try {
     await execute({
       params: {
-        uuid: props.instanceId ?? "",
+        uuid: resolvedInstanceId.value,
         daemonId: props.daemonId ?? ""
       },
       data: {
@@ -50,6 +52,7 @@ const submit = async () => {
 };
 
 defineExpose({
+  open: openDialog,
   openDialog
 });
 </script>

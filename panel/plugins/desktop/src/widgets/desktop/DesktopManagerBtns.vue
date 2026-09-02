@@ -15,12 +15,10 @@ import { useAppStateStore } from "@/stores/useAppStateStore";
 import {
     AppstoreAddOutlined,
     BuildOutlined,
-    CodeOutlined,
     ControlOutlined,
     DashboardOutlined,
     FieldTimeOutlined,
     FileTextOutlined,
-    FolderOpenOutlined,
     UsbOutlined,
     UsergroupDeleteOutlined
 } from "@ant-design/icons-vue";
@@ -41,11 +39,9 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (e: "open-server-config", type: string): void;
-    (e: "open-file-manager"): void;
     (e: "open-mod-manager"): void;
     (e: "open-schedule"): void;
     (e: "open-event-config"): void;
-    (e: "open-term-config"): void;
     (e: "open-mc-ping"): void;
     (e: "open-instance-action", actionId: string): void;
 }>();
@@ -146,14 +142,6 @@ const btns = computed(() => {
             }
         },
         {
-            title: t("TXT_CODE_ae533703"),
-            icon: FolderOpenOutlined,
-            click: () => {
-                emit("open-file-manager");
-            },
-            condition: () => state.settings.canFileManager || isAdmin.value
-        },
-        {
             title: t("TXT_CODE_MOD_MANAGER"),
             icon: UsbOutlined,
             click: () => {
@@ -191,13 +179,6 @@ const btns = computed(() => {
             icon: DashboardOutlined,
             click: () => {
                 emit("open-event-config");
-            }
-        },
-        {
-            title: t("TXT_CODE_d23631cb"),
-            icon: CodeOutlined,
-            click: () => {
-                emit("open-term-config");
             }
         },
         {

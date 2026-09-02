@@ -23,7 +23,6 @@ import DesktopServerConfig from "./widgets/desktop/DesktopServerConfig.vue";
 import DesktopSettings from "./widgets/desktop/DesktopSettings.vue";
 import type { TaskbarWindow } from "./widgets/desktop/DesktopTaskbar.vue";
 import DesktopTaskbar from "./widgets/desktop/DesktopTaskbar.vue";
-import DesktopTermConfig from "./widgets/desktop/DesktopTermConfig.vue";
 import DesktopTerminalSelector from "./widgets/desktop/DesktopTerminalSelector.vue";
 import DesktopWindow from "./widgets/desktop/DesktopWindow.vue";
 import {
@@ -37,7 +36,6 @@ import {
     DesktopOutlined,
     EditOutlined,
     FieldTimeOutlined,
-    FolderOpenOutlined,
     FullscreenExitOutlined,
     FullscreenOutlined,
     MinusOutlined,
@@ -66,7 +64,6 @@ const desktopStartMenuAvatar = computed(() => user.value?.desktopStartMenuAvatar
 // "file" plugin. Without it those windows have nothing to render, and the
 // menu entries that open them are hidden the same way the account ones are.
 const fileManager = computed(() => usePluginService<FrontendFileManagerService>("file"));
-const desktopFileManagerWindow = computed(() => fileManager.value?.DesktopFileManager);
 const desktopFileEditorWindow = computed(() => fileManager.value?.DesktopFileEditor);
 const desktopImageViewerWindow = computed(() => fileManager.value?.DesktopImageViewer);
 const { getSettingsConfig } = useLayoutConfigStore();
@@ -550,13 +547,11 @@ const ICON_MAP: Record<string, Component> = {
     "terminal": markRaw(CodeOutlined),
     "my-apps": markRaw(AppstoreOutlined),
     "instance-console": markRaw(CodeOutlined),
-    "file-manager": markRaw(FolderOpenOutlined),
     "file-editor": markRaw(EditOutlined),
     "image-viewer": markRaw(PictureOutlined),
     "server-config": markRaw(ControlOutlined),
     "schedule": markRaw(FieldTimeOutlined),
     "event-config": markRaw(DashboardOutlined),
-    "term-config": markRaw(CodeOutlined),
     "new-instance": markRaw(DesktopOutlined),
     "user-info": markRaw(UserOutlined),
     "mc-ping": markRaw(UsergroupDeleteOutlined),
@@ -589,6 +584,10 @@ const loadDesktopLayout = async () => {
                         ? "backup"
                         : win.content === "java-manager"
                         ? "java-manager"
+                        : win.content === "file-manager"
+                        ? "file-manager"
+                        : win.content === "term-config"
+                        ? "terminal-config"
                         : typeof win.content === "string" && win.content.startsWith("instance-action:")
                         ? win.content.slice("instance-action:".length)
                         : undefined;
@@ -725,32 +724,6 @@ const openInstanceConsole = (instance: any, daemonId: string) => {
         initialWidth: 1000,
         initialHeight: 650,
         instanceId: instance.instanceUuid,
-        daemonId: daemonId
-    });
-    saveDesktopLayout();
-};
-
-const openFileManagerWindow = (instanceId: string, daemonId: string, instanceName: string) => {
-    const windowId = `file-manager-${instanceId}-${Date.now()}`;
-
-    windowOffset = (windowOffset + 1) % 8;
-    const offsetX = 120 + windowOffset * 30;
-    const offsetY = 80 + windowOffset * 30;
-
-    windows.set(windowId, {
-        id: windowId,
-        title: `${instanceName} - ${t("TXT_CODE_ae533703")}`,
-        icon: markRaw(FolderOpenOutlined),
-        visible: true,
-        minimized: false,
-        maximized: false,
-        zIndex: ++nextZIndex,
-        content: "file-manager",
-        initialX: offsetX,
-        initialY: offsetY,
-        initialWidth: 900,
-        initialHeight: 600,
-        instanceId: instanceId,
         daemonId: daemonId
     });
     saveDesktopLayout();
@@ -909,40 +882,6 @@ const openEventConfigWindow = (instanceId: string, daemonId: string) => {
         initialY: offsetY,
         initialWidth: 500,
         initialHeight: 450,
-        instanceId: instanceId,
-        daemonId: daemonId
-    });
-    saveDesktopLayout();
-};
-
-const openTermConfigWindow = (instanceId: string, daemonId: string) => {
-    const windowId = `term-config-${instanceId}`;
-    const existing = windows.get(windowId);
-
-    if (existing) {
-        existing.minimized = false;
-        existing.visible = true;
-        focusWindow(windowId);
-        return;
-    }
-
-    windowOffset = (windowOffset + 1) % 8;
-    const offsetX = 120 + windowOffset * 30;
-    const offsetY = 80 + windowOffset * 30;
-
-    windows.set(windowId, {
-        id: windowId,
-        title: t("TXT_CODE_d23631cb"),
-        icon: markRaw(CodeOutlined),
-        visible: true,
-        minimized: false,
-        maximized: false,
-        zIndex: ++nextZIndex,
-        content: "term-config",
-        initialX: offsetX,
-        initialY: offsetY,
-        initialWidth: 700,
-        initialHeight: 500,
         instanceId: instanceId,
         daemonId: daemonId
     });
@@ -1447,16 +1386,18 @@ const username = computed(() => appState.userInfo?.userName || "User");
                             <DesktopInstanceConsole
                                 v-else-if="win.content === 'instance-console' && win.instanceId && win.daemonId"
                                 :instance-id="win.instanceId" :daemon-id="win.daemonId"
-                                @open-server-config="openServerConfigWindow" @open-file-manager="openFileManagerWindow"
+                                @open-server-config="openServerConfigWindow"
                                 @open-mod-manager="openModManagerWindow" @open-schedule="openScheduleWindow"
-                                @open-event-config="openEventConfigWindow" @open-term-config="openTermConfigWindow"
+                                @open-event-config="openEventConfigWindow"
                                 @open-mc-ping="openMcPingWindow"
                                 @open-instance-action="openInstanceActionWindow" />
 
                             <component :is="win.component"
                                 v-else-if="win.content.startsWith('instance-action:') && win.component && win.instanceId && win.daemonId"
-                                :instance-uuid="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)"
-                                @open-file-editor="(filePath: string, fileName: string) => openFileEditorWindow(win.instanceId!, win.daemonId!, filePath, fileName)" />
+                                :instance-uuid="win.instanceId" :daemon-id="win.daemonId" :session-id="win.id"
+                                @close="closeWindow(win.id)"
+                                @open-file-editor="(filePath: string, fileName: string) => openFileEditorWindow(win.instanceId!, win.daemonId!, filePath, fileName)"
+                                @open-image-viewer="(filePath: string, fileName: string) => openImageViewerWindow(win.instanceId!, win.daemonId!, filePath, fileName)" />
 
                             <DesktopServerConfig
                                 v-else-if="win.content === 'server-config' && win.instanceId && win.daemonId && win.type"
@@ -1469,10 +1410,6 @@ const username = computed(() => appState.userInfo?.userName || "User");
                                 v-else-if="win.content === 'event-config' && win.instanceId && win.daemonId"
                                 :instance-id="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)" />
 
-                            <DesktopTermConfig
-                                v-else-if="win.content === 'term-config' && win.instanceId && win.daemonId"
-                                :instance-id="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)" />
-
                             <DesktopMcPing v-else-if="win.content === 'mc-ping' && win.instanceId && win.daemonId"
                                 :instance-id="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)" />
 
@@ -1480,12 +1417,6 @@ const username = computed(() => appState.userInfo?.userName || "User");
                                 v-else-if="win.content === 'mod-manager' && win.instanceId && win.daemonId"
                                 :instance-id="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)"
                                 @open-file-editor="(filePath: string, fileName: string) => openFileEditorWindow(win.instanceId!, win.daemonId!, filePath, fileName)" />
-
-                            <component :is="desktopFileManagerWindow"
-                                v-else-if="win.content === 'file-manager' && desktopFileManagerWindow && win.instanceId && win.daemonId"
-                                :instance-id="win.instanceId" :daemon-id="win.daemonId" :session-id="win.id"
-                                @open-file-editor="(filePath: string, fileName: string) => openFileEditorWindow(win.instanceId!, win.daemonId!, filePath, fileName)"
-                                @open-image-viewer="(filePath: string, fileName: string) => openImageViewerWindow(win.instanceId!, win.daemonId!, filePath, fileName)" />
 
                             <component :is="desktopFileEditorWindow"
                                 v-else-if="win.content === 'file-editor' && desktopFileEditorWindow && win.instanceId && win.daemonId && win.filePath && win.fileName"
