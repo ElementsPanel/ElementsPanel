@@ -152,5 +152,6 @@
   "TXT_CODE_router.user.existsUserName": "用户名已经被占用",
   "TXT_CODE_router.user.invalidPassword": "非法的密码格式",
   "TXT_CODE_router.user.passwordCheck": "密码不规范，必须为拥有大小写字母，数字，长度在9到36之间",
-  "TXT_CODE_systemUser.userCount": "本地用户数：{{n}}"
+  "TXT_CODE_systemUser.userCount": "本地用户数：{{n}}",
+  "TXT_CODE_systemUser.defaultAccount": "已创建默认管理员账户。\n用户名：{{userName}}\n密码：{{password}}\n此密码仅显示一次。"
 }

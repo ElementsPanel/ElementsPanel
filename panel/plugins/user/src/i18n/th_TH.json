@@ -152,5 +152,6 @@
   "TXT_CODE_router.user.existsUserName": "ชื่อผู้ใช้นี้มีคนใช้แล้ว",
   "TXT_CODE_router.user.invalidPassword": "รูปแบบรหัสผ่านไม่ถูกต้อง",
   "TXT_CODE_router.user.passwordCheck": "รหัสผ่านไม่ถูกต้อง ต้องประกอบด้วยตัวอักษรพิมพ์ใหญ่ พิมพ์เล็ก ตัวเลข และมีความยาวระหว่าง 9 ถึง 36 ตัวอักษร",
-  "TXT_CODE_systemUser.userCount": "จำนวนผู้ใช้ในระบบ: {{n}}"
+  "TXT_CODE_systemUser.userCount": "จำนวนผู้ใช้ในระบบ: {{n}}",
+  "TXT_CODE_systemUser.defaultAccount": "สร้างบัญชีผู้ดูแลระบบเริ่มต้นแล้ว\nชื่อผู้ใช้: {{userName}}\nรหัสผ่าน: {{password}}\nรหัสผ่านนี้จะแสดงเพียงครั้งเดียว"
 }

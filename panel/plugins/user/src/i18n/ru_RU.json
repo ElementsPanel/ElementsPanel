@@ -152,5 +152,6 @@
   "TXT_CODE_router.user.existsUserName": "Имя пользователя уже используется",
   "TXT_CODE_router.user.invalidPassword": "Недействительный формат пароля",
   "TXT_CODE_router.user.passwordCheck": "Неверный пароль. Он должен содержать заглавные и строчные буквы, цифры, и его длина должна быть от 9 до 36 символов",
-  "TXT_CODE_systemUser.userCount": "Количество локальных пользователей: {{n}}"
+  "TXT_CODE_systemUser.userCount": "Количество локальных пользователей: {{n}}",
+  "TXT_CODE_systemUser.defaultAccount": "Создана учетная запись администратора по умолчанию.\nИмя пользователя: {{userName}}\nПароль: {{password}}\nЭтот пароль отображается только один раз."
 }

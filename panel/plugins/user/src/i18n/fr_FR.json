@@ -152,5 +152,6 @@
   "TXT_CODE_router.user.existsUserName": "Nom d'utilisateur déjà pris",
   "TXT_CODE_router.user.invalidPassword": "Mauvais format de mot de passe",
   "TXT_CODE_router.user.passwordCheck": "Le mot de passe est incorrect. Il doit contenir des lettres majuscules et minuscules, des chiffres et avoir une longueur comprise entre 9 et 36.",
-  "TXT_CODE_systemUser.userCount": "Nombre d'utilisateurs sur cette machine : {{n}}"
+  "TXT_CODE_systemUser.userCount": "Nombre d'utilisateurs sur cette machine : {{n}}",
+  "TXT_CODE_systemUser.defaultAccount": "Le compte administrateur par défaut a été créé.\nNom d'utilisateur : {{userName}}\nMot de passe : {{password}}\nCe mot de passe n'est affiché qu'une seule fois."
 }

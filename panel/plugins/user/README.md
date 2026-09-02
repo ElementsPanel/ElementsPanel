@@ -6,7 +6,7 @@
 
 On the first initialization, when no account exists, this plugin creates the
 administrator `epanel` with a random 10-character password. The password is
-printed to the process console once immediately after it is persisted.
+logged once by the user plugin immediately after it is persisted.
 
 Owns login, multi-user management, permissions, 2FA, API keys and SSO, on both
 the panel backend and the frontend (including Desktop mode).

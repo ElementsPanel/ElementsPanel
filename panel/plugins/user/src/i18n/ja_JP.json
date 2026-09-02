@@ -152,5 +152,6 @@
   "TXT_CODE_router.user.existsUserName": "ユーザー名は既に使われています",
   "TXT_CODE_router.user.invalidPassword": "パスワードの形式が間違っています",
   "TXT_CODE_router.user.passwordCheck": "パスワードは大文字と小文字、数字を含み、長さは 9 ～ 36 でなければなりません。",
-  "TXT_CODE_systemUser.userCount": "このマシンのユーザー数: {{n}}"
+  "TXT_CODE_systemUser.userCount": "このマシンのユーザー数: {{n}}",
+  "TXT_CODE_systemUser.defaultAccount": "デフォルトの管理者アカウントを作成しました。\nユーザー名: {{userName}}\nパスワード: {{password}}\nこのパスワードは一度だけ表示されます。"
 }

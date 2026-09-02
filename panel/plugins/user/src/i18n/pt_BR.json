@@ -152,5 +152,6 @@
   "TXT_CODE_router.user.existsUserName": "Nome de usuário já está em uso",
   "TXT_CODE_router.user.invalidPassword": "Formato de senha inválido",
   "TXT_CODE_router.user.passwordCheck": "Senha inválida. Ela deve conter letras maiúsculas e minúsculas, números, e ter um comprimento entre 9 e 36 caracteres",
-  "TXT_CODE_systemUser.userCount": "Número de usuários locais: {{n}}"
+  "TXT_CODE_systemUser.userCount": "Número de usuários locais: {{n}}",
+  "TXT_CODE_systemUser.defaultAccount": "A conta de administrador padrão foi criada.\nNome de usuário: {{userName}}\nSenha: {{password}}\nEsta senha é exibida apenas uma vez."
 }

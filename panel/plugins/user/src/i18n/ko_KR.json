@@ -152,5 +152,6 @@
   "TXT_CODE_router.user.existsUserName": "이미 사용중인 이름입니다",
   "TXT_CODE_router.user.invalidPassword": "잘못된 비밀번호 형식",
   "TXT_CODE_router.user.passwordCheck": "비밀번호가 올바르지 않습니다. 대문자, 소문자, 숫자를 포함해야 하며 길이는 9~36자여야 합니다.",
-  "TXT_CODE_systemUser.userCount": "이 컴퓨터의 사용자 수: {{n}}"
+  "TXT_CODE_systemUser.userCount": "이 컴퓨터의 사용자 수: {{n}}",
+  "TXT_CODE_systemUser.defaultAccount": "기본 관리자 계정이 생성되었습니다.\n사용자 이름: {{userName}}\n비밀번호: {{password}}\n이 비밀번호는 한 번만 표시됩니다."
 }

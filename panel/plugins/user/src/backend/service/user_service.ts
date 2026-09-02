@@ -49,12 +49,12 @@ class UserSubsystem {
         passWord,
         permission: ROLE().ADMIN
       });
-      console.log(`
-ElementsPanel default administrator created.
-Username: epanel
-Password: ${passWord}
-This password is shown only once.
-`);
+      logger().info(
+        $t("TXT_CODE_systemUser.defaultAccount", {
+          userName: "epanel",
+          password: passWord
+        })
+      );
     }
     logger().info($t("TXT_CODE_systemUser.userCount", { n: this.objects.size }));
   }

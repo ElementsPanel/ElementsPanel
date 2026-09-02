@@ -152,5 +152,6 @@
   "TXT_CODE_router.user.existsUserName": "Kullanıcı adı zaten kullanımda",
   "TXT_CODE_router.user.invalidPassword": "Geçersiz Parola Biçimi",
   "TXT_CODE_router.user.passwordCheck": "Geçersiz parola. Büyük ve küçük harfler, sayılar içermeli ve 9 ile 36 karakter arasında bir uzunluğa sahip olmalıdır",
-  "TXT_CODE_systemUser.userCount": "Yerel kullanıcı sayısı: {{n}}"
+  "TXT_CODE_systemUser.userCount": "Yerel kullanıcı sayısı: {{n}}",
+  "TXT_CODE_systemUser.defaultAccount": "Varsayılan yönetici hesabı oluşturuldu.\nKullanıcı adı: {{userName}}\nParola: {{password}}\nBu parola yalnızca bir kez gösterilir."
 }

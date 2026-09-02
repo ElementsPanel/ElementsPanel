@@ -152,5 +152,6 @@
   "TXT_CODE_router.user.existsUserName": "使用者名稱已經被佔用",
   "TXT_CODE_router.user.invalidPassword": "錯誤的密碼格式",
   "TXT_CODE_router.user.passwordCheck": "密碼不正確，必須為擁有大小寫字母，數字，長度在9到36之間",
-  "TXT_CODE_systemUser.userCount": "本機使用者數：{{n}}"
+  "TXT_CODE_systemUser.userCount": "本機使用者數：{{n}}",
+  "TXT_CODE_systemUser.defaultAccount": "已建立預設管理員帳號。\n使用者名稱：{{userName}}\n密碼：{{password}}\n此密碼僅顯示一次。"
 }

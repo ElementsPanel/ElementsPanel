@@ -152,5 +152,6 @@
   "TXT_CODE_router.user.existsUserName": "Username is already in use",
   "TXT_CODE_router.user.invalidPassword": "Invalid Password Format",
   "TXT_CODE_router.user.passwordCheck": "Invalid password. It must contain uppercase and lowercase letters, numbers, and have a length between 9 and 36 characters",
-  "TXT_CODE_systemUser.userCount": "Number of local users: {{n}}"
+  "TXT_CODE_systemUser.userCount": "Number of local users: {{n}}",
+  "TXT_CODE_systemUser.defaultAccount": "Default administrator account created.\nUsername: {{userName}}\nPassword: {{password}}\nThis password is shown only once."
 }

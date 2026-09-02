@@ -152,5 +152,6 @@
   "TXT_CODE_router.user.existsUserName": "Este nombre de usuario ya está tomado",
   "TXT_CODE_router.user.invalidPassword": "Formato de contraseña incorrecto",
   "TXT_CODE_router.user.passwordCheck": "La contraseña es incorrecta. Debe contener letras mayúsculas y minúsculas, números y tener entre 9 y 36 de longitud.",
-  "TXT_CODE_systemUser.userCount": "Número de usuarios en esta máquina: {{n}}"
+  "TXT_CODE_systemUser.userCount": "Número de usuarios en esta máquina: {{n}}",
+  "TXT_CODE_systemUser.defaultAccount": "Se creó la cuenta de administrador predeterminada.\nNombre de usuario: {{userName}}\nContraseña: {{password}}\nEsta contraseña se muestra una sola vez."
 }

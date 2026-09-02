@@ -152,5 +152,6 @@
   "TXT_CODE_router.user.existsUserName": "Benutzername ist bereits vergeben",
   "TXT_CODE_router.user.invalidPassword": "Falsches Passwortformat",
   "TXT_CODE_router.user.passwordCheck": "Das Passwort ist falsch. Es muss Groß- und Kleinbuchstaben sowie Zahlen enthalten und zwischen 9 und 36 lang sein.",
-  "TXT_CODE_systemUser.userCount": "Anzahl der Benutzer auf diesem Computer: {{n}}"
+  "TXT_CODE_systemUser.userCount": "Anzahl der Benutzer auf diesem Computer: {{n}}",
+  "TXT_CODE_systemUser.defaultAccount": "Standardadministratorkonto wurde erstellt.\nBenutzername: {{userName}}\nPasswort: {{password}}\nDieses Passwort wird nur einmal angezeigt."
 }
