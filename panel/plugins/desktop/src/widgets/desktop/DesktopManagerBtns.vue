@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useAppRouters } from "@/hooks/useAppRouters";
 import {
-    TYPE_MINECRAFT_JAVA,
     TYPE_STEAM_SERVER_UNIVERSAL,
     useInstanceInfo
 } from "@/hooks/useInstance";
@@ -19,15 +18,13 @@ import {
     DashboardOutlined,
     FieldTimeOutlined,
     FileTextOutlined,
-    UsbOutlined,
-    UsergroupDeleteOutlined
+    UsbOutlined
 } from "@ant-design/icons-vue";
 import { computed, ref, watch } from "vue";
 import { arrayFilter } from "@/tools/array";
 import EventConfig from "@/widgets/instance/dialogs/EventConfig.vue";
 import InstanceDetail from "@/widgets/instance/dialogs/InstanceDetail.vue";
 import InstanceFundamentalDetail from "@/widgets/instance/dialogs/InstanceFundamentalDetail.vue";
-import McPingSettings from "@/widgets/instance/dialogs/McPingSettings.vue";
 import PingConfig from "@/widgets/instance/dialogs/PingConfig.vue";
 import RconSettings from "@/widgets/instance/dialogs/RconSettings.vue";
 import DesktopInstanceLog from "./DesktopInstanceLog.vue";
@@ -42,7 +39,6 @@ const emit = defineEmits<{
     (e: "open-mod-manager"): void;
     (e: "open-schedule"): void;
     (e: "open-event-config"): void;
-    (e: "open-mc-ping"): void;
     (e: "open-instance-action", actionId: string): void;
 }>();
 
@@ -51,7 +47,6 @@ const { toPage: toOtherPager } = useAppRouters();
 const { state: overviewState } = useOverviewInfo();
 
 const rconSettingsDialog = ref<InstanceType<typeof RconSettings>>();
-const mcSettingsDialog = ref<InstanceType<typeof McPingSettings>>();
 const eventConfigDialog = ref<InstanceType<typeof EventConfig>>();
 const pingConfigDialog = ref<InstanceType<typeof PingConfig>>();
 const instanceDetailsDialog = ref<InstanceType<typeof InstanceDetail>>();
@@ -190,14 +185,6 @@ const btns = computed(() => {
             }
         },
         {
-            title: t("TXT_CODE_40241d8e"),
-            icon: UsergroupDeleteOutlined,
-            click: () => {
-                emit("open-mc-ping");
-            },
-            condition: () => instanceInfo.value?.config.type.includes(TYPE_MINECRAFT_JAVA) ?? false
-        },
-        {
             title: t("TXT_CODE_4f34fc28"),
             icon: AppstoreAddOutlined,
             condition: () =>
@@ -246,9 +233,6 @@ watch(instanceInfo, (cfg, oldCfg) => {
         :instance-id="props.instanceId" :daemon-id="props.daemonId" @update="refreshInstanceInfo" />
 
     <RconSettings ref="rconSettingsDialog" :instance-info="instanceInfo" :instance-id="props.instanceId"
-        :daemon-id="props.daemonId" @update="refreshInstanceInfo" />
-
-    <McPingSettings ref="mcSettingsDialog" :instance-info="instanceInfo" :instance-id="props.instanceId"
         :daemon-id="props.daemonId" @update="refreshInstanceInfo" />
 
     <DesktopInstanceLog ref="instanceLogDialog" :instance-id="props.instanceId" :daemon-id="props.daemonId"

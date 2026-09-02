@@ -3,7 +3,6 @@ import InnerCard from "@/components/InnerCard.vue";
 import ResponsiveLayoutGroup from "@/components/ResponsiveLayoutGroup.vue";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import {
-  TYPE_MINECRAFT_JAVA,
   TYPE_STEAM_SERVER_UNIVERSAL,
   useInstanceInfo
 } from "@/hooks/useInstance";
@@ -22,8 +21,7 @@ import {
   ControlOutlined,
   DashboardOutlined,
   FieldTimeOutlined,
-  UsbOutlined,
-  UsergroupDeleteOutlined
+  UsbOutlined
 } from "@ant-design/icons-vue";
 
 import { computed, ref, watch, type ComponentPublicInstance } from "vue";
@@ -33,12 +31,10 @@ import { arrayFilter } from "../../tools/array";
 import EventConfig from "./dialogs/EventConfig.vue";
 import InstanceDetail from "./dialogs/InstanceDetail.vue";
 import InstanceFundamentalDetail from "./dialogs/InstanceFundamentalDetail.vue";
-import McPingSettings from "./dialogs/McPingSettings.vue";
 import PingConfig from "./dialogs/PingConfig.vue";
 import RconSettings from "./dialogs/RconSettings.vue";
 
 const rconSettingsDialog = ref<InstanceType<typeof RconSettings>>();
-const mcSettingsDialog = ref<InstanceType<typeof McPingSettings>>();
 const eventConfigDialog = ref<InstanceType<typeof EventConfig>>();
 const pingConfigDialog = ref<InstanceType<typeof PingConfig>>();
 const instanceDetailsDialog = ref<InstanceType<typeof InstanceDetail>>();
@@ -228,14 +224,6 @@ const btns = computed(() => {
       }
     },
     {
-      title: t("TXT_CODE_40241d8e"),
-      icon: UsergroupDeleteOutlined,
-      click: () => {
-        mcSettingsDialog.value?.openDialog();
-      },
-      condition: () => instanceInfo.value?.config.type.includes(TYPE_MINECRAFT_JAVA) ?? false
-    },
-    {
       title: t("TXT_CODE_4f34fc28"),
       icon: AppstoreAddOutlined,
       condition: () =>
@@ -294,9 +282,6 @@ watch(instanceInfo, (cfg, oldCfg) => {
     :instance-id="instanceId" :daemon-id="daemonId" @update="refreshInstanceInfo" />
 
   <RconSettings ref="rconSettingsDialog" :instance-info="instanceInfo" :instance-id="instanceId" :daemon-id="daemonId"
-    @update="refreshInstanceInfo" />
-
-  <McPingSettings ref="mcSettingsDialog" :instance-info="instanceInfo" :instance-id="instanceId" :daemon-id="daemonId"
     @update="refreshInstanceInfo" />
 
   <template v-if="instanceId && daemonId">

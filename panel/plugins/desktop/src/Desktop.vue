@@ -14,7 +14,6 @@ import DesktopEventConfig from "./widgets/desktop/DesktopEventConfig.vue";
 import DesktopIcon from "./widgets/desktop/DesktopIcon.vue";
 import DesktopInstanceConsole from "./widgets/desktop/DesktopInstanceConsole.vue";
 import DesktopInstanceManager from "./widgets/desktop/DesktopInstanceManager.vue";
-import DesktopMcPing from "./widgets/desktop/DesktopMcPing.vue";
 import DesktopModManager from "./widgets/desktop/DesktopModManager.vue";
 import DesktopMyApps from "./widgets/desktop/DesktopMyApps.vue";
 import DesktopNewInstance from "./widgets/desktop/DesktopNewInstance.vue";
@@ -43,7 +42,6 @@ import {
     SettingOutlined,
     TeamOutlined,
     UsbOutlined,
-    UsergroupDeleteOutlined,
     UserOutlined
 } from "@ant-design/icons-vue";
 import { computed, markRaw, onMounted, onUnmounted, reactive, ref, watch, type Component, type CSSProperties } from "vue";
@@ -554,7 +552,6 @@ const ICON_MAP: Record<string, Component> = {
     "event-config": markRaw(DashboardOutlined),
     "new-instance": markRaw(DesktopOutlined),
     "user-info": markRaw(UserOutlined),
-    "mc-ping": markRaw(UsergroupDeleteOutlined),
     "mod-manager": markRaw(UsbOutlined)
 };
 
@@ -576,30 +573,32 @@ const loadDesktopLayout = async () => {
         if (layout && Array.isArray(layout.windows) && layout.windows.length > 0) {
             windows.clear();
             for (const win of layout.windows) {
+                // Migrate the former dedicated Minecraft status window to the plugin action.
+                const content = win.content === "mc-ping" ? "instance-action:mcstats" : win.content;
                 const desktopApp = availableDesktopApps.value.find(
-                    (app) => app.windowContent === win.content || app.id === win.content
+                    (app) => app.windowContent === content || app.id === content
                 );
                 const instanceActionId =
-                    win.content === "backup"
+                    content === "backup"
                         ? "backup"
-                        : win.content === "java-manager"
+                        : content === "java-manager"
                         ? "java-manager"
-                        : win.content === "file-manager"
+                        : content === "file-manager"
                         ? "file-manager"
-                        : win.content === "term-config"
+                        : content === "term-config"
                         ? "terminal-config"
-                        : typeof win.content === "string" && win.content.startsWith("instance-action:")
-                        ? win.content.slice("instance-action:".length)
+                        : typeof content === "string" && content.startsWith("instance-action:")
+                        ? content.slice("instance-action:".length)
                         : undefined;
                 const instanceAction = instanceActionId
                     ? pluginInstanceActions.value.find((action) => action.id === instanceActionId)
                     : undefined;
-                if (win.content.startsWith("panel-plugin:") && !desktopApp?.component) continue;
+                if (content.startsWith("panel-plugin:") && !desktopApp?.component) continue;
                 if (instanceActionId && !instanceAction?.desktopComponent) continue;
                 const icon =
                     desktopApp?.icon ||
                     (instanceAction?.icon ? markRaw(instanceAction.icon) : undefined) ||
-                    ICON_MAP[win.content] ||
+                    ICON_MAP[content] ||
                     markRaw(DesktopOutlined);
                 const zIndex = typeof win.zIndex === "number" ? win.zIndex : ++nextZIndex;
                 if (zIndex > nextZIndex) nextZIndex = zIndex;
@@ -614,7 +613,7 @@ const loadDesktopLayout = async () => {
                     content:
                         instanceActionId
                             ? `instance-action:${instanceActionId}`
-                            : desktopApp?.windowContent || win.content,
+                            : desktopApp?.windowContent || content,
                     initialX: win.x ?? 100,
                     initialY: win.y ?? 60,
                     initialWidth: win.width ?? 800,
@@ -882,40 +881,6 @@ const openEventConfigWindow = (instanceId: string, daemonId: string) => {
         initialY: offsetY,
         initialWidth: 500,
         initialHeight: 450,
-        instanceId: instanceId,
-        daemonId: daemonId
-    });
-    saveDesktopLayout();
-};
-
-const openMcPingWindow = (instanceId: string, daemonId: string) => {
-    const windowId = `mc-ping-${instanceId}`;
-    const existing = windows.get(windowId);
-
-    if (existing) {
-        existing.minimized = false;
-        existing.visible = true;
-        focusWindow(windowId);
-        return;
-    }
-
-    windowOffset = (windowOffset + 1) % 8;
-    const offsetX = 120 + windowOffset * 30;
-    const offsetY = 80 + windowOffset * 30;
-
-    windows.set(windowId, {
-        id: windowId,
-        title: t("TXT_CODE_40241d8e"),
-        icon: markRaw(UsergroupDeleteOutlined),
-        visible: true,
-        minimized: false,
-        maximized: false,
-        zIndex: ++nextZIndex,
-        content: "mc-ping",
-        initialX: offsetX,
-        initialY: offsetY,
-        initialWidth: 500,
-        initialHeight: 400,
         instanceId: instanceId,
         daemonId: daemonId
     });
@@ -1389,7 +1354,6 @@ const username = computed(() => appState.userInfo?.userName || "User");
                                 @open-server-config="openServerConfigWindow"
                                 @open-mod-manager="openModManagerWindow" @open-schedule="openScheduleWindow"
                                 @open-event-config="openEventConfigWindow"
-                                @open-mc-ping="openMcPingWindow"
                                 @open-instance-action="openInstanceActionWindow" />
 
                             <component :is="win.component"
@@ -1408,9 +1372,6 @@ const username = computed(() => appState.userInfo?.userName || "User");
 
                             <DesktopEventConfig
                                 v-else-if="win.content === 'event-config' && win.instanceId && win.daemonId"
-                                :instance-id="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)" />
-
-                            <DesktopMcPing v-else-if="win.content === 'mc-ping' && win.instanceId && win.daemonId"
                                 :instance-id="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)" />
 
                             <DesktopModManager

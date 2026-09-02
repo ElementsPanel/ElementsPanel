@@ -26,6 +26,8 @@ export type {
   DaemonFilesService,
   DaemonI18nService,
   DaemonInstancesService,
+  DaemonLifecycleService,
+  DaemonLifecycleTaskFactory,
   DaemonJavaManagerService,
   DaemonKoaService,
   DaemonMiddlewareService,

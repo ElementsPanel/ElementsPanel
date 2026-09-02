@@ -17,6 +17,7 @@ import type { sendFile } from "../utils/speed_limit";
 import type { globalConfiguration } from "../entity/config";
 import type Instance from "../entity/instance/instance";
 import type InstanceConfig from "../entity/instance/Instance_config";
+import type { ILifeCycleTask } from "../entity/instance/life_cycle";
 import type InstanceCommand from "../entity/commands/base/command";
 import type { commandStringToArray } from "../entity/commands/base/command_parser";
 import type { IPresetCommand } from "../entity/commands/dispatcher";
@@ -217,6 +218,15 @@ export interface DaemonInstancesService {
   readonly commandStringToArray: typeof commandStringToArray;
 }
 
+/** Builds an optional lifecycle task for one instance. */
+export type DaemonLifecycleTaskFactory = (instance: Instance) => ILifeCycleTask | undefined;
+
+/** Lifecycle tasks contributed by daemon plugins and applied by the dispatcher. */
+export interface DaemonLifecycleService {
+  register(factory: DaemonLifecycleTaskFactory): () => void;
+  entries(): readonly DaemonLifecycleTaskFactory[];
+}
+
 export interface DaemonAsyncTaskRegistration {
   type: string;
   create: (instance: Instance, parameter?: any) => IAsyncTask;
@@ -266,6 +276,7 @@ export interface DaemonSchedulesService {
 export interface DaemonFeaturesService {
   add(feature: string): () => void;
   has(feature: string): boolean;
+  all(): Record<string, boolean>;
 }
 
 /** Fields a plugin adds to the `info/overview` payload the panel reads. */
@@ -385,6 +396,7 @@ declare module "cordis" {
     middleware: DaemonMiddlewareService;
     protocol: DaemonProtocolService;
     instances: DaemonInstancesService;
+    instanceLifecycle: DaemonLifecycleService;
     tasks: DaemonTasksService;
     presets: DaemonPresetsService;
     schedules: DaemonSchedulesService;

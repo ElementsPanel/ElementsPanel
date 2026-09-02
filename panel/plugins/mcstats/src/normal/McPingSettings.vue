@@ -1,43 +1,45 @@
 <script setup lang="ts">
-import { ref, reactive } from "vue";
 import { t } from "@/lang/i18n";
 import type { InstanceDetail } from "@/types";
 import { updateInstanceConfig } from "@/services/apis/instance";
-import { message, type FormInstance } from "ant-design-vue";
 import { reportErrorMsg } from "@/tools/validator";
-
-const formRef = ref<FormInstance>();
+import { message } from "ant-design-vue";
+import { reactive, ref } from "vue";
 
 const props = defineProps<{
+  instanceUuid: string;
+  daemonId: string;
   instanceInfo?: InstanceDetail;
-  instanceId?: string;
-  daemonId?: string;
 }>();
 
-const emit = defineEmits(["update"]);
+const emit = defineEmits<{
+  (e: "update"): void;
+}>();
+
+const open = ref(false);
+const isLoading = ref(false);
 const formData = reactive({
   ip: "",
   port: "",
   type: 1
 });
 
-const open = ref(false);
+const { execute: updateConfig } = updateInstanceConfig();
+
 const openDialog = () => {
   open.value = true;
-  formData.ip = props.instanceInfo?.config?.pingConfig.ip || "";
-  formData.port = String(props.instanceInfo?.config?.pingConfig.port || "");
-  formData.type = props.instanceInfo?.config?.pingConfig.type ?? 1;
+  formData.ip = props.instanceInfo?.config?.pingConfig?.ip || "";
+  formData.port = String(props.instanceInfo?.config?.pingConfig?.port || "");
+  formData.type = props.instanceInfo?.config?.pingConfig?.type ?? 1;
 };
-
-const { execute, isLoading } = updateInstanceConfig();
 
 const submit = async () => {
   try {
-    await formRef.value?.validateFields();
-    await execute({
+    isLoading.value = true;
+    await updateConfig({
       params: {
-        uuid: props.instanceId ?? "",
-        daemonId: props.daemonId ?? ""
+        uuid: props.instanceUuid,
+        daemonId: props.daemonId
       },
       data: {
         pingConfig: {
@@ -49,13 +51,16 @@ const submit = async () => {
     });
     emit("update");
     open.value = false;
-    return message.success(t("TXT_CODE_d3de39b4"));
+    message.success(t("TXT_CODE_d3de39b4"));
   } catch (err: any) {
-    return reportErrorMsg(err.message);
+    reportErrorMsg(err?.message || err);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 defineExpose({
+  open: openDialog,
   openDialog
 });
 </script>
@@ -77,7 +82,7 @@ defineExpose({
           {{ t("TXT_CODE_6b175558") }}
         </a-typography-text>
       </a-typography-paragraph>
-      <a-form ref="formRef" :model="formData" layout="vertical">
+      <a-form layout="vertical">
         <a-form-item name="port">
           <a-typography-title :level="5">{{ t("TXT_CODE_f49149d0") }}</a-typography-title>
           <a-typography-paragraph>

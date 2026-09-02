@@ -61,10 +61,7 @@ routerApp.on("info/overview", async (ctx) => {
       instanceBackupFormat: globalConfiguration.config.instanceBackupFormat,
       instanceBackupCompressionLevel: globalConfiguration.config.instanceBackupCompressionLevel
     },
-    features: {
-      instanceBackup: daemon.features.has("instanceBackup"),
-      javaManager: daemon.features.has("javaManager")
-    },
+    features: daemon.features.all(),
     dockerPlatforms
   };
   // Plugin-contributed fields, e.g. the monitoring plugin's cpuMemChart.

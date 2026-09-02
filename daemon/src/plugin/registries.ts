@@ -1,6 +1,9 @@
 import { Service, type Context } from "cordis";
+import { remove } from "cosmokit";
 import type { IPresetCommand } from "../entity/commands/dispatcher";
 import type {
+  DaemonLifecycleService,
+  DaemonLifecycleTaskFactory,
   DaemonAsyncTaskRegistration,
   DaemonFeaturesService,
   DaemonOverviewProvider,
@@ -16,7 +19,7 @@ import { AsyncTask, TaskCenter } from "../service/async_task_service";
 /**
  * The daemon's extension points.
  *
- * These were five module-level maps that no scope owned, so nothing a plugin
+ * These were module-level registries that no scope owned, so nothing a plugin
  * registered could ever be taken back. Registration is an effect now: each entry
  * belongs to the plugin that added it, duplicates still throw, and the core
  * consumers below stay registry-driven with no knowledge of any one plugin.
@@ -50,6 +53,26 @@ export class TasksService extends Service implements DaemonTasksService {
 
   get(taskName: string) {
     return this.entries.get(taskName);
+  }
+}
+
+export class LifecycleService extends Service implements DaemonLifecycleService {
+  private readonly factories: DaemonLifecycleTaskFactory[] = [];
+
+  constructor(ctx: Context) {
+    super(ctx, "instanceLifecycle", true);
+  }
+
+  register(factory: DaemonLifecycleTaskFactory) {
+    if (typeof factory !== "function") throw new Error("Invalid daemon lifecycle task registration");
+    return this.ctx.effect(() => {
+      this.factories.push(factory);
+      return () => remove(this.factories, factory);
+    });
+  }
+
+  entries(): readonly DaemonLifecycleTaskFactory[] {
+    return this.factories;
   }
 }
 
@@ -105,6 +128,10 @@ export class FeaturesService extends Service implements DaemonFeaturesService {
 
   has(feature: string) {
     return this.features.get(feature) === true;
+  }
+
+  all() {
+    return Object.fromEntries(this.features);
   }
 }
 

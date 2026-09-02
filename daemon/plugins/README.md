@@ -63,8 +63,9 @@ Set `enabled` to `false` to skip one.
 | `ctx.transfer` | `passports`, `downloads`, `sendFile` — what a file transfer needs from the core. |
 | `ctx.tasks` | `AsyncTask`, `Center`, `register(name, registration)`, `get(name)`. |
 | `ctx.presets` | `register(preset, factory)`, `entries()`. |
+| `ctx.instanceLifecycle` | `register(factory)`, `entries()` for per-instance lifecycle tasks. |
 | `ctx.schedules` | `register(actionType, handler)`, `get(actionType)`. |
-| `ctx.features` | `add(feature)`, `has(feature)`. |
+| `ctx.features` | `add(feature)`, `has(feature)`, `all()`. |
 | `ctx.overview` | `provide(fn)` to add fields to `info/overview`. |
 | `ctx.archive` | `GitignoreMatcher`, `compress`, `decompress`, `listArchiveEntries`, `decompressWithProgress`, `check7zipStatus`, `sevenZipPath`, `zipTimeoutSeconds`. |
 | `ctx.plugins` | `loaded`, `inventory()`, `setEnabled(id, enabled)`. |
@@ -207,3 +208,6 @@ preset — the two ways a market package reaches an instance. See
 `java` owns Java runtime installation and selection, the `java_manager/*`
 protocol events and the `{mcsm_java}` command expansion. See
 `daemon/plugins/java`.
+
+`mcstats` owns Minecraft Java and Bedrock status polling, the `refreshPlayers`
+preset and its per-instance lifecycle task. See `daemon/plugins/mcstats`.

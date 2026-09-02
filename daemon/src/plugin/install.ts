@@ -28,6 +28,7 @@ import { ProtocolService } from "./protocol";
 import { SettingsFormService } from "./settings";
 import {
   FeaturesService,
+  LifecycleService,
   OverviewService,
   PresetsService,
   SchedulesService,
@@ -115,6 +116,7 @@ export function installDaemonPluginServices() {
   ctx.plugin(SettingsFormService);
   ctx.plugin(ProtocolService);
   ctx.plugin(TasksService);
+  ctx.plugin(LifecycleService);
   ctx.plugin(PresetsService);
   ctx.plugin(SchedulesService);
   ctx.plugin(FeaturesService);

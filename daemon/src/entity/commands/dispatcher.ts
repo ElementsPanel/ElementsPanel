@@ -9,14 +9,11 @@ import GeneralRestartCommand from "./general/general_restart";
 import GeneralStartCommand from "./general/general_start";
 import GeneralStopCommand from "./general/general_stop";
 import GeneralUpdateCommand from "./general/general_update";
-import PingJavaMinecraftServerCommand from "./minecraft/mc_ping";
-import NullCommand from "./nullfunc";
 import PtyResizeCommand from "./pty/pty_resize";
 import PtyStartCommand from "./pty/pty_start";
 import RconCommand from "./steam/rcon_command";
 import InstanceDiskCheckTask from "./task/any_stats";
 import DockerStatsTask from "./task/docker_stats";
-import PingMinecraftServerTask from "./task/mc_players";
 import TimeCheck from "./task/time";
 
 // If you add a new "Preset", Please add the definition here.
@@ -52,7 +49,6 @@ export default class FunctionDispatcher extends InstanceCommand {
     instance.setPreset("kill", new GeneralKillCommand());
     instance.setPreset("restart", new GeneralRestartCommand());
     instance.setPreset("update", new GeneralUpdateCommand());
-    instance.setPreset("refreshPlayers", new NullCommand());
     instance.lifeCycleTaskManager.registerLifeCycleTask(new InstanceDiskCheckTask());
 
     // Preset the basic operation mode according to the instance startup type
@@ -75,10 +71,10 @@ export default class FunctionDispatcher extends InstanceCommand {
       instance.setPreset("command", new RconCommand());
     }
 
-    // Minecraft Ping
-    if (instance.config.type.includes(Instance.TYPE_MINECRAFT_JAVA)) {
-      instance.setPreset("refreshPlayers", new PingJavaMinecraftServerCommand());
-      instance.lifeCycleTaskManager.registerLifeCycleTask(new PingMinecraftServerTask());
+    // Plugin-contributed lifecycle tasks, such as Minecraft status polling.
+    for (const createTask of daemon.instanceLifecycle.entries()) {
+      const task = createTask(instance);
+      if (task) instance.lifeCycleTaskManager.registerLifeCycleTask(task);
     }
 
     // Plugin-supplied presets go last so a plugin can add one the core has no
