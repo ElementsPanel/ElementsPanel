@@ -115,14 +115,6 @@ const originRouterConfig: RouterConfig[] = [
         },
         children: [
           {
-            path: `/instances/terminal/files`,
-            name: t("TXT_CODE_ae533703"),
-            component: LayoutContainer,
-            meta: {
-              permission: ROLE.USER
-            }
-          },
-          {
             path: `/instances/terminal/mods`,
             name: t("TXT_CODE_MOD_MANAGER"),
             component: LayoutContainer,

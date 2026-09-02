@@ -4,6 +4,7 @@ import { LayoutCardHeight } from "@/config/originLayoutConfig";
 import { t } from "@/lang/i18n";
 import { getRandomId } from "@/tools/randId";
 import { NEW_CARD_TYPE } from "@/types";
+import LayoutContainer from "@/views/LayoutContainer.vue";
 import { FolderOpenOutlined } from "@ant-design/icons-vue";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import * as fileManagerApi from "./api";
@@ -33,6 +34,7 @@ import { filterFileName, getFileExtName, getFileIcon, isCompressFile } from "./t
 // plugin removable.
 
 const ROLE_USER = 1;
+const ROLE_ADMIN = 10;
 
 /** The design-mode picker entry for the file manager card. */
 const fileManagerCard: LayoutCardPoolItemFactory = () => ({
@@ -57,7 +59,7 @@ const isFileManagerAvailable = (_context: PanelFrontendInstanceActionContext) =>
   return state.settings.canFileManager || isAdmin.value;
 };
 
-export const inject = ["ui", "actions"];
+export const inject = ["ui", "actions", "routes"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.set("file", {
@@ -85,6 +87,28 @@ export function apply(ctx: PanelFrontendPluginContext) {
   // over nothing and simply disappears with the plugin.
   ctx.ui.layoutCard("InstanceFileManager", FileManager);
   ctx.ui.layoutCardPoolItem(fileManagerCard);
+
+  ctx.routes.add({
+    path: "/instances/terminal/files",
+    name: t("TXT_CODE_ae533703"),
+    component: LayoutContainer,
+    meta: {
+      permission: ROLE_USER,
+      breadcrumbs: [
+        {
+          name: t("TXT_CODE_e21473bc"),
+          path: "/instances",
+          mainMenu: true,
+          permission: ROLE_ADMIN
+        },
+        {
+          name: t("TXT_CODE_524e3036"),
+          path: "/instances/terminal",
+          permission: ROLE_USER
+        }
+      ]
+    }
+  });
 
   ctx.actions.instance({
     id: "file-manager",
