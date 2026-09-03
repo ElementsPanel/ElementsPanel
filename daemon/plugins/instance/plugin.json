@@ -1,0 +1,8 @@
+{
+  "id": "instance",
+  "name": "Application Instances",
+  "version": "1.0.0",
+  "description": "Owns application instance entities, commands, Docker process management, scheduling and instance protocols.",
+  "priority": 40,
+  "backend": "backend/index.cjs"
+}

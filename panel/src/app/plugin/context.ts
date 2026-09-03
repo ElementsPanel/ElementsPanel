@@ -9,9 +9,9 @@ import type { ROLE } from "../entity/user";
 import type { $t } from "../i18n";
 import type instanceAccess from "../middleware/instance_access";
 import type { speedLimit } from "../middleware/limit";
+import type { requestConcurrencyLimiter } from "../middleware/limit";
 import type permission from "../middleware/permission";
 import type validator from "../middleware/validator";
-import type { getInstancesByUuid } from "../service/instance_service";
 import type { operationLogger } from "../service/operation_logger";
 import type {
   AuthStats,
@@ -166,6 +166,7 @@ export interface PanelMiddlewareService {
   readonly instanceAccess: typeof instanceAccess;
   /** Per-caller rate limit; elevated callers pass through. */
   readonly speedLimit: typeof speedLimit;
+  readonly requestConcurrencyLimiter: typeof requestConcurrencyLimiter;
 }
 
 /** The stored configuration of one daemon node, as the panel reads it. */
@@ -294,7 +295,10 @@ declare module "cordis" {
     roles: typeof ROLE;
     identity: PanelIdentityService;
     operations: typeof operationLogger;
-    instances: { getByUuid: typeof getInstancesByUuid };
+    /** User-instance lookup provided by the panel `instance` plugin. */
+    instances: {
+      getByUuid(uuid: string, targetDaemonId?: string, advanced?: boolean): Promise<any>;
+    };
     globals: typeof GlobalVariable;
     overview: PanelOverviewService;
     plugins: PanelPluginsService;

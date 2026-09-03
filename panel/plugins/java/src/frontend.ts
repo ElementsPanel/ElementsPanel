@@ -22,7 +22,7 @@ const isJavaManagerAvailable = ({
   return state.settings.allowJavaManager || isAdmin.value;
 };
 
-export const inject = ["i18n", "actions"];
+export const inject = ["i18n", "actions", "instance"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);

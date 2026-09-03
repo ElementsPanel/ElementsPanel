@@ -1,86 +1,30 @@
-import { useDefineApi } from "@/stores/useDefineApi";
-import type { ContainerInfo, DockerNetworkModes, ImageInfo } from "@/types";
+import { usePluginService } from "@/plugin/context";
+import type * as InstanceApi from "@instance/api";
 
-export const imageList = useDefineApi<
-  {
-    params: {
-      daemonId: string;
-      imageId?: string;
-    };
-    data?: {
-      dockerFile: string;
-      name: string;
-      tag: string;
-    };
-    method: string;
-  },
-  ImageInfo[]
->({
-  url: "/api/environment/image"
-});
+type EnvironmentApi = Pick<
+  typeof InstanceApi,
+  | "imageList"
+  | "getNetworkModeList"
+  | "containerList"
+  | "buildProgress"
+  | "getImagePlatforms"
+  | "getDockerHubImagePlatforms"
+>;
 
-export const getNetworkModeList = useDefineApi<
-  {
-    params: {
-      daemonId: string;
-    };
-  },
-  DockerNetworkModes[]
->({
-  url: "/api/environment/networkModes",
-  method: "GET"
-});
-
-export const containerList = useDefineApi<
-  {
-    params: {
-      daemonId: string;
-      imageId?: string;
-    };
-  },
-  ContainerInfo[]
->({
-  url: "/api/environment/containers",
-  method: "GET"
-});
-
-export const buildProgress = useDefineApi<
-  {
-    params: {
-      daemonId: string;
-    };
-  },
-  {
-    [propsName: string]: number;
+function resolveEnvironmentApi(): EnvironmentApi {
+  const instance = usePluginService<{ api: EnvironmentApi }>("instance");
+  if (!instance) {
+    throw new Error('Panel frontend plugin "instance" is not loaded.');
   }
->({
-  url: "/api/environment/progress",
-  method: "GET"
-});
+  return instance.api;
+}
 
-export const getImagePlatforms = useDefineApi<
-  {
-    params: {
-      daemonId: string;
-    };
-    data: {
-      imageName: string;
-    };
-  },
-  string[]
->({
-  url: "/api/environment/image_platforms",
-  method: "POST"
-});
+const call = <K extends keyof EnvironmentApi>(name: K) =>
+  ((...args: any[]) => (resolveEnvironmentApi()[name] as any)(...args)) as EnvironmentApi[K];
 
-export const getDockerHubImagePlatforms = useDefineApi<
-  {
-    data: {
-      imageName: string;
-    };
-  },
-  string[]
->({
-  url: "/api/environment/dockerhub_image_platforms",
-  method: "POST"
-});
+export const imageList = call("imageList");
+export const getNetworkModeList = call("getNetworkModeList");
+export const containerList = call("containerList");
+export const buildProgress = call("buildProgress");
+export const getImagePlatforms = call("getImagePlatforms");
+export const getDockerHubImagePlatforms = call("getDockerHubImagePlatforms");

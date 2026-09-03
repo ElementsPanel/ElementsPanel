@@ -1,0 +1,104 @@
+import path from "path";
+
+import fs from "fs-extra";
+import RouterContext from "../entity/ctx";
+import * as protocol from "../service/protocol";
+import InstanceSubsystem from "../service/system_instance";
+
+const MAX_LOG_SIZE = 512;
+
+const buffer = new Map<string, string>();
+
+export function registerInstanceEvents() {
+  const flushTimer = setInterval(() => {
+    buffer.forEach((buf, instanceUuid) => {
+      if (!buf || !instanceUuid) return;
+      const logFilePath = path.join(InstanceSubsystem.LOG_DIR, `${instanceUuid}.log`);
+      if (!fs.existsSync(InstanceSubsystem.LOG_DIR)) fs.mkdirsSync(InstanceSubsystem.LOG_DIR);
+      try {
+        const fileInfo = fs.statSync(logFilePath);
+        if (fileInfo && fileInfo.size > 1024 * MAX_LOG_SIZE) fs.removeSync(logFilePath);
+      } catch (err: any) {
+        // A concurrently removed log file can be recreated on the next flush.
+      }
+      fs.writeFile(logFilePath, buf, { encoding: "utf-8", flag: "a" }, () => {
+        buffer.set(instanceUuid, "");
+      });
+    });
+  }, 500);
+
+  const outputLog = (instanceUuid: string, text: string) => {
+    const buf = (buffer.get(instanceUuid) ?? "") + text;
+    if (buf.length > 1024 * 1024) buffer.set(instanceUuid, "");
+    buffer.set(instanceUuid, buf);
+  };
+
+  // Instance output stream event. The buffer controls disk write frequency.
+  const onData = (instanceUuid: string, text: string) => {
+    InstanceSubsystem.forEachForward(instanceUuid, (socket) => {
+      protocol.msg(new RouterContext(null, socket), "instance/stdout", {
+        instanceUuid,
+        text
+      });
+    });
+    outputLog(instanceUuid, text);
+  };
+  InstanceSubsystem.on("data", onData);
+
+  // Instance exit event.
+  const onExit = (obj: any) => {
+    const eventName = obj.isCrash ? "instance/crashed" : "instance/stopped";
+    InstanceSubsystem.forEachForward(obj.instanceUuid, (socket) => {
+      protocol.msg(new RouterContext(null, socket), eventName, {
+        instanceUuid: obj.instanceUuid,
+        instanceName: obj.instanceName,
+        exitCode: obj.exitCode
+      });
+    });
+  };
+  InstanceSubsystem.on("exit", onExit);
+
+  // Instance start event.
+  const onOpen = (obj: any) => {
+    InstanceSubsystem.forEachForward(obj.instanceUuid, (socket) => {
+      protocol.msg(new RouterContext(null, socket), "instance/opened", {
+        instanceUuid: obj.instanceUuid,
+        instanceName: obj.instanceName
+      });
+    });
+  };
+  InstanceSubsystem.on("open", onOpen);
+
+  // Instance failure event (usually startup or operation failure).
+  const onFailure = (obj: any) => {
+    InstanceSubsystem.forEachForward(obj.instanceUuid, (socket) => {
+      protocol.msg(new RouterContext(null, socket), "instance/failure", {
+        instanceUuid: obj.instanceUuid,
+        instanceName: obj.instanceName
+      });
+    });
+  };
+  InstanceSubsystem.on("failure", onFailure);
+
+  // Instance auto-restart event (triggered after a crash).
+  const onAutoRestarted = (obj: any) => {
+    InstanceSubsystem.forEachForward(obj.instanceUuid, (socket) => {
+      protocol.msg(new RouterContext(null, socket), "instance/auto_restarted", {
+        instanceUuid: obj.instanceUuid,
+        instanceName: obj.instanceName,
+        restartCount: obj.restartCount
+      });
+    });
+  };
+  InstanceSubsystem.on("autoRestarted", onAutoRestarted);
+
+  return () => {
+    clearInterval(flushTimer);
+    InstanceSubsystem.off("data", onData);
+    InstanceSubsystem.off("exit", onExit);
+    InstanceSubsystem.off("open", onOpen);
+    InstanceSubsystem.off("failure", onFailure);
+    InstanceSubsystem.off("autoRestarted", onAutoRestarted);
+    buffer.clear();
+  };
+}

@@ -2,7 +2,6 @@ import { $t as t } from "@/lang/i18n";
 import { topProgressBar } from "@/services/TopProgressBar";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import type { LoginUserInfo } from "@/types/user";
-import CreateInstancePage from "@/views/CreateInstance.vue";
 import LayoutContainer from "@/views/LayoutContainer.vue";
 import type { Component } from "vue";
 import {
@@ -61,25 +60,6 @@ export enum ROLE {
 
 const originRouterConfig: RouterConfig[] = [
   {
-    path: "/quickstart",
-    name: t("TXT_CODE_2799a1dd"),
-    component: LayoutContainer,
-    meta: {
-      permission: ROLE.ADMIN,
-      mainMenu: false
-    },
-    children: [
-      {
-        path: "/quickstart/minecraft",
-        name: t("TXT_CODE_88249aee"),
-        component: LayoutContainer,
-        meta: {
-          permission: ROLE.ADMIN
-        }
-      }
-    ]
-  },
-  {
     path: "/",
     name: "",
     component: LayoutContainer,
@@ -95,78 +75,6 @@ const originRouterConfig: RouterConfig[] = [
         return "/login";
       },
       permission: ROLE.USER
-    }
-  },
-  {
-    path: "/instances",
-    name: t("TXT_CODE_e21473bc"),
-    component: LayoutContainer,
-    meta: {
-      mainMenu: true,
-      permission: ROLE.ADMIN
-    },
-    children: [
-      {
-        path: `/instances/terminal`,
-        name: t("TXT_CODE_524e3036"),
-        component: LayoutContainer,
-        meta: {
-          permission: ROLE.USER
-        },
-        children: [
-          {
-            path: `/instances/terminal/mods`,
-            name: t("TXT_CODE_MOD_MANAGER"),
-            component: LayoutContainer,
-            meta: {
-              permission: ROLE.USER
-            }
-          },
-          {
-            path: `/instances/terminal/serverConfig`,
-            name: t("TXT_CODE_d07742fe"),
-            component: LayoutContainer,
-            meta: {
-              permission: ROLE.USER
-            },
-            children: [
-              {
-                path: `/instances/terminal/serverConfig/fileEdit`,
-                name: t("TXT_CODE_78019c60"),
-                component: LayoutContainer,
-                meta: {
-                  permission: ROLE.USER
-                }
-              }
-            ]
-          },
-          {
-            path: `/instances/schedule`,
-            name: t("TXT_CODE_b7d026f8"),
-            component: LayoutContainer,
-            meta: {
-              permission: ROLE.USER
-            }
-          }
-        ]
-      }
-    ]
-  },
-  {
-    path: "/instances/create",
-    name: t("TXT_CODE_5a74975b"),
-    component: CreateInstancePage,
-    meta: {
-      permission: ROLE.ADMIN,
-      mainMenu: false,
-      breadcrumbs: [
-        {
-          name: t("TXT_CODE_e21473bc"),
-          path: "/instances",
-          mainMenu: true,
-          permission: ROLE.ADMIN
-        }
-      ]
     }
   },
   {

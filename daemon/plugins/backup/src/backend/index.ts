@@ -5,7 +5,7 @@ import os from "os";
 import path from "path";
 import { v4 } from "uuid";
 import type { DaemonPluginContext } from "../../../../src/plugin";
-import type InstanceEntity from "../../../../src/entity/instance/instance";
+type InstanceEntity = any;
 import { localeMessages } from "../i18n";
 
 export const inject = ["i18n", "protocol", "instances", "tasks", "schedules", "features", "archive", "settings", "settingsForm"];

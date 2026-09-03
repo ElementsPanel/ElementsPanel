@@ -49,7 +49,7 @@ const commandHistoryCard: LayoutCardPoolItemFactory = () => ({
   params: instanceParams
 });
 
-export const inject = ["ui", "actions", "i18n"];
+export const inject = ["ui", "actions", "i18n", "instance"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);

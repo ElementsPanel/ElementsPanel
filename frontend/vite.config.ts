@@ -361,6 +361,7 @@ export default defineConfig({
     ],
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@instance": fileURLToPath(new URL("../panel/plugins/instance/src", import.meta.url)),
       "@languages": fileURLToPath(new URL("../languages", import.meta.url))
     }
   },

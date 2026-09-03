@@ -1,5 +1,5 @@
 import fs from "fs-extra";
-import type InstanceEntity from "../../../../src/entity/instance/instance";
+type InstanceEntity = any;
 import type { DaemonPluginContext } from "../../../../src/plugin";
 import type { QuickInstallTask, QuickInstallTaskClass } from "./quick_install";
 

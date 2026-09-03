@@ -11,16 +11,16 @@ import {
 } from "@ant-design/icons-vue";
 import { Flex, message } from "ant-design-vue";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
-import LocalModTable from "@/widgets/instance/mod-manager/LocalModTable.vue";
+import LocalModTable from "@instance/widgets/instance/mod-manager/LocalModTable.vue";
 import ModConfigModal from "../instance/mod-manager/ModConfigModal.vue";
-import ModFloatingTools from "@/widgets/instance/mod-manager/ModFloatingTools.vue";
+import ModFloatingTools from "@instance/widgets/instance/mod-manager/ModFloatingTools.vue";
 import ModVersionModal from "../instance/mod-manager/ModVersionModal.vue";
-import SearchModTable from "@/widgets/instance/mod-manager/SearchModTable.vue";
-import { useDeferredTasks } from "@/widgets/instance/mod-manager/useDeferredTasks";
-import { useLocalMods } from "@/widgets/instance/mod-manager/useLocalMods";
-import { useModConfig } from "@/widgets/instance/mod-manager/useModConfig";
+import SearchModTable from "@instance/widgets/instance/mod-manager/SearchModTable.vue";
+import { useDeferredTasks } from "@instance/widgets/instance/mod-manager/useDeferredTasks";
+import { useLocalMods } from "@instance/widgets/instance/mod-manager/useLocalMods";
+import { useModConfig } from "@instance/widgets/instance/mod-manager/useModConfig";
 import { useModSearch } from "../instance/mod-manager/useModSearch";
-import { useModUpload } from "@/widgets/instance/mod-manager/useModUpload";
+import { useModUpload } from "@instance/widgets/instance/mod-manager/useModUpload";
 import DesktopWindow from "./DesktopWindow.vue";
 
 const TAB_KEY_MODS = "TAB_KEY_MODS";

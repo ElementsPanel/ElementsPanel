@@ -1,0 +1,8 @@
+{
+  "id": "instance",
+  "version": "1.0.0",
+  "description": "Owns application instance management, creation, console routes, base instance cards and panel-to-daemon instance APIs.",
+  "priority": 40,
+  "backend": "backend/index.cjs",
+  "frontend": "src/frontend.ts"
+}

@@ -2,7 +2,7 @@
 import { openNodeSelectDialog } from "@/components/fc/index";
 import { QUICKSTART_METHOD } from "@/hooks/widgets/quickStartFlow";
 import { t } from "@/lang/i18n";
-import CreateInstanceForm from "@/widgets/setupApp/CreateInstanceForm.vue";
+import CreateInstanceForm from "@instance/widgets/setupApp/CreateInstanceForm.vue";
 import { FileZipOutlined, FolderOpenOutlined, BlockOutlined } from "@ant-design/icons-vue";
 import { ref } from "vue";
 

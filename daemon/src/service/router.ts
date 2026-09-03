@@ -1,7 +1,6 @@
 import { EventEmitter } from "events";
 import { Socket } from "socket.io";
 import RouterContext from "../entity/ctx";
-import { $t } from "../i18n";
 import { IPacket, responseError } from "../service/protocol";
 import logger from "./log";
 // Routing controller class (singleton class)
@@ -46,6 +45,14 @@ class RouterApp extends EventEmitter {
 // routing controller singleton class
 export const routerApp = new RouterApp();
 
+/** Register the daemon routes that remain core-owned after plugin extraction.
+ * Called once the router singleton exists, avoiding a circular import during
+ * module evaluation. */
+export function registerCoreRoutes() {
+  require("../routers/passport_router");
+  require("../routers/info_router");
+}
+
 /**
  * Based on Socket.io for routing decentralization and secondary forwarding
  * @param {Socket} socket
@@ -76,15 +83,3 @@ export function navigation(socket: Socket) {
   const ctx = new RouterContext(null, socket, session);
   routerApp.emitRouter("connection", ctx, null);
 }
-
-// Authentication is `plugins/auth`: it registers the top-level middleware that
-// gates every event below, and it loads before the server starts listening, so no
-// socket is ever routed without it.
-import "../routers/environment_router";
-import "../routers/info_router";
-import "../routers/instance_event_router";
-import "../routers/Instance_router";
-import "../routers/passport_router";
-import "../routers/schedule_router";
-
-logger.info($t("TXT_CODE_router.initComplete"));

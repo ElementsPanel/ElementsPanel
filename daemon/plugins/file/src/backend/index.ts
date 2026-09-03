@@ -19,7 +19,10 @@ import uploadManager from "./upload_manager";
 // through `service/file_access.ts`, so removing this plugin removes the daemon's
 // ability to touch instance files rather than breaking the build.
 
-export const inject = ["i18n", "settings", "instances", "protocol", "archive", "transfer", "koa"];
+// File routes resolve the instance service when a request arrives. Keeping the
+// dependency lazy avoids a startup cycle: the instance plugin depends on the
+// file primitives, while the file routes only need instances at request time.
+export const inject = ["i18n", "settings", "protocol", "archive", "transfer", "koa"];
 
 export function apply(ctx: DaemonPluginContext) {
   // Before anything else: the modules below read the logger, the configuration,

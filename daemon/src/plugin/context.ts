@@ -15,12 +15,12 @@ import type downloadManager from "../service/download_manager";
 import type { missionPassport } from "../service/mission_passport";
 import type { sendFile } from "../utils/speed_limit";
 import type { globalConfiguration } from "../entity/config";
-import type Instance from "../entity/instance/instance";
-import type InstanceConfig from "../entity/instance/Instance_config";
-import type { ILifeCycleTask } from "../entity/instance/life_cycle";
-import type InstanceCommand from "../entity/commands/base/command";
-import type { commandStringToArray } from "../entity/commands/base/command_parser";
-import type { IPresetCommand } from "../entity/commands/dispatcher";
+type Instance = any;
+type InstanceConfig = any;
+type ILifeCycleTask = any;
+type InstanceCommand = any;
+type commandStringToArray = (text: string) => string[];
+type IPresetCommand = string;
 import type RouterContext from "../entity/ctx";
 import type { $t } from "../i18n";
 import type {
@@ -28,10 +28,8 @@ import type {
   uploadSpeedLimitMiddleware
 } from "../middlewares/precheck";
 import type { AsyncTask, IAsyncTask, TaskCenter } from "../service/async_task_service";
-import type { InstanceUpdateAction } from "../service/instance_update_action";
 import type * as protocol from "../service/protocol";
 import type { check7zipStatus } from "../service/seven_zip_service";
-import type InstanceSubsystem from "../service/system_instance";
 import type { DaemonPluginEntry, DaemonPluginRecord } from "./loader";
 
 /**
@@ -208,14 +206,14 @@ export interface DaemonProtocolService {
 
 /** The instances this daemon runs, and the pieces needed to build a new one. */
 export interface DaemonInstancesService {
-  readonly subsystem: typeof InstanceSubsystem;
-  readonly Instance: typeof Instance;
-  readonly Config: typeof InstanceConfig;
-  readonly Command: typeof InstanceCommand;
-  readonly UpdateAction: typeof InstanceUpdateAction;
+  readonly subsystem: any;
+  readonly Instance: any;
+  readonly Config: any;
+  readonly Command: any;
+  readonly UpdateAction: any;
   readonly fileManager: (instanceUuid: string) => DaemonFileManager;
   readonly headers: typeof getCommonHeaders;
-  readonly commandStringToArray: typeof commandStringToArray;
+  readonly commandStringToArray: commandStringToArray;
 }
 
 /** Builds an optional lifecycle task for one instance. */

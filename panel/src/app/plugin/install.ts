@@ -3,11 +3,10 @@ import type { Context } from "cordis";
 import { GlobalVariable } from "mcsmanager-common";
 import Storage from "../common/storage/sys_storage";
 import { ROLE } from "../entity/user";
-import { speedLimit } from "../middleware/limit";
+import { requestConcurrencyLimiter, speedLimit } from "../middleware/limit";
 import permission from "../middleware/permission";
 import instanceAccess from "../middleware/instance_access";
 import validator from "../middleware/validator";
-import { getInstancesByUuid } from "../service/instance_service";
 import { operationLogger } from "../service/operation_logger";
 import { getRequestGuard } from "../service/request_guard";
 import { saveSystemConfig, systemConfig } from "../setting";
@@ -55,7 +54,7 @@ function provide<K extends keyof Context & string>(name: K, value: Context[K]) {
 export function installPanelPluginServices() {
   provide("settings", { config: systemConfig!, save: () => saveSystemConfig(systemConfig!) });
   provide("storage", Storage);
-  provide("middleware", { permission, validator, instanceAccess, speedLimit });
+  provide("middleware", { permission, validator, instanceAccess, speedLimit, requestConcurrencyLimiter });
   provide("roles", ROLE);
   provide("identity", {
     of: (requestCtx: Koa.ParameterizedContext) => getRequestGuard().identify(requestCtx),
@@ -74,7 +73,6 @@ export function installPanelPluginServices() {
     }
   });
   provide("operations", operationLogger);
-  provide("instances", { getByUuid: getInstancesByUuid });
   provide("globals", GlobalVariable);
   provide("plugins", {
     get loaded() {

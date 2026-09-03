@@ -1,18 +1,10 @@
 import { useMountComponent } from "@/hooks/useMountComponent";
+import { usePluginService, type FrontendInstanceService } from "@/plugin/context";
 import type { UserInstance } from "@/types/user";
 
-import CmdAssistantDialog from "@/components/fc/CmdAssistantDialog/index.vue";
 import KvOptionsDialogVue from "@/components/fc/KvOptionsDialog.vue";
-import SelectInstances from "@/components/fc/SelectInstances.vue";
 import { t } from "@/lang/i18n";
 import type { AntColumnsType } from "@/types/ant";
-import DeleteInstanceDialog from "@/widgets/instance/dialogs/DeleteInstanceDialog.vue";
-import DockerCapabilityDialogVue from "./DockerCapabilityDialog.vue";
-import DockerDeviceDialogVue from "./DockerDeviceDialog.vue";
-import DockerPortDialog from "./DockerPortDialog.vue";
-import DockerVersionSelectDialog from "./DockerVersionSelectDialog.vue";
-import NodeSelectDialog from "./NodeSelectDialog.vue";
-import TagsDialog from "./TagsDialog.vue";
 import TaskLoadingDialog from "./TaskLoadingDialog.vue";
 
 // The file manager's own dialogs — upload, download-from-URL and the image
@@ -47,6 +39,12 @@ interface DockerDeviceItem {
   CgroupPermissions: string;
 }
 
+function instanceComponents() {
+  const instance = usePluginService<FrontendInstanceService>("instance");
+  if (!instance) throw new Error('Panel frontend plugin "instance" is not loaded.');
+  return instance.components;
+}
+
 export async function useSelectInstances(data: UserInstance[] = []) {
   return await useMountComponent({
     data,
@@ -69,11 +67,11 @@ export async function useSelectInstances(data: UserInstance[] = []) {
         key: "operation"
       }
     ]
-  }).mount<UserInstance[]>(SelectInstances);
+  }).mount<UserInstance[]>(instanceComponents().SelectInstances);
 }
 
 export async function useCmdAssistantDialog() {
-  return await useMountComponent().mount<string>(CmdAssistantDialog);
+  return await useMountComponent().mount<string>(instanceComponents().CmdAssistantDialog);
 }
 
 export async function usePortEditDialog(data: PortConfigItem[] = []) {
@@ -81,7 +79,7 @@ export async function usePortEditDialog(data: PortConfigItem[] = []) {
     (await useMountComponent({
       data,
       textarea: false
-    }).mount<PortConfigItem[]>(DockerPortDialog)) || []
+    }).mount<PortConfigItem[]>(instanceComponents().DockerPortDialog)) || []
   );
 }
 
@@ -160,7 +158,7 @@ export async function useDockerCapabilityEditDialog(data: DockerCapabilityItem[]
       title: t("TXT_CODE_bbbd4133"),
       subTitle: t("TXT_CODE_377319df"),
       textarea: false
-    }).mount<DockerCapabilityItem[]>(DockerCapabilityDialogVue)) || []
+    }).mount<DockerCapabilityItem[]>(instanceComponents().DockerCapabilityDialog)) || []
   );
 }
 
@@ -171,7 +169,7 @@ export async function useDockerDeviceEditDialog(data: DockerDeviceItem[] = []) {
       title: t("TXT_CODE_b3a60c78"),
       subTitle: t("TXT_CODE_b6e18b87"),
       textarea: false
-    }).mount<DockerDeviceItem[]>(DockerDeviceDialogVue)) || []
+    }).mount<DockerDeviceItem[]>(instanceComponents().DockerDeviceDialog)) || []
   );
 }
 
@@ -196,25 +194,24 @@ export async function openInstanceTagsEditor(
     tagsTips,
     tags
   })
-    .load<InstanceType<typeof TagsDialog>>(TagsDialog)
+    .load<any>(instanceComponents().TagsDialog)
     .openDialog();
 }
 
 export async function useDeleteInstanceDialog(instanceId: string, daemonId: string) {
-  return await useMountComponent({ instanceId, daemonId }).mount<boolean>(DeleteInstanceDialog);
+  return await useMountComponent({ instanceId, daemonId }).mount<boolean>(
+    instanceComponents().DeleteInstanceDialog
+  );
 }
 
 export async function openNodeSelectDialog(targetPlatforms?: string[]) {
-  const dialog = useMountComponent({ targetPlatforms }).load<InstanceType<typeof NodeSelectDialog>>(
-    NodeSelectDialog
+  const dialog = useMountComponent({ targetPlatforms }).load<any>(
+    instanceComponents().NodeSelectDialog
   );
   return dialog!.openDialog();
 }
 
 export async function openDockerVersionSelectDialog() {
-  const dialog =
-    useMountComponent().load<InstanceType<typeof DockerVersionSelectDialog>>(
-      DockerVersionSelectDialog
-    );
+  const dialog = useMountComponent().load<any>(instanceComponents().DockerVersionSelectDialog);
   return dialog!.openDialog();
 }

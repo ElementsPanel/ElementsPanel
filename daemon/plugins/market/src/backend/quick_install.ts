@@ -3,8 +3,8 @@ import fs from "fs-extra";
 import path from "path";
 import { pipeline, Readable } from "stream";
 import { v4 } from "uuid";
-import type InstanceEntity from "../../../../src/entity/instance/instance";
-import type { IAsyncTaskJSON } from "../../../../src/service/async_task_service";
+type InstanceEntity = any;
+type IAsyncTaskJSON = any;
 import type { DaemonPluginContext } from "../../../../src/plugin";
 
 /**

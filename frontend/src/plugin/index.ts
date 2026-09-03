@@ -25,6 +25,7 @@ export type {
   FrontendActionsService,
   FrontendDesktopService,
   FrontendI18nService,
+  FrontendInstanceService,
   FrontendMarketService,
   FrontendMenusService,
   FrontendFileManagerService,

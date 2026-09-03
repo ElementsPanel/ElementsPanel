@@ -1,6 +1,6 @@
 import { Service, type Context } from "cordis";
 import { remove } from "cosmokit";
-import type { IPresetCommand } from "../entity/commands/dispatcher";
+type IPresetCommand = string;
 import type {
   DaemonLifecycleService,
   DaemonLifecycleTaskFactory,

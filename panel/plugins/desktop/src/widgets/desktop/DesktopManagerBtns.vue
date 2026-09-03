@@ -18,11 +18,11 @@ import {
 } from "@ant-design/icons-vue";
 import { computed, ref, watch } from "vue";
 import { arrayFilter } from "@/tools/array";
-import EventConfig from "@/widgets/instance/dialogs/EventConfig.vue";
-import InstanceDetail from "@/widgets/instance/dialogs/InstanceDetail.vue";
-import InstanceFundamentalDetail from "@/widgets/instance/dialogs/InstanceFundamentalDetail.vue";
-import PingConfig from "@/widgets/instance/dialogs/PingConfig.vue";
-import RconSettings from "@/widgets/instance/dialogs/RconSettings.vue";
+import EventConfig from "@instance/widgets/instance/dialogs/EventConfig.vue";
+import InstanceDetail from "@instance/widgets/instance/dialogs/InstanceDetail.vue";
+import InstanceFundamentalDetail from "@instance/widgets/instance/dialogs/InstanceFundamentalDetail.vue";
+import PingConfig from "@instance/widgets/instance/dialogs/PingConfig.vue";
+import RconSettings from "@instance/widgets/instance/dialogs/RconSettings.vue";
 
 const props = defineProps<{
   instanceId: string;

@@ -11,7 +11,6 @@ import { installDaemonPluginServices } from "./plugin/install";
 import { loadDaemonPlugins } from "./plugin/loader";
 import * as protocol from "./service/protocol";
 import * as router from "./service/router";
-import InstanceSubsystem from "./service/system_instance";
 import { getVersion, initVersionManager } from "./service/version";
 import versionAdapter from "./service/version_adapter";
 
@@ -55,6 +54,7 @@ async function main() {
   // the Socket.io server — is the "server" plugin, and it is what provides
   // `ctx.koa` and `ctx.websocket`.
   installDaemonPluginServices();
+  router.registerCoreRoutes();
   await loadDaemonPlugins();
 
   // The core's own HTTP router goes on last, after every plugin's middleware and
@@ -81,15 +81,6 @@ async function main() {
       });
     });
   });
-
-  // Initialize application instance system
-  try {
-    InstanceSubsystem.loadInstances();
-    logger.info($t("TXT_CODE_app.instanceLoad", { n: InstanceSubsystem.getInstances().length }));
-  } catch (err) {
-    logger.error($t("TXT_CODE_app.instanceLoadError"), err);
-    process.exit(-1);
-  }
 
   (function initCompressModule() {
     try {
@@ -125,24 +116,12 @@ async function main() {
         // User interrupted the process, now force exit
         logger.warn($t("TXT_CODE_4ffdc91d", { signal }));
         logger.info($t("TXT_CODE_app.forcedShutdown"));
-        await InstanceSubsystem.exit(true); // Force close all instances
         logger.info($t("TXT_CODE_dff680b7"));
         process.exit(0);
       } else {
         logger.warn($t("TXT_CODE_4ffdc91d", { signal }));
         isExiting = true;
         await daemon.stop();
-
-        if (isForce || !config.enableSoftShutdown) {
-          // Force mode
-          await InstanceSubsystem.exit(true);
-        } else {
-          // Soft shutdown with configurable strategy
-          await InstanceSubsystem.softExit(
-            Boolean(config.softShutdownSkipDocker),
-            Number(config.softShutdownWaitSeconds) || 10
-          );
-        }
 
         logger.info($t("TXT_CODE_dff680b7"));
         process.exit(0);

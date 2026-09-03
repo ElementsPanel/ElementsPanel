@@ -19,7 +19,7 @@ const ROLE_ADMIN = 10;
 const ROLE_USER = 1;
 const ROLE_GUEST = 0;
 
-export const inject = ["i18n", "routes", "ui"];
+export const inject = ["i18n", "routes", "ui", "instance"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);

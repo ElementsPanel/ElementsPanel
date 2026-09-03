@@ -1,0 +1,1 @@
+export { globalConfiguration } from "../runtime";

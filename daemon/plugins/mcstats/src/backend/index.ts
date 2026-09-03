@@ -1,6 +1,6 @@
 import dgram from "dgram";
 import { MCServerStatus, toNumber } from "mcsmanager-common";
-import type InstanceEntity from "../../../../src/entity/instance/instance";
+type InstanceEntity = any;
 import type { DaemonPluginContext } from "../../../../src/plugin";
 
 const JAVA_TYPE = "minecraft/java";

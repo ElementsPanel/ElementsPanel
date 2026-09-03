@@ -25,7 +25,7 @@ import {
 import { Flex, message, Modal, type UploadProps } from "ant-design-vue";
 import axios from "axios";
 import { h, onMounted, ref } from "vue";
-import InstanceDetail from "@/widgets/instance/dialogs/InstanceDetail.vue";
+import InstanceDetail from "@instance/widgets/instance/dialogs/InstanceDetail.vue";
 import { updateMarketSettings } from "../api";
 import { useMarketPackages } from "../hooks/useMarketPackages";
 

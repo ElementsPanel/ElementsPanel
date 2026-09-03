@@ -1,160 +1,40 @@
-import { useDefineApi } from "@/stores/useDefineApi";
+import { usePluginService } from "@/plugin/context";
+import type * as InstanceApi from "@instance/api";
 
-export const getMcVersionsApi = useDefineApi<{}, string[]>({
-  method: "GET",
-  url: "/api/mod/mc_versions"
-});
+type ModManagerApi = Pick<
+  typeof InstanceApi,
+  | "getMcVersionsApi"
+  | "modListApi"
+  | "toggleModApi"
+  | "deleteModApi"
+  | "getModInfoApi"
+  | "getModBatchInfoApi"
+  | "searchModsApi"
+  | "getModVersionsApi"
+  | "downloadModApi"
+  | "stopTransferApi"
+  | "getModConfigFilesApi"
+>;
 
-export const modListApi = useDefineApi<
-  {
-    params: {
-      daemonId: string;
-      uuid: string;
-      page?: number;
-      pageSize?: number;
-      folder?: string;
-    };
-  },
-  {
-    mods: any[];
-    folders: string[];
-    total: number;
-    page: number;
-    pageSize: number;
+function resolveModManagerApi(): ModManagerApi {
+  const instance = usePluginService<{ api: ModManagerApi }>("instance");
+  if (!instance) {
+    throw new Error('Panel frontend plugin "instance" is not loaded.');
   }
->({
-  method: "GET",
-  url: "/api/mod/list"
-});
+  return instance.api;
+}
 
-export const toggleModApi = useDefineApi<
-  {
-    data: {
-      daemonId: string;
-      uuid: string;
-      fileName: string;
-    };
-  },
-  boolean
->({
-  method: "POST",
-  url: "/api/mod/toggle"
-});
+const call = <K extends keyof ModManagerApi>(name: K) =>
+  ((...args: any[]) => (resolveModManagerApi()[name] as any)(...args)) as ModManagerApi[K];
 
-export const deleteModApi = useDefineApi<
-  {
-    data: {
-      daemonId: string;
-      uuid: string;
-      fileName: string;
-    };
-  },
-  boolean
->({
-  method: "POST",
-  url: "/api/mod/delete"
-});
-
-export const getModInfoApi = useDefineApi<
-  {
-    params: {
-      hash: string;
-    };
-  },
-  any
->({
-  method: "GET",
-  url: "/api/mod/info"
-});
-
-export const getModBatchInfoApi = useDefineApi<
-  {
-    data: {
-      hashes: string[];
-    };
-  },
-  Record<string, any>
->({
-  method: "POST",
-  url: "/api/mod/batch_info"
-});
-
-export const searchModsApi = useDefineApi<
-  {
-    params: {
-      query: string;
-      source?: string;
-      version?: string;
-      type?: string;
-      loader?: string;
-      environment?: string;
-      offset?: number;
-      limit?: number;
-    };
-  },
-  any
->({
-  method: "GET",
-  url: "/api/mod/search"
-});
-
-export const getModVersionsApi = useDefineApi<
-  {
-    params: {
-      projectId: string;
-      source?: string;
-    };
-  },
-  any[]
->({
-  method: "GET",
-  url: "/api/mod/versions"
-});
-
-export const downloadModApi = useDefineApi<
-  {
-    data: {
-      daemonId: string;
-      uuid: string;
-      url: string;
-      fileName: string;
-      projectType?: string;
-      fallbackUrl?: string;
-    };
-  },
-  boolean
->({
-  method: "POST",
-  url: "/api/mod/download"
-});
-
-export const stopTransferApi = useDefineApi<
-  {
-    data: {
-      daemonId: string;
-      uuid: string;
-      fileName: string;
-      type: "download" | "upload";
-      uploadId?: string;
-    };
-  },
-  boolean
->({
-  method: "POST",
-  url: "/api/mod/stop_transfer"
-});
-
-export const getModConfigFilesApi = useDefineApi<
-  {
-    params: {
-      daemonId: string;
-      uuid: string;
-      modId: string;
-      type: string;
-    };
-  },
-  any[]
->({
-  method: "GET",
-  url: "/api/mod/config_files"
-});
+export const getMcVersionsApi = call("getMcVersionsApi");
+export const modListApi = call("modListApi");
+export const toggleModApi = call("toggleModApi");
+export const deleteModApi = call("deleteModApi");
+export const getModInfoApi = call("getModInfoApi");
+export const getModBatchInfoApi = call("getModBatchInfoApi");
+export const searchModsApi = call("searchModsApi");
+export const getModVersionsApi = call("getModVersionsApi");
+export const downloadModApi = call("downloadModApi");
+export const stopTransferApi = call("stopTransferApi");
+export const getModConfigFilesApi = call("getModConfigFilesApi");

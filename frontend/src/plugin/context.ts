@@ -289,6 +289,24 @@ export interface FrontendTerminalService {
   readonly encodeConsoleColor: (text: string) => string;
 }
 
+/** Application instance pages, APIs, hooks and dialogs. Provided by `plugins/instance`. */
+export interface FrontendInstanceService {
+  readonly api: Record<string, (...args: any[]) => any>;
+  readonly hooks: Record<string, unknown>;
+  readonly components: {
+    readonly CmdAssistantDialog: Component;
+    readonly CreateInstanceForm: Component;
+    readonly DeleteInstanceDialog: Component;
+    readonly DockerCapabilityDialog: Component;
+    readonly DockerDeviceDialog: Component;
+    readonly DockerPortDialog: Component;
+    readonly DockerVersionSelectDialog: Component;
+    readonly NodeSelectDialog: Component;
+    readonly SelectInstances: Component;
+    readonly TagsDialog: Component;
+  };
+}
+
 /** Accounts and sessions. Provided by `plugins/user`. */
 export interface FrontendUserService {
   readonly api: UserPluginApi;
@@ -332,6 +350,7 @@ declare module "cordis" {
     user: FrontendUserService;
     market: FrontendMarketService;
     node: FrontendNodeService;
+    instance: FrontendInstanceService;
     file: FrontendFileManagerService;
     terminal: FrontendTerminalService;
   }
