@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, reactive, nextTick } from "vue";
-import type { MountComponent } from "@/types";
 import { t } from "@/lang/i18n";
 
 import AppConfigProvider from "@/components/AppConfigProvider.vue";
@@ -9,7 +8,9 @@ import { reportErrorMsg } from "@/tools/validator";
 import { message } from "ant-design-vue";
 import { PlusOutlined } from "@ant-design/icons-vue";
 
-interface Props extends MountComponent {
+interface Props {
+  destroyComponent(delay?: number): void;
+  emitResult(data?: string[]): void;
   instanceId: string;
   daemonId: string;
   tags: string[];

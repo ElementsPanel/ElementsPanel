@@ -1,19 +1,25 @@
 import type { DaemonPluginContext } from "../../../../src/plugin";
 import { setPluginContext } from "./runtime";
 
-export const inject = [
-  "settings",
-  "storage",
-  "files",
-  "transfer",
-  "protocol",
-  "tasks",
-  "instanceLifecycle",
-  "presets",
-  "schedules",
-  "features",
-  "overview"
-];
+export const inject = {
+  required: [
+    "i18n",
+    "settings",
+    "storage",
+    "files",
+    "transfer",
+    "protocol",
+    "tasks",
+    "instanceLifecycle",
+    "presets",
+    "schedules",
+    "features",
+    "overview"
+  ],
+  // Java support is installed by a later, optional plugin. Instance startup
+  // resolves it only when a Java runtime is actually needed.
+  optional: ["javaManager"]
+};
 
 export async function apply(ctx: DaemonPluginContext) {
   setPluginContext(ctx);

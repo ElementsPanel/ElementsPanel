@@ -354,10 +354,19 @@ export default defineConfig({
       "cordis",
       "dayjs",
       "echarts",
+      "eventemitter3",
       "lodash",
       "pinia",
+      "pretty-bytes",
       "vue",
-      "vue-router"
+      "vue-i18n",
+      "vue-router",
+      // Terminal code lives in `panel/plugins/terminal`, while its packages
+      // are installed with the frontend workspace dependencies.
+      "@xterm/addon-canvas",
+      "@xterm/addon-fit",
+      "@xterm/addon-webgl",
+      "@xterm/xterm"
     ],
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),

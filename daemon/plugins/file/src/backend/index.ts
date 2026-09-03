@@ -22,7 +22,12 @@ import uploadManager from "./upload_manager";
 // File routes resolve the instance service when a request arrives. Keeping the
 // dependency lazy avoids a startup cycle: the instance plugin depends on the
 // file primitives, while the file routes only need instances at request time.
-export const inject = ["i18n", "settings", "protocol", "archive", "transfer", "koa"];
+export const inject = {
+  required: ["i18n", "settings", "protocol", "archive", "transfer", "koa"],
+  // File routes resolve the instance subsystem lazily to avoid a startup
+  // cycle: the instance plugin requires the file service in return.
+  optional: ["instances"]
+};
 
 export function apply(ctx: DaemonPluginContext) {
   // Before anything else: the modules below read the logger, the configuration,

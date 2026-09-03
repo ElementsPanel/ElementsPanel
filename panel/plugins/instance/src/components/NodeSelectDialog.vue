@@ -4,11 +4,12 @@ import type { ComputedNodeInfo } from "@/hooks/useOverviewInfo";
 import { useRemoteNode } from "@/hooks/useRemoteNode";
 import { t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";
-import type { MountComponent } from "@/types";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { computed, onMounted, ref } from "vue";
 
-interface Props extends MountComponent<ComputedNodeInfo> {
+interface Props {
+  destroyComponent(delay?: number): void;
+  emitResult(data?: ComputedNodeInfo): void;
   targetPlatforms?: string[];
 }
 

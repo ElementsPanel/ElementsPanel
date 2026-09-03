@@ -4,7 +4,7 @@ import { t } from "@/lang/i18n";
 import { remoteInstances, remoteNodeList } from "@/services/apis";
 import { computeNodeName } from "@/tools/nodes";
 import { reportErrorMsg } from "@/tools/validator";
-import type { MountComponent, NodeStatus } from "@/types";
+import type { NodeStatus } from "@/types";
 import type { AntColumnsType, AntTableCell } from "@/types/ant";
 import { INSTANCE_STATUS } from "@/types/const";
 import type { UserInstance } from "@/types/user";
@@ -20,7 +20,9 @@ import { computed, onMounted, ref } from "vue";
 import AppConfigProvider from "@/components/AppConfigProvider.vue";
 import BetweenMenus from "@/components/BetweenMenus.vue";
 
-interface Props extends MountComponent {
+interface Props {
+  destroyComponent(delay?: number): void;
+  emitResult(data?: UserInstance[]): void;
   title: string;
   keyTitle?: string;
   valueTitle?: string;

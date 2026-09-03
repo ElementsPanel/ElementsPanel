@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { useDialog } from "@/hooks/useDialog";
 import { t } from "@/lang/i18n";
-import type { MountComponent } from "@/types";
 import { AppstoreOutlined, DeploymentUnitOutlined } from "@ant-design/icons-vue";
 
-interface Props extends MountComponent<number> {}
+interface Props {
+  destroyComponent(delay?: number): void;
+  emitResult(data?: number): void;
+}
 
 const props = defineProps<Props>();
 const { isVisible, openDialog, submit } = useDialog<number>(props);

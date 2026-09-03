@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import type { MountComponent } from "@/types";
 import ActionButton from "@/components/ActionButton.vue";
 import { t } from "@/lang/i18n";
 import { BuildFilled, DropboxSquareFilled, SwitcherFilled } from "@ant-design/icons-vue";
@@ -26,7 +25,12 @@ enum STEP {
   SELECT_SOFTWARE = "B"
 }
 
-const props = defineProps<MountComponent>();
+interface Props {
+  destroyComponent(delay?: number): void;
+  emitResult(data?: string): void;
+}
+
+const props = defineProps<Props>();
 const open = ref(true);
 const step = ref<STEP>(STEP.SELECT_TYPE);
 const formRef = ref();
