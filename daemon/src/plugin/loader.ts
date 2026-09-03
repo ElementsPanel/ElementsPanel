@@ -1,15 +1,15 @@
+import type { ForkScope } from "cordis";
 import fs from "fs-extra";
-import path from "path";
-import { pathToFileURL } from "url";
 import {
   discoverPlugins,
   sortPlugins,
   type DiscoveredPlugin,
   type PluginManifest
 } from "mcsmanager-common";
-import type { ForkScope } from "cordis";
-import { ctx, type DaemonPluginContext } from "./context";
+import path from "path";
+import { pathToFileURL } from "url";
 import logger from "../service/log";
+import { ctx, type DaemonPluginContext } from "./context";
 
 /**
  * Turns the plugin directories into cordis plugins.
