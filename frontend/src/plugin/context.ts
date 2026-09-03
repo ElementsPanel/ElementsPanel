@@ -159,8 +159,21 @@ export interface FrontendVueService {
   readonly router: Router;
 }
 
+export interface PanelLanguageOption {
+  label: string;
+  value: string;
+}
+
 export interface FrontendI18nService {
   readonly instance: I18n;
+  readonly supportedLanguages: readonly PanelLanguageOption[];
+  getSupportLanguages(): string[];
+  searchSupportLanguage(language: string): string;
+  getCurrentLang(): string;
+  setLanguage(language: string, reload?: boolean): void;
+  isCN(): boolean;
+  isEN(): boolean;
+  translate(...args: any[]): string;
   /**
    * Merge the plugin's translations, keyed by locale (`en_us`, `zh_cn`, ...).
    * The base catalogue is snapshotted and re-applied on unload, so a plugin's
@@ -335,8 +348,9 @@ export interface FrontendNodeService {
 
 declare module "cordis" {
   interface Context {
-    // Core services, always present.
+    // Core services, always present after frontend bootstrap.
     vue: FrontendVueService;
+    // Provided first by the foundational `i18n` plugin.
     i18n: FrontendI18nService;
     routes: FrontendRoutesService;
     ui: FrontendUiService;

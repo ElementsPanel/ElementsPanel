@@ -1,5 +1,5 @@
-import { t } from "i18next";
 import StorageSubsystem from "../common/system_storage";
+import { $t } from "../i18n";
 import { logger } from "./log";
 
 function readCategoryConfig(configCategory: string, callback: (config: any) => boolean) {
@@ -8,11 +8,11 @@ function readCategoryConfig(configCategory: string, callback: (config: any) => b
     try {
       const config = JSON.parse(StorageSubsystem.readFile(configPath));
       if (callback(config)) {
-        logger.info(t("TXT_CODE_6b2a9cab"), configPath);
+        logger.info($t("TXT_CODE_6b2a9cab"), configPath);
         StorageSubsystem.writeFile(configPath, JSON.stringify(config, null, 4));
       }
     } catch (error: any) {
-      logger.error(t("TXT_CODE_fb75aba9"), error);
+      logger.error($t("TXT_CODE_fb75aba9"), error);
     }
   }
 }

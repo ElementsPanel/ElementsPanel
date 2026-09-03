@@ -13,7 +13,7 @@ import zhTW from "./zh_TW.json";
 
 // The lines this plugin writes about who connected and who was turned away.
 // Registered with the daemon's i18next instance at setup, so the shared
-// `languages` catalogue carries nothing authentication-specific.
+// foundational `plugins/i18n` catalogue carries nothing authentication-specific.
 export const localeMessages = {
   de_de: deDE,
   en_us: enUS,

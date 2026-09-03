@@ -3,7 +3,7 @@ import LeftMenusPanel from "@/components/LeftMenusPanel.vue";
 import Loading from "@/components/Loading.vue";
 import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
-import { SUPPORTED_LANGS, isCN, t } from "@/lang/i18n";
+import { getSupportedLanguageOptions, isCN, t } from "@/lang/i18n";
 import { setSettingInfo, settingInfo } from "@/services/apis";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
@@ -111,7 +111,7 @@ const menus = arrayFilter([
   }
 ]);
 
-const allLanguages = SUPPORTED_LANGS;
+const allLanguages = getSupportedLanguageOptions();
 
 const allYesNo = [
   {

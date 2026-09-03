@@ -1,8 +1,9 @@
 import { shallowReactive } from "vue";
 import type { ForkScope } from "cordis";
-import { router } from "@/config/router";
 import { ctx, type PanelFrontendPluginContext } from "./context";
 import { panelPluginModules } from "virtual:panel-plugins";
+
+const FOUNDATION_PLUGIN_ID = "i18n";
 
 /**
  * Fetches plugin code and hands it to cordis.
@@ -191,7 +192,7 @@ async function discoverSources() {
   );
 }
 
-async function install(source: PluginSource, cacheKey?: string) {
+async function install(source: PluginSource, cacheKey?: string, configOverride?: unknown) {
   const existing = plugins.find((plugin) => plugin.metadata.id === source.metadata.id);
   if (existing) return existing;
 
@@ -228,7 +229,9 @@ async function install(source: PluginSource, cacheKey?: string) {
             }
           }
         },
-        (source.metadata as { config?: unknown }).config
+        configOverride === undefined
+          ? (source.metadata as { config?: unknown }).config
+          : configOverride
       );
       if (thrown) throw thrown;
       await applied;
@@ -247,17 +250,24 @@ async function install(source: PluginSource, cacheKey?: string) {
 }
 
 function isCurrentRoute(plugin: InternalPlugin) {
-  return router.currentRoute.value.matched.some(
-    (record) => ctx.routes.ownerOf(record.path) === plugin.metadata.id
+  const vue = ctx.get("vue");
+  const routes = ctx.get("routes");
+  if (!vue || !routes) return false;
+  return vue.router.currentRoute.value.matched.some(
+    (record) => routes.ownerOf(record.path) === plugin.metadata.id
   );
 }
 
 export async function unloadPlugin(id: string) {
+  if (id === FOUNDATION_PLUGIN_ID) {
+    throw new Error('The foundational frontend plugin "i18n" cannot be unloaded.');
+  }
   const plugin = plugins.find((candidate) => candidate.metadata.id === id);
   if (!plugin) return false;
   // Leave the plugin's page before its routes go, or the router lands on
   // nothing.
-  if (isCurrentRoute(plugin)) await router.replace("/404");
+  const vue = ctx.get("vue");
+  if (vue && isCurrentRoute(plugin)) await vue.router.replace("/404");
   await plugin.fork?.dispose();
   plugin.removeStyles?.();
   removePluginStyles(plugin.source);
@@ -278,6 +288,9 @@ export async function loadPlugin(id: string) {
 }
 
 export async function reloadPlugin(id: string) {
+  if (id === FOUNDATION_PLUGIN_ID) {
+    throw new Error('The foundational frontend plugin "i18n" cannot be reloaded.');
+  }
   await unloadPlugin(id);
   if (!import.meta.env.DEV) {
     const discovered = await discoverSources();
@@ -297,12 +310,33 @@ export async function refreshPlugins() {
   sources.clear();
   next.forEach((source, id) => sources.set(id, source));
   for (const plugin of [...plugins].reverse()) {
+    if (plugin.metadata.id === FOUNDATION_PLUGIN_ID) continue;
     if (!next.has(plugin.metadata.id)) await unloadPlugin(plugin.metadata.id);
   }
   for (const source of discovered) {
     if (!plugins.some((plugin) => plugin.metadata.id === source.metadata.id)) await install(source);
   }
   return discovered.map((source) => source.metadata) as readonly PanelFrontendPluginMetadata[];
+}
+
+/** Loads the one plugin required before routes, layout and Vue are evaluated. */
+export async function bootstrapPanelFrontendPlugin(id: string, config?: unknown) {
+  if (id !== FOUNDATION_PLUGIN_ID) {
+    throw new Error(`Panel frontend plugin "${id}" is not a foundational plugin.`);
+  }
+
+  const discovered = await discoverSources();
+  sources.clear();
+  discovered.forEach((source) => sources.set(source.metadata.id, source));
+  const source = sources.get(id);
+  if (!source) throw new Error(`Panel frontend foundation plugin not found: ${id}`);
+
+  const plugin = await install(source, undefined, config);
+  if (plugin.error) throw plugin.error;
+  if (!plugin.fork || !ctx.get("i18n")) {
+    throw new Error(`Panel frontend foundation plugin failed to initialize: ${id}`);
+  }
+  return plugin;
 }
 
 export function getLoadedPlugins(): readonly LoadedPanelFrontendPlugin[] {

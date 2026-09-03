@@ -17,7 +17,7 @@ const SELF = "config";
  * Turning the web server off would drop the connection the request arrived on,
  * and with it every event that could turn it back on.
  */
-const ESSENTIAL = "server";
+const ESSENTIAL = new Set(["i18n", "server"]);
 
 export const inject = ["protocol", "i18n", "plugins", "settingsForm"];
 
@@ -45,7 +45,7 @@ export function apply(ctx: DaemonPluginContext) {
       if (!enabled && id === SELF) {
         throw new Error(ctx.i18n.$t("TXT_CODE_DAEMON_PLUGIN_SELF_DISABLE"));
       }
-      if (!enabled && id === ESSENTIAL) {
+      if (!enabled && ESSENTIAL.has(id)) {
         throw new Error(ctx.i18n.$t("TXT_CODE_DAEMON_PLUGIN_ESSENTIAL_DISABLE"));
       }
       ctx.protocol.response(routerCtx, await ctx.plugins.setEnabled(id, enabled));

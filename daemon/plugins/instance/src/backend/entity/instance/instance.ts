@@ -1,6 +1,5 @@
 import { randomUUID } from "crypto";
 import { EventEmitter } from "events";
-import { t } from "i18next";
 import iconv from "iconv-lite";
 import { configureEntityParams } from "mcsmanager-common";
 import path from "path";
@@ -56,16 +55,18 @@ interface IWatcherInfo {
 const TERM_TEXT_YELLOW = "\x1B[0;33;1m";
 const TERM_TEXT_GOLD = "\x1B[0;33m"; // Gold §6
 const TERM_RESET = "\x1B[0m";
-const IGNORE_TEXT = [
-  "\n\n",
-  TERM_TEXT_GOLD,
-  "[MCSMANAGER] ",
-  TERM_RESET,
-  TERM_TEXT_YELLOW,
-  t("TXT_CODE_c5ed896f"),
-  TERM_RESET,
-  "\n\n"
-].join("");
+function getIgnoreText() {
+  return [
+    "\n\n",
+    TERM_TEXT_GOLD,
+    "[MCSMANAGER] ",
+    TERM_RESET,
+    TERM_TEXT_YELLOW,
+    $t("TXT_CODE_c5ed896f"),
+    TERM_RESET,
+    "\n\n"
+  ].join("");
+}
 
 export default class Instance extends EventEmitter {
   public static readonly STATUS_BUSY = -1;
@@ -599,7 +600,7 @@ export default class Instance extends EventEmitter {
   private flushOutputBuffer(shouldClear = false) {
     const { items, wasDeleted } = this.outputBuffer.getCache();
     if (!items.length) return;
-    if (wasDeleted) items.unshift(IGNORE_TEXT);
+    if (wasDeleted) items.unshift(getIgnoreText());
     if (shouldClear) this.outputBuffer.clear();
     this.emit("data", items.join(""));
   }

@@ -43,6 +43,7 @@ export type {
   PanelFrontendInstanceActionContext,
   PanelFrontendLoginAction,
   PanelFrontendPluginContext,
+  PanelLanguageOption,
   PanelFrontendScheduleAction,
   PanelFrontendTerminalAction,
   PanelFrontendTerminalActionContext,

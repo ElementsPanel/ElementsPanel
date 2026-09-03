@@ -1,4 +1,4 @@
-import { initI18n } from "@/lang/i18n";
+import { bootstrapPanelFrontendPlugin } from "./plugin/loader";
 import { initLayoutConfig } from "./services/layout";
 import { useAppStateStore } from "./stores/useAppStateStore";
 import { setAppLoadingError, setLoadingTitle } from "./tools/dom";
@@ -19,7 +19,7 @@ async function initApp() {
     setLoadingTitle("Initializing Application...");
     await updatePanelStatus();
     setLoadingTitle("Initializing Language...");
-    await initI18n(state.language);
+    await bootstrapPanelFrontendPlugin("i18n", { language: state.language });
     setLoadingTitle("Initializing Layout...");
     await initLayoutConfig();
     setLoadingTitle("Downloading JavaScript Files...");

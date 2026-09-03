@@ -1,8 +1,8 @@
-import { t } from "i18next";
 import Instance from "../../instance/instance";
 import InstanceCommand from "../base/command";
 import Rcon from "rcon-srcds";
 import { isExitCommand } from "../general/general_command";
+import { $t } from "../../../i18n";
 
 async function sendRconCommand(instance: Instance, command: string) {
   const targetIp = instance.config.rconIp || "localhost";
@@ -14,14 +14,14 @@ async function sendRconCommand(instance: Instance, command: string) {
   });
   await rconServer.authenticate(instance.config.rconPassword);
   if (!rconServer.isAuthenticated()) {
-    throw new Error(t("TXT_CODE_1b1b2934"));
+    throw new Error($t("TXT_CODE_1b1b2934"));
   }
   return new Promise((resolve, reject) => {
     let hasResult = false;
     setTimeout(() => {
       if (!hasResult) {
         rconServer.disconnect().catch(() => {});
-        instance.print(`[RCON] ${t("TXT_CODE_386f2d66")}\n`);
+        instance.print(`[RCON] ${$t("TXT_CODE_386f2d66")}\n`);
         resolve("");
       }
     }, 1000 * 10);

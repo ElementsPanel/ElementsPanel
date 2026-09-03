@@ -8,7 +8,7 @@ import * as koa from "./service/http";
 import logger from "./service/log";
 import { ctx as daemon } from "./plugin/context";
 import { installDaemonPluginServices } from "./plugin/install";
-import { loadDaemonPlugins } from "./plugin/loader";
+import { loadDaemonFoundationPlugin, loadDaemonPlugins } from "./plugin/loader";
 import * as protocol from "./service/protocol";
 import * as router from "./service/router";
 import { getVersion, initVersionManager } from "./service/version";
@@ -28,26 +28,30 @@ console.log(`
  + Version ${VERSION}
 `);
 
-// Initialize the global configuration service
-globalConfiguration.load();
-const config = globalConfiguration.config;
-
-// Detect whether the configuration file is from an older version and update it if so.
-versionAdapter.detectConfig();
-
-checkDependencies();
-
-// Set language
-if (fs.existsSync(LOCAL_PRESET_LANG_PATH)) {
-  i18next.changeLanguage(fs.readFileSync(LOCAL_PRESET_LANG_PATH, "utf-8"));
-} else {
-  const lang = config.language || "en_us";
-  logger.info(`LANGUAGE: ${lang}`);
-  i18next.changeLanguage(lang);
-}
-logger.info($t("TXT_CODE_app.welcome"));
-
 async function main() {
+  // Translation is a foundation plugin, so it must exist before configuration
+  // migration and startup diagnostics use translated messages.
+  await loadDaemonFoundationPlugin("i18n");
+
+  // Initialize the global configuration service
+  globalConfiguration.load();
+  const config = globalConfiguration.config;
+
+  // Detect whether the configuration file is from an older version and update it if so.
+  versionAdapter.detectConfig();
+
+  checkDependencies();
+
+  // Set language
+  if (fs.existsSync(LOCAL_PRESET_LANG_PATH)) {
+    await i18next.changeLanguage(fs.readFileSync(LOCAL_PRESET_LANG_PATH, "utf-8"));
+  } else {
+    const lang = config.language || "en_us";
+    logger.info(`LANGUAGE: ${lang}`);
+    await i18next.changeLanguage(lang);
+  }
+  logger.info($t("TXT_CODE_app.welcome"));
+
   // The plugin container owns everything past this point: services first, so
   // that a plugin can use them, then the plugins themselves. The daemon's
   // network layer — the Koa application, its base middleware, the listener and

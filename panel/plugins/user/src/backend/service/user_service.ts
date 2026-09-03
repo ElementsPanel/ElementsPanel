@@ -1,6 +1,5 @@
 import bcrypt from "bcryptjs";
 import { randomInt } from "crypto";
-import { t } from "i18next";
 import { LocalFileSource, QueryWrapper } from "mcsmanager-common";
 import md5 from "md5";
 import { authenticator } from "otplib";
@@ -118,7 +117,7 @@ class UserSubsystem {
           user.secret &&
           !this.check2FA(code2FA || "", user, totpDriftToleranceSteps)
         )
-          throw new TwoFactorError(t("TXT_CODE_3d68e43b"));
+          throw new TwoFactorError($t("TXT_CODE_3d68e43b"));
         if (user.passWordType === UserPassWordType.bcrypt) {
           if (!bcrypt.compareSync(inputPassword, user.passWord))
             throw new Error($t("TXT_CODE_fefbb457"));

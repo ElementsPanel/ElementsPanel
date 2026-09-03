@@ -1,0 +1,9 @@
+{
+  "id": "i18n",
+  "name": "Internationalization",
+  "version": "1.0.0",
+  "description": "Provides the panel's base translations, frontend vue-i18n instance and scoped translation registration for other plugins.",
+  "priority": -10000,
+  "backend": "backend/index.cjs",
+  "frontend": "src/frontend.ts"
+}

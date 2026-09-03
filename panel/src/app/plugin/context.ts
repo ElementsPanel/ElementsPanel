@@ -138,7 +138,7 @@ export interface PanelI18nService {
   /**
    * Merge the plugin's translations, keyed by locale (`en_us`, `zh_cn`, ...).
    * Removed again when the plugin unloads, so its strings arrive and leave with
-   * it instead of living in the shared `languages` catalogue.
+   * it instead of living in the foundational `plugins/i18n` catalogue.
    */
   define(messages: Record<string, Record<string, unknown>>): () => void;
 }

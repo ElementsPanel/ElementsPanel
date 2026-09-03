@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
-import { SUPPORTED_LANGS, t } from "@/lang/i18n";
+import { getSupportedLanguageOptions, t } from "@/lang/i18n";
 import { setSettingInfo, settingInfo } from "@/services/apis";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
@@ -39,7 +39,7 @@ const tabs = [
     { key: "about", title: t("TXT_CODE_3b4b656d"), icon: QuestionCircleOutlined }
 ];
 
-const allLanguages = SUPPORTED_LANGS;
+const allLanguages = getSupportedLanguageOptions();
 
 const allYesNo = [
     { label: t("TXT_CODE_52c8a730"), value: true },

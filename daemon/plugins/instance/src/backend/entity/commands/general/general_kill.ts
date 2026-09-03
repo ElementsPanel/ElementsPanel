@@ -1,4 +1,3 @@
-import { t } from "i18next";
 import { sleep } from "../../../tools/time";
 import Instance from "../../instance/instance";
 import InstanceCommand from "../base/command";

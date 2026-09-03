@@ -16,9 +16,6 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@languages/*": [
-        "../languages/*"
-      ],
       "mcsmanager-common": [
         "../common/src/index.ts"
       ],

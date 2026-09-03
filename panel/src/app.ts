@@ -4,7 +4,7 @@ import { $t } from "./app/i18n";
 import { mountRouters } from "./app/index";
 import { ctx as panel } from "./app/plugin/context";
 import { installPanelPluginServices } from "./app/plugin/install";
-import { loadPanelPlugins } from "./app/plugin/loader";
+import { loadPanelFoundationPlugin, loadPanelPlugins } from "./app/plugin/loader";
 import { logger } from "./app/service/log";
 import versionAdapter from "./app/service/version_adapter";
 import { initSystemConfig, saveSystemConfig, systemConfig } from "./app/setting";
@@ -35,6 +35,10 @@ process.stdin.on("data", (v) => {
 });
 
 async function main() {
+  // Configuration loading already translates messages and selects the active
+  // locale, so translation must exist before the configuration is read.
+  await loadPanelFoundationPlugin("i18n");
+
   // load global configuration file
   initSystemConfig();
 

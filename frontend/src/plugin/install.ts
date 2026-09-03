@@ -5,7 +5,6 @@ import { getLoadedPlugins, loadPlugin, refreshPlugins, reloadPlugin, unloadPlugi
 import {
   ActionsService,
   DesktopService,
-  I18nService,
   MenusService,
   RoutesService,
   UiService,
@@ -37,8 +36,10 @@ declare global {
  * the plugins are in place.
  */
 export async function setupPanelFrontendPlugins(app: App, pinia: Pinia) {
+  if (!ctx.get("i18n")) {
+    throw new Error("The foundational i18n plugin has not been initialized.");
+  }
   ctx.plugin(VueService, { app, pinia });
-  ctx.plugin(I18nService);
   ctx.plugin(RoutesService);
   ctx.plugin(UiService);
   ctx.plugin(MenusService);

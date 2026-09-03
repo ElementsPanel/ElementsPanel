@@ -13,7 +13,7 @@ import zhTW from "./zh_TW.json";
 
 // The translated errors the file subsystem throws: path sandbox violations, the
 // per-instance task limit and the archive size limit. Registered at setup, so the
-// shared `languages` catalogue carries nothing file-specific.
+// foundational `plugins/i18n` catalogue carries nothing file-specific.
 export const localeMessages = {
   de_de: deDE,
   en_us: enUS,

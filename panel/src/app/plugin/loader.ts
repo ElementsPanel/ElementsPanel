@@ -32,6 +32,7 @@ const ENTRY_CANDIDATES = [
   "src/panel.cjs",
   "src/panel.mjs"
 ];
+const FOUNDATION_PLUGIN_ID = "i18n";
 
 /** A panel plugin module, as its backend entry exports it. */
 export interface PanelPluginModule {
@@ -140,14 +141,43 @@ async function installPlugin(plugin: DiscoveredPlugin): Promise<LoadedPanelPlugi
 
 /** Discovers, requires and installs every enabled plugin, in manifest order. */
 export async function loadPanelPlugins(): Promise<readonly LoadedPanelPlugin[]> {
-  loaded.length = 0;
   const discovered = discoverPlugins(PLUGINS_DIRECTORY(), {
     entryFields: ENTRY_FIELDS,
     entryCandidates: ENTRY_CANDIDATES,
     onWarning: (message, error) => logger.warn(message, error)
   });
-  for (const plugin of discovered) loaded.push(await installPlugin(plugin));
+  for (const plugin of discovered) {
+    if (loaded.some((record) => record.manifest.id === plugin.manifest.id)) continue;
+    loaded.push(await installPlugin(plugin));
+  }
+  sortPlugins(loaded);
   return loaded;
+}
+
+/** Loads the service required before the panel can read its language setting. */
+export async function loadPanelFoundationPlugin(id = FOUNDATION_PLUGIN_ID) {
+  if (id !== FOUNDATION_PLUGIN_ID) {
+    throw new Error(`Panel plugin "${id}" is not a foundational plugin.`);
+  }
+
+  const existing = loaded.find((record) => record.manifest.id === id);
+  if (existing) return existing;
+
+  const plugin = discoverPlugins(PLUGINS_DIRECTORY(), {
+    entryFields: ENTRY_FIELDS,
+    entryCandidates: ENTRY_CANDIDATES,
+    onWarning: (message, error) => logger.warn(message, error)
+  }).find((candidate) => candidate.manifest.id === id);
+  if (!plugin?.entry) throw new Error(`Panel foundation plugin not found: ${id}`);
+
+  const record = await installPlugin(plugin);
+  loaded.push(record);
+  sortPlugins(loaded);
+  if (record.error) throw record.error;
+  if (!record.fork || !ctx.get("i18n")) {
+    throw new Error(`Panel foundation plugin failed to initialize: ${id}`);
+  }
+  return record;
 }
 
 export function getLoadedPanelPlugins(): readonly LoadedPanelPlugin[] {
@@ -254,6 +284,9 @@ export async function setPanelPluginEnabled(
   id: string,
   enabled: boolean
 ): Promise<PanelPluginRecord> {
+  if (id === FOUNDATION_PLUGIN_ID && !enabled) {
+    throw new Error('The foundational panel plugin "i18n" cannot be disabled.');
+  }
   const plugin = discoverPlugins(PLUGINS_DIRECTORY(), {
     entryFields: ENTRY_FIELDS,
     entryCandidates: ENTRY_CANDIDATES,

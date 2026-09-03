@@ -1,4 +1,3 @@
-import { t } from "i18next";
 import { toText } from "mcsmanager-common";
 import { identity, remote, $t } from "../runtime";
 
@@ -10,11 +9,21 @@ export enum INSTANCE_STATUS {
   RUNNING = 3
 }
 export const INSTANCE_STATUS_TEXT: Record<number, string> = {
-  [INSTANCE_STATUS.BUSY]: t("TXT_CODE_342a04a9"),
-  [INSTANCE_STATUS.STOP]: t("TXT_CODE_15f2e564"),
-  [INSTANCE_STATUS.STOPPING]: t("TXT_CODE_a409b8a9"),
-  [INSTANCE_STATUS.STARTING]: t("TXT_CODE_175b570d"),
-  [INSTANCE_STATUS.RUNNING]: t("TXT_CODE_bdb620b9")
+  get [INSTANCE_STATUS.BUSY]() {
+    return $t("TXT_CODE_342a04a9");
+  },
+  get [INSTANCE_STATUS.STOP]() {
+    return $t("TXT_CODE_15f2e564");
+  },
+  get [INSTANCE_STATUS.STOPPING]() {
+    return $t("TXT_CODE_a409b8a9");
+  },
+  get [INSTANCE_STATUS.STARTING]() {
+    return $t("TXT_CODE_175b570d");
+  },
+  get [INSTANCE_STATUS.RUNNING]() {
+    return $t("TXT_CODE_bdb620b9");
+  }
 };
 
 export interface IAdvancedInstanceInfo {

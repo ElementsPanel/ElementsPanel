@@ -1,42 +1,22 @@
+import { remove } from "cosmokit";
 import { Service, type Context } from "cordis";
 import i18next from "i18next";
-import { remove } from "cosmokit";
-import { $t } from "../i18n";
-import type { PanelI18nService } from "./context";
+import type { DaemonI18nService, DaemonPluginContext } from "../../../../src/plugin";
+import { baseLocaleMessages } from "../messages";
 
 const NAMESPACE = "translation";
-
-/**
- * A deep copy, because `addResourceBundle` merges into the objects it is given:
- * a shallow snapshot of the base catalogue would let a plugin's nested keys
- * mutate the core's own bundle and outlive the plugin.
- */
-function clone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
-}
 
 interface LocaleRegistration {
   locale: string;
   resources: Record<string, unknown>;
 }
 
-/**
- * Translation for plugins.
- *
- * A plugin owns the strings only it uses and ships them in its own `src/i18n`,
- * so the shared `languages` catalogue keeps just what the core and more than one
- * plugin need. Registration is an effect: the bundles are removed again when the
- * plugin unloads.
- *
- * Removing one plugin's keys cannot be done by deletion, because two plugins may
- * define the same key and a plugin may deliberately override a core string. The
- * base catalogue is snapshotted the first time a locale is touched, and every
- * change re-applies that base plus the registrations still live — the same
- * algorithm the frontend uses.
- */
-export class I18nService extends Service implements PanelI18nService {
-  readonly $t = $t;
-  readonly i18next = i18next;
+function clone<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+class I18nService extends Service implements DaemonI18nService {
+  readonly $t = i18next.t;
 
   private readonly base = new Map<string, Record<string, unknown>>();
   private readonly registrations: LocaleRegistration[] = [];
@@ -78,4 +58,20 @@ export class I18nService extends Service implements PanelI18nService {
       i18next.addResourceBundle(locale, NAMESPACE, registration.resources, true, true);
     }
   }
+}
+
+export async function apply(ctx: DaemonPluginContext) {
+  const resources: Record<string, { translation: Record<string, unknown> }> = {};
+  for (const [locale, translation] of Object.entries(baseLocaleMessages)) {
+    resources[locale] = { translation };
+  }
+
+  await i18next.init({
+    interpolation: { escapeValue: false },
+    lng: "en_us",
+    fallbackLng: "en_us",
+    resources
+  });
+
+  ctx.plugin(I18nService);
 }

@@ -1,147 +1,54 @@
-// I18n init configuration (Frontend)
-
-import { createI18n, type I18n } from "vue-i18n";
-
-// DO NOT I18N
-// If you want to add the language of your own country, you need to add the code here.
-export const SUPPORTED_LANGS = [
-  {
-    label: `English`,
-    value: `en_us`
-  },
-  {
-    label: `简体中文`,
-    value: `zh_cn`
-  },
-  {
-    label: `繁體中文`,
-    value: `zh_tw`
-  },
-  {
-    label: `日本語`,
-    value: `ja_jp`
-  },
-  {
-    label: `Русский`,
-    value: `ru_ru`
-  },
-  {
-    label: `Deutsch`,
-    value: `de_de`
-  },
-  {
-    label: `Français`,
-    value: `fr_fr`
-  },
-  {
-    label: `Português Brasileiro`,
-    value: `pt_br`
-  },
-  {
-    label: `Thai`,
-    value: `th_th`
-  },
-  {
-    label: `Español`,
-    value: `es_es`
-  },
-  {
-    label: `한국어`,
-    value: `ko_kr`
-  },
-  {
-    label: `Türkçe`,
-    value: `tr_tr`
-  }
-];
+import type { I18n } from "vue-i18n";
+import { ctx } from "@/plugin/context";
+import type { FrontendI18nService, PanelLanguageOption } from "@/plugin";
 
 export const LANGUAGE_KEY = "LANGUAGE";
 
-let i18n: I18n;
-
-export function toStandardLang(lang?: string) {
-  if (!lang) return "en_us";
-  return lang.replace("-", "_").toLowerCase();
+export function toStandardLang(language?: string) {
+  if (!language) return "en_us";
+  return language.replace("-", "_").toLowerCase();
 }
 
-// I18n init configuration
-// If you want to add the language of your own country, you need to add the code here.
-const messages: Record<string, any> = {};
-async function initI18n(lang: string) {
-  lang = toStandardLang(lang);
-
-  const langFiles = import.meta.glob("../../../languages/*.json");
-  for (const path in langFiles) {
-    const langFile = langFiles[path];
-    if (typeof langFile !== "function") continue;
-
-    if (!toStandardLang(path).includes(lang)) continue;
-    messages[lang] = await langFiles[path]();
-    break;
-  }
-
-  i18n = createI18n({
-    allowComposition: true,
-    globalInjection: true,
-    locale: lang,
-    fallbackLocale: toStandardLang("en_us"),
-    messages: messages
-  });
-}
-
-export function getI18nInstance() {
+function service(): FrontendI18nService {
+  const i18n = ctx.get("i18n");
+  if (!i18n) throw new Error('Panel frontend plugin "i18n" is not loaded.');
   return i18n;
 }
 
-const getSupportLanguages = (): string[] => {
-  return SUPPORTED_LANGS.map((v) => v.value);
-};
+export function getI18nInstance(): I18n {
+  return service().instance;
+}
 
-const searchSupportLanguage = (lang: string) => {
-  const findLang = getSupportLanguages().find((v) => v.includes(toStandardLang(lang)));
-  if (findLang) return findLang;
-  return "en_us";
-};
+export function getSupportedLanguageOptions(): readonly PanelLanguageOption[] {
+  return service().supportedLanguages;
+}
 
-const setLanguage = (lang: string, reload = true) => {
-  lang = toStandardLang(lang);
-  localStorage.setItem(LANGUAGE_KEY, lang);
-  i18n.global.locale = lang;
-  if (reload) window.location.reload();
-};
+export function getSupportLanguages(): string[] {
+  return service().getSupportLanguages();
+}
 
-const getCurrentLang = (): string => {
-  const curLang = String(i18n.global.locale).toLowerCase();
-  return searchSupportLanguage(curLang);
-};
+export function searchSupportLanguage(language: string): string {
+  return service().searchSupportLanguage(language);
+}
 
-const isCN = () => {
-  return (
-    getCurrentLang() === "zh_cn" ||
-    getCurrentLang() === "zh_tw" ||
-    window.navigator.language.includes("zh")
-  );
-};
+export function setLanguage(language: string, reload = true): void {
+  service().setLanguage(language, reload);
+}
 
-const isEN = () => {
-  return getCurrentLang() === "en_us";
-};
+export function getCurrentLang(): string {
+  return service().getCurrentLang();
+}
 
-const $t = (...args: any[]): string => {
-  return (i18n.global.t as Function)(...args);
-};
-const t = $t;
+export function isCN(): boolean {
+  return service().isCN();
+}
 
-(window as any).setLang = setLanguage;
+export function isEN(): boolean {
+  return service().isEN();
+}
 
-export {
-  $t,
-  getCurrentLang,
-  getSupportLanguages,
-  initI18n,
-  isCN,
-  isEN,
-  searchSupportLanguage,
-  setLanguage,
-  t
-};
+export function $t(...args: any[]): string {
+  return service().translate(...args);
+}
+
+export const t = $t;

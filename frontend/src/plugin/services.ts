@@ -6,11 +6,9 @@ import type { RouteRecordRaw } from "vue-router";
 import { LAYOUT_CARD_TYPES, PLUGIN_LAYOUT_CARD_POOL_FACTORIES } from "@/config";
 import type { LayoutCardPoolItemFactory } from "@/config";
 import { router } from "@/config/router";
-import { getI18nInstance } from "@/lang/i18n";
 import type {
   FrontendActionsService,
   FrontendDesktopService,
-  FrontendI18nService,
   FrontendMenusService,
   FrontendRoutesService,
   FrontendUiService,
@@ -45,70 +43,6 @@ export class VueService extends Service implements FrontendVueService {
     super(ctx, "vue", true);
     this.app = markRaw(options.app);
     this.pinia = markRaw(options.pinia);
-  }
-}
-
-interface LocaleRegistration {
-  locale: string;
-  messages: Record<string, unknown>;
-}
-
-function cloneMessages<T>(value: T): T {
-  if (value === undefined) return value;
-  return JSON.parse(JSON.stringify(value)) as T;
-}
-
-export class I18nService extends Service implements FrontendI18nService {
-  private readonly base = new Map<string, Record<string, unknown>>();
-  private readonly registrations: LocaleRegistration[] = [];
-
-  constructor(ctx: Context) {
-    super(ctx, "i18n", true);
-  }
-
-  get instance() {
-    return getI18nInstance();
-  }
-
-  define(messages: Record<string, Record<string, unknown>>) {
-    const added = Object.entries(messages ?? {}).map(([locale, resources]) => ({
-      locale,
-      messages: cloneMessages(resources)
-    }));
-    return this.ctx.effect(() => {
-      for (const registration of added) {
-        if (!this.base.has(registration.locale)) {
-          this.base.set(
-            registration.locale,
-            cloneMessages(
-              (getI18nInstance().global as any).getLocaleMessage(registration.locale) || {}
-            )
-          );
-        }
-        this.registrations.push(registration);
-        this.reapply(registration.locale);
-      }
-      return () => {
-        for (const registration of added) {
-          remove(this.registrations, registration);
-          this.reapply(registration.locale);
-        }
-      };
-    });
-  }
-
-  /**
-   * Re-applies the base catalogue plus every live registration. Deleting keys
-   * would be wrong: two plugins may define the same key, and a plugin may
-   * deliberately override a core string.
-   */
-  private reapply(locale: string) {
-    const global = getI18nInstance().global as any;
-    global.setLocaleMessage(locale, cloneMessages(this.base.get(locale) || {}));
-    for (const registration of this.registrations) {
-      if (registration.locale !== locale) continue;
-      global.mergeLocaleMessage(locale, cloneMessages(registration.messages));
-    }
   }
 }
 
@@ -380,4 +314,3 @@ export class DesktopService extends Service implements FrontendDesktopService {
     });
   }
 }
-

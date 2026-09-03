@@ -14,7 +14,6 @@ import { missionPassport } from "../service/mission_passport";
 import { sendFile } from "../utils/speed_limit";
 import { check7zipStatus } from "../service/seven_zip_service";
 import { ctx } from "./context";
-import { I18nService } from "./i18n";
 import { getDaemonPluginInventory, getLoadedDaemonPlugins, setDaemonPluginEnabled } from "./loader";
 import { ProtocolService } from "./protocol";
 import { SettingsFormService } from "./settings";
@@ -45,10 +44,11 @@ function provide<K extends keyof Context & string>(name: K, value: Context[K]) {
  * Wires the daemon's singletons onto the container, once, at startup.
  *
  * A service that only hands a plugin something the core already owns is a plain
- * builtin value: there is nothing to scope and nothing to dispose. The ones that
- * accept registrations from plugins are `Service` classes, because a registration
- * has to belong to the plugin that made it. `logger` and the timer helpers come
- * from cordis itself.
+ * builtin value: there is nothing to scope and nothing to dispose. The services
+ * that accept registrations from plugins are `Service` classes, because a
+ * registration has to belong to the plugin that made it. The foundational `i18n`
+ * plugin is loaded before this function. `logger` and the timer helpers come from
+ * cordis itself.
  *
  * `koa` and `websocket` are deliberately absent: they are the daemon's network
  * layer, provided by `plugins/server` with `ctx.set()`.
@@ -93,7 +93,6 @@ export function installDaemonPluginServices() {
     setEnabled: setDaemonPluginEnabled
   });
 
-  ctx.plugin(I18nService);
   ctx.plugin(SettingsFormService);
   ctx.plugin(ProtocolService);
   ctx.plugin(TasksService);

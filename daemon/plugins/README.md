@@ -184,9 +184,10 @@ JSON file per language, next to an `index.ts` that exports them as
 that object to `ctx.i18n.define()` as the first thing `apply()` does, before any
 code path that can log or throw translated text.
 
-The root `languages/` catalogue keeps only what the daemon core uses, plus the
-strings shared with it. When you add a string, add it to every language file in
-the folder that owns it — see `plugins/backup`.
+The foundational `plugins/i18n` plugin owns the complete daemon-wide catalogue in
+`plugins/i18n/src/languages/`. Every one of its twelve language files is shipped
+with the plugin, so the daemon has no dependency on a repository-level language
+directory. When you add a global string, add it to all twelve files there.
 
 ## Bundled plugins
 

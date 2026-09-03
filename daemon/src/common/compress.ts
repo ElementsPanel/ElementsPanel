@@ -1,6 +1,5 @@
 import { execFile, spawn } from "child_process";
 import fs from "fs-extra";
-import { t } from "i18next";
 import { ProcessWrapper } from "mcsmanager-common";
 import StreamZip from "node-stream-zip";
 import path from "path";
@@ -42,12 +41,16 @@ const SUPPORTED_ARCHIVE_EXTENSIONS = [
   ".bz2"
 ];
 
-const COMPRESS_ERROR_MSG = {
-  invalidName: t("TXT_CODE_3aa9f36"),
-  exitErr: t("TXT_CODE_2be83d36"),
-  startErr: t("TXT_CODE_37d839a4"),
-  timeoutErr: t("TXT_CODE_15c07350")
-};
+function getCompressErrorMsg() {
+  // Resolve these lazily: the daemon's i18n foundation is a plugin, so module
+  // evaluation can happen before that plugin has initialized i18next.
+  return {
+    invalidName: $t("TXT_CODE_3aa9f36"),
+    exitErr: $t("TXT_CODE_2be83d36"),
+    startErr: $t("TXT_CODE_37d839a4"),
+    timeoutErr: $t("TXT_CODE_15c07350")
+  };
+}
 
 function checkFileName(fileName: string) {
   const disableList = ['"', "'", "?", "|", "&"];
@@ -71,7 +74,7 @@ export async function compress(
   cwd?: string
 ): Promise<boolean> {
   if (!checkFileName(sourceZip) || files.some((v) => !checkFileName(v)))
-    throw new Error(COMPRESS_ERROR_MSG.invalidName);
+    throw new Error(getCompressErrorMsg().invalidName);
   return await useZip(sourceZip, files, fileCode, cwd);
 }
 
@@ -81,7 +84,7 @@ export async function decompress(
   fileCode?: string
 ): Promise<boolean> {
   if (!checkFileName(zipPath) || !checkFileName(dest))
-    throw new Error(COMPRESS_ERROR_MSG.invalidName);
+    throw new Error(getCompressErrorMsg().invalidName);
   if (!isSupportedArchiveFile(zipPath)) {
     throw new Error($t("TXT_CODE_69c42450", { fileExt: getFileExtension(zipPath) }));
   }
@@ -120,7 +123,7 @@ export async function listArchiveEntries(
   archivePath: string,
   fileCode?: string
 ): Promise<ArchiveEntryInfo[]> {
-  if (!checkFileName(archivePath)) throw new Error(COMPRESS_ERROR_MSG.invalidName);
+  if (!checkFileName(archivePath)) throw new Error(getCompressErrorMsg().invalidName);
   if (!isSupportedArchiveFile(archivePath)) {
     throw new Error($t("TXT_CODE_69c42450", { fileExt: getFileExtension(archivePath) }));
   }
@@ -205,7 +208,7 @@ export async function decompressWithProgress(
   fileCode?: string
 ): Promise<boolean> {
   if (!checkFileName(archivePath) || !checkFileName(dest))
-    throw new Error(COMPRESS_ERROR_MSG.invalidName);
+    throw new Error(getCompressErrorMsg().invalidName);
 
   await fs.ensureDir(dest);
 
@@ -523,7 +526,7 @@ async function useUnzip(sourceZip: string, destDir: string, code = "utf-8"): Pro
     ZIP_TIMEOUT_SECONDS,
     code
   );
-  subProcess.setErrMsg(COMPRESS_ERROR_MSG);
+  subProcess.setErrMsg(getCompressErrorMsg());
   return subProcess.start();
 }
 
@@ -534,7 +537,7 @@ async function useZip(
   code = "utf-8",
   cwd?: string
 ): Promise<boolean> {
-  if (!files || files.length == 0) throw new Error(t("TXT_CODE_2038ec2c"));
+  if (!files || files.length == 0) throw new Error($t("TXT_CODE_2038ec2c"));
   const workingDir = cwd || path.dirname(distZip);
   const params = ["--mode=1", `--code=${code}`, `--zipPath=${path.resolve(distZip)}`];
   files.forEach((v) => {
@@ -548,6 +551,6 @@ async function useZip(
     ZIP_TIMEOUT_SECONDS,
     code
   );
-  subProcess.setErrMsg(COMPRESS_ERROR_MSG);
+  subProcess.setErrMsg(getCompressErrorMsg());
   return subProcess.start();
 }

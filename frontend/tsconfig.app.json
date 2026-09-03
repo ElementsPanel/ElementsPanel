@@ -19,7 +19,6 @@
     "paths": {
       "@/*": ["./src/*"],
       "@instance/*": ["../panel/plugins/instance/src/*"],
-      "@languages": ["../languages/*"],
       "lodash": ["./node_modules/@types/lodash/index.d.ts"],
       "*": ["./node_modules/*"]
     },

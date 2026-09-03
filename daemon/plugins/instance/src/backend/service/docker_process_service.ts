@@ -1,4 +1,3 @@
-import { t } from "i18next";
 import { commandStringToArray } from "../entity/commands/base/command_parser";
 import DockerPullCommand from "../entity/commands/docker/docker_pull";
 import Instance from "../entity/instance/instance";
@@ -98,7 +97,7 @@ export class SetupDockerContainer extends AsyncTask {
       const protocol = elem[1];
       //Host (host) port: container port
       const publicAndPrivatePort = ports.split(":");
-      if (publicAndPrivatePort.length != 2) throw new Error(t("TXT_CODE_2029027e"));
+      if (publicAndPrivatePort.length != 2) throw new Error($t("TXT_CODE_2029027e"));
       publicPortArray[`${publicAndPrivatePort[1]}/${protocol}`] = [
         { HostPort: publicAndPrivatePort[0] }
       ];

@@ -14,8 +14,11 @@ module.exports = {
     lngs: LANGUAGES,
     defaultLng: "zh",
     resource: {
-      loadPath: "./languages/{{lng}}.json",
-      savePath: "./languages/{{lng}}.json",
+      // The panel catalogue is the scanner's canonical output. The workspace
+      // i18n command synchronizes the same complete catalogue to daemon after
+      // scanning, so both runtime plugins remain byte-for-byte identical.
+      loadPath: "./panel/plugins/i18n/src/languages/{{lng}}.json",
+      savePath: "./panel/plugins/i18n/src/languages/{{lng}}.json",
       jsonIndent: 2,
       lineEnding: "\n"
     },

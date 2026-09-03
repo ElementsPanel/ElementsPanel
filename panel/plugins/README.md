@@ -201,9 +201,10 @@ effect: the panel snapshots the base catalogue and re-applies base plus every
 live registration on each change, so a plugin's strings — including any that
 override a core string — arrive and leave with the plugin.
 
-The root `languages/` catalogue keeps only what the panel core uses, plus strings
-shared by more than one plugin. When you add a string, add it to every language
-file in the folder that owns it.
+The foundational `plugins/i18n` plugin owns the complete panel-wide catalogue in
+`plugins/i18n/src/languages/`. Every one of its twelve language files is shipped
+with the plugin, so the panel has no dependency on a repository-level language
+directory. When you add a global string, add it to all twelve files there.
 
 ## The frontend
 

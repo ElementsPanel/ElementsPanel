@@ -116,8 +116,8 @@ pages, the user list, the SSO settings block, the Desktop user windows and the
 messages the backend logs or throws. `src/frontend.ts` passes them to the panel
 with `ctx.i18n.define()`, and `src/backend/index.ts` does the same on the panel's
 i18next instance before it initializes anything, so a router that throws a
-translated error never depends on the root `languages/` catalogue.
+translated error never depends on another plugin or a repository-level catalogue.
 
 Strings shared with the panel core or with another plugin (the `desktop`
-window chrome, for instance) stay in `languages/*.json`. Adding a string here
-means adding it to all twelve files in `src/i18n/`.
+window chrome, for instance) stay in the foundational `plugins/i18n` catalogue.
+Adding a string here means adding it to all twelve files in `src/i18n/`.

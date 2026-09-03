@@ -11,7 +11,6 @@ import { operationLogger } from "../service/operation_logger";
 import { getRequestGuard } from "../service/request_guard";
 import { saveSystemConfig, systemConfig } from "../setting";
 import { ctx } from "./context";
-import { I18nService } from "./i18n";
 import {
   getLoadedPanelPlugins,
   getPanelFrontendManifest,
@@ -41,9 +40,10 @@ function provide<K extends keyof Context & string>(name: K, value: Context[K]) {
  *
  * A service that only hands a plugin something the core already owns is a plain
  * builtin value: there is nothing to scope and nothing to dispose. The three that
- * accept registrations from plugins — `i18n`, `settingsForm` and `overview` —
- * are `Service` classes, because a registration has to belong to the plugin that
- * made it. `logger` and the timer helpers come from cordis itself.
+ * accept registrations from plugins — `settingsForm` and `overview` — are
+ * `Service` classes, because a registration has to belong to the plugin that
+ * made it. The foundational `i18n` plugin is loaded before this function.
+ * `logger` and the timer helpers come from cordis itself.
  *
  * `koa`, `remote` and `guard` are deliberately absent: they are
  * provided by plugins with `ctx.set()`. `koa` comes from `plugins/server`, which
@@ -83,7 +83,6 @@ export function installPanelPluginServices() {
     setEnabled: setPanelPluginEnabled
   });
 
-  ctx.plugin(I18nService);
   ctx.plugin(SettingsFormService);
   ctx.plugin(OverviewService);
 }

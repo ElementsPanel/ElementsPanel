@@ -5,7 +5,7 @@ import { Worker, isMainThread, workerData } from "node:worker_threads";
 import { fileURLToPath } from "url";
 import { parentPort, threadId } from "worker_threads";
 
-// node scripts/useless-key-scanner.mjs languages zh_CN.json . ".js,.ts,.vue" "node_modules/"
+// node scripts/useless-key-scanner.mjs panel/plugins/i18n/src/languages zh_CN.json . ".js,.ts,.vue" "node_modules/"
 const LANGUAGE_DIR = process.argv[2];
 const LANGUAGE_SOURCE_FILE_NAME = process.argv[3];
 const CODE_DIR = process.argv[4];
