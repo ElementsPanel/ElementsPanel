@@ -154,19 +154,11 @@ const breakInNeed = (a: number, b: number = 0) => {
           / {{ realStatus.total }}
         </div>
 
-        <a-progress
-          :percent="
+        <a-progress :percent="realStatus.total ? Math.round((realStatus.running / realStatus.total) * 100) : 0
+          " :stroke-color="getProgressStrokeColor(
             realStatus.total ? Math.round((realStatus.running / realStatus.total) * 100) : 0
-          "
-          :stroke-color="
-            getProgressStrokeColor(
-              realStatus.total ? Math.round((realStatus.running / realStatus.total) * 100) : 0
-            )
-          "
-          :show-info="false"
-          :stroke-width="12"
-          style="max-width: 60%"
-        />
+          )
+            " :show-info="false" :stroke-width="12" style="max-width: 60%" />
 
         <component :is="realStatus?.icon" class="status-card-icon" />
       </template>
@@ -174,10 +166,7 @@ const breakInNeed = (a: number, b: number = 0) => {
       <!-- User login: two tags -->
       <template v-else-if="realStatus?.type === 'users'">
         <div class="status-text">
-          <span
-            class="status-text__highlight"
-            :style="breakInNeed(realStatus.loginFailed, realStatus.logined)"
-          >
+          <span class="status-text__highlight" :style="breakInNeed(realStatus.loginFailed, realStatus.logined)">
             {{ realStatus.loginFailed }}
           </span>
           / {{ realStatus.logined }}
@@ -197,12 +186,8 @@ const breakInNeed = (a: number, b: number = 0) => {
                 <span v-if="bar.detail" class="status-bar-value__detail">{{ bar.detail }}</span>
               </div>
             </div>
-            <a-progress
-              :percent="bar.percent"
-              :stroke-color="getProgressStrokeColor(bar.percent)"
-              :stroke-width="12"
-              :show-info="false"
-            />
+            <a-progress :percent="bar.percent" :stroke-color="getProgressStrokeColor(bar.percent)" :stroke-width="12"
+              :show-info="false" />
           </div>
         </div>
       </template>
@@ -232,6 +217,7 @@ const breakInNeed = (a: number, b: number = 0) => {
   bottom: 10px;
   opacity: 0.1;
   transition: transform 0.25s ease-out;
+
   svg {
     fill: #fff;
   }

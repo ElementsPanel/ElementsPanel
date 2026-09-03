@@ -2,7 +2,7 @@
 // the panel core with the monitoring page; the core keeps `useSimpleChart`,
 // which the node plugin uses for its per-node sparklines.
 
-import { init, graphic, type ECharts } from "echarts";
+import { graphic, init, type ECharts } from "echarts";
 import { onMounted, onUnmounted, ref } from "vue";
 
 export function useOverviewChart(dom: string) {

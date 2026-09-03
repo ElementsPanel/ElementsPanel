@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { getInstanceOperationLog } from "../api";
-import { formatOperationLogItem, type FormattedOperationLog } from "../hooks/useOperationLog";
 import { t } from "@/lang/i18n";
 import { ctx } from "@/plugin/context";
 import { FileTextOutlined } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
 import { computed, onMounted, ref } from "vue";
+import { getInstanceOperationLog } from "../api";
+import { formatOperationLogItem, type FormattedOperationLog } from "../hooks/useOperationLog";
 import InstanceOperationLogContent from "./InstanceOperationLogContent.vue";
 
 const props = defineProps<{
@@ -61,42 +61,18 @@ onMounted(fetchLogs);
 <template>
   <Teleport to="body">
     <Transition v-if="useDesktopWindow" name="monitor-log-fade" @after-leave="emitClose">
-      <component
-        :is="desktopWindow"
-        v-if="dialogOpen"
-        id="instance-operation-log"
-        :title="t('TXT_CODE_f6a33629')"
-        :icon="FileTextOutlined"
-        :visible="true"
-        :minimized="false"
-        :maximized="false"
-        :active="true"
-        :initial-width="680"
-        :initial-height="500"
-        :initial-x="windowWidth / 2 - 340"
-        :initial-y="windowHeight / 2 - 250"
-        :z-index="10004"
-        :show-minimize="false"
-        :show-maximize="false"
-        :resizable="false"
-        @close="close"
-      >
+      <component :is="desktopWindow" v-if="dialogOpen" id="instance-operation-log" :title="t('TXT_CODE_f6a33629')"
+        :icon="FileTextOutlined" :visible="true" :minimized="false" :maximized="false" :active="true"
+        :initial-width="680" :initial-height="500" :initial-x="windowWidth / 2 - 340"
+        :initial-y="windowHeight / 2 - 250" :z-index="10004" :show-minimize="false" :show-maximize="false"
+        :resizable="false" @close="close">
         <InstanceOperationLogContent :loading="loading" :logs="logs" desktop />
       </component>
 
     </Transition>
 
-    <a-modal
-      v-else
-      v-model:open="dialogOpen"
-      centered
-      :mask-closable="true"
-      :width="680"
-      :title="t('TXT_CODE_f6a33629')"
-      :footer="null"
-      @cancel="close"
-      @after-close="emitClose"
-    >
+    <a-modal v-else v-model:open="dialogOpen" centered :mask-closable="true" :width="680"
+      :title="t('TXT_CODE_f6a33629')" :footer="null" @cancel="close" @after-close="emitClose">
       <InstanceOperationLogContent :loading="loading" :logs="logs" />
     </a-modal>
   </Teleport>

@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import type { LayoutCard } from "@/types";
-import { useOverviewChart } from "../hooks/useOverviewChart";
-import { getRandomId } from "@/tools/randId";
-import { watch } from "vue";
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
-import type { JsonData } from "@/types";
+import { getRandomId } from "@/tools/randId";
+import type { JsonData, LayoutCard } from "@/types";
+import { watch } from "vue";
+import { useOverviewChart } from "../hooks/useOverviewChart";
 
 defineProps<{
   card: LayoutCard;
