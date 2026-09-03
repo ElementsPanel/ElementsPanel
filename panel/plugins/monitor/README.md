@@ -7,7 +7,7 @@ rate, the status tiles and the panel-wide operation log.
 `GET /api/overview` itself stays in the panel core. Half the panel reads it for
 the node list, the panel process and the host it runs on — `useOverviewInfo()` is
 the single shared fetch behind the node plugin's cards, the instance manager
-buttons and the node picker. This plugin *contributes to* that response rather
+buttons and the node picker. This plugin _contributes to_ that response rather
 than owning it.
 
 ## Backend
@@ -19,11 +19,11 @@ a panel core singleton (`service/visual_data.ts`).
 
 `apply()` wires three things:
 
-| Registration | What it does |
-| --- | --- |
+| Registration             | What it does                                  |
+| ------------------------ | --------------------------------------------- |
 | `ctx.overview.provide()` | Adds the `chart` field to `GET /api/overview` |
-| `ctx.koa.use()` | Counts `/api/` requests for the request chart |
-| `ctx.koa.router()` | `GET /api/monitor/operation_logs` |
+| `ctx.koa.use()`          | Counts `/api/` requests for the request chart |
+| `ctx.koa.router()`       | `GET /api/monitor/operation_logs`             |
 
 The request counter lives here rather than in the core response middleware: the
 request rate exists only to be charted. Koa runs the plugin's middleware for
@@ -33,8 +33,9 @@ complete either way.
 `GET /api/monitor/operation_logs` replaces the core's
 `GET /api/overview/operation_logs`. The **per-instance** log routes
 (`/api/overview/instance_operation_logs`, `/instance_crash`,
-`/instance_auto_restart`) stay in the core, because the instance pages read those
-whether or not the monitoring page exists. The operation logger itself is core
+`/instance_auto_restart`) stay in the core because terminal lifecycle reporting
+still uses them. The monitor plugin owns the per-instance log viewer and only
+calls the read route while its injected action is installed. The logger itself is core
 infrastructure — every router writes to it.
 
 `dispose()` stops both samplers, so unloading the plugin leaves no timers behind.
@@ -46,6 +47,7 @@ Registered by `src/frontend.ts`:
 - Route `/overview`
 - Layout cards `DataOverview`, `StatusBlock`, `RequestChart`, `InstanceChart`,
   `OperationLogCard`, plus their card-pool entries
+- The instance-console operation-log action and its normal/Desktop log window
 - A Desktop application (`DesktopOverview`, moved out of the `desktop` plugin)
 
 `src/hooks/useOverviewChart.ts` holds the full monitoring chart — axes, gradient
@@ -56,7 +58,7 @@ per-node sparklines with it.
 ### A note on `chart.system`
 
 The panel host's CPU/memory history is collected and reported, but no card
-currently draws it — the page shows the *current* figures instead, which come
+currently draws it — the page shows the _current_ figures instead, which come
 from `system` and `process`. This predates the extraction; the field is kept so
 the shape of `GET /api/overview` does not change for anything reading it.
 

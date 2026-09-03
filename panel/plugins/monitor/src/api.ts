@@ -1,11 +1,7 @@
 import { useDefineApi } from "@/stores/useDefineApi";
 import type { OperationLoggerItem } from "@/types/operationLog";
 
-/**
- * The panel-wide operation log the monitoring page lists. Per-instance logs live
- * in the core's `@/services/apis/operationLog`, because the instance pages read
- * those whether or not this plugin is installed.
- */
+/** The panel-wide operation log shown by the monitoring page. */
 export const getOperationLog = useDefineApi<
   {
     data: {
@@ -15,5 +11,20 @@ export const getOperationLog = useDefineApi<
   OperationLoggerItem[]
 >({
   url: "/api/monitor/operation_logs",
+  method: "GET"
+});
+
+/** Operation logs for the instance console's monitor-provided log action. */
+export const getInstanceOperationLog = useDefineApi<
+  {
+    params: {
+      daemonId: string;
+      instanceId: string;
+      limit?: number;
+    };
+  },
+  OperationLoggerItem[]
+>({
+  url: "/api/overview/instance_operation_logs",
   method: "GET"
 });

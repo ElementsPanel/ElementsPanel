@@ -25,9 +25,9 @@ export function apply(ctx: PanelPluginContext) {
 
   ctx.overview.provide(() => ({ chart: history.toChart() }));
 
-  // The panel-wide operation log the monitoring page lists. Per-instance logs
-  // stay in the core: the instance pages read those whether or not the
-  // monitoring page exists.
+  // The panel-wide operation log the monitoring page lists. Per-instance log
+  // storage and lifecycle reporting stay in the core; this plugin owns the
+  // viewer and reads the core route only while its action is installed.
   const router = ctx.koa.router("/api/monitor");
   router.get(
     "/operation_logs",

@@ -6,10 +6,14 @@ import LayoutContainer from "@/views/LayoutContainer.vue";
 import { getRandomId } from "@/tools/randId";
 import { NEW_CARD_TYPE } from "@/types";
 import { useAppStateStore } from "@/stores/useAppStateStore";
-import { AreaChartOutlined, DashboardOutlined } from "@ant-design/icons-vue";
+import { AreaChartOutlined, DashboardOutlined, FileTextOutlined } from "@ant-design/icons-vue";
 import DesktopOverview from "./desktop/DesktopOverview.vue";
+import DesktopInstanceOperationLog from "./desktop/InstanceOperationLog.vue";
+import InstanceLogHost from "./InstanceLogHost.vue";
+import { closeInstanceLog } from "./instanceLog";
 import { localeMessages } from "./i18n";
 import InstanceChart from "./normal/InstanceChart.vue";
+import InstanceOperationLogAction from "./normal/InstanceOperationLogAction.vue";
 import OperationLogCard from "./normal/OperationLogCard.vue";
 import DataOverview from "./normal/PanelOverview.vue";
 import RequestChart from "./normal/RequestChart.vue";
@@ -83,7 +87,7 @@ const cardPoolItems: LayoutCardPoolItemFactory[] = [
   })
 ];
 
-export const inject = ["i18n", "routes", "ui", "desktop"];
+export const inject = ["i18n", "routes", "ui", "desktop", "actions"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
@@ -94,6 +98,19 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.ui.layoutCard("InstanceChart", InstanceChart);
   ctx.ui.layoutCard("OperationLogCard", OperationLogCard);
   cardPoolItems.forEach((createItem) => ctx.ui.layoutCardPoolItem(createItem));
+  ctx.ui.globalComponent(InstanceLogHost);
+  ctx.effect(() => () => closeInstanceLog());
+
+  ctx.actions.instance({
+    id: "operation-log",
+    title: () => t("TXT_CODE_f6a33629"),
+    icon: FileTextOutlined,
+    normalComponent: InstanceOperationLogAction,
+    desktopComponent: DesktopInstanceOperationLog,
+    condition: ({ instanceId, daemonId }) => Boolean(instanceId && daemonId),
+    desktopInitialWidth: 680,
+    desktopInitialHeight: 500
+  });
 
   ctx.routes.add({
     path: "/overview",

@@ -24,7 +24,6 @@ import {
   CloudDownloadOutlined,
   CloudServerOutlined,
   DownOutlined,
-  FileTextOutlined,
   InfoCircleOutlined,
   LaptopOutlined,
   LoadingOutlined,
@@ -37,7 +36,6 @@ import { computed, h, onUnmounted, ref } from "vue";
 import { GLOBAL_INSTANCE_NAME } from "@/config/const";
 import { useTerminal, type UseTerminalHook } from "../../hooks/useTerminal";
 import { arrayFilter } from "@/tools/array";
-import InstanceLogDialog from "./dialogs/InstanceLogDialog.vue";
 
 const props = defineProps<{
   card: LayoutCard;
@@ -96,7 +94,7 @@ const toOpenInstance = async () => {
             h("p", t("TXT_CODE_3409258a")),
             h("p", `${t("TXT_CODE_973414e1")}：${instanceInfo.value?.config.startCommand || ""}`),
             isDockerMode.value &&
-            h("p", `${t("TXT_CODE_44b585c7")}：${instanceInfo.value?.config.docker.image || ""}`)
+              h("p", `${t("TXT_CODE_44b585c7")}：${instanceInfo.value?.config.docker.image || ""}`)
           ])
         });
       }
@@ -232,8 +230,6 @@ const getInstanceName = computed(() => {
 onUnmounted(() => {
   if (checkRunningTimer) clearTimeout(checkRunningTimer);
 });
-
-const instanceLogDialogRef = ref<InstanceType<typeof InstanceLogDialog>>();
 </script>
 
 <template>
@@ -265,7 +261,10 @@ const instanceLogDialogRef = ref<InstanceType<typeof InstanceLogDialog>>();
 
               <a-tag v-if="instanceTypeText" color="purple"> {{ instanceTypeText }} </a-tag>
 
-              <span v-if="instanceInfo?.watcher && instanceInfo?.watcher > 1 && !isPhone" class="ml-16">
+              <span
+                v-if="instanceInfo?.watcher && instanceInfo?.watcher > 1 && !isPhone"
+                class="ml-16"
+              >
                 <a-tooltip>
                   <template #title>
                     {{ t("TXT_CODE_4a37ec9c") }}
@@ -281,19 +280,29 @@ const instanceLogDialogRef = ref<InstanceType<typeof InstanceLogDialog>>();
         </template>
         <template #right>
           <div v-if="!isPhone">
-            <a-tooltip :title="t('TXT_CODE_f6a33629')">
-              <a-button type="text" class="log-btn mr-8" @click="instanceLogDialogRef?.openDialog()">
-                <FileTextOutlined />
-              </a-button>
-            </a-tooltip>
             <template v-for="item in [...quickOperations, ...instanceOperations]" :key="item.title">
-              <a-button v-if="item.noConfirm" class="ml-8" :class="item.class ? item.class : ''"
-                :danger="item.type === 'danger'" :disabled="isOpenInstanceLoading" @click="item.click">
+              <a-button
+                v-if="item.noConfirm"
+                class="ml-8"
+                :class="item.class ? item.class : ''"
+                :danger="item.type === 'danger'"
+                :disabled="isOpenInstanceLoading"
+                @click="item.click"
+              >
                 <component :is="item.icon" />
                 {{ item.title }}
               </a-button>
-              <a-popconfirm v-else :key="item.title" :title="t('TXT_CODE_276756b2')" @confirm="item.click">
-                <a-button class="ml-8" :danger="item.type === 'danger'" :class="item.class ? item.class : ''">
+              <a-popconfirm
+                v-else
+                :key="item.title"
+                :title="t('TXT_CODE_276756b2')"
+                @confirm="item.click"
+              >
+                <a-button
+                  class="ml-8"
+                  :danger="item.type === 'danger'"
+                  :class="item.class ? item.class : ''"
+                >
                   <component :is="item.icon" />
                   {{ item.title }}
                 </a-button>
@@ -304,13 +313,11 @@ const instanceLogDialogRef = ref<InstanceType<typeof InstanceLogDialog>>();
           <a-dropdown v-else>
             <template #overlay>
               <a-menu>
-                <a-menu-item @click="instanceLogDialogRef?.openDialog()">
-                  <FileTextOutlined />
-                  {{ t("TXT_CODE_f6a33629") }}
-                </a-menu-item>
-                <a-menu-divider />
-                <a-menu-item v-for="item in [...quickOperations, ...instanceOperations]" :key="item.title"
-                  @click="item.click">
+                <a-menu-item
+                  v-for="item in [...quickOperations, ...instanceOperations]"
+                  :key="item.title"
+                  @click="item.click"
+                >
                   <component :is="item.icon" />
                   {{ item.title }}
                 </a-menu-item>
@@ -324,8 +331,13 @@ const instanceLogDialogRef = ref<InstanceType<typeof InstanceLogDialog>>();
         </template>
       </BetweenMenus>
     </div>
-    <TerminalCore v-if="instanceId && daemonId" :use-terminal-hook="terminalHook" :instance-id="instanceId"
-      :daemon-id="daemonId" :height="card.height" />
+    <TerminalCore
+      v-if="instanceId && daemonId"
+      :use-terminal-hook="terminalHook"
+      :instance-id="instanceId"
+      :daemon-id="daemonId"
+      :height="card.height"
+    />
   </div>
 
   <!-- Other Page View -->
@@ -350,11 +362,13 @@ const instanceLogDialogRef = ref<InstanceType<typeof InstanceLogDialog>>();
       </span>
     </template>
     <template #operator>
-      <span class="mr-2">
-        <IconBtn :icon="FileTextOutlined" :title="t('TXT_CODE_f6a33629')"
-          @click="instanceLogDialogRef?.openDialog()"></IconBtn>
-      </span>
-      <span v-for="item in quickOperations" :key="item.title" size="default" class="mr-2" v-bind="item.props">
+      <span
+        v-for="item in quickOperations"
+        :key="item.title"
+        size="default"
+        class="mr-2"
+        v-bind="item.props"
+      >
         <IconBtn :icon="item.icon" :title="item.title" @click="item.click"></IconBtn>
       </span>
       <a-dropdown>
@@ -372,17 +386,15 @@ const instanceLogDialogRef = ref<InstanceType<typeof InstanceLogDialog>>();
       </a-dropdown>
     </template>
     <template #body>
-      <TerminalCore v-if="instanceId && daemonId" :use-terminal-hook="terminalHook" :instance-id="instanceId"
-        :daemon-id="daemonId" :height="card.height" />
+      <TerminalCore
+        v-if="instanceId && daemonId"
+        :use-terminal-hook="terminalHook"
+        :instance-id="instanceId"
+        :daemon-id="daemonId"
+        :height="card.height"
+      />
     </template>
   </CardPanel>
-  <InstanceLogDialog
-    v-if="instanceId && daemonId"
-    ref="instanceLogDialogRef"
-    :instance-id="instanceId"
-    :daemon-id="daemonId"
-    :instance-name="getInstanceName"
-  />
 </template>
 
 <style lang="scss" scoped>
