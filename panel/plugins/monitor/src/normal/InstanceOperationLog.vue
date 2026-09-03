@@ -49,6 +49,9 @@ const fetchLogs = async () => {
 
 const close = () => {
   dialogOpen.value = false;
+};
+
+const emitClose = () => {
   emit("close");
 };
 
@@ -57,14 +60,14 @@ onMounted(fetchLogs);
 
 <template>
   <Teleport to="body">
-    <Transition name="monitor-log-fade">
+    <Transition v-if="useDesktopWindow" name="monitor-log-fade" @after-leave="emitClose">
       <component
         :is="desktopWindow"
-        v-if="useDesktopWindow"
+        v-if="dialogOpen"
         id="instance-operation-log"
         :title="t('TXT_CODE_f6a33629')"
         :icon="FileTextOutlined"
-        :visible="dialogOpen"
+        :visible="true"
         :minimized="false"
         :maximized="false"
         :active="true"
@@ -81,19 +84,21 @@ onMounted(fetchLogs);
         <InstanceOperationLogContent :loading="loading" :logs="logs" desktop />
       </component>
 
-      <a-modal
-        v-else
-        v-model:open="dialogOpen"
-        centered
-        :mask-closable="true"
-        :width="680"
-        :title="t('TXT_CODE_f6a33629')"
-        :footer="null"
-        @cancel="close"
-      >
-        <InstanceOperationLogContent :loading="loading" :logs="logs" />
-      </a-modal>
     </Transition>
+
+    <a-modal
+      v-else
+      v-model:open="dialogOpen"
+      centered
+      :mask-closable="true"
+      :width="680"
+      :title="t('TXT_CODE_f6a33629')"
+      :footer="null"
+      @cancel="close"
+      @after-close="emitClose"
+    >
+      <InstanceOperationLogContent :loading="loading" :logs="logs" />
+    </a-modal>
   </Teleport>
 </template>
 
