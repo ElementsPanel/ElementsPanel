@@ -32,8 +32,8 @@ declare global {
  * Brings up the container and loads every installed plugin.
  *
  * Awaited before the session is restored and before the router is installed: the
- * `user` plugin owns the account API and the login route, so neither exists until
- * the plugins are in place.
+ * `console` plugin owns the application shell and base routes, while `user` owns
+ * the account API and login route.
  */
 export async function setupPanelFrontendPlugins(app: App, pinia: Pinia) {
   if (!ctx.get("i18n")) {
@@ -60,6 +60,9 @@ export async function setupPanelFrontendPlugins(app: App, pinia: Pinia) {
   });
 
   await refreshPlugins();
+  if (!ctx.get("console")) {
+    throw new Error("The foundational console plugin failed to initialize.");
+  }
 
   window.ElementsPanelPlugins = {
     load: loadPlugin,

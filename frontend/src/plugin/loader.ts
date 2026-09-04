@@ -4,6 +4,7 @@ import { ctx, type PanelFrontendPluginContext } from "./context";
 import { panelPluginModules } from "virtual:panel-plugins";
 
 const FOUNDATION_PLUGIN_ID = "i18n";
+const ESSENTIAL_PLUGIN_IDS = new Set([FOUNDATION_PLUGIN_ID, "console"]);
 
 /**
  * Fetches plugin code and hands it to cordis.
@@ -259,8 +260,8 @@ function isCurrentRoute(plugin: InternalPlugin) {
 }
 
 export async function unloadPlugin(id: string) {
-  if (id === FOUNDATION_PLUGIN_ID) {
-    throw new Error('The foundational frontend plugin "i18n" cannot be unloaded.');
+  if (ESSENTIAL_PLUGIN_IDS.has(id)) {
+    throw new Error(`The essential frontend plugin "${id}" cannot be unloaded.`);
   }
   const plugin = plugins.find((candidate) => candidate.metadata.id === id);
   if (!plugin) return false;
@@ -288,8 +289,8 @@ export async function loadPlugin(id: string) {
 }
 
 export async function reloadPlugin(id: string) {
-  if (id === FOUNDATION_PLUGIN_ID) {
-    throw new Error('The foundational frontend plugin "i18n" cannot be reloaded.');
+  if (ESSENTIAL_PLUGIN_IDS.has(id)) {
+    throw new Error(`The essential frontend plugin "${id}" cannot be reloaded.`);
   }
   await unloadPlugin(id);
   if (!import.meta.env.DEV) {
@@ -310,7 +311,7 @@ export async function refreshPlugins() {
   sources.clear();
   next.forEach((source, id) => sources.set(id, source));
   for (const plugin of [...plugins].reverse()) {
-    if (plugin.metadata.id === FOUNDATION_PLUGIN_ID) continue;
+    if (ESSENTIAL_PLUGIN_IDS.has(plugin.metadata.id)) continue;
     if (!next.has(plugin.metadata.id)) await unloadPlugin(plugin.metadata.id);
   }
   for (const source of discovered) {

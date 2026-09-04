@@ -18,7 +18,7 @@ import { Empty, message, type FormInstance } from "ant-design-vue";
 import type { FileType } from "ant-design-vue/es/upload/interface";
 import _ from "lodash";
 import { ref } from "vue";
-import { reportValidatorError } from "../../tools/validator";
+import { reportValidatorError } from "@/tools/validator";
 
 const props = defineProps<{
   card: LayoutCard;

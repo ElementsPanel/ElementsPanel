@@ -1,5 +1,4 @@
 import { bootstrapPanelFrontendPlugin } from "./plugin/loader";
-import { initLayoutConfig } from "./services/layout";
 import { useAppStateStore } from "./stores/useAppStateStore";
 import { setAppLoadingError, setLoadingTitle } from "./tools/dom";
 
@@ -20,8 +19,6 @@ async function initApp() {
     await updatePanelStatus();
     setLoadingTitle("Initializing Language...");
     await bootstrapPanelFrontendPlugin("i18n", { language: state.language });
-    setLoadingTitle("Initializing Layout...");
-    await initLayoutConfig();
     setLoadingTitle("Downloading JavaScript Files...");
     const module = await import("./mount");
     setLoadingTitle("Rendering Application...");

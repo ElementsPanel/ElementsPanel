@@ -16,10 +16,10 @@ import { localeMessages } from "../i18n";
 const SELF = "config";
 
 /**
- * Turning the web server off would remove the connection the request came in
- * over, and with it every route that could turn it back on.
+ * Turning an essential plugin off would remove the interface or connection
+ * that is needed to turn it back on.
  */
-const ESSENTIAL = new Set(["i18n", "server"]);
+const ESSENTIAL = new Set(["console", "i18n", "server"]);
 
 export const inject = ["koa", "i18n", "middleware", "roles", "plugins", "settingsForm"];
 

@@ -1,0 +1,8 @@
+{
+  "id": "console",
+  "name": "Console",
+  "version": "1.0.0",
+  "description": "Provides the panel's base Web UI shell, routes, layout cards and global styles.",
+  "priority": -9000,
+  "frontend": "src/frontend.ts"
+}

@@ -370,7 +370,13 @@ export default defineConfig({
     ],
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
-      "@instance": fileURLToPath(new URL("../panel/plugins/instance/src", import.meta.url))
+      "@console": fileURLToPath(new URL("../panel/plugins/console/src", import.meta.url)),
+      "@instance": fileURLToPath(new URL("../panel/plugins/instance/src", import.meta.url)),
+      // Console cards are compiled from the panel plugin directory, while
+      // browser-only packages are installed in the frontend workspace.
+      "wavesurfer.js": fileURLToPath(
+        new URL("./node_modules/wavesurfer.js/dist/wavesurfer.esm.js", import.meta.url)
+      )
     }
   },
   base: "./"

@@ -24,6 +24,7 @@ export { ctx, serviceRevision, usePluginService } from "./context";
 export type {
   FrontendActionsService,
   FrontendDesktopService,
+  FrontendConsoleService,
   FrontendI18nService,
   FrontendInstanceService,
   FrontendMarketService,

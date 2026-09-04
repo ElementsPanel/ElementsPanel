@@ -208,6 +208,10 @@ directory. When you add a global string, add it to all twelve files there.
 
 ## The frontend
 
+The foundational `console` plugin owns the browser shell, base routes, built-in
+layout cards and global styles. `frontend/src/App.vue` is only its host; other
+plugins contribute pages and UI through the registries below.
+
 The frontend entry has the same shape — `apply(ctx)` plus optional `inject` —
 against a different set of services:
 

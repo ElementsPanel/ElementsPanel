@@ -6,7 +6,7 @@ import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import { MenuUnfoldOutlined } from "@ant-design/icons-vue";
 import { h } from "vue";
 import { useRoute } from "vue-router";
-import CardPanel from "./CardPanel.vue";
+import CardPanel from "@/components/CardPanel.vue";
 
 defineProps<{
   /** One-shot entrance animation after a successful login */

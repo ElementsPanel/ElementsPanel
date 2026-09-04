@@ -1,45 +1,14 @@
-import { t } from "@/lang/i18n";
-import { getRandomId } from "@/tools/randId";
 import type { LayoutCard } from "@/types";
-import DefaultCard from "@/widgets/DefaultCard.vue";
-import EmptyCard from "@/widgets/EmptyCard.vue";
-import Carousel from "@/widgets/others/Carousel.vue";
-import ClockCard from "@/widgets/others/ClockCard.vue";
-import IframeCard from "@/widgets/others/IframeCard.vue";
-import ImageBox from "@/widgets/others/ImageBox.vue";
-import LinkCard from "@/widgets/others/LinkCard.vue";
-import MusicCard from "@/widgets/others/MusicCard.vue";
-import PluginCard from "@/widgets/others/PluginCard.vue";
-import TextCard from "@/widgets/others/TextCard.vue";
-import Page404 from "@/widgets/Page404.vue";
-import Settings from "@/widgets/Settings.vue";
-import TitleCard from "@/widgets/TitleCard.vue";
-
-import { NEW_CARD_TYPE } from "../types/index";
-import { LayoutCardHeight } from "./originLayoutConfig";
-import { ROLE } from "./router";
 import { shallowReactive } from "vue";
 
-// Register specified Vue components for each card.
-export const LAYOUT_CARD_TYPES: { [key: string]: any } = shallowReactive({
-  Page404,
-  TitleCard,
-  EmptyCard,
-  Settings,
-  ImageBox,
-  IframeCard,
-  TextCard,
-  LinkCard,
-  ClockCard,
-  DefaultCard,
-  Carousel,
-  PluginCard,
-  MusicCard
-});
+// Card implementations and picker entries are contributed by plugins. The
+// `console` plugin owns the built-in Web UI cards; feature plugins add theirs
+// through the same registry.
+export const LAYOUT_CARD_TYPES: Record<string, any> = shallowReactive({});
 
 export interface NewCardItem extends LayoutCard {
-  category: NEW_CARD_TYPE;
-  permission: ROLE;
+  category: import("@/types").NEW_CARD_TYPE;
+  permission: import("./router").ROLE;
 }
 
 export type LayoutCardPoolItemFactory = () => NewCardItem;
@@ -47,134 +16,5 @@ export type LayoutCardPoolItemFactory = () => NewCardItem;
 export const PLUGIN_LAYOUT_CARD_POOL_FACTORIES = shallowReactive<LayoutCardPoolItemFactory[]>([]);
 
 export function getLayoutCardPool() {
-  const LAYOUT_CARD_POOL: NewCardItem[] = [
-    {
-      id: getRandomId(),
-      permission: ROLE.GUEST,
-      meta: {},
-      type: "EmptyCard",
-      title: t("TXT_CODE_b23e2bab"),
-      width: 2,
-      description: t("TXT_CODE_b3e2f83e"),
-      height: LayoutCardHeight.MINI,
-      category: NEW_CARD_TYPE.COMMON
-    },
-    {
-      id: getRandomId(),
-      permission: ROLE.GUEST,
-      meta: {},
-      type: "TitleCard",
-      title: t("TXT_CODE_8981d724"),
-      width: 12,
-      description: t("TXT_CODE_9466852b"),
-      height: LayoutCardHeight.AUTO,
-      category: NEW_CARD_TYPE.COMMON
-    },
-
-    {
-      id: getRandomId(),
-      permission: ROLE.ADMIN,
-      meta: {},
-      type: "Settings",
-      title: t("TXT_CODE_b5c7b82d"),
-      width: 8,
-      description: t("TXT_CODE_e78047a5"),
-      height: LayoutCardHeight.MEDIUM,
-      category: NEW_CARD_TYPE.OTHER
-    },
-
-    {
-      id: getRandomId(),
-      permission: ROLE.GUEST,
-      meta: {},
-      type: "ImageBox",
-      title: t("TXT_CODE_4d993ca4"),
-      width: 4,
-      description: t("TXT_CODE_6ef5195f"),
-      height: LayoutCardHeight.SMALL,
-      category: NEW_CARD_TYPE.COMMON
-    },
-
-    {
-      id: getRandomId(),
-      permission: ROLE.GUEST,
-      meta: {},
-      type: "Carousel",
-      title: t("TXT_CODE_5a196078"),
-      width: 4,
-      description: t("TXT_CODE_6ef5195f"),
-      height: LayoutCardHeight.SMALL,
-      category: NEW_CARD_TYPE.COMMON
-    },
-
-    {
-      id: getRandomId(),
-      permission: ROLE.GUEST,
-      meta: {},
-      type: "IframeCard",
-      title: t("TXT_CODE_3ed96265"),
-      width: 4,
-      description: t("TXT_CODE_db9375a5"),
-      height: LayoutCardHeight.SMALL,
-      category: NEW_CARD_TYPE.COMMON
-    },
-
-    {
-      id: getRandomId(),
-      permission: ROLE.GUEST,
-      meta: {},
-      type: "TextCard",
-      title: t("TXT_CODE_ddcca0b9"),
-      width: 4,
-      description: t("TXT_CODE_2ca42b39"),
-      height: LayoutCardHeight.SMALL,
-      category: NEW_CARD_TYPE.COMMON
-    },
-
-    {
-      id: getRandomId(),
-      permission: ROLE.GUEST,
-      meta: {},
-      type: "LinkCard",
-      title: t("TXT_CODE_745d8a03"),
-      width: 4,
-      description: t("TXT_CODE_d6a96ea4"),
-      height: LayoutCardHeight.SMALL,
-      category: NEW_CARD_TYPE.COMMON
-    },
-    {
-      id: getRandomId(),
-      permission: ROLE.GUEST,
-      meta: {},
-      type: "ClockCard",
-      title: t("TXT_CODE_af143e18"),
-      width: 4,
-      description: t("TXT_CODE_cf9e259c"),
-      height: LayoutCardHeight.SMALL,
-      category: NEW_CARD_TYPE.COMMON
-    },
-    {
-      id: getRandomId(),
-      permission: ROLE.GUEST,
-      meta: {},
-      type: "MusicCard",
-      title: t("TXT_CODE_660e2341"),
-      width: 4,
-      description: t("TXT_CODE_903a9ec9"),
-      height: LayoutCardHeight.SMALL,
-      category: NEW_CARD_TYPE.COMMON
-    },
-    {
-      id: getRandomId(),
-      permission: ROLE.GUEST,
-      meta: {},
-      type: "PluginCard",
-      title: t("TXT_CODE_5ebec0db"),
-      width: 4,
-      description: t("TXT_CODE_cb84b22"),
-      height: LayoutCardHeight.SMALL,
-      category: NEW_CARD_TYPE.COMMON
-    }
-  ];
-  return [...LAYOUT_CARD_POOL, ...PLUGIN_LAYOUT_CARD_POOL_FACTORIES.map((createItem) => createItem())];
+  return PLUGIN_LAYOUT_CARD_POOL_FACTORIES.map((createItem) => createItem());
 }

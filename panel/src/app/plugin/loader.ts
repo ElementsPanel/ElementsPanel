@@ -33,6 +33,7 @@ const ENTRY_CANDIDATES = [
   "src/panel.mjs"
 ];
 const FOUNDATION_PLUGIN_ID = "i18n";
+const ESSENTIAL_PLUGIN_IDS = new Set([FOUNDATION_PLUGIN_ID, "console"]);
 
 /** A panel plugin module, as its backend entry exports it. */
 export interface PanelPluginModule {
@@ -284,8 +285,8 @@ export async function setPanelPluginEnabled(
   id: string,
   enabled: boolean
 ): Promise<PanelPluginRecord> {
-  if (id === FOUNDATION_PLUGIN_ID && !enabled) {
-    throw new Error('The foundational panel plugin "i18n" cannot be disabled.');
+  if (ESSENTIAL_PLUGIN_IDS.has(id) && !enabled) {
+    throw new Error(`The essential panel plugin "${id}" cannot be disabled.`);
   }
   const plugin = discoverPlugins(PLUGINS_DIRECTORY(), {
     entryFields: ENTRY_FIELDS,

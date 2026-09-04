@@ -6,10 +6,10 @@ import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import axios from "axios";
 import { v4 } from "uuid";
 import { onMounted, onUnmounted, ref } from "vue";
-import { useLayoutCardTools } from "../../hooks/useCardTools";
-import { useLayoutContainerStore } from "../../stores/useLayoutContainerStore";
-import { ProxySandBox } from "../../tools/sandbox";
-import type { LayoutCard } from "../../types/index";
+import { useLayoutCardTools } from "@/hooks/useCardTools";
+import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
+import { ProxySandBox } from "@/tools/sandbox";
+import type { LayoutCard } from "@/types/index";
 
 const props = defineProps<{
   card: LayoutCard;

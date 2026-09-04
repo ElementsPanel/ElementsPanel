@@ -1,13 +1,3 @@
-import "ant-design-vue/dist/reset.css";
-import "@/assets/base.scss";
-import "@/assets/tools.scss";
-import "@/assets/variables.scss";
-import "@/assets/variables-dark.scss";
-import "@/assets/global.scss";
-import "@/assets/bg-extend-theme.scss";
-
-import "./initLib";
-
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 
@@ -31,8 +21,9 @@ export async function mountApp() {
   app.use(pinia);
   app.use(getI18nInstance());
 
-  // Plugins first: the "user" plugin owns the account API and the login route,
-  // so the session below cannot be restored until it has registered them.
+  // Plugins first: "console" owns the shell and base routes, while "user"
+  // owns the optional account API and login route, so the session below cannot
+  // be restored until the installed plugins have registered their services.
   await setupPanelFrontendPlugins(app, pinia);
 
   try {

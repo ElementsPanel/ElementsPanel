@@ -159,6 +159,11 @@ export interface FrontendVueService {
   readonly router: Router;
 }
 
+/** The panel shell. Provided by the foundational `console` plugin. */
+export interface FrontendConsoleService {
+  readonly root: Component;
+}
+
 export interface PanelLanguageOption {
   label: string;
   value: string;
@@ -350,6 +355,7 @@ declare module "cordis" {
   interface Context {
     // Core services, always present after frontend bootstrap.
     vue: FrontendVueService;
+    console: FrontendConsoleService;
     // Provided first by the foundational `i18n` plugin.
     i18n: FrontendI18nService;
     routes: FrontendRoutesService;

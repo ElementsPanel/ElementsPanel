@@ -17,7 +17,7 @@ import {
 } from "@ant-design/icons-vue";
 import _, { throttle } from "lodash";
 import { computed, onMounted, ref } from "vue";
-import AppConfigProvider from "@/components/AppConfigProvider.vue";
+import AppConfigProvider from "@console/components/AppConfigProvider.vue";
 import BetweenMenus from "@/components/BetweenMenus.vue";
 
 interface Props {

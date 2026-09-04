@@ -2,7 +2,7 @@
 import { ref, reactive, nextTick } from "vue";
 import { t } from "@/lang/i18n";
 
-import AppConfigProvider from "@/components/AppConfigProvider.vue";
+import AppConfigProvider from "@console/components/AppConfigProvider.vue";
 import { useInstanceTags, useInstanceTagTips } from "@/hooks/useInstanceTag";
 import { reportErrorMsg } from "@/tools/validator";
 import { message } from "ant-design-vue";
