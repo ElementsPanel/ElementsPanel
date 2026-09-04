@@ -63,8 +63,15 @@ export class VisualDataHistory {
     // one round of daemon requests. An unreachable node simply contributes zero.
     let totalInstance = 0;
     let runningInstance = 0;
-    const RemoteRequest = this.ctx.remote.Request;
-    for (const [, remoteService] of this.ctx.remote.services.services.entries()) {
+    const remote = this.ctx.get("remote");
+    if (!remote) {
+      this.requestSamples.shift();
+      this.requestSamples.push({ value: this.requestCount, totalInstance, runningInstance });
+      this.requestCount = 0;
+      return;
+    }
+    const RemoteRequest = remote.Request;
+    for (const [, remoteService] of remote.services.services.entries()) {
       try {
         const info = await new RemoteRequest(remoteService).request("info/overview");
         if (!info?.instance) continue;

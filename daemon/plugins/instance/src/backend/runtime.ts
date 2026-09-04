@@ -13,26 +13,32 @@ export function core(): DaemonPluginContext {
   return context;
 }
 
-export const settings = () => core().settings;
-export const storage = () => core().storage;
-export const files = () => core().files;
-export const transfer = () => core().transfer;
-export const tasks = () => core().tasks;
-export const schedules = () => core().schedules;
-export const presets = () => core().presets;
-export const protocol = () => core().protocol;
-export const javaManager = () => core().javaManager;
-export const config = () => core().settings.config;
+function required<T>(name: string): T {
+  const value = core().get(name);
+  if (value === undefined) throw new Error(`Daemon service is unavailable: ${name}`);
+  return value as T;
+}
+
+export const settings = () => required<DaemonPluginContext["settings"]>("settings");
+export const storage = () => required<DaemonPluginContext["storage"]>("storage");
+export const files = () => required<DaemonPluginContext["files"]>("files");
+export const transfer = () => required<DaemonPluginContext["transfer"]>("transfer");
+export const tasks = () => required<DaemonPluginContext["tasks"]>("tasks");
+export const schedules = () => required<DaemonPluginContext["schedules"]>("schedules");
+export const presets = () => required<DaemonPluginContext["presets"]>("presets");
+export const protocol = () => required<DaemonPluginContext["protocol"]>("protocol");
+export const javaManager = () => core().get("javaManager");
+export const config = () => settings().config;
 export const $t = (key: string, options?: any): string =>
-  core().i18n.$t(key, options) as unknown as string;
+  (core().get("i18n")?.$t(key, options) ?? key) as unknown as string;
 
 // The core logger is exposed as a callable service by cordis. Instance modules
 // historically used a namespaced logger object, so keep that small adapter here.
 export const logger = {
-  info: (...args: any[]) => (core().logger as any).info(...args),
-  warn: (...args: any[]) => (core().logger as any).warn(...args),
-  error: (...args: any[]) => (core().logger as any).error(...args),
-  debug: (...args: any[]) => (core().logger as any).debug(...args)
+  info: (...args: any[]) => (core().get("logger") as any)?.info(...args),
+  warn: (...args: any[]) => (core().get("logger") as any)?.warn(...args),
+  error: (...args: any[]) => (core().get("logger") as any)?.error(...args),
+  debug: (...args: any[]) => (core().get("logger") as any)?.debug(...args)
 };
 
 export const getCommonHeaders = (url?: string) => {

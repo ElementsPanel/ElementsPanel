@@ -11,9 +11,10 @@ The console plugin owns the panel's foundational browser UI:
 Appearance settings are declared by the backend half of this plugin and rendered
 by the `config` plugin's generic configuration page. They include the navigation
 position, page title, logo and background image. The same form links to the
-layout designer. The layout persistence service remains in panel core because
-its default layout contains cards contributed by other plugins.
+layout designer. The layout persistence service also lives in this plugin; its
+default layout references cards contributed by other plugins through the shared
+UI registry.
 
 `frontend/src/App.vue` is only a host for the `console` service. Feature plugins
-continue to use the core route and layout registries, while their own pages,
+continue to use the console route and layout registries, while their own pages,
 cards and overlays remain scoped to their plugin.

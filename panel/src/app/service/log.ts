@@ -7,15 +7,6 @@ import { Logger } from "cordis";
 
 const LOG_FILE_PATH = "logs/current.log";
 
-// save the log file separately on each startup
-if (fs.existsSync(LOG_FILE_PATH)) {
-  const time = new Date();
-  const timeString = `${time.getFullYear()}-${
-    time.getMonth() + 1
-  }-${time.getDate()}_${time.getHours()}-${time.getMinutes()}-${time.getSeconds()}`;
-  fs.renameSync(LOG_FILE_PATH, `logs/${timeString}.log`);
-}
-
 /**
  * Appends through a single file descriptor kept open for the process lifetime.
  * Writes are synchronous on purpose: the panel calls `process.exit()` directly
@@ -34,13 +25,31 @@ function createFileTarget(filePath: string, levels: Logger.LevelConfig): Logger.
 
 const APP_LEVELS: Logger.LevelConfig = { base: Logger.INFO };
 
-// The first target is reggol's own, which prints to stdout with the colour
-// support it detected. Only its timestamp is ours.
-const [stdout] = Logger.targets;
-stdout.showTime = "MM/dd hh:mm:ss";
-stdout.levels = APP_LEVELS;
-Logger.targets.push(createFileTarget(LOG_FILE_PATH, APP_LEVELS));
-Logger.levels = APP_LEVELS;
+const GLOBAL_LOGGER_KEY = "__elementsPanelLogger";
+const shared = (globalThis as typeof globalThis & { [GLOBAL_LOGGER_KEY]?: Logger })[
+  GLOBAL_LOGGER_KEY
+];
 
 /** The panel core's logger. Plugins use `ctx.logger`, which names itself. */
-export const logger = new Logger("app");
+export const logger = shared ?? (() => {
+  // Save the log file separately on each process startup. This guard keeps a
+  // plugin bundle from configuring a second file target when it imports a core
+  // helper that happens to reference this module.
+  if (fs.existsSync(LOG_FILE_PATH)) {
+    const time = new Date();
+    const timeString = `${time.getFullYear()}-${
+      time.getMonth() + 1
+    }-${time.getDate()}_${time.getHours()}-${time.getMinutes()}-${time.getSeconds()}`;
+    fs.renameSync(LOG_FILE_PATH, `logs/${timeString}.log`);
+  }
+  const [stdout] = Logger.targets;
+  stdout.showTime = "MM/dd hh:mm:ss";
+  stdout.levels = APP_LEVELS;
+  Logger.targets.push(createFileTarget(LOG_FILE_PATH, APP_LEVELS));
+  Logger.levels = APP_LEVELS;
+  const value = new Logger("app");
+  (globalThis as typeof globalThis & { [GLOBAL_LOGGER_KEY]?: Logger })[
+    GLOBAL_LOGGER_KEY
+  ] = value;
+  return value;
+})();

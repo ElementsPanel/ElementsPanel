@@ -11,8 +11,8 @@ import uploadManager from "./upload_manager";
  * The upload and download HTTP routes.
  *
  * Both are authorized by a passport the panel registered over the protocol first
- * — the core issues those (`routers/passport_router.ts`) — and the upload routes
- * sit behind the core's upload middleware, which the web server mounts ahead of
+ * — the server plugin issues those (`passport/register`) — and the upload routes
+ * sit behind the runtime plugin's upload middleware, which the web server mounts ahead of
  * the body parser.
  */
 export function registerHttpRoutes() {

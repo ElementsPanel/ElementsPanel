@@ -1,0 +1,8 @@
+{
+  "id": "runtime",
+  "name": "Panel Runtime",
+  "version": "1.0.0",
+  "description": "Initializes panel configuration and exposes shared runtime services to plugins.",
+  "priority": -9000,
+  "backend": "backend/index.cjs"
+}

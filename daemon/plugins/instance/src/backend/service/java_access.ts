@@ -1,7 +1,9 @@
 import { javaManager } from "../runtime";
 
 export function javaManagerSubsystem() {
-  return javaManager();
+  const manager = javaManager();
+  if (!manager) throw new Error("Java runtime management requires the Java plugin.");
+  return manager;
 }
 
 export function hasJavaManagerSubsystem() {

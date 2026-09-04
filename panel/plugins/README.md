@@ -94,14 +94,18 @@ and skipped; the panel keeps running.
 
 `src/app/plugin/context.ts` is the authoritative declaration of all of this.
 
-Three of these are provided by plugins rather than by the core, with `ctx.set()`:
+The panel core is intentionally limited to the Cordis container, plugin loader
+and process logger. Configuration, transport, node connections, authorization,
+monitoring, layout and feature routes are supplied by plugins; the declarations
+in `src/app/plugin/context.ts` are type contracts rather than implementations.
+
+The services below are provided by plugins with `ctx.set()`:
 
 `ctx.set("koa", ...)` is the web server itself. `plugins/server` creates the Koa
 application, mounts the base middleware, serves the static assets and binds the
-listener; the core keeps only its own API routers and mounts them onto
-`ctx.koa.app` through `ctx.inject(["koa"], ...)` once the plugin has provided it.
-The panel therefore listens on nothing without it, which is why `plugins/config`
-refuses to disable it and why almost every plugin injects it. A plugin that
+listener. Feature plugins register their routes through `ctx.koa.router()`, so
+the panel listens on nothing without this plugin. That is why `plugins/config`
+refuses to disable it and why almost every route plugin injects it. A plugin that
 provides a service cannot inject it — see `plugins/server`, which reaches its own
 `koa` with `ctx.inject()` instead.
 

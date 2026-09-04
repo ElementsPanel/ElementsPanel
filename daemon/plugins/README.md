@@ -76,6 +76,11 @@ Set `enabled` to `false` to skip one.
 
 `src/plugin/context.ts` is the authoritative declaration of all of this.
 
+The daemon core is intentionally limited to the Cordis container, plugin loader
+and process logger. Configuration, transport, authentication, instance
+management, file access and monitoring are supplied by plugins; the declarations
+in `src/plugin/context.ts` are type contracts rather than implementations.
+
 `ctx.set("files", ...)` is the file subsystem. `plugins/file` owns the
 sandboxed `FileManager`, the chunked uploads, the `file/*` events and the
 upload/download routes; the core resolves the primitives at use time through
@@ -86,16 +91,15 @@ daemon cannot read or write an instance's files at all.
 The network services are provided by `plugins/server` with
 `ctx.set()` rather than by the core. That plugin creates the Koa application,
 mounts the base middleware, binds the HTTP/HTTPS listener and runs the Socket.io
-server; the core keeps its own HTTP router and its own connection handling and
-mounts them onto `ctx.koa.app` and `ctx.websocket.io` through
-`daemon.inject(...)` once the plugin has provided them. The daemon is therefore
-reachable over nothing without it. A plugin that provides a service cannot inject
+server; this plugin also owns protocol dispatch and connection navigation.
+Feature plugins register HTTP routes and protocol handlers through the services
+it provides. The daemon is therefore unreachable over anything without it. A
+plugin that provides a service cannot inject
 it — see `plugins/server`, which leaves both names out of its own `inject` list.
 
 `ctx.overview.provide(fn)` merges extra fields into the `info/overview` payload
-the panel reads. The core reports what the panel needs to route and describe this
-daemon; anything collected on top of that — the monitoring plugin's CPU and
-memory history — is contributed here.
+the panel reads. The instance plugin supplies instance counts, while the
+monitoring plugin contributes this host's CPU and memory history.
 
 `ctx.tasks.register(taskName, registration)` accepts `requiresInstance: false`
 for a task that builds its own instance rather than acting on an existing one, and

@@ -40,9 +40,9 @@ mounts:
 They are nested under one `/api` router in the order the core used to mount
 them, because several share the `/auth/` path and differ only by method.
 
-`/api/auth/status` and `/api/auth/proxy` stay in the panel core
-(`src/app/routers/panel_status_router.ts`): the frontend reads `/status` during
-bootstrap, before any plugin has loaded.
+`/api/auth/status` is owned by this plugin; `/api/auth/proxy` is provided by the
+panel `server` plugin. The frontend reads `/status` during bootstrap, after the
+foundation plugins have loaded.
 
 ### What the core keeps
 

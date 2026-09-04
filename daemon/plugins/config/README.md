@@ -2,7 +2,7 @@
 
 Remote plugin management for this daemon.
 
-The daemon core owns the mechanism: `ctx.plugins.inventory()` lists every
+The plugin loader exposes the mechanism: `ctx.plugins.inventory()` lists every
 installed plugin, disabled ones included, and `ctx.plugins.setEnabled(id, on)`
 persists the switch in that plugin's `plugin.json` and applies it to the running
 process. This plugin only exposes those two over the protocol, because the page
@@ -14,7 +14,7 @@ that drives them is the panel's plugin manager.
 | `plugin/enabled` | `{ id, enabled }` | the updated record |
 
 Both are reachable only over an authenticated top-level session: the daemon's
-auth middleware (`src/routers/auth_router.ts`) rejects every event other than
+`plugins/auth` middleware rejects every event other than
 `auth` and `stream` until the caller has presented the daemon key. The panel side
 guards the matching routes with `ROLE.ADMIN` on top of that.
 

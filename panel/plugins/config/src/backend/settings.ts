@@ -4,23 +4,12 @@ import type {
   PanelSettingsDeclaration,
   PanelSettingsFormService,
   PanelSettingsSchema
-} from "./context";
+} from "../../../../src/app/plugin";
 
 /**
- * The register of plugin configuration forms.
- *
- * A plugin describes its settings — `ctx.settingsForm.declare({ fields, read,
- * write })` — instead of shipping a component for them. One generic form in
- * `plugins/config` then renders any plugin's configuration, and the same
- * description works for a daemon plugin, whose half of the panel does not exist
- * in the browser at all.
- *
- * `fields()` is called per request rather than once at declaration time: a
- * plugin's titles come from its own translation catalogue, and the panel's
- * language can change while it is running.
- *
- * It is a separate service from `settings` because cordis's `Service` base class
- * already owns the names `config` and `schema`.
+ * The configuration registry belongs to the config plugin. A declaration is
+ * scoped to the plugin that made it, so unloading that plugin removes its form
+ * without leaving stale entries in the settings page.
  */
 export class SettingsFormService extends Service implements PanelSettingsFormService {
   private readonly declarations: Array<{ id: string; declaration: PanelSettingsDeclaration }> = [];
@@ -30,8 +19,6 @@ export class SettingsFormService extends Service implements PanelSettingsFormSer
   }
 
   declare(declaration: PanelSettingsDeclaration) {
-    // `ctx.name` is the calling plugin, so a form is attributed without the
-    // caller repeating its own id.
     const entry = { id: this.ctx.name, declaration };
     return this.ctx.effect(() => {
       this.declarations.push(entry);
@@ -55,7 +42,7 @@ export class SettingsFormService extends Service implements PanelSettingsFormSer
 
   async write(id: string, values: Record<string, unknown>) {
     const entry = this.declarations.find((item) => item.id === id);
-    if (!entry) throw new Error(`Plugin "${id}" has no configuration to write.`);
+    if (!entry) throw new Error(`Plugin has no settings declaration: ${id}`);
     await entry.declaration.write(values);
   }
 }

@@ -26,6 +26,7 @@ export type {
   PanelMiddlewareService,
   PanelOverviewProvider,
   PanelOverviewService,
+  PanelOperationLogger,
   PanelPluginContext,
   PanelPluginsService,
   PanelRemoteService,

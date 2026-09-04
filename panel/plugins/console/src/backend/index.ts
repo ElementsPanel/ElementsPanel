@@ -2,6 +2,7 @@ import Router from "@koa/router";
 import * as fs from "fs-extra";
 import path from "path";
 import { v4 } from "uuid";
+import { configureLayout, LayoutService } from "./layout";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
 
 const SAVE_DIR_PATH = "public/upload_files/";
@@ -76,17 +77,23 @@ function isSafeFileName(fileName: string) {
 export const inject = [
   "koa",
   "i18n",
-  "layout",
-  "settingsForm",
   "middleware",
-  "roles"
+  "roles",
+  "globals"
 ];
 
 export function apply(ctx: PanelPluginContext) {
+  configureLayout(ctx);
+  ctx.plugin(LayoutService);
+  const getLayout = () => {
+    const layout = ctx.get("layout");
+    if (!layout) throw new Error("Panel layout service is unavailable.");
+    return layout;
+  };
   const $t = ctx.i18n.$t;
   const requireAdmin = ctx.middleware.permission({ level: ctx.roles.ADMIN });
 
-  ctx.settingsForm.declare({
+  ctx.inject(["settingsForm"], (settingsCtx) => settingsCtx.settingsForm.declare({
     fields: () => [
       {
         key: "sidebarPosition",
@@ -130,24 +137,25 @@ export function apply(ctx: PanelPluginContext) {
         route: "/console/design"
       }
     ],
-    read: () => readAppearance(ctx.layout.get),
-    write: (values) => writeAppearance(values, ctx.layout.get, ctx.layout.set)
-  });
+    read: () => readAppearance(() => getLayout().get()),
+    write: (values) =>
+      writeAppearance(values, () => getLayout().get(), (config) => getLayout().set(config))
+  }));
 
   const router = ctx.koa.router("/api/overview");
 
   // The frontend shell reads layout before authentication is restored.
   router.get("/layout", async (requestCtx) => {
-    requestCtx.body = ctx.layout.get();
+    requestCtx.body = getLayout().get();
   });
 
   router.post("/layout", requireAdmin, async (requestCtx) => {
-    ctx.layout.set(requestCtx.request.body as IPageLayoutConfig[]);
+    getLayout().set(requestCtx.request.body as IPageLayoutConfig[]);
     requestCtx.body = true;
   });
 
   router.delete("/layout", requireAdmin, async (requestCtx) => {
-    ctx.layout.reset();
+    getLayout().reset();
     requestCtx.body = true;
   });
 

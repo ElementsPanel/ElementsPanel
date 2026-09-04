@@ -1,8 +1,8 @@
 import type { DaemonPluginContext } from "../../../../src/plugin";
 
 // Daemon side of the node plugin. It owns "info/setting", the protocol event
-// the panel node plugin uses to write this node's configuration. The daemon
-// core only reports its configuration through "info/overview".
+// the panel node plugin uses to write this node's configuration. The instance
+// and monitor plugins own the corresponding "info/overview" payload.
 
 // Inlined from mcsmanager-common so the plugin does not depend on how the
 // daemon bundles it.

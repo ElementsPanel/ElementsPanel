@@ -31,7 +31,7 @@ const ENTRY_CANDIDATES = [
   "src/daemon.cjs",
   "src/daemon.mjs"
 ];
-const FOUNDATION_PLUGIN_ID = "i18n";
+const FOUNDATION_PLUGIN_IDS = new Set(["i18n", "runtime"]);
 
 /** A daemon plugin module, as its backend entry exports it. */
 export interface DaemonPluginModule {
@@ -50,6 +50,19 @@ export interface DaemonPluginEntry {
 }
 
 const loaded: DaemonPluginEntry[] = [];
+
+/** Exposes the loader's own registry without pulling it into a plugin bundle. */
+function ensureDaemonPluginService() {
+  if (ctx.get("plugins")) return;
+  ctx.provide("plugins", undefined, true);
+  ctx.set("plugins", {
+    get loaded() {
+      return getLoadedDaemonPlugins();
+    },
+    inventory: getDaemonPluginInventory,
+    setEnabled: setDaemonPluginEnabled
+  });
+}
 
 /**
  * The plugin object a module exports, whether as named exports or as `default`.
@@ -133,6 +146,7 @@ async function installPlugin(plugin: DiscoveredPlugin): Promise<DaemonPluginEntr
 
 /** Discovers, requires and installs every enabled plugin, in manifest order. */
 export async function loadDaemonPlugins(): Promise<readonly DaemonPluginEntry[]> {
+  ensureDaemonPluginService();
   const discovered = discoverPlugins(PLUGINS_DIRECTORY(), {
     entryFields: ENTRY_FIELDS,
     entryCandidates: ENTRY_CANDIDATES,
@@ -146,9 +160,10 @@ export async function loadDaemonPlugins(): Promise<readonly DaemonPluginEntry[]>
   return loaded;
 }
 
-/** Loads the service required before the daemon reads its language setting. */
-export async function loadDaemonFoundationPlugin(id = FOUNDATION_PLUGIN_ID) {
-  if (id !== FOUNDATION_PLUGIN_ID) {
+/** Loads one of the small foundation plugins before feature plugins start. */
+export async function loadDaemonFoundationPlugin(id = "i18n") {
+  ensureDaemonPluginService();
+  if (!FOUNDATION_PLUGIN_IDS.has(id)) {
     throw new Error(`Daemon plugin "${id}" is not a foundational plugin.`);
   }
 
@@ -166,7 +181,8 @@ export async function loadDaemonFoundationPlugin(id = FOUNDATION_PLUGIN_ID) {
   loaded.push(record);
   sortPlugins(loaded);
   if (record.error) throw record.error;
-  if (!record.fork || !ctx.get("i18n")) {
+  const capability = id === "i18n" ? "i18n" : "settings";
+  if (!record.fork || !ctx.get(capability)) {
     throw new Error(`Daemon foundation plugin failed to initialize: ${id}`);
   }
   return record;
@@ -232,8 +248,8 @@ export async function setDaemonPluginEnabled(
   id: string,
   enabled: boolean
 ): Promise<DaemonPluginRecord> {
-  if (id === FOUNDATION_PLUGIN_ID && !enabled) {
-    throw new Error('The foundational daemon plugin "i18n" cannot be disabled.');
+  if (FOUNDATION_PLUGIN_IDS.has(id) && !enabled) {
+    throw new Error(`The foundational daemon plugin "${id}" cannot be disabled.`);
   }
   const plugin = discoverPlugins(PLUGINS_DIRECTORY(), {
     entryFields: ENTRY_FIELDS,

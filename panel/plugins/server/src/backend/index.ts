@@ -1,3 +1,4 @@
+import axios from "axios";
 import fs from "fs-extra";
 import http from "http";
 import https from "https";
@@ -20,9 +21,9 @@ import { protocol } from "./protocol";
 // The panel's web server.
 //
 // Everything about serving HTTP lives here: the Koa application, the base
-// middleware stack, the static assets and the listener itself. The panel core
-// keeps only its API routers and mounts them onto `ctx.koa.app` once this plugin
-// has provided it, so replacing the web server means replacing this directory.
+// middleware stack, the static assets and the listener itself. Feature plugins
+// register their routes through `ctx.koa`, so replacing this plugin replaces the
+// panel's entire HTTP transport.
 //
 // `ctx.koa` is provided from inside `apply()`, which makes it this plugin's:
 // unloading the server takes the Koa service with it, and every plugin that
@@ -45,7 +46,14 @@ const SETTING_KEYS = [
   "reverseProxyHeader"
 ] as const;
 
-export const inject = ["i18n", "settings", "settingsForm", "globals", "plugins"];
+export const inject = [
+  "i18n",
+  "settings",
+  "globals",
+  "plugins",
+  "middleware",
+  "roles"
+];
 
 export function apply(ctx: PanelPluginContext) {
   ctx.i18n.define(localeMessages);
@@ -128,7 +136,7 @@ export function apply(ctx: PanelPluginContext) {
 
   // Everything past this point belongs to the plugins: `KoaService` mounts the
   // two composed stacks a plugin adds middleware and routers to, which is why it
-  // has to come before the static handlers and before the core's own routers.
+  // has to come before the static handlers and before feature plugin routers.
   ctx.plugin(KoaService, app);
 
   const pluginDirectory = path.join(process.cwd(), "plugins");
@@ -153,6 +161,29 @@ export function apply(ctx: PanelPluginContext) {
 
   app.use(koaStatic(path.join(process.cwd(), "public"), { maxAge: STATIC_MAX_AGE }));
 
+  // Generic administrative proxy used by remote integrations. It is transport
+  // plumbing and belongs to the server plugin's HTTP surface.
+  ctx.inject(["koa"], (koaCtx) => {
+    const proxyRouter = koaCtx.koa.router("/api/auth");
+    proxyRouter.all(
+      "/proxy",
+      ctx.middleware.validator({ query: { target: String } }),
+      ctx.middleware.permission({ level: ctx.roles.ADMIN }),
+      async (requestCtx) => {
+        try {
+          const response = await axios.request({
+            method: (requestCtx.query.method as string) || requestCtx.method,
+            url: String(requestCtx.query.target)
+          });
+          if (response.status !== 200) throw new Error("Response code != 200");
+          requestCtx.body = response.data;
+        } catch (error) {
+          requestCtx.body = error;
+        }
+      }
+    );
+  });
+
   // Described, not drawn: the panel's plugin manager renders this declaration
   // with the same generic form it uses for a daemon plugin's configuration, so
   // this plugin ships no browser half at all.
@@ -160,7 +191,7 @@ export function apply(ctx: PanelPluginContext) {
   // Nothing is rebound live — the listener, the proxy mode and the path prefix
   // are all fixed when this plugin starts — so the port's description says that a
   // change takes effect on the next restart, as it always has.
-  ctx.settingsForm.declare({
+  ctx.inject(["settingsForm"], (settingsCtx) => settingsCtx.settingsForm.declare({
     fields: () => [
       {
         key: "httpPort",
@@ -253,12 +284,11 @@ export function apply(ctx: PanelPluginContext) {
       }
       ctx.settings.save();
     }
-  });
+  }));
 
-  // Bound on `ready`, not here: the core mounts its own routers after every
-  // plugin has loaded, and the panel must not accept a request before they are
-  // in place. cordis runs the hook immediately when the container is already
-  // started, so reloading this plugin re-binds rather than going silent.
+  // Bound on `ready`, not here: the panel must not accept a request before every
+  // plugin has registered its routes. Cordis runs the hook immediately when the
+  // container is already started, so reloading this plugin re-binds cleanly.
   let httpServer: http.Server | https.Server | undefined;
 
   ctx.on("ready", () => {
@@ -306,7 +336,10 @@ export function apply(ctx: PanelPluginContext) {
   // The core used to leak the listener until the process exited; it now closes
   // with the plugin, and so on shutdown.
   ctx.on("dispose", () => {
-    httpServer?.close();
+    // A failed `ready` hook can dispose this scope before a listener exists.
+    // Guard the close so unload remains idempotent and does not mask startup
+    // errors with ERR_SERVER_NOT_RUNNING.
+    if (httpServer?.listening) httpServer.close();
     httpServer = undefined;
   });
 }

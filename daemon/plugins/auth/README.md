@@ -40,6 +40,10 @@ That is the same trade the panel makes with `plugins/user`, with one difference
 worth keeping in mind: the panel still has a login page in front of it, while a
 daemon is a bare API surface.
 
+The shared transfer passport store belongs to the runtime foundation. This
+plugin issues upload passports, while `plugins/terminal` consumes stream
+passports; the server plugin only transports those protocol events.
+
 ## Errors
 
 The four `TXT_CODE_auth_router.*` strings are bundled in `src/i18n/` for all

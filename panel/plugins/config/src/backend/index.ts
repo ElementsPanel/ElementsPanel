@@ -1,6 +1,8 @@
 import type Koa from "koa";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
+import type SystemConfig from "../../../../src/app/entity/setting";
 import { localeMessages } from "../i18n";
+import { SettingsFormService } from "./settings";
 
 // Panel side of the plugin manager page. The container owns the mechanism —
 // `ctx.plugins` lists what is installed and persists the enable switch — and this
@@ -19,20 +21,57 @@ const SELF = "config";
  * Turning an essential plugin off would remove the interface or connection
  * that is needed to turn it back on.
  */
-const ESSENTIAL = new Set(["console", "i18n", "server"]);
+const ESSENTIAL = new Set(["console", "i18n", "runtime", "server", "monitor"]);
 
-export const inject = ["koa", "i18n", "middleware", "roles", "plugins", "settingsForm"];
+export const inject = [
+  "koa",
+  "i18n",
+  "middleware",
+  "roles",
+  "plugins",
+  "settings",
+  "identity",
+  "operations"
+];
 
 export function apply(ctx: PanelPluginContext) {
   ctx.i18n.define(localeMessages);
+  ctx.plugin(SettingsFormService);
+  const settingsForm = ctx.get("settingsForm");
+  if (!settingsForm) throw new Error("Panel settings form service is unavailable.");
 
   const router = ctx.koa.router("/api/plugins");
   const requireAdmin = ctx.middleware.permission({ level: ctx.roles.ADMIN });
 
+  // Remaining system settings are administered by this configuration plugin.
+  // Plugin-owned settings are declared by their own backend and handled by the
+  // generic routes below, so the core no longer mounts a settings router.
+  const settingsRouter = ctx.koa.router("/api/overview");
+  settingsRouter.get("/setting", requireAdmin, async (requestCtx) => {
+    requestCtx.body = ctx.settings.config;
+  });
+  settingsRouter.put("/setting", requireAdmin, async (requestCtx) => {
+    const config = (requestCtx.request.body ?? {}) as Partial<SystemConfig>;
+    const current = ctx.settings.config;
+    if (!config || !current) throw new Error(ctx.i18n.$t("TXT_CODE_e4d6cc20"));
+    if (config.gzip != null) current.gzip = config.gzip;
+    if (config.maxCompress != null) current.maxCompress = config.maxCompress;
+    if (config.maxDownload != null) current.maxDownload = config.maxDownload;
+    if (config.zipType != null) current.zipType = config.zipType;
+    if (config.forwardType != null) current.forwardType = Number(config.forwardType);
+    if (config.dataPort != null) current.dataPort = Number(config.dataPort);
+    ctx.operations.log("system_config_change", {
+      operator_ip: requestCtx.ip,
+      operator_name: ctx.identity.of(requestCtx).userName
+    });
+    ctx.settings.save();
+    requestCtx.body = "OK";
+  });
+
   // Everything installed, disabled plugins included: the page needs to list one
   // to be able to enable it again.
   router.get("/", requireAdmin, async (requestCtx) => {
-    const declared = new Set(ctx.settingsForm.declared());
+    const declared = new Set(settingsForm.declared());
     requestCtx.body = ctx.plugins.inventory().map((record) => ({
       ...record,
       // So the page can say "no configurable options" without a round trip.
@@ -43,7 +82,7 @@ export function apply(ctx: PanelPluginContext) {
   // One plugin's form and its current values, as its own backend describes them.
   // `null` when it declared nothing.
   router.get("/settings", requireAdmin, async (requestCtx) => {
-    requestCtx.body = await ctx.settingsForm.read(String(requestCtx.request.query.id ?? ""));
+    requestCtx.body = await settingsForm.read(String(requestCtx.request.query.id ?? ""));
   });
 
   router.put(
@@ -54,7 +93,7 @@ export function apply(ctx: PanelPluginContext) {
       const id = String(requestCtx.request.query.id);
       // The plugin's own `write()` validates: this route knows nothing about
       // what any particular plugin's values mean.
-      await ctx.settingsForm.write(id, (requestCtx.request.body ?? {}) as Record<string, unknown>);
+      await settingsForm.write(id, (requestCtx.request.body ?? {}) as Record<string, unknown>);
       requestCtx.body = true;
     }
   );

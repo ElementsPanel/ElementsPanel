@@ -12,7 +12,7 @@ import type { speedLimit } from "../middleware/limit";
 import type { requestConcurrencyLimiter } from "../middleware/limit";
 import type permission from "../middleware/permission";
 import type validator from "../middleware/validator";
-import type { operationLogger } from "../service/operation_logger";
+import type { OperationLoggerItem, OperationLoggerItemPayload } from "../../types/operation_logger";
 import type {
   AuthStats,
   RequestGuard,
@@ -38,7 +38,7 @@ import type {
  *
  * The declarations below are the API documentation: only `import type` here, so
  * this module stays a leaf that core code can import without a cycle. The
- * runtime values are wired in `./install.ts`.
+ * runtime values are provided by the `plugins/runtime` foundation.
  */
 export const ctx = new Context();
 
@@ -162,7 +162,7 @@ export interface PanelI18nService {
  */
 export interface PanelKoaService {
   readonly app: Koa;
-  /** Adds a middleware, ahead of the core routers. */
+  /** Adds a middleware, ahead of feature-plugin routers. */
   use(middleware: Koa.Middleware): () => void;
   /** Creates a router owned by the calling plugin and mounts it. */
   router(prefix?: string): Router;
@@ -270,12 +270,35 @@ export type PanelOverviewProvider = () =>
 
 export interface PanelOverviewService {
   /**
-   * Contribute extra fields to `GET /api/overview`. The core reports only what
-   * the whole panel reads that route for; anything collected purely to be
-   * displayed lives in a plugin and disappears with it.
+   * Contribute extra fields to an overview payload. The owning feature plugin
+   * decides which base fields it serves; anything collected purely for display
+   * lives in a plugin and disappears with it.
    */
   provide(provider: PanelOverviewProvider): () => void;
   collect(): Promise<Record<string, unknown>>;
+}
+
+/** Operation records are owned by the monitor plugin and shared by feature plugins. */
+export interface PanelOperationLogger {
+  log<T extends keyof OperationLoggerItemPayload>(
+    type: T,
+    payload: Omit<OperationLoggerItemPayload[T], "operation_id" | "operation_time" | "operation_level">,
+    level?: "info" | "warning" | "error"
+  ): string;
+  info<T extends keyof OperationLoggerItemPayload>(
+    type: T,
+    payload: Omit<OperationLoggerItemPayload[T], "operation_id" | "operation_time" | "operation_level">
+  ): string;
+  warning<T extends keyof OperationLoggerItemPayload>(
+    type: T,
+    payload: Omit<OperationLoggerItemPayload[T], "operation_id" | "operation_time" | "operation_level">
+  ): string;
+  error<T extends keyof OperationLoggerItemPayload>(
+    type: T,
+    payload: Omit<OperationLoggerItemPayload[T], "operation_id" | "operation_time" | "operation_level">
+  ): string;
+  get(limit?: number): Promise<OperationLoggerItem[]>;
+  getByInstance(instanceId: string, daemonId: string, limit?: number): Promise<OperationLoggerItem[]>;
 }
 
 /** What is installed and what is loaded, plus the switch that decides. */
@@ -295,16 +318,17 @@ export interface PanelPluginsService {
 
 declare module "cordis" {
   interface Context {
-    // Core services, always present.
+    // Shared services supplied by the runtime foundation before feature plugins load.
     settings: PanelSettingsService;
-    layout: PanelLayoutService;
-    settingsForm: PanelSettingsFormService;
     storage: typeof Storage;
     i18n: PanelI18nService;
     middleware: PanelMiddlewareService;
     roles: typeof ROLE;
     identity: PanelIdentityService;
-    operations: typeof operationLogger;
+    // Feature services are provided by their owning plugins.
+    layout: PanelLayoutService;
+    settingsForm: PanelSettingsFormService;
+    operations: PanelOperationLogger;
     /** User-instance lookup provided by the panel `instance` plugin. */
     instances: {
       getByUuid(uuid: string, targetDaemonId?: string, advanced?: boolean): Promise<any>;

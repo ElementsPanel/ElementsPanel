@@ -11,15 +11,21 @@ interface IMission {
 class MissionPassport {
   // temporary task passport list
   public readonly missions = new Map<string, IMission>();
+  private readonly cleanupTimer: NodeJS.Timeout;
 
   constructor() {
     // Set up to check the task expiration every hour
-    setInterval(() => {
+    this.cleanupTimer = setInterval(() => {
       const t = new Date().getTime();
       this.missions.forEach((m, k) => {
         if (t > m.end || m.isDeleted) this.missions.delete(k);
       });
     }, 1000 * 60);
+  }
+
+  dispose() {
+    clearInterval(this.cleanupTimer);
+    this.missions.clear();
   }
 
   // register task passport

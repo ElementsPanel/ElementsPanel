@@ -15,8 +15,8 @@ import { localeMessages } from "../i18n";
 // answering every event to anyone who can reach the port, which is the same trade
 // the panel makes with `plugins/user`.
 //
-// The session type is this plugin's own: `service/mission_passport.ts` keeps the
-// stream login and the upload passports, because those are the core's.
+// The session type is this plugin's own; stream and upload passports are exposed
+// by the runtime transfer service.
 
 /** How long a connection may stay unauthenticated before it is hung up on. */
 const AUTH_TIMEOUT = 6000;
@@ -24,13 +24,34 @@ const AUTH_TIMEOUT = 6000;
 /** What this plugin marks a session it has authenticated with. */
 const LOGIN_BY_TOP_LEVEL = "TOP_LEVEL";
 
-export const inject = ["protocol", "i18n", "settings"];
+export const inject = ["protocol", "i18n", "settings", "transfer"];
 
 export function apply(ctx: DaemonPluginContext) {
   ctx.i18n.define(localeMessages);
 
   const $t = ctx.i18n.$t;
   const protocol = ctx.protocol;
+
+  // Temporary upload/download passports are part of authentication: they are
+  // issued only after the panel has authenticated and are consumed by the file
+  // and terminal plugins. Keeping this event here leaves the server plugin
+  // responsible only for transport.
+  const ONE_HOUR_TIME = 3600000;
+  protocol.on("passport/register", (routerCtx, data) => {
+    const start = Date.now();
+    const end = start + ONE_HOUR_TIME;
+    if (!data?.name || !data?.password) {
+      throw new Error($t("TXT_CODE_passport_router.registerErr"));
+    }
+    ctx.transfer.passports.registerMission(data.password, {
+      name: data.name,
+      parameter: data.parameter,
+      count: data.count,
+      start,
+      end
+    });
+    protocol.response(routerCtx, true);
+  });
 
   const isAuthenticated = (routerCtx: RouterContext) =>
     routerCtx.session.key === ctx.settings.config.key &&

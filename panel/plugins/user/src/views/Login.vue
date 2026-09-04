@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import type { LayoutCard } from "@/types";
 import LoginCard from "../widgets/LoginCard.vue";
 import { useScreen } from "@/hooks/useScreen";
 import LayoutContainer from "@/views/LayoutContainer.vue";
-
-defineProps<{
-  card: LayoutCard;
-}>();
 
 const { isPhone } = useScreen();
 

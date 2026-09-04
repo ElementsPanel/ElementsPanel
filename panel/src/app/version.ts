@@ -1,7 +1,6 @@
 import * as fs from "fs-extra";
 import { GlobalVariable } from "mcsmanager-common";
-import storage from "./common/system_storage";
-import { getFrontendLayoutConfig } from "./service/frontend_layout";
+import path from "path";
 import { logger } from "./service/log";
 
 interface IPackageInfo {
@@ -25,13 +24,15 @@ export function initVersionManager() {
         GlobalVariable.set("version", data.version);
         currentVersion = String(data.version);
       }
+      GlobalVariable.set("specifiedDaemonVersion", data.daemonVersion ?? "1.0.0");
     }
   } catch (error: any) {
     logger.error("Version Check failure:", error);
   }
 
-  if (currentVersion && storage.fileExists(VERSION_LOG_TEXT_NAME)) {
-    const LastLaunchedVersion = storage.readFile(VERSION_LOG_TEXT_NAME);
+  const versionLogPath = path.join(process.cwd(), "data", VERSION_LOG_TEXT_NAME);
+  if (currentVersion && fs.existsSync(versionLogPath)) {
+    const LastLaunchedVersion = fs.readFileSync(versionLogPath, "utf8");
     const lastVersionNumber = Number(LastLaunchedVersion.split(".").slice(0, 2).join(""));
 
     if (LastLaunchedVersion && LastLaunchedVersion != currentVersion && !isNaN(lastVersionNumber)) {
@@ -39,11 +40,10 @@ export function initVersionManager() {
       GlobalVariable.set("lastLaunchedVersion", lastVersionNumber);
       GlobalVariable.set("versionChange", currentVersion);
 
-      // reload layout
-      getFrontendLayoutConfig();
     }
   }
-  storage.writeFile(VERSION_LOG_TEXT_NAME, currentVersion);
+  fs.ensureDirSync(path.dirname(versionLogPath));
+  fs.writeFileSync(versionLogPath, currentVersion, "utf8");
 }
 
 export function getVersion(): string {

@@ -14,8 +14,8 @@ import type { DaemonKoaService } from "../../../../src/plugin";
  * routes disappear when it unloads: each plugin gets its own `Router` instead of
  * sharing a mutable one.
  *
- * Middleware runs before routers, and the core's own router is mounted after
- * both, which is the order the daemon had before any of this was disposable.
+ * Middleware runs before routers; every router is contributed by a feature
+ * plugin and removed with that plugin's scope.
  *
  * The service is registered from inside `apply()`, so it belongs to this
  * plugin's scope and leaves with it.

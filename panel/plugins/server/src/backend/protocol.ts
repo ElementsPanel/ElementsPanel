@@ -36,8 +36,8 @@ export function protocol(ctx: PanelPluginContext) {
       );
     }
     requestCtx.response.set("X-Powered-By", "MCSManager");
-    // The core's `getVersion()` reads exactly this, and `ctx.globals` is the
-    // same store, so the plugin needs nothing from the core to report it.
+    // The runtime foundation records the version in the shared globals store;
+    // the server only exposes it as a response header.
     requestCtx.response.set("X-Version", ctx.globals.get("version", "Unknown"));
 
     // Frontend plugin manifests are regular JSON resources, not API responses.

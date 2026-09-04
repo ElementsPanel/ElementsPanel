@@ -6,23 +6,24 @@ import koaBody from "koa-body";
 import { removeTrail } from "mcsmanager-common";
 import path from "path";
 import { Server } from "socket.io";
+import { DAEMON_INDEX_HTML } from "../../../../src/const/index_html";
 import type { DaemonPluginContext } from "../../../../src/plugin";
 import { localeMessages } from "../i18n";
 import { KoaService } from "./koa";
+import { addGlobalSocket, delGlobalSocket, navigation, ProtocolService } from "./protocol";
 
 // The daemon's network layer.
 //
 // Everything the daemon is reachable over lives here: the Koa application and
-// its base middleware, the HTTP/HTTPS listener, and the Socket.io server the
-// panel actually talks to. The core keeps its own HTTP router and its own
-// connection handling and mounts both onto what this plugin provides, so
-// replacing the daemon's transport means replacing this directory.
+// its base middleware, the HTTP/HTTPS listener, the protocol handlers and
+// the Socket.io server the panel actually talks to. Replacing this plugin
+// replaces the daemon's transport and its protocol entry point.
 //
 // `ctx.koa` and `ctx.websocket` are set from inside `apply()`, which makes them
 // this plugin's: they leave when it unloads. That is also why neither may appear
 // in this plugin's own `inject` list.
 
-export const inject = ["i18n", "settings", "settingsForm", "middleware"];
+export const inject = ["i18n", "settings", "middleware"];
 
 export function apply(ctx: DaemonPluginContext) {
   ctx.i18n.define(localeMessages);
@@ -34,7 +35,7 @@ export function apply(ctx: DaemonPluginContext) {
   // plugin manager renders this declaration with the same generic form it uses
   // for its own plugins. Nothing here is rebound live — the listener is fixed
   // when this plugin starts — so the port's description says to restart.
-  ctx.settingsForm.declare({
+  ctx.inject(["settingsForm"], (settingsCtx) => settingsCtx.settingsForm.declare({
     fields: () => [
       {
         key: "port",
@@ -100,7 +101,7 @@ export function apply(ctx: DaemonPluginContext) {
       if (values.sslKeyPath != null) config.sslKeyPath = String(values.sslKeyPath);
       ctx.settings.save();
     }
-  });
+  }));
 
   const app = new Koa();
 
@@ -114,8 +115,8 @@ export function apply(ctx: DaemonPluginContext) {
 
   // Both ahead of koa-body: the rate limit has to wrap the request stream before
   // anything reads it, and an unauthorized upload has to be rejected before the
-  // body parser writes it to disk. The daemon core owns the upload subsystem
-  // they consult, so it owns the middleware and hands it over as a service.
+  // body parser writes it to disk. The runtime foundation owns the upload
+  // subsystem they consult and hands the middleware over as a service.
   app.use(ctx.middleware.uploadSpeedLimit);
   app.use(ctx.middleware.uploadFileCheck);
 
@@ -164,10 +165,18 @@ export function apply(ctx: DaemonPluginContext) {
     });
   }
 
-  // Everything past this point belongs to the plugins: `KoaService` mounts the
-  // two composed stacks a plugin adds middleware and routers to, which is why it
-  // has to come before the core's own router.
+  // Everything past this point belongs to plugins: `KoaService` mounts the two
+  // composed stacks for middleware and routers.
   ctx.plugin(KoaService, app);
+  ctx.plugin(ProtocolService);
+
+  ctx.inject(["koa"], (koaCtx) => {
+    const rootRouter = koaCtx.koa.router();
+    rootRouter.all("/", async (requestCtx) => {
+      requestCtx.body = DAEMON_INDEX_HTML;
+      requestCtx.status = 200;
+    });
+  });
 
   let httpServer: http.Server | https.Server;
   try {
@@ -208,15 +217,22 @@ export function apply(ctx: DaemonPluginContext) {
     maxHttpBufferSize: 1e8
   });
 
-  // Handed over before anything listens, so the core has its connection handler
-  // attached by the time the first client can arrive.
+  // Handed over before anything listens; this plugin attaches its connection
+  // handler before the first client can arrive.
   ctx.set("websocket", { io });
 
-  // Bound on `ready`, not here: the core mounts its own HTTP router and its
-  // connection handling after every plugin has loaded, and the daemon must not
-  // accept a request before they are in place. cordis runs the hook immediately
-  // when the container is already started, so reloading this plugin re-binds
-  // rather than going silent.
+  io.on("connection", (socket) => {
+    addGlobalSocket(socket);
+    navigation(socket, ctx.logger);
+    socket.on("error", (error) => ctx.logger.error("Connection(): Socket.io Error:", error));
+    socket.on("disconnect", () => {
+      delGlobalSocket(socket);
+      for (const name of socket.eventNames()) socket.removeAllListeners(name);
+    });
+  });
+
+  // Bound on `ready`, so the daemon does not accept a request before the plugin
+  // router, protocol handlers and every dependent plugin are in place.
   ctx.on("ready", () => {
     httpServer.listen(config.port, config.ip);
 
@@ -238,6 +254,9 @@ export function apply(ctx: DaemonPluginContext) {
   // the plugin, and so on shutdown.
   ctx.on("dispose", () => {
     io.close();
-    httpServer.close();
+    // `dispose` can run after a failed `ready` hook, before the listener ever
+    // started. Node throws ERR_SERVER_NOT_RUNNING in that case, which would
+    // mask the original startup error and make plugin unload non-idempotent.
+    if (httpServer.listening) httpServer.close();
   });
 }

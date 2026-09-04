@@ -1,12 +1,7 @@
 import { Service, type Context } from "cordis";
-import type { PanelOverviewProvider, PanelOverviewService } from "./context";
+import type { PanelOverviewProvider, PanelOverviewService } from "../../../../../src/app/plugin";
 
-/**
- * `GET /api/overview` reports what the whole panel needs: the nodes, the panel
- * process and the host it runs on. Anything beyond that — the CPU and request
- * history the monitoring page charts, for instance — is contributed here by a
- * plugin, so the core neither collects nor knows about it.
- */
+/** Extension point for the monitor overview response. */
 export class OverviewService extends Service implements PanelOverviewService {
   private readonly providers = new Set<PanelOverviewProvider>();
 
@@ -21,10 +16,6 @@ export class OverviewService extends Service implements PanelOverviewService {
     });
   }
 
-  /**
-   * Merge every provider's fields into the payload. A provider that throws is
-   * skipped and reported: one broken extra must not take the whole page down.
-   */
   async collect() {
     const extras: Record<string, unknown> = {};
     for (const provider of this.providers) {

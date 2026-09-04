@@ -23,10 +23,15 @@ import uploadManager from "./upload_manager";
 // dependency lazy avoids a startup cycle: the instance plugin depends on the
 // file primitives, while the file routes only need instances at request time.
 export const inject = {
-  required: ["i18n", "settings", "protocol", "archive", "transfer", "koa"],
+  i18n: { required: true },
+  settings: { required: true },
+  protocol: { required: true },
+  archive: { required: true },
+  transfer: { required: true },
+  koa: { required: true },
   // File routes resolve the instance subsystem lazily to avoid a startup
   // cycle: the instance plugin requires the file service in return.
-  optional: ["instances"]
+  instances: { required: false }
 };
 
 export function apply(ctx: DaemonPluginContext) {

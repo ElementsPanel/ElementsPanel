@@ -4,8 +4,8 @@ The panel's web server.
 
 Everything about serving HTTP lives in this plugin: the Koa application, the base
 middleware stack, the static assets and the listener itself. It is the plugin
-that provides `ctx.koa`, so every route in the panel — the core's API routers
-included — is mounted on an application this plugin created.
+that provides `ctx.koa`, so every route in the panel is mounted on an
+application this plugin created.
 
 That is why it loads first (`priority: 10`) and why `"koa"` must never appear in
 its own `inject` list: a plugin cannot wait for a service it is the one to
@@ -24,12 +24,17 @@ routes — it resolves them with `ctx.inject([...], scoped => ...)` instead.
 | `KoaService` | The two composed stacks every other plugin's middleware and routers go into. |
 | plugin frontends | `/plugins/manifest.json` and `/plugins/<folder>/frontend/`. |
 | `public/` | The compiled panel. |
-| core routers | Mounted by `panel/src/app.ts` through `ctx.inject(["koa"], ...)`, so they stay last. |
+| plugin routers | Mounted through `ctx.koa.router()` and removed with the owning plugin. |
 
 The listener is bound on the container's `ready` hook rather than during
-`apply()`, so it starts accepting requests only once the core has mounted its own
-routers — and it is closed again on `dispose`, when the plugin unloads or the
-panel shuts down.
+`apply()`, so it starts accepting requests only once every plugin has registered
+its routes. It is closed again on `dispose`, when the plugin unloads or the panel
+shuts down.
+
+The panel executable no longer mounts a separate core router after this plugin
+loads. All HTTP routes are registered by plugins through `ctx.koa.router()` and
+are removed with their owning scope; this plugin only owns the transport and
+the shared response middleware.
 
 ## Disabling it
 

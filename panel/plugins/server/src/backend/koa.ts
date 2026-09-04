@@ -14,8 +14,8 @@ import type { PanelKoaService } from "../../../../src/app/plugin";
  * routes disappear when it unloads: each plugin gets its own `Router` instead of
  * sharing a mutable one.
  *
- * Middleware runs before routers, and the core's own routers are mounted after
- * both, which is the order the panel had before any of this was disposable.
+ * Middleware runs before routers. Every router is contributed by a feature
+ * plugin and removed with that plugin's scope.
  *
  * The service is registered from inside `apply()`, so it belongs to this
  * plugin's scope: unloading the server takes `ctx.koa` with it, and every plugin

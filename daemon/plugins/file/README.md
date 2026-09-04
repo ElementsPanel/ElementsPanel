@@ -26,19 +26,19 @@ creation and update, the Java manager, SteamCMD and the mod service all go
 through it, and so does `ctx.instances.fileManager`, which `plugins/market` uses
 to write a package's configuration. The core declares only the shape it needs
 (`DaemonFilesService` in `src/plugin/context.ts`) and resolves it at use time
-through `src/service/file_access.ts`, so removing the plugin leaves those callers
+through the context service, so removing the plugin leaves those callers
 answering with a clear error rather than breaking the build.
 
 ## What it needs
 
-`ctx.transfer` is the counterpart: the core hands over the passports that
-authorize a transfer (`routers/passport_router.ts` issues them and
+`ctx.transfer` is the counterpart: the runtime plugin hands over the passports that
+authorize a transfer (`plugins/server` registers the passport protocol event and
 `plugins/terminal` checks the stream passport), the URL downloader the Java manager
 and mod service share, and the rate-limited file sender. `ctx.archive` carries the
 compression helpers, extended here with `compress`, `decompress` and
 `listArchiveEntries`.
 
-The upload routes sit behind the core's upload middleware, which the web server
+The upload routes sit behind the runtime plugin's upload middleware, which the web server
 mounts ahead of the body parser. Without this plugin that middleware rejects
 every multipart request, because there is nothing left to receive one.
 

@@ -32,8 +32,8 @@ const ENTRY_CANDIDATES = [
   "src/panel.cjs",
   "src/panel.mjs"
 ];
-const FOUNDATION_PLUGIN_ID = "i18n";
-const ESSENTIAL_PLUGIN_IDS = new Set([FOUNDATION_PLUGIN_ID, "console"]);
+const FOUNDATION_PLUGIN_IDS = new Set(["i18n", "runtime"]);
+const ESSENTIAL_PLUGIN_IDS = new Set(["i18n", "runtime", "console"]);
 
 /** A panel plugin module, as its backend entry exports it. */
 export interface PanelPluginModule {
@@ -62,6 +62,20 @@ export interface PanelFrontendPluginEntry {
 }
 
 const loaded: LoadedPanelPlugin[] = [];
+
+/** Exposes the loader's own registry without pulling it into a plugin bundle. */
+function ensurePanelPluginService() {
+  if (ctx.get("plugins")) return;
+  ctx.provide("plugins", undefined, true);
+  ctx.set("plugins", {
+    get loaded() {
+      return getLoadedPanelPlugins();
+    },
+    frontendManifest: getPanelFrontendManifest,
+    inventory: getPanelPluginInventory,
+    setEnabled: setPanelPluginEnabled
+  });
+}
 
 /**
  * The plugin object a module exports, whether as named exports or as `default`.
@@ -142,6 +156,7 @@ async function installPlugin(plugin: DiscoveredPlugin): Promise<LoadedPanelPlugi
 
 /** Discovers, requires and installs every enabled plugin, in manifest order. */
 export async function loadPanelPlugins(): Promise<readonly LoadedPanelPlugin[]> {
+  ensurePanelPluginService();
   const discovered = discoverPlugins(PLUGINS_DIRECTORY(), {
     entryFields: ENTRY_FIELDS,
     entryCandidates: ENTRY_CANDIDATES,
@@ -155,9 +170,10 @@ export async function loadPanelPlugins(): Promise<readonly LoadedPanelPlugin[]> 
   return loaded;
 }
 
-/** Loads the service required before the panel can read its language setting. */
-export async function loadPanelFoundationPlugin(id = FOUNDATION_PLUGIN_ID) {
-  if (id !== FOUNDATION_PLUGIN_ID) {
+/** Loads one of the small foundation plugins before feature plugins start. */
+export async function loadPanelFoundationPlugin(id = "i18n") {
+  ensurePanelPluginService();
+  if (!FOUNDATION_PLUGIN_IDS.has(id)) {
     throw new Error(`Panel plugin "${id}" is not a foundational plugin.`);
   }
 
@@ -175,7 +191,8 @@ export async function loadPanelFoundationPlugin(id = FOUNDATION_PLUGIN_ID) {
   loaded.push(record);
   sortPlugins(loaded);
   if (record.error) throw record.error;
-  if (!record.fork || !ctx.get("i18n")) {
+  const capability = id === "i18n" ? "i18n" : "settings";
+  if (!record.fork || !ctx.get(capability)) {
     throw new Error(`Panel foundation plugin failed to initialize: ${id}`);
   }
   return record;

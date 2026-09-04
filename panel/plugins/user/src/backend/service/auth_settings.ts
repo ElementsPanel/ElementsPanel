@@ -67,7 +67,6 @@ export async function saveAuthSettings() {
 
 /** Public shape for the login page: never exposes client secrets. */
 export function publicSsoConfig() {
-  if (!settings.ssoEnabled) return null;
   return {
     enabled: settings.ssoEnabled,
     onlyMode: settings.ssoOnlyMode,

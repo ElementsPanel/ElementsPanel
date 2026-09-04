@@ -41,12 +41,21 @@ const SILENT = {
 
 export const logger = (): PluginLogger => core().logger ?? SILENT;
 export const settings = () => core().settings;
-export const instances = () => core().instances;
 export const protocol = () => core().protocol;
 export const archive = () => core().archive;
 export const transfer = () => core().transfer;
 export const $t = (key: string, options?: any): string =>
-  core().i18n.$t(key, options) as unknown as string;
+  (core().get("i18n")?.$t(key, options) ?? key) as unknown as string;
+
+/**
+ * The file plugin can load before the instance plugin. `get()` avoids Cordis'
+ * undeclared-property warning while keeping the existing lazy dependency.
+ */
+export const instances = () => {
+  const service = core().get("instances");
+  if (!service) throw new Error("Instance access requires the daemon instance plugin.");
+  return service;
+};
 
 /**
  * How many file tasks are running across the whole daemon. It used to be

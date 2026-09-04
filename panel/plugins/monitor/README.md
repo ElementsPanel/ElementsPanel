@@ -4,11 +4,11 @@ Owns the `/overview` page — the panel's data monitoring view — and everythin
 collected purely to draw it: the panel host's CPU/memory history, the API request
 rate, the status tiles and the panel-wide operation log.
 
-`GET /api/overview` itself stays in the panel core. Half the panel reads it for
+`GET /api/overview` is owned by this plugin. Half the panel reads it for
 the node list, the panel process and the host it runs on — `useOverviewInfo()` is
 the single shared fetch behind the node plugin's cards, the instance manager
-buttons and the node picker. This plugin _contributes to_ that response rather
-than owning it.
+buttons and the node picker. Additional fields are contributed through the
+overview registry so each feature can own the data it displays.
 
 ## Backend
 
@@ -30,13 +30,14 @@ request rate exists only to be charted. Koa runs the plugin's middleware for
 every request regardless of where in the chain it was mounted, so the count is
 complete either way.
 
-`GET /api/monitor/operation_logs` replaces the core's
-`GET /api/overview/operation_logs`. The **per-instance** log routes
+`GET /api/monitor/operation_logs` is the panel-wide operation log endpoint.
+The **per-instance** log routes
 (`/api/overview/instance_operation_logs`, `/instance_crash`,
-`/instance_auto_restart`) stay in the core because terminal lifecycle reporting
-still uses them. The monitor plugin owns the per-instance log viewer and only
-calls the read route while its injected action is installed. The logger itself is core
-infrastructure — every router writes to it.
+`/instance_auto_restart`) are registered by this plugin, so disabling monitor
+removes all operation-log HTTP behavior together. The monitor plugin owns the
+per-instance log viewer and feature plugins write through its operation logger.
+No operation-log implementation remains in the panel core; feature plugins use
+the monitor service exposed on `ctx.operations`.
 
 `dispose()` stops both samplers, so unloading the plugin leaves no timers behind.
 

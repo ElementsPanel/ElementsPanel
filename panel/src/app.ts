@@ -1,20 +1,13 @@
-import RedisStorage from "./app/common/storage/redis_storage";
-import Storage from "./app/common/storage/sys_storage";
-import { $t } from "./app/i18n";
-import { mountRouters } from "./app/index";
 import { ctx as panel } from "./app/plugin/context";
-import { installPanelPluginServices } from "./app/plugin/install";
 import { loadPanelFoundationPlugin, loadPanelPlugins } from "./app/plugin/loader";
 import { logger } from "./app/service/log";
-import versionAdapter from "./app/service/version_adapter";
-import { initSystemConfig, saveSystemConfig, systemConfig } from "./app/setting";
-import { getVersion, initVersionManager } from "./app/version";
 
 async function processExit() {
   try {
+    const translate = panel.get("i18n")?.$t;
     await panel.stop();
-    logger.warn($t("TXT_CODE_cea5dba1"));
-    logger.warn($t("TXT_CODE_b0aa2db9"));
+    logger.warn(translate?.("TXT_CODE_cea5dba1") ?? "Panel has been stopped.");
+    logger.warn(translate?.("TXT_CODE_b0aa2db9") ?? "Goodbye.");
   } catch (err) {
     logger.error(err);
   } finally {
@@ -39,51 +32,16 @@ async function main() {
   // locale, so translation must exist before the configuration is read.
   await loadPanelFoundationPlugin("i18n");
 
-  // load global configuration file
-  initSystemConfig();
-
-  if (systemConfig && systemConfig?.redisUrl?.length != 0) {
-    await RedisStorage.initialize(systemConfig.redisUrl);
-    Storage.setStorageType(Storage.TYPE.REDIS);
-  }
-
-  initVersionManager();
-  const VERSION = getVersion();
-
-  console.log(`
- _____ _                   _       _____             _
-|   __| |___ _____ ___ ___| |_ ___|  _  |___ ___ ___| |
-|   __| | -_|     | -_|   |  _|_ -|   __| .'|   | -_| |
-|_____|_|___|_|_|_|___|_|_|_| |___|__|  |__,|_|_|___|_|
-
- + Copyright ${new Date().getFullYear()} ElementsPanel
- + Based on MCSManager
- + Version ${VERSION}
-`);
-
-  // Detect whether the configuration file is from an older version and update it if so.
-  versionAdapter.detectConfig();
+  // Runtime owns configuration, storage and shared middleware. It is loaded
+  // before feature plugins so their dependencies are available through ctx.
+  await loadPanelFoundationPlugin("runtime");
 
   // The plugin container owns everything past this point: services first, so
   // that a plugin can use them, then the plugins themselves. Two of the panel's
   // foundations are plugins now — the web server (`ctx.koa`, `plugins/server`)
   // and the daemon connections (`ctx.remote`, `plugins/node`) — and both are
   // established during this load, before anything can ask for them.
-  installPanelPluginServices();
   await loadPanelPlugins();
-
-  // Authentication settings migrate from the legacy SystemConfig during
-  // plugin loading. Persist the core config only after that migration has had
-  // a chance to read the old fields, which also removes those legacy keys.
-  if (systemConfig) saveSystemConfig(systemConfig);
-
-  // The core's own routers go on last, after every plugin's middleware and
-  // routers and after the static handlers — the order the panel had before any
-  // of this was disposable. Reloading the web server hands us a new Koa
-  // application, and this re-runs against it.
-  panel.inject(["koa"], (scoped) => {
-    mountRouters(scoped.koa.app);
-  });
 
   process.on("uncaughtException", function (err) {
     logger.error(`ERROR (uncaughtException):`, err);

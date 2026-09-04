@@ -1,4 +1,5 @@
 import type { PanelPluginContext } from "../../../../src/app/plugin";
+import Koa from "koa";
 import { localeMessages } from "../i18n";
 import { createRequestGuard } from "./guard";
 import createAuthSettingsRouter, {
@@ -27,6 +28,7 @@ export const inject = [
   "settingsForm",
   "middleware",
   "roles",
+  "identity",
   "instances",
   "operations",
   "globals"
@@ -45,6 +47,27 @@ export async function apply(ctx: PanelPluginContext) {
   // From here on the whole panel is guarded. Unloading this plugin removes the
   // service, and with it the policy, which is the documented behaviour.
   ctx.set("guard", createRequestGuard());
+
+  // Authentication status is part of the user contract and is available before
+  // any account page is rendered. Keeping it here removes the last auth route
+  // from the panel core while preserving `/api/auth/status`.
+  const statusRouter = ctx.koa.router("/api/auth");
+  statusRouter.all(
+    "/status",
+    ctx.middleware.permission({ token: false, level: null, speedLimit: false }),
+    async (requestCtx: Koa.ParameterizedContext) => {
+      const accessPolicy = ctx.identity.accessPolicy;
+      requestCtx.body = {
+        versionChange: ctx.globals.get("versionChange", null),
+        language: ctx.settings.config.language || null,
+        settings: {
+          canFileManager: accessPolicy.canFileManager,
+          allowChangeCmd: accessPolicy.allowChangeCmd,
+          allowJavaManager: accessPolicy.allowJavaManager
+        }
+      };
+    }
+  );
 
   // Nested under a single /api router, in the same order the core used to mount
   // them: several of these share the "/auth/" path and only differ by method,

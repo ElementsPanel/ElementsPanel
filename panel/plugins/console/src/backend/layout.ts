@@ -1,12 +1,28 @@
 import fs from "fs-extra";
-import { GlobalVariable } from "mcsmanager-common";
 import path from "path";
 import { v4 } from "uuid";
-import storage from "../common/system_storage";
-import { SAVE_DIR_PATH } from "../const";
-import { $t as t } from "../i18n";
+import { Service, type Context } from "cordis";
+import type { PanelLayoutService, PanelPluginContext } from "../../../../src/app/plugin";
 
-const LAYOUT_CONFIG_NAME = "layout.json";
+const SAVE_DIR_PATH = "public/upload_files/";
+const DATA_DIR = path.join(process.cwd(), "data");
+const LAYOUT_FILE = path.join(DATA_DIR, "layout.json");
+let translate: (key: string) => string = (key) => key;
+let globals: PanelPluginContext["globals"] | undefined;
+
+export function configureLayout(ctx: PanelPluginContext) {
+  translate = (key) => String(ctx.i18n.$t(key));
+  globals = ctx.globals;
+}
+
+export class LayoutService extends Service implements PanelLayoutService {
+  constructor(ctx: Context) {
+    super(ctx, "layout", true);
+  }
+  get() { return getFrontendLayoutConfig(); }
+  set(config: IPageLayoutConfig[]) { setFrontendLayoutConfig(config); }
+  reset() { resetFrontendLayoutConfig(); }
+}
 
 function getRandomId() {
   return v4();
@@ -14,11 +30,11 @@ function getRandomId() {
 
 export function getFrontendLayoutConfig(): string {
   let layoutConfig: string = "";
-  if (storage.fileExists(LAYOUT_CONFIG_NAME)) {
-    layoutConfig = storage.readFile(LAYOUT_CONFIG_NAME);
+  if (fs.existsSync(LAYOUT_FILE)) {
+    layoutConfig = fs.readFileSync(LAYOUT_FILE, "utf8");
   }
   if (layoutConfig) {
-    if (GlobalVariable.get("versionChange")) {
+    if (globals?.get("versionChange")) {
       const latestLayoutConfig = getDefaultFrontendLayoutConfig();
       const currentLayoutConfig = JSON.parse(layoutConfig) as IPageLayoutConfig[];
       for (const page of latestLayoutConfig) {
@@ -26,7 +42,7 @@ export function getFrontendLayoutConfig(): string {
           currentLayoutConfig.push(page);
         }
       }
-      GlobalVariable.set("versionChange", null);
+      globals?.set("versionChange", null);
       setFrontendLayoutConfig(currentLayoutConfig);
       return JSON.stringify(currentLayoutConfig);
     }
@@ -37,11 +53,12 @@ export function getFrontendLayoutConfig(): string {
 }
 
 export function setFrontendLayoutConfig(config: IPageLayoutConfig[]) {
-  storage.writeFile(LAYOUT_CONFIG_NAME, JSON.stringify(config, null, 2));
+  fs.ensureDirSync(DATA_DIR);
+  fs.writeFileSync(LAYOUT_FILE, JSON.stringify(config, null, 2), "utf8");
 }
 
 export function resetFrontendLayoutConfig() {
-  storage.deleteFile(LAYOUT_CONFIG_NAME);
+  if (fs.existsSync(LAYOUT_FILE)) fs.removeSync(LAYOUT_FILE);
   const filesDir = path.join(process.cwd(), SAVE_DIR_PATH);
   if (fs.existsSync(filesDir)) {
     for (const fileName of fs.readdirSync(filesDir)) {
@@ -77,90 +94,90 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
         {
           id: getRandomId(),
           type: "StatusBlock",
-          title: t("TXT_CODE_e627e546"),
+          title: translate("TXT_CODE_e627e546"),
           meta: {
             type: "node"
           },
           width: 3,
-          description: t("TXT_CODE_55ade942"),
+          description: translate("TXT_CODE_55ade942"),
           height: LayoutCardHeight.SMALL
         },
         {
           id: getRandomId(),
           type: "StatusBlock",
-          title: t("TXT_CODE_88e9361a"),
+          title: translate("TXT_CODE_88e9361a"),
           meta: {
             type: "instance"
           },
           width: 3,
-          description: t("TXT_CODE_55ade942"),
+          description: translate("TXT_CODE_55ade942"),
           height: LayoutCardHeight.SMALL
         },
         {
           id: getRandomId(),
           type: "StatusBlock",
-          title: t("TXT_CODE_db64faf6"),
+          title: translate("TXT_CODE_db64faf6"),
           meta: {
             type: "users"
           },
           width: 3,
-          description: t("TXT_CODE_55ade942"),
+          description: translate("TXT_CODE_55ade942"),
           height: LayoutCardHeight.SMALL
         },
         {
           id: getRandomId(),
           type: "StatusBlock",
-          title: t("TXT_CODE_66056676"),
+          title: translate("TXT_CODE_66056676"),
           meta: {
             type: "system"
           },
           width: 3,
-          description: t("TXT_CODE_55ade942"),
+          description: translate("TXT_CODE_55ade942"),
           height: LayoutCardHeight.SMALL
         },
         {
           id: getRandomId(),
           meta: {},
           type: "DataOverview",
-          title: t("TXT_CODE_721157a3"),
+          title: translate("TXT_CODE_721157a3"),
           width: 12,
-          description: t("TXT_CODE_55ade942"),
+          description: translate("TXT_CODE_55ade942"),
           height: LayoutCardHeight.MEDIUM
         },
         {
           id: getRandomId(),
           meta: {},
           type: "OperationLogCard",
-          title: t("TXT_CODE_6a444b79"),
+          title: translate("TXT_CODE_6a444b79"),
           width: 4,
-          description: t("TXT_CODE_9e8c176e"),
+          description: translate("TXT_CODE_9e8c176e"),
           height: LayoutCardHeight.MEDIUM
         },
         {
           id: getRandomId(),
           meta: {},
           type: "NodeOverview",
-          title: t("TXT_CODE_bfb50126"),
+          title: translate("TXT_CODE_bfb50126"),
           width: 8,
-          description: t("TXT_CODE_55ade942"),
+          description: translate("TXT_CODE_55ade942"),
           height: LayoutCardHeight.MEDIUM
         },
         {
           id: getRandomId(),
           meta: {},
           type: "RequestChart",
-          title: t("TXT_CODE_a4037a98"),
+          title: translate("TXT_CODE_a4037a98"),
           width: 6,
-          description: t("TXT_CODE_55ade942"),
+          description: translate("TXT_CODE_55ade942"),
           height: LayoutCardHeight.SMALL
         },
         {
           id: getRandomId(),
           meta: {},
           type: "InstanceChart",
-          title: t("TXT_CODE_d6d9c42c"),
+          title: translate("TXT_CODE_d6d9c42c"),
           width: 6,
-          description: t("TXT_CODE_55ade942"),
+          description: translate("TXT_CODE_55ade942"),
           height: LayoutCardHeight.SMALL
         }
       ]
@@ -172,7 +189,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "Market",
-          title: t("TXT_CODE_88249aee"),
+          title: translate("TXT_CODE_88249aee"),
           width: 12,
           height: LayoutCardHeight.AUTO,
           disableDelete: true
@@ -194,7 +211,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "MarketEditor",
-          title: t("TXT_CODE_54275b9c"),
+          title: translate("TXT_CODE_54275b9c"),
           width: 12,
           height: LayoutCardHeight.AUTO,
           disableDelete: true
@@ -216,7 +233,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "InstanceList",
-          title: t("TXT_CODE_e21473bc"),
+          title: translate("TXT_CODE_e21473bc"),
           width: 12,
           height: LayoutCardHeight.AUTO,
           disableDelete: true
@@ -240,7 +257,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
             viewType: "inner"
           },
           type: "Terminal",
-          title: t("TXT_CODE_4ccdd3a0"),
+          title: translate("TXT_CODE_4ccdd3a0"),
           width: 12,
           height: LayoutCardHeight.BIG,
           disableDelete: true
@@ -248,7 +265,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
         {
           id: "InstancePerformance",
           type: "InstancePerformance",
-          title: t("TXT_CODE_5476e012"),
+          title: translate("TXT_CODE_5476e012"),
           width: 8,
           height: "MINI",
           meta: {}
@@ -256,7 +273,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
         {
           id: "InstanceCommandHistory",
           type: "InstanceCommandHistory",
-          title: t("TXT_CODE_cmd_history"),
+          title: translate("TXT_CODE_cmd_history"),
           width: 4,
           height: "MINI",
           meta: {}
@@ -264,7 +281,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
         {
           id: "InstanceBaseInfo",
           type: "InstanceBaseInfo",
-          title: t("TXT_CODE_eadb4f60"),
+          title: translate("TXT_CODE_eadb4f60"),
           width: 4,
           height: "SMALL",
           meta: {}
@@ -273,7 +290,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "InstanceManagerBtns",
-          title: t("TXT_CODE_efd37c48"),
+          title: translate("TXT_CODE_efd37c48"),
           width: 8,
           height: LayoutCardHeight.SMALL,
           disableDelete: true
@@ -287,7 +304,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "InstanceFileManager",
-          title: t("TXT_CODE_ae533703"),
+          title: translate("TXT_CODE_ae533703"),
           width: 12,
           height: LayoutCardHeight.AUTO,
           disableDelete: true
@@ -309,7 +326,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "InstanceModManager",
-          title: t("TXT_CODE_MOD_MANAGER"),
+          title: translate("TXT_CODE_MOD_MANAGER"),
           width: 12,
           height: LayoutCardHeight.AUTO,
           disableDelete: true
@@ -331,7 +348,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "InstanceServerConfigOverview",
-          title: t("TXT_CODE_d07742fe"),
+          title: translate("TXT_CODE_d07742fe"),
           width: 12,
           height: LayoutCardHeight.AUTO,
           disableDelete: true
@@ -353,7 +370,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "InstanceServerConfigFile",
-          title: t("TXT_CODE_1c45f7fe"),
+          title: translate("TXT_CODE_1c45f7fe"),
           width: 12,
           height: LayoutCardHeight.AUTO,
           disableDelete: true
@@ -375,7 +392,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "Schedule",
-          title: t("TXT_CODE_b7d026f8"),
+          title: translate("TXT_CODE_b7d026f8"),
           width: 12,
           height: LayoutCardHeight.AUTO,
           disableDelete: true
@@ -397,7 +414,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "UserList",
-          title: t("TXT_CODE_97d17cce"),
+          title: translate("TXT_CODE_97d17cce"),
           width: 12,
           height: LayoutCardHeight.AUTO,
           disableDelete: true
@@ -419,7 +436,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "UserAccessSettings",
-          title: t("TXT_CODE_eb579d63"),
+          title: translate("TXT_CODE_eb579d63"),
           width: 12,
           height: LayoutCardHeight.AUTO,
           disableDelete: true
@@ -441,7 +458,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "NodeList",
-          title: t("TXT_CODE_20509fa0"),
+          title: translate("TXT_CODE_20509fa0"),
           width: 12,
           height: LayoutCardHeight.AUTO,
           disableDelete: true
@@ -463,7 +480,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "ImageManager",
-          title: t("TXT_CODE_e6c30866"),
+          title: translate("TXT_CODE_e6c30866"),
           width: 12,
           height: LayoutCardHeight.AUTO,
           disableDelete: true
@@ -485,7 +502,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "NewImage",
-          title: t("TXT_CODE_3d09f0ac"),
+          title: translate("TXT_CODE_3d09f0ac"),
           width: 12,
           height: LayoutCardHeight.AUTO,
           disableDelete: true
@@ -507,7 +524,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "QuickStartFlow",
-          title: t("TXT_CODE_9b99b72e"),
+          title: translate("TXT_CODE_9b99b72e"),
           width: 8,
           height: LayoutCardHeight.AUTO
         }
@@ -540,7 +557,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
         {
           id: getRandomId(),
           type: "UserStatusBlock",
-          title: t("TXT_CODE_7411336e"),
+          title: translate("TXT_CODE_7411336e"),
           meta: {
             type: "instance_all"
           },
@@ -551,7 +568,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
         {
           id: getRandomId(),
           type: "UserStatusBlock",
-          title: t("TXT_CODE_f912fadc"),
+          title: translate("TXT_CODE_f912fadc"),
           meta: {
             type: "instance_running"
           },
@@ -562,7 +579,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
         {
           id: getRandomId(),
           type: "UserStatusBlock",
-          title: t("TXT_CODE_15f2e564"),
+          title: translate("TXT_CODE_15f2e564"),
           meta: {
             type: "instance_stop"
           },
@@ -573,7 +590,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
         {
           id: getRandomId(),
           type: "UserStatusBlock",
-          title: t("TXT_CODE_342a04a9"),
+          title: translate("TXT_CODE_342a04a9"),
           meta: {
             type: "instance_error"
           },
@@ -584,7 +601,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
         {
           id: getRandomId(),
           type: "UserInstanceList",
-          title: t("TXT_CODE_d655beec"),
+          title: translate("TXT_CODE_d655beec"),
           meta: {
             type: "instance_error"
           },
@@ -601,7 +618,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "LoginCard",
-          title: t("TXT_CODE_ccb60658"),
+          title: translate("TXT_CODE_ccb60658"),
           width: 4,
           height: LayoutCardHeight.AUTO,
           disableDelete: true
@@ -615,7 +632,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "Page404",
-          title: t("TXT_CODE_6aa286df"),
+          title: translate("TXT_CODE_6aa286df"),
           width: 6,
           height: LayoutCardHeight.MINI,
           disableDelete: true
@@ -629,7 +646,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           id: getRandomId(),
           meta: {},
           type: "DefaultCard",
-          title: t("TXT_CODE_463375d2"),
+          title: translate("TXT_CODE_463375d2"),
           width: 6,
           height: LayoutCardHeight.SMALL
         }

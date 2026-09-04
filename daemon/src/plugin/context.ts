@@ -20,6 +20,7 @@ type InstanceConfig = any;
 type ILifeCycleTask = any;
 type InstanceCommand = any;
 type commandStringToArray = (text: string) => string[];
+type IAsyncTask = any;
 type IPresetCommand = string;
 import type RouterContext from "../entity/ctx";
 import type { $t } from "../i18n";
@@ -27,8 +28,6 @@ import type {
   uploadFileCheckMiddleware,
   uploadSpeedLimitMiddleware
 } from "../middlewares/precheck";
-import type { AsyncTask, IAsyncTask, TaskCenter } from "../service/async_task_service";
-import type * as protocol from "../service/protocol";
 import type { check7zipStatus } from "../service/seven_zip_service";
 import type { DaemonPluginEntry, DaemonPluginRecord } from "./loader";
 
@@ -43,13 +42,15 @@ import type { DaemonPluginEntry, DaemonPluginRecord } from "./loader";
  *
  * The declarations below are the API documentation: only `import type` here, so
  * this module stays a leaf that core code can import without a cycle. The
- * runtime values are wired in `./install.ts`.
+  * runtime values are provided by the `plugins/runtime` foundation.
  */
 export const ctx = new Context();
 
 /** Daemon configuration, plus the calls that persist and re-language it. */
 export interface DaemonSettingsService {
   readonly config: typeof globalConfiguration.config;
+  /** Version detected by the runtime foundation for this daemon process. */
+  readonly version: string;
   save(): void;
   /** Switch the daemon language and drop the bootstrap language preset file. */
   setLanguage(language: string): void;
@@ -162,8 +163,8 @@ export interface DaemonKoaService {
 
 /**
  * The Socket.io server the panel connects to. Provided by `plugins/server`; the
- * core attaches its own connection handling to it, and a plugin that needs to
- * reach every connected client directly can do the same.
+ * `plugins/server` also owns connection navigation and protocol dispatch, and a
+ * plugin that needs to reach every connected client directly can use the socket.
  */
 export interface DaemonWebsocketService {
   readonly io: SocketIOServer;
@@ -173,8 +174,8 @@ export interface DaemonWebsocketService {
  * The base Koa middleware the web server mounts ahead of the body parser.
  *
  * Both consult the upload subsystem — the passports that authorize an upload and
- * the configured rate limit — so the core owns them and hands them over, rather
- * than the server plugin reaching into that subsystem itself.
+ * the configured rate limit — and are exposed by the runtime foundation for the
+ * server plugin to mount.
  */
 export interface DaemonMiddlewareService {
   readonly uploadFileCheck: typeof uploadFileCheckMiddleware;
@@ -184,8 +185,8 @@ export interface DaemonMiddlewareService {
 /**
  * The Socket.io protocol the panel talks to this daemon over.
  *
- * `on()` and `use()` are scoped to the calling plugin, but note that
- * `service/router.ts` snapshots the handler list per connection: a handler
+ * `on()` and `use()` are scoped to the calling plugin, but note that the server
+ * snapshots the handler list per connection: a handler
  * registered after a client connected is invisible to that client's socket.
  * Plugins load before the server starts listening, so this only limits
  * hot-reloading a plugin on a running daemon.
@@ -195,11 +196,20 @@ export interface DaemonProtocolService {
   use(
     handler: (event: string, ctx: RouterContext, data: any, next: Function) => void
   ): () => void;
-  readonly response: typeof protocol.response;
-  readonly responseError: typeof protocol.responseError;
-  readonly error: typeof protocol.error;
-  readonly msg: typeof protocol.msg;
-  readonly ROLE: typeof protocol.ROLE;
+  readonly response: (ctx: RouterContext, data: any) => void;
+  readonly responseError: (
+    ctx: RouterContext,
+    error: Error | string,
+    config?: { disablePrint: boolean }
+  ) => void;
+  readonly error: (
+    ctx: RouterContext,
+    event: string,
+    error: any,
+    config?: { disablePrint: boolean }
+  ) => void;
+  readonly msg: (ctx: RouterContext, event: string, data: any) => void;
+  readonly ROLE: { ADMIN: number; USER: number; GUEST: number; BAN: number };
   /** Marker an error message carries to keep `error()` from printing it. */
   readonly IGNORE: string;
 }
@@ -239,8 +249,12 @@ export interface DaemonAsyncTaskRegistration {
 
 /** Long-running work the panel starts through `instance/asynchronous`. */
 export interface DaemonTasksService {
-  readonly AsyncTask: typeof AsyncTask;
-  readonly Center: typeof TaskCenter;
+  readonly AsyncTask: any;
+  readonly Center: {
+    addTask(task: any): void;
+    getTask(taskId: string, type?: string): any;
+    getTasks(type?: string): any[];
+  };
   register(taskName: string, registration: DaemonAsyncTaskRegistration): () => void;
   get(taskName: string): DaemonAsyncTaskRegistration | undefined;
 }
@@ -300,12 +314,12 @@ export interface DaemonArchiveService {
 }
 
 /**
- * The plumbing a file transfer needs from the core: the passports that authorize
+ * The plumbing a file transfer needs from the runtime foundation: the passports that authorize
  * one, the URL downloader instance management shares with it, the rate-limited
  * file sender and the temp-file cleanup.
  *
- * These stay in the core because other features use them too — `passport_router`
- * issues passports, `plugins/terminal` checks stream passports, and the Java
+ * These stay in the runtime foundation because other features use them too —
+ * `plugins/auth` issues passports, `plugins/terminal` checks stream passports, and the Java
  * manager and mod service download by URL.
  */
 export interface DaemonTransferService {
@@ -387,6 +401,7 @@ export interface DaemonPluginsService {
 
 declare module "cordis" {
   interface Context {
+    // Shared services supplied by the runtime foundation before feature plugins load.
     settings: DaemonSettingsService;
     storage: DaemonStorageService;
     settingsForm: DaemonSettingsFormService;

@@ -1,5 +1,6 @@
 import type { DaemonPluginContext } from "../../../../src/plugin";
 import { localeMessages } from "../i18n";
+import { SettingsFormService } from "./settings";
 
 // Daemon side of the plugin manager. The daemon core owns the mechanism —
 // `ctx.plugins` lists what is installed and persists the enable switch — and
@@ -17,15 +18,18 @@ const SELF = "config";
  * Turning the web server off would drop the connection the request arrived on,
  * and with it every event that could turn it back on.
  */
-const ESSENTIAL = new Set(["i18n", "server"]);
+const ESSENTIAL = new Set(["i18n", "runtime", "server", "monitor"]);
 
-export const inject = ["protocol", "i18n", "plugins", "settingsForm"];
+export const inject = ["protocol", "i18n", "plugins"];
 
 export function apply(ctx: DaemonPluginContext) {
   ctx.i18n.define(localeMessages);
+  ctx.plugin(SettingsFormService);
+  const settingsForm = ctx.get("settingsForm");
+  if (!settingsForm) throw new Error("Daemon settings form service is unavailable.");
 
   ctx.protocol.on("plugin/list", (routerCtx) => {
-    const declared = new Set(ctx.settingsForm.declared());
+    const declared = new Set(settingsForm.declared());
     ctx.protocol.response(
       routerCtx,
       ctx.plugins.inventory().map((record) => ({
@@ -64,7 +68,7 @@ export function apply(ctx: DaemonPluginContext) {
     try {
       const id = String((data as { id?: unknown })?.id ?? "");
       if (!id) throw new Error(ctx.i18n.$t("TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED"));
-      ctx.protocol.response(routerCtx, await ctx.settingsForm.read(id));
+      ctx.protocol.response(routerCtx, await settingsForm.read(id));
     } catch (error: any) {
       ctx.protocol.responseError(routerCtx, error);
     }
@@ -76,7 +80,7 @@ export function apply(ctx: DaemonPluginContext) {
       const id = String(payload.id ?? "");
       if (!id) throw new Error(ctx.i18n.$t("TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED"));
       const values = (payload.values ?? {}) as Record<string, unknown>;
-      await ctx.settingsForm.write(id, values);
+      await settingsForm.write(id, values);
       ctx.protocol.response(routerCtx, true);
     } catch (error: any) {
       ctx.protocol.responseError(routerCtx, error);

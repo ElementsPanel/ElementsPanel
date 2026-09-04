@@ -67,8 +67,9 @@ the terminal button's `condition` is evaluated synchronously on every render.
 edit a package's instance configuration, so the dependency points from the
 plugin into the core rather than the other way round.
 
-The default layouts for `/market` and `/market/editor` remain in the panel
-core's `service/frontend_layout.ts`, the same as the `node` and `users` pages.
+The default layouts for `/market` and `/market/editor` are contributed through
+the console layout registry, alongside the node and users pages. The panel core
+does not own feature layout definitions.
 
 `frontend/src/components/InstallOptionButton.vue` moved out of the old
 `widgets/market/` folder into the core components: it is a generic button used
