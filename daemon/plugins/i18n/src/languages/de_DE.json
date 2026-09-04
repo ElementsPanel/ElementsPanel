@@ -29,6 +29,8 @@
   "TXT_CODE_4ffdc91d": "Empfangen {{signal}} Signal aus dem System und versucht, alle Instanzen zu schalten ...",
   "TXT_CODE_5778848e": "Archiv kann nicht geöffnet werden",
   "TXT_CODE_66e32091": "Die Knotensprache wurde geändert:",
+  "TXT_CODE_I18N_LANGUAGE": "Daemon-Sprache",
+  "TXT_CODE_I18N_FOLLOW_PANEL": "Panelsprache folgen",
   "TXT_CODE_69c42450": "7zip-Unterstützung fehlt, {{fileExt}}-Dateien können nicht entpackt werden.",
   "TXT_CODE_6b2a9cab": "Die alte Versionskonfiguration wurde auf die neue Versionskonfiguration aktualisiert:",
   "TXT_CODE_6b77cd52": "Ausführungsintervall zu kurz. Bitten Intervall anpassen!",

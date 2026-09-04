@@ -3,7 +3,7 @@ import LeftMenusPanel from "@/components/LeftMenusPanel.vue";
 import Loading from "@/components/Loading.vue";
 import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
-import { getSupportedLanguageOptions, isCN, t } from "@/lang/i18n";
+import { isCN, t } from "@/lang/i18n";
 import { setSettingInfo, settingInfo } from "@/services/apis";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
@@ -19,7 +19,6 @@ import {
   MessageOutlined,
   MoneyCollectOutlined,
   PicLeftOutlined,
-  ProjectOutlined,
   QuestionCircleOutlined
 } from "@ant-design/icons-vue";
 import { Modal, message, notification } from "ant-design-vue";
@@ -84,11 +83,6 @@ const submit = async (needReload: boolean = true) => {
 
 const menus = arrayFilter([
   {
-    title: t("TXT_CODE_cdd555be"),
-    key: "baseInfo",
-    icon: ProjectOutlined
-  },
-  {
     title: t("TXT_CODE_1c18acc0"),
     key: "ui",
     icon: PicLeftOutlined
@@ -110,19 +104,6 @@ const menus = arrayFilter([
     icon: QuestionCircleOutlined
   }
 ]);
-
-const allLanguages = getSupportedLanguageOptions();
-
-const allYesNo = [
-  {
-    label: t("TXT_CODE_52c8a730"),
-    value: true
-  },
-  {
-    label: t("TXT_CODE_718c9310"),
-    value: false
-  }
-];
 
 const aboutLinks = arrayFilter([
   {
@@ -284,39 +265,6 @@ onMounted(async () => {
     <CardPanel v-if="isReady && formData" class="CardWrapper" style="height: 100%" :padding="false">
       <template #body>
         <LeftMenusPanel ref="leftMenusPanelRef" :menus="menus">
-          <template #baseInfo>
-            <div class="content-box" :style="{ maxHeight: card.height }">
-              <a-typography-title :level="4" class="mb-24">
-                {{ t("TXT_CODE_5206cf41") }}
-              </a-typography-title>
-              <div style="text-align: left">
-                <a-form :model="formData" layout="vertical">
-                  <a-form-item>
-                    <a-typography-title :level="5">{{ t("TXT_CODE_a1a59b08") }}</a-typography-title>
-                    <a-typography-paragraph>
-                      <a-typography-text type="secondary">
-                        {{ t("TXT_CODE_2abeb185") }}
-                        <br />
-                        {{ t("TXT_CODE_d648ff91") }}
-                      </a-typography-text>
-                    </a-typography-paragraph>
-                    <a-select v-model:value="formData.language" style="max-width: 320px">
-                      <a-select-option v-for="item in allLanguages" :key="item.value" :value="item.value">
-                        {{ item.label }}
-                      </a-select-option>
-                    </a-select>
-                  </a-form-item>
-
-                  <div class="button">
-                    <a-button type="primary" :loading="submitIsLoading" @click="submit()">
-                      {{ t("TXT_CODE_abfe9512") }}
-                    </a-button>
-                  </div>
-                </a-form>
-              </div>
-            </div>
-          </template>
-
           <template #ui>
             <div class="content-box" :style="{ maxHeight: card.height }">
               <a-typography-title :level="4" class="mb-24">

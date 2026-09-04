@@ -18,6 +18,7 @@ class Config {
   public maxFileTask = 2;
   public maxZipFileSize = 200;
   public language = "en_us";
+  public followPanelLanguage = true;
   public defaultInstancePath = "";
   public defaultJavaDataPath = "";
   public instanceBackupPath = "data/backups";

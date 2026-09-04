@@ -97,6 +97,7 @@ const loadSchema = async () => {
 const saveSettings = async () => {
   if (!schema.value) return;
   savingSettings.value = true;
+  const reloadPanel = scope.value === "panel" && schema.value.id === "i18n";
   try {
     const values = schema.value.values;
     if (scope.value === "panel") {
@@ -110,6 +111,10 @@ const saveSettings = async () => {
       });
     }
     message.success(t("TXT_CODE_d3de39b4"));
+    if (reloadPanel) {
+      window.setTimeout(() => window.location.reload(), 400);
+      return;
+    }
     await loadSchema();
   } catch (error: any) {
     reportErrorMsg(error?.message ?? String(error));
@@ -290,16 +295,18 @@ const nodeLabel = (node: NodeSummary) =>
         </a-select>
 
         <div class="plugin-config-heading">{{ t("TXT_CODE_PLUGIN_LIST") }}</div>
-        <button v-for="plugin in currentList" :key="plugin.id" type="button" class="plugin-config-item" :class="{
-          'plugin-config-item-active': plugin.id === currentId,
-          'plugin-config-item-off': !plugin.enabled
-        }" @click="currentId = plugin.id">
-          <span class="plugin-config-item-name">
-            {{ plugin.id }}
-          </span>
-          <span class="plugin-config-item-dot"></span>
-        </button>
-        <div v-if="!currentList.length" class="plugin-config-empty">{{ t("TXT_CODE_NO_DATA") }}</div>
+        <div class="plugin-config-list">
+          <button v-for="plugin in currentList" :key="plugin.id" type="button" class="plugin-config-item" :class="{
+            'plugin-config-item-active': plugin.id === currentId,
+            'plugin-config-item-off': !plugin.enabled
+          }" @click="currentId = plugin.id">
+            <span class="plugin-config-item-name">
+              {{ plugin.id }}
+            </span>
+            <span class="plugin-config-item-dot"></span>
+          </button>
+          <div v-if="!currentList.length" class="plugin-config-empty">{{ t("TXT_CODE_NO_DATA") }}</div>
+        </div>
       </div>
 
       <div class="plugin-config-content">
@@ -310,9 +317,6 @@ const nodeLabel = (node: NodeSummary) =>
           <div class="plugin-config-title-row">
             <div>
               <h2>{{ selectedPlugin.id }}</h2>
-              <p v-if="selectedPlugin.description" class="plugin-config-description">
-                {{ selectedPlugin.description }}
-              </p>
             </div>
             <div class="plugin-config-meta">
               <span v-if="scope === 'node' && selectedNode" class="plugin-config-version">
@@ -352,7 +356,8 @@ const nodeLabel = (node: NodeSummary) =>
 .plugin-config-page {
   display: flex;
   width: 100%;
-  min-height: min(720px, calc(100vh - 140px));
+  height: min(720px, calc(100vh - 140px));
+  min-height: 0;
   overflow: hidden;
   border-radius: 12px;
   background: var(--background-color-white);
@@ -371,9 +376,12 @@ const nodeLabel = (node: NodeSummary) =>
 }
 
 .plugin-config-sidebar {
+  display: flex;
+  flex-direction: column;
   flex: 0 0 240px;
+  min-height: 0;
   padding: 16px 10px;
-  overflow-y: auto;
+  overflow: hidden;
   background: var(--background-color-white);
 }
 
@@ -399,11 +407,19 @@ const nodeLabel = (node: NodeSummary) =>
 }
 
 .plugin-config-heading {
+  flex-shrink: 0;
   padding: 4px 10px 12px;
   color: var(--text-color);
   font-size: 13px;
   font-weight: 600;
   opacity: 0.72;
+}
+
+.plugin-config-list {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .plugin-config-item {
@@ -487,14 +503,6 @@ const nodeLabel = (node: NodeSummary) =>
   font-size: 20px;
 }
 
-.plugin-config-description {
-  max-width: 720px;
-  margin: 8px 0 0;
-  color: var(--text-color);
-  font-size: 13px;
-  opacity: 0.7;
-}
-
 .plugin-config-meta {
   display: flex;
   flex-shrink: 0;
@@ -519,12 +527,18 @@ const nodeLabel = (node: NodeSummary) =>
 @media (max-width: 720px) {
   .plugin-config-page {
     flex-direction: column;
+    height: auto;
     min-height: 0;
   }
 
   .plugin-config-sidebar {
     flex-basis: auto;
     max-height: 220px;
+  }
+
+  .plugin-config-list {
+    flex: initial;
+    max-height: 140px;
   }
 
   .plugin-config-content {

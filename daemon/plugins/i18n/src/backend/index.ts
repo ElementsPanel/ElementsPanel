@@ -6,6 +6,28 @@ import { baseLocaleMessages } from "../messages";
 
 const NAMESPACE = "translation";
 
+const SUPPORTED_LANGUAGES = [
+  { value: "en_us", label: "English" },
+  { value: "zh_cn", label: "Simplified Chinese" },
+  { value: "zh_tw", label: "Traditional Chinese" },
+  { value: "ja_jp", label: "Japanese" },
+  { value: "ru_ru", label: "Russian" },
+  { value: "de_de", label: "Deutsch" },
+  { value: "fr_fr", label: "French" },
+  { value: "pt_br", label: "Brazilian Portuguese" },
+  { value: "th_th", label: "Thai" },
+  { value: "es_es", label: "Spanish" },
+  { value: "ko_kr", label: "Korean" },
+  { value: "tr_tr", label: "Turkish" }
+] as const;
+
+const SUPPORTED_LANGUAGE_VALUES = new Set<string>(SUPPORTED_LANGUAGES.map((item) => item.value));
+
+function normalizeLanguage(value: unknown, fallback = "en_us") {
+  const normalized = String(value ?? "").replace(/-/g, "_").toLowerCase();
+  return SUPPORTED_LANGUAGE_VALUES.has(normalized) ? normalized : fallback;
+}
+
 interface LocaleRegistration {
   locale: string;
   resources: Record<string, unknown>;
@@ -74,4 +96,45 @@ export async function apply(ctx: DaemonPluginContext) {
   });
 
   ctx.plugin(I18nService);
+
+  // The foundation is loaded before the daemon installs its settings services;
+  // wait for them while keeping the declaration attributed to this plugin.
+  ctx.plugin({
+    name: "i18n",
+    inject: ["i18n", "settings", "settingsForm"],
+    apply(settingsCtx: DaemonPluginContext) {
+      const config = settingsCtx.settings.config;
+
+      settingsCtx.settingsForm.declare({
+        fields: () => [
+          {
+            key: "language",
+            type: "select",
+            title: settingsCtx.i18n.$t("TXT_CODE_I18N_LANGUAGE"),
+            options: SUPPORTED_LANGUAGES.map((item) => ({ ...item }))
+          },
+          {
+            key: "followPanelLanguage",
+            type: "boolean",
+            title: settingsCtx.i18n.$t("TXT_CODE_I18N_FOLLOW_PANEL")
+          }
+        ],
+        read: () => ({
+          language: normalizeLanguage(config.language),
+          followPanelLanguage: config.followPanelLanguage !== false
+        }),
+        write: (values) => {
+          const currentLanguage = normalizeLanguage(config.language);
+          const language = normalizeLanguage(values.language, currentLanguage);
+          if (values.language != null && language !== currentLanguage) {
+            settingsCtx.settings.setLanguage(language);
+          }
+          if (values.followPanelLanguage != null) {
+            config.followPanelLanguage = Boolean(values.followPanelLanguage);
+          }
+          settingsCtx.settings.save();
+        }
+      });
+    }
+  });
 }

@@ -29,6 +29,8 @@
   "TXT_CODE_4ffdc91d": "收到来自系统的 {{signal}} 信号，正在尝试关闭所有实例...",
   "TXT_CODE_5778848e": "压缩包无法打开",
   "TXT_CODE_66e32091": "节点语言已更改：",
+  "TXT_CODE_I18N_LANGUAGE": "Daemon 语言",
+  "TXT_CODE_I18N_FOLLOW_PANEL": "跟随 Panel 语言",
   "TXT_CODE_69c42450": "缺少 7zip 依赖库支持，暂无法解压 {{fileExt}} 格式文件。",
   "TXT_CODE_6b2a9cab": "已将旧版本配置升级为新版本配置：",
   "TXT_CODE_6b77cd52": "此计划任务执行间隔太频繁，请更改执行间隔周期！",

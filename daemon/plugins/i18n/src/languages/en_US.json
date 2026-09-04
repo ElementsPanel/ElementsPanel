@@ -29,6 +29,8 @@
   "TXT_CODE_4ffdc91d": "Received {{signal}} signal from the system, attempting to shut down all instances...",
   "TXT_CODE_5778848e": "Archive cannot be opened",
   "TXT_CODE_66e32091": "Node language has been changed:",
+  "TXT_CODE_I18N_LANGUAGE": "Daemon Language",
+  "TXT_CODE_I18N_FOLLOW_PANEL": "Follow panel language",
   "TXT_CODE_69c42450": "Missing 7zip dependency support, unable to decompress {{fileExt}} format files.",
   "TXT_CODE_6b2a9cab": "Upgraded configuration to new version:",
   "TXT_CODE_6b77cd52": "This scheduled task's execution interval is too frequent, please change the execution interval period!",

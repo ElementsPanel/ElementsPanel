@@ -6,7 +6,7 @@ import { v4 } from "uuid";
 import { SAVE_DIR_PATH } from "../const";
 import SystemConfig from "../entity/setting";
 import { ROLE } from "../entity/user";
-import { $t, i18next } from "../i18n";
+import { $t } from "../i18n";
 import permission from "../middleware/permission";
 import {
   getFrontendLayoutConfig,
@@ -14,10 +14,8 @@ import {
   setFrontendLayoutConfig
 } from "../service/frontend_layout";
 import { getRequestGuard as guard } from "../service/request_guard";
-import { logger } from "../service/log";
 import { operationLogger } from "../service/operation_logger";
 import { saveSystemConfig, systemConfig } from "../setting";
-import { remoteSubsystem } from "../service/remote_access";
 
 const router = new Router({ prefix: "/overview" });
 
@@ -50,13 +48,6 @@ router.put("/setting", permission({ level: ROLE.ADMIN }), async (ctx) => {
     if (config.zipType != null) systemConfig.zipType = config.zipType;
     if (config.forwardType != null) systemConfig.forwardType = Number(config.forwardType);
     if (config.dataPort != null) systemConfig.dataPort = Number(config.dataPort);
-
-    if (config.language != null) {
-      logger.warn($t("TXT_CODE_e29a9317"), config.language);
-      systemConfig.language = String(config.language);
-      await i18next.changeLanguage(systemConfig.language.toLowerCase());
-      remoteSubsystem().changeDaemonLanguage(systemConfig.language);
-    }
 
     operationLogger.log("system_config_change", {
       operator_ip: ctx.ip,

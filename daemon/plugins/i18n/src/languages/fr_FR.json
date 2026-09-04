@@ -29,6 +29,8 @@
   "TXT_CODE_4ffdc91d": "Signal {{signal}} reçu du système, essayant d'arrêter toutes les instances ...",
   "TXT_CODE_5778848e": "Archive inaccessible",
   "TXT_CODE_66e32091": "La langue de nœud a été modifiée:",
+  "TXT_CODE_I18N_LANGUAGE": "Langue du daemon",
+  "TXT_CODE_I18N_FOLLOW_PANEL": "Suivre la langue du panneau",
   "TXT_CODE_69c42450": "7zip manquant, impossible de décompresser les fichiers {{fileExt}}.",
   "TXT_CODE_6b2a9cab": "L'ancienne configuration de la version a été mise à niveau vers la nouvelle configuration :",
   "TXT_CODE_6b77cd52": "Intervalle d'exécution trop fréquent pour cette tâche planifiée. Modifiez la périodicité !",

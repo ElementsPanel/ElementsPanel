@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
-import { getSupportedLanguageOptions, t } from "@/lang/i18n";
+import { t } from "@/lang/i18n";
 import { setSettingInfo, settingInfo } from "@/services/apis";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
 import type { Settings } from "@/types";
 import {
     PicLeftOutlined,
-    ProjectOutlined,
     QuestionCircleOutlined,
     SaveOutlined,
     UploadOutlined
@@ -27,23 +26,15 @@ interface MySettings extends Settings {
 }
 
 const formData = ref<MySettings>();
-const activeTab = ref("baseInfo");
+const activeTab = ref("ui");
 const saveMessage = ref("");
 const saveError = ref("");
 
 const sidebarPosition = ref<"left" | "right">("left");
 
 const tabs = [
-    { key: "baseInfo", title: t("TXT_CODE_cdd555be"), icon: ProjectOutlined },
     { key: "ui", title: t("TXT_CODE_1c18acc0"), icon: PicLeftOutlined },
     { key: "about", title: t("TXT_CODE_3b4b656d"), icon: QuestionCircleOutlined }
-];
-
-const allLanguages = getSupportedLanguageOptions();
-
-const allYesNo = [
-    { label: t("TXT_CODE_52c8a730"), value: true },
-    { label: t("TXT_CODE_718c9310"), value: false }
 ];
 
 const sidebarPositionOptions = [
@@ -176,21 +167,6 @@ limitations under the License.`;
 
             <div class="ds-content">
                 <div class="ds-content__scroll">
-                    <div v-show="activeTab === 'baseInfo'" class="ds-form">
-                        <h2 class="ds-title">{{ t("TXT_CODE_5206cf41") }}</h2>
-
-                        <div class="ds-form-group">
-                            <label class="ds-label">{{ t("TXT_CODE_a1a59b08") }}</label>
-                            <p class="ds-desc">{{ t("TXT_CODE_2abeb185") }} {{ t("TXT_CODE_d648ff91") }}</p>
-                            <select v-model="formData.language" class="ds-select">
-                                <option v-for="item in allLanguages" :key="item.value" :value="item.value">
-                                    {{ item.label }}
-                                </option>
-                            </select>
-                        </div>
-
-                    </div>
-
                     <div v-show="activeTab === 'ui'" class="ds-form">
                         <h2 class="ds-title">{{ t("TXT_CODE_1c18acc0") }}</h2>
 

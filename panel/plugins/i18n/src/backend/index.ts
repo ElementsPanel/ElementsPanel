@@ -6,6 +6,28 @@ import { baseLocaleMessages } from "../messages";
 
 const NAMESPACE = "translation";
 
+const SUPPORTED_LANGUAGES = [
+  { value: "en_us", label: "English" },
+  { value: "zh_cn", label: "Simplified Chinese" },
+  { value: "zh_tw", label: "Traditional Chinese" },
+  { value: "ja_jp", label: "Japanese" },
+  { value: "ru_ru", label: "Russian" },
+  { value: "de_de", label: "Deutsch" },
+  { value: "fr_fr", label: "French" },
+  { value: "pt_br", label: "Brazilian Portuguese" },
+  { value: "th_th", label: "Thai" },
+  { value: "es_es", label: "Spanish" },
+  { value: "ko_kr", label: "Korean" },
+  { value: "tr_tr", label: "Turkish" }
+] as const;
+
+const SUPPORTED_LANGUAGE_VALUES = new Set<string>(SUPPORTED_LANGUAGES.map((item) => item.value));
+
+function normalizeLanguage(value: unknown, fallback = "en_us") {
+  const normalized = String(value ?? "").replace(/-/g, "_").toLowerCase();
+  return SUPPORTED_LANGUAGE_VALUES.has(normalized) ? normalized : fallback;
+}
+
 interface LocaleRegistration {
   locale: string;
   resources: Record<string, unknown>;
@@ -75,4 +97,39 @@ export async function apply(ctx: PanelPluginContext) {
   });
 
   ctx.plugin(I18nService);
+
+  // The foundation is loaded before the core installs `settingsForm`, so this
+  // small child plugin waits for those services while keeping the declaration
+  // owned by the i18n plugin itself.
+  ctx.plugin({
+    name: "i18n",
+    inject: ["i18n", "settings", "settingsForm"],
+    apply(settingsCtx: PanelPluginContext) {
+      const config = settingsCtx.settings.config;
+
+      settingsCtx.settingsForm.declare({
+        fields: () => [
+          {
+            key: "language",
+            type: "select",
+            title: settingsCtx.i18n.$t("TXT_CODE_a1a59b08"),
+            options: SUPPORTED_LANGUAGES.map((item) => ({ ...item }))
+          }
+        ],
+        read: () => ({ language: normalizeLanguage(config.language) }),
+        write: async (values) => {
+          const language = normalizeLanguage(values.language, normalizeLanguage(config.language));
+          config.language = language;
+          await i18next.changeLanguage(language);
+          settingsCtx.settings.save();
+
+          // A panel language change historically propagated to connected
+          // daemons. The daemon-side i18n plugin now decides whether to accept
+          // that update through its follow-panel-language setting.
+          const remote = settingsCtx.get("remote");
+          remote?.services.changeDaemonLanguage(language);
+        }
+      });
+    }
+  });
 }

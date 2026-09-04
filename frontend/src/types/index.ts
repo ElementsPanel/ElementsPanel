@@ -86,7 +86,6 @@ export interface Settings {
   maxCompress: number;
   maxDownload: number;
   zipType: number;
-  language: string;
   redisUrl: string;
 }
 

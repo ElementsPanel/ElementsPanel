@@ -29,6 +29,8 @@
   "TXT_CODE_4ffdc91d": "收到來自系統的 {{signal}} 訊號，正在嘗試關閉所有實例...",
   "TXT_CODE_5778848e": "無法開啟壓縮檔",
   "TXT_CODE_66e32091": "節點語言已更改：",
+  "TXT_CODE_I18N_LANGUAGE": "Daemon 語言",
+  "TXT_CODE_I18N_FOLLOW_PANEL": "跟隨 Panel 語言",
   "TXT_CODE_69c42450": "缺少7zip依賴支援，無法解壓縮{{fileExt}}格式檔案。",
   "TXT_CODE_6b2a9cab": "已將舊版設定升級為新版本設定：",
   "TXT_CODE_6b77cd52": "此排程任務執行間隔過於頻繁，請調整執行間隔時間！",

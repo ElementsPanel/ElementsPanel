@@ -8,3 +8,8 @@ instance, and scopes translation bundles registered by other plugins.
 The host loads this plugin before configuration, routes, layouts, and ordinary
 plugins. Core imports from `app/i18n` and `@/lang/i18n` are compatibility
 facades over the instances owned here.
+
+The plugin also declares the panel language setting consumed by the central
+plugin configuration page. Saving it updates the persisted panel setting and
+pushes the selected language to connected daemons; each daemon may opt out of
+that push through its own i18n setting.

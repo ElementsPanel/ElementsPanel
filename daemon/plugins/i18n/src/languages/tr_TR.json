@@ -29,6 +29,8 @@
   "TXT_CODE_4ffdc91d": "Tüm örnekleri kapatmaya çalışarak sistemden {{signal}} sinyali alındı ​​...",
   "TXT_CODE_5778848e": "Arşiv açılamıyor",
   "TXT_CODE_66e32091": "Düğüm dili değiştirildi:",
+  "TXT_CODE_I18N_LANGUAGE": "Daemon Dili",
+  "TXT_CODE_I18N_FOLLOW_PANEL": "Panel dilini takip et",
   "TXT_CODE_69c42450": "7zip desteği eksik, {{fileExt}} formatı açılamıyor.",
   "TXT_CODE_6b2a9cab": "Yapılandırma yeni sürüme yükseltildi:",
   "TXT_CODE_6b77cd52": "Bu zamanlanmış görevin çalışma aralığı çok sık, lütfen çalışma aralığını değiştirin!",

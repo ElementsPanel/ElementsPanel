@@ -51,7 +51,7 @@ export function apply(ctx: DaemonPluginContext) {
     const instanceBackupFormat = toText(payload.instanceBackupFormat);
     const instanceBackupCompressionLevel = toNumber(payload.instanceBackupCompressionLevel);
 
-    if (language) {
+    if (language && config.followPanelLanguage !== false) {
       ctx.settings.setLanguage(language);
     }
     if (uploadSpeedRate != null && uploadSpeedRate >= 0) {

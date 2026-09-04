@@ -29,6 +29,8 @@
   "TXT_CODE_4ffdc91d": "Se recibió la señal {{signal}} del sistema, intentando cerrar todas las instancias ...",
   "TXT_CODE_5778848e": "No se puede abrir el archivo",
   "TXT_CODE_66e32091": "El lenguaje de nodo ha sido cambiado:",
+  "TXT_CODE_I18N_LANGUAGE": "Idioma del daemon",
+  "TXT_CODE_I18N_FOLLOW_PANEL": "Seguir el idioma del panel",
   "TXT_CODE_69c42450": "Falta soporte de dependencia 7zip, no se pueden descomprimir archivos formato {{fileExt}}.",
   "TXT_CODE_6b2a9cab": "La configuración de la versión anterior se ha actualizado a la configuración de la nueva versión:",
   "TXT_CODE_6b77cd52": "El intervalo de ejecución de esta tarea programada es demasiado frecuente. ¡Modifica el intervalo de ejecución!",
