@@ -52,7 +52,7 @@ degrades when it is absent:
 | --- | --- |
 | `Editor.vue` | Edits fine, but cannot tell which language to highlight. |
 | `ArchivePreview.vue` | Rows show no file-type icon. |
-| `Settings.vue`, `MusicCard.vue`, `PluginCard.vue`, `InstanceDetail.vue`, `plugins/desktop`'s settings | The "pick a file" buttons return nothing, so the image or URL is left unchanged. |
+| `plugins/console`'s appearance settings, `MusicCard.vue`, `PluginCard.vue`, `InstanceDetail.vue` | The "pick a file" buttons return nothing, so the image or URL is left unchanged. |
 | `CreateInstanceForm.vue` | Creating an instance from an uploaded pack is unavailable; every other method works. |
 | `ModManager.vue`, `useModUpload.ts` | Mods can be browsed but not uploaded, and their configuration cannot be edited. |
 | `ServerConfigFile.vue` | The structured editor works; "edit the raw file" has nothing to open. |

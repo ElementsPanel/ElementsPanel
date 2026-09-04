@@ -4,5 +4,6 @@
   "version": "1.0.0",
   "description": "Provides the panel's base Web UI shell, routes, layout cards and global styles.",
   "priority": -9000,
+  "backend": "backend/index.cjs",
   "frontend": "src/frontend.ts"
 }

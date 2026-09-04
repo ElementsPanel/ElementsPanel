@@ -78,6 +78,8 @@ export interface PanelSettingField {
   options?: PanelSettingOption[];
   /** `string`: render as a password input. */
   secret?: boolean;
+  /** `string`: offer the installed file manager's upload dialog. */
+  fileUpload?: boolean;
   /**
    * Shown only while every listed condition holds. A condition is either a field
    * name, true when that field is truthy, or `"name=value"`, true when that
@@ -111,6 +113,13 @@ export interface PanelSettingsSchema {
 export interface PanelSettingsService {
   readonly config: NonNullable<typeof systemConfig>;
   save(): void;
+}
+
+/** Shared frontend layout persistence used by the console and feature plugins. */
+export interface PanelLayoutService {
+  get(): string;
+  set(config: IPageLayoutConfig[]): void;
+  reset(): void;
 }
 
 /**
@@ -288,6 +297,7 @@ declare module "cordis" {
   interface Context {
     // Core services, always present.
     settings: PanelSettingsService;
+    layout: PanelLayoutService;
     settingsForm: PanelSettingsFormService;
     storage: typeof Storage;
     i18n: PanelI18nService;

@@ -28,8 +28,8 @@ import TextCard from "./widgets/others/TextCard.vue";
 import DefaultCard from "./widgets/DefaultCard.vue";
 import EmptyCard from "./widgets/EmptyCard.vue";
 import Page404 from "./widgets/Page404.vue";
-import Settings from "./widgets/Settings.vue";
 import TitleCard from "./widgets/TitleCard.vue";
+import DesignModeActivator from "./widgets/DesignModeActivator.vue";
 import ConsoleApp from "./ConsoleApp.vue";
 import { setLoadingTitle } from "@/tools/dom";
 
@@ -37,7 +37,6 @@ const coreCards = [
   ["Page404", Page404],
   ["TitleCard", TitleCard],
   ["EmptyCard", EmptyCard],
-  ["Settings", Settings],
   ["ImageBox", ImageBox],
   ["IframeCard", IframeCard],
   ["TextCard", TextCard],
@@ -85,15 +84,6 @@ const cardPoolItems: LayoutCardPoolItemFactory[] = [
     () => t("TXT_CODE_9466852b"),
     12,
     LayoutCardHeight.AUTO
-  ),
-  commonCard(
-    "Settings",
-    () => t("TXT_CODE_b5c7b82d"),
-    () => t("TXT_CODE_e78047a5"),
-    8,
-    LayoutCardHeight.MEDIUM,
-    NEW_CARD_TYPE.OTHER,
-    ROLE.ADMIN
   ),
   commonCard(
     "ImageBox",
@@ -177,21 +167,20 @@ export async function apply(ctx: PanelFrontendPluginContext) {
   });
 
   ctx.routes.add({
-    path: "/settings",
-    name: t("TXT_CODE_b5c7b82d"),
-    component: LayoutContainer,
-    meta: {
-      permission: ROLE.ADMIN,
-      mainMenu: true,
-      customClass: ["nav-button-success"]
-    }
-  });
-
-  ctx.routes.add({
     path: "/404",
     name: t("TXT_CODE_393c816c"),
     component: LayoutContainer,
     meta: { permission: ROLE.GUEST, mainMenu: false }
+  });
+
+  ctx.routes.add({
+    path: "/console/design",
+    name: "console-design",
+    component: DesignModeActivator,
+    meta: {
+      permission: ROLE.ADMIN,
+      mainMenu: false
+    }
   });
 
   ctx.routes.add({

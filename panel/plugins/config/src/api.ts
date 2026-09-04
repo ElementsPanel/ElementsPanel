@@ -51,6 +51,8 @@ export interface SettingField {
   max?: number;
   options?: SettingOption[];
   secret?: boolean;
+  /** `string`: offer the installed file manager's upload dialog. */
+  fileUpload?: boolean;
   /**
    * Shown only while every listed condition holds: a field name (truthy) or
    * `"name=value"`.

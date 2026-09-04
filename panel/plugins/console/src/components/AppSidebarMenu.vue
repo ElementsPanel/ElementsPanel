@@ -10,7 +10,6 @@ import {
   LinkOutlined,
   LoginOutlined,
   MenuOutlined,
-  SettingOutlined,
   TeamOutlined,
   UserOutlined
 } from "@ant-design/icons-vue";
@@ -33,7 +32,6 @@ const isRouteActive = (path: string): boolean => {
 const routePathIcons: Record<string, Component> = {
   "/instances": AppstoreOutlined,
   "/users": TeamOutlined,
-  "/settings": SettingOutlined,
   "/customer": UserOutlined,
   "/login": LoginOutlined,
   "/_open_page": LinkOutlined

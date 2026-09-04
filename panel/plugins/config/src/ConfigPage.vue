@@ -97,7 +97,8 @@ const loadSchema = async () => {
 const saveSettings = async () => {
   if (!schema.value) return;
   savingSettings.value = true;
-  const reloadPanel = scope.value === "panel" && schema.value.id === "i18n";
+  const reloadPanel =
+    scope.value === "panel" && ["i18n", "console"].includes(schema.value.id);
   try {
     const values = schema.value.values;
     if (scope.value === "panel") {

@@ -10,6 +10,11 @@ import validator from "../middleware/validator";
 import { operationLogger } from "../service/operation_logger";
 import { getRequestGuard } from "../service/request_guard";
 import { saveSystemConfig, systemConfig } from "../setting";
+import {
+  getFrontendLayoutConfig,
+  resetFrontendLayoutConfig,
+  setFrontendLayoutConfig
+} from "../service/frontend_layout";
 import { ctx } from "./context";
 import {
   getLoadedPanelPlugins,
@@ -53,6 +58,11 @@ function provide<K extends keyof Context & string>(name: K, value: Context[K]) {
  */
 export function installPanelPluginServices() {
   provide("settings", { config: systemConfig!, save: () => saveSystemConfig(systemConfig!) });
+  provide("layout", {
+    get: getFrontendLayoutConfig,
+    set: setFrontendLayoutConfig,
+    reset: resetFrontendLayoutConfig
+  });
   provide("storage", Storage);
   provide("middleware", { permission, validator, instanceAccess, speedLimit, requestConcurrencyLimiter });
   provide("roles", ROLE);

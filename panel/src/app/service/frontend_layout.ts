@@ -435,20 +435,6 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
       ]
     },
     {
-      page: "/settings",
-      items: [
-        {
-          id: getRandomId(),
-          meta: {},
-          type: "Settings",
-          title: t("TXT_CODE_3fe97dcc"),
-          width: 9,
-          height: LayoutCardHeight.LARGE,
-          disableDelete: true
-        }
-      ]
-    },
-    {
       page: "/node",
       items: [
         {

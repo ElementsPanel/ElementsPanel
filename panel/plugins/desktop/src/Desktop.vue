@@ -19,7 +19,6 @@ import DesktopMyApps from "./widgets/desktop/DesktopMyApps.vue";
 import DesktopNewInstance from "./widgets/desktop/DesktopNewInstance.vue";
 import DesktopSchedule from "./widgets/desktop/DesktopSchedule.vue";
 import DesktopServerConfig from "./widgets/desktop/DesktopServerConfig.vue";
-import DesktopSettings from "./widgets/desktop/DesktopSettings.vue";
 import type { TaskbarWindow } from "./widgets/desktop/DesktopTaskbar.vue";
 import DesktopTaskbar from "./widgets/desktop/DesktopTaskbar.vue";
 import DesktopTerminalSelector from "./widgets/desktop/DesktopTerminalSelector.vue";
@@ -39,7 +38,6 @@ import {
     FullscreenOutlined,
     MinusOutlined,
     PictureOutlined,
-    SettingOutlined,
     TeamOutlined,
     UsbOutlined,
     UserOutlined
@@ -164,14 +162,6 @@ const availableDesktopApps = computed<DesktopApp[]>(() => {
             icon: markRaw(DesktopOutlined),
             color: "#1677ff",
             route: "/instances", windowContent: "instances"
-        },
-        {
-            id: "settings",
-            label: t("TXT_CODE_3fe97dcc"),
-            icon: markRaw(SettingOutlined),
-            color: "#13c2c2",
-            route: "/settings",
-            windowContent: "settings"
         },
         {
             id: "terminal",
@@ -541,7 +531,6 @@ watch(
 const ICON_MAP: Record<string, Component> = {
     "instances": markRaw(DesktopOutlined),
     "users": markRaw(TeamOutlined),
-    "settings": markRaw(SettingOutlined),
     "terminal": markRaw(CodeOutlined),
     "my-apps": markRaw(AppstoreOutlined),
     "instance-console": markRaw(CodeOutlined),
@@ -1390,8 +1379,6 @@ const username = computed(() => appState.userInfo?.userName || "User");
                                 :file-name="win.fileName" @close="closeWindow(win.id)" />
 
                             <component :is="desktopUsersWindow" v-else-if="win.content === 'users' && desktopUsersWindow" />
-
-                            <DesktopSettings v-else-if="win.content === 'settings'" />
 
                             <DesktopTerminalSelector v-else-if="win.content === 'terminal'"
                                 @open-console="openInstanceConsole" />

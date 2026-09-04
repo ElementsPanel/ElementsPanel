@@ -18,6 +18,10 @@ description is the only thing it can offer, and the same component renders it.
 Validation lives in `write()`, on the plugin's backend. This page sends what the
 form holds and reports whatever comes back.
 
+String fields may opt into the installed file manager's upload dialog. The
+field still stores a URL, so a missing file plugin degrades to a normal text
+field.
+
 Each plugin also gets an enable switch. It calls `PUT /api/plugins/enabled`,
 which this plugin's backend forwards to `ctx.plugins.setEnabled()`: the panel
 writes `enabled` into that plugin's `plugin.json` and applies it live, then the

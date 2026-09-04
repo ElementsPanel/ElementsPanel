@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
+import type { FrontendFileManagerService } from "@/plugin";
+import { usePluginService } from "@/plugin/context";
 import { router } from "@/config/router";
-import { computed } from "vue";
+import { computed, reactive } from "vue";
 import type { SettingField } from "./api";
 
 // The one form that renders every plugin's configuration. It knows nothing about
@@ -39,9 +41,25 @@ const visible = (field: SettingField) => {
 };
 
 const editable = computed(() => props.fields.filter((field) => field.type !== "link"));
+const fileManager = computed(() => usePluginService<FrontendFileManagerService>("file"));
+
+const uploading = reactive(new Set<string>());
 
 const set = (field: SettingField, value: unknown) => {
   if (field.key) props.values[field.key] = value;
+};
+
+const upload = async (field: SettingField) => {
+  if (!field.key || uploading.has(field.key)) return;
+  const file = fileManager.value;
+  if (!file) return;
+  uploading.add(field.key);
+  try {
+    const url = await file.useUploadFileDialog();
+    if (url) set(field, url);
+  } finally {
+    uploading.delete(field.key);
+  }
 };
 
 const open = (field: SettingField) => {
@@ -74,6 +92,17 @@ const open = (field: SettingField) => {
           :placeholder="field.placeholder || t('TXT_CODE_4ea93630')"
           @update:value="set(field, $event)"
         />
+        <div v-else-if="field.type === 'string' && !field.secret && field.fileUpload" class="setting-file-input">
+          <a-input
+            :value="String(values[field.key!] ?? '')"
+            allow-clear
+            :placeholder="field.placeholder || t('TXT_CODE_4ea93630')"
+            @update:value="set(field, $event)"
+          />
+          <a-button v-if="fileManager" :loading="field.key ? uploading.has(field.key) : false" @click="upload(field)">
+            {{ t("TXT_CODE_ae09d79d") }}
+          </a-button>
+        </div>
         <a-input
           v-else-if="field.type === 'string' && !field.secret"
           :value="String(values[field.key!] ?? '')"
@@ -130,3 +159,15 @@ const open = (field: SettingField) => {
     </a-form-item>
   </a-form>
 </template>
+
+<style scoped>
+.setting-file-input {
+  display: flex;
+  max-width: 520px;
+  gap: 8px;
+}
+
+.setting-file-input :deep(.ant-input) {
+  flex: 1;
+}
+</style>
