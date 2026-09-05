@@ -54,12 +54,21 @@ function writeAppearance(
     logoImage: "",
     backgroundImage: ""
   };
-  const sidebarPosition = String(values.sidebarPosition ?? current.sidebarPosition ?? "left");
+  // `null` is sent by the clearable Vuetify input when an image is removed.
+  // Only an omitted field should fall back to the persisted value; treating
+  // null as missing writes the old image straight back into the layout.
+  const valueOrCurrent = (value: unknown, currentValue: unknown) =>
+    value === undefined ? currentValue : value;
+  const sidebarPosition = String(
+    valueOrCurrent(values.sidebarPosition, current.sidebarPosition ?? "left")
+  );
   page.theme = {
     ...current,
-    pageTitle: String(values.pageTitle ?? current.pageTitle ?? DEFAULT_PAGE_TITLE).trim() || DEFAULT_PAGE_TITLE,
-    logoImage: String(values.logoImage ?? current.logoImage ?? ""),
-    backgroundImage: String(values.backgroundImage ?? current.backgroundImage ?? ""),
+    pageTitle: String(
+      valueOrCurrent(values.pageTitle, current.pageTitle ?? DEFAULT_PAGE_TITLE)
+    ).trim() || DEFAULT_PAGE_TITLE,
+    logoImage: String(valueOrCurrent(values.logoImage, current.logoImage) ?? ""),
+    backgroundImage: String(valueOrCurrent(values.backgroundImage, current.backgroundImage) ?? ""),
     sidebarPosition: sidebarPosition === "right" ? "right" : "left"
   };
   setLayout(layout);

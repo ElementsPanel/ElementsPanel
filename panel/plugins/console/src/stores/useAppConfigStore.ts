@@ -74,7 +74,22 @@ export const useAppConfigStore = createGlobalState(() => {
     () => sidebarPosition.value === "left" && isWideEnoughForSidebar.value
   );
 
+  const clearBackgroundImage = () => {
+    const body = document.querySelector("body");
+    if (!body) return;
+    body.style.removeProperty("background-image");
+    body.style.removeProperty("background-size");
+    body.style.removeProperty("background-position");
+    body.style.removeProperty("background-repeat");
+    body.classList.remove("app-light-extend-theme", "app-dark-extend-theme");
+    hasBgImage.value = false;
+  };
+
   const setBackgroundImage = (url: string) => {
+    if (!url) {
+      clearBackgroundImage();
+      return;
+    }
     const body = document.querySelector("body");
     if (body) {
       body.style.backgroundSize = "cover";
@@ -124,8 +139,7 @@ export const useAppConfigStore = createGlobalState(() => {
     fn[currentTheme.value]?.();
 
     const frontendSettings = await getSettingsConfig();
-    if (frontendSettings?.theme?.backgroundImage)
-      setBackgroundImage(frontendSettings.theme.backgroundImage);
+    setBackgroundImage(frontendSettings?.theme?.backgroundImage || "");
     const pos = frontendSettings?.theme?.sidebarPosition;
     sidebarPosition.value = pos === "left" || pos === "right" ? pos : "left";
   };
@@ -178,6 +192,7 @@ export const useAppConfigStore = createGlobalState(() => {
     isDarkTheme,
     initAppTheme,
     setTheme,
+    clearBackgroundImage,
     setBackgroundImage,
     currentTheme,
     themeConfig: theme
