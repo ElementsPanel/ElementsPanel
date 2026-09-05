@@ -13,7 +13,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Equestriarcadia/ElementsPanel"
+    "url": "https://github.com/ElementsPanel/ElementsPanel"
   },
   "optionalDependencies": {
     "mcsmanager-common": "file:../common"

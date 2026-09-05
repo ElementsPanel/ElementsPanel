@@ -6,7 +6,6 @@ import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { sleep } from "@/tools/common";
 import { reportErrorMsg } from "@/tools/validator";
-import { desktopIconDarkUrl, desktopIconUrl } from "../assets";
 import {
     AppstoreOutlined,
     LoadingOutlined,
@@ -15,6 +14,7 @@ import {
 } from "@ant-design/icons-vue";
 import { message, Modal } from "ant-design-vue";
 import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
+import { desktopIconDarkUrl, desktopIconUrl } from "../assets";
 
 const emit = defineEmits<{
     (e: "login-success"): void;
@@ -129,7 +129,8 @@ const handleNext = async () => {
             <div class="window__titlebar" @mousedown="onMouseDown">
                 <div class="window__titlebar-left">
                     <span class="window__icon">
-                        <img class="window__logo-img" :src="isDarkTheme ? desktopIconUrl : desktopIconDarkUrl" alt="logo" />
+                        <img class="window__logo-img" :src="isDarkTheme ? desktopIconUrl : desktopIconDarkUrl"
+                            alt="logo" />
                     </span>
                     <span class="window__title">ElementsPanel</span>
                 </div>
@@ -170,7 +171,7 @@ const handleNext = async () => {
                 </form>
                 <div class="desktop-login-footer">
                     Powered by
-                    <a href="https://github.com/Equestriarcadia/ElementsPanel" target="_blank"
+                    <a href="https://github.com/ElementsPanel/ElementsPanel" target="_blank"
                         rel="noopener noreferrer">ElementsPanel</a>
                 </div>
             </div>

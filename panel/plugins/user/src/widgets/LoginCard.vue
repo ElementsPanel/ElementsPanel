@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import CardPanel from "@/components/CardPanel.vue";
 import { router } from "@/config/router";
-import { ctx } from "@/plugin/context";
 import { t } from "@/lang/i18n";
+import { ctx } from "@/plugin/context";
 import { loginPageInfo, loginUser, ssoConfig, type SsoPublicConfig } from "@/services/apis";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { sleep } from "@/tools/common";
@@ -219,7 +219,7 @@ onMounted(async () => {
                   <div v-if="pageInfoResult?.loginInfo" class="global-markdown-html"
                     v-html="markdownToHTML(pageInfoResult?.loginInfo || '')"></div>
                   Powered by
-                  <a href="https://github.com/Equestriarcadia/ElementsPanel" target="_blank" rel="noopener noreferrer">
+                  <a href="https://github.com/ElementsPanel/ElementsPanel" target="_blank" rel="noopener noreferrer">
                     ElementsPanel
                   </a>
                 </div>
