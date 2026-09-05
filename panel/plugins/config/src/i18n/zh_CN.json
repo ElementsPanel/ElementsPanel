@@ -1,5 +1,6 @@
 {
   "TXT_CODE_PLUGIN_CONFIG": "插件配置",
+  "TXT_CODE_PLUGIN_CANCEL": "取消",
   "TXT_CODE_PLUGIN_DISABLE": "禁用",
   "TXT_CODE_PLUGIN_DISABLED": "插件已禁用",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "该插件提供的所有组件都会被立即移除。",

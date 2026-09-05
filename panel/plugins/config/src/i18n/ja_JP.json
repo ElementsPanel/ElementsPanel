@@ -1,5 +1,6 @@
 {
   "TXT_CODE_PLUGIN_CONFIG": "プラグイン設定",
+  "TXT_CODE_PLUGIN_CANCEL": "キャンセル",
   "TXT_CODE_PLUGIN_DISABLE": "無効",
   "TXT_CODE_PLUGIN_DISABLED": "プラグインを無効にしました",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "このプラグインが提供するすべての要素が即座に削除されます。",

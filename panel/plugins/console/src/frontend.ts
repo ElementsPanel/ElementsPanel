@@ -32,6 +32,7 @@ import TitleCard from "./widgets/TitleCard.vue";
 import DesignModeActivator from "./widgets/DesignModeActivator.vue";
 import ConsoleApp from "./ConsoleApp.vue";
 import { setLoadingTitle } from "@/tools/dom";
+import { installVuetify } from "./vuetify";
 
 const coreCards = [
   ["Page404", Page404],
@@ -146,6 +147,7 @@ const cardPoolItems: LayoutCardPoolItemFactory[] = [
 export const inject = ["i18n", "vue", "routes", "ui"];
 
 export async function apply(ctx: PanelFrontendPluginContext) {
+  installVuetify(ctx.vue.app);
   ctx.set("console", { root: ConsoleApp });
 
   coreCards.forEach(([name, component]) => ctx.ui.layoutCard(name, component));

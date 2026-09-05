@@ -1,5 +1,6 @@
 {
   "TXT_CODE_PLUGIN_CONFIG": "Настройка плагинов",
+  "TXT_CODE_PLUGIN_CANCEL": "Отмена",
   "TXT_CODE_PLUGIN_DISABLE": "Выкл",
   "TXT_CODE_PLUGIN_DISABLED": "Плагин отключён",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Всё, что предоставляет этот плагин, будет удалено сразу.",

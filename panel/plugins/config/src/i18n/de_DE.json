@@ -1,5 +1,6 @@
 {
   "TXT_CODE_PLUGIN_CONFIG": "Plugin-Konfiguration",
+  "TXT_CODE_PLUGIN_CANCEL": "Abbrechen",
   "TXT_CODE_PLUGIN_DISABLE": "Aus",
   "TXT_CODE_PLUGIN_DISABLED": "Plugin deaktiviert",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Alles, was dieses Plugin bereitstellt, wird sofort entfernt.",

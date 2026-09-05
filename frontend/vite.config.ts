@@ -15,6 +15,21 @@ const PANEL_PLUGIN_ENTRY_PREFIX = "panel-plugin-entry:";
 const PANEL_PLUGIN_BUILD_ENTRY_PREFIX = "panel-plugin-build-entry:";
 const RESOLVED_PANEL_PLUGIN_BUILD_ENTRY_PREFIX = `\0${PANEL_PLUGIN_BUILD_ENTRY_PREFIX}`;
 const PANEL_PLUGINS_DIRECTORY = fileURLToPath(new URL("../panel/plugins", import.meta.url));
+const VUETIFY_FRAMEWORK_PATH = fileURLToPath(
+  new URL("./node_modules/vuetify/lib/framework.mjs", import.meta.url)
+);
+const VUETIFY_STYLES_PATH = fileURLToPath(
+  new URL("./node_modules/vuetify/lib/styles/main.css", import.meta.url)
+);
+const VUETIFY_COMPONENTS_PATH = fileURLToPath(
+  new URL("./node_modules/vuetify/lib/components/index.mjs", import.meta.url)
+);
+const VUETIFY_MDI_PATH = fileURLToPath(
+  new URL("./node_modules/vuetify/lib/iconsets/mdi.mjs", import.meta.url)
+);
+const MDI_FONT_CSS_PATH = fileURLToPath(
+  new URL("./node_modules/@mdi/font/css/materialdesignicons.css", import.meta.url)
+);
 
 interface DiscoveredPanelPlugin {
   metadata: Record<string, unknown>;
@@ -394,6 +409,16 @@ export default defineConfig({
       "@xterm/xterm"
     ],
     alias: {
+      // Vite 4 does not resolve Vuetify 3.7's exports map consistently from
+      // plugin files outside the frontend package. Point those entries at the
+      // installed files while keeping the imports package-oriented in source.
+      "vuetify/styles": VUETIFY_STYLES_PATH,
+      "vuetify/lib/components/index.mjs": VUETIFY_COMPONENTS_PATH,
+      "vuetify/lib/iconsets/mdi.mjs": VUETIFY_MDI_PATH,
+      // Keep this after the more specific Vuetify entries above: Vite aliases
+      // also match subpaths of a bare package name.
+      vuetify: VUETIFY_FRAMEWORK_PATH,
+      "@mdi/font/css/materialdesignicons.css": MDI_FONT_CSS_PATH,
       // The frontend entry only hosts the plugin runtime. Browser UI and shared
       // implementation modules are owned by their foundational plugins.
       "@/plugin": fileURLToPath(new URL("./src/plugin", import.meta.url)),

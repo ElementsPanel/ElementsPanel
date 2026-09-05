@@ -1,5 +1,6 @@
 {
   "TXT_CODE_PLUGIN_CONFIG": "插件設定",
+  "TXT_CODE_PLUGIN_CANCEL": "取消",
   "TXT_CODE_PLUGIN_DISABLE": "停用",
   "TXT_CODE_PLUGIN_DISABLED": "外掛已停用",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "該外掛提供的所有元件都會被立即移除。",

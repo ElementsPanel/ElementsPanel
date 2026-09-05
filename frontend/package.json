@@ -29,6 +29,7 @@
     "@codemirror/view": "^6.36.8",
     "@cordisjs/logger": "^0.3.3",
     "@lezer/highlight": "^1.2.1",
+    "@mdi/font": "^7.4.47",
     "@uiw/codemirror-theme-dracula": "^4.21.24",
     "@uiw/codemirror-theme-tokyo-night": "^4.23.12",
     "@vueuse/core": "^10.3.0",
@@ -58,6 +59,7 @@
     "vue": "^3.3.4",
     "vue-i18n": "^9.6.5",
     "vue-router": "^4.2.4",
+    "vuetify": "^3.7.0",
     "wavesurfer.js": "^7.7.1",
     "zrender": "^5.4.4"
   },

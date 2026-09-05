@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import CardPanel from "@/components/CardPanel.vue";
 import { router } from "@/config/router";
 import { t } from "@/lang/i18n";
 import { ctx } from "@/plugin/context";
@@ -9,13 +8,17 @@ import { sleep } from "@/tools/common";
 import { markdownToHTML } from "@/tools/safe";
 import { reportErrorMsg } from "@/tools/validator";
 import type { LayoutCard } from "@/types";
-import {
-  LockOutlined,
-  LoginOutlined,
-  UserOutlined
-} from "@ant-design/icons-vue";
 import { message, Modal } from "ant-design-vue";
 import { computed, onMounted, reactive, ref } from "vue";
+import {
+  VAlert,
+  VBtn,
+  VCard,
+  VCardText,
+  VDivider,
+  VForm,
+  VTextField
+} from "vuetify/lib/components/index.mjs";
 
 const { state: pageInfoResult, execute } = loginPageInfo();
 const ssoInfo = ref<SsoPublicConfig | null>(null);
@@ -142,114 +145,132 @@ onMounted(async () => {
 
 <template>
   <!-- eslint-disable vue/no-v-html -->
-  <div :class="{
-    'w-100': true,
-    'h-100': true
-  }">
-    <CardPanel class="login-panel" :class="{ 'login-card-fading': fadeOut }">
-      <template #body>
-        <div class="login-panel-body">
-          <div v-if="loginActions.length" style="position: absolute; top: 24px; right: 24px; z-index: 10;">
-            <template v-for="(action, index) in loginActions" :key="index">
-              <a-tooltip :title="action.title">
-                <a-button type="text" @click="action.click()">
-                  <template #icon>
-                    <component :is="action.icon" v-if="action.icon" />
-                  </template>
-                </a-button>
-              </a-tooltip>
-            </template>
+  <div class="login-card-host">
+    <VCard class="login-panel" :class="{ 'login-card-fading': fadeOut }" elevation="0">
+      <VCardText class="login-panel-body">
+        <div v-if="loginActions.length" class="login-actions">
+          <template v-for="(action, index) in loginActions" :key="index">
+            <VBtn
+              :aria-label="action.title"
+              :title="action.title"
+              icon
+              variant="text"
+              @click="action.click()"
+            >
+              <component :is="action.icon" v-if="action.icon" />
+            </VBtn>
+          </template>
+        </div>
+        <h2 class="login-title glitch-wrapper">
+          <div class="glitch" :data-text="props.card?.title ? props.card?.title : t('TXT_CODE_3ba5ad')">
+            {{ props.card?.title ? props.card?.title : t("TXT_CODE_3ba5ad") }}
           </div>
-          <a-typography-title :level="3" class="mb-20 glitch-wrapper">
-            <div class="glitch" :data-text="props.card?.title ? props.card?.title : t('TXT_CODE_3ba5ad')">
-              {{ props.card?.title ? props.card?.title : t("TXT_CODE_3ba5ad") }}
-            </div>
-          </a-typography-title>
-          <a-typography-paragraph class="mb-20">
-            {{ t("TXT_CODE_5b60ad00") }}
-          </a-typography-paragraph>
-          <div class="account-input-container">
-            <div v-if="ssoInfo?.enabled && ssoInfo?.onlyMode" class="sso-only-container">
-              <a-typography-paragraph type="secondary" class="mb-20">
-                {{ t("TXT_CODE_SSO_ONLY_MODE_WARN") }}
-              </a-typography-paragraph>
-              <a-button size="large" type="primary" block @click="handleSsoLogin">
-                <template #icon>
-                  <img v-if="ssoInfo?.iconUrl" :src="ssoInfo.iconUrl"
-                    style="width: 16px; height: 16px; margin-right: 6px; vertical-align: middle" />
-                  <LoginOutlined v-else />
+        </h2>
+        <p class="login-subtitle">
+          {{ t("TXT_CODE_5b60ad00") }}
+        </p>
+        <div class="account-input-container">
+          <div v-if="ssoInfo?.enabled && ssoInfo?.onlyMode" class="sso-only-container">
+            <VAlert class="mb-20" type="info" variant="tonal">
+              {{ t("TXT_CODE_SSO_ONLY_MODE_WARN") }}
+            </VAlert>
+            <VBtn size="large" color="primary" block @click="handleSsoLogin">
+              <template #prepend>
+                <img v-if="ssoInfo?.iconUrl" :src="ssoInfo.iconUrl" class="sso-icon" alt="" />
+                <span v-else class="mdi mdi-login" aria-hidden="true"></span>
+              </template>
+              {{
+                ssoInfo?.providerName
+                  ? t("TXT_CODE_SSO_LOGIN_BTN", { name: ssoInfo.providerName })
+                  : t("TXT_CODE_SSO_LOGIN_BTN_DEFAULT")
+              }}
+            </VBtn>
+          </div>
+
+          <template v-else>
+            <VForm @submit.prevent="handleLogin">
+              <div v-if="!is2Fa">
+                <VTextField
+                  v-model="formData.username"
+                  class="account"
+                  name="mcsm-name-input"
+                  autocomplete="username"
+                  :placeholder="t('TXT_CODE_80a560a1')"
+                  prepend-inner-icon="mdi-account"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+                <VTextField
+                  v-model="formData.password"
+                  class="mt-20 account"
+                  type="password"
+                  name="mcsm-pw-input"
+                  autocomplete="current-password"
+                  :placeholder="t('TXT_CODE_551b0348')"
+                  prepend-inner-icon="mdi-lock"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+              </div>
+              <VTextField
+                v-else
+                v-model="formData.code"
+                class="mt-20 mb-20 account"
+                type="text"
+                name="mcsm-pw-2fa"
+                autocomplete="one-time-code"
+                :placeholder="t('TXT_CODE_7ac8b1d3')"
+                prepend-inner-icon="mdi-lock-check"
+                variant="outlined"
+                density="comfortable"
+                hide-details
+              />
+              <div class="login-actions-row">
+                <div class="mcsmanager-link">
+                  <div
+                    v-if="pageInfoResult?.loginInfo"
+                    class="global-markdown-html"
+                    v-html="markdownToHTML(pageInfoResult?.loginInfo || '')"
+                  ></div>
+                  Powered by
+                  <a
+                    href="https://github.com/ElementsPanel/ElementsPanel"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    ElementsPanel
+                  </a>
+                </div>
+                <VBtn size="large" color="primary" type="submit" :loading="loading" min-width="95">
+                  {{ t("TXT_CODE_d2c1a316") }}
+                </VBtn>
+              </div>
+            </VForm>
+
+            <div v-if="ssoInfo?.enabled && !ssoInfo?.onlyMode" class="sso-divider-section">
+              <div class="sso-divider">
+                <VDivider />
+                <span>{{ t("TXT_CODE_SSO_LOGIN_DIVIDER") }}</span>
+                <VDivider />
+              </div>
+              <VBtn size="large" block variant="outlined" @click="handleSsoLogin">
+                <template #prepend>
+                  <img v-if="ssoInfo?.iconUrl" :src="ssoInfo.iconUrl" class="sso-icon" alt="" />
+                  <span v-else class="mdi mdi-login" aria-hidden="true"></span>
                 </template>
                 {{
                   ssoInfo?.providerName
                     ? t("TXT_CODE_SSO_LOGIN_BTN", { name: ssoInfo.providerName })
                     : t("TXT_CODE_SSO_LOGIN_BTN_DEFAULT")
                 }}
-              </a-button>
+              </VBtn>
             </div>
-
-            <template v-else>
-              <form @submit.prevent>
-                <div v-if="!is2Fa">
-                  <a-input v-model:value="formData.username" class="account" size="large" name="mcsm-name-input"
-                    :placeholder="t('TXT_CODE_80a560a1')">
-                    <template #suffix>
-                      <UserOutlined style="color: rgba(0, 0, 0, 0.45)" />
-                    </template>
-                  </a-input>
-                  <a-input v-model:value="formData.password" class="mt-20 account" type="password"
-                    :placeholder="t('TXT_CODE_551b0348')" size="large" name="mcsm-pw-input" @press-enter="handleLogin">
-                    <template #suffix>
-                      <LockOutlined style="color: rgba(0, 0, 0, 0.45)" />
-                    </template>
-                  </a-input>
-                </div>
-                <div v-else>
-                  <a-input v-model:value="formData.code" class="mt-20 mb-20 account" type="text"
-                    :placeholder="t('TXT_CODE_7ac8b1d3')" size="large" autocomplete="off" name="mcsm-pw-2fa"
-                    @press-enter="handleLogin">
-                    <template #suffix>
-                      <LockOutlined style="color: rgba(0, 0, 0, 0.45)" />
-                    </template>
-                  </a-input>
-                </div>
-              </form>
-
-              <div class="mt-24 flex-between align-center">
-                <div class="mcsmanager-link">
-                  <div v-if="pageInfoResult?.loginInfo" class="global-markdown-html"
-                    v-html="markdownToHTML(pageInfoResult?.loginInfo || '')"></div>
-                  Powered by
-                  <a href="https://github.com/ElementsPanel/ElementsPanel" target="_blank" rel="noopener noreferrer">
-                    ElementsPanel
-                  </a>
-                </div>
-                <div class="justify-end" style="gap: 10px">
-                  <a-button size="large" type="primary" style="min-width: 95px" :loading="loading" @click="handleLogin">
-                    {{ t("TXT_CODE_d2c1a316") }}
-                  </a-button>
-                </div>
-              </div>
-
-              <div v-if="ssoInfo?.enabled && !ssoInfo?.onlyMode" class="sso-divider-section">
-                <a-divider>{{ t("TXT_CODE_SSO_LOGIN_DIVIDER") }}</a-divider>
-                <a-button size="large" block @click="handleSsoLogin">
-                  <template #icon>
-                    <img v-if="ssoInfo?.iconUrl" :src="ssoInfo.iconUrl"
-                      style="width: 16px; height: 16px; margin-right: 6px; vertical-align: middle" />
-                    <LoginOutlined v-else />
-                  </template>
-                  {{
-                    ssoInfo?.providerName
-                      ? t("TXT_CODE_SSO_LOGIN_BTN", { name: ssoInfo.providerName })
-                      : t("TXT_CODE_SSO_LOGIN_BTN_DEFAULT")
-                  }}
-                </a-button>
-              </div>
-            </template>
-          </div>
+          </template>
         </div>
-      </template>
-    </CardPanel>
+      </VCardText>
+    </VCard>
   </div>
 </template>
 
@@ -275,15 +296,69 @@ onMounted(async () => {
   margin: 0 auto;
   transition: all 0.4s;
   width: 100%;
+  height: 100%;
   border-radius: 12px;
+  overflow: hidden;
   // backdrop-filter: saturate(120%) blur(12px);
   background-color: var(--login-panel-bg);
+  color: var(--text-color);
 
   .login-panel-body {
     position: relative;
     padding: 28px 24px;
     min-height: 322px;
   }
+}
+
+.login-card-host {
+  width: 100%;
+  height: 100%;
+}
+
+.login-actions {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 10;
+}
+
+.login-title {
+  margin: 0 0 20px;
+  font-size: 22px;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.login-subtitle {
+  margin: 0 0 20px;
+  color: var(--text-color);
+}
+
+.login-actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.sso-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: var(--text-color);
+  font-size: var(--font-body);
+
+  .v-divider {
+    flex: 1;
+  }
+}
+
+.sso-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
 }
 
 .login-card-fading {

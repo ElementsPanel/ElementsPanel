@@ -1,5 +1,6 @@
 {
   "TXT_CODE_PLUGIN_CONFIG": "Plugin Configuration",
+  "TXT_CODE_PLUGIN_CANCEL": "Cancel",
   "TXT_CODE_PLUGIN_DISABLE": "Off",
   "TXT_CODE_PLUGIN_DISABLED": "Plugin disabled",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Everything this plugin provides is removed at once.",

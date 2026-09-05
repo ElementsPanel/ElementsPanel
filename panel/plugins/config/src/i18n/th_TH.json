@@ -1,5 +1,6 @@
 {
   "TXT_CODE_PLUGIN_CONFIG": "การกำหนดค่าปลั๊กอิน",
+  "TXT_CODE_PLUGIN_CANCEL": "ยกเลิก",
   "TXT_CODE_PLUGIN_DISABLE": "ปิด",
   "TXT_CODE_PLUGIN_DISABLED": "ปิดใช้งานปลั๊กอินแล้ว",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "ทุกอย่างที่ปลั๊กอินนี้ให้มาจะถูกลบออกทันที",

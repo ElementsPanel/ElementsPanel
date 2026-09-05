@@ -1,5 +1,6 @@
 {
   "TXT_CODE_PLUGIN_CONFIG": "Configuration des plugins",
+  "TXT_CODE_PLUGIN_CANCEL": "Annuler",
   "TXT_CODE_PLUGIN_DISABLE": "Désactivé",
   "TXT_CODE_PLUGIN_DISABLED": "Extension désactivée",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Tout ce que cette extension fournit est retiré immédiatement.",

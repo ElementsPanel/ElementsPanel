@@ -1,9 +1,17 @@
 <script setup lang="ts">
+/* eslint-disable vue/no-mutating-props */
 import { t } from "@/lang/i18n";
 import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
 import { router } from "@/config/router";
 import { computed, reactive } from "vue";
+import {
+  VBtn,
+  VForm,
+  VSelect,
+  VTextField,
+  VTextarea
+} from "vuetify/lib/components/index.mjs";
 import type { SettingField } from "./api";
 
 // The one form that renders every plugin's configuration. It knows nothing about
@@ -18,6 +26,9 @@ const props = defineProps<{
   saving?: boolean;
 }>();
 
+// The event parameter is part of the emit type only; Vue supplies no runtime
+// value for it.
+// eslint-disable-next-line no-unused-vars
 const emit = defineEmits<{ (event: "save"): void }>();
 
 const allYesNo = [
@@ -49,6 +60,11 @@ const set = (field: SettingField, value: unknown) => {
   if (field.key) props.values[field.key] = value;
 };
 
+const setNumber = (field: SettingField, value: string | number | null) => {
+  if (!field.key) return;
+  props.values[field.key] = value === "" || value === null ? undefined : Number(value);
+};
+
 const upload = async (field: SettingField) => {
   if (!field.key || uploading.has(field.key)) return;
   const file = fileManager.value;
@@ -73,101 +89,164 @@ const open = (field: SettingField) => {
 </script>
 
 <template>
-  <a-form layout="vertical">
+  <VForm @submit.prevent="emit('save')">
     <template v-for="(field, index) in fields" :key="field.key || `link-${index}`">
-      <a-form-item v-if="field.type === 'link'">
-        <a-button @click="open(field)">{{ field.title }}</a-button>
-      </a-form-item>
+      <div v-if="field.type === 'link'" class="setting-link-row">
+        <VBtn variant="outlined" type="button" @click="open(field)">{{ field.title }}</VBtn>
+      </div>
 
-      <a-form-item v-else-if="visible(field)">
-        <a-typography-title :level="5">{{ field.title }}</a-typography-title>
-        <a-typography-paragraph v-if="field.description" type="secondary">
+      <div v-else-if="visible(field)" class="setting-field">
+        <div class="setting-field-title">{{ field.title }}</div>
+        <div v-if="field.description" class="setting-field-description">
           {{ field.description }}
-        </a-typography-paragraph>
+        </div>
 
-        <a-textarea
+        <VTextarea
           v-if="field.type === 'text'"
-          :value="String(values[field.key!] ?? '')"
+          :model-value="String(values[field.key!] ?? '')"
           :rows="4"
           :placeholder="field.placeholder || t('TXT_CODE_4ea93630')"
-          @update:value="set(field, $event)"
+          variant="outlined"
+          density="comfortable"
+          hide-details
+          @update:model-value="set(field, $event)"
         />
         <div v-else-if="field.type === 'string' && !field.secret && field.fileUpload" class="setting-file-input">
-          <a-input
-            :value="String(values[field.key!] ?? '')"
-            allow-clear
+          <VTextField
+            :model-value="String(values[field.key!] ?? '')"
             :placeholder="field.placeholder || t('TXT_CODE_4ea93630')"
-            @update:value="set(field, $event)"
+            variant="outlined"
+            density="comfortable"
+            hide-details
+            clearable
+            @update:model-value="set(field, $event)"
           />
-          <a-button v-if="fileManager" :loading="field.key ? uploading.has(field.key) : false" @click="upload(field)">
+          <VBtn
+            v-if="fileManager"
+            type="button"
+            variant="outlined"
+            :loading="field.key ? uploading.has(field.key) : false"
+            @click="upload(field)"
+          >
             {{ t("TXT_CODE_ae09d79d") }}
-          </a-button>
+          </VBtn>
         </div>
-        <a-input
+        <VTextField
           v-else-if="field.type === 'string' && !field.secret"
-          :value="String(values[field.key!] ?? '')"
-          style="max-width: 420px"
+          :model-value="String(values[field.key!] ?? '')"
+          class="setting-control setting-control-medium"
           :placeholder="field.placeholder || t('TXT_CODE_4ea93630')"
-          @update:value="set(field, $event)"
+          variant="outlined"
+          density="comfortable"
+          hide-details
+          @update:model-value="set(field, $event)"
         />
-        <a-input-password
+        <VTextField
           v-else-if="field.type === 'string'"
-          :value="String(values[field.key!] ?? '')"
-          style="max-width: 420px"
+          :model-value="String(values[field.key!] ?? '')"
+          class="setting-control setting-control-medium"
+          type="password"
           :placeholder="field.placeholder || t('TXT_CODE_4ea93630')"
-          @update:value="set(field, $event)"
+          variant="outlined"
+          density="comfortable"
+          hide-details
+          @update:model-value="set(field, $event)"
         />
-        <a-input-number
+        <VTextField
           v-else-if="field.type === 'number'"
-          :value="Number(values[field.key!] ?? 0)"
+          :model-value="Number(values[field.key!] ?? 0)"
+          class="setting-control setting-control-small"
+          type="number"
           :min="field.min"
           :max="field.max"
-          style="max-width: 220px"
-          @update:value="set(field, $event)"
+          variant="outlined"
+          density="comfortable"
+          hide-details
+          @update:model-value="setNumber(field, $event)"
         />
-        <a-select
+        <VSelect
           v-else-if="field.type === 'boolean'"
-          :value="Boolean(values[field.key!]) as any"
-          style="max-width: 220px"
-          @update:value="set(field, $event)"
-        >
-          <a-select-option v-for="item in allYesNo" :key="String(item.value)" :value="item.value">
-            {{ item.label }}
-          </a-select-option>
-        </a-select>
-        <a-select
+          :model-value="Boolean(values[field.key!])"
+          class="setting-control setting-control-small"
+          :items="allYesNo"
+          item-title="label"
+          item-value="value"
+          variant="outlined"
+          density="comfortable"
+          hide-details
+          @update:model-value="set(field, $event)"
+        />
+        <VSelect
           v-else-if="field.type === 'select'"
-          :value="values[field.key!] as any"
-          style="max-width: 320px"
-          @update:value="set(field, $event)"
-        >
-          <a-select-option
-            v-for="item in field.options || []"
-            :key="String(item.value)"
-            :value="item.value"
-          >
-            {{ item.label }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
+          :model-value="values[field.key!]"
+          class="setting-control setting-control-wide"
+          :items="field.options || []"
+          item-title="label"
+          item-value="value"
+          variant="outlined"
+          density="comfortable"
+          hide-details
+          @update:model-value="set(field, $event)"
+        />
+      </div>
     </template>
 
-    <a-form-item v-if="editable.length">
-      <a-button type="primary" :loading="saving" @click="emit('save')">
+    <div v-if="editable.length" class="setting-save-row">
+      <VBtn type="submit" color="primary" :loading="saving">
         {{ t("TXT_CODE_d507abff") }}
-      </a-button>
-    </a-form-item>
-  </a-form>
+      </VBtn>
+    </div>
+  </VForm>
 </template>
 
 <style scoped>
+.setting-field,
+.setting-link-row {
+  margin-bottom: 20px;
+}
+
+.setting-field-title {
+  margin-bottom: 6px;
+  color: var(--text-color);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.setting-field-description {
+  margin-bottom: 10px;
+  color: var(--text-color);
+  font-size: 13px;
+  opacity: 0.68;
+}
+
+.setting-control {
+  max-width: 100%;
+}
+
+.setting-control-small {
+  max-width: 220px;
+}
+
+.setting-control-medium {
+  max-width: 420px;
+}
+
+.setting-control-wide {
+  max-width: 320px;
+}
+
 .setting-file-input {
   display: flex;
   max-width: 520px;
+  align-items: flex-start;
   gap: 8px;
 }
 
-.setting-file-input :deep(.ant-input) {
+.setting-file-input :deep(.v-input) {
   flex: 1;
+}
+
+.setting-save-row {
+  margin-top: 8px;
 }
 </style>

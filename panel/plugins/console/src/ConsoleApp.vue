@@ -15,8 +15,9 @@ import { ctx } from "@/plugin/context";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import { closeAppLoading, setLoadingTitle } from "@/tools/dom";
+import { VThemeProvider } from "vuetify/lib/components/index.mjs";
 
-const { hasBgImage, initAppTheme, useSidebarLayout } = useAppConfigStore();
+const { hasBgImage, initAppTheme, isDarkTheme, useSidebarLayout } = useAppConfigStore();
 const { containerState } = useLayoutContainerStore();
 const { state: appState } = useAppStateStore();
 const { isPhone } = useScreen();
@@ -39,6 +40,7 @@ const designModeNavStyle = computed(() => {
 
 const isLoginPage = computed(() => route.path === "/login");
 const isImmersivePage = computed(() => route.meta.immersive === true);
+const vuetifyTheme = computed(() => (isDarkTheme.value ? "dark" : "light"));
 
 // One-shot entrance animation right after a successful login (route leaves
 // `/login`). Header slides down, content fades in.
@@ -65,30 +67,32 @@ onMounted(async () => {
 </script>
 
 <template>
-  <AppConfigProvider :has-bg-image="hasBgImage">
-    <div class="global-app-container">
-      <AppSidebarMenu v-if="useSidebarLayout && !isLoginPage && !isImmersivePage" :style="designModeNavStyle" />
-      <main class="main-content" :class="{ 'app-layout-sidebar-only': useSidebarLayout && !isImmersivePage }">
-        <AppHeader
-          v-if="!useSidebarLayout && !isLoginPage && !isImmersivePage"
-          :style="designModeNavStyle"
-          :login-enter="justLoggedIn"
-        />
-        <div class="app-main-body" :class="{ 'login-enter-content': justLoggedIn }">
-          <Breadcrumbs v-if="!isLoginPage && !isImmersivePage" />
-          <RouterView v-slot="{ Component, route }">
-            <transition name="page-fade" mode="out-in">
-              <component :is="Component" :key="route.fullPath" />
-            </transition>
-          </RouterView>
-        </div>
-      </main>
-    </div>
+  <VThemeProvider :theme="vuetifyTheme">
+    <AppConfigProvider :has-bg-image="hasBgImage">
+      <div class="global-app-container">
+        <AppSidebarMenu v-if="useSidebarLayout && !isLoginPage && !isImmersivePage" :style="designModeNavStyle" />
+        <main class="main-content" :class="{ 'app-layout-sidebar-only': useSidebarLayout && !isImmersivePage }">
+          <AppHeader
+            v-if="!useSidebarLayout && !isLoginPage && !isImmersivePage"
+            :style="designModeNavStyle"
+            :login-enter="justLoggedIn"
+          />
+          <div class="app-main-body" :class="{ 'login-enter-content': justLoggedIn }">
+            <Breadcrumbs v-if="!isLoginPage && !isImmersivePage" />
+            <RouterView v-slot="{ Component, route }">
+              <transition name="page-fade" mode="out-in">
+                <component :is="Component" :key="route.fullPath" />
+              </transition>
+            </RouterView>
+          </div>
+        </main>
+      </div>
 
-    <AppBottomNav v-if="isPhone && !useSidebarLayout && !isLoginPage && !isImmersivePage" />
+      <AppBottomNav v-if="isPhone && !useSidebarLayout && !isLoginPage && !isImmersivePage" />
 
-    <component :is="component" v-for="(component, index) in GLOBAL_COMPONENTS" :key="index" />
-  </AppConfigProvider>
+      <component :is="component" v-for="(component, index) in GLOBAL_COMPONENTS" :key="index" />
+    </AppConfigProvider>
+  </VThemeProvider>
 </template>
 
 <style lang="scss">
