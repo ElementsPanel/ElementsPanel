@@ -5,7 +5,7 @@ import type { Ref } from "vue";
 /**
  * Facade over the account API, which is owned by the "user" panel plugin.
  *
- * Panel core and other plugins keep importing these names from
+ * The console implementation and other plugins keep importing these names from
  * `@/services/apis`; the real definitions are registered by the plugin as the
  * `user.api` service and resolved at call time, so unloading the plugin takes
  * the API with it. Without the plugin the panel runs unauthenticated and

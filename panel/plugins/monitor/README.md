@@ -52,9 +52,9 @@ Registered by `src/frontend.ts`:
 - A Desktop application (`DesktopOverview`, moved out of the `desktop` plugin)
 
 `src/hooks/useOverviewChart.ts` holds the full monitoring chart — axes, gradient
-area fill, tooltip. The core keeps `useSimpleChart` in
-`frontend/src/hooks/useOverviewChart.ts`, because the `node` plugin draws its
-per-node sparklines with it.
+area fill, tooltip. The console plugin provides the shared `useSimpleChart`
+implementation in `plugins/console/src/hooks/useOverviewChart.ts`, because the
+`node` plugin draws its per-node sparklines with it.
 
 ### A note on `chart.system`
 

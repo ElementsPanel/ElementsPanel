@@ -1,11 +1,11 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 
-import { router } from "./config/router";
+import { router } from "@console/config/router";
 import { getI18nInstance, t } from "@/lang/i18n";
 import App from "./App.vue";
 
-import { useAppStateStore } from "./stores/useAppStateStore";
+import { useAppStateStore } from "@console/stores/useAppStateStore";
 import { ctx } from "./plugin/context";
 import { setupPanelFrontendPlugins } from "./plugin/install";
 

@@ -369,7 +369,11 @@ export default defineConfig({
       "@xterm/xterm"
     ],
     alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      // The frontend entry only hosts the plugin runtime. Browser UI and shared
+      // implementation modules are owned by their foundational plugins.
+      "@/plugin": fileURLToPath(new URL("./src/plugin", import.meta.url)),
+      "@/lang": fileURLToPath(new URL("../panel/plugins/i18n/src/lang", import.meta.url)),
+      "@": fileURLToPath(new URL("../panel/plugins/console/src", import.meta.url)),
       "@console": fileURLToPath(new URL("../panel/plugins/console/src", import.meta.url)),
       "@instance": fileURLToPath(new URL("../panel/plugins/instance/src", import.meta.url)),
       // Console cards are compiled from the panel plugin directory, while

@@ -90,10 +90,9 @@ rather than adding a tab to the panel Settings page.
 ## Frontend
 
 `src/api.ts` holds the real `/api/auth/*` definitions and is registered as the
-`user.api` service. `frontend/src/services/apis/user.ts` in the core is a facade
-over it, re-exported from `@/services/apis`, so existing call sites are
-unchanged and `useAppStateStore().authEnabled` reports whether this plugin is
-installed.
+`user.api` service. The console plugin's shared API facade re-exports it from
+`@/services/apis`, so existing call sites remain scoped to the loaded plugin and
+`useAppStateStore().authEnabled` reports whether this plugin is installed.
 
 Registered by `src/frontend.ts`:
 

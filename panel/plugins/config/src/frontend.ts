@@ -12,7 +12,7 @@ import { localeMessages } from "./i18n";
 
 const ROLE_ADMIN = 10;
 
-export const inject = ["i18n", "routes", "desktop"];
+export const inject = ["console", "i18n", "routes", "desktop"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);

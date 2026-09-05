@@ -54,26 +54,25 @@ Registered by `src/frontend.ts`:
 `src/hooks/useMarketPackages.ts` holds the catalogue fetch and all the filter
 state. `src/market-dialog.ts` mounts the package picker; it is registered as
 `market.openMarketDialog` so the core Iframe bridge
-(`frontend/src/components/IframeBox/handler.ts`) can open it without importing
+(`plugins/console/src/components/IframeBox/handler.ts`) can open it without importing
 this plugin, and reports a clear error when the plugin is absent.
 
 `src/runtime.ts` caches the install permission once the plugin is ready, because
 the terminal button's `condition` is evaluated synchronously on every render.
 
-### What the core keeps
+### Shared console implementation
 
-`FilterOption` and `SEARCH_ALL_KEY` live in `frontend/src/types`, and
-`InstanceDetail.vue` stays in the core: the market editor reuses that dialog to
-edit a package's instance configuration, so the dependency points from the
-plugin into the core rather than the other way round.
+`FilterOption` and `SEARCH_ALL_KEY` live in the console plugin's shared types,
+and `InstanceDetail.vue` is provided by the instance plugin: the market editor
+uses that plugin service directly when it edits a package's instance
+configuration.
 
 The default layouts for `/market` and `/market/editor` are contributed through
 the console layout registry, alongside the node and users pages. The panel core
 does not own feature layout definitions.
 
-`frontend/src/components/InstallOptionButton.vue` moved out of the old
-`widgets/market/` folder into the core components: it is a generic button used
-by the instance-creation page and has nothing to do with the market.
+`plugins/console/src/components/InstallOptionButton.vue` is a generic button
+used by the instance-creation page and has nothing to do with the market.
 
 ## Daemon side
 

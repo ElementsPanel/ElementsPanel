@@ -87,7 +87,7 @@ const cardPoolItems: LayoutCardPoolItemFactory[] = [
   })
 ];
 
-export const inject = ["i18n", "routes", "ui", "desktop", "actions"];
+export const inject = ["console", "i18n", "routes", "ui", "desktop", "actions"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);

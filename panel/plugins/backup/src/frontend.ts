@@ -5,7 +5,7 @@ import DesktopInstanceBackup from "./desktop/DesktopInstanceBackup.vue";
 import { localeMessages } from "./i18n";
 import InstanceBackupModal from "./normal/InstanceBackupModal.vue";
 
-export const inject = ["i18n", "actions", "instance"];
+export const inject = ["console", "i18n", "actions", "instance"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);

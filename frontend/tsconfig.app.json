@@ -4,10 +4,9 @@
     "env.d.ts",
     "src/**/*",
     "src/**/*.vue",
-    "src/config/**/*",
-    "src/lang/**/*.json",
     "../panel/plugins/**/*.ts",
     "../panel/plugins/**/*.vue",
+    "../panel/plugins/**/*.json",
     "ant.d.ts",
     "components.d.ts",
     "../common/global.d.ts"
@@ -17,7 +16,10 @@
     "composite": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
+      "@/plugin": ["./src/plugin/index.ts"],
+      "@/plugin/*": ["./src/plugin/*"],
+      "@/lang/*": ["../panel/plugins/i18n/src/lang/*"],
+      "@/*": ["../panel/plugins/console/src/*"],
       "@console/*": ["../panel/plugins/console/src/*"],
       "@instance/*": ["../panel/plugins/instance/src/*"],
       "lodash": ["./node_modules/@types/lodash/index.d.ts"],

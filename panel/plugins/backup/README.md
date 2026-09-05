@@ -5,7 +5,8 @@ both the normal panel and Desktop mode. It registers one removable instance
 action with normal and Desktop components, and owns the panel-side backup HTTP
 routes under `/api/protected_instance/backup`.
 
-The generic asynchronous-task and file-editor APIs remain in the panel core;
+The generic asynchronous-task and file-editor APIs remain in the console
+plugin's shared browser implementation;
 the backup plugin composes them to run backup jobs and edit `.epbaklst`.
 
 ## Translations

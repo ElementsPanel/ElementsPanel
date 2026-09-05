@@ -224,7 +224,7 @@ import type { PanelFrontendPluginContext } from "@/plugin";
 import { localeMessages } from "./i18n";
 import ExamplePage from "./ExamplePage.vue";
 
-export const inject = ["i18n", "routes", "ui"];
+export const inject = ["console", "i18n", "routes", "ui"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
@@ -236,6 +236,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 | Service | What it gives you |
 | --- | --- |
 | `ctx.logger`, `ctx.timer` | As on the backend. |
+| `ctx.console` | The foundational Web UI shell. Every plugin that contributes browser UI should inject it. |
 | `ctx.vue` | `app`, `pinia`, `router`. Stored raw; never make a context reactive. |
 | `ctx.i18n` | `instance`, `define(messages)`. |
 | `ctx.routes` | `add(route)`, `revision`, `isPluginRoute(path)`, `ownerOf(path)`. |
@@ -251,6 +252,15 @@ export function apply(ctx: PanelFrontendPluginContext) {
 | `ctx.terminal` | Terminal components, hooks and stream APIs. **Provided by `plugins/terminal`.** |
 
 `frontend/src/plugin/context.ts` is the authoritative declaration of all of this.
+
+The `frontend/src` entry is intentionally minimal: it contains only the app
+bootstrap host and the plugin runtime. Shared browser implementation modules
+are owned by `plugins/console`, while feature-specific modules live in their
+respective plugin directories.
+
+Every built-in frontend plugin except the foundational `i18n` and `console`
+plugins injects `console`. This makes the Web UI ownership explicit and keeps a
+feature plugin inactive until the shell it contributes to is available.
 
 Routes may set `meta.public` to bypass login checks, `meta.immersive` to hide the
 panel shell, `meta.mainMenu` to appear in navigation and `meta.icon` for its

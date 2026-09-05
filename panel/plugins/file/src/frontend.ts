@@ -26,7 +26,7 @@ import { filterFileName, getFileExtName, getFileIcon, isCompressFile } from "./t
 // window, the file editor, the image viewer, the upload queue and the three
 // dialogs the panel mounts on demand.
 //
-// Everything another plugin or the panel core needs of it is published as
+// Everything another plugin or the console implementation needs of it is published as
 // `ctx.set("file", ...)`: the upload dialog the settings page opens for a
 // logo, the file editor the mod manager and the backup plugin open, the
 // extension helpers the code editor uses. Those callers resolve it with
@@ -59,7 +59,7 @@ const isFileManagerAvailable = (_context: PanelFrontendInstanceActionContext) =>
   return state.settings.canFileManager || isAdmin.value;
 };
 
-export const inject = ["ui", "actions", "routes"];
+export const inject = ["console", "ui", "actions", "routes"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.set("file", {

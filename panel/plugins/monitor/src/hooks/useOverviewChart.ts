@@ -1,6 +1,6 @@
 // The full monitoring chart: axes, gradient area fill and tooltip. Moved out of
-// the panel core with the monitoring page; the core keeps `useSimpleChart`,
-// which the node plugin uses for its per-node sparklines.
+// the console plugin with the monitoring page; the console keeps
+// `useSimpleChart`, which the node plugin uses for its per-node sparklines.
 
 import { graphic, init, type ECharts } from "echarts";
 import { onMounted, onUnmounted, ref } from "vue";

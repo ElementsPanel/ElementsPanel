@@ -2,8 +2,8 @@ import { useDefineApi } from "@/stores/useDefineApi";
 import type { BaseUserInfo, EditUserInfo, LoginUserInfo, UserInstance } from "@/types/user";
 import type { SsoPublicConfig } from "@/services/apis/user";
 
-// The real /api/auth definitions. The panel core re-exports facades over these
-// (see frontend/src/services/apis/user.ts) so nothing outside this plugin has
+// The real /api/auth definitions. The console plugin re-exports facades over
+// these (see plugins/console/src/services/apis/user.ts) so nothing outside this plugin has
 // to know they exist.
 
 export const loginUser = useDefineApi<

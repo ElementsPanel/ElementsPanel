@@ -8,7 +8,7 @@
  * ```ts
  * import type { PanelFrontendPluginContext } from "@/plugin";
  *
- * export const inject = ["routes", "ui"];
+ * export const inject = ["console", "routes", "ui"];
  *
  * export function apply(ctx: PanelFrontendPluginContext) {
  *   ctx.i18n.define(localeMessages);

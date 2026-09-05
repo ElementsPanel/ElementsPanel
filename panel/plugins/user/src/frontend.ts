@@ -19,12 +19,12 @@ const ROLE_ADMIN = 10;
 const ROLE_USER = 1;
 const ROLE_GUEST = 0;
 
-export const inject = ["i18n", "routes", "ui", "instance"];
+export const inject = ["console", "i18n", "routes", "ui", "instance"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
 
-  // Everything the panel core needs from the account API and the windows the
+  // Everything the console implementation needs from the account API and the windows the
   // Desktop plugin mounts. Resolved at call time, so unloading this plugin
   // takes authentication with it.
   ctx.set("user", {

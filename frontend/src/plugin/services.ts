@@ -3,9 +3,9 @@ import { markRaw, shallowReactive, shallowRef, type App, type Component } from "
 import { remove } from "cosmokit";
 import type { Pinia } from "pinia";
 import type { RouteRecordRaw } from "vue-router";
-import { LAYOUT_CARD_TYPES, PLUGIN_LAYOUT_CARD_POOL_FACTORIES } from "@/config";
-import type { LayoutCardPoolItemFactory } from "@/config";
-import { router } from "@/config/router";
+import { LAYOUT_CARD_TYPES, PLUGIN_LAYOUT_CARD_POOL_FACTORIES } from "@console/config";
+import type { LayoutCardPoolItemFactory } from "@console/config";
+import { router } from "@console/config/router";
 import type {
   FrontendActionsService,
   FrontendDesktopService,

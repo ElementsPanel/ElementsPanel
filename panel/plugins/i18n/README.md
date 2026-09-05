@@ -6,8 +6,8 @@ the backend and frontend. It provides `ctx.i18n`, initializes the shared
 instance, and scopes translation bundles registered by other plugins.
 
 The host loads this plugin before configuration, routes, layouts, and ordinary
-plugins. Core imports from `app/i18n` and `@/lang/i18n` are compatibility
-facades over the instances owned here.
+plugins. The frontend bootstrap and shared plugin code import `@/lang/i18n` as
+a compatibility facade over the instances owned here.
 
 The plugin also declares the panel language setting consumed by the central
 plugin configuration page. Saving it updates the persisted panel setting and

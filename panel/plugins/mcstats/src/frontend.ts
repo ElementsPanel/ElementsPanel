@@ -19,7 +19,7 @@ const isMinecraftStatusAvailable = ({
   return type.startsWith(TYPE_MINECRAFT_JAVA) || type.startsWith(TYPE_MINECRAFT_BEDROCK);
 };
 
-export const inject = ["actions", "instance"];
+export const inject = ["console", "actions", "instance"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.actions.instance({

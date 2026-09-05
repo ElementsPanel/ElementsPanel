@@ -16,7 +16,7 @@ const openDesktop = () => {
   window.location.hash = "#/desktop";
 };
 
-export const inject = ["i18n", "routes", "menus", "desktop", "terminal", "instance"];
+export const inject = ["console", "i18n", "routes", "menus", "desktop", "terminal", "instance"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);

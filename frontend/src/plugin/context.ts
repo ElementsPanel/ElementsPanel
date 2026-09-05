@@ -3,10 +3,10 @@ import { shallowRef, type App, type Component } from "vue";
 import type { Pinia } from "pinia";
 import type { RouteRecordRaw, Router } from "vue-router";
 import type { I18n } from "vue-i18n";
-import type { LayoutCardPoolItemFactory } from "@/config";
-import type { RemoteNodeHook } from "@/hooks/useRemoteNode";
-import type { NodePluginApi } from "@/services/apis/node";
-import type { UserPluginApi } from "@/services/apis/user";
+import type { LayoutCardPoolItemFactory } from "@console/config";
+import type { RemoteNodeHook } from "@console/hooks/useRemoteNode";
+import type { NodePluginApi } from "@console/services/apis/node";
+import type { UserPluginApi } from "@console/services/apis/user";
 import type { LoadedPanelFrontendPlugin, PanelFrontendPluginMetadata } from "./loader";
 
 /**

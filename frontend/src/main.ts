@@ -1,6 +1,6 @@
 import { bootstrapPanelFrontendPlugin } from "./plugin/loader";
-import { useAppStateStore } from "./stores/useAppStateStore";
-import { setAppLoadingError, setLoadingTitle } from "./tools/dom";
+import { useAppStateStore } from "@console/stores/useAppStateStore";
+import { setAppLoadingError, setLoadingTitle } from "@console/tools/dom";
 
 function handleLoadingError(error: any) {
   console.error("Init app error:", error);

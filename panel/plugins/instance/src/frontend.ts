@@ -105,7 +105,7 @@ const cardPoolItems: LayoutCardPoolItemFactory[] = [
   )
 ];
 
-export const inject = ["routes", "ui", "actions"];
+export const inject = ["console", "routes", "ui", "actions"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.set("instance", {
