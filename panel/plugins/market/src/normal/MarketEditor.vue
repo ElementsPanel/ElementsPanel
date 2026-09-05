@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import CardPanel from "@/components/CardPanel.vue";
+import FadeUpAnimation from "@/components/FadeUpAnimation.vue";
 import Loading from "@/components/Loading.vue";
 import { router } from "@/config/router";
 import { t } from "@/lang/i18n";

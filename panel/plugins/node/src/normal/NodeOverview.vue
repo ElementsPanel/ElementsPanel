@@ -1,5 +1,6 @@
 <!-- eslint-disable vue/html-indent -->
 <script setup lang="ts">
+import CardPanel from "@/components/CardPanel.vue";
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { t } from "@/lang/i18n";
 import { getUsageColor } from "@/tools/common";

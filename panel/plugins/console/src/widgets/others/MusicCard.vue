@@ -1,5 +1,6 @@
 <!-- eslint-disable no-unused-vars -->
 <script setup lang="ts">
+import CardPanel from "@/components/CardPanel.vue";
 import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
 import { useLayoutCardTools } from "@/hooks/useCardTools";

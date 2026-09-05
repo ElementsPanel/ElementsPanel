@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import CardPanel from "@/components/CardPanel.vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { t } from "@/lang/i18n";
 import type { LayoutCard } from "../types/index";

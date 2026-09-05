@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { LayoutCard } from "@/types/index";
 import { LAYOUT_CARD_TYPES } from "@/config/index";
+import CardError from "@/components/CardError.vue";
 import { onErrorCaptured, ref } from "vue";
 
 const props = defineProps<{

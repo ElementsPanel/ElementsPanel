@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import InnerCard from "@/components/InnerCard.vue";
 import ResponsiveLayoutGroup from "@/components/ResponsiveLayoutGroup.vue";
+import CardPanel from "@/components/CardPanel.vue";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import {
   TYPE_STEAM_SERVER_UNIVERSAL,

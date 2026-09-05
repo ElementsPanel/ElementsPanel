@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import CardPanel from "@/components/CardPanel.vue";
+import BetweenMenus from "@/components/BetweenMenus.vue";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { getInstanceConfigByType, type InstanceConfigs } from "@/hooks/useInstance";

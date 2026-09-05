@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CardPanel from "@/components/CardPanel.vue";
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { getRandomId } from "@/tools/randId";
 import type { JsonData, LayoutCard } from "@/types";

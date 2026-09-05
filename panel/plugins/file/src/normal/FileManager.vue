@@ -2,6 +2,7 @@
 import ArchivePreview from "@/components/ArchivePreview.vue";
 import BetweenMenus from "@/components/BetweenMenus.vue";
 import CardPanel from "@/components/CardPanel.vue";
+import UploadTaskProgress from "@/components/UploadTaskProgress.vue";
 import { useDownloadFileDialog } from "../dialogs";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useFileManager } from "../hooks/useFileManager";

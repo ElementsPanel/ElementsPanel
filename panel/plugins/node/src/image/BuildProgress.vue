@@ -5,6 +5,7 @@ import { useScreen } from "@/hooks/useScreen";
 import { reportErrorMsg } from "@/tools/validator";
 import { buildProgress } from "@/services/apis/envImage";
 import Loading from "@/components/Loading.vue";
+import CardPanel from "@/components/CardPanel.vue";
 const props = defineProps<{
   daemonId: string;
 }>();

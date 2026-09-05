@@ -9,6 +9,7 @@ import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { toUnicode } from "@/tools/common";
 import Loading from "@/components/Loading.vue";
+import BetweenMenus from "@/components/BetweenMenus.vue";
 import configComponent from "@/components/InstanceConfigEditor.vue";
 import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";

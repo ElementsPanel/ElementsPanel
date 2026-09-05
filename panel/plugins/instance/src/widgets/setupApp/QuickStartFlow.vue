@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ActionButton from "@/components/ActionButton.vue";
+import CardPanel from "@/components/CardPanel.vue";
 import Loading from "@/components/Loading.vue";
 import { useScreen } from "@/hooks/useScreen";
 import type { LayoutCard } from "@/types";

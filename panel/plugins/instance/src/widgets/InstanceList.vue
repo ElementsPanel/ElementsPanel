@@ -19,6 +19,9 @@ import {
 import { computed, h, onMounted, ref } from "vue";
 
 import BetweenMenus from "@/components/BetweenMenus.vue";
+import Empty from "@/components/Empty.vue";
+import FadeUpAnimation from "@/components/FadeUpAnimation.vue";
+import Loading from "@/components/Loading.vue";
 import { router } from "@/config/router";
 import { useInstanceTagSearch, useInstanceTagTips } from "@/hooks/useInstanceTag";
 import { useScreen } from "@/hooks/useScreen";

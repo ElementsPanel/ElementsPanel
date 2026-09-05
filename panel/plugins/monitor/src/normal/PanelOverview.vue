@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DataStatistic from "@/components/DataStatistic.vue";
+import CardPanel from "@/components/CardPanel.vue";
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { t } from "@/lang/i18n";
 import { arrayFilter } from "@/tools/array";

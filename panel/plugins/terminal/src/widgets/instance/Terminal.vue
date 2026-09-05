@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import CardPanel from "@/components/CardPanel.vue";
 import IconBtn from "@/components/IconBtn.vue";
+import BetweenMenus from "@/components/BetweenMenus.vue";
 import TerminalCore from "../../components/TerminalCore.vue";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { INSTANCE_TYPE_TRANSLATION, verifyEULA } from "@/hooks/useInstance";

@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import type { Ref } from "vue";
 import ActionButton from "@/components/ActionButton.vue";
+import CardPanel from "@/components/CardPanel.vue";
 import { message } from "ant-design-vue";
 import { reportErrorMsg } from "@/tools/validator";
 import { DeleteOutlined } from "@ant-design/icons-vue";

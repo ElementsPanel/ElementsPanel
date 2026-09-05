@@ -267,7 +267,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           type: "InstancePerformance",
           title: translate("TXT_CODE_5476e012"),
           width: 8,
-          height: "MINI",
+          height: LayoutCardHeight.MINI,
           meta: {}
         },
         {
@@ -275,7 +275,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           type: "InstanceCommandHistory",
           title: translate("TXT_CODE_cmd_history"),
           width: 4,
-          height: "MINI",
+          height: LayoutCardHeight.MINI,
           meta: {}
         },
         {
@@ -283,7 +283,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           type: "InstanceBaseInfo",
           title: translate("TXT_CODE_eadb4f60"),
           width: 4,
-          height: "SMALL",
+          height: LayoutCardHeight.SMALL,
           meta: {}
         },
         {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BetweenMenus from "@/components/BetweenMenus.vue";
+import FadeUpAnimation from "@/components/FadeUpAnimation.vue";
 import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";

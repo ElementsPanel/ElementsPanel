@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CardPanel from "@/components/CardPanel.vue";
 import LineOption from "@/components/LineOption.vue";
 import { configData } from "@/config/instanceConfigMap";
 import { t } from "@/lang/i18n";

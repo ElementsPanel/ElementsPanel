@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CardPanel from "@/components/CardPanel.vue";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { t } from "@/lang/i18n";

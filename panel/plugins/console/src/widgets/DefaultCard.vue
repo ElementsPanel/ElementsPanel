@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CardPanel from "@/components/CardPanel.vue";
 import { t } from "@/lang/i18n";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import type { LayoutCard } from "@/types";

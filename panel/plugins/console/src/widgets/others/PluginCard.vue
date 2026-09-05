@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CardPanel from "@/components/CardPanel.vue";
 import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
 import { t } from "@/lang/i18n";

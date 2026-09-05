@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ActionButton from "@/components/ActionButton.vue";
+import CardPanel from "@/components/CardPanel.vue";
 import { t } from "@/lang/i18n";
 import type { LayoutCard } from "@/types";
 import { router } from "@/config/router";
