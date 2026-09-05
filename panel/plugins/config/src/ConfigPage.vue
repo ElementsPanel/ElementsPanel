@@ -369,7 +369,14 @@ const nodeLabel = (node: NodeSummary) =>
 :global(.desktop-container .plugin-config-page) {
   --plugin-config-surface-color: #FFFFFF;
 
+  height: 100%;
   background: var(--plugin-config-surface-color);
+}
+
+:global(.desktop-container .ant-spin-nested-loading),
+:global(.desktop-container .ant-spin-container) {
+  height: 100%;
+  min-height: 0;
 }
 
 :global(.app-dark-theme .desktop-container .plugin-config-page) {
