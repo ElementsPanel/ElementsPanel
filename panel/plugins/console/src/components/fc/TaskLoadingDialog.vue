@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import type { MountComponent } from "@/types";
+import type { MountComponent } from "../../types";
 import { LoadingOutlined } from "@ant-design/icons-vue";
 
 interface Props extends MountComponent {

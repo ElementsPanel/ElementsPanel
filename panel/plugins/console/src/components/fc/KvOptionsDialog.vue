@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import type { MountComponent } from "@/types";
+import type { MountComponent } from "../../types";
 import type { AntColumnsType, AntTableCell } from "@/types/ant";
 import { MinusCircleOutlined, PlusCircleOutlined } from "@ant-design/icons-vue";
 import { type FormInstance } from "ant-design-vue";

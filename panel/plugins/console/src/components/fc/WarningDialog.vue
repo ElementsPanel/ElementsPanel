@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import type { MountComponent } from "@/types";
+import type { MountComponent } from "../../types";
 import { t } from "@/lang/i18n";
 
 interface Props extends MountComponent {
