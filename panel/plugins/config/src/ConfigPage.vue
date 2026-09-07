@@ -334,9 +334,9 @@ const confirmDisable = () => {
     <VProgressLinear v-if="loading" class="plugin-config-loading" color="primary" indeterminate />
 
     <div class="plugin-config-sidebar">
-      <VBtnToggle v-model="scope" class="plugin-config-scope" color="primary" mandatory divided>
-        <VBtn value="panel" size="small">{{ t("TXT_CODE_PLUGIN_SCOPE_PANEL") }}</VBtn>
-        <VBtn value="node" size="small">{{ t("TXT_CODE_PLUGIN_SCOPE_NODE") }}</VBtn>
+      <VBtnToggle v-model="scope" class="plugin-config-scope" mandatory>
+        <VBtn value="panel" size="small" variant="text">{{ t("TXT_CODE_PLUGIN_SCOPE_PANEL") }}</VBtn>
+        <VBtn value="node" size="small" variant="text">{{ t("TXT_CODE_PLUGIN_SCOPE_NODE") }}</VBtn>
       </VBtnToggle>
 
       <VSelect
@@ -506,13 +506,24 @@ const confirmDisable = () => {
 
 .plugin-config-scope {
   display: flex;
+  gap: 8px;
   width: 100%;
   padding: 0 10px 12px;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .plugin-config-scope :deep(.v-btn) {
   flex: 1;
+  min-height: 32px;
+  border-radius: 24px;
   text-align: center;
+}
+
+.plugin-config-scope :deep(.v-btn--active) {
+  background: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-on-primary));
 }
 
 .plugin-config-node-select {
@@ -559,15 +570,21 @@ const confirmDisable = () => {
 
 .plugin-config-list :deep(.v-list-item) {
   min-height: 36px;
-  margin: 0;
+  margin: 0 0 6px;
   padding-top: 2px;
   padding-bottom: 2px;
-  border-radius: 6px;
+  overflow: hidden;
+  border-radius: 24px !important;
   color: var(--text-color);
 }
 
 .plugin-config-list :deep(.v-list-item--active) {
   background: rgba(22, 119, 255, 0.12);
+}
+
+.plugin-config-list :deep(.v-list-item__overlay),
+.plugin-config-list :deep(.v-list-item__underlay) {
+  border-radius: inherit;
 }
 
 .plugin-config-list :deep(.plugin-config-item-off .v-list-item-title) {
