@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import NodeSimpleChart from "../NodeSimpleChart.vue";
 import { GLOBAL_INSTANCE_UUID } from "@/config/const";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useOverviewInfo, type ComputedNodeInfo } from "@/hooks/useOverviewInfo";
 import { SocketStatus, useSocketIoClient } from "@/hooks/useSocketIo";
 import { t } from "@/lang/i18n";
-import { connectNode } from "../../api";
 import { arrayFilter } from "@/tools/array";
 import { reportErrorMsg } from "@/tools/validator";
 import { hasVersionUpdate } from "@/tools/version";
@@ -14,6 +12,8 @@ import type { LayoutCard } from "@/types";
 import { message } from "ant-design-vue";
 import { computed, onMounted, ref } from "vue";
 import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VCol, VIcon, VRow, VTooltip } from "vuetify/lib/components/index.mjs";
+import { connectNode } from "../../api";
+import NodeSimpleChart from "../NodeSimpleChart.vue";
 import NodeDetailDialog from "./NodeDetailDialog.vue";
 
 const { testFrontendSocket, socketStatus } = useSocketIoClient();
@@ -204,14 +204,8 @@ onMounted(() => {
         <VCardActions v-if="remoteNode" class="node-card-actions">
           <VTooltip v-for="operation in nodeOperations" :key="operation.title" location="top">
             <template #activator="{ props: tooltipProps }">
-              <VBtn
-                v-bind="tooltipProps"
-                icon
-                variant="text"
-                size="small"
-                :aria-label="operation.title"
-                @click="remoteNode && operation.click(remoteNode)"
-              >
+              <VBtn v-bind="tooltipProps" icon variant="text" size="small" :aria-label="operation.title"
+                @click="remoteNode && operation.click(remoteNode)">
                 <VIcon :icon="operation.icon" />
               </VBtn>
             </template>
@@ -236,11 +230,10 @@ onMounted(() => {
               <div v-else style="font-size: 13px">
                 <VTooltip v-if="detail.warn && detail.value" location="top">
                   <template #activator="{ props: tooltipProps }">
-                  <span
-                    v-bind="tooltipProps"
-                    :class="detail.danger ? 'color-danger' : remoteNode?.brand !== 'ElementsPanel' ? 'color-warning' : 'color-danger'">
-                    <VIcon icon="mdi-information-outline" size="16" /> {{ detail.value }}
-                  </span>
+                    <span v-bind="tooltipProps"
+                      :class="detail.danger ? 'color-danger' : remoteNode?.brand !== 'ElementsPanel' ? 'color-warning' : 'color-danger'">
+                      <VIcon icon="mdi-information-outline" size="16" /> {{ detail.value }}
+                    </span>
                   </template>
                   <span>{{ detail.warnText }}</span>
                 </VTooltip>
@@ -283,7 +276,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 32px 8px;
+  padding: 20px 20px 8px 32px;
   color: var(--text-color);
 }
 
@@ -294,7 +287,7 @@ onMounted(() => {
 }
 
 .node-card-content {
-  padding: 0 32px 28px;
+  padding: 0 28px 28px 32px;
   color: var(--text-color);
 }
 

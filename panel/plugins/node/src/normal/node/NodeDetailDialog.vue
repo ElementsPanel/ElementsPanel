@@ -162,20 +162,4 @@ defineExpose({ openDialog });
 .form-hint { margin: -8px 0 12px; color: var(--color-gray-7); font-size: 12px; }
 .mapping-sheet { padding: 16px; }
 .mapping-label { margin-bottom: 4px; font-weight: 600; }
-
-.node-dialog-form :deep(.v-field--variant-solo-filled),
-.node-dialog-form :deep(.v-field--variant-solo),
-.node-dialog-form :deep(.v-field--variant-underlined) {
-  box-shadow: none !important;
-}
-
-.node-dialog-form :deep(.v-field::before),
-.node-dialog-form :deep(.v-field::after),
-.node-dialog-form :deep(.v-field__outline) {
-  display: none !important;
-}
-
-.node-dialog-form :deep(.v-field) {
-  border: 0 !important;
-}
 </style>

@@ -45,6 +45,17 @@ html {
   color: var(--text-color) !important;
 }
 
+// Use one flat field treatment for every Vuetify input and select.
+.v-field {
+  box-shadow: none !important;
+}
+
+.v-field::before,
+.v-field::after,
+.v-field__outline {
+  display: none !important;
+}
+
 .global-bg-color {
   background-color: var(--background-color) !important;
 }

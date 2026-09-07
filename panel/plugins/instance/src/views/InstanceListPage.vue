@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useDeleteInstanceDialog } from "@/components/fc/index";
+import { openInstanceTagsEditor, useDeleteInstanceDialog } from "@/components/fc/index";
 import PageToolbar from "@/components/PageToolbar.vue";
 import { router } from "@/config/router";
 import { verifyEULA } from "@/hooks/useInstance";
@@ -235,9 +235,23 @@ const runCardAction = async (
 const confirmCardAction = (item: InstanceMoreDetail, action: "stop" | "restart" | "kill") =>
   Modal.confirm({
     title: t("TXT_CODE_893567ac"),
-    content: t("TXT_CODE_276756b2"),
+    content: {
+      stop: t("TXT_CODE_6da85509"),
+      restart: t("TXT_CODE_f6bd907d"),
+      kill: t("TXT_CODE_ec08484")
+    }[action],
     onOk: () => runCardAction(item, action)
   });
+
+const editCardTags = async (item: InstanceMoreDetail) => {
+  const tags = item.config.tag || [];
+  const newTags = await openInstanceTagsEditor(
+    item.instanceUuid,
+    currentRemoteNode.value?.uuid || "",
+    tags
+  );
+  if (JSON.stringify(newTags) !== JSON.stringify(tags)) await initInstancesData();
+};
 
 const statusColor = (item: InstanceMoreDetail) => {
   if (item.status === INSTANCE_STATUS_CODE.RUNNING) return "success";
@@ -530,6 +544,58 @@ onMounted(async () => {
                     @click="confirmCardAction(item, 'stop')" /></template
                 ><span>{{ t("TXT_CODE_b1dedda3") }}</span></VTooltip
               >
+              <VTooltip location="top">
+                <template #activator="{ props: tooltipProps }">
+                  <VBtn
+                    v-if="item.status === INSTANCE_STATUS_CODE.RUNNING"
+                    v-bind="tooltipProps"
+                    icon="mdi-restart"
+                    size="small"
+                    variant="text"
+                    @click="confirmCardAction(item, 'restart')"
+                  />
+                </template>
+                <span>{{ t("TXT_CODE_47dcfa5") }}</span>
+              </VTooltip>
+              <VTooltip location="top">
+                <template #activator="{ props: tooltipProps }">
+                  <VBtn
+                    v-if="item.status === INSTANCE_STATUS_CODE.STOPPED"
+                    v-bind="tooltipProps"
+                    icon="mdi-cloud-download-outline"
+                    size="small"
+                    variant="text"
+                    @click="runCardAction(item, 'update')"
+                  />
+                </template>
+                <span>{{ t("TXT_CODE_40ca4f2") }}</span>
+              </VTooltip>
+              <VTooltip location="top">
+                <template #activator="{ props: tooltipProps }">
+                  <VBtn
+                    v-if="item.status !== INSTANCE_STATUS_CODE.STOPPED"
+                    v-bind="tooltipProps"
+                    icon="mdi-close-circle-outline"
+                    size="small"
+                    color="error"
+                    variant="text"
+                    @click="confirmCardAction(item, 'kill')"
+                  />
+                </template>
+                <span>{{ t("TXT_CODE_7b67813a") }}</span>
+              </VTooltip>
+              <VTooltip location="top">
+                <template #activator="{ props: tooltipProps }">
+                  <VBtn
+                    v-bind="tooltipProps"
+                    icon="mdi-tag-multiple-outline"
+                    size="small"
+                    variant="text"
+                    @click="editCardTags(item)"
+                  />
+                </template>
+                <span>{{ t("TXT_CODE_78e88c3f") }}</span>
+              </VTooltip>
               <VTooltip location="top"
                 ><template #activator="{ props: tooltipProps }"
                   ><VBtn
@@ -693,6 +759,8 @@ onMounted(async () => {
 }
 .instance-card-actions {
   justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 2px;
   padding: 4px 12px 12px;
 }
 @media (max-width: 992px) {
