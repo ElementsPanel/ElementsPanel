@@ -1,31 +1,37 @@
 <script setup lang="ts">
-import BetweenMenus from "@/components/BetweenMenus.vue";
-import CardPanel from "@/components/CardPanel.vue";
+import PageToolbar from "@/components/PageToolbar.vue";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useSchedule } from "@/hooks/useSchedule";
-import { useScreen } from "@/hooks/useScreen";
 import { t as $t, t } from "@/lang/i18n";
 import { ctx } from "@/plugin/context";
 import { padZero } from "@/tools/common";
 import { ScheduleActionType, ScheduleCreateType, ScheduleType } from "@/types/const";
 import type { LayoutCard, Schedule } from "@/types/index";
-import NewSchedule from "./dialogs/NewSchedule.vue";
-import { DeleteOutlined, EditOutlined, FieldTimeOutlined } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
 import { computed, onMounted, ref } from "vue";
-import type { AntColumnsType } from "@/types/ant";
+import {
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardText,
+  VContainer,
+  VDataTable,
+  VDialog,
+  VSpacer
+} from "vuetify/lib/components/index.mjs";
+import NewSchedule from "./dialogs/NewSchedule.vue";
 
 const props = defineProps<{
   card: LayoutCard;
 }>();
 
-const { isPhone } = useScreen();
 const { getMetaOrRouteValue } = useLayoutCardTools(props.card);
 const instanceId = getMetaOrRouteValue("instanceId");
 const daemonId = getMetaOrRouteValue("daemonId");
 const { toPage } = useAppRouters();
-const newScheduleDialog = ref<InstanceType<typeof NewSchedule>>();
+const scheduleDialogOpen = ref(false);
+const scheduleDialogTask = ref<Schedule>();
 const { getScheduleList, schedules, scheduleListLoading, deleteSchedule } = useSchedule(
   String(instanceId),
   String(daemonId)
@@ -65,62 +71,93 @@ const timeRender = (text: string, schedule: Schedule) => {
   return formatFunction(text) ?? "Unknown Time";
 };
 
-const columns: AntColumnsType[] = [
+const headers = [
   {
     align: "center",
     title: t("TXT_CODE_2d542e4c"),
-    dataIndex: "name",
     key: "name"
   },
   {
     align: "center",
     title: t("TXT_CODE_1544562"),
-    dataIndex: "payload",
     key: "payload"
   },
   {
     align: "center",
     title: t("TXT_CODE_485e2d41"),
-    dataIndex: "count",
     key: "count",
-    minWidth: 80,
-    customRender: (e: { text: number }) => (e.text > 0 ? e.text : t("TXT_CODE_a92df201"))
+    sortable: false
   },
   {
     align: "center",
     title: t("TXT_CODE_82fbc5ad"),
-    dataIndex: "action",
     key: "action",
-    minWidth: 180,
-    customRender: (e: { text: string }) => scheduleActionTypes.value[e.text] ?? e.text
+    sortable: false
   },
   {
     align: "center",
     title: t("TXT_CODE_67d68dd1"),
-    dataIndex: "type",
     key: "type",
-    minWidth: 180,
-    customRender: (e: { text: 1 | 2 | 3 }) => ScheduleType[e.text]
+    sortable: false
   },
   {
     align: "center",
     title: t("TXT_CODE_3554dac0"),
-    dataIndex: "time",
     key: "time",
-    minWidth: 240,
-    customRender: (e: { text: string; record: Schedule }) => timeRender(e.text, e.record)
+    sortable: false
   },
   {
     align: "center",
     title: t("TXT_CODE_fe731dfc"),
     key: "actions",
-    minWidth: 180
+    sortable: false
   }
-];
+] as const;
+
+type ScheduleRow = Schedule & {
+  payload: string;
+  action: string;
+};
+
+const scheduleRows = computed<ScheduleRow[]>(() =>
+  ((schedules.value || []) as Schedule[]).map((schedule) => ({
+    ...schedule,
+    payload: schedule.actions?.[0]?.payload || "",
+    action: schedule.actions?.[0]?.type || ""
+  }))
+);
+
+const rawSchedule = (item: unknown): ScheduleRow =>
+  (item as { raw?: ScheduleRow })?.raw || (item as ScheduleRow);
+const deleteDialogOpen = ref(false);
+const deleteCandidate = ref<Schedule>();
+const deleteLoading = ref(false);
 
 const refresh = async () => {
   await getScheduleList();
   message.success(t("TXT_CODE_fbde647e"));
+};
+
+const openDeleteDialog = (schedule: Schedule) => {
+  deleteCandidate.value = schedule;
+  deleteDialogOpen.value = true;
+};
+
+const openScheduleDialog = (schedule?: Schedule) => {
+  scheduleDialogTask.value = schedule;
+  scheduleDialogOpen.value = true;
+};
+
+const confirmDelete = async () => {
+  if (!deleteCandidate.value) return;
+  deleteLoading.value = true;
+  try {
+    await deleteSchedule(deleteCandidate.value.name);
+    deleteDialogOpen.value = false;
+    deleteCandidate.value = undefined;
+  } finally {
+    deleteLoading.value = false;
+  }
 };
 
 const toConsole = () => {
@@ -139,90 +176,112 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div style="height: 100%" class="container">
-    <a-row :gutter="[24, 24]" style="height: 100%">
-      <a-col :span="24">
-        <BetweenMenus>
-          <template v-if="!isPhone" #left>
-            <a-typography-title class="mb-0" :level="4">
-              <FieldTimeOutlined />
-              {{ card.title }}
-            </a-typography-title>
-          </template>
-          <template #right>
-            <a-button @click="toConsole">
-              {{ t("TXT_CODE_c14b2ea3") }}
-            </a-button>
-            <a-button @click="refresh">
-              {{ t("TXT_CODE_b76d94e0") }}
-            </a-button>
-            <a-button type="primary" @click="newScheduleDialog?.openDialog()">
-              {{ t("TXT_CODE_1644b775") }}
-            </a-button>
-          </template>
-        </BetweenMenus>
-      </a-col>
-      <a-col :span="24">
-        <CardPanel style="height: 100%">
-          <template #body>
-            <a-spin :spinning="scheduleListLoading">
-              <a-table
-                :data-source="schedules"
-                :columns="columns"
-                :scroll="{ x: 'max-content' }"
-                :pagination="{
-                  pageSize: 15
-                }"
-              >
-                <template #bodyCell="{ column, record }">
-                  <template v-if="column.key === 'actions'">
-                    <a-button
-                      class="mr-8"
-                      size="large"
-                      @click="newScheduleDialog?.openDialog(record as Schedule)"
-                    >
-                      {{ t("TXT_CODE_ad207008") }}
-                      <EditOutlined />
-                    </a-button>
-                    <a-popconfirm
-                      :title="t('TXT_CODE_6ff0668f')"
-                      @confirm="deleteSchedule(record.name)"
-                    >
-                      <a-button danger size="large">
-                        {{ t("TXT_CODE_ecbd7449") }}
-                        <DeleteOutlined />
-                      </a-button>
-                    </a-popconfirm>
-                  </template>
-                </template>
-              </a-table>
-            </a-spin>
-          </template>
-        </CardPanel>
-      </a-col>
-    </a-row>
-  </div>
+  <main class="schedule-page">
+    <VContainer fluid class="schedule-container">
+      <PageToolbar :title="card.title" icon="mdi-clock-outline">
+        <template #actions>
+          <VBtn variant="text" prepend-icon="mdi-console-line" @click="toConsole">
+            {{ t("TXT_CODE_c14b2ea3") }}
+          </VBtn>
+          <VBtn variant="text" prepend-icon="mdi-refresh" @click="refresh">
+            {{ t("TXT_CODE_b76d94e0") }}
+          </VBtn>
+          <VBtn color="primary" prepend-icon="mdi-plus" @click="openScheduleDialog()">
+            {{ t("TXT_CODE_1644b775") }}
+          </VBtn>
+        </template>
+      </PageToolbar>
 
-  <NewSchedule
-    ref="newScheduleDialog"
-    :daemon-id="daemonId ?? ''"
-    :instance-id="instanceId ?? ''"
-    @get-schedule-list="getScheduleList()"
-  />
+      <VCard class="schedule-card" rounded="xl" flat>
+        <VDataTable :headers="headers" :items="scheduleRows" :items-per-page="15" :loading="scheduleListLoading"
+          :loading-text="t('TXT_CODE_b197be11')" :no-data-text="t('TXT_CODE_NO_DATA')" class="schedule-table">
+          <template #item.count="{ item }">
+            {{ Number(rawSchedule(item).count) > 0 ? rawSchedule(item).count : t("TXT_CODE_a92df201") }}
+          </template>
+          <template #item.action="{ item }">
+            {{ scheduleActionTypes[rawSchedule(item).action] ?? (rawSchedule(item).action || "--") }}
+          </template>
+          <template #item.type="{ item }">
+            {{ ScheduleType[rawSchedule(item).type as keyof typeof ScheduleType] ?? "--" }}
+          </template>
+          <template #item.time="{ item }">
+            {{ timeRender(rawSchedule(item).time, rawSchedule(item)) }}
+          </template>
+          <template #item.actions="{ item }">
+            <div class="schedule-row-actions">
+              <VBtn size="small" variant="text" prepend-icon="mdi-pencil-outline"
+                @click.stop="openScheduleDialog(rawSchedule(item))">
+                {{ t("TXT_CODE_ad207008") }}
+              </VBtn>
+              <VBtn size="small" color="error" variant="text" prepend-icon="mdi-delete-outline"
+                @click="openDeleteDialog(rawSchedule(item))">
+                {{ t("TXT_CODE_ecbd7449") }}
+              </VBtn>
+            </div>
+          </template>
+        </VDataTable>
+      </VCard>
+    </VContainer>
+    <VDialog v-model="deleteDialogOpen" class="app-dialog" max-width="460px">
+      <VCard rounded="xl" :title="t('TXT_CODE_6ff0668f')">
+        <VCardText>
+          {{ deleteCandidate?.name || "" }}
+        </VCardText>
+        <VCardActions>
+          <VSpacer />
+          <VBtn variant="text" :disabled="deleteLoading" @click="deleteDialogOpen = false">
+            {{ t("TXT_CODE_a0451c97") }}
+          </VBtn>
+          <VBtn color="error" :loading="deleteLoading" @click="confirmDelete">
+            {{ t("TXT_CODE_ecbd7449") }}
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+  </main>
+
+  <Teleport to="body">
+    <NewSchedule v-model="scheduleDialogOpen" :daemon-id="daemonId ?? ''" :instance-id="instanceId ?? ''"
+      :task="scheduleDialogTask" @get-schedule-list="getScheduleList()" />
+  </Teleport>
 </template>
 
 <style lang="scss" scoped>
-.search-input {
-  transition: all 0.4s;
-  text-align: center;
-  width: 50%;
+.schedule-page {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
 
-  &:hover {
-    width: 100%;
+.schedule-container {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: 20px 24px 32px;
+}
+
+.schedule-card {
+  overflow: hidden;
+  background: var(--background-color-white);
+}
+
+.schedule-table :deep(th),
+.schedule-table :deep(td) {
+  white-space: nowrap;
+}
+
+.schedule-row-actions {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+@media (max-width: 992px) {
+  .schedule-container {
+    padding: 16px 12px 28px;
   }
 
-  @media (max-width: 992px) {
-    width: 100% !important;
+  .schedule-row-actions {
+    justify-content: flex-start;
   }
 }
 </style>

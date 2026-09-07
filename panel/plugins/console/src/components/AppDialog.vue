@@ -8,7 +8,7 @@ import {
   VDialog
 } from "vuetify/lib/components/index.mjs";
 import { t } from "@/lang/i18n";
-import { computed, ref, useAttrs, useSlots, watch } from "vue";
+import { computed, getCurrentInstance, ref, useAttrs, useSlots, watch } from "vue";
 
 defineOptions({ inheritAttrs: false });
 
@@ -37,6 +37,11 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  // Explicit undefined defaults prevent Vue's Boolean prop casting from
+  // turning omitted channels into `false` and masking the active v-model.
+  modelValue: undefined,
+  open: undefined,
+  visible: undefined,
   closable: true,
   maskClosable: true,
   keyboard: true,
@@ -58,8 +63,19 @@ const emit = defineEmits<{
 const attrs = useAttrs();
 const slots = useSlots();
 const localOpen = ref(false);
+const instance = getCurrentInstance();
 
-const sourceOpen = computed(() => props.open ?? props.visible ?? props.modelValue ?? false);
+// Boolean props are cast to `false` when omitted. Inspect the vnode to tell
+// which v-model channel the caller supplied, so an omitted `open` prop cannot
+// mask a `modelValue` controlled by the parent.
+const hasVnodeProp = (name: string) =>
+  Object.prototype.hasOwnProperty.call(instance?.vnode.props ?? {}, name);
+
+const sourceOpen = computed(() => {
+  if (hasVnodeProp("open")) return props.open;
+  if (hasVnodeProp("visible")) return props.visible;
+  return props.modelValue ?? false;
+});
 
 watch(
   sourceOpen,

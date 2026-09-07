@@ -10,16 +10,32 @@ import {
   ScheduleCreateType,
   ScheduleType
 } from "@/types/const";
-import { MinusCircleOutlined, PlusCircleOutlined } from "@ant-design/icons-vue";
-import { Flex, notification } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import dayjs from "dayjs";
 import _ from "lodash";
-import { computed, h, reactive, ref } from "vue";
+import { computed, reactive, ref, watch } from "vue";
+import AppDialog from "@/components/AppDialog.vue";
+import {
+  VBtn,
+  VCheckbox,
+  VCol,
+  VForm,
+  VRow,
+  VSelect,
+  VTextField
+} from "vuetify/lib/components/index.mjs";
 
 const props = defineProps<{
   daemonId: string;
   instanceId: string;
+  modelValue?: boolean;
+  task?: Schedule;
 }>();
+const emit = defineEmits(["update:modelValue", "getScheduleList"]);
+const dialogOpen = computed({
+  get: () => props.modelValue ?? false,
+  set: (value: boolean) => emit("update:modelValue", value)
+});
 const isLoading = ref(false);
 const editMode = ref(false);
 const {
@@ -43,9 +59,7 @@ const parseTime = {
   },
   [ScheduleCreateType.SPECIFY]: (time: string) => (newTask.objTime = parseTaskTime(time))
 };
-const emit = defineEmits(["getScheduleList"]);
-const open = ref(false);
-const openDialog = (task?: Schedule) => {
+const setTask = (task?: Schedule) => {
   newTask = reactive({
     ..._.cloneDeep(defaultTask),
     ...task,
@@ -55,8 +69,11 @@ const openDialog = (task?: Schedule) => {
   editMode.value = !!task;
 
   if (editMode.value) parseTime[newTask.type](newTask.time);
+};
 
-  open.value = true;
+const openDialog = (task?: Schedule) => {
+  setTask(task);
+  emit("update:modelValue", true);
 };
 
 const weeks = [
@@ -87,6 +104,14 @@ const defaultTask: ScheduleTaskForm = {
 
 let newTask = reactive<ScheduleTaskForm>(_.cloneDeep(defaultTask));
 
+watch(
+  () => props.modelValue,
+  (value) => {
+    if (value) setTask(props.task);
+  },
+  { immediate: true }
+);
+
 const scheduleActionTypes = computed(() => {
   const types: Record<string, string> = { ...ScheduleActionType };
   for (const action of ctx.actions.schedules) {
@@ -95,6 +120,37 @@ const scheduleActionTypes = computed(() => {
   }
   return types;
 });
+
+const scheduleTypeItems = Object.entries(ScheduleType).map(([value, title]) => ({
+  title,
+  value: Number(value)
+}));
+const scheduleActionItems = computed(() =>
+  Object.entries(scheduleActionTypes.value).map(([value, title]) => ({ title, value }))
+);
+
+const cycleTimeValue = computed({
+  get: () => newTask.objTime?.format("HH:mm") ?? "",
+  set: (value: string) => {
+    const [hour, minute] = value.split(":").map(Number);
+    if (Number.isNaN(hour) || Number.isNaN(minute)) return;
+    newTask.objTime = newTask.objTime.hour(hour).minute(minute).second(0);
+  }
+});
+
+const specifyDateTimeValue = computed({
+  get: () => newTask.objTime?.format("YYYY-MM-DDTHH:mm") ?? "",
+  set: (value: string) => {
+    const parsed = dayjs(value);
+    if (parsed.isValid()) newTask.objTime = parsed;
+  }
+});
+
+const toggleWeekend = (value: number) => {
+  newTask.weekend = newTask.weekend.includes(value)
+    ? newTask.weekend.filter((item) => item !== value)
+    : [...newTask.weekend, value];
+};
 
 const create = {
   [ScheduleCreateType.INTERVAL]: (newTask: ScheduleTaskForm) => createTaskTypeInterval(newTask),
@@ -126,7 +182,7 @@ const submit = async () => {
         message: editMode.value ? t("TXT_CODE_d3de39b4") : t("TXT_CODE_d28c05df")
       });
       newTask = reactive(_.cloneDeep(defaultTask));
-      open.value = false;
+      emit("update:modelValue", false);
     }
   } catch (err: any) {
     return reportErrorMsg(err.message);
@@ -152,165 +208,182 @@ defineExpose({
 </script>
 
 <template>
-  <a-modal
-    v-model:open="open"
-    centered
-    width="660px"
-    :mask-closable="false"
+  <AppDialog
+    v-model:open="dialogOpen"
+    class="schedule-dialog"
     :title="editMode ? t('TXT_CODE_1548649e') : t('TXT_CODE_3502273d')"
     :confirm-loading="isLoading"
     :destroy-on-close="true"
     :ok-text="t('TXT_CODE_abfe9512')"
+    max-width="660px"
     @ok="submit"
   >
-    <a-form-item>
-      <a-typography-title :level="5">{{ t("TXT_CODE_b290a4b0") }}</a-typography-title>
-      <a-typography-paragraph>
-        <a-typography-text type="secondary">
-          {{ t("TXT_CODE_b72d638d") }}
-        </a-typography-text>
-      </a-typography-paragraph>
-      <a-input v-model:value="newTask.name" :disabled="editMode" />
-    </a-form-item>
-
-    <a-form-item>
-      <a-typography-title :level="5">{{ t("TXT_CODE_a62c99d1") }}</a-typography-title>
-      <a-select
-        v-model:value="newTask.type"
-        :placeholder="t('TXT_CODE_3bb646e4')"
-        :dropdown-match-select-width="false"
-      >
-        <a-select-option v-for="(type, i) in ScheduleType" :key="i" :value="Number(i)">
-          {{ type }}
-        </a-select-option>
-      </a-select>
-    </a-form-item>
-
-    <template v-if="newTask.type === ScheduleCreateType.INTERVAL">
-      <a-form-item>
-        <a-typography-paragraph>
-          <a-typography-title :level="5">{{ t("TXT_CODE_3554dac0") }}</a-typography-title>
-          <a-typography-text>
-            {{ t("TXT_CODE_f17889f4") }}
-          </a-typography-text>
-        </a-typography-paragraph>
-        <a-row :gutter="[24, 24]">
-          <a-col :xs="24" :md="8" :offset="0">
-            <a-input
-              v-model:value="newTask.cycle[2]"
-              :placeholder="t('TXT_CODE_ba8ebc7')"
-              :addon-after="t('TXT_CODE_4e2c7f64')"
-            />
-          </a-col>
-          <a-col :xs="24" :md="8" :offset="0">
-            <a-input
-              v-model:value="newTask.cycle[1]"
-              :placeholder="t('TXT_CODE_ba8ebc7')"
-              :addon-after="t('TXT_CODE_a7e9ff0f')"
-            />
-          </a-col>
-          <a-col :xs="24" :md="8" :offset="0">
-            <a-input
-              v-model:value="newTask.cycle[0]"
-              :placeholder="t('TXT_CODE_ba8ebc7')"
-              :addon-after="t('TXT_CODE_acabc771')"
-            />
-          </a-col>
-        </a-row>
-      </a-form-item>
-      <a-form-item>
-        <a-typography-title :level="5">{{ t("TXT_CODE_d9cfab1b") }}</a-typography-title>
-        <a-input-number
-          v-model:value="newTask.count"
-          size="large"
-          class="w-100"
-          :placeholder="t('TXT_CODE_a59981f4')"
-        />
-      </a-form-item>
-    </template>
-
-    <template v-if="newTask.type === ScheduleCreateType.CYCLE">
-      <a-form-item>
-        <a-typography-title :level="5">{{ t("TXT_CODE_3554dac0") }}</a-typography-title>
-        <a-time-picker
-          v-model:value="newTask.objTime"
-          size="large"
-          :placeholder="$t('TXT_CODE_38591f72')"
-          class="w-100"
-        />
-      </a-form-item>
-      <a-form-item>
-        <a-checkbox-group v-model:value="newTask.weekend" :options="weeks" />
-      </a-form-item>
-
-      <a-form-item>
-        <a-typography-title :level="5">{{ t("TXT_CODE_d9cfab1b") }}</a-typography-title>
-        <a-input-number
-          v-model:value="newTask.count"
-          size="large"
-          class="w-100"
-          :placeholder="t('TXT_CODE_a59981f4')"
-        />
-      </a-form-item>
-    </template>
-
-    <a-form-item v-if="newTask.type === ScheduleCreateType.SPECIFY">
-      <a-typography-title :level="5">{{ t("TXT_CODE_f3fe5c8e") }}</a-typography-title>
-      <a-date-picker v-model:value="newTask.objTime" show-time size="large" class="w-100" />
-    </a-form-item>
-
-    <a-form-item>
-      <div class="flex justify-between items-center mb-20">
-        <div>
-          <a-typography-title :level="5" :style="{ marginBottom: 0 }">
-            {{ t("TXT_CODE_61811ac") }}
-          </a-typography-title>
-          <a-typography-paragraph>
-            <a-typography-text type="secondary">
-              {{ t("TXT_CODE_81297804") }}
-            </a-typography-text>
-          </a-typography-paragraph>
-        </div>
-        <a-button :icon="h(PlusCircleOutlined)" @click="addEmptyAction()">
-          {{ t("TXT_CODE_dfc17a0c") }}
-        </a-button>
+    <VForm class="schedule-form" @submit.prevent="submit">
+      <div class="schedule-field">
+        <div class="schedule-field-title">{{ t("TXT_CODE_b290a4b0") }}</div>
+        <div class="schedule-field-description">{{ t("TXT_CODE_b72d638d") }}</div>
+        <VTextField v-model="newTask.name" :disabled="editMode" hide-details />
       </div>
-      <template v-for="(action, index) in newTask.actions" :key="index">
-        <a-form-item>
-          <a-row :gutter="[12, 24]">
-            <a-col :xs="24" :md="6" :offset="0">
-              <a-select
-                v-model:value="action.type"
-                :placeholder="t('TXT_CODE_3bb646e4')"
-                :dropdown-match-select-width="false"
-                @change="action.payload = ''"
-              >
-                <a-select-option v-for="(type, i) in scheduleActionTypes" :key="i" :value="i">
-                  {{ type }}
-                </a-select-option>
-              </a-select>
-            </a-col>
-            <a-col :xs="24" :md="16" :offset="0">
-              <Flex>
-                <a-input
-                  v-model:value="action.payload"
-                  :placeholder="getInputPlaceholder(action)"
-                  :disabled="!getInputPlaceholder(action)"
-                />
-              </Flex>
-            </a-col>
-            <a-col :xs="24" :md="2" :offset="0">
-              <div>
-                <a-button
-                  :icon="h(MinusCircleOutlined)"
-                  danger
-                  @click="delAction(index)"
-                ></a-button>
-              </div>
-            </a-col>
-          </a-row>
-        </a-form-item>
+
+      <div class="schedule-field">
+        <div class="schedule-field-title">{{ t("TXT_CODE_a62c99d1") }}</div>
+        <VSelect
+          v-model="newTask.type"
+          :items="scheduleTypeItems"
+          :placeholder="t('TXT_CODE_3bb646e4')"
+          hide-details
+        />
+      </div>
+
+      <template v-if="newTask.type === ScheduleCreateType.INTERVAL">
+        <div class="schedule-field">
+          <div class="schedule-field-title">{{ t("TXT_CODE_3554dac0") }}</div>
+          <div class="schedule-field-description">{{ t("TXT_CODE_f17889f4") }}</div>
+          <VRow dense>
+            <VCol cols="12" md="4">
+              <VTextField v-model="newTask.cycle[2]" type="number" :label="t('TXT_CODE_4e2c7f64')" hide-details />
+            </VCol>
+            <VCol cols="12" md="4">
+              <VTextField v-model="newTask.cycle[1]" type="number" :label="t('TXT_CODE_a7e9ff0f')" hide-details />
+            </VCol>
+            <VCol cols="12" md="4">
+              <VTextField v-model="newTask.cycle[0]" type="number" :label="t('TXT_CODE_acabc771')" hide-details />
+            </VCol>
+          </VRow>
+        </div>
+        <div class="schedule-field">
+          <div class="schedule-field-title">{{ t("TXT_CODE_d9cfab1b") }}</div>
+          <VTextField
+            v-model.number="newTask.count"
+            type="number"
+            :placeholder="t('TXT_CODE_a59981f4')"
+            hide-details
+          />
+        </div>
       </template>
-    </a-form-item>
-  </a-modal>
+
+      <template v-if="newTask.type === ScheduleCreateType.CYCLE">
+        <div class="schedule-field">
+          <div class="schedule-field-title">{{ t("TXT_CODE_3554dac0") }}</div>
+          <VTextField
+            v-model="cycleTimeValue"
+            type="time"
+            :placeholder="t('TXT_CODE_38591f72')"
+            hide-details
+          />
+        </div>
+        <div class="schedule-field">
+          <div class="schedule-field-title">{{ t("TXT_CODE_fcbdcb34") }}</div>
+          <div class="schedule-weekdays">
+            <VCheckbox
+              v-for="week in weeks"
+              :key="week.value"
+              :model-value="newTask.weekend.includes(week.value)"
+              :label="week.label"
+              hide-details
+              density="compact"
+              @update:model-value="toggleWeekend(week.value)"
+            />
+          </div>
+        </div>
+        <div class="schedule-field">
+          <div class="schedule-field-title">{{ t("TXT_CODE_d9cfab1b") }}</div>
+          <VTextField
+            v-model.number="newTask.count"
+            type="number"
+            :placeholder="t('TXT_CODE_a59981f4')"
+            hide-details
+          />
+        </div>
+      </template>
+
+      <div v-if="newTask.type === ScheduleCreateType.SPECIFY" class="schedule-field">
+        <div class="schedule-field-title">{{ t("TXT_CODE_f3fe5c8e") }}</div>
+        <VTextField v-model="specifyDateTimeValue" type="datetime-local" hide-details />
+      </div>
+
+      <div class="schedule-field schedule-actions-field">
+        <div class="schedule-actions-heading">
+          <div>
+            <div class="schedule-field-title">{{ t("TXT_CODE_61811ac") }}</div>
+            <div class="schedule-field-description">{{ t("TXT_CODE_81297804") }}</div>
+          </div>
+          <VBtn prepend-icon="mdi-plus-circle-outline" variant="text" @click="addEmptyAction">
+            {{ t("TXT_CODE_dfc17a0c") }}
+          </VBtn>
+        </div>
+        <VRow v-for="(action, index) in newTask.actions" :key="index" dense class="schedule-action-row">
+          <VCol cols="12" md="4">
+            <VSelect
+              v-model="action.type"
+              :items="scheduleActionItems"
+              :placeholder="t('TXT_CODE_3bb646e4')"
+              hide-details
+              @update:model-value="action.payload = ''"
+            />
+          </VCol>
+          <VCol cols="12" md="7">
+            <VTextField
+              v-model="action.payload"
+              :placeholder="getInputPlaceholder(action)"
+              :disabled="!getInputPlaceholder(action)"
+              hide-details
+            />
+          </VCol>
+          <VCol cols="12" md="1" class="schedule-action-remove">
+            <VBtn icon="mdi-minus-circle-outline" color="error" variant="text" @click="delAction(index)" />
+          </VCol>
+        </VRow>
+      </div>
+    </VForm>
+  </AppDialog>
 </template>
+
+<style lang="scss" scoped>
+.schedule-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.schedule-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.schedule-field-title {
+  color: var(--text-color);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.schedule-field-description {
+  color: var(--color-gray-7);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.schedule-weekdays {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.schedule-actions-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.schedule-action-row {
+  align-items: center;
+}
+
+.schedule-action-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>

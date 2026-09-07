@@ -36,7 +36,7 @@ import PingConfig from "./dialogs/PingConfig.vue";
 import RconSettings from "./dialogs/RconSettings.vue";
 
 const rconSettingsDialog = ref<InstanceType<typeof RconSettings>>();
-const eventConfigDialog = ref<InstanceType<typeof EventConfig>>();
+const eventConfigOpen = ref(false);
 const pingConfigDialog = ref<InstanceType<typeof PingConfig>>();
 const instanceDetailsDialog = ref<InstanceType<typeof InstanceDetail>>();
 const instanceFundamentalDetailDialog = ref<InstanceType<typeof InstanceFundamentalDetail>>();
@@ -213,7 +213,7 @@ const btns = computed(() => {
       title: t("TXT_CODE_d341127b"),
       icon: DashboardOutlined,
       click: () => {
-        eventConfigDialog.value?.openDialog();
+        eventConfigOpen.value = true;
       }
     },
     {
@@ -252,7 +252,7 @@ watch(instanceInfo, (cfg, oldCfg) => {
     <template #body>
       <ResponsiveLayoutGroup class="function-btns-container" :items="btns">
         <template #default="{ item }">
-          <InnerCard :style="{ height: '90px' }" :icon="item.icon" @click="item.click">
+          <InnerCard :style="{ height: '90px' }" :icon="item.icon" @click="item.click()">
             <template #title>
               {{ item.title }}
             </template>
@@ -270,7 +270,7 @@ watch(instanceInfo, (cfg, oldCfg) => {
     </template>
   </CardPanel>
 
-  <EventConfig ref="eventConfigDialog" :instance-info="instanceInfo" :instance-id="instanceId" :daemon-id="daemonId"
+  <EventConfig v-model="eventConfigOpen" :instance-info="instanceInfo" :instance-id="instanceId" :daemon-id="daemonId"
     @update="refreshInstanceInfo" />
 
   <PingConfig ref="pingConfigDialog" :instance-info="instanceInfo" :instance-id="instanceId" :daemon-id="daemonId"

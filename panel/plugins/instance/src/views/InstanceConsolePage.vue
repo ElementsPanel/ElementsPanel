@@ -25,6 +25,8 @@ import {
 } from "@/services/apis/instance";
 import { sleep } from "@/tools/common";
 import { reportErrorMsg } from "@/tools/validator";
+import { parseTimestamp } from "@/tools/time";
+import { toCopy } from "@/tools/copy";
 import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@/types/const";
 import { Modal } from "ant-design-vue";
 import { computed, onUnmounted, ref, watch, type ComponentPublicInstance } from "vue";
@@ -45,6 +47,7 @@ import {
   VToolbar
 } from "vuetify/lib/components/index.mjs";
 import EventConfig from "../widgets/instance/dialogs/EventConfig.vue";
+import DockerInfo from "../widgets/instance/dialogs/DockerInfo.vue";
 import InstanceDetail from "../widgets/instance/dialogs/InstanceDetail.vue";
 import InstanceFundamentalDetail from "../widgets/instance/dialogs/InstanceFundamentalDetail.vue";
 import RconSettings from "../widgets/instance/dialogs/RconSettings.vue";
@@ -81,6 +84,13 @@ const instanceName = computed(() =>
     ? t("TXT_CODE_5bdaf23d")
     : instanceInfo.value?.config.nickname || "--"
 );
+const instanceGameServerInfo = computed(() => {
+  if (!instanceInfo.value?.info?.mcPingOnline) return null;
+  return {
+    players: `${instanceInfo.value.info.currentPlayers} / ${instanceInfo.value.info.maxPlayers}`,
+    version: instanceInfo.value.info.version
+  };
+});
 const crashTimer = ref<ReturnType<typeof setTimeout>>();
 const { execute: requestOpenInstance, isLoading: openLoading } = openInstance();
 const pluginActions = computed(() => {
@@ -164,10 +174,11 @@ const normalInstanceActions = computed(() =>
 );
 type InstanceActionHandle = ComponentPublicInstance & { open?: () => void };
 const instanceActionRefs = new Map<string, InstanceActionHandle>();
-const eventConfigDialog = ref<InstanceType<typeof EventConfig>>();
+const eventConfigOpen = ref(false);
 const instanceDetailsDialog = ref<InstanceType<typeof InstanceDetail>>();
 const instanceFundamentalDetailDialog = ref<InstanceType<typeof InstanceFundamentalDetail>>();
 const rconSettingsDialog = ref<InstanceType<typeof RconSettings>>();
+const dockerInfoDialog = ref<InstanceType<typeof DockerInfo>>();
 
 const setInstanceActionRef = (id: string, component: unknown) => {
   if (component) instanceActionRefs.set(id, component as InstanceActionHandle);
@@ -262,7 +273,9 @@ const instanceFunctionItems = computed(() => {
       title: t("TXT_CODE_d341127b"),
       icon: "mdi-view-dashboard-outline",
       condition: () => true,
-      click: () => eventConfigDialog.value?.openDialog()
+      click: () => {
+        eventConfigOpen.value = true;
+      }
     },
     {
       title: t("TXT_CODE_4f34fc28"),
@@ -462,7 +475,7 @@ onUnmounted(() => {
                   md="4"
                   lg="3"
                 >
-                  <VCard class="console-function-item" rounded="xl" flat @click="item.click">
+                  <VCard class="console-function-item" rounded="xl" flat @click="item.click()">
                     <VCardText>
                       <VIcon :icon="item.icon" size="28" color="info" />
                       <span>{{ item.title }}</span>
@@ -483,23 +496,110 @@ onUnmounted(() => {
             >
             <VCardText class="info-list">
               <div>
-                <span>{{ t("TXT_CODE_2f291d8b") }}</span
-                ><strong>{{ instanceTypeText }}</strong>
+                <span>{{ t("TXT_CODE_7ec9c59c") }}</span>
+                <strong class="info-list-value">
+                  <span>{{ instanceName }}</span>
+                  <VChip
+                    size="x-small"
+                    :color="isRunning ? 'success' : isBuys ? 'warning' : 'secondary'"
+                    variant="tonal"
+                    >{{ instanceStatusText }}</VChip
+                  >
+                </strong>
               </div>
               <div>
-                <span>{{ t("TXT_CODE_34611898") }}</span
-                ><strong>{{ instanceInfo.config.lastDatetime || "--" }}</strong>
+                <span>{{ t("TXT_CODE_68831be6") }}</span>
+                <strong>{{ instanceTypeText }}</strong>
               </div>
               <div>
-                <span>{{ t("TXT_CODE_30051f9b") }}</span
-                ><strong class="mono">{{ instanceInfo.instanceUuid }}</strong>
+                <span>{{ t("TXT_CODE_ad30f3c5") }}</span>
+                <strong>{{ instanceInfo.started }}</strong>
               </div>
               <div>
-                <span>{{ t("TXT_CODE_5f2d2e30") }}</span
-                ><strong class="mono">{{ daemonId }}</strong>
+                <span>{{ t("TXT_CODE_6420023d") }}</span>
+                <strong>{{ instanceInfo.autoRestarted }}</strong>
               </div>
-              <VDivider class="my-2" />
-              <div class="tag-list">
+              <div v-if="instanceGameServerInfo">
+                <span>{{ t("TXT_CODE_855c4a1c") }}</span>
+                <strong>{{ instanceGameServerInfo.players }}</strong>
+              </div>
+              <div v-if="instanceGameServerInfo">
+                <span>{{ t("TXT_CODE_e260a220") }}</span>
+                <strong>{{ instanceGameServerInfo.version }}</strong>
+              </div>
+              <div v-if="instanceInfo.config.processType === 'docker'">
+                <span>{{ t("TXT_CODE_4f917a65") }}</span>
+                <VBtn
+                  variant="text"
+                  size="small"
+                  class="info-list-link"
+                  @click="dockerInfoDialog?.openDialog()"
+                  >{{ t("TXT_CODE_530f5951") }}</VBtn
+                >
+              </div>
+              <div v-if="Number(instanceInfo.info?.allocatedPorts?.length) > 0" class="info-list-block">
+                <span>{{ t("TXT_CODE_2e4469f6") }}</span>
+                <div class="port-list">
+                  <div v-for="(item, index) in instanceInfo.info.allocatedPorts" :key="index" class="port-item">
+                    <VChip size="x-small" color="success" variant="tonal">
+                      {{ item.protocol.toUpperCase() }}
+                    </VChip>
+                    <VChip size="x-small" variant="tonal">
+                      {{ t("TXT_CODE_8dfc41ef") }}: {{ item.host }}
+                      {{ t("TXT_CODE_8f8103b7") }}: {{ item.container }}
+                    </VChip>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <span>{{ t("TXT_CODE_ae747cc0") }}</span>
+                <strong>{{ parseTimestamp(instanceInfo.config.endTime) || t("TXT_CODE_e3a77a77") }}</strong>
+              </div>
+              <div v-if="!instanceGameServerInfo">
+                <span>{{ t("TXT_CODE_8b8e08a6") }}</span>
+                <strong>{{ parseTimestamp(instanceInfo.config.createDatetime) }}</strong>
+              </div>
+              <div>
+                <span>{{ t("TXT_CODE_46f575ae") }}</span>
+                <strong>{{ parseTimestamp(instanceInfo.config.lastDatetime) }}</strong>
+              </div>
+              <div v-if="!instanceGameServerInfo" class="info-list-block">
+                <div class="encoding-list">
+                  <div>
+                    <span>{{ t("TXT_CODE_cec321b4") }}</span>
+                    <strong>{{ instanceInfo.config.oe?.toUpperCase() || "--" }}</strong>
+                  </div>
+                  <div>
+                    <span>{{ t("TXT_CODE_400a4210") }}</span>
+                    <strong>{{ instanceInfo.config.ie?.toUpperCase() || "--" }}</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="info-list-identifiers">
+                <span>{{ t("TXT_CODE_30051f9b") }}</span>
+                <VBtn
+                  class="identifier-copy"
+                  variant="text"
+                  size="small"
+                  @click="toCopy(instanceInfo.instanceUuid)"
+                >
+                  <span class="mono">{{ instanceInfo.instanceUuid }}</span>
+                  <VIcon icon="mdi-content-copy" size="14" />
+                </VBtn>
+                <span>{{ t("TXT_CODE_5f2d2e30") }}</span>
+                <VBtn
+                  class="identifier-copy"
+                  variant="text"
+                  size="small"
+                  @click="toCopy(daemonId)"
+                >
+                  <span class="mono">{{ daemonId }}</span>
+                  <VIcon icon="mdi-content-copy" size="14" />
+                </VBtn>
+              </div>
+              <div v-if="instanceInfo.config.tag?.length" class="info-list-block">
+                <span>{{ t("TXT_CODE_eaabd222") }}</span>
+                <div class="tag-list">
                 <VChip
                   v-for="tag in instanceInfo.config.tag || []"
                   :key="tag"
@@ -507,6 +607,7 @@ onUnmounted(() => {
                   variant="tonal"
                   >{{ tag }}</VChip
                 >
+                </div>
               </div>
             </VCardText>
           </VCard>
@@ -529,7 +630,7 @@ onUnmounted(() => {
     </template>
 
     <EventConfig
-      ref="eventConfigDialog"
+      v-model="eventConfigOpen"
       :instance-info="instanceInfo"
       :instance-id="instanceId"
       :daemon-id="daemonId"
@@ -556,6 +657,7 @@ onUnmounted(() => {
       :daemon-id="daemonId"
       @update="refreshInstanceInfo"
     />
+    <DockerInfo ref="dockerInfoDialog" :docker-info="instanceInfo?.config.docker" />
   </main>
 </template>
 
@@ -717,12 +819,84 @@ onUnmounted(() => {
   color: var(--color-gray-7);
   font-size: 13px;
 }
+.info-list .info-list-block {
+  display: block;
+}
+.info-list .info-list-identifiers {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px 12px;
+}
+.encoding-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+.encoding-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.identifier-copy {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  justify-content: flex-start;
+  gap: 6px;
+  padding-inline: 4px;
+  color: var(--text-color);
+  text-transform: none;
+}
+.identifier-copy :deep(.v-btn__content) {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  overflow: hidden;
+}
+.identifier-copy .mono {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.info-list-link {
+  min-width: 0;
+  padding-inline: 4px;
+}
+.port-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  padding-left: 12px;
+}
+.port-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
 .info-list strong {
   overflow: hidden;
   color: var(--text-color);
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.info-list-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.info-list-value > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .info-list {
   display: flex;
@@ -737,6 +911,7 @@ onUnmounted(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  margin-top: 8px;
 }
 @media (max-width: 992px) {
   .instance-console-container {
@@ -744,6 +919,9 @@ onUnmounted(() => {
   }
   .desktop-actions > .v-btn:not(:first-child) {
     display: none;
+  }
+  .info-list .info-list-identifiers {
+    grid-template-columns: auto minmax(0, 1fr);
   }
 }
 </style>

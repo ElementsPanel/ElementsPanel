@@ -1,23 +1,41 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { t } from "@/lang/i18n";
 import type { InstanceDetail } from "@/types";
 import { updateInstanceConfig } from "@/services/apis/instance";
 import { message } from "ant-design-vue";
 import { reportErrorMsg } from "@/tools/validator";
+import AppDialog from "@/components/AppDialog.vue";
+import {
+  VForm,
+  VSwitch,
+  VTextField
+} from "vuetify/lib/components/index.mjs";
 
 const props = defineProps<{
   instanceInfo?: InstanceDetail;
   instanceId?: string;
   daemonId?: string;
+  modelValue?: boolean;
 }>();
-const emit = defineEmits(["update"]);
+const emit = defineEmits(["update", "update:modelValue"]);
 const options = ref<InstanceDetail>();
-const open = ref(false);
+const dialogOpen = computed({
+  get: () => props.modelValue ?? false,
+  set: (value: boolean) => emit("update:modelValue", value)
+});
 const openDialog = () => {
-  open.value = true;
+  dialogOpen.value = true;
   options.value = props.instanceInfo;
 };
+
+watch(
+  () => props.modelValue,
+  (value) => {
+    if (value) options.value = props.instanceInfo;
+  },
+  { immediate: true }
+);
 
 const { execute, isLoading } = updateInstanceConfig();
 
@@ -33,7 +51,7 @@ const submit = async () => {
       }
     });
     emit("update");
-    open.value = false;
+    dialogOpen.value = false;
     return message.success(t("TXT_CODE_d3de39b4"));
   } catch (err: any) {
     return reportErrorMsg(err.message);
@@ -46,53 +64,82 @@ defineExpose({
 </script>
 
 <template>
-  <a-modal
-    v-model:open="open"
-    centered
+  <AppDialog
+    v-model:open="dialogOpen"
+    class="event-config-dialog"
     :title="t('TXT_CODE_10150756')"
     :confirm-loading="isLoading"
     :ok-text="t('TXT_CODE_abfe9512')"
+    compact
     @ok="submit"
   >
-    <a-form v-if="options" layout="vertical">
-      <a-form-item>
-        <a-typography-title :level="5">{{ t("TXT_CODE_a64da7c4") }}</a-typography-title>
-        <a-typography-paragraph>
-          <a-typography-text type="secondary">
-            {{ t("TXT_CODE_619faab6") }}
-            <br />
-            {{ t("TXT_CODE_3eb58633") }}
-          </a-typography-text>
-        </a-typography-paragraph>
-        <a-switch v-model:checked="options.config.eventTask.autoRestart" />
-      </a-form-item>
-      
-      <template v-if="options.config.eventTask.autoRestart">
-        <a-form-item>
-          <a-typography-title :level="5">{{ t("TXT_CODE_f4b52ed4") }}</a-typography-title>
-          <a-typography-paragraph>
-            <a-typography-text type="secondary">
-              {{ t("TXT_CODE_9d2fca76") }}
-            </a-typography-text>
-          </a-typography-paragraph>
-          <a-input
-            v-model:value="options.config.eventTask.autoRestartMaxTimes"
-            :style="'width: 220px'"
-          />
-        </a-form-item>
-      </template>
+    <VForm v-if="options" class="event-config-form" @submit.prevent="submit">
+      <div class="event-config-section">
+        <div class="event-config-title">{{ t("TXT_CODE_a64da7c4") }}</div>
+        <div class="event-config-description">
+          {{ t("TXT_CODE_619faab6") }}
+          <br />
+          {{ t("TXT_CODE_3eb58633") }}
+        </div>
+        <VSwitch
+          v-model="options.config.eventTask.autoRestart"
+          color="primary"
+          hide-details
+        />
+      </div>
 
-      <a-form-item>
-        <a-typography-title :level="5">{{ t("TXT_CODE_273d24e0") }}</a-typography-title>
-        <a-typography-paragraph>
-          <a-typography-text type="secondary">
-            {{ t("TXT_CODE_8d9f5a4e") }}
-            <br />
-            {{ t("TXT_CODE_64bf4386") }}
-          </a-typography-text>
-        </a-typography-paragraph>
-        <a-switch v-model:checked="options.config.eventTask.autoStart" />
-      </a-form-item>
-    </a-form>
-  </a-modal>
+      <div v-if="options.config.eventTask.autoRestart" class="event-config-section">
+        <div class="event-config-title">{{ t("TXT_CODE_f4b52ed4") }}</div>
+        <div class="event-config-description">{{ t("TXT_CODE_9d2fca76") }}</div>
+        <VTextField
+          v-model.number="options.config.eventTask.autoRestartMaxTimes"
+          type="number"
+          class="event-config-number"
+          hide-details
+          variant="solo-filled"
+        />
+      </div>
+
+      <div class="event-config-section">
+        <div class="event-config-title">{{ t("TXT_CODE_273d24e0") }}</div>
+        <div class="event-config-description">
+          {{ t("TXT_CODE_8d9f5a4e") }}
+          <br />
+          {{ t("TXT_CODE_64bf4386") }}
+        </div>
+        <VSwitch v-model="options.config.eventTask.autoStart" color="primary" hide-details />
+      </div>
+    </VForm>
+  </AppDialog>
 </template>
+
+<style lang="scss" scoped>
+.event-config-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.event-config-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.event-config-title {
+  color: var(--text-color);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.event-config-description {
+  color: var(--color-gray-7);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.event-config-number {
+  width: 220px;
+}
+</style>
