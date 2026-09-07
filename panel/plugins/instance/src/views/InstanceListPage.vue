@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useDeleteInstanceDialog } from "@/components/fc/index";
+import PageToolbar from "@/components/PageToolbar.vue";
 import { router } from "@/config/router";
 import { verifyEULA } from "@/hooks/useInstance";
 import { useInstanceTagSearch, useInstanceTagTips } from "@/hooks/useInstanceTag";
@@ -259,12 +260,8 @@ onMounted(async () => {
 <template>
   <main class="instance-list-page">
     <VContainer fluid class="instance-list-container">
-      <VRow class="instance-toolbar" align="center">
-        <VCol cols="12" md="3" class="page-heading">
-          <VIcon icon="mdi-view-grid-outline" color="primary" size="28" />
-          <span>{{ t("TXT_CODE_e21473bc") }}</span>
-        </VCol>
-        <VCol cols="12" md="5">
+      <PageToolbar :title="t('TXT_CODE_e21473bc')" icon="mdi-view-grid-outline">
+        <template #search>
           <div class="instance-search-row">
             <VSelect
               v-model="operationForm.status"
@@ -286,8 +283,8 @@ onMounted(async () => {
               @update:model-value="handleQueryInstance"
             />
           </div>
-        </VCol>
-        <VCol cols="12" md="4" class="toolbar-actions">
+        </template>
+        <template #actions>
           <VMenu location="bottom end">
             <template #activator="{ props: menuProps }">
               <VBtn
@@ -330,8 +327,8 @@ onMounted(async () => {
             @click="toCreate"
             >{{ t("TXT_CODE_53408064") }}</VBtn
           >
-        </VCol>
-      </VRow>
+        </template>
+      </PageToolbar>
 
       <VRow align="center" class="instance-actions-row">
         <VCol cols="12" md="7">
@@ -589,20 +586,12 @@ onMounted(async () => {
   margin: 0 auto;
   padding: 20px 24px 32px;
 }
-.instance-toolbar,
 .instance-actions-row {
   margin: 0;
 }
-.page-heading {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--text-color);
-  font-size: 20px;
-  font-weight: 600;
-}
 .instance-search-row {
   display: flex;
+  width: 100%;
   gap: 8px;
 }
 .instance-search-row .v-select {
@@ -612,7 +601,6 @@ onMounted(async () => {
   min-width: 0;
   flex: 1;
 }
-.toolbar-actions,
 .pagination-wrap,
 .batch-actions {
   display: flex;
@@ -711,12 +699,8 @@ onMounted(async () => {
   .instance-list-container {
     padding: 16px 12px 28px;
   }
-  .toolbar-actions,
   .pagination-wrap {
     justify-content: flex-start;
-  }
-  .page-heading {
-    font-size: 18px;
   }
 }
 </style>
