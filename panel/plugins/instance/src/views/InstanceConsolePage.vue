@@ -1,8 +1,21 @@
 <script setup lang="ts">
 import { GLOBAL_INSTANCE_NAME } from "@/config/const";
-import { INSTANCE_TYPE_TRANSLATION, verifyEULA } from "@/hooks/useInstance";
+import {
+  INSTANCE_TYPE_TRANSLATION,
+  TYPE_STEAM_SERVER_UNIVERSAL,
+  verifyEULA
+} from "@/hooks/useInstance";
 import { t } from "@/lang/i18n";
-import { ctx, usePluginService, type FrontendTerminalService } from "@/plugin/context";
+import {
+  ctx,
+  usePluginService,
+  type FrontendTerminalService,
+  type PanelFrontendInstanceActionContext
+} from "@/plugin/context";
+import { useOverviewInfo } from "@/hooks/useOverviewInfo";
+import { useServerConfig } from "@/hooks/useServerConfig";
+import { modListApi } from "@/services/apis/modManager";
+import { useAppStateStore } from "@/stores/useAppStateStore";
 import {
   killInstance,
   openInstance,
@@ -15,7 +28,7 @@ import { reportErrorMsg } from "@/tools/validator";
 import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@/types/const";
 import { Modal } from "ant-design-vue";
 import prettyBytes from "pretty-bytes";
-import { computed, onUnmounted, ref } from "vue";
+import { computed, onUnmounted, ref, watch, type ComponentPublicInstance } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   VAlert,
@@ -28,14 +41,15 @@ import {
   VContainer,
   VDivider,
   VIcon,
-  VList,
-  VListItem,
-  VMenu,
   VProgressLinear,
   VRow,
   VSpacer,
   VToolbar
 } from "vuetify/lib/components/index.mjs";
+import EventConfig from "../widgets/instance/dialogs/EventConfig.vue";
+import InstanceDetail from "../widgets/instance/dialogs/InstanceDetail.vue";
+import InstanceFundamentalDetail from "../widgets/instance/dialogs/InstanceFundamentalDetail.vue";
+import RconSettings from "../widgets/instance/dialogs/RconSettings.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -92,6 +106,180 @@ const pluginActions = computed(() => {
   });
 });
 
+const mdiIconMap: Record<string, string> = {
+  AppstoreAddOutlined: "mdi-view-grid-plus",
+  BuildOutlined: "mdi-hammer-wrench",
+  CloudDownloadOutlined: "mdi-cloud-download-outline",
+  CodeOutlined: "mdi-code-tags",
+  FileTextOutlined: "mdi-file-document-outline",
+  FolderOpenOutlined: "mdi-folder-open-outline",
+  InteractionOutlined: "mdi-gesture-tap-button",
+  UsergroupDeleteOutlined: "mdi-account-multiple-minus-outline"
+};
+const instanceActionMdiIcons: Record<string, string> = {
+  "file-manager": "mdi-folder-open-outline",
+  "java-manager": "mdi-language-java",
+  mcstats: "mdi-chart-line",
+  backup: "mdi-backup-restore",
+  "terminal-config": "mdi-code-tags",
+  "operation-log": "mdi-file-document-outline"
+};
+const terminalActionMdiIcons: Record<string, string> = {
+  "market-reinstall": "mdi-storefront-outline"
+};
+const getMdiIcon = (icon: unknown, fallback = "mdi-application-cog-outline") => {
+  if (typeof icon === "string" && icon.startsWith("mdi-")) return icon;
+  const component = icon as
+    | {
+        name?: string;
+        displayName?: string;
+        __name?: string;
+        type?: { name?: string; __name?: string };
+      }
+    | undefined;
+  const name =
+    component?.name ??
+    component?.displayName ??
+    component?.__name ??
+    component?.type?.name ??
+    component?.type?.__name;
+  return (name && mdiIconMap[name]) || fallback;
+};
+
+const { isAdmin, state: appState } = useAppStateStore();
+const { state: overviewState } = useOverviewInfo();
+const { serverConfigFiles, refresh: refreshServerConfig } = useServerConfig();
+const normalInstanceActions = computed(() =>
+  ctx.actions.instances.filter((action) => action.normalComponent)
+);
+type InstanceActionHandle = ComponentPublicInstance & { open?: () => void };
+const instanceActionRefs = new Map<string, InstanceActionHandle>();
+const eventConfigDialog = ref<InstanceType<typeof EventConfig>>();
+const instanceDetailsDialog = ref<InstanceType<typeof InstanceDetail>>();
+const instanceFundamentalDetailDialog = ref<InstanceType<typeof InstanceFundamentalDetail>>();
+const rconSettingsDialog = ref<InstanceType<typeof RconSettings>>();
+
+const setInstanceActionRef = (id: string, component: unknown) => {
+  if (component) instanceActionRefs.set(id, component as InstanceActionHandle);
+  else instanceActionRefs.delete(id);
+};
+const openInstanceAction = (id: string) => instanceActionRefs.get(id)?.open?.();
+
+const folders = ref<string[]>([]);
+const foldersLoaded = ref(false);
+const loadFolders = async () => {
+  if (!instanceId.value || !daemonId.value) return;
+  try {
+    const { execute } = modListApi();
+    const result = await execute({
+      params: { uuid: instanceId.value, daemonId: daemonId.value }
+    });
+    folders.value = result.value?.folders || [];
+  } catch (error) {
+    console.error("Failed to load instance folders:", error);
+  } finally {
+    foldersLoaded.value = true;
+  }
+};
+
+watch([instanceId, daemonId], () => void loadFolders(), { immediate: true });
+watch(
+  () => [instanceInfo.value?.config?.type, instanceId.value, daemonId.value],
+  ([type, id, node]) => {
+    if (typeof type === "string" && id && node) void refreshServerConfig(type, id, node);
+  },
+  { immediate: true }
+);
+
+const instanceFunctionItems = computed(() => {
+  if (!instanceInfo.value) return [];
+  const daemon = overviewState.value?.remote?.find((item: any) => item.uuid === daemonId.value);
+  const actionContext: PanelFrontendInstanceActionContext = {
+    mode: "normal",
+    instanceId: instanceId.value,
+    daemonId: daemonId.value,
+    instanceInfo: instanceInfo.value,
+    daemon,
+    isGlobalTerminal: isGlobalTerminal.value
+  };
+  const pluginItems = normalInstanceActions.value.map((action) => ({
+    title: typeof action.title === "function" ? action.title() : action.title,
+    icon: instanceActionMdiIcons[action.id] || getMdiIcon(action.icon),
+    condition: () => action.condition?.(actionContext) ?? true,
+    click: () => openInstanceAction(action.id)
+  }));
+  const terminalItems = pluginActions.value
+    .filter((action) => action.condition())
+    .map((action) => ({
+      title: action.title,
+      icon:
+        terminalActionMdiIcons[action.id] ||
+        getMdiIcon(action.icon, "mdi-lightning-bolt-outline"),
+      condition: () => true,
+      click: action.click
+    }));
+  const items = [
+    {
+      title: t("TXT_CODE_d07742fe"),
+      icon: "mdi-cog-outline",
+      condition: () => !isGlobalTerminal.value && serverConfigFiles.value.length > 0,
+      click: goConfig
+    },
+    {
+      title: t("TXT_CODE_MOD_MANAGER"),
+      icon: "mdi-package-variant-closed",
+      condition: () => {
+        const type = String(instanceInfo.value?.config.type || "");
+        const isMinecraft = type.startsWith("minecraft/java") || type.startsWith("minecraft/bedrock");
+        const hasPermission = appState.settings.canFileManager || isAdmin.value;
+        return isMinecraft && hasPermission && foldersLoaded.value && folders.value.length > 0;
+      },
+      click: goMods
+    },
+    {
+      title: t("TXT_CODE_656a85d8"),
+      icon: "mdi-hammer-wrench",
+      condition: () => String(instanceInfo.value?.config.type || "").includes(TYPE_STEAM_SERVER_UNIVERSAL),
+      click: () => rconSettingsDialog.value?.openDialog()
+    },
+    {
+      title: t("TXT_CODE_b7d026f8"),
+      icon: "mdi-calendar-clock-outline",
+      condition: () => !isGlobalTerminal.value,
+      click: goSchedule
+    },
+    {
+      title: t("TXT_CODE_d341127b"),
+      icon: "mdi-view-dashboard-outline",
+      condition: () => true,
+      click: () => eventConfigDialog.value?.openDialog()
+    },
+    {
+      title: t("TXT_CODE_4f34fc28"),
+      icon: "mdi-application-cog-outline",
+      condition: () =>
+        isAdmin.value ||
+        (instanceInfo.value?.config.processType === "docker" && appState.settings.allowChangeCmd),
+      click: () =>
+        (isAdmin.value
+          ? instanceDetailsDialog.value
+          : instanceFundamentalDetailDialog.value
+        )?.openDialog()
+    },
+    ...pluginItems,
+    ...terminalItems
+  ];
+  return items.filter((item) => item.condition());
+});
+
+const refreshInstanceInfo = async () => {
+  if (!instanceId.value || !daemonId.value) return;
+  await terminalHook.execute({
+    params: { uuid: instanceId.value, daemonId: daemonId.value },
+    forceRequest: true
+  });
+};
+
 const open = async () => {
   if (crashTimer.value) clearTimeout(crashTimer.value);
   clearTerminal();
@@ -141,12 +329,6 @@ const update = async () => {
     reportErrorMsg(error.message);
   }
 };
-const goBack = () => router.push("/instances");
-const goFiles = () =>
-  router.push({
-    path: "/instances/terminal/files",
-    query: { daemonId: daemonId.value, instanceId: instanceId.value }
-  });
 const goMods = () =>
   router.push({
     path: "/instances/terminal/mods",
@@ -166,15 +348,6 @@ const goSchedule = () =>
     path: "/instances/schedule",
     query: { daemonId: daemonId.value, instanceId: instanceId.value }
   });
-const actionItems = computed(() => [
-  { title: t("TXT_CODE_ae533703"), icon: "mdi-folder-open-outline", click: goFiles },
-  { title: t("TXT_CODE_MOD_MANAGER"), icon: "mdi-puzzle-outline", click: goMods },
-  { title: t("TXT_CODE_d07742fe"), icon: "mdi-cog-outline", click: goConfig },
-  { title: t("TXT_CODE_b7d026f8"), icon: "mdi-calendar-clock-outline", click: goSchedule },
-  ...pluginActions.value
-    .filter((item) => item.condition())
-    .map((item) => ({ title: item.title, icon: "mdi-puzzle-outline", click: item.click }))
-]);
 const canUpdate = computed(
   () => Boolean(instanceInfo.value?.config.updateCommand) && isStopped.value
 );
@@ -188,8 +361,7 @@ onUnmounted(() => {
   <main class="instance-console-page">
     <VContainer fluid class="instance-console-container">
       <VToolbar class="console-toolbar" color="transparent" flat>
-        <VBtn icon="mdi-arrow-left" variant="text" aria-label="Back" @click="goBack" />
-        <VIcon icon="mdi-console-line" color="primary" class="mr-3" />
+        <VIcon icon="mdi-console-line" color="info" class="mr-3" />
         <div class="console-title">
           <strong>{{ instanceName }}</strong
           ><span>{{ instanceTypeText }}</span>
@@ -228,23 +400,6 @@ onUnmounted(() => {
           <VBtn v-if="canUpdate" prepend-icon="mdi-cloud-download-outline" @click="update">{{
             t("TXT_CODE_40ca4f2")
           }}</VBtn>
-          <VMenu>
-            <template #activator="{ props: menuProps }"
-              ><VBtn
-                v-bind="menuProps"
-                icon="mdi-dots-vertical"
-                variant="text"
-                aria-label="More actions"
-            /></template>
-            <VList density="comfortable"
-              ><VListItem
-                v-for="item in actionItems"
-                :key="item.title"
-                :title="item.title"
-                :prepend-icon="item.icon"
-                @click="item.click"
-            /></VList>
-          </VMenu>
         </div>
       </VToolbar>
 
@@ -263,71 +418,98 @@ onUnmounted(() => {
         t("TXT_CODE_181f2f08")
       }}</VAlert>
 
-      <VRow v-if="instanceInfo" class="console-summary">
-        <VCol cols="12" lg="7">
-          <VCard class="summary-card" rounded="xl" flat>
-            <VCardTitle
-              ><VIcon icon="mdi-chart-line" color="primary" class="mr-2" />{{
-                t("TXT_CODE_5476e012")
-              }}</VCardTitle
+      <VCard v-if="instanceInfo" class="summary-card console-state-card" rounded="xl" flat>
+        <VCardTitle
+          ><VIcon icon="mdi-chart-line" color="info" class="mr-2" />{{
+            t("TXT_CODE_5476e012")
+          }}</VCardTitle
+        >
+        <VCardText>
+          <div class="metric-row">
+            <span>{{ t("TXT_CODE_b862a158") }}</span
+            ><strong>{{ Number(instanceInfo.info?.cpuUsage || 0).toFixed(0) }}%</strong>
+          </div>
+          <VProgressLinear
+            :model-value="cpuPercent"
+            color="primary"
+            height="6"
+            rounded="xl"
+            class="metric-bar"
+          />
+          <div class="metric-row">
+            <span>{{ t("TXT_CODE_593ee330") }}</span
+            ><strong
+              >{{ formatBytes(instanceInfo.info?.memoryUsage)
+              }}{{
+                instanceInfo.info?.memoryLimit
+                  ? ` / ${formatBytes(instanceInfo.info.memoryLimit)}`
+                  : ""
+              }}</strong
             >
+          </div>
+          <VProgressLinear
+            :model-value="memoryPercent"
+            color="secondary"
+            height="6"
+            rounded="xl"
+            class="metric-bar"
+          />
+          <div class="metric-grid">
+            <div>
+              <span>{{ t("TXT_CODE_network_bandwidth") }}</span
+              ><strong
+                >rx {{ formatBytes(instanceInfo.info?.rxRate) }}/s, tx
+                {{ formatBytes(instanceInfo.info?.txRate) }}/s</strong
+              >
+            </div>
+            <div>
+              <span>{{ t("TXT_CODE_DISK_USAGE") }}</span
+              ><strong>{{ formatBytes(instanceInfo.info?.storageUsage) }}</strong>
+            </div>
+            <div v-if="instanceInfo.info?.mcPingOnline">
+              <span>{{ t("TXT_CODE_e4dce83f") }}</span
+              ><strong
+                >{{ instanceInfo.info.currentPlayers }} /
+                {{ instanceInfo.info.maxPlayers }}</strong
+              >
+            </div>
+          </div>
+        </VCardText>
+      </VCard>
+
+      <VRow v-if="instanceInfo" class="console-summary">
+        <VCol cols="12" lg="7" class="console-function-column">
+          <VCard v-if="instanceFunctionItems.length" class="console-function-card" rounded="xl" flat>
+            <VCardTitle class="console-function-title">
+              <VIcon icon="mdi-view-grid-outline" color="info" class="mr-2" />
+              {{ t("TXT_CODE_efd37c48") }}
+            </VCardTitle>
             <VCardText>
-              <div class="metric-row">
-                <span>{{ t("TXT_CODE_b862a158") }}</span
-                ><strong>{{ Number(instanceInfo.info?.cpuUsage || 0).toFixed(0) }}%</strong>
-              </div>
-              <VProgressLinear
-                :model-value="cpuPercent"
-                color="primary"
-                height="6"
-                rounded="xl"
-                class="metric-bar"
-              />
-              <div class="metric-row">
-                <span>{{ t("TXT_CODE_593ee330") }}</span
-                ><strong
-                  >{{ formatBytes(instanceInfo.info?.memoryUsage)
-                  }}{{
-                    instanceInfo.info?.memoryLimit
-                      ? ` / ${formatBytes(instanceInfo.info.memoryLimit)}`
-                      : ""
-                  }}</strong
+              <VRow class="console-function-grid">
+                <VCol
+                  v-for="(item, index) in instanceFunctionItems"
+                  :key="`${item.title}-${index}`"
+                  cols="12"
+                  sm="6"
+                  md="4"
+                  lg="3"
                 >
-              </div>
-              <VProgressLinear
-                :model-value="memoryPercent"
-                color="secondary"
-                height="6"
-                rounded="xl"
-                class="metric-bar"
-              />
-              <div class="metric-grid">
-                <div>
-                  <span>{{ t("TXT_CODE_network_bandwidth") }}</span
-                  ><strong
-                    >rx {{ formatBytes(instanceInfo.info?.rxRate) }}/s, tx
-                    {{ formatBytes(instanceInfo.info?.txRate) }}/s</strong
-                  >
-                </div>
-                <div>
-                  <span>{{ t("TXT_CODE_DISK_USAGE") }}</span
-                  ><strong>{{ formatBytes(instanceInfo.info?.storageUsage) }}</strong>
-                </div>
-                <div v-if="instanceInfo.info?.mcPingOnline">
-                  <span>{{ t("TXT_CODE_e4dce83f") }}</span
-                  ><strong
-                    >{{ instanceInfo.info.currentPlayers }} /
-                    {{ instanceInfo.info.maxPlayers }}</strong
-                  >
-                </div>
-              </div>
+                  <VCard class="console-function-item" rounded="xl" flat @click="item.click">
+                    <VCardText>
+                      <VIcon :icon="item.icon" size="28" color="info" />
+                      <span>{{ item.title }}</span>
+                      <VIcon icon="mdi-arrow-right" size="18" class="console-function-arrow" />
+                    </VCardText>
+                  </VCard>
+                </VCol>
+              </VRow>
             </VCardText>
           </VCard>
         </VCol>
-        <VCol cols="12" lg="5">
+        <VCol cols="12" lg="5" class="console-basic-column">
           <VCard class="summary-card" rounded="xl" flat>
             <VCardTitle
-              ><VIcon icon="mdi-information-outline" color="primary" class="mr-2" />{{
+              ><VIcon icon="mdi-information-outline" color="info" class="mr-2" />{{
                 t("TXT_CODE_eadb4f60")
               }}</VCardTitle
             >
@@ -363,6 +545,49 @@ onUnmounted(() => {
         </VCol>
       </VRow>
     </VContainer>
+
+    <template v-if="instanceId && daemonId">
+      <component
+        v-for="action in normalInstanceActions"
+        :is="action.normalComponent"
+        :key="action.id"
+        :ref="(component: unknown) => setInstanceActionRef(action.id, component)"
+        :instance-uuid="instanceId"
+        :instance-info="instanceInfo"
+        :daemon-id="daemonId"
+        @close="refreshInstanceInfo"
+        @update="refreshInstanceInfo"
+      />
+    </template>
+
+    <EventConfig
+      ref="eventConfigDialog"
+      :instance-info="instanceInfo"
+      :instance-id="instanceId"
+      :daemon-id="daemonId"
+      @update="refreshInstanceInfo"
+    />
+    <InstanceDetail
+      ref="instanceDetailsDialog"
+      :instance-info="instanceInfo"
+      :instance-id="instanceId"
+      :daemon-id="daemonId"
+      @update="refreshInstanceInfo"
+    />
+    <InstanceFundamentalDetail
+      ref="instanceFundamentalDetailDialog"
+      :instance-info="instanceInfo"
+      :instance-id="instanceId"
+      :daemon-id="daemonId"
+      @update="refreshInstanceInfo"
+    />
+    <RconSettings
+      ref="rconSettingsDialog"
+      :instance-info="instanceInfo"
+      :instance-id="instanceId"
+      :daemon-id="daemonId"
+      @update="refreshInstanceInfo"
+    />
   </main>
 </template>
 
@@ -407,6 +632,61 @@ onUnmounted(() => {
 }
 .console-card-content {
   padding: 12px;
+}
+.console-function-card {
+  height: 100%;
+  margin-top: 0;
+  background: var(--background-color-white);
+}
+.console-state-card {
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+.console-function-column {
+  order: 2;
+}
+.console-basic-column {
+  order: 1;
+}
+.console-function-title {
+  display: flex;
+  align-items: center;
+  padding: 18px 20px 8px;
+  color: var(--text-color);
+  font-size: 16px;
+}
+.console-function-grid {
+  margin: 0 -8px;
+}
+.console-function-grid > .v-col {
+  padding: 8px;
+}
+.console-function-item {
+  height: 100%;
+  cursor: pointer;
+  background: var(--color-gray-2);
+  transition: background-color 0.2s ease;
+}
+.console-function-item:hover {
+  background: rgba(var(--v-theme-primary), 0.07);
+}
+.console-function-item :deep(.v-card-text) {
+  display: flex;
+  min-height: 88px;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+}
+.console-function-item span {
+  min-width: 0;
+  flex: 1;
+  color: var(--text-color);
+  font-size: 14px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.console-function-arrow {
+  color: var(--color-gray-7);
 }
 .console-summary {
   margin: 0 -8px;

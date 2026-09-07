@@ -144,6 +144,7 @@ export interface PanelFrontendTerminalAction {
 
 /** The button descriptor both terminals render. */
 export interface PanelFrontendTerminalButton {
+  id: string;
   title: string;
   icon: Component;
   type: string;

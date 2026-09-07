@@ -431,14 +431,17 @@ onMounted(async () => {
             <VCardTitle class="instance-card-title">
               <div class="instance-card-heading">
                 <span class="instance-name">{{ item.config.nickname }}</span>
-                <div v-if="item.config.tag?.length" class="instance-card-tags">
-                  <VChip v-for="tag in item.config.tag" :key="tag" size="x-small" variant="outlined">{{ tag }}</VChip>
-                </div>
               </div>
-              <VChip size="small" :color="statusColor(item)" variant="tonal" :prepend-icon="item.status === INSTANCE_STATUS_CODE.RUNNING
-                ? 'mdi-check-circle-outline'
-                : 'mdi-alert-circle-outline'
-                ">{{ statusText(item) }}</VChip>
+              <div class="instance-card-meta">
+                <div v-if="item.config.tag?.length" class="instance-card-tags">
+                  <VChip v-for="tag in item.config.tag" :key="tag" size="x-small" color="primary" variant="flat">{{ tag }}</VChip>
+                </div>
+                <VDivider v-if="item.config.tag?.length" vertical class="instance-card-status-divider" />
+                <VChip size="small" :color="statusColor(item)" variant="tonal" :prepend-icon="item.status === INSTANCE_STATUS_CODE.RUNNING
+                  ? 'mdi-check-circle-outline'
+                  : 'mdi-alert-circle-outline'
+                  ">{{ statusText(item) }}</VChip>
+              </div>
             </VCardTitle>
             <VCardText class="instance-card-content">
               <div class="instance-detail">
@@ -568,8 +571,15 @@ onMounted(async () => {
   flex: 1;
 }
 
-.pagination-wrap,
 .batch-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pagination-wrap {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -613,27 +623,30 @@ onMounted(async () => {
 
 .instance-grid>.v-col {
   padding: 8px;
+  display: flex;
 }
 
 .instance-card {
+  display: flex;
+  width: 100%;
+  flex: 1 1 auto;
   min-height: 220px;
   cursor: pointer;
   background: var(--background-color-white);
-  transition:
-    transform 0.2s ease,
-    background-color 0.2s ease;
+  transition: background-color 0.2s ease;
+  flex-direction: column;
 }
 
 .instance-card:hover,
 .instance-card.selected {
   background: rgba(var(--v-theme-primary), 0.07);
-  transform: translateY(-2px);
 }
 
 .instance-card-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 22px 22px 12px;
 }
@@ -641,7 +654,7 @@ onMounted(async () => {
 .instance-card-heading {
   display: flex;
   min-width: 0;
-  flex: 1 1 auto;
+  flex: 1 1 120px;
   align-items: center;
   gap: 8px;
 }
@@ -653,19 +666,34 @@ onMounted(async () => {
   white-space: nowrap;
 }
 
+.instance-card-meta {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.instance-card-status-divider {
+  height: 20px;
+}
+
 .instance-card-tags {
   display: flex;
   min-width: 0;
   flex: 0 1 auto;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 4px;
 }
 
 .instance-card-content {
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px 22px 16px;
+  padding: 12px 22px 12px;
 }
 
 .instance-detail {
@@ -685,10 +713,11 @@ onMounted(async () => {
 }
 
 .instance-card-actions {
+  min-height: 0;
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 2px;
-  padding: 8px 16px 16px;
+  padding: 4px 16px 8px;
 }
 
 @media (max-width: 992px) {

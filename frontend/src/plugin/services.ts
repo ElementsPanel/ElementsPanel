@@ -246,6 +246,7 @@ export class ActionsService extends Service implements FrontendActionsService {
 
   terminalButtons(state: PanelFrontendTerminalActionContext) {
     return this.terminals.map((action) => ({
+      id: action.id,
       title: typeof action.title === "function" ? action.title() : action.title,
       icon: action.icon,
       type: action.type ?? "default",

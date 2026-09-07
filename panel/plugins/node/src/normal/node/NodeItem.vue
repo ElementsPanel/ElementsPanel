@@ -276,7 +276,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 20px 8px 32px;
+  padding: 20px 22px 8px 32px;
   color: var(--text-color);
 }
 
