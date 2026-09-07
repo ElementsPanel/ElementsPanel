@@ -27,7 +27,6 @@ import { sleep } from "@/tools/common";
 import { reportErrorMsg } from "@/tools/validator";
 import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@/types/const";
 import { Modal } from "ant-design-vue";
-import prettyBytes from "pretty-bytes";
 import { computed, onUnmounted, ref, watch, type ComponentPublicInstance } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
@@ -41,7 +40,6 @@ import {
   VContainer,
   VDivider,
   VIcon,
-  VProgressLinear,
   VRow,
   VSpacer,
   VToolbar
@@ -56,6 +54,7 @@ const router = useRouter();
 const terminalService = usePluginService<FrontendTerminalService>("terminal");
 if (!terminalService) throw new Error("The terminal plugin is required by the instance console.");
 const TerminalCore = terminalService.TerminalCore;
+const TerminalTopTags = terminalService.TerminalTopTags;
 const terminalHook = terminalService.useTerminal();
 const {
   state: instanceInfo,
@@ -84,14 +83,6 @@ const instanceName = computed(() =>
 );
 const crashTimer = ref<ReturnType<typeof setTimeout>>();
 const { execute: requestOpenInstance, isLoading: openLoading } = openInstance();
-const formatBytes = (value?: number) =>
-  prettyBytes(value || 0, { binary: true, maximumFractionDigits: 1 });
-const cpuPercent = computed(() =>
-  Math.max(0, Math.min(100, Number(instanceInfo.value?.info?.cpuUsage || 0)))
-);
-const memoryPercent = computed(() =>
-  Math.max(0, Math.min(100, Number(instanceInfo.value?.info?.memoryUsagePercent || 0)))
-);
 const pluginActions = computed(() => {
   return ctx.actions.terminalButtons({
     mode: "normal",
@@ -148,6 +139,25 @@ const getMdiIcon = (icon: unknown, fallback = "mdi-application-cog-outline") => 
 
 const { isAdmin, state: appState } = useAppStateStore();
 const { state: overviewState } = useOverviewInfo();
+const nodeInfo = computed(() =>
+  overviewState.value?.remote?.find((node: any) => node.uuid === daemonId.value)
+);
+const displayInfo = computed(() => {
+  if (instanceInfo.value?.config?.processType === "docker") return instanceInfo.value.info;
+  const system = nodeInfo.value?.system;
+  if (!system) return instanceInfo.value?.info;
+  const memoryUsage = system.totalmem - system.freemem;
+  return {
+    ...instanceInfo.value?.info,
+    cpuUsage: system.cpuUsage * 100,
+    memoryUsage,
+    memoryLimit: system.totalmem,
+    memoryUsagePercent: system.totalmem ? (memoryUsage / system.totalmem) * 100 : 0
+  };
+});
+const isDisplayStopped = computed(
+  () => instanceInfo.value?.config?.processType === "docker" && isStopped.value
+);
 const { serverConfigFiles, refresh: refreshServerConfig } = useServerConfig();
 const normalInstanceActions = computed(() =>
   ctx.actions.instances.filter((action) => action.normalComponent)
@@ -418,62 +428,20 @@ onUnmounted(() => {
         t("TXT_CODE_181f2f08")
       }}</VAlert>
 
-      <VCard v-if="instanceInfo" class="summary-card console-state-card" rounded="xl" flat>
-        <VCardTitle
-          ><VIcon icon="mdi-chart-line" color="info" class="mr-2" />{{
-            t("TXT_CODE_5476e012")
-          }}</VCardTitle
-        >
-        <VCardText>
-          <div class="metric-row">
-            <span>{{ t("TXT_CODE_b862a158") }}</span
-            ><strong>{{ Number(instanceInfo.info?.cpuUsage || 0).toFixed(0) }}%</strong>
+      <VCard v-if="instanceInfo" class="console-state-card" rounded="xl" flat>
+        <VCardText class="console-state-content">
+          <div class="console-state-heading">
+            <VIcon icon="mdi-chart-line" color="info" />
+            <span>{{ t("TXT_CODE_5476e012") }}</span>
           </div>
-          <VProgressLinear
-            :model-value="cpuPercent"
-            color="primary"
-            height="6"
-            rounded="xl"
-            class="metric-bar"
+          <component
+            :is="TerminalTopTags"
+            v-if="displayInfo && !isDisplayStopped"
+            class="console-state-metrics"
+            :info="displayInfo"
+            :is-stopped="isDisplayStopped"
           />
-          <div class="metric-row">
-            <span>{{ t("TXT_CODE_593ee330") }}</span
-            ><strong
-              >{{ formatBytes(instanceInfo.info?.memoryUsage)
-              }}{{
-                instanceInfo.info?.memoryLimit
-                  ? ` / ${formatBytes(instanceInfo.info.memoryLimit)}`
-                  : ""
-              }}</strong
-            >
-          </div>
-          <VProgressLinear
-            :model-value="memoryPercent"
-            color="secondary"
-            height="6"
-            rounded="xl"
-            class="metric-bar"
-          />
-          <div class="metric-grid">
-            <div>
-              <span>{{ t("TXT_CODE_network_bandwidth") }}</span
-              ><strong
-                >rx {{ formatBytes(instanceInfo.info?.rxRate) }}/s, tx
-                {{ formatBytes(instanceInfo.info?.txRate) }}/s</strong
-              >
-            </div>
-            <div>
-              <span>{{ t("TXT_CODE_DISK_USAGE") }}</span
-              ><strong>{{ formatBytes(instanceInfo.info?.storageUsage) }}</strong>
-            </div>
-            <div v-if="instanceInfo.info?.mcPingOnline">
-              <span>{{ t("TXT_CODE_e4dce83f") }}</span
-              ><strong
-                >{{ instanceInfo.info.currentPlayers }} /
-                {{ instanceInfo.info.maxPlayers }}</strong
-              >
-            </div>
-          </div>
+          <span v-else class="console-state-empty">{{ t("TXT_CODE_NO_DATA") }}</span>
         </VCardText>
       </VCard>
 
@@ -641,6 +609,39 @@ onUnmounted(() => {
 .console-state-card {
   margin-top: 16px;
   margin-bottom: 8px;
+  background: var(--background-color-white);
+}
+.console-state-content {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+}
+.console-state-heading {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-color);
+  font-size: 16px;
+  font-weight: 500;
+}
+.console-state-metrics {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-x: auto;
+}
+.console-state-metrics :deep(.perf-cards) {
+  flex-wrap: nowrap;
+}
+.console-state-metrics :deep(.perf-card) {
+  width: 150px;
+  flex: 0 0 150px;
+}
+.console-state-empty {
+  color: var(--color-gray-6);
+  font-size: 13px;
 }
 .console-function-column {
   order: 2;
@@ -708,7 +709,6 @@ onUnmounted(() => {
 .summary-card :deep(.v-card-text) {
   padding: 10px 20px 20px;
 }
-.metric-row,
 .info-list > div {
   display: flex;
   align-items: center;
@@ -717,34 +717,12 @@ onUnmounted(() => {
   color: var(--color-gray-7);
   font-size: 13px;
 }
-.metric-row strong,
 .info-list strong {
   overflow: hidden;
   color: var(--text-color);
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.metric-bar {
-  margin: 6px 0 14px;
-}
-.metric-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-  margin-top: 8px;
-}
-.metric-grid div {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  color: var(--color-gray-7);
-  font-size: 12px;
-}
-.metric-grid strong {
-  color: var(--text-color);
-  font-size: 13px;
-  font-weight: 500;
 }
 .info-list {
   display: flex;

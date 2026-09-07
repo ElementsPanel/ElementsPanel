@@ -717,7 +717,7 @@ onMounted(async () => {
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 2px;
-  padding: 4px 16px 8px;
+  padding: 4px 16px 12px;
 }
 
 @media (max-width: 992px) {
