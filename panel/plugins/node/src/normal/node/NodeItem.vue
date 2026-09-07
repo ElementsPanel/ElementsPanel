@@ -214,7 +214,7 @@ onMounted(() => {
         </VCardActions>
       </VCardTitle>
       <VCardText v-if="remoteNode" class="node-card-content">
-        <VRow dense class="mt-2">
+        <VRow dense>
           <VCol v-for="detail in detailList(remoteNode)" :key="detail.title + detail.value" cols="6" sm="3">
             <div class="node-detail">
               <div :title="detail.onlyCopy ? detail.value : ''">
@@ -276,7 +276,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 22px 8px 32px;
+  padding: 14px 14px 14px 24px;
   color: var(--text-color);
 }
 
@@ -287,7 +287,7 @@ onMounted(() => {
 }
 
 .node-card-content {
-  padding: 0 28px 28px 32px;
+  padding: 24px;
   color: var(--text-color);
 }
 
