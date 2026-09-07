@@ -22,6 +22,8 @@ import { useSchedule } from "./hooks/useSchedule";
 import { useServerConfig } from "./hooks/useServerConfig";
 import { useStartCmdBuilder } from "./hooks/useGenerateStartCmd";
 import CreateInstancePage from "./views/CreateInstance.vue";
+import InstanceListPage from "./views/InstanceListPage.vue";
+import InstanceConsolePage from "./views/InstanceConsolePage.vue";
 import InstanceList from "./widgets/InstanceList.vue";
 import QuickStart from "./widgets/QuickStart.vue";
 import InstanceBaseInfo from "./widgets/instance/BaseInfo.vue";
@@ -163,44 +165,53 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.routes.add({
     path: "/instances",
     name: t("TXT_CODE_e21473bc"),
+    component: InstanceListPage,
+    meta: { mainMenu: true, permission: ROLE.ADMIN }
+  });
+
+  ctx.routes.add({
+    path: "/instances/terminal",
+    name: t("TXT_CODE_524e3036"),
+    component: InstanceConsolePage,
+    meta: {
+      permission: ROLE.USER,
+      breadcrumbs: [
+        {
+          name: t("TXT_CODE_e21473bc"),
+          path: "/instances",
+          mainMenu: true,
+          permission: ROLE.ADMIN
+        }
+      ]
+    }
+  });
+
+  ctx.routes.add({
+    path: "/instances/terminal/mods",
+    name: t("TXT_CODE_MOD_MANAGER"),
     component: LayoutContainer,
-    meta: { mainMenu: true, permission: ROLE.ADMIN },
-    children: [
-      {
-        path: "/instances/terminal",
-        name: t("TXT_CODE_524e3036"),
-        component: LayoutContainer,
-        meta: { permission: ROLE.USER },
-        children: [
-          {
-            path: "/instances/terminal/mods",
-            name: t("TXT_CODE_MOD_MANAGER"),
-            component: LayoutContainer,
-            meta: { permission: ROLE.USER }
-          },
-          {
-            path: "/instances/terminal/serverConfig",
-            name: t("TXT_CODE_d07742fe"),
-            component: LayoutContainer,
-            meta: { permission: ROLE.USER },
-            children: [
-              {
-                path: "/instances/terminal/serverConfig/fileEdit",
-                name: t("TXT_CODE_78019c60"),
-                component: LayoutContainer,
-                meta: { permission: ROLE.USER }
-              }
-            ]
-          },
-          {
-            path: "/instances/schedule",
-            name: t("TXT_CODE_b7d026f8"),
-            component: LayoutContainer,
-            meta: { permission: ROLE.USER }
-          }
-        ]
-      }
-    ]
+    meta: { permission: ROLE.USER }
+  });
+
+  ctx.routes.add({
+    path: "/instances/terminal/serverConfig",
+    name: t("TXT_CODE_d07742fe"),
+    component: LayoutContainer,
+    meta: { permission: ROLE.USER }
+  });
+
+  ctx.routes.add({
+    path: "/instances/terminal/serverConfig/fileEdit",
+    name: t("TXT_CODE_78019c60"),
+    component: LayoutContainer,
+    meta: { permission: ROLE.USER }
+  });
+
+  ctx.routes.add({
+    path: "/instances/schedule",
+    name: t("TXT_CODE_b7d026f8"),
+    component: LayoutContainer,
+    meta: { permission: ROLE.USER }
   });
 
   ctx.routes.add({

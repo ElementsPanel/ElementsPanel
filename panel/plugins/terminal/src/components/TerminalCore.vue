@@ -6,12 +6,18 @@ import { t } from "@/lang/i18n";
 import { getInstanceOutputLog } from "../api";
 import { logInstanceCrash, logInstanceAutoRestart } from "@/services/apis/operationLog";
 import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
-import { CodeOutlined, DeleteOutlined, LoadingOutlined } from "@ant-design/icons-vue";
 import { Terminal } from "@xterm/xterm";
 import { message } from "ant-design-vue";
 import { onMounted, ref } from "vue";
 import { encodeConsoleColor, type UseTerminalHook } from "../hooks/useTerminal";
 import { getRandomId } from "@/tools/randId";
+import {
+  VBtn,
+  VChip,
+  VProgressCircular,
+  VTextField,
+  VTooltip
+} from "vuetify/lib/components/index.mjs";
 
 // Module-level dedup: prevent duplicate crash/restart logs across multiple TerminalCore instances
 let lastCrashLogTime = 0;
@@ -24,6 +30,8 @@ const props = defineProps<{
   daemonId: string;
   height: string;
   useTerminalHook: UseTerminalHook;
+  /** Fixed pages use the terminal even when the legacy layout is in design mode. */
+  ignoreDesignMode?: boolean;
 }>();
 
 const { containerState } = useLayoutContainerStore();
@@ -72,7 +80,7 @@ const handleClickHistoryItem = (item: string) => {
 };
 
 const initTerminal = async () => {
-  if (containerState.isDesignMode) return;
+  if (containerState.isDesignMode && !props.ignoreDesignMode) return;
   const dom = document.getElementById(terminalDomId);
   if (dom) {
     const term = initTerminalWindow(dom);
@@ -166,24 +174,32 @@ onMounted(async () => {
   <!-- Terminal Page View -->
   <div class="console-wrapper">
     <div v-if="!isConnect" class="terminal-loading">
-      <LoadingOutlined style="font-size: 72px; color: white" />
+      <VProgressCircular indeterminate color="white" size="64" />
     </div>
     <div class="terminal-button-group position-absolute-right position-absolute-top">
       <ul>
-        <li @click="clearTerminal()">
-          <a-tooltip placement="top">
-            <template #title>
-              <span>{{ t("TXT_CODE_b1e2e1b4") }}</span>
+        <li>
+          <VTooltip location="top">
+            <template #activator="{ props: tooltipProps }">
+              <VBtn
+                v-bind="tooltipProps"
+                icon="mdi-delete-outline"
+                variant="text"
+                size="small"
+                color="white"
+                :aria-label="t('TXT_CODE_b1e2e1b4')"
+                @click="clearTerminal()"
+              />
             </template>
-            <delete-outlined />
-          </a-tooltip>
+            <span>{{ t("TXT_CODE_b1e2e1b4") }}</span>
+          </VTooltip>
         </li>
       </ul>
     </div>
     <div class="terminal-wrapper global-card-container-shadow position-relative">
       <div class="terminal-container">
         <div
-          v-if="!containerState.isDesignMode"
+          v-if="!containerState.isDesignMode || props.ignoreDesignMode"
           :id="terminalDomId"
           :style="{ height: props.height }"
         ></div>
@@ -195,48 +211,49 @@ onMounted(async () => {
     <div class="command-input">
       <div v-show="focusHistoryList" class="history">
         <li v-for="(item, key) in history" :key="item">
-          <a-tag
-            :color="key !== selectLocation ? 'blue' : '#108ee9'"
+          <VChip
+            size="small"
+            :color="key !== selectLocation ? 'info' : 'primary'"
             @click="handleClickHistoryItem(item)"
           >
             {{ item.length > 14 ? item.slice(0, 14) + "..." : item }}
-          </a-tag>
+          </VChip>
         </li>
       </div>
-      <a-input
+      <VTextField
         ref="inputRef"
-        v-model:value="commandInputValue"
+        v-model="commandInputValue"
         :placeholder="t('TXT_CODE_555e2c1b')"
+        prepend-inner-icon="mdi-code-tags"
+        variant="outlined"
+        density="comfortable"
+        hide-details
         autofocus
-        :disabled="containerState.isDesignMode || !isConnect"
-        @press-enter="handleSendCommand"
+        :disabled="(containerState.isDesignMode && !props.ignoreDesignMode) || !isConnect"
         @keydown="handleHistorySelect"
-      >
-        <template #prefix>
-          <CodeOutlined style="font-size: 18px" />
-        </template>
-      </a-input>
+        @keyup.enter="handleSendCommand"
+      />
     </div>
 
     <!-- Error Dialog -->
     <div v-if="socketError" class="error-card">
       <div class="error-card-container">
-        <a-typography-title :level="5">{{ $t("TXT_CODE_6929b0b2") }}</a-typography-title>
-        <a-typography-paragraph>
+        <h3>{{ $t("TXT_CODE_6929b0b2") }}</h3>
+        <p>
           {{ $t("TXT_CODE_812a629e") + socketAddress }}
-        </a-typography-paragraph>
+        </p>
         <div>
           <img :src="connectErrorImage" style="width: 100%; height: 110px" />
         </div>
-        <a-typography-title :level="5">{{ $t("TXT_CODE_9c95b60f") }}</a-typography-title>
-        <a-typography-paragraph>
+        <h3>{{ $t("TXT_CODE_9c95b60f") }}</h3>
+        <div>
           <pre style="font-size: 12px"><code>{{ socketError?.message||"" }}</code></pre>
 
           <div v-if="isXhrPollError" style="font-size: 12px">
             <span> {{ xhrPollErrorReason }}</span>
           </div>
-        </a-typography-paragraph>
-        <a-typography-paragraph v-if="isXhrPollError">
+        </div>
+        <div v-if="isXhrPollError">
           <div class="flex" style="gap: 8px; font-size: 12px">
             <span>
               <strong>{{ $t("TXT_CODE_d4c8fb3b") }}</strong>
@@ -257,9 +274,9 @@ onMounted(async () => {
               {{ $t("TXT_CODE_10cc2794") }}
             </a>
           </div>
-        </a-typography-paragraph>
-        <a-typography-title :level="5">{{ $t("TXT_CODE_f1c96d8a") }}</a-typography-title>
-        <a-typography-paragraph>
+        </div>
+        <h3>{{ $t("TXT_CODE_f1c96d8a") }}</h3>
+        <div>
           <ul>
             <li>
               {{ $t("TXT_CODE_ceba9262") }}
@@ -272,11 +289,11 @@ onMounted(async () => {
             </li>
           </ul>
           <div class="flex flex-center">
-            <a-typography-link @click="refreshPage">
+            <VBtn variant="text" color="primary" @click="refreshPage">
               {{ $t("TXT_CODE_f8b28901") }}
-            </a-typography-link>
+            </VBtn>
           </div>
-        </a-typography-paragraph>
+        </div>
       </div>
     </div>
   </div>
