@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { openInstanceTagsEditor, useDeleteInstanceDialog } from "@/components/fc/index";
+import { openInstanceTagsEditor } from "@/components/fc/index";
 import PageToolbar from "@/components/PageToolbar.vue";
 import { router } from "@/config/router";
 import { verifyEULA } from "@/hooks/useInstance";
@@ -19,8 +19,8 @@ import {
   stopInstance,
   updateInstance
 } from "@/services/apis/instance";
-import { computeNodeName } from "@/tools/nodes";
 import { formatMemoryUsage } from "@/tools/memory";
+import { computeNodeName } from "@/tools/nodes";
 import { parseTimestamp } from "@/tools/time";
 import { reportErrorMsg } from "@/tools/validator";
 import type { InstanceDetail, NodeStatus } from "@/types";
@@ -35,9 +35,11 @@ import {
   VCardActions,
   VCardText,
   VCardTitle,
+  VCheckbox,
   VChip,
   VCol,
   VContainer,
+  VDialog,
   VDivider,
   VEmptyState,
   VIcon,
@@ -253,6 +255,53 @@ const editCardTags = async (item: InstanceMoreDetail) => {
   if (JSON.stringify(newTags) !== JSON.stringify(tags)) await initInstancesData();
 };
 
+const canUpdate = (item: InstanceMoreDetail) =>
+  item.status === INSTANCE_STATUS_CODE.STOPPED && Boolean(item.config.updateCommand?.trim());
+
+const deleteDialogOpen = ref(false);
+const deleteDialogItem = ref<InstanceMoreDetail>();
+const deleteDialogFiles = ref(false);
+const deleteDialogLoading = ref(false);
+
+const openDeleteDialog = (item: InstanceMoreDetail) => {
+  deleteDialogItem.value = item;
+  deleteDialogFiles.value = false;
+  deleteDialogOpen.value = true;
+};
+
+const closeDeleteDialog = () => {
+  if (deleteDialogLoading.value) return;
+  deleteDialogOpen.value = false;
+  deleteDialogItem.value = undefined;
+};
+
+const deleteCardInstance = async () => {
+  const item = deleteDialogItem.value;
+  if (!item) return;
+
+  deleteDialogLoading.value = true;
+  try {
+    const { execute, state } = batchDelete();
+    await execute({
+      params: { daemonId: currentRemoteNode.value?.uuid || "" },
+      data: {
+        uuids: [item.instanceUuid],
+        deleteFile: deleteDialogFiles.value
+      }
+    });
+    if (state.value) {
+      notification.success({ message: t("TXT_CODE_f486dbb4") });
+      deleteDialogOpen.value = false;
+      deleteDialogItem.value = undefined;
+      await initInstancesData(true);
+    }
+  } catch (error: any) {
+    reportErrorMsg(error.message);
+  } finally {
+    deleteDialogLoading.value = false;
+  }
+};
+
 const statusColor = (item: InstanceMoreDetail) => {
   if (item.status === INSTANCE_STATUS_CODE.RUNNING) return "success";
   if (item.status === INSTANCE_STATUS_CODE.STARTING) return "warning";
@@ -277,36 +326,19 @@ onMounted(async () => {
       <PageToolbar :title="t('TXT_CODE_e21473bc')" icon="mdi-view-grid-outline">
         <template #search>
           <div class="instance-search-row">
-            <VSelect
-              v-model="operationForm.status"
-              :items="[
-                { title: t('TXT_CODE_c48f6f64'), value: '' },
-                ...Object.entries(INSTANCE_STATUS).map(([value, title]) => ({ title, value }))
-              ]"
-              hide-details
-              density="comfortable"
-              @update:model-value="handleQueryInstance"
-            />
-            <VTextField
-              v-model="operationForm.instanceName"
-              :placeholder="t('TXT_CODE_ce132192')"
-              prepend-inner-icon="mdi-magnify"
-              hide-details
-              density="comfortable"
-              @keyup.enter="handleQueryInstance"
-              @update:model-value="handleQueryInstance"
-            />
+            <VSelect v-model="operationForm.status" :items="[
+              { title: t('TXT_CODE_c48f6f64'), value: '' },
+              ...Object.entries(INSTANCE_STATUS).map(([value, title]) => ({ title, value }))
+            ]" hide-details density="comfortable" @update:model-value="handleQueryInstance" />
+            <VTextField v-model="operationForm.instanceName" :placeholder="t('TXT_CODE_ce132192')"
+              prepend-inner-icon="mdi-magnify" hide-details density="comfortable" @keyup.enter="handleQueryInstance"
+              @update:model-value="handleQueryInstance" />
           </div>
         </template>
         <template #actions>
           <VMenu location="bottom end">
             <template #activator="{ props: menuProps }">
-              <VBtn
-                v-bind="menuProps"
-                variant="tonal"
-                prepend-icon="mdi-server-outline"
-                :disabled="!currentRemoteNode"
-              >
+              <VBtn v-bind="menuProps" variant="tonal" prepend-icon="mdi-server-outline" :disabled="!currentRemoteNode">
                 <span class="node-name">{{
                   computeNodeName(
                     currentRemoteNode?.ip || "",
@@ -318,29 +350,16 @@ onMounted(async () => {
               </VBtn>
             </template>
             <VList density="comfortable">
-              <VListItem
-                v-for="node in nodes || []"
-                :key="node.uuid"
-                :disabled="!node.available"
+              <VListItem v-for="node in nodes || []" :key="node.uuid" :disabled="!node.available"
                 :title="computeNodeName(node.ip, node.available, node.remarks)"
                 :prepend-icon="node.available ? 'mdi-database-outline' : 'mdi-server-off-outline'"
-                @click="changeNode(node)"
-              />
+                @click="changeNode(node)" />
               <VDivider />
-              <VListItem
-                :title="t('TXT_CODE_28e53fed')"
-                prepend-icon="mdi-pencil-outline"
-                @click="toNodes"
-              />
+              <VListItem :title="t('TXT_CODE_28e53fed')" prepend-icon="mdi-pencil-outline" @click="toNodes" />
             </VList>
           </VMenu>
-          <VBtn
-            color="primary"
-            prepend-icon="mdi-plus"
-            :disabled="!currentRemoteNode?.available"
-            @click="toCreate"
-            >{{ t("TXT_CODE_53408064") }}</VBtn
-          >
+          <VBtn color="primary" prepend-icon="mdi-plus" :disabled="!currentRemoteNode?.available" @click="toCreate">{{
+            t("TXT_CODE_53408064") }}</VBtn>
         </template>
       </PageToolbar>
 
@@ -349,295 +368,171 @@ onMounted(async () => {
           <div v-if="multipleMode" class="batch-actions">
             <VBtn variant="text" prepend-icon="mdi-close" @click="exitMultiple">{{
               t("TXT_CODE_5366af54")
-            }}</VBtn>
+              }}</VBtn>
             <VBtn variant="text" @click="selectAll">{{
               selectedInstance.length === instancesMoreInfo.length
                 ? t("TXT_CODE_df87c46d")
                 : t("TXT_CODE_f466d7a")
             }}</VBtn>
             <VMenu>
-              <template #activator="{ props: menuProps }"
-                ><VBtn v-bind="menuProps" color="primary" append-icon="mdi-chevron-down">{{
+              <template #activator="{ props: menuProps }">
+                <VBtn v-bind="menuProps" color="primary" append-icon="mdi-chevron-down">{{
                   t("TXT_CODE_8fd8bfd3")
-                }}</VBtn></template
-              >
+                  }}</VBtn>
+              </template>
               <VList>
-                <VListItem
-                  :title="t('TXT_CODE_57245e94')"
-                  prepend-icon="mdi-play"
-                  @click="batchOperation('start')"
-                />
-                <VListItem
-                  :title="t('TXT_CODE_b1dedda3')"
-                  prepend-icon="mdi-stop"
-                  @click="batchOperation('stop')"
-                />
-                <VListItem
-                  :title="t('TXT_CODE_47dcfa5')"
-                  prepend-icon="mdi-restart"
-                  @click="batchOperation('restart')"
-                />
-                <VListItem
-                  :title="t('TXT_CODE_7b67813a')"
-                  prepend-icon="mdi-close-circle-outline"
-                  @click="batchOperation('kill')"
-                />
-                <VListItem
-                  :title="t('TXT_CODE_ecbd7449')"
-                  prepend-icon="mdi-delete-outline"
-                  @click="batchDeleteInstances(false)"
-                />
-                <VListItem
-                  :title="t('TXT_CODE_9ef27367')"
-                  prepend-icon="mdi-delete-forever-outline"
-                  @click="batchDeleteInstances(true)"
-                />
+                <VListItem :title="t('TXT_CODE_57245e94')" prepend-icon="mdi-play" @click="batchOperation('start')" />
+                <VListItem :title="t('TXT_CODE_b1dedda3')" prepend-icon="mdi-stop" @click="batchOperation('stop')" />
+                <VListItem :title="t('TXT_CODE_47dcfa5')" prepend-icon="mdi-restart"
+                  @click="batchOperation('restart')" />
+                <VListItem :title="t('TXT_CODE_7b67813a')" prepend-icon="mdi-close-circle-outline"
+                  @click="batchOperation('kill')" />
+                <VListItem :title="t('TXT_CODE_ecbd7449')" prepend-icon="mdi-delete-outline"
+                  @click="batchDeleteInstances(false)" />
+                <VListItem :title="t('TXT_CODE_9ef27367')" prepend-icon="mdi-delete-forever-outline"
+                  @click="batchDeleteInstances(true)" />
               </VList>
             </VMenu>
-            <span class="selected-count"
-              >{{ t("TXT_CODE_432cbc38") }}{{ selectedInstance.length }}
-              {{ t("TXT_CODE_5cd3b4bd") }}</span
-            >
+            <span class="selected-count">{{ t("TXT_CODE_432cbc38") }}{{ selectedInstance.length }}
+              {{ t("TXT_CODE_5cd3b4bd") }}</span>
           </div>
           <div v-else class="batch-actions">
-            <VBtn
-              variant="text"
-              prepend-icon="mdi-checkbox-multiple-outline"
-              @click="multipleMode = true"
-              >{{ t("TXT_CODE_5cb656b9") }}</VBtn
-            >
-            <VBtn
-              variant="text"
-              prepend-icon="mdi-refresh"
-              :loading="isLoading"
-              @click="initInstancesData"
-              >{{ t("TXT_CODE_b76d94e0") }}</VBtn
-            >
+            <VBtn variant="text" prepend-icon="mdi-checkbox-multiple-outline" @click="multipleMode = true">{{
+              t("TXT_CODE_5cb656b9") }}</VBtn>
+            <VBtn variant="text" prepend-icon="mdi-refresh" :loading="isLoading" @click="initInstancesData">{{
+              t("TXT_CODE_b76d94e0") }}</VBtn>
           </div>
         </VCol>
         <VCol cols="12" md="5" class="pagination-wrap">
-          <VPagination
-            v-if="instances"
-            v-model="operationForm.currentPage"
-            :length="instances.maxPage || 1"
-            total-visible="6"
-            density="comfortable"
-            @update:model-value="() => initInstancesData()"
-          />
-          <VSelect
-            v-if="instances"
-            v-model="operationForm.pageSize"
-            :items="[10, 20, 50, 100]"
-            hide-details
-            density="compact"
-            class="page-size-select"
-            @update:model-value="() => initInstancesData(true)"
-          />
+          <VPagination v-if="instances" v-model="operationForm.currentPage" :length="instances.maxPage || 1"
+            total-visible="6" density="comfortable" @update:model-value="() => initInstancesData()" />
+          <VSelect v-if="instances" v-model="operationForm.pageSize" :items="[10, 20, 50, 100]" hide-details
+            density="compact" class="page-size-select" @update:model-value="() => initInstancesData(true)" />
         </VCol>
       </VRow>
 
       <div v-if="tagTips?.length" class="tag-row">
-        <VChip
-          v-if="selectedTags.length"
-          color="error"
-          variant="tonal"
-          prepend-icon="mdi-filter-remove"
-          @click="clearTags"
-          >{{ t("TXT_CODE_7333c7f7") }}</VChip
-        >
-        <VChip
-          v-for="tag in tagTips"
-          :key="tag"
-          :color="isTagSelected(tag) ? 'primary' : undefined"
+        <VChip v-if="selectedTags.length" color="error" variant="tonal" prepend-icon="mdi-filter-remove"
+          @click="clearTags">{{
+            t("TXT_CODE_7333c7f7") }}</VChip>
+        <VChip v-for="tag in tagTips" :key="tag" :color="isTagSelected(tag) ? 'primary' : undefined"
           :variant="isTagSelected(tag) ? 'tonal' : 'outlined'"
-          @click="isTagSelected(tag) ? removeTag(tag) : selectTag(tag)"
-          >{{ tag }}</VChip
-        >
+          @click="isTagSelected(tag) ? removeTag(tag) : selectTag(tag)">
+          {{ tag }}</VChip>
       </div>
 
       <div v-if="isLoading" class="state-container">
         <VProgressCircular indeterminate color="primary" size="48" />
       </div>
       <VRow v-else-if="instancesMoreInfo.length" class="instance-grid">
-        <VCol
-          v-for="item in instancesMoreInfo"
-          :key="item.instanceUuid"
-          cols="12"
-          sm="6"
-          lg="4"
-          xl="3"
-        >
-          <VCard
-            class="instance-card"
-            :class="{ selected: multipleMode && findSelected(item) }"
-            rounded="xl"
-            flat
-            @click="selectInstance(item)"
-          >
-            <VCardTitle class="instance-card-title"
-              ><span class="instance-name">{{ item.config.nickname }}</span
-              ><VChip
-                size="small"
-                :color="statusColor(item)"
-                variant="tonal"
-                :prepend-icon="
-                  item.status === INSTANCE_STATUS_CODE.RUNNING
-                    ? 'mdi-check-circle-outline'
-                    : 'mdi-alert-circle-outline'
-                "
-                >{{ statusText(item) }}</VChip
-              ></VCardTitle
-            >
+        <VCol v-for="item in instancesMoreInfo" :key="item.instanceUuid" cols="12" sm="6" lg="4" xl="3">
+          <VCard class="instance-card" :class="{ selected: multipleMode && findSelected(item) }" rounded="xl" flat
+            @click="selectInstance(item)">
+            <VCardTitle class="instance-card-title">
+              <div class="instance-card-heading">
+                <span class="instance-name">{{ item.config.nickname }}</span>
+                <div v-if="item.config.tag?.length" class="instance-card-tags">
+                  <VChip v-for="tag in item.config.tag" :key="tag" size="x-small" variant="outlined">{{ tag }}</VChip>
+                </div>
+              </div>
+              <VChip size="small" :color="statusColor(item)" variant="tonal" :prepend-icon="item.status === INSTANCE_STATUS_CODE.RUNNING
+                ? 'mdi-check-circle-outline'
+                : 'mdi-alert-circle-outline'
+                ">{{ statusText(item) }}</VChip>
+            </VCardTitle>
             <VCardText class="instance-card-content">
-              <div class="tag-list">
-                <VChip
-                  v-for="tag in item.config.tag || []"
-                  :key="tag"
-                  size="x-small"
-                  variant="outlined"
-                  >{{ tag }}</VChip
-                >
+              <div class="instance-detail">
+                <span>{{ t("TXT_CODE_2f291d8b") }}</span><strong>{{ item.moreInfo?.instanceTypeText || "--" }}</strong>
               </div>
               <div class="instance-detail">
-                <span>{{ t("TXT_CODE_2f291d8b") }}</span
-                ><strong>{{ item.moreInfo?.instanceTypeText || "--" }}</strong>
-              </div>
-              <div class="instance-detail">
-                <span>{{ t("TXT_CODE_34611898") }}</span
-                ><strong>{{ parseTimestamp(item.config.lastDatetime) }}</strong>
+                <span>{{ t("TXT_CODE_34611898") }}</span><strong>{{ parseTimestamp(item.config.lastDatetime) }}</strong>
               </div>
               <div v-if="item.info?.memoryUsage != null" class="instance-detail">
-                <span>{{ t("TXT_CODE_593ee330") }}</span
-                ><strong>{{ memoryText(item) }}</strong>
+                <span>{{ t("TXT_CODE_593ee330") }}</span><strong>{{ memoryText(item) }}</strong>
               </div>
               <div v-if="item.info?.cpuUsage != null" class="instance-detail">
-                <span>{{ t("TXT_CODE_b862a158") }}</span
-                ><strong>{{ Number(item.info.cpuUsage).toFixed(0) }}%</strong>
+                <span>{{ t("TXT_CODE_b862a158") }}</span><strong>{{ Number(item.info.cpuUsage).toFixed(0) }}%</strong>
               </div>
               <div v-if="item.info?.storageUsage != null" class="instance-detail">
-                <span>{{ t("TXT_CODE_DISK_USAGE") }}</span
-                ><strong>{{ bytesText(item.info.storageUsage) }}</strong>
+                <span>{{ t("TXT_CODE_DISK_USAGE") }}</span><strong>{{ bytesText(item.info.storageUsage) }}</strong>
               </div>
             </VCardText>
             <VCardActions class="instance-card-actions" @click.stop>
-              <VTooltip location="top"
-                ><template #activator="{ props: tooltipProps }"
-                  ><VBtn
-                    v-if="item.status === INSTANCE_STATUS_CODE.STOPPED"
-                    v-bind="tooltipProps"
-                    icon="mdi-play"
-                    size="small"
-                    color="success"
-                    variant="text"
-                    @click="runCardAction(item, 'start')" /></template
-                ><span>{{ t("TXT_CODE_57245e94") }}</span></VTooltip
-              >
-              <VTooltip location="top"
-                ><template #activator="{ props: tooltipProps }"
-                  ><VBtn
-                    v-if="item.status === INSTANCE_STATUS_CODE.RUNNING"
-                    v-bind="tooltipProps"
-                    icon="mdi-stop"
-                    size="small"
-                    color="warning"
-                    variant="text"
-                    @click="confirmCardAction(item, 'stop')" /></template
-                ><span>{{ t("TXT_CODE_b1dedda3") }}</span></VTooltip
-              >
+              <VTooltip location="top"><template #activator="{ props: tooltipProps }">
+                  <VBtn v-if="item.status === INSTANCE_STATUS_CODE.STOPPED" v-bind="tooltipProps" icon="mdi-play"
+                    size="small" color="success" variant="text" @click="runCardAction(item, 'start')" />
+                </template><span>{{ t("TXT_CODE_57245e94") }}</span>
+              </VTooltip>
+              <VTooltip location="top"><template #activator="{ props: tooltipProps }">
+                  <VBtn v-if="item.status === INSTANCE_STATUS_CODE.RUNNING" v-bind="tooltipProps" icon="mdi-stop"
+                    size="small" color="warning" variant="text" @click="confirmCardAction(item, 'stop')" />
+                </template><span>{{ t("TXT_CODE_b1dedda3") }}</span>
+              </VTooltip>
               <VTooltip location="top">
                 <template #activator="{ props: tooltipProps }">
-                  <VBtn
-                    v-if="item.status === INSTANCE_STATUS_CODE.RUNNING"
-                    v-bind="tooltipProps"
-                    icon="mdi-restart"
-                    size="small"
-                    variant="text"
-                    @click="confirmCardAction(item, 'restart')"
-                  />
+                  <VBtn v-if="item.status === INSTANCE_STATUS_CODE.RUNNING" v-bind="tooltipProps" icon="mdi-restart"
+                    size="small" variant="text" @click="confirmCardAction(item, 'restart')" />
                 </template>
                 <span>{{ t("TXT_CODE_47dcfa5") }}</span>
               </VTooltip>
               <VTooltip location="top">
                 <template #activator="{ props: tooltipProps }">
-                  <VBtn
-                    v-if="item.status === INSTANCE_STATUS_CODE.STOPPED"
-                    v-bind="tooltipProps"
-                    icon="mdi-cloud-download-outline"
-                    size="small"
-                    variant="text"
-                    @click="runCardAction(item, 'update')"
-                  />
+                  <VBtn v-if="canUpdate(item)" v-bind="tooltipProps" icon="mdi-cloud-download-outline" size="small"
+                    variant="text" @click="runCardAction(item, 'update')" />
                 </template>
                 <span>{{ t("TXT_CODE_40ca4f2") }}</span>
               </VTooltip>
               <VTooltip location="top">
                 <template #activator="{ props: tooltipProps }">
-                  <VBtn
-                    v-if="item.status !== INSTANCE_STATUS_CODE.STOPPED"
-                    v-bind="tooltipProps"
-                    icon="mdi-close-circle-outline"
-                    size="small"
-                    color="error"
-                    variant="text"
-                    @click="confirmCardAction(item, 'kill')"
-                  />
+                  <VBtn v-if="item.status !== INSTANCE_STATUS_CODE.STOPPED" v-bind="tooltipProps"
+                    icon="mdi-close-circle-outline" size="small" color="error" variant="text"
+                    @click="confirmCardAction(item, 'kill')" />
                 </template>
                 <span>{{ t("TXT_CODE_7b67813a") }}</span>
               </VTooltip>
               <VTooltip location="top">
                 <template #activator="{ props: tooltipProps }">
-                  <VBtn
-                    v-bind="tooltipProps"
-                    icon="mdi-tag-multiple-outline"
-                    size="small"
-                    variant="text"
-                    @click="editCardTags(item)"
-                  />
+                  <VBtn v-bind="tooltipProps" icon="mdi-tag-multiple-outline" size="small" variant="text"
+                    @click="editCardTags(item)" />
                 </template>
                 <span>{{ t("TXT_CODE_78e88c3f") }}</span>
               </VTooltip>
-              <VTooltip location="top"
-                ><template #activator="{ props: tooltipProps }"
-                  ><VBtn
-                    v-bind="tooltipProps"
-                    icon="mdi-console-line"
-                    size="small"
-                    variant="text"
-                    @click="toTerminal(item)" /></template
-                ><span>{{ t("TXT_CODE_524e3036") }}</span></VTooltip
-              >
-              <VTooltip location="top"
-                ><template #activator="{ props: tooltipProps }"
-                  ><VBtn
-                    v-bind="tooltipProps"
-                    icon="mdi-delete-outline"
-                    size="small"
-                    color="error"
-                    variant="text"
-                    @click="
-                      useDeleteInstanceDialog(
-                        item.instanceUuid,
-                        currentRemoteNode?.uuid || ''
-                      ).then(() => initInstancesData())
-                    " /></template
-                ><span>{{ t("TXT_CODE_a0e19f38") }}</span></VTooltip
-              >
+              <VTooltip location="top"><template #activator="{ props: tooltipProps }">
+                  <VBtn v-bind="tooltipProps" icon="mdi-console-line" size="small" variant="text"
+                    @click="toTerminal(item)" />
+                </template><span>{{ t("TXT_CODE_524e3036") }}</span></VTooltip>
+              <VTooltip location="top"><template #activator="{ props: tooltipProps }">
+                  <VBtn v-bind="tooltipProps" icon="mdi-delete-outline" size="small" color="error" variant="text"
+                    @click.stop="openDeleteDialog(item)" />
+                </template><span>{{ t("TXT_CODE_a0e19f38") }}</span>
+              </VTooltip>
             </VCardActions>
           </VCard>
         </VCol>
       </VRow>
       <VEmptyState v-else :title="t('TXT_CODE_5415f009')" icon="mdi-view-grid-outline">
-        <template #actions
-          ><VBtn
-            v-if="marketAvailable"
-            color="primary"
-            prepend-icon="mdi-storefront-outline"
-            @click="toMarket"
-            >{{ t("TXT_CODE_871cb8bc") }}</VBtn
-          ></template
-        >
+        <template #actions>
+          <VBtn v-if="marketAvailable" color="primary" prepend-icon="mdi-storefront-outline" @click="toMarket">{{
+            t("TXT_CODE_871cb8bc") }}</VBtn>
+        </template>
       </VEmptyState>
     </VContainer>
+    <VDialog v-model="deleteDialogOpen" class="app-dialog" max-width="480px">
+      <VCard rounded="xl" :title="t('TXT_CODE_2a3b0c17')">
+        <VCardText>
+          <p>{{ t("TXT_CODE_1981470a") }}</p>
+          <VCheckbox v-model="deleteDialogFiles" :label="t('TXT_CODE_7542201a')" hide-details />
+        </VCardText>
+        <VCardActions>
+          <VBtn variant="text" :disabled="deleteDialogLoading" @click="closeDeleteDialog">
+            {{ t("TXT_CODE_a0451c97") }}
+          </VBtn>
+          <VBtn color="error" :loading="deleteDialogLoading" @click="deleteCardInstance">
+            {{ deleteDialogFiles ? t("TXT_CODE_584d786d") : t("TXT_CODE_a0e19f38") }}
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </main>
 </template>
 
@@ -647,26 +542,32 @@ onMounted(async () => {
   min-height: 100%;
   overflow-x: hidden;
 }
+
 .instance-list-container {
   max-width: var(--app-max-width);
   margin: 0 auto;
   padding: 20px 24px 32px;
 }
+
 .instance-actions-row {
   margin: 0;
 }
+
 .instance-search-row {
   display: flex;
   width: 100%;
   gap: 8px;
 }
+
 .instance-search-row .v-select {
   max-width: 150px;
 }
+
 .instance-search-row .v-text-field {
   min-width: 0;
   flex: 1;
 }
+
 .pagination-wrap,
 .batch-actions {
   display: flex;
@@ -675,37 +576,45 @@ onMounted(async () => {
   flex-wrap: wrap;
   gap: 8px;
 }
+
 .node-name {
   max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .selected-count {
   color: var(--color-gray-7);
   font-size: 13px;
 }
+
 .page-size-select {
   width: 90px;
 }
+
 .tag-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin: 4px 0 16px;
 }
+
 .state-container {
   display: flex;
   min-height: 360px;
   align-items: center;
   justify-content: center;
 }
+
 .instance-grid {
   margin: 0 -8px;
 }
-.instance-grid > .v-col {
+
+.instance-grid>.v-col {
   padding: 8px;
 }
+
 .instance-card {
   min-height: 220px;
   cursor: pointer;
@@ -714,35 +623,51 @@ onMounted(async () => {
     transform 0.2s ease,
     background-color 0.2s ease;
 }
+
 .instance-card:hover,
 .instance-card.selected {
   background: rgba(var(--v-theme-primary), 0.07);
   transform: translateY(-2px);
 }
+
 .instance-card-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 18px 18px 8px;
+  padding: 22px 22px 12px;
 }
+
+.instance-card-heading {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 8px;
+}
+
 .instance-name {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.instance-card-tags {
+  display: flex;
+  min-width: 0;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
 .instance-card-content {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 8px 18px 12px;
+  padding: 12px 22px 16px;
 }
-.tag-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  min-height: 22px;
-}
+
 .instance-detail {
   display: flex;
   justify-content: space-between;
@@ -750,6 +675,7 @@ onMounted(async () => {
   color: var(--color-gray-7);
   font-size: 13px;
 }
+
 .instance-detail strong {
   overflow: hidden;
   color: var(--text-color);
@@ -757,16 +683,19 @@ onMounted(async () => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .instance-card-actions {
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 2px;
-  padding: 4px 12px 12px;
+  padding: 8px 16px 16px;
 }
+
 @media (max-width: 992px) {
   .instance-list-container {
     padding: 16px 12px 28px;
   }
+
   .pagination-wrap {
     justify-content: flex-start;
   }
