@@ -93,20 +93,59 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
   const currentTabs = computed(() => tabList.value[currentTabKey] ?? []);
   const activeTab = ref<string>("");
 
-  const initDefaultTab = (path = "/") => {
-    const key = v4();
-    tabList.value[currentTabKey] ||= [];
-    tabList.value[currentTabKey].push({
-      key,
-      path,
-      name: path,
-      pushedTime: 0,
-      closable: false
+  const removeDuplicateDefaultTabs = (tabs: TabItem[]) => {
+    let hasDefaultTab = false;
+    return tabs.filter((tab) => {
+      if (tab.closable) return true;
+      if (hasDefaultTab) return false;
+      hasDefaultTab = true;
+      return true;
     });
-    activeTab.value = key;
-    currentDisk.value = t("TXT_CODE_28124988");
-    handleChangeTab(key);
   };
+
+  const normalizeTabs = (key: string) => {
+    const tabs = tabList.value[key];
+    if (!tabs?.length) return;
+
+    const normalizedTabs = removeDuplicateDefaultTabs(tabs);
+    if (normalizedTabs.length !== tabs.length) {
+      tabList.value[key] = normalizedTabs;
+    }
+  };
+
+  const ensureActiveTab = (path = "/") => {
+    tabList.value[currentTabKey] ||= [];
+    normalizeTabs(currentTabKey);
+
+    const tabs = currentTabs.value;
+    let tab = tabs.find((item) => item.key === activeTab.value);
+    if (!tab) {
+      tab = tabs[0];
+    }
+    if (!tab) {
+      tab = {
+        key: v4(),
+        path,
+        name: path,
+        pushedTime: 0,
+        closable: false
+      };
+      tabs.push(tab);
+    }
+
+    activeTab.value = tab.key;
+    return tab;
+  };
+
+  // A file list can be requested by both the table and the page mount. Create
+  // the persistent root tab before either request starts, not after it returns.
+  const initDefaultTab = (path = "/") => {
+    const tab = ensureActiveTab(path);
+    currentDisk.value = t("TXT_CODE_28124988");
+    void handleChangeTab(tab.key);
+  };
+
+  normalizeTabs(currentTabKey);
 
   // clear old tabs
   onMounted(() => {
@@ -116,7 +155,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     Object.keys(tabList.value).forEach((key) => {
       const tabs = tabList.value[key];
       if (tabs && tabs.length > 0) {
-        tabList.value[key] = tabs.filter((tab) => {
+        tabList.value[key] = removeDuplicateDefaultTabs(tabs).filter((tab) => {
           if (!tab.pushedTime) return true;
           return now - tab.pushedTime < oneDayInMs;
         });
@@ -357,7 +396,13 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
 
   const getFileList = async (throwErr = false, initPath?: string) => {
     const { execute } = getFileListApi();
-    const thisTab = currentTabs.value.find((e) => e.key === activeTab.value);
+    let thisTab = currentTabs.value.find((e) => e.key === activeTab.value);
+    if (!thisTab) {
+      thisTab = ensureActiveTab(initPath ?? currentPath.value);
+      if (!initPath && thisTab.path !== currentPath.value) {
+        updateBreadcrumbs(thisTab.path);
+      }
+    }
 
     try {
       clearSelected();
@@ -380,9 +425,6 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
       });
       dataSource.value = res.value?.items || [];
       operationForm.value.total = res.value?.total || 0;
-      if (!thisTab) {
-        initDefaultTab(path);
-      }
     } catch (error: any) {
       // if (thisTab) {
       //   handleRemoveTab(thisTab.key);

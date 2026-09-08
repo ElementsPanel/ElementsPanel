@@ -272,6 +272,10 @@ html {
 }
 
 // All application dialogs are rendered through Vuetify's VDialog adapter.
+.v-dialog:not(.full-modal)>.v-overlay__content {
+  min-width: min(360px, calc(100vw - 24px));
+}
+
 .v-dialog.app-dialog:not(.full-modal)>.v-overlay__content {
   width: auto;
   max-width: min(1120px, calc(100vw - 96px));

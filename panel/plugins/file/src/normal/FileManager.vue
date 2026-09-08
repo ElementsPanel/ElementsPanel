@@ -633,6 +633,15 @@ onUnmounted(() => {
 
 .tab-close {
   margin-left: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease;
+}
+
+.file-tabs-row :deep(.v-tab:hover .tab-close),
+.file-tabs-row :deep(.v-tab:focus-within .tab-close) {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .path-row {
