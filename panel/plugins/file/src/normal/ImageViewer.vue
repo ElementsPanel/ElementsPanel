@@ -1,6 +1,16 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
 import { t } from "@/lang/i18n";
+import { onMounted, ref } from "vue";
+import {
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardText,
+  VDialog,
+  VImg,
+  VProgressCircular,
+  VSpacer
+} from "vuetify/lib/components/index.mjs";
 import { useFileManager } from "../hooks/useFileManager";
 
 const props = defineProps<{
@@ -37,30 +47,33 @@ onMounted(async () => {
 </script>
 
 <template>
-  <a-modal :visible="isOpen" :title="t('TXT_CODE_eee2a47f')" @ok="onClose" @cancel="onClose">
-    <div class="image-view">
-      <a-spin :spinning="!imgLink">
-        <a-image :src="imgLink" />
-      </a-spin>
-    </div>
-    <div class="image-name">
-      {{ props.fileName }}
-    </div>
-    <template #footer>
-      <a-button type="primary" :loading="downloadBtnLoading" @click="onDownload">
-        {{ t("TXT_CODE_65b21404") }}
-      </a-button>
-    </template>
-  </a-modal>
+  <VDialog v-model="isOpen" class="app-dialog" max-width="960" persistent scrollable>
+    <VCard rounded="xl" :title="t('TXT_CODE_eee2a47f')">
+      <VCardText>
+        <div class="image-view">
+          <VProgressCircular v-if="!imgLink" indeterminate color="primary" />
+          <VImg v-else :src="imgLink" :alt="props.fileName" max-height="65vh" contain />
+        </div>
+        <div class="image-name">{{ props.fileName }}</div>
+      </VCardText>
+      <VCardActions>
+        <VSpacer />
+        <VBtn variant="text" @click="onClose">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+        <VBtn color="primary" :loading="downloadBtnLoading" @click="onDownload">{{ t("TXT_CODE_65b21404") }}</VBtn>
+      </VCardActions>
+    </VCard>
+  </VDialog>
 </template>
 
 <style scoped>
 .image-view {
-  margin-bottom: 10px;
+  min-height: 240px;
+  margin-bottom: 12px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
+
 .image-name {
   text-align: center;
 }

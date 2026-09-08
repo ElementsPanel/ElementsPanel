@@ -22,16 +22,15 @@ html {
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
-// The mount point is the page scroller in top-header mode. Reserve its
-// scrollbar gutter even on shorter routes so tall fixed pages such as the
-// monitor and market do not move the centered application a few pixels left.
+// The mount point is the page scroller in top-header mode. Keep the scrollbar
+// on demand so a track is not permanently visible on pages that fit.
 #app-mount-point {
   width: 100%;
   height: 100svh;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
-  scrollbar-gutter: stable;
+  scrollbar-gutter: auto;
 }
 
 // Sidebar mode owns scrolling on the main content column. Avoid creating a
@@ -153,9 +152,9 @@ html {
 }
 
 .app-layout-sidebar-only {
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-gutter: stable;
+  scrollbar-gutter: auto;
 
   .breadcrumbs,
   .main-layout-container,
@@ -369,9 +368,8 @@ html {
 }
 
 *::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 5px rgba(49, 49, 49, 0.041);
   border-radius: 4px;
-  background: #ffffff0a;
+  background: transparent;
 }
 
 // Vuetify keeps the native slider element for its selected-tab animation.

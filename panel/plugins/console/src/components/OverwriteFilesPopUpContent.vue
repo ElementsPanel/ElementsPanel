@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import { computed } from "vue";
+import { computed, unref, type Ref } from "vue";
+import { VCheckbox } from "vuetify/lib/components/index.mjs";
 
 const props = defineProps<{
   count?: number;
   fileName: string;
-  all?: boolean;
-  overwrite: boolean;
+  all?: boolean | Ref<boolean>;
+  overwrite: boolean | Ref<boolean>;
 }>();
 
 const emit = defineEmits<{
@@ -15,11 +16,11 @@ const emit = defineEmits<{
 }>();
 
 const overwriteRef = computed({
-  get: () => props.overwrite,
+  get: () => unref(props.overwrite),
   set: (value: boolean) => emit("update:overwrite", value)
 });
 const allRef = computed({
-  get: () => props.all,
+  get: () => unref(props.all) ?? false,
   set: (value: boolean) => emit("update:all", value)
 });
 </script>
@@ -28,16 +29,14 @@ const allRef = computed({
   <div class="flex-col">
     {{ t("TXT_CODE_58a55f17", { name: props.fileName }) }}
     <div style="margin-top: 16px; margin-bottom: -8px">
-      <a-checkbox v-model:checked="overwriteRef">
-        {{ t("TXT_CODE_5bf41818") }}
-      </a-checkbox>
-      <a-checkbox
+      <VCheckbox v-model="overwriteRef" :label="t('TXT_CODE_5bf41818')" density="compact" hide-details />
+      <VCheckbox
         v-if="props.count && props.count > 1"
-        v-model:checked="allRef"
-        style="margin-left: 5px"
-      >
-        {{ t("TXT_CODE_5445f34b", { num: props.count - 1 }) }}
-      </a-checkbox>
+        v-model="allRef"
+        :label="t('TXT_CODE_5445f34b', { num: props.count - 1 })"
+        density="compact"
+        hide-details
+      />
     </div>
   </div>
 </template>

@@ -5,9 +5,19 @@ import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
 import { fileContent } from "../api";
 import { reportErrorMsg } from "@/tools/validator";
-import { FullscreenExitOutlined, FullscreenOutlined } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
 import { computed, ref } from "vue";
+import {
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardText,
+  VCardTitle,
+  VDialog,
+  VIcon,
+  VProgressCircular,
+  VSpacer
+} from "vuetify/lib/components/index.mjs";
 
 const emit = defineEmits(["save"]);
 
@@ -54,10 +64,10 @@ const openDialog = (_path: string, _fileName: string) => {
   fileName.value = _fileName;
   open.value = true;
   initKeydownListener();
-  return new Promise(async (_resolve, _reject) => {
-    await render();
+  return new Promise((_resolve, _reject) => {
     resolve = _resolve;
     reject = _reject;
+    void render();
   });
 };
 
@@ -128,68 +138,52 @@ defineExpose({
 </script>
 
 <template>
-  <a-modal v-model:open="open" centered :wrap-class-name="fullScreen ? 'full-modal' : ''"
-    :cancel-text="t('TXT_CODE_3b1cc020')" :ok-text="t('TXT_CODE_abfe9512')" :mask-closable="false"
-    :width="fullScreen ? '100%' : '1600px'" :confirm-loading="isLoading" @ok="submit" @cancel="cancel">
-    <template #title>
-      {{ dialogTitle }}
-      <a-button v-if="!isPhone" type="text" size="small" @click="fullScreen = !fullScreen">
-        <template #icon>
-          <FullscreenExitOutlined v-if="fullScreen" />
-          <FullscreenOutlined v-else />
-        </template>
-      </a-button>
-    </template>
-    <Editor v-if="openEditor" ref="EditorComponent" v-model:text="editorText" :filename="fileName"
-      :height="fullScreen ? '100%' : '60vh'" />
-    <a-skeleton v-else :paragraph="{ rows: 12 }" active />
-  </a-modal>
+  <VDialog v-model="open" class="file-editor-dialog app-dialog" :class="{ 'file-editor-dialog--full': fullScreen }"
+    :max-width="fullScreen ? undefined : '1600px'" :fullscreen="fullScreen" persistent scrollable>
+    <VCard rounded="xl" class="file-editor-card">
+      <VCardTitle class="file-editor-title">
+        <span>{{ dialogTitle }}</span>
+        <VBtn v-if="!isPhone" icon size="small" variant="text" :aria-label="dialogTitle" @click="fullScreen = !fullScreen">
+          <VIcon :icon="fullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" />
+        </VBtn>
+      </VCardTitle>
+      <VCardText class="file-editor-content">
+        <Editor v-if="openEditor" ref="EditorComponent" v-model:text="editorText" :filename="fileName"
+          :height="fullScreen ? '100%' : '60vh'" />
+        <div v-else class="file-editor-loading"><VProgressCircular indeterminate color="primary" /></div>
+      </VCardText>
+      <VCardActions><VSpacer /><VBtn variant="text" :disabled="isLoading" @click="cancel">{{ t("TXT_CODE_3b1cc020") }}</VBtn><VBtn color="primary" :loading="isLoading" @click="submit">{{ t("TXT_CODE_abfe9512") }}</VBtn></VCardActions>
+    </VCard>
+  </VDialog>
 </template>
 
 <style lang="scss">
-.full-modal {
-  &.v-dialog > .v-overlay__content {
-    width: 100%;
-    max-width: 100% !important;
-    height: 100svh;
-    max-height: 100svh;
-    margin: 0;
-    border-radius: 0;
-  }
+.file-editor-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
 
-  .app-dialog-card {
-    width: 100% !important;
-    height: 100%;
-    border-radius: 0 !important;
-  }
+.file-editor-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-  .app-dialog-content {
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-  }
+.file-editor-content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
 
-  .ant-modal-close {
-    top: 10px;
-  }
+.file-editor-loading {
+  display: grid;
+  min-height: 60vh;
+  place-items: center;
+}
 
-  .ant-modal {
-    max-width: 100%;
-    top: 0;
-    padding-bottom: 0;
-    margin: 0 !important;
-  }
-
-  .ant-modal-content {
-    display: flex;
-    flex-direction: column;
-    height: 100svh;
-    padding: 5px;
-  }
-
-  .ant-modal-body {
-    flex: 1;
-    overflow: hidden;
-  }
+.file-editor-dialog--full .file-editor-card {
+  height: 100svh;
+  border-radius: 0 !important;
 }
 </style>

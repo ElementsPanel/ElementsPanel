@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import { CloudUploadOutlined } from "@ant-design/icons-vue";
-import { FloatButton } from "ant-design-vue";
 import uploadService from "../services/uploadService";
 import { computed } from "vue";
+import { VBadge, VBtn, VIcon, VTooltip } from "vuetify/lib/components/index.mjs";
 
 const uploadData = uploadService.uiData;
 const uploadCount = computed(() => {
@@ -21,31 +20,36 @@ const uploadProgress = computed(() => {
 </script>
 
 <template>
-  <FloatButton
-    v-if="uploadData.current && !uploadData.suspending"
-    class="frosted-float-button"
-    :badge="{
-      count: uploadCount,
-      overflowCount: 99,
-      color: 'blue'
-    }"
-    :tooltip="t('TXT_CODE_b0ff4172', { n: uploadCount }) + ` (${uploadProgress}%)`"
-  >
-    <template #icon>
-      <CloudUploadOutlined />
-    </template>
-  </FloatButton>
+  <div v-if="uploadData.current && !uploadData.suspending" class="upload-bubble-wrap">
+    <VTooltip location="start">
+      <template #activator="{ props }">
+        <VBadge :content="uploadCount" color="primary" :max="99" floating>
+          <VBtn v-bind="props" class="upload-bubble" icon variant="flat" color="surface">
+            <VIcon icon="mdi-cloud-upload-outline" />
+          </VBtn>
+        </VBadge>
+      </template>
+      {{ t("TXT_CODE_b0ff4172", { n: uploadCount }) + ` (${uploadProgress}%)` }}
+    </VTooltip>
+  </div>
 </template>
 
 <style scoped lang="scss">
-:deep(.ant-float-button-body) {
+.upload-bubble-wrap {
+  position: fixed;
+  z-index: 10;
+  right: 24px;
+  bottom: 24px;
+}
+
+.upload-bubble {
   background-color: rgba(255, 255, 255, 0.6) !important;
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-:deep(.ant-float-button-body:hover) {
+.upload-bubble:hover {
   background-color: rgba(255, 255, 255, 0.8) !important;
 }
 </style>

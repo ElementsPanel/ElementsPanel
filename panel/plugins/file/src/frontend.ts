@@ -4,8 +4,6 @@ import { LayoutCardHeight } from "@/config/originLayoutConfig";
 import { t } from "@/lang/i18n";
 import { getRandomId } from "@/tools/randId";
 import { NEW_CARD_TYPE } from "@/types";
-import LayoutContainer from "@/views/LayoutContainer.vue";
-import { FolderOpenOutlined } from "@ant-design/icons-vue";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import * as fileManagerApi from "./api";
 import UploadBubble from "./components/UploadBubble.vue";
@@ -91,7 +89,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.routes.add({
     path: "/instances/terminal/files",
     name: t("TXT_CODE_ae533703"),
-    component: LayoutContainer,
+    component: FileManager,
     meta: {
       permission: ROLE_USER,
       breadcrumbs: [
@@ -113,7 +111,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.actions.instance({
     id: "file-manager",
     title: () => t("TXT_CODE_ae533703"),
-    icon: FolderOpenOutlined,
+    icon: "mdi-folder-open-outline",
     normalComponent: FileManagerAction,
     desktopComponent: DesktopFileManagerAction,
     condition: isFileManagerAvailable,

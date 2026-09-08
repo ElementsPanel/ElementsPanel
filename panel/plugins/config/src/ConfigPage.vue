@@ -546,7 +546,7 @@ const confirmDisable = () => {
   min-height: 0;
   flex: 1;
   overflow-y: auto;
-  scrollbar-gutter: stable;
+  scrollbar-gutter: auto;
   background: transparent;
   padding: 0 10px 4px;
 }

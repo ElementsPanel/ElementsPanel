@@ -1,25 +1,16 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import { usePluginService } from "@/plugin/context";
-import type { FrontendFileManagerService } from "@/plugin";
 import { convertFileSize } from "@/tools/fileSize";
 import type { ArchiveEntry } from "@/types/fileManager";
 import dayjs from "dayjs";
-import { computed, ref, watch } from "vue";
+import { computed } from "vue";
+import { VDataTable, VIcon } from "vuetify/lib/components/index.mjs";
 
 type ArchiveTreeEntry = ArchiveEntry & {
   key: string;
+  depth: number;
   children?: ArchiveTreeEntry[];
 };
-
-/**
- * The file-type icons belong to `plugins/file`. Reading the service
- * through a `computed` keeps the preview reactive to the plugin being loaded or
- * unloaded; without it the rows simply show no icon.
- */
-const fileManager = computed(() => usePluginService<FrontendFileManagerService>("file"));
-const getFileIcon = (name: string, type?: number) =>
-  fileManager.value?.getFileIcon(name, type);
 
 const props = defineProps<{
   entries: ArchiveEntry[];
@@ -45,6 +36,7 @@ const treeEntries = computed<ArchiveTreeEntry[]>(() => {
       if (!node) {
         node = {
           key: nodePath,
+          depth: index,
           name: part,
           size: isLeaf ? source.size : 0,
           compressedSize: isLeaf ? source.compressedSize : 0,
@@ -83,92 +75,57 @@ const treeEntries = computed<ArchiveTreeEntry[]>(() => {
   return roots;
 });
 
-const expandedRowKeys = ref<string[]>([]);
-const getExpandableKeys = (items: ArchiveTreeEntry[]): string[] => {
-  const keys: string[] = [];
-  for (const item of items) {
-    if (item.children?.length) {
-      keys.push(item.key, ...getExpandableKeys(item.children));
+// Vuetify's data table does not recursively render arbitrary `children` arrays.
+// Flatten the archive tree while retaining depth so every entry remains visible.
+const flatEntries = computed(() => {
+  const result: ArchiveTreeEntry[] = [];
+  const visit = (items: ArchiveTreeEntry[]) => {
+    for (const item of items) {
+      result.push(item);
+      if (item.children?.length) visit(item.children);
     }
-  }
-  return keys;
+  };
+  visit(treeEntries.value);
+  return result;
+});
+const archiveHeaders = [
+  { title: t("TXT_CODE_94c193de"), key: "name", width: 360, sortable: false },
+  { title: t("TXT_CODE_67d68dd1"), key: "type", width: 100, sortable: false },
+  { title: t("TXT_CODE_94bb113a"), key: "size", width: 120, sortable: false },
+  { title: t("TXT_CODE_ARCHIVE_COMPRESSED_SIZE"), key: "compressedSize", width: 130, sortable: false },
+  { title: t("TXT_CODE_d3b29478"), key: "time", width: 180, sortable: false }
+];
+const getMdiIconName = (entry: ArchiveTreeEntry) => {
+  if (entry.type === 0) return "mdi-folder-outline";
+  const lower = entry.name.toLowerCase();
+  if (/\.(zip|tar|gz|bz2|xz|7z|rar|iso|cab)$/.test(lower)) return "mdi-folder-zip-outline";
+  if (/\.(png|jpe?g|gif|webp|svg|ico)$/.test(lower)) return "mdi-file-image-outline";
+  return "mdi-file-outline";
 };
-
-watch(
-  treeEntries,
-  (entries) => {
-    expandedRowKeys.value = getExpandableKeys(entries);
-  },
-  { immediate: true }
-);
-
-const getRowKey = (entry: ArchiveTreeEntry) => entry.key;
-const handleExpandedRowsChange = (keys: (string | number)[]) => {
-  expandedRowKeys.value = keys.map(String);
-};
-const tableExpandedRowKeys = expandedRowKeys;
+const rawEntry = (item: unknown) =>
+  ((item as { raw?: ArchiveTreeEntry })?.raw ?? item) as ArchiveTreeEntry;
 </script>
 
 <template>
   <div class="archive-preview" :class="{ 'archive-preview--compact': compact }">
     <div class="archive-preview__table-wrap">
-      <div class="archive-preview__table-header" role="row">
-        <div role="columnheader">{{ t("TXT_CODE_94c193de") }}</div>
-        <div role="columnheader">{{ t("TXT_CODE_67d68dd1") }}</div>
-        <div role="columnheader">{{ t("TXT_CODE_94bb113a") }}</div>
-        <div role="columnheader">{{ t("TXT_CODE_ARCHIVE_COMPRESSED_SIZE") }}</div>
-        <div role="columnheader">{{ t("TXT_CODE_d3b29478") }}</div>
-      </div>
-      <a-table
+      <VDataTable
         :loading="loading"
-        :data-source="treeEntries"
-        :row-key="getRowKey"
-        :expanded-row-keys="tableExpandedRowKeys"
-        @expanded-rows-change="handleExpandedRowsChange"
-        :show-header="false"
-        size="small"
-        :pagination="{
-          pageSize: compact ? 50 : 100,
-          hideOnSinglePage: true,
-          showSizeChanger: true
-        }"
+        :headers="archiveHeaders"
+        :items="flatEntries"
+        item-value="key"
+        :items-per-page="compact ? 50 : 100"
+        :items-per-page-options="[50, 100]"
+        density="compact"
+        class="archive-preview-table"
       >
-        <a-table-column data-index="name" :width="360">
-          <template #default="{ record }">
-            <div class="archive-preview__name">
-              <component :is="getFileIcon(record.name, record.type)" />
-              <span :title="record.name">{{ record.name }}</span>
-            </div>
-          </template>
-        </a-table-column>
-        <a-table-column data-index="type" :width="100">
-          <template #default="{ record }">
-            {{ record.type === 0 ? t("TXT_CODE_e5f949c") : t("TXT_CODE_d4cf1cb8") }}
-          </template>
-        </a-table-column>
-        <a-table-column data-index="size" :width="120">
-          <template #default="{ record }">
-            {{ record.type === 0 ? "--" : convertFileSize(String(record.size)) }}
-          </template>
-        </a-table-column>
-        <a-table-column
-          data-index="compressedSize"
-          :width="130"
-        >
-          <template #default="{ record }">
-            {{
-              record.type === 0 || !record.compressedSize
-                ? "--"
-                : convertFileSize(String(record.compressedSize))
-            }}
-          </template>
-        </a-table-column>
-        <a-table-column data-index="time" :width="180">
-          <template #default="{ record }">
-            {{ record.type === 0 || !record.time ? "--" : dayjs(record.time).format("YYYY-MM-DD HH:mm:ss") }}
-          </template>
-        </a-table-column>
-      </a-table>
+        <template #item.name="{ item }"><div class="archive-preview__name" :style="{ paddingLeft: `${rawEntry(item).depth * 18}px` }"><VIcon :icon="getMdiIconName(rawEntry(item))" size="16" /><span :title="rawEntry(item).name">{{ rawEntry(item).name }}</span></div></template>
+        <template #item.type="{ item }">{{ rawEntry(item).type === 0 ? t("TXT_CODE_e5f949c") : t("TXT_CODE_d4cf1cb8") }}</template>
+        <template #item.size="{ item }">{{ rawEntry(item).type === 0 ? "--" : convertFileSize(String(rawEntry(item).size)) }}</template>
+        <template #item.compressedSize="{ item }">{{ rawEntry(item).type === 0 || !rawEntry(item).compressedSize ? "--" : convertFileSize(String(rawEntry(item).compressedSize)) }}</template>
+        <template #item.time="{ item }">{{ rawEntry(item).type === 0 || !rawEntry(item).time ? "--" : dayjs(rawEntry(item).time).format("YYYY-MM-DD HH:mm:ss") }}</template>
+        <template #bottom></template>
+      </VDataTable>
     </div>
   </div>
 </template>
@@ -195,31 +152,6 @@ const tableExpandedRowKeys = expandedRowKeys;
   overflow: auto;
 }
 
-.archive-preview__table-header {
-  display: grid;
-  grid-template-columns: 360px 100px 120px 130px minmax(180px, 1fr);
-  width: 100%;
-  min-width: 890px;
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  background: var(--background-color, #f5f5f5);
-  color: var(--desktop-window-text-secondary, var(--text-color));
-  border-bottom: 1px solid var(--desktop-window-border, var(--color-gray-4));
-}
-
-.archive-preview__table-header > div {
-  box-sizing: border-box;
-  min-width: 0;
-  overflow: hidden;
-  padding: 7px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.4;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .archive-preview__name {
   display: flex;
   align-items: center;
@@ -227,61 +159,38 @@ const tableExpandedRowKeys = expandedRowKeys;
   min-width: 0;
 }
 
-.archive-preview__name :deep(.anticon) {
-  flex: 0 0 16px;
-  width: 16px;
-  min-width: 16px;
-  height: 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* The desktop preview is teleported outside .dfm, so it needs its own table theme. */
-.archive-preview--compact :deep(.ant-table-wrapper),
-.archive-preview--compact :deep(.ant-spin-nested-loading),
-.archive-preview--compact :deep(.ant-spin-container) {
-  width: 100%;
-  min-width: 0;
-}
-
-.archive-preview--compact .archive-preview__table-wrap :deep(.ant-table-wrapper) {
-  min-height: 0;
-}
-
-.archive-preview--compact :deep(.ant-table) {
-  color: var(--desktop-window-text);
-  background: transparent;
-  font-size: 12px;
-}
-
-.archive-preview :deep(.ant-table-container table) {
+.archive-preview :deep(.v-table) {
   width: 100% !important;
   min-width: 890px !important;
-  table-layout: fixed !important;
-}
-
-.archive-preview--compact :deep(.ant-table-container),
-.archive-preview--compact :deep(.ant-table-content),
-.archive-preview--compact :deep(.ant-table-body) {
   background: transparent;
+  color: var(--text-color);
 }
 
-.archive-preview--compact .archive-preview__table-header {
+.archive-preview :deep(.v-data-table__th) {
   background: var(--background-color, #f5f5f5);
-  color: var(--desktop-window-text-secondary);
-  border-bottom-color: var(--desktop-window-border);
+  color: var(--text-color);
+  font-size: 11px;
+  font-weight: 600;
 }
 
-.archive-preview--compact :deep(.ant-table-tbody > tr > td) {
-  color: var(--desktop-window-text) !important;
-  background: transparent !important;
-  border-bottom: 1px solid var(--desktop-window-border) !important;
-  padding: 6px 10px;
+.archive-preview :deep(.v-data-table__td) {
+  border-bottom: 1px solid var(--color-gray-4);
+  font-size: 12px;
+  white-space: nowrap;
 }
 
-.archive-preview--compact :deep(.ant-table-tbody > tr:hover > td) {
-  background: var(--desktop-window-control-hover) !important;
+.archive-preview--compact :deep(.v-data-table__th) {
+  background: var(--background-color, #f5f5f5);
+  color: var(--desktop-window-text-secondary, var(--text-color));
+}
+
+.archive-preview--compact :deep(.v-data-table__td) {
+  color: var(--desktop-window-text, var(--text-color));
+  border-bottom-color: var(--desktop-window-border, var(--color-gray-4));
+}
+
+.archive-preview :deep(.v-data-table__tr:hover > td) {
+  background: var(--color-gray-2);
 }
 
 .archive-preview__name span {
