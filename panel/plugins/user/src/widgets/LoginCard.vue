@@ -7,7 +7,6 @@ import { useAppStateStore } from "@/stores/useAppStateStore";
 import { sleep } from "@/tools/common";
 import { markdownToHTML } from "@/tools/safe";
 import { reportErrorMsg } from "@/tools/validator";
-import type { LayoutCard } from "@/types";
 import { message, Modal } from "ant-design-vue";
 import { computed, onMounted, reactive, ref } from "vue";
 import {
@@ -22,10 +21,6 @@ import {
 
 const { state: pageInfoResult, execute } = loginPageInfo();
 const ssoInfo = ref<SsoPublicConfig | null>(null);
-
-const props = defineProps<{
-  card?: LayoutCard;
-}>();
 
 const formData = reactive({
   username: "",
@@ -167,8 +162,8 @@ onMounted(async () => {
           </template>
         </div>
         <h2 class="login-title glitch-wrapper">
-          <div class="glitch" :data-text="props.card?.title ? props.card?.title : t('TXT_CODE_3ba5ad')">
-            {{ props.card?.title ? props.card?.title : t("TXT_CODE_3ba5ad") }}
+          <div class="glitch" :data-text="t('TXT_CODE_3ba5ad')">
+            {{ t("TXT_CODE_3ba5ad") }}
           </div>
         </h2>
         <p class="login-subtitle">

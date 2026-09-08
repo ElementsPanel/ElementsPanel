@@ -97,8 +97,8 @@ rather than adding a tab to the panel Settings page.
 Registered by `src/frontend.ts`:
 
 - Routes `/login`, `/sso/bind`, `/users` (+ `/users/resources`), `/user`
-- Layout cards `LoginCard`, `UserList`, `UserStatusBlock`, `UserInstanceList`,
-  `UserAccessSettings`
+- Fixed login page component `LoginCard`
+- Layout cards `UserList`, `UserStatusBlock`, `UserInstanceList`, `UserAccessSettings`
 - Global component `MyselfInfoDialog`
 - Services `user.api`, `user.desktopLoginWindow`, `user.desktopUsers`,
   `user.desktopUserInfo`, `user.desktopStartMenuAvatar`

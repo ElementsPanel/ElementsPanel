@@ -29,7 +29,6 @@ const routePathIcons: Record<string, string> = {
   "/users": "mdi-account-group-outline",
   "/customer": "mdi-account-outline",
   "/login": "mdi-login",
-  "/_open_page": "mdi-open-in-new",
   "/plugins/config": "mdi-view-grid-plus",
   "/overview": "mdi-monitor-dashboard",
   "/node": "mdi-server-network-outline",

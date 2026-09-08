@@ -3,7 +3,6 @@ import { useHeaderMenus } from "@/hooks/useHeaderMenus";
 import {
   AppstoreOutlined,
   CloseOutlined,
-  LinkOutlined,
   LoginOutlined,
   MenuOutlined,
   TeamOutlined,
@@ -21,8 +20,7 @@ const routePathIcons: Record<string, Component> = {
   "/instances": AppstoreOutlined,
   "/users": TeamOutlined,
   "/customer": UserOutlined,
-  "/login": LoginOutlined,
-  "/_open_page": LinkOutlined
+  "/login": LoginOutlined
 };
 
 const getRouteIcon = (item: (typeof menus.value)[number]): Component | string =>

@@ -25,7 +25,6 @@ import LinkCard from "./widgets/others/LinkCard.vue";
 import MusicCard from "./widgets/others/MusicCard.vue";
 import PluginCard from "./widgets/others/PluginCard.vue";
 import TextCard from "./widgets/others/TextCard.vue";
-import DefaultCard from "./widgets/DefaultCard.vue";
 import EmptyCard from "./widgets/EmptyCard.vue";
 import Page404 from "./widgets/Page404.vue";
 import TitleCard from "./widgets/TitleCard.vue";
@@ -44,7 +43,6 @@ const coreCards = [
   ["TextCard", TextCard],
   ["LinkCard", LinkCard],
   ["ClockCard", ClockCard],
-  ["DefaultCard", DefaultCard],
   ["Carousel", Carousel],
   ["PluginCard", PluginCard],
   ["MusicCard", MusicCard]
@@ -192,18 +190,6 @@ export async function apply(ctx: PanelFrontendPluginContext) {
     name: t("TXT_CODE_ec299306"),
     component: LayoutContainer,
     meta: { permission: ROLE.USER, mainMenu: true, onlyDisplayEditMode: true }
-  });
-
-  ctx.routes.add({
-    path: "/_open_page",
-    name: t("TXT_CODE_2cf59872"),
-    component: LayoutContainer,
-    meta: {
-      permission: ROLE.ADMIN,
-      mainMenu: true,
-      onlyDisplayEditMode: true,
-      customClass: ["nav-button-warning"]
-    }
   });
 
   // Layout data belongs to the console shell. A temporary backend failure

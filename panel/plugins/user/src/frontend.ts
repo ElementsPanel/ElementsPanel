@@ -10,7 +10,6 @@ import { localeMessages } from "./i18n";
 import LoginPage from "./views/Login.vue";
 import SsoBindLogin from "./views/SsoBindLogin.vue";
 import UserAccessSettings from "./widgets/AccessSettings.vue";
-import LoginCard from "./widgets/LoginCard.vue";
 import UserInstanceList from "./widgets/UserInstanceList.vue";
 import UserList from "./widgets/UserList.vue";
 import UserStatusBlock from "./widgets/UserStatusBlock.vue";
@@ -38,7 +37,6 @@ export function apply(ctx: PanelFrontendPluginContext) {
   // Authentication settings are declared by this plugin's backend, so the plugin
   // manager renders them and this half contributes no form.
 
-  ctx.ui.layoutCard("LoginCard", LoginCard);
   ctx.ui.layoutCard("UserStatusBlock", UserStatusBlock);
   ctx.ui.layoutCard("UserInstanceList", UserInstanceList);
   ctx.ui.layoutCard("UserAccessSettings", UserAccessSettings);
@@ -50,8 +48,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
     component: LoginPage,
     meta: {
       permission: ROLE_GUEST,
-      onlyDisplayEditMode: true,
-      customClass: ["nav-button-warning"]
+      mainMenu: false
     }
   });
 

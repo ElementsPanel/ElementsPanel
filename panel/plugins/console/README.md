@@ -3,7 +3,7 @@
 The console plugin owns the panel's foundational browser UI:
 
 - the root application shell and navigation;
-- the base `/`, `/404`, `/customer` and `/_open_page` routes;
+- the base `/`, `/404` and `/customer` routes;
 - built-in layout cards and design-mode picker entries;
 - shared browser components, hooks, stores, services, tools and types used by
   the feature plugins;

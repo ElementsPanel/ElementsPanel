@@ -104,7 +104,6 @@ router.beforeEach(async (to, from, next) => {
   }
 
   if (
-    toRoutePath.includes("_open_page") ||
     toRoutePath.startsWith("/sso/") ||
     to.meta.public === true ||
     ["/login", "/404"].includes(toRoutePath)

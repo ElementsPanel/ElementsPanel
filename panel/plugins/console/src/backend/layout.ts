@@ -452,20 +452,6 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
       ]
     },
     {
-      page: "/login",
-      items: [
-        {
-          id: getRandomId(),
-          meta: {},
-          type: "LoginCard",
-          title: translate("TXT_CODE_ccb60658"),
-          width: 4,
-          height: LayoutCardHeight.AUTO,
-          disableDelete: true
-        }
-      ]
-    },
-    {
       page: "/404",
       items: [
         {
@@ -476,19 +462,6 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           width: 6,
           height: LayoutCardHeight.MINI,
           disableDelete: true
-        }
-      ]
-    },
-    {
-      page: "/_open_page",
-      items: [
-        {
-          id: getRandomId(),
-          meta: {},
-          type: "DefaultCard",
-          title: translate("TXT_CODE_463375d2"),
-          width: 6,
-          height: LayoutCardHeight.SMALL
         }
       ]
     }
