@@ -10,7 +10,7 @@ import { computed, onMounted, onUnmounted, ref, type Component } from "vue";
 export interface DesktopWindowProps {
     id: string;
     title: string;
-    icon: Component | string;
+    icon?: Component | string;
     visible: boolean;
     minimized: boolean;
     maximized: boolean;
@@ -256,7 +256,7 @@ onUnmounted(() => {
         <div class="window__titlebar" @mousedown="onMouseDownTitlebar" @dblclick="handleMaximize"
             @contextmenu.stop.prevent="onContextMenuTitlebar">
             <div class="window__titlebar-left">
-                <span class="window__icon">
+                <span v-if="icon" class="window__icon">
                     <component :is="icon" v-if="isComponentIcon" />
                     <img v-else :src="icon as string" alt="icon" />
                 </span>

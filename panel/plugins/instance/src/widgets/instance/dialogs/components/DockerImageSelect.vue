@@ -3,8 +3,8 @@ import { useAppRouters } from "@/hooks/useAppRouters";
 import { t } from "@/lang/i18n";
 import { imageList } from "@/services/apis/envImage";
 import { arrayFilter } from "@/tools/array";
-import type { DefaultOptionType } from "ant-design-vue/es/select";
-import { ref } from "vue";
+import { ref, watch } from "vue";
+import { VSelect, VTextField } from "vuetify/lib/components/index.mjs";
 
 const IMAGE_DEFINE = {
   NEW: "__MCSM_NEW_IMAGE__",
@@ -16,6 +16,7 @@ const props = defineProps<{
   daemonId?: string;
   isAllowEmpty?: boolean;
   isAllowText?: string;
+  imageSelectMethod?: "SELECT" | "EDIT";
 }>();
 
 const emit = defineEmits<{
@@ -24,6 +25,9 @@ const emit = defineEmits<{
 }>();
 
 const imageSelectMethod = ref<"SELECT" | "EDIT">("SELECT");
+watch(() => props.imageSelectMethod, (value) => {
+  if (value) imageSelectMethod.value = value;
+}, { immediate: true });
 const { toPage } = useAppRouters();
 const dockerImages = ref<{ label: string; value: string }[]>([]);
 const loading = ref(false);
@@ -68,8 +72,7 @@ const loadImages = async () => {
   }
 };
 
-const selectImage = (row: DefaultOptionType) => {
-  const image = row.value;
+const selectImage = (image: unknown) => {
   if (typeof image === "string" && image === IMAGE_DEFINE.NEW) {
     toPage({
       path: `/node/image?daemonId=${props.daemonId}`
@@ -86,27 +89,10 @@ const selectImage = (row: DefaultOptionType) => {
 
 <template>
   <template v-if="imageSelectMethod === 'SELECT'">
-    <a-select
-      :value="modelValue"
-      size="large"
-      style="width: 100%"
-      :placeholder="t('TXT_CODE_3bb646e4')"
-      :loading="loading"
-      @focus="loadImages"
-      @update:value="(v: any) => emit('update:modelValue', v)"
-      @change="(_e, option: DefaultOptionType) => selectImage(option)"
-    >
-      <a-select-option v-for="item in dockerImages" :key="item.value" :value="item.value">
-        {{ item.label }}
-      </a-select-option>
-    </a-select>
+    <VSelect :model-value="modelValue" :items="dockerImages" item-title="label" item-value="value" :placeholder="t('TXT_CODE_3bb646e4')" :loading="loading" variant="solo-filled" hide-details @focus="loadImages" @update:model-value="(v) => { emit('update:modelValue', v); selectImage(v); }" />
   </template>
 
   <template v-else>
-    <a-input
-      :value="modelValue"
-      :placeholder="t('TXT_CODE_d7638d7b')"
-      @update:value="(v: string) => emit('update:modelValue', v)"
-    />
+    <VTextField :model-value="modelValue" :placeholder="t('TXT_CODE_d7638d7b')" variant="solo-filled" hide-details @update:model-value="(v) => emit('update:modelValue', v)" />
   </template>
 </template>

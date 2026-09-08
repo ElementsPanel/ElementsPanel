@@ -76,11 +76,13 @@ const sourceOpen = computed(() => {
   if (hasVnodeProp("visible")) return props.visible;
   return props.modelValue ?? false;
 });
+const renderCard = ref(!props.destroyOnClose || sourceOpen.value);
 
 watch(
   sourceOpen,
   (value) => {
     localOpen.value = value;
+    if (value) renderCard.value = true;
   },
   { immediate: true }
 );
@@ -144,6 +146,7 @@ const confirm = () => {
 };
 
 const afterLeave = () => {
+  if (props.destroyOnClose) renderCard.value = false;
   emit("after-close");
 };
 </script>
@@ -162,7 +165,7 @@ const afterLeave = () => {
     @after-leave="afterLeave"
   >
     <VCard
-      v-if="!props.destroyOnClose || isOpen"
+      v-if="renderCard"
       class="app-dialog-card"
       rounded="xl"
       :style="{ width: dialogWidth }"

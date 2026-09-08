@@ -5,6 +5,8 @@ import { updateInstanceConfig } from "@/services/apis/instance";
 import { reportErrorMsg } from "@/tools/validator";
 import { message } from "ant-design-vue";
 import { reactive, ref } from "vue";
+import AppDialog from "@/components/AppDialog.vue";
+import { VTextField } from "vuetify/lib/components/index.mjs";
 
 const props = defineProps<{
   instanceUuid: string;
@@ -66,42 +68,41 @@ defineExpose({
 </script>
 
 <template>
-  <a-modal
+  <AppDialog
     v-model:open="open"
-    centered
     :title="t('TXT_CODE_40241d8e')"
     :confirm-loading="isLoading"
     :ok-text="t('TXT_CODE_abfe9512')"
+    compact
     @ok="submit"
   >
     <div>
-      <a-typography-paragraph>
-        <a-typography-text type="secondary">
+      <p class="mc-ping-description">
+        <span>
           {{ t("TXT_CODE_57d1929e") }}
           <br />
           {{ t("TXT_CODE_6b175558") }}
-        </a-typography-text>
-      </a-typography-paragraph>
-      <a-form layout="vertical">
-        <a-form-item name="port">
-          <a-typography-title :level="5">{{ t("TXT_CODE_f49149d0") }}</a-typography-title>
-          <a-typography-paragraph>
-            <a-typography-text type="secondary">
-              {{ t("TXT_CODE_2ab036a4") }}
-            </a-typography-text>
-          </a-typography-paragraph>
-          <a-input v-model:value="formData.port" :placeholder="t('TXT_CODE_e2dc0156')" />
-        </a-form-item>
-        <a-form-item name="ip">
-          <a-typography-title :level="5">{{ t("TXT_CODE_2f59807a") }}</a-typography-title>
-          <a-typography-paragraph>
-            <a-typography-text type="secondary">
-              {{ t("TXT_CODE_8e2be926") }}
-            </a-typography-text>
-          </a-typography-paragraph>
-          <a-input v-model:value="formData.ip" :placeholder="t('TXT_CODE_ddc2de99')" />
-        </a-form-item>
-      </a-form>
+        </span>
+      </p>
+      <div class="mc-ping-form">
+        <div>
+          <div class="mc-ping-label">{{ t("TXT_CODE_f49149d0") }}</div>
+          <div class="mc-ping-help">{{ t("TXT_CODE_2ab036a4") }}</div>
+          <VTextField v-model="formData.port" :placeholder="t('TXT_CODE_e2dc0156')" hide-details variant="solo-filled" />
+        </div>
+        <div>
+          <div class="mc-ping-label">{{ t("TXT_CODE_2f59807a") }}</div>
+          <div class="mc-ping-help">{{ t("TXT_CODE_8e2be926") }}</div>
+          <VTextField v-model="formData.ip" :placeholder="t('TXT_CODE_ddc2de99')" hide-details variant="solo-filled" />
+        </div>
+      </div>
     </div>
-  </a-modal>
+  </AppDialog>
 </template>
+
+<style scoped>
+.mc-ping-description { color: var(--color-gray-7); line-height: 1.6; }
+.mc-ping-form { display: flex; flex-direction: column; gap: 16px; }
+.mc-ping-label { font-weight: 600; margin-bottom: 4px; }
+.mc-ping-help { color: var(--color-gray-7); font-size: 13px; margin-bottom: 6px; }
+</style>

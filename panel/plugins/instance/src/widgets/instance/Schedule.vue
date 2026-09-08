@@ -23,18 +23,20 @@ import {
 import NewSchedule from "./dialogs/NewSchedule.vue";
 
 const props = defineProps<{
-  card: LayoutCard;
+  card?: LayoutCard;
 }>();
 
-const { getMetaOrRouteValue } = useLayoutCardTools(props.card);
-const instanceId = getMetaOrRouteValue("instanceId");
-const daemonId = getMetaOrRouteValue("daemonId");
+const card = props.card ?? ({ meta: {} } as LayoutCard);
+const { getMetaOrRouteValue } = useLayoutCardTools(card);
+const instanceId = getMetaOrRouteValue("instanceId", false);
+const daemonId = getMetaOrRouteValue("daemonId", false);
+const pageTitle = computed(() => props.card?.title || t("TXT_CODE_b7d026f8"));
 const { toPage } = useAppRouters();
 const scheduleDialogOpen = ref(false);
 const scheduleDialogTask = ref<Schedule>();
 const { getScheduleList, schedules, scheduleListLoading, deleteSchedule } = useSchedule(
-  String(instanceId),
-  String(daemonId)
+  String(instanceId ?? ""),
+  String(daemonId ?? "")
 );
 
 const scheduleActionTypes = computed(() => {
@@ -178,7 +180,7 @@ onMounted(async () => {
 <template>
   <main class="schedule-page">
     <VContainer fluid class="schedule-container">
-      <PageToolbar :title="card.title" icon="mdi-clock-outline">
+      <PageToolbar :title="pageTitle" icon="mdi-clock-outline">
         <template #actions>
           <VBtn variant="text" prepend-icon="mdi-console-line" @click="toConsole">
             {{ t("TXT_CODE_c14b2ea3") }}
@@ -238,12 +240,12 @@ onMounted(async () => {
         </VCardActions>
       </VCard>
     </VDialog>
-  </main>
 
-  <Teleport to="body">
-    <NewSchedule v-model="scheduleDialogOpen" :daemon-id="daemonId ?? ''" :instance-id="instanceId ?? ''"
-      :task="scheduleDialogTask" @get-schedule-list="getScheduleList()" />
-  </Teleport>
+    <Teleport to="body">
+      <NewSchedule v-model="scheduleDialogOpen" :daemon-id="daemonId ?? ''" :instance-id="instanceId ?? ''"
+        :task="scheduleDialogTask" @get-schedule-list="getScheduleList()" />
+    </Teleport>
+  </main>
 </template>
 
 <style lang="scss" scoped>

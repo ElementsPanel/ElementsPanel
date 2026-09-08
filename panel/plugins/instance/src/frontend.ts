@@ -210,8 +210,18 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.routes.add({
     path: "/instances/schedule",
     name: t("TXT_CODE_b7d026f8"),
-    component: LayoutContainer,
-    meta: { permission: ROLE.USER }
+    component: Schedule,
+    meta: {
+      permission: ROLE.USER,
+      breadcrumbs: [
+        {
+          name: t("TXT_CODE_e21473bc"),
+          path: "/instances",
+          mainMenu: true,
+          permission: ROLE.ADMIN
+        }
+      ]
+    }
   });
 
   ctx.routes.add({

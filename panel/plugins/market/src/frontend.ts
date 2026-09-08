@@ -1,10 +1,5 @@
 import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugin";
-import type { LayoutCardPoolItemFactory } from "@/config";
-import { LayoutCardHeight } from "@/config/originLayoutConfig";
-import LayoutContainer from "@/views/LayoutContainer.vue";
-import { getRandomId } from "@/tools/randId";
-import { NEW_CARD_TYPE } from "@/types";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { InteractionOutlined, ShopOutlined } from "@ant-design/icons-vue";
 import * as marketApi from "./api";
@@ -19,31 +14,6 @@ import { getAllowUsePreset, refreshMarketPermission } from "./runtime";
 
 const ROLE_ADMIN = 10;
 
-const marketCardPoolItems: LayoutCardPoolItemFactory[] = [
-  () => ({
-    id: getRandomId(),
-    permission: ROLE_ADMIN,
-    meta: {},
-    type: "Market",
-    title: t("TXT_CODE_27594db8"),
-    width: 12,
-    description: t("TXT_CODE_9b45858c"),
-    height: LayoutCardHeight.BIG,
-    category: NEW_CARD_TYPE.OTHER
-  }),
-  () => ({
-    id: getRandomId(),
-    permission: ROLE_ADMIN,
-    meta: {},
-    type: "MarketEditor",
-    title: t("TXT_CODE_54275b9c"),
-    width: 12,
-    description: t("TXT_CODE_94f55150"),
-    height: LayoutCardHeight.BIG,
-    category: NEW_CARD_TYPE.OTHER
-  })
-];
-
 export const inject = ["console", "i18n", "routes", "ui", "actions", "desktop", "instance"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
@@ -56,10 +26,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   // The market's own settings are declared by its backend, so the plugin manager
   // renders them with the generic form and this half contributes no page for them.
 
-  ctx.ui.layoutCard("Market", Market);
-  ctx.ui.layoutCard("MarketEditor", MarketEditor);
   ctx.ui.layoutCard("McPreset", McPreset);
-  marketCardPoolItems.forEach((createItem) => ctx.ui.layoutCardPoolItem(createItem));
 
   ctx.actions.terminal({
     id: "market-reinstall",
@@ -83,22 +50,30 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.routes.add({
     path: "/market",
     name: t("TXT_CODE_27594db8"),
-    component: LayoutContainer,
+    component: Market,
     meta: {
       mainMenu: true,
       permission: ROLE_ADMIN,
-      icon: ShopOutlined
-    },
-    children: [
-      {
-        path: "editor",
-        name: t("TXT_CODE_54275b9c"),
-        component: LayoutContainer,
-        meta: {
+      icon: "mdi-storefront-outline"
+    }
+  });
+
+  ctx.routes.add({
+    path: "/market/editor",
+    name: t("TXT_CODE_54275b9c"),
+    component: MarketEditor,
+    meta: {
+      permission: ROLE_ADMIN,
+      mainMenu: false,
+      breadcrumbs: [
+        {
+          name: t("TXT_CODE_27594db8"),
+          path: "/market",
+          mainMenu: true,
           permission: ROLE_ADMIN
         }
-      }
-    ]
+      ]
+    }
   });
 
   ctx.desktop.app({

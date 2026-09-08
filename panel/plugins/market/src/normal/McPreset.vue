@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { openNodeSelectDialog } from "@/components/fc";
 import { router } from "@/config/router";
-import { useLayoutCardTools } from "@/hooks/useCardTools";
 import type { ComputedNodeInfo } from "@/hooks/useOverviewInfo";
 import { t } from "@/lang/i18n";
 import { getDockerHubImagePlatforms } from "@/services/apis/envImage";
@@ -10,20 +9,18 @@ import { reportErrorMsg } from "@/tools/validator";
 import type { LayoutCard, QuickStartPackages } from "@/types";
 import { message } from "ant-design-vue";
 import { ref } from "vue";
+import { useRoute } from "vue-router";
 import TemplateNameDialog from "../components/TemplateNameDialog.vue";
 import AppPackages from "./AppPackages.vue";
 
-const props = defineProps<{
-  card: LayoutCard;
-}>();
+const props = defineProps<{ card?: LayoutCard }>();
 
 const appPackages = ref<InstanceType<typeof AppPackages>>();
 
-const { getMetaOrRouteValue } = useLayoutCardTools(props.card);
-let daemonId = getMetaOrRouteValue("daemonId", false) ?? "";
-let currentNode = ref<ComputedNodeInfo | undefined>(undefined);
+const route = useRoute();
+let daemonId = props.card?.meta?.daemonId != null ? String(props.card.meta.daemonId) : String(route.query.daemonId ?? "");
 
-const isMarketPage = router.currentRoute.value.path.includes("/market");
+const isMarketPage = route.path.includes("/market");
 if (isMarketPage) {
   daemonId = "";
 }
@@ -93,7 +90,6 @@ const handleSelectCategory = async (item: QuickStartPackages) => {
         return;
       }
       daemonId = node.uuid;
-      currentNode.value = node;
     }
     appPackages.value?.handleSelectTopCategory(item, node);
   } catch (err: any) {
@@ -191,7 +187,6 @@ const startDownloadTask = async () => {
 
 const handleBackToCategory = () => {
   daemonId = "";
-  currentNode.value = undefined;
 };
 </script>
 

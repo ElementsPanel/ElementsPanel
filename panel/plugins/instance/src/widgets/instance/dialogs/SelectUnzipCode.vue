@@ -3,6 +3,8 @@ import { ref } from "vue";
 import { t } from "@/lang/i18n";
 import { message } from "ant-design-vue";
 import { reportErrorMsg } from "@/tools/validator";
+import AppDialog from "@/components/AppDialog.vue";
+import { VSelect } from "vuetify/lib/components/index.mjs";
 
 const emit = defineEmits(["selectCode"]);
 const open = ref(false);
@@ -29,31 +31,16 @@ defineExpose({
 </script>
 
 <template>
-  <a-modal
-    v-model:open="open"
-    centered
-    :mask-closable="false"
-    :title="t('TXT_CODE_2dc23f7a')"
-    :ok-text="t('TXT_CODE_abfe9512')"
-    @ok="submit"
-  >
-    <a-typography-paragraph>
-      <a-typography-text type="secondary">
-        {{ t("TXT_CODE_b278707d") }}
-        <br />
-        {{ t("TXT_CODE_48044fc2") }}
-        <br />
-        {{ t("TXT_CODE_76a82338") }}
-      </a-typography-text>
-    </a-typography-paragraph>
-    <a-select
-      v-model:value="zipCode"
-      :placeholder="t('TXT_CODE_3bb646e4')"
-      :dropdown-match-select-width="false"
-    >
-      <a-select-option value="utf-8">{{ t("TXT_CODE_91bb6101") }}</a-select-option>
-      <a-select-option value="gbk">{{ t("TXT_CODE_4d6b06f0") }}</a-select-option>
-      <a-select-option value="big5">{{ t("TXT_CODE_c4dfdb26") }}</a-select-option>
-    </a-select>
-  </a-modal>
+  <AppDialog v-model:open="open" :title="t('TXT_CODE_2dc23f7a')" :mask-closable="false" :ok-text="t('TXT_CODE_abfe9512')" compact @ok="submit">
+    <p class="text-medium-emphasis">
+      {{ t("TXT_CODE_b278707d") }}<br />
+      {{ t("TXT_CODE_48044fc2") }}<br />
+      {{ t("TXT_CODE_76a82338") }}
+    </p>
+    <VSelect v-model="zipCode" :items="[
+      { title: t('TXT_CODE_91bb6101'), value: 'utf-8' },
+      { title: t('TXT_CODE_4d6b06f0'), value: 'gbk' },
+      { title: t('TXT_CODE_c4dfdb26'), value: 'big5' }
+    ]" :placeholder="t('TXT_CODE_3bb646e4')" variant="solo-filled" hide-details />
+  </AppDialog>
 </template>

@@ -46,7 +46,7 @@ used to do in `version_adapter.ts`.
 Registered by `src/frontend.ts`:
 
 - Routes `/market` and `/market/editor`
-- Layout cards `Market`, `MarketEditor`, `McPreset`, plus their card-pool entries
+- Fixed pages for `Market` and `MarketEditor`, plus the `McPreset` layout card used by quick start
 - A Desktop application (`DesktopMarket`)
 - A terminal action — the "reinstall from a package" button
 - Services `market.api`, `market.openMarketDialog`, `market.useMarketPackages`

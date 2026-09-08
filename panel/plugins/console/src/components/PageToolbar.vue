@@ -14,14 +14,14 @@ withDefaults(
 
 <template>
   <VRow class="page-toolbar" align="center">
-    <VCol cols="12" md="3" class="page-toolbar-title">
+    <VCol cols="12" :md="$slots.search ? 3 : 4" class="page-toolbar-title">
       <VIcon :icon="icon" class="page-toolbar-icon" size="28" />
       <span>{{ title }}</span>
     </VCol>
-    <VCol cols="12" md="5" class="page-toolbar-search">
+    <VCol v-if="$slots.search" cols="12" md="5" class="page-toolbar-search">
       <slot name="search" />
     </VCol>
-    <VCol cols="12" md="4" class="page-toolbar-actions">
+    <VCol cols="12" :md="$slots.search ? 4 : 8" class="page-toolbar-actions">
       <slot name="actions" />
     </VCol>
   </VRow>

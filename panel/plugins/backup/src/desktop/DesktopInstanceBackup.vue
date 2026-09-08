@@ -436,14 +436,13 @@ onUnmounted(() => {
             <Transition name="ds-dialog-fade">
                 <component :is="desktopWindowComponent" v-if="desktopWindowComponent && epbaklstConfirmDialog.show"
                     id="backup-epbaklst-confirm-dialog"
-                    :title="t('TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST')" :icon="ExclamationCircleOutlined"
+                    :title="t('TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST')"
                     :visible="epbaklstConfirmDialog.show" :minimized="false" :maximized="false" :active="true"
                     :initial-width="400" :initial-height="200" :initial-x="windowWidth / 2 - 200"
                     :initial-y="windowHeight / 2 - 100" :z-index="10007" :show-minimize="false" :show-maximize="false"
                     :resizable="false" @close="epbaklstConfirmDialog.resolve && epbaklstConfirmDialog.resolve(false)">
                     <div class="ds-dialog-content">
                         <div class="ds-dialog__body ds-dialog__body--column">
-                            <ExclamationCircleOutlined class="ds-dialog__warn-icon" />
                             <p class="ds-dialog__desc">
                                 {{ t("TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM") }}
                             </p>
@@ -467,14 +466,13 @@ onUnmounted(() => {
             <Transition name="ds-dialog-fade">
                 <component :is="desktopWindowComponent" v-if="desktopWindowComponent && backupConfirmDialog.show"
                     id="backup-confirm-dialog"
-                    :title="t('TXT_CODE_INSTANCE_BACKUP_CREATE')" :icon="ExclamationCircleOutlined"
+                    :title="t('TXT_CODE_INSTANCE_BACKUP_CREATE')"
                     :visible="backupConfirmDialog.show" :minimized="false" :maximized="false" :active="true"
                     :initial-width="400" :initial-height="200" :initial-x="windowWidth / 2 - 200"
                     :initial-y="windowHeight / 2 - 100" :z-index="10006" :show-minimize="false" :show-maximize="false"
                     :resizable="false" @close="backupConfirmDialog.resolve && backupConfirmDialog.resolve(false)">
                     <div class="ds-dialog-content">
                         <div class="ds-dialog__body ds-dialog__body--column">
-                            <ExclamationCircleOutlined class="ds-dialog__warn-icon" />
                             <p class="ds-dialog__desc">
                                 {{ t("TXT_CODE_INSTANCE_BACKUP_CREATE_CONFIRM") }}
                             </p>
@@ -597,7 +595,8 @@ onUnmounted(() => {
     .backup-item {
         background: var(--desktop-window-titlebar-bg);
         border: 1px solid var(--desktop-window-border);
-        border-radius: 8px;
+        border-radius: 16px;
+        overflow: hidden;
         padding: 12px 16px;
         display: flex;
         align-items: center;

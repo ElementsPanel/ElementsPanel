@@ -1,12 +1,20 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { t } from "@/lang/i18n";
-import { useScreen } from "@/hooks/useScreen";
 import type { InstanceDetail } from "@/types";
 import { updateInstanceConfig } from "@/services/apis/instance";
 import { message } from "ant-design-vue";
 import { reportErrorMsg } from "@/tools/validator";
 import { TERMINAL_CODE } from "@/types/const";
+import AppDialog from "@/components/AppDialog.vue";
+import {
+  VCol,
+  VForm,
+  VRow,
+  VSelect,
+  VSwitch,
+  VTextField
+} from "vuetify/lib/components/index.mjs";
 
 const props = defineProps<{
   instanceInfo?: InstanceDetail;
@@ -17,8 +25,6 @@ const props = defineProps<{
 const emit = defineEmits(["update"]);
 const options = ref<InstanceDetail>();
 
-const screen = useScreen();
-const isPhone = computed(() => screen.isPhone.value);
 const open = ref(false);
 const openDialog = () => {
   open.value = true;
@@ -58,102 +64,123 @@ defineExpose({
 </script>
 
 <template>
-  <a-modal
+  <AppDialog
     v-model:open="open"
-    centered
-    width="auto"
+    max-width="760px"
     :title="t('TXT_CODE_d23631cb')"
     :confirm-loading="isLoading"
     :ok-text="t('TXT_CODE_abfe9512')"
     @ok="submit"
   >
-    <a-form v-if="options" layout="vertical">
-      <a-row :gutter="[24, 24]">
-        <a-col :xs="24" :md="12" :offset="0">
-          <a-form-item>
-            <a-typography-title :level="5">{{ t("TXT_CODE_ef650d57") }}</a-typography-title>
-            <a-typography-paragraph>
-              <a-typography-text type="secondary">
-                {{ t("TXT_CODE_feeea328") }}
-                <br />
-                {{ t("TXT_CODE_d6e7f572") }}
-              </a-typography-text>
-            </a-typography-paragraph>
-            <a-switch v-model:checked="options.config.terminalOption.pty" />
-          </a-form-item>
+    <VForm v-if="options" class="term-config-form" @submit.prevent="submit">
+      <VRow dense>
+        <VCol cols="12" md="6">
+          <div class="term-config-section">
+            <div class="term-config-title">{{ t("TXT_CODE_ef650d57") }}</div>
+            <div class="term-config-description">
+              {{ t("TXT_CODE_feeea328") }}<br />{{ t("TXT_CODE_d6e7f572") }}
+            </div>
+            <VSwitch v-model="options.config.terminalOption.pty" color="primary" hide-details />
+          </div>
 
-          <a-form-item>
-            <a-typography-title :level="5">{{ t("TXT_CODE_e1a3b150") }}</a-typography-title>
-            <a-typography-paragraph>
-              <a-typography-text type="secondary">
-                {{ t("TXT_CODE_6a515e35") }}
-                <br />
-                {{ t("TXT_CODE_1295831e") }}
-              </a-typography-text>
-            </a-typography-paragraph>
-            <a-switch v-model:checked="options.config.terminalOption.haveColor" />
-          </a-form-item>
+          <div class="term-config-section">
+            <div class="term-config-title">{{ t("TXT_CODE_e1a3b150") }}</div>
+            <div class="term-config-description">
+              {{ t("TXT_CODE_6a515e35") }}<br />{{ t("TXT_CODE_1295831e") }}
+            </div>
+            <VSwitch v-model="options.config.terminalOption.haveColor" color="primary" hide-details />
+          </div>
 
-          <a-form-item>
-            <a-typography-title :level="5">{{ t("TXT_CODE_b91a94f9") }}</a-typography-title>
-            <a-typography-paragraph>
-              <a-typography-text type="secondary">
-                {{ t("TXT_CODE_5b2daea0") }}
-                <br />
-                {{ t("TXT_CODE_b94f13ce") }}
-              </a-typography-text>
-            </a-typography-paragraph>
-            <a-select
-              v-model:value="options.config.crlf"
+          <div class="term-config-section">
+            <div class="term-config-title">{{ t("TXT_CODE_b91a94f9") }}</div>
+            <div class="term-config-description">
+              {{ t("TXT_CODE_5b2daea0") }}<br />{{ t("TXT_CODE_b94f13ce") }}
+            </div>
+            <VSelect
+              v-model="options.config.crlf"
+              :items="[
+                { title: t('TXT_CODE_365aabd4'), value: 1 },
+                { title: t('TXT_CODE_20cec54'), value: 2 }
+              ]"
               :placeholder="t('TXT_CODE_3bb646e4')"
-              :style="'width: ' + (isPhone ? '100%' : '220px')"
-            >
-              <a-select-option :value="1"> {{ t("TXT_CODE_365aabd4") }}</a-select-option>
-              <a-select-option :value="2">{{ t("TXT_CODE_20cec54") }}</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-        <a-col :xs="24" :md="12" :offset="0">
-          <a-form-item>
-            <a-typography-title :level="5">{{ t("TXT_CODE_11cfe3a1") }}</a-typography-title>
-            <a-typography-paragraph>
-              <a-typography-text type="secondary">
-                {{ t("TXT_CODE_7ec7ccb8") }}
-              </a-typography-text>
-            </a-typography-paragraph>
-            <a-input
-              v-model:value="options.config.stopCommand"
-              :style="'width: ' + (isPhone ? '100%' : '220px')"
+              class="term-config-control"
+              hide-details
             />
-          </a-form-item>
+          </div>
+        </VCol>
 
-          <a-form-item>
-            <a-typography-title :level="5">{{ t("TXT_CODE_449d1581") }}</a-typography-title>
-            <a-typography-paragraph>
-              <a-typography-text type="secondary">
-                {{ t("TXT_CODE_d16d82ab") }}
-              </a-typography-text>
-            </a-typography-paragraph>
-            <a-select
-              v-model:value="options.config.ie"
-              class="mr-10 mb-20"
-              :placeholder="t('TXT_CODE_bd2559f3')"
-              :style="'width: ' + (isPhone ? '100%' : '220px')"
-            >
-              <a-select-option v-for="item in TERMINAL_CODE" :key="item" :value="item">
-              </a-select-option>
-            </a-select>
-            <a-select
-              v-model:value="options.config.oe"
-              :placeholder="t('TXT_CODE_6e96b2a9')"
-              :style="'width: ' + (isPhone ? '100%' : '220px')"
-            >
-              <a-select-option v-for="item in TERMINAL_CODE" :key="item" :value="item">
-              </a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-      </a-row>
-    </a-form>
-  </a-modal>
+        <VCol cols="12" md="6">
+          <div class="term-config-section">
+            <div class="term-config-title">{{ t("TXT_CODE_11cfe3a1") }}</div>
+            <div class="term-config-description">{{ t("TXT_CODE_7ec7ccb8") }}</div>
+            <VTextField
+              v-model="options.config.stopCommand"
+              class="term-config-control"
+              hide-details
+            />
+          </div>
+
+          <div class="term-config-section">
+            <div class="term-config-title">{{ t("TXT_CODE_449d1581") }}</div>
+            <div class="term-config-description">{{ t("TXT_CODE_d16d82ab") }}</div>
+            <div class="term-config-encoding">
+              <VSelect
+                v-model="options.config.ie"
+                :items="TERMINAL_CODE"
+                :placeholder="t('TXT_CODE_bd2559f3')"
+                hide-details
+              />
+              <VSelect
+                v-model="options.config.oe"
+                :items="TERMINAL_CODE"
+                :placeholder="t('TXT_CODE_6e96b2a9')"
+                hide-details
+              />
+            </div>
+          </div>
+        </VCol>
+      </VRow>
+    </VForm>
+  </AppDialog>
 </template>
+
+<style lang="scss" scoped>
+.term-config-form {
+  display: block;
+}
+
+.term-config-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.term-config-title {
+  color: var(--text-color);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.term-config-description {
+  color: var(--color-gray-7);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.term-config-control {
+  width: min(100%, 280px);
+}
+
+.term-config-encoding {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+}
+
+.term-config-encoding > * {
+  width: min(100%, 180px);
+}
+</style>

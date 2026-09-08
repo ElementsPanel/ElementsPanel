@@ -121,7 +121,7 @@ const instanceActionMdiIcons: Record<string, string> = {
   "file-manager": "mdi-folder-open-outline",
   "java-manager": "mdi-language-java",
   mcstats: "mdi-chart-line",
-  backup: "mdi-backup-restore",
+  backup: "mdi-cloud-outline",
   "terminal-config": "mdi-code-tags",
   "operation-log": "mdi-file-document-outline"
 };

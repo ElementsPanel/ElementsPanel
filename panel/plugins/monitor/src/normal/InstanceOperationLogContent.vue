@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import { FileTextOutlined, LoadingOutlined } from "@ant-design/icons-vue";
 import dayjs from "dayjs";
+import {
+  VIcon,
+  VProgressCircular,
+  VTimeline,
+  VTimelineItem
+} from "vuetify/lib/components/index.mjs";
 import type { FormattedOperationLog } from "../hooks/useOperationLog";
 
 withDefaults(
@@ -17,24 +22,29 @@ withDefaults(
 <template>
   <div class="instance-log" :class="{ 'instance-log--desktop': desktop }">
     <div v-if="loading" class="log-loading">
-      <LoadingOutlined spin />
+      <VProgressCircular indeterminate size="20" width="2" />
       <span>{{ t("TXT_CODE_73102f2b") }}</span>
     </div>
     <div v-else-if="logs.length === 0" class="empty-state">
-      <FileTextOutlined class="empty-icon" />
+      <VIcon icon="mdi-file-document-outline" class="empty-icon" />
       <div class="empty-text">{{ t("TXT_CODE_54469e02") }}</div>
     </div>
     <div v-else class="log-timeline">
-      <a-timeline>
-        <a-timeline-item v-for="item in logs" :key="item.operation_id" :color="item.color">
+      <VTimeline density="compact" side="end" truncate-line="both">
+        <VTimelineItem
+          v-for="item in logs"
+          :key="item.operation_id"
+          :dot-color="item.color"
+          size="small"
+        >
           <div class="log-item">
             <div class="log-content">{{ item.text }}</div>
             <div class="log-time">
               {{ dayjs(Number(item.operation_time)).format("YYYY-MM-DD HH:mm:ss") }}
             </div>
           </div>
-        </a-timeline-item>
-      </a-timeline>
+        </VTimelineItem>
+      </VTimeline>
     </div>
   </div>
 </template>
