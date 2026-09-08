@@ -1,237 +1,108 @@
 <script setup lang="ts">
-import CardPanel from "@/components/CardPanel.vue";
+import PageToolbar from "@/components/PageToolbar.vue";
 import type { LayoutCard } from "@/types";
 import type { UserInstance } from "@/types/user";
-import { computed, ref, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { t } from "@/lang/i18n";
-import BetweenMenus from "@/components/BetweenMenus.vue";
 import { useScreen } from "@/hooks/useScreen";
-import { arrayFilter } from "@/tools/array";
-import { userInfoApiAdvanced } from "@/services/apis";
-import { useLayoutCardTools } from "@/hooks/useCardTools";
-import { updateUserInstance } from "@/services/apis";
+import { useRoute } from "vue-router";
+import { userInfoApiAdvanced, updateUserInstance } from "@/services/apis";
 import { useSelectInstances } from "@/components/fc";
 import { message } from "ant-design-vue";
 import { reportErrorMsg } from "@/tools/validator";
 import { INSTANCE_STATUS } from "@/types/const";
-import type { AntColumnsType, AntTableCell } from "@/types/ant";
 import dayjs from "dayjs";
 import WarningDialog from "@/components/fc/WarningDialog.vue";
 import { useMountComponent } from "@/hooks/useMountComponent";
+import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VDataTable, VDialog, VSpacer } from "vuetify/lib/components/index.mjs";
 
-const props = defineProps<{
-  card: LayoutCard;
-  uuid: string;
-}>();
-
+const props = defineProps<{ card?: LayoutCard; uuid?: string }>();
 const { isPhone } = useScreen();
-
+const route = useRoute();
 const dataSource = ref<UserInstance[]>([]);
-const { getMetaOrRouteValue } = useLayoutCardTools(props.card);
-const userUuid = getMetaOrRouteValue("uuid");
+const userUuid = props.uuid ?? props.card?.meta?.uuid ?? String(route.query.uuid ?? "");
+const deleteDialog = ref<{ open: boolean; item: UserInstance | null }>({ open: false, item: null });
 
-const handleDelete = async (deletedInstance: UserInstance) => {
+const refreshTableData = async () => {
+  if (userUuid == null) return;
   try {
-    for (let valueKey = 0; valueKey < dataSource.value.length; valueKey++) {
-      const instance = dataSource.value[valueKey];
-      if (
-        deletedInstance.daemonId == instance.daemonId &&
-        deletedInstance.instanceUuid == instance.instanceUuid
-      ) {
-        dataSource.value.splice(valueKey, 1);
-        break;
-      }
-    }
-    await saveData();
-  } catch (error: any) {
-    reportErrorMsg(error);
-  }
-};
-
-const assignApp = async () => {
-  try {
-    const selectedInstances = await useSelectInstances(dataSource.value);
-    let warningInstances: string[] = [];
-    for (const instance of selectedInstances || []) {
-      if (typeof instance.config?.docker?.image == "string" && !instance.config?.docker?.image)
-        warningInstances.push(instance.nickname);
-    }
-    if (warningInstances.length > 0) {
-      const component = (
-        await useMountComponent({
-          title: t("TXT_CODE_dd78943e"),
-          subTitle: t("TXT_CODE_57e86edb") + warningInstances.join(", "),
-          checkText: t("TXT_CODE_19f697f3")
-        })
-      ).load<InstanceType<typeof WarningDialog>>(WarningDialog);
-      await component.openDialog();
-    }
-    if (selectedInstances) dataSource.value = selectedInstances;
-    await saveData();
-  } catch (err: any) {
-    reportErrorMsg(err);
-  }
-};
-
-const saveData = async () => {
-  try {
-    await updateUserInstance().execute({
-      data: {
-        config: {
-          instances: dataSource.value
-        },
-        uuid: <string>userUuid
-      }
-    });
-    message.success(t("TXT_CODE_d3de39b4"));
-    refreshTableData().catch(() => {
-      // ignore
-    });
+    const rawUserInfo = (await userInfoApiAdvanced().execute({ params: { uuid: String(userUuid), advanced: true }, forceRequest: true })).value;
+    dataSource.value = rawUserInfo?.instances ? [...rawUserInfo.instances] : [];
   } catch (err: any) {
     reportErrorMsg(err.message);
   }
 };
 
-async function refreshTableData() {
-  if (userUuid == null) {
-    return;
+const saveData = async () => {
+  try {
+    await updateUserInstance().execute({ data: { config: { instances: dataSource.value }, uuid: String(userUuid) } });
+    message.success(t("TXT_CODE_d3de39b4"));
+    await refreshTableData();
+  } catch (err: any) {
+    reportErrorMsg(err.message);
   }
-  const rawUserInfo = (
-    await userInfoApiAdvanced().execute({
-      params: {
-        uuid: <string>userUuid,
-        advanced: true
-      },
-      forceRequest: true
-    })
-  ).value;
-  if (!rawUserInfo) {
-    return;
-  }
-  const newDataSource: UserInstance[] = [];
-  for (const instance of rawUserInfo.instances) {
-    newDataSource.push(instance);
-  }
-  dataSource.value = newDataSource;
-}
+};
 
-onMounted(() => {
-  refreshTableData();
-});
+const handleDelete = async () => {
+  const deletedInstance = deleteDialog.value.item;
+  deleteDialog.value.open = false;
+  if (!deletedInstance) return;
+  dataSource.value = dataSource.value.filter((instance) => !(instance.daemonId === deletedInstance.daemonId && instance.instanceUuid === deletedInstance.instanceUuid));
+  await saveData();
+};
 
-const columns = computed(() => {
-  return arrayFilter<AntColumnsType>([
-    {
-      align: "center",
-      title: t("TXT_CODE_b26a0528"),
-      dataIndex: "remarks",
-      key: "remarks",
-      minWidth: 200,
-      condition: () => !isPhone.value,
-      customRender: (row) => {
-        return row.record.hostIp + ` (${row.record.remarks})`;
-      }
-    },
-    {
-      align: "center",
-      title: t("TXT_CODE_f70badb9"),
-      dataIndex: "nickname",
-      key: "name",
-      minWidth: 200
-    },
-    {
-      align: "center",
-      title: t("TXT_CODE_fa920c0"),
-      dataIndex: "endTime",
-      key: "endTime",
-      minWidth: 200,
-      condition: () => !isPhone.value,
-      customRender: (row: { text: string | number }) => {
-        if (Number(row.text) === 0) return t("TXT_CODE_8dfd8b17");
-        if (!isNaN(Number(row.text))) return dayjs(Number(row.text)).format("YYYY-MM-DD HH:mm:ss");
-        return row.text;
-      }
-    },
-    {
-      align: "center",
-      title: t("TXT_CODE_3d602459"),
-      dataIndex: "status",
-      key: "status",
-      minWidth: 200,
-      customRender: (e: { text: "-1" | "1" | "2" | "3" }) => {
-        return INSTANCE_STATUS[e.text] || e.text;
-      },
-      condition: () => !isPhone.value
-    },
-    {
-      align: "center",
-      title: t("TXT_CODE_fe731dfc"),
-      key: "operation",
-      minWidth: 200,
-      scopedSlots: { customRender: "operation" }
+const assignApp = async () => {
+  try {
+    const selectedInstances = await useSelectInstances(dataSource.value);
+    const warningInstances = (selectedInstances || []).filter((instance) => typeof instance.config?.docker?.image === "string" && !instance.config.docker.image).map((instance) => instance.nickname);
+    if (warningInstances.length > 0) {
+      const component = (await useMountComponent({ title: t("TXT_CODE_dd78943e"), subTitle: t("TXT_CODE_57e86edb") + warningInstances.join(", "), checkText: t("TXT_CODE_19f697f3") })).load<InstanceType<typeof WarningDialog>>(WarningDialog);
+      await component.openDialog();
     }
-  ]);
-});
+    if (selectedInstances) {
+      dataSource.value = selectedInstances;
+      await saveData();
+    }
+  } catch (err: any) {
+    reportErrorMsg(err.message);
+  }
+};
+
+const headers = computed(() => [
+  ...(!isPhone.value ? [{ title: t("TXT_CODE_b26a0528"), key: "remarks" }] : []),
+  { title: t("TXT_CODE_f70badb9"), key: "nickname" },
+  ...(!isPhone.value ? [{ title: t("TXT_CODE_fa920c0"), key: "endTime" }] : []),
+  ...(!isPhone.value ? [{ title: t("TXT_CODE_3d602459"), key: "status" }] : []),
+  { title: t("TXT_CODE_fe731dfc"), key: "operation", sortable: false, align: "end" as const }
+]);
+
+onMounted(refreshTableData);
 </script>
 
 <template>
-  <div style="height: 100%" class="container">
-    <a-row v-if="userUuid" :gutter="[24, 24]" style="height: 100%">
-      <a-col :span="24">
-        <BetweenMenus>
-          <template v-if="!isPhone" #left>
-            <a-typography-title class="mb-0" :level="4">
-              {{ t("TXT_CODE_76d20724") }}
-            </a-typography-title>
-          </template>
-          <template #right>
-            <a-button @click="refreshTableData()">
-              {{ t("TXT_CODE_b76d94e0") }}
-            </a-button>
-            <a-button type="primary" @click="assignApp">
-              {{ t("TXT_CODE_9393b484") }}
-            </a-button>
-          </template>
-        </BetweenMenus>
-      </a-col>
-
-      <a-col :span="24">
-        <CardPanel class="h-100">
-          <template #body>
-            <a-table :scroll="{ x: 'max-content' }" :data-source="dataSource" :columns="columns">
-              <template #bodyCell="{ column, record }: AntTableCell">
-                <template v-if="column.key === 'operation'">
-                  <a-popconfirm :title="t('TXT_CODE_71155575')" @confirm="handleDelete(record)">
-                    <a-button danger size="large">
-                      {{ t("TXT_CODE_ecbd7449") }}
-                    </a-button>
-                  </a-popconfirm>
-                </template>
-              </template>
-            </a-table>
-          </template>
-        </CardPanel>
-      </a-col>
-    </a-row>
-  </div>
+  <main class="user-access-page">
+    <PageToolbar :title="t('TXT_CODE_76d20724')" icon="mdi-account-key-outline">
+      <template #actions>
+        <VBtn variant="text" prepend-icon="mdi-refresh" @click="refreshTableData">{{ t("TXT_CODE_b76d94e0") }}</VBtn>
+        <VBtn color="primary" prepend-icon="mdi-plus" @click="assignApp">{{ t("TXT_CODE_9393b484") }}</VBtn>
+      </template>
+    </PageToolbar>
+    <VCard rounded="xl" flat class="user-access-card">
+      <VDataTable :headers="headers" :items="dataSource" item-value="instanceUuid" :items-per-page="-1">
+        <template #item.remarks="{ item }">{{ item.raw.hostIp }} ({{ item.raw.remarks }})</template>
+        <template #item.endTime="{ item }">{{ Number(item.raw.endTime) === 0 ? t("TXT_CODE_8dfd8b17") : !isNaN(Number(item.raw.endTime)) ? dayjs(Number(item.raw.endTime)).format("YYYY-MM-DD HH:mm:ss") : item.raw.endTime }}</template>
+        <template #item.status="{ item }">{{ INSTANCE_STATUS[item.raw.status] || item.raw.status }}</template>
+        <template #item.operation="{ item }"><VBtn color="error" variant="tonal" size="small" @click="deleteDialog = { open: true, item: item.raw }">{{ t("TXT_CODE_ecbd7449") }}</VBtn></template>
+      </VDataTable>
+    </VCard>
+    <VDialog v-model="deleteDialog.open" class="app-dialog" max-width="460" scrollable>
+      <VCard rounded="xl"><VCardTitle>{{ t("TXT_CODE_71155575") }}</VCardTitle><VCardText>{{ t("TXT_CODE_71155575") }}</VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="deleteDialog.open = false">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="error" @click="handleDelete">{{ t("TXT_CODE_ecbd7449") }}</VBtn></VCardActions></VCard>
+    </VDialog>
+  </main>
 </template>
 
-<style lang="scss" scoped>
-.search-input {
-  transition: all 0.4s;
-  text-align: center;
-  width: 50%;
-}
-
-@media (max-width: 992px) {
-  .search-input {
-    transition: all 0.4s;
-    text-align: center;
-    width: 100% !important;
-  }
-}
-
-.search-input:hover {
-  width: 100%;
-}
+<style scoped lang="scss">
+.user-access-page { width: 100%; max-width: var(--app-max-width); margin: 0 auto; padding: 16px 24px 32px; box-sizing: border-box; }
+.user-access-card { overflow: hidden; }
+@media (max-width: 992px) { .user-access-page { padding: 12px 12px 28px; } }
 </style>

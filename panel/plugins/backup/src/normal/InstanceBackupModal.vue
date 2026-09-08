@@ -372,12 +372,11 @@ defineExpose({ open });
                 <VBtn variant="text" @click="close">
                     {{ t("TXT_CODE_b1dedda3") }}
                 </VBtn>
-                <VBtn variant="text" prepend-icon="mdi-file-edit-outline" @click="handleEditEpbaklst">
+                <VBtn variant="text" @click="handleEditEpbaklst">
                     {{ t("TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST") }}
                 </VBtn>
                 <VBtn
                     color="primary"
-                    prepend-icon="mdi-cloud-upload-outline"
                     :loading="loading"
                     :disabled="taskStatus === 1"
                     @click="startBackup"

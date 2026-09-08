@@ -10,10 +10,8 @@ import { ctx } from "@/plugin/context";
 import {
     CloudDownloadOutlined,
     DeleteOutlined,
-    EditOutlined,
     ExclamationCircleOutlined,
     LoadingOutlined,
-    PlusCircleOutlined,
     RollbackOutlined,
     SyncOutlined
 } from "@ant-design/icons-vue";
@@ -360,12 +358,9 @@ onUnmounted(() => {
         </div>
         <div class="ds-backup-footer">
             <button class="ds-dialog-btn ds-dialog-btn--default" :disabled="loading" @click="handleEditEpbaklst">
-                <EditOutlined />
                 {{ t("TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST") }}
             </button>
             <button class="ds-dialog-btn ds-dialog-btn--primary" :disabled="loading" @click="startBackup">
-                <SyncOutlined v-if="loading" spin />
-                <PlusCircleOutlined v-else />
                 {{ t("TXT_CODE_INSTANCE_BACKUP_CREATE") }}
             </button>
         </div>

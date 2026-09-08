@@ -76,7 +76,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.routes.add({
     path: "/users/resources",
     name: t("TXT_CODE_236f70aa"),
-    component: () => import("@/views/LayoutContainer.vue"),
+    component: UserAccessSettings,
     meta: {
       permission: ROLE_ADMIN,
       breadcrumbs: [
