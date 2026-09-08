@@ -39,7 +39,6 @@ export function apply(ctx: PanelFrontendPluginContext) {
   // manager renders them and this half contributes no form.
 
   ctx.ui.layoutCard("LoginCard", LoginCard);
-  ctx.ui.layoutCard("UserList", UserList);
   ctx.ui.layoutCard("UserStatusBlock", UserStatusBlock);
   ctx.ui.layoutCard("UserInstanceList", UserInstanceList);
   ctx.ui.layoutCard("UserAccessSettings", UserAccessSettings);
@@ -69,21 +68,29 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.routes.add({
     path: "/users",
     name: t("TXT_CODE_1deaa2dd"),
-    component: () => import("@/views/LayoutContainer.vue"),
+    component: UserList,
     meta: {
       mainMenu: true,
-      permission: ROLE_ADMIN
-    },
-    children: [
-      {
-        path: "/users/resources",
-        name: t("TXT_CODE_236f70aa"),
-        component: () => import("@/views/LayoutContainer.vue"),
-        meta: {
+      permission: ROLE_ADMIN,
+      icon: "mdi-account-group-outline"
+    }
+  });
+
+  ctx.routes.add({
+    path: "/users/resources",
+    name: t("TXT_CODE_236f70aa"),
+    component: () => import("@/views/LayoutContainer.vue"),
+    meta: {
+      permission: ROLE_ADMIN,
+      breadcrumbs: [
+        {
+          name: t("TXT_CODE_1deaa2dd"),
+          path: "/users",
+          mainMenu: true,
           permission: ROLE_ADMIN
         }
-      }
-    ]
+      ]
+    }
   });
 
   ctx.routes.add({

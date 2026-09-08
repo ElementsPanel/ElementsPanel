@@ -1,38 +1,35 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import AppDialog from "@/components/AppDialog.vue";
+import PageToolbar from "@/components/PageToolbar.vue";
 import { t } from "@/lang/i18n";
-import { message, Modal, type FormInstance } from "ant-design-vue";
-import { DownOutlined, UserOutlined, SearchOutlined } from "@ant-design/icons-vue";
-import type { Rule } from "ant-design-vue/es/form";
-import { throttle } from "lodash";
-import CardPanel from "@/components/CardPanel.vue";
-import BetweenMenus from "@/components/BetweenMenus.vue";
-import { useScreen } from "@/hooks/useScreen";
-import { arrayFilter } from "@/tools/array";
-import { useAppRouters } from "@/hooks/useAppRouters";
-import { useAppStateStore } from "@/stores/useAppStateStore";
+import { message } from "ant-design-vue";
+import { computed, onMounted, ref } from "vue";
 import {
-  getUserInfo,
-  deleteUser as deleteUserApi,
+  VBtn,
+  VCard,
+  VChip,
+  VDataTableServer,
+  VForm,
+  VMenu,
+  VSelect,
+  VTextField
+} from "vuetify/lib/components/index.mjs";
+import { useAppRouters } from "@/hooks/useAppRouters";
+import { useScreen } from "@/hooks/useScreen";
+import { throttle } from "lodash";
+import {
   addUser as addUserApi,
+  deleteUser as deleteUserApi,
   editUserInfo,
+  getUserInfo,
   ssoUnbind as ssoUnbindApi
 } from "@/services/apis";
 import { ssoConfig } from "../api";
-import type { LayoutCard } from "@/types/index";
 import type { BaseUserInfo, EditUserInfo } from "@/types/user";
-import _ from "lodash";
-import type { AntColumnsType, AntTableCell } from "@/types/ant";
-import type { Key } from "ant-design-vue/es/_util/type";
-import { PASSWORD_REGEX } from "@/tools/validator";
+import { PASSWORD_REGEX, reportErrorMsg } from "@/tools/validator";
 import { PERMISSION_MAP } from "@/config/const";
-import { reportErrorMsg } from "@/tools/validator";
 
-defineProps<{
-  card: LayoutCard;
-}>();
-
-interface dataType {
+interface UserPageData {
   total: number;
   pageSize: number;
   page: number;
@@ -43,111 +40,23 @@ interface dataType {
 const { execute, isLoading: getUserInfoLoading } = getUserInfo();
 const { toPage } = useAppRouters();
 const { isPhone } = useScreen();
-const { state: appState } = useAppStateStore();
-
-// SSO settings belong to this plugin, so ask its own public endpoint rather
-// than the panel status payload.
 const ssoEnabled = ref(false);
-onMounted(async () => {
-  try {
-    const res = await ssoConfig().execute();
-    ssoEnabled.value = Boolean(res.value?.enabled);
-  } catch {
-    ssoEnabled.value = false;
-  }
-});
-
-const operationForm = ref({
-  name: "",
-  currentPage: 1,
-  pageSize: 20
-});
-
-const columns = computed(() => {
-  return arrayFilter<AntColumnsType>([
-    {
-      align: "center",
-      title: "UUID",
-      dataIndex: "uuid",
-      key: "uuid",
-      condition: () => !isPhone.value
-    },
-    {
-      align: "center",
-      title: t("TXT_CODE_eb9fcdad"),
-      dataIndex: "userName",
-      key: "userName",
-      minWidth: 200
-    },
-    {
-      align: "center",
-      title: t("TXT_CODE_511aea70"),
-      dataIndex: "permission",
-      key: "permission",
-      minWidth: 200,
-      customRender: (e: { text: "1" | "10" | "-1" }) => {
-        return PERMISSION_MAP[e.text] || e.text;
-      }
-    },
-    {
-      align: "center",
-      title: t("TXT_CODE_d7ee9ba"),
-      dataIndex: "loginTime",
-      key: "loginTime",
-      minWidth: 200,
-      condition: () => !isPhone.value
-    },
-    {
-      align: "center",
-      title: t("TXT_CODE_c5c56801"),
-      dataIndex: "registerTime",
-      key: "registerTime",
-      minWidth: 200,
-      condition: () => !isPhone.value
-    },
-    {
-      align: "center",
-      title: t("TXT_CODE_SSO_BOUND_STATUS"),
-      dataIndex: "ssoBound",
-      key: "ssoBound",
-      minWidth: 100,
-      condition: () => !isPhone.value && ssoEnabled.value
-    },
-    {
-      align: "center",
-      title: t("TXT_CODE_fe731dfc"),
-      key: "action",
-      minWidth: 200
-    }
-  ]);
-});
-
+const data = ref<UserPageData>();
 const total = ref(0);
-const data = ref<dataType>();
-const dataSource = computed(() => data?.value?.data);
 const selectedUsers = ref<string[]>([]);
 const currentRole = ref("");
-
-const handleToUserResources = (user: BaseUserInfo) => {
-  toPage({
-    path: "/users/resources",
-    query: {
-      uuid: user.uuid
-    }
-  });
-};
-
-const handleTableChange = (e: { current: number; pageSize: number }) => {
-  operationForm.value.currentPage = e.current;
-  operationForm.value.pageSize = e.pageSize;
-  fetchData();
-};
+const operationForm = ref({ name: "", currentPage: 1, pageSize: 20 });
+const dataSource = computed(() => data.value?.data ?? []);
+const permissionItems = computed(() =>
+  Object.entries(PERMISSION_MAP).map(([value, title]) => ({ title, value: Number(value) }))
+);
+const roleItems = computed(() => [
+  { title: t("TXT_CODE_c48f6f64"), value: "" },
+  ...permissionItems.value.map((item) => ({ title: item.title, value: String(item.value) }))
+]);
 
 const fetchData = async () => {
-  if (operationForm.value.currentPage < 1) {
-    operationForm.value.currentPage = 1;
-  }
-  data.value?.pageSize && (data.value.pageSize = 0);
+  operationForm.value.currentPage = Math.max(1, operationForm.value.currentPage);
   const res = await execute({
     params: {
       userName: operationForm.value.name,
@@ -159,39 +68,36 @@ const fetchData = async () => {
   data.value = res.value;
   total.value = res.value?.total ?? 0;
 };
-
-const reload = throttle(() => {
-  fetchData();
+const reload = throttle(fetchData, 600);
+const search = throttle(async () => {
+  operationForm.value.currentPage = 1;
+  await fetchData();
 }, 600);
+const handleTableOptions = (options: { page: number; itemsPerPage: number }) => {
+  operationForm.value.currentPage = options.page;
+  operationForm.value.pageSize = options.itemsPerPage;
+  fetchData();
+};
 
-const deleteUser = async (userList: string[]) => {
+const deleteUsers = async (userList: string[]) => {
   try {
-    const { execute } = deleteUserApi();
-    await execute({
-      data: userList
-    });
+    await deleteUserApi().execute({ data: userList });
     message.success(t("TXT_CODE_28190dbc"));
+    selectedUsers.value = [];
     await fetchData();
   } catch (error: any) {
     reportErrorMsg(error.message);
   }
 };
-
-const handleDeleteUser = async (user: BaseUserInfo) => {
-  await deleteUser([user.uuid]);
+const handleBatchDelete = () => {
+  if (!selectedUsers.value.length) return message.warn(t("TXT_CODE_d78ad17a"));
+  deleteUsers(selectedUsers.value);
 };
-
-const handleBatchDelete = async () => {
-  if (selectedUsers.value.length === 0) {
-    return message.warn(t("TXT_CODE_d78ad17a"));
-  }
-  await deleteUser(selectedUsers.value);
-};
-
+const handleToUserResources = (user: BaseUserInfo) =>
+  toPage({ path: "/users/resources", query: { uuid: user.uuid } });
 const handleSsoUnbind = async (user: BaseUserInfo) => {
   try {
-    const { execute } = ssoUnbindApi();
-    await execute({ data: { uuid: user.uuid } });
+    await ssoUnbindApi().execute({ data: { uuid: user.uuid } });
     message.success(t("TXT_CODE_SSO_UNBIND_SUCCESS"));
     await fetchData();
   } catch (error: any) {
@@ -199,69 +105,39 @@ const handleSsoUnbind = async (user: BaseUserInfo) => {
   }
 };
 
-const showSsoUnbindConfirm = (user: BaseUserInfo) => {
-  Modal.confirm({
-    title: t("TXT_CODE_SSO_UNBIND_CONFIRM", { userName: user.userName } as any),
-    okType: "danger",
-    onOk: () => handleSsoUnbind(user),
-    maskClosable: true
-  });
+const confirmDialog = ref<{
+  open: boolean;
+  title: string;
+  text: string;
+  action: () => void | Promise<void>;
+}>({ open: false, title: "", text: "", action: () => undefined });
+const confirmAction = async () => {
+  const action = confirmDialog.value.action;
+  confirmDialog.value.open = false;
+  await action();
 };
-
-const showDeleteConfirm = (user: BaseUserInfo) => {
-  Modal.confirm({
-    title: () => t("TXT_CODE_e99ab99a", { userName: user.userName } as any),
-    okType: "danger",
-    onOk: () => handleDeleteUser(user),
-    maskClosable: true
-  });
+const openDeleteConfirm = (user: BaseUserInfo) => {
+  confirmDialog.value = {
+    open: true,
+    title: t("TXT_CODE_ecbd7449"),
+    text: t("TXT_CODE_e99ab99a", { userName: user.userName } as any),
+    action: () => deleteUsers([user.uuid])
+  };
+};
+const openSsoConfirm = (user: BaseUserInfo) => {
+  confirmDialog.value = {
+    open: true,
+    title: t("TXT_CODE_SSO_UNBIND"),
+    text: t("TXT_CODE_SSO_UNBIND_CONFIRM", { userName: user.userName } as any),
+    action: () => handleSsoUnbind(user)
+  };
 };
 
 const isAddMode = ref(true);
-const userDialog = ref({
-  status: false,
-  title: t("TXT_CODE_e83ffa03"),
-  confirmBtnLoading: false,
-  show: () => {
-    userDialog.value.status = true;
-  },
-  resolve: async () => {
-    try {
-      await formRef.value?.validateFields();
-    } catch (err) {
-      return;
-    }
-    try {
-      userDialog.value.confirmBtnLoading = true;
-      if (isAddMode.value) {
-        await addUserApi().execute({
-          data: {
-            username: formData.value.userName,
-            password: formData.value.passWord!,
-            permission: formData.value.permission
-          }
-        });
-        message.success(t("TXT_CODE_c855fc29"));
-      } else {
-        await editUserInfo().execute({
-          data: {
-            config: formData.value,
-            uuid: formData.value.uuid
-          }
-        });
-        message.success(t("TXT_CODE_27efac3b"));
-      }
-      userDialog.value.status = false;
-      formData.value = _.cloneDeep(formDataOrigin);
-    } catch (error: any) {
-      return reportErrorMsg(error.message);
-    } finally {
-      fetchData();
-      userDialog.value.confirmBtnLoading = false;
-    }
-  }
-});
-
+const userDialogOpen = ref(false);
+const userDialogTitle = ref("");
+const userDialogLoading = ref(false);
+const formRef = ref<{ validate: () => Promise<{ valid: boolean }> }>();
 const formDataOrigin: EditUserInfo = {
   uuid: "",
   userName: "",
@@ -277,285 +153,316 @@ const formDataOrigin: EditUserInfo = {
   ssoSub: "",
   ssoBound: false
 };
-
-const formRef = ref<FormInstance>();
-const formData = ref<EditUserInfo>(_.cloneDeep(formDataOrigin));
-const baseRules: Record<string, Rule[]> = {
-  userName: [
-    { required: true, message: t("TXT_CODE_2695488c") },
-    { min: 3, max: 20, message: t("TXT_CODE_3f477ec"), trigger: "blur" }
-  ],
-  permission: [{ required: true, message: t("TXT_CODE_3bb646e4") }]
+const formData = ref<EditUserInfo>({ ...formDataOrigin });
+const requiredRule = (value: unknown) =>
+  Boolean(String(value ?? "").trim()) || t("TXT_CODE_2695488c");
+const userNameRule = (value: unknown) => {
+  const text = String(value ?? "");
+  return !text || (text.length >= 3 && text.length <= 20) || t("TXT_CODE_3f477ec");
 };
-const addUserRules: Record<string, Rule[]> = {
-  ...baseRules,
-  passWord: [
-    {
-      min: 9,
-      max: 36,
-      validator: async (_rule: Rule, value: string) => {
-        if (!PASSWORD_REGEX.test(value)) throw new Error(t("TXT_CODE_6032f5a3"));
-      },
-      trigger: "blur"
-    }
-  ]
+const passwordRule = (value: unknown) => {
+  const text = String(value ?? "");
+  return (
+    (!isAddMode.value && !text) ||
+    (text.length >= 9 && text.length <= 36 && PASSWORD_REGEX.test(text)) ||
+    t("TXT_CODE_6032f5a3")
+  );
 };
-const editUserRules: Record<string, Rule[]> = {
-  ...baseRules,
-  passWord: [
-    {
-      required: false
-    },
-    {
-      min: 9,
-      max: 36,
-      validator: async (_rule: Rule, value: string) => {
-        if (value && !PASSWORD_REGEX.test(value)) throw new Error(t("TXT_CODE_6032f5a3"));
-      },
-      trigger: "blur"
-    }
-  ]
-};
-
-// Add user
-const handleAddUser = async () => {
-  userDialog.value.title = t("TXT_CODE_e83ffa03");
-  formData.value = _.cloneDeep(formDataOrigin);
+const handleAddUser = () => {
   isAddMode.value = true;
-  userDialog.value.show();
+  userDialogTitle.value = t("TXT_CODE_e83ffa03");
+  formData.value = { ...formDataOrigin };
+  userDialogOpen.value = true;
 };
-
-// Edit user
 const handleEditUser = (user: BaseUserInfo) => {
-  userDialog.value.title = t("TXT_CODE_79f9a172");
-  formData.value = _.cloneDeep(user);
   isAddMode.value = false;
-  userDialog.value.show();
+  userDialogTitle.value = t("TXT_CODE_79f9a172");
+  formData.value = { ...user };
+  userDialogOpen.value = true;
+};
+const submitUser = async () => {
+  const result = await formRef.value?.validate();
+  if (result && !result.valid) return;
+  try {
+    userDialogLoading.value = true;
+    if (isAddMode.value) {
+      await addUserApi().execute({
+        data: {
+          username: formData.value.userName,
+          password: formData.value.passWord!,
+          permission: formData.value.permission
+        }
+      });
+      message.success(t("TXT_CODE_c855fc29"));
+    } else {
+      await editUserInfo().execute({ data: { config: formData.value, uuid: formData.value.uuid } });
+      message.success(t("TXT_CODE_27efac3b"));
+    }
+    userDialogOpen.value = false;
+    await fetchData();
+  } catch (error: any) {
+    reportErrorMsg(error.message);
+  } finally {
+    userDialogLoading.value = false;
+  }
 };
 
-const search = throttle(async () => {
-  operationForm.value.currentPage = 1;
-  await fetchData();
-}, 600);
-
+const headers = computed(() => {
+  const result: any[] = [
+    ...(!isPhone.value ? [{ title: "UUID", key: "uuid", sortable: false }] : []),
+    { title: t("TXT_CODE_eb9fcdad"), key: "userName" },
+    { title: t("TXT_CODE_511aea70"), key: "permission" },
+    ...(!isPhone.value
+      ? [
+          { title: t("TXT_CODE_d7ee9ba"), key: "loginTime" },
+          { title: t("TXT_CODE_c5c56801"), key: "registerTime" }
+        ]
+      : [])
+  ];
+  if (ssoEnabled.value) result.push({ title: t("TXT_CODE_SSO_BOUND_STATUS"), key: "ssoBound" });
+  result.push({ title: t("TXT_CODE_fe731dfc"), key: "actions", sortable: false, align: "end" });
+  return result;
+});
+const rawUser = (item: BaseUserInfo | { raw: BaseUserInfo }) =>
+  (item as { raw?: BaseUserInfo }).raw ?? (item as BaseUserInfo);
 onMounted(async () => {
-  fetchData();
+  try {
+    const res = await ssoConfig().execute();
+    ssoEnabled.value = Boolean(res.value?.enabled);
+  } catch {
+    ssoEnabled.value = false;
+  }
+  await fetchData();
 });
 </script>
 
 <template>
-  <a-modal
-    v-model:open="userDialog.status"
-    centered
-    :destroy-on-close="true"
-    :title="userDialog.title"
-    :confirm-loading="userDialog.confirmBtnLoading"
-    @ok="userDialog.resolve()"
-  >
-    <a-form
-      ref="formRef"
-      :rules="isAddMode ? addUserRules : editUserRules"
-      :model="formData"
-      layout="vertical"
+  <main class="user-page">
+    <div class="user-page-container">
+      <PageToolbar :title="`${t('TXT_CODE_1deaa2dd')} (${total})`" icon="mdi-account-group-outline">
+        <template #search>
+          <div class="user-search-row">
+            <VSelect
+              v-model="currentRole"
+              :items="roleItems"
+              density="comfortable"
+              hide-details
+              class="role-select"
+              @update:model-value="search"
+            />
+            <VTextField
+              v-model.trim="operationForm.name"
+              :placeholder="t('TXT_CODE_2471b9c')"
+              prepend-inner-icon="mdi-magnify"
+              density="comfortable"
+              hide-details
+              clearable
+              @update:model-value="search"
+            />
+          </div>
+        </template>
+        <template #actions>
+          <VBtn
+            variant="text"
+            prepend-icon="mdi-refresh"
+            :loading="getUserInfoLoading"
+            @click="reload"
+            >{{ t("TXT_CODE_b76d94e0") }}</VBtn
+          >
+          <VMenu>
+            <template #activator="{ props: menuProps }"
+              ><VBtn v-bind="menuProps" color="primary" append-icon="mdi-chevron-down">{{
+                t("TXT_CODE_f7084f84")
+              }}</VBtn></template
+            >
+            <VCard rounded="xl" class="pa-2"
+              ><VBtn
+                block
+                variant="text"
+                prepend-icon="mdi-account-plus-outline"
+                @click="handleAddUser"
+                >{{ t("TXT_CODE_e83ffa03") }}</VBtn
+              ><VBtn
+                block
+                variant="text"
+                prepend-icon="mdi-delete-outline"
+                @click="handleBatchDelete"
+                >{{ t("TXT_CODE_ecbd7449") }}</VBtn
+              ></VCard
+            >
+          </VMenu>
+        </template>
+      </PageToolbar>
+      <VCard rounded="xl" flat class="user-table-card">
+        <VDataTableServer
+          v-model="selectedUsers"
+          :headers="headers"
+          :items="dataSource"
+          :items-length="total"
+          :items-per-page-options="[10, 20, 50]"
+          item-value="uuid"
+          show-select
+          :loading="getUserInfoLoading"
+          :items-per-page="operationForm.pageSize"
+          :page="operationForm.currentPage"
+          class="user-table"
+          @update:options="handleTableOptions"
+        >
+          <template #item.permission="{ item }">{{
+            PERMISSION_MAP[rawUser(item).permission] || rawUser(item).permission
+          }}</template>
+          <template #item.ssoBound="{ item }"
+            ><VChip
+              size="small"
+              :color="rawUser(item).ssoBound ? 'success' : undefined"
+              variant="tonal"
+              >{{
+                rawUser(item).ssoBound ? t("TXT_CODE_SSO_BOUND_YES") : t("TXT_CODE_SSO_BOUND_NO")
+              }}</VChip
+            ></template
+          >
+          <template #item.actions="{ item }"
+            ><VMenu
+              ><template #activator="{ props: menuProps }"
+                ><VBtn
+                  v-bind="menuProps"
+                  size="small"
+                  variant="text"
+                  append-icon="mdi-chevron-down"
+                  >{{ t("TXT_CODE_fe731dfc") }}</VBtn
+                ></template
+              ><VCard rounded="xl" class="pa-2"
+                ><VBtn
+                  block
+                  variant="text"
+                  prepend-icon="mdi-pencil-outline"
+                  @click="handleEditUser(rawUser(item))"
+                  >{{ t("TXT_CODE_236f70aa") }}</VBtn
+                ><VBtn
+                  block
+                  variant="text"
+                  prepend-icon="mdi-shield-account-outline"
+                  @click="handleToUserResources(rawUser(item))"
+                  >{{ t("TXT_CODE_4d934e3a") }}</VBtn
+                ><VBtn
+                  v-if="ssoEnabled && rawUser(item).ssoBound"
+                  block
+                  variant="text"
+                  prepend-icon="mdi-link-off"
+                  @click="openSsoConfirm(rawUser(item))"
+                  >{{ t("TXT_CODE_SSO_UNBIND") }}</VBtn
+                ><VBtn
+                  block
+                  variant="text"
+                  color="error"
+                  prepend-icon="mdi-delete-outline"
+                  @click="openDeleteConfirm(rawUser(item))"
+                  >{{ t("TXT_CODE_ecbd7449") }}</VBtn
+                ></VCard
+              ></VMenu
+            ></template
+          >
+        </VDataTableServer>
+      </VCard>
+    </div>
+    <AppDialog
+      v-model:open="userDialogOpen"
+      :title="userDialogTitle"
+      :confirm-loading="userDialogLoading"
+      :ok-text="t('TXT_CODE_d507abff')"
+      @ok="submitUser"
     >
-      <a-form-item required name="permission" :label="t('TXT_CODE_511aea70')">
-        <a-typography-paragraph>
-          <a-typography-text type="secondary">
-            {{ t("TXT_CODE_21b8b71a") }}
-          </a-typography-text>
-        </a-typography-paragraph>
-        <a-select v-model:value="formData.permission">
-          <a-select-option v-for="(item, key, i) in PERMISSION_MAP" :key="i" :value="Number(key)">
-            {{ item }}
-          </a-select-option>
-        </a-select>
-      </a-form-item>
-
-      <a-form-item required name="userName" :label="t('TXT_CODE_eb9fcdad')">
-        <a-typography-paragraph>
-          <a-typography-text type="secondary">
-            {{ t("TXT_CODE_1987587b") }}
-          </a-typography-text>
-        </a-typography-paragraph>
-        <a-input v-model:value="formData.userName" :placeholder="t('TXT_CODE_4ea93630')" />
-      </a-form-item>
-
-      <a-form-item :required="isAddMode" name="passWord" :label="t('TXT_CODE_551b0348')">
-        <a-typography-paragraph>
-          <a-typography-text type="secondary">
-            {{ !isAddMode ? t("TXT_CODE_af1f921d") : t("TXT_CODE_1f2062c7") }}
-          </a-typography-text>
-        </a-typography-paragraph>
-        <a-input v-model:value="formData.passWord" :placeholder="t('TXT_CODE_4ea93630')" />
-      </a-form-item>
-
-      <a-form-item v-if="!isAddMode" label="APIKEY">
-        <a-typography-paragraph v-if="!formData.apiKey">
+      <VForm ref="formRef" @submit.prevent="submitUser"
+        ><VSelect
+          v-model="formData.permission"
+          :items="permissionItems"
+          :label="t('TXT_CODE_511aea70')"
+          :hint="t('TXT_CODE_21b8b71a')"
+          persistent-hint
+          :rules="[requiredRule]"
+          class="mb-4"
+        /><VTextField
+          v-model="formData.userName"
+          :label="t('TXT_CODE_eb9fcdad')"
+          :hint="t('TXT_CODE_1987587b')"
+          persistent-hint
+          :placeholder="t('TXT_CODE_4ea93630')"
+          :rules="[requiredRule, userNameRule]"
+          class="mb-4"
+        /><VTextField
+          v-model="formData.passWord"
+          type="password"
+          :label="t('TXT_CODE_551b0348')"
+          :hint="isAddMode ? t('TXT_CODE_1f2062c7') : t('TXT_CODE_af1f921d')"
+          persistent-hint
+          :placeholder="t('TXT_CODE_4ea93630')"
+          :rules="[passwordRule]"
+          class="mb-4"
+        /><VTextField
+          v-if="!isAddMode && formData.apiKey"
+          v-model="formData.apiKey"
+          label="APIKEY"
+          readonly
+          class="mb-4"
+        />
+        <div v-else-if="!isAddMode" class="text-medium-emphasis mb-4">
           {{ t("TXT_CODE_6c274bdc") }}
-        </a-typography-paragraph>
-        <a-input v-else v-model:value="formData.apiKey" :readonly="true" />
-      </a-form-item>
-
-      <a-form-item v-if="isAddMode" required :label="t('TXT_CODE_ef0ce2e')">
-        <a-typography-paragraph>
-          <a-typography-text type="secondary">
-            {{ t("TXT_CODE_9e9d3767") }}
-            <br />
-            <a href="https://docs.mcsmanager.com/" target="_blank">
-              {{ t("TXT_CODE_b01f8383") }}
-            </a>
-          </a-typography-text>
-        </a-typography-paragraph>
-      </a-form-item>
-    </a-form>
-  </a-modal>
-
-  <div style="height: 100%" class="container">
-    <a-row :gutter="[24, 24]" style="height: 100%">
-      <a-col :span="24">
-        <BetweenMenus>
-          <template v-if="!isPhone" #left>
-            <a-typography-title class="mb-0" :level="4">
-              <UserOutlined />
-              {{ card.title }} ({{ total }})
-            </a-typography-title>
-          </template>
-          <template #right>
-            <a-button type="default" :loading="getUserInfoLoading" @click="reload">
-              {{ t("TXT_CODE_b76d94e0") }}
-            </a-button>
-            <a-dropdown>
-              <template #overlay>
-                <a-menu>
-                  <a-menu-item key="1" @click="handleAddUser">
-                    {{ t("TXT_CODE_e83ffa03") }}
-                  </a-menu-item>
-                  <a-menu-item key="2" @click="handleBatchDelete()">
-                    {{ t("TXT_CODE_ecbd7449") }}
-                  </a-menu-item>
-                </a-menu>
-              </template>
-              <a-button type="primary">
-                {{ t("TXT_CODE_f7084f84") }}
-                <DownOutlined />
-              </a-button>
-            </a-dropdown>
-          </template>
-          <template #center>
-            <div class="search-input">
-              <a-input-group compact>
-                <a-select v-model:value="currentRole" style="width: 100px" @change="search()">
-                  <a-select-option value="">
-                    {{ t("TXT_CODE_c48f6f64") }}
-                  </a-select-option>
-                  <a-select-option v-for="(p, i) in PERMISSION_MAP" :key="i" :value="i">
-                    {{ p }}
-                  </a-select-option>
-                </a-select>
-                <a-input
-                  v-model:value.trim.lazy="operationForm.name"
-                  :placeholder="t('TXT_CODE_2471b9c')"
-                  allow-clear
-                  style="width: calc(100% - 100px)"
-                  @change="search()"
-                >
-                  <template #suffix>
-                    <search-outlined />
-                  </template>
-                </a-input>
-              </a-input-group>
-            </div>
-          </template>
-        </BetweenMenus>
-      </a-col>
-      <a-col :span="24">
-        <CardPanel style="height: 100%">
-          <template #body>
-            <a-spin :spinning="data && data.pageSize == 0">
-              <a-table
-                :row-selection="{
-                  selectedRowKeys: selectedUsers,
-                  onChange: (selectedRowKeys: Key[]) => {
-                    selectedUsers = selectedRowKeys as string[];
-                  }
-                }"
-                :data-source="dataSource"
-                :columns="columns"
-                :preserve-selected-row-keys="true"
-                :row-key="(record: BaseUserInfo) => record.uuid"
-                :pagination="{
-                  current: operationForm.currentPage,
-                  pageSize: operationForm.pageSize,
-                  hideOnSinglePage: false,
-                  total: total,
-                  showSizeChanger: true
-                }"
-                @change="
-                  handleTableChange({
-                    current: $event.current || 0,
-                    pageSize: $event.pageSize || 0
-                  })
-                "
-              >
-                <template #bodyCell="{ column, record }: AntTableCell">
-                  <template v-if="column.key === 'ssoBound'">
-                    <a-tag v-if="record.ssoBound" color="green">
-                      {{ t("TXT_CODE_SSO_BOUND_YES") }}
-                    </a-tag>
-                    <a-tag v-else>
-                      {{ t("TXT_CODE_SSO_BOUND_NO") }}
-                    </a-tag>
-                  </template>
-                  <template v-if="column.key === 'action'">
-                    <a-dropdown>
-                      <template #overlay>
-                        <a-menu>
-                          <a-menu-item key="1" @click="handleEditUser(record)">
-                            {{ t("TXT_CODE_236f70aa") }}
-                          </a-menu-item>
-                          <a-menu-item key="2" @click="handleToUserResources(record)">
-                            {{ t("TXT_CODE_4d934e3a") }}
-                          </a-menu-item>
-                          <a-menu-item
-                            v-if="ssoEnabled && record.ssoBound"
-                            key="sso_unbind"
-                            @click="showSsoUnbindConfirm(record)"
-                          >
-                            {{ t("TXT_CODE_SSO_UNBIND") }}
-                          </a-menu-item>
-                          <a-menu-item key="3" @click="showDeleteConfirm(record)">
-                            {{ t("TXT_CODE_ecbd7449") }}
-                          </a-menu-item>
-                        </a-menu>
-                      </template>
-                      <a-button size="large">
-                        {{ t("TXT_CODE_fe731dfc") }}
-                        <DownOutlined />
-                      </a-button>
-                    </a-dropdown>
-                  </template>
-                </template>
-              </a-table>
-            </a-spin>
-          </template>
-        </CardPanel>
-      </a-col>
-    </a-row>
-  </div>
+        </div>
+        <div v-if="isAddMode" class="text-medium-emphasis">
+          {{ t("TXT_CODE_9e9d3767") }}<br /><a
+            href="https://docs.mcsmanager.com/"
+            target="_blank"
+            >{{ t("TXT_CODE_b01f8383") }}</a
+          >
+        </div></VForm
+      >
+    </AppDialog>
+    <AppDialog
+      v-model:open="confirmDialog.open"
+      :title="confirmDialog.title"
+      compact
+      ok-color="error"
+      :ok-text="t('TXT_CODE_ecbd7449')"
+      @ok="confirmAction"
+      ><div>{{ confirmDialog.text }}</div></AppDialog
+    >
+  </main>
 </template>
 
 <style lang="scss" scoped>
-.search-input {
-  transition: all 0.4s;
-  text-align: center;
-  width: 80%;
-
-  &:hover {
-    width: 100%;
+.user-page {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+.user-page-container {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: 20px 24px 32px;
+}
+.user-search-row {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+}
+.role-select {
+  flex: 0 0 120px;
+}
+.user-table-card {
+  overflow: hidden;
+}
+.user-table {
+  width: 100%;
+}
+@media (max-width: 992px) {
+  .user-page-container {
+    padding: 16px 12px 28px;
   }
-
-  @media (max-width: 992px) {
-    width: 100% !important;
+  .user-search-row {
+    flex-direction: column;
+  }
+  .role-select {
+    flex-basis: auto;
   }
 }
 </style>

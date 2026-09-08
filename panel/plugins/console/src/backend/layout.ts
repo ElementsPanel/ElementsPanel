@@ -270,28 +270,6 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
       ]
     },
     {
-      page: "/users",
-      items: [
-        {
-          id: getRandomId(),
-          meta: {},
-          type: "UserList",
-          title: translate("TXT_CODE_97d17cce"),
-          width: 12,
-          height: LayoutCardHeight.AUTO,
-          disableDelete: true
-        },
-        {
-          id: getRandomId(),
-          meta: {},
-          type: "EmptyCard",
-          title: "",
-          width: 12,
-          height: LayoutCardHeight.MINI
-        }
-      ]
-    },
-    {
       page: "/users/resources",
       items: [
         {

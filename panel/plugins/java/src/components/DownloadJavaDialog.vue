@@ -1,140 +1,100 @@
 <script setup lang="ts">
+import AppDialog from "@/components/AppDialog.vue";
 import JavaIcon from "../assets/java.png";
 import { t } from "@/lang/i18n";
 import type { DownloadJavaConfigItem } from "../types";
-import { Flex } from "ant-design-vue";
 import { computed, ref } from "vue";
+import { VCard, VChip, VCol, VImg, VRow } from "vuetify/lib/components/index.mjs";
 
-// Keep these callbacks local instead of importing MountComponent from the core
-// alias: the SFC compiler cannot resolve that alias from a plugin directory.
 interface Props {
   destroyComponent(delay?: number): void;
   emitResult(data?: DownloadJavaConfigItem): void;
 }
-
 const props = defineProps<Props>();
-
 const open = ref(true);
 const selectedIndex = ref<number | null>(null);
-
-// 合并后的单一数据源
-const JAVA_OPTIONS: DownloadJavaConfigItem[] = [
-  { name: "zulu", version: "8" },
-  { name: "zulu", version: "11" },
-  { name: "zulu", version: "15" },
-  { name: "zulu", version: "17" },
-  { name: "zulu", version: "21" },
-  { name: "zulu", version: "25" }
-];
-
-const selectedItem = computed(() => {
-  if (selectedIndex.value === null) return null;
-  return JAVA_OPTIONS[selectedIndex.value];
-});
-
-const handleSelect = (index: number) => {
-  selectedIndex.value = index;
-};
-
-const cancel = async () => {
+const JAVA_OPTIONS: DownloadJavaConfigItem[] = [8, 11, 15, 17, 21, 25].map((version) => ({
+  name: "zulu",
+  version: String(version)
+}));
+const selectedItem = computed(() =>
+  selectedIndex.value === null ? null : JAVA_OPTIONS[selectedIndex.value]
+);
+const cancel = () => {
   open.value = false;
-  if (props.destroyComponent) props.destroyComponent();
+  props.destroyComponent?.();
 };
-
-const submit = async () => {
-  if (selectedItem.value) {
-    props.emitResult(selectedItem.value);
-  }
-  await cancel();
+const submit = () => {
+  if (selectedItem.value) props.emitResult(selectedItem.value);
+  cancel();
 };
 </script>
 
 <template>
-  <a-modal
+  <AppDialog
     v-model:open="open"
-    width="820px"
-    centered
     :title="t('TXT_CODE_84588601')"
+    :max-width="820"
     :closable="false"
-    :destroy-on-close="true"
-    @cancel="cancel"
+    :ok-button-props="{ disabled: selectedIndex === null }"
     @ok="submit"
+    @cancel="cancel"
   >
-    <flex wrap="wrap" gap="middle" justify="flex-start">
-      <a-card
+    <VRow dense>
+      <VCol
         v-for="(item, index) in JAVA_OPTIONS"
         :key="`${item.name}-${item.version}`"
-        hoverable
-        :class="['java-card', { 'java-card-selected': selectedIndex === index }]"
-        @click="handleSelect(index)"
+        cols="6"
+        sm="4"
+        md="3"
       >
-        <template #cover>
-          <div justify="center" align="center" align-items="center" class="java-card-cover">
-            <a-image
-              :src="JavaIcon"
-              :preview="false"
-              :height="62"
-              style="object-fit: cover; border-radius: 0px"
-            />
+        <VCard
+          class="java-card"
+          :class="{ 'java-card-selected': selectedIndex === index }"
+          rounded="xl"
+          flat
+          @click="selectedIndex = index"
+        >
+          <div class="java-card-cover"><VImg :src="JavaIcon" width="62" height="62" contain /></div>
+          <div class="java-card-body">
+            <div class="font-weight-medium">Java {{ item.version }}</div>
+            <VChip size="small" color="primary" variant="tonal">{{
+              item.name.toUpperCase()
+            }}</VChip>
           </div>
-        </template>
-        <a-card-meta>
-          <template #title>
-            <a-typography-text strong> Java {{ item.version.toUpperCase() }}</a-typography-text>
-          </template>
-          <template #description>
-            <a-tag color="blue">{{ item.name.toUpperCase() }}</a-tag>
-          </template>
-        </a-card-meta>
-      </a-card>
-    </flex>
-
-    <template #footer>
-      <a-button @click="cancel">{{ t("TXT_CODE_a0451c97") }}</a-button>
-      <a-button type="primary" :disabled="selectedIndex === null" @click="submit">
-        {{ t("TXT_CODE_d507abff") }}
-      </a-button>
-    </template>
-  </a-modal>
+        </VCard>
+      </VCol>
+    </VRow>
+  </AppDialog>
 </template>
 
 <style scoped>
 .java-card {
-  width: 140px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  border-radius: 12px;
   border: 1px solid var(--color-gray-5);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
   overflow: hidden;
 }
-
-.java-card:hover {
-  border-color: #1890ff;
-}
-
+.java-card:hover,
 .java-card-selected {
-  border-color: #1890ff;
-  background: linear-gradient(135deg, var(--color-gray-1) 0%, var(--color-gray-2) 100%);
+  border-color: rgb(var(--v-theme-primary));
 }
-
+.java-card-selected {
+  background: rgba(var(--v-theme-primary), 0.08);
+}
 .java-card-cover {
-  padding: 8px;
   display: flex;
   justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, var(--color-gray-3) 0%, var(--color-gray-5) 100%);
-}
-
-.java-card :deep(.ant-card-body) {
   padding: 12px;
-  text-align: center;
+  background: rgba(var(--v-theme-on-surface), 0.04);
 }
-
-.java-card :deep(.ant-card-meta-title) {
-  margin-bottom: 4px !important;
-}
-
-.java-card :deep(.ant-card-meta-description) {
-  margin-top: 4px;
+.java-card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px 14px;
 }
 </style>

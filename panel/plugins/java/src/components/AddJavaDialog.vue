@@ -1,57 +1,48 @@
 <script setup lang="ts">
+import AppDialog from "@/components/AppDialog.vue";
 import { t } from "@/lang/i18n";
 import type { AddJavaConfigItem } from "../types";
 import { ref } from "vue";
+import { VForm, VTextField } from "vuetify/lib/components/index.mjs";
 
-// Keep these callbacks local instead of importing MountComponent from the core
-// alias: the SFC compiler cannot resolve that alias from a plugin directory.
 interface Props {
   destroyComponent(delay?: number): void;
   emitResult(data?: AddJavaConfigItem): void;
 }
-
 const props = defineProps<Props>();
-const dataSource = ref<AddJavaConfigItem>({
-  name: "",
-  path: ""
-});
-
 const open = ref(true);
-
-const cancel = async () => {
+const form = ref<AddJavaConfigItem>({ name: "", path: "" });
+const cancel = () => {
   open.value = false;
-  if (props.destroyComponent) props.destroyComponent();
+  props.destroyComponent?.();
 };
-
-const submit = async () => {
-  props.emitResult(dataSource.value);
-  await cancel();
+const submit = () => {
+  props.emitResult(form.value);
+  cancel();
 };
 </script>
 
 <template>
-  <a-modal
+  <AppDialog
     v-model:open="open"
-    width="400px"
-    centered
     :title="t('TXT_CODE_8900e7ee')"
+    compact
     :closable="false"
-    :destroy-on-close="true"
-    @cancel="cancel"
     @ok="submit"
+    @cancel="cancel"
   >
-    <a-form layout="vertical">
-      <a-form-item :label="t('TXT_CODE_3f36206f')">
-        <a-input v-model:value="dataSource.name" :placeholder="t('TXT_CODE_4ea93630')" />
-      </a-form-item>
-      <a-form-item :label="t('TXT_CODE_43422ed3')">
-        <a-input v-model:value="dataSource.path" :placeholder="t('TXT_CODE_4ea93630')" />
-      </a-form-item>
-    </a-form>
-
-    <template #footer>
-      <a-button @click="cancel">{{ t("TXT_CODE_a0451c97") }}</a-button>
-      <a-button type="primary" @click="submit">{{ t("TXT_CODE_d507abff") }}</a-button>
-    </template>
-  </a-modal>
+    <VForm @submit.prevent="submit">
+      <VTextField
+        v-model="form.name"
+        :label="t('TXT_CODE_3f36206f')"
+        :placeholder="t('TXT_CODE_4ea93630')"
+        class="mb-4"
+      />
+      <VTextField
+        v-model="form.path"
+        :label="t('TXT_CODE_43422ed3')"
+        :placeholder="t('TXT_CODE_4ea93630')"
+      />
+    </VForm>
+  </AppDialog>
 </template>
