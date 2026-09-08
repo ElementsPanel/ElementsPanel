@@ -12,7 +12,7 @@ import type { QuickStartPackages, QuickStartTemplate } from "@/types";
 import InstanceDetail from "@instance/widgets/instance/dialogs/InstanceDetail.vue";
 import axios from "axios";
 import { onMounted, ref } from "vue";
-import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VChip, VCol, VIcon, VProgressCircular, VRow, VSelect } from "vuetify/lib/components/index.mjs";
+import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VChip, VCol, VContainer, VIcon, VProgressCircular, VRow, VSelect } from "vuetify/lib/components/index.mjs";
 import { message } from "ant-design-vue";
 import { updateMarketSettings } from "../api";
 import { useMarketPackages } from "../hooks/useMarketPackages";
@@ -107,7 +107,8 @@ onMounted(() => { if (isNewTemplate) packages.value = []; else fetchTemplate(); 
 
 <template>
   <main class="market-editor">
-    <PageToolbar :title="t('TXT_CODE_54275b9c')" icon="mdi-pencil-outline">
+    <VContainer fluid class="market-editor-container">
+      <PageToolbar :title="t('TXT_CODE_54275b9c')" icon="mdi-pencil-outline">
       <template #actions>
         <div class="toolbar-group toolbar-group-all">
           <VBtn :loading="upLoading || saveSetLoading" variant="tonal" @click="uploadToPanel"><VIcon start icon="mdi-content-save" />{{ t("TXT_CODE_592eff33") }}</VBtn>
@@ -129,25 +130,25 @@ onMounted(() => { if (isNewTemplate) packages.value = []; else fetchTemplate(); 
           <VBtn color="success" @click="editorRef?.openDialog({ i: -1 })"><VIcon start icon="mdi-plus" />{{ t("TXT_CODE_3d45d8d") }}</VBtn>
         </div>
       </template>
-    </PageToolbar>
-    <p class="text-medium-emphasis">{{ t("TXT_CODE_372e7b9c") }}</p>
+      </PageToolbar>
+      <p class="text-medium-emphasis">{{ t("TXT_CODE_372e7b9c") }}</p>
 
-    <div class="section-title mt-8"><VIcon icon="mdi-database" />{{ t("TXT_CODE_88249aee") }}</div>
-    <p class="text-medium-emphasis">{{ t("TXT_CODE_c9ce7427") }}</p>
-    <div class="market-filters">
+      <div class="section-title mt-8"><VIcon icon="mdi-database" />{{ t("TXT_CODE_88249aee") }}</div>
+      <p class="text-medium-emphasis">{{ t("TXT_CODE_c9ce7427") }}</p>
+      <div class="market-filters">
       <VSelect v-model="searchForm.language" :items="appLangList" item-title="label" item-value="value" :placeholder="t('TXT_CODE_8a30e150')" variant="solo-filled" hide-details @update:model-value="handleLanguageChange" />
       <VSelect v-model="searchForm.gameType" :items="appGameTypeList" item-title="label" item-value="value" :placeholder="t('TXT_CODE_107695d')" variant="solo-filled" hide-details @update:model-value="handleGameTypeChange" />
       <VSelect v-model="searchForm.platform" :items="appPlatformList" item-title="label" item-value="value" :placeholder="t('TXT_CODE_47203b64')" variant="solo-filled" hide-details @update:model-value="handlePlatformChange" />
       <VSelect v-model="searchForm.category" :items="appCategoryList" item-title="label" item-value="value" :placeholder="t('TXT_CODE_ebbb2def')" variant="solo-filled" hide-details />
       <VBtn variant="tonal" @click="handleReset">{{ t("TXT_CODE_880fedf7") }}</VBtn>
-    </div>
+      </div>
 
-    <div v-if="appListLoading" class="market-loading"><VProgressCircular indeterminate color="primary" /><span>{{ t("TXT_CODE_7fca723a") }}</span></div>
-    <div v-else-if="!appList.length" class="market-empty">
-      <span>{{ t("TXT_CODE_7356e569") }}</span>
-      <VBtn v-if="!packages.length" variant="tonal" @click="fileInput?.click()"><VIcon start icon="mdi-file-upload" />{{ t("TXT_CODE_8e16ee21") }}</VBtn>
-    </div>
-    <VRow v-else>
+      <div v-if="appListLoading" class="market-loading"><VProgressCircular indeterminate color="primary" /><span>{{ t("TXT_CODE_7fca723a") }}</span></div>
+      <div v-else-if="!appList.length" class="market-empty">
+        <span>{{ t("TXT_CODE_7356e569") }}</span>
+        <VBtn v-if="!packages.length" variant="tonal" @click="fileInput?.click()"><VIcon start icon="mdi-file-upload" />{{ t("TXT_CODE_8e16ee21") }}</VBtn>
+      </div>
+      <VRow v-else>
       <FadeUpAnimation class="market-card-grid">
         <VCol v-for="item in appList" :key="item.key" :data-index="item.key" cols="12" sm="6" :lg="item.isSummary ? 4 : 3">
           <VCard rounded="xl" elevation="0" class="market-card" :class="{ selected: multipleMode && findItem(item) }" @click="item.isSummary ? handleSelectTopCategory(item) : undefined">
@@ -163,16 +164,18 @@ onMounted(() => { if (isNewTemplate) packages.value = []; else fetchTemplate(); 
           </VCard>
         </VCol>
       </FadeUpAnimation>
-    </VRow>
+      </VRow>
 
-    <InstanceDetail ref="editorRef" :game-type-list="appGameTypeList" :platform-list="appPlatformList" :category-list="appCategoryList" @save-template="saveTemplate" />
-    <AppDialog v-model:open="confirmClearOpen" :title="t('TXT_CODE_617ce69c')" compact ok-color="error" @ok="clearPackages"><div>{{ t("TXT_CODE_276756b2") }}</div></AppDialog>
-    <AppDialog v-model:open="confirmUploadOpen" :title="t('TXT_CODE_617ce69c')" compact @ok="confirmUploadOpen = false; performUpload()"><div>{{ t("TXT_CODE_f88db280") }}</div></AppDialog>
+      <InstanceDetail ref="editorRef" :game-type-list="appGameTypeList" :platform-list="appPlatformList" :category-list="appCategoryList" @save-template="saveTemplate" />
+      <AppDialog v-model:open="confirmClearOpen" :title="t('TXT_CODE_617ce69c')" compact ok-color="error" @ok="clearPackages"><div>{{ t("TXT_CODE_276756b2") }}</div></AppDialog>
+      <AppDialog v-model:open="confirmUploadOpen" :title="t('TXT_CODE_617ce69c')" compact @ok="confirmUploadOpen = false; performUpload()"><div>{{ t("TXT_CODE_f88db280") }}</div></AppDialog>
+    </VContainer>
   </main>
 </template>
 
 <style scoped>
-.market-editor { width:100%; min-width:0; }
+.market-editor { width:100%; min-width:0; min-height:100%; overflow-x:hidden; }
+.market-editor-container { width:100%; min-width:0; max-width:var(--app-max-width); margin:0 auto; box-sizing:border-box; padding:20px 24px 32px; }
 .toolbar-group { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .toolbar-group-all { width:100%; justify-content:flex-end; }
 .market-filters { display:grid; grid-template-columns:repeat(4,minmax(160px,1fr)) auto; gap:10px; align-items:center; margin:16px 0; }
@@ -186,4 +189,5 @@ onMounted(() => { if (isNewTemplate) packages.value = []; else fetchTemplate(); 
 .package-tags { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:8px; }
 @media (max-width:900px) { .market-filters { grid-template-columns:1fr 1fr; } }
 @media (max-width:600px) { .market-filters { grid-template-columns:1fr; } }
+@media (max-width:992px) { .market-editor-container { padding:16px 12px 28px; } }
 </style>
