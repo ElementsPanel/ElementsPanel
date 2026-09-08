@@ -89,7 +89,7 @@ const selectImage = (image: unknown) => {
 
 <template>
   <template v-if="imageSelectMethod === 'SELECT'">
-    <VSelect :model-value="modelValue" :items="dockerImages" item-title="label" item-value="value" :placeholder="t('TXT_CODE_3bb646e4')" :loading="loading" variant="solo-filled" hide-details @focus="loadImages" @update:model-value="(v) => { emit('update:modelValue', v); selectImage(v); }" />
+    <VSelect :model-value="modelValue" :items="dockerImages" item-title="label" item-value="value" :placeholder="t('TXT_CODE_3bb646e4')" :loading="loading" hide-details @focus="loadImages" @update:model-value="(v) => { emit('update:modelValue', v); selectImage(v); }" />
   </template>
 
   <template v-else>

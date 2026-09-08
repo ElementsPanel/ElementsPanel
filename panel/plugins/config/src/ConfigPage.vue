@@ -346,8 +346,6 @@ const confirmDisable = () => {
         :items="nodeItems"
         :loading="loading"
         :placeholder="t('TXT_CODE_PLUGIN_NODE_SELECT')"
-        variant="solo-filled"
-        density="compact"
         hide-details
       />
 
@@ -530,23 +528,8 @@ const confirmDisable = () => {
   flex: 0 0 calc(100% - 20px);
   width: calc(100% - 20px);
   max-width: calc(100% - 20px);
-  height: 34px;
-  max-height: 34px;
   margin: 0 10px 2px;
   box-sizing: border-box;
-  --v-input-control-height: 34px;
-  --v-input-padding-top: 0px;
-}
-
-.plugin-config-node-select :deep(.v-field) {
-  height: 34px;
-  min-height: 34px;
-}
-
-.plugin-config-node-select :deep(.v-field__input) {
-  height: 34px;
-  min-height: 34px;
-  padding: 0 12px;
 }
 
 .plugin-config-heading {

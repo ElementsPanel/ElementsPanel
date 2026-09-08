@@ -41,6 +41,6 @@ defineExpose({
       { title: t('TXT_CODE_91bb6101'), value: 'utf-8' },
       { title: t('TXT_CODE_4d6b06f0'), value: 'gbk' },
       { title: t('TXT_CODE_c4dfdb26'), value: 'big5' }
-    ]" :placeholder="t('TXT_CODE_3bb646e4')" variant="solo-filled" hide-details />
+    ]" :placeholder="t('TXT_CODE_3bb646e4')" hide-details />
   </AppDialog>
 </template>

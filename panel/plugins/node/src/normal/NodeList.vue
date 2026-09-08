@@ -60,7 +60,6 @@ const handleOpenDetailDialog = async () => {
                 { title: t('TXT_CODE_66ce073e'), value: false }
               ]"
               class="status-select"
-              density="comfortable"
               hide-details
             />
             <VTextField
@@ -111,9 +110,7 @@ const handleOpenDetailDialog = async () => {
                 v-model="operationForm.pageSize"
                 :items="[8, 16, 24, 48]"
                 class="page-size-select"
-                density="compact"
                 hide-details
-                variant="solo-filled"
               />
             </div>
           </div>

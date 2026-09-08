@@ -171,8 +171,6 @@ const open = (field: SettingField) => {
           :items="allYesNo"
           item-title="label"
           item-value="value"
-          variant="solo-filled"
-          density="comfortable"
           hide-details
           @update:model-value="set(field, $event)"
         />
@@ -183,8 +181,6 @@ const open = (field: SettingField) => {
           :items="field.options || []"
           item-title="label"
           item-value="value"
-          variant="solo-filled"
-          density="comfortable"
           hide-details
           @update:model-value="set(field, $event)"
         />

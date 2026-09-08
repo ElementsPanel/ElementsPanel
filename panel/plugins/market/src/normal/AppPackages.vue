@@ -42,7 +42,7 @@ defineExpose({ appList, fetchTemplate, handleSelectTopCategory });
     </VCol>
     <VCol cols="12">
       <div class="detail-search-bar">
-        <VSelect v-model="searchForm.platform" :items="platformOptions" item-title="label" item-value="value" :placeholder="t('TXT_CODE_47203b64')" class="detail-search-platform" variant="solo-filled" hide-details />
+        <VSelect v-model="searchForm.platform" :items="platformOptions" item-title="label" item-value="value" :placeholder="t('TXT_CODE_47203b64')" class="detail-search-platform" hide-details />
         <VTextField v-model="searchForm.keyword" :placeholder="t('TXT_CODE_ce132192')" class="detail-search-keyword" variant="solo-filled" hide-details />
         <VBtn v-if="detailList.length > 0" variant="tonal" @click="handleBackToCategory"><VIcon start icon="mdi-arrow-left" />{{ t("TXT_CODE_c14b2ea3") }}</VBtn>
       </div>

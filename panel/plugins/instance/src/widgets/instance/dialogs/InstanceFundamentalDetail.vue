@@ -53,7 +53,7 @@ defineExpose({ openDialog });
         <VCol cols="12" lg="6"><VTextField v-model="options.config.nickname" :label="t('TXT_CODE_f70badb9')" disabled variant="solo-filled" hide-details /></VCol>
         <VCol cols="12" lg="6"><VTextField :model-value="INSTANCE_TYPE_TRANSLATION[options.config.type]" :label="t('TXT_CODE_2f291d8b')" disabled variant="solo-filled" hide-details /></VCol>
         <VCol cols="12" lg="6"><VTextField :model-value="options.dayjsEndTime ? dayjs(options.dayjsEndTime).format('YYYY-MM-DD HH:mm:ss') : ''" :label="t('TXT_CODE_fa920c0')" disabled variant="solo-filled" hide-details /></VCol>
-        <VCol cols="12" lg="6"><VSelect v-model="options.config.fileCode" :items="TERMINAL_CODE" :label="t('TXT_CODE_f041de90')" variant="solo-filled" hide-details /></VCol>
+        <VCol cols="12" lg="6"><VSelect v-model="options.config.fileCode" :items="TERMINAL_CODE" :label="t('TXT_CODE_f041de90')" hide-details /></VCol>
         <VCol cols="12"><VTextarea v-model="options.config.startCommand" :label="t('TXT_CODE_d12fa808')" :placeholder="isDockerMode ? t('TXT_CODE_98e7c829') : t('TXT_CODE_f50cfe2')" :disabled="!isDockerMode" rows="5" variant="solo-filled" hide-details /></VCol>
         <VCol cols="12" lg="9"><VTextField v-model="options.config.updateCommand" :label="t('TXT_CODE_bb0b9711')" :hint="updateCommandDesc" persistent-hint :placeholder="UPDATE_CMD_TEMPLATE" :disabled="!isDockerMode" variant="solo-filled" hide-details="auto" /></VCol>
         <VCol cols="12" lg="3" class="d-flex align-center"><VBtn variant="tonal" @click="handleEditDockerEnv">{{ t('TXT_CODE_ad207008') }}</VBtn></VCol>

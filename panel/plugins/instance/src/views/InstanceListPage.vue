@@ -329,7 +329,7 @@ onMounted(async () => {
             <VSelect v-model="operationForm.status" :items="[
               { title: t('TXT_CODE_c48f6f64'), value: '' },
               ...Object.entries(INSTANCE_STATUS).map(([value, title]) => ({ title, value }))
-            ]" hide-details density="comfortable" @update:model-value="handleQueryInstance" />
+            ]" hide-details @update:model-value="handleQueryInstance" />
             <VTextField v-model="operationForm.instanceName" :placeholder="t('TXT_CODE_ce132192')"
               prepend-inner-icon="mdi-magnify" hide-details density="comfortable" @keyup.enter="handleQueryInstance"
               @update:model-value="handleQueryInstance" />
@@ -407,7 +407,7 @@ onMounted(async () => {
           <VPagination v-if="instances" v-model="operationForm.currentPage" :length="instances.maxPage || 1"
             total-visible="6" density="comfortable" @update:model-value="() => initInstancesData()" />
           <VSelect v-if="instances" v-model="operationForm.pageSize" :items="[10, 20, 50, 100]" hide-details
-            density="compact" class="page-size-select" @update:model-value="() => initInstancesData(true)" />
+            class="page-size-select" @update:model-value="() => initInstancesData(true)" />
         </VCol>
       </VRow>
 

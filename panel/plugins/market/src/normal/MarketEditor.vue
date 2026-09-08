@@ -136,10 +136,10 @@ onMounted(() => { if (isNewTemplate) packages.value = []; else fetchTemplate(); 
       <div class="section-title mt-8"><VIcon icon="mdi-database" />{{ t("TXT_CODE_88249aee") }}</div>
       <p class="text-medium-emphasis">{{ t("TXT_CODE_c9ce7427") }}</p>
       <div class="market-filters">
-      <VSelect v-model="searchForm.language" :items="appLangList" item-title="label" item-value="value" :placeholder="t('TXT_CODE_8a30e150')" variant="solo-filled" hide-details @update:model-value="handleLanguageChange" />
-      <VSelect v-model="searchForm.gameType" :items="appGameTypeList" item-title="label" item-value="value" :placeholder="t('TXT_CODE_107695d')" variant="solo-filled" hide-details @update:model-value="handleGameTypeChange" />
-      <VSelect v-model="searchForm.platform" :items="appPlatformList" item-title="label" item-value="value" :placeholder="t('TXT_CODE_47203b64')" variant="solo-filled" hide-details @update:model-value="handlePlatformChange" />
-      <VSelect v-model="searchForm.category" :items="appCategoryList" item-title="label" item-value="value" :placeholder="t('TXT_CODE_ebbb2def')" variant="solo-filled" hide-details />
+      <VSelect v-model="searchForm.language" :items="appLangList" item-title="label" item-value="value" :placeholder="t('TXT_CODE_8a30e150')" hide-details @update:model-value="handleLanguageChange" />
+      <VSelect v-model="searchForm.gameType" :items="appGameTypeList" item-title="label" item-value="value" :placeholder="t('TXT_CODE_107695d')" hide-details @update:model-value="handleGameTypeChange" />
+      <VSelect v-model="searchForm.platform" :items="appPlatformList" item-title="label" item-value="value" :placeholder="t('TXT_CODE_47203b64')" hide-details @update:model-value="handlePlatformChange" />
+      <VSelect v-model="searchForm.category" :items="appCategoryList" item-title="label" item-value="value" :placeholder="t('TXT_CODE_ebbb2def')" hide-details />
       <VBtn variant="tonal" @click="handleReset">{{ t("TXT_CODE_880fedf7") }}</VBtn>
       </div>
 

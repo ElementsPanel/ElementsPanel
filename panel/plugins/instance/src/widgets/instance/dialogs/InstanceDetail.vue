@@ -355,26 +355,26 @@ defineExpose({ openDialog });
               <VTextField v-model="formData.template.title" :label="t('TXT_CODE_f4fba0cd')" variant="solo-filled" />
               <VTextarea v-model="formData.template.description" :label="t('TXT_CODE_59cdbec3')" variant="solo-filled" rows="2" />
               <VRow>
-                <VCol cols="12" sm="6"><VSelect v-model="formData.template.language" :items="languageOptions" item-title="label" item-value="value" :label="t('TXT_CODE_2a34c50a')" variant="solo-filled" /></VCol>
+                <VCol cols="12" sm="6"><VSelect v-model="formData.template.language" :items="languageOptions" item-title="label" item-value="value" :label="t('TXT_CODE_2a34c50a')" /></VCol>
                 <VCol cols="12" sm="6"><VTextField v-model="formData.template.author" :label="t('TXT_CODE_3d56da34')" variant="solo-filled" /></VCol>
               </VRow>
             </VCol>
-            <VCol cols="12" sm="6" lg="3"><VSelect v-if="formData.template.setupInfo" v-model="formData.template.setupInfo.type" :items="Object.entries(INSTANCE_TYPE_TRANSLATION).map(([value, title]) => ({ value, title }))" :label="t('TXT_CODE_c5ace40b')" variant="solo-filled" /></VCol>
-            <VCol cols="12" sm="6" lg="3"><VCombobox v-model="formData.template.gameType" :items="selectOptions.appGameTypeList?.filter((item) => item.value !== SEARCH_ALL_KEY)" item-title="label" item-value="value" :label="t('TXT_CODE_ebfb4831')" variant="solo-filled" /></VCol>
-            <VCol cols="12" sm="6" lg="3"><VCombobox v-model="formData.template.platform" :items="selectOptions.appPlatformList?.filter((item) => item.value !== SEARCH_ALL_KEY)" item-title="label" item-value="value" :label="t('TXT_CODE_1ce1d1d1')" variant="solo-filled" /></VCol>
-            <VCol cols="12" sm="6" lg="3"><VCombobox v-model="formData.template.category" :items="selectOptions.appCategoryList?.filter((item) => item.value !== SEARCH_ALL_KEY)" item-title="label" item-value="value" :label="t('TXT_CODE_2d8a400')" variant="solo-filled" /></VCol>
+            <VCol cols="12" sm="6" lg="3"><VSelect v-if="formData.template.setupInfo" v-model="formData.template.setupInfo.type" :items="Object.entries(INSTANCE_TYPE_TRANSLATION).map(([value, title]) => ({ value, title }))" :label="t('TXT_CODE_c5ace40b')" /></VCol>
+            <VCol cols="12" sm="6" lg="3"><VCombobox v-model="formData.template.gameType" :items="selectOptions.appGameTypeList?.filter((item) => item.value !== SEARCH_ALL_KEY)" item-title="label" item-value="value" :label="t('TXT_CODE_ebfb4831')" /></VCol>
+            <VCol cols="12" sm="6" lg="3"><VCombobox v-model="formData.template.platform" :items="selectOptions.appPlatformList?.filter((item) => item.value !== SEARCH_ALL_KEY)" item-title="label" item-value="value" :label="t('TXT_CODE_1ce1d1d1')" /></VCol>
+            <VCol cols="12" sm="6" lg="3"><VCombobox v-model="formData.template.category" :items="selectOptions.appCategoryList?.filter((item) => item.value !== SEARCH_ALL_KEY)" item-title="label" item-value="value" :label="t('TXT_CODE_2d8a400')" /></VCol>
             <VCol cols="12" sm="4"><VTextField v-model="formData.template.runtime" :label="t('TXT_CODE_80c85070')" variant="solo-filled" /></VCol>
             <VCol cols="12" sm="4"><VTextField v-model="formData.template.hardware" :label="t('TXT_CODE_683e3033')" variant="solo-filled" /></VCol>
             <VCol cols="12" sm="4"><VTextField v-model="formData.template.size" :label="t('TXT_CODE_8dbcf565')" variant="solo-filled" /></VCol>
             <VCol cols="12"><VTextField v-model="formData.template.targetLink" :label="t('TXT_CODE_13eac7e1')" variant="solo-filled" /></VCol>
-            <VCol cols="12"><VCombobox v-model="formData.template.tags" :label="t('TXT_CODE_9901af98')" :placeholder="t('TXT_CODE_7d839745')" multiple chips closable-chips variant="solo-filled" /></VCol>
+            <VCol cols="12"><VCombobox v-model="formData.template.tags" :label="t('TXT_CODE_9901af98')" :placeholder="t('TXT_CODE_7d839745')" multiple chips closable-chips /></VCol>
           </VRow>
         </VTabsWindowItem>
 
         <VTabsWindowItem :value="TabSettings.Basic">
           <VRow>
             <VCol v-if="!isTemplateMode" cols="12" lg="4"><VTextField v-model="formData.instance.config.nickname" :label="t('TXT_CODE_f70badb9')" :disabled="isGlobalTerminal" variant="solo-filled" /></VCol>
-            <VCol v-if="!isTemplateMode" cols="12" lg="4"><VSelect v-model="formData.instance.config.type" :items="Object.entries(INSTANCE_TYPE_TRANSLATION).map(([value, title]) => ({ value, title }))" :label="t('TXT_CODE_2f291d8b')" :disabled="isGlobalTerminal" variant="solo-filled" /></VCol>
+            <VCol v-if="!isTemplateMode" cols="12" lg="4"><VSelect v-model="formData.instance.config.type" :items="Object.entries(INSTANCE_TYPE_TRANSLATION).map(([value, title]) => ({ value, title }))" :label="t('TXT_CODE_2f291d8b')" :disabled="isGlobalTerminal" /></VCol>
             <VCol v-if="!isTemplateMode" cols="12" lg="4"><VTextField v-model="endTimeText" :label="t('TXT_CODE_fa920c0')" placeholder="YYYY-MM-DD HH:mm:ss" :disabled="isGlobalTerminal" variant="solo-filled" /></VCol>
             <VCol cols="12"><VTextarea v-model="formData.instance.config.startCommand" :label="t('TXT_CODE_d12fa808')" :placeholder="isDockerMode ? t('TXT_CODE_98e7c829') : t('TXT_CODE_f50cfe2')" rows="4" variant="solo-filled" /></VCol>
             <VCol cols="12"><VTextField v-model="formData.instance.config.stopCommand" :label="t('TXT_CODE_11cfe3a1')" :placeholder="t('TXT_CODE_83053cd5')" variant="solo-filled" /></VCol>
@@ -393,7 +393,7 @@ defineExpose({ openDialog });
                 { key: 'label', label: 'TXT_CODE_g1c43s2h' }, { key: 'capability', label: 'TXT_CODE_bbbd4133' }, { key: 'device', label: 'TXT_CODE_b3a60c78' }
               ]" :key="item.key" cols="12" sm="6" lg="4"><VBtn variant="tonal" block @click="handleEditDockerConfig(item.key as any)">{{ t(item.label) }}: {{ t('TXT_CODE_ad207008') }}</VBtn></VCol>
               <VCol v-if="!isTemplateMode" cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.basePort" type="number" min="0" max="65535" :label="t('TXT_CODE_15f5fb07')" variant="solo-filled" /></VCol>
-              <VCol cols="12" sm="6" lg="4"><VSelect v-model="formData.instance.config.docker.networkMode" :items="networkModes" item-title="Name" item-value="Name" :label="t('TXT_CODE_efcef926')" variant="solo-filled" @focus="loadNetworkModes" /></VCol>
+              <VCol cols="12" sm="6" lg="4"><VSelect v-model="formData.instance.config.docker.networkMode" :items="networkModes" item-title="Name" item-value="Name" :label="t('TXT_CODE_efcef926')" @focus="loadNetworkModes" /></VCol>
               <VCol cols="12" sm="6" lg="4"><VTextField v-model="formData.instance.networkAliasesText" :label="t('TXT_CODE_10194e6a')" variant="solo-filled" /></VCol>
               <VCol cols="12" sm="6" lg="4"><VTextField v-model="formData.instance.config.docker.containerName" :label="t('TXT_CODE_c3a3b6b1')" variant="solo-filled" /></VCol>
               <VCol cols="12" sm="6" lg="4"><VSwitch v-model="formData.instance.config.docker.privileged" :label="t('TXT_CODE_dc47d2aa')" color="primary" /></VCol>
@@ -406,7 +406,7 @@ defineExpose({ openDialog });
             <VCol v-if="!isTemplateMode" cols="12"><VTextField v-model="formData.instance.config.cwd" :label="t('TXT_CODE_ee67e1a3')" variant="solo-filled" /></VCol>
             <VCol cols="12"><VTextField v-model="formData.instance.config.updateCommand" :label="t('TXT_CODE_bb0b9711')" :placeholder="UPDATE_CMD_TEMPLATE" :hint="UPDATE_CMD_DESCRIPTION" persistent-hint :disabled="isGlobalTerminal" variant="solo-filled" /></VCol>
             <VCol cols="12" lg="6"><DockerImageSelect :is-allow-empty="true" :is-allow-text="t('TXT_CODE_8aca7994')" :model-value="formData.instance.config?.docker?.updateCommandImage ?? ''" :image-select-method="formData.instance.imageSelectMethod ?? 'SELECT'" :daemon-id="daemonId ?? ''" @update:model-value="setUpdateDockerImage" @update:image-select-method="(v) => (formData.instance.imageSelectMethod = v)" /></VCol>
-            <VCol cols="12" lg="3"><VSelect v-model="formData.instance.config.fileCode" :items="TERMINAL_CODE" :label="t('TXT_CODE_f041de90')" variant="solo-filled" /></VCol>
+            <VCol cols="12" lg="3"><VSelect v-model="formData.instance.config.fileCode" :items="TERMINAL_CODE" :label="t('TXT_CODE_f041de90')" /></VCol>
             <VCol cols="12" lg="3"><VTextField v-model="formData.instance.config.runAs" :label="t('TXT_CODE_fffaeb17')" :disabled="isGlobalTerminal" variant="solo-filled" /></VCol>
           </VRow>
         </VTabsWindowItem>

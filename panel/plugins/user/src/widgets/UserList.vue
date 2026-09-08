@@ -11,6 +11,8 @@ import {
   VDataTableServer,
   VForm,
   VMenu,
+  VList,
+  VListItem,
   VSelect,
   VTextField
 } from "vuetify/lib/components/index.mjs";
@@ -245,7 +247,6 @@ onMounted(async () => {
             <VSelect
               v-model="currentRole"
               :items="roleItems"
-              density="comfortable"
               hide-details
               class="role-select"
               @update:model-value="search"
@@ -269,27 +270,24 @@ onMounted(async () => {
             @click="reload"
             >{{ t("TXT_CODE_b76d94e0") }}</VBtn
           >
-          <VMenu>
+          <VMenu location="bottom end">
             <template #activator="{ props: menuProps }"
               ><VBtn v-bind="menuProps" color="primary" append-icon="mdi-chevron-down">{{
                 t("TXT_CODE_f7084f84")
               }}</VBtn></template
             >
-            <VCard rounded="xl" class="pa-2"
-              ><VBtn
-                block
-                variant="text"
+            <VList>
+              <VListItem
+                :title="t('TXT_CODE_e83ffa03')"
                 prepend-icon="mdi-account-plus-outline"
                 @click="handleAddUser"
-                >{{ t("TXT_CODE_e83ffa03") }}</VBtn
-              ><VBtn
-                block
-                variant="text"
+              />
+              <VListItem
+                :title="t('TXT_CODE_ecbd7449')"
                 prepend-icon="mdi-delete-outline"
                 @click="handleBatchDelete"
-                >{{ t("TXT_CODE_ecbd7449") }}</VBtn
-              ></VCard
-            >
+              />
+            </VList>
           </VMenu>
         </template>
       </PageToolbar>
@@ -322,7 +320,7 @@ onMounted(async () => {
             ></template
           >
           <template #item.actions="{ item }"
-            ><VMenu
+            ><VMenu location="bottom end"
               ><template #activator="{ props: menuProps }"
                 ><VBtn
                   v-bind="menuProps"
@@ -331,37 +329,22 @@ onMounted(async () => {
                   append-icon="mdi-chevron-down"
                   >{{ t("TXT_CODE_fe731dfc") }}</VBtn
                 ></template
-              ><VCard rounded="xl" class="pa-2"
-                ><VBtn
-                  block
-                  variant="text"
+              ><VList
+                ><VListItem
+                  :title="t('TXT_CODE_236f70aa')"
                   prepend-icon="mdi-pencil-outline"
-                  @click="handleEditUser(rawUser(item))"
-                  >{{ t("TXT_CODE_236f70aa") }}</VBtn
-                ><VBtn
-                  block
-                  variant="text"
+                  @click="handleEditUser(rawUser(item))" /><VListItem
+                  :title="t('TXT_CODE_4d934e3a')"
                   prepend-icon="mdi-shield-account-outline"
-                  @click="handleToUserResources(rawUser(item))"
-                  >{{ t("TXT_CODE_4d934e3a") }}</VBtn
-                ><VBtn
+                  @click="handleToUserResources(rawUser(item))" /><VListItem
                   v-if="ssoEnabled && rawUser(item).ssoBound"
-                  block
-                  variant="text"
+                  :title="t('TXT_CODE_SSO_UNBIND')"
                   prepend-icon="mdi-link-off"
-                  @click="openSsoConfirm(rawUser(item))"
-                  >{{ t("TXT_CODE_SSO_UNBIND") }}</VBtn
-                ><VBtn
-                  block
-                  variant="text"
-                  color="error"
+                  @click="openSsoConfirm(rawUser(item))" /><VListItem
+                  :title="t('TXT_CODE_ecbd7449')"
                   prepend-icon="mdi-delete-outline"
-                  @click="openDeleteConfirm(rawUser(item))"
-                  >{{ t("TXT_CODE_ecbd7449") }}</VBtn
-                ></VCard
-              ></VMenu
-            ></template
-          >
+                  @click="openDeleteConfirm(rawUser(item))" /></VList></VMenu
+          ></template>
         </VDataTableServer>
       </VCard>
     </div>
