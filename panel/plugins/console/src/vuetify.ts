@@ -12,7 +12,8 @@ import type { App } from "vue";
 export const vuetify = createVuetify({
   defaults: {
     VDialog: {
-      scrim: "rgba(0, 0, 0, 0.48)"
+      scrim: "rgba(0, 0, 0, 0.48)",
+      scrollable: true
     },
     VCard: {
       rounded: "xl"

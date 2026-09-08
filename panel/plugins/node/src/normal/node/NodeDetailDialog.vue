@@ -105,7 +105,7 @@ defineExpose({ openDialog });
 </script>
 
 <template>
-  <VDialog v-model="dialog.status" class="app-dialog node-detail-dialog" max-width="900px" scrollable>
+  <VDialog v-model="dialog.status" class="app-dialog node-detail-dialog" max-width="900px">
     <VCard rounded="xl">
       <VCardTitle class="node-dialog-title">{{ dialog.title }}</VCardTitle>
       <VCardText class="node-dialog-content">

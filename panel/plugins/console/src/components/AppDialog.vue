@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { t } from "@/lang/i18n";
+import { computed, getCurrentInstance, ref, useAttrs, useSlots, watch } from "vue";
 import {
   VBtn,
   VCard,
@@ -7,8 +9,6 @@ import {
   VCardTitle,
   VDialog
 } from "vuetify/lib/components/index.mjs";
-import { t } from "@/lang/i18n";
-import { computed, getCurrentInstance, ref, useAttrs, useSlots, watch } from "vue";
 
 defineOptions({ inheritAttrs: false });
 
@@ -152,24 +152,10 @@ const afterLeave = () => {
 </script>
 
 <template>
-  <VDialog
-    v-model="isOpen"
-    class="app-dialog"
-    :class="[attrs.class, props.wrapClassName]"
-    :style="dialogStyle"
-    :width="dialogWidth"
-    :max-width="dialogMaxWidth"
-    :persistent="props.maskClosable === false"
-    :close-on-back="props.keyboard !== false"
-    scrollable
-    @after-leave="afterLeave"
-  >
-    <VCard
-      v-if="renderCard"
-      class="app-dialog-card"
-      rounded="xl"
-      :style="{ width: dialogWidth }"
-    >
+  <VDialog v-model="isOpen" class="app-dialog" :class="[attrs.class, props.wrapClassName]" :style="dialogStyle"
+    :width="dialogWidth" :max-width="dialogMaxWidth" :persistent="props.maskClosable === false"
+    :close-on-back="props.keyboard !== false" @after-leave="afterLeave">
+    <VCard v-if="renderCard" class="app-dialog-card" rounded="xl" :style="{ width: dialogWidth }">
       <VCardTitle v-if="showTitle" class="app-dialog-title">
         <slot name="title">{{ props.title }}</slot>
       </VCardTitle>
