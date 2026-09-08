@@ -13,18 +13,15 @@ import {
   VToolbar,
   VTooltip
 } from "vuetify/lib/components/index.mjs";
+import { computed } from "vue";
 import { useRoute } from "vue-router";
-
-defineProps<{
-  /** One-shot entrance animation after a successful login */
-  loginEnter?: boolean;
-}>();
 
 const route = useRoute();
 const { containerState } = useLayoutContainerStore();
-const { logoImage } = useAppConfigStore();
+const { isSidebarOpen, logoImage, toggleSidebar, useSidebarLayout } = useAppConfigStore();
 
-const { menus, headerMenus, appMenus, headerAppMenus, handleToPage } = useHeaderMenus();
+const { menus, appMenus, handleToPage } = useHeaderMenus();
+const desktopAppMenus = computed(() => appMenus.value.filter((item) => !item.onlyHeader));
 
 const getMdiIcon = (explicitIcon?: string) => {
   return explicitIcon || "mdi-help-circle-outline";
@@ -54,37 +51,34 @@ const openPhoneMenu = (b = false) => {
     v-if="!isPhone"
     tag="header"
     class="app-header-wrapper"
-    :class="{ 'login-enter-header': loginEnter }"
     color="transparent"
     flat
     elevation="0"
     height="64"
   >
     <div class="app-header-content">
-      <nav class="btns">
-        <a href="." class="logo-link" aria-label="ElementsPanel">
-          <div class="logo">
-            <img :src="logoImage" alt="ElementsPanel" />
-          </div>
-        </a>
-
-        <div
-          v-for="item in headerMenus"
-          :key="item.path"
-          class="nav-item"
+      <div
+        class="header-leading"
+        :class="{ 'header-leading--sidebar-open': isSidebarOpen }"
+      >
+        <VBtn
+          v-if="useSidebarLayout"
+          class="sidebar-toggle-button"
+          icon
+          variant="text"
+          aria-label="MENU"
+          aria-controls="app-sidebar"
+          :aria-expanded="isSidebarOpen"
+          @click="toggleSidebar"
         >
-          <VBtn
-            variant="text"
-            class="nav-button"
-            :class="[item.customClass, { 'nav-button-active': isRouteActive(item.path) }]"
-            @click="handleToPage(item.path)"
-          >
-            {{ item.name }}
-          </VBtn>
-        </div>
-      </nav>
-      <div class="btns">
-        <div v-for="(item, index) in headerAppMenus as any" :key="index">
+          <VIcon :icon="isSidebarOpen ? 'mdi-menu-open' : 'mdi-menu'" />
+        </VBtn>
+        <a href="." class="header-logo" aria-label="ElementsPanel">
+          <img :src="logoImage" alt="ElementsPanel" />
+        </a>
+      </div>
+      <div class="btns header-actions">
+        <div v-for="(item, index) in desktopAppMenus as any" :key="index">
           <VMenu v-if="item.menus && item.conditions" location="bottom" :offset="6">
             <template #activator="{ props: menuProps }">
               <VBtn
@@ -135,7 +129,6 @@ const openPhoneMenu = (b = false) => {
     v-if="isPhone"
     tag="header"
     class="app-header-content-for-phone"
-    :class="{ 'login-enter-header': loginEnter }"
     color="transparent"
     flat
     elevation="0"
@@ -152,6 +145,9 @@ const openPhoneMenu = (b = false) => {
         >
           <span class="mdi mdi-menu" aria-hidden="true"></span>
         </VBtn>
+        <a href="." class="phone-logo" aria-label="ElementsPanel">
+          <img :src="logoImage" alt="ElementsPanel" />
+        </a>
         <div v-for="(item, index) in appMenus" :key="index">
           <VMenu
             v-if="item.menus && item.conditions && !item.onlyPC"
@@ -259,9 +255,10 @@ const openPhoneMenu = (b = false) => {
 .app-header-content-for-phone {
   height: 60px;
   width: 100%;
-  background-color: var(--app-header-bg);
+  background-color: var(--app-header-bg) !important;
   color: var(--app-header-text-color);
   box-shadow: none;
+  backdrop-filter: saturate(180%) blur(20px);
 }
 
 .phone-toolbar-content {
@@ -303,16 +300,17 @@ const openPhoneMenu = (b = false) => {
   position: relative;
   z-index: 20;
   display: flex;
+  flex: 0 0 64px;
   width: 100%;
   height: 64px;
   min-height: 64px;
   align-items: center;
   justify-content: center;
-  background-color: var(--app-header-bg);
+  background-color: var(--app-header-bg) !important;
   color: var(--app-header-text-color);
   border-radius: 0;
   box-shadow: none;
-  backdrop-filter: none;
+  backdrop-filter: saturate(180%) blur(20px);
 }
 
 .app-header-wrapper :deep(.v-toolbar__content),
@@ -325,12 +323,9 @@ const openPhoneMenu = (b = false) => {
   display: flex;
   width: 100%;
   height: 64px;
-  max-width: var(--app-max-width);
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
-  margin: 0 auto;
-  padding: 0 24px;
 
   .btns {
     display: flex;
@@ -339,15 +334,59 @@ const openPhoneMenu = (b = false) => {
   }
 }
 
-.logo-link {
+.header-leading {
   display: flex;
+  flex: 0 0 200px;
+  width: 200px;
+  height: 64px;
   align-items: center;
-  margin-right: 12px;
+  box-sizing: border-box;
+  padding-left: 12px;
+  transition:
+    width 0.2s ease,
+    flex-basis 0.2s ease;
 }
 
-.nav-item {
+.header-leading--sidebar-open {
+  flex-basis: 240px;
+  width: 240px;
+}
+
+.sidebar-toggle-button {
+  flex: 0 0 auto;
+  margin-right: 8px;
+  color: var(--app-header-text-color) !important;
+}
+
+.header-logo {
   display: flex;
+  min-width: 0;
+  height: 64px;
   align-items: center;
+  justify-content: flex-start;
+
+  img {
+    max-width: 130px;
+    height: 20px;
+  }
+}
+
+.header-actions {
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  padding: 0 24px;
+}
+
+.phone-logo {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  margin-left: 4px;
+
+  img {
+    max-width: 120px;
+    height: 18px;
+  }
 }
 
 .nav-button {
@@ -379,32 +418,20 @@ const openPhoneMenu = (b = false) => {
   background-color: rgba(215, 215, 215, 0.261);
 }
 
-.nav-button-active {
-  background-color: rgba(215, 215, 215, 0.35);
-}
-
-.logo {
-  cursor: pointer;
-
-  img {
-    height: 18px;
-  }
-}
-
 .pro-mode-order-container {
   @extend .nav-button;
   @extend .nav-button-success;
 }
 
 @media (max-width: 1470px) {
-  .app-header-content {
+  .header-actions {
     padding-right: 25px;
     padding-left: 25px;
   }
 }
 
 @media (max-width: 992px) {
-  .app-header-content {
+  .header-actions {
     padding-right: 8px;
     padding-left: 8px;
   }

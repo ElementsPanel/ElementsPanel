@@ -11,7 +11,6 @@ const DEFAULT_PAGE_TITLE = "ElementsPanel";
 const SETTINGS_PAGE = "__settings__";
 
 type AppearanceValues = {
-  sidebarPosition?: unknown;
   pageTitle?: unknown;
   logoImage?: unknown;
   backgroundImage?: unknown;
@@ -35,7 +34,6 @@ function settingsPage(layout: IPageLayoutConfig[]) {
 function readAppearance(getLayout: () => string) {
   const theme = settingsPage(readLayout(getLayout)).theme;
   return {
-    sidebarPosition: theme?.sidebarPosition === "right" ? "right" : "left",
     pageTitle: theme?.pageTitle || DEFAULT_PAGE_TITLE,
     logoImage: theme?.logoImage || "",
     backgroundImage: theme?.backgroundImage || ""
@@ -59,17 +57,12 @@ function writeAppearance(
   // null as missing writes the old image straight back into the layout.
   const valueOrCurrent = (value: unknown, currentValue: unknown) =>
     value === undefined ? currentValue : value;
-  const sidebarPosition = String(
-    valueOrCurrent(values.sidebarPosition, current.sidebarPosition ?? "left")
-  );
   page.theme = {
-    ...current,
     pageTitle: String(
       valueOrCurrent(values.pageTitle, current.pageTitle ?? DEFAULT_PAGE_TITLE)
     ).trim() || DEFAULT_PAGE_TITLE,
     logoImage: String(valueOrCurrent(values.logoImage, current.logoImage) ?? ""),
-    backgroundImage: String(valueOrCurrent(values.backgroundImage, current.backgroundImage) ?? ""),
-    sidebarPosition: sidebarPosition === "right" ? "right" : "left"
+    backgroundImage: String(valueOrCurrent(values.backgroundImage, current.backgroundImage) ?? "")
   };
   setLayout(layout);
 }
@@ -104,22 +97,6 @@ export function apply(ctx: PanelPluginContext) {
 
   ctx.inject(["settingsForm"], (settingsCtx) => settingsCtx.settingsForm.declare({
     fields: () => [
-      {
-        key: "sidebarPosition",
-        type: "select",
-        title: $t("TXT_CODE_SETTINGS_LAYOUT_SIDEBAR_POSITION_TITLE"),
-        description: $t("TXT_CODE_SETTINGS_LAYOUT_SIDEBAR_POSITION_DESCRIPTION"),
-        options: [
-          {
-            value: "left",
-            label: $t("TXT_CODE_SETTINGS_LAYOUT_SIDEBAR_POSITION_LEFT")
-          },
-          {
-            value: "right",
-            label: $t("TXT_CODE_SETTINGS_LAYOUT_SIDEBAR_POSITION_RIGHT")
-          }
-        ]
-      },
       {
         key: "pageTitle",
         type: "string",

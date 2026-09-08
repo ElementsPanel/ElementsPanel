@@ -84,8 +84,7 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
       theme: {
         pageTitle: "ElementsPanel",
         logoImage: "",
-        backgroundImage: "",
-        sidebarPosition: "right"
+        backgroundImage: ""
       }
     },
     {

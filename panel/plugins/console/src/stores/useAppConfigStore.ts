@@ -64,15 +64,16 @@ export const useAppConfigStore = createGlobalState(() => {
 
   const hasBgImage = ref(false);
 
-  /** Main app nav layout: "left" = sidebar, "right" = top header only. Filled by initAppTheme(). */
-  const sidebarPosition = ref<"left" | "right">("left");
-
-  /** Whether to show the left sidebar; when false, only top header (AppHeader) is used. */
-  const breakpoints = useBreakpoints({ sidebar: 1400 });
+  /** Desktop uses the sidebar/header layout; phones keep the compact navigation. */
+  const breakpoints = useBreakpoints({ sidebar: 993 });
   const isWideEnoughForSidebar = breakpoints.greaterOrEqual("sidebar");
-  const useSidebarLayout = computed(
-    () => sidebarPosition.value === "left" && isWideEnoughForSidebar.value
-  );
+  const useSidebarLayout = computed(() => isWideEnoughForSidebar.value);
+  const sidebarOpen = useLocalStorage("app-sidebar-open", true);
+  const isSidebarOpen = computed(() => useSidebarLayout.value && sidebarOpen.value);
+
+  const toggleSidebar = () => {
+    sidebarOpen.value = !sidebarOpen.value;
+  };
 
   const clearBackgroundImage = () => {
     const body = document.querySelector("body");
@@ -140,8 +141,6 @@ export const useAppConfigStore = createGlobalState(() => {
 
     const frontendSettings = await getSettingsConfig();
     setBackgroundImage(frontendSettings?.theme?.backgroundImage || "");
-    const pos = frontendSettings?.theme?.sidebarPosition;
-    sidebarPosition.value = pos === "left" || pos === "right" ? pos : "left";
   };
 
   const setTheme = (t: AppTheme) => {
@@ -184,8 +183,9 @@ export const useAppConfigStore = createGlobalState(() => {
     appConfig,
     logoImage,
     hasBgImage,
-    sidebarPosition,
     useSidebarLayout,
+    isSidebarOpen,
+    toggleSidebar,
     setLogoImage,
     changeLanguage,
     getCurrentLanguage,

@@ -3,7 +3,7 @@ import { useScreen } from "@/hooks/useScreen";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 
 import { Button, Input, Select, Table } from "ant-design-vue";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, watch } from "vue";
 import { RouterView, useRoute } from "vue-router";
 import AppBottomNav from "./components/AppBottomNav.vue";
 import AppConfigProvider from "./components/AppConfigProvider.vue";
@@ -18,7 +18,13 @@ import { closeAppLoading, setLoadingTitle } from "@/tools/dom";
 import { VThemeProvider } from "vuetify/lib/components/index.mjs";
 import { setVuetifyTheme } from "./vuetify";
 
-const { hasBgImage, initAppTheme, isDarkTheme, useSidebarLayout } = useAppConfigStore();
+const {
+  hasBgImage,
+  initAppTheme,
+  isDarkTheme,
+  isSidebarOpen,
+  useSidebarLayout
+} = useAppConfigStore();
 const { containerState } = useLayoutContainerStore();
 const { state: appState } = useAppStateStore();
 const { isPhone } = useScreen();
@@ -52,23 +58,6 @@ watch(
   { immediate: true }
 );
 
-// One-shot entrance animation right after a successful login (route leaves
-// `/login`). Header slides down, content fades in.
-const justLoggedIn = ref(false);
-let loginAnimTimer: ReturnType<typeof setTimeout> | undefined;
-watch(
-  () => route.path,
-  (to, from) => {
-    clearTimeout(loginAnimTimer);
-    if (from === "/login" && to !== "/login") {
-      justLoggedIn.value = true;
-      loginAnimTimer = setTimeout(() => (justLoggedIn.value = false), 1500);
-    } else {
-      justLoggedIn.value = false;
-    }
-  }
-);
-
 onMounted(async () => {
   setLoadingTitle("Loading application settings...");
   await initAppTheme();
@@ -80,22 +69,38 @@ onMounted(async () => {
   <VThemeProvider :theme="vuetifyTheme">
     <AppConfigProvider :has-bg-image="hasBgImage">
       <div class="global-app-container">
-        <AppSidebarMenu v-if="useSidebarLayout && !isLoginPage && !isImmersivePage" :style="designModeNavStyle" />
-        <main class="main-content" :class="{ 'app-layout-sidebar-only': useSidebarLayout && !isImmersivePage }">
-          <AppHeader
-            v-if="!useSidebarLayout && !isLoginPage && !isImmersivePage"
-            :style="designModeNavStyle"
-            :login-enter="justLoggedIn"
-          />
-          <div class="app-main-body" :class="{ 'login-enter-content': justLoggedIn }">
-            <Breadcrumbs v-if="!isLoginPage && !isImmersivePage" />
-            <RouterView v-slot="{ Component, route }">
-              <transition name="page-fade" mode="out-in">
-                <component :is="Component" :key="route.fullPath" />
-              </transition>
-            </RouterView>
+        <AppHeader v-if="!isLoginPage && !isImmersivePage" :style="designModeNavStyle" />
+        <div
+          class="app-shell-content"
+          :class="{
+            'app-shell-content--sidebar': useSidebarLayout && !isLoginPage && !isImmersivePage
+          }"
+        >
+          <div
+            v-if="useSidebarLayout && !isLoginPage && !isImmersivePage"
+            id="app-sidebar"
+            class="app-sidebar-shell"
+            :class="{ 'app-sidebar-shell--collapsed': !isSidebarOpen }"
+            :aria-hidden="!isSidebarOpen"
+          >
+            <AppSidebarMenu :style="designModeNavStyle" />
           </div>
-        </main>
+          <main
+            class="main-content"
+            :class="{
+              'app-layout-sidebar-only': useSidebarLayout && !isLoginPage && !isImmersivePage
+            }"
+          >
+            <div class="app-main-body">
+              <Breadcrumbs v-if="!isLoginPage && !isImmersivePage" />
+              <RouterView v-slot="{ Component, route }">
+                <transition name="page-fade" mode="out-in">
+                  <component :is="Component" :key="route.fullPath" />
+                </transition>
+              </RouterView>
+            </div>
+          </main>
+        </div>
       </div>
 
       <AppBottomNav v-if="isPhone && !useSidebarLayout && !isLoginPage && !isImmersivePage" />
@@ -116,42 +121,4 @@ onMounted(async () => {
   opacity: 0;
 }
 
-@keyframes login-header-slide-in {
-  from {
-    transform: translateY(calc(-100% - 12px));
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes login-content-fade-in {
-  from {
-    transform: translateY(12px);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.login-enter-header {
-  animation: login-header-slide-in 0.4s cubic-bezier(0.25, 0.1, 0.25, 1) 0.3s both;
-}
-
-.login-enter-content {
-  animation: login-content-fade-in 0.4s cubic-bezier(0.25, 0.1, 0.25, 1) 0.8s both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .login-enter-header,
-  .login-enter-content {
-    animation: none;
-  }
-}
 </style>

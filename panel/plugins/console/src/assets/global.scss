@@ -98,13 +98,57 @@ html {
 }
 
 .global-app-container {
+  display: flex;
+  flex-direction: column;
   max-width: var(--app-max-width);
   height: 100svh;
   margin: auto;
 
   &:has(.app-layout-sidebar-only) {
-    display: flex;
     max-width: 100%;
+  }
+}
+
+.app-shell-content {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.app-shell-content--sidebar {
+  display: flex;
+  min-width: 0;
+}
+
+.app-sidebar-shell {
+  flex: 0 0 240px;
+  width: 240px;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  visibility: visible;
+  transition:
+    width 0.2s ease,
+    flex-basis 0.2s ease,
+    visibility 0s linear 0s;
+
+  > .left-sidebar {
+    transform: translateX(0);
+    transition: transform 0.2s ease;
+  }
+}
+
+.app-sidebar-shell--collapsed {
+  flex-basis: 0;
+  width: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    width 0.2s ease,
+    flex-basis 0.2s ease,
+    visibility 0s linear 0.2s;
+
+  > .left-sidebar {
+    transform: translateX(-100%);
   }
 }
 
@@ -150,6 +194,10 @@ html {
 @media (max-width: 1400px) {
   .global-app-container {
     margin: 0 24px;
+  }
+
+  .global-app-container:has(.app-layout-sidebar-only) {
+    margin: 0;
   }
 }
 

@@ -1,22 +1,17 @@
 <script setup lang="ts">
 import {
   useHeaderMenus,
-  type SidebarAppDropdownEntry,
-  type SidebarEntry
+  type SidebarRouteEntry
 } from "@/hooks/useHeaderMenus";
-import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useRoute } from "vue-router";
 import {
-  VDivider,
   VList,
   VListItem,
-  VMenu,
   VSheet
 } from "vuetify/lib/components/index.mjs";
 
 const route = useRoute();
 const { sidebarItems, handleToPage } = useHeaderMenus();
-const { logoImage } = useAppConfigStore();
 
 const isRouteActive = (path: string): boolean => {
   if (route.path === path) return true;
@@ -88,49 +83,25 @@ const getMdiIcon = (icon: unknown, fallback?: string): string => {
   return (iconName && mdiIconMap[iconName]) || fallback || "mdi-menu";
 };
 
-const getRouteIcon = (entry: Extract<SidebarEntry, { type: "route" }>): string =>
+const getRouteIcon = (entry: SidebarRouteEntry): string =>
   routePathIcons[entry.path] || getMdiIcon(entry.icon);
-
-const getItemKey = (entry: SidebarEntry, index: number): string => {
-  if (entry.type === "divider") return "sidebar-divider";
-  if (entry.type === "route") return entry.path;
-  return `app-${index}-${entry.title}`;
-};
-
-const onAppDropdownClick = (item: SidebarAppDropdownEntry, key: string | number) => {
-  item.click(String(key));
-};
 </script>
 
 <template>
   <VSheet tag="aside" class="left-sidebar" elevation="0" rounded="0">
-    <a href="." class="logo" aria-label="ElementsPanel">
-      <img :src="logoImage" alt="ElementsPanel" />
-    </a>
-
     <VList class="sidebar-menu" density="comfortable" nav>
-      <template v-for="(entry, index) in sidebarItems" :key="getItemKey(entry, index)">
-        <VDivider v-if="entry.type === 'divider'" class="sidebar-divider" />
-
-        <VListItem v-else-if="entry.type === 'route'" class="sidebar-item" :class="entry.customClass"
-          :active="isRouteActive(entry.path)" active-color="primary" rounded="xl" :title="String(entry.name ?? '')"
-          :prepend-icon="getRouteIcon(entry)" @click="handleToPage(entry.path)" />
-
-        <VMenu v-else-if="entry.type === 'app-dropdown'" location="end" :offset="8">
-          <template #activator="{ props: menuProps }">
-            <VListItem v-bind="menuProps" class="sidebar-item" :class="entry.customClass" rounded="xl"
-              :title="entry.title" :prepend-icon="entry.mdiIcon || getMdiIcon(entry.icon)"
-              append-icon="mdi-chevron-right" />
-          </template>
-          <VList class="sidebar-submenu" density="comfortable" nav>
-            <VListItem v-for="menuItem in entry.menus" :key="String(menuItem.value)" rounded="xl"
-              :title="menuItem.title" @click="onAppDropdownClick(entry, menuItem.value)" />
-          </VList>
-        </VMenu>
-
-        <VListItem v-else-if="entry.type === 'app'" class="sidebar-item" :class="entry.customClass" rounded="xl"
-          :title="entry.title" :prepend-icon="entry.mdiIcon || getMdiIcon(entry.icon)" @click="entry.click()" />
-      </template>
+      <VListItem
+        v-for="entry in sidebarItems"
+        :key="entry.path"
+        class="sidebar-item"
+        :class="entry.customClass"
+        :active="isRouteActive(entry.path)"
+        active-color="primary"
+        rounded="xl"
+        :title="String(entry.name ?? '')"
+        :prepend-icon="getRouteIcon(entry)"
+        @click="handleToPage(entry.path)"
+      />
     </VList>
   </VSheet>
 </template>
@@ -142,31 +113,23 @@ const onAppDropdownClick = (item: SidebarAppDropdownEntry, key: string | number)
   flex-direction: column;
   width: 240px;
   min-width: 240px;
+  height: 100%;
+  box-sizing: border-box;
   text-align: left;
   background-color: var(--app-header-bg);
   color: var(--app-header-text-color);
   backdrop-filter: saturate(180%) blur(20px);
-  padding: 20px 0;
-}
-
-.logo {
-  display: block;
-  padding-top: 10px;
-  padding-bottom: 18px;
-  text-align: center;
-
-  img {
-    height: 20px;
-  }
+  padding: 0 0 20px;
 }
 
 .sidebar-menu {
   flex: 1;
+  min-height: 0;
   width: calc(100%);
   max-width: none !important;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 8px 20px;
+  padding: 12px 20px 8px;
   box-sizing: border-box;
   color: var(--app-header-text-color);
   background: transparent;
@@ -208,16 +171,4 @@ const onAppDropdownClick = (item: SidebarAppDropdownEntry, key: string | number)
   color: inherit;
 }
 
-.sidebar-divider {
-  margin: 12px 0;
-  opacity: 0.18;
-}
-
-.sidebar-submenu {
-  min-width: 180px;
-  padding: 8px;
-  border-radius: 16px;
-  background: var(--app-header-bg);
-  color: var(--app-header-text-color);
-}
 </style>

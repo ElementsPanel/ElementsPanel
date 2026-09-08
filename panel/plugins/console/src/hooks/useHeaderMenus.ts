@@ -24,9 +24,6 @@ import { message, Modal, notification } from "ant-design-vue";
 import type { Component } from "vue";
 import { computed } from "vue";
 
-/** Sidebar item: divider */
-export type SidebarDividerEntry = { type: "divider" };
-
 /** Sidebar item: route link */
 export type SidebarRouteEntry = {
   type: "route";
@@ -35,35 +32,6 @@ export type SidebarRouteEntry = {
   icon?: Component | string;
   customClass?: string[];
 };
-
-/** Sidebar item: app menu (no submenu) */
-export type SidebarAppEntry = {
-  type: "app";
-  title: string;
-  icon?: Component;
-  mdiIcon?: string;
-  customClass?: string[];
-  click: () => void;
-};
-
-/** Sidebar item: app menu with dropdown */
-export type SidebarAppDropdownEntry = {
-  type: "app-dropdown";
-  title: string;
-  icon?: Component;
-  mdiIcon?: string;
-  customClass?: string[];
-  menus: { value: string | number; title: string }[];
-  // Param name for type semantics only; overlay passes key
-  // eslint-disable-next-line no-unused-vars -- type param name
-  click: (menuKey: string) => void;
-};
-
-export type SidebarEntry =
-  | SidebarDividerEntry
-  | SidebarRouteEntry
-  | SidebarAppEntry
-  | SidebarAppDropdownEntry;
 
 const mdiIconMap: Record<string, string> = {
   AppstoreAddOutlined: "mdi-view-grid-plus",
@@ -140,18 +108,6 @@ export function useHeaderMenus() {
         meta: r.meta,
         customClass: r.meta.customClass ?? []
       }));
-  });
-
-  const headerMenus = computed(() => {
-    const coreMenus = menus.value.filter((menu) => !ctx.routes.isPluginRoute(menu.path));
-    const pluginMenus = menus.value.filter((menu) => ctx.routes.isPluginRoute(menu.path));
-    const settingsIndex = coreMenus.findIndex((menu) => menu.path === "/settings");
-    if (settingsIndex < 0) return [...coreMenus, ...pluginMenus];
-    return [
-      ...coreMenus.slice(0, settingsIndex + 1),
-      ...pluginMenus,
-      ...coreMenus.slice(settingsIndex + 1)
-    ];
   });
 
   const appMenuGroups = computed(() => {
@@ -333,52 +289,16 @@ export function useHeaderMenus() {
     return [...coreMenus, ...pluginMenus];
   });
 
-  const headerAppMenus = computed<any[]>(() => {
-    const { coreMenus, pluginMenus } = appMenuGroups.value;
-    const themeIndex = coreMenus.findIndex((menu) => menu.icon === BgColorsOutlined);
-    if (themeIndex < 0) return [...coreMenus, ...pluginMenus];
-    return [
-      ...coreMenus.slice(0, themeIndex),
-      ...[...pluginMenus].reverse(),
-      ...coreMenus.slice(themeIndex)
-    ];
-  });
-
-  /** Sidebar config: route menu + divider + app menu, rendered in one loop */
-  const sidebarItems = computed((): SidebarEntry[] => {
-    const routeEntries: SidebarRouteEntry[] = menus.value.map((r) => ({
+  /** The sidebar owns route navigation; application actions live in the header. */
+  const sidebarItems = computed((): SidebarRouteEntry[] =>
+    menus.value.map((r) => ({
       type: "route",
       path: r.path,
       name: r.name,
       icon: (r.meta as RouterMetaInfo).icon,
       customClass: Array.isArray(r.customClass) ? r.customClass : []
-    }));
-    const divider: SidebarDividerEntry = { type: "divider" };
-    const appEntries: (SidebarAppEntry | SidebarAppDropdownEntry)[] = appMenus.value
-      .filter((item) => item.conditions && !item.onlyHeader)
-      .map((item) => {
-        if (item.menus && item.menus.length > 0) {
-          return {
-            type: "app-dropdown" as const,
-            title: item.leftSideTitle || item.title,
-            icon: item.icon,
-            mdiIcon: item.mdiIcon,
-            customClass: item.customClass,
-            menus: item.menus,
-            click: item.click as (_: string) => void
-          };
-        }
-        return {
-          type: "app" as const,
-          title: item.leftSideTitle || item.title,
-          icon: item.icon,
-          mdiIcon: item.mdiIcon,
-          customClass: item.customClass,
-          click: item.click as () => void
-        };
-      });
-    return [...routeEntries, divider, ...appEntries];
-  });
+    }))
+  );
 
-  return { menus, headerMenus, appMenus, headerAppMenus, sidebarItems, handleToPage };
+  return { menus, appMenus, sidebarItems, handleToPage };
 }

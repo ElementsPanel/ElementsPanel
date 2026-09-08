@@ -4,7 +4,6 @@ import { t } from "@/lang/i18n";
 import { ctx } from "@/plugin/context";
 import { loginPageInfo, loginUser, ssoConfig, type SsoPublicConfig } from "@/services/apis";
 import { useAppStateStore } from "@/stores/useAppStateStore";
-import { sleep } from "@/tools/common";
 import { markdownToHTML } from "@/tools/safe";
 import { reportErrorMsg } from "@/tools/validator";
 import { message, Modal } from "ant-design-vue";
@@ -45,8 +44,6 @@ const loginActions = computed(() =>
 
 const loading = ref(false);
 const is2Fa = ref(false);
-// Fade the card out before navigating away after a successful login
-const fadeOut = ref(false);
 
 const handleLogin = async () => {
   if (!formData.username.trim() || !formData.password.trim()) {
@@ -86,8 +83,6 @@ const handleNext = async () => {
 };
 
 const loginSuccess = async () => {
-  fadeOut.value = true;
-  await sleep(420);
   if (isAdmin.value) {
     router.push({
       path: "/"
@@ -143,7 +138,6 @@ onMounted(async () => {
   <div class="login-card-host">
     <VCard
       class="login-panel"
-      :class="{ 'login-card-fading': fadeOut }"
       elevation="0"
       rounded="xl"
     >
@@ -364,11 +358,6 @@ onMounted(async () => {
   .login-panel .login-panel-body {
     padding: 24px;
   }
-}
-
-.login-card-fading {
-  opacity: 0;
-  pointer-events: none;
 }
 
 .mcsmanager-link {
