@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { t } from "@/lang/i18n";
-import { VIcon } from "vuetify/lib/components/index.mjs";
+import { VIcon } from "vuetify/components";
 import { computed } from "vue";
 
 const { state: overviewData } = useOverviewInfo();

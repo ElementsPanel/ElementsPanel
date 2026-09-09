@@ -5,7 +5,7 @@ import { FileTextOutlined } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
 import { computed, onMounted, ref } from "vue";
 import AppDialog from "@/components/AppDialog.vue";
-import { VBtn } from "vuetify/lib/components/index.mjs";
+import { VBtn } from "vuetify/components";
 import { getInstanceOperationLog } from "../api";
 import { formatOperationLogItem, type FormattedOperationLog } from "../hooks/useOperationLog";
 import InstanceOperationLogContent from "./InstanceOperationLogContent.vue";

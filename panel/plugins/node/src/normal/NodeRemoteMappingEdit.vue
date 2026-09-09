@@ -12,7 +12,7 @@ import {
   VRow,
   VTextField,
   VTextarea
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 
 type RemoteMappingItem = IPanelOverviewRemoteMappingResponse;
 

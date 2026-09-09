@@ -3,7 +3,7 @@ import AppDialog from "@/components/AppDialog.vue";
 import { t } from "@/lang/i18n";
 import type { QuickStartPackages } from "@/types";
 import { computed, reactive } from "vue";
-import { VChip, VTextField } from "vuetify/lib/components/index.mjs";
+import { VChip, VTextField } from "vuetify/components";
 
 const props = defineProps<{ open: boolean; template: QuickStartPackages | null }>();
 const emit = defineEmits<{ "update:open": [value: boolean]; confirm: [instanceName: string, template: QuickStartPackages] }>();

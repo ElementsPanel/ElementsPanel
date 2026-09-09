@@ -2,12 +2,14 @@
 import { t } from "@/lang/i18n";
 import { EditOutlined } from "@ant-design/icons-vue";
 import { computed, onMounted, ref } from "vue";
+import { VBtn, VCard, VCardText, VCol, VIcon, VRow, VSelect, VTextField } from "vuetify/components";
 
 const FLOAT_MAGIC_PREFIX = "<__float__>";
 const props = defineProps<{
   optionValue?: Record<string, any>;
   optionKey?: any;
   custom?: boolean;
+  isDesktop?: boolean;
 }>();
 
 enum CONTROL {
@@ -59,7 +61,26 @@ onMounted(() => {
 
 <template>
   <div class="line-option-wrapper">
-    <a-card class="line-option-card" :body-style="{ padding: '10px' }">
+    <VCard v-if="isDesktop" class="line-option-card" variant="tonal" rounded="xl">
+      <VCardText>
+        <div v-if="!custom">
+          <VRow dense align="center">
+            <VCol cols="12" md="7"><slot name="title"></slot></VCol>
+            <VCol cols="12" md="11"><slot name="info"></slot></VCol>
+            <VCol cols="12" md="6">
+              <div v-if="$slots.optionInput"><slot name="optionInput"></slot></div>
+              <div v-else class="line-option-control">
+                <VTextField v-if="type == CONTROL.INPUT" v-model="computedValue" variant="solo" density="compact" hide-details />
+                <VSelect v-else v-model="computedValue" :items="[{ title: t('TXT_CODE_addfcb6b'), value: true }, { title: t('TXT_CODE_1e9c479e'), value: false }]" variant="solo" density="compact" hide-details />
+                <VBtn v-if="type == CONTROL.SELECT" icon variant="text" size="small" rounded="xl" @click="forceType"><VIcon icon="mdi-pencil-outline" /></VBtn>
+              </div>
+            </VCol>
+          </VRow>
+        </div>
+        <div v-else><slot></slot></div>
+      </VCardText>
+    </VCard>
+    <a-card v-else class="line-option-card" :body-style="{ padding: '10px' }">
       <div v-if="!custom">
         <a-row :gutter="[10, 10]" align="middle">
           <a-col :md="7" :span="24">
@@ -106,8 +127,10 @@ onMounted(() => {
     border-radius: 6px;
   }
   .line-option-card:hover {
-    border: 1px solid var(--color-gray-6) !important;
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.16);
   }
 }
+
+.line-option-control { display: flex; align-items: center; gap: 6px; }
+.line-option-control :deep(.v-input) { flex: 1; min-width: 0; }
 </style>

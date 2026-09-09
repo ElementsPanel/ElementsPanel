@@ -19,7 +19,7 @@ import {
   VDataTable,
   VDialog,
   VSpacer
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 import NewSchedule from "./dialogs/NewSchedule.vue";
 
 const props = defineProps<{

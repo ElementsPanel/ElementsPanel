@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { VCol, VIcon, VRow } from "vuetify/lib/components/index.mjs";
+import { VCol, VIcon, VRow } from "vuetify/components";
 
 withDefaults(
   defineProps<{

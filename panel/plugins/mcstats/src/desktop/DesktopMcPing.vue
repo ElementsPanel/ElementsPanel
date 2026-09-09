@@ -2,9 +2,9 @@
 import { useInstanceInfo } from "@/hooks/useInstance";
 import { t } from "@/lang/i18n";
 import { updateInstanceConfig } from "@/services/apis/instance";
-import { reportErrorMsg } from "@/tools/validator";
-import { message } from "ant-design-vue";
+import { notifyDesktop, notifyDesktopError } from "../../../desktop/src/desktopNotice";
 import { reactive, ref, watch } from "vue";
+import { VBtn, VIcon, VTextField } from "vuetify/components";
 
 const props = defineProps<{
   instanceUuid: string;
@@ -46,9 +46,9 @@ const submit = async () => {
         }
       }
     });
-    message.success(t("TXT_CODE_d3de39b4"));
+    notifyDesktop(t("TXT_CODE_d3de39b4"), "success");
   } catch (err: any) {
-    reportErrorMsg(err?.message || err);
+    notifyDesktopError(err);
   } finally {
     isLoading.value = false;
   }
@@ -69,38 +69,26 @@ watch(
 <template>
   <div class="dmcping-config">
     <div class="dmcping-config__body">
-      <a-form layout="vertical">
-        <a-typography-paragraph>
-          <a-typography-text type="secondary">
-            {{ t("TXT_CODE_57d1929e") }}
-            <br />
-            {{ t("TXT_CODE_6b175558") }}
-          </a-typography-text>
-        </a-typography-paragraph>
-        <a-form-item>
-          <a-typography-title :level="5">{{ t("TXT_CODE_f49149d0") }}</a-typography-title>
-          <a-typography-paragraph>
-            <a-typography-text type="secondary">
-              {{ t("TXT_CODE_2ab036a4") }}
-            </a-typography-text>
-          </a-typography-paragraph>
-          <a-input v-model:value="formData.port" :placeholder="t('TXT_CODE_e2dc0156')" />
-        </a-form-item>
-        <a-form-item>
-          <a-typography-title :level="5">{{ t("TXT_CODE_2f59807a") }}</a-typography-title>
-          <a-typography-paragraph>
-            <a-typography-text type="secondary">
-              {{ t("TXT_CODE_8e2be926") }}
-            </a-typography-text>
-          </a-typography-paragraph>
-          <a-input v-model:value="formData.ip" :placeholder="t('TXT_CODE_ddc2de99')" />
-        </a-form-item>
-      </a-form>
+      <p class="dmcping-config__hint">
+        {{ t("TXT_CODE_57d1929e") }}<br />
+        {{ t("TXT_CODE_6b175558") }}
+      </p>
+      <div class="dmcping-field">
+        <div class="dmcping-field__title">{{ t("TXT_CODE_f49149d0") }}</div>
+        <div class="dmcping-field__hint">{{ t("TXT_CODE_2ab036a4") }}</div>
+        <VTextField v-model="formData.port" :placeholder="t('TXT_CODE_e2dc0156')" variant="solo" density="compact" hide-details />
+      </div>
+      <div class="dmcping-field">
+        <div class="dmcping-field__title">{{ t("TXT_CODE_2f59807a") }}</div>
+        <div class="dmcping-field__hint">{{ t("TXT_CODE_8e2be926") }}</div>
+        <VTextField v-model="formData.ip" :placeholder="t('TXT_CODE_ddc2de99')" variant="solo" density="compact" hide-details />
+      </div>
     </div>
     <div class="dmcping-config__footer">
-      <button class="dmcping-btn dmcping-btn--primary" :disabled="isLoading" @click="submit">
+      <VBtn class="dmcping-btn dmcping-btn--primary" variant="text" :loading="isLoading" @click="submit">
+        <VIcon icon="mdi-content-save-outline" />
         {{ t("TXT_CODE_abfe9512") }}
-      </button>
+      </VBtn>
     </div>
   </div>
 </template>
@@ -124,23 +112,20 @@ watch(
     display: flex;
     justify-content: flex-end;
     padding: 12px 16px;
-    border-top: 1px solid var(--desktop-window-border);
     flex-shrink: 0;
   }
 }
 
+.dmcping-config__hint,
+.dmcping-field__hint { color: var(--desktop-window-text-secondary); line-height: 1.5; }
+.dmcping-config__hint { margin: 0 0 20px; }
+.dmcping-field { margin-bottom: 20px; }
+.dmcping-field__title { margin-bottom: 4px; font-size: 14px; font-weight: 600; }
+.dmcping-field__hint { margin-bottom: 8px; }
+
 .dmcping-btn {
   background: var(--desktop-window-titlebar-bg);
-  border: 1px solid var(--desktop-window-border);
-  border-radius: 6px;
   color: var(--desktop-window-text);
-  padding: 6px 16px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
 
   &:hover:not(:disabled) {
     background: var(--desktop-window-control-hover);
@@ -153,7 +138,6 @@ watch(
 
   &--primary {
     color: #1677ff;
-    border-color: rgba(22, 119, 255, 0.3);
     background: rgba(22, 119, 255, 0.1);
 
     &:hover:not(:disabled) {

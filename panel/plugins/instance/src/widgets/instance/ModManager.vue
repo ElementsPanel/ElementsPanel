@@ -16,7 +16,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
-import { VBtn } from "vuetify/lib/components/index.mjs";
+import { VBtn } from "vuetify/components";
 import LocalModTable from "./mod-manager/LocalModTable.vue";
 import ModConfigModal from "./mod-manager/ModConfigModal.vue";
 import ModFloatingTools from "./mod-manager/ModFloatingTools.vue";

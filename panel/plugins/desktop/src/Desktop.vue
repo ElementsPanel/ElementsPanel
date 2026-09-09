@@ -2,14 +2,18 @@
 import { t } from "@/lang/i18n";
 import { getDesktopLayoutConfig, setDesktopLayoutConfig } from "./api";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
-import { ctx, usePluginService } from "@/plugin/context";
+import {
+    ctx,
+    usePluginService,
+    type PanelFrontendDesktopApp,
+    type PanelFrontendInstanceAction
+} from "@/plugin/context";
 import type { FrontendFileManagerService, FrontendUserService } from "@/plugin";
 import { logoutUser } from "@/services/apis/index";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
-import type { PanelFrontendDesktopApp, PanelFrontendInstanceAction } from "@/plugin";
-import type { ContextMenuItem } from "./widgets/desktop/DesktopContextMenu.vue";
 import DesktopContextMenu from "./widgets/desktop/DesktopContextMenu.vue";
+import type { ContextMenuItem } from "./widgets/desktop/DesktopContextMenu.vue";
 import DesktopEventConfig from "./widgets/desktop/DesktopEventConfig.vue";
 import DesktopIcon from "./widgets/desktop/DesktopIcon.vue";
 import DesktopInstanceConsole from "./widgets/desktop/DesktopInstanceConsole.vue";
@@ -23,27 +27,47 @@ import type { TaskbarWindow } from "./widgets/desktop/DesktopTaskbar.vue";
 import DesktopTaskbar from "./widgets/desktop/DesktopTaskbar.vue";
 import DesktopTerminalSelector from "./widgets/desktop/DesktopTerminalSelector.vue";
 import DesktopWindow from "./widgets/desktop/DesktopWindow.vue";
-import {
-    AppstoreOutlined,
-    CloseOutlined,
-    CloseSquareOutlined,
-    CodeOutlined,
-    ControlOutlined,
-    DashboardOutlined,
-    DeleteOutlined,
-    DesktopOutlined,
-    EditOutlined,
-    FieldTimeOutlined,
-    FullscreenExitOutlined,
-    FullscreenOutlined,
-    MinusOutlined,
-    PictureOutlined,
-    TeamOutlined,
-    UsbOutlined,
-    UserOutlined
-} from "@ant-design/icons-vue";
+import { desktopNotice } from "./desktopNotice";
+import { VIcon, VSnackbar } from "vuetify/components";
 import { computed, markRaw, onMounted, onUnmounted, reactive, ref, watch, type Component, type CSSProperties } from "vue";
 import { useRouter } from "vue-router";
+
+const AppstoreOutlined = "mdi-view-grid-outline";
+const CloseOutlined = "mdi-close";
+const CloseSquareOutlined = "mdi-close-box-outline";
+const CodeOutlined = "mdi-code-tags";
+const ControlOutlined = "mdi-tune-variant";
+const DashboardOutlined = "mdi-view-dashboard-outline";
+const DeleteOutlined = "mdi-delete-outline";
+const DesktopOutlined = "mdi-monitor";
+const EditOutlined = "mdi-pencil-outline";
+const FieldTimeOutlined = "mdi-clock-outline";
+const FullscreenExitOutlined = "mdi-fullscreen-exit";
+const FullscreenOutlined = "mdi-fullscreen";
+const MinusOutlined = "mdi-minus";
+const PictureOutlined = "mdi-image-outline";
+const TeamOutlined = "mdi-account-group-outline";
+const UsbOutlined = "mdi-usb-port";
+const UserOutlined = "mdi-account-outline";
+
+// Desktop surfaces render icons through Vuetify's MDI set. Feature plugins
+// still expose legacy component icons for the normal panel, so map known
+// desktop app/action ids at this boundary.
+const DESKTOP_ICON_MAP: Record<string, string> = {
+    overview: "mdi-view-dashboard-outline",
+    config: "mdi-view-grid-plus-outline",
+    market: "mdi-storefront-outline",
+    nodes: "mdi-server-network-outline",
+    "operation-log": "mdi-file-document-outline",
+    backup: "mdi-cloud-outline",
+    "java-manager": "mdi-hammer-wrench",
+    mcstats: "mdi-account-group-outline",
+    "terminal-config": "mdi-code-tags",
+    "file-manager": "mdi-folder-open-outline"
+};
+
+const getDesktopIcon = (id: string, icon?: Component | string): string | Component =>
+    DESKTOP_ICON_MAP[id] || (typeof icon === "string" && icon.startsWith("mdi-") ? icon : "mdi-application-outline");
 
 const router = useRouter();
 const { state: appState, isAdmin, isLogged, authEnabled } = useAppStateStore();
@@ -65,7 +89,7 @@ const desktopImageViewerWindow = computed(() => fileManager.value?.DesktopImageV
 const { getSettingsConfig } = useLayoutConfigStore();
 const { isDarkTheme } = useAppConfigStore();
 
-//─── Wallpaper ───
+//閳光偓閳光偓閳光偓 Wallpaper 閳光偓閳光偓閳光偓
 const backgroundImageUrl = ref<string>("");
 
 const wallpaperStyle = computed<CSSProperties>(() => {
@@ -99,7 +123,7 @@ onMounted(async () => {
     }
 });
 
-//─── Login ───
+//閳光偓閳光偓閳光偓 Login 閳光偓閳光偓閳光偓
 const showLoginOverlay = ref(authEnabled.value && !isLogged.value);
 
 const handleLoginSuccess = () => {
@@ -114,7 +138,7 @@ watch(isLogged, (logged) => {
     }
 });
 
-//─── Desktop Icons ───
+//閳光偓閳光偓閳光偓 Desktop Icons 閳光偓閳光偓閳光偓
 interface DesktopApp {
     id: string;
     label: string;
@@ -140,7 +164,7 @@ const pluginDesktopApps = computed<DesktopApp[]>(() =>
         .map((app) => ({
             id: app.id,
             label: getDesktopAppLabel(app),
-            icon: typeof app.icon === "string" ? app.icon : markRaw(app.icon),
+            icon: getDesktopIcon(app.id, app.icon),
             color: app.color || "#1677ff",
             route: app.route,
             windowContent: `panel-plugin:${app.id}`,
@@ -159,14 +183,14 @@ const availableDesktopApps = computed<DesktopApp[]>(() => {
         {
             id: "instances",
             label: t("TXT_CODE_e21473bc"),
-            icon: markRaw(DesktopOutlined),
+            icon: DesktopOutlined,
             color: "#1677ff",
             route: "/instances", windowContent: "instances"
         },
         {
             id: "terminal",
             label: t("TXT_CODE_524e3036"),
-            icon: markRaw(CodeOutlined),
+            icon: CodeOutlined,
             color: "#434343",
             windowContent: "terminal"
         }
@@ -177,7 +201,7 @@ const availableDesktopApps = computed<DesktopApp[]>(() => {
             {
                 id: "my-apps",
                 label: t("TXT_CODE_DESKTOP_MY_APPS"),
-                icon: markRaw(AppstoreOutlined),
+                icon: AppstoreOutlined,
                 color: "#1677ff",
                 windowContent: "my-apps"
             },
@@ -188,7 +212,7 @@ const availableDesktopApps = computed<DesktopApp[]>(() => {
         apps.push({
             id: "users",
             label: t("TXT_CODE_1deaa2dd"),
-            icon: markRaw(TeamOutlined),
+            icon: TeamOutlined,
             color: "#722ed1",
             route: "/users",
             windowContent: "users"
@@ -211,7 +235,7 @@ const selectIcon = (id: string) => {
     selectedIconId.value = id;
 };
 
-//─── Icon Positions ───
+//閳光偓閳光偓閳光偓 Icon Positions 閳光偓閳光偓閳光偓
 const iconPositions = reactive<Map<string, { x: number; y: number }>>(new Map());
 const desktopIconsRef = ref<HTMLElement | null>(null);
 
@@ -274,7 +298,7 @@ function findEmptyCell(col: number, row: number, excludeId: string): { col: numb
     return { col, row };
 }
 
-//─── Drag State ───
+//閳光偓閳光偓閳光偓 Drag State 閳光偓閳光偓閳光偓
 const DRAG_THRESHOLD = 5;
 
 const isDragging = ref(false);
@@ -403,7 +427,7 @@ const handleTaskbarAppDrop = (appId: string, clientX: number, clientY: number) =
     addDesktopShortcutAt(appId, clientX - (rect?.left || 0), clientY - (rect?.top || 0));
 };
 
-//─── Window Management ───
+//閳光偓閳光偓閳光偓 Window Management 閳光偓閳光偓閳光偓
 interface WindowState {
     id: string;
     title: string;
@@ -429,7 +453,7 @@ const windows = reactive<Map<string, WindowState>>(new Map());
 let nextZIndex = 100;
 let windowOffset = 0;
 
-// ─── Layout Persistence ───
+// 閳光偓閳光偓閳光偓 Layout Persistence 閳光偓閳光偓閳光偓
 const { execute: executeGetLayout } = getDesktopLayoutConfig();
 const { execute: executeSaveLayout } = setDesktopLayoutConfig();
 
@@ -528,20 +552,20 @@ watch(
     { flush: "sync" }
 );
 
-const ICON_MAP: Record<string, Component> = {
-    "instances": markRaw(DesktopOutlined),
-    "users": markRaw(TeamOutlined),
-    "terminal": markRaw(CodeOutlined),
-    "my-apps": markRaw(AppstoreOutlined),
-    "instance-console": markRaw(CodeOutlined),
-    "file-editor": markRaw(EditOutlined),
-    "image-viewer": markRaw(PictureOutlined),
-    "server-config": markRaw(ControlOutlined),
-    "schedule": markRaw(FieldTimeOutlined),
-    "event-config": markRaw(DashboardOutlined),
-    "new-instance": markRaw(DesktopOutlined),
-    "user-info": markRaw(UserOutlined),
-    "mod-manager": markRaw(UsbOutlined)
+const ICON_MAP: Record<string, Component | string> = {
+    "instances": DesktopOutlined,
+    "users": TeamOutlined,
+    "terminal": CodeOutlined,
+    "my-apps": AppstoreOutlined,
+    "instance-console": CodeOutlined,
+    "file-editor": EditOutlined,
+    "image-viewer": PictureOutlined,
+    "server-config": ControlOutlined,
+    "schedule": FieldTimeOutlined,
+    "event-config": DashboardOutlined,
+    "new-instance": DesktopOutlined,
+    "user-info": UserOutlined,
+    "mod-manager": UsbOutlined
 };
 
 const loadDesktopLayout = async () => {
@@ -586,9 +610,9 @@ const loadDesktopLayout = async () => {
                 if (instanceActionId && !instanceAction?.desktopComponent) continue;
                 const icon =
                     desktopApp?.icon ||
-                    (instanceAction?.icon ? markRaw(instanceAction.icon) : undefined) ||
+                    (instanceActionId ? getDesktopIcon(instanceActionId, instanceAction?.icon) : undefined) ||
                     ICON_MAP[content] ||
-                    markRaw(DesktopOutlined);
+                    DesktopOutlined;
                 const zIndex = typeof win.zIndex === "number" ? win.zIndex : ++nextZIndex;
                 if (zIndex > nextZIndex) nextZIndex = zIndex;
                 windows.set(win.id, {
@@ -701,7 +725,7 @@ const openInstanceConsole = (instance: any, daemonId: string) => {
     windows.set(windowId, {
         id: windowId,
         title: instance.config.nickname || "Console",
-        icon: markRaw(CodeOutlined),
+        icon: CodeOutlined,
         visible: true,
         minimized: false,
         maximized: false,
@@ -727,7 +751,7 @@ const openFileEditorWindow = (instanceId: string, daemonId: string, filePath: st
     windows.set(windowId, {
         id: windowId,
         title: fileName,
-        icon: markRaw(EditOutlined),
+        icon: EditOutlined,
         visible: true,
         minimized: false,
         maximized: false,
@@ -755,7 +779,7 @@ const openImageViewerWindow = (instanceId: string, daemonId: string, filePath: s
     windows.set(windowId, {
         id: windowId,
         title: fileName,
-        icon: markRaw(PictureOutlined),
+        icon: PictureOutlined,
         visible: true,
         minimized: false,
         maximized: false,
@@ -791,7 +815,7 @@ const openServerConfigWindow = (instanceId: string, daemonId: string, type: stri
     windows.set(windowId, {
         id: windowId,
         title: t("TXT_CODE_d07742fe"),
-        icon: markRaw(ControlOutlined),
+        icon: ControlOutlined,
         visible: true,
         minimized: false,
         maximized: false,
@@ -826,7 +850,7 @@ const openScheduleWindow = (instanceId: string, daemonId: string) => {
     windows.set(windowId, {
         id: windowId,
         title: t("TXT_CODE_b7d026f8"),
-        icon: markRaw(FieldTimeOutlined),
+        icon: FieldTimeOutlined,
         visible: true,
         minimized: false,
         maximized: false,
@@ -860,7 +884,7 @@ const openEventConfigWindow = (instanceId: string, daemonId: string) => {
     windows.set(windowId, {
         id: windowId,
         title: t("TXT_CODE_10150756"),
-        icon: markRaw(DashboardOutlined),
+        icon: DashboardOutlined,
         visible: true,
         minimized: false,
         maximized: false,
@@ -894,7 +918,7 @@ const openModManagerWindow = (instanceId: string, daemonId: string) => {
     windows.set(windowId, {
         id: windowId,
         title: t("TXT_CODE_MOD_MANAGER"),
-        icon: markRaw(UsbOutlined),
+        icon: UsbOutlined,
         visible: true,
         minimized: false,
         maximized: false,
@@ -933,7 +957,7 @@ const openInstanceActionWindow = (actionId: string, instanceId: string, daemonId
     windows.set(windowId, {
         id: windowId,
         title: typeof action.title === "function" ? action.title() : action.title,
-        icon: markRaw(action.icon),
+        icon: getDesktopIcon(actionId, action.icon),
         visible: true,
         minimized: false,
         maximized: false,
@@ -968,7 +992,7 @@ const openNewInstanceWindow = () => {
     windows.set(windowId, {
         id: windowId,
         title: t("TXT_CODE_DESKTOP_IM_NEW_INSTANCE"),
-        icon: markRaw(DesktopOutlined),
+        icon: DesktopOutlined,
         visible: true,
         minimized: false,
         maximized: false,
@@ -1001,7 +1025,7 @@ const openUserInfoWindow = () => {
     windows.set(windowId, {
         id: windowId,
         title: t("TXT_CODE_9bb2f08b"),
-        icon: markRaw(UserOutlined),
+        icon: UserOutlined,
         visible: true,
         minimized: false,
         maximized: false,
@@ -1053,7 +1077,7 @@ const toggleWindow = (id: string) => {
     }
 };
 
-// ─── Window events ───
+// 閳光偓閳光偓閳光偓 Window events 閳光偓閳光偓閳光偓
 const handleWindowMoved = (id: string, newX: number, newY: number) => {
     const win = windows.get(id);
     if (win) {
@@ -1130,7 +1154,7 @@ const handleReorderWindows = (newOrder: string[]) => {
     saveDesktopLayout();
 };
 
-// ─── Route ───
+// 閳光偓閳光偓閳光偓 Route 閳光偓閳光偓閳光偓
 const navigateToRoute = (appId: string) => {
     const app = availableDesktopApps.value.find((a) => a.id === appId);
     if (app?.route) {
@@ -1138,7 +1162,7 @@ const navigateToRoute = (appId: string) => {
     }
 };
 
-// ─── Context Menu ───
+// 閳光偓閳光偓閳光偓 Context Menu 閳光偓閳光偓閳光偓
 const ctxMenu = reactive({
     visible: false,
     x: 0,
@@ -1155,7 +1179,7 @@ const ctxMenuItems = computed<ContextMenuItem[]>(() => {
         const shortcutId = ctxMenu.targetShortcutId;
         items.push({
             label: t("TXT_CODE_DESKTOP_REMOVE_SHORTCUT"),
-            icon: markRaw(DeleteOutlined),
+            icon: DeleteOutlined,
             action: () => removeDesktopShortcut(shortcutId)
         });
         return items;
@@ -1167,7 +1191,7 @@ const ctxMenuItems = computed<ContextMenuItem[]>(() => {
             if (win) {
                 items.push({
                     label: t("TXT_CODE_DESKTOP_MINIMIZE"),
-                    icon: markRaw(MinusOutlined),
+                    icon: MinusOutlined,
                     action: () => {
                         if (ctxMenu.targetWindowId) {
                             minimizeWindow(ctxMenu.targetWindowId);
@@ -1176,32 +1200,30 @@ const ctxMenuItems = computed<ContextMenuItem[]>(() => {
                 });
                 items.push({
                     label: win.maximized ? (t("TXT_CODE_DESKTOP_RESTORE")) : (t("TXT_CODE_DESKTOP_MAXIMIZE")),
-                    icon: markRaw(win.maximized ? FullscreenExitOutlined : FullscreenOutlined),
+                    icon: win.maximized ? FullscreenExitOutlined : FullscreenOutlined,
                     action: () => {
                         if (ctxMenu.targetWindowId) {
                             maximizeWindow(ctxMenu.targetWindowId);
                         }
                     }
                 });
-                items.push({ divider: true } as any);
             }
         }
 
         items.push({
             label: t("TXT_CODE_a7e9d4e"),
-            icon: markRaw(CloseOutlined),
+            icon: CloseOutlined,
             action: () => {
                 if (ctxMenu.targetWindowId) {
                     closeWindow(ctxMenu.targetWindowId);
                 }
             }
         });
-        items.push({ divider: true } as any);
     }
 
     items.push({
         label: t("TXT_CODE_DESKTOP_CLOSE_ALL"),
-        icon: markRaw(CloseSquareOutlined),
+        icon: CloseSquareOutlined,
         action: () => {
             windows.clear();
             saveDesktopLayout();
@@ -1263,9 +1285,13 @@ const onDesktopKeyDown = (event: KeyboardEvent) => {
     ctxMenu.visible = false;
 };
 
-onMounted(() => document.addEventListener("keydown", onDesktopKeyDown));
+onMounted(() => {
+    document.body.classList.add("desktop-mode-active");
+    document.addEventListener("keydown", onDesktopKeyDown);
+});
 onUnmounted(() => {
     document.removeEventListener("keydown", onDesktopKeyDown);
+    document.body.classList.remove("desktop-mode-active");
     if (saveLayoutTimer) clearTimeout(saveLayoutTimer);
 });
 
@@ -1278,13 +1304,14 @@ const onDesktopClick = () => {
     ctxMenu.visible = false;
 };
 
-// ─── Exit ───
+// 閳光偓閳光偓閳光偓 Exit 閳光偓閳光偓閳光偓
 const exitDesktop = async () => {
     if (authEnabled.value) await logoutUser().execute();
     window.location.reload();
 };
 
 const username = computed(() => appState.userInfo?.userName || "User");
+const isMdiIcon = (icon: Component | string): boolean => typeof icon === "string" && icon.startsWith("mdi-");
 </script>
 
 <template>
@@ -1312,6 +1339,8 @@ const username = computed(() => appState.userInfo?.userName || "User");
                         <template v-for="app in desktopApps" :key="app.id">
                             <div v-if="app.id === droppingIconId" class="drag-ghost__inner">
                                 <component :is="app.icon" v-if="typeof app.icon !== 'string'"
+                                    class="drag-ghost__icon" />
+                                <VIcon v-else-if="isMdiIcon(app.icon)" :icon="app.icon" size="42"
                                     class="drag-ghost__icon" />
                                 <span v-else class="drag-ghost__emoji">{{ app.icon }}</span>
                                 <span class="drag-ghost__label">{{ app.label }}</span>
@@ -1408,6 +1437,12 @@ const username = computed(() => appState.userInfo?.userName || "User");
                     @close="closeContextMenu" />
             </div>
         </Transition>
+        <VSnackbar v-model="desktopNotice.visible" :key="desktopNotice.key"
+            :color="desktopNotice.type" location="bottom right" rounded="xl" variant="tonal"
+            :timeout="3200">
+            <VIcon :icon="desktopNotice.type === 'success' ? 'mdi-check-circle-outline' : desktopNotice.type === 'error' ? 'mdi-alert-circle-outline' : desktopNotice.type === 'warning' ? 'mdi-alert-outline' : 'mdi-information-outline'" class="mr-2" />
+            {{ desktopNotice.text }}
+        </VSnackbar>
         <Transition name="login-fade">
             <component :is="desktopLoginWindow" v-if="showLoginOverlay && desktopLoginWindow"
                 @login-success="handleLoginSuccess" />
@@ -1499,7 +1534,7 @@ const username = computed(() => appState.userInfo?.userName || "User");
     width: 74px;
     height: 74px;
     border-radius: 12px;
-    border: 2px dashed rgba(255, 255, 255, 0.45);
+    border: 0;
     background: rgba(255, 255, 255, 0.06);
 }
 

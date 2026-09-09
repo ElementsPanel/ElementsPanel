@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
+import { VIcon } from "vuetify/components";
 import { computed, type Component } from "vue";
 
 const { isDarkTheme } = useAppConfigStore();
@@ -33,6 +34,7 @@ const iconStyle = computed(() => ({
 }));
 
 const isComponent = computed(() => typeof props.icon !== "string");
+const isMdiIcon = computed(() => typeof props.icon === "string" && props.icon.startsWith("mdi-"));
 
 const handleDblClick = () => {
     emit("open", props.id);
@@ -58,6 +60,7 @@ const handleContextMenu = (e: MouseEvent) => {
         @mousedown.stop="handleMouseDown" @contextmenu.stop.prevent="handleContextMenu">
         <div class="desktop-icon__graphic" :style="iconStyle">
             <component :is="icon" v-if="isComponent" class="desktop-icon__anticon" />
+            <VIcon v-else-if="isMdiIcon" :icon="icon as string" size="42" />
             <img v-else-if="typeof icon === 'string' && icon.endsWith('.svg')" :src="icon" alt="icon"
                 class="desktop-icon__img" />
             <span v-else class="desktop-icon__emoji">{{ icon }}</span>

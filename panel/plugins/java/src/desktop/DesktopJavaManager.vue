@@ -2,19 +2,15 @@
 import { t } from "@/lang/i18n";
 import { addJava, deleteJava, downloadJava, getJavaList, usingJava } from "../api";
 import { parseTimestamp } from "@/tools/time";
-import type { AntColumnsType } from "@/types/ant";
 import type { AddJavaConfigItem, DownloadJavaConfigItem, JavaInfo, JavaRuntime } from "../types";
-import {
-    AppstoreOutlined,
-    BuildOutlined,
-    DeleteOutlined,
-    DownloadOutlined,
-    PlusOutlined,
-    ReloadOutlined
-} from "@ant-design/icons-vue";
-import { message } from "ant-design-vue";
-import { computed, h, onUnmounted, ref, type Ref } from "vue";
+import { notifyDesktop } from "../../../desktop/src/desktopNotice";
+import { computed, onUnmounted, ref, type Ref } from "vue";
 import { ctx } from "@/plugin/context";
+import { VBtn, VCard, VCardText, VChip, VDataTable, VIcon, VTextField } from "vuetify/components";
+
+const BuildOutlined = "mdi-hammer-wrench";
+const DownloadOutlined = "mdi-cloud-download-outline";
+const AppstoreOutlined = "mdi-language-java";
 
 const props = defineProps<{
     instanceUuid?: string;
@@ -29,37 +25,12 @@ const emit = defineEmits<{
     (e: "close"): void;
 }>();
 
-const columns: AntColumnsType[] = [
-    {
-        align: "center",
-        title: t("TXT_CODE_151d2bb7"),
-        dataIndex: ["info", "fullname"],
-        key: "fullname"
-    },
-    {
-        align: "center",
-        title: t("TXT_CODE_a2e79565"),
-        dataIndex: ["info", "installTime"],
-        key: "installTime",
-        customRender: (e: { text: number }) => t(parseTimestamp(e.text))
-    },
-    {
-        align: "center",
-        title: t("TXT_CODE_759fb403"),
-        key: "status",
-        customRender: ({ record }: { record: JavaRuntime }) => {
-            if (record.usingInstances.length > 0) return t("TXT_CODE_bdb620b9");
-            else if (record.info.downloading) return t("TXT_CODE_d919f7c7");
-            else return t("TXT_CODE_15f2e564");
-        }
-    },
-    {
-        align: "center",
-        title: t("TXT_CODE_fe731dfc"),
-        key: "actions",
-        width: 250
-    }
-];
+const headers = [
+    { title: t("TXT_CODE_151d2bb7"), key: "fullname", align: "center" as const },
+    { title: t("TXT_CODE_a2e79565"), key: "installTime", align: "center" as const },
+    { title: t("TXT_CODE_759fb403"), key: "status", align: "center" as const },
+    { title: t("TXT_CODE_fe731dfc"), key: "actions", align: "center" as const, sortable: false }
+] as const;
 
 const javaList: Ref<JavaRuntime[] | undefined> = ref([]);
 const refreshJavaList = async (out: boolean = false) => {
@@ -71,9 +42,9 @@ const refreshJavaList = async (out: boolean = false) => {
             }
         });
         javaList.value = list.value;
-        if (out) message.success(t("TXT_CODE_fbde647e"));
+        if (out) notifyDesktop(t("TXT_CODE_fbde647e"), "success");
     } catch (err: any) {
-        message.error(err.message);
+        notifyDesktop(err.message, "error");
     }
 };
 
@@ -105,9 +76,9 @@ const handleAddJava = async () => {
                 }
             });
         } catch (err: any) {
-            message.error(err.message);
+            notifyDesktop(err.message, "error");
         }
-        message.success(t("TXT_CODE_10f0f8d"));
+        notifyDesktop(t("TXT_CODE_10f0f8d"), "success");
         await refreshJavaList();
     });
 };
@@ -115,7 +86,7 @@ const handleAddJava = async () => {
 const confirmAddJava = () => {
     const { data, resolve } = addJavaDialog.value;
     if (!data.name || !data.path) {
-        message.warning(t("TXT_CODE_b5095a15"));
+        notifyDesktop(t("TXT_CODE_b5095a15"), "warning");
         return;
     }
     addJavaDialog.value.show = false;
@@ -170,10 +141,10 @@ const handleDownloadJava = async () => {
                     version: data.version
                 }
             });
-            message.success(t("TXT_CODE_5e7a4c02"));
+            notifyDesktop(t("TXT_CODE_5e7a4c02"), "success");
             await refreshJavaList();
         } catch (err: any) {
-            message.error(err.message);
+            notifyDesktop(err.message, "error");
         }
         await refreshJavaList();
     });
@@ -188,7 +159,7 @@ const confirmDownloadJava = () => {
     const { resolve } = downloadJavaDialog.value;
     const item = selectedDownloadItem.value;
     if (!item) {
-        message.warning(t("TXT_CODE_b5095a15"));
+        notifyDesktop(t("TXT_CODE_b5095a15"), "warning");
         return;
     }
     downloadJavaDialog.value.show = false;
@@ -215,7 +186,7 @@ const handleDeleteJava = async (info: JavaInfo) => {
             }
         });
     } catch (err: any) {
-        message.error(err.message);
+        notifyDesktop(err.message, "error");
     }
     await refreshJavaList();
 };
@@ -231,9 +202,9 @@ const handleUsingJava = async (info: JavaInfo) => {
                 id: info.fullname
             }
         });
-        message.success(t("TXT_CODE_d3de39b4"));
+        notifyDesktop(t("TXT_CODE_d3de39b4"), "success");
     } catch (err: any) {
-        message.error(err.message);
+        notifyDesktop(err.message, "error");
     }
     await refreshJavaList();
 };
@@ -251,54 +222,58 @@ onUnmounted(() => window.removeEventListener("resize", updateWindowSize));
 <template>
     <div class="djava-config">
         <div class="djava-config__body">
-            <a-typography-paragraph>
-                <a-typography-text type="secondary">
-                    {{ t("TXT_CODE_ebf01bcc") }}
-                    <br />
-                    {{ t("TXT_CODE_e1c637bb").replace("<mcsm_java>", "{mcsm_java}") }}
-                </a-typography-text>
-            </a-typography-paragraph>
+            <p class="djava-config__hint">
+                {{ t("TXT_CODE_ebf01bcc") }}<br />
+                {{ t("TXT_CODE_e1c637bb").replace("<mcsm_java>", "{mcsm_java}") }}
+            </p>
 
             <div class="djava-config__toolbar">
-                <a-button type="link" :icon="h(PlusOutlined)" @click="handleAddJava()">
+                <VBtn variant="text" rounded="xl" @click="handleAddJava()">
+                    <VIcon icon="mdi-plus" />
                     {{ t("TXT_CODE_8900e7ee") }}
-                </a-button>
-                <a-button type="link" :icon="h(DownloadOutlined)" @click="handleDownloadJava()">
+                </VBtn>
+                <VBtn variant="text" rounded="xl" @click="handleDownloadJava()">
+                    <VIcon :icon="DownloadOutlined" />
                     {{ t("TXT_CODE_9c48100e") }}
-                </a-button>
-                <a-button :icon="h(ReloadOutlined)" type="text" @click="refreshJavaList(true)">
+                </VBtn>
+                <VBtn variant="text" rounded="xl" @click="refreshJavaList(true)">
+                    <VIcon icon="mdi-refresh" />
                     {{ t("TXT_CODE_b76d94e0") }}
-                </a-button>
+                </VBtn>
             </div>
 
-            <a-table class="mt-12" :data-source="javaList" :columns="columns" :scroll="{ x: 'max-content' }"
-                :pagination="{
-                    pageSize: 15
-                }">
-                <template #bodyCell="{ column, record }">
-                    <div v-if="column.key === 'actions'" class="djava-config__actions">
-                        <a-button v-if="record.info.fullname == ''" class="mr-8" type="link" :disabled="true">
+            <VDataTable class="djava-table mt-3" :headers="headers" :items="javaList || []" :items-per-page="15">
+                <template #item.fullname="{ item }">{{ item.info.fullname || "-" }}</template>
+                <template #item.installTime="{ item }">{{ item.info.installTime ? t(parseTimestamp(item.info.installTime)) : "-" }}</template>
+                <template #item.status="{ item }">
+                    <VChip size="small" variant="tonal" :color="item.usingInstances.length > 0 ? 'success' : item.info.downloading ? 'warning' : 'default'">
+                        {{ item.usingInstances.length > 0 ? t("TXT_CODE_bdb620b9") : item.info.downloading ? t("TXT_CODE_d919f7c7") : t("TXT_CODE_15f2e564") }}
+                    </VChip>
+                </template>
+                <template #item.actions="{ item }">
+                    <div class="djava-config__actions">
+                        <VBtn v-if="item.info.fullname == ''" variant="text" size="small" disabled>
                             {{ t("TXT_CODE_979520ef") }}
-                        </a-button>
-                        <a-button v-else class="mr-8" type="link" :disabled="record.info.downloading"
-                            @click="handleUsingJava(record.info as JavaInfo)">
+                        </VBtn>
+                        <VBtn v-else variant="text" size="small" :disabled="item.info.downloading"
+                            @click="handleUsingJava(item.info as JavaInfo)">
+                            <VIcon icon="mdi-check-circle-outline" />
                             {{ t("TXT_CODE_f0dcc8bf") }}
-                        </a-button>
-                        <a-popconfirm :title="t('TXT_CODE_f4f86ba8')" :description="t('TXT_CODE_35631d1d')"
-                            @confirm="handleDeleteJava(record.info as JavaInfo)">
-                            <a-button danger type="link" :disabled="record.info.downloading">
-                                {{ t("TXT_CODE_ecbd7449") }}
-                                <DeleteOutlined />
-                            </a-button>
-                        </a-popconfirm>
+                        </VBtn>
+                        <VBtn color="error" variant="text" size="small" :disabled="item.info.downloading"
+                            @click="handleDeleteJava(item.info as JavaInfo)">
+                            <VIcon icon="mdi-delete-outline" />
+                            {{ t("TXT_CODE_ecbd7449") }}
+                        </VBtn>
                     </div>
                 </template>
-            </a-table>
+            </VDataTable>
         </div>
         <div class="djava-config__footer">
-            <button class="djava-btn djava-btn--primary" @click="emit('close')">
+            <VBtn class="djava-btn djava-btn--primary" variant="text" rounded="xl" @click="emit('close')">
+                <VIcon icon="mdi-close" />
                 {{ t("TXT_CODE_31e92ef3") }}
-            </button>
+            </VBtn>
         </div>
 
         <Teleport to="body">
@@ -310,24 +285,19 @@ onUnmounted(() => window.removeEventListener("resize", updateWindowSize));
                     :resizable="false" @close="cancelAddJava">
                     <div class="djava-dialog-content">
                         <div class="djava-dialog__body">
-                            <a-form layout="vertical">
-                                <a-form-item :label="t('TXT_CODE_3f36206f')">
-                                    <a-input v-model:value="addJavaDialog.data.name"
-                                        :placeholder="t('TXT_CODE_4ea93630')" />
-                                </a-form-item>
-                                <a-form-item :label="t('TXT_CODE_43422ed3')">
-                                    <a-input v-model:value="addJavaDialog.data.path"
-                                        :placeholder="t('TXT_CODE_4ea93630')" />
-                                </a-form-item>
-                            </a-form>
+                            <VTextField v-model="addJavaDialog.data.name" :label="t('TXT_CODE_3f36206f')"
+                                :placeholder="t('TXT_CODE_4ea93630')" variant="solo" density="compact" hide-details class="mb-4" />
+                            <VTextField v-model="addJavaDialog.data.path" :label="t('TXT_CODE_43422ed3')"
+                                :placeholder="t('TXT_CODE_4ea93630')" variant="solo" density="compact" hide-details />
                         </div>
                         <div class="djava-dialog__footer">
-                            <button class="djava-btn djava-btn--default" @click="cancelAddJava">
+                            <VBtn class="djava-btn djava-btn--default" variant="text" rounded="xl" @click="cancelAddJava">
                                 {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="djava-btn djava-btn--primary" @click="confirmAddJava">
+                            </VBtn>
+                            <VBtn class="djava-btn djava-btn--primary" variant="text" rounded="xl" @click="confirmAddJava">
+                                <VIcon icon="mdi-check" />
                                 {{ t("TXT_CODE_d507abff") }}
-                            </button>
+                            </VBtn>
                         </div>
                     </div>
                 </component>
@@ -349,25 +319,26 @@ onUnmounted(() => window.removeEventListener("resize", updateWindowSize));
                                     :class="{ 'djava-download-card--selected': downloadJavaDialog.selectedIndex === index }"
                                     @click="handleSelectDownloadItem(index)">
                                     <div class="djava-download-card__cover">
-                                        <AppstoreOutlined class="djava-download-card__icon" />
+                                        <VIcon :icon="AppstoreOutlined" class="djava-download-card__icon" />
                                     </div>
                                     <div class="djava-download-card__info">
-                                        <a-typography-text strong>
+                                        <strong>
                                             Java {{ item.version.toUpperCase() }}
-                                        </a-typography-text>
-                                        <a-tag color="blue">{{ item.name.toUpperCase() }}</a-tag>
+                                        </strong>
+                                        <VChip color="primary" size="x-small" variant="tonal">{{ item.name.toUpperCase() }}</VChip>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="djava-dialog__footer">
-                            <button class="djava-btn djava-btn--default" @click="cancelDownloadJava">
+                            <VBtn class="djava-btn djava-btn--default" variant="text" rounded="xl" @click="cancelDownloadJava">
                                 {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="djava-btn djava-btn--primary"
+                            </VBtn>
+                            <VBtn class="djava-btn djava-btn--primary" variant="text" rounded="xl"
                                 :disabled="downloadJavaDialog.selectedIndex === null" @click="confirmDownloadJava">
+                                <VIcon icon="mdi-check" />
                                 {{ t("TXT_CODE_d507abff") }}
-                            </button>
+                            </VBtn>
                         </div>
                     </div>
                 </component>
@@ -391,6 +362,12 @@ onUnmounted(() => window.removeEventListener("resize", updateWindowSize));
         padding: 16px;
     }
 
+    &__hint {
+        margin: 0 0 12px;
+        color: var(--desktop-window-text-secondary);
+        line-height: 1.5;
+    }
+
     &__toolbar {
         display: flex;
         align-items: center;
@@ -408,23 +385,13 @@ onUnmounted(() => window.removeEventListener("resize", updateWindowSize));
         display: flex;
         justify-content: flex-end;
         padding: 12px 16px;
-        border-top: 1px solid var(--desktop-window-border);
         flex-shrink: 0;
     }
 }
 
 .djava-btn {
     background: var(--desktop-window-titlebar-bg);
-    border: 1px solid var(--desktop-window-border);
-    border-radius: 6px;
     color: var(--desktop-window-text);
-    padding: 6px 16px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
 
     &:hover:not(:disabled) {
         background: var(--desktop-window-control-hover);
@@ -437,7 +404,6 @@ onUnmounted(() => window.removeEventListener("resize", updateWindowSize));
 
     &--primary {
         color: #1677ff;
-        border-color: rgba(22, 119, 255, 0.3);
         background: rgba(22, 119, 255, 0.1);
 
         &:hover:not(:disabled) {
@@ -452,7 +418,6 @@ onUnmounted(() => window.removeEventListener("resize", updateWindowSize));
 
     &--default {
         background: var(--desktop-window-titlebar-bg);
-        border: 1px solid var(--desktop-window-border);
 
         &:hover:not(:disabled) {
             background: var(--desktop-window-control-hover);
@@ -489,7 +454,6 @@ onUnmounted(() => window.removeEventListener("resize", updateWindowSize));
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-    border-top: 1px solid var(--desktop-window-border);
     flex-shrink: 0;
 }
 
@@ -505,16 +469,14 @@ onUnmounted(() => window.removeEventListener("resize", updateWindowSize));
     cursor: pointer;
     transition: all 0.3s ease;
     border-radius: 12px;
-    border: 1px solid var(--desktop-window-border);
     overflow: hidden;
     background: var(--desktop-window-titlebar-bg);
 
     &:hover {
-        border-color: #1890ff;
+        background: var(--desktop-window-control-hover);
     }
 
     &--selected {
-        border-color: #1890ff;
         background: linear-gradient(135deg, rgba(24, 144, 255, 0.1), rgba(24, 144, 255, 0.05));
     }
 

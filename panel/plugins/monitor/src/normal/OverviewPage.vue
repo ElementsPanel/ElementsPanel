@@ -21,7 +21,7 @@ import {
   VRow,
   VTimeline,
   VTimelineItem
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 import dayjs from "dayjs";
 import { useOperationLog } from "../hooks/useOperationLog";
 import { useOverviewChart } from "../hooks/useOverviewChart";

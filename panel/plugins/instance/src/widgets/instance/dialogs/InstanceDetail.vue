@@ -44,7 +44,7 @@ import {
   VTextField,
   VTabsWindow,
   VTabsWindowItem
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 import DockerImageSelect from "./components/DockerImageSelect.vue";
 
 interface FormDetail extends InstanceDetail {
@@ -103,7 +103,7 @@ const formData = ref<CombinedFormData>({
 
 const templateIndex = ref(-1);
 const languageOptions: FilterOption[] = [
-  { label: "简体中文", value: "zh_cn" },
+  { label: "Chinese", value: "zh_cn" },
   { label: "English", value: "en_us" }
 ];
 const selectOptions = ref({

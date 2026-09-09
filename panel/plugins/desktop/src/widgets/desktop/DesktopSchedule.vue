@@ -5,23 +5,15 @@ import { padZero } from "@/tools/common";
 import { ctx } from "@/plugin/context";
 import type { Schedule, ScheduleAction, ScheduleTaskForm } from "@/types";
 import { ScheduleActionType, ScheduleCreateType, ScheduleType } from "@/types/const";
-import {
-    ClockCircleOutlined,
-    DeleteOutlined,
-    EditOutlined,
-    LoadingOutlined,
-    MinusCircleOutlined,
-    PlusCircleOutlined
-} from "@ant-design/icons-vue";
-import { notification } from "ant-design-vue";
+import { notifyDesktop } from "../../desktopNotice";
 import dayjs from "dayjs";
 import _ from "lodash";
-import { computed, h, onMounted, onUnmounted, reactive, ref } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
 import DesktopWindow from "./DesktopWindow.vue";
+import { VBtn, VCheckbox, VIcon, VSelect, VTextField } from "vuetify/components";
 
-const getPopupContainer = (triggerNode: HTMLElement) => {
-    return triggerNode.parentElement || document.body;
-};
+const ClockCircleOutlined = "mdi-clock-outline";
+const MinusCircleOutlined = "mdi-minus-circle-outline";
 
 const props = defineProps<{
     instanceId: string;
@@ -54,6 +46,15 @@ const scheduleActionTypes = computed(() => {
     }
     return types;
 });
+
+const scheduleTypeItems = computed(() => Object.entries(ScheduleType).map(([value, title]) => ({
+    title,
+    value: Number(value)
+})));
+const actionTypeItems = computed(() => Object.entries(scheduleActionTypes.value).map(([value, title]) => ({
+    title,
+    value
+})));
 
 const windowWidth = ref(window.innerWidth);
 const windowHeight = ref(window.innerHeight);
@@ -207,9 +208,10 @@ const submitForm = async () => {
         await create[formTask.type](formTask);
 
         if (createState.value) {
-            notification.success({
-                message: isEditing.value ? t("TXT_CODE_d3de39b4") : t("TXT_CODE_d28c05df")
-            });
+            notifyDesktop(
+                isEditing.value ? t("TXT_CODE_d3de39b4") : t("TXT_CODE_d28c05df"),
+                "success"
+            );
             dialogOpen.value = false;
             await loadSchedules();
         }
@@ -229,18 +231,18 @@ onMounted(async () => {
     <div class="dschedule">
         <div class="dschedule-header">
             <div class="dschedule-header__right">
-                <button class="ds-btn ds-btn--primary" @click="openNewDialog">
-                    <PlusCircleOutlined />
+                <VBtn class="ds-btn ds-btn--primary" variant="text" rounded="xl" @click="openNewDialog">
+                    <VIcon icon="mdi-plus-circle-outline"  />
                     {{ t("TXT_CODE_1644b775") }}
-                </button>
-                <button class="ds-btn" @click="loadSchedules">
+                </VBtn>
+                <VBtn class="ds-btn" variant="text" rounded="xl" @click="loadSchedules">
                     {{ t("TXT_CODE_b76d94e0") }}
-                </button>
+                </VBtn>
             </div>
         </div>
 
         <div class="dschedule-body">
-            <a-spin :spinning="scheduleListLoading">
+            <div class="dschedule-list" :class="{ 'dschedule-list--loading': scheduleListLoading }">
                 <div v-if="scheduleList.length === 0 && !scheduleListLoading" class="dschedule-empty">
                     {{ t("TXT_CODE_NO_DATA") }}
                 </div>
@@ -269,16 +271,16 @@ onMounted(async () => {
                         </div>
                     </div>
                     <div class="dschedule-item__actions">
-                        <button class="ds-btn-icon" :title="t('TXT_CODE_ad207008')" @click="openEditDialog(item)">
-                            <EditOutlined />
-                        </button>
-                        <button class="ds-btn-icon ds-btn-icon--danger" :title="t('TXT_CODE_ecbd7449')"
+                        <VBtn icon variant="text" rounded="xl" class="ds-btn-icon" :title="t('TXT_CODE_ad207008')" @click="openEditDialog(item)">
+                            <VIcon icon="mdi-pencil-outline"  />
+                        </VBtn>
+                        <VBtn icon variant="text" rounded="xl" class="ds-btn-icon ds-btn-icon--danger" :title="t('TXT_CODE_ecbd7449')"
                             @click="handleDelete(item.name)">
-                            <DeleteOutlined />
-                        </button>
+                            <VIcon icon="mdi-delete-outline"  />
+                        </VBtn>
                     </div>
                 </div>
-            </a-spin>
+            </div>
         </div>
     </div>
 
@@ -291,103 +293,76 @@ onMounted(async () => {
                 :z-index="10004" :show-minimize="false" :show-maximize="false" :resizable="false"
                 @close="dialogOpen = false">
                 <div class="ds-dialog-content">
-                    <a-form layout="vertical" class="ds-dialog-form">
-                        <a-form-item :label="t('TXT_CODE_b290a4b0')">
-                            <a-input v-model:value="formTask.name" :disabled="isEditing"
-                                :placeholder="t('TXT_CODE_b72d638d')" />
-                        </a-form-item>
+                    <div class="ds-dialog-form">
+                        <label class="ds-form-label">{{ t('TXT_CODE_b290a4b0') }}</label>
+                        <VTextField v-model="formTask.name" :disabled="isEditing" variant="solo" density="compact" rounded="xl" hide-details
+                            :placeholder="t('TXT_CODE_b72d638d')" />
 
-                        <a-form-item :label="t('TXT_CODE_a62c99d1')">
-                            <a-select v-model:value="formTask.type" :placeholder="t('TXT_CODE_3bb646e4')"
-                                :getPopupContainer="getPopupContainer">
-                                <a-select-option v-for="(type, i) in ScheduleType" :key="i" :value="Number(i)">
-                                    {{ type }}
-                                </a-select-option>
-                            </a-select>
-                        </a-form-item>
+                        <label class="ds-form-label">{{ t('TXT_CODE_a62c99d1') }}</label>
+                        <VSelect v-model="formTask.type" :items="scheduleTypeItems" variant="solo" density="compact" rounded="xl" hide-details
+                            :placeholder="t('TXT_CODE_3bb646e4')" />
 
                         <template v-if="formTask.type === ScheduleCreateType.INTERVAL">
-                            <a-form-item :label="t('TXT_CODE_3554dac0')">
-                                <a-row :gutter="[12, 12]">
-                                    <a-col :span="8">
-                                        <a-input v-model:value="formTask.cycle[2]" :placeholder="t('TXT_CODE_ba8ebc7')"
-                                            :addon-after="t('TXT_CODE_4e2c7f64')" />
-                                    </a-col>
-                                    <a-col :span="8">
-                                        <a-input v-model:value="formTask.cycle[1]" :placeholder="t('TXT_CODE_ba8ebc7')"
-                                            :addon-after="t('TXT_CODE_a7e9ff0f')" />
-                                    </a-col>
-                                    <a-col :span="8">
-                                        <a-input v-model:value="formTask.cycle[0]" :placeholder="t('TXT_CODE_ba8ebc7')"
-                                            :addon-after="t('TXT_CODE_acabc771')" />
-                                    </a-col>
-                                </a-row>
-                            </a-form-item>
-                            <a-form-item :label="t('TXT_CODE_d9cfab1b')">
-                                <a-input-number v-model:value="formTask.count" class="w-100"
-                                    :placeholder="t('TXT_CODE_a59981f4')" />
-                            </a-form-item>
+                            <label class="ds-form-label">{{ t('TXT_CODE_3554dac0') }}</label>
+                            <div class="ds-cycle-grid">
+                                <VTextField v-model="formTask.cycle[2]" :label="t('TXT_CODE_4e2c7f64')" variant="solo" density="compact" rounded="xl" hide-details />
+                                <VTextField v-model="formTask.cycle[1]" :label="t('TXT_CODE_a7e9ff0f')" variant="solo" density="compact" rounded="xl" hide-details />
+                                <VTextField v-model="formTask.cycle[0]" :label="t('TXT_CODE_acabc771')" variant="solo" density="compact" rounded="xl" hide-details />
+                            </div>
+                            <label class="ds-form-label">{{ t('TXT_CODE_d9cfab1b') }}</label>
+                            <VTextField v-model.number="formTask.count" type="number" variant="solo" density="compact" rounded="xl" hide-details
+                                :placeholder="t('TXT_CODE_a59981f4')" />
                         </template>
 
                         <template v-if="formTask.type === ScheduleCreateType.CYCLE">
-                            <a-form-item :label="t('TXT_CODE_3554dac0')">
-                                <a-time-picker v-model:value="formTask.objTime" class="w-100"
-                                    :getPopupContainer="getPopupContainer" />
-                            </a-form-item>
-                            <a-form-item :label="t('TXT_CODE_76750199')">
-                                <a-checkbox-group v-model:value="formTask.weekend" :options="weeks" />
-                            </a-form-item>
-                            <a-form-item :label="t('TXT_CODE_d9cfab1b')">
-                                <a-input-number v-model:value="formTask.count" class="w-100"
-                                    :placeholder="t('TXT_CODE_a59981f4')" />
-                            </a-form-item>
+                            <div class="ds-form-group">
+                                <label class="ds-form-label">{{ t('TXT_CODE_3554dac0') }}</label>
+                                <VTextField :model-value="formTask.objTime?.format('HH:mm:ss')" type="time" variant="solo" density="compact" rounded="xl" hide-details
+                                    @update:model-value="value => formTask.objTime = dayjs(value, 'HH:mm:ss')" />
+                            </div>
+                            <label class="ds-form-label">{{ t('TXT_CODE_76750199') }}</label>
+                            <div class="ds-week-grid"><VCheckbox v-for="week in weeks" :key="week.value" v-model="formTask.weekend" :value="week.value" :label="week.label" hide-details density="compact" /></div>
+                            <label class="ds-form-label">{{ t('TXT_CODE_d9cfab1b') }}</label>
+                            <VTextField v-model.number="formTask.count" type="number" variant="solo" density="compact" rounded="xl" hide-details
+                                :placeholder="t('TXT_CODE_a59981f4')" />
                         </template>
 
                         <template v-if="formTask.type === ScheduleCreateType.SPECIFY">
-                            <a-form-item :label="t('TXT_CODE_f3fe5c8e')">
-                                <a-date-picker v-model:value="formTask.objTime" show-time class="w-100"
-                                    :getPopupContainer="getPopupContainer" />
-                            </a-form-item>
+                            <div class="ds-form-group">
+                                <label class="ds-form-label">{{ t('TXT_CODE_f3fe5c8e') }}</label>
+                                <VTextField :model-value="formTask.objTime?.format('YYYY-MM-DDTHH:mm')" type="datetime-local" variant="solo" density="compact" rounded="xl" hide-details
+                                    @update:model-value="value => formTask.objTime = dayjs(value)" />
+                            </div>
                         </template>
 
-                        <a-form-item>
+                        <div class="ds-form-group">
                             <div class="ds-actions-header">
                                 <span>{{ t("TXT_CODE_61811ac") }}</span>
-                                <a-button size="small" :icon="h(PlusCircleOutlined)" @click="addEmptyAction">
+                                <VBtn size="small" variant="text" rounded="xl" @click="addEmptyAction">
+                                    <VIcon icon="mdi-plus-circle-outline" />
                                     {{ t("TXT_CODE_dfc17a0c") }}
-                                </a-button>
+                                </VBtn>
                             </div>
                             <div v-for="(action, index) in formTask.actions" :key="index" class="ds-action-row">
-                                <a-row :gutter="[8, 8]">
-                                    <a-col :span="6">
-                                        <a-select v-model:value="action.type" @change="action.payload = ''"
-                                            :getPopupContainer="getPopupContainer">
-                                            <a-select-option v-for="(type, i) in scheduleActionTypes" :key="i"
-                                                :value="i">
-                                                {{ type }}
-                                            </a-select-option>
-                                        </a-select>
-                                    </a-col>
-                                    <a-col :span="16">
-                                        <a-input v-model:value="action.payload"
-                                            :placeholder="getInputPlaceholder(action) || t('TXT_CODE_6cbb84a9')"
-                                            :disabled="!getInputPlaceholder(action)" />
-                                    </a-col>
-                                    <a-col :span="2">
-                                        <a-button :icon="h(MinusCircleOutlined)" danger @click="delAction(index)" />
-                                    </a-col>
-                                </a-row>
+                                    <VSelect v-model="action.type" :items="actionTypeItems" variant="solo" density="compact" rounded="xl" hide-details
+                                        @update:model-value="action.payload = ''" />
+                                    <VTextField v-model="action.payload" variant="solo" density="compact" rounded="xl" hide-details
+                                        :placeholder="getInputPlaceholder(action) || t('TXT_CODE_6cbb84a9')"
+                                        :disabled="!getInputPlaceholder(action)" />
+                                    <VBtn icon variant="text" rounded="xl" color="error" @click="delAction(index)">
+                                        <VIcon :icon="MinusCircleOutlined" />
+                                    </VBtn>
                             </div>
-                        </a-form-item>
-                    </a-form>
+                        </div>
+                    </div>
                     <div class="ds-dialog-footer">
-                        <button class="ds-dialog-btn ds-dialog-btn--default" @click="dialogOpen = false">
+                        <VBtn class="ds-dialog-btn ds-dialog-btn--default" variant="text" rounded="xl" @click="dialogOpen = false">
                             {{ t("TXT_CODE_a0451c97") }}
-                        </button>
-                        <button class="ds-dialog-btn ds-dialog-btn--primary" :disabled="isLoading" @click="submitForm">
-                            <LoadingOutlined v-if="isLoading" />
+                        </VBtn>
+                        <VBtn class="ds-dialog-btn ds-dialog-btn--primary" variant="text" rounded="xl" :disabled="isLoading" @click="submitForm">
+                            <VIcon icon="mdi-loading" v-if="isLoading"  />
                             {{ t("TXT_CODE_abfe9512") }}
-                        </button>
+                        </VBtn>
                     </div>
                 </div>
             </DesktopWindow>
@@ -481,6 +456,25 @@ onMounted(async () => {
     flex: 1;
     overflow-y: auto;
     padding: 8px;
+}
+
+.ds-form-label {
+    display: block;
+    margin: 10px 0 6px;
+    color: var(--desktop-window-text-secondary);
+    font-size: 12px;
+}
+
+.ds-cycle-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.ds-week-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
 }
 
 .dschedule-empty {

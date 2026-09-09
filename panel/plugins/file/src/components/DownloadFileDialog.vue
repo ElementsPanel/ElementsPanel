@@ -12,7 +12,7 @@ import {
   VDialog,
   VSpacer,
   VTextField
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 
 // The two callbacks `useMountComponent` injects, spelled out rather than taken
 // from the core `MountComponent<T>`: the SFC compiler resolves `defineProps`

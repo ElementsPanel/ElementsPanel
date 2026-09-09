@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import {
-    CloseOutlined,
-    FullscreenExitOutlined,
-    FullscreenOutlined,
-    MinusOutlined
-} from "@ant-design/icons-vue";
+    VBtn,
+    VIcon
+} from "vuetify/components";
 import { computed, onMounted, onUnmounted, ref, type Component } from "vue";
 
 export interface DesktopWindowProps {
@@ -62,6 +60,7 @@ const resizeStart = ref({ x: 0, y: 0, w: 0, h: 0, winX: 0, winY: 0 });
 const savedPos = ref({ x: props.initialX, y: props.initialY, w: props.initialWidth, h: props.initialHeight });
 
 const isComponentIcon = computed(() => typeof props.icon !== "string");
+const isMdiIcon = computed(() => typeof props.icon === "string" && props.icon.startsWith("mdi-"));
 
 const windowStyle = computed(() => {
     if (props.maximized) {
@@ -258,22 +257,22 @@ onUnmounted(() => {
             <div class="window__titlebar-left">
                 <span v-if="icon" class="window__icon">
                     <component :is="icon" v-if="isComponentIcon" />
+                    <VIcon v-else-if="isMdiIcon" :icon="icon as string" size="small" />
                     <img v-else :src="icon as string" alt="icon" />
                 </span>
                 <span class="window__title">{{ title }}</span>
             </div>
             <div class="window__controls" @mousedown.stop>
-                <div v-if="showMinimize" class="window__control window__control--minimize"
-                    @click.stop="emit('minimize', id)">
-                    <MinusOutlined />
-                </div>
-                <div v-if="showMaximize" class="window__control window__control--maximize" @click.stop="handleMaximize">
-                    <FullscreenExitOutlined v-if="maximized" />
-                    <FullscreenOutlined v-else />
-                </div>
-                <div v-if="showClose" class="window__control window__control--close" @click.stop="emit('close', id)">
-                    <CloseOutlined />
-                </div>
+                <VBtn v-if="showMinimize" class="window__control window__control--minimize" icon="mdi-minus"
+                    variant="text" density="compact" size="small" :aria-label="`Minimize ${title}`"
+                    @click.stop="emit('minimize', id)" />
+                <VBtn v-if="showMaximize" class="window__control window__control--maximize"
+                    :icon="maximized ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" variant="text" density="compact"
+                    size="small" :aria-label="maximized ? `Restore ${title}` : `Maximize ${title}`"
+                    @click.stop="handleMaximize" />
+                <VBtn v-if="showClose" class="window__control window__control--close" icon="mdi-close"
+                    variant="text" density="compact" size="small" :aria-label="`Close ${title}`"
+                    @click.stop="emit('close', id)" />
             </div>
         </div>
 
@@ -295,7 +294,6 @@ onUnmounted(() => {
     position: fixed;
     background: var(--desktop-window-bg);
     backdrop-filter: saturate(180%) blur(20px);
-    border: 1px solid var(--desktop-window-border);
     box-shadow: 0 8px 32px var(--desktop-window-shadow);
     display: flex;
     flex-direction: column;
@@ -308,7 +306,6 @@ onUnmounted(() => {
         box-shadow 0.2s ease;
 
     &--active {
-        border-color: var(--desktop-window-border);
         box-shadow: 0 12px 48px var(--desktop-window-shadow);
     }
 
@@ -317,9 +314,6 @@ onUnmounted(() => {
         transition: none;
     }
 
-    &--maximized {
-        border: none;
-    }
 }
 
 .window__titlebar {
@@ -376,11 +370,15 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
+    border-radius: 999px;
     cursor: pointer;
     color: var(--desktop-window-text-secondary);
     font-size: 12px;
     transition: background-color 0.12s;
+
+    :deep(.v-btn__content) {
+        color: inherit;
+    }
 
     &:hover {
         background-color: var(--desktop-window-control-hover);
@@ -435,8 +433,7 @@ onUnmounted(() => {
             right: 3px;
             width: 8px;
             height: 8px;
-            border-right: 2px solid var(--desktop-resize-handle-color);
-            border-bottom: 2px solid var(--desktop-resize-handle-color);
+            background: transparent;
         }
     }
 }

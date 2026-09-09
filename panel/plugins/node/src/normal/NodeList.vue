@@ -12,7 +12,7 @@ import {
   VRow,
   VSelect,
   VTextField
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 import { useRemoteNode } from "../hooks/useRemoteNode";
 import NodeDetailDialog from "./node/NodeDetailDialog.vue";
 import NodeItem from "./node/NodeItem.vue";

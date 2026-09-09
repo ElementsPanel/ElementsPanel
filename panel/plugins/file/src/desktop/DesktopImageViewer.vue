@@ -2,6 +2,7 @@
 import { useFileManager } from "../hooks/useFileManager";
 import { t } from "@/lang/i18n";
 import { onMounted, ref } from "vue";
+import { VBtn, VIcon, VImg, VProgressCircular } from "vuetify/components";
 
 const props = defineProps<{
     instanceId: string;
@@ -43,15 +44,15 @@ onMounted(async () => {
 <template>
     <div class="desktop-image-viewer">
         <div class="image-view">
-            <a-spin :spinning="!imgLink">
-                <a-image v-if="imgLink" :src="imgLink" :alt="props.fileName" />
-            </a-spin>
+            <VProgressCircular v-if="!imgLink" indeterminate size="32" width="3" />
+            <VImg v-else class="image-preview" :src="imgLink" :alt="props.fileName" contain />
         </div>
         <div class="image-footer">
             <div class="image-name">{{ props.fileName }}</div>
-            <a-button type="primary" size="small" :loading="downloadBtnLoading" @click="onDownload">
+            <VBtn color="primary" variant="text" size="small" :loading="downloadBtnLoading" @click="onDownload">
+                <VIcon icon="mdi-download-outline" />
                 {{ t("TXT_CODE_65b21404") }}
-            </a-button>
+            </VBtn>
         </div>
     </div>
 </template>
@@ -74,18 +75,11 @@ onMounted(async () => {
     padding: 16px;
 }
 
-.image-view :deep(.ant-image) {
+.image-preview {
+    width: 100%;
+    height: 100%;
     max-width: 100%;
     max-height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.image-view :deep(.ant-image-img) {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
 }
 
 .image-footer {
@@ -93,7 +87,6 @@ onMounted(async () => {
     justify-content: space-between;
     align-items: center;
     padding: 12px 16px;
-    border-top: 1px solid var(--desktop-window-border);
     background-color: var(--desktop-window-titlebar-bg);
 }
 

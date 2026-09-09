@@ -23,7 +23,7 @@ import {
   VTextField,
   VWindow,
   VWindowItem
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 import { useRemoteNode } from "../../hooks/useRemoteNode";
 import NodeRemoteMappingEdit from "../NodeRemoteMappingEdit.vue";
 

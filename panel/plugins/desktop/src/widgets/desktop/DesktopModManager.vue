@@ -1,15 +1,7 @@
 <script setup lang="ts">
 import { useInstanceInfo } from "@/hooks/useInstance";
 import { t } from "@/lang/i18n";
-import {
-    ExclamationCircleOutlined,
-    FolderOutlined,
-    LoadingOutlined,
-    ReloadOutlined,
-    SearchOutlined,
-    UploadOutlined
-} from "@ant-design/icons-vue";
-import { Flex, message } from "ant-design-vue";
+import { notifyDesktop } from "../../desktopNotice";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import LocalModTable from "@instance/widgets/instance/mod-manager/LocalModTable.vue";
 import ModConfigModal from "../instance/mod-manager/ModConfigModal.vue";
@@ -22,10 +14,12 @@ import { useModConfig } from "@instance/widgets/instance/mod-manager/useModConfi
 import { useModSearch } from "../instance/mod-manager/useModSearch";
 import { useModUpload } from "@instance/widgets/instance/mod-manager/useModUpload";
 import DesktopWindow from "./DesktopWindow.vue";
+import { VAlert, VBadge, VBtn, VIcon, VSelect, VTabs, VTab, VTextField, VWindow, VWindowItem } from "vuetify/components";
 
 const TAB_KEY_MODS = "TAB_KEY_MODS";
 const TAB_KEY_PLUGINS = "TAB_KEY_PLUGINS";
 const TAB_KEY_DOWNLOAD = "TAB_KEY_DOWNLOAD";
+const ExclamationCircleOutlined = "mdi-alert-circle-outline";
 
 const props = defineProps<{
     instanceId: string;
@@ -211,7 +205,7 @@ const openExternal = (mod: any) => {
     };
     const url = baseUrlMap[source];
     if (!url) {
-        message.error(t("TXT_CODE_8d2a42a2"));
+        notifyDesktop(t("TXT_CODE_8d2a42a2"), "error");
     } else {
         window.open(url, "_blank");
     }
@@ -394,6 +388,8 @@ const handleTabChange = (newKey: string | number) => {
     }
 };
 
+const onTabChange = (value: unknown) => handleTabChange(String(value));
+
 onMounted(async () => {
     loadMcVersions();
     await loadMods(getCurrentFolder());
@@ -405,20 +401,16 @@ onMounted(async () => {
         <div v-if="activeKey === TAB_KEY_MODS || activeKey === TAB_KEY_PLUGINS" class="dmm-header">
             <div class="dmm-header__right">
                 <div class="dmm-search">
-                    <a-input v-model:value="headerSearchQuery" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')"
-                        allow-clear size="small" style="width: 200px">
-                        <template #suffix>
-                            <SearchOutlined />
-                        </template>
-                    </a-input>
+                    <VTextField v-model="headerSearchQuery" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')"
+                        variant="solo" density="compact" rounded="xl" hide-details clearable prepend-inner-icon="mdi-magnify" width="200" />
                 </div>
-                <button class="dmm-btn dmm-btn--sm" @click="onUploadClick" :title="t('TXT_CODE_ae09d79d')">
-                    <UploadOutlined /> {{ t("TXT_CODE_ae09d79d") }}
-                </button>
-                <button class="dmm-btn dmm-btn--sm dmm-btn--primary" :disabled="loading" @click="() => loadMods()"
+                <VBtn class="dmm-btn dmm-btn--sm" variant="text" rounded="xl" @click="onUploadClick" :title="t('TXT_CODE_ae09d79d')">
+                    <VIcon icon="mdi-upload-outline"  /> {{ t("TXT_CODE_ae09d79d") }}
+                </VBtn>
+                <VBtn class="dmm-btn dmm-btn--sm dmm-btn--primary" variant="text" rounded="xl" :disabled="loading" @click="() => loadMods()"
                     :title="t('TXT_CODE_REFRESH')">
-                    <ReloadOutlined :spin="loading" /> {{ t("TXT_CODE_REFRESH") }}
-                </button>
+                    <VIcon icon="mdi-refresh" :class="{ 'desktop-icon-spin': loading }"  /> {{ t("TXT_CODE_REFRESH") }}
+                </VBtn>
             </div>
         </div>
 
@@ -427,154 +419,66 @@ onMounted(async () => {
                 @drop.prevent="handleDrop">
                 <div v-if="opacity" class="dmm-drag-overlay">
                     <div class="dmm-drag-overlay__inner">
-                        <UploadOutlined class="dmm-drag-overlay__icon" />
+                        <VIcon icon="mdi-upload-outline" class="dmm-drag-overlay__icon"  />
                         <div class="dmm-drag-overlay__text">{{ t("TXT_CODE_DRAG_TO_UPLOAD") }}</div>
                     </div>
                 </div>
 
-                <a-alert v-if="isWindows && isRunning" type="warning" show-icon class="dmm-alert">
-                    <template #message>
-                        <div class="text-left">
-                            <div class="font-bold">{{ t("TXT_CODE_MOD_WIN_FILE_LOCK_TITLE") }}</div>
-                            <div class="text-xs opacity-80 font-normal mt-1">
-                                {{ t("TXT_CODE_MOD_WIN_RUNNING_ALERT") }}
-                            </div>
-                        </div>
-                    </template>
-                </a-alert>
+                <VAlert v-if="isWindows && isRunning" type="warning" variant="tonal" rounded="xl" class="dmm-alert"
+                    :title="t('TXT_CODE_MOD_WIN_FILE_LOCK_TITLE')">
+                    {{ t("TXT_CODE_MOD_WIN_RUNNING_ALERT") }}
+                </VAlert>
 
-                <a-tabs v-model:activeKey="activeKey" class="dmm-tabs" destroy-inactive-tab-pane
-                    @change="handleTabChange">
-                    <a-tab-pane v-if="hasModsFolder" :key="TAB_KEY_MODS">
-                        <template #tab>
-                            <Flex align="center" :gap="6">
-                                {{ t("TXT_CODE_MOD_LIST") }}
-                                <a-badge v-if="!loading && activeKey === TAB_KEY_MODS" :count="filteredMods.length"
-                                    :show-zero="true" :overflow-count="999" :number-style="{
-                                        backgroundColor: '#f0f0f0',
-                                        color: '#555',
-                                        boxShadow: 'none'
-                                    }" size="small" />
-                                <LoadingOutlined v-if="loading || loadingExtra"
-                                    style="font-size: 12px; color: #1890ff" />
-                            </Flex>
-                        </template>
+                <VTabs v-model="activeKey" class="dmm-tabs" @update:model-value="onTabChange">
+                    <VTab v-if="hasModsFolder" :value="TAB_KEY_MODS">
+                        {{ t("TXT_CODE_MOD_LIST") }}
+                        <VBadge v-if="!loading && activeKey === TAB_KEY_MODS" :content="filteredMods.length" inline color="grey" />
+                        <VIcon icon="mdi-loading" v-if="loading || loadingExtra" size="small" />
+                    </VTab>
+                    <VTab v-if="hasPluginsFolder" :value="TAB_KEY_PLUGINS">
+                        {{ t("TXT_CODE_PLUGIN_LIST") }}
+                        <VBadge v-if="!loading && activeKey === TAB_KEY_PLUGINS" :content="filteredPlugins.length" inline color="grey" />
+                        <VIcon icon="mdi-loading" v-if="loading || loadingExtra" size="small" />
+                    </VTab>
+                    <VTab :value="TAB_KEY_DOWNLOAD">{{ t('TXT_CODE_25bf0004') }}</VTab>
+                </VTabs>
+                <VWindow v-model="activeKey" class="dmm-window" :touch="false">
+                    <VWindowItem v-if="hasModsFolder" :value="TAB_KEY_MODS">
                         <div class="dmm-table-wrapper">
-                            <LocalModTable :key="TAB_KEY_MODS" :loading="loading" :data-source="filteredMods"
+                            <LocalModTable :key="TAB_KEY_MODS" :loading="loading" :data-source="filteredMods" :is-desktop="true"
                                 :columns="columns" :pagination="tablePagination" @change="handleTableChange"
                                 @toggle="onToggle" @delete="onDelete" @config="openConfig" @open-external="openExternal"
                                 @refresh="loadMods" />
                         </div>
-                    </a-tab-pane>
-
-                    <a-tab-pane v-if="hasPluginsFolder" :key="TAB_KEY_PLUGINS">
-                        <template #tab>
-                            <Flex align="center" :gap="6">
-                                {{ t("TXT_CODE_PLUGIN_LIST") }}
-                                <a-badge v-if="!loading && activeKey === TAB_KEY_PLUGINS"
-                                    :count="filteredPlugins.length" :show-zero="true" :overflow-count="999"
-                                    :number-style="{
-                                        backgroundColor: '#f0f0f0',
-                                        color: '#555',
-                                        boxShadow: 'none'
-                                    }" size="small" />
-                                <LoadingOutlined v-if="loading || loadingExtra"
-                                    style="font-size: 12px; color: #1890ff" />
-                            </Flex>
-                        </template>
+                    </VWindowItem>
+                    <VWindowItem v-if="hasPluginsFolder" :value="TAB_KEY_PLUGINS">
                         <div class="dmm-table-wrapper">
-                            <LocalModTable :key="TAB_KEY_PLUGINS" :loading="loading" :data-source="filteredPlugins"
+                            <LocalModTable :key="TAB_KEY_PLUGINS" :loading="loading" :data-source="filteredPlugins" :is-desktop="true"
                                 :columns="columns" :pagination="tablePagination" @change="handleTableChange"
                                 @toggle="onToggle" @delete="onDelete" @config="openConfig" @open-external="openExternal"
                                 @refresh="loadMods" />
                         </div>
-                    </a-tab-pane>
-
-                    <a-tab-pane :key="TAB_KEY_DOWNLOAD" :tab="t('TXT_CODE_25bf0004')">
+                    </VWindowItem>
+                    <VWindowItem :value="TAB_KEY_DOWNLOAD">
                         <div class="dmm-download">
-                            <a-form layout="horizontal" :model="searchFilters" class="dmm-search-form">
-                                <a-row :gutter="[12, 8]">
-                                    <a-col :span="6">
-                                        <a-form-item>
-                                            <a-input v-model:value="searchFilters.query"
-                                                :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" size="small"
-                                                @press-enter="onSearch" />
-                                        </a-form-item>
-                                    </a-col>
-                                    <a-col :span="4">
-                                        <a-form-item>
-                                            <a-select v-model:value="searchFilters.source" size="small">
-                                                <a-select-option value="all">
-                                                    {{ t("TXT_CODE_9693b0e1") }}
-                                                </a-select-option>
-                                                <a-select-option value="modrinth">Modrinth</a-select-option>
-                                                <a-select-option value="curseforge">CurseForge</a-select-option>
-                                                <a-select-option value="spigotmc">SpigotMC</a-select-option>
-                                            </a-select>
-                                        </a-form-item>
-                                    </a-col>
-                                    <a-col :span="4">
-                                        <a-form-item>
-                                            <a-select v-model:value="searchFilters.version" show-search allow-clear
-                                                size="small" :placeholder="t('TXT_CODE_743b4fe7')">
-                                                <a-select-option value="">
-                                                    {{ t("TXT_CODE_2af87548") }}
-                                                </a-select-option>
-                                                <a-select-option v-for="v in mcVersions" :key="v" :value="v">
-                                                    {{ v }}
-                                                </a-select-option>
-                                            </a-select>
-                                        </a-form-item>
-                                    </a-col>
-                                    <a-col :span="3">
-                                        <a-form-item>
-                                            <a-select v-model:value="searchFilters.type" size="small">
-                                                <a-select-option value="all">
-                                                    {{ t("TXT_CODE_cc4db8f0") }}
-                                                </a-select-option>
-                                                <a-select-option value="mod">
-                                                    {{ t("TXT_CODE_MOD") }}
-                                                </a-select-option>
-                                                <a-select-option value="plugin">
-                                                    {{ t("TXT_CODE_PLUGIN") }}
-                                                </a-select-option>
-                                            </a-select>
-                                        </a-form-item>
-                                    </a-col>
-                                    <a-col :span="3">
-                                        <a-form-item>
-                                            <a-select v-model:value="searchFilters.environment" size="small">
-                                                <a-select-option value="all">
-                                                    {{ t("TXT_CODE_74e77b4c") }}
-                                                </a-select-option>
-                                                <a-select-option value="server">
-                                                    {{ t("TXT_CODE_SERVER") }}
-                                                </a-select-option>
-                                                <a-select-option value="client">
-                                                    {{ t("TXT_CODE_CLIENT") }}
-                                                </a-select-option>
-                                            </a-select>
-                                        </a-form-item>
-                                    </a-col>
-                                    <a-col :span="4">
-                                        <a-form-item>
-                                            <a-select v-model:value="searchFilters.loader" show-search allow-clear
-                                                size="small" :options="loaderOptions" option-filter-prop="label"
-                                                style="width: 100%" :placeholder="t('TXT_CODE_SELECT_LOADER')" />
-                                        </a-form-item>
-                                    </a-col>
-                                </a-row>
-                                <div class="dmm-search-actions">
-                                    <a-button type="primary" size="small" :loading="searchLoading" @click="onSearch">
-                                        <template #icon>
-                                            <SearchOutlined />
-                                        </template>
-                                        {{ t("TXT_CODE_SEARCH") }}
-                                    </a-button>
-                                    <a-button size="small" @click="resetSearch">{{ t("TXT_CODE_880fedf7") }}</a-button>
+                            <div class="dmm-search-form">
+                                <div class="dmm-search-grid">
+                                    <VTextField v-model="searchFilters.query" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" variant="solo" density="compact" rounded="xl" hide-details @keyup.enter="onSearch" />
+                                    <VSelect v-model="searchFilters.source" :items="[{title:t('TXT_CODE_9693b0e1'),value:'all'},{title:'Modrinth',value:'modrinth'},{title:'CurseForge',value:'curseforge'},{title:'SpigotMC',value:'spigotmc'}]" variant="solo" density="compact" rounded="xl" hide-details />
+                                    <VSelect v-model="searchFilters.version" :items="[{title:t('TXT_CODE_2af87548'),value:''}, ...mcVersions.map(v=>({title:v,value:v}))]" clearable :placeholder="t('TXT_CODE_743b4fe7')" variant="solo" density="compact" rounded="xl" hide-details />
+                                    <VSelect v-model="searchFilters.type" :items="[{title:t('TXT_CODE_cc4db8f0'),value:'all'},{title:t('TXT_CODE_MOD'),value:'mod'},{title:t('TXT_CODE_PLUGIN'),value:'plugin'}]" variant="solo" density="compact" rounded="xl" hide-details />
+                                    <VSelect v-model="searchFilters.environment" :items="[{title:t('TXT_CODE_74e77b4c'),value:'all'},{title:t('TXT_CODE_SERVER'),value:'server'},{title:t('TXT_CODE_CLIENT'),value:'client'}]" variant="solo" density="compact" rounded="xl" hide-details />
+                                    <VSelect v-model="searchFilters.loader" :items="loaderOptions" item-title="label" item-value="value" clearable :placeholder="t('TXT_CODE_SELECT_LOADER')" variant="solo" density="compact" rounded="xl" hide-details />
                                 </div>
-                            </a-form>
-                            <SearchModTable :loading="searchLoading" :data-source="searchResults"
+                                <div class="dmm-search-actions">
+                                    <VBtn color="primary" size="small" variant="text" rounded="xl" :loading="searchLoading" @click="onSearch">
+                                        <VIcon icon="mdi-magnify" />
+                                        {{ t("TXT_CODE_SEARCH") }}
+                                    </VBtn>
+                                    <VBtn size="small" variant="text" rounded="xl" @click="resetSearch">{{ t("TXT_CODE_880fedf7") }}</VBtn>
+                                </div>
+                            </div>
+                            <SearchModTable :loading="searchLoading" :data-source="searchResults" :is-desktop="true"
                                 :columns="searchColumns" :mods="mods" :pagination="{
                                     current: searchPage,
                                     pageSize: searchLimit,
@@ -585,8 +489,8 @@ onMounted(async () => {
                                 }" @change="(p: any) => onSearch(p.current, p.pageSize)" @show-versions="showVersions"
                                 @open-external="openExternal" @download="handleDownload" />
                         </div>
-                    </a-tab-pane>
-                </a-tabs>
+                    </VWindowItem>
+                </VWindow>
 
                 <ModVersionModal v-model:visible="showVersionModal" :selected-mod="selectedMod" :versions="versions"
                     :versions-loading="versionsLoading" :search-filters="searchFilters" :mods="mods" :is-desktop="true"
@@ -614,23 +518,23 @@ onMounted(async () => {
                     :resizable="false" @close="handleSaveLocationCancel">
                     <div class="dmm-dialog-content">
                         <div class="dmm-dialog__body dmm-dialog__body--column">
-                            <ExclamationCircleOutlined class="dmm-dialog__warn-icon" />
+                            <VIcon icon="mdi-alert-circle-outline" class="dmm-dialog__warn-icon"  />
                             <p class="dmm-dialog__desc">{{ t("TXT_CODE_MOD_SELECT_SAVE_DIR") }}</p>
                         </div>
                         <div class="dmm-dialog__footer">
-                            <button class="dmm-dialog-btn dmm-dialog-btn--default" @click="handleSaveLocationCancel">
+                            <VBtn class="dmm-dialog-btn dmm-dialog-btn--default" variant="text" rounded="xl" @click="handleSaveLocationCancel">
                                 {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="dmm-dialog-btn dmm-dialog-btn--primary"
+                            </VBtn>
+                            <VBtn class="dmm-dialog-btn dmm-dialog-btn--primary" variant="text" rounded="xl"
                                 :class="{ 'dmm-dialog-btn--highlighted': saveLocationDialog.detectedType === 'mod' }"
                                 @click="handleSaveLocationSelect('mod')">
-                                <FolderOutlined /> {{ t("TXT_CODE_MOD") }}
-                            </button>
-                            <button class="dmm-dialog-btn dmm-dialog-btn--primary"
+                                <VIcon icon="mdi-folder-outline"  /> {{ t("TXT_CODE_MOD") }}
+                            </VBtn>
+                            <VBtn class="dmm-dialog-btn dmm-dialog-btn--primary" variant="text" rounded="xl"
                                 :class="{ 'dmm-dialog-btn--highlighted': saveLocationDialog.detectedType === 'plugin' }"
                                 @click="handleSaveLocationSelect('plugin')">
-                                <FolderOutlined /> {{ t("TXT_CODE_PLUGIN") }}
-                            </button>
+                                <VIcon icon="mdi-folder-outline"  /> {{ t("TXT_CODE_PLUGIN") }}
+                            </VBtn>
                         </div>
                     </div>
                 </DesktopWindow>
@@ -647,19 +551,19 @@ onMounted(async () => {
                     :resizable="false" @close="handleFileLockCancel">
                     <div class="dmm-dialog-content">
                         <div class="dmm-dialog__body dmm-dialog__body--column">
-                            <ExclamationCircleOutlined class="dmm-dialog__warn-icon" />
+                            <VIcon icon="mdi-alert-circle-outline" class="dmm-dialog__warn-icon"  />
                             <p class="dmm-dialog__desc">{{ t("TXT_CODE_MOD_WIN_FILE_LOCK_DESC") }}</p>
                         </div>
                         <div class="dmm-dialog__footer">
-                            <button class="dmm-dialog-btn dmm-dialog-btn--default" @click="handleFileLockCancel">
+                            <VBtn class="dmm-dialog-btn dmm-dialog-btn--default" variant="text" rounded="xl" @click="handleFileLockCancel">
                                 {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="dmm-dialog-btn dmm-dialog-btn--danger" @click="handleFileLockImmediate">
+                            </VBtn>
+                            <VBtn class="dmm-dialog-btn dmm-dialog-btn--danger" variant="text" rounded="xl" @click="handleFileLockImmediate">
                                 {{ t("TXT_CODE_MOD_TRY_IMMEDIATELY") }}
-                            </button>
-                            <button class="dmm-dialog-btn dmm-dialog-btn--primary" @click="handleFileLockQueue">
+                            </VBtn>
+                            <VBtn class="dmm-dialog-btn dmm-dialog-btn--primary" variant="text" rounded="xl" @click="handleFileLockQueue">
                                 {{ t("TXT_CODE_MOD_ADD_TO_QUEUE") }}
-                            </button>
+                            </VBtn>
                         </div>
                     </div>
                 </DesktopWindow>
@@ -700,6 +604,19 @@ onMounted(async () => {
         display: flex;
         align-items: center;
         gap: 6px;
+    }
+}
+
+.dmm-search-grid {
+    display: grid;
+    grid-template-columns: minmax(180px, 2fr) repeat(5, minmax(120px, 1fr));
+    gap: 10px;
+    align-items: center;
+}
+
+@media (max-width: 900px) {
+    .dmm-search-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 

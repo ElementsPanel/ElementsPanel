@@ -3,8 +3,8 @@ import { openNodeSelectDialog } from "@/components/fc/index";
 import { QUICKSTART_METHOD } from "@/hooks/widgets/quickStartFlow";
 import { t } from "@/lang/i18n";
 import CreateInstanceForm from "@instance/widgets/setupApp/CreateInstanceForm.vue";
-import { FileZipOutlined, FolderOpenOutlined, BlockOutlined } from "@ant-design/icons-vue";
 import { ref } from "vue";
+import { VBtn, VCard, VCardText, VCardTitle, VDialog, VIcon } from "vuetify/components";
 
 const emit = defineEmits<{
     (e: "close"): void;
@@ -46,7 +46,7 @@ const handleInstallAction = async (createMethod: QUICKSTART_METHOD) => {
         <div class="dni-options">
             <div class="dni-option" @click="handleInstallAction(QUICKSTART_METHOD.IMPORT)">
                 <div class="dni-option__icon dni-option__icon--import">
-                    <FileZipOutlined />
+                    <VIcon icon="mdi-file-zip-outline"  />
                 </div>
                 <div class="dni-option__content">
                     <h4>{{ t("TXT_CODE_a3efb1cc") }}</h4>
@@ -56,7 +56,7 @@ const handleInstallAction = async (createMethod: QUICKSTART_METHOD) => {
 
             <div class="dni-option" @click="handleInstallAction(QUICKSTART_METHOD.DOCKER)">
                 <div class="dni-option__icon dni-option__icon--docker">
-                    <BlockOutlined />
+                    <VIcon icon="mdi-block-helper"  />
                 </div>
                 <div class="dni-option__content">
                     <h4>{{ t("TXT_CODE_bae487e4") }}</h4>
@@ -66,7 +66,7 @@ const handleInstallAction = async (createMethod: QUICKSTART_METHOD) => {
 
             <div class="dni-option" @click="handleInstallAction(QUICKSTART_METHOD.EXIST)">
                 <div class="dni-option__icon dni-option__icon--exist">
-                    <FolderOpenOutlined />
+                    <VIcon icon="mdi-folder-open-outline"  />
                 </div>
                 <div class="dni-option__content">
                     <h4>{{ t("TXT_CODE_e0fca76") }}</h4>
@@ -75,11 +75,18 @@ const handleInstallAction = async (createMethod: QUICKSTART_METHOD) => {
             </div>
         </div>
 
-        <a-modal v-model:open="showCreateForm" :title="t('TXT_CODE_645bc545')" :width="1000" :footer="null"
-            :destroy-on-close="true">
-            <CreateInstanceForm :create-method="formData.createMethod" :daemon-id="formData.daemonId"
-                @next-step="handleNext" />
-        </a-modal>
+        <VDialog v-model="showCreateForm" class="desktop-dialog" max-width="1000" scrollable>
+            <VCard rounded="xl">
+                <VCardTitle>{{ t('TXT_CODE_645bc545') }}</VCardTitle>
+                <VCardText>
+                    <CreateInstanceForm :create-method="formData.createMethod" :daemon-id="formData.daemonId" :is-desktop="true"
+                        @next-step="handleNext" />
+                </VCardText>
+                <div class="dni-dialog-actions">
+                    <VBtn variant="text" rounded="xl" @click="showCreateForm = false">{{ t('TXT_CODE_a0451c97') }}</VBtn>
+                </div>
+            </VCard>
+        </VDialog>
     </div>
 </template>
 
@@ -113,6 +120,12 @@ const handleInstallAction = async (createMethod: QUICKSTART_METHOD) => {
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+.dni-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 20px 20px;
 }
 
 .dni-option {

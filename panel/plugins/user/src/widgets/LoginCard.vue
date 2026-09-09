@@ -16,7 +16,7 @@ import {
   VDivider,
   VForm,
   VTextField
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 
 const { state: pageInfoResult, execute } = loginPageInfo();
 const ssoInfo = ref<SsoPublicConfig | null>(null);

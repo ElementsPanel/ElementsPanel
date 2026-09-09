@@ -4,10 +4,7 @@ import { t } from "@/lang/i18n";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { AppTheme } from "@/types/const";
 import { desktopIconDarkUrl, desktopIconUrl } from "../../assets";
-import {
-    BgColorsOutlined,
-    LogoutOutlined
-} from "@ant-design/icons-vue";
+import { VBtn, VIcon, VList, VListItem, VMenu } from "vuetify/components";
 import { onBeforeUnmount, ref, type Component } from "vue";
 
 const { currentTheme, isDarkTheme, setTheme } = useAppConfigStore();
@@ -158,6 +155,7 @@ const handleAppDrop = (event: DragEvent) => {
 };
 
 const isComponentIcon = (icon: Component | string): boolean => typeof icon !== "string";
+const isMdiIcon = (icon: Component | string): boolean => typeof icon === "string" && icon.startsWith("mdi-");
 
 const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
     emit("contextmenu-window", event, win.id);
@@ -166,11 +164,12 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
 
 <template>
     <div class="desktop-taskbar" :class="{ 'desktop-taskbar--docked': covered }">
-        <div class="taskbar__start" :class="{ 'taskbar__start--active': startMenuOpen }" @click="toggleStartMenu">
+        <VBtn class="taskbar__start" :class="{ 'taskbar__start--active': startMenuOpen }" icon variant="text"
+            aria-label="Start" @click="toggleStartMenu">
             <span class="taskbar__start-icon">
                 <img :src="isDarkTheme ? desktopIconUrl : desktopIconDarkUrl" alt="Start" />
             </span>
-        </div>
+        </VBtn>
 
         <div class="taskbar__windows">
             <TransitionGroup name="taskbar-window-list">
@@ -184,6 +183,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
                     @contextmenu.stop.prevent="handleContextMenu($event, win)">
                     <span class="taskbar__window-icon">
                         <component :is="win.icon" v-if="isComponentIcon(win.icon)" />
+                        <VIcon v-else-if="isMdiIcon(win.icon)" :icon="win.icon" size="small" />
                         <img v-else-if="typeof win.icon === 'string' && win.icon.endsWith('.svg')" :src="win.icon"
                             alt="icon" />
                         <template v-else>{{ win.icon }}</template>
@@ -208,38 +208,49 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
         <div v-if="startMenuOpen" class="taskbar__start-menu" :class="{ 'taskbar__start-menu--docked': covered }"
             @click.stop>
             <div class="start-menu__sidebar">
-                <button v-if="userAvatar" class="start-menu__function-btn" type="button" :title="username"
+                <VBtn v-if="userAvatar" class="start-menu__function-btn" icon variant="text" :title="username"
                     @click="handleOpenUserInfo">
                     <component :is="userAvatar" />
-                </button>
+                </VBtn>
                 <div class="start-menu__sidebar-spacer"></div>
-                <a-dropdown placement="topRight">
-                    <button class="start-menu__function-btn" type="button" @click.prevent>
-                        <BgColorsOutlined />
-                    </button>
-                    <template #overlay>
-                        <a-menu :selected-keys="[String(currentTheme)]" @click="handleThemeMenuClick">
-                            <a-menu-item :key="AppTheme.AUTO">{{ t("TXT_CODE_dc8de4ff") }}</a-menu-item>
-                            <a-menu-item :key="AppTheme.LIGHT">{{ t("TXT_CODE_673eac8e") }}</a-menu-item>
-                            <a-menu-item :key="AppTheme.DARK">{{ t("TXT_CODE_5e4a370d") }}</a-menu-item>
-                        </a-menu>
+                <VMenu location="top end">
+                    <template #activator="{ props: menuProps }">
+                        <VBtn v-bind="menuProps" class="start-menu__function-btn" icon variant="text"
+                            aria-label="Theme">
+                            <VIcon icon="mdi-palette-outline" />
+                        </VBtn>
                     </template>
-                </a-dropdown>
-                <a-dropdown placement="topRight">
-                    <button class="start-menu__function-btn" type="button" @click.prevent>
-                        <LogoutOutlined />
-                    </button>
-                    <template #overlay>
-                        <a-menu @click="handleAccountMenuClick">
-                            <a-menu-item key="exit-desktop">
-                                {{ t("TXT_CODE_DESKTOP_EXIT") }}
-                            </a-menu-item>
-                            <a-menu-item key="logout">
-                                {{ t("TXT_CODE_2c69ab15") }}
-                            </a-menu-item>
-                        </a-menu>
+                    <VList density="compact" rounded="xl">
+                        <VListItem :active="currentTheme === AppTheme.AUTO" rounded="xl"
+                            @click="handleThemeMenuClick({ key: AppTheme.AUTO })">
+                            {{ t("TXT_CODE_dc8de4ff") }}
+                        </VListItem>
+                        <VListItem :active="currentTheme === AppTheme.LIGHT" rounded="xl"
+                            @click="handleThemeMenuClick({ key: AppTheme.LIGHT })">
+                            {{ t("TXT_CODE_673eac8e") }}
+                        </VListItem>
+                        <VListItem :active="currentTheme === AppTheme.DARK" rounded="xl"
+                            @click="handleThemeMenuClick({ key: AppTheme.DARK })">
+                            {{ t("TXT_CODE_5e4a370d") }}
+                        </VListItem>
+                    </VList>
+                </VMenu>
+                <VMenu location="top end">
+                    <template #activator="{ props: menuProps }">
+                        <VBtn v-bind="menuProps" class="start-menu__function-btn" icon variant="text"
+                            aria-label="Account">
+                            <VIcon icon="mdi-logout" />
+                        </VBtn>
                     </template>
-                </a-dropdown>
+                    <VList density="compact" rounded="xl">
+                        <VListItem rounded="xl" @click="handleAccountMenuClick({ key: 'exit-desktop' })">
+                            {{ t("TXT_CODE_DESKTOP_EXIT") }}
+                        </VListItem>
+                        <VListItem rounded="xl" @click="handleAccountMenuClick({ key: 'logout' })">
+                            {{ t("TXT_CODE_2c69ab15") }}
+                        </VListItem>
+                    </VList>
+                </VMenu>
             </div>
             <div class="start-menu__apps-panel">
                 <div class="start-menu__apps">
@@ -247,6 +258,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
                         draggable="true" @dragstart="handleAppDragStart(app, $event)" @click="handleOpenApp(app.id)">
                         <span class="start-menu__item-icon">
                             <component :is="app.icon" v-if="isComponentIcon(app.icon)" />
+                            <VIcon v-else-if="isMdiIcon(app.icon)" :icon="app.icon" size="small" />
                             <img v-else-if="typeof app.icon === 'string' && app.icon.endsWith('.svg')" :src="app.icon"
                                 alt="icon" />
                             <template v-else>{{ app.icon }}</template>
@@ -273,7 +285,7 @@ $taskbar-inset: 10px;
     display: flex;
     align-items: center;
     z-index: 99999;
-    border: 1px solid var(--desktop-taskbar-border);
+    border: none;
     border-radius: 12px;
     box-shadow: 0 8px 32px var(--desktop-menu-shadow);
     padding: 0 4px;
@@ -335,7 +347,7 @@ $taskbar-inset: 10px;
     background: var(--desktop-start-menu-bg);
     backdrop-filter: saturate(180%) blur(24px);
     border-radius: 12px;
-    border: 1px solid var(--desktop-menu-border);
+    border: none;
     box-shadow: 0 8px 32px var(--desktop-menu-shadow);
     z-index: 100000;
     overflow: hidden;
@@ -355,7 +367,7 @@ $taskbar-inset: 10px;
         align-items: center;
         padding: 10px 6px;
         background: var(--desktop-start-menu-bg);
-        border-right: 1px solid var(--desktop-menu-divider);
+        border-right: none;
     }
 
     .start-menu__sidebar-spacer {

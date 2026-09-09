@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import { CopyOutlined } from "@ant-design/icons-vue";
-import type { ButtonType } from "ant-design-vue/es/button";
-import type { SizeType } from "ant-design-vue/es/config-provider";
 import { toCopy } from "@/tools/copy";
+import { VBtn, VIcon, VTooltip } from "vuetify/components";
 
 const props = defineProps<{
   size?: string;
@@ -13,12 +11,12 @@ const props = defineProps<{
 </script>
 
 <template>
-  <a-tooltip>
-    <template #title>{{ t("TXT_CODE_13ae6a93") }}</template>
-    <a-button :type="<ButtonType>type" :size="<SizeType>size" @click="toCopy(props.value)">
-      <template #icon>
-        <CopyOutlined />
-      </template>
-    </a-button>
-  </a-tooltip>
+  <VTooltip :text="t('TXT_CODE_13ae6a93')">
+    <template #activator="{ props: tooltipProps }">
+      <VBtn v-bind="tooltipProps" icon variant="text" rounded="xl" :size="size || 'small'" :color="type === 'danger' ? 'error' : undefined"
+        @click="toCopy(props.value)">
+        <VIcon icon="mdi-content-copy" />
+      </VBtn>
+    </template>
+  </VTooltip>
 </template>

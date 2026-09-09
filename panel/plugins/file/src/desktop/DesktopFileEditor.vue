@@ -3,9 +3,9 @@ import Editor from "@/components/Editor.vue";
 import { useKeyboardEvents } from "@/hooks/useKeyboardEvents";
 import { t } from "@/lang/i18n";
 import { fileContent } from "../api";
-import { reportErrorMsg } from "@/tools/validator";
-import { message } from "ant-design-vue";
+import { notifyDesktop, notifyDesktopError } from "../../../desktop/src/desktopNotice";
 import { onMounted, ref } from "vue";
+import { VBtn, VIcon, VSkeletonLoader } from "vuetify/components";
 
 const props = defineProps<{
     daemonId: string;
@@ -34,10 +34,10 @@ const initKeydownListener = () => {
             }
             try {
                 await submitRequest();
-                message.success(t("TXT_CODE_8f47d95"));
+                notifyDesktop(t("TXT_CODE_8f47d95"), "success");
                 emit("save");
             } catch (err: any) {
-                return reportErrorMsg(err.message);
+                return notifyDesktopError(err);
             }
         }
     );
@@ -64,7 +64,7 @@ const loadContent = async () => {
         }
     } catch (err: any) {
         console.error(err.message);
-        reportErrorMsg(err.message);
+        notifyDesktopError(err);
     } finally {
         isLoading.value = false;
     }
@@ -86,11 +86,11 @@ const submitRequest = async () => {
 const submit = async () => {
     try {
         await submitRequest();
-        message.success(t("TXT_CODE_a7907771"));
+        notifyDesktop(t("TXT_CODE_a7907771"), "success");
         emit("save");
     } catch (err: any) {
         console.error(err.message);
-        reportErrorMsg(err.message);
+        notifyDesktopError(err);
     }
 };
 
@@ -112,18 +112,20 @@ onMounted(() => {
                 <span class="dfe-filename">{{ fileName }}</span>
             </div>
             <div class="dfe-toolbar__right">
-                <button class="dfe-btn dfe-btn--primary" :disabled="isLoading" @click="submit">
+                <VBtn class="dfe-btn dfe-btn--primary" variant="text" size="small" :disabled="isLoading" @click="submit">
+                    <VIcon icon="mdi-content-save-outline" />
                     {{ t("TXT_CODE_abfe9512") }}
-                </button>
-                <button class="dfe-btn" @click="close">
+                </VBtn>
+                <VBtn class="dfe-btn" variant="text" size="small" @click="close">
+                    <VIcon icon="mdi-close" />
                     {{ t("TXT_CODE_3b1cc020") }}
-                </button>
+                </VBtn>
             </div>
         </div>
         <div class="dfe-body">
             <Editor v-if="!isLoading" v-model:text="editorText" :filename="fileName" height="100%" />
             <div v-else class="dfe-loading">
-                <a-skeleton :paragraph="{ rows: 12 }" active />
+                <VSkeletonLoader type="paragraph, paragraph, paragraph, paragraph" />
             </div>
         </div>
     </div>
@@ -145,7 +147,6 @@ onMounted(() => {
     justify-content: space-between;
     gap: 8px;
     padding: 8px 12px;
-    border-bottom: 1px solid var(--desktop-window-border);
     flex-shrink: 0;
 
     &__left,
@@ -164,16 +165,7 @@ onMounted(() => {
 
 .dfe-btn {
     background: var(--desktop-window-titlebar-bg);
-    border: 1px solid var(--desktop-window-border);
-    border-radius: 6px;
     color: var(--desktop-window-text);
-    padding: 4px 12px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
 
     &:hover:not(:disabled) {
         background: var(--desktop-window-control-hover);
@@ -186,7 +178,6 @@ onMounted(() => {
 
     &--primary {
         color: #52c41a;
-        border-color: rgba(82, 196, 26, 0.3);
         background: rgba(82, 196, 26, 0.1);
 
         &:hover:not(:disabled) {

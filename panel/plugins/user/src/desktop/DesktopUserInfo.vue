@@ -4,9 +4,9 @@ import { PERMISSION_MAP } from "@/config/const";
 import { t } from "@/lang/i18n";
 import { bind2FA, confirm2FA, setUserApiKey, updatePassword } from "@/services/apis/user";
 import { useAppStateStore } from "@/stores/useAppStateStore";
-import { reportErrorMsg } from "@/tools/validator";
-import { message } from "ant-design-vue";
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
+import { notifyDesktop, notifyDesktopError } from "../../../desktop/src/desktopNotice";
+import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VDialog, VTextField } from "vuetify/components";
 
 const { state, updateUserInfo } = useAppStateStore();
 
@@ -20,6 +20,7 @@ const formState = reactive({
     password2: "",
     qrcode: ""
 });
+const revokeApiKeyDialog = ref(false);
 
 const handleGenerateApiKey = async (enable: boolean) => {
     await execute({
@@ -30,26 +31,26 @@ const handleGenerateApiKey = async (enable: boolean) => {
         errorAlert: true
     });
     updateUserInfo();
-    return message.success(t("TXT_CODE_d3de39b4"));
+    return notifyDesktop(t("TXT_CODE_d3de39b4"), "success");
 };
 
 const handleChangePassword = async () => {
-    if (!formState.password1 || !formState.password2) return message.error(t("TXT_CODE_c846074d"));
-    if (formState.password1 !== formState.password2) return reportErrorMsg(t("TXT_CODE_d51f5d6"));
+    if (!formState.password1 || !formState.password2) return notifyDesktop(t("TXT_CODE_c846074d"), "error");
+    if (formState.password1 !== formState.password2) return notifyDesktopError(t("TXT_CODE_d51f5d6"));
     if (formState.password1.length < 9 || formState.password1.length > 36)
-        return reportErrorMsg(t("TXT_CODE_cc5a3aea"));
+        return notifyDesktopError(t("TXT_CODE_cc5a3aea"));
     try {
         await executeUpdatePassword({
             data: {
                 passWord: formState.password1
             }
         });
-        message.success(t("TXT_CODE_d3de39b4"));
+        notifyDesktop(t("TXT_CODE_d3de39b4"), "success");
         setTimeout(() => {
             window.location.reload();
         }, 600);
     } catch (error: any) {
-        return reportErrorMsg(error.message);
+        return notifyDesktopError(error);
     }
 };
 
@@ -73,9 +74,9 @@ const confirm2FACode = async () => {
             }
         });
     } catch {
-        return message.error(t("TXT_CODE_3d68e43b"));
+        return notifyDesktop(t("TXT_CODE_3d68e43b"), "error");
     }
-    message.success(t("TXT_CODE_d3de39b4"));
+    notifyDesktop(t("TXT_CODE_d3de39b4"), "success");
     await updateUserInfo();
     formState.TOTPCode = "";
     formState.qrcode = "";
@@ -88,7 +89,7 @@ const disable2FACode = async () => {
             TOTPCode: "000000"
         }
     });
-    message.success(t("TXT_CODE_d3de39b4"));
+    notifyDesktop(t("TXT_CODE_d3de39b4"), "success");
     await updateUserInfo();
     formState.qrcode = "";
 };
@@ -125,18 +126,18 @@ const disable2FACode = async () => {
         <div class="info-section">
             <h3 class="section-title">{{ t('TXT_CODE_551b0348') }}</h3>
             <div v-if="!formState.resetPassword">
-                <a-button danger @click="formState.resetPassword = true">
+                <VBtn color="error" variant="text" rounded="xl" @click="formState.resetPassword = true">
                     {{ t("TXT_CODE_50d471b2") }}
-                </a-button>
+                </VBtn>
             </div>
             <div v-else class="password-form">
-                <a-input v-model:value="formState.password1" type="password" :placeholder="t('TXT_CODE_4f6c39d3')" />
-                <a-input v-model:value="formState.password2" type="password" :placeholder="t('TXT_CODE_37924654')" />
+                <VTextField v-model="formState.password1" type="password" variant="solo" rounded="xl" hide-details :placeholder="t('TXT_CODE_4f6c39d3')" />
+                <VTextField v-model="formState.password2" type="password" variant="solo" rounded="xl" hide-details :placeholder="t('TXT_CODE_37924654')" />
                 <div class="form-actions">
-                    <a-button @click="formState.resetPassword = false">{{ t("TXT_CODE_3b1cc020") }}</a-button>
-                    <a-button type="primary" :loading="updatePasswordLoading" @click="handleChangePassword">
+                    <VBtn variant="text" rounded="xl" @click="formState.resetPassword = false">{{ t("TXT_CODE_3b1cc020") }}</VBtn>
+                    <VBtn color="primary" variant="text" rounded="xl" :loading="updatePasswordLoading" @click="handleChangePassword">
                         {{ t("TXT_CODE_d507abff") }}
-                    </a-button>
+                    </VBtn>
                 </div>
             </div>
         </div>
@@ -144,12 +145,12 @@ const disable2FACode = async () => {
         <div class="info-section">
             <h3 class="section-title">{{ t('TXT_CODE_61eae8a6') }}</h3>
             <div v-if="!formState?.qrcode">
-                <a-button class="mr-8" @click="handleBind2FA">
+                <VBtn class="mr-8" variant="text" rounded="xl" @click="handleBind2FA">
                     {{ state.userInfo?.open2FA ? t("TXT_CODE_85a33a84") : t("TXT_CODE_a492ae63") }}
-                </a-button>
-                <a-button v-if="state.userInfo?.open2FA" danger @click="disable2FACode">
+                </VBtn>
+                <VBtn v-if="state.userInfo?.open2FA" color="error" variant="text" rounded="xl" @click="disable2FACode">
                     {{ t("TXT_CODE_edd64e4d") }}
-                </a-button>
+                </VBtn>
             </div>
             <div v-if="formState?.qrcode" class="two-fa-setup">
                 <p class="two-fa-instructions">
@@ -161,11 +162,11 @@ const disable2FACode = async () => {
                     <img :src="formState.qrcode" alt="2FA QR Code" />
                 </div>
                 <div class="two-fa-form">
-                    <a-input v-model:value="formState.TOTPCode" :placeholder="t('TXT_CODE_7ac8b1d3')" />
-                    <a-button type="primary" :loading="setUserApiKeyLoading" @click="confirm2FACode">
+                    <VTextField v-model="formState.TOTPCode" variant="solo" rounded="xl" hide-details :placeholder="t('TXT_CODE_7ac8b1d3')" />
+                    <VBtn color="primary" variant="text" rounded="xl" :loading="setUserApiKeyLoading" @click="confirm2FACode">
                         {{ t("TXT_CODE_b0a18c20") }}
-                    </a-button>
-                    <a-button @click="formState.qrcode = ''">{{ t("TXT_CODE_3b1cc020") }}</a-button>
+                    </VBtn>
+                    <VBtn variant="text" rounded="xl" @click="formState.qrcode = ''">{{ t("TXT_CODE_3b1cc020") }}</VBtn>
                 </div>
             </div>
         </div>
@@ -183,15 +184,25 @@ const disable2FACode = async () => {
             </div>
 
             <div class="api-key-actions">
-                <a-button type="primary" :loading="setUserApiKeyLoading" @click="handleGenerateApiKey(true)">
+                <VBtn color="primary" variant="text" rounded="xl" :loading="setUserApiKeyLoading" @click="handleGenerateApiKey(true)">
                     {{ t("TXT_CODE_d51cd7ae") }}
-                </a-button>
-                <a-popconfirm v-if="state.userInfo?.apiKey" :title="t('TXT_CODE_6819de18')"
-                    @confirm="handleGenerateApiKey(false)">
-                    <a-button danger> {{ t("TXT_CODE_718c9310") }} </a-button>
-                </a-popconfirm>
+                </VBtn>
+                <VBtn v-if="state.userInfo?.apiKey" color="error" variant="text" rounded="xl" @click="revokeApiKeyDialog = true">
+                    {{ t("TXT_CODE_718c9310") }}
+                </VBtn>
             </div>
         </div>
+
+        <VDialog v-model="revokeApiKeyDialog" class="desktop-dialog" max-width="380" scrollable>
+            <VCard rounded="xl">
+                <VCardTitle>{{ t("TXT_CODE_6819de18") }}</VCardTitle>
+                <VCardText>{{ t("TXT_CODE_6819de18") }}</VCardText>
+                <VCardActions class="justify-end">
+                    <VBtn variant="text" rounded="xl" @click="revokeApiKeyDialog = false">{{ t("TXT_CODE_3b1cc020") }}</VBtn>
+                    <VBtn color="error" variant="text" rounded="xl" @click="revokeApiKeyDialog = false; handleGenerateApiKey(false)">{{ t("TXT_CODE_718c9310") }}</VBtn>
+                </VCardActions>
+            </VCard>
+        </VDialog>
     </div>
 </template>
 

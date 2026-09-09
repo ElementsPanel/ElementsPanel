@@ -9,7 +9,7 @@ import {
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { useLocalStorage } from "@vueuse/core";
 import { message, Modal } from "ant-design-vue";
-import { VBtn } from "vuetify/lib/components/index.mjs";
+import { VBtn } from "vuetify/components";
 import { computed, createVNode, ref, type Ref } from "vue";
 
 export function useModSearch(

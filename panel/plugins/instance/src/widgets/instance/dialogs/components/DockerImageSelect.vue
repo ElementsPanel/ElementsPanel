@@ -4,7 +4,7 @@ import { t } from "@/lang/i18n";
 import { imageList } from "@/services/apis/envImage";
 import { arrayFilter } from "@/tools/array";
 import { ref, watch } from "vue";
-import { VSelect, VTextField } from "vuetify/lib/components/index.mjs";
+import { VSelect, VTextField } from "vuetify/components";
 
 const IMAGE_DEFINE = {
   NEW: "__MCSM_NEW_IMAGE__",

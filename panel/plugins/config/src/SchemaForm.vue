@@ -11,13 +11,13 @@ import {
   VSelect,
   VTextField,
   VTextarea
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 import type { SettingField } from "./api";
 
 // The one form that renders every plugin's configuration. It knows nothing about
 // any particular plugin: the fields arrive from the backend that declared them,
 // with their labels already translated, which is what lets the same component
-// render a daemon plugin's settings — the browser holds no copy of a daemon
+// render a daemon plugin's settings 鈥?the browser holds no copy of a daemon
 // plugin at all.
 
 const props = defineProps<{
@@ -38,7 +38,7 @@ const allYesNo = [
 
 /**
  * A field is hidden unless every condition holds. A condition is either a field
- * name — true when that field is truthy — or `"name=value"`.
+ * name 鈥?true when that field is truthy 鈥?or `"name=value"`.
  */
 const visible = (field: SettingField) => {
   const conditions = field.visibleWhen;

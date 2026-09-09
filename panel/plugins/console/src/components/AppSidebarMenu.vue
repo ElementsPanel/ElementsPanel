@@ -8,7 +8,7 @@ import {
   VList,
   VListItem,
   VSheet
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 
 const route = useRoute();
 const { sidebarItems, handleToPage } = useHeaderMenus();

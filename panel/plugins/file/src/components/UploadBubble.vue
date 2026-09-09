@@ -2,7 +2,7 @@
 import { t } from "@/lang/i18n";
 import uploadService from "../services/uploadService";
 import { computed } from "vue";
-import { VBadge, VBtn, VIcon, VTooltip } from "vuetify/lib/components/index.mjs";
+import { VBadge, VBtn, VIcon, VTooltip } from "vuetify/components";
 
 const uploadData = uploadService.uiData;
 const uploadCount = computed(() => {

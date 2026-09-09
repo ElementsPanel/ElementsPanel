@@ -425,8 +425,8 @@ export default defineConfig({
       // plugin files outside the frontend package. Point those entries at the
       // installed files while keeping the imports package-oriented in source.
       "vuetify/styles": VUETIFY_STYLES_PATH,
-      "vuetify/lib/components/index.mjs": VUETIFY_COMPONENTS_PATH,
-      "vuetify/lib/iconsets/mdi.mjs": VUETIFY_MDI_PATH,
+      "vuetify/components": VUETIFY_COMPONENTS_PATH,
+      "vuetify/iconsets/mdi": VUETIFY_MDI_PATH,
       // Keep this after the more specific Vuetify entries above: Vite aliases
       // also match subpaths of a bare package name.
       vuetify: VUETIFY_FRAMEWORK_PATH,

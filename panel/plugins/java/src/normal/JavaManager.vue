@@ -8,7 +8,7 @@ import { parseTimestamp } from "@/tools/time";
 import type { JavaInfo, JavaRuntime } from "../types";
 import { message } from "ant-design-vue";
 import { computed, ref, type Ref } from "vue";
-import { VBtn, VChip, VDataTable } from "vuetify/lib/components/index.mjs";
+import { VBtn, VChip, VDataTable } from "vuetify/components";
 
 interface InstanceInfo {
   config: { java: { id: string } };
@@ -139,25 +139,25 @@ defineExpose({ open: openDialog, openDialog });
       }}</VBtn>
     </div>
     <VDataTable :headers="headers" :items="javaList ?? []" :items-per-page="15" class="java-table">
-      <template #item.fullname="{ item }">{{ (item.raw ?? item).info.fullname }}</template>
+      <template #item.fullname="{ item }">{{ item.info.fullname }}</template>
       <template #item.installTime="{ item }">{{
-        t(parseTimestamp((item.raw ?? item).info.installTime))
+        t(parseTimestamp(item.info.installTime))
       }}</template>
       <template #item.status="{ item }"
         ><VChip
           size="small"
           :color="
-            (item.raw ?? item).usingInstances.length
+            item.usingInstances.length
               ? 'success'
-              : (item.raw ?? item).info.downloading
+              : item.info.downloading
               ? 'warning'
               : undefined
           "
           variant="tonal"
           >{{
-            (item.raw ?? item).usingInstances.length
+            item.usingInstances.length
               ? t("TXT_CODE_bdb620b9")
-              : (item.raw ?? item).info.downloading
+              : item.info.downloading
               ? t("TXT_CODE_d919f7c7")
               : t("TXT_CODE_15f2e564")
           }}</VChip
@@ -169,12 +169,12 @@ defineExpose({ open: openDialog, openDialog });
             size="small"
             variant="text"
             :disabled="
-              (item.raw ?? item).info.fullname === props.instanceInfo?.config.java.id ||
-              (item.raw ?? item).info.downloading
+              item.info.fullname === props.instanceInfo?.config.java.id ||
+              item.info.downloading
             "
-            @click="handleUsingJava((item.raw ?? item).info)"
+            @click="handleUsingJava(item.info)"
             >{{
-              (item.raw ?? item).info.fullname === props.instanceInfo?.config.java.id
+              item.info.fullname === props.instanceInfo?.config.java.id
                 ? t("TXT_CODE_979520ef")
                 : t("TXT_CODE_f0dcc8bf")
             }}</VBtn
@@ -183,8 +183,8 @@ defineExpose({ open: openDialog, openDialog });
             color="error"
             variant="text"
             prepend-icon="mdi-delete-outline"
-            :disabled="(item.raw ?? item).info.downloading"
-            @click="confirmDelete((item.raw ?? item).info)"
+            :disabled="item.info.downloading"
+            @click="confirmDelete(item.info)"
             >{{ t("TXT_CODE_ecbd7449") }}</VBtn
           >
         </div>

@@ -5,7 +5,7 @@ import { t } from "@/lang/i18n";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { computed } from "vue";
 import { useRoute } from "vue-router";
-import { VBreadcrumbs } from "vuetify/lib/components/index.mjs";
+import { VBreadcrumbs } from "vuetify/components";
 
 export interface BreadcrumbItem {
   title: string;

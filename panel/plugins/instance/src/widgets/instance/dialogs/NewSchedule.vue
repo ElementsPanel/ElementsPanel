@@ -23,7 +23,7 @@ import {
   VRow,
   VSelect,
   VTextField
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 
 const props = defineProps<{
   daemonId: string;

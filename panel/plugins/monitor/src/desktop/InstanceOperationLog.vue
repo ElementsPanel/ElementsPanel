@@ -2,7 +2,7 @@
 import { getInstanceOperationLog } from "../api";
 import { formatOperationLogItem, type FormattedOperationLog } from "../hooks/useOperationLog";
 import { t } from "@/lang/i18n";
-import { message } from "ant-design-vue";
+import { notifyDesktop } from "../../../desktop/src/desktopNotice";
 import { onMounted, ref } from "vue";
 import InstanceOperationLogContent from "../normal/InstanceOperationLogContent.vue";
 
@@ -27,7 +27,7 @@ const fetchLogs = async () => {
     });
     logs.value = (data.value || []).reverse().map(formatOperationLogItem);
   } catch (error: any) {
-    message.error(error?.message || t("TXT_CODE_4a689666"));
+    notifyDesktop(error?.message || t("TXT_CODE_4a689666"), "error");
     logs.value = [];
   } finally {
     loading.value = false;

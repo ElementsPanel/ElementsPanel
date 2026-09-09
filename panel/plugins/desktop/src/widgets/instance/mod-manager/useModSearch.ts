@@ -6,10 +6,10 @@ import {
   getModVersionsApi,
   searchModsApi
 } from "@/services/apis/modManager";
-import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { useLocalStorage } from "@vueuse/core";
 import { message, Modal } from "ant-design-vue";
-import { VBtn } from "vuetify/lib/components/index.mjs";
+import { notifyDesktop } from "../../../desktopNotice";
+import { VBtn, VIcon } from "vuetify/components";
 import { computed, createVNode, ref, type Ref } from "vue";
 
 export function useModSearch(
@@ -120,7 +120,8 @@ export function useModSearch(
       searchResults.value = res.value?.hits || [];
       searchTotal.value = res.value?.total_hits || 0;
     } catch (err: any) {
-      message.error(err.message);
+      if (isDesktop) notifyDesktop(err.message, "error");
+      else message.error(err.message);
     } finally {
       searchLoading.value = false;
     }
@@ -193,7 +194,8 @@ export function useModSearch(
       });
       versions.value = res.value || [];
     } catch (err: any) {
-      message.error(err.message);
+      if (isDesktop) notifyDesktop(err.message, "error");
+      else message.error(err.message);
     } finally {
       versionsLoading.value = false;
     }
@@ -253,7 +255,7 @@ export function useModSearch(
           finalType = await new Promise((resolve, reject) => {
             const modal = Modal.confirm({
               title: t("TXT_CODE_MOD_SELECT_SAVE_DIR"),
-              icon: createVNode(ExclamationCircleOutlined),
+              icon: createVNode(VIcon, { icon: "mdi-alert-circle-outline" }),
               content: "",
               footer: createVNode("div", { style: "text-align: right; margin-top: 20px;" }, [
                 createVNode(
@@ -360,11 +362,13 @@ export function useModSearch(
 
         const targetTab =
           currentProjectType === "plugin" ? t("TXT_CODE_PLUGIN_LIST") : t("TXT_CODE_MOD_LIST");
-        message.success(`${t("TXT_CODE_38fb23a8")} -> ${targetTab}`);
+        if (isDesktop) notifyDesktop(`${t("TXT_CODE_38fb23a8")} -> ${targetTab}`, "success");
+        else message.success(`${t("TXT_CODE_38fb23a8")} -> ${targetTab}`);
         showVersionModal.value = false;
         await loadMods();
       } catch (err: any) {
-        message.error(err.message);
+        if (isDesktop) notifyDesktop(err.message, "error");
+        else message.error(err.message);
       }
     };
 

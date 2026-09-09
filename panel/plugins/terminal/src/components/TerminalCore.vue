@@ -17,7 +17,7 @@ import {
   VProgressCircular,
   VTextField,
   VTooltip
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 
 // Module-level dedup: prevent duplicate crash/restart logs across multiple TerminalCore instances
 let lastCrashLogTime = 0;

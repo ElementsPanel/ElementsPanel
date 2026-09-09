@@ -17,7 +17,7 @@ import {
   VIcon,
   VProgressCircular,
   VSpacer
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 
 const emit = defineEmits(["save"]);
 

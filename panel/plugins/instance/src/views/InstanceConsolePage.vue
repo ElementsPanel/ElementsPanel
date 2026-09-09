@@ -45,7 +45,7 @@ import {
   VRow,
   VSpacer,
   VToolbar
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 import EventConfig from "../widgets/instance/dialogs/EventConfig.vue";
 import DockerInfo from "../widgets/instance/dialogs/DockerInfo.vue";
 import InstanceDetail from "../widgets/instance/dialogs/InstanceDetail.vue";

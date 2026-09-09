@@ -20,7 +20,7 @@ import {
   VSpacer,
   VSnackbar,
   VSwitch
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 import {
   nodeList,
   nodePluginList,
@@ -45,7 +45,7 @@ import SchemaForm from "./SchemaForm.vue";
 // The form beside the list is not a component any plugin shipped: a plugin
 // describes its configuration on its backend, and this page renders that
 // description. That is the only reason a daemon plugin can have a settings form
-// at all — the browser holds no copy of a daemon plugin.
+// at all 鈥?the browser holds no copy of a daemon plugin.
 
 type Scope = "panel" | "node";
 
@@ -279,7 +279,7 @@ const apply = async (plugin: PluginRecord, enabled: boolean) => {
 
 /**
  * The daemon applies the switch itself and answers with the updated record, so
- * there is nothing for the browser to reconcile — only the list to re-read.
+ * there is nothing for the browser to reconcile 鈥?only the list to re-read.
  */
 const applyNode = async (plugin: NodePluginRecord, enabled: boolean) => {
   pending.value = plugin.id;
@@ -300,7 +300,7 @@ const applyNode = async (plugin: NodePluginRecord, enabled: boolean) => {
 
 /**
  * Enabling is immediate; disabling asks first, because it removes whatever the
- * plugin contributed — including, for some plugins, authentication itself.
+ * plugin contributed 鈥?including, for some plugins, authentication itself.
  */
 const toggle = (plugin: PluginRecord | NodePluginRecord, enabled: boolean) => {
   const commit = () =>

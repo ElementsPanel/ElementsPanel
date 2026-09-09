@@ -11,31 +11,27 @@ import {
     updateInstance
 } from "@/services/apis/instance";
 import { sleep } from "@/tools/common";
-import { reportErrorMsg } from "@/tools/validator";
+import { notifyDesktopError } from "../../desktopNotice";
 import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS } from "@/types/const";
-import {
-    ApartmentOutlined,
-    ArrowLeftOutlined,
-    BlockOutlined,
-    CheckCircleOutlined,
-    CloseOutlined,
-    CloudDownloadOutlined,
-    ControlOutlined,
-    DashboardOutlined,
-    FieldTimeOutlined,
-    FolderOpenOutlined,
-    InfoCircleOutlined,
-    LaptopOutlined,
-    LoadingOutlined,
-    PauseCircleOutlined,
-    PlayCircleOutlined,
-    RedoOutlined
-} from "@ant-design/icons-vue";
-import { Modal } from "ant-design-vue";
-import { computed, h, onUnmounted, ref } from "vue";
+import { computed, onUnmounted, ref } from "vue";
 import { GLOBAL_INSTANCE_NAME } from "@/config/const";
 import { arrayFilter } from "@/tools/array";
 import DesktopManagerBtns from "./DesktopManagerBtns.vue";
+import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VDialog, VIcon } from "vuetify/components";
+
+const PlayCircleOutlined = "mdi-play-circle-outline";
+const PauseCircleOutlined = "mdi-pause-circle-outline";
+const RedoOutlined = "mdi-redo";
+const CloseOutlined = "mdi-close";
+const CloudDownloadOutlined = "mdi-cloud-download-outline";
+const terminalActionIconMap: Record<string, string> = {
+    "market-reinstall": "mdi-storefront-outline"
+};
+
+const getTerminalActionIcon = (item: { icon?: unknown; id?: string }) => {
+    if (typeof item.icon === "string") return item.icon;
+    return (item.id && terminalActionIconMap[item.id]) || "mdi-lightning-bolt-outline";
+};
 
 type DialogPanel = "none" | "file-manager" | "mod-manager" | "schedule" | "server-config";
 
@@ -74,6 +70,25 @@ const nodeInfo = computed(() => {
 });
 
 const activeDialog = ref<DialogPanel>("none");
+const errorDialog = ref({ show: false, lines: [] as string[] });
+const confirmDialog = ref(false);
+const pendingAction = ref<(() => Promise<void>) | null>(null);
+
+const requestAction = (item: { noConfirm?: boolean; click: () => unknown }) => {
+    if (item.noConfirm) {
+        void item.click();
+        return;
+    }
+    pendingAction.value = async () => { await item.click(); };
+    confirmDialog.value = true;
+};
+
+const confirmPendingAction = async () => {
+    const action = pendingAction.value;
+    confirmDialog.value = false;
+    pendingAction.value = null;
+    if (action) await action();
+};
 
 const openDialog = (panel: DialogPanel) => {
     activeDialog.value = panel;
@@ -109,19 +124,27 @@ const toOpenInstance = async () => {
 
         checkRunningTimer = setTimeout(() => {
             if (terminalHook.isStopped.value) {
-                Modal.error({
+                errorDialog.value = {
+                    show: true,
+                    lines: [
+                        t("TXT_CODE_3409258a"),
+                        `${t("TXT_CODE_973414e1")}: ${instanceInfo.value?.config.startCommand || ""}`,
+                        ...(isDockerMode.value ? [`${t("TXT_CODE_44b585c7")}: ${instanceInfo.value?.config.docker.image || ""}`] : [])
+                    ]
+                };
+                /*
                     title: t("TXT_CODE_ac405b50"),
                     content: h("div", [
                         h("p", t("TXT_CODE_3409258a")),
-                        h("p", `${t("TXT_CODE_973414e1")}：${instanceInfo.value?.config.startCommand || ""}`),
+                        h("p", `${t("TXT_CODE_973414e1")}闁?{instanceInfo.value?.config.startCommand || ""}`),
                         isDockerMode.value &&
-                        h("p", `${t("TXT_CODE_44b585c7")}：${instanceInfo.value?.config.docker.image || ""}`)
+                        h("p", `${t("TXT_CODE_44b585c7")}闁?{instanceInfo.value?.config.docker.image || ""}`)
                     ])
-                });
+                }); */
             }
         }, INSTANCE_CRASH_TIMEOUT);
     } catch (error: any) {
-        reportErrorMsg(error);
+        notifyDesktopError(error);
     }
 };
 
@@ -156,7 +179,7 @@ const quickOperations = computed(() =>
                         }
                     });
                 } catch (error: any) {
-                    reportErrorMsg(error);
+                    notifyDesktopError(error);
                 }
             },
             props: {
@@ -183,7 +206,7 @@ const instanceOperations = computed(() =>
                         }
                     });
                 } catch (error: any) {
-                    reportErrorMsg(error);
+                    notifyDesktopError(error);
                 }
             },
             condition: () => isRunning.value
@@ -202,7 +225,7 @@ const instanceOperations = computed(() =>
                         }
                     });
                 } catch (error: any) {
-                    reportErrorMsg(error);
+                    notifyDesktopError(error);
                 }
             },
             condition: () => !isStopped.value
@@ -225,7 +248,7 @@ const instanceOperations = computed(() =>
                         }
                     });
                 } catch (error: any) {
-                    reportErrorMsg(error);
+                    notifyDesktopError(error);
                 }
             },
             condition: () => isStopped.value && updateCmd.value
@@ -323,9 +346,9 @@ onUnmounted(() => {
                         'status--busy': isBuys,
                         'status--stopped': isStopped
                     }">
-                        <CheckCircleOutlined v-if="isRunning" />
-                        <LoadingOutlined v-else-if="isBuys" />
-                        <InfoCircleOutlined v-else />
+                        <VIcon icon="mdi-check-circle-outline" v-if="isRunning"  />
+                        <VIcon icon="mdi-loading" v-else-if="isBuys"  />
+                        <VIcon icon="mdi-information-outline" v-else  />
                     </span>
                     <span class="dim-instance__name">{{ getInstanceName }}</span>
                     <span class="dim-instance__badge" :class="{
@@ -337,7 +360,7 @@ onUnmounted(() => {
                     </span>
                     <span v-if="instanceTypeText" class="dim-instance__type">{{ instanceTypeText }}</span>
                     <span v-if="instanceInfo?.watcher && instanceInfo?.watcher > 1" class="dim-instance__players">
-                        <LaptopOutlined /> {{ instanceInfo?.watcher }}
+                        <VIcon icon="mdi-laptop"  /> {{ instanceInfo?.watcher }}
                     </span>
                 </div>
             </div>
@@ -346,34 +369,32 @@ onUnmounted(() => {
                     <span v-if="perfInfo.cpu != null" class="dim-perf__item"
                         :class="`dim-perf__cpu--${perfInfo.cpu > 80 ? 'high' : perfInfo.cpu > 50 ? 'mid' : 'low'}`"
                         :title="t('TXT_CODE_b862a158')">
-                        <BlockOutlined /> {{ perfInfo.cpu }}%
+                        <VIcon icon="mdi-block-helper" size="1em" /> {{ perfInfo.cpu }}%
                     </span>
                     <span v-if="perfInfo.mem != null && perfInfo.memUsed && perfInfo.memTotal" class="dim-perf__item"
                         :class="`dim-perf__mem--${perfInfo.mem > 80 ? 'high' : perfInfo.mem > 50 ? 'mid' : 'low'}`"
                         :title="t('TXT_CODE_593ee330')">
-                        <DashboardOutlined /> {{ perfInfo.memUsed }}/{{ perfInfo.memTotal }}
+                        <VIcon icon="mdi-view-dashboard-outline" size="1em" /> {{ perfInfo.memUsed }}/{{ perfInfo.memTotal }}
                     </span>
                     <span v-if="perfInfo.net" class="dim-perf__item dim-perf__net" :title="t('TXT_CODE_50daec4')">
-                        <ApartmentOutlined /> ↓{{ perfInfo.net.rx }}/s ↑{{ perfInfo.net.tx }}/s
+                        <VIcon icon="mdi-lan" size="1em" /> ↓{{ perfInfo.net.rx }}/s ↑{{ perfInfo.net.tx }}/s
                     </span>
                 </div>
                 <template v-for="item in [...quickOperations, ...instanceOperations]" :key="item.title">
-                    <button v-if="item.noConfirm" class="dim-btn dim-btn--sm" :class="{
+                    <button v-if="item.noConfirm" type="button" class="dim-btn dim-btn--sm" :class="{
                         'dim-btn--primary': item.class === 'button-color-success',
                         'dim-btn--danger': item.type === 'danger'
                     }" :disabled="isOpenInstanceLoading" @click="item.click" :title="item.title">
-                        <component :is="item.icon" />
+                        <VIcon :icon="getTerminalActionIcon(item)" size="1em" />
                         {{ item.title }}
                     </button>
-                    <a-popconfirm v-else :key="item.title" :title="t('TXT_CODE_276756b2')" @confirm="item.click">
-                        <button class="dim-btn dim-btn--sm" :class="{
+                    <button v-else type="button" class="dim-btn dim-btn--sm" :class="{
                             'dim-btn--primary': item.class === 'button-color-success',
                             'dim-btn--danger': item.type === 'danger'
-                        }" :title="item.title">
-                            <component :is="item.icon" />
+                        }" :title="item.title" @click="requestAction(item)">
+                            <VIcon :icon="getTerminalActionIcon(item)" size="1em" />
                             {{ item.title }}
-                        </button>
-                    </a-popconfirm>
+                    </button>
                 </template>
             </div>
         </div>
@@ -386,16 +407,16 @@ onUnmounted(() => {
 
             <div v-else-if="activeDialog === 'file-manager'" class="dim-dialog">
                 <div class="dim-dialog__header">
-                    <button class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
-                        <ArrowLeftOutlined />
-                    </button>
+                    <VBtn icon variant="text" rounded="xl" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
+                        <VIcon icon="mdi-arrow-left"  />
+                    </VBtn>
                     <span class="dim-dialog__title">
-                        <FolderOpenOutlined /> {{ t("TXT_CODE_ae533703") }}
+                        <VIcon icon="mdi-folder-open-outline"  /> {{ t("TXT_CODE_ae533703") }}
                     </span>
                 </div>
                 <div class="dim-dialog__body">
                     <div class="dim-placeholder">
-                        <FolderOpenOutlined class="dim-placeholder__icon" />
+                        <VIcon icon="mdi-folder-open-outline" class="dim-placeholder__icon"  />
                         <p class="dim-placeholder__text">{{ t("TXT_CODE_ae533703") }}</p>
                         <p class="dim-placeholder__hint">{{ t("TXT_CODE_6c5985ca") }}</p>
                     </div>
@@ -404,16 +425,16 @@ onUnmounted(() => {
 
             <div v-else-if="activeDialog === 'mod-manager'" class="dim-dialog">
                 <div class="dim-dialog__header">
-                    <button class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
-                        <ArrowLeftOutlined />
-                    </button>
+                    <VBtn icon variant="text" rounded="xl" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
+                        <VIcon icon="mdi-arrow-left"  />
+                    </VBtn>
                     <span class="dim-dialog__title">
-                        <UsbOutlined /> {{ t("TXT_CODE_MOD_MANAGER") }}
+                        <VIcon icon="mdi-usb-port"  /> {{ t("TXT_CODE_MOD_MANAGER") }}
                     </span>
                 </div>
                 <div class="dim-dialog__body">
                     <div class="dim-placeholder">
-                        <UsbOutlined class="dim-placeholder__icon" />
+                        <VIcon icon="mdi-usb-port" class="dim-placeholder__icon"  />
                         <p class="dim-placeholder__text">{{ t("TXT_CODE_MOD_MANAGER") }}</p>
                         <p class="dim-placeholder__hint">{{ t("TXT_CODE_6c5985ca") }}</p>
                     </div>
@@ -422,16 +443,16 @@ onUnmounted(() => {
 
             <div v-else-if="activeDialog === 'schedule'" class="dim-dialog">
                 <div class="dim-dialog__header">
-                    <button class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
-                        <ArrowLeftOutlined />
-                    </button>
+                    <VBtn icon variant="text" rounded="xl" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
+                        <VIcon icon="mdi-arrow-left"  />
+                    </VBtn>
                     <span class="dim-dialog__title">
-                        <FieldTimeOutlined /> {{ t("TXT_CODE_b7d026f8") }}
+                        <VIcon icon="mdi-clock-outline"  /> {{ t("TXT_CODE_b7d026f8") }}
                     </span>
                 </div>
                 <div class="dim-dialog__body">
                     <div class="dim-placeholder">
-                        <FieldTimeOutlined class="dim-placeholder__icon" />
+                        <VIcon icon="mdi-clock-outline" class="dim-placeholder__icon"  />
                         <p class="dim-placeholder__text">{{ t("TXT_CODE_b7d026f8") }}</p>
                         <p class="dim-placeholder__hint">{{ t("TXT_CODE_6c5985ca") }}</p>
                     </div>
@@ -440,16 +461,16 @@ onUnmounted(() => {
 
             <div v-else-if="activeDialog === 'server-config'" class="dim-dialog">
                 <div class="dim-dialog__header">
-                    <button class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
-                        <ArrowLeftOutlined />
-                    </button>
+                    <VBtn icon variant="text" rounded="xl" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
+                        <VIcon icon="mdi-arrow-left"  />
+                    </VBtn>
                     <span class="dim-dialog__title">
-                        <ControlOutlined /> {{ t("TXT_CODE_d07742fe") }}
+                        <VIcon icon="mdi-tune-variant"  /> {{ t("TXT_CODE_d07742fe") }}
                     </span>
                 </div>
                 <div class="dim-dialog__body">
                     <div class="dim-placeholder">
-                        <ControlOutlined class="dim-placeholder__icon" />
+                        <VIcon icon="mdi-tune-variant" class="dim-placeholder__icon"  />
                         <p class="dim-placeholder__text">{{ t("TXT_CODE_d07742fe") }}</p>
                         <p class="dim-placeholder__hint">{{ t("TXT_CODE_6c5985ca") }}</p>
                     </div>
@@ -463,6 +484,29 @@ onUnmounted(() => {
             @open-schedule="emit('open-schedule', instanceId, daemonId)"
             @open-event-config="emit('open-event-config', instanceId, daemonId)"
             @open-instance-action="(actionId: string) => emit('open-instance-action', actionId, instanceId, daemonId)" />
+
+        <VDialog v-model="errorDialog.show" class="desktop-dialog" max-width="460" scrollable>
+            <VCard rounded="xl">
+                <VCardTitle>{{ t("TXT_CODE_ac405b50") }}</VCardTitle>
+                <VCardText>
+                    <p v-for="line in errorDialog.lines" :key="line" class="dim-error-line">{{ line }}</p>
+                </VCardText>
+                <VCardActions class="justify-end">
+                    <VBtn variant="text" rounded="xl" @click="errorDialog.show = false">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+                </VCardActions>
+            </VCard>
+        </VDialog>
+
+        <VDialog v-model="confirmDialog" class="desktop-dialog" max-width="380" scrollable>
+            <VCard rounded="xl">
+                <VCardTitle>{{ t("TXT_CODE_276756b2") }}</VCardTitle>
+                <VCardText>{{ t("TXT_CODE_276756b2") }}</VCardText>
+                <VCardActions class="justify-end">
+                    <VBtn variant="text" rounded="xl" @click="confirmDialog = false">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+                    <VBtn color="primary" variant="text" rounded="xl" @click="confirmPendingAction">{{ t("TXT_CODE_d507abff") }}</VBtn>
+                </VCardActions>
+            </VCard>
+        </VDialog>
     </div>
 </template>
 
@@ -481,7 +525,7 @@ onUnmounted(() => {
     justify-content: space-between;
     gap: 12px;
     padding: 12px 16px;
-    border-bottom: 1px solid var(--desktop-window-border);
+    border-bottom: 0;
     flex-wrap: wrap;
 
     &__left,
@@ -494,7 +538,7 @@ onUnmounted(() => {
 
 .dim-btn {
     background: var(--desktop-window-titlebar-bg);
-    border: 1px solid var(--desktop-window-border);
+    border: 0;
     border-radius: 6px;
     color: var(--desktop-window-text);
     padding: 6px 12px;
@@ -526,7 +570,7 @@ onUnmounted(() => {
 
     &--primary {
         color: #52c41a;
-        border-color: rgba(82, 196, 26, 0.3);
+        border-color: transparent;
         background: rgba(82, 196, 26, 0.1);
 
         &:hover:not(:disabled) {
@@ -536,13 +580,19 @@ onUnmounted(() => {
 
     &--danger {
         color: #ff4d4f;
-        border-color: rgba(255, 77, 79, 0.3);
+        border-color: transparent;
         background: rgba(255, 77, 79, 0.1);
 
         &:hover:not(:disabled) {
             background: rgba(255, 77, 79, 0.2);
         }
     }
+}
+
+.dim-error-line {
+    margin: 0 0 8px;
+    color: var(--desktop-window-text-secondary);
+    white-space: pre-wrap;
 }
 
 .dim-instance__header {
@@ -624,7 +674,7 @@ onUnmounted(() => {
     align-items: center;
     gap: 6px;
     padding: 0 12px;
-    border-right: 1px solid var(--desktop-window-border);
+    border-right: 0;
     margin-right: 5px;
 }
 

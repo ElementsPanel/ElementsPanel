@@ -4,7 +4,7 @@ import JavaIcon from "../assets/java.png";
 import { t } from "@/lang/i18n";
 import type { DownloadJavaConfigItem } from "../types";
 import { computed, ref } from "vue";
-import { VCard, VChip, VCol, VImg, VRow } from "vuetify/lib/components/index.mjs";
+import { VCard, VChip, VCol, VImg, VRow } from "vuetify/components";
 
 interface Props {
   destroyComponent(delay?: number): void;

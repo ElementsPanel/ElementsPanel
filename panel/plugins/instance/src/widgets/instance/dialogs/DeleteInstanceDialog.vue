@@ -4,7 +4,7 @@ import { t } from "@/lang/i18n";
 import AppDialog from "@/components/AppDialog.vue";
 import { batchDelete } from "@/services/apis/instance";
 import { reportErrorMsg } from "@/tools/validator";
-import { VCheckbox } from "vuetify/lib/components/index.mjs";
+import { VCheckbox } from "vuetify/components";
 const props = defineProps<{ emitResult: (ok: boolean) => void; destroyComponent: () => void; instanceId: string; daemonId: string }>();
 const deleteFiles = ref(false), isOpen = ref(true), loading = ref(false), confirmOpen = ref(false);
 const submit = async (deleteFile = deleteFiles.value) => { const { execute } = batchDelete(); loading.value = true; try { await execute({ params: { daemonId: props.daemonId || "" }, data: { uuids: [props.instanceId || ""], deleteFile: Boolean(deleteFile) } }); props.emitResult(true); } catch (error) { reportErrorMsg(error); props.emitResult(false); } finally { loading.value = false; isOpen.value = false; props.destroyComponent(); } };

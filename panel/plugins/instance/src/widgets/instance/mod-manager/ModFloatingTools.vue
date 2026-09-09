@@ -1,17 +1,10 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import {
-  CloudDownloadOutlined,
-  CloudUploadOutlined,
-  DeleteOutlined,
-  LoadingOutlined,
-  SwapOutlined
-} from "@ant-design/icons-vue";
-import { Button, Popover, Progress } from "ant-design-vue";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { stopTransferApi } from "@/services/apis/modManager";
 import { message } from "ant-design-vue";
+import { VBadge, VBtn, VCard, VCardText, VCardTitle, VIcon, VMenu, VProgressLinear } from "vuetify/components";
 
 const props = defineProps<{
   instanceId: string;
@@ -37,6 +30,7 @@ const activeTasksCount = computed(() => {
 });
 
 const rippleKey = ref(0);
+const menuOpen = ref(false);
 
 watch(activeTasksCount, (newVal, oldVal) => {
   if (newVal > oldVal) {
@@ -118,133 +112,60 @@ onUnmounted(() => {
 
 <template>
   <teleport to="body">
-    <Popover placement="leftBottom" trigger="click" overlay-class-name="frosted-popover" :arrow="false">
-      <template #content>
-        <div class="dw-window">
-          <!-- Title Bar (DesktopWindow style) -->
-          <div class="dw-titlebar">
-            <div class="dw-titlebar-left">
-              <span class="dw-icon">
-                <SwapOutlined />
-              </span>
-              <span class="dw-title">{{ t("TXT_CODE_TRANSFER_MANAGER") }}</span>
-              <span class="dw-badge">{{ fileStatus?.downloadTasks?.length || 0 }}</span>
-            </div>
-          </div>
-
-          <!-- Content -->
-          <div class="dw-content custom-scrollbar">
-            <div v-if="!fileStatus?.downloadTasks?.length && !fileStatus?.downloadFileFromURLTask" class="empty-state">
-              <div class="empty-icon">
-                <SwapOutlined style="font-size: 28px" class="empty-icon-inner" />
-              </div>
-              <div class="empty-text">
-                {{ t("TXT_CODE_NO_TRANSFER_TASK") }}
-              </div>
-            </div>
-
-            <div v-if="
-              fileStatus?.downloadFileFromURLTask > 0 &&
-              (!fileStatus.downloadTasks || fileStatus.downloadTasks.length === 0)
-            " class="url-task-indicator">
-              <div class="url-task-icon">
-                <loading-outlined class="url-task-icon-inner" />
-              </div>
-              <span class="url-task-text">{{
-                t("TXT_CODE_8b7fe641", { count: fileStatus.downloadFileFromURLTask })
-              }}</span>
-            </div>
-
-            <div class="task-list">
-              <div v-for="task in fileStatus.downloadTasks" :key="task.path" class="task-item">
-                <div class="task-header">
-                  <div class="task-info">
-                    <div :class="[
-                      'task-icon',
-                      task.type === 'download' ? 'task-icon-download' : 'task-icon-upload'
-                    ]">
-                      <CloudDownloadOutlined v-if="task.type === 'download'" style="font-size: 22px" />
-                      <CloudUploadOutlined v-else style="font-size: 22px" />
-                    </div>
-                    <div class="task-details">
-                      <div class="task-filename" :title="task.path">
-                        {{ task.path.split(/[\\/]/).pop() || task.path }}
-                      </div>
-                      <div class="task-status-text">
-                        <span v-if="task.status === 2" class="task-status-error">{{
-                          task.error || t("TXT_CODE_DOWNLOAD_FAILED")
-                        }}</span>
-                        <span v-else-if="task.status === 1" class="task-status-success">{{
-                          t("TXT_CODE_FINISHED")
-                        }}</span>
-                        <template v-else>
-                          <span class="task-status-progress">{{ (task.current / 1024 / 1024).toFixed(2) }}MB</span>
-                          <span v-if="task.total > 0" class="task-status-total">/ {{ (task.total / 1024 /
-                            1024).toFixed(2)
-                          }}MB</span>
-                        </template>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="task-actions">
-                    <span :class="[
-                      'task-percent',
-                      task.status === 2
-                        ? 'task-percent-error'
-                        : task.status === 1
-                          ? 'task-percent-success'
-                          : task.type === 'upload'
-                            ? 'task-percent-upload'
-                            : 'task-percent-download'
-                    ]">
-                      {{ task.total > 0 ? Math.floor((task.current / task.total) * 100) : 0 }}%
-                    </span>
-                    <Button v-if="task.status === 0" size="large" type="text" danger class="task-stop-button"
-                      @click="onStopTransfer(task)">
-                      <template #icon>
-                        <DeleteOutlined style="font-size: 18px" />
-                      </template>
-                    </Button>
-                  </div>
-                </div>
-                <div class="task-progress-wrapper">
-                  <Progress :percent="task.status === 1
-                    ? 100
-                    : task.total > 0
-                      ? Math.floor((task.current / task.total) * 100)
-                      : 0
-                    " :show-info="false" :status="task.status === 2 ? 'exception' : task.status === 1 ? 'success' : 'active'
-                      " :stroke-width="6" :stroke-color="task.status === 2
-                        ? '#ef4444'
-                        : task.status === 1
-                          ? '#22c55e'
-                          : task.type === 'upload'
-                            ? '#f97316'
-                            : '#3b82f6'
-                        " class="task-progress" />
-                </div>
-              </div>
-            </div>
-          </div>
+    <VMenu v-model="menuOpen" location="left" :close-on-content-click="false">
+      <template #activator="{ props: menuProps }">
+        <div ref="buttonRef" v-bind="menuProps" class="draggable-trigger" :class="{ 'draggable-trigger--dragging': isDragging }" :style="{
+          position: 'fixed', right: posX + 'px', bottom: posY + 'px', zIndex: 9999
+        }" @mousedown="onMouseDown">
+          <VBtn class="draggable-trigger__body" icon variant="text" rounded="xl">
+            <VIcon icon="mdi-swap-horizontal" />
+          </VBtn>
+          <VBadge v-if="activeTasksCount > 0" :content="activeTasksCount > 99 ? '99+' : activeTasksCount" color="error" floating />
+          <span v-if="activeTasksCount > 0" :key="rippleKey" class="draggable-trigger__ripple"></span>
         </div>
       </template>
-
-      <!-- Draggable trigger button -->
-      <div ref="buttonRef" class="draggable-trigger" :class="{ 'draggable-trigger--dragging': isDragging }" :style="{
-        position: 'fixed',
-        right: posX + 'px',
-        bottom: posY + 'px',
-        zIndex: 9999
-      }" @mousedown="onMouseDown">
-        <div class="draggable-trigger__body">
-          <SwapOutlined />
-        </div>
-        <span v-if="activeTasksCount > 0" class="draggable-trigger__badge">{{ activeTasksCount > 99 ? '99+' :
-          activeTasksCount
-        }}</span>
-        <span v-if="activeTasksCount > 0" :key="rippleKey" class="draggable-trigger__ripple"></span>
-      </div>
-    </Popover>
+      <VCard min-width="380" max-width="440" rounded="xl" class="transfer-card">
+        <VCardTitle class="transfer-card__title">
+          <VIcon icon="mdi-swap-horizontal" />
+          <span>{{ t("TXT_CODE_TRANSFER_MANAGER") }}</span>
+          <VChip size="x-small" variant="tonal">{{ fileStatus?.downloadTasks?.length || 0 }}</VChip>
+        </VCardTitle>
+        <VCardText class="dw-content custom-scrollbar">
+          <div v-if="!fileStatus?.downloadTasks?.length && !fileStatus?.downloadFileFromURLTask" class="empty-state">
+            <VIcon icon="mdi-swap-horizontal" size="42" class="empty-icon-inner" />
+            <div class="empty-text">{{ t("TXT_CODE_NO_TRANSFER_TASK") }}</div>
+          </div>
+          <div v-if="fileStatus?.downloadFileFromURLTask > 0 && (!fileStatus.downloadTasks || fileStatus.downloadTasks.length === 0)" class="url-task-indicator">
+            <VIcon icon="mdi-loading" class="url-task-icon-inner desktop-icon-spin" />
+            <span class="url-task-text">{{ t("TXT_CODE_8b7fe641", { count: fileStatus.downloadFileFromURLTask }) }}</span>
+          </div>
+          <div class="task-list">
+            <div v-for="task in fileStatus.downloadTasks" :key="task.path" class="task-item">
+              <div class="task-header">
+                <div class="task-info">
+                  <div :class="['task-icon', task.type === 'download' ? 'task-icon-download' : 'task-icon-upload']">
+                    <VIcon :icon="task.type === 'download' ? 'mdi-cloud-download-outline' : 'mdi-cloud-upload-outline'" size="22" />
+                  </div>
+                  <div class="task-details">
+                    <div class="task-filename" :title="task.path">{{ task.path.split(/[\\/]/).pop() || task.path }}</div>
+                    <div class="task-status-text">
+                      <span v-if="task.status === 2" class="task-status-error">{{ task.error || t("TXT_CODE_DOWNLOAD_FAILED") }}</span>
+                      <span v-else-if="task.status === 1" class="task-status-success">{{ t("TXT_CODE_FINISHED") }}</span>
+                      <template v-else><span class="task-status-progress">{{ (task.current / 1024 / 1024).toFixed(2) }}MB</span><span v-if="task.total > 0" class="task-status-total">/ {{ (task.total / 1024 / 1024).toFixed(2) }}MB</span></template>
+                    </div>
+                  </div>
+                </div>
+                <div class="task-actions">
+                  <span :class="['task-percent', task.status === 2 ? 'task-percent-error' : task.status === 1 ? 'task-percent-success' : task.type === 'upload' ? 'task-percent-upload' : 'task-percent-download']">{{ task.total > 0 ? Math.floor((task.current / task.total) * 100) : 0 }}%</span>
+                  <VBtn v-if="task.status === 0" icon variant="text" color="error" size="small" rounded="xl" class="task-stop-button" @click="onStopTransfer(task)"><VIcon icon="mdi-delete-outline" /></VBtn>
+                </div>
+              </div>
+              <VProgressLinear :model-value="task.status === 1 ? 100 : task.total > 0 ? Math.floor((task.current / task.total) * 100) : 0" :color="task.status === 2 ? 'error' : task.status === 1 ? 'success' : task.type === 'upload' ? 'orange' : 'primary'" rounded="xl" height="6" class="task-progress" />
+            </div>
+          </div>
+        </VCardText>
+      </VCard>
+    </VMenu>
   </teleport>
 </template>
 
@@ -270,6 +191,9 @@ onUnmounted(() => {
   flex-direction: column;
   overflow: hidden;
 }
+
+.transfer-card { background: var(--desktop-window-bg, #fff); color: var(--desktop-window-text, #262626); }
+.transfer-card__title { display: flex; align-items: center; gap: 8px; }
 
 .dw-titlebar {
   display: flex;
@@ -361,7 +285,6 @@ onUnmounted(() => {
   padding: 1.25rem;
   border-radius: 0.75rem;
   background-color: rgba(59, 130, 246, 0.05);
-  border: 1px solid rgba(59, 130, 246, 0.1);
   margin-bottom: 1rem;
 }
 
@@ -399,14 +322,12 @@ onUnmounted(() => {
 
 .task-item {
   position: relative;
-  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 0.5rem;
   background-color: transparent;
   padding: 0.75rem;
 }
 
 .app-dark-theme .task-item {
-  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .task-item:hover {
@@ -594,13 +515,11 @@ onUnmounted(() => {
   justify-content: center;
   font-size: 18px;
   background-color: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(0, 0, 0, 0.08);
   color: #111827;
 }
 
 .app-dark-theme .draggable-trigger__body {
   background-color: rgba(30, 30, 30, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.1);
   color: #f9fafb;
 }
 
@@ -685,25 +604,5 @@ onUnmounted(() => {
     transform: translateX(0);
     opacity: 1;
   }
-}
-</style>
-
-<style>
-.frosted-popover .ant-popover-inner {
-  background-color: rgba(255, 255, 255, 0.85) !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
-  border-radius: 12px !important;
-  padding: 12px !important;
-  color: #111827 !important;
-}
-
-.app-dark-theme .frosted-popover .ant-popover-inner {
-  background-color: rgba(20, 20, 20, 0.9) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  color: #f9fafb !important;
-}
-
-.frosted-popover .ant-popover-arrow {
-  display: none !important;
 }
 </style>

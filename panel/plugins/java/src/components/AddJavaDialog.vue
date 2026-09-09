@@ -3,7 +3,7 @@ import AppDialog from "@/components/AppDialog.vue";
 import { t } from "@/lang/i18n";
 import type { AddJavaConfigItem } from "../types";
 import { ref } from "vue";
-import { VForm, VTextField } from "vuetify/lib/components/index.mjs";
+import { VForm, VTextField } from "vuetify/components";
 
 interface Props {
   destroyComponent(delay?: number): void;

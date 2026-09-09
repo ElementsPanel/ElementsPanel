@@ -10,7 +10,7 @@ import {
   VImg,
   VProgressCircular,
   VSpacer
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 import { useFileManager } from "../hooks/useFileManager";
 
 const props = defineProps<{

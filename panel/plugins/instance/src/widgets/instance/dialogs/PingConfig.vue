@@ -6,7 +6,7 @@ import { updateInstanceConfig } from "@/services/apis/instance";
 import { message } from "ant-design-vue";
 import { reportErrorMsg } from "@/tools/validator";
 import AppDialog from "@/components/AppDialog.vue";
-import { VTextField } from "vuetify/lib/components/index.mjs";
+import { VTextField } from "vuetify/components";
 const props = defineProps<{ instanceInfo?: InstanceDetail; instanceId?: string; daemonId?: string }>();
 const emit = defineEmits(["update"]);
 const options = ref<InstanceDetail>();

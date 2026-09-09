@@ -5,7 +5,7 @@ import { reportErrorMsg } from "@/tools/validator";
 import type { QuickStartPackages } from "@/types";
 import { ref } from "vue";
 import AppDialog from "@/components/AppDialog.vue";
-import { VBtn } from "vuetify/lib/components/index.mjs";
+import { VBtn } from "vuetify/components";
 import { reinstallInstance } from "../api";
 import type { OpenMarketDialogProps } from "../market-dialog";
 import AppPackages from "../normal/AppPackages.vue";

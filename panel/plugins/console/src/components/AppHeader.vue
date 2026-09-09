@@ -12,7 +12,7 @@ import {
   VIcon,
   VToolbar,
   VTooltip
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 import { computed } from "vue";
 import { useRoute } from "vue-router";
 

@@ -4,7 +4,7 @@ import { convertFileSize } from "@/tools/fileSize";
 import type { ArchiveEntry } from "@/types/fileManager";
 import dayjs from "dayjs";
 import { computed } from "vue";
-import { VDataTable, VIcon } from "vuetify/lib/components/index.mjs";
+import { VDataTable, VIcon } from "vuetify/components";
 
 type ArchiveTreeEntry = ArchiveEntry & {
   key: string;

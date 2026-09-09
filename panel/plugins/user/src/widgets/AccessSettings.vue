@@ -14,12 +14,16 @@ import { INSTANCE_STATUS } from "@/types/const";
 import dayjs from "dayjs";
 import WarningDialog from "@/components/fc/WarningDialog.vue";
 import { useMountComponent } from "@/hooks/useMountComponent";
-import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VDataTable, VDialog, VSpacer } from "vuetify/lib/components/index.mjs";
+import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VDataTable, VDialog, VSpacer } from "vuetify/components";
 
 const props = defineProps<{ card?: LayoutCard; uuid?: string }>();
 const { isPhone } = useScreen();
 const route = useRoute();
-const dataSource = ref<UserInstance[]>([]);
+interface AccessInstance extends UserInstance {
+  remarks?: string;
+  endTime?: number | string;
+}
+const dataSource = ref<AccessInstance[]>([]);
 const userUuid = props.uuid ?? props.card?.meta?.uuid ?? String(route.query.uuid ?? "");
 const deleteDialog = ref<{ open: boolean; item: UserInstance | null }>({ open: false, item: null });
 
@@ -89,10 +93,10 @@ onMounted(refreshTableData);
     </PageToolbar>
     <VCard rounded="xl" flat class="user-access-card">
       <VDataTable :headers="headers" :items="dataSource" item-value="instanceUuid" :items-per-page="-1">
-        <template #item.remarks="{ item }">{{ item.raw.hostIp }} ({{ item.raw.remarks }})</template>
-        <template #item.endTime="{ item }">{{ Number(item.raw.endTime) === 0 ? t("TXT_CODE_8dfd8b17") : !isNaN(Number(item.raw.endTime)) ? dayjs(Number(item.raw.endTime)).format("YYYY-MM-DD HH:mm:ss") : item.raw.endTime }}</template>
-        <template #item.status="{ item }">{{ INSTANCE_STATUS[item.raw.status] || item.raw.status }}</template>
-        <template #item.operation="{ item }"><VBtn color="error" variant="tonal" size="small" @click="deleteDialog = { open: true, item: item.raw }">{{ t("TXT_CODE_ecbd7449") }}</VBtn></template>
+        <template #item.remarks="{ item }">{{ item.hostIp }}<template v-if="item.remarks"> ({{ item.remarks }})</template></template>
+        <template #item.endTime="{ item }">{{ Number(item.endTime) === 0 ? t("TXT_CODE_8dfd8b17") : !isNaN(Number(item.endTime)) ? dayjs(Number(item.endTime)).format("YYYY-MM-DD HH:mm:ss") : item.endTime }}</template>
+        <template #item.status="{ item }">{{ INSTANCE_STATUS[item.status as keyof typeof INSTANCE_STATUS] || item.status }}</template>
+        <template #item.operation="{ item }"><VBtn color="error" variant="tonal" size="small" @click="deleteDialog = { open: true, item }">{{ t("TXT_CODE_ecbd7449") }}</VBtn></template>
       </VDataTable>
     </VCard>
     <VDialog v-model="deleteDialog.open" class="app-dialog" max-width="460" scrollable>

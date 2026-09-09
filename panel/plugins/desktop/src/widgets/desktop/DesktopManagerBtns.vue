@@ -8,14 +8,6 @@ import { ctx } from "@/plugin/context";
 import type { PanelFrontendInstanceActionContext } from "@/plugin";
 import { modListApi } from "@/services/apis/modManager";
 import { useAppStateStore } from "@/stores/useAppStateStore";
-import {
-  AppstoreAddOutlined,
-  BuildOutlined,
-  ControlOutlined,
-  DashboardOutlined,
-  FieldTimeOutlined,
-  UsbOutlined
-} from "@ant-design/icons-vue";
 import { computed, ref, watch } from "vue";
 import { arrayFilter } from "@/tools/array";
 import EventConfig from "@instance/widgets/instance/dialogs/EventConfig.vue";
@@ -23,6 +15,23 @@ import InstanceDetail from "@instance/widgets/instance/dialogs/InstanceDetail.vu
 import InstanceFundamentalDetail from "@instance/widgets/instance/dialogs/InstanceFundamentalDetail.vue";
 import PingConfig from "@instance/widgets/instance/dialogs/PingConfig.vue";
 import RconSettings from "@instance/widgets/instance/dialogs/RconSettings.vue";
+import { VIcon } from "vuetify/components";
+
+const ControlOutlined = "mdi-tune-variant";
+const UsbOutlined = "mdi-usb-port";
+const BuildOutlined = "mdi-hammer-wrench";
+const FieldTimeOutlined = "mdi-clock-outline";
+const DashboardOutlined = "mdi-view-dashboard-outline";
+const AppstoreAddOutlined = "mdi-view-grid-plus-outline";
+
+const instanceActionIconMap: Record<string, string> = {
+  backup: "mdi-cloud-outline",
+  "java-manager": "mdi-hammer-wrench",
+  mcstats: "mdi-account-group-outline",
+  "operation-log": "mdi-file-document-outline",
+  "terminal-config": "mdi-code-tags",
+  "file-manager": "mdi-folder-open-outline"
+};
 
 const props = defineProps<{
   instanceId: string;
@@ -111,7 +120,7 @@ const btns = computed(() => {
   };
   const pluginActions = desktopInstanceActions.value.map((action) => ({
     title: typeof action.title === "function" ? action.title() : action.title,
-    icon: action.icon,
+    icon: instanceActionIconMap[action.id] || "mdi-cog-outline",
     condition: () => action.condition?.(actionContext) ?? true,
     click: () => emit("open-instance-action", action.id)
   }));
@@ -216,7 +225,7 @@ watch(instanceInfo, (cfg, oldCfg) => {
         :title="btn.title"
         @click="btn.click"
       >
-        <component :is="btn.icon" />
+        <VIcon :icon="btn.icon" size="small" />
       </div>
     </div>
   </div>
@@ -265,7 +274,6 @@ watch(instanceInfo, (cfg, oldCfg) => {
 <style lang="scss" scoped>
 .dim-mgr-btns {
   padding: 8px;
-  border-top: 1px solid var(--desktop-window-border);
 
   &__title {
     font-size: 10px;
@@ -292,7 +300,6 @@ watch(instanceInfo, (cfg, oldCfg) => {
   font-size: 16px;
   color: var(--desktop-window-text-secondary);
   background: var(--desktop-window-titlebar-bg);
-  border: 1px solid var(--desktop-window-border);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;

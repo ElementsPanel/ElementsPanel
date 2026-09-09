@@ -15,7 +15,7 @@ import { ctx } from "@/plugin/context";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import { closeAppLoading, setLoadingTitle } from "@/tools/dom";
-import { VThemeProvider } from "vuetify/lib/components/index.mjs";
+import { VThemeProvider } from "vuetify/components";
 import { setVuetifyTheme } from "./vuetify";
 
 const {

@@ -4,10 +4,9 @@ import { getInstanceConfigByType, type InstanceConfigs } from "@/hooks/useInstan
 import { t } from "@/lang/i18n";
 import { getConfigFile, getConfigFileList, updateConfigFile } from "@/services/apis/instance";
 import { toUnicode } from "@/tools/common";
-import { reportErrorMsg } from "@/tools/validator";
-import { ArrowLeftOutlined, EditOutlined, FileExclamationOutlined, ReloadOutlined, SaveOutlined } from "@ant-design/icons-vue";
-import { message } from "ant-design-vue";
+import { notifyDesktop, notifyDesktopError } from "../../desktopNotice";
 import { onMounted, ref } from "vue";
+import { VBtn, VIcon } from "vuetify/components";
 
 const props = defineProps<{
     instanceId: string;
@@ -62,7 +61,7 @@ const loadConfigFiles = async () => {
         configFiles.value = files.filter((f) => f.check);
     } catch (err: any) {
         console.error(err);
-        reportErrorMsg(err.message);
+        notifyDesktopError(err);
     } finally {
         isLoading.value = false;
     }
@@ -83,7 +82,7 @@ const selectFile = async (file: InstanceConfigs) => {
             }
         });
     } catch (err: any) {
-        reportErrorMsg(err.message);
+        notifyDesktopError(err);
     }
 };
 
@@ -117,9 +116,9 @@ const saveFile = async () => {
             },
             data: config
         });
-        message.success(t("TXT_CODE_a7907771"));
+        notifyDesktop(t("TXT_CODE_a7907771"), "success");
     } catch (err: any) {
-        reportErrorMsg(err.message);
+        notifyDesktopError(err);
     } finally {
         isSaving.value = false;
     }
@@ -133,25 +132,25 @@ onMounted(async () => {
 <template>
     <div class="dsc">
         <div class="dsc__header">
-            <button v-if="selectedFile" class="dsc-btn dsc-btn--icon" @click="goBack" :title="t('TXT_CODE_c14b2ea3')">
-                <ArrowLeftOutlined />
-            </button>
+            <VBtn v-if="selectedFile" icon variant="text" rounded="xl" class="dsc-btn dsc-btn--icon" @click="goBack" :title="t('TXT_CODE_c14b2ea3')">
+                <VIcon icon="mdi-arrow-left"  />
+            </VBtn>
             <span class="dsc__title">
                 {{ selectedFile ? selectedFile.fileName : t("TXT_CODE_d07742fe") }}
             </span>
             <div class="dsc__actions">
-                <button v-if="!selectedFile" class="dsc-btn dsc-btn--sm" @click="loadConfigFiles" :disabled="isLoading">
-                    <ReloadOutlined /> {{ t("TXT_CODE_b76d94e0") }}
-                </button>
+                <VBtn v-if="!selectedFile" class="dsc-btn dsc-btn--sm" variant="text" rounded="xl" @click="loadConfigFiles" :disabled="isLoading">
+                    <VIcon icon="mdi-refresh"  /> {{ t("TXT_CODE_b76d94e0") }}
+                </VBtn>
                 <template v-if="selectedFile">
-                    <button class="dsc-btn dsc-btn--sm dsc-btn--primary" @click="saveFile" :disabled="isSaving">
-                        <SaveOutlined /> {{ t("TXT_CODE_abfe9512") }}
-                    </button>
-                    <button class="dsc-btn dsc-btn--sm"
-                        @click="async () => { if (selectedFile) { await selectFile(selectedFile); message.success(t('TXT_CODE_7863f28d')); } }"
+                    <VBtn class="dsc-btn dsc-btn--sm dsc-btn--primary" variant="text" rounded="xl" @click="saveFile" :disabled="isSaving">
+                        <VIcon icon="mdi-content-save-outline"  /> {{ t("TXT_CODE_abfe9512") }}
+                    </VBtn>
+                    <VBtn class="dsc-btn dsc-btn--sm" variant="text" rounded="xl"
+                        @click="async () => { if (selectedFile) { await selectFile(selectedFile); notifyDesktop(t('TXT_CODE_7863f28d'), 'success'); } }"
                         :disabled="isFileLoading">
-                        <ReloadOutlined /> {{ t("TXT_CODE_b76d94e0") }}
-                    </button>
+                        <VIcon icon="mdi-refresh"  /> {{ t("TXT_CODE_b76d94e0") }}
+                    </VBtn>
                 </template>
             </div>
         </div>
@@ -159,7 +158,7 @@ onMounted(async () => {
         <div class="dsc__body">
             <div v-if="!selectedFile" class="dsc-list">
                 <div v-if="configFiles.length === 0 && !isLoading" class="dsc-empty">
-                    <FileExclamationOutlined class="dsc-empty__icon" />
+                    <VIcon icon="mdi-file-alert-outline" class="dsc-empty__icon"  />
                     <p class="dsc-empty__text">{{ t("TXT_CODE_37a4c14a") }}</p>
                     <p class="dsc-empty__hint">{{ t("TXT_CODE_4c0fda9") }}</p>
                 </div>
@@ -170,7 +169,7 @@ onMounted(async () => {
                             <span class="dsc-file-item__desc">{{ file.info }}</span>
                         </div>
                         <div class="dsc-file-item__action">
-                            <EditOutlined />
+                            <VIcon icon="mdi-pencil-outline"  />
                         </div>
                     </div>
                 </div>
@@ -179,7 +178,7 @@ onMounted(async () => {
             <div v-else class="dsc-editor desktop-mode">
                 <div v-if="configFileState" class="dsc-editor__content">
                     <InstanceConfigEditor :key="selectedFile.path + Date.now()" :config="configFileState"
-                        :config-name="selectedFile.redirect" />
+                        :config-name="selectedFile.redirect" is-desktop />
                 </div>
                 <div v-else class="dsc-empty">
                     <p class="dsc-empty__text">{{ t("TXT_CODE_b197be11") }}</p>

@@ -11,7 +11,7 @@ import { hasVersionUpdate } from "@/tools/version";
 import type { LayoutCard } from "@/types";
 import { message } from "ant-design-vue";
 import { computed, onMounted, ref } from "vue";
-import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VCol, VIcon, VRow, VTooltip } from "vuetify/lib/components/index.mjs";
+import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VCol, VIcon, VRow, VTooltip } from "vuetify/components";
 import { connectNode } from "../../api";
 import NodeSimpleChart from "../NodeSimpleChart.vue";
 import NodeDetailDialog from "./NodeDetailDialog.vue";

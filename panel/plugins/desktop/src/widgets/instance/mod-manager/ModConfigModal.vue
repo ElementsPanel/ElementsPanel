@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
 import DesktopWindow from "../../desktop/DesktopWindow.vue";
-import { FileTextOutlined, SettingOutlined } from "@ant-design/icons-vue";
 import {
   Button,
   List,
@@ -10,6 +9,11 @@ import {
   Modal
 } from "ant-design-vue";
 import { onMounted, onUnmounted, ref } from "vue";
+import { VIcon } from "vuetify/components";
+import { VBtn, VList, VListItem } from "vuetify/components";
+
+const FileTextOutlined = "mdi-file-document-outline";
+const SettingOutlined = "mdi-cog-outline";
 
 defineProps<{
   visible: boolean;
@@ -48,20 +52,14 @@ const emit = defineEmits(["update:visible", "edit"]);
           :initial-y="windowHeight / 2 - 200" :z-index="10001" :show-minimize="false" :show-maximize="false"
           :resizable="false" @close="emit('update:visible', false)">
           <div class="desktop-modal-content">
-            <List :loading="configLoading" :data-source="configFiles">
-              <template #renderItem="{ item }">
-                <ListItem>
-                  <ListItemMeta :title="item.name" :description="item.path">
-                    <template #avatar>
-                      <FileTextOutlined />
-                    </template>
-                  </ListItemMeta>
-                  <template #actions>
-                    <Button type="link" @click="emit('edit', item)">{{ t("TXT_CODE_EDIT") }}</Button>
-                  </template>
-                </ListItem>
-              </template>
-            </List>
+            <VList v-if="!configLoading" rounded="xl">
+              <VListItem v-for="item in configFiles" :key="item.path || item.name" :title="item.name" :subtitle="item.path">
+                <template #prepend><VIcon icon="mdi-file-document-outline" /></template>
+                <template #append><VBtn variant="text" rounded="xl" @click="emit('edit', item)">{{ t("TXT_CODE_EDIT") }}</VBtn></template>
+              </VListItem>
+              <VListItem v-if="!configFiles.length" :title="t('TXT_CODE_NO_DATA')" />
+            </VList>
+            <div v-else class="desktop-modal-loading"><VIcon icon="mdi-loading" /></div>
           </div>
         </DesktopWindow>
       </Transition>
@@ -74,7 +72,7 @@ const emit = defineEmits(["update:visible", "edit"]);
         <ListItem>
           <ListItemMeta :title="item.name" :description="item.path">
             <template #avatar>
-              <FileTextOutlined />
+              <VIcon icon="mdi-file-document-outline"  />
             </template>
           </ListItemMeta>
           <template #actions>

@@ -5,16 +5,15 @@ import { loginUser } from "@/services/apis";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { sleep } from "@/tools/common";
-import { reportErrorMsg } from "@/tools/validator";
-import {
-    AppstoreOutlined,
-    LoadingOutlined,
-    LockOutlined,
-    UserOutlined
-} from "@ant-design/icons-vue";
-import { message, Modal } from "ant-design-vue";
+import { notifyDesktop, notifyDesktopError } from "../../../desktop/src/desktopNotice";
 import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import { desktopIconDarkUrl, desktopIconUrl } from "../assets";
+import { VBtn, VIcon, VTextField } from "vuetify/components";
+
+const AppstoreOutlined = "mdi-view-grid-outline";
+const LoadingOutlined = "mdi-loading";
+const LockOutlined = "mdi-lock-outline";
+const UserOutlined = "mdi-account-outline";
 
 const emit = defineEmits<{
     (e: "login-success"): void;
@@ -86,7 +85,7 @@ onBeforeUnmount(() => {
 
 const handleLogin = async () => {
     if (!formData.username.trim() || !formData.password.trim()) {
-        return message.error(t("TXT_CODE_c846074d"));
+        return notifyDesktop(t("TXT_CODE_c846074d"), "error");
     }
     try {
         loginStep.value = 1;
@@ -102,7 +101,7 @@ const handleLogin = async () => {
         await handleNext();
     } catch (error: any) {
         loginStep.value = 0;
-        reportErrorMsg(error);
+        notifyDesktopError(error);
     }
 };
 
@@ -113,10 +112,7 @@ const handleNext = async () => {
     } catch (error: any) {
         console.error(error);
         loginStep.value = 0;
-        Modal.error({
-            title: t("TXT_CODE_da2fb99a"),
-            content: t("TXT_CODE_6e718abe")
-        });
+        notifyDesktop({ message: t("TXT_CODE_da2fb99a"), description: t("TXT_CODE_6e718abe") }, "error");
     }
 };
 </script>
@@ -135,9 +131,11 @@ const handleNext = async () => {
                     <span class="window__title">ElementsPanel</span>
                 </div>
                 <div class="window__controls">
-                    <div class="window__control" @click="router.push('/login')" :title="t('TXT_CODE_DESKTOP_EXIT')">
-                        <AppstoreOutlined />
-                    </div>
+                    <VBtn class="window__control" icon variant="text" rounded="xl"
+                        :title="t('TXT_CODE_DESKTOP_EXIT')" :aria-label="t('TXT_CODE_DESKTOP_EXIT')"
+                        @click="router.push('/login')">
+                        <VIcon icon="mdi-view-grid-outline" />
+                    </VBtn>
                 </div>
             </div>
 
@@ -145,29 +143,23 @@ const handleNext = async () => {
                 <p class="desktop-login-subtitle">{{ t("TXT_CODE_5b60ad00") }}</p>
                 <form class="desktop-login-form" @submit.prevent="handleLogin">
                     <div v-if="!is2Fa" class="desktop-login-fields-group">
-                        <div class="desktop-login-field">
-                            <UserOutlined class="field-icon" />
-                            <input v-model="formData.username" type="text" :placeholder="t('TXT_CODE_80a560a1')"
-                                autocomplete="username" :disabled="loginStep === 1" />
-                        </div>
-                        <div class="desktop-login-field">
-                            <LockOutlined class="field-icon" />
-                            <input v-model="formData.password" type="password" :placeholder="t('TXT_CODE_551b0348')"
-                                autocomplete="current-password" @keydown.enter="handleLogin"
-                                :disabled="loginStep === 1" />
-                        </div>
+                        <VTextField v-model="formData.username" type="text" :placeholder="t('TXT_CODE_80a560a1')"
+                            prepend-inner-icon="mdi-account-outline" autocomplete="username" variant="solo"
+                            rounded="xl" hide-details :disabled="loginStep === 1" />
+                        <VTextField v-model="formData.password" type="password" :placeholder="t('TXT_CODE_551b0348')"
+                            prepend-inner-icon="mdi-lock-outline" autocomplete="current-password" variant="solo"
+                            rounded="xl" hide-details @keydown.enter="handleLogin" :disabled="loginStep === 1" />
                     </div>
                     <div v-else>
-                        <div class="desktop-login-field">
-                            <LockOutlined class="field-icon" />
-                            <input v-model="formData.code" type="text" :placeholder="t('TXT_CODE_7ac8b1d3')"
-                                autocomplete="off" @keydown.enter="handleLogin" :disabled="loginStep === 1" />
-                        </div>
+                        <VTextField v-model="formData.code" type="text" :placeholder="t('TXT_CODE_7ac8b1d3')"
+                            prepend-inner-icon="mdi-lock-outline" autocomplete="off" variant="solo" rounded="xl"
+                            hide-details @keydown.enter="handleLogin" :disabled="loginStep === 1" />
                     </div>
-                    <button type="submit" class="desktop-login-btn" :disabled="loginStep === 1">
-                        <LoadingOutlined v-if="loginStep === 1" />
+                    <VBtn type="submit" class="desktop-login-btn" block variant="flat" rounded="xl"
+                        :loading="loginStep === 1" :disabled="loginStep === 1">
+                        <VIcon v-if="loginStep === 1" icon="mdi-loading" class="mr-2" />
                         {{ loginStep === 1 ? t("TXT_CODE_DESKTOP_LOGGING_IN") : t("TXT_CODE_d2c1a316") }}
-                    </button>
+                    </VBtn>
                 </form>
                 <div class="desktop-login-footer">
                     Powered by

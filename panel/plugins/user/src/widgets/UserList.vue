@@ -15,7 +15,7 @@ import {
   VListItem,
   VSelect,
   VTextField
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { useScreen } from "@/hooks/useScreen";
 import { throttle } from "lodash";

@@ -14,7 +14,7 @@ import {
   VFileInput,
   VProgressLinear,
   VSpacer
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 
 const { execute } = uploadFile();
 

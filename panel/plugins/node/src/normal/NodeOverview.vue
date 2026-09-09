@@ -13,7 +13,7 @@ import {
   VPagination,
   VTable,
   VTooltip
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 
 defineProps<{ card: LayoutCard }>();
 

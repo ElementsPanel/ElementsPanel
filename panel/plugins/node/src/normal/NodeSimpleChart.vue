@@ -3,7 +3,7 @@ import { t } from "@/lang/i18n";
 import { getRandomId } from "@/tools/randId";
 import { onMounted, watch } from "vue";
 import { useSimpleChart } from "@/hooks/useOverviewChart";
-import { VCol, VRow } from "vuetify/lib/components/index.mjs";
+import { VCol, VRow } from "vuetify/components";
 
 const props = defineProps<{
   cpuData: number[];

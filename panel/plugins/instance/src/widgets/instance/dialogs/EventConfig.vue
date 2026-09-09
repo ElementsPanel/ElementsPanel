@@ -10,7 +10,7 @@ import {
   VForm,
   VSwitch,
   VTextField
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 
 const props = defineProps<{
   instanceInfo?: InstanceDetail;

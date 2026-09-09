@@ -6,7 +6,7 @@ import {
   VProgressCircular,
   VTimeline,
   VTimelineItem
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 import type { FormattedOperationLog } from "../hooks/useOperationLog";
 
 withDefaults(

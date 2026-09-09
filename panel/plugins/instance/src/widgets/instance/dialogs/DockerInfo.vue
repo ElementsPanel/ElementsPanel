@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { t } from "@/lang/i18n";
 import { dockerPortsArray } from "@/tools/common";
 import AppDialog from "@/components/AppDialog.vue";
-import { VChip, VCol, VRow } from "vuetify/lib/components/index.mjs";
+import { VChip, VCol, VRow } from "vuetify/components";
 const props = defineProps<{
   dockerInfo?: IGlobalInstanceDockerConfig;
 }>();

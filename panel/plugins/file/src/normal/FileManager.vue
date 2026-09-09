@@ -39,7 +39,7 @@ import {
   VTab,
   VTabs,
   VTextField
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 import FileEditor from "./FileEditor.vue";
 
 const props = defineProps<{

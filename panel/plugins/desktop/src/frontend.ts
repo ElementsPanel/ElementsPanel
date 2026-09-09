@@ -2,11 +2,11 @@ import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugin";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
-import { DesktopOutlined } from "@ant-design/icons-vue";
 import DesktopPage from "./Desktop.vue";
 import DesktopWindow from "./widgets/desktop/DesktopWindow.vue";
 import { localeMessages } from "./i18n";
 import themeCss from "./theme.scss?inline";
+
 
 // Desktop mode. It owns the window shell and the application registry, so a
 // plugin contributes a Desktop app through `ctx.desktop` and only while this
@@ -45,7 +45,6 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.menus.app({
     title: () => t("TXT_CODE_DESKTOP_MODE"),
-    icon: DesktopOutlined,
     mdiIcon: "mdi-monitor",
     click: openDesktop,
     conditions: () => {
@@ -58,7 +57,6 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.menus.login({
     title: () => t("TXT_CODE_DESKTOP_MODE"),
-    icon: DesktopOutlined,
     click: openDesktop
   });
 }

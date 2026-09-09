@@ -4,10 +4,12 @@ import { t } from "@/lang/i18n";
 import { editNode } from "../api";
 import { overviewInfo } from "@/services/apis";
 import type { NodeStatus } from "@/types";
-import { SettingOutlined } from "@ant-design/icons-vue";
-import { message } from "ant-design-vue";
+import { notifyDesktop } from "../../../desktop/src/desktopNotice";
 import { reactive, ref, watch } from "vue";
 import DesktopWindow from "./DesktopWindow.vue";
+import { VBtn, VIcon, VSelect, VSwitch, VTextField } from "vuetify/components";
+
+const SettingOutlined = "mdi-cog-outline";
 
 const SPEED_RATE_OPTIONS = [
     { label: t("TXT_CODE_e3a77a77"), value: 0 },
@@ -162,11 +164,11 @@ const saveSettings = async () => {
                 remoteMappings: form.remoteMappings
             }
         });
-        message.success(t("TXT_CODE_e74d658c"));
+        notifyDesktop(t("TXT_CODE_e74d658c"), "success");
         emit("saved");
         emit("close");
     } catch (error: any) {
-        message.error(error?.message ?? t("TXT_CODE_5245bd11"));
+        notifyDesktop(error?.message ?? t("TXT_CODE_5245bd11"), "error");
     } finally {
         saving.value = false;
     }
@@ -186,79 +188,70 @@ const saveSettings = async () => {
                 <div class="dn-form-group">
                     <label class="dn-form-label">{{ t("TXT_CODE_fde31068") }}</label>
                     <span class="dn-form-hint">{{ t("TXT_CODE_d8d19932") }}</span>
-                    <select v-model.number="form.uploadSpeedRate" class="dn-form-select">
-                        <option v-for="item in SPEED_RATE_OPTIONS" :key="item.value" :value="item.value">
-                            {{ item.label }}
-                        </option>
-                    </select>
+                    <VSelect v-model="form.uploadSpeedRate" :items="SPEED_RATE_OPTIONS" item-title="label" item-value="value"
+                        class="dn-form-select" variant="solo" density="compact" rounded="xl" hide-details />
                 </div>
 
                 <div class="dn-form-group">
                     <label class="dn-form-label">{{ t("TXT_CODE_785a0fcf") }}</label>
                     <span class="dn-form-hint">{{ t("TXT_CODE_b9fc604c") }}</span>
-                    <select v-model.number="form.downloadSpeedRate" class="dn-form-select">
-                        <option v-for="item in SPEED_RATE_OPTIONS" :key="item.value" :value="item.value">
-                            {{ item.label }}
-                        </option>
-                    </select>
+                    <VSelect v-model="form.downloadSpeedRate" :items="SPEED_RATE_OPTIONS" item-title="label" item-value="value"
+                        class="dn-form-select" variant="solo" density="compact" rounded="xl" hide-details />
                 </div>
 
                 <div class="dn-form-group">
                     <label class="dn-form-label">{{ t("TXT_CODE_a15fca22") }}</label>
                     <span class="dn-form-hint">{{ t("TXT_CODE_ecaf78a2") }}</span>
-                    <input v-model.number="form.maxDownloadFromUrlFileCount" type="number" class="dn-form-input" />
+                    <VTextField v-model.number="form.maxDownloadFromUrlFileCount" type="number" class="dn-form-input" variant="solo" density="compact" rounded="xl" hide-details />
                 </div>
 
                 <div class="dn-form-group">
                     <label class="dn-form-label">{{ t("TXT_CODE_daemon_outputBufferSize") }}</label>
                     <span class="dn-form-hint">{{ t("TXT_CODE_daemon_outputBufferSizeInfo") }}</span>
-                    <input v-model.number="form.outputBufferSize" type="number" class="dn-form-input" />
+                    <VTextField v-model.number="form.outputBufferSize" type="number" class="dn-form-input" variant="solo" density="compact" rounded="xl" hide-details />
                 </div>
 
                 <div class="dn-form-group">
                     <label class="dn-form-label">{{ t("TXT_CODE_daemon_enableSoftShutdown") }}</label>
                     <span class="dn-form-hint">{{ t("TXT_CODE_daemon_enableSoftShutdownInfo") }}</span>
-                    <a-switch v-model:checked="form.enableSoftShutdown" />
+                    <VSwitch v-model="form.enableSoftShutdown" color="primary" hide-details density="compact" />
                 </div>
 
                 <div class="dn-form-group">
                     <label class="dn-form-label">{{ t("TXT_CODE_daemon_softShutdownSkipDocker") }}</label>
                     <span class="dn-form-hint">{{ t("TXT_CODE_daemon_softShutdownSkipDockerInfo") }}</span>
-                    <a-switch v-model:checked="form.softShutdownSkipDocker" />
+                    <VSwitch v-model="form.softShutdownSkipDocker" color="primary" hide-details density="compact" />
                 </div>
 
                 <div class="dn-form-group">
                     <label class="dn-form-label">{{ t("TXT_CODE_daemon_softShutdownWaitSeconds") }}</label>
                     <span class="dn-form-hint">{{ t("TXT_CODE_daemon_softShutdownWaitSecondsInfo") }}</span>
-                    <input v-model.number="form.softShutdownWaitSeconds" type="number" class="dn-form-input" />
+                    <VTextField v-model.number="form.softShutdownWaitSeconds" type="number" class="dn-form-input" variant="solo" density="compact" rounded="xl" hide-details />
                 </div>
 
                 <div class="dn-form-group">
                     <label class="dn-form-label">{{ t("TXT_CODE_cd1f9ef7") }}</label>
                     <span class="dn-form-hint">{{ t("TXT_CODE_75ef0619") }}</span>
-                    <input v-model.number="form.daemonPort" type="number" class="dn-form-input" />
+                    <VTextField v-model.number="form.daemonPort" type="number" class="dn-form-input" variant="solo" density="compact" rounded="xl" hide-details />
                 </div>
 
                 <div class="dn-form-group">
                     <label class="dn-form-label">{{ t("TXT_CODE_INSTANCE_BACKUP_PATH") }}</label>
                     <span class="dn-form-hint">{{ t("TXT_CODE_INSTANCE_BACKUP_PATH_HINT") }}</span>
-                    <input v-model="form.instanceBackupPath" type="text" class="dn-form-input"
+                    <VTextField v-model="form.instanceBackupPath" type="text" class="dn-form-input" variant="solo" density="compact" rounded="xl" hide-details
                         placeholder="data/backups" />
                 </div>
 
                 <div class="dn-form-group">
                     <label class="dn-form-label">{{ t("TXT_CODE_e06c1cea") }}</label>
-                    <select v-model="form.instanceBackupFormat" class="dn-form-select">
-                        <option value="zip">ZIP</option>
-                        <option value="tar.gz">TAR.GZ</option>
-                        <option value="7z">7Z</option>
-                    </select>
+                    <VSelect v-model="form.instanceBackupFormat" class="dn-form-select" variant="solo" density="compact" rounded="xl" hide-details
+                        :items="['zip', 'tar.gz', '7z']" />
                 </div>
 
                 <div class="dn-form-group">
                     <label class="dn-form-label">{{ t("TXT_CODE_743ed87f") }}</label>
-                    <input v-model.number="form.instanceBackupCompressionLevel" type="number" min="0" max="9"
-                        step="1" class="dn-form-input" />
+                    <VTextField v-model.number="form.instanceBackupCompressionLevel" type="number" min="0" max="9"
+                        step="1" class="dn-form-input" variant="solo" density="compact" rounded="xl" hide-details />
                 </div>
 
                 <div class="dn-form-group">
@@ -271,12 +264,12 @@ const saveSettings = async () => {
                 </div>
             </div>
             <div class="dn-advanced-settings__footer">
-                <button class="dn-btn dn-btn--default" @click="emit('close')">
+                <VBtn class="dn-btn dn-btn--default" variant="text" rounded="xl" @click="emit('close')">
                     {{ t("TXT_CODE_a0451c97") }}
-                </button>
-                <button class="dn-btn dn-btn--primary" :disabled="saving || loading" @click="saveSettings">
+                </VBtn>
+                <VBtn class="dn-btn dn-btn--primary" variant="text" rounded="xl" :disabled="saving || loading" @click="saveSettings">
                     {{ t("TXT_CODE_d507abff") }}
-                </button>
+                </VBtn>
             </div>
         </div>
     </DesktopWindow>

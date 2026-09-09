@@ -8,7 +8,7 @@ import {
   VCardText,
   VCardTitle,
   VDialog
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 
 defineOptions({ inheritAttrs: false });
 

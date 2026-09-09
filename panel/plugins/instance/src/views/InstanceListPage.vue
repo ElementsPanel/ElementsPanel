@@ -52,7 +52,7 @@ import {
   VSelect,
   VTextField,
   VTooltip
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 import { useInstanceMoreDetail, type InstanceMoreDetail } from "../hooks/useInstance";
 
 const operationForm = ref({ instanceName: "", currentPage: 1, pageSize: 20, status: "" });

@@ -14,38 +14,24 @@ import {
     stopInstance,
     updateInstanceConfig
 } from "@/services/apis/instance";
-import { reportErrorMsg } from "@/tools/validator";
+import { notifyDesktop, notifyDesktopError } from "../../desktopNotice";
 import type { InstanceDetail, NodeStatus } from "@/types";
 import { INSTANCE_STATUS_CODE } from "@/types/const";
-import {
-    ApiOutlined,
-    CaretRightOutlined,
-    ClockCircleOutlined,
-    CloseCircleOutlined,
-    CloseOutlined,
-    DeleteOutlined,
-    DownOutlined,
-    ExclamationCircleOutlined,
-    InboxOutlined,
-    LeftOutlined,
-    LoadingOutlined,
-    MinusCircleOutlined,
-    PauseCircleOutlined,
-    PlayCircleOutlined,
-    PlusOutlined,
-    QuestionCircleOutlined,
-    RedoOutlined,
-    ReloadOutlined,
-    RightOutlined,
-    SearchOutlined,
-    StopOutlined,
-    TagsOutlined,
-    TeamOutlined,
-    WarningOutlined
-} from "@ant-design/icons-vue";
-import { notification } from "ant-design-vue";
-import { computed, nextTick, onMounted, onUnmounted, ref, type Component } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch, type Component } from "vue";
 import DesktopWindow from "./DesktopWindow.vue";
+import { VBtn, VChip, VIcon, VList, VListItem, VMenu, VProgressCircular, VSelect, VTextField } from "vuetify/components";
+
+const ClockCircleOutlined = "mdi-clock-outline";
+const MinusCircleOutlined = "mdi-minus-circle-outline";
+const PauseCircleOutlined = "mdi-pause-circle-outline";
+const PlayCircleOutlined = "mdi-play-circle-outline";
+const QuestionCircleOutlined = "mdi-help-circle-outline";
+const RedoOutlined = "mdi-redo";
+const CloseOutlined = "mdi-close";
+const DeleteOutlined = "mdi-delete-outline";
+const WarningOutlined = "mdi-alert-outline";
+const TagsOutlined = "mdi-tag-multiple-outline";
+const ExclamationCircleOutlined = "mdi-alert-circle-outline";
 
 const nodes = ref<NodeStatus[]>([]);
 const selectedNodeId = ref<string>("");
@@ -57,6 +43,18 @@ const currentPage = ref(1);
 const totalPages = ref(1);
 const pageSize = 20;
 const operatingIds = ref<Set<string>>(new Set());
+
+const nodeSelectItems = computed(() => nodes.value.map((node) => ({
+    title: `${node.remarks || node.ip}:${node.port}${node.available ? "" : ` (${t("TXT_CODE_66ce073e")})`}`,
+    value: node.uuid
+})));
+const statusSelectItems = computed(() => [
+    { title: t("TXT_CODE_DESKTOP_IM_ALL_STATUS"), value: "all" },
+    { title: t("TXT_CODE_bdb620b9"), value: String(INSTANCE_STATUS_CODE.RUNNING) },
+    { title: t("TXT_CODE_4ef6b040"), value: String(INSTANCE_STATUS_CODE.STOPPED) },
+    { title: t("TXT_CODE_175b570d"), value: String(INSTANCE_STATUS_CODE.STARTING) },
+    { title: t("TXT_CODE_a409b8a9"), value: String(INSTANCE_STATUS_CODE.STOPPING) }
+]);
 
 const multipleMode = ref(false);
 const selectedInstance = ref<InstanceDetail[]>([]);
@@ -168,13 +166,11 @@ const saveInstanceTags = async () => {
             }
         });
         tagDialog.value.show = false;
-        notification.success({
-            message: t("TXT_CODE_a7907771")
-        });
+        notifyDesktop(t("TXT_CODE_a7907771"), "success");
         await fetchInstances(true);
     } catch (err: any) {
         console.error(err);
-        reportErrorMsg(err.message);
+        notifyDesktopError(err);
     } finally {
         tagDialog.value.saving = false;
     }
@@ -238,7 +234,7 @@ const getStatusClass = (status: INSTANCE_STATUS_CODE): string => {
     return map[status] || "";
 };
 
-const statusIconMap: Record<number, Component> = {
+const statusIconMap: Record<number, Component | string> = {
     [INSTANCE_STATUS_CODE.BUSY]: ClockCircleOutlined,
     [INSTANCE_STATUS_CODE.STOPPED]: MinusCircleOutlined,
     [INSTANCE_STATUS_CODE.STOPPING]: PauseCircleOutlined,
@@ -246,7 +242,7 @@ const statusIconMap: Record<number, Component> = {
     [INSTANCE_STATUS_CODE.RUNNING]: PlayCircleOutlined
 };
 
-const getStatusIconComponent = (status: INSTANCE_STATUS_CODE): Component => {
+const getStatusIconComponent = (status: INSTANCE_STATUS_CODE): Component | string => {
     return statusIconMap[status] || QuestionCircleOutlined;
 };
 
@@ -429,7 +425,7 @@ const instanceOperations = [
 ];
 
 const batchOperation = async (actName: "start" | "stop" | "kill" | "restart") => {
-    if (selectedInstance.value.length === 0) return reportErrorMsg(t("TXT_CODE_a0a77be5"));
+    if (selectedInstance.value.length === 0) return notifyDesktopError(t("TXT_CODE_a0a77be5"));
     const operationMap = {
         start: async () => exec(batchStart().execute, t("TXT_CODE_2b5fd76e")),
         stop: async () => exec(batchStop().execute, t("TXT_CODE_4822a21")),
@@ -446,16 +442,13 @@ const batchOperation = async (actName: "start" | "stop" | "kill" | "restart") =>
                 }))
             });
             if (state.value) {
-                notification.success({
-                    message: msg,
-                    description: t("TXT_CODE_1514d08f")
-                });
+                notifyDesktop({ message: msg, description: t("TXT_CODE_1514d08f") }, "success");
                 exitMultipleMode();
                 await fetchInstances(true);
             }
         } catch (err: any) {
             console.error(err);
-            reportErrorMsg(err.message);
+            notifyDesktopError(err);
         }
     };
 
@@ -463,7 +456,7 @@ const batchOperation = async (actName: "start" | "stop" | "kill" | "restart") =>
 };
 
 const batchDeleteInstance = async (deleteFile: boolean) => {
-    if (selectedInstance.value.length === 0) return reportErrorMsg(t("TXT_CODE_a0a77be5"));
+    if (selectedInstance.value.length === 0) return notifyDesktopError(t("TXT_CODE_a0a77be5"));
     const uuids: string[] = [];
     const paths: string[] = [];
     for (const i of selectedInstance.value) {
@@ -497,15 +490,12 @@ const handleDeleteConfirm = async () => {
         if (state.value) {
             deleteDialog.value.show = false;
             exitMultipleMode();
-            notification.success({
-                message: t("TXT_CODE_c3c06801"),
-                description: t("TXT_CODE_50075e02")
-            });
+            notifyDesktop({ message: t("TXT_CODE_c3c06801"), description: t("TXT_CODE_50075e02") }, "success");
             await fetchInstances(true);
         }
     } catch (err: any) {
         console.error(err);
-        reportErrorMsg(err.message);
+        notifyDesktopError(err);
     } finally {
         deleteDialog.value.loading = false;
     }
@@ -521,7 +511,6 @@ const handleInstanceDblClick = (instance: InstanceDetail) => {
     }
 };
 
-import { watch } from "vue";
 
 watch(selectedNodeId, () => {
     currentPage.value = 1;
@@ -563,80 +552,61 @@ onUnmounted(() => {
         <div class="dim-toolbar">
             <div class="dim-toolbar__left">
                 <div class="dim-select">
-                    <label class="dim-select__label">{{ t("TXT_CODE_e076d90b") }}:</label>
-                    <select v-model="selectedNodeId" class="dim-select__input">
-                        <option v-for="node in nodes" :key="node.uuid" :value="node.uuid">
-                            {{ node.remarks || node.ip }}:{{ node.port }}
-                            {{ node.available ? "" : ` (${t("TXT_CODE_66ce073e")})` }}
-                        </option>
-                    </select>
+                    <VSelect v-model="selectedNodeId" :label="t('TXT_CODE_e076d90b')" :items="nodeSelectItems"
+                        variant="solo" density="compact" rounded="xl" hide-details class="dim-select__input"
+                        :disabled="nodeSelectItems.length === 0" />
                 </div>
 
                 <div class="dim-select">
-                    <select v-model="statusFilter" class="dim-select__input">
-                        <option value="all">{{ t("TXT_CODE_DESKTOP_IM_ALL_STATUS") }}</option>
-                        <option :value="String(INSTANCE_STATUS_CODE.RUNNING)">
-                            {{ t("TXT_CODE_bdb620b9") }}
-                        </option>
-                        <option :value="String(INSTANCE_STATUS_CODE.STOPPED)">
-                            {{ t("TXT_CODE_4ef6b040") }}
-                        </option>
-                        <option :value="String(INSTANCE_STATUS_CODE.STARTING)">
-                            {{ t("TXT_CODE_175b570d") }}
-                        </option>
-                        <option :value="String(INSTANCE_STATUS_CODE.STOPPING)">
-                            {{ t("TXT_CODE_a409b8a9") }}
-                        </option>
-                    </select>
+                    <VSelect v-model="statusFilter" :items="statusSelectItems" variant="solo" density="compact"
+                        rounded="xl" hide-details class="dim-select__input" />
                 </div>
             </div>
 
             <div class="dim-toolbar__right">
                 <div v-if="multipleMode" class="dim-batch-actions">
-                    <button class="dim-btn" @click="exitMultipleMode">
+                    <VBtn class="dim-btn" variant="text" rounded="xl" @click="exitMultipleMode">
                         {{ t("TXT_CODE_5366af54") }}
-                    </button>
-                    <button class="dim-btn" @click="selectAllInstances">
+                    </VBtn>
+                    <VBtn class="dim-btn" variant="text" rounded="xl" @click="selectAllInstances">
                         {{ filteredInstances.length === selectedInstance.length ? t("TXT_CODE_df87c46d") :
                             t("TXT_CODE_f466d7a") }}
-                    </button>
-                    <a-dropdown>
-                        <template #overlay>
-                            <a-menu>
-                                <a-menu-item v-for="item in instanceOperations" :key="item.title" @click="item.click">
-                                    <component :is="item.icon" />
-                                    {{ item.title }}
-                                </a-menu-item>
-                            </a-menu>
-                        </template>
-                        <button class="dim-btn dim-btn--primary">
+                    </VBtn>
+                    <VMenu location="bottom end">
+                        <template #activator="{ props: menuProps }">
+                            <VBtn v-bind="menuProps" class="dim-btn dim-btn--primary" variant="text" rounded="xl">
                             {{ t("TXT_CODE_8fd8bfd3") }}
-                            <DownOutlined />
-                        </button>
-                    </a-dropdown>
+                            <VIcon icon="mdi-chevron-down"  />
+                            </VBtn>
+                        </template>
+                        <VList density="compact" rounded="xl">
+                            <VListItem v-for="item in instanceOperations" :key="item.title" :title="item.title"
+                                @click="item.click">
+                                <template #prepend>
+                                    <VIcon :icon="item.icon" size="small" />
+                                </template>
+                            </VListItem>
+                        </VList>
+                    </VMenu>
                 </div>
                 <div v-else class="dim-batch-actions">
-                    <button class="dim-btn" @click="multipleMode = true">
+                    <VBtn class="dim-btn" variant="text" rounded="xl" @click="multipleMode = true">
                         {{ t("TXT_CODE_5cb656b9") }}
-                    </button>
+                    </VBtn>
                 </div>
 
-                <div class="dim-search">
-                    <input v-model="searchText" type="text" class="dim-search__input"
-                        :placeholder="t('TXT_CODE_DESKTOP_IM_SEARCH')" />
-                    <span class="dim-search__icon">
-                        <SearchOutlined />
-                    </span>
-                </div>
+                <VTextField v-model="searchText" class="dim-search__input" density="compact" variant="solo"
+                    rounded="xl" hide-details clearable :placeholder="t('TXT_CODE_DESKTOP_IM_SEARCH')"
+                    prepend-inner-icon="mdi-magnify" />
 
-                <button class="dim-btn dim-btn--icon" @click="fetchInstances()">
-                    <LoadingOutlined v-if="loading" />
-                    <ReloadOutlined v-else />
-                </button>
+                <VBtn class="dim-btn dim-btn--icon" icon variant="text" rounded="xl" :loading="loading"
+                    aria-label="Refresh" @click="fetchInstances()">
+                    <VIcon icon="mdi-refresh" />
+                </VBtn>
 
-                <button class="dim-btn dim-btn--primary" @click="emit('open-new-instance')">
-                    <PlusOutlined /> {{ t("TXT_CODE_DESKTOP_IM_NEW_INSTANCE") }}
-                </button>
+                <VBtn class="dim-btn dim-btn--primary" variant="text" rounded="xl" @click="emit('open-new-instance')">
+                    <VIcon icon="mdi-plus"  /> {{ t("TXT_CODE_DESKTOP_IM_NEW_INSTANCE") }}
+                </VBtn>
             </div>
         </div>
 
@@ -655,7 +625,7 @@ onUnmounted(() => {
             </div>
             <div v-if="selectedNode" class="dim-stats__node">
                 <span>
-                    <ApiOutlined /> {{ selectedNode.remarks || selectedNode.ip }}
+                    <VIcon icon="mdi-api"  /> {{ selectedNode.remarks || selectedNode.ip }}
                 </span>
                 <span :class="selectedNode.available ? 'dim-stats__online' : 'dim-stats__offline'">
                     {{ selectedNode.available ? t("TXT_CODE_823bfe63") : t("TXT_CODE_66ce073e") }}
@@ -664,25 +634,25 @@ onUnmounted(() => {
         </div>
 
         <div v-if="tagTips && tagTips.length > 0" class="dim-tags">
-            <a-tag v-if="selectedTags.length > 0" color="red" class="dim-tag" @click="clearTags">
+            <VChip v-if="selectedTags.length > 0" color="error" size="small" class="dim-tag" @click="clearTags">
                 {{ t("TXT_CODE_7333c7f7") }}
-            </a-tag>
-            <a-tag v-for="item in tagTips" :key="item" class="dim-tag"
+            </VChip>
+            <VChip v-for="item in tagTips" :key="item" size="small" class="dim-tag"
                 :class="{ 'dim-tag--active': isTagSelected(item) }"
                 @click="isTagSelected(item) ? removeTag(item) : selectTag(item)">
                 {{ item }}
-            </a-tag>
+            </VChip>
         </div>
 
         <div class="dim-list" :class="{ 'dim-list--loading': loading }">
             <div v-if="loading && instances.length === 0" class="dim-empty">
-                <div class="dim-spinner"></div>
+                <VProgressCircular indeterminate size="28" width="3" class="mb-2" />
                 <p>{{ t("TXT_CODE_DESKTOP_IM_LOADING") }}</p>
             </div>
 
             <div v-else-if="filteredInstances.length === 0" class="dim-empty">
                 <span class="dim-empty__icon">
-                    <InboxOutlined />
+                    <VIcon icon="mdi-inbox-outline"  />
                 </span>
                 <p>{{ t("TXT_CODE_DESKTOP_IM_NO_INSTANCES") }}</p>
             </div>
@@ -693,7 +663,9 @@ onUnmounted(() => {
                 <div class="dim-instance__info">
                     <div class="dim-instance__header">
                         <span class="dim-instance__status" :class="getStatusClass(instance.status)">
-                            <component :is="getStatusIconComponent(instance.status)" />
+                            <component :is="getStatusIconComponent(instance.status)"
+                                v-if="typeof getStatusIconComponent(instance.status) !== 'string'" />
+                            <VIcon v-else :icon="getStatusIconComponent(instance.status)" size="small" />
                         </span>
                         <span class="dim-instance__name">{{
                             instance.config.nickname || t("TXT_CODE_DESKTOP_IM_UNNAMED")
@@ -715,7 +687,7 @@ onUnmounted(() => {
                             instance.info.maxPlayers > 0 &&
                             instance.status === INSTANCE_STATUS_CODE.RUNNING
                         " class="dim-instance__players">
-                            <TeamOutlined /> {{ instance.info.currentPlayers }}/{{ instance.info.maxPlayers }}
+                            <VIcon icon="mdi-account-group-outline"  /> {{ instance.info.currentPlayers }}/{{ instance.info.maxPlayers }}
                         </span>
                         <span v-for="tag in instance.config?.tag || []" :key="tag" class="dim-instance__tag">{{ tag
                         }}</span>
@@ -723,46 +695,47 @@ onUnmounted(() => {
                 </div>
 
                 <div class="dim-instance__actions">
-                    <button class="dim-action dim-action--tag" :title="t('TXT_CODE_78e88c3f')"
+                    <VBtn icon variant="text" rounded="xl" class="dim-action dim-action--tag" :title="t('TXT_CODE_78e88c3f')"
                         @click.stop="openTagDialog(instance)">
-                        <TagsOutlined />
-                    </button>
-                    <button v-if="instance.status === INSTANCE_STATUS_CODE.STOPPED" class="dim-action dim-action--start"
+                        <VIcon icon="mdi-tag-multiple-outline"  />
+                    </VBtn>
+                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.STOPPED" icon variant="text" rounded="xl" class="dim-action dim-action--start"
                         :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_57245e94')"
                         @click.stop="handleStart(instance.instanceUuid)">
-                        <CaretRightOutlined />
-                    </button>
-                    <button v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING"
+                        <VIcon icon="mdi-play"  />
+                    </VBtn>
+                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING"
+                        icon variant="text" rounded="xl"
                         class="dim-action dim-action--restart" :disabled="isOperating(instance.instanceUuid)"
                         :title="t('TXT_CODE_47dcfa5')" @click.stop="handleRestart(instance.instanceUuid)">
-                        <ReloadOutlined />
-                    </button>
-                    <button v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" class="dim-action dim-action--stop"
+                        <VIcon icon="mdi-refresh"  />
+                    </VBtn>
+                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" icon variant="text" rounded="xl" class="dim-action dim-action--stop"
                         :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_b1dedda3')"
                         @click.stop="handleStop(instance.instanceUuid)">
-                        <StopOutlined />
-                    </button>
-                    <button v-if="
+                        <VIcon icon="mdi-stop"  />
+                    </VBtn>
+                    <VBtn v-if="
                         instance.status === INSTANCE_STATUS_CODE.RUNNING ||
                         instance.status === INSTANCE_STATUS_CODE.STOPPING
-                    " class="dim-action dim-action--kill" :disabled="isOperating(instance.instanceUuid)"
+                    " icon variant="text" rounded="xl" class="dim-action dim-action--kill" :disabled="isOperating(instance.instanceUuid)"
                         :title="t('TXT_CODE_7b67813a')" @click.stop="handleKill(instance.instanceUuid)">
-                        <CloseCircleOutlined />
-                    </button>
+                        <VIcon icon="mdi-close-circle-outline"  />
+                    </VBtn>
                 </div>
             </div>
         </div>
 
         <div v-if="totalPages > 1" class="dim-pagination">
-            <button class="dim-btn dim-btn--sm" :disabled="currentPage <= 1" @click="currentPage--; fetchInstances()">
-                <LeftOutlined /> {{ t("TXT_CODE_DESKTOP_IM_PREV") }}
-            </button>
+            <VBtn class="dim-btn dim-btn--sm" variant="text" rounded="xl" :disabled="currentPage <= 1" @click="currentPage--; fetchInstances()">
+                <VIcon icon="mdi-chevron-left"  /> {{ t("TXT_CODE_DESKTOP_IM_PREV") }}
+            </VBtn>
             <span class="dim-pagination__info">{{ currentPage }} / {{ totalPages }}</span>
-            <button class="dim-btn dim-btn--sm" :disabled="currentPage >= totalPages"
+            <VBtn class="dim-btn dim-btn--sm" variant="text" rounded="xl" :disabled="currentPage >= totalPages"
                 @click="currentPage++; fetchInstances()">
                 {{ t("TXT_CODE_5e9022f8") }}
-                <RightOutlined />
-            </button>
+                <VIcon icon="mdi-chevron-right"  />
+            </VBtn>
         </div>
 
         <Teleport to="body">
@@ -784,14 +757,14 @@ onUnmounted(() => {
                             <div class="dim-tag-editor">
                                 <span v-for="tag in tagDialog.tags" :key="tag" class="dim-tag-editor__tag">
                                     {{ tag }}
-                                    <CloseOutlined class="dim-tag-editor__remove" @click="removeInstanceTag(tag)" />
+                                    <VIcon icon="mdi-close" class="dim-tag-editor__remove" @click="removeInstanceTag(tag)"  />
                                 </span>
-                                <input v-if="tagDialog.newTagVisible" ref="tagInputRef" v-model="tagDialog.newTagValue"
-                                    type="text" class="dim-tag-editor__input" @blur="confirmNewTag"
-                                    @keyup.enter="confirmNewTag" />
-                                <button v-else class="dim-tag-editor__add" @click="showNewTagInput">
-                                    <PlusOutlined /> {{ t("TXT_CODE_3dd66d98") }}
-                                </button>
+                                <VTextField v-if="tagDialog.newTagVisible" ref="tagInputRef" v-model="tagDialog.newTagValue"
+                                    density="compact" variant="solo" rounded="xl" hide-details class="dim-tag-editor__input"
+                                    @blur="confirmNewTag" @keyup.enter="confirmNewTag" />
+                                <VBtn v-else class="dim-tag-editor__add" variant="text" rounded="xl" @click="showNewTagInput">
+                                    <VIcon icon="mdi-plus"  /> {{ t("TXT_CODE_3dd66d98") }}
+                                </VBtn>
                             </div>
                             <template v-if="tagSuggestions.length > 0">
                                 <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--strong">
@@ -810,15 +783,15 @@ onUnmounted(() => {
                             </template>
                         </div>
                         <div class="dim-dialog__footer">
-                            <button class="dim-btn dim-btn--default" :disabled="tagDialog.saving"
+                            <VBtn class="dim-btn dim-btn--default" variant="text" rounded="xl" :disabled="tagDialog.saving"
                                 @click="closeTagDialog">
                                 {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="dim-btn dim-btn--primary" :disabled="tagDialog.saving"
+                            </VBtn>
+                            <VBtn class="dim-btn dim-btn--primary" variant="text" rounded="xl" :disabled="tagDialog.saving"
                                 @click="saveInstanceTags">
-                                <LoadingOutlined v-if="tagDialog.saving" />
+                                <VIcon icon="mdi-loading" v-if="tagDialog.saving"  />
                                 {{ t("TXT_CODE_d507abff") }}
-                            </button>
+                            </VBtn>
                         </div>
                     </div>
                 </DesktopWindow>
@@ -835,7 +808,7 @@ onUnmounted(() => {
                     :resizable="false" @close="handleDeleteCancel">
                     <div class="dim-dialog-content">
                         <div class="dim-dialog__body dim-dialog__body--column">
-                            <ExclamationCircleOutlined class="dim-dialog__warn-icon" />
+                            <VIcon icon="mdi-alert-circle-outline" class="dim-dialog__warn-icon"  />
                             <p class="dim-dialog__desc">
                                 {{ deleteDialog.deleteFile ? t("TXT_CODE_18d2f8ae") : t("TXT_CODE_ac01315a") }}
                             </p>
@@ -844,15 +817,15 @@ onUnmounted(() => {
                             </p>
                         </div>
                         <div class="dim-dialog__footer">
-                            <button class="dim-btn dim-btn--default" :disabled="deleteDialog.loading"
+                            <VBtn class="dim-btn dim-btn--default" variant="text" rounded="xl" :disabled="deleteDialog.loading"
                                 @click="handleDeleteCancel">
                                 {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="dim-btn dim-btn--danger" :disabled="deleteDialog.loading"
+                            </VBtn>
+                            <VBtn class="dim-btn dim-btn--danger" variant="text" rounded="xl" :disabled="deleteDialog.loading"
                                 @click="handleDeleteConfirm">
-                                <LoadingOutlined v-if="deleteDialog.loading" />
+                                <VIcon icon="mdi-loading" v-if="deleteDialog.loading"  />
                                 {{ t("TXT_CODE_d507abff") }}
-                            </button>
+                            </VBtn>
                         </div>
                     </div>
                 </DesktopWindow>
@@ -1031,16 +1004,6 @@ onUnmounted(() => {
     margin-right: 8px;
 }
 
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
 .dim-stats {
     display: flex;
     align-items: center;
@@ -1166,16 +1129,6 @@ onUnmounted(() => {
         margin: 8px 0 0;
         font-size: 13px;
     }
-}
-
-.dim-spinner {
-    width: 28px;
-    height: 28px;
-    border: 3px solid var(--desktop-window-border);
-    border-top-color: #1677ff;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-bottom: 8px;
 }
 
 .dim-instance {

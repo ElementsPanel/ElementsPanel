@@ -20,6 +20,7 @@ import type { Rule } from "ant-design-vue/es/form";
 import { computed, createVNode, onUnmounted, reactive, ref } from "vue";
 import DockerImageSelect from "../instance/dialogs/components/DockerImageSelect.vue";
 import SelectUnzipCode from "../instance/dialogs/SelectUnzipCode.vue";
+import { VBtn, VFileInput, VForm, VIcon, VRadio, VRadioGroup, VRow, VCol, VSelect, VSwitch, VTextField, VTextarea } from "vuetify/components";
 
 const selectUnzipCodeDialog = ref<InstanceType<typeof SelectUnzipCode>>();
 const emit = defineEmits(["nextStep"]);
@@ -27,7 +28,11 @@ const emit = defineEmits(["nextStep"]);
 const props = defineProps<{
   createMethod: QUICKSTART_METHOD;
   daemonId: string;
+  isDesktop?: boolean;
 }>();
+
+const instanceTypeOptions = computed(() => Object.entries(INSTANCE_TYPE_TRANSLATION).map(([value, title]) => ({ value, title: String(title) })));
+const requiredRule = (value: unknown) => Boolean(value) || t("TXT_CODE_47e21c80");
 
 const zipCode = ref("utf-8");
 const formRef = ref<FormInstance>();
@@ -89,10 +94,9 @@ const setUnzipCode = async (code: string) => {
 };
 
 const finalConfirm = async () => {
-  try {
-    await formRef.value?.validate();
-  } catch (err: any) {
-    return reportErrorMsg(t("TXT_CODE_47e21c80"));
+  if (!formData.nickname || !formData.stopCommand) return reportErrorMsg(t("TXT_CODE_47e21c80"));
+  if (!props.isDesktop) {
+    try { await formRef.value?.validate(); } catch (err: any) { return reportErrorMsg(t("TXT_CODE_47e21c80")); }
   }
   const thisModal = Modal.confirm({
     title: t("TXT_CODE_2a3b0c17"),
@@ -109,6 +113,11 @@ const finalConfirm = async () => {
     },
     onCancel() {}
   });
+};
+
+const onDesktopFileChange = (file: File | File[] | null) => {
+  const selected = Array.isArray(file) ? file[0] : file;
+  if (selected) void beforeUpload(selected as any, [selected as any]);
 };
 
 /**
@@ -222,6 +231,38 @@ const createInstance = async () => {
 </script>
 
 <template>
+  <template v-if="isDesktop">
+    <VForm class="desktop-create-form" @submit.prevent="finalConfirm">
+      <p v-if="createMethod === QUICKSTART_METHOD.DOCKER" class="desktop-create-hint"><VIcon icon="mdi-information-outline" /> {{ t("TXT_CODE_b51bac6f") }}</p>
+      <VRow dense>
+        <VCol cols="12" md="6">
+          <VTextField v-model="formData.nickname" :label="t('TXT_CODE_f70badb9')" :hint="t('TXT_CODE_818928ba')" persistent-hint :placeholder="t('TXT_CODE_475c5890')" :rules="[requiredRule]" variant="solo" density="compact" hide-details="auto" />
+        </VCol>
+        <VCol cols="12" md="6">
+          <VSelect v-model="formData.type" :items="instanceTypeOptions" item-title="title" item-value="value" :label="t('TXT_CODE_2f291d8b')" :hint="t('TXT_CODE_be608c82')" persistent-hint :placeholder="t('TXT_CODE_3bb646e4')" variant="solo" density="compact" hide-details="auto" @update:model-value="changeInstanceType" />
+        </VCol>
+      </VRow>
+      <VRow v-if="createMethod === QUICKSTART_METHOD.DOCKER" dense>
+        <VCol cols="12" md="6">
+          <DockerImageSelect :model-value="formData.docker.image ?? ''" :daemon-id="daemonId" @update:model-value="(v: string) => (formData.docker.image = v)" />
+        </VCol>
+        <VCol cols="12" md="6" class="desktop-create-switch">
+          <span>{{ t("TXT_CODE_5484094a") }}</span>
+          <VSwitch v-model="formData.docker.changeWorkdir" color="primary" hide-details />
+        </VCol>
+        <VCol cols="12" md="6"><VTextField v-model="formData.cwd" :label="t('TXT_CODE_20d110b3')" :hint="t('TXT_CODE_877eea45')" persistent-hint variant="solo" density="compact" hide-details="auto" /></VCol>
+        <VCol cols="12" md="6"><VTextField v-model="formData.docker.workingDir" :label="t('TXT_CODE_81979d0f')" :hint="t('TXT_CODE_3407250a')" persistent-hint variant="solo" density="compact" hide-details="auto" /></VCol>
+      </VRow>
+      <VTextarea v-model="formData.startCommand" :label="t('TXT_CODE_d12fa808')" :hint="createMethod === QUICKSTART_METHOD.IMPORT ? t('TXT_CODE_17544b7b') : createMethod === QUICKSTART_METHOD.DOCKER ? t('TXT_CODE_26495d02') : t('TXT_CODE_8c0db3f4')" persistent-hint rows="2" variant="solo" density="compact" hide-details="auto" class="mt-3" />
+      <VTextarea v-model="formData.updateCommand" :label="t('TXT_CODE_2e2c6b7b')" :hint="t('TXT_CODE_4f387c5a')" persistent-hint rows="2" variant="solo" density="compact" hide-details="auto" class="mt-3" />
+      <VTextField v-model="formData.stopCommand" :label="t('TXT_CODE_11cfe3a1')" :hint="t('TXT_CODE_7ec7ccb8')" persistent-hint :rules="[requiredRule]" variant="solo" density="compact" hide-details="auto" class="mt-3" />
+      <VFileInput v-if="needUpload" :label="createMethod === QUICKSTART_METHOD.IMPORT ? t('TXT_CODE_f9b6e61b') : t('TXT_CODE_444db70f')" :accept="createMethod === QUICKSTART_METHOD.IMPORT ? '.zip' : '.jar'" prepend-icon="mdi-upload-outline" variant="solo" density="compact" hide-details="auto" class="mt-3" @update:model-value="onDesktopFileChange" />
+      <div v-else class="desktop-create-hint mt-3">{{ t("TXT_CODE_7da6e84") }}</div>
+      <VBtn v-if="needUpload" color="primary" variant="text" rounded="xl" class="mt-3" :disabled="!formData.nickname || uploadStarted" @click="finalConfirm"><VIcon icon="mdi-upload-outline" />{{ percentText() }}</VBtn>
+      <VBtn v-else color="primary" variant="text" rounded="xl" class="mt-3" :loading="createInstanceLoading" @click="finalConfirm"><VIcon icon="mdi-plus" />{{ t("TXT_CODE_5a74975b") }}</VBtn>
+    </VForm>
+  </template>
+  <template v-else>
   <div style="text-align: left">
     <a-typography-paragraph v-if="createMethod === QUICKSTART_METHOD.DOCKER" :level="5">
       <InfoCircleOutlined />
@@ -476,6 +517,7 @@ const createInstance = async () => {
       </a-form-item>
     </a-form>
   </div>
+  </template>
 
   <SelectUnzipCode ref="selectUnzipCodeDialog" @select-code="setUnzipCode" />
 </template>
@@ -490,4 +532,8 @@ const createInstance = async () => {
   bottom: 16px;
   right: 16px;
 }
+
+.desktop-create-form { display: flex; flex-direction: column; gap: 8px; }
+.desktop-create-hint { color: var(--desktop-window-text-secondary, rgba(0, 0, 0, 0.6)); line-height: 1.5; }
+.desktop-create-switch { display: flex; align-items: center; justify-content: space-between; }
 </style>

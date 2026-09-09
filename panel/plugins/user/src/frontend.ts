@@ -1,6 +1,5 @@
 import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugin";
-import { UserOutlined } from "@ant-design/icons-vue";
 import * as userApi from "./api";
 import MyselfInfoDialog from "./components/MyselfInfoDialog.vue";
 import DesktopLoginWindow from "./desktop/DesktopLoginWindow.vue";
@@ -31,7 +30,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
     desktopLoginWindow: DesktopLoginWindow,
     desktopUsers: DesktopUsers,
     desktopUserInfo: DesktopUserInfo,
-    desktopStartMenuAvatar: UserOutlined
+    desktopStartMenuAvatar: "mdi-account-outline"
   });
 
   // Authentication settings are declared by this plugin's backend, so the plugin

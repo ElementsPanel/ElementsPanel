@@ -9,22 +9,14 @@ import {
 } from "@/services/apis/instance";
 import { INSTANCE_STATUS_CODE } from "@/types/const";
 import type { UserInstance } from "@/types/user";
-import {
-    CaretRightOutlined,
-    ClockCircleOutlined,
-    CloseCircleOutlined,
-    InboxOutlined,
-    LoadingOutlined,
-    MinusCircleOutlined,
-    PauseCircleOutlined,
-    PlayCircleOutlined,
-    QuestionCircleOutlined,
-    ReloadOutlined,
-    SearchOutlined,
-    StopOutlined,
-    TeamOutlined
-} from "@ant-design/icons-vue";
 import { computed, onMounted, onUnmounted, ref, type Component } from "vue";
+import { VBtn, VIcon, VProgressCircular, VSelect, VTextField } from "vuetify/components";
+
+const ClockCircleOutlined = "mdi-clock-outline";
+const MinusCircleOutlined = "mdi-minus-circle-outline";
+const PauseCircleOutlined = "mdi-pause-circle-outline";
+const PlayCircleOutlined = "mdi-play-circle-outline";
+const QuestionCircleOutlined = "mdi-help-circle-outline";
 
 interface MyAppInstance extends UserInstance {
     info?: Record<string, any>;
@@ -37,6 +29,14 @@ const loading = ref(false);
 const searchText = ref("");
 const statusFilter = ref<string>("all");
 const operatingIds = ref<Set<string>>(new Set());
+
+const statusSelectItems = computed(() => [
+    { title: t("TXT_CODE_DESKTOP_IM_ALL_STATUS"), value: "all" },
+    { title: t("TXT_CODE_bdb620b9"), value: String(INSTANCE_STATUS_CODE.RUNNING) },
+    { title: t("TXT_CODE_4ef6b040"), value: String(INSTANCE_STATUS_CODE.STOPPED) },
+    { title: t("TXT_CODE_175b570d"), value: String(INSTANCE_STATUS_CODE.STARTING) },
+    { title: t("TXT_CODE_a409b8a9"), value: String(INSTANCE_STATUS_CODE.STOPPING) }
+]);
 
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -92,7 +92,7 @@ const getStatusClass = (status: INSTANCE_STATUS_CODE): string => {
     return map[status] || "";
 };
 
-const statusIconMap: Record<number, Component> = {
+const statusIconMap: Record<number, Component | string> = {
     [INSTANCE_STATUS_CODE.BUSY]: ClockCircleOutlined,
     [INSTANCE_STATUS_CODE.STOPPED]: MinusCircleOutlined,
     [INSTANCE_STATUS_CODE.STOPPING]: PauseCircleOutlined,
@@ -100,7 +100,7 @@ const statusIconMap: Record<number, Component> = {
     [INSTANCE_STATUS_CODE.RUNNING]: PlayCircleOutlined
 };
 
-const getStatusIconComponent = (status: INSTANCE_STATUS_CODE): Component => {
+const getStatusIconComponent = (status: INSTANCE_STATUS_CODE): Component | string => {
     return statusIconMap[status] || QuestionCircleOutlined;
 };
 
@@ -223,38 +223,19 @@ onUnmounted(() => {
     <div class="ma">
         <div class="ma-toolbar">
             <div class="ma-toolbar__left">
-                <div class="ma-select">
-                    <select v-model="statusFilter" class="ma-select__input">
-                        <option value="all">{{ t("TXT_CODE_DESKTOP_IM_ALL_STATUS") }}</option>
-                        <option :value="String(INSTANCE_STATUS_CODE.RUNNING)">
-                            {{ t("TXT_CODE_bdb620b9") }}
-                        </option>
-                        <option :value="String(INSTANCE_STATUS_CODE.STOPPED)">
-                            {{ t("TXT_CODE_4ef6b040") }}
-                        </option>
-                        <option :value="String(INSTANCE_STATUS_CODE.STARTING)">
-                            {{ t("TXT_CODE_175b570d") }}
-                        </option>
-                        <option :value="String(INSTANCE_STATUS_CODE.STOPPING)">
-                            {{ t("TXT_CODE_a409b8a9") }}
-                        </option>
-                    </select>
-                </div>
+                <VSelect v-model="statusFilter" :items="statusSelectItems" variant="solo" density="compact"
+                    rounded="xl" hide-details class="ma-select__input" />
             </div>
 
             <div class="ma-toolbar__right">
-                <div class="ma-search">
-                    <input v-model="searchText" type="text" class="ma-search__input"
-                        :placeholder="t('TXT_CODE_DESKTOP_IM_SEARCH')" />
-                    <span class="ma-search__icon">
-                        <SearchOutlined />
-                    </span>
-                </div>
+                <VTextField v-model="searchText" class="ma-search__input" density="compact" variant="solo"
+                    rounded="xl" hide-details clearable :placeholder="t('TXT_CODE_DESKTOP_IM_SEARCH')"
+                    prepend-inner-icon="mdi-magnify" />
 
-                <button class="ma-btn ma-btn--icon" @click="fetchInstances()">
-                    <LoadingOutlined v-if="loading" />
-                    <ReloadOutlined v-else />
-                </button>
+                <VBtn class="ma-btn ma-btn--icon" icon variant="text" rounded="xl" :loading="loading"
+                    aria-label="Refresh" @click="fetchInstances()">
+                    <VIcon icon="mdi-refresh" />
+                </VBtn>
             </div>
         </div>
 
@@ -275,13 +256,13 @@ onUnmounted(() => {
 
         <div class="ma-list" :class="{ 'ma-list--loading': loading }">
             <div v-if="loading && instances.length === 0" class="ma-empty">
-                <div class="ma-spinner"></div>
+                <VProgressCircular indeterminate size="28" width="3" class="mb-2" />
                 <p>{{ t("TXT_CODE_DESKTOP_IM_LOADING") }}</p>
             </div>
 
             <div v-else-if="filteredInstances.length === 0" class="ma-empty">
                 <span class="ma-empty__icon">
-                    <InboxOutlined />
+                    <VIcon icon="mdi-inbox-outline"  />
                 </span>
                 <p>{{ t("TXT_CODE_DESKTOP_IM_NO_INSTANCES") }}</p>
             </div>
@@ -292,7 +273,9 @@ onUnmounted(() => {
                 <div class="ma-instance__info">
                     <div class="ma-instance__header">
                         <span class="ma-instance__status" :class="getStatusClass(instance.status)">
-                            <component :is="getStatusIconComponent(instance.status)" />
+                            <component :is="getStatusIconComponent(instance.status)"
+                                v-if="typeof getStatusIconComponent(instance.status) !== 'string'" />
+                            <VIcon v-else :icon="getStatusIconComponent(instance.status)" size="small" />
                         </span>
                         <span class="ma-instance__name">{{
                             instance.nickname || t("TXT_CODE_DESKTOP_IM_UNNAMED")
@@ -316,35 +299,35 @@ onUnmounted(() => {
                             instance.info.maxPlayers > 0 &&
                             instance.status === INSTANCE_STATUS_CODE.RUNNING
                         " class="ma-instance__players">
-                            <TeamOutlined /> {{ instance.info.currentPlayers }}/{{ instance.info.maxPlayers }}
+                            <VIcon icon="mdi-account-group-outline"  /> {{ instance.info.currentPlayers }}/{{ instance.info.maxPlayers }}
                         </span>
                     </div>
                 </div>
 
                 <div class="ma-instance__actions">
-                    <button v-if="instance.status === INSTANCE_STATUS_CODE.STOPPED" class="ma-action ma-action--start"
+                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.STOPPED" icon variant="text" rounded="xl" class="ma-action ma-action--start"
                         :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_57245e94')"
                         @click.stop="handleStart(instance.instanceUuid, instance.daemonId)">
-                        <CaretRightOutlined />
-                    </button>
-                    <button v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" class="ma-action ma-action--restart"
+                        <VIcon icon="mdi-play"  />
+                    </VBtn>
+                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" icon variant="text" rounded="xl" class="ma-action ma-action--restart"
                         :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_47dcfa5')"
                         @click.stop="handleRestart(instance.instanceUuid, instance.daemonId)">
-                        <ReloadOutlined />
-                    </button>
-                    <button v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" class="ma-action ma-action--stop"
+                        <VIcon icon="mdi-refresh"  />
+                    </VBtn>
+                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" icon variant="text" rounded="xl" class="ma-action ma-action--stop"
                         :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_b1dedda3')"
                         @click.stop="handleStop(instance.instanceUuid, instance.daemonId)">
-                        <StopOutlined />
-                    </button>
-                    <button v-if="
+                        <VIcon icon="mdi-stop"  />
+                    </VBtn>
+                    <VBtn v-if="
                         instance.status === INSTANCE_STATUS_CODE.RUNNING ||
                         instance.status === INSTANCE_STATUS_CODE.STOPPING
-                    " class="ma-action ma-action--kill" :disabled="isOperating(instance.instanceUuid)"
+                    " icon variant="text" rounded="xl" class="ma-action ma-action--kill" :disabled="isOperating(instance.instanceUuid)"
                         :title="t('TXT_CODE_7b67813a')"
                         @click.stop="handleKill(instance.instanceUuid, instance.daemonId)">
-                        <CloseCircleOutlined />
-                    </button>
+                        <VIcon icon="mdi-close-circle-outline"  />
+                    </VBtn>
                 </div>
             </div>
         </div>
@@ -383,23 +366,12 @@ onUnmounted(() => {
     gap: 6px;
 
     &__input {
-        background: var(--desktop-window-titlebar-bg);
-        border: 1px solid var(--desktop-window-border);
-        border-radius: 6px;
-        color: var(--desktop-window-text);
-        padding: 6px 10px;
-        font-size: 12px;
-        outline: none;
-        cursor: pointer;
-        max-width: 200px;
+        min-width: 180px;
+        max-width: 220px;
 
-        &:focus {
-            border-color: rgba(22, 119, 255, 0.5);
-        }
-
-        option {
-            background: var(--desktop-window-bg);
-            color: var(--desktop-window-text);
+        :deep(.v-field) {
+            background: var(--desktop-window-titlebar-bg);
+            box-shadow: none;
         }
     }
 }
@@ -408,35 +380,13 @@ onUnmounted(() => {
     position: relative;
 
     &__input {
-        background: var(--desktop-window-titlebar-bg);
-        border: 1px solid var(--desktop-window-border);
-        border-radius: 6px;
-        color: var(--desktop-window-text);
-        padding: 6px 10px 6px 28px;
-        font-size: 12px;
-        outline: none;
         width: 180px;
         transition: all 0.2s;
 
-        &::placeholder {
-            color: var(--desktop-window-text-muted);
+        :deep(.v-field) {
+            background: var(--desktop-window-titlebar-bg);
+            box-shadow: none;
         }
-
-        &:focus {
-            border-color: rgba(22, 119, 255, 0.5);
-            width: 220px;
-        }
-    }
-
-    &__icon {
-        position: absolute;
-        left: 8px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 12px;
-        pointer-events: none;
-        display: flex;
-        align-items: center;
     }
 }
 
@@ -469,16 +419,6 @@ onUnmounted(() => {
         display: flex;
         align-items: center;
         justify-content: center;
-    }
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
     }
 }
 
@@ -557,16 +497,6 @@ onUnmounted(() => {
         margin: 8px 0 0;
         font-size: 13px;
     }
-}
-
-.ma-spinner {
-    width: 28px;
-    height: 28px;
-    border: 3px solid var(--desktop-window-border);
-    border-top-color: #1677ff;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-bottom: 8px;
 }
 
 .ma-instance {

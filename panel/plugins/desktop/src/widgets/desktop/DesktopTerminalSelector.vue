@@ -3,13 +3,8 @@ import { t } from "@/lang/i18n";
 import { remoteNodeList } from "@/services/apis";
 import { computeNodeName } from "@/tools/nodes";
 import type { NodeStatus } from "@/types";
-import {
-    CheckCircleOutlined,
-    CloseCircleOutlined,
-    ClusterOutlined,
-    SearchOutlined
-} from "@ant-design/icons-vue";
 import { computed, onMounted, ref } from "vue";
+import { VIcon, VTextField } from "vuetify/components";
 
 const emit = defineProps<{
     onOpenConsole: (instance: any, daemonId: string) => void;
@@ -57,8 +52,8 @@ const openConsole = (node: NodeStatus) => {
         <div class="dts-toolbar">
             <div class="dts-search">
                 <div class="dts-search-input-wrap">
-                    <SearchOutlined class="dts-search-icon" />
-                    <input v-model="searchQuery" class="dts-search-input"
+                    <VTextField v-model="searchQuery" class="dts-search-input" variant="solo" density="compact" rounded="xl"
+                        hide-details clearable prepend-inner-icon="mdi-magnify"
                         :placeholder="t('TXT_CODE_461d1a01') || 'Search nodes...'" />
                 </div>
             </div>
@@ -75,13 +70,13 @@ const openConsole = (node: NodeStatus) => {
                 <div v-for="node in filteredNodes" :key="node.uuid" class="dts-card"
                     :class="{ 'dts-card--disabled': !node.available }" @click="openConsole(node)">
                     <div class="dts-card__icon">
-                        <ClusterOutlined />
+                        <VIcon icon="mdi-server-network"  />
                     </div>
                     <div class="dts-card__info">
                         <div class="dts-card__name">{{ computeNodeName(node.ip, node.available, node.remarks) }}</div>
                         <div class="dts-card__status">
-                            <CheckCircleOutlined v-if="node.available" class="status-icon status-icon--yes" />
-                            <CloseCircleOutlined v-else class="status-icon status-icon--no" />
+                            <VIcon icon="mdi-check-circle-outline" v-if="node.available" class="status-icon status-icon--yes"  />
+                            <VIcon icon="mdi-close-circle-outline" v-else class="status-icon status-icon--no"  />
                             {{ node.available ? (t("TXT_CODE_823bfe63") || 'Online') :
                                 (t("TXT_CODE_66ce073e") || 'Offline') }}
                         </div>

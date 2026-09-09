@@ -9,6 +9,7 @@ import isEmpty from "lodash/isEmpty";
 const props = defineProps<{
   config: Record<string, any>;
   configName: string;
+  isDesktop?: boolean;
 }>();
 
 const data:
@@ -19,11 +20,38 @@ const data:
   | undefined = configData[props.configName];
 
 import { computed } from "vue";
+import { VCard, VCardText, VCol } from "vuetify/components";
 
 const parsedConfig = computed(() => jsonToMap(props.config));
 </script>
 
 <template>
+  <template v-if="isDesktop">
+    <VCol cols="12">
+      <VCard class="config-editor-panel" variant="tonal" rounded="xl">
+        <VCardText>
+          <h3 class="config-editor-title">{{ data ? t("TXT_CODE_958fd70c") : t("TXT_CODE_2ce953da") }}</h3>
+          <p class="config-editor-description">{{ data ? data.desc : t("TXT_CODE_75e5af9b") }}</p>
+        </VCardText>
+      </VCard>
+    </VCol>
+    <VCol v-if="data" cols="12">
+      <VCard class="config-editor-panel" variant="tonal" rounded="xl">
+        <VCardText>
+          <div v-if="!isEmpty(props.config)">
+            <div v-for="(item, index) in parsedConfig" :key="index" class="p-1">
+              <LineOption :option-value="parsedConfig" :option-key="String(index)" is-desktop>
+                <template #title>{{ index }}</template>
+                <template #info>{{ getDescriptionByTitle(data?.config, String(index)) }}</template>
+              </LineOption>
+            </div>
+          </div>
+          <div v-else>{{ t("TXT_CODE_1a730d48") }}</div>
+        </VCardText>
+      </VCard>
+    </VCol>
+  </template>
+  <template v-else>
   <a-col :span="24">
     <CardPanel style="height: 100%" class="config-editor-panel">
       <template #body>
@@ -58,6 +86,7 @@ const parsedConfig = computed(() => jsonToMap(props.config));
       </template>
     </CardPanel>
   </a-col>
+  </template>
 </template>
 
 <style lang="scss" scoped>
@@ -74,7 +103,6 @@ const parsedConfig = computed(() => jsonToMap(props.config));
 
   .line-option-card {
     background: transparent !important;
-    border: 1px solid var(--desktop-window-border) !important;
     box-shadow: none !important;
 
     &:hover {
@@ -96,7 +124,6 @@ const parsedConfig = computed(() => jsonToMap(props.config));
 
   :deep(.line-option-card) {
     background: transparent !important;
-    border: 1px solid var(--desktop-window-border) !important;
     box-shadow: none !important;
 
     &:hover {
@@ -104,4 +131,7 @@ const parsedConfig = computed(() => jsonToMap(props.config));
     }
   }
 }
+
+.config-editor-title { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
+.config-editor-description { margin: 0; color: var(--desktop-window-text-secondary, rgba(0, 0, 0, 0.6)); line-height: 1.5; }
 </style>

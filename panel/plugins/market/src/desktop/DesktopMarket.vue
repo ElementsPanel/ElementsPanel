@@ -3,18 +3,14 @@ import { openNodeSelectDialog } from "@/components/fc";
 import { t } from "@/lang/i18n";
 import { getDockerHubImagePlatforms } from "@/services/apis/envImage";
 import { createAsyncTask } from "@/services/apis/instance";
-import { reportErrorMsg } from "@/tools/validator";
+import { notifyDesktopError } from "../../../desktop/src/desktopNotice";
 import type { QuickStartPackages } from "@/types";
 import { SEARCH_ALL_KEY, useMarketPackages } from "../hooks/useMarketPackages";
-import {
-    ArrowLeftOutlined,
-    CloudDownloadOutlined,
-    CodeOutlined,
-    CloudDownloadOutlined as InstallIcon,
-    SearchOutlined
-} from "@ant-design/icons-vue";
 import { computed, onMounted, ref } from "vue";
 import DesktopWindow from "./DesktopWindow.vue";
+import { VBtn, VIcon, VSelect, VTextField } from "vuetify/components";
+
+const InstallIcon = "mdi-cloud-download-outline";
 
 const emit = defineEmits<{
     "open-console": [instance: any, daemonId: string];
@@ -96,7 +92,7 @@ const getImagePlatformsFromDockerHub = async (imageName: string): Promise<string
 
 const handleInstall = async () => {
     if (!instanceName.value.trim()) {
-        return reportErrorMsg(t("TXT_CODE_cf27ab7e"));
+        return notifyDesktopError(t("TXT_CODE_cf27ab7e"));
     }
     if (!selectedTemplate.value) return;
 
@@ -153,7 +149,7 @@ const handleInstall = async () => {
         }
     } catch (err: any) {
         console.error(err);
-        reportErrorMsg(err.message);
+        notifyDesktopError(err);
     } finally {
         isInstalling.value = false;
     }
@@ -168,24 +164,18 @@ const handleInstall = async () => {
         <template v-else>
             <div class="dm-header">
                 <div class="dm-header__left">
-                    <button v-if="!isCategoryView" class="dm-btn dm-btn--icon" @click="handleBackToCategory">
-                        <ArrowLeftOutlined />
-                    </button>
+                    <VBtn v-if="!isCategoryView" icon variant="text" rounded="xl" class="dm-btn dm-btn--icon" @click="handleBackToCategory">
+                        <VIcon icon="mdi-arrow-left"  />
+                    </VBtn>
                     <h2 class="dm-title">
                         {{ isCategoryView ? t("TXT_CODE_88249aee") : searchForm.gameType }}
                     </h2>
                 </div>
                 <div class="dm-header__right" v-if="!isCategoryView">
-                    <select v-model="searchForm.platform" class="dm-select">
-                        <option v-for="opt in platformOptions" :key="opt.value" :value="opt.value">
-                            {{ opt.label }}
-                        </option>
-                    </select>
-                    <div class="dm-search">
-                        <SearchOutlined class="dm-search__icon" />
-                        <input v-model="searchForm.keyword" class="dm-search__input"
-                            :placeholder="t('TXT_CODE_ce132192')" />
-                    </div>
+                    <VSelect v-model="searchForm.platform" :items="platformOptions" item-title="label" item-value="value"
+                        class="dm-select" variant="solo" density="compact" rounded="xl" hide-details />
+                    <VTextField v-model="searchForm.keyword" class="dm-search__input" variant="solo" density="compact"
+                        rounded="xl" hide-details clearable prepend-inner-icon="mdi-magnify" :placeholder="t('TXT_CODE_ce132192')" />
                 </div>
             </div>
 
@@ -216,13 +206,13 @@ const handleInstall = async () => {
                             </div>
                         </div>
                         <div class="dm-list-item__right">
-                            <button class="dm-btn dm-btn--primary" @click="openInstallDialog(item, 'normal')">
-                                <CloudDownloadOutlined /> {{ t("TXT_CODE_1704ea49") }}
-                            </button>
-                            <button v-if="item.dockerOptional" class="dm-btn dm-btn--docker"
+                            <VBtn class="dm-btn dm-btn--primary" variant="text" rounded="xl" @click="openInstallDialog(item, 'normal')">
+                                <VIcon icon="mdi-cloud-download-outline"  /> {{ t("TXT_CODE_1704ea49") }}
+                            </VBtn>
+                            <VBtn v-if="item.dockerOptional" class="dm-btn dm-btn--docker" variant="text" rounded="xl"
                                 @click="openInstallDialog(item, 'docker')">
-                                <CodeOutlined /> Docker
-                            </button>
+                                <VIcon icon="mdi-code-tags"  /> Docker
+                            </VBtn>
                         </div>
                     </div>
                 </div>
@@ -253,17 +243,17 @@ const handleInstall = async () => {
                             </div>
                             <div class="dm-form-group">
                                 <label>{{ t("TXT_CODE_44ae0e7") }}</label>
-                                <input v-model="instanceName" class="dm-input" :placeholder="t('TXT_CODE_cf27ab7e')"
-                                    maxlength="50" />
+                                <VTextField v-model="instanceName" class="dm-input" variant="solo" density="compact" rounded="xl" hide-details
+                                    :placeholder="t('TXT_CODE_cf27ab7e')" maxlength="50" />
                             </div>
                         </div>
                         <div class="dm-install-footer">
-                            <button class="dm-btn dm-btn--default" @click="closeInstallDialog" :disabled="isInstalling">
+                            <VBtn class="dm-btn dm-btn--default" variant="text" rounded="xl" @click="closeInstallDialog" :disabled="isInstalling">
                                 {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="dm-btn dm-btn--primary" @click="handleInstall" :disabled="isInstalling">
+                            </VBtn>
+                            <VBtn class="dm-btn dm-btn--primary" variant="text" rounded="xl" @click="handleInstall" :disabled="isInstalling">
                                 {{ isInstalling ? t("TXT_CODE_b197be11") : t("TXT_CODE_e4898801") }}
-                            </button>
+                            </VBtn>
                         </div>
                     </div>
                 </DesktopWindow>

@@ -3,7 +3,7 @@ import AppDialog from "@/components/AppDialog.vue";
 import { t } from "@/lang/i18n";
 import type { QuickStartPackages } from "@/types";
 import { computed, ref } from "vue";
-import { VAvatar, VBtn, VChip, VDataTable, VIcon } from "vuetify/lib/components/index.mjs";
+import { VAvatar, VBtn, VChip, VDataTable, VIcon } from "vuetify/components";
 import type { PackageTableColumnDef } from "./usePackageTableColumns";
 import { usePackageTableColumns } from "./usePackageTableColumns";
 

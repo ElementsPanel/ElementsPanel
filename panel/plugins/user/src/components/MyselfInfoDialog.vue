@@ -22,7 +22,7 @@ import {
   VRow,
   VSpacer,
   VTextField
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 import { bind2FA } from "../api";
 
 const { state, updateUserInfo } = useAppStateStore();

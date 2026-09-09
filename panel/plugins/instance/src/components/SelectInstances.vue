@@ -26,7 +26,7 @@ import {
   VSelect,
   VSpacer,
   VTextField
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 
 interface Props {
   destroyComponent(delay?: number): void;

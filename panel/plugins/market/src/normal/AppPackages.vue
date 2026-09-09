@@ -3,7 +3,7 @@ import FadeUpAnimation from "@/components/FadeUpAnimation.vue";
 import { t } from "@/lang/i18n";
 import type { QuickStartPackages } from "@/types";
 import { computed, onMounted } from "vue";
-import { VBtn, VCard, VCardTitle, VCol, VIcon, VProgressCircular, VRow, VSelect, VTextField } from "vuetify/lib/components/index.mjs";
+import { VBtn, VCard, VCardTitle, VCol, VIcon, VProgressCircular, VRow, VSelect, VTextField } from "vuetify/components";
 import { SEARCH_ALL_KEY, useMarketPackages } from "../hooks/useMarketPackages";
 import PackageDetailTable from "./PackageDetailTable.vue";
 

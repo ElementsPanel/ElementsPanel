@@ -6,7 +6,7 @@ import { reportErrorMsg } from "@/tools/validator";
 import { message } from "ant-design-vue";
 import { reactive, ref } from "vue";
 import AppDialog from "@/components/AppDialog.vue";
-import { VTextField } from "vuetify/lib/components/index.mjs";
+import { VTextField } from "vuetify/components";
 
 const props = defineProps<{
   instanceUuid: string;

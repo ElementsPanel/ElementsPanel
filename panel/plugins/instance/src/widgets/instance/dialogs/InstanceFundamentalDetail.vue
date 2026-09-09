@@ -10,7 +10,7 @@ import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
 import dayjs, { type Dayjs } from "dayjs";
 import _ from "lodash";
 import { computed, ref, unref } from "vue";
-import { VBtn, VCol, VRow, VSelect, VTextField, VTextarea } from "vuetify/lib/components/index.mjs";
+import { VBtn, VCol, VRow, VSelect, VTextField, VTextarea } from "vuetify/components";
 import { message } from "ant-design-vue";
 import { dayjsToTimestamp, timestampToDayjs } from "@/tools/time";
 import { useDockerEnvEditDialog } from "@/components/fc";

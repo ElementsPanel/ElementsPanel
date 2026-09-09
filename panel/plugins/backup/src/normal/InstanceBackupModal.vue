@@ -17,7 +17,7 @@ import {
     VListItemSubtitle,
     VListItemTitle,
     VProgressCircular
-} from "vuetify/lib/components/index.mjs";
+} from "vuetify/components";
 import { deleteBackup, getBackupList, restoreBackup } from "../api";
 
 const props = defineProps<{
@@ -268,7 +268,7 @@ const handleEditEpbaklst = async () => {
                         },
                         data: {
                             target: filePath,
-                            text: "$black\n\n# $black = 黑名单匹配；$white = 白名单匹配\n# 该文件使用 .gitignore 语法\n# ---\n# $black = blacklist matching; $white = whitelist matching\n# This file uses .gitignore syntax\n"
+                            text: "$black\n\n# $black = 榛戝悕鍗曞尮閰嶏紱$white = 鐧藉悕鍗曞尮閰峔n# 璇ユ枃浠朵娇鐢?.gitignore 璇硶\n# ---\n# $black = blacklist matching; $white = whitelist matching\n# This file uses .gitignore syntax\n"
                         }
                     });
                     message.success(t("TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATED"));
@@ -340,7 +340,7 @@ defineExpose({ open });
                         </template>
                         <VListItemTitle class="backup-name">{{ item.name }}</VListItemTitle>
                         <VListItemSubtitle>
-                            {{ formatSize(item.size) }} · {{ item.time }}
+                            {{ formatSize(item.size) }} 路 {{ item.time }}
                         </VListItemSubtitle>
                         <template #append>
                             <div class="backup-item-actions">

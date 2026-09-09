@@ -2,10 +2,10 @@
 import { useInstanceInfo } from "@/hooks/useInstance";
 import { t } from "@/lang/i18n";
 import { updateInstanceConfig } from "@/services/apis/instance";
-import { reportErrorMsg } from "@/tools/validator";
 import type { InstanceDetail } from "@/types";
-import { message } from "ant-design-vue";
 import { ref, watch } from "vue";
+import { notifyDesktop, notifyDesktopError } from "../../desktopNotice";
+import { VBtn, VSwitch, VTextField } from "vuetify/components";
 
 const props = defineProps<{
     instanceId: string;
@@ -40,9 +40,9 @@ const submit = async () => {
                 eventTask: options.value.config.eventTask
             }
         });
-        message.success(t("TXT_CODE_d3de39b4"));
+        notifyDesktop(t("TXT_CODE_d3de39b4"), "success");
     } catch (err: any) {
-        reportErrorMsg(err.message);
+        notifyDesktopError(err);
     } finally {
         isLoading.value = false;
     }
@@ -58,51 +58,45 @@ watch(instanceInfo, (val) => {
 <template>
     <div class="devent-config">
         <div class="devent-config__body">
-            <a-form v-if="options" layout="vertical">
-                <a-form-item>
-                    <a-typography-title :level="5">{{ t("TXT_CODE_a64da7c4") }}</a-typography-title>
-                    <a-typography-paragraph>
-                        <a-typography-text type="secondary">
+            <div v-if="options" class="devent-form">
+                <section class="devent-form__section">
+                    <h3>{{ t("TXT_CODE_a64da7c4") }}</h3>
+                    <p class="devent-form__hint">
                             {{ t("TXT_CODE_619faab6") }}
                             <br />
                             {{ t("TXT_CODE_3eb58633") }}
-                        </a-typography-text>
-                    </a-typography-paragraph>
-                    <a-switch v-model:checked="options.config.eventTask.autoRestart" />
-                </a-form-item>
+                    </p>
+                    <VSwitch v-model="options.config.eventTask.autoRestart" color="primary" hide-details density="compact" />
+                </section>
 
                 <template v-if="options.config.eventTask.autoRestart">
-                    <a-form-item>
-                        <a-typography-title :level="5">{{ t("TXT_CODE_f4b52ed4") }}</a-typography-title>
-                        <a-typography-paragraph>
-                            <a-typography-text type="secondary">
-                                {{ t("TXT_CODE_9d2fca76") }}
-                            </a-typography-text>
-                        </a-typography-paragraph>
-                        <a-input v-model:value="options.config.eventTask.autoRestartMaxTimes" :style="'width: 220px'" />
-                    </a-form-item>
+                    <section class="devent-form__section">
+                        <h3>{{ t("TXT_CODE_f4b52ed4") }}</h3>
+                        <p class="devent-form__hint">
+                            {{ t("TXT_CODE_9d2fca76") }}
+                        </p>
+                        <VTextField v-model="options.config.eventTask.autoRestartMaxTimes" type="number" width="220" variant="solo" density="compact" rounded="xl" hide-details />
+                    </section>
                 </template>
 
-                <a-form-item>
-                    <a-typography-title :level="5">{{ t("TXT_CODE_273d24e0") }}</a-typography-title>
-                    <a-typography-paragraph>
-                        <a-typography-text type="secondary">
+                <section class="devent-form__section">
+                    <h3>{{ t("TXT_CODE_273d24e0") }}</h3>
+                    <p class="devent-form__hint">
                             {{ t("TXT_CODE_8d9f5a4e") }}
                             <br />
                             {{ t("TXT_CODE_64bf4386") }}
-                        </a-typography-text>
-                    </a-typography-paragraph>
-                    <a-switch v-model:checked="options.config.eventTask.autoStart" />
-                </a-form-item>
-            </a-form>
+                    </p>
+                    <VSwitch v-model="options.config.eventTask.autoStart" color="primary" hide-details density="compact" />
+                </section>
+            </div>
             <div v-else class="devent-config__loading">
                 {{ t("TXT_CODE_b197be11") }}
             </div>
         </div>
         <div class="devent-config__footer">
-            <button class="devent-btn devent-btn--primary" :disabled="isLoading" @click="submit">
+            <VBtn class="devent-btn devent-btn--primary" variant="text" rounded="xl" :disabled="isLoading" @click="submit">
                 {{ t("TXT_CODE_abfe9512") }}
-            </button>
+            </VBtn>
         </div>
     </div>
 </template>

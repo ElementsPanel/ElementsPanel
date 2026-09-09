@@ -5,22 +5,25 @@ import { t } from "@/lang/i18n";
 import { addNode, connectNode, deleteNode, editNode, remoteNodeList } from "../api";
 import { hasVersionUpdate } from "@/tools/version";
 import type { NodeStatus } from "@/types";
-import {
-    CheckCircleOutlined,
-    CloseCircleOutlined,
-    ClusterOutlined,
-    DeleteOutlined,
-    EditOutlined,
-    ExclamationCircleOutlined,
-    InfoCircleOutlined,
-    PlusOutlined,
-    ReloadOutlined,
-    SearchOutlined,
-    SettingOutlined
-} from "@ant-design/icons-vue";
 import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
 import DesktopNodeAdvancedSettings from "./DesktopNodeAdvancedSettings.vue";
 import DesktopWindow from "./DesktopWindow.vue";
+import { VBtn, VDataTable, VIcon, VTextField, VTooltip } from "vuetify/components";
+
+const PlusOutlined = "mdi-plus";
+const EditOutlined = "mdi-pencil-outline";
+const ExclamationCircleOutlined = "mdi-alert-circle-outline";
+
+const nodeHeaders = [
+    { title: t("TXT_CODE_759fb403"), key: "status", sortable: false },
+    { title: t("TXT_CODE_DESKTOP_NODES_SOCKET"), key: "socket", sortable: false },
+    { title: t("TXT_CODE_81634069"), key: "version", sortable: false },
+    { title: t("TXT_CODE_b8e8e6f5"), key: "name", sortable: false },
+    { title: t("TXT_CODE_DESKTOP_NODES_IP"), key: "ip" },
+    { title: t("TXT_CODE_f49149d0"), key: "port" },
+    { title: t("TXT_CODE_693f31d6"), key: "prefix" },
+    { title: t("TXT_CODE_OPERATE"), key: "actions", sortable: false }
+];
 
 const { execute: fetchNodesApi, isLoading: loading } = remoteNodeList();
 const { execute: fetchNodesSilentApi } = remoteNodeList();
@@ -305,108 +308,24 @@ const closeAdvancedSettings = () => {
     <div class="desktop-nodes">
         <div class="dn-toolbar">
             <div class="dn-search">
-                <SearchOutlined class="dn-search__icon" />
-                <input v-model="searchQuery" class="dn-search__input" :placeholder="t('TXT_CODE_DESKTOP_NODES_SEARCH')"
+                <VTextField v-model="searchQuery" class="dn-search__input" :placeholder="t('TXT_CODE_DESKTOP_NODES_SEARCH')"
+                    prepend-inner-icon="mdi-magnify" variant="solo" density="compact" rounded="xl" hide-details clearable
                     autocomplete="off" spellcheck="false" />
             </div>
-            <button class="dn-btn dn-btn--primary" @click="openAddDialog">
-                <PlusOutlined />
+            <VBtn class="dn-btn dn-btn--primary" variant="text" rounded="xl" @click="openAddDialog">
+                <VIcon icon="mdi-plus"  />
                 {{ t("TXT_CODE_DESKTOP_NODES_ADD") }}
-            </button>
+            </VBtn>
         </div>
 
-        <div class="dn-table-wrap">
-            <table class="dn-table">
-                <thead>
-                    <tr>
-                        <th class="dn-table__col--status">{{ t("TXT_CODE_759fb403") }}</th>
-                        <th class="dn-table__col--socket">{{ t("TXT_CODE_DESKTOP_NODES_SOCKET") }}</th>
-                        <th class="dn-table__col--version">{{ t("TXT_CODE_81634069") }}</th>
-                        <th class="dn-table__col--name">{{ t("TXT_CODE_b8e8e6f5") }}</th>
-                        <th class="dn-table__col--ip">{{ t("TXT_CODE_DESKTOP_NODES_IP") }}</th>
-                        <th class="dn-table__col--port">{{ t("TXT_CODE_f49149d0") }}</th>
-                        <th class="dn-table__col--prefix">{{ t("TXT_CODE_693f31d6") }}</th>
-                        <th class="dn-table__col--actions">{{ t("TXT_CODE_OPERATE") }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-if="loading">
-                        <td colspan="8" class="dn-table__empty">
-                            <div class="dn-loading">{{ t("TXT_CODE_b197be11") }}</div>
-                        </td>
-                    </tr>
-                    <tr v-else-if="filteredNodes.length === 0">
-                        <td colspan="8" class="dn-table__empty">
-                            <div class="dn-empty">{{ t("TXT_CODE_DESKTOP_NODES_NO_RESULTS") }}</div>
-                        </td>
-                    </tr>
-                    <tr v-for="node in filteredNodes" :key="node.uuid" class="dn-table__row">
-                        <td class="dn-table__col--status">
-                            <CheckCircleOutlined v-if="node.available" class="dn-badge-icon dn-badge-icon--yes" />
-                            <CloseCircleOutlined v-else class="dn-badge-icon dn-badge-icon--no" />
-                        </td>
-                        <td class="dn-table__col--socket">
-                            <CheckCircleOutlined v-if="socketStatusMap[node.uuid] === SocketStatus.Connected"
-                                class="dn-badge-icon dn-badge-icon--yes" />
-                            <a-tooltip v-else-if="socketStatusMap[node.uuid] === SocketStatus.Error"
-                                :title="t('TXT_CODE_6b4a27dd')">
-                                <span class="dn-badge-icon dn-badge-icon--no">
-                                    <InfoCircleOutlined />
-                                </span>
-                            </a-tooltip>
-                            <span v-else class="dn-badge-icon dn-badge-icon--dash">--</span>
-                        </td>
-                        <td class="dn-table__col--version">
-                            <template v-if="node.available && nodeVersionMap[node.uuid]">
-                                <a-tooltip v-if="node.brand !== 'ElementsPanel'" :title="t('TXT_CODE_NODE_BRAND_ERR')">
-                                    <span class="dn-badge-icon dn-badge-icon--warn">
-                                        <InfoCircleOutlined />
-                                    </span>
-                                </a-tooltip>
-                                <CheckCircleOutlined
-                                    v-else-if="!hasVersionUpdate(specifiedDaemonVersion, nodeVersionMap[node.uuid])"
-                                    class="dn-badge-icon dn-badge-icon--yes" />
-                                <a-tooltip v-else :title="t('TXT_CODE_e520908a')">
-                                    <span class="dn-badge-icon dn-badge-icon--no">
-                                        <InfoCircleOutlined />
-                                    </span>
-                                </a-tooltip>
-                            </template>
-                            <span v-else class="dn-badge-icon dn-badge-icon--dash">--</span>
-                        </td>
-                        <td class="dn-table__col--name">
-                            <div class="dn-node-name">
-                                <ClusterOutlined class="dn-node-name__icon" />
-                                <span>{{ node.remarks || node.ip }}</span>
-                            </div>
-                        </td>
-                        <td class="dn-table__col--ip">{{ node.ip }}</td>
-                        <td class="dn-table__col--port">{{ node.port }}</td>
-                        <td class="dn-table__col--prefix">{{ node.prefix || "-" }}</td>
-                        <td class="dn-table__col--actions">
-                            <div class="dn-action-btns">
-                                <button class="dn-action-btn dn-action-btn--reconnect" :title="t('TXT_CODE_f8b28901')"
-                                    @click="reconnectNode(node)">
-                                    <ReloadOutlined />
-                                </button>
-                                <button class="dn-action-btn dn-action-btn--edit"
-                                    :title="t('TXT_CODE_DESKTOP_NODES_EDIT')" @click="openEditDialog(node)">
-                                    <EditOutlined />
-                                </button>
-                                <button class="dn-action-btn dn-action-btn--advanced" :title="t('TXT_CODE_31a1d824')"
-                                    @click="openAdvancedSettings(node)">
-                                    <SettingOutlined />
-                                </button>
-                                <button class="dn-action-btn dn-action-btn--delete"
-                                    :title="t('TXT_CODE_8b937b23')" @click="confirmDelete(node)">
-                                    <DeleteOutlined />
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <VDataTable class="dn-table" :headers="nodeHeaders" :items="filteredNodes" :loading="loading" item-value="uuid" density="comfortable">
+            <template #item.status="{ item }"><VIcon :icon="item.available ? 'mdi-check-circle-outline' : 'mdi-close-circle-outline'" :class="item.available ? 'dn-badge-icon--yes' : 'dn-badge-icon--no'" /></template>
+            <template #item.socket="{ item }"><VIcon v-if="socketStatusMap[item.uuid] === SocketStatus.Connected" icon="mdi-check-circle-outline" class="dn-badge-icon--yes" /><VTooltip v-else-if="socketStatusMap[item.uuid] === SocketStatus.Error" :text="t('TXT_CODE_6b4a27dd')"><template #activator="{ props: tooltipProps }"><span v-bind="tooltipProps" class="dn-badge-icon--no"><VIcon icon="mdi-information-outline" /></span></template></VTooltip><span v-else>--</span></template>
+            <template #item.version="{ item }"><VTooltip v-if="item.available && item.brand !== 'ElementsPanel'" :text="t('TXT_CODE_NODE_BRAND_ERR')"><template #activator="{ props: tooltipProps }"><span v-bind="tooltipProps" class="dn-badge-icon--warn"><VIcon icon="mdi-information-outline" /></span></template></VTooltip><VIcon v-else-if="item.available && nodeVersionMap[item.uuid] && !hasVersionUpdate(specifiedDaemonVersion, nodeVersionMap[item.uuid])" icon="mdi-check-circle-outline" class="dn-badge-icon--yes" /><span v-else>--</span></template>
+            <template #item.name="{ item }"><div class="dn-node-name"><VIcon icon="mdi-server-network" class="dn-node-name__icon" /><span>{{ item.remarks || item.ip }}</span></div></template>
+            <template #item.actions="{ item }"><div class="dn-action-btns"><VBtn icon variant="text" rounded="xl" class="dn-action-btn" :title="t('TXT_CODE_f8b28901')" @click="reconnectNode(item)"><VIcon icon="mdi-refresh" /></VBtn><VBtn icon variant="text" rounded="xl" class="dn-action-btn" :title="t('TXT_CODE_DESKTOP_NODES_EDIT')" @click="openEditDialog(item)"><VIcon icon="mdi-pencil-outline" /></VBtn><VBtn icon variant="text" rounded="xl" class="dn-action-btn" :title="t('TXT_CODE_31a1d824')" @click="openAdvancedSettings(item)"><VIcon icon="mdi-cog-outline" /></VBtn><VBtn icon variant="text" rounded="xl" color="error" class="dn-action-btn" :title="t('TXT_CODE_8b937b23')" @click="confirmDelete(item)"><VIcon icon="mdi-delete-outline" /></VBtn></div></template>
+            <template #no-data><div class="dn-empty">{{ t("TXT_CODE_DESKTOP_NODES_NO_RESULTS") }}</div></template>
+        </VDataTable>
 
         <Teleport to="body">
             <Transition name="dn-dialog-fade">
@@ -422,28 +341,28 @@ const closeAdvancedSettings = () => {
                                 <label class="dn-form-label">
                                     {{ t("TXT_CODE_b8e8e6f5") }}
                                 </label>
-                                <input v-model="form.remarks" class="dn-form-input"
+                                <VTextField v-model="form.remarks" class="dn-form-input" variant="solo" density="compact" rounded="xl" hide-details
                                     :placeholder="t('TXT_CODE_b8e8e6f5')" />
                             </div>
                             <div class="dn-form-group">
                                 <label class="dn-form-label">
                                     {{ t("TXT_CODE_DESKTOP_NODES_IP") }}
                                 </label>
-                                <input v-model="form.ip" class="dn-form-input"
+                                <VTextField v-model="form.ip" class="dn-form-input" variant="solo" density="compact" rounded="xl" hide-details
                                     :placeholder="t('TXT_CODE_DESKTOP_NODES_IP')" />
                             </div>
                             <div class="dn-form-group">
                                 <label class="dn-form-label">
                                     {{ t("TXT_CODE_f49149d0") }}
                                 </label>
-                                <input v-model="form.port" type="number" class="dn-form-input"
+                                <VTextField v-model="form.port" type="number" class="dn-form-input" variant="solo" density="compact" rounded="xl" hide-details
                                     :placeholder="t('TXT_CODE_f49149d0')" />
                             </div>
                             <div class="dn-form-group">
                                 <label class="dn-form-label">
                                     {{ t("TXT_CODE_DESKTOP_NODES_APIKEY") }}
                                 </label>
-                                <input v-model="form.apiKey" type="password" class="dn-form-input"
+                                <VTextField v-model="form.apiKey" type="password" class="dn-form-input" variant="solo" density="compact" rounded="xl" hide-details
                                     autocomplete="new-password"
                                     :placeholder="dialogMode === 'edit' ? (t('TXT_CODE_DESKTOP_NODES_APIKEY_HELP')) : ''" />
                                 <span v-if="dialogMode === 'edit'" class="dn-form-hint">
@@ -454,7 +373,7 @@ const closeAdvancedSettings = () => {
                                 <label class="dn-form-label">
                                     {{ t("TXT_CODE_693f31d6") }}
                                 </label>
-                                <input v-model="form.prefix" class="dn-form-input"
+                                <VTextField v-model="form.prefix" class="dn-form-input" variant="solo" density="compact" rounded="xl" hide-details
                                     :placeholder="t('TXT_CODE_693f31d6')" />
                                 <span class="dn-form-hint">
                                     {{ t("TXT_CODE_3e93e31e") }}
@@ -463,12 +382,12 @@ const closeAdvancedSettings = () => {
                             <div v-if="formError" class="dn-form-error">{{ formError }}</div>
                         </div>
                         <div class="dn-dialog__footer">
-                            <button class="dn-btn dn-btn--default" @click="closeDialog">
+                            <VBtn class="dn-btn dn-btn--default" variant="text" rounded="xl" @click="closeDialog">
                                 {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="dn-btn dn-btn--primary" :disabled="saving" @click="saveNode">
+                            </VBtn>
+                            <VBtn class="dn-btn dn-btn--primary" variant="text" rounded="xl" :disabled="saving" @click="saveNode">
                                 {{ t("TXT_CODE_abfe9512") }}
-                            </button>
+                            </VBtn>
                         </div>
                     </div>
                 </DesktopWindow>
@@ -485,7 +404,7 @@ const closeAdvancedSettings = () => {
                     :resizable="false" @close="cancelDelete">
                     <div class="dn-dialog-content">
                         <div class="dn-dialog__body dn-dialog__body--column">
-                            <ExclamationCircleOutlined class="dn-dialog__warn-icon" />
+                            <VIcon icon="mdi-alert-circle-outline" class="dn-dialog__warn-icon"  />
                             <p class="dn-dialog__desc">
                                 {{ t("TXT_CODE_DESKTOP_NODES_DELETE_CONFIRM", {
                                     name: deletingNode?.remarks ||
@@ -494,14 +413,14 @@ const closeAdvancedSettings = () => {
                             </p>
                         </div>
                         <div class="dn-dialog__footer">
-                            <button class="dn-btn dn-btn--default" @click="cancelDelete">
+                            <VBtn class="dn-btn dn-btn--default" variant="text" rounded="xl" @click="cancelDelete">
                                 {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="dn-btn dn-btn--primary"
+                            </VBtn>
+                            <VBtn class="dn-btn dn-btn--primary" variant="text" rounded="xl"
                                 style="background: var(--color-red-5); border-color: var(--color-red-5);"
                                 :disabled="saving" @click="executeDelete">
                                 {{ t("TXT_CODE_8b937b23") }}
-                            </button>
+                            </VBtn>
                         </div>
                     </div>
                 </DesktopWindow>
