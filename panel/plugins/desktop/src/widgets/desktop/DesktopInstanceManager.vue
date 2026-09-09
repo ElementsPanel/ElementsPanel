@@ -579,7 +579,7 @@ onUnmounted(() => {
                             <VIcon icon="mdi-chevron-down"  />
                             </VBtn>
                         </template>
-                        <VList density="compact" rounded="xl">
+                        <VList>
                             <VListItem v-for="item in instanceOperations" :key="item.title" :title="item.title"
                                 @click="item.click">
                                 <template #prepend>

@@ -183,6 +183,25 @@
   box-shadow: none !important;
 }
 
+/* Dropdown menus use the same surface as a VSelect menu.  Keep button menus
+   from introducing their own rounded items or elevation. */
+.desktop-mode-active .v-select__content,
+.desktop-mode-active .v-menu > .v-overlay__content {
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+
+.desktop-mode-active .v-select__content > .v-list,
+.desktop-mode-active .v-menu > .v-overlay__content > .v-list {
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+
+.desktop-mode-active .v-select__content .v-list-item,
+.desktop-mode-active .v-menu > .v-overlay__content .v-list-item {
+  border-radius: 0 !important;
+}
+
 .desktop-container .v-field::before,
 .desktop-container .v-field::after,
 .desktop-container .v-input::before,

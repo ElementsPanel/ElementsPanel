@@ -220,16 +220,16 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
                             <VIcon icon="mdi-palette-outline" />
                         </VBtn>
                     </template>
-                    <VList density="compact" rounded="xl">
-                        <VListItem :active="currentTheme === AppTheme.AUTO" rounded="xl"
+                    <VList>
+                        <VListItem :active="currentTheme === AppTheme.AUTO"
                             @click="handleThemeMenuClick({ key: AppTheme.AUTO })">
                             {{ t("TXT_CODE_dc8de4ff") }}
                         </VListItem>
-                        <VListItem :active="currentTheme === AppTheme.LIGHT" rounded="xl"
+                        <VListItem :active="currentTheme === AppTheme.LIGHT"
                             @click="handleThemeMenuClick({ key: AppTheme.LIGHT })">
                             {{ t("TXT_CODE_673eac8e") }}
                         </VListItem>
-                        <VListItem :active="currentTheme === AppTheme.DARK" rounded="xl"
+                        <VListItem :active="currentTheme === AppTheme.DARK"
                             @click="handleThemeMenuClick({ key: AppTheme.DARK })">
                             {{ t("TXT_CODE_5e4a370d") }}
                         </VListItem>
@@ -242,11 +242,11 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
                             <VIcon icon="mdi-logout" />
                         </VBtn>
                     </template>
-                    <VList density="compact" rounded="xl">
-                        <VListItem rounded="xl" @click="handleAccountMenuClick({ key: 'exit-desktop' })">
+                    <VList>
+                        <VListItem @click="handleAccountMenuClick({ key: 'exit-desktop' })">
                             {{ t("TXT_CODE_DESKTOP_EXIT") }}
                         </VListItem>
-                        <VListItem rounded="xl" @click="handleAccountMenuClick({ key: 'logout' })">
+                        <VListItem @click="handleAccountMenuClick({ key: 'logout' })">
                             {{ t("TXT_CODE_2c69ab15") }}
                         </VListItem>
                     </VList>
