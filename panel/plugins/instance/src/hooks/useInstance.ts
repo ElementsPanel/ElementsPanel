@@ -3,7 +3,8 @@ import { t } from "@/lang/i18n";
 import { getConfigFile, getInstanceInfo, updateConfigFile } from "@/services/apis/instance";
 import type { InstanceDetail, MapData } from "@/types";
 import { INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@/types/const";
-import { message, Modal } from "ant-design-vue";
+import { message } from "ant-design-vue";
+import { Modal } from "@/tools/vuetifyModal";
 import { computed, h, onMounted, onUnmounted, ref, type Ref } from "vue";
 
 export const TYPE_UNIVERSAL = "universal";

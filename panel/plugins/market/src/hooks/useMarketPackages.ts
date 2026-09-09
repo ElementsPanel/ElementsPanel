@@ -2,7 +2,7 @@ import { getCurrentLang, t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";
 import type { FilterOption, QuickStartPackages } from "@/types";
 import { SEARCH_ALL_KEY } from "@/types/const";
-import { Modal } from "ant-design-vue";
+import { Modal } from "@/tools/vuetifyModal";
 import { computed, reactive, ref } from "vue";
 import type { ComputedNodeInfo } from "@/hooks/useOverviewInfo";
 import { quickInstallListAddr } from "../api";

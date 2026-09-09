@@ -36,7 +36,8 @@ import {
 } from "@/services/apis/instance";
 import { reportErrorMsg } from "@/tools/validator";
 import { INSTANCE_STATUS } from "@/types/const";
-import { Modal, notification } from "ant-design-vue";
+import { notification } from "ant-design-vue";
+import { Modal } from "@/tools/vuetifyModal";
 import { throttle } from "lodash";
 import type { InstanceMoreDetail } from "../hooks/useInstance";
 import { useInstanceMoreDetail } from "../hooks/useInstance";

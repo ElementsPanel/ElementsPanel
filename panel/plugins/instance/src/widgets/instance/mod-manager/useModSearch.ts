@@ -8,7 +8,8 @@ import {
 } from "@/services/apis/modManager";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { useLocalStorage } from "@vueuse/core";
-import { message, Modal } from "ant-design-vue";
+import { message } from "ant-design-vue";
+import { Modal } from "@/tools/vuetifyModal";
 import { VBtn } from "vuetify/components";
 import { computed, createVNode, ref, type Ref } from "vue";
 

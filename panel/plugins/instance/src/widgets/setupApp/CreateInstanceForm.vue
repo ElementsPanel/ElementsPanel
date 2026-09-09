@@ -15,7 +15,8 @@ import {
   UploadOutlined
 } from "@ant-design/icons-vue";
 import type { FormInstance } from "ant-design-vue";
-import { message, Modal, type UploadProps } from "ant-design-vue";
+import { message, type UploadProps } from "ant-design-vue";
+import { Modal } from "@/tools/vuetifyModal";
 import type { Rule } from "ant-design-vue/es/form";
 import { computed, createVNode, onUnmounted, reactive, ref } from "vue";
 import DockerImageSelect from "../instance/dialogs/components/DockerImageSelect.vue";

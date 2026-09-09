@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
+import AppDialog from "@/components/AppDialog.vue";
 import {
   CheckCircleOutlined,
   CloudDownloadOutlined,
   LoadingOutlined,
   WarningOutlined
 } from "@ant-design/icons-vue";
-import { Button, Modal, Table, Tag } from "ant-design-vue";
+import { Button, Table, Tag } from "ant-design-vue";
 import { computed, ref, watch } from "vue";
 
 const props = defineProps<{
@@ -139,7 +140,7 @@ const columns = computed(() => {
 </script>
 
 <template>
-  <Modal :visible="visible" :title="t('TXT_CODE_VERSION_SELECT')" :footer="null"
+  <AppDialog :visible="visible" :title="t('TXT_CODE_VERSION_SELECT')" :footer="null"
     :width="isPhone ? '100%' : '900px'" @update:visible="(val) => emit('update:visible', val)">
     <a-typography class="mb-8" type="secondary">
       <a-typography-text>
@@ -177,5 +178,5 @@ const columns = computed(() => {
         </template>
       </template>
     </Table>
-  </Modal>
+  </AppDialog>
 </template>

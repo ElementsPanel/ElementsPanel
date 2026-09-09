@@ -28,7 +28,7 @@ import { reportErrorMsg } from "@/tools/validator";
 import { parseTimestamp } from "@/tools/time";
 import { toCopy } from "@/tools/copy";
 import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@/types/const";
-import { Modal } from "ant-design-vue";
+import { Modal } from "@/tools/vuetifyModal";
 import { computed, onUnmounted, ref, watch, type ComponentPublicInstance } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {

@@ -7,7 +7,8 @@ import {
   searchModsApi
 } from "@/services/apis/modManager";
 import { useLocalStorage } from "@vueuse/core";
-import { message, Modal } from "ant-design-vue";
+import { message } from "ant-design-vue";
+import { Modal } from "@/tools/vuetifyModal";
 import { notifyDesktop } from "../../../desktopNotice";
 import { VBtn, VIcon } from "vuetify/components";
 import { computed, createVNode, ref, type Ref } from "vue";

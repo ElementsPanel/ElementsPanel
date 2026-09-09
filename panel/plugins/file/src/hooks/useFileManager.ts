@@ -35,7 +35,8 @@ import type {
 } from "@/types/fileManager";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { useLocalStorage } from "@vueuse/core";
-import { message, Modal } from "ant-design-vue";
+import { message } from "ant-design-vue";
+import { Modal } from "@/tools/vuetifyModal";
 import type { Key } from "ant-design-vue/es/table/interface";
 import { v4 } from "uuid";
 import { computed, createVNode, onMounted, onUnmounted, reactive, ref, type VNodeRef } from "vue";

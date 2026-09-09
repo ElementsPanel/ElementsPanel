@@ -32,7 +32,7 @@ import {
   PlayCircleOutlined,
   RedoOutlined
 } from "@ant-design/icons-vue";
-import { Modal } from "ant-design-vue";
+import { Modal } from "@/tools/vuetifyModal";
 import { computed, h, onUnmounted, ref } from "vue";
 import { GLOBAL_INSTANCE_NAME } from "@/config/const";
 import { useTerminal, type UseTerminalHook } from "../../hooks/useTerminal";

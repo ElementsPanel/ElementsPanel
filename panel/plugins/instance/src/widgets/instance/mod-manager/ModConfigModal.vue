@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
+import AppDialog from "@/components/AppDialog.vue";
 import { FileTextOutlined } from "@ant-design/icons-vue";
 import {
   Button,
   List,
   ListItem,
-  ListItemMeta,
-  Modal
+  ListItemMeta
 } from "ant-design-vue";
 
 defineProps<{
@@ -20,7 +20,7 @@ const emit = defineEmits(["update:visible", "edit"]);
 </script>
 
 <template>
-  <Modal :visible="visible" @update:visible="val => emit('update:visible', val)"
+  <AppDialog :visible="visible" @update:visible="val => emit('update:visible', val)"
     :title="t('TXT_CODE_CONFIG') + ': ' + currentMod?.name" :footer="null">
     <List :loading="configLoading" :data-source="configFiles">
       <template #renderItem="{ item }">
@@ -36,5 +36,5 @@ const emit = defineEmits(["update:visible", "edit"]);
         </ListItem>
       </template>
     </List>
-  </Modal>
+  </AppDialog>
 </template>

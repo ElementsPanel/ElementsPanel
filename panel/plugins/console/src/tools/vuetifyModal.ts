@@ -1,11 +1,10 @@
-import { Modal } from "ant-design-vue";
 import { createApp, defineComponent, h, shallowReactive, type VNode } from "vue";
 import AppDialog from "../components/AppDialog.vue";
 import { installVuetify } from "../vuetify";
 
 type Renderable = string | VNode | Renderable[] | (() => Renderable) | undefined;
 
-interface ModalOptions {
+export interface ModalOptions {
   title?: Renderable;
   content?: Renderable;
   icon?: Renderable;
@@ -23,13 +22,12 @@ interface ModalOptions {
   maxWidth?: string | number;
 }
 
-interface ModalHandle {
+export interface ModalHandle {
   destroy: () => void;
   update: (next: Partial<ModalOptions>) => void;
 }
 
 const activeDialogs = new Set<ModalHandle>();
-let installed = false;
 
 const resolveRenderable = (value: Renderable): Renderable => {
   return typeof value === "function" ? resolveRenderable(value()) : value;
@@ -140,18 +138,14 @@ function openDialog(options: ModalOptions, variant: "confirm" | "alert"): ModalH
   return handle;
 }
 
-export function installVuetifyModalService() {
-  if (installed) return;
-  installed = true;
-
-  const modalApi = Modal as any;
-  modalApi.confirm = (options: ModalOptions) => openDialog(options, "confirm");
-  modalApi.info = (options: ModalOptions) => openDialog(options, "alert");
-  modalApi.success = (options: ModalOptions) => openDialog(options, "alert");
-  modalApi.error = (options: ModalOptions) => openDialog(options, "alert");
-  modalApi.warning = (options: ModalOptions) => openDialog(options, "alert");
-  modalApi.warn = modalApi.warning;
-  modalApi.destroyAll = () => {
+export const Modal = {
+  confirm: (options: ModalOptions) => openDialog(options, "confirm"),
+  info: (options: ModalOptions) => openDialog(options, "alert"),
+  success: (options: ModalOptions) => openDialog(options, "alert"),
+  error: (options: ModalOptions) => openDialog(options, "alert"),
+  warning: (options: ModalOptions) => openDialog(options, "alert"),
+  warn: (options: ModalOptions) => openDialog(options, "alert"),
+  destroyAll: () => {
     activeDialogs.forEach((dialog) => dialog.destroy());
-  };
-}
+  }
+};

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
+import AppDialog from "@/components/AppDialog.vue";
 import DesktopWindow from "../../desktop/DesktopWindow.vue";
 import {
   Button,
   List,
   ListItem,
-  ListItemMeta,
-  Modal
+  ListItemMeta
 } from "ant-design-vue";
 import { onMounted, onUnmounted, ref } from "vue";
 import { VIcon } from "vuetify/components";
@@ -65,7 +65,7 @@ const emit = defineEmits(["update:visible", "edit"]);
       </Transition>
     </Teleport>
   </template>
-  <Modal v-else :visible="visible" @update:visible="val => emit('update:visible', val)"
+  <AppDialog v-else :visible="visible" @update:visible="val => emit('update:visible', val)"
     :title="t('TXT_CODE_CONFIG') + ': ' + currentMod?.name" :footer="null">
     <List :loading="configLoading" :data-source="configFiles">
       <template #renderItem="{ item }">
@@ -81,7 +81,7 @@ const emit = defineEmits(["update:visible", "edit"]);
         </ListItem>
       </template>
     </List>
-  </Modal>
+  </AppDialog>
 </template>
 
 <style scoped>

@@ -1,6 +1,7 @@
 import { t } from "@/lang/i18n";
 import { useClipboard } from "@vueuse/core";
-import { message, Modal } from "ant-design-vue";
+import { message } from "ant-design-vue";
+import { Modal } from "@/tools/vuetifyModal";
 import { h } from "vue";
 
 const { copy, copied, isSupported } = useClipboard();

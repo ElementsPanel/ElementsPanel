@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
+import AppDialog from "@/components/AppDialog.vue";
 import DesktopWindow from "../../desktop/DesktopWindow.vue";
-import { Button, Modal, Table, Tag } from "ant-design-vue";
+import { Button, Table, Tag } from "ant-design-vue";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { VBtn, VChip, VDataTable, VIcon, VProgressCircular } from "vuetify/components";
 
@@ -194,7 +195,7 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
       </Transition>
     </Teleport>
   </template>
-  <Modal v-else :visible="visible" :title="t('TXT_CODE_VERSION_SELECT')" :footer="null"
+  <AppDialog v-else :visible="visible" :title="t('TXT_CODE_VERSION_SELECT')" :footer="null"
     :width="isPhone ? '100%' : '900px'" @update:visible="(val) => emit('update:visible', val)">
     <p class="mb-8 desktop-modal-hint"><VIcon icon="mdi-alert-outline" /> {{ $t("TXT_CODE_6111bc9e") }}</p>
     <Table :loading="versionsLoading" :data-source="sortedVersions" :columns="columns" row-key="id"
@@ -222,7 +223,7 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
         </template>
       </template>
     </Table>
-  </Modal>
+  </AppDialog>
 </template>
 
 <style scoped>

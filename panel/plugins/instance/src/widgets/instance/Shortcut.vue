@@ -31,7 +31,8 @@ import {
   TagsOutlined,
   UserOutlined
 } from "@ant-design/icons-vue";
-import { message, Modal } from "ant-design-vue";
+import { message } from "ant-design-vue";
+import { Modal } from "@/tools/vuetifyModal";
 import _ from "lodash";
 import prettyBytes, { type Options as PrettyOptions } from "pretty-bytes";
 import { computed, ref } from "vue";

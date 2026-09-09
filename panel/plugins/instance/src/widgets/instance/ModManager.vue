@@ -24,6 +24,7 @@ import ModVersionModal from "./mod-manager/ModVersionModal.vue";
 import SearchModTable from "./mod-manager/SearchModTable.vue";
 
 import { Flex, message } from "ant-design-vue";
+import { Modal } from "@/tools/vuetifyModal";
 import { useDeferredTasks } from "./mod-manager/useDeferredTasks";
 import { useLocalMods } from "./mod-manager/useLocalMods";
 import { useModConfig } from "./mod-manager/useModConfig";
@@ -79,7 +80,6 @@ const checkAndConfirm = async (
 ) => {
   if (isWindows.value && isRunning.value) {
     const { createVNode } = await import("vue");
-    const { Modal } = await import("ant-design-vue");
     const { ExclamationCircleOutlined } = await import("@ant-design/icons-vue");
     Modal.confirm({
       title: t("TXT_CODE_MOD_WIN_FILE_LOCK_TITLE"),
