@@ -21,6 +21,21 @@ import LoginCard from "../widgets/LoginCard.vue";
   padding: 24px;
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.login-wrapper-fixed::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+.login-wrapper-fixed::-webkit-scrollbar-thumb,
+.login-wrapper-fixed::-webkit-scrollbar-track {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
 }
 
 .login-card-container {
