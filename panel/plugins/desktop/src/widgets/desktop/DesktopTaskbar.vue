@@ -28,7 +28,7 @@ const props = defineProps<{
     windows: TaskbarWindow[];
     apps: TaskbarApp[];
     username: string;
-    userAvatar?: Component;
+    userAvatar?: Component | string;
     covered?: boolean;
 }>();
 
@@ -154,8 +154,10 @@ const handleAppDrop = (event: DragEvent) => {
     emit("add-shortcut", appId, event.clientX, event.clientY);
 };
 
-const isComponentIcon = (icon: Component | string): boolean => typeof icon !== "string";
-const isMdiIcon = (icon: Component | string): boolean => typeof icon === "string" && icon.startsWith("mdi-");
+const isComponentIcon = (icon: Component | string | undefined): boolean =>
+    typeof icon !== "string" && Boolean(icon);
+const isMdiIcon = (icon: Component | string | undefined): boolean =>
+    typeof icon === "string" && icon.startsWith("mdi-");
 
 const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
     emit("contextmenu-window", event, win.id);
@@ -208,9 +210,11 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
         <div v-if="startMenuOpen" class="taskbar__start-menu" :class="{ 'taskbar__start-menu--docked': covered }"
             @click.stop>
             <div class="start-menu__sidebar">
-                <VBtn v-if="userAvatar" class="start-menu__function-btn" icon variant="text" :title="username"
+                <VBtn class="start-menu__function-btn" icon variant="text" :title="username"
                     @click="handleOpenUserInfo">
-                    <component :is="userAvatar" />
+                    <component :is="userAvatar" v-if="isComponentIcon(userAvatar)" />
+                    <VIcon v-else-if="isMdiIcon(userAvatar)" :icon="userAvatar" />
+                    <VIcon v-else icon="mdi-account-outline" />
                 </VBtn>
                 <div class="start-menu__sidebar-spacer"></div>
                 <VMenu location="top end">

@@ -1,12 +1,20 @@
 <script setup lang="ts">
 import { ref, reactive, nextTick } from "vue";
 import { t } from "@/lang/i18n";
-
-import AppConfigProvider from "@console/components/AppConfigProvider.vue";
 import { useInstanceTags, useInstanceTagTips } from "@/hooks/useInstanceTag";
 import { reportErrorMsg } from "@/tools/validator";
 import { message } from "ant-design-vue";
-import { PlusOutlined } from "@ant-design/icons-vue";
+import {
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardText,
+  VCardTitle,
+  VChip,
+  VDialog,
+  VSpacer,
+  VTextField
+} from "vuetify/components";
 
 interface Props {
   destroyComponent(delay?: number): void;
@@ -53,6 +61,14 @@ const cancel = async () => {
   if (props.destroyComponent) props.destroyComponent(1000);
 };
 
+const handleDialogUpdate = (value: boolean) => {
+  if (value) {
+    open.value = true;
+  } else if (open.value) {
+    cancel();
+  }
+};
+
 const submit = async () => {
   try {
     await saveTags();
@@ -74,102 +90,142 @@ defineExpose({ openDialog });
 </script>
 
 <template>
-  <AppConfigProvider>
-    <a-modal
-      v-model:open="open"
-      :title="t('TXT_CODE_a2544278')"
-      centered
-      :confirm-loading="saveLoading"
-      @ok="submit"
-      @cancel="cancel"
-    >
-      <div class="dialog-overflow-container">
-        <div class="flex direction-column">
-          <a-typography-paragraph>
-            <a-typography-text type="secondary">
-              {{ t("TXT_CODE_f84ae54f") }}
-            </a-typography-text>
-          </a-typography-paragraph>
-          <div>
-            <a-typography-paragraph>
-              <a-typography-text>
-                {{ t("TXT_CODE_2c1337d") }}
-              </a-typography-text>
-            </a-typography-paragraph>
-            <a-typography-paragraph>
-              <a-typography-text type="secondary">
-                {{ t("TXT_CODE_e26d53d5") }}
-              </a-typography-text>
-            </a-typography-paragraph>
-            <div class="tag-container">
-              <a-tag
-                v-for="tag in instanceTags"
-                :key="tag"
-                class="m-4 my-tag"
-                color="blue"
-                closable
-                @close="() => removeTag(tag)"
-              >
-                {{ tag }}
-              </a-tag>
-              <a-input
-                v-if="state.inputVisible"
-                ref="inputRef"
-                v-model:value="state.inputValue"
-                type="text"
-                size="small"
-                :style="{ width: '82px' }"
-                class="m-4"
-                @blur="handleInputConfirm"
-                @keyup.enter="handleInputConfirm"
-              />
-              <a-tag v-else class="m-4 my-tag" style="border-style: dashed" @click="showInput">
-                <plus-outlined />
-                {{ t("TXT_CODE_3dd66d98") }}
-              </a-tag>
-            </div>
-          </div>
+  <VDialog :model-value="open" class="app-dialog tags-dialog" max-width="620" scrollable
+    @update:model-value="handleDialogUpdate">
+    <VCard rounded="xl">
+      <VCardTitle class="tags-dialog__title">{{ t("TXT_CODE_a2544278") }}</VCardTitle>
+      <VCardText class="tags-dialog__content">
+        <p class="tags-dialog__hint">{{ t("TXT_CODE_f84ae54f") }}</p>
 
-          <div v-if="instanceTagsTips?.length > 0" class="mt-20">
-            <a-typography-paragraph>
-              <a-typography-text>
-                {{ t("TXT_CODE_67d1ea21") }}
-              </a-typography-text>
-            </a-typography-paragraph>
-            <a-typography-paragraph>
-              <a-typography-text type="secondary">
-                {{ t("TXT_CODE_3ecee271") }}
-              </a-typography-text>
-            </a-typography-paragraph>
-            <div class="tag-container">
-              <a-tag
-                v-for="tag in instanceTagsTips"
-                :key="tag"
-                class="m-4 my-tag tag-option"
-                @click="addTag(tag)"
-              >
-                {{ tag }}
-              </a-tag>
-            </div>
+        <section class="tags-dialog__section">
+          <p class="tags-dialog__label">{{ t("TXT_CODE_2c1337d") }}</p>
+          <p class="tags-dialog__hint">{{ t("TXT_CODE_e26d53d5") }}</p>
+          <div class="tag-container">
+            <VChip
+              v-for="tag in instanceTags"
+              :key="tag"
+              class="tag-item"
+              color="primary"
+              variant="tonal"
+              closable
+              rounded="xl"
+              @click:close="removeTag(tag)"
+            >
+              {{ tag }}
+            </VChip>
+            <VTextField
+              v-if="state.inputVisible"
+              ref="inputRef"
+              v-model="state.inputValue"
+              class="tag-input"
+              variant="solo"
+              density="compact"
+              hide-details
+              rounded="xl"
+              @blur="handleInputConfirm"
+              @keyup.enter="handleInputConfirm"
+            />
+            <VBtn
+              v-else
+              class="tag-add"
+              variant="outlined"
+              rounded="xl"
+              prepend-icon="mdi-plus"
+              @click="showInput"
+            >
+              {{ t("TXT_CODE_3dd66d98") }}
+            </VBtn>
           </div>
-        </div>
-      </div>
-    </a-modal>
-  </AppConfigProvider>
+        </section>
+
+        <section v-if="instanceTagsTips?.length > 0" class="tags-dialog__section tags-dialog__suggestions">
+          <p class="tags-dialog__label">{{ t("TXT_CODE_67d1ea21") }}</p>
+          <p class="tags-dialog__hint">{{ t("TXT_CODE_3ecee271") }}</p>
+          <div class="tag-container">
+            <VChip
+              v-for="tag in instanceTagsTips"
+              :key="tag"
+              class="tag-item tag-option"
+              variant="outlined"
+              rounded="xl"
+              @click="addTag(tag)"
+            >
+              {{ tag }}
+            </VChip>
+          </div>
+        </section>
+      </VCardText>
+      <VCardActions class="tags-dialog__actions">
+        <VSpacer />
+        <VBtn variant="text" rounded="xl" @click="cancel">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+        <VBtn color="primary" variant="text" rounded="xl" :loading="saveLoading" @click="submit">
+          {{ t("TXT_CODE_d507abff") }}
+        </VBtn>
+      </VCardActions>
+    </VCard>
+  </VDialog>
 </template>
 
 <style lang="scss" scoped>
 .tag-container {
-  margin-left: -4px;
-  margin-right: -4px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
-.group-name-tag {
-  height: 26px;
-  line-height: 24px;
+.tags-dialog__title {
+  padding: 14px 24px 8px;
+}
+
+.tags-dialog__content {
+  padding: 8px 24px 16px;
+}
+
+.tags-dialog__section {
+  & + & {
+    margin-top: 24px;
+  }
+}
+
+.tags-dialog__label,
+.tags-dialog__hint {
+  margin: 0;
+}
+
+.tags-dialog__label {
+  color: rgb(var(--v-theme-on-surface));
+  font-weight: 500;
+}
+
+.tags-dialog__hint {
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  line-height: 1.5;
+}
+
+.tags-dialog__label + .tags-dialog__hint {
+  margin-top: 4px;
+  margin-bottom: 10px;
+}
+
+.tag-item {
+  margin: 0;
+}
+
+.tag-input {
+  flex: 0 0 100px;
+  max-width: 100px;
+}
+
+.tag-add {
+  min-width: 0;
 }
 
 .tag-option {
   cursor: pointer;
+}
+
+.tags-dialog__actions {
+  padding: 8px 16px 12px 24px;
 }
 </style>
