@@ -110,7 +110,7 @@ const ensureMounted = () => {
               },
               color: typeColor[item.type],
               location: item.location,
-              offset: 16 + index * 64,
+              offset: 24 + index * 64,
               rounded: "xl",
               timeout: item.timeout,
               variant: "tonal",
@@ -142,7 +142,7 @@ const openToast = (type: ToastType, options: ToastOptions | Renderable) => {
     content,
     description: normalized.description,
     timeout: normalized.duration === 0 ? -1 : normalized.duration ?? 3200,
-    location: placementMap[normalized.placement ?? "bottom"] ?? normalized.placement ?? "bottom",
+    location: placementMap[normalized.placement ?? "top"] ?? normalized.placement ?? "top",
     visible: true
   };
   activeToasts.push(item);
