@@ -10,7 +10,7 @@ import {
   ScheduleCreateType,
   ScheduleType
 } from "@/types/const";
-import { notification } from "ant-design-vue";
+import { notification } from "@/tools/vuetifyToast";
 import dayjs from "dayjs";
 import _ from "lodash";
 import { computed, reactive, ref, watch } from "vue";

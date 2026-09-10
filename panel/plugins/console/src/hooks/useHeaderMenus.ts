@@ -20,7 +20,7 @@ import {
   SaveOutlined,
   UserOutlined
 } from "@ant-design/icons-vue";
-import { message, notification } from "ant-design-vue";
+import { message, notification } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import type { Component } from "vue";
 import { computed } from "vue";

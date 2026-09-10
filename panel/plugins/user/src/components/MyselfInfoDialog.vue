@@ -6,7 +6,7 @@ import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useAppToolsStore } from "@/stores/useAppToolsStore";
 import { toCopy } from "@/tools/copy";
 import { reportErrorMsg } from "@/tools/validator";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { reactive, ref } from "vue";
 import {
   VBtn,

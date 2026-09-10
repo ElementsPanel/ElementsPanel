@@ -14,7 +14,8 @@ import {
   RightCircleOutlined,
   UploadOutlined
 } from "@ant-design/icons-vue";
-import { Empty, message, type FormInstance } from "ant-design-vue";
+import { Empty, type FormInstance } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import type { FileType } from "ant-design-vue/es/upload/interface";
 import _ from "lodash";
 import { ref } from "vue";

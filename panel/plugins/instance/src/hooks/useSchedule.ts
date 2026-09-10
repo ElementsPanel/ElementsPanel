@@ -2,7 +2,7 @@ import { t } from "@/lang/i18n";
 import { scheduleCreate, scheduleDelete, scheduleList } from "@/services/apis/instance";
 import { reportErrorMsg } from "@/tools/validator";
 import type { ScheduleTaskForm } from "@/types";
-import { message, notification } from "ant-design-vue";
+import { message, notification } from "@/tools/vuetifyToast";
 import dayjs from "dayjs";
 
 export function useSchedule(instanceId: string, daemonId: string) {

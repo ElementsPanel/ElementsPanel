@@ -2,7 +2,7 @@
 import type { ComputedNodeInfo } from "@/hooks/useOverviewInfo";
 import { t } from "@/lang/i18n";
 import { getValidatorErrorMsg, isLocalNetworkIP, reportErrorMsg } from "@/tools/validator";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import _ from "lodash";
 import { computed, reactive, ref } from "vue";

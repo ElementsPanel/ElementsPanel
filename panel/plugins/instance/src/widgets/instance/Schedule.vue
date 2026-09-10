@@ -8,7 +8,7 @@ import { ctx } from "@/plugin/context";
 import { padZero } from "@/tools/common";
 import { ScheduleActionType, ScheduleCreateType, ScheduleType } from "@/types/const";
 import type { LayoutCard, Schedule } from "@/types/index";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { computed, onMounted, ref } from "vue";
 import {
   VBtn,

@@ -5,7 +5,7 @@ import {
   modListApi,
   toggleModApi
 } from "@/services/apis/modManager";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { computed, onUnmounted, reactive, ref, watch } from "vue";
 
 export function useLocalMods(

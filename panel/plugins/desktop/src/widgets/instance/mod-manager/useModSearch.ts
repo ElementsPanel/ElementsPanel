@@ -7,7 +7,7 @@ import {
   searchModsApi
 } from "@/services/apis/modManager";
 import { useLocalStorage } from "@vueuse/core";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import { notifyDesktop } from "../../../desktopNotice";
 import { VBtn, VIcon } from "vuetify/components";

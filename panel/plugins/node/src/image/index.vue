@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h } from "vue";
 import { t } from "@/lang/i18n";
-import { notification } from "ant-design-vue";
+import { notification } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import CardPanel from "@/components/CardPanel.vue";
 import BetweenMenus from "@/components/BetweenMenus.vue";

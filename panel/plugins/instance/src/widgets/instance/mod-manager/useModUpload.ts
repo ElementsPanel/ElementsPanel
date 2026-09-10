@@ -1,6 +1,6 @@
 import { ref, watch, createVNode, type Ref } from "vue";
 import { t } from "@/lang/i18n";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import type { FrontendFileManagerService } from "@/plugin";

@@ -1,7 +1,7 @@
 import { t } from "@/lang/i18n";
 import { deleteModApi, downloadModApi, toggleModApi } from "@/services/apis/modManager";
 import { useLocalStorage } from "@vueuse/core";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { ref } from "vue";
 
 export interface DeferredTask {

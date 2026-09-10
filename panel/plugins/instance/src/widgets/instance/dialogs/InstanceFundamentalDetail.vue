@@ -11,7 +11,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import _ from "lodash";
 import { computed, ref, unref } from "vue";
 import { VBtn, VCol, VRow, VSelect, VTextField, VTextarea } from "vuetify/components";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { dayjsToTimestamp, timestampToDayjs } from "@/tools/time";
 import { useDockerEnvEditDialog } from "@/components/fc";
 

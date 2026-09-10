@@ -13,7 +13,7 @@ import InstanceDetail from "@instance/widgets/instance/dialogs/InstanceDetail.vu
 import axios from "axios";
 import { onMounted, ref } from "vue";
 import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VChip, VCol, VContainer, VIcon, VProgressCircular, VRow, VSelect } from "vuetify/components";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { updateMarketSettings } from "../api";
 import { useMarketPackages } from "../hooks/useMarketPackages";
 

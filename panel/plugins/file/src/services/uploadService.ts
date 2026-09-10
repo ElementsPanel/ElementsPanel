@@ -4,7 +4,7 @@ import {
   uploadFilePiece as uploadFilePieceApi
 } from "../api";
 import { reportErrorMsg } from "@/tools/validator";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { ref, type Ref } from "vue";
 
 const PIECE_SIZE = 1024 * 1024 * 2;

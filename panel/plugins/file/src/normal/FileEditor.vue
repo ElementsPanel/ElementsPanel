@@ -5,7 +5,7 @@ import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
 import { fileContent } from "../api";
 import { reportErrorMsg } from "@/tools/validator";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { computed, ref } from "vue";
 import {
   VBtn,

@@ -6,7 +6,7 @@ import {
     createAsyncTask,
     queryAsyncTask
 } from "@/services/apis/instance";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import { computed, h, onUnmounted, ref } from "vue";
 import AppDialog from "@/components/AppDialog.vue";

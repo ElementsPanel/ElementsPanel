@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, onMounted } from "vue";
 import { t } from "@/lang/i18n";
-import { notification } from "ant-design-vue";
+import { notification } from "@/tools/vuetifyToast";
 import { imageList } from "@/services/apis/envImage";
 import { reportErrorMsg } from "@/tools/validator";
 

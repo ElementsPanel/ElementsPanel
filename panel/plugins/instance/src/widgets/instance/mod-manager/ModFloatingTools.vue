@@ -3,7 +3,7 @@ import { t } from "@/lang/i18n";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { stopTransferApi } from "@/services/apis/modManager";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { VBadge, VBtn, VCard, VCardText, VCardTitle, VIcon, VMenu, VProgressLinear } from "vuetify/components";
 
 const props = defineProps<{

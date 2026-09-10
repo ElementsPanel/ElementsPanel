@@ -25,7 +25,7 @@ import { parseTimestamp } from "@/tools/time";
 import { reportErrorMsg } from "@/tools/validator";
 import type { InstanceDetail, NodeStatus } from "@/types";
 import { INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@/types/const";
-import { notification } from "ant-design-vue";
+import { notification } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import { throttle } from "lodash";
 import prettyBytes from "pretty-bytes";

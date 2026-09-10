@@ -4,7 +4,7 @@ import { t } from "@/lang/i18n";
 import type { LayoutCard } from "@/types";
 import { useScreen } from "@/hooks/useScreen";
 import { getConfigFile, updateConfigFile } from "@/services/apis/instance";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { toUnicode } from "@/tools/common";

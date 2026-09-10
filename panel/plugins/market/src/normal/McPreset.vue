@@ -7,7 +7,7 @@ import { getDockerHubImagePlatforms } from "@/services/apis/envImage";
 import { createAsyncTask } from "@/services/apis/instance";
 import { reportErrorMsg } from "@/tools/validator";
 import type { LayoutCard, QuickStartPackages } from "@/types";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { ref } from "vue";
 import { useRoute } from "vue-router";
 import TemplateNameDialog from "../components/TemplateNameDialog.vue";

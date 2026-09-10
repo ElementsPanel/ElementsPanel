@@ -8,7 +8,7 @@ import { useScreen } from "@/hooks/useScreen";
 import { useRoute } from "vue-router";
 import { userInfoApiAdvanced, updateUserInstance } from "@/services/apis";
 import { useSelectInstances } from "@/components/fc";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { reportErrorMsg } from "@/tools/validator";
 import { INSTANCE_STATUS } from "@/types/const";
 import dayjs from "dayjs";

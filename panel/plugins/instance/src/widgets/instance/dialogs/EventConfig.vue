@@ -3,7 +3,7 @@ import { computed, ref, watch } from "vue";
 import { t } from "@/lang/i18n";
 import type { InstanceDetail } from "@/types";
 import { updateInstanceConfig } from "@/services/apis/instance";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { reportErrorMsg } from "@/tools/validator";
 import AppDialog from "@/components/AppDialog.vue";
 import {

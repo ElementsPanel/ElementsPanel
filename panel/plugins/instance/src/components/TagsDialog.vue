@@ -3,7 +3,7 @@ import { ref, reactive, nextTick } from "vue";
 import { t } from "@/lang/i18n";
 import { useInstanceTags, useInstanceTagTips } from "@/hooks/useInstanceTag";
 import { reportErrorMsg } from "@/tools/validator";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import {
   VBtn,
   VCard,

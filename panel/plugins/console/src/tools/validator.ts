@@ -1,5 +1,5 @@
 import { t } from "@/lang/i18n";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 
 export function emptyValueValidator(value: string | number) {
   if (String(value).trim() === "") throw new Error(t("TXT_CODE_cb08d342"));

@@ -19,7 +19,7 @@ import { dockerPortsArray } from "@/tools/common";
 import { reportErrorMsg } from "@/tools/validator";
 import type { DockerNetworkModes, FilterOption, InstanceDetail, QuickStartPackages } from "@/types";
 import { defaultQuickStartPackages, SEARCH_ALL_KEY, TERMINAL_CODE } from "@/types/const";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import dayjs, { type Dayjs } from "dayjs";
 import _ from "lodash";
 import { computed, ref, unref } from "vue";

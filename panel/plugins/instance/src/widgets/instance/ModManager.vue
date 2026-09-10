@@ -23,8 +23,9 @@ import ModFloatingTools from "./mod-manager/ModFloatingTools.vue";
 import ModVersionModal from "./mod-manager/ModVersionModal.vue";
 import SearchModTable from "./mod-manager/SearchModTable.vue";
 
-import { Flex, message } from "ant-design-vue";
+import { Flex } from "ant-design-vue";
 import { Modal } from "@/tools/vuetifyModal";
+import { message } from "@/tools/vuetifyToast";
 import { useDeferredTasks } from "./mod-manager/useDeferredTasks";
 import { useLocalMods } from "./mod-manager/useLocalMods";
 import { useModConfig } from "./mod-manager/useModConfig";

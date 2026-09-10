@@ -9,7 +9,7 @@ import { arrayFilter } from "@/tools/array";
 import { reportErrorMsg } from "@/tools/validator";
 import { hasVersionUpdate } from "@/tools/version";
 import type { LayoutCard } from "@/types";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { computed, onMounted, ref } from "vue";
 import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VCol, VIcon, VRow, VTooltip } from "vuetify/components";
 import { connectNode } from "../../api";

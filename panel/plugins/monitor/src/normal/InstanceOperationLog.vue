@@ -2,7 +2,7 @@
 import { t } from "@/lang/i18n";
 import { ctx } from "@/plugin/context";
 import { FileTextOutlined } from "@ant-design/icons-vue";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { computed, onMounted, ref } from "vue";
 import AppDialog from "@/components/AppDialog.vue";
 import { VBtn } from "vuetify/components";

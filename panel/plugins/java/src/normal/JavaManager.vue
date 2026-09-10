@@ -6,7 +6,7 @@ import { updateInstanceConfig } from "@/services/apis/instance";
 import { addJava, deleteJava, downloadJava, getJavaList, usingJava } from "../api";
 import { parseTimestamp } from "@/tools/time";
 import type { JavaInfo, JavaRuntime } from "../types";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { computed, ref, type Ref } from "vue";
 import { VBtn, VChip, VDataTable } from "vuetify/components";
 

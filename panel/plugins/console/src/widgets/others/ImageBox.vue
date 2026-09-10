@@ -7,7 +7,8 @@ import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import type { LayoutCard } from "@/types/index";
 import { UploadOutlined } from "@ant-design/icons-vue";
-import { Empty, message, type UploadProps } from "ant-design-vue";
+import { Empty, type UploadProps } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { ref } from "vue";
 
 const props = defineProps<{

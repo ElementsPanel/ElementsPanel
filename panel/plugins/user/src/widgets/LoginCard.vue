@@ -6,7 +6,7 @@ import { loginPageInfo, loginUser, ssoConfig, type SsoPublicConfig } from "@/ser
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { markdownToHTML } from "@/tools/safe";
 import { reportErrorMsg } from "@/tools/validator";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import { computed, onMounted, reactive, ref } from "vue";
 import {

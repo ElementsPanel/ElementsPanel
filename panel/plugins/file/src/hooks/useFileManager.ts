@@ -35,7 +35,7 @@ import type {
 } from "@/types/fileManager";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { useLocalStorage } from "@vueuse/core";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import type { Key } from "ant-design-vue/es/table/interface";
 import { v4 } from "uuid";

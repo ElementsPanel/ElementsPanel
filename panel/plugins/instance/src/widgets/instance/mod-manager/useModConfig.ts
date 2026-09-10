@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import { getModConfigFilesApi } from "@/services/apis/modManager";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 
 export function useModConfig(instanceId: string, daemonId: string, FileEditorDialog: any) {
   const showConfigModal = ref(false);

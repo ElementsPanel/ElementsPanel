@@ -3,7 +3,7 @@ import { t } from "@/lang/i18n";
 import { getConfigFile, getInstanceInfo, updateConfigFile } from "@/services/apis/instance";
 import type { InstanceDetail, MapData } from "@/types";
 import { INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@/types/const";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import { computed, h, onMounted, onUnmounted, ref, type Ref } from "vue";
 

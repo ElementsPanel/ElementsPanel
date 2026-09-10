@@ -1,6 +1,6 @@
 import { t } from "@/lang/i18n";
 import { useClipboard } from "@vueuse/core";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import { h } from "vue";
 

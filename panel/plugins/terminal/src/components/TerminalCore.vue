@@ -7,7 +7,7 @@ import { getInstanceOutputLog } from "../api";
 import { logInstanceCrash, logInstanceAutoRestart } from "@/services/apis/operationLog";
 import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import { Terminal } from "@xterm/xterm";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { onMounted, ref } from "vue";
 import { encodeConsoleColor, type UseTerminalHook } from "../hooks/useTerminal";
 import { getRandomId } from "@/tools/randId";

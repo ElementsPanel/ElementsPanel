@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { t } from "@/lang/i18n";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { uploadFile } from "@/services/apis/layout";
 import { reportErrorMsg } from "@/tools/validator";
 import {

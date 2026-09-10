@@ -13,7 +13,7 @@ import {
   SwapOutlined,
   UserOutlined
 } from "@ant-design/icons-vue";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { onMounted, reactive, ref } from "vue";
 
 const { updateUserInfo, isAdmin } = useAppStateStore();
