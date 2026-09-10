@@ -346,6 +346,7 @@ const confirmDisable = () => {
         :items="nodeItems"
         :loading="loading"
         :placeholder="t('TXT_CODE_PLUGIN_NODE_SELECT')"
+        :menu-props="{ contentClass: 'plugin-config-node-menu' }"
         hide-details
       />
 
@@ -467,6 +468,7 @@ const confirmDisable = () => {
   position: relative;
   display: flex;
   width: 100%;
+  box-sizing: border-box;
   height: min(720px, calc(100vh - 140px));
   min-height: 0;
   overflow: hidden;
@@ -491,6 +493,7 @@ const confirmDisable = () => {
   display: flex;
   flex-direction: column;
   flex: 0 0 240px;
+  box-sizing: border-box;
   min-height: 0;
   padding: 24px 16px;
   overflow: hidden;
@@ -506,6 +509,7 @@ const confirmDisable = () => {
   display: flex;
   gap: 8px;
   width: 100%;
+  box-sizing: border-box;
   padding: 0 10px 12px;
   background: transparent;
   border-radius: 0;
@@ -525,11 +529,29 @@ const confirmDisable = () => {
 }
 
 .plugin-config-node-select {
-  flex: 0 0 calc(100% - 20px);
-  width: calc(100% - 20px);
-  max-width: calc(100% - 20px);
-  margin: 0 10px 2px;
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0 0 8px;
   box-sizing: border-box;
+}
+
+.plugin-config-node-select :deep(.v-input__control),
+.plugin-config-node-select :deep(.v-field) {
+  width: 100%;
+  min-width: 0;
+}
+
+.plugin-config-node-select :deep(.v-field__input) {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.plugin-config-node-select :deep(.v-select__selection-text) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .plugin-config-heading {
@@ -545,6 +567,8 @@ const confirmDisable = () => {
 .plugin-config-list {
   min-height: 0;
   flex: 1;
+  width: 100%;
+  box-sizing: border-box;
   overflow-y: auto;
   scrollbar-gutter: auto;
   background: transparent;
@@ -559,6 +583,17 @@ const confirmDisable = () => {
   overflow: hidden;
   border-radius: 24px !important;
   color: var(--text-color);
+}
+
+.plugin-config-list :deep(.v-list-item__content) {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.plugin-config-list :deep(.v-list-item-title) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .plugin-config-list :deep(.v-list-item--active) {
@@ -584,6 +619,28 @@ const confirmDisable = () => {
 
 .plugin-config-item-dot-off {
   background: var(--color-gray-6);
+}
+
+:global(.plugin-config-node-menu) {
+  max-width: min(420px, calc(100vw - 32px));
+  overflow: hidden;
+  border-radius: 16px !important;
+}
+
+:global(.plugin-config-node-menu .v-list) {
+  padding: 4px;
+  background: rgb(var(--v-theme-surface));
+}
+
+:global(.plugin-config-node-menu .v-list-item) {
+  min-height: 40px;
+  border-radius: 12px;
+}
+
+:global(.plugin-config-node-menu .v-list-item-title) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .plugin-config-empty,
