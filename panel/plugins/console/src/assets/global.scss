@@ -112,6 +112,16 @@ body::-webkit-scrollbar-track {
 .vuetify-toast-text {
   flex: 1 1 auto;
   min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.v-snackbar.vuetify-toast .v-snackbar__wrapper {
+  background-color: rgba(var(--v-theme-surface), 0.68);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  width: fit-content;
+  min-width: 0;
+  max-width: min(672px, calc(100vw - 32px));
 }
 
 // Use one flat field treatment for every Vuetify input and select.

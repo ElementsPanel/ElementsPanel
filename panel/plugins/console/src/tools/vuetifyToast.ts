@@ -95,9 +95,11 @@ const ensureMounted = () => {
   const ToastHost = defineComponent({
     setup() {
       return () =>
-        activeToasts.map((item, index) => {
+        [...activeToasts].reverse().map((item, index) => {
           const content = resolveRenderable(item.content);
           const description = resolveRenderable(item.description);
+          const isBottomToast = item.location.split(" ").includes("bottom");
+          const stackOffset = `${16 + index * 64}px`;
           const textChildren: any[] = [];
           if (content != null) textChildren.push(...(Array.isArray(content) ? content : [content]));
           if (description != null) {
@@ -111,7 +113,7 @@ const ensureMounted = () => {
           const children = (h as any)("div", { class: "vuetify-toast-content" }, [
             (h as any)(VIcon, {
               icon: typeIcon[item.type],
-              class: "vuetify-toast-icon mr-2",
+              class: "vuetify-toast-icon mr-4",
               size: 20
             }),
             (h as any)("div", { class: "vuetify-toast-text" }, textChildren)
@@ -121,6 +123,7 @@ const ensureMounted = () => {
             VSnackbar,
             {
               key: item.id,
+              class: "vuetify-toast",
               modelValue: item.visible,
               "onUpdate:modelValue": (value: boolean) => {
                 if (!value) removeToast(item);
@@ -128,7 +131,12 @@ const ensureMounted = () => {
               onAfterLeave: () => finalizeToast(item),
               color: typeColor[item.type],
               location: item.location,
-              offset: 24 + index * 64,
+              contentProps: {
+                style: {
+                  marginTop: isBottomToast ? undefined : stackOffset,
+                  marginBottom: isBottomToast ? stackOffset : undefined
+                }
+              },
               rounded: "xl",
               timeout: item.timeout,
               variant: "tonal",
