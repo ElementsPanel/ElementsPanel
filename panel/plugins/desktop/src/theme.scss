@@ -191,6 +191,22 @@
   box-shadow: none !important;
 }
 
+/* Match every desktop-mode input and dropdown surface to its window.  Menus
+   are teleported outside the window, so target their list surface globally. */
+.desktop-mode-active .v-field,
+.desktop-mode-active .v-input,
+.desktop-mode-active .v-input__control,
+.desktop-mode-active .v-select__content,
+.desktop-mode-active .v-autocomplete__content,
+.desktop-mode-active .v-combobox__content,
+.desktop-mode-active .v-menu > .v-overlay__content,
+.desktop-mode-active .v-select__content > .v-list,
+.desktop-mode-active .v-autocomplete__content > .v-list,
+.desktop-mode-active .v-combobox__content > .v-list,
+.desktop-mode-active .v-menu > .v-overlay__content > .v-list {
+  background: var(--desktop-window-bg) !important;
+}
+
 .desktop-mode-active .v-select__content > .v-list,
 .desktop-mode-active .v-menu > .v-overlay__content > .v-list {
   border-radius: 4px !important;

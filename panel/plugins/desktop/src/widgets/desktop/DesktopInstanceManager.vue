@@ -872,7 +872,6 @@ onUnmounted(() => {
     }
 
     &__input {
-        background: var(--desktop-window-bg);
         border: 1px solid var(--desktop-window-border);
         border-radius: 6px;
         color: var(--desktop-window-text);
@@ -881,11 +880,6 @@ onUnmounted(() => {
         outline: none;
         cursor: pointer;
         max-width: 200px;
-
-        :deep(.v-field) {
-            background: var(--desktop-window-bg);
-            box-shadow: none;
-        }
 
         &:focus {
             border-color: rgba(22, 119, 255, 0.5);
@@ -902,7 +896,6 @@ onUnmounted(() => {
     position: relative;
 
     &__input {
-        background: var(--desktop-window-bg);
         border: 1px solid var(--desktop-window-border);
         border-radius: 6px;
         color: var(--desktop-window-text);
@@ -911,11 +904,6 @@ onUnmounted(() => {
         outline: none;
         width: 180px;
         transition: all 0.2s;
-
-        :deep(.v-field) {
-            background: var(--desktop-window-bg);
-            box-shadow: none;
-        }
 
         &::placeholder {
             color: var(--desktop-window-text-muted);
