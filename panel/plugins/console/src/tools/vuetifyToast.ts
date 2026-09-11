@@ -22,6 +22,8 @@ interface ToastItem {
   timeout: number;
   location: string;
   visible: boolean;
+  closing: boolean;
+  removeTimer?: ReturnType<typeof setTimeout>;
 }
 
 const activeToasts = shallowReactive<ToastItem[]>([]);
@@ -53,8 +55,11 @@ const placementMap: Record<string, string> = {
   bottomRight: "bottom end"
 };
 
-const removeToast = (item: ToastItem) => {
-  item.visible = false;
+const finalizeToast = (item: ToastItem) => {
+  if (item.removeTimer) {
+    clearTimeout(item.removeTimer);
+    item.removeTimer = undefined;
+  }
   const index = activeToasts.indexOf(item);
   if (index >= 0) activeToasts.splice(index, 1);
   if (activeToasts.length === 0) {
@@ -64,6 +69,17 @@ const removeToast = (item: ToastItem) => {
     host = undefined;
     mounted = false;
   }
+};
+
+const removeToast = (item: ToastItem) => {
+  if (item.closing || activeToasts.indexOf(item) < 0) return;
+  item.closing = true;
+  item.visible = false;
+
+  // Keep the item mounted long enough for VSnackbar's leave transition. The
+  // after-leave hook normally removes it sooner; this also covers a close
+  // call made before the first render has completed.
+  item.removeTimer = setTimeout(() => finalizeToast(item), 250);
 };
 
 const resolveRenderable = (value: Renderable): Renderable =>
@@ -82,23 +98,24 @@ const ensureMounted = () => {
         activeToasts.map((item, index) => {
           const content = resolveRenderable(item.content);
           const description = resolveRenderable(item.description);
-          const children: any[] = [];
-
-          children.push(
-            (h as any)(VIcon, {
-              icon: typeIcon[item.type],
-              class: "mr-2",
-              size: 20
-            })
-          );
-          if (content != null) children.push(...(Array.isArray(content) ? content : [content]));
+          const textChildren: any[] = [];
+          if (content != null) textChildren.push(...(Array.isArray(content) ? content : [content]));
           if (description != null) {
-            children.push(
+            textChildren.push(
               (h as any)("div", { class: "vuetify-toast-description" },
                 Array.isArray(description) ? description : [description]
               )
             );
           }
+
+          const children = (h as any)("div", { class: "vuetify-toast-content" }, [
+            (h as any)(VIcon, {
+              icon: typeIcon[item.type],
+              class: "vuetify-toast-icon mr-2",
+              size: 20
+            }),
+            (h as any)("div", { class: "vuetify-toast-text" }, textChildren)
+          ]);
 
           return (h as any)(
             VSnackbar,
@@ -108,6 +125,7 @@ const ensureMounted = () => {
               "onUpdate:modelValue": (value: boolean) => {
                 if (!value) removeToast(item);
               },
+              onAfterLeave: () => finalizeToast(item),
               color: typeColor[item.type],
               location: item.location,
               offset: 24 + index * 64,
@@ -136,15 +154,16 @@ const openToast = (type: ToastType, options: ToastOptions | Renderable) => {
       ? (options as ToastOptions)
       : { content: options as Renderable };
   const content = normalized.message ?? normalized.content;
-  const item: ToastItem = {
+  const item = shallowReactive<ToastItem>({
     id: nextId++,
     type,
     content,
     description: normalized.description,
     timeout: normalized.duration === 0 ? -1 : normalized.duration ?? 3200,
     location: placementMap[normalized.placement ?? "top"] ?? normalized.placement ?? "top",
-    visible: true
-  };
+    visible: true,
+    closing: false
+  });
   activeToasts.push(item);
 
   return {
@@ -175,6 +194,9 @@ export const notification = {
 };
 
 export const destroyAll = () => {
+  activeToasts.forEach((item) => {
+    if (item.removeTimer) clearTimeout(item.removeTimer);
+  });
   activeToasts.splice(0, activeToasts.length);
   app?.unmount();
   host?.remove();

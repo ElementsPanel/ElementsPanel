@@ -98,6 +98,22 @@ body::-webkit-scrollbar-track {
   color: var(--text-color) !important;
 }
 
+.vuetify-toast-content {
+  align-items: center;
+  display: flex;
+  min-width: 0;
+  width: 100%;
+}
+
+.vuetify-toast-icon {
+  flex: 0 0 auto;
+}
+
+.vuetify-toast-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 // Use one flat field treatment for every Vuetify input and select.
 .v-field {
   box-shadow: none !important;
