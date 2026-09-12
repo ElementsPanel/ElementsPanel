@@ -536,6 +536,6 @@ const createInstance = async () => {
 }
 
 .desktop-create-form { display: flex; flex-direction: column; gap: 8px; }
-.desktop-create-hint { color: var(--desktop-window-text-secondary, rgba(0, 0, 0, 0.6)); line-height: 1.5; }
+.desktop-create-hint { color: rgba(var(--v-theme-on-surface), 0.68); line-height: 1.5; }
 .desktop-create-switch { display: flex; align-items: center; justify-content: space-between; }
 </style>
