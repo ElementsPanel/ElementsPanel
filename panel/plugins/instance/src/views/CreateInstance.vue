@@ -25,6 +25,14 @@ import {
   VStepperWindowItem
 } from "vuetify/components";
 
+const props = defineProps<{
+  embedded?: boolean;
+}>();
+
+const emit = defineEmits<{
+  (event: "created", instanceUuid: string): void;
+}>();
+
 const step = ref(1);
 const createMethod = ref<QUICKSTART_METHOD | "">("");
 const daemonId = ref("");
@@ -84,6 +92,10 @@ const goBack = () => {
 const goToNodePage = () => router.push({ path: "/node" });
 
 const handleCreated = (instanceUuid: string) => {
+  if (props.embedded) {
+    emit("created", instanceUuid);
+    return;
+  }
   router.push({
     path: "/instances/terminal",
     query: {
@@ -95,7 +107,7 @@ const handleCreated = (instanceUuid: string) => {
 </script>
 
 <template>
-  <main class="create-instance-page">
+  <main class="create-instance-page" :class="{ 'create-instance-page--embedded': embedded }">
     <VContainer class="pa-0" fluid>
       <VCard class="create-instance-card" elevation="0" rounded="xl">
         <VCardText class="pa-0">
@@ -210,6 +222,12 @@ const handleCreated = (instanceUuid: string) => {
   padding: 0 24px 20px;
 }
 
+.create-instance-page--embedded {
+  max-width: none;
+  min-height: 100%;
+  padding: 0;
+}
+
 .create-instance-card {
   overflow: hidden;
   background: transparent;
@@ -217,7 +235,7 @@ const handleCreated = (instanceUuid: string) => {
 
 .step-heading p {
   margin: 6px 0 0;
-  color: rgba(var(--v-theme-on-surface), 0.68);
+  color: var(--desktop-window-text-secondary, rgba(var(--v-theme-on-surface), 0.68));
   line-height: 1.5;
 }
 
@@ -246,7 +264,7 @@ const handleCreated = (instanceUuid: string) => {
 
   h2 {
     margin: 0;
-    color: rgb(var(--v-theme-on-surface));
+    color: var(--desktop-window-text, rgb(var(--v-theme-on-surface)));
     font-size: 18px;
     font-weight: 600;
   }
@@ -265,13 +283,13 @@ const handleCreated = (instanceUuid: string) => {
 
 .method-card {
   border: 0 !important;
-  background-color: rgba(var(--v-theme-surface-variant), 0.72) !important;
+  background-color: var(--desktop-window-titlebar-bg, rgba(var(--v-theme-surface-variant), 0.72)) !important;
   box-shadow: none !important;
   transition: background-color 0.2s ease;
 
   &:hover {
     transform: none;
-    background-color: rgba(var(--v-theme-surface-variant), 0.88) !important;
+    background-color: var(--desktop-window-control-hover, rgba(var(--v-theme-surface-variant), 0.88)) !important;
     box-shadow: none !important;
   }
 
@@ -285,14 +303,14 @@ const handleCreated = (instanceUuid: string) => {
 
   h3 {
     margin: 18px 0 8px;
-    color: rgb(var(--v-theme-on-surface));
+    color: var(--desktop-window-text, rgb(var(--v-theme-on-surface)));
     font-size: 16px;
   }
 
   p {
     flex: 1;
     margin: 0;
-    color: rgba(var(--v-theme-on-surface), 0.68);
+    color: var(--desktop-window-text-secondary, rgba(var(--v-theme-on-surface), 0.68));
     font-size: 13px;
     line-height: 1.55;
     white-space: pre-line;
@@ -309,13 +327,13 @@ const handleCreated = (instanceUuid: string) => {
 
 .node-card {
   border: 0 !important;
-  background-color: rgba(var(--v-theme-surface-variant), 0.72) !important;
+  background-color: var(--desktop-window-titlebar-bg, rgba(var(--v-theme-surface-variant), 0.72)) !important;
   box-shadow: none !important;
   transition: background-color 0.2s ease;
 
   &:hover {
     transform: none;
-    background-color: rgba(var(--v-theme-surface-variant), 0.88) !important;
+    background-color: var(--desktop-window-control-hover, rgba(var(--v-theme-surface-variant), 0.88)) !important;
     box-shadow: none !important;
   }
 
@@ -336,7 +354,7 @@ const handleCreated = (instanceUuid: string) => {
   min-width: 0;
   align-items: center;
   gap: 8px;
-  color: rgb(var(--v-theme-on-surface));
+  color: var(--desktop-window-text, rgb(var(--v-theme-on-surface)));
   font-weight: 600;
   overflow-wrap: anywhere;
 }
@@ -346,7 +364,7 @@ const handleCreated = (instanceUuid: string) => {
   flex-direction: column;
   gap: 4px;
   margin-top: 14px;
-  color: rgba(var(--v-theme-on-surface), 0.68);
+  color: var(--desktop-window-text-secondary, rgba(var(--v-theme-on-surface), 0.68));
   font-size: 12px;
 }
 
@@ -373,6 +391,13 @@ const handleCreated = (instanceUuid: string) => {
   .step-content {
     padding-right: 16px;
     padding-left: 16px;
+  }
+}
+
+@media (min-width: 993px) {
+  .create-instance-page--embedded .step-content {
+    padding-right: 24px;
+    padding-left: 24px;
   }
 }
 </style>

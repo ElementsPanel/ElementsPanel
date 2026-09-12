@@ -999,8 +999,8 @@ const openNewInstanceWindow = () => {
         content: "new-instance",
         initialX: offsetX,
         initialY: offsetY,
-        initialWidth: 500,
-        initialHeight: 400
+        initialWidth: 900,
+        initialHeight: 680
     });
     saveDesktopLayout();
 };
