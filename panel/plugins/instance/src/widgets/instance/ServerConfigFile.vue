@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from "vue";
 import { t } from "@/lang/i18n";
-import type { LayoutCard } from "@/types";
 import { getConfigFile, updateConfigFile } from "@/services/apis/instance";
 import { message } from "@/tools/vuetifyToast";
-import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { toUnicode } from "@/tools/common";
 import Loading from "@/components/Loading.vue";
@@ -14,19 +12,16 @@ import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
 import { useKeyboardEvents } from "@/hooks/useKeyboardEvents";
 import { reportErrorMsg } from "@/tools/validator";
+import { useRoute } from "vue-router";
 import { VAlert, VBtn, VCol, VContainer, VRow } from "vuetify/components";
 
-const props = defineProps<{
-  card?: LayoutCard;
-}>();
-
-const { getMetaOrRouteValue } = useLayoutCardTools(props.card ?? ({ meta: {} } as LayoutCard));
-const instanceId = getMetaOrRouteValue("instanceId");
-const daemonId = getMetaOrRouteValue("daemonId");
-const configName = getMetaOrRouteValue("configName");
-const configPath = getMetaOrRouteValue("configPath");
-const extName = getMetaOrRouteValue("extName");
-const type = getMetaOrRouteValue("type");
+const route = useRoute();
+const instanceId = String(route.query.instanceId ?? "");
+const daemonId = String(route.query.daemonId ?? "");
+const configName = String(route.query.configName ?? "");
+const configPath = String(route.query.configPath ?? "");
+const extName = String(route.query.extName ?? "");
+const type = String(route.query.type ?? "");
 const isFailure = ref(false);
 const { toPage } = useAppRouters();
 const toConfigOverview = () => {

@@ -1,24 +1,21 @@
 <script setup lang="ts">
 import ActionButton from "@/components/ActionButton.vue";
 import CardPanel from "@/components/CardPanel.vue";
+import PageToolbar from "@/components/PageToolbar.vue";
 import Loading from "@/components/Loading.vue";
 import { useScreen } from "@/hooks/useScreen";
-import type { LayoutCard } from "@/types";
 import {
   QUICKSTART_ACTION_TYPE,
   QUICKSTART_METHOD,
   useQuickStartFlow
 } from "@/hooks/widgets/quickStartFlow";
+import { t } from "@/lang/i18n";
 import CreateInstanceForm from "./CreateInstanceForm.vue";
 import { useRoute } from "vue-router";
 import FadeUpAnimation from "@/components/FadeUpAnimation.vue";
-import { VCol, VIcon, VRow } from "vuetify/components";
+import { VCol, VContainer, VIcon, VRow } from "vuetify/components";
 const { isPhone } = useScreen();
 const route = useRoute();
-
-defineProps<{
-  card: LayoutCard;
-}>();
 
 const {
   formData,
@@ -63,9 +60,11 @@ const handleNext = (key: string) => {
 </script>
 
 <template>
-  <CardPanel class="card-wrapper" style="height: 100%">
-    <template #title>{{ card.title }}</template>
-    <template #body>
+  <main class="quickstart-page">
+    <VContainer fluid class="quickstart-page-container">
+      <PageToolbar :title="t('TXT_CODE_9b99b72e')" icon="mdi-rocket-launch-outline" />
+      <CardPanel class="card-wrapper">
+        <template #body>
       <div v-if="!isLoading" class="pd-24 h-100">
         <VRow v-if="isNormalStep" class="h-100" dense>
           <VCol v-if="!isPhone" lg="6">
@@ -112,11 +111,31 @@ const handleNext = (key: string) => {
       <div v-else class="loading flex-center w-100 h-100">
         <Loading />
       </div>
-    </template>
-  </CardPanel>
+      </template>
+    </CardPanel>
+    </VContainer>
+  </main>
 </template>
 
 <style lang="scss" scoped>
+.quickstart-page {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+.quickstart-page-container {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: 20px 24px 32px;
+}
+
+@media (max-width: 992px) {
+  .quickstart-page-container {
+    padding: 16px 12px 28px;
+  }
+}
+
 .card-wrapper {
   min-height: 500px;
 }

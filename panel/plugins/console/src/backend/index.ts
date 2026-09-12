@@ -1,14 +1,15 @@
-import Router from "@koa/router";
 import * as fs from "fs-extra";
 import path from "path";
 import { v4 } from "uuid";
-import { configureLayout, LayoutService } from "./layout";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
 
 const SAVE_DIR_PATH = "public/upload_files/";
 
 const DEFAULT_PAGE_TITLE = "ElementsPanel";
-const SETTINGS_PAGE = "__settings__";
+
+/** Where older panels kept the site appearance, before it moved to SystemConfig. */
+const LEGACY_LAYOUT_FILE = path.join(process.cwd(), "data", "layout.json");
+const LEGACY_SETTINGS_PAGE = "__settings__";
 
 type AppearanceValues = {
   pageTitle?: unknown;
@@ -16,55 +17,61 @@ type AppearanceValues = {
   backgroundImage?: unknown;
 };
 
-function readLayout(getLayout: () => string): IPageLayoutConfig[] {
-  const layout = JSON.parse(getLayout()) as unknown;
-  if (!Array.isArray(layout)) throw new Error("Invalid frontend layout configuration.");
-  return layout as IPageLayoutConfig[];
-}
+type AppearanceConfig = {
+  pageTitle?: string;
+  logoImage?: string;
+  backgroundImage?: string;
+};
 
-function settingsPage(layout: IPageLayoutConfig[]) {
-  let page = layout.find((item) => item.page === SETTINGS_PAGE);
-  if (!page) {
-    page = { page: SETTINGS_PAGE, items: [] };
-    layout.unshift(page);
-  }
-  return page;
-}
-
-function readAppearance(getLayout: () => string) {
-  const theme = settingsPage(readLayout(getLayout)).theme;
+function readAppearance(config: AppearanceConfig) {
   return {
-    pageTitle: theme?.pageTitle || DEFAULT_PAGE_TITLE,
-    logoImage: theme?.logoImage || "",
-    backgroundImage: theme?.backgroundImage || ""
+    pageTitle: config.pageTitle || DEFAULT_PAGE_TITLE,
+    logoImage: config.logoImage || "",
+    backgroundImage: config.backgroundImage || ""
   };
 }
 
-function writeAppearance(
-  values: AppearanceValues,
-  getLayout: () => string,
-  setLayout: (config: IPageLayoutConfig[]) => void
-) {
-  const layout = readLayout(getLayout);
-  const page = settingsPage(layout);
-  const current = page.theme ?? {
-    pageTitle: DEFAULT_PAGE_TITLE,
-    logoImage: "",
-    backgroundImage: ""
-  };
+function writeAppearance(values: AppearanceValues, config: AppearanceConfig, save: () => void) {
   // `null` is sent by the clearable Vuetify input when an image is removed.
   // Only an omitted field should fall back to the persisted value; treating
-  // null as missing writes the old image straight back into the layout.
+  // null as missing writes the old image straight back.
   const valueOrCurrent = (value: unknown, currentValue: unknown) =>
     value === undefined ? currentValue : value;
-  page.theme = {
-    pageTitle: String(
-      valueOrCurrent(values.pageTitle, current.pageTitle ?? DEFAULT_PAGE_TITLE)
-    ).trim() || DEFAULT_PAGE_TITLE,
-    logoImage: String(valueOrCurrent(values.logoImage, current.logoImage) ?? ""),
-    backgroundImage: String(valueOrCurrent(values.backgroundImage, current.backgroundImage) ?? "")
-  };
-  setLayout(layout);
+  config.pageTitle =
+    String(valueOrCurrent(values.pageTitle, config.pageTitle ?? DEFAULT_PAGE_TITLE)).trim() ||
+    DEFAULT_PAGE_TITLE;
+  config.logoImage = String(valueOrCurrent(values.logoImage, config.logoImage) ?? "");
+  config.backgroundImage = String(
+    valueOrCurrent(values.backgroundImage, config.backgroundImage) ?? ""
+  );
+  save();
+}
+
+/**
+ * Site appearance used to live inside `data/layout.json` under the
+ * `__settings__` pseudo page. It now belongs to SystemConfig; copy any saved
+ * values over once so the title, logo and background survive the change.
+ */
+function migrateLegacyAppearance(config: AppearanceConfig, save: () => void) {
+  const customized =
+    (config.pageTitle && config.pageTitle !== DEFAULT_PAGE_TITLE) ||
+    config.logoImage ||
+    config.backgroundImage;
+  if (customized) return;
+  try {
+    if (!fs.existsSync(LEGACY_LAYOUT_FILE)) return;
+    const layout = JSON.parse(fs.readFileSync(LEGACY_LAYOUT_FILE, "utf8")) as unknown;
+    if (!Array.isArray(layout)) return;
+    const page = layout.find((item: any) => item?.page === LEGACY_SETTINGS_PAGE);
+    const theme = page?.theme as AppearanceValues | undefined;
+    if (!theme) return;
+    if (theme.pageTitle) config.pageTitle = String(theme.pageTitle);
+    if (theme.logoImage) config.logoImage = String(theme.logoImage);
+    if (theme.backgroundImage) config.backgroundImage = String(theme.backgroundImage);
+    save();
+  } catch (error) {
+    console.error("Failed to migrate legacy appearance settings:", error);
+  }
 }
 
 function isSafeFileName(fileName: string) {
@@ -72,28 +79,23 @@ function isSafeFileName(fileName: string) {
 }
 
 /**
- * The console owns the browser shell's appearance and its layout asset routes.
- * The layout service itself remains shared with feature plugins because default
- * layouts include cards contributed by those plugins.
+ * The console owns the browser shell's appearance and its shared asset route.
  */
 export const inject = [
   "koa",
   "i18n",
   "middleware",
   "roles",
-  "globals"
+  "globals",
+  "settings"
 ];
 
 export function apply(ctx: PanelPluginContext) {
-  configureLayout(ctx);
-  ctx.plugin(LayoutService);
-  const getLayout = () => {
-    const layout = ctx.get("layout");
-    if (!layout) throw new Error("Panel layout service is unavailable.");
-    return layout;
-  };
   const $t = ctx.i18n.$t;
   const requireAdmin = ctx.middleware.permission({ level: ctx.roles.ADMIN });
+  const settings = ctx.settings;
+
+  migrateLegacyAppearance(settings.config, () => settings.save());
 
   ctx.inject(["settingsForm"], (settingsCtx) => settingsCtx.settingsForm.declare({
     fields: () => [
@@ -116,33 +118,17 @@ export function apply(ctx: PanelPluginContext) {
         title: $t("TXT_CODE_8ae0dc90"),
         description: `${$t("TXT_CODE_434786c9")} ${$t("TXT_CODE_cf95364f")}`,
         fileUpload: true
-      },
-      {
-        type: "link",
-        title: $t("TXT_CODE_bc46c15b"),
-        route: "/console/design"
       }
     ],
-    read: () => readAppearance(() => getLayout().get()),
-    write: (values) =>
-      writeAppearance(values, () => getLayout().get(), (config) => getLayout().set(config))
+    read: () => readAppearance(settings.config),
+    write: (values) => writeAppearance(values, settings.config, () => settings.save())
   }));
 
   const router = ctx.koa.router("/api/overview");
 
-  // The frontend shell reads layout before authentication is restored.
-  router.get("/layout", async (requestCtx) => {
-    requestCtx.body = getLayout().get();
-  });
-
-  router.post("/layout", requireAdmin, async (requestCtx) => {
-    getLayout().set(requestCtx.request.body as IPageLayoutConfig[]);
-    requestCtx.body = true;
-  });
-
-  router.delete("/layout", requireAdmin, async (requestCtx) => {
-    getLayout().reset();
-    requestCtx.body = true;
+  // The frontend shell reads the appearance before authentication is restored.
+  router.get("/appearance", async (requestCtx) => {
+    requestCtx.body = readAppearance(settings.config);
   });
 
   router.post("/upload_assets", requireAdmin, async (requestCtx) => {

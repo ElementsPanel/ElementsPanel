@@ -2,7 +2,7 @@
 import { useHeaderMenus } from "@/hooks/useHeaderMenus";
 import { useScreen } from "@/hooks/useScreen";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
-import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
+import { useUiStore } from "@/stores/useUiStore";
 import {
   VBtn,
   VDialog,
@@ -17,7 +17,7 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
-const { containerState } = useLayoutContainerStore();
+const { uiState } = useUiStore();
 const { isSidebarOpen, logoImage, toggleSidebar, useSidebarLayout } = useAppConfigStore();
 
 const { menus, appMenus, handleToPage } = useHeaderMenus();
@@ -42,7 +42,7 @@ const isRouteActive = (path: string): boolean => {
 const { isPhone } = useScreen();
 
 const openPhoneMenu = (b = false) => {
-  containerState.showPhoneMenu = b;
+  uiState.showPhoneMenu = b;
 };
 </script>
 
@@ -195,7 +195,7 @@ const openPhoneMenu = (b = false) => {
   </VToolbar>
 
   <VDialog
-    v-model="containerState.showPhoneMenu"
+    v-model="uiState.showPhoneMenu"
     class="phone-menu-dialog"
     max-width="500"
     location="top"

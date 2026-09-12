@@ -4,7 +4,7 @@ import FadeUpAnimation from "@/components/FadeUpAnimation.vue";
 import PageToolbar from "@/components/PageToolbar.vue";
 import { router } from "@/config/router";
 import { t } from "@/lang/i18n";
-import { uploadFile } from "@/services/apis/layout";
+import { uploadFile } from "@/services/apis/upload";
 import { useAppToolsStore } from "@/stores/useAppToolsStore";
 import { filterEmptyFields } from "@/tools/object";
 import { reportErrorMsg } from "@/tools/validator";

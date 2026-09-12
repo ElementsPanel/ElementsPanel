@@ -4,8 +4,8 @@ import logoB from "@/assets/logo_b.svg";
 import { getCurrentLang, setLanguage } from "@/lang/i18n";
 import { AppTheme, THEME_AUTO_MIGRATED_KEY, THEME_KEY } from "@/types/const";
 import { createGlobalState, useBreakpoints, useLocalStorage, usePreferredDark } from "@vueuse/core";
+import { getAppearance } from "@/services/apis/appearance";
 import { computed, onMounted, reactive, ref, watch } from "vue";
-import { useLayoutConfigStore } from "./useLayoutConfig";
 
 /**
  * Older builds defaulted to LIGHT and wrote that value on the very first visit,
@@ -29,7 +29,6 @@ migrateLegacyLightDefault();
 
 export const useAppConfigStore = createGlobalState(() => {
   const isPreferredDark = usePreferredDark();
-  const { getSettingsConfig } = useLayoutConfigStore();
 
   const appConfig = reactive({
     logoImage: "" as string
@@ -125,8 +124,8 @@ export const useAppConfigStore = createGlobalState(() => {
     };
     fn[currentTheme.value]?.();
 
-    const frontendSettings = await getSettingsConfig();
-    setBackgroundImage(frontendSettings?.theme?.backgroundImage || "");
+    const { value: appearance } = await getAppearance().execute();
+    setBackgroundImage(appearance?.backgroundImage || "");
   };
 
   const setTheme = (t: AppTheme) => {
@@ -156,12 +155,12 @@ export const useAppConfigStore = createGlobalState(() => {
 
   onMounted(async () => {
     try {
-      const settingsConfig = await getSettingsConfig();
-      if (settingsConfig?.theme?.logoImage) {
-        setLogoImage(settingsConfig.theme.logoImage);
+      const { value: appearance } = await getAppearance().execute();
+      if (appearance?.logoImage) {
+        setLogoImage(appearance.logoImage);
       }
     } catch (error) {
-      console.error("Failed to load settings config:", error);
+      console.error("Failed to load appearance settings:", error);
     }
   });
 

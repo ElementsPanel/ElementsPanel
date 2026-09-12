@@ -3,7 +3,7 @@
  *
  * A plugin exports `apply(ctx)` and, optionally, `inject`. Everything it
  * contributes is an effect of its own scope, so unloading it undoes its routes,
- * cards, menus, actions and translations with no cleanup code of its own.
+ * menus, actions and translations with no cleanup code of its own.
  *
  * ```ts
  * import type { PanelFrontendPluginContext } from "@/plugin";
@@ -12,7 +12,7 @@
  *
  * export function apply(ctx: PanelFrontendPluginContext) {
  *   ctx.i18n.define(localeMessages);
- *   ctx.ui.layoutCard("ExampleCard", ExampleCard);
+ *   ctx.ui.component("ExampleWidget", ExampleWidget);
  *   ctx.routes.add({ path: "/example", component: ExamplePage });
  * }
  * ```

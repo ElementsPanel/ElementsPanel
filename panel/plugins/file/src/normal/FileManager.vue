@@ -8,7 +8,6 @@ import { t } from "@/lang/i18n";
 import uploadService from "../services/uploadService";
 import { filterFileName, getFileExtName, isCompressFile } from "../tools/fileManager";
 import { convertFileSize } from "@/tools/fileSize";
-import type { LayoutCard } from "@/types";
 import type { DataType } from "@/types/fileManager";
 import dayjs from "dayjs";
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
@@ -42,14 +41,10 @@ import {
 } from "vuetify/components";
 import FileEditor from "./FileEditor.vue";
 
-const props = defineProps<{
-  card?: LayoutCard;
-}>();
-
 const route = useRoute();
-const instanceId = String(props.card?.meta?.instanceId ?? route.query.instanceId ?? "");
-const daemonId = String(props.card?.meta?.daemonId ?? route.query.daemonId ?? "");
-const pageTitle = computed(() => props.card?.title || t("TXT_CODE_ae533703"));
+const instanceId = String(route.query.instanceId ?? "");
+const daemonId = String(route.query.daemonId ?? "");
+const pageTitle = computed(() => t("TXT_CODE_ae533703"));
 
 const { isPhone } = useScreen();
 

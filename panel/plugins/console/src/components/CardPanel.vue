@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
-
 const props = defineProps({
   fullHeight: {
     type: Boolean,
@@ -11,8 +9,6 @@ const props = defineProps({
     default: true
   }
 });
-
-const { containerState } = useLayoutContainerStore();
 </script>
 
 <template>
@@ -33,13 +29,11 @@ const { containerState } = useLayoutContainerStore();
       <div>
         <span>
           <slot name="operator"></slot>
-          <slot v-if="containerState.isDesignMode" name="operator-design"></slot>
         </span>
       </div>
     </div>
     <div class="card-panel-content">
       <slot name="body"></slot>
-      <slot v-if="containerState.isDesignMode" name="body-design"></slot>
     </div>
   </div>
 </template>

@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { t } from "@/lang/i18n";
 import { message } from "@/tools/vuetifyToast";
-import { uploadFile } from "@/services/apis/layout";
+import { uploadFile } from "@/services/apis/upload";
 import { reportErrorMsg } from "@/tools/validator";
 import {
   VBtn,

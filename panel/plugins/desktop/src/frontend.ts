@@ -1,7 +1,6 @@
 import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugin";
 import { useAppStateStore } from "@/stores/useAppStateStore";
-import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import DesktopPage from "./Desktop.vue";
 import DesktopWindow from "./widgets/desktop/DesktopWindow.vue";
 import { localeMessages } from "./i18n";
@@ -51,8 +50,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
     click: openDesktop,
     conditions: () => {
       const { isLogged } = useAppStateStore();
-      const { containerState } = useLayoutContainerStore();
-      return !containerState.isDesignMode && isLogged.value;
+      return isLogged.value;
     },
     onlyPC: true
   });

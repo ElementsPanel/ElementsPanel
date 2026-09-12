@@ -6,12 +6,11 @@ import DesktopLoginWindow from "./desktop/DesktopLoginWindow.vue";
 import DesktopUserInfo from "./desktop/DesktopUserInfo.vue";
 import DesktopUsers from "./desktop/DesktopUsers.vue";
 import { localeMessages } from "./i18n";
+import CustomerPage from "./views/CustomerPage.vue";
 import LoginPage from "./views/Login.vue";
 import SsoBindLogin from "./views/SsoBindLogin.vue";
 import UserAccessSettings from "./widgets/AccessSettings.vue";
-import UserInstanceList from "./widgets/UserInstanceList.vue";
 import UserList from "./widgets/UserList.vue";
-import UserStatusBlock from "./widgets/UserStatusBlock.vue";
 
 const ROLE_ADMIN = 10;
 const ROLE_USER = 1;
@@ -36,8 +35,6 @@ export function apply(ctx: PanelFrontendPluginContext) {
   // Authentication settings are declared by this plugin's backend, so the plugin
   // manager renders them and this half contributes no form.
 
-  ctx.ui.layoutCard("UserStatusBlock", UserStatusBlock);
-  ctx.ui.layoutCard("UserInstanceList", UserInstanceList);
   ctx.ui.globalComponent(MyselfInfoDialog);
 
   ctx.routes.add({
@@ -58,6 +55,13 @@ export function apply(ctx: PanelFrontendPluginContext) {
       permission: ROLE_GUEST,
       mainMenu: false
     }
+  });
+
+  ctx.routes.add({
+    path: "/customer",
+    name: t("TXT_CODE_ec299306"),
+    component: CustomerPage,
+    meta: { permission: ROLE_USER, mainMenu: true, icon: "mdi-account-outline" }
   });
 
   ctx.routes.add({

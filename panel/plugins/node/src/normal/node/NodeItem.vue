@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { GLOBAL_INSTANCE_UUID } from "@/config/const";
 import { useAppRouters } from "@/hooks/useAppRouters";
-import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useOverviewInfo, type ComputedNodeInfo } from "@/hooks/useOverviewInfo";
 import { SocketStatus, useSocketIoClient } from "@/hooks/useSocketIo";
 import { t } from "@/lang/i18n";
 import { arrayFilter } from "@/tools/array";
 import { reportErrorMsg } from "@/tools/validator";
 import { hasVersionUpdate } from "@/tools/version";
-import type { LayoutCard } from "@/types";
 import { message } from "@/tools/vuetifyToast";
 import { computed, onMounted, ref } from "vue";
 import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VCol, VIcon, VRow, VTooltip } from "vuetify/components";
@@ -22,7 +20,6 @@ const nodeDetailDialog = ref<InstanceType<typeof NodeDetailDialog>>();
 
 const props = defineProps<{
   item?: ComputedNodeInfo;
-  card?: LayoutCard;
 }>();
 
 const { state: AllDaemonData } = useOverviewInfo();
@@ -36,14 +33,6 @@ const remoteNode = computed(() => {
   });
   return myDaemon ?? props.item;
 });
-
-if (props.card) {
-  const { getMetaOrRouteValue } = useLayoutCardTools(props.card);
-  const daemonId = getMetaOrRouteValue("daemonId");
-  if (daemonId) {
-    itemDaemonId.value = daemonId;
-  }
-}
 
 const tryConnectNode = async (uuid: string, showMsg = true) => {
   const { execute } = connectNode();

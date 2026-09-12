@@ -4,14 +4,11 @@
 
 - `/api/mod/*`, including Modrinth, CurseForge and SpigotMC searches;
 - the frontend `ctx.mod.api` service;
-- `/instances/terminal/mods` and the `InstanceModManager` layout card;
+- the `/instances/terminal/mods` page;
 - the `mod-manager` instance action in normal and Desktop modes;
 - the feature's translations in all twelve panel locales.
 
 The backend injects `koa`, `i18n`, `remote`, `middleware`, `roles` and `identity`.
-It registers its default page through the optional `layout.provide()` service.
-Existing customized layouts take precedence. A frontend page opened immediately
-after enabling the plugin also has a fallback for a layout cached before enablement.
 
 The frontend injects the console registries, `instance` and `file`. It resolves
 Desktop dialogs through `ctx.desktop.window`; it imports no Desktop implementation.
@@ -26,8 +23,8 @@ unload behavior.
 
 Each activation creates its own search service. Cordis cancels cache timers and
 retry delays on unload; an effect aborts pending HTTP requests and clears caches.
-Routes, page defaults, actions, cards, services and translations leave with the
-owning scope. The instance and desktop plugins contain no mod API calls or mod UI.
+Routes, actions, services and translations leave with the owning scope. The
+instance and desktop plugins contain no mod API calls or mod UI.
 
 Run the regression checks from the repository root after installing panel,
 daemon and frontend dependencies (installation can use `--ignore-scripts`):

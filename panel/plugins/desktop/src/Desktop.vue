@@ -11,7 +11,7 @@ import {
 import type { FrontendFileManagerService, FrontendUserService } from "@/plugin";
 import { logoutUser } from "@/services/apis/index";
 import { useAppStateStore } from "@/stores/useAppStateStore";
-import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
+import { getAppearance } from "@/services/apis/appearance";
 import DesktopContextMenu from "./widgets/desktop/DesktopContextMenu.vue";
 import type { ContextMenuItem } from "./widgets/desktop/DesktopContextMenu.vue";
 import DesktopEventConfig from "./widgets/desktop/DesktopEventConfig.vue";
@@ -84,7 +84,6 @@ const desktopStartMenuAvatar = computed(() => user.value?.desktopStartMenuAvatar
 const fileManager = computed(() => usePluginService<FrontendFileManagerService>("file"));
 const desktopFileEditorWindow = computed(() => fileManager.value?.DesktopFileEditor);
 const desktopImageViewerWindow = computed(() => fileManager.value?.DesktopImageViewer);
-const { getSettingsConfig } = useLayoutConfigStore();
 const { isDarkTheme } = useAppConfigStore();
 
 //閳光偓閳光偓閳光偓 Wallpaper 閳光偓閳光偓閳光偓
@@ -112,9 +111,9 @@ const wallpaperStyle = computed<CSSProperties>(() => {
 
 onMounted(async () => {
     try {
-        const settings = await getSettingsConfig();
-        if (settings?.theme?.backgroundImage) {
-            backgroundImageUrl.value = settings.theme.backgroundImage;
+        const { value: appearance } = await getAppearance().execute();
+        if (appearance?.backgroundImage) {
+            backgroundImageUrl.value = appearance.backgroundImage;
         }
     } catch (e) {
         // Silently ignore

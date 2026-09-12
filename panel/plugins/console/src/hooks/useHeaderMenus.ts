@@ -6,10 +6,9 @@ import { logoutUser } from "@/services/apis/index";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useAppToolsStore } from "@/stores/useAppToolsStore";
-import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
-import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
+import { useUiStore } from "@/stores/useUiStore";
 import { AppTheme } from "@/types/const";
-import { message, notification } from "@/tools/vuetifyToast";
+import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import type { Component } from "vue";
 import { computed } from "vue";
@@ -24,15 +23,10 @@ export type SidebarRouteEntry = {
 };
 
 const mdiIconMap: Record<string, string> = {
-  AppstoreAddOutlined: "mdi-view-grid-plus",
   BgColorsOutlined: "mdi-palette-outline",
-  BuildOutlined: "mdi-hammer-wrench",
-  CloseCircleOutlined: "mdi-close-circle-outline",
   DesktopOutlined: "mdi-monitor",
   GithubFilled: "mdi-github",
   LogoutOutlined: "mdi-logout",
-  RedoOutlined: "mdi-restore",
-  SaveOutlined: "mdi-content-save-outline",
   UserOutlined: "mdi-account-outline"
 };
 
@@ -51,18 +45,14 @@ const getMdiIcon = (icon: unknown, title?: string): string => {
 };
 
 export function useHeaderMenus() {
-  const { saveGlobalLayoutConfig, resetGlobalLayoutConfig } = useLayoutConfigStore();
-  const { containerState, changeDesignMode } = useLayoutContainerStore();
   const { toPage } = useAppRouters();
   const { setTheme } = useAppConfigStore();
+  const { uiState } = useUiStore();
   const { state: appTools } = useAppToolsStore();
-  const { isAdmin, state: appState, isLogged, authEnabled } = useAppStateStore();
-  const openNewCardDialog = (): void => {
-    containerState.showNewCardDialog = true;
-  };
+  const { state: appState, isAdmin, isLogged, authEnabled } = useAppStateStore();
 
   const handleToPage = (url: string) => {
-    containerState.showPhoneMenu = false;
+    uiState.showPhoneMenu = false;
     toPage({ path: url });
   };
 
@@ -80,11 +70,8 @@ export function useHeaderMenus() {
         if (metaInfo.condition && !metaInfo.condition()) {
           return false;
         }
-        if (containerState.isDesignMode) {
-          return metaInfo.onlyDisplayEditMode || metaInfo.mainMenu;
-        }
         if (isAdmin.value) {
-          return metaInfo.mainMenu === true && metaInfo.onlyDisplayEditMode !== true;
+          return metaInfo.mainMenu === true;
         }
         return (
           metaInfo.mainMenu === true &&
@@ -112,78 +99,6 @@ export function useHeaderMenus() {
         click: onClickIcon
       },
       {
-        title: t("TXT_CODE_8b0f8aab"),
-        icon: "mdi-view-grid-plus",
-        mdiIcon: "mdi-view-grid-plus",
-        click: openNewCardDialog,
-        conditions: containerState.isDesignMode,
-        onlyPC: true
-      },
-      {
-        title: t("TXT_CODE_8145d82"),
-        icon: "mdi-content-save-outline",
-        mdiIcon: "mdi-content-save-outline",
-        click: async () => {
-          Modal.confirm({
-            title: t("TXT_CODE_d73c8510"),
-            content: t("TXT_CODE_6d9b9f22"),
-            async onOk() {
-              changeDesignMode(false);
-              await saveGlobalLayoutConfig();
-              notification.success({
-                placement: "top",
-                message: t("TXT_CODE_47c35915"),
-                description: t("TXT_CODE_e10c992a")
-              });
-              setTimeout(() => window.location.reload(), 400);
-            }
-          });
-        },
-        conditions: containerState.isDesignMode,
-        onlyPC: true,
-        customClass: ["nav-button-success"]
-      },
-      {
-        title: t("TXT_CODE_5b5d6f04"),
-        icon: "mdi-close-circle-outline",
-        mdiIcon: "mdi-close-circle-outline",
-        click: async () => {
-          Modal.confirm({
-            title: t("TXT_CODE_8f20c21c"),
-            content: t("TXT_CODE_9740f199"),
-            async onOk() {
-              window.location.reload();
-            }
-          });
-        },
-        conditions: containerState.isDesignMode,
-        onlyPC: true,
-        customClass: ["nav-button-warning"]
-      },
-      {
-        title: t("TXT_CODE_abd2f7e1"),
-        icon: "mdi-restore",
-        mdiIcon: "mdi-restore",
-        click: async () => {
-          Modal.confirm({
-            title: t("TXT_CODE_74fa2f73"),
-            content: t("TXT_CODE_f63bfe78"),
-            async onOk() {
-              await resetGlobalLayoutConfig();
-              notification.success({
-                placement: "top",
-                message: t("TXT_CODE_15c6d4eb"),
-                description: t("TXT_CODE_e10c992a")
-              });
-              setTimeout(() => window.location.reload(), 400);
-            }
-          });
-        },
-        conditions: containerState.isDesignMode,
-        onlyPC: true,
-        customClass: ["nav-button-danger"]
-      },
-      {
         title: t("TXT_CODE_5d88a9b"),
         leftSideTitle: t("TXT_CODE_ee01c10c"),
         icon: "mdi-palette-outline",
@@ -191,7 +106,6 @@ export function useHeaderMenus() {
         click: (key: string) => {
           setTheme(Number(key) as AppTheme);
         },
-        conditions: !containerState.isDesignMode,
         onlyPC: false,
         menus: [
           { value: AppTheme.AUTO, title: t("TXT_CODE_dc8de4ff") },
@@ -200,36 +114,13 @@ export function useHeaderMenus() {
         ]
       },
       {
-        title: t("TXT_CODE_ebd2a6a1"),
-        leftSideTitle: t("TXT_CODE_4eb158da"),
-        icon: "mdi-hammer-wrench",
-        mdiIcon: "mdi-hammer-wrench",
-        click: (): void => {
-          Modal.confirm({
-            title: t("TXT_CODE_29e85f34"),
-            content: t("TXT_CODE_f18f65db"),
-            async onOk() {
-              changeDesignMode(true);
-              notification.warning({
-                placement: "top",
-                type: "warning",
-                message: t("TXT_CODE_7b1adf35"),
-                description: t("TXT_CODE_6b6f1d3")
-              });
-            }
-          });
-        },
-        conditions: !containerState.isDesignMode && isAdmin.value,
-        onlyPC: true
-      },
-      {
         title: t("TXT_CODE_8c3164c9"),
         icon: "mdi-account-outline",
         mdiIcon: "mdi-account-outline",
         click: () => {
           appTools.showUserInfoDialog = true;
         },
-        conditions: !containerState.isDesignMode && authEnabled.value && isLogged.value,
+        conditions: authEnabled.value && isLogged.value,
         onlyPC: false
       },
       {
@@ -248,7 +139,7 @@ export function useHeaderMenus() {
         },
         customClass: ["nav-button-danger"],
         // Nothing to log out of when the "user" plugin is absent.
-        conditions: !containerState.isDesignMode && authEnabled.value && isLogged.value,
+        conditions: authEnabled.value && isLogged.value,
         onlyPC: false
       }
     ];

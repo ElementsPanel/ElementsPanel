@@ -45,4 +45,9 @@ export default class SystemConfig {
   sslPemPath = "";
   // SSL private key file path (.key)
   sslKeyPath = "";
+
+  // Site appearance (edited on the plugin config page, read by the shell)
+  pageTitle = "ElementsPanel";
+  logoImage = "";
+  backgroundImage = "";
 }

@@ -58,9 +58,6 @@ function registrar(Service, name) {
     define(value) {
       return this.add(value);
     }
-    layoutCard(name, component) {
-      return this.add({ name, component });
-    }
     instance(value) {
       return this.add(value);
     }
@@ -68,20 +65,6 @@ function registrar(Service, name) {
       return key;
     }
   };
-}
-
-function layoutService() {
-  let stored;
-  return load("panel/plugins/console/src/backend/layout.ts", {
-    "fs-extra": {
-      existsSync: (filename) => filename.endsWith("layout.json") && stored !== undefined,
-      readFileSync: () => stored,
-      ensureDirSync() {},
-      writeFileSync: (_filename, data) => {
-        stored = data;
-      }
-    }
-  }).LayoutService;
 }
 
 async function panelFixture(t) {
@@ -93,7 +76,6 @@ async function panelFixture(t) {
   const { KoaService } = load("panel/plugins/server/src/backend/koa.ts");
   ctx.plugin(KoaService, app);
   ctx.plugin(registrar(Service, "i18n"));
-  ctx.plugin(layoutService());
   const policy = { canFileManager: true, allowed: true };
   ctx.set("roles", { USER: 1 });
   ctx.set("identity", {
@@ -156,7 +138,7 @@ async function panelFixture(t) {
   return { ctx, fork, policy, remote, calls, network, request };
 }
 
-test("panel routes, translations, layout and timers follow dependency lifetime", async (t) => {
+test("panel routes, translations and timers follow dependency lifetime", async (t) => {
   const clear = t.mock.method(global, "clearInterval");
   const fixture = await panelFixture(t);
   const { ctx, fork, remote, network, request } = fixture;
@@ -169,18 +151,10 @@ test("panel routes, translations, layout and timers follow dependency lifetime",
   assert.deepEqual((await request("/api/mod/mc_versions")).body, ["1.21.1"]);
   assert.deepEqual((await request("/api/mod/mc_versions")).body, ["1.21.1"]);
   assert.equal(network.length, 1, "version requests use the plugin cache");
-  assert.equal(
-    JSON.parse(ctx.layout.get()).some((page) => page.page.endsWith("/mods")),
-    true
-  );
 
   remoteFork.dispose();
   await until(() => ctx.i18n.items.size === 0);
   assert.equal((await request("/api/mod/list")).body, undefined);
-  assert.equal(
-    JSON.parse(ctx.layout.get()).some((page) => page.page.endsWith("/mods")),
-    false
-  );
   assert.equal(network[0].signal.aborted, true);
   assert.equal(clear.mock.calls.length, 1, "unload clears the daily cache timer");
 
@@ -229,32 +203,6 @@ test("panel mod API preserves authorization, validation and daemon event names",
   });
   assert.equal(unsafe.status, 400);
   assert.equal(calls.length, 1);
-});
-
-test("plugin layout defaults preserve saved customization and do not persist themselves", async (t) => {
-  const { Context } = panelRequire("cordis");
-  const ctx = new Context();
-  t.after(() => ctx.stop());
-  ctx.plugin(layoutService());
-  await ctx.start();
-  ctx.layout.set([{ page: "/custom", items: [] }]);
-  const plugin = ctx.plugin({
-    inject: ["layout"],
-    apply: (scoped) => {
-      scoped.layout.provide(() => ({ page: "/mod", items: [] }));
-    }
-  });
-  await settle();
-  assert.deepEqual(
-    JSON.parse(ctx.layout.get()).map((page) => page.page),
-    ["/custom", "/mod"]
-  );
-  plugin.dispose();
-  await settle();
-  assert.deepEqual(
-    JSON.parse(ctx.layout.get()).map((page) => page.page),
-    ["/custom"]
-  );
 });
 
 function temporaryDirectory(t) {
@@ -386,12 +334,10 @@ test("frontend registration and feature gating follow the mod and file plugin li
   const plugin = load("panel/plugins/mod/src/frontend.ts", {
     "@/lang/i18n": { t: (key) => key },
     "@/stores/useAppStateStore": { useAppStateStore: () => user },
-    "@/views/LayoutContainer.vue": component,
     "./api": { modListApi() {} },
     "./desktop/DesktopModManager.vue": component,
     "./normal/ModManager.vue": component,
-    "./normal/ModManagerAction.vue": component,
-    "./normal/ModManagerPage.vue": component
+    "./normal/ModManagerAction.vue": component
   });
   ctx.plugin({ ...plugin, name: "mod" });
   await ctx.start();
@@ -412,7 +358,6 @@ test("frontend registration and feature gating follow the mod and file plugin li
   user.isAdmin.value = true;
   assert.equal(action.condition(state), true);
   assert.equal([...ctx.routes.items][0].path, "/instances/terminal/mods");
-  assert.equal([...ctx.ui.items][0].name, "InstanceModManager");
   fileFork.dispose();
   await until(() => ctx.get("mod") === undefined);
   for (const name of ["i18n", "routes", "ui", "actions"]) assert.equal(ctx.get(name).items.size, 0);
@@ -443,31 +388,6 @@ test("every panel locale includes the same nonempty mod translations", () => {
       assert.ok(messages[key].length > 0, `${locale}: ${key}`);
     }
   }
-});
-
-test("live-enabled mod page renders a fallback while preserving existing custom layouts", async () => {
-  const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
-  const vue = frontendRequire("vue");
-  const { parse, compileScript } = frontendRequire("@vue/compiler-sfc");
-  const { renderToString } = frontendRequire("@vue/server-renderer");
-  const filename = "panel/plugins/mod/src/normal/ModManagerPage.vue";
-  const { descriptor } = parse(fs.readFileSync(path.join(root, filename), "utf8"));
-  const compiled = compileScript(descriptor, { id: "mod-page-test", inlineTemplate: true });
-  const globalLayoutConfig = vue.ref([]);
-  const page = load(
-    filename,
-    {
-      vue,
-      "@/lang/i18n": { t: (key) => key },
-      "@/stores/useLayoutConfig": { useLayoutConfigStore: () => ({ globalLayoutConfig }) },
-      "@/views/LayoutContainer.vue": { render: () => vue.h("p", "saved-layout") },
-      "./ModManager.vue": { props: ["card"], setup: (props) => () => vue.h("p", props.card.type) }
-    },
-    compiled.content
-  ).default;
-  assert.match(await renderToString(vue.createSSRApp(page)), /InstanceModManager/);
-  globalLayoutConfig.value.push({ page: "/instances/terminal/mods", items: [] });
-  assert.match(await renderToString(vue.createSSRApp(page)), /saved-layout/);
 });
 
 test("legacy mod windows restore under the action ID without losing layout or opening duplicates", () => {

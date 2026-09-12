@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import PageToolbar from "@/components/PageToolbar.vue";
 import { useAppRouters } from "@/hooks/useAppRouters";
-import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useSchedule } from "@/hooks/useSchedule";
 import { t as $t, t } from "@/lang/i18n";
 import { ctx } from "@/plugin/context";
 import { padZero } from "@/tools/common";
 import { ScheduleActionType, ScheduleCreateType, ScheduleType } from "@/types/const";
-import type { LayoutCard, Schedule } from "@/types/index";
+import type { Schedule } from "@/types/index";
 import { message } from "@/tools/vuetifyToast";
 import { computed, onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
 import {
   VBtn,
   VCard,
@@ -22,21 +22,16 @@ import {
 } from "vuetify/components";
 import NewSchedule from "./dialogs/NewSchedule.vue";
 
-const props = defineProps<{
-  card?: LayoutCard;
-}>();
-
-const card = props.card ?? ({ meta: {} } as LayoutCard);
-const { getMetaOrRouteValue } = useLayoutCardTools(card);
-const instanceId = getMetaOrRouteValue("instanceId", false);
-const daemonId = getMetaOrRouteValue("daemonId", false);
-const pageTitle = computed(() => props.card?.title || t("TXT_CODE_b7d026f8"));
+const route = useRoute();
+const instanceId = String(route.query.instanceId ?? "");
+const daemonId = String(route.query.daemonId ?? "");
+const pageTitle = computed(() => t("TXT_CODE_b7d026f8"));
 const { toPage } = useAppRouters();
 const scheduleDialogOpen = ref(false);
 const scheduleDialogTask = ref<Schedule>();
 const { getScheduleList, schedules, scheduleListLoading, deleteSchedule } = useSchedule(
-  String(instanceId ?? ""),
-  String(daemonId ?? "")
+  instanceId,
+  daemonId
 );
 
 const scheduleActionTypes = computed(() => {

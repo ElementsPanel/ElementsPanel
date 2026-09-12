@@ -6,21 +6,16 @@ import { Modal } from "@/tools/vuetifyModal";
 import CardPanel from "@/components/CardPanel.vue";
 import PageToolbar from "@/components/PageToolbar.vue";
 import { arrayFilter } from "@/tools/array";
-import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { imageList, containerList } from "@/services/apis/envImage";
-import type { LayoutCard, ImageInfo, ContainerInfo } from "@/types";
+import type { ImageInfo, ContainerInfo } from "@/types";
 import { useAppRouters } from "@/hooks/useAppRouters";
+import { useRoute } from "vue-router";
 import { reportErrorMsg } from "@/tools/validator";
 import { VBtn, VCol, VContainer, VDataTable, VRow } from "vuetify/components";
 
-const props = defineProps<{
-  card?: LayoutCard;
-}>();
-
 const { toPage } = useAppRouters();
-const card = props.card ?? ({ meta: {} } as LayoutCard);
-const { getMetaOrRouteValue } = useLayoutCardTools(card);
-const daemonId: string | undefined = getMetaOrRouteValue("daemonId");
+const route = useRoute();
+const daemonId: string = String(route.query.daemonId ?? "");
 
 const { execute: execImageList, state: images, isLoading: imageListLoading } = imageList();
 const getImageList = async () => {

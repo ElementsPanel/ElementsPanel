@@ -66,9 +66,8 @@ There is no `setup`, no `dispose` and no lifecycle to implement. `apply` may be
 
 Plugins are loaded in ascending `priority` order. Use `inject` to express real
 dependencies; `priority` only fixes a deterministic order among plugins that do
-not depend on each other — Koa middleware order, route match order, i18n merge
-precedence and layout-card override precedence. A plugin that fails is reported
-and skipped; the panel keeps running.
+not depend on each other — Koa middleware order, route match order and i18n merge
+precedence. A plugin that fails is reported and skipped; the panel keeps running.
 
 ## The backend context
 
@@ -87,7 +86,6 @@ and skipped; the panel keeps running.
 | `ctx.instances` | `getByUuid`. |
 | `ctx.globals` | Process-wide counters shared with the core. |
 | `ctx.overview` | `provide(fn)` to add fields to `GET /api/overview`. |
-| `ctx.layout` | `get`, `set`, `reset` and scoped `provide(() => page)` for plugin-owned default page layouts. **Provided by `plugins/console`.** |
 | `ctx.plugins` | `loaded`, `inventory()`, `setEnabled()`, and the frontend manifest the browser fetches. |
 | `ctx.koa` | `app`, `use(middleware)`, `router(prefix?)`. Both are removed on unload. **Provided by `plugins/server`.** |
 | `ctx.remote` | `services` (the node subsystem), `Request` (the daemon request helper) and `RequestTimeoutError`. **Provided by `plugins/node`.** |
@@ -97,7 +95,7 @@ and skipped; the panel keeps running.
 
 The panel core is intentionally limited to the Cordis container, plugin loader
 and process logger. Configuration, transport, node connections, authorization,
-monitoring, layout and feature routes are supplied by plugins; the declarations
+monitoring and feature routes are supplied by plugins; the declarations
 in `src/app/plugin/context.ts` are type contracts rather than implementations.
 
 The services below are provided by plugins with `ctx.set()`:
@@ -214,8 +212,8 @@ directory. When you add a global string, add it to all twelve files there.
 
 ## The frontend
 
-The foundational `console` plugin owns the browser shell, base routes, built-in
-layout cards and global styles. `frontend/src/App.vue` is only its host; other
+The foundational `console` plugin owns the browser shell, base routes and global
+styles. `frontend/src/App.vue` is only its host; other
 plugins contribute pages and UI through the registries below.
 
 The frontend entry has the same shape — `apply(ctx)` plus optional `inject` —
@@ -230,7 +228,6 @@ export const inject = ["console", "i18n", "routes", "ui"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
-  ctx.ui.layoutCard("ExampleCard", ExampleCard);
   ctx.routes.add({ path: "/example", component: ExamplePage });
 }
 ```
@@ -242,7 +239,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 | `ctx.vue` | `app`, `pinia`, `router`. Stored raw; never make a context reactive. |
 | `ctx.i18n` | `instance`, `define(messages)`. |
 | `ctx.routes` | `add(route)`, `revision`, `isPluginRoute(path)`, `ownerOf(path)`. |
-| `ctx.ui` | `component`, `layoutCard`, `layoutCardPoolItem`, `globalComponent`. |
+| `ctx.ui` | `component`, `globalComponent`. |
 | `ctx.menus` | `app(menu)`, `login(action)`, and the arrays the shell renders. |
 | `ctx.actions` | `instance`, `schedule`, `terminal`, and `terminalButtons(state)`. |
 | `ctx.desktop` | `app(desktopApp)`, `apps`, `window`, `provideWindow(component)`. |
@@ -269,12 +266,11 @@ Routes may set `meta.public` to bypass login checks, `meta.immersive` to hide th
 panel shell, `meta.mainMenu` to appear in navigation and `meta.icon` for its
 icon. Menu entries are derived from routes, so there is nothing else to register.
 
-`ctx.ui.layoutCard(name, component)` registers a card the layout engine renders
-by name, and stacks over a core card of the same name so the original is restored
-on unload. `ctx.ui.layoutCardPoolItem(factory)` adds an entry to the design-mode
-card picker. `ctx.ui.globalComponent(component)` mounts a component for the
+`ctx.ui.component(name, component)` registers a global component, stacking over
+a core component of the same name so the original is restored on unload.
+`ctx.ui.globalComponent(component)` mounts a component for the
 lifetime of the plugin, alongside the panel's own dialog providers — for global
-overlays that belong to no route or card.
+overlays that belong to no route.
 
 `ctx.desktop.app({...})` adds an application to Desktop mode. The registry is
 core-owned even though Desktop mode is itself a plugin, because an application

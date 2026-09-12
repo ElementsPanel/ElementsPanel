@@ -2,24 +2,18 @@
 import CardPanel from "@/components/CardPanel.vue";
 import PageToolbar from "@/components/PageToolbar.vue";
 import { useAppRouters } from "@/hooks/useAppRouters";
-import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { getInstanceConfigByType, type InstanceConfigs } from "@/hooks/useInstance";
 import { t } from "@/lang/i18n";
 import { getConfigFileList } from "@/services/apis/instance";
 import { reportErrorMsg } from "@/tools/validator";
-import type { LayoutCard } from "@/types";
 import { onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
 import { VBtn, VChip, VCol, VContainer, VIcon, VList, VListItem, VListItemSubtitle, VListItemTitle, VProgressLinear, VRow } from "vuetify/components";
 
-const props = defineProps<{
-  card?: LayoutCard;
-}>();
-
-const card = props.card ?? ({ meta: {} } as LayoutCard);
-const { getMetaOrRouteValue } = useLayoutCardTools(card);
-const instanceId = getMetaOrRouteValue("instanceId");
-const daemonId = getMetaOrRouteValue("daemonId");
-const type = getMetaOrRouteValue("type");
+const route = useRoute();
+const instanceId = String(route.query.instanceId ?? "");
+const daemonId = String(route.query.daemonId ?? "");
+const type = String(route.query.type ?? "");
 
 const { toPage } = useAppRouters();
 const toConsole = () => {

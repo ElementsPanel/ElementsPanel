@@ -3,8 +3,6 @@ import { markRaw, shallowReactive, shallowRef, type App, type Component } from "
 import { remove } from "cosmokit";
 import type { Pinia } from "pinia";
 import type { RouteRecordRaw } from "vue-router";
-import { LAYOUT_CARD_TYPES, PLUGIN_LAYOUT_CARD_POOL_FACTORIES } from "@console/config";
-import type { LayoutCardPoolItemFactory } from "@console/config";
 import { router } from "@console/config/router";
 import type {
   FrontendActionsService,
@@ -94,9 +92,8 @@ interface ComponentStack {
 }
 
 /**
- * One place a named component can be installed: either Vue's global component
- * registry or the layout engine's card map. Both need the same stacking
- * behaviour, and naming the three operations keeps the two apart.
+ * A stack of component registrations for one name, so a plugin can override a
+ * core component and have the original restored when it unloads.
  */
 interface ComponentSlots {
   stacks: Map<string, ComponentStack>;
@@ -119,36 +116,12 @@ export class UiService extends Service implements FrontendUiService {
     clear: (name) => void delete this.app()._context.components[name]
   };
 
-  private readonly layoutCards: ComponentSlots = {
-    stacks: new Map(),
-    read: (name) => LAYOUT_CARD_TYPES[name],
-    write: (name, component) => void (LAYOUT_CARD_TYPES[name] = component),
-    clear: (name) => void delete LAYOUT_CARD_TYPES[name]
-  };
-
   constructor(ctx: Context) {
     super(ctx, "ui", true);
   }
 
   component(name: string, component: Component) {
     return this.ctx.effect(() => this.push(this.vueComponents, name, component));
-  }
-
-  layoutCard(name: string, component: Component) {
-    // A card is also a global component, because layouts render cards by name.
-    const disposeComponent = this.component(name, component);
-    const disposeCard = this.ctx.effect(() => this.push(this.layoutCards, name, component));
-    return () => {
-      disposeCard();
-      disposeComponent();
-    };
-  }
-
-  layoutCardPoolItem(createItem: LayoutCardPoolItemFactory) {
-    return this.ctx.effect(() => {
-      PLUGIN_LAYOUT_CARD_POOL_FACTORIES.push(createItem);
-      return () => remove(PLUGIN_LAYOUT_CARD_POOL_FACTORIES, createItem);
-    });
   }
 
   globalComponent(component: Component) {

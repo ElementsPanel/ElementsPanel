@@ -131,15 +131,6 @@ export interface PanelStorageService {
   writeFile(name: string, data: string): void;
 }
 
-/** Shared frontend layout persistence used by the console and feature plugins. */
-export interface PanelLayoutService {
-  get(): string;
-  set(config: IPageLayoutConfig[]): void;
-  reset(): void;
-  /** Adds a default page layout for the lifetime of the calling plugin. */
-  provide(page: () => IPageLayoutConfig): () => void;
-}
-
 /**
  * The register of plugin configuration forms.
  *
@@ -344,7 +335,6 @@ declare module "cordis" {
     roles: typeof ROLE;
     identity: PanelIdentityService;
     // Feature services are provided by their owning plugins.
-    layout: PanelLayoutService;
     settingsForm: PanelSettingsFormService;
     operations: PanelOperationLogger;
     /** User-instance lookup provided by the panel `instance` plugin. */

@@ -3,7 +3,6 @@ import { shallowRef, type App, type Component } from "vue";
 import type { Pinia } from "pinia";
 import type { RouteRecordRaw, Router } from "vue-router";
 import type { I18n } from "vue-i18n";
-import type { LayoutCardPoolItemFactory } from "@console/config";
 import type { RemoteNodeHook } from "@console/hooks/useRemoteNode";
 import type { NodePluginApi } from "@console/services/apis/node";
 import type { UserPluginApi } from "@console/services/apis/user";
@@ -206,13 +205,9 @@ export interface FrontendRoutesService {
 export interface FrontendUiService {
   /** Registers a global component; a previous registration is restored on unload. */
   component(name: string, component: Component): () => void;
-  /** Registers a layout card; a core card of the same name is restored on unload. */
-  layoutCard(name: string, component: Component): () => void;
-  /** Adds an entry to the design-mode card picker. */
-  layoutCardPoolItem(createItem: LayoutCardPoolItemFactory): () => void;
   /**
    * Mounts a component for the lifetime of the plugin, alongside the panel's own
-   * dialog providers. For global overlays that belong to no route or card.
+   * dialog providers. For global overlays that belong to no route.
    */
   globalComponent(component: Component): () => void;
   readonly globalComponents: readonly Component[];
@@ -303,7 +298,6 @@ export interface FrontendFileManagerService {
 /** The instance terminal and its stream client. Provided by `plugins/terminal`. */
 export interface FrontendTerminalService {
   readonly api: Record<string, unknown>;
-  readonly Terminal: Component;
   readonly TerminalCore: Component;
   readonly TerminalTags: Component;
   readonly TerminalTopTags: Component;

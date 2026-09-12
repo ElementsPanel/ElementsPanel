@@ -1,9 +1,5 @@
 import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } from "@/plugin";
-import type { LayoutCardPoolItemFactory } from "@/config";
-import { LayoutCardHeight } from "@/config/originLayoutConfig";
 import { t } from "@/lang/i18n";
-import { getRandomId } from "@/tools/randId";
-import { NEW_CARD_TYPE } from "@/types";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import * as fileManagerApi from "./api";
 import UploadBubble from "./components/UploadBubble.vue";
@@ -36,24 +32,6 @@ import { h } from "vue";
 const ROLE_USER = 1;
 const ROLE_ADMIN = 10;
 
-/** The design-mode picker entry for the file manager card. */
-const fileManagerCard: LayoutCardPoolItemFactory = () => ({
-  id: getRandomId(),
-  permission: ROLE_USER,
-  meta: {},
-  type: "InstanceFileManager",
-  title: t("TXT_CODE_72cce10b"),
-  width: 12,
-  description: t("TXT_CODE_f49b2787"),
-  height: LayoutCardHeight.MEDIUM,
-  category: NEW_CARD_TYPE.INSTANCE,
-  params: [
-    { field: "instanceId", label: t("TXT_CODE_e6a5c12b"), type: "string" },
-    { field: "daemonId", label: t("TXT_CODE_72cfab69"), type: "string" },
-    { field: "instance", label: t("TXT_CODE_cb043d10"), type: "instance" }
-  ]
-});
-
 const isFileManagerAvailable = (_context: PanelFrontendInstanceActionContext) => {
   const { state, isAdmin } = useAppStateStore();
   return state.settings.canFileManager || isAdmin.value;
@@ -81,12 +59,6 @@ export function apply(ctx: PanelFrontendPluginContext) {
     useDownloadFileDialog,
     useImageViewerDialog
   });
-
-  // The card the layout engine renders for an instance's files. It was a core
-  // card registered in `config/index.ts`; registering it by name here stacks it
-  // over nothing and simply disappears with the plugin.
-  ctx.ui.layoutCard("InstanceFileManager", FileManager);
-  ctx.ui.layoutCardPoolItem(fileManagerCard);
 
   ctx.routes.add({
     path: "/instances/terminal/files",

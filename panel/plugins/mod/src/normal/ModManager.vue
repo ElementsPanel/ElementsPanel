@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import PageToolbar from "@/components/PageToolbar.vue";
 import CardPanel from "@/components/CardPanel.vue";
-import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useInstanceInfo } from "@/hooks/useInstance";
 import { useScreen } from "@/hooks/useScreen";
-import type { LayoutCard } from "@/types";
 import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { useRoute } from "vue-router";
 import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
 import { VAlert, VBadge, VBtn, VCol, VIcon, VRow, VSelect, VTab, VTabs, VTextField, VWindow, VWindowItem } from "vuetify/components";
@@ -29,16 +28,11 @@ const TAB_KEY_MODS = "TAB_KEY_MODS";
 const TAB_KEY_PLUGINS = "TAB_KEY_PLUGINS";
 const TAB_KEY_DOWNLOAD = "TAB_KEY_DOWNLOAD";
 
-const props = defineProps<{
-  card?: LayoutCard;
-}>();
-
 const { t } = useI18n();
 const { isPhone } = useScreen();
-const card = props.card ?? ({ meta: {} } as LayoutCard);
-const { getMetaOrRouteValue } = useLayoutCardTools(card);
-const instanceId = getMetaOrRouteValue("instanceId");
-const daemonId = getMetaOrRouteValue("daemonId");
+const route = useRoute();
+const instanceId = String(route.query.instanceId ?? "");
+const daemonId = String(route.query.daemonId ?? "");
 
 const { instanceInfo, isRunning: isInstanceRunning } = useInstanceInfo({
   instanceId,

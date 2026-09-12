@@ -4,9 +4,8 @@ import { t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";
 import CardPanel from "@/components/CardPanel.vue";
 import PageToolbar from "@/components/PageToolbar.vue";
-import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useAppRouters } from "@/hooks/useAppRouters";
-import type { LayoutCard } from "@/types";
+import { useRoute } from "vue-router";
 import {
   defaultDockerfile,
   jdk17Dockerfile,
@@ -21,14 +20,9 @@ import DockerFileForm from "./DockerFileForm.vue";
 import BuildProgress from "./BuildProgress.vue";
 import { VBtn, VCard, VCardText, VCol, VContainer, VDialog, VRow } from "vuetify/components";
 
-const props = defineProps<{
-  card?: LayoutCard;
-}>();
-
 const { toPage } = useAppRouters();
-const card = props.card ?? ({ meta: {} } as LayoutCard);
-const { getMetaOrRouteValue } = useLayoutCardTools(card);
-const daemonId: string | undefined = getMetaOrRouteValue("daemonId");
+const route = useRoute();
+const daemonId: string = String(route.query.daemonId ?? "");
 const buildProgressDialog = ref<InstanceType<typeof BuildProgress>>();
 const dockerFileDrawer = ref(false);
 const imageList = [

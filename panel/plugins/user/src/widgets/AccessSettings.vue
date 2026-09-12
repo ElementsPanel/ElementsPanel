@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import PageToolbar from "@/components/PageToolbar.vue";
-import type { LayoutCard } from "@/types";
 import type { UserInstance } from "@/types/user";
 import { computed, onMounted, ref } from "vue";
 import { t } from "@/lang/i18n";
@@ -16,7 +15,7 @@ import WarningDialog from "@/components/fc/WarningDialog.vue";
 import { useMountComponent } from "@/hooks/useMountComponent";
 import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VDataTable, VDialog, VSpacer } from "vuetify/components";
 
-const props = defineProps<{ card?: LayoutCard; uuid?: string }>();
+const props = defineProps<{ uuid?: string }>();
 const { isPhone } = useScreen();
 const route = useRoute();
 interface AccessInstance extends UserInstance {
@@ -24,7 +23,7 @@ interface AccessInstance extends UserInstance {
   endTime?: number | string;
 }
 const dataSource = ref<AccessInstance[]>([]);
-const userUuid = props.uuid ?? props.card?.meta?.uuid ?? String(route.query.uuid ?? "");
+const userUuid = props.uuid ?? String(route.query.uuid ?? "");
 const deleteDialog = ref<{ open: boolean; item: UserInstance | null }>({ open: false, item: null });
 
 const refreshTableData = async () => {

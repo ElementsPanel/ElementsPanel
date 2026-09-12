@@ -19,7 +19,6 @@ export interface RouterMetaInfo {
     to: RouteLocationNormalized,
     from: RouteLocationNormalized
   ) => string);
-  onlyDisplayEditMode?: boolean;
   customClass?: string[];
   condition?: () => boolean;
   public?: boolean;

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PageToolbar from "@/components/PageToolbar.vue";
 import { openNodeSelectDialog } from "@/components/fc";
 import { router } from "@/config/router";
 import type { ComputedNodeInfo } from "@/hooks/useOverviewInfo";
@@ -6,19 +7,17 @@ import { t } from "@/lang/i18n";
 import { getDockerHubImagePlatforms } from "@/services/apis/envImage";
 import { createAsyncTask } from "@/services/apis/instance";
 import { reportErrorMsg } from "@/tools/validator";
-import type { LayoutCard, QuickStartPackages } from "@/types";
+import type { QuickStartPackages } from "@/types";
 import { message } from "@/tools/vuetifyToast";
 import { ref } from "vue";
 import { useRoute } from "vue-router";
 import TemplateNameDialog from "../components/TemplateNameDialog.vue";
 import AppPackages from "./AppPackages.vue";
 
-const props = defineProps<{ card?: LayoutCard }>();
-
 const appPackages = ref<InstanceType<typeof AppPackages>>();
 
 const route = useRoute();
-let daemonId = props.card?.meta?.daemonId != null ? String(props.card.meta.daemonId) : String(route.query.daemonId ?? "");
+let daemonId = String(route.query.daemonId ?? "");
 
 const isMarketPage = route.path.includes("/market");
 if (isMarketPage) {
@@ -191,17 +190,53 @@ const handleBackToCategory = () => {
 </script>
 
 <template>
-  <div style="height: 100%">
-    <AppPackages
-      ref="appPackages"
-      @handle-select-category="handleSelectCategory"
-      @handle-select-template="handleSelectTemplate"
-      @handle-back-to-category="handleBackToCategory"
-    />
-    <TemplateNameDialog
-      v-model:open="showTemplateNameDialog"
-      :template="selectedTemplate"
-      @confirm="handleTemplateConfirm"
-    />
-  </div>
+  <main :class="!isMarketPage && 'mc-preset-page'">
+    <div v-if="!isMarketPage" class="mc-preset-page-container">
+      <PageToolbar :title="t('TXT_CODE_88249aee')" icon="mdi-storefront-outline" />
+      <AppPackages
+        ref="appPackages"
+        @handle-select-category="handleSelectCategory"
+        @handle-select-template="handleSelectTemplate"
+        @handle-back-to-category="handleBackToCategory"
+      />
+      <TemplateNameDialog
+        v-model:open="showTemplateNameDialog"
+        :template="selectedTemplate"
+        @confirm="handleTemplateConfirm"
+      />
+    </div>
+    <template v-else>
+      <AppPackages
+        ref="appPackages"
+        @handle-select-category="handleSelectCategory"
+        @handle-select-template="handleSelectTemplate"
+        @handle-back-to-category="handleBackToCategory"
+      />
+      <TemplateNameDialog
+        v-model:open="showTemplateNameDialog"
+        :template="selectedTemplate"
+        @confirm="handleTemplateConfirm"
+      />
+    </template>
+  </main>
 </template>
+
+<style lang="scss" scoped>
+.mc-preset-page {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+.mc-preset-page-container {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: 20px 24px 32px;
+}
+
+@media (max-width: 992px) {
+  .mc-preset-page-container {
+    padding: 16px 12px 28px;
+  }
+}
+</style>

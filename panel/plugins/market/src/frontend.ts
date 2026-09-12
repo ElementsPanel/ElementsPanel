@@ -25,7 +25,14 @@ export function apply(ctx: PanelFrontendPluginContext) {
   // The market's own settings are declared by its backend, so the plugin manager
   // renders them with the generic form and this half contributes no page for them.
 
-  ctx.ui.layoutCard("McPreset", McPreset);
+  // The Minecraft preset owns the second quick-start step, so its route lives
+  // here rather than in the instance plugin that owns the first step.
+  ctx.routes.add({
+    path: "/quickstart/minecraft",
+    name: t("TXT_CODE_88249aee"),
+    component: McPreset,
+    meta: { permission: ROLE_ADMIN, mainMenu: false }
+  });
 
   ctx.actions.terminal({
     id: "market-reinstall",

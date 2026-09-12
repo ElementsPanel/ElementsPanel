@@ -5,7 +5,6 @@ import { useXhrPollError } from "@/hooks/useXhrPollError";
 import { t } from "@/lang/i18n";
 import { getInstanceOutputLog } from "../api";
 import { logInstanceCrash, logInstanceAutoRestart } from "@/services/apis/operationLog";
-import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import { Terminal } from "@xterm/xterm";
 import { message } from "@/tools/vuetifyToast";
 import { onMounted, ref } from "vue";
@@ -30,11 +29,7 @@ const props = defineProps<{
   daemonId: string;
   height: string;
   useTerminalHook: UseTerminalHook;
-  /** Fixed pages use the terminal even when the legacy layout is in design mode. */
-  ignoreDesignMode?: boolean;
 }>();
-
-const { containerState } = useLayoutContainerStore();
 
 const {
   focusHistoryList,
@@ -80,7 +75,6 @@ const handleClickHistoryItem = (item: string) => {
 };
 
 const initTerminal = async () => {
-  if (containerState.isDesignMode && !props.ignoreDesignMode) return;
   const dom = document.getElementById(terminalDomId);
   if (dom) {
     const term = initTerminalWindow(dom);
@@ -199,13 +193,9 @@ onMounted(async () => {
     <div class="terminal-wrapper global-card-container-shadow position-relative">
       <div class="terminal-container">
         <div
-          v-if="!containerState.isDesignMode || props.ignoreDesignMode"
           :id="terminalDomId"
           :style="{ height: props.height }"
         ></div>
-        <div v-else :style="{ height: props.height }">
-          <p class="terminal-design-tip">{{ $t("TXT_CODE_7ac6f85c") }}</p>
-        </div>
       </div>
     </div>
     <div class="command-input">
@@ -229,7 +219,7 @@ onMounted(async () => {
         density="comfortable"
         hide-details
         autofocus
-        :disabled="(containerState.isDesignMode && !props.ignoreDesignMode) || !isConnect"
+        :disabled="!isConnect"
         @keydown="handleHistorySelect"
         @keyup.enter="handleSendCommand"
       />
@@ -421,10 +411,6 @@ onMounted(async () => {
         height: 0 !important;
       }
     }
-  }
-
-  .terminal-design-tip {
-    color: rgba(255, 255, 255, 0.584);
   }
 }
 </style>

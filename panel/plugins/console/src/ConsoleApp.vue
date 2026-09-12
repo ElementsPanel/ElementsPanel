@@ -11,8 +11,6 @@ import AppSidebarMenu from "./components/AppSidebarMenu.vue";
 import Breadcrumbs from "./components/Breadcrumbs.vue";
 import InputDialogProvider from "./components/InputDialogProvider.vue";
 import { ctx } from "@/plugin/context";
-import { useAppStateStore } from "@/stores/useAppStateStore";
-import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import { closeAppLoading, setLoadingTitle } from "@/tools/dom";
 import { VThemeProvider } from "vuetify/components";
 import { setVuetifyTheme } from "./vuetify";
@@ -24,21 +22,12 @@ const {
   isSidebarOpen,
   useSidebarLayout
 } = useAppConfigStore();
-const { containerState } = useLayoutContainerStore();
-const { state: appState } = useAppStateStore();
 const { isPhone } = useScreen();
 const route = useRoute();
 
 // Overlays that belong to no route. Feature plugins add their own global
 // components through `ctx.ui.globalComponent()` and leave with their scope.
 const GLOBAL_COMPONENTS = computed(() => [InputDialogProvider, ...ctx.ui.globalComponents]);
-
-const designModeNavStyle = computed(() => {
-  if (!appState.userInfo) return {};
-  return {
-    zIndex: containerState.isDesignMode ? 997 : 1
-  };
-});
 
 const isLoginPage = computed(() => route.path === "/login");
 const isImmersivePage = computed(() => route.meta.immersive === true);
@@ -64,7 +53,7 @@ onMounted(async () => {
   <VThemeProvider :theme="vuetifyTheme">
     <AppConfigProvider :has-bg-image="hasBgImage">
       <div class="global-app-container">
-        <AppHeader v-if="!isLoginPage && !isImmersivePage" :style="designModeNavStyle" />
+        <AppHeader v-if="!isLoginPage && !isImmersivePage" />
         <div
           class="app-shell-content"
           :class="{
@@ -78,7 +67,7 @@ onMounted(async () => {
             :class="{ 'app-sidebar-shell--collapsed': !isSidebarOpen }"
             :aria-hidden="!isSidebarOpen"
           >
-            <AppSidebarMenu :style="designModeNavStyle" />
+            <AppSidebarMenu />
           </div>
           <main
             class="main-content"

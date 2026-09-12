@@ -2,16 +2,18 @@
 import CardPanel from "@/components/CardPanel.vue";
 import { t } from "@/lang/i18n";
 import { onMounted } from "vue";
-import type { LayoutCard } from "@/types";
 import { userInfoApi } from "@/services/apis/index";
 import { useRouter } from "vue-router";
 import { INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@/types/const";
 import { parseTimestamp } from "@/tools/time";
 import { VBtn, VChip, VDataTable } from "vuetify/components";
 
-defineProps<{
-  card: LayoutCard;
-}>();
+withDefaults(
+  defineProps<{
+    title?: string;
+  }>(),
+  { title: "" }
+);
 
 const router = useRouter();
 
@@ -78,7 +80,7 @@ onMounted(() => {
 
 <template>
   <CardPanel>
-    <template #title>{{ card.title }}</template>
+    <template #title>{{ title || t("TXT_CODE_d655beec") }}</template>
     <template #body>
       <VDataTable :headers="columns.map((column) => ({ title: column.title, key: column.key, value: column.dataIndex || column.key, sortable: false }))" :items="state?.instances || []" :items-per-page="-1" hide-default-footer density="comfortable">
         <template #item.status="{ item }"><VChip size="small" variant="tonal" :color="item.status === INSTANCE_STATUS_CODE.RUNNING ? 'success' : item.status === INSTANCE_STATUS_CODE.BUSY ? 'warning' : 'secondary'">{{ INSTANCE_STATUS[item.status as INSTANCE_STATUS_CODE] || item.status }}</VChip></template>

@@ -4,21 +4,6 @@ import type { INSTANCE_STATUS_CODE, ScheduleCreateType } from "./const";
 
 export type JsonData = IJsonData;
 export type MapData<T> = IMapData<T>;
-export type LayoutCardParams = ILayoutCardParams;
-export type LayoutCard = ILayoutCard;
-
-export interface LayoutWithRouter {
-  page: string;
-  items: LayoutCard[];
-}
-
-export enum NEW_CARD_TYPE {
-  COMMON = "COMMON",
-  INSTANCE = "INSTANCE",
-  DATA = "DATA",
-  USER = "USER",
-  OTHER = "OTHER"
-}
 
 export interface InstanceRuntimeInfo {
   mcPingOnline: boolean;
