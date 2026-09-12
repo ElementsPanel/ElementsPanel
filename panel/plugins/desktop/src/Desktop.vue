@@ -20,7 +20,7 @@ import DesktopInstanceConsole from "./widgets/desktop/DesktopInstanceConsole.vue
 import DesktopInstanceManager from "./widgets/desktop/DesktopInstanceManager.vue";
 import DesktopModManager from "./widgets/desktop/DesktopModManager.vue";
 import DesktopMyApps from "./widgets/desktop/DesktopMyApps.vue";
-import DesktopNewInstance from "./widgets/desktop/DesktopNewInstance.vue";
+import CreateInstancePage from "@instance/views/CreateInstance.vue";
 import DesktopSchedule from "./widgets/desktop/DesktopSchedule.vue";
 import DesktopServerConfig from "./widgets/desktop/DesktopServerConfig.vue";
 import type { TaskbarWindow } from "./widgets/desktop/DesktopTaskbar.vue";
@@ -1362,8 +1362,8 @@ const isMdiIcon = (icon: Component | string): boolean => typeof icon === "string
                             <DesktopInstanceManager v-else-if="win.content === 'instances'"
                                 @open-console="openInstanceConsole" @open-new-instance="openNewInstanceWindow" />
 
-                            <DesktopNewInstance v-else-if="win.content === 'new-instance'"
-                                @close="closeWindow(win.id)" />
+                            <CreateInstancePage v-else-if="win.content === 'new-instance'" embedded
+                                @created="closeWindow(win.id)" />
 
                             <DesktopInstanceConsole
                                 v-else-if="win.content === 'instance-console' && win.instanceId && win.daemonId"
