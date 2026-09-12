@@ -53,7 +53,7 @@ Set `enabled` to `false` to skip one.
 | `ctx.logger` | Named logger. `ctx.logger("sub")` for a sub-logger. |
 | `ctx.timer` | `setTimeout` / `setInterval` / `sleep` / `throttle` / `debounce`, mixed onto `ctx`. |
 | `ctx.settings` | `config`, `save()`, `setLanguage(lang)`. |
-| `ctx.storage` | The daemon's entity storage, shared with core-owned instance configuration. |
+| `ctx.storage` | The daemon's entity storage, provided by `plugins/storage` and shared with core-owned instance configuration. |
 | `ctx.i18n` | `$t` and `define(messages)` for the plugin's own strings. |
 | `ctx.settingsForm` | `declare({ fields, read, write })` — the plugin's configuration, which the panel renders. |
 | `ctx.middleware` | `uploadSpeedLimit`, `uploadFileCheck` — the base middleware the web server mounts ahead of the body parser. |

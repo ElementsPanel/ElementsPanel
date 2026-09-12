@@ -3,7 +3,6 @@ import { Context } from "cordis";
 import type i18next from "i18next";
 import type Koa from "koa";
 import type { GlobalVariable } from "mcsmanager-common";
-import type Storage from "../common/storage/sys_storage";
 import type { IRemoteService, RemoteMappingEntry } from "../entity/entity_interface";
 import type { ROLE } from "../entity/user";
 import type { $t } from "../i18n";
@@ -38,7 +37,8 @@ import type {
  *
  * The declarations below are the API documentation: only `import type` here, so
  * this module stays a leaf that core code can import without a cycle. The
- * runtime values are provided by the `plugins/runtime` foundation.
+ * runtime values are provided by the foundation plugins (`storage`, `i18n`,
+ * and `runtime`).
  */
 export const ctx = new Context();
 
@@ -113,6 +113,22 @@ export interface PanelSettingsSchema {
 export interface PanelSettingsService {
   readonly config: NonNullable<typeof systemConfig>;
   save(): void;
+}
+
+/** Entity and file persistence supplied by `plugins/storage`. */
+export interface PanelStorageService {
+  readonly TYPE: { readonly FILE: 0; readonly REDIS: 1 };
+  getStorage(): {
+    store(category: string, uuid: string, object: any): Promise<void>;
+    load(category: string, classz: any, uuid: string): Promise<any>;
+    list(category: string): Promise<string[]>;
+    delete(category: string, uuid: string): Promise<void>;
+  };
+  setStorageType(type: number): void;
+  initialize(url: string): Promise<void>;
+  readDir(category: string): string[];
+  readFile(name: string): string;
+  writeFile(name: string, data: string): void;
 }
 
 /** Shared frontend layout persistence used by the console and feature plugins. */
@@ -318,9 +334,9 @@ export interface PanelPluginsService {
 
 declare module "cordis" {
   interface Context {
-    // Shared services supplied by the runtime foundation before feature plugins load.
+    // Shared services supplied by foundation plugins before feature plugins load.
     settings: PanelSettingsService;
-    storage: typeof Storage;
+    storage: PanelStorageService;
     i18n: PanelI18nService;
     middleware: PanelMiddlewareService;
     roles: typeof ROLE;

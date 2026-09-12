@@ -1,15 +1,15 @@
-import StorageSubsystem from "../common/system_storage";
+import type { DaemonStorageService } from "../plugin/context";
 import logger from "./log";
 import { $t } from "../i18n";
 
-function readCategoryConfig(configCategory: string, callback: (config: any) => boolean) {
-  const configPaths = StorageSubsystem.readDir(configCategory);
+function readCategoryConfig(storage: DaemonStorageService, configCategory: string, callback: (config: any) => boolean) {
+  const configPaths = storage.readDir(configCategory);
   for (const configPath of configPaths) {
     try {
-      const config = JSON.parse(StorageSubsystem.readFile(configPath));
+      const config = JSON.parse(storage.readFile(configPath));
       if (callback(config)) {
         logger.info($t("TXT_CODE_6b2a9cab"), configPath);
-        StorageSubsystem.writeFile(configPath, JSON.stringify(config, null, 4));
+        storage.writeFile(configPath, JSON.stringify(config, null, 4));
       }
     } catch (error: any) {
       logger.error($t("TXT_CODE_fb75aba9"), error);
@@ -26,8 +26,8 @@ function refactorInstanceConfig(config: any) {
   return false;
 }
 
-function detectConfig() {
-  readCategoryConfig("InstanceConfig", refactorInstanceConfig);
+function detectConfig(storage: DaemonStorageService) {
+  readCategoryConfig(storage, "InstanceConfig", refactorInstanceConfig);
 }
 
 export default { detectConfig };

@@ -1,5 +1,5 @@
 import { v4 } from "uuid";
-import StorageSubsystem from "../common/system_storage";
+import type { DaemonStorageService } from "../plugin/context";
 
 function builderPassword() {
   const a = `${v4().replace(/\-/gim, "")}`;
@@ -59,18 +59,25 @@ class Config {
 class GlobalConfiguration {
   public config = new Config();
   private static readonly ID = "global";
+  private storage?: DaemonStorageService;
+
+  configure(storage: DaemonStorageService) {
+    this.storage = storage;
+  }
 
   load() {
-    let config: Config = StorageSubsystem.load("Config", Config, GlobalConfiguration.ID);
+    if (!this.storage) throw new Error("Daemon storage has not been initialized.");
+    let config: Config = this.storage.load("Config", Config, GlobalConfiguration.ID);
     if (config == null) {
       config = new Config();
-      StorageSubsystem.store("Config", GlobalConfiguration.ID, config);
+      this.storage.store("Config", GlobalConfiguration.ID, config);
     }
     this.config = config;
   }
 
   store() {
-    StorageSubsystem.store("Config", GlobalConfiguration.ID, this.config);
+    if (!this.storage) throw new Error("Daemon storage has not been initialized.");
+    this.storage.store("Config", GlobalConfiguration.ID, this.config);
   }
 }
 
@@ -82,4 +89,3 @@ const globalConfiguration = new GlobalConfiguration();
 const globalEnv = new GlobalEnv();
 
 export { Config, globalConfiguration, globalEnv };
-

@@ -1,7 +1,7 @@
 // global configuration initialization
 
 import SystemConfig from "./entity/setting";
-import StorageSystem from "./common/system_storage";
+import type { PanelStorageService } from "./plugin/context";
 import { i18next } from "./i18n";
 let systemConfig: SystemConfig | null = null;
 
@@ -73,18 +73,18 @@ function detectSystemLanguage(): string {
 }
 
 // System persistence configuration table
-export function initSystemConfig() {
-  systemConfig = StorageSystem.load("SystemConfig", SystemConfig, "config");
+export async function initSystemConfig(storage: PanelStorageService) {
+  systemConfig = await storage.getStorage().load("SystemConfig", SystemConfig, "config");
   if (!systemConfig) {
     systemConfig = new SystemConfig();
     systemConfig.language = detectSystemLanguage();
-    StorageSystem.store("SystemConfig", "config", systemConfig);
+    await storage.getStorage().store("SystemConfig", "config", systemConfig);
   }
   if (systemConfig.language) i18next.changeLanguage(systemConfig.language);
 }
 
-export function saveSystemConfig(_systemConfig: SystemConfig) {
-  StorageSystem.store("SystemConfig", "config", _systemConfig);
+export async function saveSystemConfig(storage: PanelStorageService, _systemConfig: SystemConfig) {
+  await storage.getStorage().store("SystemConfig", "config", _systemConfig);
 }
 
 export { systemConfig };

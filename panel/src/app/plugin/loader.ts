@@ -32,8 +32,8 @@ const ENTRY_CANDIDATES = [
   "src/panel.cjs",
   "src/panel.mjs"
 ];
-const FOUNDATION_PLUGIN_IDS = new Set(["i18n", "runtime"]);
-const ESSENTIAL_PLUGIN_IDS = new Set(["i18n", "runtime", "console"]);
+const FOUNDATION_PLUGIN_IDS = new Set(["i18n", "storage", "runtime"]);
+const ESSENTIAL_PLUGIN_IDS = new Set(["i18n", "storage", "runtime", "console"]);
 
 /** A panel plugin module, as its backend entry exports it. */
 export interface PanelPluginModule {
@@ -191,7 +191,7 @@ export async function loadPanelFoundationPlugin(id = "i18n") {
   loaded.push(record);
   sortPlugins(loaded);
   if (record.error) throw record.error;
-  const capability = id === "i18n" ? "i18n" : "settings";
+  const capability = id === "i18n" ? "i18n" : id === "storage" ? "storage" : "settings";
   if (!record.fork || !ctx.get(capability)) {
     throw new Error(`Panel foundation plugin failed to initialize: ${id}`);
   }

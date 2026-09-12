@@ -1,7 +1,5 @@
 import type Koa from "koa";
 import { GlobalVariable } from "mcsmanager-common";
-import RedisStorage from "../../../../src/app/common/storage/redis_storage";
-import Storage from "../../../../src/app/common/storage/sys_storage";
 import { ROLE } from "../../../../src/app/entity/user";
 import validator from "../../../../src/app/middleware/validator";
 import { singletonMemoryRedis } from "../../../../src/app/service/mini_redis";
@@ -42,24 +40,23 @@ const UNGUARDED: RequestGuard = {
 };
 
 /**
- * The panel runtime is the first non-translation plugin. It owns startup
- * configuration and the shared primitives that feature plugins consume; the
+ * The panel runtime follows the storage and translation foundations. It owns
+ * startup configuration and the shared primitives that feature plugins consume; the
  * application entry point only orchestrates plugin loading and shutdown.
  */
-export const inject = ["i18n"];
+export const inject = ["i18n", "storage"];
 
 export async function apply(ctx: PanelPluginContext) {
-  initSystemConfig();
+  await initSystemConfig(ctx.storage);
   const config = systemConfig;
   if (!config) throw new Error("Panel configuration failed to initialize.");
 
   if (config.redisUrl?.length) {
-    await RedisStorage.initialize(config.redisUrl);
-    Storage.setStorageType(Storage.TYPE.REDIS);
+    await ctx.storage.initialize(config.redisUrl);
   }
 
   initVersionManager();
-  versionAdapter.detectConfig();
+  versionAdapter.detectConfig(ctx.storage);
 
   // Middleware and identity are resolved through this context at request time.
   // Importing the core middleware modules here would bundle a second copy of
@@ -123,8 +120,7 @@ export async function apply(ctx: PanelPluginContext) {
     };
   };
 
-  ctx.set("settings", { config, save: () => saveSystemConfig(config) });
-  ctx.set("storage", Storage);
+  ctx.set("settings", { config, save: () => void saveSystemConfig(ctx.storage, config) });
   ctx.set("middleware", {
     permission,
     validator,
@@ -165,5 +161,5 @@ export async function apply(ctx: PanelPluginContext) {
 
   // Configuration migrations performed by feature plugins are persisted once
   // all plugin scopes have had a chance to update the shared object.
-  ctx.on("ready", () => saveSystemConfig(config));
+  ctx.on("ready", () => void saveSystemConfig(ctx.storage, config));
 }

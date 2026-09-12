@@ -8,7 +8,6 @@ import {
 } from "../../../../src/const";
 import { compress, decompress, decompressWithProgress, listArchiveEntries } from "../../../../src/common/compress";
 import { GitignoreMatcher } from "../../../../src/common/gitignore_matcher";
-import StorageSubsystem from "../../../../src/common/system_storage";
 import { globalConfiguration } from "../../../../src/entity/config";
 import type { DaemonPluginContext } from "../../../../src/plugin";
 import { uploadFileCheckMiddleware, uploadSpeedLimitMiddleware } from "../../../../src/middlewares/precheck";
@@ -23,16 +22,18 @@ import { sendFile } from "../../../../src/utils/speed_limit";
 
 /**
  * Shared daemon bootstrap. The executable only loads plugins; this plugin
- * owns configuration, dependency checks and the reusable runtime primitives.
+ * follows the storage foundation and owns configuration, dependency checks and
+ * the reusable runtime primitives.
  */
-export const inject = ["i18n"];
+export const inject = ["i18n", "storage"];
 
 export async function apply(ctx: DaemonPluginContext) {
+  globalConfiguration.configure(ctx.storage);
   globalConfiguration.load();
   const config = globalConfiguration.config;
 
   initVersionManager();
-  versionAdapter.detectConfig();
+  versionAdapter.detectConfig(ctx.storage);
   checkDependencies();
 
   if (fs.existsSync(LOCAL_PRESET_LANG_PATH)) {
@@ -55,7 +56,6 @@ export async function apply(ctx: DaemonPluginContext) {
       config.language = language;
     }
   });
-  ctx.set("storage", StorageSubsystem);
   ctx.set("middleware", {
     uploadFileCheck: uploadFileCheckMiddleware,
     uploadSpeedLimit: uploadSpeedLimitMiddleware

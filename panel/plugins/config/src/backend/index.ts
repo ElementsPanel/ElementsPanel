@@ -21,7 +21,7 @@ const SELF = "config";
  * Turning an essential plugin off would remove the interface or connection
  * that is needed to turn it back on.
  */
-const ESSENTIAL = new Set(["console", "i18n", "runtime", "server", "monitor"]);
+const ESSENTIAL = new Set(["console", "i18n", "storage", "runtime", "server", "monitor"]);
 
 export const inject = [
   "koa",

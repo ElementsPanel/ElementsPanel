@@ -3,7 +3,6 @@ import type Koa from "koa";
 import type Router from "@koa/router";
 import type { Server as SocketIOServer } from "socket.io";
 import type { GitignoreMatcher } from "../common/gitignore_matcher";
-import type StorageSubsystem from "../common/system_storage";
 import type {
   compress,
   decompress,
@@ -42,7 +41,8 @@ import type { DaemonPluginEntry, DaemonPluginRecord } from "./loader";
  *
  * The declarations below are the API documentation: only `import type` here, so
  * this module stays a leaf that core code can import without a cycle. The
-  * runtime values are provided by the `plugins/runtime` foundation.
+  * runtime values are provided by the foundation plugins (`storage`, `i18n`,
+  * and `runtime`).
  */
 export const ctx = new Context();
 
@@ -56,8 +56,16 @@ export interface DaemonSettingsService {
   setLanguage(language: string): void;
 }
 
-/** Local storage shared by daemon plugins without importing daemon core. */
-export type DaemonStorageService = typeof StorageSubsystem;
+/** Entity and file persistence supplied by `plugins/storage`. */
+export interface DaemonStorageService {
+  store(category: string, uuid: string, object: any): void;
+  load(category: string, classz: any, uuid: string): any;
+  list(category: string): string[];
+  delete(category: string, uuid: string): void;
+  writeFile(name: string, data: string): void;
+  readFile(name: string): string;
+  readDir(dirName: string): string[];
+}
 
 /** What a declared setting renders as. `link` reads and writes nothing. */
 export type DaemonSettingFieldType =
@@ -401,7 +409,7 @@ export interface DaemonPluginsService {
 
 declare module "cordis" {
   interface Context {
-    // Shared services supplied by the runtime foundation before feature plugins load.
+    // Shared services supplied by foundation plugins before feature plugins load.
     settings: DaemonSettingsService;
     storage: DaemonStorageService;
     settingsForm: DaemonSettingsFormService;

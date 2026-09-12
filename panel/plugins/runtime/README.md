@@ -5,7 +5,7 @@ panel configuration and exposes shared infrastructure through the plugin
 context:
 
 - settings persistence and version metadata;
-- storage, request middleware and role constants;
+- request middleware and role constants;
 - the current identity/authorization view;
 - global process values used by feature plugins.
 

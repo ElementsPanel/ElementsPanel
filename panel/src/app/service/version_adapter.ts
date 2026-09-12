@@ -1,15 +1,15 @@
-import StorageSubsystem from "../common/system_storage";
+import type { PanelStorageService } from "../plugin/context";
 import { $t } from "../i18n";
 import { logger } from "./log";
 
-function readCategoryConfig(configCategory: string, callback: (config: any) => boolean) {
-  const configPaths = StorageSubsystem.readDir(configCategory);
+function readCategoryConfig(storage: PanelStorageService, configCategory: string, callback: (config: any) => boolean) {
+  const configPaths = storage.readDir(configCategory);
   for (const configPath of configPaths) {
     try {
-      const config = JSON.parse(StorageSubsystem.readFile(configPath));
+      const config = JSON.parse(storage.readFile(configPath));
       if (callback(config)) {
         logger.info($t("TXT_CODE_6b2a9cab"), configPath);
-        StorageSubsystem.writeFile(configPath, JSON.stringify(config, null, 4));
+        storage.writeFile(configPath, JSON.stringify(config, null, 4));
       }
     } catch (error: any) {
       logger.error($t("TXT_CODE_fb75aba9"), error);
@@ -32,8 +32,8 @@ function refactorUserConfig(config: any) {
   return changed;
 }
 
-function detectConfig() {
-  readCategoryConfig("User", refactorUserConfig);
+function detectConfig(storage: PanelStorageService) {
+  readCategoryConfig(storage, "User", refactorUserConfig);
 }
 
 export default { detectConfig };

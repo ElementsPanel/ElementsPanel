@@ -32,7 +32,9 @@ async function main() {
   // locale, so translation must exist before the configuration is read.
   await loadPanelFoundationPlugin("i18n");
 
-  // Runtime owns configuration, storage and shared middleware. It is loaded
+  await loadPanelFoundationPlugin("storage");
+
+  // Runtime owns configuration and shared middleware. It is loaded
   // before feature plugins so their dependencies are available through ctx.
   await loadPanelFoundationPlugin("runtime");
 

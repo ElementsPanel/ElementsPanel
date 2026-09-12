@@ -78,7 +78,7 @@ and skipped; the panel keeps running.
 | `ctx.timer` | `setTimeout` / `setInterval` / `sleep` / `throttle` / `debounce`, mixed onto `ctx`. |
 | `ctx.settings` | `config` (the panel configuration) and `save()`. |
 | `ctx.settingsForm` | `declare({ fields, read, write })` — the plugin's own configuration form, described rather than drawn. |
-| `ctx.storage` | The panel's entity storage, file- or Redis-backed. |
+| `ctx.storage` | The panel's entity storage, file- or Redis-backed, provided by `plugins/storage`. |
 | `ctx.i18n` | `$t`, `i18next`, and `define(messages)` for the plugin's own strings. |
 | `ctx.middleware` | `permission`, `validator`, `instanceAccess`, `speedLimit`. |
 | `ctx.roles` | The role constants (`ADMIN`, `USER`, ...). |

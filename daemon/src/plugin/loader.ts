@@ -31,7 +31,7 @@ const ENTRY_CANDIDATES = [
   "src/daemon.cjs",
   "src/daemon.mjs"
 ];
-const FOUNDATION_PLUGIN_IDS = new Set(["i18n", "runtime"]);
+const FOUNDATION_PLUGIN_IDS = new Set(["i18n", "storage", "runtime"]);
 
 /** A daemon plugin module, as its backend entry exports it. */
 export interface DaemonPluginModule {
@@ -181,7 +181,7 @@ export async function loadDaemonFoundationPlugin(id = "i18n") {
   loaded.push(record);
   sortPlugins(loaded);
   if (record.error) throw record.error;
-  const capability = id === "i18n" ? "i18n" : "settings";
+  const capability = id === "i18n" ? "i18n" : id === "storage" ? "storage" : "settings";
   if (!record.fork || !ctx.get(capability)) {
     throw new Error(`Daemon foundation plugin failed to initialize: ${id}`);
   }

@@ -3,9 +3,10 @@ import { loadDaemonFoundationPlugin, loadDaemonPlugins } from "./plugin/loader";
 import logger from "./service/log";
 
 async function main() {
-  // Translation and runtime are foundations. The executable itself only
+  // Translation, storage and runtime are foundations. The executable itself only
   // orchestrates plugin loading and container lifecycle.
   await loadDaemonFoundationPlugin("i18n");
+  await loadDaemonFoundationPlugin("storage");
   await loadDaemonFoundationPlugin("runtime");
   await loadDaemonPlugins();
 

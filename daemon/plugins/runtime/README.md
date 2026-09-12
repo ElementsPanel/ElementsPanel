@@ -5,7 +5,7 @@ configuration, performs startup checks and exposes shared infrastructure through
 the plugin context:
 
 - settings and version information;
-- storage and upload middleware;
+- upload middleware;
 - transfer passports, downloads and rate-limited file sending;
 - archive and 7-Zip helpers.
 

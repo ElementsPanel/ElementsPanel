@@ -18,7 +18,7 @@ const SELF = "config";
  * Turning the web server off would drop the connection the request arrived on,
  * and with it every event that could turn it back on.
  */
-const ESSENTIAL = new Set(["i18n", "runtime", "server", "monitor"]);
+const ESSENTIAL = new Set(["i18n", "storage", "runtime", "server", "monitor"]);
 
 export const inject = ["protocol", "i18n", "plugins"];
 
