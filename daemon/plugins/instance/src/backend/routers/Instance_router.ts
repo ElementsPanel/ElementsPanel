@@ -11,10 +11,8 @@ import { arrayUnique, toNumber } from "mcsmanager-common";
 import ProcessInfoCommand from "../entity/commands/process_info";
 import { ProcessConfig } from "../entity/instance/process_config";
 import { TaskCenter } from "../service/async_task_service";
-import downloadManager from "../service/download_manager";
 import { fileSubsystem } from "../service/file_access";
 import { IInstanceDetail } from "../service/interfaces";
-import { modService } from "../service/mod_service";
 import { ctx as daemon } from "../plugin/context";
 import { ROLE } from "../service/protocol";
 
@@ -552,94 +550,5 @@ routerApp.on("instance/process_config/file", (ctx, data) => {
     }
   } catch (err: any) {
     protocol.responseError(ctx, err);
-  }
-});
-
-routerApp.on("instance/mods/list", async (ctx, data) => {
-  const instanceUuid = data.instanceUuid;
-  const page = Number(data.page) || 1;
-  const pageSize = Math.min(Number(data.pageSize) || 50, 50); // Max 50
-  const folder = data.folder ? String(data.folder) : undefined;
-  try {
-    const mods = await modService.listMods(instanceUuid, page, pageSize, folder);
-    const downloadTasks = [];
-    if (downloadManager.task) {
-      downloadTasks.push({
-        path: downloadManager.task.path,
-        total: downloadManager.task.total,
-        current: downloadManager.task.current,
-        status: downloadManager.task.status,
-        error: downloadManager.task.error,
-        type: "download"
-      });
-    }
-
-    const uploadTasks = [];
-    for (const [id, writer] of fileSubsystem().uploads.getUploads()) {
-      if (writer.cwd === instanceUuid || writer.path.includes(instanceUuid)) {
-        uploadTasks.push({
-          id,
-          path: writer.path,
-          total: writer.size,
-          current: writer.received.reduce(
-            (acc: number, r: { start: number; end: number }) => acc + (r.end - r.start),
-            0
-          ),
-          status: 0,
-          type: "upload"
-        });
-      }
-    }
-
-    protocol.response(ctx, {
-      ...mods,
-      downloadTasks: [...downloadTasks, ...uploadTasks],
-      downloadFileFromURLTask: downloadManager.downloadingCount
-    });
-  } catch (err: any) {
-    protocol.responseError(ctx, err);
-  }
-});
-
-routerApp.on("instance/mods/toggle", async (ctx, data) => {
-  const { instanceUuid, fileName } = data;
-  try {
-    await modService.toggleMod(instanceUuid, fileName);
-    protocol.response(ctx, true);
-  } catch (err: any) {
-    protocol.responseError(ctx, err);
-  }
-});
-
-routerApp.on("instance/mods/delete", async (ctx, data) => {
-  const { instanceUuid, fileName } = data;
-  try {
-    await modService.deleteMod(instanceUuid, fileName);
-    protocol.response(ctx, true);
-  } catch (err: any) {
-    protocol.responseError(ctx, err, { disablePrint: true });
-  }
-});
-
-routerApp.on("instance/mods/install", async (ctx, data) => {
-  const { instanceUuid, url, fileName, type, fallbackUrl } = data;
-  try {
-    // async
-    modService.installMod(instanceUuid, url, fileName, type, {
-      fallbackUrl
-    });
-    protocol.response(ctx, true);
-  } catch (err: any) {
-    protocol.responseError(ctx, err, { disablePrint: true });
-  }
-});
-
-routerApp.on("instance/mods/config_files", async (ctx, data) => {
-  const { instanceUuid, modId, type, fileName } = data;
-  try {
-    const files = await modService.getModConfig(instanceUuid, modId, type, fileName);
-    protocol.response(ctx, files);
-  } catch (err: any) {
-    protocol.responseError(ctx, err, { disablePrint: true });
   }
 });

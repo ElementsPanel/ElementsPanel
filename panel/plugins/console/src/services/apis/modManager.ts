@@ -1,27 +1,13 @@
-import { usePluginService } from "@/plugin/context";
-import type * as InstanceApi from "@instance/api";
+import { usePluginService, type FrontendModManagerService } from "@/plugin/context";
 
-type ModManagerApi = Pick<
-  typeof InstanceApi,
-  | "getMcVersionsApi"
-  | "modListApi"
-  | "toggleModApi"
-  | "deleteModApi"
-  | "getModInfoApi"
-  | "getModBatchInfoApi"
-  | "searchModsApi"
-  | "getModVersionsApi"
-  | "downloadModApi"
-  | "stopTransferApi"
-  | "getModConfigFilesApi"
->;
+type ModManagerApi = FrontendModManagerService["api"];
 
 function resolveModManagerApi(): ModManagerApi {
-  const instance = usePluginService<{ api: ModManagerApi }>("instance");
-  if (!instance) {
-    throw new Error('Panel frontend plugin "instance" is not loaded.');
+  const mod = usePluginService<FrontendModManagerService>("mod");
+  if (!mod) {
+    throw new Error('Panel frontend plugin "mod" is not loaded.');
   }
-  return instance.api;
+  return mod.api;
 }
 
 const call = <K extends keyof ModManagerApi>(name: K) =>

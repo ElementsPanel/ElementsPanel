@@ -33,7 +33,7 @@ const getTerminalActionIcon = (item: { icon?: unknown; id?: string }) => {
     return (item.id && terminalActionIconMap[item.id]) || "mdi-lightning-bolt-outline";
 };
 
-type DialogPanel = "none" | "file-manager" | "mod-manager" | "schedule" | "server-config";
+type DialogPanel = "none" | "file-manager" | "schedule" | "server-config";
 
 const props = defineProps<{
     instanceId: string;
@@ -42,7 +42,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (e: "open-server-config", instanceId: string, daemonId: string, type: string): void;
-    (e: "open-mod-manager", instanceId: string, daemonId: string): void;
     (e: "open-schedule", instanceId: string, daemonId: string): void;
     (e: "open-event-config", instanceId: string, daemonId: string): void;
     (e: "open-instance-action", actionId: string, instanceId: string, daemonId: string): void;
@@ -423,24 +422,6 @@ onUnmounted(() => {
                 </div>
             </div>
 
-            <div v-else-if="activeDialog === 'mod-manager'" class="dim-dialog">
-                <div class="dim-dialog__header">
-                    <VBtn icon variant="text" rounded="xl" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
-                        <VIcon icon="mdi-arrow-left"  />
-                    </VBtn>
-                    <span class="dim-dialog__title">
-                        <VIcon icon="mdi-usb-port"  /> {{ t("TXT_CODE_MOD_MANAGER") }}
-                    </span>
-                </div>
-                <div class="dim-dialog__body">
-                    <div class="dim-placeholder">
-                        <VIcon icon="mdi-usb-port" class="dim-placeholder__icon"  />
-                        <p class="dim-placeholder__text">{{ t("TXT_CODE_MOD_MANAGER") }}</p>
-                        <p class="dim-placeholder__hint">{{ t("TXT_CODE_6c5985ca") }}</p>
-                    </div>
-                </div>
-            </div>
-
             <div v-else-if="activeDialog === 'schedule'" class="dim-dialog">
                 <div class="dim-dialog__header">
                     <VBtn icon variant="text" rounded="xl" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
@@ -480,7 +461,6 @@ onUnmounted(() => {
 
         <DesktopManagerBtns :instance-id="instanceId" :daemon-id="daemonId"
             @open-server-config="(type: string) => emit('open-server-config', instanceId, daemonId, type)"
-            @open-mod-manager="emit('open-mod-manager', instanceId, daemonId)"
             @open-schedule="emit('open-schedule', instanceId, daemonId)"
             @open-event-config="emit('open-event-config', instanceId, daemonId)"
             @open-instance-action="(actionId: string) => emit('open-instance-action', actionId, instanceId, daemonId)" />

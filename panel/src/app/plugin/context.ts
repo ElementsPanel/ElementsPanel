@@ -136,6 +136,8 @@ export interface PanelLayoutService {
   get(): string;
   set(config: IPageLayoutConfig[]): void;
   reset(): void;
+  /** Adds a default page layout for the lifetime of the calling plugin. */
+  provide(page: () => IPageLayoutConfig): () => void;
 }
 
 /**

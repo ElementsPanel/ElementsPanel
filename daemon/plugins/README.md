@@ -161,9 +161,11 @@ README covers.
 ## What a backend must not import
 
 A plugin must not import daemon core modules at runtime: they are bundled into
-`app.js`, so importing one would compile a second copy of that singleton. The same
-goes for `cordis` — a second `Context` class is a second container. Only
-`import type` from either.
+`app.js`, so importing one would compile a second copy of that singleton. Use
+`import type` for host contracts. Cordis's `Service` and `Logger` may be imported
+at runtime because `scripts/webpack-cordis-externals.cjs` keeps one shared,
+external framework copy. Do not bundle another Cordis copy or import the host's
+`ctx` singleton.
 
 This is why a class that has to extend something the core owns is built by a
 factory that takes `ctx`: see `plugins/market/src/backend/quick_install.ts`, whose
@@ -213,6 +215,10 @@ preset — the two ways a market package reaches an instance. See
 `java` owns Java runtime installation and selection, the `java_manager/*`
 protocol events and the `{mcsm_java}` command expansion. See
 `daemon/plugins/java`.
+
+`mod` owns `instance/mods/*`, JAR metadata parsing and mod installation, and
+advertises the `modManager` capability. See `daemon/plugins/mod` and
+`panel/plugins/mod`.
 
 `mcstats` owns Minecraft Java and Bedrock status polling, the `refreshPlayers`
 preset and its per-instance lifecycle task. See `daemon/plugins/mcstats`.

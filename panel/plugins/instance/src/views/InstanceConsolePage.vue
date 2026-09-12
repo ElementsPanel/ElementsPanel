@@ -14,7 +14,6 @@ import {
 } from "@/plugin/context";
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { useServerConfig } from "@/hooks/useServerConfig";
-import { modListApi } from "@/services/apis/modManager";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import {
   killInstance,
@@ -186,24 +185,6 @@ const setInstanceActionRef = (id: string, component: unknown) => {
 };
 const openInstanceAction = (id: string) => instanceActionRefs.get(id)?.open?.();
 
-const folders = ref<string[]>([]);
-const foldersLoaded = ref(false);
-const loadFolders = async () => {
-  if (!instanceId.value || !daemonId.value) return;
-  try {
-    const { execute } = modListApi();
-    const result = await execute({
-      params: { uuid: instanceId.value, daemonId: daemonId.value }
-    });
-    folders.value = result.value?.folders || [];
-  } catch (error) {
-    console.error("Failed to load instance folders:", error);
-  } finally {
-    foldersLoaded.value = true;
-  }
-};
-
-watch([instanceId, daemonId], () => void loadFolders(), { immediate: true });
 watch(
   () => [instanceInfo.value?.config?.type, instanceId.value, daemonId.value],
   ([type, id, node]) => {
@@ -225,7 +206,7 @@ const instanceFunctionItems = computed(() => {
   };
   const pluginItems = normalInstanceActions.value.map((action) => ({
     title: typeof action.title === "function" ? action.title() : action.title,
-    icon: instanceActionMdiIcons[action.id] || getMdiIcon(action.icon),
+    icon: action.mdiIcon || instanceActionMdiIcons[action.id] || getMdiIcon(action.icon),
     condition: () => action.condition?.(actionContext) ?? true,
     click: () => openInstanceAction(action.id)
   }));
@@ -245,17 +226,6 @@ const instanceFunctionItems = computed(() => {
       icon: "mdi-cog-outline",
       condition: () => !isGlobalTerminal.value && serverConfigFiles.value.length > 0,
       click: goConfig
-    },
-    {
-      title: t("TXT_CODE_MOD_MANAGER"),
-      icon: "mdi-package-variant-closed",
-      condition: () => {
-        const type = String(instanceInfo.value?.config.type || "");
-        const isMinecraft = type.startsWith("minecraft/java") || type.startsWith("minecraft/bedrock");
-        const hasPermission = appState.settings.canFileManager || isAdmin.value;
-        return isMinecraft && hasPermission && foldersLoaded.value && folders.value.length > 0;
-      },
-      click: goMods
     },
     {
       title: t("TXT_CODE_656a85d8"),
@@ -352,11 +322,6 @@ const update = async () => {
     reportErrorMsg(error.message);
   }
 };
-const goMods = () =>
-  router.push({
-    path: "/instances/terminal/mods",
-    query: { daemonId: daemonId.value, instanceId: instanceId.value }
-  });
 const goConfig = () =>
   router.push({
     path: "/instances/terminal/serverConfig",
