@@ -1,4 +1,3 @@
-import { UsbOutlined } from "@ant-design/icons-vue";
 import { t } from "@/lang/i18n";
 import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } from "@/plugin";
 import { useAppStateStore } from "@/stores/useAppStateStore";
@@ -36,7 +35,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.actions.instance({
     id: "mod-manager",
     title: () => t("TXT_CODE_MOD_MANAGER"),
-    icon: UsbOutlined,
+    icon: "mdi-package-variant-closed",
     mdiIcon: "mdi-package-variant-closed",
     normalComponent: ModManagerAction,
     desktopComponent: DesktopModManager,

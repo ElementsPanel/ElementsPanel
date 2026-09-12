@@ -384,7 +384,6 @@ test("frontend registration and feature gating follow the mod and file plugin li
   const user = { state: { settings: { canFileManager: true } }, isAdmin: { value: false } };
   const component = {};
   const plugin = load("panel/plugins/mod/src/frontend.ts", {
-    "@ant-design/icons-vue": { UsbOutlined: component },
     "@/lang/i18n": { t: (key) => key },
     "@/stores/useAppStateStore": { useAppStateStore: () => user },
     "@/views/LayoutContainer.vue": component,
