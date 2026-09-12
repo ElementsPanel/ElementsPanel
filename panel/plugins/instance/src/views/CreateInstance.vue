@@ -45,7 +45,7 @@ const methodOptions = [
     value: QUICKSTART_METHOD.IMPORT,
     title: t("TXT_CODE_a3efb1cc"),
     description: t("TXT_CODE_f09da050"),
-    icon: "mdi-file-zip-outline"
+    icon: "mdi-folder-zip-outline"
   },
   {
     value: QUICKSTART_METHOD.DOCKER,
