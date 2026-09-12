@@ -15,15 +15,7 @@ import type { PanelFrontendInstanceActionContext } from "@/plugin";
 import { modListApi } from "@/services/apis/modManager";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import type { LayoutCard } from "@/types";
-import {
-  AppstoreAddOutlined,
-  ArrowRightOutlined,
-  BuildOutlined,
-  ControlOutlined,
-  DashboardOutlined,
-  FieldTimeOutlined,
-  UsbOutlined
-} from "@ant-design/icons-vue";
+import { VIcon } from "vuetify/components";
 
 import { computed, ref, watch, type ComponentPublicInstance } from "vue";
 import type { RouteLocationPathRaw } from "vue-router";
@@ -150,7 +142,7 @@ const btns = computed(() => {
   return arrayFilter([
     {
       title: t("TXT_CODE_d07742fe"),
-      icon: ControlOutlined,
+      icon: "mdi-file-cog-outline",
       condition: () => {
         return (
           !isGlobalTerminal.value &&
@@ -169,7 +161,7 @@ const btns = computed(() => {
     },
     {
       title: t("TXT_CODE_MOD_MANAGER"),
-      icon: UsbOutlined,
+      icon: "mdi-usb-port",
       click: () => {
         toPage({ path: "/instances/terminal/mods" });
       },
@@ -187,7 +179,7 @@ const btns = computed(() => {
 
     {
       title: t("TXT_CODE_656a85d8"),
-      icon: BuildOutlined,
+      icon: "mdi-hammer-wrench",
       click: () => {
         rconSettingsDialog.value?.openDialog();
       },
@@ -197,7 +189,7 @@ const btns = computed(() => {
 
     {
       title: t("TXT_CODE_b7d026f8"),
-      icon: FieldTimeOutlined,
+      icon: "mdi-calendar-clock-outline",
       condition: () => !isGlobalTerminal.value,
       click: () => {
         toPage({
@@ -211,14 +203,14 @@ const btns = computed(() => {
     },
     {
       title: t("TXT_CODE_d341127b"),
-      icon: DashboardOutlined,
-      click: () => {
+      icon: "mdi-view-dashboard-outline",
+      click: (): void => {
         eventConfigOpen.value = true;
       }
     },
     {
       title: t("TXT_CODE_4f34fc28"),
-      icon: AppstoreAddOutlined,
+      icon: "mdi-view-grid-plus",
       condition: () => isAdmin.value,
       click: () => {
         instanceDetailsDialog.value?.openDialog();
@@ -226,7 +218,7 @@ const btns = computed(() => {
     },
     {
       title: t("TXT_CODE_4f34fc28"),
-      icon: AppstoreAddOutlined,
+      icon: "mdi-view-grid-plus",
       condition: () =>
         !isAdmin.value &&
         instanceInfo.value?.config.processType === "docker" &&
@@ -260,7 +252,7 @@ watch(instanceInfo, (cfg, oldCfg) => {
               <a href="javascript:void(0);">
                 <span>
                   {{ t("TXT_CODE_6c5985ca") }}
-                  <ArrowRightOutlined style="font-size: 12px" />
+                  <VIcon icon="mdi-arrow-right" size="12" />
                 </span>
               </a>
             </template>

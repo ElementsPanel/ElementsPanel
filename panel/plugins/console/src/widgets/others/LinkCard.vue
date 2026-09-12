@@ -3,9 +3,11 @@ import { ref } from "vue";
 import type { Ref } from "vue";
 import ActionButton from "@/components/ActionButton.vue";
 import CardPanel from "@/components/CardPanel.vue";
+import AppDialog from "@/components/AppDialog.vue";
 import { message } from "@/tools/vuetifyToast";
 import { reportErrorMsg } from "@/tools/validator";
-import { DeleteOutlined } from "@ant-design/icons-vue";
+import { VBtn, VIcon, VRow, VTextarea } from "vuetify/components";
+import { Modal } from "@/tools/vuetifyModal";
 
 import { $t as t } from "@/lang/i18n";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
@@ -63,6 +65,10 @@ const openLink = (url: string) => {
 const deleteLink = (index: number) => {
   cardData.value.splice(index, 1);
 };
+
+const confirmDeleteLink = (index: number) => {
+  Modal.confirm({ title: t("TXT_CODE_6f12aba3"), onOk: () => deleteLink(index) });
+};
 </script>
 
 <template>
@@ -74,43 +80,31 @@ const deleteLink = (index: number) => {
     </template>
     <template #operator>
       <div v-if="containerState.isDesignMode" class="btn-group ml-10">
-        <a-button type="primary" size="small" @click="addLink.show = true">
+        <VBtn color="primary" size="small" @click="addLink.show = true">
           {{ t("TXT_CODE_a1d885c1") }}
-        </a-button>
+        </VBtn>
       </div>
     </template>
 
     <template #body>
-      <a-row :gutter="[0, 16]">
+      <VRow dense>
         <div v-for="(item, index) in cardData" :key="item.title" class="h-100 w-100 button">
-          <a-popconfirm
-            :title="t('TXT_CODE_6f12aba3')"
-            :ok-text="t('TXT_CODE_d507abff')"
-            :cancel-text="t('TXT_CODE_a0451c97')"
-            @confirm="deleteLink(index)"
-          >
-            <div v-if="containerState.isDesignMode" class="delete-button"><DeleteOutlined /></div>
-          </a-popconfirm>
+          <div v-if="containerState.isDesignMode" class="delete-button" @click="confirmDeleteLink(index)"><VIcon icon="mdi-delete-outline" /></div>
           <action-button :title="item.title" :click="() => openLink(item.link)" />
         </div>
-      </a-row>
+      </VRow>
     </template>
   </card-panel>
 
-  <a-modal
-    v-model:open="addLink.show"
-    :title="t('TXT_CODE_a7c85e67')"
-    @ok="addLink.finish()"
-    @cancel="addLink.close()"
-  >
-    <a-textarea
+  <AppDialog v-model:visible="addLink.show" :title="t('TXT_CODE_a7c85e67')" @ok="addLink.finish()" @cancel="addLink.close()">
+    <VTextarea
       v-model:value="addLink.title"
       :placeholder="t('TXT_CODE_b5a0661a')"
       auto-size
       class="mt-10 mb-10"
     />
-    <a-textarea v-model:value="addLink.link" :placeholder="t('TXT_CODE_ad5e2b0f')" auto-size />
-  </a-modal>
+    <VTextarea v-model="addLink.link" :placeholder="t('TXT_CODE_ad5e2b0f')" auto-grow />
+  </AppDialog>
 </template>
 
 <style scoped lang="scss">

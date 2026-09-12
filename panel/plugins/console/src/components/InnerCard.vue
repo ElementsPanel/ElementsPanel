@@ -9,13 +9,13 @@ const props = defineProps<{
 <template>
   <div class="inner-card-wrapper">
     <div class="inner-card-container">
-      <a-typography-text strong>
+      <strong>
         <slot name="title"></slot>
-      </a-typography-text>
+      </strong>
       <div class="mt-10">
-        <a-typography-text>
+        <span>
           <slot name="body"></slot>
-        </a-typography-text>
+        </span>
 
         <div v-if="props.icon" class="bg-icon">
           <component :is="props.icon"></component>

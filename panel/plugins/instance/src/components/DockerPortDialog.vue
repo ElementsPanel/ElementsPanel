@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import type { AntColumnsType, AntTableCell } from "@/types/ant";
-import { MinusCircleOutlined, PlusCircleOutlined } from "@ant-design/icons-vue";
-import { type FormInstance } from "ant-design-vue";
+import type { TableColumn } from "@/types/table";
 import _ from "lodash";
-import { computed, h, onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
+import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VCheckbox, VDataTable, VDialog, VIcon, VSelect, VSpacer, VTextField } from "vuetify/components";
 import { emptyValueValidator, reportValidatorError } from "@/tools/validator";
 
 type Protocol = "tcp" | "udp";
@@ -29,9 +28,9 @@ const props = defineProps<Props>();
 const dataSource = ref<DockerPortMappingWithAutoAssign[]>([]);
 const usedPorts = ref<number[]>([]);
 const open = ref(true);
-const formInstance = ref<FormInstance>();
+const getRecord = (item: any) => item?.raw ?? item;
 
-const columns = computed<AntColumnsType[]>(() => [
+const columns = computed<TableColumn[]>(() => [
   {
     align: "center",
     dataIndex: "host",
@@ -158,11 +157,7 @@ const cancel = async () => {
 };
 
 const submit = async () => {
-  try {
-    await formInstance.value?.validate();
-  } catch (error: any) {
-    return reportValidatorError(error);
-  }
+  if (dataSource.value.some((item) => !String(item.host || "").trim() || !String(item.container || "").trim() || !String(item.protocol || "").trim())) return reportValidatorError(new Error(t("TXT_CODE_cb08d342")));
 
   const result: DockerPortMapping[] = dataSource.value.map((item) => ({
     protocol: item.protocol,
@@ -200,19 +195,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <a-modal
-    v-model:open="open"
-    centered
-    width="1300px"
-    :mask-closable="false"
-    :title="t('TXT_CODE_c4435af9')"
-    :ok-text="t('TXT_CODE_d507abff')"
-    :cancel-text="t('TXT_CODE_a0451c97')"
-    @ok="submit"
-    @cancel="cancel"
-  >
-    <div class="dialog-overflow-container">
-      <div style="font-size: 14px" class="text-gray-400 mb-4">
+  <VDialog v-model="open" max-width="1300" persistent>
+    <VCard>
+      <VCardTitle>{{ t("TXT_CODE_c4435af9") }}</VCardTitle>
+      <VCardText class="dialog-overflow-container">
+      <div class="text-body-2 text-medium-emphasis mb-4">
         {{
           t("TXT_CODE_56b9e6af", {
             mcsm_port1: "{mcsm_port1}",
@@ -220,105 +207,20 @@ onMounted(() => {
           })
         }}
       </div>
-      <div class="flex justify-end mb-20">
-        <a-button :icon="h(PlusCircleOutlined)" @click="operation('add')">
+      <div class="d-flex justify-end mb-5">
+        <VBtn variant="tonal" @click="operation('add')"><VIcon start icon="mdi-plus-circle-outline" />
           {{ t("TXT_CODE_dfc17a0c") }}
-        </a-button>
+        </VBtn>
       </div>
-      <a-form ref="formInstance" :model="dataSource" name="validate_other">
-        <a-table
-          :data-source="dataSource"
-          :columns="columns"
-          :pagination="false"
-          :scroll="{ x: 542 }"
-          size="small"
-        >
-          <template #bodyCell="{ column, record, index }: AntTableCell">
-            <template v-if="column.dataIndex === 'host' || column.dataIndex === 'container'">
-              <div class="flex-center flex-row">
-                <a-form-item
-                  :name="`${index}-${String(column.dataIndex)}`"
-                  no-style
-                  :rules="[
-                    {
-                      validator: () => emptyValueValidator(record[String(column.dataIndex)]),
-                      trigger: 'change'
-                    }
-                  ]"
-                >
-                  <a-input-number
-                    v-model:value="record[String(column.dataIndex)]"
-                    class="w-full"
-                    min="1"
-                    max="65535"
-                    size="large"
-                    :placeholder="(column as any).placeholder"
-                    :disabled="
-                      record[
-                        column.dataIndex === 'host'
-                          ? 'autoAssignHostPort'
-                          : 'autoAssignContainerPort'
-                      ]
-                    "
-                  />
-                </a-form-item>
-                <a-checkbox
-                  class="ml-12"
-                  style="width: 114px"
-                  :checked="
-                    record[
-                      column.dataIndex === 'host' ? 'autoAssignHostPort' : 'autoAssignContainerPort'
-                    ]
-                  "
-                  @change="
-                    () => handleAutoAssignChange(record, column.dataIndex as 'host' | 'container')
-                  "
-                >
-                  {{ t("TXT_CODE_6f1129fb") }}
-                </a-checkbox>
-              </div>
-            </template>
-            <template v-else-if="column.dataIndex === 'protocol'">
-              <a-form-item
-                :name="`${index}-${String(column.dataIndex)}`"
-                no-style
-                :rules="[
-                  {
-                    validator: () => emptyValueValidator(record[String(column.dataIndex)]),
-                    trigger: 'change'
-                  }
-                ]"
-              >
-                <a-select
-                  v-model:value="record[String(column.dataIndex)]"
-                  :placeholder="(column as any).placeholder"
-                  :options="[
-                    {
-                      label: 'TCP',
-                      value: 'tcp'
-                    },
-                    {
-                      label: 'UDP',
-                      value: 'udp'
-                    }
-                  ]"
-                />
-              </a-form-item>
-            </template>
-            <template v-else-if="column.dataIndex === 'operation'">
-              <div class="flex-center flex-between">
-                <div>
-                  <a-button
-                    :icon="h(MinusCircleOutlined)"
-                    danger
-                    @click="operation('del', index)"
-                  ></a-button>
-                </div>
-              </div>
-            </template>
-          </template>
-        </a-table>
-      </a-form>
-    </div>
-  </a-modal>
+      <VDataTable :headers="columns.map((column) => ({ title: column.title, key: String(column.dataIndex), align: 'center' as const, sortable: false }))" :items="dataSource" :items-per-page="-1" hide-default-footer density="comfortable">
+        <template #item="{ item, index }"><tr><td v-for="column in columns" :key="String(column.dataIndex)">
+          <template v-if="column.dataIndex === 'host' || column.dataIndex === 'container'"><div class="d-flex align-center ga-2"><VTextField :model-value="getRecord(item)[String(column.dataIndex)]" type="number" min="1" max="65535" :placeholder="(column as any).placeholder" :disabled="getRecord(item)[column.dataIndex === 'host' ? 'autoAssignHostPort' : 'autoAssignContainerPort']" hide-details="auto" @update:model-value="(value) => (getRecord(item)[String(column.dataIndex)] = value)" /><VCheckbox :model-value="getRecord(item)[column.dataIndex === 'host' ? 'autoAssignHostPort' : 'autoAssignContainerPort']" :label="t('TXT_CODE_6f1129fb')" hide-details @update:model-value="() => handleAutoAssignChange(getRecord(item), column.dataIndex as 'host' | 'container')" /></div></template>
+          <VSelect v-else-if="column.dataIndex === 'protocol'" :model-value="getRecord(item).protocol" :items="[{ title: 'TCP', value: 'tcp' }, { title: 'UDP', value: 'udp' }]" hide-details @update:model-value="(value) => (getRecord(item).protocol = value)" />
+          <VBtn v-else icon variant="text" color="error" size="small" @click="operation('del', index)"><VIcon icon="mdi-minus-circle-outline" /></VBtn>
+        </td></tr></template>
+      </VDataTable>
+      </VCardText>
+      <VCardActions><VSpacer /><VBtn variant="text" @click="cancel">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="primary" @click="submit">{{ t("TXT_CODE_d507abff") }}</VBtn></VCardActions>
+    </VCard>
+  </VDialog>
 </template>

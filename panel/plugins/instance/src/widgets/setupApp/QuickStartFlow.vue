@@ -12,6 +12,7 @@ import {
 import CreateInstanceForm from "./CreateInstanceForm.vue";
 import { useRoute } from "vue-router";
 import FadeUpAnimation from "@/components/FadeUpAnimation.vue";
+import { VCol, VIcon, VRow } from "vuetify/components";
 const { isPhone } = useScreen();
 const route = useRoute();
 
@@ -66,24 +67,24 @@ const handleNext = (key: string) => {
     <template #title>{{ card.title }}</template>
     <template #body>
       <div v-if="!isLoading" class="pd-24 h-100">
-        <a-row v-if="isNormalStep" :gutter="[24, 24]" class="h-100">
-          <a-col v-if="!isPhone" :lg="12">
+        <VRow v-if="isNormalStep" class="h-100" dense>
+          <VCol v-if="!isPhone" lg="6">
             <div class="quickstart-icon flex-center h-100">
               <Transition name="global-action-float">
-                <component :is="currentIcon"></component>
+                <VIcon :icon="currentIcon" size="180" />
               </Transition>
             </div>
-          </a-col>
-          <a-col :lg="12">
+          </VCol>
+          <VCol lg="6">
             <div class="text-left" style="text-align: left">
-              <a-typography-title :level="5" class="mb-24">
+              <h3 class="mb-24">
                 {{ formData.title }}
-              </a-typography-title>
+              </h3>
               <div style="max-height: 400px; overflow-x: hidden">
-                <a-typography-paragraph v-if="formData.actions?.length === 0">
+                <p v-if="formData.actions?.length === 0">
                   {{ formData.emptyActionsText }}
-                </a-typography-paragraph>
-                <a-row :gutter="[12, 12]">
+                </p>
+                <VRow dense>
                   <fade-up-animation>
                     <action-button
                       v-for="(action, index) in formData.actions"
@@ -94,11 +95,11 @@ const handleNext = (key: string) => {
                       :click="() => (action.click ? action.click() : handleNext(action.key))"
                     />
                   </fade-up-animation>
-                </a-row>
+                </VRow>
               </div>
             </div>
-          </a-col>
-        </a-row>
+          </VCol>
+        </VRow>
         <div v-else-if="isFormStep && formData.appType && formData.createMethod">
           <CreateInstanceForm
             :app-type="formData.appType"

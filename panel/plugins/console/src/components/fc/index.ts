@@ -4,7 +4,6 @@ import type { UserInstance } from "@/types/user";
 
 import KvOptionsDialogVue from "@/components/fc/KvOptionsDialog.vue";
 import { t } from "@/lang/i18n";
-import type { AntColumnsType } from "@/types/ant";
 import TaskLoadingDialog from "./TaskLoadingDialog.vue";
 
 // The file manager's own dialogs — upload, download-from-URL and the image
@@ -100,7 +99,7 @@ export async function useVolumeEditDialog(data: DockerConfigItem[] = []) {
           dataIndex: "container",
           title: t("TXT_CODE_30258325")
         }
-      ] as AntColumnsType[],
+      ],
       textarea: true
     }).mount<DockerConfigItem[]>(KvOptionsDialogVue)) || []
   );
@@ -122,7 +121,7 @@ export async function useDockerEnvEditDialog(data: DockerEnvItem[] = []) {
           dataIndex: "value",
           title: t("TXT_CODE_115e8a25")
         }
-      ] as AntColumnsType[],
+      ],
       textarea: true
     }).mount<DockerEnvItem[]>(KvOptionsDialogVue)) || []
   );
@@ -145,7 +144,7 @@ export async function useDockerLabelEditDialog(data: DockerLabelItem[] = []) {
           dataIndex: "value",
           title: t("TXT_CODE_115e8a25")
         }
-      ] as AntColumnsType[],
+      ],
       textarea: true
     }).mount<DockerLabelItem[]>(KvOptionsDialogVue)) || []
   );

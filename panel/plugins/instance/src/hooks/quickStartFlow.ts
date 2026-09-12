@@ -2,24 +2,7 @@ import { router } from "@/config/router";
 import { t } from "@/lang/i18n";
 import { remoteNodeList } from "@/services/apis";
 import { arrayFilter } from "@/tools/array";
-import {
-  AppstoreAddOutlined,
-  AppstoreTwoTone,
-  CalculatorTwoTone,
-  CloudUploadOutlined,
-  CodeOutlined,
-  DatabaseTwoTone,
-  FileExcelOutlined,
-  FileZipOutlined,
-  FolderOpenOutlined,
-  HomeOutlined,
-  IdcardTwoTone,
-  NodeIndexOutlined,
-  ShoppingCartOutlined,
-  SmileTwoTone,
-  TransactionOutlined
-} from "@ant-design/icons-vue";
-import { computed, reactive, ref, type FunctionalComponent } from "vue";
+import { computed, reactive, ref } from "vue";
 
 export enum QUICKSTART_ACTION_TYPE {
   Minecraft = "minecraft",
@@ -43,12 +26,12 @@ export enum QUICKSTART_METHOD {
 export function useQuickStartFlow() {
   const { state: remoteNodes, execute, isReady, isLoading } = remoteNodeList();
 
-  const currentIcon = ref<FunctionalComponent>(AppstoreTwoTone);
+  const currentIcon = ref("mdi-apps");
 
   interface ActionButtons {
     title: string;
     key: string;
-    icon: any;
+    icon: string;
     click?: () => void;
   }
 
@@ -56,33 +39,33 @@ export function useQuickStartFlow() {
     {
       title: t("TXT_CODE_9e3f25e0"),
       key: QUICKSTART_ACTION_TYPE.Minecraft,
-      icon: AppstoreAddOutlined
+      icon: "mdi-apps"
     },
     {
       title: t("TXT_CODE_c8261c85"),
       key: QUICKSTART_ACTION_TYPE.Bedrock,
-      icon: AppstoreAddOutlined
+      icon: "mdi-apps"
     },
     {
       title: t("TXT_CODE_2025658e"),
       key: QUICKSTART_ACTION_TYPE.Hytale,
-      icon: AppstoreAddOutlined
+      icon: "mdi-apps"
     },
     {
       title: t("TXT_CODE_dbefcc6c"),
       key: QUICKSTART_ACTION_TYPE.Terraria,
-      icon: AppstoreAddOutlined
+      icon: "mdi-apps"
     },
 
     {
       title: t("TXT_CODE_dd8d27ce"),
       key: QUICKSTART_ACTION_TYPE.SteamGameServer,
-      icon: ShoppingCartOutlined
+      icon: "mdi-cart-outline"
     },
     {
       title: t("TXT_CODE_e08e63b5"),
       key: QUICKSTART_ACTION_TYPE.AnyApp,
-      icon: TransactionOutlined
+      icon: "mdi-swap-horizontal"
     }
   ];
 
@@ -106,7 +89,7 @@ export function useQuickStartFlow() {
 
     formData.step = 2;
     formData.emptyActionsText = t("TXT_CODE_9337bed1");
-    currentIcon.value = DatabaseTwoTone;
+    currentIcon.value = "mdi-database-outline";
     await execute();
     formData.actions = remoteNodes.value
       ?.filter((v) => v.available)
@@ -114,7 +97,7 @@ export function useQuickStartFlow() {
         return {
           title: `${v.ip}:${v.port} (${v.remarks})`,
           key: v.uuid,
-          icon: NodeIndexOutlined
+          icon: "mdi-source-branch"
         };
       });
 
@@ -125,12 +108,12 @@ export function useQuickStartFlow() {
     formData.step = 3;
     formData.title = t("TXT_CODE_49981cb9");
     formData.daemonId = daemonId;
-    currentIcon.value = CalculatorTwoTone;
+    currentIcon.value = "mdi-calculator-variant";
     formData.actions = arrayFilter<ActionButtons>([
       {
         title: t("TXT_CODE_266b7246"),
         key: QUICKSTART_METHOD.FAST,
-        icon: AppstoreAddOutlined,
+        icon: "mdi-apps",
         condition: () =>
           formData.appType === QUICKSTART_ACTION_TYPE.Minecraft ||
           formData.appType === QUICKSTART_ACTION_TYPE.Bedrock,
@@ -146,27 +129,27 @@ export function useQuickStartFlow() {
       {
         title: t("TXT_CODE_acd4abda"),
         key: QUICKSTART_METHOD.DOCKER,
-        icon: CodeOutlined
+        icon: "mdi-code-tags"
       },
       {
         title: t("TXT_CODE_444db70f"),
         key: QUICKSTART_METHOD.FILE,
-        icon: CloudUploadOutlined
+        icon: "mdi-cloud-upload-outline"
       },
       {
         title: t("TXT_CODE_f2a58270"),
         key: QUICKSTART_METHOD.IMPORT,
-        icon: FileZipOutlined
+        icon: "mdi-folder-zip-outline"
       },
       {
         title: t("TXT_CODE_1baf656e"),
         key: QUICKSTART_METHOD.SELECT,
-        icon: FolderOpenOutlined
+        icon: "mdi-folder-open-outline"
       },
       {
         title: t("TXT_CODE_c14caab"),
         key: QUICKSTART_METHOD.EXIST,
-        icon: FileExcelOutlined
+        icon: "mdi-file-document-outline"
       }
     ]);
   };
@@ -174,19 +157,19 @@ export function useQuickStartFlow() {
   const toStep4 = (key: QUICKSTART_METHOD) => {
     formData.step = 4;
     formData.createMethod = key;
-    currentIcon.value = IdcardTwoTone;
+    currentIcon.value = "mdi-card-account-details-outline";
   };
 
   const toStep5 = (instanceId?: string) => {
     formData.step = 5;
     formData.title = t("TXT_CODE_2958a0f8");
-    currentIcon.value = SmileTwoTone;
+    currentIcon.value = "mdi-emoticon-outline";
 
     formData.actions = arrayFilter<ActionButtons>([
       {
         title: t("TXT_CODE_36417656"),
         key: "console",
-        icon: CodeOutlined,
+        icon: "mdi-code-tags",
         click: () => {
           const daemonId = formData.daemonId;
           router.push({
@@ -201,7 +184,7 @@ export function useQuickStartFlow() {
       {
         title: t("TXT_CODE_2864bfbc"),
         key: "files",
-        icon: FolderOpenOutlined,
+        icon: "mdi-folder-open-outline",
         click: () => {
           const daemonId = formData.daemonId;
           router.push({
@@ -216,7 +199,7 @@ export function useQuickStartFlow() {
       {
         title: t("TXT_CODE_d4146944"),
         key: "main",
-        icon: HomeOutlined,
+        icon: "mdi-home-outline",
         click: () => {
           router.push({
             path: "/"

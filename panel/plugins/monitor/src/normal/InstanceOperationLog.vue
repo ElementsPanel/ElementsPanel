@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
 import { ctx } from "@/plugin/context";
-import { FileTextOutlined } from "@ant-design/icons-vue";
 import { message } from "@/tools/vuetifyToast";
 import { computed, onMounted, ref } from "vue";
 import AppDialog from "@/components/AppDialog.vue";
@@ -64,7 +63,7 @@ onMounted(fetchLogs);
   <Teleport to="body">
     <Transition v-if="useDesktopWindow" name="monitor-log-fade" @after-leave="emitClose">
       <component :is="desktopWindow" v-if="dialogOpen" id="instance-operation-log" :title="t('TXT_CODE_f6a33629')"
-        :icon="FileTextOutlined" :visible="true" :minimized="false" :maximized="false" :active="true"
+        icon="mdi-file-document-outline" :visible="true" :minimized="false" :maximized="false" :active="true"
         :initial-width="680" :initial-height="500" :initial-x="windowWidth / 2 - 340"
         :initial-y="windowHeight / 2 - 250" :z-index="10004" :show-minimize="false" :show-maximize="false"
         :resizable="false" @close="close">

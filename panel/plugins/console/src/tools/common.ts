@@ -1,5 +1,4 @@
 import type { JsonData } from "@/types";
-import { LoadingOutlined } from "@ant-design/icons-vue";
 import { h } from "vue";
 
 export async function sleep(t: number): Promise<void> {
@@ -7,11 +6,9 @@ export async function sleep(t: number): Promise<void> {
 }
 
 export async function loadingIconFc(fontSize = 24) {
-  const indicator = h(LoadingOutlined, {
-    style: {
-      fontSize: `${fontSize}px`
-    },
-    spin: true
+  const indicator = h("i", {
+    class: "mdi mdi-loading mdi-spin",
+    style: { fontSize: `${fontSize}px` }
   });
   return indicator;
 }

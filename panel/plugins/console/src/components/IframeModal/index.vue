@@ -1,25 +1,16 @@
 <!-- IframeModal Dialog Component -->
 <template>
-  <a-modal
-    v-model:open="visible"
-    width="80%"
-    :footer="null"
-    :closable="true"
-    :mask-closable="true"
-    :destroy-on-close="true"
-    :centered="true"
-    class="iframe-modal"
-    @cancel="handleCancel"
-  >
+  <AppDialog v-model:visible="visible" width="80%" :footer="null" class="iframe-modal" @cancel="handleCancel">
     <div class="iframe-modal-content">
       <IframeBox :src="src" width="100%" height="100%" />
     </div>
-  </a-modal>
+  </AppDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import IframeBox from "@/components/IframeBox/index.vue";
+import AppDialog from "@/components/AppDialog.vue";
 
 interface IframeModalProps {
   src: string;
@@ -46,7 +37,7 @@ defineExpose({
 </script>
 
 <style scoped>
-.iframe-modal :deep(.ant-modal-body) {
+.iframe-modal :deep(.app-dialog-content) {
   padding: 0;
   height: 100%;
 }
@@ -69,13 +60,13 @@ defineExpose({
   padding: 14px 0;
 }
 
-.iframe-modal :deep(.ant-modal-content) {
+.iframe-modal :deep(.app-dialog-card) {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.iframe-modal :deep(.ant-modal-header) {
+.iframe-modal :deep(.app-dialog-title) {
   flex-shrink: 0;
 }
 </style>

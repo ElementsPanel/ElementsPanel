@@ -3,8 +3,8 @@ import CardPanel from "@/components/CardPanel.vue";
 import { useCommandHistory } from "../../hooks/useCommandHistory";
 import { t } from "@/lang/i18n";
 import type { LayoutCard } from "@/types";
-import { CodeOutlined, DeleteOutlined } from "@ant-design/icons-vue";
 import { onMounted, ref } from "vue";
+import { VBtn, VIcon, VTooltip } from "vuetify/components";
 
 const props = defineProps<{
     card: LayoutCard;
@@ -50,11 +50,9 @@ onMounted(() => {
             {{ card.title }}
         </template>
         <template #operator>
-            <a-tooltip :title="t('TXT_CODE_7333c7f7')">
-                <a-button type="text" size="small" @click="clearHistory">
-                    <DeleteOutlined />
-                </a-button>
-            </a-tooltip>
+            <VTooltip :text="t('TXT_CODE_7333c7f7')">
+                <template #activator="{ props: tooltipProps }"><VBtn v-bind="tooltipProps" icon variant="text" size="small" @click="clearHistory"><VIcon icon="mdi-delete-outline" /></VBtn></template>
+            </VTooltip>
         </template>
         <template #body>
             <div class="history-container">
@@ -64,7 +62,7 @@ onMounted(() => {
                 <div v-else class="history-list">
                     <div v-for="(item, index) in historyList" :key="index" class="history-item"
                         @click="handleItemClick(item)">
-                        <CodeOutlined class="history-icon" />
+                        <VIcon icon="mdi-console-line" class="history-icon" />
                         <span class="history-text" :title="item">{{ item }}</span>
                     </div>
                 </div>

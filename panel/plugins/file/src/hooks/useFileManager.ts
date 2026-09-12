@@ -33,13 +33,14 @@ import type {
   OperationForm,
   Permission
 } from "@/types/fileManager";
-import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { useLocalStorage } from "@vueuse/core";
 import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
-import type { Key } from "ant-design-vue/es/table/interface";
 import { v4 } from "uuid";
 import { computed, createVNode, onMounted, onUnmounted, reactive, ref, type VNodeRef } from "vue";
+import { VIcon } from "vuetify/components";
+
+type Key = string | number;
 
 export function getFileConfigAddr(config: { addr: string; remoteMappings?: RemoteMappingEntry[] }) {
   let addr = config.addr;
@@ -702,7 +703,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
           const overwriteRef = ref(false);
           Modal.confirm({
             title: t("TXT_CODE_99ca8563"),
-            icon: createVNode(ExclamationCircleOutlined),
+            icon: createVNode(VIcon, { icon: "mdi-alert-circle-outline" }),
             content: createVNode(
               OverwriteFilesPopUpContent,
               {

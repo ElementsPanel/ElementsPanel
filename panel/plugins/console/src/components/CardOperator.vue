@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { useCardOperation } from "@/hooks/useCardOperation";
 import type { LayoutCard } from "@/types";
-import { CloseOutlined, EditOutlined, VerticalAlignTopOutlined } from "@ant-design/icons-vue";
-import { h } from "vue";
+import { VBtn, VIcon, VTooltip } from "vuetify/components";
 import { $t as t } from "@/lang/i18n";
 import { useAppToolsStore } from "@/stores/useAppToolsStore";
 import { arrayFilter } from "@/tools/array";
@@ -20,7 +19,7 @@ const { addCardHeight, reduceCardHeight, addCardWidth, reduceCardWidth, deleteCa
 let btns = arrayFilter([
   {
     tipText: t("TXT_CODE_153f705d"),
-    icon: CloseOutlined,
+    icon: "mdi-close",
     click: deleteCard,
     condition: () => {
       return props.card.disableDelete !== true;
@@ -28,7 +27,7 @@ let btns = arrayFilter([
   },
   {
     tipText: t("TXT_CODE_fd5ca298"),
-    icon: VerticalAlignTopOutlined,
+    icon: "mdi-arrow-collapse-up",
     click: reduceCardHeight,
     style: "transform: rotate(0deg);",
     condition: () => {
@@ -37,7 +36,7 @@ let btns = arrayFilter([
   },
   {
     tipText: t("TXT_CODE_5db4e96b"),
-    icon: VerticalAlignTopOutlined,
+    icon: "mdi-arrow-expand-up",
     click: addCardHeight,
     style: "transform: rotate(180deg);",
     condition: () => {
@@ -46,19 +45,19 @@ let btns = arrayFilter([
   },
   {
     tipText: t("TXT_CODE_d356cf9d"),
-    icon: VerticalAlignTopOutlined,
+    icon: "mdi-arrow-collapse-horizontal",
     click: reduceCardWidth,
     style: "transform: rotate(270deg);"
   },
   {
     tipText: t("TXT_CODE_baa16e45"),
-    icon: VerticalAlignTopOutlined,
+    icon: "mdi-arrow-expand-horizontal",
     click: addCardWidth,
     style: "transform: rotate(90deg);"
   },
   {
     tipText: t("TXT_CODE_18cdc17f"),
-    icon: EditOutlined,
+    icon: "mdi-pencil-outline",
     click: async (id: string) => {
       const newName = await openInputDialog(t("TXT_CODE_b128afa6"));
       editCardName(id, String(newName));
@@ -69,18 +68,14 @@ let btns = arrayFilter([
 
 <template>
   <div class="layout-card-design-btn">
-    <a-tooltip v-for="(item, index) in btns" :key="index" placement="left">
-      <template #title>
-        <span>{{ item.tipText }}</span>
+    <VTooltip v-for="(item, index) in btns" :key="index" location="left">
+      <template #activator="{ props: tooltipProps }">
+        <VBtn v-bind="tooltipProps" :style="item.style" icon variant="text" size="small" @click="() => item.click(card.id)">
+          <VIcon :icon="item.icon" />
+        </VBtn>
       </template>
-      <a-button
-        :style="item.style"
-        type="text"
-        size="small"
-        :icon="h(item.icon)"
-        @click="() => item.click(card.id)"
-      />
-    </a-tooltip>
+      <span>{{ item.tipText }}</span>
+    </VTooltip>
   </div>
   <div class="number-card">
     <div class="number-card-H">

@@ -52,24 +52,22 @@ const parsedConfig = computed(() => jsonToMap(props.config));
     </VCol>
   </template>
   <template v-else>
-  <a-col :span="24">
+  <VCol cols="12">
     <CardPanel style="height: 100%" class="config-editor-panel">
       <template #body>
-        <a-typography>
-          <a-typography-title :level="5">
+          <h5 class="text-h6 mb-2">
             {{ data ? t("TXT_CODE_958fd70c") : t("TXT_CODE_2ce953da") }}
-          </a-typography-title>
-          <a-typography-paragraph v-if="data">
+          </h5>
+          <p v-if="data">
             {{ data?.desc }}
-          </a-typography-paragraph>
-          <a-typography-paragraph v-else>
+          </p>
+          <p v-else>
             {{ t("TXT_CODE_75e5af9b") }}
-          </a-typography-paragraph>
-        </a-typography>
+          </p>
       </template>
     </CardPanel>
-  </a-col>
-  <a-col v-if="data" :span="24">
+  </VCol>
+  <VCol v-if="data" cols="12">
     <CardPanel style="height: 100%" class="config-editor-panel">
       <template #body>
         <div v-if="!isEmpty(props.config)">
@@ -85,7 +83,7 @@ const parsedConfig = computed(() => jsonToMap(props.config));
         </div>
       </template>
     </CardPanel>
-  </a-col>
+  </VCol>
   </template>
 </template>
 
@@ -96,9 +94,6 @@ const parsedConfig = computed(() => jsonToMap(props.config));
     border: none !important;
     box-shadow: none !important;
 
-    .ant-card-body {
-      padding: 0 !important;
-    }
   }
 
   .line-option-card {
@@ -117,9 +112,6 @@ const parsedConfig = computed(() => jsonToMap(props.config));
     border: none !important;
     box-shadow: none !important;
 
-    :deep(.ant-card-body) {
-      padding: 0 !important;
-    }
   }
 
   :deep(.line-option-card) {

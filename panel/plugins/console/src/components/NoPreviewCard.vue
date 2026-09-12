@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import CardPanel from "@/components/CardPanel.vue";
-import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { t } from "@/lang/i18n";
 import type { LayoutCard } from "../types/index";
 
@@ -14,10 +13,10 @@ defineProps<{
     <template #title>{{ card.title }}</template>
     <template #body>
       <div class="flex justify-center align-center h-100">
-        <a-typography-paragraph style="max-width: 320px; margin: auto; text-align: center">
-          <ExclamationCircleOutlined />
+        <p style="max-width: 320px; margin: auto; text-align: center">
+          <VIcon icon="mdi-alert-circle-outline" />
           {{ t("TXT_CODE_5ec10cc8") }}
-        </a-typography-paragraph>
+        </p>
       </div>
     </template>
   </CardPanel>

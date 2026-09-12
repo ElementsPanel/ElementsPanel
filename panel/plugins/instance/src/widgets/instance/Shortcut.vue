@@ -18,24 +18,12 @@ import { formatMemoryUsage } from "@/tools/memory";
 import { parseTimestamp } from "@/tools/time";
 import { reportErrorMsg } from "@/tools/validator";
 import type { InstanceDetail, LayoutCard } from "@/types/index";
-import {
-  CheckCircleOutlined,
-  CloseOutlined,
-  CloudDownloadOutlined,
-  CodeOutlined,
-  DeleteOutlined,
-  ExclamationCircleOutlined,
-  PauseCircleOutlined,
-  PlayCircleOutlined,
-  RedoOutlined,
-  TagsOutlined,
-  UserOutlined
-} from "@ant-design/icons-vue";
 import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import _ from "lodash";
 import prettyBytes, { type Options as PrettyOptions } from "pretty-bytes";
 import { computed, ref } from "vue";
+import { VBtn, VChip, VIcon, VTooltip } from "vuetify/components";
 
 const props = defineProps<{
   card: LayoutCard;
@@ -155,7 +143,7 @@ const instanceOperations = computed(() =>
   arrayFilter([
     {
       title: t("TXT_CODE_57245e94"),
-      icon: PlayCircleOutlined,
+      icon: "mdi-play-circle-outline",
       click: async (event: MouseEvent) => {
         event.stopPropagation();
         await execInstanceAction(event, "start");
@@ -166,7 +154,7 @@ const instanceOperations = computed(() =>
     },
     {
       title: t("TXT_CODE_b1dedda3"),
-      icon: PauseCircleOutlined,
+      icon: "mdi-pause-circle-outline",
       click: (event: MouseEvent) => {
         event.stopPropagation();
         Modal.confirm({
@@ -184,7 +172,7 @@ const instanceOperations = computed(() =>
     },
     {
       title: t("TXT_CODE_47dcfa5"),
-      icon: RedoOutlined,
+      icon: "mdi-restart",
       click: async (event: MouseEvent) => {
         event.stopPropagation();
         Modal.confirm({
@@ -201,7 +189,7 @@ const instanceOperations = computed(() =>
     },
     {
       title: t("TXT_CODE_40ca4f2"),
-      icon: CloudDownloadOutlined,
+      icon: "mdi-cloud-download-outline",
       click: async (event: MouseEvent) => {
         event.stopPropagation();
         execInstanceAction(event, "update");
@@ -212,7 +200,7 @@ const instanceOperations = computed(() =>
     },
     {
       title: t("TXT_CODE_7b67813a"),
-      icon: CloseOutlined,
+      icon: "mdi-close-circle-outline",
       click: async (event: MouseEvent) => {
         event.stopPropagation();
         Modal.confirm({
@@ -233,7 +221,7 @@ const instanceOperations = computed(() =>
     },
     {
       title: t("TXT_CODE_78e88c3f"),
-      icon: TagsOutlined,
+      icon: "mdi-tag-outline",
       click: async (event: MouseEvent) => {
         event.stopPropagation();
         if (instanceId && daemonId) {
@@ -246,7 +234,7 @@ const instanceOperations = computed(() =>
     },
     {
       title: t("TXT_CODE_524e3036"),
-      icon: CodeOutlined,
+      icon: "mdi-console-line",
       click: (event: MouseEvent) => {
         event.stopPropagation();
         toPage({
@@ -261,7 +249,7 @@ const instanceOperations = computed(() =>
     },
     {
       title: t("TXT_CODE_a0e19f38"),
-      icon: DeleteOutlined,
+      icon: "mdi-delete-outline",
       click: async (event: MouseEvent) => {
         event.stopPropagation();
         const deleteInstanceResult = await useDeleteInstanceDialog(
@@ -287,33 +275,35 @@ const instanceOperations = computed(() =>
     <template #operator> </template>
     <template #body>
       <div class="instance-card-body">
-        <a-typography-paragraph>
+        <div>
           <div class="mb-8 flex" style="flex-wrap: wrap; gap: 8px">
-            <a-tag
+            <VChip
               class="m-0"
-              :color="isRunning ? 'green' : isStarting ? 'pink' : ''"
+              :color="isRunning ? 'success' : isStarting ? 'pink' : undefined"
+              size="small"
+              variant="tonal"
               :style="{
                 opacity: isRunning || isStarting ? '1' : '0.5'
               }"
             >
               <span v-if="isRunning">
-                <CheckCircleOutlined />
+                <VIcon start icon="mdi-check-circle-outline" />
                 {{ statusText }}
               </span>
               <span v-else-if="isStopped">
-                <ExclamationCircleOutlined />
+                <VIcon start icon="mdi-alert-circle-outline" />
                 {{ statusText }}
               </span>
               <span v-else>
-                <ExclamationCircleOutlined />
+                <VIcon start icon="mdi-alert-circle-outline" />
                 {{ statusText }}
               </span>
-            </a-tag>
+            </VChip>
 
             <div v-if="instanceInfo?.config.tag && instanceInfo?.config.tag.length > 0">|</div>
-            <a-tag v-for="item in instanceInfo?.config.tag" :key="item" class="m-0">
+            <VChip v-for="item in instanceInfo?.config.tag" :key="item" class="m-0" size="small" variant="tonal">
               {{ item }}
-            </a-tag>
+            </VChip>
           </div>
           <div class="instance-info-line">
             <span class="title">{{ t("TXT_CODE_2f291d8b") }}:</span>
@@ -377,28 +367,20 @@ const instanceOperations = computed(() =>
           <div v-if="instanceInfo?.info.mcPingOnline" class="instance-info-line">
             <span class="title">{{ t("TXT_CODE_e4dce83f") }}:</span>
             <span class="value" style="vertical-align: middle">
-              <UserOutlined />
+              <VIcon start icon="mdi-account-outline" />
               {{ instanceInfo?.info.currentPlayers }} / {{ instanceInfo?.info.maxPlayers }}
             </span>
           </div>
-        </a-typography-paragraph>
+        </div>
 
-        <a-space warp :size="6" class="mb-4">
+        <div class="d-flex flex-wrap ga-1 mb-4">
           <div v-for="item in instanceOperations" :key="item.title">
-            <a-divider v-if="item.area" type="vertical" />
-            <a-tooltip v-else :title="item.title">
-              <a-button
-                size="small"
-                :loading="item.loading"
-                :disabled="item.disabled"
-                :danger="item.danger"
-                @click="item.click"
-              >
-                <component :is="item.icon" style="font-size: 13px"></component>
-              </a-button>
-            </a-tooltip>
+            <span v-if="item.area" class="mx-1">|</span>
+            <VTooltip v-else :text="item.title">
+              <template #activator="{ props: tooltipProps }"><VBtn v-bind="tooltipProps" icon variant="text" size="small" :loading="item.loading" :disabled="item.disabled" :color="item.danger ? 'error' : undefined" @click="item.click"><VIcon :icon="item.icon" size="16" /></VBtn></template>
+            </VTooltip>
           </div>
-        </a-space>
+        </div>
       </div>
     </template>
   </CardPanel>

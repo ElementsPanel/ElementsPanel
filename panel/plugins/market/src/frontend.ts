@@ -1,7 +1,6 @@
 import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugin";
 import { useAppStateStore } from "@/stores/useAppStateStore";
-import { InteractionOutlined, ShopOutlined } from "@ant-design/icons-vue";
 import * as marketApi from "./api";
 import DesktopMarket from "./desktop/DesktopMarket.vue";
 import { useMarketPackages } from "./hooks/useMarketPackages";
@@ -31,7 +30,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.actions.terminal({
     id: "market-reinstall",
     title: () => t("TXT_CODE_b19ed1dd"),
-    icon: InteractionOutlined,
+    icon: "mdi-gesture-tap-button",
     click: async ({ daemonId, instanceId, isDockerMode, clearTerminal }) => {
       try {
         clearTerminal();
@@ -79,7 +78,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.desktop.app({
     id: "market",
     label: () => t("TXT_CODE_27594db8"),
-    icon: ShopOutlined,
+    icon: "mdi-store-outline",
     color: "#722ed1",
     route: "/market",
     component: DesktopMarket,

@@ -46,23 +46,23 @@ const markdownTextToHTML = (md: string) => {
     </template>
     <template #operator>
       <div v-if="containerState.isDesignMode" class="ml-10">
-        <a-button
+        <VBtn
           v-if="status !== EDIT_MODE.PREVIEW"
           type="primary"
           size="small"
           @click="previewsTextContent()"
         >
           {{ t("TXT_CODE_4d81a657") }}
-        </a-button>
-        <a-button v-else type="primary" size="small" @click="editTextContent()">
+        </VBtn>
+        <VBtn v-else color="primary" size="small" @click="editTextContent()">
           {{ t("TXT_CODE_ad207008") }}
-        </a-button>
+        </VBtn>
       </div>
     </template>
 
     <template v-if="containerState.isDesignMode && status == EDIT_MODE.EDIT" #body>
       <div class="edit h-100">
-        <a-textarea
+        <VTextarea
           v-model:value="textContent"
           class="h-100"
           style="resize: none"

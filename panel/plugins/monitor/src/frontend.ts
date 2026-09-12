@@ -1,7 +1,6 @@
 import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugin";
 import { useAppStateStore } from "@/stores/useAppStateStore";
-import { AreaChartOutlined, DashboardOutlined, FileTextOutlined } from "@ant-design/icons-vue";
 import DesktopOverview from "./desktop/DesktopOverview.vue";
 import DesktopInstanceOperationLog from "./desktop/InstanceOperationLog.vue";
 import InstanceLogHost from "./InstanceLogHost.vue";
@@ -23,7 +22,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.actions.instance({
     id: "operation-log",
     title: () => t("TXT_CODE_f6a33629"),
-    icon: FileTextOutlined,
+    icon: "mdi-file-document-outline",
     normalComponent: InstanceOperationLogAction,
     desktopComponent: DesktopInstanceOperationLog,
     condition: ({ instanceId, daemonId }) => Boolean(instanceId && daemonId),
@@ -38,14 +37,14 @@ export function apply(ctx: PanelFrontendPluginContext) {
     meta: {
       mainMenu: true,
       permission: ROLE_ADMIN,
-      icon: AreaChartOutlined
+      icon: "mdi-chart-areaspline",
     }
   });
 
   ctx.desktop.app({
     id: "overview",
     label: () => t("TXT_CODE_84fbe277"),
-    icon: DashboardOutlined,
+    icon: "mdi-view-dashboard-outline",
     color: "#52c41a",
     route: "/overview",
     component: DesktopOverview,

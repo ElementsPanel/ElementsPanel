@@ -2,7 +2,7 @@
 import type { FunctionalComponent } from "vue";
 
 defineProps<{
-  icon: FunctionalComponent;
+  icon: FunctionalComponent | string;
   title: string;
   placement?: string;
 }>();
@@ -11,14 +11,15 @@ defineEmits(["click"]);
 </script>
 
 <template>
-  <a-tooltip :placement="<any>(placement ? placement : 'top')">
-    <template #title>
-      <span>{{ title }}</span>
+  <VTooltip :location="(placement || 'top') as any">
+    <template #activator="{ props: tooltipProps }">
+      <span v-bind="tooltipProps" class="btn" @click="$emit('click')">
+        <VIcon v-if="typeof icon === 'string'" :icon="icon" />
+        <component :is="icon" v-else></component>
+      </span>
     </template>
-    <span class="btn" @click="$emit('click')">
-      <component :is="icon"></component>
-    </span>
-  </a-tooltip>
+    <span>{{ title }}</span>
+  </VTooltip>
 </template>
 
 <style scoped lang="scss">

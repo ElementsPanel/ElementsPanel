@@ -4,8 +4,6 @@ import logoB from "@/assets/logo_b.svg";
 import { getCurrentLang, setLanguage } from "@/lang/i18n";
 import { AppTheme, THEME_AUTO_MIGRATED_KEY, THEME_KEY } from "@/types/const";
 import { createGlobalState, useBreakpoints, useLocalStorage, usePreferredDark } from "@vueuse/core";
-import { theme as antTheme } from "ant-design-vue";
-import type { ThemeConfig } from "ant-design-vue/es/config-provider/context";
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useLayoutConfigStore } from "./useLayoutConfig";
 
@@ -33,16 +31,6 @@ export const useAppConfigStore = createGlobalState(() => {
   const isPreferredDark = usePreferredDark();
   const { getSettingsConfig } = useLayoutConfigStore();
 
-  const theme: ThemeConfig = reactive({
-    algorithm: antTheme.defaultAlgorithm,
-    token: {
-      borderRadius: 12,
-      borderRadiusLG: 12,
-      fontSizeLG: 14,
-      fontSizeSM: 12,
-      fontSizeXL: 18
-    }
-  });
   const appConfig = reactive({
     logoImage: "" as string
   });
@@ -111,13 +99,11 @@ export const useAppConfigStore = createGlobalState(() => {
   };
 
   const setLight = () => {
-    theme.algorithm = antTheme.defaultAlgorithm;
     document.body.classList.add("app-light-theme");
     document.body.classList.remove("app-dark-theme");
   };
 
   const setDark = () => {
-    theme.algorithm = antTheme.darkAlgorithm;
     document.body.classList.add("app-dark-theme");
     document.body.classList.remove("app-light-theme");
   };
@@ -194,7 +180,6 @@ export const useAppConfigStore = createGlobalState(() => {
     setTheme,
     clearBackgroundImage,
     setBackgroundImage,
-    currentTheme,
-    themeConfig: theme
+    currentTheme
   };
 });

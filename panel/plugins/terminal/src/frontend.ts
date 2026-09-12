@@ -14,7 +14,6 @@ import CommandHistory from "./widgets/instance/CommandHistory.vue";
 import Terminal from "./widgets/instance/Terminal.vue";
 import TermConfig from "./widgets/instance/dialogs/TermConfig.vue";
 import DesktopTermConfig from "./desktop/DesktopTermConfig.vue";
-import { CodeOutlined } from "@ant-design/icons-vue";
 import { localeMessages } from "./i18n";
 
 const instanceParams: ILayoutCardParams[] = [
@@ -73,7 +72,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.actions.instance({
     id: "terminal-config",
     title: () => t("TXT_CODE_d23631cb"),
-    icon: CodeOutlined,
+    icon: "mdi-console-line",
     normalComponent: TermConfig,
     desktopComponent: DesktopTermConfig,
     desktopInitialWidth: 700,

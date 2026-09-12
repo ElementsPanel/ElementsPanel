@@ -1,5 +1,5 @@
 /**
- * Returns gradient stroke color for progress bar by percent (Ant Design Progress strokeColor).
+ * Returns gradient stroke colors for a progress bar by percentage.
  * - > 80%: red gradient
  * - > 50%: yellow gradient
  * - otherwise: blue gradient

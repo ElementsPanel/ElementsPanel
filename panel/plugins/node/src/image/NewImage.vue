@@ -20,6 +20,7 @@ import {
 import { getCurrentLang } from "@/lang/i18n";
 import DockerFileForm from "./DockerFileForm.vue";
 import BuildProgress from "./BuildProgress.vue";
+import { VBtn, VCard, VCardText, VCol, VDialog, VRow } from "vuetify/components";
 
 const props = defineProps<{
   card: LayoutCard;
@@ -100,49 +101,45 @@ onMounted(async () => {});
 
 <template>
   <div style="height: 100%" class="container">
-    <a-row :gutter="[24, 24]" style="height: 100%">
-      <a-col :span="24">
+    <VRow dense style="height: 100%">
+      <VCol cols="12">
         <BetweenMenus>
           <template v-if="!isPhone" #left>
-            <a-typography-title class="mb-0" :level="4">
+            <h4 class="text-h6 mb-0">
               {{ card.title }}
-            </a-typography-title>
+            </h4>
           </template>
           <template #right>
-            <a-button @click="toImageListPage">
+            <VBtn variant="tonal" @click="toImageListPage">
               {{ t("TXT_CODE_3a818e91") }}
-            </a-button>
-            <a-button type="primary" @click="buildProgressDialog?.openDialog()">
+            </VBtn>
+            <VBtn color="primary" @click="buildProgressDialog?.openDialog()">
               {{ t("TXT_CODE_5544ec22") }}
-            </a-button>
+            </VBtn>
           </template>
         </BetweenMenus>
-      </a-col>
+      </VCol>
 
-      <a-col :span="24">
+      <VCol cols="12">
         <CardPanel style="height: 100%">
           <template #body>
-            <a-typography>
-              <a-typography-paragraph>
-                <a-typography-title :level="5">{{ t("TXT_CODE_d76ccb4f") }}</a-typography-title>
-                <a-typography-text>
+            <div>
+                <h5 class="text-h6 mb-2">{{ t("TXT_CODE_d76ccb4f") }}</h5>
+                <p class="text-body-2 text-medium-emphasis">
                   {{ t("TXT_CODE_528753e7") }}
-                </a-typography-text>
-              </a-typography-paragraph>
-              <a-typography-paragraph>
-                <a-typography-title :level="5">
+                </p>
+                <h5 class="text-h6 mb-2">
                   {{ t("TXT_CODE_2ea7af21") }}
-                </a-typography-title>
-                <a-typography-text>
+                </h5>
+                <p class="text-body-2 text-medium-emphasis">
                   {{ t("TXT_CODE_ba1eb3b5") }}
-                </a-typography-text>
-              </a-typography-paragraph>
-            </a-typography>
+                </p>
+            </div>
           </template>
         </CardPanel>
-      </a-col>
+      </VCol>
 
-      <a-col
+      <VCol
         v-for="i in imageList"
         :key="i.title + i.description + i.type"
         :span="24"
@@ -153,22 +150,18 @@ onMounted(async () => {});
         <CardPanel class="images-card" @click="selectType(i.type)">
           <template #title>{{ i.title }}</template>
           <template #body>
-            <a-typography-text>
+            <span>
               {{ i.description }}
-            </a-typography-text>
+            </span>
           </template>
         </CardPanel>
-      </a-col>
-    </a-row>
+      </VCol>
+    </VRow>
   </div>
 
-  <a-drawer
-    v-model:open="dockerFileDrawer"
-    :width="isPhone ? 'auto' : '768px'"
-    title="DockerFile"
-    placement="right"
-    destroy-on-close
-  >
+  <VDialog v-model="dockerFileDrawer" max-width="768" scrollable>
+    <VCard title="DockerFile">
+      <VCardText>
     <DockerFileForm
       :docker-file="dockerFile"
       :name="name"
@@ -176,7 +169,9 @@ onMounted(async () => {});
       :daemon-id="daemonId ?? ''"
       @close="dockerFileDrawer = false"
     />
-  </a-drawer>
+      </VCardText>
+    </VCard>
+  </VDialog>
 
   <BuildProgress ref="buildProgressDialog" :daemon-id="daemonId ?? ''" />
 </template>

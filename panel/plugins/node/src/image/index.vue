@@ -11,8 +11,8 @@ import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { imageList, containerList } from "@/services/apis/envImage";
 import type { LayoutCard, ImageInfo, ContainerInfo } from "@/types";
 import { useAppRouters } from "@/hooks/useAppRouters";
-import type { AntColumnsType, AntTableCell } from "@/types/ant";
 import { reportErrorMsg } from "@/tools/validator";
+import { VBtn, VCardText, VChip, VCol, VDataTable, VIcon, VRow } from "vuetify/components";
 
 const props = defineProps<{
   card: LayoutCard;
@@ -46,7 +46,7 @@ const getImageList = async () => {
 
 const imageDataSource = ref<ImageInfo[]>();
 const imageColumns = computed(() => {
-  return arrayFilter<AntColumnsType>([
+  return arrayFilter<any>([
     {
       align: "center",
       title: "ID",
@@ -76,7 +76,7 @@ const imageColumns = computed(() => {
   ]);
 });
 
-const showDetail = (info: ImageInfo) => {
+const showDetail = (info: ImageInfo | ContainerInfo) => {
   Modal.info({
     centered: true,
     closable: true,
@@ -116,7 +116,7 @@ const delImage = async (item: ImageInfo) => {
 
 const containerDataSource = ref<ContainerInfo[]>();
 const containerColumns = computed(() => {
-  return arrayFilter<AntColumnsType>([
+  return arrayFilter<any>([
     {
       align: "center",
       title: "ID",
@@ -192,119 +192,60 @@ onMounted(async () => {
 
 <template>
   <div style="height: 100%" class="container">
-    <a-row :gutter="[24, 24]" style="height: 100%">
-      <a-col :span="24">
+    <VRow dense style="height: 100%">
+      <VCol cols="12">
         <BetweenMenus>
           <template v-if="!isPhone" #left>
-            <a-typography-title class="mb-0" :level="4">
+            <h4 class="text-h6 mb-0">
               {{ card.title }}
-            </a-typography-title>
+            </h4>
           </template>
           <template #right>
-            <a-button @click="getImageList">
+            <VBtn variant="tonal" @click="getImageList">
               {{ t("TXT_CODE_b76d94e0") }}
-            </a-button>
-            <a-button type="primary" @click="toNewImagePage">
+            </VBtn>
+            <VBtn color="primary" @click="toNewImagePage">
               <span>{{ t("TXT_CODE_59ac0239") }}</span>
-            </a-button>
+            </VBtn>
           </template>
         </BetweenMenus>
-      </a-col>
+      </VCol>
 
-      <a-col :span="24">
+      <VCol cols="12">
         <CardPanel style="height: 100%">
           <template #title>
             {{ t("TXT_CODE_8b62abb2") }}
           </template>
           <template #body>
-            <a-typography-paragraph>
-              <a-typography-text>
+            <p class="text-body-2 text-medium-emphasis">
                 {{ t("TXT_CODE_ba82dddb") }}
-              </a-typography-text>
-            </a-typography-paragraph>
-            <a-table
-              :scroll="{
-                x: 'max-content'
-              }"
-              :data-source="imageDataSource"
-              :columns="imageColumns"
-              :pagination="{
-                pageSize: 10,
-                showSizeChanger: true
-              }"
-              :loading="imageListLoading"
-            >
-              <template #bodyCell="{ column, record }: AntTableCell">
-                <template v-if="column.key === 'Id'">
-                  <a-typography-paragraph
-                    class="mb-0"
-                    :copyable="{
-                      text: record.Id
-                    }"
-                    :ellipsis="{ rows: 1, expandable: false }"
-                    :content="isPhone ? '' : record.Id"
-                  />
-                </template>
-                <template v-if="column.key === 'action'">
-                  <a-button class="mr-8" size="large" @click="showDetail(record)">
-                    {{ t("TXT_CODE_f1b166e7") }}
-                  </a-button>
-                  <a-popconfirm :title="t('TXT_CODE_dfa17b2d')" @confirm="delImage(record)">
-                    <a-button size="large" danger>
-                      {{ t("TXT_CODE_ecbd7449") }}
-                    </a-button>
-                  </a-popconfirm>
-                </template>
-              </template>
-            </a-table>
+            </p>
+            <VDataTable :headers="imageColumns.map((column) => ({ title: column.title, key: column.key || column.dataIndex, value: column.dataIndex || column.key, sortable: false }))" :items="imageDataSource || []" :loading="imageListLoading" :items-per-page="10" density="comfortable">
+              <template #item.Id="{ item }"><code class="text-truncate">{{ item.Id }}</code></template>
+              <template #item.RepoTags="{ item }">{{ item.RepoTags?.[0] || '&lt;none&gt;' }}</template>
+              <template #item.Size="{ item }">{{ parseInt((item.Size / 1024 / 1024).toString()) }} MB</template>
+              <template #item.action="{ item }"><VBtn variant="text" size="small" @click="showDetail(item)">{{ t("TXT_CODE_f1b166e7") }}</VBtn><VBtn variant="text" size="small" color="error" @click="Modal.confirm({ title: t('TXT_CODE_dfa17b2d'), async onOk() { await delImage(item); } })">{{ t("TXT_CODE_ecbd7449") }}</VBtn></template>
+            </VDataTable>
           </template>
         </CardPanel>
-      </a-col>
+      </VCol>
 
-      <a-col :span="24">
+      <VCol cols="12">
         <CardPanel style="height: 100%">
           <template #title>
             {{ t("TXT_CODE_cb36c80e") }}
           </template>
           <template #body>
-            <a-typography-paragraph>
-              <a-typography-text>
+            <p class="text-body-2 text-medium-emphasis">
                 {{ t("TXT_CODE_b34efc1") }}
-              </a-typography-text>
-            </a-typography-paragraph>
-            <a-table
-              :scroll="{
-                x: 'max-content'
-              }"
-              :data-source="containerDataSource"
-              :columns="containerColumns"
-              :pagination="{
-                pageSize: 10,
-                showSizeChanger: true
-              }"
-              :loading="containerListLoading"
-            >
-              <template #bodyCell="{ column, record }: AntTableCell">
-                <template v-if="column.key === 'Id'">
-                  <a-typography-paragraph
-                    class="mb-0"
-                    :copyable="{
-                      text: record.Id
-                    }"
-                    :ellipsis="{ rows: 1, expandable: false }"
-                    :content="isPhone ? '' : record.Id"
-                  />
-                </template>
-                <template v-if="column.key === 'action'">
-                  <a-button class="mr-8" size="large" @click="showDetail(record)">
-                    {{ t("TXT_CODE_f1b166e7") }}
-                  </a-button>
-                </template>
-              </template>
-            </a-table>
+            </p>
+            <VDataTable :headers="containerColumns.map((column) => ({ title: column.title, key: column.key || column.dataIndex, value: column.dataIndex || column.key, sortable: false }))" :items="containerDataSource || []" :loading="containerListLoading" :items-per-page="10" density="comfortable">
+              <template #item.Id="{ item }"><code>{{ item.Id }}</code></template>
+              <template #item.action="{ item }"><VBtn variant="text" size="small" @click="showDetail(item)">{{ t("TXT_CODE_f1b166e7") }}</VBtn></template>
+            </VDataTable>
           </template>
         </CardPanel>
-      </a-col>
-    </a-row>
+      </VCol>
+    </VRow>
   </div>
 </template>

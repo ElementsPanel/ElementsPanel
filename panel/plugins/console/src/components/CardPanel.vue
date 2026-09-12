@@ -26,15 +26,15 @@ const { containerState } = useLayoutContainerStore();
   >
     <div v-if="$slots.title" class="card-panel-title">
       <div>
-        <a-typography-title :level="5" style="margin-bottom: 0px">
+        <h3 class="card-panel-heading">
           <slot name="title"></slot>
-        </a-typography-title>
+        </h3>
       </div>
       <div>
-        <a-typography-text>
+        <span>
           <slot name="operator"></slot>
           <slot v-if="containerState.isDesignMode" name="operator-design"></slot>
-        </a-typography-text>
+        </span>
       </div>
     </div>
     <div class="card-panel-content">
@@ -65,8 +65,14 @@ const { containerState } = useLayoutContainerStore();
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: -4px; // For Ant-Design Font
+    margin-top: 0;
     margin-bottom: 8px;
+  }
+
+  .card-panel-heading {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.5;
   }
   .card-panel-content {
     flex-grow: 1;

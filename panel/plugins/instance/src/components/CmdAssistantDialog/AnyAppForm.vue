@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import { t } from "@/lang/i18n";
+import { VForm, VTextField } from "vuetify/components";
 
 interface FormDataType {
   softwarePath: string;
@@ -22,17 +23,14 @@ defineExpose({ validate });
 </script>
 
 <template>
-  <a-form ref="formRef" layout="vertical" :model="form">
-    <a-form-item name="softwarePath" :label="t('TXT_CODE_c7b1b8d0')" required>
-      <a-input v-model:value="form.softwarePath" :placeholder="t('TXT_CODE_a2a0e054')" />
-    </a-form-item>
-    <a-form-item name="params" :label="t('TXT_CODE_b9442311')">
-      <a-input v-model:value="form.params" :placeholder="t('TXT_CODE_2a379a13')" />
-      <div class="mt-6">
-        <a-typography-text type="secondary">
+  <VForm ref="formRef">
+    <VTextField v-model="form.softwarePath" :label="t('TXT_CODE_c7b1b8d0')" :placeholder="t('TXT_CODE_a2a0e054')" :rules="[(value) => String(value || '').trim() ? true : t('TXT_CODE_c7b1b8d0')]" />
+    <VTextField v-model="form.params" :label="t('TXT_CODE_b9442311')" :placeholder="t('TXT_CODE_2a379a13')">
+      <template #details>
+        <span class="text-caption text-medium-emphasis">
           {{ t("TXT_CODE_d705a2bd") }}
-        </a-typography-text>
-      </div>
-    </a-form-item>
-  </a-form>
+        </span>
+      </template>
+    </VTextField>
+  </VForm>
 </template>

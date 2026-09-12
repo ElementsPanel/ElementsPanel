@@ -3,9 +3,9 @@ import CardPanel from "@/components/CardPanel.vue";
 import { $t as t } from "@/lang/i18n";
 import type { LayoutCard } from "@/types";
 import { onMounted, onUnmounted, ref } from "vue";
-import { UndoOutlined } from "@ant-design/icons-vue";
 import dayjs from "dayjs";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
+import IconBtn from "@/components/IconBtn.vue";
 
 import Style1 from "@/components/time/Style1.vue";
 import Style2 from "@/components/time/Style2.vue";
@@ -62,16 +62,7 @@ onUnmounted(() => {
   <div class="h-100">
     <card-panel>
       <template #operator-design>
-        <a-button type="link" size="small" class="ml-10" @click="changeStyle()">
-          <template #icon>
-            <a-tooltip placement="top">
-              <template #title>
-                <span>{{ t("TXT_CODE_5ab1eb7d") }}</span>
-              </template>
-              <undo-outlined :rotate="45" :spin="isSpinning" />
-            </a-tooltip>
-          </template>
-        </a-button>
+        <IconBtn icon="mdi-rotate-right" :title="t('TXT_CODE_5ab1eb7d')" class="ml-2" :class="{ spinning: isSpinning }" @click="changeStyle" />
       </template>
       <template #title>{{ card.title }}</template>
       <template #body>

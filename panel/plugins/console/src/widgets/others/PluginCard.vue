@@ -80,7 +80,7 @@ onUnmounted(() => {
     <template #body>
       <div class="plugin-card-container">
         <div v-if="containerState.isDesignMode">
-          <a-typography-paragraph>
+          <div>
             <p>
               {{ t("TXT_CODE_c565b2e0") }}
               <br />
@@ -90,10 +90,10 @@ onUnmounted(() => {
             <div v-if="originUrl" class="mt-16 mb-16">
               <a :href="originUrl" target="_blank" rel="noopener noreferrer">{{ originUrl }}</a>
             </div>
-            <a-button class="mt-8" type="primary" @click="uploadHtmlFile">
+            <VBtn class="mt-8" color="primary" @click="uploadHtmlFile">
               {{ t("TXT_CODE_40a87804") }}
-            </a-button>
-          </a-typography-paragraph>
+            </VBtn>
+          </div>
         </div>
         <div v-else :id="DOM_ID" class="html-plugin-container">
           <!-- Remote HTML -->

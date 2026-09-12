@@ -1,4 +1,3 @@
-import { AppstoreAddOutlined } from "@ant-design/icons-vue";
 import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugin";
 import { useAppStateStore } from "@/stores/useAppStateStore";
@@ -24,14 +23,14 @@ export function apply(ctx: PanelFrontendPluginContext) {
     meta: {
       permission: ROLE_ADMIN,
       mainMenu: true,
-      icon: AppstoreAddOutlined
+      icon: "mdi-view-grid-plus"
     }
   });
 
   ctx.desktop.app({
     id: "config",
     label: () => t("TXT_CODE_PLUGIN_CONFIG"),
-    icon: AppstoreAddOutlined,
+    icon: "mdi-view-grid-plus",
     color: "#1677ff",
     route: "/plugins/config",
     component: ConfigPage,

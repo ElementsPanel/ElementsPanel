@@ -4,7 +4,6 @@ import path from "node:path";
 import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
 import { visualizer } from "rollup-plugin-visualizer";
-import { AntDesignVueResolver } from "unplugin-vue-components/resolvers";
 import Components from "unplugin-vue-components/vite";
 import { defineConfig, normalizePath, type Plugin } from "vite";
 import { discoverPlugins } from "../common/src/plugin_manifest";
@@ -30,18 +29,6 @@ const VUETIFY_MDI_PATH = fileURLToPath(
 const MDI_FONT_CSS_PATH = fileURLToPath(
   new URL("./node_modules/@mdi/font/css/materialdesignicons.css", import.meta.url)
 );
-const APP_DIALOG_PATH = normalizePath(
-  fileURLToPath(new URL("../panel/plugins/console/src/components/AppDialog.vue", import.meta.url))
-);
-
-const VuetifyDialogResolver = (name: string) => {
-  if (name !== "AModal") return undefined;
-  return {
-    as: "AModal",
-    from: APP_DIALOG_PATH
-  };
-};
-
 interface DiscoveredPanelPlugin {
   metadata: Record<string, unknown>;
   directory: string;
@@ -300,12 +287,6 @@ export default defineConfig({
           return "assets/[name]-[hash][extname]";
         },
         manualChunks(path) {
-          if (path.includes("node_modules/ant-design-vue/es")) {
-            return "ant-es";
-          }
-          if (path.includes("node_modules/ant-design-vue")) {
-            return "ant";
-          }
           if (path.includes("node_modules/zrender")) {
             return "zrender";
           }
@@ -361,19 +342,11 @@ export default defineConfig({
     panelPlugins(panelPluginBuildEntries),
     vue(),
     vueJsx(),
-    Components({
-      resolvers: [
-        VuetifyDialogResolver,
-        AntDesignVueResolver({
-          importStyle: false // css in js
-        })
-      ]
-    }),
+    Components(),
     visualizer({ emitFile: true, filename: "stats.html" })
   ],
   resolve: {
     dedupe: [
-      "@ant-design/icons-vue",
       "@codemirror/commands",
       "@codemirror/lang-css",
       "@codemirror/lang-html",
@@ -391,7 +364,6 @@ export default defineConfig({
       "@uiw/codemirror-theme-dracula",
       "@uiw/codemirror-theme-tokyo-night",
       "@vueuse/core",
-      "ant-design-vue",
       "axios",
       // One cordis instance: a plugin chunk and the main bundle must share the
       // container, or a plugin would register its services on a copy of it.

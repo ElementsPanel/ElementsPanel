@@ -8,17 +8,8 @@ import { usePluginService } from "@/plugin/context";
 import { parseForwardAddress } from "@/tools/protocol";
 import { reportErrorMsg } from "@/tools/validator";
 import { defaultInstanceInfo } from "@/types/const";
-import {
-  CheckOutlined,
-  CloseOutlined,
-  InfoCircleOutlined,
-  UploadOutlined
-} from "@ant-design/icons-vue";
-import type { FormInstance } from "ant-design-vue";
-import { type UploadProps } from "ant-design-vue";
 import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
-import type { Rule } from "ant-design-vue/es/form";
 import { computed, createVNode, onUnmounted, reactive, ref } from "vue";
 import DockerImageSelect from "../instance/dialogs/components/DockerImageSelect.vue";
 import SelectUnzipCode from "../instance/dialogs/SelectUnzipCode.vue";
@@ -37,7 +28,7 @@ const instanceTypeOptions = computed(() => Object.entries(INSTANCE_TYPE_TRANSLAT
 const requiredRule = (value: unknown) => Boolean(value) || t("TXT_CODE_47e21c80");
 
 const zipCode = ref("utf-8");
-const formRef = ref<FormInstance>();
+const formRef = ref<any>();
 const formData = reactive<IGlobalInstanceConfig>(defaultInstanceInfo);
 
 const isImportMode = props.createMethod === QUICKSTART_METHOD.IMPORT;
@@ -69,14 +60,9 @@ function changeInstanceType(appType: string) {
   }
 }
 
-const rules: Record<string, Rule[]> = {
-  nickname: [{ required: true, message: t("TXT_CODE_68a504b3") }],
-  stopCommand: [{ required: true, message: t("TXT_CODE_83053cd5") }]
-};
-
 const uFile = ref<File>();
 
-const beforeUpload: UploadProps["beforeUpload"] = async (file) => {
+const beforeUpload = async (file: File) => {
   uFile.value = file;
 
   if (isImportMode) {
@@ -98,11 +84,12 @@ const setUnzipCode = async (code: string) => {
 const finalConfirm = async () => {
   if (!formData.nickname || !formData.stopCommand) return reportErrorMsg(t("TXT_CODE_47e21c80"));
   if (!props.isDesktop) {
-    try { await formRef.value?.validate(); } catch (err: any) { return reportErrorMsg(t("TXT_CODE_47e21c80")); }
+    const validation = await formRef.value?.validate();
+    if (validation && !validation.valid) return reportErrorMsg(t("TXT_CODE_47e21c80"));
   }
   const thisModal = Modal.confirm({
     title: t("TXT_CODE_2a3b0c17"),
-    icon: createVNode(InfoCircleOutlined),
+    icon: createVNode("span", { class: "mdi mdi-information-outline" }),
     content: needUpload ? t("TXT_CODE_e06841b5") : t("TXT_CODE_5deeefb5"),
     okText: t("TXT_CODE_d507abff"),
     async onOk() {
@@ -119,7 +106,7 @@ const finalConfirm = async () => {
 
 const onDesktopFileChange = (file: File | File[] | null) => {
   const selected = Array.isArray(file) ? file[0] : file;
-  if (selected) void beforeUpload(selected as any, [selected as any]);
+  if (selected) void beforeUpload(selected);
 };
 
 /**
@@ -265,260 +252,30 @@ const createInstance = async () => {
     </VForm>
   </template>
   <template v-else>
-  <div style="text-align: left">
-    <a-typography-paragraph v-if="createMethod === QUICKSTART_METHOD.DOCKER" :level="5">
-      <InfoCircleOutlined />
-      {{ t("TXT_CODE_b51bac6f") }}
-    </a-typography-paragraph>
-    <a-form ref="formRef" :rules="rules" :model="formData" layout="vertical" autocomplete="off">
-      <a-row :gutter="20">
-        <a-col :xs="24" :md="12">
-          <a-form-item name="nickname">
-            <a-typography-title :level="5" class="require-field">
-              {{ t("TXT_CODE_f70badb9") }}
-            </a-typography-title>
-            <a-typography-paragraph>
-              <a-typography-text type="secondary">
-                {{ t("TXT_CODE_818928ba") }}
-              </a-typography-text>
-            </a-typography-paragraph>
-            <a-input v-model:value="formData.nickname" :placeholder="t('TXT_CODE_475c5890')" />
-          </a-form-item>
-        </a-col>
-
-        <a-col :xs="24" :md="12">
-          <a-form-item>
-            <a-typography-title :level="5" class="require-field">
-              {{ t("TXT_CODE_2f291d8b") }}
-            </a-typography-title>
-            <a-typography-paragraph>
-              <a-typography-text type="secondary">
-                {{ t("TXT_CODE_be608c82") }}
-              </a-typography-text>
-            </a-typography-paragraph>
-            <a-select
-              v-model:value="formData.type"
-              :placeholder="t('TXT_CODE_3bb646e4')"
-              @change="(value) => changeInstanceType(value?.toString() ?? '')"
-            >
-              <a-select-option
-                v-for="(item, key) in INSTANCE_TYPE_TRANSLATION"
-                :key="key"
-                :value="key"
-              >
-                {{ item }}
-              </a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-      </a-row>
-
-      <a-row v-if="createMethod === QUICKSTART_METHOD.DOCKER" :gutter="20">
-        <a-col :xs="24" :md="12">
-          <a-form-item>
-            <a-typography-title :level="5" class="require-field">
-              {{ t("TXT_CODE_d12f5b1c") }}
-            </a-typography-title>
-            <a-typography-paragraph>
-              <a-typography-text type="secondary">
-                <span>
-                  {{ t("TXT_CODE_c7a43089") }}
-                </span>
-              </a-typography-text>
-            </a-typography-paragraph>
-            <DockerImageSelect
-              :model-value="formData.docker.image ?? ''"
-              :daemon-id="daemonId ?? ''"
-              @update:model-value="(v: string) => (formData.docker.image = v)"
-            />
-          </a-form-item>
-        </a-col>
-        <a-col :xs="24" :md="12">
-          <a-form-item>
-            <a-typography-title :level="5" class="require-field">
-              {{ t("TXT_CODE_5484094a") }}
-            </a-typography-title>
-            <a-typography-paragraph>
-              <a-typography-text type="secondary">
-                {{ t("TXT_CODE_60dd05d5") }}
-              </a-typography-text>
-            </a-typography-paragraph>
-            <a-switch
-              v-model:checked="formData.docker.changeWorkdir"
-              :checked-value="true"
-              :un-checked-value="false"
-            >
-              <template #checkedChildren>
-                <check-outlined />
-              </template>
-              <template #unCheckedChildren>
-                <close-outlined />
-              </template>
-            </a-switch>
-          </a-form-item>
-        </a-col>
-      </a-row>
-
-      <a-row v-if="createMethod === QUICKSTART_METHOD.DOCKER" :gutter="20">
-        <a-col :xs="24" :sm="12">
-          <a-form-item name="cwd">
-            <a-typography-title :level="5">
-              {{ t("TXT_CODE_20d110b3") }}
-            </a-typography-title>
-            <a-typography-paragraph>
-              <a-typography-text type="secondary">
-                {{ t("TXT_CODE_877eea45") }}
-              </a-typography-text>
-            </a-typography-paragraph>
-            <a-input v-model:value="formData.cwd" :placeholder="t('TXT_CODE_a85091a4')" />
-          </a-form-item>
-        </a-col>
-        <a-col :xs="24" :md="12">
-          <a-form-item>
-            <a-typography-title :level="5">
-              {{ t("TXT_CODE_81979d0f") }}
-            </a-typography-title>
-            <a-typography-paragraph>
-              <a-typography-text type="secondary">
-                {{ t("TXT_CODE_3407250a") }}
-              </a-typography-text>
-            </a-typography-paragraph>
-            <a-input
-              v-model:value="formData.docker.workingDir"
-              :placeholder="t('TXT_CODE_2082f659')"
-            />
-          </a-form-item>
-        </a-col>
-      </a-row>
-
-      <a-form-item name="startCommand">
-        <a-typography-title :level="5">
-          {{ t("TXT_CODE_d12fa808") }}
-        </a-typography-title>
-        <a-typography-paragraph>
-          <a-typography-text type="secondary">
-            <span v-if="createMethod === QUICKSTART_METHOD.IMPORT">
-              {{ t("TXT_CODE_17544b7b") }}
-            </span>
-            <span v-else-if="createMethod === QUICKSTART_METHOD.DOCKER">
-              {{ t("TXT_CODE_26495d02") }}
-            </span>
-            <span v-else>
-              {{ t("TXT_CODE_8c0db3f4") }}
-            </span>
-          </a-typography-text>
-        </a-typography-paragraph>
-        <a-input-group compact style="display: flex">
-          <a-textarea
-            v-model:value="formData.startCommand"
-            :rows="2"
-            :placeholder="t('TXT_CODE_d4ad1dd')"
-            style="min-height: 30px"
-          />
-        </a-input-group>
-      </a-form-item>
-
-      <a-form-item>
-        <!-- Update Command -->
-        <a-typography-title :level="5">{{ t("TXT_CODE_2e2c6b7b") }}</a-typography-title>
-        <a-typography-paragraph>
-          <a-typography-text type="secondary" class="typography-text-ellipsis">
-            {{ t("TXT_CODE_4f387c5a") }}
-          </a-typography-text>
-        </a-typography-paragraph>
-        <!-- eslint-disable-next-line vue/html-quotes -->
-        <a-textarea
-          v-model:value="formData.updateCommand"
-          :rows="2"
-          style="min-height: 30px"
-          :placeholder="$t('TXT_CODE_36bd6348')"
-        />
-      </a-form-item>
-
-      <a-row :gutter="20">
-        <a-col :xs="24" :sm="12">
-          <a-form-item name="stopCommand">
-            <a-typography-title :level="5" class="require-field">
-              {{ t("TXT_CODE_11cfe3a1") }}
-            </a-typography-title>
-            <a-typography-paragraph>
-              <a-typography-text type="secondary">
-                {{ t("TXT_CODE_7ec7ccb8") }}
-              </a-typography-text>
-            </a-typography-paragraph>
-            <a-input v-model:value="formData.stopCommand" :placeholder="t('TXT_CODE_83053cd5')" />
-          </a-form-item>
-        </a-col>
-      </a-row>
-
-      <a-form-item v-if="createMethod === QUICKSTART_METHOD.FILE">
-        <a-typography-title :level="5" class="require-field">
-          {{ t("TXT_CODE_444db70f") }}
-        </a-typography-title>
-        <a-typography-paragraph>
-          <a-typography-text type="secondary">
-            {{ t("TXT_CODE_fc4e2173") }}
-          </a-typography-text>
-        </a-typography-paragraph>
-        <a-upload
-          accept=".jar"
-          :before-upload="beforeUpload"
-          :max-count="1"
-          :change="selectedFile"
-          :disabled="percentComplete > 0"
-        >
-          <a-button type="primary" :loading="percentComplete > 0">
-            <upload-outlined v-if="percentComplete === 0" />
-            {{
-              percentComplete > 0
-                ? t("TXT_CODE_b625dbf0") + percentComplete + "%"
-                : t("TXT_CODE_335ba209")
-            }}
-          </a-button>
-        </a-upload>
-      </a-form-item>
-
-      <a-form-item v-else-if="createMethod === QUICKSTART_METHOD.IMPORT">
-        <a-typography-title :level="5" class="require-field">
-          {{ t("TXT_CODE_f9b6e61b") }}
-        </a-typography-title>
-        <a-typography-paragraph>
-          <a-typography-text type="secondary">
-            {{ t("TXT_CODE_510bd294") }}
-            <br />
-            {{ t("TXT_CODE_1561198c") }}
-          </a-typography-text>
-        </a-typography-paragraph>
-        <a-upload
-          accept=".zip"
-          :before-upload="beforeUpload"
-          :max-count="1"
-          :change="selectedFile"
-          :disabled="percentComplete > 0 || uploadFileInstance != undefined"
-        >
-          <a-button
-            :disabled="!formData.nickname"
-            type="primary"
-            :loading="percentComplete > 0 || uploadFileInstance != undefined"
-          >
-            <upload-outlined v-if="percentComplete == 0 && uploadFileInstance == undefined" />
-            {{ percentText() }}
-          </a-button>
-        </a-upload>
-      </a-form-item>
-
-      <a-form-item v-else>
-        <a-typography-paragraph class="mt-10">
-          <a-typography-text>
-            <span>{{ t("TXT_CODE_7da6e84") }}</span>
-          </a-typography-text>
-        </a-typography-paragraph>
-        <a-button type="primary" :loading="createInstanceLoading" @click="finalConfirm">
-          {{ t("TXT_CODE_5a74975b") }}
-        </a-button>
-      </a-form-item>
-    </a-form>
-  </div>
+  <VForm ref="formRef" class="normal-create-form" @submit.prevent="finalConfirm">
+    <p v-if="createMethod === QUICKSTART_METHOD.DOCKER" class="desktop-create-hint"><VIcon icon="mdi-information-outline" /> {{ t("TXT_CODE_b51bac6f") }}</p>
+    <VRow dense>
+      <VCol cols="12" md="6">
+        <VTextField v-model="formData.nickname" :label="t('TXT_CODE_f70badb9')" :hint="t('TXT_CODE_818928ba')" persistent-hint :placeholder="t('TXT_CODE_475c5890')" :rules="[requiredRule]" variant="solo" density="compact" hide-details="auto" />
+      </VCol>
+      <VCol cols="12" md="6">
+        <VSelect v-model="formData.type" :items="instanceTypeOptions" item-title="title" item-value="value" :label="t('TXT_CODE_2f291d8b')" :hint="t('TXT_CODE_be608c82')" persistent-hint :placeholder="t('TXT_CODE_3bb646e4')" variant="solo" density="compact" hide-details="auto" @update:model-value="changeInstanceType" />
+      </VCol>
+    </VRow>
+    <VRow v-if="createMethod === QUICKSTART_METHOD.DOCKER" dense>
+      <VCol cols="12" md="6"><DockerImageSelect :model-value="formData.docker.image ?? ''" :daemon-id="daemonId" @update:model-value="(v: string) => (formData.docker.image = v)" /></VCol>
+      <VCol cols="12" md="6" class="desktop-create-switch"><span>{{ t("TXT_CODE_5484094a") }}</span><VSwitch v-model="formData.docker.changeWorkdir" color="primary" hide-details /></VCol>
+      <VCol cols="12" md="6"><VTextField v-model="formData.cwd" :label="t('TXT_CODE_20d110b3')" :hint="t('TXT_CODE_877eea45')" persistent-hint variant="solo" density="compact" hide-details="auto" /></VCol>
+      <VCol cols="12" md="6"><VTextField v-model="formData.docker.workingDir" :label="t('TXT_CODE_81979d0f')" :hint="t('TXT_CODE_3407250a')" persistent-hint variant="solo" density="compact" hide-details="auto" /></VCol>
+    </VRow>
+    <VTextarea v-model="formData.startCommand" :label="t('TXT_CODE_d12fa808')" :hint="createMethod === QUICKSTART_METHOD.IMPORT ? t('TXT_CODE_17544b7b') : createMethod === QUICKSTART_METHOD.DOCKER ? t('TXT_CODE_26495d02') : t('TXT_CODE_8c0db3f4')" persistent-hint rows="2" variant="solo" density="compact" hide-details="auto" class="mt-3" />
+    <VTextarea v-model="formData.updateCommand" :label="t('TXT_CODE_2e2c6b7b')" :hint="t('TXT_CODE_4f387c5a')" persistent-hint rows="2" variant="solo" density="compact" hide-details="auto" class="mt-3" />
+    <VTextField v-model="formData.stopCommand" :label="t('TXT_CODE_11cfe3a1')" :hint="t('TXT_CODE_7ec7ccb8')" persistent-hint :rules="[requiredRule]" variant="solo" density="compact" hide-details="auto" class="mt-3" />
+    <VFileInput v-if="needUpload" :label="createMethod === QUICKSTART_METHOD.IMPORT ? t('TXT_CODE_f9b6e61b') : t('TXT_CODE_444db70f')" :accept="createMethod === QUICKSTART_METHOD.IMPORT ? '.zip' : '.jar'" prepend-icon="mdi-upload-outline" variant="solo" density="compact" hide-details="auto" class="mt-3" :disabled="percentComplete > 0 || uploadFileInstance != undefined" @update:model-value="onDesktopFileChange" />
+    <div v-else class="desktop-create-hint mt-3">{{ t("TXT_CODE_7da6e84") }}</div>
+    <VBtn v-if="needUpload" color="primary" variant="text" rounded="xl" class="mt-3" :disabled="!formData.nickname || uploadStarted" @click="finalConfirm"><VIcon icon="mdi-upload-outline" />{{ percentText() }}</VBtn>
+    <VBtn v-else color="primary" variant="text" rounded="xl" class="mt-3" :loading="createInstanceLoading" @click="finalConfirm"><VIcon icon="mdi-plus" />{{ t("TXT_CODE_5a74975b") }}</VBtn>
+  </VForm>
   </template>
 
   <SelectUnzipCode ref="selectUnzipCodeDialog" @select-code="setUnzipCode" />

@@ -14,7 +14,7 @@
     <div v-if="error" class="iframe-error">
       <p>{{ t("TXT_CODE_ef8f8e29") }}</p>
       <p>{{ error }}</p>
-      <a-button type="primary" @click="reload">{{ t("TXT_CODE_9277af78") }}</a-button>
+      <VBtn color="primary" @click="reload">{{ t("TXT_CODE_9277af78") }}</VBtn>
     </div>
   </div>
 </template>

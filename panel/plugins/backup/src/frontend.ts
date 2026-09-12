@@ -1,6 +1,5 @@
 import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugin";
-import { CloudOutlined } from "@ant-design/icons-vue";
 import DesktopInstanceBackup from "./desktop/DesktopInstanceBackup.vue";
 import { localeMessages } from "./i18n";
 import InstanceBackupModal from "./normal/InstanceBackupModal.vue";
@@ -18,7 +17,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.actions.instance({
     id: "backup",
     title: () => t("TXT_CODE_INSTANCE_BACKUP"),
-    icon: CloudOutlined,
+    icon: "mdi-cloud-outline",
     normalComponent: InstanceBackupModal,
     desktopComponent: DesktopInstanceBackup,
     // The node has to provide the feature, which means its backup plugin has to

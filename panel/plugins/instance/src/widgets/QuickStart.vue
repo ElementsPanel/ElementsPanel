@@ -4,9 +4,9 @@ import CardPanel from "@/components/CardPanel.vue";
 import { t } from "@/lang/i18n";
 import type { LayoutCard } from "@/types";
 import { router } from "@/config/router";
-import { BuildFilled, DropboxSquareFilled, SwitcherFilled } from "@ant-design/icons-vue";
 import { QUICKSTART_ACTION_TYPE } from "@/hooks/widgets/quickStartFlow";
 import FadeUpAnimation from "@/components/FadeUpAnimation.vue";
+import { VRow } from "vuetify/components";
 
 defineProps<{
   card: LayoutCard;
@@ -14,7 +14,7 @@ defineProps<{
 
 const actions = [
   {
-    icon: BuildFilled,
+    icon: "mdi-hammer-wrench",
     title: t("TXT_CODE_68128434"),
     click: () => {
       router.push({
@@ -26,7 +26,7 @@ const actions = [
     }
   },
   {
-    icon: SwitcherFilled,
+    icon: "mdi-swap-horizontal",
     title: t("TXT_CODE_46bb965"),
     click: () => {
       router.push({
@@ -38,7 +38,7 @@ const actions = [
     }
   },
   {
-    icon: DropboxSquareFilled,
+    icon: "mdi-dropbox",
     title: t("TXT_CODE_2ab3e9fd"),
     click: () => {
       router.push({
@@ -56,7 +56,7 @@ const actions = [
   <card-panel style="height: 100%">
     <template #title>{{ card.title }}</template>
     <template #body>
-      <a-row :gutter="[0, 12]">
+      <VRow dense>
         <fade-up-animation>
           <action-button
             v-for="(action, index) in actions"
@@ -67,7 +67,7 @@ const actions = [
             :data-index="index"
           />
         </fade-up-animation>
-      </a-row>
+      </VRow>
     </template>
   </card-panel>
 </template>

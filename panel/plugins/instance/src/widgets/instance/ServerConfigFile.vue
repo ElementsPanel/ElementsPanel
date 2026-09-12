@@ -15,6 +15,7 @@ import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
 import { useKeyboardEvents } from "@/hooks/useKeyboardEvents";
 import { reportErrorMsg } from "@/tools/validator";
+import { VAlert, VBtn, VCol, VRow } from "vuetify/components";
 
 const props = defineProps<{
   card: LayoutCard;
@@ -134,24 +135,24 @@ onMounted(async () => {
 
 <template>
   <div style="height: 100%" class="container">
-    <a-row :gutter="[24, 24]" style="height: 100%">
-      <a-col v-if="!isFailure" :span="24">
+    <VRow dense style="height: 100%">
+      <VCol v-if="!isFailure" cols="12">
         <BetweenMenus>
           <template v-if="!isPhone" #left>
-            <a-button @click="toConfigOverview">
+            <VBtn variant="tonal" @click="toConfigOverview">
               {{ t("TXT_CODE_c14b2ea3") }}
-            </a-button>
+            </VBtn>
           </template>
           <template #right>
-            <a-button type="primary" :loading="updateConfigFileLoading" @click="save">
+            <VBtn color="primary" :loading="updateConfigFileLoading" @click="save">
               {{ t("TXT_CODE_abfe9512") }}
-            </a-button>
-            <a-button :loading="getConfigFileLoading" @click="refresh()">
+            </VBtn>
+            <VBtn variant="tonal" :loading="getConfigFileLoading" @click="refresh()">
               {{ t("TXT_CODE_b76d94e0") }}
-            </a-button>
-            <a-button type="dashed" @click="toEditRawFile">
+            </VBtn>
+            <VBtn variant="outlined" @click="toEditRawFile">
               {{ t("TXT_CODE_1f61e5a3") }}
-            </a-button>
+            </VBtn>
           </template>
         </BetweenMenus>
       </a-col>
@@ -162,19 +163,17 @@ onMounted(async () => {
         :config-name="configName"
       />
 
-      <a-col v-else :span="24">
+      <VCol v-else cols="12">
         <Loading v-if="!isFailure" />
-      </a-col>
-      <a-col v-if="isFailure" :span="24">
-        <a-result status="error" :title="t('TXT_CODE_f859eac')" :sub-title="t('TXT_CODE_b8814f15')">
-          <template #extra>
-            <a-button type="primary" @click="toConfigOverview">
+      </VCol>
+      <VCol v-if="isFailure" cols="12">
+        <VAlert type="error" variant="tonal" :title="t('TXT_CODE_f859eac')" :text="t('TXT_CODE_b8814f15')">
+          <template #append><VBtn color="primary" @click="toConfigOverview">
               {{ t("TXT_CODE_537cd5ad") }}
-            </a-button>
-          </template>
-        </a-result>
-      </a-col>
-    </a-row>
+            </VBtn></template>
+        </VAlert>
+      </VCol>
+    </VRow>
   </div>
 
   <component

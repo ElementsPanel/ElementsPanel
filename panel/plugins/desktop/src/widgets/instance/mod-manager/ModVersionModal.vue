@@ -3,7 +3,6 @@ import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
 import AppDialog from "@/components/AppDialog.vue";
 import DesktopWindow from "../../desktop/DesktopWindow.vue";
-import { Button, Table, Tag } from "ant-design-vue";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { VBtn, VChip, VDataTable, VIcon, VProgressCircular } from "vuetify/components";
 
@@ -198,31 +197,27 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
   <AppDialog v-else :visible="visible" :title="t('TXT_CODE_VERSION_SELECT')" :footer="null"
     :width="isPhone ? '100%' : '900px'" @update:visible="(val) => emit('update:visible', val)">
     <p class="mb-8 desktop-modal-hint"><VIcon icon="mdi-alert-outline" /> {{ $t("TXT_CODE_6111bc9e") }}</p>
-    <Table :loading="versionsLoading" :data-source="sortedVersions" :columns="columns" row-key="id"
-      :size="isPhone ? 'small' : 'middle'">
-      <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'game_versions'">
-          <Tag v-for="v in record.game_versions?.slice(0, 3)" :key="v"
-            :color="v === searchFilters?.version ? 'blue' : ''">
-            {{ v }}
-          </Tag>
-        </template>
-        <template v-if="column.key === 'loaders'">
-          <Tag v-for="l in record.loaders" :key="l"
-            :color="l.toLowerCase() === searchFilters?.loader?.toLowerCase() ? 'green' : 'orange'">
-            {{ l }}
-          </Tag>
-        </template>
-        <template v-if="column.key === 'action'">
-          <VBtn icon variant="text" rounded="xl" size="small" class="opacity-60 hover:opacity-100"
-            :disabled="isInstalled(record) || downloadingVersionId === record.id"
-            :loading="downloadingVersionId === record.id"
-            :title="isInstalled(record) ? t('TXT_CODE_INSTALLED') : t('TXT_CODE_DOWNLOAD')"
-            :class="{ 'text-green-500': isInstalled(record) }" @click="handleDownload(record)">
-            ><VIcon :icon="downloadingVersionId === record.id ? 'mdi-loading' : isInstalled(record) ? 'mdi-check-circle-outline' : 'mdi-cloud-download-outline'" /></VBtn>
-        </template>
+    <VDataTable :headers="desktopHeaders" :items="sortedVersions" item-value="id" :loading="versionsLoading"
+      :items-per-page="isPhone ? 5 : 10" density="comfortable">
+      <template #item.name="{ item }"><strong>{{ item.name }}</strong></template>
+      <template #item.game_versions="{ item }">
+        <VChip v-for="v in item.game_versions?.slice(0, 3)" :key="v" size="small" variant="tonal"
+          :color="v === searchFilters?.version ? 'primary' : undefined" class="mr-1">{{ v }}</VChip>
       </template>
-    </Table>
+      <template #item.loaders="{ item }">
+        <VChip v-for="l in item.loaders" :key="l" size="small" variant="tonal"
+          :color="l.toLowerCase() === searchFilters?.loader?.toLowerCase() ? 'success' : 'warning'" class="mr-1">{{ l }}</VChip>
+      </template>
+      <template #item.action="{ item }">
+        <VBtn icon variant="text" rounded="xl" size="small"
+          :disabled="isInstalled(item) || downloadingVersionId === item.id"
+          :loading="downloadingVersionId === item.id"
+          :title="isInstalled(item) ? t('TXT_CODE_INSTALLED') : t('TXT_CODE_DOWNLOAD')"
+          @click="handleDownload(item)">
+          <VIcon :icon="downloadingVersionId === item.id ? 'mdi-loading' : isInstalled(item) ? 'mdi-check-circle-outline' : 'mdi-cloud-download-outline'" />
+        </VBtn>
+      </template>
+    </VDataTable>
   </AppDialog>
 </template>
 

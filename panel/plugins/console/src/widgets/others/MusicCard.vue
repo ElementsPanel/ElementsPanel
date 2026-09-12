@@ -9,11 +9,10 @@ import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useAppToolsStore } from "@/stores/useAppToolsStore";
 import { getRandomId } from "@/tools/randId";
 import type { LayoutCard } from "@/types";
-import { PauseCircleOutlined, PlayCircleOutlined } from "@ant-design/icons-vue";
-import { Empty } from "ant-design-vue";
 import { message } from "@/tools/vuetifyToast";
 import dayjs from "dayjs";
-import { h, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
+import { VBtn, VIcon } from "vuetify/components";
 import WaveSurfer from "wavesurfer.js";
 
 const { isDarkTheme } = useAppConfigStore();
@@ -66,7 +65,7 @@ enum PlayerStatus {
 }
 
 const playerStatus = ref(PlayerStatus.Pause);
-const playerButtonIcon = ref(h(PlayCircleOutlined));
+const playerButtonIcon = ref("mdi-play-circle-outline");
 const changePlayerStatis = (setStatus?: PlayerStatus) => {
   if (setStatus) {
     playerStatus.value = setStatus;
@@ -77,10 +76,10 @@ const changePlayerStatis = (setStatus?: PlayerStatus) => {
 
   if (playerStatus.value === PlayerStatus.Play) {
     wavesurfer?.play();
-    playerButtonIcon.value = h(PauseCircleOutlined);
+    playerButtonIcon.value = "mdi-pause-circle-outline";
   } else {
     wavesurfer?.pause();
-    playerButtonIcon.value = h(PlayCircleOutlined);
+    playerButtonIcon.value = "mdi-play-circle-outline";
   }
 };
 const playTime = ref("0:00");
@@ -141,40 +140,27 @@ onMounted(() => {
               <div :id="timeLineId" class="time"></div>
             </div>
             <div class="button">
-              <a-button
-                type="link"
-                size="large"
-                shape="circle"
-                :icon="playerButtonIcon"
-                style="width: auto; height: auto; font-size: 14px"
-                @click="changePlayerStatis()"
-              />
+              <VBtn icon variant="text" size="large" @click="changePlayerStatis()"><VIcon :icon="playerButtonIcon" /></VBtn>
               <span>{{ playTime }}&nbsp;/&nbsp;{{ maxTime }}</span>
             </div>
           </div>
         </div>
         <div v-else>
-          <a-empty class="h-100" :image="Empty.PRESENTED_IMAGE_SIMPLE">
-            <template #description>
-              <span>{{ t("TXT_CODE_28ce635a") }}</span>
-              <br />
-              <span>{{ t("TXT_CODE_be1354f5") }}</span>
-            </template>
-          </a-empty>
+          <div class="empty-placeholder h-100"><VIcon icon="mdi-music-off" size="32" /><span>{{ t("TXT_CODE_28ce635a") }}</span><span>{{ t("TXT_CODE_be1354f5") }}</span></div>
         </div>
       </template>
       <template #body-design>
-        <a-space align="center" direction="vertical" class="w-100 h-100 edit">
+        <div class="w-100 h-100 edit">
           <h2>{{ t("TXT_CODE_c2697552") }}</h2>
-          <a-space>
-            <a-button type="primary" @click="uploadMusic(UploadType.File)">
+          <div class="d-flex ga-2">
+            <VBtn color="primary" @click="uploadMusic(UploadType.File)">
               {{ t("TXT_CODE_a106108c") }}
-            </a-button>
-            <a-button type="primary" @click="uploadMusic(UploadType.Url)">
+            </VBtn>
+            <VBtn color="primary" @click="uploadMusic(UploadType.Url)">
               {{ t("TXT_CODE_b3f2ea10") }}
-            </a-button>
-          </a-space>
-        </a-space>
+            </VBtn>
+          </div>
+        </div>
       </template>
     </card-panel>
   </div>
@@ -221,4 +207,5 @@ onMounted(() => {
     align-items: center;
   }
 }
+.empty-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
 </style>

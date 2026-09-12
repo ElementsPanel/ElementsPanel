@@ -1,49 +1,21 @@
 <script setup lang="ts">
 import { useFileManager } from "../hooks/useFileManager";
 import ArchivePreview from "@/components/ArchivePreview.vue";
-import { useRightClickMenu } from "@/hooks/useRightClickMenu";
-import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
 import uploadService from "../services/uploadService";
-import { arrayFilter } from "@/tools/array";
-import { filterFileName, getFileExtName, getFileIcon, isCompressFile } from "../tools/fileManager";
+import { filterFileName, getFileExtName, isCompressFile } from "../tools/fileManager";
 import { convertFileSize } from "@/tools/fileSize";
-import type { AntColumnsType } from "@/types/ant";
 import type { DataType } from "@/types/fileManager";
-import {
-    CaretRightOutlined,
-    CloseOutlined,
-    CopyOutlined,
-    DeleteOutlined,
-    DownOutlined,
-    DownloadOutlined,
-    EditOutlined,
-    ExclamationCircleOutlined,
-    FileOutlined,
-    FileZipOutlined,
-    FolderOutlined,
-    FormOutlined,
-    KeyOutlined,
-    PauseOutlined,
-    PlusOutlined,
-    ScissorOutlined,
-    SearchOutlined,
-    UploadOutlined
-} from "@ant-design/icons-vue";
-import { type ItemType, type UploadChangeParam, type UploadProps } from "ant-design-vue";
-import type { Key } from "ant-design-vue/es/table/interface";
 import dayjs from "dayjs";
-import { computed, h, nextTick, onMounted, onUnmounted, reactive, ref, watch, type CSSProperties } from "vue";
-import { ctx as panel } from "@/plugin/context";
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { notifyDesktopError } from "../../../desktop/src/desktopNotice";
-import { VAlert, VBtn, VCard, VCardText, VCardTitle, VCheckbox, VChip, VDataTable, VDialog, VFileInput, VIcon, VList, VListItem, VMenu, VProgressCircular, VProgressLinear, VRadio, VRadioGroup, VSelect, VSpacer, VTabs, VTab, VTextField, VTextarea } from "vuetify/components";
+import { VAlert, VBtn, VCard, VCardText, VCardTitle, VCheckbox, VDataTableServer, VDialog, VIcon, VList, VListItem, VMenu, VProgressCircular, VProgressLinear, VRadio, VRadioGroup, VSelect, VSpacer, VTabs, VTab, VTextField } from "vuetify/components";
 
 /**
  * The shell Desktop mode mounts a component inside. `plugins/desktop` supplies it
  * through the core-owned registry, so this plugin never reaches into another
  * plugin's source tree for it.
  */
-const desktopWindow = computed(() => panel.desktop.window);
 const desktopVuetifyMode = true;
 
 const props = defineProps<{
@@ -56,8 +28,6 @@ const emit = defineEmits<{
     (e: "open-file-editor", filePath: string, fileName: string): void;
     (e: "open-image-viewer", filePath: string, fileName: string): void;
 }>();
-
-const { isPhone } = useScreen();
 
 const {
     dialog,
@@ -75,8 +45,6 @@ const {
     activeTab,
     currentTabs,
     onEditTabs,
-    handleChangeTab,
-    selectChanged,
     getFileList,
     touchFile,
     reloadList,
@@ -98,8 +66,6 @@ const {
     toDisk,
     oneSelected,
     isImage,
-    showImage,
-    pushSelected,
     selectionData,
     loadingWindow,
     archivePreview,
@@ -108,8 +74,6 @@ const {
     deleteDialog
 } = useFileManager(props.instanceId, props.daemonId, props.sessionId || "");
 
-const { openRightClickMenu } = useRightClickMenu();
-
 const isShowDiskList = computed(
     () =>
         fileStatus.value?.disks.length &&
@@ -117,72 +81,21 @@ const isShowDiskList = computed(
         fileStatus.value?.isGlobalInstance
 );
 
-const columns = computed(() => {
-    return arrayFilter<AntColumnsType>([
-        {
-            align: "left",
-            title: t("TXT_CODE_94c193de"),
-            dataIndex: "name",
-            key: "name",
-            minWidth: 200
-        },
-        {
-            align: "center",
-            title: t("TXT_CODE_67d68dd1"),
-            dataIndex: "type",
-            key: "type",
-            customRender: (e: { text: number; record: { name: string } }) => {
-                return e.text == 1 ? filterFileName(e.record.name) : t("TXT_CODE_e5f949c");
-            },
-            condition: () => !isPhone.value,
-            minWidth: 200
-        },
-        {
-            align: "center",
-            title: t("TXT_CODE_94bb113a"),
-            dataIndex: "size",
-            key: "size",
-            customRender: (e: { text: number }) =>
-                e.text == 0 ? "--" : convertFileSize(e.text.toString()),
-            minWidth: 200,
-            condition: () => !isPhone.value
-        },
-        {
-            align: "center",
-            title: t("TXT_CODE_d3b29478"),
-            dataIndex: "time",
-            key: "time",
-            customRender: (e: { text: string }) => {
-                return dayjs(e.text).format("YYYY-MM-DD HH:mm:ss");
-            },
-            minWidth: 200,
-            condition: () => !isPhone.value
-        },
-        {
-            align: "center",
-            title: t("TXT_CODE_511aea70"),
-            dataIndex: "mode",
-            key: "mode",
-            minWidth: 200,
-            condition: () => !isPhone.value && fileStatus.value?.platform !== "win32"
-        },
-        {
-            align: isPhone.value ? "center" : "right",
-            title: t("TXT_CODE_fe731dfc"),
-            dataIndex: "action",
-            key: "action",
-            minWidth: 200,
-            condition: () => !isMultiple.value
-        }
-    ]);
+const desktopFileHeaders = computed(() => {
+    const headers = [
+        { title: t("TXT_CODE_94c193de"), key: "name", value: "name", sortable: false },
+        { title: t("TXT_CODE_67d68dd1"), key: "type", value: "type", sortable: false },
+        { title: t("TXT_CODE_94bb113a"), key: "size", value: "size", sortable: false },
+        { title: t("TXT_CODE_d3b29478"), key: "time", value: "time", sortable: false }
+    ];
+    if (fileStatus.value?.platform !== "win32") {
+        headers.push({ title: t("TXT_CODE_511aea70"), key: "mode", value: "mode", sortable: false });
+    }
+    if (!isMultiple.value) {
+        headers.push({ title: t("TXT_CODE_fe731dfc"), key: "action", value: "action", sortable: false });
+    }
+    return headers;
 });
-
-const desktopFileHeaders = computed(() => columns.value.map((column: any) => ({
-    title: column.title || "",
-    key: column.key,
-    value: column.dataIndex || column.key,
-    sortable: false
-})));
 
 const getDesktopFileIcon = (name: string, type: number) => {
     if (type === 0) return "mdi-folder-outline";
@@ -333,16 +246,6 @@ const handleOverwriteCancel = () => {
     overwriteDialog.value.show = false;
 };
 
-const fileList = ref<UploadProps["fileList"]>([]);
-const onFileSelect = (info: UploadChangeParam) => {
-    if (!info.fileList) return;
-    if (info.fileList[info.fileList.length - 1].uid != info.file.uid) return;
-    if (!fileList.value) return;
-    const files = [...fileList.value].map((v) => v.originFileObj as File);
-    fileList.value = [];
-    selectedFiles(files, undefined, createOverwriteHandler());
-};
-
 const desktopFileInput = ref<HTMLInputElement | null>(null);
 const onDesktopFileInput = (event: Event) => {
     const files = (event.target as HTMLInputElement).files;
@@ -371,10 +274,19 @@ const handleDesktopRightClickRow = (e: MouseEvent, record: DataType) => {
     nextTick(() => (desktopContextMenu.open = true));
 };
 
-const getDesktopRowProps = ({ item }: { item: unknown }) => ({
-    onContextmenu: (e: MouseEvent) =>
-        handleDesktopRightClickRow(e, ((item as any)?.raw ?? item) as DataType)
-});
+const getDesktopRowProps = ({ item }: { item: unknown }) => {
+    const record = ((item as any)?.raw ?? item) as DataType;
+    return {
+        "data-row-key": record.name,
+        onClick: (e: MouseEvent) => handleRowClick(e, record),
+        onDblclick: (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (target.closest('input[type="checkbox"]') || target.closest('.v-btn') || target.closest('.v-menu')) return;
+            void handleClickFile(record);
+        },
+        onContextmenu: (e: MouseEvent) => handleDesktopRightClickRow(e, record)
+    };
+};
 
 const runDesktopMenuAction = (action: { action: () => void }) => {
     action.action();
@@ -382,11 +294,15 @@ const runDesktopMenuAction = (action: { action: () => void }) => {
 };
 
 const desktopRowMenu = (record: DataType) => [
+    { title: t("TXT_CODE_ARCHIVE_PREVIEW"), icon: "mdi-archive-outline", show: !isMultiple.value && record.type === 1 && isCompressFile(record.name), action: () => previewArchiveFile(record.name) },
+    { title: t("TXT_CODE_a64f3007"), icon: "mdi-package-up", show: record.type === 1 && isCompressFile(record.name), action: () => unzipFile(record.name, false) },
     { title: t("TXT_CODE_ad207008"), icon: "mdi-pencil-outline", show: !isMultiple.value && record.type === 1, action: () => editFile(record.name) },
     { title: t("TXT_CODE_65b21404"), icon: "mdi-download-outline", show: !isMultiple.value && record.type === 1, action: () => downloadFile(record.name) },
     { title: t("TXT_CODE_46c4169b"), icon: "mdi-content-cut", show: true, action: () => setClipBoard("move") },
     { title: t("TXT_CODE_13ae6a93"), icon: "mdi-content-copy", show: true, action: () => setClipBoard("copy") },
     { title: t("TXT_CODE_c83551f5"), icon: "mdi-form-textbox", show: !isMultiple.value, action: () => resetName(record.name) },
+    { title: t("TXT_CODE_16853efe"), icon: "mdi-key-outline", show: fileStatus.value?.platform !== "win32", action: () => changePermission(record.name, record.mode) },
+    { title: t("TXT_CODE_88122886"), icon: "mdi-package-down", show: true, action: () => zipFile(false) },
     { title: t("TXT_CODE_ecbd7449"), icon: "mdi-delete-outline", show: true, action: () => deleteFile(record.name), color: "error" }
 ].filter((item) => item.show);
 
@@ -404,111 +320,6 @@ const handleClickFile = async (file: DataType) => {
         return emit("open-image-viewer", path, file.name);
     }
     return editFile(file.name);
-};
-
-const onDesktopRowClick = (_event: MouseEvent, row: { item: DataType }) => {
-    void handleClickFile(row.item);
-};
-
-const menuList = (record: DataType) =>
-    arrayFilter<ItemType & { style?: CSSProperties }>([
-        {
-            label: t("TXT_CODE_b147fabc"),
-            key: "new",
-            icon: h(PlusOutlined),
-            children: [
-                {
-                    label: t("TXT_CODE_cfc657db"),
-                    key: "newFolder",
-                    icon: h(FolderOutlined),
-                    onClick: () => touchFile(true)
-                },
-                {
-                    label: t("TXT_CODE_1e0b63b6"),
-                    key: "newFile",
-                    icon: h(FileOutlined),
-                    onClick: () => touchFile()
-                }
-            ],
-            condition: () => !isMultiple.value
-        },
-        {
-            label: t("TXT_CODE_ARCHIVE_PREVIEW"),
-            key: "previewArchive",
-            icon: h(FileZipOutlined),
-            onClick: () => previewArchiveFile(record.name),
-            condition: () => !isMultiple.value && record.type === 1 && isCompressFile(record.name)
-        },
-        {
-            label: t("TXT_CODE_a64f3007"),
-            key: "unzip",
-            icon: h(FileZipOutlined),
-            onClick: () => unzipFile(record.name, false),
-            condition: () => record.type === 1 && isCompressFile(record.name)
-        },
-        {
-            label: t("TXT_CODE_ad207008"),
-            key: "edit",
-            icon: h(EditOutlined),
-            onClick: () => editFile(record.name),
-            condition: () => !isMultiple.value && record.type === 1
-        },
-        {
-            label: t("TXT_CODE_65b21404"),
-            key: "download",
-            icon: h(DownloadOutlined),
-            onClick: () => downloadFile(record.name),
-            condition: () => !isMultiple.value && record.type === 1
-        },
-        {
-            label: t("TXT_CODE_46c4169b"),
-            key: "cut",
-            icon: h(ScissorOutlined),
-            onClick: () => setClipBoard("move")
-        },
-        {
-            label: t("TXT_CODE_13ae6a93"),
-            key: "copy",
-            icon: h(CopyOutlined),
-            onClick: () => setClipBoard("copy")
-        },
-        {
-            label: t("TXT_CODE_c83551f5"),
-            key: "rename",
-            icon: h(FormOutlined),
-            onClick: () => resetName(record.name),
-            condition: () => !isMultiple.value
-        },
-        {
-            label: t("TXT_CODE_16853efe"),
-            key: "changePermission",
-            icon: h(KeyOutlined),
-            onClick: () => changePermission(record.name, record.mode),
-            condition: () => fileStatus.value?.platform !== "win32"
-        },
-        {
-            label: t("TXT_CODE_88122886"),
-            key: "zip",
-            icon: h(FileZipOutlined),
-            onClick: () => zipFile(false)
-        },
-        {
-            label: t("TXT_CODE_ecbd7449"),
-            key: "delete",
-            icon: h(DeleteOutlined),
-            style: {
-                color: "var(--color-red-5)"
-            },
-            onClick: () => deleteFile(record.name)
-        }
-    ]);
-
-const handleRightClickRow = (e: MouseEvent, record: DataType) => {
-    e.preventDefault();
-    e.stopPropagation();
-    oneSelected(record.name, record);
-    openRightClickMenu(e.clientX, e.clientY, menuList(record));
-    return false;
 };
 
 const downloadDialog = ref({
@@ -568,11 +379,10 @@ const lastClickedIndex = ref(-1);
 
 const handleRowClick = (e: MouseEvent, record: DataType) => {
     const target = e.target as HTMLElement;
-    if (target.closest('.ant-checkbox') ||
-        target.closest('.ant-btn') ||
-        target.closest('.ant-dropdown-trigger') ||
-        target.closest('.ant-input') ||
-        target.closest('.ant-select')) {
+    if (target.closest('input[type="checkbox"]') ||
+        target.closest('.v-btn') ||
+        target.closest('.v-menu') ||
+        target.closest('.v-input')) {
         return;
     }
 
@@ -602,7 +412,7 @@ const handleRowClick = (e: MouseEvent, record: DataType) => {
         if (lastClickedIndex.value > -1 && dataSource.value) {
             const start = Math.min(lastClickedIndex.value, index);
             const end = Math.max(lastClickedIndex.value, index);
-            const rangeKeys: Key[] = [];
+            const rangeKeys: string[] = [];
             const rangeRows: DataType[] = [];
             for (let i = start; i <= end; i++) {
                 const row = dataSource.value[i];
@@ -656,12 +466,12 @@ const dataSourceMap = computed(() => {
 
 const getTableBodyEl = (): HTMLElement | null => {
     if (!dfmRootRef.value) return null;
-    return dfmRootRef.value.querySelector('.ant-table-tbody');
+    return dfmRootRef.value.querySelector('.dfm-table tbody');
 };
 
 const getRowEls = (): NodeListOf<HTMLElement> => {
     if (!dfmRootRef.value) return document.querySelectorAll('');
-    return dfmRootRef.value.querySelectorAll('.ant-table-tbody tr.ant-table-row');
+    return dfmRootRef.value.querySelectorAll('.dfm-table tbody tr');
 };
 
 const getRowDataKey = (rowEl: HTMLElement): string | null => {
@@ -677,15 +487,14 @@ const onTableMouseDown = (e: MouseEvent) => {
     if (e.button !== 0) return;
     if (e.shiftKey || e.metaKey) return;
     const target = e.target as HTMLElement;
-    if (target.closest('.ant-table-cell-fix-right') ||
-        target.closest('.ant-checkbox') ||
-        target.closest('.ant-btn') ||
-        target.closest('.ant-dropdown-trigger') ||
-        target.closest('.ant-input') ||
-        target.closest('.ant-select') ||
-        target.closest('.ant-pagination') ||
-        target.closest('.ant-tabs') ||
-        target.closest('.ant-breadcrumb') ||
+    if (target.closest('.dfm-table .v-data-table__td:last-child') ||
+        target.closest('input[type="checkbox"]') ||
+        target.closest('.v-btn') ||
+        target.closest('.v-menu') ||
+        target.closest('.v-input') ||
+        target.closest('.v-pagination') ||
+        target.closest('.v-tabs') ||
+        target.closest('.dfm-breadcrumbs') ||
         target.closest('.dfm-toolbar') ||
         target.closest('.dfm-nav') ||
         target.closest('.dfm-upload-progress')) {
@@ -711,7 +520,8 @@ const onTableMouseDown = (e: MouseEvent) => {
     dragSelectVisible.value = true;
 
     if (!isDragAdditive.value) {
-        selectChanged([], []);
+        selectedRowKeys.value = [];
+        selectionData.value = [];
     }
 
     if (dfmRootRef.value) {
@@ -860,7 +670,7 @@ const handleKeyboardShortcut = (e: KeyboardEvent) => {
     const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
     const isContentEditable = target?.isContentEditable;
 
-    const isTableCheckbox = isInput && tag === 'INPUT' && (target as HTMLInputElement)?.type === 'checkbox' && target.closest('.dfm .ant-table');
+    const isTableCheckbox = isInput && tag === 'INPUT' && (target as HTMLInputElement)?.type === 'checkbox' && target.closest('.dfm .dfm-table');
     if (isInput && !isTableCheckbox) return;
     if (isContentEditable && !isTableCheckbox) return;
 
@@ -963,6 +773,7 @@ onUnmounted(() => {
             </div>
             <VProgressLinear v-if="uploadData.current" :model-value="progress" color="primary" height="4" rounded="xl" />
             <div v-if="uploadData.current" class="dfm-upload-progress__info"><span>{{ `${uploadData.currentFile} ${uploadInstanceTag}`.trim() }}</span><span>({{ uploadData.files[0] }}/{{ uploadData.files[1] }})</span><VBtn icon variant="text" size="small" rounded="xl" @click="uploadData.suspending ? uploadService.unsuspend() : uploadService.suspend()"><VIcon :icon="uploadData.suspending ? 'mdi-play' : 'mdi-pause'" /></VBtn><VBtn icon variant="text" size="small" rounded="xl" @click="uploadService.stop()"><VIcon icon="mdi-close" /></VBtn></div>
+            <div class="dfm-body" :style="{ opacity: opacity ? 0.4 : undefined }" @dragover.prevent="handleDragover" @dragleave.prevent="handleDragleave" @drop.prevent="handleDrop">
             <VTabs v-model="activeTab" class="dfm-tabs" color="primary">
                 <VTab v-for="tab in currentTabs" :key="tab.key" :value="tab.key">{{ tab.name }}<VBtn icon variant="text" size="x-small" rounded="xl" class="dfm-tab-close" @click.stop="onEditTabs(tab.key, 'remove')"><VIcon icon="mdi-close" /></VBtn></VTab>
             </VTabs>
@@ -972,7 +783,8 @@ onUnmounted(() => {
             </div>
             <VAlert v-if="(fileStatus?.downloadFileFromURLTask || 0) > 0" type="info" variant="tonal" rounded="xl" density="compact"><VIcon icon="mdi-loading" class="desktop-icon-spin" />{{ t("TXT_CODE_8b7fe641", { count: fileStatus?.downloadFileFromURLTask || 0 }) }}</VAlert>
             <VAlert v-if="(fileStatus?.instanceFileTask || 0) > 0" type="info" variant="tonal" rounded="xl" density="compact"><VIcon icon="mdi-loading" class="desktop-icon-spin" />{{ t("TXT_CODE_dd06dea2") + (fileStatus?.instanceFileTask || 0) + t("TXT_CODE_3e959ce7") }}</VAlert>
-            <VDataTable v-model="selectedRowKeys" class="dfm-table" :headers="desktopFileHeaders" :items="dataSource || []" item-value="name" :loading="spinning" :items-per-page="operationForm.pageSize || 20" :page="operationForm.current || 1" show-select density="comfortable" :row-props="getDesktopRowProps" @update:model-value="onDesktopSelectionChange" @update:page="(page) => handleTableChange({ current: page, pageSize: operationForm.pageSize || 20 })" @update:items-per-page="(size) => handleTableChange({ current: operationForm.current || 1, pageSize: size })" @click:row="onDesktopRowClick">
+            <div class="dfm-table-wrapper" @mousedown="onTableMouseDown">
+            <VDataTableServer v-model="selectedRowKeys" class="dfm-table" :headers="desktopFileHeaders" :items="dataSource || []" item-value="name" :loading="spinning" :items-length="operationForm.total" :items-per-page="operationForm.pageSize || 20" :page="operationForm.current || 1" :items-per-page-options="[25, 50, 100, 200]" show-select density="comfortable" :row-props="getDesktopRowProps" @update:model-value="onDesktopSelectionChange" @update:page="(page) => handleTableChange({ current: page, pageSize: operationForm.pageSize || 20 })" @update:items-per-page="(size) => handleTableChange({ current: operationForm.current || 1, pageSize: size })">
                 <template #loading><VProgressCircular indeterminate size="24" width="2" /></template>
                 <template #item.name="{ item }"><span class="dfm-file-name"><VIcon :icon="getDesktopFileIcon(item.name, item.type)" size="small" />{{ item.name }}</span></template>
                 <template #item.type="{ item }">{{ item.type === 1 ? filterFileName(item.name) : t("TXT_CODE_e5f949c") }}</template>
@@ -981,8 +793,10 @@ onUnmounted(() => {
                 <template #item.mode="{ item }">{{ item.mode ?? "--" }}</template>
                 <template #item.action="{ item }"><VMenu location="bottom end"><template #activator="{ props: menuProps }"><VBtn v-bind="menuProps" icon variant="text" size="small" rounded="xl"><VIcon icon="mdi-dots-vertical" /></VBtn></template><VCard rounded="xl"><VCardText class="dfm-menu-list"><VBtn v-for="action in desktopRowMenu(item)" :key="action.title" variant="text" block :color="action.color" @click="action.action()"><VIcon :icon="action.icon" />{{ action.title }}</VBtn></VCardText></VCard></VMenu></template>
                 <template #no-data><div class="dfm-empty"><VIcon icon="mdi-folder-open-outline" size="42" /><span>{{ t("TXT_CODE_DESKTOP_FM_NO_FILES") }}</span></div></template>
-            </VDataTable>
+            </VDataTableServer>
             <div v-if="dragSelectVisible" class="dfm-drag-select-rect" :style="{ left: dragSelectRect.x + 'px', top: dragSelectRect.y + 'px', width: dragSelectRect.w + 'px', height: dragSelectRect.h + 'px' }"></div>
+            </div>
+            </div>
         </div>
 
         <VMenu v-model="desktopContextMenu.open" :target="[desktopContextMenu.x, desktopContextMenu.y]" location="bottom start">
@@ -999,431 +813,6 @@ onUnmounted(() => {
         <VDialog v-model="overwriteDialog.show" max-width="520" scrollable><VCard rounded="xl"><VCardTitle>{{ t("TXT_CODE_99ca8563") }}</VCardTitle><VCardText>{{ t("TXT_CODE_58a55f17", { name: overwriteDialog.fileName }) }}<VCheckbox v-model="overwriteDialog.overwrite" :label="t('TXT_CODE_5bf41818')" hide-details /><VCheckbox v-if="overwriteDialog.count > 1" v-model="overwriteDialog.all" :label="t('TXT_CODE_5445f34b', { num: overwriteDialog.count - 1 })" hide-details /></VCardText><VCardText class="dfm-v-dialog-actions"><VBtn variant="text" rounded="xl" @click="handleOverwriteCancel">{{ t("TXT_CODE_518528d0") }}</VBtn><VBtn color="primary" variant="text" rounded="xl" @click="handleOverwriteOk">{{ t("TXT_CODE_ae09d79d") }}</VBtn></VCardText></VCard></VDialog>
         <VDialog v-model="deleteDialog.show" max-width="520" scrollable><VCard rounded="xl"><VCardTitle>{{ t("TXT_CODE_71155575") }}</VCardTitle><VCardText>{{ t("TXT_CODE_6a10302d") }}</VCardText><VCardText class="dfm-v-dialog-actions"><VBtn variant="text" rounded="xl" @click="deleteDialog.resolve && deleteDialog.resolve(false)">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="error" variant="text" rounded="xl" @click="deleteDialog.resolve && deleteDialog.resolve(true)">{{ t("TXT_CODE_d507abff") }}</VBtn></VCardText></VCard></VDialog>
     </template>
-    <template v-else>
-    <div ref="dfmRootRef" class="dfm">
-        <div class="dfm-toolbar">
-            <div class="dfm-toolbar__left">
-                <a-input v-model:value.trim.lazy="operationForm.name" :placeholder="t('TXT_CODE_7cad42a5')" allow-clear
-                    size="small" @change="handleSearchChange()">
-                    <template #suffix>
-                        <SearchOutlined />
-                    </template>
-                </a-input>
-            </div>
-            <div class="dfm-toolbar__right">
-                <a-button type="dashed" size="small" @click="downloadFromURLFile">
-                    <DownloadOutlined />
-                    {{ t("TXT_CODE_5b364aef") }}
-                </a-button>
-                <a-upload v-model:file-list="fileList" :before-upload="() => false" multiple :on-change="onFileSelect"
-                    :show-upload-list="false">
-                    <a-button type="dashed" size="small">
-                        <UploadOutlined />
-                        {{ t("TXT_CODE_e00c858c") }}
-                    </a-button>
-                </a-upload>
-                <a-button v-if="clipboard?.value && clipboard.value.length > 0" type="dashed" size="small" danger
-                    @click="paste()">
-                    {{ t("TXT_CODE_f0260e51") }}
-                </a-button>
-                <a-button v-else type="default" size="small" @click="reloadList()">
-                    {{ t("TXT_CODE_a53573af") }}
-                </a-button>
-
-                <a-dropdown v-if="isMultiple" :get-popup-container="(trigger: any) => trigger.parentElement">
-                    <template #overlay>
-                        <a-menu mode="vertical" :items="menuList({
-                            name: '',
-                            type: 0,
-                            size: 0,
-                            time: '',
-                            mode: 0
-                        })
-                            ">
-                        </a-menu>
-                    </template>
-                    <a-button type="primary" size="small">
-                        {{ t("TXT_CODE_5cb656b9") }}
-                        <DownOutlined />
-                    </a-button>
-                </a-dropdown>
-
-                <a-dropdown v-else :get-popup-container="(trigger: any) => trigger.parentElement">
-                    <template #overlay>
-                        <a-menu>
-                            <a-menu-item key="newFile" @click="touchFile()">
-                                {{ t("TXT_CODE_1e0b63b6") }}
-                            </a-menu-item>
-                            <a-menu-item key="newFolder" @click="touchFile(true)">
-                                {{ t("TXT_CODE_cfc657db") }}
-                            </a-menu-item>
-                        </a-menu>
-                    </template>
-                    <a-button type="primary" size="small">
-                        {{ t("TXT_CODE_b147fabc") }}
-                        <DownOutlined />
-                    </a-button>
-                </a-dropdown>
-            </div>
-        </div>
-
-        <div v-if="uploadData.current" class="dfm-upload-progress">
-            <div class="dfm-upload-progress__info">
-                <a-typography-text :ellipsis="true">
-                    {{ `${uploadData.currentFile} ${uploadInstanceTag}`.trim() }}
-                </a-typography-text>
-                <a-typography-text style="padding-left: 5px; white-space: nowrap">
-                    ({{ uploadData.files[0] }}/{{ uploadData.files[1] }})
-                </a-typography-text>
-                <CaretRightOutlined v-if="uploadData.suspending" style="margin-left: 5px; cursor: pointer"
-                    @click="uploadService.unsuspend()" />
-                <PauseOutlined v-else style="margin-left: 5px; cursor: pointer" @click="uploadService.suspend()" />
-                <CloseOutlined style="margin-left: 5px; cursor: pointer" @click="uploadService.stop()" />
-            </div>
-            <a-progress :stroke-color="{
-                '0%': '#49b3ff',
-                '100%': '#25f5b9'
-            }" :percent="progress" :show-info="false" class="dfm-upload-progress__bar" />
-            <a-typography-text style="font-size: 11px">
-                {{ convertFileSize(uploadData.current![0].toString()) }} /
-                {{ convertFileSize(uploadData.current![1].toString()) }}
-            </a-typography-text>
-        </div>
-
-        <div class="dfm-body" :style="opacity ? 'opacity: 0.4' : ''" @dragover="handleDragover"
-            @dragleave="handleDragleave" @drop="handleDrop">
-            <a-tabs v-model:activeKey="activeTab" type="editable-card" size="small" @edit="onEditTabs"
-                @change="(key) => handleChangeTab(key as string)">
-                <a-tab-pane v-for="b in currentTabs" :key="b.key" :tab="b.name" :closable="true">
-                </a-tab-pane>
-            </a-tabs>
-
-            <div class="dfm-nav">
-                <a-select v-if="isShowDiskList" v-model:value="currentDisk" size="small"
-                    style="width: 125px; flex-shrink: 0" @change="toDisk(currentDisk)">
-                    <a-select-option value="/">{{ t("TXT_CODE_28124988") }}</a-select-option>
-                    <a-select-option v-for="disk in fileStatus?.disks" :key="disk" :value="disk">
-                        {{ disk }}
-                    </a-select-option>
-                </a-select>
-                <div class="dfm-breadcrumbs">
-                    <a-breadcrumb separator=">">
-                        <a-breadcrumb-item v-for="item in breadcrumbs" :key="item.path">
-                            <span class="dfm-breadcrumbs__item" @click="handleChangeDir(item.path)">
-                                {{ item.name }}
-                            </span>
-                        </a-breadcrumb-item>
-                    </a-breadcrumb>
-                </div>
-            </div>
-
-            <VAlert v-if="fileStatus?.downloadFileFromURLTask && fileStatus.downloadFileFromURLTask > 0" type="info" variant="tonal" rounded="xl" density="compact"><VIcon icon="mdi-loading" class="desktop-icon-spin" />{{ t("TXT_CODE_8b7fe641", { count: fileStatus.downloadFileFromURLTask }) }}</VAlert>
-            <VAlert v-if="fileStatus?.instanceFileTask && fileStatus.instanceFileTask > 0" type="info" variant="tonal" rounded="xl" density="compact"><VIcon icon="mdi-loading" class="desktop-icon-spin" />{{ t("TXT_CODE_dd06dea2") + fileStatus.instanceFileTask + t("TXT_CODE_3e959ce7") }}</VAlert>
-
-            <a-spin :spinning="spinning">
-                <div class="dfm-table-wrapper" @mousedown="onTableMouseDown">
-                    <a-table :row-selection="{
-                        selectedRowKeys: selectedRowKeys,
-                        onChange: selectChanged
-                    }" :row-key="(record: DataType) => record.name" :data-source="dataSource" :columns="columns"
-                        :scroll="{ x: 'max-content' }" size="small" :pagination="{
-                            current: operationForm.current,
-                            pageSize: operationForm.pageSize,
-                            total: operationForm.total,
-                            hideOnSinglePage: false,
-                            showSizeChanger: true
-                        }" :custom-row="(record: DataType) => {
-                            return {
-                                onclick: (e: MouseEvent) => handleRowClick(e, record as DataType),
-                                onContextmenu: (e: MouseEvent) => handleRightClickRow(e, record as DataType),
-                                ondblclick: (e: MouseEvent) => {
-                                    const target = e.target as HTMLElement;
-                                    if (target.closest('.ant-checkbox')) return;
-                                    handleClickFile(record as DataType);
-                                }
-                            };
-                        }"
-                        @change="(pagination: any) => handleTableChange({ current: pagination.current || 0, pageSize: pagination.pageSize || 0 })">
-                        <template #bodyCell="{ column, record }">
-                            <template v-if="column.key === 'name'">
-                                <span class="dfm-file-name">
-                                    <span class="mr-4">
-                                        <component :is="getFileIcon(record.name, record.type)"
-                                            style="font-size: 16px" />
-                                    </span>
-                                    {{ record.name }}
-                                </span>
-                            </template>
-                            <template v-if="column.key === 'action'">
-                                <a-dropdown>
-                                    <template #overlay>
-                                        <a-menu mode="vertical" :items="menuList(record as DataType)"></a-menu>
-                                    </template>
-                                    <a-button size="small" type="text" class="dfm-action-btn">
-                                        <DownOutlined />
-                                    </a-button>
-                                </a-dropdown>
-                            </template>
-                        </template>
-                    </a-table>
-                    <div v-if="dragSelectVisible" class="dfm-drag-select-rect" :style="{
-                        left: dragSelectRect.x + 'px',
-                        top: dragSelectRect.y + 'px',
-                        width: dragSelectRect.w + 'px',
-                        height: dragSelectRect.h + 'px'
-                    }"></div>
-                </div>
-            </a-spin>
-        </div>
-
-        <Teleport to="body">
-            <Transition name="dfm-dialog-fade">
-                <component :is="desktopWindow" v-if="archivePreview.show" id="file-manager-archive-preview"
-                    :title="`${t('TXT_CODE_ARCHIVE_PREVIEW')}: ${archivePreview.title}`" :icon="FileZipOutlined"
-                    :visible="archivePreview.show" :minimized="false" :maximized="false" :active="true"
-                    :initial-width="960" :initial-height="620" :initial-x="Math.max(20, windowWidth / 2 - 480)"
-                    :initial-y="Math.max(20, windowHeight / 2 - 310)" :z-index="10002" :show-minimize="false"
-                    :show-maximize="false" :resizable="false" @close="closeArchivePreview">
-                    <ArchivePreview compact :entries="archivePreview.entries" :loading="archivePreview.loading" />
-                </component>
-            </Transition>
-        </Teleport>
-
-        <Teleport to="body">
-            <Transition name="dfm-dialog-fade">
-                <component :is="desktopWindow" v-if="dialog.show" id="file-manager-dialog" :title="dialog.title" :icon="FileOutlined"
-                    :visible="dialog.show" :minimized="false" :maximized="false" :active="true" :initial-width="420"
-                    :initial-height="380" :initial-x="windowWidth / 2 - 210" :initial-y="windowHeight / 2 - 190"
-                    :z-index="10002" :show-minimize="false" :show-maximize="false" :resizable="false"
-                    @close="dialog.cancel()">
-                    <div class="dfm-dialog-content">
-                        <div class="dfm-dialog__body">
-                            <p>{{ dialog.info }}</p>
-
-                            <a-input v-if="dialog.mode == ''" :ref="dialog.ref" v-model:value="dialog.value"
-                                :placeholder="t('TXT_CODE_4ea93630')" />
-
-                            <a-space v-if="dialog.mode == 'unzip'" direction="vertical" class="w-100">
-                                <a-typography-title :level="5">{{ t("TXT_CODE_a6453188") }}</a-typography-title>
-                                <a-radio-group v-model:value="dialog.unzipmode">
-                                    <a-radio-button value="0">{{ t("TXT_CODE_7907c99") }}</a-radio-button>
-                                    <a-radio-button value="1">{{ t("TXT_CODE_329fb904") }}</a-radio-button>
-                                </a-radio-group>
-
-                                <a-input v-if="dialog.unzipmode == '1'" v-model:value="dialog.value"
-                                    :placeholder="t('TXT_CODE_377e5535')" />
-                            </a-space>
-
-                            <a-space v-if="dialog.mode == 'zip'" direction="vertical" class="w-100">
-                                <a-input :ref="dialog.ref" v-model:value="dialog.value"
-                                    :placeholder="t('TXT_CODE_366bad15')" addon-after=". zip" />
-                            </a-space>
-
-                            <a-space v-if="dialog.mode == 'unzip'" direction="vertical" class="w-100 mt-16">
-                                <a-typography-title :level="5">{{ t("TXT_CODE_2841f4a") }}</a-typography-title>
-                                <a-radio-group v-model:value="dialog.code">
-                                    <a-radio-button value="utf-8">UTF-8</a-radio-button>
-                                    <a-radio-button value="gbk">GBK</a-radio-button>
-                                    <a-radio-button value="big5">BIG5</a-radio-button>
-                                </a-radio-group>
-                            </a-space>
-
-                            <a-space v-if="dialog.mode == 'zip'" direction="vertical" class="w-100 mt-16">
-                                <a-typography-text>
-                                    {{ t("TXT_CODE_92ebdc7f") }}
-                                </a-typography-text>
-                            </a-space>
-
-                            <a-space v-if="dialog.mode == 'permission'" direction="vertical" class="w-100 select-none">
-                                <a-spin :spinning="permission.loading">
-                                    <div class="dfm-permission">
-                                        <a-checkbox-group v-for="item in permission.item" :key="item.key"
-                                            v-model:value="permission.data[item.role]">
-                                            <a-row class="direction-column">
-                                                <a-typography-text class="mb-10">
-                                                    <strong>{{ item.key }}</strong>
-                                                </a-typography-text>
-                                                <a-col class="mb-10">
-                                                    <a-checkbox value="4">{{ t("TXT_CODE_798f592e") }}</a-checkbox>
-                                                </a-col>
-                                                <a-col class="mb-10">
-                                                    <a-checkbox value="2">{{ t("TXT_CODE_46c4e9ac") }}</a-checkbox>
-                                                </a-col>
-                                                <a-col class="mb-10">
-                                                    <a-checkbox value="1">{{ t("TXT_CODE_e97669d8") }}</a-checkbox>
-                                                </a-col>
-                                            </a-row>
-                                        </a-checkbox-group>
-                                    </div>
-                                    <a-checkbox v-model:checked="permission.deep" class="mt-15">
-                                        {{ t("TXT_CODE_74fd665e") }}
-                                    </a-checkbox>
-                                </a-spin>
-                            </a-space>
-                        </div>
-                        <div class="dfm-dialog__footer">
-                            <button class="dfm-btn dfm-btn--default" @click="dialog.cancel()">
-                                {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="dfm-btn dfm-btn--primary" :disabled="dialog.loading" @click="dialog.ok()">
-                                {{ t("TXT_CODE_abfe9512") }}
-                            </button>
-                        </div>
-                    </div>
-                </component>
-            </Transition>
-        </Teleport>
-
-        <Teleport to="body">
-            <Transition name="dfm-dialog-fade">
-                <component :is="desktopWindow" v-if="downloadDialog.show" id="file-manager-download-dialog"
-                    :title="t('TXT_CODE_f27b68b3')" :icon="DownloadOutlined" :visible="downloadDialog.show"
-                    :minimized="false" :maximized="false" :active="true" :initial-width="400" :initial-height="280"
-                    :initial-x="windowWidth / 2 - 200" :initial-y="windowHeight / 2 - 140" :z-index="10002"
-                    :show-minimize="false" :show-maximize="false" :resizable="false" @close="cancelDownloadDialog">
-                    <div class="dfm-dialog-content">
-                        <div class="dfm-dialog__body">
-                            <a-form layout="vertical">
-                                <a-form-item :label="t('TXT_CODE_ab8dd5a0')">
-                                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                                        <a-typography-text type="secondary" class="typography-text-ellipsis">
-                                            {{ t("TXT_CODE_3fd7fe73") }}
-                                        </a-typography-text>
-                                        <a-input v-model:value="downloadDialog.url"
-                                            :placeholder="t('TXT_CODE_4ea93630')" />
-                                    </div>
-                                </a-form-item>
-                                <a-form-item :label="t('TXT_CODE_2eace3d5')">
-                                    <a-input v-model:value="downloadDialog.fileName"
-                                        :placeholder="t('TXT_CODE_4ea93630')" />
-                                </a-form-item>
-                            </a-form>
-                        </div>
-                        <div class="dfm-dialog__footer">
-                            <button class="dfm-btn dfm-btn--default" @click="cancelDownloadDialog">
-                                {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="dfm-btn dfm-btn--primary" @click="submitDownloadDialog">
-                                {{ t("TXT_CODE_d507abff") }}
-                            </button>
-                        </div>
-                    </div>
-                </component>
-            </Transition>
-        </Teleport>
-
-        <Teleport to="body">
-            <Transition name="dfm-dialog-fade">
-                <component :is="desktopWindow" v-if="loadingWindow.show" id="file-manager-loading-dialog" :title="loadingWindow.title"
-                    :icon="FileZipOutlined" :visible="loadingWindow.show" :minimized="false" :maximized="false"
-                    :active="true" :initial-width="360" :initial-height="180" :initial-x="windowWidth / 2 - 180"
-                    :initial-y="windowHeight / 2 - 90" :z-index="10003" :show-minimize="false" :show-maximize="false"
-                    :show-close="false" :resizable="false">
-                    <div class="dfm-dialog-content">
-                        <div class="dfm-dialog__body"
-                            style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;">
-                            <a-spin size="large" />
-                            <p style="margin: 0; color: var(--desktop-window-text);">{{ loadingWindow.text }}</p>
-                        </div>
-                    </div>
-                </component>
-            </Transition>
-        </Teleport>
-
-        <Teleport to="body">
-            <Transition name="dfm-dialog-fade">
-                <component :is="desktopWindow" v-if="uploadConfirmDialog.show" id="file-manager-upload-confirm-dialog"
-                    :title="t('TXT_CODE_52bc24ec')" :icon="ExclamationCircleOutlined"
-                    :visible="uploadConfirmDialog.show" :minimized="false" :maximized="false" :active="true"
-                    :initial-width="400" :initial-height="200" :initial-x="windowWidth / 2 - 200"
-                    :initial-y="windowHeight / 2 - 100" :z-index="10004" :show-minimize="false" :show-maximize="false"
-                    :resizable="false" @close="handleUploadConfirmCancel">
-                    <div class="dfm-dialog-content">
-                        <div class="dfm-dialog__body dfm-dialog__body--column">
-                            <ExclamationCircleOutlined class="dfm-dialog__warn-icon" />
-                            <p class="dfm-dialog__desc">{{ t("TXT_CODE_52bc24ec") }} {{ uploadConfirmDialog.name }} ?
-                            </p>
-                        </div>
-                        <div class="dfm-dialog__footer">
-                            <button class="dfm-btn dfm-btn--default" @click="handleUploadConfirmCancel">
-                                {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="dfm-btn dfm-btn--primary" @click="handleUploadConfirmOk">
-                                {{ t("TXT_CODE_d507abff") }}
-                            </button>
-                        </div>
-                    </div>
-                </component>
-            </Transition>
-        </Teleport>
-
-        <Teleport to="body">
-            <Transition name="dfm-dialog-fade">
-                <component :is="desktopWindow" v-if="overwriteDialog.show" id="file-manager-overwrite-dialog"
-                    :title="t('TXT_CODE_99ca8563')" :icon="ExclamationCircleOutlined" :visible="overwriteDialog.show"
-                    :minimized="false" :maximized="false" :active="true" :initial-width="400" :initial-height="240"
-                    :initial-x="windowWidth / 2 - 200" :initial-y="windowHeight / 2 - 120" :z-index="10005"
-                    :show-minimize="false" :show-maximize="false" :resizable="false" @close="handleOverwriteCancel">
-                    <div class="dfm-dialog-content">
-                        <div class="dfm-dialog__body dfm-dialog__body--column">
-                            <ExclamationCircleOutlined class="dfm-dialog__warn-icon" />
-                            <p class="dfm-dialog__desc">{{ t("TXT_CODE_58a55f17", { name: overwriteDialog.fileName }) }}
-                            </p>
-                            <div class="dfm-overwrite-options">
-                                <a-checkbox v-model:checked="overwriteDialog.overwrite">
-                                    {{ t("TXT_CODE_5bf41818") }}
-                                </a-checkbox>
-                                <a-checkbox v-if="overwriteDialog.count > 1" v-model:checked="overwriteDialog.all"
-                                    style="margin-left: 5px">
-                                    {{ t("TXT_CODE_5445f34b", { num: overwriteDialog.count - 1 }) }}
-                                </a-checkbox>
-                            </div>
-                        </div>
-                        <div class="dfm-dialog__footer">
-                            <button class="dfm-btn dfm-btn--default" @click="handleOverwriteCancel">
-                                {{ t("TXT_CODE_518528d0") }}
-                            </button>
-                            <button class="dfm-btn dfm-btn--primary" @click="handleOverwriteOk">
-                                {{ t("TXT_CODE_ae09d79d") }}
-                            </button>
-                        </div>
-                    </div>
-                </component>
-            </Transition>
-        </Teleport>
-
-        <Teleport to="body">
-            <Transition name="dfm-dialog-fade">
-                <component :is="desktopWindow" v-if="deleteDialog.show" id="file-manager-delete-dialog" :title="t('TXT_CODE_71155575')"
-                    :icon="ExclamationCircleOutlined" :visible="deleteDialog.show" :minimized="false" :maximized="false"
-                    :active="true" :initial-width="400" :initial-height="200" :initial-x="windowWidth / 2 - 200"
-                    :initial-y="windowHeight / 2 - 100" :z-index="10006" :show-minimize="false" :show-maximize="false"
-                    :resizable="false" @close="deleteDialog.resolve && deleteDialog.resolve(false)">
-                    <div class="dfm-dialog-content">
-                        <div class="dfm-dialog__body dfm-dialog__body--column">
-                            <ExclamationCircleOutlined class="dfm-dialog__warn-icon" />
-                            <p class="dfm-dialog__desc">
-                                {{ t("TXT_CODE_6a10302d") }}
-                            </p>
-                        </div>
-                        <div class="dfm-dialog__footer">
-                            <button class="dfm-btn dfm-btn--default"
-                                @click="deleteDialog.resolve && deleteDialog.resolve(false)">
-                                {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="dfm-btn dfm-btn--primary"
-                                style="background: var(--color-red-5); border-color: var(--color-red-5);"
-                                @click="deleteDialog.resolve && deleteDialog.resolve(true)">
-                                {{ t("TXT_CODE_d507abff") }}
-                            </button>
-                        </div>
-                    </div>
-                </component>
-            </Transition>
-        </Teleport>
-
-    </div>
-    </template>
 </template>
 
 <style lang="scss" scoped>
@@ -1435,26 +824,6 @@ onUnmounted(() => {
     font-size: 13px;
     overflow: hidden;
 
-    :deep(.ant-dropdown-menu),
-    :deep(.ant-menu) {
-
-        .ant-dropdown-menu-item,
-        .ant-dropdown-menu-submenu-title,
-        .ant-menu-item,
-        .ant-menu-submenu-title {
-            height: 32px !important;
-            line-height: 32px !important;
-            padding-inline: 12px !important;
-            display: flex !important;
-            align-items: center !important;
-            margin-block: 2px !important;
-        }
-
-        .ant-menu-submenu-arrow,
-        .ant-dropdown-menu-submenu-arrow {
-            inset-inline-end: 8px !important;
-        }
-    }
 }
 
 .dfm-toolbar {
@@ -1545,12 +914,39 @@ onUnmounted(() => {
     user-select: none;
 }
 
-:deep(.ant-table-measure-row) {
-    display: none !important;
+:deep(.dfm-table .v-data-table__th),
+:deep(.dfm-table .v-data-table__td) {
+    font-size: 12px;
 }
 
-:deep(.ant-table-pagination-right) {
-    gap: 6px;
+:deep(.dfm-table .v-data-table__th) {
+    background: var(--desktop-window-titlebar-bg) !important;
+    border-bottom: 1px solid var(--desktop-window-border) !important;
+    color: var(--desktop-window-text-secondary) !important;
+    font-size: 11px !important;
+    padding: 6px 10px !important;
+}
+
+:deep(.dfm-table .v-data-table__td) {
+    border-bottom: 1px solid var(--desktop-window-border) !important;
+    padding: 6px 8px !important;
+    line-height: 1.4;
+}
+
+:deep(.dfm-table tbody tr:hover > td) {
+    background: var(--desktop-window-control-hover) !important;
+}
+
+:deep(.dfm-table .v-data-table-footer) {
+    font-size: 12px;
+}
+
+:deep(.dfm-table .v-btn) {
+    font-size: 11px;
+}
+
+:deep(.dfm-table .v-data-table__tr--mobile) {
+    display: none !important;
 }
 
 .dfm-drag-select-rect {
@@ -1574,43 +970,8 @@ onUnmounted(() => {
     }
 }
 
-:deep(.ant-tabs-nav) {
+:deep(.dfm-tabs) {
     margin-bottom: 8px !important;
-}
-
-:deep(.ant-tabs-tab) {
-    font-size: 12px !important;
-    padding: 4px 12px !important;
-}
-
-:deep(.ant-table) {
-    font-size: 12px;
-}
-
-:deep(.ant-table-thead > tr > th) {
-    background: var(--desktop-window-titlebar-bg) !important;
-    border-bottom: 1px solid var(--desktop-window-border) !important;
-    color: var(--desktop-window-text-secondary) !important;
-    font-size: 11px !important;
-    padding: 6px 10px !important;
-}
-
-:deep(.ant-table-tbody > tr > td) {
-    border-bottom: 1px solid var(--desktop-window-border) !important;
-    padding: 6px 8px !important;
-    line-height: 1.4;
-}
-
-:deep(.ant-table-tbody > tr:hover > td) {
-    background: var(--desktop-window-control-hover) !important;
-}
-
-:deep(.ant-pagination) {
-    font-size: 12px;
-}
-
-:deep(.ant-btn-sm) {
-    font-size: 11px;
 }
 
 .dfm-dialog-fade-enter-active,

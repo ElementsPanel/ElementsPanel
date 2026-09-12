@@ -4,7 +4,7 @@ import type { Component } from "vue";
 defineProps<{
   title: string;
   value: string;
-  /** Optional Ant Design Vue icon component */
+  /** Optional icon component */
   icon?: Component;
 }>();
 </script>

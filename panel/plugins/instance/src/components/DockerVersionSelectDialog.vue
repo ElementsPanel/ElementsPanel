@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useDialog } from "@/hooks/useDialog";
 import { t } from "@/lang/i18n";
-import { AppstoreOutlined, DeploymentUnitOutlined } from "@ant-design/icons-vue";
+import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VDialog, VIcon } from "vuetify/components";
 
 interface Props {
   destroyComponent(delay?: number): void;
@@ -25,55 +25,51 @@ defineExpose({
 </script>
 
 <template>
-  <a-modal
-    v-model:open="isVisible"
-    :title="t('TXT_CODE_docker_version_select_title')"
-    :width="860"
-    :footer="null"
-    :destroy-on-close="true"
-    :closable="false"
-    :mask-closable="false"
-    :keyboard="false"
-  >
-    <a-typography-paragraph class="desc">
+  <VDialog v-model="isVisible" max-width="860" persistent>
+    <VCard>
+      <VCardTitle>{{ t("TXT_CODE_docker_version_select_title") }}</VCardTitle>
+      <VCardText>
+    <p class="desc text-body-2 text-medium-emphasis">
       {{ t("TXT_CODE_docker_version_select_desc") }}
-    </a-typography-paragraph>
+    </p>
     <div class="cards">
-      <a-card class="choose-card docker-card" hoverable @click="selectDockerVersion">
-        <template #title>
+      <VCard class="choose-card docker-card" hoverable @click="selectDockerVersion">
+        <VCardTitle>
           <div class="card-title">
-            <DeploymentUnitOutlined />
+            <VIcon icon="mdi-docker" />
             <span>{{ t("TXT_CODE_docker_version_select_docker_title") }}</span>
           </div>
-        </template>
-        <a-typography-text type="secondary">
+        </VCardTitle>
+        <VCardText class="text-medium-emphasis">
           {{ t("TXT_CODE_docker_version_select_docker_subtitle") }}
-        </a-typography-text>
+        </VCardText>
         <div class="card-action">
-          <a-button type="primary">
+          <VBtn color="primary">
             {{ t("TXT_CODE_docker_version_select_docker_btn") }}
-          </a-button>
+          </VBtn>
         </div>
-      </a-card>
+      </VCard>
 
-      <a-card class="choose-card normal-card" hoverable @click="selectNormalVersion">
-        <template #title>
+      <VCard class="choose-card normal-card" hoverable @click="selectNormalVersion">
+        <VCardTitle>
           <div class="card-title">
-            <AppstoreOutlined />
+            <VIcon icon="mdi-apps" />
             <span>{{ t("TXT_CODE_docker_version_select_normal_title") }}</span>
           </div>
-        </template>
-        <a-typography-text type="secondary">
+        </VCardTitle>
+        <VCardText class="text-medium-emphasis">
           {{ t("TXT_CODE_docker_version_select_normal_subtitle") }}
-        </a-typography-text>
+        </VCardText>
         <div class="card-action">
-          <a-button>
+          <VBtn variant="tonal">
             {{ t("TXT_CODE_docker_version_select_normal_btn") }}
-          </a-button>
+          </VBtn>
         </div>
-      </a-card>
+      </VCard>
     </div>
-  </a-modal>
+      </VCardText>
+    </VCard>
+  </VDialog>
 </template>
 
 <style lang="scss" scoped>

@@ -2,7 +2,6 @@
 
 import { createApp, type Component, type App } from "vue";
 import { sleep } from "@/tools/common";
-import AppDialog from "../components/AppDialog.vue";
 import { installVuetify } from "../vuetify";
 
 export function useMountComponent(data: Record<string, any> = {}) {
@@ -27,7 +26,6 @@ export function useMountComponent(data: Record<string, any> = {}) {
         }
       });
       installVuetify(app);
-      app.component("AModal", AppDialog);
       app.mount(div);
     });
   };
@@ -51,7 +49,6 @@ export function useMountComponent(data: Record<string, any> = {}) {
       }
     });
     installVuetify(app);
-    app.component("AModal", AppDialog);
     const mountedComponent = app.mount(div);
     return {
       component: mountedComponent as any,

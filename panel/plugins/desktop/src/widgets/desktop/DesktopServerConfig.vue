@@ -337,9 +337,6 @@ onMounted(async () => {
             border: none !important;
             box-shadow: none !important;
 
-            .ant-card-body {
-                padding: 0 !important;
-            }
         }
 
         :deep(.line-option-card) {

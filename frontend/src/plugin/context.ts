@@ -54,7 +54,7 @@ export interface PanelFrontendAppMenu {
   title: string | (() => string);
   leftSideTitle?: string | (() => string);
   iconText?: string;
-  icon?: Component;
+  icon?: Component | string;
   /** Vuetify/MDI icon name used by the normal panel shell. */
   mdiIcon?: string;
   click: (...args: any[]) => unknown;
@@ -67,7 +67,7 @@ export interface PanelFrontendAppMenu {
 
 export interface PanelFrontendLoginAction {
   title: string | (() => string);
-  icon?: Component;
+  icon?: Component | string;
   click: () => unknown;
   condition?: boolean | (() => boolean);
 }
@@ -96,7 +96,7 @@ export interface PanelFrontendInstanceActionContext {
 export interface PanelFrontendInstanceAction {
   id: string;
   title: string | (() => string);
-  icon: Component;
+  icon: Component | string;
   normalComponent?: Component;
   desktopComponent?: Component;
   condition?: (context: PanelFrontendInstanceActionContext) => boolean;
@@ -132,7 +132,7 @@ export interface PanelFrontendTerminalActionContext {
 export interface PanelFrontendTerminalAction {
   id: string;
   title: string | (() => string);
-  icon: Component;
+  icon: Component | string;
   /** Matches the core buttons: "default" | "danger". */
   type?: string;
   class?: string;
@@ -146,7 +146,7 @@ export interface PanelFrontendTerminalAction {
 export interface PanelFrontendTerminalButton {
   id: string;
   title: string;
-  icon: Component;
+  icon: Component | string;
   type: string;
   class?: string;
   noConfirm: boolean;

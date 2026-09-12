@@ -12,9 +12,9 @@ defineProps<{
 <template>
   <div :class="{ btn: true, isActive: isActive }">
     <component :is="icon" v-if="icon"></component>
-    <a-typography-text class="text ml-6" :style="textStyle">
+    <span class="text ml-6" :style="textStyle">
       {{ title }}
-    </a-typography-text>
+    </span>
   </div>
 </template>
 

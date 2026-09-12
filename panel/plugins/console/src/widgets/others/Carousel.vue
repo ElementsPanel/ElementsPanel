@@ -6,20 +6,11 @@ import { uploadFile } from "@/services/apis/layout";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import type { LayoutCard } from "@/types/index";
-import {
-  CloseOutlined,
-  LeftCircleOutlined,
-  MinusCircleOutlined,
-  PlusOutlined,
-  RightCircleOutlined,
-  UploadOutlined
-} from "@ant-design/icons-vue";
-import { Empty, type FormInstance } from "ant-design-vue";
 import { message } from "@/tools/vuetifyToast";
-import type { FileType } from "ant-design-vue/es/upload/interface";
 import _ from "lodash";
 import { ref } from "vue";
 import { reportValidatorError } from "@/tools/validator";
+import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VCarousel, VCarouselItem, VDialog, VFileInput, VIcon, VProgressLinear, VSpacer, VTextField } from "vuetify/components";
 
 const props = defineProps<{
   card: LayoutCard;
@@ -39,7 +30,7 @@ const open = ref(false);
 const imgList = ref(getMetaValue<ImgList[]>("images", []));
 const displayImgList = ref(_.cloneDeep(imgList.value));
 
-const beforeUpload = async (file: FileType, imgItem: ImgList) => {
+const beforeUpload = async (file: File, imgItem: ImgList) => {
   imgItem.uploadControl = new AbortController();
   const { state, execute } = uploadFile();
   const uploadFormData = new FormData();
@@ -70,24 +61,6 @@ const cancelUpload = (item: ImgList) => {
   item.uploadControl.abort();
 };
 
-const formRef = ref<FormInstance>();
-const formItemLayout = {
-  labelCol: {
-    xs: { span: 24 },
-    sm: { span: 4 }
-  },
-  wrapperCol: {
-    xs: { span: 24 },
-    sm: { span: 20 }
-  }
-};
-const formItemLayoutWithOutLabel = {
-  wrapperCol: {
-    xs: { span: 24, offset: 0 },
-    sm: { span: 20, offset: 4 }
-  }
-};
-
 const removeImgSrc = (item: ImgList) => {
   const index = imgList.value.indexOf(item);
   if (index !== -1) {
@@ -112,121 +85,70 @@ const close = () => {
 };
 
 const save = async () => {
-  try {
-    await formRef.value?.validate();
-    setMetaValue("images", imgList.value);
-    displayImgList.value = _.cloneDeep(imgList.value);
-    open.value = false;
-  } catch (err: any) {
-    return reportValidatorError(err);
+  if (imgList.value.some((item) => !item.url.trim())) {
+    return reportValidatorError(new Error(t("TXT_CODE_c8a51b2e")));
   }
+  setMetaValue("images", imgList.value);
+  displayImgList.value = _.cloneDeep(imgList.value);
+  open.value = false;
+};
+
+const onFilePicked = async (file: File | File[] | null, item: ImgList) => {
+  const selected = Array.isArray(file) ? file[0] : file;
+  if (selected) await beforeUpload(selected, item);
 };
 </script>
 
 <template>
   <div style="width: 100%; height: 100%; position: relative">
-    <a-carousel v-if="imgList.length !== 0" class="h-100" arrows autoplay :adaptive-height="false">
-      <template #prevArrow>
-        <div class="custom-slick-arrow" style="left: 10px; z-index: 1">
-          <left-circle-outlined />
-        </div>
-      </template>
-      <template #nextArrow>
-        <div class="custom-slick-arrow" style="right: 10px">
-          <right-circle-outlined />
-        </div>
-      </template>
-      <div v-for="item in displayImgList" :key="item.url" class="h-100">
-        <img :src="item.url" :style="{ height: '100%' }" />
-      </div>
-    </a-carousel>
+    <VCarousel v-if="imgList.length !== 0" class="h-100" show-arrows="hover" cycle hide-delimiter-background>
+      <VCarouselItem v-for="item in displayImgList" :key="item.url"><img :src="item.url" /></VCarouselItem>
+    </VCarousel>
     <div v-if="imgList.length !== 0 && containerState.isDesignMode" class="mask">
-      <a-button type="primary" @click="editImgSrc()">
+      <VBtn color="primary" @click="editImgSrc()">
         {{ t("TXT_CODE_fd13f431") }}
-      </a-button>
+      </VBtn>
     </div>
     <CardPanel v-if="imgList.length === 0" style="height: 100%">
       <template #body>
-        <a-empty :image="Empty.PRESENTED_IMAGE_SIMPLE">
-          <template #description>
-            <span>{{ t("TXT_CODE_635d051") }}</span>
-          </template>
-          <a-button
+        <div class="empty-placeholder">
+          <VIcon icon="mdi-image-multiple-outline" size="32" />
+          <span>{{ t("TXT_CODE_635d051") }}</span>
+          <VBtn
             :disabled="!containerState.isDesignMode || !isAdmin"
-            type="primary"
+            color="primary"
             @click="editImgSrc()"
           >
             {{ t("TXT_CODE_589e091c") }}
-          </a-button>
-        </a-empty>
+          </VBtn>
+        </div>
       </template>
     </CardPanel>
   </div>
-  <a-modal
-    v-model:open="open"
-    :title="t('TXT_CODE_4a56836d')"
-    :closable="false"
-    :destroy-on-close="true"
-  >
-    <a-form ref="formRef" class="mt-20" :model="imgList">
-      <a-form-item
-        v-for="(imgItem, index) in imgList"
-        :key="imgItem.url + imgItem.key"
-        v-bind="formItemLayout"
-        :label="`${t('TXT_CODE_9900f79e')} ${index + 1}`"
-        :name="[index, 'url']"
-        :rules="{
-          required: true,
-          message: t('TXT_CODE_c8a51b2e'),
-          trigger: 'change'
-        }"
-      >
-        <div v-if="imgItem.uploadPercent === 0" style="display: inline-flex; width: 80%">
-          <a-input
-            v-model:value.trim="imgItem.url"
-            autofocus
-            :placeholder="t('TXT_CODE_c8a51b2e')"
-          />
-          <a-upload
-            :max-count="1"
-            :disabled="imgItem.uploadPercent > 0"
-            :show-upload-list="false"
-            :before-upload="(file: FileType) => beforeUpload(file, imgItem)"
-            class="mr-8"
-          >
-            <a-button type="link" :loading="imgItem.uploadPercent > 0">
-              <upload-outlined />
-            </a-button>
-          </a-upload>
+  <VDialog v-model="open" max-width="760" persistent>
+    <VCard>
+      <VCardTitle>{{ t("TXT_CODE_4a56836d") }}</VCardTitle>
+      <VCardText>
+        <div v-for="(imgItem, index) in imgList" :key="imgItem.url + imgItem.key" class="d-flex align-center ga-2 mb-4">
+          <div class="flex-grow-1">
+            <div class="text-body-2 text-medium-emphasis mb-1">{{ `${t('TXT_CODE_9900f79e')} ${index + 1}` }}</div>
+            <VProgressLinear v-if="imgItem.uploadPercent > 0" :model-value="imgItem.uploadPercent" color="primary" class="mb-1" />
+            <VTextField v-if="imgItem.uploadPercent === 0" v-model="imgItem.url" :placeholder="t('TXT_CODE_c8a51b2e')" hide-details="auto" />
+            <VTextField v-else :model-value="`${t('TXT_CODE_b625dbf0') + imgItem.uploadPercent}%`" disabled hide-details />
+          </div>
+          <VFileInput v-if="imgItem.uploadPercent === 0" class="carousel-file-input" accept="image/*" prepend-icon="mdi-upload" hide-details show-size @update:model-value="(file) => onFilePicked(file, imgItem)" />
+          <VBtn v-else icon variant="text" color="error" :title="t('TXT_CODE_7ec87e8a')" @click="cancelUpload(imgItem)"><VIcon icon="mdi-close" /></VBtn>
+          <VBtn v-if="imgList.length > 1" icon variant="text" color="error" @click="removeImgSrc(imgItem)"><VIcon icon="mdi-minus-circle-outline" /></VBtn>
         </div>
-
-        <div v-else style="display: inline-flex; width: 80%">
-          <a-input :value="`${t('TXT_CODE_b625dbf0') + imgItem.uploadPercent}%`" disabled />
-          <a-tooltip :title="t('TXT_CODE_7ec87e8a')">
-            <a-button type="link" @click="cancelUpload(imgItem)">
-              <CloseOutlined />
-            </a-button>
-          </a-tooltip>
-        </div>
-
-        <a-button v-if="imgList.length > 1" type="link" @click="removeImgSrc(imgItem)">
-          <MinusCircleOutlined />
-        </a-button>
-      </a-form-item>
-      <a-form-item v-bind="formItemLayoutWithOutLabel">
-        <a-button type="dashed" @click="addImgSrc">
-          <PlusOutlined />
-          {{ t("TXT_CODE_589e091c") }}
-        </a-button>
-      </a-form-item>
-    </a-form>
-    <template #footer>
-      <a-button @click="close">{{ t("TXT_CODE_b1dedda3") }}</a-button>
-      <a-button type="primary" @click="save">
-        {{ t("TXT_CODE_abfe9512") }}
-      </a-button>
-    </template>
-  </a-modal>
+        <VBtn variant="tonal" @click="addImgSrc"><VIcon start icon="mdi-plus" />{{ t("TXT_CODE_589e091c") }}</VBtn>
+      </VCardText>
+      <VCardActions>
+        <VSpacer />
+        <VBtn variant="text" @click="close">{{ t("TXT_CODE_b1dedda3") }}</VBtn>
+        <VBtn color="primary" @click="save">{{ t("TXT_CODE_abfe9512") }}</VBtn>
+      </VCardActions>
+    </VCard>
+  </VDialog>
 </template>
 
 <style scoped lang="scss">
@@ -261,42 +183,5 @@ img {
     width: fit-content;
   }
 }
-
-:deep(.slick-slider) {
-  border-radius: 12px;
-  background: #364d79;
-  overflow: hidden;
-}
-
-:deep(.slick-arrow.custom-slick-arrow) {
-  width: 25px;
-  height: 25px;
-  font-size: 25px;
-  color: #fff;
-  background-color: rgba(31, 45, 61, 0.11);
-  transition: ease all 0.3s;
-  opacity: 0.3;
-  z-index: 1;
-}
-:deep(.slick-arrow.custom-slick-arrow:before) {
-  display: none;
-}
-:deep(.slick-arrow.custom-slick-arrow:hover) {
-  color: #fff;
-  opacity: 0.5;
-}
-
-:deep(.slick-slide h3) {
-  color: #fff;
-}
-</style>
-
-<style lang="scss">
-// For antdv carousel
-.ant-carousel {
-  height: 100% !important;
-  div {
-    height: 100% !important;
-  }
-}
+.empty-placeholder { height: 100%; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
 </style>

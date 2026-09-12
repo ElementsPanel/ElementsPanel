@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import type { AntColumnsType, AntTableCell } from "@/types/ant";
-import { MinusCircleOutlined, PlusCircleOutlined } from "@ant-design/icons-vue";
-import { type FormInstance } from "ant-design-vue";
 import _ from "lodash";
-import { computed, h, onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
+import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VDataTable, VDialog, VIcon, VSelect, VSpacer, VTextField } from "vuetify/components";
 import { emptyValueValidator, reportValidatorError } from "@/tools/validator";
 
 type CapabilityOperation = "add" | "drop";
@@ -29,9 +27,9 @@ interface Props {
 const props = defineProps<Props>();
 const dataSource = ref<DockerCapabilitiesItem[]>([]);
 const open = ref(true);
-const formInstance = ref<FormInstance>();
+const getRecord = (item: any) => item?.raw ?? item;
 
-const columns = computed<AntColumnsType[]>(() => [
+const columns = computed(() => [
   {
     align: "center" as const,
     dataIndex: "label",
@@ -66,11 +64,7 @@ const cancel = async () => {
 };
 
 const submit = async () => {
-  try {
-    await formInstance.value?.validate();
-  } catch (error: any) {
-    return reportValidatorError(error);
-  }
+  if (dataSource.value.some((item) => !String(item.label || "").trim())) return reportValidatorError(new Error(t("TXT_CODE_9227a967")));
 
   const result: DockerCapabilitiesItem[] = dataSource.value.map((item) => ({
     label: item.label,
@@ -93,96 +87,30 @@ onMounted(() => {
 </script>
 
 <template>
-  <a-modal
-    v-model:open="open"
-    centered
-    width="1300px"
-    :mask-closable="false"
-    :title="t('TXT_CODE_bbbd4133')"
-    :ok-text="t('TXT_CODE_d507abff')"
-    :cancel-text="t('TXT_CODE_a0451c97')"
-    @ok="submit"
-    @cancel="cancel"
-  >
-    <div class="dialog-overflow-container">
-      <div v-if="props.subTitle" style="font-size: 14px" class="text-gray-400 mb-4">
+  <VDialog v-model="open" max-width="1300" persistent>
+    <VCard>
+      <VCardTitle>{{ t("TXT_CODE_bbbd4133") }}</VCardTitle>
+      <VCardText class="dialog-overflow-container">
+      <div v-if="props.subTitle" class="text-body-2 text-medium-emphasis mb-4">
         <!-- eslint-disable-next-line vue/no-v-html -->
         <span v-html="props.subTitle"></span>
       </div>
-      <div class="flex justify-end mb-20">
-        <a-button :icon="h(PlusCircleOutlined)" @click="operation('add')">
+      <div class="d-flex justify-end mb-5">
+        <VBtn variant="tonal" @click="operation('add')"><VIcon start icon="mdi-plus-circle-outline" />
           {{ t("TXT_CODE_dfc17a0c") }}
-        </a-button>
+        </VBtn>
       </div>
-      <a-form ref="formInstance" :model="dataSource" name="validate_capabilities">
-        <a-table
-          :data-source="dataSource"
-          :columns="columns"
-          :pagination="false"
-          :scroll="{ x: 542 }"
-          size="small"
-        >
-          <template #bodyCell="{ column, record, index }: AntTableCell">
-            <template v-if="column.dataIndex === 'label'">
-              <a-form-item
-                :name="`${index}-${String(column.dataIndex)}`"
-                no-style
-                :rules="[
-                  {
-                    validator: () => emptyValueValidator(record[String(column.dataIndex)]),
-                    trigger: 'change'
-                  }
-                ]"
-              >
-                <a-input
-                  v-model:value="record[String(column.dataIndex)]"
-                  class="w-full"
-                  size="large"
-                  :placeholder="(column as any).placeholder"
-                />
-              </a-form-item>
-            </template>
-
-            <template v-else-if="column.dataIndex === 'value'">
-              <a-form-item
-                :name="`${index}-${String(column.dataIndex)}`"
-                no-style
-                :rules="[
-                  {
-                    validator: () => emptyValueValidator(record[String(column.dataIndex)]),
-                    trigger: 'change'
-                  }
-                ]"
-              >
-                <a-select
-                  v-model:value="record[String(column.dataIndex)]"
-                  class="w-full"
-                  size="large"
-                  :placeholder="(column as any).placeholder"
-                  :options="[
-                    { label: t('TXT_CODE_a1d885c1'), value: 'add' },
-                    { label: t('TXT_CODE_fac5dc49'), value: 'drop' }
-                  ]"
-                />
-              </a-form-item>
-            </template>
-
-            <template v-else-if="column.dataIndex === 'operation'">
-              <div class="flex-center flex-between">
-                <div>
-                  <a-button
-                    :icon="h(MinusCircleOutlined)"
-                    danger
-                    @click="operation('del', index)"
-                  ></a-button>
-                </div>
-              </div>
-            </template>
-          </template>
-        </a-table>
-      </a-form>
-    </div>
-  </a-modal>
+      <VDataTable :headers="columns.map((column) => ({ title: column.title, key: String(column.dataIndex), align: 'center' as const, sortable: false }))" :items="dataSource" :items-per-page="-1" hide-default-footer density="comfortable">
+        <template #item="{ item, index }"><tr><td v-for="column in columns" :key="String(column.dataIndex)">
+          <VBtn v-if="column.dataIndex === 'operation'" icon variant="text" color="error" size="small" @click="operation('del', index)"><VIcon icon="mdi-minus-circle-outline" /></VBtn>
+          <VTextField v-else-if="column.dataIndex === 'label'" :model-value="getRecord(item).label" :placeholder="(column as any).placeholder" hide-details="auto" @update:model-value="(value) => (getRecord(item).label = value)" />
+          <VSelect v-else v-model="getRecord(item).value" :items="[{ title: t('TXT_CODE_a1d885c1'), value: 'add' }, { title: t('TXT_CODE_fac5dc49'), value: 'drop' }]" hide-details />
+        </td></tr></template>
+      </VDataTable>
+      </VCardText>
+      <VCardActions><VSpacer /><VBtn variant="text" @click="cancel">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="primary" @click="submit">{{ t("TXT_CODE_d507abff") }}</VBtn></VCardActions>
+    </VCard>
+  </VDialog>
 </template>
 
 <style lang="scss" scoped>

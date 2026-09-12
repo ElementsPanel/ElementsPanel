@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import type { MountComponent } from "../../types";
-import { LoadingOutlined } from "@ant-design/icons-vue";
+import AppDialog from "@/components/AppDialog.vue";
 
 interface Props extends MountComponent {
   title: string;
@@ -24,39 +24,30 @@ defineExpose({
 </script>
 
 <template>
-  <a-modal
-    v-model:open="open"
-    centered
-    width="600px"
-    :title="props.title"
-    :mask-closable="false"
-    :closable="false"
-    :footer="null"
-    @cancel="cancel"
-  >
+  <AppDialog v-model:visible="open" width="600px" :title="props.title" :mask-closable="false" :closable="false" :footer="null" @cancel="cancel">
     <div class="dialog-overflow-container">
       <div class="flex flex-center">
         <div>
-          <a-typography-paragraph>
-            <a-typography-title :level="5">
+          <div>
+            <h3>
               <div class="flex flex-center mb-20">
-                <LoadingOutlined style="font-size: 60px" />
+                <VProgressCircular indeterminate :size="60" />
               </div>
               <div class="flex flex-center" style="gap: 10px">
                 {{ props.text }}
               </div>
-            </a-typography-title>
-            <a-typography-text v-if="props.subTitle">
+            </h3>
+            <span v-if="props.subTitle">
               <div
                 class="flex-center"
                 style="font-size: 12px; opacity: 0.8; max-width: 300px; text-align: center"
               >
                 {{ props.subTitle }}
               </div>
-            </a-typography-text>
-          </a-typography-paragraph>
+            </span>
+          </div>
         </div>
       </div>
     </div>
-  </a-modal>
+  </AppDialog>
 </template>

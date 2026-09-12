@@ -2,11 +2,8 @@
 import CardPanel from "@/components/CardPanel.vue";
 import { t } from "@/lang/i18n";
 import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
-import { CloseCircleOutlined, ExclamationCircleOutlined } from "@ant-design/icons-vue";
 
 const { containerState } = useLayoutContainerStore();
-CloseCircleOutlined;
-ExclamationCircleOutlined;
 defineProps<{
   title: string;
   error: Error;
@@ -19,27 +16,27 @@ defineProps<{
     <template #body>
       <div class="flex justify-center align-center h-100">
         <div class="">
-          <a-typography-paragraph
+          <p
             v-if="containerState.showNewCardDialog"
             :level="5"
             style="max-width: 320px; margin: auto; text-align: center"
           >
-            <ExclamationCircleOutlined />
+            <VIcon icon="mdi-alert-circle-outline" />
             {{ t("TXT_CODE_450481c5") }}
-          </a-typography-paragraph>
+          </p>
           <template v-else>
             <div>
-              <a-typography-paragraph>
-                <ExclamationCircleOutlined />
+              <p>
+                <VIcon icon="mdi-alert-circle-outline" />
                 {{ t("TXT_CODE_4e627613") }}
-              </a-typography-paragraph>
+              </p>
 
-              <a-typography-paragraph>
+              <p>
                 <div>
                   {{ t("TXT_CODE_9c95b60f") }}
                 </div>
                 <pre>{{ error.message ? error.message : error }}</pre>
-              </a-typography-paragraph>
+              </p>
             </div>
           </template>
         </div>

@@ -9,17 +9,6 @@ import { useAppToolsStore } from "@/stores/useAppToolsStore";
 import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
 import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import { AppTheme } from "@/types/const";
-import {
-  AppstoreAddOutlined,
-  BgColorsOutlined,
-  BuildOutlined,
-  CloseCircleOutlined,
-  GithubFilled,
-  LogoutOutlined,
-  RedoOutlined,
-  SaveOutlined,
-  UserOutlined
-} from "@ant-design/icons-vue";
 import { message, notification } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import type { Component } from "vue";
@@ -116,7 +105,7 @@ export function useHeaderMenus() {
       {
         iconText: "",
         title: "GitHub",
-        icon: GithubFilled,
+        icon: "mdi-github",
         mdiIcon: "mdi-github",
         onlyPC: true,
         onlyHeader: true,
@@ -124,7 +113,7 @@ export function useHeaderMenus() {
       },
       {
         title: t("TXT_CODE_8b0f8aab"),
-        icon: AppstoreAddOutlined,
+        icon: "mdi-view-grid-plus",
         mdiIcon: "mdi-view-grid-plus",
         click: openNewCardDialog,
         conditions: containerState.isDesignMode,
@@ -132,7 +121,7 @@ export function useHeaderMenus() {
       },
       {
         title: t("TXT_CODE_8145d82"),
-        icon: SaveOutlined,
+        icon: "mdi-content-save-outline",
         mdiIcon: "mdi-content-save-outline",
         click: async () => {
           Modal.confirm({
@@ -156,7 +145,7 @@ export function useHeaderMenus() {
       },
       {
         title: t("TXT_CODE_5b5d6f04"),
-        icon: CloseCircleOutlined,
+        icon: "mdi-close-circle-outline",
         mdiIcon: "mdi-close-circle-outline",
         click: async () => {
           Modal.confirm({
@@ -173,7 +162,7 @@ export function useHeaderMenus() {
       },
       {
         title: t("TXT_CODE_abd2f7e1"),
-        icon: RedoOutlined,
+        icon: "mdi-restore",
         mdiIcon: "mdi-restore",
         click: async () => {
           Modal.confirm({
@@ -197,7 +186,7 @@ export function useHeaderMenus() {
       {
         title: t("TXT_CODE_5d88a9b"),
         leftSideTitle: t("TXT_CODE_ee01c10c"),
-        icon: BgColorsOutlined,
+        icon: "mdi-palette-outline",
         mdiIcon: "mdi-palette-outline",
         click: (key: string) => {
           setTheme(Number(key) as AppTheme);
@@ -213,7 +202,7 @@ export function useHeaderMenus() {
       {
         title: t("TXT_CODE_ebd2a6a1"),
         leftSideTitle: t("TXT_CODE_4eb158da"),
-        icon: BuildOutlined,
+        icon: "mdi-hammer-wrench",
         mdiIcon: "mdi-hammer-wrench",
         click: (): void => {
           Modal.confirm({
@@ -235,7 +224,7 @@ export function useHeaderMenus() {
       },
       {
         title: t("TXT_CODE_8c3164c9"),
-        icon: UserOutlined,
+        icon: "mdi-account-outline",
         mdiIcon: "mdi-account-outline",
         click: () => {
           appTools.showUserInfoDialog = true;
@@ -245,7 +234,7 @@ export function useHeaderMenus() {
       },
       {
         title: t("TXT_CODE_2c69ab15"),
-        icon: LogoutOutlined,
+        icon: "mdi-logout",
         mdiIcon: "mdi-logout",
         click: async () => {
           Modal.confirm({

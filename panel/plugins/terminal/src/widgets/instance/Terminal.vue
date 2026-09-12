@@ -19,21 +19,9 @@ import { sleep } from "@/tools/common";
 import { reportErrorMsg } from "@/tools/validator";
 import type { LayoutCard } from "@/types";
 import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS } from "@/types/const";
-import {
-  CheckCircleOutlined,
-  CloseOutlined,
-  CloudDownloadOutlined,
-  CloudServerOutlined,
-  DownOutlined,
-  InfoCircleOutlined,
-  LaptopOutlined,
-  LoadingOutlined,
-  PauseCircleOutlined,
-  PlayCircleOutlined,
-  RedoOutlined
-} from "@ant-design/icons-vue";
 import { Modal } from "@/tools/vuetifyModal";
 import { computed, h, onUnmounted, ref } from "vue";
+import { VBtn, VChip, VIcon, VList, VListItem, VListItemTitle, VMenu } from "vuetify/components";
 import { GLOBAL_INSTANCE_NAME } from "@/config/const";
 import { useTerminal, type UseTerminalHook } from "../../hooks/useTerminal";
 import { arrayFilter } from "@/tools/array";
@@ -111,7 +99,7 @@ const quickOperations = computed(() =>
   arrayFilter([
     {
       title: t("TXT_CODE_57245e94"),
-      icon: PlayCircleOutlined,
+      icon: "mdi-play-circle-outline",
       noConfirm: false,
       type: "default",
       class: "button-color-success",
@@ -121,7 +109,7 @@ const quickOperations = computed(() =>
     },
     {
       title: t("TXT_CODE_b1dedda3"),
-      icon: PauseCircleOutlined,
+      icon: "mdi-pause-circle-outline",
       type: "default",
       click: async (): Promise<void> => {
         try {
@@ -146,7 +134,7 @@ const instanceOperations = computed(() =>
   arrayFilter([
     {
       title: t("TXT_CODE_47dcfa5"),
-      icon: RedoOutlined,
+      icon: "mdi-restart",
       type: "default",
       noConfirm: false,
       click: async (): Promise<void> => {
@@ -165,7 +153,7 @@ const instanceOperations = computed(() =>
     },
     {
       title: t("TXT_CODE_7b67813a"),
-      icon: CloseOutlined,
+      icon: "mdi-close-circle-outline",
       type: "danger",
       class: "color-warning",
       click: async (): Promise<void> => {
@@ -185,7 +173,7 @@ const instanceOperations = computed(() =>
     {
       title: t("TXT_CODE_40ca4f2"),
       type: "default",
-      icon: CloudDownloadOutlined,
+      icon: "mdi-cloud-download-outline",
       click: async (): Promise<void> => {
         try {
           clearTerminal();
@@ -228,6 +216,9 @@ const getInstanceName = computed(() => {
   }
 });
 
+const confirmAction = (action: () => any) =>
+  Modal.confirm({ title: t("TXT_CODE_276756b2"), async onOk() { await action(); } });
+
 onUnmounted(() => {
   if (checkRunningTimer) clearTimeout(checkRunningTimer);
 });
@@ -240,95 +231,68 @@ onUnmounted(() => {
       <BetweenMenus>
         <template #left>
           <div class="align-center">
-            <a-typography-title class="mb-0 mr-12" :level="4">
-              <CloudServerOutlined />
+            <h4 class="text-h6 mb-0 mr-3">
+              <VIcon icon="mdi-server-outline" />
               <span class="ml-6"> {{ getInstanceName }} </span>
-            </a-typography-title>
-            <a-typography-paragraph v-if="!isPhone" class="mb-0 ml-4">
+            </h4>
+            <div v-if="!isPhone" class="mb-0 ml-2">
               <span class="ml-6">
-                <a-tag v-if="isRunning" color="green">
-                  <CheckCircleOutlined />
+                <VChip v-if="isRunning" color="success" size="small" variant="tonal">
+                  <VIcon start icon="mdi-check-circle-outline" />
                   {{ instanceStatusText }}
-                </a-tag>
-                <a-tag v-else-if="isBuys" color="red">
-                  <LoadingOutlined />
+                </VChip>
+                <VChip v-else-if="isBuys" color="error" size="small" variant="tonal">
+                  <VIcon start icon="mdi-loading" class="loading-icon" />
                   {{ instanceStatusText }}
-                </a-tag>
-                <a-tag v-else-if="instanceStatusText">
-                  <InfoCircleOutlined />
+                </VChip>
+                <VChip v-else-if="instanceStatusText" size="small" variant="tonal">
+                  <VIcon start icon="mdi-information-outline" />
                   {{ instanceStatusText }}
-                </a-tag>
+                </VChip>
               </span>
 
-              <a-tag v-if="instanceTypeText" color="purple"> {{ instanceTypeText }} </a-tag>
+              <VChip v-if="instanceTypeText" color="purple" size="small" variant="tonal"> {{ instanceTypeText }} </VChip>
 
               <span
                 v-if="instanceInfo?.watcher && instanceInfo?.watcher > 1 && !isPhone"
                 class="ml-16"
               >
-                <a-tooltip>
-                  <template #title>
-                    {{ t("TXT_CODE_4a37ec9c") }}
-                  </template>
-                  <LaptopOutlined />
-                </a-tooltip>
+                <VIcon icon="mdi-laptop" :title="t('TXT_CODE_4a37ec9c')" />
                 <span class="ml-6" style="opacity: 0.8">
                   {{ instanceInfo?.watcher }}
                 </span>
               </span>
-            </a-typography-paragraph>
+            </div>
           </div>
         </template>
         <template #right>
           <div v-if="!isPhone">
             <template v-for="item in [...quickOperations, ...instanceOperations]" :key="item.title">
-              <a-button
-                v-if="item.noConfirm"
+              <VBtn
                 class="ml-8"
                 :class="item.class ? item.class : ''"
-                :danger="item.type === 'danger'"
+                :color="item.type === 'danger' ? 'error' : undefined"
                 :disabled="isOpenInstanceLoading"
-                @click="item.click"
+                @click="item.noConfirm ? item.click() : confirmAction(item.click)"
               >
-                <component :is="item.icon" />
+                <VIcon start :icon="item.icon" />
                 {{ item.title }}
-              </a-button>
-              <a-popconfirm
-                v-else
-                :key="item.title"
-                :title="t('TXT_CODE_276756b2')"
-                @confirm="item.click"
-              >
-                <a-button
-                  class="ml-8"
-                  :danger="item.type === 'danger'"
-                  :class="item.class ? item.class : ''"
-                >
-                  <component :is="item.icon" />
-                  {{ item.title }}
-                </a-button>
-              </a-popconfirm>
+              </VBtn>
             </template>
           </div>
 
-          <a-dropdown v-else>
-            <template #overlay>
-              <a-menu>
-                <a-menu-item
+          <VMenu v-else location="bottom end">
+            <template #activator="{ props: menuProps }"><VBtn v-bind="menuProps" color="primary">{{ t("TXT_CODE_fe731dfc") }}<VIcon end icon="mdi-chevron-down" /></VBtn></template>
+              <VList density="compact">
+                <VListItem
                   v-for="item in [...quickOperations, ...instanceOperations]"
                   :key="item.title"
-                  @click="item.click"
+                  @click="item.noConfirm ? item.click() : confirmAction(item.click)"
                 >
-                  <component :is="item.icon" />
-                  {{ item.title }}
-                </a-menu-item>
-              </a-menu>
-            </template>
-            <a-button type="primary">
-              {{ t("TXT_CODE_fe731dfc") }}
-              <DownOutlined />
-            </a-button>
-          </a-dropdown>
+                  <template #prepend><VIcon :icon="item.icon" /></template><VListItemTitle>{{ item.title }}</VListItemTitle>
+                </VListItem>
+              </VList>
+          </VMenu>
         </template>
       </BetweenMenus>
     </div>
@@ -344,22 +308,22 @@ onUnmounted(() => {
   <!-- Other Page View -->
   <CardPanel v-else class="containerWrapper" style="height: 100%">
     <template #title>
-      <CloudServerOutlined />
+      <VIcon icon="mdi-server-outline" />
       <span class="ml-8"> {{ getInstanceName }} </span>
       <span class="ml-8">
-        <a-tag v-if="isRunning" color="green">
-          <CheckCircleOutlined />
+        <VChip v-if="isRunning" color="success" size="small" variant="tonal">
+          <VIcon start icon="mdi-check-circle-outline" />
           {{ instanceStatusText }}
-        </a-tag>
-        <a-tag v-else-if="isBuys" color="red">
-          <LoadingOutlined />
+        </VChip>
+        <VChip v-else-if="isBuys" color="error" size="small" variant="tonal">
+          <VIcon start icon="mdi-loading" class="loading-icon" />
           {{ instanceStatusText }}
-        </a-tag>
-        <a-tag v-else>
-          <InfoCircleOutlined />
+        </VChip>
+        <VChip v-else size="small" variant="tonal">
+          <VIcon start icon="mdi-information-outline" />
           {{ instanceStatusText }}
-        </a-tag>
-        <a-tag color="purple"> {{ instanceTypeText }} </a-tag>
+        </VChip>
+        <VChip color="purple" size="small" variant="tonal"> {{ instanceTypeText }} </VChip>
       </span>
     </template>
     <template #operator>
@@ -372,19 +336,10 @@ onUnmounted(() => {
       >
         <IconBtn :icon="item.icon" :title="item.title" @click="item.click"></IconBtn>
       </span>
-      <a-dropdown>
-        <template #overlay>
-          <a-menu>
-            <a-menu-item v-for="item in instanceOperations" :key="item.title" @click="item.click">
-              <component :is="item.icon"></component>
-              <span>&nbsp;{{ item.title }}</span>
-            </a-menu-item>
-          </a-menu>
-        </template>
-        <span size="default" type="primary">
-          <IconBtn :icon="DownOutlined" :title="t('TXT_CODE_fe731dfc')"></IconBtn>
-        </span>
-      </a-dropdown>
+      <VMenu location="bottom end">
+        <template #activator="{ props: menuProps }"><span v-bind="menuProps"><IconBtn icon="mdi-chevron-down" :title="t('TXT_CODE_fe731dfc')" /></span></template>
+        <VList density="compact"><VListItem v-for="item in instanceOperations" :key="item.title" @click="item.noConfirm ? item.click() : confirmAction(item.click)"><template #prepend><VIcon :icon="item.icon" /></template><VListItemTitle>{{ item.title }}</VListItemTitle></VListItem></VList>
+      </VMenu>
     </template>
     <template #body>
       <TerminalCore

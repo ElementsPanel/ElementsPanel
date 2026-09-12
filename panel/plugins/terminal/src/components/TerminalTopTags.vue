@@ -1,14 +1,9 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import {
-  ApartmentOutlined,
-  BlockOutlined,
-  DashboardOutlined,
-  HddOutlined
-} from "@ant-design/icons-vue";
 import { useLocalStorage } from "@vueuse/core";
 import prettyBytes, { type Options as PrettyOptions } from "pretty-bytes";
-import { computed, type Component } from "vue";
+import { computed } from "vue";
+import { VIcon } from "vuetify/components";
 
 interface TerminalRuntimeInfo {
   cpuUsage?: number;
@@ -29,7 +24,7 @@ interface PerfCardItem {
   key: string;
   label: string;
   value: string;
-  icon: Component;
+  icon: string;
   theme: string;
   barPercent: number;
   onClick?: () => void;
@@ -98,7 +93,7 @@ const cards = computed<PerfCardItem[]>(() => {
         key: "cpu",
         label: t("TXT_CODE_b862a158"),
         value: `${parseInt(String(cpuUsage))}%`,
-        icon: BlockOutlined,
+        icon: "mdi-cube-outline",
         theme: `perf-card--cpu-${cpuStatus}`,
         barPercent: cpuPercent
       }
@@ -109,7 +104,7 @@ const cards = computed<PerfCardItem[]>(() => {
         key: "memory",
         label: t("TXT_CODE_593ee330"),
         value: formatMemoryUsage(memoryUsage, memoryLimit),
-        icon: DashboardOutlined,
+        icon: "mdi-view-dashboard-outline",
         theme: "perf-card--memory",
         barPercent: memPercent
       }
@@ -120,7 +115,7 @@ const cards = computed<PerfCardItem[]>(() => {
         key: "disk",
         label: t("TXT_CODE_DISK_USAGE"),
         value: formatMemoryUsage(storageUsage || 0, storageLimit || 0),
-        icon: HddOutlined,
+        icon: "mdi-harddisk",
         theme: "perf-card--disk",
         barPercent: storagePercent
       }
@@ -131,7 +126,7 @@ const cards = computed<PerfCardItem[]>(() => {
         key: "network-bandwidth",
         label: `${t("TXT_CODE_50daec4")} · 带宽`,
         value: `↓${formatNetworkSpeed(rxRate)} ↑${formatNetworkSpeed(txRate)}`,
-        icon: ApartmentOutlined,
+        icon: "mdi-lan-connect",
         theme: "perf-card--network",
         barPercent: 0,
         onClick: () => {
@@ -145,7 +140,7 @@ const cards = computed<PerfCardItem[]>(() => {
         key: "network-traffic",
         label: `${t("TXT_CODE_50daec4")} · 流量`,
         value: `↓${formatTrafficUsage(rxBytes)} ↑${formatTrafficUsage(txBytes)}`,
-        icon: ApartmentOutlined,
+        icon: "mdi-lan-connect",
         theme: "perf-card--network",
         barPercent: 0
       }
@@ -161,7 +156,7 @@ const cards = computed<PerfCardItem[]>(() => {
     <div v-for="card in cards" :key="card.key" class="perf-card" :class="card.theme" @click="card.onClick?.()">
       <div class="perf-card__body">
         <div class="perf-card__icon">
-          <component :is="card.icon" />
+          <VIcon :icon="card.icon" />
         </div>
         <div class="perf-card__info">
           <span class="perf-card__label">{{ card.label }}</span>

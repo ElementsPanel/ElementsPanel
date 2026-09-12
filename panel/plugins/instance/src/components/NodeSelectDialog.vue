@@ -4,8 +4,8 @@ import type { ComputedNodeInfo } from "@/hooks/useOverviewInfo";
 import { useRemoteNode } from "@/hooks/useRemoteNode";
 import { t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";
-import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { computed, onMounted, ref } from "vue";
+import { VAlert, VBtn, VCard, VCardText, VCardTitle, VChip, VDialog, VIcon } from "vuetify/components";
 
 interface Props {
   destroyComponent(delay?: number): void;
@@ -64,18 +64,14 @@ defineExpose({
 </script>
 
 <template>
-  <a-modal
-    v-model:open="isVisible"
-    :title="t('TXT_CODE_7e267ba')"
-    :width="840"
-    :footer="null"
-    :destroy-on-close="true"
-    @cancel="cancel"
-  >
+  <VDialog v-model="isVisible" max-width="840" persistent>
+    <VCard>
+      <VCardTitle>{{ t("TXT_CODE_7e267ba") }}</VCardTitle>
+      <VCardText>
     <div class="node-select-container">
-      <a-typography-paragraph>
+      <p class="text-body-2 text-medium-emphasis">
         {{ t("TXT_CODE_ad24269a") }}
-      </a-typography-paragraph>
+      </p>
       <div class="node-grid">
         <div v-if="availableNodes.length === 0">
           <div class="justify-center" flex-center>
@@ -86,9 +82,9 @@ defineExpose({
                 </p>
               </div>
               <div>
-                <a-button type="primary" @click="selectNode(availableNodes[0])">
+                <VBtn color="primary" @click="refreshOverviewInfo">
                   {{ t("TXT_CODE_4fe5dce5") }}
-                </a-button>
+                </VBtn>
               </div>
             </div>
           </div>
@@ -107,15 +103,15 @@ defineExpose({
             <div class="node-header">
               <span class="node-name">{{ item.remarks || `${item.ip}:${item.port}` }}</span>
               <div class="node-tags">
-                <a-tag v-if="item.available" color="green">{{ t("TXT_CODE_b078a763") }}</a-tag>
-                <a-tag v-else color="red">{{ t("TXT_CODE_6cbb84a9") }}</a-tag>
-                <a-tag
+                <VChip v-if="item.available" color="success" size="small" variant="tonal">{{ t("TXT_CODE_b078a763") }}</VChip>
+                <VChip v-else color="error" size="small" variant="tonal">{{ t("TXT_CODE_6cbb84a9") }}</VChip>
+                <VChip
                   v-if="props.targetPlatforms && props.targetPlatforms.length > 0 && !isNodeSupported(item)"
-                  color="orange"
+                  color="warning" size="small" variant="tonal"
                 >
-                  <ExclamationCircleOutlined />
+                  <VIcon start icon="mdi-alert-circle-outline" />
                   {{ t("TXT_CODE_node_platform_unsupported") }}
-                </a-tag>
+                </VChip>
               </div>
             </div>
             <div class="node-details">
@@ -127,7 +123,7 @@ defineExpose({
                 }"
               >
                 <template v-if="props.targetPlatforms && props.targetPlatforms.length > 0 && !isNodeSupported(item)">
-                  <ExclamationCircleOutlined />
+                  <VIcon icon="mdi-alert-circle-outline" class="mr-1" />
                 </template>
                 Docker platforms: {{ item?.dockerPlatforms?.join(",") || "--" }}
               </span>
@@ -137,7 +133,9 @@ defineExpose({
         </div>
       </div>
     </div>
-  </a-modal>
+      </VCardText>
+    </VCard>
+  </VDialog>
 </template>
 
 <style lang="scss" scoped>

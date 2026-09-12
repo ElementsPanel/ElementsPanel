@@ -1,22 +1,8 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
 import type { LayoutCard } from "@/types/index";
-import {
-  AppstoreOutlined,
-  CloseOutlined,
-  DatabaseOutlined,
-  DeleteOutlined,
-  DownOutlined,
-  FormOutlined,
-  FrownOutlined,
-  InfoCircleOutlined,
-  PauseCircleOutlined,
-  PlayCircleOutlined,
-  RedoOutlined,
-  SearchOutlined,
-  WarningOutlined
-} from "@ant-design/icons-vue";
 import { computed, h, onMounted, ref } from "vue";
+import { VBtn, VChip, VCol, VIcon, VList, VListItem, VListItemTitle, VMenu, VPagination, VRow, VSelect, VTextField } from "vuetify/components";
 
 import BetweenMenus from "@/components/BetweenMenus.vue";
 import Empty from "@/components/Empty.vue";
@@ -56,6 +42,11 @@ const operationForm = ref({
   pageSize: 20,
   status: ""
 });
+
+const statusOptions = computed(() => [
+  { title: t("TXT_CODE_c48f6f64"), value: "" },
+  ...Object.entries(INSTANCE_STATUS).map(([value, title]) => ({ title, value }))
+]);
 
 const currentRemoteNode = ref<NodeStatus>();
 
@@ -215,34 +206,34 @@ const exitMultipleMode = () => {
 const instanceOperations = [
   {
     title: t("TXT_CODE_57245e94"),
-    icon: PlayCircleOutlined,
+    icon: "mdi-play-circle-outline",
     click: () => batchOperation("start")
   },
   {
     title: t("TXT_CODE_b1dedda3"),
-    icon: PauseCircleOutlined,
+    icon: "mdi-pause-circle-outline",
     click: () => batchOperation("stop")
   },
   {
     title: t("TXT_CODE_47dcfa5"),
-    icon: RedoOutlined,
+    icon: "mdi-restart",
     click: () => batchOperation("restart")
   },
   {
     title: t("TXT_CODE_7b67813a"),
-    icon: CloseOutlined,
+    icon: "mdi-close-circle-outline",
     click: () => {
       batchOperation("kill");
     }
   },
   {
     title: t("TXT_CODE_ecbd7449"),
-    icon: DeleteOutlined,
+    icon: "mdi-delete-outline",
     click: () => batchDeleteInstance(false)
   },
   {
     title: t("TXT_CODE_9ef27367"),
-    icon: WarningOutlined,
+    icon: "mdi-delete-alert-outline",
     click: () => batchDeleteInstance(true)
   }
 ];
@@ -294,7 +285,7 @@ const batchDeleteInstance = async (deleteFile: boolean) => {
   }
   const confirmDeleteInstanceModal = Modal.confirm({
     title: t("TXT_CODE_2a3b0c17"),
-    icon: h(InfoCircleOutlined),
+    icon: h("i", { class: "mdi mdi-information-outline" }),
     content: () =>
       h("div", {}, [
         h("p", {}, deleteFile ? t("TXT_CODE_18d2f8ae") : t("TXT_CODE_ac01315a")),
@@ -344,161 +335,117 @@ onMounted(async () => {
 
 <template>
   <div style="min-height: 100%" class="container">
-    <a-row :gutter="[24, 24]" style="min-height: 100%">
-      <a-col :span="24">
+    <VRow dense style="min-height: 100%">
+      <VCol cols="12">
         <BetweenMenus>
           <template v-if="!isPhone" #left>
-            <a-typography-title class="mb-0" :level="4">
-              <AppstoreOutlined />
+            <h4 class="text-h6 mb-0">
+              <VIcon icon="mdi-apps" class="mr-1" />
               {{ card.title }}
-            </a-typography-title>
+            </h4>
           </template>
           <template #right>
-            <a-dropdown>
-              <template #overlay>
-                <a-menu>
-                  <a-menu-item
+            <VMenu location="bottom end">
+              <template #activator="{ props: menuProps }">
+                <VBtn v-bind="menuProps" variant="tonal" style="max-width: 200px; min-width: 180px; overflow: hidden">
+                  <span class="text-truncate">{{ computeNodeName(currentRemoteNode?.ip || '', currentRemoteNode?.available || true, currentRemoteNode?.remarks) }}</span>
+                  <VIcon end icon="mdi-chevron-down" />
+                </VBtn>
+              </template>
+              <VList density="compact">
+                  <VListItem
                     v-for="item in nodes"
                     :key="item.uuid"
                     :disabled="!item.available"
                     @click="handleChangeNode(item)"
                   >
-                    <DatabaseOutlined v-if="item.available" />
-                    <FrownOutlined v-else />
-                    {{ computeNodeName(item.ip, item.available, item.remarks) }}
-                  </a-menu-item>
-                  <a-menu-divider />
-                  <a-menu-item key="toNodesPage" @click="toNodesPage()">
-                    <FormOutlined />
-                    {{ t("TXT_CODE_28e53fed") }}
-                  </a-menu-item>
-                </a-menu>
-              </template>
-              <a-button style="max-width: 200px; min-width: 180px; overflow: hidden">
-                <a-typography-text
-                  style="max-width: 145px"
-                  :ellipsis="{ ellipsis: true }"
-                  :content="
-                    computeNodeName(
-                      currentRemoteNode?.ip || '',
-                      currentRemoteNode?.available || true,
-                      currentRemoteNode?.remarks
-                    )
-                  "
-                />
-                <DownOutlined />
-              </a-button>
-            </a-dropdown>
-            <a-button
-              type="primary"
+                    <template #prepend><VIcon :icon="item.available ? 'mdi-database-outline' : 'mdi-emoticon-sad-outline'" /></template>
+                    <VListItemTitle>{{ computeNodeName(item.ip, item.available, item.remarks) }}</VListItemTitle>
+                  </VListItem>
+                  <VListItem @click="toNodesPage">
+                    <template #prepend><VIcon icon="mdi-form-select" /></template>
+                    <VListItemTitle>{{ t("TXT_CODE_28e53fed") }}</VListItemTitle>
+                  </VListItem>
+              </VList>
+            </VMenu>
+            <VBtn
+              color="primary"
               :disabled="!currentRemoteNode?.available"
               @click="toCreateAppPage"
             >
               {{ t("TXT_CODE_53408064") }}
-            </a-button>
+            </VBtn>
           </template>
           <template #center>
             <div class="search-input">
-              <a-input-group compact>
-                <a-select
-                  v-model:value="operationForm.status"
-                  style="width: 90px"
-                  @change="handleQueryInstance"
-                >
-                  <a-select-option value="">
-                    {{ t("TXT_CODE_c48f6f64") }}
-                  </a-select-option>
-                  <a-select-option v-for="(p, i) in INSTANCE_STATUS" :key="i" :value="i">
-                    {{ p }}
-                  </a-select-option>
-                </a-select>
-                <a-input
-                  v-model:value.trim="operationForm.instanceName"
-                  :placeholder="t('TXT_CODE_ce132192')"
-                  style="width: calc(100% - 90px)"
-                  @press-enter="handleQueryInstance"
-                  @change="handleQueryInstance"
-                >
-                  <template #suffix>
-                    <search-outlined />
-                  </template>
-                </a-input>
-              </a-input-group>
+              <div class="d-flex align-center ga-2">
+                <VSelect v-model="operationForm.status" :items="statusOptions" density="compact" hide-details style="width: 130px" @update:model-value="handleQueryInstance" />
+                <VTextField v-model.trim="operationForm.instanceName" :placeholder="t('TXT_CODE_ce132192')" density="compact" hide-details append-inner-icon="mdi-magnify" @keyup.enter="handleQueryInstance" @update:model-value="handleQueryInstance" />
+              </div>
             </div>
           </template>
         </BetweenMenus>
-      </a-col>
-      <a-col :span="24">
+      </VCol>
+      <VCol cols="12">
         <BetweenMenus>
           <template v-if="instances" #left>
             <div v-if="multipleMode">
-              <a-button class="mr-10" @click="exitMultipleMode">
+              <VBtn variant="tonal" @click="exitMultipleMode">
                 {{ t("TXT_CODE_5366af54") }}
-              </a-button>
+              </VBtn>
 
-              <a-button
+              <VBtn
                 v-if="instancesMoreInfo.length === selectedInstance.length"
                 class="mr-10"
                 @click="selectedInstance = []"
               >
                 {{ t("TXT_CODE_df87c46d") }}
-              </a-button>
-              <a-button v-else class="mr-10" @click="selectAllInstances">
+              </VBtn>
+              <VBtn v-else variant="tonal" @click="selectAllInstances">
                 {{ t("TXT_CODE_f466d7a") }}
-              </a-button>
-              <a-dropdown>
-                <template #overlay>
-                  <a-menu>
-                    <a-menu-item
+              </VBtn>
+              <VMenu location="bottom start">
+                <template #activator="{ props: menuProps }"><VBtn v-bind="menuProps" color="primary">{{ t("TXT_CODE_8fd8bfd3") }}<VIcon end icon="mdi-chevron-down" /></VBtn></template>
+                <VList density="compact">
+                    <VListItem
                       v-for="item in instanceOperations"
                       :key="item.title"
-                      @click="item.click"
+                      @click="item.click()"
                     >
-                      <component :is="item.icon" />
-                      {{ item.title }}
-                    </a-menu-item>
-                  </a-menu>
-                </template>
-                <a-button type="primary">
-                  {{ t("TXT_CODE_8fd8bfd3") }}
-                  <DownOutlined />
-                </a-button>
-              </a-dropdown>
+                      <template #prepend><VIcon :icon="item.icon" /></template><VListItemTitle>{{ item.title }}</VListItemTitle>
+                    </VListItem>
+                </VList>
+              </VMenu>
             </div>
             <div v-else>
-              <a-button @click="multipleMode = true">{{ t("TXT_CODE_5cb656b9") }}</a-button>
-              <a-button class="ml-10" @click="handleQueryInstance">
+              <VBtn variant="tonal" @click="multipleMode = true">{{ t("TXT_CODE_5cb656b9") }}</VBtn>
+              <VBtn variant="tonal" @click="handleQueryInstance">
                 {{ t("TXT_CODE_b76d94e0") }}
-              </a-button>
+              </VBtn>
             </div>
           </template>
           <template v-if="multipleMode" #center>
-            <a-typography-text>
+            <span class="text-body-2">
               {{ t("TXT_CODE_432cbc38") }}{{ selectedInstance.length }} {{ t("TXT_CODE_5cd3b4bd") }}
-            </a-typography-text>
+            </span>
           </template>
           <template v-if="instances" #right>
-            <a-pagination
-              v-model:current="operationForm.currentPage"
-              v-model:pageSize="operationForm.pageSize"
-              :total="(instances?.maxPage || 0) * operationForm.pageSize"
-              show-size-changer
-              @change="initInstancesData()"
-            />
+            <VPagination v-model="operationForm.currentPage" :length="instances?.maxPage || 0" density="comfortable" @update:model-value="() => initInstancesData()" />
+            <VSelect v-model="operationForm.pageSize" :items="[10, 20, 50]" density="compact" hide-details style="max-width: 100px" @update:model-value="() => initInstancesData(true)" />
           </template>
         </BetweenMenus>
-      </a-col>
-      <a-col :span="24">
+      </VCol>
+      <VCol cols="12">
         <div v-if="tagTips && tagTips?.length > 0" class="instances-tag-container">
-          <a-tag
+          <VChip
             v-if="selectedTags.length > 0"
             color="red"
             class="group-name-tag"
             @click="clearTags"
           >
             {{ t("TXT_CODE_7333c7f7") }}
-          </a-tag>
-          <a-tag
+          </VChip>
+          <VChip
             v-for="item in tagTips"
             :key="item"
             class="group-name-tag"
@@ -506,20 +453,19 @@ onMounted(async () => {
             @click="isTagSelected(item) ? removeTag(item) : selectTag(item)"
           >
             {{ item }}
-          </a-tag>
+          </VChip>
         </div>
-      </a-col>
-      <a-col v-if="isLoading" :span="24">
+      </VCol>
+      <VCol v-if="isLoading" cols="12">
         <Loading></Loading>
-      </a-col>
+      </VCol>
 
-      <a-col v-else-if="instancesMoreInfo.length > 0" :span="24">
-        <a-row :gutter="[16, 16]">
+      <VCol v-else-if="instancesMoreInfo.length > 0" cols="12">
+        <VRow dense>
           <fade-up-animation>
-            <a-col
+            <VCol
               v-for="item in instancesMoreInfo"
               :key="item.instanceUuid"
-              :span="24"
               :xl="6"
               :lg="8"
               :sm="12"
@@ -534,14 +480,13 @@ onMounted(async () => {
                 @click="handleSelectInstance(item)"
                 @refresh-list="initInstancesData()"
               />
-            </a-col>
+            </VCol>
           </fade-up-animation>
-        </a-row>
-      </a-col>
+        </VRow>
+      </VCol>
 
-      <a-col
+      <VCol
         v-else-if="instancesMoreInfo.length === 0"
-        :span="24"
         class="flex align-center justify-center h-100 w-100 flex-col"
         style="position: relative"
       >
@@ -549,12 +494,12 @@ onMounted(async () => {
           <Empty :description="t('TXT_CODE_5415f009')" />
         </div>
         <div class="mt-20">
-          <a-button v-if="marketAvailable" type="primary" @click="toMarketPage">
+          <VBtn v-if="marketAvailable" color="primary" @click="toMarketPage">
             {{ t("TXT_CODE_871cb8bc") }}
-          </a-button>
+          </VBtn>
         </div>
-      </a-col>
-    </a-row>
+      </VCol>
+    </VRow>
   </div>
 </template>
 

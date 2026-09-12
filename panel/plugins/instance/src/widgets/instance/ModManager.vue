@@ -5,25 +5,17 @@ import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useInstanceInfo } from "@/hooks/useInstance";
 import { useScreen } from "@/hooks/useScreen";
 import type { LayoutCard } from "@/types";
-import {
-  AppstoreOutlined,
-  LoadingOutlined,
-  ReloadOutlined,
-  SearchOutlined,
-  UploadOutlined
-} from "@ant-design/icons-vue";
 import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
-import { VBtn } from "vuetify/components";
+import { VAlert, VBadge, VBtn, VCol, VIcon, VRow, VSelect, VTab, VTabs, VTextField, VWindow, VWindowItem } from "vuetify/components";
 import LocalModTable from "./mod-manager/LocalModTable.vue";
 import ModConfigModal from "./mod-manager/ModConfigModal.vue";
 import ModFloatingTools from "./mod-manager/ModFloatingTools.vue";
 import ModVersionModal from "./mod-manager/ModVersionModal.vue";
 import SearchModTable from "./mod-manager/SearchModTable.vue";
 
-import { Flex } from "ant-design-vue";
 import { Modal } from "@/tools/vuetifyModal";
 import { message } from "@/tools/vuetifyToast";
 import { useDeferredTasks } from "./mod-manager/useDeferredTasks";
@@ -81,10 +73,9 @@ const checkAndConfirm = async (
 ) => {
   if (isWindows.value && isRunning.value) {
     const { createVNode } = await import("vue");
-    const { ExclamationCircleOutlined } = await import("@ant-design/icons-vue");
     Modal.confirm({
       title: t("TXT_CODE_MOD_WIN_FILE_LOCK_TITLE"),
-      icon: createVNode(ExclamationCircleOutlined),
+      icon: createVNode("i", { class: "mdi mdi-alert-circle-outline" }),
       content: t("TXT_CODE_MOD_WIN_FILE_LOCK_DESC"),
       okText: t("TXT_CODE_MOD_ADD_TO_QUEUE"),
       cancelText: t("TXT_CODE_MOD_TRY_IMMEDIATELY"),
@@ -408,10 +399,11 @@ const handleTableChange = (pagination: any) => {
 };
 
 // Handle tab change event
-const handleTabChange = (newKey: string | number) => {
+const handleTabChange = (newKey: unknown) => {
+  const key = String(newKey);
   tablePagination.current = 1; // Reset to first page on tab change
-  if (newKey === TAB_KEY_MODS || newKey === TAB_KEY_PLUGINS) {
-    loadMods(newKey === TAB_KEY_MODS ? "mods" : "plugins");
+  if (key === TAB_KEY_MODS || key === TAB_KEY_PLUGINS) {
+    loadMods(key === TAB_KEY_MODS ? "mods" : "plugins");
   }
 };
 
@@ -423,47 +415,38 @@ onMounted(async () => {
 
 <template>
   <div class="container">
-    <a-row :gutter="[24, 16]">
-      <a-col :span="24">
+    <VRow dense>
+      <VCol cols="12">
         <BetweenMenus>
           <template #left>
-            <a-typography-title v-if="!isPhone" class="mb-0" :level="4">
-              <appstore-outlined class="mr-1" />
+            <h4 v-if="!isPhone" class="text-h6 mb-0">
+              <VIcon icon="mdi-apps" class="mr-1" />
               {{ t("TXT_CODE_MOD_MANAGER") }}
-            </a-typography-title>
+            </h4>
             <div v-else style="width: 40px"></div>
           </template>
           <template #center>
             <div v-if="activeKey === TAB_KEY_MODS || activeKey === TAB_KEY_PLUGINS" class="search-input">
-              <a-input v-model:value="headerSearchQuery" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" allow-clear
-                :style="isPhone ? 'width: 180px' : 'width: 300px'">
-                <template #suffix>
-                  <search-outlined />
-                </template>
-              </a-input>
+              <VTextField v-model="headerSearchQuery" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" clearable density="compact" append-inner-icon="mdi-magnify" :style="isPhone ? 'width: 180px' : 'width: 300px'" hide-details />
             </div>
           </template>
           <template #right>
-            <a-space>
-              <a-button v-if="activeKey === TAB_KEY_MODS || activeKey === TAB_KEY_PLUGINS" @click="onUploadClick">
-                <template #icon>
-                  <upload-outlined />
-                </template>
+            <div class="d-flex ga-2">
+              <VBtn v-if="activeKey === TAB_KEY_MODS || activeKey === TAB_KEY_PLUGINS" variant="tonal" @click="onUploadClick">
+                  <VIcon start icon="mdi-upload" />
                 {{ t("TXT_CODE_ae09d79d") }}
-              </a-button>
-              <a-button v-if="activeKey !== TAB_KEY_DOWNLOAD" type="primary" :loading="loading"
+              </VBtn>
+              <VBtn v-if="activeKey !== TAB_KEY_DOWNLOAD" color="primary" :loading="loading"
                 @click="() => loadMods()">
-                <template #icon>
-                  <reload-outlined />
-                </template>
+                  <VIcon start icon="mdi-refresh" />
                 {{ t("TXT_CODE_REFRESH") }}
-              </a-button>
-            </a-space>
+              </VBtn>
+            </div>
           </template>
         </BetweenMenus>
-      </a-col>
+      </VCol>
 
-      <a-col :span="24">
+      <VCol cols="12">
         <CardPanel class="containerWrapper" :padding="false">
           <template #body>
             <div :class="isPhone ? 'p-2' : 'p-4'" style="position: relative" @dragover.prevent="handleDragover"
@@ -482,20 +465,20 @@ onMounted(async () => {
                   backdrop-filter: blur(10px);
                   -webkit-backdrop-filter: blur(10px);
                   z-index: 100;
-                  border: 2px dashed var(--ant-primary-color);
+                  border: 2px dashed var(--color-primary);
                   border-radius: 8px;
                   pointer-events: none;
                 ">
                 <div class="text-center">
-                  <upload-outlined style="font-size: 48px; color: var(--ant-primary-color)" />
-                  <div class="mt-2 text-lg font-bold" style="color: var(--ant-primary-color)">
+                  <VIcon icon="mdi-upload" size="48" color="primary" />
+                  <div class="mt-2 text-lg font-bold" style="color: var(--color-primary)">
                     {{ t("TXT_CODE_DRAG_TO_UPLOAD") }}
                   </div>
                 </div>
               </div>
 
-              <a-alert v-if="isWindows && isRunning" type="warning" show-icon class="mb-4 mt-2 mod-manager-alert">
-                <template #message>
+              <VAlert v-if="isWindows && isRunning" type="warning" variant="tonal" class="mb-4 mt-2 mod-manager-alert">
+                <template #text>
                   <div class="text-left">
                     <div class="font-bold">{{ t("TXT_CODE_MOD_WIN_FILE_LOCK_TITLE") }}</div>
                     <div class="text-xs opacity-80 font-normal mt-1">
@@ -503,133 +486,45 @@ onMounted(async () => {
                     </div>
                   </div>
                 </template>
-              </a-alert>
+              </VAlert>
 
-              <a-tabs v-model:activeKey="activeKey" class="mod-manager-tabs" destroy-inactive-tab-pane
-                @change="handleTabChange">
-                <a-tab-pane v-if="hasModsFolder" :key="TAB_KEY_MODS">
-                  <template #tab>
-                    <Flex align="center" :gap="6">
-                      {{ t("TXT_CODE_MOD_LIST") }}
-                      <a-badge v-if="!loading && activeKey === TAB_KEY_MODS" :count="filteredMods.length"
-                        :show-zero="true" :overflow-count="999" :number-style="{
-                          backgroundColor: '#f0f0f0',
-                          color: '#555',
-                          boxShadow: 'none'
-                        }" size="small" />
-                      <loading-outlined v-if="loading || loadingExtra" style="font-size: 12px; color: #1890ff" />
-                    </Flex>
-                  </template>
+              <VTabs v-model="activeKey" class="mod-manager-tabs" @update:model-value="handleTabChange">
+                <VTab v-if="hasModsFolder" :value="TAB_KEY_MODS">{{ t("TXT_CODE_MOD_LIST") }} <VBadge v-if="!loading" inline :content="filteredMods.length" color="secondary" /><VIcon v-if="loading || loadingExtra" icon="mdi-loading" size="14" class="loading-icon" /></VTab>
+                <VTab v-if="hasPluginsFolder" :value="TAB_KEY_PLUGINS">{{ t("TXT_CODE_PLUGIN_LIST") }} <VBadge v-if="!loading" inline :content="filteredPlugins.length" color="secondary" /><VIcon v-if="loading || loadingExtra" icon="mdi-loading" size="14" class="loading-icon" /></VTab>
+                <VTab :value="TAB_KEY_DOWNLOAD">{{ t("TXT_CODE_25bf0004") }}</VTab>
+              </VTabs>
+              <VWindow v-model="activeKey" :touch="false">
+                <VWindowItem v-if="hasModsFolder" :value="TAB_KEY_MODS">
                   <div :class="isPhone ? 'p-2' : 'p-10'">
                     <LocalModTable :key="TAB_KEY_MODS" :loading="loading" :data-source="filteredMods" :columns="columns"
                       :pagination="tablePagination" @change="handleTableChange" @toggle="onToggle" @delete="onDelete"
                       @config="openConfig" @open-external="openExternal" @refresh="loadMods" />
                   </div>
-                </a-tab-pane>
+                </VWindowItem>
 
-                <a-tab-pane v-if="hasPluginsFolder" :key="TAB_KEY_PLUGINS">
-                  <template #tab>
-                    <Flex align="center" :gap="6">
-                      {{ t("TXT_CODE_PLUGIN_LIST") }}
-                      <a-badge v-if="!loading && activeKey === TAB_KEY_PLUGINS" :count="filteredPlugins.length"
-                        :show-zero="true" :overflow-count="999" :number-style="{
-                          backgroundColor: '#f0f0f0',
-                          color: '#555',
-                          boxShadow: 'none'
-                        }" size="small" />
-                      <loading-outlined v-if="loading || loadingExtra" style="font-size: 12px; color: #1890ff" />
-                    </Flex>
-                  </template>
+                <VWindowItem v-if="hasPluginsFolder" :value="TAB_KEY_PLUGINS">
                   <div :class="isPhone ? 'p-2' : 'p-10'">
                     <LocalModTable :key="TAB_KEY_PLUGINS" :loading="loading" :data-source="filteredPlugins"
                       :columns="columns" :pagination="tablePagination" @change="handleTableChange" @toggle="onToggle"
                       @delete="onDelete" @config="openConfig" @open-external="openExternal" @refresh="loadMods" />
                   </div>
-                </a-tab-pane>
+                </VWindowItem>
 
-                <a-tab-pane :key="TAB_KEY_DOWNLOAD" :tab="t('TXT_CODE_25bf0004')">
+                <VWindowItem :value="TAB_KEY_DOWNLOAD">
                   <div :class="isPhone ? 'p-2' : 'p-10'">
                     <div>
-                      <a-form layout="horizontal" :model="searchFilters" class="search-form" label-width="120px"
-                        label-align="left">
-                        <a-row :gutter="isPhone ? [8, 8] : [24, 0]" style="margin-top: 10px">
-                          <a-col :span="isPhone ? 24 : 4">
-                            <a-form-item>
-                              <a-input v-model:value="searchFilters.query"
-                                :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" @press-enter="onSearch" />
-                            </a-form-item>
-                          </a-col>
-                          <a-col :span="isPhone ? 12 : 4">
-                            <a-form-item>
-                              <a-select v-model:value="searchFilters.source">
-                                <a-select-option value="all">
-                                  {{ t("TXT_CODE_9693b0e1") }}
-                                </a-select-option>
-                                <a-select-option value="modrinth">Modrinth</a-select-option>
-                                <a-select-option value="curseforge">CurseForge</a-select-option>
-                                <a-select-option value="spigotmc">SpigotMC</a-select-option>
-                              </a-select>
-                            </a-form-item>
-                          </a-col>
-                          <a-col :span="isPhone ? 12 : 4">
-                            <a-form-item>
-                              <a-select v-model:value="searchFilters.version" show-search allow-clear
-                                :placeholder="t('TXT_CODE_743b4fe7')">
-                                <a-select-option value="">
-                                  {{ t("TXT_CODE_2af87548") }}
-                                </a-select-option>
-                                <a-select-option v-for="v in mcVersions" :key="v" :value="v">
-                                  {{ v }}
-                                </a-select-option>
-                              </a-select>
-                            </a-form-item>
-                          </a-col>
-                          <a-col :span="isPhone ? 12 : 4">
-                            <a-form-item>
-                              <a-select v-model:value="searchFilters.type">
-                                <a-select-option value="all">
-                                  {{ t("TXT_CODE_cc4db8f0") }}
-                                </a-select-option>
-                                <a-select-option value="mod">
-                                  {{ t("TXT_CODE_MOD") }}
-                                </a-select-option>
-                                <a-select-option value="plugin">
-                                  {{ t("TXT_CODE_PLUGIN") }}
-                                </a-select-option>
-                              </a-select>
-                            </a-form-item>
-                          </a-col>
-                          <a-col :span="isPhone ? 12 : 4">
-                            <a-form-item>
-                              <a-select v-model:value="searchFilters.environment">
-                                <a-select-option value="all">
-                                  {{ t("TXT_CODE_74e77b4c") }}
-                                </a-select-option>
-                                <a-select-option value="server">
-                                  {{ t("TXT_CODE_SERVER") }}
-                                </a-select-option>
-                                <a-select-option value="client">
-                                  {{ t("TXT_CODE_CLIENT") }}
-                                </a-select-option>
-                              </a-select>
-                            </a-form-item>
-                          </a-col>
-                          <a-col :span="isPhone ? 12 : 4">
-                            <a-form-item>
-                              <a-select v-model:value="searchFilters.loader" show-search allow-clear
-                                :options="loaderOptions" option-filter-prop="label" style="width: 100%"
-                                :placeholder="t('TXT_CODE_SELECT_LOADER')" />
-                            </a-form-item>
-                          </a-col>
-                        </a-row>
-                        <div class="flex gap-8 justify-end mt-2">
-                          <a-button type="primary" :loading="searchLoading" @click="onSearch">
-                            <template #icon><search-outlined /></template>
-                            {{ t("TXT_CODE_SEARCH") }}
-                          </a-button>
-                          <a-button @click="resetSearch">{{ t("TXT_CODE_880fedf7") }}</a-button>
-                        </div>
-                      </a-form>
+                      <VRow dense class="search-form mt-2">
+                        <VCol cols="12" :md="4"><VTextField v-model="searchFilters.query" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" prepend-inner-icon="mdi-magnify" density="compact" hide-details @keyup.enter="onSearch" /></VCol>
+                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.source" :items="[{ title: t('TXT_CODE_9693b0e1'), value: 'all' }, { title: 'Modrinth', value: 'modrinth' }, { title: 'CurseForge', value: 'curseforge' }, { title: 'SpigotMC', value: 'spigotmc' }]" density="compact" hide-details /></VCol>
+                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.version" :items="[{ title: t('TXT_CODE_2af87548'), value: '' }, ...mcVersions.map((v) => ({ title: v, value: v }))]" :placeholder="t('TXT_CODE_743b4fe7')" clearable density="compact" hide-details /></VCol>
+                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.type" :items="[{ title: t('TXT_CODE_cc4db8f0'), value: 'all' }, { title: t('TXT_CODE_MOD'), value: 'mod' }, { title: t('TXT_CODE_PLUGIN'), value: 'plugin' }]" density="compact" hide-details /></VCol>
+                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.environment" :items="[{ title: t('TXT_CODE_74e77b4c'), value: 'all' }, { title: t('TXT_CODE_SERVER'), value: 'server' }, { title: t('TXT_CODE_CLIENT'), value: 'client' }]" density="compact" hide-details /></VCol>
+                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.loader" :items="loaderOptions.flatMap((group) => group.options)" :placeholder="t('TXT_CODE_SELECT_LOADER')" clearable density="compact" hide-details /></VCol>
+                      </VRow>
+                      <div class="d-flex ga-2 justify-end mt-2">
+                        <VBtn color="primary" :loading="searchLoading" @click="onSearch"><VIcon start icon="mdi-magnify" />{{ t("TXT_CODE_SEARCH") }}</VBtn>
+                        <VBtn variant="tonal" @click="resetSearch">{{ t("TXT_CODE_880fedf7") }}</VBtn>
+                      </div>
                     </div>
                     <SearchModTable :loading="searchLoading" :data-source="searchResults" :columns="searchColumns"
                       :mods="mods" :pagination="{
@@ -643,7 +538,8 @@ onMounted(async () => {
                       @open-external="openExternal" @download="handleDownload" />
                   </div>
                 </a-tab-pane>
-              </a-tabs>
+                </VWindowItem>
+              </VWindow>
 
               <ModVersionModal v-model:visible="showVersionModal" :selected-mod="selectedMod" :versions="versions"
                 :versions-loading="versionsLoading" :search-filters="searchFilters" :mods="mods"
@@ -656,8 +552,8 @@ onMounted(async () => {
             </div>
           </template>
         </CardPanel>
-      </a-col>
-    </a-row>
+      </VCol>
+    </VRow>
 
     <ModFloatingTools v-model:deferred-tasks="deferredTasks" v-model:auto-execute="autoExecute"
       :instance-id="instanceId!" :daemon-id="daemonId!" :file-status="fileStatus" :is-executing="isExecuting"
@@ -673,7 +569,7 @@ onMounted(async () => {
   overflow: hidden;
 }
 
-.mod-manager-tabs :deep(.ant-tabs-nav) {
+.mod-manager-tabs {
   margin-bottom: 0;
   padding: 0 20px;
 }
@@ -696,25 +592,16 @@ onMounted(async () => {
   margin-bottom: 20px;
 }
 
-.search-form :deep(.ant-form-item) {
-  margin-bottom: 12px;
-}
-
 .mod-manager-alert {
   padding: 10px 18px !important;
 }
 
-.mod-manager-alert :deep(.ant-alert-content) {
+.mod-manager-alert :deep(.v-alert__content) {
   text-align: left !important;
 }
 
-.search-form :deep(.ant-input),
-.search-form :deep(.ant-select-selection-item),
-.search-form :deep(.ant-select-selection-placeholder) {
+.search-form :deep(.v-field__input) {
   text-align: left !important;
 }
 
-.search-form :deep(.ant-form-item-label) {
-  text-align: left;
-}
 </style>

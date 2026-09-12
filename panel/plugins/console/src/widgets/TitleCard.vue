@@ -8,8 +8,8 @@ const props = defineProps<{
 
 <template>
   <div class="">
-    <a-typography-title class="mb-0" :level="4">
+    <h2 class="mb-0">
       {{ props.card.title }}
-    </a-typography-title>
+    </h2>
   </div>
 </template>

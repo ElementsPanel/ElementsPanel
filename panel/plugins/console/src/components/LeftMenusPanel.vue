@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useScreen } from "@/hooks/useScreen";
 import { onMounted, ref, type FunctionalComponent } from "vue";
+import { VTab, VTabs } from "vuetify/components";
 import LeftMenuBtn from "./LeftMenuBtn.vue";
 
 const { isPhone } = useScreen();
@@ -55,22 +56,12 @@ defineExpose({
   </div>
 
   <div v-else class="ml-16 mr-16 mt-8 mb-8">
-    <a-tabs v-model:activeKey="activeKey">
-      <a-tab-pane
-        v-for="item in props.menus"
-        :key="item.key"
-        class="mb-6"
-        @click="handleChangeMenu(item)"
-      >
-        <template #tab>
-          <!-- <component :is="item.icon"></component> -->
-          {{ item.title }}
-        </template>
-        <div style="text-align: left">
-          <slot :name="activeKey"></slot>
-        </div>
-      </a-tab-pane>
-    </a-tabs>
+    <VTabs v-model="activeKey" @update:model-value="(key) => setActiveKey(String(key))">
+      <VTab v-for="item in props.menus" :key="item.key" :value="item.key" class="mb-6" @click="handleChangeMenu(item)">{{ item.title }}</VTab>
+    </VTabs>
+    <div style="text-align: left">
+      <slot :name="activeKey"></slot>
+    </div>
   </div>
 </template>
 

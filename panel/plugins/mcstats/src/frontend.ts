@@ -4,7 +4,6 @@ import type {
 } from "@/plugin";
 import { TYPE_MINECRAFT_BEDROCK, TYPE_MINECRAFT_JAVA } from "@/hooks/useInstance";
 import { t } from "@/lang/i18n";
-import { UsergroupDeleteOutlined } from "@ant-design/icons-vue";
 import DesktopMcPing from "./desktop/DesktopMcPing.vue";
 import McPingSettings from "./normal/McPingSettings.vue";
 
@@ -25,7 +24,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.actions.instance({
     id: "mcstats",
     title: () => t("TXT_CODE_40241d8e"),
-    icon: UsergroupDeleteOutlined,
+    icon: "mdi-account-multiple-minus-outline",
     normalComponent: McPingSettings,
     desktopComponent: DesktopMcPing,
     condition: isMinecraftStatusAvailable,

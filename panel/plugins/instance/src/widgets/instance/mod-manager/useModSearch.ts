@@ -6,7 +6,6 @@ import {
   getModVersionsApi,
   searchModsApi
 } from "@/services/apis/modManager";
-import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { useLocalStorage } from "@vueuse/core";
 import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
@@ -229,7 +228,7 @@ export function useModSearch(
         finalType = await new Promise((resolve, reject) => {
           const modal = Modal.confirm({
             title: t("TXT_CODE_MOD_SELECT_SAVE_DIR"),
-            icon: createVNode(ExclamationCircleOutlined),
+      icon: createVNode("i", { class: "mdi mdi-alert-circle-outline" }),
             content: "",
             footer: createVNode("div", { style: "text-align: right; margin-top: 20px;" }, [
               createVNode(

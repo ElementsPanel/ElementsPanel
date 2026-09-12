@@ -1,22 +1,16 @@
 <template>
   <div>
-    <a-modal
-      v-model:open="state.inputDialog.show"
-      centered
-      :title="state.inputDialog.title"
-      :width="400"
-      @ok="handleOk"
-      @cancel="handleCancel"
-    >
+    <AppDialog v-model:visible="state.inputDialog.show" :title="state.inputDialog.title" :width="400" @ok="handleOk" @cancel="handleCancel">
       <div class="dialog-input-container">
-        <a-input v-model:value="inputValue" :placeholder="state.inputDialog.title" />
+        <VTextField v-model="inputValue" :placeholder="state.inputDialog.title" variant="solo" density="compact" hide-details />
       </div>
-    </a-modal>
+    </AppDialog>
   </div>
 </template>
 <script lang="ts" setup>
 import { useAppToolsStore } from "@/stores/useAppToolsStore";
 import { ref } from "vue";
+import AppDialog from "./AppDialog.vue";
 
 const inputValue = ref("");
 

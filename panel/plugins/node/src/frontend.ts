@@ -1,4 +1,3 @@
-import { ClusterOutlined } from "@ant-design/icons-vue";
 import type { PanelFrontendPluginContext } from "@/plugin";
 import type { LayoutCardPoolItemFactory } from "@/config";
 import LayoutContainer from "@/views/LayoutContainer.vue";
@@ -123,7 +122,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.desktop.app({
     id: "nodes",
     label: () => t("TXT_CODE_e076d90b"),
-    icon: ClusterOutlined,
+    icon: "mdi-vector-link",
     color: "#fa8c16",
     route: "/node",
     component: DesktopNodeManager,

@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import type { LayoutCard } from "@/types/index";
-import { ref, computed, reactive, onMounted } from "vue";
+import { ref } from "vue";
 import type { MapData } from "@/types/index";
-import type { FormInstance } from "ant-design-vue";
-import { BulbOutlined } from "@ant-design/icons-vue";
 import { $t as t } from "@/lang/i18n";
 import { useSelectInstances } from "@/components/fc";
+import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VCol, VDialog, VForm, VIcon, VRow, VSpacer, VTextField } from "vuetify/components";
 
 const open = ref(false);
 const card = ref<LayoutCard>();
 let resolveFn: (value: unknown) => void;
 
 const formData = ref<MapData<string>>({});
-const formRef = ref<FormInstance>();
+const formRef = ref<InstanceType<typeof VForm>>();
 
 const openInstanceSelectDialog = async () => {
   try {
@@ -42,7 +41,8 @@ const openDialog = (cardInfo: LayoutCard) => {
 
 const onSubmit = async () => {
   const result = await formRef.value?.validate();
-  if (card.value && result) card.value.meta = result;
+  if (result && !result.valid) return;
+  if (card.value) card.value.meta = formData.value;
 
   open.value = false;
   resolveFn(true);
@@ -54,47 +54,32 @@ defineExpose({
 </script>
 
 <template>
-  <a-drawer
-    class="global-text-color"
-    :title="t('TXT_CODE_e4c84088')"
-    placement="bottom"
-    :open="open"
-    @close="onClose"
-  >
-    <template #extra>
-      <a-button style="margin-right: 8px" @click="onClose">
-        {{ t("TXT_CODE_a0451c97") }}
-      </a-button>
-      <a-button type="primary" @click="onSubmit">
-        {{ t("TXT_CODE_d507abff") }}
-      </a-button>
-    </template>
-    <div v-if="card && card.meta" class="app-max-width">
-      <a-form ref="formRef" :model="formData" layout="vertical" autocomplete="off">
-        <a-row :gutter="[20, 20]">
-          <a-col v-for="item in card.params" :key="item.field" :span="24" :md="12">
-            <a-form-item :label="item.label" :name="item.field">
-              <a-input v-if="item.type === 'string'" v-model:value="formData[item.field]" />
-              <a-button
-                v-if="item.type === 'instance'"
-                type="primary"
-                @click="openInstanceSelectDialog"
-              >
-                {{ t("TXT_CODE_2c9083a1") }}
-              </a-button>
-            </a-form-item>
-          </a-col>
-        </a-row>
-      </a-form>
-      <p>
-        <BulbOutlined />
-        <span class="ml-4">
-          {{ t("TXT_CODE_e29b79df") }}
-        </span>
-      </p>
-      <p>
-        {{ t("TXT_CODE_13663120") }}
-      </p>
-    </div>
-  </a-drawer>
+  <VDialog v-model="open" class="global-text-color" location="bottom" max-width="900" scrollable>
+    <VCard>
+      <VCardTitle>{{ t("TXT_CODE_e4c84088") }}</VCardTitle>
+      <VCardText v-if="card && card.meta">
+        <VForm ref="formRef" @submit.prevent="onSubmit">
+          <VRow>
+            <VCol v-for="item in card.params" :key="item.field" cols="12" md="6">
+              <VTextField v-if="item.type === 'string'" v-model="formData[item.field]" :label="item.label" :rules="[(value) => String(value ?? '').trim() ? true : t('TXT_CODE_cb08d342')]" />
+              <div v-else-if="item.type === 'instance'" class="d-flex flex-column ga-2">
+                <div class="text-body-2 text-medium-emphasis">{{ item.label }}</div>
+                <VBtn color="primary" variant="tonal" @click="openInstanceSelectDialog">
+                  <VIcon start icon="mdi-server-outline" />
+                  {{ t("TXT_CODE_2c9083a1") }}
+                </VBtn>
+              </div>
+            </VCol>
+          </VRow>
+        </VForm>
+        <p><VIcon icon="mdi-lightbulb-outline" class="mr-1" />{{ t("TXT_CODE_e29b79df") }}</p>
+        <p>{{ t("TXT_CODE_13663120") }}</p>
+      </VCardText>
+      <VCardActions>
+        <VSpacer />
+        <VBtn variant="text" @click="onClose">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+        <VBtn color="primary" @click="onSubmit">{{ t("TXT_CODE_d507abff") }}</VBtn>
+      </VCardActions>
+    </VCard>
+  </VDialog>
 </template>

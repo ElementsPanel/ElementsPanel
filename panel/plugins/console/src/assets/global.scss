@@ -250,7 +250,7 @@ body::-webkit-scrollbar-track {
     padding-left: 12px;
     padding-right: 12px;
 
-    >.ant-row {
+    >.v-row {
       width: 100%;
       margin-left: 0 !important;
       margin-right: 0 !important;
@@ -341,17 +341,6 @@ body::-webkit-scrollbar-track {
   }
 }
 
-// Override the AntDesign original style
-.ant-modal-mask,
-.ant-drawer-mask {
-  backdrop-filter: saturate(110%) blur(4px);
-}
-
-.ant-modal {
-  margin-top: 16px !important;
-  margin-bottom: 16px !important;
-}
-
 // All application dialogs are rendered through Vuetify's VDialog adapter.
 .v-dialog:not(.full-modal)>.v-overlay__content {
   min-width: min(360px, calc(100vw - 24px));
@@ -379,10 +368,7 @@ body::-webkit-scrollbar-track {
   padding: 12px 16px 16px 28px;
 }
 
-// Ant Design rows compensate for column gutters with negative side margins.
-// The layout container already owns the page gutters, so those margins make
-// full-page cards (notably market and monitor) appear a few pixels shifted.
-.main-layout-container>.ant-row {
+.main-layout-container>.v-row {
   width: 100%;
   margin-left: 0 !important;
   margin-right: 0 !important;
@@ -401,25 +387,10 @@ body::-webkit-scrollbar-track {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
 }
 
-.ant-tooltip .ant-tooltip-inner {
-  background: #262626 !important;
-  color: #ffffff !important;
-  border-radius: 8px;
-}
-
-.ant-tooltip .ant-tooltip-arrow::before {
-  background: #262626 !important;
-}
-
 @media (max-width: 600px) {
   .v-dialog.app-dialog:not(.full-modal)>.v-overlay__content {
     max-width: calc(100vw - 24px) !important;
   }
-}
-
-// Override the AntDesign progress bar animation
-.no-animation .ant-progress-bg {
-  transition: none !important;
 }
 
 // Custom Top Progress Bar
@@ -526,7 +497,7 @@ body::-webkit-scrollbar-track {
   opacity: 1;
 }
 
-.ant-card:hover .download-button {
+.v-card:hover .download-button {
   transform: scale(1.08);
   box-shadow:
     0 8px 20px rgba(24, 144, 255, 0.4),

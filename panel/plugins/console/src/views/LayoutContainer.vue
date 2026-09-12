@@ -10,6 +10,7 @@ import { useScreen } from "@/hooks/useScreen";
 import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
 import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import { useRouterParams } from "../hooks/useRouterParams";
+import { VCol, VRow } from "vuetify/components";
 
 const { containerState } = useLayoutContainerStore();
 const { currentRoutePath } = useRouterParams();
@@ -42,12 +43,13 @@ const showCardOperator = (card: ILayoutCard) => {
   <main class="main-layout-container">
     <NewCardList v-if="containerState.isDesignMode" ref="newCardList" />
 
-    <a-row
+    <VRow
       v-if="currentLayoutConfig.length > 1"
       :class="{ 'row-order-mode': containerState.isDesignMode }"
-      :gutter="[24, 24]"
+      dense
+      class="layout-grid"
     >
-      <a-col
+      <VCol
         v-for="card in computedLayout"
         :key="card.id"
         :span="24"
@@ -87,15 +89,15 @@ const showCardOperator = (card: ILayoutCard) => {
           @dragenter="(e: DragEvent) => newAreaDragenter(e)"
           @drop="(e: DragEvent) => dropToNewArea(e, String(card.followId))"
         />
-      </a-col>
-    </a-row>
+      </VCol>
+    </VRow>
 
     <div
       v-if="currentLayoutConfig.length <= 1 && currentLayoutConfig.length != 0"
       :class="{ 'main-flex-center': !isPhone }"
     >
-      <a-row :gutter="[0, 0]" :align="'center' as any" style="width: 100%">
-        <a-col
+      <VRow align="center" class="w-100">
+        <VCol
           :span="24"
           :md="24"
           :lg="currentLayoutConfig[0].width * 2"
@@ -107,8 +109,8 @@ const showCardOperator = (card: ILayoutCard) => {
             :data-id="currentLayoutConfig[0].id"
             :style="{ minHeight: currentLayoutConfig[0].height }"
           />
-        </a-col>
-      </a-row>
+        </VCol>
+      </VRow>
     </div>
   </main>
 </template>

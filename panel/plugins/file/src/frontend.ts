@@ -19,7 +19,8 @@ import DesktopFileManagerAction from "./desktop/DesktopFileManagerAction.vue";
 import ImageViewer from "./normal/ImageViewer.vue";
 import uploadService, { UploadFiles } from "./services/uploadService";
 import { filterFileName, getFileExtName, getFileIcon, isCompressFile } from "./tools/fileManager";
-import { FolderOpenOutlined } from "@ant-design/icons-vue";
+import { VIcon } from "vuetify/components";
+import { h } from "vue";
 
 // The file manager, browser side. It owns the instance file card and its Desktop
 // window, the file editor, the image viewer, the upload queue and the three
@@ -112,7 +113,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.actions.instance({
     id: "file-manager",
     title: () => t("TXT_CODE_ae533703"),
-    icon: FolderOpenOutlined,
+    icon: () => h(VIcon, { icon: "mdi-folder-open-outline" }),
     normalComponent: FileManagerAction,
     desktopComponent: DesktopFileManagerAction,
     condition: isFileManagerAvailable,

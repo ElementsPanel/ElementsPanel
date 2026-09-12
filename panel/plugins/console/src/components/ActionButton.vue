@@ -1,25 +1,29 @@
 <script setup lang="ts">
-import { LinkOutlined } from "@ant-design/icons-vue";
+import { VIcon } from "vuetify/components";
+import { computed, type Component } from "vue";
 
-defineProps<{
-  icon?: any;
+const props = defineProps<{
+  icon?: string | Component;
   title: string;
   click?: (...args: any) => any;
 }>();
+
+const isMdiIcon = computed(() => typeof props.icon === "string" || !props.icon);
 </script>
 
 <template>
   <div class="actions-button w-100">
-    <a-col :span="24">
+    <div class="action-col">
       <div class="action-btn-item w-100 flex" @click="click">
         <div>
-          <component :is="icon || LinkOutlined" />
+          <VIcon v-if="isMdiIcon" :icon="(icon as string) || 'mdi-link-variant'" />
+          <component :is="icon" v-else />
         </div>
         <div class="ml-8">
           {{ title }}
         </div>
       </div>
-    </a-col>
+    </div>
   </div>
 </template>
 

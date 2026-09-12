@@ -664,7 +664,7 @@ onMounted(async () => {
 }
 
 .dmm-search {
-    :deep(.ant-input) {
+    :deep(.v-field) {
         background: var(--desktop-window-titlebar-bg);
         border-color: var(--desktop-window-border);
         color: var(--desktop-window-text);
@@ -675,7 +675,7 @@ onMounted(async () => {
         }
     }
 
-    :deep(.ant-input-suffix) {
+    :deep(.v-field__append-inner) {
         color: var(--desktop-window-text-muted);
     }
 }
@@ -706,7 +706,7 @@ onMounted(async () => {
     background-color: rgba(128, 128, 128, 0.1);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 2px dashed var(--ant-primary-color);
+    border: 2px dashed var(--color-primary);
     border-radius: 8px;
     pointer-events: none;
 
@@ -716,14 +716,14 @@ onMounted(async () => {
 
     &__icon {
         font-size: 48px;
-        color: var(--ant-primary-color);
+        color: var(--color-primary);
     }
 
     &__text {
         margin-top: 8px;
         font-size: 16px;
         font-weight: bold;
-        color: var(--ant-primary-color);
+        color: var(--color-primary);
     }
 }
 
@@ -731,17 +731,17 @@ onMounted(async () => {
     margin-bottom: 12px;
     padding: 8px 14px !important;
 
-    :deep(.ant-alert-content) {
+    :deep(.v-alert__content) {
         text-align: left !important;
     }
 }
 
 .dmm-tabs {
-    :deep(.ant-tabs-nav) {
+    :deep(.v-slide-group) {
         margin-bottom: 0;
     }
 
-    :deep(.ant-tabs-tab) {
+    :deep(.v-tab) {
         font-size: 12px;
         padding: 6px 12px;
     }
@@ -758,13 +758,11 @@ onMounted(async () => {
 .dmm-search-form {
     margin-bottom: 12px;
 
-    :deep(.ant-form-item) {
+    :deep(.v-input) {
         margin-bottom: 0;
     }
 
-    :deep(.ant-input),
-    :deep(.ant-select-selection-item),
-    :deep(.ant-select-selection-placeholder) {
+    :deep(.v-field__input) {
         text-align: left !important;
         font-size: 12px;
     }

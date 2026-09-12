@@ -2,7 +2,6 @@
 import { useScreen } from "@/hooks/useScreen";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 
-import { Button, Input, Select, Table } from "ant-design-vue";
 import { computed, onMounted, watch } from "vue";
 import { RouterView, useRoute } from "vue-router";
 import AppBottomNav from "./components/AppBottomNav.vue";
@@ -33,10 +32,6 @@ const route = useRoute();
 // Overlays that belong to no route. Feature plugins add their own global
 // components through `ctx.ui.globalComponent()` and leave with their scope.
 const GLOBAL_COMPONENTS = computed(() => [InputDialogProvider, ...ctx.ui.globalComponents]);
-
-[Button, Select, Input, Table].forEach((element) => {
-  element.props.size.default = "large";
-});
 
 const designModeNavStyle = computed(() => {
   if (!appState.userInfo) return {};

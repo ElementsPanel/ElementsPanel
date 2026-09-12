@@ -5,23 +5,14 @@
     backdrop-filter: saturate(180%) blur(20px);
   }
 
-  .ant-table,
   .left-menu,
-  .ant-table-cell,
   .action-btn-item,
   .inner-card-wrapper,
-  .ant-select-dropdown,
   .file-breadcrumbs {
     background-color: var(--level-2-bg-color) !important;
   }
 
-  .card-panel,
-  .ant-pagination-item {
-    background-color: var(--level-1-bg-color) !important;
-    backdrop-filter: saturate(180%) blur(20px) !important;
-  }
-
-  .ant-card {
+  .card-panel {
     background-color: var(--level-1-bg-color) !important;
     backdrop-filter: saturate(180%) blur(20px) !important;
   }
@@ -30,40 +21,6 @@
     backdrop-filter: saturate(180%) blur(20px) !important;
   }
 
-  .ant-btn-default {
-    background-color: var(--level-1-bg-color);
-    backdrop-filter: blur(3px) !important;
-  }
-
-  .ant-btn-primary {
-    background-color: var(--primary-btn-color);
-    backdrop-filter: blur(3px) !important;
-  }
-
-  .ant-btn-dangerous {
-    background-color: var(--danger-btn-color);
-    backdrop-filter: blur(3px) !important;
-  }
-
-  .ant-input-affix-wrapper,
-  .ant-select-selector,
-  .ant-input {
-    background-color: var(--level-1-bg-color) !important;
-    backdrop-filter: saturate(180%) blur(20px) !important;
-  }
-
-  .ant-modal-content {
-    background-color: var(--level-0-bg-color) !important;
-    backdrop-filter: blur(3px) !important;
-  }
-
-  .ant-modal-title,
-  .ant-modal-header,
-  .ant-input-affix-wrapper>.ant-input,
-  .ant-input-affix-wrapper .ant-input {
-    background-color: rgba(0, 0, 0, 0) !important;
-    backdrop-filter: none !important;
-  }
 }
 
 .extend-light-css {
@@ -71,7 +28,7 @@
     @extend .text-white-shadow;
   }
 
-  .ant-btn-dangerous {
+  .v-btn.text-error {
     color: #fff;
 
     &:not(:disabled):hover {
@@ -96,7 +53,7 @@
     @extend .text-black-shadow;
   }
 
-  .ant-btn-dangerous {
+  .v-btn.text-error {
     color: #ffa4a4;
   }
 

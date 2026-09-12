@@ -15,7 +15,10 @@ const showText = computed(() => {
 </script>
 
 <template>
-  <a-tooltip :title="props.text">
+  <VTooltip location="top">
+    <template #activator="{ props: tooltipProps }"><span v-bind="tooltipProps">
     <span>{{ showText }}</span>
-  </a-tooltip>
+    </span></template>
+    <span>{{ props.text }}</span>
+  </VTooltip>
 </template>

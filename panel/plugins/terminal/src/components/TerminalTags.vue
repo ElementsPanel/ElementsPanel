@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { TagInfo } from "@/components/interface";
+import { VChip, VIcon } from "vuetify/components";
 
 defineProps<{
   tags: TagInfo[];
@@ -14,7 +15,7 @@ defineProps<{
       gap: gap || '6px'
     }"
   >
-    <a-tag
+    <VChip
       v-for="tag in tags"
       :key="tag.label"
       class="tag m-0"
@@ -24,12 +25,11 @@ defineProps<{
       }"
       @click="tag.onClick?.()"
     >
-      <span>
-        <component :is="tag.icon" v-if="tag.icon"></component>
-      </span>
+      <VIcon v-if="typeof tag.icon === 'string'" :icon="tag.icon" />
+      <component :is="tag.icon" v-else-if="tag.icon"></component>
       <span>{{ tag.label }}</span>
       <span>{{ tag.value }}</span>
-    </a-tag>
+    </VChip>
   </div>
 </template>
 

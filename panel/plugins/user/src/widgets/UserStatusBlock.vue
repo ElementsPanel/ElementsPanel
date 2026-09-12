@@ -64,9 +64,9 @@ onMounted(() => {
   <CardPanel class="StatusBlock" style="height: 100%">
     <template #title>{{ card.title }}</template>
     <template #body>
-      <a-typography-text class="color-info">
+      <span class="color-info">
         {{ realStatus?.title }}
-      </a-typography-text>
+      </span>
       <div class="value">{{ realStatus?.value }}</div>
     </template>
   </CardPanel>

@@ -4,10 +4,8 @@ defineProps<{
 }>();
 </script>
 <template>
-  <a-empty>
-    <template #description>
-      <span class="color-info">{{ description }}</span>
-    </template>
-    <!-- <a-button type="primary">Create Now</a-button> -->
-  </a-empty>
+  <div class="empty-state">
+    <VIcon icon="mdi-inbox-outline" size="42" />
+    <span class="color-info">{{ description }}</span>
+  </div>
 </template>

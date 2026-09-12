@@ -59,7 +59,7 @@ const handleContextMenu = (e: MouseEvent) => {
         :style="{ left: x + 'px', top: y + 'px' }" @click.stop="handleClick" @dblclick.stop="handleDblClick"
         @mousedown.stop="handleMouseDown" @contextmenu.stop.prevent="handleContextMenu">
         <div class="desktop-icon__graphic" :style="iconStyle">
-            <component :is="icon" v-if="isComponent" class="desktop-icon__anticon" />
+            <component :is="icon" v-if="isComponent" class="desktop-icon__component" />
             <VIcon v-else-if="isMdiIcon" :icon="icon as string" size="42" />
             <img v-else-if="typeof icon === 'string' && icon.endsWith('.svg')" :src="icon" alt="icon"
                 class="desktop-icon__img" />
@@ -104,7 +104,7 @@ const handleContextMenu = (e: MouseEvent) => {
         filter: drop-shadow(0 2px 4px var(--desktop-icon-shadow));
     }
 
-    &__anticon {
+    &__component {
         font-size: 42px;
     }
 

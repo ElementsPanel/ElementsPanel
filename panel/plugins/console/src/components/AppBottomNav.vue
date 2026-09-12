@@ -1,30 +1,22 @@
 <script setup lang="ts">
 import { useHeaderMenus } from "@/hooks/useHeaderMenus";
-import {
-  AppstoreOutlined,
-  CloseOutlined,
-  LoginOutlined,
-  MenuOutlined,
-  TeamOutlined,
-  UserOutlined
-} from "@ant-design/icons-vue";
-import type { Component } from "vue";
 import { ref } from "vue";
 import { useRoute } from "vue-router";
+import { VIcon } from "vuetify/components";
 
 const route = useRoute();
 const { menus, handleToPage } = useHeaderMenus();
 const isExpanded = ref(false);
 
-const routePathIcons: Record<string, Component> = {
-  "/instances": AppstoreOutlined,
-  "/users": TeamOutlined,
-  "/customer": UserOutlined,
-  "/login": LoginOutlined
+const routePathIcons: Record<string, string> = {
+  "/instances": "mdi-view-grid",
+  "/users": "mdi-account-group-outline",
+  "/customer": "mdi-account-outline",
+  "/login": "mdi-login"
 };
 
-const getRouteIcon = (item: (typeof menus.value)[number]): Component | string =>
-  item.meta.icon ?? routePathIcons[item.path] ?? MenuOutlined;
+const getRouteIcon = (item: (typeof menus.value)[number]): string =>
+  (item.meta.icon as string) ?? routePathIcons[item.path] ?? "mdi-menu";
 
 const isActive = (path: string): boolean => {
   if (route.path === path) return true;
@@ -53,7 +45,7 @@ const handleMenuItemClick = (path: string) => {
         <button v-for="item in menus" :key="item.path" class="fab-menu-item"
           :class="{ 'fab-menu-item--active': isActive(item.path) }" @click="handleMenuItemClick(item.path)">
           <span class="fab-menu-icon-wrap">
-            <component :is="getRouteIcon(item)" class="fab-menu-icon" />
+            <VIcon :icon="getRouteIcon(item)" class="fab-menu-icon" />
           </span>
         </button>
       </div>
@@ -62,8 +54,8 @@ const handleMenuItemClick = (path: string) => {
     <button aria-label="Toggle navigation menu" class="fab-ball" :class="{ 'fab-ball--expanded': isExpanded }"
       @click="toggleMenu">
       <Transition name="fab-icon" mode="out-in">
-        <CloseOutlined v-if="isExpanded" class="fab-ball-icon" />
-        <MenuOutlined v-else class="fab-ball-icon" />
+        <VIcon v-if="isExpanded" icon="mdi-close" class="fab-ball-icon" />
+        <VIcon v-else icon="mdi-menu" class="fab-ball-icon" />
       </Transition>
     </button>
   </div>

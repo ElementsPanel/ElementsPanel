@@ -3,8 +3,8 @@ import CardPanel from "@/components/CardPanel.vue";
 import { useInstanceInfo } from "@/hooks/useInstance";
 import { t } from "@/lang/i18n";
 import type { LayoutCard } from "@/types";
-import { CheckCircleOutlined, ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { computed, onMounted, ref } from "vue";
+import { VChip, VIcon } from "vuetify/components";
 import { GLOBAL_INSTANCE_NAME } from "@/config/const";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { parseTimestamp } from "@/tools/time";
@@ -65,66 +65,66 @@ onMounted(async () => {
       {{ card.title }}
     </template>
     <template #body>
-      <a-typography-paragraph>
+      <p>
         {{ t("TXT_CODE_7ec9c59c") }}
         <span class="mr-10">{{ getInstanceName }}</span>
-        <a-tag v-if="isRunning" color="green" class="tag">
-          <CheckCircleOutlined />
+        <VChip v-if="isRunning" color="success" size="small" variant="tonal" class="tag">
+          <VIcon start icon="mdi-check-circle-outline" />
           {{ statusText }}
-        </a-tag>
-        <a-tag v-else-if="isStopped" class="tag">
-          <ExclamationCircleOutlined />
+        </VChip>
+        <VChip v-else-if="isStopped" size="small" variant="tonal" class="tag">
+          <VIcon start icon="mdi-alert-circle-outline" />
           {{ statusText }}
-        </a-tag>
-        <a-tag v-else class="tag" color="pink">
+        </VChip>
+        <VChip v-else class="tag" color="pink" size="small" variant="tonal">
           {{ statusText }}
-        </a-tag>
-      </a-typography-paragraph>
-      <a-typography-paragraph>
+        </VChip>
+      </p>
+      <p>
         <span>{{ t("TXT_CODE_68831be6") }}</span>
         <span>{{ instanceTypeText }}</span>
-      </a-typography-paragraph>
-      <a-typography-paragraph>
+      </p>
+      <p>
         <span>
           {{ t("TXT_CODE_ad30f3c5") }}
-          <a-tag v-if="Number(instanceInfo?.started) > 0">
+          <VChip v-if="Number(instanceInfo?.started) > 0" size="small" variant="tonal">
             {{ instanceInfo?.started }}
-          </a-tag>
+          </VChip>
           <span v-else>{{ instanceInfo?.started }}</span>
         </span>
-      </a-typography-paragraph>
-      <a-typography-paragraph>
+      </p>
+      <p>
         <span>
           {{ t("TXT_CODE_6420023d") }}
-          <a-tag v-if="Number(instanceInfo?.autoRestarted) > 0" class="ml-6">
+          <VChip v-if="Number(instanceInfo?.autoRestarted) > 0" size="small" variant="tonal" class="ml-2">
             {{ instanceInfo?.autoRestarted }}
-          </a-tag>
+          </VChip>
           <span v-else class="ml-6">{{ instanceInfo?.autoRestarted }}</span>
         </span>
-      </a-typography-paragraph>
+      </p>
 
-      <a-typography-paragraph v-if="instanceGameServerInfo">
+      <p v-if="instanceGameServerInfo">
         <span>{{ t("TXT_CODE_855c4a1c") }}</span>
         <span>{{ instanceGameServerInfo.players }}</span>
-      </a-typography-paragraph>
-      <a-typography-paragraph v-if="instanceGameServerInfo">
+      </p>
+      <p v-if="instanceGameServerInfo">
         <span>
           {{ t("TXT_CODE_e260a220") }}
         </span>
         <span>
           {{ instanceGameServerInfo.version }}
         </span>
-      </a-typography-paragraph>
+      </p>
 
       <template v-if="instanceInfo?.config.processType === 'docker'">
-        <a-typography-paragraph>
+        <p>
           {{ t("TXT_CODE_4f917a65") }}
-          <a href="javascript:;" @click="DockerInfoDialog?.openDialog()">
+          <a href="#" @click.prevent="DockerInfoDialog?.openDialog()">
             {{ t("TXT_CODE_530f5951") }}
           </a>
-        </a-typography-paragraph>
+        </p>
       </template>
-      <a-typography-paragraph v-if="Number(instanceInfo?.info?.allocatedPorts?.length) > 0">
+      <p v-if="Number(instanceInfo?.info?.allocatedPorts?.length) > 0">
         {{ t("TXT_CODE_2e4469f6") }}
         <div style="padding: 10px 0px 0px 16px">
           <div
@@ -132,56 +132,54 @@ onMounted(async () => {
             :key="index"
             class="mb-4"
           >
-            <span>
-              <a-tag color="green">{{ item.protocol.toUpperCase() }}</a-tag>
-            </span>
-            <a-tag>
+            <span><VChip color="success" size="small" variant="tonal">{{ item.protocol.toUpperCase() }}</VChip></span>
+            <VChip size="small" variant="tonal">
               <span>{{ t("TXT_CODE_8dfc41ef") }}: {{ item.host }}</span>
               <span class="ml-4"> {{ t("TXT_CODE_8f8103b7") }}: {{ item.container }} </span>
-            </a-tag>
+            </VChip>
           </div>
         </div>
-      </a-typography-paragraph>
+      </p>
 
-      <a-typography-paragraph>
+      <p>
         <span>{{ t("TXT_CODE_ae747cc0") }}</span>
         <span>{{ parseTimestamp(instanceInfo?.config.endTime) || t("TXT_CODE_e3a77a77") }}</span>
-      </a-typography-paragraph>
-      <a-typography-paragraph v-if="!instanceGameServerInfo">
+      </p>
+      <p v-if="!instanceGameServerInfo">
         {{ t("TXT_CODE_8b8e08a6") }}{{ parseTimestamp(instanceInfo?.config.createDatetime) }}
-      </a-typography-paragraph>
-      <a-typography-paragraph>
+      </p>
+      <p>
         {{ t("TXT_CODE_46f575ae") }}{{ parseTimestamp(instanceInfo?.config.lastDatetime) }}
-      </a-typography-paragraph>
-      <a-typography-paragraph v-if="!instanceGameServerInfo">
+      </p>
+      <p v-if="!instanceGameServerInfo">
         <span>{{ t("TXT_CODE_cec321b4") }}{{ instanceInfo?.config.oe.toUpperCase() }} </span>
         <span class="ml-6">
           {{ t("TXT_CODE_400a4210") }}{{ instanceInfo?.config.ie.toUpperCase() }}
         </span>
-      </a-typography-paragraph>
-      <a-typography-paragraph>
-        <a-typography-text :title="instanceInfo?.instanceUuid">
+      </p>
+      <p>
+        <span :title="instanceInfo?.instanceUuid">
           {{ t("TXT_CODE_30051f9b") }}
-        </a-typography-text>
-        <a-typography-text :copyable="{ text: instanceInfo?.instanceUuid }"> </a-typography-text>
-        <a-typography-text class="ml-20" :title="daemonId">
+        </span>
+        <span class="text-caption ml-1">{{ instanceInfo?.instanceUuid }}</span>
+        <span class="ml-5" :title="daemonId">
           {{ t("TXT_CODE_5f2d2e30") }}
-        </a-typography-text>
-        <a-typography-text :copyable="{ text: daemonId }"> </a-typography-text>
-      </a-typography-paragraph>
-      <a-typography-paragraph v-if="instanceInfo?.config.tag.length">
+        </span>
+        <span class="text-caption ml-1">{{ daemonId }}</span>
+      </p>
+      <p v-if="instanceInfo?.config.tag.length">
         <details open>
           <summary>{{ t("TXT_CODE_eaabd222") }}:</summary>
-          <a-tag
+          <VChip
             v-for="tag in instanceInfo.config.tag"
             :key="tag"
             class="m-4"
             style="display: inline-block"
           >
             {{ tag }}
-          </a-tag>
+          </VChip>
         </details>
-      </a-typography-paragraph>
+      </p>
     </template>
   </CardPanel>
 

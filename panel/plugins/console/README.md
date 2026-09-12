@@ -7,7 +7,7 @@ The console plugin owns the panel's foundational browser UI:
 - built-in layout cards and design-mode picker entries;
 - shared browser components, hooks, stores, services, tools and types used by
   the feature plugins;
-- global Web UI styles, Ant Design defaults and layout initialization;
+- global Web UI styles and layout initialization;
 - the panel appearance settings form, frontend layout routes and asset uploads.
 
 Appearance settings are declared by the backend half of this plugin and rendered

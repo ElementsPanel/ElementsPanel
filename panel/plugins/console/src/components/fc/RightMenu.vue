@@ -1,13 +1,23 @@
 <script setup lang="ts">
 import { useWindowSize } from "@vueuse/core";
-import type { ItemType } from "ant-design-vue";
 import type { CSSProperties } from "vue";
 import { computed, nextTick, ref } from "vue";
+import { VIcon, VList, VListItem, VListItemTitle } from "vuetify/components";
+
+interface MenuItem {
+  key?: string;
+  label?: string;
+  title?: string;
+  icon?: unknown;
+  disabled?: boolean;
+  children?: MenuItem[];
+  onClick?: (event?: Event) => void;
+}
 
 const props = defineProps<{
   mouseX: number;
   mouseY: number;
-  options: ItemType[];
+  options: MenuItem[];
 }>();
 
 const { width: vw, height: vh } = useWindowSize();
@@ -43,7 +53,20 @@ defineExpose({
 </script>
 <template>
   <div ref="rightMenu" class="right-menu" :style="menuStyle">
-    <a-menu mode="vertical" style="width: 160px" :items="props.options"> </a-menu>
+    <VList density="compact" min-width="160" class="right-menu-list" nav>
+      <template v-for="(item, index) in props.options" :key="item.key || index">
+        <VListItem
+          :value="item.key || index"
+          :disabled="item.disabled"
+          @click="item.onClick?.($event)"
+        >
+          <template #prepend>
+            <VIcon v-if="typeof item.icon === 'string'" :icon="item.icon" />
+          </template>
+          <VListItemTitle>{{ item.label || item.title }}</VListItemTitle>
+        </VListItem>
+      </template>
+    </VList>
   </div>
 </template>
 
@@ -55,43 +78,10 @@ defineExpose({
   overflow: hidden;
   visibility: hidden;
 
-  :deep(.ant-menu) {
-    border-inline-end: none;
-
-    .ant-menu-item,
-    .ant-menu-submenu-title {
-      height: 32px !important;
-      line-height: 32px !important;
-      margin-block: 2px !important;
-      padding-inline: 12px !important;
-      display: flex !important;
-      align-items: center !important;
-    }
-
-    .ant-menu-submenu-arrow {
-      inset-inline-end: 8px !important;
-    }
-  }
+  background: var(--background-color-white, rgb(var(--v-theme-surface)));
 }
-</style>
 
-<style lang="scss">
-.right-menu {
-  .ant-menu-submenu-popup {
-
-    .ant-menu-item,
-    .ant-menu-submenu-title {
-      height: 32px !important;
-      line-height: 32px !important;
-      margin-block: 2px !important;
-      padding-inline: 12px !important;
-      display: flex !important;
-      align-items: center !important;
-    }
-
-    .ant-menu-submenu-arrow {
-      inset-inline-end: 8px !important;
-    }
-  }
+.right-menu-list {
+  padding: 4px;
 }
 </style>

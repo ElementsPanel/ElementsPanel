@@ -7,9 +7,9 @@ import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
 import { useLayoutContainerStore } from "@/stores/useLayoutContainerStore";
 import { reportErrorMsg } from "@/tools/validator";
 import { NEW_CARD_TYPE } from "@/types";
-import { AppstoreOutlined } from "@ant-design/icons-vue";
 import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
+import { VAlert, VBtn, VBtnToggle, VChip, VCol, VIcon, VRow } from "vuetify/components";
 import type { NewCardItem } from "../../config/index";
 import Params from "./params.vue";
 
@@ -77,51 +77,49 @@ const currentCardCategory = ref<NEW_CARD_TYPE>(NEW_CARD_TYPE.COMMON);
     <div v-if="display" class="new-card-list-container">
       <div class="new-card-list">
         <div class="mb-24">
-          <a-radio-group v-model:value="currentCardCategory" size="large">
-            <a-radio-button v-for="item in cardCategoryList" :key="item.value" :value="item.value">
+          <VBtnToggle v-model="currentCardCategory" color="primary" divided mandatory rounded="xl">
+            <VBtn v-for="item in cardCategoryList" :key="item.value" :value="item.value" variant="tonal">
               {{ item.label }}
-            </a-radio-button>
-          </a-radio-group>
-          <a-button class="ml-8" @click="() => (containerState.showNewCardDialog = false)">
+            </VBtn>
+          </VBtnToggle>
+          <VBtn class="ml-2" variant="text" @click="() => (containerState.showNewCardDialog = false)">
+            <VIcon start icon="mdi-close" />
             {{ t("TXT_CODE_a7e9d4e") }}
-          </a-button>
+          </VBtn>
         </div>
         <div v-for="card in cardPool" :key="card.id + currentCardCategory">
-          <a-row v-if="card.category === currentCardCategory" style="margin-bottom: 48px">
-            <a-col span="24">
-              <a-typography>
-                <a-typography-title :level="4">
-                  <AppstoreOutlined />
+          <VRow v-if="card.category === currentCardCategory" class="mb-12">
+            <VCol cols="12">
+                <h4 class="text-h6 mb-2"><VIcon icon="mdi-view-grid-outline" class="mr-1" />
                   <span class="ml-4">
                     {{ card.title }}
                   </span>
-                </a-typography-title>
-                <a-typography-paragraph>
+                </h4>
+                <p class="text-body-2 mb-2">
                   <div>
                     {{ t("TXT_CODE_8575f7c") }}
-                    <a-tag v-if="card.permission >= ROLE.ADMIN" color="red">
+                    <VChip v-if="card.permission >= ROLE.ADMIN" color="error" size="small" variant="tonal">
                       {{ t("TXT_CODE_cd978243") }}
-                    </a-tag>
-                    <a-tag v-else-if="card.permission >= ROLE.USER" color="green">
+                    </VChip>
+                    <VChip v-else-if="card.permission >= ROLE.USER" color="success" size="small" variant="tonal">
                       {{ t("TXT_CODE_b67197fc") }}
-                    </a-tag>
-                    <a-tag v-else color="green">
+                    </VChip>
+                    <VChip v-else color="success" size="small" variant="tonal">
                       {{ t("TXT_CODE_b488372f") }}
-                    </a-tag>
+                    </VChip>
                   </div>
-                </a-typography-paragraph>
-                <a-typography-paragraph>
+                </p>
+                <p class="text-body-2 text-medium-emphasis">
                   <div>
                     {{ t("TXT_CODE_d486a561") }}
                     {{ card.description }}
                   </div>
-                </a-typography-paragraph>
-              </a-typography>
-            </a-col>
-            <a-col span="24" :md="24" :lg="card.width * 2">
+                </p>
+            </VCol>
+            <VCol cols="12" :lg="card.width * 2">
               <div class="card-container-wrapper">
                 <div v-if="card.permission > currentPageRole" class="card-alert">
-                  <a-alert show-icon :message="t('TXT_CODE_cd8cd5d2')" type="warning" />
+                  <VAlert type="warning" variant="tonal" :text="t('TXT_CODE_cd8cd5d2')" />
                 </div>
                 <LayoutCardComponent
                   :id="'card-card-container-' + card.id"
@@ -132,8 +130,8 @@ const currentCardCategory = ref<NEW_CARD_TYPE>(NEW_CARD_TYPE.COMMON);
                   @click="() => insertCardToLayout(card)"
                 />
               </div>
-            </a-col>
-          </a-row>
+            </VCol>
+          </VRow>
         </div>
       </div>
     </div>

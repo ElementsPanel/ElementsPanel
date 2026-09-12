@@ -1,4 +1,3 @@
-import { BuildOutlined } from "@ant-design/icons-vue";
 import { t } from "@/lang/i18n";
 import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } from "@/plugin";
 import { useAppStateStore } from "@/stores/useAppStateStore";
@@ -29,7 +28,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.actions.instance({
     id: "java-manager",
     title: () => t("TXT_CODE_3fee13ed"),
-    icon: BuildOutlined,
+    icon: "mdi-hammer-wrench",
     normalComponent: JavaManager,
     desktopComponent: DesktopJavaManager,
     condition: isJavaManagerAvailable,

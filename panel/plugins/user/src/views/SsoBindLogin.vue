@@ -6,15 +6,9 @@ import { ssoBindCurrent, ssoBindLogin, userInfoApi } from "@/services/apis";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { sleep } from "@/tools/common";
 import { reportErrorMsg } from "@/tools/validator";
-import {
-  CheckCircleOutlined,
-  LoadingOutlined,
-  LockOutlined,
-  SwapOutlined,
-  UserOutlined
-} from "@ant-design/icons-vue";
 import { message } from "@/tools/vuetifyToast";
 import { onMounted, reactive, ref } from "vue";
+import { VAlert, VBtn, VIcon, VTextField } from "vuetify/components";
 
 const { updateUserInfo, isAdmin } = useAppStateStore();
 const { execute: bindExecute } = ssoBindLogin();
@@ -104,102 +98,91 @@ const handleBind = async () => {
     <CardPanel class="sso-bind-card">
       <template #body>
         <div v-show="step === 0" class="sso-bind-body">
-          <a-typography-title :level="3" class="mb-12">
+          <h3 class="text-h5 mb-3">
             {{ t("TXT_CODE_SSO_BIND_TITLE") }}
-          </a-typography-title>
-          <a-typography-paragraph class="mb-20">
+          </h3>
+          <p class="mb-5">
             {{ t("TXT_CODE_SSO_BIND_DESC") }}
-          </a-typography-paragraph>
+          </p>
 
           <!-- Already logged in: show quick bind option -->
           <div v-if="loggedInUserName && !showLoginForm">
-            <a-alert type="info" show-icon class="mb-20">
-              <template #message>
+            <VAlert type="info" variant="tonal" class="mb-5">
+              <template #text>
                 {{ t('TXT_CODE_SSO_BIND_CURRENT_HINT') }}
                 <strong>{{ loggedInUserName }}</strong>
               </template>
-            </a-alert>
+            </VAlert>
 
             <div class="mt-24" style="text-align: right">
-              <a-button class="mr-10" @click="showLoginForm = true">
-                <SwapOutlined />
+              <VBtn variant="tonal" @click="showLoginForm = true">
+                <VIcon start icon="mdi-swap-horizontal" />
                 {{ t("TXT_CODE_SSO_BIND_OTHER_ACCOUNT") }}
-              </a-button>
-              <a-button size="large" type="primary" @click="handleBindCurrent">
+              </VBtn>
+              <VBtn size="large" color="primary" @click="handleBindCurrent">
                 {{ t("TXT_CODE_SSO_BIND_CURRENT_BTN") }}
-              </a-button>
+              </VBtn>
             </div>
           </div>
 
           <!-- Login form for binding to a different account -->
           <div v-else>
             <div v-if="loggedInUserName" class="mb-16">
-              <a-button type="link" style="padding: 0" @click="showLoginForm = false">
+              <VBtn variant="text" class="px-0" @click="showLoginForm = false">
                 &larr; {{ t("TXT_CODE_SSO_BIND_BACK_CURRENT") }}
-              </a-button>
+              </VBtn>
             </div>
 
             <form @submit.prevent>
               <div v-if="!is2Fa">
-                <a-input
-                  v-model:value="formData.username"
+                <VTextField
+                  v-model="formData.username"
                   class="account"
                   size="large"
                   :placeholder="t('TXT_CODE_80a560a1')"
-                >
-                  <template #suffix>
-                    <UserOutlined style="color: rgba(0, 0, 0, 0.45)" />
-                  </template>
-                </a-input>
-                <a-input
-                  v-model:value="formData.password"
+                  prepend-inner-icon="mdi-account-outline"
+                />
+                <VTextField
+                  v-model="formData.password"
                   class="mt-20 account"
                   type="password"
                   :placeholder="t('TXT_CODE_551b0348')"
                   size="large"
-                  @press-enter="handleBind"
-                >
-                  <template #suffix>
-                    <LockOutlined style="color: rgba(0, 0, 0, 0.45)" />
-                  </template>
-                </a-input>
+                  @keyup.enter="handleBind"
+                  prepend-inner-icon="mdi-lock-outline"
+                />
               </div>
               <div v-else>
-                <a-input
-                  v-model:value="formData.code"
+                <VTextField
+                  v-model="formData.code"
                   class="mt-20 mb-20 account"
                   type="text"
                   :placeholder="t('TXT_CODE_7ac8b1d3')"
                   size="large"
                   autocomplete="off"
-                  @press-enter="handleBind"
-                >
-                  <template #suffix>
-                    <LockOutlined style="color: rgba(0, 0, 0, 0.45)" />
-                  </template>
-                </a-input>
+                  @keyup.enter="handleBind"
+                  prepend-inner-icon="mdi-lock-outline"
+                />
               </div>
             </form>
 
             <div class="mt-24" style="text-align: right">
-              <a-button size="large" type="primary" style="min-width: 95px" @click="handleBind">
+              <VBtn size="large" color="primary" style="min-width: 95px" @click="handleBind">
                 {{ t("TXT_CODE_SSO_BIND_TITLE") }}
-              </a-button>
+              </VBtn>
             </div>
           </div>
         </div>
 
         <div v-show="step === 1" class="sso-bind-body flex-center">
           <div style="text-align: center">
-            <LoadingOutlined :style="{ fontSize: '62px', fontWeight: 800 }" />
+            <VIcon icon="mdi-loading" size="62" class="loading-icon" />
           </div>
         </div>
 
         <div v-show="step >= 2" class="sso-bind-body flex-center">
           <div style="text-align: center">
-            <CheckCircleOutlined
-              :style="{ fontSize: '62px', color: 'var(--color-green-6)' }"
-            />
+            <VIcon icon="mdi-check-circle-outline" size="62" color="success" />
           </div>
         </div>
       </template>
