@@ -33,10 +33,10 @@ import {
 import { type ItemType, type UploadChangeParam, type UploadProps } from "ant-design-vue";
 import type { Key } from "ant-design-vue/es/table/interface";
 import dayjs from "dayjs";
-import { computed, h, onMounted, onUnmounted, ref, watch, type CSSProperties } from "vue";
+import { computed, h, nextTick, onMounted, onUnmounted, reactive, ref, watch, type CSSProperties } from "vue";
 import { ctx as panel } from "@/plugin/context";
 import { notifyDesktopError } from "../../../desktop/src/desktopNotice";
-import { VAlert, VBtn, VCard, VCardText, VCardTitle, VCheckbox, VChip, VDataTable, VDialog, VFileInput, VIcon, VMenu, VProgressCircular, VProgressLinear, VRadio, VRadioGroup, VSelect, VSpacer, VTabs, VTab, VTextField, VTextarea } from "vuetify/components";
+import { VAlert, VBtn, VCard, VCardText, VCardTitle, VCheckbox, VChip, VDataTable, VDialog, VFileInput, VIcon, VList, VListItem, VMenu, VProgressCircular, VProgressLinear, VRadio, VRadioGroup, VSelect, VSpacer, VTabs, VTab, VTextField, VTextarea } from "vuetify/components";
 
 /**
  * The shell Desktop mode mounts a component inside. `plugins/desktop` supplies it
@@ -358,6 +358,29 @@ const onDesktopSelectionChange = (keys: unknown[]) => {
     selectionData.value = (dataSource.value || []).filter((item) => normalized.includes(item.name));
 };
 
+const desktopContextMenu = reactive({ open: false, x: 0, y: 0, record: null as DataType | null });
+
+const handleDesktopRightClickRow = (e: MouseEvent, record: DataType) => {
+    e.preventDefault();
+    e.stopPropagation();
+    oneSelected(record.name, record);
+    desktopContextMenu.open = false;
+    desktopContextMenu.x = e.clientX;
+    desktopContextMenu.y = e.clientY;
+    desktopContextMenu.record = record;
+    nextTick(() => (desktopContextMenu.open = true));
+};
+
+const getDesktopRowProps = ({ item }: { item: unknown }) => ({
+    onContextmenu: (e: MouseEvent) =>
+        handleDesktopRightClickRow(e, ((item as any)?.raw ?? item) as DataType)
+});
+
+const runDesktopMenuAction = (action: { action: () => void }) => {
+    action.action();
+    desktopContextMenu.open = false;
+};
+
 const desktopRowMenu = (record: DataType) => [
     { title: t("TXT_CODE_ad207008"), icon: "mdi-pencil-outline", show: !isMultiple.value && record.type === 1, action: () => editFile(record.name) },
     { title: t("TXT_CODE_65b21404"), icon: "mdi-download-outline", show: !isMultiple.value && record.type === 1, action: () => downloadFile(record.name) },
@@ -665,8 +688,7 @@ const onTableMouseDown = (e: MouseEvent) => {
         target.closest('.ant-breadcrumb') ||
         target.closest('.dfm-toolbar') ||
         target.closest('.dfm-nav') ||
-        target.closest('.dfm-upload-progress') ||
-        target.closest('.dfm-task-info')) {
+        target.closest('.dfm-upload-progress')) {
         return;
     }
 
@@ -950,7 +972,7 @@ onUnmounted(() => {
             </div>
             <VAlert v-if="(fileStatus?.downloadFileFromURLTask || 0) > 0" type="info" variant="tonal" rounded="xl" density="compact"><VIcon icon="mdi-loading" class="desktop-icon-spin" />{{ t("TXT_CODE_8b7fe641", { count: fileStatus?.downloadFileFromURLTask || 0 }) }}</VAlert>
             <VAlert v-if="(fileStatus?.instanceFileTask || 0) > 0" type="info" variant="tonal" rounded="xl" density="compact"><VIcon icon="mdi-loading" class="desktop-icon-spin" />{{ t("TXT_CODE_dd06dea2") + (fileStatus?.instanceFileTask || 0) + t("TXT_CODE_3e959ce7") }}</VAlert>
-            <VDataTable v-model="selectedRowKeys" class="dfm-table" :headers="desktopFileHeaders" :items="dataSource || []" item-value="name" :loading="spinning" :items-per-page="operationForm.pageSize || 20" :page="operationForm.current || 1" show-select density="comfortable" @update:model-value="onDesktopSelectionChange" @update:page="(page) => handleTableChange({ current: page, pageSize: operationForm.pageSize || 20 })" @update:items-per-page="(size) => handleTableChange({ current: operationForm.current || 1, pageSize: size })" @click:row="onDesktopRowClick">
+            <VDataTable v-model="selectedRowKeys" class="dfm-table" :headers="desktopFileHeaders" :items="dataSource || []" item-value="name" :loading="spinning" :items-per-page="operationForm.pageSize || 20" :page="operationForm.current || 1" show-select density="comfortable" :row-props="getDesktopRowProps" @update:model-value="onDesktopSelectionChange" @update:page="(page) => handleTableChange({ current: page, pageSize: operationForm.pageSize || 20 })" @update:items-per-page="(size) => handleTableChange({ current: operationForm.current || 1, pageSize: size })" @click:row="onDesktopRowClick">
                 <template #loading><VProgressCircular indeterminate size="24" width="2" /></template>
                 <template #item.name="{ item }"><span class="dfm-file-name"><VIcon :icon="getDesktopFileIcon(item.name, item.type)" size="small" />{{ item.name }}</span></template>
                 <template #item.type="{ item }">{{ item.type === 1 ? filterFileName(item.name) : t("TXT_CODE_e5f949c") }}</template>
@@ -962,6 +984,12 @@ onUnmounted(() => {
             </VDataTable>
             <div v-if="dragSelectVisible" class="dfm-drag-select-rect" :style="{ left: dragSelectRect.x + 'px', top: dragSelectRect.y + 'px', width: dragSelectRect.w + 'px', height: dragSelectRect.h + 'px' }"></div>
         </div>
+
+        <VMenu v-model="desktopContextMenu.open" :target="[desktopContextMenu.x, desktopContextMenu.y]" location="bottom start">
+            <VList v-if="desktopContextMenu.record" min-width="190">
+                <VListItem v-for="action in desktopRowMenu(desktopContextMenu.record)" :key="action.title" :title="action.title" :prepend-icon="action.icon" :base-color="action.color" @click="runDesktopMenuAction(action)" />
+            </VList>
+        </VMenu>
 
         <VDialog v-model="archivePreview.show" max-width="960" scrollable><VCard rounded="xl"><VCardTitle>{{ `${t('TXT_CODE_ARCHIVE_PREVIEW')}: ${archivePreview.title}` }}</VCardTitle><VCardText><ArchivePreview compact :entries="archivePreview.entries" :loading="archivePreview.loading" /></VCardText><VCardText class="dfm-v-dialog-actions"><VBtn variant="text" rounded="xl" @click="closeArchivePreview">{{ t("TXT_CODE_a0451c97") }}</VBtn></VCardText></VCard></VDialog>
         <VDialog v-model="dialog.show" max-width="520" scrollable><VCard rounded="xl"><VCardTitle>{{ dialog.title }}</VCardTitle><VCardText><p>{{ dialog.info }}</p><VTextField v-if="dialog.mode === '' || dialog.mode === 'zip'" v-model="dialog.value" variant="solo" density="compact" hide-details :placeholder="t('TXT_CODE_4ea93630')" /><template v-if="dialog.mode === 'unzip'"><div class="dfm-dialog-label">{{ t("TXT_CODE_a6453188") }}</div><VRadioGroup v-model="dialog.unzipmode" inline><VRadio value="0" :label="t('TXT_CODE_7907c99')" /><VRadio value="1" :label="t('TXT_CODE_329fb904')" /></VRadioGroup><VTextField v-if="dialog.unzipmode === '1'" v-model="dialog.value" variant="solo" density="compact" hide-details :placeholder="t('TXT_CODE_377e5535')" /><div class="dfm-dialog-label">{{ t("TXT_CODE_2841f4a") }}</div><VRadioGroup v-model="dialog.code" inline><VRadio value="utf-8" label="UTF-8" /><VRadio value="gbk" label="GBK" /><VRadio value="big5" label="BIG5" /></VRadioGroup></template><template v-if="dialog.mode === 'permission'"><VProgressCircular v-if="permission.loading" indeterminate /><div v-for="item in permission.item" :key="item.key" class="dfm-permission"><strong>{{ item.key }}</strong><VCheckbox v-model="permission.data[item.role]" value="4" :label="t('TXT_CODE_798f592e')" hide-details /><VCheckbox v-model="permission.data[item.role]" value="2" :label="t('TXT_CODE_46c4e9ac')" hide-details /><VCheckbox v-model="permission.data[item.role]" value="1" :label="t('TXT_CODE_e97669d8')" hide-details /></div><VCheckbox v-model="permission.deep" :label="t('TXT_CODE_74fd665e')" hide-details /></template></VCardText><VCardText class="dfm-v-dialog-actions"><VBtn variant="text" rounded="xl" @click="dialog.cancel()">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="primary" variant="text" rounded="xl" :loading="dialog.loading" @click="dialog.ok()">{{ t("TXT_CODE_abfe9512") }}</VBtn></VCardText></VCard></VDialog>
@@ -1089,15 +1117,8 @@ onUnmounted(() => {
                 </div>
             </div>
 
-            <p v-if="fileStatus?.downloadFileFromURLTask && fileStatus.downloadFileFromURLTask > 0"
-                class="dfm-task-info">
-                <a-spin />
-                {{ t("TXT_CODE_8b7fe641", { count: fileStatus?.downloadFileFromURLTask }) }}
-            </p>
-            <p v-if="fileStatus?.instanceFileTask && fileStatus.instanceFileTask > 0" class="dfm-task-info">
-                <a-spin />
-                {{ t("TXT_CODE_dd06dea2") + fileStatus?.instanceFileTask + t("TXT_CODE_3e959ce7") }}
-            </p>
+            <VAlert v-if="fileStatus?.downloadFileFromURLTask && fileStatus.downloadFileFromURLTask > 0" type="info" variant="tonal" rounded="xl" density="compact"><VIcon icon="mdi-loading" class="desktop-icon-spin" />{{ t("TXT_CODE_8b7fe641", { count: fileStatus.downloadFileFromURLTask }) }}</VAlert>
+            <VAlert v-if="fileStatus?.instanceFileTask && fileStatus.instanceFileTask > 0" type="info" variant="tonal" rounded="xl" density="compact"><VIcon icon="mdi-loading" class="desktop-icon-spin" />{{ t("TXT_CODE_dd06dea2") + fileStatus.instanceFileTask + t("TXT_CODE_3e959ce7") }}</VAlert>
 
             <a-spin :spinning="spinning">
                 <div class="dfm-table-wrapper" @mousedown="onTableMouseDown">
@@ -1506,12 +1527,6 @@ onUnmounted(() => {
             background: var(--desktop-window-control-hover);
         }
     }
-}
-
-.dfm-task-info {
-    color: #1677ff;
-    font-size: 12px;
-    margin: 4px 0;
 }
 
 .dfm-file-name {
