@@ -106,6 +106,7 @@ export function useHeaderMenus() {
         click: (key: string) => {
           setTheme(Number(key) as AppTheme);
         },
+        conditions: true,
         onlyPC: false,
         menus: [
           { value: AppTheme.AUTO, title: t("TXT_CODE_dc8de4ff") },

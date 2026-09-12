@@ -1,5 +1,6 @@
 import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugin";
+import { useAppStateStore } from "@/stores/useAppStateStore";
 import * as userApi from "./api";
 import MyselfInfoDialog from "./components/MyselfInfoDialog.vue";
 import DesktopLoginWindow from "./desktop/DesktopLoginWindow.vue";
@@ -61,7 +62,13 @@ export function apply(ctx: PanelFrontendPluginContext) {
     path: "/customer",
     name: t("TXT_CODE_ec299306"),
     component: CustomerPage,
-    meta: { permission: ROLE_USER, mainMenu: true, icon: "mdi-account-outline" }
+    meta: {
+      permission: ROLE_USER,
+      mainMenu: true,
+      icon: "mdi-account-outline",
+      // Admins work from `/instances`; this page is the ordinary user's home.
+      condition: () => !useAppStateStore().isAdmin.value
+    }
   });
 
   ctx.routes.add({
