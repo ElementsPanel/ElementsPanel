@@ -94,6 +94,12 @@ const schemaLoading = ref(false);
 const savingSettings = ref(false);
 const disableCandidate = ref<PluginRecord | NodePluginRecord | null>(null);
 const disableConfirmOpen = ref(false);
+// The switch is a controlled input. Rejecting the disable confirmation leaves
+// `enabled` untouched, so Vuetify never re-patches the native checkbox: it keeps
+// the state the browser gave it and swallows the next click. Mirror the switch
+// locally so we can push the real value back and resync the input.
+const switchEnabled = ref(false);
+let disableCommitted = false;
 const notify = (text: string, color: "success" | "error") => {
   if (color === "error") message.error(text);
   else message.success(text);
@@ -309,15 +315,42 @@ const toggleSelected = (enabled: boolean) => {
   if (selectedPlugin.value) toggle(selectedPlugin.value, enabled);
 };
 
+// Keep the mirrored switch in step with whatever plugin is selected.
+watch(
+  () => [selectedPlugin.value?.id, selectedPlugin.value?.enabled] as const,
+  () => {
+    switchEnabled.value = selectedPlugin.value?.enabled ?? false;
+  },
+  { immediate: true }
+);
+
+// Closing the dialog without confirming (cancel button, Esc, backdrop) must
+// restore the switch to the plugin's real state, which also resyncs the input.
+watch(disableConfirmOpen, (open) => {
+  if (open) return;
+  disableCandidate.value = null;
+  if (!disableCommitted) {
+    switchEnabled.value = selectedPlugin.value?.enabled ?? false;
+  }
+  disableCommitted = false;
+});
+
+const onSwitchChange = (enabled: boolean) => {
+  switchEnabled.value = enabled;
+  toggleSelected(enabled);
+};
+
 const confirmDisable = () => {
   const plugin = disableCandidate.value;
-  disableCandidate.value = null;
-  disableConfirmOpen.value = false;
-  if (plugin) {
-    return scope.value === "panel"
-      ? apply(plugin as PluginRecord, false)
-      : applyNode(plugin as NodePluginRecord, false);
+  if (!plugin) {
+    disableConfirmOpen.value = false;
+    return;
   }
+  disableCommitted = true;
+  disableConfirmOpen.value = false;
+  return scope.value === "panel"
+    ? apply(plugin as PluginRecord, false)
+    : applyNode(plugin as NodePluginRecord, false);
 };
 
 </script>
@@ -387,13 +420,13 @@ const confirmDisable = () => {
               {{ t("TXT_CODE_VERSION") }} {{ selectedPlugin.version }}
             </span>
             <VSwitch
-              :model-value="selectedPlugin.enabled"
+              :model-value="switchEnabled"
               :loading="pending === selectedPlugin.id"
               :aria-label="selectedPlugin.enabled ? t('TXT_CODE_PLUGIN_ENABLE') : t('TXT_CODE_PLUGIN_DISABLE')"
               color="primary"
               density="compact"
               hide-details
-              @update:model-value="toggleSelected(Boolean($event))"
+              @update:model-value="onSwitchChange(Boolean($event))"
             />
           </div>
         </div>

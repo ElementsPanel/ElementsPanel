@@ -113,7 +113,10 @@
   border-color: transparent !important;
 }
 
-.desktop-window [class*="divider"],
+/* Timeline dots share the "divider" class name with the connecting line, but
+   they are content markers rather than chrome separators.  Keep them so the
+   log timeline matches normal mode. */
+.desktop-window [class*="divider"]:not(.v-timeline-divider__dot):not(.v-timeline-divider__inner-dot),
 .desktop-window [class*="separator"],
 .desktop-window hr {
   border: 0 !important;
@@ -130,7 +133,7 @@
 .desktop-container td,
 .desktop-container hr,
 .desktop-container .v-divider,
-.desktop-container [class*="divider"],
+.desktop-container [class*="divider"]:not(.v-timeline-divider__dot):not(.v-timeline-divider__inner-dot),
 .desktop-container [class*="separator"] {
   border: 0 !important;
   background-color: transparent !important;
