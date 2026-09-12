@@ -4,24 +4,23 @@ import { t } from "@/lang/i18n";
 import { notification } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import CardPanel from "@/components/CardPanel.vue";
-import BetweenMenus from "@/components/BetweenMenus.vue";
-import { useScreen } from "@/hooks/useScreen";
+import PageToolbar from "@/components/PageToolbar.vue";
 import { arrayFilter } from "@/tools/array";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { imageList, containerList } from "@/services/apis/envImage";
 import type { LayoutCard, ImageInfo, ContainerInfo } from "@/types";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { reportErrorMsg } from "@/tools/validator";
-import { VBtn, VCardText, VChip, VCol, VDataTable, VIcon, VRow } from "vuetify/components";
+import { VBtn, VCol, VContainer, VDataTable, VRow } from "vuetify/components";
 
 const props = defineProps<{
-  card: LayoutCard;
+  card?: LayoutCard;
 }>();
 
 const { toPage } = useAppRouters();
-const { getMetaOrRouteValue } = useLayoutCardTools(props.card);
+const card = props.card ?? ({ meta: {} } as LayoutCard);
+const { getMetaOrRouteValue } = useLayoutCardTools(card);
 const daemonId: string | undefined = getMetaOrRouteValue("daemonId");
-const { isPhone } = useScreen();
 
 const { execute: execImageList, state: images, isLoading: imageListLoading } = imageList();
 const getImageList = async () => {
@@ -191,27 +190,21 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div style="height: 100%" class="container">
-    <VRow dense style="height: 100%">
-      <VCol cols="12">
-        <BetweenMenus>
-          <template v-if="!isPhone" #left>
-            <h4 class="text-h6 mb-0">
-              {{ card.title }}
-            </h4>
-          </template>
-          <template #right>
-            <VBtn variant="tonal" @click="getImageList">
-              {{ t("TXT_CODE_b76d94e0") }}
-            </VBtn>
-            <VBtn color="primary" @click="toNewImagePage">
-              <span>{{ t("TXT_CODE_59ac0239") }}</span>
-            </VBtn>
-          </template>
-        </BetweenMenus>
-      </VCol>
+  <main class="node-image-page">
+    <VContainer fluid class="node-image-page-container">
+      <PageToolbar :title="t('TXT_CODE_e6c30866')" icon="mdi-docker">
+        <template #actions>
+          <VBtn variant="tonal" @click="getImageList">
+            {{ t("TXT_CODE_b76d94e0") }}
+          </VBtn>
+          <VBtn color="primary" @click="toNewImagePage">
+            <span>{{ t("TXT_CODE_59ac0239") }}</span>
+          </VBtn>
+        </template>
+      </PageToolbar>
 
-      <VCol cols="12">
+      <VRow dense class="node-image-row">
+        <VCol cols="12">
         <CardPanel style="height: 100%">
           <template #title>
             {{ t("TXT_CODE_8b62abb2") }}
@@ -246,6 +239,32 @@ onMounted(async () => {
           </template>
         </CardPanel>
       </VCol>
-    </VRow>
-  </div>
+      </VRow>
+    </VContainer>
+  </main>
 </template>
+
+<style lang="scss" scoped>
+.node-image-page {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+.node-image-page-container {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: 20px 24px 32px;
+}
+
+.node-image-row {
+  width: 100%;
+  margin: 0;
+}
+
+@media (max-width: 992px) {
+  .node-image-page-container {
+    padding: 16px 12px 28px;
+  }
+}
+</style>

@@ -6,7 +6,6 @@ import DesktopModManager from "./desktop/DesktopModManager.vue";
 import { localeMessages } from "./i18n";
 import ModManager from "./normal/ModManager.vue";
 import ModManagerAction from "./normal/ModManagerAction.vue";
-import ModManagerPage from "./normal/ModManagerPage.vue";
 
 const isModManagerAvailable = ({
   daemon,
@@ -25,11 +24,10 @@ export const inject = ["console", "i18n", "ui", "routes", "actions", "desktop", 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
   ctx.set("mod", { api });
-  ctx.ui.layoutCard("InstanceModManager", ModManager);
   ctx.routes.add({
     path: "/instances/terminal/mods",
     name: t("TXT_CODE_MOD_MANAGER"),
-    component: ModManagerPage,
+    component: ModManager,
     meta: { permission: 1 }
   });
   ctx.actions.instance({

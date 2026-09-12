@@ -2,27 +2,25 @@
 import { computed, ref, onMounted } from "vue";
 import { t } from "@/lang/i18n";
 import type { LayoutCard } from "@/types";
-import { useScreen } from "@/hooks/useScreen";
 import { getConfigFile, updateConfigFile } from "@/services/apis/instance";
 import { message } from "@/tools/vuetifyToast";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { toUnicode } from "@/tools/common";
 import Loading from "@/components/Loading.vue";
-import BetweenMenus from "@/components/BetweenMenus.vue";
+import PageToolbar from "@/components/PageToolbar.vue";
 import configComponent from "@/components/InstanceConfigEditor.vue";
 import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
 import { useKeyboardEvents } from "@/hooks/useKeyboardEvents";
 import { reportErrorMsg } from "@/tools/validator";
-import { VAlert, VBtn, VCol, VRow } from "vuetify/components";
+import { VAlert, VBtn, VCol, VContainer, VRow } from "vuetify/components";
 
 const props = defineProps<{
-  card: LayoutCard;
+  card?: LayoutCard;
 }>();
 
-const { isPhone } = useScreen();
-const { getMetaOrRouteValue } = useLayoutCardTools(props.card);
+const { getMetaOrRouteValue } = useLayoutCardTools(props.card ?? ({ meta: {} } as LayoutCard));
 const instanceId = getMetaOrRouteValue("instanceId");
 const daemonId = getMetaOrRouteValue("daemonId");
 const configName = getMetaOrRouteValue("configName");
@@ -134,55 +132,76 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div style="height: 100%" class="container">
-    <VRow dense style="height: 100%">
-      <VCol v-if="!isFailure" cols="12">
-        <BetweenMenus>
-          <template v-if="!isPhone" #left>
-            <VBtn variant="tonal" @click="toConfigOverview">
-              {{ t("TXT_CODE_c14b2ea3") }}
-            </VBtn>
-          </template>
-          <template #right>
-            <VBtn color="primary" :loading="updateConfigFileLoading" @click="save">
-              {{ t("TXT_CODE_abfe9512") }}
-            </VBtn>
-            <VBtn variant="tonal" :loading="getConfigFileLoading" @click="refresh()">
-              {{ t("TXT_CODE_b76d94e0") }}
-            </VBtn>
-            <VBtn variant="outlined" @click="toEditRawFile">
-              {{ t("TXT_CODE_1f61e5a3") }}
-            </VBtn>
-          </template>
-        </BetweenMenus>
-      </VCol>
+  <main class="server-config-page">
+    <VContainer fluid class="server-config-page-container">
+      <PageToolbar :title="t('TXT_CODE_1c45f7fe')" icon="mdi-file-document-edit-outline">
+        <template #actions>
+          <VBtn variant="tonal" @click="toConfigOverview">
+            {{ t("TXT_CODE_c14b2ea3") }}
+          </VBtn>
+          <VBtn color="primary" :loading="updateConfigFileLoading" @click="save">
+            {{ t("TXT_CODE_abfe9512") }}
+          </VBtn>
+          <VBtn variant="tonal" :loading="getConfigFileLoading" @click="refresh()">
+            {{ t("TXT_CODE_b76d94e0") }}
+          </VBtn>
+          <VBtn variant="outlined" @click="toEditRawFile">
+            {{ t("TXT_CODE_1f61e5a3") }}
+          </VBtn>
+        </template>
+      </PageToolbar>
 
-      <configComponent
-        v-if="configName && isReady"
-        :config="configFile"
-        :config-name="configName"
-      />
+      <VRow dense class="server-config-row">
+        <configComponent
+          v-if="configName && isReady"
+          :config="configFile"
+          :config-name="configName"
+        />
 
-      <VCol v-else cols="12">
-        <Loading v-if="!isFailure" />
-      </VCol>
-      <VCol v-if="isFailure" cols="12">
-        <VAlert type="error" variant="tonal" :title="t('TXT_CODE_f859eac')" :text="t('TXT_CODE_b8814f15')">
-          <template #append><VBtn color="primary" @click="toConfigOverview">
-              {{ t("TXT_CODE_537cd5ad") }}
-            </VBtn></template>
-        </VAlert>
-      </VCol>
-    </VRow>
-  </div>
+        <VCol v-else cols="12">
+          <Loading v-if="!isFailure" />
+        </VCol>
+        <VCol v-if="isFailure" cols="12">
+          <VAlert type="error" variant="tonal" :title="t('TXT_CODE_f859eac')" :text="t('TXT_CODE_b8814f15')">
+            <template #append><VBtn color="primary" @click="toConfigOverview">
+                {{ t("TXT_CODE_537cd5ad") }}
+              </VBtn></template>
+          </VAlert>
+        </VCol>
+      </VRow>
+    </VContainer>
 
-  <component
-    :is="fileEditorComponent"
-    v-if="fileEditorComponent && daemonId && instanceId"
-    ref="FileEditorDialog"
-    :daemon-id="daemonId"
-    :instance-id="instanceId"
-  />
+    <component
+      :is="fileEditorComponent"
+      v-if="fileEditorComponent && daemonId && instanceId"
+      ref="FileEditorDialog"
+      :daemon-id="daemonId"
+      :instance-id="instanceId"
+    />
+  </main>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.server-config-page {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+.server-config-page-container {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: 20px 24px 32px;
+}
+
+.server-config-row {
+  width: 100%;
+  margin: 0;
+}
+
+@media (max-width: 992px) {
+  .server-config-page-container {
+    padding: 16px 12px 28px;
+  }
+}
+</style>

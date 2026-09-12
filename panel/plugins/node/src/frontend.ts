@@ -1,6 +1,5 @@
 import type { PanelFrontendPluginContext } from "@/plugin";
 import type { LayoutCardPoolItemFactory } from "@/config";
-import LayoutContainer from "@/views/LayoutContainer.vue";
 import { t } from "@/lang/i18n";
 import { NEW_CARD_TYPE } from "@/types";
 import { LayoutCardHeight } from "@/config/originLayoutConfig";
@@ -65,11 +64,8 @@ export function apply(ctx: PanelFrontendPluginContext) {
   // instead of breaking when this plugin is not installed.
   ctx.set("node", { api: nodeApi, useRemoteNode });
 
-  ctx.ui.layoutCard("NodeList", NodeList);
   ctx.ui.layoutCard("NodeItem", NodeItem);
   ctx.ui.layoutCard("NodeOverview", NodeOverview);
-  ctx.ui.layoutCard("ImageManager", ImageManager);
-  ctx.ui.layoutCard("NewImage", NewImage);
   nodeCardPoolItems.forEach((createItem) => ctx.ui.layoutCardPoolItem(createItem));
 
   const nodeBreadcrumb = {
@@ -93,7 +89,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.routes.add({
     path: "/node/image",
     name: t("TXT_CODE_e6c30866"),
-    component: LayoutContainer,
+    component: ImageManager,
     meta: {
       permission: ADMIN_PERMISSION,
       mainMenu: false,
@@ -104,7 +100,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.routes.add({
     path: "/node/image/new",
     name: t("TXT_CODE_3d09f0ac"),
-    component: LayoutContainer,
+    component: NewImage,
     meta: {
       permission: ADMIN_PERMISSION,
       mainMenu: false,

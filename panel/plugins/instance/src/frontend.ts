@@ -139,8 +139,6 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.ui.layoutCard("InstanceManagerBtns", InstanceManagerBtns);
   ctx.ui.layoutCard("InstanceBaseInfo", InstanceBaseInfo);
   ctx.ui.layoutCard("InstancePerformance", InstancePerformance);
-  ctx.ui.layoutCard("InstanceServerConfigOverview", InstanceServerConfigOverview);
-  ctx.ui.layoutCard("InstanceServerConfigFile", InstanceServerConfigFile);
   ctx.ui.layoutCard("Schedule", Schedule);
   ctx.ui.layoutCard("InstanceShortcut", InstanceShortcut);
   cardPoolItems.forEach((createItem) => ctx.ui.layoutCardPoolItem(createItem));
@@ -187,14 +185,14 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.routes.add({
     path: "/instances/terminal/serverConfig",
     name: t("TXT_CODE_d07742fe"),
-    component: LayoutContainer,
+    component: InstanceServerConfigOverview,
     meta: { permission: ROLE.USER }
   });
 
   ctx.routes.add({
     path: "/instances/terminal/serverConfig/fileEdit",
     name: t("TXT_CODE_78019c60"),
-    component: LayoutContainer,
+    component: InstanceServerConfigFile,
     meta: { permission: ROLE.USER }
   });
 

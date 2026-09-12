@@ -38,7 +38,6 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.ui.layoutCard("UserStatusBlock", UserStatusBlock);
   ctx.ui.layoutCard("UserInstanceList", UserInstanceList);
-  ctx.ui.layoutCard("UserAccessSettings", UserAccessSettings);
   ctx.ui.globalComponent(MyselfInfoDialog);
 
   ctx.routes.add({
@@ -86,16 +85,6 @@ export function apply(ctx: PanelFrontendPluginContext) {
           permission: ROLE_ADMIN
         }
       ]
-    }
-  });
-
-  ctx.routes.add({
-    path: "/user",
-    name: t("TXT_CODE_8c3164c9"),
-    component: () => import("@/views/LayoutContainer.vue"),
-    meta: {
-      permission: ROLE_ADMIN,
-      mainMenu: false
     }
   });
 }

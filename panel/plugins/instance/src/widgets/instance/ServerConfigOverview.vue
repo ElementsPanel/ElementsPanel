@@ -1,23 +1,22 @@
 <script setup lang="ts">
 import CardPanel from "@/components/CardPanel.vue";
-import BetweenMenus from "@/components/BetweenMenus.vue";
+import PageToolbar from "@/components/PageToolbar.vue";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { getInstanceConfigByType, type InstanceConfigs } from "@/hooks/useInstance";
-import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
 import { getConfigFileList } from "@/services/apis/instance";
 import { reportErrorMsg } from "@/tools/validator";
 import type { LayoutCard } from "@/types";
 import { onMounted, ref } from "vue";
-import { VBtn, VCardText, VChip, VCol, VIcon, VList, VListItem, VListItemSubtitle, VListItemTitle, VProgressLinear, VRow } from "vuetify/components";
+import { VBtn, VChip, VCol, VContainer, VIcon, VList, VListItem, VListItemSubtitle, VListItemTitle, VProgressLinear, VRow } from "vuetify/components";
 
 const props = defineProps<{
-  card: LayoutCard;
+  card?: LayoutCard;
 }>();
 
-const { isPhone } = useScreen();
-const { getMetaOrRouteValue } = useLayoutCardTools(props.card);
+const card = props.card ?? ({ meta: {} } as LayoutCard);
+const { getMetaOrRouteValue } = useLayoutCardTools(card);
 const instanceId = getMetaOrRouteValue("instanceId");
 const daemonId = getMetaOrRouteValue("daemonId");
 const type = getMetaOrRouteValue("type");
@@ -87,28 +86,22 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div style="height: 100%" class="container">
-    <VRow dense style="height: 100%">
-      <VCol cols="12">
-        <BetweenMenus>
-          <template v-if="!isPhone" #left>
-            <h4 class="text-h6 mb-0">
-              {{ card.title }}
-            </h4>
-          </template>
-          <template #right>
-            <VBtn variant="tonal" @click="toConsole">
-              {{ t("TXT_CODE_95b9833f") }}
-            </VBtn>
-            <VBtn :loading="isLoading" variant="tonal" @click="render">
-              {{ t("TXT_CODE_b76d94e0") }}
-            </VBtn>
-          </template>
-        </BetweenMenus>
-      </VCol>
+  <main class="server-config-page">
+    <VContainer fluid class="server-config-page-container">
+      <PageToolbar :title="t('TXT_CODE_d07742fe')" icon="mdi-file-cog-outline">
+        <template #actions>
+          <VBtn variant="tonal" @click="toConsole">
+            {{ t("TXT_CODE_95b9833f") }}
+          </VBtn>
+          <VBtn :loading="isLoading" variant="tonal" @click="render">
+            {{ t("TXT_CODE_b76d94e0") }}
+          </VBtn>
+        </template>
+      </PageToolbar>
 
-      <VCol cols="12">
-        <CardPanel style="height: 100%">
+      <VRow dense class="server-config-row">
+        <VCol cols="12">
+          <CardPanel style="height: 100%">
           <template #body>
             <VProgressLinear v-if="isLoading" indeterminate color="primary" class="mb-2" />
             <VList v-if="realFiles && realFiles.length > 0" lines="three">
@@ -138,8 +131,32 @@ onMounted(async () => {
           </template>
         </CardPanel>
       </VCol>
-    </VRow>
-  </div>
+      </VRow>
+    </VContainer>
+  </main>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.server-config-page {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+.server-config-page-container {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: 20px 24px 32px;
+}
+
+.server-config-row {
+  width: 100%;
+  margin: 0;
+}
+
+@media (max-width: 992px) {
+  .server-config-page-container {
+    padding: 16px 12px 28px;
+  }
+}
+</style>

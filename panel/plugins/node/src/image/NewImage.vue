@@ -3,8 +3,7 @@ import { ref, onMounted } from "vue";
 import { t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";
 import CardPanel from "@/components/CardPanel.vue";
-import BetweenMenus from "@/components/BetweenMenus.vue";
-import { useScreen } from "@/hooks/useScreen";
+import PageToolbar from "@/components/PageToolbar.vue";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import type { LayoutCard } from "@/types";
@@ -20,16 +19,16 @@ import {
 import { getCurrentLang } from "@/lang/i18n";
 import DockerFileForm from "./DockerFileForm.vue";
 import BuildProgress from "./BuildProgress.vue";
-import { VBtn, VCard, VCardText, VCol, VDialog, VRow } from "vuetify/components";
+import { VBtn, VCard, VCardText, VCol, VContainer, VDialog, VRow } from "vuetify/components";
 
 const props = defineProps<{
-  card: LayoutCard;
+  card?: LayoutCard;
 }>();
 
 const { toPage } = useAppRouters();
-const { getMetaOrRouteValue } = useLayoutCardTools(props.card);
+const card = props.card ?? ({ meta: {} } as LayoutCard);
+const { getMetaOrRouteValue } = useLayoutCardTools(card);
 const daemonId: string | undefined = getMetaOrRouteValue("daemonId");
-const { isPhone } = useScreen();
 const buildProgressDialog = ref<InstanceType<typeof BuildProgress>>();
 const dockerFileDrawer = ref(false);
 const imageList = [
@@ -100,27 +99,21 @@ onMounted(async () => {});
 </script>
 
 <template>
-  <div style="height: 100%" class="container">
-    <VRow dense style="height: 100%">
-      <VCol cols="12">
-        <BetweenMenus>
-          <template v-if="!isPhone" #left>
-            <h4 class="text-h6 mb-0">
-              {{ card.title }}
-            </h4>
-          </template>
-          <template #right>
-            <VBtn variant="tonal" @click="toImageListPage">
-              {{ t("TXT_CODE_3a818e91") }}
-            </VBtn>
-            <VBtn color="primary" @click="buildProgressDialog?.openDialog()">
-              {{ t("TXT_CODE_5544ec22") }}
-            </VBtn>
-          </template>
-        </BetweenMenus>
-      </VCol>
+  <main class="node-image-page">
+    <VContainer fluid class="node-image-page-container">
+      <PageToolbar :title="t('TXT_CODE_3d09f0ac')" icon="mdi-image-plus">
+        <template #actions>
+          <VBtn variant="tonal" @click="toImageListPage">
+            {{ t("TXT_CODE_3a818e91") }}
+          </VBtn>
+          <VBtn color="primary" @click="buildProgressDialog?.openDialog()">
+            {{ t("TXT_CODE_5544ec22") }}
+          </VBtn>
+        </template>
+      </PageToolbar>
 
-      <VCol cols="12">
+      <VRow dense class="node-image-row">
+        <VCol cols="12">
         <CardPanel style="height: 100%">
           <template #body>
             <div>
@@ -156,10 +149,10 @@ onMounted(async () => {});
           </template>
         </CardPanel>
       </VCol>
-    </VRow>
-  </div>
+      </VRow>
+    </VContainer>
 
-  <VDialog v-model="dockerFileDrawer" max-width="768" scrollable>
+    <VDialog v-model="dockerFileDrawer" max-width="768" scrollable>
     <VCard title="DockerFile">
       <VCardText>
     <DockerFileForm
@@ -173,10 +166,34 @@ onMounted(async () => {});
     </VCard>
   </VDialog>
 
-  <BuildProgress ref="buildProgressDialog" :daemon-id="daemonId ?? ''" />
+    <BuildProgress ref="buildProgressDialog" :daemon-id="daemonId ?? ''" />
+  </main>
 </template>
 
 <style lang="scss" scoped>
+.node-image-page {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+.node-image-page-container {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: 20px 24px 32px;
+}
+
+.node-image-row {
+  width: 100%;
+  margin: 0;
+}
+
+@media (max-width: 992px) {
+  .node-image-page-container {
+    padding: 16px 12px 28px;
+  }
+}
+
 .images-card {
   cursor: pointer;
 

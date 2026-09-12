@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BetweenMenus from "@/components/BetweenMenus.vue";
+import PageToolbar from "@/components/PageToolbar.vue";
 import CardPanel from "@/components/CardPanel.vue";
 import { useLayoutCardTools } from "@/hooks/useCardTools";
 import { useInstanceInfo } from "@/hooks/useInstance";
@@ -30,12 +30,13 @@ const TAB_KEY_PLUGINS = "TAB_KEY_PLUGINS";
 const TAB_KEY_DOWNLOAD = "TAB_KEY_DOWNLOAD";
 
 const props = defineProps<{
-  card: LayoutCard;
+  card?: LayoutCard;
 }>();
 
 const { t } = useI18n();
 const { isPhone } = useScreen();
-const { getMetaOrRouteValue } = useLayoutCardTools(props.card);
+const card = props.card ?? ({ meta: {} } as LayoutCard);
+const { getMetaOrRouteValue } = useLayoutCardTools(card);
 const instanceId = getMetaOrRouteValue("instanceId");
 const daemonId = getMetaOrRouteValue("daemonId");
 
@@ -415,37 +416,25 @@ onMounted(async () => {
 
 <template>
   <div class="container">
-    <VRow dense>
-      <VCol cols="12">
-        <BetweenMenus>
-          <template #left>
-            <h4 v-if="!isPhone" class="text-h6 mb-0">
-              <VIcon icon="mdi-apps" class="mr-1" />
-              {{ t("TXT_CODE_MOD_MANAGER") }}
-            </h4>
-            <div v-else style="width: 40px"></div>
-          </template>
-          <template #center>
-            <div v-if="activeKey === TAB_KEY_MODS || activeKey === TAB_KEY_PLUGINS" class="search-input">
-              <VTextField v-model="headerSearchQuery" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" clearable density="compact" append-inner-icon="mdi-magnify" :style="isPhone ? 'width: 180px' : 'width: 300px'" hide-details />
-            </div>
-          </template>
-          <template #right>
-            <div class="d-flex ga-2">
-              <VBtn v-if="activeKey === TAB_KEY_MODS || activeKey === TAB_KEY_PLUGINS" variant="tonal" @click="onUploadClick">
-                  <VIcon start icon="mdi-upload" />
-                {{ t("TXT_CODE_ae09d79d") }}
-              </VBtn>
-              <VBtn v-if="activeKey !== TAB_KEY_DOWNLOAD" color="primary" :loading="loading"
-                @click="() => loadMods()">
-                  <VIcon start icon="mdi-refresh" />
-                {{ t("TXT_CODE_REFRESH") }}
-              </VBtn>
-            </div>
-          </template>
-        </BetweenMenus>
-      </VCol>
+    <PageToolbar :title="t('TXT_CODE_MOD_MANAGER')" icon="mdi-package-variant-closed">
+      <template #search>
+        <div v-if="activeKey === TAB_KEY_MODS || activeKey === TAB_KEY_PLUGINS" class="search-input">
+          <VTextField v-model="headerSearchQuery" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" clearable density="compact" append-inner-icon="mdi-magnify" :style="isPhone ? 'width: 180px' : 'width: 300px'" hide-details />
+        </div>
+      </template>
+      <template #actions>
+        <VBtn v-if="activeKey === TAB_KEY_MODS || activeKey === TAB_KEY_PLUGINS" variant="tonal" @click="onUploadClick">
+          <VIcon start icon="mdi-upload" />
+          {{ t("TXT_CODE_ae09d79d") }}
+        </VBtn>
+        <VBtn v-if="activeKey !== TAB_KEY_DOWNLOAD" color="primary" :loading="loading" @click="() => loadMods()">
+          <VIcon start icon="mdi-refresh" />
+          {{ t("TXT_CODE_REFRESH") }}
+        </VBtn>
+      </template>
+    </PageToolbar>
 
+    <VRow dense>
       <VCol cols="12">
         <CardPanel class="containerWrapper" :padding="false">
           <template #body>
@@ -564,6 +553,20 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.container {
+  width: 100%;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: 20px 24px 32px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 992px) {
+  .container {
+    padding: 16px 12px 28px;
+  }
+}
+
 .containerWrapper {
   overflow: hidden;
 }
@@ -571,20 +574,6 @@ onMounted(async () => {
 .mod-manager-tabs {
   margin-bottom: 0;
   padding: 0 20px;
-}
-
-@media (max-width: 585px) {
-  :deep(.menus-item-center) {
-    width: auto !important;
-    flex: 1 !important;
-    justify-content: center !important;
-  }
-
-  :deep(.menus-item-left),
-  :deep(.menus-item-right) {
-    display: flex !important;
-    flex: 0 0 auto !important;
-  }
 }
 
 .search-form {
