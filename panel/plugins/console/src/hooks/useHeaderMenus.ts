@@ -222,7 +222,7 @@ export function useHeaderMenus() {
             async onOk() {
               changeDesignMode(true);
               notification.warning({
-                placement: "bottom",
+                placement: "top",
                 type: "warning",
                 message: t("TXT_CODE_7b1adf35"),
                 description: t("TXT_CODE_6b6f1d3")

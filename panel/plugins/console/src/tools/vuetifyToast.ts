@@ -46,14 +46,8 @@ const typeIcon: Record<ToastType, string> = {
   info: "mdi-information-outline"
 };
 
-const placementMap: Record<string, string> = {
-  top: "top",
-  topLeft: "top start",
-  topRight: "top end",
-  bottom: "bottom",
-  bottomLeft: "bottom start",
-  bottomRight: "bottom end"
-};
+// Toasts share one position regardless of the legacy placement supplied by a caller.
+const resolveToastLocation = (_placement?: string) => "top";
 
 const finalizeToast = (item: ToastItem) => {
   if (item.removeTimer) {
@@ -98,7 +92,6 @@ const ensureMounted = () => {
         [...activeToasts].reverse().map((item, index) => {
           const content = resolveRenderable(item.content);
           const description = resolveRenderable(item.description);
-          const isBottomToast = item.location.split(" ").includes("bottom");
           const stackOffset = `${16 + index * 64}px`;
           const textChildren: any[] = [];
           if (content != null) textChildren.push(...(Array.isArray(content) ? content : [content]));
@@ -133,8 +126,7 @@ const ensureMounted = () => {
               location: item.location,
               contentProps: {
                 style: {
-                  marginTop: isBottomToast ? undefined : stackOffset,
-                  marginBottom: isBottomToast ? stackOffset : undefined
+                  marginTop: stackOffset
                 }
               },
               rounded: "xl",
@@ -168,7 +160,7 @@ const openToast = (type: ToastType, options: ToastOptions | Renderable) => {
     content,
     description: normalized.description,
     timeout: normalized.duration === 0 ? -1 : normalized.duration ?? 3200,
-    location: placementMap[normalized.placement ?? "top"] ?? normalized.placement ?? "top",
+    location: resolveToastLocation(normalized.placement),
     visible: true,
     closing: false
   });

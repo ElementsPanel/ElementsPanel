@@ -1,4 +1,4 @@
-import { reactive } from "vue";
+import { notification } from "@/tools/vuetifyToast";
 
 export type DesktopNoticeType = "success" | "error" | "warning" | "info";
 
@@ -7,25 +7,15 @@ export interface DesktopNoticeInput {
   description?: string;
 }
 
-export const desktopNotice = reactive({
-  visible: false,
-  text: "",
-  type: "info" as DesktopNoticeType,
-  key: 0
-});
-
 export function notifyDesktop(
   input: string | DesktopNoticeInput,
   type: DesktopNoticeType = "info"
 ) {
-  const text = typeof input === "string"
-    ? input
-    : [input.message, input.description].filter(Boolean).join(" ");
-  if (!text) return;
-  desktopNotice.text = text;
-  desktopNotice.type = type;
-  desktopNotice.key += 1;
-  desktopNotice.visible = true;
+  const options = typeof input === "string"
+    ? { message: input }
+    : { message: input.message, description: input.description };
+  if (!options.message && !options.description) return;
+  notification[type]({ ...options, placement: "top" });
 }
 
 export function notifyDesktopError(error: unknown, fallback = "") {

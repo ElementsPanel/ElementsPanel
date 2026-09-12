@@ -27,8 +27,7 @@ import type { TaskbarWindow } from "./widgets/desktop/DesktopTaskbar.vue";
 import DesktopTaskbar from "./widgets/desktop/DesktopTaskbar.vue";
 import DesktopTerminalSelector from "./widgets/desktop/DesktopTerminalSelector.vue";
 import DesktopWindow from "./widgets/desktop/DesktopWindow.vue";
-import { desktopNotice } from "./desktopNotice";
-import { VIcon, VSnackbar } from "vuetify/components";
+import { VIcon } from "vuetify/components";
 import { computed, markRaw, onMounted, onUnmounted, reactive, ref, watch, type Component, type CSSProperties } from "vue";
 import { useRouter } from "vue-router";
 
@@ -1437,12 +1436,6 @@ const isMdiIcon = (icon: Component | string): boolean => typeof icon === "string
                     @close="closeContextMenu" />
             </div>
         </Transition>
-        <VSnackbar v-model="desktopNotice.visible" :key="desktopNotice.key"
-            :color="desktopNotice.type" location="bottom right" rounded="xl" variant="tonal"
-            :timeout="3200">
-            <VIcon :icon="desktopNotice.type === 'success' ? 'mdi-check-circle-outline' : desktopNotice.type === 'error' ? 'mdi-alert-circle-outline' : desktopNotice.type === 'warning' ? 'mdi-alert-outline' : 'mdi-information-outline'" class="mr-2" />
-            {{ desktopNotice.text }}
-        </VSnackbar>
         <Transition name="login-fade">
             <component :is="desktopLoginWindow" v-if="showLoginOverlay && desktopLoginWindow"
                 @login-success="handleLoginSuccess" />

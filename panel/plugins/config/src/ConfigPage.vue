@@ -2,7 +2,8 @@
 import { t } from "@/lang/i18n";
 import { ctx } from "@/plugin/context";
 import { getValidatorErrorMsg } from "@/tools/validator";
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { message } from "@/tools/vuetifyToast";
+import { computed, onMounted, ref, watch } from "vue";
 import {
   VAlert,
   VBtn,
@@ -18,7 +19,6 @@ import {
   VProgressLinear,
   VSelect,
   VSpacer,
-  VSnackbar,
   VSwitch
 } from "vuetify/components";
 import {
@@ -94,16 +94,9 @@ const schemaLoading = ref(false);
 const savingSettings = ref(false);
 const disableCandidate = ref<PluginRecord | NodePluginRecord | null>(null);
 const disableConfirmOpen = ref(false);
-const feedback = reactive({
-  open: false,
-  text: "",
-  color: "success" as "success" | "error"
-});
-
 const notify = (text: string, color: "success" | "error") => {
-  feedback.text = text;
-  feedback.color = color;
-  feedback.open = true;
+  if (color === "error") message.error(text);
+  else message.success(text);
 };
 
 const notifyError = (error: unknown) => {
@@ -456,10 +449,6 @@ const confirmDisable = () => {
         </VCardActions>
       </VCard>
     </VDialog>
-
-    <VSnackbar v-model="feedback.open" :color="feedback.color" :timeout="3200" location="bottom end">
-      {{ feedback.text }}
-    </VSnackbar>
   </div>
 </template>
 
