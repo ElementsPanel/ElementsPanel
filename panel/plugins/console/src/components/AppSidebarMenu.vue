@@ -25,8 +25,8 @@ const routePathIcons: Record<string, string> = {
   "/customer": "mdi-account-outline",
   "/login": "mdi-login",
   "/plugins/config": "mdi-view-grid-plus",
-  "/overview": "mdi-monitor-dashboard",
-  "/node": "mdi-server-network-outline",
+  "/overview": "mdi-view-dashboard-outline",
+  "/node": "mdi-sitemap-outline",
   "/market": "mdi-storefront-outline"
 };
 
@@ -85,6 +85,36 @@ const getMdiIcon = (icon: unknown, fallback?: string): string => {
 
 const getRouteIcon = (entry: SidebarRouteEntry): string =>
   routePathIcons[entry.path] || getMdiIcon(entry.icon);
+
+// Default (inactive) sidebar icons use the linear/outline style; the active
+// item swaps to its filled counterpart. Only verified outline/filled pairs are
+// listed here — icons without an outline variant keep the same glyph.
+const filledIconMap: Record<string, string> = {
+  "mdi-view-grid-outline": "mdi-view-grid",
+  "mdi-view-grid-plus-outline": "mdi-view-grid-plus",
+  "mdi-account-group-outline": "mdi-account-group",
+  "mdi-account-outline": "mdi-account",
+  "mdi-sitemap-outline": "mdi-sitemap",
+  "mdi-server-network-outline": "mdi-server-network",
+  "mdi-storefront-outline": "mdi-storefront",
+  "mdi-view-dashboard-outline": "mdi-view-dashboard"
+};
+
+const toOutlineIcon = (icon: string): string => {
+  if (icon.endsWith("-outline")) return icon;
+  const outline = Object.keys(filledIconMap).find((key) => filledIconMap[key] === icon);
+  return outline ?? icon;
+};
+
+const toFilledIcon = (icon: string): string => {
+  const outline = toOutlineIcon(icon);
+  return filledIconMap[outline] ?? outline;
+};
+
+const getSidebarIcon = (entry: SidebarRouteEntry): string => {
+  const icon = getRouteIcon(entry);
+  return isRouteActive(entry.path) ? toFilledIcon(icon) : toOutlineIcon(icon);
+};
 </script>
 
 <template>
@@ -99,7 +129,7 @@ const getRouteIcon = (entry: SidebarRouteEntry): string =>
         active-color="primary"
         rounded="xl"
         :title="String(entry.name ?? '')"
-        :prepend-icon="getRouteIcon(entry)"
+        :prepend-icon="getSidebarIcon(entry)"
         @click="handleToPage(entry.path)"
       />
     </VList>
