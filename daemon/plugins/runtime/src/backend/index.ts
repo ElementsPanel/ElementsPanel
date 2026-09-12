@@ -10,7 +10,6 @@ import { compress, decompress, decompressWithProgress, listArchiveEntries } from
 import { GitignoreMatcher } from "../../../../src/common/gitignore_matcher";
 import { globalConfiguration } from "../../../../src/entity/config";
 import type { DaemonPluginContext } from "../../../../src/plugin";
-import { uploadFileCheckMiddleware, uploadSpeedLimitMiddleware } from "../../../../src/middlewares/precheck";
 import { checkDependencies } from "../../../../src/service/dependencies";
 import downloadManager from "../../../../src/service/download_manager";
 import { missionPassport } from "../../../../src/service/mission_passport";
@@ -18,7 +17,45 @@ import versionAdapter from "../../../../src/service/version_adapter";
 import { check7zipStatus } from "../../../../src/service/seven_zip_service";
 import { getVersion, initVersionManager } from "../../../../src/service/version";
 import i18next from "i18next";
-import { sendFile } from "../../../../src/utils/speed_limit";
+import { proxyIncomingMessage, sendFile } from "../../../../src/utils/speed_limit";
+import type { Context as KoaContext } from "koa";
+
+function isMultipart(requestCtx: KoaContext) {
+  return String(requestCtx.request?.headers?.["content-type"] ?? "")
+    .toLowerCase()
+    .includes("multipart");
+}
+
+/**
+ * These middleware functions are created by the runtime plugin so their
+ * upload state is read from this live context. Importing the old core helpers
+ * here would bundle a second `ctx` and make valid upload writers invisible.
+ */
+function createUploadMiddleware(ctx: DaemonPluginContext) {
+  const uploadFileCheck = async (requestCtx: KoaContext, next: () => Promise<void>) => {
+    if (!isMultipart(requestCtx)) return await next();
+
+    const pathName = new URL(`${requestCtx.origin}${requestCtx.url}`).pathname;
+    const segments = pathName.trim().split("/").filter(Boolean);
+    const uploadKey = segments[segments.length - 1] || "";
+    const files = ctx.get("files");
+    const pieceWriter = files?.uploads.get(uploadKey);
+    const uploadMission = ctx.transfer.passports.getMission(uploadKey, "upload");
+    if (pieceWriter || uploadMission) return await next();
+
+    throw new Error("Access denied: Invalid multipart request!");
+  };
+
+  const uploadSpeedLimit = async (requestCtx: KoaContext, next: () => Promise<void>) => {
+    if (!isMultipart(requestCtx)) return await next();
+    const rate = Number(ctx.settings.config.uploadSpeedRate) || 0;
+    if (rate <= 0) return await next();
+    requestCtx.req = proxyIncomingMessage(requestCtx.req, rate);
+    return await next();
+  };
+
+  return { uploadFileCheck, uploadSpeedLimit };
+}
 
 /**
  * Shared daemon bootstrap. The executable only loads plugins; this plugin
@@ -56,9 +93,10 @@ export async function apply(ctx: DaemonPluginContext) {
       config.language = language;
     }
   });
+  const uploadMiddleware = createUploadMiddleware(ctx);
   ctx.set("middleware", {
-    uploadFileCheck: uploadFileCheckMiddleware,
-    uploadSpeedLimit: uploadSpeedLimitMiddleware
+    uploadFileCheck: uploadMiddleware.uploadFileCheck,
+    uploadSpeedLimit: uploadMiddleware.uploadSpeedLimit
   });
   ctx.set("transfer", {
     passports: missionPassport,

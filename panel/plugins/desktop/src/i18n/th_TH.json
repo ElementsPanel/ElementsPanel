@@ -1,6 +1,7 @@
 {
   "TXT_CODE_DESKTOP_CLOSE_ALL": "ปิดหน้าต่างทั้งหมด",
   "TXT_CODE_DESKTOP_EXIT": "ออกจากเดสก์ท็อป",
+  "TXT_CODE_DESKTOP_FM_NO_FILES": "ไม่พบไฟล์",
   "TXT_CODE_DESKTOP_IM_ALL_STATUS": "ทุกสถานะ",
   "TXT_CODE_DESKTOP_IM_LOADING": "กำลังโหลดอินสแตนซ์...",
   "TXT_CODE_DESKTOP_IM_NEW_INSTANCE": "อินสแตนซ์ใหม่",

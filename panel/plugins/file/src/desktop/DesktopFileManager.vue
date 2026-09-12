@@ -958,7 +958,7 @@ onUnmounted(() => {
                 <template #item.time="{ item }">{{ item.time ? dayjs(item.time).format("YYYY-MM-DD HH:mm:ss") : "--" }}</template>
                 <template #item.mode="{ item }">{{ item.mode ?? "--" }}</template>
                 <template #item.action="{ item }"><VMenu location="bottom end"><template #activator="{ props: menuProps }"><VBtn v-bind="menuProps" icon variant="text" size="small" rounded="xl"><VIcon icon="mdi-dots-vertical" /></VBtn></template><VCard rounded="xl"><VCardText class="dfm-menu-list"><VBtn v-for="action in desktopRowMenu(item)" :key="action.title" variant="text" block :color="action.color" @click="action.action()"><VIcon :icon="action.icon" />{{ action.title }}</VBtn></VCardText></VCard></VMenu></template>
-                <template #no-data><div class="dfm-empty"><VIcon icon="mdi-folder-open-outline" size="42" /><span>{{ t("TXT_CODE_DESKTOP_IM_NO_INSTANCES") }}</span></div></template>
+                <template #no-data><div class="dfm-empty"><VIcon icon="mdi-folder-open-outline" size="42" /><span>{{ t("TXT_CODE_DESKTOP_FM_NO_FILES") }}</span></div></template>
             </VDataTable>
             <div v-if="dragSelectVisible" class="dfm-drag-select-rect" :style="{ left: dragSelectRect.x + 'px', top: dragSelectRect.y + 'px', width: dragSelectRect.w + 'px', height: dragSelectRect.h + 'px' }"></div>
         </div>

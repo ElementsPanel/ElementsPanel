@@ -1,6 +1,7 @@
 {
   "TXT_CODE_DESKTOP_CLOSE_ALL": "すべてのウィンドウを閉じる",
   "TXT_CODE_DESKTOP_EXIT": "デスクトップを終了",
+  "TXT_CODE_DESKTOP_FM_NO_FILES": "ファイルが見つかりません",
   "TXT_CODE_DESKTOP_IM_ALL_STATUS": "すべてのステータス",
   "TXT_CODE_DESKTOP_IM_LOADING": "インスタンスを読み込み中...",
   "TXT_CODE_DESKTOP_IM_NEW_INSTANCE": "新しいインスタンス",
