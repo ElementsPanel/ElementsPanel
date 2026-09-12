@@ -6,6 +6,8 @@ import DesktopPage from "./Desktop.vue";
 import DesktopWindow from "./widgets/desktop/DesktopWindow.vue";
 import { localeMessages } from "./i18n";
 import themeCss from "./theme.scss?inline";
+import { h } from "vue";
+import { VIcon } from "vuetify/components";
 
 
 // Desktop mode. It owns the window shell and the application registry, so a
@@ -57,6 +59,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.menus.login({
     title: () => t("TXT_CODE_DESKTOP_MODE"),
+    icon: () => h(VIcon, { icon: "mdi-monitor" }),
     click: openDesktop
   });
 }
