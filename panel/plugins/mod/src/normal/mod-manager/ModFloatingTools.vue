@@ -4,7 +4,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { stopTransferApi } from "../../api";
 import { message } from "@/tools/vuetifyToast";
-import { VBadge, VBtn, VCard, VCardText, VCardTitle, VIcon, VMenu, VProgressLinear } from "vuetify/components";
+import { VBadge, VBtn, VCard, VCardText, VCardTitle, VChip, VIcon, VMenu, VProgressLinear } from "vuetify/components";
 
 const props = defineProps<{
   instanceId: string;

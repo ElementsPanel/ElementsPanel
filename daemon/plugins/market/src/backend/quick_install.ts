@@ -111,8 +111,12 @@ export function createQuickInstallTaskClass(ctx: DaemonPluginContext) {
 
       // Get total file size
       const contentLength = response.headers["content-length"];
-      if (contentLength) {
-        this.downloadProgress.totalBytes = parseInt(contentLength);
+      const totalBytes =
+        typeof contentLength === "string" || typeof contentLength === "number"
+          ? Number(contentLength)
+          : NaN;
+      if (Number.isSafeInteger(totalBytes) && totalBytes >= 0) {
+        this.downloadProgress.totalBytes = totalBytes;
       }
 
       let lastProgressUpdate = Date.now();

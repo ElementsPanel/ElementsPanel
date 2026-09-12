@@ -17,7 +17,7 @@ import {
 import { notifyDesktop, notifyDesktopError } from "../../desktopNotice";
 import type { InstanceDetail, NodeStatus } from "@/types";
 import { INSTANCE_STATUS_CODE } from "@/types/const";
-import { computed, nextTick, onMounted, onUnmounted, ref, watch, type Component } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import DesktopWindow from "./DesktopWindow.vue";
 import { VBtn, VChip, VIcon, VList, VListItem, VMenu, VProgressCircular, VSelect, VTextField } from "vuetify/components";
 
@@ -234,7 +234,7 @@ const getStatusClass = (status: INSTANCE_STATUS_CODE): string => {
     return map[status] || "";
 };
 
-const statusIconMap: Record<number, Component | string> = {
+const statusIconMap: Record<number, string> = {
     [INSTANCE_STATUS_CODE.BUSY]: ClockCircleOutlined,
     [INSTANCE_STATUS_CODE.STOPPED]: MinusCircleOutlined,
     [INSTANCE_STATUS_CODE.STOPPING]: PauseCircleOutlined,
@@ -242,7 +242,7 @@ const statusIconMap: Record<number, Component | string> = {
     [INSTANCE_STATUS_CODE.RUNNING]: PlayCircleOutlined
 };
 
-const getStatusIconComponent = (status: INSTANCE_STATUS_CODE): Component | string => {
+const getStatusIcon = (status: INSTANCE_STATUS_CODE): string => {
     return statusIconMap[status] || QuestionCircleOutlined;
 };
 
@@ -663,9 +663,7 @@ onUnmounted(() => {
                 <div class="dim-instance__info">
                     <div class="dim-instance__header">
                         <span class="dim-instance__status" :class="getStatusClass(instance.status)">
-                            <component :is="getStatusIconComponent(instance.status)"
-                                v-if="typeof getStatusIconComponent(instance.status) !== 'string'" />
-                            <VIcon v-else :icon="getStatusIconComponent(instance.status)" size="small" />
+                            <VIcon :icon="getStatusIcon(instance.status)" size="small" />
                         </span>
                         <span class="dim-instance__name">{{
                             instance.config.nickname || t("TXT_CODE_DESKTOP_IM_UNNAMED")

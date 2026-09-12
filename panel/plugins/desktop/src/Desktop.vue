@@ -1274,7 +1274,7 @@ const exitDesktop = async () => {
 };
 
 const username = computed(() => appState.userInfo?.userName || "User");
-const isMdiIcon = (icon: Component | string): boolean => typeof icon === "string" && icon.startsWith("mdi-");
+const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof icon === "string" && icon.startsWith("mdi-");
 </script>
 
 <template>

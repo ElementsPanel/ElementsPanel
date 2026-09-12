@@ -151,7 +151,7 @@ watch(
   { immediate: true }
 );
 
-let task: NodeJS.Timer | undefined;
+let task: ReturnType<typeof setInterval> | undefined;
 task = setInterval(async () => {
   await getFileStatus();
 }, 3000);

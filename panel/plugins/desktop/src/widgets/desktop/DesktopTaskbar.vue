@@ -154,9 +154,9 @@ const handleAppDrop = (event: DragEvent) => {
     emit("add-shortcut", appId, event.clientX, event.clientY);
 };
 
-const isComponentIcon = (icon: Component | string | undefined): boolean =>
+const isComponentIcon = (icon: Component | string | undefined): icon is Component =>
     typeof icon !== "string" && Boolean(icon);
-const isMdiIcon = (icon: Component | string | undefined): boolean =>
+const isMdiIcon = (icon: Component | string | undefined): icon is `mdi-${string}` =>
     typeof icon === "string" && icon.startsWith("mdi-");
 
 const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
