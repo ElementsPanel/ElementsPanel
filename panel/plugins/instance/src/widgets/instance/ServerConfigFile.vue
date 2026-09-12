@@ -155,7 +155,7 @@ onMounted(async () => {
             </VBtn>
           </template>
         </BetweenMenus>
-      </a-col>
+      </VCol>
 
       <configComponent
         v-if="configName && isReady"

@@ -139,7 +139,8 @@ defineExpose({
 
 <template>
   <VDialog v-model="open" class="file-editor-dialog app-dialog" :class="{ 'file-editor-dialog--full': fullScreen }"
-    :max-width="fullScreen ? undefined : '1600px'" :fullscreen="fullScreen" persistent scrollable>
+    :width="fullScreen ? undefined : '1600px'"
+    :max-width="fullScreen ? undefined : 'calc(100vw - 48px)'" :fullscreen="fullScreen" persistent scrollable>
     <VCard rounded="xl" class="file-editor-card">
       <VCardTitle class="file-editor-title">
         <span>{{ dialogTitle }}</span>
@@ -161,6 +162,7 @@ defineExpose({
 .file-editor-card {
   display: flex;
   flex-direction: column;
+  width: 100%;
   min-height: 0;
 }
 

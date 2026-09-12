@@ -35,6 +35,7 @@ withDefaults(
           v-for="item in logs"
           :key="item.operation_id"
           :dot-color="item.color"
+          :style="{ '--operation-log-color': item.color }"
           size="small"
         >
           <div class="log-item">
@@ -123,6 +124,21 @@ withDefaults(
 
 .instance-log--desktop .log-content {
   color: var(--desktop-window-text);
+}
+
+/* Desktop mode deliberately removes every element whose class contains
+   "divider".  Vuetify uses that class for the timeline dots as well as the
+   connecting line, so restore the dot surfaces locally for the log window. */
+.instance-log.instance-log--desktop :deep(.v-timeline-divider__dot) {
+  background: rgb(var(--v-theme-surface-light)) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.instance-log.instance-log--desktop :deep(.v-timeline-divider__inner-dot) {
+  background-color: var(--operation-log-color) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .log-time {

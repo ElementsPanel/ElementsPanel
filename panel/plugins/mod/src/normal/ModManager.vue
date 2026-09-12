@@ -537,7 +537,6 @@ onMounted(async () => {
                       }" @change="(p: any) => onSearch(p.current, p.pageSize)" @show-versions="showVersions"
                       @open-external="openExternal" @download="handleDownload" />
                   </div>
-                </a-tab-pane>
                 </VWindowItem>
               </VWindow>
 
