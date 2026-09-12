@@ -87,6 +87,7 @@ and skipped; the panel keeps running.
 | `ctx.instances` | `getByUuid`. |
 | `ctx.globals` | Process-wide counters shared with the core. |
 | `ctx.overview` | `provide(fn)` to add fields to `GET /api/overview`. |
+| `ctx.layout` | `get`, `set`, `reset` and scoped `provide(() => page)` for plugin-owned default page layouts. **Provided by `plugins/console`.** |
 | `ctx.plugins` | `loaded`, `inventory()`, `setEnabled()`, and the frontend manifest the browser fetches. |
 | `ctx.koa` | `app`, `use(middleware)`, `router(prefix?)`. Both are removed on unload. **Provided by `plugins/server`.** |
 | `ctx.remote` | `services` (the node subsystem), `Request` (the daemon request helper) and `RequestTimeoutError`. **Provided by `plugins/node`.** |
@@ -171,10 +172,11 @@ not.
 
 A backend must not import panel core modules at runtime: they are bundled into
 `app.js`, so importing one would compile a second copy of that singleton — the
-storage subsystem, the system config, the i18n instance. The same goes for
-`cordis` itself: a second `Context` class is a second container, and the plugin's
-services would be invisible to the panel. Only `import type` from either, because
-types are erased.
+storage subsystem, the system config, the i18n instance. Use `import type` for
+host contracts because types are erased. Cordis's `Service` and `Logger` may be
+imported at runtime: `scripts/webpack-cordis-externals.cjs` keeps the framework
+external in both host and plugin bundles, so they share one installed copy.
+Do not bundle another Cordis copy or import the host's `ctx` singleton.
 
 Backend entries are TypeScript at `src/backend/index.ts`.
 `panel/webpack.plugins.config.js` compiles each one to `<plugin>/backend/index.cjs`
@@ -250,6 +252,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 | `ctx.node` | Node API and hook. **Provided by `plugins/node`.** |
 | `ctx.file` | File API, hook, upload queue, filename helpers, editor/viewer components and the file dialogs. **Provided by `plugins/file`.** |
 | `ctx.terminal` | Terminal components, hooks and stream APIs. **Provided by `plugins/terminal`.** |
+| `ctx.mod` | Minecraft mod and server-plugin APIs. **Provided by `plugins/mod`.** |
 
 `frontend/src/plugin/context.ts` is the authoritative declaration of all of this.
 
@@ -317,6 +320,10 @@ instance-operations row — the latter gets the state the terminal itself has
 (`instanceId`, `daemonId`, `instanceInfo`, `isStopped`, `isRunning`,
 `isDockerMode`, `isGlobalTerminal`, `clearTerminal()`) in both `click` and
 `condition`, so one registration serves the normal terminal and a Desktop console.
+
+An instance action may supply `mdiIcon` for shells that render Material Design
+icons. Its feature plugin owns this presentation hint along with its component,
+title and availability condition.
 
 A frontend plugin *may* import `cordis` and panel core modules at runtime: it is
 compiled into the same Vite module graph, and `cordis` is deduplicated, so there

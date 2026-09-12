@@ -1,0 +1,9 @@
+{
+  "id": "mod",
+  "name": "Mod Manager",
+  "version": "1.0.0",
+  "description": "Provides Minecraft mod and plugin discovery, installation and management in normal and Desktop modes.",
+  "priority": 150,
+  "backend": "backend/index.cjs",
+  "frontend": "src/frontend.ts"
+}

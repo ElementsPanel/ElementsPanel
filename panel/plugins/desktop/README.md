@@ -5,6 +5,10 @@ theme variables and icons. Its backend entry provides the authenticated
 `/api/overview/desktop_layout` endpoints and keeps existing user layouts in
 `data/desktop_layouts`.
 
+Mod management is contributed by `plugins/mod` through `ctx.actions.instance()`.
+The desktop shell only migrates its legacy window identifier; it does not import
+the manager, call its API or decide whether it is available.
+
 Set `enabled` to `false` in `plugin.json` to exclude it when plugins are
 discovered. The frontend entry is emitted to `dist/plugins/desktop/`, then
 collected under `production-code/web/plugins/desktop/frontend/`; it can be

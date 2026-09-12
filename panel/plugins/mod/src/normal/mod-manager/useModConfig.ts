@@ -1,5 +1,5 @@
 import { ref } from "vue";
-import { getModConfigFilesApi } from "@/services/apis/modManager";
+import { getModConfigFilesApi } from "../../api";
 import { message } from "@/tools/vuetifyToast";
 
 export function useModConfig(instanceId: string, daemonId: string, FileEditorDialog: any) {

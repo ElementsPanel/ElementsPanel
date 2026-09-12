@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { PanelPluginContext } from "../../../../src/app/plugin";
 
 export interface ModrinthProject {
   id: string;
@@ -17,20 +18,29 @@ export interface ModrinthVersion {
   version_number: string;
 }
 
-class ModManagerService {
+export class ModManagerService {
   private readonly baseUrl = "https://api.modrinth.com/v2";
   private readonly curseforgeUrl = "https://api.curse.tools";
   private readonly MAX_CACHE_SIZE = 1000;
   private cache = new Map<string, any>();
   private mcVersionsCache: string[] = [];
   private mcVersionsLastFetch = 0;
+  private readonly controller = new AbortController();
 
-  constructor() {
-    setInterval(() => {
-      this.mcVersionsCache = [];
-      this.mcVersionsLastFetch = 0;
+  constructor(private readonly ctx: PanelPluginContext) {
+    ctx.effect(() => () => {
+      this.controller.abort();
       this.cache.clear();
-    }, 1000 * 60 * 60 * 24);
+      this.mcVersionsCache = [];
+    });
+    ctx.setInterval(
+      () => {
+        this.mcVersionsCache = [];
+        this.mcVersionsLastFetch = 0;
+        this.cache.clear();
+      },
+      1000 * 60 * 60 * 24
+    );
   }
 
   private setCache(key: string, value: any) {
@@ -73,7 +83,7 @@ class ModManagerService {
         return versions;
       }
     } catch (err) {
-      console.error("Failed to fetch MC versions from Modrinth:", err);
+      this.ctx.logger.warn("Failed to fetch MC versions from Modrinth:", err);
     }
 
     try {
@@ -103,7 +113,7 @@ class ModManagerService {
         return versions;
       }
     } catch (err: any) {
-      console.error("Failed to fetch MC versions from Mojang!", err?.message);
+      this.ctx.logger.warn("Failed to fetch MC versions from Mojang!", err?.message);
     }
 
     // Fallback to a reasonable list if all APIs fail
@@ -155,7 +165,8 @@ class ModManagerService {
     try {
       return await axios({
         ...config,
-        timeout: config.timeout || 5000
+        timeout: config.timeout || 5000,
+        signal: this.controller.signal
       });
     } catch (err: any) {
       const isNetworkError =
@@ -167,7 +178,7 @@ class ModManagerService {
         err.response?.status === 504;
 
       if (retries > 0 && (isNetworkError || isRetryableStatus)) {
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+        await this.ctx.sleep(1500);
         return await this.requestWithRetry(config, retries - 1);
       }
       throw err;
@@ -232,7 +243,10 @@ class ModManagerService {
             }
           }
         } catch (err: any) {
-          console.error(`Modrinth batch lookup error for chunk ${i / chunkSize}:`, err?.message);
+          this.ctx.logger.warn(
+            `Modrinth batch lookup error for chunk ${i / chunkSize}:`,
+            err?.message
+          );
         }
       }
     }
@@ -370,7 +384,7 @@ class ModManagerService {
 
       return { hits, total_hits };
     } catch (err) {
-      console.error("Search all error:", err);
+      this.ctx.logger.warn("Search all error:", err);
       return { hits: [], total_hits: 0 };
     }
   }
@@ -465,7 +479,7 @@ class ModManagerService {
             return acc;
           }, {});
         } catch (vErr) {
-          console.error("Failed to fetch version numbers for hits:", vErr);
+          this.ctx.logger.warn("Failed to fetch version numbers for hits:", vErr);
         }
       }
 
@@ -517,7 +531,7 @@ class ModManagerService {
         total_hits: res.data.total_hits
       };
     } catch (err) {
-      console.error("Modrinth search error:", err);
+      this.ctx.logger.warn("Modrinth search error:", err);
       return { hits: [], total_hits: 0 };
     }
   }
@@ -619,7 +633,7 @@ class ModManagerService {
         total_hits: res.data.pagination.totalCount
       };
     } catch (err) {
-      console.error("CurseForge search error:", err);
+      this.ctx.logger.warn("CurseForge search error:", err);
       return { hits: [], total_hits: 0 };
     }
   }
@@ -741,7 +755,7 @@ class ModManagerService {
         };
       });
     } catch (err) {
-      console.error("CurseForge versions error:", err);
+      this.ctx.logger.warn("CurseForge versions error:", err);
       return null;
     }
   }
@@ -842,7 +856,7 @@ class ModManagerService {
           (data.length === limit ? offset + limit + 1 : offset + data.length)
       };
     } catch (err) {
-      console.error("SpigotMC search error:", err);
+      this.ctx.logger.warn("SpigotMC search error:", err);
       return { hits: [], total_hits: 0 };
     }
   }
@@ -906,10 +920,8 @@ class ModManagerService {
         };
       });
     } catch (err) {
-      console.error("SpigotMC versions error:", err);
+      this.ctx.logger.warn("SpigotMC versions error:", err);
       return null;
     }
   }
 }
-
-export const modManagerService = new ModManagerService();

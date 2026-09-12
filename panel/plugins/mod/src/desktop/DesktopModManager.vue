@@ -1,20 +1,22 @@
 <script setup lang="ts">
 import { useInstanceInfo } from "@/hooks/useInstance";
 import { t } from "@/lang/i18n";
-import { notifyDesktop } from "../../desktopNotice";
+import { notifyDesktop } from "./notice";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
-import LocalModTable from "@instance/widgets/instance/mod-manager/LocalModTable.vue";
-import ModConfigModal from "../instance/mod-manager/ModConfigModal.vue";
-import ModFloatingTools from "@instance/widgets/instance/mod-manager/ModFloatingTools.vue";
-import ModVersionModal from "../instance/mod-manager/ModVersionModal.vue";
-import SearchModTable from "@instance/widgets/instance/mod-manager/SearchModTable.vue";
-import { useDeferredTasks } from "@instance/widgets/instance/mod-manager/useDeferredTasks";
-import { useLocalMods } from "@instance/widgets/instance/mod-manager/useLocalMods";
-import { useModConfig } from "@instance/widgets/instance/mod-manager/useModConfig";
-import { useModSearch } from "../instance/mod-manager/useModSearch";
-import { useModUpload } from "@instance/widgets/instance/mod-manager/useModUpload";
-import DesktopWindow from "./DesktopWindow.vue";
+import LocalModTable from "../normal/mod-manager/LocalModTable.vue";
+import ModConfigModal from "./mod-manager/ModConfigModal.vue";
+import ModFloatingTools from "../normal/mod-manager/ModFloatingTools.vue";
+import ModVersionModal from "./mod-manager/ModVersionModal.vue";
+import SearchModTable from "../normal/mod-manager/SearchModTable.vue";
+import { useDeferredTasks } from "../normal/mod-manager/useDeferredTasks";
+import { useLocalMods } from "../normal/mod-manager/useLocalMods";
+import { useModConfig } from "../normal/mod-manager/useModConfig";
+import { useModSearch } from "./mod-manager/useModSearch";
+import { useModUpload } from "../normal/mod-manager/useModUpload";
+import { ctx } from "@/plugin/context";
 import { VAlert, VBadge, VBtn, VIcon, VSelect, VTabs, VTab, VTextField, VWindow, VWindowItem } from "vuetify/components";
+
+const desktopWindowComponent = computed(() => ctx.desktop.window);
 
 const TAB_KEY_MODS = "TAB_KEY_MODS";
 const TAB_KEY_PLUGINS = "TAB_KEY_PLUGINS";
@@ -22,7 +24,7 @@ const TAB_KEY_DOWNLOAD = "TAB_KEY_DOWNLOAD";
 const ExclamationCircleOutlined = "mdi-alert-circle-outline";
 
 const props = defineProps<{
-    instanceId: string;
+    instanceUuid: string;
     daemonId: string;
 }>();
 
@@ -32,7 +34,7 @@ const emit = defineEmits<{
 }>();
 
 const { instanceInfo, isRunning: isInstanceRunning } = useInstanceInfo({
-    instanceId: props.instanceId,
+    instanceId: props.instanceUuid,
     daemonId: props.daemonId,
     autoRefresh: true
 });
@@ -136,7 +138,7 @@ const {
     removeDeferredTask,
     executeDeferredTask,
     executeAllDeferredTasks
-} = useDeferredTasks(props.instanceId, props.daemonId, async () => {
+} = useDeferredTasks(props.instanceUuid, props.daemonId, async () => {
     await loadMods();
 });
 
@@ -159,7 +161,7 @@ const {
     onDelete,
     fileStatus,
     tablePagination
-} = useLocalMods(props.instanceId, props.daemonId, checkAndConfirm, addDeferredTask);
+} = useLocalMods(props.instanceUuid, props.daemonId, checkAndConfirm, addDeferredTask);
 
 const getCurrentFolder = () => {
     if (activeKey.value === TAB_KEY_MODS) return "mods";
@@ -193,7 +195,7 @@ const {
     versionsLoading,
     formatDate,
     saveLocationDialog
-} = useModSearch(props.instanceId, props.daemonId, () => mods.value, loadMods, folders, true);
+} = useModSearch(props.instanceUuid, props.daemonId, () => mods.value, loadMods, folders, true);
 
 const openExternal = (mod: any) => {
     const { source, id, slug, name } = mod;
@@ -244,10 +246,10 @@ const {
     onUploadClick,
     onFileChange,
     fileInput
-} = useModUpload(props.instanceId, props.daemonId, activeKey, loadMods);
+} = useModUpload(props.instanceUuid, props.daemonId, activeKey, loadMods);
 
 const { showConfigModal, currentMod, configFiles, configLoading, openConfig } =
-    useModConfig(props.instanceId, props.daemonId, ref(null));
+    useModConfig(props.instanceUuid, props.daemonId, ref(null));
 
 const handleEditFile = (file: any) => {
     showConfigModal.value = false;
@@ -502,7 +504,7 @@ onMounted(async () => {
         </div>
 
         <ModFloatingTools v-model:deferred-tasks="deferredTasks" v-model:auto-execute="autoExecute"
-            :instance-id="props.instanceId" :daemon-id="props.daemonId" :file-status="fileStatus"
+            :instance-id="props.instanceUuid" :daemon-id="props.daemonId" :file-status="fileStatus"
             :is-executing="isExecuting" @execute-task="executeDeferredTask" @execute-all="executeAllDeferredTasks"
             @remove-task="removeDeferredTask" @refresh="loadMods" />
 
@@ -510,7 +512,7 @@ onMounted(async () => {
 
         <Teleport to="body">
             <Transition name="dmm-dialog-fade">
-                <DesktopWindow v-if="saveLocationDialog.show" id="mod-save-location-dialog"
+                <component :is="desktopWindowComponent" v-if="saveLocationDialog.show" id="mod-save-location-dialog"
                     :title="t('TXT_CODE_MOD_SELECT_SAVE_DIR')" :icon="ExclamationCircleOutlined"
                     :visible="saveLocationDialog.show" :minimized="false" :maximized="false" :active="true"
                     :initial-width="360" :initial-height="220" :initial-x="windowWidth / 2 - 180"
@@ -537,13 +539,13 @@ onMounted(async () => {
                             </VBtn>
                         </div>
                     </div>
-                </DesktopWindow>
+                </component>
             </Transition>
         </Teleport>
 
         <Teleport to="body">
             <Transition name="dmm-dialog-fade">
-                <DesktopWindow v-if="fileLockDialog.show" id="mod-file-lock-dialog"
+                <component :is="desktopWindowComponent" v-if="fileLockDialog.show" id="mod-file-lock-dialog"
                     :title="t('TXT_CODE_MOD_WIN_FILE_LOCK_TITLE')" :icon="ExclamationCircleOutlined"
                     :visible="fileLockDialog.show" :minimized="false" :maximized="false" :active="true"
                     :initial-width="400" :initial-height="240" :initial-x="windowWidth / 2 - 200"
@@ -566,7 +568,7 @@ onMounted(async () => {
                             </VBtn>
                         </div>
                     </div>
-                </DesktopWindow>
+                </component>
             </Transition>
         </Teleport>
     </div>

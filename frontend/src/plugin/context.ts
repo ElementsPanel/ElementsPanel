@@ -97,6 +97,8 @@ export interface PanelFrontendInstanceAction {
   id: string;
   title: string | (() => string);
   icon: Component | string;
+  /** Optional Material Design icon for shells that render MDI icons. */
+  mdiIcon?: string;
   normalComponent?: Component;
   desktopComponent?: Component;
   condition?: (context: PanelFrontendInstanceActionContext) => boolean;
@@ -310,6 +312,11 @@ export interface FrontendTerminalService {
   readonly encodeConsoleColor: (text: string) => string;
 }
 
+/** Minecraft mod and plugin APIs. Provided by `plugins/mod`. */
+export interface FrontendModManagerService {
+  readonly api: typeof import("../../../panel/plugins/mod/src/api");
+}
+
 /** Application instance pages, APIs, hooks and dialogs. Provided by `plugins/instance`. */
 export interface FrontendInstanceService {
   readonly api: Record<string, (...args: any[]) => any>;
@@ -374,6 +381,7 @@ declare module "cordis" {
     market: FrontendMarketService;
     node: FrontendNodeService;
     instance: FrontendInstanceService;
+    mod: FrontendModManagerService;
     file: FrontendFileManagerService;
     terminal: FrontendTerminalService;
   }

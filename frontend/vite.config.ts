@@ -1,5 +1,6 @@
 import { fileURLToPath, URL } from "node:url";
 import path from "node:path";
+import { createRequire } from "node:module";
 
 import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
@@ -14,21 +15,15 @@ const PANEL_PLUGIN_ENTRY_PREFIX = "panel-plugin-entry:";
 const PANEL_PLUGIN_BUILD_ENTRY_PREFIX = "panel-plugin-build-entry:";
 const RESOLVED_PANEL_PLUGIN_BUILD_ENTRY_PREFIX = `\0${PANEL_PLUGIN_BUILD_ENTRY_PREFIX}`;
 const PANEL_PLUGINS_DIRECTORY = fileURLToPath(new URL("../panel/plugins", import.meta.url));
-const VUETIFY_FRAMEWORK_PATH = fileURLToPath(
-  new URL("./node_modules/vuetify/lib/framework.mjs", import.meta.url)
-);
-const VUETIFY_STYLES_PATH = fileURLToPath(
-  new URL("./node_modules/vuetify/lib/styles/main.css", import.meta.url)
-);
-const VUETIFY_COMPONENTS_PATH = fileURLToPath(
-  new URL("./node_modules/vuetify/lib/components/index.mjs", import.meta.url)
-);
-const VUETIFY_MDI_PATH = fileURLToPath(
-  new URL("./node_modules/vuetify/lib/iconsets/mdi.mjs", import.meta.url)
-);
-const MDI_FONT_CSS_PATH = fileURLToPath(
-  new URL("./node_modules/@mdi/font/css/materialdesignicons.css", import.meta.url)
-);
+// Resolve the installed package's exports from the frontend workspace. Vuetify
+// releases use both .mjs and .js entry points, so hard-coding an extension fails
+// after a compatible dependency update.
+const frontendRequire = createRequire(import.meta.url);
+const VUETIFY_FRAMEWORK_PATH = frontendRequire.resolve("vuetify");
+const VUETIFY_STYLES_PATH = frontendRequire.resolve("vuetify/styles");
+const VUETIFY_COMPONENTS_PATH = frontendRequire.resolve("vuetify/components");
+const VUETIFY_MDI_PATH = frontendRequire.resolve("vuetify/iconsets/mdi");
+const MDI_FONT_CSS_PATH = frontendRequire.resolve("@mdi/font/css/materialdesignicons.css");
 interface DiscoveredPanelPlugin {
   metadata: Record<string, unknown>;
   directory: string;
@@ -393,9 +388,8 @@ export default defineConfig({
       "@xterm/xterm"
     ],
     alias: {
-      // Vite 4 does not resolve Vuetify 3.7's exports map consistently from
-      // plugin files outside the frontend package. Point those entries at the
-      // installed files while keeping the imports package-oriented in source.
+      // Plugin files live outside the frontend package. Resolve Vuetify from
+      // this workspace while keeping its public import names in plugin source.
       "vuetify/styles": VUETIFY_STYLES_PATH,
       "vuetify/components": VUETIFY_COMPONENTS_PATH,
       "vuetify/iconsets/mdi": VUETIFY_MDI_PATH,

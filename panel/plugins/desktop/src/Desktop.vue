@@ -18,7 +18,6 @@ import DesktopEventConfig from "./widgets/desktop/DesktopEventConfig.vue";
 import DesktopIcon from "./widgets/desktop/DesktopIcon.vue";
 import DesktopInstanceConsole from "./widgets/desktop/DesktopInstanceConsole.vue";
 import DesktopInstanceManager from "./widgets/desktop/DesktopInstanceManager.vue";
-import DesktopModManager from "./widgets/desktop/DesktopModManager.vue";
 import DesktopMyApps from "./widgets/desktop/DesktopMyApps.vue";
 import CreateInstancePage from "@instance/views/CreateInstance.vue";
 import DesktopSchedule from "./widgets/desktop/DesktopSchedule.vue";
@@ -27,6 +26,7 @@ import type { TaskbarWindow } from "./widgets/desktop/DesktopTaskbar.vue";
 import DesktopTaskbar from "./widgets/desktop/DesktopTaskbar.vue";
 import DesktopTerminalSelector from "./widgets/desktop/DesktopTerminalSelector.vue";
 import DesktopWindow from "./widgets/desktop/DesktopWindow.vue";
+import { migrateLegacyInstanceWindow } from "./legacyWindows";
 import { VIcon } from "vuetify/components";
 import { computed, markRaw, onMounted, onUnmounted, reactive, ref, watch, type Component, type CSSProperties } from "vue";
 import { useRouter } from "vue-router";
@@ -46,7 +46,6 @@ const FullscreenOutlined = "mdi-fullscreen";
 const MinusOutlined = "mdi-minus";
 const PictureOutlined = "mdi-image-outline";
 const TeamOutlined = "mdi-account-group-outline";
-const UsbOutlined = "mdi-usb-port";
 const UserOutlined = "mdi-account-outline";
 
 // Desktop surfaces render icons through Vuetify's MDI set. Feature plugins
@@ -563,8 +562,7 @@ const ICON_MAP: Record<string, Component | string> = {
     "schedule": FieldTimeOutlined,
     "event-config": DashboardOutlined,
     "new-instance": DesktopOutlined,
-    "user-info": UserOutlined,
-    "mod-manager": UsbOutlined
+    "user-info": UserOutlined
 };
 
 const loadDesktopLayout = async () => {
@@ -584,9 +582,9 @@ const loadDesktopLayout = async () => {
 
         if (layout && Array.isArray(layout.windows) && layout.windows.length > 0) {
             windows.clear();
-            for (const win of layout.windows) {
-                // Migrate the former dedicated Minecraft status window to the plugin action.
-                const content = win.content === "mc-ping" ? "instance-action:mcstats" : win.content;
+            for (const savedWindow of layout.windows) {
+                const win = migrateLegacyInstanceWindow(savedWindow);
+                const content = win.content;
                 const desktopApp = availableDesktopApps.value.find(
                     (app) => app.windowContent === content || app.id === content
                 );
@@ -609,7 +607,7 @@ const loadDesktopLayout = async () => {
                 if (instanceActionId && !instanceAction?.desktopComponent) continue;
                 const icon =
                     desktopApp?.icon ||
-                    (instanceActionId ? getDesktopIcon(instanceActionId, instanceAction?.icon) : undefined) ||
+                    (instanceActionId ? getDesktopIcon(instanceActionId, instanceAction?.mdiIcon || instanceAction?.icon) : undefined) ||
                     ICON_MAP[content] ||
                     DesktopOutlined;
                 const zIndex = typeof win.zIndex === "number" ? win.zIndex : ++nextZIndex;
@@ -899,40 +897,6 @@ const openEventConfigWindow = (instanceId: string, daemonId: string) => {
     saveDesktopLayout();
 };
 
-const openModManagerWindow = (instanceId: string, daemonId: string) => {
-    const windowId = `mod-manager-${instanceId}`;
-    const existing = windows.get(windowId);
-
-    if (existing) {
-        existing.minimized = false;
-        existing.visible = true;
-        focusWindow(windowId);
-        return;
-    }
-
-    windowOffset = (windowOffset + 1) % 8;
-    const offsetX = 120 + windowOffset * 30;
-    const offsetY = 80 + windowOffset * 30;
-
-    windows.set(windowId, {
-        id: windowId,
-        title: t("TXT_CODE_MOD_MANAGER"),
-        icon: UsbOutlined,
-        visible: true,
-        minimized: false,
-        maximized: false,
-        zIndex: ++nextZIndex,
-        content: "mod-manager",
-        initialX: offsetX,
-        initialY: offsetY,
-        initialWidth: 900,
-        initialHeight: 600,
-        instanceId: instanceId,
-        daemonId: daemonId
-    });
-    saveDesktopLayout();
-};
-
 const openInstanceActionWindow = (actionId: string, instanceId: string, daemonId: string) => {
     const action = pluginInstanceActions.value.find(
         (candidate) => candidate.id === actionId && candidate.desktopComponent
@@ -956,7 +920,7 @@ const openInstanceActionWindow = (actionId: string, instanceId: string, daemonId
     windows.set(windowId, {
         id: windowId,
         title: typeof action.title === "function" ? action.title() : action.title,
-        icon: getDesktopIcon(actionId, action.icon),
+        icon: getDesktopIcon(actionId, action.mdiIcon || action.icon),
         visible: true,
         minimized: false,
         maximized: false,
@@ -1310,7 +1274,7 @@ const exitDesktop = async () => {
 };
 
 const username = computed(() => appState.userInfo?.userName || "User");
-const isMdiIcon = (icon: Component | string): boolean => typeof icon === "string" && icon.startsWith("mdi-");
+const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof icon === "string" && icon.startsWith("mdi-");
 </script>
 
 <template>
@@ -1369,7 +1333,7 @@ const isMdiIcon = (icon: Component | string): boolean => typeof icon === "string
                                 v-else-if="win.content === 'instance-console' && win.instanceId && win.daemonId"
                                 :instance-id="win.instanceId" :daemon-id="win.daemonId"
                                 @open-server-config="openServerConfigWindow"
-                                @open-mod-manager="openModManagerWindow" @open-schedule="openScheduleWindow"
+                                @open-schedule="openScheduleWindow"
                                 @open-event-config="openEventConfigWindow"
                                 @open-instance-action="openInstanceActionWindow" />
 
@@ -1390,11 +1354,6 @@ const isMdiIcon = (icon: Component | string): boolean => typeof icon === "string
                             <DesktopEventConfig
                                 v-else-if="win.content === 'event-config' && win.instanceId && win.daemonId"
                                 :instance-id="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)" />
-
-                            <DesktopModManager
-                                v-else-if="win.content === 'mod-manager' && win.instanceId && win.daemonId"
-                                :instance-id="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)"
-                                @open-file-editor="(filePath: string, fileName: string) => openFileEditorWindow(win.instanceId!, win.daemonId!, filePath, fileName)" />
 
                             <component :is="desktopFileEditorWindow"
                                 v-else-if="win.content === 'file-editor' && desktopFileEditorWindow && win.instanceId && win.daemonId && win.filePath && win.fileName"

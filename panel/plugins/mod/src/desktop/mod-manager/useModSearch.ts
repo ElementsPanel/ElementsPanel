@@ -5,11 +5,12 @@ import {
   getMcVersionsApi,
   getModVersionsApi,
   searchModsApi
-} from "@/services/apis/modManager";
+} from "../../api";
 import { useLocalStorage } from "@vueuse/core";
 import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
-import { VBtn } from "vuetify/components";
+import { notifyDesktop } from "../notice";
+import { VBtn, VIcon } from "vuetify/components";
 import { computed, createVNode, ref, type Ref } from "vue";
 
 export function useModSearch(
@@ -17,7 +18,8 @@ export function useModSearch(
   daemonId: string,
   getMods: () => any[],
   loadMods: () => Promise<void>,
-  folders: Ref<string[]>
+  folders: Ref<string[]>,
+  isDesktop?: boolean
 ) {
   const searchFilters = useLocalStorage("mcs_mod_search_filters", {
     query: "",
@@ -35,6 +37,14 @@ export function useModSearch(
   const searchLimit = useLocalStorage("mcs_mod_search_limit", 10);
 
   const mcVersions = ref<string[]>([]);
+
+  // Desktop mode: reactive state for the save-location dialog
+  const saveLocationDialog = ref({
+    show: false,
+    detectedType: "mod" as "mod" | "plugin",
+    resolve: null as ((value: "mod" | "plugin") => void) | null,
+    reject: null as ((reason: any) => void) | null
+  });
 
   const loaderOptions = computed(() => [
     {
@@ -111,7 +121,8 @@ export function useModSearch(
       searchResults.value = res.value?.hits || [];
       searchTotal.value = res.value?.total_hits || 0;
     } catch (err: any) {
-      message.error(err.message);
+      if (isDesktop) notifyDesktop(err.message, "error");
+      else message.error(err.message);
     } finally {
       searchLoading.value = false;
     }
@@ -184,7 +195,8 @@ export function useModSearch(
       });
       versions.value = res.value || [];
     } catch (err: any) {
-      message.error(err.message);
+      if (isDesktop) notifyDesktop(err.message, "error");
+      else message.error(err.message);
     } finally {
       versionsLoading.value = false;
     }
@@ -224,55 +236,72 @@ export function useModSearch(
     const hasPlugins = folders.value.includes("plugins");
 
     if (hasMods && hasPlugins) {
-      try {
-        finalType = await new Promise((resolve, reject) => {
-          const modal = Modal.confirm({
-            title: t("TXT_CODE_MOD_SELECT_SAVE_DIR"),
-      icon: createVNode("i", { class: "mdi mdi-alert-circle-outline" }),
-            content: "",
-            footer: createVNode("div", { style: "text-align: right; margin-top: 20px;" }, [
-              createVNode(
-                VBtn,
-                {
-                  variant: "text",
-                  onClick: () => {
-                    modal.destroy();
-                    reject(new Error("Cancelled"));
-                  }
-                },
-                { default: () => t("TXT_CODE_a0451c97") }
-              ),
-              createVNode(
-                VBtn,
-                {
-                  color: detectedType === "mod" ? "primary" : undefined,
-                  variant: detectedType === "mod" ? "elevated" : "text",
-                  style: "margin-left: 8px",
-                  onClick: () => {
-                    modal.destroy();
-                    resolve("mod");
-                  }
-                },
-                { default: () => t("TXT_CODE_MOD") }
-              ),
-              createVNode(
-                VBtn,
-                {
-                  color: detectedType === "plugin" ? "primary" : undefined,
-                  variant: detectedType === "plugin" ? "elevated" : "text",
-                  style: "margin-left: 8px",
-                  onClick: () => {
-                    modal.destroy();
-                    resolve("plugin");
-                  }
-                },
-                { default: () => t("TXT_CODE_PLUGIN") }
-              )
-            ])
+      if (isDesktop) {
+        // Desktop mode: use reactive DesktopWindow dialog
+        try {
+          finalType = await new Promise<"mod" | "plugin">((resolve, reject) => {
+            saveLocationDialog.value = {
+              show: true,
+              detectedType: detectedType as "mod" | "plugin",
+              resolve,
+              reject
+            };
           });
-        });
-      } catch (e) {
-        return; // User cancelled
+        } catch (e) {
+          return; // User cancelled
+        }
+      } else {
+        // Mobile/web mode: use Modal.confirm
+        try {
+          finalType = await new Promise((resolve, reject) => {
+            const modal = Modal.confirm({
+              title: t("TXT_CODE_MOD_SELECT_SAVE_DIR"),
+              icon: createVNode(VIcon, { icon: "mdi-alert-circle-outline" }),
+              content: "",
+              footer: createVNode("div", { style: "text-align: right; margin-top: 20px;" }, [
+                createVNode(
+                  VBtn,
+                  {
+                    variant: "text",
+                    onClick: () => {
+                      modal.destroy();
+                      reject(new Error("Cancelled"));
+                    }
+                  },
+                  { default: () => t("TXT_CODE_a0451c97") }
+                ),
+                createVNode(
+                  VBtn,
+                  {
+                    color: detectedType === "mod" ? "primary" : undefined,
+                    variant: detectedType === "mod" ? "elevated" : "text",
+                    style: "margin-left: 8px",
+                    onClick: () => {
+                      modal.destroy();
+                      resolve("mod");
+                    }
+                  },
+                  { default: () => t("TXT_CODE_MOD") }
+                ),
+                createVNode(
+                  VBtn,
+                  {
+                    color: detectedType === "plugin" ? "primary" : undefined,
+                    variant: detectedType === "plugin" ? "elevated" : "text",
+                    style: "margin-left: 8px",
+                    onClick: () => {
+                      modal.destroy();
+                      resolve("plugin");
+                    }
+                  },
+                  { default: () => t("TXT_CODE_PLUGIN") }
+                )
+              ])
+            });
+          });
+        } catch (e) {
+          return; // User cancelled
+        }
       }
     } else if (hasPlugins && !hasMods) {
       finalType = "plugin";
@@ -334,11 +363,13 @@ export function useModSearch(
 
         const targetTab =
           currentProjectType === "plugin" ? t("TXT_CODE_PLUGIN_LIST") : t("TXT_CODE_MOD_LIST");
-        message.success(`${t("TXT_CODE_38fb23a8")} -> ${targetTab}`);
+        if (isDesktop) notifyDesktop(`${t("TXT_CODE_38fb23a8")} -> ${targetTab}`, "success");
+        else message.success(`${t("TXT_CODE_38fb23a8")} -> ${targetTab}`);
         showVersionModal.value = false;
         await loadMods();
       } catch (err: any) {
-        message.error(err.message);
+        if (isDesktop) notifyDesktop(err.message, "error");
+        else message.error(err.message);
       }
     };
 
@@ -367,6 +398,8 @@ export function useModSearch(
     showVersionModal,
     sortedVersions,
     showVersions,
-    onDownload
+    onDownload,
+    // Desktop mode: save location dialog state
+    saveLocationDialog
   };
 }

@@ -2,11 +2,9 @@ import crypto from "crypto";
 import fs from "fs-extra";
 import StreamZip from "node-stream-zip";
 import path from "path";
-import toml from 'smol-toml';
+import toml from "smol-toml";
 import yaml from "yaml";
-import downloadManager from "./download_manager";
-import { fileSubsystem } from "./file_access";
-import logger from "./log";
+import type { DaemonPluginContext } from "../../../../src/plugin";
 
 export interface ModInfo {
   name: string;
@@ -34,11 +32,24 @@ export interface ModConfigFile {
 }
 
 export class ModService {
+  private disposed = false;
+  private download: { path: string } | undefined;
   private readonly MAX_CACHE_SIZE = 2000;
   private cache: Map<
     string,
     { mtime: number; size: number; info: Partial<ModInfo>; hash: string }
   > = new Map();
+
+  constructor(private readonly ctx: DaemonPluginContext) {
+    const downloads = ctx.transfer.downloads;
+    ctx.effect(() => () => {
+      this.disposed = true;
+      this.cache.clear();
+      // The transfer service is shared: never stop another feature's download.
+      if (this.download && downloads.task?.path === this.download.path) downloads.stop();
+      this.download = undefined;
+    });
+  }
 
   private async getFileHash(filePath: string): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -95,7 +106,7 @@ export class ModService {
             description: mod.description,
             type: "mod"
           };
-        } catch (e) { }
+        } catch (e) {}
       }
 
       // Quilt
@@ -169,7 +180,7 @@ export class ModService {
     if (pageSize < 1) pageSize = 10;
     if (page < 1) page = 1;
 
-    const fileManager = fileSubsystem().getFileManager(instanceUuid);
+    const fileManager = this.ctx.files.getFileManager(instanceUuid);
 
     // if (!FileManager.checkFileName(folder ?? "")) {
     //   throw new Error("Invalid folder name");
@@ -287,7 +298,7 @@ export class ModService {
   }
 
   public async toggleMod(instanceUuid: string, fileName: string): Promise<void> {
-    const fileManager = fileSubsystem().getFileManager(instanceUuid);
+    const fileManager = this.ctx.files.getFileManager(instanceUuid);
     if (!fileManager.checkPath(fileName)) throw new Error("Invalid file name");
     const rootDir = fileManager.toAbsolutePath(".");
 
@@ -317,7 +328,7 @@ export class ModService {
   }
 
   public async deleteMod(instanceUuid: string, fileName: string): Promise<void> {
-    const fileManager = fileSubsystem().getFileManager(instanceUuid);
+    const fileManager = this.ctx.files.getFileManager(instanceUuid);
     if (!fileManager.checkPath(fileName)) throw new Error("Invalid file name");
     const rootDir = fileManager.toAbsolutePath(".");
 
@@ -346,7 +357,7 @@ export class ModService {
     type: "mod" | "plugin",
     options: { fallbackUrl?: string } = {}
   ) {
-    const fileManager = fileSubsystem().getFileManager(instanceUuid);
+    const fileManager = this.ctx.files.getFileManager(instanceUuid);
     const rootDir = fileManager.toAbsolutePath(".");
 
     // Determine the save directory based on what exists (case-sensitive check for Linux)
@@ -364,12 +375,19 @@ export class ModService {
     if (!fileManager.checkPath(relativePath)) throw new Error("Invalid file path");
     const targetPath = fileManager.toAbsolutePath(relativePath);
 
-    logger.info(
+    this.ctx.logger.info(
       `[ModService] Instance ${instanceUuid} Install Mod: ${fileName} from ${url} to ${targetPath}`
     );
-    logger.info(`[ModService] Options: ${JSON.stringify(options)}`);
+    this.ctx.logger.info(`[ModService] Options: ${JSON.stringify(options)}`);
 
-    await downloadManager.downloadFromUrl(url, targetPath, options.fallbackUrl);
+    if (this.disposed) throw new Error("The mod plugin has been unloaded.");
+    const download = { path: targetPath };
+    this.download = download;
+    try {
+      await this.ctx.transfer.downloads.downloadFromUrl(url, targetPath, options.fallbackUrl);
+    } finally {
+      if (this.download === download) this.download = undefined;
+    }
   }
 
   public async getModConfig(
@@ -378,7 +396,7 @@ export class ModService {
     type: "mod" | "plugin",
     fileName?: string
   ): Promise<ModConfigFile[]> {
-    const fileManager = fileSubsystem().getFileManager(instanceUuid);
+    const fileManager = this.ctx.files.getFileManager(instanceUuid);
     if (fileName && !fileManager.checkPath(fileName)) throw new Error("Invalid file name");
     if (modId && !fileManager.checkPath(modId)) throw new Error("Invalid mod ID");
     const rootDir = fileManager.toAbsolutePath(".");
@@ -476,5 +494,3 @@ export class ModService {
     return configFiles;
   }
 }
-
-export const modService = new ModService();

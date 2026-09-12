@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
 import AppDialog from "@/components/AppDialog.vue";
-import DesktopWindow from "../../desktop/DesktopWindow.vue";
-import { onMounted, onUnmounted, ref } from "vue";
-import { VBtn, VIcon, VList, VListItem } from "vuetify/components";
+import { ctx } from "@/plugin/context";
+import { computed, onMounted, onUnmounted, ref } from "vue";
+import { VBtn, VList, VListItem } from "vuetify/components";
 
 const FileTextOutlined = "mdi-file-document-outline";
 const SettingOutlined = "mdi-cog-outline";
+const desktopWindowComponent = computed(() => ctx.desktop.window);
 
 defineProps<{
   visible: boolean;
@@ -39,7 +40,7 @@ const emit = defineEmits(["update:visible", "edit"]);
   <template v-if="isDesktop">
     <Teleport to="body">
       <Transition name="du-dialog-fade">
-        <DesktopWindow v-if="visible" id="mod-config-dialog" :title="t('TXT_CODE_CONFIG') + ': ' + currentMod?.name"
+        <component :is="desktopWindowComponent" v-if="visible" id="mod-config-dialog" :title="t('TXT_CODE_CONFIG') + ': ' + currentMod?.name"
           :icon="SettingOutlined" :visible="visible" :minimized="false" :maximized="false" :active="true"
           :initial-width="600" :initial-height="400" :initial-x="windowWidth / 2 - 300"
           :initial-y="windowHeight / 2 - 200" :z-index="10001" :show-minimize="false" :show-maximize="false"
@@ -54,7 +55,7 @@ const emit = defineEmits(["update:visible", "edit"]);
             </VList>
             <div v-else class="desktop-modal-loading"><VIcon icon="mdi-loading" /></div>
           </div>
-        </DesktopWindow>
+        </component>
       </Transition>
     </Teleport>
   </template>

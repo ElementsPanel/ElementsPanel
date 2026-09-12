@@ -1,5 +1,5 @@
 import { t } from "@/lang/i18n";
-import { deleteModApi, downloadModApi, toggleModApi } from "@/services/apis/modManager";
+import { deleteModApi, downloadModApi, toggleModApi } from "../../api";
 import { useLocalStorage } from "@vueuse/core";
 import { message } from "@/tools/vuetifyToast";
 import { ref } from "vue";

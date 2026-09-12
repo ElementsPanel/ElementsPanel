@@ -28,7 +28,6 @@ import InstanceList from "./widgets/InstanceList.vue";
 import QuickStart from "./widgets/QuickStart.vue";
 import InstanceBaseInfo from "./widgets/instance/BaseInfo.vue";
 import InstanceManagerBtns from "./widgets/instance/ManagerBtns.vue";
-import InstanceModManager from "./widgets/instance/ModManager.vue";
 import InstancePerformance from "./widgets/instance/Performance.vue";
 import Schedule from "./widgets/instance/Schedule.vue";
 import InstanceServerConfigFile from "./widgets/instance/ServerConfigFile.vue";
@@ -142,7 +141,6 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.ui.layoutCard("InstancePerformance", InstancePerformance);
   ctx.ui.layoutCard("InstanceServerConfigOverview", InstanceServerConfigOverview);
   ctx.ui.layoutCard("InstanceServerConfigFile", InstanceServerConfigFile);
-  ctx.ui.layoutCard("InstanceModManager", InstanceModManager);
   ctx.ui.layoutCard("Schedule", Schedule);
   ctx.ui.layoutCard("InstanceShortcut", InstanceShortcut);
   cardPoolItems.forEach((createItem) => ctx.ui.layoutCardPoolItem(createItem));
@@ -184,13 +182,6 @@ export function apply(ctx: PanelFrontendPluginContext) {
         }
       ]
     }
-  });
-
-  ctx.routes.add({
-    path: "/instances/terminal/mods",
-    name: t("TXT_CODE_MOD_MANAGER"),
-    component: LayoutContainer,
-    meta: { permission: ROLE.USER }
   });
 
   ctx.routes.add({

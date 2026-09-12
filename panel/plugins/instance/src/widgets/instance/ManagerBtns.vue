@@ -12,7 +12,6 @@ import { useServerConfig } from "@/hooks/useServerConfig";
 import { t } from "@/lang/i18n";
 import { ctx } from "@/plugin/context";
 import type { PanelFrontendInstanceActionContext } from "@/plugin";
-import { modListApi } from "@/services/apis/modManager";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import type { LayoutCard } from "@/types";
 import { VIcon } from "vuetify/components";
@@ -73,35 +72,6 @@ const openInstanceAction = (id: string) => {
   instanceActionRefs.get(id)?.open?.();
 };
 
-const folders = ref<string[]>([]);
-const foldersLoaded = ref(false);
-
-const loadFolders = async () => {
-  if (!instanceId || !daemonId) return;
-  try {
-    const { execute } = modListApi();
-    const res = await execute({
-      params: {
-        uuid: instanceId,
-        daemonId: daemonId
-      }
-    });
-    folders.value = res.value?.folders || [];
-  } catch (err) {
-    console.error("Failed to load folders:", err);
-  } finally {
-    foldersLoaded.value = true;
-  }
-};
-
-watch(
-  () => [instanceId, daemonId],
-  () => {
-    loadFolders();
-  },
-  { immediate: true }
-);
-
 const toPage = (params: RouteLocationPathRaw) => {
   if (!params.query) params.query = {};
   params.query = {
@@ -159,24 +129,6 @@ const btns = computed(() => {
         });
       }
     },
-    {
-      title: t("TXT_CODE_MOD_MANAGER"),
-      icon: "mdi-usb-port",
-      click: () => {
-        toPage({ path: "/instances/terminal/mods" });
-      },
-      condition: () => {
-        const type = instanceInfo.value?.config.type || "";
-        // Narrow it down to Minecraft server types only (Java or Bedrock)
-        const isMC = type.startsWith("minecraft/java") || type.startsWith("minecraft/bedrock");
-        if (!isMC) return false;
-        const hasPermission = state.settings.canFileManager || isAdmin.value;
-        if (!hasPermission) return false;
-        if (!foldersLoaded.value) return false;
-        return folders.value && folders.value.length > 0;
-      }
-    },
-
     {
       title: t("TXT_CODE_656a85d8"),
       icon: "mdi-hammer-wrench",

@@ -9,7 +9,7 @@ import {
 } from "@/services/apis/instance";
 import { INSTANCE_STATUS_CODE } from "@/types/const";
 import type { UserInstance } from "@/types/user";
-import { computed, onMounted, onUnmounted, ref, type Component } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { VBtn, VIcon, VProgressCircular, VSelect, VTextField } from "vuetify/components";
 
 const ClockCircleOutlined = "mdi-clock-outline";
@@ -92,7 +92,7 @@ const getStatusClass = (status: INSTANCE_STATUS_CODE): string => {
     return map[status] || "";
 };
 
-const statusIconMap: Record<number, Component | string> = {
+const statusIconMap: Record<number, string> = {
     [INSTANCE_STATUS_CODE.BUSY]: ClockCircleOutlined,
     [INSTANCE_STATUS_CODE.STOPPED]: MinusCircleOutlined,
     [INSTANCE_STATUS_CODE.STOPPING]: PauseCircleOutlined,
@@ -100,7 +100,7 @@ const statusIconMap: Record<number, Component | string> = {
     [INSTANCE_STATUS_CODE.RUNNING]: PlayCircleOutlined
 };
 
-const getStatusIconComponent = (status: INSTANCE_STATUS_CODE): Component | string => {
+const getStatusIcon = (status: INSTANCE_STATUS_CODE): string => {
     return statusIconMap[status] || QuestionCircleOutlined;
 };
 
@@ -273,9 +273,7 @@ onUnmounted(() => {
                 <div class="ma-instance__info">
                     <div class="ma-instance__header">
                         <span class="ma-instance__status" :class="getStatusClass(instance.status)">
-                            <component :is="getStatusIconComponent(instance.status)"
-                                v-if="typeof getStatusIconComponent(instance.status) !== 'string'" />
-                            <VIcon v-else :icon="getStatusIconComponent(instance.status)" size="small" />
+                            <VIcon :icon="getStatusIcon(instance.status)" size="small" />
                         </span>
                         <span class="ma-instance__name">{{
                             instance.nickname || t("TXT_CODE_DESKTOP_IM_UNNAMED")

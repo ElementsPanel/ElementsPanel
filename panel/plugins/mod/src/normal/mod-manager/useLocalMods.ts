@@ -4,7 +4,7 @@ import {
   getModBatchInfoApi,
   modListApi,
   toggleModApi
-} from "@/services/apis/modManager";
+} from "../../api";
 import { message } from "@/tools/vuetifyToast";
 import { computed, onUnmounted, reactive, ref, watch } from "vue";
 

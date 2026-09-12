@@ -2,11 +2,13 @@
 import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
 import AppDialog from "@/components/AppDialog.vue";
-import DesktopWindow from "../../desktop/DesktopWindow.vue";
+import { ctx } from "@/plugin/context";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { VBtn, VChip, VDataTable, VIcon, VProgressCircular } from "vuetify/components";
 
 const AppstoreOutlined = "mdi-view-grid-outline";
+
+const desktopWindowComponent = computed(() => ctx.desktop.window);
 
 const props = defineProps<{
   visible: boolean;
@@ -66,6 +68,8 @@ const clearDownloadingState = () => {
   }
   downloadingVersionId.value = null;
 };
+
+onUnmounted(clearDownloadingState);
 
 // Watch mods changes, clear loading state when version is installed
 watch(
@@ -164,7 +168,7 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
   <template v-if="isDesktop">
     <Teleport to="body">
       <Transition name="du-dialog-fade">
-        <DesktopWindow v-if="visible" id="mod-version-dialog" :title="t('TXT_CODE_VERSION_SELECT')"
+        <component :is="desktopWindowComponent" v-if="visible" id="mod-version-dialog" :title="t('TXT_CODE_VERSION_SELECT')"
           :icon="AppstoreOutlined" :visible="visible" :minimized="false" :maximized="false" :active="true"
           :initial-width="900" :initial-height="600" :initial-x="windowWidth / 2 - 450"
           :initial-y="windowHeight / 2 - 300" :z-index="10001" :show-minimize="false" :show-maximize="false"
@@ -190,7 +194,7 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
               </template>
             </VDataTable>
           </div>
-        </DesktopWindow>
+        </component>
       </Transition>
     </Teleport>
   </template>

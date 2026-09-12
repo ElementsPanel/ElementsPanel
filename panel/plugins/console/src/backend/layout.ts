@@ -16,26 +16,37 @@ export function configureLayout(ctx: PanelPluginContext) {
 }
 
 export class LayoutService extends Service implements PanelLayoutService {
+  private readonly pages = new Set<() => IPageLayoutConfig>();
+
   constructor(ctx: Context) {
     super(ctx, "layout", true);
   }
-  get() { return getFrontendLayoutConfig(); }
+  get() {
+    return getFrontendLayoutConfig([...this.pages].map((page) => page()));
+  }
   set(config: IPageLayoutConfig[]) { setFrontendLayoutConfig(config); }
   reset() { resetFrontendLayoutConfig(); }
+
+  provide(page: () => IPageLayoutConfig) {
+    return this.ctx.effect(() => {
+      this.pages.add(page);
+      return () => this.pages.delete(page);
+    });
+  }
 }
 
 function getRandomId() {
   return v4();
 }
 
-export function getFrontendLayoutConfig(): string {
+export function getFrontendLayoutConfig(pluginPages: IPageLayoutConfig[] = []): string {
   let layoutConfig: string = "";
   if (fs.existsSync(LAYOUT_FILE)) {
     layoutConfig = fs.readFileSync(LAYOUT_FILE, "utf8");
   }
   if (layoutConfig) {
     if (globals?.get("versionChange")) {
-      const latestLayoutConfig = getDefaultFrontendLayoutConfig();
+      const latestLayoutConfig = [...getDefaultFrontendLayoutConfig(), ...pluginPages];
       const currentLayoutConfig = JSON.parse(layoutConfig) as IPageLayoutConfig[];
       for (const page of latestLayoutConfig) {
         if (!currentLayoutConfig.find((item) => item.page === page.page)) {
@@ -46,9 +57,17 @@ export function getFrontendLayoutConfig(): string {
       setFrontendLayoutConfig(currentLayoutConfig);
       return JSON.stringify(currentLayoutConfig);
     }
-    return layoutConfig as string;
+    // A newly enabled plugin gets its defaults immediately, without replacing
+    // any saved customization or waiting for a panel version change.
+    const currentLayoutConfig = JSON.parse(layoutConfig) as IPageLayoutConfig[];
+    for (const page of pluginPages) {
+      if (!currentLayoutConfig.some((item) => item.page === page.page)) {
+        currentLayoutConfig.push(page);
+      }
+    }
+    return JSON.stringify(currentLayoutConfig);
   } else {
-    return JSON.stringify(getDefaultFrontendLayoutConfig());
+    return JSON.stringify([...getDefaultFrontendLayoutConfig(), ...pluginPages]);
   }
 }
 
@@ -166,28 +185,6 @@ function getDefaultFrontendLayoutConfig(): IPageLayoutConfig[] {
           meta: {},
           type: "InstanceFileManager",
           title: translate("TXT_CODE_ae533703"),
-          width: 12,
-          height: LayoutCardHeight.AUTO,
-          disableDelete: true
-        },
-        {
-          id: getRandomId(),
-          meta: {},
-          type: "EmptyCard",
-          title: "",
-          width: 12,
-          height: LayoutCardHeight.MINI
-        }
-      ]
-    },
-    {
-      page: "/instances/terminal/mods",
-      items: [
-        {
-          id: getRandomId(),
-          meta: {},
-          type: "InstanceModManager",
-          title: translate("TXT_CODE_MOD_MANAGER"),
           width: 12,
           height: LayoutCardHeight.AUTO,
           disableDelete: true

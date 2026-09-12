@@ -27,7 +27,7 @@ const changeStyle = () => {
 
 const isSpinning = ref(false);
 
-let timekeeping: NodeJS.Timeout | null = null;
+let timekeeping: ReturnType<typeof setTimeout> | null = null;
 const spin = (time: number) => {
   isSpinning.value = true;
   if (timekeeping === null) {
@@ -44,7 +44,7 @@ const getDate = () => dayjs().format("YYYY/MM/DD dddd");
 const time = ref(getTime());
 const date = ref(getDate());
 
-let timer: NodeJS.Timer | null;
+let timer: ReturnType<typeof setInterval> | null = null;
 
 onMounted(() => {
   timer = setInterval(() => {
@@ -54,7 +54,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (timer) clearInterval(timer);
+  if (timekeeping) clearTimeout(timekeeping);
   timer = null;
+  timekeeping = null;
 });
 </script>
 

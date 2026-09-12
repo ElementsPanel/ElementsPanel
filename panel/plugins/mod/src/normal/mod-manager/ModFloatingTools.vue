@@ -2,7 +2,7 @@
 import { t } from "@/lang/i18n";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
-import { stopTransferApi } from "@/services/apis/modManager";
+import { stopTransferApi } from "../../api";
 import { message } from "@/tools/vuetifyToast";
 import { VBadge, VBtn, VCard, VCardText, VCardTitle, VChip, VIcon, VMenu, VProgressLinear } from "vuetify/components";
 

@@ -72,8 +72,8 @@ const hasVnodeProp = (name: string) =>
   Object.prototype.hasOwnProperty.call(instance?.vnode.props ?? {}, name);
 
 const sourceOpen = computed(() => {
-  if (hasVnodeProp("open")) return props.open;
-  if (hasVnodeProp("visible")) return props.visible;
+  if (hasVnodeProp("open")) return props.open ?? false;
+  if (hasVnodeProp("visible")) return props.visible ?? false;
   return props.modelValue ?? false;
 });
 const renderCard = ref(!props.destroyOnClose || sourceOpen.value);

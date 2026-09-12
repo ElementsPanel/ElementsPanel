@@ -28,6 +28,7 @@ export type {
   FrontendI18nService,
   FrontendInstanceService,
   FrontendMarketService,
+  FrontendModManagerService,
   FrontendMenusService,
   FrontendFileManagerService,
   FrontendTerminalService,

@@ -22,6 +22,14 @@
       "@/*": ["../panel/plugins/console/src/*"],
       "@console/*": ["../panel/plugins/console/src/*"],
       "@instance/*": ["../panel/plugins/instance/src/*"],
+      "vuetify/components": [
+        "./node_modules/vuetify/lib/components/index.d.ts",
+        "./node_modules/vuetify/lib/components/index.d.mts"
+      ],
+      "vuetify/iconsets/mdi": [
+        "./node_modules/vuetify/lib/iconsets/mdi.d.ts",
+        "./node_modules/vuetify/lib/iconsets/mdi.d.mts"
+      ],
       "lodash": ["./node_modules/@types/lodash/index.d.ts"],
       "*": ["./node_modules/*"]
     },

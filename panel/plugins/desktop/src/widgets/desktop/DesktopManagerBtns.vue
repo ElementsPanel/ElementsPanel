@@ -6,7 +6,6 @@ import { useServerConfig } from "@/hooks/useServerConfig";
 import { t } from "@/lang/i18n";
 import { ctx } from "@/plugin/context";
 import type { PanelFrontendInstanceActionContext } from "@/plugin";
-import { modListApi } from "@/services/apis/modManager";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { computed, ref, watch } from "vue";
 import { arrayFilter } from "@/tools/array";
@@ -18,7 +17,6 @@ import RconSettings from "@instance/widgets/instance/dialogs/RconSettings.vue";
 import { VIcon } from "vuetify/components";
 
 const ControlOutlined = "mdi-tune-variant";
-const UsbOutlined = "mdi-usb-port";
 const BuildOutlined = "mdi-hammer-wrench";
 const FieldTimeOutlined = "mdi-clock-outline";
 const DashboardOutlined = "mdi-view-dashboard-outline";
@@ -40,7 +38,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: "open-server-config", type: string): void;
-  (e: "open-mod-manager"): void;
   (e: "open-schedule"): void;
   (e: "open-event-config"): void;
   (e: "open-instance-action", actionId: string): void;
@@ -68,35 +65,6 @@ const desktopInstanceActions = computed(() =>
   ctx.actions.instances.filter((action) => action.desktopComponent)
 );
 
-const folders = ref<string[]>([]);
-const foldersLoaded = ref(false);
-
-const loadFolders = async () => {
-  if (!props.instanceId || !props.daemonId) return;
-  try {
-    const { execute } = modListApi();
-    const res = await execute({
-      params: {
-        uuid: props.instanceId,
-        daemonId: props.daemonId
-      }
-    });
-    folders.value = res.value?.folders || [];
-  } catch (err) {
-    console.error("Failed to load folders:", err);
-  } finally {
-    foldersLoaded.value = true;
-  }
-};
-
-watch(
-  () => [props.instanceId, props.daemonId],
-  () => {
-    loadFolders();
-  },
-  { immediate: true }
-);
-
 const refreshInstanceInfo = async () => {
   await execute({
     params: {
@@ -120,7 +88,7 @@ const btns = computed(() => {
   };
   const pluginActions = desktopInstanceActions.value.map((action) => ({
     title: typeof action.title === "function" ? action.title() : action.title,
-    icon: instanceActionIconMap[action.id] || "mdi-cog-outline",
+    icon: action.mdiIcon || instanceActionIconMap[action.id] || "mdi-cog-outline",
     condition: () => action.condition?.(actionContext) ?? true,
     click: () => emit("open-instance-action", action.id)
   }));
@@ -137,22 +105,6 @@ const btns = computed(() => {
       },
       click: (): void => {
         emit("open-server-config", instanceInfo.value?.config.type ?? "");
-      }
-    },
-    {
-      title: t("TXT_CODE_MOD_MANAGER"),
-      icon: UsbOutlined,
-      click: () => {
-        emit("open-mod-manager");
-      },
-      condition: () => {
-        const type = instanceInfo.value?.config.type || "";
-        const isMC = type.startsWith("minecraft/java") || type.startsWith("minecraft/bedrock");
-        if (!isMC) return false;
-        const hasPermission = state.settings.canFileManager || isAdmin.value;
-        if (!hasPermission) return false;
-        if (!foldersLoaded.value) return false;
-        return folders.value && folders.value.length > 0;
       }
     },
     {

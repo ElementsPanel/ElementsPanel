@@ -2,7 +2,7 @@
 import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
 import AppDialog from "@/components/AppDialog.vue";
-import { computed, ref, watch } from "vue";
+import { computed, onUnmounted, ref, watch } from "vue";
 import { VBtn, VChip, VDataTable, VIcon, VProgressCircular } from "vuetify/components";
 
 const props = defineProps<{
@@ -46,6 +46,8 @@ const clearDownloadingState = () => {
   }
   downloadingVersionId.value = null;
 };
+
+onUnmounted(clearDownloadingState);
 
 // Watch mods changes, clear loading state when version is installed
 watch(

@@ -1,10 +1,10 @@
 /**
  * What a daemon plugin's backend imports.
  *
- * Only types: a plugin must never import cordis or the daemon core at runtime,
- * because both are bundled into `app.js` and a second copy of either would be a
- * second container. Everything a plugin needs arrives through the `ctx` its
- * `apply()` is called with.
+ * Import only types from this host module: a runtime import can bundle a second
+ * host context. Shared services arrive through the `ctx` passed to `apply()`.
+ * Cordis itself is externalized in host and plugin bundles, so importing its
+ * Service or Logger at runtime uses the same installed framework instance.
  *
  * ```ts
  * import type { DaemonPluginContext } from "../../../../src/plugin";
