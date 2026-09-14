@@ -11,7 +11,6 @@ import {
   VCard,
   VCardActions,
   VCardText,
-  VCardTitle,
   VCol,
   VDialog,
   VForm,
@@ -107,8 +106,7 @@ defineExpose({ openDialog });
 
 <template>
   <VDialog v-model="dialog.status" class="app-dialog node-detail-dialog" max-width="900px">
-    <VCard rounded="xl">
-      <VCardTitle class="node-dialog-title">{{ dialog.title }}</VCardTitle>
+    <VCard :title="dialog.title" rounded="xl">
       <VCardText class="node-dialog-content">
         <VTabs v-model="activeTabKey" color="primary" density="comfortable" class="mb-4">
           <VTab value="basic">{{ t("TXT_CODE_cc7b54b9") }}</VTab>
@@ -207,11 +205,6 @@ defineExpose({ openDialog });
 </template>
 
 <style lang="scss" scoped>
-.node-dialog-title {
-  padding: 12px 24px 4px;
-  font-weight: 600;
-}
-
 .node-dialog-content {
   max-height: min(72vh, 760px);
   padding: 8px 24px 20px;

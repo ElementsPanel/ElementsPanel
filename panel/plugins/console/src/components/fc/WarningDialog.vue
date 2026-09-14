@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { t } from "@/lang/i18n";
-import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VCheckbox, VDialog, VSpacer } from "vuetify/components";
+import { VBtn, VCard, VCardActions, VCardText, VCheckbox, VDialog, VSpacer } from "vuetify/components";
 
 interface Props {
   title: string;
@@ -51,8 +51,7 @@ defineExpose({
     persistent
     scrollable
   >
-    <VCard rounded="xl">
-      <VCardTitle class="warning-dialog__title">{{ props.title }}</VCardTitle>
+    <VCard :title="props.title" rounded="xl">
       <VCardText class="warning-dialog__body">
         <pre class="warning-dialog__message">{{ props.subTitle }}</pre>
         <VCheckbox v-model="checkbox" :label="props.checkText" hide-details density="comfortable" />
@@ -71,11 +70,6 @@ defineExpose({
 </template>
 
 <style scoped lang="scss">
-.warning-dialog__title {
-  padding: 20px 24px 8px;
-  text-align: center;
-}
-
 .warning-dialog__body {
   padding: 8px 24px 12px;
   text-align: center;

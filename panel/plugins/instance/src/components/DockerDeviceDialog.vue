@@ -2,7 +2,7 @@
 import { t } from "@/lang/i18n";
 import _ from "lodash";
 import { computed, onMounted, ref } from "vue";
-import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VDataTable, VDialog, VIcon, VSpacer, VTextField } from "vuetify/components";
+import { VBtn, VCard, VCardActions, VCardText, VDataTable, VDialog, VIcon, VSpacer, VTextField } from "vuetify/components";
 import { emptyValueValidator, reportValidatorError } from "@/tools/validator";
 
 interface DockerDeviceItem {
@@ -100,8 +100,7 @@ onMounted(() => {
 
 <template>
   <VDialog v-model="open" max-width="1300" persistent>
-    <VCard>
-      <VCardTitle>{{ props.title || t("TXT_CODE_b3a60c78") }}</VCardTitle>
+    <VCard :title="props.title || t('TXT_CODE_b3a60c78')">
       <VCardText class="dialog-overflow-container">
       <div v-if="props.subTitle" class="text-body-medium text-medium-emphasis mb-4">
         <!-- eslint-disable-next-line vue/no-v-html -->

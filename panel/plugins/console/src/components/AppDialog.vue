@@ -6,7 +6,6 @@ import {
   VCard,
   VCardActions,
   VCardText,
-  VCardTitle,
   VDialog
 } from "vuetify/components";
 
@@ -126,7 +125,6 @@ const dialogMaxWidth = computed(() => {
 });
 const dialogStyle = computed(() => [attrs.style as any, props.style] as any);
 
-const showTitle = computed(() => Boolean(props.title || slots.title));
 const showFooter = computed(() => props.footer !== null && props.footer !== false);
 const okButtonAttrs = computed(() => {
   const buttonProps = { ...(props.okButtonProps ?? {}) };
@@ -155,10 +153,14 @@ const afterLeave = () => {
   <VDialog v-model="isOpen" class="app-dialog" :class="[attrs.class, props.wrapClassName]" :style="dialogStyle"
     :width="dialogWidth" :max-width="dialogMaxWidth" :persistent="props.maskClosable === false"
     :close-on-back="props.keyboard !== false" @after-leave="afterLeave">
-    <VCard v-if="renderCard" class="app-dialog-card" rounded="xl" :style="{ width: dialogWidth }">
-      <VCardTitle v-if="showTitle" class="app-dialog-title">
-        <slot name="title">{{ props.title }}</slot>
-      </VCardTitle>
+    <VCard v-if="renderCard" :title="props.title || undefined" class="app-dialog-card" rounded="xl"
+      :style="{ width: dialogWidth }">
+      <template v-if="slots.prepend" #prepend>
+        <slot name="prepend" />
+      </template>
+      <template v-if="slots.title" #title>
+        <slot name="title" />
+      </template>
 
       <VCardText class="app-dialog-content">
         <slot />
@@ -182,14 +184,6 @@ const afterLeave = () => {
 .app-dialog-card {
   max-width: 100%;
   overflow: hidden;
-}
-
-.app-dialog-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px 28px 8px 24px;
 }
 
 .app-dialog-content {

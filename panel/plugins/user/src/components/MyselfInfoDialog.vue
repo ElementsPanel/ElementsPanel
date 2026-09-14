@@ -13,7 +13,6 @@ import {
   VCard,
   VCardActions,
   VCardText,
-  VCardTitle,
   VChip,
   VCol,
   VDialog,
@@ -94,7 +93,7 @@ const disable2FACode = async () => {
 
 <template>
   <VDialog v-model="tools.showUserInfoDialog" class="app-dialog myself-info-dialog" max-width="720" scrollable>
-    <VCard rounded="xl" :title="t('TXT_CODE_9bb2f08b')">
+    <VCard :title="t('TXT_CODE_9bb2f08b')">
       <VCardText>
         <VForm>
           <VRow>
@@ -179,8 +178,7 @@ const disable2FACode = async () => {
   </VDialog>
 
   <VDialog v-model="disableApiKeyDialog" class="app-dialog" max-width="460" scrollable>
-    <VCard rounded="xl">
-      <VCardTitle>{{ t("TXT_CODE_718c9310") }}</VCardTitle>
+    <VCard :title="t('TXT_CODE_718c9310')" rounded="xl">
       <VCardText>{{ t("TXT_CODE_6819de18") }}</VCardText>
       <VCardActions>
         <VSpacer />

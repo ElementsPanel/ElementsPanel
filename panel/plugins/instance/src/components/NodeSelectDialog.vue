@@ -5,7 +5,7 @@ import { useRemoteNode } from "@/hooks/useRemoteNode";
 import { t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";
 import { computed, onMounted, ref } from "vue";
-import { VAlert, VBtn, VCard, VCardText, VCardTitle, VChip, VDialog, VIcon } from "vuetify/components";
+import { VAlert, VBtn, VCard, VCardText, VChip, VDialog, VIcon } from "vuetify/components";
 
 interface Props {
   destroyComponent(delay?: number): void;
@@ -65,8 +65,7 @@ defineExpose({
 
 <template>
   <VDialog v-model="isVisible" max-width="840" persistent>
-    <VCard>
-      <VCardTitle>{{ t("TXT_CODE_7e267ba") }}</VCardTitle>
+    <VCard :title="t('TXT_CODE_7e267ba')">
       <VCardText>
     <div class="node-select-container">
       <p class="text-body-medium text-medium-emphasis">

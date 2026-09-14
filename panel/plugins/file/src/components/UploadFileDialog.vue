@@ -9,7 +9,6 @@ import {
   VCard,
   VCardActions,
   VCardText,
-  VCardTitle,
   VDialog,
   VFileInput,
   VProgressLinear,
@@ -71,8 +70,7 @@ const cancel = () => {
 
 <template>
   <VDialog v-model="open" class="app-dialog" max-width="440" persistent scrollable>
-    <VCard rounded="xl">
-      <VCardTitle>{{ t("TXT_CODE_e00c858c") }}</VCardTitle>
+    <VCard :title="t('TXT_CODE_e00c858c')" rounded="xl">
       <VCardText class="upload-container">
         <VFileInput
           :disabled="percentComplete > 0"

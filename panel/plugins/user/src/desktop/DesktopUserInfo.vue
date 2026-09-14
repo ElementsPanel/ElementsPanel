@@ -6,7 +6,7 @@ import { bind2FA, confirm2FA, setUserApiKey, updatePassword } from "@/services/a
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { reactive, ref } from "vue";
 import { notifyDesktop, notifyDesktopError } from "../../../desktop/src/desktopNotice";
-import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VDialog, VTextField } from "vuetify/components";
+import { VBtn, VCard, VCardActions, VCardText, VDialog, VTextField } from "vuetify/components";
 
 const { state, updateUserInfo } = useAppStateStore();
 
@@ -194,8 +194,7 @@ const disable2FACode = async () => {
         </div>
 
         <VDialog v-model="revokeApiKeyDialog" class="desktop-dialog" max-width="380" scrollable>
-            <VCard rounded="xl">
-                <VCardTitle>{{ t("TXT_CODE_6819de18") }}</VCardTitle>
+            <VCard :title="t('TXT_CODE_6819de18')" rounded="xl">
                 <VCardText>{{ t("TXT_CODE_6819de18") }}</VCardText>
                 <VCardActions class="justify-end">
                     <VBtn variant="text" rounded="xl" @click="revokeApiKeyDialog = false">{{ t("TXT_CODE_3b1cc020") }}</VBtn>

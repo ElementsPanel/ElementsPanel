@@ -6,7 +6,7 @@ import { reportErrorMsg } from "@/tools/validator";
 import { buildProgress } from "@/services/apis/envImage";
 import Loading from "@/components/Loading.vue";
 import CardPanel from "@/components/CardPanel.vue";
-import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VCol, VDialog, VProgressLinear, VRow } from "vuetify/components";
+import { VBtn, VCard, VCardActions, VCardText, VCol, VDialog, VProgressLinear, VRow } from "vuetify/components";
 const props = defineProps<{
   daemonId: string;
 }>();
@@ -56,8 +56,7 @@ defineExpose({
 
 <template>
   <VDialog v-model="open" max-width="900" persistent>
-    <VCard>
-      <VCardTitle>{{ t("TXT_CODE_4bbd3fde") }}</VCardTitle>
+    <VCard :title="t('TXT_CODE_4bbd3fde')">
       <VCardText>
     <VRow v-if="!isLoading" density="compact">
       <VCol v-for="i in progressList" :key="i.name + i.status" cols="12" lg="6" md="8" sm="12">

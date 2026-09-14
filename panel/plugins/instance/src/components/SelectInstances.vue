@@ -14,7 +14,6 @@ import {
   VCard,
   VCardActions,
   VCardText,
-  VCardTitle,
   VChip,
   VDataTable,
   VDialog,
@@ -173,8 +172,7 @@ onMounted(async () => {
 
 <template>
   <VDialog v-model="open" class="app-dialog select-instances-dialog" max-width="980" scrollable persistent>
-    <VCard rounded="xl">
-      <VCardTitle>{{ props.title }}</VCardTitle>
+    <VCard :title="props.title" rounded="xl">
       <VCardText class="select-instances-content">
         <p class="text-medium-emphasis select-instances-help">{{ t("TXT_CODE_50697989") }}</p>
 

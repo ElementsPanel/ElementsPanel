@@ -8,7 +8,6 @@ import {
   VCard,
   VCardActions,
   VCardText,
-  VCardTitle,
   VDialog,
   VSpacer,
   VTextField
@@ -74,8 +73,7 @@ watch(
 
 <template>
   <VDialog v-model="open" class="app-dialog" max-width="440" persistent scrollable>
-    <VCard rounded="xl">
-      <VCardTitle>{{ t("TXT_CODE_f27b68b3") }}</VCardTitle>
+    <VCard :title="t('TXT_CODE_f27b68b3')" rounded="xl">
       <VCardText class="dialog-form">
         <div class="dialog-help">{{ t("TXT_CODE_3fd7fe73") }}</div>
         <VTextField v-model="dataSource.url" :label="t('TXT_CODE_ab8dd5a0')" :placeholder="t('TXT_CODE_4ea93630')" hide-details="auto" />

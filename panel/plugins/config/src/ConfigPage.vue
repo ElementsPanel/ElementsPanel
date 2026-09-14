@@ -11,7 +11,6 @@ import {
   VCard,
   VCardActions,
   VCardText,
-  VCardTitle,
   VDialog,
   VList,
   VListItem,
@@ -466,10 +465,7 @@ const confirmDisable = () => {
     </div>
 
     <VDialog v-model="disableConfirmOpen" max-width="460">
-      <VCard class="plugin-config-confirm-card" rounded="xl">
-        <VCardTitle>
-          {{ disableCandidate ? t("TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE", { name: disableCandidate.id }) : "" }}
-        </VCardTitle>
+      <VCard :title="disableCandidate ? t('TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE', { name: disableCandidate.id }) : ''" class="plugin-config-confirm-card" rounded="xl">
         <VCardText>{{ t("TXT_CODE_PLUGIN_DISABLE_CONFIRM") }}</VCardText>
         <VCardActions>
           <VSpacer />
@@ -679,10 +675,6 @@ const confirmDisable = () => {
   flex: 1;
   padding: 32px;
   overflow: auto;
-}
-
-.plugin-config-confirm-card :deep(.v-card-title) {
-  padding: 24px 28px 12px;
 }
 
 .plugin-config-confirm-card :deep(.v-card-text) {

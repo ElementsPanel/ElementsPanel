@@ -97,15 +97,18 @@ function openDialog(options: ModalOptions, variant: "confirm" | "alert"): ModalH
       return () => {
         const title = resolveRenderable(state.title);
         const icon = resolveRenderable(state.icon);
-        const hasTitleSlot = icon != null || (title != null && typeof title !== "string");
+        const hasTitleSlot = title != null && typeof title !== "string";
         const dialogSlots: Record<string, any> = {
           default: () => asChildren(state.content)
         };
         if (state.footer != null) {
           dialogSlots.footer = () => asChildren(state.footer);
         }
+        if (icon != null) {
+          dialogSlots.prepend = () => asChildren(icon);
+        }
         if (hasTitleSlot) {
-          dialogSlots.title = () => [...asChildren(icon), ...asChildren(title)];
+          dialogSlots.title = () => asChildren(title);
         }
         return h(
           AppDialog,

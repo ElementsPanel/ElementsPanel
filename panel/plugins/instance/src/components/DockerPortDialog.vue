@@ -3,7 +3,7 @@ import { t } from "@/lang/i18n";
 import type { TableColumn } from "@/types/table";
 import _ from "lodash";
 import { computed, onMounted, ref } from "vue";
-import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VCheckbox, VDataTable, VDialog, VIcon, VSelect, VSpacer, VTextField } from "vuetify/components";
+import { VBtn, VCard, VCardActions, VCardText, VCheckbox, VDataTable, VDialog, VIcon, VSelect, VSpacer, VTextField } from "vuetify/components";
 import { emptyValueValidator, reportValidatorError } from "@/tools/validator";
 
 type Protocol = "tcp" | "udp";
@@ -196,8 +196,7 @@ onMounted(() => {
 
 <template>
   <VDialog v-model="open" max-width="1300" persistent>
-    <VCard>
-      <VCardTitle>{{ t("TXT_CODE_c4435af9") }}</VCardTitle>
+    <VCard :title="t('TXT_CODE_c4435af9')">
       <VCardText class="dialog-overflow-container">
       <div class="text-body-medium text-medium-emphasis mb-4">
         {{

@@ -18,7 +18,6 @@ import {
   VCard,
   VCardActions,
   VCardText,
-  VCardTitle,
   VCheckbox,
   VCol,
   VContainer,
@@ -492,10 +491,10 @@ onUnmounted(() => {
       <VList v-if="contextMenu.record" min-width="190"><VListItem v-for="action in rowMenuItems(contextMenu.record)" :key="action.key" :title="action.label" :prepend-icon="action.icon" :base-color="action.color" @click="runMenuAction(action, contextMenu.record!)" /></VList>
     </VMenu>
 
-    <VDialog v-model="dropConfirm.open" class="app-dialog" max-width="460" persistent><VCard rounded="xl"><VCardTitle>{{ t("TXT_CODE_52bc24ec") }}</VCardTitle><VCardText>{{ `${t("TXT_CODE_52bc24ec")} ${dropConfirm.name} ?` }}</VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="dropConfirm.open = false">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="primary" @click="confirmDrop">{{ t("TXT_CODE_d507abff") }}</VBtn></VCardActions></VCard></VDialog>
+    <VDialog v-model="dropConfirm.open" class="app-dialog" max-width="460" persistent><VCard :title="t('TXT_CODE_52bc24ec')" rounded="xl"><VCardText>{{ `${t("TXT_CODE_52bc24ec")} ${dropConfirm.name} ?` }}</VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="dropConfirm.open = false">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="primary" @click="confirmDrop">{{ t("TXT_CODE_d507abff") }}</VBtn></VCardActions></VCard></VDialog>
 
     <VDialog v-model="dialog.show" class="app-dialog" :max-width="dialogMaxWidth" scrollable>
-      <VCard rounded="xl"><VCardTitle>{{ dialog.title }}</VCardTitle><VCardText>
+      <VCard :title="dialog.title" rounded="xl"><VCardText>
         <p v-if="dialog.info">{{ dialog.info }}</p>
         <VTextField v-if="dialog.mode === ''" v-model="dialog.value" :placeholder="t('TXT_CODE_4ea93630')" autofocus />
         <div v-if="dialog.mode === 'zip'" class="dialog-stack"><VTextField v-model="dialog.value" :placeholder="t('TXT_CODE_366bad15')" suffix=".zip" /><div>{{ t("TXT_CODE_92ebdc7f") }}</div></div>
@@ -504,8 +503,8 @@ onUnmounted(() => {
       </VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="dialog.cancel()">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="primary" :loading="dialog.loading" @click="dialog.ok()">{{ t("TXT_CODE_d507abff") }}</VBtn></VCardActions></VCard>
     </VDialog>
 
-    <VDialog v-model="archivePreview.show" class="app-dialog" max-width="1100" scrollable @after-leave="closeArchivePreview"><VCard rounded="xl"><VCardTitle>{{ `${t('TXT_CODE_ARCHIVE_PREVIEW')}: ${archivePreview.title}` }}</VCardTitle><VCardText><ArchivePreview :entries="archivePreview.entries" :loading="archivePreview.loading" /></VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="closeArchivePreview">{{ t("TXT_CODE_a0451c97") }}</VBtn></VCardActions></VCard></VDialog>
-    <VDialog v-model="deleteDialog.show" class="app-dialog" max-width="460" persistent><VCard rounded="xl"><VCardTitle>{{ t("TXT_CODE_71155575") }}</VCardTitle><VCardText class="text-error">{{ t("TXT_CODE_6a10302d") }}</VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="deleteDialog.resolve && deleteDialog.resolve(false)">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="error" :loading="deleteDialog.loading" @click="deleteDialog.resolve && deleteDialog.resolve(true)">{{ t("TXT_CODE_d507abff") }}</VBtn></VCardActions></VCard></VDialog>
+    <VDialog v-model="archivePreview.show" class="app-dialog" max-width="1100" scrollable @after-leave="closeArchivePreview"><VCard :title="`${t('TXT_CODE_ARCHIVE_PREVIEW')}: ${archivePreview.title}`" rounded="xl"><VCardText><ArchivePreview :entries="archivePreview.entries" :loading="archivePreview.loading" /></VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="closeArchivePreview">{{ t("TXT_CODE_a0451c97") }}</VBtn></VCardActions></VCard></VDialog>
+    <VDialog v-model="deleteDialog.show" class="app-dialog" max-width="460" persistent><VCard :title="t('TXT_CODE_71155575')" rounded="xl"><VCardText class="text-error">{{ t("TXT_CODE_6a10302d") }}</VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="deleteDialog.resolve && deleteDialog.resolve(false)">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="error" :loading="deleteDialog.loading" @click="deleteDialog.resolve && deleteDialog.resolve(true)">{{ t("TXT_CODE_d507abff") }}</VBtn></VCardActions></VCard></VDialog>
     <FileEditor v-if="daemonId && instanceId" ref="FileEditorDialog" :daemon-id="daemonId" :instance-id="instanceId" @save="getFileList" />
   </main>
 </template>

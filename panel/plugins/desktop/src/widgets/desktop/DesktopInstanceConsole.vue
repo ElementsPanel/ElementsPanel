@@ -17,7 +17,7 @@ import { computed, onUnmounted, ref } from "vue";
 import { GLOBAL_INSTANCE_NAME } from "@/config/const";
 import { arrayFilter } from "@/tools/array";
 import DesktopManagerBtns from "./DesktopManagerBtns.vue";
-import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VDialog, VIcon } from "vuetify/components";
+import { VBtn, VCard, VCardActions, VCardText, VDialog, VIcon } from "vuetify/components";
 
 const PlayCircleOutlined = "mdi-play-circle-outline";
 const PauseCircleOutlined = "mdi-pause-circle-outline";
@@ -466,8 +466,7 @@ onUnmounted(() => {
             @open-instance-action="(actionId: string) => emit('open-instance-action', actionId, instanceId, daemonId)" />
 
         <VDialog v-model="errorDialog.show" class="desktop-dialog" max-width="460" scrollable>
-            <VCard rounded="xl">
-                <VCardTitle>{{ t("TXT_CODE_ac405b50") }}</VCardTitle>
+            <VCard :title="t('TXT_CODE_ac405b50')" rounded="xl">
                 <VCardText>
                     <p v-for="line in errorDialog.lines" :key="line" class="dim-error-line">{{ line }}</p>
                 </VCardText>
@@ -478,8 +477,7 @@ onUnmounted(() => {
         </VDialog>
 
         <VDialog v-model="confirmDialog" class="desktop-dialog" max-width="380" scrollable>
-            <VCard rounded="xl">
-                <VCardTitle>{{ t("TXT_CODE_276756b2") }}</VCardTitle>
+            <VCard :title="t('TXT_CODE_276756b2')" rounded="xl">
                 <VCardText>{{ t("TXT_CODE_276756b2") }}</VCardText>
                 <VCardActions class="justify-end">
                     <VBtn variant="text" rounded="xl" @click="confirmDialog = false">{{ t("TXT_CODE_a0451c97") }}</VBtn>

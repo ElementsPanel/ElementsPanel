@@ -13,7 +13,7 @@ import { INSTANCE_STATUS } from "@/types/const";
 import dayjs from "dayjs";
 import WarningDialog from "@/components/fc/WarningDialog.vue";
 import { useMountComponent } from "@/hooks/useMountComponent";
-import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VDataTable, VDialog, VSpacer } from "vuetify/components";
+import { VBtn, VCard, VCardActions, VCardText, VDataTable, VDialog, VSpacer } from "vuetify/components";
 
 const props = defineProps<{ uuid?: string }>();
 const { isPhone } = useScreen();
@@ -99,7 +99,7 @@ onMounted(refreshTableData);
       </VDataTable>
     </VCard>
     <VDialog v-model="deleteDialog.open" class="app-dialog" max-width="460" scrollable>
-      <VCard rounded="xl"><VCardTitle>{{ t("TXT_CODE_71155575") }}</VCardTitle><VCardText>{{ t("TXT_CODE_71155575") }}</VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="deleteDialog.open = false">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="error" @click="handleDelete">{{ t("TXT_CODE_ecbd7449") }}</VBtn></VCardActions></VCard>
+      <VCard :title="t('TXT_CODE_71155575')" rounded="xl"><VCardText>{{ t("TXT_CODE_71155575") }}</VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="deleteDialog.open = false">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="error" @click="handleDelete">{{ t("TXT_CODE_ecbd7449") }}</VBtn></VCardActions></VCard>
     </VDialog>
   </main>
 </template>

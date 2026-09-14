@@ -15,7 +15,7 @@ import {
 import AnyAppFormComponent from "./AnyAppForm.vue";
 import MinecraftJavaForm from "./MinecraftJavaForm.vue";
 import type { Component } from "vue";
-import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VDialog, VRow, VSpacer, VTab, VTabs } from "vuetify/components";
+import { VBtn, VCard, VCardActions, VCardText, VDialog, VRow, VSpacer, VTab, VTabs } from "vuetify/components";
 
 const { minecraftJava, buildCmd, setGameType, gameType, appType, anyAppForm } =
   useStartCmdBuilder();
@@ -111,8 +111,7 @@ const actions = [
 
 <template>
   <VDialog v-model="open" max-width="800" persistent>
-    <VCard>
-      <VCardTitle>{{ t("TXT_CODE_2728d0d4") }}</VCardTitle>
+    <VCard :title="t('TXT_CODE_2728d0d4')">
       <VCardText>
       <div v-if="step === STEP.SELECT_TYPE">
         <VRow>

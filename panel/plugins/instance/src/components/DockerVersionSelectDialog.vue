@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useDialog } from "@/hooks/useDialog";
 import { t } from "@/lang/i18n";
-import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VDialog, VIcon } from "vuetify/components";
+import { VBtn, VCard, VCardText, VDialog } from "vuetify/components";
 
 interface Props {
   destroyComponent(delay?: number): void;
@@ -26,20 +26,14 @@ defineExpose({
 
 <template>
   <VDialog v-model="isVisible" max-width="860" persistent>
-    <VCard>
-      <VCardTitle>{{ t("TXT_CODE_docker_version_select_title") }}</VCardTitle>
+    <VCard :title="t('TXT_CODE_docker_version_select_title')">
       <VCardText>
     <p class="desc text-body-medium text-medium-emphasis">
       {{ t("TXT_CODE_docker_version_select_desc") }}
     </p>
     <div class="cards">
-      <VCard class="choose-card docker-card" hoverable @click="selectDockerVersion">
-        <VCardTitle>
-          <div class="card-title">
-            <VIcon icon="mdi-docker" />
-            <span>{{ t("TXT_CODE_docker_version_select_docker_title") }}</span>
-          </div>
-        </VCardTitle>
+      <VCard :title="t('TXT_CODE_docker_version_select_docker_title')" prepend-icon="mdi-docker"
+        class="choose-card docker-card" hoverable @click="selectDockerVersion">
         <VCardText class="text-medium-emphasis">
           {{ t("TXT_CODE_docker_version_select_docker_subtitle") }}
         </VCardText>
@@ -50,13 +44,8 @@ defineExpose({
         </div>
       </VCard>
 
-      <VCard class="choose-card normal-card" hoverable @click="selectNormalVersion">
-        <VCardTitle>
-          <div class="card-title">
-            <VIcon icon="mdi-apps" />
-            <span>{{ t("TXT_CODE_docker_version_select_normal_title") }}</span>
-          </div>
-        </VCardTitle>
+      <VCard :title="t('TXT_CODE_docker_version_select_normal_title')" prepend-icon="mdi-apps"
+        class="choose-card normal-card" hoverable @click="selectNormalVersion">
         <VCardText class="text-medium-emphasis">
           {{ t("TXT_CODE_docker_version_select_normal_subtitle") }}
         </VCardText>
@@ -91,12 +80,6 @@ defineExpose({
 
 .choose-card:hover {
   transform: translateY(-2px);
-}
-
-.card-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .card-action {

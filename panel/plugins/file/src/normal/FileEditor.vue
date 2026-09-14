@@ -12,7 +12,6 @@ import {
   VCard,
   VCardActions,
   VCardText,
-  VCardTitle,
   VDialog,
   VIcon,
   VProgressCircular,
@@ -141,13 +140,12 @@ defineExpose({
   <VDialog v-model="open" class="file-editor-dialog app-dialog" :class="{ 'file-editor-dialog--full': fullScreen }"
     :width="fullScreen ? undefined : '1600px'"
     :max-width="fullScreen ? undefined : 'calc(100vw - 48px)'" :fullscreen="fullScreen" persistent scrollable>
-    <VCard rounded="xl" class="file-editor-card">
-      <VCardTitle class="file-editor-title">
-        <span>{{ dialogTitle }}</span>
-        <VBtn v-if="!isPhone" icon size="small" variant="text" :aria-label="dialogTitle" @click="fullScreen = !fullScreen">
+    <VCard :title="dialogTitle" rounded="xl" class="file-editor-card">
+      <template v-if="!isPhone" #append>
+        <VBtn icon size="small" variant="text" :aria-label="dialogTitle" @click="fullScreen = !fullScreen">
           <VIcon :icon="fullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" />
         </VBtn>
-      </VCardTitle>
+      </template>
       <VCardText class="file-editor-content">
         <Editor v-if="openEditor" ref="EditorComponent" v-model:text="editorText" :filename="fileName"
           :height="fullScreen ? '100%' : '60vh'" />
@@ -164,12 +162,6 @@ defineExpose({
   flex-direction: column;
   width: 100%;
   min-height: 0;
-}
-
-.file-editor-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
 
 .file-editor-content {

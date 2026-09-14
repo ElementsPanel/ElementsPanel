@@ -195,7 +195,7 @@ onMounted(() => {
             <template #activator="{ props: tooltipProps }">
               <VBtn v-bind="tooltipProps" icon variant="text" size="small" :aria-label="operation.title"
                 @click="remoteNode && operation.click(remoteNode)">
-                <VIcon :icon="operation.icon" />
+                <VIcon :icon="operation.icon" size="18" />
               </VBtn>
             </template>
             <span>{{ operation.title }}</span>

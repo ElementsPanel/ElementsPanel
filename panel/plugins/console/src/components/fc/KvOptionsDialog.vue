@@ -3,7 +3,7 @@ import { t } from "@/lang/i18n";
 import type { MountComponent } from "../../types";
 import _ from "lodash";
 import { computed, ref } from "vue";
-import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VDataTable, VDialog, VForm, VIcon, VSpacer, VTextarea, VTextField } from "vuetify/components";
+import { VBtn, VCard, VCardActions, VCardText, VDataTable, VDialog, VForm, VIcon, VSpacer, VTextarea, VTextField } from "vuetify/components";
 import { emptyValueValidator, reportValidatorError } from "../../tools/validator";
 
 interface KvColumn {
@@ -108,8 +108,7 @@ const operation = (type: "add" | "del", index = 0) => {
 
 <template>
   <VDialog v-model="open" class="app-dialog" max-width="1300" persistent>
-    <VCard>
-      <VCardTitle>{{ props.title }}</VCardTitle>
+    <VCard :title="props.title">
       <VCardText class="dialog-overflow-container">
       <div v-if="props.subTitle" class="text-body-medium text-medium-emphasis mb-4">
         <!-- eslint-disable-next-line vue/no-v-html -->

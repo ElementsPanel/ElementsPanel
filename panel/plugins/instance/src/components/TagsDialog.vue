@@ -9,7 +9,6 @@ import {
   VCard,
   VCardActions,
   VCardText,
-  VCardTitle,
   VChip,
   VDialog,
   VSpacer,
@@ -92,8 +91,7 @@ defineExpose({ openDialog });
 <template>
   <VDialog :model-value="open" class="app-dialog tags-dialog" max-width="620" scrollable
     @update:model-value="handleDialogUpdate">
-    <VCard rounded="xl">
-      <VCardTitle class="tags-dialog__title">{{ t("TXT_CODE_a2544278") }}</VCardTitle>
+    <VCard :title="t('TXT_CODE_a2544278')" rounded="xl">
       <VCardText class="tags-dialog__content">
         <p class="tags-dialog__hint">{{ t("TXT_CODE_f84ae54f") }}</p>
 
@@ -172,10 +170,6 @@ defineExpose({ openDialog });
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-}
-
-.tags-dialog__title {
-  padding: 14px 24px 8px;
 }
 
 .tags-dialog__content {

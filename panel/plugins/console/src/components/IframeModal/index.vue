@@ -66,7 +66,4 @@ defineExpose({
   flex-direction: column;
 }
 
-.iframe-modal :deep(.app-dialog-title) {
-  flex-shrink: 0;
-}
 </style>
