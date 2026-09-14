@@ -55,7 +55,7 @@ watch(props, () => {
 
 <template>
   <div class="node-simple-chart" style="width: 100%">
-    <VRow dense>
+    <VRow density="compact">
       <VCol cols="12" sm="6">
         <div class="usage-header">
           <span class="usage-title">{{ t("TXT_CODE_eca8f1b3") }}</span>

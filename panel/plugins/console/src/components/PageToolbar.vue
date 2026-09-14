@@ -13,7 +13,7 @@ withDefaults(
 </script>
 
 <template>
-  <VRow class="page-toolbar" align="center">
+  <VRow class="page-toolbar align-center" density="comfortable">
     <VCol cols="12" :md="$slots.search ? 3 : 4" class="page-toolbar-title">
       <VIcon :icon="icon" class="page-toolbar-icon" size="28" />
       <span>{{ title }}</span>
@@ -30,12 +30,10 @@ withDefaults(
 <style lang="scss" scoped>
 .page-toolbar {
   width: 100%;
-  margin: -8px 0 0;
 }
 
 .page-toolbar > .v-col {
   min-width: 0;
-  padding: 8px;
 }
 
 .page-toolbar-title {

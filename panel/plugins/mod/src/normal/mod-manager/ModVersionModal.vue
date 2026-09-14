@@ -140,7 +140,7 @@ const headers = computed(() => columns.value.map((column) => ({ title: column.ti
 <template>
   <AppDialog :visible="visible" :title="t('TXT_CODE_VERSION_SELECT')" :footer="null"
     :width="isPhone ? '100%' : '900px'" @update:visible="(val) => emit('update:visible', val)">
-    <div class="mb-4 text-body-2 text-medium-emphasis">
+    <div class="mb-4 text-body-medium text-medium-emphasis">
         <VIcon start icon="mdi-alert-outline" />
         {{ $t("TXT_CODE_6111bc9e") }}
     </div>

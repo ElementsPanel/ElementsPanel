@@ -428,7 +428,7 @@ onMounted(async () => {
       </template>
     </PageToolbar>
 
-    <VRow dense>
+    <VRow density="compact">
       <VCol cols="12">
         <CardPanel class="containerWrapper" :padding="false">
           <template #body>
@@ -496,7 +496,7 @@ onMounted(async () => {
                 <VWindowItem :value="TAB_KEY_DOWNLOAD">
                   <div :class="isPhone ? 'p-2' : 'p-10'">
                     <div>
-                      <VRow dense class="search-form mt-2">
+                      <VRow density="compact" class="search-form mt-2">
                         <VCol cols="12" :md="4"><VTextField v-model="searchFilters.query" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" prepend-inner-icon="mdi-magnify" density="compact" hide-details @keyup.enter="onSearch" /></VCol>
                         <VCol cols="6" :md="2"><VSelect v-model="searchFilters.source" :items="[{ title: t('TXT_CODE_9693b0e1'), value: 'all' }, { title: 'Modrinth', value: 'modrinth' }, { title: 'CurseForge', value: 'curseforge' }, { title: 'SpigotMC', value: 'spigotmc' }]" density="compact" hide-details /></VCol>
                         <VCol cols="6" :md="2"><VSelect v-model="searchFilters.version" :items="[{ title: t('TXT_CODE_2af87548'), value: '' }, ...mcVersions.map((v) => ({ title: v, value: v }))]" :placeholder="t('TXT_CODE_743b4fe7')" clearable density="compact" hide-details /></VCol>

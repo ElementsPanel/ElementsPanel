@@ -69,7 +69,7 @@ defineExpose({
       <VCardTitle>{{ t("TXT_CODE_7e267ba") }}</VCardTitle>
       <VCardText>
     <div class="node-select-container">
-      <p class="text-body-2 text-medium-emphasis">
+      <p class="text-body-medium text-medium-emphasis">
         {{ t("TXT_CODE_ad24269a") }}
       </p>
       <div class="node-grid">

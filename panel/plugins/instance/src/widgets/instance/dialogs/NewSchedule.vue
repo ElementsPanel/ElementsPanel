@@ -239,7 +239,7 @@ defineExpose({
         <div class="schedule-field">
           <div class="schedule-field-title">{{ t("TXT_CODE_3554dac0") }}</div>
           <div class="schedule-field-description">{{ t("TXT_CODE_f17889f4") }}</div>
-          <VRow dense>
+          <VRow density="compact">
             <VCol cols="12" md="4">
               <VTextField v-model="newTask.cycle[2]" type="number" :label="t('TXT_CODE_4e2c7f64')" hide-details />
             </VCol>
@@ -312,7 +312,7 @@ defineExpose({
             {{ t("TXT_CODE_dfc17a0c") }}
           </VBtn>
         </div>
-        <VRow v-for="(action, index) in newTask.actions" :key="index" dense class="schedule-action-row">
+        <VRow v-for="(action, index) in newTask.actions" :key="index" density="compact" class="schedule-action-row">
           <VCol cols="12" md="4">
             <VSelect
               v-model="action.type"

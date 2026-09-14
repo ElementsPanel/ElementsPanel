@@ -98,7 +98,7 @@ const handleBind = async () => {
     <CardPanel class="sso-bind-card">
       <template #body>
         <div v-show="step === 0" class="sso-bind-body">
-          <h3 class="text-h5 mb-3">
+          <h3 class="text-headline-small mb-3">
             {{ t("TXT_CODE_SSO_BIND_TITLE") }}
           </h3>
           <p class="mb-5">

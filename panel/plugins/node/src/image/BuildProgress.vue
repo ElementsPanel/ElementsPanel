@@ -59,7 +59,7 @@ defineExpose({
     <VCard>
       <VCardTitle>{{ t("TXT_CODE_4bbd3fde") }}</VCardTitle>
       <VCardText>
-    <VRow v-if="!isLoading" dense>
+    <VRow v-if="!isLoading" density="compact">
       <VCol v-for="i in progressList" :key="i.name + i.status" cols="12" lg="6" md="8" sm="12">
         <CardPanel>
           <template #title>{{ i.name }}</template>

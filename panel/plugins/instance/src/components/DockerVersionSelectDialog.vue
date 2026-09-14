@@ -29,7 +29,7 @@ defineExpose({
     <VCard>
       <VCardTitle>{{ t("TXT_CODE_docker_version_select_title") }}</VCardTitle>
       <VCardText>
-    <p class="desc text-body-2 text-medium-emphasis">
+    <p class="desc text-body-medium text-medium-emphasis">
       {{ t("TXT_CODE_docker_version_select_desc") }}
     </p>
     <div class="cards">

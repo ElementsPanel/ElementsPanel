@@ -146,7 +146,7 @@ onMounted(async () => {
         </template>
       </PageToolbar>
 
-      <VRow dense class="server-config-row">
+      <VRow density="compact" class="server-config-row">
         <configComponent
           v-if="configName && isReady"
           :config="configFile"

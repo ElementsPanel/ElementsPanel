@@ -55,7 +55,7 @@ const parsedConfig = computed(() => jsonToMap(props.config));
   <VCol cols="12">
     <CardPanel style="height: 100%" class="config-editor-panel">
       <template #body>
-          <h5 class="text-h6 mb-2">
+          <h5 class="text-title-large mb-2">
             {{ data ? t("TXT_CODE_958fd70c") : t("TXT_CODE_2ce953da") }}
           </h5>
           <p v-if="data">

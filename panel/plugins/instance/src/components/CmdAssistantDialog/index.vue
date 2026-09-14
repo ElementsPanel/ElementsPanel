@@ -116,7 +116,7 @@ const actions = [
       <VCardText>
       <div v-if="step === STEP.SELECT_TYPE">
         <VRow>
-          <p class="text-body-2 text-medium-emphasis">
+          <p class="text-body-medium text-medium-emphasis">
             {{ t("TXT_CODE_18df7f10") }}
           </p>
           <fade-up-animation>

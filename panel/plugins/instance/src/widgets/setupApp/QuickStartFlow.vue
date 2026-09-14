@@ -66,7 +66,7 @@ const handleNext = (key: string) => {
       <CardPanel class="card-wrapper">
         <template #body>
       <div v-if="!isLoading" class="pd-24 h-100">
-        <VRow v-if="isNormalStep" class="h-100" dense>
+        <VRow v-if="isNormalStep" class="h-100" density="compact">
           <VCol v-if="!isPhone" lg="6">
             <div class="quickstart-icon flex-center h-100">
               <Transition name="global-action-float">
@@ -83,7 +83,7 @@ const handleNext = (key: string) => {
                 <p v-if="formData.actions?.length === 0">
                   {{ formData.emptyActionsText }}
                 </p>
-                <VRow dense>
+                <VRow density="compact">
                   <fade-up-animation>
                     <action-button
                       v-for="(action, index) in formData.actions"

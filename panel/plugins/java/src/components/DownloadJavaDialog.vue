@@ -40,7 +40,7 @@ const submit = () => {
     @ok="submit"
     @cancel="cancel"
   >
-    <VRow dense>
+    <VRow density="compact">
       <VCol
         v-for="(item, index) in JAVA_OPTIONS"
         :key="`${item.name}-${item.version}`"

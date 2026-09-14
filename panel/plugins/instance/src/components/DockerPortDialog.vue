@@ -199,7 +199,7 @@ onMounted(() => {
     <VCard>
       <VCardTitle>{{ t("TXT_CODE_c4435af9") }}</VCardTitle>
       <VCardText class="dialog-overflow-container">
-      <div class="text-body-2 text-medium-emphasis mb-4">
+      <div class="text-body-medium text-medium-emphasis mb-4">
         {{
           t("TXT_CODE_56b9e6af", {
             mcsm_port1: "{mcsm_port1}",

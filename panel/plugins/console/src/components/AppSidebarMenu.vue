@@ -126,7 +126,7 @@ const getSidebarIcon = (entry: SidebarRouteEntry): string => {
         class="sidebar-item"
         :class="entry.customClass"
         :active="isRouteActive(entry.path)"
-        active-color="primary"
+        color="primary"
         rounded="xl"
         :title="String(entry.name ?? '')"
         :prepend-icon="getSidebarIcon(entry)"

@@ -223,7 +223,7 @@ const createInstance = async () => {
   <template v-if="isDesktop">
     <VForm class="desktop-create-form" @submit.prevent="finalConfirm">
       <p v-if="createMethod === QUICKSTART_METHOD.DOCKER" class="desktop-create-hint"><VIcon icon="mdi-information-outline" /> {{ t("TXT_CODE_b51bac6f") }}</p>
-      <VRow dense>
+      <VRow density="compact">
         <VCol cols="12" md="6">
           <VTextField v-model="formData.nickname" :label="t('TXT_CODE_f70badb9')" :hint="t('TXT_CODE_818928ba')" persistent-hint :placeholder="t('TXT_CODE_475c5890')" :rules="[requiredRule]" variant="solo" density="compact" hide-details="auto" />
         </VCol>
@@ -231,7 +231,7 @@ const createInstance = async () => {
           <VSelect v-model="formData.type" :items="instanceTypeOptions" item-title="title" item-value="value" :label="t('TXT_CODE_2f291d8b')" :hint="t('TXT_CODE_be608c82')" persistent-hint :placeholder="t('TXT_CODE_3bb646e4')" variant="solo" density="compact" hide-details="auto" @update:model-value="changeInstanceType" />
         </VCol>
       </VRow>
-      <VRow v-if="createMethod === QUICKSTART_METHOD.DOCKER" dense>
+      <VRow v-if="createMethod === QUICKSTART_METHOD.DOCKER" density="compact">
         <VCol cols="12" md="6">
           <DockerImageSelect :model-value="formData.docker.image ?? ''" :daemon-id="daemonId" @update:model-value="(v: string) => (formData.docker.image = v)" />
         </VCol>
@@ -254,7 +254,7 @@ const createInstance = async () => {
   <template v-else>
   <VForm ref="formRef" class="normal-create-form" @submit.prevent="finalConfirm">
     <p v-if="createMethod === QUICKSTART_METHOD.DOCKER" class="desktop-create-hint"><VIcon icon="mdi-information-outline" /> {{ t("TXT_CODE_b51bac6f") }}</p>
-    <VRow dense>
+    <VRow density="compact">
       <VCol cols="12" md="6">
         <VTextField v-model="formData.nickname" :label="t('TXT_CODE_f70badb9')" :hint="t('TXT_CODE_818928ba')" persistent-hint :placeholder="t('TXT_CODE_475c5890')" :rules="[requiredRule]" variant="solo" density="compact" hide-details="auto" />
       </VCol>
@@ -262,7 +262,7 @@ const createInstance = async () => {
         <VSelect v-model="formData.type" :items="instanceTypeOptions" item-title="title" item-value="value" :label="t('TXT_CODE_2f291d8b')" :hint="t('TXT_CODE_be608c82')" persistent-hint :placeholder="t('TXT_CODE_3bb646e4')" variant="solo" density="compact" hide-details="auto" @update:model-value="changeInstanceType" />
       </VCol>
     </VRow>
-    <VRow v-if="createMethod === QUICKSTART_METHOD.DOCKER" dense>
+    <VRow v-if="createMethod === QUICKSTART_METHOD.DOCKER" density="compact">
       <VCol cols="12" md="6"><DockerImageSelect :model-value="formData.docker.image ?? ''" :daemon-id="daemonId" @update:model-value="(v: string) => (formData.docker.image = v)" /></VCol>
       <VCol cols="12" md="6" class="desktop-create-switch"><span>{{ t("TXT_CODE_5484094a") }}</span><VSwitch v-model="formData.docker.changeWorkdir" color="primary" hide-details /></VCol>
       <VCol cols="12" md="6"><VTextField v-model="formData.cwd" :label="t('TXT_CODE_20d110b3')" :hint="t('TXT_CODE_877eea45')" persistent-hint variant="solo" density="compact" hide-details="auto" /></VCol>

@@ -6,9 +6,17 @@ const { after, test } = require("node:test");
 
 const root = path.resolve(__dirname, "../..");
 const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
-const { JSDOM } = frontendRequire("jsdom");
+const { JSDOM, VirtualConsole } = frontendRequire("jsdom");
+const virtualConsole = new VirtualConsole();
+virtualConsole.sendTo(console, { omitJSDOMErrors: true });
+virtualConsole.on("jsdomError", (error) => {
+  // jsdom 22 cannot parse Vuetify 4's theme cascade layers.
+  if (error.type === "css parsing" && error.detail?.includes("@layer")) return;
+  throw error;
+});
 const dom = new JSDOM("<!doctype html><html><head></head><body></body></html>", {
-  pretendToBeVisual: true
+  pretendToBeVisual: true,
+  virtualConsole
 });
 
 for (const key of [
@@ -17,19 +25,22 @@ for (const key of [
   "Element",
   "HTMLElement",
   "SVGElement",
+  "ShadowRoot",
+  "MouseEvent",
   "Node",
   "getComputedStyle"
 ]) {
   global[key] = dom.window[key];
 }
-global.requestAnimationFrame = dom.window.requestAnimationFrame.bind(dom.window);
-global.cancelAnimationFrame = dom.window.cancelAnimationFrame.bind(dom.window);
+global.requestAnimationFrame = (callback) => setTimeout(() => callback(performance.now()), 16);
+global.cancelAnimationFrame = (handle) => clearTimeout(handle);
 global.ResizeObserver = class {
   observe() {}
   unobserve() {}
   disconnect() {}
 };
 global.CSS = { supports: () => false };
+global.visualViewport = null;
 window.matchMedia = () => ({
   matches: false,
   addEventListener() {},
@@ -43,7 +54,12 @@ const ts = frontendRequire("typescript");
 
 function fixture(t) {
   t.mock.timers.enable({ apis: ["setTimeout", "setInterval"] });
-  const vuetify = Vuetify.createVuetify();
+  for (const name of ["setTimeout", "clearTimeout", "setInterval", "clearInterval"]) {
+    t.mock.method(window, name, global[name]);
+  }
+  const vuetify = Vuetify.createVuetify({
+    defaults: { VSnackbarQueue: { transition: { css: false } } }
+  });
   const filename = path.join(root, "panel/plugins/console/src/tools/vuetifyToast.ts");
   const mod = new Module(filename, module);
   const imports = {
@@ -73,26 +89,29 @@ async function advance(t, milliseconds) {
 }
 
 const visible = () =>
-  [...document.querySelectorAll(".v-snackbar--active .vuetify-toast-text")].map(
-    (element) => element.textContent
-  );
+  [...document.querySelectorAll(".v-snackbar--active.vuetify-toast")]
+    .sort(
+      (a, b) =>
+        Number(a.style.getPropertyValue("--v-snackbar-index")) -
+        Number(b.style.getPropertyValue("--v-snackbar-index"))
+    )
+    .map((element) => element.querySelector(".vuetify-toast-text").textContent);
 
 test("toast bursts show three messages and drain the waiting queue in arrival order", async (t) => {
   const { message } = fixture(t);
   const handles = ["one", "two", "three", "four", "five"].map((text) => message.info(text, 0));
   await flush();
   assert.deepEqual(visible(), ["three", "two", "one"]);
-  assert.equal(document.querySelectorAll(".vuetify-toast-host .v-snackbar").length, 3);
+  assert.equal(document.querySelectorAll(".v-snackbar.vuetify-toast").length, 3);
+  assert.equal(document.querySelector(".vuetify-toast-host .v-snackbar"), null);
 
   handles[0].close();
   handles[0].close();
   await flush();
-  await advance(t, 250);
   assert.deepEqual(visible(), ["four", "three", "two"]);
 
   handles[1].close();
   await flush();
-  await advance(t, 250);
   assert.deepEqual(visible(), ["five", "four", "three"]);
 });
 
@@ -103,13 +122,11 @@ test("default toasts last five seconds and waiting messages receive their full t
   await advance(t, 4999);
   assert.deepEqual(visible(), ["three", "two", "one"]);
   await advance(t, 1);
-  await advance(t, 250);
   assert.deepEqual(visible(), ["waiting"]);
 
   await advance(t, 4999);
   assert.deepEqual(visible(), ["waiting"]);
   await advance(t, 1);
-  await advance(t, 250);
   assert.equal(document.querySelector(".vuetify-toast-host"), null);
 });
 
@@ -124,12 +141,10 @@ test("pending messages can be cancelled and duration zero stays open", async (t)
 
   handles[0].close();
   await flush();
-  await advance(t, 250);
   assert.deepEqual(visible(), ["short", "three", "two"]);
   await advance(t, 99);
   assert.deepEqual(visible(), ["short", "three", "two"]);
   await advance(t, 1);
-  await advance(t, 250);
   assert.deepEqual(visible(), ["three", "two"]);
 });
 
@@ -151,7 +166,7 @@ test("blank messages are ignored while descriptions and renderable content are p
   assert.ok(document.querySelector(".vuetify-toast .mdi-alert-circle-outline"));
   assert.ok(document.querySelector(".vuetify-toast .mdi-alert-outline"));
 
-  vuetify.theme.global.name.value = "dark";
+  await vuetify.theme.change("dark");
   await flush();
   assert.equal(
     document.querySelectorAll(".vuetify-toast .v-snackbar__wrapper.v-theme--dark").length,
@@ -163,7 +178,6 @@ test("immediate close and destroyAll release the host without reviving old messa
   const { message, destroyAll } = fixture(t);
   message.info("immediate", 0).close();
   await flush();
-  await advance(t, 250);
   assert.equal(document.querySelector(".vuetify-toast-host"), null);
 
   const handles = ["one", "two", "three", "waiting"].map((text) => message.info(text, 0));
@@ -182,6 +196,5 @@ test("immediate close and destroyAll release the host without reviving old messa
 
   fresh.close();
   await flush();
-  await advance(t, 250);
   assert.equal(document.querySelector(".vuetify-toast-host"), null);
 });

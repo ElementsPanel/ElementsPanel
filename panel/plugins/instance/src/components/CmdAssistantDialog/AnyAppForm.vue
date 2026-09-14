@@ -27,7 +27,7 @@ defineExpose({ validate });
     <VTextField v-model="form.softwarePath" :label="t('TXT_CODE_c7b1b8d0')" :placeholder="t('TXT_CODE_a2a0e054')" :rules="[(value) => String(value || '').trim() ? true : t('TXT_CODE_c7b1b8d0')]" />
     <VTextField v-model="form.params" :label="t('TXT_CODE_b9442311')" :placeholder="t('TXT_CODE_2a379a13')">
       <template #details>
-        <span class="text-caption text-medium-emphasis">
+        <span class="text-body-small text-medium-emphasis">
           {{ t("TXT_CODE_d705a2bd") }}
         </span>
       </template>

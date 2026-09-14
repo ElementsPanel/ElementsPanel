@@ -150,7 +150,7 @@ onMounted(fetchData);
         {{ t("TXT_CODE_b197be11") }}
       </VAlert>
 
-      <VRow class="monitor-stat-row">
+      <VRow class="monitor-stat-row" density="comfortable">
         <VCol cols="12" sm="6" lg="3">
           <VCard class="monitor-card monitor-stat-card" flat>
             <VCardText>
@@ -210,7 +210,7 @@ onMounted(fetchData);
         </VCol>
       </VRow>
 
-      <VRow>
+      <VRow density="comfortable">
         <VCol cols="12">
           <VCard class="monitor-card monitor-overview-card" flat>
             <VCardTitle class="monitor-card-title">
@@ -218,7 +218,7 @@ onMounted(fetchData);
               {{ t("TXT_CODE_721157a3") }}
             </VCardTitle>
             <VCardText>
-              <VRow class="overview-grid">
+              <VRow class="overview-grid" density="comfortable">
                 <VCol v-for="item in overviewItems" :key="item.title" cols="12" sm="6" md="4" lg="3">
                   <div class="overview-item">
                     <div class="overview-item-title">
@@ -242,7 +242,7 @@ onMounted(fetchData);
         </VCol>
       </VRow>
 
-      <VRow>
+      <VRow density="comfortable">
         <VCol cols="12" lg="6">
           <VCard class="monitor-card chart-card" flat>
             <VCardTitle class="monitor-card-title">
@@ -263,7 +263,7 @@ onMounted(fetchData);
         </VCol>
       </VRow>
 
-      <VRow>
+      <VRow density="comfortable">
         <VCol cols="12" lg="7">
           <VCard class="monitor-card" flat>
             <VCardTitle class="monitor-card-title">
@@ -357,14 +357,7 @@ onMounted(fetchData);
 }
 
 .monitor-overview-container > .v-row {
-  margin-top: 0;
-  margin-bottom: 0;
-  margin-right: 0;
-  margin-left: 0;
-}
-
-.monitor-overview-container > .v-row > .v-col {
-  padding: 8px;
+  margin: 0;
 }
 
 .monitor-card {
@@ -392,7 +385,6 @@ onMounted(fetchData);
 
 .overview-grid > .v-col {
   min-width: 0;
-  padding: 8px;
 }
 
 .monitor-stat-card {

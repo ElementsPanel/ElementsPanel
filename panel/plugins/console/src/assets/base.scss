@@ -1,3 +1,26 @@
+@layer vuetify-core, vuetify-components, vuetify-overrides, vuetify-utilities, vuetify-final;
+
+@layer vuetify-core.reset {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p {
+    margin: 0;
+  }
+
+  ul,
+  ol,
+  figure,
+  details,
+  summary {
+    margin: 0;
+    padding: 0;
+  }
+}
+
 :root {
   --font-body2: 12px;
   --font-body: 14px;

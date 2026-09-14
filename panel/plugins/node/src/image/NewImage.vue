@@ -106,19 +106,19 @@ onMounted(async () => {});
         </template>
       </PageToolbar>
 
-      <VRow dense class="node-image-row">
+      <VRow density="compact" class="node-image-row">
         <VCol cols="12">
         <CardPanel style="height: 100%">
           <template #body>
             <div>
-                <h5 class="text-h6 mb-2">{{ t("TXT_CODE_d76ccb4f") }}</h5>
-                <p class="text-body-2 text-medium-emphasis">
+                <h5 class="text-title-large mb-2">{{ t("TXT_CODE_d76ccb4f") }}</h5>
+                <p class="text-body-medium text-medium-emphasis">
                   {{ t("TXT_CODE_528753e7") }}
                 </p>
-                <h5 class="text-h6 mb-2">
+                <h5 class="text-title-large mb-2">
                   {{ t("TXT_CODE_2ea7af21") }}
                 </h5>
-                <p class="text-body-2 text-medium-emphasis">
+                <p class="text-body-medium text-medium-emphasis">
                   {{ t("TXT_CODE_ba1eb3b5") }}
                 </p>
             </div>

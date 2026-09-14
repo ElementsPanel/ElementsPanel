@@ -73,7 +73,7 @@ defineExpose({
     @ok="submit"
   >
     <VForm v-if="options" class="term-config-form" @submit.prevent="submit">
-      <VRow dense>
+      <VRow density="compact">
         <VCol cols="12" md="6">
           <div class="term-config-section">
             <div class="term-config-title">{{ t("TXT_CODE_ef650d57") }}</div>

@@ -30,7 +30,7 @@ defineExpose({ appList, fetchTemplate, handleSelectTopCategory });
 </script>
 
 <template>
-  <VRow v-if="appListLoading" class="market-packages-row" align="center" justify="center">
+  <VRow v-if="appListLoading" class="market-packages-row align-center justify-center">
     <VCol cols="12" class="market-loading">
       <VProgressCircular indeterminate color="primary" size="32" />
       <div class="mt-5 text-medium-emphasis">{{ t("TXT_CODE_7fca723a") }}</div>

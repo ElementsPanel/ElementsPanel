@@ -423,7 +423,7 @@ onUnmounted(() => {
         </VCardText>
       </VCard>
 
-      <VRow v-if="instanceInfo" class="console-summary">
+      <VRow v-if="instanceInfo" class="console-summary" density="comfortable">
         <VCol cols="12" lg="7" class="console-function-column">
           <VCard v-if="instanceFunctionItems.length" class="console-function-card" rounded="xl" flat>
             <VCardTitle class="console-function-title">
@@ -431,7 +431,7 @@ onUnmounted(() => {
               {{ t("TXT_CODE_efd37c48") }}
             </VCardTitle>
             <VCardText>
-              <VRow class="console-function-grid">
+              <VRow class="console-function-grid" density="comfortable">
                 <VCol
                   v-for="(item, index) in instanceFunctionItems"
                   :key="`${item.title}-${index}`"
@@ -723,12 +723,6 @@ onUnmounted(() => {
   color: var(--text-color);
   font-size: 16px;
 }
-.console-function-grid {
-  margin: 0 -8px;
-}
-.console-function-grid > .v-col {
-  padding: 8px;
-}
 .console-function-item {
   height: 100%;
   cursor: pointer;
@@ -755,12 +749,6 @@ onUnmounted(() => {
 }
 .console-function-arrow {
   color: var(--color-gray-7);
-}
-.console-summary {
-  margin: 0 -8px;
-}
-.console-summary > .v-col {
-  padding: 8px;
 }
 .summary-card {
   height: 100%;

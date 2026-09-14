@@ -52,10 +52,10 @@ const removeMapping = (index: number) => {
 
       <VCard v-for="(mapping, index) in remoteMappings" :key="index" class="remote-mapping-card" variant="tonal" flat>
         <VCardText>
-          <VRow align="center">
+          <VRow class="align-center">
             <VCol cols="12" md="5">
               <div class="mapping-side-title">{{ t("TXT_CODE_2ee6fd18") }}</div>
-              <VRow dense>
+              <VRow density="compact">
                 <VCol cols="12" sm="8">
                   <VTextField v-model="mapping.from.ip" :label="t('TXT_CODE_54312194')" density="compact" hide-details variant="solo-filled" />
                 </VCol>
@@ -70,7 +70,7 @@ const removeMapping = (index: number) => {
             <VCol cols="12" md="1" class="mapping-arrow"><VIcon icon="mdi-arrow-right" /></VCol>
             <VCol cols="12" md="5">
               <div class="mapping-side-title">{{ t("TXT_CODE_6f27624c") }}</div>
-              <VRow dense>
+              <VRow density="compact">
                 <VCol cols="12" sm="8">
                   <VTextField v-model="mapping.to.ip" :label="t('TXT_CODE_54312194')" density="compact" hide-details variant="solo-filled" />
                 </VCol>

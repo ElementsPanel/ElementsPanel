@@ -93,7 +93,7 @@ onMounted(async () => {
         </template>
       </PageToolbar>
 
-      <VRow dense class="server-config-row">
+      <VRow density="compact" class="server-config-row">
         <VCol cols="12">
           <CardPanel style="height: 100%">
           <template #body>
@@ -121,7 +121,7 @@ onMounted(async () => {
                 </template>
               </VListItem>
             </VList>
-            <div v-else class="empty-config-state"><VIcon icon="mdi-file-alert-outline" size="32" /><p>{{ t("TXT_CODE_37a4c14a") }}</p><p class="text-body-2 text-medium-emphasis">{{ t("TXT_CODE_4c0fda9") }}</p></div>
+            <div v-else class="empty-config-state"><VIcon icon="mdi-file-alert-outline" size="32" /><p>{{ t("TXT_CODE_37a4c14a") }}</p><p class="text-body-medium text-medium-emphasis">{{ t("TXT_CODE_4c0fda9") }}</p></div>
           </template>
         </CardPanel>
       </VCol>

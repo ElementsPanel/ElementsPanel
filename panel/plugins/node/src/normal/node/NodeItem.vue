@@ -203,7 +203,7 @@ onMounted(() => {
         </VCardActions>
       </VCardTitle>
       <VCardText v-if="remoteNode" class="node-card-content">
-        <VRow dense>
+        <VRow density="compact">
           <VCol v-for="detail in detailList(remoteNode)" :key="detail.title + detail.value" cols="6" sm="3">
             <div class="node-detail">
               <div :title="detail.onlyCopy ? detail.value : ''">

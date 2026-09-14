@@ -3,11 +3,12 @@ import {
   defineComponent,
   h,
   isVNode,
+  nextTick,
   shallowReactive,
   type VNode,
   type VNodeChild
 } from "vue";
-import { VIcon, VSnackbar } from "vuetify/components";
+import { VSnackbarQueue } from "vuetify/components";
 import { installVuetify } from "../vuetify";
 
 type ToastType = "success" | "error" | "warning" | "info";
@@ -24,21 +25,27 @@ export interface ToastOptions {
 
 interface ToastItem {
   id: number;
-  type: ToastType;
   content: Renderable;
   description?: Renderable;
-  timeout: number;
-  visible: boolean;
   closing: boolean;
-  removeTimer?: ReturnType<typeof setTimeout>;
+  dismiss?: () => void;
+}
+
+interface QueueMessage {
+  class: string;
+  color: ToastType;
+  prependIcon: string;
+  timeout: number;
+  contentProps: { "data-toast-id": number };
+  onDismiss: () => void;
+  onAfterLeave: () => void;
 }
 
 const MAX_VISIBLE = 3;
 const DEFAULT_TIMEOUT = 5000;
-const pendingToasts: ToastItem[] = [];
-const activeToasts = shallowReactive<ToastItem[]>([]);
+const messages = shallowReactive<QueueMessage[]>([]);
+const toasts = new Map<number, ToastItem>();
 let nextId = 1;
-let mounted = false;
 let host: HTMLDivElement | undefined;
 let app: ReturnType<typeof createApp> | undefined;
 
@@ -49,47 +56,28 @@ const typeIcon: Record<ToastType, string> = {
   info: "mdi-information-outline"
 };
 
-// Vuetify 3.7's snackbar queue only displays one item at a time.
-const showNextToasts = () => {
-  while (activeToasts.length < MAX_VISIBLE && pendingToasts.length > 0) {
-    const item = pendingToasts.shift()!;
-    item.visible = true;
-    activeToasts.push(item);
-  }
-};
-
 const finalizeToast = (item: ToastItem) => {
-  if (item.removeTimer) {
-    clearTimeout(item.removeTimer);
-    item.removeTimer = undefined;
-  }
-  const index = activeToasts.indexOf(item);
-  if (index < 0) return;
-  activeToasts.splice(index, 1);
-  showNextToasts();
-  if (activeToasts.length === 0) {
-    app?.unmount();
-    host?.remove();
-    app = undefined;
-    host = undefined;
-    mounted = false;
-  }
+  toasts.delete(item.id);
+  nextTick(() => {
+    if (toasts.size === 0) destroyAll();
+  });
 };
 
 const removeToast = (item: ToastItem) => {
-  const pendingIndex = pendingToasts.indexOf(item);
+  if (item.closing || toasts.get(item.id) !== item) return;
+  item.closing = true;
+  const pendingIndex = messages.findIndex(
+    (message) => message.contentProps["data-toast-id"] === item.id
+  );
   if (pendingIndex >= 0) {
-    pendingToasts.splice(pendingIndex, 1);
+    messages.splice(pendingIndex, 1);
+    finalizeToast(item);
     return;
   }
-  if (item.closing || activeToasts.indexOf(item) < 0) return;
-  item.closing = true;
-  item.visible = false;
 
-  // Keep the item mounted long enough for VSnackbar's leave transition. The
-  // after-leave hook normally removes it sooner; this also covers a close
-  // call made before the first render has completed.
-  item.removeTimer = setTimeout(() => finalizeToast(item), 250);
+  nextTick(() => {
+    if (toasts.get(item.id) === item) item.dismiss?.();
+  });
 };
 
 const resolveRenderable = (value: Renderable): VNodeChild => {
@@ -105,8 +93,7 @@ const hasContent = (value: Renderable): boolean => {
 };
 
 const ensureMounted = () => {
-  if (mounted || typeof document === "undefined") return;
-  mounted = true;
+  if (app || typeof document === "undefined") return;
   host = document.createElement("div");
   host.className = "vuetify-toast-host";
   document.body.appendChild(host);
@@ -114,54 +101,44 @@ const ensureMounted = () => {
   const ToastHost = defineComponent({
     setup() {
       return () =>
-        [...activeToasts].reverse().map((item) => {
-          const content = resolveRenderable(item.content);
-          const description = resolveRenderable(item.description);
-          const textChildren: VNodeChild[] = [];
-          if (content != null) textChildren.push(...(Array.isArray(content) ? content : [content]));
-          if (description != null) {
-            textChildren.push(
-              h(
-                "div",
-                { class: "vuetify-toast-description" },
-                Array.isArray(description) ? description : [description]
-              )
-            );
-          }
-
-          const children = h("div", { class: "vuetify-toast-content" }, [
-            h(VIcon, {
-              icon: typeIcon[item.type],
-              class: "vuetify-toast-icon",
-              size: 20
-            }),
-            h("div", { class: "vuetify-toast-text" }, textChildren)
-          ]);
-
-          return h(
-            VSnackbar,
-            {
-              key: item.id,
-              class: "vuetify-toast",
-              modelValue: item.visible,
-              "onUpdate:modelValue": (value: boolean) => {
-                if (!value) removeToast(item);
-              },
-              onAfterLeave: () => finalizeToast(item),
-              attach: true,
-              color: item.type,
-              location: "top center",
-              minWidth: 0,
-              maxWidth: "min(560px, calc(100vw - 32px))",
-              zIndex: 10000,
-              rounded: "xl",
-              timeout: item.timeout,
-              variant: "tonal",
-              multiLine: description != null
+        h(
+          VSnackbarQueue<QueueMessage[]>,
+          {
+            modelValue: messages,
+            // Keep the array stable so simultaneous dismissals see the updated queue.
+            "onUpdate:modelValue": (value: QueueMessage[]) =>
+              messages.splice(0, messages.length, ...value),
+            attach: "body",
+            location: "top center",
+            minWidth: 0,
+            maxWidth: "min(560px, calc(100vw - 32px))",
+            zIndex: 10000,
+            rounded: "xl",
+            timeout: DEFAULT_TIMEOUT,
+            totalVisible: MAX_VISIBLE,
+            variant: "tonal"
+          },
+          {
+            text: ({ item }: { item: QueueMessage }) => {
+              const toast = toasts.get(item.contentProps["data-toast-id"]);
+              if (!toast) return null;
+              return h("div", { class: "vuetify-toast-text" }, [
+                resolveRenderable(toast.content),
+                toast.description != null
+                  ? h("div", { class: "vuetify-toast-description" }, [
+                      resolveRenderable(toast.description)
+                    ])
+                  : null
+              ]);
             },
-            { default: () => children }
-          );
-        });
+            // The queue exposes its per-message dismiss callback through this slot.
+            actions: ({ item, props }: { item: QueueMessage; props: { onClick: () => void } }) => {
+              const toast = toasts.get(item.contentProps["data-toast-id"]);
+              if (toast) toast.dismiss = props.onClick;
+              return null;
+            }
+          }
+        );
     }
   });
 
@@ -180,19 +157,24 @@ const openToast = (type: ToastType, options: ToastOptions | Renderable) => {
   if (!hasContent(content) && !hasContent(description)) return { close: () => undefined };
 
   ensureMounted();
-  if (!mounted) return { close: () => undefined };
+  if (!app) return { close: () => undefined };
 
-  const item = shallowReactive<ToastItem>({
+  const item: ToastItem = {
     id: nextId++,
-    type,
     content: typeof content === "string" ? content.trim() : content,
     description: typeof description === "string" ? description.trim() : description,
-    timeout: normalized.duration === 0 ? -1 : normalized.duration ?? DEFAULT_TIMEOUT,
-    visible: false,
     closing: false
+  };
+  toasts.set(item.id, item);
+  messages.push({
+    class: "vuetify-toast",
+    color: type,
+    prependIcon: typeIcon[type],
+    timeout: normalized.duration === 0 ? -1 : normalized.duration ?? DEFAULT_TIMEOUT,
+    contentProps: { "data-toast-id": item.id },
+    onDismiss: () => (item.closing = true),
+    onAfterLeave: () => finalizeToast(item)
   });
-  pendingToasts.push(item);
-  showNextToasts();
 
   return {
     close: () => {
@@ -222,14 +204,10 @@ export const notification = {
 };
 
 export const destroyAll = () => {
-  pendingToasts.splice(0, pendingToasts.length);
-  activeToasts.forEach((item) => {
-    if (item.removeTimer) clearTimeout(item.removeTimer);
-  });
-  activeToasts.splice(0, activeToasts.length);
+  messages.splice(0, messages.length);
+  toasts.clear();
   app?.unmount();
   host?.remove();
   app = undefined;
   host = undefined;
-  mounted = false;
 };

@@ -91,7 +91,7 @@ const handleOpenDetailDialog = async () => {
         </template>
       </PageToolbar>
 
-      <VRow dense class="node-list-row">
+      <VRow density="compact" class="node-list-row">
         <VCol cols="12">
           <div class="desc">
             <div class="desc-text">

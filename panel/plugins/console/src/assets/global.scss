@@ -98,58 +98,21 @@ body::-webkit-scrollbar-track {
   color: var(--text-color) !important;
 }
 
-.vuetify-toast-host {
+.vuetify-toast {
   position: fixed;
   inset: 0;
-  z-index: 10000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
+  padding: 0;
   margin: 16px;
   margin-inline-end: calc(16px + var(--v-scrollbar-offset, 0px));
-  pointer-events: none;
-}
-
-.v-snackbar.vuetify-toast {
-  position: relative;
-  inset: auto;
-  flex: 0 0 auto;
-  max-width: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-.vuetify-toast-content {
-  align-items: center;
-  display: flex;
-  gap: 12px;
-  min-width: 0;
-  width: fit-content;
-  max-width: 100%;
-}
-
-.vuetify-toast-icon {
-  flex: 0 0 auto;
-}
-
-.vuetify-toast-text {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.v-snackbar.vuetify-toast .v-snackbar__wrapper {
-  position: relative;
-  background-color: rgb(var(--v-theme-surface));
-  width: fit-content;
-  min-width: 0;
-  max-width: min(560px, calc(100vw - 32px));
 }
 
 .vuetify-toast .v-snackbar__content {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.vuetify-toast .v-snackbar__actions {
+  display: none;
 }
 
 // Use one flat field treatment for every Vuetify input and select.

@@ -364,7 +364,7 @@ onMounted(async () => {
         </template>
       </PageToolbar>
 
-      <VRow align="center" class="instance-actions-row">
+      <VRow class="instance-actions-row align-center">
         <VCol cols="12" md="7">
           <div v-if="multipleMode" class="batch-actions">
             <VBtn variant="text" prepend-icon="mdi-close" @click="exitMultiple">{{
@@ -425,7 +425,7 @@ onMounted(async () => {
       <div v-if="isLoading" class="state-container">
         <VProgressCircular indeterminate color="primary" size="48" />
       </div>
-      <VRow v-else-if="instancesMoreInfo.length" class="instance-grid">
+      <VRow v-else-if="instancesMoreInfo.length" class="instance-grid" density="comfortable">
         <VCol v-for="item in instancesMoreInfo" :key="item.instanceUuid" cols="12" sm="6" lg="4" xl="3">
           <VCard class="instance-card" :class="{ selected: multipleMode && findSelected(item) }" rounded="xl" flat
             @click="selectInstance(item)">
@@ -618,12 +618,7 @@ onMounted(async () => {
   justify-content: center;
 }
 
-.instance-grid {
-  margin: 0 -8px;
-}
-
 .instance-grid>.v-col {
-  padding: 8px;
   display: flex;
 }
 

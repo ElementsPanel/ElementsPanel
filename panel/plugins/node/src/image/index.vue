@@ -198,14 +198,14 @@ onMounted(async () => {
         </template>
       </PageToolbar>
 
-      <VRow dense class="node-image-row">
+      <VRow density="compact" class="node-image-row">
         <VCol cols="12">
         <CardPanel style="height: 100%">
           <template #title>
             {{ t("TXT_CODE_8b62abb2") }}
           </template>
           <template #body>
-            <p class="text-body-2 text-medium-emphasis">
+            <p class="text-body-medium text-medium-emphasis">
                 {{ t("TXT_CODE_ba82dddb") }}
             </p>
             <VDataTable :headers="imageColumns.map((column) => ({ title: column.title, key: column.key || column.dataIndex, value: column.dataIndex || column.key, sortable: false }))" :items="imageDataSource || []" :loading="imageListLoading" :items-per-page="10" density="comfortable">
@@ -224,7 +224,7 @@ onMounted(async () => {
             {{ t("TXT_CODE_cb36c80e") }}
           </template>
           <template #body>
-            <p class="text-body-2 text-medium-emphasis">
+            <p class="text-body-medium text-medium-emphasis">
                 {{ t("TXT_CODE_b34efc1") }}
             </p>
             <VDataTable :headers="containerColumns.map((column) => ({ title: column.title, key: column.key || column.dataIndex, value: column.dataIndex || column.key, sortable: false }))" :items="containerDataSource || []" :loading="containerListLoading" :items-per-page="10" density="comfortable">

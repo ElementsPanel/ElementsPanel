@@ -73,7 +73,7 @@ export const vuetify = createVuetify({
  * those apps are outside ConsoleApp's VThemeProvider subtree.
  */
 export function setVuetifyTheme(isDark: boolean) {
-  vuetify.theme.global.name.value = isDark ? "dark" : "light";
+  return vuetify.theme.change(isDark ? "dark" : "light");
 }
 
 const installedApps = new WeakSet<App>();

@@ -41,7 +41,7 @@ const platformDisplayText = (platform: string) => String(platform).toLowerCase()
     <template #item.title="{ item }">
       <div class="package-title-cell">
         <div class="font-weight-medium">{{ localized(rowItem(item), "title") }}</div>
-        <div class="text-caption text-medium-emphasis text-truncate">{{ localized(rowItem(item), "description") }}</div>
+        <div class="text-body-small text-medium-emphasis text-truncate">{{ localized(rowItem(item), "description") }}</div>
       </div>
     </template>
     <template #item.platform="{ item }"><VChip size="small" color="primary" variant="tonal">{{ platformDisplayText(rowItem(item).platform) }}</VChip></template>

@@ -91,7 +91,7 @@ onMounted(() => {
     <VCard>
       <VCardTitle>{{ t("TXT_CODE_bbbd4133") }}</VCardTitle>
       <VCardText class="dialog-overflow-container">
-      <div v-if="props.subTitle" class="text-body-2 text-medium-emphasis mb-4">
+      <div v-if="props.subTitle" class="text-body-medium text-medium-emphasis mb-4">
         <!-- eslint-disable-next-line vue/no-v-html -->
         <span v-html="props.subTitle"></span>
       </div>
