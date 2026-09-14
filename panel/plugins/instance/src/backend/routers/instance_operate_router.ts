@@ -180,7 +180,7 @@ router.post(
       const parameter = ctx.request.body;
 
       // some asynchronous tasks are only allowed for administrators
-      const needTopPermissionTask = ["quick_install"];
+      const needTopPermissionTask = ["quick_install", "minecraft_install"];
       if (
         needTopPermissionTask.includes(taskName) &&
         !guard().identify(ctx).elevated

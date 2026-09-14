@@ -4,6 +4,7 @@ import { createEnvironmentRouter } from "./routers/environment_router";
 import { createInstanceAdminRouter } from "./routers/instance_admin_router";
 import { createInstanceOperateRouter } from "./routers/instance_operate_router";
 import { createScheduleRouter } from "./routers/schedule_router";
+import { createMinecraftRouter } from "./routers/minecraft_router";
 import { getInstancesByUuid } from "./service/instance_service";
 import { setPluginContext, middleware, remote, roles } from "./runtime";
 
@@ -26,10 +27,12 @@ export function apply(ctx: PanelPluginContext) {
   const adminRouter = createInstanceAdminRouter();
   const environmentRouter = createEnvironmentRouter();
   const scheduleRouter = createScheduleRouter();
+  const minecraftRouter = createMinecraftRouter();
   api.use(operateRouter.routes()).use(operateRouter.allowedMethods());
   api.use(adminRouter.routes()).use(adminRouter.allowedMethods());
   api.use(environmentRouter.routes()).use(environmentRouter.allowedMethods());
   api.use(scheduleRouter.routes()).use(scheduleRouter.allowedMethods());
+  api.use(minecraftRouter.routes()).use(minecraftRouter.allowedMethods());
 
   // Instance selection is part of instance management, while daemon CRUD is
   // owned by the node plugin.

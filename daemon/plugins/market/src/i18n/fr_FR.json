@@ -15,5 +15,9 @@
   "TXT_CODE_e577c77c": "Mise à jour de l'instance ...",
   "TXT_CODE_e5ba712d": "Construire le serveur comme package par défaut :",
   "TXT_CODE_f8145844": "Ce modèle d'application ne peut pas être utilisé pour la réinstallation. \nLes instances créées à l'aide de conteneurs Docker ne peuvent pas être réinstallées comme modèles normaux. \nVeuillez sélectionner un package prédéfini avec l'étiquette Docker pour la réinstallation. \nSi vous avez besoin d'installer d'autres modèles, veuillez contacter l'administrateur pour désactiver manuellement les paramètres de contenerisation de l'instance.",
-  "TXT_CODE_quick_install.unzipError": "Échec de la décompression de l'archive"
+  "TXT_CODE_quick_install.unzipError": "Échec de la décompression de l'archive",
+  "TXT_CODE_minecraft.invalidDownload": "Paramètres de téléchargement Minecraft invalides.",
+  "TXT_CODE_minecraft.platformMismatch": "Le serveur Bedrock est incompatible avec ce nœud. Choisissez une version correspondant à Windows/Linux et utilisez un nœud x64.",
+  "TXT_CODE_minecraft.missingFiles": "Les fichiers de démarrage du serveur installé sont introuvables. Vérifiez le paquet téléchargé et le journal d’installation.",
+  "TXT_CODE_minecraft.hashMismatch": "La vérification SHA-256 du fichier téléchargé a échoué. Installation arrêtée ; veuillez réessayer."
 }

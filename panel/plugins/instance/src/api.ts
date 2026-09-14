@@ -1,4 +1,5 @@
 import { useDefineApi } from "@/stores/useDefineApi";
+import type { MinecraftServerSelection } from "../../../../common/src/minecraft";
 import type { RemoteMappingEntry } from "@/tools/protocol";
 import type {
   ContainerInfo,
@@ -222,6 +223,31 @@ export const createInstance = useDefineApi<
   method: "POST",
   url: "/api/instance"
 });
+
+export const minecraftServers = useDefineApi<{}, string[]>({
+  url: "/api/instance/minecraft/servers",
+  // Each selection owns its abort signal; metadata caching lives on the panel.
+  forceRequest: true,
+  timeout: 30000
+});
+
+export const minecraftVersions = useDefineApi<
+  { params: { server: string } },
+  { versions: string[]; description: string }
+>({ url: "/api/instance/minecraft/versions", forceRequest: true, timeout: 30000 });
+
+export const minecraftBuilds = useDefineApi<
+  { params: { server: string; version: string } },
+  string[]
+>({ url: "/api/instance/minecraft/builds", forceRequest: true, timeout: 30000 });
+
+export const createMinecraftInstance = useDefineApi<
+  {
+    params: { daemonId: string };
+    data: { selection: MinecraftServerSelection; config: IGlobalInstanceConfig };
+  },
+  { instanceUuid: string; taskId: string; status: number }
+>({ url: "/api/instance/minecraft", method: "POST", forceRequest: true, timeout: 60000 });
 
 export const createAsyncTask = useDefineApi<
   {

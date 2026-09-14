@@ -15,5 +15,9 @@
   "TXT_CODE_e577c77c": "インスタンス更新中...",
   "TXT_CODE_e5ba712d": "サーバーをデフォルトのパッケージとして構築する:",
   "TXT_CODE_f8145844": "このアプリケーションテンプレートは、再インストールに使用できません。 \nDockerコンテナを使用して作成されたインスタンスは、通常のテンプレートとして再インストールすることはできません。\n再インストールするために、Dockerラベル付きのプリセットパッケージを選択してください。\n他のテンプレートをインストールする必要がある場合は、管理者に連絡して、インスタンスのコンテナ化設定を手動でオフにしてください。",
-  "TXT_CODE_quick_install.unzipError": "アーカイブの解凍に失敗しました"
+  "TXT_CODE_quick_install.unzipError": "アーカイブの解凍に失敗しました",
+  "TXT_CODE_minecraft.invalidDownload": "Minecraft のダウンロードパラメーターが無効です。",
+  "TXT_CODE_minecraft.platformMismatch": "Bedrock サーバーはこのノードに対応していません。ノードの Windows/Linux に合うバージョンを選び、x64 ノードを使用してください。",
+  "TXT_CODE_minecraft.missingFiles": "インストールされたサーバーの起動ファイルが見つかりません。ダウンロードしたパッケージとインストールログを確認してください。",
+  "TXT_CODE_minecraft.hashMismatch": "ダウンロードしたファイルの SHA-256 検証に失敗したため、インストールを停止しました。再試行してください。"
 }

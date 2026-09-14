@@ -15,5 +15,9 @@
   "TXT_CODE_e577c77c": "正在更新實例...",
   "TXT_CODE_e5ba712d": "正在以預設套件的方式建置伺服器：",
   "TXT_CODE_f8145844": "此應用模板不能用於重新安裝。使用 Docker 容器建立的實例不能作為普通模板重新安裝。請選擇帶有 Docker 標籤的預設包進行重新安裝。如果您確實需要安裝其他模板，請聯繫管理員手動關閉實例的容器化設定。",
-  "TXT_CODE_quick_install.unzipError": "解壓縮檔案失敗"
+  "TXT_CODE_quick_install.unzipError": "解壓縮檔案失敗",
+  "TXT_CODE_minecraft.invalidDownload": "Minecraft 下載參數無效。",
+  "TXT_CODE_minecraft.platformMismatch": "基岩版伺服器與節點不相容，請選擇與節點 Windows/Linux 系統一致的版本，並使用 x64 節點。",
+  "TXT_CODE_minecraft.missingFiles": "找不到安裝後的伺服器啟動檔案，請檢查下載套件和安裝記錄。",
+  "TXT_CODE_minecraft.hashMismatch": "下載檔案的 SHA-256 驗證失敗，已停止安裝，請重試。"
 }

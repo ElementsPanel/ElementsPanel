@@ -4,10 +4,12 @@ import { t } from "@/lang/i18n";
 import { remoteNodeList } from "@/services/apis";
 import type { NodeStatus } from "@/types";
 import { QUICKSTART_METHOD } from "@/hooks/widgets/quickStartFlow";
+import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
 import CreateInstanceForm from "../widgets/setupApp/CreateInstanceForm.vue";
 import { computed, ref } from "vue";
 import {
   VAlert,
+  VAutocomplete,
   VBtn,
   VCard,
   VCardText,
@@ -34,19 +36,35 @@ const emit = defineEmits<{
 }>();
 
 const step = ref(1);
+const instanceType = ref("");
+const formBusy = ref(false);
+const instanceTypeOptions = computed(() =>
+  Object.entries(INSTANCE_TYPE_TRANSLATION).map(([value, title]) => ({ value, title }))
+);
+const isMinecraft = computed(() => instanceType.value?.startsWith("minecraft/"));
 const createMethod = ref<QUICKSTART_METHOD | "">("");
 const daemonId = ref("");
 const selectedNode = ref<NodeStatus>();
 const { execute: loadNodes, state: nodes, isLoading: nodesLoading } = remoteNodeList();
 
 const availableNodes = computed(() => (nodes.value || []).filter((node) => node.available));
-const methodOptions = [
+const methodOptions = computed(() => [
   {
     value: QUICKSTART_METHOD.IMPORT,
-    title: t("TXT_CODE_a3efb1cc"),
-    description: t("TXT_CODE_f09da050"),
+    title: isMinecraft.value ? t("TXT_CODE_minecraft.upload") : t("TXT_CODE_a3efb1cc"),
+    description: isMinecraft.value ? t("TXT_CODE_minecraft.uploadHint") : t("TXT_CODE_f09da050"),
     icon: "mdi-folder-zip-outline"
   },
+  ...(isMinecraft.value
+    ? [
+        {
+          value: QUICKSTART_METHOD.DOWNLOAD,
+          title: t("TXT_CODE_minecraft.download"),
+          description: t("TXT_CODE_minecraft.downloadHint"),
+          icon: "mdi-cloud-download-outline"
+        }
+      ]
+    : []),
   {
     value: QUICKSTART_METHOD.DOCKER,
     title: t("TXT_CODE_bae487e4"),
@@ -59,19 +77,23 @@ const methodOptions = [
     description: t("TXT_CODE_b3844cf8"),
     icon: "mdi-folder-open-outline"
   }
-];
+]);
+
+const changeInstanceType = () => {
+  createMethod.value = "";
+  daemonId.value = "";
+  selectedNode.value = undefined;
+};
 
 const chooseMethod = async (method: QUICKSTART_METHOD) => {
   createMethod.value = method;
   daemonId.value = "";
   selectedNode.value = undefined;
-  step.value = 2;
-  if (!nodes.value) {
-    try {
-      await loadNodes();
-    } catch (error) {
-      console.error(error);
-    }
+  step.value = 3;
+  try {
+    await loadNodes();
+  } catch (error) {
+    console.error(error);
   }
 };
 
@@ -81,12 +103,12 @@ const chooseNode = (node: NodeStatus) => {
 };
 
 const goNext = () => {
-  if (step.value === 2 && daemonId.value) step.value = 3;
+  if (step.value === 1 && instanceType.value) step.value = 2;
+  else if (step.value === 3 && daemonId.value) step.value = 4;
 };
 
 const goBack = () => {
-  if (step.value === 3) step.value = 2;
-  else if (step.value === 2) step.value = 1;
+  if (!formBusy.value && step.value > 1) step.value--;
 };
 
 const goToNodePage = () => router.push({ path: "/node" });
@@ -113,48 +135,116 @@ const handleCreated = (instanceUuid: string) => {
         <VCardText class="pa-0">
           <VStepper v-model="step" class="create-instance-stepper" flat>
             <VStepperHeader>
-              <VStepperItem :value="1" :title="t('TXT_CODE_5a74975b')" icon="mdi-format-list-bulleted" />
+              <VStepperItem :value="1" :title="t('TXT_CODE_2f291d8b')" icon="mdi-shape-outline" />
               <VDivider />
-              <VStepperItem :value="2" :title="t('TXT_CODE_7e267ba')" icon="mdi-server-network-outline" :disabled="!createMethod" />
+              <VStepperItem
+                :value="2"
+                :title="t('TXT_CODE_5a74975b')"
+                icon="mdi-format-list-bulleted"
+                :disabled="!instanceType"
+              />
               <VDivider />
-              <VStepperItem :value="3" :title="t('TXT_CODE_645bc545')" icon="mdi-tune-variant" :disabled="!daemonId" />
+              <VStepperItem
+                :value="3"
+                :title="t('TXT_CODE_7e267ba')"
+                icon="mdi-server-network-outline"
+                :disabled="!createMethod"
+              />
+              <VDivider />
+              <VStepperItem
+                :value="4"
+                :title="t('TXT_CODE_645bc545')"
+                icon="mdi-tune-variant"
+                :disabled="!daemonId"
+              />
             </VStepperHeader>
 
             <VStepperWindow>
               <VStepperWindowItem :value="1">
-                <div class="step-content">
+                <div class="step-content step-content--form">
                   <div class="step-heading">
-                    <h2>{{ t("TXT_CODE_5a74975b") }}</h2>
-                    <p>{{ t("TXT_CODE_81ad9e80") }}</p>
+                    <h2>{{ t("TXT_CODE_2f291d8b") }}</h2>
+                    <p>{{ t("TXT_CODE_be608c82") }}</p>
                   </div>
-                  <VRow>
-                    <VCol v-for="option in methodOptions" :key="option.value" cols="12" md="4">
-                      <VCard class="method-card" variant="flat" elevation="0" rounded="xl" @click="chooseMethod(option.value)">
-                        <VCardText>
-                          <VIcon :icon="option.icon" size="36" color="primary" />
-                          <h3>{{ option.title }}</h3>
-                          <p>{{ option.description }}</p>
-                          <VBtn color="primary" variant="text" class="method-card-action" @click.stop="chooseMethod(option.value)">
-                            {{ t("TXT_CODE_5e9022f8") }}<VIcon icon="mdi-arrow-right" end />
-                          </VBtn>
-                        </VCardText>
-                      </VCard>
-                    </VCol>
-                  </VRow>
+                  <VAutocomplete
+                    v-model="instanceType"
+                    :items="instanceTypeOptions"
+                    :label="t('TXT_CODE_2f291d8b')"
+                    :placeholder="t('TXT_CODE_3bb646e4')"
+                    variant="solo"
+                    hide-details
+                    @update:model-value="changeInstanceType"
+                  />
+                  <div class="step-actions">
+                    <VBtn color="primary" :disabled="!instanceType" @click="goNext"
+                      >{{ t("TXT_CODE_5e9022f8") }}<VIcon icon="mdi-arrow-right" end
+                    /></VBtn>
+                  </div>
                 </div>
               </VStepperWindowItem>
 
               <VStepperWindowItem :value="2">
                 <div class="step-content">
                   <div class="step-heading">
+                    <h2>{{ t("TXT_CODE_5a74975b") }}</h2>
+                    <p>{{ t("TXT_CODE_81ad9e80") }}</p>
+                  </div>
+                  <VRow>
+                    <VCol
+                      v-for="option in methodOptions"
+                      :key="option.value"
+                      cols="12"
+                      :md="isMinecraft ? 6 : 4"
+                    >
+                      <VCard
+                        class="method-card"
+                        variant="flat"
+                        elevation="0"
+                        rounded="xl"
+                        @click="chooseMethod(option.value)"
+                      >
+                        <VCardText>
+                          <VIcon :icon="option.icon" size="36" color="primary" />
+                          <h3>{{ option.title }}</h3>
+                          <p>{{ option.description }}</p>
+                          <VBtn
+                            color="primary"
+                            variant="text"
+                            class="method-card-action"
+                            @click.stop="chooseMethod(option.value)"
+                          >
+                            {{ t("TXT_CODE_5e9022f8") }}<VIcon icon="mdi-arrow-right" end />
+                          </VBtn>
+                        </VCardText>
+                      </VCard>
+                    </VCol>
+                  </VRow>
+                  <div class="step-actions">
+                    <VBtn variant="text" @click="goBack"
+                      ><VIcon icon="mdi-arrow-left" />{{ t("TXT_CODE_c14b2ea3") }}</VBtn
+                    >
+                  </div>
+                </div>
+              </VStepperWindowItem>
+
+              <VStepperWindowItem :value="3">
+                <div class="step-content">
+                  <div class="step-heading">
                     <h2>{{ t("TXT_CODE_7e267ba") }}</h2>
                     <p>{{ t("TXT_CODE_ad24269a") }}</p>
                   </div>
                   <VProgressLinear v-if="nodesLoading" indeterminate color="primary" rounded="xl" />
-                  <VAlert v-else-if="availableNodes.length === 0" type="warning" variant="tonal" rounded="xl">
+                  <VAlert
+                    v-else-if="availableNodes.length === 0"
+                    type="warning"
+                    variant="tonal"
+                    rounded="xl"
+                  >
                     <div class="node-empty-content">
                       <span>{{ t("TXT_CODE_f4110b65") }}</span>
-                      <VBtn color="primary" variant="text" @click="goToNodePage">{{ t("TXT_CODE_4fe5dce5") }}</VBtn>
+                      <VBtn color="primary" variant="text" @click="goToNodePage">{{
+                        t("TXT_CODE_4fe5dce5")
+                      }}</VBtn>
                     </div>
                   </VAlert>
                   <VRow v-else>
@@ -169,8 +259,14 @@ const handleCreated = (instanceUuid: string) => {
                       >
                         <VCardText>
                           <div class="node-card-header">
-                            <div class="node-card-title"><VIcon icon="mdi-server-outline" />{{ node.remarks || `${node.ip}:${node.port}` }}</div>
-                            <VChip color="success" size="small" variant="tonal">{{ t("TXT_CODE_b078a763") }}</VChip>
+                            <div class="node-card-title">
+                              <VIcon icon="mdi-server-outline" />{{
+                                node.remarks || `${node.ip}:${node.port}`
+                              }}
+                            </div>
+                            <VChip color="success" size="small" variant="tonal">{{
+                              t("TXT_CODE_b078a763")
+                            }}</VChip>
                           </div>
                           <div class="node-card-details">
                             <span>{{ node.ip }}:{{ node.port }}</span>
@@ -181,27 +277,38 @@ const handleCreated = (instanceUuid: string) => {
                     </VCol>
                   </VRow>
                   <div class="step-actions">
-                    <VBtn variant="text" @click="goBack"><VIcon icon="mdi-arrow-left" />{{ t("TXT_CODE_c14b2ea3") }}</VBtn>
-                    <VBtn color="primary" :disabled="!daemonId" @click="goNext">{{ t("TXT_CODE_5e9022f8") }}<VIcon icon="mdi-arrow-right" end /></VBtn>
+                    <VBtn variant="text" @click="goBack"
+                      ><VIcon icon="mdi-arrow-left" />{{ t("TXT_CODE_c14b2ea3") }}</VBtn
+                    >
+                    <VBtn color="primary" :disabled="!daemonId" @click="goNext"
+                      >{{ t("TXT_CODE_5e9022f8") }}<VIcon icon="mdi-arrow-right" end
+                    /></VBtn>
                   </div>
                 </div>
               </VStepperWindowItem>
 
-              <VStepperWindowItem :value="3">
+              <VStepperWindowItem :value="4">
                 <div class="step-content step-content--form">
                   <div class="step-heading">
                     <h2>{{ t("TXT_CODE_645bc545") }}</h2>
-                    <p v-if="selectedNode">{{ selectedNode.remarks || `${selectedNode.ip}:${selectedNode.port}` }}</p>
+                    <p v-if="selectedNode">
+                      {{ selectedNode.remarks || `${selectedNode.ip}:${selectedNode.port}` }}
+                    </p>
                   </div>
                   <CreateInstanceForm
-                    v-if="createMethod && daemonId"
+                    v-if="createMethod && daemonId && instanceType"
+                    :key="`${instanceType}:${createMethod}:${daemonId}`"
                     :create-method="createMethod"
+                    :instance-type="instanceType"
                     :daemon-id="daemonId"
                     :is-desktop="true"
                     @next-step="handleCreated"
+                    @busy="formBusy = $event"
                   />
                   <div class="step-actions">
-                    <VBtn variant="text" @click="goBack"><VIcon icon="mdi-arrow-left" />{{ t("TXT_CODE_c14b2ea3") }}</VBtn>
+                    <VBtn variant="text" :disabled="formBusy" @click="goBack"
+                      ><VIcon icon="mdi-arrow-left" />{{ t("TXT_CODE_c14b2ea3") }}</VBtn
+                    >
                   </div>
                 </div>
               </VStepperWindowItem>
@@ -274,7 +381,10 @@ const handleCreated = (instanceUuid: string) => {
 .node-card {
   height: 100%;
   cursor: pointer;
-  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease;
 
   &:hover {
     transform: translateY(-2px);
@@ -283,13 +393,19 @@ const handleCreated = (instanceUuid: string) => {
 
 .method-card {
   border: 0 !important;
-  background-color: var(--desktop-window-titlebar-bg, rgba(var(--v-theme-surface-variant), 0.72)) !important;
+  background-color: var(
+    --desktop-window-titlebar-bg,
+    rgba(var(--v-theme-surface-variant), 0.72)
+  ) !important;
   box-shadow: none !important;
   transition: background-color 0.2s ease;
 
   &:hover {
     transform: none;
-    background-color: var(--desktop-window-control-hover, rgba(var(--v-theme-surface-variant), 0.88)) !important;
+    background-color: var(
+      --desktop-window-control-hover,
+      rgba(var(--v-theme-surface-variant), 0.88)
+    ) !important;
     box-shadow: none !important;
   }
 
@@ -327,13 +443,19 @@ const handleCreated = (instanceUuid: string) => {
 
 .node-card {
   border: 0 !important;
-  background-color: var(--desktop-window-titlebar-bg, rgba(var(--v-theme-surface-variant), 0.72)) !important;
+  background-color: var(
+    --desktop-window-titlebar-bg,
+    rgba(var(--v-theme-surface-variant), 0.72)
+  ) !important;
   box-shadow: none !important;
   transition: background-color 0.2s ease;
 
   &:hover {
     transform: none;
-    background-color: var(--desktop-window-control-hover, rgba(var(--v-theme-surface-variant), 0.88)) !important;
+    background-color: var(
+      --desktop-window-control-hover,
+      rgba(var(--v-theme-surface-variant), 0.88)
+    ) !important;
     box-shadow: none !important;
   }
 

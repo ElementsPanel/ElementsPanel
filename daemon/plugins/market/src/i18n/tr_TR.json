@@ -15,5 +15,9 @@
   "TXT_CODE_e577c77c": "Örneğin güncellenmesi ...",
   "TXT_CODE_e5ba712d": "Sunucuyu önceden ayarlanmış bir paket olarak oluşturma:",
   "TXT_CODE_f8145844": "Bu uygulama şablonu yeniden yükleme için kullanılamaz. \nDocker kapları kullanılarak oluşturulan örnekler normal şablonlar olarak yeniden yüklenemez. \nYeniden yükleme için Docker etiketine sahip önceden ayarlanmış bir paket seçin. \nDiğer şablonları yüklemeniz gerekiyorsa, örneğin kapsayıcılık ayarlarını manuel olarak kapatmak için lütfen yöneticiyle iletişime geçin.",
-  "TXT_CODE_quick_install.unzipError": "Unzip Başarısız"
+  "TXT_CODE_quick_install.unzipError": "Unzip Başarısız",
+  "TXT_CODE_minecraft.invalidDownload": "Geçersiz Minecraft indirme parametreleri.",
+  "TXT_CODE_minecraft.platformMismatch": "Bedrock sunucusu bu düğümle uyumlu değil. Düğümün Windows/Linux sistemine uygun bir sürüm seçin ve x64 düğüm kullanın.",
+  "TXT_CODE_minecraft.missingFiles": "Kurulan sunucunun başlatma dosyaları bulunamadı. İndirilen paketi ve kurulum günlüğünü kontrol edin.",
+  "TXT_CODE_minecraft.hashMismatch": "İndirilen dosyanın SHA-256 doğrulaması başarısız oldu. Kurulum durduruldu; lütfen tekrar deneyin."
 }

@@ -15,5 +15,9 @@
   "TXT_CODE_e577c77c": "Actualización de la instancia ...",
   "TXT_CODE_e5ba712d": "Construyendo el servidor como paquete predeterminado:",
   "TXT_CODE_f8145844": "Esta plantilla de aplicación no se puede utilizar para la reinstalación. \nLas instancias creadas con contenedores Docker no se pueden reinstalar como plantillas normales. \nSeleccione un paquete preestablecido con la etiqueta Docker para la reinstalación. \nSi necesita instalar otras plantillas, comuníquese con el administrador para apagar manualmente la configuración de contenedorización de la instancia.",
-  "TXT_CODE_quick_install.unzipError": "No se pudo descomprimir el archivo"
+  "TXT_CODE_quick_install.unzipError": "No se pudo descomprimir el archivo",
+  "TXT_CODE_minecraft.invalidDownload": "Parámetros de descarga de Minecraft no válidos.",
+  "TXT_CODE_minecraft.platformMismatch": "El servidor Bedrock no es compatible con este nodo. Selecciona una versión que coincida con Windows/Linux del nodo y utiliza un nodo x64.",
+  "TXT_CODE_minecraft.missingFiles": "No se encontraron los archivos de inicio del servidor instalado. Revisa el paquete descargado y el registro de instalación.",
+  "TXT_CODE_minecraft.hashMismatch": "El archivo descargado no superó la verificación SHA-256. Se detuvo la instalación; inténtalo de nuevo."
 }

@@ -15,5 +15,9 @@
   "TXT_CODE_e577c77c": "Aktualisieren der Instanz ...",
   "TXT_CODE_e5ba712d": "Build-Server als Standardpaket:",
   "TXT_CODE_f8145844": "Diese Anwendungsvorlage kann nicht zur Neuinstallation verwendet werden. \nMit Docker -Containern erstellte Instanzen können nicht als normale Vorlagen neu installiert werden. \nBitte wählen Sie ein voreingestelltes Paket mit dem Docker -Label zur Neuinstallation aus. \nWenn Sie andere Vorlagen installieren müssen, wenden Sie sich bitte an den Administrator, um die Containerisierungseinstellungen der Instanz manuell auszuschalten.",
-  "TXT_CODE_quick_install.unzipError": "Das Dekomprimieren des Archivs ist fehlgeschlagen"
+  "TXT_CODE_quick_install.unzipError": "Das Dekomprimieren des Archivs ist fehlgeschlagen",
+  "TXT_CODE_minecraft.invalidDownload": "Ungültige Minecraft-Downloadparameter.",
+  "TXT_CODE_minecraft.platformMismatch": "Der Bedrock-Server ist mit diesem Knoten nicht kompatibel. Eine Version passend zu Windows/Linux auswählen und einen x64-Knoten verwenden.",
+  "TXT_CODE_minecraft.missingFiles": "Die Startdateien des installierten Servers wurden nicht gefunden. Das heruntergeladene Paket und das Installationsprotokoll prüfen.",
+  "TXT_CODE_minecraft.hashMismatch": "Die SHA-256-Prüfung der heruntergeladenen Datei ist fehlgeschlagen. Die Installation wurde gestoppt. Bitte erneut versuchen."
 }

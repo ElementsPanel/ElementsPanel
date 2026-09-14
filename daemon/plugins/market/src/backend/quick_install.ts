@@ -1,4 +1,5 @@
 import axios from "axios";
+import { createHash } from "crypto";
 import fs from "fs-extra";
 import path from "path";
 import { pipeline, Readable } from "stream";
@@ -6,6 +7,12 @@ import { v4 } from "uuid";
 type InstanceEntity = any;
 type IAsyncTaskJSON = any;
 import type { DaemonPluginContext } from "../../../../src/plugin";
+import type { MinecraftInstallOptions } from "../../../../../common/src/minecraft";
+import {
+  minecraftFileName,
+  minecraftInstallerCommand,
+  minecraftStartCommand
+} from "./minecraft_install";
 
 /**
  * Downloads a market package into an instance directory, unpacks it and applies
@@ -49,20 +56,25 @@ export function createQuickInstallTaskClass(ctx: DaemonPluginContext) {
 
     private lastProgressOutput = 0; // Throttle progress output
     private isInitInstance = false;
+    private cancelled = false;
+    private finished = false;
 
     private abortController?: AbortController;
     private downloadStream?: fs.WriteStream;
     private writeStream?: fs.WriteStream;
     private updateTask?: InstanceUpdateTask;
-    // PLACEHOLDER_BODY
 
     constructor(
       public instanceName: string,
       public targetLink?: string,
       public buildParams?: IGlobalInstanceConfig,
-      curInstance?: InstanceEntity
+      curInstance?: InstanceEntity,
+      private readonly minecraft?: MinecraftInstallOptions
     ) {
       super();
+      this.extName = this.minecraft
+        ? path.extname(minecraftFileName(this.minecraft))
+        : path.extname(this.targetLink ? new URL(this.targetLink).pathname : "") || ".zip";
       const config = new InstanceConfig();
       config.nickname = instanceName;
       config.stopCommand = "^c";
@@ -77,20 +89,19 @@ export function createQuickInstallTaskClass(ctx: DaemonPluginContext) {
 
       this.taskId = `${QuickInstallTask.TYPE}-${this.instance.instanceUuid}-${v4()}`;
       this.type = QuickInstallTask.TYPE;
-      this.extName = path.extname(this.targetLink ?? "") || ".zip";
     }
 
     private async download() {
       this.abortController = new AbortController();
       if (!this.targetLink) throw new Error("No targetLink!");
       let downloadFileName = this.TMP_ZIP_NAME;
-      if (this.extName !== ".zip") {
+      if (this.minecraft) {
+        downloadFileName = minecraftFileName(this.minecraft);
+      } else if (this.extName !== ".zip") {
         const url = new URL(this.targetLink);
         downloadFileName = url.pathname.split("/").pop() || `application${this.extName}`;
       }
       this.filePath = path.normalize(path.join(this.instance.absoluteCwdPath(), downloadFileName));
-      this.writeStream = fs.createWriteStream(this.filePath);
-      if (!this.writeStream) throw new Error("Not writeStream!");
 
       // Initialize download progress
       this.downloadProgress = {
@@ -105,9 +116,17 @@ export function createQuickInstallTaskClass(ctx: DaemonPluginContext) {
         url: this.targetLink,
         responseType: "stream",
         signal: this.abortController.signal,
-        headers: getCommonHeaders(this.targetLink),
+        headers: {
+          ...getCommonHeaders(this.targetLink),
+          ...(this.minecraft ? { "User-Agent": "ElementsPanel" } : {})
+        },
+        timeout: this.minecraft ? 30000 : 0,
         maxRedirects: 10
       });
+      if (this.cancelled) {
+        response.data.destroy();
+        return;
+      }
 
       // Get total file size
       const contentLength = response.headers["content-length"];
@@ -121,9 +140,11 @@ export function createQuickInstallTaskClass(ctx: DaemonPluginContext) {
 
       let lastProgressUpdate = Date.now();
       let lastDownloadedBytes = 0;
+      const hash = this.minecraft?.sha256 ? createHash("sha256") : undefined;
 
       // listen download progress
       response.data.on("data", (chunk: Buffer) => {
+        hash?.update(chunk);
         this.downloadProgress.downloadedBytes += chunk.length;
 
         // Calculate download speed (update every second)
@@ -166,6 +187,9 @@ export function createQuickInstallTaskClass(ctx: DaemonPluginContext) {
 
       // await download
       await new Promise<boolean>((resolve, reject) => {
+        // Open the file only once the response is available so pipeline owns
+        // its error events, including disk/permission errors during open.
+        this.writeStream = fs.createWriteStream(this.filePath);
         this.downloadStream = pipeline(response.data, this.writeStream!, (err) => {
           if (err) {
             reject(err);
@@ -175,9 +199,51 @@ export function createQuickInstallTaskClass(ctx: DaemonPluginContext) {
         });
       });
 
+      if (hash && hash.digest("hex").toLowerCase() !== this.minecraft!.sha256!.toLowerCase()) {
+        await fs.remove(this.filePath);
+        throw new Error($t("TXT_CODE_minecraft.hashMismatch"));
+      }
+
       this.downloadProgress.percentage = 100;
-      this.downloadProgress.downloadedBytes = this.downloadProgress.totalBytes;
-      this.instance.println("INFO", `Download "${this.targetLink}" success!!!`);
+      this.instance.println(
+        "INFO",
+        `Download "${this.minecraft ? downloadFileName : this.targetLink}" success!!!`
+      );
+    }
+
+    private async runUpdate() {
+      this.updateTask = new InstanceUpdateAction(this.instance);
+      // Attach the error listener before starting: a missing Java executable
+      // can fail before start() resolves.
+      const failure = () => {};
+      this.updateTask.on("error", failure);
+      try {
+        await this.updateTask.start();
+        await this.updateTask.wait();
+      } finally {
+        this.updateTask.removeListener("error", failure);
+      }
+    }
+
+    private async installMinecraft() {
+      if (!this.minecraft) return;
+      if (this.minecraft.kind === "forge" || this.minecraft.kind === "neoforge") {
+        const updateCommand = this.instance.config.updateCommand;
+        try {
+          this.instance.config.updateCommand = minecraftInstallerCommand(this.minecraft);
+          await this.runUpdate();
+        } finally {
+          this.instance.config.updateCommand = updateCommand;
+        }
+      }
+      if (this.cancelled) return;
+      const startCommand = await minecraftStartCommand(
+        this.instance.absoluteCwdPath(),
+        this.minecraft,
+        $t
+      );
+      if (!this.instance.config.startCommand?.trim())
+        this.instance.parameters({ startCommand }, true);
     }
 
     async onStart() {
@@ -205,20 +271,22 @@ export function createQuickInstallTaskClass(ctx: DaemonPluginContext) {
 
         if (this.targetLink) {
           await this.download();
-          this.instance.println("INFO", $t("TXT_CODE_e4a926bf"));
+          if (this.cancelled) return;
           if (this.extName === ".zip") {
+            this.instance.println("INFO", $t("TXT_CODE_e4a926bf"));
             const isOk = await fileManager.unzip(this.TMP_ZIP_NAME, ".", "UTF-8");
             if (!isOk) {
-              this.error(new Error($t("TXT_CODE_quick_install.unzipError")));
-              return;
+              throw new Error($t("TXT_CODE_quick_install.unzipError"));
             }
           }
         }
-        // PLACEHOLDER_ONSTART
+        if (this.cancelled) return;
 
         this.instance.println("INFO", $t("TXT_CODE_9df98e2"));
         let config: Partial<IGlobalInstanceConfig>;
-        if (this.buildParams?.startCommand || !fs.existsSync(this.ZIP_CONFIG_JSON)) {
+        if (this.minecraft) {
+          config = { ...this.buildParams, cwd: this.instance.config.cwd, processType: "general" };
+        } else if (this.buildParams?.startCommand || !fs.existsSync(this.ZIP_CONFIG_JSON)) {
           config = this.buildParams || {};
         } else {
           config = JSON.parse(await fileManager.readFile(this.ZIP_CONFIG_JSON));
@@ -229,24 +297,26 @@ export function createQuickInstallTaskClass(ctx: DaemonPluginContext) {
           this.instance.config.nickname,
           this.instance.instanceUuid,
           "URL:",
-          this.targetLink
+          this.minecraft ? `${this.minecraft.server}/${this.minecraft.version}` : this.targetLink
         );
         logger.info($t("TXT_CODE_ac225d07") + JSON.stringify(config));
 
         this.instance.resetConfigWithoutDocker();
         this.instance.parameters(config, true);
+        await this.installMinecraft();
+        if (this.cancelled) return;
 
         this.instance.println("INFO", $t("TXT_CODE_4eccdde8"));
 
         if (this.instance?.config?.updateCommand) {
           try {
             this.instance.println("INFO", $t("TXT_CODE_e577c77c"));
-            this.updateTask = new InstanceUpdateAction(this.instance);
-            await this.updateTask.start();
-            await this.updateTask.wait();
+            await this.runUpdate();
+            if (this.cancelled) return;
             this.instance.println("INFO", $t("TXT_CODE_9b4985d3"));
             this.instance.println("INFO", $t("TXT_CODE_1562f6cf"));
           } catch (error: any) {
+            if (this.minecraft) throw error;
             this.instance.println(
               "ERROR",
               `\n========================================
@@ -259,9 +329,10 @@ ${error?.message}
           this.instance.println("INFO", $t("TXT_CODE_1562f6cf"));
         }
 
-        this.stop();
+        this.finished = true;
+        await this.stop();
       } catch (error: any) {
-        this.error(error);
+        if (!this.cancelled) await this.error(error);
       } finally {
         this.instance.status(Instance.STATUS_STOP);
         if (this.isInitInstance && this.instance.asynchronousTask === this)
@@ -272,6 +343,7 @@ ${error?.message}
     }
 
     async onStop() {
+      if (!this.finished) this.cancelled = true;
       try {
         this.abortController?.abort();
         this.writeStream?.destroy();
@@ -309,7 +381,8 @@ ${error?.message}
           instanceUuid: this.instance.instanceUuid,
           instanceStatus: this.instance.status(),
           instanceConfig: this.instance.config,
-          downloadProgress: this.downloadProgress
+          downloadProgress: this.downloadProgress,
+          error: this.errorInfo?.message
         })
       );
     }
@@ -323,4 +396,3 @@ ${error?.message}
 /** The produced class and its instances, for typing the plugin's references. */
 export type QuickInstallTaskClass = ReturnType<typeof createQuickInstallTaskClass>;
 export type QuickInstallTask = InstanceType<QuickInstallTaskClass>;
-

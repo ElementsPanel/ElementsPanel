@@ -15,5 +15,9 @@
   "TXT_CODE_e577c77c": "正在更新实例...",
   "TXT_CODE_e5ba712d": "正在以预设包的方式构建服务器：",
   "TXT_CODE_f8145844": "无法使用此应用模板重新安装，使用 Docker 容器创建的实例无法重装为普通模板，请选择含 Docker 标签的预设包进行重装。如果你确实需要安装其他模板，请联系管理员手动关闭实例的容器化设置。",
-  "TXT_CODE_quick_install.unzipError": "解压文件失败"
+  "TXT_CODE_quick_install.unzipError": "解压文件失败",
+  "TXT_CODE_minecraft.invalidDownload": "Minecraft 下载参数无效。",
+  "TXT_CODE_minecraft.platformMismatch": "基岩版服务端与节点不兼容，请选择与节点 Windows/Linux 系统一致的版本，并使用 x64 节点。",
+  "TXT_CODE_minecraft.missingFiles": "未找到安装后的服务端启动文件，请检查下载包和安装日志。",
+  "TXT_CODE_minecraft.hashMismatch": "下载文件的 SHA-256 校验失败，已停止安装，请重试。"
 }

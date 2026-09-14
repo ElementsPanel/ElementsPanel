@@ -65,9 +65,9 @@ export class InstanceUpdateAction extends AsyncTask {
       stdio: "pipe",
       windowsHide: true
     });
-    if (!process || !process.pid) {
-      throw new Error($t("TXT_CODE_general_update.updateFailed"));
-    }
+    // spawn() reports a missing executable asynchronously. Always handle that
+    // event so an unavailable Java runtime fails the install task, not the daemon.
+    process.once("error", (error) => { void this.error(error); });
 
     // process & pid
     this.pid = process.pid;

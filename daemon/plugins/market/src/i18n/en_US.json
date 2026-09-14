@@ -15,5 +15,9 @@
   "TXT_CODE_e577c77c": "Updating the instance...",
   "TXT_CODE_e5ba712d": "Building the server as a preset package:",
   "TXT_CODE_f8145844": "This application template cannot be used for reinstallation. Instances created using Docker containers cannot be reinstalled as normal templates. Please select a preset package with the Docker label for reinstallation. If you do need to install other templates, please contact the administrator to manually turn off the containerization settings of the instance.",
-  "TXT_CODE_quick_install.unzipError": "Unzip Failed"
+  "TXT_CODE_quick_install.unzipError": "Unzip Failed",
+  "TXT_CODE_minecraft.invalidDownload": "Invalid Minecraft download parameters.",
+  "TXT_CODE_minecraft.platformMismatch": "The Bedrock server is incompatible with this node. Select a version matching the node’s Windows/Linux OS and use an x64 node.",
+  "TXT_CODE_minecraft.missingFiles": "Installed server startup files were not found. Check the downloaded package and installation log.",
+  "TXT_CODE_minecraft.hashMismatch": "The downloaded file failed SHA-256 verification. Installation stopped; please retry."
 }

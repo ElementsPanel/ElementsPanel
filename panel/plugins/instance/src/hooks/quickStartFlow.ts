@@ -20,7 +20,8 @@ export enum QUICKSTART_METHOD {
   IMPORT = "IMPORT",
   SELECT = "SELECT",
   EXIST = "EXIST",
-  DOCKER = "DOCKER"
+  DOCKER = "DOCKER",
+  DOWNLOAD = "DOWNLOAD"
 }
 
 export function useQuickStartFlow() {
