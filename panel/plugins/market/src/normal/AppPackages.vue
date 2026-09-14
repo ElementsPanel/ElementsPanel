@@ -69,5 +69,6 @@ defineExpose({ appList, fetchTemplate, handleSelectTopCategory });
 .empty-state { display:flex; align-items:center; justify-content:center; height:40vh; }
 .market-category-grid { width:100%; display:flex; flex-wrap:wrap; }
 .package-image-container-summary { overflow:hidden; cursor:pointer; }
+.package-image-container-summary > :deep(.v-card__overlay) { --v-hover-opacity:0; }
 .package-image { width:100%; height:220px; object-fit:cover; display:block; }
 </style>

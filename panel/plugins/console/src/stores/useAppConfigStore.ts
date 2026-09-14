@@ -4,7 +4,7 @@ import logoB from "@/assets/logo_b.svg";
 import { getCurrentLang, setLanguage } from "@/lang/i18n";
 import { AppTheme, THEME_AUTO_MIGRATED_KEY, THEME_KEY } from "@/types/const";
 import { createGlobalState, useBreakpoints, useLocalStorage, usePreferredDark } from "@vueuse/core";
-import { getAppearance } from "@/services/apis/appearance";
+import { getAppearance, type PanelAppearance } from "@/services/apis/appearance";
 import { computed, onMounted, reactive, ref, watch } from "vue";
 
 /**
@@ -31,7 +31,9 @@ export const useAppConfigStore = createGlobalState(() => {
   const isPreferredDark = usePreferredDark();
 
   const appConfig = reactive({
-    logoImage: "" as string
+    logoImage: "",
+    logoImageLight: undefined as string | undefined,
+    logoImageDark: undefined as string | undefined
   });
 
   const isDarkTheme = computed(() => {
@@ -41,8 +43,8 @@ export const useAppConfigStore = createGlobalState(() => {
   });
 
   const logoImage = computed(() => {
-    if (appConfig.logoImage) return appConfig.logoImage;
-    return isDarkTheme.value ? logo : logoB;
+    const themedLogo = isDarkTheme.value ? appConfig.logoImageDark : appConfig.logoImageLight;
+    return (themedLogo ?? appConfig.logoImage) || (isDarkTheme.value ? logo : logoB);
   });
 
   // Default to AUTO so a fresh visit follows the system dark mode
@@ -125,6 +127,7 @@ export const useAppConfigStore = createGlobalState(() => {
     fn[currentTheme.value]?.();
 
     const { value: appearance } = await getAppearance().execute();
+    setLogoImages(appearance);
     setBackgroundImage(appearance?.backgroundImage || "");
   };
 
@@ -142,9 +145,13 @@ export const useAppConfigStore = createGlobalState(() => {
   };
 
   const setLogoImage = (url: string) => {
-    if (url) {
-      appConfig.logoImage = url;
-    }
+    appConfig.logoImage = url;
+  };
+
+  const setLogoImages = (appearance?: PanelAppearance) => {
+    setLogoImage(appearance?.logoImage || "");
+    appConfig.logoImageLight = appearance?.logoImageLight;
+    appConfig.logoImageDark = appearance?.logoImageDark;
   };
 
   watch(isPreferredDark, () => {
@@ -156,9 +163,7 @@ export const useAppConfigStore = createGlobalState(() => {
   onMounted(async () => {
     try {
       const { value: appearance } = await getAppearance().execute();
-      if (appearance?.logoImage) {
-        setLogoImage(appearance.logoImage);
-      }
+      setLogoImages(appearance);
     } catch (error) {
       console.error("Failed to load appearance settings:", error);
     }

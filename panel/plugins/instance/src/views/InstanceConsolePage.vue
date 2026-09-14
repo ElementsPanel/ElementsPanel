@@ -355,7 +355,7 @@ onUnmounted(() => {
           ><span>{{ instanceTypeText }}</span>
         </div>
         <VChip
-          class="ml-3"
+          class="console-status"
           size="small"
           :color="isRunning ? 'success' : isBuys ? 'warning' : 'secondary'"
           variant="tonal"
@@ -656,6 +656,9 @@ onUnmounted(() => {
 .console-title span {
   color: var(--color-gray-7);
   font-size: 12px;
+}
+.console-status {
+  margin-inline-start: 12px;
 }
 .console-actions {
   display: flex;

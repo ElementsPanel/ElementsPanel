@@ -14,12 +14,16 @@ const LEGACY_SETTINGS_PAGE = "__settings__";
 type AppearanceValues = {
   pageTitle?: unknown;
   logoImage?: unknown;
+  logoImageLight?: unknown;
+  logoImageDark?: unknown;
   backgroundImage?: unknown;
 };
 
 type AppearanceConfig = {
   pageTitle?: string;
   logoImage?: string;
+  logoImageLight?: string;
+  logoImageDark?: string;
   backgroundImage?: string;
 };
 
@@ -27,6 +31,8 @@ function readAppearance(config: AppearanceConfig) {
   return {
     pageTitle: config.pageTitle || DEFAULT_PAGE_TITLE,
     logoImage: config.logoImage || "",
+    logoImageLight: config.logoImageLight ?? config.logoImage ?? "",
+    logoImageDark: config.logoImageDark ?? config.logoImage ?? "",
     backgroundImage: config.backgroundImage || ""
   };
 }
@@ -41,6 +47,12 @@ function writeAppearance(values: AppearanceValues, config: AppearanceConfig, sav
     String(valueOrCurrent(values.pageTitle, config.pageTitle ?? DEFAULT_PAGE_TITLE)).trim() ||
     DEFAULT_PAGE_TITLE;
   config.logoImage = String(valueOrCurrent(values.logoImage, config.logoImage) ?? "");
+  if (values.logoImageLight !== undefined) {
+    config.logoImageLight = String(values.logoImageLight ?? "");
+  }
+  if (values.logoImageDark !== undefined) {
+    config.logoImageDark = String(values.logoImageDark ?? "");
+  }
   config.backgroundImage = String(
     valueOrCurrent(values.backgroundImage, config.backgroundImage) ?? ""
   );
@@ -56,6 +68,8 @@ function migrateLegacyAppearance(config: AppearanceConfig, save: () => void) {
   const customized =
     (config.pageTitle && config.pageTitle !== DEFAULT_PAGE_TITLE) ||
     config.logoImage ||
+    config.logoImageLight !== undefined ||
+    config.logoImageDark !== undefined ||
     config.backgroundImage;
   if (customized) return;
   try {
@@ -106,10 +120,17 @@ export function apply(ctx: PanelPluginContext) {
         description: $t("TXT_CODE_b305236a")
       },
       {
-        key: "logoImage",
+        key: "logoImageLight",
         type: "string",
-        title: $t("TXT_CODE_47b5a2f7"),
-        description: $t("TXT_CODE_cf95364f"),
+        title: $t("TXT_CODE_CONSOLE_LOGO_LIGHT"),
+        description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
+        fileUpload: true
+      },
+      {
+        key: "logoImageDark",
+        type: "string",
+        title: $t("TXT_CODE_CONSOLE_LOGO_DARK"),
+        description: $t("TXT_CODE_CONSOLE_LOGO_HINT"),
         fileUpload: true
       },
       {

@@ -2459,5 +2459,8 @@
   "TXT_CODE_permission.forbiddenTokenError": "Ошибка проверки токена, доступ запрещен",
   "TXT_CODE_router.file.off": "Администратор ограничил функцию управления файлами для пользователей по умолчанию",
   "TXT_CODE_router.instance.createError": "Не удалось создать экземпляр",
-  "TXT_CODE_router.schedule.invalidName": "Недопустимое имя задачи"
+  "TXT_CODE_router.schedule.invalidName": "Недопустимое имя задачи",
+  "TXT_CODE_CONSOLE_LOGO_LIGHT": "Изображение логотипа (светлая тема)",
+  "TXT_CODE_CONSOLE_LOGO_DARK": "Изображение логотипа (тёмная тема)",
+  "TXT_CODE_CONSOLE_LOGO_HINT": "Укажите логотип для этой темы. Оставьте поле пустым, чтобы использовать логотип по умолчанию."
 }

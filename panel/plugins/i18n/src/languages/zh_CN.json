@@ -2459,5 +2459,8 @@
   "TXT_CODE_permission.forbiddenTokenError": "令牌(Token)验证失败，拒绝访问",
   "TXT_CODE_router.file.off": "管理员已限制普通用户使用文件管理功能",
   "TXT_CODE_router.instance.createError": "创建实例失败",
-  "TXT_CODE_router.schedule.invalidName": "非法的计划任务名"
+  "TXT_CODE_router.schedule.invalidName": "非法的计划任务名",
+  "TXT_CODE_CONSOLE_LOGO_LIGHT": "图标图片（浅色模式）",
+  "TXT_CODE_CONSOLE_LOGO_DARK": "图标图片（深色模式）",
+  "TXT_CODE_CONSOLE_LOGO_HINT": "设置此模式的 Logo 图片，留空使用默认 Logo。"
 }

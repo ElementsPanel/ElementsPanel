@@ -2459,5 +2459,8 @@
   "TXT_CODE_permission.forbiddenTokenError": "Falló la verificación del token, acceso denegado",
   "TXT_CODE_router.file.off": "Los administradores han restringido a los usuarios el uso de funciones de administración de archivos",
   "TXT_CODE_router.instance.createError": "No se pudo crear la instancia",
-  "TXT_CODE_router.schedule.invalidName": "Nombre de tarea de proyecto incorrecto"
+  "TXT_CODE_router.schedule.invalidName": "Nombre de tarea de proyecto incorrecto",
+  "TXT_CODE_CONSOLE_LOGO_LIGHT": "Imagen del logotipo (modo claro)",
+  "TXT_CODE_CONSOLE_LOGO_DARK": "Imagen del logotipo (modo oscuro)",
+  "TXT_CODE_CONSOLE_LOGO_HINT": "Configura el logotipo para este modo. Deja el campo vacío para usar el logotipo predeterminado."
 }

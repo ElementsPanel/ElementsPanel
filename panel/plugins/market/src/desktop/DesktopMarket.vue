@@ -148,6 +148,7 @@ const handleInstall = async () => {
             emit("open-console", { instanceUuid: res.value.instanceUuid, config: { nickname: instanceName.value.trim() } }, node.uuid);
         }
     } catch (err: any) {
+        if (err?.message === "cancel") return;
         console.error(err);
         notifyDesktopError(err);
     } finally {

@@ -12,7 +12,9 @@ The console plugin owns the panel's foundational browser UI:
 
 Appearance settings are declared by the backend half of this plugin and rendered
 by the `config` plugin's generic configuration page. They include the page title,
-logo and background image. The same form links to the layout designer. The layout
+separate logos for light and dark modes, and the background image. Existing single
+logos remain the fallback until each mode is configured; clearing a mode's logo
+restores its built-in image. The same form links to the layout designer. The layout
 persistence service also lives in this plugin; its default layout references
 cards contributed by other plugins through the shared UI registry.
 

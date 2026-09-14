@@ -2459,5 +2459,8 @@
   "TXT_CODE_permission.forbiddenTokenError": "Token validation failed, access denied",
   "TXT_CODE_router.file.off": "Administrator has restricted file management functionality for default users",
   "TXT_CODE_router.instance.createError": "Failed to create instance",
-  "TXT_CODE_router.schedule.invalidName": "Invalid Task Name"
+  "TXT_CODE_router.schedule.invalidName": "Invalid Task Name",
+  "TXT_CODE_CONSOLE_LOGO_LIGHT": "Logo image (light mode)",
+  "TXT_CODE_CONSOLE_LOGO_DARK": "Logo image (dark mode)",
+  "TXT_CODE_CONSOLE_LOGO_HINT": "Set the logo image for this mode. Leave blank to use the default logo."
 }

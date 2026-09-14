@@ -49,5 +49,8 @@ export default class SystemConfig {
   // Site appearance (edited on the plugin config page, read by the shell)
   pageTitle = "ElementsPanel";
   logoImage = "";
+  // Missing theme values inherit the legacy logo; empty strings use the built-in logo.
+  logoImageLight: string | undefined = undefined;
+  logoImageDark: string | undefined = undefined;
   backgroundImage = "";
 }

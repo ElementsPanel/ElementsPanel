@@ -2459,5 +2459,8 @@
   "TXT_CODE_permission.forbiddenTokenError": "Token-Überprüfung fehlgeschlagen, Zugriff verweigert",
   "TXT_CODE_router.file.off": "Administratoren haben Benutzern die Nutzung von Dateiverwaltungsfunktionen untersagt",
   "TXT_CODE_router.instance.createError": "Instanz konnte nicht erstellt werden",
-  "TXT_CODE_router.schedule.invalidName": "Falscher Name der Projektaufgabe"
+  "TXT_CODE_router.schedule.invalidName": "Falscher Name der Projektaufgabe",
+  "TXT_CODE_CONSOLE_LOGO_LIGHT": "Logo für den hellen Modus",
+  "TXT_CODE_CONSOLE_LOGO_DARK": "Logo für den dunklen Modus",
+  "TXT_CODE_CONSOLE_LOGO_HINT": "Legen Sie das Logo für diesen Modus fest. Lassen Sie das Feld leer, um das Standardlogo zu verwenden."
 }

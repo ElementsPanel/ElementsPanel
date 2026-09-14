@@ -2459,5 +2459,8 @@
   "TXT_CODE_permission.forbiddenTokenError": "令牌(Token)驗證失敗，拒絕存取",
   "TXT_CODE_router.file.off": "管理者已限制使用者使用檔案管理功能",
   "TXT_CODE_router.instance.createError": "建立實例失敗",
-  "TXT_CODE_router.schedule.invalidName": "錯誤的計畫任務名稱"
+  "TXT_CODE_router.schedule.invalidName": "錯誤的計畫任務名稱",
+  "TXT_CODE_CONSOLE_LOGO_LIGHT": "圖示圖片（淺色模式）",
+  "TXT_CODE_CONSOLE_LOGO_DARK": "圖示圖片（深色模式）",
+  "TXT_CODE_CONSOLE_LOGO_HINT": "設定此模式的 Logo 圖片，留空使用預設 Logo。"
 }

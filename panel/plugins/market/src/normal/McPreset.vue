@@ -92,6 +92,7 @@ const handleSelectCategory = async (item: QuickStartPackages) => {
     }
     appPackages.value?.handleSelectTopCategory(item, node);
   } catch (err: any) {
+    if (err?.message === "cancel") return;
     console.error(err);
   }
 };
@@ -165,6 +166,7 @@ const handleTemplateConfirm = async (instanceName: string, template: QuickStartP
     };
     await startDownloadTask();
   } catch (err: any) {
+    if (err?.message === "cancel") return;
     console.error(err);
     return reportErrorMsg(err.message);
   }

@@ -5,7 +5,7 @@ import { useRemoteNode } from "@/hooks/useRemoteNode";
 import { t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";
 import { computed, onMounted, ref } from "vue";
-import { VAlert, VBtn, VCard, VCardText, VChip, VDialog, VIcon } from "vuetify/components";
+import { VBtn, VCard, VCardActions, VCardText, VChip, VDialog, VIcon, VSpacer } from "vuetify/components";
 
 interface Props {
   destroyComponent(delay?: number): void;
@@ -68,7 +68,7 @@ defineExpose({
     <VCard :title="t('TXT_CODE_7e267ba')">
       <VCardText>
     <div class="node-select-container">
-      <p class="text-body-medium text-medium-emphasis">
+      <p class="node-select-description text-body-medium text-medium-emphasis">
         {{ t("TXT_CODE_ad24269a") }}
       </p>
       <div class="node-grid">
@@ -133,11 +133,19 @@ defineExpose({
       </div>
     </div>
       </VCardText>
+      <VCardActions>
+        <VSpacer />
+        <VBtn variant="text" @click="cancel">{{ t("TXT_CODE_a7e9d4e") }}</VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 </template>
 
 <style lang="scss" scoped>
+.node-select-description {
+  margin-bottom: 16px;
+}
+
 .node-select-container {
   max-height: 600px;
   overflow-y: auto;

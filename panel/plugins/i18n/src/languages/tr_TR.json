@@ -2459,5 +2459,8 @@
   "TXT_CODE_permission.forbiddenTokenError": "Belirteç doğrulaması başarısız oldu, erişim reddedildi",
   "TXT_CODE_router.file.off": "Yönetici, varsayılan kullanıcılar için dosya yönetimi işlevselliğini kısıtladı",
   "TXT_CODE_router.instance.createError": "Örnek oluşturulamadı",
-  "TXT_CODE_router.schedule.invalidName": "Geçersiz Görev Adı"
+  "TXT_CODE_router.schedule.invalidName": "Geçersiz Görev Adı",
+  "TXT_CODE_CONSOLE_LOGO_LIGHT": "Logo görseli (açık mod)",
+  "TXT_CODE_CONSOLE_LOGO_DARK": "Logo görseli (koyu mod)",
+  "TXT_CODE_CONSOLE_LOGO_HINT": "Bu mod için logo görselini ayarlayın. Varsayılan logoyu kullanmak için boş bırakın."
 }

@@ -182,6 +182,7 @@ onMounted(() => { if (isNewTemplate) packages.value = []; else fetchTemplate(); 
 .market-loading,.market-empty { min-height:40vh; display:flex; flex-direction:column; gap:16px; align-items:center; justify-content:center; color:var(--color-gray-7); }
 .market-card-grid { width:100%; display:flex; flex-wrap:wrap; }
 .market-card { height:100%; display:flex; flex-direction:column; overflow:hidden; cursor:pointer; }
+.market-card > :deep(.v-card__overlay) { --v-hover-opacity:0; }
 .market-card.selected { outline:2px solid rgb(var(--v-theme-primary)); }
 .package-image { display:block; width:100%; height:200px; object-fit:cover; }
 .v-card-title { display:flex; justify-content:space-between; align-items:center; gap:8px; }

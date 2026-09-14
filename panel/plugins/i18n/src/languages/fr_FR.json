@@ -2459,5 +2459,8 @@
   "TXT_CODE_permission.forbiddenTokenError": "La vérification du jeton a échoué, accès refusé",
   "TXT_CODE_router.file.off": "Les administrateurs ont empêché les utilisateurs d'utiliser les fonctionnalités de gestion de fichiers",
   "TXT_CODE_router.instance.createError": "Échec de la création de l'instance",
-  "TXT_CODE_router.schedule.invalidName": "Nom de tâche de projet incorrect"
+  "TXT_CODE_router.schedule.invalidName": "Nom de tâche de projet incorrect",
+  "TXT_CODE_CONSOLE_LOGO_LIGHT": "Image du logo (mode clair)",
+  "TXT_CODE_CONSOLE_LOGO_DARK": "Image du logo (mode sombre)",
+  "TXT_CODE_CONSOLE_LOGO_HINT": "Définissez le logo à utiliser dans ce mode. Laissez le champ vide pour utiliser le logo par défaut."
 }

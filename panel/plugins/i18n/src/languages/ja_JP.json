@@ -2459,5 +2459,8 @@
   "TXT_CODE_permission.forbiddenTokenError": "トークン検証に失敗し、アクセスが拒否されました",
   "TXT_CODE_router.file.off": "管理者はユーザーによるファイル管理機能の使用を制限しています",
   "TXT_CODE_router.instance.createError": "インスタンスの作成に失敗しました",
-  "TXT_CODE_router.schedule.invalidName": "プロジェクトタスク名が間違っています"
+  "TXT_CODE_router.schedule.invalidName": "プロジェクトタスク名が間違っています",
+  "TXT_CODE_CONSOLE_LOGO_LIGHT": "ロゴ画像（ライトモード）",
+  "TXT_CODE_CONSOLE_LOGO_DARK": "ロゴ画像（ダークモード）",
+  "TXT_CODE_CONSOLE_LOGO_HINT": "このモードで使用するロゴ画像を設定します。空欄の場合は標準のロゴを使用します。"
 }

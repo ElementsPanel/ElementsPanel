@@ -2459,5 +2459,8 @@
   "TXT_CODE_permission.forbiddenTokenError": "การตรวจสอบโทเค็นล้มเหลว การเข้าถึงถูกปฏิเสธ",
   "TXT_CODE_router.file.off": "ผู้ดูแลระบบได้จำกัดฟังก์ชันการจัดการไฟล์สำหรับผู้ใช้ทั่วไป",
   "TXT_CODE_router.instance.createError": "การสร้างอินสแตนซ์ล้มเหลว",
-  "TXT_CODE_router.schedule.invalidName": "ชื่องานไม่ถูกต้อง"
+  "TXT_CODE_router.schedule.invalidName": "ชื่องานไม่ถูกต้อง",
+  "TXT_CODE_CONSOLE_LOGO_LIGHT": "รูปภาพโลโก้ (โหมดสว่าง)",
+  "TXT_CODE_CONSOLE_LOGO_DARK": "รูปภาพโลโก้ (โหมดมืด)",
+  "TXT_CODE_CONSOLE_LOGO_HINT": "ตั้งค่ารูปภาพโลโก้สำหรับโหมดนี้ เว้นว่างไว้เพื่อใช้โลโก้เริ่มต้น"
 }

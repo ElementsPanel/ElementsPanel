@@ -448,21 +448,11 @@ body::-webkit-scrollbar-track {
 .package-image {
   user-select: none;
   position: relative;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   height: 100%;
   width: 100%;
   object-fit: cover;
   height: 160px;
   background-color: var(--color-gray-1);
-}
-
-.package-image:hover {
-  transform: scale(1.08) rotate(2deg);
-  filter: brightness(1.1) contrast(1.1);
-}
-
-.package-image:hover::after {
-  opacity: 1;
 }
 
 .v-card:hover .download-button {
