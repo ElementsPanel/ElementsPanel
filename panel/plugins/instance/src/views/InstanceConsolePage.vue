@@ -678,7 +678,7 @@ onUnmounted(() => {
 }
 .console-state-card {
   margin-top: 16px;
-  margin-bottom: 8px;
+  margin-bottom: 20px;
   background: var(--background-color-white);
 }
 .console-state-content {

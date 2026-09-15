@@ -716,6 +716,10 @@ onMounted(async () => {
   padding: 4px 16px 12px;
 }
 
+.instance-card-actions :deep(.v-btn .v-icon) {
+  font-size: 17px;
+}
+
 @media (max-width: 992px) {
   .instance-list-container {
     padding: 16px 12px 28px;
