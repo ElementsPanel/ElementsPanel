@@ -343,6 +343,8 @@ export interface DaemonJavaManagerService {
   exists(id: string): boolean;
   getJavaDataDir(): string;
   getJavaDownloadUrl(info: IJavaInfo & { name: string; version?: string }): Promise<string | undefined>;
+  getAvailableVersions(): Promise<import("../../../common/src/java").JavaCatalog>;
+  startInstall(version: string): Promise<IJavaRuntime>;
   addJava(info: IJavaInfo & { name: string; version?: string }): void;
   updateJavaInfo(info: IJavaInfo & { name: string; version?: string }): void;
   getJavaRuntimeCommand(id: string): Promise<string>;

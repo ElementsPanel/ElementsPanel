@@ -3,7 +3,7 @@ import { INSTANCE_TYPE_TRANSLATION, TYPE_MINECRAFT_BUNGEECORD } from "@/hooks/us
 import { QUICKSTART_METHOD } from "@/hooks/widgets/quickStartFlow";
 import { t } from "@/lang/i18n";
 import { createInstance as createInstanceApi, uploadAddress } from "@/services/apis/instance";
-import type { FrontendFileManagerService } from "@/plugin";
+import type { FrontendFileManagerService, FrontendJavaService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
 import { parseForwardAddress } from "@/tools/protocol";
 import { reportErrorMsg } from "@/tools/validator";
@@ -13,6 +13,11 @@ import { Modal } from "@/tools/vuetifyModal";
 import { cloneDeep } from "lodash";
 import { computed, createVNode, onUnmounted, reactive, ref, watch } from "vue";
 import type { MinecraftServerSelection } from "../../../../../../common/src/minecraft";
+import {
+  bindJavaCommand,
+  javaExecutableCommand,
+  type PreparedJava
+} from "../../../../../../common/src/java";
 import { createMinecraftInstance } from "../../api";
 import { MINECRAFT_SERVERS } from "../../minecraft";
 import MinecraftServerDownload from "./MinecraftServerDownload.vue";
@@ -73,6 +78,16 @@ const submitting = ref(false);
 const createdInstanceUuid = ref("");
 const busy = computed(() => confirming.value || submitting.value || !!createdInstanceUuid.value);
 watch(busy, (value) => emit("busy", value), { immediate: true });
+const javaService = computed(() => usePluginService<FrontendJavaService>("java"));
+const javaSetup = ref<{ prepare(): Promise<PreparedJava> }>();
+const javaValid = ref(true);
+const needsJava = computed(
+  () =>
+    props.createMethod !== QUICKSTART_METHOD.DOCKER &&
+    (isDownloadMode.value
+      ? !!downloadSelection.value && downloadSelection.value.server !== "bedrock-server"
+      : formData.type.startsWith("minecraft/java") || formData.type === "minecraft/bedrock/nukkit")
+);
 
 function changeInstanceType(type: string) {
   formData.stopCommand =
@@ -164,13 +179,25 @@ async function validate() {
     reportErrorMsg(t("TXT_CODE_minecraft.invalidSelection"));
     return false;
   }
+  if (needsJava.value && javaService.value && !javaValid.value) return false;
   return true;
+}
+
+async function prepareJava() {
+  formData.java.id = "";
+  if (!needsJava.value) return;
+  if (javaService.value) {
+    if (!javaSetup.value) throw new Error(t("TXT_CODE_e8ce38c2"));
+    const java = await javaSetup.value.prepare();
+    formData.java.id = java.id;
+    javaPath.value = java.path;
+  }
 }
 
 async function finalConfirm() {
   if (busy.value || !(await validate()) || busy.value || disposed) return;
   if (isZipUpload.value) selectUnzipCodeDialog.value?.openDialog();
-  else showConfirmation();
+  else await showConfirmation();
 }
 
 function setUnzipCode(code: string) {
@@ -196,10 +223,12 @@ async function showConfirmation() {
       confirming.value = false;
       confirmation?.destroy();
       try {
+        await prepareJava();
+        if (disposed) return;
         if (needUpload.value) await selectedFile();
         else await createInstance();
       } catch (error: any) {
-        reportErrorMsg(error);
+        if (!disposed) reportErrorMsg(error);
       } finally {
         submitting.value = false;
       }
@@ -219,6 +248,9 @@ function instanceConfig() {
   config.nickname = config.nickname.trim();
   config.createDatetime = Date.now();
   if (config.docker.image) config.processType = "docker";
+  if (needsJava.value && javaPath.value.trim()) {
+    config.startCommand = bindJavaCommand(config.startCommand, javaPath.value.trim());
+  }
   return config;
 }
 
@@ -235,9 +267,9 @@ async function selectedFile() {
     const nogui =
       config.type.startsWith("minecraft/java") &&
       ![TYPE_MINECRAFT_BUNGEECORD, "minecraft/java/velocity"].includes(config.type);
-    config.startCommand = `java -jar "${uFile.value.name.replace(/"/g, "{quotes}")}"${
-      nogui ? " nogui" : ""
-    }`;
+    config.startCommand = `${javaExecutableCommand(
+      javaPath.value.trim() || "java"
+    )} -jar "${uFile.value.name.replace(/"/g, "{quotes}")}"${nogui ? " nogui" : ""}`;
   }
   await getCfg({ params: { upload_dir: ".", daemonId: props.daemonId }, data: config });
   if (!cfg.value?.instanceUuid) throw new Error(t("TXT_CODE_e8ce38c2"));
@@ -332,8 +364,17 @@ async function createInstance() {
       :disabled="busy"
       class="mt-3"
     />
+    <component
+      :is="javaService.setupComponent"
+      v-if="needsJava && javaService"
+      ref="javaSetup"
+      :daemon-id="daemonId"
+      :disabled="busy"
+      class="mt-3"
+      @valid="javaValid = $event"
+    />
     <VTextField
-      v-if="isDownloadMode && downloadSelection?.server !== 'bedrock-server'"
+      v-else-if="needsJava"
       v-model="javaPath"
       :label="t('TXT_CODE_43422ed3')"
       :hint="t('TXT_CODE_7f9b6758')"
@@ -441,7 +482,7 @@ async function createInstance() {
       variant="text"
       rounded="xl"
       class="mt-3 align-self-start"
-      :disabled="busy || !uFile"
+      :disabled="busy || !uFile || (needsJava && !!javaService && !javaValid)"
       :loading="submitting"
       @click="finalConfirm"
       ><VIcon icon="mdi-upload-outline" start />{{ percentText }}</VBtn
@@ -452,7 +493,9 @@ async function createInstance() {
       variant="text"
       rounded="xl"
       class="mt-3 align-self-start"
-      :disabled="busy || (isDownloadMode && !downloadSelection)"
+      :disabled="
+        busy || (isDownloadMode && !downloadSelection) || (needsJava && !!javaService && !javaValid)
+      "
       :loading="submitting"
       @click="finalConfirm"
       ><VIcon :icon="isDownloadMode ? 'mdi-cloud-download-outline' : 'mdi-plus'" start />{{

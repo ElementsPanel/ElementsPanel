@@ -65,7 +65,10 @@ function directory(t) {
 }
 
 const catalog = load("panel/plugins/instance/src/minecraft.ts");
-const install = load("daemon/plugins/market/src/backend/minecraft_install.ts");
+const javaCommands = load("common/src/java.ts");
+const install = load("daemon/plugins/market/src/backend/minecraft_install.ts", {
+  "../../../../../common/src/java": javaCommands
+});
 const { AsyncTask } = load("daemon/plugins/instance/src/backend/service/async_task_core.ts", {
   "../runtime": { logger }
 });
@@ -799,7 +802,7 @@ test("instance creation requires type, then method, then node; changing type cle
   assert.ok(!state.methodOptions.some((option) => option.value === "DOWNLOAD"));
 });
 
-function formFixture(t, createMethod = "DOWNLOAD") {
+function formFixture(t, createMethod = "DOWNLOAD", javaSetup) {
   const confirms = [],
     creates = [],
     uploads = [],
@@ -809,6 +812,7 @@ function formFixture(t, createMethod = "DOWNLOAD") {
     "@/lang/i18n": { t: translate }
   });
   const cfg = vue.ref();
+  const instanceResponse = vue.ref();
   const fileManager = {
     getFileConfigAddr: () => "https://node.example",
     uploadService: {
@@ -848,9 +852,23 @@ function formFixture(t, createMethod = "DOWNLOAD") {
             cfg.value = { instanceUuid: "uploaded-instance", password: "test" };
           }
         }),
-        createInstance: () => ({ state: vue.ref(), execute: async () => {} })
+        createInstance: () => ({
+          state: instanceResponse,
+          execute: async (request) => {
+            creates.push(request);
+            instanceResponse.value = { instanceUuid: "existing-directory-instance" };
+          }
+        })
       },
-      "@/plugin/context": { usePluginService: () => fileManager },
+      "@/plugin/context": {
+        usePluginService: (name) =>
+          name === "file"
+            ? fileManager
+            : name === "java" && javaSetup
+            ? { setupComponent: {} }
+            : undefined
+      },
+      "../../../../../../common/src/java": javaCommands,
       "@/tools/protocol": { parseForwardAddress: (url) => url },
       "@/tools/validator": { reportErrorMsg: (error) => errors.push(error) },
       "@/types/const": constants,
@@ -879,6 +897,7 @@ function formFixture(t, createMethod = "DOWNLOAD") {
   );
   state.formRef = { validate: async () => ({ valid: true }) };
   state.formData.nickname = "Test";
+  if (javaSetup) state.javaSetup = javaSetup;
   return { state, constants, confirms, creates, uploads, errors, successes };
 }
 
@@ -922,6 +941,95 @@ test("own JAR uploads stay intact, ZIP uploads are extracted, and cancellation i
       await f.state.finalConfirm();
       assert.equal(f.creates.length, 1);
     });
+});
+
+test("Java is prepared once before downloading, uploading, or creating from an existing directory", async (t) => {
+  for (const method of ["DOWNLOAD", "IMPORT", "EXIST"]) {
+    await t.test(method, async (t) => {
+      const gate = deferred();
+      let prepared = 0;
+      const f = formFixture(t, method, {
+        prepare: () => {
+          prepared++;
+          return gate.promise;
+        }
+      });
+      f.state.downloadSelection = { server: "paper", version: "1.21.4", build: "latest" };
+      f.state.formData.startCommand = 'java -Dname="a b" -jar "server name.jar"';
+      if (method === "IMPORT") f.state.onFileChange({ name: "server.jar", size: 10 });
+      await f.state.finalConfirm();
+      const first = f.confirms[0].onOk();
+      const repeated = f.confirms[0].onOk();
+      assert.equal(prepared, 1);
+      assert.equal(f.creates.length, 0);
+      assert.equal(f.state.busy, true);
+      gate.resolve({ id: "msl_21", path: "{mcsm_java}" });
+      await Promise.all([first, repeated]);
+      assert.equal(f.creates.length, 1);
+      const config = method === "DOWNLOAD" ? f.creates[0].data.config : f.creates[0].data;
+      assert.equal(config.java.id, "msl_21");
+      assert.equal(config.startCommand, '{mcsm_java} -Dname="a b" -jar "server name.jar"');
+      if (method === "DOWNLOAD") assert.equal(f.creates[0].data.selection.javaPath, "{mcsm_java}");
+    });
+  }
+});
+
+test("Java preparation failure does not create an instance and permits retry", async (t) => {
+  let failing = true;
+  const f = formFixture(t, "IMPORT", {
+    prepare: async () => {
+      if (failing) throw new Error("Java checksum failed");
+      return { id: "msl_21", path: "{mcsm_java}" };
+    }
+  });
+  f.state.onFileChange({ name: "server.jar", size: 10 });
+  await f.state.finalConfirm();
+  await f.confirms[0].onOk();
+  assert.equal(f.creates.length, 0);
+  assert.equal(f.uploads.length, 0);
+  assert.match(f.errors[0].message, /checksum failed/);
+  assert.equal(f.state.busy, false);
+  failing = false;
+  await f.state.finalConfirm();
+  await f.confirms[1].onOk();
+  assert.equal(f.creates.length, 1);
+  assert.equal(f.creates[0].data.startCommand, '{mcsm_java} -jar "server.jar" nogui');
+});
+
+test("Docker and native Bedrock creation do not prepare host Java", async (t) => {
+  const javaSetup = {
+    prepare: () => {
+      throw new Error("Java should not be installed");
+    }
+  };
+  const docker = formFixture(t, "DOCKER", javaSetup);
+  await docker.state.finalConfirm();
+  await docker.confirms[0].onOk();
+  assert.equal(docker.creates.length, 1);
+  const bedrock = formFixture(t, "DOWNLOAD", javaSetup);
+  bedrock.state.downloadSelection = {
+    server: "bedrock-server",
+    version: "linux-release",
+    build: "latest"
+  };
+  await bedrock.state.finalConfirm();
+  await bedrock.confirms[0].onOk();
+  assert.equal(bedrock.creates.length, 1);
+  assert.equal(bedrock.creates[0].data.config.java.id, "");
+});
+
+test("managed Java placeholders stay unquoted in Forge installers and generated commands", async (t) => {
+  const options = { ...paper, javaPath: "{mcsm_java}" };
+  assert.equal(
+    install.minecraftInstallerCommand(options),
+    "{mcsm_java} -jar server-installer.jar --installServer"
+  );
+  const cwd = directory(t);
+  fs.writeFileSync(path.join(cwd, "server.jar"), "fixture");
+  assert.equal(
+    await install.minecraftStartCommand(cwd, options, translate),
+    "{mcsm_java} -jar server.jar nogui"
+  );
 });
 
 test("Minecraft UI and daemon messages exist in every language", () => {

@@ -1,6 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import type { MinecraftInstallOptions } from "../../../../../common/src/minecraft";
+import { javaExecutableCommand } from "../../../../../common/src/java";
 
 type Translate = (key: string) => string;
 
@@ -53,7 +54,7 @@ export function minecraftFileName(options: MinecraftInstallOptions) {
 }
 
 export function minecraftInstallerCommand(options: MinecraftInstallOptions) {
-  return `"${options.javaPath || "java"}" -jar server-installer.jar --installServer`;
+  return `${javaExecutableCommand(options.javaPath)} -jar server-installer.jar --installServer`;
 }
 
 /** Resolve only files actually produced by this installation. */
@@ -72,7 +73,7 @@ export async function minecraftStartCommand(
     return "env LD_LIBRARY_PATH=. ./bedrock_server";
   }
 
-  const java = `"${options.javaPath || "java"}"`;
+  const java = javaExecutableCommand(options.javaPath);
   if (options.kind === "jar") {
     if (!(await fs.pathExists(path.join(cwd, "server.jar")))) throw missingFiles();
     const noGui = !["bungeecord", "velocity", "travertine", "lightfall", "nukkitx"].includes(

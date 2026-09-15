@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import { addJava, deleteJava, downloadJava, getJavaList, usingJava } from "../api";
+import { addJava, deleteJava, downloadJava, usingJava } from "../api";
 import { parseTimestamp } from "@/tools/time";
-import type { AddJavaConfigItem, DownloadJavaConfigItem, JavaInfo, JavaRuntime } from "../types";
+import type { AddJavaConfigItem, DownloadJavaConfigItem, JavaInfo } from "../types";
 import { notifyDesktop } from "../../../desktop/src/desktopNotice";
-import { computed, onUnmounted, ref, type Ref } from "vue";
+import { computed, onUnmounted, ref } from "vue";
 import { ctx } from "@/plugin/context";
-import { VBtn, VCard, VCardText, VChip, VDataTable, VIcon, VTextField } from "vuetify/components";
+import { VAlert, VBtn, VDataTable, VIcon, VTextField } from "vuetify/components";
+
+import { useJavaList } from "../hooks/useJavaList";
+import JavaVersionSelect from "../components/JavaVersionSelect.vue";
+import JavaRuntimeStatus from "../components/JavaRuntimeStatus.vue";
 
 const BuildOutlined = "mdi-hammer-wrench";
 const DownloadOutlined = "mdi-cloud-download-outline";
-const AppstoreOutlined = "mdi-language-java";
 
 const props = defineProps<{
     instanceUuid?: string;
@@ -32,16 +35,14 @@ const headers = [
     { title: t("TXT_CODE_fe731dfc"), key: "actions", align: "center" as const, sortable: false }
 ] as const;
 
-const javaList: Ref<JavaRuntime[] | undefined> = ref([]);
+const { javaList, loading: listLoading, error: listError, refresh } = useJavaList({
+    daemonId: () => props.daemonId,
+    instanceId: () => resolvedInstanceId.value,
+    active: () => true
+});
 const refreshJavaList = async (out: boolean = false) => {
     try {
-        const list = await getJavaList().execute({
-            params: {
-                daemonId: props.daemonId ?? "",
-                instanceId: resolvedInstanceId.value
-            }
-        });
-        javaList.value = list.value;
+        await refresh(true);
         if (out) notifyDesktop(t("TXT_CODE_fbde647e"), "success");
     } catch (err: any) {
         notifyDesktop(err.message, "error");
@@ -101,69 +102,49 @@ const cancelAddJava = () => {
     addJavaDialog.value.resolve = null;
 };
 
-const JAVA_OPTIONS: DownloadJavaConfigItem[] = [
-    { name: "zulu", version: "8" },
-    { name: "zulu", version: "11" },
-    { name: "zulu", version: "15" },
-    { name: "zulu", version: "17" },
-    { name: "zulu", version: "21" },
-    { name: "zulu", version: "25" }
-];
-
 const downloadJavaDialog = ref({
     show: false,
     installedList: [] as string[],
-    selectedIndex: null as number | null,
+    version: "",
     resolve: null as ((value: DownloadJavaConfigItem | undefined) => void) | null
 });
 
-const selectedDownloadItem = ref<DownloadJavaConfigItem | null>(null);
-
 const handleDownloadJava = async () => {
-    const installedList = javaList.value?.map((item) => item.info.fullname) ?? [];
+    const installedList = javaList.value.filter((item) => !item.info.error).map((item) => item.info.fullname);
     downloadJavaDialog.value.installedList = installedList;
-    downloadJavaDialog.value.selectedIndex = null;
-    selectedDownloadItem.value = null;
+    downloadJavaDialog.value.version = "";
 
     return new Promise<DownloadJavaConfigItem | undefined>((resolve) => {
         downloadJavaDialog.value.show = true;
         downloadJavaDialog.value.resolve = resolve;
     }).then(async (data) => {
         if (!data) return;
-        try {
-            await downloadJava().execute({
-                params: {
-                    daemonId: props.daemonId ?? "",
-                    instanceId: resolvedInstanceId.value
-                },
-                data: {
-                    name: data.name,
-                    version: data.version
-                }
-            });
-            notifyDesktop(t("TXT_CODE_5e7a4c02"), "success");
-            await refreshJavaList();
-        } catch (err: any) {
-            notifyDesktop(err.message, "error");
-        }
-        await refreshJavaList();
+        await startDownload(data.version);
     });
 };
 
-const handleSelectDownloadItem = (index: number) => {
-    downloadJavaDialog.value.selectedIndex = index;
-    selectedDownloadItem.value = JAVA_OPTIONS[index];
+const startDownload = async (version: string) => {
+    try {
+        await downloadJava().execute({
+            params: { daemonId: props.daemonId, instanceId: resolvedInstanceId.value },
+            data: { name: "msl", version }
+        });
+        notifyDesktop(t("TXT_CODE_5e7a4c02"), "success");
+        await refreshJavaList();
+    } catch (err: any) {
+        notifyDesktop(err.message, "error");
+    }
 };
 
 const confirmDownloadJava = () => {
     const { resolve } = downloadJavaDialog.value;
-    const item = selectedDownloadItem.value;
-    if (!item) {
-        notifyDesktop(t("TXT_CODE_b5095a15"), "warning");
+    const version = downloadJavaDialog.value.version;
+    if (!version) {
+        notifyDesktop(t("TXT_CODE_javaMsl.selectJava"), "warning");
         return;
     }
     downloadJavaDialog.value.show = false;
-    if (resolve) resolve({ name: item.name, version: item.version });
+    if (resolve) resolve({ name: "msl", version });
     downloadJavaDialog.value.resolve = null;
 };
 
@@ -209,14 +190,17 @@ const handleUsingJava = async (info: JavaInfo) => {
     await refreshJavaList();
 };
 
-refreshJavaList();
 
 const updateWindowSize = () => {
     windowWidth.value = window.innerWidth;
     windowHeight.value = window.innerHeight;
 };
 window.addEventListener("resize", updateWindowSize);
-onUnmounted(() => window.removeEventListener("resize", updateWindowSize));
+onUnmounted(() => {
+    window.removeEventListener("resize", updateWindowSize);
+    cancelAddJava();
+    cancelDownloadJava();
+});
 </script>
 
 <template>
@@ -242,20 +226,21 @@ onUnmounted(() => window.removeEventListener("resize", updateWindowSize));
                 </VBtn>
             </div>
 
-            <VDataTable class="djava-table mt-3" :headers="headers" :items="javaList || []" :items-per-page="15">
+            <VAlert v-if="listError" type="error" variant="tonal" class="mt-3">{{ listError }}</VAlert>
+            <VDataTable :loading="listLoading" class="djava-table mt-3" :headers="headers" :items="javaList || []" :items-per-page="15">
                 <template #item.fullname="{ item }">{{ item.info.fullname || "-" }}</template>
                 <template #item.installTime="{ item }">{{ item.info.installTime ? t(parseTimestamp(item.info.installTime)) : "-" }}</template>
                 <template #item.status="{ item }">
-                    <VChip size="small" variant="tonal" :color="item.usingInstances.length > 0 ? 'success' : item.info.downloading ? 'warning' : 'default'">
-                        {{ item.usingInstances.length > 0 ? t("TXT_CODE_bdb620b9") : item.info.downloading ? t("TXT_CODE_d919f7c7") : t("TXT_CODE_15f2e564") }}
-                    </VChip>
+                    <JavaRuntimeStatus :runtime="item" />
                 </template>
                 <template #item.actions="{ item }">
                     <div class="djava-config__actions">
+                        <VBtn v-if="item.info.error && /^msl_[0-9]+$/.test(item.info.fullname)"
+                            variant="text" size="small" @click="startDownload(item.info.fullname.slice(4))">{{ t("TXT_CODE_9277af78") }}</VBtn>
                         <VBtn v-if="item.info.fullname == ''" variant="text" size="small" disabled>
                             {{ t("TXT_CODE_979520ef") }}
                         </VBtn>
-                        <VBtn v-else variant="text" size="small" :disabled="item.info.downloading"
+                        <VBtn v-else variant="text" size="small" :disabled="item.info.downloading || !!item.info.error"
                             @click="handleUsingJava(item.info as JavaInfo)">
                             <VIcon icon="mdi-check-circle-outline" />
                             {{ t("TXT_CODE_f0dcc8bf") }}
@@ -313,29 +298,15 @@ onUnmounted(() => window.removeEventListener("resize", updateWindowSize));
                     :show-minimize="false" :show-maximize="false" :resizable="false" @close="cancelDownloadJava">
                     <div class="djava-dialog-content">
                         <div class="djava-dialog__body">
-                            <div class="djava-download-grid">
-                                <div v-for="(item, index) in JAVA_OPTIONS" :key="`${item.name}-${item.version}`"
-                                    class="djava-download-card"
-                                    :class="{ 'djava-download-card--selected': downloadJavaDialog.selectedIndex === index }"
-                                    @click="handleSelectDownloadItem(index)">
-                                    <div class="djava-download-card__cover">
-                                        <VIcon :icon="AppstoreOutlined" class="djava-download-card__icon" />
-                                    </div>
-                                    <div class="djava-download-card__info">
-                                        <strong>
-                                            Java {{ item.version.toUpperCase() }}
-                                        </strong>
-                                        <VChip color="primary" size="x-small" variant="tonal">{{ item.name.toUpperCase() }}</VChip>
-                                    </div>
-                                </div>
-                            </div>
+                            <JavaVersionSelect v-model="downloadJavaDialog.version" :daemon-id="daemonId"
+                                :installed-java-list="downloadJavaDialog.installedList" />
                         </div>
                         <div class="djava-dialog__footer">
                             <VBtn class="djava-btn djava-btn--default" variant="text" rounded="xl" @click="cancelDownloadJava">
                                 {{ t("TXT_CODE_a0451c97") }}
                             </VBtn>
                             <VBtn class="djava-btn djava-btn--primary" variant="text" rounded="xl"
-                                :disabled="downloadJavaDialog.selectedIndex === null" @click="confirmDownloadJava">
+                                :disabled="!downloadJavaDialog.version" @click="confirmDownloadJava">
                                 <VIcon icon="mdi-check" />
                                 {{ t("TXT_CODE_d507abff") }}
                             </VBtn>
@@ -457,49 +428,4 @@ onUnmounted(() => window.removeEventListener("resize", updateWindowSize));
     flex-shrink: 0;
 }
 
-.djava-download-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    justify-content: flex-start;
-}
-
-.djava-download-card {
-    width: 140px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-radius: 12px;
-    overflow: hidden;
-    background: var(--desktop-window-titlebar-bg);
-
-    &:hover {
-        background: var(--desktop-window-control-hover);
-    }
-
-    &--selected {
-        background: linear-gradient(135deg, rgba(24, 144, 255, 0.1), rgba(24, 144, 255, 0.05));
-    }
-
-    &__cover {
-        padding: 16px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: linear-gradient(135deg, var(--desktop-window-control-hover) 0%, var(--desktop-window-border) 100%);
-    }
-
-    &__icon {
-        font-size: 48px;
-        line-height: 1;
-    }
-
-    &__info {
-        padding: 12px;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-    }
-}
 </style>

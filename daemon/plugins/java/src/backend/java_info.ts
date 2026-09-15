@@ -2,6 +2,8 @@ export class JavaInfo implements IJavaInfo {
   public fullname: string;
   public path?: string;
   public downloading: boolean = false;
+  public progress?: number;
+  public error?: string;
 
   constructor(
     public name: string,

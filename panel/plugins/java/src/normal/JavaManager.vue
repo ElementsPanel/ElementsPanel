@@ -3,12 +3,14 @@ import AppDialog from "@/components/AppDialog.vue";
 import { useAddJavaDialog, useDownloadJavaDialog } from "../dialogs";
 import { t } from "@/lang/i18n";
 import { updateInstanceConfig } from "@/services/apis/instance";
-import { addJava, deleteJava, downloadJava, getJavaList, usingJava } from "../api";
+import { addJava, deleteJava, downloadJava, usingJava } from "../api";
 import { parseTimestamp } from "@/tools/time";
-import type { JavaInfo, JavaRuntime } from "../types";
+import type { JavaInfo } from "../types";
 import { message } from "@/tools/vuetifyToast";
-import { computed, ref, type Ref } from "vue";
-import { VBtn, VChip, VDataTable } from "vuetify/components";
+import { computed, ref } from "vue";
+import { VAlert, VBtn, VDataTable } from "vuetify/components";
+import { useJavaList } from "../hooks/useJavaList";
+import JavaRuntimeStatus from "../components/JavaRuntimeStatus.vue";
 
 interface InstanceInfo {
   config: { java: { id: string } };
@@ -21,7 +23,16 @@ const props = defineProps<{
 }>();
 const resolvedInstanceId = computed(() => props.instanceUuid ?? props.instanceId ?? "");
 const open = ref(false);
-const javaList: Ref<JavaRuntime[] | undefined> = ref([]);
+const {
+  javaList,
+  loading: listLoading,
+  error: listError,
+  refresh
+} = useJavaList({
+  daemonId: () => props.daemonId ?? "",
+  instanceId: () => resolvedInstanceId.value,
+  active: () => open.value
+});
 const deleteDialogOpen = ref(false);
 const deleteCandidate = ref<JavaInfo>();
 const { isLoading } = updateInstanceConfig();
@@ -31,29 +42,31 @@ const javaDescription = computed(() =>
 
 const refreshJavaList = async (out = false) => {
   try {
-    const list = await getJavaList().execute({
-      params: { daemonId: props.daemonId ?? "", instanceId: resolvedInstanceId.value }
-    });
-    javaList.value = list.value;
+    await refresh(true);
     if (out) message.success(t("TXT_CODE_fbde647e"));
   } catch (err: any) {
     message.error(err.message);
   }
 };
-const openDialog = async () => {
-  await refreshJavaList();
+const openDialog = () => {
   open.value = true;
 };
 const close = () => {
   open.value = false;
 };
 const handleDownloadJava = async () => {
-  const data = await useDownloadJavaDialog(javaList.value?.map((item) => item.info.fullname) ?? []);
+  const data = await useDownloadJavaDialog(
+    props.daemonId ?? "",
+    javaList.value.filter((item) => !item.info.error).map((item) => item.info.fullname)
+  );
   if (!data) return;
+  await startDownload(data.version);
+};
+const startDownload = async (version: string) => {
   try {
     await downloadJava().execute({
       params: { daemonId: props.daemonId ?? "", instanceId: resolvedInstanceId.value },
-      data: { name: data.name, version: data.version }
+      data: { name: "msl", version }
     });
     message.success(t("TXT_CODE_5e7a4c02"));
     await refreshJavaList();
@@ -138,39 +151,35 @@ defineExpose({ open: openDialog, openDialog });
         t("TXT_CODE_b76d94e0")
       }}</VBtn>
     </div>
-    <VDataTable :headers="headers" :items="javaList ?? []" :items-per-page="15" class="java-table">
+    <VAlert v-if="listError" type="error" variant="tonal" class="mb-3">{{ listError }}</VAlert>
+    <VDataTable
+      :headers="headers"
+      :items="javaList"
+      :loading="listLoading"
+      :items-per-page="15"
+      class="java-table"
+    >
       <template #item.fullname="{ item }">{{ item.info.fullname }}</template>
       <template #item.installTime="{ item }">{{
         t(parseTimestamp(item.info.installTime))
       }}</template>
-      <template #item.status="{ item }"
-        ><VChip
-          size="small"
-          :color="
-            item.usingInstances.length
-              ? 'success'
-              : item.info.downloading
-              ? 'warning'
-              : undefined
-          "
-          variant="tonal"
-          >{{
-            item.usingInstances.length
-              ? t("TXT_CODE_bdb620b9")
-              : item.info.downloading
-              ? t("TXT_CODE_d919f7c7")
-              : t("TXT_CODE_15f2e564")
-          }}</VChip
-        ></template
-      >
+      <template #item.status="{ item }"><JavaRuntimeStatus :runtime="item" /></template>
       <template #item.actions="{ item }">
         <div class="java-row-actions">
+          <VBtn
+            v-if="item.info.error && /^msl_[0-9]+$/.test(item.info.fullname)"
+            size="small"
+            variant="text"
+            @click="startDownload(item.info.fullname.slice(4))"
+            >{{ t("TXT_CODE_9277af78") }}</VBtn
+          >
           <VBtn
             size="small"
             variant="text"
             :disabled="
               item.info.fullname === props.instanceInfo?.config.java.id ||
-              item.info.downloading
+              item.info.downloading ||
+              !!item.info.error
             "
             @click="handleUsingJava(item.info)"
             >{{

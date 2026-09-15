@@ -6,28 +6,23 @@ import { JavaManager } from "./java_manager";
 // Java runtime management for the daemon. The manager and its protocol handlers
 // are scoped to this plugin, while instance startup resolves the service through
 // the daemon context so the core has no Java-specific import.
-export const inject = [
-  "i18n",
-  "settings",
-  "storage",
-  "instances",
-  "protocol",
-  "files",
-  "transfer",
-  "features"
-];
+export const inject = ["i18n", "settings", "instances", "protocol", "files", "features"];
 
 export async function apply(ctx: DaemonPluginContext) {
   ctx.i18n.define(localeMessages);
 
   const javaManager = new JavaManager({
     defaultJavaDataPath: ctx.settings.config.defaultJavaDataPath,
-    storage: ctx.storage,
-    translate: ctx.i18n.$t
+    translate: ctx.i18n.$t,
+    logger: ctx.logger,
+    unzip: (directory, file, destination) =>
+      new ctx.files.FileManager(directory, "UTF-8").unzip(file, destination, "UTF-8")
   });
   await javaManager.ready;
   ctx.set("javaManager", javaManager);
   ctx.features.add("javaManager");
+  ctx.features.add("javaManagerMsl");
+  ctx.on("dispose", () => javaManager.dispose());
 
   registerJavaManagerRoutes(ctx, javaManager);
 

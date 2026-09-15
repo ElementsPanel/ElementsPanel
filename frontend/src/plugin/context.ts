@@ -311,6 +311,11 @@ export interface FrontendModManagerService {
   readonly api: typeof import("../../../panel/plugins/mod/src/api");
 }
 
+/** Optional Java environment selector used while creating an instance. */
+export interface FrontendJavaService {
+  readonly setupComponent: Component;
+}
+
 /** Application instance pages, APIs, hooks and dialogs. Provided by `plugins/instance`. */
 export interface FrontendInstanceService {
   readonly api: Record<string, (...args: any[]) => any>;
@@ -376,6 +381,7 @@ declare module "cordis" {
     node: FrontendNodeService;
     instance: FrontendInstanceService;
     mod: FrontendModManagerService;
+    java: FrontendJavaService;
     file: FrontendFileManagerService;
     terminal: FrontendTerminalService;
   }

@@ -1,11 +1,12 @@
 import { useDefineApi } from "@/stores/useDefineApi";
 import type { JavaRuntime } from "./types";
+import type { JavaCatalog } from "../../../../common/src/java";
 
 export const getJavaList = useDefineApi<
   {
     params: {
       daemonId: string;
-      instanceId: string;
+      instanceId?: string;
     };
   },
   JavaRuntime[]
@@ -34,17 +35,26 @@ export const downloadJava = useDefineApi<
   {
     params: {
       daemonId: string;
-      instanceId: string;
+      instanceId?: string;
     };
     data: {
       name: string;
       version: string;
     };
   },
-  Boolean
+  JavaRuntime
 >({
   url: "/api/java_manager/download",
-  method: "POST"
+  method: "POST",
+  forceRequest: true,
+  timeout: 60000
+});
+
+export const getJavaCatalog = useDefineApi<{ params: { daemonId: string } }, JavaCatalog>({
+  url: "/api/java_manager/catalog",
+  method: "GET",
+  forceRequest: true,
+  timeout: 30000
 });
 
 export const usingJava = useDefineApi<
