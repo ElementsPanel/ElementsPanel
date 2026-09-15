@@ -2,8 +2,10 @@ import fs from "fs-extra";
 import path from "path";
 import { pathToFileURL } from "url";
 import {
-  discoverPlugins,
+  discoverExternalPluginRoots,
+  discoverPluginsFromRoots,
   sortPlugins,
+  type DiscoverPluginsOptions,
   type DiscoveredPlugin,
   type PluginManifest
 } from "mcsmanager-common";
@@ -23,7 +25,7 @@ import { ctx, type PanelPluginContext } from "./context";
 
 const logger = new Logger("plugin");
 
-const PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "plugins");
+const BUILT_IN_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "plugins");
 const ENTRY_FIELDS = ["panel", "backend", "main", "entry"];
 const ENTRY_CANDIDATES = [
   "src/index.js",
@@ -64,6 +66,14 @@ export interface PanelFrontendPluginEntry {
 
 const loaded: LoadedPanelPlugin[] = [];
 
+function discoverPanelPlugins(options: DiscoverPluginsOptions) {
+  const roots = [{ directory: BUILT_IN_PLUGINS_DIRECTORY() }];
+  if (process.env.NODE_ENV === "development") {
+    roots.push(...discoverExternalPluginRoots(path.resolve(process.cwd(), ".."), "panel"));
+  }
+  return discoverPluginsFromRoots(roots, options);
+}
+
 /** Exposes the loader's own registry without pulling it into a plugin bundle. */
 function ensurePanelPluginService() {
   if (ctx.get("plugins")) return;
@@ -98,6 +108,9 @@ async function loadModule(entry: string): Promise<unknown> {
   try {
     // eval keeps webpack from trying to bundle files supplied at runtime.
     const runtimeRequire = eval("require") as NodeRequire;
+    if (process.env.NODE_ENV === "development" && /\.[cm]?tsx?$/.test(entry)) {
+      runtimeRequire("ts-node/register/transpile-only");
+    }
     return runtimeRequire(entry);
   } catch (error: any) {
     if (error?.code !== "ERR_REQUIRE_ESM") throw error;
@@ -158,7 +171,7 @@ async function installPlugin(plugin: DiscoveredPlugin): Promise<LoadedPanelPlugi
 /** Discovers, requires and installs every enabled plugin, in manifest order. */
 export async function loadPanelPlugins(): Promise<readonly LoadedPanelPlugin[]> {
   ensurePanelPluginService();
-  const discovered = discoverPlugins(PLUGINS_DIRECTORY(), {
+  const discovered = discoverPanelPlugins({
     entryFields: ENTRY_FIELDS,
     entryCandidates: ENTRY_CANDIDATES,
     onWarning: (message, error) => logger.warn(message, error)
@@ -181,7 +194,7 @@ export async function loadPanelFoundationPlugin(id = "i18n") {
   const existing = loaded.find((record) => record.manifest.id === id);
   if (existing) return existing;
 
-  const plugin = discoverPlugins(PLUGINS_DIRECTORY(), {
+  const plugin = discoverPanelPlugins({
     entryFields: ENTRY_FIELDS,
     entryCandidates: ENTRY_CANDIDATES,
     onWarning: (message, error) => logger.warn(message, error)
@@ -209,9 +222,8 @@ export function getLoadedPanelPlugins(): readonly LoadedPanelPlugin[] {
  * ship only a frontend.
  */
 export function getPanelFrontendManifest(): PanelFrontendPluginEntry[] {
-  const root = PLUGINS_DIRECTORY();
   const entries: PanelFrontendPluginEntry[] = [];
-  for (const plugin of discoverPlugins(root, {
+  for (const plugin of discoverPanelPlugins({
     entryFields: ["frontend", "ui"],
     onWarning: (message, error) => logger.warn(message, error)
   })) {
@@ -267,7 +279,7 @@ const FRONTEND_FIELDS = ["frontend", "ui"];
  * purpose: the inventory describes what is installed, not what compiled.
  */
 export function getPanelPluginInventory(): PanelPluginRecord[] {
-  return discoverPlugins(PLUGINS_DIRECTORY(), {
+  return discoverPanelPlugins({
     entryFields: [],
     includeDisabled: true,
     onWarning: (message, error) => logger.warn(message, error)
@@ -306,7 +318,7 @@ export async function setPanelPluginEnabled(
   if (ESSENTIAL_PLUGIN_IDS.has(id) && !enabled) {
     throw new Error(`The essential panel plugin "${id}" cannot be disabled.`);
   }
-  const plugin = discoverPlugins(PLUGINS_DIRECTORY(), {
+  const plugin = discoverPanelPlugins({
     entryFields: ENTRY_FIELDS,
     entryCandidates: ENTRY_CANDIDATES,
     includeDisabled: true,

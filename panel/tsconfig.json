@@ -20,5 +20,10 @@
       "*": ["node_modules/*", "src/types/*"]
     }
   },
-  "include": ["src/**/*", "plugins/*/src/backend/**/*", "../common/global.d.ts"]
+  "include": [
+    "src/**/*",
+    "plugins/*/src/backend/**/*",
+    "../external/*/panel/src/backend/**/*",
+    "../common/global.d.ts"
+  ]
 }

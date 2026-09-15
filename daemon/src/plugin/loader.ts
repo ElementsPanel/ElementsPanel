@@ -1,8 +1,10 @@
 import { Logger, type ForkScope } from "cordis";
 import fs from "fs-extra";
 import {
-  discoverPlugins,
+  discoverExternalPluginRoots,
+  discoverPluginsFromRoots,
   sortPlugins,
+  type DiscoverPluginsOptions,
   type DiscoveredPlugin,
   type PluginManifest
 } from "mcsmanager-common";
@@ -22,7 +24,7 @@ import { ctx, type DaemonPluginContext } from "./context";
 
 const logger = new Logger("plugin");
 
-const PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "plugins");
+const BUILT_IN_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "plugins");
 const ENTRY_FIELDS = ["daemon", "backend", "main", "entry"];
 const ENTRY_CANDIDATES = [
   "src/index.js",
@@ -51,6 +53,14 @@ export interface DaemonPluginEntry {
 }
 
 const loaded: DaemonPluginEntry[] = [];
+
+function discoverDaemonPlugins(options: DiscoverPluginsOptions) {
+  const roots = [{ directory: BUILT_IN_PLUGINS_DIRECTORY() }];
+  if (process.env.NODE_ENV === "development") {
+    roots.push(...discoverExternalPluginRoots(path.resolve(process.cwd(), ".."), "daemon"));
+  }
+  return discoverPluginsFromRoots(roots, options);
+}
 
 /** Exposes the loader's own registry without pulling it into a plugin bundle. */
 function ensureDaemonPluginService() {
@@ -85,6 +95,9 @@ async function loadModule(entry: string): Promise<unknown> {
   try {
     // eval keeps webpack from trying to bundle files supplied at runtime.
     const runtimeRequire = eval("require") as NodeRequire;
+    if (process.env.NODE_ENV === "development" && /\.[cm]?tsx?$/.test(entry)) {
+      runtimeRequire("ts-node/register/transpile-only");
+    }
     return runtimeRequire(entry);
   } catch (error: any) {
     if (error?.code !== "ERR_REQUIRE_ESM") throw error;
@@ -148,7 +161,7 @@ async function installPlugin(plugin: DiscoveredPlugin): Promise<DaemonPluginEntr
 /** Discovers, requires and installs every enabled plugin, in manifest order. */
 export async function loadDaemonPlugins(): Promise<readonly DaemonPluginEntry[]> {
   ensureDaemonPluginService();
-  const discovered = discoverPlugins(PLUGINS_DIRECTORY(), {
+  const discovered = discoverDaemonPlugins({
     entryFields: ENTRY_FIELDS,
     entryCandidates: ENTRY_CANDIDATES,
     onWarning: (message, error) => logger.warn(message, error)
@@ -171,7 +184,7 @@ export async function loadDaemonFoundationPlugin(id = "i18n") {
   const existing = loaded.find((record) => record.manifest.id === id);
   if (existing) return existing;
 
-  const plugin = discoverPlugins(PLUGINS_DIRECTORY(), {
+  const plugin = discoverDaemonPlugins({
     entryFields: ENTRY_FIELDS,
     entryCandidates: ENTRY_CANDIDATES,
     onWarning: (message, error) => logger.warn(message, error)
@@ -216,7 +229,7 @@ export interface DaemonPluginRecord {
  * purpose: the inventory describes what is installed, not what compiled.
  */
 export function getDaemonPluginInventory(): DaemonPluginRecord[] {
-  return discoverPlugins(PLUGINS_DIRECTORY(), {
+  return discoverDaemonPlugins({
     entryFields: [],
     includeDisabled: true,
     onWarning: (message, error) => logger.warn(message, error)
@@ -252,7 +265,7 @@ export async function setDaemonPluginEnabled(
   if (FOUNDATION_PLUGIN_IDS.has(id) && !enabled) {
     throw new Error(`The foundational daemon plugin "${id}" cannot be disabled.`);
   }
-  const plugin = discoverPlugins(PLUGINS_DIRECTORY(), {
+  const plugin = discoverDaemonPlugins({
     entryFields: ENTRY_FIELDS,
     entryCandidates: ENTRY_CANDIDATES,
     includeDisabled: true,

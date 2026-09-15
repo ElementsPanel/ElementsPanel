@@ -27,6 +27,8 @@ export { arrayUnique } from "./array";
 
 export {
   discoverPlugins,
+  discoverPluginsFromRoots,
+  discoverExternalPluginRoots,
   readPluginManifest,
   resolvePluginEntry,
   sortPlugins
@@ -34,6 +36,7 @@ export {
 export type {
   DiscoveredPlugin,
   DiscoverPluginsOptions,
+  PluginDiscoveryRoot,
   PluginManifest
 } from "./plugin_manifest";
 

@@ -7,11 +7,19 @@
     "../panel/plugins/**/*.ts",
     "../panel/plugins/**/*.vue",
     "../panel/plugins/**/*.json",
+    "../external/*/panel/**/*.ts",
+    "../external/*/panel/**/*.tsx",
+    "../external/*/panel/**/*.vue",
+    "../external/*/panel/**/*.json",
     "ant.d.ts",
     "components.d.ts",
     "../common/global.d.ts"
   ],
-  "exclude": ["src/**/__tests__/*", "../panel/plugins/*/src/backend/**"],
+  "exclude": [
+    "src/**/__tests__/*",
+    "../panel/plugins/*/src/backend/**",
+    "../external/*/panel/src/backend/**"
+  ],
   "compilerOptions": {
     "composite": true,
     "baseUrl": ".",

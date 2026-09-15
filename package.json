@@ -10,6 +10,7 @@
     "install-dependents": "cd daemon && npm install && cd ../panel && npm install && cd ../frontend && npm install",
     "dev": "npm run all",
     "all": "concurrently -n Daemon,Frontend,Panel -c cyan,magenta,green -p name \"npm run dev --prefix daemon\" \"npm run dev --prefix frontend\" \"npm run dev --prefix panel\"",
+    "create-plugin": "node scripts/create-plugin.mjs",
     "i18n": "i18next-scanner --config i18-scanner.config.js && node scripts/sync-global-i18n.mjs",
     "sort-lang-keys": "node scripts/sort-lang-key.mjs",
     "preview-build": "cd common && npm install && npm run build",

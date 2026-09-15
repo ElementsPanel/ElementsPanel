@@ -7,14 +7,19 @@ import vueJsx from "@vitejs/plugin-vue-jsx";
 import { visualizer } from "rollup-plugin-visualizer";
 import Components from "unplugin-vue-components/vite";
 import { defineConfig, normalizePath, type Plugin } from "vite";
-import { discoverPlugins } from "../common/src/plugin_manifest";
+import {
+  discoverExternalPluginRoots,
+  discoverPluginsFromRoots
+} from "../common/src/plugin_manifest";
 
 const PANEL_PLUGINS_MODULE_ID = "virtual:panel-plugins";
 const RESOLVED_PANEL_PLUGINS_MODULE_ID = `\0${PANEL_PLUGINS_MODULE_ID}`;
 const PANEL_PLUGIN_ENTRY_PREFIX = "panel-plugin-entry:";
 const PANEL_PLUGIN_BUILD_ENTRY_PREFIX = "panel-plugin-build-entry:";
 const RESOLVED_PANEL_PLUGIN_BUILD_ENTRY_PREFIX = `\0${PANEL_PLUGIN_BUILD_ENTRY_PREFIX}`;
+const PROJECT_DIRECTORY = fileURLToPath(new URL("..", import.meta.url));
 const PANEL_PLUGINS_DIRECTORY = fileURLToPath(new URL("../panel/plugins", import.meta.url));
+const EXTERNAL_PLUGINS_DIRECTORY = fileURLToPath(new URL("../external", import.meta.url));
 // Resolve the installed package's exports from the frontend workspace. Vuetify
 // releases use both .mjs and .js entry points, so hard-coding an extension fails
 // after a compatible dependency update.
@@ -32,11 +37,15 @@ interface DiscoveredPanelPlugin {
   buildEntryId: string;
 }
 
-function discoverPanelPlugins(): DiscoveredPanelPlugin[] {
+function discoverPanelPlugins(includeExternal = false): DiscoveredPanelPlugin[] {
   // Discovery is shared with the panel and daemon backends, so the four places
   // that read `plugin.json` cannot drift apart. Only the entry field and the
   // build-time extras are specific to this side.
-  return discoverPlugins(PANEL_PLUGINS_DIRECTORY, {
+  const roots = [{ directory: PANEL_PLUGINS_DIRECTORY }];
+  if (includeExternal) {
+    roots.push(...discoverExternalPluginRoots(PROJECT_DIRECTORY, "panel"));
+  }
+  return discoverPluginsFromRoots(roots, {
     entryFields: ["frontend", "ui"],
     entryCandidates: [
       "src/frontend.ts",
@@ -61,21 +70,24 @@ function discoverPanelPlugins(): DiscoveredPanelPlugin[] {
 function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
   let plugins = initialPlugins;
   let isBuild = false;
-  const isPluginFile = (file: string) =>
-    path
-      .resolve(file)
-      .toLowerCase()
-      .startsWith(path.resolve(PANEL_PLUGINS_DIRECTORY).toLowerCase());
+  const isPluginFile = (file: string) => {
+    const target = path.resolve(file).toLowerCase();
+    return [PANEL_PLUGINS_DIRECTORY, EXTERNAL_PLUGINS_DIRECTORY].some((directory) => {
+      const root = path.resolve(directory).toLowerCase();
+      return target === root || target.startsWith(`${root}${path.sep}`);
+    });
+  };
 
   return {
     name: "elements-panel-plugins",
     enforce: "post" as const,
     configResolved(config: any) {
       isBuild = config.command === "build";
+      if (!isBuild) plugins = discoverPanelPlugins(true);
     },
     buildStart() {
       if (!isBuild) return;
-      plugins = discoverPanelPlugins();
+      plugins = discoverPanelPlugins(false);
       panelPluginBuildEntries = plugins;
       // Production loads plugins from the manifest instead of the virtual
       // module. Emit each entry explicitly so tree-shaking cannot remove its
@@ -102,7 +114,7 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
       }
     },
     configureServer(server: any) {
-      server.watcher.add(PANEL_PLUGINS_DIRECTORY);
+      server.watcher.add([PANEL_PLUGINS_DIRECTORY, EXTERNAL_PLUGINS_DIRECTORY]);
       const reload = (file: string) => {
         if (!isPluginFile(file)) return;
         const module = server.moduleGraph.getModuleById(RESOLVED_PANEL_PLUGINS_MODULE_ID);
@@ -124,7 +136,7 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
       }
       if (id !== RESOLVED_PANEL_PLUGINS_MODULE_ID) return;
       if (isBuild) return "export const panelPluginModules = [];";
-      plugins = discoverPanelPlugins();
+      plugins = discoverPanelPlugins(true);
       const entries = plugins.map(
         (plugin, index) =>
           `{ metadata: ${JSON.stringify(plugin.metadata)}, directory: ${JSON.stringify(
@@ -225,7 +237,7 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
   };
 }
 
-let panelPluginBuildEntries = discoverPanelPlugins();
+let panelPluginBuildEntries = discoverPanelPlugins(false);
 const sanitizePluginFolder = (folder: string) => folder.replace(/[^a-zA-Z0-9_-]/g, "_");
 
 // https://vitejs.dev/config/

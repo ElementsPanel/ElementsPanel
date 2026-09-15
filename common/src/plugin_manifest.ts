@@ -55,6 +55,13 @@ export interface DiscoverPluginsOptions {
   onWarning?: (message: string, error?: unknown) => void;
 }
 
+/** A plugin directory to scan, optionally with a public folder name override. */
+export interface PluginDiscoveryRoot {
+  directory: string;
+  /** Used by external workspaces, whose manifest lives below a side directory. */
+  folder?: string;
+}
+
 const MANIFEST_FILES = ["plugin.json", "manifest.json", "package.json"];
 
 /** Reads the manifest of one plugin directory, or null if it has none. */
@@ -102,6 +109,23 @@ export function resolvePluginEntry(
   return null;
 }
 
+function discoverPluginDirectory(
+  directory: string,
+  options: DiscoverPluginsOptions,
+  folder = path.basename(directory)
+): DiscoveredPlugin | null {
+  const manifest = readPluginManifest(directory, options.onWarning);
+  if (!manifest) return null;
+  if (manifest.enabled === false && !options.includeDisabled) return null;
+
+  const entry = resolvePluginEntry(directory, manifest, options);
+  if (!entry && options.entryFields.some((field) => typeof manifest[field] === "string")) {
+    options.onWarning?.(`Plugin "${manifest.id}" has no valid entry module.`);
+    return null;
+  }
+  return { manifest, directory, folder, entry: entry ?? undefined };
+}
+
 /**
  * Lists the usable plugins below `root`, in load order: ascending `priority`,
  * then by id so the order is stable. Duplicate ids are dropped, and disabled
@@ -120,24 +144,70 @@ export function discoverPlugins(
   for (const item of fs.readdirSync(root, { withFileTypes: true })) {
     if (!item.isDirectory()) continue;
     const directory = path.join(root, item.name);
-    const manifest = readPluginManifest(directory, options.onWarning);
-    if (!manifest) continue;
-    if (manifest.enabled === false && !options.includeDisabled) continue;
-    if (seenIds.has(manifest.id)) {
-      options.onWarning?.(`Ignoring duplicate plugin id: ${manifest.id}`);
+    const plugin = discoverPluginDirectory(directory, options, item.name);
+    if (!plugin || seenIds.has(plugin.manifest.id)) {
+      if (plugin && seenIds.has(plugin.manifest.id)) {
+        options.onWarning?.(`Ignoring duplicate plugin id: ${plugin.manifest.id}`);
+      }
       continue;
     }
-    seenIds.add(manifest.id);
-
-    const entry = resolvePluginEntry(directory, manifest, options);
-    if (!entry && options.entryFields.some((field) => typeof manifest[field] === "string")) {
-      options.onWarning?.(`Plugin "${manifest.id}" has no valid entry module.`);
-      continue;
-    }
-    plugins.push({ manifest, directory, folder: item.name, entry: entry ?? undefined });
+    seenIds.add(plugin.manifest.id);
+    plugins.push(plugin);
   }
 
   return sortPlugins(plugins);
+}
+
+/**
+ * Discovers plugins from several roots while keeping the first root's plugin
+ * when ids collide. The built-in root is intentionally passed first by the
+ * panel and daemon loaders, so an external workspace cannot shadow a bundled
+ * plugin accidentally.
+ */
+export function discoverPluginsFromRoots(
+  roots: readonly PluginDiscoveryRoot[],
+  options: DiscoverPluginsOptions
+): DiscoveredPlugin[] {
+  const discovered: DiscoveredPlugin[] = [];
+  const seenIds = new Set<string>();
+  for (const root of roots) {
+    const isDirectPlugin = MANIFEST_FILES.some((file) =>
+      fs.existsSync(path.join(root.directory, file))
+    );
+    const plugins = isDirectPlugin
+      ? [discoverPluginDirectory(root.directory, options, root.folder)]
+      : discoverPlugins(root.directory, options);
+    for (const plugin of plugins) {
+      if (!plugin) continue;
+      if (seenIds.has(plugin.manifest.id)) {
+        options.onWarning?.(`Ignoring duplicate plugin id: ${plugin.manifest.id}`);
+        continue;
+      }
+      seenIds.add(plugin.manifest.id);
+      discovered.push(root.folder ? { ...plugin, folder: root.folder } : plugin);
+    }
+  }
+  return sortPlugins(discovered);
+}
+
+/**
+ * Lists the side-specific roots of custom plugin workspaces below
+ * `<projectRoot>/external/<workspace>/<side>`.
+ */
+export function discoverExternalPluginRoots(
+  projectRoot: string,
+  side: "panel" | "daemon"
+): PluginDiscoveryRoot[] {
+  const externalRoot = path.resolve(projectRoot, "external");
+  if (!fs.existsSync(externalRoot)) return [];
+  return fs
+    .readdirSync(externalRoot, { withFileTypes: true })
+    .filter((item) => item.isDirectory())
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((item) => ({
+      directory: path.join(externalRoot, item.name, side),
+      folder: item.name
+    }));
 }
 
 /** Load order: ascending `priority`, then by id so it never depends on the filesystem. */
