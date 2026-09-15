@@ -78,9 +78,9 @@ onMounted(async () => {
             <div class="app-main-body">
               <Breadcrumbs v-if="!isLoginPage && !isImmersivePage" />
               <RouterView v-slot="{ Component, route }">
-                <transition name="page-fade" mode="out-in">
+                <Transition name="page" mode="out-in">
                   <component :is="Component" :key="route.fullPath" />
-                </transition>
+                </Transition>
               </RouterView>
             </div>
           </main>
@@ -95,14 +95,45 @@ onMounted(async () => {
 </template>
 
 <style lang="scss">
-.page-fade-enter-active,
-.page-fade-leave-active {
-  transition: opacity 0.3s ease;
+.page-enter-active,
+.page-leave-active {
+  transform-origin: center top;
+  will-change: transform, opacity;
 }
 
-.page-fade-enter-from,
-.page-fade-leave-to {
+.page-enter-active {
+  transition:
+    opacity 260ms ease-out,
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.page-leave-active {
+  transition:
+    opacity 180ms ease-in,
+    transform 180ms ease-in;
+}
+
+.page-enter-from {
   opacity: 0;
+  transform: scale(1.04);
 }
 
+.page-enter-to,
+.page-leave-from {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-active,
+  .page-leave-active {
+    transition: none;
+    will-change: auto;
+  }
+}
 </style>
