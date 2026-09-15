@@ -137,6 +137,7 @@ defineExpose({ prepare });
       variant="solo"
       density="compact"
       hide-details="auto"
+      class="mb-3"
     />
     <VTextField
       v-if="mode === 'system'"
@@ -150,7 +151,6 @@ defineExpose({ prepare });
       variant="solo"
       density="compact"
       hide-details="auto"
-      class="mt-3"
     />
     <template v-else-if="mode === 'installed'">
       <VSelect
@@ -165,7 +165,6 @@ defineExpose({ prepare });
         variant="solo"
         density="compact"
         hide-details="auto"
-        class="mt-3"
       />
       <VAlert v-if="error" type="error" variant="tonal" class="mt-3" rounded="lg">{{
         error
@@ -182,7 +181,6 @@ defineExpose({ prepare });
       v-model="version"
       :daemon-id="daemonId"
       :disabled="disabled || preparing"
-      class="mt-3"
     />
     <div v-if="preparing" class="mt-3" role="status" aria-live="polite">
       <p class="mb-2">
