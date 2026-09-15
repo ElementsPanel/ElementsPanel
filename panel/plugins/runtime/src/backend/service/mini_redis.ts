@@ -6,8 +6,10 @@ interface Data {
 class SingletonMemoryRedis {
   private readonly envMap: Map<string, Data> = new Map();
 
+  private readonly cleanupTimer: NodeJS.Timeout;
+
   constructor() {
-    setInterval(() => {
+    this.cleanupTimer = setInterval(() => {
       const now = Date.now();
       for (const [key, data] of this.envMap) {
         if (now >= data.ttl) {
@@ -15,6 +17,11 @@ class SingletonMemoryRedis {
         }
       }
     }, 500);
+  }
+
+  dispose() {
+    clearInterval(this.cleanupTimer);
+    this.envMap.clear();
   }
 
   get<T = any>(key: string): T | undefined {

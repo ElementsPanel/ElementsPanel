@@ -1,5 +1,5 @@
 import { v4 } from "uuid";
-import type { IPacket, IRequestPacket } from "../../../../src/app/entity/entity_interface";
+import type { IPacket, IRequestPacket } from "../../../../src/app/plugin/packets";
 import RemoteService from "./remote_entity";
 import { $t } from "./runtime";
 

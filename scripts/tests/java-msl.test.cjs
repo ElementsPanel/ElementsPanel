@@ -454,7 +454,7 @@ test("Java HTTP routes allow admin setup before instance creation and retain ins
     roles: { USER: 1, ADMIN: 10 },
     i18n: { $t: translate },
     middleware: {
-      validator: load("panel/src/app/middleware/validator.ts").default,
+      validator: load("panel/plugins/runtime/src/backend/middleware/validator.ts").default,
       permission:
         ({ level }) =>
         async (ctx, next) => {

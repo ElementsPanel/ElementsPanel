@@ -3,23 +3,19 @@ import { Context } from "cordis";
 import type i18next from "i18next";
 import type Koa from "koa";
 import type { GlobalVariable } from "mcsmanager-common";
-import type { IRemoteService, RemoteMappingEntry } from "../entity/entity_interface";
-import type { ROLE } from "../entity/user";
-import type { $t } from "../i18n";
-import type instanceAccess from "../middleware/instance_access";
-import type { speedLimit } from "../middleware/limit";
-import type { requestConcurrencyLimiter } from "../middleware/limit";
-import type permission from "../middleware/permission";
-import type validator from "../middleware/validator";
+import type { IRemoteService, RemoteMappingEntry } from "./packets";
+import type { ROLE } from "../../../plugins/runtime/src/backend/roles";
+import type validator from "../../../plugins/runtime/src/backend/middleware/validator";
 import type { OperationLoggerItem, OperationLoggerItemPayload } from "../../types/operation_logger";
 import type {
   AuthStats,
+  GuardedRoute,
   RequestGuard,
   RequestIdentity,
   UserAccessPolicy,
   UserRecords
-} from "../service/request_guard";
-import type { systemConfig } from "../setting";
+} from "./guard";
+import type { systemConfig } from "../../../plugins/runtime/src/backend/setting";
 import type {
   LoadedPanelPlugin,
   PanelFrontendPluginEntry,
@@ -151,7 +147,7 @@ export interface PanelSettingsFormService {
 
 /** Translation, and the way a plugin contributes its own strings. */
 export interface PanelI18nService {
-  readonly $t: typeof $t;
+  readonly $t: typeof i18next.t;
   readonly i18next: typeof i18next;
   /**
    * Merge the plugin's translations, keyed by locale (`en_us`, `zh_cn`, ...).
@@ -179,12 +175,12 @@ export interface PanelKoaService {
 
 /** The shared request middleware. Policy comes from the installed guard. */
 export interface PanelMiddlewareService {
-  readonly permission: typeof permission;
+  permission(route: GuardedRoute): Koa.Middleware;
   readonly validator: typeof validator;
-  readonly instanceAccess: typeof instanceAccess;
+  readonly instanceAccess: Koa.Middleware;
   /** Per-caller rate limit; elevated callers pass through. */
-  readonly speedLimit: typeof speedLimit;
-  readonly requestConcurrencyLimiter: typeof requestConcurrencyLimiter;
+  speedLimit(seconds: number, errMsg?: string): Koa.Middleware;
+  requestConcurrencyLimiter(url: string): Koa.Middleware;
 }
 
 /** The stored configuration of one daemon node, as the panel reads it. */
@@ -243,7 +239,7 @@ export interface PanelRemoteRequest {
  * The daemon nodes: the subsystem that tracks them and the request helper.
  *
  * **Provided by `plugins/node`.** The core declares only the shape it needs and
- * resolves it at use time through `service/remote_access.ts`, so removing that
+ * exposes it through this contract, so removing that
  * plugin removes the panel's ability to reach a daemon rather than breaking the
  * build.
  */
@@ -345,8 +341,7 @@ declare module "cordis" {
     overview: PanelOverviewService;
     plugins: PanelPluginsService;
 
-    // Provided by plugins. Read them through the core accessor that falls back
-    // to a default, or `inject` them from a plugin that cannot work without one.
+    // Provided by plugins. Resolve optional services with `get()` or declare an `inject` dependency.
     /**
      * The Koa application every route in the panel is mounted on. Provided by
      * `plugins/server`, the web server — without it the panel listens on

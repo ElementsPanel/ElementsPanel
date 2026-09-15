@@ -1,3 +1,5 @@
+import { initSteamCmd } from "./tools/steam_cmd";
+import { migrateConfig } from "./service/version_adapter";
 import type { DaemonPluginContext } from "../../../../src/plugin";
 import { LifecycleService, PresetsService, SchedulesService, TasksService } from "./registries";
 import { setPluginContext } from "./runtime";
@@ -23,6 +25,8 @@ export function apply(ctx: DaemonPluginContext) {
   ctx.plugin(PresetsService);
   ctx.plugin(SchedulesService);
   setPluginContext(ctx);
+  migrateConfig(ctx);
+  void initSteamCmd(ctx);
 
   // The registry services above are created as child plugins, so their values
   // are available on the next turn rather than synchronously in this function.

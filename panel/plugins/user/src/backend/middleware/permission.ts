@@ -1,5 +1,5 @@
 import Koa from "koa";
-import type { GuardedRoute } from "../../../../../src/app/service/request_guard";
+import type { GuardedRoute } from "../../../../../src/app/plugin/guard";
 import { $t, globalVariable } from "../runtime";
 import {
   checkSafeName,

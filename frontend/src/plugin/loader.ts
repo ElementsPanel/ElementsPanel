@@ -3,8 +3,12 @@ import type { ForkScope } from "cordis";
 import { ctx, type PanelFrontendPluginContext } from "./context";
 import { panelPluginModules } from "virtual:panel-plugins";
 
-const FOUNDATION_PLUGIN_ID = "i18n";
-const ESSENTIAL_PLUGIN_IDS = new Set([FOUNDATION_PLUGIN_ID, "console"]);
+const FOUNDATION_SERVICES: Record<string, string> = {
+  runtime: "startup",
+  i18n: "i18n",
+  console: "console"
+};
+const ESSENTIAL_PLUGIN_IDS = new Set(Object.keys(FOUNDATION_SERVICES));
 
 /**
  * Fetches plugin code and hands it to cordis.
@@ -320,9 +324,9 @@ export async function refreshPlugins() {
   return discovered.map((source) => source.metadata) as readonly PanelFrontendPluginMetadata[];
 }
 
-/** Loads the one plugin required before routes, layout and Vue are evaluated. */
+/** Loads a foundation and verifies that it provided its declared service. */
 export async function bootstrapPanelFrontendPlugin(id: string, config?: unknown) {
-  if (id !== FOUNDATION_PLUGIN_ID) {
+  if (!ESSENTIAL_PLUGIN_IDS.has(id)) {
     throw new Error(`Panel frontend plugin "${id}" is not a foundational plugin.`);
   }
 
@@ -334,7 +338,7 @@ export async function bootstrapPanelFrontendPlugin(id: string, config?: unknown)
 
   const plugin = await install(source, undefined, config);
   if (plugin.error) throw plugin.error;
-  if (!plugin.fork || !ctx.get("i18n")) {
+  if (!plugin.fork || !ctx.get(FOUNDATION_SERVICES[id])) {
     throw new Error(`Panel frontend foundation plugin failed to initialize: ${id}`);
   }
   return plugin;

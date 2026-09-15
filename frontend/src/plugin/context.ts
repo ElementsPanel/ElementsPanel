@@ -163,6 +163,12 @@ export interface FrontendVueService {
   readonly router: Router;
 }
 
+/** Startup state and errors. Provided by the foundational `runtime` plugin. */
+export interface FrontendStartupService {
+  readonly language: string;
+  showError(error: unknown): void;
+}
+
 /** The panel shell. Provided by the foundational `console` plugin. */
 export interface FrontendConsoleService {
   readonly root: Component;
@@ -246,8 +252,8 @@ export interface FrontendPluginsService {
 /**
  * Desktop mode's application registry.
  *
- * Core-owned even though Desktop mode itself is a plugin: an application belongs
- * to whichever plugin owns the page, so the registration has to be disposed with
+ * Supplied by the console plugin even though Desktop mode is optional. An
+ * application belongs to whichever plugin owns the page and is disposed with
  * that plugin rather than with Desktop. Without `plugins/desktop` nothing renders
  * the registry and `window` is absent.
  */
@@ -336,6 +342,7 @@ export interface FrontendInstanceService {
 
 /** Accounts and sessions. Provided by `plugins/user`. */
 export interface FrontendUserService {
+  restoreSession(): Promise<void>;
   readonly api: UserPluginApi;
   readonly desktopLoginWindow: Component;
   readonly desktopUsers: Component;
@@ -361,8 +368,13 @@ export interface FrontendNodeService {
 }
 
 declare module "cordis" {
+  interface Events {
+    "plugins/loaded"(): void | Promise<void>;
+  }
+
   interface Context {
-    // Core services, always present after frontend bootstrap.
+    startup: FrontendStartupService;
+    // Services provided by the foundational frontend plugins.
     vue: FrontendVueService;
     console: FrontendConsoleService;
     // Provided first by the foundational `i18n` plugin.

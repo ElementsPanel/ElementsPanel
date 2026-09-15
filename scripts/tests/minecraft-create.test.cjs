@@ -160,7 +160,7 @@ test("Minecraft API requires an administrator and resolves downloads on the pane
     $t: translate,
     roles: () => ({ ADMIN: 10 }),
     middleware: () => ({
-      validator: load("panel/src/app/middleware/validator.ts").default,
+      validator: load("panel/plugins/runtime/src/backend/middleware/validator.ts").default,
       permission:
         ({ level }) =>
         async (ctx, next) => {

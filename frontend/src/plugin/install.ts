@@ -1,21 +1,13 @@
-import type { App } from "vue";
-import type { Pinia } from "pinia";
 import { ctx } from "./context";
-import { getLoadedPlugins, loadPlugin, refreshPlugins, reloadPlugin, unloadPlugin } from "./loader";
 import {
-  ActionsService,
-  DesktopService,
-  MenusService,
-  RoutesService,
-  UiService,
-  VueService
-} from "./services";
+  bootstrapPanelFrontendPlugin,
+  getLoadedPlugins,
+  loadPlugin,
+  refreshPlugins,
+  reloadPlugin,
+  unloadPlugin
+} from "./loader";
 
-/**
- * The runtime API a production plugin can be enabled, disabled or replaced
- * through without rebuilding the panel. Copy or delete a plugin directory under
- * `web/plugins/`, then call `refresh()`.
- */
 declare global {
   interface Window {
     ElementsPanelPlugins?: {
@@ -28,26 +20,7 @@ declare global {
   }
 }
 
-/**
- * Brings up the container and loads every installed plugin.
- *
- * Awaited before the session is restored and before the router is installed: the
- * `console` plugin owns the application shell and base routes, while `user` owns
- * the account API and login route.
- */
-export async function setupPanelFrontendPlugins(app: App, pinia: Pinia) {
-  if (!ctx.get("i18n")) {
-    throw new Error("The foundational i18n plugin has not been initialized.");
-  }
-  ctx.plugin(VueService, { app, pinia });
-  ctx.plugin(RoutesService);
-  ctx.plugin(UiService);
-  ctx.plugin(MenusService);
-  ctx.plugin(ActionsService);
-  ctx.plugin(DesktopService);
-  // Declared with no value and then set, so the object is stored as it is:
-  // `ctx.provide(name, value)` would stamp cordis's tracker onto it and every
-  // read would return a proxy. Only the `Service` classes need that tracing.
+export async function setupPanelFrontendPlugins() {
   ctx.provide("plugins", undefined, true);
   ctx.set("plugins", {
     get loaded() {
@@ -59,10 +32,10 @@ export async function setupPanelFrontendPlugins(app: App, pinia: Pinia) {
     refresh: refreshPlugins
   });
 
+  await bootstrapPanelFrontendPlugin("runtime");
+  await bootstrapPanelFrontendPlugin("i18n");
+  await bootstrapPanelFrontendPlugin("console");
   await refreshPlugins();
-  if (!ctx.get("console")) {
-    throw new Error("The foundational console plugin failed to initialize.");
-  }
 
   window.ElementsPanelPlugins = {
     load: loadPlugin,
@@ -71,8 +44,6 @@ export async function setupPanelFrontendPlugins(app: App, pinia: Pinia) {
     refresh: refreshPlugins,
     loaded: getLoadedPlugins
   };
-
-  // Plugins that hold something outside the page — a socket, a poller — get one
-  // chance to shut down cleanly.
-  window.addEventListener("beforeunload", () => void ctx.stop(), { once: true });
+  await ctx.parallel("plugins/loaded");
+  await ctx.start();
 }

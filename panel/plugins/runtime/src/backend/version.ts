@@ -33,7 +33,7 @@ export function initVersionManager() {
   const versionLogPath = path.join(process.cwd(), "data", VERSION_LOG_TEXT_NAME);
   if (currentVersion && fs.existsSync(versionLogPath)) {
     const LastLaunchedVersion = fs.readFileSync(versionLogPath, "utf8");
-    const lastVersionNumber = Number(LastLaunchedVersion.split(".").slice(0, 2).join(""));
+    const lastVersionNumber = Number(LastLaunchedVersion.split("../../../../src/app").slice(0, 2).join(""));
 
     if (LastLaunchedVersion && LastLaunchedVersion != currentVersion && !isNaN(lastVersionNumber)) {
       logger.warn(`Version changed from ${LastLaunchedVersion} to ${currentVersion}`);

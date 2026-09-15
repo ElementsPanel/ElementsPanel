@@ -18,10 +18,10 @@ import type {
   PanelFrontendScheduleAction,
   PanelFrontendTerminalAction,
   PanelFrontendTerminalActionContext
-} from "./context";
+} from "@/plugin/context";
 
 /**
- * The frontend's core services.
+ * The console plugin's UI registration services.
  *
  * Every method that accepts a registration wraps it in `this.ctx.effect()`, so
  * the registration belongs to the plugin that made the call and is undone when
@@ -243,12 +243,8 @@ export class ActionsService extends Service implements FrontendActionsService {
 /**
  * Desktop mode's application registry and window shell.
  *
- * The registry is core-owned even though Desktop mode itself is a plugin: an
- * application is contributed by whichever plugin owns the page, and the
- * registration has to be disposed with *that* plugin. Only a `Service` method
- * can attribute an effect to its caller, so this cannot live in the Desktop
- * plugin. Without that plugin nothing renders the registry and the entries are
- * simply inert.
+ * The console provides this registry even when Desktop is absent. Each
+ * registration belongs to the calling plugin and is removed with its scope.
  */
 export class DesktopService extends Service implements FrontendDesktopService {
   readonly apps = shallowReactive<PanelFrontendDesktopApp[]>([]);

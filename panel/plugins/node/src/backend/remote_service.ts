@@ -1,6 +1,6 @@
 import fs from "fs-extra";
 import path from "path";
-import type { IRemoteService } from "../../../../src/app/entity/entity_interface";
+import type { IRemoteService } from "../../../../src/app/plugin/packets";
 import { UniversalRemoteSubsystem } from "./remote_base";
 import { RemoteServiceConfig } from "./remote_config";
 import RemoteService from "./remote_entity";

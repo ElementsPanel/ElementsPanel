@@ -1,3 +1,4 @@
+import { prepareApplication } from "./bootstrap";
 import "@/assets/base.scss";
 import "@/assets/tools.scss";
 import "@/assets/variables.scss";
@@ -19,10 +20,11 @@ import { installVuetify } from "./vuetify";
 /** `/` only ever redirects through its `meta.redirect`; it never renders. */
 const RedirectShell = { render: () => null };
 
-export const inject = ["i18n", "vue", "routes", "ui"];
+export const inject = ["i18n", "startup"];
 
-export async function apply(ctx: PanelFrontendPluginContext) {
-  installVuetify(ctx.vue.app);
+export async function apply(parent: PanelFrontendPluginContext) {
+  const { app, ctx } = await prepareApplication(parent);
+  installVuetify(app);
   ctx.set("console", { root: ConsoleApp });
 
   ctx.routes.add({

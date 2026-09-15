@@ -1,6 +1,6 @@
 import { removeTrail } from "mcsmanager-common";
 import type { ManagerOptions, SocketOptions } from "socket.io-client";
-import type { RemoteMappingEntry } from "../../../../src/app/entity/entity_interface";
+import type { RemoteMappingEntry } from "../../../../src/app/plugin/packets";
 
 // @Entity
 //

@@ -128,8 +128,10 @@ interface FrontendI18nPluginConfig {
   language?: string;
 }
 
+export const inject = ["startup"];
+
 export function apply(ctx: PanelFrontendPluginContext, config?: FrontendI18nPluginConfig) {
-  const language = toStandardLang(config?.language);
+  const language = toStandardLang(config?.language ?? ctx.startup.language);
   const instance = createI18n({
     allowComposition: true,
     globalInjection: true,

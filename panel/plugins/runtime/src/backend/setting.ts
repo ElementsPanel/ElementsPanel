@@ -1,7 +1,7 @@
 // global configuration initialization
 
 import SystemConfig from "./entity/setting";
-import type { PanelStorageService } from "./plugin/context";
+import type { PanelStorageService } from "../../../../src/app/plugin/context";
 import { i18next } from "./i18n";
 let systemConfig: SystemConfig | null = null;
 

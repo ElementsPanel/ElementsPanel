@@ -29,7 +29,7 @@ function load(filename, overrides = {}) {
   return mod.exports;
 }
 
-const { default: SystemConfig } = load("panel/src/app/entity/setting.ts");
+const { default: SystemConfig } = load("panel/plugins/runtime/src/backend/entity/setting.ts");
 const i18n = { t: (key) => key, getCurrentLang: () => "en_us", setLanguage() {} };
 const constants = load("panel/plugins/console/src/types/const.ts", { "@/lang/i18n": i18n });
 const { AppTheme } = constants;

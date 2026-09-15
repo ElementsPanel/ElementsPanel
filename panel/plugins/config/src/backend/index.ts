@@ -1,6 +1,6 @@
 import type Koa from "koa";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
-import type SystemConfig from "../../../../src/app/entity/setting";
+import type SystemConfig from "../../../runtime/src/backend/entity/setting";
 import { localeMessages } from "../i18n";
 import { SettingsFormService } from "./settings";
 

@@ -3,7 +3,7 @@ import iconv from "iconv-lite";
 import { ProcessWrapper } from "mcsmanager-common";
 import os from "os";
 import path from "path";
-import type { ArchiveEntryInfo } from "../../../../src/common/compress";
+import type { ArchiveEntryInfo } from "../../../runtime/src/backend/common/compress";
 import { normalizedJoin } from "./filepath";
 import { $t, archive, settings } from "./runtime";
 

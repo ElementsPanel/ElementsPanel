@@ -1,3 +1,5 @@
+import { setupLogging } from "./service/log";
+import { setupProcessLifecycle } from "./lifecycle";
 import fs from "fs-extra";
 import {
   GOLANG_ZIP_PATH,
@@ -5,19 +7,23 @@ import {
   PTY_PATH,
   SEVEN_ZIP_PATH,
   ZIP_TIMEOUT_SECONDS
-} from "../../../../src/const";
-import { compress, decompress, decompressWithProgress, listArchiveEntries } from "../../../../src/common/compress";
-import { GitignoreMatcher } from "../../../../src/common/gitignore_matcher";
-import { globalConfiguration } from "../../../../src/entity/config";
+} from "./const";
+import {
+  compress,
+  decompress,
+  decompressWithProgress,
+  listArchiveEntries
+} from "./common/compress";
+import { GitignoreMatcher } from "./common/gitignore_matcher";
+import { globalConfiguration } from "./entity/config";
 import type { DaemonPluginContext } from "../../../../src/plugin";
-import { checkDependencies } from "../../../../src/service/dependencies";
-import downloadManager from "../../../../src/service/download_manager";
-import { missionPassport } from "../../../../src/service/mission_passport";
-import versionAdapter from "../../../../src/service/version_adapter";
-import { check7zipStatus } from "../../../../src/service/seven_zip_service";
-import { getVersion, initVersionManager } from "../../../../src/service/version";
+import { checkDependencies } from "./service/dependencies";
+import downloadManager from "./service/download_manager";
+import { missionPassport } from "./service/mission_passport";
+import { check7zipStatus } from "./service/seven_zip_service";
+import { getVersion, initVersionManager } from "./service/version";
 import i18next from "i18next";
-import { proxyIncomingMessage, sendFile } from "../../../../src/utils/speed_limit";
+import { proxyIncomingMessage, sendFile } from "./utils/speed_limit";
 import type { Context as KoaContext } from "koa";
 
 function isMultipart(requestCtx: KoaContext) {
@@ -26,11 +32,6 @@ function isMultipart(requestCtx: KoaContext) {
     .includes("multipart");
 }
 
-/**
- * These middleware functions are created by the runtime plugin so their
- * upload state is read from this live context. Importing the old core helpers
- * here would bundle a second `ctx` and make valid upload writers invisible.
- */
 function createUploadMiddleware(ctx: DaemonPluginContext) {
   const uploadFileCheck = async (requestCtx: KoaContext, next: () => Promise<void>) => {
     if (!isMultipart(requestCtx)) return await next();
@@ -65,12 +66,17 @@ function createUploadMiddleware(ctx: DaemonPluginContext) {
 export const inject = ["i18n", "storage"];
 
 export async function apply(ctx: DaemonPluginContext) {
+  ctx.on("dispose", () => {
+    missionPassport.dispose();
+    downloadManager.stop();
+  });
+  setupLogging(ctx);
+  setupProcessLifecycle(ctx);
   globalConfiguration.configure(ctx.storage);
   globalConfiguration.load();
   const config = globalConfiguration.config;
 
   initVersionManager();
-  versionAdapter.detectConfig(ctx.storage);
   checkDependencies();
 
   if (fs.existsSync(LOCAL_PRESET_LANG_PATH)) {
@@ -114,12 +120,6 @@ export async function apply(ctx: DaemonPluginContext) {
     zipTimeoutSeconds: ZIP_TIMEOUT_SECONDS
   });
 
-  // Transfer helpers own process-level timers and in-flight downloads. They
-  // are exposed by this foundation, so their cleanup belongs to its scope too.
-  ctx.on("dispose", () => {
-    missionPassport.dispose();
-    downloadManager.stop();
-  });
   try {
     fs.chmodSync(GOLANG_ZIP_PATH, 0o755);
     fs.chmodSync(PTY_PATH, 0o755);

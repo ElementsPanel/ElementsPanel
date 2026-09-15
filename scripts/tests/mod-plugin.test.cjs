@@ -91,7 +91,7 @@ async function panelFixture(t) {
         if (requestCtx.role < level) requestCtx.status = 403;
         else await next();
       },
-    validator: load("panel/src/app/middleware/validator.ts").default,
+    validator: load("panel/plugins/runtime/src/backend/middleware/validator.ts").default,
     speedLimit: pass,
     requestConcurrencyLimiter: pass
   });

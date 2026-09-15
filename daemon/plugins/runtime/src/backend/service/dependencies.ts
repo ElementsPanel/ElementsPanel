@@ -1,9 +1,7 @@
 import fs from "fs-extra";
 import { GOLANG_ZIP_PATH } from "../const";
-import { initSteamCmd } from "../tools/steam_cmd";
 
 export function checkDependencies() {
-  initSteamCmd();
 
   const dependencies = [GOLANG_ZIP_PATH];
   dependencies.forEach((path) => {

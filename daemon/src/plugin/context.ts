@@ -2,18 +2,18 @@ import { Context } from "cordis";
 import type Koa from "koa";
 import type Router from "@koa/router";
 import type { Server as SocketIOServer } from "socket.io";
-import type { GitignoreMatcher } from "../common/gitignore_matcher";
+import type { GitignoreMatcher } from "../../plugins/runtime/src/backend/common/gitignore_matcher";
 import type {
   compress,
   decompress,
   listArchiveEntries,
   decompressWithProgress
-} from "../common/compress";
-import type { getCommonHeaders } from "../common/network";
-import type downloadManager from "../service/download_manager";
-import type { missionPassport } from "../service/mission_passport";
-import type { sendFile } from "../utils/speed_limit";
-import type { globalConfiguration } from "../entity/config";
+} from "../../plugins/runtime/src/backend/common/compress";
+import type { getCommonHeaders } from "../../plugins/runtime/src/backend/common/network";
+import type downloadManager from "../../plugins/runtime/src/backend/service/download_manager";
+import type { missionPassport } from "../../plugins/runtime/src/backend/service/mission_passport";
+import type { sendFile } from "../../plugins/runtime/src/backend/utils/speed_limit";
+import type { globalConfiguration } from "../../plugins/runtime/src/backend/entity/config";
 type Instance = any;
 type InstanceConfig = any;
 type ILifeCycleTask = any;
@@ -21,13 +21,9 @@ type InstanceCommand = any;
 type commandStringToArray = (text: string) => string[];
 type IAsyncTask = any;
 type IPresetCommand = string;
-import type RouterContext from "../entity/ctx";
-import type { $t } from "../i18n";
-import type {
-  uploadFileCheckMiddleware,
-  uploadSpeedLimitMiddleware
-} from "../middlewares/precheck";
-import type { check7zipStatus } from "../service/seven_zip_service";
+import type RouterContext from "../../plugins/server/src/backend/context";
+import type i18next from "i18next";
+import type { check7zipStatus } from "../../plugins/runtime/src/backend/service/seven_zip_service";
 import type { DaemonPluginEntry, DaemonPluginRecord } from "./loader";
 
 /**
@@ -152,7 +148,7 @@ export interface DaemonSettingsFormService {
 }
 
 export interface DaemonI18nService {
-  readonly $t: typeof $t;
+  readonly $t: typeof i18next.t;
   /** Merge the plugin's translations, keyed by locale. Removed on unload. */
   define(messages: Record<string, Record<string, unknown>>): () => void;
 }
@@ -186,8 +182,8 @@ export interface DaemonWebsocketService {
  * server plugin to mount.
  */
 export interface DaemonMiddlewareService {
-  readonly uploadFileCheck: typeof uploadFileCheckMiddleware;
-  readonly uploadSpeedLimit: typeof uploadSpeedLimitMiddleware;
+  readonly uploadFileCheck: Koa.Middleware;
+  readonly uploadSpeedLimit: Koa.Middleware;
 }
 
 /**
@@ -377,7 +373,7 @@ export interface DaemonUploadTask {
  *
  * **Provided by `plugins/file`.** The core declares only the shape its own
  * few callers need — instance creation, the Java manager, SteamCMD, the mod
- * service — and resolves it at use time through `service/file_access.ts`, so
+ * service — and consumers resolve it through their plugin context, so
  * removing that plugin removes the daemon's ability to touch instance files
  * rather than breaking the build.
  */

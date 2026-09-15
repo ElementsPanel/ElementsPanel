@@ -1,17 +1,16 @@
+import type { DaemonPluginContext } from "../../../../../src/plugin";
+import { STEAM_CMD_PATH, SYSTEM_TYPE, WINDOWS_STEAM_CMD_URL } from "../const";
+import { getCommonHeaders, logger } from "../runtime";
 import axios from "axios";
 import fs from "fs-extra";
 import path from "path";
 import { pipeline, Readable } from "stream";
-import { STEAM_CMD_PATH, SYSTEM_TYPE, WINDOWS_STEAM_CMD_URL } from "../const";
-import logger from "../service/log";
-import { fileSubsystem } from "../service/file_access";
-import { getCommonHeaders } from "../common/network";
 
-export async function initSteamCmd() {
+export async function initSteamCmd(ctx: DaemonPluginContext) {
   try {
     if (!fs.existsSync(STEAM_CMD_PATH) && SYSTEM_TYPE === "win32") {
       const zipPath = await downloadSteam(WINDOWS_STEAM_CMD_URL);
-      await new (fileSubsystem().FileManager)().unzip(zipPath, "lib", "utf-8");
+      await new ctx.files.FileManager().unzip(zipPath, "lib", "utf-8");
       await fs.remove(zipPath);
     }
   } catch (error) {

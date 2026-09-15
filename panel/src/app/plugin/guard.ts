@@ -1,16 +1,4 @@
-import Koa from "koa";
-import { ROLE } from "../entity/user";
-import { ctx as panel } from "../plugin/context";
-
-/**
- * The panel core does not implement authentication. A guard plugin — see
- * `plugins/user` — installs the complete policy at startup; until one does, the
- * panel is simply unguarded and every request is served.
- *
- * Only the shape of a guard and the "no guard installed" null object live here.
- * There is deliberately no core branch anywhere else that asks whether
- * authentication is enabled.
- */
+import type Koa from "koa";
 
 /** Everything the panel knows about the caller of a request. */
 export interface RequestIdentity {
@@ -96,49 +84,4 @@ export interface RequestGuard {
   stats(): AuthStats;
   accounts?: AccountService;
   users?: UserRecords;
-}
-
-const ANONYMOUS: RequestIdentity = {
-  uuid: "",
-  userName: "",
-  role: ROLE.ADMIN,
-  elevated: true
-};
-
-const NO_STATS: AuthStats = { logined: 0, illegalAccess: 0, banips: 0, loginFailed: 0 };
-const UNGUARDED_ACCESS: UserAccessPolicy = {
-  allowChangeCmd: false,
-  canFileManager: true,
-  allowJavaManager: true
-};
-
-/** What "nobody is guarding this panel" means. Not a policy — the absence of one. */
-const UNGUARDED: RequestGuard = {
-  guardRoute: () => async (_ctx, next) => await next(),
-  identify: () => ANONYMOUS,
-  canAccessInstance: () => true,
-  canUpload: () => true,
-  accessPolicy: () => UNGUARDED_ACCESS,
-  stats: () => NO_STATS
-};
-
-/**
- * Always returns a guard, so call sites never branch on whether one exists.
- * `plugins/user` provides `ctx.guard`; while nothing does, the panel is
- * unguarded and every request is served.
- */
-export function getRequestGuard(): RequestGuard {
-  return panel.get("guard") ?? UNGUARDED;
-}
-
-/**
- * Declare a hard dependency on a guard capability. Used by the few features
- * that cannot work without real accounts, so they fail loudly instead of
- * silently behaving as if everyone were an administrator.
- */
-export function requireGuardFeature<T>(feature: string, value: T | undefined): T {
-  if (!value) {
-    throw new Error(`${feature} requires a panel plugin that provides user accounts.`);
-  }
-  return value;
 }

@@ -1,6 +1,6 @@
 import fs from "fs-extra";
 import path from "path";
-import type RouterContext from "../../../../src/entity/ctx";
+import type RouterContext from "../../../server/src/backend/context";
 import type { DaemonPluginContext } from "../../../../src/plugin";
 
 const LOGIN_FROM_STREAM = "STREAM";

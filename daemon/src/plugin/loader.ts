@@ -1,4 +1,4 @@
-import type { ForkScope } from "cordis";
+import { Logger, type ForkScope } from "cordis";
 import fs from "fs-extra";
 import {
   discoverPlugins,
@@ -8,7 +8,6 @@ import {
 } from "mcsmanager-common";
 import path from "path";
 import { pathToFileURL } from "url";
-import logger from "../service/log";
 import { ctx, type DaemonPluginContext } from "./context";
 
 /**
@@ -20,6 +19,8 @@ import { ctx, type DaemonPluginContext } from "./context";
  * that scope registered when it is disposed. A plugin that throws is isolated by
  * cordis and reported through `ctx.logger`, so the daemon keeps running.
  */
+
+const logger = new Logger("plugin");
 
 const PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "plugins");
 const ENTRY_FIELDS = ["daemon", "backend", "main", "entry"];

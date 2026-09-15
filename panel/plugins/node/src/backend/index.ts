@@ -11,7 +11,7 @@ import { setPluginContext } from "./runtime";
 //
 // The subsystem is handed to everyone else as `ctx.remote`, which is why this is
 // the one plugin the panel cannot reach a daemon without: the core resolves it
-// through `service/remote_access.ts` and every other plugin injects it. It
+// through the shared plugin context, and consumers inject it. It
 // therefore loads early, ahead of the plugins that do.
 
 interface RemoteServiceLike {

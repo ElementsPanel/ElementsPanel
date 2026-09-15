@@ -1,5 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
-import type RouterContext from "../../../../src/entity/ctx";
+import type RouterContext from "../../../server/src/backend/context";
 import type { DaemonPluginContext } from "../../../../src/plugin";
 import { localeMessages } from "../i18n";
 

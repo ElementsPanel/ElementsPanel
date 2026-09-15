@@ -6,7 +6,7 @@ import koaBody from "koa-body";
 import { removeTrail } from "mcsmanager-common";
 import path from "path";
 import { Server } from "socket.io";
-import { DAEMON_INDEX_HTML } from "../../../../src/const/index_html";
+import { DAEMON_INDEX_HTML } from "./static/index_html";
 import type { DaemonPluginContext } from "../../../../src/plugin";
 import { localeMessages } from "../i18n";
 import { KoaService } from "./koa";

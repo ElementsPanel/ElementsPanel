@@ -1,3 +1,4 @@
+import { migrateConfig } from "./service/version_adapter";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
 import Koa from "koa";
 import { localeMessages } from "../i18n";
@@ -36,6 +37,7 @@ export const inject = [
 
 export async function apply(ctx: PanelPluginContext) {
   setPluginContext(ctx);
+  migrateConfig(ctx);
 
   // Before anything that logs or throws: this plugin's strings live here, not
   // in the panel catalogue.

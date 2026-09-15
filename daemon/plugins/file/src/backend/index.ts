@@ -15,8 +15,8 @@ import uploadManager from "./upload_manager";
 //
 // The primitives are handed to the rest of the daemon as `ctx.files`, because
 // instance creation, the Java manager, SteamCMD and the mod service all need to
-// touch files too. The core declares only the shape it uses and resolves it
-// through `service/file_access.ts`, so removing this plugin removes the daemon's
+// touch files too. Consumers resolve the service through their plugin context,
+// so removing this plugin removes the daemon's
 // ability to touch instance files rather than breaking the build.
 
 // File routes resolve the instance service when a request arrives. Keeping the

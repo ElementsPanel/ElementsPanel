@@ -1,7 +1,7 @@
+const IGNORE = "[IGNORE_LOG]";
 import { EventEmitter } from "events";
 import { Service, type Context } from "cordis";
-import { IGNORE } from "../../../../src/const";
-import RouterContext from "../../../../src/entity/ctx";
+import RouterContext from "./context";
 import type { DaemonProtocolService } from "../../../../src/plugin";
 import type { Socket } from "socket.io";
 

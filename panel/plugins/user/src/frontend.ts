@@ -1,3 +1,4 @@
+import { restoreSession } from "./session";
 import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugin";
 import { useAppStateStore } from "@/stores/useAppStateStore";
@@ -27,6 +28,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   // takes authentication with it.
   ctx.set("user", {
     api: userApi,
+    restoreSession,
     desktopLoginWindow: DesktopLoginWindow,
     desktopUsers: DesktopUsers,
     desktopUserInfo: DesktopUserInfo,

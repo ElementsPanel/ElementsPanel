@@ -2,7 +2,8 @@
   "id": "runtime",
   "name": "Panel Runtime",
   "version": "1.0.0",
-  "description": "Initializes panel configuration and exposes shared runtime services to plugins.",
+  "description": "Initializes panel configuration and frontend startup state, and exposes shared runtime services to plugins.",
   "priority": -9000,
-  "backend": "backend/index.cjs"
+  "backend": "backend/index.cjs",
+  "frontend": "src/frontend.ts"
 }

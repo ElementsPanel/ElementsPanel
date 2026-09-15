@@ -1,19 +1,20 @@
+import { setupLogging } from "./service/log";
+import { setupProcessLifecycle } from "./lifecycle";
 import type Koa from "koa";
 import { GlobalVariable } from "mcsmanager-common";
-import { ROLE } from "../../../../src/app/entity/user";
-import validator from "../../../../src/app/middleware/validator";
-import { singletonMemoryRedis } from "../../../../src/app/service/mini_redis";
-import { execWithMutexId } from "../../../../src/app/utils/sync";
+import { ROLE } from "./roles";
+import validator from "./middleware/validator";
+import { singletonMemoryRedis } from "./service/mini_redis";
+import { execWithMutexId } from "./utils/sync";
 import type {
   AuthStats,
   GuardedRoute,
   RequestGuard,
   RequestIdentity,
   UserAccessPolicy
-} from "../../../../src/app/service/request_guard";
-import versionAdapter from "../../../../src/app/service/version_adapter";
-import { initSystemConfig, saveSystemConfig, systemConfig } from "../../../../src/app/setting";
-import { getVersion, initVersionManager } from "../../../../src/app/version";
+} from "../../../../src/app/plugin/guard";
+import { initSystemConfig, saveSystemConfig, systemConfig } from "./setting";
+import { getVersion, initVersionManager } from "./version";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
 
 const ANONYMOUS: RequestIdentity = {
@@ -47,6 +48,9 @@ const UNGUARDED: RequestGuard = {
 export const inject = ["i18n", "storage"];
 
 export async function apply(ctx: PanelPluginContext) {
+  ctx.on("dispose", () => singletonMemoryRedis.dispose());
+  setupLogging(ctx);
+  setupProcessLifecycle(ctx);
   await initSystemConfig(ctx.storage);
   const config = systemConfig;
   if (!config) throw new Error("Panel configuration failed to initialize.");
@@ -56,12 +60,8 @@ export async function apply(ctx: PanelPluginContext) {
   }
 
   initVersionManager();
-  versionAdapter.detectConfig(ctx.storage);
 
-  // Middleware and identity are resolved through this context at request time.
-  // Importing the core middleware modules here would bundle a second copy of
-  // the panel context into this plugin, so a user guard installed by the host
-  // would never be visible to those copies.
+  // Resolve the optional guard from this live plugin context for each request.
   const getGuard = () => ctx.get("guard") ?? UNGUARDED;
   const permission = (route: GuardedRoute): Koa.Middleware => {
     let owner: RequestGuard | undefined;

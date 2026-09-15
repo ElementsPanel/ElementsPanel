@@ -1,5 +1,5 @@
 import { v4 } from "uuid";
-import type { DaemonStorageService } from "../plugin/context";
+import type { DaemonStorageService } from "../../../../../src/plugin/context";
 
 function builderPassword() {
   const a = `${v4().replace(/\-/gim, "")}`;

@@ -7,9 +7,8 @@ import {
   type DiscoveredPlugin,
   type PluginManifest
 } from "mcsmanager-common";
-import type { ForkScope } from "cordis";
+import { Logger, type ForkScope } from "cordis";
 import { ctx, type PanelPluginContext } from "./context";
-import { logger } from "../service/log";
 
 /**
  * Turns the plugin directories into cordis plugins.
@@ -21,6 +20,8 @@ import { logger } from "../service/log";
  * is disposed. A plugin that throws is isolated by cordis and reported through
  * `ctx.logger`, so the panel keeps running.
  */
+
+const logger = new Logger("plugin");
 
 const PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "plugins");
 const ENTRY_FIELDS = ["panel", "backend", "main", "entry"];

@@ -5,7 +5,7 @@ import type {
   RequestGuard,
   RequestIdentity,
   UserRecords
-} from "../../../../src/app/service/request_guard";
+} from "../../../../src/app/plugin/guard";
 import guardRoute from "./middleware/permission";
 import { globalVariable, ROLE } from "./runtime";
 import {
