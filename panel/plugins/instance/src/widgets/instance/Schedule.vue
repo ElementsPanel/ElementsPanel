@@ -175,7 +175,7 @@ onMounted(async () => {
 <template>
   <main class="schedule-page">
     <VContainer fluid class="schedule-container">
-      <PageToolbar :title="pageTitle" icon="mdi-clock-outline">
+      <PageToolbar class="mb-16" :title="pageTitle" icon="mdi-clock-outline">
         <template #actions>
           <VBtn variant="text" prepend-icon="mdi-console-line" @click="toConsole">
             {{ t("TXT_CODE_c14b2ea3") }}
