@@ -241,7 +241,11 @@ onMounted(async () => {
 <template>
   <main class="user-page">
     <div class="user-page-container">
-      <PageToolbar :title="`${t('TXT_CODE_1deaa2dd')} (${total})`" icon="mdi-account-group-outline">
+      <PageToolbar
+        class="mb-16"
+        :title="`${t('TXT_CODE_1deaa2dd')} (${total})`"
+        icon="mdi-account-group-outline"
+      >
         <template #search>
           <div class="user-search-row">
             <VSelect
