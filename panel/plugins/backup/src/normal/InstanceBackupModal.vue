@@ -341,7 +341,7 @@ defineExpose({ open });
                         </template>
                         <VListItemTitle class="backup-name">{{ item.name }}</VListItemTitle>
                         <VListItemSubtitle>
-                            {{ formatSize(item.size) }} 路 {{ item.time }}
+                            {{ formatSize(item.size) }} · {{ item.time }}
                         </VListItemSubtitle>
                         <template #append>
                             <div class="backup-item-actions">

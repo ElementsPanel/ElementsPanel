@@ -47,7 +47,8 @@ export function apply(ctx: DaemonPluginContext) {
           softShutdownWaitSeconds: config.softShutdownWaitSeconds,
           instanceBackupPath: config.instanceBackupPath,
           instanceBackupFormat: config.instanceBackupFormat,
-          instanceBackupCompressionLevel: config.instanceBackupCompressionLevel
+          instanceBackupCompressionLevel: config.instanceBackupCompressionLevel,
+          instanceBackupMaxSize: config.instanceBackupMaxSize
         },
         features: monitorCtx.features.all()
       };

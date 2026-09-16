@@ -1351,6 +1351,8 @@
   "TXT_CODE_DISK_USAGE": "Disk",
   "TXT_CODE_HYTALE_CONFIG_DESC": "Genel Hytale Sunucu Yapılandırması",
   "TXT_CODE_HYTALE_CONFIG_INFO": "Hytale Sunucu Yapılandırması",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE": "Örnek başına maksimum yedek boyutu (GB)",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE_HINT": "Bir örneğin yedeklerinin kullanabileceği toplam alan. 0 sınırsız anlamına gelir. Alan yetersizse elle yedekleme reddedilir ve zamanlanmış yedekleme en eski yedeği siler.",
   "TXT_CODE_INSTANCE_BACKUP_PATH": "Örnek yedekleme yolu",
   "TXT_CODE_INSTANCE_BACKUP_PATH_HINT": "Yedek arşivlerinin depolanacağı dizini ayarlayın",
   "TXT_CODE_LEAVES": "MC Leaves",

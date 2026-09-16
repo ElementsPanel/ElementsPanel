@@ -1351,6 +1351,8 @@
   "TXT_CODE_DISK_USAGE": "磁盘",
   "TXT_CODE_HYTALE_CONFIG_DESC": "一般 Hytale 服务器配置",
   "TXT_CODE_HYTALE_CONFIG_INFO": "Hytale 服务器配置",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE": "每个实例最大备份数据量 (GB)",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE_HINT": "单个实例全部备份文件可占用的总空间上限，0 表示不限制。剩余空间不足时手动备份会被拒绝，计划任务备份会自动删除最旧的备份。",
   "TXT_CODE_INSTANCE_BACKUP_PATH": "实例备份路径",
   "TXT_CODE_INSTANCE_BACKUP_PATH_HINT": "设置实例备份压缩包的存储目录",
   "TXT_CODE_LEAVES": "MC Leaves",

@@ -187,6 +187,7 @@ declare global {
       instanceBackupPath: string;
       instanceBackupFormat: string;
       instanceBackupCompressionLevel: number;
+      instanceBackupMaxSize: number;
     };
     dockerPlatforms?: string[];
   }

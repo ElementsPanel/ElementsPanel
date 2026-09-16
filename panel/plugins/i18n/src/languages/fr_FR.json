@@ -1351,6 +1351,8 @@
   "TXT_CODE_DISK_USAGE": "Disque",
   "TXT_CODE_HYTALE_CONFIG_DESC": "Configuration générale du serveur Hytale",
   "TXT_CODE_HYTALE_CONFIG_INFO": "Configuration du serveur Hytale",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE": "Taille maximale des sauvegardes par instance (GB)",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE_HINT": "Espace total que les sauvegardes d’une instance peuvent occuper. 0 signifie illimité. Si l’espace manque, les sauvegardes manuelles sont refusées et les sauvegardes planifiées suppriment la plus ancienne.",
   "TXT_CODE_INSTANCE_BACKUP_PATH": "Chemin de sauvegarde de l’instance",
   "TXT_CODE_INSTANCE_BACKUP_PATH_HINT": "Définissez le répertoire de stockage des archives de sauvegarde",
   "TXT_CODE_LEAVES": "MC Leaves",

@@ -50,6 +50,7 @@ export function apply(ctx: DaemonPluginContext) {
     const instanceBackupPath = toText(payload.instanceBackupPath);
     const instanceBackupFormat = toText(payload.instanceBackupFormat);
     const instanceBackupCompressionLevel = toNumber(payload.instanceBackupCompressionLevel);
+    const instanceBackupMaxSize = toNumber(payload.instanceBackupMaxSize);
 
     if (language && config.followPanelLanguage !== false) {
       ctx.settings.setLanguage(language);
@@ -102,6 +103,9 @@ export function apply(ctx: DaemonPluginContext) {
       instanceBackupCompressionLevel <= 9
     ) {
       config.instanceBackupCompressionLevel = instanceBackupCompressionLevel;
+    }
+    if (instanceBackupMaxSize != null && instanceBackupMaxSize >= 0) {
+      config.instanceBackupMaxSize = instanceBackupMaxSize;
     }
 
     ctx.settings.save();

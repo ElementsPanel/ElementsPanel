@@ -15,7 +15,7 @@ export function apply(ctx: DaemonPluginContext) {
 
   const BACKUP_FORMATS = ["zip", "tar.gz", "7z"];
 
-  // Described, not drawn. The three fields a backup actually reads live in the
+  // Described, not drawn. The fields a backup actually reads live in the
   // daemon configuration, and the panel's plugin manager renders this
   // declaration; there is no browser half of a daemon plugin to put a form in.
   ctx.settingsForm.declare({
@@ -39,12 +39,20 @@ export function apply(ctx: DaemonPluginContext) {
         description: ctx.i18n.$t("TXT_CODE_DBACKUP_LEVEL_TIP"),
         min: 0,
         max: 9
+      },
+      {
+        key: "instanceBackupMaxSize",
+        type: "number",
+        title: ctx.i18n.$t("TXT_CODE_DBACKUP_MAX_SIZE"),
+        description: ctx.i18n.$t("TXT_CODE_DBACKUP_MAX_SIZE_TIP"),
+        min: 0
       }
     ],
     read: () => ({
       instanceBackupPath: ctx.settings.config.instanceBackupPath,
       instanceBackupFormat: ctx.settings.config.instanceBackupFormat,
-      instanceBackupCompressionLevel: ctx.settings.config.instanceBackupCompressionLevel
+      instanceBackupCompressionLevel: ctx.settings.config.instanceBackupCompressionLevel,
+      instanceBackupMaxSize: ctx.settings.config.instanceBackupMaxSize
     }),
     write: (values) => {
       const config = ctx.settings.config;
@@ -58,6 +66,10 @@ export function apply(ctx: DaemonPluginContext) {
       const level = Number(values.instanceBackupCompressionLevel);
       if (Number.isInteger(level) && level >= 0 && level <= 9) {
         config.instanceBackupCompressionLevel = level;
+      }
+      const maxSize = Number(values.instanceBackupMaxSize);
+      if (Number.isFinite(maxSize) && maxSize >= 0) {
+        config.instanceBackupMaxSize = maxSize;
       }
       ctx.settings.save();
     }
@@ -73,6 +85,50 @@ export function apply(ctx: DaemonPluginContext) {
   const logger = ctx.logger;
   type InstanceBackupMatcher = InstanceType<typeof GitignoreMatcher>;
 
+  const BACKUP_EXTENSIONS = [".zip", ".tar.gz", ".7z"];
+  const GB_IN_BYTES = 1024 * 1024 * 1024;
+
+  const getBackupDirPath = (instanceUuid: string) =>
+    path.join(
+      path.normalize(ctx.settings.config.instanceBackupPath || path.join(process.cwd(), "data/backups")),
+      instanceUuid
+    );
+
+  // Returns the instance's backup archives, newest first. `time` is in milliseconds.
+  const listBackupFiles = async (instanceUuid: string) => {
+    const instanceBackupDir = getBackupDirPath(instanceUuid);
+    if (!(await fs.pathExists(instanceBackupDir))) return [];
+    const backups: Array<{ name: string; size: number; time: number }> = [];
+    for (const file of await fs.readdir(instanceBackupDir)) {
+      const lowerFileName = file.toLowerCase();
+      if (!BACKUP_EXTENSIONS.some((extension) => lowerFileName.endsWith(extension))) continue;
+      const stat = await fs.stat(path.join(instanceBackupDir, file)).catch(() => null);
+      if (!stat?.isFile()) continue;
+      backups.push({ name: file, size: stat.size, time: stat.birthtimeMs || stat.ctimeMs });
+    }
+    return backups.sort((a, b) => b.time - a.time);
+  };
+
+  // One instance may store at most `instanceBackupMaxSize` GB of backup archives
+  // (0 = unlimited). A new backup is only allowed while the space left is at
+  // least as large as the average size of the archives already stored, so the
+  // archive about to be written stays within the budget.
+  const getBackupBudget = (backups: Array<{ size: number }>) => {
+    const limitGb = Number(ctx.settings.config.instanceBackupMaxSize);
+    const unlimited = !Number.isFinite(limitGb) || limitGb <= 0;
+    const usedBytes = backups.reduce((total, backup) => total + backup.size, 0);
+    const averageBytes = backups.length > 0 ? usedBytes / backups.length : 0;
+    return {
+      unlimited,
+      limitGb,
+      usedBytes,
+      averageBytes,
+      exceeded: !unlimited && limitGb * GB_IN_BYTES - usedBytes < averageBytes
+    };
+  };
+
+  const toGigabytes = (bytes: number) => (bytes / GB_IN_BYTES).toFixed(2);
+
   class InstanceBackupTask extends AsyncTask {
     public static readonly TYPE = "InstanceBackupTask";
 
@@ -87,6 +143,17 @@ export function apply(ctx: DaemonPluginContext) {
 
     async onStart() {
       try {
+        const budget = getBackupBudget(await listBackupFiles(this.instance.instanceUuid));
+        if (budget.exceeded) {
+          throw new Error(
+            t("TXT_CODE_INSTANCE_BACKUP_QUOTA_EXCEEDED", {
+              limit: String(budget.limitGb),
+              used: toGigabytes(budget.usedBytes),
+              average: toGigabytes(budget.averageBytes)
+            })
+          );
+        }
+
         this.instance.println("INFO", t("TXT_CODE_INSTANCE_BACKUP_START"));
 
         const configuredPath = ctx.settings.config.instanceBackupPath;
@@ -386,12 +453,33 @@ export function apply(ctx: DaemonPluginContext) {
     type: InstanceBackupTask.TYPE,
     create: createBackupTask
   });
+  // A scheduled backup must not be blocked by a full budget, so the oldest
+  // archives are dropped until a new one fits. The task's own check then passes.
+  const freeBackupBudget = async (instance: InstanceEntity) => {
+    const instanceBackupDir = getBackupDirPath(instance.instanceUuid);
+    let backups = await listBackupFiles(instance.instanceUuid);
+    let budget = getBackupBudget(backups);
+    while (budget.exceeded && backups.length > 0) {
+      const oldest = backups[backups.length - 1];
+      await fs.remove(path.join(instanceBackupDir, oldest.name));
+      instance.println(
+        "INFO",
+        t("TXT_CODE_INSTANCE_BACKUP_AUTO_DELETE_OLDEST", { name: oldest.name })
+      );
+      backups = await listBackupFiles(instance.instanceUuid);
+      budget = getBackupBudget(backups);
+    }
+  };
+
   ctx.schedules.register("backup", async (instance) => {
     const runningBackup = TaskCenter.getTasks(InstanceBackupTask.TYPE).find(
       (task) => task.toObject().instanceUuid === instance.instanceUuid && task.status() === 1
     );
     const backupTask = runningBackup || createBackupTask(instance);
-    if (!runningBackup) TaskCenter.addTask(backupTask);
+    if (!runningBackup) {
+      await freeBackupBudget(instance);
+      TaskCenter.addTask(backupTask);
+    }
     await (backupTask as unknown as { wait(): Promise<void> }).wait();
   });
 
@@ -399,28 +487,11 @@ export function apply(ctx: DaemonPluginContext) {
     try {
       const instanceUuid = data.instanceUuid;
       if (!instances.getInstance(instanceUuid)) throw new Error(t("TXT_CODE_3bfb9e04"));
-      const instanceBackupDir = path.join(
-        path.normalize(ctx.settings.config.instanceBackupPath || path.join(process.cwd(), "data/backups")),
-        instanceUuid
+      const backups = await listBackupFiles(instanceUuid);
+      protocol.response(
+        routerCtx,
+        backups.map((backup) => ({ ...backup, time: new Date(backup.time).toLocaleString() }))
       );
-      if (!fs.existsSync(instanceBackupDir)) return protocol.response(routerCtx, []);
-      const backups: Array<{ name: string; size: number; time: string }> = [];
-      for (const file of await fs.readdir(instanceBackupDir)) {
-        const lowerFileName = file.toLowerCase();
-        if (!lowerFileName.endsWith(".zip") && !lowerFileName.endsWith(".tar.gz") && !lowerFileName.endsWith(".7z")) continue;
-        const stat = await fs.stat(path.join(instanceBackupDir, file));
-        backups.push({
-          name: file,
-          size: stat.size,
-          time: new Date(stat.birthtimeMs || stat.ctimeMs).toLocaleString()
-        });
-      }
-      backups.sort((a, b) => {
-        const statA = fs.statSync(path.join(instanceBackupDir, a.name));
-        const statB = fs.statSync(path.join(instanceBackupDir, b.name));
-        return (statB.birthtimeMs || statB.ctimeMs) - (statA.birthtimeMs || statA.ctimeMs);
-      });
-      protocol.response(routerCtx, backups);
     } catch (error: any) {
       protocol.responseError(routerCtx, error);
     }

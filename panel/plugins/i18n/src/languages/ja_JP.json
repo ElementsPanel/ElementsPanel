@@ -1351,6 +1351,8 @@
   "TXT_CODE_DISK_USAGE": "ディスク",
   "TXT_CODE_HYTALE_CONFIG_DESC": "Hytaleサーバー基本設定",
   "TXT_CODE_HYTALE_CONFIG_INFO": "Hytaleサーバー設定",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE": "インスタンスごとの最大バックアップ容量 (GB)",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE_HINT": "1 つのインスタンスのバックアップが占有できる合計容量です。0 は無制限です。容量が不足すると手動バックアップは拒否され、スケジュールされたバックアップは最も古いものを削除します。",
   "TXT_CODE_INSTANCE_BACKUP_PATH": "インスタンスのバックアップパス",
   "TXT_CODE_INSTANCE_BACKUP_PATH_HINT": "バックアップアーカイブの保存先を設定します",
   "TXT_CODE_LEAVES": "MC Leaves",

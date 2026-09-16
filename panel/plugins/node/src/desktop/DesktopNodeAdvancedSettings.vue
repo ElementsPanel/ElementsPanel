@@ -37,6 +37,7 @@ export interface AdvancedSettingsData {
     instanceBackupPath: string;
     instanceBackupFormat: string;
     instanceBackupCompressionLevel: number;
+    instanceBackupMaxSize: number;
     daemonPort: number;
     remoteMappings: IPanelOverviewRemoteMappingResponse[];
 }
@@ -67,6 +68,7 @@ const form = reactive<AdvancedSettingsData>({
     instanceBackupPath: "",
     instanceBackupFormat: "zip",
     instanceBackupCompressionLevel: 9,
+    instanceBackupMaxSize: 0,
     daemonPort: 24444,
     remoteMappings: []
 });
@@ -82,6 +84,7 @@ const resetForm = () => {
     form.instanceBackupPath = "";
     form.instanceBackupFormat = "zip";
     form.instanceBackupCompressionLevel = 9;
+    form.instanceBackupMaxSize = 0;
     form.daemonPort = 24444;
     form.remoteMappings = [];
 };
@@ -107,6 +110,7 @@ const fetchNodeConfig = async () => {
                 form.instanceBackupPath = cfg.instanceBackupPath;
                 form.instanceBackupFormat = cfg.instanceBackupFormat ?? "zip";
                 form.instanceBackupCompressionLevel = cfg.instanceBackupCompressionLevel ?? 9;
+                form.instanceBackupMaxSize = cfg.instanceBackupMaxSize ?? 0;
                 form.daemonPort = cfg.port;
             }
             if (nodeInfo?.remoteMappings) {
@@ -158,7 +162,8 @@ const saveSettings = async () => {
                     softShutdownWaitSeconds: form.softShutdownWaitSeconds,
                     instanceBackupPath: form.instanceBackupPath,
                     instanceBackupFormat: form.instanceBackupFormat,
-                    instanceBackupCompressionLevel: form.instanceBackupCompressionLevel
+                    instanceBackupCompressionLevel: form.instanceBackupCompressionLevel,
+                    instanceBackupMaxSize: form.instanceBackupMaxSize
                 },
                 daemonPort: form.daemonPort,
                 remoteMappings: form.remoteMappings
@@ -252,6 +257,13 @@ const saveSettings = async () => {
                     <label class="dn-form-label">{{ t("TXT_CODE_743ed87f") }}</label>
                     <VTextField v-model.number="form.instanceBackupCompressionLevel" type="number" min="0" max="9"
                         step="1" class="dn-form-input" variant="solo" density="compact" rounded="xl" hide-details />
+                </div>
+
+                <div class="dn-form-group">
+                    <label class="dn-form-label">{{ t("TXT_CODE_INSTANCE_BACKUP_MAX_SIZE") }}</label>
+                    <span class="dn-form-hint">{{ t("TXT_CODE_INSTANCE_BACKUP_MAX_SIZE_HINT") }}</span>
+                    <VTextField v-model.number="form.instanceBackupMaxSize" type="number" min="0" step="1"
+                        class="dn-form-input" variant="solo" density="compact" rounded="xl" hide-details />
                 </div>
 
                 <div class="dn-form-group">

@@ -39,7 +39,8 @@ const DEFAULT_CONFIG = {
   portRangeStart: 0, portRangeEnd: 0, portAssignInterval: 0, daemonPort: 24444,
   remoteMappings: [] as IPanelOverviewRemoteMappingResponse[], outputBufferSize: 256,
   enableSoftShutdown: true, softShutdownSkipDocker: true, softShutdownWaitSeconds: 10,
-  instanceBackupPath: "", instanceBackupFormat: "zip", instanceBackupCompressionLevel: 9
+  instanceBackupPath: "", instanceBackupFormat: "zip", instanceBackupCompressionLevel: 9,
+  instanceBackupMaxSize: 0
 };
 
 const SPEED_RATE_OPTIONS = [
@@ -181,6 +182,11 @@ defineExpose({ openDialog });
               <VCol cols="12" md="6">
                 <VTextField v-model.number="dialog.data.instanceBackupCompressionLevel" type="number" min="0" max="9"
                   :label="t('TXT_CODE_743ed87f')" />
+              </VCol>
+              <VCol cols="12">
+                <VTextField v-model.number="dialog.data.instanceBackupMaxSize" type="number" min="0"
+                  :label="t('TXT_CODE_INSTANCE_BACKUP_MAX_SIZE')"
+                  :hint="t('TXT_CODE_INSTANCE_BACKUP_MAX_SIZE_HINT')" persistent-hint />
               </VCol>
               <VCol cols="12">
                 <VSheet class="mapping-sheet" rounded="xl" variant="tonal">

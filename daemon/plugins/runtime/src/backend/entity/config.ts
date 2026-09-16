@@ -24,6 +24,8 @@ class Config {
   public instanceBackupPath = "data/backups";
   public instanceBackupFormat = "zip";
   public instanceBackupCompressionLevel = 9;
+  // Maximum total size of one instance's backup archives, in GB. 0 = unlimited.
+  public instanceBackupMaxSize = 0;
   public allocatablePortRange = [10010, 65500];
   public currentAllocatablePort = 10010;
   public portAssignInterval = 5;

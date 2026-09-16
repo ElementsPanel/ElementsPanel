@@ -1351,6 +1351,8 @@
   "TXT_CODE_DISK_USAGE": "Festplatte",
   "TXT_CODE_HYTALE_CONFIG_DESC": "Allgemeine Hytale-Serverkonfiguration",
   "TXT_CODE_HYTALE_CONFIG_INFO": "Hytale-Serverkonfiguration",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE": "Maximale Backup-Größe pro Instanz (GB)",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE_HINT": "Gesamtspeicherplatz, den die Backups einer Instanz belegen dürfen. 0 bedeutet unbegrenzt. Bei zu wenig Platz werden manuelle Backups abgelehnt und geplante Backups löschen das älteste Archiv.",
   "TXT_CODE_INSTANCE_BACKUP_PATH": "Sicherungspfad der Instanz",
   "TXT_CODE_INSTANCE_BACKUP_PATH_HINT": "Speicherverzeichnis für Instanzsicherungsarchive festlegen",
   "TXT_CODE_LEAVES": "Verlässt den Server",

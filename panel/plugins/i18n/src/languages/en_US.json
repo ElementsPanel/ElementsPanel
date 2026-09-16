@@ -1351,6 +1351,8 @@
   "TXT_CODE_DISK_USAGE": "Disk",
   "TXT_CODE_HYTALE_CONFIG_DESC": "General Hytale Server Config",
   "TXT_CODE_HYTALE_CONFIG_INFO": "Hytale Server Config",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE": "Max Backup Size per Instance (GB)",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE_HINT": "Total space one instance's backups may occupy. 0 means unlimited. When the space left is smaller than an average backup, manual backups are refused and scheduled backups delete the oldest one.",
   "TXT_CODE_INSTANCE_BACKUP_PATH": "Instance Backup Path",
   "TXT_CODE_INSTANCE_BACKUP_PATH_HINT": "Set the storage directory for instance backup archives",
   "TXT_CODE_LEAVES": "Leaves Server",

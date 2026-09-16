@@ -1351,6 +1351,8 @@
   "TXT_CODE_DISK_USAGE": "ดิสก์",
   "TXT_CODE_HYTALE_CONFIG_DESC": "การตั้งค่าเซิร์ฟเวอร์ Hytale ทั่วไป",
   "TXT_CODE_HYTALE_CONFIG_INFO": "การตั้งค่าเซิร์ฟเวอร์ Hytale",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE": "ขนาดสำรองข้อมูลสูงสุดต่ออินสแตนซ์ (GB)",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE_HINT": "พื้นที่รวมที่ข้อมูลสำรองของอินสแตนซ์หนึ่งสามารถใช้ได้ 0 หมายถึงไม่จำกัด เมื่อพื้นที่ไม่พอ การสำรองข้อมูลด้วยตนเองจะถูกปฏิเสธ และการสำรองข้อมูลตามกำหนดจะลบข้อมูลที่เก่าที่สุด",
   "TXT_CODE_INSTANCE_BACKUP_PATH": "เส้นทางสำรองข้อมูลอินสแตนซ์",
   "TXT_CODE_INSTANCE_BACKUP_PATH_HINT": "กำหนดไดเรกทอรีจัดเก็บไฟล์สำรองข้อมูล",
   "TXT_CODE_LEAVES": "MC Leaves",

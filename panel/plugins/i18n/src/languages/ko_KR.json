@@ -1351,6 +1351,8 @@
   "TXT_CODE_DISK_USAGE": "디스크",
   "TXT_CODE_HYTALE_CONFIG_DESC": "일반 Hytale 서버 설정",
   "TXT_CODE_HYTALE_CONFIG_INFO": "Hytale 서버 설정",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE": "인스턴스별 최대 백업 용량 (GB)",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE_HINT": "한 인스턴스의 백업이 차지할 수 있는 총 용량입니다. 0은 무제한입니다. 공간이 부족하면 수동 백업은 거부되고 예약 백업은 가장 오래된 백업을 삭제합니다.",
   "TXT_CODE_INSTANCE_BACKUP_PATH": "인스턴스 백업 경로",
   "TXT_CODE_INSTANCE_BACKUP_PATH_HINT": "백업 아카이브 저장 디렉터리를 설정합니다",
   "TXT_CODE_LEAVES": "MC Leaves",

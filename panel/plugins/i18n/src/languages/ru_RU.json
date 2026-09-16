@@ -1351,6 +1351,8 @@
   "TXT_CODE_DISK_USAGE": "Диск",
   "TXT_CODE_HYTALE_CONFIG_DESC": "Общая конфигурация сервера Hytale",
   "TXT_CODE_HYTALE_CONFIG_INFO": "Конфигурация сервера Hytale",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE": "Максимальный объем резервных копий на экземпляр (GB)",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE_HINT": "Общий объем, который могут занимать резервные копии одного экземпляра. 0 означает без ограничений. При нехватке места ручное копирование отклоняется, а запланированное удаляет самую старую копию.",
   "TXT_CODE_INSTANCE_BACKUP_PATH": "Путь резервных копий экземпляра",
   "TXT_CODE_INSTANCE_BACKUP_PATH_HINT": "Укажите каталог хранения архивов резервных копий",
   "TXT_CODE_LEAVES": "MC Leaves",

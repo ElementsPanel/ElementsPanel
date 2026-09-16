@@ -1351,6 +1351,8 @@
   "TXT_CODE_DISK_USAGE": "Disco",
   "TXT_CODE_HYTALE_CONFIG_DESC": "Configuración General del Servidor Hytale",
   "TXT_CODE_HYTALE_CONFIG_INFO": "Configuración del Servidor Hytale",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE": "Tamaño máximo de copias por instancia (GB)",
+  "TXT_CODE_INSTANCE_BACKUP_MAX_SIZE_HINT": "Espacio total que pueden ocupar las copias de una instancia. 0 significa sin límite. Si falta espacio, las copias manuales se rechazan y las programadas eliminan la más antigua.",
   "TXT_CODE_INSTANCE_BACKUP_PATH": "Ruta de copia de la instancia",
   "TXT_CODE_INSTANCE_BACKUP_PATH_HINT": "Define el directorio donde se guardan los archivos de copia",
   "TXT_CODE_LEAVES": "MC Leaves",
