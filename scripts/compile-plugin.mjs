@@ -180,6 +180,9 @@ import vue from "@vitejs/plugin-vue";
 
 export default defineConfig({
   root: ${JSON.stringify(FRONTEND_ROOT)},
+  // Without this Vite copies the panel's own frontend/public (favicon, logo)
+  // into every plugin package, where it does not belong.
+  publicDir: false,
   logLevel: "warn",
   plugins: [vue()],
   resolve: {
@@ -260,6 +263,30 @@ function writeManifest(side, workspace, outSideDir, frontend) {
   return manifest;
 }
 
+/**
+ * Drops source maps from the package. `scripts/package-panel-plugins.mjs` does the
+ * same to every built-in plugin: maps are build artifacts, they are not part of
+ * what gets published, and the market only accepts the extensions a real package
+ * needs.
+ */
+function stripSourceMaps(directory) {
+  for (const item of fs.readdirSync(directory, { withFileTypes: true })) {
+    const target = path.join(directory, item.name);
+    if (item.isDirectory()) {
+      stripSourceMaps(target);
+      continue;
+    }
+    if (item.name.endsWith(".map")) {
+      fs.rmSync(target, { force: true });
+      continue;
+    }
+    if (/\.[cm]?js$/.test(item.name)) {
+      const source = fs.readFileSync(target, "utf8");
+      fs.writeFileSync(target, source.replace(/\n?\/\/[#@] sourceMappingURL=.*$/gm, ""), "utf8");
+    }
+  }
+}
+
 function listFiles(root) {
   const files = [];
   const walk = (directory) => {
@@ -314,6 +341,7 @@ async function main() {
 
   if (!sides.length) throw new Error("工作区里没有可编译的插件（缺少 plugin.json）");
 
+  stripSourceMaps(outDir);
   const files = listFiles(outDir);
   log(`[compile] 完成，共 ${files.length} 个文件`);
 

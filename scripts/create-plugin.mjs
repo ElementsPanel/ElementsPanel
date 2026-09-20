@@ -38,8 +38,14 @@ if (names.length !== 1 || names[0].startsWith("-")) {
         {
           id: folder,
           name: `${folder} panel plugin`,
+          // The market reads these: `id` is the slug a plugin is published under,
+          // and the rest is what its page shows. Edit them here, not at upload time.
+          displayName: `${folder} panel plugin`,
           version: "0.1.0",
           description: "A custom ElementsPanel panel plugin.",
+          summary: "A custom ElementsPanel panel plugin.",
+          category: "",
+          changelog: "",
           priority: 100,
           backend: "src/backend/index.ts",
           frontend: "src/frontend.ts"
@@ -67,8 +73,12 @@ export function apply(ctx: PanelFrontendPluginContext) {
         {
           id: folder,
           name: `${folder} daemon plugin`,
+          displayName: `${folder} daemon plugin`,
           version: "0.1.0",
           description: "A custom ElementsPanel daemon plugin.",
+          summary: "A custom ElementsPanel daemon plugin.",
+          category: "",
+          changelog: "",
           priority: 100,
           backend: "src/backend/index.ts"
         },
@@ -98,8 +108,13 @@ npm run publish-plugin -- ${folder}
 \`\`\`
 
 That compiles both halves and uploads the result, which the market puts in its
-review queue. Production builds still ignore \`external/\`: a published plugin is
-installed from the market, not from this directory.
+review queue. Everything the market shows — display name, version, summary,
+description, category, changelog — is read from \`panel/plugin.json\` (or
+\`daemon/plugin.json\` for a daemon-only workspace), so edit it there. Only
+\`--version\` and \`--changelog\` are worth passing per upload.
+
+Production builds still ignore \`external/\`: a published plugin is installed
+from the market, not from this directory.
 `
     };
 

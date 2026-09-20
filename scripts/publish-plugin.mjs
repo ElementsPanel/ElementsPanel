@@ -5,8 +5,9 @@
 //   npm run publish-plugin -- <workspace-folder> [--market <url>] [--version <x.y.z>]
 //                             [--changelog <text>] [--yes] [--compile-only]
 //
-// It asks for the plugin's details, compiles the workspace with the project's own
-// compilers (scripts/compile-plugin.mjs), and uploads the result. The market puts
+// The plugin's details are read from the workspace's `plugin.json` — that is where
+// a plugin is described. This compiles the workspace with the project's own
+// compilers (scripts/compile-plugin.mjs) and uploads the result. The market puts
 // every upload in its review queue; nothing appears on the market's front page
 // until an administrator approves it.
 //
@@ -22,7 +23,6 @@ import process from "node:process";
 import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { createInterface } from "node:readline/promises";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.resolve(SCRIPT_DIR, "..");
@@ -35,7 +35,7 @@ const POLL_INTERVAL_MS = 2000;
 
 function printUsage() {
   console.error(
-    "Usage: npm run publish-plugin -- <workspace-folder> [--market <url>] [--name <id>] [--version <x.y.z>] [--changelog <text>] [--yes] [--compile-only]"
+    "Usage: npm run publish-plugin -- <workspace-folder> [--market <url>] [--version <x.y.z>] [--changelog <text>] [--compile-only]"
   );
 }
 
@@ -72,28 +72,34 @@ async function readJson(filePath) {
   }
 }
 
-/** The panel half carries what a reader sees; a daemon-only workspace still works. */
-async function readWorkspaceDefaults(folder) {
+/**
+ * Everything the market is told about a plugin comes from the workspace's own
+ * `plugin.json`, so a plugin is described where it is written. The panel half is
+ * the one that describes the package; a daemon-only workspace still publishes
+ * from its own manifest.
+ *
+ * `name` must come from `id`, not from `name`: the market uses it as a slug, while
+ * a plugin's `name` is a human-readable label such as "hello panel plugin".
+ */
+async function readWorkspaceManifest(folder) {
   const panelManifest = await readJson(path.join(EXTERNAL_ROOT, folder, "panel", "plugin.json"));
   const daemonManifest = await readJson(path.join(EXTERNAL_ROOT, folder, "daemon", "plugin.json"));
-  const manifest = panelManifest ?? daemonManifest ?? {};
-  return {
-    name: String(manifest.id ?? folder),
-    displayName: String(manifest.id ?? folder),
-    version: String(manifest.version ?? "0.1.0"),
-    summary: typeof manifest.description === "string" ? manifest.description : "",
-    manifest
-  };
-}
-
-async function ask(question, fallback) {
-  const rl = createInterface({ input: process.stdin, output: process.stdout });
-  try {
-    const answer = (await rl.question(`${question}${fallback ? ` [${fallback}]` : ""}: `)).trim();
-    return answer || fallback;
-  } finally {
-    rl.close();
+  const manifest = panelManifest ?? daemonManifest;
+  if (!manifest) {
+    throw new Error(`No plugin.json in external/${folder}/panel or external/${folder}/daemon.`);
   }
+
+  const id = String(manifest.id ?? folder);
+  const description = typeof manifest.description === "string" ? manifest.description : "";
+  return {
+    name: id,
+    displayName: String(manifest.displayName ?? manifest.name ?? id),
+    version: String(manifest.version ?? "0.1.0"),
+    summary: String(manifest.summary ?? description),
+    description,
+    category: String(manifest.category ?? ""),
+    changelog: String(manifest.changelog ?? "")
+  };
 }
 
 async function loadConnection() {
@@ -167,16 +173,22 @@ async function fetchMarket(connection, url, options = {}) {
     ...options,
     headers: { Authorization: `Bearer ${connection.token}`, ...(options.headers ?? {}) }
   });
+
   if (!response.ok) {
-    let message = `HTTP ${response.status}`;
+    // h3 puts the readable Chinese reason in `data.message`; the top-level
+    // `message` is just the ASCII error code, which tells nobody anything.
+    let detail = "";
     try {
       const body = await response.json();
-      if (body?.message) message = body.message;
+      detail = String(body?.data?.message ?? body?.message ?? "");
     } catch {
       // A non-JSON error body still has its status code to report.
     }
-    throw new Error(`The market refused the request: ${message}`);
+    throw new Error(
+      `The market refused the request (HTTP ${response.status}${detail ? `): ${detail}` : ")"}`
+    );
   }
+
   return await response.json();
 }
 
@@ -220,7 +232,31 @@ function compile(folder, workspace, outDir) {
   });
 }
 
+// The market only accepts the extensions a real plugin package can contain.
+// Checking here means a stray build artifact is reported before the round trip.
+const ALLOWED_EXTENSIONS = new Set([
+  ".json",
+  ".js",
+  ".cjs",
+  ".mjs",
+  ".ts",
+  ".vue",
+  ".css",
+  ".scss",
+  ".md",
+  ".txt"
+]);
+
 async function upload(connection, manifest, outDir, files) {
+  const rejected = files.filter(
+    (relativeFile) => !ALLOWED_EXTENSIONS.has(path.extname(relativeFile).toLowerCase())
+  );
+  if (rejected.length) {
+    throw new Error(
+      `The compiled package contains files the market will not accept: ${rejected.join(", ")}`
+    );
+  }
+
   const form = new FormData();
   form.append(
     "manifest",
@@ -234,6 +270,7 @@ async function upload(connection, manifest, outDir, files) {
     totalBytes += data.byteLength;
     form.append("file", new Blob([data]), relativeFile);
   }
+  for (const relativeFile of files) console.log(`  ${relativeFile}`);
   console.log(`Uploading ${files.length} files (${(totalBytes / 1024).toFixed(1)} KB)…`);
 
   return await fetchMarket(connection, "/api/plugins/upload", {
@@ -276,18 +313,12 @@ async function main() {
     throw new Error(`No such plugin workspace: external/${folder}`);
   }
 
-  const defaults = await readWorkspaceDefaults(folder);
-  const useDefaults = flags.yes === true;
-
-  const manifest = {
-    name: flags.name ? String(flags.name) : useDefaults ? defaults.name : await ask("Plugin id", defaults.name),
-    displayName: useDefaults ? defaults.displayName : await ask("Plugin name", defaults.displayName),
-    version: flags.version ? String(flags.version) : useDefaults ? defaults.version : await ask("Version", defaults.version),
-    summary: useDefaults ? defaults.summary : await ask("Summary", defaults.summary),
-    description: useDefaults ? "" : await ask("Description", ""),
-    category: useDefaults ? "" : await ask("Category", ""),
-    changelog: flags.changelog ? String(flags.changelog) : useDefaults ? "" : await ask("Changelog", "")
-  };
+  const manifest = await readWorkspaceManifest(folder);
+  // Only the version and the changelog are worth overriding on the command line:
+  // they change with every upload, while the rest describes the plugin itself.
+  if (flags.version) manifest.version = String(flags.version);
+  if (flags.changelog) manifest.changelog = String(flags.changelog);
+  console.log(`Publishing ${manifest.displayName} (${manifest.name}) v${manifest.version}`);
 
   const outDir = path.join(workspace, ".dist");
   const compiled = await compile(folder, workspace, outDir);
