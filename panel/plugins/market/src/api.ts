@@ -49,16 +49,46 @@ export const pluginMarketInstalled = useDefineApi<unknown, InstalledPlugin[]>({
   method: "GET"
 });
 
+/** One daemon a plugin with a daemon half can be installed on. */
+export interface MarketNode {
+  daemonId: string;
+  remarks: string;
+  ip: string;
+  port: number;
+  available: boolean;
+}
+
+export const pluginMarketNodes = useDefineApi<unknown, MarketNode[]>({
+  url: "/api/market/plugin/nodes",
+  method: "GET"
+});
+
+export const pluginMarketPackage = useDefineApi<
+  { params: { pluginId: string; version?: string } },
+  { name: string; version: string; sides: string[] }
+>({
+  url: "/api/market/plugin/package",
+  method: "GET"
+});
+
 export const installMarketPlugin = useDefineApi<
-  { data: { pluginId: string; name: string; version?: string } },
-  { restartRequired: boolean }
+  {
+    data: {
+      pluginId: string;
+      name: string;
+      version?: string;
+      /** The nodes to send the daemon half to. Empty installs the panel half only. */
+      daemonIds?: string[];
+    };
+  },
+  { restartRequired: boolean; failedNodes: string[] }
 >({
   url: "/api/market/plugin/install",
   method: "POST"
 });
 
 export const uninstallMarketPlugin = useDefineApi<
-  { params: { pluginId: string } },
+  { params: { pluginId: string; daemonIds?: string } },
   { removed: boolean; restartRequired: boolean }
 >({
   url: "/api/market/plugin/uninstall",

@@ -10,9 +10,11 @@ import fs from "fs-extra";
 //   panel/plugin.json, panel/backend/index.cjs, panel/frontend/index.js
 //   daemon/plugin.json, daemon/backend/index.cjs
 //
-// Installing means putting each side's files under `<side>/plugins/<name>/`, so
-// the panel and daemon loaders pick the plugin up like any other. In development
-// the same files go to `<side>/market_plugins/<name>/` instead, because that
+// The two halves do not travel the same way. The panel half is written into this
+// process's own plugin directory; the daemon half has to land on every machine
+// that loads it, so it is sent to the daemons the user picked and written by the
+// daemon itself (`plugin/install`). In development a side goes to
+// `<side>/market_plugins/<name>/` instead of `<side>/plugins/`, because that
 // directory is git-ignored and an installation must never add files to the
 // repository.
 
@@ -32,6 +34,30 @@ export interface MarketInstallInfo {
 export interface InstalledMarketPlugin extends MarketInstallInfo {
   sides: PluginSide[];
   directories: string[];
+}
+
+/** One file of a published package, with its side taken off the front. */
+export interface MarketPackageFile {
+  /** The path the market publishes it under, which is what `/file` expects. */
+  path: string;
+  side: PluginSide;
+  relative: string;
+  size: number;
+}
+
+/** A package as the market lists it: enough to decide what an install touches. */
+export interface MarketPackage {
+  pluginId: string;
+  name: string;
+  version: string;
+  files: MarketPackageFile[];
+}
+
+/** One file of a package, ready to be written or sent to a daemon. */
+export interface MarketFileContent {
+  side: PluginSide;
+  relative: string;
+  content: Buffer;
 }
 
 function projectRoot() {
@@ -126,10 +152,17 @@ function marketUrl(addr: string, pluginId: string, suffix: string) {
 
 export class PluginMarketError extends Error {}
 
-export async function installPlugin(
+/**
+ * Asks the market what a package contains, without downloading it.
+ *
+ * The answer is what the page needs before it can ask the user anything: a
+ * package with a daemon half has to be sent to the nodes the user picks, and one
+ * without is installed into the panel alone.
+ */
+export async function fetchPackage(
   addr: string,
-  options: { pluginId: string; name: string; version?: string }
-): Promise<InstalledMarketPlugin> {
+  options: { pluginId: string; name?: string; version?: string }
+): Promise<MarketPackage> {
   const params = options.version ? { version: options.version } : {};
 
   const meta = await axios.get<{
@@ -138,59 +171,83 @@ export async function installPlugin(
     files: Array<{ path: string; size: number }>;
   }>(marketUrl(addr, options.pluginId, "/files"), { params, timeout: 20000 });
 
-  const files = meta.data?.files ?? [];
+  const files = (meta.data?.files ?? [])
+    .map((file) => {
+      const target = splitPackagePath(file.path);
+      return target ? { path: file.path, ...target, size: file.size } : null;
+    })
+    .filter((file): file is MarketPackageFile => file !== null);
   if (!files.length) throw new PluginMarketError("EMPTY_PACKAGE");
 
-  const name = String(meta.data?.name || options.name);
-  const version = String(meta.data?.version ?? options.version ?? "");
+  return {
+    pluginId: options.pluginId,
+    name: String(meta.data?.name || options.name || options.pluginId),
+    version: String(meta.data?.version ?? options.version ?? ""),
+    files
+  };
+}
 
-  // A directory that belongs to a different plugin is not ours to overwrite.
-  for (const side of SIDES) {
-    const marker = readMarker(installDirectory(side, name));
-    if (marker && marker.pluginId !== options.pluginId) throw new PluginMarketError("DIR_TAKEN");
-  }
-
-  const touched = new Set<PluginSide>();
-  for (const file of files) {
-    const target = splitPackagePath(file.path);
-    if (!target) continue;
-
-    const root = installDirectory(target.side, name);
-    const destination = path.resolve(root, target.relative);
-    if (!destination.startsWith(`${path.resolve(root)}${path.sep}`)) {
-      throw new PluginMarketError("BAD_PATH");
-    }
-
-    const response = await axios.get<ArrayBuffer>(marketUrl(addr, options.pluginId, "/file"), {
+/** Downloads every file of a package, keeping each one's side. */
+export async function downloadPackage(
+  addr: string,
+  pkg: MarketPackage
+): Promise<MarketFileContent[]> {
+  const params = pkg.version ? { version: pkg.version } : {};
+  const downloaded: MarketFileContent[] = [];
+  for (const file of pkg.files) {
+    const response = await axios.get<ArrayBuffer>(marketUrl(addr, pkg.pluginId, "/file"), {
       params: { ...params, path: file.path },
       responseType: "arraybuffer",
       timeout: 60000
     });
-    await fs.outputFile(destination, Buffer.from(response.data));
-    touched.add(target.side);
+    downloaded.push({
+      side: file.side,
+      relative: file.relative,
+      content: Buffer.from(response.data)
+    });
   }
-
-  if (!touched.size) throw new PluginMarketError("EMPTY_PACKAGE");
-
-  const info: MarketInstallInfo = {
-    pluginId: options.pluginId,
-    name,
-    version,
-    installedAt: Date.now()
-  };
-  for (const side of touched) {
-    await fs.outputFile(
-      path.join(installDirectory(side, name), MARKER_FILE),
-      JSON.stringify(info, null, 2)
-    );
-  }
-
-  return { ...info, sides: [...touched], directories: [...touched].map((side) => installDirectory(side, name)) };
+  return downloaded;
 }
 
-export async function uninstallPlugin(pluginId: string): Promise<boolean> {
+/**
+ * Writes one side's files into this process's own plugin directory, and marks
+ * the directory so the market can recognise it later.
+ */
+export async function writePlugin(
+  side: PluginSide,
+  info: MarketInstallInfo,
+  files: readonly { relative: string; content: Buffer }[]
+): Promise<string> {
+  // A directory that belongs to a different plugin is not ours to overwrite.
+  const directory = installDirectory(side, info.name);
+  const marker = readMarker(directory);
+  if (marker && marker.pluginId !== info.pluginId) throw new PluginMarketError("DIR_TAKEN");
+
+  const root = path.resolve(directory);
+  for (const file of files) {
+    const destination = path.resolve(root, file.relative);
+    if (!destination.startsWith(`${root}${path.sep}`)) throw new PluginMarketError("BAD_PATH");
+    await fs.outputFile(destination, file.content);
+  }
+  await fs.outputFile(path.join(directory, MARKER_FILE), JSON.stringify(info, null, 2));
+  return directory;
+}
+
+/** What a daemon needs to write the same half on its own machine. */
+export function toTransferFiles(files: readonly { relative: string; content: Buffer }[]) {
+  return files.map((file) => ({
+    path: file.relative,
+    content: file.content.toString("base64")
+  }));
+}
+
+/**
+ * Removes every local half of an installation and reports what it was, so the
+ * caller can ask the same nodes to remove their half too.
+ */
+export async function uninstallPlugin(pluginId: string): Promise<InstalledMarketPlugin | null> {
   const installed = listInstalled().find((item) => item.pluginId === pluginId);
-  if (!installed) return false;
+  if (!installed) return null;
   for (const directory of installed.directories) await fs.remove(directory);
-  return true;
+  return installed;
 }

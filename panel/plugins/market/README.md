@@ -91,8 +91,10 @@ setting on this plugin's own settings form.
 | --- | --- | --- |
 | GET | `/api/market/plugin/list` | the market's published plugins, each with the version installed here |
 | GET | `/api/market/plugin/installed` | what has been installed from the market |
-| POST | `/api/market/plugin/install` | download a published package and write it into place |
-| DELETE | `/api/market/plugin/uninstall` | remove it again |
+| GET | `/api/market/plugin/nodes` | the daemons a daemon half can be sent to |
+| GET | `/api/market/plugin/package` | what a published package contains, before installing it |
+| POST | `/api/market/plugin/install` | download a package, write the panel half, send the daemon half to the named nodes |
+| DELETE | `/api/market/plugin/uninstall` | remove it again, here and on the named nodes |
 
 A published package is laid out with the side as its first path segment
 (`panel/plugin.json`, `daemon/backend/index.cjs`, …), so installing is mostly
@@ -101,11 +103,27 @@ splitting that prefix and writing each file under `<side>/<plugins>/<name>/`.
 directory with `.market-install.json` — without the marker a directory in
 `plugins/` is indistinguishable from a built-in plugin.
 
-**Where it lands.** `installRoot()` puts a plugin in `<side>/market_plugins/` in
-development and in `<side>/plugins/` otherwise, so an installation never adds
-files to the repository: `market_plugins/` is git-ignored. Both loaders and
+**Where each half lands.** The panel half is written into this process's plugin
+directory: `installRoot()` puts it in `panel/market_plugins/` in development and
+in `panel/plugins/` otherwise, so an installation never adds files to the
+repository — `market_plugins/` is git-ignored. Both loaders and
 `frontend/vite.config.ts` therefore list `market_plugins` as a discovery root,
 with the built-in directory first so a market plugin cannot shadow one of ours.
+
+The daemon half has to sit on every machine that loads it, so it is not written
+here at all: the page asks which nodes to send it to (all of them selected to
+start with), and `plugin/install` carries the files over the panel's existing
+daemon connection, base64 in the event payload — the socket is already configured
+for a 100 MB buffer, and a compiled plugin is a few hundred kilobytes. The daemon
+writes them into its own `market_plugins/<name>/`, which both loaders scan
+everywhere, and marks the directory with the same `.market-install.json` the panel
+uses, so `listInstalled()` recognises it on either side. Path escapes, extensions
+outside a compiled package's set, and a name that is not a plain directory name
+are all rejected there: the payload arrives from the network.
+
+`src/backend/service/plugin_market.ts` owns the package — fetching its file list,
+downloading it, writing a side, marking the directory — and the route decides
+where each half goes.
 
 **How "development" is detected.** Not with `process.env.NODE_ENV`: webpack bakes
 `"production"` into every plugin bundle, and a plugin's `backend/index.cjs` is
@@ -121,8 +139,8 @@ effect after both are restarted; the page says so, and the install route answers
 
 A source checkout reloads instead: the route calls `ctx.plugins.reload()`, which
 re-scans the panel's own directories — installing what has appeared and disposing
-what is gone — and asks every connected daemon to do the same over
-`plugin/reload`, reconnecting the node afterwards because a daemon binds its
+what is gone — and asks the daemons the package was sent to do the same over
+`plugin/reload`, reconnecting each node afterwards because a daemon binds its
 protocol handlers onto each socket as that socket connects. The browser half
 needs nothing: the Vite dev server watches the plugin directories and reloads the
 page. `reload()` itself refuses to run outside development, so a built
@@ -130,7 +148,8 @@ deployment keeps the restart it asks for. What reload cannot do is replace a
 plugin that is already loaded — installing a newer version of one still needs a
 restart.
 
-**Same machine only.** The daemon half is written to `<project>/daemon/plugins`,
-which assumes the daemon runs next to the panel — true in development, and true
-of a single-host deployment. Installing a daemon plugin onto a remote node is not
-supported.
+**A node that cannot be reached.** Sending the daemon half to one node says
+nothing about the others, so a failure is collected instead of thrown: the panel
+half is already installed by then, and the route answers with the `failedNodes`
+it could not update, which the page names. A package whose daemon half reached no
+node at all is a package installed into the panel alone.

@@ -3,11 +3,16 @@ import type Koa from "koa";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
 import { localeMessages } from "../i18n";
 import {
-  installPlugin,
+  downloadPackage,
+  fetchPackage,
   isDevelopment,
   listInstalled,
   PluginMarketError,
+  toTransferFiles,
   uninstallPlugin,
+  writePlugin,
+  type MarketFileContent,
+  type MarketInstallInfo,
   type PluginSide
 } from "./service/plugin_market";
 import { clearMarketCache, getAppMarketList } from "./service/market_service";
@@ -162,16 +167,88 @@ export async function apply(ctx: PanelPluginContext) {
     throw new Error(messages[reason] ?? ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE"));
   }
 
+  /** The daemons a daemon plugin can be installed on, as the page lists them. */
+  function listNodes() {
+    return Array.from(ctx.remote.services.services.entries()).map(([daemonId, node]) => ({
+      daemonId,
+      remarks: node.config.remarks,
+      ip: node.config.ip,
+      port: node.config.port,
+      available: node.available
+    }));
+  }
+
   /**
-   * Asks every reachable daemon to re-scan its plugin directories.
+   * The daemons a request names. The install sends them as an array in the body;
+   * an uninstall has no body, so it names them in the query instead.
+   */
+  function requestedNodes(value: unknown): string[] {
+    if (Array.isArray(value)) return value.map((item) => String(item));
+    if (typeof value === "string") return value.split(",").map((item) => item.trim()).filter(Boolean);
+    return [];
+  }
+
+  /**
+   * Sends one half of a package to the daemons the user picked.
+   *
+   * A daemon plugin has to sit on the machine that loads it, so the files go
+   * over the socket and the daemon writes them itself. A node that cannot be
+   * reached is reported rather than thrown: the panel half is already installed
+   * by then, and a failure on one node says nothing about the others.
+   */
+  async function pushToNodes(
+    daemonIds: readonly string[],
+    info: MarketInstallInfo,
+    files: readonly MarketFileContent[]
+  ): Promise<string[]> {
+    const payload = {
+      name: info.name,
+      pluginId: info.pluginId,
+      version: info.version,
+      files: toTransferFiles(files)
+    };
+    const failed: string[] = [];
+    for (const daemonId of daemonIds) {
+      const node = ctx.remote.services.getInstance(daemonId);
+      if (!node) {
+        failed.push(daemonId);
+        continue;
+      }
+      try {
+        await new ctx.remote.Request(node).request("plugin/install", payload, 60000);
+      } catch (error) {
+        ctx.logger.warn(`Failed to install a plugin on daemon ${daemonId}: ${error}`);
+        failed.push(daemonId);
+      }
+    }
+    return failed;
+  }
+
+  /** Asks the daemons the user picked to delete their half of a package. */
+  async function removeFromNodes(daemonIds: readonly string[], name: string, pluginId: string) {
+    for (const daemonId of daemonIds) {
+      const node = ctx.remote.services.getInstance(daemonId);
+      if (!node) continue;
+      try {
+        await new ctx.remote.Request(node).request("plugin/uninstall", { name, pluginId }, 30000);
+      } catch (error) {
+        ctx.logger.warn(`Failed to uninstall a plugin on daemon ${daemonId}: ${error}`);
+      }
+    }
+  }
+
+  /**
+   * Asks the daemons the user picked to re-scan their plugin directories.
    *
    * A daemon binds its protocol handlers onto each socket as that socket
    * connects, so the node is reconnected afterwards: without that, a handler
    * that has just appeared stays invisible to the connection the panel holds.
    */
-  async function reloadNodes() {
-    for (const node of ctx.remote.services.services.values()) {
-      if (!node.available) continue;
+  async function reloadNodes(daemonIds: readonly string[] = []) {
+    const targets = daemonIds.length ? daemonIds : Array.from(ctx.remote.services.services.keys());
+    for (const daemonId of targets) {
+      const node = ctx.remote.services.getInstance(daemonId);
+      if (!node || !node.available) continue;
       try {
         await new ctx.remote.Request(node).request("plugin/reload");
         node.refreshReconnect();
@@ -189,14 +266,18 @@ export async function apply(ctx: PanelPluginContext) {
    * Both halves load their plugins once, at startup, so installing normally
    * only writes files and the answer tells the page to ask for a restart. In a
    * source checkout the two re-scan instead: the panel its own directories, and
-   * each connected daemon the ones it owns. A production install still answers
-   * `restartRequired`, because `ctx.plugins.reload()` refuses to run there.
+   * the daemons the package was sent to the ones they own. A production install
+   * still answers `restartRequired`, because `ctx.plugins.reload()` refuses to
+   * run there.
    */
-  async function hotReload(sides: PluginSide[]): Promise<boolean> {
+  async function hotReload(
+    sides: PluginSide[],
+    daemonIds: readonly string[] = []
+  ): Promise<boolean> {
     if (!isDevelopment()) return false;
     try {
       if (sides.includes("panel")) await ctx.plugins.reload();
-      if (sides.includes("daemon")) await reloadNodes();
+      if (sides.includes("daemon")) await reloadNodes(daemonIds);
       return true;
     } catch (error) {
       ctx.logger.warn(`Failed to reload plugins after a market install: ${error}`);
@@ -216,9 +297,39 @@ export async function apply(ctx: PanelPluginContext) {
     requestCtx.body = listInstalled();
   });
 
-  // Installing writes files, and both halves load their plugins at startup — so
-  // in a development checkout the two are asked to re-scan, and everywhere else
-  // the answer tells the page to ask for a restart.
+  // The daemons the page offers to install a daemon plugin on.
+  router.get("/plugin/nodes", requireAdmin, async (requestCtx) => {
+    requestCtx.body = listNodes();
+  });
+
+  // What a package contains, before anything is installed: the page asks this to
+  // find out whether it has to ask the user which nodes to send it to.
+  router.get(
+    "/plugin/package",
+    requireAdmin,
+    ctx.middleware.validator({ query: { pluginId: String } }),
+    async (requestCtx: Koa.ParameterizedContext) => {
+      try {
+        const query = requestCtx.request.query;
+        const pkg = await fetchPackage(marketSettings().pluginMarketAddr, {
+          pluginId: String(query.pluginId),
+          version: query.version ? String(query.version) : undefined
+        });
+        requestCtx.body = {
+          name: pkg.name,
+          version: pkg.version,
+          sides: [...new Set(pkg.files.map((file) => file.side))]
+        };
+      } catch (error) {
+        reportPluginMarketError(error);
+      }
+    }
+  );
+
+  // Installing writes the panel half into this process's plugin directory and
+  // sends the daemon half to the nodes the user picked. Both halves load their
+  // plugins at startup, so in a development checkout the two are asked to
+  // re-scan, and everywhere else the answer tells the page to ask for a restart.
   router.post(
     "/plugin/install",
     requireAdmin,
@@ -227,12 +338,35 @@ export async function apply(ctx: PanelPluginContext) {
     async (requestCtx: Koa.ParameterizedContext) => {
       const body = (requestCtx.request.body ?? {}) as Record<string, unknown>;
       try {
-        const installed = await installPlugin(marketSettings().pluginMarketAddr, {
+        const addr = marketSettings().pluginMarketAddr;
+        const pkg = await fetchPackage(addr, {
           pluginId: String(body.pluginId),
           name: String(body.name),
           version: body.version ? String(body.version) : undefined
         });
-        requestCtx.body = { restartRequired: !(await hotReload(installed.sides)) };
+        const files = await downloadPackage(addr, pkg);
+        const info: MarketInstallInfo = {
+          pluginId: pkg.pluginId,
+          name: pkg.name,
+          version: pkg.version,
+          installedAt: Date.now()
+        };
+
+        const sides = [...new Set(files.map((file) => file.side))];
+        const ofSide = (side: PluginSide) => files.filter((file) => file.side === side);
+        if (sides.includes("panel")) await writePlugin("panel", info, ofSide("panel"));
+
+        const daemonIds = requestedNodes(body.daemonIds);
+        // A package with a daemon half installs that half nowhere at all unless
+        // the page was given nodes to send it to.
+        const failedNodes = sides.includes("daemon")
+          ? await pushToNodes(daemonIds, info, ofSide("daemon"))
+          : [];
+
+        requestCtx.body = {
+          restartRequired: !(await hotReload(sides, daemonIds)),
+          failedNodes
+        };
       } catch (error) {
         reportPluginMarketError(error);
       }
@@ -244,11 +378,18 @@ export async function apply(ctx: PanelPluginContext) {
     requireAdmin,
     ctx.middleware.validator({ query: { pluginId: String } }),
     async (requestCtx: Koa.ParameterizedContext) => {
-      const removed = await uninstallPlugin(String(requestCtx.request.query.pluginId));
-      // Both halves are re-scanned whether or not this one had a side in each:
-      // uninstalling takes the whole package away, and a reload is what disposes
-      // the plugin whose directory has just been deleted.
-      requestCtx.body = { removed, restartRequired: removed && !(await hotReload(["panel", "daemon"])) };
+      const pluginId = String(requestCtx.request.query.pluginId);
+      const daemonIds = requestedNodes(requestCtx.request.query.daemonIds);
+      const removed = await uninstallPlugin(pluginId);
+      if (removed) await removeFromNodes(daemonIds, removed.name, pluginId);
+      // A reload is what disposes the plugin whose directory has just been
+      // deleted, on the panel and on every node the package was sent to.
+      requestCtx.body = {
+        removed: Boolean(removed),
+        restartRequired: removed
+          ? !(await hotReload(removed.sides, daemonIds))
+          : false
+      };
     }
   );
 

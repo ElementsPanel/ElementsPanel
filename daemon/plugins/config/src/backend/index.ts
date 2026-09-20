@@ -1,3 +1,5 @@
+import path from "path";
+import fs from "fs-extra";
 import type { DaemonPluginContext } from "../../../../src/plugin";
 import { localeMessages } from "../i18n";
 import { SettingsFormService } from "./settings";
@@ -7,7 +9,7 @@ import { SettingsFormService } from "./settings";
 // this plugin only exposes it over the protocol, because the panel's plugin
 // manager page is what drives it.
 //
-// Both events are reachable only over an authenticated top-level session: the
+// Every event is reachable only over an authenticated top-level session: the
 // daemon's auth middleware rejects every event other than "auth" and "stream"
 // until the panel has presented the daemon key.
 
@@ -19,6 +21,53 @@ const SELF = "config";
  * and with it every event that could turn it back on.
  */
 const ESSENTIAL = new Set(["i18n", "storage", "runtime", "server", "monitor"]);
+
+/**
+ * Where a plugin sent over the protocol is written.
+ *
+ * `market_plugins/` is the directory both loaders scan besides `plugins/`, and
+ * it is the one an installation may own: it never holds a built-in plugin, and
+ * in a source checkout it is git-ignored, so an installation cannot add files to
+ * the repository.
+ */
+const MARKET_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "market_plugins");
+
+/** Must match the marker the panel's plugin market writes and looks for. */
+const MARKER_FILE = ".market-install.json";
+
+/** The extensions a plugin package is allowed to contain. */
+const ALLOWED_EXTENSIONS = new Set([
+  ".json",
+  ".js",
+  ".cjs",
+  ".mjs",
+  ".css",
+  ".scss",
+  ".md",
+  ".txt"
+]);
+
+/** A directory name is used as a path, so it may not climb out of its parent. */
+const SAFE_NAME = /^[a-zA-Z0-9_-]+$/;
+
+function pluginDirectory(name: string): string {
+  if (!SAFE_NAME.test(name)) throw new Error("Invalid plugin name.");
+  return path.join(MARKET_PLUGINS_DIRECTORY(), name);
+}
+
+/** One file of a package, as the panel sends it. */
+interface TransferFile {
+  path: string;
+  content: string;
+}
+
+function toTransferFiles(files: unknown): TransferFile[] {
+  if (!Array.isArray(files)) throw new Error("The package contains no files.");
+  return files.map((file) => ({
+    path: String((file as TransferFile)?.path ?? ""),
+    content: String((file as TransferFile)?.content ?? "")
+  }));
+}
 
 export const inject = ["protocol", "i18n", "plugins"];
 
@@ -57,6 +106,60 @@ export function apply(ctx: DaemonPluginContext) {
       // The panel turns this into the error its page reports; an unhandled throw
       // from an async handler would reach nobody, because `emitRouter` only
       // catches the synchronous part.
+      ctx.protocol.responseError(routerCtx, error);
+    }
+  });
+
+  // A plugin installed from the market. The panel has already downloaded the
+  // package and sends the daemon half here, because a daemon plugin has to sit on
+  // the machine that loads it: nothing the panel writes locally is visible to
+  // another host.
+  ctx.protocol.on("plugin/install", async (routerCtx, data) => {
+    try {
+      const payload = (data ?? {}) as { name?: unknown; pluginId?: unknown; version?: unknown; files?: unknown };
+      const name = String(payload.name ?? "");
+      const directory = pluginDirectory(name);
+      const root = path.resolve(directory);
+      const files = toTransferFiles(payload.files);
+
+      for (const file of files) {
+        const destination = path.resolve(root, file.path);
+        if (!destination.startsWith(`${root}${path.sep}`)) throw new Error("Illegal plugin path.");
+        if (!ALLOWED_EXTENSIONS.has(path.extname(destination).toLowerCase())) {
+          throw new Error(`The package contains an unacceptable file: ${file.path}`);
+        }
+        await fs.outputFile(destination, Buffer.from(file.content, "base64"));
+      }
+
+      const info = {
+        pluginId: String(payload.pluginId ?? ""),
+        name,
+        version: String(payload.version ?? ""),
+        installedAt: Date.now()
+      };
+      await fs.outputFile(path.join(directory, MARKER_FILE), JSON.stringify(info, null, 2));
+      ctx.protocol.response(routerCtx, { ...info, directory });
+    } catch (error: any) {
+      ctx.protocol.responseError(routerCtx, error);
+    }
+  });
+
+  // The other half of the same installation. The plugin id has to match the
+  // marker, so a name that happens to collide with a built-in plugin cannot be
+  // used to delete it.
+  ctx.protocol.on("plugin/uninstall", async (routerCtx, data) => {
+    try {
+      const payload = (data ?? {}) as { name?: unknown; pluginId?: unknown };
+      const directory = pluginDirectory(String(payload.name ?? ""));
+      const marker = await fs
+        .readFile(path.join(directory, MARKER_FILE), "utf8")
+        .then((content) => JSON.parse(content) as { pluginId?: string })
+        .catch(() => null);
+      if (marker?.pluginId && marker.pluginId === String(payload.pluginId ?? "")) {
+        await fs.remove(directory);
+      }
+      ctx.protocol.response(routerCtx, { removed: Boolean(marker) });
+    } catch (error: any) {
       ctx.protocol.responseError(routerCtx, error);
     }
   });
