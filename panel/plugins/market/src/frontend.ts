@@ -9,6 +9,7 @@ import { openMarketDialog } from "./market-dialog";
 import Market from "./normal/Market.vue";
 import MarketEditor from "./normal/MarketEditor.vue";
 import McPreset from "./normal/McPreset.vue";
+import PluginMarket from "./normal/PluginMarket.vue";
 import { getAllowUsePreset, refreshMarketPermission } from "./runtime";
 
 const ROLE_ADMIN = 10;
@@ -71,6 +72,27 @@ export function apply(ctx: PanelFrontendPluginContext) {
     meta: {
       permission: ROLE_ADMIN,
       mainMenu: false,
+      breadcrumbs: [
+        {
+          name: t("TXT_CODE_27594db8"),
+          path: "/market",
+          mainMenu: true,
+          permission: ROLE_ADMIN
+        }
+      ]
+    }
+  });
+
+  // The plugin market: plugins published to EPanel_Market, installed into the
+  // panel's and the daemon's own plugin directories.
+  ctx.routes.add({
+    path: "/market/plugins",
+    name: t("TXT_CODE_PLUGIN_MARKET"),
+    component: PluginMarket,
+    meta: {
+      mainMenu: true,
+      permission: ROLE_ADMIN,
+      icon: "mdi-puzzle-outline",
       breadcrumbs: [
         {
           name: t("TXT_CODE_27594db8"),

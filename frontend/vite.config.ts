@@ -20,6 +20,11 @@ const RESOLVED_PANEL_PLUGIN_BUILD_ENTRY_PREFIX = `\0${PANEL_PLUGIN_BUILD_ENTRY_P
 const PROJECT_DIRECTORY = fileURLToPath(new URL("..", import.meta.url));
 const PANEL_PLUGINS_DIRECTORY = fileURLToPath(new URL("../panel/plugins", import.meta.url));
 const EXTERNAL_PLUGINS_DIRECTORY = fileURLToPath(new URL("../external", import.meta.url));
+// Plugins installed from the market: git-ignored, so they must be discovered the
+// same way as the built-in ones or an installed plugin would never load.
+const MARKET_PANEL_PLUGINS_DIRECTORY = fileURLToPath(
+  new URL("../panel/market_plugins", import.meta.url)
+);
 // Resolve the installed package's exports from the frontend workspace. Vuetify
 // releases use both .mjs and .js entry points, so hard-coding an extension fails
 // after a compatible dependency update.
@@ -41,7 +46,10 @@ function discoverPanelPlugins(includeExternal = false): DiscoveredPanelPlugin[] 
   // Discovery is shared with the panel and daemon backends, so the four places
   // that read `plugin.json` cannot drift apart. Only the entry field and the
   // build-time extras are specific to this side.
-  const roots = [{ directory: PANEL_PLUGINS_DIRECTORY }];
+  const roots = [
+    { directory: PANEL_PLUGINS_DIRECTORY },
+    { directory: MARKET_PANEL_PLUGINS_DIRECTORY }
+  ];
   if (includeExternal) {
     roots.push(...discoverExternalPluginRoots(PROJECT_DIRECTORY, "panel"));
   }
@@ -72,7 +80,11 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
   let isBuild = false;
   const isPluginFile = (file: string) => {
     const target = path.resolve(file).toLowerCase();
-    return [PANEL_PLUGINS_DIRECTORY, EXTERNAL_PLUGINS_DIRECTORY].some((directory) => {
+    return [
+      PANEL_PLUGINS_DIRECTORY,
+      MARKET_PANEL_PLUGINS_DIRECTORY,
+      EXTERNAL_PLUGINS_DIRECTORY
+    ].some((directory) => {
       const root = path.resolve(directory).toLowerCase();
       return target === root || target.startsWith(`${root}${path.sep}`);
     });
@@ -114,7 +126,11 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
       }
     },
     configureServer(server: any) {
-      server.watcher.add([PANEL_PLUGINS_DIRECTORY, EXTERNAL_PLUGINS_DIRECTORY]);
+      server.watcher.add([
+        PANEL_PLUGINS_DIRECTORY,
+        MARKET_PANEL_PLUGINS_DIRECTORY,
+        EXTERNAL_PLUGINS_DIRECTORY
+      ]);
       const reload = (file: string) => {
         if (!isPluginFile(file)) return;
         const module = server.moduleGraph.getModuleById(RESOLVED_PANEL_PLUGINS_MODULE_ID);

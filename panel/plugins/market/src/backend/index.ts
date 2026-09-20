@@ -1,6 +1,13 @@
+import axios from "axios";
 import type Koa from "koa";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
 import { localeMessages } from "../i18n";
+import {
+  installPlugin,
+  listInstalled,
+  PluginMarketError,
+  uninstallPlugin
+} from "./service/plugin_market";
 import { clearMarketCache, getAppMarketList } from "./service/market_service";
 import { initMarketSettings, marketSettings, saveMarketSettings } from "./service/market_settings";
 
@@ -111,6 +118,8 @@ export async function apply(ctx: PanelPluginContext) {
       settings.presetPackAddr = address;
     }
     if (values.allowUsePreset != null) settings.allowUsePreset = Boolean(values.allowUsePreset);
+    if (values.pluginMarketAddr != null)
+      settings.pluginMarketAddr = String(values.pluginMarketAddr).trim().replace(/\/+$/, "");
     await saveMarketSettings(ctx);
   }
 
@@ -121,6 +130,78 @@ export async function apply(ctx: PanelPluginContext) {
     await writeMarketSettings((requestCtx.request.body ?? {}) as Record<string, unknown>);
     requestCtx.body = true;
   });
+
+  // ---- Plugin market -----------------------------------------------------
+  // The catalogue above installs instances; these install plugins, into the
+  // panel's and the daemon's own plugin directories.
+
+  /** Plugins are listed publicly by the market, so this needs no token. */
+  async function fetchMarketPlugins(addr: string) {
+    const response = await axios.get<{ items: Array<Record<string, unknown>> }>(
+      `${addr}/api/plugins`,
+      { timeout: 15000 }
+    );
+    const installed = new Map(listInstalled().map((item) => [item.pluginId, item]));
+    return (response.data?.items ?? []).map((item) => ({
+      ...item,
+      installedVersion: installed.get(String(item.id))?.version
+    }));
+  }
+
+  function reportPluginMarketError(error: unknown): never {
+    const reason =
+      error instanceof PluginMarketError ? error.message : "UNREACHABLE";
+    const messages: Record<string, string> = {
+      DIR_TAKEN: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_DIR_TAKEN"),
+      EMPTY_PACKAGE: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_EMPTY_PACKAGE"),
+      BAD_PATH: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE")
+    };
+    throw new Error(messages[reason] ?? ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE"));
+  }
+
+  router.get("/plugin/list", requireAdmin, async (requestCtx) => {
+    try {
+      requestCtx.body = await fetchMarketPlugins(marketSettings().pluginMarketAddr);
+    } catch (error) {
+      reportPluginMarketError(error);
+    }
+  });
+
+  router.get("/plugin/installed", requireAdmin, async (requestCtx) => {
+    requestCtx.body = listInstalled();
+  });
+
+  // Installing only writes files: the panel and daemon load their plugins at
+  // startup, so the answer tells the page to ask for a restart.
+  router.post(
+    "/plugin/install",
+    requireAdmin,
+    ctx.middleware.speedLimit(3),
+    ctx.middleware.validator({ body: { pluginId: String, name: String } }),
+    async (requestCtx: Koa.ParameterizedContext) => {
+      const body = (requestCtx.request.body ?? {}) as Record<string, unknown>;
+      try {
+        await installPlugin(marketSettings().pluginMarketAddr, {
+          pluginId: String(body.pluginId),
+          name: String(body.name),
+          version: body.version ? String(body.version) : undefined
+        });
+        requestCtx.body = { restartRequired: true };
+      } catch (error) {
+        reportPluginMarketError(error);
+      }
+    }
+  );
+
+  router.delete(
+    "/plugin/uninstall",
+    requireAdmin,
+    ctx.middleware.validator({ query: { pluginId: String } }),
+    async (requestCtx: Koa.ParameterizedContext) => {
+      const removed = await uninstallPlugin(String(requestCtx.request.query.pluginId));
+      requestCtx.body = { removed, restartRequired: removed };
+    }
+  );
 
   // Described, not drawn: the market's two settings are rendered by the plugin
   // manager's generic form, the same one that renders a daemon plugin's
@@ -140,7 +221,14 @@ export async function apply(ctx: PanelPluginContext) {
         title: ctx.i18n.$t("TXT_CODE_3c93920b"),
         description: ctx.i18n.$t("TXT_CODE_bc2e52a0")
       },
+      {
+        key: "pluginMarketAddr",
+        type: "string",
+        title: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_ADDR"),
+        description: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_ADDR_DESC")
+      },
       { type: "link", title: ctx.i18n.$t("TXT_CODE_ad207008"), route: "/market/editor" },
+      { type: "link", title: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET"), route: "/market/plugins" },
       {
         type: "link",
         title: ctx.i18n.$t("TXT_CODE_53499d7"),

@@ -25,6 +25,11 @@ import { ctx, type DaemonPluginContext } from "./context";
 const logger = new Logger("plugin");
 
 const BUILT_IN_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "plugins");
+/**
+ * Plugins installed from the plugin market, kept apart from the built-in tree and
+ * git-ignored. In a production install the same plugin goes to `plugins/`.
+ */
+const MARKET_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "market_plugins");
 const ENTRY_FIELDS = ["daemon", "backend", "main", "entry"];
 const ENTRY_CANDIDATES = [
   "src/index.js",
@@ -55,7 +60,10 @@ export interface DaemonPluginEntry {
 const loaded: DaemonPluginEntry[] = [];
 
 function discoverDaemonPlugins(options: DiscoverPluginsOptions) {
-  const roots = [{ directory: BUILT_IN_PLUGINS_DIRECTORY() }];
+  const roots = [
+    { directory: BUILT_IN_PLUGINS_DIRECTORY() },
+    { directory: MARKET_PLUGINS_DIRECTORY() }
+  ];
   if (process.env.NODE_ENV === "development") {
     roots.push(...discoverExternalPluginRoots(path.resolve(process.cwd(), ".."), "daemon"));
   }

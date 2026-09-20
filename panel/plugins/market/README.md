@@ -80,3 +80,38 @@ used by the instance-creation page and has nothing to do with the market.
 `quick_install` asynchronous task (create an instance around a package) and the
 `install` instance preset (reinstall an existing one). A daemon without it stays
 fully usable; it simply cannot install packages.
+
+## Plugin market
+
+`/market/plugins` is a second market: it installs **plugins**, not instance
+templates. Its source is EPanel_Market, whose address is the `pluginMarketAddr`
+setting on this plugin's own settings form.
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| GET | `/api/market/plugin/list` | the market's published plugins, each with the version installed here |
+| GET | `/api/market/plugin/installed` | what has been installed from the market |
+| POST | `/api/market/plugin/install` | download a published package and write it into place |
+| DELETE | `/api/market/plugin/uninstall` | remove it again |
+
+A published package is laid out with the side as its first path segment
+(`panel/plugin.json`, `daemon/backend/index.cjs`, …), so installing is mostly
+splitting that prefix and writing each file under `<side>/<plugins>/<name>/`.
+`src/backend/service/plugin_market.ts` owns that, and marks every installed
+directory with `.market-install.json` — without the marker a directory in
+`plugins/` is indistinguishable from a built-in plugin.
+
+**Where it lands.** `installRoot()` puts a plugin in `<side>/market_plugins/` in
+development and in `<side>/plugins/` otherwise, so an installation never adds
+files to the repository: `market_plugins/` is git-ignored. Both loaders and
+`frontend/vite.config.ts` therefore list `market_plugins` as a discovery root,
+with the built-in directory first so a market plugin cannot shadow one of ours.
+
+**Restart required.** The panel and the daemon load their plugins at startup, so
+an install or an uninstall only takes effect after both are restarted; the page
+says so, and the install route answers `restartRequired: true`.
+
+**Same machine only.** The daemon half is written to `<project>/daemon/plugins`,
+which assumes the daemon runs next to the panel — true in development, and true
+of a single-host deployment. Installing a daemon plugin onto a remote node is not
+supported.

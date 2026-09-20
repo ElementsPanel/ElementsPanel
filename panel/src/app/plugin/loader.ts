@@ -26,6 +26,12 @@ import { ctx, type PanelPluginContext } from "./context";
 const logger = new Logger("plugin");
 
 const BUILT_IN_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "plugins");
+/**
+ * Plugins installed from the plugin market. They live apart from the built-in
+ * tree so an installation never adds files to the repository: `market_plugins/`
+ * is git-ignored, and in a production install the same plugin goes to `plugins/`.
+ */
+const MARKET_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "market_plugins");
 const ENTRY_FIELDS = ["panel", "backend", "main", "entry"];
 const ENTRY_CANDIDATES = [
   "src/index.js",
@@ -67,7 +73,12 @@ export interface PanelFrontendPluginEntry {
 const loaded: LoadedPanelPlugin[] = [];
 
 function discoverPanelPlugins(options: DiscoverPluginsOptions) {
-  const roots = [{ directory: BUILT_IN_PLUGINS_DIRECTORY() }];
+  // Built-in first: the shared discovery keeps the first root's plugin when two
+  // roots declare the same id, so a market plugin cannot shadow one of ours.
+  const roots = [
+    { directory: BUILT_IN_PLUGINS_DIRECTORY() },
+    { directory: MARKET_PLUGINS_DIRECTORY() }
+  ];
   if (process.env.NODE_ENV === "development") {
     roots.push(...discoverExternalPluginRoots(path.resolve(process.cwd(), ".."), "panel"));
   }

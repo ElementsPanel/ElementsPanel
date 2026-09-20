@@ -9,7 +9,61 @@ export interface MarketSettings {
   presetPackAddr: string;
   /** Whether non-elevated users may install packages. */
   allowUsePreset: boolean;
+  /** Base address of the plugin market, which supplies installable plugins. */
+  pluginMarketAddr?: string;
 }
+
+// ---- Plugin market -------------------------------------------------------
+// Distinct from the catalogue above: these are panel and daemon plugins, not
+// instance templates.
+
+/** One plugin as the market lists it, with the version installed here, if any. */
+export interface MarketPlugin {
+  id: string;
+  name: string;
+  displayName: string;
+  summary: string;
+  category: string;
+  author: { id: string; displayName: string };
+  latestVersion?: { id: string; version: string; status: string; submittedAt: number };
+  /** The version installed on this panel, or undefined when it is not installed. */
+  installedVersion?: string;
+}
+
+/** One plugin installed from the market, as the marker in its directory records. */
+export interface InstalledPlugin {
+  pluginId: string;
+  name: string;
+  version: string;
+  installedAt: number;
+  sides: string[];
+}
+
+export const pluginMarketList = useDefineApi<unknown, MarketPlugin[]>({
+  url: "/api/market/plugin/list",
+  method: "GET"
+});
+
+export const pluginMarketInstalled = useDefineApi<unknown, InstalledPlugin[]>({
+  url: "/api/market/plugin/installed",
+  method: "GET"
+});
+
+export const installMarketPlugin = useDefineApi<
+  { data: { pluginId: string; name: string; version?: string } },
+  { restartRequired: boolean }
+>({
+  url: "/api/market/plugin/install",
+  method: "POST"
+});
+
+export const uninstallMarketPlugin = useDefineApi<
+  { params: { pluginId: string } },
+  { removed: boolean; restartRequired: boolean }
+>({
+  url: "/api/market/plugin/uninstall",
+  method: "DELETE"
+});
 
 /** The package catalogue, resolved and cached by the plugin backend. */
 export const quickInstallListAddr = useDefineApi<any, QuickStartTemplate>({

@@ -8,4 +8,7 @@ export default class MarketSettings {
 
   /** Whether a non-elevated user may install a package. */
   allowUsePreset: boolean = false;
+
+  /** Base address of the plugin market, which supplies installable plugins. */
+  pluginMarketAddr: string = "http://localhost:4500";
 }
