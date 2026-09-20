@@ -242,6 +242,7 @@ onMounted(refresh);
   padding: 20px 24px 32px;
 }
 
+.plugin-market-hint {
   margin-top: 16px;
   font-size: 12px;
   color: var(--color-gray-7);
