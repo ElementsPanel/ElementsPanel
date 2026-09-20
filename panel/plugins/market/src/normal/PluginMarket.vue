@@ -36,6 +36,11 @@ const plugins = ref<MarketPlugin[]>([]);
 const keyword = ref("");
 const pendingId = ref("");
 
+// Whether the answer to the last install or uninstall asked for a restart. A
+// development checkout reloads its plugins instead, so the note under the list
+// is only kept while a restart is what it actually takes.
+const restartHint = ref(true);
+
 const uninstallTarget = ref<MarketPlugin | null>(null);
 const uninstallShown = computed({
   get: () => uninstallTarget.value !== null,
@@ -70,13 +75,14 @@ async function install(plugin: MarketPlugin) {
   pendingId.value = plugin.id;
   try {
     const { execute } = installMarketPlugin();
-    await execute({
+    const response = await execute({
       data: {
         pluginId: plugin.id,
         name: plugin.name,
         version: plugin.latestVersion?.version
       }
     });
+    restartHint.value = response.value?.restartRequired ?? true;
     plugin.installedVersion = plugin.latestVersion?.version;
     message.success(t("TXT_CODE_PLUGIN_MARKET_INSTALLED"));
   } catch (error) {
@@ -93,7 +99,8 @@ async function confirmUninstall() {
   pendingId.value = plugin.id;
   try {
     const { execute } = uninstallMarketPlugin();
-    await execute({ params: { pluginId: plugin.id } });
+    const response = await execute({ params: { pluginId: plugin.id } });
+    restartHint.value = response.value?.restartRequired ?? true;
     plugin.installedVersion = undefined;
     message.success(t("TXT_CODE_PLUGIN_MARKET_UNINSTALLED"));
   } catch (error) {
@@ -197,7 +204,7 @@ onMounted(refresh);
         </VCol>
       </VRow>
 
-      <div class="plugin-market-hint">
+      <div v-if="restartHint" class="plugin-market-hint">
         {{ t("TXT_CODE_PLUGIN_MARKET_RESTART_HINT") }}
       </div>
     </VContainer>

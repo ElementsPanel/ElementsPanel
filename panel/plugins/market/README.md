@@ -114,9 +114,21 @@ production. `isDevelopment()` looks for `panel/src/app` instead — present in a
 source checkout, absent from a built deployment, which is only
 `production-code/web` and `production-code/daemon`.
 
-**Restart required.** The panel and the daemon load their plugins at startup, so
-an install or an uninstall only takes effect after both are restarted; the page
-says so, and the install route answers `restartRequired: true`.
+**Restart required — except in development.** The panel and the daemon load their
+plugins at startup, so in a deployment an install or an uninstall only takes
+effect after both are restarted; the page says so, and the install route answers
+`restartRequired: true`.
+
+A source checkout reloads instead: the route calls `ctx.plugins.reload()`, which
+re-scans the panel's own directories — installing what has appeared and disposing
+what is gone — and asks every connected daemon to do the same over
+`plugin/reload`, reconnecting the node afterwards because a daemon binds its
+protocol handlers onto each socket as that socket connects. The browser half
+needs nothing: the Vite dev server watches the plugin directories and reloads the
+page. `reload()` itself refuses to run outside development, so a built
+deployment keeps the restart it asks for. What reload cannot do is replace a
+plugin that is already loaded — installing a newer version of one still needs a
+restart.
 
 **Same machine only.** The daemon half is written to `<project>/daemon/plugins`,
 which assumes the daemon runs next to the panel — true in development, and true

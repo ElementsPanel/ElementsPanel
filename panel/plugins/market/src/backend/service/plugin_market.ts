@@ -48,7 +48,7 @@ function projectRoot() {
  * The source tree is the signal that survives: a built deployment is only
  * `production-code/web` and `production-code/daemon`, with no `panel/src`.
  */
-function isDevelopment(): boolean {
+export function isDevelopment(): boolean {
   return fs.existsSync(path.join(projectRoot(), "panel", "src", "app"));
 }
 

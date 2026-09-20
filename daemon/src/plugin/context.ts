@@ -403,6 +403,11 @@ export interface DaemonPluginsService {
    * its protocol handlers, tasks, timers and services go with it.
    */
   setEnabled(id: string, enabled: boolean): Promise<DaemonPluginRecord>;
+  /**
+   * Re-scans the plugin directories: a plugin that has appeared since startup is
+   * installed, one that is gone or disabled is disposed. Development only.
+   */
+  reload(): Promise<readonly DaemonPluginEntry[]>;
 }
 
 declare module "cordis" {

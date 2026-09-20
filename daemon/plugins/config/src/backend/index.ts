@@ -61,6 +61,19 @@ export function apply(ctx: DaemonPluginContext) {
     }
   });
 
+  // Re-scan the plugin directories, for a plugin that arrived while the daemon
+  // was running — the plugin market installs one into `market_plugins/` in a
+  // source checkout. Development only: `ctx.plugins.reload()` refuses otherwise,
+  // and the panel is told why.
+  ctx.protocol.on("plugin/reload", async (routerCtx) => {
+    try {
+      await ctx.plugins.reload();
+      ctx.protocol.response(routerCtx, ctx.plugins.inventory());
+    } catch (error: any) {
+      ctx.protocol.responseError(routerCtx, error);
+    }
+  });
+
   // The configuration of one of this daemon's plugins, described by the plugin
   // itself. The panel renders the description; nothing about the form lives
   // there, which is the only way a daemon plugin can have a settings page at all.

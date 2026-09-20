@@ -4,9 +4,11 @@ import type { PanelPluginContext } from "../../../../src/app/plugin";
 import { localeMessages } from "../i18n";
 import {
   installPlugin,
+  isDevelopment,
   listInstalled,
   PluginMarketError,
-  uninstallPlugin
+  uninstallPlugin,
+  type PluginSide
 } from "./service/plugin_market";
 import { clearMarketCache, getAppMarketList } from "./service/market_service";
 import { initMarketSettings, marketSettings, saveMarketSettings } from "./service/market_settings";
@@ -23,7 +25,8 @@ export const inject = [
   "middleware",
   "roles",
   "remote",
-  "identity"
+  "identity",
+  "plugins"
 ];
 
 export async function apply(ctx: PanelPluginContext) {
@@ -159,6 +162,48 @@ export async function apply(ctx: PanelPluginContext) {
     throw new Error(messages[reason] ?? ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE"));
   }
 
+  /**
+   * Asks every reachable daemon to re-scan its plugin directories.
+   *
+   * A daemon binds its protocol handlers onto each socket as that socket
+   * connects, so the node is reconnected afterwards: without that, a handler
+   * that has just appeared stays invisible to the connection the panel holds.
+   */
+  async function reloadNodes() {
+    for (const node of ctx.remote.services.services.values()) {
+      if (!node.available) continue;
+      try {
+        await new ctx.remote.Request(node).request("plugin/reload");
+        node.refreshReconnect();
+      } catch (error) {
+        // A daemon that cannot reload — an older one, or one that is not a
+        // development checkout — keeps what it has until its next restart.
+        ctx.logger.warn(`Failed to reload a daemon's plugins: ${error}`);
+      }
+    }
+  }
+
+  /**
+   * Makes a freshly written package take effect without a restart.
+   *
+   * Both halves load their plugins once, at startup, so installing normally
+   * only writes files and the answer tells the page to ask for a restart. In a
+   * source checkout the two re-scan instead: the panel its own directories, and
+   * each connected daemon the ones it owns. A production install still answers
+   * `restartRequired`, because `ctx.plugins.reload()` refuses to run there.
+   */
+  async function hotReload(sides: PluginSide[]): Promise<boolean> {
+    if (!isDevelopment()) return false;
+    try {
+      if (sides.includes("panel")) await ctx.plugins.reload();
+      if (sides.includes("daemon")) await reloadNodes();
+      return true;
+    } catch (error) {
+      ctx.logger.warn(`Failed to reload plugins after a market install: ${error}`);
+      return false;
+    }
+  }
+
   router.get("/plugin/list", requireAdmin, async (requestCtx) => {
     try {
       requestCtx.body = await fetchMarketPlugins(marketSettings().pluginMarketAddr);
@@ -171,8 +216,9 @@ export async function apply(ctx: PanelPluginContext) {
     requestCtx.body = listInstalled();
   });
 
-  // Installing only writes files: the panel and daemon load their plugins at
-  // startup, so the answer tells the page to ask for a restart.
+  // Installing writes files, and both halves load their plugins at startup — so
+  // in a development checkout the two are asked to re-scan, and everywhere else
+  // the answer tells the page to ask for a restart.
   router.post(
     "/plugin/install",
     requireAdmin,
@@ -181,12 +227,12 @@ export async function apply(ctx: PanelPluginContext) {
     async (requestCtx: Koa.ParameterizedContext) => {
       const body = (requestCtx.request.body ?? {}) as Record<string, unknown>;
       try {
-        await installPlugin(marketSettings().pluginMarketAddr, {
+        const installed = await installPlugin(marketSettings().pluginMarketAddr, {
           pluginId: String(body.pluginId),
           name: String(body.name),
           version: body.version ? String(body.version) : undefined
         });
-        requestCtx.body = { restartRequired: true };
+        requestCtx.body = { restartRequired: !(await hotReload(installed.sides)) };
       } catch (error) {
         reportPluginMarketError(error);
       }
@@ -199,7 +245,10 @@ export async function apply(ctx: PanelPluginContext) {
     ctx.middleware.validator({ query: { pluginId: String } }),
     async (requestCtx: Koa.ParameterizedContext) => {
       const removed = await uninstallPlugin(String(requestCtx.request.query.pluginId));
-      requestCtx.body = { removed, restartRequired: removed };
+      // Both halves are re-scanned whether or not this one had a side in each:
+      // uninstalling takes the whole package away, and a reload is what disposes
+      // the plugin whose directory has just been deleted.
+      requestCtx.body = { removed, restartRequired: removed && !(await hotReload(["panel", "daemon"])) };
     }
   );
 

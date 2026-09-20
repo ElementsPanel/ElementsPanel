@@ -319,6 +319,11 @@ export interface PanelPluginsService {
    * its routes, middleware, timers and services go with it.
    */
   setEnabled(id: string, enabled: boolean): Promise<PanelPluginRecord>;
+  /**
+   * Re-scans the plugin directories: a plugin that has appeared since startup is
+   * installed, one that is gone or disabled is disposed. Development only.
+   */
+  reload(): Promise<readonly LoadedPanelPlugin[]>;
 }
 
 declare module "cordis" {

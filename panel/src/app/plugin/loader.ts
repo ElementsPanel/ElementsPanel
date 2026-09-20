@@ -95,7 +95,8 @@ function ensurePanelPluginService() {
     },
     frontendManifest: getPanelFrontendManifest,
     inventory: getPanelPluginInventory,
-    setEnabled: setPanelPluginEnabled
+    setEnabled: setPanelPluginEnabled,
+    reload: reloadPanelPlugins
   });
 }
 
@@ -130,6 +131,18 @@ async function loadModule(entry: string): Promise<unknown> {
     ) => Promise<unknown>;
     return dynamicImport(pathToFileURL(entry).href);
   }
+}
+
+/**
+ * Drops a plugin's entry module from the require cache, so the next `require()`
+ * of it runs the file that is on disk rather than the copy an earlier run left
+ * behind.
+ */
+function forgetCachedModule(entry?: string) {
+  if (!entry) return;
+  // eval keeps webpack from trying to bundle files supplied at runtime.
+  const runtimeRequire = eval("require") as NodeRequire;
+  delete runtimeRequire.cache[entry];
 }
 
 /** Requires one plugin's backend entry and hands it to cordis. */
@@ -189,6 +202,50 @@ export async function loadPanelPlugins(): Promise<readonly LoadedPanelPlugin[]> 
   });
   for (const plugin of discovered) {
     if (loaded.some((record) => record.manifest.id === plugin.manifest.id)) continue;
+    loaded.push(await installPlugin(plugin));
+  }
+  sortPlugins(loaded);
+  return loaded;
+}
+
+/**
+ * Re-scans the plugin directories and reconciles them with what is running: a
+ * plugin that has appeared since startup is installed, and one whose directory
+ * is gone — or whose manifest now says `enabled: false` — is disposed.
+ *
+ * Development only: a plugin loaded into a running process is never fully
+ * reversible, because whatever it captured outside its own scope stays behind.
+ * This is the convenience it was written for — a plugin installed from the
+ * market in a source checkout — and nothing a production panel should do.
+ *
+ * The browser half needs nothing here: the Vite dev server watches the plugin
+ * directories and reloads the page when one changes.
+ */
+export async function reloadPanelPlugins(): Promise<readonly LoadedPanelPlugin[]> {
+  if (process.env.NODE_ENV !== "development") {
+    throw new Error("Reloading plugins is only supported in a development environment.");
+  }
+  ensurePanelPluginService();
+  const discovered = discoverPanelPlugins({
+    entryFields: ENTRY_FIELDS,
+    entryCandidates: ENTRY_CANDIDATES,
+    onWarning: (message, error) => logger.warn(message, error)
+  });
+
+  const installed = new Set(discovered.map((plugin) => plugin.manifest.id));
+  for (let index = loaded.length - 1; index >= 0; index--) {
+    const record = loaded[index];
+    if (installed.has(record.manifest.id)) continue;
+    record.fork?.dispose();
+    loaded.splice(index, 1);
+    logger.info(`Panel plugin unloaded: ${record.manifest.id}`);
+  }
+
+  for (const plugin of discovered) {
+    if (loaded.some((record) => record.manifest.id === plugin.manifest.id)) continue;
+    // A plugin installed, uninstalled and installed again would otherwise be
+    // served the module its first run left behind.
+    forgetCachedModule(plugin.entry);
     loaded.push(await installPlugin(plugin));
   }
   sortPlugins(loaded);
@@ -350,8 +407,7 @@ export async function setPanelPluginEnabled(
     if (plugin.entry) {
       // Drop the cached module so a re-enabled plugin starts from fresh
       // module-level state instead of the copy its previous run left behind.
-      const runtimeRequire = eval("require") as NodeRequire;
-      delete runtimeRequire.cache[plugin.entry];
+      forgetCachedModule(plugin.entry);
     }
     loaded.push(await installPlugin({ ...plugin, manifest: { ...plugin.manifest, enabled: true } }));
     sortPlugins(loaded);
