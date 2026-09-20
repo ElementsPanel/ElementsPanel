@@ -3,6 +3,7 @@ import {
   useHeaderMenus,
   type SidebarRouteEntry
 } from "@/hooks/useHeaderMenus";
+import { computed } from "vue";
 import { useRoute } from "vue-router";
 import {
   VList,
@@ -13,11 +14,27 @@ import {
 const route = useRoute();
 const { sidebarItems, handleToPage } = useHeaderMenus();
 
-const isRouteActive = (path: string): boolean => {
-  if (route.path === path) return true;
-  if (path === "/") return false;
-  return route.path.startsWith(path + "/");
-};
+/**
+ * Only the most specific entry counts as active. `/market/plugins` is a menu item
+ * of its own, and a plain prefix test would light it up together with `/market`
+ * — which also decides which icon is drawn filled.
+ */
+const activePath = computed(() => {
+  let exact = "";
+  let longest = "";
+  for (const entry of sidebarItems.value) {
+    const path = entry.path;
+    if (path === "/") continue;
+    if (route.path === path) {
+      exact = path;
+      break;
+    }
+    if (route.path.startsWith(`${path}/`) && path.length > longest.length) longest = path;
+  }
+  return exact || longest;
+});
+
+const isRouteActive = (path: string): boolean => activePath.value === path;
 
 const routePathIcons: Record<string, string> = {
   "/instances": "mdi-view-grid-outline",
@@ -97,7 +114,8 @@ const filledIconMap: Record<string, string> = {
   "mdi-sitemap-outline": "mdi-sitemap",
   "mdi-server-network-outline": "mdi-server-network",
   "mdi-storefront-outline": "mdi-storefront",
-  "mdi-view-dashboard-outline": "mdi-view-dashboard"
+  "mdi-view-dashboard-outline": "mdi-view-dashboard",
+  "mdi-puzzle-outline": "mdi-puzzle"
 };
 
 const toOutlineIcon = (icon: string): string => {

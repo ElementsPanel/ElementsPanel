@@ -65,13 +65,17 @@ export function apply(ctx: PanelFrontendPluginContext) {
     }
   });
 
+  // Registered straight after `/market`: the sidebar lists routes in
+  // registration order, so this is what puts the plugin market directly below
+  // the application market instead of at the end of the menu.
   ctx.routes.add({
-    path: "/market/editor",
-    name: t("TXT_CODE_54275b9c"),
-    component: MarketEditor,
+    path: "/market/plugins",
+    name: t("TXT_CODE_PLUGIN_MARKET"),
+    component: PluginMarket,
     meta: {
+      mainMenu: true,
       permission: ROLE_ADMIN,
-      mainMenu: false,
+      icon: "mdi-puzzle-outline",
       breadcrumbs: [
         {
           name: t("TXT_CODE_27594db8"),
@@ -83,16 +87,13 @@ export function apply(ctx: PanelFrontendPluginContext) {
     }
   });
 
-  // The plugin market: plugins published to EPanel_Market, installed into the
-  // panel's and the daemon's own plugin directories.
   ctx.routes.add({
-    path: "/market/plugins",
-    name: t("TXT_CODE_PLUGIN_MARKET"),
-    component: PluginMarket,
+    path: "/market/editor",
+    name: t("TXT_CODE_54275b9c"),
+    component: MarketEditor,
     meta: {
-      mainMenu: true,
       permission: ROLE_ADMIN,
-      icon: "mdi-puzzle-outline",
+      mainMenu: false,
       breadcrumbs: [
         {
           name: t("TXT_CODE_27594db8"),
