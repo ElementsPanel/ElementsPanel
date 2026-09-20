@@ -135,12 +135,6 @@ onMounted(refresh);
         </template>
       </PageToolbar>
 
-      <div class="plugin-market-description">
-        <div class="plugin-market-description-text">
-          <span>{{ t("TXT_CODE_PLUGIN_MARKET_DESC") }}</span>
-        </div>
-      </div>
-
       <VProgressLinear v-if="loading && !plugins.length" indeterminate class="mb-4" />
 
       <VAlert
@@ -152,8 +146,8 @@ onMounted(refresh);
 
       <VRow v-else>
         <VCol v-for="plugin in visiblePlugins" :key="plugin.id" cols="12" md="6" lg="4">
-          <VCard class="h-100" elevation="0">
-            <VCardText>
+          <VCard class="plugin-market-card h-100" elevation="0">
+            <VCardText class="plugin-market-card-content">
               <div class="text-h6">
                 {{ plugin.displayName }}
               </div>
@@ -166,7 +160,7 @@ onMounted(refresh);
               </div>
             </VCardText>
 
-            <VCardActions>
+            <VCardActions class="plugin-market-card-actions">
               <VChip v-if="plugin.latestVersion" size="small" variant="tonal">
                 {{ t("TXT_CODE_PLUGIN_MARKET_VERSION", { version: plugin.latestVersion.version }) }}
               </VChip>
@@ -248,19 +242,27 @@ onMounted(refresh);
   padding: 20px 24px 32px;
 }
 
-.plugin-market-description {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  color: var(--color-gray-7);
-  margin-bottom: 16px;
-}
-
-.plugin-market-hint {
   margin-top: 16px;
   font-size: 12px;
   color: var(--color-gray-7);
+}
+
+// A card is a column: the description takes the space that is left, so the
+// version chips and the install button stay on the last line of every card
+// instead of following the text up and down.
+.plugin-market-card {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+}
+
+.plugin-market-card-content {
+  flex: 1 0 auto;
+}
+
+.plugin-market-card-actions {
+  align-items: center;
+  padding-top: 8px;
 }
 
 @media (max-width: 992px) {
