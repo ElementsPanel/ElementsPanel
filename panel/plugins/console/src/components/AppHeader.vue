@@ -32,12 +32,27 @@ const getFallbackMdiIcon = (icon: unknown) => {
   return "mdi-help-circle-outline";
 };
 
-/** Whether route menu item is active (current path equals or is child of this path) */
-const isRouteActive = (path: string): boolean => {
-  if (route.path === path) return true;
-  if (path === "/") return false;
-  return route.path.startsWith(path + "/");
-};
+/**
+ * Only the most specific menu entry counts as active: `/market/plugins` is a menu
+ * item of its own, so a plain prefix test would light it up together with
+ * `/market`.
+ */
+const activePath = computed(() => {
+  let exact = "";
+  let longest = "";
+  for (const item of menus.value) {
+    const path = item.path;
+    if (path === "/") continue;
+    if (route.path === path) {
+      exact = path;
+      break;
+    }
+    if (route.path.startsWith(`${path}/`) && path.length > longest.length) longest = path;
+  }
+  return exact || longest;
+});
+
+const isRouteActive = (path: string): boolean => activePath.value === path;
 
 const { isPhone } = useScreen();
 

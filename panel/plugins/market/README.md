@@ -107,6 +107,13 @@ files to the repository: `market_plugins/` is git-ignored. Both loaders and
 `frontend/vite.config.ts` therefore list `market_plugins` as a discovery root,
 with the built-in directory first so a market plugin cannot shadow one of ours.
 
+**How "development" is detected.** Not with `process.env.NODE_ENV`: webpack bakes
+`"production"` into every plugin bundle, and a plugin's `backend/index.cjs` is
+what runs even while the dev servers are up, so the check would always say
+production. `isDevelopment()` looks for `panel/src/app` instead — present in a
+source checkout, absent from a built deployment, which is only
+`production-code/web` and `production-code/daemon`.
+
 **Restart required.** The panel and the daemon load their plugins at startup, so
 an install or an uninstall only takes effect after both are restarted; the page
 says so, and the install route answers `restartRequired: true`.

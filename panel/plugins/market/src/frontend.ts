@@ -75,15 +75,9 @@ export function apply(ctx: PanelFrontendPluginContext) {
     meta: {
       mainMenu: true,
       permission: ROLE_ADMIN,
-      icon: "mdi-puzzle-outline",
-      breadcrumbs: [
-        {
-          name: t("TXT_CODE_27594db8"),
-          path: "/market",
-          mainMenu: true,
-          permission: ROLE_ADMIN
-        }
-      ]
+      icon: "mdi-puzzle-outline"
+      // No `breadcrumbs`: this is a market of its own, not a page of the
+      // application market, so the trail reads 管理面板 > 插件市场.
     }
   });
 

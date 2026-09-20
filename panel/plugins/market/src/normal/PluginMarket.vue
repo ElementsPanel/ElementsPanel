@@ -145,7 +145,7 @@ onMounted(refresh);
 
       <VRow v-else>
         <VCol v-for="plugin in visiblePlugins" :key="plugin.id" cols="12" md="6" lg="4">
-          <VCard class="h-100">
+          <VCard class="h-100" elevation="0">
             <VCardText>
               <div class="text-h6">
                 {{ plugin.displayName }}

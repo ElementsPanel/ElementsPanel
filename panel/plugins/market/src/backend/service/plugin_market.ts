@@ -39,13 +39,22 @@ function projectRoot() {
   return path.resolve(process.cwd(), "..");
 }
 
+/**
+ * Whether this is a development checkout.
+ *
+ * `process.env.NODE_ENV` is no use here: webpack bakes `"production"` into every
+ * plugin bundle — `webpack.plugins.config.js` builds in production mode, and a
+ * plugin's `backend/index.cjs` is what runs even while the dev servers are up.
+ * The source tree is the signal that survives: a built deployment is only
+ * `production-code/web` and `production-code/daemon`, with no `panel/src`.
+ */
+function isDevelopment(): boolean {
+  return fs.existsSync(path.join(projectRoot(), "panel", "src", "app"));
+}
+
 /** Where an installation writes. `market_plugins` in development, `plugins` otherwise. */
 export function installRoot(side: PluginSide): string {
-  return path.join(
-    projectRoot(),
-    side,
-    process.env.NODE_ENV === "development" ? "market_plugins" : "plugins"
-  );
+  return path.join(projectRoot(), side, isDevelopment() ? "market_plugins" : "plugins");
 }
 
 /** Both are searched: an installation may have been made under either. */
