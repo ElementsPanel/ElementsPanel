@@ -91,8 +91,15 @@ servers are running. The panel and daemon halves are kept independent:
 - \`panel/\` contains the panel backend and frontend sources.
 - \`daemon/\` contains the daemon backend sources.
 
-Production builds currently ignore \`external/\`. Package or publish support can
-be added later without changing this source layout.
+Publish it to the plugin market with:
+
+\`\`\`bash
+npm run publish-plugin -- ${folder}
+\`\`\`
+
+That compiles both halves and uploads the result, which the market puts in its
+review queue. Production builds still ignore \`external/\`: a published plugin is
+installed from the market, not from this directory.
 `
     };
 
