@@ -8,6 +8,7 @@
 // scripts/package-panel-plugins.mjs 一致：
 //
 //   <out>/<side>/plugin.json
+//   <out>/<side>/README.md               （工作区里带自述时）
 //   <out>/<side>/backend/index.cjs
 //   <out>/<side>/frontend/index.js       （仅 panel 侧有前端时）
 //
@@ -237,6 +238,21 @@ export default defineConfig({
   return { entry: "frontend/index.js", styles: fs.existsSync(path.join(outFrontendDir, "style.css")) ? ["frontend/style.css"] : [] };
 }
 
+/**
+ * 自述：工作区里 `<side>/README.md`。它是插件对使用者说的话，会随包一起发布；工作区根
+ * 目录那份 README.md 是写给开发者的，不在这里取用。
+ *
+ * 自述是可选的，没有就不带——详情页的「自述」页签据此显示，缺了只是空着。
+ */
+function copyReadme(workspace, side, outSideDir) {
+  const source = path.join(workspace, side, "README.md");
+  if (!fs.existsSync(source)) return null;
+
+  fs.copyFileSync(source, path.join(outSideDir, "README.md"));
+  log(`[compile] ${side}: 带上自述 ${path.relative(PROJECT_ROOT, source)}`);
+  return source;
+}
+
 /** 产出的 plugin.json 指向编译后的文件，和打包脚本的产出保持一致。 */
 function writeManifest(side, workspace, outSideDir, frontend) {
   const manifestPath = path.join(workspace, side, "plugin.json");
@@ -335,8 +351,15 @@ async function main() {
     await compileBackend(side, workspace, outSideDir);
     const frontend = side === "panel" ? await compileFrontend(workspace, outSideDir) : null;
     const manifest = writeManifest(side, workspace, outSideDir, frontend);
+    const readme = copyReadme(workspace, side, outSideDir);
 
-    sides.push({ side, id: manifest.id, version: manifest.version, frontend: Boolean(frontend) });
+    sides.push({
+      side,
+      id: manifest.id,
+      version: manifest.version,
+      frontend: Boolean(frontend),
+      readme: Boolean(readme)
+    });
   }
 
   if (!sides.length) throw new Error("工作区里没有可编译的插件（缺少 plugin.json）");

@@ -93,6 +93,27 @@ export function apply(ctx: DaemonPluginContext) {
   ctx.logger.info("Custom daemon plugin loaded.");
 }
 `,
+      // 这两份是插件对使用者说的话，会随包发布、在插件市场的「自述」页签里按 markdown
+      // 渲染。与工作区根目录的 README.md 不同，那份是写给开发者的。
+      "panel/README.md": `# ${folder} panel plugin
+
+这一份是插件的自述：发布后会随包上传，在插件市场的「自述」页签里按 markdown 显示。
+
+## 它做什么
+
+在这里写清楚插件做什么、怎么配置、有什么注意事项。
+
+## 用法
+
+\`\`\`bash
+# 发布到插件市场
+npm run publish-plugin -- ${folder}
+\`\`\`
+`,
+      "daemon/README.md": `# ${folder} daemon plugin
+
+这一份是插件的自述：发布后会随包上传，在插件市场的「自述」页签里按 markdown 显示。
+`,
       "README.md": `# ${folder}
 
 This custom plugin workspace is discovered while the ElementsPanel development
@@ -112,6 +133,10 @@ review queue. Everything the market shows — display name, version, summary,
 description, category, changelog — is read from \`panel/plugin.json\` (or
 \`daemon/plugin.json\` for a daemon-only workspace), so edit it there. Only
 \`--version\` and \`--changelog\` are worth passing per upload.
+
+The plugin's own description for users lives in \`panel/README.md\` (or
+\`daemon/README.md\`): it is packaged with the plugin and rendered on the market's
+自述 tab. This file is the developer's guide, and is not published.
 
 Production builds still ignore \`external/\`: a published plugin is installed
 from the market, not from this directory.

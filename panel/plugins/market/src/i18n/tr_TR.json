@@ -83,7 +83,7 @@
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Boyut: {size} · {count} dosya",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "Sürüm notları yok",
   "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "Eklenti veya sürüm bulunamadı, henüz onaylanmadı veya mağazadan kaldırıldı",
-  "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "Genel bakış",
+  "TXT_CODE_PLUGIN_MARKET_README": "Readme",
   "TXT_CODE_PLUGIN_MARKET_VERSIONS": "Sürümler",
   "TXT_CODE_PLUGIN_MARKET_TAGS": "Etiketler",
   "TXT_CODE_PLUGIN_MARKET_ADDITIONAL_INFO": "Ek bilgiler",

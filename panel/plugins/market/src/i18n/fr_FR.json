@@ -83,7 +83,7 @@
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Taille : {size} · {count} fichiers",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "Aucune note de version disponible",
   "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "Le plugin ou la version est introuvable, en attente de validation ou retiré du marché",
-  "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "Vue d'ensemble",
+  "TXT_CODE_PLUGIN_MARKET_README": "Readme",
   "TXT_CODE_PLUGIN_MARKET_VERSIONS": "Versions",
   "TXT_CODE_PLUGIN_MARKET_TAGS": "Étiquettes",
   "TXT_CODE_PLUGIN_MARKET_ADDITIONAL_INFO": "Informations complémentaires",

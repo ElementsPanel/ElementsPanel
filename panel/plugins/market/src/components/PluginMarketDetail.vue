@@ -27,13 +27,17 @@ const plugin = ref<MarketPluginDetail>();
 const loading = ref(false);
 const busy = ref(false);
 const error = ref("");
-const activeTab = ref<"overview" | "versions" | "updates">("overview");
+const activeTab = ref<"readme" | "versions" | "updates">("readme");
 let requestId = 0;
 // Every release row carries its own install button, so more than one install can be
 // in flight; count them instead of letting the last event win.
 let running = 0;
 
-const description = computed(() => markdownToHTML(plugin.value?.description || ""));
+// 自述优先用包里的 README.md；市场没给（旧市场源，或包里没有自述）就退到插件说明。
+// 渲染与净化都在这里做，因为这个市场源可以是任意地址。
+const readme = computed(() =>
+  markdownToHTML(plugin.value?.readme || plugin.value?.description || "")
+);
 // The updates tab lists every release's notes, so each one is rendered once here
 // rather than re-parsed on every render.
 const changelogs = computed(() =>
@@ -91,12 +95,12 @@ function updateInstalled(pluginId: string, version: string | undefined) {
 }
 
 watch(() => props.pluginId, refresh, { immediate: true });
-// A marketplace entry always opens on its description; only the user's next
+// A marketplace entry always opens on its readme; only the user's next
 // click moves the tab.
 watch(
   () => props.pluginId,
   () => {
-    activeTab.value = "overview";
+    activeTab.value = "readme";
   }
 );
 onBeforeUnmount(() => requestId++);
@@ -163,7 +167,7 @@ onBeforeUnmount(() => requestId++);
 
         <div class="plugin-detail-tabs">
           <VTabs v-model="activeTab" color="primary">
-            <VTab value="overview">{{ t("TXT_CODE_PLUGIN_MARKET_OVERVIEW") }}</VTab>
+            <VTab value="readme">{{ t("TXT_CODE_PLUGIN_MARKET_README") }}</VTab>
             <VTab value="versions">{{ t("TXT_CODE_PLUGIN_MARKET_VERSIONS") }}</VTab>
             <VTab value="updates">{{ t("TXT_CODE_PLUGIN_MARKET_UPDATES") }}</VTab>
           </VTabs>
@@ -171,11 +175,11 @@ onBeforeUnmount(() => requestId++);
 
         <div class="plugin-detail-body">
           <section class="plugin-detail-content">
-            <template v-if="activeTab === 'overview'">
+            <template v-if="activeTab === 'readme'">
               <div
-                v-if="plugin.description"
+                v-if="plugin.readme || plugin.description"
                 class="global-markdown-html plugin-detail-markdown"
-                v-html="description"
+                v-html="readme"
               />
               <p v-else class="plugin-detail-empty">
                 {{ t("TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION") }}

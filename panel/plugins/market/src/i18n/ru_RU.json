@@ -83,7 +83,7 @@
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Размер: {size} · Файлов: {count}",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "Список изменений отсутствует",
   "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "Плагин или версия не найдены, ещё не одобрены или сняты с публикации",
-  "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "Обзор",
+  "TXT_CODE_PLUGIN_MARKET_README": "Readme",
   "TXT_CODE_PLUGIN_MARKET_VERSIONS": "Версии",
   "TXT_CODE_PLUGIN_MARKET_TAGS": "Теги",
   "TXT_CODE_PLUGIN_MARKET_ADDITIONAL_INFO": "Дополнительная информация",

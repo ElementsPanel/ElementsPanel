@@ -83,7 +83,7 @@
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "ขนาด: {size} · {count} ไฟล์",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "ยังไม่มีบันทึกการเปลี่ยนแปลง",
   "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "ไม่พบปลั๊กอินหรือเวอร์ชัน ยังไม่ได้รับอนุมัติ หรือถูกนำออกจากตลาด",
-  "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "ภาพรวม",
+  "TXT_CODE_PLUGIN_MARKET_README": "Readme",
   "TXT_CODE_PLUGIN_MARKET_VERSIONS": "เวอร์ชัน",
   "TXT_CODE_PLUGIN_MARKET_TAGS": "แท็ก",
   "TXT_CODE_PLUGIN_MARKET_ADDITIONAL_INFO": "ข้อมูลเพิ่มเติม",

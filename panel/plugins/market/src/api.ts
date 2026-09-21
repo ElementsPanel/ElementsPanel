@@ -52,6 +52,8 @@ export interface MarketPluginVersion {
 
 export interface MarketPluginDetail extends MarketPlugin {
   description: string;
+  /** 包里的 README.md 原文，市场没给或包里没有时为空。 */
+  readme?: string;
   versions: MarketPluginVersion[];
   selectedVersion: MarketPluginVersion;
   createdAt: number;

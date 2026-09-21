@@ -83,7 +83,7 @@
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Tamaño: {size} · {count} archivos",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "No hay notas de la versión",
   "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "El complemento o la versión no existe, no se ha aprobado o se ha retirado del mercado",
-  "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "Descripción general",
+  "TXT_CODE_PLUGIN_MARKET_README": "Readme",
   "TXT_CODE_PLUGIN_MARKET_VERSIONS": "Versiones",
   "TXT_CODE_PLUGIN_MARKET_TAGS": "Etiquetas",
   "TXT_CODE_PLUGIN_MARKET_ADDITIONAL_INFO": "Información adicional",

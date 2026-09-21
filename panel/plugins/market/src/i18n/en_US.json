@@ -83,7 +83,7 @@
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Size: {size} · {count} files",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "No release notes available",
   "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "The plugin or version was not found, has not been approved, or has been delisted",
-  "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "Overview",
+  "TXT_CODE_PLUGIN_MARKET_README": "Readme",
   "TXT_CODE_PLUGIN_MARKET_VERSIONS": "Versions",
   "TXT_CODE_PLUGIN_MARKET_TAGS": "Tags",
   "TXT_CODE_PLUGIN_MARKET_ADDITIONAL_INFO": "Additional info",

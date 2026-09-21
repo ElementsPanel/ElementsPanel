@@ -7,9 +7,10 @@
 //
 // The plugin's details are read from the workspace's `plugin.json` — that is where
 // a plugin is described. This compiles the workspace with the project's own
-// compilers (scripts/compile-plugin.mjs) and uploads the result. The market puts
-// every upload in its review queue; nothing appears on the market's front page
-// until an administrator approves it.
+// compilers (scripts/compile-plugin.mjs) and uploads the result; the market reads
+// the details from the packaged `plugin.json`, so nothing describes a plugin twice.
+// The market puts every upload in its review queue; nothing appears on the market's
+// front page until an administrator approves it.
 //
 // The market account is linked the first time it is needed: this script makes up a
 // state, opens the market's connect page in the browser, and polls until the user
@@ -247,7 +248,21 @@ const ALLOWED_EXTENSIONS = new Set([
   ".txt"
 ]);
 
-async function upload(connection, manifest, outDir, files) {
+/**
+ * 市场从包里自己的 plugin.json 读插件信息，所以 `--version` / `--changelog` 要写进
+ * 编译产物里的那份。工作区的 plugin.json 保持不动：覆盖只针对这一次上传。
+ */
+async function applyOverrides(outDir, files, manifest) {
+  for (const relativeFile of files.filter((file) => file.endsWith("plugin.json"))) {
+    const filePath = path.join(outDir, relativeFile);
+    const packaged = JSON.parse(await fs.readFile(filePath, "utf8"));
+    packaged.version = manifest.version;
+    packaged.changelog = manifest.changelog;
+    await fs.writeFile(filePath, `${JSON.stringify(packaged, null, 2)}\n`, "utf8");
+  }
+}
+
+async function upload(connection, outDir, files) {
   const rejected = files.filter(
     (relativeFile) => !ALLOWED_EXTENSIONS.has(path.extname(relativeFile).toLowerCase())
   );
@@ -258,11 +273,6 @@ async function upload(connection, manifest, outDir, files) {
   }
 
   const form = new FormData();
-  form.append(
-    "manifest",
-    new Blob([JSON.stringify(manifest)], { type: "application/json" }),
-    "manifest.json"
-  );
 
   let totalBytes = 0;
   for (const relativeFile of files) {
@@ -325,13 +335,16 @@ async function main() {
   if (!compiled.files?.length) throw new Error("Compiling produced no files.");
   console.log(`Compiled ${compiled.files.length} files into ${path.relative(PROJECT_ROOT, outDir)}`);
 
+  // 市场不再收单独的 manifest 字段：它读包里自己的 plugin.json，所以覆盖值要写进去。
+  await applyOverrides(outDir, compiled.files, manifest);
+
   if (flags["compile-only"] === true) return;
 
   const connection = await loadConnection();
   if (flags.market) connection.marketUrl = normalizeMarketUrl(flags.market);
   if (!connection.token) await connect(connection);
 
-  const result = await upload(connection, manifest, outDir, compiled.files);
+  const result = await upload(connection, outDir, compiled.files);
   console.log(`\nSubmitted for review: ${manifest.displayName} v${manifest.version}`);
   await reportSubmissions(connection, String(result?.pluginId ?? "")).catch(() => undefined);
 }

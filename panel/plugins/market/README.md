@@ -98,9 +98,13 @@ setting on this plugin's own settings form.
 | DELETE | `/api/market/plugin/uninstall` | remove it again, here and on the named nodes |
 
 Selecting a plugin opens `/market/plugins/:pluginId`. The page is laid out like a
-store listing: a header with the plugin's name, author and install action, an
-Overview / Versions / Updates tab set, and a sidebar carrying the category and the
-plugin's id, vendor and versions. Overview renders the description. Versions lists
+store listing: a header with the plugin's name, author and install action, a
+Readme / Versions / Updates tab set, and a sidebar carrying the category and the
+plugin's id, vendor and versions. The Readme tab renders the description the
+market publishes with the plugin, which is the package's own `README.md`
+(`readme` on the detail response); a market source that does not send one falls
+back to the plugin's long description, and the rendering and sanitizing happen
+here because that source is a configurable address. Versions lists
 every approved release with its date, file count and package size, and each row
 carries its own install button — the header's installs the latest release. The
 Updates tab lists every release's notes. A row is not a link: clicking one no
