@@ -119,7 +119,7 @@ onMounted(refresh);
                 {{ t("TXT_CODE_PLUGIN_MARKET_BY", { name: plugin.author?.displayName ?? "" }) }}
                 <span v-if="plugin.category">· {{ plugin.category }}</span>
               </div>
-              <div class="text-body-2 mt-2">
+              <div class="plugin-market-card-summary text-body-2 mt-2">
                 {{ plugin.summary || t("TXT_CODE_PLUGIN_MARKET_NO_SUMMARY") }}
               </div>
             </VCardText>
@@ -171,11 +171,20 @@ onMounted(refresh);
 .plugin-market-card {
   display: flex;
   flex-direction: column;
-  padding: 8px;
+  padding: 12px 8px;
 }
 
 .plugin-market-card-content {
   flex: 1 0 auto;
+}
+
+.plugin-market-card-summary {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.5;
+  text-overflow: ellipsis;
 }
 
 .plugin-market-card-actions {
