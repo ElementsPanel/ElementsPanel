@@ -51,7 +51,6 @@
   "TXT_CODE_PLUGIN_MARKET_INSTALLED": "インストール済み",
   "TXT_CODE_PLUGIN_MARKET_NO_SUMMARY": "概要なし",
   "TXT_CODE_PLUGIN_MARKET_REFRESH": "更新",
-  "TXT_CODE_PLUGIN_MARKET_RESTART_HINT": "プラグインのインストール・削除が完全に反映されるには、パネルとデーモンの再起動が必要な場合があります",
   "TXT_CODE_PLUGIN_MARKET_SEARCH": "プラグインを検索",
   "TXT_CODE_PLUGIN_MARKET_UNINSTALL": "アンインストール",
   "TXT_CODE_PLUGIN_MARKET_UNINSTALLED": "アンインストール済み",
@@ -97,5 +96,12 @@
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "サイズ：{size} · {count} ファイル",
   "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "更新内容",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "更新内容はありません",
-  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "プラグインまたはバージョンが存在しないか、未承認または公開停止されています"
+  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "プラグインまたはバージョンが存在しないか、未承認または公開停止されています",
+  "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "概要",
+  "TXT_CODE_PLUGIN_MARKET_VERSIONS": "バージョン",
+  "TXT_CODE_PLUGIN_MARKET_TAGS": "タグ",
+  "TXT_CODE_PLUGIN_MARKET_ADDITIONAL_INFO": "追加情報",
+  "TXT_CODE_PLUGIN_MARKET_PLUGIN_ID": "プラグイン ID",
+  "TXT_CODE_PLUGIN_MARKET_VENDOR": "開発元",
+  "TXT_CODE_PLUGIN_MARKET_LATEST": "最新"
 }

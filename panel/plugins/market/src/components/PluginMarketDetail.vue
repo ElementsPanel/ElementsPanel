@@ -4,18 +4,7 @@ import { getCurrentLang, t } from "@/lang/i18n";
 import { markdownToHTML } from "@/tools/safe";
 import { getValidatorErrorMsg } from "@/tools/validator";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
-import {
-  VAlert,
-  VBtn,
-  VCard,
-  VCardText,
-  VChip,
-  VCol,
-  VContainer,
-  VProgressLinear,
-  VRow,
-  VSelect
-} from "vuetify/components";
+import { VAlert, VBtn, VChip, VContainer, VIcon, VProgressLinear } from "vuetify/components";
 import { pluginMarketDetail, type MarketPluginDetail } from "../api";
 import PluginMarketInstall from "./PluginMarketInstall.vue";
 
@@ -29,16 +18,11 @@ const plugin = ref<MarketPluginDetail>();
 const loading = ref(false);
 const busy = ref(false);
 const error = ref("");
+const activeTab = ref<"overview" | "versions">("overview");
 let requestId = 0;
 
 const description = computed(() => markdownToHTML(plugin.value?.description || ""));
 const changelog = computed(() => markdownToHTML(plugin.value?.selectedVersion.changelog || ""));
-const versionOptions = computed(() =>
-  (plugin.value?.versions ?? []).map((version) => ({
-    title: t("TXT_CODE_PLUGIN_MARKET_VERSION", { version: version.version }),
-    value: version.version
-  }))
-);
 
 function formatDate(timestamp: number) {
   return new Date(timestamp).toLocaleString(getCurrentLang().replace("_", "-"));
@@ -50,11 +34,16 @@ function formatSize(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
+/**
+ * Picking another release keeps the plugin on screen: the name, the install
+ * button and the tab all show it, so emptying the view for every version would
+ * flash the whole page. Only a different plugin clears it.
+ */
 async function refresh() {
   const currentRequest = ++requestId;
   loading.value = true;
   error.value = "";
-  plugin.value = undefined;
+  if (plugin.value?.id !== props.pluginId) plugin.value = undefined;
   busy.value = false;
   try {
     const { execute } = pluginMarketDetail();
@@ -85,17 +74,21 @@ function updateInstalled(pluginId: string, version: string | undefined) {
 }
 
 watch(() => [props.pluginId, props.version], refresh, { immediate: true });
+// A marketplace entry always opens on its description; only the user's next
+// click moves the tab.
+watch(
+  () => props.pluginId,
+  () => {
+    activeTab.value = "overview";
+  }
+);
 onBeforeUnmount(() => requestId++);
 </script>
 
 <template>
   <main class="plugin-detail" :class="{ 'plugin-detail--embedded': embedded }">
     <VContainer fluid class="plugin-detail-container">
-      <PageToolbar
-        :title="t('TXT_CODE_PLUGIN_MARKET_DETAIL')"
-        icon="mdi-puzzle-outline"
-        class="mb-14"
-      >
+      <PageToolbar :title="t('TXT_CODE_PLUGIN_MARKET_DETAIL')" icon="mdi-puzzle-outline">
         <template #actions>
           <VBtn variant="text" prepend-icon="mdi-arrow-left" :disabled="busy" @click="emit('back')">
             {{ t("TXT_CODE_PLUGIN_MARKET_BACK") }}
@@ -107,110 +100,175 @@ onBeforeUnmount(() => requestId++);
       </PageToolbar>
 
       <VProgressLinear v-if="loading" indeterminate class="mb-4" />
-      <VAlert v-else-if="error" type="error" :text="error" />
+      <VAlert v-if="error" type="error" :text="error" class="mb-4" />
 
-      <template v-else-if="plugin">
-        <VCard class="mb-8 pa-4" elevation="0">
-          <VCardText>
-            <h1 class="text-h5 mb-2">{{ plugin.displayName }}</h1>
-            <div class="text-body-2 text-medium-emphasis mb-3">
-              {{ t("TXT_CODE_PLUGIN_MARKET_BY", { name: plugin.author?.displayName ?? "" }) }}
-              <span class="ml-2">{{ plugin.name }}</span>
+      <template v-if="plugin">
+        <header class="plugin-detail-header">
+          <div class="plugin-detail-heading">
+            <span class="plugin-detail-icon">
+              <VIcon icon="mdi-puzzle-outline" size="34" />
+            </span>
+            <div class="plugin-detail-heading-text">
+              <h1 class="plugin-detail-title">{{ plugin.displayName }}</h1>
+              <p class="plugin-detail-summary">
+                {{ plugin.summary || t("TXT_CODE_PLUGIN_MARKET_NO_SUMMARY") }}
+              </p>
+              <div class="plugin-detail-meta">
+                <span class="plugin-detail-author">
+                  <VIcon icon="mdi-account-circle-outline" size="16" />
+                  {{ t("TXT_CODE_PLUGIN_MARKET_BY", { name: plugin.author?.displayName ?? "" }) }}
+                </span>
+                <span v-if="plugin.category" class="plugin-detail-category">
+                  {{ plugin.category }}
+                </span>
+                <VChip v-if="plugin.installedVersion" size="small" color="success" variant="tonal">
+                  {{
+                    t("TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION", {
+                      version: plugin.installedVersion
+                    })
+                  }}
+                </VChip>
+              </div>
             </div>
-            <div class="d-flex flex-wrap ga-2 mb-4">
-              <VChip v-if="plugin.category" size="small" variant="tonal">{{
-                plugin.category
-              }}</VChip>
-              <VChip v-if="plugin.latestVersion" size="small" variant="tonal">
-                {{
-                  t("TXT_CODE_PLUGIN_MARKET_LATEST_VERSION", {
-                    version: plugin.latestVersion.version
-                  })
-                }}
-              </VChip>
-              <VChip v-if="plugin.installedVersion" size="small" color="success" variant="tonal">
-                {{
-                  t("TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION", {
-                    version: plugin.installedVersion
-                  })
-                }}
-              </VChip>
-            </div>
-            <p class="text-body-1 mb-0">
-              {{ plugin.summary || t("TXT_CODE_PLUGIN_MARKET_NO_SUMMARY") }}
-            </p>
-          </VCardText>
-        </VCard>
+          </div>
 
-        <VRow :gap="32" class="plugin-detail-grid">
-          <VCol cols="12" md="8">
-            <VCard :title="t('TXT_CODE_PLUGIN_MARKET_DESCRIPTION')" elevation="0" class="pa-4">
-              <VCardText>
-                <div
-                  v-if="plugin.description"
-                  class="global-markdown-html plugin-detail-markdown"
-                  v-html="description"
-                />
-                <p v-else class="text-medium-emphasis mb-0">
-                  {{ t("TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION") }}
-                </p>
-              </VCardText>
-            </VCard>
-          </VCol>
-          <VCol cols="12" md="4">
-            <VCard :title="t('TXT_CODE_PLUGIN_MARKET_RELEASE')" elevation="0" class="pa-4">
-              <VCardText>
-                <VSelect
-                  :model-value="plugin.selectedVersion.version"
-                  :items="versionOptions"
-                  :label="t('TXT_CODE_PLUGIN_MARKET_SELECT_VERSION')"
-                  :disabled="busy"
-                  variant="outlined"
-                  density="comfortable"
-                  hide-details
-                  class="mb-4"
-                  @update:model-value="selectVersion"
-                />
-                <div class="text-body-2 text-medium-emphasis mb-4">
-                  <div>
-                    {{
-                      t("TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT", {
-                        date: formatDate(plugin.selectedVersion.submittedAt)
-                      })
-                    }}
-                  </div>
-                  <div>
-                    {{
-                      t("TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE", {
-                        size: formatSize(plugin.selectedVersion.sizeBytes),
-                        count: plugin.selectedVersion.fileCount
-                      })
-                    }}
-                  </div>
+          <div class="plugin-detail-action">
+            <PluginMarketInstall
+              :key="plugin.id"
+              :plugin="plugin"
+              :version="plugin.selectedVersion"
+              @installed="updateInstalled"
+              @busy="busy = $event"
+            />
+          </div>
+        </header>
+
+        <div class="plugin-detail-tabs" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            class="plugin-detail-tab"
+            :class="{ 'plugin-detail-tab--active': activeTab === 'overview' }"
+            :aria-selected="activeTab === 'overview'"
+            @click="activeTab = 'overview'"
+          >
+            {{ t("TXT_CODE_PLUGIN_MARKET_OVERVIEW") }}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            class="plugin-detail-tab"
+            :class="{ 'plugin-detail-tab--active': activeTab === 'versions' }"
+            :aria-selected="activeTab === 'versions'"
+            @click="activeTab = 'versions'"
+          >
+            {{ t("TXT_CODE_PLUGIN_MARKET_VERSIONS") }}
+          </button>
+        </div>
+
+        <div class="plugin-detail-body">
+          <section class="plugin-detail-content">
+            <template v-if="activeTab === 'overview'">
+              <div
+                v-if="plugin.description"
+                class="global-markdown-html plugin-detail-markdown"
+                v-html="description"
+              />
+              <p v-else class="plugin-detail-empty">
+                {{ t("TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION") }}
+              </p>
+            </template>
+
+            <template v-else>
+              <h2 class="plugin-detail-section-title">
+                {{ t("TXT_CODE_PLUGIN_MARKET_SELECT_VERSION") }}
+              </h2>
+              <ul class="plugin-detail-versions">
+                <li v-for="item in plugin.versions" :key="item.version">
+                  <button
+                    type="button"
+                    class="plugin-detail-version"
+                    :class="{
+                      'plugin-detail-version--active':
+                        item.version === plugin.selectedVersion.version
+                    }"
+                    :disabled="busy"
+                    @click="selectVersion(item.version)"
+                  >
+                    <span class="plugin-detail-version-name">
+                      {{ t("TXT_CODE_PLUGIN_MARKET_VERSION", { version: item.version }) }}
+                    </span>
+                    <span class="plugin-detail-version-meta">
+                      {{
+                        t("TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT", {
+                          date: formatDate(item.submittedAt)
+                        })
+                      }}
+                      ·
+                      {{
+                        t("TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE", {
+                          size: formatSize(item.sizeBytes),
+                          count: item.fileCount
+                        })
+                      }}
+                    </span>
+                  </button>
+                </li>
+              </ul>
+
+              <h2 class="plugin-detail-section-title">
+                {{ t("TXT_CODE_PLUGIN_MARKET_CHANGELOG") }}
+              </h2>
+              <div
+                v-if="plugin.selectedVersion.changelog"
+                class="global-markdown-html plugin-detail-markdown"
+                v-html="changelog"
+              />
+              <p v-else class="plugin-detail-empty">
+                {{ t("TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG") }}
+              </p>
+            </template>
+          </section>
+
+          <aside class="plugin-detail-sidebar">
+            <section v-if="plugin.category" class="plugin-detail-sidebar-section">
+              <h2 class="plugin-detail-sidebar-title">
+                {{ t("TXT_CODE_PLUGIN_MARKET_TAGS") }}
+              </h2>
+              <span class="plugin-detail-tag">{{ plugin.category }}</span>
+            </section>
+
+            <section class="plugin-detail-sidebar-section">
+              <h2 class="plugin-detail-sidebar-title">
+                {{ t("TXT_CODE_PLUGIN_MARKET_ADDITIONAL_INFO") }}
+              </h2>
+              <dl class="plugin-detail-info">
+                <div class="plugin-detail-info-row">
+                  <dt>{{ t("TXT_CODE_PLUGIN_MARKET_PLUGIN_ID") }}</dt>
+                  <dd>{{ plugin.name }}</dd>
                 </div>
-                <PluginMarketInstall
-                  :key="plugin.id"
-                  :plugin="plugin"
-                  :version="plugin.selectedVersion"
-                  @installed="updateInstalled"
-                  @busy="busy = $event"
-                />
-              </VCardText>
-            </VCard>
-            <VCard :title="t('TXT_CODE_PLUGIN_MARKET_CHANGELOG')" elevation="0" class="mt-8 pa-4">
-              <VCardText>
-                <div
-                  v-if="plugin.selectedVersion.changelog"
-                  class="global-markdown-html plugin-detail-markdown"
-                  v-html="changelog"
-                />
-                <p v-else class="text-medium-emphasis mb-0">
-                  {{ t("TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG") }}
-                </p>
-              </VCardText>
-            </VCard>
-          </VCol>
-        </VRow>
+                <div class="plugin-detail-info-row">
+                  <dt>{{ t("TXT_CODE_PLUGIN_MARKET_VENDOR") }}</dt>
+                  <dd>{{ plugin.author?.displayName ?? "" }}</dd>
+                </div>
+                <div v-if="plugin.latestVersion" class="plugin-detail-info-row">
+                  <dt>{{ t("TXT_CODE_PLUGIN_MARKET_LATEST") }}</dt>
+                  <dd>
+                    {{
+                      t("TXT_CODE_PLUGIN_MARKET_VERSION", { version: plugin.latestVersion.version })
+                    }}
+                  </dd>
+                </div>
+                <div v-if="plugin.installedVersion" class="plugin-detail-info-row">
+                  <dt>{{ t("TXT_CODE_PLUGIN_MARKET_INSTALLED") }}</dt>
+                  <dd>
+                    {{ t("TXT_CODE_PLUGIN_MARKET_VERSION", { version: plugin.installedVersion }) }}
+                  </dd>
+                </div>
+              </dl>
+            </section>
+          </aside>
+        </div>
       </template>
     </VContainer>
   </main>
@@ -221,12 +279,257 @@ onBeforeUnmount(() => requestId++);
   width: 100%;
   min-width: 0;
   overflow-wrap: anywhere;
+
+  // The page header keeps room before the store-style header block below it.
+  :deep(.page-toolbar) {
+    margin-bottom: 56px;
+  }
 }
 
 .plugin-detail-container {
   max-width: var(--app-max-width);
   margin: 0 auto;
   padding: 20px 24px 32px;
+}
+
+// A marketplace entry reads like its store page: a logo, the name, the author,
+// and the install action held out to the right of the title.
+.plugin-detail-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 24px;
+}
+
+.plugin-detail-heading {
+  display: flex;
+  gap: 20px;
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
+.plugin-detail-icon {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.12);
+}
+
+.plugin-detail-heading-text {
+  min-width: 0;
+}
+
+.plugin-detail-title {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.plugin-detail-summary {
+  margin: 0 0 12px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+}
+
+.plugin-detail-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+}
+
+.plugin-detail-author {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.plugin-detail-category {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(var(--v-theme-on-surface), 0.06);
+}
+
+.plugin-detail-action {
+  flex: 0 1 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  text-align: right;
+}
+
+// The rule under the tabs is a background, not a border: Desktop mode strips
+// every border inside a window.
+.plugin-detail-tabs {
+  position: relative;
+  display: flex;
+  gap: 28px;
+  margin-bottom: 24px;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: rgba(var(--v-theme-on-surface), 0.12);
+  }
+}
+
+.plugin-detail-tab {
+  position: relative;
+  appearance: none;
+  padding: 10px 2px 14px;
+  border: 0;
+  background: none;
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  cursor: pointer;
+
+  &:hover {
+    color: rgb(var(--v-theme-on-surface));
+  }
+}
+
+.plugin-detail-tab--active {
+  color: rgb(var(--v-theme-primary));
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: rgb(var(--v-theme-primary));
+  }
+}
+
+.plugin-detail-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 40px;
+  align-items: start;
+}
+
+.plugin-detail-content,
+.plugin-detail-sidebar {
+  min-width: 0;
+}
+
+.plugin-detail-sidebar-section + .plugin-detail-sidebar-section {
+  margin-top: 28px;
+}
+
+.plugin-detail-section-title,
+.plugin-detail-sidebar-title {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.plugin-detail-section-title:not(:first-child) {
+  margin-top: 28px;
+}
+
+.plugin-detail-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  background: rgba(var(--v-theme-on-surface), 0.06);
+}
+
+.plugin-detail-info {
+  margin: 0;
+}
+
+.plugin-detail-info-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+
+  dt {
+    flex: 0 0 84px;
+    color: rgba(var(--v-theme-on-surface), 0.6);
+  }
+
+  dd {
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+.plugin-detail-versions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plugin-detail-version {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(var(--v-theme-on-surface), 0.05);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.plugin-detail-version--active {
+  background: rgba(var(--v-theme-primary), 0.1);
+
+  .plugin-detail-version-name {
+    color: rgb(var(--v-theme-primary));
+  }
+}
+
+.plugin-detail-version-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.plugin-detail-version-meta {
+  font-size: 12px;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+}
+
+.plugin-detail-empty {
+  margin: 0;
+  color: rgba(var(--v-theme-on-surface), 0.6);
 }
 
 .plugin-detail-markdown {
@@ -242,12 +545,32 @@ onBeforeUnmount(() => requestId++);
   }
 }
 
+// Normal mode is laid out against the viewport; Desktop mode answers to its
+// window instead, so it is left out here and handled by the container query.
 @media (max-width: 992px) {
-  .plugin-detail-container {
-    padding: 16px 12px 28px;
+  .plugin-detail:not(.plugin-detail--embedded) {
+    .plugin-detail-container {
+      padding: 16px 12px 28px;
+    }
+
+    .plugin-detail-body {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 28px;
+    }
+
+    .plugin-detail-title {
+      font-size: 22px;
+    }
+
+    .plugin-detail-action {
+      align-items: flex-start;
+      text-align: left;
+    }
   }
 }
 
+// Desktop mode hands the page a window that is narrower than the screen, so the
+// layout follows the window it was given rather than the viewport.
 .plugin-detail--embedded {
   height: 100%;
   min-height: 0;
@@ -259,9 +582,8 @@ onBeforeUnmount(() => requestId++);
     padding: 20px;
   }
 
-  .plugin-detail-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  :deep(.page-toolbar) {
+    margin-bottom: 24px;
   }
 
   :deep(.page-toolbar-title) {
@@ -275,9 +597,21 @@ onBeforeUnmount(() => requestId++);
   }
 }
 
-@container (max-width: 800px) {
-  .plugin-detail--embedded .plugin-detail-grid {
-    grid-template-columns: minmax(0, 1fr);
+@container (max-width: 820px) {
+  .plugin-detail--embedded {
+    .plugin-detail-body {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 28px;
+    }
+
+    .plugin-detail-title {
+      font-size: 22px;
+    }
+
+    .plugin-detail-action {
+      align-items: flex-start;
+      text-align: left;
+    }
   }
 }
 </style>

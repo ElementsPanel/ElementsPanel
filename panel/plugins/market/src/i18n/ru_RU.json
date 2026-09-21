@@ -51,7 +51,6 @@
   "TXT_CODE_PLUGIN_MARKET_INSTALLED": "Установлено",
   "TXT_CODE_PLUGIN_MARKET_NO_SUMMARY": "Без описания",
   "TXT_CODE_PLUGIN_MARKET_REFRESH": "Обновить",
-  "TXT_CODE_PLUGIN_MARKET_RESTART_HINT": "Для полного вступления в силу установленного или удалённого плагина может потребоваться перезапуск панели и демона",
   "TXT_CODE_PLUGIN_MARKET_SEARCH": "Поиск плагинов",
   "TXT_CODE_PLUGIN_MARKET_UNINSTALL": "Удалить",
   "TXT_CODE_PLUGIN_MARKET_UNINSTALLED": "Удалено",
@@ -97,5 +96,12 @@
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Размер: {size} · Файлов: {count}",
   "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "Список изменений",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "Список изменений отсутствует",
-  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "Плагин или версия не найдены, ещё не одобрены или сняты с публикации"
+  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "Плагин или версия не найдены, ещё не одобрены или сняты с публикации",
+  "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "Обзор",
+  "TXT_CODE_PLUGIN_MARKET_VERSIONS": "Версии",
+  "TXT_CODE_PLUGIN_MARKET_TAGS": "Теги",
+  "TXT_CODE_PLUGIN_MARKET_ADDITIONAL_INFO": "Дополнительная информация",
+  "TXT_CODE_PLUGIN_MARKET_PLUGIN_ID": "ID плагина",
+  "TXT_CODE_PLUGIN_MARKET_VENDOR": "Издатель",
+  "TXT_CODE_PLUGIN_MARKET_LATEST": "Последняя"
 }

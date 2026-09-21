@@ -51,7 +51,6 @@
   "TXT_CODE_PLUGIN_MARKET_INSTALLED": "Instalado",
   "TXT_CODE_PLUGIN_MARKET_NO_SUMMARY": "Sin resumen",
   "TXT_CODE_PLUGIN_MARKET_REFRESH": "Actualizar",
-  "TXT_CODE_PLUGIN_MARKET_RESTART_HINT": "Puede que sea necesario reiniciar el panel y el daemon para que un plugin instalado o eliminado surta efecto por completo",
   "TXT_CODE_PLUGIN_MARKET_SEARCH": "Buscar plugins",
   "TXT_CODE_PLUGIN_MARKET_UNINSTALL": "Desinstalar",
   "TXT_CODE_PLUGIN_MARKET_UNINSTALLED": "Desinstalado",
@@ -97,5 +96,12 @@
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Tamaño: {size} · {count} archivos",
   "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "Notas de la versión",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "No hay notas de la versión",
-  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "El complemento o la versión no existe, no se ha aprobado o se ha retirado del mercado"
+  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "El complemento o la versión no existe, no se ha aprobado o se ha retirado del mercado",
+  "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "Descripción general",
+  "TXT_CODE_PLUGIN_MARKET_VERSIONS": "Versiones",
+  "TXT_CODE_PLUGIN_MARKET_TAGS": "Etiquetas",
+  "TXT_CODE_PLUGIN_MARKET_ADDITIONAL_INFO": "Información adicional",
+  "TXT_CODE_PLUGIN_MARKET_PLUGIN_ID": "ID del complemento",
+  "TXT_CODE_PLUGIN_MARKET_VENDOR": "Proveedor",
+  "TXT_CODE_PLUGIN_MARKET_LATEST": "Más reciente"
 }

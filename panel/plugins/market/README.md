@@ -97,11 +97,14 @@ setting on this plugin's own settings form.
 | POST | `/api/market/plugin/install` | download a package, write the panel half, send the daemon half to the named nodes |
 | DELETE | `/api/market/plugin/uninstall` | remove it again, here and on the named nodes |
 
-Selecting a plugin opens `/market/plugins/:pluginId`. The detail page renders
-the description and release notes as sanitized Markdown and shows version dates,
-file counts and package sizes. Its version picker preserves the choice in the
-`version` query parameter. Installation uses that exact approved version for both
-the package lookup and download, including after the node picker is confirmed.
+Selecting a plugin opens `/market/plugins/:pluginId`. The page is laid out like a
+store listing: a header with the plugin's name, author and install action, an
+Overview / Versions tab pair, and a sidebar carrying the category and the
+plugin's id, vendor and versions. Overview renders the description, and Versions
+lists every approved release with its date, file count and package size before
+the release notes; picking one preserves the choice in the `version` query
+parameter. Installation uses that exact approved version for both the package
+lookup and download, including after the node picker is confirmed.
 The install and uninstall dialogs live in `components/PluginMarketInstall.vue`.
 Uninstall checks the installed version's package when deciding whether to offer
 daemon removal. Details are fetched through the panel backend, using the configured
@@ -153,7 +156,7 @@ source checkout, absent from a built deployment, which is only
 
 **Restart required — except in development.** The panel and the daemon load their
 plugins at startup, so in a deployment an install or an uninstall only takes
-effect after both are restarted; the page says so, and the install route answers
+effect after both are restarted; the install route answers
 `restartRequired: true`.
 
 A source checkout reloads instead: the route calls `ctx.plugins.reload()`, which

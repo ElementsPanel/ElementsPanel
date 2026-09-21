@@ -28,10 +28,6 @@ const emit = defineEmits<{
   busy: [value: boolean];
 }>();
 const pendingId = ref("");
-// Whether the answer to the last install or uninstall asked for a restart. A
-// development checkout reloads its plugins instead, so the note under the list
-// is only kept while a restart is what it actually takes.
-const restartHint = ref(true);
 
 const uninstallTarget = ref<MarketPlugin | null>(null);
 const uninstallShown = computed({
@@ -139,7 +135,6 @@ async function runInstall(plugin: MarketPlugin, daemonIds: string[]) {
         daemonIds
       }
     });
-    restartHint.value = response.value?.restartRequired ?? true;
     emit("installed", plugin.id, plugin.latestVersion?.version);
     const failed = response.value?.failedNodes ?? [];
     if (failed.length) {
@@ -174,10 +169,9 @@ async function runUninstall(plugin: MarketPlugin, daemonIds: string[]) {
   pendingId.value = plugin.id;
   try {
     const { execute } = uninstallMarketPlugin();
-    const response = await execute({
+    await execute({
       params: { pluginId: plugin.id, daemonIds: daemonIds.join(",") }
     });
-    restartHint.value = response.value?.restartRequired ?? true;
     emit("installed", plugin.id, undefined);
     message.success(t("TXT_CODE_PLUGIN_MARKET_UNINSTALLED"));
   } catch (error) {
@@ -214,9 +208,6 @@ watch(busy, (value) => emit("busy", value));
         {{ t("TXT_CODE_PLUGIN_MARKET_UNINSTALL") }}
       </VBtn>
     </div>
-    <p v-if="restartHint" class="text-caption text-medium-emphasis mt-4 mb-0">
-      {{ t("TXT_CODE_PLUGIN_MARKET_RESTART_HINT") }}
-    </p>
     <VDialog v-model="uninstallShown" max-width="420">
       <VCard :title="t('TXT_CODE_PLUGIN_MARKET_UNINSTALL')">
         <VCardText>

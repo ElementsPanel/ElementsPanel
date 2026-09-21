@@ -51,7 +51,6 @@
   "TXT_CODE_PLUGIN_MARKET_INSTALLED": "Kurulu",
   "TXT_CODE_PLUGIN_MARKET_NO_SUMMARY": "Özet yok",
   "TXT_CODE_PLUGIN_MARKET_REFRESH": "Yenile",
-  "TXT_CODE_PLUGIN_MARKET_RESTART_HINT": "Bir eklentinin kurulumunun veya kaldırılmasının tam olarak etkili olması için panelin ve daemon'un yeniden başlatılması gerekebilir",
   "TXT_CODE_PLUGIN_MARKET_SEARCH": "Eklenti ara",
   "TXT_CODE_PLUGIN_MARKET_UNINSTALL": "Kaldır",
   "TXT_CODE_PLUGIN_MARKET_UNINSTALLED": "Kaldırıldı",
@@ -97,5 +96,12 @@
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Boyut: {size} · {count} dosya",
   "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "Sürüm notları",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "Sürüm notları yok",
-  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "Eklenti veya sürüm bulunamadı, henüz onaylanmadı veya mağazadan kaldırıldı"
+  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "Eklenti veya sürüm bulunamadı, henüz onaylanmadı veya mağazadan kaldırıldı",
+  "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "Genel bakış",
+  "TXT_CODE_PLUGIN_MARKET_VERSIONS": "Sürümler",
+  "TXT_CODE_PLUGIN_MARKET_TAGS": "Etiketler",
+  "TXT_CODE_PLUGIN_MARKET_ADDITIONAL_INFO": "Ek bilgiler",
+  "TXT_CODE_PLUGIN_MARKET_PLUGIN_ID": "Eklenti Kimliği",
+  "TXT_CODE_PLUGIN_MARKET_VENDOR": "Sağlayıcı",
+  "TXT_CODE_PLUGIN_MARKET_LATEST": "En son"
 }

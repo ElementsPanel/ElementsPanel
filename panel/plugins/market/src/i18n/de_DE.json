@@ -51,7 +51,6 @@
   "TXT_CODE_PLUGIN_MARKET_INSTALLED": "Installiert",
   "TXT_CODE_PLUGIN_MARKET_NO_SUMMARY": "Keine Kurzbeschreibung",
   "TXT_CODE_PLUGIN_MARKET_REFRESH": "Aktualisieren",
-  "TXT_CODE_PLUGIN_MARKET_RESTART_HINT": "Ein installiertes oder entferntes Plugin kann einen Neustart von Panel und Daemon erfordern, um vollständig zu wirken",
   "TXT_CODE_PLUGIN_MARKET_SEARCH": "Plugins suchen",
   "TXT_CODE_PLUGIN_MARKET_UNINSTALL": "Deinstallieren",
   "TXT_CODE_PLUGIN_MARKET_UNINSTALLED": "Deinstalliert",
@@ -97,5 +96,12 @@
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Größe: {size} · {count} Dateien",
   "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "Versionshinweise",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "Keine Versionshinweise verfügbar",
-  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "Das Plugin oder die Version wurde nicht gefunden, noch nicht freigegeben oder aus dem Markt entfernt"
+  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "Das Plugin oder die Version wurde nicht gefunden, noch nicht freigegeben oder aus dem Markt entfernt",
+  "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "Übersicht",
+  "TXT_CODE_PLUGIN_MARKET_VERSIONS": "Versionen",
+  "TXT_CODE_PLUGIN_MARKET_TAGS": "Tags",
+  "TXT_CODE_PLUGIN_MARKET_ADDITIONAL_INFO": "Weitere Informationen",
+  "TXT_CODE_PLUGIN_MARKET_PLUGIN_ID": "Plugin-ID",
+  "TXT_CODE_PLUGIN_MARKET_VENDOR": "Anbieter",
+  "TXT_CODE_PLUGIN_MARKET_LATEST": "Neueste"
 }
