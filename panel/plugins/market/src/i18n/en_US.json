@@ -82,5 +82,20 @@
   "TXT_CODE_ed3fc23": "Continue",
   "TXT_CODE_ee5cd485": "See Config",
   "TXT_CODE_f88db280": "The current template is empty, do you want to continue saving?",
-  "TXT_CODE_fd0cdf5d": "Import from file"
+  "TXT_CODE_fd0cdf5d": "Import from file",
+  "TXT_CODE_PLUGIN_MARKET_DETAIL": "Plugin details",
+  "TXT_CODE_PLUGIN_MARKET_VIEW_DETAIL": "View details",
+  "TXT_CODE_PLUGIN_MARKET_BACK": "Back to plugin market",
+  "TXT_CODE_PLUGIN_MARKET_DESCRIPTION": "Description",
+  "TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION": "No detailed description available",
+  "TXT_CODE_PLUGIN_MARKET_RELEASE": "Version and installation",
+  "TXT_CODE_PLUGIN_MARKET_SELECT_VERSION": "Select version",
+  "TXT_CODE_PLUGIN_MARKET_LATEST_VERSION": "Latest v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION": "Installed v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALL_VERSION": "Install v{version}",
+  "TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT": "Published: {date}",
+  "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Size: {size} · {count} files",
+  "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "Release notes",
+  "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "No release notes available",
+  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "The plugin or version was not found, has not been approved, or has been delisted"
 }

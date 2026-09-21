@@ -158,8 +158,13 @@ export async function apply(ctx: PanelPluginContext) {
 
   function reportPluginMarketError(error: unknown): never {
     const reason =
-      error instanceof PluginMarketError ? error.message : "UNREACHABLE";
+      error instanceof PluginMarketError
+        ? error.message
+        : axios.isAxiosError(error) && error.response?.status === 404
+        ? "NOT_FOUND"
+        : "UNREACHABLE";
     const messages: Record<string, string> = {
+      NOT_FOUND: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_NOT_FOUND"),
       DIR_TAKEN: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_DIR_TAKEN"),
       EMPTY_PACKAGE: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_EMPTY_PACKAGE"),
       BAD_PATH: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE")
@@ -184,7 +189,11 @@ export async function apply(ctx: PanelPluginContext) {
    */
   function requestedNodes(value: unknown): string[] {
     if (Array.isArray(value)) return value.map((item) => String(item));
-    if (typeof value === "string") return value.split(",").map((item) => item.trim()).filter(Boolean);
+    if (typeof value === "string")
+      return value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
     return [];
   }
 
@@ -297,6 +306,37 @@ export async function apply(ctx: PanelPluginContext) {
     requestCtx.body = listInstalled();
   });
 
+  router.get(
+    "/plugin/detail",
+    requireAdmin,
+    validator({ query: { pluginId: String } }),
+    async (requestCtx: Koa.ParameterizedContext) => {
+      try {
+        const pluginId = String(requestCtx.query.pluginId);
+        const version = requestCtx.query.version ? String(requestCtx.query.version) : undefined;
+        const response = await axios.get(
+          `${marketSettings().pluginMarketAddr}/api/plugins/${encodeURIComponent(pluginId)}`,
+          { params: { version }, timeout: 15000 }
+        );
+        const detail = response.data;
+        // Also support market sources that predate the selectedVersion field.
+        const selectedVersion = version
+          ? detail.versions?.find((item: { version: string }) => item.version === version)
+          : detail.latestVersion;
+        if (!selectedVersion || selectedVersion.status !== "approved") {
+          throw new PluginMarketError("NOT_FOUND");
+        }
+        requestCtx.body = {
+          ...detail,
+          selectedVersion,
+          installedVersion: listInstalled().find((item) => item.pluginId === pluginId)?.version
+        };
+      } catch (error) {
+        reportPluginMarketError(error);
+      }
+    }
+  );
+
   // The daemons the page offers to install a daemon plugin on.
   router.get("/plugin/nodes", requireAdmin, async (requestCtx) => {
     requestCtx.body = listNodes();
@@ -386,9 +426,7 @@ export async function apply(ctx: PanelPluginContext) {
       // deleted, on the panel and on every node the package was sent to.
       requestCtx.body = {
         removed: Boolean(removed),
-        restartRequired: removed
-          ? !(await hotReload(removed.sides, daemonIds))
-          : false
+        restartRequired: removed ? !(await hotReload(removed.sides, daemonIds)) : false
       };
     }
   );

@@ -25,9 +25,27 @@ export interface MarketPlugin {
   summary: string;
   category: string;
   author: { id: string; displayName: string };
-  latestVersion?: { id: string; version: string; status: string; submittedAt: number };
+  latestVersion?: MarketPluginVersion;
   /** The version installed on this panel, or undefined when it is not installed. */
   installedVersion?: string;
+}
+
+export interface MarketPluginVersion {
+  id: string;
+  version: string;
+  status: string;
+  changelog: string;
+  fileCount: number;
+  sizeBytes: number;
+  submittedAt: number;
+}
+
+export interface MarketPluginDetail extends MarketPlugin {
+  description: string;
+  versions: MarketPluginVersion[];
+  selectedVersion: MarketPluginVersion;
+  createdAt: number;
+  updatedAt: number;
 }
 
 /** One plugin installed from the market, as the marker in its directory records. */
@@ -41,6 +59,14 @@ export interface InstalledPlugin {
 
 export const pluginMarketList = useDefineApi<unknown, MarketPlugin[]>({
   url: "/api/market/plugin/list",
+  method: "GET"
+});
+
+export const pluginMarketDetail = useDefineApi<
+  { params: { pluginId: string; version?: string } },
+  MarketPluginDetail
+>({
+  url: "/api/market/plugin/detail",
   method: "GET"
 });
 

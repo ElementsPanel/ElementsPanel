@@ -82,5 +82,20 @@
   "TXT_CODE_ed3fc23": "続く",
   "TXT_CODE_ee5cd485": "設定を表示",
   "TXT_CODE_f88db280": "現在のテンプレートは空です、保存を続行しますか？",
-  "TXT_CODE_fd0cdf5d": "ファイルからインポート"
+  "TXT_CODE_fd0cdf5d": "ファイルからインポート",
+  "TXT_CODE_PLUGIN_MARKET_DETAIL": "プラグインの詳細",
+  "TXT_CODE_PLUGIN_MARKET_VIEW_DETAIL": "詳細を見る",
+  "TXT_CODE_PLUGIN_MARKET_BACK": "プラグインマーケットに戻る",
+  "TXT_CODE_PLUGIN_MARKET_DESCRIPTION": "プラグインの説明",
+  "TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION": "詳細な説明はありません",
+  "TXT_CODE_PLUGIN_MARKET_RELEASE": "バージョンとインストール",
+  "TXT_CODE_PLUGIN_MARKET_SELECT_VERSION": "バージョンを選択",
+  "TXT_CODE_PLUGIN_MARKET_LATEST_VERSION": "最新バージョン v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION": "インストール済み v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALL_VERSION": "v{version} をインストール",
+  "TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT": "公開日時：{date}",
+  "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "サイズ：{size} · {count} ファイル",
+  "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "更新内容",
+  "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "更新内容はありません",
+  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "プラグインまたはバージョンが存在しないか、未承認または公開停止されています"
 }

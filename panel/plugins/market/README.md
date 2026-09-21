@@ -90,11 +90,22 @@ setting on this plugin's own settings form.
 | Method | Path | Purpose |
 | --- | --- | --- |
 | GET | `/api/market/plugin/list` | the market's published plugins, each with the version installed here |
+| GET | `/api/market/plugin/detail` | public plugin details and approved versions; accepts `pluginId` and optional `version`, and adds the locally installed version |
 | GET | `/api/market/plugin/installed` | what has been installed from the market |
 | GET | `/api/market/plugin/nodes` | the daemons a daemon half can be sent to |
 | GET | `/api/market/plugin/package` | what a published package contains, before installing it |
 | POST | `/api/market/plugin/install` | download a package, write the panel half, send the daemon half to the named nodes |
 | DELETE | `/api/market/plugin/uninstall` | remove it again, here and on the named nodes |
+
+Selecting a plugin opens `/market/plugins/:pluginId`. The detail page renders
+the description and release notes as sanitized Markdown and shows version dates,
+file counts and package sizes. Its version picker preserves the choice in the
+`version` query parameter. Installation uses that exact approved version for both
+the package lookup and download, including after the node picker is confirmed.
+The install and uninstall dialogs live in `components/PluginMarketInstall.vue`.
+Uninstall checks the installed version's package when deciding whether to offer
+daemon removal. Details are fetched through the panel backend, using the configured
+EPanel_Market source and the same administrator permission as installation.
 
 A published package is laid out with the side as its first path segment
 (`panel/plugin.json`, `daemon/backend/index.cjs`, …), so installing is mostly

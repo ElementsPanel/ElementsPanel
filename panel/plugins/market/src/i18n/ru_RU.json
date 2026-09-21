@@ -82,5 +82,20 @@
   "TXT_CODE_ed3fc23": "Продолжить",
   "TXT_CODE_ee5cd485": "Просмотр конфигурации",
   "TXT_CODE_f88db280": "Текущий шаблон пуст, продолжить сохранение?",
-  "TXT_CODE_fd0cdf5d": "Импорт из файла"
+  "TXT_CODE_fd0cdf5d": "Импорт из файла",
+  "TXT_CODE_PLUGIN_MARKET_DETAIL": "Сведения о плагине",
+  "TXT_CODE_PLUGIN_MARKET_VIEW_DETAIL": "Подробнее",
+  "TXT_CODE_PLUGIN_MARKET_BACK": "Назад в магазин плагинов",
+  "TXT_CODE_PLUGIN_MARKET_DESCRIPTION": "Описание",
+  "TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION": "Подробное описание отсутствует",
+  "TXT_CODE_PLUGIN_MARKET_RELEASE": "Версия и установка",
+  "TXT_CODE_PLUGIN_MARKET_SELECT_VERSION": "Выберите версию",
+  "TXT_CODE_PLUGIN_MARKET_LATEST_VERSION": "Последняя версия v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION": "Установлена v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALL_VERSION": "Установить v{version}",
+  "TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT": "Опубликовано: {date}",
+  "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Размер: {size} · Файлов: {count}",
+  "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "Список изменений",
+  "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "Список изменений отсутствует",
+  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "Плагин или версия не найдены, ещё не одобрены или сняты с публикации"
 }

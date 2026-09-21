@@ -10,6 +10,7 @@ import Market from "./normal/Market.vue";
 import MarketEditor from "./normal/MarketEditor.vue";
 import McPreset from "./normal/McPreset.vue";
 import PluginMarket from "./normal/PluginMarket.vue";
+import PluginMarketDetail from "./normal/PluginMarketDetail.vue";
 import { getAllowUsePreset, refreshMarketPermission } from "./runtime";
 
 const ROLE_ADMIN = 10;
@@ -78,6 +79,24 @@ export function apply(ctx: PanelFrontendPluginContext) {
       icon: "mdi-puzzle-outline"
       // No `breadcrumbs`: this is a market of its own, not a page of the
       // application market, so the trail reads 管理面板 > 插件市场.
+    }
+  });
+
+  ctx.routes.add({
+    path: "/market/plugins/:pluginId",
+    name: t("TXT_CODE_PLUGIN_MARKET_DETAIL"),
+    component: PluginMarketDetail,
+    meta: {
+      mainMenu: false,
+      permission: ROLE_ADMIN,
+      breadcrumbs: [
+        {
+          name: t("TXT_CODE_PLUGIN_MARKET"),
+          path: "/market/plugins",
+          mainMenu: true,
+          permission: ROLE_ADMIN
+        }
+      ]
     }
   });
 

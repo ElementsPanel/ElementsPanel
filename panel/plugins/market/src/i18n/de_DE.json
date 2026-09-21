@@ -82,5 +82,20 @@
   "TXT_CODE_ed3fc23": "weitermachen",
   "TXT_CODE_ee5cd485": "Siehe Konfiguration",
   "TXT_CODE_f88db280": "Aktuelle Vorlage ist leer, trotzdem speichern?",
-  "TXT_CODE_fd0cdf5d": "Aus Datei importieren"
+  "TXT_CODE_fd0cdf5d": "Aus Datei importieren",
+  "TXT_CODE_PLUGIN_MARKET_DETAIL": "Plugin-Details",
+  "TXT_CODE_PLUGIN_MARKET_VIEW_DETAIL": "Details anzeigen",
+  "TXT_CODE_PLUGIN_MARKET_BACK": "Zurück zum Plugin-Markt",
+  "TXT_CODE_PLUGIN_MARKET_DESCRIPTION": "Beschreibung",
+  "TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION": "Keine ausführliche Beschreibung verfügbar",
+  "TXT_CODE_PLUGIN_MARKET_RELEASE": "Version und Installation",
+  "TXT_CODE_PLUGIN_MARKET_SELECT_VERSION": "Version auswählen",
+  "TXT_CODE_PLUGIN_MARKET_LATEST_VERSION": "Neueste Version v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION": "Installiert: v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALL_VERSION": "v{version} installieren",
+  "TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT": "Veröffentlicht: {date}",
+  "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Größe: {size} · {count} Dateien",
+  "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "Versionshinweise",
+  "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "Keine Versionshinweise verfügbar",
+  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "Das Plugin oder die Version wurde nicht gefunden, noch nicht freigegeben oder aus dem Markt entfernt"
 }

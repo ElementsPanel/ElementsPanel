@@ -82,5 +82,20 @@
   "TXT_CODE_ed3fc23": "계속하기",
   "TXT_CODE_ee5cd485": "설정 보기",
   "TXT_CODE_f88db280": "현재 템플릿이 비어 있습니다, 계속 저장하시겠습니까?",
-  "TXT_CODE_fd0cdf5d": "파일에서 가져오기"
+  "TXT_CODE_fd0cdf5d": "파일에서 가져오기",
+  "TXT_CODE_PLUGIN_MARKET_DETAIL": "플러그인 상세 정보",
+  "TXT_CODE_PLUGIN_MARKET_VIEW_DETAIL": "상세 보기",
+  "TXT_CODE_PLUGIN_MARKET_BACK": "플러그인 마켓으로 돌아가기",
+  "TXT_CODE_PLUGIN_MARKET_DESCRIPTION": "플러그인 설명",
+  "TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION": "상세 설명이 없습니다",
+  "TXT_CODE_PLUGIN_MARKET_RELEASE": "버전 및 설치",
+  "TXT_CODE_PLUGIN_MARKET_SELECT_VERSION": "버전 선택",
+  "TXT_CODE_PLUGIN_MARKET_LATEST_VERSION": "최신 버전 v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION": "설치됨 v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALL_VERSION": "v{version} 설치",
+  "TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT": "게시일: {date}",
+  "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "크기: {size} · 파일 {count}개",
+  "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "업데이트 내역",
+  "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "업데이트 내역이 없습니다",
+  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "플러그인 또는 버전이 없거나, 승인되지 않았거나, 마켓에서 내려갔습니다"
 }

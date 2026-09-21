@@ -82,5 +82,20 @@
   "TXT_CODE_ed3fc23": "继续",
   "TXT_CODE_ee5cd485": "查看配置",
   "TXT_CODE_f88db280": "当前模板内容为空，是否继续保存？",
-  "TXT_CODE_fd0cdf5d": "从文件导入"
+  "TXT_CODE_fd0cdf5d": "从文件导入",
+  "TXT_CODE_PLUGIN_MARKET_DETAIL": "插件详情",
+  "TXT_CODE_PLUGIN_MARKET_VIEW_DETAIL": "查看详情",
+  "TXT_CODE_PLUGIN_MARKET_BACK": "返回插件市场",
+  "TXT_CODE_PLUGIN_MARKET_DESCRIPTION": "插件说明",
+  "TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION": "暂无详细说明",
+  "TXT_CODE_PLUGIN_MARKET_RELEASE": "版本与安装",
+  "TXT_CODE_PLUGIN_MARKET_SELECT_VERSION": "选择版本",
+  "TXT_CODE_PLUGIN_MARKET_LATEST_VERSION": "最新版本 v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION": "已安装 v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALL_VERSION": "安装 v{version}",
+  "TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT": "发布时间：{date}",
+  "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "大小：{size} · {count} 个文件",
+  "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "更新说明",
+  "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "暂无更新说明",
+  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "插件或版本不存在、尚未通过审核或已下架"
 }

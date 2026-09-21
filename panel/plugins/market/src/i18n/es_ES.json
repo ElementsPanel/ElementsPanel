@@ -82,5 +82,20 @@
   "TXT_CODE_ed3fc23": "continuar",
   "TXT_CODE_ee5cd485": "Ver configuración",
   "TXT_CODE_f88db280": "La plantilla actual está vacía, ¿desea continuar guardando?",
-  "TXT_CODE_fd0cdf5d": "Importar desde archivo"
+  "TXT_CODE_fd0cdf5d": "Importar desde archivo",
+  "TXT_CODE_PLUGIN_MARKET_DETAIL": "Detalles del complemento",
+  "TXT_CODE_PLUGIN_MARKET_VIEW_DETAIL": "Ver detalles",
+  "TXT_CODE_PLUGIN_MARKET_BACK": "Volver al mercado de complementos",
+  "TXT_CODE_PLUGIN_MARKET_DESCRIPTION": "Descripción",
+  "TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION": "No hay una descripción detallada",
+  "TXT_CODE_PLUGIN_MARKET_RELEASE": "Versión e instalación",
+  "TXT_CODE_PLUGIN_MARKET_SELECT_VERSION": "Seleccionar versión",
+  "TXT_CODE_PLUGIN_MARKET_LATEST_VERSION": "Última versión v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION": "Instalada v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALL_VERSION": "Instalar v{version}",
+  "TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT": "Publicado: {date}",
+  "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Tamaño: {size} · {count} archivos",
+  "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "Notas de la versión",
+  "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "No hay notas de la versión",
+  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "El complemento o la versión no existe, no se ha aprobado o se ha retirado del mercado"
 }

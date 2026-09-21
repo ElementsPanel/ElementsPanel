@@ -82,5 +82,20 @@
   "TXT_CODE_ed3fc23": "繼續",
   "TXT_CODE_ee5cd485": "檢視設定",
   "TXT_CODE_f88db280": "當前模板為空，是否繼續儲存？",
-  "TXT_CODE_fd0cdf5d": "從檔案匯入"
+  "TXT_CODE_fd0cdf5d": "從檔案匯入",
+  "TXT_CODE_PLUGIN_MARKET_DETAIL": "外掛程式詳情",
+  "TXT_CODE_PLUGIN_MARKET_VIEW_DETAIL": "查看詳情",
+  "TXT_CODE_PLUGIN_MARKET_BACK": "返回外掛程式市場",
+  "TXT_CODE_PLUGIN_MARKET_DESCRIPTION": "外掛程式說明",
+  "TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION": "暫無詳細說明",
+  "TXT_CODE_PLUGIN_MARKET_RELEASE": "版本與安裝",
+  "TXT_CODE_PLUGIN_MARKET_SELECT_VERSION": "選擇版本",
+  "TXT_CODE_PLUGIN_MARKET_LATEST_VERSION": "最新版本 v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION": "已安裝 v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALL_VERSION": "安裝 v{version}",
+  "TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT": "發佈時間：{date}",
+  "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "大小：{size} · {count} 個檔案",
+  "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "更新說明",
+  "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "暫無更新說明",
+  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "外掛程式或版本不存在、尚未通過審核或已下架"
 }

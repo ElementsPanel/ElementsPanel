@@ -82,5 +82,20 @@
   "TXT_CODE_ed3fc23": "ดำเนินการต่อ",
   "TXT_CODE_ee5cd485": "ดูการตั้งค่า",
   "TXT_CODE_f88db280": "เทมเพลตปัจจุบันว่างเปล่า คุณต้องการบันทึกต่อหรือไม่?",
-  "TXT_CODE_fd0cdf5d": "นำเข้าจากไฟล์"
+  "TXT_CODE_fd0cdf5d": "นำเข้าจากไฟล์",
+  "TXT_CODE_PLUGIN_MARKET_DETAIL": "รายละเอียดปลั๊กอิน",
+  "TXT_CODE_PLUGIN_MARKET_VIEW_DETAIL": "ดูรายละเอียด",
+  "TXT_CODE_PLUGIN_MARKET_BACK": "กลับไปยังตลาดปลั๊กอิน",
+  "TXT_CODE_PLUGIN_MARKET_DESCRIPTION": "คำอธิบายปลั๊กอิน",
+  "TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION": "ยังไม่มีคำอธิบายโดยละเอียด",
+  "TXT_CODE_PLUGIN_MARKET_RELEASE": "เวอร์ชันและการติดตั้ง",
+  "TXT_CODE_PLUGIN_MARKET_SELECT_VERSION": "เลือกเวอร์ชัน",
+  "TXT_CODE_PLUGIN_MARKET_LATEST_VERSION": "เวอร์ชันล่าสุด v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION": "ติดตั้งแล้ว v{version}",
+  "TXT_CODE_PLUGIN_MARKET_INSTALL_VERSION": "ติดตั้ง v{version}",
+  "TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT": "เผยแพร่เมื่อ: {date}",
+  "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "ขนาด: {size} · {count} ไฟล์",
+  "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "บันทึกการเปลี่ยนแปลง",
+  "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "ยังไม่มีบันทึกการเปลี่ยนแปลง",
+  "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "ไม่พบปลั๊กอินหรือเวอร์ชัน ยังไม่ได้รับอนุมัติ หรือถูกนำออกจากตลาด"
 }
