@@ -117,6 +117,9 @@ body::-webkit-scrollbar-track {
 
 // Use one flat field treatment for every Vuetify input and select.
 .v-field {
+  // Keep fields distinct from the page background in both theme modes.
+  // Component-specific desktop surfaces can still override this locally.
+  background-color: rgb(var(--v-theme-surface));
   box-shadow: none !important;
 }
 
