@@ -91,5 +91,8 @@
   "TXT_CODE_PLUGIN_MARKET_ADDITIONAL_INFO": "Información adicional",
   "TXT_CODE_PLUGIN_MARKET_PLUGIN_ID": "ID del complemento",
   "TXT_CODE_PLUGIN_MARKET_VENDOR": "Proveedor",
-  "TXT_CODE_PLUGIN_MARKET_LATEST": "Más reciente"
+  "TXT_CODE_PLUGIN_MARKET_LATEST": "Más reciente",
+  "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL": "Complemento de panel",
+  "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON": "Complemento de daemon",
+  "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Complemento de panel y daemon"
 }

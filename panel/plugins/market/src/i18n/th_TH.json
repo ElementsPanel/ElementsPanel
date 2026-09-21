@@ -91,5 +91,8 @@
   "TXT_CODE_PLUGIN_MARKET_ADDITIONAL_INFO": "ข้อมูลเพิ่มเติม",
   "TXT_CODE_PLUGIN_MARKET_PLUGIN_ID": "ID ปลั๊กอิน",
   "TXT_CODE_PLUGIN_MARKET_VENDOR": "ผู้พัฒนา",
-  "TXT_CODE_PLUGIN_MARKET_LATEST": "ล่าสุด"
+  "TXT_CODE_PLUGIN_MARKET_LATEST": "ล่าสุด",
+  "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL": "ปลั๊กอิน Panel",
+  "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON": "ปลั๊กอิน Daemon",
+  "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "ปลั๊กอิน Panel และ Daemon"
 }

@@ -28,7 +28,15 @@ export interface MarketPlugin {
   latestVersion?: MarketPluginVersion;
   /** The version installed on this panel, or undefined when it is not installed. */
   installedVersion?: string;
+  /**
+   * The halves the latest release carries, as the market reports them. Optional
+   * because a market source that predates the field simply does not send it.
+   */
+  sides?: PluginSide[];
 }
+
+/** Which half of a package carries a plugin: its first path segment. */
+export type PluginSide = "panel" | "daemon";
 
 export interface MarketPluginVersion {
   id: string;
@@ -38,6 +46,8 @@ export interface MarketPluginVersion {
   fileCount: number;
   sizeBytes: number;
   submittedAt: number;
+  /** The halves this release's own package carries. */
+  sides?: PluginSide[];
 }
 
 export interface MarketPluginDetail extends MarketPlugin {

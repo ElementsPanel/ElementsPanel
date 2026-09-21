@@ -110,6 +110,14 @@ Uninstall checks the installed version's package when deciding whether to offer
 daemon removal. Details are fetched through the panel backend, using the configured
 EPanel_Market source and the same administrator permission as installation.
 
+A card and the detail header both say which halves a plugin has. The market
+reports the sides of each release — the first path segment of its package — as
+`sides`, and `components/PluginMarketSideBadge.vue` turns that into
+"Panel插件", "Daemon插件" or "双端插件". The list uses the plugin's own `sides`
+(the latest release's) and the detail page the selected release's, falling back
+to the plugin's. A market source that predates the field sends nothing, in which
+case no badge is shown rather than a guess.
+
 The desktop registers a separate administrator-only `plugin-market` application.
 `desktop/DesktopPluginMarket.vue` keeps list/detail navigation and the selected
 version inside its window, leaving the desktop route unchanged. It shares

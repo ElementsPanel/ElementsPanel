@@ -18,6 +18,7 @@ import {
   VTextField
 } from "vuetify/components";
 import { pluginMarketList, type MarketPlugin } from "../api";
+import PluginMarketSideBadge from "./PluginMarketSideBadge.vue";
 
 const props = defineProps<{ embedded?: boolean }>();
 const emit = defineEmits<{ select: [pluginId: string] }>();
@@ -128,6 +129,7 @@ onMounted(refresh);
               <VChip v-if="plugin.latestVersion" size="small" variant="tonal">
                 {{ t("TXT_CODE_PLUGIN_MARKET_VERSION", { version: plugin.latestVersion.version }) }}
               </VChip>
+              <PluginMarketSideBadge :sides="plugin.sides" />
               <VChip v-if="plugin.installedVersion" size="small" color="success" variant="tonal">
                 {{ t("TXT_CODE_PLUGIN_MARKET_INSTALLED") }}
               </VChip>

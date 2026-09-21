@@ -16,6 +16,7 @@ import {
 } from "vuetify/components";
 import { pluginMarketDetail, type MarketPluginDetail } from "../api";
 import PluginMarketInstall from "./PluginMarketInstall.vue";
+import PluginMarketSideBadge from "./PluginMarketSideBadge.vue";
 
 const props = defineProps<{ pluginId: string; version?: string; embedded?: boolean }>();
 const emit = defineEmits<{
@@ -130,6 +131,7 @@ onBeforeUnmount(() => requestId++);
                 <span v-if="plugin.category" class="plugin-detail-category">
                   {{ plugin.category }}
                 </span>
+                <PluginMarketSideBadge :sides="plugin.selectedVersion.sides ?? plugin.sides" />
                 <VChip v-if="plugin.installedVersion" size="small" color="success" variant="tonal">
                   {{
                     t("TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION", {

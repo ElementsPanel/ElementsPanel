@@ -91,5 +91,8 @@
   "TXT_CODE_PLUGIN_MARKET_ADDITIONAL_INFO": "Дополнительная информация",
   "TXT_CODE_PLUGIN_MARKET_PLUGIN_ID": "ID плагина",
   "TXT_CODE_PLUGIN_MARKET_VENDOR": "Издатель",
-  "TXT_CODE_PLUGIN_MARKET_LATEST": "Последняя"
+  "TXT_CODE_PLUGIN_MARKET_LATEST": "Последняя",
+  "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL": "Плагин панели",
+  "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON": "Плагин демона",
+  "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Плагин панели и демона"
 }

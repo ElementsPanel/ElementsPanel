@@ -265,7 +265,9 @@ const sharedViewOverrides = {
   "@/components/PageToolbar.vue": {},
   "@/lang/i18n": { t: (key) => key, getCurrentLang: () => "en_us" },
   "@/tools/validator": { getValidatorErrorMsg: (err) => err.message },
-  "@/tools/vuetifyToast": { message: { error() {} } }
+  "@/tools/vuetifyToast": { message: { error() {} } },
+  // The list and the detail both show a plugin's sides through this chip.
+  "./PluginMarketSideBadge.vue": {}
 };
 
 test("desktop cards support keyboard selection and preserve search when installed badges change", async () => {
@@ -412,4 +414,14 @@ test("shared detail ignores stale requests when a desktop version changes and st
   } finally {
     if (app._instance) app.unmount();
   }
+});
+
+test("a plugin's sides pick the badge wording, and no badge when the market is silent", () => {
+  const { sideBadgeKey } = load("panel/plugins/market/src/sides.ts");
+  assert.equal(sideBadgeKey(["panel"]), "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL");
+  assert.equal(sideBadgeKey(["daemon"]), "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON");
+  assert.equal(sideBadgeKey(["panel", "daemon"]), "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH");
+  // An empty list and a missing field both mean the market said nothing.
+  assert.equal(sideBadgeKey([]), undefined);
+  assert.equal(sideBadgeKey(undefined), undefined);
 });
