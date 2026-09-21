@@ -5,7 +5,6 @@ import { getValidatorErrorMsg } from "@/tools/validator";
 import { message } from "@/tools/vuetifyToast";
 import { computed, onMounted, ref } from "vue";
 import {
-  VAlert,
   VBtn,
   VCard,
   VCardActions,
@@ -13,6 +12,7 @@ import {
   VChip,
   VCol,
   VContainer,
+  VIcon,
   VProgressLinear,
   VRow,
   VTextField
@@ -93,14 +93,13 @@ onMounted(refresh);
 
       <VProgressLinear v-if="loading && !plugins.length" indeterminate class="mb-4" />
 
-      <VAlert
-        v-if="!loading && !plugins.length"
-        type="info"
-        :title="t('TXT_CODE_PLUGIN_MARKET_EMPTY')"
-        :text="t('TXT_CODE_PLUGIN_MARKET_UNREACHABLE')"
-      />
+      <div v-if="!loading && !plugins.length" class="plugin-market-empty" role="status">
+        <VIcon icon="mdi-puzzle-outline" size="48" class="plugin-market-empty-icon" />
+        <div class="plugin-market-empty-title">{{ t("TXT_CODE_PLUGIN_MARKET_EMPTY") }}</div>
+        <div class="plugin-market-empty-text">{{ t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE") }}</div>
+      </div>
 
-      <VRow v-else class="plugin-market-grid">
+      <VRow v-else-if="visiblePlugins.length" class="plugin-market-grid">
         <VCol v-for="plugin in visiblePlugins" :key="plugin.id" cols="12" md="6" lg="4">
           <VCard
             class="plugin-market-card h-100"
@@ -137,6 +136,11 @@ onMounted(refresh);
           </VCard>
         </VCol>
       </VRow>
+
+      <div v-else-if="!loading" class="plugin-market-empty plugin-market-empty--filtered" role="status">
+        <VIcon icon="mdi-magnify" size="42" class="plugin-market-empty-icon" />
+        <div class="plugin-market-empty-title">{{ t("TXT_CODE_NO_DATA") }}</div>
+      </div>
     </VContainer>
   </main>
 </template>
@@ -177,6 +181,40 @@ onMounted(refresh);
 .plugin-market-card-actions {
   align-items: center;
   padding-top: 8px;
+}
+
+.plugin-market-empty {
+  min-height: 38vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--color-gray-7);
+}
+
+.plugin-market-empty-icon {
+  margin-bottom: 8px;
+  color: var(--color-gray-6);
+}
+
+.plugin-market-empty-title {
+  color: var(--color-gray-8);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.plugin-market-empty-text {
+  max-width: 460px;
+  color: var(--color-gray-7);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.plugin-market-empty--filtered {
+  min-height: 28vh;
 }
 
 @media (max-width: 992px) {
