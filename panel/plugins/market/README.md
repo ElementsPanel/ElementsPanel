@@ -107,6 +107,14 @@ Uninstall checks the installed version's package when deciding whether to offer
 daemon removal. Details are fetched through the panel backend, using the configured
 EPanel_Market source and the same administrator permission as installation.
 
+The desktop registers a separate administrator-only `plugin-market` application.
+`desktop/DesktopPluginMarket.vue` keeps list/detail navigation and the selected
+version inside its window, leaving the desktop route unchanged. It shares
+`components/PluginMarketList.vue`, `components/PluginMarketDetail.vue` and the
+installation dialogs with normal mode. Returning to the list preserves its search
+and scroll position, and installation events update the list's installed badges.
+Desktop layouts respond to the window width, including while it is resized.
+
 A published package is laid out with the side as its first path segment
 (`panel/plugin.json`, `daemon/backend/index.cjs`, …), so installing is mostly
 splitting that prefix and writing each file under `<side>/<plugins>/<name>/`.

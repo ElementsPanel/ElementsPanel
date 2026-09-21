@@ -11,12 +11,15 @@ const ts = panelRequire("typescript");
 const vue = frontendRequire("vue");
 
 // Load source in memory: no project build, network listener or plugin installation.
-function load(relative, overrides = {}) {
+function load(relative, overrides = {}, inlineTemplate = false) {
   const filename = path.join(root, relative);
   let source = fs.readFileSync(filename, "utf8");
   if (filename.endsWith(".vue")) {
     const { parse, compileScript } = frontendRequire("@vue/compiler-sfc");
-    source = compileScript(parse(source).descriptor, { id: "market-install-test" }).content;
+    source = compileScript(parse(source).descriptor, {
+      id: "market-test",
+      inlineTemplate
+    }).content;
   }
   const mod = new Module(filename, module);
   mod.filename = filename;
@@ -212,5 +215,201 @@ test("cancelling the node picker does not install, and uninstall uses the instal
     });
   } finally {
     scope.stop();
+  }
+});
+
+// A small Vue host exercises component events and lifecycles without a browser
+// server. Keeping real Vue components also covers the template's event wiring.
+const renderer = vue.createRenderer({
+  createElement: (tag) => ({ tag, children: [], style: {} }),
+  createText: (text) => ({ text }),
+  createComment: (text) => ({ text }),
+  setText: (node, text) => {
+    node.text = text;
+  },
+  setElementText: (node, text) => {
+    node.text = text;
+  },
+  patchProp: (node, key, _previous, value) => {
+    node[key] = value;
+  },
+  parentNode: (node) => node.parent,
+  nextSibling: (node) => node.parent?.children[node.parent.children.indexOf(node) + 1],
+  insert(node, parent, anchor) {
+    if (node.parent) node.parent.children.splice(node.parent.children.indexOf(node), 1);
+    const index = anchor ? parent.children.indexOf(anchor) : parent.children.length;
+    parent.children.splice(index, 0, node);
+    node.parent = parent;
+  },
+  remove(node) {
+    if (node.parent) node.parent.children.splice(node.parent.children.indexOf(node), 1);
+  }
+});
+
+function setupFixture(component, props) {
+  let state;
+  const events = [];
+  const app = renderer.createApp({
+    setup() {
+      state = component.setup(props, { expose() {}, emit: (...args) => events.push(args) });
+      return () => vue.h("div");
+    }
+  });
+  app.mount({ children: [] });
+  return { state, events, app };
+}
+
+const sharedViewOverrides = {
+  vue,
+  "vuetify/components": {},
+  "@/components/PageToolbar.vue": {},
+  "@/lang/i18n": { t: (key) => key, getCurrentLang: () => "en_us" },
+  "@/tools/validator": { getValidatorErrorMsg: (err) => err.message },
+  "@/tools/vuetifyToast": { message: { error() {} } }
+};
+
+test("desktop cards support keyboard selection and preserve search when installed badges change", async () => {
+  const component = load("panel/plugins/market/src/components/PluginMarketList.vue", {
+    ...sharedViewOverrides,
+    "../api": {
+      pluginMarketList: () => ({
+        execute: async () => ({
+          value: [
+            { id: "one", displayName: "First plugin", summary: "A plugin" },
+            { id: "two", displayName: "Second plugin", summary: "Another plugin" }
+          ]
+        })
+      })
+    }
+  }).default;
+  const props = vue.reactive({ embedded: true });
+  const { state, events, app } = setupFixture(component, props);
+  try {
+    await vue.nextTick();
+    state.keyword.value = "First";
+    const first = state.visiblePlugins.value[0];
+    let prevented = false;
+    state.onCardKeydown(
+      {
+        key: "Enter",
+        preventDefault: () => {
+          prevented = true;
+        }
+      },
+      first
+    );
+    assert.equal(prevented, true);
+    assert.deepEqual(events, [["select", "one"]]);
+    state.updateInstalled("one", "1.0.0");
+    assert.equal(state.visiblePlugins.value[0].installedVersion, "1.0.0");
+    state.updateInstalled("one", undefined);
+    assert.equal(state.visiblePlugins.value[0].installedVersion, undefined);
+    assert.equal(state.keyword.value, "First");
+    props.embedded = false;
+    state.selectPlugin(first);
+    assert.equal(events.length, 1, "normal cards keep their native route link");
+  } finally {
+    app.unmount();
+  }
+});
+
+test("desktop browsing keeps the list mounted and wires detail version, installation and back events", async () => {
+  const installed = [];
+  // Typed props, like the real components: a bare `embedded` attribute only
+  // becomes `true` when the prop is declared Boolean.
+  const List = vue.defineComponent({
+    props: { embedded: Boolean },
+    emits: ["select"],
+    setup(_props, { expose }) {
+      expose({ updateInstalled: (...args) => installed.push(args) });
+      return () => vue.h("div");
+    }
+  });
+  const Detail = vue.defineComponent({
+    props: { pluginId: String, version: String, embedded: Boolean },
+    emits: ["back", "select-version", "installed"],
+    render: () => vue.h("div")
+  });
+  const Desktop = load(
+    "panel/plugins/market/src/desktop/DesktopPluginMarket.vue",
+    {
+      vue,
+      "../components/PluginMarketList.vue": List,
+      "../components/PluginMarketDetail.vue": Detail
+    },
+    true
+  ).default;
+  const app = renderer.createApp(Desktop);
+  app.mount({ children: [] });
+  const findChild = (type) =>
+    app._instance.subTree.children.find((node) => node.type === type)?.component;
+  try {
+    const list = findChild(List);
+    assert.equal(list.props.embedded, true);
+    list.emit("select", "one");
+    await vue.nextTick();
+    const detail = findChild(Detail);
+    assert.equal(detail.props.pluginId, "one");
+    assert.equal(detail.props.embedded, true);
+    detail.emit("select-version", "1.0.0");
+    await vue.nextTick();
+    assert.equal(detail.props.version, "1.0.0");
+    detail.emit("installed", "one", "1.0.0");
+    assert.deepEqual(installed, [["one", "1.0.0"]]);
+    detail.emit("back");
+    await vue.nextTick();
+    assert.equal(findChild(Detail), undefined);
+    assert.equal(findChild(List), list, "search and scroll state survive returning to the list");
+    list.emit("select", "two");
+    await vue.nextTick();
+    assert.equal(findChild(Detail).props.pluginId, "two");
+    assert.equal(
+      findChild(Detail).props.version,
+      undefined,
+      "another plugin starts at its latest release"
+    );
+  } finally {
+    app.unmount();
+  }
+});
+
+test("shared detail ignores stale requests when a desktop version changes and stops updating after close", async () => {
+  const requests = [];
+  const component = load("panel/plugins/market/src/components/PluginMarketDetail.vue", {
+    ...sharedViewOverrides,
+    "@/tools/safe": { markdownToHTML: (text) => text },
+    "./PluginMarketInstall.vue": {},
+    "../api": {
+      pluginMarketDetail: () => ({
+        execute: (args) => new Promise((resolve) => requests.push({ args, resolve }))
+      })
+    }
+  }).default;
+  const props = vue.reactive({ pluginId: "one", version: undefined, embedded: true });
+  const { state, events, app } = setupFixture(component, props);
+  try {
+    assert.equal(requests[0].args.params.pluginId, "one");
+    state.selectVersion("1.0.0");
+    assert.deepEqual(events, [["select-version", "1.0.0"]]);
+    props.version = "1.0.0";
+    await vue.nextTick();
+    assert.equal(requests[1].args.params.version, "1.0.0");
+    requests[1].resolve({ value: { id: "one", selectedVersion: version("1.0.0") } });
+    await vue.nextTick();
+    requests[0].resolve({ value: { id: "one", selectedVersion: version("2.0.0") } });
+    await vue.nextTick();
+    assert.equal(state.plugin.value.selectedVersion.version, "1.0.0");
+    state.busy.value = true;
+    state.selectVersion("2.0.0");
+    assert.equal(events.length, 1, "installation prevents selecting another release");
+    state.busy.value = false;
+    props.pluginId = "two";
+    await vue.nextTick();
+    app.unmount();
+    requests[2].resolve({ value: { id: "two", selectedVersion: version("1.0.0") } });
+    await vue.nextTick();
+    assert.equal(state.plugin.value, undefined);
+  } finally {
+    if (app._instance) app.unmount();
   }
 });

@@ -3,6 +3,7 @@ import type { PanelFrontendPluginContext } from "@/plugin";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import * as marketApi from "./api";
 import DesktopMarket from "./desktop/DesktopMarket.vue";
+import DesktopPluginMarket from "./desktop/DesktopPluginMarket.vue";
 import { useMarketPackages } from "./hooks/useMarketPackages";
 import { localeMessages } from "./i18n";
 import { openMarketDialog } from "./market-dialog";
@@ -128,6 +129,18 @@ export function apply(ctx: PanelFrontendPluginContext) {
     condition: () => useAppStateStore().isAdmin.value,
     initialWidth: 1100,
     initialHeight: 680
+  });
+
+  ctx.desktop.app({
+    id: "plugin-market",
+    label: () => t("TXT_CODE_PLUGIN_MARKET"),
+    icon: "mdi-puzzle-outline",
+    color: "#5c6bc0",
+    route: "/market/plugins",
+    component: DesktopPluginMarket,
+    condition: () => useAppStateStore().isAdmin.value,
+    initialWidth: 1100,
+    initialHeight: 720
   });
 
   // The session exists once the app has started, so the install permission can
