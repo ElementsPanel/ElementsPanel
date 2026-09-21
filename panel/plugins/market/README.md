@@ -99,28 +99,33 @@ setting on this plugin's own settings form.
 
 Selecting a plugin opens `/market/plugins/:pluginId`. The page is laid out like a
 store listing: a header with the plugin's name, author and install action, an
-Overview / Versions tab pair, and a sidebar carrying the category and the
-plugin's id, vendor and versions. Overview renders the description, and Versions
-lists every approved release with its date, file count and package size before
-the release notes; picking one preserves the choice in the `version` query
-parameter. Installation uses that exact approved version for both the package
-lookup and download, including after the node picker is confirmed.
-The install and uninstall dialogs live in `components/PluginMarketInstall.vue`.
-Uninstall checks the installed version's package when deciding whether to offer
-daemon removal. Details are fetched through the panel backend, using the configured
-EPanel_Market source and the same administrator permission as installation.
+Overview / Versions / Updates tab set, and a sidebar carrying the category and the
+plugin's id, vendor and versions. Overview renders the description. Versions lists
+every approved release with its date, file count and package size, and each row
+carries its own install button — the header's installs the latest release. The
+Updates tab lists every release's notes. A row is not a link: clicking one no
+longer switches the page to that release, and the page no longer reads or writes
+the `version` query parameter. Installing uses the release the clicked button
+belongs to for both the package lookup and download, including after the node
+picker is confirmed.
+The install and uninstall dialogs live in `components/PluginMarketInstall.vue`;
+its `installOnly` flag drops the uninstall action for the release rows, since
+uninstalling concerns the plugin rather than one release. Uninstall checks the
+installed version's package when deciding whether to offer daemon removal.
+Details are fetched through the panel backend, using the configured EPanel_Market
+source and the same administrator permission as installation.
 
 A card and the detail header both say which halves a plugin has. The market
 reports the sides of each release — the first path segment of its package — as
 `sides`, and `components/PluginMarketSideBadge.vue` turns that into
 "Panel插件", "Daemon插件" or "双端插件". The list uses the plugin's own `sides`
-(the latest release's) and the detail page the selected release's, falling back
-to the plugin's. A market source that predates the field sends nothing, in which
-case no badge is shown rather than a guess.
+(the latest release's) and the detail header the latest release's. A market source
+that predates the field sends nothing, in which case no badge is shown rather than
+a guess.
 
 The desktop registers a separate administrator-only `plugin-market` application.
-`desktop/DesktopPluginMarket.vue` keeps list/detail navigation and the selected
-version inside its window, leaving the desktop route unchanged. It shares
+`desktop/DesktopPluginMarket.vue` keeps list/detail navigation inside its window,
+leaving the desktop route unchanged. It shares
 `components/PluginMarketList.vue`, `components/PluginMarketDetail.vue` and the
 installation dialogs with normal mode. Returning to the list preserves its search
 and scroll position, and installation events update the list's installed badges.

@@ -18,21 +18,30 @@ import { pluginMarketDetail, type MarketPluginDetail } from "../api";
 import PluginMarketInstall from "./PluginMarketInstall.vue";
 import PluginMarketSideBadge from "./PluginMarketSideBadge.vue";
 
-const props = defineProps<{ pluginId: string; version?: string; embedded?: boolean }>();
+const props = defineProps<{ pluginId: string; embedded?: boolean }>();
 const emit = defineEmits<{
   back: [];
-  "select-version": [version: string];
   installed: [pluginId: string, version: string | undefined];
 }>();
 const plugin = ref<MarketPluginDetail>();
 const loading = ref(false);
 const busy = ref(false);
 const error = ref("");
-const activeTab = ref<"overview" | "versions">("overview");
+const activeTab = ref<"overview" | "versions" | "updates">("overview");
 let requestId = 0;
+// Every release row carries its own install button, so more than one install can be
+// in flight; count them instead of letting the last event win.
+let running = 0;
 
 const description = computed(() => markdownToHTML(plugin.value?.description || ""));
-const changelog = computed(() => markdownToHTML(plugin.value?.selectedVersion.changelog || ""));
+// The updates tab lists every release's notes, so each one is rendered once here
+// rather than re-parsed on every render.
+const changelogs = computed(() =>
+  (plugin.value?.versions ?? []).map((version) => ({
+    version,
+    html: markdownToHTML(version.changelog || "")
+  }))
+);
 
 function formatDate(timestamp: number) {
   return new Date(timestamp).toLocaleString(getCurrentLang().replace("_", "-"));
@@ -45,24 +54,22 @@ function formatSize(bytes: number) {
 }
 
 /**
- * Picking another release keeps the plugin on screen: the name, the install
- * button and the tab all show it, so emptying the view for every version would
- * flash the whole page. Only a different plugin clears it.
+ * Reloading keeps the plugin on screen: the name, the header action and the tabs
+ * all show it, so emptying the view would flash the whole page. Only a different
+ * plugin clears it.
  */
 async function refresh() {
   const currentRequest = ++requestId;
   loading.value = true;
   error.value = "";
   if (plugin.value?.id !== props.pluginId) plugin.value = undefined;
+  // A refresh starts from a clean slate: an install still running belongs to the
+  // state this page is leaving behind.
+  running = 0;
   busy.value = false;
   try {
     const { execute } = pluginMarketDetail();
-    const response = await execute({
-      params: {
-        pluginId: props.pluginId,
-        version: props.version
-      }
-    });
+    const response = await execute({ params: { pluginId: props.pluginId } });
     if (currentRequest !== requestId) return;
     if (!response.value) throw new Error(t("TXT_CODE_PLUGIN_MARKET_NOT_FOUND"));
     plugin.value = response.value;
@@ -73,9 +80,9 @@ async function refresh() {
   }
 }
 
-function selectVersion(version: string) {
-  if (busy.value || !version) return;
-  emit("select-version", version);
+function trackBusy(value: boolean) {
+  running = Math.max(0, running + (value ? 1 : -1));
+  busy.value = running > 0;
 }
 
 function updateInstalled(pluginId: string, version: string | undefined) {
@@ -83,7 +90,7 @@ function updateInstalled(pluginId: string, version: string | undefined) {
   emit("installed", pluginId, version);
 }
 
-watch(() => [props.pluginId, props.version], refresh, { immediate: true });
+watch(() => props.pluginId, refresh, { immediate: true });
 // A marketplace entry always opens on its description; only the user's next
 // click moves the tab.
 watch(
@@ -149,7 +156,7 @@ onBeforeUnmount(() => requestId++);
               :plugin="plugin"
               :version="plugin.selectedVersion"
               @installed="updateInstalled"
-              @busy="busy = $event"
+              @busy="trackBusy"
             />
           </div>
         </header>
@@ -158,6 +165,7 @@ onBeforeUnmount(() => requestId++);
           <VTabs v-model="activeTab" color="primary">
             <VTab value="overview">{{ t("TXT_CODE_PLUGIN_MARKET_OVERVIEW") }}</VTab>
             <VTab value="versions">{{ t("TXT_CODE_PLUGIN_MARKET_VERSIONS") }}</VTab>
+            <VTab value="updates">{{ t("TXT_CODE_PLUGIN_MARKET_UPDATES") }}</VTab>
           </VTabs>
         </div>
 
@@ -174,22 +182,15 @@ onBeforeUnmount(() => requestId++);
               </p>
             </template>
 
-            <template v-else>
-              <h2 class="plugin-detail-section-title">
-                {{ t("TXT_CODE_PLUGIN_MARKET_SELECT_VERSION") }}
-              </h2>
+            <!-- 版本页签只列出历史，并给每个版本自己的安装入口；点一行不会切换页面 -->
+            <template v-else-if="activeTab === 'versions'">
               <ul class="plugin-detail-versions">
-                <li v-for="item in plugin.versions" :key="item.version">
-                  <button
-                    type="button"
-                    class="plugin-detail-version"
-                    :class="{
-                      'plugin-detail-version--active':
-                        item.version === plugin.selectedVersion.version
-                    }"
-                    :disabled="busy"
-                    @click="selectVersion(item.version)"
-                  >
+                <li
+                  v-for="item in plugin.versions"
+                  :key="item.version"
+                  class="plugin-detail-version"
+                >
+                  <div class="plugin-detail-version-text">
                     <span class="plugin-detail-version-name">
                       {{ t("TXT_CODE_PLUGIN_MARKET_VERSION", { version: item.version }) }}
                     </span>
@@ -207,21 +208,41 @@ onBeforeUnmount(() => requestId++);
                         })
                       }}
                     </span>
-                  </button>
+                  </div>
+                  <PluginMarketInstall
+                    :plugin="plugin"
+                    :version="item"
+                    install-only
+                    @installed="updateInstalled"
+                    @busy="trackBusy"
+                  />
                 </li>
               </ul>
+            </template>
 
-              <h2 class="plugin-detail-section-title">
-                {{ t("TXT_CODE_PLUGIN_MARKET_CHANGELOG") }}
-              </h2>
-              <div
-                v-if="plugin.selectedVersion.changelog"
-                class="global-markdown-html plugin-detail-markdown"
-                v-html="changelog"
-              />
-              <p v-else class="plugin-detail-empty">
-                {{ t("TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG") }}
-              </p>
+            <template v-else>
+              <article
+                v-for="entry in changelogs"
+                :key="entry.version.version"
+                class="plugin-detail-update"
+              >
+                <h2 class="plugin-detail-update-head">
+                  <span class="plugin-detail-update-version">
+                    {{ t("TXT_CODE_PLUGIN_MARKET_VERSION", { version: entry.version.version }) }}
+                  </span>
+                  <span class="plugin-detail-update-date">
+                    {{ formatDate(entry.version.submittedAt) }}
+                  </span>
+                </h2>
+                <div
+                  v-if="entry.html"
+                  class="global-markdown-html plugin-detail-markdown"
+                  v-html="entry.html"
+                />
+                <p v-else class="plugin-detail-empty">
+                  {{ t("TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG") }}
+                </p>
+              </article>
             </template>
           </section>
 
@@ -399,16 +420,11 @@ onBeforeUnmount(() => requestId++);
   margin-top: 28px;
 }
 
-.plugin-detail-section-title,
 .plugin-detail-sidebar-title {
   margin: 0 0 12px;
   font-size: 15px;
   font-weight: 700;
   color: rgb(var(--v-theme-on-surface));
-}
-
-.plugin-detail-section-title:not(:first-child) {
-  margin-top: 28px;
 }
 
 .plugin-detail-tag {
@@ -450,34 +466,25 @@ onBeforeUnmount(() => requestId++);
   list-style: none;
 }
 
+// 每一行只做两件事：说清是哪个版本，给出这个版本自己的安装入口。
 .plugin-detail-version {
-  appearance: none;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   padding: 12px 14px;
-  border: 0;
   border-radius: 8px;
-  background: none;
-  text-align: left;
-  cursor: pointer;
 
   &:hover {
     background: rgba(var(--v-theme-on-surface), 0.05);
   }
-
-  &:disabled {
-    cursor: default;
-  }
 }
 
-.plugin-detail-version--active {
-  background: rgba(var(--v-theme-primary), 0.1);
-
-  .plugin-detail-version-name {
-    color: rgb(var(--v-theme-primary));
-  }
+.plugin-detail-version-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
 }
 
 .plugin-detail-version-name {
@@ -487,6 +494,30 @@ onBeforeUnmount(() => requestId++);
 }
 
 .plugin-detail-version-meta {
+  font-size: 12px;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+}
+
+.plugin-detail-update + .plugin-detail-update {
+  margin-top: 28px;
+  padding-top: 28px;
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+}
+
+.plugin-detail-update-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+
+.plugin-detail-update-version {
+  font-size: 15px;
+  font-weight: 700;
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.plugin-detail-update-date {
   font-size: 12px;
   color: rgba(var(--v-theme-on-surface), 0.6);
 }

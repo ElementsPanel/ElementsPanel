@@ -78,11 +78,9 @@
   "TXT_CODE_PLUGIN_MARKET_DETAIL": "Plugin details",
   "TXT_CODE_PLUGIN_MARKET_BACK": "Back to plugin market",
   "TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION": "No detailed description available",
-  "TXT_CODE_PLUGIN_MARKET_SELECT_VERSION": "Select version",
   "TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION": "Installed v{version}",
   "TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT": "Published: {date}",
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Size: {size} · {count} files",
-  "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "Release notes",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "No release notes available",
   "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "The plugin or version was not found, has not been approved, or has been delisted",
   "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "Overview",
@@ -94,5 +92,6 @@
   "TXT_CODE_PLUGIN_MARKET_LATEST": "Latest",
   "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL": "Panel plugin",
   "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON": "Daemon plugin",
-  "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Panel + daemon plugin"
+  "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Panel + daemon plugin",
+  "TXT_CODE_PLUGIN_MARKET_UPDATES": "Updates"
 }

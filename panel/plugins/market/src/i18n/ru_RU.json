@@ -78,11 +78,9 @@
   "TXT_CODE_PLUGIN_MARKET_DETAIL": "Сведения о плагине",
   "TXT_CODE_PLUGIN_MARKET_BACK": "Назад в магазин плагинов",
   "TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION": "Подробное описание отсутствует",
-  "TXT_CODE_PLUGIN_MARKET_SELECT_VERSION": "Выберите версию",
   "TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION": "Установлена v{version}",
   "TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT": "Опубликовано: {date}",
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Размер: {size} · Файлов: {count}",
-  "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "Список изменений",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "Список изменений отсутствует",
   "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "Плагин или версия не найдены, ещё не одобрены или сняты с публикации",
   "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "Обзор",
@@ -94,5 +92,6 @@
   "TXT_CODE_PLUGIN_MARKET_LATEST": "Последняя",
   "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL": "Плагин панели",
   "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON": "Плагин демона",
-  "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Плагин панели и демона"
+  "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Плагин панели и демона",
+  "TXT_CODE_PLUGIN_MARKET_UPDATES": "Обновления"
 }

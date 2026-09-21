@@ -6,20 +6,8 @@ import PluginMarketDetail from "../components/PluginMarketDetail.vue";
 const route = useRoute();
 const router = useRouter();
 const pluginId = computed(() => String(route.params.pluginId ?? ""));
-const version = computed(() =>
-  typeof route.query.version === "string" ? route.query.version : undefined
-);
-
-function selectVersion(version: string) {
-  void router.replace({ query: { ...route.query, version } });
-}
 </script>
 
 <template>
-  <PluginMarketDetail
-    :plugin-id="pluginId"
-    :version="version"
-    @back="router.push('/market/plugins')"
-    @select-version="selectVersion"
-  />
+  <PluginMarketDetail :plugin-id="pluginId" @back="router.push('/market/plugins')" />
 </template>

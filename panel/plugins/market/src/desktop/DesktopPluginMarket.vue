@@ -5,16 +5,13 @@ import PluginMarketList from "../components/PluginMarketList.vue";
 
 const pluginList = ref<InstanceType<typeof PluginMarketList>>();
 const selectedPluginId = ref("");
-const selectedVersion = ref<string>();
 
 function openPlugin(pluginId: string) {
-  selectedVersion.value = undefined;
   selectedPluginId.value = pluginId;
 }
 
 function backToList() {
   selectedPluginId.value = "";
-  selectedVersion.value = undefined;
 }
 
 function updateInstalled(pluginId: string, version: string | undefined) {
@@ -28,10 +25,8 @@ function updateInstalled(pluginId: string, version: string | undefined) {
     <PluginMarketDetail
       v-if="selectedPluginId"
       :plugin-id="selectedPluginId"
-      :version="selectedVersion"
       embedded
       @back="backToList"
-      @select-version="selectedVersion = $event"
       @installed="updateInstalled"
     />
   </div>

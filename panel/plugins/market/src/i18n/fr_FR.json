@@ -78,11 +78,9 @@
   "TXT_CODE_PLUGIN_MARKET_DETAIL": "Détails du plugin",
   "TXT_CODE_PLUGIN_MARKET_BACK": "Retour au marché des plugins",
   "TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION": "Aucune description détaillée disponible",
-  "TXT_CODE_PLUGIN_MARKET_SELECT_VERSION": "Choisir une version",
   "TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION": "Version installée v{version}",
   "TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT": "Publication : {date}",
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Taille : {size} · {count} fichiers",
-  "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "Notes de version",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "Aucune note de version disponible",
   "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "Le plugin ou la version est introuvable, en attente de validation ou retiré du marché",
   "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "Vue d'ensemble",
@@ -94,5 +92,6 @@
   "TXT_CODE_PLUGIN_MARKET_LATEST": "Dernière",
   "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL": "Extension de panel",
   "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON": "Extension de daemon",
-  "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Extension panel et daemon"
+  "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Extension panel et daemon",
+  "TXT_CODE_PLUGIN_MARKET_UPDATES": "Nouveautés"
 }

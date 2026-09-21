@@ -22,7 +22,15 @@ import {
   type MarketPluginVersion
 } from "../api";
 
-const props = defineProps<{ plugin: MarketPlugin; version?: MarketPluginVersion }>();
+const props = defineProps<{
+  plugin: MarketPlugin;
+  version?: MarketPluginVersion;
+  /**
+   * Only offer the install action. A release row installs that one release and has
+   * nothing to say about uninstalling, which belongs to the plugin as a whole.
+   */
+  installOnly?: boolean;
+}>();
 const emit = defineEmits<{
   installed: [pluginId: string, version: string | undefined];
   busy: [value: boolean];
@@ -199,7 +207,7 @@ watch(busy, (value) => emit("busy", value));
         {{ t("TXT_CODE_PLUGIN_MARKET_INSTALL") }}
       </VBtn>
       <VBtn
-        v-if="plugin.installedVersion"
+        v-if="plugin.installedVersion && !installOnly"
         color="error"
         variant="text"
         :disabled="busy"

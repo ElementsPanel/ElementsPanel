@@ -78,11 +78,9 @@
   "TXT_CODE_PLUGIN_MARKET_DETAIL": "플러그인 상세 정보",
   "TXT_CODE_PLUGIN_MARKET_BACK": "플러그인 마켓으로 돌아가기",
   "TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION": "상세 설명이 없습니다",
-  "TXT_CODE_PLUGIN_MARKET_SELECT_VERSION": "버전 선택",
   "TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION": "설치됨 v{version}",
   "TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT": "게시일: {date}",
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "크기: {size} · 파일 {count}개",
-  "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "업데이트 내역",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "업데이트 내역이 없습니다",
   "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "플러그인 또는 버전이 없거나, 승인되지 않았거나, 마켓에서 내려갔습니다",
   "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "개요",
@@ -94,5 +92,6 @@
   "TXT_CODE_PLUGIN_MARKET_LATEST": "최신",
   "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL": "Panel 플러그인",
   "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON": "Daemon 플러그인",
-  "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Panel + Daemon 플러그인"
+  "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Panel + Daemon 플러그인",
+  "TXT_CODE_PLUGIN_MARKET_UPDATES": "업데이트"
 }

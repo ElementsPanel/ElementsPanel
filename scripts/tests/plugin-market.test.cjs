@@ -315,7 +315,7 @@ test("desktop cards support keyboard selection and preserve search when installe
   }
 });
 
-test("desktop browsing keeps the list mounted and wires detail version, installation and back events", async () => {
+test("desktop browsing keeps the list mounted and wires detail installation and back events", async () => {
   const installed = [];
   // Typed props, like the real components: a bare `embedded` attribute only
   // becomes `true` when the prop is declared Boolean.
@@ -328,8 +328,8 @@ test("desktop browsing keeps the list mounted and wires detail version, installa
     }
   });
   const Detail = vue.defineComponent({
-    props: { pluginId: String, version: String, embedded: Boolean },
-    emits: ["back", "select-version", "installed"],
+    props: { pluginId: String, embedded: Boolean },
+    emits: ["back", "installed"],
     render: () => vue.h("div")
   });
   const Desktop = load(
@@ -353,9 +353,6 @@ test("desktop browsing keeps the list mounted and wires detail version, installa
     const detail = findChild(Detail);
     assert.equal(detail.props.pluginId, "one");
     assert.equal(detail.props.embedded, true);
-    detail.emit("select-version", "1.0.0");
-    await vue.nextTick();
-    assert.equal(detail.props.version, "1.0.0");
     detail.emit("installed", "one", "1.0.0");
     assert.deepEqual(installed, [["one", "1.0.0"]]);
     detail.emit("back");
@@ -365,17 +362,12 @@ test("desktop browsing keeps the list mounted and wires detail version, installa
     list.emit("select", "two");
     await vue.nextTick();
     assert.equal(findChild(Detail).props.pluginId, "two");
-    assert.equal(
-      findChild(Detail).props.version,
-      undefined,
-      "another plugin starts at its latest release"
-    );
   } finally {
     app.unmount();
   }
 });
 
-test("shared detail ignores stale requests when a desktop version changes and stops updating after close", async () => {
+test("shared detail follows the plugin only, and ignores an answer that arrived late", async () => {
   const requests = [];
   const component = load("panel/plugins/market/src/components/PluginMarketDetail.vue", {
     ...sharedViewOverrides,
@@ -387,28 +379,31 @@ test("shared detail ignores stale requests when a desktop version changes and st
       })
     }
   }).default;
-  const props = vue.reactive({ pluginId: "one", version: undefined, embedded: true });
-  const { state, events, app } = setupFixture(component, props);
+  // Version selection is gone: the page always asks for the plugin itself, and
+  // each release has its own install button instead of the header's selection.
+  assert.equal("version" in component.props, false, "no version prop");
+  assert.equal(component.emits.includes("select-version"), false, "no version selection event");
+
+  const props = vue.reactive({ pluginId: "one", embedded: true });
+  const { state, app } = setupFixture(component, props);
   try {
     assert.equal(requests[0].args.params.pluginId, "one");
-    state.selectVersion("1.0.0");
-    assert.deepEqual(events, [["select-version", "1.0.0"]]);
-    props.version = "1.0.0";
-    await vue.nextTick();
-    assert.equal(requests[1].args.params.version, "1.0.0");
-    requests[1].resolve({ value: { id: "one", selectedVersion: version("1.0.0") } });
-    await vue.nextTick();
-    requests[0].resolve({ value: { id: "one", selectedVersion: version("2.0.0") } });
-    await vue.nextTick();
-    assert.equal(state.plugin.value.selectedVersion.version, "1.0.0");
-    state.busy.value = true;
-    state.selectVersion("2.0.0");
-    assert.equal(events.length, 1, "installation prevents selecting another release");
-    state.busy.value = false;
+    assert.equal(requests[0].args.params.version, undefined);
+
     props.pluginId = "two";
     await vue.nextTick();
+    assert.equal(requests[1].args.params.pluginId, "two");
+    requests[1].resolve({ value: { id: "two", selectedVersion: version("2.0.0") } });
+    await vue.nextTick();
+    // The previous plugin's answer lands after the new one and must not win.
+    requests[0].resolve({ value: { id: "one", selectedVersion: version("1.0.0") } });
+    await vue.nextTick();
+    assert.equal(state.plugin.value.id, "two");
+
+    props.pluginId = "three";
+    await vue.nextTick();
     app.unmount();
-    requests[2].resolve({ value: { id: "two", selectedVersion: version("1.0.0") } });
+    requests[2].resolve({ value: { id: "three", selectedVersion: version("3.0.0") } });
     await vue.nextTick();
     assert.equal(state.plugin.value, undefined);
   } finally {

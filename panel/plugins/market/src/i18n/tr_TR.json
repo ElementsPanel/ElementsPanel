@@ -78,11 +78,9 @@
   "TXT_CODE_PLUGIN_MARKET_DETAIL": "Eklenti ayrıntıları",
   "TXT_CODE_PLUGIN_MARKET_BACK": "Eklenti mağazasına dön",
   "TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION": "Ayrıntılı açıklama yok",
-  "TXT_CODE_PLUGIN_MARKET_SELECT_VERSION": "Sürüm seçin",
   "TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION": "Kurulu v{version}",
   "TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT": "Yayımlanma: {date}",
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Boyut: {size} · {count} dosya",
-  "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "Sürüm notları",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "Sürüm notları yok",
   "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "Eklenti veya sürüm bulunamadı, henüz onaylanmadı veya mağazadan kaldırıldı",
   "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "Genel bakış",
@@ -94,5 +92,6 @@
   "TXT_CODE_PLUGIN_MARKET_LATEST": "En son",
   "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL": "Panel eklentisi",
   "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON": "Daemon eklentisi",
-  "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Panel ve daemon eklentisi"
+  "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Panel ve daemon eklentisi",
+  "TXT_CODE_PLUGIN_MARKET_UPDATES": "Güncellemeler"
 }

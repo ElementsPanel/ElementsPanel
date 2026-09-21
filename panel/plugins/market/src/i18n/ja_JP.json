@@ -78,11 +78,9 @@
   "TXT_CODE_PLUGIN_MARKET_DETAIL": "プラグインの詳細",
   "TXT_CODE_PLUGIN_MARKET_BACK": "プラグインマーケットに戻る",
   "TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION": "詳細な説明はありません",
-  "TXT_CODE_PLUGIN_MARKET_SELECT_VERSION": "バージョンを選択",
   "TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION": "インストール済み v{version}",
   "TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT": "公開日時：{date}",
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "サイズ：{size} · {count} ファイル",
-  "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "更新内容",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "更新内容はありません",
   "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "プラグインまたはバージョンが存在しないか、未承認または公開停止されています",
   "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "概要",
@@ -94,5 +92,6 @@
   "TXT_CODE_PLUGIN_MARKET_LATEST": "最新",
   "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL": "Panel プラグイン",
   "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON": "Daemon プラグイン",
-  "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Panel・Daemon 両対応プラグイン"
+  "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Panel・Daemon 両対応プラグイン",
+  "TXT_CODE_PLUGIN_MARKET_UPDATES": "更新履歴"
 }

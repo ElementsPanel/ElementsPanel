@@ -78,11 +78,9 @@
   "TXT_CODE_PLUGIN_MARKET_DETAIL": "Detalles del complemento",
   "TXT_CODE_PLUGIN_MARKET_BACK": "Volver al mercado de complementos",
   "TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION": "No hay una descripción detallada",
-  "TXT_CODE_PLUGIN_MARKET_SELECT_VERSION": "Seleccionar versión",
   "TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION": "Instalada v{version}",
   "TXT_CODE_PLUGIN_MARKET_PUBLISHED_AT": "Publicado: {date}",
   "TXT_CODE_PLUGIN_MARKET_PACKAGE_SIZE": "Tamaño: {size} · {count} archivos",
-  "TXT_CODE_PLUGIN_MARKET_CHANGELOG": "Notas de la versión",
   "TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG": "No hay notas de la versión",
   "TXT_CODE_PLUGIN_MARKET_NOT_FOUND": "El complemento o la versión no existe, no se ha aprobado o se ha retirado del mercado",
   "TXT_CODE_PLUGIN_MARKET_OVERVIEW": "Descripción general",
@@ -94,5 +92,6 @@
   "TXT_CODE_PLUGIN_MARKET_LATEST": "Más reciente",
   "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL": "Complemento de panel",
   "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON": "Complemento de daemon",
-  "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Complemento de panel y daemon"
+  "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Complemento de panel y daemon",
+  "TXT_CODE_PLUGIN_MARKET_UPDATES": "Novedades"
 }
