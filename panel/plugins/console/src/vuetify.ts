@@ -21,7 +21,12 @@ export const vuetify = createVuetify({
     VAutocomplete: { flat: true, rounded: "xl" },
     VBtn: { flat: true, rounded: "xl" },
     VCombobox: { flat: true, rounded: "xl" },
-    VField: { flat: true, rounded: "xl" },
+    VField: {
+      flat: true,
+      rounded: "xl",
+      color: "var(--text-color)",
+      baseColor: "var(--text-color)"
+    },
     VFileInput: { flat: true, rounded: "xl" },
     VSelect: { flat: true, rounded: "xl" },
     VTextarea: { flat: true, rounded: "xl" },

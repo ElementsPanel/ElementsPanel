@@ -123,6 +123,77 @@ body::-webkit-scrollbar-track {
   box-shadow: none !important;
 }
 
+// Vuetify splits a field's visible text between the native input, the select
+// selection wrapper, and the floating label. Keep all of them tied to the
+// application theme so light mode never inherits a white-on-white value.
+.v-field,
+.v-field__input,
+.v-field__input input,
+.v-field__input textarea,
+.v-field-label,
+.v-select__selection-text,
+.v-autocomplete__selection-text,
+.v-combobox__selection-text,
+.v-field__prepend-inner > .v-icon,
+.v-field__append-inner > .v-icon {
+  color: var(--text-color) !important;
+}
+
+.v-field__input input::placeholder,
+.v-field__input textarea::placeholder {
+  color: var(--text-color) !important;
+  opacity: 0.55 !important;
+}
+
+// Select/autocomplete menus are teleported outside the component that opened
+// them, so their list text and surface need a global theme rule as well.
+.v-select__content,
+.v-autocomplete__content,
+.v-combobox__content {
+  background-color: rgb(var(--v-theme-surface)) !important;
+  color: var(--text-color) !important;
+}
+
+.v-select__content > .v-list,
+.v-autocomplete__content > .v-list,
+.v-combobox__content > .v-list,
+.v-select__content .v-list,
+.v-autocomplete__content .v-list,
+.v-combobox__content .v-list,
+.v-select__content .v-list-item,
+.v-autocomplete__content .v-list-item,
+.v-combobox__content .v-list-item,
+.v-select__content .v-list-item-title,
+.v-autocomplete__content .v-list-item-title,
+.v-combobox__content .v-list-item-title,
+.v-select__content .v-list-item-subtitle,
+.v-autocomplete__content .v-list-item-subtitle,
+.v-combobox__content .v-list-item-subtitle,
+.v-select__content .v-icon,
+.v-autocomplete__content .v-icon,
+.v-combobox__content .v-icon {
+  color: var(--text-color) !important;
+}
+
+.v-select__content > .v-list,
+.v-autocomplete__content > .v-list,
+.v-combobox__content > .v-list,
+.v-select__content .v-list,
+.v-autocomplete__content .v-list,
+.v-combobox__content .v-list {
+  background-color: rgb(var(--v-theme-surface)) !important;
+}
+
+// Text/plain buttons inherit their parent color when no explicit Vuetify
+// color is supplied. Bind those neutral actions to the active theme while
+// leaving `primary`, `error`, and other explicitly colored buttons intact.
+.v-btn--variant-text:not([class*="text-"]):not([class*="bg-"]),
+.v-btn--variant-plain:not([class*="text-"]):not([class*="bg-"]),
+.v-btn--variant-tonal:not([class*="text-"]):not([class*="bg-"]),
+.v-btn--variant-outlined:not([class*="text-"]):not([class*="bg-"]) {
+  color: var(--text-color) !important;
+}
+
 .v-field::before,
 .v-field::after,
 .v-field__outline {

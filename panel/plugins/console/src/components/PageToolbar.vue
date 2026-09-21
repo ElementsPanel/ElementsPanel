@@ -54,10 +54,24 @@ withDefaults(
   display: flex;
   align-items: center;
   min-width: 0;
+  color: var(--text-color);
 }
 
 .page-toolbar-search {
   justify-content: center;
+
+  :deep(.v-field),
+  :deep(.v-field__input),
+  :deep(.v-field__input input),
+  :deep(.v-select__selection-text) {
+    color: var(--text-color) !important;
+  }
+
+  :deep(.v-field__input input)::placeholder,
+  :deep(textarea)::placeholder {
+    color: var(--text-color) !important;
+    opacity: 0.55 !important;
+  }
 }
 
 .page-toolbar-actions {

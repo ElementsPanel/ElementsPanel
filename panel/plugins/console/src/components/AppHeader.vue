@@ -106,7 +106,7 @@ const openPhoneMenu = (b = false) => {
                 <VIcon :icon="getMdiIcon(item.mdiIcon || getFallbackMdiIcon(item.icon))" />
               </VBtn>
             </template>
-            <VList density="compact">
+            <VList class="header-menu-list" density="compact">
               <VListItem
                 v-for="menuItem in item.menus"
                 :key="menuItem.value"
@@ -180,7 +180,7 @@ const openPhoneMenu = (b = false) => {
                 <VIcon :icon="getMdiIcon(item.mdiIcon || getFallbackMdiIcon(item.icon))" />
               </VBtn>
             </template>
-            <VList density="compact">
+            <VList class="header-menu-list" density="compact">
               <VListItem
                 v-for="menuItem in item.menus"
                 :key="menuItem.value"
@@ -253,13 +253,13 @@ const openPhoneMenu = (b = false) => {
   width: 100%;
   padding: 8px 12px;
   background: transparent;
-  color: var(--app-header-text-color);
+  color: var(--app-header-text-color) !important;
 
   :deep(.v-list-item) {
     min-height: 44px;
     margin: 4px 0;
     border-radius: 12px;
-    color: var(--app-header-text-color);
+    color: var(--app-header-text-color) !important;
   }
 
   :deep(.v-list-item--active) {
@@ -267,11 +267,20 @@ const openPhoneMenu = (b = false) => {
   }
 }
 
+.header-menu-list {
+  color: var(--app-header-text-color) !important;
+
+  :deep(.v-list-item),
+  :deep(.v-list-item-title) {
+    color: var(--app-header-text-color) !important;
+  }
+}
+
 .app-header-content-for-phone {
   height: 60px;
   width: 100%;
   background-color: var(--app-header-bg) !important;
-  color: var(--app-header-text-color);
+  color: var(--app-header-text-color) !important;
   box-shadow: none;
   backdrop-filter: saturate(180%) blur(20px);
 }
@@ -307,7 +316,7 @@ const openPhoneMenu = (b = false) => {
 
 .phone-menu-dialog :deep(.v-list) {
   background-color: var(--app-header-bg);
-  color: var(--app-header-text-color);
+  color: var(--app-header-text-color) !important;
   border-radius: 24px;
 }
 
@@ -322,7 +331,7 @@ const openPhoneMenu = (b = false) => {
   align-items: center;
   justify-content: center;
   background-color: var(--app-header-bg) !important;
-  color: var(--app-header-text-color);
+  color: var(--app-header-text-color) !important;
   border-radius: 0;
   box-shadow: none;
   backdrop-filter: saturate(180%) blur(20px);
@@ -332,6 +341,11 @@ const openPhoneMenu = (b = false) => {
 .app-header-content-for-phone :deep(.v-toolbar__content) {
   width: 100%;
   padding: 0;
+}
+
+.app-header-wrapper :deep(.v-btn),
+.app-header-content-for-phone :deep(.v-btn) {
+  color: var(--app-header-text-color) !important;
 }
 
 .app-header-content {

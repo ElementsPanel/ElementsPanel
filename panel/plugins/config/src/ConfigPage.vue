@@ -538,12 +538,17 @@ const confirmDisable = () => {
   flex: 1;
   min-height: 32px;
   border-radius: 24px;
+  color: var(--text-color) !important;
   text-align: center;
+}
+
+:global(.app-dark-theme) .plugin-config-scope :deep(.v-btn) {
+  color: #fff !important;
 }
 
 .plugin-config-scope :deep(.v-btn--active) {
   background: rgb(var(--v-theme-primary));
-  color: rgb(var(--v-theme-on-primary));
+  color: #fff !important;
 }
 
 .plugin-config-node-select {
