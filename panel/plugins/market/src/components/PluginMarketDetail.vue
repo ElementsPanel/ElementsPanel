@@ -4,7 +4,16 @@ import { getCurrentLang, t } from "@/lang/i18n";
 import { markdownToHTML } from "@/tools/safe";
 import { getValidatorErrorMsg } from "@/tools/validator";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
-import { VAlert, VBtn, VChip, VContainer, VIcon, VProgressLinear } from "vuetify/components";
+import {
+  VAlert,
+  VBtn,
+  VChip,
+  VContainer,
+  VIcon,
+  VProgressLinear,
+  VTab,
+  VTabs
+} from "vuetify/components";
 import { pluginMarketDetail, type MarketPluginDetail } from "../api";
 import PluginMarketInstall from "./PluginMarketInstall.vue";
 
@@ -143,27 +152,11 @@ onBeforeUnmount(() => requestId++);
           </div>
         </header>
 
-        <div class="plugin-detail-tabs" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            class="plugin-detail-tab"
-            :class="{ 'plugin-detail-tab--active': activeTab === 'overview' }"
-            :aria-selected="activeTab === 'overview'"
-            @click="activeTab = 'overview'"
-          >
-            {{ t("TXT_CODE_PLUGIN_MARKET_OVERVIEW") }}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            class="plugin-detail-tab"
-            :class="{ 'plugin-detail-tab--active': activeTab === 'versions' }"
-            :aria-selected="activeTab === 'versions'"
-            @click="activeTab = 'versions'"
-          >
-            {{ t("TXT_CODE_PLUGIN_MARKET_VERSIONS") }}
-          </button>
+        <div class="plugin-detail-tabs">
+          <VTabs v-model="activeTab" color="primary">
+            <VTab value="overview">{{ t("TXT_CODE_PLUGIN_MARKET_OVERVIEW") }}</VTab>
+            <VTab value="versions">{{ t("TXT_CODE_PLUGIN_MARKET_VERSIONS") }}</VTab>
+          </VTabs>
         </div>
 
         <div class="plugin-detail-body">
@@ -370,12 +363,11 @@ onBeforeUnmount(() => requestId++);
   text-align: right;
 }
 
-// The rule under the tabs is a background, not a border: Desktop mode strips
-// every border inside a window.
+// `VTabs` draws its own slider; this rule only extends it across the page, as
+// a background rather than a border because Desktop mode strips every border
+// inside a window.
 .plugin-detail-tabs {
   position: relative;
-  display: flex;
-  gap: 28px;
   margin-bottom: 24px;
 
   &::after {
@@ -386,36 +378,6 @@ onBeforeUnmount(() => requestId++);
     bottom: 0;
     height: 1px;
     background: rgba(var(--v-theme-on-surface), 0.12);
-  }
-}
-
-.plugin-detail-tab {
-  position: relative;
-  appearance: none;
-  padding: 10px 2px 14px;
-  border: 0;
-  background: none;
-  font-size: 15px;
-  font-weight: 500;
-  color: rgba(var(--v-theme-on-surface), 0.6);
-  cursor: pointer;
-
-  &:hover {
-    color: rgb(var(--v-theme-on-surface));
-  }
-}
-
-.plugin-detail-tab--active {
-  color: rgb(var(--v-theme-primary));
-
-  &::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 2px;
-    background: rgb(var(--v-theme-primary));
   }
 }
 

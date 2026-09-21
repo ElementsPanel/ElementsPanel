@@ -196,7 +196,7 @@ watch(busy, (value) => emit("busy", value));
         :disabled="busy"
         @click="install"
       >
-        {{ t("TXT_CODE_PLUGIN_MARKET_INSTALL_VERSION", { version: version.version }) }}
+        {{ t("TXT_CODE_PLUGIN_MARKET_INSTALL") }}
       </VBtn>
       <VBtn
         v-if="plugin.installedVersion"
