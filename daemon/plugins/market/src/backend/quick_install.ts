@@ -286,7 +286,10 @@ export function createQuickInstallTaskClass(ctx: DaemonPluginContext) {
         let config: Partial<IGlobalInstanceConfig>;
         if (this.minecraft) {
           config = { ...this.buildParams, cwd: this.instance.config.cwd, processType: "general" };
-        } else if (this.buildParams?.startCommand || !fs.existsSync(this.ZIP_CONFIG_JSON)) {
+        } else if (
+          this.buildParams?.startCommand ||
+          !fs.existsSync(fileManager.toAbsolutePath(this.ZIP_CONFIG_JSON))
+        ) {
           config = this.buildParams || {};
         } else {
           config = JSON.parse(await fileManager.readFile(this.ZIP_CONFIG_JSON));

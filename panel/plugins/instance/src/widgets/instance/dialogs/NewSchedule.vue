@@ -45,8 +45,7 @@ const {
   calculateIntervalFromTime,
   calculateTimeFromCycle,
   parseTaskTime,
-  createState,
-  deleteSchedule
+  createState
 } = useSchedule(props.instanceId, props.daemonId);
 
 const parseTime = {
@@ -63,7 +62,7 @@ const setTask = (task?: Schedule) => {
   newTask = reactive({
     ..._.cloneDeep(defaultTask),
     ...task,
-    count: Number(task?.count) === -1 ? "" : Number(task?.count)
+    count: task && Number(task.count) !== -1 ? Number(task.count) : ""
   });
 
   editMode.value = !!task;
@@ -153,9 +152,9 @@ const toggleWeekend = (value: number) => {
 };
 
 const create = {
-  [ScheduleCreateType.INTERVAL]: (newTask: ScheduleTaskForm) => createTaskTypeInterval(newTask),
-  [ScheduleCreateType.CYCLE]: (newTask: ScheduleTaskForm) => createTaskTypeCycle(newTask),
-  [ScheduleCreateType.SPECIFY]: (newTask: ScheduleTaskForm) => createTaskTypeSpecify(newTask)
+  [ScheduleCreateType.INTERVAL]: createTaskTypeInterval,
+  [ScheduleCreateType.CYCLE]: createTaskTypeCycle,
+  [ScheduleCreateType.SPECIFY]: createTaskTypeSpecify
 };
 
 const getInputPlaceholder = (action: ScheduleAction) => {
@@ -172,10 +171,10 @@ const getInputPlaceholder = (action: ScheduleAction) => {
     : pluginAction.inputPlaceholder;
 };
 const submit = async () => {
+  if (isLoading.value) return;
   try {
     isLoading.value = true;
-    if (editMode.value) await deleteSchedule(newTask.name, false);
-    await create[newTask.type](newTask);
+    await create[newTask.type](newTask, editMode.value ? newTask.name : undefined);
     if (createState.value) {
       emit("getScheduleList");
       notification.success({

@@ -1,59 +1,17 @@
-import { ChildProcess, spawn } from "child_process";
-import EventEmitter from "events";
+import { spawn } from "child_process";
 import fs from "fs-extra";
-import { killProcess } from "mcsmanager-common";
 import { $t } from "../../../i18n";
 import logger from "../../../service/log";
 import { getRunAsUserParams } from "../../../tools/system_user";
 import Instance from "../../instance/instance";
-import { IInstanceProcess } from "../../instance/interface";
 import { commandStringToArray } from "../base/command_parser";
+import { ChildProcessAdapter, waitForSpawn } from "../base/process_adapter";
 import AbsStartCommand from "../start";
 
 // Error exception at startup
 class StartupError extends Error {
   constructor(msg: string) {
     super(msg);
-  }
-}
-
-// Docker process adapter
-class ProcessAdapter extends EventEmitter implements IInstanceProcess {
-  pid?: number | string;
-
-  constructor(private process: ChildProcess) {
-    super();
-    this.pid = this.process.pid;
-    process.stdout?.on("data", (text) => this.emit("data", text));
-    process.stderr?.on("data", (text) => this.emit("data", text));
-    process.on("exit", (code) => this.emit("exit", code));
-  }
-
-  public write(data?: string) {
-    return this.process.stdin?.write(data);
-  }
-
-  public kill(s?: any) {
-    if (this.pid) return killProcess(this.pid, this.process, s);
-  }
-
-  public async destroy() {
-    // remove all dynamically added event listeners
-    for (const n of this.eventNames()) this.removeAllListeners(n);
-    if (this.process.stdout)
-      for (const eventName of this.process.stdout.eventNames())
-        this.process.stdout.removeAllListeners(eventName);
-    if (this.process.stderr)
-      for (const eventName of this.process.stderr.eventNames())
-        this.process.stderr.removeAllListeners(eventName);
-    if (this.process)
-      for (const eventName of this.process.eventNames()) this.process.removeAllListeners(eventName);
-    this.process?.stdout?.destroy();
-    this.process?.stderr?.destroy();
-    if (this.process?.exitCode === null) {
-      this.process.kill("SIGTERM");
-      this.process.kill("SIGKILL");
-    }
   }
 }
 
@@ -106,8 +64,12 @@ export default class GeneralStartCommand extends AbsStartCommand {
       detached: false
     });
 
-    // child process creation result check
-    if (!subProcess || !subProcess.pid) {
+    const processAdapter = new ChildProcessAdapter(subProcess);
+    try {
+      await waitForSpawn(subProcess);
+      instance.started(processAdapter);
+    } catch (error) {
+      await processAdapter.destroy();
       instance.println(
         "ERROR",
         $t("TXT_CODE_general_start.pidErr", {
@@ -116,14 +78,8 @@ export default class GeneralStartCommand extends AbsStartCommand {
           commandParameters: JSON.stringify(commandParameters)
         })
       );
-      throw new StartupError($t("TXT_CODE_general_start.startErr"));
+      throw error;
     }
-
-    // create process adapter
-    const processAdapter = new ProcessAdapter(subProcess);
-
-    // generate open event
-    instance.started(processAdapter);
     logger.info(
       $t("TXT_CODE_general_start.startSuccess", {
         instanceUuid: instance.instanceUuid,

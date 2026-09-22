@@ -1,4 +1,7 @@
 {
+  "TXT_CODE_LEAVES_DONT_RESPOND_PING": "サーバーの起動が完了するまで Ping リクエストに応答しません。",
+  "TXT_CODE_LEAVES_HOPPER_COUNTER": "ホッパーカウンターを有効にします。",
+  "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "LMS Paster プロトコルのサポートを有効にします。",
   "TXT_CODE_10088738": "削除の確認",
   "TXT_CODE_10150756": "イベントトリガータスク",
   "TXT_CODE_10194e6a": "ネットワークエイリアス",

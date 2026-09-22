@@ -64,7 +64,7 @@ export function apply(ctx: PanelPluginContext) {
       operator_ip: requestCtx.ip,
       operator_name: ctx.identity.of(requestCtx).userName
     });
-    ctx.settings.save();
+    await ctx.settings.save();
     requestCtx.body = "OK";
   });
 

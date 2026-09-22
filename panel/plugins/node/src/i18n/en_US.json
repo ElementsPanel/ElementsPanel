@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_NODE_DOCKERFILE_EDITOR": "Edit Dockerfile",
   "TXT_CODE_3d94ea16": "The node Socket is abnormal, please try to reconnect in the node management!",
   "TXT_CODE_7c650d80": "Node connection failed, please contact the administrator to check the status of the remote node!",
   "TXT_CODE_DESKTOP_NODES": "Nodes",

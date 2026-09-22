@@ -1,114 +1,135 @@
+import { randomUUID } from "crypto";
 import path from "path";
 import fs from "fs-extra";
 
 export default class StorageSubsystem {
-  public static readonly DATA_PATH = path.normalize(path.join(process.cwd(), "data"));
-  public static readonly INDEX_PATH = path.normalize(path.join(process.cwd(), "data", "index"));
+  public static readonly DATA_PATH = path.resolve(process.cwd(), "data");
+  public static readonly INDEX_PATH = path.join(StorageSubsystem.DATA_PATH, "index");
 
-  private checkFileName(name: string) {
-    const blackList = ["\\", "/", ".."];
-    for (const ch of blackList) {
-      if (name.includes(ch)) return false;
+  private resolvePath(name: string) {
+    if (
+      typeof name !== "string" ||
+      !name ||
+      /[\0:]/.test(name) ||
+      path.isAbsolute(name) ||
+      path.win32.isAbsolute(name)
+    ) {
+      throw new Error(`Invalid storage path: ${name}`);
     }
-    return true;
-  }
-
-  public writeFile(name: string, data: string) {
-    const targetPath = path.normalize(path.join(StorageSubsystem.DATA_PATH, name));
-    fs.writeFileSync(targetPath, data, { encoding: "utf-8" });
-  }
-
-  public readFile(name: string) {
-    const targetPath = path.normalize(path.join(StorageSubsystem.DATA_PATH, name));
-    return fs.readFileSync(targetPath, { encoding: "utf-8" });
-  }
-
-  public readDir(dirName: string) {
-    const targetPath = path.normalize(path.join(StorageSubsystem.DATA_PATH, dirName));
-    if (!fs.existsSync(targetPath)) return [];
-    const files = fs.readdirSync(targetPath).map((v) => path.normalize(path.join(dirName, v)));
-    return files;
-  }
-
-  public deleteFile(name: string) {
-    const targetPath = path.normalize(path.join(StorageSubsystem.DATA_PATH, name));
-    fs.removeSync(targetPath);
-  }
-
-  public fileExists(name: string) {
-    const targetPath = path.normalize(path.join(StorageSubsystem.DATA_PATH, name));
-    return fs.existsSync(targetPath);
-  }
-
-  // Stored in local file based on class definition and identifier
-  public store(category: string, uuid: string, object: any) {
-    const dirPath = path.join(StorageSubsystem.DATA_PATH, category);
-    if (!fs.existsSync(dirPath)) fs.mkdirsSync(dirPath);
-    if (!this.checkFileName(uuid))
-      throw new Error(`UUID ${uuid} does not conform to specification`);
-    const filePath = path.join(dirPath, `${uuid}.json`);
-    const data = JSON.stringify(object, null, 4);
-    fs.writeFileSync(filePath, data, { encoding: "utf-8" });
-  }
-
-  // deep copy of the primitive type with the copy target as the prototype
-  protected defineAttr(target: any, object: any): any {
-    for (const v of Object.keys(target)) {
-      const objectValue = object[v];
-      if (objectValue === undefined) continue;
-      if (objectValue instanceof Array) {
-        target[v] = objectValue;
-        continue;
-      }
-      if (objectValue instanceof Object && typeof objectValue === "object") {
-        this.defineAttr(target[v], objectValue);
-        continue;
-      }
-      target[v] = objectValue;
+    const target = path.resolve(StorageSubsystem.DATA_PATH, name);
+    const relative = path.relative(StorageSubsystem.DATA_PATH, target);
+    if (
+      !relative ||
+      relative === ".." ||
+      relative.startsWith(`..${path.sep}`) ||
+      path.isAbsolute(relative)
+    ) {
+      throw new Error(`Invalid storage path: ${name}`);
+    }
+    const realRelative = path.relative(
+      this.realPath(StorageSubsystem.DATA_PATH),
+      this.realPath(target)
+    );
+    if (
+      realRelative === ".." ||
+      realRelative.startsWith(`..${path.sep}`) ||
+      path.isAbsolute(realRelative)
+    ) {
+      throw new Error(`Invalid storage path: ${name}`);
     }
     return target;
   }
 
-  /**
-   * Instantiate an object based on the class definition and identifier
-   */
-  public load(category: string, classz: any, uuid: string) {
-    const dirPath = path.join(StorageSubsystem.DATA_PATH, category);
-    if (!fs.existsSync(dirPath)) fs.mkdirsSync(dirPath);
-    if (!this.checkFileName(uuid))
+  private realPath(target: string): string {
+    if (fs.existsSync(target)) return fs.realpathSync(target);
+    const parent = path.dirname(target);
+    return parent === target ? target : path.join(this.realPath(parent), path.basename(target));
+  }
+
+  private entityPath(category: string, uuid: string) {
+    if (typeof uuid !== "string" || !uuid || /[\\/\0:]/.test(uuid) || uuid.includes("..")) {
       throw new Error(`UUID ${uuid} does not conform to specification`);
-    const filePath = path.join(dirPath, `${uuid}.json`);
-    if (!fs.existsSync(filePath)) return null;
-    const data = fs.readFileSync(filePath, { encoding: "utf-8" });
-    const dataObject = JSON.parse(data);
-    const target = new classz();
-    // for (const v of Object. keys(target)) {
-    // if (dataObject[v] !== undefined) target[v] = dataObject[v];
-    // }
-    // deep object copy
-    return this.defineAttr(target, dataObject);
+    }
+    this.resolvePath(category);
+    return path.join(category, `${uuid}.json`);
   }
 
-  /**
-   * Return all identifiers related to this class through the class definition
-   */
+  public writeFile(name: string, data: string) {
+    const targetPath = this.resolvePath(name);
+    fs.ensureDirSync(path.dirname(targetPath));
+    const temporaryPath = `${targetPath}.${randomUUID()}.tmp`;
+    const mode = fs.existsSync(targetPath) ? fs.statSync(targetPath).mode : 0o600;
+    try {
+      fs.writeFileSync(temporaryPath, data, { encoding: "utf8", flag: "wx", mode });
+      fs.renameSync(temporaryPath, targetPath);
+    } finally {
+      if (fs.existsSync(temporaryPath)) fs.unlinkSync(temporaryPath);
+    }
+  }
+
+  public readFile(name: string) {
+    return fs.readFileSync(this.resolvePath(name), "utf8");
+  }
+
+  public readDir(dirName: string) {
+    const targetPath = this.resolvePath(dirName);
+    if (!fs.existsSync(targetPath)) return [];
+    return fs.readdirSync(targetPath).map((name) => path.join(dirName, name));
+  }
+
+  public deleteFile(name: string) {
+    fs.removeSync(this.resolvePath(name));
+  }
+
+  public fileExists(name: string) {
+    return fs.existsSync(this.resolvePath(name));
+  }
+
+  public store(category: string, uuid: string, object: any) {
+    this.writeFile(this.entityPath(category, uuid), JSON.stringify(object, null, 4));
+  }
+
+  // Restore declared fields while keeping defaults for fields absent in older data.
+  protected defineAttr(target: any, object: any): any {
+    for (const key of Object.keys(target)) {
+      if (!Object.prototype.hasOwnProperty.call(object, key) || object[key] === undefined) continue;
+      const value = object[key];
+      if (
+        value !== null &&
+        typeof value === "object" &&
+        !Array.isArray(value) &&
+        target[key] !== null &&
+        typeof target[key] === "object" &&
+        !Array.isArray(target[key])
+      ) {
+        this.defineAttr(target[key], value);
+      } else {
+        target[key] = value;
+      }
+    }
+    return target;
+  }
+
+  public load(category: string, classz: any, uuid: string) {
+    const file = this.entityPath(category, uuid);
+    if (!this.fileExists(file)) return null;
+    const object = JSON.parse(this.readFile(file));
+    if (!object || typeof object !== "object" || Array.isArray(object)) {
+      throw new Error(`Invalid stored entity: ${file}`);
+    }
+    return this.defineAttr(new classz(), object);
+  }
+
   public list(category: string) {
-    const dirPath = path.join(StorageSubsystem.DATA_PATH, category);
-    if (!fs.existsSync(dirPath)) fs.mkdirsSync(dirPath);
-    const files = fs.readdirSync(dirPath);
-    const result = new Array<string>();
-    files.forEach((name) => {
-      result.push(name.replace(path.extname(name), ""));
-    });
-    return result;
+    const directory = this.resolvePath(category);
+    if (!fs.existsSync(directory)) return [];
+    return fs
+      .readdirSync(directory, { withFileTypes: true })
+      .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
+      .map((entry) => entry.name.slice(0, -5));
   }
 
-  /**
-   * Delete an identifier instance of the specified type through the class definition
-   */
   public delete(category: string, uuid: string) {
-    const filePath = path.join(StorageSubsystem.DATA_PATH, category, `${uuid}.json`);
-    if (!fs.existsSync(filePath)) return;
-    fs.removeSync(filePath);
+    this.deleteFile(this.entityPath(category, uuid));
   }
 }

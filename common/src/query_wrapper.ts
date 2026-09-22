@@ -11,6 +11,20 @@ interface Page<T> {
   data: T[];
 }
 
+function paginate<T>(data: T[], page: number, pageSize: number): Page<T> {
+  if (!Number.isSafeInteger(page) || page < 1 || !Number.isSafeInteger(pageSize) || pageSize < 1) {
+    throw new RangeError("page and pageSize must be positive integers");
+  }
+  const start = (page - 1) * pageSize;
+  return {
+    page,
+    pageSize,
+    maxPage: Math.ceil(data.length / pageSize),
+    total: data.length,
+    data: data.slice(start, start + pageSize)
+  };
+}
+
 // Provide the MAP query interface used by the routing layer
 export class QueryMapWrapper {
   constructor(public map: IMap) {}
@@ -24,20 +38,7 @@ export class QueryMapWrapper {
   }
 
   page<T>(data: T[], page = 1, pageSize = 10) {
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-    let size = data.length;
-    let maxPage = 0;
-    while (size > 0) {
-      size -= pageSize;
-      maxPage++;
-    }
-    return {
-      page,
-      pageSize,
-      maxPage,
-      data: data.slice(start, end)
-    };
+    return paginate(data, page, pageSize);
   }
 }
 
@@ -75,42 +76,33 @@ export class LocalFileSource<T> implements IDataSource<T> {
   constructor(public data: any) {}
 
   selectPage(condition: any, page = 1, pageSize = 10) {
+    return this.page(this.select(condition), page, pageSize);
+  }
+
+  page(data: T[], page = 1, pageSize = 10) {
+    return paginate(data, page, pageSize);
+  }
+
+  select(condition: Record<string, unknown> = {}): T[] {
     const result: T[] = [];
+    const entries = Object.entries(condition);
     this.data.forEach((v: any) => {
-      for (const key in condition) {
+      for (const [key, targetValue] of entries) {
         const dataValue = v[key];
-        const targetValue = condition[key];
-        if (targetValue[0] == "%") {
-          if (!dataValue.includes(targetValue.slice(1, targetValue.length - 1))) return false;
-        } else {
-          if (targetValue !== dataValue) return false;
+        if (
+          typeof targetValue === "string" &&
+          targetValue.startsWith("%") &&
+          targetValue.endsWith("%")
+        ) {
+          if (typeof dataValue !== "string" || !dataValue.includes(targetValue.slice(1, -1)))
+            return;
+        } else if (targetValue !== dataValue) {
+          return;
         }
       }
       result.push(v);
     });
-    return this.page(result, page, pageSize);
-  }
-
-  page(data: T[], page = 1, pageSize = 10) {
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-    let size = data.length;
-    let maxPage = 0;
-    while (size > 0) {
-      size -= pageSize;
-      maxPage++;
-    }
-    return {
-      page,
-      pageSize,
-      maxPage,
-      total: data.length,
-      data: data.slice(start, end)
-    };
-  }
-
-  select(condition: any): any[] {
-    return [];
+    return result;
   }
   update(condition: any, data: any) {}
   delete(condition: any) {}

@@ -1,44 +1,65 @@
-/* eslint-disable no-unused-vars */
-import { ref } from "vue";
+import { onUnmounted, ref, watch } from "vue";
 
-export function useDialog<T = any>(props: any) {
-  let resolve: (value?: T) => void;
-  let reject: (reason?: any) => void;
-  const isVisible = ref(false);
-
-  const openDialog = async () => {
-    isVisible.value = true;
-    return new Promise<T | undefined>((_resolve, _reject) => {
-      resolve = _resolve;
-      reject = _reject;
-    });
-  };
-
-  const cancel = async () => {
-    isVisible.value = false;
-    if (props.destroyComponent) props.destroyComponent();
-    reject(new Error("cancel"));
-  };
-
-  const submit = async (data?: T) => {
-    if (props.emitResult) props.emitResult(data);
-    resolve(data);
-    await cancel();
-  };
-
-  return {
-    openDialog,
-    isVisible,
-    cancel,
-    submit
-  };
+interface DialogCallbacks<T> {
+  destroyComponent?: (delay?: number) => void;
+  emitResult?: (data?: T) => void;
 }
 
-export function usePromiseDialog<T = any>(props: any) {
-  const { isVisible, ...rest } = useDialog<T>(props);
-  isVisible.value = true;
-  return {
-    isVisible,
-    ...rest
+export function useDialog<T = unknown>(props: DialogCallbacks<T>) {
+  const isVisible = ref(false);
+  let pending: Promise<T | undefined> | undefined;
+  let resolveDialog: ((value?: T) => void) | undefined;
+  let closing = false;
+  let disposed = false;
+
+  const finish = (value?: T, submitted = false) => {
+    if (!isVisible.value && !resolveDialog) return;
+    const resolve = resolveDialog;
+    resolveDialog = undefined;
+    pending = undefined;
+    isVisible.value = false;
+    resolve?.(value);
+    if (submitted) props.emitResult?.(value);
+    if (!closing && props.destroyComponent) {
+      closing = true;
+      props.destroyComponent();
+    }
   };
+
+  const openDialog = (): Promise<T | undefined> => {
+    if (disposed || closing) return Promise.resolve(undefined);
+    if (pending) return pending;
+    pending = new Promise<T | undefined>((resolve) => {
+      resolveDialog = resolve;
+    });
+    isVisible.value = true;
+    return pending;
+  };
+
+  const cancel = () => finish();
+  const submit = (data?: T) => finish(data, true);
+
+  watch(
+    isVisible,
+    (visible) => {
+      if (!visible && resolveDialog) cancel();
+    },
+    { flush: "sync" }
+  );
+
+  onUnmounted(() => {
+    disposed = true;
+    resolveDialog?.(undefined);
+    resolveDialog = undefined;
+    pending = undefined;
+    isVisible.value = false;
+  });
+
+  return { openDialog, isVisible, cancel, submit };
+}
+
+export function usePromiseDialog<T = unknown>(props: DialogCallbacks<T>) {
+  const dialog = useDialog<T>(props);
+  void dialog.openDialog();
+  return dialog;
 }

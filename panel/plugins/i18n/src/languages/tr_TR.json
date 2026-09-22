@@ -1,4 +1,7 @@
 {
+  "TXT_CODE_LEAVES_DONT_RESPOND_PING": "Sunucu tamamen başlatılana kadar ping isteklerine yanıt verme.",
+  "TXT_CODE_LEAVES_HOPPER_COUNTER": "Huni sayaçlarını etkinleştir.",
+  "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "LMS Paster protokolü desteğini etkinleştir.",
   "TXT_CODE_10088738": "Silmeyi onayla",
   "TXT_CODE_10150756": "Olay Tetiklemeli Görev",
   "TXT_CODE_10194e6a": "Ağ Takma Adları",

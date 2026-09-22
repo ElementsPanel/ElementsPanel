@@ -12,6 +12,8 @@ export default class FileWriter {
   id?: string;
   private releaseLock?: () => Promise<void>;
   private fd: number | null = null;
+  private operations: Promise<void> = Promise.resolve();
+  private completed = false;
   readonly received: ChunkRange[] = [];
   lastUpdate: number = Date.now();
 
@@ -25,6 +27,7 @@ export default class FileWriter {
   ) {
     if (!FileManager.checkFileName(path.basename(this.filename)))
       throw new Error("Access denied: Malformed file name");
+    if (!Number.isSafeInteger(size) || size < 0) throw new Error("Invalid file size");
 
     this.path = filePath;
   }
@@ -73,83 +76,110 @@ export default class FileWriter {
 
   async init() {
     if (this.fd != null) return;
-    let locked = false;
     try {
-      if (lockfile.checkSync(this.path)) locked = true;
-    } catch {}
-    if (locked) {
-      throw new Error("File is locked");
-    }
-    try {
+      // Lock before opening with w+: a competing upload must not truncate the file.
+      this.releaseLock = await lockfile.lock(this.path, { realpath: false });
       this.fd = await fs.open(this.path, "w+");
-      this.releaseLock = await lockfile.lock(this.path);
       await fs.ftruncate(this.fd, this.size);
     } catch (e) {
-      if (typeof this.releaseLock === "function") await this.releaseLock();
-      this.releaseLock = undefined;
+      try {
+        await this.close();
+      } finally {
+        await this.unlock();
+      }
       throw e;
     }
   }
 
-  async write(offset: number, chunk: Buffer) {
-    this.lastUpdate = Date.now();
-    if (offset + chunk.length > this.size) throw new Error("Write exceeds file size limit");
-    if (this.fd === null) throw new Error("File is not opened");
-    await fs.write(this.fd, chunk, 0, chunk.length, offset);
-
-    this.addWrittenRange(offset, offset + chunk.length);
-    if (this.isFullyCovered()) {
-      this.done().catch((e) => {
-        logger().error("Error completing file upload:", e);
-      }); // async
-    }
+  private enqueue(operation: () => Promise<void>) {
+    const pending = this.operations.then(operation);
+    this.operations = pending.catch(() => {});
+    return pending;
   }
 
-  async done() {
-    if (this.fd != null) {
-      await fs.close(this.fd);
-      this.fd = null;
-      await this.releaseLock!();
-    }
-
-    if (this.id != null) {
-      uploadManager.delete(this.id);
-    }
-
-    logger().info("Browser Uploaded File:", this.path);
-
-    if (this.unzip) {
-      const instanceFiles = new FileManager(this.cwd);
-      await instanceFiles.unzip(this.path, ".", this.zipCode);
-      logger().info("File unzipped:", this.path);
-    }
+  write(offset: number, chunk: Buffer) {
+    return this.enqueue(async () => {
+      if (!Number.isSafeInteger(offset) || offset < 0 || offset + chunk.length > this.size) {
+        throw new Error("Write exceeds file size limit");
+      }
+      if (this.fd === null || this.completed) throw new Error("File is not opened");
+      this.lastUpdate = Date.now();
+      let written = 0;
+      while (written < chunk.length) {
+        const { bytesWritten } = await fs.write(
+          this.fd,
+          chunk,
+          written,
+          chunk.length - written,
+          offset + written
+        );
+        if (bytesWritten === 0) throw new Error("Unable to write upload chunk");
+        written += bytesWritten;
+      }
+      this.addWrittenRange(offset, offset + chunk.length);
+      if (this.isFullyCovered()) await this.finish(false);
+    });
   }
 
-  async stop() {
-    if (this.fd != null) {
-      await fs.close(this.fd);
-      this.fd = null;
-      await this.releaseLock!();
+  done() {
+    return this.enqueue(() => this.finish(false));
+  }
+
+  stop() {
+    return this.enqueue(() => this.finish(true));
+  }
+
+  private async close() {
+    const fd = this.fd;
+    this.fd = null;
+    if (fd != null) await fs.close(fd);
+  }
+
+  private async unlock() {
+    const releaseLock = this.releaseLock;
+    this.releaseLock = undefined;
+    await releaseLock?.();
+  }
+
+  private async finish(cancelled: boolean) {
+    if (this.completed) return;
+    this.completed = true;
+    try {
+      await this.close();
+      if (cancelled) {
+        await fs.remove(this.path);
+        logger().info("Browser Upload Task Stopped:", this.path);
+      } else {
+        logger().info("Browser Uploaded File:", this.path);
+        if (this.unzip) {
+          const instanceFiles = new FileManager(this.cwd);
+          await instanceFiles.unzip(this.path, ".", this.zipCode);
+          logger().info("File unzipped:", this.path);
+        }
+      }
+    } finally {
+      try {
+        // Keep ownership until removal/extraction completes, so a newer upload
+        // cannot start using the same path while this task is still changing it.
+        await this.unlock();
+      } finally {
+        if (this.id != null) uploadManager.delete(this.id);
+      }
     }
-    if (this.id != null) {
-      uploadManager.delete(this.id);
-    }
-    await fs.remove(this.path);
-    logger().info("Browser Upload Task Stopped:", this.path);
   }
 
   private addWrittenRange(start: number, end: number): void {
-    if (start > end) return;
+    if (start >= end) return;
 
     let i = 0;
     let ranges = this.received;
-    while (i < ranges.length && ranges[i].end < start - 1) i++;
+    while (i < ranges.length && ranges[i].end < start) i++;
 
     let mergeStart = start,
       mergeEnd = end;
     let removeCount = 0;
 
-    while (i + removeCount < ranges.length && ranges[i + removeCount].start <= end + 1) {
+    while (i + removeCount < ranges.length && ranges[i + removeCount].start <= mergeEnd) {
       mergeStart = Math.min(mergeStart, ranges[i + removeCount].start);
       mergeEnd = Math.max(mergeEnd, ranges[i + removeCount].end);
       removeCount++;
@@ -164,18 +194,5 @@ export default class FileWriter {
       this.received[0].start === 0 &&
       this.received[0].end === this.size
     );
-  }
-
-  private readStreamToHash(
-    filePath: string,
-    hash: any,
-    options?: { start: number; end: number }
-  ): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const stream = fs.createReadStream(filePath, options);
-      stream.on("data", (chunk) => hash.update(chunk));
-      stream.on("end", resolve);
-      stream.on("error", reject);
-    });
   }
 }

@@ -54,5 +54,5 @@ export function apply(ctx: DaemonPluginContext) {
 
   // Chunked uploads hold open file handles and lock files, so they are stopped
   // with the plugin. The daemon used to do this from its own shutdown path.
-  ctx.on("dispose", () => void uploadManager.exit());
+  ctx.on("dispose", () => uploadManager.exit());
 }

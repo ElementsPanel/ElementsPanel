@@ -1,69 +1,94 @@
-/* eslint-disable vue/one-component-per-file */
-
-import { createApp, type Component, type App } from "vue";
-import { sleep } from "@/tools/common";
+import { createApp, type App, type Component } from "vue";
 import { installVuetify } from "../vuetify";
 
-export function useMountComponent(data: Record<string, any> = {}) {
-  let isOpen = false;
-  const mount = <T>(component: Component) => {
-    if (isOpen) return;
-    isOpen = true;
-    return new Promise<T>((resolve) => {
-      const div = document.createElement("div");
-      document.body.appendChild(div);
-      const app = createApp(component, {
-        ...data,
-        async destroyComponent(delay = 1000) {
-          await sleep(delay);
-          app.unmount();
-          div.remove();
-          isOpen = false;
-        },
-        emitResult(data: T) {
-          isOpen = false;
-          resolve(data);
-        }
-      });
-      installVuetify(app);
-      app.mount(div);
-    });
-  };
+export function useMountComponent(data: object = {}) {
+  let pendingMount: Promise<unknown> | undefined;
 
-  const load = <T extends Component>(component: Component): T => {
-    const { component: mountedComponent } = loadApp<T>(component);
-    return mountedComponent;
-  };
-
-  const loadApp = <T extends Component>(
-    component: Component
-  ): { component: T; app: App; div: HTMLDivElement; destroyFc: () => void } => {
+  const createHost = <T extends Component>(
+    component: Component,
+    onResult?: (value: unknown) => void,
+    onClose?: () => void,
+    onDestroy?: () => void
+  ) => {
     const div = document.createElement("div");
     document.body.appendChild(div);
-    const app = createApp(component, {
-      ...data,
-      async destroyComponent(delay = 1000) {
-        await sleep(delay);
-        app.unmount();
-        div.remove();
-      }
-    });
-    installVuetify(app);
-    const mountedComponent = app.mount(div);
-    return {
-      component: mountedComponent as any,
-      app: app,
-      div,
-      destroyFc: () => {
-        app.unmount();
-        div.remove();
-      }
+    let app: App;
+    let closing = false;
+    let destroyed = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const cleanup = () => {
+      if (destroyed) return;
+      destroyed = true;
+      clearTimeout(timer);
+      app?.unmount();
+      div.remove();
+      onDestroy?.();
     };
+
+    const destroy = (delay = 1000) => {
+      if (!closing) {
+        closing = true;
+        onClose?.();
+      }
+      if (destroyed) return;
+      if (delay <= 0) cleanup();
+      else if (!timer) timer = setTimeout(cleanup, delay);
+    };
+
+    try {
+      app = createApp(component, {
+        ...data,
+        destroyComponent: destroy,
+        ...(onResult
+          ? {
+              emitResult: (value: unknown) => {
+                onResult(value);
+                destroy();
+              }
+            }
+          : {})
+      });
+      installVuetify(app);
+      const mountedComponent = app.mount(div);
+      return {
+        component: mountedComponent as unknown as T,
+        app,
+        div,
+        destroyFc: () => destroy(0)
+      };
+    } catch (error) {
+      cleanup();
+      throw error;
+    }
   };
 
-  return {
-    mount,
-    load,
-    loadApp
+  const mount = <T>(component: Component): Promise<T | undefined> => {
+    if (pendingMount) return pendingMount as Promise<T | undefined>;
+    let resolveResult!: (value: T | undefined) => void;
+    let rejectResult!: (reason: unknown) => void;
+    const result = new Promise<T | undefined>((resolve, reject) => {
+      resolveResult = resolve;
+      rejectResult = reject;
+    });
+    pendingMount = result;
+    try {
+      createHost(
+        component,
+        (value) => resolveResult(value as T),
+        () => resolveResult(undefined),
+        () => {
+          pendingMount = undefined;
+        }
+      );
+    } catch (error) {
+      rejectResult(error);
+    }
+    return result;
   };
+
+  const loadApp = <T extends Component>(component: Component) => createHost<T>(component);
+  const load = <T extends Component>(component: Component): T => loadApp<T>(component).component;
+
+  return { mount, load, loadApp };
 }

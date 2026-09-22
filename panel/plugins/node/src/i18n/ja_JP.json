@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_NODE_DOCKERFILE_EDITOR": "Dockerfile を編集",
   "TXT_CODE_3d94ea16": "ノードのソケットが異常です。ノード管理で再接続してください。",
   "TXT_CODE_7c650d80": "ノードの接続に失敗しました。管理者に連絡してリモート ノードのステータスを確認してください。",
   "TXT_CODE_DESKTOP_NODES": "ノード",

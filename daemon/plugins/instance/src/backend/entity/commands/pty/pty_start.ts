@@ -1,10 +1,7 @@
 import { ChildProcess, ChildProcessWithoutNullStreams, spawn } from "child_process";
-import EventEmitter from "events";
 import fs from "fs-extra";
-import { killProcess } from "mcsmanager-common";
 import os from "os";
 import path from "path";
-import readline from "readline";
 import { Writable } from "stream";
 import { v4 } from "uuid";
 import { PTY_PATH } from "../../../const";
@@ -12,9 +9,10 @@ import { $t } from "../../../i18n";
 import logger from "../../../service/log";
 import { getRunAsUserParams } from "../../../tools/system_user";
 import Instance from "../../instance/instance";
-import { IInstanceProcess } from "../../instance/interface";
 import { commandStringToArray } from "../base/command_parser";
+import { ChildProcessAdapter, waitForSpawn } from "../base/process_adapter";
 import FunctionDispatcher from "../dispatcher";
+import GeneralStartCommand from "../general/general_start";
 import AbsStartCommand from "../start";
 
 interface IPtySubProcessCfg {
@@ -33,29 +31,40 @@ const GO_PTY_MSG_TYPE = {
 };
 
 // process adapter
-export class GoPtyProcessAdapter extends EventEmitter implements IInstanceProcess {
+export class GoPtyProcessAdapter extends ChildProcessAdapter {
   private pipeClient?: Writable;
+  private pipeTimer?: NodeJS.Timeout;
+  private pipeOpening?: Promise<void>;
+  private cleanup?: Promise<void>;
 
   constructor(
-    private readonly process: ChildProcess,
-    public readonly pid: number,
+    process: ChildProcess,
+    pid: number | undefined,
     public readonly pipeName: string
   ) {
-    super();
-    process.stdout?.on("data", (text) => this.emit("data", text));
-    process.stderr?.on("data", (text) => this.emit("data", text));
-    process.on("exit", (code) => this.emit("exit", code));
-    setTimeout(() => {
-      this.initNamedPipe();
+    super(process, false);
+    this.pid = pid ?? process.pid;
+  }
+
+  public attachOutput() {
+    super.attachOutput();
+    if (this.disposed || this.pipeTimer || this.pipeOpening) return;
+    this.pipeTimer = setTimeout(() => {
+      this.pipeTimer = undefined;
+      this.pipeOpening = this.initNamedPipe();
     }, 1000);
   }
 
   private async initNamedPipe() {
+    if (this.disposed) return;
     try {
-      const fd = await fs.open(this.pipeName, "w");
+      const flags = os.platform() === "win32" ? "w" : fs.constants.O_WRONLY | fs.constants.O_NONBLOCK;
+      const fd = await fs.open(this.pipeName, flags);
+      if (this.disposed) {
+        await fs.close(fd);
+        return;
+      }
       const writePipe = fs.createWriteStream("", { fd });
-      writePipe.on("close", () => {});
-      writePipe.on("end", () => {});
       writePipe.on("error", (err) => {
         logger.error("Pipe error:", this.pipeName, err);
       });
@@ -67,8 +76,9 @@ export class GoPtyProcessAdapter extends EventEmitter implements IInstanceProces
 
   public resize(w: number, h: number) {
     const MAX_W = 900;
-    if (w > MAX_W) w = MAX_W;
-    if (h > MAX_W) h = MAX_W;
+    if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) return;
+    w = Math.min(MAX_W, Math.floor(w));
+    h = Math.min(MAX_W, Math.floor(h));
     const resizeStruct = JSON.stringify({ width: Number(w), height: Number(h) });
     const len = resizeStruct.length;
     const lenBuff = Buffer.alloc(2);
@@ -78,65 +88,70 @@ export class GoPtyProcessAdapter extends EventEmitter implements IInstanceProces
   }
 
   public writeToNamedPipe(data: Buffer) {
-    this.pipeClient?.write(data);
+    if (!this.disposed) this.pipeClient?.write(data);
   }
 
-  public write(data?: string) {
-    return this.process.stdin?.write(data);
-  }
-
-  public kill(s?: any) {
-    return killProcess(this.pid, this.process, s);
-  }
-
-  public async destroy() {
-    for (const n of this.eventNames()) this.removeAllListeners(n);
-    if (this.process.stdout)
-      for (const eventName of this.process.stdout.eventNames())
-        this.process.stdout.removeAllListeners(eventName);
-    if (this.process.stderr)
-      for (const eventName of this.process.stderr.eventNames())
-        this.process.stderr.removeAllListeners(eventName);
-    if (this.process)
-      for (const eventName of this.process.eventNames())
-        this.process.stdout?.removeAllListeners(eventName);
-    if (this.pipeClient)
-      for (const eventName of this.pipeClient.eventNames())
-        this.pipeClient.removeAllListeners(eventName);
-    this.pipeClient?.destroy();
-    this.process?.stdout?.destroy();
-    this.process?.stderr?.destroy();
-    if (this.process?.exitCode === null) {
-      this.process.kill("SIGTERM");
-      this.process.kill("SIGKILL");
+  public destroy(): Promise<void> {
+    if (this.cleanup) return this.cleanup;
+    clearTimeout(this.pipeTimer);
+    this.pipeTimer = undefined;
+    // Mark disposed before awaiting an in-flight open, which closes a late fd.
+    let destroyed: void | Promise<void>;
+    try {
+      destroyed = super.destroy();
+    } catch (error) {
+      destroyed = Promise.reject(error);
     }
-    fs.remove(this.pipeName, (err) => {});
+    this.cleanup = Promise.resolve(destroyed).finally(async () => {
+      await this.pipeOpening;
+      this.pipeClient?.destroy();
+      this.pipeClient = undefined;
+      if (os.platform() !== "win32") await fs.remove(this.pipeName);
+    });
+    return this.cleanup;
   }
 }
 
 export default class PtyStartCommand extends AbsStartCommand {
   readPtySubProcessConfig(subProcess: ChildProcessWithoutNullStreams): Promise<IPtySubProcessCfg> {
-    return new Promise((r, j) => {
-      const errConfig = {
-        pid: 0
+    return new Promise((resolve, reject) => {
+      let header = Buffer.alloc(0);
+      const cleanup = () => {
+        clearTimeout(timer);
+        subProcess.stdout.off("data", onData);
+        subProcess.stdout.off("error", onError);
+        subProcess.off("error", onError);
+        subProcess.off("exit", onExit);
       };
-      const rl = readline.createInterface({
-        input: subProcess.stdout,
-        crlfDelay: Infinity
-      });
-      rl.on("line", (line = "") => {
+      const onError = (error: Error) => {
+        cleanup();
+        reject(error);
+      };
+      const onExit = () => onError(new StartupError($t("TXT_CODE_pty_start.instanceStartErr")));
+      const onData = (chunk: Buffer) => {
         try {
-          rl.removeAllListeners();
-          const cfg = JSON.parse(line) as IPtySubProcessCfg;
-          if (cfg.pid == null) throw new Error("Error");
-          r(cfg);
+          header = Buffer.concat([header, chunk]);
+          const end = header.indexOf(10);
+          if (end < 0 && header.length <= 65536) return;
+          if (end < 0 || end > 65536) throw new Error("Invalid PTY startup response");
+          const cfg = JSON.parse(header.subarray(0, end).toString("utf8")) as IPtySubProcessCfg;
+          if (!Number.isSafeInteger(cfg.pid) || cfg.pid <= 0)
+            throw new Error("Invalid PTY process ID");
+          // Preserve output arriving in the same chunk as the handshake.
+          subProcess.stdout.pause();
+          cleanup();
+          const remaining = header.subarray(end + 1);
+          if (remaining.length) subProcess.stdout.unshift(remaining);
+          resolve(cfg);
         } catch (error: any) {
-          r(errConfig);
+          onError(error);
         }
-      });
-      setTimeout(() => {
-        r(errConfig);
-      }, 1000 * 3);
+      };
+      const timer = setTimeout(onExit, 3000);
+      subProcess.once("error", onError);
+      subProcess.once("exit", onExit);
+      subProcess.stdout.once("error", onError);
+      subProcess.stdout.on("data", onData);
     });
   }
 
@@ -163,7 +178,8 @@ export default class PtyStartCommand extends AbsStartCommand {
     if (checkPtyEnv === false) {
       instance.config.terminalOption.pty = false;
       await instance.forceExec(new FunctionDispatcher());
-      await instance.execPreset("start");
+      // The outer start command already owns the lock and STARTING state.
+      await new GeneralStartCommand().createProcess(instance);
       return;
     }
 
@@ -234,8 +250,19 @@ export default class PtyStartCommand extends AbsStartCommand {
       detached: false
     });
 
-    // pty child process creation result check
-    if (!subProcess || !subProcess.pid) {
+    const processAdapter = new GoPtyProcessAdapter(subProcess, subProcess.pid, pipeName);
+    try {
+      const [, config] = await Promise.all([
+        waitForSpawn(subProcess),
+        this.readPtySubProcessConfig(subProcess)
+      ]);
+      processAdapter.pid = config.pid;
+      if (subProcess.exitCode !== null || subProcess.signalCode !== null)
+        throw new StartupError($t("TXT_CODE_pty_start.instanceStartErr"));
+      instance.started(processAdapter);
+      processAdapter.attachOutput();
+    } catch (error) {
+      await processAdapter.destroy();
       instance.println(
         "ERROR",
         $t("TXT_CODE_pty_start.pidErr", {
@@ -244,32 +271,13 @@ export default class PtyStartCommand extends AbsStartCommand {
           params: JSON.stringify(ptyParameter)
         })
       );
-      throw new StartupError($t("TXT_CODE_pty_start.instanceStartErr"));
+      throw error;
     }
-
-    // create process adapter
-    const ptySubProcessCfg = await this.readPtySubProcessConfig(subProcess);
-    const processAdapter = new GoPtyProcessAdapter(subProcess, ptySubProcessCfg.pid, pipeName);
-
-    if (subProcess.exitCode !== null || processAdapter.pid == null || processAdapter.pid === 0) {
-      instance.println(
-        "ERROR",
-        $t("TXT_CODE_pty_start.pidErr", {
-          startCommand: commandList.join(" "),
-          path: PTY_PATH,
-          params: JSON.stringify(ptyParameter)
-        })
-      );
-      throw new StartupError($t("TXT_CODE_pty_start.instanceStartErr"));
-    }
-
-    // generate open event
-    instance.started(processAdapter);
 
     logger.info(
       $t("TXT_CODE_pty_start.startSuccess", {
         instanceUuid: instance.instanceUuid,
-        pid: ptySubProcessCfg.pid
+        pid: processAdapter.pid
       })
     );
     instance.println("INFO", $t("TXT_CODE_b50ffba8"));

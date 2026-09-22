@@ -5,7 +5,8 @@ import type { InstanceDetail, MapData } from "@/types";
 import { INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@/types/const";
 import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
-import { computed, h, onMounted, onUnmounted, ref, type Ref } from "vue";
+import { usePolling } from "@/hooks/usePolling";
+import { computed, h, ref, type Ref } from "vue";
 
 export const TYPE_UNIVERSAL = "universal";
 export const TYPE_WEB_SHELL = "universal/web_shell";
@@ -93,7 +94,6 @@ export function useInstanceMoreDetail(info: InstanceMoreDetail): InstanceMoreDet
 }
 
 export function useInstanceInfo(params: Params) {
-  let task: ReturnType<typeof setInterval> | undefined;
   const { daemonId, instanceId, instanceInfo, autoRefresh } = params;
 
   const { execute, state, isLoading, isReady } = getInstanceInfo();
@@ -107,7 +107,7 @@ export function useInstanceInfo(params: Params) {
   const isStarting = computed(() => finalState?.value?.status === INSTANCE_STATUS_CODE.STARTING);
   const isRunning = computed(() => finalState?.value?.status === INSTANCE_STATUS_CODE.RUNNING);
   const isGlobalTerminal = computed(() => {
-    return state.value?.config.nickname === GLOBAL_INSTANCE_NAME;
+    return finalState.value?.config.nickname === GLOBAL_INSTANCE_NAME;
   });
 
   const instanceTypeText = computed(() => {
@@ -116,35 +116,15 @@ export function useInstanceInfo(params: Params) {
     );
   });
   const statusText = computed(
-    () => String(INSTANCE_STATUS[finalState.value?.status ?? -1]) || t("TXT_CODE_c8333afa")
+    () => INSTANCE_STATUS[finalState.value?.status ?? -1] || t("TXT_CODE_c8333afa")
   );
 
-  onMounted(async () => {
-    if (instanceId && daemonId) {
-      await execute({
-        params: {
-          uuid: instanceId,
-          daemonId: daemonId
-        }
-      });
-
-      if (autoRefresh) {
-        task = setInterval(async () => {
-          await execute({
-            params: {
-              uuid: instanceId,
-              daemonId: daemonId
-            }
-          });
-        }, 3000);
-      }
-    }
-  });
-
-  onUnmounted(() => {
-    if (task) clearInterval(task);
-    task = undefined;
-  });
+  if (instanceId && daemonId) {
+    usePolling(
+      () => execute({ params: { uuid: instanceId, daemonId } }),
+      autoRefresh ? 3000 : undefined
+    );
+  }
 
   return {
     isLoading,

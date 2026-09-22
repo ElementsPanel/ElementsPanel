@@ -4,15 +4,7 @@ import FadeUpAnimation from "@/components/FadeUpAnimation.vue";
 import { t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";
 import { ref } from "vue";
-import {
-  VBtn,
-  VCol,
-  VContainer,
-  VPagination,
-  VRow,
-  VSelect,
-  VTextField
-} from "vuetify/components";
+import { VBtn, VCol, VContainer, VPagination, VRow, VSelect, VTextField } from "vuetify/components";
 import { useRemoteNode } from "../hooks/useRemoteNode";
 import NodeDetailDialog from "./node/NodeDetailDialog.vue";
 import NodeItem from "./node/NodeItem.vue";
@@ -23,6 +15,7 @@ defineProps<{ card?: unknown }>();
 const nodeDetailDialog = ref<InstanceType<typeof NodeDetailDialog>>();
 
 const {
+  response,
   operationForm,
   remoteNodes: remotes,
   refreshLoading,
@@ -49,11 +42,7 @@ const handleOpenDetailDialog = async () => {
 <template>
   <main class="node-page">
     <VContainer fluid class="node-page-container">
-      <PageToolbar
-        class="mb-16"
-        :title="t('TXT_CODE_20509fa0')"
-        icon="mdi-server-network-outline"
-      >
+      <PageToolbar class="mb-16" :title="t('TXT_CODE_20509fa0')" icon="mdi-server-network-outline">
         <template #search>
           <div class="node-search-row">
             <VSelect
@@ -119,7 +108,7 @@ const handleOpenDetailDialog = async () => {
             </div>
           </div>
         </VCol>
-        <fade-up-animation v-if="!refreshLoading" :delay="3000">
+        <fade-up-animation :delay="3000">
           <VCol
             v-for="(item, index) in remotes"
             :key="item.uuid + item.available + item.ip"
@@ -127,7 +116,7 @@ const handleOpenDetailDialog = async () => {
             cols="12"
             lg="6"
           >
-            <NodeItem :item="item" />
+            <NodeItem :item="item" :specified-daemon-version="response?.specifiedDaemonVersion" />
           </VCol>
         </fade-up-animation>
       </VRow>

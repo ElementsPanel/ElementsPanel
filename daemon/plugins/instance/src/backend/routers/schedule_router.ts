@@ -5,7 +5,12 @@ import InstanceControlSubsystem from "../service/system_instance_control";
 // create a scheduled task
 routerApp.on("schedule/register", (ctx, data) => {
   try {
-    InstanceControlSubsystem.registerScheduleJob(data);
+    const { replaceName, ...task } = data;
+    InstanceControlSubsystem.registerScheduleJob(
+      task,
+      true,
+      typeof replaceName === "string" ? replaceName : undefined
+    );
     protocol.response(ctx, true);
   } catch (error: any) {
     protocol.responseError(ctx, error);

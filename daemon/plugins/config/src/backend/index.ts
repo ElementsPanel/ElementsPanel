@@ -1,5 +1,5 @@
 import path from "path";
-import fs from "fs-extra";
+import { pluginPackageDirectory, removePluginPackage, writePluginPackage } from "mcsmanager-common";
 import type { DaemonPluginContext } from "../../../../src/plugin";
 import { localeMessages } from "../i18n";
 import { SettingsFormService } from "./settings";
@@ -32,9 +32,6 @@ const ESSENTIAL = new Set(["i18n", "storage", "runtime", "server", "monitor"]);
  */
 const MARKET_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "market_plugins");
 
-/** Must match the marker the panel's plugin market writes and looks for. */
-const MARKER_FILE = ".market-install.json";
-
 /** The extensions a plugin package is allowed to contain. */
 const ALLOWED_EXTENSIONS = new Set([
   ".json",
@@ -46,13 +43,28 @@ const ALLOWED_EXTENSIONS = new Set([
   ".md",
   ".txt"
 ]);
+const MAX_PLUGIN_ICON_BYTES = 1024 * 1024;
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
-/** A directory name is used as a path, so it may not climb out of its parent. */
-const SAFE_NAME = /^[a-zA-Z0-9_-]+$/;
+function validateTransferFile(file: TransferFile, destination: string) {
+  // Icons are plugin-level metadata and may only live at the package root. Do
+  // not turn the general package whitelist into an arbitrary image upload.
+  if (file.path === "icon.png") {
+    const encodedLimit = Math.ceil(MAX_PLUGIN_ICON_BYTES / 3) * 4 + 8;
+    if (file.content.length > encodedLimit) throw new Error("Plugin icon is too large.");
+    const data = Buffer.from(file.content, "base64");
+    if (data.length > MAX_PLUGIN_ICON_BYTES) throw new Error("Plugin icon is too large.");
+    if (data.length === 0 || !data.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE))
+      throw new Error("Invalid plugin icon.");
+    return;
+  }
+  if (!ALLOWED_EXTENSIONS.has(path.extname(destination).toLowerCase())) {
+    throw new Error(`The package contains an unacceptable file: ${file.path}`);
+  }
+}
 
 function pluginDirectory(name: string): string {
-  if (!SAFE_NAME.test(name)) throw new Error("Invalid plugin name.");
-  return path.join(MARKET_PLUGINS_DIRECTORY(), name);
+  return pluginPackageDirectory(MARKET_PLUGINS_DIRECTORY(), name);
 }
 
 /** One file of a package, as the panel sends it. */
@@ -116,7 +128,12 @@ export function apply(ctx: DaemonPluginContext) {
   // another host.
   ctx.protocol.on("plugin/install", async (routerCtx, data) => {
     try {
-      const payload = (data ?? {}) as { name?: unknown; pluginId?: unknown; version?: unknown; files?: unknown };
+      const payload = (data ?? {}) as {
+        name?: unknown;
+        pluginId?: unknown;
+        version?: unknown;
+        files?: unknown;
+      };
       const name = String(payload.name ?? "");
       const directory = pluginDirectory(name);
       const root = path.resolve(directory);
@@ -125,10 +142,7 @@ export function apply(ctx: DaemonPluginContext) {
       for (const file of files) {
         const destination = path.resolve(root, file.path);
         if (!destination.startsWith(`${root}${path.sep}`)) throw new Error("Illegal plugin path.");
-        if (!ALLOWED_EXTENSIONS.has(path.extname(destination).toLowerCase())) {
-          throw new Error(`The package contains an unacceptable file: ${file.path}`);
-        }
-        await fs.outputFile(destination, Buffer.from(file.content, "base64"));
+        validateTransferFile(file, destination);
       }
 
       const info = {
@@ -137,7 +151,14 @@ export function apply(ctx: DaemonPluginContext) {
         version: String(payload.version ?? ""),
         installedAt: Date.now()
       };
-      await fs.outputFile(path.join(directory, MARKER_FILE), JSON.stringify(info, null, 2));
+      await writePluginPackage(
+        MARKET_PLUGINS_DIRECTORY(),
+        info,
+        files.map((file) => ({
+          relative: file.path,
+          content: Buffer.from(file.content, "base64")
+        }))
+      );
       ctx.protocol.response(routerCtx, { ...info, directory });
     } catch (error: any) {
       ctx.protocol.responseError(routerCtx, error);
@@ -150,15 +171,12 @@ export function apply(ctx: DaemonPluginContext) {
   ctx.protocol.on("plugin/uninstall", async (routerCtx, data) => {
     try {
       const payload = (data ?? {}) as { name?: unknown; pluginId?: unknown };
-      const directory = pluginDirectory(String(payload.name ?? ""));
-      const marker = await fs
-        .readFile(path.join(directory, MARKER_FILE), "utf8")
-        .then((content) => JSON.parse(content) as { pluginId?: string })
-        .catch(() => null);
-      if (marker?.pluginId && marker.pluginId === String(payload.pluginId ?? "")) {
-        await fs.remove(directory);
-      }
-      ctx.protocol.response(routerCtx, { removed: Boolean(marker) });
+      await removePluginPackage(
+        MARKET_PLUGINS_DIRECTORY(),
+        String(payload.name ?? ""),
+        String(payload.pluginId ?? "")
+      );
+      ctx.protocol.response(routerCtx, { removed: true });
     } catch (error: any) {
       ctx.protocol.responseError(routerCtx, error);
     }

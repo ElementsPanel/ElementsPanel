@@ -6,7 +6,7 @@ export const LANGUAGE_KEY = "LANGUAGE";
 
 export function toStandardLang(language?: string) {
   if (!language) return "en_us";
-  return language.replace("-", "_").toLowerCase();
+  return language.trim().replace(/-/g, "_").toLowerCase();
 }
 
 function service(): FrontendI18nService {

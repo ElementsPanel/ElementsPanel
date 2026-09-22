@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onUnmounted, ref } from "vue";
 import { t } from "@/lang/i18n";
 import { message } from "@/tools/vuetifyToast";
 import { uploadFile } from "@/services/apis/upload";
@@ -29,6 +29,8 @@ const props = defineProps<Props>();
 const uploadControl = new AbortController();
 const open = ref(true);
 const percentComplete = ref(0);
+const uploading = ref(false);
+onUnmounted(() => uploadControl.abort());
 
 const submit = (path = "") => {
   open.value = false;
@@ -37,20 +39,25 @@ const submit = (path = "") => {
 };
 
 const uploadSelectedFile = async (value: unknown) => {
+  if (uploading.value) return;
   const file = Array.isArray(value) ? value[0] : value;
   if (!(file instanceof File)) return;
   const uploadFormData = new FormData();
   uploadFormData.append("file", file);
+  uploading.value = true;
   try {
     const res = await execute({
       data: uploadFormData,
       timeout: Number.MAX_SAFE_INTEGER,
       signal: uploadControl.signal,
       onUploadProgress: (progressEvent: any) => {
-        percentComplete.value = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        percentComplete.value = progressEvent.total
+          ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          : 0;
       }
     });
 
+    if (uploadControl.signal.aborted) return;
     if (res.value) {
       message.success(t("TXT_CODE_773f36a0"));
       submit(`/upload_files/${res.value}`);
@@ -58,7 +65,9 @@ const uploadSelectedFile = async (value: unknown) => {
       submit("");
     }
   } catch (error: any) {
-    reportErrorMsg(error);
+    if (!uploadControl.signal.aborted) reportErrorMsg(error);
+  } finally {
+    uploading.value = false;
   }
 };
 
@@ -73,7 +82,7 @@ const cancel = () => {
     <VCard :title="t('TXT_CODE_e00c858c')" rounded="xl">
       <VCardText class="upload-container">
         <VFileInput
-          :disabled="percentComplete > 0"
+          :disabled="uploading"
           :label="t('TXT_CODE_335ba209')"
           accept="*/*"
           prepend-icon="mdi-folder-open-outline"

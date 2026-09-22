@@ -4,11 +4,11 @@ import { t } from "@/lang/i18n";
 import { remoteInstances, remoteNodeList } from "@/services/apis";
 import { computeNodeName } from "@/tools/nodes";
 import { reportErrorMsg } from "@/tools/validator";
-import type { NodeStatus } from "@/types";
+import type { InstanceDetail, NodeStatus } from "@/types";
 import { INSTANCE_STATUS } from "@/types/const";
 import type { UserInstance } from "@/types/user";
 import _, { throttle } from "lodash";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import {
   VBtn,
   VCard,
@@ -30,11 +30,7 @@ import {
 interface Props {
   destroyComponent(delay?: number): void;
   emitResult(data?: UserInstance[]): void;
-  title: string;
-  keyTitle?: string;
-  valueTitle?: string;
   data: UserInstance[];
-  columns?: unknown[];
 }
 
 const props = defineProps<Props>();
@@ -42,18 +38,26 @@ const { isPhone } = useScreen();
 const open = ref(false);
 
 const operationForm = ref({
-  instanceName: "",
+  instanceName: "" as string | null,
   currentPage: 1,
   pageSize: 10,
   status: ""
 });
 
 const currentRemoteNode = ref<NodeStatus>();
-const { execute: getNodes, state: nodes } = remoteNodeList();
-const { execute: getInstances, state: instances, isLoading } = remoteInstances();
+const { execute: getNodes } = remoteNodeList();
+const { execute: getInstances } = remoteInstances();
+const nodes = ref<NodeStatus[]>([]);
+const instances = ref<{ data: InstanceDetail[]; maxPage: number }>();
+const isLoading = ref(false);
+const nodeController = new AbortController();
+let instanceController: AbortController | undefined;
+let nodesRequest: Promise<boolean> | undefined;
+let latestRequest = 0;
+let closed = false;
 
 const instancesList = computed<UserInstance[]>(() =>
-  (instances.value?.data || []).map((instance: any) => ({
+  (instances.value?.data || []).map((instance) => ({
     instanceUuid: instance.instanceUuid,
     daemonId: currentRemoteNode.value?.uuid ?? "",
     nickname: instance.config.nickname,
@@ -82,34 +86,63 @@ const rowItem = (item: UserInstance | { raw?: UserInstance }): UserInstance =>
   (item as { raw?: UserInstance }).raw ?? (item as UserInstance);
 
 const cancel = async () => {
+  if (closed) return;
+  disposeRequests();
   open.value = false;
-  props.destroyComponent?.(1000);
+  props.destroyComponent?.(300);
 };
 
 const initNodes = async () => {
-  await getNodes();
-  nodes.value?.sort((a, b) => (a.available === b.available ? 0 : a.available ? -1 : 1));
-  if (!nodes.value?.length) {
-    return reportErrorMsg(t("TXT_CODE_e3d96a26"));
+  const response = await getNodes({ signal: nodeController.signal });
+  if (closed) return false;
+  nodes.value = [...(response.value || [])].sort(
+    (a, b) => Number(b.available) - Number(a.available)
+  );
+  let storedUuid: string | undefined;
+  try {
+    const stored = JSON.parse(localStorage.getItem("pageSelectedRemote") || "null");
+    if (typeof stored?.uuid === "string") storedUuid = stored.uuid;
+  } catch {
+    // A damaged or unavailable storage entry must not block selecting a node.
   }
-  const storedNode = localStorage.getItem("pageSelectedRemote");
-  currentRemoteNode.value = storedNode ? JSON.parse(storedNode) : nodes.value[0];
+  currentRemoteNode.value = nodes.value.find((node) => node.uuid === storedUuid && node.available)
+    ?? nodes.value.find((node) => node.available);
+  if (currentRemoteNode.value) return true;
+  reportErrorMsg(t("TXT_CODE_e3d96a26"));
+  return false;
 };
 
 const initInstancesData = async () => {
-  if (!currentRemoteNode.value) await initNodes();
+  if (closed) return;
+  const request = ++latestRequest;
+  instanceController?.abort();
+  const controller = new AbortController();
+  instanceController = controller;
+  instances.value = undefined;
+  isLoading.value = true;
   try {
-    await getInstances({
+    if (!currentRemoteNode.value) {
+      nodesRequest ??= initNodes().finally(() => { nodesRequest = undefined; });
+      if (!(await nodesRequest)) return;
+    }
+    if (closed || request !== latestRequest) return;
+    const node = currentRemoteNode.value;
+    if (!node) return;
+    const response = await getInstances({
+      signal: controller.signal,
       params: {
-        daemonId: currentRemoteNode.value?.uuid ?? "",
+        daemonId: node.uuid,
         page: operationForm.value.currentPage,
         page_size: operationForm.value.pageSize,
         status: operationForm.value.status,
-        instance_name: operationForm.value.instanceName.trim()
+        instance_name: (operationForm.value.instanceName || "").trim()
       }
     });
+    if (!closed && request === latestRequest) instances.value = response.value;
   } catch {
-    return reportErrorMsg(t("TXT_CODE_e109c091"));
+    if (!closed && request === latestRequest) reportErrorMsg(t("TXT_CODE_e109c091"));
+  } finally {
+    if (request === latestRequest) isLoading.value = false;
   }
 };
 
@@ -143,14 +176,16 @@ const handleQueryInstance = throttle(async () => {
 }, 600);
 
 const handleChangeNode = async (item: NodeStatus) => {
+  if (!item.available || closed) return;
+  handleQueryInstance.cancel();
+  operationForm.value.currentPage = 1;
+  currentRemoteNode.value = item;
   try {
-    operationForm.value.currentPage = 1;
-    currentRemoteNode.value = item;
-    await initInstancesData();
     localStorage.setItem("pageSelectedRemote", JSON.stringify(item));
-  } catch (err: any) {
-    console.error(err.message);
+  } catch {
+    // Node selection still works when the browser disables local storage.
   }
+  await initInstancesData();
 };
 
 const handlePageChange = async (page: number) => {
@@ -168,11 +203,21 @@ onMounted(async () => {
   open.value = true;
   await initInstancesData();
 });
+
+const disposeRequests = () => {
+  closed = true;
+  latestRequest++;
+  nodeController.abort();
+  instanceController?.abort();
+  handleQueryInstance.cancel();
+  isLoading.value = false;
+};
+onUnmounted(disposeRequests);
 </script>
 
 <template>
   <VDialog v-model="open" class="app-dialog select-instances-dialog" max-width="980" scrollable persistent>
-    <VCard :title="props.title" rounded="xl">
+    <VCard :title="t('TXT_CODE_8145d25a')" rounded="xl">
       <VCardText class="select-instances-content">
         <p class="text-medium-emphasis select-instances-help">{{ t("TXT_CODE_50697989") }}</p>
 

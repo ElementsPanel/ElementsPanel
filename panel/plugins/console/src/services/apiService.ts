@@ -1,29 +1,24 @@
-import { reportErrorMsg } from "@/tools/validator";
-import type { AxiosError, AxiosRequestConfig } from "axios";
+﻿import { reportErrorMsg } from "@/tools/validator";
+import type { AxiosRequestConfig } from "axios";
 import axios from "axios";
-import EventEmitter from "eventemitter3";
 import _ from "lodash";
 
 axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 let authToken: string | undefined;
 
 export function setAuthToken(token?: string) {
+  if (authToken !== token) apiService.clearCache();
   authToken = token;
 }
 
-axios.interceptors.request.use(async (config) => {
-  if (!config.params) config.params = {};
-  config.params.token = authToken;
+axios.interceptors.request.use((config) => {
+  config.params = { ...config.params, token: authToken };
   return config;
 });
 
 export interface RequestConfig extends AxiosRequestConfig {
   forceRequest?: boolean;
   errorAlert?: boolean;
-}
-interface ResponseDataRecord {
-  timestamp: number;
-  data: any;
 }
 
 interface PacketProtocol<T> {
@@ -33,118 +28,81 @@ interface PacketProtocol<T> {
 }
 
 class ApiService {
-  private readonly event = new EventEmitter();
-  private readonly responseMap = new Map<string, ResponseDataRecord>();
-  private readonly RESPONSE_CACHE_TIME = 1000 * 2;
-  private readonly REQUEST_CACHE_TIME = 100;
+  private readonly responses = new Map<string, { expiresAt: number; data: unknown }>();
+  private readonly pending = new Map<string, Promise<unknown>>();
+  private generation = 0;
 
-  public async subscribe<T>(config: RequestConfig): Promise<T | undefined> {
-    if (!config.url) throw new Error("ApiService: RequestConfig: 'url' is empty!");
-
-    config = _.cloneDeep(config);
-    // filter and clean up expired cache tables
-    this.responseMap.forEach((value, key) => {
-      if (value.timestamp + this.RESPONSE_CACHE_TIME < Date.now()) {
-        this.responseMap.delete(key);
-      }
-    });
-
-    if (config.url?.startsWith("/")) {
-      config.url = "." + config.url;
-    }
-
-    if (config.forceRequest === true) {
-      config.params = config?.params || {};
-      config.params._force = Date.now();
-      return await this.sendRequest<T>(config);
-    }
-
-    const reqId = encodeURIComponent(
-      [
-        String(config.method),
-        String(config.url),
-        JSON.stringify(config.data ?? {}),
-        JSON.stringify(config.params ?? {})
-      ].join("")
-    );
-
-    return new Promise((resolve, reject) => {
-      this.event.once(reqId, (data: any) => {
-        if (data instanceof Error) {
-          if (config.errorAlert === true) {
-            reportErrorMsg(data.message);
-          }
-          reject(data);
-        } else {
-          data = _.cloneDeep(data);
-          resolve(data);
-        }
-      });
-
-      if (this.responseMap.has(reqId) && !config.forceRequest) {
-        const cache = this.responseMap.get(reqId) as ResponseDataRecord;
-        if (cache.timestamp + this.RESPONSE_CACHE_TIME > Date.now()) {
-          return this.event.emit(reqId, cache.data);
-        }
-      }
-
-      if (this.event.listenerCount(reqId) <= 1 || config.forceRequest === true) {
-        this.sendRequest(config, reqId);
-      }
-    });
+  public clearCache() {
+    this.generation++;
+    this.responses.clear();
+    this.pending.clear();
   }
 
-  private async sendRequest<T>(config: RequestConfig, reqId?: string) {
+  public async subscribe<T>(options: RequestConfig): Promise<T | undefined> {
+    if (!options.url) throw new Error("ApiService: RequestConfig: 'url' is empty!");
+    const config = { ...options, method: (options.method || "GET").toUpperCase() };
+    if (config.url?.startsWith("/")) config.url = "." + config.url;
+    config.timeout ??= 30_000;
+
+    const isRead = config.method === "GET" || config.method === "HEAD";
+    // Mutations must always reach the server. Invalidate both before and after
+    // them so an older read cannot repopulate the cache while a write is running.
+    if (!isRead || config.forceRequest) this.clearCache();
+    const cacheable = isRead && !config.forceRequest && !config.signal;
+    const generation = this.generation;
+    const key = cacheable
+      ? JSON.stringify([
+          config.method,
+          config.baseURL,
+          config.url,
+          config.params,
+          config.data,
+          config.headers,
+          config.responseType,
+          config.withCredentials,
+          config.timeout
+        ])
+      : "";
+
     try {
-      // Force request!
-      if (!reqId) {
-        const { data: result } = await axios<PacketProtocol<T>>(config);
-        return result?.data;
-      }
-
-      // Request cache
-      const startTime = Date.now();
-      if (!config.timeout) config.timeout = 1000 * 30;
-      const { data: result } = await axios<PacketProtocol<T>>(config);
-      const endTime = Date.now();
-      const reqSpeed = endTime - startTime;
-      if (reqSpeed < this.REQUEST_CACHE_TIME) await this.wait(this.REQUEST_CACHE_TIME - reqSpeed);
-      const realData = result.data;
-      this.responseMap.set(reqId, {
-        timestamp: Date.now(),
-        data: realData
-      });
-      this.event.emit(reqId, realData);
-    } catch (error: AxiosError | Error | any) {
-      const axiosErr = error as AxiosError;
-      const otherErr = error as Error | any;
-      if (axiosErr?.response?.data) {
-        const protocol = axiosErr?.response?.data as IPanelResponseProtocol;
-        if (protocol.data && protocol.status !== 200) {
-          this.throwRequestError(reqId, String(protocol.data));
-          return;
+      if (cacheable) {
+        for (const [id, response] of this.responses) {
+          if (response.expiresAt <= Date.now()) this.responses.delete(id);
         }
+        const cached = this.responses.get(key);
+        if (cached) return _.cloneDeep(cached.data) as T;
+        const pending = this.pending.get(key);
+        if (pending) return _.cloneDeep(await pending) as T;
       }
-      this.throwRequestError(reqId, otherErr);
-    }
-  }
 
-  private throwRequestError(reqId?: string, error?: any) {
-    if (!(error instanceof Error)) error = new Error(error);
-
-    if (reqId) {
-      this.event.emit(reqId, error);
-    } else {
+      const request = this.sendRequest<T>(config);
+      if (cacheable) this.pending.set(key, request);
+      try {
+        const data = await request;
+        if (cacheable && generation === this.generation) {
+          this.responses.set(key, { expiresAt: Date.now() + 2000, data });
+        }
+        return _.cloneDeep(data);
+      } finally {
+        if (this.pending.get(key) === request) this.pending.delete(key);
+        if (!isRead || config.forceRequest) this.clearCache();
+      }
+    } catch (cause: any) {
+      const protocol = cause?.response?.data as PacketProtocol<unknown> | undefined;
+      const error =
+        protocol?.data && protocol.status !== 200
+          ? new Error(String(protocol.data))
+          : cause instanceof Error
+          ? cause
+          : new Error(String(cause));
+      if (config.errorAlert) reportErrorMsg(error.message);
       throw error;
     }
   }
 
-  private wait(time: number) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(null);
-      }, time);
-    });
+  private async sendRequest<T>(config: RequestConfig): Promise<T | undefined> {
+    const { data } = await axios<PacketProtocol<T>>(config);
+    return data?.data;
   }
 }
 

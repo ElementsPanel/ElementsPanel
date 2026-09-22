@@ -4,6 +4,6 @@ import { EventEmitter } from "events";
 export interface IInstanceProcess extends EventEmitter {
   pid?: number | string;
   kill: (signal?: any) => any;
-  destroy: () => void;
+  destroy: () => void | Promise<void>;
   write: (data?: any) => any;
 }

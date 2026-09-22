@@ -70,6 +70,10 @@ async function backendFixture() {
   const pass = () => async (_ctx, next) => next();
   const plugin = load("panel/plugins/market/src/backend/index.ts", {
     axios,
+    "./plugin_icon": {
+      MAX_PLUGIN_ICON_BYTES: 1024 * 1024,
+      encodePluginIcon: () => "data:image/png;base64,review"
+    },
     "../i18n": { localeMessages: {} },
     "./service/market_service": {},
     "./service/market_settings": {
@@ -131,24 +135,27 @@ test("detail proxy encodes ids, preserves the requested release and adds local s
 test("detail proxy defaults to latest and rejects missing or unapproved releases", async () => {
   const { request, detail } = await backendFixture();
   assert.equal((await request({ pluginId: "plugin/one" })).body.selectedVersion.version, "2.0.0");
-  assert.equal(
-    (await request({ pluginId: "plugin/one", version: "missing" })).body,
-    "TXT_CODE_PLUGIN_MARKET_NOT_FOUND"
-  );
+  await assert.rejects(request({ pluginId: "plugin/one", version: "missing" }), {
+    status: 404,
+    message: "TXT_CODE_PLUGIN_MARKET_NOT_FOUND"
+  });
   detail.versions[1].status = "pending";
-  assert.equal(
-    (await request({ pluginId: "plugin/one", version: "1.0.0" })).body,
-    "TXT_CODE_PLUGIN_MARKET_NOT_FOUND"
-  );
+  await assert.rejects(request({ pluginId: "plugin/one", version: "1.0.0" }), {
+    status: 404,
+    message: "TXT_CODE_PLUGIN_MARKET_NOT_FOUND"
+  });
 });
 
-function installFixture() {
+function installFixture(overrides = {}) {
   const calls = [];
   const events = [];
   const errors = [];
+  const successes = [];
+  const warnings = [];
   const props = vue.reactive({
     plugin: { id: "one", name: "one", installedVersion: "1.0.0", latestVersion: version("2.0.0") },
-    version: version("1.0.0")
+    version: version("1.0.0"),
+    disabled: false
   });
   const api = (name, response) => () => ({
     execute: async (args) => {
@@ -161,23 +168,47 @@ function installFixture() {
     "vuetify/components": {},
     "@/lang/i18n": { t: (key) => key },
     "@/tools/validator": { getValidatorErrorMsg: (err) => err.message },
-    "@/tools/vuetifyToast": { message: { success() {}, error: (msg) => errors.push(msg) } },
+    "@/tools/vuetifyToast": {
+      message: {
+        success: (msg) => successes.push(msg),
+        warning: (msg) => warnings.push(msg),
+        error: (msg) => errors.push(msg)
+      }
+    },
     "../api": {
       pluginMarketPackage: api("package", { sides: ["panel", "daemon"] }),
+      pluginMarketInstalled: api("installed", [
+        {
+          pluginId: "one",
+          name: "one",
+          version: "1.0.0",
+          sides: ["panel", "daemon"],
+          daemonIds: ["node-1"]
+        }
+      ]),
       pluginMarketNodes: api("nodes", [{ daemonId: "node-1", ip: "localhost", available: true }]),
-      installMarketPlugin: api("install", { restartRequired: true, failedNodes: ["node-1"] }),
-      uninstallMarketPlugin: api("uninstall", { restartRequired: true, removed: true })
+      installMarketPlugin: api("install", {
+        restartRequired: true,
+        failedNodes: ["node-1"],
+        installedVersion: "1.0.0"
+      }),
+      uninstallMarketPlugin: api("uninstall", {
+        restartRequired: true,
+        removed: true,
+        failedNodes: []
+      }),
+      ...overrides
     }
   }).default;
   const scope = vue.effectScope();
   const state = scope.run(() =>
     component.setup(props, { expose() {}, emit: (...args) => events.push(args) })
   );
-  return { props, state, calls, events, errors, scope };
+  return { props, state, calls, events, errors, successes, warnings, scope };
 }
 
-test("node confirmation installs the captured version and reports partial failure", async () => {
-  const { props, state, calls, events, errors, scope } = installFixture();
+test("node confirmation installs the captured version and reports partial failure and restart", async () => {
+  const { props, state, calls, events, errors, successes, warnings, scope } = installFixture();
   try {
     await state.install();
     assert.equal(calls[0].args.params.version, "1.0.0");
@@ -190,12 +221,69 @@ test("node confirmation installs the captured version and reports partial failur
     assert.deepEqual(install.args.data.daemonIds, ["node-1"]);
     assert.ok(events.some((event) => event[0] === "installed" && event[2] === "1.0.0"));
     assert.deepEqual(errors, ["TXT_CODE_PLUGIN_MARKET_NODE_FAILED"]);
+    assert.deepEqual(successes, []);
+    assert.deepEqual(warnings, ["TXT_CODE_PLUGIN_MARKET_RESTART_REQUIRED"]);
   } finally {
     scope.stop();
   }
 });
 
-test("cancelling the node picker does not install, and uninstall uses the installed release", async () => {
+test("partial uninstall preserves the installed release and never reports complete success", async () => {
+  const { state, events, errors, successes, warnings, scope } = installFixture({
+    uninstallMarketPlugin: () => ({
+      execute: async () => ({
+        value: {
+          restartRequired: true,
+          removed: false,
+          installedVersion: "1.0.0",
+          failedNodes: ["node-1"]
+        }
+      })
+    })
+  });
+  try {
+    await state.requestUninstall({ id: "one", installedVersion: "1.0.0" });
+    state.confirmNodes();
+    await vue.nextTick();
+    assert.ok(events.some((event) => event[0] === "installed" && event[2] === "1.0.0"));
+    assert.deepEqual(errors, ["TXT_CODE_PLUGIN_MARKET_NODE_FAILED"]);
+    assert.deepEqual(successes, []);
+    assert.deepEqual(warnings, ["TXT_CODE_PLUGIN_MARKET_RESTART_REQUIRED"]);
+  } finally {
+    scope.stop();
+  }
+});
+
+test("disabled installs do not start and disposing during preparation cannot start a late install", async () => {
+  let resolve;
+  const fixture = installFixture({
+    pluginMarketPackage: () => ({
+      execute: () =>
+        new Promise((yes) => {
+          resolve = yes;
+        })
+    })
+  });
+  fixture.props.disabled = true;
+  await fixture.state.install();
+  assert.equal(resolve, undefined);
+  fixture.props.disabled = false;
+  const work = fixture.state.install();
+  assert.deepEqual(fixture.events, [["busy", true]], "the parent locks other actions immediately");
+  fixture.scope.stop();
+  resolve({ value: { sides: ["panel"] } });
+  await work;
+  assert.equal(
+    fixture.calls.some((call) => call.name === "install"),
+    false
+  );
+  assert.deepEqual(fixture.events, [
+    ["busy", true],
+    ["busy", false]
+  ]);
+});
+
+test("cancelling the node picker does not install, and uninstall uses persisted node records", async () => {
   const { props, state, calls, scope } = installFixture();
   try {
     await state.install();
@@ -204,9 +292,11 @@ test("cancelling the node picker does not install, and uninstall uses the instal
     props.version = version("2.0.0");
     await state.requestUninstall({ ...props.plugin });
     assert.equal(
-      calls.filter((call) => call.name === "package").at(-1).args.params.version,
-      "1.0.0"
+      calls.filter((call) => call.name === "package").length,
+      1,
+      "uninstall must not depend on a release still being available from the market"
     );
+    assert.equal(calls.filter((call) => call.name === "installed").length, 1);
     state.confirmNodes();
     await vue.nextTick();
     assert.deepEqual(calls.find((call) => call.name === "uninstall").args.params, {
@@ -266,6 +356,8 @@ const sharedViewOverrides = {
   "@/lang/i18n": { t: (key) => key, getCurrentLang: () => "en_us" },
   "@/tools/validator": { getValidatorErrorMsg: (err) => err.message },
   "@/tools/vuetifyToast": { message: { error() {} } },
+  // Icon networking is independent of the catalogue/operation state tested here.
+  "../hooks/usePluginIcons": { usePluginIcons: () => ({ icons: vue.ref({}), load() {} }) },
   // The list and the detail both show a plugin's sides through this chip.
   "./PluginMarketSideBadge.vue": {}
 };
@@ -313,6 +405,30 @@ test("desktop cards support keyboard selection and preserve search when installe
   } finally {
     app.unmount();
   }
+});
+
+test("market lists ignore older refreshes and responses after unmount", async () => {
+  const requests = [];
+  const component = load("panel/plugins/market/src/components/PluginMarketList.vue", {
+    ...sharedViewOverrides,
+    "../api": {
+      pluginMarketList: () => ({
+        execute: () => new Promise((resolve) => requests.push(resolve))
+      })
+    }
+  }).default;
+  const { state, app } = setupFixture(component, vue.reactive({ embedded: true }));
+  const current = state.refresh();
+  requests[1]({ value: [{ id: "current" }] });
+  await current;
+  requests[0]({ value: [{ id: "old" }] });
+  await vue.nextTick();
+  assert.equal(state.plugins.value[0].id, "current");
+  const late = state.refresh();
+  app.unmount();
+  requests[2]({ value: [{ id: "late" }] });
+  await late;
+  assert.equal(state.plugins.value[0].id, "current");
 });
 
 test("desktop browsing keeps the list mounted and wires detail installation and back events", async () => {
@@ -408,6 +524,98 @@ test("shared detail follows the plugin only, and ignores an answer that arrived 
     assert.equal(state.plugin.value, undefined);
   } finally {
     if (app._instance) app.unmount();
+  }
+});
+
+test("detail locks every release action and its tabs while a plugin operation is active", async () => {
+  const slots = vue.defineComponent({
+    setup(_props, { slots }) {
+      return () =>
+        vue.h(
+          "div",
+          Object.values(slots).flatMap((slot) => slot?.())
+        );
+    }
+  });
+  const Tabs = vue.defineComponent({
+    props: { modelValue: String, disabled: Boolean },
+    emits: ["update:modelValue"],
+    setup(_props, { slots }) {
+      return () => vue.h("div", slots.default?.());
+    }
+  });
+  const Install = vue.defineComponent({
+    props: { plugin: Object, version: Object, disabled: Boolean, installOnly: Boolean },
+    emits: ["busy", "installed"],
+    render: () => vue.h("div")
+  });
+  const components = Object.fromEntries(
+    ["VAlert", "VBtn", "VChip", "VContainer", "VIcon", "VProgressLinear", "VTab"].map((name) => [
+      name,
+      slots
+    ])
+  );
+  const Detail = load(
+    "panel/plugins/market/src/components/PluginMarketDetail.vue",
+    {
+      ...sharedViewOverrides,
+      "@/components/PageToolbar.vue": slots,
+      "@/tools/safe": { markdownToHTML: (text) => text },
+      "vuetify/components": { ...components, VTabs: Tabs },
+      "./PluginMarketInstall.vue": Install,
+      "./PluginMarketSideBadge.vue": slots,
+      "../api": {
+        pluginMarketDetail: () => ({
+          execute: async () => ({
+            value: {
+              id: "one",
+              selectedVersion: version("2.0.0"),
+              versions: [version("2.0.0"), version("1.0.0")]
+            }
+          })
+        })
+      }
+    },
+    true
+  ).default;
+  const app = renderer.createApp(Detail, { pluginId: "one" });
+  app.mount({ children: [] });
+  function findComponents(type, node = app._instance.subTree) {
+    if (!node || typeof node !== "object") return [];
+    const found = node.type === type ? [node.component] : [];
+    if (node.component) return [...found, ...findComponents(type, node.component.subTree)];
+    if (Array.isArray(node.children))
+      return [...found, ...node.children.flatMap((child) => findComponents(type, child))];
+    return found;
+  }
+  try {
+    await new Promise((resolve) => setImmediate(resolve));
+    await vue.nextTick();
+    const tabs = findComponents(Tabs)[0];
+    tabs.emit("update:modelValue", "versions");
+    await vue.nextTick();
+    const installs = findComponents(Install);
+    assert.equal(installs.length, 3);
+    installs[1].emit("busy", true);
+    await vue.nextTick();
+    assert.equal(
+      tabs.props.disabled,
+      true,
+      "switching tabs must not unmount a running release row"
+    );
+    assert.equal(
+      installs.every((item) => item.props.disabled),
+      true
+    );
+    installs[1].emit("busy", false);
+    await vue.nextTick();
+    assert.equal(tabs.props.disabled, false);
+    assert.equal(
+      installs.some((item) => item.props.disabled),
+      false
+    );
+  } finally {
+    app.unmount();
   }
 });
 

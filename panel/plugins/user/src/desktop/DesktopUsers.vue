@@ -6,7 +6,7 @@ import type { NodeStatus } from "@/types";
 import { INSTANCE_STATUS } from "@/types/const";
 import type { BaseUserInfo, EditUserInfo, UserInstance } from "@/types/user";
 import { notifyDesktop } from "../../../desktop/src/desktopNotice";
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
 import DesktopWindow from "./DesktopWindow.vue";
 import { VBtn, VChip, VDataTable, VIcon, VRadio, VRadioGroup, VSelect, VTextField } from "vuetify/components";
 
@@ -77,16 +77,19 @@ const assignForm = reactive({
 const windowWidth = ref(window.innerWidth);
 const windowHeight = ref(window.innerHeight);
 
+const updateWindowSize = () => {
+    windowWidth.value = window.innerWidth;
+    windowHeight.value = window.innerHeight;
+};
+
 onMounted(() => {
-    const updateWindowSize = () => {
-        windowWidth.value = window.innerWidth;
-        windowHeight.value = window.innerHeight;
-    };
     window.addEventListener('resize', updateWindowSize);
     fetchUsers();
 });
 
+let latestRequest = 0;
 const fetchUsers = async () => {
+    const request = ++latestRequest;
     try {
         const res = await fetchUsersApi({
             params: {
@@ -96,17 +99,23 @@ const fetchUsers = async () => {
                 role: ""
             }
         });
-        if (res?.value) {
+        if (request === latestRequest && res?.value) {
             users.value = res.value.data || [];
             total.value = res.value.total || 0;
         }
     } catch {
+        if (request !== latestRequest) return;
         users.value = [];
         total.value = 0;
     }
 };
 
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
+onUnmounted(() => {
+    latestRequest++;
+    clearTimeout(searchTimer);
+    window.removeEventListener('resize', updateWindowSize);
+});
 const onSearchInput = () => {
     if (searchTimer) clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {

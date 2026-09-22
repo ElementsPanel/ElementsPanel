@@ -58,7 +58,8 @@ export const openInstance = useDefineApi<
   }
 >({
   url: "/api/protected_instance/open",
-  method: "GET"
+  method: "GET",
+  forceRequest: true
 });
 
 export const stopInstance = useDefineApi<
@@ -73,7 +74,8 @@ export const stopInstance = useDefineApi<
   }
 >({
   url: "/api/protected_instance/stop",
-  method: "GET"
+  method: "GET",
+  forceRequest: true
 });
 
 export const restartInstance = useDefineApi<
@@ -88,7 +90,8 @@ export const restartInstance = useDefineApi<
   }
 >({
   url: "/api/protected_instance/restart",
-  method: "GET"
+  method: "GET",
+  forceRequest: true
 });
 
 export const killInstance = useDefineApi<
@@ -103,7 +106,8 @@ export const killInstance = useDefineApi<
   }
 >({
   url: "/api/protected_instance/kill",
-  method: "GET"
+  method: "GET",
+  forceRequest: true
 });
 
 export const updateInstance = useDefineApi<
@@ -411,6 +415,11 @@ export const batchRestart = useDefineApi<
   url: "/api/instance/multi_restart"
 });
 
+export interface InstanceDeleteResult {
+  instances: { instanceUuid: string; nickname: string }[];
+  errors?: { instanceUuid: string; error: string }[];
+}
+
 export const batchDelete = useDefineApi<
   {
     params: {
@@ -421,7 +430,7 @@ export const batchDelete = useDefineApi<
       deleteFile: boolean;
     };
   },
-  string[]
+  InstanceDeleteResult
 >({
   method: "DELETE",
   url: "/api/instance"
@@ -460,7 +469,7 @@ export const scheduleCreate = useDefineApi<
       daemonId: string;
       uuid: string;
     };
-    data: NewScheduleTask;
+    data: NewScheduleTask & { replaceName?: string };
   },
   boolean
 >({

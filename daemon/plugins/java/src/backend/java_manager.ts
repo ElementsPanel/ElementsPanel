@@ -38,27 +38,32 @@ export class JavaManager {
 
   async loadJavaList() {
     for (const file of await fs.readdir(this.javaDataDir)) {
-      const javaPath = path.join(this.javaDataDir, file);
-      const dir = await fs.stat(javaPath);
-      if (!dir.isDirectory()) continue;
-      const infoPath = path.join(javaPath, "java_info.json");
-      if (!fs.existsSync(infoPath)) continue;
-      const config = await fs.readJson(infoPath);
-      const info = new JavaInfo(config.name, config.installTime ?? Date.now(), config.version);
-      // A metadata record must never point at another runtime's managed directory.
-      if (info.fullname !== file) continue;
-      info.path = config.path;
-      info.error = config.error;
-      info.progress = config.progress;
-      if (config.downloading) {
-        await fs.remove(path.join(javaPath, ".install"));
-        await fs.remove(path.join(javaPath, "runtime"));
-        info.path = undefined;
-        info.error = this.dependencies.translate("TXT_CODE_javaMsl.interrupted");
-        info.progress = undefined;
+      try {
+        const javaPath = path.join(this.javaDataDir, file);
+        const dir = await fs.lstat(javaPath);
+        if (!dir.isDirectory()) continue;
+        const infoPath = path.join(javaPath, "java_info.json");
+        if (!fs.existsSync(infoPath)) continue;
+        const config = await fs.readJson(infoPath);
+        const info = new JavaInfo(config.name, config.installTime ?? Date.now(), config.version);
+        // A metadata record must never point at another runtime's managed directory.
+        if (info.fullname !== file) continue;
+        info.path = config.path;
+        info.error = config.error;
+        info.progress = config.progress;
+        if (config.downloading) {
+          await fs.remove(path.join(javaPath, ".install"));
+          await fs.remove(path.join(javaPath, "runtime"));
+          info.path = undefined;
+          info.error = this.dependencies.translate("TXT_CODE_javaMsl.interrupted");
+          info.progress = undefined;
+        }
+        this.javaList.set(info.fullname, { info, path: javaPath, usingInstances: [] });
+        if (config.downloading) this.updateJavaInfo(info);
+      } catch (error) {
+        // A damaged or concurrently removed record must not hide healthy runtimes.
+        this.dependencies.logger?.warn(`Cannot load Java runtime: ${file}`, error);
       }
-      this.javaList.set(info.fullname, { info, path: javaPath, usingInstances: [] });
-      if (config.downloading) this.updateJavaInfo(info);
     }
   }
 

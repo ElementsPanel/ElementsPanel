@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "ElementsPanel daemon/node — a fork of the MCSManager project, provides remote process management, scheduled tasks, I/O stream control and more",
   "scripts": {
+    "type-check": "tsc --noEmit --project tsconfig.json",
     "dev": "nodemon",
     "build": "webpack --config webpack.config.js && webpack --config webpack.plugins.config.js"
   },

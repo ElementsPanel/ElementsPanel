@@ -5,18 +5,23 @@ import { localeMessages } from "../i18n";
 import {
   downloadPackage,
   fetchPackage,
+  forgetRemoteInstall,
   isDevelopment,
   listInstalled,
   PluginMarketError,
+  readRemoteInstalls,
+  recordRemoteInstall,
   toTransferFiles,
   uninstallPlugin,
   writePlugin,
   type MarketFileContent,
   type MarketInstallInfo,
-  type PluginSide
+  type PluginSide,
+  type RemoteMarketInstall
 } from "./service/plugin_market";
 import { clearMarketCache, getAppMarketList } from "./service/market_service";
 import { initMarketSettings, marketSettings, saveMarketSettings } from "./service/market_settings";
+import { encodePluginIcon, MAX_PLUGIN_ICON_BYTES } from "./plugin_icon";
 
 // Panel side of the app market. It owns the package catalogue, the settings
 // that point at it, and the reinstall-from-package route. The panel core keeps
@@ -33,6 +38,25 @@ export const inject = [
   "identity",
   "plugins"
 ];
+
+// Install and uninstall must share a queue: a second request cannot overwrite
+// files or installation records while the first request is still using them.
+const pluginOperations = new Map<string, Promise<void>>();
+
+async function withPluginLock<T>(pluginId: string, operation: () => Promise<T>): Promise<T> {
+  const previous = pluginOperations.get(pluginId) ?? Promise.resolve();
+  const result = previous.then(operation);
+  const settled = result.then(
+    () => {},
+    () => {}
+  );
+  pluginOperations.set(pluginId, settled);
+  try {
+    return await result;
+  } finally {
+    if (pluginOperations.get(pluginId) === settled) pluginOperations.delete(pluginId);
+  }
+}
 
 export async function apply(ctx: PanelPluginContext) {
   ctx.i18n.define(localeMessages);
@@ -100,7 +124,7 @@ export async function apply(ctx: PanelPluginContext) {
         if (!target) throw new Error("Market package is not found!");
 
         const remoteService = ctx.remote.services.getInstance(daemonId);
-        new ctx.remote.Request(remoteService).request("instance/asynchronous", {
+        await new ctx.remote.Request(remoteService).request("instance/asynchronous", {
           taskName: "install_instance",
           instanceUuid,
           parameter: target,
@@ -152,7 +176,8 @@ export async function apply(ctx: PanelPluginContext) {
     const installed = new Map(listInstalled().map((item) => [item.pluginId, item]));
     return (response.data?.items ?? []).map((item) => ({
       ...item,
-      installedVersion: installed.get(String(item.id))?.version
+      installedVersion: installed.get(String(item.id))?.version,
+      installedDaemonIds: installed.get(String(item.id))?.daemonIds ?? []
     }));
   }
 
@@ -167,9 +192,20 @@ export async function apply(ctx: PanelPluginContext) {
       NOT_FOUND: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_NOT_FOUND"),
       DIR_TAKEN: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_DIR_TAKEN"),
       EMPTY_PACKAGE: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_EMPTY_PACKAGE"),
-      BAD_PATH: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE")
+      BAD_PATH: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE"),
+      NO_NODES: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_SELECT_NODES")
     };
-    throw new Error(messages[reason] ?? ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE"));
+    const statusByReason: Record<string, number> = {
+      NOT_FOUND: 404,
+      DIR_TAKEN: 409,
+      EMPTY_PACKAGE: 400,
+      BAD_PATH: 400,
+      NO_NODES: 400
+    };
+    throw Object.assign(
+      new Error(messages[reason] ?? ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE")),
+      { status: statusByReason[reason] ?? 502 }
+    );
   }
 
   /** The daemons a daemon plugin can be installed on, as the page lists them. */
@@ -188,13 +224,15 @@ export async function apply(ctx: PanelPluginContext) {
    * an uninstall has no body, so it names them in the query instead.
    */
   function requestedNodes(value: unknown): string[] {
-    if (Array.isArray(value)) return value.map((item) => String(item));
-    if (typeof value === "string")
-      return value
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean);
-    return [];
+    const values = Array.isArray(value) ? value : typeof value === "string" ? value.split(",") : [];
+    return [
+      ...new Set(
+        values
+          .filter((item): item is string => typeof item === "string")
+          .map((item) => item.trim())
+          .filter(Boolean)
+      )
+    ];
   }
 
   /**
@@ -209,41 +247,56 @@ export async function apply(ctx: PanelPluginContext) {
     daemonIds: readonly string[],
     info: MarketInstallInfo,
     files: readonly MarketFileContent[]
-  ): Promise<string[]> {
+  ): Promise<{ failedNodes: string[]; changedNodes: string[] }> {
     const payload = {
       name: info.name,
       pluginId: info.pluginId,
       version: info.version,
       files: toTransferFiles(files)
     };
-    const failed: string[] = [];
+    const failedNodes: string[] = [];
+    const changedNodes: string[] = [];
     for (const daemonId of daemonIds) {
       const node = ctx.remote.services.getInstance(daemonId);
-      if (!node) {
-        failed.push(daemonId);
+      if (!node || !node.available) {
+        failedNodes.push(daemonId);
         continue;
       }
       try {
         await new ctx.remote.Request(node).request("plugin/install", payload, 60000);
       } catch (error) {
         ctx.logger.warn(`Failed to install a plugin on daemon ${daemonId}: ${error}`);
-        failed.push(daemonId);
+        failedNodes.push(daemonId);
+        continue;
       }
+      await recordRemoteInstall(info, daemonId);
+      changedNodes.push(daemonId);
     }
-    return failed;
+    return { failedNodes, changedNodes };
   }
 
-  /** Asks the daemons the user picked to delete their half of a package. */
-  async function removeFromNodes(daemonIds: readonly string[], name: string, pluginId: string) {
-    for (const daemonId of daemonIds) {
+  /** Failed or unselected installs stay recorded until a later successful retry. */
+  async function removeFromNodes(installations: readonly RemoteMarketInstall[]) {
+    const failedNodes = new Set<string>();
+    const changedNodes = new Set<string>();
+    for (const installation of installations) {
+      const { daemonId, name, pluginId } = installation;
       const node = ctx.remote.services.getInstance(daemonId);
-      if (!node) continue;
+      if (!node || !node.available) {
+        failedNodes.add(daemonId);
+        continue;
+      }
       try {
         await new ctx.remote.Request(node).request("plugin/uninstall", { name, pluginId }, 30000);
       } catch (error) {
         ctx.logger.warn(`Failed to uninstall a plugin on daemon ${daemonId}: ${error}`);
+        failedNodes.add(daemonId);
+        continue;
       }
+      await forgetRemoteInstall(installation);
+      changedNodes.add(daemonId);
     }
+    return { failedNodes: [...failedNodes], changedNodes: [...changedNodes] };
   }
 
   /**
@@ -253,11 +306,14 @@ export async function apply(ctx: PanelPluginContext) {
    * connects, so the node is reconnected afterwards: without that, a handler
    * that has just appeared stays invisible to the connection the panel holds.
    */
-  async function reloadNodes(daemonIds: readonly string[] = []) {
-    const targets = daemonIds.length ? daemonIds : Array.from(ctx.remote.services.services.keys());
-    for (const daemonId of targets) {
+  async function reloadNodes(daemonIds: readonly string[]): Promise<boolean> {
+    let reloaded = true;
+    for (const daemonId of daemonIds) {
       const node = ctx.remote.services.getInstance(daemonId);
-      if (!node || !node.available) continue;
+      if (!node || !node.available) {
+        reloaded = false;
+        continue;
+      }
       try {
         await new ctx.remote.Request(node).request("plugin/reload");
         node.refreshReconnect();
@@ -265,8 +321,10 @@ export async function apply(ctx: PanelPluginContext) {
         // A daemon that cannot reload — an older one, or one that is not a
         // development checkout — keeps what it has until its next restart.
         ctx.logger.warn(`Failed to reload a daemon's plugins: ${error}`);
+        reloaded = false;
       }
     }
+    return reloaded;
   }
 
   /**
@@ -283,10 +341,11 @@ export async function apply(ctx: PanelPluginContext) {
     sides: PluginSide[],
     daemonIds: readonly string[] = []
   ): Promise<boolean> {
+    if (!sides.length) return true;
     if (!isDevelopment()) return false;
     try {
       if (sides.includes("panel")) await ctx.plugins.reload();
-      if (sides.includes("daemon")) await reloadNodes(daemonIds);
+      if (sides.includes("daemon")) return await reloadNodes(daemonIds);
       return true;
     } catch (error) {
       ctx.logger.warn(`Failed to reload plugins after a market install: ${error}`);
@@ -326,10 +385,12 @@ export async function apply(ctx: PanelPluginContext) {
         if (!selectedVersion || selectedVersion.status !== "approved") {
           throw new PluginMarketError("NOT_FOUND");
         }
+        const installed = listInstalled().find((item) => item.pluginId === pluginId);
         requestCtx.body = {
           ...detail,
           selectedVersion,
-          installedVersion: listInstalled().find((item) => item.pluginId === pluginId)?.version
+          installedVersion: installed?.version,
+          installedDaemonIds: installed?.daemonIds ?? []
         };
       } catch (error) {
         reportPluginMarketError(error);
@@ -366,11 +427,12 @@ export async function apply(ctx: PanelPluginContext) {
           {
             params: version ? { version } : {},
             responseType: "arraybuffer",
-            timeout: 15000
+            timeout: 15000,
+            maxContentLength: MAX_PLUGIN_ICON_BYTES,
+            maxBodyLength: MAX_PLUGIN_ICON_BYTES
           }
         );
-        const data = Buffer.from(response.data);
-        requestCtx.body = { dataUrl: `data:image/png;base64,${data.toString("base64")}` };
+        requestCtx.body = { dataUrl: encodePluginIcon(response.data) };
       } catch {
         // 市场没有图标，或这个市场源不可达：都当作没有图标。
         requestCtx.body = { dataUrl: null };
@@ -414,35 +476,51 @@ export async function apply(ctx: PanelPluginContext) {
     async (requestCtx: Koa.ParameterizedContext) => {
       const body = (requestCtx.request.body ?? {}) as Record<string, unknown>;
       try {
-        const addr = marketSettings().pluginMarketAddr;
-        const pkg = await fetchPackage(addr, {
-          pluginId: String(body.pluginId),
-          name: String(body.name),
-          version: body.version ? String(body.version) : undefined
+        requestCtx.body = await withPluginLock(String(body.pluginId), async () => {
+          const addr = marketSettings().pluginMarketAddr;
+          const pkg = await fetchPackage(addr, {
+            pluginId: String(body.pluginId),
+            name: String(body.name),
+            version: body.version ? String(body.version) : undefined
+          });
+          const daemonIds = requestedNodes(body.daemonIds);
+          if (!pkg.files.some((file) => file.side === "panel") && !daemonIds.length)
+            throw new PluginMarketError("NO_NODES");
+          const files = await downloadPackage(addr, pkg);
+          const info: MarketInstallInfo = {
+            pluginId: pkg.pluginId,
+            name: pkg.name,
+            version: pkg.version,
+            installedAt: Date.now()
+          };
+          const previous = listInstalled().find((item) => item.pluginId === info.pluginId);
+
+          const sides: PluginSide[] = [];
+          const ofSide = (side: PluginSide) => files.filter((file) => file.side === side);
+          const panelFiles = ofSide("panel");
+          if (panelFiles.length) {
+            await writePlugin("panel", info, panelFiles);
+            sides.push("panel");
+          }
+          const daemonFiles = ofSide("daemon");
+          const { failedNodes, changedNodes } = daemonFiles.length
+            ? await pushToNodes(daemonIds, info, daemonFiles)
+            : { failedNodes: [], changedNodes: [] };
+          if (changedNodes.length) sides.push("daemon");
+          const reloaded = await hotReload(sides, changedNodes);
+          // Development discovery loads new plugins, but retains already loaded
+          // module instances. Replacing an existing side still needs a restart.
+          const replaced =
+            (panelFiles.length > 0 && previous?.sides.includes("panel")) ||
+            changedNodes.some((daemonId) => previous?.daemonIds.includes(daemonId));
+
+          return {
+            restartRequired: Boolean(replaced) || !reloaded,
+            installedVersion: listInstalled().find((item) => item.pluginId === info.pluginId)
+              ?.version,
+            failedNodes
+          };
         });
-        const files = await downloadPackage(addr, pkg);
-        const info: MarketInstallInfo = {
-          pluginId: pkg.pluginId,
-          name: pkg.name,
-          version: pkg.version,
-          installedAt: Date.now()
-        };
-
-        const sides = [...new Set(files.map((file) => file.side))];
-        const ofSide = (side: PluginSide) => files.filter((file) => file.side === side);
-        if (sides.includes("panel")) await writePlugin("panel", info, ofSide("panel"));
-
-        const daemonIds = requestedNodes(body.daemonIds);
-        // A package with a daemon half installs that half nowhere at all unless
-        // the page was given nodes to send it to.
-        const failedNodes = sides.includes("daemon")
-          ? await pushToNodes(daemonIds, info, ofSide("daemon"))
-          : [];
-
-        requestCtx.body = {
-          restartRequired: !(await hotReload(sides, daemonIds)),
-          failedNodes
-        };
       } catch (error) {
         reportPluginMarketError(error);
       }
@@ -456,14 +534,23 @@ export async function apply(ctx: PanelPluginContext) {
     async (requestCtx: Koa.ParameterizedContext) => {
       const pluginId = String(requestCtx.request.query.pluginId);
       const daemonIds = requestedNodes(requestCtx.request.query.daemonIds);
-      const removed = await uninstallPlugin(pluginId);
-      if (removed) await removeFromNodes(daemonIds, removed.name, pluginId);
-      // A reload is what disposes the plugin whose directory has just been
-      // deleted, on the panel and on every node the package was sent to.
-      requestCtx.body = {
-        removed: Boolean(removed),
-        restartRequired: removed ? !(await hotReload(removed.sides, daemonIds)) : false
-      };
+      requestCtx.body = await withPluginLock(pluginId, async () => {
+        const selectedNodes = new Set(daemonIds);
+        const installations = readRemoteInstalls(pluginId).filter((item) =>
+          selectedNodes.has(item.daemonId)
+        );
+        const removed = await uninstallPlugin(pluginId);
+        const { failedNodes, changedNodes } = await removeFromNodes(installations);
+        const sides: PluginSide[] = removed?.directories.length ? ["panel"] : [];
+        if (changedNodes.length) sides.push("daemon");
+        const remaining = listInstalled().find((item) => item.pluginId === pluginId);
+        return {
+          removed: !remaining,
+          installedVersion: remaining?.version,
+          failedNodes,
+          restartRequired: !(await hotReload(sides, changedNodes))
+        };
+      });
     }
   );
 

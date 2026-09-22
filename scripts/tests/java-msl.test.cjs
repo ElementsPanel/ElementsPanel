@@ -4,6 +4,7 @@ const os = require("node:os");
 const path = require("node:path");
 const Module = require("node:module");
 const { createHash } = require("node:crypto");
+const { gzipSync } = require("node:zlib");
 const { Readable, PassThrough } = require("node:stream");
 const { test } = require("node:test");
 
@@ -15,6 +16,8 @@ const fse = daemonRequire("fs-extra");
 const tar = daemonRequire("tar");
 const vue = frontendRequire("vue");
 const translate = (key) => key;
+const nativeJava = (home) =>
+  path.join(home, "bin", process.platform === "win32" ? "java.exe" : "java");
 
 // Exercise source in memory. Downloads are streams of fixture data; Java is never executed.
 function load(filename, overrides = {}, source) {
@@ -152,12 +155,23 @@ test("MSL downloads refresh URLs, reject bad metadata and infer signed archive f
 });
 
 async function tarFixture(t, relative, symlink) {
+  if (symlink) {
+    // Build the archive entry directly; creating symlinks needs special privileges on Windows.
+    const header = new tar.Header({
+      path: relative,
+      type: "SymbolicLink",
+      linkpath: symlink,
+      mode: 0o777,
+      size: 0
+    });
+    header.encode();
+    return gzipSync(Buffer.concat([header.block, Buffer.alloc(1024)]));
+  }
   const cwd = directory(t);
   const source = path.join(cwd, "source");
   const file = path.join(source, relative);
   fs.mkdirSync(path.dirname(file), { recursive: true });
-  if (symlink) fs.symlinkSync(symlink, file);
-  else fs.writeFileSync(file, "fixture java - never executed", { mode: 0o644 });
+  fs.writeFileSync(file, "fixture java - never executed", { mode: 0o644 });
   const archive = path.join(cwd, "payload.tar.gz");
   await tar.create({ cwd: source, file: archive, gzip: true }, [relative.split("/")[0]]);
   return fs.readFileSync(archive);
@@ -165,10 +179,18 @@ async function tarFixture(t, relative, symlink) {
 function installerFixture(t, payload, overrides = {}) {
   const cwd = directory(t);
   const progress = [],
-    unzips = [];
+    unzips = [],
+    modes = [];
   const controller = new AbortController();
   const stream = overrides.stream || Readable.from([payload]);
   const installer = load("daemon/plugins/java/src/backend/java_install.ts", {
+    "fs-extra": {
+      ...fse,
+      chmod: async (file, mode) => {
+        modes.push({ file, mode });
+        await fse.chmod(file, mode);
+      }
+    },
     axios: {
       get: async (_url, options) => {
         assert.equal(options.headers["User-Agent"], "ElementsPanel");
@@ -193,7 +215,7 @@ function installerFixture(t, payload, overrides = {}) {
     },
     ...overrides
   };
-  return { ...installer, options, cwd, stream, controller, progress, unzips };
+  return { ...installer, options, cwd, stream, controller, progress, unzips, modes };
 }
 
 test("Java archives keep actual Linux and macOS runtime roots and executable permissions", async (t) => {
@@ -205,7 +227,12 @@ test("Java archives keep actual Linux and macOS runtime roots and executable per
     const f = installerFixture(t, payload, { platform });
     const installed = await f.installJavaArchive(f.options);
     assert.equal(installed, path.join(f.cwd, "runtime", home));
-    assert.equal(fs.statSync(path.join(installed, "bin/java")).mode & 0o777, 0o755);
+    assert.equal(f.modes.length, 1);
+    assert.equal(f.modes[0].mode, 0o755);
+    assert.equal(path.basename(f.modes[0].file), "java");
+    if (process.platform !== "win32") {
+      assert.equal(fs.statSync(path.join(installed, "bin/java")).mode & 0o777, 0o755);
+    }
     assert.equal(fs.existsSync(path.join(f.cwd, ".install")), false);
     assert.ok(f.progress.length);
   }
@@ -291,7 +318,7 @@ function managerFixture(t, options = {}) {
         installs.push(args);
         if (options.install) return options.install(args, installs.length);
         const home = path.join(args.directory, "runtime/jdk-21");
-        await fse.outputFile(path.join(home, "bin/java"), "fixture");
+        await fse.outputFile(nativeJava(home), "fixture");
         return home;
       }
     },
@@ -315,7 +342,7 @@ test("concurrent Java downloads share one installation and persist in the config
       args.progress(42);
       await gate.promise;
       const home = path.join(args.directory, "runtime/real-jdk");
-      await fse.outputFile(path.join(home, "bin/java"), "fixture");
+      await fse.outputFile(nativeJava(home), "fixture");
       return home;
     }
   });
@@ -334,7 +361,7 @@ test("concurrent Java downloads share one installation and persist in the config
   assert.equal(a.info.progress, 100);
   assert.equal(fse.readJsonSync(infoPath).path, a.info.path);
   assert.equal(fse.readJsonSync(infoPath).downloading, false);
-  assert.equal(await f.manager.getJavaRuntimeCommand("msl_21"), `"${a.info.path}/bin/java"`);
+  assert.equal(await f.manager.getJavaRuntimeCommand("msl_21"), `"${nativeJava(a.info.path)}"`);
   assert.equal(await f.manager.startInstall("21"), a);
   assert.equal(f.installs.length, 1);
   const reloaded = new f.JavaManager(f.dependencies);
@@ -348,7 +375,7 @@ test("failed Java installations record an error and can be retried", async (t) =
     install: async (args, attempt) => {
       if (attempt === 1) throw new Error("checksum failed fixture");
       const home = path.join(args.directory, "runtime/jdk");
-      await fse.outputFile(path.join(home, "bin/java"), "fixture");
+      await fse.outputFile(nativeJava(home), "fixture");
       return home;
     }
   });
@@ -396,25 +423,25 @@ test("legacy Zulu and external Java remain usable, and deleting metadata keeps e
   const f = managerFixture(t);
   await f.manager.ready;
   const external = directory(t);
-  await fse.outputFile(path.join(external, "bin/java"), "existing");
+  await fse.outputFile(nativeJava(external), "existing");
   const legacyPath = path.join(f.cwd, "zulu_17");
   await fse.outputJson(path.join(legacyPath, "java_info.json"), {
     name: "zulu",
     version: "17",
     downloading: false
   });
-  await fse.outputFile(path.join(legacyPath, "bin/java"), "legacy");
+  await fse.outputFile(nativeJava(legacyPath), "legacy");
   await f.manager.loadJavaList();
-  assert.equal(await f.manager.getJavaRuntimeCommand("zulu_17"), `"${legacyPath}/bin/java"`);
+  assert.equal(await f.manager.getJavaRuntimeCommand("zulu_17"), `"${nativeJava(legacyPath)}"`);
   const info = new JavaInfo("External", Date.now());
   info.path = external;
   f.manager.addJava(info);
-  assert.equal(await f.manager.getJavaRuntimeCommand("External"), `"${external}/bin/java"`);
+  assert.equal(await f.manager.getJavaRuntimeCommand("External"), `"${nativeJava(external)}"`);
   f.manager.getJava("External").usingInstances.push("running-instance");
   await assert.rejects(f.manager.removeJava("External"), /ea8ea5d1/);
   f.manager.getJava("External").usingInstances = [];
   await f.manager.removeJava("External");
-  assert.equal(fs.existsSync(path.join(external, "bin/java")), true);
+  assert.equal(fs.existsSync(nativeJava(external)), true);
   assert.equal(fs.existsSync(path.join(f.cwd, "External")), false);
 });
 
@@ -501,26 +528,18 @@ test("Java HTTP routes allow admin setup before instance creation and retain ins
     ["java_manager/list", "java_manager/catalog", "java_manager/download"]
   );
   assert.equal(requests[1][3], 20000);
-  const missing = await dispatch("get:/list", 1);
-  assert.equal(missing.status, 400);
-  assert.match(missing.body, /eb401a37/);
-  const denied = await dispatch("get:/list", 1, { daemonId: "node", instanceId: "someone-else" });
-  assert.equal(denied.status, 400);
-  assert.match(denied.body, /eb401a37/);
+  await assert.rejects(dispatch("get:/list", 1), /eb401a37/);
+  await assert.rejects(
+    dispatch("get:/list", 1, { daemonId: "node", instanceId: "someone-else" }),
+    /eb401a37/
+  );
   await dispatch("get:/list", 1, { daemonId: "node", instanceId: "owned" });
   await assert.rejects(dispatch("get:/catalog", 1), /forbidden/);
   await assert.rejects(dispatch("post:/download", 1), /forbidden/);
   await dispatch("post:/using", 1, { daemonId: "node", instanceId: "owned" }, { id: "msl_21" });
-  assert.equal(
-    (
-      await dispatch(
-        "post:/using",
-        1,
-        { daemonId: "node", instanceId: "someone-else" },
-        { id: "msl_21" }
-      )
-    ).status,
-    400
+  await assert.rejects(
+    dispatch("post:/using", 1, { daemonId: "node", instanceId: "someone-else" }, { id: "msl_21" }),
+    /eb401a37/
   );
 });
 

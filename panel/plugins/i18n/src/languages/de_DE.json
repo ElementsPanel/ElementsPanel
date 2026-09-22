@@ -1,4 +1,7 @@
 {
+  "TXT_CODE_LEAVES_DONT_RESPOND_PING": "Ping-Anfragen erst nach dem vollständigen Serverstart beantworten.",
+  "TXT_CODE_LEAVES_HOPPER_COUNTER": "Trichterzähler aktivieren.",
+  "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "Unterstützung für das LMS-Paster-Protokoll aktivieren.",
   "TXT_CODE_10088738": "Bestätigen Sie den Löschvorgang",
   "TXT_CODE_10150756": "Ereignisgesteuerte Aufgaben",
   "TXT_CODE_10194e6a": "Netzwerk-Alias",

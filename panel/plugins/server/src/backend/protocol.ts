@@ -48,8 +48,10 @@ export function protocol(ctx: PanelPluginContext) {
 
     // Serialize and display when sending Error class
     if (requestCtx.body instanceof Error) {
-      const error = requestCtx.body as Error;
-      requestCtx.status = 500;
+      const error = requestCtx.body as Error & { status?: number; statusCode?: number };
+      const status = error.status ?? error.statusCode ?? requestCtx.status;
+      requestCtx.status = status >= 400 && status <= 599 ? status : 500;
+      requestCtx.type = "application/json";
       requestCtx.body = JSON.stringify({
         status: requestCtx.status,
         data: error.message,
@@ -59,9 +61,13 @@ export function protocol(ctx: PanelPluginContext) {
     }
 
     // release all data streams
-    if (requestCtx.body instanceof Stream) {
+    if (requestCtx.body instanceof Stream || Buffer.isBuffer(requestCtx.body)) {
       return;
     }
+
+    if ((requestCtx.status >= 300 && requestCtx.status < 400) ||
+        requestCtx.status === 204 || requestCtx.status === 205) return;
+    requestCtx.type = "application/json";
 
     // 404 error code
     if (requestCtx.status == 404) {
@@ -87,7 +93,7 @@ export function protocol(ctx: PanelPluginContext) {
     }
 
     // When the return result is empty, display processing failed
-    if (requestCtx.body === null || requestCtx.body === false || requestCtx.body === undefined) {
+    if (requestCtx.body === null || requestCtx.body === undefined) {
       requestCtx.status = 500;
       requestCtx.body = JSON.stringify({
         status: 500,

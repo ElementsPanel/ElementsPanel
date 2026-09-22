@@ -1,4 +1,7 @@
 {
+  "TXT_CODE_LEAVES_DONT_RESPOND_PING": "Не отвечать на запросы ping до полного запуска сервера.",
+  "TXT_CODE_LEAVES_HOPPER_COUNTER": "Включить счётчики воронок.",
+  "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "Включить поддержку протокола LMS Paster.",
   "TXT_CODE_10088738": "Подтвердить удаление",
   "TXT_CODE_10150756": "Задача, инициируемая событием",
   "TXT_CODE_10194e6a": "Сетевые псевдонимы",

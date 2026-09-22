@@ -11,6 +11,7 @@ export default class RemoteService {
   public uuid: string = "";
   public available: boolean = false;
   public socket?: Socket;
+  public readonly pendingRequests = new Set<() => void>();
   public readonly instanceStream = new InstanceStreamListener();
   public config: RemoteServiceConfig;
   public realUrl: string = "";
@@ -86,8 +87,10 @@ export default class RemoteService {
   public async auth(key?: string) {
     if (key) this.config.apiKey = key;
     const daemonInfo = this.getDaemonInfo();
+    const socket = this.socket;
     try {
       const res = await new RemoteRequest(this).request("auth", this.config.apiKey, 5000, true);
+      if (this.socket !== socket || !socket?.connected) return false;
       if (res === true) {
         this.available = true;
         try {
@@ -107,6 +110,7 @@ export default class RemoteService {
           this.config.brand = "";
         }
 
+        if (this.socket !== socket || !socket.connected) return false;
         logger().info($t("TXT_CODE_daemonInfo.authSuccess", { v: daemonInfo }));
         return true;
       }
@@ -114,6 +118,8 @@ export default class RemoteService {
       logger().warn($t("TXT_CODE_daemonInfo.authFailure", { v: daemonInfo }));
       return false;
     } catch (error: any) {
+      if (this.socket !== socket) return false;
+      this.available = false;
       logger().warn($t("TXT_CODE_daemonInfo.authError", { v: daemonInfo }));
       logger().warn(error);
       return false;
@@ -141,6 +147,8 @@ export default class RemoteService {
    * separated from the announced one.
    */
   close() {
+    for (const cancel of this.pendingRequests) cancel();
+    this.pendingRequests.clear();
     if (this.socket) {
       this.socket.removeAllListeners();
       this.socket.disconnect();

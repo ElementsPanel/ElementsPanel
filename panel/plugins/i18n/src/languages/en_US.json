@@ -1,4 +1,7 @@
 {
+  "TXT_CODE_LEAVES_DONT_RESPOND_PING": "Do not respond to ping requests until the server has fully started.",
+  "TXT_CODE_LEAVES_HOPPER_COUNTER": "Enable hopper counters.",
+  "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "Enable LMS Paster protocol support.",
   "TXT_CODE_10088738": "Confirm deletion",
   "TXT_CODE_10150756": "Event-Triggered Task",
   "TXT_CODE_10194e6a": "Network Aliases",

@@ -84,10 +84,7 @@ const handleSelectCategory = async (item: QuickStartPackages) => {
     let node: ComputedNodeInfo | undefined;
     if (!daemonId) {
       node = await openNodeSelectDialog();
-      if (!node) {
-        reportErrorMsg(t("TXT_CODE_2de92a5d"));
-        return;
-      }
+      if (!node) return;
       daemonId = node.uuid;
     }
     appPackages.value?.handleSelectTopCategory(item, node);
@@ -134,10 +131,7 @@ const handleTemplateConfirm = async (instanceName: string, template: QuickStartP
       }
 
       const node = await openNodeSelectDialog(targetPlatforms);
-      if (!node) {
-        reportErrorMsg(t("TXT_CODE_2de92a5d"));
-        return;
-      }
+      if (!node) return;
       daemonId = node.uuid;
     }
 

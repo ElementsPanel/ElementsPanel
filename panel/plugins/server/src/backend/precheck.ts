@@ -17,8 +17,11 @@ function isUploadRequest(requestCtx: Context) {
  */
 export function preCheck(ctx: PanelPluginContext) {
   return async function preCheckMiddleware(requestCtx: Context, next: () => Promise<void>) {
-    if (isUploadRequest(requestCtx) && !(ctx.get("guard")?.canUpload(requestCtx) ?? true)) {
-      throw new Error("Access denied: Invalid multipart/form-data request!");
+    const canUpload = () =>
+      ctx.get("guard")?.canUpload(requestCtx) ??
+      ctx.get("identity")?.of(requestCtx).elevated ?? true;
+    if (isUploadRequest(requestCtx) && !canUpload()) {
+      requestCtx.throw(403, "Access denied: Invalid multipart/form-data request!");
     }
     return await next();
   };

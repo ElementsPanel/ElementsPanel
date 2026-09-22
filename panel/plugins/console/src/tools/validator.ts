@@ -1,9 +1,8 @@
 import { t } from "@/lang/i18n";
 import { message } from "@/tools/vuetifyToast";
 
-export function emptyValueValidator(value: string | number) {
-  if (String(value).trim() === "") throw new Error(t("TXT_CODE_cb08d342"));
-  return Promise.resolve();
+export async function emptyValueValidator(value: string | number | null | undefined) {
+  if (value == null || String(value).trim() === "") throw new Error(t("TXT_CODE_cb08d342"));
 }
 
 export function isNumberValidator(value: any) {
@@ -12,14 +11,12 @@ export function isNumberValidator(value: any) {
 }
 
 export function getValidatorErrorMsg(error: any, def: string = "") {
+  if (error === null || error === undefined) return def;
   if (error.message) {
     return error.message;
   }
   if (error.errorFields instanceof Array) {
     return String(error.errorFields[0]?.errors[0] || "");
-  }
-  if (error === null || error === undefined) {
-    return def;
   }
   return String(error);
 }

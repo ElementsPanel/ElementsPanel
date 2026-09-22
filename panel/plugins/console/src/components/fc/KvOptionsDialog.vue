@@ -37,7 +37,8 @@ const cancel = async () => {
 
 const submit = async () => {
   try {
-    await formInstance.value?.validate();
+    const result = await formInstance.value?.validate();
+    if (!result?.valid) return;
   } catch (error: any) {
     return reportValidatorError(error);
   }

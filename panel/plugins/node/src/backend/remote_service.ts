@@ -43,7 +43,6 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
   async registerRemoteService(config: IRemoteService) {
     const instance = await this.newInstance(config);
     if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
-    await storage().getStorage().store("RemoteServiceConfig", instance.uuid, instance.config);
     instance.connect();
     return instance;
   }
@@ -51,9 +50,9 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
   // Delete the specified remote service based on UUID
   async deleteRemoteService(uuid: string) {
     if (this.getInstance(uuid)) {
+      await storage().getStorage().delete("RemoteServiceConfig", uuid);
       this.getInstance(uuid)?.disconnect();
       this.deleteInstance(uuid);
-      await storage().getStorage().delete("RemoteServiceConfig", uuid);
     }
   }
 
@@ -65,21 +64,38 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
       new RemoteServiceConfig()
     );
     this.setInstance(instance.uuid, instance);
-    await this.edit(instance.uuid, config);
+    try {
+      await this.edit(instance.uuid, config);
+    } catch (error) {
+      this.deleteInstance(instance.uuid);
+      throw error;
+    }
     return instance;
   }
 
   // Edit the configuration file of the instance
   async edit(uuid: string, config: IRemoteService) {
     const instance = this.getInstance(uuid);
-    if (!instance) return;
-    if (config.remarks) instance.config.remarks = config.remarks;
-    if (config.ip) instance.config.ip = config.ip;
-    if (config.port) instance.config.port = config.port;
-    if (config.prefix != null) instance.config.prefix = config.prefix;
-    if (config.apiKey) instance.config.apiKey = config.apiKey;
-    if (config.remoteMappings != null) instance.config.remoteMappings = config.remoteMappings;
-    await storage().getStorage().store("RemoteServiceConfig", instance.uuid, instance.config);
+    if (!instance) throw new Error("Instance does not exist");
+    const next = Object.assign(new RemoteServiceConfig(), instance.config);
+    if (config.remarks != null) next.remarks = String(config.remarks);
+    if (config.ip != null) {
+      if (typeof config.ip !== "string" || !config.ip.trim()) throw new Error("Invalid daemon address");
+      next.ip = config.ip.trim();
+    }
+    if (config.port != null) {
+      const port = Number(config.port);
+      if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("Invalid daemon port");
+      next.port = port;
+    }
+    if (config.prefix != null) next.prefix = String(config.prefix);
+    if (config.apiKey != null) next.apiKey = String(config.apiKey);
+    if (config.remoteMappings != null) {
+      if (!Array.isArray(config.remoteMappings)) throw new Error("Invalid daemon mappings");
+      next.remoteMappings = config.remoteMappings;
+    }
+    await storage().getStorage().store("RemoteServiceConfig", instance.uuid, next);
+    instance.config = next;
   }
 
   // Scannce localhost service

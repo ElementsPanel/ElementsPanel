@@ -108,7 +108,7 @@ export interface PanelSettingsSchema {
 /** Panel settings, plus the call that persists them. */
 export interface PanelSettingsService {
   readonly config: NonNullable<typeof systemConfig>;
-  save(): void;
+  save(): Promise<void>;
 }
 
 /** Entity and file persistence supplied by `plugins/storage`. */

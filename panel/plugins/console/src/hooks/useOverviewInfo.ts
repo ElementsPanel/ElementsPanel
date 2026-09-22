@@ -1,5 +1,6 @@
 import { overviewInfo } from "@/services/apis";
-import { onMounted, onUnmounted, ref, type Ref } from "vue";
+import { computed, type Ref } from "vue";
+import { usePolling } from "./usePolling";
 
 export interface ComputedOverviewResponse extends IPanelOverviewResponse {
   totalInstance: number;
@@ -20,7 +21,8 @@ export interface ComputedNodeInfo extends IPanelOverviewRemoteResponse {
 }
 
 function computeResponseData(v: Ref<IPanelOverviewResponse | undefined>) {
-  const currentState = v.value as ComputedOverviewResponse;
+  if (!v.value) return undefined;
+  const currentState = { ...v.value } as ComputedOverviewResponse;
 
   let totalInstance = 0;
   let runningInstance = 0;
@@ -35,12 +37,15 @@ function computeResponseData(v: Ref<IPanelOverviewResponse | undefined>) {
   currentState.runningInstance = runningInstance;
 
   let cpu = Number(currentState.system.cpu * 100).toFixed(0);
-  let mem = Number((currentState.system.freemem / currentState.system.totalmem) * 100).toFixed(0);
+  const totalMemory = currentState.system.totalmem;
+  const usedMemory = totalMemory ? (1 - currentState.system.freemem / totalMemory) * 100 : 0;
+  const mem = Math.min(100, Math.max(0, usedMemory)).toFixed(0);
 
   currentState.cpu = Number(cpu);
   currentState.mem = Number(mem);
 
-  const newNodes = v.value?.remote as ComputedNodeInfo[] | undefined;
+  const newNodes = v.value.remote?.map((node) => ({ ...node })) as ComputedNodeInfo[] | undefined;
+  currentState.remote = newNodes ?? [];
   if (newNodes) {
     for (let node of newNodes) {
       if (!node.system || !node.instance || !node.cpuMemChart) continue;
@@ -59,34 +64,16 @@ function computeResponseData(v: Ref<IPanelOverviewResponse | undefined>) {
   return currentState;
 }
 
-export function useOverviewInfo() {
+export function useOverviewInfo({ poll = true }: { poll?: boolean } = {}) {
   const result = overviewInfo();
-  let task: ReturnType<typeof setInterval> | undefined;
-
-  const newState = ref<ComputedOverviewResponse>();
+  const newState = computed(() => computeResponseData(result.state));
 
   const refresh = async (forceRequest = false) => {
-    newState.value = computeResponseData(
-      await result.execute({
-        forceRequest
-      })
-    );
+    await result.execute({ forceRequest });
     return newState.value;
   };
 
-  onMounted(async () => {
-    refresh();
-    task = setInterval(async () => {
-      await refresh();
-    }, 3000);
-  });
-
-  onUnmounted(() => {
-    if (task) {
-      clearInterval(task);
-      task = undefined;
-    }
-  });
+  if (poll) usePolling(refresh, 3000);
 
   return {
     ...result,

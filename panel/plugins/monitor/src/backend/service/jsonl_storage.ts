@@ -1,68 +1,71 @@
-import fs from "fs-extra";
 import path from "path";
+import { StorageSubsystem } from "mcsmanager-common";
 
-/** Small append-only store used by the monitor's operation log. */
+/** Bounded histories are committed as one atomic read/modify/write transaction. */
 export class JsonlStorage {
-  #rootDir: string;
-  #maxLines: number;
+  private readonly storage = new StorageSubsystem();
 
-  constructor(dir: string, maxLines = 200) {
-    this.#rootDir = path.normalize(path.join(process.cwd(), "data", dir));
-    this.#maxLines = maxLines;
+  constructor(
+    private readonly directory: string,
+    private readonly maxLines = 200
+  ) {
+    if (!Number.isSafeInteger(maxLines) || maxLines < 1) {
+      throw new RangeError("maxLines must be a positive integer");
+    }
   }
 
   private resolveFilePath(logicalPath: string) {
-    if (["..", "\\", "//"].some((item) => logicalPath.includes(item))) {
+    if (
+      !logicalPath ||
+      path.isAbsolute(logicalPath) ||
+      /[\\\0:]/.test(logicalPath) ||
+      logicalPath.includes("..")
+    ) {
       throw new Error(`Invalid path: ${logicalPath}`);
     }
-    const filePath = path.normalize(path.join(this.#rootDir, `${logicalPath}.jsonl`));
-    if (!fs.existsSync(path.dirname(filePath))) fs.mkdirsSync(path.dirname(filePath));
-    return filePath;
+    return path.join(this.directory, `${logicalPath}.jsonl`);
   }
 
-  async append(logicalPath: string, entry: object | object[], sync = false) {
-    const entries = Array.isArray(entry) ? entry : [entry];
-    const filePath = this.resolveFilePath(logicalPath);
-    const lines = entries.map((item) => JSON.stringify(item)).join("\n") + "\n";
-    if (sync) {
-      fs.ensureFileSync(filePath);
-      fs.appendFileSync(filePath, lines, "utf8");
-    } else {
-      await fs.ensureFile(filePath);
-      await fs.appendFile(filePath, lines, "utf8");
+  private readSync(logicalPath: string): object[] {
+    const file = this.resolveFilePath(logicalPath);
+    if (!this.storage.fileExists(file)) return [];
+    const entries: object[] = [];
+    for (const line of this.storage.readFile(file).split("\n")) {
+      if (!line.trim()) continue;
+      try {
+        const entry = JSON.parse(line);
+        if (entry && typeof entry === "object") entries.push(entry);
+      } catch {
+        // Ignore a truncated line left by an older non-atomic writer.
+      }
     }
-    await this.trim(logicalPath);
+    return entries;
+  }
+
+  appendSync(logicalPath: string, entry: object | object[]) {
+    const entries = Array.isArray(entry) ? entry : [entry];
+    if (!entries.length) return;
+    const content = [...this.readSync(logicalPath), ...entries]
+      .slice(-this.maxLines)
+      .map((item) => JSON.stringify(item))
+      .join("\n");
+    this.storage.writeFile(this.resolveFilePath(logicalPath), `${content}\n`);
+  }
+
+  async append(logicalPath: string, entry: object | object[], _sync = false) {
+    this.appendSync(logicalPath, entry);
   }
 
   async readAll(logicalPath: string): Promise<object[]> {
-    const filePath = this.resolveFilePath(logicalPath);
-    if (!(await fs.pathExists(filePath))) return [];
-    return (await fs.readFile(filePath, "utf8"))
-      .split("\n")
-      .filter((line) => line.trim())
-      .map((line) => {
-        try {
-          return JSON.parse(line);
-        } catch {
-          return null;
-        }
-      })
-      .filter(Boolean);
+    return this.readSync(logicalPath);
   }
 
   async query(logicalPath: string, predicate: (entry: any) => boolean) {
-    return (await this.readAll(logicalPath)).filter(predicate);
+    return this.readSync(logicalPath).filter(predicate);
   }
 
-  async tail<T>(logicalPath: string, count: number) {
-    return (await this.query(logicalPath, () => true)).slice(-count) as T[];
-  }
-
-  private async trim(logicalPath: string) {
-    const entries = await this.readAll(logicalPath);
-    if (entries.length <= this.#maxLines) return;
-    const filePath = this.resolveFilePath(logicalPath);
-    const content = entries.slice(-this.#maxLines).map((item) => JSON.stringify(item)).join("\n") + "\n";
-    await fs.writeFile(filePath, content, "utf8");
+  async tail<T>(logicalPath: string, count: number): Promise<T[]> {
+    if (!Number.isSafeInteger(count) || count < 1) return [];
+    return this.readSync(logicalPath).slice(-count) as T[];
   }
 }

@@ -3,7 +3,7 @@ import { removeTrail } from "@/tools/string";
 import type { DefaultEventsMap } from "@socket.io/component-emitter";
 import type { Socket } from "socket.io-client";
 import { io } from "socket.io-client";
-import { ref } from "vue";
+import { onScopeDispose, ref } from "vue";
 import type { ComputedNodeInfo } from "./useOverviewInfo";
 
 // eslint-disable-next-line no-unused-vars
@@ -29,11 +29,40 @@ export function makeSocketIo(addr: string, prefix?: string) {
   });
 }
 
+export function testSocketConnection(addr: string, prefix?: string, signal?: AbortSignal) {
+  return new Promise<Socket<DefaultEventsMap, DefaultEventsMap>>((resolve, reject) => {
+    if (signal?.aborted) return reject(new Error("Socket connection test cancelled"));
+    const socket = makeSocketIo(addr, prefix);
+    const cleanup = () => {
+      socket.off("connect", connected);
+      socket.off("connect_error", failed);
+      signal?.removeEventListener("abort", cancelled);
+      socket.disconnect();
+    };
+    const connected = () => {
+      cleanup();
+      resolve(socket);
+    };
+    const failed = (error: Error) => {
+      cleanup();
+      reject(error);
+    };
+    const cancelled = () => failed(new Error("Socket connection test cancelled"));
+    socket.once("connect", connected);
+    socket.once("connect_error", failed);
+    signal?.addEventListener("abort", cancelled, { once: true });
+  });
+}
+
 export function useSocketIoClient() {
-  let socket: Socket<DefaultEventsMap, DefaultEventsMap> | undefined;
+  let controller: AbortController | undefined;
   const socketStatus = ref<SocketStatus>(SocketStatus.Connecting);
 
+  onScopeDispose(() => controller?.abort());
+
   const testFrontendSocket = async (remoteNode?: Partial<ComputedNodeInfo>) => {
+    controller?.abort();
+    const current = (controller = new AbortController());
     const nodeCfg = remoteNode;
 
     if (!nodeCfg?.available || !nodeCfg.ip) {
@@ -61,9 +90,10 @@ export function useSocketIoClient() {
             prefix = mapped.prefix;
           }
         }
-        await testConnect(addr, prefix);
-        socketStatus.value = SocketStatus.Connected;
+        await testSocketConnection(addr, prefix, current.signal);
+        if (!current.signal.aborted) socketStatus.value = SocketStatus.Connected;
       } catch (error) {
+        if (current.signal.aborted) return;
         console.error("Socket error: ", error);
         socketStatus.value = SocketStatus.Error;
       }
@@ -71,23 +101,9 @@ export function useSocketIoClient() {
   };
 
   const testConnect = (addr: string, prefix?: string) => {
-    socket = makeSocketIo(addr, prefix);
-
-    return new Promise<Socket<DefaultEventsMap, DefaultEventsMap>>((resolve, reject) => {
-      if (!socket) return reject(new Error("[Socket.io] socket is undefined"));
-
-      socket.on("connect", () => {
-        try {
-          socket?.disconnect();
-        } finally {
-          resolve(socket!);
-        }
-      });
-
-      socket.on("connect_error", (error) => {
-        reject(error);
-      });
-    });
+    controller?.abort();
+    controller = new AbortController();
+    return testSocketConnection(addr, prefix, controller.signal);
   };
 
   return { testConnect, testFrontendSocket, socketStatus };

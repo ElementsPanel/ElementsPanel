@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { GLOBAL_INSTANCE_UUID } from "@/config/const";
 import { useAppRouters } from "@/hooks/useAppRouters";
-import { useOverviewInfo, type ComputedNodeInfo } from "@/hooks/useOverviewInfo";
+import type { ComputedNodeInfo } from "@/hooks/useOverviewInfo";
 import { SocketStatus, useSocketIoClient } from "@/hooks/useSocketIo";
 import { t } from "@/lang/i18n";
 import { arrayFilter } from "@/tools/array";
@@ -9,7 +9,17 @@ import { reportErrorMsg } from "@/tools/validator";
 import { hasVersionUpdate } from "@/tools/version";
 import { message } from "@/tools/vuetifyToast";
 import { computed, onMounted, ref } from "vue";
-import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VCol, VIcon, VRow, VTooltip } from "vuetify/components";
+import {
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardText,
+  VCardTitle,
+  VCol,
+  VIcon,
+  VRow,
+  VTooltip
+} from "vuetify/components";
 import { connectNode } from "../../api";
 import NodeSimpleChart from "../NodeSimpleChart.vue";
 import NodeDetailDialog from "./NodeDetailDialog.vue";
@@ -20,19 +30,11 @@ const nodeDetailDialog = ref<InstanceType<typeof NodeDetailDialog>>();
 
 const props = defineProps<{
   item?: ComputedNodeInfo;
+  specifiedDaemonVersion?: string;
 }>();
 
-const { state: AllDaemonData } = useOverviewInfo();
-
-const itemDaemonId = ref<string>();
-const specifiedDaemonVersion = computed(() => AllDaemonData.value?.specifiedDaemonVersion);
-
-const remoteNode = computed(() => {
-  const myDaemon = AllDaemonData.value?.remote.find((node) => {
-    return node.uuid === itemDaemonId.value;
-  });
-  return myDaemon ?? props.item;
-});
+const specifiedDaemonVersion = computed(() => props.specifiedDaemonVersion);
+const remoteNode = computed(() => props.item);
 
 const tryConnectNode = async (uuid: string, showMsg = true) => {
   const { execute } = connectNode();
@@ -193,8 +195,14 @@ onMounted(() => {
         <VCardActions v-if="remoteNode" class="node-card-actions">
           <VTooltip v-for="operation in nodeOperations" :key="operation.title" location="top">
             <template #activator="{ props: tooltipProps }">
-              <VBtn v-bind="tooltipProps" icon variant="text" size="small" :aria-label="operation.title"
-                @click="remoteNode && operation.click(remoteNode)">
+              <VBtn
+                v-bind="tooltipProps"
+                icon
+                variant="text"
+                size="small"
+                :aria-label="operation.title"
+                @click="remoteNode && operation.click(remoteNode)"
+              >
                 <VIcon :icon="operation.icon" size="18" />
               </VBtn>
             </template>
@@ -204,23 +212,43 @@ onMounted(() => {
       </VCardTitle>
       <VCardText v-if="remoteNode" class="node-card-content">
         <VRow density="compact">
-          <VCol v-for="detail in detailList(remoteNode)" :key="detail.title + detail.value" cols="6" sm="3">
+          <VCol
+            v-for="detail in detailList(remoteNode)"
+            :key="detail.title + detail.value"
+            cols="6"
+            sm="3"
+          >
             <div class="node-detail">
               <div :title="detail.onlyCopy ? detail.value : ''">
                 {{ detail.title }}
               </div>
 
               <div v-if="detail.onlyCopy">
-                <VBtn variant="text" size="small" class="node-copy-btn" @click="copyValue(detail.value)">
-                  <span class="text-monospace">{{ String(detail.value ?? "").slice(0, 16) }}...</span>
+                <VBtn
+                  variant="text"
+                  size="small"
+                  class="node-copy-btn"
+                  @click="copyValue(detail.value)"
+                >
+                  <span class="text-monospace"
+                    >{{ String(detail.value ?? "").slice(0, 16) }}...</span
+                  >
                   <VIcon icon="mdi-content-copy" size="16" class="ml-1" />
                 </VBtn>
               </div>
               <div v-else style="font-size: 13px">
                 <VTooltip v-if="detail.warn && detail.value" location="top">
                   <template #activator="{ props: tooltipProps }">
-                    <span v-bind="tooltipProps"
-                      :class="detail.danger ? 'color-danger' : remoteNode?.brand !== 'ElementsPanel' ? 'color-warning' : 'color-danger'">
+                    <span
+                      v-bind="tooltipProps"
+                      :class="
+                        detail.danger
+                          ? 'color-danger'
+                          : remoteNode?.brand !== 'ElementsPanel'
+                          ? 'color-warning'
+                          : 'color-danger'
+                      "
+                    >
                       <VIcon icon="mdi-information-outline" size="16" /> {{ detail.value }}
                     </span>
                   </template>
@@ -241,8 +269,13 @@ onMounted(() => {
             </div>
           </VCol>
         </VRow>
-        <NodeSimpleChart class="mt-8" :cpu-usage="remoteNode.cpuInfo ?? ''" :mem-usage="remoteNode.memText ?? ''"
-          :cpu-data="remoteNode.cpuChartData ?? []" :mem-data="remoteNode.memChartData ?? []" />
+        <NodeSimpleChart
+          class="mt-8"
+          :cpu-usage="remoteNode.cpuInfo ?? ''"
+          :mem-usage="remoteNode.memText ?? ''"
+          :cpu-data="remoteNode.cpuChartData ?? []"
+          :mem-data="remoteNode.memChartData ?? []"
+        />
       </VCardText>
     </VCard>
   </div>

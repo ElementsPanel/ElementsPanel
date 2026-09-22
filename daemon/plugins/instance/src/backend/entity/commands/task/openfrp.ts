@@ -11,7 +11,10 @@ import { downloadFileToLocalFile } from "../../../service/download";
 export class OpenFrp {
   public processWrapper?: ProcessWrapper;
 
-  constructor(public readonly token: string, public readonly tunnelId: string) {
+  constructor(
+    public readonly token: string,
+    public readonly tunnelId: string
+  ) {
     // ./frpc -u <passowrd> -p <channel id>
     this.processWrapper = new ProcessWrapper(
       FRPC_PATH,
@@ -22,7 +25,9 @@ export class OpenFrp {
 
   public open() {
     logger.info("Start openfrp:", FRPC_PATH);
-    this.processWrapper?.start();
+    void this.processWrapper?.start().catch((error) => {
+      logger.warn("OpenFRP process failed:", error);
+    });
     if (!this.processWrapper?.getPid()) {
       throw new Error("pid is null");
     }
@@ -79,7 +84,7 @@ export default class OpenFrpTask implements ILifeCycleTask {
         logger.info(
           `Instance ${instance.config.nickname}(${instance.instanceUuid}) ${pid} Frp task started!`
         );
-        logger.info(`Params: ${openFrpTunnelId} | ${openFrpToken}`);
+        logger.info(`Tunnel: ${openFrpTunnelId}`);
         instance.openFrp = frpProcess;
         instance.info.openFrpStatus = true;
       } else {

@@ -67,6 +67,7 @@ export async function apply(ctx: PanelPluginContext) {
     // `close()` rather than `disconnect()`: this runs while the scope is being
     // disposed, when there is no `ctx.logger` left to announce it with.
     for (const service of remoteServices.services.values()) service.close();
+    remoteServices.services.clear();
   });
 
   const router = ctx.koa.router("/api/service");
@@ -121,7 +122,7 @@ export async function apply(ctx: PanelPluginContext) {
   router.post(
     "/remote_service",
     requireAdmin,
-    validator({ body: { apiKey: String, port: Number, ip: String, remarks: String } }),
+    validator({ body: { apiKey: String, port: Number, ip: String } }),
     async (ctx: Koa.ParameterizedContext) => {
       const parameter = ctx.request.body;
       // do asynchronous registration
@@ -154,7 +155,7 @@ export async function apply(ctx: PanelPluginContext) {
       const daemonSetting = parameter?.setting || {};
       const daemon = remoteServices.getInstance(uuid);
 
-      if (daemonSetting && daemon?.available) {
+      if (parameter.setting && daemon?.available) {
         await new RemoteRequest(daemon).request("info/setting", {
           ...daemonSetting,
           port: parameter.daemonPort
@@ -166,10 +167,10 @@ export async function apply(ctx: PanelPluginContext) {
       await remoteServices.edit(uuid, {
         port: parameter.port,
         ip: parameter.ip,
-        prefix: parameter.prefix ?? "",
+        prefix: parameter.prefix,
         apiKey: parameter.apiKey,
         remarks: parameter.remarks,
-        remoteMappings: parameter.remoteMappings ?? []
+        remoteMappings: parameter.remoteMappings
       });
 
       operationLogger.log("daemon_config_change", {

@@ -33,10 +33,12 @@ export interface RemoteNodeHook {
   updateNode: (uuid: string, data: any) => Promise<void>;
 }
 
-export function useRemoteNode() {
-  const node = usePluginService<{ useRemoteNode: () => RemoteNodeHook }>("node");
+export function useRemoteNode(options: { poll?: boolean } = {}) {
+  const node = usePluginService<{
+    useRemoteNode: (options?: { poll?: boolean }) => RemoteNodeHook;
+  }>("node");
   if (!node) {
     throw new Error('Panel frontend plugin "node" is not loaded.');
   }
-  return node.useRemoteNode();
+  return node.useRemoteNode(options);
 }

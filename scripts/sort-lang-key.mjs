@@ -1,42 +1,27 @@
-// Automatically sort the panel and daemon global language catalogues.
+import { readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { LANGUAGES, findCatalogues, validateCatalogues } from "./i18n-catalogues.cjs";
 
-import { promises as fs } from "fs";
-import path from "path";
-
-const languagesDirs = [
-  path.join(import.meta.dirname, "../panel/plugins/i18n/src/languages"),
-  path.join(import.meta.dirname, "../daemon/plugins/i18n/src/languages")
-];
-
-export async function sortLanguageFiles() {
-  try {
-    for (const languagesDir of languagesDirs) {
-      const languageFiles = await fs.readdir(languagesDir);
-      await Promise.all(
-        languageFiles.map(async (file) => {
-          if (!file.endsWith(".json")) return;
-          console.log(`Sorting ${languagesDir}/${file}...`);
-          const filePath = path.join(languagesDir, file);
-          const content = await fs.readFile(filePath, "utf8");
-          const jsonContent = JSON.parse(content);
-          const keysCount = Object.keys(jsonContent).length;
-          const sortedContent = Object.keys(jsonContent)
-            .sort()
-            .reduce((obj, key) => {
-              obj[key] = jsonContent[key];
-              return obj;
-            }, {});
-          if (keysCount !== Object.keys(sortedContent).length) {
-            throw new Error(`Error: ${file} keys count is not equal`);
-          }
-          return await fs.writeFile(filePath, JSON.stringify(sortedContent, null, 2));
-        })
+export async function sortLanguageFiles(
+  root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
+) {
+  validateCatalogues(root);
+  for (const directory of findCatalogues(root)) {
+    for (const language of LANGUAGES) {
+      const filename = path.join(root, directory, `${language}.json`);
+      const content = await readFile(filename, "utf8");
+      const messages = JSON.parse(content);
+      const sorted = Object.fromEntries(
+        Object.entries(messages).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
       );
+      const output = JSON.stringify(sorted, null, 2) + "\n";
+      if (output !== content) await writeFile(filename, output, "utf8");
     }
-    console.log("All language files sorted successfully");
-  } catch (err) {
-    console.error("Error sorting language files:", err);
   }
 }
 
-sortLanguageFiles();
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  await sortLanguageFiles();
+  console.log("Language files sorted successfully.");
+}

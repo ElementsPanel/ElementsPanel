@@ -15,8 +15,10 @@ export function registerModManagerRoutes(
 
   // Permission check middleware
   router.use(async (requestCtx, next) => {
-    const instanceUuid = requestCtx.query.uuid || requestCtx.request.body?.uuid;
-    const daemonId = requestCtx.query.daemonId || requestCtx.request.body?.daemonId;
+    // Authorize the same parameters that the route forwards to the daemon.
+    const parameters = requestCtx.method === "GET" ? requestCtx.query : requestCtx.request.body;
+    const instanceUuid = parameters?.uuid;
+    const daemonId = parameters?.daemonId;
 
     // Check global file manager setting
     if (!ctx.identity.accessPolicy.canFileManager && !ctx.identity.of(requestCtx).elevated) {
@@ -113,10 +115,10 @@ export function registerModManagerRoutes(
         const loader = String(requestCtx.query.loader || "all");
         const environment = String(requestCtx.query.environment || "all");
 
-        if (offset < 0 || offset > 100000) {
+        if (!Number.isInteger(offset) || offset < 0 || offset > 100000) {
           throw new Error("Offset must be between 0 and 100000");
         }
-        if (limit < 1 || limit > 50) {
+        if (!Number.isInteger(limit) || limit < 1 || limit > 50) {
           throw new Error("Limit must be between 1 and 50");
         }
 

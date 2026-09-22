@@ -3,12 +3,14 @@ import fs from "fs-extra";
 import os from "os";
 import path from "path";
 
-export function checkFileName(fileName: string) {
-  const blackKeys = ["/", "\\", "|", "?", "*", ">", "<", ";", '"'];
-  for (const ch of blackKeys) {
-    if (fileName.includes(ch)) return false;
-  }
-  return true;
+export function checkFileName(fileName?: string): boolean {
+  return (
+    typeof fileName === "string" &&
+    fileName.length > 0 &&
+    fileName !== "." &&
+    fileName !== ".." &&
+    !/[\\/|?*><;":\0]/.test(fileName)
+  );
 }
 
 export function clearUploadFiles(file?: formidable.File | formidable.File[]) {

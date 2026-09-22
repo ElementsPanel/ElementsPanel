@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { Mutex } from "async-mutex";
 import { randomInt } from "crypto";
 import { LocalFileSource, QueryWrapper } from "mcsmanager-common";
 import md5 from "md5";
@@ -35,8 +36,10 @@ function generateDefaultPassword(): string {
 
 class UserSubsystem {
   public readonly objects: Map<string, User> = new Map();
+  private readonly mutationLock = new Mutex();
 
   async initialize() {
+    this.objects.clear();
     for (const uuid of await storage().getStorage().list("User")) {
       const user = (await storage().getStorage().load("User", User, uuid)) as User;
       this.objects.set(uuid, user);
@@ -59,26 +62,49 @@ class UserSubsystem {
   }
 
   async create(config: IUserInfo): Promise<User> {
+    if (!config.userName || this.existUserName(config.userName))
+      throw new Error($t("TXT_CODE_router.user.existsUserName"));
     const newUuid = v4().replace(/-/gim, "");
     // Initialize necessary user data
     const instance = new User();
     instance.uuid = newUuid;
+    instance.userName = config.userName;
     instance.registerTime = new Date().toLocaleString();
     // add to the user system
     this.setInstance(newUuid, instance);
-    await this.edit(instance.uuid, config);
-    // Persistently save user information
-    await storage().getStorage().store("User", instance.uuid, instance);
-    return instance;
+    try {
+      await this.edit(instance.uuid, config);
+      return this.getInstance(newUuid)!;
+    } catch (error) {
+      this.objects.delete(newUuid);
+      throw error;
+    }
   }
 
   // Update user detail
   async edit(uuid: string, config: any) {
-    const instance = this.getInstance(uuid);
-    if (!instance) return;
-    if (config.userName) instance.userName = config.userName;
+    return this.mutationLock.runExclusive(() => this.update(uuid, config));
+  }
+
+  private async update(uuid: string, config: any) {
+    const current = this.getInstance(uuid);
+    if (!current) throw new Error("User not found");
+    const instance = Object.assign(new User(), current);
+    if (config.userName != null) {
+      if (typeof config.userName !== "string" || !config.userName.trim())
+        throw new Error("Invalid username");
+      const existing = this.getUserByUserName(config.userName);
+      if (existing && existing.uuid !== uuid)
+        throw new Error($t("TXT_CODE_router.user.existsUserName"));
+    }
+    if (config.permission != null && ![-1, 0, 1, 10].includes(config.permission))
+      throw new Error("Invalid user permission");
+    if (config.passWord != null && typeof config.passWord !== "string")
+      throw new Error($t("TXT_CODE_router.user.passwordCheck"));
+    if (config.instances != null) instance.instances = this.normalizeInstances(config.instances);
+    if (config.userName != null) instance.userName = config.userName;
     if (config.isInit != null) instance.isInit = Boolean(config.isInit);
-    if (config.permission) instance.permission = config.permission;
+    if (config.permission != null) instance.permission = config.permission;
     if (config.registerTime) instance.registerTime = config.registerTime;
     if (config.loginTime) instance.loginTime = config.loginTime;
     if (config.apiKey != null) instance.apiKey = config.apiKey;
@@ -86,16 +112,16 @@ class UserSubsystem {
     if (config.open2FA != null) instance.open2FA = Boolean(config.open2FA);
     if (config.ssoSub != null) instance.ssoSub = String(config.ssoSub);
     if (config.ssoBound != null) instance.ssoBound = Boolean(config.ssoBound);
-    if (config.instances) this.setUserInstances(uuid, config.instances);
     if (config.passWord) {
       instance.passWordType = UserPassWordType.bcrypt;
       instance.passWord = bcrypt.hashSync(config.passWord, 10);
     }
     await storage().getStorage().store("User", uuid, instance);
+    this.objects.set(uuid, instance);
   }
 
   validatePassword(password = "") {
-    if (password.length < 9 || password.length > 36) return false;
+    if (typeof password !== "string" || password.length < 9 || password.length > 36) return false;
     const reg = /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])/;
     return reg.test(password);
   }
@@ -103,74 +129,55 @@ class UserSubsystem {
   check2FA(code: string, user: IUserCredentials, totpDriftToleranceSteps: number = 0) {
     if (!user.secret)
       throw new Error("Please contact the administrator to reset the account password");
-    authenticator.options = { window: totpDriftToleranceSteps };
-    const delta = authenticator.checkDelta(code, user.secret);
+    const verifier = authenticator.clone();
+    verifier.options = { window: totpDriftToleranceSteps };
+    const delta = verifier.checkDelta(code, user.secret);
     return delta != null;
   }
 
   checkUser(info: IUserCredentials, code2FA?: string, totpDriftToleranceSteps: number = 0) {
     const inputPassword = info.passWord || "";
-    for (const [, user] of this.objects) {
-      if (user.userName === info.userName) {
-        if (
-          user.open2FA &&
-          user.secret &&
-          !this.check2FA(code2FA || "", user, totpDriftToleranceSteps)
-        )
-          throw new TwoFactorError($t("TXT_CODE_3d68e43b"));
-        if (user.passWordType === UserPassWordType.bcrypt) {
-          if (!bcrypt.compareSync(inputPassword, user.passWord))
-            throw new Error($t("TXT_CODE_fefbb457"));
-        } else {
-          if (!(md5(inputPassword) === user.passWord)) throw new Error($t("TXT_CODE_fefbb457"));
-        }
-      }
-    }
+    const user = this.getUserByUserName(info.userName || "");
+    if (!user || user.permission < ROLE().USER || typeof inputPassword !== "string")
+      throw new Error($t("TXT_CODE_fefbb457"));
+    const passwordMatches = user.passWordType === UserPassWordType.bcrypt
+      ? bcrypt.compareSync(inputPassword, user.passWord)
+      : md5(inputPassword) === user.passWord;
+    if (!passwordMatches) throw new Error($t("TXT_CODE_fefbb457"));
+    if (user.open2FA && (!user.secret || !this.check2FA(code2FA || "", user, totpDriftToleranceSteps)))
+      throw new TwoFactorError($t("TXT_CODE_3d68e43b"));
   }
 
   existUserName(userName: string): boolean {
-    let flag = false;
-    this.objects.forEach((user) => {
-      if (user.userName === userName) return (flag = true);
-    });
-    return flag;
+    return this.getUserByUserName(userName) !== null;
   }
 
-  setUserInstances(uuid: string, instanceIds: IUserApp[]) {
-    const user = this.getInstance(uuid);
-    if (!user) return;
+  private normalizeInstances(instanceIds: IUserApp[]) {
+    if (!Array.isArray(instanceIds)) throw new Error("Invalid user instances");
     instanceIds.forEach((value) => {
-      if (!value.daemonId || !value.instanceUuid)
+      if (!value || typeof value.daemonId !== "string" || !value.daemonId ||
+          typeof value.instanceUuid !== "string" || !value.instanceUuid)
         throw new Error("Type error, The instances of user must be IUserHaveInstance array.");
     });
-    user.instances = [];
-    instanceIds.forEach((value) => {
-      user.instances.push({
-        instanceUuid: String(value.instanceUuid),
-        daemonId: String(value.daemonId)
-      });
-    });
+    return instanceIds.map(({ instanceUuid, daemonId }) => ({ instanceUuid, daemonId }));
   }
 
-  deleteUserInstances(uuid: string | null, instanceIds: IUserApp[], allUsers = false) {
+  async deleteUserInstances(uuid: string | null, instanceIds: IUserApp[], allUsers = false) {
     if (uuid && allUsers) {
       throw new Error("Type error, The uuid and allUsers cannot be true at the same time.");
     }
-    const users = allUsers ? Array.from(this.objects.values()) : [this.getInstance(uuid!)];
-    if (!users || users.length === 0) return;
-    instanceIds.forEach((value) => {
-      if (!value.daemonId || !value.instanceUuid)
-        throw new Error("Type error, The instances of user must be IUserHaveInstance array.");
-    });
-    users.forEach((user) => {
-      if (!user) return;
-      user.instances = user.instances.filter((value) => {
-        for (const instance of instanceIds) {
-          if (instance.daemonId === value.daemonId && instance.instanceUuid === value.instanceUuid)
-            return false;
+    const removed = this.normalizeInstances(instanceIds);
+    await this.mutationLock.runExclusive(async () => {
+      const users = allUsers ? Array.from(this.objects.values()) : [this.getInstance(uuid!)];
+      for (const user of users) {
+        if (!user) continue;
+        const instances = user.instances.filter((value) => !removed.some((instance) =>
+          instance.daemonId === value.daemonId && instance.instanceUuid === value.instanceUuid
+        ));
+        if (instances.length !== user.instances.length) {
+          await this.update(user.uuid, { instances });
         }
-        return true;
-      });
+      }
     });
   }
 
@@ -199,10 +206,12 @@ class UserSubsystem {
   }
 
   async deleteInstance(uuid: string) {
-    if (this.hasInstance(uuid)) {
-      this.objects.delete(uuid);
-      await storage().getStorage().delete("User", uuid);
-    }
+    await this.mutationLock.runExclusive(async () => {
+      if (this.hasInstance(uuid)) {
+        await storage().getStorage().delete("User", uuid);
+        this.objects.delete(uuid);
+      }
+    });
   }
 
   getUserBySsoSub(ssoSub: string): User | null {
@@ -213,20 +222,14 @@ class UserSubsystem {
   }
 
   async unbindSso(uuid: string) {
-    const instance = this.getInstance(uuid);
-    if (!instance) return;
-    instance.ssoSub = "";
-    instance.ssoBound = false;
-    await storage().getStorage().store("User", uuid, instance);
+    await this.edit(uuid, { ssoSub: "", ssoBound: false });
   }
 
   async unbindAllSso(): Promise<number> {
     let count = 0;
     for (const [uuid, user] of this.objects) {
       if (user.ssoBound || user.ssoSub) {
-        user.ssoSub = "";
-        user.ssoBound = false;
-        await storage().getStorage().store("User", uuid, user);
+        await this.unbindSso(uuid);
         count++;
       }
     }
@@ -234,11 +237,14 @@ class UserSubsystem {
   }
 
   async bindSso(uuid: string, ssoSub: string) {
-    const instance = this.getInstance(uuid);
-    if (!instance) throw new Error("User not found");
-    instance.ssoSub = ssoSub;
-    instance.ssoBound = true;
-    await storage().getStorage().store("User", uuid, instance);
+    await this.mutationLock.runExclusive(async () => {
+      const instance = this.getInstance(uuid);
+      if (!instance) throw new Error("User not found");
+      const existing = this.getUserBySsoSub(ssoSub);
+      if (!ssoSub || (existing && existing.uuid !== uuid) || instance.ssoBound)
+        throw new Error("SSO account is already bound");
+      await this.update(uuid, { ssoSub, ssoBound: true });
+    });
   }
 
   getQueryWrapper() {

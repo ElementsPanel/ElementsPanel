@@ -339,6 +339,18 @@ test("download errors are retryable and changing instance edition resets the sel
 function taskFixture(t, options = {}) {
   const cwd = directory(t);
   const bytes = Buffer.from("test download; never executed");
+  const chmods = [];
+  const fse = Module.createRequire(path.join(root, "daemon/package.json"))("fs-extra");
+  const fixtureInstall = load("daemon/plugins/market/src/backend/minecraft_install.ts", {
+    "../../../../../common/src/java": javaCommands,
+    "fs-extra": {
+      ...fse,
+      chmod: async (file, mode) => {
+        chmods.push({ file, mode });
+        await fse.chmod(file, mode);
+      }
+    }
+  });
   const output = [],
     updates = [],
     unzips = [],
@@ -406,7 +418,24 @@ function taskFixture(t, options = {}) {
   const { createQuickInstallTaskClass } = load(
     "daemon/plugins/market/src/backend/quick_install.ts",
     {
-      "./minecraft_install": install,
+      "./minecraft_install": {
+        ...fixtureInstall,
+        validateMinecraftInstall: (selection, url, translate) =>
+          fixtureInstall.validateMinecraftInstall(
+            selection,
+            url,
+            translate,
+            options.platform ?? "linux",
+            "x64"
+          ),
+        minecraftStartCommand: (cwd, selection, translate) =>
+          fixtureInstall.minecraftStartCommand(
+            cwd,
+            selection,
+            translate,
+            options.platform ?? "linux"
+          )
+      },
       axios: async (config) => {
         downloads.push(config);
         await options.download?.();
@@ -433,7 +462,7 @@ function taskFixture(t, options = {}) {
     task.on("error", () => {});
     return task;
   };
-  return { create, cwd, bytes, instance, output, updates, unzips, downloads, ctx };
+  return { create, cwd, bytes, instance, output, updates, unzips, downloads, ctx, chmods };
 }
 
 const paper = { server: "paper", version: "1.21.4", kind: "jar", javaPath: "/java path/bin/java" };
@@ -663,7 +692,10 @@ test("Bedrock enforces OS/architecture before creation and sets Linux executable
   assert.equal(task.status(), AsyncTask.STATUS_STOP);
   assert.deepEqual(f.unzips, ["mcsm_install_package.zip"]);
   assert.equal(f.instance.config.startCommand, "env LD_LIBRARY_PATH=. ./bedrock_server");
-  assert.equal(fs.statSync(path.join(f.cwd, "bedrock_server")).mode & 0o777, 0o755);
+  assert.deepEqual(f.chmods, [{ file: path.join(f.cwd, "bedrock_server"), mode: 0o755 }]);
+  if (process.platform !== "win32") {
+    assert.equal(fs.statSync(path.join(f.cwd, "bedrock_server")).mode & 0o777, 0o755);
+  }
   assert.equal(f.updates.length, 0);
 });
 

@@ -33,7 +33,8 @@ export const loginPageInfo = useDefineApi<
 
 export const logoutUser = useDefineApi<any, any>({
   url: "/api/auth/logout",
-  method: "GET"
+  method: "GET",
+  forceRequest: true
 });
 
 export const userInfoApi = useDefineApi<any, LoginUserInfo>({

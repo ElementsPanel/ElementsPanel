@@ -10,9 +10,10 @@ import userSystem from "../service/user_service";
 const SECRET_PLACEHOLDER = "";
 
 function assertHttpUrl(url: string, name: string) {
-  if (url && !url.startsWith("https://") && !url.startsWith("http://")) {
+  if (!url) return;
+  const parsed = new URL(url);
+  if (!["https:", "http:"].includes(parsed.protocol) || parsed.username || parsed.password)
     throw new Error(`SSO ${name} must use http(s) protocol`);
-  }
 }
 
 /** The settings as the form reads them: the client secret is write-only. */
@@ -29,7 +30,7 @@ export function readAuthSettings() {
  */
 export async function applyAuthSettings(values: Record<string, unknown>) {
   const config = values as Partial<AuthSettings>;
-  const settings = authSettings();
+  const settings = { ...authSettings() };
 
   if (config.loginInfo != null) settings.loginInfo = String(config.loginInfo);
   if (config.loginCheckIp != null) settings.loginCheckIp = Boolean(config.loginCheckIp);
@@ -75,7 +76,6 @@ export async function applyAuthSettings(values: Record<string, unknown>) {
     }
     if (issuer?.trim() && clientId?.trim() && clientSecret?.trim()) {
       await verifyIssuer(issuer, clientId, clientSecret);
-      clearOIDCCache();
     }
     if (config.ssoIssuer != null) settings.ssoIssuer = issuer;
   } else {
@@ -124,13 +124,6 @@ export async function applyAuthSettings(values: Record<string, unknown>) {
     ssoType === "oauth2" && settings.ssoUserinfoUrl !== prevSsoUserinfoUrl;
   const userIdFieldChanged =
     ssoType === "oauth2" && settings.ssoUserIdField !== prevSsoUserIdField;
-  if (typeChanged || issuerChanged || userinfoChanged || userIdFieldChanged) {
-    const count = await userSystem.unbindAllSso();
-    if (count > 0) {
-      logger().warn(`[SSO] Identity-critical config changed, unbound ${count} SSO user(s).`);
-    }
-  }
-
   if (config.ssoScopes != null) settings.ssoScopes = String(config.ssoScopes);
   if (config.ssoOnlyMode != null) settings.ssoOnlyMode = Boolean(config.ssoOnlyMode);
   if (config.ssoAutoRedirect != null) {
@@ -161,7 +154,15 @@ export async function applyAuthSettings(values: Record<string, unknown>) {
   if (config.allowJavaManager != null) {
     settings.allowJavaManager = Boolean(config.allowJavaManager);
   }
-  await saveAuthSettings();
+  // Complete validation before changing accounts or live configuration.
+  if (typeChanged || issuerChanged || userinfoChanged || userIdFieldChanged) {
+    const count = await userSystem.unbindAllSso();
+    if (count > 0) {
+      logger().warn(`[SSO] Identity-critical config changed, unbound ${count} SSO user(s).`);
+    }
+  }
+  await saveAuthSettings(settings);
+  clearOIDCCache();
 }
 
 export default function createAuthSettingsRouter() {

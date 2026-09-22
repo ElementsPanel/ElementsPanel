@@ -3,7 +3,7 @@ import { t } from "@/lang/i18n";
 import { ctx } from "@/plugin/context";
 import { getValidatorErrorMsg } from "@/tools/validator";
 import { message } from "@/tools/vuetifyToast";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import {
   VAlert,
   VBtn,
@@ -90,6 +90,9 @@ const selectedPlugin = computed(() =>
 /** The selected plugin's declared form, or null when it declared none. */
 const schema = ref<SettingsSchema | null>(null);
 const schemaLoading = ref(false);
+let schemaRequest = 0;
+let nodePluginsRequest = 0;
+let disposed = false;
 const savingSettings = ref(false);
 const disableCandidate = ref<PluginRecord | NodePluginRecord | null>(null);
 const disableConfirmOpen = ref(false);
@@ -110,7 +113,10 @@ const notifyError = (error: unknown) => {
 };
 
 const loadSchema = async () => {
+  if (disposed) return;
+  const request = ++schemaRequest;
   schema.value = null;
+  schemaLoading.value = false;
   const id = currentId.value;
   if (!id) return;
   if (scope.value === "node" && !selectedNodeId.value) return;
@@ -119,35 +125,38 @@ const loadSchema = async () => {
     if (scope.value === "panel") {
       const { execute } = pluginSettings();
       const res = await execute({ params: { id } });
-      schema.value = res.value ?? null;
+      if (request === schemaRequest) schema.value = res.value ?? null;
     } else {
       const { execute } = nodePluginSettings();
       const res = await execute({ params: { daemonId: selectedNodeId.value, id } });
-      schema.value = res.value ?? null;
+      if (request === schemaRequest) schema.value = res.value ?? null;
     }
   } catch (error: any) {
     // A plugin that declared nothing is the common case; a real failure is
     // reported by the list above, which uses the same connection.
-    schema.value = null;
+    if (request === schemaRequest) schema.value = null;
   } finally {
-    schemaLoading.value = false;
+    if (request === schemaRequest) schemaLoading.value = false;
   }
 };
 
 const saveSettings = async () => {
-  if (!schema.value) return;
+  if (!schema.value || savingSettings.value) return;
+  const targetScope = scope.value;
+  const targetNode = selectedNodeId.value;
+  const targetId = schema.value.id;
   savingSettings.value = true;
   const reloadPanel =
     scope.value === "panel" && ["i18n", "console"].includes(schema.value.id);
   try {
     const values = schema.value.values;
-    if (scope.value === "panel") {
+    if (targetScope === "panel") {
       const { execute } = updatePluginSettings();
-      await execute({ params: { id: schema.value.id }, data: values });
+      await execute({ params: { id: targetId }, data: values });
     } else {
       const { execute } = updateNodePluginSettings();
       await execute({
-        params: { daemonId: selectedNodeId.value, id: schema.value.id },
+        params: { daemonId: targetNode, id: targetId },
         data: values
       });
     }
@@ -156,7 +165,9 @@ const saveSettings = async () => {
       window.setTimeout(() => window.location.reload(), 400);
       return;
     }
-    await loadSchema();
+    if (scope.value === targetScope && selectedNodeId.value === targetNode && currentId.value === targetId) {
+      await loadSchema();
+    }
   } catch (error: any) {
     notifyError(error);
   } finally {
@@ -201,6 +212,8 @@ const loadNodes = async () => {
 };
 
 const loadNodePlugins = async () => {
+  if (disposed) return;
+  const request = ++nodePluginsRequest;
   nodePlugins.value = [];
   if (!selectedNodeId.value) return;
   loading.value = true;
@@ -208,11 +221,11 @@ const loadNodePlugins = async () => {
   try {
     const { execute } = nodePluginList();
     const res = await execute({ params: { daemonId: selectedNodeId.value } });
-    nodePlugins.value = res.value ?? [];
+    if (request === nodePluginsRequest) nodePlugins.value = res.value ?? [];
   } catch (error: any) {
-    nodeError.value = error?.message ?? String(error);
+    if (request === nodePluginsRequest) nodeError.value = error?.message ?? String(error);
   } finally {
-    loading.value = false;
+    if (request === nodePluginsRequest) loading.value = false;
   }
 };
 
@@ -223,6 +236,7 @@ const loadNodePlugins = async () => {
  */
 const reloadNodePluginsAfterToggle = async () => {
   for (let attempt = 0; attempt < 4; attempt++) {
+    if (disposed) return;
     await loadNodePlugins();
     if (!nodeError.value) return;
     await new Promise((resolve) => setTimeout(resolve, 700));
@@ -230,6 +244,11 @@ const reloadNodePluginsAfterToggle = async () => {
 };
 
 onMounted(load);
+onUnmounted(() => {
+  disposed = true;
+  schemaRequest++;
+  nodePluginsRequest++;
+});
 
 watch(scope, (value) => {
   if (value === "node" && !nodes.value.length && !nodeError.value) loadNodes();

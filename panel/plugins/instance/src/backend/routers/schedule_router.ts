@@ -82,7 +82,8 @@ router.post(
           count: Number(task.count),
           time: String(task.time),
           actions: task.actions,
-          type: Number(task.type)
+          type: Number(task.type),
+          ...(typeof task.replaceName === "string" ? { replaceName: task.replaceName } : {})
         }
       );
     } catch (err) {

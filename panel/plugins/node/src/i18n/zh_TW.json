@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_NODE_DOCKERFILE_EDITOR": "編輯 Dockerfile",
   "TXT_CODE_3d94ea16": "節點 Socket 異常，請嘗試在節點管理中重新連線！",
   "TXT_CODE_7c650d80": "節點連線失敗，請聯絡管理員檢查遠端節點狀態！",
   "TXT_CODE_DESKTOP_NODES": "节点管理",

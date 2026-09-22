@@ -37,7 +37,7 @@ function readAppearance(config: AppearanceConfig) {
   };
 }
 
-function writeAppearance(values: AppearanceValues, config: AppearanceConfig, save: () => void) {
+function writeAppearance(values: AppearanceValues, config: AppearanceConfig, save: () => Promise<void>) {
   // `null` is sent by the clearable Vuetify input when an image is removed.
   // Only an omitted field should fall back to the persisted value; treating
   // null as missing writes the old image straight back.
@@ -56,7 +56,7 @@ function writeAppearance(values: AppearanceValues, config: AppearanceConfig, sav
   config.backgroundImage = String(
     valueOrCurrent(values.backgroundImage, config.backgroundImage) ?? ""
   );
-  save();
+  return save();
 }
 
 /**
@@ -64,7 +64,7 @@ function writeAppearance(values: AppearanceValues, config: AppearanceConfig, sav
  * `__settings__` pseudo page. It now belongs to SystemConfig; copy any saved
  * values over once so the title, logo and background survive the change.
  */
-function migrateLegacyAppearance(config: AppearanceConfig, save: () => void) {
+async function migrateLegacyAppearance(config: AppearanceConfig, save: () => Promise<void>) {
   const customized =
     (config.pageTitle && config.pageTitle !== DEFAULT_PAGE_TITLE) ||
     config.logoImage ||
@@ -82,7 +82,7 @@ function migrateLegacyAppearance(config: AppearanceConfig, save: () => void) {
     if (theme.pageTitle) config.pageTitle = String(theme.pageTitle);
     if (theme.logoImage) config.logoImage = String(theme.logoImage);
     if (theme.backgroundImage) config.backgroundImage = String(theme.backgroundImage);
-    save();
+    await save();
   } catch (error) {
     console.error("Failed to migrate legacy appearance settings:", error);
   }
@@ -109,7 +109,7 @@ export function apply(ctx: PanelPluginContext) {
   const requireAdmin = ctx.middleware.permission({ level: ctx.roles.ADMIN });
   const settings = ctx.settings;
 
-  migrateLegacyAppearance(settings.config, () => settings.save());
+  const migration = migrateLegacyAppearance(settings.config, () => settings.save());
 
   ctx.inject(["settingsForm"], (settingsCtx) => settingsCtx.settingsForm.declare({
     fields: () => [
@@ -176,4 +176,5 @@ export function apply(ctx: PanelPluginContext) {
       }
     }
   });
+  return migration;
 }

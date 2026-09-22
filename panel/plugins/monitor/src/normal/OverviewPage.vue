@@ -35,7 +35,7 @@ const requestChart = useOverviewChart(requestChartId);
 const instanceChart = useOverviewChart(instanceChartId);
 
 const panelCpu = computed(() => Math.min(100, Math.max(0, state.value?.cpu ?? 0)));
-const panelMemory = computed(() => Math.min(100, Math.max(0, 100 - (state.value?.mem ?? 0))));
+const panelMemory = computed(() => state.value?.mem ?? 0);
 const totalInstances = computed(() => state.value?.totalInstance ?? 0);
 const runningInstances = computed(() => state.value?.runningInstance ?? 0);
 const stoppedInstances = computed(() => Math.max(0, totalInstances.value - runningInstances.value));

@@ -25,6 +25,18 @@ const SUPPORTED_LANGUAGES: PanelLanguageOption[] = [
   { label: "Türkçe", value: "tr_tr" }
 ];
 
+function resolveLanguage(language: string) {
+  const normalized = toStandardLang(language);
+  if (SUPPORTED_LANGUAGES.some((item) => item.value === normalized)) return normalized;
+  const [base, ...regions] = normalized.split("_");
+  if (base === "zh") {
+    return regions.some((region) => ["tw", "hk", "mo", "hant"].includes(region))
+      ? "zh_tw"
+      : "zh_cn";
+  }
+  return SUPPORTED_LANGUAGES.find((item) => item.value.split("_")[0] === base)?.value ?? "en_us";
+}
+
 interface LocaleRegistration {
   locale: string;
   messages: Record<string, unknown>;
@@ -56,8 +68,7 @@ class I18nService extends Service implements FrontendI18nService {
   }
 
   searchSupportLanguage(language: string) {
-    const normalized = toStandardLang(language);
-    return this.getSupportLanguages().find((item) => item.includes(normalized)) ?? "en_us";
+    return resolveLanguage(language);
   }
 
   getCurrentLang() {
@@ -65,18 +76,14 @@ class I18nService extends Service implements FrontendI18nService {
   }
 
   setLanguage(language: string, reload = true) {
-    const normalized = toStandardLang(language);
+    const normalized = this.searchSupportLanguage(language);
     localStorage.setItem(LANGUAGE_KEY, normalized);
     (this.instance.global as any).locale = normalized;
     if (reload) window.location.reload();
   }
 
   isCN() {
-    return (
-      this.getCurrentLang() === "zh_cn" ||
-      this.getCurrentLang() === "zh_tw" ||
-      window.navigator.language.includes("zh")
-    );
+    return ["zh_cn", "zh_tw"].includes(this.getCurrentLang());
   }
 
   isEN() {
@@ -97,9 +104,7 @@ class I18nService extends Service implements FrontendI18nService {
         if (!this.base.has(registration.locale)) {
           this.base.set(
             registration.locale,
-            cloneMessages(
-              (this.instance.global as any).getLocaleMessage(registration.locale) || {}
-            )
+            cloneMessages((this.instance.global as any).getLocaleMessage(registration.locale) || {})
           );
         }
         this.registrations.push(registration);
@@ -131,7 +136,7 @@ interface FrontendI18nPluginConfig {
 export const inject = ["startup"];
 
 export function apply(ctx: PanelFrontendPluginContext, config?: FrontendI18nPluginConfig) {
-  const language = toStandardLang(config?.language ?? ctx.startup.language);
+  const language = resolveLanguage(config?.language ?? ctx.startup.language);
   const instance = createI18n({
     allowComposition: true,
     globalInjection: true,

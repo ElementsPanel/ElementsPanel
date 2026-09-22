@@ -4,7 +4,7 @@ import type { ComputedNodeInfo } from "@/hooks/useOverviewInfo";
 import { useRemoteNode } from "@/hooks/useRemoteNode";
 import { t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 import { VBtn, VCard, VCardActions, VCardText, VChip, VDialog, VIcon, VSpacer } from "vuetify/components";
 
 interface Props {
@@ -18,9 +18,20 @@ const props = defineProps<Props>();
 const { isVisible, openDialog, cancel, submit } = useDialog<ComputedNodeInfo>(props);
 
 // 获取可用节点
-const { response, refresh: refreshOverviewInfo } = useRemoteNode();
+const { response, refresh: refreshOverviewInfo, refreshLoading } = useRemoteNode({ poll: false });
 
-const availableNodes = ref<ComputedNodeInfo[]>([]);
+const availableNodes = computed(() => response.value?.remote?.filter((node) => node.available) || []);
+let disposed = false;
+onUnmounted(() => { disposed = true; });
+
+const refreshNodes = async () => {
+  if (refreshLoading.value) return;
+  try {
+    await refreshOverviewInfo(true);
+  } catch (error) {
+    if (!disposed) reportErrorMsg(error);
+  }
+};
 
 // check node is supported target platforms
 const isNodeSupported = (node: ComputedNodeInfo): boolean => {
@@ -53,10 +64,7 @@ const selectNode = (node: ComputedNodeInfo) => {
   submit(node);
 };
 
-onMounted(async () => {
-  await refreshOverviewInfo();
-  availableNodes.value = response.value?.remote?.filter((node) => node.available) || [];
-});
+onMounted(refreshNodes);
 
 defineExpose({
   openDialog
@@ -81,7 +89,7 @@ defineExpose({
                 </p>
               </div>
               <div>
-                <VBtn color="primary" @click="refreshOverviewInfo">
+                <VBtn color="primary" :loading="refreshLoading" @click="refreshNodes">
                   {{ t("TXT_CODE_4fe5dce5") }}
                 </VBtn>
               </div>

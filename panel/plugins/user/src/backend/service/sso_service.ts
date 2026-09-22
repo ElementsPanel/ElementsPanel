@@ -160,7 +160,8 @@ async function oauth2TokenExchange(
       "Content-Type": "application/x-www-form-urlencoded",
       Accept: "application/json"
     },
-    body: body.toString()
+    body: body.toString(),
+    signal: AbortSignal.timeout(15000)
   });
 
   if (!res.ok) {
@@ -185,7 +186,8 @@ async function oauth2Userinfo(accessToken: string): Promise<Record<string, unkno
     headers: {
       Authorization: `Bearer ${accessToken}`,
       Accept: "application/json"
-    }
+    },
+    signal: AbortSignal.timeout(15000)
   });
 
   if (!res.ok) {
@@ -209,7 +211,7 @@ export async function handleOAuth2Callback(
 
   const idField = authSettings().ssoUserIdField || "id";
   const userId = userinfo[idField];
-  if (userId == null || userId === "") {
+  if ((typeof userId !== "string" && typeof userId !== "number") || String(userId).trim() === "") {
     throw new Error(`OAuth 2.0 userinfo response missing field: ${idField}`);
   }
 
@@ -225,8 +227,9 @@ export function getCallbackUrl(ctx?: Koa.ParameterizedContext): string {
   if (authSettings().ssoCallbackUrl) return authSettings().ssoCallbackUrl;
   const prefix = corePrefix();
   if (ctx) {
-    const proto = (ctx.get("X-Forwarded-Proto") || ctx.protocol || "http").split(",")[0].trim();
-    const host = (ctx.get("X-Forwarded-Host") || ctx.get("Host") || "").split(",")[0].trim();
+    // Koa only trusts forwarding headers when reverse proxy mode is enabled.
+    const proto = ctx.protocol;
+    const host = ctx.host;
     if (host) {
       return `${proto}://${host}${prefix}/api/auth/sso/callback`;
     }

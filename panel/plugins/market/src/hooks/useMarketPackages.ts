@@ -59,7 +59,7 @@ export function useMarketPackages(options: UseMarketPackagesOptions = {}) {
 
   // Specific filter functions
   const matchesLanguageFilter = (item: QuickStartPackages): boolean => {
-    return item.language === searchForm.language || item.language === "en_us";
+    return searchForm.language === SEARCH_ALL_KEY || item.language === searchForm.language || item.language === "en_us";
   };
 
   const matchesGameTypeFilter = (item: QuickStartPackages): boolean => {
@@ -71,7 +71,6 @@ export function useMarketPackages(options: UseMarketPackagesOptions = {}) {
   };
 
   const matchesPlatformFilter = (item: QuickStartPackages): boolean => {
-    console.debug("matchesFilterCondition", item.platform, "platform", searchForm.platform);
     return matchesFilterCondition(item, "platform", searchForm.platform);
   };
 
@@ -83,7 +82,6 @@ export function useMarketPackages(options: UseMarketPackagesOptions = {}) {
     const k = searchForm.keyword?.trim() ?? "";
     if (!k) return true;
     const lower = k.toLowerCase();
-    const record = item as unknown as Record<string, unknown>;
     const textFields: string[] = [item.title ?? "", item.description ?? ""];
     return textFields.some((t) => t.toLowerCase().includes(lower));
   };
@@ -236,7 +234,7 @@ export function useMarketPackages(options: UseMarketPackagesOptions = {}) {
     searchForm.language = SEARCH_ALL_KEY;
     searchForm.gameType = SEARCH_ALL_KEY;
     searchForm.category = SEARCH_ALL_KEY;
-    // searchForm.platform = SEARCH_ALL_KEY;
+    searchForm.platform = SEARCH_ALL_KEY;
     searchForm.keyword = "";
   };
 

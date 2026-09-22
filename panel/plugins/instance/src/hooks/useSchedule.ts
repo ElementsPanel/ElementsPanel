@@ -6,17 +6,17 @@ import { message, notification } from "@/tools/vuetifyToast";
 import dayjs from "dayjs";
 
 export function useSchedule(instanceId: string, daemonId: string) {
-  const createTaskTypeInterval = async (newTask: ScheduleTaskForm) => {
+  const createTaskTypeInterval = async (newTask: ScheduleTaskForm, replaceName?: string) => {
     const arr = newTask.cycle;
     let ps = Number(arr[0]);
     let pm = Number(arr[1]);
     let ph = Number(arr[2]);
     const rs = ps + pm * 60 + ph * 60 * 60;
     newTask.time = rs.toString();
-    await createTask(newTask);
+    await createTask(newTask, replaceName);
   };
 
-  const createTaskTypeCycle = async (newTask: ScheduleTaskForm) => {
+  const createTaskTypeCycle = async (newTask: ScheduleTaskForm, replaceName?: string) => {
     const weekend = newTask.weekend;
     if (!newTask.objTime) throw new Error(t("TXT_CODE_349edc57"));
     if (weekend.length === 0) throw new Error(t("TXT_CODE_2fe0cc84"));
@@ -25,10 +25,10 @@ export function useSchedule(instanceId: string, daemonId: string) {
     const m = time.minute();
     const s = time.second();
     newTask.time = `${s} ${m} ${h} * * ${weekend.join(",")}`;
-    await createTask(newTask);
+    await createTask(newTask, replaceName);
   };
 
-  const createTaskTypeSpecify = async (newTask: ScheduleTaskForm) => {
+  const createTaskTypeSpecify = async (newTask: ScheduleTaskForm, replaceName?: string) => {
     if (!newTask.objTime) throw new Error(t("TXT_CODE_349edc57"));
     const time = newTask.objTime;
     const mm = time.month() + 1;
@@ -37,7 +37,7 @@ export function useSchedule(instanceId: string, daemonId: string) {
     const m = time.minute();
     const s = time.second();
     newTask.time = `${s} ${m} ${h} ${dd} ${mm} *`;
-    await createTask(newTask);
+    await createTask(newTask, replaceName);
   };
 
   const calculateIntervalFromTime = (time: string): string[] => {
@@ -87,11 +87,10 @@ export function useSchedule(instanceId: string, daemonId: string) {
       const mm = Number(match[5]) - 1;
 
       const now = new Date();
-      now.setSeconds(s);
-      now.setMinutes(m);
-      now.setHours(h);
-      now.setDate(dd);
-      now.setMonth(mm);
+      // Set month and day together so editing a February task on the 31st
+      // does not overflow into March before the day is applied.
+      now.setMonth(mm, dd);
+      now.setHours(h, m, s, 0);
       objTime = dayjs(now);
     } else {
       notification.error({ message: t("TXT_CODE_afabf3ca") });
@@ -101,20 +100,11 @@ export function useSchedule(instanceId: string, daemonId: string) {
   };
 
   const { state: createState, execute: create } = scheduleCreate();
-  const createTask = async (newTask: ScheduleTaskForm) => {
-    try {
-      if (!newTask.count) newTask.count = -1;
-      await create({
-        params: {
-          daemonId: daemonId,
-          uuid: instanceId
-        },
-        data: newTask
-      });
-    } catch (err: any) {
-      console.error(err);
-      reportErrorMsg(err.message);
-    }
+  const createTask = async (newTask: ScheduleTaskForm, replaceName?: string) => {
+    await create({
+      params: { daemonId, uuid: instanceId },
+      data: { ...newTask, count: newTask.count || -1, replaceName }
+    });
   };
 
   const { state: schedules, execute: list, isLoading: scheduleListLoading } = scheduleList();

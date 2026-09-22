@@ -121,7 +121,7 @@ export async function apply(ctx: PanelPluginContext) {
           const language = normalizeLanguage(values.language, normalizeLanguage(config.language));
           config.language = language;
           await i18next.changeLanguage(language);
-          settingsCtx.settings.save();
+          await settingsCtx.settings.save();
 
           // A panel language change historically propagated to connected
           // daemons. The daemon-side i18n plugin now decides whether to accept

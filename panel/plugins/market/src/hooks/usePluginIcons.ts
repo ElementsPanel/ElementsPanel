@@ -1,34 +1,69 @@
-import { ref } from "vue";
+import { onScopeDispose, ref } from "vue";
 import { pluginMarketIcon } from "../api";
 
+interface IconRequest {
+  version?: string;
+  controller: AbortController;
+  dataUrl?: string;
+  pending?: Promise<void>;
+}
+
 /**
- * The icons of the plugins currently on screen, as data URLs keyed by plugin id.
- *
- * The image is fetched through the panel, one request per plugin, and only for
- * plugins the market says have one (`hasIcon`). A data URL is what the backend
- * answers with — see `pluginMarketIcon` — so the result goes straight into an
- * `<img>` with no second request that would have to authenticate on its own.
- *
- * A plugin with no icon simply has no entry here, and the card keeps the default
- * icon; a failure is not reported, because a missing icon is not an error.
+ * Cache each plugin's current release icon within this component's scope.
+ * Failed or missing images stay retryable; older markets without `hasIcon`
+ * retain the default icon and make no image request.
  */
 export function usePluginIcons() {
-  const icons = ref<Record<string, string>>({});
-  // 同一张图不会重复请求：卡片重渲染、列表刷新都会走到 load()。
-  const requested = new Set<string>();
+  const icons = ref<Record<string, string>>(Object.create(null));
+  const requests = new Map<string, IconRequest>();
+  let disposed = false;
 
-  async function load(pluginId: string, hasIcon?: boolean) {
-    if (!hasIcon || requested.has(pluginId)) return;
-    requested.add(pluginId);
+  async function fetchIcon(pluginId: string, request: IconRequest) {
     try {
       const { execute } = pluginMarketIcon();
-      const response = await execute({ params: { pluginId } });
+      const response = await execute({
+        params: { pluginId, version: request.version },
+        signal: request.controller.signal
+      });
+      if (disposed || request.controller.signal.aborted || requests.get(pluginId) !== request)
+        return;
       const dataUrl = response.value?.dataUrl;
-      if (dataUrl) icons.value = { ...icons.value, [pluginId]: dataUrl };
+      if (typeof dataUrl === "string" && dataUrl) {
+        request.dataUrl = dataUrl;
+        icons.value[pluginId] = dataUrl;
+      }
     } catch {
-      // 图标缺失或市场不可达：保持默认图标即可，不必打扰用户。
+      // Keep the default icon; a later catalogue refresh can retry this request.
     }
   }
+
+  function load(pluginId: string, hasIcon?: boolean, version?: string): Promise<void> {
+    if (disposed) return Promise.resolve();
+    const previous = requests.get(pluginId);
+    if (hasIcon && previous && previous.version === version) {
+      if (previous.dataUrl) return Promise.resolve();
+      if (previous.pending) return previous.pending;
+    }
+
+    previous?.controller.abort();
+    requests.delete(pluginId);
+    delete icons.value[pluginId];
+    if (!hasIcon) return Promise.resolve();
+
+    const request: IconRequest = { version, controller: new AbortController() };
+    requests.set(pluginId, request);
+    request.pending = fetchIcon(pluginId, request).finally(() => {
+      request.pending = undefined;
+    });
+    return request.pending;
+  }
+
+  onScopeDispose(() => {
+    disposed = true;
+    requests.forEach((request) => request.controller.abort());
+    requests.clear();
+    icons.value = Object.create(null);
+  });
 
   return { icons, load };
 }

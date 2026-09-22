@@ -1,4 +1,7 @@
 {
+  "TXT_CODE_LEAVES_DONT_RESPOND_PING": "Ne pas répondre aux requêtes ping avant le démarrage complet du serveur.",
+  "TXT_CODE_LEAVES_HOPPER_COUNTER": "Activer les compteurs d’entonnoirs.",
+  "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "Activer la prise en charge du protocole LMS Paster.",
   "TXT_CODE_10088738": "Confirmer la suppression",
   "TXT_CODE_10150756": "tâches déclenchées par un événement",
   "TXT_CODE_10194e6a": "alias de réseau",

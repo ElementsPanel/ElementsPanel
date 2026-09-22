@@ -94,12 +94,13 @@ export function apply(ctx: DaemonPluginContext) {
       if (ip.startsWith("::ffff:")) ip = ip.substring(7);
 
       const config = ctx.settings.config;
+      const suppliedKey = typeof data === "string" ? Buffer.from(data, "utf8") : Buffer.alloc(0);
+      const configuredKey = Buffer.from(String(config.key ?? ""), "utf8");
       if (
         (!config.whiteListPanelIp || config.whiteListPanelIps.includes(ip)) &&
-        timingSafeEqual(
-          Uint8Array.from(String(data ?? "")),
-          Uint8Array.from(String(config.key ?? ""))
-        )
+        configuredKey.length > 0 &&
+        suppliedKey.length === configuredKey.length &&
+        timingSafeEqual(suppliedKey, configuredKey)
       ) {
         // The authentication is passed, and the registered session is a trusted
         // session.

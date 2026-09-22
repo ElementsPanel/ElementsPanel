@@ -54,9 +54,9 @@ export function registerHttpRoutes() {
   // Old version upload route
   router.post("/upload/:key", async (ctx) => {
     const key = String(ctx.params.key);
-    const unzip = Boolean(ctx.query.unzip);
+    const unzip = ctx.query.unzip === "true";
     const zipCode = String(ctx.query.code);
-    let tmpFiles: formidable.File | formidable.File[] | undefined;
+    const tmpFiles = ctx.request.files?.file;
     try {
       const mission = transfer().passports.getMission(key, "upload");
       if (!mission) throw new Error("Access denied: No task found");
@@ -64,7 +64,6 @@ export function registerHttpRoutes() {
       if (!instance) throw new Error("Access denied: No instance found");
       const uploadDir = mission.parameter.uploadDir;
       const cwd = instance.absoluteCwdPath();
-      const tmpFiles = ctx.request.files?.file;
       if (tmpFiles) {
         let uploadedFile: formidable.File;
         if (tmpFiles instanceof Array) {
@@ -113,7 +112,7 @@ export function registerHttpRoutes() {
 
         if (unzip) {
           const instanceFiles = new FileManager(instance.absoluteCwdPath());
-          instanceFiles.unzip(fileSaveAbsolutePath, ".", zipCode);
+          await instanceFiles.unzip(fileSaveAbsolutePath, ".", zipCode);
         }
         ctx.body = "OK";
         return;
@@ -131,7 +130,7 @@ export function registerHttpRoutes() {
 
   router.post("/upload-new/:key", async (ctx) => {
     const key = String(ctx.params.key);
-    const unzip = Boolean(ctx.query.unzip);
+    const unzip = ctx.query.unzip === "true";
     const zipCode = String(ctx.query.code);
     const filename = String(ctx.query.filename);
     const size = Number(ctx.query.size);
@@ -156,6 +155,7 @@ export function registerHttpRoutes() {
       const uploadDir = mission.parameter.uploadDir;
       const cwd = instance.absoluteCwdPath();
       const overwrite = ctx.query.overwrite !== "false";
+      if (!Number.isSafeInteger(size) || size < 0) throw new Error("Invalid file size");
       const filePath = await FileWriter.getPath(cwd, uploadDir, filename, overwrite);
       let fr = uploadManager.getByPath(filePath);
       if (fr && size != fr.writer.size) {
@@ -169,6 +169,7 @@ export function registerHttpRoutes() {
         const id = uploadManager.add(fileWriter);
         fr = { id, writer: fileWriter };
       }
+      if (size === 0) await fr.writer.done();
 
       ctx.body = {
         data: {
@@ -211,13 +212,13 @@ export function registerHttpRoutes() {
       const chunk = await fs.readFile(uploadedFile.filepath);
       await writer.write(offset, chunk);
 
-      if (tmpFiles) clearUploadFiles(tmpFiles);
-
       ctx.body = "OK";
       return;
     } catch (error: any) {
       ctx.body = error.message;
       ctx.status = 500;
+    } finally {
+      clearUploadFiles(tmpFiles);
     }
   });
 }

@@ -139,10 +139,9 @@ The plugin's own description for users lives in \`panel/README.md\` (or
 自述 tab. This file is the developer's guide, and is not published.
 
 The plugin's face on the market is \`icon.png\` at the root of this workspace.
-Unlike the manifest and the readme, it is not per half: put one square PNG here,
-and it is packaged with the plugin (into the half the market reads first) and
-shown on the plugin's market card and detail page. Without it the market falls
-back to its default puzzle icon.
+Unlike the manifest and the readme, it is not per half: put one PNG here (at most
+1 MiB), and it is packaged with the plugin into the half the market reads first.
+Without it the market falls back to its default puzzle icon.
 
 Production builds still ignore \`external/\`: a published plugin is installed
 from the market, not from this directory.
@@ -152,7 +151,9 @@ from the market, not from this directory.
     if (!force) {
       try {
         await fs.access(workspace);
-        throw new Error(`Plugin workspace already exists: external/${folder} (use --force to overwrite).`);
+        throw new Error(
+          `Plugin workspace already exists: external/${folder} (use --force to overwrite).`
+        );
       } catch (error) {
         if (error?.code !== "ENOENT") throw error;
       }

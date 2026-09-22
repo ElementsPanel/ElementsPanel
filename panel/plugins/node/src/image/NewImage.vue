@@ -147,7 +147,7 @@ onMounted(async () => {});
     </VContainer>
 
     <VDialog v-model="dockerFileDrawer" max-width="768" scrollable>
-    <VCard title="DockerFile">
+    <VCard :title="t('TXT_CODE_NODE_DOCKERFILE_EDITOR')">
       <VCardText>
     <DockerFileForm
       :docker-file="dockerFile"

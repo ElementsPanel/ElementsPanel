@@ -292,23 +292,29 @@ const handleEditDockerConfig = async (type: "port" | "volume" | "env" | "label" 
   if (!cfg) return;
   if (type === "port") {
     const result = await usePortEditDialog(dockerPortsArray(cfg.ports || []));
+    if (!result) return;
     cfg.ports = result.map((v) => `${v.host}:${v.container}/${v.protocol}`);
   } else if (type === "volume") {
     const result = await useVolumeEditDialog((cfg.extraVolumes || []).map((v) => { const [host, container] = v.split("|"); return { host: host || "", container: container || "" }; }));
+    if (!result) return;
     cfg.extraVolumes = result.map((v) => `${v.host}|${v.container}`);
   } else if (type === "env") {
     const result = await useDockerEnvEditDialog((cfg.env || []).map((v) => { const [label, ...rest] = v.split("="); return { label: label || "", value: rest.join("=") }; }));
+    if (!result) return;
     cfg.env = result.map((v) => `${v.label}=${v.value}`);
   } else if (type === "label") {
     const result = await useDockerLabelEditDialog((cfg.labels || []).map((v) => { const [label, ...rest] = v.split("="); return { label: label || "", value: rest.join("=") }; }));
+    if (!result) return;
     cfg.labels = result.map((v) => `${v.label}=${v.value}`);
   } else if (type === "capability") {
     const all = [...new Set([...(cfg.capAdd || []), ...(cfg.capDrop || [])])];
     const result = await useDockerCapabilityEditDialog(all.map((label) => ({ label, value: cfg.capAdd?.includes(label) ? "add" : "drop" })));
+    if (!result) return;
     cfg.capAdd = result.filter((v) => v.value === "add").map((v) => v.label);
     cfg.capDrop = result.filter((v) => v.value === "drop").map((v) => v.label);
   } else {
     const result = await useDockerDeviceEditDialog((cfg.devices || []).map((v) => { const [PathOnHost, PathInContainer, CgroupPermissions] = v.split("|"); return { PathOnHost: PathOnHost || "", PathInContainer: PathInContainer || "", CgroupPermissions: CgroupPermissions || "" }; }));
+    if (!result) return;
     cfg.devices = result.map((v) => !v.PathOnHost ? "" : !v.PathInContainer && !v.CgroupPermissions ? v.PathOnHost : !v.CgroupPermissions ? `${v.PathOnHost}|${v.PathInContainer}` : `${v.PathOnHost}|${v.PathInContainer}|${v.CgroupPermissions}`).filter(Boolean);
   }
 };

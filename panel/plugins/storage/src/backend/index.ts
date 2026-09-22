@@ -46,47 +46,82 @@ class FileStorage implements EntityStorage {
 class RedisStorage implements EntityStorage {
   private client?: RedisClientType;
 
-  constructor(private readonly fallback: FileStorage, private readonly onError: (error?: unknown) => void) {}
+  // Connection settings must remain available before Redis can be initialized.
+  constructor(private readonly bootstrap: FileStorage, private readonly onError: (error?: unknown) => void) {}
 
   async initialize(url: string) {
-    this.client = createClient({ url });
+    await this.dispose();
+    this.client = createClient({ url, disableOfflineQueue: true, socket: { connectTimeout: 5000 } });
     this.client.on("error", this.onError);
-    await this.client.connect();
+    let timer: NodeJS.Timeout | undefined;
+    try {
+      await Promise.race([
+        this.client.connect(),
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(() => reject(new Error("Redis connection timed out")), 10000);
+        })
+      ]);
+    } catch (error) {
+      await this.dispose();
+      throw error;
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  }
+
+  async dispose() {
+    const client = this.client;
+    this.client = undefined;
+    if (client?.isOpen) await client.disconnect();
+  }
+
+  private connectedClient() {
+    if (!this.client?.isReady) throw new Error("Redis storage is unavailable");
+    return this.client;
+  }
+
+  private category(category: string) {
+    if (!/^[a-zA-Z0-9_-]+$/.test(category)) throw new Error("Invalid storage category");
+    return category;
   }
 
   private key(category: string, uuid: string) {
-    if (["\\", "/", ".."].some((part) => uuid.includes(part))) {
+    if (!uuid || ["\\", "/", "..", ":"].some((part) => uuid.includes(part))) {
       throw new Error(`UUID ${uuid} does not conform to specification`);
     }
-    return `${category}:${uuid}`;
+    return `${this.category(category)}:${uuid}`;
   }
 
   async store(category: string, uuid: string, object: any) {
-    if (!this.client) return this.fallback.store(category, uuid, object);
-    await this.client.set(this.key(category, uuid), JSON.stringify(object));
+    if (category === "SystemConfig") return this.bootstrap.store(category, uuid, object);
+    await this.connectedClient().set(this.key(category, uuid), JSON.stringify(object));
   }
 
   async load(category: string, classz: any, uuid: string) {
-    if (!this.client) return this.fallback.load(category, classz, uuid);
-    const value = await this.client.get(this.key(category, uuid));
+    if (category === "SystemConfig") return this.bootstrap.load(category, classz, uuid);
+    const value = await this.connectedClient().get(this.key(category, uuid));
     if (value == null) return null;
     const target = new classz();
     return defineAttr(target, JSON.parse(value));
   }
 
   async list(category: string) {
-    if (!this.client) return this.fallback.list(category);
-    const keys = await this.client.keys(`${category}:*`);
-    return keys.map((key) => key.slice(category.length + 1));
+    if (category === "SystemConfig") return this.bootstrap.list(category);
+    const keys: string[] = [];
+    for await (const key of this.connectedClient().scanIterator({ MATCH: `${this.category(category)}:*`, COUNT: 100 })) {
+      keys.push(key.slice(category.length + 1));
+    }
+    return keys;
   }
 
   async delete(category: string, uuid: string) {
-    if (!this.client) return this.fallback.delete(category, uuid);
-    await this.client.del(this.key(category, uuid));
+    if (category === "SystemConfig") return this.bootstrap.delete(category, uuid);
+    await this.connectedClient().del(this.key(category, uuid));
   }
 }
 
 function defineAttr(target: any, source: any): any {
+  if (!target || typeof target !== "object" || !source || typeof source !== "object") return target;
   for (const key of Object.keys(target)) {
     const value = source?.[key];
     if (value === undefined) continue;
@@ -102,7 +137,7 @@ function defineAttr(target: any, source: any): any {
 class PanelStorage {
   readonly TYPE = { FILE: 0, REDIS: 1 } as const;
   private readonly file = new FileStorage();
-  private readonly redis = new RedisStorage(this.file, () => this.setStorageType(this.TYPE.FILE));
+  private readonly redis = new RedisStorage(this.file, (error) => this.logger?.error("Redis storage error", error));
   private current: EntityStorage = this.file;
   private logger?: { info(...args: any[]): void; warn(...args: any[]): void; error(...args: any[]): void };
 
@@ -126,9 +161,13 @@ class PanelStorage {
       this.logger?.info("Connected to redis!");
     } catch (error) {
       this.logger?.error("Error occurred while trying to dial redis", error);
-      this.logger?.warn("Due to an unrecoverable error, panel will temporarily store data in files.");
-      this.setStorageType(this.TYPE.FILE);
+      throw error;
     }
+  }
+
+  async dispose() {
+    await this.redis.dispose();
+    this.current = this.file;
   }
 
   readDir(category: string) {
@@ -151,4 +190,5 @@ export const inject: string[] = [];
 export function apply(ctx: PanelPluginContext) {
   storage.setLogger(ctx.logger);
   ctx.set("storage", storage);
+  ctx.on("dispose", () => storage.dispose());
 }

@@ -3,6 +3,7 @@ import type { GuardedRoute } from "../../../../../src/app/plugin/guard";
 import { $t, globalVariable } from "../runtime";
 import {
   checkSafeName,
+  getApiKey,
   getUuidByApiKey,
   ILLEGAL_ACCESS_KEY,
   isAjax,
@@ -50,7 +51,7 @@ function apiError(ctx: Koa.ParameterizedContext) {
 }
 
 function tooFast(ctx: Koa.ParameterizedContext) {
-  ctx.status = 500;
+  ctx.status = 429;
   ctx.body = `${$t("TXT_CODE_permission.tooFast")}`;
 }
 
@@ -70,7 +71,7 @@ export default function permission(parameter: GuardedRoute): Koa.Middleware {
     // If it is an API request, perform API-level permission judgment
     const key = ctx.request?.header["x-request-api-key"] || ctx.query.apikey;
     if (key) {
-      const apiKey = String(key);
+      const apiKey = getApiKey(ctx);
       if (!checkSafeName(apiKey)) {
         return apiError(ctx);
       }
@@ -87,7 +88,7 @@ export default function permission(parameter: GuardedRoute): Koa.Middleware {
       if (!isAjax(ctx)) return ajaxError(ctx);
       const requestToken = ctx.query.token;
       const realToken = ctx.session?.["token"];
-      if (requestToken !== realToken) {
+      if (!realToken || requestToken !== realToken) {
         return tokenError(ctx);
       }
     }
@@ -100,7 +101,8 @@ export default function permission(parameter: GuardedRoute): Koa.Middleware {
 
         // ban check
         if (user && user.permission < 0) {
-          return logout(ctx) as unknown as void;
+          logout(ctx);
+          return verificationFailed(ctx);
         }
 
         // Judgment of permissions for ordinary users and administrative users

@@ -4,17 +4,21 @@ import { v4 } from "uuid";
 class UploadManager {
   private readonly uploads: Map<string, FileWriter> = new Map();
   static timeout = 60 * 60 * 1000; // 1 hour
+  private cleanupTimer?: NodeJS.Timeout;
 
-  constructor() {
-    setInterval(
+  private startCleanup() {
+    if (this.cleanupTimer) return;
+    this.cleanupTimer = setInterval(
       async () => {
         await this.clearExpired();
       },
       5 * 60 * 1000 // 5 min
     );
+    this.cleanupTimer.unref();
   }
 
   add(file: FileWriter): string {
+    this.startCleanup();
     const key = v4();
     file.id = key;
     this.uploads.set(key, file);
@@ -57,6 +61,8 @@ class UploadManager {
   }
 
   async exit() {
+    clearInterval(this.cleanupTimer);
+    this.cleanupTimer = undefined;
     for (const [key, writer] of this.uploads.entries()) {
       try {
         await writer.stop();

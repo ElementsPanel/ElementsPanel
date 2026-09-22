@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_NODE_DOCKERFILE_EDITOR": "Dockerfile bearbeiten",
   "TXT_CODE_3d94ea16": "Der Knoten-Socket ist abnormal, bitte versuchen Sie, die Verbindung in der Knotenverwaltung wiederherzustellen!",
   "TXT_CODE_7c650d80": "Die Knotenverbindung ist fehlgeschlagen. Bitte wenden Sie sich an den Administrator, um den Status des Remote-Knotens zu überprüfen!",
   "TXT_CODE_DESKTOP_NODES": "Knoten",

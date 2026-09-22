@@ -1,4 +1,7 @@
 {
+  "TXT_CODE_LEAVES_DONT_RESPOND_PING": "ไม่ตอบกลับคำขอ Ping จนกว่าเซิร์ฟเวอร์จะเริ่มทำงานอย่างสมบูรณ์",
+  "TXT_CODE_LEAVES_HOPPER_COUNTER": "เปิดใช้งานตัวนับฮอปเปอร์",
+  "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "เปิดใช้งานการรองรับโปรโตคอล LMS Paster",
   "TXT_CODE_10088738": "ยืนยันว่าจะลบ",
   "TXT_CODE_10150756": "กิจกรรมการติดตามงาน",
   "TXT_CODE_10194e6a": "นามแฝงเครือข่าย",

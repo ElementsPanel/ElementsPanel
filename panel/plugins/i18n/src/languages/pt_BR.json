@@ -1,4 +1,7 @@
 {
+  "TXT_CODE_LEAVES_DONT_RESPOND_PING": "Não responder às solicitações de ping até que o servidor tenha iniciado completamente.",
+  "TXT_CODE_LEAVES_HOPPER_COUNTER": "Ativar contadores de funis.",
+  "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "Ativar o suporte ao protocolo LMS Paster.",
   "TXT_CODE_10088738": "Confirmar exclusão",
   "TXT_CODE_10150756": "Tarefa Acionada por Evento",
   "TXT_CODE_10194e6a": "Aliases de Rede",

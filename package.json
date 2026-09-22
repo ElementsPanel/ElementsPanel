@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "ElementsPanel workspace — a fork of the MCSManager project",
   "scripts": {
+    "test": "node --test scripts/tests/*.test.cjs",
+    "type-check": "npm run type-check --prefix common && npm run type-check --prefix panel && npm run type-check --prefix daemon && npm run type-check --prefix frontend",
+    "check:i18n": "node scripts/check-i18n.mjs",
     "daemon": "cd daemon &&  npm run dev",
     "frontend": "cd frontend && npm run dev",
     "panel": "cd panel && npm run dev",
@@ -12,7 +15,7 @@
     "all": "concurrently -n Daemon,Frontend,Panel -c cyan,magenta,green -p name \"npm run dev --prefix daemon\" \"npm run dev --prefix frontend\" \"npm run dev --prefix panel\"",
     "create-plugin": "node scripts/create-plugin.mjs",
     "publish-plugin": "node scripts/publish-plugin.mjs",
-    "i18n": "i18next-scanner --config i18-scanner.config.js && node scripts/sync-global-i18n.mjs",
+    "i18n": "i18next-scanner --config i18-scanner.config.js && node scripts/check-i18n.mjs",
     "sort-lang-keys": "node scripts/sort-lang-key.mjs",
     "preview-build": "cd common && npm install && npm run build",
     "scan-useless-key": "node scripts/useless-key-scanner.mjs ./panel/plugins/i18n/src/languages en_US.json . \".js,.ts,.vue,.tsx,.jsx\" \"node_modules/\" && node scripts/sync-global-i18n.mjs"

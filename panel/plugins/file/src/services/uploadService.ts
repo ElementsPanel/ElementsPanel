@@ -6,6 +6,7 @@ import {
 import { reportErrorMsg } from "@/tools/validator";
 import { message } from "@/tools/vuetifyToast";
 import { ref, type Ref } from "vue";
+import { v4 } from "uuid";
 
 const PIECE_SIZE = 1024 * 1024 * 2;
 
@@ -69,20 +70,24 @@ export class UploadFiles {
       this.pieceUrl = `${url}/upload-piece/${id}`;
       uploadService.changeId(tempId, id);
 
-      const received: { start: number; end: number }[] = uploadCfg.value?.received!;
+      const received = uploadCfg.value?.received ?? [];
       if (received.length > 0 && received[0].start == 0) {
-        this.offset = received[0].end;
+        this.offset = Math.min(this.file.size, received[0].end);
+        this.uploadedSize = this.offset;
       }
 
       this.prepared = true;
       if (this.canceled) {
         await this.stop();
+        return;
       }
 
       uploadService.update();
     } catch (err: any) {
       this.removing = true;
-      return reportErrorMsg(err.response?.data || err.message);
+      this.prepared = true;
+      if (!this.canceled) reportErrorMsg(err.response?.data || err.message);
+      uploadService.update();
     }
   }
 
@@ -140,20 +145,21 @@ export class UploadFiles {
   }
 
   async stop() {
+    this.canceled = true;
     if (!this.prepared) {
-      this.canceled = true;
       return;
     }
 
     const { execute: uploadFile } = uploadFileApi();
-    await uploadFile({
-      url: `${this.url}/upload-new/${this.id}`,
-      params: {
-        stop: true
-      }
-    });
-    this.onEnd();
-    uploadService.files.delete(this.id!);
+    try {
+      await uploadFile({
+        url: `${this.url}/upload-new/${this.id}`,
+        params: { stop: true }
+      });
+    } finally {
+      this.onEnd();
+      if (uploadService.files.get(this.id!) === this) uploadService.files.delete(this.id!);
+    }
   }
 }
 
@@ -166,6 +172,7 @@ class UploadTask {
   worker?: Promise<any>;
   abortController?: AbortController;
   retries: number = 0;
+  private generation = 0;
 
   constructor(config: { file: UploadFiles; range: [number, number] }) {
     this.file = config.file;
@@ -174,6 +181,7 @@ class UploadTask {
   }
 
   start() {
+    const generation = ++this.generation;
     const { execute: uploadFilePiece } = uploadFilePieceApi();
 
     const formData = new FormData();
@@ -186,20 +194,25 @@ class UploadTask {
       params: {
         offset: this.rangeStart
       },
-      onUploadProgress: (progressEvent: any) => this.onProgress(progressEvent.loaded),
+      onUploadProgress: (progressEvent: any) => {
+        if (generation === this.generation) this.onProgress(progressEvent.loaded);
+      },
       signal: this.abortController.signal
     })
-      .then(() => this.onCompleted())
-      .catch((e) => this.onError(e));
+      .then(() => {
+        if (generation === this.generation) this.onCompleted();
+      })
+      .catch((e) => {
+        if (generation === this.generation) this.onError(e);
+      });
 
     this.status = "uploading";
   }
 
   stop() {
-    this.status = "stopping";
-    if (!this.worker) {
-      return;
-    }
+    this.generation++;
+    this.status = "pending";
+    this.progress = 0;
     this.abortController?.abort();
   }
 
@@ -244,7 +257,7 @@ class UploadTask {
   }
 
   onProgress(progress: number) {
-    this.progress = progress;
+    this.progress = Math.min(progress, this.rangeEnd - this.rangeStart);
     uploadService.updateProgress();
   }
 
@@ -284,7 +297,7 @@ class UploadService {
     // eslint-disable-next-line no-unused-vars
     beforeMounted?: (uploadFile: UploadFiles) => void
   ) {
-    const tempId = Date.now().toString();
+    const tempId = v4();
     const uploadFile = new UploadFiles(tempId, file, url, password, options);
     if (beforeMounted) {
       beforeMounted(uploadFile);
@@ -304,6 +317,7 @@ class UploadService {
       return;
     }
     const file = this.files.get(oldId)!;
+    if (!file) return;
     this.files.set(newId, file);
     this.files.delete(oldId);
     if (this.current == oldId) {
@@ -337,9 +351,17 @@ class UploadService {
     }
     if (this.status == "working" && this.current) {
       const currentFile = this.files.get(this.current)!;
+      if (!currentFile) {
+        this.current = undefined;
+        this.status = "stopped";
+        this.updateProgress();
+        return;
+      }
+      removeFile ||= currentFile.removing;
       let reachTaskEnd = removeFile;
 
       if (removeFile) {
+        this.task.forEach((task) => task?.stop());
         this.task = [];
       }
 
@@ -381,6 +403,7 @@ class UploadService {
           const current = this.files.keys().next().value ?? "";
           const currentFile = this.files.get(current)!;
           if (currentFile.removing) {
+            currentFile.onEnd();
             this.files.delete(current);
             continue;
           }
@@ -434,26 +457,31 @@ class UploadService {
     }
     this.task = [];
     this.current = undefined;
-    const stopTask: Promise<any>[] = [];
-    for (const file of this.files) {
-      stopTask.push(file[1].stop());
-    }
-    await Promise.all(stopTask);
+    const files = [...this.files.values()];
     this.files.clear();
     this.uploaded = 0;
     this.updateProgress();
+    // Clear the old queue before awaiting; newly appended uploads belong to
+    // the next batch and must not be cleared by this cancellation.
+    const results = await Promise.allSettled(files.map((file) => file.stop()));
+    for (const result of results) {
+      if (result.status === "rejected") reportErrorMsg(result.reason?.message || result.reason);
+    }
   }
 
   updateProgress() {
-    if (!this.current) {
+    const currentFile = this.current ? this.files.get(this.current) : undefined;
+    if (!currentFile) {
       this.uiData.value = {
         files: [this.uploaded, this.uploaded + this.files.size],
         suspending: this.status == "suspend"
       };
       return;
     }
-    const currentFile = this.files.get(this.current)!;
-    let progress = currentFile.uploadedSize;
+    const progress = currentFile.uploadedSize + this.task.reduce(
+      (total, task) => total + (task?.status === "uploading" ? task.progress : 0),
+      0
+    );
 
     this.uiData.value = {
       current: [progress, currentFile.file.size],

@@ -37,7 +37,7 @@ import { useLocalStorage } from "@vueuse/core";
 import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import { v4 } from "uuid";
-import { computed, createVNode, onMounted, onUnmounted, reactive, ref, type VNodeRef } from "vue";
+import { computed, createVNode, onMounted, onUnmounted, reactive, ref, watch, type VNodeRef } from "vue";
 import { VIcon } from "vuetify/components";
 
 type Key = string | number;
@@ -70,6 +70,8 @@ const TAB_LIST_KEY = "FileManagerTabMap";
 export const useFileManager = (instanceId: string = "", daemonId: string = "", sessionId: string = "") => {
   const tabList = useLocalStorage<TabsMap>(TAB_LIST_KEY, {});
   const dataSource = ref<DataType[]>();
+  let fileListRequest = 0;
+  let disposed = false;
   const fileStatus = ref<FileStatus>();
   const selectedRowKeys = ref<Key[]>([]);
   const selectionData = ref<DataType[]>();
@@ -239,19 +241,19 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
   };
 
   const handleChangeTab = async (key: string) => {
-    const path = currentTabs.value.find((tab) => tab.key === key)?.path || "";
+    const tab = currentTabs.value.find((tab) => tab.key === key);
+    if (!tab) return;
+    const path = tab.path || "/";
     activeTab.value = key;
     updateBreadcrumbs(path);
 
-    spinning.value = true;
     operationForm.value.name = "";
     operationForm.value.current = 1;
     await getFileList();
-    spinning.value = false;
   };
 
   const parsePath = (path: string) => {
-    if (!path) return [];
+    if (!path) return ["/"];
 
     const normalizedPath = path.replace(/\\/g, "/");
     const driveMatch = normalizedPath.match(/^([a-zA-Z]):/);
@@ -281,6 +283,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     value: string[];
   }>();
 
+  let resolveDialog: ((value: string | undefined) => void) | undefined;
   const dialog = ref({
     show: false,
     title: "Dialog",
@@ -293,10 +296,16 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     ref: ref<VNodeRef>(),
     ok: () => { },
     cancel: () => {
+      resolveDialog?.(undefined);
+      resolveDialog = undefined;
       dialog.value.value = "";
       dialog.value.show = false;
     },
     style: {}
+  });
+
+  watch(() => dialog.value.show, (visible) => {
+    if (!visible) dialog.value.cancel();
   });
 
   const loadingWindow = ref({
@@ -318,6 +327,10 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     file: undefined as string | undefined,
     resolve: null as ((value: boolean) => void) | null
   });
+
+  watch(() => deleteDialog.value.show, (visible) => {
+    if (!visible) deleteDialog.value.resolve?.(false);
+  }, { flush: "sync" });
 
   const showLoadingWindow = (title: string, text: string) => {
     loadingWindow.value.title = title;
@@ -365,7 +378,8 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     defaultValue?: string,
     mode?: string,
     style?: object
-  ): Promise<string> => {
+  ): Promise<string | undefined> => {
+    resolveDialog?.(undefined);
     dialog.value.style = style || {};
     dialog.value.value = defaultValue || "";
     dialog.value.mode = mode || "";
@@ -377,6 +391,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     (dialog.value?.ref as any)?.focus();
 
     return new Promise((resolve) => {
+      resolveDialog = resolve;
       dialog.value.ok = () => {
         if (
           dialog.value.value == "" &&
@@ -386,6 +401,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
           return reportErrorMsg(t("TXT_CODE_4ea93630"));
         }
         resolve(dialog.value.value);
+        resolveDialog = undefined;
         dialog.value.show = false;
         dialog.value.value = "";
         dialog.value.info = "";
@@ -397,6 +413,9 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
   };
 
   const getFileList = async (throwErr = false, initPath?: string) => {
+    if (disposed) return false;
+    const request = ++fileListRequest;
+    spinning.value = true;
     const { execute } = getFileListApi();
     let thisTab = currentTabs.value.find((e) => e.key === activeTab.value);
     if (!thisTab) {
@@ -425,23 +444,22 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
           target: path
         }
       });
+      if (request !== fileListRequest) return false;
       dataSource.value = res.value?.items || [];
       operationForm.value.total = res.value?.total || 0;
+      return true;
     } catch (error: any) {
-      // if (thisTab) {
-      //   handleRemoveTab(thisTab.key);
-      // } else {
-      //   initDefaultTab();
-      // }
-
+      if (request !== fileListRequest) return false;
       if (throwErr) throw error;
-      return reportErrorMsg(error.message);
+      reportErrorMsg(error.message);
+      return false;
+    } finally {
+      if (request === fileListRequest) spinning.value = false;
     }
   };
 
   const reloadList = async () => {
-    await getFileList();
-    return message.success(t("TXT_CODE_8ccb5428"));
+    if (await getFileList()) message.success(t("TXT_CODE_8ccb5428"));
   };
 
   const touchFile = async (dir?: boolean) => {
@@ -449,6 +467,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     const dirname = dir
       ? await openDialog(t("TXT_CODE_6215388a"), t("TXT_CODE_1b450b79"))
       : await openDialog(t("TXT_CODE_791c73e9"), t("TXT_CODE_59cb16ff"));
+    if (dirname === undefined) return;
     const execute = dir ? addFolderApi().execute : touchFileApi().execute;
 
     try {
@@ -514,6 +533,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
 
   const resetName = async (file: string) => {
     const newname = await openDialog(t("TXT_CODE_c83551f5"), t("TXT_CODE_a5830778"), file);
+    if (newname === undefined) return;
     try {
       const { execute } = moveFileApi();
       await execute({
@@ -528,12 +548,12 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
       message.success(t("TXT_CODE_5b990e2e"));
       await getFileList();
     } catch (error: any) {
-      return error.message;
+      reportErrorMsg(error.message);
     }
   };
 
   const deleteFile = async (file?: string) => {
-    if (deleteDialog.value.show || deleteDialog.value.loading) return;
+    if (disposed || deleteDialog.value.show || deleteDialog.value.loading) return;
 
     let files: string[];
     if (isMultiple.value) {
@@ -548,11 +568,15 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     deleteDialog.value.file = file;
     deleteDialog.value.show = true;
     const confirmed = await new Promise<boolean>((resolve) => {
-      deleteDialog.value.resolve = resolve;
+      const finish = (value: boolean) => {
+        if (deleteDialog.value.resolve !== finish) return;
+        deleteDialog.value.resolve = null;
+        deleteDialog.value.show = false;
+        resolve(value);
+      };
+      deleteDialog.value.resolve = finish;
     });
-    deleteDialog.value.show = false;
-    deleteDialog.value.resolve = null;
-    if (!confirmed) return;
+    if (!confirmed || disposed) return;
 
     deleteDialog.value.loading = true;
     const { execute } = deleteFileApi();
@@ -580,15 +604,17 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
   };
 
   onUnmounted(() => {
-    if (deleteDialog.value.show) {
-      deleteDialog.value.resolve?.(false);
-    }
+    disposed = true;
+    fileListRequest++;
+    dialog.value.cancel();
+    deleteDialog.value.resolve?.(false);
   });
 
   const zipFile = async (showLoadingDialog = true) => {
     if (!selectionData.value || selectionData.value.length === 0)
       return reportErrorMsg(t("TXT_CODE_b152cd75"));
     const filename = await openDialog(t("TXT_CODE_f8a15a94"), t("TXT_CODE_366bad15"), "", "zip");
+    if (filename === undefined) return;
     const { execute } = compressFileApi();
     let loadingDialog: any = null;
     if (showLoadingDialog) {
@@ -626,6 +652,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
 
   const unzipFile = async (name: string, showLoadingDialog = true) => {
     const dirname = await openDialog(t("TXT_CODE_7669fd3f"), "", "", "unzip");
+    if (dirname === undefined) return;
     const { execute } = compressFileApi();
     let loadingDialog: any = null;
     if (showLoadingDialog) {
@@ -679,6 +706,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     overridePath?: string,
     overwriteDialogHandler?: OverwriteDialogHandler
   ) => {
+    if (disposed) return;
     const { state: missionCfg, execute: getUploadMissionCfg } = uploadAddress();
     const fileSet = new Set(files.map((f) => ({ file: f, overwrite: false })));
     const existingFiles: typeof fileSet = new Set();
@@ -736,6 +764,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
         });
       }
 
+      if (disposed) return;
       if (confirmResult.confirmed) {
         if (confirmResult.all) {
           for (const ef of existingFiles) {
@@ -758,6 +787,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     }
 
     for (const f of fileSet) {
+      if (disposed) return;
       try {
         await getUploadMissionCfg({
           params: {
@@ -767,6 +797,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
             file_name: f.file.name
           }
         });
+        if (disposed) return;
         if (!missionCfg.value) throw new Error(t("TXT_CODE_e8ce38c2"));
 
         const addr = parseForwardAddress(getFileConfigAddr(missionCfg.value), "http");
@@ -818,7 +849,6 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
   const rowClickTable = async (item: string, type: number) => {
     if (type === 1) return;
     try {
-      spinning.value = true;
       const target = currentPath.value + item;
 
       breadcrumbs.push({
@@ -828,7 +858,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
       });
       operationForm.value.name = "";
       operationForm.value.current = 1;
-      await getFileList(true);
+      if (!await getFileList(true)) return;
 
       const thisTab = currentTabs.value.find((e) => e.key === activeTab.value);
       if (thisTab) {
@@ -839,8 +869,6 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     } catch (error: any) {
       breadcrumbs.splice(breadcrumbs.length - 1, 1);
       return reportErrorMsg(error.message);
-    } finally {
-      spinning.value = false;
     }
   };
 
@@ -858,7 +886,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
       });
       if (!downloadCfg.value) return null;
       const addr = parseForwardAddress(getFileConfigAddr(downloadCfg.value), "http");
-      const path = `/download/${downloadCfg.value.password}/${fileName}`;
+      const path = `/download/${encodeURIComponent(downloadCfg.value.password)}/${encodeURIComponent(fileName)}`;
       return addr + path;
     } catch (err: any) {
       console.error(err);
@@ -912,12 +940,10 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
   const handleChangeDir = async (dir: string) => {
     if (breadcrumbs.findIndex((e) => e.path === dir) === -1)
       return reportErrorMsg(t("TXT_CODE_96281410"));
-    spinning.value = true;
     breadcrumbs.splice(breadcrumbs.findIndex((e) => e.path === dir) + 1);
     operationForm.value.name = "";
     operationForm.value.current = 1;
-    await getFileList();
-    spinning.value = false;
+    if (!await getFileList()) return;
 
     const thisTab = currentTabs.value.find((e) => e.key === activeTab.value);
     if (thisTab) {
@@ -942,6 +968,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
   };
 
   const getFileStatus = async () => {
+    if (disposed) return;
     const { state, execute } = getFileStatusApi();
     try {
       await execute({
@@ -950,10 +977,11 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
           uuid: instanceId || ""
         }
       });
-      if (state.value) {
+      if (!disposed && state.value) {
         fileStatus.value = state.value;
       }
     } catch (err: any) {
+      if (disposed) return;
       console.error(err);
       return reportErrorMsg(err.message);
     }
@@ -987,9 +1015,10 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     permission.loading = true;
     permission.data = number2permission(mode);
     permission.loading = false;
-    await openDialog(t("TXT_CODE_16853efe"), "", "", "permission", {
+    const result = await openDialog(t("TXT_CODE_16853efe"), "", "", "permission", {
       maxWidth: "400px"
     });
+    if (result === undefined) return;
     try {
       const chmod = permission2number(
         permission.data.owner,
@@ -1056,7 +1085,6 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
       name: "/",
       disabled: false
     });
-    spinning.value = true;
     operationForm.value.name = "";
     operationForm.value.current = 1;
     const thisTab = currentTabs.value.find((e) => e.key === activeTab.value);
@@ -1064,7 +1092,6 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
       thisTab.name = thisTab.path = diskName;
     }
     await getFileList();
-    spinning.value = false;
   };
 
   const isImage = (extName: string) => {

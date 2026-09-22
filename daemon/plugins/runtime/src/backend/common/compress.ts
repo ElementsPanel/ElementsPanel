@@ -3,6 +3,7 @@ import fs from "fs-extra";
 import { ProcessWrapper } from "mcsmanager-common";
 import StreamZip from "node-stream-zip";
 import path from "path";
+import { pipeline } from "stream/promises";
 import { extract, list } from "tar";
 import { promisify } from "util";
 import { GOLANG_ZIP_PATH, SEVEN_ZIP_PATH, ZIP_TIMEOUT_SECONDS } from "../const";
@@ -62,9 +63,7 @@ function checkFileName(fileName: string) {
 
 export function isSupportedArchiveFile(fileName: string): boolean {
   const lowerFileName = fileName.toLowerCase();
-  return (
-    SUPPORTED_ARCHIVE_EXTENSIONS.some((extension) => lowerFileName.endsWith(extension))
-  );
+  return SUPPORTED_ARCHIVE_EXTENSIONS.some((extension) => lowerFileName.endsWith(extension));
 }
 
 export async function compress(
@@ -109,7 +108,7 @@ export async function decompress(
     return await tryUnzip();
   }
 
-  if (!await check7zipStatus()) {
+  if (!(await check7zipStatus())) {
     throw new Error($t("TXT_CODE_a0ede210"));
   }
   return await use7zip(zipPath, dest);
@@ -168,11 +167,11 @@ export async function listArchiveEntries(
   }
 
   if (await check7zipStatus()) {
-    const result = await execFilePromise(
-      SEVEN_ZIP_PATH,
-      ["l", "-slt", "-sccUTF-8", archivePath],
-      { cwd: path.dirname(archivePath), timeout: ZIP_TIMEOUT_SECONDS * 1000, maxBuffer: 10 * 1024 * 1024 }
-    );
+    const result = await execFilePromise(SEVEN_ZIP_PATH, ["l", "-slt", "-sccUTF-8", archivePath], {
+      cwd: path.dirname(archivePath),
+      timeout: ZIP_TIMEOUT_SECONDS * 1000,
+      maxBuffer: 10 * 1024 * 1024
+    });
     const output = String(result.stdout || "");
     const parsed: ArchiveEntryInfo[] = [];
     for (const block of output.split(/\r?\n(?=-{5,}\r?\n)/)) {
@@ -195,7 +194,9 @@ export async function listArchiveEntries(
     return parsed;
   }
 
-  throw new Error($t("TXT_CODE_69c42450", { fileExt: path.extname(archivePath).slice(1) || "unknown" }));
+  throw new Error(
+    $t("TXT_CODE_69c42450", { fileExt: path.extname(archivePath).slice(1) || "unknown" })
+  );
 }
 
 /**
@@ -249,7 +250,7 @@ export async function decompressWithProgress(
   }
 
   if (lowerArchivePath.endsWith(".7z")) {
-    if (!await check7zipStatus()) {
+    if (!(await check7zipStatus())) {
       throw new Error($t("TXT_CODE_a0ede210"));
     }
     return await use7zip(archivePath, dest, onProgress);
@@ -276,49 +277,45 @@ export async function decompressWithProgress(
     let lastPercent = -1;
 
     for (const entry of entryList) {
+      const targetPath = path.resolve(dest, entry.name);
+      const destination = path.resolve(dest);
+      const relative = path.relative(destination, targetPath);
+      if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+        throw new Error(getCompressErrorMsg().invalidName);
+      }
+      // Archive names are validated by StreamZip. Existing filesystem links
+      // also need checking before the extraction opens a destination file.
+      let ancestor = targetPath;
+      while (ancestor !== destination) {
+        const stat = await fs.lstat(ancestor).catch((error: NodeJS.ErrnoException) => {
+          if (error.code !== "ENOENT") throw error;
+          return null;
+        });
+        if (stat?.isSymbolicLink()) throw new Error(getCompressErrorMsg().invalidName);
+        ancestor = path.dirname(ancestor);
+      }
       if (entry.isDirectory) {
-        await fs.ensureDir(path.join(dest, entry.name));
+        await fs.ensureDir(targetPath);
         continue;
       }
 
-      const targetPath = path.join(dest, entry.name);
       await fs.ensureDir(path.dirname(targetPath));
 
       const readStream = await zip.stream(entry.name);
       const writeStream = fs.createWriteStream(targetPath);
 
-      await new Promise<void>((resolve, reject) => {
-        readStream.on("data", (chunk: Buffer) => {
-          readStream.pause();
-          processedSize += chunk.length;
+      readStream.on("data", (chunk: Buffer) => {
+        processedSize += chunk.length;
 
-          if (onProgress && totalSize > 0) {
-            const percent = Math.floor((processedSize / totalSize) * 100);
-            if (percent !== lastPercent) {
-              lastPercent = percent;
-              onProgress(percent);
-            }
+        if (onProgress && totalSize > 0) {
+          const percent = Math.floor((processedSize / totalSize) * 100);
+          if (percent !== lastPercent) {
+            lastPercent = percent;
+            onProgress(percent);
           }
-
-          setImmediate(() => {
-            readStream.resume();
-          });
-        });
-
-        writeStream.on("finish", () => {
-          resolve();
-        });
-
-        writeStream.on("error", (err: Error) => {
-          reject(err);
-        });
-
-        readStream.on("error", (err: Error) => {
-          reject(err);
-        });
-
-        readStream.pipe(writeStream);
+        }
       });
+      await pipeline(readStream, writeStream);
     }
 
     if (onProgress && totalSize > 0) {
@@ -356,73 +353,73 @@ async function use7zip(
     logger.info($t("TXT_CODE_35d2ee7a", { command }));
 
     onProgress?.(0);
-    const { stdout, stderr } = await new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
-      const child = spawn(SEVEN_ZIP_PATH, [
-        "x",
-        absoluteSourceZip,
-        `-o${absoluteDestDir}`,
-        "-aoa",
-        "-bsp1"
-      ], {
-        cwd: workingDir,
-        windowsHide: true
-      });
-      let stdout = "";
-      let stderr = "";
-      let progressOutput = "";
-      let lastProgress = -1;
-      let settled = false;
-      const timeout = setTimeout(() => {
-        child.kill();
-        if (!settled) {
-          settled = true;
-          reject(new Error($t("TXT_CODE_1d1ec400")));
-        }
-      }, ZIP_TIMEOUT_SECONDS * 1000);
-      const consume = (chunk: Buffer, isStderr: boolean) => {
-        const text = chunk.toString();
-        if (isStderr) {
-          stderr += text;
-          return;
-        }
-        stdout += text;
-        progressOutput = `${progressOutput}${text}`.slice(-128);
-        const matches = progressOutput.match(/(?:^|\D)(\d{1,3})%/g) || [];
-        for (const match of matches) {
-          const percent = Number(match.match(/\d+/)?.[0]);
-          if (Number.isFinite(percent)) {
-            const normalizedPercent = Math.min(100, percent);
-            if (normalizedPercent >= lastProgress) {
-              lastProgress = normalizedPercent;
-              onProgress?.(normalizedPercent);
+    const { stdout, stderr } = await new Promise<{ stdout: string; stderr: string }>(
+      (resolve, reject) => {
+        const child = spawn(
+          SEVEN_ZIP_PATH,
+          ["x", absoluteSourceZip, `-o${absoluteDestDir}`, "-aoa", "-bsp1"],
+          {
+            cwd: workingDir,
+            windowsHide: true
+          }
+        );
+        let stdout = "";
+        let stderr = "";
+        let progressOutput = "";
+        let lastProgress = -1;
+        let settled = false;
+        const timeout = setTimeout(() => {
+          child.kill();
+          if (!settled) {
+            settled = true;
+            reject(new Error($t("TXT_CODE_1d1ec400")));
+          }
+        }, ZIP_TIMEOUT_SECONDS * 1000);
+        const consume = (chunk: Buffer, isStderr: boolean) => {
+          const text = chunk.toString();
+          if (isStderr) {
+            stderr += text;
+            return;
+          }
+          stdout += text;
+          progressOutput = `${progressOutput}${text}`.slice(-128);
+          const matches = progressOutput.match(/(?:^|\D)(\d{1,3})%/g) || [];
+          for (const match of matches) {
+            const percent = Number(match.match(/\d+/)?.[0]);
+            if (Number.isFinite(percent)) {
+              const normalizedPercent = Math.min(100, percent);
+              if (normalizedPercent >= lastProgress) {
+                lastProgress = normalizedPercent;
+                onProgress?.(normalizedPercent);
+              }
             }
           }
-        }
-        const lastPercentIndex = progressOutput.lastIndexOf("%");
-        if (lastPercentIndex >= 0) {
-          progressOutput = progressOutput.slice(lastPercentIndex + 1);
-        }
-      };
-      child.stdout.on("data", (chunk: Buffer) => consume(chunk, false));
-      child.stderr.on("data", (chunk: Buffer) => consume(chunk, true));
-      child.on("error", (error) => {
-        clearTimeout(timeout);
-        if (!settled) {
+          const lastPercentIndex = progressOutput.lastIndexOf("%");
+          if (lastPercentIndex >= 0) {
+            progressOutput = progressOutput.slice(lastPercentIndex + 1);
+          }
+        };
+        child.stdout.on("data", (chunk: Buffer) => consume(chunk, false));
+        child.stderr.on("data", (chunk: Buffer) => consume(chunk, true));
+        child.on("error", (error) => {
+          clearTimeout(timeout);
+          if (!settled) {
+            settled = true;
+            reject(error);
+          }
+        });
+        child.on("close", (code) => {
+          clearTimeout(timeout);
+          if (settled) return;
           settled = true;
-          reject(error);
-        }
-      });
-      child.on("close", (code) => {
-        clearTimeout(timeout);
-        if (settled) return;
-        settled = true;
-        if (code === 0) {
-          resolve({ stdout, stderr });
-        } else {
-          reject(new Error(`Command failed: ${stdout}\n${stderr}`.trim()));
-        }
-      });
-    });
+          if (code === 0) {
+            resolve({ stdout, stderr });
+          } else {
+            reject(new Error(`Command failed: ${stdout}\n${stderr}`.trim()));
+          }
+        });
+      }
+    );
 
     const output = `${stdout}\n${stderr}`;
 
@@ -543,7 +540,9 @@ async function useZip(
   files.forEach((v) => {
     params.push(`--file=${v}`);
   });
-  logger.info(`Function useZip(): Command: ${GOLANG_ZIP_PATH} ${params.join(" ")}, CWD: ${workingDir}`);
+  logger.info(
+    `Function useZip(): Command: ${GOLANG_ZIP_PATH} ${params.join(" ")}, CWD: ${workingDir}`
+  );
   const subProcess = new ProcessWrapper(
     GOLANG_ZIP_PATH,
     params,

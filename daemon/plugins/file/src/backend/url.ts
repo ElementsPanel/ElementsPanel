@@ -1,6 +1,9 @@
 export function checkSafeUrl(url: string) {
   try {
     const urlObj = new URL(url);
+    if (!["http:", "https:"].includes(urlObj.protocol) || urlObj.username || urlObj.password) {
+      return false;
+    }
     const hostname = urlObj.hostname.toLowerCase();
 
     // Reject IPv6 addresses (IPv6 addresses are wrapped in brackets by URL object)
@@ -24,21 +27,6 @@ export function checkSafeUrl(url: string) {
     // Reject .local domains
     if (hostname.endsWith(".local")) {
       return false;
-    }
-
-    // Reject private IP address ranges (additional check in case IP format bypasses above)
-    if (ipv4Regex.test(hostname)) {
-      const parts = hostname.split(".").map(Number);
-      // 10.0.0.0/8
-      if (parts[0] === 10) return false;
-      // 172.16.0.0/12
-      if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return false;
-      // 192.168.0.0/16
-      if (parts[0] === 192 && parts[1] === 168) return false;
-      // 127.0.0.0/8 (loopback)
-      if (parts[0] === 127) return false;
-      // 169.254.0.0/16 (link-local)
-      if (parts[0] === 169 && parts[1] === 254) return false;
     }
 
     // Must contain at least one dot (ensure it's a valid domain, not a single word)

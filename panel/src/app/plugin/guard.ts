@@ -47,7 +47,7 @@ export interface UserRecords {
     uuid: string | null,
     instanceIds: AuthUserInstanceRef[],
     allUsers?: boolean
-  ): void;
+  ): Promise<void>;
   unbindAllSso(): Promise<number>;
 }
 

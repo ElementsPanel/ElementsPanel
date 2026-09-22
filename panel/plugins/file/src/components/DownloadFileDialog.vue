@@ -33,7 +33,8 @@ const submit = async () => {
   if (!dataSource.value.url) return reportValidatorError(t("TXT_CODE_b5095a15"));
   if (!dataSource.value.fileName) return reportValidatorError(t("TXT_CODE_de1b06cd"));
   try {
-    new URL(dataSource.value.url);
+    const url = new URL(dataSource.value.url);
+    if (!["http:", "https:"].includes(url.protocol)) throw new Error("Unsupported protocol");
   } catch (_) {
     return reportValidatorError(t("TXT_CODE_a4a960b9"));
   }

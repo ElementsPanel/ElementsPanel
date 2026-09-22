@@ -24,7 +24,9 @@ export function registerFileEvents() {
       }
 
       if (
-        [instances().Instance.STATUS_BUSY, instances().Instance.STATUS_STARTING].includes(instance.status()) &&
+        [instances().Instance.STATUS_BUSY, instances().Instance.STATUS_STARTING].includes(
+          instance.status()
+        ) &&
         !["file/list", "file/status"].includes(event)
       ) {
         return protocol().error(ctx, event, {
@@ -96,7 +98,11 @@ export function registerFileEvents() {
   protocol().on("file/chmod_batch", async (ctx, data) => {
     try {
       const fileManager = getFileManager(data.instanceUuid);
-      const { chmod, targets, deep: rawDeep } = data as {
+      const {
+        chmod,
+        targets,
+        deep: rawDeep
+      } = data as {
         chmod: number;
         deep?: boolean;
         targets: string[];
@@ -198,7 +204,7 @@ export function registerFileEvents() {
       const url = data.url;
       const fileName = data.fileName;
 
-      if (!checkSafeUrl(url)) {
+      if (!checkSafeUrl(url) || (data.fallbackUrl && !checkSafeUrl(data.fallbackUrl))) {
         protocol().responseError(ctx, $t("TXT_CODE_3fe1b194"), {
           disablePrint: true
         });
@@ -206,7 +212,7 @@ export function registerFileEvents() {
       }
 
       const fileManager = getFileManager(data.instanceUuid);
-      fileManager.checkPath(fileName);
+      if (!fileManager.checkPath(fileName)) throw new Error("Access denied: Invalid destination");
       const targetPath = fileManager.toAbsolutePath(fileName);
 
       // Start download in background
@@ -217,15 +223,21 @@ export function registerFileEvents() {
         maxDownloadFromUrlFileCount > 0 &&
         transfer().downloads.downloadingCount >= maxDownloadFromUrlFileCount
       ) {
-        protocol().responseError(ctx, $t("TXT_CODE_821a742e", { count: maxDownloadFromUrlFileCount }), {
-          disablePrint: true
-        });
+        protocol().responseError(
+          ctx,
+          $t("TXT_CODE_821a742e", { count: maxDownloadFromUrlFileCount }),
+          {
+            disablePrint: true
+          }
+        );
         return;
       }
 
-      transfer().downloads.downloadFromUrl(url, targetPath, fallbackUrl).catch((err: any) => {
-        logger().error(`Download failed: ${url} -> ${targetPath}`, err);
-      });
+      transfer()
+        .downloads.downloadFromUrl(url, targetPath, fallbackUrl)
+        .catch((err: any) => {
+          logger().error(`Download failed: ${url} -> ${targetPath}`, err);
+        });
 
       protocol().response(ctx, {});
     } catch (error: any) {
@@ -237,7 +249,8 @@ export function registerFileEvents() {
   protocol().on("file/download_stop", (ctx, data) => {
     try {
       const fileManager = getFileManager(data.instanceUuid);
-      fileManager.checkPath(data.fileName);
+      if (!fileManager.checkPath(data.fileName))
+        throw new Error("Access denied: Invalid destination");
       const targetPath = fileManager.toAbsolutePath(data.fileName);
       const result = transfer().downloads.stop(targetPath);
       protocol().response(ctx, result);
@@ -253,7 +266,7 @@ export function registerFileEvents() {
       const targets = data.targets;
       const fileManager = getFileManager(data.instanceUuid);
       for (const target of targets) {
-        fileManager.copy(target[0], target[1]);
+        await fileManager.copy(target[0], target[1]);
       }
       protocol().response(ctx, true);
     } catch (error: any) {
@@ -286,7 +299,7 @@ export function registerFileEvents() {
         const uploadTask = uploadManager.getByPath(path);
         if (uploadTask != undefined) {
           uploadManager.delete(uploadTask.id);
-          uploadTask.writer.stop();
+          await uploadTask.writer.stop();
         } else {
           // async delete
           fileManager.delete(target);

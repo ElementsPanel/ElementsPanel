@@ -21,14 +21,18 @@ export abstract class AsyncTask extends EventEmitter implements IAsyncTask {
   type = "";
   errorInfo?: Error;
   protected _status = AsyncTask.STATUS_STOP;
+  private stopping?: Promise<void>;
 
   async start() {
+    if (this._status === AsyncTask.STATUS_RUNNING) return;
+    this.stopping = undefined;
+    this.errorInfo = undefined;
     this._status = AsyncTask.STATUS_RUNNING;
     try {
       await this.onStart();
-      this.emit("started");
+      if (this._status === AsyncTask.STATUS_RUNNING) this.emit("started");
     } catch (error: any) {
-      void this.error(error);
+      await this.error(error);
       throw error;
     }
   }
@@ -37,31 +41,51 @@ export abstract class AsyncTask extends EventEmitter implements IAsyncTask {
     return this.start();
   }
 
-  async stop() {
-    if (this._status === AsyncTask.STATUS_STOP) return;
-    try {
-      await this.onStop();
-    } finally {
-      if (this._status !== AsyncTask.STATUS_ERROR) this._status = AsyncTask.STATUS_STOP;
-      this.emit("stopped");
-    }
+  stop(): Promise<void> {
+    if (this.stopping) return this.stopping;
+    if (this._status === AsyncTask.STATUS_STOP) return Promise.resolve();
+    this.stopping = Promise.resolve()
+      .then(() => this.onStop())
+      .finally(() => {
+        if (this._status !== AsyncTask.STATUS_ERROR) this._status = AsyncTask.STATUS_STOP;
+        this.emit("stopped");
+      });
+    return this.stopping;
   }
 
   async error(error: Error) {
+    if (this._status === AsyncTask.STATUS_ERROR) return;
     this._status = AsyncTask.STATUS_ERROR;
     this.errorInfo = error;
     logger.error(`AsyncTask - ID: ${this.taskId} TYPE: ${this.type} Error:`, error);
-    await this.onError(error);
-    this.emit("error", error);
-    void this.stop();
+    try {
+      await this.onError(error);
+    } catch (hookError) {
+      logger.error("Async task error handler failed:", hookError);
+    }
+    if (this.listenerCount("error") > 0) this.emit("error", error);
+    await this.stop().catch((stopError) => logger.error("Async task cleanup failed:", stopError));
   }
 
   wait() {
     return new Promise<void>((resolve, reject) => {
       if (this._status === AsyncTask.STATUS_STOP) return resolve();
       if (this._status === AsyncTask.STATUS_ERROR) return reject(this.errorInfo);
-      this.once("stopped", resolve);
-      this.once("error", reject);
+      const cleanup = () => {
+        this.removeListener("stopped", onStopped);
+        this.removeListener("error", onError);
+      };
+      const onStopped = () => {
+        cleanup();
+        if (this._status === AsyncTask.STATUS_ERROR) reject(this.errorInfo);
+        else resolve();
+      };
+      const onError = (error: Error) => {
+        cleanup();
+        reject(error);
+      };
+      this.once("stopped", onStopped);
+      this.once("error", onError);
     });
   }
 
@@ -80,9 +104,9 @@ export class TaskCenter {
 
   static addTask(task: IAsyncTask) {
     this.tasks.push(task);
-    void task.start();
     task.on("stopped", () => this.onTaskStopped(task));
     task.on("error", () => this.onTaskError(task));
+    void task.start().catch(() => {});
   }
 
   static onTaskStopped(task: IAsyncTask) {
@@ -94,7 +118,9 @@ export class TaskCenter {
   }
 
   static getTask(taskId: string, type?: string) {
-    return this.tasks.find((task) => task.taskId === taskId && (type == null || task.type === type));
+    return this.tasks.find(
+      (task) => task.taskId === taskId && (type == null || task.type === type)
+    );
   }
 
   static getTasks(type?: string) {

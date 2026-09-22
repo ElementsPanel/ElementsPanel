@@ -35,38 +35,50 @@ export default class RemoteRequest {
     if (!this.rService.socket.connected && !force)
       throw new Error($t("TXT_CODE_7c650d80") + ` IP: ${this.rService.config.ip}`);
 
+    const service = this.rService;
+    const socket = this.rService.socket;
+    const disconnectedMessage = $t("TXT_CODE_7c650d80") + ` IP: ${service.config.ip}`;
+    const timeoutMessage = [$t("TXT_CODE_bd99b64e"), service.config.ip].join(" ");
     return new Promise((resolve, reject) => {
-      let countdownTask: NodeJS.Timeout;
+      let countdownTask: NodeJS.Timeout | undefined;
       const uuid = [v4(), new Date().getTime()].join("");
       const protocolData: IRequestPacket = { uuid, data };
 
+      const cleanup = () => {
+        if (countdownTask) clearTimeout(countdownTask);
+        socket.removeListener(event, fn);
+        socket.removeListener("disconnect", disconnected);
+        service.pendingRequests.delete(disconnected);
+      };
+      const disconnected = () => {
+        cleanup();
+        reject(new RemoteError(disconnectedMessage));
+      };
       const fn = (msg: IPacket) => {
-        if (msg.uuid === uuid) {
-          if (countdownTask) clearTimeout(countdownTask);
-          this.rService?.socket?.removeListener(event, fn);
+        if (msg && msg.uuid === uuid) {
+          cleanup();
           if (msg.status == RemoteService.STATUS_OK) resolve(msg.data);
-          else if (msg.data.err) {
-            reject(new RemoteError(msg.data.err));
-          } else {
-            reject(new RemoteError(msg.data));
-          }
+          else reject(new RemoteError(String(msg.data?.err ?? msg.data ?? "Remote request failed")));
         }
       };
 
       if (timeout) {
         countdownTask = setTimeout(() => {
-          this.rService?.socket?.removeListener(event, fn);
-          reject(
-            new RemoteRequestTimeoutError(
-              [$t("TXT_CODE_bd99b64e"), this.rService?.config.ip].join(" ")
-            )
-          );
+          cleanup();
+          reject(new RemoteRequestTimeoutError(timeoutMessage));
         }, timeout);
       }
 
-      this.rService?.socket?.on(event, fn);
+      socket.on(event, fn);
+      socket.on("disconnect", disconnected);
+      service.pendingRequests.add(disconnected);
       // send command
-      this.rService?.emit(event, protocolData);
+      try {
+        socket.emit(event, protocolData);
+      } catch (error) {
+        cleanup();
+        reject(error);
+      }
     });
   }
 }

@@ -65,7 +65,8 @@ const cancel = async () => {
 
 const submit = async () => {
   try {
-    await formRef.value.validate();
+    const result = await formRef.value?.validate();
+    if (!result?.valid) return reportErrorMsg(t("TXT_CODE_d6c5a7f8"));
   } catch (error: any) {
     return reportErrorMsg(t("TXT_CODE_d6c5a7f8"));
   }

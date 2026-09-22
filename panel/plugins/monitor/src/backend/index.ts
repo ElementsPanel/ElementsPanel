@@ -96,9 +96,10 @@ export function apply(ctx: PanelPluginContext) {
     const daemonId = String(requestCtx.query?.daemonId ?? "");
     const limit = Number(requestCtx.query?.limit ?? 50);
     if (!instanceId || !daemonId) return requestCtx.throw(400, "instanceId and daemonId are required.");
-    if (!Number.isFinite(limit) || limit <= 0 || limit > 200) {
+    if (!Number.isInteger(limit) || limit <= 0 || limit > 200) {
       return requestCtx.throw(400, "Invalid limit value. It must be a number between 1 and 200.");
     }
+    if (!ctx.identity.canAccessInstance(requestCtx, daemonId, instanceId)) requestCtx.throw(403);
     requestCtx.body = await operations.getByInstance(instanceId, daemonId, limit);
   });
 
@@ -107,6 +108,7 @@ export function apply(ctx: PanelPluginContext) {
     const instanceId = String(body.instanceId ?? "");
     const daemonId = String(body.daemonId ?? "");
     if (!instanceId || !daemonId) return requestCtx.throw(400, "instanceId and daemonId are required.");
+    if (!ctx.identity.canAccessInstance(requestCtx, daemonId, instanceId)) requestCtx.throw(403);
     operations.error("instance_crash", {
       daemon_id: daemonId,
       instance_id: instanceId,
@@ -123,6 +125,7 @@ export function apply(ctx: PanelPluginContext) {
     const instanceId = String(body.instanceId ?? "");
     const daemonId = String(body.daemonId ?? "");
     if (!instanceId || !daemonId) return requestCtx.throw(400, "instanceId and daemonId are required.");
+    if (!ctx.identity.canAccessInstance(requestCtx, daemonId, instanceId)) requestCtx.throw(403);
     operations.log("instance_auto_restart", {
       daemon_id: daemonId,
       instance_id: instanceId,
@@ -140,7 +143,7 @@ export function apply(ctx: PanelPluginContext) {
     ctx.middleware.permission({ level: ctx.roles.ADMIN }),
     async (requestCtx) => {
       const limit = Number(requestCtx.query?.limit ?? 20);
-      if (!Number.isFinite(limit) || limit <= 0 || limit > 200) {
+      if (!Number.isInteger(limit) || limit <= 0 || limit > 200) {
         return requestCtx.throw(400, "Invalid limit value. It must be a number between 1 and 200.");
       }
       requestCtx.body = await operations.get(limit);

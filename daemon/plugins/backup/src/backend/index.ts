@@ -3,12 +3,23 @@ import { spawn } from "child_process";
 import fs from "fs-extra";
 import os from "os";
 import path from "path";
+import { pipeline } from "stream/promises";
 import { v4 } from "uuid";
 import type { DaemonPluginContext } from "../../../../src/plugin";
 type InstanceEntity = any;
 import { localeMessages } from "../i18n";
 
-export const inject = ["i18n", "protocol", "instances", "tasks", "schedules", "features", "archive", "settings", "settingsForm"];
+export const inject = [
+  "i18n",
+  "protocol",
+  "instances",
+  "tasks",
+  "schedules",
+  "features",
+  "archive",
+  "settings",
+  "settingsForm"
+];
 
 export function apply(ctx: DaemonPluginContext) {
   ctx.i18n.define(localeMessages);
@@ -76,8 +87,13 @@ export function apply(ctx: DaemonPluginContext) {
   });
 
   const { AsyncTask, Center: TaskCenter } = ctx.tasks;
-  const { GitignoreMatcher, decompressWithProgress, check7zipStatus, sevenZipPath, zipTimeoutSeconds } =
-    ctx.archive;
+  const {
+    GitignoreMatcher,
+    decompressWithProgress,
+    check7zipStatus,
+    sevenZipPath,
+    zipTimeoutSeconds
+  } = ctx.archive;
   const Instance = ctx.instances.Instance;
   const t = ctx.i18n.$t;
   const protocol = ctx.protocol;
@@ -90,7 +106,9 @@ export function apply(ctx: DaemonPluginContext) {
 
   const getBackupDirPath = (instanceUuid: string) =>
     path.join(
-      path.normalize(ctx.settings.config.instanceBackupPath || path.join(process.cwd(), "data/backups")),
+      path.normalize(
+        ctx.settings.config.instanceBackupPath || path.join(process.cwd(), "data/backups")
+      ),
       instanceUuid
     );
 
@@ -142,7 +160,11 @@ export function apply(ctx: DaemonPluginContext) {
     }
 
     async onStart() {
+      let ownsBusyState = false;
       try {
+        if (this.instance.status() === Instance.STATUS_BUSY) {
+          throw new Error(t("TXT_CODE_instanceConf.instanceBusy"));
+        }
         const budget = getBackupBudget(await listBackupFiles(this.instance.instanceUuid));
         if (budget.exceeded) {
           throw new Error(
@@ -157,7 +179,9 @@ export function apply(ctx: DaemonPluginContext) {
         this.instance.println("INFO", t("TXT_CODE_INSTANCE_BACKUP_START"));
 
         const configuredPath = ctx.settings.config.instanceBackupPath;
-        this.backupPath = path.normalize(configuredPath || path.join(process.cwd(), "data/backups"));
+        this.backupPath = path.normalize(
+          configuredPath || path.join(process.cwd(), "data/backups")
+        );
         await fs.ensureDir(this.backupPath);
 
         if (this.instance.status() !== Instance.STATUS_STOP) {
@@ -174,6 +198,7 @@ export function apply(ctx: DaemonPluginContext) {
         }
 
         this.instance.status(Instance.STATUS_BUSY);
+        ownsBusyState = true;
         this.instance.println("INFO", t("TXT_CODE_INSTANCE_BACKUP_COMPRESSING"));
 
         const now = new Date();
@@ -227,6 +252,8 @@ export function apply(ctx: DaemonPluginContext) {
           const entries = await fs.readdir(dir, { withFileTypes: true });
           for (const entry of entries) {
             const fullPath = path.join(dir, entry.name);
+            // A backup directory inside the instance must not back up itself.
+            if (path.resolve(fullPath) === path.resolve(instanceBackupDir)) continue;
             const relPath = path.join(relativePath, entry.name);
             if (entry.isDirectory()) {
               let dirWhitelisted = whitelistedParent;
@@ -290,66 +317,72 @@ export function apply(ctx: DaemonPluginContext) {
               allFiles.map((file) => file.filePath.replace(/\\/g, "/")).join("\n"),
               "utf8"
             );
-            const result = await new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
-              const child = spawn(
-                sevenZipPath,
-                [
-                  "a",
-                  absoluteTargetArchivePath,
-                  "-t7z",
-                  `-mx=${compressionLevel}`,
-                  "-scsUTF-8",
-                  "-spd",
-                  "-bsp1",
-                  `@${listFilePath}`
-                ],
-                { cwd: instanceCwd, windowsHide: true }
-              );
-              let stdout = "";
-              let stderr = "";
-              let progressOutput = "";
-              let settled = false;
-              const timeout = setTimeout(() => {
-                child.kill();
-                if (!settled) {
-                  settled = true;
-                  reject(new Error(t("TXT_CODE_1d1ec400")));
-                }
-              }, zipTimeoutSeconds * 1000);
-              const consume = (chunk: Buffer, isStderr: boolean) => {
-                const text = chunk.toString();
-                if (isStderr) {
-                  stderr += text;
-                } else {
-                  stdout += text;
-                  progressOutput = `${progressOutput}${text}`.slice(-128);
-                  const matches = progressOutput.match(/(?:^|\D)(\d{1,3})%/g) || [];
-                  for (const match of matches) {
-                    const percent = Number(match.match(/\d+/)?.[0]);
-                    if (Number.isFinite(percent)) printProgress(percent);
+            const result = await new Promise<{ stdout: string; stderr: string }>(
+              (resolve, reject) => {
+                const child = spawn(
+                  sevenZipPath,
+                  [
+                    "a",
+                    absoluteTargetArchivePath,
+                    "-t7z",
+                    `-mx=${compressionLevel}`,
+                    "-scsUTF-8",
+                    "-spd",
+                    "-bsp1",
+                    `@${listFilePath}`
+                  ],
+                  { cwd: instanceCwd, windowsHide: true }
+                );
+                let stdout = "";
+                let stderr = "";
+                let progressOutput = "";
+                let settled = false;
+                const timeout = setTimeout(() => {
+                  child.kill();
+                  if (!settled) {
+                    settled = true;
+                    reject(new Error(t("TXT_CODE_1d1ec400")));
                   }
-                  const lastPercentIndex = progressOutput.lastIndexOf("%");
-                  if (lastPercentIndex >= 0) progressOutput = progressOutput.slice(lastPercentIndex + 1);
-                }
-              };
-              printProgress(0);
-              child.stdout.on("data", (chunk: Buffer) => consume(chunk, false));
-              child.stderr.on("data", (chunk: Buffer) => consume(chunk, true));
-              child.on("error", (error) => {
-                clearTimeout(timeout);
-                if (!settled) {
+                }, zipTimeoutSeconds * 1000);
+                const consume = (chunk: Buffer, isStderr: boolean) => {
+                  const text = chunk.toString();
+                  if (isStderr) {
+                    stderr += text;
+                  } else {
+                    stdout += text;
+                    progressOutput = `${progressOutput}${text}`.slice(-128);
+                    const matches = progressOutput.match(/(?:^|\D)(\d{1,3})%/g) || [];
+                    for (const match of matches) {
+                      const percent = Number(match.match(/\d+/)?.[0]);
+                      if (Number.isFinite(percent)) printProgress(percent);
+                    }
+                    const lastPercentIndex = progressOutput.lastIndexOf("%");
+                    if (lastPercentIndex >= 0)
+                      progressOutput = progressOutput.slice(lastPercentIndex + 1);
+                  }
+                };
+                printProgress(0);
+                child.stdout.on("data", (chunk: Buffer) => consume(chunk, false));
+                child.stderr.on("data", (chunk: Buffer) => consume(chunk, true));
+                child.on("error", (error) => {
+                  clearTimeout(timeout);
+                  if (!settled) {
+                    settled = true;
+                    reject(error);
+                  }
+                });
+                child.on("close", (code) => {
+                  clearTimeout(timeout);
+                  if (settled) return;
                   settled = true;
-                  reject(error);
-                }
-              });
-              child.on("close", (code) => {
-                clearTimeout(timeout);
-                if (settled) return;
-                settled = true;
-                if (code === 0) resolve({ stdout, stderr });
-                else reject(new Error(`${stdout}\n${stderr}`.trim() || `7-Zip exited with code ${code}`));
-              });
-            });
+                  if (code === 0) resolve({ stdout, stderr });
+                  else
+                    reject(
+                      new Error(`${stdout}\n${stderr}`.trim() || `7-Zip exited with code ${code}`)
+                    );
+                });
+              }
+            );
             const output = `${result.stdout}\n${result.stderr}`;
             const archiveStat = await fs.stat(absoluteTargetArchivePath).catch(() => null);
             if (!archiveStat?.isFile() || archiveStat.size === 0) {
@@ -368,7 +401,6 @@ export function apply(ctx: DaemonPluginContext) {
             backupFormat === "tar.gz"
               ? archiver("tar", { gzip: true, gzipOptions: { level: compressionLevel } })
               : archiver("zip", { zlib: { level: compressionLevel } });
-          archive.pipe(output);
           for (const file of allFiles) {
             archive.file(path.join(instanceCwd, file.filePath), { name: file.filePath });
           }
@@ -376,18 +408,17 @@ export function apply(ctx: DaemonPluginContext) {
             const processedBytes = archive.pointer();
             printProgress(totalSize > 0 ? (processedBytes / totalSize) * 100 : 0);
           }, 200);
-          await new Promise<void>((resolve, reject) => {
-            output.on("close", () => {
-              clearInterval(progressInterval);
-              printProgress(100);
-              resolve();
-            });
-            archive.on("error", (err) => {
-              clearInterval(progressInterval);
-              reject(err);
-            });
-            archive.finalize();
-          });
+          try {
+            await Promise.all([pipeline(archive, output), archive.finalize()]);
+            printProgress(100);
+          } catch (error) {
+            archive.abort();
+            output.destroy();
+            await fs.remove(targetArchivePath).catch(() => {});
+            throw error;
+          } finally {
+            clearInterval(progressInterval);
+          }
         }
 
         this.instance.print("\n");
@@ -395,7 +426,9 @@ export function apply(ctx: DaemonPluginContext) {
           "INFO",
           t("TXT_CODE_INSTANCE_BACKUP_SUCCESS", { name: this.backupFileName })
         );
-        logger.info(`Instance backup success: ${this.instance.config.nickname} -> ${targetArchivePath}`);
+        logger.info(
+          `Instance backup success: ${this.instance.config.nickname} -> ${targetArchivePath}`
+        );
         await this.stop();
       } catch (error: any) {
         this.instance.println(
@@ -404,7 +437,7 @@ export function apply(ctx: DaemonPluginContext) {
         );
         await this.error(error);
       } finally {
-        this.instance.status(Instance.STATUS_STOP);
+        if (ownsBusyState) this.instance.status(Instance.STATUS_STOP);
       }
     }
 
@@ -516,7 +549,10 @@ export function apply(ctx: DaemonPluginContext) {
         if (instance.status() === Instance.STATUS_BUSY) {
           throw new Error(t("TXT_CODE_instanceConf.instanceBusy"));
         }
-        if (instance.status() === Instance.STATUS_RUNNING || instance.status() === Instance.STATUS_STARTING) {
+        if (
+          instance.status() === Instance.STATUS_RUNNING ||
+          instance.status() === Instance.STATUS_STARTING
+        ) {
           instance.println("INFO", t("TXT_CODE_INSTANCE_BACKUP_STOPPING"));
           await instance.execPreset("stop");
         }
@@ -557,7 +593,10 @@ export function apply(ctx: DaemonPluginContext) {
         } catch (error: any) {
           instance.print("\n");
           logger.error(t("TXT_CODE_INSTANCE_BACKUP_RESTORE_FAILED", { err: error.message }));
-          instance.println("ERROR", t("TXT_CODE_INSTANCE_BACKUP_RESTORE_FAILED", { err: error.message }));
+          instance.println(
+            "ERROR",
+            t("TXT_CODE_INSTANCE_BACKUP_RESTORE_FAILED", { err: error.message })
+          );
         } finally {
           instance.status(Instance.STATUS_STOP);
         }

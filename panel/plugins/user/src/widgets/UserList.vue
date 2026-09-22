@@ -3,7 +3,7 @@ import AppDialog from "@/components/AppDialog.vue";
 import PageToolbar from "@/components/PageToolbar.vue";
 import { t } from "@/lang/i18n";
 import { message } from "@/tools/vuetifyToast";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import {
   VBtn,
   VCard,
@@ -57,24 +57,41 @@ const roleItems = computed(() => [
   ...permissionItems.value.map((item) => ({ title: item.title, value: String(item.value) }))
 ]);
 
+let latestRequest = 0;
 const fetchData = async () => {
+  const request = ++latestRequest;
   operationForm.value.currentPage = Math.max(1, operationForm.value.currentPage);
-  const res = await execute({
-    params: {
-      userName: operationForm.value.name,
-      page: operationForm.value.currentPage,
-      page_size: operationForm.value.pageSize,
-      role: currentRole.value
+  try {
+    const res = await execute({
+      params: {
+        userName: operationForm.value.name || "",
+        page: operationForm.value.currentPage,
+        page_size: operationForm.value.pageSize,
+        role: currentRole.value
+      }
+    });
+    if (request !== latestRequest) return;
+    data.value = res.value;
+    total.value = res.value?.total ?? 0;
+    const maxPage = Math.max(1, Math.ceil(total.value / operationForm.value.pageSize));
+    if (operationForm.value.currentPage > maxPage) {
+      operationForm.value.currentPage = maxPage;
+      await fetchData();
     }
-  });
-  data.value = res.value;
-  total.value = res.value?.total ?? 0;
+  } catch (error: any) {
+    if (request === latestRequest) reportErrorMsg(error.message);
+  }
 };
 const reload = throttle(fetchData, 600);
 const search = throttle(async () => {
   operationForm.value.currentPage = 1;
   await fetchData();
 }, 600);
+onUnmounted(() => {
+  latestRequest++;
+  reload.cancel();
+  search.cancel();
+});
 const handleTableOptions = (options: { page: number; itemsPerPage: number }) => {
   operationForm.value.currentPage = options.page;
   operationForm.value.pageSize = options.itemsPerPage;
@@ -183,8 +200,9 @@ const handleEditUser = (user: BaseUserInfo) => {
   userDialogOpen.value = true;
 };
 const submitUser = async () => {
+  if (userDialogLoading.value) return;
   const result = await formRef.value?.validate();
-  if (result && !result.valid) return;
+  if (!result?.valid) return;
   try {
     userDialogLoading.value = true;
     if (isAddMode.value) {

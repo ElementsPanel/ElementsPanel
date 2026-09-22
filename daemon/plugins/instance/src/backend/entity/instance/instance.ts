@@ -111,6 +111,8 @@ export default class Instance extends EventEmitter {
 
   private outputLoopTask?: NodeJS.Timeout;
   private outputBuffer: CircularBuffer<string>;
+  private stopping?: Promise<void>;
+  private resourceCleanup?: Promise<void>;
 
   // Track whether the current stop was initiated by a user action (stop/kill command)
   private userRequestedStop = false;
@@ -353,19 +355,27 @@ export default class Instance extends EventEmitter {
   // function that must be executed after the instance starts
   // Trigger the open event and bind the data and exit events, etc.
   started(process: IInstanceProcess) {
-    this.config.lastDatetime = Date.now();
+    this.startTimestamp = this.config.lastDatetime = Date.now();
     this.userRequestedStop = false;
     const outputCode = this.config.terminalOption.pty ? "utf-8" : this.config.oe;
     process.on("data", (text: any) => {
       this.pushOutput(iconv.decode(text, outputCode));
     });
-    process.on("exit", (code: number) => this.stopped(code));
+    process.on("error", (error: Error) => {
+      if (this.process === process) this.println("ERROR", error.message ?? String(error));
+    });
+    process.once("exit", (code: number) => {
+      if (this.process !== process) return;
+      void this.stopped(code).catch((error) =>
+        logger.error(`Instance ${this.instanceUuid} failed to stop:`, error)
+      );
+    });
     this.process = process;
     this.instanceStatus = Instance.STATUS_RUNNING;
     this.emit("open", this);
 
     // start all lifecycle tasks
-    this.lifeCycleTaskManager.execLifeCycleTask(1);
+    void this.lifeCycleTaskManager.execLifeCycleTask(1);
     this.startOutputLoop();
   }
 
@@ -379,51 +389,57 @@ export default class Instance extends EventEmitter {
 
   // function that must be executed after the instance has been closed
   // trigger exit event
-  stopped(code = 0) {
-    // Close all lifecycle tasks
-    this.stopOutputLoop();
-    this.println("INFO", $t("TXT_CODE_70ce6fbb"));
-    this.releaseResources();
-    if (this.instanceStatus != Instance.STATUS_STOP) {
-      this.instanceStatus = Instance.STATUS_STOP;
-      this.startTimestamp = 0;
-      const isCrash = !this.userRequestedStop;
-      this.userRequestedStop = false;
-      this.emit("exit", { code, isCrash });
-      StorageSubsystem.store("InstanceConfig", this.instanceUuid, this.config);
-    }
-
-    this.lifeCycleTaskManager.execLifeCycleTask(0);
-
-    // If automatic restart is enabled, the startup operation is performed immediately
-    if (!this.config.eventTask.ignore && this.config.eventTask.autoRestart) {
-      const maxAutoRestartCount = this.config.eventTask.autoRestartMaxTimes;
-      if (maxAutoRestartCount == -1 || this.autoRestartCount < maxAutoRestartCount) {
-        this.execPreset("start")
-          .then(() => {
-            this.autoRestartCount++;
-            this.println($t("TXT_CODE_instanceConf.info"), $t("TXT_CODE_instanceConf.autoRestart"));
-            this.emit("autoRestarted", { count: this.autoRestartCount });
-          })
-          .catch((err) => {
-            this.println(
-              $t("TXT_CODE_instanceConf.error"),
-              $t("TXT_CODE_instanceConf.autoRestartErr", { err: err })
-            );
-          });
-      } else {
-        this.println($t("TXT_CODE_instanceConf.error"), $t("TXT_CODE_894b8e52"));
-      }
-    }
-
+  stopped(code = 0): Promise<void> {
+    if (this.stopping) return this.stopping;
+    if (this.instanceStatus === Instance.STATUS_STOP && !this.process) return Promise.resolve();
+    const stoppedQuickly = this.startTimestamp > 0 && Date.now() - this.startTimestamp < 2000;
+    const isCrash = !this.userRequestedStop;
+    const shouldRestart = !this.config.eventTask.ignore && this.config.eventTask.autoRestart;
+    this.instanceStatus = Instance.STATUS_STOPPING;
+    this.userRequestedStop = false;
     this.config.eventTask.ignore = false;
 
-    // Turn off the warning immediately after startup, usually the startup command is written incorrectly
-    const currentTimestamp = new Date().getTime();
-    const startThreshold = 2 * 1000;
-    if (currentTimestamp - this.startTimestamp < startThreshold) {
-      this.println("ERROR", $t("TXT_CODE_aae2918f"));
-    }
+    const operation = Promise.resolve().then(async () => {
+      this.stopOutputLoop();
+      this.println("INFO", $t("TXT_CODE_70ce6fbb"));
+      await this.releaseResources();
+      await this.lifeCycleTaskManager.execLifeCycleTask(0);
+      this.instanceStatus = Instance.STATUS_STOP;
+      this.startTimestamp = 0;
+      this.emit("exit", { code, isCrash });
+      try {
+        StorageSubsystem.store("InstanceConfig", this.instanceUuid, this.config);
+      } catch (error) {
+        logger.error(`Instance ${this.instanceUuid} failed to save its stopped state:`, error);
+      }
+      if (isCrash && stoppedQuickly) this.println("ERROR", $t("TXT_CODE_aae2918f"));
+
+      // Release this stop before a restarted process can emit its own exit.
+      this.stopping = undefined;
+      if (shouldRestart) {
+        const maxAutoRestartCount = this.config.eventTask.autoRestartMaxTimes;
+        if (maxAutoRestartCount === -1 || this.autoRestartCount < maxAutoRestartCount) {
+          this.execPreset("start")
+            .then(() => {
+              this.autoRestartCount++;
+              this.println($t("TXT_CODE_instanceConf.info"), $t("TXT_CODE_instanceConf.autoRestart"));
+              this.emit("autoRestarted", { count: this.autoRestartCount });
+            })
+            .catch((err) => {
+              this.println(
+                $t("TXT_CODE_instanceConf.error"),
+                $t("TXT_CODE_instanceConf.autoRestartErr", { err })
+              );
+            });
+        } else {
+          this.println($t("TXT_CODE_instanceConf.error"), $t("TXT_CODE_894b8e52"));
+        }
+      }
+    }).finally(() => {
+      if (this.stopping === operation) this.stopping = undefined;
+    });
+    this.stopping = operation;
+    return operation;
   }
 
   ignoreEventTaskOnce() {
@@ -450,15 +466,19 @@ export default class Instance extends EventEmitter {
   }
 
   // Release resources (mainly release process-related resources)
-  releaseResources() {
-    try {
-      this.process?.destroy();
-    } catch (error: any) {
-      logger.error(`Instance ${this.instanceUuid}, Release resources error: ${error}`);
-    } finally {
-      this.process = undefined;
-    }
-    this.resetInstanceRuntimeInfo();
+  releaseResources(): Promise<void> {
+    if (this.resourceCleanup) return this.resourceCleanup;
+    const process = this.process;
+    this.process = undefined;
+    const cleanup = Promise.resolve()
+      .then(() => process?.destroy())
+      .catch((error) => logger.error(`Instance ${this.instanceUuid}, Release resources error:`, error))
+      .then(() => { this.resetInstanceRuntimeInfo(); })
+      .finally(() => {
+        if (this.resourceCleanup === cleanup) this.resourceCleanup = undefined;
+      });
+    this.resourceCleanup = cleanup;
+    return cleanup;
   }
 
   resetInstanceRuntimeInfo() {
@@ -467,7 +487,7 @@ export default class Instance extends EventEmitter {
       currentPlayers: 0,
       maxPlayers: 0,
       version: "",
-      fileLock: 0,
+      fileLock: this.info.fileLock,
       playersChart: [],
       openFrpStatus: false,
       latency: 0,
@@ -476,11 +496,12 @@ export default class Instance extends EventEmitter {
   }
 
   // destroy this instance
-  destroy() {
-    if (this.process && this.process.pid) {
-      this.process.kill("SIGKILL");
-    }
-    this.process = undefined;
+  async destroy() {
+    this.ignoreEventTaskOnce();
+    this.stopOutputLoop();
+    await this.lifeCycleTaskManager.clearLifeCycleTask();
+    await this.releaseResources();
+    this.removeAllListeners();
   }
 
   fullTime() {

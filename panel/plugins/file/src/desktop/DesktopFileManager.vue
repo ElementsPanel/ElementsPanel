@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useFileManager } from "../hooks/useFileManager";
+import { usePolling } from "@/hooks/usePolling";
 import ArchivePreview from "@/components/ArchivePreview.vue";
 import { t } from "@/lang/i18n";
 import uploadService from "../services/uploadService";
@@ -17,6 +18,7 @@ import { VAlert, VBtn, VCard, VCardText, VCheckbox, VDataTableServer, VDialog, V
  * plugin's source tree for it.
  */
 const desktopVuetifyMode = true;
+let disposed = false;
 
 const props = defineProps<{
     instanceId: string;
@@ -139,10 +141,7 @@ watch(
     { immediate: true }
 );
 
-let task: ReturnType<typeof setInterval> | undefined;
-task = setInterval(async () => {
-    await getFileStatus();
-}, 3000);
+usePolling(getFileStatus, 3000);
 
 const opacity = ref(false);
 const handleDragover = (e: DragEvent) => {
@@ -189,18 +188,26 @@ const handleDrop = (e: DragEvent) => {
     };
 };
 
+interface OverwriteResult {
+    confirmed: boolean;
+    all: boolean;
+    overwrite: boolean;
+}
+
 const overwriteDialog = ref({
     show: false,
     count: 0,
     fileName: "",
     all: false,
     overwrite: false,
-    resolve: null as ((value: { confirmed: boolean; all: boolean; overwrite: boolean }) => void) | null
+    resolve: null as ((value: OverwriteResult) => void) | null
 });
 
 const createOverwriteHandler = () => {
     return (params: { count: number; fileName: string }) => {
-        return new Promise<{ confirmed: boolean; all: boolean; overwrite: boolean }>((resolve) => {
+        finishOverwrite(false, true);
+        if (disposed) return Promise.resolve({ confirmed: false, all: true, overwrite: false });
+        return new Promise<OverwriteResult>((resolve) => {
             overwriteDialog.value = {
                 show: true,
                 count: params.count,
@@ -224,27 +231,23 @@ const handleUploadConfirmCancel = () => {
     uploadConfirmDialog.value.show = false;
 };
 
-const handleOverwriteOk = () => {
-    if (overwriteDialog.value.resolve) {
-        overwriteDialog.value.resolve({
-            confirmed: true,
-            all: overwriteDialog.value.all,
-            overwrite: overwriteDialog.value.overwrite
-        });
-    }
+const finishOverwrite = (confirmed: boolean, cancelAll = false) => {
+    const resolve = overwriteDialog.value.resolve;
+    overwriteDialog.value.resolve = null;
     overwriteDialog.value.show = false;
+    resolve?.({
+        confirmed,
+        all: cancelAll || overwriteDialog.value.all,
+        overwrite: overwriteDialog.value.overwrite
+    });
 };
 
-const handleOverwriteCancel = () => {
-    if (overwriteDialog.value.resolve) {
-        overwriteDialog.value.resolve({
-            confirmed: false,
-            all: overwriteDialog.value.all,
-            overwrite: overwriteDialog.value.overwrite
-        });
-    }
-    overwriteDialog.value.show = false;
-};
+const handleOverwriteOk = () => finishOverwrite(true);
+const handleOverwriteCancel = () => finishOverwrite(false);
+
+watch(() => overwriteDialog.value.show, (visible) => {
+    if (!visible && overwriteDialog.value.resolve) handleOverwriteCancel();
+}, { flush: "sync" });
 
 const desktopFileInput = ref<HTMLInputElement | null>(null);
 const onDesktopFileInput = (event: Event) => {
@@ -721,7 +724,6 @@ onMounted(async () => {
     window.addEventListener('resize', updateWindowSize);
     window.addEventListener('blur', handleWindowBlur);
 
-    await getFileStatus();
     dialog.value.loading = true;
 
     if (currentTabs.value.length) {
@@ -732,6 +734,7 @@ onMounted(async () => {
         await getFileList(false);
     }
 
+    if (disposed) return;
     dialog.value.loading = false;
 
     document.addEventListener('mousemove', onTableMouseMove);
@@ -740,8 +743,9 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-    if (task) clearInterval(task);
-    task = undefined;
+    disposed = true;
+    finishOverwrite(false, true);
+    uploadConfirmDialog.value.files = null;
     finishDragSelection(false);
     if (dragSelectRafId !== null) {
         cancelAnimationFrame(dragSelectRafId);

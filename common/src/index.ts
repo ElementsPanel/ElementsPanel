@@ -24,6 +24,14 @@ export {
 } from "./typecheck";
 
 export { arrayUnique } from "./array";
+export {
+  MARKET_INSTALL_MARKER,
+  PluginPackageError,
+  pluginPackageDirectory,
+  writePluginPackage,
+  removePluginPackage
+} from "./plugin_package";
+export type { PluginInstallation, PluginPackageFile } from "./plugin_package";
 
 export {
   discoverPlugins,

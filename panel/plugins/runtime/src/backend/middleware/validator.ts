@@ -2,20 +2,24 @@ import Koa from "koa";
 
 // Type check
 function check(target: any, parameter: any) {
-  if (target) {
-    for (const key in parameter) {
+  if (target && typeof target === "object" && !Array.isArray(target)) {
+    for (const key of Object.keys(parameter)) {
       const typeVal = parameter[key];
 
       if (target[key] == null || target[key] === "")
         throw new Error(`Validator failed: "${key}" is required!`);
 
       if (typeVal === Number) {
+        if (!["string", "number"].includes(typeof target[key]) || String(target[key]).trim() === "")
+          throw new Error(`Validator failed: "${key}" is not a number`);
         target[key] = Number(target[key]);
-        if (isNaN(target[key])) throw new Error(`Validator failed: "${key}" is not a number`);
+        if (!Number.isFinite(target[key])) throw new Error(`Validator failed: "${key}" is not a number`);
         continue;
       }
 
       if (typeVal === String) {
+        if (!["string", "number", "boolean"].includes(typeof target[key]))
+          throw new Error(`Validator failed: "${key}" is not a string`);
         target[key] = String(target[key]);
         continue;
       }
@@ -53,7 +57,8 @@ function check(target: any, parameter: any) {
       }
 
       if (typeVal === Object) {
-        if (!target[key]) throw new Error(`Validator failed: "${key}" is not an object`);
+        if (typeof target[key] !== "object" || Array.isArray(target[key]))
+          throw new Error(`Validator failed: "${key}" is not an object`);
         continue;
       }
     }
@@ -70,15 +75,16 @@ interface IParam {
 
 // Entry function
 export default function (parameter: IParam) {
-  return async (ctx: Koa.ParameterizedContext, next: Function) => {
+  return async (ctx: Koa.ParameterizedContext, next: Koa.Next) => {
     try {
       parameter["params"] && check(ctx.params, parameter["params"]);
       parameter["query"] && check(ctx.query, parameter["query"]);
       parameter["body"] && check(ctx.request.body, parameter["body"]);
-      return await next();
     } catch (err: any) {
       ctx.status = 400;
       ctx.body = `${err.message || "Request parameters are incorrect"}`;
+      return;
     }
+    return await next();
   };
 }

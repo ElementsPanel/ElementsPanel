@@ -1,15 +1,18 @@
-import { ChildProcess, exec, execSync, SpawnOptionsWithoutStdio } from "child_process";
+import { ChildProcess, execFileSync, SpawnOptionsWithoutStdio } from "child_process";
 import os from "os";
 import child_process from "child_process";
 import path from "path";
 import EventEmitter from "events";
 import iconv from "iconv-lite";
+import nodeProcess from "process";
 
 export class StartError extends Error {}
 
 export class ProcessWrapper extends EventEmitter {
   public process?: ChildProcess;
   public pid?: number;
+  private lastExitCode?: number | null;
+  private completed = false;
 
   public errMsg = {
     timeoutErr: "task timeout!",
@@ -33,8 +36,20 @@ export class ProcessWrapper extends EventEmitter {
   }
 
   public start(): Promise<boolean> {
+    if (this.process) return Promise.reject(new Error("The process is already running"));
     return new Promise((resolve, reject) => {
-      let timeTask: NodeJS.Timeout;
+      const stdoutDecoder = iconv.decodeStream(this.code);
+      const stderrDecoder = iconv.decodeStream(this.code);
+      let timeTask: NodeJS.Timeout | undefined;
+      let settled = false;
+      let spawned = false;
+      const settle = (error?: Error) => {
+        if (settled) return;
+        settled = true;
+        if (timeTask) clearTimeout(timeTask);
+        if (error) reject(error);
+        else resolve(true);
+      };
       const subProcess = child_process.spawn(this.file, this.args, {
         stdio: "pipe",
         windowsHide: true,
@@ -43,31 +58,53 @@ export class ProcessWrapper extends EventEmitter {
       });
       this.process = subProcess;
       this.pid = subProcess.pid;
+      this.lastExitCode = undefined;
+      this.completed = false;
 
-      this.emit("start", subProcess.pid);
-      if (!subProcess || !subProcess.pid) return reject(new Error(this.errMsg.startErr));
+      const fail = (error: Error) => {
+        if (settled) return;
+        settle(error);
+        if (subProcess.pid && subProcess.exitCode === null && subProcess.signalCode === null) {
+          try {
+            killProcess(subProcess.pid, subProcess);
+          } catch (error) {
+            console.error("[ProcessWrapper kill error]", error);
+          }
+        }
+      };
 
-      subProcess.stdout.on("data", (text) => this.emit("data", iconv.decode(text, this.code)));
-      subProcess.stderr.on("data", (text) => this.emit("data", iconv.decode(text, this.code)));
-      subProcess.on("exit", (code) => {
-        try {
-          this.emit("exit", code);
-          this.destroy();
-        } catch (error: any) {}
-        if (timeTask) clearTimeout(timeTask);
-        if (code !== 0) return reject(new Error(this.errMsg.exitErr));
-        return resolve(true);
+      subProcess.once("spawn", () => {
+        spawned = true;
+        this.emit("start", subProcess.pid);
+      });
+      for (const [source, decoder] of [
+        [subProcess.stdout, stdoutDecoder],
+        [subProcess.stderr, stderrDecoder]
+      ] as const) {
+        decoder.on("data", (text) => this.emit("data", text));
+        decoder.on("error", fail);
+        source.on("error", fail);
+        source.pipe(decoder);
+      }
+      subProcess.stdin.on("error", fail);
+      subProcess.once("error", (error) => {
+        fail(new Error(`${spawned ? this.errMsg.exitErr : this.errMsg.startErr} ${error.message}`));
+      });
+      subProcess.once("exit", (code) => {
+        this.lastExitCode = code;
+        this.emit("exit", code);
+      });
+      // `close` follows the final stdout/stderr data and also follows a failed spawn.
+      subProcess.once("close", (code) => {
+        this.lastExitCode = code;
+        this.completed = true;
+        this.process = undefined;
+        settle(code === 0 ? undefined : new Error(this.errMsg.exitErr));
       });
 
-      // timeout, terminate the task
-      if (this.timeout) {
+      if (this.timeout > 0) {
         timeTask = setTimeout(() => {
-          if (subProcess?.pid && !subProcess.exitCode && subProcess.exitCode !== 0) {
-            killProcess(subProcess.pid, subProcess);
-            reject(new Error(this.errMsg.timeoutErr));
-          } else {
-            reject(new Error(this.errMsg.exitErr));
-          }
+          fail(new Error(this.errMsg.timeoutErr));
         }, 1000 * this.timeout);
       }
     });
@@ -86,36 +123,11 @@ export class ProcessWrapper extends EventEmitter {
   }
 
   public status() {
-    return !!this.process?.exitCode;
+    return this.completed;
   }
 
   public exitCode() {
-    return this.process?.exitCode;
-  }
-
-  private async destroy() {
-    try {
-      for (const n of this.eventNames()) this.removeAllListeners(n);
-      if (this.process?.stdout)
-        for (const eventName of this.process.stdout.eventNames())
-          this.process.stdout.removeAllListeners(eventName);
-      if (this.process?.stderr)
-        for (const eventName of this.process.stderr.eventNames())
-          this.process.stderr.removeAllListeners(eventName);
-      if (this.process)
-        for (const eventName of this.process.eventNames())
-          this.process.removeAllListeners(eventName);
-      this.process?.stdout?.destroy();
-      this.process?.stderr?.destroy();
-      if (this.process?.exitCode === null) {
-        this.process.kill("SIGTERM");
-        this.process.kill("SIGKILL");
-      }
-    } catch (error: any) {
-      console.log("[ProcessWrapper destroy() Error]", error);
-    } finally {
-      this.process = undefined;
-    }
+    return this.process?.exitCode ?? this.lastExitCode;
   }
 }
 
@@ -124,17 +136,17 @@ export function killProcess(
   process: { kill(signal?: any): any },
   signal?: any
 ) {
+  const numericPid = Number(pid);
+  if (!Number.isSafeInteger(numericPid) || numericPid <= 0) {
+    throw new Error("Invalid process ID");
+  }
   try {
     if (os.platform() === "win32") {
-      execSync(`taskkill /PID ${pid} /T /F`);
+      execFileSync("taskkill", ["/PID", String(numericPid), "/T", "/F"], { windowsHide: true });
       return true;
     }
-    if (os.platform() === "linux") {
-      execSync(`kill -s 9 ${pid}`);
-      return true;
-    }
+    return nodeProcess.kill(numericPid, signal || "SIGKILL");
   } catch (err) {
     return signal ? process.kill(signal) : process.kill("SIGKILL");
   }
-  return signal ? process.kill(signal) : process.kill("SIGKILL");
 }

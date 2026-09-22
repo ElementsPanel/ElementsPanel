@@ -45,28 +45,7 @@ function instanceComponents() {
 }
 
 export async function useSelectInstances(data: UserInstance[] = []) {
-  return await useMountComponent({
-    data,
-    title: t("TXT_CODE_8145d25a"),
-    columns: [
-      {
-        align: "center",
-        title: t("TXT_CODE_f70badb9"),
-        dataIndex: "nickname",
-        key: "instanceUuid"
-      },
-      {
-        align: "center",
-        title: t("TXT_CODE_5def0cbe"),
-        key: "safe"
-      },
-      {
-        align: "center",
-        title: t("TXT_CODE_fe731dfc"),
-        key: "operation"
-      }
-    ]
-  }).mount<UserInstance[]>(instanceComponents().SelectInstances);
+  return useMountComponent({ data }).mount<UserInstance[]>(instanceComponents().SelectInstances);
 }
 
 export async function useCmdAssistantDialog() {
@@ -74,102 +53,87 @@ export async function useCmdAssistantDialog() {
 }
 
 export async function usePortEditDialog(data: PortConfigItem[] = []) {
-  return (
-    (await useMountComponent({
-      data,
-      textarea: false
-    }).mount<PortConfigItem[]>(instanceComponents().DockerPortDialog)) || []
-  );
+  return useMountComponent({ data }).mount<PortConfigItem[]>(instanceComponents().DockerPortDialog);
 }
 
 export async function useVolumeEditDialog(data: DockerConfigItem[] = []) {
-  return (
-    (await useMountComponent({
-      data,
-      subTitle: t("TXT_CODE_6c232c9c"),
-      title: t("TXT_CODE_820ebc92"),
-      columns: [
-        {
-          align: "center",
-          dataIndex: "host",
-          title: t("TXT_CODE_681aaeb9")
-        },
-        {
-          align: "center",
-          dataIndex: "container",
-          title: t("TXT_CODE_30258325")
-        }
-      ],
-      textarea: true
-    }).mount<DockerConfigItem[]>(KvOptionsDialogVue)) || []
-  );
+  return useMountComponent({
+    data,
+    subTitle: t("TXT_CODE_6c232c9c"),
+    title: t("TXT_CODE_820ebc92"),
+    columns: [
+      {
+        align: "center",
+        dataIndex: "host",
+        title: t("TXT_CODE_681aaeb9")
+      },
+      {
+        align: "center",
+        dataIndex: "container",
+        title: t("TXT_CODE_30258325")
+      }
+    ],
+    textarea: true
+  }).mount<DockerConfigItem[]>(KvOptionsDialogVue);
 }
 
 export async function useDockerEnvEditDialog(data: DockerEnvItem[] = []) {
-  return (
-    (await useMountComponent({
-      data,
-      title: t("TXT_CODE_90a9d317"),
-      columns: [
-        {
-          align: "center",
-          dataIndex: "label",
-          title: t("TXT_CODE_a42984e")
-        },
-        {
-          align: "center",
-          dataIndex: "value",
-          title: t("TXT_CODE_115e8a25")
-        }
-      ],
-      textarea: true
-    }).mount<DockerEnvItem[]>(KvOptionsDialogVue)) || []
-  );
+  return useMountComponent({
+    data,
+    title: t("TXT_CODE_90a9d317"),
+    columns: [
+      {
+        align: "center",
+        dataIndex: "label",
+        title: t("TXT_CODE_a42984e")
+      },
+      {
+        align: "center",
+        dataIndex: "value",
+        title: t("TXT_CODE_115e8a25")
+      }
+    ],
+    textarea: true
+  }).mount<DockerEnvItem[]>(KvOptionsDialogVue);
 }
 
 export async function useDockerLabelEditDialog(data: DockerLabelItem[] = []) {
-  return (
-    (await useMountComponent({
-      data,
-      title: t("TXT_CODE_g1c43s2h"),
-      subTitle: t("TXT_CODE_MimBB1Ea"),
-      columns: [
-        {
-          align: "center",
-          dataIndex: "label",
-          title: t("TXT_CODE_a42984e")
-        },
-        {
-          align: "center",
-          dataIndex: "value",
-          title: t("TXT_CODE_115e8a25")
-        }
-      ],
-      textarea: true
-    }).mount<DockerLabelItem[]>(KvOptionsDialogVue)) || []
-  );
+  return useMountComponent({
+    data,
+    title: t("TXT_CODE_g1c43s2h"),
+    subTitle: t("TXT_CODE_MimBB1Ea"),
+    columns: [
+      {
+        align: "center",
+        dataIndex: "label",
+        title: t("TXT_CODE_a42984e")
+      },
+      {
+        align: "center",
+        dataIndex: "value",
+        title: t("TXT_CODE_115e8a25")
+      }
+    ],
+    textarea: true
+  }).mount<DockerLabelItem[]>(KvOptionsDialogVue);
 }
 
 export async function useDockerCapabilityEditDialog(data: DockerCapabilityItem[] = []) {
-  return (
-    (await useMountComponent({
-      data,
-      title: t("TXT_CODE_bbbd4133"),
-      subTitle: t("TXT_CODE_377319df"),
-      textarea: false
-    }).mount<DockerCapabilityItem[]>(instanceComponents().DockerCapabilityDialog)) || []
-  );
+  return useMountComponent({
+    data,
+    title: t("TXT_CODE_bbbd4133"),
+    subTitle: t("TXT_CODE_377319df"),
+    textarea: false
+  }).mount<DockerCapabilityItem[]>(instanceComponents().DockerCapabilityDialog);
 }
 
 export async function useDockerDeviceEditDialog(data: DockerDeviceItem[] = []) {
-  return (
-    (await useMountComponent({
-      data,
-      title: t("TXT_CODE_b3a60c78"),
-      subTitle: t("TXT_CODE_b6e18b87"),
-      textarea: false
-    }).mount<DockerDeviceItem[]>(instanceComponents().DockerDeviceDialog)) || []
-  );
+  return useMountComponent({
+    data,
+    title: t("TXT_CODE_b3a60c78"),
+    subTitle: t("TXT_CODE_b6e18b87"),
+    textarea: false
+  }).mount<DockerDeviceItem[]>(instanceComponents().DockerDeviceDialog);
 }
 
 export async function openLoadingDialog(title: string, text: string, subTitle?: string) {

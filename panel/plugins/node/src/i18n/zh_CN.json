@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_NODE_DOCKERFILE_EDITOR": "编辑 Dockerfile",
   "TXT_CODE_3d94ea16": "节点 Socket 异常，请尝试在节点管理中重新连接！",
   "TXT_CODE_7c650d80": "节点连接失败，请联系管理员检查远程节点状态！",
   "TXT_CODE_DESKTOP_NODES": "节点管理",

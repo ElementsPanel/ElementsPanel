@@ -149,7 +149,7 @@ routerApp.on("instance/detail", async (ctx, data) => {
     try {
       // Parts that may be wrong due to file permissions, avoid affecting the acquisition of the entire configuration
       processInfo = await instance.forceExec(new ProcessInfoCommand());
-    } catch (err: any) { }
+    } catch (err: any) {}
     protocol.msg(ctx, "instance/detail", {
       instanceUuid: instance.instanceUuid,
       started: instance.startCount,
@@ -221,112 +221,58 @@ routerApp.on("instance/forward", (ctx, data) => {
   }
 });
 
-// open the instance
-routerApp.on("instance/open", async (ctx, data) => {
-  const disableResponse = data.disableResponse;
-  const instances = [];
-  for (const instanceUuid of data.instanceUuids) {
-    const instance = InstanceSubsystem.getInstance(instanceUuid);
-    instances.push({
-      instanceUuid: instanceUuid,
-      nickname: instance?.config.nickname
-    });
+// One RPC gets one response, after all requested operations have completed.
+for (const [operation, command] of [
+  ["open", "start"],
+  ["stop", "stop"],
+  ["restart", "restart"],
+  ["kill", "kill"]
+] as const) {
+  const event = `instance/${operation}`;
+  routerApp.on(event, async (ctx, data) => {
+    const instances: { instanceUuid: string; nickname: string }[] = [];
+    const errors: { instanceUuid: string; error: string }[] = [];
     try {
-      if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
-      await instance.execPreset("start");
-      instance.autoRestartCount = 0;
-      if (!disableResponse) protocol.msg(ctx, "instance/open", { instanceUuid, instances });
-    } catch (err: any) {
-      if (!disableResponse) {
-        logger.error(
-          $t("TXT_CODE_Instance_router.openInstanceErr", { instanceUuid: instanceUuid }),
-          err
-        );
-        protocol.error(ctx, "instance/open", {
-          instanceUuid: instanceUuid,
-          nickname: instance?.config.nickname,
-          err: err.message
+      if (
+        !Array.isArray(data.instanceUuids) ||
+        !data.instanceUuids.length ||
+        data.instanceUuids.some((id: unknown) => typeof id !== "string" || !id)
+      ) {
+        throw new Error("Invalid instance references");
+      }
+      for (const instanceUuid of new Set<string>(data.instanceUuids)) {
+        try {
+          const instance = InstanceSubsystem.getInstance(instanceUuid);
+          if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+          await instance.execPreset(command);
+          if (command === "start") instance.autoRestartCount = 0;
+          instances.push({ instanceUuid, nickname: instance.config.nickname });
+        } catch (error) {
+          errors.push({
+            instanceUuid,
+            error: error instanceof Error ? error.message : String(error)
+          });
+        }
+      }
+      if (errors.length) {
+        throw new Error(errors.map((item) => `${item.instanceUuid}: ${item.error}`).join("\n"));
+      }
+      if (!data.disableResponse) {
+        protocol.msg(ctx, event, { instanceUuid: instances[0]?.instanceUuid, instances });
+      }
+    } catch (error) {
+      logger.warn(`${event} failed:`, error);
+      if (!data.disableResponse) {
+        protocol.error(ctx, event, {
+          instanceUuid: errors[0]?.instanceUuid,
+          instances,
+          errors,
+          err: error instanceof Error ? error.message : String(error)
         });
       }
     }
-  }
-});
-
-// close the instance
-routerApp.on("instance/stop", async (ctx, data) => {
-  const disableResponse = data.disableResponse;
-  const instances = [];
-  for (const instanceUuid of data.instanceUuids) {
-    const instance = InstanceSubsystem.getInstance(instanceUuid);
-    instances.push({
-      instanceUuid: instanceUuid,
-      nickname: instance?.config.nickname
-    });
-    try {
-      if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
-      await instance.execPreset("stop");
-      //Note: Removing this reply will cause the front-end response to be slow, because the front-end will wait for the panel-side message to be forwarded
-      if (!disableResponse) protocol.msg(ctx, "instance/stop", { instanceUuid, instances });
-    } catch (err: any) {
-      if (!disableResponse)
-        protocol.error(ctx, "instance/stop", {
-          instanceUuid: instanceUuid,
-          nickname: instance?.config.nickname,
-          err: err.message
-        });
-    }
-  }
-});
-
-// restart the instance
-routerApp.on("instance/restart", async (ctx, data) => {
-  const disableResponse = data.disableResponse;
-  const instances = [];
-  for (const instanceUuid of data.instanceUuids) {
-    const instance = InstanceSubsystem.getInstance(instanceUuid);
-    instances.push({
-      instanceUuid: instanceUuid,
-      nickname: instance?.config.nickname
-    });
-    try {
-      if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
-      await instance.execPreset("restart");
-      if (!disableResponse) protocol.msg(ctx, "instance/restart", { instanceUuid, instances });
-    } catch (err: any) {
-      if (!disableResponse)
-        protocol.error(ctx, "instance/restart", {
-          instanceUuid: instanceUuid,
-          nickname: instance?.config.nickname,
-          err: err.message
-        });
-    }
-  }
-});
-
-// terminate instance method
-routerApp.on("instance/kill", async (ctx, data) => {
-  const disableResponse = data.disableResponse;
-  const instances = [];
-  for (const instanceUuid of data.instanceUuids) {
-    const instance = InstanceSubsystem.getInstance(instanceUuid);
-    instances.push({
-      instanceUuid: instanceUuid,
-      nickname: instance?.config.nickname
-    });
-    if (!instance) continue;
-    try {
-      await instance.execPreset("kill");
-      if (!disableResponse) protocol.msg(ctx, "instance/kill", { instanceUuid, instances });
-    } catch (err: any) {
-      if (!disableResponse)
-        protocol.error(ctx, "instance/kill", {
-          instanceUuid: instanceUuid,
-          nickname: instance?.config.nickname,
-          err: err.message
-        });
-    }
-  }
-});
+  });
+}
 
 // Send a command to the application instance
 routerApp.on("instance/command", async (ctx, data) => {
@@ -345,22 +291,30 @@ routerApp.on("instance/command", async (ctx, data) => {
 });
 
 // delete instance
-routerApp.on("instance/delete", (ctx, data) => {
+routerApp.on("instance/delete", async (ctx, data) => {
   const instanceUuids = data.instanceUuids;
   const deleteFile = data.deleteFile;
   const instances = [];
+  const errors = [];
   for (const instanceUuid of instanceUuids) {
     try {
       const instance = InstanceSubsystem.getInstance(instanceUuid);
       if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+      await InstanceSubsystem.removeInstance(instanceUuid, deleteFile);
       instances.push({
         instanceUuid: instance.instanceUuid,
         nickname: instance.config.nickname
       });
-      InstanceSubsystem.removeInstance(instanceUuid, deleteFile);
-    } catch (err: any) { }
+    } catch (err: any) {
+      errors.push({ instanceUuid, error: err.message });
+      logger.warn(`Cannot delete instance ${instanceUuid}:`, err);
+    }
   }
-  protocol.msg(ctx, "instance/delete", { instanceUuids, instances });
+  protocol.msg(ctx, "instance/delete", {
+    instanceUuids: instances.map((instance) => instance.instanceUuid),
+    instances,
+    errors
+  });
 });
 
 // perform complex asynchronous tasks
@@ -383,7 +337,7 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
   if (taskName === "install_instance" && instance) {
     instance
       .execPreset("install", parameter)
-      .then(() => { })
+      .then(() => {})
       .catch((err) => {
         logger.error(
           $t("TXT_CODE_Instance_router.performTasksErr", {
@@ -400,7 +354,7 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
   if (taskName === "update" && instance) {
     instance
       .execPreset("update", parameter)
-      .then(() => { })
+      .then(() => {})
       .catch((err) => {
         logger.error(
           $t("TXT_CODE_Instance_router.performTasksErr", {
@@ -459,8 +413,8 @@ routerApp.on("instance/stop_asynchronous", (ctx, data) => {
   if (task && task.stop) {
     task
       .stop(instance)
-      .then(() => { })
-      .catch((err) => { });
+      .then(() => {})
+      .catch((err) => {});
   } else {
     return protocol.error(
       ctx,

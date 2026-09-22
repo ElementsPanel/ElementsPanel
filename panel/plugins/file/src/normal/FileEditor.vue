@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import Editor from "@/components/Editor.vue";
-import { useKeyboardEvents } from "@/hooks/useKeyboardEvents";
 import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
 import { fileContent } from "../api";
 import { reportErrorMsg } from "@/tools/validator";
 import { message } from "@/tools/vuetifyToast";
-import { computed, ref } from "vue";
+import { onUnmounted, ref } from "vue";
 import {
   VBtn,
   VCard,
@@ -26,54 +25,51 @@ const editorText = ref("");
 const fileName = ref("");
 const path = ref("");
 const fullScreen = ref(false);
+const editorKey = ref(0);
+const isLoading = ref(false);
+const isSaving = ref(false);
 
 const { isPhone } = useScreen();
 
-// eslint-disable-next-line no-unused-vars
-let resolve: (t: string) => void;
-// eslint-disable-next-line no-unused-vars
-let reject: (e: Error) => void;
+let resolveDialog: ((text?: string) => void) | undefined;
+let controller: AbortController | undefined;
+let session = 0;
+let disposed = false;
 
 const props = defineProps<{
   daemonId: string;
   instanceId: string;
 }>();
 
-let useKeyboardEventsHooks: ReturnType<typeof useKeyboardEvents> | null = null;
-
-const initKeydownListener = () => {
-  useKeyboardEventsHooks = useKeyboardEvents(
-    { ctrl: true, alt: false, caseSensitive: false, key: "s" },
-    async () => {
-      try {
-        await submitRequest();
-        message.success(t("TXT_CODE_8f47d95"));
-        emit("save");
-      } catch (err: any) {
-        return reportErrorMsg(err.message);
-      }
-    }
-  );
-  useKeyboardEventsHooks.startKeydownListener();
+const handleKeydown = (event: KeyboardEvent) => {
+  if (
+    !open.value ||
+    !(event.ctrlKey || event.metaKey) ||
+    event.altKey ||
+    event.key.toLowerCase() !== "s"
+  ) return;
+  event.preventDefault();
+  void save(false);
 };
 
-const openDialog = (_path: string, _fileName: string) => {
-  fullScreen.value = isPhone.value;
-  path.value = _path;
-  fileName.value = _fileName;
-  open.value = true;
-  initKeydownListener();
-  return new Promise((_resolve, _reject) => {
-    resolve = _resolve;
-    reject = _reject;
-    void render();
-  });
+const closeDialog = (text?: string) => {
+  session++;
+  controller?.abort();
+  controller = undefined;
+  document.removeEventListener("keydown", handleKeydown);
+  open.value = false;
+  openEditor.value = false;
+  isLoading.value = false;
+  isSaving.value = false;
+  const resolve = resolveDialog;
+  resolveDialog = undefined;
+  resolve?.(text);
 };
 
-const { state: text, execute, isLoading } = fileContent();
-const render = async () => {
+const render = async (request: number, signal: AbortSignal) => {
   try {
-    await execute({
+    const response = await fileContent().execute({
+      signal,
       params: {
         daemonId: props.daemonId,
         uuid: props.instanceId
@@ -83,52 +79,65 @@ const render = async () => {
       }
     });
 
-    if (text.value) {
-      typeof text.value === "boolean" ? (editorText.value = "") : (editorText.value = text.value);
-    }
-
+    if (request !== session || signal.aborted) return;
+    editorText.value = typeof response.value === "string" ? response.value : "";
     openEditor.value = true;
-  } catch (err: any) {
-    console.error(err.message);
-    return reportErrorMsg(err.message);
+  } catch (error) {
+    if (request !== session || signal.aborted) return;
+    reportErrorMsg(error);
+    closeDialog();
+  } finally {
+    if (request === session) isLoading.value = false;
   }
 };
 
-const submitRequest = async () => {
-  await execute({
-    params: {
-      daemonId: props.daemonId,
-      uuid: props.instanceId
-    },
-    data: {
-      target: path.value,
-      text: editorText.value
-    }
+const openDialog = (target: string, name: string): Promise<string | undefined> => {
+  if (disposed) return Promise.resolve(undefined);
+  closeDialog();
+  path.value = target;
+  fileName.value = name;
+  editorText.value = "";
+  editorKey.value++;
+  fullScreen.value = isPhone.value;
+  open.value = true;
+  isLoading.value = true;
+  controller = new AbortController();
+  document.addEventListener("keydown", handleKeydown);
+  return new Promise((resolve) => {
+    resolveDialog = resolve;
+    void render(session, controller!.signal);
   });
 };
 
-const submit = async () => {
+const save = async (closeAfterSave: boolean) => {
+  if (!open.value || !openEditor.value || isLoading.value || isSaving.value || !controller) return;
+  const request = session;
+  const signal = controller.signal;
+  const text = editorText.value;
+  isSaving.value = true;
   try {
-    await submitRequest();
-    message.success(t("TXT_CODE_a7907771"));
-    cancel();
-    resolve(editorText.value);
+    await fileContent().execute({
+      signal,
+      params: { daemonId: props.daemonId, uuid: props.instanceId },
+      data: { target: path.value, text }
+    });
+    if (request !== session || signal.aborted) return;
+    message.success(t(closeAfterSave ? "TXT_CODE_a7907771" : "TXT_CODE_8f47d95"));
     emit("save");
-  } catch (err: any) {
-    console.error(err.message);
-    reject(err);
-    return reportErrorMsg(err.message);
+    if (closeAfterSave) closeDialog(text);
+  } catch (error) {
+    if (request === session && !signal.aborted) reportErrorMsg(error);
+  } finally {
+    if (request === session) isSaving.value = false;
   }
 };
 
-const cancel = async () => {
-  useKeyboardEventsHooks?.removeKeydownListener();
-  open.value = openEditor.value = false;
-  resolve(editorText.value);
-};
+const submit = () => save(true);
+const cancel = () => closeDialog();
 
-const dialogTitle = computed(() => {
-  return fileName.value;
+onUnmounted(() => {
+  disposed = true;
+  closeDialog();
 });
 
 defineExpose({
@@ -140,18 +149,24 @@ defineExpose({
   <VDialog v-model="open" class="file-editor-dialog app-dialog" :class="{ 'file-editor-dialog--full': fullScreen }"
     :width="fullScreen ? undefined : '1600px'"
     :max-width="fullScreen ? undefined : 'calc(100vw - 48px)'" :fullscreen="fullScreen" persistent scrollable>
-    <VCard :title="dialogTitle" rounded="xl" class="file-editor-card">
+    <VCard :title="t('TXT_CODE_1f61e5a3')" :subtitle="fileName" rounded="xl" class="file-editor-card">
       <template v-if="!isPhone" #append>
-        <VBtn icon size="small" variant="text" :aria-label="dialogTitle" @click="fullScreen = !fullScreen">
+        <VBtn icon size="small" variant="text" :aria-label="fileName" @click="fullScreen = !fullScreen">
           <VIcon :icon="fullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" />
         </VBtn>
       </template>
       <VCardText class="file-editor-content">
-        <Editor v-if="openEditor" ref="EditorComponent" v-model:text="editorText" :filename="fileName"
+        <Editor v-if="openEditor" :key="editorKey" v-model:text="editorText" :filename="fileName"
           :height="fullScreen ? '100%' : '60vh'" />
         <div v-else class="file-editor-loading"><VProgressCircular indeterminate color="primary" /></div>
       </VCardText>
-      <VCardActions><VSpacer /><VBtn variant="text" :disabled="isLoading" @click="cancel">{{ t("TXT_CODE_3b1cc020") }}</VBtn><VBtn color="primary" :loading="isLoading" @click="submit">{{ t("TXT_CODE_abfe9512") }}</VBtn></VCardActions>
+      <VCardActions>
+        <VSpacer />
+        <VBtn variant="text" :disabled="isSaving" @click="cancel">{{ t("TXT_CODE_3b1cc020") }}</VBtn>
+        <VBtn color="primary" :disabled="!openEditor || isLoading" :loading="isSaving" @click="submit">
+          {{ t("TXT_CODE_abfe9512") }}
+        </VBtn>
+      </VCardActions>
     </VCard>
   </VDialog>
 </template>

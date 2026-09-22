@@ -3,7 +3,7 @@ import PageToolbar from "@/components/PageToolbar.vue";
 import { t } from "@/lang/i18n";
 import { getValidatorErrorMsg } from "@/tools/validator";
 import { message } from "@/tools/vuetifyToast";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
   VAvatar,
   VBtn,
@@ -29,6 +29,7 @@ const loading = ref(false);
 const plugins = ref<MarketPlugin[]>([]);
 const keyword = ref<string | null>("");
 const { icons, load } = usePluginIcons();
+let requestId = 0;
 
 const visiblePlugins = computed(() => {
   const q = (keyword.value ?? "").trim().toLowerCase();
@@ -42,24 +43,26 @@ const visiblePlugins = computed(() => {
   );
 });
 
-// 只取屏幕上这些插件的图标，并且只取市场说有的那些（hasIcon）。
+// Load the filtered catalogue's declared icons for the release shown on each card.
 watch(
   visiblePlugins,
   (list) => {
-    for (const plugin of list) void load(plugin.id, plugin.hasIcon);
+    for (const plugin of list) void load(plugin.id, plugin.hasIcon, plugin.latestVersion?.version);
   },
   { immediate: true }
 );
 
 async function refresh() {
+  const request = ++requestId;
   loading.value = true;
   try {
     const { execute } = pluginMarketList();
-    plugins.value = (await execute()).value ?? [];
+    const response = await execute();
+    if (request === requestId) plugins.value = response.value ?? [];
   } catch (error) {
-    message.error(getValidatorErrorMsg(error));
+    if (request === requestId) message.error(getValidatorErrorMsg(error));
   } finally {
-    loading.value = false;
+    if (request === requestId) loading.value = false;
   }
 }
 
@@ -80,6 +83,7 @@ function updateInstalled(pluginId: string, version: string | undefined) {
 
 defineExpose({ updateInstalled });
 onMounted(refresh);
+onBeforeUnmount(() => requestId++);
 </script>
 
 <template>
@@ -157,7 +161,11 @@ onMounted(refresh);
         </VCol>
       </VRow>
 
-      <div v-else-if="!loading" class="plugin-market-empty plugin-market-empty--filtered" role="status">
+      <div
+        v-else-if="!loading"
+        class="plugin-market-empty plugin-market-empty--filtered"
+        role="status"
+      >
         <VIcon icon="mdi-magnify" size="42" class="plugin-market-empty-icon" />
         <div class="plugin-market-empty-title">{{ t("TXT_CODE_NO_DATA") }}</div>
       </div>

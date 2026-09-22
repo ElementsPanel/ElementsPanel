@@ -40,6 +40,17 @@ const UNGUARDED: RequestGuard = {
   stats: () => NO_STATS
 };
 
+const UNAVAILABLE_GUARD: RequestGuard = {
+  ...UNGUARDED,
+  guardRoute: () => async (requestCtx) => {
+    requestCtx.status = 503;
+    requestCtx.body = "Authentication service is unavailable";
+  },
+  identify: () => ({ ...ANONYMOUS, role: ROLE.GUEST, elevated: false }),
+  canAccessInstance: () => false,
+  canUpload: () => false
+};
+
 /**
  * The panel runtime follows the storage and translation foundations. It owns
  * startup configuration and the shared primitives that feature plugins consume; the
@@ -62,7 +73,14 @@ export async function apply(ctx: PanelPluginContext) {
   initVersionManager();
 
   // Resolve the optional guard from this live plugin context for each request.
-  const getGuard = () => ctx.get("guard") ?? UNGUARDED;
+  const getGuard = () => {
+    const guard = ctx.get("guard");
+    if (guard) return guard;
+    // Removing authentication is supported; an enabled plugin that failed or
+    // lost a dependency must never silently grant administrator access.
+    const expectsGuard = ctx.get("plugins")?.loaded.some((plugin) => plugin.manifest.id === "user");
+    return expectsGuard ? UNAVAILABLE_GUARD : UNGUARDED;
+  };
   const permission = (route: GuardedRoute): Koa.Middleware => {
     let owner: RequestGuard | undefined;
     let middleware: Koa.Middleware | undefined;
@@ -95,7 +113,7 @@ export async function apply(ctx: PanelPluginContext) {
       const requestPath = requestCtx.URL.pathname;
       const speedCheckKey = `SpeedLimit:${identity.uuid || "_anonymous_"}:${requestPath}`;
       if (singletonMemoryRedis.get<boolean>(speedCheckKey)) {
-        requestCtx.status = 500;
+        requestCtx.status = 429;
         requestCtx.body =
           errMsg ||
           String(
@@ -120,7 +138,7 @@ export async function apply(ctx: PanelPluginContext) {
     };
   };
 
-  ctx.set("settings", { config, save: () => void saveSystemConfig(ctx.storage, config) });
+  ctx.set("settings", { config, save: () => saveSystemConfig(ctx.storage, config) });
   ctx.set("middleware", {
     permission,
     validator,
@@ -161,5 +179,5 @@ export async function apply(ctx: PanelPluginContext) {
 
   // Configuration migrations performed by feature plugins are persisted once
   // all plugin scopes have had a chance to update the shared object.
-  ctx.on("ready", () => void saveSystemConfig(ctx.storage, config));
+  ctx.on("ready", () => saveSystemConfig(ctx.storage, config));
 }

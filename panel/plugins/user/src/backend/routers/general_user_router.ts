@@ -79,29 +79,17 @@ export default function createGeneralUserRouter() {
 
   // [Low-level Permission]
   // API generation and shutdown
-  router.put("/api", permission({ level: ROLE().USER }), async (ctx: Koa.ParameterizedContext) => {
-    const userUuid = getUserUuid(ctx);
-    const enable = ctx.request.body.enable;
-    const user = userSystem.getInstance(userUuid);
-    let newKey = "";
-    try {
-      if (user) {
-        if (enable) {
-          newKey = v4().replace(/-/gim, "");
-          await userSystem.edit(userUuid, {
-            apiKey: newKey
-          });
-        } else {
-          await userSystem.edit(userUuid, {
-            apiKey: ""
-          });
-        }
-      }
-      ctx.body = newKey;
-    } catch (error: any) {
-      ctx.body = error;
+  router.put(
+    "/api",
+    permission({ level: ROLE().USER }),
+    validator({ body: { enable: Boolean } }),
+    async (ctx: Koa.ParameterizedContext) => {
+      const userUuid = getUserUuid(ctx);
+      const apiKey = ctx.request.body.enable ? v4().replace(/-/gim, "") : "";
+      await userSystem.edit(userUuid, { apiKey });
+      ctx.body = apiKey;
     }
-  });
+  );
 
   // [Low-level Permission]
   // 2FA
@@ -123,9 +111,8 @@ export default function createGeneralUserRouter() {
       const TOTPCode = ctx.request.body.TOTPCode;
       const MFAResult = userSystem.check2FA(TOTPCode, getUserFromCtx(ctx) ?? {}, 0);
       const enable = Boolean(ctx.request.body.enable);
-      if (enable && !MFAResult) {
-        ctx.body = false;
-        return;
+      if (!MFAResult) {
+        ctx.throw(400, $t("TXT_CODE_3d68e43b"));
       }
       const userUuid = getUserUuid(ctx);
       await confirm2FaQRCode(userUuid, enable);

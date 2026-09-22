@@ -26,8 +26,10 @@ export interface MarketPlugin {
   category: string;
   author: { id: string; displayName: string };
   latestVersion?: MarketPluginVersion;
-  /** The version installed on this panel, or undefined when it is not installed. */
+  /** The version installed on this panel or its nodes, if any. */
   installedVersion?: string;
+  /** Nodes with a recorded installation of this plugin. */
+  installedDaemonIds?: string[];
   /**
    * The halves the latest release carries, as the market reports them. Optional
    * because a market source that predates the field simply does not send it.
@@ -66,13 +68,14 @@ export interface MarketPluginDetail extends MarketPlugin {
   updatedAt: number;
 }
 
-/** One plugin installed from the market, as the marker in its directory records. */
+/** One plugin installed from the market on the panel or its nodes. */
 export interface InstalledPlugin {
   pluginId: string;
   name: string;
   version: string;
   installedAt: number;
   sides: string[];
+  daemonIds: string[];
 }
 
 export const pluginMarketList = useDefineApi<unknown, MarketPlugin[]>({
@@ -85,7 +88,8 @@ export const pluginMarketList = useDefineApi<unknown, MarketPlugin[]>({
  * address is a backend setting, so the browser cannot fetch it directly. The
  * route answers with a data URL rather than the image itself, because the panel's
  * request layer only reads JSON; it answers `dataUrl: null` when the package
- * carries no icon, which the page treats as "keep the default icon".
+ * carries no icon, which the page treats as "keep the default icon". Pass the
+ * displayed release's version so a newer publication cannot change its icon.
  */
 export const pluginMarketIcon = useDefineApi<
   { params: { pluginId: string; version?: string } },
@@ -140,7 +144,7 @@ export const installMarketPlugin = useDefineApi<
       daemonIds?: string[];
     };
   },
-  { restartRequired: boolean; failedNodes: string[] }
+  { restartRequired: boolean; failedNodes: string[]; installedVersion?: string }
 >({
   url: "/api/market/plugin/install",
   method: "POST"
@@ -148,7 +152,7 @@ export const installMarketPlugin = useDefineApi<
 
 export const uninstallMarketPlugin = useDefineApi<
   { params: { pluginId: string; daemonIds?: string } },
-  { removed: boolean; restartRequired: boolean }
+  { removed: boolean; restartRequired: boolean; failedNodes: string[]; installedVersion?: string }
 >({
   url: "/api/market/plugin/uninstall",
   method: "DELETE"

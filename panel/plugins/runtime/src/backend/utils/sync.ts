@@ -14,7 +14,7 @@ export async function execWithMutex<T>(fn: () => Promise<T>): Promise<T> {
     return await fn();
   } finally {
     releaseLock();
-    mutexMap.delete(fn);
+    if (!mutex.isLocked()) mutexMap.delete(fn);
   }
 }
 
@@ -29,6 +29,6 @@ export async function execWithMutexId<T>(id: string, fn: () => Promise<T>) {
     return await fn();
   } finally {
     releaseLock();
-    mutexIdMap.delete(id);
+    if (!mutex.isLocked()) mutexIdMap.delete(id);
   }
 }

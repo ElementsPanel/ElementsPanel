@@ -21,14 +21,13 @@ export default abstract class AbsStartCommand extends InstanceCommand {
     if (instance.status() !== Instance.STATUS_STOP)
       return instance.failure(new StartupError($t("TXT_CODE_start.instanceNotDown")));
 
-    // Create the instance directory if it doesn't exist
-    if (!fs.existsSync(instance.absoluteCwdPath())) {
-      await fs.mkdirs(instance.absoluteCwdPath());
-    }
-
+    // Claim the state before the first await so two starts cannot both proceed.
+    instance.setLock(true);
+    instance.status(Instance.STATUS_STARTING);
     try {
-      instance.setLock(true);
-      instance.status(Instance.STATUS_STARTING);
+      if (!fs.existsSync(instance.absoluteCwdPath())) {
+        await fs.mkdirs(instance.absoluteCwdPath());
+      }
       instance.startCount++;
 
       instance.startTimestamp = Date.now();
@@ -81,9 +80,11 @@ export default abstract class AbsStartCommand extends InstanceCommand {
 
       return await this.createProcess(instance);
     } catch (error: any) {
-      instance.execPreset("kill");
-      instance.releaseResources();
+      // createProcess owns a child until started() hands it to the instance.
+      // A delayed kill preset could otherwise kill a subsequent startup.
+      await instance.releaseResources();
       instance.status(Instance.STATUS_STOP);
+      instance.startTimestamp = 0;
       instance.failure(error);
     } finally {
       instance.setLock(false);

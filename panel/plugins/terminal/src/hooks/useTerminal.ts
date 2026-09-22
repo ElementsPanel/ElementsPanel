@@ -13,7 +13,7 @@ import { WebglAddon } from "@xterm/addon-webgl";
 import { Terminal } from "@xterm/xterm";
 import EventEmitter from "eventemitter3";
 import type { Socket } from "socket.io-client";
-import { computed, onMounted, onUnmounted, ref, unref } from "vue";
+import { computed, onMounted, onUnmounted, ref, shallowRef, unref } from "vue";
 import { makeSocketIo } from "@/hooks/useSocketIo";
 
 export const TERM_COLOR = {
@@ -63,10 +63,14 @@ export function useTerminal() {
   let socket: Socket<DefaultEventsMap, DefaultEventsMap> | undefined;
   const state = ref<InstanceDetail>();
   const isReady = ref<boolean>(false);
-  const terminal = ref<Terminal>();
+  const terminal = shallowRef<Terminal>();
   const isConnect = ref<boolean>(false);
   const socketAddress = ref("");
   let isManualDisconnect = false;
+  let disposed = false;
+  let pendingConnection: Promise<Socket<DefaultEventsMap, DefaultEventsMap>> | undefined;
+  const connectionController = new AbortController();
+  let terminalElement: HTMLElement | undefined;
 
   const isGlobalTerminal = computed(() => {
     return state.value?.config.nickname === GLOBAL_INSTANCE_NAME;
@@ -82,20 +86,29 @@ export function useTerminal() {
     h: 40
   };
 
-  const execute = async (config: UseTerminalParams) => {
+  const execute = (config: UseTerminalParams) => {
+    if (disposed) return Promise.reject(new Error("Terminal has been disposed"));
+    if (socket) return Promise.resolve(socket);
+    if (!pendingConnection) {
+      pendingConnection = connect(config).finally(() => {
+        pendingConnection = undefined;
+      });
+    }
+    return pendingConnection;
+  };
+
+  const connect = async (config: UseTerminalParams) => {
     isReady.value = false;
     isManualDisconnect = false;
-
-    if (socket) {
-      return socket;
-    }
 
     const res = await setUpTerminalStreamChannel().execute({
       params: {
         daemonId: config.daemonId,
         uuid: config.instanceId
-      }
+      },
+      signal: connectionController.signal
     });
+    if (disposed) throw new Error("Terminal has been disposed");
     const remoteInfo = unref(res.value);
     if (!remoteInfo) throw new Error(t("TXT_CODE_181f2f08"));
 
@@ -200,6 +213,7 @@ export function useTerminal() {
   const touchHandler = (event: TouchEvent) => {
     const touches = event.changedTouches;
     const first = touches[0];
+    if (!first) return;
 
     let type = "";
     switch (event.type) {
@@ -243,6 +257,7 @@ export function useTerminal() {
     if (terminal.value) {
       throw new Error("Terminal already initialized, Please refresh the page!");
     }
+    terminalElement = element;
 
     // init touch handler
     element.addEventListener("touchstart", touchHandler, true);
@@ -381,12 +396,19 @@ export function useTerminal() {
   });
 
   onUnmounted(() => {
+    disposed = true;
+    connectionController.abort();
     clearInterval(fitAddonTask);
     clearInterval(statusQueryTask);
     events.removeAllListeners();
     isManualDisconnect = true;
     socket?.disconnect();
     socket?.removeAllListeners();
+    terminal.value?.dispose();
+    terminal.value = undefined;
+    for (const type of ["touchstart", "touchmove", "touchend", "touchcancel"]) {
+      terminalElement?.removeEventListener(type, touchHandler as EventListener, true);
+    }
   });
 
   const isStopped = computed(() => state?.value?.status === INSTANCE_STATUS_CODE.STOPPED);

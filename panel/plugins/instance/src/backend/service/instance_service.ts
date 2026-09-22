@@ -44,14 +44,23 @@ export interface IAdvancedInstanceInfo {
 }
 
 // Multi-forward operation method
-export function multiOperationForwarding(
-  instances: any[],
-  callback: (daemonId: string, instanceUuids: string[]) => void
+export async function multiOperationForwarding(
+  instances: unknown,
+  callback: (daemonId: string, instanceUuids: string[]) => Promise<void>
 ) {
+  if (!Array.isArray(instances)) throw new Error("Instances must be an array");
   // classification table
   const map = new Map<string, string[]>();
   // Classify remote hosts and instance IDs based on information
   for (const instanceInfo of instances) {
+    if (
+      !instanceInfo ||
+      typeof instanceInfo.daemonId !== "string" ||
+      !instanceInfo.daemonId ||
+      typeof instanceInfo.instanceUuid !== "string" ||
+      !instanceInfo.instanceUuid
+    )
+      throw new Error("Invalid instance reference");
     const daemonId: string = instanceInfo.daemonId;
     const instanceUuid: string = instanceInfo.instanceUuid;
     if (map.has(daemonId)) {
@@ -61,11 +70,18 @@ export function multiOperationForwarding(
     }
   }
   // Pack and forward the classified data separately
-  for (const iterator of map) {
-    const daemonId = iterator[0];
-    const instanceUuids = iterator[1];
-    callback(daemonId, instanceUuids);
-  }
+  const failures = await Promise.all(
+    Array.from(map, async ([daemonId, instanceUuids]) => {
+      try {
+        await callback(daemonId, [...new Set(instanceUuids)]);
+        return undefined;
+      } catch (error) {
+        return error instanceof Error ? error.message : String(error);
+      }
+    })
+  );
+  const messages = failures.filter((failure): failure is string => failure !== undefined);
+  if (messages.length) throw new Error(messages.join("\n"));
 }
 
 export async function getInstancesByUuid(
@@ -105,9 +121,12 @@ export async function getInstancesByUuid(
       }
       // Note: UUID can be integrated here to save the returned traffic, and this optimization will not be done for the time being
       try {
-        let instancesInfo = await new (remote().Request)(remoteService).request("instance/section", {
-          instanceUuids: [iterator.instanceUuid]
-        });
+        let instancesInfo = await new (remote().Request)(remoteService).request(
+          "instance/section",
+          {
+            instanceUuids: [iterator.instanceUuid]
+          }
+        );
         if (!instancesInfo || instancesInfo.length === 0) continue;
         instancesInfo = instancesInfo[0];
         resInstances.push({
@@ -145,7 +164,6 @@ export async function getInstancesByUuid(
     apiKey: user.apiKey,
     isInit: user.isInit,
     open2FA: user.open2FA,
-    secret: user.secret,
     token: ""
   };
 }

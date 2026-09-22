@@ -11,6 +11,7 @@
     "url": "https://github.com/MCSManager/MCSManager"
   },
   "scripts": {
+    "type-check": "tsc --noEmit --project tsconfig.json",
     "build": "tsc --project tsconfig.json",
     "pub": "npm publish"
   },

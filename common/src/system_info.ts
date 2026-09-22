@@ -1,7 +1,6 @@
 import os from "os";
 import osUtils from "os-utils";
 import fs from "fs";
-// import systeminformation from "systeminformation";
 
 interface IInfoTable {
   [key: string]: number;
@@ -40,25 +39,31 @@ const info: ISystemInfo = {
   processMem: 0
 };
 
+let previousCpu = process.cpuUsage();
+let previousTime = process.hrtime.bigint();
+
 // periodically refresh the cache
-setInterval(() => {
+function refresh() {
+  const now = process.hrtime.bigint();
+  const cpu = process.cpuUsage();
+  const elapsed = Number(now - previousTime) / 1000;
+  info.processCpu =
+    elapsed > 0 ? (cpu.user - previousCpu.user + cpu.system - previousCpu.system) / elapsed : 0;
+  previousCpu = cpu;
+  previousTime = now;
+  info.uptime = os.uptime();
+  info.loadavg = os.loadavg();
+  info.processMem = process.memoryUsage().rss;
   if (os.platform() === "linux") {
     return setLinuxSystemInfo();
   }
-  if (os.platform() === "win32") {
-    return setWindowsSystemInfo();
-  }
   return otherSystemInfo();
-}, 3000);
-
-function otherSystemInfo() {
-  info.freemem = os.freemem();
-  info.totalmem = os.totalmem();
-  info.memUsage = (os.totalmem() - os.freemem()) / os.totalmem();
-  osUtils.cpuUsage((p) => (info.cpuUsage = p));
 }
 
-function setWindowsSystemInfo() {
+refresh();
+setInterval(refresh, 3000).unref();
+
+function otherSystemInfo() {
   info.freemem = os.freemem();
   info.totalmem = os.totalmem();
   info.memUsage = (os.totalmem() - os.freemem()) / os.totalmem();

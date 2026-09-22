@@ -33,6 +33,8 @@ const TOKEN_FILE = path.join(PROJECT_ROOT, "data", "epanel-market.json");
 const DEFAULT_MARKET_URL = "http://localhost:4500";
 const CONNECT_TIMEOUT_MS = 5 * 60 * 1000;
 const POLL_INTERVAL_MS = 2000;
+const MAX_PNG_BYTES = 1024 * 1024;
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 function printUsage() {
   console.error(
@@ -62,7 +64,9 @@ function parseArgs(argv) {
 }
 
 function normalizeMarketUrl(value) {
-  return String(value ?? "").trim().replace(/\/+$/, "");
+  return String(value ?? "")
+    .trim()
+    .replace(/\/+$/, "");
 }
 
 async function readJson(filePath) {
@@ -115,7 +119,8 @@ async function saveConnection(connection) {
 }
 
 function openBrowser(url) {
-  const command = process.platform === "darwin" ? "open" : process.platform === "win32" ? "start" : "xdg-open";
+  const command =
+    process.platform === "darwin" ? "open" : process.platform === "win32" ? "start" : "xdg-open";
   const child = spawn(command, [url], {
     stdio: "ignore",
     detached: true,
@@ -198,13 +203,7 @@ function compile(folder, workspace, outDir) {
   return new Promise((resolve, reject) => {
     const child = spawn(
       process.execPath,
-      [
-        path.join(SCRIPT_DIR, "compile-plugin.mjs"),
-        "--workspace",
-        workspace,
-        "--out",
-        outDir
-      ],
+      [path.join(SCRIPT_DIR, "compile-plugin.mjs"), "--workspace", workspace, "--out", outDir],
       { cwd: PROJECT_ROOT }
     );
 
@@ -219,7 +218,11 @@ function compile(folder, workspace, outDir) {
         reject(new Error(`Compiling ${folder} failed.`));
         return;
       }
-      const line = stdout.split("\n").map((item) => item.trim()).filter(Boolean).pop();
+      const line = stdout
+        .split("\n")
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .pop();
       if (!line) {
         reject(new Error("The compiler produced no result."));
         return;
@@ -250,6 +253,27 @@ const ALLOWED_EXTENSIONS = new Set([
   ".png"
 ]);
 
+async function validatePackageFile(filename, relativeFile) {
+  const stat = await fs.lstat(filename);
+  if (!stat.isFile() || stat.isSymbolicLink()) {
+    throw new Error(`The compiled package contains a non-regular file: ${relativeFile}`);
+  }
+  if (!relativeFile.toLowerCase().endsWith(".png")) return;
+  if (stat.size > MAX_PNG_BYTES) {
+    throw new Error(`PNG files must be no larger than ${MAX_PNG_BYTES} bytes: ${relativeFile}`);
+  }
+  const file = await fs.open(filename, "r");
+  try {
+    const header = Buffer.alloc(PNG_SIGNATURE.length);
+    await file.read(header, 0, header.length, 0);
+    if (!header.equals(PNG_SIGNATURE)) {
+      throw new Error(`PNG file has an invalid signature: ${relativeFile}`);
+    }
+  } finally {
+    await file.close();
+  }
+}
+
 /**
  * 市场从包里自己的 plugin.json 读插件信息，所以 `--version` / `--changelog` 要写进
  * 编译产物里的那份。工作区的 plugin.json 保持不动：覆盖只针对这一次上传。
@@ -278,7 +302,9 @@ async function upload(connection, outDir, files) {
 
   let totalBytes = 0;
   for (const relativeFile of files) {
-    const data = await fs.readFile(path.join(outDir, relativeFile));
+    const filename = path.join(outDir, relativeFile);
+    await validatePackageFile(filename, relativeFile);
+    const data = await fs.readFile(filename);
     totalBytes += data.byteLength;
     form.append("file", new Blob([data]), relativeFile);
   }
@@ -303,9 +329,7 @@ async function reportSubmissions(connection, pluginId) {
   console.log(`\n${plugin.displayName} (${plugin.name})`);
   for (const version of plugin.versions ?? []) {
     const note = version.reviewNote ? ` — ${version.reviewNote}` : "";
-    console.log(
-      `  v${version.version}: ${STATUS_LABEL[version.status] ?? version.status}${note}`
-    );
+    console.log(`  v${version.version}: ${STATUS_LABEL[version.status] ?? version.status}${note}`);
   }
 }
 
@@ -335,7 +359,9 @@ async function main() {
   const outDir = path.join(workspace, ".dist");
   const compiled = await compile(folder, workspace, outDir);
   if (!compiled.files?.length) throw new Error("Compiling produced no files.");
-  console.log(`Compiled ${compiled.files.length} files into ${path.relative(PROJECT_ROOT, outDir)}`);
+  console.log(
+    `Compiled ${compiled.files.length} files into ${path.relative(PROJECT_ROOT, outDir)}`
+  );
 
   // 市场不再收单独的 manifest 字段：它读包里自己的 plugin.json，所以覆盖值要写进去。
   await applyOverrides(outDir, compiled.files, manifest);

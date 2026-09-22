@@ -113,11 +113,12 @@ export class ModService {
       if (entries["quilt.mod.json"]) {
         const data = await zip.entryData("quilt.mod.json");
         const json = JSON.parse(data.toString());
-        const mod = json.quilt_loader?.metadata || json;
+        const loader = json.quilt_loader || json;
+        const mod = loader.metadata || loader;
         return {
-          id: mod.id,
-          name: mod.name || mod.id,
-          version: mod.version,
+          id: loader.id,
+          name: mod.name || loader.id,
+          version: loader.version,
           description: mod.description,
           type: "mod"
         };
@@ -176,9 +177,8 @@ export class ModService {
     folder?: string
   ): Promise<ModListResult> {
     // Enforce max page size of 50
-    if (pageSize > 50) pageSize = 50;
-    if (pageSize < 1) pageSize = 10;
-    if (page < 1) page = 1;
+    pageSize = Number.isSafeInteger(pageSize) && pageSize > 0 ? Math.min(pageSize, 50) : 10;
+    page = Number.isSafeInteger(page) && page > 0 ? page : 1;
 
     const fileManager = this.ctx.files.getFileManager(instanceUuid);
 
@@ -199,7 +199,7 @@ export class ModService {
         const files = await fs.readdir(dir);
         for (const file of files) {
           if (file.endsWith(".jar") || file.endsWith(".jar.disabled")) {
-            const fullPath = path.join(dir, file);
+            const fullPath = fileManager.toAbsolutePath(path.join(dirName, file));
             const enabled = !file.endsWith(".disabled");
 
             tasks.push(async () => {
@@ -299,14 +299,13 @@ export class ModService {
 
   public async toggleMod(instanceUuid: string, fileName: string): Promise<void> {
     const fileManager = this.ctx.files.getFileManager(instanceUuid);
-    if (!fileManager.checkPath(fileName)) throw new Error("Invalid file name");
-    const rootDir = fileManager.toAbsolutePath(".");
+    this.checkModFileName(fileName);
 
     const possibleDirs = ["mods", "plugins", "Mods", "Plugins"];
     let filePath = "";
 
     for (const dirName of possibleDirs) {
-      const p = path.join(rootDir, dirName, fileName);
+      const p = fileManager.toAbsolutePath(path.join(dirName, fileName));
       if (await fs.pathExists(p)) {
         filePath = p;
         break;
@@ -319,7 +318,7 @@ export class ModService {
 
     let newPath: string;
     if (fileName.endsWith(".disabled")) {
-      newPath = filePath.replace(".disabled", "");
+      newPath = filePath.slice(0, -".disabled".length);
     } else {
       newPath = filePath + ".disabled";
     }
@@ -329,14 +328,13 @@ export class ModService {
 
   public async deleteMod(instanceUuid: string, fileName: string): Promise<void> {
     const fileManager = this.ctx.files.getFileManager(instanceUuid);
-    if (!fileManager.checkPath(fileName)) throw new Error("Invalid file name");
-    const rootDir = fileManager.toAbsolutePath(".");
+    this.checkModFileName(fileName);
 
     const possibleDirs = ["mods", "plugins", "Mods", "Plugins"];
     let filePath = "";
 
     for (const dirName of possibleDirs) {
-      const p = path.join(rootDir, dirName, fileName);
+      const p = fileManager.toAbsolutePath(path.join(dirName, fileName));
       if (await fs.pathExists(p)) {
         filePath = p;
         break;
@@ -357,6 +355,7 @@ export class ModService {
     type: "mod" | "plugin",
     options: { fallbackUrl?: string } = {}
   ) {
+    this.checkModFileName(fileName);
     const fileManager = this.ctx.files.getFileManager(instanceUuid);
     const rootDir = fileManager.toAbsolutePath(".");
 
@@ -390,6 +389,16 @@ export class ModService {
     }
   }
 
+  private checkModFileName(fileName: string) {
+    if (
+      typeof fileName !== "string" ||
+      /[\\/:\0]/.test(fileName) ||
+      !/\.jar(?:\.disabled)?$/i.test(fileName)
+    ) {
+      throw new Error("Invalid mod file name");
+    }
+  }
+
   public async getModConfig(
     instanceUuid: string,
     modId: string,
@@ -415,12 +424,12 @@ export class ModService {
 
     if (type === "mod") {
       // Mods usually have configs in /config directory
-      const configDir = path.join(rootDir, "config");
+      const configDir = fileManager.toAbsolutePath("config");
       if (await fs.pathExists(configDir)) {
         const files = await fs.readdir(configDir);
         for (const file of files) {
           const lowerFile = file.toLowerCase();
-          const fullPath = path.join(configDir, file);
+          const fullPath = fileManager.toAbsolutePath(path.join("config", file));
           const stat = await fs.stat(fullPath);
 
           let matched = false;
@@ -440,7 +449,7 @@ export class ModService {
             } else if (stat.isDirectory()) {
               const subFiles = await fs.readdir(fullPath);
               for (const subFile of subFiles) {
-                const subFullPath = path.join(fullPath, subFile);
+                const subFullPath = fileManager.toAbsolutePath(path.join("config", file, subFile));
                 if ((await fs.stat(subFullPath)).isFile()) {
                   configFiles.push({
                     name: `${file}/${subFile}`,
@@ -455,17 +464,17 @@ export class ModService {
     } else {
       // Plugins usually have configs in /plugins/PluginName directory
       // Try direct match first
-      let pluginConfigDir = path.join(rootDir, "plugins", modId);
+      let pluginConfigDir = fileManager.toAbsolutePath(path.join("plugins", modId));
       if (!(await fs.pathExists(pluginConfigDir)) && fileName) {
         // Try matching by search terms in plugins directory
-        const pluginsDir = path.join(rootDir, "plugins");
+        const pluginsDir = fileManager.toAbsolutePath("plugins");
         if (await fs.pathExists(pluginsDir)) {
           const dirs = await fs.readdir(pluginsDir);
           for (const dir of dirs) {
             const lowerDir = dir.toLowerCase();
             for (const term of searchTerms) {
               if (lowerDir === term || lowerDir === term.replace(/\s+/g, "")) {
-                pluginConfigDir = path.join(pluginsDir, dir);
+                pluginConfigDir = fileManager.toAbsolutePath(path.join("plugins", dir));
                 break;
               }
             }
@@ -479,7 +488,7 @@ export class ModService {
       ) {
         const files = await fs.readdir(pluginConfigDir);
         for (const file of files) {
-          const fullPath = path.join(pluginConfigDir, file);
+          const fullPath = fileManager.toAbsolutePath(path.join(pluginConfigDir, file));
           const stat = await fs.stat(fullPath);
           if (stat.isFile()) {
             configFiles.push({

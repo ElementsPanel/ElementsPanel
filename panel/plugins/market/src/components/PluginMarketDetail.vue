@@ -31,8 +31,7 @@ const busy = ref(false);
 const error = ref("");
 const activeTab = ref<"readme" | "versions" | "updates">("readme");
 let requestId = 0;
-// Every release row carries its own install button, so more than one install can be
-// in flight; count them instead of letting the last event win.
+// Keep every action for this plugin disabled until the active action settles.
 let running = 0;
 
 // 包里的 icon.png 是插件的门面；市场没给图标时退回默认拼图图标。
@@ -69,6 +68,7 @@ function formatSize(bytes: number) {
  * plugin clears it.
  */
 async function refresh() {
+  if (busy.value && plugin.value?.id === props.pluginId) return;
   const currentRequest = ++requestId;
   loading.value = true;
   error.value = "";
@@ -83,7 +83,7 @@ async function refresh() {
     if (currentRequest !== requestId) return;
     if (!response.value) throw new Error(t("TXT_CODE_PLUGIN_MARKET_NOT_FOUND"));
     plugin.value = response.value;
-    void load(response.value.id, response.value.hasIcon);
+    void load(response.value.id, response.value.hasIcon, response.value.selectedVersion.version);
   } catch (err) {
     if (currentRequest === requestId) error.value = getValidatorErrorMsg(err);
   } finally {
@@ -133,7 +133,10 @@ onBeforeUnmount(() => requestId++);
       <template v-if="plugin">
         <header class="plugin-detail-header">
           <div class="plugin-detail-heading">
-            <span class="plugin-detail-icon" :class="{ 'plugin-detail-icon--image': Boolean(icon) }">
+            <span
+              class="plugin-detail-icon"
+              :class="{ 'plugin-detail-icon--image': Boolean(icon) }"
+            >
               <VImg v-if="icon" :src="icon" alt="" cover />
               <VIcon v-else icon="mdi-puzzle-outline" size="34" />
             </span>
@@ -167,6 +170,7 @@ onBeforeUnmount(() => requestId++);
               :key="plugin.id"
               :plugin="plugin"
               :version="plugin.selectedVersion"
+              :disabled="busy || loading"
               @installed="updateInstalled"
               @busy="trackBusy"
             />
@@ -174,7 +178,7 @@ onBeforeUnmount(() => requestId++);
         </header>
 
         <div class="plugin-detail-tabs">
-          <VTabs v-model="activeTab" color="primary">
+          <VTabs v-model="activeTab" color="primary" :disabled="busy">
             <VTab value="readme">{{ t("TXT_CODE_PLUGIN_MARKET_README") }}</VTab>
             <VTab value="versions">{{ t("TXT_CODE_PLUGIN_MARKET_VERSIONS") }}</VTab>
             <VTab value="updates">{{ t("TXT_CODE_PLUGIN_MARKET_UPDATES") }}</VTab>
@@ -224,6 +228,7 @@ onBeforeUnmount(() => requestId++);
                   <PluginMarketInstall
                     :plugin="plugin"
                     :version="item"
+                    :disabled="busy || loading"
                     install-only
                     @installed="updateInstalled"
                     @busy="trackBusy"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getInstanceDeleteError } from "../tools/deletion";
 import { openInstanceTagsEditor } from "@/components/fc/index";
 import PageToolbar from "@/components/PageToolbar.vue";
 import { router } from "@/config/router";
@@ -199,7 +200,9 @@ const batchDeleteInstances = (deleteFile: boolean) => {
       });
       if (state.value) {
         dialog.destroy();
-        notification.success({ message: t("TXT_CODE_c3c06801") });
+        const error = getInstanceDeleteError(state.value);
+        if (error) reportErrorMsg(error);
+        else notification.success({ message: t("TXT_CODE_c3c06801") });
         exitMultiple();
         await initInstancesData(true);
       }
@@ -291,7 +294,9 @@ const deleteCardInstance = async () => {
       }
     });
     if (state.value) {
-      notification.success({ message: t("TXT_CODE_f486dbb4") });
+      const error = getInstanceDeleteError(state.value);
+      if (error) reportErrorMsg(error);
+      else notification.success({ message: t("TXT_CODE_f486dbb4") });
       deleteDialogOpen.value = false;
       deleteDialogItem.value = undefined;
       await initInstancesData(true);

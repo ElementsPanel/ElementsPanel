@@ -73,7 +73,7 @@ export function registerFileRoutes() {
         const instanceUuid = String(ctx.query.uuid);
         const page = Math.max(0, Number(ctx.query.page) || 0);
         const pageSize = Math.min(100, Math.max(1, Number(ctx.query.page_size) || 10));
-        const fileName = String(ctx.query.file_name);
+        const fileName = String(ctx.query.file_name || "");
         const remoteService = remote().services.getInstance(daemonId);
         const result = await new (remote().Request)(remoteService).request("file/list", {
           instanceUuid,
@@ -332,7 +332,7 @@ export function registerFileRoutes() {
   router.delete(
     "/",
     permission({ level: ROLE.USER }),
-    validator({ query: { daemonId: String, uuid: String }, body: { targets: Object } }),
+    validator({ query: { daemonId: String, uuid: String }, body: { targets: Array } }),
     async (ctx) => {
       try {
         const daemonId = String(ctx.query.daemonId);
@@ -362,7 +362,7 @@ export function registerFileRoutes() {
     permission({ level: ROLE.USER }),
     validator({
       query: { daemonId: String, uuid: String },
-      body: { source: String, targets: Object, type: Number, code: String }
+      body: { source: String, type: Number, code: String }
     }),
     async (ctx) => {
       try {
@@ -371,6 +371,10 @@ export function registerFileRoutes() {
         const source = String(ctx.request.body.source);
         const targets = ctx.request.body.targets;
         const type = Number(ctx.request.body.type);
+        if (typeof targets !== "string" &&
+            (!Array.isArray(targets) || !targets.every((target) => typeof target === "string"))) {
+          ctx.throw(400, "Invalid compression targets");
+        }
         const code = String(ctx.request.body.code);
         const remoteService = remote().services.getInstance(daemonId);
         const res = await new (remote().Request)(remoteService).request(

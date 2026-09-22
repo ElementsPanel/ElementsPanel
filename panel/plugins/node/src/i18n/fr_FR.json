@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_NODE_DOCKERFILE_EDITOR": "Modifier le Dockerfile",
   "TXT_CODE_3d94ea16": "Le socket du nœud est anormal, veuillez essayer de vous reconnecter dans la gestion des nœuds !",
   "TXT_CODE_7c650d80": "La connexion du nœud a échoué, veuillez contacter l'administrateur pour vérifier l'état du nœud distant !",
   "TXT_CODE_DESKTOP_NODES": "Nœuds",

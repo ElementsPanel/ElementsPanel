@@ -61,8 +61,9 @@ export function authSettings(): AuthSettings {
   return settings;
 }
 
-export async function saveAuthSettings() {
-  await storage().getStorage().store(CATEGORY, ID, settings);
+export async function saveAuthSettings(next = settings) {
+  await storage().getStorage().store(CATEGORY, ID, next);
+  settings = next;
 }
 
 /** Public shape for the login page: never exposes client secrets. */

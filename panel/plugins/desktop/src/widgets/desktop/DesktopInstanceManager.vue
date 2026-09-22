@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getInstanceDeleteError } from "@instance/tools/deletion";
 import { useInstanceTagSearch, useInstanceTagTips } from "@/hooks/useInstanceTag";
 import { t } from "@/lang/i18n";
 import { remoteInstances, remoteNodeList } from "@/services/apis";
@@ -490,7 +491,9 @@ const handleDeleteConfirm = async () => {
         if (state.value) {
             deleteDialog.value.show = false;
             exitMultipleMode();
-            notifyDesktop({ message: t("TXT_CODE_c3c06801"), description: t("TXT_CODE_50075e02") }, "success");
+            const error = getInstanceDeleteError(state.value);
+            if (error) notifyDesktopError(error);
+            else notifyDesktop({ message: t("TXT_CODE_c3c06801"), description: t("TXT_CODE_50075e02") }, "success");
             await fetchInstances(true);
         }
     } catch (err: any) {

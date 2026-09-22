@@ -37,10 +37,14 @@ const submit = async () => {
   } catch (error: any) { reportErrorMsg(error.message ?? t("TXT_CODE_9911ac11")); }
 };
 const handleEditDockerEnv = async () => {
-  if (!options.value?.config) return;
-  const envs = options.value.config.docker.env?.map((v) => { const tmp = v.split("="); return { label: tmp[0] || "", value: tmp[1] || "" }; });
+  const docker = options.value?.config.docker;
+  if (!docker) return;
+  const envs = docker.env?.map((entry) => {
+    const [label, ...value] = entry.split("=");
+    return { label: label || "", value: value.join("=") };
+  });
   const result = await useDockerEnvEditDialog(envs);
-  options.value.config.docker.env = result.map((v) => `${v.label}=${v.value}`);
+  if (result) docker.env = result.map((v) => `${v.label}=${v.value}`);
 };
 defineExpose({ openDialog });
 </script>

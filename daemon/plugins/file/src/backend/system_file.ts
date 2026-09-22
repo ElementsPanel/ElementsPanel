@@ -4,7 +4,7 @@ import { ProcessWrapper } from "mcsmanager-common";
 import os from "os";
 import path from "path";
 import type { ArchiveEntryInfo } from "../../../runtime/src/backend/common/compress";
-import { normalizedJoin } from "./filepath";
+import { checkFileName, normalizedJoin } from "./filepath";
 import { $t, archive, settings } from "./runtime";
 
 /** Resolved per use: the module is required before `apply()` runs. */
@@ -22,7 +22,10 @@ interface IFile {
 export default class FileManager {
   public cwd: string = ".";
 
-  constructor(public topPath: string = "", public fileCode?: string) {
+  constructor(
+    public topPath: string = "",
+    public fileCode?: string
+  ) {
     if (!path.isAbsolute(topPath)) {
       this.topPath = path.normalize(path.join(process.cwd(), topPath));
     } else {
@@ -41,7 +44,11 @@ export default class FileManager {
   toAbsolutePath(fileName: string = "") {
     const topAbsolutePath = this.topPath;
 
-    if (path.normalize(fileName).indexOf(topAbsolutePath) === 0) return fileName;
+    if (path.normalize(fileName).indexOf(topAbsolutePath) === 0) {
+      const resolved = path.resolve(fileName);
+      this.assertInsideRoot(resolved);
+      return resolved;
+    }
 
     let finalPath = "";
     if (os.platform() === "win32") {
@@ -57,13 +64,38 @@ export default class FileManager {
       finalPath = path.normalize(path.join(this.topPath, this.cwd, fileName));
     }
 
-    if (
-      finalPath.indexOf(topAbsolutePath) !== 0 &&
-      topAbsolutePath !== "/" &&
-      topAbsolutePath !== "\\"
-    )
-      throw new Error(ERROR_MSG_01());
+    this.assertInsideRoot(finalPath);
     return finalPath;
+  }
+
+  private assertInsideRoot(target: string) {
+    if (this.isRootTopRath()) return;
+    const isInside = (root: string, candidate: string) => {
+      const relative = path.relative(root, candidate);
+      return (
+        relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative)
+      );
+    };
+    if (!isInside(this.topPath, target)) {
+      throw new Error(ERROR_MSG_01());
+    }
+    // New files need the same protection as existing files: resolve the nearest
+    // existing parent so a symlink/junction cannot escape an instance directory.
+    if (!fs.existsSync(this.topPath)) return;
+    const realRoot = fs.realpathSync(this.topPath);
+    let ancestor = target;
+    while (true) {
+      try {
+        fs.lstatSync(ancestor);
+        break;
+      } catch (error: any) {
+        if (error.code !== "ENOENT") throw error;
+      }
+      const parent = path.dirname(ancestor);
+      if (parent === ancestor) throw new Error(ERROR_MSG_01());
+      ancestor = parent;
+    }
+    if (!isInside(realRoot, fs.realpathSync(ancestor))) throw new Error(ERROR_MSG_01());
   }
 
   checkPath(fileNameOrPath: string) {
@@ -161,7 +193,8 @@ export default class FileManager {
   }
 
   async chmod(fileName: string, chmodValue: number, deep: boolean) {
-    if (!this.check(fileName) || isNaN(parseInt(chmodValue as any))) throw new Error(ERROR_MSG_01());
+    if (!this.check(fileName) || isNaN(parseInt(chmodValue as any)))
+      throw new Error(ERROR_MSG_01());
     const absPath = this.toAbsolutePath(fileName);
     const defaultPath = "/bin/chmod";
     let file = "chmod";
@@ -192,7 +225,7 @@ export default class FileManager {
     // if (!FileManager.checkFileName(fileName)) throw new Error(ERROR_MSG_01());
     if (!this.checkPath(fileName)) throw new Error(ERROR_MSG_01());
     const target = this.toAbsolutePath(fileName);
-    fs.createFile(target);
+    await fs.createFile(target);
   }
 
   async copy(target1: string, target2: string) {
@@ -238,13 +271,20 @@ export default class FileManager {
     if (!code) code = this.fileCode;
     if (!this.check(sourceZip) || !this.checkPath(destDir)) throw new Error(ERROR_MSG_01());
     this.zipFileCheck(this.toAbsolutePath(sourceZip));
-    return await archive().decompress(this.toAbsolutePath(sourceZip), this.toAbsolutePath(destDir), code);
+    return await archive().decompress(
+      this.toAbsolutePath(sourceZip),
+      this.toAbsolutePath(destDir),
+      code
+    );
   }
 
   async previewArchive(sourceZip: string, code?: string): Promise<ArchiveEntryInfo[]> {
     if (!this.check(sourceZip)) throw new Error(ERROR_MSG_01());
     this.zipFileCheck(this.toAbsolutePath(sourceZip));
-    return await archive().listArchiveEntries(this.toAbsolutePath(sourceZip), code || this.fileCode);
+    return await archive().listArchiveEntries(
+      this.toAbsolutePath(sourceZip),
+      code || this.fileCode
+    );
   }
 
   async zip(sourceZip: string, files: string[], code?: string) {
@@ -291,11 +331,6 @@ export default class FileManager {
   }
 
   public static checkFileName(fileName?: string): boolean {
-    if (!fileName) return false;
-    const blackKeys = ["/", "\\", "|", "?", "*", ">", "<", ";", '"'];
-    for (const ch of blackKeys) {
-      if (fileName.includes(ch)) return false;
-    }
-    return true;
+    return checkFileName(fileName);
   }
 }

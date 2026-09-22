@@ -179,15 +179,12 @@ class InstanceSubsystem extends EventEmitter {
       this.emit("data", instance.instanceUuid, ...arr);
     });
     instance.on("exit", (exitData: { code: number; isCrash: boolean }) => {
-      this.emit(
-        "exit",
-        {
-          instanceUuid: instance.instanceUuid,
-          instanceName: instance.config.nickname,
-          exitCode: exitData.code,
-          isCrash: exitData.isCrash
-        }
-      );
+      this.emit("exit", {
+        instanceUuid: instance.instanceUuid,
+        instanceName: instance.config.nickname,
+        exitCode: exitData.code,
+        isCrash: exitData.isCrash
+      });
     });
     instance.on("open", (...arr) => {
       this.emit(
@@ -218,16 +215,27 @@ class InstanceSubsystem extends EventEmitter {
     });
   }
 
-  removeInstance(instanceUuid: string, deleteFile: boolean) {
+  async removeInstance(instanceUuid: string, deleteFile: boolean) {
     const instance = this.getInstance(instanceUuid);
     if (instance) {
+      if (instanceUuid === this.GLOBAL_INSTANCE_UUID)
+        throw new Error("Cannot delete the global terminal instance");
       if (instance.status() !== Instance.STATUS_STOP) throw new Error($t("TXT_CODE_fb547313"));
-      instance.destroy();
-      this.instances.delete(instanceUuid);
-      StorageSubsystem.delete("InstanceConfig", instanceUuid);
-      InstanceControl.deleteInstanceAllTask(instanceUuid);
-      if (deleteFile) fs.remove(instance.absoluteCwdPath(), (err) => {});
-      return true;
+      const directory = path.resolve(instance.absoluteCwdPath());
+      if (deleteFile && directory === path.parse(directory).root) {
+        throw new Error($t("TXT_CODE_Instance_router.accessFileErr"));
+      }
+      instance.status(Instance.STATUS_BUSY);
+      try {
+        if (deleteFile) await fs.remove(directory);
+        InstanceControl.deleteInstanceAllTask(instanceUuid);
+        StorageSubsystem.delete("InstanceConfig", instanceUuid);
+        await instance.destroy();
+        this.instances.delete(instanceUuid);
+        return true;
+      } finally {
+        if (this.instances.has(instanceUuid)) instance.status(Instance.STATUS_STOP);
+      }
     }
     throw new Error($t("TXT_CODE_3bfb9e04"));
   }
@@ -377,7 +385,7 @@ class InstanceSubsystem extends EventEmitter {
     this.instances.forEach((instance) => {
       if (!this.isGlobalInstance(instance)) newArr.push(instance);
     });
-    newArr = newArr.sort((a, b) => (a.config.nickname > a.config.nickname ? 1 : -1));
+    newArr.sort((a, b) => a.config.nickname.localeCompare(b.config.nickname));
     return newArr;
   }
 

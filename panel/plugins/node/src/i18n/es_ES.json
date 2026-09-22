@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_NODE_DOCKERFILE_EDITOR": "Editar Dockerfile",
   "TXT_CODE_3d94ea16": "El socket del nodo es anormal, intente volver a conectarse en la administración del nodo.",
   "TXT_CODE_7c650d80": "La conexión del nodo falló. Comuníquese con el administrador para verificar el estado del nodo remoto.",
   "TXT_CODE_DESKTOP_NODES": "Nodos",

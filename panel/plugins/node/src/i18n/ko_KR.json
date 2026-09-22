@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_NODE_DOCKERFILE_EDITOR": "Dockerfile 편집",
   "TXT_CODE_3d94ea16": "노드 소켓이 비정상입니다. 노드 관리에서 다시 연결을 시도해보세요!",
   "TXT_CODE_7c650d80": "노드 연결에 실패했습니다. 데몬의 상태를 확인하려면 관리자에게 문의하세요!",
   "TXT_CODE_DESKTOP_NODES": "노드",

@@ -1,4 +1,7 @@
 {
+  "TXT_CODE_LEAVES_DONT_RESPOND_PING": "在服务器完全启动前不响应 Ping 请求。",
+  "TXT_CODE_LEAVES_HOPPER_COUNTER": "启用漏斗计数器。",
+  "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "启用 LMS Paster 协议支持。",
   "TXT_CODE_10088738": "确认删除",
   "TXT_CODE_10150756": "事件触发型任务",
   "TXT_CODE_10194e6a": "网络别名",

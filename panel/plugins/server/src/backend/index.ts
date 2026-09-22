@@ -74,6 +74,44 @@ export function apply(ctx: PanelPluginContext) {
     // some applications
   });
 
+  app.keys = [v4()];
+  app.use(
+    session(
+      {
+        key: v4(),
+        maxAge: 86400000,
+        overwrite: true,
+        httpOnly: true,
+        signed: true,
+        rolling: false,
+        renew: false,
+        sameSite: "lax",
+        secure: config.ssl
+      },
+      app
+    )
+  );
+  if (config.prefix !== "") {
+    const prefix = removeTrail(config.prefix, "/");
+    app.use(async (requestCtx, next) => {
+      if (requestCtx.path === prefix || requestCtx.path.startsWith(prefix + "/")) {
+        const originalUrl = requestCtx.url;
+        requestCtx.url = requestCtx.url.slice(prefix.length) || "/";
+        if (!requestCtx.url.startsWith("/")) requestCtx.url = "/" + requestCtx.url;
+        try {
+          await next();
+        } finally {
+          requestCtx.url = originalUrl;
+        }
+      } else {
+        requestCtx.redirect(prefix + requestCtx.url);
+      }
+    });
+  }
+  // Wrap parser and upload errors too, while keeping the authenticated session
+  // available before multipart parsing writes any temporary files.
+  app.use(protocol(ctx));
+
   // Ahead of koa-body, which is the whole point of it: an upload the caller may
   // not make must be rejected before the body parser writes it to disk.
   app.use(preCheck(ctx));
@@ -94,45 +132,10 @@ export function apply(ctx: PanelPluginContext) {
       jsonLimit: "10mb",
       onError(err) {
         ctx.logger.error("koaBody Lib Error:", err);
+        throw err;
       }
     })
   );
-
-  app.keys = [v4()];
-  app.use(
-    session(
-      {
-        key: v4(),
-        maxAge: 86400000,
-        overwrite: true,
-        httpOnly: true,
-        signed: true,
-        rolling: false,
-        renew: false,
-        secure: false
-      },
-      app
-    )
-  );
-
-  if (config.prefix !== "") {
-    const prefix = config.prefix;
-    app.use(async (requestCtx, next) => {
-      if (requestCtx.url.startsWith(prefix)) {
-        const orig = requestCtx.url;
-        requestCtx.url = requestCtx.url.slice(prefix.length);
-        if (!requestCtx.url.startsWith("/")) {
-          requestCtx.url = "/" + requestCtx.url;
-        }
-        await next();
-        requestCtx.url = orig;
-      } else {
-        requestCtx.redirect(removeTrail(prefix, "/") + requestCtx.url);
-      }
-    });
-  }
-
-  app.use(protocol(ctx));
 
   // Everything past this point belongs to the plugins: `KoaService` mounts the
   // two composed stacks a plugin adds middleware and routers to, which is why it
@@ -282,7 +285,7 @@ export function apply(ctx: PanelPluginContext) {
       if (values.reverseProxyHeader != null) {
         config.reverseProxyHeader = String(values.reverseProxyHeader);
       }
-      ctx.settings.save();
+      return ctx.settings.save();
     }
   }));
 

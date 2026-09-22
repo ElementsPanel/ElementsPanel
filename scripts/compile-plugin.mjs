@@ -25,6 +25,7 @@ const PROJECT_ROOT = path.resolve(SCRIPT_DIR, "..");
 const PANEL_ROOT = path.join(PROJECT_ROOT, "panel");
 const DAEMON_ROOT = path.join(PROJECT_ROOT, "daemon");
 const FRONTEND_ROOT = path.join(PROJECT_ROOT, "frontend");
+const OUTPUT_MARKER = ".elements-plugin-build.json";
 
 const FRONTEND_ENTRIES = [
   "src/frontend.ts",
@@ -35,6 +36,8 @@ const FRONTEND_ENTRIES = [
 
 /** The plugin's own face: a square PNG at the workspace root, packaged as-is. */
 const ICON_FILE = "icon.png";
+const MAX_ICON_BYTES = 1024 * 1024;
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 // 必须与宿主共享实例的包：面板运行时只有一份 Vue / cordis 容器，
 // 打进产物里会出现两个实例。其余依赖（vuetify、axios 等）全部打进去，
@@ -62,6 +65,37 @@ function parseArgs(argv) {
 
 function log(message) {
   process.stderr.write(`${message}\n`);
+}
+
+function assertRegularFile(filename, label) {
+  let stat;
+  try {
+    stat = fs.lstatSync(filename);
+  } catch (error) {
+    if (error?.code === "ENOENT") return false;
+    throw error;
+  }
+  if (!stat.isFile() || stat.isSymbolicLink()) {
+    throw new Error(`${label} must be a regular file: ${filename}`);
+  }
+  return true;
+}
+
+function validateIcon(filename) {
+  if (!assertRegularFile(filename, "icon.png")) return false;
+  const stat = fs.statSync(filename);
+  if (stat.size > MAX_ICON_BYTES) {
+    throw new Error(`icon.png must be no larger than ${MAX_ICON_BYTES} bytes.`);
+  }
+  const signature = Buffer.alloc(PNG_SIGNATURE.length);
+  const file = fs.openSync(filename, "r");
+  try {
+    fs.readSync(file, signature, 0, signature.length, 0);
+  } finally {
+    fs.closeSync(file);
+  }
+  if (!signature.equals(PNG_SIGNATURE)) throw new Error("icon.png must be a PNG image.");
+  return true;
 }
 
 function isEsmPackage(modulesDir, moduleName) {
@@ -205,12 +239,8 @@ export default defineConfig({
         path.join(PROJECT_ROOT, "panel", "plugins", "i18n", "src", "lang")
       )},
       "@": ${JSON.stringify(path.join(PROJECT_ROOT, "panel", "plugins", "console", "src"))},
-      "@console": ${JSON.stringify(
-        path.join(PROJECT_ROOT, "panel", "plugins", "console", "src")
-      )},
-      "@instance": ${JSON.stringify(
-        path.join(PROJECT_ROOT, "panel", "plugins", "instance", "src")
-      )}
+      "@console": ${JSON.stringify(path.join(PROJECT_ROOT, "panel", "plugins", "console", "src"))},
+      "@instance": ${JSON.stringify(path.join(PROJECT_ROOT, "panel", "plugins", "instance", "src"))}
     }
   },
   build: {
@@ -239,7 +269,10 @@ export default defineConfig({
     fs.rmSync(configPath, { force: true });
   }
 
-  return { entry: "frontend/index.js", styles: fs.existsSync(path.join(outFrontendDir, "style.css")) ? ["frontend/style.css"] : [] };
+  return {
+    entry: "frontend/index.js",
+    styles: fs.existsSync(path.join(outFrontendDir, "style.css")) ? ["frontend/style.css"] : []
+  };
 }
 
 /**
@@ -250,7 +283,7 @@ export default defineConfig({
  */
 function copyReadme(workspace, side, outSideDir) {
   const source = path.join(workspace, side, "README.md");
-  if (!fs.existsSync(source)) return null;
+  if (!assertRegularFile(source, `${side}/README.md`)) return null;
 
   fs.copyFileSync(source, path.join(outSideDir, "README.md"));
   log(`[compile] ${side}: 带上自述 ${path.relative(PROJECT_ROOT, source)}`);
@@ -268,7 +301,7 @@ function copyReadme(workspace, side, outSideDir) {
  */
 function copyIcon(workspace, side, outSideDir) {
   const source = path.join(workspace, ICON_FILE);
-  if (!fs.existsSync(source)) return false;
+  if (!validateIcon(source)) return false;
 
   const preferred = fs.existsSync(path.join(workspace, "panel", "plugin.json"))
     ? "panel"
@@ -281,19 +314,21 @@ function copyIcon(workspace, side, outSideDir) {
 }
 
 /** 产出的 plugin.json 指向编译后的文件，和打包脚本的产出保持一致。 */
-function writeManifest(side, workspace, outSideDir, frontend) {
+function writeManifest(side, workspace, outSideDir, backend, frontend) {
   const manifestPath = path.join(workspace, side, "plugin.json");
   const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 
-  manifest.backend = "backend/index.cjs";
+  if (backend) manifest.backend = "backend/index.cjs";
+  else delete manifest.backend;
   if (frontend) {
     manifest.frontend = frontend.entry;
     manifest.styles = frontend.styles;
   } else {
     delete manifest.frontend;
-    delete manifest.ui;
     delete manifest.styles;
   }
+  delete manifest.ui;
+  delete manifest.daemon;
   delete manifest.panel;
   delete manifest.main;
   delete manifest.entry;
@@ -335,6 +370,7 @@ function listFiles(root) {
   const walk = (directory) => {
     for (const item of fs.readdirSync(directory, { withFileTypes: true })) {
       const target = path.join(directory, item.name);
+      if (directory === root && item.name === OUTPUT_MARKER) continue;
       if (item.isDirectory()) {
         walk(target);
         continue;
@@ -364,8 +400,52 @@ async function main() {
     throw new Error(`工作区不存在：${workspace}`);
   }
 
+  // Validate source assets before clearing an existing build. A malformed or
+  // linked asset must never destroy the last usable package.
+  validateIcon(path.join(workspace, ICON_FILE));
+  for (const side of ["panel", "daemon"]) {
+    const sourceDir = path.join(workspace, side);
+    if (!fs.existsSync(path.join(sourceDir, "plugin.json"))) continue;
+    assertRegularFile(path.join(sourceDir, "plugin.json"), `${side}/plugin.json`);
+    assertRegularFile(path.join(sourceDir, "README.md"), `${side}/README.md`);
+  }
+
+  const realWorkspace = fs.realpathSync(workspace);
+  const realOutput = resolveRealPath(outDir);
+  const outputRelative = path.relative(fs.realpathSync(PROJECT_ROOT), realOutput);
+  if (
+    !outputRelative ||
+    outputRelative === ".." ||
+    outputRelative.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(outputRelative)
+  ) {
+    throw new Error("输出目录不能通过符号链接离开项目。");
+  }
+  const sourceRelative = path.relative(realOutput, realWorkspace);
+  if (
+    !sourceRelative ||
+    (!sourceRelative.startsWith(`..${path.sep}`) &&
+      sourceRelative !== ".." &&
+      !path.isAbsolute(sourceRelative))
+  ) {
+    throw new Error("输出目录不能包含插件源代码工作区。");
+  }
+  const markerPath = path.join(outDir, OUTPUT_MARKER);
+  if (fs.existsSync(outDir) && fs.readdirSync(outDir).length > 0) {
+    let owner;
+    try {
+      owner = JSON.parse(fs.readFileSync(markerPath, "utf8"));
+    } catch {
+      throw new Error(`拒绝清理非插件构建目录：${outDir}`);
+    }
+    if (owner.workspace !== realWorkspace) {
+      throw new Error(`输出目录属于其他插件工作区：${outDir}`);
+    }
+  }
+
   fs.rmSync(outDir, { recursive: true, force: true });
   fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(markerPath, JSON.stringify({ workspace: realWorkspace }), "utf8");
 
   const sides = [];
   for (const side of ["panel", "daemon"]) {
@@ -375,9 +455,9 @@ async function main() {
     const outSideDir = path.join(outDir, side);
     fs.mkdirSync(outSideDir, { recursive: true });
 
-    await compileBackend(side, workspace, outSideDir);
+    const backend = await compileBackend(side, workspace, outSideDir);
     const frontend = side === "panel" ? await compileFrontend(workspace, outSideDir) : null;
-    const manifest = writeManifest(side, workspace, outSideDir, frontend);
+    const manifest = writeManifest(side, workspace, outSideDir, backend, frontend);
     const readme = copyReadme(workspace, side, outSideDir);
     const icon = copyIcon(workspace, side, outSideDir);
 
@@ -408,6 +488,12 @@ async function main() {
       sizeBytes: files.reduce((total, file) => total + file.size, 0)
     })}\n`
   );
+}
+
+function resolveRealPath(target) {
+  if (fs.existsSync(target)) return fs.realpathSync(target);
+  const parent = path.dirname(target);
+  return parent === target ? target : path.join(resolveRealPath(parent), path.basename(target));
 }
 
 main().catch((error) => {
