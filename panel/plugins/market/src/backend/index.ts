@@ -342,6 +342,42 @@ export async function apply(ctx: PanelPluginContext) {
     requestCtx.body = listNodes();
   });
 
+  /**
+   * 插件图标。市场地址只配在后端，浏览器拿不到，所以图片也经这里转一手，与其余市场
+   * 接口一致。
+   *
+   * 返回的是 data URL 而不是图片本身：面板的请求层按 JSON 协议收发（console 的
+   * apiService 只取响应体里的 `data`），返回二进制它读不了。图标很小，转成 data URL
+   * 由页面直接放进 <img> 最省事。
+   *
+   * 包里没有 icon.png 时市场返回 404，这里当作「没有图标」——dataUrl 为 null，
+   * 页面回退到拼图图标，缺图标不是错误。
+   */
+  router.get(
+    "/plugin/icon",
+    requireAdmin,
+    validator({ query: { pluginId: String } }),
+    async (requestCtx: Koa.ParameterizedContext) => {
+      const pluginId = String(requestCtx.query.pluginId);
+      const version = requestCtx.query.version ? String(requestCtx.query.version) : undefined;
+      try {
+        const response = await axios.get<ArrayBuffer>(
+          `${marketSettings().pluginMarketAddr}/api/plugins/${encodeURIComponent(pluginId)}/icon`,
+          {
+            params: version ? { version } : {},
+            responseType: "arraybuffer",
+            timeout: 15000
+          }
+        );
+        const data = Buffer.from(response.data);
+        requestCtx.body = { dataUrl: `data:image/png;base64,${data.toString("base64")}` };
+      } catch {
+        // 市场没有图标，或这个市场源不可达：都当作没有图标。
+        requestCtx.body = { dataUrl: null };
+      }
+    }
+  );
+
   // What a package contains, before anything is installed: the page asks this to
   // find out whether it has to ask the user which nodes to send it to.
   router.get(

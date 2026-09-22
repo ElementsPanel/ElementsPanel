@@ -3,8 +3,9 @@ import PageToolbar from "@/components/PageToolbar.vue";
 import { t } from "@/lang/i18n";
 import { getValidatorErrorMsg } from "@/tools/validator";
 import { message } from "@/tools/vuetifyToast";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import {
+  VAvatar,
   VBtn,
   VCard,
   VCardActions,
@@ -13,11 +14,13 @@ import {
   VCol,
   VContainer,
   VIcon,
+  VImg,
   VProgressLinear,
   VRow,
   VTextField
 } from "vuetify/components";
 import { pluginMarketList, type MarketPlugin } from "../api";
+import { usePluginIcons } from "../hooks/usePluginIcons";
 import PluginMarketSideBadge from "./PluginMarketSideBadge.vue";
 
 const props = defineProps<{ embedded?: boolean }>();
@@ -25,6 +28,7 @@ const emit = defineEmits<{ select: [pluginId: string] }>();
 const loading = ref(false);
 const plugins = ref<MarketPlugin[]>([]);
 const keyword = ref<string | null>("");
+const { icons, load } = usePluginIcons();
 
 const visiblePlugins = computed(() => {
   const q = (keyword.value ?? "").trim().toLowerCase();
@@ -37,6 +41,15 @@ const visiblePlugins = computed(() => {
     )
   );
 });
+
+// 只取屏幕上这些插件的图标，并且只取市场说有的那些（hasIcon）。
+watch(
+  visiblePlugins,
+  (list) => {
+    for (const plugin of list) void load(plugin.id, plugin.hasIcon);
+  },
+  { immediate: true }
+);
 
 async function refresh() {
   loading.value = true;
@@ -112,8 +125,15 @@ onMounted(refresh);
             @keydown="onCardKeydown($event, plugin)"
           >
             <VCardText class="plugin-market-card-content">
-              <div class="text-h6">
-                {{ plugin.displayName }}
+              <div class="plugin-market-card-head">
+                <!-- 包里的 icon.png；市场没给图标时仍是那块拼图 -->
+                <VAvatar size="40" rounded="lg" color="surface-variant">
+                  <VImg v-if="icons[plugin.id]" :src="icons[plugin.id]" alt="" cover />
+                  <VIcon v-else icon="mdi-puzzle-outline" size="22" />
+                </VAvatar>
+                <div class="text-h6">
+                  {{ plugin.displayName }}
+                </div>
               </div>
               <div class="text-caption text-medium-emphasis">
                 {{ t("TXT_CODE_PLUGIN_MARKET_BY", { name: plugin.author?.displayName ?? "" }) }}
@@ -176,6 +196,14 @@ onMounted(refresh);
 
 .plugin-market-card-content {
   flex: 1 0 auto;
+}
+
+// 图标与标题排在一行：图标是插件在市场里的门面，标题紧跟着它。
+.plugin-market-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
 }
 
 .plugin-market-card-summary {

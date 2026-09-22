@@ -92,6 +92,7 @@ setting on this plugin's own settings form.
 | GET | `/api/market/plugin/list` | the market's published plugins, each with the version installed here |
 | GET | `/api/market/plugin/detail` | public plugin details and approved versions; accepts `pluginId` and optional `version`, and adds the locally installed version |
 | GET | `/api/market/plugin/installed` | what has been installed from the market |
+| GET | `/api/market/plugin/icon` | the plugin's icon as a data URL, proxied from the market; accepts `pluginId` and optional `version` |
 | GET | `/api/market/plugin/nodes` | the daemons a daemon half can be sent to |
 | GET | `/api/market/plugin/package` | what a published package contains, before installing it |
 | POST | `/api/market/plugin/install` | download a package, write the panel half, send the daemon half to the named nodes |
@@ -126,6 +127,17 @@ reports the sides of each release — the first path segment of its package — 
 (the latest release's) and the detail header the latest release's. A market source
 that predates the field sends nothing, in which case no badge is shown rather than
 a guess.
+
+A card and the detail header also show the plugin's icon: the package's own
+`icon.png`, announced as `hasIcon` on the market response. `hooks/usePluginIcons.ts`
+fetches it once per plugin, through `/api/market/plugin/icon` rather than straight
+from the market — the market's address is a backend setting, so the browser cannot
+build that URL itself, the same reason every other market call goes through the
+panel. That route answers with a **data URL**, not the image: the panel's request
+layer only reads JSON (`console`'s `apiService` returns the body's `data` field),
+so a binary response would not arrive. A plugin without an icon, or a market
+source that predates `hasIcon`, simply has no entry and the page keeps the default
+puzzle icon.
 
 The desktop registers a separate administrator-only `plugin-market` application.
 `desktop/DesktopPluginMarket.vue` keeps list/detail navigation inside its window,

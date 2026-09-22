@@ -10,11 +10,13 @@ import {
   VChip,
   VContainer,
   VIcon,
+  VImg,
   VProgressLinear,
   VTab,
   VTabs
 } from "vuetify/components";
 import { pluginMarketDetail, type MarketPluginDetail } from "../api";
+import { usePluginIcons } from "../hooks/usePluginIcons";
 import PluginMarketInstall from "./PluginMarketInstall.vue";
 import PluginMarketSideBadge from "./PluginMarketSideBadge.vue";
 
@@ -32,6 +34,10 @@ let requestId = 0;
 // Every release row carries its own install button, so more than one install can be
 // in flight; count them instead of letting the last event win.
 let running = 0;
+
+// 包里的 icon.png 是插件的门面；市场没给图标时退回默认拼图图标。
+const { icons, load } = usePluginIcons();
+const icon = computed(() => (plugin.value ? icons.value[plugin.value.id] : undefined));
 
 // 自述优先用包里的 README.md；市场没给（旧市场源，或包里没有自述）就退到插件说明。
 // 渲染与净化都在这里做，因为这个市场源可以是任意地址。
@@ -77,6 +83,7 @@ async function refresh() {
     if (currentRequest !== requestId) return;
     if (!response.value) throw new Error(t("TXT_CODE_PLUGIN_MARKET_NOT_FOUND"));
     plugin.value = response.value;
+    void load(response.value.id, response.value.hasIcon);
   } catch (err) {
     if (currentRequest === requestId) error.value = getValidatorErrorMsg(err);
   } finally {
@@ -126,8 +133,9 @@ onBeforeUnmount(() => requestId++);
       <template v-if="plugin">
         <header class="plugin-detail-header">
           <div class="plugin-detail-heading">
-            <span class="plugin-detail-icon">
-              <VIcon icon="mdi-puzzle-outline" size="34" />
+            <span class="plugin-detail-icon" :class="{ 'plugin-detail-icon--image': Boolean(icon) }">
+              <VImg v-if="icon" :src="icon" alt="" cover />
+              <VIcon v-else icon="mdi-puzzle-outline" size="34" />
             </span>
             <div class="plugin-detail-heading-text">
               <h1 class="plugin-detail-title">{{ plugin.displayName }}</h1>
@@ -340,6 +348,17 @@ onBeforeUnmount(() => requestId++);
   border-radius: 14px;
   color: rgb(var(--v-theme-primary));
   background: rgba(var(--v-theme-primary), 0.12);
+}
+
+// 有图标时让图片铺满这个圆角方块；保留底色，透明的 PNG 也看得清。
+.plugin-detail-icon--image {
+  padding: 0;
+  overflow: hidden;
+
+  :deep(.v-img) {
+    width: 100%;
+    height: 100%;
+  }
 }
 
 .plugin-detail-heading-text {

@@ -9,6 +9,7 @@
 //
 //   <out>/<side>/plugin.json
 //   <out>/<side>/README.md               （工作区里带自述时）
+//   <out>/<side>/icon.png                （工作区根目录带图标时）
 //   <out>/<side>/backend/index.cjs
 //   <out>/<side>/frontend/index.js       （仅 panel 侧有前端时）
 //
@@ -31,6 +32,9 @@ const FRONTEND_ENTRIES = [
   "src/frontend.js",
   "src/frontend.jsx"
 ];
+
+/** The plugin's own face: a square PNG at the workspace root, packaged as-is. */
+const ICON_FILE = "icon.png";
 
 // 必须与宿主共享实例的包：面板运行时只有一份 Vue / cordis 容器，
 // 打进产物里会出现两个实例。其余依赖（vuetify、axios 等）全部打进去，
@@ -253,6 +257,29 @@ function copyReadme(workspace, side, outSideDir) {
   return source;
 }
 
+/**
+ * 图标：工作区根目录的 `icon.png`。它会随包发布，做插件在插件市场里的门面——卡片和详情页
+ * 都显示它。
+ *
+ * 图标是插件级的（一个插件一个图标），所以只放进描述整包的那一端：有 panel 就 panel，
+ * 否则 daemon，与 plugin.json / README.md 的取用顺序一致。两端各存一份同样的图没有必要。
+ *
+ * 图标是可选的，没有就不带——页面据「包里有没有这个文件」回退到默认图标。
+ */
+function copyIcon(workspace, side, outSideDir) {
+  const source = path.join(workspace, ICON_FILE);
+  if (!fs.existsSync(source)) return false;
+
+  const preferred = fs.existsSync(path.join(workspace, "panel", "plugin.json"))
+    ? "panel"
+    : "daemon";
+  if (side !== preferred) return false;
+
+  fs.copyFileSync(source, path.join(outSideDir, ICON_FILE));
+  log(`[compile] ${side}: 带上图标 ${path.relative(PROJECT_ROOT, source)}`);
+  return true;
+}
+
 /** 产出的 plugin.json 指向编译后的文件，和打包脚本的产出保持一致。 */
 function writeManifest(side, workspace, outSideDir, frontend) {
   const manifestPath = path.join(workspace, side, "plugin.json");
@@ -352,13 +379,15 @@ async function main() {
     const frontend = side === "panel" ? await compileFrontend(workspace, outSideDir) : null;
     const manifest = writeManifest(side, workspace, outSideDir, frontend);
     const readme = copyReadme(workspace, side, outSideDir);
+    const icon = copyIcon(workspace, side, outSideDir);
 
     sides.push({
       side,
       id: manifest.id,
       version: manifest.version,
       frontend: Boolean(frontend),
-      readme: Boolean(readme)
+      readme: Boolean(readme),
+      icon: Boolean(icon)
     });
   }
 

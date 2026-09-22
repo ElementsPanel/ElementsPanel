@@ -245,7 +245,9 @@ const ALLOWED_EXTENSIONS = new Set([
   ".css",
   ".scss",
   ".md",
-  ".txt"
+  ".txt",
+  // The plugin's own icon, picked up from the workspace root.
+  ".png"
 ]);
 
 /**

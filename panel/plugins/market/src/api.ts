@@ -33,6 +33,12 @@ export interface MarketPlugin {
    * because a market source that predates the field simply does not send it.
    */
   sides?: PluginSide[];
+  /**
+   * Whether the latest release's package carries an `icon.png`. Optional for the
+   * same reason as `sides`: an older market source does not send it, and the page
+   * then falls back to the default icon.
+   */
+  hasIcon?: boolean;
 }
 
 /** Which half of a package carries a plugin: its first path segment. */
@@ -71,6 +77,21 @@ export interface InstalledPlugin {
 
 export const pluginMarketList = useDefineApi<unknown, MarketPlugin[]>({
   url: "/api/market/plugin/list",
+  method: "GET"
+});
+
+/**
+ * The plugin's icon, proxied to the market by the panel backend: the market's
+ * address is a backend setting, so the browser cannot fetch it directly. The
+ * route answers with a data URL rather than the image itself, because the panel's
+ * request layer only reads JSON; it answers `dataUrl: null` when the package
+ * carries no icon, which the page treats as "keep the default icon".
+ */
+export const pluginMarketIcon = useDefineApi<
+  { params: { pluginId: string; version?: string } },
+  { dataUrl: string | null }
+>({
+  url: "/api/market/plugin/icon",
   method: "GET"
 });
 

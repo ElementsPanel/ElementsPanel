@@ -138,6 +138,10 @@ The plugin's own description for users lives in \`panel/README.md\` (or
 \`daemon/README.md\`): it is packaged with the plugin and rendered on the market's
 自述 tab. This file is the developer's guide, and is not published.
 
+The plugin's face on the market is \`icon.png\` in this directory: put a square
+PNG here and it is packaged with the plugin and shown on its market card and
+detail page. Without one the market falls back to its default puzzle icon.
+
 Production builds still ignore \`external/\`: a published plugin is installed
 from the market, not from this directory.
 `
