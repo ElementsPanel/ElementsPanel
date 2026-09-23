@@ -14,6 +14,7 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "未找到節點",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "連接埠為必填",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "搜索節點...",
+  "TXT_CODE_NODE_LIST_EMPTY": "暫無可用節點",
   "TXT_CODE_DESKTOP_NODES_SOCKET": "直接連線",
   "TXT_CODE_b7d38e78": "遠端節點無法使用！請聯絡管理員前往節點清單檢查遠端節點狀態！",
   "TXT_CODE_bd99b64e": "請求逾時！請聯絡管理員檢查節點網路狀態，節點IP：",

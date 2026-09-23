@@ -14,6 +14,7 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "未找到节点",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "端口不能为空",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "搜索节点...",
+  "TXT_CODE_NODE_LIST_EMPTY": "暂无可用节点",
   "TXT_CODE_DESKTOP_NODES_SOCKET": "直连",
   "TXT_CODE_b7d38e78": "远程节点不可用！请联系管理员前往节点列表检查远程节点状态！",
   "TXT_CODE_bd99b64e": "请求超时！请联系管理员检查节点网络状态，节点IP：",

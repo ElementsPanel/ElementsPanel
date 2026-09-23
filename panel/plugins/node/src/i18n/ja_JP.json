@@ -14,6 +14,7 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "ノードが見つかりません",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "ポートは必須です",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "ノードを検索...",
+  "TXT_CODE_NODE_LIST_EMPTY": "利用可能なノードがありません",
   "TXT_CODE_DESKTOP_NODES_SOCKET": "直接接続",
   "TXT_CODE_b7d38e78": "リモートノードは使用できません!\nノード リストでリモート ノードのステータスを確認するには、管理者に連絡してください。",
   "TXT_CODE_bd99b64e": "リクエストはタイムアウトしました！\n管理者に問い合わせて、ノードのネットワーク ステータス、ノード IP を確認してください。",

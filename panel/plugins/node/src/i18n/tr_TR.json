@@ -14,6 +14,7 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "Düğüm bulunamadı",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "Bağlantı noktası gereklidir",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "Düğüm ara...",
+  "TXT_CODE_NODE_LIST_EMPTY": "Kullanılabilir düğüm yok",
   "TXT_CODE_DESKTOP_NODES_SOCKET": "Doğrudan bağlantı",
   "TXT_CODE_b7d38e78": "Uzak düğüm kullanılamıyor! \nUzak düğümün durumunu kontrol etmek üzere düğüm listesine gitmek için lütfen yöneticiyle iletişime geçin!",
   "TXT_CODE_bd99b64e": "İstek zaman aşımı! \nLütfen düğüm ağ durumunu kontrol etmek için yöneticiye başvurun, IP:",

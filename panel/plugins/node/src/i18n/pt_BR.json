@@ -14,6 +14,7 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "Nenhum nó encontrado",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "A porta é obrigatória",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "Pesquisar nós...",
+  "TXT_CODE_NODE_LIST_EMPTY": "Nenhum nó disponível",
   "TXT_CODE_DESKTOP_NODES_SOCKET": "Conexão direta",
   "TXT_CODE_b7d38e78": "O nó remoto não está disponível! \nPor favor, entre em contato com o administrador para ir à lista de nós e verificar o status do nó remoto!",
   "TXT_CODE_bd99b64e": "Tempo limite da solicitação! \nPor favor, entre em contato com o administrador para verificar o status da rede do nó, IP:",

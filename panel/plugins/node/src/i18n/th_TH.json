@@ -14,6 +14,7 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "ไม่พบโหนด",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "ต้องระบุพอร์ต",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "ค้นหาโหนด...",
+  "TXT_CODE_NODE_LIST_EMPTY": "ไม่มีโหนดที่พร้อมใช้งาน",
   "TXT_CODE_DESKTOP_NODES_SOCKET": "เชื่อมต่อโดยตรง",
   "TXT_CODE_b7d38e78": "โหนดระยะไกลไม่พร้อมใช้งาน! \nโปรดติดต่อผู้ดูแลระบบเพื่อไปที่รายการโหนดเพื่อตรวจสอบสถานะของโหนดระยะไกล!",
   "TXT_CODE_bd99b64e": "หมดเวลาการร้องขอ! \nกรุณาติดต่อผู้ดูแลระบบเพื่อตรวจสอบสถานะเครือข่ายของโหนด, IP:",

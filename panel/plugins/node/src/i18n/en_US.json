@@ -14,6 +14,7 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "No nodes found",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "Port is required",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "Search nodes...",
+  "TXT_CODE_NODE_LIST_EMPTY": "No nodes available",
   "TXT_CODE_DESKTOP_NODES_SOCKET": "Direct connection",
   "TXT_CODE_b7d38e78": "The remote node is unavailable! \nPlease contact the administrator to go to the node list to check the status of the remote node!",
   "TXT_CODE_bd99b64e": "Request timeout! \nPlease contact the administrator to check the node network status, IP:",

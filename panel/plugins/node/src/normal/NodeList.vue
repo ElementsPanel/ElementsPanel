@@ -4,7 +4,7 @@ import FadeUpAnimation from "@/components/FadeUpAnimation.vue";
 import { t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";
 import { ref } from "vue";
-import { VBtn, VCol, VContainer, VPagination, VRow, VSelect, VTextField } from "vuetify/components";
+import { VBtn, VCol, VContainer, VIcon, VPagination, VRow, VSelect, VTextField } from "vuetify/components";
 import { useRemoteNode } from "../hooks/useRemoteNode";
 import NodeDetailDialog from "./node/NodeDetailDialog.vue";
 import NodeItem from "./node/NodeItem.vue";
@@ -84,7 +84,16 @@ const handleOpenDetailDialog = async () => {
         </template>
       </PageToolbar>
 
-      <VRow density="compact" class="node-list-row">
+      <div v-if="response && !remotes.length && !refreshLoading" class="node-empty" role="status">
+        <VIcon icon="mdi-server-network-outline" size="48" class="node-empty-icon" />
+        <div class="node-empty-title">{{ t("TXT_CODE_NODE_LIST_EMPTY") }}</div>
+        <div class="node-empty-text">{{ t("TXT_CODE_NO_DATA") }}</div>
+        <VBtn color="primary" prepend-icon="mdi-plus" @click="handleOpenDetailDialog">
+          {{ t("TXT_CODE_15a381d5") }}
+        </VBtn>
+      </div>
+
+      <VRow v-else-if="remotes.length || refreshLoading" density="compact" class="node-list-row">
         <VCol cols="12">
           <div class="desc">
             <div class="desc-text">
@@ -154,6 +163,35 @@ const handleOpenDetailDialog = async () => {
   width: 100%;
   height: 100%;
   margin: 0;
+}
+.node-empty {
+  min-height: 38vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--color-gray-7);
+}
+.node-empty-icon {
+  margin-bottom: 8px;
+  color: var(--color-gray-6);
+}
+.node-empty-title {
+  color: var(--color-gray-8);
+  font-size: 1rem;
+  font-weight: 600;
+}
+.node-empty-text {
+  max-width: 460px;
+  color: var(--color-gray-7);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.node-empty :deep(.v-btn) {
+  margin-top: 8px;
 }
 .desc-text {
   color: var(--color-gray-7);

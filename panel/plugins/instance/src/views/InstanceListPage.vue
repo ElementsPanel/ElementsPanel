@@ -519,12 +519,14 @@ onMounted(async () => {
           </VCard>
         </VCol>
       </VRow>
-      <VEmptyState v-else :title="t('TXT_CODE_5415f009')" icon="mdi-view-grid-outline">
-        <template #actions>
-          <VBtn v-if="marketAvailable" color="primary" prepend-icon="mdi-storefront-outline" @click="toMarket">{{
-            t("TXT_CODE_871cb8bc") }}</VBtn>
-        </template>
-      </VEmptyState>
+      <div v-else class="instance-empty" role="status">
+        <VIcon icon="mdi-view-grid-outline" size="48" class="instance-empty-icon" />
+        <div class="instance-empty-title">{{ t("TXT_CODE_5415f009") }}</div>
+        <div class="instance-empty-text">{{ t("TXT_CODE_NO_DATA") }}</div>
+        <VBtn v-if="marketAvailable" color="primary" prepend-icon="mdi-storefront-outline" @click="toMarket">
+          {{ t("TXT_CODE_871cb8bc") }}
+        </VBtn>
+      </div>
     </VContainer>
     <VDialog v-model="deleteDialogOpen" class="app-dialog" max-width="480px">
       <VCard rounded="xl" :title="t('TXT_CODE_2a3b0c17')">
@@ -621,6 +623,36 @@ onMounted(async () => {
   min-height: 360px;
   align-items: center;
   justify-content: center;
+}
+
+.instance-empty {
+  min-height: 38vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--color-gray-7);
+}
+
+.instance-empty-icon {
+  margin-bottom: 8px;
+  color: var(--color-gray-6);
+}
+
+.instance-empty-title {
+  color: var(--color-gray-8);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.instance-empty-text {
+  max-width: 460px;
+  color: var(--color-gray-7);
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 .instance-grid>.v-col {

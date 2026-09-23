@@ -14,6 +14,7 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "Aucun nœud trouvé",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "Le port est obligatoire",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "Rechercher des nœuds...",
+  "TXT_CODE_NODE_LIST_EMPTY": "Aucun nœud disponible",
   "TXT_CODE_DESKTOP_NODES_SOCKET": "Connexion directe",
   "TXT_CODE_b7d38e78": "Le nœud distant ne peut pas être utilisé ! \nVeuillez contacter l'administrateur pour vérifier l'état du nœud distant dans la liste des nœuds !",
   "TXT_CODE_bd99b64e": "La demande a expiré ! \nVeuillez contacter l'administrateur pour vérifier l'état du réseau du nœud, l'adresse IP du nœud :",

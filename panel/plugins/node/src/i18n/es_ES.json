@@ -14,6 +14,7 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "No se encontraron nodos",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "El puerto es obligatorio",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "Buscar nodos...",
+  "TXT_CODE_NODE_LIST_EMPTY": "No hay nodos disponibles",
   "TXT_CODE_DESKTOP_NODES_SOCKET": "Conexión directa",
   "TXT_CODE_b7d38e78": "¡El nodo remoto no se puede utilizar! \n¡Comuníquese con el administrador para verificar el estado del nodo remoto en la lista de nodos!",
   "TXT_CODE_bd99b64e": "¡Tiempo de espera agotado! \nComuníquese con el administrador para verificar el estado de la red del nodo, IP del nodo:",

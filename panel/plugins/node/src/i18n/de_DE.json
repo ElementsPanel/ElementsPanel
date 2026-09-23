@@ -14,6 +14,7 @@
   "TXT_CODE_DESKTOP_NODES_NO_RESULTS": "Keine Knoten gefunden",
   "TXT_CODE_DESKTOP_NODES_PORT_REQUIRED": "Port ist erforderlich",
   "TXT_CODE_DESKTOP_NODES_SEARCH": "Knoten suchen...",
+  "TXT_CODE_NODE_LIST_EMPTY": "Keine Knoten verfügbar",
   "TXT_CODE_DESKTOP_NODES_SOCKET": "Direktverbindung",
   "TXT_CODE_b7d38e78": "Der Remote-Knoten kann nicht verwendet werden! \nBitte wenden Sie sich an den Administrator, um den Status des Remote-Knotens in der Knotenliste zu überprüfen!",
   "TXT_CODE_bd99b64e": "Zeitüberschreitung der Anforderung! \nBitte wenden Sie sich an den Administrator, um den Netzwerkstatus des Knotens und die Knoten-IP zu überprüfen:",

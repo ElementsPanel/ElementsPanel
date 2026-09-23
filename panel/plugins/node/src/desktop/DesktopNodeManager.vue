@@ -430,9 +430,13 @@ const closeAdvancedSettings = () => {
             ><VIcon icon="mdi-delete-outline"
           /></VBtn></div
       ></template>
-      <template #no-data
-        ><div class="dn-empty">{{ t("TXT_CODE_DESKTOP_NODES_NO_RESULTS") }}</div></template
-      >
+      <template #no-data>
+        <div class="dn-empty" role="status">
+          <VIcon icon="mdi-server-network-outline" size="48" class="dn-empty__icon" />
+          <div class="dn-empty__title">{{ t("TXT_CODE_NODE_LIST_EMPTY") }}</div>
+          <div class="dn-empty__text">{{ t("TXT_CODE_NO_DATA") }}</div>
+        </div>
+      </template>
     </VDataTable>
 
     <Teleport to="body">
@@ -891,6 +895,35 @@ const closeAdvancedSettings = () => {
 .dn-empty {
   font-size: 13px;
   color: var(--desktop-window-text-muted);
+}
+
+.dn-empty {
+  min-height: 38vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.dn-empty__icon {
+  margin-bottom: 8px;
+  color: var(--color-gray-6);
+}
+
+.dn-empty__title {
+  color: var(--color-gray-8);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.dn-empty__text {
+  max-width: 460px;
+  color: var(--color-gray-7);
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 .dn-dialog-overlay {
