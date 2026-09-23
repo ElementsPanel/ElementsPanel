@@ -19,6 +19,7 @@
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "面板",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "外掛管理本身無法被停用，請改為在其 plugin.json 中把 enabled 設為 false。",
   "TXT_CODE_PLUGIN_STATE_PENDING": "等待依賴",
+  "TXT_CODE_PLUGIN_STATE_DISABLED": "已停用",
   "TXT_CODE_PLUGIN_STATE_LOADING": "載入中",
   "TXT_CODE_PLUGIN_STATE_ACTIVE": "執行中",
   "TXT_CODE_PLUGIN_STATE_UNLOADING": "卸載中",

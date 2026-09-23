@@ -19,6 +19,7 @@
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "Panel",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "The plugin manager cannot disable itself. Set enabled to false in its plugin.json instead.",
   "TXT_CODE_PLUGIN_STATE_PENDING": "Waiting for dependencies",
+  "TXT_CODE_PLUGIN_STATE_DISABLED": "Disabled",
   "TXT_CODE_PLUGIN_STATE_LOADING": "Loading",
   "TXT_CODE_PLUGIN_STATE_ACTIVE": "Running",
   "TXT_CODE_PLUGIN_STATE_UNLOADING": "Unloading",

@@ -19,6 +19,7 @@
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "Panel",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "El gestor de complementos no puede desactivarse a sí mismo. Establece enabled en false en su plugin.json.",
   "TXT_CODE_PLUGIN_STATE_PENDING": "Esperando dependencias",
+  "TXT_CODE_PLUGIN_STATE_DISABLED": "Desactivado",
   "TXT_CODE_PLUGIN_STATE_LOADING": "Cargando",
   "TXT_CODE_PLUGIN_STATE_ACTIVE": "En ejecución",
   "TXT_CODE_PLUGIN_STATE_UNLOADING": "Descargando",

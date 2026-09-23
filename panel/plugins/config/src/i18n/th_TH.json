@@ -19,6 +19,7 @@
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "แผงควบคุม",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "ตัวจัดการปลั๊กอินปิดใช้งานตัวเองไม่ได้ กรุณาตั้ง enabled เป็น false ใน plugin.json ของมันแทน",
   "TXT_CODE_PLUGIN_STATE_PENDING": "กำลังรอส่วนที่ต้องพึ่งพา",
+  "TXT_CODE_PLUGIN_STATE_DISABLED": "ปิดใช้งาน",
   "TXT_CODE_PLUGIN_STATE_LOADING": "กำลังโหลด",
   "TXT_CODE_PLUGIN_STATE_ACTIVE": "กำลังทำงาน",
   "TXT_CODE_PLUGIN_STATE_UNLOADING": "กำลังยกเลิกการโหลด",

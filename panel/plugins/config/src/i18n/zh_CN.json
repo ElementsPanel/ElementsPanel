@@ -19,6 +19,7 @@
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "面板",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "插件管理自身无法被禁用，请改为在其 plugin.json 中把 enabled 设为 false。",
   "TXT_CODE_PLUGIN_STATE_PENDING": "等待依赖",
+  "TXT_CODE_PLUGIN_STATE_DISABLED": "已禁用",
   "TXT_CODE_PLUGIN_STATE_LOADING": "加载中",
   "TXT_CODE_PLUGIN_STATE_ACTIVE": "运行中",
   "TXT_CODE_PLUGIN_STATE_UNLOADING": "卸载中",

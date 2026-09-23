@@ -99,7 +99,7 @@ let disposed = false;
 const savingSettings = ref(false);
 const lastResult = ref<PluginChangeResult | null>(null);
 const stateLabels = {
-  disabled: "TXT_CODE_PLUGIN_IS_DISABLED",
+  disabled: "TXT_CODE_PLUGIN_STATE_DISABLED",
   pending: "TXT_CODE_PLUGIN_STATE_PENDING",
   loading: "TXT_CODE_PLUGIN_STATE_LOADING",
   active: "TXT_CODE_PLUGIN_STATE_ACTIVE",

@@ -19,6 +19,7 @@
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "Панель",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "Менеджер плагинов не может отключить сам себя. Укажите enabled: false в его plugin.json.",
   "TXT_CODE_PLUGIN_STATE_PENDING": "Ожидание зависимостей",
+  "TXT_CODE_PLUGIN_STATE_DISABLED": "Отключён",
   "TXT_CODE_PLUGIN_STATE_LOADING": "Загрузка",
   "TXT_CODE_PLUGIN_STATE_ACTIVE": "Работает",
   "TXT_CODE_PLUGIN_STATE_UNLOADING": "Выгрузка",

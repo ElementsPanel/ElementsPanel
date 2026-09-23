@@ -19,6 +19,7 @@
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "패널",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "플러그인 관리자는 자신을 비활성화할 수 없습니다. plugin.json에서 enabled 를 false 로 설정하세요.",
   "TXT_CODE_PLUGIN_STATE_PENDING": "종속성 대기 중",
+  "TXT_CODE_PLUGIN_STATE_DISABLED": "비활성",
   "TXT_CODE_PLUGIN_STATE_LOADING": "로드 중",
   "TXT_CODE_PLUGIN_STATE_ACTIVE": "실행 중",
   "TXT_CODE_PLUGIN_STATE_UNLOADING": "언로드 중",

@@ -19,6 +19,7 @@
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "Painel",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "O gerenciador de plugins não pode desativar a si mesmo. Defina enabled como false no plugin.json dele.",
   "TXT_CODE_PLUGIN_STATE_PENDING": "Aguardando dependências",
+  "TXT_CODE_PLUGIN_STATE_DISABLED": "Desativado",
   "TXT_CODE_PLUGIN_STATE_LOADING": "Carregando",
   "TXT_CODE_PLUGIN_STATE_ACTIVE": "Em execução",
   "TXT_CODE_PLUGIN_STATE_UNLOADING": "Descarregando",

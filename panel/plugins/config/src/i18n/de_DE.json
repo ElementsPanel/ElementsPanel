@@ -19,6 +19,7 @@
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "Panel",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "Die Plugin-Verwaltung kann sich nicht selbst deaktivieren. Setze stattdessen enabled auf false in ihrer plugin.json.",
   "TXT_CODE_PLUGIN_STATE_PENDING": "Wartet auf Abhängigkeiten",
+  "TXT_CODE_PLUGIN_STATE_DISABLED": "Deaktiviert",
   "TXT_CODE_PLUGIN_STATE_LOADING": "Wird geladen",
   "TXT_CODE_PLUGIN_STATE_ACTIVE": "Aktiv",
   "TXT_CODE_PLUGIN_STATE_UNLOADING": "Wird entladen",

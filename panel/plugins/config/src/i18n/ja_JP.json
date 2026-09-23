@@ -19,6 +19,7 @@
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "パネル",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "プラグイン管理自身は無効にできません。plugin.json で enabled を false に設定してください。",
   "TXT_CODE_PLUGIN_STATE_PENDING": "依存関係を待機中",
+  "TXT_CODE_PLUGIN_STATE_DISABLED": "無効",
   "TXT_CODE_PLUGIN_STATE_LOADING": "読み込み中",
   "TXT_CODE_PLUGIN_STATE_ACTIVE": "実行中",
   "TXT_CODE_PLUGIN_STATE_UNLOADING": "アンロード中",

@@ -19,6 +19,7 @@
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "Panneau",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "Le gestionnaire d extensions ne peut pas se désactiver lui-même. Définissez plutôt enabled à false dans son plugin.json.",
   "TXT_CODE_PLUGIN_STATE_PENDING": "En attente des dépendances",
+  "TXT_CODE_PLUGIN_STATE_DISABLED": "Désactivé",
   "TXT_CODE_PLUGIN_STATE_LOADING": "Chargement",
   "TXT_CODE_PLUGIN_STATE_ACTIVE": "Actif",
   "TXT_CODE_PLUGIN_STATE_UNLOADING": "Déchargement",
