@@ -186,13 +186,8 @@ const afterLeave = () => {
   overflow: hidden;
 }
 
-.app-dialog-content {
-  padding: 12px 28px 24px;
-}
-
 .app-dialog-actions {
   justify-content: flex-end;
   gap: 8px;
-  padding: 12px 16px 16px 28px;
 }
 </style>

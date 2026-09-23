@@ -813,14 +813,6 @@ const confirmDisable = () => {
   overflow: auto;
 }
 
-.plugin-config-confirm-card :deep(.v-card-text) {
-  padding: 0 28px 20px;
-}
-
-.plugin-config-confirm-card :deep(.v-card-actions) {
-  padding: 12px 28px 24px;
-}
-
 .plugin-config-title-row {
   display: flex;
   align-items: flex-start;
