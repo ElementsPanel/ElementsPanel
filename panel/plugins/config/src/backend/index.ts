@@ -116,6 +116,16 @@ export function apply(ctx: PanelPluginContext) {
     }
   );
 
+  router.delete(
+    "/",
+    requireAdmin,
+    ctx.middleware.validator({ query: { id: String } }),
+    async (requestCtx: Koa.ParameterizedContext) => {
+      await ctx.plugins.remove(String(requestCtx.request.query.id));
+      requestCtx.body = { removed: true };
+    }
+  );
+
   // The node half. `remote` is resolved here rather than injected at the top, so
   // removing `plugins/node` takes the node routes away and leaves the rest of the
   // page working.

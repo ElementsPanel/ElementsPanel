@@ -22,14 +22,18 @@ String fields may opt into the installed file manager's upload dialog. The
 field still stores a URL, so a missing file plugin degrades to a normal text
 field.
 
-Each plugin also gets an enable switch. It calls `PUT /api/plugins/enabled`,
-which this plugin's backend forwards to `ctx.plugins.setEnabled()`: the panel
-writes `enabled` into that plugin's `plugin.json` and applies it live, then the
-page calls `ctx.plugins.refresh()` so the browser drops or picks up the frontend
-half. `GET /api/plugins` lists every installed plugin, disabled ones included,
-because a disabled plugin has to stay listed to be enabled again. This plugin
-refuses to disable itself — that would remove the page the request came from; set
-`enabled` to false in its own `plugin.json` if you really mean it.
+Each panel plugin has an enable or disable button. It calls
+`PUT /api/plugins/enabled`, which this plugin's backend forwards to
+`ctx.plugins.setEnabled()`: the panel writes `enabled` into that plugin's
+`plugin.json` and applies it live, then the page calls `ctx.plugins.refresh()` so
+the browser drops or picks up the frontend half. `GET /api/plugins` lists every
+installed plugin, disabled ones included, because a disabled plugin has to stay
+listed to be enabled again. The page also saves declared settings from the title
+actions and can remove panel plugin files through `DELETE /api/plugins?id=`.
+Removal unloads the plugin and clears its saved override. In a source checkout,
+plugins under `panel/plugins` and custom `external` workspaces cannot be removed;
+compiled deployments can remove packaged plugins. Foundational plugins and this
+configuration page remain protected.
 
 Its own translations are bundled inside the plugin for all panel locales and are
 removed with it. `src/backend/` registers the same catalogue on the panel's

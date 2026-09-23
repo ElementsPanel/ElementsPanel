@@ -23,7 +23,6 @@ import type { SettingField } from "./api";
 const props = defineProps<{
   fields: SettingField[];
   values: Record<string, unknown>;
-  saving?: boolean;
 }>();
 
 // The event parameter is part of the emit type only; Vue supplies no runtime
@@ -51,7 +50,6 @@ const visible = (field: SettingField) => {
   });
 };
 
-const editable = computed(() => props.fields.filter((field) => field.type !== "link"));
 const fileManager = computed(() => usePluginService<FrontendFileManagerService>("file"));
 
 const uploading = reactive(new Set<string>());
@@ -187,11 +185,6 @@ const open = (field: SettingField) => {
       </div>
     </template>
 
-    <div v-if="editable.length" class="setting-save-row">
-      <VBtn type="submit" color="primary" :loading="saving">
-        {{ t("TXT_CODE_d507abff") }}
-      </VBtn>
-    </div>
   </VForm>
 </template>
 
@@ -242,7 +235,4 @@ const open = (field: SettingField) => {
   flex: 1;
 }
 
-.setting-save-row {
-  margin-top: 8px;
-}
 </style>

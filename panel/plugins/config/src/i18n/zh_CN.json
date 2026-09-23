@@ -1,6 +1,12 @@
 {
   "TXT_CODE_PLUGIN_CONFIG": "插件配置",
   "TXT_CODE_PLUGIN_CANCEL": "取消",
+  "TXT_CODE_PLUGIN_DELETE": "删除插件",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "插件文件和已保存的配置将被永久删除。",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "确定删除 {name}？",
+  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "源码插件和基础插件不能在此处删除。",
+  "TXT_CODE_PLUGIN_DELETED": "插件已删除",
+  "TXT_CODE_PLUGIN_SAVE_SETTINGS": "保存配置",
   "TXT_CODE_PLUGIN_DISABLE": "禁用",
   "TXT_CODE_PLUGIN_DISABLED": "插件已禁用",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "该插件提供的所有组件都会被立即移除。",

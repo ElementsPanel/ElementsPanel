@@ -23,6 +23,8 @@ export interface PluginRecord {
   error?: string;
   /** Whether the plugin declared a configuration form. */
   hasSettings?: boolean;
+  /** Whether the panel may remove this plugin package in the current environment. */
+  removable: boolean;
 }
 
 // A plugin describes its configuration on its backend rather than shipping a
@@ -86,6 +88,12 @@ export const setPluginEnabled = useDefineApi<
 >({
   url: "/api/plugins/enabled",
   method: "PUT"
+});
+
+/** Unloads and removes one panel plugin package. */
+export const removePlugin = useDefineApi<{ params: { id: string } }, void>({
+  url: "/api/plugins",
+  method: "DELETE"
 });
 
 /** One panel plugin's declared form and values, or `null` when it declared none. */

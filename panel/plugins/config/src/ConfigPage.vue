@@ -19,7 +19,7 @@ import {
   VProgressLinear,
   VSelect,
   VSpacer,
-  VSwitch
+  VTooltip
 } from "vuetify/components";
 import {
   nodeList,
@@ -27,6 +27,7 @@ import {
   nodePluginSettings,
   pluginList,
   pluginSettings,
+  removePlugin,
   setNodePluginEnabled,
   setPluginEnabled,
   updateNodePluginSettings,
@@ -39,9 +40,8 @@ import {
 } from "./api";
 import SchemaForm from "./SchemaForm.vue";
 
-// The panel reports installed plugins after applying the user override layer; the enable
-// switch lives; a disabled plugin has to stay listed for the switch to turn it
-// back on.
+// The panel reports installed plugins after applying the user override layer; a
+// disabled plugin has to stay listed for the enable button to turn it back on.
 //
 // The form beside the list is not a component any plugin shipped: a plugin
 // describes its configuration on its backend, and this page renders that
@@ -89,6 +89,9 @@ const currentId = computed({
 const selectedPlugin = computed(() =>
   currentList.value.find((item) => item.id === currentId.value)
 );
+const selectedPanelPlugin = computed(() =>
+  scope.value === "panel" ? plugins.value.find((item) => item.id === selectedId.value) : undefined
+);
 
 /** The selected plugin's declared form, or null when it declared none. */
 const schema = ref<SettingsSchema | null>(null);
@@ -117,14 +120,15 @@ const recordResult = (result?: PluginChangeResult | boolean) => {
   if (lastResult.value?.application === "failed")
     notify(lastResult.value.error || t("TXT_CODE_PLUGIN_LOAD_FAILED"), "error");
 };
-const disableCandidate = ref<PluginRecord | NodePluginRecord | null>(null);
+const disableCandidate = ref<{
+  scope: Scope;
+  plugin: PluginRecord | NodePluginRecord;
+  nodeId: string;
+} | null>(null);
 const disableConfirmOpen = ref(false);
-// The switch is a controlled input. Rejecting the disable confirmation leaves
-// `enabled` untouched, so Vuetify never re-patches the native checkbox: it keeps
-// the state the browser gave it and swallows the next click. Mirror the switch
-// locally so we can push the real value back and resync the input.
-const switchEnabled = ref(false);
-let disableCommitted = false;
+const deleteConfirmOpen = ref(false);
+const deletingPlugin = ref(false);
+const deleteCandidate = ref<PluginRecord | null>(null);
 const notify = (text: string, color: "success" | "error") => {
   if (color === "error") message.error(text);
   else message.success(text);
@@ -353,14 +357,18 @@ const apply = async (plugin: PluginRecord, enabled: boolean) => {
  * The daemon applies the switch itself and answers with the updated record, so
  * there is nothing for the browser to reconcile 鈥?only the list to re-read.
  */
-const applyNode = async (plugin: NodePluginRecord, enabled: boolean) => {
+const applyNode = async (
+  plugin: NodePluginRecord,
+  enabled: boolean,
+  daemonId = selectedNodeId.value
+) => {
   pending.value = plugin.id;
   try {
     const { execute } = setNodePluginEnabled();
     recordResult(
       (
         await execute({
-          params: { daemonId: selectedNodeId.value },
+          params: { daemonId },
           data: { id: plugin.id, enabled }
         })
       ).value?.result
@@ -380,12 +388,14 @@ const applyNode = async (plugin: NodePluginRecord, enabled: boolean) => {
  * plugin contributed 鈥?including, for some plugins, authentication itself.
  */
 const toggle = (plugin: PluginRecord | NodePluginRecord, enabled: boolean) => {
+  const targetScope = scope.value;
+  const nodeId = selectedNodeId.value;
   const commit = () =>
-    scope.value === "panel"
+    targetScope === "panel"
       ? apply(plugin as PluginRecord, enabled)
-      : applyNode(plugin as NodePluginRecord, enabled);
+      : applyNode(plugin as NodePluginRecord, enabled, nodeId);
   if (enabled) return commit();
-  disableCandidate.value = plugin;
+  disableCandidate.value = { scope: targetScope, plugin, nodeId };
   disableConfirmOpen.value = true;
 };
 
@@ -393,42 +403,39 @@ const toggleSelected = (enabled: boolean) => {
   if (selectedPlugin.value) toggle(selectedPlugin.value, enabled);
 };
 
-// Keep the mirrored switch in step with whatever plugin is selected.
-watch(
-  () => [selectedPlugin.value?.id, selectedPlugin.value?.enabled] as const,
-  () => {
-    switchEnabled.value = selectedPlugin.value?.enabled ?? false;
-  },
-  { immediate: true }
-);
-
-// Closing the dialog without confirming (cancel button, Esc, backdrop) must
-// restore the switch to the plugin's real state, which also resyncs the input.
 watch(disableConfirmOpen, (open) => {
-  if (open) return;
-  disableCandidate.value = null;
-  if (!disableCommitted) {
-    switchEnabled.value = selectedPlugin.value?.enabled ?? false;
-  }
-  disableCommitted = false;
+  if (!open) disableCandidate.value = null;
 });
 
-const onSwitchChange = (enabled: boolean) => {
-  switchEnabled.value = enabled;
-  toggleSelected(enabled);
-};
-
 const confirmDisable = () => {
-  const plugin = disableCandidate.value;
-  if (!plugin) {
+  const candidate = disableCandidate.value;
+  if (!candidate) {
     disableConfirmOpen.value = false;
     return;
   }
-  disableCommitted = true;
   disableConfirmOpen.value = false;
-  return scope.value === "panel"
-    ? apply(plugin as PluginRecord, false)
-    : applyNode(plugin as NodePluginRecord, false);
+  return candidate.scope === "panel"
+    ? apply(candidate.plugin as PluginRecord, false)
+    : applyNode(candidate.plugin as NodePluginRecord, false, candidate.nodeId);
+};
+
+const confirmRemove = async () => {
+  const plugin = deleteCandidate.value;
+  if (!plugin || !plugin.removable || deletingPlugin.value) return;
+  deletingPlugin.value = true;
+  try {
+    const { execute } = removePlugin();
+    await execute({ params: { id: plugin.id } });
+    deleteConfirmOpen.value = false;
+    deleteCandidate.value = null;
+    await ctx.plugins.refresh();
+    await load();
+    notify(t("TXT_CODE_PLUGIN_DELETED"), "success");
+  } catch (error) {
+    notifyError(error);
+  } finally {
+    deletingPlugin.value = false;
+  }
 };
 </script>
 
@@ -510,17 +517,83 @@ const confirmDisable = () => {
             <span v-if="selectedPlugin.version" class="plugin-config-version">
               {{ t("TXT_CODE_VERSION") }} {{ selectedPlugin.version }}
             </span>
-            <VSwitch
-              :model-value="switchEnabled"
-              :loading="pending === selectedPlugin.id"
-              :aria-label="
-                selectedPlugin.enabled ? t('TXT_CODE_PLUGIN_ENABLE') : t('TXT_CODE_PLUGIN_DISABLE')
+            <VTooltip
+              :text="t(selectedPlugin.enabled ? 'TXT_CODE_PLUGIN_DISABLE' : 'TXT_CODE_PLUGIN_ENABLE')"
+              location="top"
+            >
+              <template #activator="{ props: tooltipProps }">
+                <span v-bind="tooltipProps">
+                  <VBtn
+                    :icon="selectedPlugin.enabled ? 'mdi-power-off' : 'mdi-power'"
+                    :color="selectedPlugin.enabled ? 'warning' : 'success'"
+                    variant="text"
+                    :loading="pending === selectedPlugin.id"
+                    :disabled="Boolean(pending)"
+                    :aria-label="
+                      t(
+                        selectedPlugin.enabled
+                          ? 'TXT_CODE_PLUGIN_DISABLE'
+                          : 'TXT_CODE_PLUGIN_ENABLE'
+                      )
+                    "
+                    @click="toggleSelected(!selectedPlugin.enabled)"
+                  />
+                </span>
+              </template>
+            </VTooltip>
+            <VTooltip
+              v-if="schema?.fields.some((field) => field.type !== 'link')"
+              :text="t('TXT_CODE_PLUGIN_SAVE_SETTINGS')"
+              location="top"
+            >
+              <template #activator="{ props: tooltipProps }">
+                <span v-bind="tooltipProps">
+                  <VBtn
+                    icon="mdi-content-save"
+                    color="primary"
+                    variant="text"
+                    :loading="savingSettings"
+                    :disabled="schemaLoading"
+                    :aria-label="t('TXT_CODE_PLUGIN_SAVE_SETTINGS')"
+                    @click="saveSettings"
+                  />
+                </span>
+              </template>
+            </VTooltip>
+            <VTooltip
+              v-if="scope === 'panel'"
+              :text="
+                t(
+                  selectedPanelPlugin?.removable
+                    ? 'TXT_CODE_PLUGIN_DELETE'
+                    : 'TXT_CODE_PLUGIN_DELETE_UNAVAILABLE'
+                )
               "
-              color="primary"
-              density="compact"
-              hide-details
-              @update:model-value="onSwitchChange(Boolean($event))"
-            />
+              location="top"
+            >
+              <template #activator="{ props: tooltipProps }">
+                <span v-bind="tooltipProps">
+                  <VBtn
+                    icon="mdi-delete"
+                    color="error"
+                    variant="text"
+                    :loading="deletingPlugin"
+                    :disabled="!selectedPanelPlugin?.removable || deletingPlugin"
+                    :aria-label="
+                      t(
+                        selectedPanelPlugin?.removable
+                          ? 'TXT_CODE_PLUGIN_DELETE'
+                          : 'TXT_CODE_PLUGIN_DELETE_UNAVAILABLE'
+                      )
+                    "
+                    @click="
+                      deleteCandidate = selectedPanelPlugin || null;
+                      deleteConfirmOpen = Boolean(deleteCandidate)
+                    "
+                  />
+                </span>
+              </template>
+            </VTooltip>
           </div>
         </div>
 
@@ -577,12 +650,7 @@ const confirmDisable = () => {
           <VProgressCircular color="primary" indeterminate size="28" />
         </div>
         <div v-else-if="schema && schema.fields.length" class="plugin-config-form">
-          <SchemaForm
-            :fields="schema.fields"
-            :values="schema.values"
-            :saving="savingSettings"
-            @save="saveSettings"
-          />
+          <SchemaForm :fields="schema.fields" :values="schema.values" @save="saveSettings" />
         </div>
         <div v-else class="plugin-config-no-config">
           {{ t("TXT_CODE_PLUGIN_NO_CONFIG") }}
@@ -593,7 +661,7 @@ const confirmDisable = () => {
 
     <VDialog v-model="disableConfirmOpen" max-width="460">
       <VCard
-        :title="t('TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE', { name: disableCandidate?.id || '' })"
+        :title="t('TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE', { name: disableCandidate?.plugin.id || '' })"
         class="plugin-config-confirm-card"
         rounded="xl"
       >
@@ -605,6 +673,30 @@ const confirmDisable = () => {
           </VBtn>
           <VBtn color="error" @click="confirmDisable">
             {{ t("TXT_CODE_PLUGIN_DISABLE") }}
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
+
+    <VDialog v-model="deleteConfirmOpen" max-width="460">
+      <VCard
+        :title="t('TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE', { name: deleteCandidate?.id || '' })"
+        class="plugin-config-confirm-card"
+        rounded="xl"
+      >
+        <VCardText>{{ t("TXT_CODE_PLUGIN_DELETE_CONFIRM") }}</VCardText>
+        <VCardActions>
+          <VSpacer />
+          <VBtn variant="text" @click="deleteConfirmOpen = false">
+            {{ t("TXT_CODE_PLUGIN_CANCEL") }}
+          </VBtn>
+          <VBtn
+            color="error"
+            prepend-icon="mdi-delete"
+            :loading="deletingPlugin"
+            @click="confirmRemove"
+          >
+            {{ t("TXT_CODE_PLUGIN_DELETE") }}
           </VBtn>
         </VCardActions>
       </VCard>
@@ -830,7 +922,9 @@ const confirmDisable = () => {
 .plugin-config-meta {
   display: flex;
   flex-shrink: 0;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: 12px;
 }
 

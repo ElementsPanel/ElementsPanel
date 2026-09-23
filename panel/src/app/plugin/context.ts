@@ -334,6 +334,8 @@ export interface PanelPluginsService {
    * its routes, middleware, timers and services go with it.
    */
   setEnabled(id: string, enabled: boolean): Promise<PanelPluginRecord>;
+  /** Unloads and removes an installed panel plugin package. */
+  remove(id: string): Promise<void>;
   configure(id: string, config: Record<string, unknown>): Promise<PanelPluginRecord>;
   configuration(id: string): PanelSettingsSchema;
   runExclusive<T>(operation: () => Promise<T>): Promise<T>;

@@ -91,3 +91,18 @@ export function writePluginOverride(
     fs.rmSync(temporary, { force: true });
   }
 }
+
+/** Remove user-owned values when a plugin package is uninstalled. */
+export function removePluginOverride(id: string, filename = pluginOverridesPath()): void {
+  const data = readPluginOverrides(filename);
+  if (!Object.prototype.hasOwnProperty.call(data.plugins, id)) return;
+  delete data.plugins[id];
+  fs.mkdirSync(path.dirname(filename), { recursive: true });
+  const temporary = `${filename}.${randomBytes(8).toString("hex")}.tmp`;
+  try {
+    fs.writeFileSync(temporary, `${JSON.stringify(data, null, 2)}\n`, { mode: 0o600, flag: "wx" });
+    fs.renameSync(temporary, filename);
+  } finally {
+    fs.rmSync(temporary, { force: true });
+  }
+}

@@ -4,6 +4,7 @@ import { pathToFileURL } from "url";
 import {
   pluginDirectoryRevision,
   applyPluginOverrides,
+  removePluginOverride,
   writePluginOverride,
   validatePluginCompatibility,
   validatePluginSettings,
@@ -56,6 +57,11 @@ const ENTRY_CANDIDATES = [
 ];
 const FOUNDATION_PLUGIN_IDS = new Set(["i18n", "storage", "runtime"]);
 const ESSENTIAL_PLUGIN_IDS = new Set(["i18n", "storage", "runtime", "console"]);
+const NON_REMOVABLE_PLUGIN_IDS = new Set([...ESSENTIAL_PLUGIN_IDS, "config", "server", "monitor"]);
+
+function isDevelopmentCheckout() {
+  return fs.existsSync(path.resolve(process.cwd(), "src", "app"));
+}
 
 /** A panel plugin module, as its backend entry exports it. */
 export interface PanelPluginModule {
@@ -117,6 +123,7 @@ function ensurePanelPluginService() {
     frontendManifest: getPanelFrontendManifest,
     inventory: getPanelPluginInventory,
     setEnabled: setPanelPluginEnabled,
+    remove: removePanelPlugin,
     configure: configurePanelPlugin,
     configuration: (id: string): PanelSettingsSchema => {
       const manifest = findPlugin(id).manifest;
@@ -400,6 +407,8 @@ export interface PanelPluginRecord {
   running: boolean;
   /** Why the backend half is not running, when it should be. */
   error?: string;
+  /** False for source workspaces in development and foundational plugins. */
+  removable: boolean;
 }
 
 const FRONTEND_FIELDS = ["frontend", "ui"];
@@ -410,12 +419,22 @@ const FRONTEND_FIELDS = ["frontend", "ui"];
  * purpose: the inventory describes what is installed, not what compiled.
  */
 export function getPanelPluginInventory(): PanelPluginRecord[] {
+  const externalRoots =
+    isDevelopmentCheckout()
+      ? discoverExternalPluginRoots(path.resolve(process.cwd(), ".."), "panel")
+      : [];
   return discoverPanelPlugins({
     entryFields: [],
     includeDisabled: true,
     onWarning: (message, error) => logger.warn(message, error)
   }).map((plugin) => {
     const running = loaded.find((item) => item.manifest.id === plugin.manifest.id);
+    const directory = path.resolve(plugin.directory);
+    const inRoot = (root: string) => directory === root || directory.startsWith(`${root}${path.sep}`);
+    const protectedDevelopmentSource =
+      isDevelopmentCheckout() &&
+      (inRoot(path.resolve(BUILT_IN_PLUGINS_DIRECTORY())) ||
+        externalRoots.some((root) => inRoot(path.resolve(root.directory))));
     const has = (fields: string[]) =>
       fields.some((field) => typeof plugin.manifest[field] === "string");
     return {
@@ -427,6 +446,7 @@ export function getPanelPluginInventory(): PanelPluginRecord[] {
       sides: { backend: has(ENTRY_FIELDS), frontend: has(FRONTEND_FIELDS) },
       running: pluginState(plugin, running) === "active",
       state: pluginState(plugin, running),
+      removable: !protectedDevelopmentSource && !NON_REMOVABLE_PLUGIN_IDS.has(plugin.manifest.id),
       error:
         running?.error?.message ||
         running?.fork?.runtime.error?.message ||
@@ -460,6 +480,37 @@ export function setPanelPluginEnabled(id: string, enabled: boolean): Promise<Pan
       failure = String(error);
     }
     return changedRecord(id, failure);
+  });
+}
+
+/** Remove an installed panel plugin package. Source workspaces are never removable here. */
+export function removePanelPlugin(id: string): Promise<void> {
+  return change(async () => {
+    const plugin = findPlugin(id);
+    if (NON_REMOVABLE_PLUGIN_IDS.has(id)) throw new Error(`The plugin "${id}" cannot be removed.`);
+    const directory = path.resolve(plugin.directory);
+    const sourceRoot = path.resolve(BUILT_IN_PLUGINS_DIRECTORY());
+    const inRoot = (root: string) => directory === root || directory.startsWith(`${root}${path.sep}`);
+    const externalRoots =
+      isDevelopmentCheckout()
+        ? discoverExternalPluginRoots(path.resolve(process.cwd(), ".."), "panel")
+        : [];
+    if (
+      isDevelopmentCheckout() &&
+      (inRoot(sourceRoot) || externalRoots.some((root) => inRoot(path.resolve(root.directory))))
+    )
+      throw new Error("Source and custom workspace plugins cannot be removed.");
+    if (
+      !inRoot(sourceRoot) &&
+      !inRoot(path.resolve(process.cwd(), "data", "plugins")) &&
+      !inRoot(path.resolve(MARKET_PLUGINS_DIRECTORY()))
+    ) {
+      throw new Error("Plugin source is not removable.");
+    }
+
+    await removeRunning(id);
+    fs.removeSync(directory);
+    removePluginOverride(id);
   });
 }
 

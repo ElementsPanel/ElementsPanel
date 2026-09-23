@@ -74,6 +74,7 @@ function fixture(t, side = "panel") {
     start: loader[`load${cap}Plugins`],
     inventory: loader[`get${cap}PluginInventory`],
     enabled: loader[`set${cap}PluginEnabled`],
+    remove: loader[`remove${cap}Plugin`],
     configure: loader[`configure${cap}Plugin`]
   };
 }
@@ -166,6 +167,67 @@ test("incompatible plugin code never executes", async (t) => {
   assert.equal(record.state, "failed");
   assert.match(record.error, /Unsupported/);
 });
+
+test("panel: removing a packaged plugin unloads it and clears its user override", async (t) => {
+  const f = fixture(t);
+  const directory = f.write(
+    "removable",
+    'exports.apply=ctx=>{ctx.set("removableValue", true);};'
+  );
+  await f.start();
+  assert.equal(f.ctx.removableValue, true);
+  await f.enabled("removable", false);
+  assert.equal(
+    JSON.parse(fs.readFileSync(path.join(f.directory, "data/plugin-overrides.json"))).plugins
+      .removable.enabled,
+    false
+  );
+
+  await f.remove("removable");
+
+  assert.equal(fs.existsSync(directory), false);
+  assert.equal(f.ctx.removableValue, undefined);
+  const overrides = JSON.parse(
+    fs.readFileSync(path.join(f.directory, "data/plugin-overrides.json"))
+  );
+  assert.equal(Object.hasOwn(overrides.plugins, "removable"), false);
+  assert.equal(f.inventory().some((plugin) => plugin.id === "removable"), false);
+});
+
+test("panel: development source and external workspace plugins cannot be removed", async (t) => {
+  const f = fixture(t);
+  const previousNodeEnv = process.env.NODE_ENV;
+  process.env.NODE_ENV = "development";
+  t.after(() => {
+    if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = previousNodeEnv;
+  });
+  const panelRoot = path.join(f.directory, "panel");
+  const source = path.join(panelRoot, "plugins/source");
+  fs.mkdirSync(path.join(panelRoot, "src/app"), { recursive: true });
+  fs.mkdirSync(source, { recursive: true });
+  fs.writeFileSync(path.join(source, "index.cjs"), "exports.apply=()=>{};");
+  fs.writeFileSync(
+    path.join(source, "plugin.json"),
+    JSON.stringify({ id: "source", backend: "index.cjs" })
+  );
+  process.chdir(panelRoot);
+  const external = path.join(f.directory, "external/custom/panel");
+  fs.mkdirSync(external, { recursive: true });
+  fs.writeFileSync(path.join(external, "plugin.json"), JSON.stringify({ id: "workspace" }));
+
+  const inventory = f.inventory();
+  assert.equal(inventory.find((plugin) => plugin.id === "source").removable, false);
+  assert.equal(inventory.find((plugin) => plugin.id === "workspace").removable, false);
+  await assert.rejects(f.remove("source"), /Source and custom workspace plugins cannot be removed/);
+  await assert.rejects(
+    f.remove("workspace"),
+    /Source and custom workspace plugins cannot be removed/
+  );
+  assert.equal(fs.existsSync(source), true);
+  assert.equal(fs.existsSync(path.join(external, "plugin.json")), true);
+});
+
 test("a revision changes when a nested module changes, and public assets never reveal disk paths or serve stale revisions", async (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "elements-plugin-assets-"));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
