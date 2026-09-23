@@ -902,12 +902,13 @@ const confirmRemove = async () => {
   min-width: 0;
   flex: 1;
   padding: 32px;
+  padding-top: 20px;
   overflow: auto;
 }
 
 .plugin-config-title-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 20px;
@@ -981,6 +982,7 @@ const confirmRemove = async () => {
 
   .plugin-config-title-row {
     flex-direction: column;
+    align-items: flex-start;
     gap: 8px;
   }
 }

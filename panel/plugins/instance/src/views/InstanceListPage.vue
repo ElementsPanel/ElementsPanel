@@ -747,10 +747,11 @@ onMounted(async () => {
 
 .instance-card-actions {
   min-height: 0;
+  margin-top: -4px;
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 2px;
-  padding: 4px 16px 12px;
+  padding: 0 16px 12px;
 }
 
 .instance-card-actions :deep(.v-btn .v-icon) {

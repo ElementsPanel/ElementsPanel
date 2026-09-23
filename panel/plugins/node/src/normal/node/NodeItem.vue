@@ -225,16 +225,14 @@ onMounted(() => {
 
               <div v-if="detail.onlyCopy">
                 <VBtn
+                  icon="mdi-content-copy"
                   variant="text"
-                  size="small"
+                  size="x-small"
+                  density="compact"
                   class="node-copy-btn"
+                  :aria-label="`Copy ${detail.title}`"
                   @click="copyValue(detail.value)"
-                >
-                  <span class="text-monospace"
-                    >{{ String(detail.value ?? "").slice(0, 16) }}...</span
-                  >
-                  <VIcon icon="mdi-content-copy" size="16" class="ml-1" />
-                </VBtn>
+                />
               </div>
               <div v-else style="font-size: 13px">
                 <VTooltip v-if="detail.warn && detail.value" location="top">
@@ -319,14 +317,15 @@ onMounted(() => {
 }
 
 .node-copy-btn {
-  max-width: 100%;
-  padding: 0 4px;
-  text-transform: none;
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
 }
 
-.node-copy-btn :deep(.v-btn__content) {
-  max-width: 100%;
-  overflow: hidden;
+.node-copy-btn :deep(.v-icon) {
+  font-size: 16px;
 }
 
 @media (max-width: 992px) {
