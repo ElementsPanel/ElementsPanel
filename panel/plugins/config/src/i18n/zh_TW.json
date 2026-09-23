@@ -17,5 +17,13 @@
   "TXT_CODE_PLUGIN_NO_CONFIG": "此插件沒有可設定項目",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "節點",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "面板",
-  "TXT_CODE_PLUGIN_SELF_DISABLE": "外掛管理本身無法被停用，請改為在其 plugin.json 中把 enabled 設為 false。"
+  "TXT_CODE_PLUGIN_SELF_DISABLE": "外掛管理本身無法被停用，請改為在其 plugin.json 中把 enabled 設為 false。",
+  "TXT_CODE_PLUGIN_STATE_PENDING": "等待依賴",
+  "TXT_CODE_PLUGIN_STATE_LOADING": "載入中",
+  "TXT_CODE_PLUGIN_STATE_ACTIVE": "執行中",
+  "TXT_CODE_PLUGIN_STATE_UNLOADING": "卸載中",
+  "TXT_CODE_PLUGIN_RESTART_REQUIRED": "需要重新啟動服務才能套用此變更。",
+  "TXT_CODE_PLUGIN_SAVED_PENDING": "已儲存，正在等待外掛依賴。",
+  "TXT_CODE_PLUGIN_FRONTEND_FAILED": "瀏覽器外掛載入失敗",
+  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "需要重新整理頁面才能載入更新後的瀏覽器執行階段。"
 }

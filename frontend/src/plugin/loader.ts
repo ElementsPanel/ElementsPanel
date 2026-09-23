@@ -1,3 +1,8 @@
+import {
+  createPluginQueue,
+  validatePluginCompatibility
+} from "../../../common/src/plugin_contract";
+import { trackPluginDisposal } from "../../../common/src/plugin_lifecycle";
 import { shallowReactive } from "vue";
 import type { ForkScope } from "cordis";
 import { ctx, type PanelFrontendPluginContext } from "./context";
@@ -9,6 +14,8 @@ const FOUNDATION_SERVICES: Record<string, string> = {
   console: "console"
 };
 const ESSENTIAL_PLUGIN_IDS = new Set(Object.keys(FOUNDATION_SERVICES));
+const change = createPluginQueue();
+const settle = trackPluginDisposal(ctx);
 
 /**
  * Fetches plugin code and hands it to cordis.
@@ -42,6 +49,7 @@ interface PluginSource {
   directory: string;
   assetDirectory: string;
   entry?: string;
+  revision?: string;
   styles?: string[];
   load: (cacheKey?: string) => Promise<Record<string, unknown>>;
 }
@@ -51,6 +59,8 @@ export interface LoadedPanelFrontendPlugin {
   directory: string;
   fork?: ForkScope;
   error?: Error;
+  restartRequired?: boolean;
+  reloadRequired?: boolean;
 }
 
 interface InternalPlugin extends LoadedPanelFrontendPlugin {
@@ -158,12 +168,14 @@ async function fetchProductionSources(): Promise<PluginSource[]> {
     const entryUrl = toUrl(entry);
     result.push({
       metadata,
-      directory: typeof (item as any).directory === "string" ? (item as any).directory : metadata.id,
+      directory:
+        typeof (item as any).directory === "string" ? (item as any).directory : metadata.id,
       assetDirectory:
         typeof (item as any).assetDirectory === "string"
           ? (item as any).assetDirectory
           : metadata.id,
       entry: entryUrl,
+      revision: typeof item.revision === "string" ? item.revision : String(metadata.version || ""),
       styles: Array.isArray((item as any).styles)
         ? (item as any).styles
             .filter((style: unknown): style is string => typeof style === "string")
@@ -208,6 +220,9 @@ async function install(source: PluginSource, cacheKey?: string, configOverride?:
   });
   plugins.push(plugin);
   try {
+    validatePluginCompatibility(source.metadata.elements);
+    if (source.metadata.restartRequired)
+      throw new Error("The plugin backend requires a restart before this version can load.");
     if (!import.meta.env.DEV) plugin.removeStyles = await loadStyles(source);
     const module = toModule(await source.load(cacheKey), source.metadata.id);
     if (module) {
@@ -249,7 +264,9 @@ async function install(source: PluginSource, cacheKey?: string, configOverride?:
     plugin.fork?.dispose();
     plugin.fork = undefined;
     plugin.removeStyles?.();
-    ctx.logger("plugin").error(`Panel frontend plugin failed to load: ${source.metadata.id}`, error);
+    ctx
+      .logger("plugin")
+      .error(`Panel frontend plugin failed to load: ${source.metadata.id}`, error);
   }
   return plugin;
 }
@@ -263,7 +280,7 @@ function isCurrentRoute(plugin: InternalPlugin) {
   );
 }
 
-export async function unloadPlugin(id: string) {
+async function unloadPluginInternal(id: string) {
   if (ESSENTIAL_PLUGIN_IDS.has(id)) {
     throw new Error(`The essential frontend plugin "${id}" cannot be unloaded.`);
   }
@@ -273,7 +290,13 @@ export async function unloadPlugin(id: string) {
   // nothing.
   const vue = ctx.get("vue");
   if (vue && isCurrentRoute(plugin)) await vue.router.replace("/404");
-  await plugin.fork?.dispose();
+  plugin.fork?.dispose();
+  try {
+    await settle();
+  } catch (error) {
+    plugin.error = error instanceof Error ? error : new Error(String(error));
+    throw error;
+  }
   plugin.removeStyles?.();
   removePluginStyles(plugin.source);
   const index = plugins.indexOf(plugin);
@@ -282,21 +305,21 @@ export async function unloadPlugin(id: string) {
   return true;
 }
 
-export async function loadPlugin(id: string) {
+async function loadPluginInternal(id: string) {
   let source = sources.get(id);
   if (!source && !import.meta.env.DEV) {
-    await refreshPlugins();
+    await refreshPluginsInternal();
     source = sources.get(id);
   }
   if (!source) throw new Error(`Panel frontend plugin not found: ${id}`);
   return install(source);
 }
 
-export async function reloadPlugin(id: string) {
+async function reloadPluginInternal(id: string) {
   if (ESSENTIAL_PLUGIN_IDS.has(id)) {
     throw new Error(`The essential frontend plugin "${id}" cannot be reloaded.`);
   }
-  await unloadPlugin(id);
+  await unloadPluginInternal(id);
   if (!import.meta.env.DEV) {
     const discovered = await discoverSources();
     sources.clear();
@@ -309,18 +332,35 @@ export async function reloadPlugin(id: string) {
 }
 
 /** Re-reads what is installed and loads or unloads to match. */
-export async function refreshPlugins() {
+async function refreshPluginsInternal() {
   const discovered = await discoverSources();
   const next = new Map(discovered.map((source) => [source.metadata.id, source]));
   sources.clear();
   next.forEach((source, id) => sources.set(id, source));
   for (const plugin of [...plugins].reverse()) {
     if (ESSENTIAL_PLUGIN_IDS.has(plugin.metadata.id)) continue;
-    if (!next.has(plugin.metadata.id)) await unloadPlugin(plugin.metadata.id);
+    if (!next.has(plugin.metadata.id)) await unloadPluginInternal(plugin.metadata.id);
   }
   for (const source of discovered) {
+    const current = plugins.find((plugin) => plugin.metadata.id === source.metadata.id);
+    if (current) current.restartRequired = Boolean(source.metadata.restartRequired);
+    const changed =
+      current &&
+      (source.revision !== current.source.revision ||
+        JSON.stringify(source.metadata.config) !== JSON.stringify(current.metadata.config) ||
+        Boolean(source.metadata.restartRequired) !==
+          Boolean(current.source.metadata.restartRequired));
+    if (current && (changed || source.metadata.restartRequired)) {
+      if (ESSENTIAL_PLUGIN_IDS.has(source.metadata.id) || source.metadata.restartRequired) {
+        current.restartRequired = Boolean(source.metadata.restartRequired);
+        current.reloadRequired = Boolean(changed && ESSENTIAL_PLUGIN_IDS.has(source.metadata.id));
+        continue;
+      }
+      await unloadPluginInternal(source.metadata.id);
+    }
     if (!plugins.some((plugin) => plugin.metadata.id === source.metadata.id)) await install(source);
   }
+  await settle();
   return discovered.map((source) => source.metadata) as readonly PanelFrontendPluginMetadata[];
 }
 
@@ -346,4 +386,48 @@ export async function bootstrapPanelFrontendPlugin(id: string, config?: unknown)
 
 export function getLoadedPlugins(): readonly LoadedPanelFrontendPlugin[] {
   return plugins;
+}
+
+/** Serialize UI actions and server notifications against the same browser state. */
+export const unloadPlugin = (id: string) => change(() => unloadPluginInternal(id));
+export const loadPlugin = (id: string) => change(() => loadPluginInternal(id));
+export const reloadPlugin = (id: string) => change(() => reloadPluginInternal(id));
+export const refreshPlugins = () =>
+  change(async () => {
+    const result = await refreshPluginsInternal();
+    window.dispatchEvent(new CustomEvent("elementspanel:plugins-changed"));
+    return result;
+  });
+
+/** Reconnect receives the complete current generation; no event history is needed. */
+export function watchPluginChanges(): () => void {
+  if (import.meta.env.DEV || typeof EventSource === "undefined") return () => {};
+  const events = new EventSource(new URL("plugins/events", document.baseURI).href);
+  let revision = "";
+  let stopped = false;
+  let retry: ReturnType<typeof setTimeout> | undefined;
+  const synchronize = () => {
+    if (stopped) return;
+    void refreshPlugins().catch((error) => {
+      ctx.logger("plugin").error("Failed to synchronize plugins", error);
+      retry = setTimeout(synchronize, 2000);
+    });
+  };
+  events.onmessage = (event) => {
+    let next: string;
+    try {
+      next = JSON.parse(event.data).revision;
+    } catch {
+      return;
+    }
+    if (typeof next !== "string" || next === revision || stopped) return;
+    revision = next;
+    if (retry) clearTimeout(retry);
+    synchronize();
+  };
+  return () => {
+    stopped = true;
+    if (retry) clearTimeout(retry);
+    events.close();
+  };
 }

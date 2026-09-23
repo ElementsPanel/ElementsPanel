@@ -133,15 +133,25 @@ process and the host it runs on. Anything collected purely to be displayed goes
 in a plugin: `plugins/monitor` contributes the `chart` field this way, and it
 disappears with the plugin.
 
-`ctx.plugins.setEnabled(id, enabled)` is the switch behind the plugin manager
-page. It writes `enabled` into the plugin's `plugin.json` — the manifest is the
-source of truth, because that is what the loaders and the frontend manifest
-endpoint read — and applies the change to the running panel: disabling disposes
-the backend scope, enabling requires the entry module afresh so a plugin that
-keeps module-level state starts from a clean one. `ctx.plugins.inventory()` lists
-every installed plugin, disabled ones included, because a disabled plugin still
-has to be listed to be enabled again. `plugins/config` exposes both over HTTP and
-drives them from its page.
+`ctx.plugins.setEnabled(id, enabled)` stores the user's choice in
+`data/plugin-overrides.json` and returns the inventory record with a `result`
+containing `saved`, `application` and an optional error. Package manifests remain
+unchanged. Defaults come from `plugin.json`; a user override wins even after a
+package upgrade. `inventory()` includes `state` (`pending`, `loading`, `active`,
+`failed`, `unloading`, `disabled`, or `restart-required`); `running` means active.
+Changes run through one queue and wait for asynchronous disposal before starting
+replacement code. The daemon's management API reconnects its panel socket after
+an enablement change so newly registered protocol events become reachable.
+
+`configure(id, config)` validates and persists a complete config override. A
+plugin may export a Cordis `Config` schema and declare `configFields` in its
+manifest to use the generic settings form, including while disabled. Existing
+`settingsForm.declare()` forms keep their own storage and validation. Their
+field types and bounds are now also validated by the host. Declarations for
+settings applied only at startup set `restartRequired: true`.
+
+See [the runtime and SDK contract](../../docs/plugin-runtime.md) for the file
+format, result handling, shared browser modules and market compatibility.
 
 ## Naming inside a plugin
 
@@ -370,5 +380,6 @@ deleting a directory to reconcile the running frontend.
 Turning a plugin off does not need any of that: the plugin manager page has a
 switch per plugin, and it applies to both halves at once — the panel disposes the
 backend scope, and the page calls `refresh()` so the browser reconciles against
-the manifest. Adding, deleting or changing plugin *code* still requires
-restarting the panel process.
+the manifest. Adding, deleting or changing backend plugin *code* still requires
+restarting the panel process. Open browsers synchronize enabled frontend entries
+over the existing HTTP port; foundational browser code changes require a page refresh.

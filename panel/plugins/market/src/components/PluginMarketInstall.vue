@@ -4,6 +4,7 @@ import { getValidatorErrorMsg } from "@/tools/validator";
 import { message } from "@/tools/vuetifyToast";
 import { computed, onScopeDispose, ref, watch } from "vue";
 import {
+  VAlert,
   VBtn,
   VCard,
   VCardActions,
@@ -38,6 +39,12 @@ const emit = defineEmits<{
   busy: [value: boolean];
 }>();
 const pendingId = ref("");
+const incompatible = computed(() =>
+  Object.values(props.version?.compatibility || {}).some(
+    (contract) =>
+      contract && (contract.api !== 1 || (contract.sdk !== undefined && contract.sdk !== 1))
+  )
+);
 let disposed = false;
 
 const uninstallTarget = ref<MarketPlugin | null>(null);
@@ -124,7 +131,7 @@ function confirmNodes() {
  * answer, and neither does one with no node to send it to.
  */
 async function install() {
-  if (disposed || props.disabled || busy.value || !props.version) return;
+  if (disposed || props.disabled || incompatible.value || busy.value || !props.version) return;
   const plugin = { ...props.plugin, latestVersion: props.version };
   pendingId.value = plugin.id;
   try {
@@ -177,7 +184,13 @@ async function runInstall(plugin: MarketPlugin, daemonIds: string[]) {
 }
 
 async function requestUninstall(plugin = uninstallTarget.value) {
-  if (!plugin || disposed || pendingId.value || nodeTarget.value || (props.disabled && !uninstallTarget.value))
+  if (
+    !plugin ||
+    disposed ||
+    pendingId.value ||
+    nodeTarget.value ||
+    (props.disabled && !uninstallTarget.value)
+  )
     return;
   pendingId.value = plugin.id;
   uninstallTarget.value = null;
@@ -191,13 +204,14 @@ async function requestUninstall(plugin = uninstallTarget.value) {
       const availableNodes = await fetchNodes();
       if (disposed) return;
       const list = installed.daemonIds.map(
-        (daemonId) => availableNodes.find((node) => node.daemonId === daemonId) ?? {
-          daemonId,
-          remarks: "",
-          ip: daemonId,
-          port: 0,
-          available: false
-        }
+        (daemonId) =>
+          availableNodes.find((node) => node.daemonId === daemonId) ?? {
+            daemonId,
+            remarks: "",
+            ip: daemonId,
+            port: 0,
+            available: false
+          }
       );
       return openNodePicker(plugin, "uninstall", list, !installed.sides.includes("panel"));
     }
@@ -248,6 +262,12 @@ onScopeDispose(() => {
 </script>
 
 <template>
+  <VAlert
+    v-if="incompatible"
+    type="warning"
+    variant="tonal"
+    :text="t('TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE')"
+  />
   <div>
     <div class="d-flex flex-wrap ga-2">
       <VBtn
@@ -255,7 +275,7 @@ onScopeDispose(() => {
         color="primary"
         prepend-icon="mdi-download"
         :loading="Boolean(pendingId)"
-        :disabled="busy || disabled"
+        :disabled="busy || disabled || incompatible"
         @click="install"
       >
         {{ t("TXT_CODE_PLUGIN_MARKET_INSTALL") }}

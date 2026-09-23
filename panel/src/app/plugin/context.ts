@@ -1,3 +1,4 @@
+import type { PluginChangeResult } from "mcsmanager-common";
 import type Router from "@koa/router";
 import { Context } from "cordis";
 import type i18next from "i18next";
@@ -16,11 +17,7 @@ import type {
   UserRecords
 } from "./guard";
 import type { systemConfig } from "../../../plugins/runtime/src/backend/setting";
-import type {
-  LoadedPanelPlugin,
-  PanelFrontendPluginEntry,
-  PanelPluginRecord
-} from "./loader";
+import type { LoadedPanelPlugin, PanelFrontendPluginEntry, PanelPluginRecord } from "./loader";
 
 /**
  * The panel's cordis container, and the complete list of what a plugin can see.
@@ -93,6 +90,8 @@ export interface PanelSettingField {
  * come from its own catalogue, and the panel's language can change while it runs.
  */
 export interface PanelSettingsDeclaration {
+  /** Changes to this form require a process restart. */
+  restartRequired?: boolean;
   fields(): PanelSettingField[];
   read(): Record<string, unknown> | Promise<Record<string, unknown>>;
   write(values: Record<string, unknown>): void | Promise<void>;
@@ -142,7 +141,7 @@ export interface PanelSettingsFormService {
   /** One plugin's fields and values, or `null` when it declared nothing. */
   read(id: string): Promise<PanelSettingsSchema | null>;
   /** Hands `values` to that plugin's own `write()`. */
-  write(id: string, values: Record<string, unknown>): Promise<void>;
+  write(id: string, values: Record<string, unknown>): Promise<PluginChangeResult>;
 }
 
 /** Translation, and the way a plugin contributes its own strings. */
@@ -287,23 +286,39 @@ export interface PanelOverviewService {
 export interface PanelOperationLogger {
   log<T extends keyof OperationLoggerItemPayload>(
     type: T,
-    payload: Omit<OperationLoggerItemPayload[T], "operation_id" | "operation_time" | "operation_level">,
+    payload: Omit<
+      OperationLoggerItemPayload[T],
+      "operation_id" | "operation_time" | "operation_level"
+    >,
     level?: "info" | "warning" | "error"
   ): string;
   info<T extends keyof OperationLoggerItemPayload>(
     type: T,
-    payload: Omit<OperationLoggerItemPayload[T], "operation_id" | "operation_time" | "operation_level">
+    payload: Omit<
+      OperationLoggerItemPayload[T],
+      "operation_id" | "operation_time" | "operation_level"
+    >
   ): string;
   warning<T extends keyof OperationLoggerItemPayload>(
     type: T,
-    payload: Omit<OperationLoggerItemPayload[T], "operation_id" | "operation_time" | "operation_level">
+    payload: Omit<
+      OperationLoggerItemPayload[T],
+      "operation_id" | "operation_time" | "operation_level"
+    >
   ): string;
   error<T extends keyof OperationLoggerItemPayload>(
     type: T,
-    payload: Omit<OperationLoggerItemPayload[T], "operation_id" | "operation_time" | "operation_level">
+    payload: Omit<
+      OperationLoggerItemPayload[T],
+      "operation_id" | "operation_time" | "operation_level"
+    >
   ): string;
   get(limit?: number): Promise<OperationLoggerItem[]>;
-  getByInstance(instanceId: string, daemonId: string, limit?: number): Promise<OperationLoggerItem[]>;
+  getByInstance(
+    instanceId: string,
+    daemonId: string,
+    limit?: number
+  ): Promise<OperationLoggerItem[]>;
 }
 
 /** What is installed and what is loaded, plus the switch that decides. */
@@ -314,11 +329,14 @@ export interface PanelPluginsService {
   /** Every installed plugin, disabled ones included. */
   inventory(): PanelPluginRecord[];
   /**
-   * Turns a plugin on or off: persists the switch in its `plugin.json` and
+   * Turns a plugin on or off: persists the switch in data/plugin-overrides.json and
    * applies it to the running panel. Disabling disposes the backend scope, so
    * its routes, middleware, timers and services go with it.
    */
   setEnabled(id: string, enabled: boolean): Promise<PanelPluginRecord>;
+  configure(id: string, config: Record<string, unknown>): Promise<PanelPluginRecord>;
+  configuration(id: string): PanelSettingsSchema;
+  runExclusive<T>(operation: () => Promise<T>): Promise<T>;
   /**
    * Re-scans the plugin directories: a plugin that has appeared since startup is
    * installed, one that is gone or disabled is disposed. Development only.

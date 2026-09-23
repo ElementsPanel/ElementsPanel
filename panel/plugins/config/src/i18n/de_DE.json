@@ -17,5 +17,13 @@
   "TXT_CODE_PLUGIN_NO_CONFIG": "Dieses Plugin hat keine konfigurierbaren Optionen.",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "Knoten",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "Panel",
-  "TXT_CODE_PLUGIN_SELF_DISABLE": "Die Plugin-Verwaltung kann sich nicht selbst deaktivieren. Setze stattdessen enabled auf false in ihrer plugin.json."
+  "TXT_CODE_PLUGIN_SELF_DISABLE": "Die Plugin-Verwaltung kann sich nicht selbst deaktivieren. Setze stattdessen enabled auf false in ihrer plugin.json.",
+  "TXT_CODE_PLUGIN_STATE_PENDING": "Wartet auf Abhängigkeiten",
+  "TXT_CODE_PLUGIN_STATE_LOADING": "Wird geladen",
+  "TXT_CODE_PLUGIN_STATE_ACTIVE": "Aktiv",
+  "TXT_CODE_PLUGIN_STATE_UNLOADING": "Wird entladen",
+  "TXT_CODE_PLUGIN_RESTART_REQUIRED": "Starten Sie den Dienst neu, um die Änderung anzuwenden.",
+  "TXT_CODE_PLUGIN_SAVED_PENDING": "Gespeichert; wartet auf Plugin-Abhängigkeiten.",
+  "TXT_CODE_PLUGIN_FRONTEND_FAILED": "Browser-Plugin fehlgeschlagen",
+  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "Laden Sie die Seite neu, um die aktualisierte Browser-Laufzeit zu laden."
 }

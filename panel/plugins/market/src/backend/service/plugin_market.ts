@@ -7,7 +7,8 @@ import {
   PluginPackageError as PluginMarketError,
   pluginPackageDirectory,
   removePluginPackage,
-  writePluginPackage
+  writePluginPackage,
+  validatePluginCompatibility
 } from "mcsmanager-common";
 
 export { PluginMarketError };
@@ -23,10 +24,9 @@ export { PluginMarketError };
 // The two halves do not travel the same way. The panel half is written into this
 // process's own plugin directory; the daemon half has to land on every machine
 // that loads it, so it is sent to the daemons the user picked and written by the
-// daemon itself (`plugin/install`). In development a side goes to
-// `<side>/market_plugins/<name>/` instead of `<side>/plugins/`, because that
-// directory is git-ignored and an installation must never add files to the
-// repository.
+// daemon itself (`plugin/install`). Both sides use data/plugins so container
+// replacement preserves installed code on the existing data volume. Legacy
+// plugins and market_plugins roots are still inventoried.
 
 const SIDES = ["panel", "daemon"] as const;
 export type PluginSide = (typeof SIDES)[number];
@@ -55,6 +55,7 @@ export interface MarketPackageFile {
   side: PluginSide;
   relative: string;
   size: number;
+  sha256?: string;
 }
 
 /** A package as the market lists it: enough to decide what an install touches. */
@@ -90,15 +91,19 @@ export function isDevelopment(): boolean {
   return fs.existsSync(path.join(projectRoot(), "panel", "src", "app"));
 }
 
-/** Where an installation writes. `market_plugins` in development, `plugins` otherwise. */
+/** Install into the existing persistent data volume in every environment. */
 export function installRoot(side: PluginSide): string {
   const directory = side === "panel" ? process.cwd() : path.join(projectRoot(), side);
-  return path.join(directory, isDevelopment() ? "market_plugins" : "plugins");
+  return path.join(directory, "data", "plugins");
 }
 
 /** Both are searched: an installation may have been made under either. */
 function pluginRoots(): string[] {
-  return [path.join(process.cwd(), "plugins"), path.join(process.cwd(), "market_plugins")];
+  return [
+    path.join(process.cwd(), "data", "plugins"),
+    path.join(process.cwd(), "plugins"),
+    path.join(process.cwd(), "market_plugins")
+  ];
 }
 
 export function installDirectory(side: PluginSide, name: string): string {
@@ -289,19 +294,32 @@ export async function fetchPackage(
   addr: string,
   options: { pluginId: string; name?: string; version?: string }
 ): Promise<MarketPackage> {
-  const params = options.version ? { version: options.version } : {};
+  const params = {
+    pluginApi: 1,
+    pluginSdk: 1,
+    ...(options.version ? { version: options.version } : {})
+  };
 
   const meta = await axios.get<{
     name: string;
     version: string;
-    files: Array<{ path: string; size: number }>;
+    compatibility?: Record<string, unknown>;
+    files: Array<{ path: string; size: number; sha256?: string }>;
   }>(marketUrl(addr, options.pluginId, "/files"), { params, timeout: 20000 });
 
   if (!Array.isArray(meta.data?.files)) throw new PluginMarketError("EMPTY_PACKAGE");
+  try {
+    for (const contract of Object.values(meta.data.compatibility || {}))
+      validatePluginCompatibility(contract);
+  } catch {
+    throw new PluginMarketError("INCOMPATIBLE");
+  }
   const files = meta.data.files.map((file) => {
     const target = splitPackagePath(file?.path);
     if (!target) throw new PluginMarketError("BAD_PATH");
-    return { path: file.path, ...target, size: file.size };
+    if (file.sha256 !== undefined && !/^[a-f0-9]{64}$/.test(file.sha256))
+      throw new PluginMarketError("BAD_CHECKSUM");
+    return { path: file.path, ...target, size: file.size, sha256: file.sha256 };
   });
   if (!files.length) throw new PluginMarketError("EMPTY_PACKAGE");
 
@@ -328,11 +346,38 @@ export async function downloadPackage(
       responseType: "arraybuffer",
       timeout: 60000
     });
+    const content = Buffer.from(response.data);
+    if (
+      file.sha256 &&
+      (content.length !== file.size ||
+        createHash("sha256").update(content).digest("hex") !== file.sha256)
+    )
+      throw new PluginMarketError("BAD_CHECKSUM");
     downloaded.push({
       side: file.side,
       relative: file.relative,
-      content: Buffer.from(response.data)
+      content
     });
+  }
+  // Validate every side before writing the panel half or distributing any node half.
+  for (const side of new Set(downloaded.map((file) => file.side))) {
+    const file = downloaded.find(
+      (entry) => entry.side === side && entry.relative === "plugin.json"
+    );
+    if (!file) throw new PluginMarketError("EMPTY_PACKAGE");
+    let manifest: { elements?: unknown };
+    try {
+      manifest = JSON.parse(file.content.toString("utf8"));
+      if (!manifest || typeof manifest !== "object" || Array.isArray(manifest))
+        throw new Error("Invalid manifest");
+    } catch {
+      throw new PluginMarketError("EMPTY_PACKAGE");
+    }
+    try {
+      validatePluginCompatibility(manifest.elements);
+    } catch {
+      throw new PluginMarketError("INCOMPATIBLE");
+    }
   }
   return downloaded;
 }
@@ -346,7 +391,7 @@ export async function writePlugin(
   info: MarketInstallInfo,
   files: readonly { relative: string; content: Buffer }[]
 ): Promise<string> {
-  return writePluginPackage(installRoot(side), info, files);
+  return writePluginPackage(installRoot(side), info, files, pluginRoots());
 }
 
 /** What a daemon needs to write the same half on its own machine. */

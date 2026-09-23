@@ -395,6 +395,11 @@ test("plugin compiler refuses to erase source trees and unowned output directori
   fs.mkdirSync(path.join(directory, "scripts"));
   const script = path.join(directory, "scripts/compile-plugin.mjs");
   fs.copyFileSync(path.join(root, "scripts/compile-plugin.mjs"), script);
+  fs.mkdirSync(path.join(directory, "frontend"));
+  fs.copyFileSync(
+    path.join(root, "frontend/plugin-sdk.config.mjs"),
+    path.join(directory, "frontend/plugin-sdk.config.mjs")
+  );
   const workspace = path.join(directory, "external/example");
   fs.mkdirSync(workspace, { recursive: true });
   fs.writeFileSync(path.join(workspace, "source.txt"), "keep source");

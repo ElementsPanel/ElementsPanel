@@ -95,5 +95,6 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL": "Panel プラグイン",
   "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON": "Daemon プラグイン",
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Panel・Daemon 両対応プラグイン",
-  "TXT_CODE_PLUGIN_MARKET_UPDATES": "更新履歴"
+  "TXT_CODE_PLUGIN_MARKET_UPDATES": "更新履歴",
+  "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "このプラグインには別のホスト API またはブラウザー SDK が必要です。先に ElementsPanel を更新してください。"
 }

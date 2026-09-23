@@ -61,7 +61,7 @@ export function apply(ctx: PanelPluginContext) {
   ctx.logger.info("Custom panel plugin loaded.");
 }
 `,
-      "panel/src/frontend.ts": `import type { PanelFrontendPluginContext } from "../../../../frontend/src/plugin";
+      "panel/src/frontend.ts": `import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
 
 export const inject = ["console"];
 

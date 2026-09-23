@@ -6,11 +6,14 @@ import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
 import { visualizer } from "rollup-plugin-visualizer";
 import Components from "unplugin-vue-components/vite";
+// @ts-ignore Shared ESM build contract also consumed by compile-plugin.mjs.
+import { pluginSdkModules } from "./plugin-sdk.config.mjs";
 import { defineConfig, normalizePath, type Plugin } from "vite";
 import {
   discoverExternalPluginRoots,
   discoverPluginsFromRoots
 } from "../common/src/plugin_manifest";
+import { applyPluginOverrides } from "../common/src/plugin_overrides";
 
 const PANEL_PLUGINS_MODULE_ID = "virtual:panel-plugins";
 const RESOLVED_PANEL_PLUGINS_MODULE_ID = `\0${PANEL_PLUGINS_MODULE_ID}`;
@@ -46,14 +49,19 @@ function discoverPanelPlugins(includeExternal = false): DiscoveredPanelPlugin[] 
   // Discovery is shared with the panel and daemon backends, so the four places
   // that read `plugin.json` cannot drift apart. Only the entry field and the
   // build-time extras are specific to this side.
-  const roots = [
-    { directory: PANEL_PLUGINS_DIRECTORY },
-    { directory: MARKET_PANEL_PLUGINS_DIRECTORY }
-  ];
+  const roots = [{ directory: PANEL_PLUGINS_DIRECTORY, overrideManaged: false }];
   if (includeExternal) {
-    roots.push(...discoverExternalPluginRoots(PROJECT_DIRECTORY, "panel"));
+    roots.push(
+      { directory: path.join(PROJECT_DIRECTORY, "panel/data/plugins"), overrideManaged: true },
+      { directory: MARKET_PANEL_PLUGINS_DIRECTORY, overrideManaged: false },
+      ...discoverExternalPluginRoots(PROJECT_DIRECTORY, "panel").map((root) => ({
+        ...root,
+        overrideManaged: false
+      }))
+    );
   }
-  return discoverPluginsFromRoots(roots, {
+  const discovered = discoverPluginsFromRoots(roots, {
+    includeDisabled: true,
     entryFields: ["frontend", "ui"],
     entryCandidates: [
       "src/frontend.ts",
@@ -64,8 +72,16 @@ function discoverPanelPlugins(includeExternal = false): DiscoveredPanelPlugin[] 
       "src/index.tsx"
     ],
     onWarning: (message, error) => console.warn(message, error)
-  })
-    .filter((plugin) => plugin.entry)
+  });
+  return (
+    includeExternal
+      ? applyPluginOverrides(
+          discovered,
+          path.join(PROJECT_DIRECTORY, "panel/data/plugin-overrides.json")
+        )
+      : discovered
+  )
+    .filter((plugin) => plugin.entry && (!includeExternal || plugin.manifest.enabled !== false))
     .map((plugin) => ({
       metadata: plugin.manifest as Record<string, unknown>,
       directory: plugin.directory,
@@ -78,12 +94,15 @@ function discoverPanelPlugins(includeExternal = false): DiscoveredPanelPlugin[] 
 function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
   let plugins = initialPlugins;
   let isBuild = false;
+  const sdkEntries = new Map<string, string>();
   const isPluginFile = (file: string) => {
     const target = path.resolve(file).toLowerCase();
     return [
       PANEL_PLUGINS_DIRECTORY,
       MARKET_PANEL_PLUGINS_DIRECTORY,
-      EXTERNAL_PLUGINS_DIRECTORY
+      EXTERNAL_PLUGINS_DIRECTORY,
+      path.join(PROJECT_DIRECTORY, "panel/data/plugin-overrides.json"),
+      path.join(PROJECT_DIRECTORY, "panel/data/plugins")
     ].some((directory) => {
       const root = path.resolve(directory).toLowerCase();
       return target === root || target.startsWith(`${root}${path.sep}`);
@@ -99,6 +118,16 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
     },
     buildStart() {
       if (!isBuild) return;
+      for (const specifier of pluginSdkModules as string[]) {
+        sdkEntries.set(
+          specifier,
+          this.emitFile({
+            type: "chunk",
+            id: `elements-sdk:${specifier}`,
+            preserveSignature: "strict"
+          })
+        );
+      }
       plugins = discoverPanelPlugins(false);
       panelPluginBuildEntries = plugins;
       // Production loads plugins from the manifest instead of the virtual
@@ -114,6 +143,7 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
       }
     },
     resolveId(id: string) {
+      if (id.startsWith("elements-sdk:")) return `\0${id}`;
       if (id === PANEL_PLUGINS_MODULE_ID) return RESOLVED_PANEL_PLUGINS_MODULE_ID;
       if (id.startsWith(PANEL_PLUGIN_ENTRY_PREFIX)) {
         const index = Number(id.slice(PANEL_PLUGIN_ENTRY_PREFIX.length));
@@ -129,7 +159,9 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
       server.watcher.add([
         PANEL_PLUGINS_DIRECTORY,
         MARKET_PANEL_PLUGINS_DIRECTORY,
-        EXTERNAL_PLUGINS_DIRECTORY
+        EXTERNAL_PLUGINS_DIRECTORY,
+        path.join(PROJECT_DIRECTORY, "panel/data/plugin-overrides.json"),
+        path.join(PROJECT_DIRECTORY, "panel/data/plugins")
       ]);
       const reload = (file: string) => {
         if (!isPluginFile(file)) return;
@@ -142,6 +174,14 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
       server.watcher.on("unlink", reload);
     },
     load(id: string) {
+      if (id.startsWith("\0elements-sdk:")) {
+        const specifier = id.slice("\0elements-sdk:".length);
+        const target =
+          specifier === "@elements-panel/sdk"
+            ? normalizePath(fileURLToPath(new URL("./src/plugin/sdk.ts", import.meta.url)))
+            : specifier;
+        return `export * from ${JSON.stringify(target)};`;
+      }
       if (id.startsWith(RESOLVED_PANEL_PLUGIN_BUILD_ENTRY_PREFIX)) {
         const folder = id.slice(RESOLVED_PANEL_PLUGIN_BUILD_ENTRY_PREFIX.length);
         const plugin = plugins.find((candidate) => candidate.folder === folder);
@@ -164,6 +204,17 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
       return `export const panelPluginModules = [${entries.join(",")}];`;
     },
     generateBundle(_outputOptions: any, bundle: Record<string, any>) {
+      const imports = Object.fromEntries(
+        [...sdkEntries].map(([id, ref]) => [id, `./${this.getFileName(ref)}`])
+      );
+      const importMap = `<script type="importmap">${JSON.stringify({ imports }).replace(
+        /</g,
+        "\\u003c"
+      )}</script>`;
+      for (const asset of Object.values(bundle)) {
+        if (asset.type === "asset" && asset.fileName.endsWith(".html"))
+          asset.source = String(asset.source).replace("<head>", `<head>\n${importMap}`);
+      }
       const outputChunks = Object.values(bundle).filter(
         (item: any) => item.type === "chunk"
       ) as any[];
@@ -184,9 +235,7 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
         );
         return { plugin, entryChunk, chunks };
       });
-      const pluginChunkSet = new Set(
-        pluginChunks.flatMap(({ chunks }) => chunks)
-      );
+      const pluginChunkSet = new Set(pluginChunks.flatMap(({ chunks }) => chunks));
       const cssOwners = new Map<string, Set<any>>();
       for (const item of Object.values(bundle) as any[]) {
         if (item.type !== "chunk") continue;
@@ -283,7 +332,8 @@ export default defineConfig({
               chunkInfo.name === `panel-plugin-${sanitizePluginFolder(candidate.folder)}` ||
               chunkInfo.moduleIds.some(
                 (moduleId) =>
-                  normalizePath(moduleId) === entry || normalizePath(moduleId).startsWith(pluginRoot)
+                  normalizePath(moduleId) === entry ||
+                  normalizePath(moduleId).startsWith(pluginRoot)
               )
             );
           });
@@ -416,6 +466,7 @@ export default defineConfig({
       "@xterm/xterm"
     ],
     alias: {
+      "@elements-panel/sdk": fileURLToPath(new URL("./src/plugin/sdk.ts", import.meta.url)),
       // Plugin files live outside the frontend package. Resolve Vuetify from
       // this workspace while keeping its public import names in plugin source.
       "vuetify/styles": VUETIFY_STYLES_PATH,

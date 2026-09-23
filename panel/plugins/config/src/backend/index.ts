@@ -93,8 +93,10 @@ export function apply(ctx: PanelPluginContext) {
       const id = String(requestCtx.request.query.id);
       // The plugin's own `write()` validates: this route knows nothing about
       // what any particular plugin's values mean.
-      await settingsForm.write(id, (requestCtx.request.body ?? {}) as Record<string, unknown>);
-      requestCtx.body = true;
+      requestCtx.body = await settingsForm.write(
+        id,
+        (requestCtx.request.body ?? {}) as Record<string, unknown>
+      );
     }
   );
 

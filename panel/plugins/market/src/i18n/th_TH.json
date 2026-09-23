@@ -95,5 +95,6 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL": "ปลั๊กอิน Panel",
   "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON": "ปลั๊กอิน Daemon",
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "ปลั๊กอิน Panel และ Daemon",
-  "TXT_CODE_PLUGIN_MARKET_UPDATES": "อัปเดต"
+  "TXT_CODE_PLUGIN_MARKET_UPDATES": "อัปเดต",
+  "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "ปลั๊กอินนี้ต้องใช้ API โฮสต์หรือ SDK เบราว์เซอร์เวอร์ชันอื่น โปรดอัปเดต ElementsPanel ก่อน"
 }

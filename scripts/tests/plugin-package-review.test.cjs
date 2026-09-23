@@ -12,12 +12,17 @@ function load(relative, overrides = {}) {
   const filename = path.join(root, relative);
   const mod = new Module(filename, module);
   const localRequire = Module.createRequire(filename);
+  const requireSource = (id) => {
+    const candidate = path.resolve(path.dirname(filename), id) + ".ts";
+    if (id.startsWith(".") && fs.existsSync(candidate)) return load(path.relative(root, candidate));
+    return localRequire(id);
+  };
   mod.require = (id) =>
     Object.hasOwn(overrides, id)
       ? overrides[id]
       : id === "./plugin_manifest"
       ? load("common/src/plugin_manifest.ts")
-      : localRequire(id);
+      : requireSource(id);
   mod._compile(
     ts.transpileModule(fs.readFileSync(filename, "utf8"), {
       compilerOptions: {
@@ -221,11 +226,26 @@ test("daemon validates every package file before writing and reports ownership f
   };
   await handlers.get("plugin/install")({}, payload);
   assert.match(replies.pop().error.message, /unacceptable/);
-  assert.equal(fs.existsSync(path.join(dir, "market_plugins", "sample")), false);
+  assert.equal(fs.existsSync(path.join(dir, "data", "plugins", "sample")), false);
   payload.files.pop();
   await handlers.get("plugin/install")({}, payload);
   assert.equal(replies.pop().data.version, "1");
   await handlers.get("plugin/uninstall")({}, { name: "sample", pluginId: "other" });
   assert.match(replies.pop().error.message, /DIR_TAKEN/);
-  assert.equal(fs.existsSync(path.join(dir, "market_plugins", "sample")), true);
+  assert.equal(fs.existsSync(path.join(dir, "data", "plugins", "sample")), true);
+});
+
+test("persistent installs reject collisions with bundled identities and allow upgrading the same legacy owner", async (t) => {
+  const dir = directory(t);
+  const source = load("common/src/plugin_package.ts");
+  const builtin = path.join(dir, "plugins");
+  const persistent = path.join(dir, "data/plugins");
+  await fse.outputFile(path.join(builtin, "core/plugin.json"), '{"id":"sample"}');
+  await assert.rejects(
+    source.writePluginPackage(persistent, info, files(1), [builtin]),
+    /DIR_TAKEN/
+  );
+  await fse.outputFile(path.join(builtin, "core/.market-install.json"), JSON.stringify(info));
+  await source.writePluginPackage(persistent, info, files(2), [builtin]);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(persistent, "sample/plugin.json"))).version, 2);
 });

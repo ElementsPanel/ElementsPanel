@@ -1,3 +1,4 @@
+import { validatePluginSettings, type PluginChangeResult } from "mcsmanager-common";
 import { Service, type Context } from "cordis";
 import { remove } from "cosmokit";
 import type {
@@ -32,7 +33,10 @@ export class SettingsFormService extends Service implements PanelSettingsFormSer
 
   async read(id: string): Promise<PanelSettingsSchema | null> {
     const entry = this.declarations.find((item) => item.id === id);
-    if (!entry) return null;
+    if (!entry) {
+      const schema = this.ctx.plugins.configuration(id);
+      return schema.fields.length ? schema : null;
+    }
     return {
       id,
       fields: entry.declaration.fields(),
@@ -40,9 +44,16 @@ export class SettingsFormService extends Service implements PanelSettingsFormSer
     };
   }
 
-  async write(id: string, values: Record<string, unknown>) {
+  async write(id: string, values: Record<string, unknown>): Promise<PluginChangeResult> {
     const entry = this.declarations.find((item) => item.id === id);
-    if (!entry) throw new Error(`Plugin has no settings declaration: ${id}`);
-    await entry.declaration.write(values);
+    if (!entry) return (await this.ctx.plugins.configure(id, values)).result!;
+    return this.ctx.plugins.runExclusive(async () => {
+      validatePluginSettings(entry.declaration.fields(), values);
+      await entry.declaration.write(values);
+      return {
+        saved: true,
+        application: entry.declaration.restartRequired ? "restart-required" : "applied"
+      };
+    });
   }
 }

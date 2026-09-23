@@ -1,6 +1,8 @@
 import fs from "fs-extra";
 import path from "path";
 import { readPluginManifest, resolvePluginEntry } from "./plugin_manifest";
+import { validatePluginCompatibility } from "./plugin_contract";
+export { PLUGIN_API_VERSION, validatePluginCompatibility } from "./plugin_contract";
 
 export const MARKET_INSTALL_MARKER = ".market-install.json";
 
@@ -57,6 +59,7 @@ async function validateManifest(directory: string): Promise<void> {
   }
   const manifest = readPluginManifest(directory);
   if (!manifest) throw new PluginPackageError("EMPTY_PACKAGE");
+  validatePluginCompatibility(manifest.elements);
   // Do not execute downloaded code during installation. A declared entry must
   // resolve to a file inside this candidate, using the loader's path rules.
   for (const field of ["panel", "daemon", "backend", "main", "entry", "frontend", "ui"]) {
@@ -89,7 +92,8 @@ async function withDirectoryLock<T>(directory: string, operation: () => Promise<
 export async function writePluginPackage(
   root: string,
   info: PluginInstallation,
-  files: readonly PluginPackageFile[]
+  files: readonly PluginPackageFile[],
+  existingRoots: readonly string[] = []
 ): Promise<string> {
   root = path.resolve(root);
   const directory = pluginPackageDirectory(root, info.name);
@@ -136,6 +140,22 @@ export async function writePluginPackage(
         await fs.outputFile(path.join(candidate, relativeFiles[index]), file.content);
       }
       await validateManifest(candidate);
+      const manifest = readPluginManifest(candidate)!;
+      for (const installedRoot of existingRoots) {
+        if (!(await fs.pathExists(installedRoot))) continue;
+        for (const item of await fs.readdir(installedRoot, { withFileTypes: true })) {
+          if (!item.isDirectory()) continue;
+          const existingDirectory = path.join(installedRoot, item.name);
+          const existing = readPluginManifest(existingDirectory);
+          if (
+            !existing ||
+            (existing.id !== manifest.id && item.name.toLowerCase() !== info.name.toLowerCase())
+          )
+            continue;
+          if ((await owner(existingDirectory)) !== info.pluginId)
+            throw new PluginPackageError("DIR_TAKEN");
+        }
+      }
       await fs.outputFile(
         path.join(candidate, MARKET_INSTALL_MARKER),
         JSON.stringify(info, null, 2)

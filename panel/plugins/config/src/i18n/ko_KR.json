@@ -17,5 +17,13 @@
   "TXT_CODE_PLUGIN_NO_CONFIG": "이 플러그인에는 구성 가능한 옵션이 없습니다.",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "노드",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "패널",
-  "TXT_CODE_PLUGIN_SELF_DISABLE": "플러그인 관리자는 자신을 비활성화할 수 없습니다. plugin.json에서 enabled 를 false 로 설정하세요."
+  "TXT_CODE_PLUGIN_SELF_DISABLE": "플러그인 관리자는 자신을 비활성화할 수 없습니다. plugin.json에서 enabled 를 false 로 설정하세요.",
+  "TXT_CODE_PLUGIN_STATE_PENDING": "종속성 대기 중",
+  "TXT_CODE_PLUGIN_STATE_LOADING": "로드 중",
+  "TXT_CODE_PLUGIN_STATE_ACTIVE": "실행 중",
+  "TXT_CODE_PLUGIN_STATE_UNLOADING": "언로드 중",
+  "TXT_CODE_PLUGIN_RESTART_REQUIRED": "변경 사항을 적용하려면 서비스를 다시 시작하세요.",
+  "TXT_CODE_PLUGIN_SAVED_PENDING": "저장되었습니다. 플러그인 종속성을 기다리는 중입니다.",
+  "TXT_CODE_PLUGIN_FRONTEND_FAILED": "브라우저 플러그인 로드 실패",
+  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "업데이트된 브라우저 런타임을 로드하려면 페이지를 새로 고치세요."
 }

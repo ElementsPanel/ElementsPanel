@@ -17,5 +17,13 @@
   "TXT_CODE_PLUGIN_NO_CONFIG": "ปลั๊กอินนี้ไม่มีตัวเลือกที่กำหนดค่าได้",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "โหนด",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "แผงควบคุม",
-  "TXT_CODE_PLUGIN_SELF_DISABLE": "ตัวจัดการปลั๊กอินปิดใช้งานตัวเองไม่ได้ กรุณาตั้ง enabled เป็น false ใน plugin.json ของมันแทน"
+  "TXT_CODE_PLUGIN_SELF_DISABLE": "ตัวจัดการปลั๊กอินปิดใช้งานตัวเองไม่ได้ กรุณาตั้ง enabled เป็น false ใน plugin.json ของมันแทน",
+  "TXT_CODE_PLUGIN_STATE_PENDING": "กำลังรอส่วนที่ต้องพึ่งพา",
+  "TXT_CODE_PLUGIN_STATE_LOADING": "กำลังโหลด",
+  "TXT_CODE_PLUGIN_STATE_ACTIVE": "กำลังทำงาน",
+  "TXT_CODE_PLUGIN_STATE_UNLOADING": "กำลังยกเลิกการโหลด",
+  "TXT_CODE_PLUGIN_RESTART_REQUIRED": "รีสตาร์ทบริการเพื่อใช้การเปลี่ยนแปลงนี้",
+  "TXT_CODE_PLUGIN_SAVED_PENDING": "บันทึกแล้ว กำลังรอส่วนที่ปลั๊กอินต้องพึ่งพา",
+  "TXT_CODE_PLUGIN_FRONTEND_FAILED": "ปลั๊กอินเบราว์เซอร์ล้มเหลว",
+  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "รีเฟรชหน้าเพื่อโหลดรันไทม์เบราว์เซอร์ที่อัปเดต"
 }

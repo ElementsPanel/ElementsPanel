@@ -2,6 +2,15 @@ import fs from "fs-extra";
 import path from "path";
 import { pathToFileURL } from "url";
 import {
+  pluginDirectoryRevision,
+  applyPluginOverrides,
+  writePluginOverride,
+  validatePluginCompatibility,
+  validatePluginSettings,
+  createPluginQueue,
+  trackPluginDisposal,
+  type PluginState,
+  type PluginChangeResult,
   discoverExternalPluginRoots,
   discoverPluginsFromRoots,
   sortPlugins,
@@ -10,7 +19,7 @@ import {
   type PluginManifest
 } from "mcsmanager-common";
 import { Logger, type ForkScope } from "cordis";
-import { ctx, type PanelPluginContext } from "./context";
+import { ctx, type PanelPluginContext, type PanelSettingsSchema } from "./context";
 
 /**
  * Turns the plugin directories into cordis plugins.
@@ -24,12 +33,16 @@ import { ctx, type PanelPluginContext } from "./context";
  */
 
 const logger = new Logger("plugin");
+const change = createPluginQueue();
+const settle = trackPluginDisposal(ctx);
+const unloading = new Set<string>();
+const codeRevisions = new Map<string, string>();
 
 const BUILT_IN_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "plugins");
 /**
  * Plugins installed from the plugin market. They live apart from the built-in
  * tree so an installation never adds files to the repository: `market_plugins/`
- * is git-ignored, and in a production install the same plugin goes to `plugins/`.
+ * is git-ignored. New installations use data/plugins; this root remains readable.
  */
 const MARKET_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "market_plugins");
 const ENTRY_FIELDS = ["panel", "backend", "main", "entry"];
@@ -57,6 +70,8 @@ export interface LoadedPanelPlugin {
   folder: string;
   /** Absent for a plugin that only contributes a frontend. */
   entry?: string;
+  backendRevision?: string;
+  restartRequired?: boolean;
   fork?: ForkScope;
   error?: Error;
 }
@@ -68,6 +83,9 @@ export interface PanelFrontendPluginEntry {
   assetDirectory: string;
   entry: string;
   styles: string[];
+  revision: string;
+  /** Filesystem location; stripped from HTTP responses. */
+  frontendDirectory: string;
 }
 
 const loaded: LoadedPanelPlugin[] = [];
@@ -77,12 +95,15 @@ function discoverPanelPlugins(options: DiscoverPluginsOptions) {
   // roots declare the same id, so a market plugin cannot shadow one of ours.
   const roots = [
     { directory: BUILT_IN_PLUGINS_DIRECTORY() },
+    { directory: path.resolve(process.cwd(), "data", "plugins"), overrideManaged: true },
     { directory: MARKET_PLUGINS_DIRECTORY() }
   ];
   if (process.env.NODE_ENV === "development") {
     roots.push(...discoverExternalPluginRoots(path.resolve(process.cwd(), ".."), "panel"));
   }
-  return discoverPluginsFromRoots(roots, options);
+  return applyPluginOverrides(
+    discoverPluginsFromRoots(roots, { ...options, includeDisabled: true })
+  ).filter((plugin) => options.includeDisabled || plugin.manifest.enabled !== false);
 }
 
 /** Exposes the loader's own registry without pulling it into a plugin bundle. */
@@ -96,6 +117,18 @@ function ensurePanelPluginService() {
     frontendManifest: getPanelFrontendManifest,
     inventory: getPanelPluginInventory,
     setEnabled: setPanelPluginEnabled,
+    configure: configurePanelPlugin,
+    configuration: (id: string): PanelSettingsSchema => {
+      const manifest = findPlugin(id).manifest;
+      return {
+        id,
+        fields: (Array.isArray(manifest.configFields)
+          ? manifest.configFields
+          : []) as PanelSettingsSchema["fields"],
+        values: (manifest.config || {}) as Record<string, unknown>
+      };
+    },
+    runExclusive: change,
     reload: reloadPanelPlugins
   });
 }
@@ -150,8 +183,16 @@ async function installPlugin(plugin: DiscoveredPlugin): Promise<LoadedPanelPlugi
   const record: LoadedPanelPlugin = { ...plugin };
   if (!plugin.entry) return record;
   try {
+    record.backendRevision = pluginDirectoryRevision(path.dirname(plugin.entry));
+    validatePluginCompatibility(plugin.manifest.elements);
+    const previousRevision = codeRevisions.get(plugin.manifest.id);
+    if (previousRevision && previousRevision !== record.backendRevision) {
+      record.restartRequired = true;
+      return record;
+    }
+    codeRevisions.set(plugin.manifest.id, record.backendRevision!);
     const module = toModule(await loadModule(plugin.entry), plugin.manifest.id);
-    if (!module) return record;
+    if (!module) throw new Error(`Plugin "${plugin.manifest.id}" must export apply().`);
     // Plugins are applied one at a time, in `priority` order, and an async
     // `apply()` is awaited before the next plugin starts.
     //
@@ -225,31 +266,33 @@ export async function reloadPanelPlugins(): Promise<readonly LoadedPanelPlugin[]
   if (process.env.NODE_ENV !== "development") {
     throw new Error("Reloading plugins is only supported in a development environment.");
   }
-  ensurePanelPluginService();
-  const discovered = discoverPanelPlugins({
-    entryFields: ENTRY_FIELDS,
-    entryCandidates: ENTRY_CANDIDATES,
-    onWarning: (message, error) => logger.warn(message, error)
+  return change(async () => {
+    ensurePanelPluginService();
+    const discovered = discoverPanelPlugins({
+      entryFields: ENTRY_FIELDS,
+      entryCandidates: ENTRY_CANDIDATES,
+      onWarning: (message, error) => logger.warn(message, error)
+    });
+
+    const installed = new Set(discovered.map((plugin) => plugin.manifest.id));
+    for (let index = loaded.length - 1; index >= 0; index--) {
+      const record = loaded[index];
+      if (installed.has(record.manifest.id)) continue;
+      await removeRunning(record.manifest.id);
+      logger.info(`Panel plugin unloaded: ${record.manifest.id}`);
+    }
+
+    for (const plugin of discovered) {
+      if (loaded.some((record) => record.manifest.id === plugin.manifest.id)) continue;
+      // A plugin installed, uninstalled and installed again would otherwise be
+      // served the module its first run left behind.
+      forgetCachedModule(plugin.entry);
+      loaded.push(await installPlugin(plugin));
+    }
+    sortPlugins(loaded);
+    await settle();
+    return loaded;
   });
-
-  const installed = new Set(discovered.map((plugin) => plugin.manifest.id));
-  for (let index = loaded.length - 1; index >= 0; index--) {
-    const record = loaded[index];
-    if (installed.has(record.manifest.id)) continue;
-    record.fork?.dispose();
-    loaded.splice(index, 1);
-    logger.info(`Panel plugin unloaded: ${record.manifest.id}`);
-  }
-
-  for (const plugin of discovered) {
-    if (loaded.some((record) => record.manifest.id === plugin.manifest.id)) continue;
-    // A plugin installed, uninstalled and installed again would otherwise be
-    // served the module its first run left behind.
-    forgetCachedModule(plugin.entry);
-    loaded.push(await installPlugin(plugin));
-  }
-  sortPlugins(loaded);
-  return loaded;
 }
 
 /** Loads one of the small foundation plugins before feature plugins start. */
@@ -303,8 +346,12 @@ export function getPanelFrontendManifest(): PanelFrontendPluginEntry[] {
       target.startsWith(`${frontendDirectory}${path.sep}`) && fs.existsSync(target);
     if (!inFrontendDirectory(plugin.entry)) continue;
 
+    const revision = pluginDirectoryRevision(frontendDirectory);
     const toUrl = (target: string) =>
-      `./${plugin.folder}/${path.relative(plugin.directory, target).split(path.sep).join("/")}`;
+      `./${plugin.folder}@${revision}/${path
+        .relative(plugin.directory, target)
+        .split(path.sep)
+        .join("/")}`;
     const styles = Array.isArray(plugin.manifest.styles)
       ? plugin.manifest.styles
           .filter((style: unknown): style is string => typeof style === "string")
@@ -313,10 +360,24 @@ export function getPanelFrontendManifest(): PanelFrontendPluginEntry[] {
           .map(toUrl)
       : [];
     entries.push({
-      metadata: plugin.manifest,
+      // Backend configuration may contain credentials. Browser config is explicit.
+      metadata: {
+        id: plugin.manifest.id,
+        version: plugin.manifest.version,
+        priority: plugin.manifest.priority,
+        elements: plugin.manifest.elements,
+        config: plugin.manifest.frontendConfig,
+        restartRequired:
+          pluginState(
+            plugin,
+            loaded.find((item) => item.manifest.id === plugin.manifest.id)
+          ) === "restart-required"
+      },
       directory: plugin.manifest.id,
       assetDirectory: plugin.folder,
       entry: toUrl(plugin.entry),
+      revision,
+      frontendDirectory,
       styles
     });
   }
@@ -325,11 +386,13 @@ export function getPanelFrontendManifest(): PanelFrontendPluginEntry[] {
 
 /** One installed plugin, as the plugin manager page lists it. */
 export interface PanelPluginRecord {
+  state: PluginState;
+  result?: PluginChangeResult;
   id: string;
   version?: string;
   description?: string;
   priority?: number;
-  /** False only when `plugin.json` says so; that is the persisted switch. */
+  /** Effective enablement after applying the user override. */
   enabled: boolean;
   /** Which halves the manifest declares. Neither has to have been built yet. */
   sides: { backend: boolean; frontend: boolean };
@@ -362,75 +425,138 @@ export function getPanelPluginInventory(): PanelPluginRecord[] {
       priority: plugin.manifest.priority,
       enabled: plugin.manifest.enabled !== false,
       sides: { backend: has(ENTRY_FIELDS), frontend: has(FRONTEND_FIELDS) },
-      running: Boolean(running?.fork),
-      error: running?.error?.message
+      running: pluginState(plugin, running) === "active",
+      state: pluginState(plugin, running),
+      error:
+        running?.error?.message ||
+        running?.fork?.runtime.error?.message ||
+        running?.fork?.error?.message
     };
   });
 }
 
-/**
- * Turns a plugin on or off: persists the switch in its `plugin.json` and applies
- * it to the running panel.
- *
- * The manifest is the source of truth, because that is what the loaders and the
- * frontend manifest endpoint read — so the browser reconciles itself by fetching
- * `/plugins/manifest.json` again. Disabling disposes the backend scope, which
- * takes its routes, middleware, timers and services with it; enabling requires
- * the entry module afresh, so a plugin that keeps module-level state starts from
- * a clean one.
- */
-export async function setPanelPluginEnabled(
-  id: string,
-  enabled: boolean
-): Promise<PanelPluginRecord> {
-  if (ESSENTIAL_PLUGIN_IDS.has(id) && !enabled) {
-    throw new Error(`The essential panel plugin "${id}" cannot be disabled.`);
-  }
+/** Persist the user override, then serialize disposal/activation and report both outcomes. */
+export function setPanelPluginEnabled(id: string, enabled: boolean): Promise<PanelPluginRecord> {
+  return change(async () => {
+    if (typeof enabled !== "boolean") throw new Error("Invalid plugin enablement.");
+    if (ESSENTIAL_PLUGIN_IDS.has(id) && !enabled)
+      throw new Error(`The essential plugin "${id}" cannot be disabled.`);
+    const plugin = findPlugin(id);
+    writePluginOverride(id, { enabled });
+    let failure: string | undefined;
+    try {
+      const existing = loaded.find((item) => item.manifest.id === id);
+      if (!enabled || existing?.error || existing?.fork?.runtime.status === 3)
+        await removeRunning(id);
+      if (enabled && !loaded.some((item) => item.manifest.id === id)) {
+        forgetCachedModule(plugin.entry);
+        loaded.push(
+          await installPlugin({ ...plugin, manifest: { ...plugin.manifest, enabled: true } })
+        );
+        sortPlugins(loaded);
+      }
+      await settle();
+    } catch (error) {
+      failure = String(error);
+    }
+    return changedRecord(id, failure);
+  });
+}
+
+function findPlugin(id: string) {
   const plugin = discoverPanelPlugins({
     entryFields: ENTRY_FIELDS,
     entryCandidates: ENTRY_CANDIDATES,
-    includeDisabled: true,
-    onWarning: (message, error) => logger.warn(message, error)
+    includeDisabled: true
   }).find((item) => item.manifest.id === id);
-  if (!plugin) throw new Error(`Panel plugin not found: ${id}`);
-
-  await writeEnabled(plugin, enabled);
-
-  const index = loaded.findIndex((item) => item.manifest.id === id);
-  if (!enabled) {
-    if (index >= 0) {
-      loaded[index].fork?.dispose();
-      loaded.splice(index, 1);
-    }
-    logger.info(`Panel plugin disabled: ${id}`);
-  } else if (index < 0) {
-    if (plugin.entry) {
-      // Drop the cached module so a re-enabled plugin starts from fresh
-      // module-level state instead of the copy its previous run left behind.
-      forgetCachedModule(plugin.entry);
-    }
-    loaded.push(await installPlugin({ ...plugin, manifest: { ...plugin.manifest, enabled: true } }));
-    sortPlugins(loaded);
-    logger.info(`Panel plugin enabled: ${id}`);
-  }
-
-  const record = getPanelPluginInventory().find((item) => item.id === id);
-  if (!record) throw new Error(`Panel plugin not found: ${id}`);
-  return record;
+  if (!plugin) throw new Error(`Plugin not found: ${id}`);
+  return plugin;
 }
 
-/**
- * Writes the switch into `plugin.json`. An enabled plugin has the key removed
- * rather than set to `true`, so a manifest only carries the flag while it is
- * actually holding a plugin back.
- */
-async function writeEnabled(plugin: DiscoveredPlugin, enabled: boolean) {
-  const file = ["plugin.json", "manifest.json", "package.json"]
-    .map((name) => path.join(plugin.directory, name))
-    .find((candidate) => fs.existsSync(candidate));
-  if (!file) throw new Error(`Panel plugin has no manifest file: ${plugin.manifest.id}`);
-  const manifest = await fs.readJson(file);
-  if (enabled) delete manifest.enabled;
-  else manifest.enabled = false;
-  await fs.writeFile(file, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+async function removeRunning(id: string) {
+  const index = loaded.findIndex((item) => item.manifest.id === id);
+  if (index < 0) return;
+  const record = loaded[index];
+  unloading.add(id);
+  try {
+    record.fork?.dispose();
+    await settle();
+  } finally {
+    loaded.splice(loaded.indexOf(record), 1);
+    unloading.delete(id);
+  }
+}
+
+function pluginState(plugin: DiscoveredPlugin, running?: LoadedPanelPlugin): PluginState {
+  if (unloading.has(plugin.manifest.id)) return "unloading";
+  if (plugin.manifest.enabled === false) return "disabled";
+  if (running?.error || running?.fork?.error || running?.fork?.runtime.error) return "failed";
+  if (!running || running.restartRequired) return "restart-required";
+  if (!running.entry) return "active";
+  if (
+    running.backendRevision !== pluginDirectoryRevision(path.dirname(running.entry)) ||
+    JSON.stringify(running.manifest.config) !== JSON.stringify(plugin.manifest.config)
+  )
+    return "restart-required";
+  const fork = running.fork;
+  if (!fork) return "failed";
+  const state = fork.runtime.status === 2 ? fork.status : fork.runtime.status;
+  return (
+    (["pending", "loading", "active", "failed", "failed"] as PluginState[])[state] || "pending"
+  );
+}
+
+function changedRecord(id: string, failure?: string): PanelPluginRecord {
+  const record = getPanelPluginInventory().find((item) => item.id === id)!;
+  const application =
+    failure || record.state === "failed"
+      ? "failed"
+      : record.state === "restart-required"
+      ? "restart-required"
+      : ["pending", "loading", "unloading"].includes(record.state)
+      ? "pending"
+      : "applied";
+  return { ...record, result: { saved: true, application, error: failure || record.error } };
+}
+
+/** Config replaces the package default as one user-owned layer. Validate before saving. */
+export function configurePanelPlugin(
+  id: string,
+  config: Record<string, unknown>
+): Promise<PanelPluginRecord> {
+  return change(async () => {
+    const plugin = findPlugin(id);
+    if (!config || typeof config !== "object" || Array.isArray(config))
+      throw new Error("Plugin config must be an object.");
+    validatePluginCompatibility(plugin.manifest.elements);
+    const running = loaded.find((item) => item.manifest.id === id);
+    const replaced =
+      plugin.entry &&
+      codeRevisions.has(id) &&
+      codeRevisions.get(id) !== pluginDirectoryRevision(path.dirname(plugin.entry));
+    if (!replaced && typeof running?.fork?.runtime.schema === "function")
+      running.fork.runtime.schema(config);
+    if (Array.isArray(plugin.manifest.configFields))
+      validatePluginSettings(plugin.manifest.configFields, config);
+    writePluginOverride(id, { config });
+    // Core network/storage configuration is applied on restart; never tear down the reply path.
+    if (replaced || ESSENTIAL_PLUGIN_IDS.has(id) || ["server", "config", "monitor"].includes(id)) {
+      return {
+        ...getPanelPluginInventory().find((item) => item.id === id)!,
+        result: { saved: true, application: "restart-required" }
+      };
+    }
+    let failure: string | undefined;
+    try {
+      await removeRunning(id);
+      if (plugin.manifest.enabled !== false) {
+        loaded.push(await installPlugin({ ...plugin, manifest: { ...plugin.manifest, config } }));
+        sortPlugins(loaded);
+        await settle();
+      }
+    } catch (error) {
+      failure = String(error);
+    }
+    return changedRecord(id, failure);
+  });
 }

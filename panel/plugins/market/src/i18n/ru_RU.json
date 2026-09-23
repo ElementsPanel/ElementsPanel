@@ -95,5 +95,6 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL": "Плагин панели",
   "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON": "Плагин демона",
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Плагин панели и демона",
-  "TXT_CODE_PLUGIN_MARKET_UPDATES": "Обновления"
+  "TXT_CODE_PLUGIN_MARKET_UPDATES": "Обновления",
+  "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "Плагину нужна другая версия API хоста или SDK браузера. Сначала обновите ElementsPanel."
 }

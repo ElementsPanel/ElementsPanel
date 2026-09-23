@@ -187,12 +187,16 @@ export async function apply(ctx: PanelPluginContext) {
         ? error.message
         : axios.isAxiosError(error) && error.response?.status === 404
         ? "NOT_FOUND"
+        : axios.isAxiosError(error) && error.response?.status === 409
+        ? "INCOMPATIBLE"
         : "UNREACHABLE";
     const messages: Record<string, string> = {
       NOT_FOUND: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_NOT_FOUND"),
       DIR_TAKEN: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_DIR_TAKEN"),
       EMPTY_PACKAGE: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_EMPTY_PACKAGE"),
       BAD_PATH: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE"),
+      BAD_CHECKSUM: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE"),
+      INCOMPATIBLE: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE"),
       NO_NODES: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_SELECT_NODES")
     };
     const statusByReason: Record<string, number> = {
@@ -200,6 +204,8 @@ export async function apply(ctx: PanelPluginContext) {
       DIR_TAKEN: 409,
       EMPTY_PACKAGE: 400,
       BAD_PATH: 400,
+      BAD_CHECKSUM: 400,
+      INCOMPATIBLE: 409,
       NO_NODES: 400
     };
     throw Object.assign(
@@ -256,6 +262,10 @@ export async function apply(ctx: PanelPluginContext) {
     };
     const failedNodes: string[] = [];
     const changedNodes: string[] = [];
+    const manifestFile = files.find((file) => file.relative === "plugin.json");
+    const requiredApi = manifestFile
+      ? JSON.parse(manifestFile.content.toString("utf8")).elements?.api
+      : undefined;
     for (const daemonId of daemonIds) {
       const node = ctx.remote.services.getInstance(daemonId);
       if (!node || !node.available) {
@@ -263,6 +273,15 @@ export async function apply(ctx: PanelPluginContext) {
         continue;
       }
       try {
+        if (requiredApi !== undefined) {
+          const capabilities = (await new ctx.remote.Request(node).request(
+            "plugin/capabilities",
+            {},
+            5000
+          )) as { api?: number };
+          if (capabilities?.api !== requiredApi)
+            throw new Error("Incompatible daemon plugin API; update the node first.");
+        }
         await new ctx.remote.Request(node).request("plugin/install", payload, 60000);
       } catch (error) {
         ctx.logger.warn(`Failed to install a plugin on daemon ${daemonId}: ${error}`);

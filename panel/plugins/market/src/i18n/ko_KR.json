@@ -95,5 +95,6 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL": "Panel 플러그인",
   "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON": "Daemon 플러그인",
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Panel + Daemon 플러그인",
-  "TXT_CODE_PLUGIN_MARKET_UPDATES": "업데이트"
+  "TXT_CODE_PLUGIN_MARKET_UPDATES": "업데이트",
+  "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "이 플러그인에는 다른 호스트 API 또는 브라우저 SDK 버전이 필요합니다. 먼저 ElementsPanel을 업데이트하세요."
 }

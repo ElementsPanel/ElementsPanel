@@ -58,6 +58,8 @@ export interface DiscoverPluginsOptions {
 /** A plugin directory to scan, optionally with a public folder name override. */
 export interface PluginDiscoveryRoot {
   directory: string;
+  /** A persistent installation may supersede its own legacy market directory. */
+  overrideManaged?: boolean;
   /** Used by external workspaces, whose manifest lives below a side directory. */
   folder?: string;
 }
@@ -75,8 +77,7 @@ export function readPluginManifest(
     try {
       const value = JSON.parse(fs.readFileSync(filePath, "utf8")) as Record<string, unknown> | null;
       if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-      const id =
-        typeof value.id === "string" ? value.id : path.basename(directory);
+      const id = typeof value.id === "string" ? value.id : path.basename(directory);
       if (!id.trim()) return null;
       return { ...value, id: id.trim() } as PluginManifest;
     } catch (error) {
@@ -133,10 +134,7 @@ function discoverPluginDirectory(
  * dropped too; one that names none keeps `entry` undefined, because a plugin may
  * legitimately contribute to only one side of the panel.
  */
-export function discoverPlugins(
-  root: string,
-  options: DiscoverPluginsOptions
-): DiscoveredPlugin[] {
+export function discoverPlugins(root: string, options: DiscoverPluginsOptions): DiscoveredPlugin[] {
   if (!fs.existsSync(root)) return [];
 
   const plugins: DiscoveredPlugin[] = [];
@@ -180,6 +178,20 @@ export function discoverPluginsFromRoots(
     for (const plugin of plugins) {
       if (!plugin) continue;
       if (seenIds.has(plugin.manifest.id)) {
+        const index = discovered.findIndex((item) => item.manifest.id === plugin.manifest.id);
+        const owner = (directory: string) => {
+          try {
+            return JSON.parse(fs.readFileSync(path.join(directory, ".market-install.json"), "utf8"))
+              .pluginId;
+          } catch {
+            return undefined;
+          }
+        };
+        const previousOwner = owner(discovered[index].directory);
+        if (root.overrideManaged && previousOwner && previousOwner === owner(plugin.directory)) {
+          discovered[index] = plugin;
+          continue;
+        }
         options.onWarning?.(`Ignoring duplicate plugin id: ${plugin.manifest.id}`);
         continue;
       }

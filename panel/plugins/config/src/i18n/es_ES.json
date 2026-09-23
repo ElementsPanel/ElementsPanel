@@ -17,5 +17,13 @@
   "TXT_CODE_PLUGIN_NO_CONFIG": "Este plugin no tiene opciones configurables.",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "Nodos",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "Panel",
-  "TXT_CODE_PLUGIN_SELF_DISABLE": "El gestor de complementos no puede desactivarse a sí mismo. Establece enabled en false en su plugin.json."
+  "TXT_CODE_PLUGIN_SELF_DISABLE": "El gestor de complementos no puede desactivarse a sí mismo. Establece enabled en false en su plugin.json.",
+  "TXT_CODE_PLUGIN_STATE_PENDING": "Esperando dependencias",
+  "TXT_CODE_PLUGIN_STATE_LOADING": "Cargando",
+  "TXT_CODE_PLUGIN_STATE_ACTIVE": "En ejecución",
+  "TXT_CODE_PLUGIN_STATE_UNLOADING": "Descargando",
+  "TXT_CODE_PLUGIN_RESTART_REQUIRED": "Reinicia el servicio para aplicar el cambio.",
+  "TXT_CODE_PLUGIN_SAVED_PENDING": "Guardado; esperando dependencias del complemento.",
+  "TXT_CODE_PLUGIN_FRONTEND_FAILED": "Error del complemento del navegador",
+  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "Recarga la página para cargar el entorno actualizado del navegador."
 }

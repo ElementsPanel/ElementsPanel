@@ -15,6 +15,7 @@ const dom = new JSDOM("<!doctype html><div id='app-mount-point'></div>", {
 });
 for (const name of [
   "window",
+  "CustomEvent",
   "document",
   "SVGElement",
   "Element",
@@ -36,10 +37,15 @@ function load(filename, overrides = {}, environment = {}) {
   filename = path.join(root, filename);
   const mod = new Module(filename, module);
   const localRequire = Module.createRequire(filename);
+  const requireSource = (id) => {
+    const candidate = path.resolve(path.dirname(filename), id) + ".ts";
+    if (id.startsWith(".") && fs.existsSync(candidate)) return load(path.relative(root, candidate));
+    return localRequire(id);
+  };
   mod.environment = environment;
   mod.require = (id) => {
     if (Object.hasOwn(overrides, id)) return overrides[id];
-    return id.startsWith(".") ? localRequire(id) : frontendRequire(id);
+    return id.startsWith(".") ? requireSource(id) : frontendRequire(id);
   };
   const source = fs.readFileSync(filename, "utf8").replaceAll("import.meta.env.DEV", "true");
   const compiled = ts.transpileModule(source, {
@@ -156,7 +162,7 @@ function frontendFixture(t, { user = true, failStatus = false } = {}) {
     "./context": { ctx },
     "./loader": loader
   });
-  return { ctx, events, loader, router, start: install.setupPanelFrontendPlugins };
+  return { ctx, events, loader, router, sources, start: install.setupPanelFrontendPlugins };
 }
 
 test("frontend foundations restore language and session before mounting and ready hooks", async (t) => {
@@ -286,3 +292,89 @@ for (const side of ["panel", "daemon"]) {
     assert.equal(Logger.levels, initialLevels);
   });
 }
+
+test("browser synchronization replaces changed plugin revisions and serializes concurrent refreshes", async (t) => {
+  const fixture = frontendFixture(t, { user: false });
+  await fixture.start();
+  const { ctx, loader, sources } = fixture;
+  const index = sources.findIndex((source) => source.metadata.id === "feature");
+  let applies = 0;
+  sources[index] = {
+    ...sources[index],
+    revision: "new-generation",
+    load: async () => ({
+      inject: ["console"],
+      apply(scope) {
+        applies++;
+        scope.set("generation", "new");
+      }
+    })
+  };
+  await Promise.all([loader.refreshPlugins(), loader.refreshPlugins()]);
+  assert.equal(applies, 1);
+  assert.equal(ctx.get("generation"), "new");
+  assert.equal(ctx.routes.ownerOf("/feature"), undefined);
+  sources.splice(index, 1);
+  await loader.refreshPlugins();
+  assert.equal(ctx.get("generation"), undefined);
+});
+
+test("browser rejects incompatible packages and keeps foundational plugins alive on revision changes", async (t) => {
+  const fixture = frontendFixture(t, { user: false });
+  await fixture.start();
+  const { loader, sources } = fixture;
+  const foundation = loader.getLoadedPlugins().find((item) => item.metadata.id === "console");
+  const index = sources.findIndex((source) => source.metadata.id === "console");
+  sources[index] = { ...sources[index], revision: "changed" };
+  let executed = false;
+  sources.push({
+    metadata: { id: "future", elements: { api: 2 } },
+    directory: "future",
+    assetDirectory: "future",
+    load: async () => {
+      executed = true;
+      return {};
+    }
+  });
+  await loader.refreshPlugins();
+  assert.equal(executed, false);
+  assert.match(
+    loader.getLoadedPlugins().find((item) => item.metadata.id === "future").error.message,
+    /Unsupported/
+  );
+  assert.equal(
+    loader.getLoadedPlugins().find((item) => item.metadata.id === "console"),
+    foundation
+  );
+  assert.equal(foundation.reloadRequired, true);
+});
+
+test("a plugin deferred until backend restart loads when the same artifact becomes ready", async (t) => {
+  const fixture = frontendFixture(t, { user: false });
+  await fixture.start();
+  let applications = 0;
+  const source = {
+    metadata: { id: "deferred", restartRequired: true },
+    directory: "deferred",
+    assetDirectory: "deferred",
+    revision: "same-code",
+    load: async () => ({
+      apply() {
+        applications++;
+      }
+    })
+  };
+  fixture.sources.push(source);
+  await fixture.loader.refreshPlugins();
+  assert.equal(applications, 0);
+  fixture.sources[fixture.sources.length - 1] = {
+    ...source,
+    metadata: { id: "deferred", restartRequired: false }
+  };
+  await fixture.loader.refreshPlugins();
+  assert.equal(applications, 1);
+  assert.equal(
+    fixture.loader.getLoadedPlugins().find((item) => item.metadata.id === "deferred").error,
+    undefined
+  );
+});

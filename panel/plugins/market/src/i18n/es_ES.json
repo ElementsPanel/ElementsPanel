@@ -95,5 +95,6 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL": "Complemento de panel",
   "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON": "Complemento de daemon",
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Complemento de panel y daemon",
-  "TXT_CODE_PLUGIN_MARKET_UPDATES": "Novedades"
+  "TXT_CODE_PLUGIN_MARKET_UPDATES": "Novedades",
+  "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "Este complemento requiere otra versión de la API del servidor o del SDK del navegador. Actualiza ElementsPanel primero."
 }

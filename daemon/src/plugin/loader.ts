@@ -1,6 +1,15 @@
 import { Logger, type ForkScope } from "cordis";
 import fs from "fs-extra";
 import {
+  pluginDirectoryRevision,
+  applyPluginOverrides,
+  writePluginOverride,
+  validatePluginCompatibility,
+  validatePluginSettings,
+  createPluginQueue,
+  trackPluginDisposal,
+  type PluginState,
+  type PluginChangeResult,
   discoverExternalPluginRoots,
   discoverPluginsFromRoots,
   sortPlugins,
@@ -10,7 +19,7 @@ import {
 } from "mcsmanager-common";
 import path from "path";
 import { pathToFileURL } from "url";
-import { ctx, type DaemonPluginContext } from "./context";
+import { ctx, type DaemonPluginContext, type DaemonSettingsSchema } from "./context";
 
 /**
  * Turns the plugin directories into cordis plugins.
@@ -23,11 +32,15 @@ import { ctx, type DaemonPluginContext } from "./context";
  */
 
 const logger = new Logger("plugin");
+const change = createPluginQueue();
+const settle = trackPluginDisposal(ctx);
+const unloading = new Set<string>();
+const codeRevisions = new Map<string, string>();
 
 const BUILT_IN_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "plugins");
 /**
  * Plugins installed from the plugin market, kept apart from the built-in tree and
- * git-ignored. In a production install the same plugin goes to `plugins/`.
+ * git-ignored. New installations use data/plugins; this root remains readable.
  */
 const MARKET_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "market_plugins");
 const ENTRY_FIELDS = ["daemon", "backend", "main", "entry"];
@@ -53,6 +66,8 @@ export interface DaemonPluginEntry {
   directory: string;
   folder: string;
   entry?: string;
+  backendRevision?: string;
+  restartRequired?: boolean;
   fork?: ForkScope;
   error?: Error;
 }
@@ -62,12 +77,15 @@ const loaded: DaemonPluginEntry[] = [];
 function discoverDaemonPlugins(options: DiscoverPluginsOptions) {
   const roots = [
     { directory: BUILT_IN_PLUGINS_DIRECTORY() },
+    { directory: path.resolve(process.cwd(), "data", "plugins"), overrideManaged: true },
     { directory: MARKET_PLUGINS_DIRECTORY() }
   ];
   if (process.env.NODE_ENV === "development") {
     roots.push(...discoverExternalPluginRoots(path.resolve(process.cwd(), ".."), "daemon"));
   }
-  return discoverPluginsFromRoots(roots, options);
+  return applyPluginOverrides(
+    discoverPluginsFromRoots(roots, { ...options, includeDisabled: true })
+  ).filter((plugin) => options.includeDisabled || plugin.manifest.enabled !== false);
 }
 
 /** Exposes the loader's own registry without pulling it into a plugin bundle. */
@@ -80,6 +98,18 @@ function ensureDaemonPluginService() {
     },
     inventory: getDaemonPluginInventory,
     setEnabled: setDaemonPluginEnabled,
+    configure: configureDaemonPlugin,
+    configuration: (id: string): DaemonSettingsSchema => {
+      const manifest = findPlugin(id).manifest;
+      return {
+        id,
+        fields: (Array.isArray(manifest.configFields)
+          ? manifest.configFields
+          : []) as DaemonSettingsSchema["fields"],
+        values: (manifest.config || {}) as Record<string, unknown>
+      };
+    },
+    runExclusive: change,
     reload: reloadDaemonPlugins
   });
 }
@@ -137,8 +167,16 @@ async function installPlugin(plugin: DiscoveredPlugin): Promise<DaemonPluginEntr
     return record;
   }
   try {
+    record.backendRevision = pluginDirectoryRevision(path.dirname(plugin.entry));
+    validatePluginCompatibility(plugin.manifest.elements);
+    const previousRevision = codeRevisions.get(plugin.manifest.id);
+    if (previousRevision && previousRevision !== record.backendRevision) {
+      record.restartRequired = true;
+      return record;
+    }
+    codeRevisions.set(plugin.manifest.id, record.backendRevision!);
     const module = toModule(await loadModule(plugin.entry), plugin.manifest.id);
-    if (!module) return record;
+    if (!module) throw new Error(`Plugin "${plugin.manifest.id}" must export apply().`);
     // Plugins are applied one at a time, in `priority` order, and an `async
     // apply()` is awaited before the next plugin starts, so a plugin can rely
     // on what an earlier one set up.
@@ -212,31 +250,33 @@ export async function reloadDaemonPlugins(): Promise<readonly DaemonPluginEntry[
   if (process.env.NODE_ENV !== "development") {
     throw new Error("Reloading plugins is only supported in a development environment.");
   }
-  ensureDaemonPluginService();
-  const discovered = discoverDaemonPlugins({
-    entryFields: ENTRY_FIELDS,
-    entryCandidates: ENTRY_CANDIDATES,
-    onWarning: (message, error) => logger.warn(message, error)
+  return change(async () => {
+    ensureDaemonPluginService();
+    const discovered = discoverDaemonPlugins({
+      entryFields: ENTRY_FIELDS,
+      entryCandidates: ENTRY_CANDIDATES,
+      onWarning: (message, error) => logger.warn(message, error)
+    });
+
+    const installed = new Set(discovered.map((plugin) => plugin.manifest.id));
+    for (let index = loaded.length - 1; index >= 0; index--) {
+      const record = loaded[index];
+      if (installed.has(record.manifest.id)) continue;
+      await removeRunning(record.manifest.id);
+      logger.info(`Daemon plugin unloaded: ${record.manifest.id}`);
+    }
+
+    for (const plugin of discovered) {
+      if (loaded.some((record) => record.manifest.id === plugin.manifest.id)) continue;
+      // A plugin installed, uninstalled and installed again would otherwise be
+      // served the module its first run left behind.
+      forgetCachedModule(plugin.entry);
+      loaded.push(await installPlugin(plugin));
+    }
+    sortPlugins(loaded);
+    await settle();
+    return loaded;
   });
-
-  const installed = new Set(discovered.map((plugin) => plugin.manifest.id));
-  for (let index = loaded.length - 1; index >= 0; index--) {
-    const record = loaded[index];
-    if (installed.has(record.manifest.id)) continue;
-    record.fork?.dispose();
-    loaded.splice(index, 1);
-    logger.info(`Daemon plugin unloaded: ${record.manifest.id}`);
-  }
-
-  for (const plugin of discovered) {
-    if (loaded.some((record) => record.manifest.id === plugin.manifest.id)) continue;
-    // A plugin installed, uninstalled and installed again would otherwise be
-    // served the module its first run left behind.
-    forgetCachedModule(plugin.entry);
-    loaded.push(await installPlugin(plugin));
-  }
-  sortPlugins(loaded);
-  return loaded;
 }
 
 /** Loads one of the small foundation plugins before feature plugins start. */
@@ -273,12 +313,14 @@ export function getLoadedDaemonPlugins(): readonly DaemonPluginEntry[] {
 
 /** One installed plugin, as the panel's plugin manager lists it. */
 export interface DaemonPluginRecord {
+  state: PluginState;
+  result?: PluginChangeResult;
   id: string;
   name?: string;
   version?: string;
   description?: string;
   priority?: number;
-  /** False only when `plugin.json` says so; that is the persisted switch. */
+  /** Effective enablement after applying the user override. */
   enabled: boolean;
   /** Whether the manifest names an entry module at all. */
   hasEntry: boolean;
@@ -308,75 +350,138 @@ export function getDaemonPluginInventory(): DaemonPluginRecord[] {
       priority: plugin.manifest.priority,
       enabled: plugin.manifest.enabled !== false,
       hasEntry: ENTRY_FIELDS.some((field) => typeof plugin.manifest[field] === "string"),
-      running: Boolean(running?.fork),
-      error: running?.error?.message
+      running: pluginState(plugin, running) === "active",
+      state: pluginState(plugin, running),
+      error:
+        running?.error?.message ||
+        running?.fork?.runtime.error?.message ||
+        running?.fork?.error?.message
     };
   });
 }
 
-/**
- * Turns a plugin on or off: persists the switch in its `plugin.json` and applies
- * it to the running daemon.
- *
- * The manifest is the source of truth, because that is what the loader reads.
- * Disabling disposes the plugin's scope, which takes its protocol handlers,
- * tasks, timers and services with it; enabling requires the entry module afresh,
- * so a plugin that keeps module-level state starts from a clean one.
- */
-export async function setDaemonPluginEnabled(
-  id: string,
-  enabled: boolean
-): Promise<DaemonPluginRecord> {
-  if (FOUNDATION_PLUGIN_IDS.has(id) && !enabled) {
-    throw new Error(`The foundational daemon plugin "${id}" cannot be disabled.`);
-  }
+/** Persist the user override, then serialize disposal/activation and report both outcomes. */
+export function setDaemonPluginEnabled(id: string, enabled: boolean): Promise<DaemonPluginRecord> {
+  return change(async () => {
+    if (typeof enabled !== "boolean") throw new Error("Invalid plugin enablement.");
+    if (FOUNDATION_PLUGIN_IDS.has(id) && !enabled)
+      throw new Error(`The essential plugin "${id}" cannot be disabled.`);
+    const plugin = findPlugin(id);
+    writePluginOverride(id, { enabled });
+    let failure: string | undefined;
+    try {
+      const existing = loaded.find((item) => item.manifest.id === id);
+      if (!enabled || existing?.error || existing?.fork?.runtime.status === 3)
+        await removeRunning(id);
+      if (enabled && !loaded.some((item) => item.manifest.id === id)) {
+        forgetCachedModule(plugin.entry);
+        loaded.push(
+          await installPlugin({ ...plugin, manifest: { ...plugin.manifest, enabled: true } })
+        );
+        sortPlugins(loaded);
+      }
+      await settle();
+    } catch (error) {
+      failure = String(error);
+    }
+    return changedRecord(id, failure);
+  });
+}
+
+function findPlugin(id: string) {
   const plugin = discoverDaemonPlugins({
     entryFields: ENTRY_FIELDS,
     entryCandidates: ENTRY_CANDIDATES,
-    includeDisabled: true,
-    onWarning: (message, error) => logger.warn(message, error)
+    includeDisabled: true
   }).find((item) => item.manifest.id === id);
-  if (!plugin) throw new Error(`Daemon plugin not found: ${id}`);
-
-  await writeEnabled(plugin, enabled);
-
-  const index = loaded.findIndex((item) => item.manifest.id === id);
-  if (!enabled) {
-    if (index >= 0) {
-      loaded[index].fork?.dispose();
-      loaded.splice(index, 1);
-    }
-    logger.info(`Daemon plugin disabled: ${id}`);
-  } else if (index < 0) {
-    if (plugin.entry) {
-      // Drop the cached module so a re-enabled plugin starts from fresh
-      // module-level state instead of the copy its previous run left behind.
-      forgetCachedModule(plugin.entry);
-    }
-    loaded.push(
-      await installPlugin({ ...plugin, manifest: { ...plugin.manifest, enabled: true } })
-    );
-    sortPlugins(loaded);
-    logger.info(`Daemon plugin enabled: ${id}`);
-  }
-
-  const record = getDaemonPluginInventory().find((item) => item.id === id);
-  if (!record) throw new Error(`Daemon plugin not found: ${id}`);
-  return record;
+  if (!plugin) throw new Error(`Plugin not found: ${id}`);
+  return plugin;
 }
 
-/**
- * Writes the switch into `plugin.json`. An enabled plugin has the key removed
- * rather than set to `true`, so a manifest only carries the flag while it is
- * actually holding a plugin back.
- */
-async function writeEnabled(plugin: DiscoveredPlugin, enabled: boolean) {
-  const file = ["plugin.json", "manifest.json", "package.json"]
-    .map((name) => path.join(plugin.directory, name))
-    .find((candidate) => fs.existsSync(candidate));
-  if (!file) throw new Error(`Daemon plugin has no manifest file: ${plugin.manifest.id}`);
-  const manifest = await fs.readJson(file);
-  if (enabled) delete manifest.enabled;
-  else manifest.enabled = false;
-  await fs.writeFile(file, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+async function removeRunning(id: string) {
+  const index = loaded.findIndex((item) => item.manifest.id === id);
+  if (index < 0) return;
+  const record = loaded[index];
+  unloading.add(id);
+  try {
+    record.fork?.dispose();
+    await settle();
+  } finally {
+    loaded.splice(loaded.indexOf(record), 1);
+    unloading.delete(id);
+  }
+}
+
+function pluginState(plugin: DiscoveredPlugin, running?: DaemonPluginEntry): PluginState {
+  if (unloading.has(plugin.manifest.id)) return "unloading";
+  if (plugin.manifest.enabled === false) return "disabled";
+  if (running?.error || running?.fork?.error || running?.fork?.runtime.error) return "failed";
+  if (!running || running.restartRequired) return "restart-required";
+  if (!running.entry) return "active";
+  if (
+    running.backendRevision !== pluginDirectoryRevision(path.dirname(running.entry)) ||
+    JSON.stringify(running.manifest.config) !== JSON.stringify(plugin.manifest.config)
+  )
+    return "restart-required";
+  const fork = running.fork;
+  if (!fork) return "failed";
+  const state = fork.runtime.status === 2 ? fork.status : fork.runtime.status;
+  return (
+    (["pending", "loading", "active", "failed", "failed"] as PluginState[])[state] || "pending"
+  );
+}
+
+function changedRecord(id: string, failure?: string): DaemonPluginRecord {
+  const record = getDaemonPluginInventory().find((item) => item.id === id)!;
+  const application =
+    failure || record.state === "failed"
+      ? "failed"
+      : record.state === "restart-required"
+      ? "restart-required"
+      : ["pending", "loading", "unloading"].includes(record.state)
+      ? "pending"
+      : "applied";
+  return { ...record, result: { saved: true, application, error: failure || record.error } };
+}
+
+/** Config replaces the package default as one user-owned layer. Validate before saving. */
+export function configureDaemonPlugin(
+  id: string,
+  config: Record<string, unknown>
+): Promise<DaemonPluginRecord> {
+  return change(async () => {
+    const plugin = findPlugin(id);
+    if (!config || typeof config !== "object" || Array.isArray(config))
+      throw new Error("Plugin config must be an object.");
+    validatePluginCompatibility(plugin.manifest.elements);
+    const running = loaded.find((item) => item.manifest.id === id);
+    const replaced =
+      plugin.entry &&
+      codeRevisions.has(id) &&
+      codeRevisions.get(id) !== pluginDirectoryRevision(path.dirname(plugin.entry));
+    if (!replaced && typeof running?.fork?.runtime.schema === "function")
+      running.fork.runtime.schema(config);
+    if (Array.isArray(plugin.manifest.configFields))
+      validatePluginSettings(plugin.manifest.configFields, config);
+    writePluginOverride(id, { config });
+    // Core network/storage configuration is applied on restart; never tear down the reply path.
+    if (replaced || FOUNDATION_PLUGIN_IDS.has(id) || ["server", "config", "monitor"].includes(id)) {
+      return {
+        ...getDaemonPluginInventory().find((item) => item.id === id)!,
+        result: { saved: true, application: "restart-required" }
+      };
+    }
+    let failure: string | undefined;
+    try {
+      await removeRunning(id);
+      if (plugin.manifest.enabled !== false) {
+        loaded.push(await installPlugin({ ...plugin, manifest: { ...plugin.manifest, config } }));
+        sortPlugins(loaded);
+        await settle();
+      }
+    } catch (error) {
+      failure = String(error);
+    }
+    return changedRecord(id, failure);
+  });
 }

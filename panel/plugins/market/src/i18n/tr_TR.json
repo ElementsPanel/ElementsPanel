@@ -95,5 +95,6 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL": "Panel eklentisi",
   "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON": "Daemon eklentisi",
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Panel ve daemon eklentisi",
-  "TXT_CODE_PLUGIN_MARKET_UPDATES": "Güncellemeler"
+  "TXT_CODE_PLUGIN_MARKET_UPDATES": "Güncellemeler",
+  "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "Bu eklenti farklı bir ana bilgisayar API veya tarayıcı SDK sürümü gerektiriyor. Önce ElementsPanel’i güncelleyin."
 }

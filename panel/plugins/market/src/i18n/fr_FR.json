@@ -95,5 +95,6 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL": "Extension de panel",
   "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON": "Extension de daemon",
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Extension panel et daemon",
-  "TXT_CODE_PLUGIN_MARKET_UPDATES": "Nouveautés"
+  "TXT_CODE_PLUGIN_MARKET_UPDATES": "Nouveautés",
+  "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "Ce plugin nécessite une autre version de l’API hôte ou du SDK navigateur. Mettez d’abord ElementsPanel à jour."
 }

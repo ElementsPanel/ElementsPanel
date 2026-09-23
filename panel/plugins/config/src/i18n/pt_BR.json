@@ -17,5 +17,13 @@
   "TXT_CODE_PLUGIN_NO_CONFIG": "Este plugin nao possui opcoes configuraveis.",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "Nós",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "Painel",
-  "TXT_CODE_PLUGIN_SELF_DISABLE": "O gerenciador de plugins não pode desativar a si mesmo. Defina enabled como false no plugin.json dele."
+  "TXT_CODE_PLUGIN_SELF_DISABLE": "O gerenciador de plugins não pode desativar a si mesmo. Defina enabled como false no plugin.json dele.",
+  "TXT_CODE_PLUGIN_STATE_PENDING": "Aguardando dependências",
+  "TXT_CODE_PLUGIN_STATE_LOADING": "Carregando",
+  "TXT_CODE_PLUGIN_STATE_ACTIVE": "Em execução",
+  "TXT_CODE_PLUGIN_STATE_UNLOADING": "Descarregando",
+  "TXT_CODE_PLUGIN_RESTART_REQUIRED": "Reinicie o serviço para aplicar a alteração.",
+  "TXT_CODE_PLUGIN_SAVED_PENDING": "Salvo; aguardando dependências do plugin.",
+  "TXT_CODE_PLUGIN_FRONTEND_FAILED": "Falha no plugin do navegador",
+  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "Atualize a página para carregar o novo ambiente do navegador."
 }

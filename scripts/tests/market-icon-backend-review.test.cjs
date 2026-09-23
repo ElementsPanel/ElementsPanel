@@ -15,22 +15,31 @@ function load(filename, overrides = {}, ts = panelTs, requireBase = panelRequire
   const absolute = path.isAbsolute(filename) ? filename : path.join(root, filename);
   const mod = new Module(absolute, module);
   const localRequire = Module.createRequire(absolute);
-  mod.require = (id) => Object.hasOwn(overrides, id) ? overrides[id] : localRequire(id);
-  mod._compile(ts.transpileModule(fs.readFileSync(absolute, "utf8"), {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2022,
-      esModuleInterop: true
-    },
-    fileName: absolute
-  }).outputText, absolute);
+  mod.require = (id) =>
+    Object.hasOwn(overrides, id)
+      ? overrides[id]
+      : id.startsWith(".") && fs.existsSync(path.resolve(path.dirname(absolute), id) + ".ts")
+      ? load(path.resolve(path.dirname(absolute), id) + ".ts", {}, ts, requireBase)
+      : localRequire(id);
+  mod._compile(
+    ts.transpileModule(fs.readFileSync(absolute, "utf8"), {
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2022,
+        esModuleInterop: true
+      },
+      fileName: absolute
+    }).outputText,
+    absolute
+  );
   return mod.exports;
 }
 
-const png = (length = 8) => Buffer.concat([
-  Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-  Buffer.alloc(Math.max(0, length - 8), 7)
-]);
+const png = (length = 8) =>
+  Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    Buffer.alloc(Math.max(0, length - 8), 7)
+  ]);
 
 function iconFixture(t, body = png()) {
   const routes = new Map();
@@ -43,9 +52,14 @@ function iconFixture(t, body = png()) {
     }
   };
   const icon = load("panel/plugins/market/src/backend/plugin_icon.ts");
-  const common = load("common/src/plugin_package.ts", {
-    "./plugin_manifest": load("common/src/plugin_manifest.ts", {}, panelTs, panelRequire)
-  }, panelTs, panelRequire);
+  const common = load(
+    "common/src/plugin_package.ts",
+    {
+      "./plugin_manifest": load("common/src/plugin_manifest.ts", {}, panelTs, panelRequire)
+    },
+    panelTs,
+    panelRequire
+  );
   const service = load("panel/plugins/market/src/backend/service/plugin_market.ts", {
     "mcsmanager-common": common
   });
@@ -72,11 +86,20 @@ function iconFixture(t, body = png()) {
     i18n: { define() {}, $t: (key) => key },
     logger: { warn() {} },
     roles: { USER: 1, ADMIN: 10 },
-    middleware: { validator: () => async (_ctx, next) => next(), permission: pass, speedLimit: pass },
-    koa: { router: () => Object.fromEntries(["get", "post", "put", "delete"].map((method) => [
-      method,
-      (url, ...handlers) => routes.set(`${method} ${url}`, handlers)
-    ])) },
+    middleware: {
+      validator: () => async (_ctx, next) => next(),
+      permission: pass,
+      speedLimit: pass
+    },
+    koa: {
+      router: () =>
+        Object.fromEntries(
+          ["get", "post", "put", "delete"].map((method) => [
+            method,
+            (url, ...handlers) => routes.set(`${method} ${url}`, handlers)
+          ])
+        )
+    },
     settingsForm: { declare() {} },
     plugins: { reload: async () => {} },
     remote: { services: { services: new Map(), getInstance: () => undefined }, Request: class {} },
@@ -103,16 +126,18 @@ test("icon proxy requires admin permission, forwards version and encodes only va
   assert.ok(fixture.permissionLevels.includes(10));
   const ctx = await invoke(handlers, { pluginId: "plugin/name", version: "2.4.1" });
   assert.equal(ctx.body.dataUrl, `data:image/png;base64,${png(32).toString("base64")}`);
-  assert.deepEqual(fixture.axiosCalls, [{
-    url: "https://market.example/api/plugins/plugin%2Fname/icon",
-    options: {
-      params: { version: "2.4.1" },
-      responseType: "arraybuffer",
-      timeout: 15000,
-      maxContentLength: 1024 * 1024,
-      maxBodyLength: 1024 * 1024
+  assert.deepEqual(fixture.axiosCalls, [
+    {
+      url: "https://market.example/api/plugins/plugin%2Fname/icon",
+      options: {
+        params: { version: "2.4.1" },
+        responseType: "arraybuffer",
+        timeout: 15000,
+        maxContentLength: 1024 * 1024,
+        maxBodyLength: 1024 * 1024
+      }
     }
-  }]);
+  ]);
 });
 
 test("icon proxy falls back to the default icon for HTML, truncated and oversized responses", async (t) => {
@@ -139,14 +164,24 @@ function daemonFixture(t) {
   });
   const handlers = new Map();
   const replies = [];
-  const common = load("common/src/plugin_package.ts", {
-    "./plugin_manifest": load("common/src/plugin_manifest.ts", {}, daemonTs, daemonRequire)
-  }, daemonTs, daemonRequire);
-  const plugin = load("daemon/plugins/config/src/backend/index.ts", {
-    "mcsmanager-common": common,
-    "../i18n": { localeMessages: {} },
-    "./settings": { SettingsFormService: class {} }
-  }, daemonTs, daemonRequire);
+  const common = load(
+    "common/src/plugin_package.ts",
+    {
+      "./plugin_manifest": load("common/src/plugin_manifest.ts", {}, daemonTs, daemonRequire)
+    },
+    daemonTs,
+    daemonRequire
+  );
+  const plugin = load(
+    "daemon/plugins/config/src/backend/index.ts",
+    {
+      "mcsmanager-common": common,
+      "../i18n": { localeMessages: {} },
+      "./settings": { SettingsFormService: class {} }
+    },
+    daemonTs,
+    daemonRequire
+  );
   plugin.apply({
     i18n: { define() {}, $t: (key) => key },
     plugin() {},
@@ -179,7 +214,7 @@ test("daemon accepts only a root PNG icon and validates the whole transfer befor
   await fixture.handlers.get("plugin/install")({}, installPayload(png(32)));
   const success = fixture.replies.pop();
   assert.equal(success.error, undefined);
-  const installed = path.join(fixture.directory, "market_plugins", "sample");
+  const installed = path.join(fixture.directory, "data", "plugins", "sample");
   assert.equal(fs.readFileSync(path.join(installed, "icon.png")).length, 32);
 
   for (const [icon, extra, pattern] of [
@@ -192,6 +227,10 @@ test("daemon accepts only a root PNG icon and validates the whole transfer befor
     await fixture.handlers.get("plugin/install")({}, installPayload(icon, extra));
     const failure = fixture.replies.pop();
     assert.match(failure.error.message, pattern);
-    assert.equal(fs.existsSync(installed), false, "invalid package must not leave a partial directory");
+    assert.equal(
+      fs.existsSync(installed),
+      false,
+      "invalid package must not leave a partial directory"
+    );
   }
 });

@@ -47,6 +47,7 @@ export interface MarketPlugin {
 export type PluginSide = "panel" | "daemon";
 
 export interface MarketPluginVersion {
+  compatibility?: Partial<Record<PluginSide, { api: number; sdk?: number }>>;
   id: string;
   version: string;
   status: string;

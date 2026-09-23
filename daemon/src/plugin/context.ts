@@ -1,3 +1,4 @@
+import type { PluginChangeResult } from "mcsmanager-common";
 import { Context } from "cordis";
 import type Koa from "koa";
 import type Router from "@koa/router";
@@ -37,8 +38,8 @@ import type { DaemonPluginEntry, DaemonPluginRecord } from "./loader";
  *
  * The declarations below are the API documentation: only `import type` here, so
  * this module stays a leaf that core code can import without a cycle. The
-  * runtime values are provided by the foundation plugins (`storage`, `i18n`,
-  * and `runtime`).
+ * runtime values are provided by the foundation plugins (`storage`, `i18n`,
+ * and `runtime`).
  */
 export const ctx = new Context();
 
@@ -117,6 +118,8 @@ export interface DaemonSettingField {
  * pushes a new one.
  */
 export interface DaemonSettingsDeclaration {
+  /** Changes to this form require a process restart. */
+  restartRequired?: boolean;
   fields(): DaemonSettingField[];
   read(): Record<string, unknown> | Promise<Record<string, unknown>>;
   write(values: Record<string, unknown>): void | Promise<void>;
@@ -144,7 +147,7 @@ export interface DaemonSettingsFormService {
   /** One plugin's fields and values, or `null` when it declared nothing. */
   read(id: string): Promise<DaemonSettingsSchema | null>;
   /** Hands `values` to that plugin's own `write()`. */
-  write(id: string, values: Record<string, unknown>): Promise<void>;
+  write(id: string, values: Record<string, unknown>): Promise<PluginChangeResult>;
 }
 
 export interface DaemonI18nService {
@@ -197,9 +200,7 @@ export interface DaemonMiddlewareService {
  */
 export interface DaemonProtocolService {
   on(event: string, handler: (ctx: RouterContext, data: any) => void): () => void;
-  use(
-    handler: (event: string, ctx: RouterContext, data: any, next: Function) => void
-  ): () => void;
+  use(handler: (event: string, ctx: RouterContext, data: any, next: Function) => void): () => void;
   readonly response: (ctx: RouterContext, data: any) => void;
   readonly responseError: (
     ctx: RouterContext,
@@ -338,7 +339,9 @@ export interface DaemonJavaManagerService {
   getJava(id: string): IJavaRuntime | undefined;
   exists(id: string): boolean;
   getJavaDataDir(): string;
-  getJavaDownloadUrl(info: IJavaInfo & { name: string; version?: string }): Promise<string | undefined>;
+  getJavaDownloadUrl(
+    info: IJavaInfo & { name: string; version?: string }
+  ): Promise<string | undefined>;
   getAvailableVersions(): Promise<import("../../../common/src/java").JavaCatalog>;
   startInstall(version: string): Promise<IJavaRuntime>;
   addJava(info: IJavaInfo & { name: string; version?: string }): void;
@@ -398,11 +401,14 @@ export interface DaemonPluginsService {
   /** Every installed plugin, disabled ones included. */
   inventory(): DaemonPluginRecord[];
   /**
-   * Turns a plugin on or off: persists the switch in its `plugin.json` and
+   * Turns a plugin on or off: persists the switch in data/plugin-overrides.json and
    * applies it to the running daemon. Disabling disposes the plugin's scope, so
    * its protocol handlers, tasks, timers and services go with it.
    */
   setEnabled(id: string, enabled: boolean): Promise<DaemonPluginRecord>;
+  configure(id: string, config: Record<string, unknown>): Promise<DaemonPluginRecord>;
+  configuration(id: string): DaemonSettingsSchema;
+  runExclusive<T>(operation: () => Promise<T>): Promise<T>;
   /**
    * Re-scans the plugin directories: a plugin that has appeared since startup is
    * installed, one that is gone or disabled is disposed. Development only.

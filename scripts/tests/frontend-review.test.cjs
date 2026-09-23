@@ -481,6 +481,7 @@ test("switching node/plugin configuration cannot display or save a stale schema"
       updateNodePluginSettings: () => ({
         execute: async (config) => {
           saved.push(config);
+          return { value: { saved: true, application: "applied" } };
         }
       })
     }

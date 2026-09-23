@@ -5,7 +5,8 @@ import {
   loadPlugin,
   refreshPlugins,
   reloadPlugin,
-  unloadPlugin
+  unloadPlugin,
+  watchPluginChanges
 } from "./loader";
 
 declare global {
@@ -46,4 +47,5 @@ export async function setupPanelFrontendPlugins() {
   };
   await ctx.parallel("plugins/loaded");
   await ctx.start();
+  ctx.effect(watchPluginChanges);
 }

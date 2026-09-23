@@ -4,7 +4,6 @@ import http from "http";
 import https from "https";
 import Koa from "koa";
 import koaBody, { HttpMethodEnum } from "koa-body";
-import koaMount from "koa-mount";
 import koaStatic from "koa-static";
 import session from "koa-session";
 import { removeTrail } from "mcsmanager-common";
@@ -17,6 +16,7 @@ import { localeMessages } from "../i18n";
 import { KoaService } from "./koa";
 import { preCheck } from "./precheck";
 import { protocol } from "./protocol";
+import { pluginAssets } from "./plugin_assets";
 
 // The panel's web server.
 //
@@ -31,7 +31,6 @@ import { protocol } from "./protocol";
 // this plugin's own `inject` list.
 
 const STATIC_MAX_AGE = 10 * 24 * 60 * 60;
-const PLUGIN_FRONTEND_PATH = /^\/plugins\/([a-zA-Z0-9_-]+)\/frontend(?:\/|$)/;
 
 /** The fields this plugin owns in the panel configuration. */
 const SETTING_KEYS = [
@@ -46,14 +45,7 @@ const SETTING_KEYS = [
   "reverseProxyHeader"
 ] as const;
 
-export const inject = [
-  "i18n",
-  "settings",
-  "globals",
-  "plugins",
-  "middleware",
-  "roles"
-];
+export const inject = ["i18n", "settings", "globals", "plugins", "middleware", "roles"];
 
 export function apply(ctx: PanelPluginContext) {
   ctx.i18n.define(localeMessages);
@@ -142,25 +134,7 @@ export function apply(ctx: PanelPluginContext) {
   // has to come before the static handlers and before feature plugin routers.
   ctx.plugin(KoaService, app);
 
-  const pluginDirectory = path.join(process.cwd(), "plugins");
-  app.use(async (requestCtx, next) => {
-    if (requestCtx.path === "/plugins/manifest.json") {
-      requestCtx.set("Cache-Control", "no-store");
-      requestCtx.type = "application/json";
-      requestCtx.body = ctx.plugins.frontendManifest();
-      return;
-    }
-    const match = requestCtx.path.match(PLUGIN_FRONTEND_PATH);
-    if (!match) return next();
-    const folder = match[1];
-    if (!ctx.plugins.frontendManifest().some((plugin) => plugin.assetDirectory === folder)) {
-      return next();
-    }
-    return koaMount(
-      `/plugins/${folder}/frontend`,
-      koaStatic(path.join(pluginDirectory, folder, "frontend"), { maxAge: STATIC_MAX_AGE })
-    )(requestCtx, next);
-  });
+  app.use(pluginAssets(ctx));
 
   app.use(koaStatic(path.join(process.cwd(), "public"), { maxAge: STATIC_MAX_AGE }));
 
@@ -194,100 +168,103 @@ export function apply(ctx: PanelPluginContext) {
   // Nothing is rebound live — the listener, the proxy mode and the path prefix
   // are all fixed when this plugin starts — so the port's description says that a
   // change takes effect on the next restart, as it always has.
-  ctx.inject(["settingsForm"], (settingsCtx) => settingsCtx.settingsForm.declare({
-    fields: () => [
-      {
-        key: "httpPort",
-        type: "number",
-        title: $t("TXT_CODE_7f0017d2"),
-        description: `${$t("TXT_CODE_233624ad")} ${$t("TXT_CODE_SERVER_RESTART_TIP")}`,
-        min: 1,
-        max: 65535
+  ctx.inject(["settingsForm"], (settingsCtx) =>
+    settingsCtx.settingsForm.declare({
+      restartRequired: true,
+      fields: () => [
+        {
+          key: "httpPort",
+          type: "number",
+          title: $t("TXT_CODE_7f0017d2"),
+          description: `${$t("TXT_CODE_233624ad")} ${$t("TXT_CODE_SERVER_RESTART_TIP")}`,
+          min: 1,
+          max: 65535
+        },
+        {
+          key: "httpIp",
+          type: "string",
+          title: $t("TXT_CODE_514e064a"),
+          description: $t("TXT_CODE_328191e")
+        },
+        {
+          key: "prefix",
+          type: "string",
+          title: $t("TXT_CODE_SERVER_PREFIX"),
+          description: $t("TXT_CODE_SERVER_PREFIX_TIP")
+        },
+        {
+          key: "ssl",
+          type: "boolean",
+          title: $t("TXT_CODE_SERVER_SSL"),
+          description: $t("TXT_CODE_SERVER_SSL_TIP")
+        },
+        {
+          key: "sslPemPath",
+          type: "string",
+          title: $t("TXT_CODE_SERVER_SSL_PEM"),
+          description: $t("TXT_CODE_SERVER_SSL_PEM_TIP"),
+          visibleWhen: "ssl"
+        },
+        {
+          key: "sslKeyPath",
+          type: "string",
+          title: $t("TXT_CODE_SERVER_SSL_KEY"),
+          description: $t("TXT_CODE_SERVER_SSL_KEY_TIP"),
+          visibleWhen: "ssl"
+        },
+        {
+          key: "crossDomain",
+          type: "boolean",
+          title: $t("TXT_CODE_405cd346"),
+          description: $t("TXT_CODE_6655c905")
+        },
+        {
+          key: "reverseProxyMode",
+          type: "boolean",
+          title: $t("TXT_CODE_f0789d81"),
+          description: $t("TXT_CODE_2b85af6d")
+        },
+        {
+          key: "reverseProxyHeader",
+          type: "string",
+          title: $t("TXT_CODE_66aeac82"),
+          description: $t("TXT_CODE_fd8bc51f"),
+          visibleWhen: "reverseProxyMode"
+        }
+      ],
+      read: () => {
+        const values: Record<string, unknown> = {};
+        for (const key of SETTING_KEYS) values[key] = config[key];
+        return values;
       },
-      {
-        key: "httpIp",
-        type: "string",
-        title: $t("TXT_CODE_514e064a"),
-        description: $t("TXT_CODE_328191e")
-      },
-      {
-        key: "prefix",
-        type: "string",
-        title: $t("TXT_CODE_SERVER_PREFIX"),
-        description: $t("TXT_CODE_SERVER_PREFIX_TIP")
-      },
-      {
-        key: "ssl",
-        type: "boolean",
-        title: $t("TXT_CODE_SERVER_SSL"),
-        description: $t("TXT_CODE_SERVER_SSL_TIP")
-      },
-      {
-        key: "sslPemPath",
-        type: "string",
-        title: $t("TXT_CODE_SERVER_SSL_PEM"),
-        description: $t("TXT_CODE_SERVER_SSL_PEM_TIP"),
-        visibleWhen: "ssl"
-      },
-      {
-        key: "sslKeyPath",
-        type: "string",
-        title: $t("TXT_CODE_SERVER_SSL_KEY"),
-        description: $t("TXT_CODE_SERVER_SSL_KEY_TIP"),
-        visibleWhen: "ssl"
-      },
-      {
-        key: "crossDomain",
-        type: "boolean",
-        title: $t("TXT_CODE_405cd346"),
-        description: $t("TXT_CODE_6655c905")
-      },
-      {
-        key: "reverseProxyMode",
-        type: "boolean",
-        title: $t("TXT_CODE_f0789d81"),
-        description: $t("TXT_CODE_2b85af6d")
-      },
-      {
-        key: "reverseProxyHeader",
-        type: "string",
-        title: $t("TXT_CODE_66aeac82"),
-        description: $t("TXT_CODE_fd8bc51f"),
-        visibleWhen: "reverseProxyMode"
-      }
-    ],
-    read: () => {
-      const values: Record<string, unknown> = {};
-      for (const key of SETTING_KEYS) values[key] = config[key];
-      return values;
-    },
-    write: (values) => {
-      // Checked before anything is written: a rejected request must not leave
-      // the running configuration holding a port the panel cannot bind.
-      const port = values.httpPort == null ? config.httpPort : Number(values.httpPort);
-      if (!Number.isInteger(port) || port <= 0 || port > 65535) {
-        throw new Error($t("TXT_CODE_e4d6cc20"));
-      }
+      write: (values) => {
+        // Checked before anything is written: a rejected request must not leave
+        // the running configuration holding a port the panel cannot bind.
+        const port = values.httpPort == null ? config.httpPort : Number(values.httpPort);
+        if (!Number.isInteger(port) || port <= 0 || port > 65535) {
+          throw new Error($t("TXT_CODE_e4d6cc20"));
+        }
 
-      // Empty is meaningful for the string fields — no listen address, no path
-      // prefix, no certificate — so they are assigned whenever they are present
-      // rather than validated as required.
-      config.httpPort = port;
-      if (values.httpIp != null) config.httpIp = String(values.httpIp);
-      if (values.prefix != null) config.prefix = String(values.prefix);
-      if (values.ssl != null) config.ssl = Boolean(values.ssl);
-      if (values.sslPemPath != null) config.sslPemPath = String(values.sslPemPath);
-      if (values.sslKeyPath != null) config.sslKeyPath = String(values.sslKeyPath);
-      if (values.crossDomain != null) config.crossDomain = Boolean(values.crossDomain);
-      if (values.reverseProxyMode != null) {
-        config.reverseProxyMode = Boolean(values.reverseProxyMode);
+        // Empty is meaningful for the string fields — no listen address, no path
+        // prefix, no certificate — so they are assigned whenever they are present
+        // rather than validated as required.
+        config.httpPort = port;
+        if (values.httpIp != null) config.httpIp = String(values.httpIp);
+        if (values.prefix != null) config.prefix = String(values.prefix);
+        if (values.ssl != null) config.ssl = Boolean(values.ssl);
+        if (values.sslPemPath != null) config.sslPemPath = String(values.sslPemPath);
+        if (values.sslKeyPath != null) config.sslKeyPath = String(values.sslKeyPath);
+        if (values.crossDomain != null) config.crossDomain = Boolean(values.crossDomain);
+        if (values.reverseProxyMode != null) {
+          config.reverseProxyMode = Boolean(values.reverseProxyMode);
+        }
+        if (values.reverseProxyHeader != null) {
+          config.reverseProxyHeader = String(values.reverseProxyHeader);
+        }
+        return ctx.settings.save();
       }
-      if (values.reverseProxyHeader != null) {
-        config.reverseProxyHeader = String(values.reverseProxyHeader);
-      }
-      return ctx.settings.save();
-    }
-  }));
+    })
+  );
 
   // Bound on `ready`, not here: the panel must not accept a request before every
   // plugin has registered its routes. Cordis runs the hook immediately when the

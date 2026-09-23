@@ -11,6 +11,7 @@ import {
   VCard,
   VCardActions,
   VCardText,
+  VChip,
   VDialog,
   VList,
   VListItem,
@@ -33,11 +34,12 @@ import {
   type NodePluginRecord,
   type NodeSummary,
   type PluginRecord,
+  type PluginChangeResult,
   type SettingsSchema
 } from "./api";
 import SchemaForm from "./SchemaForm.vue";
 
-// The panel reports what is installed, because `plugin.json` is where the enable
+// The panel reports installed plugins after applying the user override layer; the enable
 // switch lives; a disabled plugin has to stay listed for the switch to turn it
 // back on.
 //
@@ -63,7 +65,8 @@ const nodeSelectedId = ref("");
 const nodeError = ref("");
 
 const nodeLabel = (node: NodeSummary) =>
-  `${node.remarks || `${node.ip}:${node.port}`}${node.available ? "" : ` (${t("TXT_CODE_PLUGIN_NODE_OFFLINE")})`
+  `${node.remarks || `${node.ip}:${node.port}`}${
+    node.available ? "" : ` (${t("TXT_CODE_PLUGIN_NODE_OFFLINE")})`
   }`;
 
 const selectedNode = computed(() => nodes.value.find((item) => item.uuid === selectedNodeId.value));
@@ -94,6 +97,26 @@ let schemaRequest = 0;
 let nodePluginsRequest = 0;
 let disposed = false;
 const savingSettings = ref(false);
+const lastResult = ref<PluginChangeResult | null>(null);
+const stateLabels = {
+  disabled: "TXT_CODE_PLUGIN_IS_DISABLED",
+  pending: "TXT_CODE_PLUGIN_STATE_PENDING",
+  loading: "TXT_CODE_PLUGIN_STATE_LOADING",
+  active: "TXT_CODE_PLUGIN_STATE_ACTIVE",
+  failed: "TXT_CODE_PLUGIN_LOAD_FAILED",
+  unloading: "TXT_CODE_PLUGIN_STATE_UNLOADING",
+  "restart-required": "TXT_CODE_PLUGIN_RESTART_REQUIRED"
+};
+const frontendPlugin = computed(() =>
+  scope.value === "panel"
+    ? ctx.plugins.loaded.find((item) => item.metadata.id === currentId.value)
+    : undefined
+);
+const recordResult = (result?: PluginChangeResult | boolean) => {
+  lastResult.value = result && typeof result === "object" ? result : null;
+  if (lastResult.value?.application === "failed")
+    notify(lastResult.value.error || t("TXT_CODE_PLUGIN_LOAD_FAILED"), "error");
+};
 const disableCandidate = ref<PluginRecord | NodePluginRecord | null>(null);
 const disableConfirmOpen = ref(false);
 // The switch is a controlled input. Rejecting the disable confirmation leaves
@@ -140,32 +163,52 @@ const loadSchema = async () => {
   }
 };
 
+const retryFrontend = async () => {
+  if (!currentId.value || pending.value) return;
+  pending.value = currentId.value;
+  try {
+    await ctx.plugins.reload(currentId.value);
+  } catch (error) {
+    notifyError(error);
+  } finally {
+    pending.value = "";
+  }
+};
+
 const saveSettings = async () => {
   if (!schema.value || savingSettings.value) return;
   const targetScope = scope.value;
   const targetNode = selectedNodeId.value;
   const targetId = schema.value.id;
   savingSettings.value = true;
-  const reloadPanel =
-    scope.value === "panel" && ["i18n", "console"].includes(schema.value.id);
+  const reloadPanel = scope.value === "panel" && ["i18n", "console"].includes(schema.value.id);
   try {
     const values = schema.value.values;
     if (targetScope === "panel") {
       const { execute } = updatePluginSettings();
-      await execute({ params: { id: targetId }, data: values });
+      recordResult((await execute({ params: { id: targetId }, data: values })).value);
     } else {
       const { execute } = updateNodePluginSettings();
-      await execute({
-        params: { daemonId: targetNode, id: targetId },
-        data: values
-      });
+      recordResult(
+        (
+          await execute({
+            params: { daemonId: targetNode, id: targetId },
+            data: values
+          })
+        ).value
+      );
     }
-    notify(t("TXT_CODE_d3de39b4"), "success");
+    if (!lastResult.value || lastResult.value.application === "applied")
+      notify(t("TXT_CODE_d3de39b4"), "success");
     if (reloadPanel) {
       window.setTimeout(() => window.location.reload(), 400);
       return;
     }
-    if (scope.value === targetScope && selectedNodeId.value === targetNode && currentId.value === targetId) {
+    if (
+      scope.value === targetScope &&
+      selectedNodeId.value === targetNode &&
+      currentId.value === targetId
+    ) {
       await loadSchema();
     }
   } catch (error: any) {
@@ -243,8 +286,12 @@ const reloadNodePluginsAfterToggle = async () => {
   }
 };
 
-onMounted(load);
+onMounted(() => {
+  load();
+  window.addEventListener("elementspanel:plugins-changed", load);
+});
 onUnmounted(() => {
+  window.removeEventListener("elementspanel:plugins-changed", load);
   disposed = true;
   schemaRequest++;
   nodePluginsRequest++;
@@ -273,19 +320,27 @@ watch(nodePlugins, (value) => {
 });
 
 // Whatever is selected, its form comes from the backend that declared it.
-watch([scope, currentId, selectedNodeId], () => loadSchema(), { immediate: true });
+watch(
+  [scope, currentId, selectedNodeId],
+  () => {
+    lastResult.value = null;
+    loadSchema();
+  },
+  { immediate: true }
+);
 
 const apply = async (plugin: PluginRecord, enabled: boolean) => {
   pending.value = plugin.id;
   try {
     const { execute } = setPluginEnabled();
-    await execute({ data: { id: plugin.id, enabled } });
+    recordResult((await execute({ data: { id: plugin.id, enabled } })).value?.result);
     // The panel has already applied the change to its own half. The browser
     // reconciles itself against the manifest, which now reflects the switch, so
     // the plugin's routes, cards and menus appear or disappear with it.
     await ctx.plugins.refresh();
     await load();
-    notify(t(enabled ? "TXT_CODE_PLUGIN_ENABLED" : "TXT_CODE_PLUGIN_DISABLED"), "success");
+    if (!lastResult.value || lastResult.value.application === "applied")
+      notify(t(enabled ? "TXT_CODE_PLUGIN_ENABLED" : "TXT_CODE_PLUGIN_DISABLED"), "success");
   } catch (error: any) {
     notifyError(error);
     await load();
@@ -302,11 +357,16 @@ const applyNode = async (plugin: NodePluginRecord, enabled: boolean) => {
   pending.value = plugin.id;
   try {
     const { execute } = setNodePluginEnabled();
-    await execute({
-      params: { daemonId: selectedNodeId.value },
-      data: { id: plugin.id, enabled }
-    });
-    notify(t(enabled ? "TXT_CODE_PLUGIN_ENABLED" : "TXT_CODE_PLUGIN_DISABLED"), "success");
+    recordResult(
+      (
+        await execute({
+          params: { daemonId: selectedNodeId.value },
+          data: { id: plugin.id, enabled }
+        })
+      ).value?.result
+    );
+    if (!lastResult.value || lastResult.value.application === "applied")
+      notify(t(enabled ? "TXT_CODE_PLUGIN_ENABLED" : "TXT_CODE_PLUGIN_DISABLED"), "success");
   } catch (error: any) {
     notifyError(error);
   } finally {
@@ -370,7 +430,6 @@ const confirmDisable = () => {
     ? apply(plugin as PluginRecord, false)
     : applyNode(plugin as NodePluginRecord, false);
 };
-
 </script>
 
 <template>
@@ -379,7 +438,9 @@ const confirmDisable = () => {
 
     <div class="plugin-config-sidebar">
       <VBtnToggle v-model="scope" class="plugin-config-scope" mandatory>
-        <VBtn value="panel" size="small" variant="text">{{ t("TXT_CODE_PLUGIN_SCOPE_PANEL") }}</VBtn>
+        <VBtn value="panel" size="small" variant="text">{{
+          t("TXT_CODE_PLUGIN_SCOPE_PANEL")
+        }}</VBtn>
         <VBtn value="node" size="small" variant="text">{{ t("TXT_CODE_PLUGIN_SCOPE_NODE") }}</VBtn>
       </VBtnToggle>
 
@@ -407,11 +468,16 @@ const confirmDisable = () => {
           <template #append>
             <span
               class="plugin-config-item-dot"
-              :class="{ 'plugin-config-item-dot-off': !plugin.enabled }"
+              :class="{
+                'plugin-config-item-dot-off':
+                  !plugin.enabled || (plugin.state && plugin.state !== 'active')
+              }"
             ></span>
           </template>
         </VListItem>
-        <div v-if="!currentList.length" class="plugin-config-empty">{{ t("TXT_CODE_NO_DATA") }}</div>
+        <div v-if="!currentList.length" class="plugin-config-empty">
+          {{ t("TXT_CODE_NO_DATA") }}
+        </div>
       </VList>
     </div>
 
@@ -431,6 +497,13 @@ const confirmDisable = () => {
             <h2>{{ selectedPlugin.id }}</h2>
           </div>
           <div class="plugin-config-meta">
+            <VChip
+              v-if="selectedPlugin.state"
+              size="small"
+              :color="selectedPlugin.state === 'active' ? 'success' : 'warning'"
+            >
+              {{ t(stateLabels[selectedPlugin.state]) }}
+            </VChip>
             <span v-if="scope === 'node' && selectedNode" class="plugin-config-version">
               {{ nodeLabel(selectedNode) }}
             </span>
@@ -440,7 +513,9 @@ const confirmDisable = () => {
             <VSwitch
               :model-value="switchEnabled"
               :loading="pending === selectedPlugin.id"
-              :aria-label="selectedPlugin.enabled ? t('TXT_CODE_PLUGIN_ENABLE') : t('TXT_CODE_PLUGIN_DISABLE')"
+              :aria-label="
+                selectedPlugin.enabled ? t('TXT_CODE_PLUGIN_ENABLE') : t('TXT_CODE_PLUGIN_DISABLE')
+              "
               color="primary"
               density="compact"
               hide-details
@@ -465,6 +540,39 @@ const confirmDisable = () => {
           :text="selectedPlugin.error"
         />
 
+        <VAlert
+          v-if="lastResult?.application === 'restart-required' || frontendPlugin?.restartRequired"
+          class="plugin-config-alert"
+          type="warning"
+          variant="tonal"
+          :text="t('TXT_CODE_PLUGIN_RESTART_REQUIRED')"
+        />
+        <VAlert
+          v-else-if="frontendPlugin?.reloadRequired"
+          class="plugin-config-alert"
+          type="warning"
+          variant="tonal"
+          :text="t('TXT_CODE_PLUGIN_REFRESH_REQUIRED')"
+        />
+        <VAlert
+          v-else-if="lastResult?.application === 'pending'"
+          class="plugin-config-alert"
+          type="info"
+          variant="tonal"
+          :text="t('TXT_CODE_PLUGIN_SAVED_PENDING')"
+        />
+        <VAlert
+          v-if="frontendPlugin?.error"
+          class="plugin-config-alert"
+          type="error"
+          variant="tonal"
+          :title="t('TXT_CODE_PLUGIN_FRONTEND_FAILED')"
+          :text="frontendPlugin.error.message"
+        />
+
+        <VBtn v-if="frontendPlugin?.error" class="mb-4" variant="text" @click="retryFrontend">{{
+          t("TXT_CODE_9277af78")
+        }}</VBtn>
         <div v-if="schemaLoading" class="plugin-config-schema-loading">
           <VProgressCircular color="primary" indeterminate size="28" />
         </div>
@@ -484,7 +592,11 @@ const confirmDisable = () => {
     </div>
 
     <VDialog v-model="disableConfirmOpen" max-width="460">
-      <VCard :title="disableCandidate ? t('TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE', { name: disableCandidate.id }) : ''" class="plugin-config-confirm-card" rounded="xl">
+      <VCard
+        :title="t('TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE', { name: disableCandidate?.id || '' })"
+        class="plugin-config-confirm-card"
+        rounded="xl"
+      >
         <VCardText>{{ t("TXT_CODE_PLUGIN_DISABLE_CONFIRM") }}</VCardText>
         <VCardActions>
           <VSpacer />
@@ -516,14 +628,14 @@ const confirmDisable = () => {
 }
 
 :global(.desktop-container .plugin-config-page) {
-  --plugin-config-surface-color: #FFFFFF;
+  --plugin-config-surface-color: #ffffff;
 
   height: 100%;
   background: var(--plugin-config-surface-color);
 }
 
 :global(.app-dark-theme .desktop-container .plugin-config-page) {
-  --plugin-config-surface-color: #1F1F27;
+  --plugin-config-surface-color: #1f1f27;
 }
 
 .plugin-config-sidebar {

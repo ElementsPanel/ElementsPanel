@@ -17,5 +17,13 @@
   "TXT_CODE_PLUGIN_NO_CONFIG": "此插件没有可配置项",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "节点",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "面板",
-  "TXT_CODE_PLUGIN_SELF_DISABLE": "插件管理自身无法被禁用，请改为在其 plugin.json 中把 enabled 设为 false。"
+  "TXT_CODE_PLUGIN_SELF_DISABLE": "插件管理自身无法被禁用，请改为在其 plugin.json 中把 enabled 设为 false。",
+  "TXT_CODE_PLUGIN_STATE_PENDING": "等待依赖",
+  "TXT_CODE_PLUGIN_STATE_LOADING": "加载中",
+  "TXT_CODE_PLUGIN_STATE_ACTIVE": "运行中",
+  "TXT_CODE_PLUGIN_STATE_UNLOADING": "卸载中",
+  "TXT_CODE_PLUGIN_RESTART_REQUIRED": "需要重启服务才能应用此更改。",
+  "TXT_CODE_PLUGIN_SAVED_PENDING": "已保存，正在等待插件依赖。",
+  "TXT_CODE_PLUGIN_FRONTEND_FAILED": "浏览器插件加载失败",
+  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "需要刷新页面才能加载更新后的浏览器运行时。"
 }

@@ -17,5 +17,13 @@
   "TXT_CODE_PLUGIN_NO_CONFIG": "このプラグインには設定可能な項目がありません。",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "ノード",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "パネル",
-  "TXT_CODE_PLUGIN_SELF_DISABLE": "プラグイン管理自身は無効にできません。plugin.json で enabled を false に設定してください。"
+  "TXT_CODE_PLUGIN_SELF_DISABLE": "プラグイン管理自身は無効にできません。plugin.json で enabled を false に設定してください。",
+  "TXT_CODE_PLUGIN_STATE_PENDING": "依存関係を待機中",
+  "TXT_CODE_PLUGIN_STATE_LOADING": "読み込み中",
+  "TXT_CODE_PLUGIN_STATE_ACTIVE": "実行中",
+  "TXT_CODE_PLUGIN_STATE_UNLOADING": "アンロード中",
+  "TXT_CODE_PLUGIN_RESTART_REQUIRED": "変更を適用するにはサービスを再起動してください。",
+  "TXT_CODE_PLUGIN_SAVED_PENDING": "保存しました。プラグインの依存関係を待機しています。",
+  "TXT_CODE_PLUGIN_FRONTEND_FAILED": "ブラウザープラグインの読み込みに失敗しました",
+  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "更新されたブラウザーランタイムを読み込むにはページを再読み込みしてください。"
 }

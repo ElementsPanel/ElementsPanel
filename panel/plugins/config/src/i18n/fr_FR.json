@@ -17,5 +17,13 @@
   "TXT_CODE_PLUGIN_NO_CONFIG": "Ce plugin ne comporte aucune option configurable.",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "Nœuds",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "Panneau",
-  "TXT_CODE_PLUGIN_SELF_DISABLE": "Le gestionnaire d extensions ne peut pas se désactiver lui-même. Définissez plutôt enabled à false dans son plugin.json."
+  "TXT_CODE_PLUGIN_SELF_DISABLE": "Le gestionnaire d extensions ne peut pas se désactiver lui-même. Définissez plutôt enabled à false dans son plugin.json.",
+  "TXT_CODE_PLUGIN_STATE_PENDING": "En attente des dépendances",
+  "TXT_CODE_PLUGIN_STATE_LOADING": "Chargement",
+  "TXT_CODE_PLUGIN_STATE_ACTIVE": "Actif",
+  "TXT_CODE_PLUGIN_STATE_UNLOADING": "Déchargement",
+  "TXT_CODE_PLUGIN_RESTART_REQUIRED": "Redémarrez le service pour appliquer cette modification.",
+  "TXT_CODE_PLUGIN_SAVED_PENDING": "Enregistré ; en attente des dépendances du plugin.",
+  "TXT_CODE_PLUGIN_FRONTEND_FAILED": "Échec du plugin du navigateur",
+  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "Actualisez la page pour charger le nouvel environnement du navigateur."
 }

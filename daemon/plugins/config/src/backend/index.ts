@@ -1,5 +1,11 @@
+import fs from "fs";
 import path from "path";
-import { pluginPackageDirectory, removePluginPackage, writePluginPackage } from "mcsmanager-common";
+import {
+  PLUGIN_API_VERSION,
+  pluginPackageDirectory,
+  removePluginPackage,
+  writePluginPackage
+} from "mcsmanager-common";
 import type { DaemonPluginContext } from "../../../../src/plugin";
 import { localeMessages } from "../i18n";
 import { SettingsFormService } from "./settings";
@@ -22,15 +28,8 @@ const SELF = "config";
  */
 const ESSENTIAL = new Set(["i18n", "storage", "runtime", "server", "monitor"]);
 
-/**
- * Where a plugin sent over the protocol is written.
- *
- * `market_plugins/` is the directory both loaders scan besides `plugins/`, and
- * it is the one an installation may own: it never holds a built-in plugin, and
- * in a source checkout it is git-ignored, so an installation cannot add files to
- * the repository.
- */
-const MARKET_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "market_plugins");
+/** New installations use the existing persistent data volume. */
+const MARKET_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "data", "plugins");
 
 /** The extensions a plugin package is allowed to contain. */
 const ALLOWED_EXTENSIONS = new Set([
@@ -38,6 +37,16 @@ const ALLOWED_EXTENSIONS = new Set([
   ".js",
   ".cjs",
   ".mjs",
+  ".svg",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".webp",
+  ".woff",
+  ".woff2",
+  ".ttf",
+  ".eot",
+  ".wasm",
   ".css",
   ".scss",
   ".md",
@@ -88,6 +97,9 @@ export function apply(ctx: DaemonPluginContext) {
   ctx.plugin(SettingsFormService);
   const settingsForm = ctx.get("settingsForm");
   if (!settingsForm) throw new Error("Daemon settings form service is unavailable.");
+  ctx.protocol.on("plugin/capabilities", (routerCtx) => {
+    ctx.protocol.response(routerCtx, { api: PLUGIN_API_VERSION });
+  });
 
   ctx.protocol.on("plugin/list", (routerCtx) => {
     const declared = new Set(settingsForm.declared());
@@ -157,7 +169,12 @@ export function apply(ctx: DaemonPluginContext) {
         files.map((file) => ({
           relative: file.path,
           content: Buffer.from(file.content, "base64")
-        }))
+        })),
+        [
+          MARKET_PLUGINS_DIRECTORY(),
+          path.resolve(process.cwd(), "plugins"),
+          path.resolve(process.cwd(), "market_plugins")
+        ]
       );
       ctx.protocol.response(routerCtx, { ...info, directory });
     } catch (error: any) {
@@ -171,11 +188,17 @@ export function apply(ctx: DaemonPluginContext) {
   ctx.protocol.on("plugin/uninstall", async (routerCtx, data) => {
     try {
       const payload = (data ?? {}) as { name?: unknown; pluginId?: unknown };
-      await removePluginPackage(
+      for (const root of [
         MARKET_PLUGINS_DIRECTORY(),
-        String(payload.name ?? ""),
-        String(payload.pluginId ?? "")
-      );
+        path.resolve(process.cwd(), "market_plugins"),
+        path.resolve(process.cwd(), "plugins")
+      ]) {
+        // Legacy locations are removed only when owned by this exact market package.
+        const directory = pluginPackageDirectory(root, String(payload.name ?? ""));
+        const marker = path.join(directory, ".market-install.json");
+        if (!fs.existsSync(marker)) continue;
+        await removePluginPackage(root, String(payload.name ?? ""), String(payload.pluginId ?? ""));
+      }
       ctx.protocol.response(routerCtx, { removed: true });
     } catch (error: any) {
       ctx.protocol.responseError(routerCtx, error);
@@ -214,8 +237,7 @@ export function apply(ctx: DaemonPluginContext) {
       const id = String(payload.id ?? "");
       if (!id) throw new Error(ctx.i18n.$t("TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED"));
       const values = (payload.values ?? {}) as Record<string, unknown>;
-      await settingsForm.write(id, values);
-      ctx.protocol.response(routerCtx, true);
+      ctx.protocol.response(routerCtx, await settingsForm.write(id, values));
     } catch (error: any) {
       ctx.protocol.responseError(routerCtx, error);
     }

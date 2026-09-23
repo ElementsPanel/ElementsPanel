@@ -1,3 +1,5 @@
+import type { PluginChangeResult, PluginState } from "../../../../common/src/plugin_contract";
+export type { PluginChangeResult };
 import { useDefineApi } from "@/stores/useDefineApi";
 
 // Every HTTP call the plugin manager page makes. The container owns the
@@ -9,12 +11,14 @@ export interface PluginRecord {
   version?: string;
   description?: string;
   priority?: number;
-  /** The persisted switch, as `plugin.json` holds it. */
+  /** The persisted switch, after applying data/plugin-overrides.json. */
   enabled: boolean;
   /** Which halves the manifest declares. */
   sides: { backend: boolean; frontend: boolean };
   /** Whether the backend half is running in the panel process right now. */
   running: boolean;
+  state?: PluginState;
+  result?: PluginChangeResult;
   /** Why the backend half is not running, when it should be. */
   error?: string;
   /** Whether the plugin declared a configuration form. */
@@ -75,7 +79,7 @@ export const pluginList = useDefineApi<unknown, PluginRecord[]>({
   method: "GET"
 });
 
-/** Turns a plugin on or off, in `plugin.json` and in the running panel. */
+/** Turns a plugin on or off, in the user override layer and in the running panel. */
 export const setPluginEnabled = useDefineApi<
   { data: { id: string; enabled: boolean } },
   PluginRecord
@@ -85,17 +89,14 @@ export const setPluginEnabled = useDefineApi<
 });
 
 /** One panel plugin's declared form and values, or `null` when it declared none. */
-export const pluginSettings = useDefineApi<
-  { params: { id: string } },
-  SettingsSchema | null
->({
+export const pluginSettings = useDefineApi<{ params: { id: string } }, SettingsSchema | null>({
   url: "/api/plugins/settings",
   method: "GET"
 });
 
 export const updatePluginSettings = useDefineApi<
   { params: { id: string }; data: Record<string, unknown> },
-  boolean
+  PluginChangeResult | boolean
 >({
   url: "/api/plugins/settings",
   method: "PUT"
@@ -120,12 +121,14 @@ export interface NodePluginRecord {
   version?: string;
   description?: string;
   priority?: number;
-  /** The persisted switch, as the daemon's `plugin.json` holds it. */
+  /** The persisted switch, after applying data/plugin-overrides.json. */
   enabled: boolean;
   /** Whether the manifest names an entry module at all. */
   hasEntry: boolean;
   /** Whether the plugin is running in the daemon process right now. */
   running: boolean;
+  state?: PluginState;
+  result?: PluginChangeResult;
   /** Why it is not running, when it should be. */
   error?: string;
   /** Whether the plugin declared a configuration form. */
@@ -139,10 +142,7 @@ export const nodeList = useDefineApi<unknown, NodeSummary[]>({
 });
 
 /** One node's plugin inventory, fetched from the daemon itself. */
-export const nodePluginList = useDefineApi<
-  { params: { daemonId: string } },
-  NodePluginRecord[]
->({
+export const nodePluginList = useDefineApi<{ params: { daemonId: string } }, NodePluginRecord[]>({
   url: "/api/plugins/node/plugins",
   method: "GET"
 });
@@ -167,7 +167,7 @@ export const nodePluginSettings = useDefineApi<
 
 export const updateNodePluginSettings = useDefineApi<
   { params: { daemonId: string; id: string }; data: Record<string, unknown> },
-  boolean
+  PluginChangeResult | boolean
 >({
   url: "/api/plugins/node/settings",
   method: "PUT"

@@ -19,6 +19,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { createRequire } from "node:module";
+import { pluginSdkModules } from "../frontend/plugin-sdk.config.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.resolve(SCRIPT_DIR, "..");
@@ -39,18 +40,8 @@ const ICON_FILE = "icon.png";
 const MAX_ICON_BYTES = 1024 * 1024;
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
-// 必须与宿主共享实例的包：面板运行时只有一份 Vue / cordis 容器，
-// 打进产物里会出现两个实例。其余依赖（vuetify、axios 等）全部打进去，
-// 因为生产加载器是裸 import()，没有 importmap 可以解析裸标识符。
-const FRONTEND_EXTERNALS = [
-  /^vue($|\/)/,
-  "vue-router",
-  "pinia",
-  "vue-i18n",
-  /^cordis($|\/)/,
-  /^cosmokit($|\/)/,
-  /^@vueuse\//
-];
+// Shared instances are resolved by the host SDK import map.
+const FRONTEND_EXTERNALS = pluginSdkModules;
 
 function parseArgs(argv) {
   const result = {};
@@ -223,7 +214,16 @@ export default defineConfig({
   // into every plugin package, where it does not belong.
   publicDir: false,
   logLevel: "warn",
-  plugins: [vue()],
+  plugins: [vue(), {
+    name: "elements-plugin-sdk-boundary",
+    enforce: "pre",
+    resolveId(source) {
+      if (["@/plugin", "@/plugin/context", "@elements-panel/sdk"].includes(source) ||
+          source.replaceAll("\\\\", "/").includes("/frontend/src/plugin/")) {
+        return { id: "@elements-panel/sdk", external: true };
+      }
+    }
+  }],
   resolve: {
     dedupe: ["vue", "vue-router", "pinia", "vue-i18n", "cordis", "@vueuse/core"],
     alias: {
@@ -318,6 +318,7 @@ function writeManifest(side, workspace, outSideDir, backend, frontend) {
   const manifestPath = path.join(workspace, side, "plugin.json");
   const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 
+  manifest.elements = { api: 1, ...(frontend ? { sdk: 1 } : {}) };
   if (backend) manifest.backend = "backend/index.cjs";
   else delete manifest.backend;
   if (frontend) {

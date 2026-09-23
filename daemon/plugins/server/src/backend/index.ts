@@ -35,73 +35,76 @@ export function apply(ctx: DaemonPluginContext) {
   // plugin manager renders this declaration with the same generic form it uses
   // for its own plugins. Nothing here is rebound live — the listener is fixed
   // when this plugin starts — so the port's description says to restart.
-  ctx.inject(["settingsForm"], (settingsCtx) => settingsCtx.settingsForm.declare({
-    fields: () => [
-      {
-        key: "port",
-        type: "number",
-        title: $t("TXT_CODE_DSERVER_PORT"),
-        description: $t("TXT_CODE_DSERVER_PORT_TIP"),
-        min: 1,
-        max: 65535
-      },
-      {
-        key: "ip",
-        type: "string",
-        title: $t("TXT_CODE_DSERVER_IP"),
-        description: $t("TXT_CODE_DSERVER_IP_TIP")
-      },
-      {
-        key: "prefix",
-        type: "string",
-        title: $t("TXT_CODE_DSERVER_PREFIX"),
-        description: $t("TXT_CODE_DSERVER_PREFIX_TIP")
-      },
-      {
-        key: "ssl",
-        type: "boolean",
-        title: $t("TXT_CODE_DSERVER_SSL"),
-        description: $t("TXT_CODE_DSERVER_SSL_TIP")
-      },
-      {
-        key: "sslPemPath",
-        type: "string",
-        title: $t("TXT_CODE_DSERVER_SSL_PEM"),
-        description: $t("TXT_CODE_DSERVER_PATH_TIP"),
-        visibleWhen: "ssl"
-      },
-      {
-        key: "sslKeyPath",
-        type: "string",
-        title: $t("TXT_CODE_DSERVER_SSL_KEY"),
-        description: $t("TXT_CODE_DSERVER_PATH_TIP"),
-        visibleWhen: "ssl"
+  ctx.inject(["settingsForm"], (settingsCtx) =>
+    settingsCtx.settingsForm.declare({
+      restartRequired: true,
+      fields: () => [
+        {
+          key: "port",
+          type: "number",
+          title: $t("TXT_CODE_DSERVER_PORT"),
+          description: $t("TXT_CODE_DSERVER_PORT_TIP"),
+          min: 1,
+          max: 65535
+        },
+        {
+          key: "ip",
+          type: "string",
+          title: $t("TXT_CODE_DSERVER_IP"),
+          description: $t("TXT_CODE_DSERVER_IP_TIP")
+        },
+        {
+          key: "prefix",
+          type: "string",
+          title: $t("TXT_CODE_DSERVER_PREFIX"),
+          description: $t("TXT_CODE_DSERVER_PREFIX_TIP")
+        },
+        {
+          key: "ssl",
+          type: "boolean",
+          title: $t("TXT_CODE_DSERVER_SSL"),
+          description: $t("TXT_CODE_DSERVER_SSL_TIP")
+        },
+        {
+          key: "sslPemPath",
+          type: "string",
+          title: $t("TXT_CODE_DSERVER_SSL_PEM"),
+          description: $t("TXT_CODE_DSERVER_PATH_TIP"),
+          visibleWhen: "ssl"
+        },
+        {
+          key: "sslKeyPath",
+          type: "string",
+          title: $t("TXT_CODE_DSERVER_SSL_KEY"),
+          description: $t("TXT_CODE_DSERVER_PATH_TIP"),
+          visibleWhen: "ssl"
+        }
+      ],
+      read: () => ({
+        port: config.port,
+        ip: config.ip,
+        prefix: config.prefix,
+        ssl: config.ssl,
+        sslPemPath: config.sslPemPath,
+        sslKeyPath: config.sslKeyPath
+      }),
+      write: (values) => {
+        // Checked before anything is written: a rejected request must not leave the
+        // running configuration holding a port the daemon cannot bind.
+        const port = values.port == null ? config.port : Number(values.port);
+        if (!Number.isInteger(port) || port <= 0 || port > 65535) {
+          throw new Error($t("TXT_CODE_DSERVER_PORT_TIP"));
+        }
+        config.port = port;
+        if (values.ip != null) config.ip = String(values.ip);
+        if (values.prefix != null) config.prefix = String(values.prefix);
+        if (values.ssl != null) config.ssl = Boolean(values.ssl);
+        if (values.sslPemPath != null) config.sslPemPath = String(values.sslPemPath);
+        if (values.sslKeyPath != null) config.sslKeyPath = String(values.sslKeyPath);
+        ctx.settings.save();
       }
-    ],
-    read: () => ({
-      port: config.port,
-      ip: config.ip,
-      prefix: config.prefix,
-      ssl: config.ssl,
-      sslPemPath: config.sslPemPath,
-      sslKeyPath: config.sslKeyPath
-    }),
-    write: (values) => {
-      // Checked before anything is written: a rejected request must not leave the
-      // running configuration holding a port the daemon cannot bind.
-      const port = values.port == null ? config.port : Number(values.port);
-      if (!Number.isInteger(port) || port <= 0 || port > 65535) {
-        throw new Error($t("TXT_CODE_DSERVER_PORT_TIP"));
-      }
-      config.port = port;
-      if (values.ip != null) config.ip = String(values.ip);
-      if (values.prefix != null) config.prefix = String(values.prefix);
-      if (values.ssl != null) config.ssl = Boolean(values.ssl);
-      if (values.sslPemPath != null) config.sslPemPath = String(values.sslPemPath);
-      if (values.sslKeyPath != null) config.sslKeyPath = String(values.sslKeyPath);
-      ctx.settings.save();
-    }
-  }));
+    })
+  );
 
   const app = new Koa();
 

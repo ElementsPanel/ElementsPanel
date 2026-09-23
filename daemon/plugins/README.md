@@ -136,21 +136,25 @@ resolved by `fields()` per request, in whatever language the panel last pushed
 here, and validation lives in `write()`. `plugins/config` carries the description
 to the panel and the values back.
 
-`ctx.plugins.setEnabled(id, enabled)` is the switch behind the panel's plugin
-manager page. It writes `enabled` into that plugin's `plugin.json` — the manifest
-is the source of truth, because that is what the loader reads — and applies the
-change to the running daemon: disabling disposes the plugin's scope, so its
-protocol handlers, tasks, presets, schedules and timers go with it, and enabling
-requires the entry module afresh so a plugin that keeps module-level state starts
-from a clean one. `ctx.plugins.inventory()` lists every installed plugin, disabled
-ones included, because a disabled plugin still has to be listed to be enabled
-again. `plugins/config` exposes both over the protocol; the panel's own `config`
-plugin is what drives them.
+`ctx.plugins.setEnabled(id, enabled)` stores the user's choice in
+`data/plugin-overrides.json` and returns the inventory record with a `result`
+containing `saved`, `application` and an optional error. Package manifests remain
+unchanged. Defaults come from `plugin.json`; a user override wins even after a
+package upgrade. `inventory()` includes `state` (`pending`, `loading`, `active`,
+`failed`, `unloading`, `disabled`, or `restart-required`); `running` means active.
+Changes run through one queue and wait for asynchronous disposal before starting
+replacement code. The daemon's management API reconnects its panel socket after
+an enablement change so newly registered protocol events become reachable.
 
-Note the router limitation above applies here too: a plugin enabled on a running
-daemon registers its protocol handlers, but the panel's already-connected socket
-took its handler list at connect time. Reconnecting the node — or restarting the
-daemon — is what makes those events reachable.
+`configure(id, config)` validates and persists a complete config override. A
+plugin may export a Cordis `Config` schema and declare `configFields` in its
+manifest to use the generic settings form, including while disabled. Existing
+`settingsForm.declare()` forms keep their own storage and validation. Their
+field types and bounds are now also validated by the host. Declarations for
+settings applied only at startup set `restartRequired: true`.
+
+See [the runtime and SDK contract](../../docs/plugin-runtime.md) for the file
+format, result handling, shared browser modules and market compatibility.
 
 ## Naming inside a plugin
 

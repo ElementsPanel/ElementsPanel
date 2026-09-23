@@ -24,6 +24,7 @@
     "composite": true,
     "baseUrl": ".",
     "paths": {
+      "@elements-panel/sdk": ["./src/plugin/sdk.ts"],
       "@/plugin": ["./src/plugin/index.ts"],
       "@/plugin/*": ["./src/plugin/*"],
       "@/lang/*": ["../panel/plugins/i18n/src/lang/*"],

@@ -16,6 +16,11 @@ function load(relative, overrides = {}) {
   const loaded = new Module(filename, module);
   loaded.filename = filename;
   const localRequire = Module.createRequire(filename);
+  const requireSource = (id) => {
+    const candidate = path.resolve(path.dirname(filename), id) + ".ts";
+    if (id.startsWith(".") && fs.existsSync(candidate)) return load(path.relative(root, candidate));
+    return localRequire(id);
+  };
   loaded.require = (id) =>
     Object.hasOwn(overrides, id)
       ? overrides[id]
@@ -23,7 +28,7 @@ function load(relative, overrides = {}) {
       ? load("common/src/plugin_package.ts")
       : id === "./plugin_manifest"
       ? load("common/src/plugin_manifest.ts")
-      : localRequire(id);
+      : requireSource(id);
   loaded._compile(
     ts.transpileModule(source, {
       compilerOptions: {
@@ -91,7 +96,11 @@ async function fixture(t, { sides = ["daemon"], development = false } = {}) {
       if (url.endsWith("/file"))
         return {
           data: Buffer.from(
-            JSON.stringify({ id: "sample", version: options.params.version || "1.0.0" })
+            JSON.stringify({
+              id: "sample",
+              version: options.params.version || "1.0.0",
+              ...(state.elements ? { elements: state.elements } : {})
+            })
           )
         };
       if (url.endsWith("/api/plugins"))
@@ -361,4 +370,52 @@ test("development discovery loads new nodes but upgrades still require a restart
   const additional = await env.install({ daemonIds: ["node-2"], version: "2.0.0" });
   assert.equal(additional.restartRequired, false);
   assert.deepEqual(additional.failedNodes, []);
+});
+
+test("market compatibility is negotiated before installation and downloaded bytes must match their advertised digest", async () => {
+  const bytes = Buffer.from('{"id":"sample"}');
+  const checksum = require("node:crypto").createHash("sha256").update(bytes).digest("hex");
+  let api = 2;
+  let corrupt = false;
+  const service = load(serviceFile, {
+    axios: {
+      async get(url, options) {
+        if (url.endsWith("/files")) {
+          assert.equal(options.params.pluginApi, 1);
+          assert.equal(options.params.pluginSdk, 1);
+          return {
+            data: {
+              name: "sample",
+              version: "1",
+              compatibility: { panel: { api, sdk: 1 } },
+              files: [{ path: "panel/plugin.json", size: bytes.length, sha256: checksum }]
+            }
+          };
+        }
+        return { data: corrupt ? Buffer.from("corrupt") : bytes };
+      }
+    }
+  });
+  await assert.rejects(
+    service.fetchPackage("https://example.test", { pluginId: "sample" }),
+    /INCOMPATIBLE/
+  );
+  api = 1;
+  const pkg = await service.fetchPackage("https://example.test", { pluginId: "sample" });
+  assert.deepEqual((await service.downloadPackage("https://example.test", pkg))[0].content, bytes);
+  corrupt = true;
+  await assert.rejects(service.downloadPackage("https://example.test", pkg), /BAD_CHECKSUM/);
+});
+
+test("a declared daemon package is sent only to nodes that advertise the required API", async (t) => {
+  const env = await fixture(t, { sides: ["daemon"] });
+  env.state.elements = { api: 1 };
+  env.state.request = async ({ daemonId, event }) =>
+    event === "plugin/capabilities" ? { api: daemonId === "node-1" ? 1 : 0 } : { installed: true };
+  const result = await env.install({ daemonIds: ["node-1", "node-2"] });
+  assert.deepEqual(result.failedNodes, ["node-2"]);
+  assert.deepEqual(
+    env.rpcCalls.filter((call) => call.event === "plugin/install").map((call) => call.daemonId),
+    ["node-1"]
+  );
 });
