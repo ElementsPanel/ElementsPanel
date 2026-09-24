@@ -30,7 +30,6 @@ export const inject = [
   "middleware",
   "roles",
   "identity",
-  "instances",
   "operations",
   "globals"
 ];

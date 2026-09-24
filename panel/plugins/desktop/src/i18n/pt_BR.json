@@ -1,21 +1,9 @@
 {
   "TXT_CODE_DESKTOP_CLOSE_ALL": "Fechar todas as janelas",
   "TXT_CODE_DESKTOP_EXIT": "Sair da área de trabalho",
-  "TXT_CODE_DESKTOP_FM_NO_FILES": "Nenhum arquivo encontrado",
-  "TXT_CODE_DESKTOP_IM_ALL_STATUS": "Todos os status",
-  "TXT_CODE_DESKTOP_IM_LOADING": "Carregando instâncias...",
-  "TXT_CODE_DESKTOP_IM_NEW_INSTANCE": "Nova instância",
-  "TXT_CODE_DESKTOP_IM_NO_INSTANCES": "Nenhuma instância encontrada",
-  "TXT_CODE_DESKTOP_IM_PREV": "Página anterior",
-  "TXT_CODE_DESKTOP_IM_SEARCH": "Pesquisar instâncias...",
-  "TXT_CODE_DESKTOP_IM_TOTAL": "Total",
-  "TXT_CODE_DESKTOP_IM_UNKNOWN": "Desconhecido",
-  "TXT_CODE_DESKTOP_IM_UNNAMED": "Sem nome",
   "TXT_CODE_DESKTOP_MAXIMIZE": "Maximizar",
   "TXT_CODE_DESKTOP_MINIMIZE": "Minimizar",
   "TXT_CODE_DESKTOP_MODE": "Modo desktop",
-  "TXT_CODE_DESKTOP_MY_APPS": "Minha Aplicação",
-  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Escolha uma forma de criar sua nova instância",
   "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Remover da área de trabalho",
   "TXT_CODE_DESKTOP_RESTORE": "Restaurar"
 }

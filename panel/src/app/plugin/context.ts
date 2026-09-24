@@ -358,8 +358,10 @@ declare module "cordis" {
     // Feature services are provided by their owning plugins.
     settingsForm: PanelSettingsFormService;
     operations: PanelOperationLogger;
-    /** User-instance lookup provided by the panel `instance` plugin. */
+    /** Instance details, without account data, provided by the `instance` plugin. */
     instances: {
+      getDetails(instances: readonly { instanceUuid: string; daemonId: string }[]): Promise<any[]>;
+      /** @deprecated Resolve profiles through the account service instead. */
       getByUuid(uuid: string, targetDaemonId?: string, advanced?: boolean): Promise<any>;
     };
     globals: typeof GlobalVariable;

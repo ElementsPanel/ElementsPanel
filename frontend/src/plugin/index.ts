@@ -43,6 +43,8 @@ export type {
   PanelFrontendAppMenu,
   PanelFrontendAppMenuItem,
   PanelFrontendDesktopApp,
+  PanelFrontendDesktopView,
+  PanelFrontendDesktopWindowRequest,
   PanelFrontendInstanceAction,
   PanelFrontendInstanceActionContext,
   PanelFrontendLoginAction,

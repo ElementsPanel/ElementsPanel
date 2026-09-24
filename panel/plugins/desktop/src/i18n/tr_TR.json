@@ -1,21 +1,9 @@
 {
   "TXT_CODE_DESKTOP_CLOSE_ALL": "Tüm pencereleri kapat",
   "TXT_CODE_DESKTOP_EXIT": "Masaüstünden çık",
-  "TXT_CODE_DESKTOP_FM_NO_FILES": "Dosya bulunamadı",
-  "TXT_CODE_DESKTOP_IM_ALL_STATUS": "Tüm durumlar",
-  "TXT_CODE_DESKTOP_IM_LOADING": "Örnekler yükleniyor...",
-  "TXT_CODE_DESKTOP_IM_NEW_INSTANCE": "Yeni örnek",
-  "TXT_CODE_DESKTOP_IM_NO_INSTANCES": "Örnek bulunamadı",
-  "TXT_CODE_DESKTOP_IM_PREV": "Önceki sayfa",
-  "TXT_CODE_DESKTOP_IM_SEARCH": "Örneklerde ara...",
-  "TXT_CODE_DESKTOP_IM_TOTAL": "Toplam",
-  "TXT_CODE_DESKTOP_IM_UNKNOWN": "Bilinmiyor",
-  "TXT_CODE_DESKTOP_IM_UNNAMED": "Adsız",
   "TXT_CODE_DESKTOP_MAXIMIZE": "Büyüt",
   "TXT_CODE_DESKTOP_MINIMIZE": "Küçült",
   "TXT_CODE_DESKTOP_MODE": "Masaüstü modu",
-  "TXT_CODE_DESKTOP_MY_APPS": "Benim Uygulamam",
-  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Yeni örneğinizi oluşturma yöntemini seçin",
   "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Masaüstünden kaldır",
   "TXT_CODE_DESKTOP_RESTORE": "Geri yükle"
 }

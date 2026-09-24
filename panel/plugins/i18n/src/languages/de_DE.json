@@ -2486,5 +2486,9 @@
   "TXT_CODE_minecraft.commandHint": "Leer lassen, um einen Startbefehl für den ausgewählten Server zu erzeugen.",
   "TXT_CODE_minecraft.confirmDownload": "Eine Instanz wird erstellt und der Server auf den Knoten heruntergeladen. Forge/NeoForge wird automatisch installiert und benötigt kompatibles Java auf dem Knoten. Der Fortschritt wird in der Instanzkonsole angezeigt. Fortfahren?",
   "TXT_CODE_minecraft.create": "Herunterladen und Instanz erstellen",
-  "TXT_CODE_minecraft.openConsole": "Instanzkonsole öffnen"
+  "TXT_CODE_minecraft.openConsole": "Instanzkonsole öffnen",
+  "TXT_CODE_DESKTOP_IM_PREV": "Zurück",
+  "TXT_CODE_DESKTOP_IM_TOTAL": "Gesamt",
+  "TXT_CODE_DESKTOP_IM_UNKNOWN": "Unbekannt",
+  "TXT_CODE_DESKTOP_IM_UNNAMED": "Unbenannt"
 }

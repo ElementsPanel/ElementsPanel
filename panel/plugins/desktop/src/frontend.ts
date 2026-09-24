@@ -9,15 +9,14 @@ import { h } from "vue";
 import { VIcon } from "vuetify/components";
 
 
-// Desktop mode. It owns the window shell and the application registry, so a
-// plugin contributes a Desktop app through `ctx.desktop` and only while this
-// plugin is installed.
+// Desktop mode owns the window shell. Console supplies the application/view
+// registry, so feature plugins can contribute independently of this shell.
 
 const openDesktop = () => {
   window.location.hash = "#/desktop";
 };
 
-export const inject = ["console", "i18n", "routes", "menus", "desktop", "terminal", "instance"];
+export const inject = ["console", "i18n", "routes", "menus", "actions", "desktop"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);

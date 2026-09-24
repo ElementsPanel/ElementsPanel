@@ -3,7 +3,7 @@ import { t } from "@/lang/i18n";
 import { addJava, deleteJava, downloadJava, usingJava } from "../api";
 import { parseTimestamp } from "@/tools/time";
 import type { AddJavaConfigItem, DownloadJavaConfigItem, JavaInfo } from "../types";
-import { notifyDesktop } from "../../../desktop/src/desktopNotice";
+import { notifyDesktop } from "@/tools/desktopNotice";
 import { computed, onUnmounted, ref } from "vue";
 import { ctx } from "@/plugin/context";
 import { VAlert, VBtn, VDataTable, VIcon, VTextField } from "vuetify/components";

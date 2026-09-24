@@ -15,10 +15,10 @@ import {
 } from "../service/passport_service";
 import { getUserByUserName, isTopPermissionByUuid } from "../service/permission_service";
 import userSystem from "../service/user_service";
+import { getUserProfile } from "../service/user_profile";
 
 export default function createGeneralUserRouter() {
   const validator = core().middleware.validator;
-  const { getByUuid: getInstancesByUuid } = core().instances;
   const router = new Router({ prefix: "/auth" });
 
   // [Low-level Permission]
@@ -52,7 +52,7 @@ export default function createGeneralUserRouter() {
 
       // Some and only Ajax requests grant access
       if (isAjax(ctx)) {
-        const res = await getInstancesByUuid(uuid, undefined, toBoolean(advanced) || false);
+        const res = await getUserProfile(core(), uuid, undefined, toBoolean(advanced) || false);
         res.token = getToken(ctx);
         ctx.body = res;
       }

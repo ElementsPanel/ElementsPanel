@@ -2486,5 +2486,9 @@
   "TXT_CODE_minecraft.commandHint": "Seçilen sunucu için başlatma komutunun otomatik oluşturulması için boş bırakın.",
   "TXT_CODE_minecraft.confirmDownload": "Bir örnek oluşturulacak ve sunucu düğüme indirilecek. Forge/NeoForge otomatik kurulur ve düğümde uyumlu Java gerektirir. İlerlemeyi örnek konsolundan izleyebilirsiniz. Devam edilsin mi?",
   "TXT_CODE_minecraft.create": "İndir ve örnek oluştur",
-  "TXT_CODE_minecraft.openConsole": "Örnek konsolunu aç"
+  "TXT_CODE_minecraft.openConsole": "Örnek konsolunu aç",
+  "TXT_CODE_DESKTOP_IM_PREV": "Önceki sayfa",
+  "TXT_CODE_DESKTOP_IM_TOTAL": "Toplam",
+  "TXT_CODE_DESKTOP_IM_UNKNOWN": "Bilinmiyor",
+  "TXT_CODE_DESKTOP_IM_UNNAMED": "Adsız"
 }

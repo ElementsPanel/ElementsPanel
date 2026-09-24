@@ -18,7 +18,7 @@ const ROLE_ADMIN = 10;
 const ROLE_USER = 1;
 const ROLE_GUEST = 0;
 
-export const inject = ["console", "i18n", "routes", "ui", "instance"];
+export const inject = ["console", "i18n", "routes", "ui"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
@@ -84,22 +84,24 @@ export function apply(ctx: PanelFrontendPluginContext) {
     }
   });
 
-  ctx.routes.add({
-    path: "/users/resources",
-    name: t("TXT_CODE_236f70aa"),
-    component: UserAccessSettings,
-    meta: {
-      permission: ROLE_ADMIN,
-      breadcrumbs: [
-        {
-          name: t("TXT_CODE_1deaa2dd"),
-          path: "/users",
-          mainMenu: true,
-          permission: ROLE_ADMIN
-        }
-      ]
-    }
-  });
+  ctx.inject(["instance", "node"], (scope) =>
+    scope.routes.add({
+      path: "/users/resources",
+      name: t("TXT_CODE_236f70aa"),
+      component: UserAccessSettings,
+      meta: {
+        permission: ROLE_ADMIN,
+        breadcrumbs: [
+          {
+            name: t("TXT_CODE_1deaa2dd"),
+            path: "/users",
+            mainMenu: true,
+            permission: ROLE_ADMIN
+          }
+        ]
+      }
+    })
+  );
 }
 
 export { ROLE_ADMIN, ROLE_GUEST, ROLE_USER };

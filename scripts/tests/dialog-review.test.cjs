@@ -483,7 +483,7 @@ function fileManagerFixture(t, api = {}) {
     "@vueuse/core": { useLocalStorage: (_key, value) => vue.ref(value) },
     "@/components/fc": {},
     "../dialogs": {},
-    "@/components/OverwriteFilesPopUpContent.vue": {},
+    "../components/OverwriteFilesPopUpContent.vue": {},
     "@/lang/i18n": i18n,
     "../api": {
       fileList: () => ({ execute: async () => ({ value: { items: [], total: 0 } }) }),
@@ -582,11 +582,11 @@ test("desktop overwrite dialogs settle dismissal, replacement, and window close"
       "@/hooks/usePolling": {
         usePolling: (refresh, interval) => polls.push({ refresh, interval })
       },
-      "@/components/ArchivePreview.vue": {},
+      "../components/ArchivePreview.vue": {},
       "../services/uploadService": { uiData: vue.ref({}) },
       "../tools/fileManager": {},
       "@/tools/fileSize": {},
-      "../../../desktop/src/desktopNotice": {}
+      "@/tools/desktopNotice": {}
     },
     { instanceId: "instance", daemonId: "node" }
   );

@@ -1,6 +1,6 @@
 import { openLoadingDialog } from "@/components/fc";
 import { useImageViewerDialog } from "../dialogs";
-import OverwriteFilesPopUpContent from "@/components/OverwriteFilesPopUpContent.vue";
+import OverwriteFilesPopUpContent from "../components/OverwriteFilesPopUpContent.vue";
 
 import { t } from "@/lang/i18n";
 import {

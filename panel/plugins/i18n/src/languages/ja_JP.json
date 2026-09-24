@@ -2486,5 +2486,9 @@
   "TXT_CODE_minecraft.commandHint": "空欄の場合、選択したサーバーの起動コマンドが自動生成されます。",
   "TXT_CODE_minecraft.confirmDownload": "インスタンスを作成し、ノードにサーバーをダウンロードします。Forge/NeoForge は自動インストールされ、ノードには対応する Java が必要です。進行状況はインスタンスコンソールで確認できます。続行しますか？",
   "TXT_CODE_minecraft.create": "ダウンロードしてインスタンスを作成",
-  "TXT_CODE_minecraft.openConsole": "インスタンスコンソールを開く"
+  "TXT_CODE_minecraft.openConsole": "インスタンスコンソールを開く",
+  "TXT_CODE_DESKTOP_IM_PREV": "戻る",
+  "TXT_CODE_DESKTOP_IM_TOTAL": "合計",
+  "TXT_CODE_DESKTOP_IM_UNKNOWN": "不明",
+  "TXT_CODE_DESKTOP_IM_UNNAMED": "名前なし"
 }

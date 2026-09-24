@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import PageToolbar from "@/components/PageToolbar.vue";
+import Empty from "@/components/Empty.vue";
+import { usePluginService } from "@/plugin/context";
+import { computed } from "vue";
 import { t } from "@/lang/i18n";
 import { VCol, VContainer, VRow } from "vuetify/components";
 import UserInstanceList from "../widgets/UserInstanceList.vue";
 import UserStatusBlock from "../widgets/UserStatusBlock.vue";
 
+const instanceAvailable = computed(() => !!usePluginService("instance"));
 const statusTypes = [
   "instance_all",
   "instance_running",
@@ -17,7 +21,7 @@ const statusTypes = [
   <main class="customer-page">
     <VContainer fluid class="customer-page-container">
       <PageToolbar :title="t('TXT_CODE_ec299306')" icon="mdi-account-outline" />
-      <VRow density="compact" class="customer-page-row">
+      <VRow v-if="instanceAvailable" density="compact" class="customer-page-row">
         <VCol v-for="type in statusTypes" :key="type" cols="12" sm="6" lg="3">
           <UserStatusBlock :type="type" />
         </VCol>
@@ -25,6 +29,7 @@ const statusTypes = [
           <UserInstanceList :title="t('TXT_CODE_d655beec')" />
         </VCol>
       </VRow>
+      <Empty v-else :description="t('TXT_CODE_NO_DATA')" />
     </VContainer>
   </main>
 </template>

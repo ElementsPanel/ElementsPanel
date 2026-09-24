@@ -465,7 +465,7 @@ export function configureDaemonPlugin(
       validatePluginSettings(plugin.manifest.configFields, config);
     writePluginOverride(id, { config });
     // Core network/storage configuration is applied on restart; never tear down the reply path.
-    if (replaced || FOUNDATION_PLUGIN_IDS.has(id) || ["server", "config", "monitor"].includes(id)) {
+    if (replaced || FOUNDATION_PLUGIN_IDS.has(id) || ["server", "config"].includes(id)) {
       return {
         ...getDaemonPluginInventory().find((item) => item.id === id)!,
         result: { saved: true, application: "restart-required" }

@@ -2486,5 +2486,9 @@
   "TXT_CODE_minecraft.commandHint": "Оставьте поле пустым для автоматического создания команды запуска выбранного сервера.",
   "TXT_CODE_minecraft.confirmDownload": "Будет создан экземпляр, а сервер будет скачан на узел. Forge/NeoForge устанавливается автоматически и требует совместимую Java на узле. Ход установки можно посмотреть в консоли экземпляра. Продолжить?",
   "TXT_CODE_minecraft.create": "Скачать и создать экземпляр",
-  "TXT_CODE_minecraft.openConsole": "Открыть консоль экземпляра"
+  "TXT_CODE_minecraft.openConsole": "Открыть консоль экземпляра",
+  "TXT_CODE_DESKTOP_IM_PREV": "Назад",
+  "TXT_CODE_DESKTOP_IM_TOTAL": "Всего",
+  "TXT_CODE_DESKTOP_IM_UNKNOWN": "Неизвестно",
+  "TXT_CODE_DESKTOP_IM_UNNAMED": "Без имени"
 }

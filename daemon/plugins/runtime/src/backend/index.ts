@@ -25,6 +25,8 @@ import { getVersion, initVersionManager } from "./service/version";
 import i18next from "i18next";
 import { proxyIncomingMessage, sendFile } from "./utils/speed_limit";
 import type { Context as KoaContext } from "koa";
+import { FeaturesService, OverviewService } from "./registries";
+import { registerOverview } from "./overview";
 
 function isMultipart(requestCtx: KoaContext) {
   return String(requestCtx.request?.headers?.["content-type"] ?? "")
@@ -66,6 +68,8 @@ function createUploadMiddleware(ctx: DaemonPluginContext) {
 export const inject = ["i18n", "storage"];
 
 export async function apply(ctx: DaemonPluginContext) {
+  ctx.plugin(FeaturesService);
+  ctx.plugin(OverviewService);
   ctx.on("dispose", () => {
     missionPassport.dispose();
     downloadManager.stop();
@@ -119,6 +123,7 @@ export async function apply(ctx: DaemonPluginContext) {
     sevenZipPath: SEVEN_ZIP_PATH,
     zipTimeoutSeconds: ZIP_TIMEOUT_SECONDS
   });
+  ctx.inject(["protocol", "features", "overview", "settings"], registerOverview);
 
   try {
     fs.chmodSync(GOLANG_ZIP_PATH, 0o755);

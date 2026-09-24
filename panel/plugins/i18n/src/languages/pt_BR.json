@@ -2486,5 +2486,9 @@
   "TXT_CODE_minecraft.commandHint": "Deixe em branco para gerar o comando de inicialização do servidor selecionado.",
   "TXT_CODE_minecraft.confirmDownload": "Uma instância será criada e o servidor será baixado no nó. Forge/NeoForge será instalado automaticamente e requer Java compatível no nó. Acompanhe o progresso no console da instância. Continuar?",
   "TXT_CODE_minecraft.create": "Baixar e criar instância",
-  "TXT_CODE_minecraft.openConsole": "Abrir console da instância"
+  "TXT_CODE_minecraft.openConsole": "Abrir console da instância",
+  "TXT_CODE_DESKTOP_IM_PREV": "Página anterior",
+  "TXT_CODE_DESKTOP_IM_TOTAL": "Total",
+  "TXT_CODE_DESKTOP_IM_UNKNOWN": "Desconhecido",
+  "TXT_CODE_DESKTOP_IM_UNNAMED": "Sem nome"
 }

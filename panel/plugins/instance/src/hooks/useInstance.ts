@@ -8,31 +8,8 @@ import { Modal } from "@/tools/vuetifyModal";
 import { usePolling } from "@/hooks/usePolling";
 import { computed, h, ref, type Ref } from "vue";
 
-export const TYPE_UNIVERSAL = "universal";
-export const TYPE_WEB_SHELL = "universal/web_shell";
-export const TYPE_MINECRAFT_MCDR = "universal/mcdr";
-export const TYPE_MINECRAFT_JAVA = "minecraft/java";
-export const TYPE_MINECRAFT_BUKKIT = "minecraft/java/bukkit";
-export const TYPE_MINECRAFT_SPIGOT = "minecraft/java/spigot";
-export const TYPE_MINECRAFT_PAPER = "minecraft/java/paper";
-export const TYPE_MINECRAFT_FOLIA = "minecraft/java/folia";
-export const TYPE_MINECRAFT_LEAVES = "minecraft/java/leaves";
-export const TYPE_MINECRAFT_PUFFERFISH = "minecraft/java/pufferfish";
-export const TYPE_MINECRAFT_FORGE = "minecraft/java/forge";
-export const TYPE_MINECRAFT_NEOFORGE = "minecraft/java/neoforge";
-export const TYPE_MINECRAFT_FABRIC = "minecraft/java/fabric";
-export const TYPE_MINECRAFT_BUNGEECORD = "minecraft/java/bungeecord";
-export const TYPE_MINECRAFT_VELOCITY = "minecraft/java/velocity";
-export const TYPE_MINECRAFT_GEYSER = "minecraft/java/geyser";
-export const TYPE_MINECRAFT_SPONGE = "minecraft/java/sponge";
-export const TYPE_MINECRAFT_MOHIST = "minecraft/java/mohist";
-export const TYPE_MINECRAFT_PURPUR = "minecraft/java/purpur";
-export const TYPE_MINECRAFT_BEDROCK = "minecraft/bedrock";
-export const TYPE_MINECRAFT_BDS = "minecraft/bedrock/bds";
-export const TYPE_MINECRAFT_NUKKIT = "minecraft/bedrock/nukkit";
-export const TYPE_HYTALE = "hytale";
-export const TYPE_STEAM_SERVER_UNIVERSAL = "steam/universal";
-export const TYPE_TERRARIA = "steam/terraria";
+import { TYPE_UNIVERSAL, TYPE_WEB_SHELL, TYPE_MINECRAFT_MCDR, TYPE_MINECRAFT_JAVA, TYPE_MINECRAFT_BUKKIT, TYPE_MINECRAFT_SPIGOT, TYPE_MINECRAFT_PAPER, TYPE_MINECRAFT_FOLIA, TYPE_MINECRAFT_LEAVES, TYPE_MINECRAFT_PUFFERFISH, TYPE_MINECRAFT_FORGE, TYPE_MINECRAFT_NEOFORGE, TYPE_MINECRAFT_FABRIC, TYPE_MINECRAFT_BUNGEECORD, TYPE_MINECRAFT_VELOCITY, TYPE_MINECRAFT_GEYSER, TYPE_MINECRAFT_SPONGE, TYPE_MINECRAFT_MOHIST, TYPE_MINECRAFT_PURPUR, TYPE_MINECRAFT_BEDROCK, TYPE_MINECRAFT_BDS, TYPE_MINECRAFT_NUKKIT, TYPE_HYTALE, TYPE_STEAM_SERVER_UNIVERSAL, TYPE_TERRARIA } from "@elements-panel/sdk";
+export { TYPE_UNIVERSAL, TYPE_WEB_SHELL, TYPE_MINECRAFT_MCDR, TYPE_MINECRAFT_JAVA, TYPE_MINECRAFT_BUKKIT, TYPE_MINECRAFT_SPIGOT, TYPE_MINECRAFT_PAPER, TYPE_MINECRAFT_FOLIA, TYPE_MINECRAFT_LEAVES, TYPE_MINECRAFT_PUFFERFISH, TYPE_MINECRAFT_FORGE, TYPE_MINECRAFT_NEOFORGE, TYPE_MINECRAFT_FABRIC, TYPE_MINECRAFT_BUNGEECORD, TYPE_MINECRAFT_VELOCITY, TYPE_MINECRAFT_GEYSER, TYPE_MINECRAFT_SPONGE, TYPE_MINECRAFT_MOHIST, TYPE_MINECRAFT_PURPUR, TYPE_MINECRAFT_BEDROCK, TYPE_MINECRAFT_BDS, TYPE_MINECRAFT_NUKKIT, TYPE_HYTALE, TYPE_STEAM_SERVER_UNIVERSAL, TYPE_TERRARIA } from "@elements-panel/sdk";
 
 export const INSTANCE_TYPE_TRANSLATION: MapData<string> = {
   [TYPE_UNIVERSAL]: t("TXT_CODE_a92a4aa1"),

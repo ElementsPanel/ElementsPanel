@@ -4,6 +4,7 @@ import { ctx } from "@/plugin/context";
 import { getValidatorErrorMsg } from "@/tools/validator";
 import { message } from "@/tools/vuetifyToast";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import {
   VAlert,
   VBtn,
@@ -51,6 +52,7 @@ import SchemaForm from "./SchemaForm.vue";
 type Scope = "panel" | "node";
 
 const scope = ref<Scope>("panel");
+const route = useRoute();
 
 const loading = ref(true);
 const pending = ref<string>("");
@@ -306,6 +308,16 @@ watch(scope, (value) => {
 });
 
 watch(selectedNodeId, () => loadNodePlugins());
+
+watch(
+  () => [route.query.scope, route.query.daemonId],
+  ([targetScope, daemonId]) => {
+    if (targetScope !== "node") return;
+    scope.value = "node";
+    if (typeof daemonId === "string") selectedNodeId.value = daemonId;
+  },
+  { immediate: true }
+);
 
 watch(
   plugins,

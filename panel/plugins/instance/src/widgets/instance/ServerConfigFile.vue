@@ -7,7 +7,7 @@ import { useAppRouters } from "@/hooks/useAppRouters";
 import { toUnicode } from "@/tools/common";
 import Loading from "@/components/Loading.vue";
 import PageToolbar from "@/components/PageToolbar.vue";
-import configComponent from "@/components/InstanceConfigEditor.vue";
+import configComponent from "../../components/InstanceConfigEditor.vue";
 import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
 import { useKeyboardEvents } from "@/hooks/useKeyboardEvents";

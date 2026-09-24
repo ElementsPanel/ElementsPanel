@@ -52,10 +52,6 @@ const DEFAULT_CONFIG = {
   enableSoftShutdown: true,
   softShutdownSkipDocker: true,
   softShutdownWaitSeconds: 10,
-  instanceBackupPath: "",
-  instanceBackupFormat: "zip",
-  instanceBackupCompressionLevel: 9,
-  instanceBackupMaxSize: 0
 };
 
 const SPEED_RATE_OPTIONS = [
@@ -93,7 +89,7 @@ const openDialog = (data?: ComputedNodeInfo, uuid?: string) => {
     dialog.data = {
       ..._.cloneDeep(DEFAULT_CONFIG),
       ...data,
-      ...data.config,
+      ..._.pick(data.config, Object.keys(DEFAULT_CONFIG)),
       port: data.port,
       daemonPort: data.config?.port ?? 24444,
       apiKey: "",
@@ -290,39 +286,8 @@ defineExpose({ openDialog });
                 />
               </VCol>
               <VCol cols="12">
-                <VTextField
-                  v-model="dialog.data.instanceBackupPath"
-                  :label="t('TXT_CODE_INSTANCE_BACKUP_PATH')"
-                  :hint="t('TXT_CODE_INSTANCE_BACKUP_PATH_HINT')"
-                  placeholder="data/backups"
-                  persistent-hint
-                />
-              </VCol>
-              <VCol cols="12" md="6">
-                <VSelect
-                  v-model="dialog.data.instanceBackupFormat"
-                  :items="['zip', 'tar.gz', '7z']"
-                  :label="t('TXT_CODE_e06c1cea')"
-                />
-              </VCol>
-              <VCol cols="12" md="6">
-                <VTextField
-                  v-model.number="dialog.data.instanceBackupCompressionLevel"
-                  type="number"
-                  min="0"
-                  max="9"
-                  :label="t('TXT_CODE_743ed87f')"
-                />
-              </VCol>
-              <VCol cols="12">
-                <VTextField
-                  v-model.number="dialog.data.instanceBackupMaxSize"
-                  type="number"
-                  min="0"
-                  :label="t('TXT_CODE_INSTANCE_BACKUP_MAX_SIZE')"
-                  :hint="t('TXT_CODE_INSTANCE_BACKUP_MAX_SIZE_HINT')"
-                  persistent-hint
-                />
+                <VBtn :to="{ path: '/plugins/config', query: { scope: 'node', daemonId: dialog.uuid } }"
+                  variant="tonal" @click="closeDialog">{{ t("TXT_CODE_PLUGIN_CONFIG") }}</VBtn>
               </VCol>
               <VCol cols="12">
                 <VSheet class="mapping-sheet" rounded="xl" variant="tonal">

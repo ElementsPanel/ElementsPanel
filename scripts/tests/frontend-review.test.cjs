@@ -208,6 +208,16 @@ test("overview derives used memory consistently and leaves the API response unto
   assert.equal(state.value.mem, undefined);
   state.value.system.totalmem = 0;
   assert.equal(overview.state.value.mem, 0);
+  state.value.remote = [{ uuid: "node", features: { instanceBackup: true },
+    system: { platform: "linux", totalmem: 2 ** 30, freemem: 2 ** 29, cpuUsage: 0.25 },
+    instance: { total: 2, running: 1 } }];
+  const node = overview.state.value.remote[0];
+  assert.equal(node.platformText, "linux");
+  assert.equal(node.cpuInfo, "25.0%");
+  assert.equal(node.instanceStatus, "1 / 2");
+  assert.deepEqual(node.cpuChartData, []);
+  assert.equal(node.features.instanceBackup, true);
+  assert.equal(state.value.remote[0].cpuChartData, undefined);
 });
 
 test("socket probes release sockets and listeners on failure and cancellation", async () => {
@@ -337,7 +347,7 @@ function fileManagerFixture(api = {}) {
     "@vueuse/core": { useLocalStorage: (_key, value) => vue.ref(value) },
     "@/components/fc": {},
     "../dialogs": {},
-    "@/components/OverwriteFilesPopUpContent.vue": {},
+    "../components/OverwriteFilesPopUpContent.vue": {},
     "@/lang/i18n": i18n,
     "../api": api,
     "../services/uploadService": {},
@@ -466,6 +476,7 @@ test("switching node/plugin configuration cannot display or save a stale schema"
   const requests = [];
   const saved = [];
   const state = setupSfc("panel/plugins/config/src/ConfigPage.vue", {
+    "vue-router": { useRoute: () => ({ query: {} }) },
     "@/plugin/context": { ctx: {} },
     "@/tools/validator": { getValidatorErrorMsg: (error) => error.message },
     "@/tools/vuetifyToast": { message: { success() {}, error() {} } },
@@ -536,6 +547,7 @@ test("Vuetify key/value form keeps invalid data out of its result callback", asy
 test("user search rejects an older response and fixes pagination after deleting the last row", async () => {
   const requests = [];
   const state = setupSfc("panel/plugins/user/src/widgets/UserList.vue", {
+    "@/plugin/context": { usePluginService: () => undefined },
     "@/components/AppDialog.vue": {},
     "@/components/PageToolbar.vue": {},
     "@/tools/vuetifyToast": { message: {} },

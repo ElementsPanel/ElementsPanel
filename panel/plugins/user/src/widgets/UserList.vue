@@ -2,6 +2,7 @@
 import AppDialog from "@/components/AppDialog.vue";
 import PageToolbar from "@/components/PageToolbar.vue";
 import { t } from "@/lang/i18n";
+import { usePluginService } from "@/plugin/context";
 import { message } from "@/tools/vuetifyToast";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import {
@@ -42,6 +43,7 @@ interface UserPageData {
 const { execute, isLoading: getUserInfoLoading } = getUserInfo();
 const { toPage } = useAppRouters();
 const { isPhone } = useScreen();
+const canAssignInstances = computed(() => !!usePluginService("instance") && !!usePluginService("node"));
 const ssoEnabled = ref(false);
 const data = ref<UserPageData>();
 const total = ref(0);
@@ -356,6 +358,7 @@ onMounted(async () => {
                   :title="t('TXT_CODE_236f70aa')"
                   prepend-icon="mdi-pencil-outline"
                   @click="handleEditUser(rawUser(item))" /><VListItem
+                  v-if="canAssignInstances"
                   :title="t('TXT_CODE_4d934e3a')"
                   prepend-icon="mdi-shield-account-outline"
                   @click="handleToUserResources(rawUser(item))" /><VListItem

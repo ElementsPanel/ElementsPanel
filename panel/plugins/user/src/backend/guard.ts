@@ -19,6 +19,8 @@ import {
 import { authSettings } from "./service/auth_settings";
 import { isHaveInstance, isTopPermission } from "./service/permission_service";
 import userSystem from "./service/user_service";
+import { core } from "./runtime";
+import { getUserProfile } from "./service/user_profile";
 
 // The complete authorization policy for the panel. The core holds none of it:
 // it only asks whichever guard is installed, and serves everything when there
@@ -90,7 +92,8 @@ export function createRequestGuard(): RequestGuard {
     },
 
     accounts: {
-      loginSuccess: (ctx, userName) => loginSuccess(ctx, userName)
+      loginSuccess: (ctx, userName) => loginSuccess(ctx, userName),
+      getProfile: (uuid, daemonId, advanced) => getUserProfile(core(), uuid, daemonId, advanced)
     },
 
     users: userRecords()

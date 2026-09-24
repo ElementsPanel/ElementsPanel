@@ -26,8 +26,6 @@ function toBoolean(value: unknown): boolean | null {
   return Boolean(value);
 }
 
-const BACKUP_FORMATS = ["zip", "tar.gz", "7z"];
-
 export const inject = ["protocol", "settings"];
 
 export function apply(ctx: DaemonPluginContext) {
@@ -47,10 +45,6 @@ export function apply(ctx: DaemonPluginContext) {
     const enableSoftShutdown = toBoolean(payload.enableSoftShutdown);
     const softShutdownSkipDocker = toBoolean(payload.softShutdownSkipDocker);
     const softShutdownWaitSeconds = toNumber(payload.softShutdownWaitSeconds);
-    const instanceBackupPath = toText(payload.instanceBackupPath);
-    const instanceBackupFormat = toText(payload.instanceBackupFormat);
-    const instanceBackupCompressionLevel = toNumber(payload.instanceBackupCompressionLevel);
-    const instanceBackupMaxSize = toNumber(payload.instanceBackupMaxSize);
 
     if (language && config.followPanelLanguage !== false) {
       ctx.settings.setLanguage(language);
@@ -89,23 +83,6 @@ export function apply(ctx: DaemonPluginContext) {
       softShutdownWaitSeconds <= 600
     ) {
       config.softShutdownWaitSeconds = softShutdownWaitSeconds;
-    }
-    if (instanceBackupPath != null) {
-      config.instanceBackupPath = instanceBackupPath;
-    }
-    if (instanceBackupFormat != null && BACKUP_FORMATS.includes(instanceBackupFormat)) {
-      config.instanceBackupFormat = instanceBackupFormat;
-    }
-    if (
-      instanceBackupCompressionLevel != null &&
-      Number.isInteger(instanceBackupCompressionLevel) &&
-      instanceBackupCompressionLevel >= 0 &&
-      instanceBackupCompressionLevel <= 9
-    ) {
-      config.instanceBackupCompressionLevel = instanceBackupCompressionLevel;
-    }
-    if (instanceBackupMaxSize != null && instanceBackupMaxSize >= 0) {
-      config.instanceBackupMaxSize = instanceBackupMaxSize;
     }
 
     ctx.settings.save();

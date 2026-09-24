@@ -4,7 +4,7 @@ import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
 import { updateInstanceConfig } from "@/services/apis/instance";
 import { TERMINAL_CODE } from "@/types/const";
-import { notifyDesktop, notifyDesktopError } from "../../../desktop/src/desktopNotice";
+import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
 import { computed, ref, watch } from "vue";
 import { VBtn, VCol, VIcon, VProgressCircular, VRow, VSelect, VSwitch, VTextField } from "vuetify/components";
 

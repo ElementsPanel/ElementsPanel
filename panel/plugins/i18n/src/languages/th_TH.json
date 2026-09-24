@@ -2486,5 +2486,9 @@
   "TXT_CODE_minecraft.commandHint": "เว้นว่างไว้เพื่อสร้างคำสั่งเริ่มต้นสำหรับเซิร์ฟเวอร์ที่เลือกโดยอัตโนมัติ",
   "TXT_CODE_minecraft.confirmDownload": "ระบบจะสร้างอินสแตนซ์และดาวน์โหลดเซิร์ฟเวอร์ลงโหนด Forge/NeoForge จะติดตั้งอัตโนมัติและต้องมี Java ที่เข้ากันได้บนโหนด ดูความคืบหน้าได้ในคอนโซลอินสแตนซ์ ดำเนินการต่อหรือไม่?",
   "TXT_CODE_minecraft.create": "ดาวน์โหลดและสร้างอินสแตนซ์",
-  "TXT_CODE_minecraft.openConsole": "เปิดคอนโซลอินสแตนซ์"
+  "TXT_CODE_minecraft.openConsole": "เปิดคอนโซลอินสแตนซ์",
+  "TXT_CODE_DESKTOP_IM_PREV": "ก่อนหน้า",
+  "TXT_CODE_DESKTOP_IM_TOTAL": "ทั้งหมด",
+  "TXT_CODE_DESKTOP_IM_UNKNOWN": "ไม่ทราบ",
+  "TXT_CODE_DESKTOP_IM_UNNAMED": "ไม่มีชื่อ"
 }

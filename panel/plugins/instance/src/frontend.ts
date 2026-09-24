@@ -25,12 +25,17 @@ import InstanceServerConfigOverview from "./widgets/instance/ServerConfigOvervie
 import DeleteInstanceDialog from "./widgets/instance/dialogs/DeleteInstanceDialog.vue";
 import QuickStartFlow from "./widgets/setupApp/QuickStartFlow.vue";
 import CreateInstanceForm from "./widgets/setupApp/CreateInstanceForm.vue";
+import InstanceDetail from "./widgets/instance/dialogs/InstanceDetail.vue";
+import { openInstanceConsole, registerDesktop } from "./desktop";
+import { localeMessages } from "./i18n";
 
-export const inject = ["console", "routes", "ui", "actions"];
+export const inject = ["console", "i18n", "routes", "ui", "actions", "desktop"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
+  ctx.i18n.define(localeMessages);
   ctx.set("instance", {
     api,
+    openConsole: (instance, daemonId) => openInstanceConsole(ctx, instance, daemonId),
     hooks: {
       ...instanceHooks,
       ...instanceTagHooks,
@@ -42,6 +47,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
     components: {
       CmdAssistantDialog,
       CreateInstanceForm,
+      InstanceDetail,
       DeleteInstanceDialog,
       DockerCapabilityDialog,
       DockerDeviceDialog,
@@ -52,6 +58,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
       TagsDialog
     }
   });
+  registerDesktop(ctx);
 
   ctx.routes.add({
     path: "/quickstart",

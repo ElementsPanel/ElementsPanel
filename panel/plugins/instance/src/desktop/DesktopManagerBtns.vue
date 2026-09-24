@@ -9,11 +9,11 @@ import type { PanelFrontendInstanceActionContext } from "@/plugin";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { computed, ref, watch } from "vue";
 import { arrayFilter } from "@/tools/array";
-import EventConfig from "@instance/widgets/instance/dialogs/EventConfig.vue";
-import InstanceDetail from "@instance/widgets/instance/dialogs/InstanceDetail.vue";
-import InstanceFundamentalDetail from "@instance/widgets/instance/dialogs/InstanceFundamentalDetail.vue";
-import PingConfig from "@instance/widgets/instance/dialogs/PingConfig.vue";
-import RconSettings from "@instance/widgets/instance/dialogs/RconSettings.vue";
+import EventConfig from "../widgets/instance/dialogs/EventConfig.vue";
+import InstanceDetail from "../widgets/instance/dialogs/InstanceDetail.vue";
+import InstanceFundamentalDetail from "../widgets/instance/dialogs/InstanceFundamentalDetail.vue";
+import PingConfig from "../widgets/instance/dialogs/PingConfig.vue";
+import RconSettings from "../widgets/instance/dialogs/RconSettings.vue";
 import { VIcon } from "vuetify/components";
 
 const ControlOutlined = "mdi-tune-variant";

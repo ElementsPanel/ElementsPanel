@@ -1,1 +1,2 @@
-export * from "@instance/hooks/useServerConfig";
+import { instanceHook } from "./instanceService";
+export const useServerConfig = instanceHook("useServerConfig");

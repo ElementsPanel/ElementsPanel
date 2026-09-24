@@ -5,7 +5,7 @@ import { padZero } from "@/tools/common";
 import { ctx } from "@/plugin/context";
 import type { Schedule, ScheduleAction, ScheduleTaskForm } from "@/types";
 import { ScheduleActionType, ScheduleCreateType, ScheduleType } from "@/types/const";
-import { notifyDesktop } from "../../desktopNotice";
+import { notifyDesktop } from "@/tools/desktopNotice";
 import dayjs from "dayjs";
 import _ from "lodash";
 import { computed, onMounted, onUnmounted, reactive, ref } from "vue";

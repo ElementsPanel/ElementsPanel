@@ -14,3 +14,7 @@ loads the foundation plugins, loads enabled feature plugins, starts/stops the
 Cordis container and owns process-level logging. Feature plugins should consume
 the services above through `ctx` and should not import daemon implementation
 singletons.
+
+Runtime provides `ctx.features`, `ctx.overview` and the `info/overview` handler.
+Feature plugins register capabilities and additional fields in their own scopes.
+The base response remains available with monitoring disabled.

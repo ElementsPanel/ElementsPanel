@@ -6,7 +6,7 @@ import {
     createAsyncTask,
     queryAsyncTask
 } from "@/services/apis/instance";
-import { notifyDesktop } from "../../../desktop/src/desktopNotice";
+import { notifyDesktop } from "@/tools/desktopNotice";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { deleteBackup, getBackupList, restoreBackup } from "../api";
 import { VBtn, VIcon } from "vuetify/components";

@@ -81,6 +81,26 @@ export interface PanelFrontendDesktopApp {
   condition?: boolean | (() => boolean);
   initialWidth?: number;
   initialHeight?: number;
+  /** Registered view id, also used to restore saved windows. */
+  view?: string;
+}
+
+export interface PanelFrontendDesktopView {
+  id: string;
+  component: Component;
+  title: string | (() => string);
+  icon: string;
+  initialWidth?: number;
+  initialHeight?: number;
+  condition?: () => boolean;
+  accepts?: (props: Record<string, unknown>) => boolean;
+}
+
+export interface PanelFrontendDesktopWindowRequest {
+  id: string;
+  view: string;
+  title?: string;
+  props?: Record<string, unknown>;
 }
 
 export interface PanelFrontendInstanceActionContext {
@@ -261,6 +281,10 @@ export interface FrontendDesktopService {
   /** Adds an application to the Desktop, removed when the calling plugin unloads. */
   app(desktopApp: PanelFrontendDesktopApp): () => void;
   readonly apps: readonly PanelFrontendDesktopApp[];
+  view(view: PanelFrontendDesktopView): () => void;
+  readonly views: readonly PanelFrontendDesktopView[];
+  open(request: PanelFrontendDesktopWindowRequest): boolean;
+  provideOpener(open: (request: PanelFrontendDesktopWindowRequest) => boolean): () => void;
   /** The window shell a Desktop-mode component is mounted inside. */
   readonly window: Component | undefined;
   /** Supplies that shell. Called by `plugins/desktop`. */
@@ -325,10 +349,18 @@ export interface FrontendJavaService {
 /** Application instance pages, APIs, hooks and dialogs. Provided by `plugins/instance`. */
 export interface FrontendInstanceService {
   readonly api: Record<string, (...args: any[]) => any>;
-  readonly hooks: Record<string, unknown>;
+  openConsole(instance: unknown, daemonId: string): boolean;
+  readonly hooks: typeof import("../../../panel/plugins/instance/src/hooks/useInstance") &
+    typeof import("../../../panel/plugins/instance/src/hooks/useInstanceTag") &
+    typeof import("../../../panel/plugins/instance/src/hooks/quickStartFlow") & {
+      useSchedule: typeof import("../../../panel/plugins/instance/src/hooks/useSchedule").useSchedule;
+      useServerConfig: typeof import("../../../panel/plugins/instance/src/hooks/useServerConfig").useServerConfig;
+      useStartCmdBuilder: typeof import("../../../panel/plugins/instance/src/hooks/useGenerateStartCmd").useStartCmdBuilder;
+    };
   readonly components: {
     readonly CmdAssistantDialog: Component;
     readonly CreateInstanceForm: Component;
+    readonly InstanceDetail: Component;
     readonly DeleteInstanceDialog: Component;
     readonly DockerCapabilityDialog: Component;
     readonly DockerDeviceDialog: Component;

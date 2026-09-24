@@ -84,88 +84,64 @@ export async function multiOperationForwarding(
   if (messages.length) throw new Error(messages.join("\n"));
 }
 
-export async function getInstancesByUuid(
-  uuid: string,
-  targetDaemonId?: string,
-  advanced: boolean = false
-) {
-  const user = identity().users?.getInstance(uuid);
-  if (!user) throw new Error("The UID does not exist");
-
-  // Advanced functions are optional, analyze each instance data
-  let resInstances: IAdvancedInstanceInfo[] = [];
-  if (advanced) {
-    const instances = user.instances;
-    for (const iterator of instances) {
-      if (targetDaemonId && targetDaemonId !== iterator.daemonId) continue;
-      const remoteService = remote().services.getInstance(iterator.daemonId);
-      if (!remoteService || !remoteService.available) {
-        // If the remote service doesn't exist at all, load a deleted prompt
-        resInstances.push({
-          hostIp: "-- Unknown --",
-          instanceUuid: iterator.instanceUuid,
-          daemonId: iterator.daemonId,
-          status: -1,
-          nickname: "-- Unknown --",
-          remarks: "",
-          ie: "",
-          oe: "",
-          endTime: 0,
-          lastDatetime: 0,
-          stopCommand: "",
-          processType: "",
-          docker: {},
-          info: {}
-        });
-        continue;
-      }
-      // Note: UUID can be integrated here to save the returned traffic, and this optimization will not be done for the time being
-      try {
-        let instancesInfo = await new (remote().Request)(remoteService).request(
-          "instance/section",
-          {
-            instanceUuids: [iterator.instanceUuid]
-          }
-        );
-        if (!instancesInfo || instancesInfo.length === 0) continue;
-        instancesInfo = instancesInfo[0];
-        resInstances.push({
-          hostIp: `${remoteService.config.ip}:${remoteService.config.port}`,
-          remarks: remoteService.config.remarks,
-          instanceUuid: instancesInfo.instanceUuid,
-          daemonId: remoteService.uuid,
-          status: instancesInfo.status,
-          nickname: instancesInfo.config.nickname,
-          ie: instancesInfo.config.ie,
-          oe: instancesInfo.config.oe,
-          endTime: instancesInfo.config.endTime,
-          lastDatetime: instancesInfo.config.lastDatetime,
-          stopCommand: instancesInfo.config.stopCommand,
-          processType: instancesInfo.config.processType,
-          docker: instancesInfo.config.docker || {},
-          info: instancesInfo.info || {}
-        });
-      } catch (error) {
-        // ignore error
-        continue;
-      }
+export async function getInstanceDetails(
+  instances: readonly { instanceUuid: string; daemonId: string }[]
+): Promise<IAdvancedInstanceInfo[]> {
+  const resInstances: IAdvancedInstanceInfo[] = [];
+  for (const iterator of instances) {
+    const remoteService = remote().services.getInstance(iterator.daemonId);
+    if (!remoteService || !remoteService.available) {
+      // If the remote service doesn't exist at all, load a deleted prompt
+      resInstances.push({
+        hostIp: "-- Unknown --",
+        instanceUuid: iterator.instanceUuid,
+        daemonId: iterator.daemonId,
+        status: -1,
+        nickname: "-- Unknown --",
+        remarks: "",
+        ie: "",
+        oe: "",
+        endTime: 0,
+        lastDatetime: 0,
+        stopCommand: "",
+        processType: "",
+        docker: {},
+        info: {}
+      });
+      continue;
     }
-  } else {
-    resInstances = user.instances;
+    // Note: UUID can be integrated here to save the returned traffic, and this optimization will not be done for the time being
+    try {
+      let instancesInfo = await new (remote().Request)(remoteService).request(
+        "instance/section",
+        {
+          instanceUuids: [iterator.instanceUuid]
+        }
+      );
+      if (!instancesInfo || instancesInfo.length === 0) continue;
+      instancesInfo = instancesInfo[0];
+      resInstances.push({
+        hostIp: `${remoteService.config.ip}:${remoteService.config.port}`,
+        remarks: remoteService.config.remarks,
+        instanceUuid: instancesInfo.instanceUuid,
+        daemonId: remoteService.uuid,
+        status: instancesInfo.status,
+        nickname: instancesInfo.config.nickname,
+        ie: instancesInfo.config.ie,
+        oe: instancesInfo.config.oe,
+        endTime: instancesInfo.config.endTime,
+        lastDatetime: instancesInfo.config.lastDatetime,
+        stopCommand: instancesInfo.config.stopCommand,
+        processType: instancesInfo.config.processType,
+        docker: instancesInfo.config.docker || {},
+        info: instancesInfo.info || {}
+      });
+    } catch (error) {
+      // ignore error
+      continue;
+    }
   }
-  // respond to user data
-  return {
-    uuid: user.uuid,
-    userName: user.userName,
-    loginTime: user.loginTime,
-    registerTime: user.registerTime,
-    instances: resInstances,
-    permission: user.permission,
-    apiKey: user.apiKey,
-    isInit: user.isInit,
-    open2FA: user.open2FA,
-    token: ""
-  };
+  return resInstances;
 }
 
 export function checkInstanceAdvancedParams(

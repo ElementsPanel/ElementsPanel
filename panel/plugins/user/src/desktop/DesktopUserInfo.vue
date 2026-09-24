@@ -5,7 +5,7 @@ import { t } from "@/lang/i18n";
 import { bind2FA, confirm2FA, setUserApiKey, updatePassword } from "@/services/apis/user";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { reactive, ref } from "vue";
-import { notifyDesktop, notifyDesktopError } from "../../../desktop/src/desktopNotice";
+import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
 import { VBtn, VCard, VCardActions, VCardText, VDialog, VTextField } from "vuetify/components";
 
 const { state, updateUserInfo } = useAppStateStore();

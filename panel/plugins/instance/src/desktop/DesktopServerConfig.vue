@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import InstanceConfigEditor from "@/components/InstanceConfigEditor.vue";
+import InstanceConfigEditor from "../components/InstanceConfigEditor.vue";
 import { getInstanceConfigByType, type InstanceConfigs } from "@/hooks/useInstance";
 import { t } from "@/lang/i18n";
 import { getConfigFile, getConfigFileList, updateConfigFile } from "@/services/apis/instance";
 import { toUnicode } from "@/tools/common";
-import { notifyDesktop, notifyDesktopError } from "../../desktopNotice";
+import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
 import { onMounted, ref } from "vue";
 import { VBtn, VIcon } from "vuetify/components";
 

@@ -1,7 +1,7 @@
 import { Service, type Context } from "cordis";
 import type { PanelOverviewProvider, PanelOverviewService } from "../../../../../src/app/plugin";
 
-/** Extension point for the monitor overview response. */
+/** Runtime overview extensions; monitoring is one optional contributor. */
 export class OverviewService extends Service implements PanelOverviewService {
   private readonly providers = new Set<PanelOverviewProvider>();
 

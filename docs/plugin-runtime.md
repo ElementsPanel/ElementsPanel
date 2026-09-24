@@ -116,3 +116,25 @@ also require a matching `plugin/capabilities` response from each target node;
 legacy nodes must be updated before installing those packages. Older market
 servers without these fields remain readable. A digest detects mismatched bytes;
 it does not authenticate a malicious market or make same-process plugins sandboxed.
+
+## Feature ownership and optional dependencies
+
+The runtime plugins own audit logging, base overview responses and daemon feature
+registries. `monitor` contributes history and viewers, so it can be disabled
+without suspending authentication or other plugins that report capabilities.
+`user` assembles account profiles and optionally requests instance details;
+instance availability is not an authentication dependency. Backup settings are
+validated and written only by the daemon backup settings form.
+
+The console-owned desktop registry accepts `view({ id, component, title, icon,
+accepts?, ... })` and `open({ id, view, props?, title? })`. A desktop application
+can reference a registered `view`. The desktop shell provides the opener and
+window frame; feature plugins own their components and event handlers. Removing
+a provider removes its views, applications and open windows. Saved windows use
+the view id and props; unavailable or invalid views are skipped on restore.
+
+Console compatibility hooks resolve the current instance service instead of
+re-exporting implementation modules. Shared instance ids and quick-start enums
+are available from `@elements-panel/sdk`. Optional integrations should use
+`ctx.inject([...], scope => ...)` so only their dependent contributions disappear
+when a provider unloads.

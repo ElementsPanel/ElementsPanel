@@ -4,7 +4,7 @@ import { t } from "@/lang/i18n";
 import { updateInstanceConfig } from "@/services/apis/instance";
 import type { InstanceDetail } from "@/types";
 import { ref, watch } from "vue";
-import { notifyDesktop, notifyDesktopError } from "../../desktopNotice";
+import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
 import { VBtn, VSwitch, VTextField } from "vuetify/components";
 
 const props = defineProps<{

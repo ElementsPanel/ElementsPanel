@@ -57,7 +57,7 @@ const ENTRY_CANDIDATES = [
 ];
 const FOUNDATION_PLUGIN_IDS = new Set(["i18n", "storage", "runtime"]);
 const ESSENTIAL_PLUGIN_IDS = new Set(["i18n", "storage", "runtime", "console"]);
-const NON_REMOVABLE_PLUGIN_IDS = new Set([...ESSENTIAL_PLUGIN_IDS, "config", "server", "monitor"]);
+const NON_REMOVABLE_PLUGIN_IDS = new Set([...ESSENTIAL_PLUGIN_IDS, "config", "server"]);
 
 function isDevelopmentCheckout() {
   return fs.existsSync(path.resolve(process.cwd(), "src", "app"));
@@ -591,7 +591,7 @@ export function configurePanelPlugin(
       validatePluginSettings(plugin.manifest.configFields, config);
     writePluginOverride(id, { config });
     // Core network/storage configuration is applied on restart; never tear down the reply path.
-    if (replaced || ESSENTIAL_PLUGIN_IDS.has(id) || ["server", "config", "monitor"].includes(id)) {
+    if (replaced || ESSENTIAL_PLUGIN_IDS.has(id) || ["server", "config"].includes(id)) {
       return {
         ...getPanelPluginInventory().find((item) => item.id === id)!,
         result: { saved: true, application: "restart-required" }

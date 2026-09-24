@@ -97,8 +97,9 @@ it provides. The daemon is therefore unreachable over anything without it. A
 plugin that provides a service cannot inject
 it — see `plugins/server`, which leaves both names out of its own `inject` list.
 
-`ctx.overview.provide(fn)` merges extra fields into the `info/overview` payload
-the panel reads. The instance plugin supplies instance counts, while the
+`plugins/runtime` owns `ctx.features`, `ctx.overview` and the base
+`info/overview` response. `ctx.overview.provide(fn)` merges extra fields into that
+payload; removing monitoring keeps node configuration and capabilities available. The instance plugin supplies instance counts, while the
 monitoring plugin contributes this host's CPU and memory history.
 
 `ctx.tasks.register(taskName, registration)` accepts `requiresInstance: false`

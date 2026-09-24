@@ -3,7 +3,7 @@ import { openNodeSelectDialog } from "@/components/fc";
 import { t } from "@/lang/i18n";
 import { getDockerHubImagePlatforms } from "@/services/apis/envImage";
 import { createAsyncTask } from "@/services/apis/instance";
-import { notifyDesktopError } from "../../../desktop/src/desktopNotice";
+import { notifyDesktopError } from "@/tools/desktopNotice";
 import type { QuickStartPackages } from "@/types";
 import { SEARCH_ALL_KEY, useMarketPackages } from "../hooks/useMarketPackages";
 import { computed, onMounted, ref } from "vue";

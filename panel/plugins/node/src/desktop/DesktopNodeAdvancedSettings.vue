@@ -4,7 +4,7 @@ import { t } from "@/lang/i18n";
 import { editNode } from "../api";
 import { overviewInfo } from "@/services/apis";
 import type { NodeStatus } from "@/types";
-import { notifyDesktop } from "../../../desktop/src/desktopNotice";
+import { notifyDesktop } from "@/tools/desktopNotice";
 import { reactive, ref, watch } from "vue";
 import DesktopWindow from "./DesktopWindow.vue";
 import { VBtn, VIcon, VSelect, VSwitch, VTextField } from "vuetify/components";
@@ -34,10 +34,6 @@ export interface AdvancedSettingsData {
     enableSoftShutdown: boolean;
     softShutdownSkipDocker: boolean;
     softShutdownWaitSeconds: number;
-    instanceBackupPath: string;
-    instanceBackupFormat: string;
-    instanceBackupCompressionLevel: number;
-    instanceBackupMaxSize: number;
     daemonPort: number;
     remoteMappings: IPanelOverviewRemoteMappingResponse[];
 }
@@ -65,10 +61,6 @@ const form = reactive<AdvancedSettingsData>({
     enableSoftShutdown: true,
     softShutdownSkipDocker: true,
     softShutdownWaitSeconds: 10,
-    instanceBackupPath: "",
-    instanceBackupFormat: "zip",
-    instanceBackupCompressionLevel: 9,
-    instanceBackupMaxSize: 0,
     daemonPort: 24444,
     remoteMappings: []
 });
@@ -81,10 +73,6 @@ const resetForm = () => {
     form.enableSoftShutdown = true;
     form.softShutdownSkipDocker = true;
     form.softShutdownWaitSeconds = 10;
-    form.instanceBackupPath = "";
-    form.instanceBackupFormat = "zip";
-    form.instanceBackupCompressionLevel = 9;
-    form.instanceBackupMaxSize = 0;
     form.daemonPort = 24444;
     form.remoteMappings = [];
 };
@@ -107,10 +95,6 @@ const fetchNodeConfig = async () => {
                 form.enableSoftShutdown = cfg.enableSoftShutdown;
                 form.softShutdownSkipDocker = cfg.softShutdownSkipDocker;
                 form.softShutdownWaitSeconds = cfg.softShutdownWaitSeconds;
-                form.instanceBackupPath = cfg.instanceBackupPath;
-                form.instanceBackupFormat = cfg.instanceBackupFormat ?? "zip";
-                form.instanceBackupCompressionLevel = cfg.instanceBackupCompressionLevel ?? 9;
-                form.instanceBackupMaxSize = cfg.instanceBackupMaxSize ?? 0;
                 form.daemonPort = cfg.port;
             }
             if (nodeInfo?.remoteMappings) {
@@ -160,10 +144,6 @@ const saveSettings = async () => {
                     enableSoftShutdown: form.enableSoftShutdown,
                     softShutdownSkipDocker: form.softShutdownSkipDocker,
                     softShutdownWaitSeconds: form.softShutdownWaitSeconds,
-                    instanceBackupPath: form.instanceBackupPath,
-                    instanceBackupFormat: form.instanceBackupFormat,
-                    instanceBackupCompressionLevel: form.instanceBackupCompressionLevel,
-                    instanceBackupMaxSize: form.instanceBackupMaxSize
                 },
                 daemonPort: form.daemonPort,
                 remoteMappings: form.remoteMappings
@@ -241,29 +221,8 @@ const saveSettings = async () => {
                 </div>
 
                 <div class="dn-form-group">
-                    <label class="dn-form-label">{{ t("TXT_CODE_INSTANCE_BACKUP_PATH") }}</label>
-                    <span class="dn-form-hint">{{ t("TXT_CODE_INSTANCE_BACKUP_PATH_HINT") }}</span>
-                    <VTextField v-model="form.instanceBackupPath" type="text" class="dn-form-input" variant="solo" density="compact" rounded="xl" hide-details
-                        placeholder="data/backups" />
-                </div>
-
-                <div class="dn-form-group">
-                    <label class="dn-form-label">{{ t("TXT_CODE_e06c1cea") }}</label>
-                    <VSelect v-model="form.instanceBackupFormat" class="dn-form-select" variant="solo" density="compact" rounded="xl" hide-details
-                        :items="['zip', 'tar.gz', '7z']" />
-                </div>
-
-                <div class="dn-form-group">
-                    <label class="dn-form-label">{{ t("TXT_CODE_743ed87f") }}</label>
-                    <VTextField v-model.number="form.instanceBackupCompressionLevel" type="number" min="0" max="9"
-                        step="1" class="dn-form-input" variant="solo" density="compact" rounded="xl" hide-details />
-                </div>
-
-                <div class="dn-form-group">
-                    <label class="dn-form-label">{{ t("TXT_CODE_INSTANCE_BACKUP_MAX_SIZE") }}</label>
-                    <span class="dn-form-hint">{{ t("TXT_CODE_INSTANCE_BACKUP_MAX_SIZE_HINT") }}</span>
-                    <VTextField v-model.number="form.instanceBackupMaxSize" type="number" min="0" step="1"
-                        class="dn-form-input" variant="solo" density="compact" rounded="xl" hide-details />
+                    <VBtn :to="{ path: '/plugins/config', query: { scope: 'node', daemonId: props.node.uuid } }"
+                        variant="tonal" @click="emit('close')">{{ t("TXT_CODE_PLUGIN_CONFIG") }}</VBtn>
                 </div>
 
                 <div class="dn-form-group">

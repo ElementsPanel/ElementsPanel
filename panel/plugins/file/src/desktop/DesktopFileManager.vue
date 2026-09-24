@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useFileManager } from "../hooks/useFileManager";
 import { usePolling } from "@/hooks/usePolling";
-import ArchivePreview from "@/components/ArchivePreview.vue";
+import ArchivePreview from "../components/ArchivePreview.vue";
 import { t } from "@/lang/i18n";
 import uploadService from "../services/uploadService";
 import { filterFileName, getFileExtName, isCompressFile } from "../tools/fileManager";
@@ -9,7 +9,7 @@ import { convertFileSize } from "@/tools/fileSize";
 import type { DataType } from "@/types/fileManager";
 import dayjs from "dayjs";
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
-import { notifyDesktopError } from "../../../desktop/src/desktopNotice";
+import { notifyDesktopError } from "@/tools/desktopNotice";
 import { VAlert, VBtn, VCard, VCardText, VCheckbox, VDataTableServer, VDialog, VIcon, VList, VListItem, VMenu, VProgressCircular, VProgressLinear, VRadio, VRadioGroup, VSelect, VSpacer, VTabs, VTab, VTextField } from "vuetify/components";
 
 /**

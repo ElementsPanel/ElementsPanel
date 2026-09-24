@@ -243,7 +243,7 @@ async function daemonFixture(t, downloads = { task: null, downloadingCount: 0, s
     }
   }
   ctx.plugin(Protocol);
-  ctx.plugin(load("daemon/plugins/monitor/src/backend/registries.ts").FeaturesService);
+  ctx.plugin(load("daemon/plugins/runtime/src/backend/registries.ts").FeaturesService);
   ctx.set("instances", { subsystem: { exists: (uuid) => uuid === "instance" } });
   ctx.set("transfer", { downloads });
   const directory = temporaryDirectory(t);

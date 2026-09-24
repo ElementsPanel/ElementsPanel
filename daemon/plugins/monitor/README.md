@@ -5,16 +5,13 @@ samples, and contributes them to `info/overview` as `cpuMemChart` through
 `ctx.overview.provide()`. The daemon core collects no history of its
 own.
 
-`apply()` starts the sampler with `ctx.setInterval()`, so unloading the plugin
-leaves no timer behind. The plugin also owns the `info/overview` protocol event;
-the server plugin only provides transport.
+`apply()` starts the sampler and system-report timer with `ctx.setInterval()`,
+so unloading the plugin leaves no timer behind. `plugins/runtime` owns the
+`info/overview` protocol event and the `features`/`overview` registries.
 
-Without this plugin the daemon no longer answers `info/overview`; the daemon
-server remains reachable, but monitoring data is intentionally unavailable.
-When enabled, current usage is reported in the `system` field. What disappears
-when monitoring is removed is the history line: the panel's
-`useOverviewInfo()` turns `cpuMemChart` into the `cpuChartData`/`memChartData`
-that the panel `node` plugin draws on each node card, so those sparklines go
-flat.
+Without monitoring, the daemon still reports its version, configuration,
+current system usage, instance counts and capabilities. Only `cpuMemChart`
+is absent. The panel keeps basic node information and renders empty history
+series until monitoring is enabled again.
 
 See `panel/plugins/monitor` for the panel side.

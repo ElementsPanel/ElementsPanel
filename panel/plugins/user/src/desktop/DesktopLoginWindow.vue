@@ -5,7 +5,7 @@ import { loginUser } from "@/services/apis";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { sleep } from "@/tools/common";
-import { notifyDesktop, notifyDesktopError } from "../../../desktop/src/desktopNotice";
+import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
 import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import { desktopIconDarkUrl, desktopIconUrl } from "../assets";
 import { VBtn, VIcon, VTextField } from "vuetify/components";

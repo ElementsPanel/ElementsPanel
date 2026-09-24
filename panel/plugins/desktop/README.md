@@ -20,3 +20,9 @@ Removing the production
 `enabled` to `false` prevents the frontend plugin from appearing in the runtime
 manifest. The packaged `backend/` entry is loaded when the panel process
 starts.
+
+Business windows are contributed through the console-owned `ctx.desktop`
+registry. Instance management and configuration live in `plugins/instance`, and
+the terminal selector lives in `plugins/terminal`. Desktop depends on neither
+plugin. It persists view ids and props, restores only available valid views, and
+closes a provider's windows when that provider unloads.

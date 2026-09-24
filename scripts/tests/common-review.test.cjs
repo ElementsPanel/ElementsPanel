@@ -348,7 +348,7 @@ test("POSIX termination addresses the requested game PID rather than its PTY hel
 
 test("operation histories flush before reads and retain buffered entries after a failed save", async (t) => {
   const { storage } = storageFixture(t);
-  const { JsonlStorage } = load("panel/plugins/monitor/src/backend/service/jsonl_storage.ts", {
+  const { JsonlStorage } = load("panel/plugins/runtime/src/backend/service/jsonl_storage.ts", {
     "mcsmanager-common": {
       StorageSubsystem: class {
         constructor() {
@@ -358,7 +358,7 @@ test("operation histories flush before reads and retain buffered entries after a
     }
   });
   const { OperationLogger } = load(
-    "panel/plugins/monitor/src/backend/service/operation_logger.ts",
+    "panel/plugins/runtime/src/backend/service/operation_logger.ts",
     {
       "./jsonl_storage": { JsonlStorage }
     }

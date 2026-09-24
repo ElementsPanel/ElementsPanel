@@ -2,7 +2,7 @@
 import { useInstanceInfo } from "@/hooks/useInstance";
 import { t } from "@/lang/i18n";
 import { updateInstanceConfig } from "@/services/apis/instance";
-import { notifyDesktop, notifyDesktopError } from "../../../desktop/src/desktopNotice";
+import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
 import { reactive, ref, watch } from "vue";
 import { VBtn, VIcon, VTextField } from "vuetify/components";
 

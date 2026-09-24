@@ -63,3 +63,8 @@ daemon core only reports that configuration back through `info/overview`.
 A daemon without the plugin stays connectable and fully usable; it simply keeps
 its own configuration, and the panel logs a warning instead of failing the
 node's authentication.
+
+Backup paths, archive formats, compression levels and quotas belong exclusively
+to the daemon backup plugin's `settingsForm`. Node settings neither expose nor
+write those fields. Both node UIs link to the generic plugin configuration page
+with the current node selected. Existing stored backup settings are retained.

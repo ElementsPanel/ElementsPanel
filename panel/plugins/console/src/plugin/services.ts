@@ -13,6 +13,8 @@ import type {
   FrontendVueService,
   PanelFrontendAppMenu,
   PanelFrontendDesktopApp,
+  PanelFrontendDesktopView,
+  PanelFrontendDesktopWindowRequest,
   PanelFrontendInstanceAction,
   PanelFrontendLoginAction,
   PanelFrontendScheduleAction,
@@ -248,7 +250,9 @@ export class ActionsService extends Service implements FrontendActionsService {
  */
 export class DesktopService extends Service implements FrontendDesktopService {
   readonly apps = shallowReactive<PanelFrontendDesktopApp[]>([]);
+  readonly views = shallowReactive<PanelFrontendDesktopView[]>([]);
   private readonly shell = shallowRef<Component>();
+  private readonly opener = shallowRef<(request: PanelFrontendDesktopWindowRequest) => boolean>();
 
   constructor(ctx: Context) {
     super(ctx, "desktop", true);
@@ -268,11 +272,36 @@ export class DesktopService extends Service implements FrontendDesktopService {
     });
   }
 
+  view(view: PanelFrontendDesktopView) {
+    const entry = { ...view, id: view.id.trim(), component: markRaw(view.component) };
+    if (!entry.id) throw new Error("A Desktop view needs an id.");
+    return this.ctx.effect(() => {
+      if (this.views.some((item) => item.id === entry.id)) {
+        throw new Error(`Desktop view id is already registered: ${entry.id}`);
+      }
+      this.views.push(entry);
+      return () => remove(this.views, entry);
+    });
+  }
+
+  open(request: PanelFrontendDesktopWindowRequest) {
+    return this.opener.value?.(request) ?? false;
+  }
+
+  provideOpener(open: (request: PanelFrontendDesktopWindowRequest) => boolean) {
+    return this.ctx.effect(() => {
+      this.opener.value = open;
+      return () => {
+        if (this.opener.value === open) this.opener.value = undefined;
+      };
+    });
+  }
+
   app(desktopApp: PanelFrontendDesktopApp) {
     const id = desktopApp.id.trim();
     if (!id) throw new Error("A Desktop application needs an id.");
-    if (!desktopApp.component && !desktopApp.route) {
-      throw new Error(`Desktop application "${id}" needs a component or a route.`);
+    if (!desktopApp.component && !desktopApp.route && !desktopApp.view) {
+      throw new Error(`Desktop application "${id}" needs a view, component or route.`);
     }
     const entry = { ...desktopApp, id };
     return this.ctx.effect(() => {

@@ -26,7 +26,7 @@ const SELF = "config";
  * Turning the web server off would drop the connection the request arrived on,
  * and with it every event that could turn it back on.
  */
-const ESSENTIAL = new Set(["i18n", "storage", "runtime", "server", "monitor"]);
+const ESSENTIAL = new Set(["i18n", "storage", "runtime", "server"]);
 
 /** New installations use the existing persistent data volume. */
 const MARKET_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "data", "plugins");

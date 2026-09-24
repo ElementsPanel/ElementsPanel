@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import ArchivePreview from "@/components/ArchivePreview.vue";
-import UploadTaskProgress from "@/components/UploadTaskProgress.vue";
+import ArchivePreview from "../components/ArchivePreview.vue";
+import UploadTaskProgress from "../components/UploadTaskProgress.vue";
 import { useDownloadFileDialog } from "../dialogs";
 import { useFileManager } from "../hooks/useFileManager";
 import { useScreen } from "@/hooks/useScreen";

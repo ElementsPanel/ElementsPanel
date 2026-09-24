@@ -3,7 +3,7 @@ import Editor from "@/components/Editor.vue";
 import { useKeyboardEvents } from "@/hooks/useKeyboardEvents";
 import { t } from "@/lang/i18n";
 import { fileContent } from "../api";
-import { notifyDesktop, notifyDesktopError } from "../../../desktop/src/desktopNotice";
+import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
 import { onMounted, ref } from "vue";
 import { VBtn, VIcon, VSkeletonLoader } from "vuetify/components";
 

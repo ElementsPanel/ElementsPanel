@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getInstanceDeleteError } from "@instance/tools/deletion";
+import { getInstanceDeleteError } from "../tools/deletion";
 import { useInstanceTagSearch, useInstanceTagTips } from "@/hooks/useInstanceTag";
 import { t } from "@/lang/i18n";
 import { remoteInstances, remoteNodeList } from "@/services/apis";
@@ -15,7 +15,7 @@ import {
     stopInstance,
     updateInstanceConfig
 } from "@/services/apis/instance";
-import { notifyDesktop, notifyDesktopError } from "../../desktopNotice";
+import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
 import type { InstanceDetail, NodeStatus } from "@/types";
 import { INSTANCE_STATUS_CODE } from "@/types/const";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";

@@ -2486,5 +2486,9 @@
   "TXT_CODE_minecraft.commandHint": "Leave blank to generate a startup command for the selected server.",
   "TXT_CODE_minecraft.confirmDownload": "An instance will be created and the server downloaded on the node. Forge/NeoForge will be installed automatically and requires compatible Java on the node. View progress in the instance console. Continue?",
   "TXT_CODE_minecraft.create": "Download and create instance",
-  "TXT_CODE_minecraft.openConsole": "Open instance console"
+  "TXT_CODE_minecraft.openConsole": "Open instance console",
+  "TXT_CODE_DESKTOP_IM_PREV": "Prev",
+  "TXT_CODE_DESKTOP_IM_TOTAL": "Total",
+  "TXT_CODE_DESKTOP_IM_UNKNOWN": "Unknown",
+  "TXT_CODE_DESKTOP_IM_UNNAMED": "Unnamed"
 }

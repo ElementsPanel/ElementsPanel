@@ -11,7 +11,7 @@ import {
     updateInstance
 } from "@/services/apis/instance";
 import { sleep } from "@/tools/common";
-import { notifyDesktopError } from "../../desktopNotice";
+import { notifyDesktopError } from "@/tools/desktopNotice";
 import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS } from "@/types/const";
 import { computed, onUnmounted, ref } from "vue";
 import { GLOBAL_INSTANCE_NAME } from "@/config/const";
@@ -48,7 +48,7 @@ const emit = defineEmits<{
 }>();
 
 const terminalService = usePluginService<FrontendTerminalService>("terminal");
-if (!terminalService) throw new Error("The terminal plugin is required by Desktop mode.");
+if (!terminalService) throw new Error("The terminal plugin is required by the instance console.");
 const TerminalCore = terminalService.TerminalCore;
 const terminalHook = terminalService.useTerminal();
 const {

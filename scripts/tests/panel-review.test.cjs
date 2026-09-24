@@ -580,11 +580,16 @@ test("enabled user plugin failure denies requests/uploads until its guard return
       saveSystemConfig: async () => {}
     },
     "./version": { initVersionManager() {}, getVersion: () => "test" },
-    "./service/mini_redis": cache
+    "./service/mini_redis": cache,
+    "./service/operation_logger": { OperationLogger: class { dispose() {} } },
+    "./service/overview": {},
+    "./overview": {}
   });
   const registry = new Map([["plugins", { loaded: [{ manifest: { id: "user" } }] }]]);
   const ctx = {
     on() {},
+    plugin() {},
+    inject() {},
     get: (key) => registry.get(key),
     set: (key, value) => registry.set(key, value)
   };

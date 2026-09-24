@@ -82,8 +82,8 @@ precedence. A plugin that fails is reported and skipped; the panel keeps running
 | `ctx.middleware` | `permission`, `validator`, `instanceAccess`, `speedLimit`. |
 | `ctx.roles` | The role constants (`ADMIN`, `USER`, ...). |
 | `ctx.identity` | `of(requestCtx)`, `canAccessInstance(...)`, `accessPolicy`, `users`, `stats` — identity, instance ownership and capabilities reported by the installed guard. |
-| `ctx.operations` | The operation logger. |
-| `ctx.instances` | `getByUuid`. |
+| `ctx.operations` | The runtime-owned audit logger, independent of monitoring. |
+| `ctx.instances` | `getDetails(references)`; deprecated `getByUuid` delegates account profiles to `user`. |
 | `ctx.globals` | Process-wide counters shared with the core. |
 | `ctx.overview` | `provide(fn)` to add fields to `GET /api/overview`. |
 | `ctx.plugins` | `loaded`, `inventory()`, `setEnabled()`, and the frontend manifest the browser fetches. |
@@ -116,7 +116,7 @@ it needs and resolves it at use time through `service/remote_access.ts`
 (`remoteSubsystem()`, `remoteRequest(node)`, `isRemoteRequestTimeout(error)`),
 which throws a clear error while no plugin provides one: unlike an unguarded
 panel, "no daemons" is not a state a route can answer in. It loads at
-`priority: 20` because `monitor`, `backup` and `market` all inject it.
+`priority: 20` because instance management, backup and market forwarding consume it.
 
 `ctx.set("guard", guard)` hands the plugin request authorization for the whole
 panel — route guarding, caller identity, instance ownership, upload permission
@@ -127,7 +127,7 @@ every request while none is installed. See `plugins/user`.
 All three leave with their plugin, because a service registered inside `apply`
 belongs to that plugin's scope.
 
-`ctx.overview.provide(fn)` merges extra fields into `GET /api/overview`. The core
+`ctx.overview.provide(fn)` merges extra fields into `GET /api/overview`. The runtime plugin
 reports only what the whole panel reads that route for — the nodes, the panel
 process and the host it runs on. Anything collected purely to be displayed goes
 in a plugin: `plugins/monitor` contributes the `chart` field this way, and it
@@ -252,7 +252,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 | `ctx.ui` | `component`, `globalComponent`. |
 | `ctx.menus` | `app(menu)`, `login(action)`, and the arrays the shell renders. |
 | `ctx.actions` | `instance`, `schedule`, `terminal`, and `terminalButtons(state)`. |
-| `ctx.desktop` | `app(desktopApp)`, `apps`, `window`, `provideWindow(component)`. |
+| `ctx.desktop` | `app`, `apps`, `view`, `views`, `open`, `provideOpener`, `window`, `provideWindow`. |
 | `ctx.plugins` | `loaded`, `load`, `unload`, `reload`, `refresh`. |
 | `ctx.user` | Account API and windows. **Provided by `plugins/user`.** |
 | `ctx.market` | Package picker and API. **Provided by `plugins/market`.** |
@@ -283,11 +283,25 @@ lifetime of the plugin, alongside the panel's own dialog providers — for globa
 overlays that belong to no route.
 
 `ctx.desktop.app({...})` adds an application to Desktop mode. The registry is
-core-owned even though Desktop mode is itself a plugin, because an application
+provided by `console` even though Desktop mode is itself a plugin, because an application
 belongs to whichever plugin owns the page: registering unconditionally is correct,
 and the entry is simply inert while `plugins/desktop` is not installed. An
-application needs a globally unique `id` and either a `component` to render
-inside a Desktop window or a `route` to open directly.
+application needs a globally unique `id` and a registered `view`, a `component`
+to render inside a Desktop window, or a `route` to open directly.
+
+`ctx.desktop.view({ id, component, title, icon, accepts, ... })` registers a
+restorable window type. `ctx.desktop.open({ id, view, props, title? })` asks the
+active desktop shell to open or focus it and returns false if the shell/view is
+unavailable or its props are invalid. Applications, views and their windows
+follow the provider scope: unloading a business plugin removes its contributions
+without unloading Desktop. The instance plugin owns its management, console,
+configuration and schedule windows; terminal owns its selector.
+
+Legacy console instance hooks forward through the current `ctx.instance.hooks`
+service on each call. Resolve optional services or use a scoped `ctx.inject`
+before calling them. Stable instance identifiers are exported by
+`@elements-panel/sdk`; importing another plugin's implementation bypasses its
+lifecycle and is unsupported.
 
 A plugin's own settings are **declared on its backend**, not drawn in the browser:
 

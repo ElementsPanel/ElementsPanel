@@ -5,7 +5,8 @@ import { createInstanceAdminRouter } from "./routers/instance_admin_router";
 import { createInstanceOperateRouter } from "./routers/instance_operate_router";
 import { createScheduleRouter } from "./routers/schedule_router";
 import { createMinecraftRouter } from "./routers/minecraft_router";
-import { getInstancesByUuid } from "./service/instance_service";
+import { registerOperationLogRoutes } from "./routers/operation_log_router";
+import { getInstanceDetails } from "./service/instance_service";
 import { setPluginContext, middleware, remote, roles } from "./runtime";
 
 export const inject = [
@@ -19,8 +20,16 @@ export const inject = [
 
 export function apply(ctx: PanelPluginContext) {
   setPluginContext(ctx);
-  // The instance lookup is also consumed by the user plugin's account API.
-  ctx.set("instances", { getByUuid: getInstancesByUuid });
+  ctx.set("instances", {
+    getDetails: getInstanceDetails,
+    // Compatibility facade only: account data and policy belong to `user`.
+    getByUuid: (uuid, daemonId, advanced) => {
+      const accounts = ctx.get("guard")?.accounts;
+      if (!accounts?.getProfile) throw new Error("Account profiles are unavailable.");
+      return accounts.getProfile(uuid, daemonId, advanced);
+    }
+  });
+  registerOperationLogRoutes(ctx);
 
   const api = ctx.koa.router("/api");
   const operateRouter = createInstanceOperateRouter();

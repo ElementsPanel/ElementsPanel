@@ -4,25 +4,8 @@ import { remoteNodeList } from "@/services/apis";
 import { arrayFilter } from "@/tools/array";
 import { computed, reactive, ref } from "vue";
 
-export enum QUICKSTART_ACTION_TYPE {
-  Minecraft = "minecraft",
-  Bedrock = "bedrock",
-  Hytale = "hytale",
-  Terraria = "terraria",
-  SteamGameServer = "steam",
-  Docker = "docker",
-  AnyApp = "universal"
-}
-
-export enum QUICKSTART_METHOD {
-  FAST = "FAST",
-  FILE = "FILE",
-  IMPORT = "IMPORT",
-  SELECT = "SELECT",
-  EXIST = "EXIST",
-  DOCKER = "DOCKER",
-  DOWNLOAD = "DOWNLOAD"
-}
+import { QUICKSTART_ACTION_TYPE, QUICKSTART_METHOD } from "@elements-panel/sdk";
+export { QUICKSTART_ACTION_TYPE, QUICKSTART_METHOD } from "@elements-panel/sdk";
 
 export function useQuickStartFlow() {
   const { state: remoteNodes, execute, isReady, isLoading } = remoteNodeList();

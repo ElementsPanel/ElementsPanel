@@ -1,1 +1,2 @@
-export * from "@instance/hooks/useGenerateStartCmd";
+import { instanceHook } from "./instanceService";
+export const useStartCmdBuilder = instanceHook("useStartCmdBuilder");

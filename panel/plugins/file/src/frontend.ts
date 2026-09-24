@@ -17,6 +17,7 @@ import uploadService, { UploadFiles } from "./services/uploadService";
 import { filterFileName, getFileExtName, getFileIcon, isCompressFile } from "./tools/fileManager";
 import { VIcon } from "vuetify/components";
 import { h } from "vue";
+import { localeMessages } from "./i18n";
 
 // The file manager, browser side. It owns the instance file card and its Desktop
 // window, the file editor, the image viewer, the upload queue and the three
@@ -37,9 +38,10 @@ const isFileManagerAvailable = (_context: PanelFrontendInstanceActionContext) =>
   return state.settings.canFileManager || isAdmin.value;
 };
 
-export const inject = ["console", "ui", "actions", "routes"];
+export const inject = ["console", "i18n", "ui", "actions", "routes"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
+  ctx.i18n.define(localeMessages);
   ctx.set("file", {
     api: fileManagerApi,
     useFileManager,

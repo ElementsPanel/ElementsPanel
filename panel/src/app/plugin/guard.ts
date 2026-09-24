@@ -27,7 +27,7 @@ export interface AuthUser {
   userName: string;
   permission: number;
   instances: AuthUserInstanceRef[];
-  // Profile fields echoed back by `service/instance_service.getInstancesByUuid`.
+  // Public profile fields assembled by the account plugin.
   loginTime?: string;
   registerTime?: string;
   apiKey?: string;
@@ -54,6 +54,7 @@ export interface UserRecords {
 /** Session establishment for authentication-backed routes. */
 export interface AccountService {
   loginSuccess(ctx: Koa.ParameterizedContext, userName: string): string;
+  getProfile?(uuid: string, targetDaemonId?: string, advanced?: boolean): Promise<any>;
 }
 
 export interface AuthStats {

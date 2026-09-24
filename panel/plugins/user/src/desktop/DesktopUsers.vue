@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
+import { usePluginService } from "@/plugin/context";
 import { addUser as addUserApi, deleteUser as deleteUserApi, editUserInfo as editUserInfoApi, getUserInfo as getUserInfoApi, remoteInstances, remoteNodeList, updateUserInstance, userInfoApiAdvanced } from "@/services/apis";
 import { computeNodeName } from "@/tools/nodes";
 import type { NodeStatus } from "@/types";
 import { INSTANCE_STATUS } from "@/types/const";
 import type { BaseUserInfo, EditUserInfo, UserInstance } from "@/types/user";
-import { notifyDesktop } from "../../../desktop/src/desktopNotice";
-import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
+import { notifyDesktop } from "@/tools/desktopNotice";
+import { computed, onMounted, onUnmounted, reactive, ref, shallowRef, watch } from "vue";
 import DesktopWindow from "./DesktopWindow.vue";
 import { VBtn, VChip, VDataTable, VIcon, VRadio, VRadioGroup, VSelect, VTextField } from "vuetify/components";
 
@@ -58,8 +59,16 @@ const assignTargetUser = ref<BaseUserInfo | null>(null);
 const assignedInstances = ref<UserInstance[]>([]);
 const assignSaving = ref(false);
 
-const { execute: getNodes, state: nodes } = remoteNodeList();
-const { execute: getInstances, state: instances, isLoading: instancesLoading } = remoteInstances();
+const instanceService = computed(() => usePluginService("instance"));
+const nodeService = computed(() => usePluginService("node"));
+const canAssignInstances = computed(() => !!instanceService.value && !!nodeService.value);
+// Only create domain requests while the optional resource-assignment UI is open.
+const nodeRequest = shallowRef<ReturnType<typeof remoteNodeList>>();
+const instanceRequest = shallowRef<ReturnType<typeof remoteInstances>>();
+const nodes = computed(() => nodeRequest.value?.state.value);
+const instances = computed(() => instanceRequest.value?.state.value);
+const instancesLoading = computed(() => instanceRequest.value?.isLoading.value ?? false);
+let assignmentRequest = 0;
 const currentRemoteNode = ref<NodeStatus>();
 const currentRemoteNodeId = ref("");
 const assignNodeItems = computed(() => (nodes.value || []).map((node) => ({
@@ -248,11 +257,16 @@ const cancelDelete = () => {
 };
 
 const openAssignDialog = async (user: BaseUserInfo) => {
+    if (!canAssignInstances.value) return;
+    const request = ++assignmentRequest;
+    nodeRequest.value = remoteNodeList();
+    instanceRequest.value = remoteInstances();
     assignTargetUser.value = user;
     try {
         const res = await fetchUserAdvanced({
             params: { uuid: user.uuid, advanced: true }
         });
+        if (request !== assignmentRequest) return;
         if (res?.value?.instances) {
             assignedInstances.value = res.value.instances.map((inst: any) => ({
                 instanceUuid: inst.instanceUuid,
@@ -265,6 +279,7 @@ const openAssignDialog = async (user: BaseUserInfo) => {
             assignedInstances.value = [];
         }
     } catch {
+        if (request !== assignmentRequest) return;
         assignedInstances.value = user.instances ? [...user.instances] : [];
     }
     assignForm.instanceName = "";
@@ -276,13 +291,23 @@ const openAssignDialog = async (user: BaseUserInfo) => {
 };
 
 const closeAssignDialog = () => {
+    assignmentRequest++;
     showAssignDialog.value = false;
     assignTargetUser.value = null;
     assignedInstances.value = [];
+    nodeRequest.value = undefined;
+    instanceRequest.value = undefined;
+    currentRemoteNode.value = undefined;
+    currentRemoteNodeId.value = "";
 };
 
+watch([instanceService, nodeService], closeAssignDialog, { flush: "sync" });
+onUnmounted(closeAssignDialog);
+
 const initAssignNodes = async () => {
-    await getNodes();
+    const request = assignmentRequest;
+    await nodeRequest.value?.execute();
+    if (request !== assignmentRequest) return;
     if (nodes?.value?.length) {
         nodes.value.sort((a, b) => (a.available === b.available ? 0 : a.available ? -1 : 1));
         currentRemoteNode.value = nodes.value[0];
@@ -294,7 +319,7 @@ const initAssignNodes = async () => {
 const loadRemoteInstances = async () => {
     if (!currentRemoteNode.value) return;
     try {
-        await getInstances({
+        await instanceRequest.value?.execute({
             params: {
                 daemonId: currentRemoteNode.value.uuid,
                 page: assignForm.currentPage,
@@ -337,7 +362,7 @@ const removeAssignedInstance = (instanceUuid: string) => {
 };
 
 const saveAssignedInstances = async () => {
-    if (!assignTargetUser.value) return;
+    if (!assignTargetUser.value || !canAssignInstances.value) return;
     assignSaving.value = true;
     try {
         await updateUserInstanceExec({
@@ -403,7 +428,7 @@ const getInstanceStatusLabel = (status: number): string => {
             <template #item.instances="{ item }">{{ item.instances?.length ?? 0 }}</template>
             <template #item.twoFactor="{ item }"><VIcon :icon="item.open2FA ? 'mdi-check-circle-outline' : 'mdi-close-circle-outline'" :class="item.open2FA ? 'du-badge-icon--yes' : 'du-badge-icon--no'" /></template>
             <template #item.sso="{ item }"><VIcon :icon="item.ssoBound ? 'mdi-check-circle-outline' : 'mdi-close-circle-outline'" :class="item.ssoBound ? 'du-badge-icon--yes' : 'du-badge-icon--no'" /></template>
-            <template #item.actions="{ item }"><div class="du-action-btns"><VBtn icon variant="text" rounded="xl" class="du-action-btn" :title="t('TXT_CODE_9393b484')" @click="openAssignDialog(item)"><VIcon icon="mdi-link-variant" /></VBtn><VBtn icon variant="text" rounded="xl" class="du-action-btn" :title="t('TXT_CODE_79f9a172')" @click="openEditDialog(item)"><VIcon icon="mdi-pencil-outline" /></VBtn><VBtn icon variant="text" rounded="xl" color="error" class="du-action-btn" :title="t('TXT_CODE_DESKTOP_USERS_DELETE')" @click="confirmDelete(item)"><VIcon icon="mdi-delete-outline" /></VBtn></div></template>
+            <template #item.actions="{ item }"><div class="du-action-btns"><VBtn v-if="canAssignInstances" icon variant="text" rounded="xl" class="du-action-btn" :title="t('TXT_CODE_9393b484')" @click="openAssignDialog(item)"><VIcon icon="mdi-link-variant" /></VBtn><VBtn icon variant="text" rounded="xl" class="du-action-btn" :title="t('TXT_CODE_79f9a172')" @click="openEditDialog(item)"><VIcon icon="mdi-pencil-outline" /></VBtn><VBtn icon variant="text" rounded="xl" color="error" class="du-action-btn" :title="t('TXT_CODE_DESKTOP_USERS_DELETE')" @click="confirmDelete(item)"><VIcon icon="mdi-delete-outline" /></VBtn></div></template>
             <template #no-data><div class="du-empty">{{ t("TXT_CODE_DESKTOP_USERS_NO_RESULTS") }}</div></template>
         </VDataTable>
 

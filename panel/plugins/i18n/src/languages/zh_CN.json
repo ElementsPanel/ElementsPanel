@@ -2486,5 +2486,9 @@
   "TXT_CODE_minecraft.commandHint": "留空时，面板会根据服务端自动生成启动命令。",
   "TXT_CODE_minecraft.confirmDownload": "将创建实例并在节点上下载服务端。Forge/NeoForge 会自动安装，节点需有兼容的 Java。进度可在实例控制台查看，是否继续？",
   "TXT_CODE_minecraft.create": "下载并创建实例",
-  "TXT_CODE_minecraft.openConsole": "打开实例控制台"
+  "TXT_CODE_minecraft.openConsole": "打开实例控制台",
+  "TXT_CODE_DESKTOP_IM_PREV": "上一页",
+  "TXT_CODE_DESKTOP_IM_TOTAL": "总计",
+  "TXT_CODE_DESKTOP_IM_UNKNOWN": "未知",
+  "TXT_CODE_DESKTOP_IM_UNNAMED": "未命名"
 }

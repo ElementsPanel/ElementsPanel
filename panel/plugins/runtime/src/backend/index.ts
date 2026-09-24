@@ -16,6 +16,9 @@ import type {
 import { initSystemConfig, saveSystemConfig, systemConfig } from "./setting";
 import { getVersion, initVersionManager } from "./version";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
+import { OperationLogger } from "./service/operation_logger";
+import { OverviewService } from "./service/overview";
+import { registerOverview } from "./overview";
 
 const ANONYMOUS: RequestIdentity = {
   uuid: "",
@@ -165,6 +168,11 @@ export async function apply(ctx: PanelPluginContext) {
     }
   });
   ctx.set("globals", GlobalVariable);
+  const operations = new OperationLogger();
+  ctx.set("operations", operations);
+  ctx.on("dispose", () => operations.dispose());
+  ctx.plugin(OverviewService);
+  ctx.inject(["koa", "overview", "middleware", "roles", "globals", "identity"], registerOverview);
   const version = getVersion();
   console.log(`
  _____ _                   _       _____             _

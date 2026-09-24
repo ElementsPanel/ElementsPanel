@@ -120,3 +120,9 @@ translated error never depends on another plugin or a repository-level catalogue
 Strings shared with the panel core or with another plugin (the `desktop`
 window chrome, for instance) stay in the foundational `plugins/i18n` catalogue.
 Adding a string here means adding it to all twelve files in `src/i18n/`.
+
+Account profiles and authentication remain active without the instance plugin.
+Advanced profiles optionally enrich stored instance references through
+`ctx.instances.getDetails`; unavailable enrichment preserves the account response.
+Frontend resource assignment is registered only while instance and node services
+are present; login, SSO and user CRUD keep their own lifetime.

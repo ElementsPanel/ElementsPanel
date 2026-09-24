@@ -9,9 +9,9 @@ import { useAppToolsStore } from "@/stores/useAppToolsStore";
 import { filterEmptyFields } from "@/tools/object";
 import { reportErrorMsg } from "@/tools/validator";
 import type { QuickStartPackages, QuickStartTemplate } from "@/types";
-import InstanceDetail from "@instance/widgets/instance/dialogs/InstanceDetail.vue";
+import { usePluginService, type FrontendInstanceService } from "@/plugin/context";
 import axios from "axios";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VChip, VCol, VContainer, VIcon, VProgressCircular, VRow, VSelect } from "vuetify/components";
 import { message } from "@/tools/vuetifyToast";
 import { updateMarketSettings } from "../api";
@@ -22,7 +22,8 @@ const { openInputDialog } = useAppToolsStore();
 const { searchForm, packages, appListLoading, filteredList: appList, rawList, languageOptions: appLangList, gameTypeOptions: appGameTypeList, categoryOptions: appCategoryList, platformOptions: appPlatformList, handleReset, handleGameTypeChange, handleLanguageChange, handlePlatformChange, handleSelectTopCategory, fetchTemplate } = useMarketPackages();
 const { execute: execUpload, state: fileName, isLoading: upLoading } = uploadFile();
 const { execute: saveSettings, isLoading: saveSetLoading } = updateMarketSettings();
-const editorRef = ref<InstanceType<typeof InstanceDetail>>();
+const instanceDetail = computed(() => usePluginService<FrontendInstanceService>("instance")?.components.InstanceDetail);
+const editorRef = ref<{ openDialog: (value: { item?: QuickStartPackages; i: number }) => void }>();
 const fileInput = ref<HTMLInputElement>();
 const confirmClearOpen = ref(false);
 const confirmUploadOpen = ref(false);
@@ -166,7 +167,7 @@ onMounted(() => { if (isNewTemplate) packages.value = []; else fetchTemplate(); 
       </FadeUpAnimation>
       </VRow>
 
-      <InstanceDetail ref="editorRef" :game-type-list="appGameTypeList" :platform-list="appPlatformList" :category-list="appCategoryList" @save-template="saveTemplate" />
+      <component :is="instanceDetail" v-if="instanceDetail" ref="editorRef" :game-type-list="appGameTypeList" :platform-list="appPlatformList" :category-list="appCategoryList" @save-template="saveTemplate" />
       <AppDialog v-model:open="confirmClearOpen" :title="t('TXT_CODE_617ce69c')" compact ok-color="error" @ok="clearPackages"><div>{{ t("TXT_CODE_276756b2") }}</div></AppDialog>
       <AppDialog v-model:open="confirmUploadOpen" :title="t('TXT_CODE_617ce69c')" compact @ok="confirmUploadOpen = false; performUpload()"><div>{{ t("TXT_CODE_f88db280") }}</div></AppDialog>
     </VContainer>

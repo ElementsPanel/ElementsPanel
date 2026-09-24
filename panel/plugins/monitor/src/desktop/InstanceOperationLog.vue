@@ -2,7 +2,7 @@
 import { getInstanceOperationLog } from "../api";
 import { formatOperationLogItem, type FormattedOperationLog } from "../hooks/useOperationLog";
 import { t } from "@/lang/i18n";
-import { notifyDesktop } from "../../../desktop/src/desktopNotice";
+import { notifyDesktop } from "@/tools/desktopNotice";
 import { onMounted, ref } from "vue";
 import InstanceOperationLogContent from "../normal/InstanceOperationLogContent.vue";
 
