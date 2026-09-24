@@ -253,6 +253,11 @@ export const createMinecraftInstance = useDefineApi<
   { instanceUuid: string; taskId: string; status: number }
 >({ url: "/api/instance/minecraft", method: "POST", forceRequest: true, timeout: 60000 });
 
+export const minecraftInstallCapability = useDefineApi<
+  { params: { daemonId: string } },
+  { supported: boolean }
+>({ url: "/api/instance/minecraft/capability", forceRequest: true });
+
 export const createAsyncTask = useDefineApi<
   {
     params: {

@@ -11,6 +11,24 @@ export function createMinecraftRouter() {
   const mirrors = new MslMirrorsService();
   router.use(middleware().permission({ level: roles().ADMIN }));
 
+  const capability = async (request: InstanceType<ReturnType<typeof remote>["Request"]>) => {
+    const overview = await request.request("info/overview");
+    return { supported: overview?.features?.minecraftInstall === true };
+  };
+
+  router.get(
+    "/capability",
+    middleware().validator({ query: { daemonId: String } }),
+    async (ctx) => {
+      try {
+        const service = remote().services.getInstance(String(ctx.query.daemonId));
+        ctx.body = await capability(new (remote().Request)(service));
+      } catch (error) {
+        ctx.body = error;
+      }
+    }
+  );
+
   router.get("/servers", async (ctx) => {
     try {
       ctx.body = await mirrors.servers();
@@ -56,6 +74,11 @@ export function createMinecraftRouter() {
         ) {
           throw new Error($t("TXT_CODE_minecraft.invalidSelection"));
         }
+        const daemonId = String(ctx.query.daemonId);
+        const service = remote().services.getInstance(daemonId);
+        const request = new (remote().Request)(service);
+        if (!(await capability(request)).supported)
+          throw new Error($t("TXT_CODE_minecraft.nodeUnsupported"));
         const download = await mirrors.resolve(selection, config.type);
         const minecraft: MinecraftInstallOptions = {
           server: selection.server,
@@ -64,9 +87,7 @@ export function createMinecraftRouter() {
           sha256: download.sha256,
           javaPath: selection.javaPath?.trim() || "java"
         };
-        const daemonId = String(ctx.query.daemonId);
-        const service = remote().services.getInstance(daemonId);
-        const result = await new (remote().Request)(service).request("instance/asynchronous", {
+        const result = await request.request("instance/asynchronous", {
           instanceUuid: "-",
           taskName: "minecraft_install",
           role: identity().identify(ctx).role,

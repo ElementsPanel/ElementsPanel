@@ -2481,7 +2481,7 @@
   "TXT_CODE_minecraft.noServers": "No hay servidores MSL de instalación automática para este tipo de instancia. Vuelve atrás y elige subir archivos.",
   "TXT_CODE_minecraft.noVersions": "No hay versiones o compilaciones disponibles. Elige otro servidor o inténtalo más tarde.",
   "TXT_CODE_minecraft.invalidSelection": "Selecciona un servidor, una versión y una compilación válidos y comprueba la ruta de Java.",
-  "TXT_CODE_minecraft.nodeUnsupported": "Este nodo no admite descargas de Minecraft. Actualiza el nodo y activa el complemento de la tienda de aplicaciones.",
+  "TXT_CODE_minecraft.nodeUnsupported": "Este nodo no admite descargas de Minecraft. Actualiza el nodo y activa el complemento de instancias.",
   "TXT_CODE_minecraft.invalidFile": "Selecciona un archivo JAR o ZIP que no esté vacío.",
   "TXT_CODE_minecraft.commandHint": "Déjalo en blanco para generar el comando de inicio del servidor seleccionado.",
   "TXT_CODE_minecraft.confirmDownload": "Se creará una instancia y se descargará el servidor en el nodo. Forge/NeoForge se instalará automáticamente y requiere Java compatible en el nodo. Consulta el progreso en la consola de la instancia. ¿Continuar?",

@@ -4,6 +4,9 @@ import type { DaemonPluginContext } from "../../../../src/plugin";
 import { LifecycleService, PresetsService, SchedulesService, TasksService } from "./registries";
 import { setPluginContext } from "./runtime";
 import { routerApp } from "./service/router";
+import { localeMessages } from "../i18n";
+import { createInstanceInstallTaskClass } from "./install_task";
+import * as minecraftInstall from "./minecraft_task";
 
 export const inject = {
   i18n: { required: true },
@@ -20,6 +23,7 @@ export const inject = {
 };
 
 export function apply(ctx: DaemonPluginContext) {
+  ctx.i18n.define(localeMessages);
   ctx.plugin(TasksService);
   ctx.plugin(LifecycleService);
   ctx.plugin(PresetsService);
@@ -45,7 +49,7 @@ export function apply(ctx: DaemonPluginContext) {
     const { default: FunctionDispatcher } = require("./entity/commands/dispatcher") as typeof import("./entity/commands/dispatcher");
     const { DockerManager } = require("./service/docker_service") as typeof import("./service/docker_service");
 
-    instanceCtx.set("instances", {
+    const services = {
       subsystem: InstanceSubsystem,
       Instance,
       Config,
@@ -68,7 +72,12 @@ export function apply(ctx: DaemonPluginContext) {
         return headers;
       },
       commandStringToArray
+    };
+    instanceCtx.set("instances", {
+      ...services,
+      InstallTask: createInstanceInstallTaskClass(instanceCtx, services)
     });
+    instanceCtx.plugin(minecraftInstall);
 
     // The dispatcher is the instance plugin's built-in preset/lifecycle bridge.
     void FunctionDispatcher;

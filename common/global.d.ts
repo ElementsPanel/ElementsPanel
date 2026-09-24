@@ -135,6 +135,7 @@ declare global {
 
   interface IPanelOverviewRemoteResponse {
     version: string;
+    features?: Record<string, boolean>;
     process?: {
       cpu: number;
       memory: number;

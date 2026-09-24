@@ -2481,7 +2481,7 @@
   "TXT_CODE_minecraft.noServers": "Não há servidor MSL com instalação automática para este tipo de instância. Volte e escolha enviar arquivos.",
   "TXT_CODE_minecraft.noVersions": "Nenhuma versão ou compilação disponível. Escolha outro servidor ou tente novamente mais tarde.",
   "TXT_CODE_minecraft.invalidSelection": "Selecione um servidor, uma versão e uma compilação válidos e verifique o caminho do Java.",
-  "TXT_CODE_minecraft.nodeUnsupported": "Este nó não suporta downloads do Minecraft. Atualize o nó e ative o plugin da loja de aplicativos.",
+  "TXT_CODE_minecraft.nodeUnsupported": "Este nó não suporta downloads do Minecraft. Atualize o nó e ative o plugin de instâncias.",
   "TXT_CODE_minecraft.invalidFile": "Selecione um arquivo JAR ou ZIP que não esteja vazio.",
   "TXT_CODE_minecraft.commandHint": "Deixe em branco para gerar o comando de inicialização do servidor selecionado.",
   "TXT_CODE_minecraft.confirmDownload": "Uma instância será criada e o servidor será baixado no nó. Forge/NeoForge será instalado automaticamente e requer Java compatível no nó. Acompanhe o progresso no console da instância. Continuar?",

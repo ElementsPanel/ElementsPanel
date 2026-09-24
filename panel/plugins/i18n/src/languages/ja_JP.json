@@ -2481,7 +2481,7 @@
   "TXT_CODE_minecraft.noServers": "このインスタンスタイプには自動インストールできる MSL サーバーがありません。戻ってアップロードを選択してください。",
   "TXT_CODE_minecraft.noVersions": "利用できるバージョンまたはビルドがありません。別のサーバーを選ぶか、後でもう一度お試しください。",
   "TXT_CODE_minecraft.invalidSelection": "有効なサーバー、ゲームバージョン、ビルドを選択し、Java パスを確認してください。",
-  "TXT_CODE_minecraft.nodeUnsupported": "このノードは Minecraft のダウンロードに対応していません。ノードを更新し、アプリマーケットプラグインを有効にしてください。",
+  "TXT_CODE_minecraft.nodeUnsupported": "このノードは Minecraft のダウンロードに対応していません。ノードを更新し、インスタンスプラグインを有効にしてください。",
   "TXT_CODE_minecraft.invalidFile": "空でない JAR ファイルまたは ZIP アーカイブを選択してください。",
   "TXT_CODE_minecraft.commandHint": "空欄の場合、選択したサーバーの起動コマンドが自動生成されます。",
   "TXT_CODE_minecraft.confirmDownload": "インスタンスを作成し、ノードにサーバーをダウンロードします。Forge/NeoForge は自動インストールされ、ノードには対応する Java が必要です。進行状況はインスタンスコンソールで確認できます。続行しますか？",

@@ -66,12 +66,15 @@ function directory(t) {
 
 const catalog = load("panel/plugins/instance/src/minecraft.ts");
 const javaCommands = load("common/src/java.ts");
-const install = load("daemon/plugins/market/src/backend/minecraft_install.ts", {
+const install = load("daemon/plugins/instance/src/backend/minecraft_install.ts", {
   "../../../../../common/src/java": javaCommands
 });
-const { AsyncTask } = load("daemon/plugins/instance/src/backend/service/async_task_core.ts", {
-  "../runtime": { logger }
-});
+const { AsyncTask, TaskCenter } = load(
+  "daemon/plugins/instance/src/backend/service/async_task_core.ts",
+  {
+    "../runtime": { logger }
+  }
+);
 
 function mirrorFixture(override) {
   const requests = [];
@@ -156,6 +159,7 @@ test("Minecraft API requires an administrator and resolves downloads on the pane
     logs = [],
     resolutions = [];
   let result = { instanceUuid: "created", taskId: "task", status: 1 };
+  let overview = { features: { minecraftInstall: true } };
   const runtime = {
     $t: translate,
     roles: () => ({ ADMIN: 10 }),
@@ -178,6 +182,7 @@ test("Minecraft API requires an administrator and resolves downloads on the pane
         }
         async request(event, data) {
           requests.push({ node: this.node.id, event, data });
+          if (event === "info/overview") return overview;
           return result;
         }
       }
@@ -230,16 +235,49 @@ test("Minecraft API requires an administrator and resolves downloads on the pane
   assert.equal((await request(10)).status, 400);
   assert.equal((await request(10, body)).body.instanceUuid, "created");
   assert.equal(resolutions[0].type, "minecraft/java");
-  const task = requests[0].data;
+  assert.equal(requests[0].event, "info/overview");
+  const task = requests[1].data;
   assert.equal(task.taskName, "minecraft_install");
   assert.equal(task.parameter.targetLink, "https://cdn.example/server.jar");
   assert.equal(task.parameter.minecraft.sha256, "b".repeat(64));
   assert.equal(task.parameter.setupInfo.type, "minecraft/java/paper");
   assert.equal(task.parameter.setupInfo.cwd, "");
   assert.equal(logs.length, 1);
-  result = true; // Older daemon or disabled market plugin.
+  for (const unsupported of [
+    undefined,
+    {},
+    { features: {} },
+    { features: { minecraftInstall: false } }
+  ]) {
+    overview = unsupported;
+    const before = requests.length;
+    assert.match((await request(10, body)).body.message, /nodeUnsupported/);
+    assert.equal(requests.length, before + 1);
+    assert.equal(requests.at(-1).event, "info/overview");
+    assert.equal(resolutions.length, 1);
+    assert.equal(logs.length, 1);
+  }
+  // A provider may disappear after the preflight request.
+  overview = { features: { minecraftInstall: true } };
+  result = true;
   assert.match((await request(10, body)).body.message, /nodeUnsupported/);
   assert.equal(logs.length, 1);
+
+  const probe = async (role = 10) => {
+    const ctx = {
+      path: "/instance/minecraft/capability",
+      method: "GET",
+      query: { daemonId: "node" },
+      request: {},
+      role
+    };
+    await dispatch(ctx, async () => {});
+    return ctx;
+  };
+  assert.equal((await probe(1)).status, 403);
+  assert.deepEqual((await probe()).body, { supported: true });
+  overview.features.minecraftInstall = false;
+  assert.deepEqual((await probe()).body, { supported: false });
 });
 
 function downloadFixture(t, handlers = {}) {
@@ -341,7 +379,7 @@ function taskFixture(t, options = {}) {
   const bytes = Buffer.from("test download; never executed");
   const chmods = [];
   const fse = Module.createRequire(path.join(root, "daemon/package.json"))("fs-extra");
-  const fixtureInstall = load("daemon/plugins/market/src/backend/minecraft_install.ts", {
+  const fixtureInstall = load("daemon/plugins/instance/src/backend/minecraft_install.ts", {
     "../../../../../common/src/java": javaCommands,
     "fs-extra": {
       ...fse,
@@ -386,6 +424,7 @@ function taskFixture(t, options = {}) {
     instances: {
       Instance: { STATUS_BUSY: 2, STATUS_STOP: 0 },
       Config: class {},
+      Command: class {},
       UpdateAction: class extends AsyncTask {
         constructor(instance) {
           super();
@@ -401,6 +440,7 @@ function taskFixture(t, options = {}) {
       },
       fileManager: () => ({
         toAbsolutePath: (file) => path.join(cwd, file),
+        readFile: (file) => fse.readFile(path.join(cwd, file), "utf8"),
         unzip: async (file) => {
           unzips.push(file);
           return options.unzip ? options.unzip(cwd) : true;
@@ -415,27 +455,9 @@ function taskFixture(t, options = {}) {
       }
     }
   };
-  const { createQuickInstallTaskClass } = load(
-    "daemon/plugins/market/src/backend/quick_install.ts",
+  const { createInstanceInstallTaskClass } = load(
+    "daemon/plugins/instance/src/backend/install_task.ts",
     {
-      "./minecraft_install": {
-        ...fixtureInstall,
-        validateMinecraftInstall: (selection, url, translate) =>
-          fixtureInstall.validateMinecraftInstall(
-            selection,
-            url,
-            translate,
-            options.platform ?? "linux",
-            "x64"
-          ),
-        minecraftStartCommand: (cwd, selection, translate) =>
-          fixtureInstall.minecraftStartCommand(
-            cwd,
-            selection,
-            translate,
-            options.platform ?? "linux"
-          )
-      },
       axios: async (config) => {
         downloads.push(config);
         await options.download?.();
@@ -443,7 +465,23 @@ function taskFixture(t, options = {}) {
       }
     }
   );
-  const Task = createQuickInstallTaskClass(ctx);
+  ctx.instances.InstallTask = createInstanceInstallTaskClass(ctx, ctx.instances);
+  const minecraftPlugin = load("daemon/plugins/instance/src/backend/minecraft_task.ts", {
+    "./minecraft_install": {
+      ...fixtureInstall,
+      validateMinecraftInstall: (selection, url, translate) =>
+        fixtureInstall.validateMinecraftInstall(
+          selection,
+          url,
+          translate,
+          options.platform ?? "linux",
+          "x64"
+        ),
+      minecraftStartCommand: (cwd, selection, translate) =>
+        fixtureInstall.minecraftStartCommand(cwd, selection, translate, options.platform ?? "linux")
+    }
+  });
+  const Task = minecraftPlugin.createMinecraftInstallTaskClass(ctx);
   const create = (minecraft, config = {}) => {
     const task = new Task(
       "Test",
@@ -456,13 +494,25 @@ function taskFixture(t, options = {}) {
         type: "minecraft/java",
         ...config
       },
-      undefined,
       minecraft
     );
     task.on("error", () => {});
     return task;
   };
-  return { create, cwd, bytes, instance, output, updates, unzips, downloads, ctx, chmods };
+  return {
+    create,
+    cwd,
+    bytes,
+    instance,
+    output,
+    updates,
+    unzips,
+    downloads,
+    ctx,
+    chmods,
+    minecraftPlugin,
+    createInstanceInstallTaskClass
+  };
 }
 
 const paper = { server: "paper", version: "1.21.4", kind: "jar", javaPath: "/java path/bin/java" };
@@ -585,33 +635,30 @@ test("early NeoForge and Windows installations use the argument file actually in
   );
 });
 
-test("market registers Minecraft as a separate admin task and validates before creating an instance", () => {
+test("instance registers Minecraft as a separate admin task and validates before creating an instance", () => {
   const registrations = new Map();
   const created = [];
-  const { apply } = load("daemon/plugins/market/src/backend/index.ts", {
-    "../i18n": { localeMessages: {} },
-    "./install_command": { createInstallCommandClass: () => class {} },
-    "./minecraft_install": install,
-    "./quick_install": {
-      createQuickInstallTaskClass: () =>
-        class {
-          static TYPE = "QuickInstallTask";
-          constructor(...args) {
-            created.push(args);
-          }
-        }
-    }
+  const { apply } = load("daemon/plugins/instance/src/backend/minecraft_task.ts", {
+    "./minecraft_install": install
   });
   apply({
     i18n: { define() {}, $t: translate },
     logger,
-    presets: { register() {} },
+    instances: {
+      InstallTask: class {
+        constructor(...args) {
+          created.push(args);
+        }
+      }
+    },
+    features: { add: (feature) => assert.equal(feature, "minecraftInstall") },
     tasks: { register: (name, task) => registrations.set(name, task) }
   });
   const registration = registrations.get("minecraft_install");
   assert.equal(registration.requiredRole, 10);
   assert.equal(registration.requiresInstance, false);
-  assert.ok(registrations.has("quick_install"));
+  assert.equal(registration.type, "MinecraftInstallTask");
+  assert.equal(registrations.has("quick_install"), false);
   assert.throws(
     () =>
       registration.create(undefined, {
@@ -627,7 +674,203 @@ test("market registers Minecraft as a separate admin task and validates before c
     targetLink: "https://cdn.example/server.jar",
     minecraft: paper
   });
-  assert.equal(created[0][4].kind, "jar");
+  assert.equal(created[0][4].fileName, "server.jar");
+});
+
+test("the instance plugin installs Minecraft before market loads and while market is unloaded", async (t) => {
+  const daemonRequire = Module.createRequire(path.join(root, "daemon/package.json"));
+  const { Context, Service } = daemonRequire("cordis");
+  let downloadGate;
+  const f = taskFixture(t, { download: async () => downloadGate?.promise });
+  const ctx = new Context();
+  t.after(() => ctx.stop());
+  class Translations extends Service {
+    messages = [];
+    constructor(ctx) {
+      super(ctx, "i18n", true);
+    }
+    define(locales) {
+      return this.ctx.effect(() => {
+        this.messages.push(locales.en_us);
+        return () => this.messages.splice(this.messages.indexOf(locales.en_us), 1);
+      });
+    }
+    $t = (key) => this.messages.find((messages) => messages[key])?.[key] || key;
+  }
+  ctx.plugin(Translations);
+  const { FeaturesService, OverviewService } = load(
+    "daemon/plugins/runtime/src/backend/registries.ts"
+  );
+  ctx.plugin(FeaturesService);
+  ctx.plugin(OverviewService);
+  ctx.set("settings", { config: {} });
+  ctx.set("storage", {});
+  ctx.set("transfer", {});
+  ctx.set("protocol", {});
+  ctx.set("files", { getFileManager: f.ctx.instances.fileManager });
+  const registries = load("daemon/plugins/instance/src/backend/registries.ts", {
+    "./service/async_task_core": { AsyncTask, TaskCenter }
+  });
+  const instancePlugin = load("daemon/plugins/instance/src/backend/index.ts", {
+    "./tools/steam_cmd": { initSteamCmd() {} },
+    "./service/version_adapter": { migrateConfig() {} },
+    "./runtime": { setPluginContext() {} },
+    "./service/router": { routerApp: { dispose() {} } },
+    "./registries": registries,
+    "../i18n": load("daemon/plugins/instance/src/i18n/index.ts"),
+    "./install_task": { createInstanceInstallTaskClass: f.createInstanceInstallTaskClass },
+    "./minecraft_task": f.minecraftPlugin,
+    "./service/system_instance": {
+      default: {
+        ...f.ctx.instances.subsystem,
+        loadInstances() {},
+        getInstances: () => [],
+        exit: async () => {}
+      }
+    },
+    "./entity/instance/instance": { default: f.ctx.instances.Instance },
+    "./entity/instance/Instance_config": { default: f.ctx.instances.Config },
+    "./entity/commands/base/command": { default: f.ctx.instances.Command },
+    "./service/instance_update_action": { InstanceUpdateAction: f.ctx.instances.UpdateAction },
+    "./entity/commands/base/command_parser": { commandStringToArray: () => [] },
+    "./entity/commands/dispatcher": { default: class {} },
+    "./service/docker_service": { DockerManager: class {} },
+    "./routers/Instance_router": {},
+    "./routers/instance_event_router": { registerInstanceEvents: () => () => {} },
+    "./routers/schedule_router": {},
+    "./routers/environment_router": {},
+    "./service/system_instance_control": { default: { dispose() {} } }
+  });
+  const instanceScope = ctx.plugin(instancePlugin);
+  await ctx.start();
+  await until(() => ctx.tasks?.get("minecraft_install"));
+  const minecraft = ctx.tasks.get("minecraft_install");
+  const parameters = {
+    newInstanceName: "Independent Minecraft",
+    targetLink: "https://cdn.example/server.jar",
+    setupInfo: { type: "minecraft/java", startCommand: "", updateCommand: "" },
+    minecraft: paper
+  };
+  assert.equal(ctx.features.has("minecraftInstall"), true);
+  assert.equal(ctx.tasks.get("quick_install"), undefined);
+  assert.equal(ctx.presets.entries().has("install"), false);
+  const first = minecraft.create(undefined, parameters);
+  await first.start();
+  assert.equal(first.status(), AsyncTask.STATUS_STOP);
+  assert.equal(first.type, "MinecraftInstallTask");
+  assert.ok(first.taskId.startsWith("MinecraftInstallTask-"));
+  assert.equal(fs.existsSync(path.join(f.cwd, "server.jar")), true);
+
+  const marketPlugin = load("daemon/plugins/market/src/backend/index.ts", {
+    "../i18n": load("daemon/plugins/market/src/i18n/index.ts"),
+    "./quick_install": load("daemon/plugins/market/src/backend/quick_install.ts"),
+    "./install_command": load("daemon/plugins/market/src/backend/install_command.ts")
+  });
+  const marketScope = ctx.plugin(marketPlugin);
+  await until(() => ctx.tasks.get("quick_install"));
+  assert.equal(ctx.presets.entries().has("install"), true);
+  assert.equal(ctx.tasks.get("quick_install").type, "QuickInstallTask");
+  assert.equal(ctx.tasks.get("minecraft_install"), minecraft);
+  downloadGate = deferred();
+  const active = minecraft.create(undefined, parameters);
+  ctx.tasks.Center.addTask(active);
+  await until(() => f.downloads.length === 2);
+  await marketScope.dispose();
+  assert.equal(ctx.tasks.get("quick_install"), undefined);
+  assert.equal(ctx.presets.entries().has("install"), false);
+  assert.equal(ctx.tasks.get("minecraft_install"), minecraft);
+  assert.equal(ctx.features.has("minecraftInstall"), true);
+  assert.equal(active.status(), AsyncTask.STATUS_RUNNING);
+  assert.notEqual(
+    ctx.i18n.$t("TXT_CODE_minecraft.hashMismatch"),
+    "TXT_CODE_minecraft.hashMismatch"
+  );
+  assert.notEqual(ctx.i18n.$t("TXT_CODE_e166bc2f"), "TXT_CODE_e166bc2f");
+  assert.equal(ctx.i18n.$t("TXT_CODE_cbc235ad"), "TXT_CODE_cbc235ad");
+  downloadGate.resolve();
+  await active.wait();
+  await until(() => !f.instance.asynchronousTask);
+  const after = minecraft.create(undefined, parameters);
+  await after.start();
+  assert.equal(after.status(), AsyncTask.STATUS_STOP);
+  assert.equal(f.instance.config.startCommand, '"/java path/bin/java" -jar server.jar nogui');
+
+  await instanceScope.dispose();
+  assert.equal(ctx.features.has("minecraftInstall"), false);
+  assert.equal(ctx.instances, undefined);
+  assert.equal(ctx.tasks, undefined);
+  assert.equal(ctx.i18n.$t("TXT_CODE_minecraft.hashMismatch"), "TXT_CODE_minecraft.hashMismatch");
+});
+
+test("market packages retain bundled config, explicit overrides and nonfatal update failures", async (t) => {
+  const f = taskFixture(t, {
+    update: async () => {
+      throw new Error("template update failed");
+    }
+  });
+  const { createQuickInstallTaskClass } = load(
+    "daemon/plugins/market/src/backend/quick_install.ts"
+  );
+  const QuickInstallTask = createQuickInstallTaskClass(f.ctx);
+  fs.writeFileSync(
+    path.join(f.cwd, "mcsmanager-config.json"),
+    JSON.stringify({
+      startCommand: "bundled start",
+      updateCommand: "bundled update"
+    })
+  );
+  const bundled = new QuickInstallTask("Market", "https://cdn.example/package.zip", {});
+  await bundled.start();
+  assert.equal(bundled.type, "QuickInstallTask");
+  assert.equal(bundled.status(), AsyncTask.STATUS_STOP);
+  assert.equal(f.instance.config.startCommand, "bundled start");
+  assert.deepEqual(f.unzips, ["mcsm_install_package.zip"]);
+  assert.deepEqual(f.updates, ["bundled update"]);
+  assert.ok(f.output.some((line) => line.includes("template update failed")));
+  const explicit = new QuickInstallTask("Market", undefined, { startCommand: "explicit start" });
+  await explicit.start();
+  assert.equal(f.instance.config.startCommand, "explicit start");
+  assert.equal(explicit.status(), AsyncTask.STATUS_STOP);
+});
+
+test("the market reinstall preset retains the current instance and releases its lock", async (t) => {
+  const f = taskFixture(t);
+  f.instance.setLock = (locked) => {
+    f.instance.locked = locked;
+  };
+  f.instance.hasCwdPath = () => true;
+  f.instance.status(0);
+  fs.writeFileSync(path.join(f.cwd, "old-file.txt"), "old contents");
+  const { createQuickInstallTaskClass } = load(
+    "daemon/plugins/market/src/backend/quick_install.ts"
+  );
+  const QuickInstallTask = createQuickInstallTaskClass(f.ctx);
+  const { createInstallCommandClass } = load(
+    "daemon/plugins/market/src/backend/install_command.ts"
+  );
+  const Command = createInstallCommandClass(f.ctx, QuickInstallTask);
+  await new Command().exec(f.instance, {
+    targetLink: "https://cdn.example/package.zip",
+    setupInfo: { startCommand: "new start", processType: "general" }
+  });
+  assert.equal(fs.existsSync(path.join(f.cwd, "old-file.txt")), false);
+  assert.equal(f.instance.instanceUuid, "instance");
+  assert.equal(f.instance.config.startCommand, "new start");
+  assert.equal(f.instance.locked, false);
+  assert.equal(f.instance.asynchronousTask, undefined);
+  assert.equal(f.instance.status(), 0);
+  assert.equal(f.unzips.length, 1);
+
+  f.instance.config.processType = "docker";
+  const incompatible = new QuickInstallTask(
+    "Market",
+    undefined,
+    { processType: "general" },
+    f.instance
+  );
+  await incompatible.start();
+  assert.equal(f.instance.config.processType, "docker");
+  assert.ok(f.output.some((line) => line.includes("TXT_CODE_f8145844")));
 });
 
 test("installer failure restores the update command and is reported as a failed task", async (t) => {
@@ -788,6 +1031,14 @@ const instanceTypes = {
 };
 
 test("instance creation requires type, then method, then node; changing type clears dependent choices", async (t) => {
+  const overview = vue.ref({
+    remote: [
+      { uuid: "node", available: true, features: { minecraftInstall: true } },
+      { uuid: "legacy", available: true },
+      { uuid: "unsupported", available: true, features: { minecraftInstall: false } },
+      { uuid: "offline", available: false, features: { minecraftInstall: true } }
+    ]
+  });
   const state = mountScript(
     t,
     "panel/plugins/instance/src/views/CreateInstance.vue",
@@ -795,10 +1046,10 @@ test("instance creation requires type, then method, then node; changing type cle
     {
       "@/config/router": { router: { push() {} } },
       "@/lang/i18n": { t: translate },
-      "@/services/apis": {
-        remoteNodeList: () => ({
-          execute: async () => {},
-          state: vue.ref([]),
+      "@/hooks/useOverviewInfo": {
+        useOverviewInfo: () => ({
+          refresh: async () => {},
+          state: overview,
           isLoading: vue.ref(false)
         })
       },
@@ -818,7 +1069,14 @@ test("instance creation requires type, then method, then node; changing type cle
   assert.equal(state.step, 3);
   state.goNext();
   assert.equal(state.step, 3);
-  state.chooseNode({ uuid: "node", available: true });
+  assert.equal(state.availableNodes.length, 3);
+  for (const node of overview.value.remote.slice(1)) {
+    state.chooseNode(node);
+    state.goNext();
+    assert.equal(state.step, 3);
+    assert.equal(state.daemonId, "");
+  }
+  state.chooseNode(overview.value.remote[0]);
   state.goNext();
   assert.equal(state.step, 4);
   state.formBusy = true;
@@ -827,6 +1085,15 @@ test("instance creation requires type, then method, then node; changing type cle
   state.formBusy = false;
   state.goBack();
   assert.equal(state.step, 3);
+  overview.value.remote[0].features.minecraftInstall = false;
+  await vue.nextTick();
+  assert.equal(state.daemonId, "");
+  state.goNext();
+  assert.equal(state.step, 3);
+  await state.chooseMethod("IMPORT");
+  state.chooseNode(overview.value.remote[1]);
+  state.goNext();
+  assert.equal(state.step, 4);
   state.instanceType = "universal";
   state.changeInstanceType();
   assert.equal(state.createMethod, "");
@@ -835,6 +1102,7 @@ test("instance creation requires type, then method, then node; changing type cle
 });
 
 function formFixture(t, createMethod = "DOWNLOAD", javaSetup) {
+  const capability = { supported: true, error: undefined, checks: [] };
   const confirms = [],
     creates = [],
     uploads = [],
@@ -914,6 +1182,13 @@ function formFixture(t, createMethod = "DOWNLOAD", javaSetup) {
         }
       },
       "../../api": {
+        minecraftInstallCapability: () => ({
+          execute: async (request) => {
+            capability.checks.push(request);
+            if (capability.error) throw capability.error;
+            return vue.ref({ supported: capability.supported });
+          }
+        }),
         createMinecraftInstance: () => ({
           execute: async (request) => {
             creates.push(request);
@@ -930,7 +1205,7 @@ function formFixture(t, createMethod = "DOWNLOAD", javaSetup) {
   state.formRef = { validate: async () => ({ valid: true }) };
   state.formData.nickname = "Test";
   if (javaSetup) state.javaSetup = javaSetup;
-  return { state, constants, confirms, creates, uploads, errors, successes };
+  return { state, constants, confirms, creates, uploads, errors, successes, capability };
 }
 
 test("download submission is validated and concurrent clicks create just one instance", async (t) => {
@@ -953,6 +1228,40 @@ test("download submission is validated and concurrent clicks create just one ins
   assert.equal(f.constants.defaultInstanceInfo.nickname, "");
   f.state.formData.docker.image = "custom";
   assert.notEqual(f.constants.defaultInstanceInfo.docker.image, "custom");
+});
+
+test("download confirmation rechecks capability before preparing Java and supports retry", async (t) => {
+  let prepared = 0;
+  const f = formFixture(t, "DOWNLOAD", {
+    prepare: async () => {
+      prepared++;
+      return { id: "java", path: "java" };
+    }
+  });
+  f.state.downloadSelection = { server: "paper", version: "1.21.4", build: "latest" };
+  await f.state.finalConfirm();
+  // The installer can disappear while the confirmation dialog is open.
+  f.capability.supported = false;
+  await f.confirms[0].onOk();
+  assert.equal(prepared, 0);
+  assert.equal(f.creates.length, 0);
+  assert.equal(f.state.busy, false);
+  assert.match(f.errors.at(-1).message, /nodeUnsupported/);
+
+  f.capability.supported = true;
+  f.capability.error = new Error("Node disconnected");
+  await f.state.finalConfirm();
+  await f.confirms[1].onOk();
+  assert.equal(prepared, 0);
+  assert.equal(f.creates.length, 0);
+  assert.match(f.errors.at(-1).message, /disconnected/);
+  f.capability.error = undefined;
+  await f.state.finalConfirm();
+  await f.confirms[2].onOk();
+  assert.equal(prepared, 1);
+  assert.equal(f.creates.length, 1);
+  assert.equal(f.capability.checks.length, 3);
+  assert.ok(f.capability.checks.every((request) => request.params.daemonId === "node"));
 });
 
 test("own JAR uploads stay intact, ZIP uploads are extracted, and cancellation is not success", async (t) => {
@@ -992,12 +1301,14 @@ test("Java is prepared once before downloading, uploading, or creating from an e
       await f.state.finalConfirm();
       const first = f.confirms[0].onOk();
       const repeated = f.confirms[0].onOk();
+      await until(() => prepared === 1);
       assert.equal(prepared, 1);
       assert.equal(f.creates.length, 0);
       assert.equal(f.state.busy, true);
       gate.resolve({ id: "msl_21", path: "{mcsm_java}" });
       await Promise.all([first, repeated]);
       assert.equal(f.creates.length, 1);
+      assert.equal(f.capability.checks.length, method === "DOWNLOAD" ? 1 : 0);
       const config = method === "DOWNLOAD" ? f.creates[0].data.config : f.creates[0].data;
       assert.equal(config.java.id, "msl_21");
       assert.equal(config.startCommand, '{mcsm_java} -Dname="a b" -jar "server name.jar"');
@@ -1076,7 +1387,7 @@ test("Minecraft UI and daemon messages exist in every language", () => {
     const messages = JSON.parse(source);
     for (const key of keys) assert.ok(messages[key], `${file}: ${key}`);
     const daemon = JSON.parse(
-      fs.readFileSync(path.join(root, "daemon/plugins/market/src/i18n", file))
+      fs.readFileSync(path.join(root, "daemon/plugins/instance/src/i18n", file))
     );
     for (const key of ["invalidDownload", "platformMismatch", "missingFiles", "hashMismatch"])
       assert.ok(daemon[`TXT_CODE_minecraft.${key}`], `${file}: ${key}`);

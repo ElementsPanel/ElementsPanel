@@ -2481,7 +2481,7 @@
   "TXT_CODE_minecraft.noServers": "Aucun serveur MSL installable automatiquement pour ce type d’instance. Revenez en arrière et choisissez l’importation.",
   "TXT_CODE_minecraft.noVersions": "Aucune version ou compilation disponible. Choisissez un autre serveur ou réessayez plus tard.",
   "TXT_CODE_minecraft.invalidSelection": "Sélectionnez un serveur, une version et une compilation valides, puis vérifiez le chemin Java.",
-  "TXT_CODE_minecraft.nodeUnsupported": "Ce nœud ne prend pas en charge les téléchargements Minecraft. Mettez-le à jour et activez le plugin du marché d’applications.",
+  "TXT_CODE_minecraft.nodeUnsupported": "Ce nœud ne prend pas en charge les téléchargements Minecraft. Mettez-le à jour et activez le plugin des instances.",
   "TXT_CODE_minecraft.invalidFile": "Sélectionnez un fichier JAR ou une archive ZIP non vide.",
   "TXT_CODE_minecraft.commandHint": "Laissez vide pour générer la commande de démarrage du serveur sélectionné.",
   "TXT_CODE_minecraft.confirmDownload": "Une instance sera créée et le serveur téléchargé sur le nœud. Forge/NeoForge sera installé automatiquement et nécessite un Java compatible sur le nœud. Consultez la progression dans la console de l’instance. Continuer ?",

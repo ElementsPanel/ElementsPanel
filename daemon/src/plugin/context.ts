@@ -26,6 +26,7 @@ import type RouterContext from "../../plugins/server/src/backend/context";
 import type i18next from "i18next";
 import type { check7zipStatus } from "../../plugins/runtime/src/backend/service/seven_zip_service";
 import type { DaemonPluginEntry, DaemonPluginRecord } from "./loader";
+import type { InstanceInstallTaskClass } from "../../plugins/instance/src/backend/install_task";
 
 /**
  * The daemon's cordis container, and the complete list of what a plugin can see.
@@ -226,6 +227,8 @@ export interface DaemonInstancesService {
   readonly Config: any;
   readonly Command: any;
   readonly UpdateAction: any;
+  /** Shared download, extraction, progress and cancellation lifecycle for installers. */
+  readonly InstallTask: InstanceInstallTaskClass;
   readonly fileManager: (instanceUuid: string) => DaemonFileManager;
   readonly headers: typeof getCommonHeaders;
   readonly commandStringToArray: commandStringToArray;

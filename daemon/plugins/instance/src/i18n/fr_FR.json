@@ -1,0 +1,17 @@
+{
+  "TXT_CODE_1562f6cf": "Toutes les opérations d'installation ont été terminées. \nVeuillez essayer de démarrer l'instance ...",
+  "TXT_CODE_4eccdde8": "Configuration construite avec succès!",
+  "TXT_CODE_5b0e93b5": "L'installation ne peut pas être démarrée car il existe d'autres tâches asynchrones en cours. \nVeuillez d'abord mettre fin à d'autres tâches sur la page du terminal!",
+  "TXT_CODE_9b4985d3": "Instance mise à jour avec succès!",
+  "TXT_CODE_9df98e2": "Configuration du bâtiment ...",
+  "TXT_CODE_ac225d07": "Paramètres de l'instance de package de build :",
+  "TXT_CODE_b135e9bd": "Téléchargement...",
+  "TXT_CODE_e166bc2f": "La tâche d'installation commence ...",
+  "TXT_CODE_e4a926bf": "Fichiers non comprimés ...",
+  "TXT_CODE_e577c77c": "Mise à jour de l'instance ...",
+  "TXT_CODE_quick_install.unzipError": "Échec de la décompression de l'archive",
+  "TXT_CODE_minecraft.invalidDownload": "Paramètres de téléchargement Minecraft invalides.",
+  "TXT_CODE_minecraft.platformMismatch": "Le serveur Bedrock est incompatible avec ce nœud. Choisissez une version correspondant à Windows/Linux et utilisez un nœud x64.",
+  "TXT_CODE_minecraft.missingFiles": "Les fichiers de démarrage du serveur installé sont introuvables. Vérifiez le paquet téléchargé et le journal d’installation.",
+  "TXT_CODE_minecraft.hashMismatch": "La vérification SHA-256 du fichier téléchargé a échoué. Installation arrêtée ; veuillez réessayer."
+}

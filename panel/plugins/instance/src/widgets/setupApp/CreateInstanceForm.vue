@@ -18,7 +18,7 @@ import {
   javaExecutableCommand,
   type PreparedJava
 } from "../../../../../../common/src/java";
-import { createMinecraftInstance } from "../../api";
+import { createMinecraftInstance, minecraftInstallCapability } from "../../api";
 import { MINECRAFT_SERVERS } from "../../minecraft";
 import MinecraftServerDownload from "./MinecraftServerDownload.vue";
 import DockerImageSelect from "../instance/dialogs/components/DockerImageSelect.vue";
@@ -137,6 +137,7 @@ onUnmounted(() => {
 const { state: cfg, execute: getCfg } = uploadAddress();
 const { state: newInstanceInfo, execute: executeCreateInstance } = createInstanceApi();
 const { execute: executeDownload } = createMinecraftInstance();
+const { execute: checkInstallCapability } = minecraftInstallCapability();
 const percentComplete = computed(() => {
   const progress = fileManager?.uploadService.uiData.value.current;
   return uploadStarted.value && progress?.[1] ? (progress[0] / progress[1]) * 100 : 0;
@@ -218,13 +219,22 @@ async function showConfirmation() {
       : t("TXT_CODE_5deeefb5"),
     okText: t("TXT_CODE_d507abff"),
     async onOk() {
-      if (submitting.value || createdInstanceUuid.value) return;
+      if (disposed || submitting.value || createdInstanceUuid.value) return;
       submitting.value = true;
       confirming.value = false;
       confirmation?.destroy();
       try {
+        const daemonId = props.daemonId;
+        const createMethod = props.createMethod;
+        if (isDownloadMode.value) {
+          // Recheck after confirmation, before Java preparation can download a runtime.
+          const capability = await checkInstallCapability({ params: { daemonId: props.daemonId } });
+          if (capability.value?.supported !== true)
+            throw new Error(t("TXT_CODE_minecraft.nodeUnsupported"));
+        }
+        if (disposed || daemonId !== props.daemonId || createMethod !== props.createMethod) return;
         await prepareJava();
-        if (disposed) return;
+        if (disposed || daemonId !== props.daemonId || createMethod !== props.createMethod) return;
         if (needUpload.value) await selectedFile();
         else await createInstance();
       } catch (error: any) {

@@ -2481,7 +2481,7 @@
   "TXT_CODE_minecraft.noServers": "Für diesen Instanztyp ist kein automatisch installierbarer MSL-Server verfügbar. Zurückgehen und Hochladen auswählen.",
   "TXT_CODE_minecraft.noVersions": "Keine Versionen oder Builds verfügbar. Einen anderen Server auswählen oder später erneut versuchen.",
   "TXT_CODE_minecraft.invalidSelection": "Einen gültigen Server, eine Spielversion und einen Build auswählen und den Java-Pfad prüfen.",
-  "TXT_CODE_minecraft.nodeUnsupported": "Dieser Knoten unterstützt keine Minecraft-Downloads. Den Knoten aktualisieren und das App-Market-Plugin aktivieren.",
+  "TXT_CODE_minecraft.nodeUnsupported": "Dieser Knoten unterstützt keine Minecraft-Downloads. Aktualisieren Sie den Knoten und aktivieren Sie das Instanz-Plugin.",
   "TXT_CODE_minecraft.invalidFile": "Eine nicht leere JAR-Datei oder ein ZIP-Archiv auswählen.",
   "TXT_CODE_minecraft.commandHint": "Leer lassen, um einen Startbefehl für den ausgewählten Server zu erzeugen.",
   "TXT_CODE_minecraft.confirmDownload": "Eine Instanz wird erstellt und der Server auf den Knoten heruntergeladen. Forge/NeoForge wird automatisch installiert und benötigt kompatibles Java auf dem Knoten. Der Fortschritt wird in der Instanzkonsole angezeigt. Fortfahren?",

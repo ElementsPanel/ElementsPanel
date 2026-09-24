@@ -21,11 +21,12 @@ exist while the plugin is absent.
 
 `src/backend/quick_install.ts` and `src/backend/install_command.ts` each export a
 factory rather than a class, because both extend a base class
-(`AsyncTask`, `InstanceCommand`) that the plugin can only reach through the setup
+(`InstallTask`, `InstanceCommand`) that the plugin can only reach through the setup
 context — importing the daemon core directly would compile a second copy of the
-task subsystem. The context's `install` bucket supplies `InstanceConfig`,
-`InstanceCommand`, `InstanceUpdateAction`, `getFileManager` and
-`getCommonHeaders`.
+task subsystem. `ctx.instances.InstallTask` supplies the common installation
+lifecycle; this plugin supplies bundled configuration handling and reinstall
+behavior. Minecraft installation and its capability flag belong to `instance`
+and remain available without `market`.
 
-`src/i18n/` holds the lines an install prints into the instance console. See
+`src/i18n/` holds the market-specific installation messages. See
 `panel/plugins/market` for the panel side.

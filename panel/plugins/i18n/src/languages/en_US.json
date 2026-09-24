@@ -2481,7 +2481,7 @@
   "TXT_CODE_minecraft.noServers": "No automatically installable MSL server is available for this instance type. Go back and choose upload.",
   "TXT_CODE_minecraft.noVersions": "No versions or builds are available. Choose another server or try again later.",
   "TXT_CODE_minecraft.invalidSelection": "Select a valid server, game version and build, and check the Java path.",
-  "TXT_CODE_minecraft.nodeUnsupported": "This node does not support Minecraft download tasks. Update the node and enable the App Market plugin.",
+  "TXT_CODE_minecraft.nodeUnsupported": "This node does not support Minecraft downloads. Update the node and enable the instance plugin.",
   "TXT_CODE_minecraft.invalidFile": "Select a nonempty JAR file or ZIP archive.",
   "TXT_CODE_minecraft.commandHint": "Leave blank to generate a startup command for the selected server.",
   "TXT_CODE_minecraft.confirmDownload": "An instance will be created and the server downloaded on the node. Forge/NeoForge will be installed automatically and requires compatible Java on the node. View progress in the instance console. Continue?",

@@ -2481,7 +2481,7 @@
   "TXT_CODE_minecraft.noServers": "Bu örnek türü için otomatik kurulabilen MSL sunucusu yok. Geri dönüp dosya yüklemeyi seçin.",
   "TXT_CODE_minecraft.noVersions": "Kullanılabilir sürüm veya derleme yok. Başka bir sunucu seçin ya da daha sonra tekrar deneyin.",
   "TXT_CODE_minecraft.invalidSelection": "Geçerli bir sunucu, oyun sürümü ve derleme seçip Java yolunu kontrol edin.",
-  "TXT_CODE_minecraft.nodeUnsupported": "Bu düğüm Minecraft indirme görevlerini desteklemiyor. Düğümü güncelleyin ve Uygulama Pazarı eklentisini etkinleştirin.",
+  "TXT_CODE_minecraft.nodeUnsupported": "Bu düğüm Minecraft indirmelerini desteklemiyor. Düğümü güncelleyin ve örnek eklentisini etkinleştirin.",
   "TXT_CODE_minecraft.invalidFile": "Boş olmayan bir JAR dosyası veya ZIP arşivi seçin.",
   "TXT_CODE_minecraft.commandHint": "Seçilen sunucu için başlatma komutunun otomatik oluşturulması için boş bırakın.",
   "TXT_CODE_minecraft.confirmDownload": "Bir örnek oluşturulacak ve sunucu düğüme indirilecek. Forge/NeoForge otomatik kurulur ve düğümde uyumlu Java gerektirir. İlerlemeyi örnek konsolundan izleyebilirsiniz. Devam edilsin mi?",

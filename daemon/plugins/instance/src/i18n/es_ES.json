@@ -1,0 +1,17 @@
+{
+  "TXT_CODE_1562f6cf": "Se han completado todas las operaciones de instalación. \nPor favor intente iniciar la instancia ...",
+  "TXT_CODE_4eccdde8": "¡Configuración construida con éxito!",
+  "TXT_CODE_5b0e93b5": "La instalación no se puede iniciar porque hay otras tareas asincrónicas en progreso. \n¡Primero finalice otras tareas en la página del terminal!",
+  "TXT_CODE_9b4985d3": "¡Instancia actualizada con éxito!",
+  "TXT_CODE_9df98e2": "Configuración de edificios ...",
+  "TXT_CODE_ac225d07": "Parámetros de instancia de paquete de compilación:",
+  "TXT_CODE_b135e9bd": "Descarga ...",
+  "TXT_CODE_e166bc2f": "La tarea de instalación está comenzando ...",
+  "TXT_CODE_e4a926bf": "Incompensar archivos ...",
+  "TXT_CODE_e577c77c": "Actualización de la instancia ...",
+  "TXT_CODE_quick_install.unzipError": "No se pudo descomprimir el archivo",
+  "TXT_CODE_minecraft.invalidDownload": "Parámetros de descarga de Minecraft no válidos.",
+  "TXT_CODE_minecraft.platformMismatch": "El servidor Bedrock no es compatible con este nodo. Selecciona una versión que coincida con Windows/Linux del nodo y utiliza un nodo x64.",
+  "TXT_CODE_minecraft.missingFiles": "No se encontraron los archivos de inicio del servidor instalado. Revisa el paquete descargado y el registro de instalación.",
+  "TXT_CODE_minecraft.hashMismatch": "El archivo descargado no superó la verificación SHA-256. Se detuvo la instalación; inténtalo de nuevo."
+}

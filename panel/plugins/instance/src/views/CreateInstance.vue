@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { router } from "@/config/router";
 import { t } from "@/lang/i18n";
-import { remoteNodeList } from "@/services/apis";
-import type { NodeStatus } from "@/types";
+import { useOverviewInfo, type ComputedNodeInfo } from "@/hooks/useOverviewInfo";
 import { QUICKSTART_METHOD } from "@/hooks/widgets/quickStartFlow";
 import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
 import CreateInstanceForm from "../widgets/setupApp/CreateInstanceForm.vue";
-import { computed, ref } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import {
   VAlert,
   VAutocomplete,
@@ -44,10 +43,27 @@ const instanceTypeOptions = computed(() =>
 const isMinecraft = computed(() => instanceType.value?.startsWith("minecraft/"));
 const createMethod = ref<QUICKSTART_METHOD | "">("");
 const daemonId = ref("");
-const selectedNode = ref<NodeStatus>();
-const { execute: loadNodes, state: nodes, isLoading: nodesLoading } = remoteNodeList();
+const selectedNode = computed(() =>
+  availableNodes.value.find((node) => node.uuid === daemonId.value)
+);
+const {
+  refresh: loadNodes,
+  state: overview,
+  isLoading: nodesLoading
+} = useOverviewInfo({ poll: false });
 
-const availableNodes = computed(() => (nodes.value || []).filter((node) => node.available));
+const availableNodes = computed(() =>
+  (overview.value?.remote || []).filter((node) => node.available)
+);
+const canSelectNode = (node: ComputedNodeInfo) =>
+  node.available &&
+  (createMethod.value !== QUICKSTART_METHOD.DOWNLOAD || node.features?.minecraftInstall === true);
+const canContinue = computed(
+  () => !nodesLoading.value && !!selectedNode.value && canSelectNode(selectedNode.value)
+);
+watchEffect(() => {
+  if (daemonId.value && !canContinue.value) daemonId.value = "";
+});
 const methodOptions = computed(() => [
   {
     value: QUICKSTART_METHOD.IMPORT,
@@ -82,29 +98,27 @@ const methodOptions = computed(() => [
 const changeInstanceType = () => {
   createMethod.value = "";
   daemonId.value = "";
-  selectedNode.value = undefined;
 };
 
 const chooseMethod = async (method: QUICKSTART_METHOD) => {
   createMethod.value = method;
   daemonId.value = "";
-  selectedNode.value = undefined;
   step.value = 3;
   try {
-    await loadNodes();
+    await loadNodes(true);
   } catch (error) {
     console.error(error);
   }
 };
 
-const chooseNode = (node: NodeStatus) => {
-  selectedNode.value = node;
+const chooseNode = (node: ComputedNodeInfo) => {
+  if (nodesLoading.value || !canSelectNode(node)) return;
   daemonId.value = node.uuid;
 };
 
 const goNext = () => {
   if (step.value === 1 && instanceType.value) step.value = 2;
-  else if (step.value === 3 && daemonId.value) step.value = 4;
+  else if (step.value === 3 && canContinue.value) step.value = 4;
 };
 
 const goBack = () => {
@@ -155,7 +169,7 @@ const handleCreated = (instanceUuid: string) => {
                 :value="4"
                 :title="t('TXT_CODE_645bc545')"
                 icon="mdi-tune-variant"
-                :disabled="!daemonId"
+                :disabled="!canContinue"
               />
             </VStepperHeader>
 
@@ -255,6 +269,7 @@ const handleCreated = (instanceUuid: string) => {
                         variant="flat"
                         elevation="0"
                         rounded="xl"
+                        :disabled="!canSelectNode(node)"
                         @click="chooseNode(node)"
                       >
                         <VCardText>
@@ -272,6 +287,13 @@ const handleCreated = (instanceUuid: string) => {
                             <span>{{ node.ip }}:{{ node.port }}</span>
                             <span>ID: {{ node.uuid }}</span>
                           </div>
+                          <VAlert
+                            v-if="!canSelectNode(node)"
+                            type="warning"
+                            variant="tonal"
+                            class="mt-3"
+                            >{{ t("TXT_CODE_minecraft.nodeUnsupported") }}</VAlert
+                          >
                         </VCardText>
                       </VCard>
                     </VCol>
@@ -280,7 +302,7 @@ const handleCreated = (instanceUuid: string) => {
                     <VBtn variant="text" @click="goBack"
                       ><VIcon icon="mdi-arrow-left" />{{ t("TXT_CODE_c14b2ea3") }}</VBtn
                     >
-                    <VBtn color="primary" :disabled="!daemonId" @click="goNext"
+                    <VBtn color="primary" :disabled="!canContinue" @click="goNext"
                       >{{ t("TXT_CODE_5e9022f8") }}<VIcon icon="mdi-arrow-right" end
                     /></VBtn>
                   </div>
