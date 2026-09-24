@@ -88,9 +88,6 @@ const handleOpenDetailDialog = async () => {
         <VIcon icon="mdi-server-network-outline" size="48" class="node-empty-icon" />
         <div class="node-empty-title">{{ t("TXT_CODE_NODE_LIST_EMPTY") }}</div>
         <div class="node-empty-text">{{ t("TXT_CODE_NO_DATA") }}</div>
-        <VBtn color="primary" prepend-icon="mdi-plus" @click="handleOpenDetailDialog">
-          {{ t("TXT_CODE_15a381d5") }}
-        </VBtn>
       </div>
 
       <VRow v-else-if="remotes.length || refreshLoading" density="compact" class="node-list-row">
@@ -189,9 +186,6 @@ const handleOpenDetailDialog = async () => {
   color: var(--color-gray-7);
   font-size: 0.875rem;
   line-height: 1.5;
-}
-.node-empty :deep(.v-btn) {
-  margin-top: 8px;
 }
 .desc-text {
   color: var(--color-gray-7);
