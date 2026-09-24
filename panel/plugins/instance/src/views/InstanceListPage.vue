@@ -6,7 +6,6 @@ import { router } from "@/config/router";
 import { verifyEULA } from "@/hooks/useInstance";
 import { useInstanceTagSearch, useInstanceTagTips } from "@/hooks/useInstanceTag";
 import { t } from "@/lang/i18n";
-import { ctx } from "@/plugin/context";
 import { remoteInstances, remoteNodeList } from "@/services/apis";
 import {
   batchDelete,
@@ -78,10 +77,6 @@ const isLoading = computed(() => nodesLoading.value || instancesLoading.value);
 const instancesMoreInfo = computed(() =>
   (instances.value?.data || []).map((item) => useInstanceMoreDetail(item as InstanceMoreDetail))
 );
-const marketAvailable = computed(() => {
-  void ctx.routes.revision;
-  return router.getRoutes().some((route) => route.path === "/market");
-});
 
 const initNodes = async () => {
   await getNodes();
@@ -127,8 +122,6 @@ const toTerminal = (item: InstanceDetail) =>
     query: { daemonId: currentRemoteNode.value?.uuid, instanceId: item.instanceUuid }
   });
 const toCreate = () => router.push("/instances/create");
-const toMarket = () =>
-  router.push({ path: "/market", query: { daemonId: currentRemoteNode.value?.uuid } });
 const toNodes = () => router.push("/node");
 
 const changeNode = async (node: NodeStatus) => {
@@ -523,9 +516,6 @@ onMounted(async () => {
         <VIcon icon="mdi-view-grid-outline" size="48" class="instance-empty-icon" />
         <div class="instance-empty-title">{{ t("TXT_CODE_5415f009") }}</div>
         <div class="instance-empty-text">{{ t("TXT_CODE_NO_DATA") }}</div>
-        <VBtn v-if="marketAvailable" color="primary" prepend-icon="mdi-storefront-outline" @click="toMarket">
-          {{ t("TXT_CODE_871cb8bc") }}
-        </VBtn>
       </div>
     </VContainer>
     <VDialog v-model="deleteDialogOpen" class="app-dialog" max-width="480px">
