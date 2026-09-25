@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_ABOUT_ORIGIN": "ElementsPanel no habría sido posible sin {project} y otros programas de código abierto.",
+  "TXT_CODE_ABOUT_SOURCE": "Código fuente",
   "TXT_CODE_LEAVES_DONT_RESPOND_PING": "No responder a las solicitudes de ping hasta que el servidor se haya iniciado por completo.",
   "TXT_CODE_LEAVES_HOPPER_COUNTER": "Activar los contadores de tolvas.",
   "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "Activar la compatibilidad con el protocolo LMS Paster.",

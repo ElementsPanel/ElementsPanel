@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_ABOUT_ORIGIN": "ElementsPanel の誕生には、{project} やその他のオープンソースソフトウェアが欠かせませんでした。",
+  "TXT_CODE_ABOUT_SOURCE": "ソースコード",
   "TXT_CODE_LEAVES_DONT_RESPOND_PING": "サーバーの起動が完了するまで Ping リクエストに応答しません。",
   "TXT_CODE_LEAVES_HOPPER_COUNTER": "ホッパーカウンターを有効にします。",
   "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "LMS Paster プロトコルのサポートを有効にします。",

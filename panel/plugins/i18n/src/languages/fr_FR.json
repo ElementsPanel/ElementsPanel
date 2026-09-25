@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_ABOUT_ORIGIN": "ElementsPanel n’aurait pas pu voir le jour sans {project} et d’autres logiciels open source.",
+  "TXT_CODE_ABOUT_SOURCE": "Code source",
   "TXT_CODE_LEAVES_DONT_RESPOND_PING": "Ne pas répondre aux requêtes ping avant le démarrage complet du serveur.",
   "TXT_CODE_LEAVES_HOPPER_COUNTER": "Activer les compteurs d’entonnoirs.",
   "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "Activer la prise en charge du protocole LMS Paster.",

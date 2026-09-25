@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_ABOUT_ORIGIN": "ElementsPanel не появился бы без {project} и другого программного обеспечения с открытым исходным кодом.",
+  "TXT_CODE_ABOUT_SOURCE": "Исходный код",
   "TXT_CODE_LEAVES_DONT_RESPOND_PING": "Не отвечать на запросы ping до полного запуска сервера.",
   "TXT_CODE_LEAVES_HOPPER_COUNTER": "Включить счётчики воронок.",
   "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "Включить поддержку протокола LMS Paster.",

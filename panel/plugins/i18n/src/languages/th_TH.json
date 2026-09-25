@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_ABOUT_ORIGIN": "ElementsPanel จะถือกำเนิดขึ้นไม่ได้หากไม่มี {project} และซอฟต์แวร์โอเพนซอร์สอื่น ๆ",
+  "TXT_CODE_ABOUT_SOURCE": "ซอร์สโค้ด",
   "TXT_CODE_LEAVES_DONT_RESPOND_PING": "ไม่ตอบกลับคำขอ Ping จนกว่าเซิร์ฟเวอร์จะเริ่มทำงานอย่างสมบูรณ์",
   "TXT_CODE_LEAVES_HOPPER_COUNTER": "เปิดใช้งานตัวนับฮอปเปอร์",
   "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "เปิดใช้งานการรองรับโปรโตคอล LMS Paster",

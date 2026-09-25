@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_ABOUT_ORIGIN": "ElementsPanel 的誕生離不開 {project} 及其他開源軟體",
+  "TXT_CODE_ABOUT_SOURCE": "專案原始碼",
   "TXT_CODE_LEAVES_DONT_RESPOND_PING": "在伺服器完全啟動前不回應 Ping 請求。",
   "TXT_CODE_LEAVES_HOPPER_COUNTER": "啟用漏斗計數器。",
   "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "啟用 LMS Paster 協定支援。",

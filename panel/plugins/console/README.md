@@ -3,12 +3,16 @@
 The console plugin owns the panel's foundational browser UI:
 
 - the root application shell and navigation;
-- the base `/`, `/404` and `/customer` routes;
+- the base `/`, `/404` and `/about` routes;
 - built-in layout cards and design-mode picker entries;
 - shared browser components, hooks, stores, services, tools and types used by
   the feature plugins;
 - global Web UI styles and layout initialization;
 - the panel appearance settings form, frontend layout routes and asset uploads.
+
+The header's About action opens `/about` on desktop and mobile. The page uses the
+configured theme-specific logo, an acknowledgement linking to MCSManager, and a
+centered button linking to the ElementsPanel repository.
 
 Appearance settings are declared by the backend half of this plugin and rendered
 by the `config` plugin's generic configuration page. They include the page title,

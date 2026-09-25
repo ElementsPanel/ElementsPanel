@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_ABOUT_ORIGIN": "ElementsPanel would not have been possible without {project} and other open-source software.",
+  "TXT_CODE_ABOUT_SOURCE": "Source code",
   "TXT_CODE_LEAVES_DONT_RESPOND_PING": "Do not respond to ping requests until the server has fully started.",
   "TXT_CODE_LEAVES_HOPPER_COUNTER": "Enable hopper counters.",
   "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "Enable LMS Paster protocol support.",

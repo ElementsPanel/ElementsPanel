@@ -12,6 +12,7 @@ import { initAppearance } from "@/services/appearance";
 import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugin";
 import type { LoginUserInfo } from "@/types/user";
+import AboutPage from "./views/AboutPage.vue";
 import Page404 from "./widgets/Page404.vue";
 import ConsoleApp from "./ConsoleApp.vue";
 import { setLoadingTitle } from "@/tools/dom";
@@ -46,6 +47,13 @@ export async function apply(parent: PanelFrontendPluginContext) {
     path: "/404",
     name: t("TXT_CODE_393c816c"),
     component: Page404,
+    meta: { permission: ROLE.GUEST, mainMenu: false }
+  });
+
+  ctx.routes.add({
+    path: "/about",
+    name: t("TXT_CODE_3b4b656d"),
+    component: AboutPage,
     meta: { permission: ROLE.GUEST, mainMenu: false }
   });
 

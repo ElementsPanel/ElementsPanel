@@ -99,6 +99,14 @@ export function useHeaderMenus() {
         click: onClickIcon
       },
       {
+        title: t("TXT_CODE_3b4b656d"),
+        icon: "mdi-information-outline",
+        mdiIcon: "mdi-information-outline",
+        click: () => handleToPage("/about"),
+        conditions: true,
+        onlyPC: false
+      },
+      {
         title: t("TXT_CODE_5d88a9b"),
         leftSideTitle: t("TXT_CODE_ee01c10c"),
         icon: "mdi-palette-outline",

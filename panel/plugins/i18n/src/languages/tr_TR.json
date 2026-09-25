@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_ABOUT_ORIGIN": "ElementsPanel, {project} ve diğer açık kaynaklı yazılımlar olmadan ortaya çıkamazdı.",
+  "TXT_CODE_ABOUT_SOURCE": "Kaynak kodu",
   "TXT_CODE_LEAVES_DONT_RESPOND_PING": "Sunucu tamamen başlatılana kadar ping isteklerine yanıt verme.",
   "TXT_CODE_LEAVES_HOPPER_COUNTER": "Huni sayaçlarını etkinleştir.",
   "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "LMS Paster protokolü desteğini etkinleştir.",
