@@ -1,6 +1,8 @@
 import { ctx } from "./context";
 import {
   bootstrapPanelFrontendPlugin,
+  auditFrontendPlugins,
+  getPluginDiagnostics,
   getLoadedPlugins,
   loadPlugin,
   refreshPlugins,
@@ -17,6 +19,8 @@ declare global {
       reload: typeof reloadPlugin;
       refresh: typeof refreshPlugins;
       loaded: typeof getLoadedPlugins;
+      diagnostics: typeof getPluginDiagnostics;
+      audit: typeof auditFrontendPlugins;
     };
   }
 }
@@ -27,23 +31,30 @@ export async function setupPanelFrontendPlugins() {
     get loaded() {
       return getLoadedPlugins();
     },
+    get diagnostics() {
+      return getPluginDiagnostics();
+    },
     load: loadPlugin,
     unload: unloadPlugin,
     reload: reloadPlugin,
-    refresh: refreshPlugins
+    refresh: refreshPlugins,
+    audit: auditFrontendPlugins
   });
 
   await bootstrapPanelFrontendPlugin("runtime");
   await bootstrapPanelFrontendPlugin("i18n");
   await bootstrapPanelFrontendPlugin("console");
   await refreshPlugins();
+  auditFrontendPlugins();
 
   window.ElementsPanelPlugins = {
     load: loadPlugin,
     unload: unloadPlugin,
     reload: reloadPlugin,
     refresh: refreshPlugins,
-    loaded: getLoadedPlugins
+    loaded: getLoadedPlugins,
+    diagnostics: getPluginDiagnostics,
+    audit: auditFrontendPlugins
   };
   await ctx.parallel("plugins/loaded");
   await ctx.start();

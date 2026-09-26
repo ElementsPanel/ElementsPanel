@@ -6,13 +6,26 @@ import _ from "lodash";
 axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 let authToken: string | undefined;
 
+export interface ApiConnectionReporter {
+  requestStarted(): void;
+  requestSucceeded(): void;
+  requestFailed(error: unknown): void;
+}
+
+let connectionReporter: ApiConnectionReporter | undefined;
+
+export function setApiConnectionReporter(reporter?: ApiConnectionReporter) {
+  connectionReporter = reporter;
+}
+
 export function setAuthToken(token?: string) {
   if (authToken !== token) apiService.clearCache();
   authToken = token;
 }
 
 axios.interceptors.request.use((config) => {
-  config.params = { ...config.params, token: authToken };
+  if (authToken) config.headers.set("Authorization", `Bearer ${authToken}`);
+  else config.headers.delete("Authorization");
   return config;
 });
 
@@ -101,8 +114,15 @@ class ApiService {
   }
 
   private async sendRequest<T>(config: RequestConfig): Promise<T | undefined> {
-    const { data } = await axios<PacketProtocol<T>>(config);
-    return data?.data;
+    connectionReporter?.requestStarted();
+    try {
+      const { data } = await axios<PacketProtocol<T>>(config);
+      connectionReporter?.requestSucceeded();
+      return data?.data;
+    } catch (error) {
+      connectionReporter?.requestFailed(error);
+      throw error;
+    }
   }
 }
 

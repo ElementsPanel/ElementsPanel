@@ -3,6 +3,7 @@ import path from "path";
 import { pathToFileURL } from "url";
 import {
   pluginDirectoryRevision,
+  createFrontendPluginMetadata,
   applyPluginOverrides,
   removePluginOverride,
   writePluginOverride,
@@ -84,7 +85,7 @@ export interface LoadedPanelPlugin {
 
 /** One entry of `/plugins/manifest.json`, as the browser consumes it. */
 export interface PanelFrontendPluginEntry {
-  metadata: PluginManifest;
+  metadata: ReturnType<typeof createFrontendPluginMetadata>;
   directory: string;
   assetDirectory: string;
   entry: string;
@@ -368,18 +369,13 @@ export function getPanelFrontendManifest(): PanelFrontendPluginEntry[] {
       : [];
     entries.push({
       // Backend configuration may contain credentials. Browser config is explicit.
-      metadata: {
-        id: plugin.manifest.id,
-        version: plugin.manifest.version,
-        priority: plugin.manifest.priority,
-        elements: plugin.manifest.elements,
-        config: plugin.manifest.frontendConfig,
+      metadata: createFrontendPluginMetadata(plugin.manifest, {
         restartRequired:
           pluginState(
             plugin,
             loaded.find((item) => item.manifest.id === plugin.manifest.id)
           ) === "restart-required"
-      },
+      }),
       directory: plugin.manifest.id,
       assetDirectory: plugin.folder,
       entry: toUrl(plugin.entry),

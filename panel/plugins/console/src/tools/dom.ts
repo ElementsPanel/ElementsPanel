@@ -1,3 +1,5 @@
+import type { PanelFrontendPluginDiagnostic } from "@/plugin/context";
+
 export function findParentWithClass(element: HTMLElement, className: string): HTMLElement | null {
   if (element.classList.contains(className)) {
     return element;
@@ -15,13 +17,17 @@ export function findParentWithClass(element: HTMLElement, className: string): HT
 }
 
 export function closeAppLoading() {
-  (window as any).closeLoadingContainer();
+  window.closeLoadingContainer();
 }
 
 export function setLoadingTitle(title: string) {
-  (window as any).setLoadingTitle(title);
+  window.setLoadingTitle(title);
 }
 
 export function setAppLoadingError(error: string) {
-  (window as any).setAppLoadingError(error);
+  window.setAppLoadingError(error);
+}
+
+export function setAppLoadingPlugins(plugins: readonly PanelFrontendPluginDiagnostic[]) {
+  window.setAppLoadingPlugins(plugins);
 }

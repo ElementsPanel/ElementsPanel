@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "description": "Provides the panel's base Web UI shell, shared frontend implementation, routes, layout cards and global styles.",
   "priority": -9000,
+  "frontendInject": ["runtime", "i18n"],
+  "frontendImmediate": true,
+  "frontendRequired": true,
   "backend": "backend/index.cjs",
   "frontend": "src/frontend.ts"
 }

@@ -444,6 +444,7 @@ function frontendFixture(t) {
   ctx.plugin(translations(Service));
   ctx.set("console", {});
   ctx.set("ui", { globalComponent() {} });
+  ctx.set("slots", { register() {} });
   const state = {
     isAdmin: vue.ref(true),
     isLogged: vue.ref(true),

@@ -38,7 +38,7 @@ const isFileManagerAvailable = (_context: PanelFrontendInstanceActionContext) =>
   return state.settings.canFileManager || isAdmin.value;
 };
 
-export const inject = ["console", "i18n", "ui", "actions", "routes"];
+export const inject = ["console", "i18n", "slots", "actions", "routes"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
@@ -98,5 +98,5 @@ export function apply(ctx: PanelFrontendPluginContext) {
   // The upload progress bubble is an overlay that belongs to no route, and it
   // reports this plugin's own upload queue, so it is mounted for the plugin's
   // lifetime rather than by `App.vue`.
-  ctx.ui.globalComponent(UploadBubble);
+  ctx.slots.register("shell.overlay", UploadBubble, { id: "file-upload-progress" });
 }

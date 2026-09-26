@@ -30,7 +30,7 @@ for (const name of [
 after(() => dom.window.close());
 
 const vue = frontendRequire("vue");
-const { Context, Logger } = frontendRequire("cordis");
+const { Context, Logger, Service } = frontendRequire("cordis");
 const { createRouter, createMemoryHistory } = frontendRequire("vue-router");
 
 function load(filename, overrides = {}, environment = {}) {
@@ -89,7 +89,11 @@ function frontendFixture(t, { user = true, failStatus = false } = {}) {
       return () => vue.h("main", { id: "plugin-console" }, String(state.userInfo?.permission));
     }
   };
-  const loading = { setLoadingTitle() {}, setAppLoadingError() {} };
+  const loading = {
+    setLoadingTitle() {},
+    setAppLoadingError() {},
+    setAppLoadingPlugins() {}
+  };
   const runtime = load("panel/plugins/runtime/src/frontend.ts", {
     "@console/stores/useAppStateStore": { useAppStateStore: () => store },
     "@console/tools/dom": loading
@@ -101,13 +105,32 @@ function frontendFixture(t, { user = true, failStatus = false } = {}) {
   const services = load("panel/plugins/console/src/plugin/services.ts", {
     "@console/config/router": { router }
   });
+  const slots = load("panel/plugins/console/src/plugin/slots.ts", {
+    cordis: frontendRequire("cordis"),
+    vue
+  });
+  class TestConnectionService extends Service {
+    state = {
+      status: "connected",
+      networkAvailable: true,
+      generation: 1,
+      retryAttempt: 0,
+      changedAt: Date.now()
+    };
+    constructor(scope) {
+      super(scope, "connection", true);
+    }
+    reconnect() {}
+  }
   const bootstrap = load("panel/plugins/console/src/bootstrap.ts", {
     "@/lang/i18n": { getI18nInstance: () => ctx.i18n.instance },
     "./config/router": { router },
     "./stores/useAppStateStore": { useAppStateStore: () => store },
     "./tools/dom": loading,
     "./ConsoleApp.vue": Root,
-    "./plugin/services": services
+    "./plugin/services": services,
+    "./plugin/slots": slots,
+    "./services/connectionService": { ConnectionService: TestConnectionService }
   });
   const session = load("panel/plugins/user/src/session.ts", {
     "@/lang/i18n": { t: (key) => key },

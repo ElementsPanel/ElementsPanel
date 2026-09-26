@@ -18,7 +18,7 @@ const ROLE_ADMIN = 10;
 const ROLE_USER = 1;
 const ROLE_GUEST = 0;
 
-export const inject = ["console", "i18n", "routes", "ui"];
+export const inject = ["console", "i18n", "routes", "slots"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
@@ -38,7 +38,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   // Authentication settings are declared by this plugin's backend, so the plugin
   // manager renders them and this half contributes no form.
 
-  ctx.ui.globalComponent(MyselfInfoDialog);
+  ctx.slots.register("shell.overlay", MyselfInfoDialog, { id: "user-self-dialog" });
 
   ctx.routes.add({
     path: "/login",

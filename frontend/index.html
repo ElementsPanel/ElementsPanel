@@ -103,6 +103,28 @@
       display: none;
     }
 
+    #before-app-mounted .loading-plugins {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: min(420px, calc(100vw - 48px));
+      margin-top: 8px;
+      color: var(--loading-subtitle-color);
+      font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      text-align: left;
+    }
+
+    #before-app-mounted .loading-plugin {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    #before-app-mounted .loading-plugin-state {
+      flex: none;
+      color: var(--loading-color);
+    }
+
     #before-app-mounted .loading-error {
       display: none;
       flex-direction: column;
@@ -175,13 +197,39 @@
         const loading = loadingBox.querySelector(".loading");
         const loadingDots = loadingBox.querySelector(".loading-dots");
         const loadingTitle = loadingBox.querySelector(".loading-title");
+        const loadingPlugins = loadingBox.querySelector(".loading-plugins");
         if (loading) loading.style.display = "none";
         if (loadingDots) loadingDots.style.display = "none";
         if (loadingTitle) loadingTitle.style.display = "none";
+        if (loadingPlugins) loadingPlugins.style.display = "none";
 
         // Show error box with message
         errorMessage.textContent = error;
         errorBox.classList.add("show");
+      };
+
+      window.setAppLoadingPlugins = function (plugins) {
+        const list = document
+          .getElementById("before-app-mounted")
+          .querySelector(".loading-plugins");
+        list.replaceChildren();
+        for (const plugin of plugins) {
+          const row = document.createElement("div");
+          const name = document.createElement("span");
+          const state = document.createElement("span");
+          row.className = "loading-plugin";
+          name.className = "loading-plugin-name";
+          state.className = "loading-plugin-state";
+          name.textContent = plugin.id + (plugin.required ? " *" : "");
+          const details = plugin.error
+            ? plugin.error
+            : plugin.missingServices.length
+              ? "missing: " + plugin.missingServices.join(", ")
+              : "";
+          state.textContent = details ? plugin.state + " — " + details : plugin.state;
+          row.append(name, state);
+          list.append(row);
+        }
       };
     })(window);
   </script>
@@ -198,6 +246,7 @@
         <div></div>
       </div>
       <div class="loading-title">Loading...</div>
+      <div class="loading-plugins" aria-live="polite"></div>
       <div class="loading-error">
         <div class="error-title">Error</div>
         <div class="error-message"></div>

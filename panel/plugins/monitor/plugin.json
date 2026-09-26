@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Provides the data monitoring page: panel and host status, CPU/request charts, node status tiles and the operation log.",
   "priority": 15,
+  "frontendInject": ["console", "i18n"],
   "backend": "backend/index.cjs",
   "frontend": "src/frontend.ts"
 }

@@ -25,9 +25,8 @@ const {
 const { isPhone } = useScreen();
 const route = useRoute();
 
-// Overlays that belong to no route. Feature plugins add their own global
-// components through `ctx.ui.globalComponent()` and leave with their scope.
-const GLOBAL_COMPONENTS = computed(() => [InputDialogProvider, ...ctx.ui.globalComponents]);
+// Typed, effect-scoped overlays contributed by feature plugins.
+const OVERLAY_COMPONENTS = computed(() => ctx.slots.entries("shell.overlay", {}));
 
 const isLoginPage = computed(() => route.path === "/login");
 const isImmersivePage = computed(() => route.meta.immersive === true);
@@ -89,7 +88,13 @@ onMounted(async () => {
 
       <AppBottomNav v-if="isPhone && !useSidebarLayout && !isLoginPage && !isImmersivePage" />
 
-      <component :is="component" v-for="(component, index) in GLOBAL_COMPONENTS" :key="index" />
+      <InputDialogProvider />
+      <component
+        :is="entry.component"
+        v-for="entry in OVERLAY_COMPONENTS"
+        :key="entry.id"
+        v-bind="entry.props"
+      />
     </AppConfigProvider>
   </VThemeProvider>
 </template>

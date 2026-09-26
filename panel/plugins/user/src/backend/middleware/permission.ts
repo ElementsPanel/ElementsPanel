@@ -55,6 +55,14 @@ function tooFast(ctx: Koa.ParameterizedContext) {
   ctx.body = `${$t("TXT_CODE_permission.tooFast")}`;
 }
 
+function getRequestToken(ctx: Koa.ParameterizedContext): string | undefined {
+  const authorization = ctx.get("authorization");
+  const bearer = authorization.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
+  if (bearer) return bearer;
+  // Compatibility for older clients and third-party integrations.
+  return typeof ctx.query.token === "string" ? ctx.query.token : undefined;
+}
+
 // Basic user permission middleware
 export default function permission(parameter: GuardedRoute): Koa.Middleware {
   return async (ctx: Koa.ParameterizedContext, next: Koa.Next) => {
@@ -86,7 +94,7 @@ export default function permission(parameter: GuardedRoute): Koa.Middleware {
     // If the route requires Token verification, it will be verified, the default is automatic verification
     if (parameter.token !== false) {
       if (!isAjax(ctx)) return ajaxError(ctx);
-      const requestToken = ctx.query.token;
+      const requestToken = getRequestToken(ctx);
       const realToken = ctx.session?.["token"];
       if (!realToken || requestToken !== realToken) {
         return tokenError(ctx);

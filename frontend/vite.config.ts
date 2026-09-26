@@ -11,7 +11,8 @@ import { pluginSdkModules } from "./plugin-sdk.config.mjs";
 import { defineConfig, normalizePath, type Plugin } from "vite";
 import {
   discoverExternalPluginRoots,
-  discoverPluginsFromRoots
+  discoverPluginsFromRoots,
+  createFrontendPluginMetadata
 } from "../common/src/plugin_manifest";
 import { applyPluginOverrides } from "../common/src/plugin_overrides";
 
@@ -83,7 +84,7 @@ function discoverPanelPlugins(includeExternal = false): DiscoveredPanelPlugin[] 
   )
     .filter((plugin) => plugin.entry && (!includeExternal || plugin.manifest.enabled !== false))
     .map((plugin) => ({
-      metadata: plugin.manifest as Record<string, unknown>,
+      metadata: createFrontendPluginMetadata(plugin.manifest) as Record<string, unknown>,
       directory: plugin.directory,
       folder: plugin.folder,
       entry: plugin.entry!,

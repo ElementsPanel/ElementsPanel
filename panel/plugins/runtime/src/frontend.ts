@@ -1,6 +1,10 @@
 import type { PanelFrontendPluginContext } from "@/plugin";
 import { useAppStateStore } from "@console/stores/useAppStateStore";
-import { setAppLoadingError, setLoadingTitle } from "@console/tools/dom";
+import {
+  setAppLoadingError,
+  setAppLoadingPlugins,
+  setLoadingTitle
+} from "@console/tools/dom";
 
 function errorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
@@ -15,7 +19,8 @@ export async function apply(ctx: PanelFrontendPluginContext) {
     get language() {
       return state.language;
     },
-    showError: (error: unknown) => setAppLoadingError(errorMessage(error))
+    showError: (error: unknown) => setAppLoadingError(errorMessage(error)),
+    updatePlugins: setAppLoadingPlugins
   });
   ctx.effect(() => {
     const onRejection = (event: PromiseRejectionEvent) =>

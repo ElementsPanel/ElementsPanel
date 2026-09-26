@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Owns the remote-node subsystem the panel reaches its daemons through, plus the node management pages, image management, layout cards, the Desktop node manager and the node management API.",
   "priority": 20,
+  "frontendInject": ["console", "i18n", "instance"],
   "backend": "backend/index.cjs",
   "frontend": "src/frontend.ts"
 }

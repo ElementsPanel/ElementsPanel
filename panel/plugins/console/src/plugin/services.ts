@@ -107,9 +107,11 @@ interface ComponentSlots {
 export class UiService extends Service implements FrontendUiService {
   // Declared because `app()` reads `ctx.vue` on every registration; without it
   // cordis warns once per call that the service was not injected.
-  static inject = ["vue"];
+  static inject = ["vue", "slots"];
 
-  readonly globalComponents = shallowReactive<Component[]>([]);
+  get globalComponents() {
+    return this.ctx.slots.entries("shell.overlay", {}).map((entry) => entry.component);
+  }
 
   private readonly vueComponents: ComponentSlots = {
     stacks: new Map(),
@@ -127,10 +129,7 @@ export class UiService extends Service implements FrontendUiService {
   }
 
   globalComponent(component: Component) {
-    return this.ctx.effect(() => {
-      this.globalComponents.push(component);
-      return () => remove(this.globalComponents, component);
-    });
+    return this.ctx.slots.register("shell.overlay", component);
   }
 
   /**

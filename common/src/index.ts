@@ -41,6 +41,7 @@ export {
   discoverPlugins,
   discoverPluginsFromRoots,
   discoverExternalPluginRoots,
+  createFrontendPluginMetadata,
   readPluginManifest,
   resolvePluginEntry,
   sortPlugins
@@ -48,6 +49,7 @@ export {
 export type {
   DiscoveredPlugin,
   DiscoverPluginsOptions,
+  FrontendPluginMetadata,
   PluginDiscoveryRoot,
   PluginManifest
 } from "./plugin_manifest";

@@ -7,6 +7,7 @@ import type { RemoteNodeHook } from "@console/hooks/useRemoteNode";
 import type { NodePluginApi } from "@console/services/apis/node";
 import type { UserPluginApi } from "@console/services/apis/user";
 import type { LoadedPanelFrontendPlugin, PanelFrontendPluginMetadata } from "./loader";
+import type { PluginState } from "../../../common/src/plugin_contract";
 
 /**
  * The frontend's cordis container, and the complete list of what a plugin can
@@ -187,6 +188,7 @@ export interface FrontendVueService {
 export interface FrontendStartupService {
   readonly language: string;
   showError(error: unknown): void;
+  updatePlugins(plugins: readonly PanelFrontendPluginDiagnostic[]): void;
 }
 
 /** The panel shell. Provided by the foundational `console` plugin. */
@@ -239,6 +241,49 @@ export interface FrontendUiService {
   readonly globalComponents: readonly Component[];
 }
 
+/** Slots owned by the console shell and available to independently loaded plugins. */
+export interface PanelFrontendSlotMap {
+  "shell.overlay": { props: Record<string, never> };
+  "shell.header.leading": { props: { mobile: boolean } };
+  "shell.header.actions": { props: { mobile: boolean } };
+}
+
+export type PanelFrontendSlotName = keyof PanelFrontendSlotMap & string;
+export type PanelFrontendSlotProps<K extends PanelFrontendSlotName> =
+  PanelFrontendSlotMap[K]["props"];
+
+export interface PanelFrontendSlotEntry<K extends PanelFrontendSlotName = PanelFrontendSlotName> {
+  readonly id: string;
+  readonly owner: string;
+  readonly name: K;
+  readonly component: Component;
+  readonly order: number;
+  readonly props: Record<string, unknown>;
+}
+
+export interface PanelFrontendSlotRegistration<K extends PanelFrontendSlotName> {
+  /** Stable identity inside one slot. Defaults to `<plugin>:<sequence>`. */
+  id?: string;
+  /** Lower values render first. */
+  order?: number;
+  /** Static props merged after the shell-owned props. */
+  props?: Record<string, unknown>;
+  /** Evaluated whenever the shell enumerates the slot. */
+  condition?: (props: PanelFrontendSlotProps<K>) => boolean;
+}
+
+export interface FrontendSlotsService {
+  register<K extends PanelFrontendSlotName>(
+    name: K,
+    component: Component,
+    options?: PanelFrontendSlotRegistration<K>
+  ): () => void;
+  entries<K extends PanelFrontendSlotName>(
+    name: K,
+    props: PanelFrontendSlotProps<K>
+  ): readonly PanelFrontendSlotEntry<K>[];
+}
+
 export interface FrontendMenusService {
   app(menu: PanelFrontendAppMenu): () => void;
   login(action: PanelFrontendLoginAction): () => void;
@@ -262,11 +307,45 @@ export interface FrontendActionsService {
 
 export interface FrontendPluginsService {
   readonly loaded: readonly LoadedPanelFrontendPlugin[];
+  readonly diagnostics: readonly PanelFrontendPluginDiagnostic[];
   load(id: string): Promise<LoadedPanelFrontendPlugin>;
   unload(id: string): Promise<boolean>;
   reload(id: string): Promise<LoadedPanelFrontendPlugin>;
   /** Re-reads the installed plugins and loads or unloads to match. */
   refresh(): Promise<readonly PanelFrontendPluginMetadata[]>;
+  /** Throws only when an entry declared `frontendRequired` is not active. */
+  audit(): void;
+}
+
+export interface PanelFrontendPluginDiagnostic {
+  id: string;
+  state: PluginState;
+  required: boolean;
+  revision?: string;
+  requiredServices: readonly string[];
+  missingServices: readonly string[];
+  error?: string;
+}
+
+export type FrontendConnectionStatus =
+  | "connecting"
+  | "connected"
+  | "degraded"
+  | "disconnected";
+
+export interface FrontendConnectionState {
+  status: FrontendConnectionStatus;
+  networkAvailable: boolean;
+  generation: number;
+  retryAttempt: number;
+  lastError?: string;
+  changedAt: number;
+}
+
+export interface FrontendConnectionService {
+  readonly state: Readonly<FrontendConnectionState>;
+  /** Cancels the current retry delay and probes the panel immediately. */
+  reconnect(): void;
 }
 
 /**
@@ -413,10 +492,12 @@ declare module "cordis" {
     i18n: FrontendI18nService;
     routes: FrontendRoutesService;
     ui: FrontendUiService;
+    slots: FrontendSlotsService;
     menus: FrontendMenusService;
     actions: FrontendActionsService;
     plugins: FrontendPluginsService;
     desktop: FrontendDesktopService;
+    connection: FrontendConnectionService;
 
     // Provided by plugins. Read them with `usePluginService()` for graceful
     // degradation, or `inject` them from a plugin that cannot work without one.

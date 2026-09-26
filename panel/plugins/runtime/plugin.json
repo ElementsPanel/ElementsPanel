@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "description": "Initializes panel configuration and frontend startup state, and exposes shared runtime services to plugins.",
   "priority": -9000,
+  "frontendInject": [],
+  "frontendImmediate": true,
+  "frontendRequired": true,
   "backend": "backend/index.cjs",
   "frontend": "src/frontend.ts"
 }

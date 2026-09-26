@@ -15,6 +15,7 @@ import {
 } from "vuetify/components";
 import { computed } from "vue";
 import { useRoute } from "vue-router";
+import { ctx } from "@/plugin/context";
 
 const route = useRoute();
 const { uiState } = useUiStore();
@@ -55,6 +56,12 @@ const activePath = computed(() => {
 const isRouteActive = (path: string): boolean => activePath.value === path;
 
 const { isPhone } = useScreen();
+const leadingSlots = computed(() =>
+  ctx.slots.entries("shell.header.leading", { mobile: isPhone.value })
+);
+const actionSlots = computed(() =>
+  ctx.slots.entries("shell.header.actions", { mobile: isPhone.value })
+);
 
 const openPhoneMenu = (b = false) => {
   uiState.showPhoneMenu = b;
@@ -91,8 +98,20 @@ const openPhoneMenu = (b = false) => {
         <a href="." class="header-logo" aria-label="ElementsPanel">
           <img :src="logoImage" alt="ElementsPanel" />
         </a>
+        <component
+          :is="entry.component"
+          v-for="entry in leadingSlots"
+          :key="entry.id"
+          v-bind="{ ...entry.props, mobile: false }"
+        />
       </div>
       <div class="btns header-actions">
+        <component
+          :is="entry.component"
+          v-for="entry in actionSlots"
+          :key="entry.id"
+          v-bind="{ ...entry.props, mobile: false }"
+        />
         <div v-for="(item, index) in desktopAppMenus as any" :key="index">
           <VMenu v-if="item.menus && item.conditions" location="bottom" :offset="6">
             <template #activator="{ props: menuProps }">
@@ -163,6 +182,12 @@ const openPhoneMenu = (b = false) => {
         <a href="." class="phone-logo" aria-label="ElementsPanel">
           <img :src="logoImage" alt="ElementsPanel" />
         </a>
+        <component
+          :is="entry.component"
+          v-for="entry in leadingSlots"
+          :key="entry.id"
+          v-bind="{ ...entry.props, mobile: true }"
+        />
         <div v-for="(item, index) in appMenus" :key="index">
           <VMenu
             v-if="item.menus && item.conditions && !item.onlyPC"
@@ -192,6 +217,12 @@ const openPhoneMenu = (b = false) => {
         </div>
       </div>
       <div class="phone-toolbar-side phone-toolbar-side-end">
+        <component
+          :is="entry.component"
+          v-for="entry in actionSlots"
+          :key="entry.id"
+          v-bind="{ ...entry.props, mobile: true }"
+        />
         <div v-for="(item, index) in appMenus" :key="index">
           <VBtn
             v-if="item.conditions && !item.onlyPC && !item.menus"

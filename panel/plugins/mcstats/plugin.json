@@ -4,5 +4,6 @@
   "version": "1.0.0",
   "description": "Adds Minecraft server status configuration to instance consoles.",
   "priority": 125,
+  "frontendInject": ["console", "instance"],
   "frontend": "src/frontend.ts"
 }

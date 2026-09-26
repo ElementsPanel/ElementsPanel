@@ -31,6 +31,124 @@ export interface PluginChangeResult {
   error?: string;
 }
 
+export interface PluginDependencyIssue {
+  type: "missing-dependency" | "dependency-cycle" | "dependency-unavailable";
+  dependencies: readonly string[];
+  message: string;
+}
+
+export interface PluginDependencyOrder<T> {
+  ordered: T[];
+  issues: Map<string, PluginDependencyIssue>;
+}
+
+/**
+ * Stable topological ordering shared by plugin hosts.
+ *
+ * Invalid nodes are kept out of `ordered`: direct missing dependencies are
+ * reported first, then anything depending on an invalid node, and finally
+ * cycles (plus nodes blocked behind a cycle). Independent nodes retain the
+ * caller's priority/id comparator.
+ */
+export function resolvePluginDependencyOrder<T>(
+  items: readonly T[],
+  options: {
+    id(item: T): string;
+    dependencies(item: T): readonly string[] | undefined;
+    compare(a: T, b: T): number;
+  }
+): PluginDependencyOrder<T> {
+  const sorted = [...items].sort(options.compare);
+  const byId = new Map(sorted.map((item) => [options.id(item), item]));
+  const dependencies = new Map(
+    sorted.map((item) => [
+      options.id(item),
+      [...new Set(options.dependencies(item) || [])].filter(Boolean)
+    ])
+  );
+  const issues = new Map<string, PluginDependencyIssue>();
+
+  for (const item of sorted) {
+    const id = options.id(item);
+    const missing = dependencies.get(id)!.filter((dependency) => !byId.has(dependency));
+    if (!missing.length) continue;
+    issues.set(id, {
+      type: "missing-dependency",
+      dependencies: missing,
+      message: `Missing frontend plugin dependencies: ${missing.join(", ")}`
+    });
+  }
+
+  const markUnavailable = () => {
+    let changed = false;
+    for (const item of sorted) {
+      const id = options.id(item);
+      if (issues.has(id)) continue;
+      const unavailable = dependencies.get(id)!.filter((dependency) => issues.has(dependency));
+      if (!unavailable.length) continue;
+      issues.set(id, {
+        type: "dependency-unavailable",
+        dependencies: unavailable,
+        message: `Frontend plugin dependencies are unavailable: ${unavailable.join(", ")}`
+      });
+      changed = true;
+    }
+    return changed;
+  };
+  while (markUnavailable()) {
+    // Propagate direct graph failures before sorting the remaining nodes.
+  }
+
+  const candidates = sorted.filter((item) => !issues.has(options.id(item)));
+  const candidateIds = new Set(candidates.map(options.id));
+  const indegree = new Map(candidates.map((item) => [options.id(item), 0]));
+  const dependents = new Map<string, T[]>();
+  for (const item of candidates) {
+    const id = options.id(item);
+    for (const dependency of dependencies.get(id)!) {
+      if (!candidateIds.has(dependency)) continue;
+      indegree.set(id, indegree.get(id)! + 1);
+      const bucket = dependents.get(dependency) || [];
+      bucket.push(item);
+      dependents.set(dependency, bucket);
+    }
+  }
+
+  const ready = candidates.filter((item) => indegree.get(options.id(item)) === 0);
+  ready.sort(options.compare);
+  const ordered: T[] = [];
+  while (ready.length) {
+    const item = ready.shift()!;
+    const id = options.id(item);
+    ordered.push(item);
+    for (const dependent of dependents.get(id) || []) {
+      const dependentId = options.id(dependent);
+      const next = indegree.get(dependentId)! - 1;
+      indegree.set(dependentId, next);
+      if (next === 0) {
+        ready.push(dependent);
+        ready.sort(options.compare);
+      }
+    }
+  }
+
+  const unresolved = candidates.filter((item) => !ordered.includes(item));
+  if (unresolved.length) {
+    const unresolvedIds = new Set(unresolved.map(options.id));
+    for (const item of unresolved) {
+      const id = options.id(item);
+      const blockedBy = dependencies.get(id)!.filter((dependency) => unresolvedIds.has(dependency));
+      issues.set(id, {
+        type: "dependency-cycle",
+        dependencies: blockedBy,
+        message: `Frontend plugin dependency cycle: ${[id, ...blockedBy].join(" -> ")}`
+      });
+    }
+  }
+
+  return { ordered, issues };
+}
+
 /** A queue survives failures, so a failed change cannot block subsequent repairs. */
 export function createPluginQueue() {
   let tail: Promise<unknown> = Promise.resolve();

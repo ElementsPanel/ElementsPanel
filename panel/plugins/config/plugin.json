@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Provides a central configuration page for loaded panel plugins.",
   "priority": 10000,
+  "frontendInject": ["console", "i18n"],
   "backend": "backend/index.cjs",
   "frontend": "src/frontend.ts"
 }

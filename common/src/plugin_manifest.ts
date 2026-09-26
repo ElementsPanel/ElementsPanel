@@ -24,6 +24,58 @@ export interface PluginManifest {
   [key: string]: unknown;
 }
 
+/** Browser-safe plugin metadata shared by the Vite and runtime manifests. */
+export interface FrontendPluginMetadata {
+  id: string;
+  version?: string;
+  description?: string;
+  priority?: number;
+  elements?: unknown;
+  /** Plugin ids that must be activated before this browser entry. */
+  frontendInject?: string[];
+  /** Loads in the foundation/prefetch tier. */
+  frontendImmediate?: boolean;
+  /** A failed or pending entry prevents application startup. */
+  frontendRequired?: boolean;
+  /** Browser-only configuration; backend `config` is never exposed. */
+  config?: unknown;
+  restartRequired?: boolean;
+}
+
+function stringArray(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const result = value.filter((item): item is string => typeof item === "string" && !!item.trim());
+  return result.length ? [...new Set(result.map((item) => item.trim()))] : undefined;
+}
+
+/**
+ * Redacts a full plugin manifest to the fields a browser is allowed to see.
+ * Backend `config` may contain credentials, so only `frontendConfig` crosses
+ * this boundary.
+ */
+export function createFrontendPluginMetadata(
+  manifest: PluginManifest,
+  extras: Pick<FrontendPluginMetadata, "restartRequired"> = {}
+): FrontendPluginMetadata {
+  const frontendInject = stringArray(manifest.frontendInject);
+  return {
+    id: manifest.id,
+    ...(manifest.version === undefined ? {} : { version: manifest.version }),
+    ...(manifest.description === undefined ? {} : { description: manifest.description }),
+    ...(manifest.priority === undefined ? {} : { priority: manifest.priority }),
+    ...(manifest.elements === undefined ? {} : { elements: manifest.elements }),
+    ...(frontendInject === undefined ? {} : { frontendInject }),
+    ...(manifest.frontendImmediate === undefined
+      ? {}
+      : { frontendImmediate: Boolean(manifest.frontendImmediate) }),
+    ...(manifest.frontendRequired === undefined
+      ? {}
+      : { frontendRequired: Boolean(manifest.frontendRequired) }),
+    ...(manifest.frontendConfig === undefined ? {} : { config: manifest.frontendConfig }),
+    ...(extras.restartRequired === undefined ? {} : extras)
+  };
+}
+
 export interface DiscoveredPlugin {
   manifest: PluginManifest;
   /** Absolute path of the plugin directory. */

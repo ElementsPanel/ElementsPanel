@@ -11,12 +11,12 @@ import OverviewPage from "./normal/OverviewPage.vue";
 
 const ROLE_ADMIN = 10;
 
-export const inject = ["console", "i18n", "routes", "ui", "desktop", "actions"];
+export const inject = ["console", "i18n", "routes", "slots", "desktop", "actions"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
 
-  ctx.ui.globalComponent(InstanceLogHost);
+  ctx.slots.register("shell.overlay", InstanceLogHost, { id: "monitor-instance-log" });
   ctx.effect(() => () => closeInstanceLog());
 
   ctx.actions.instance({

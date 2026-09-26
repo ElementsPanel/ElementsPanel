@@ -14,6 +14,8 @@ import {
   UiService,
   VueService
 } from "./plugin/services";
+import { SlotsService } from "./plugin/slots";
+import { ConnectionService } from "./services/connectionService";
 
 export async function prepareApplication(ctx: PanelFrontendPluginContext) {
   const app = createApp(ConsoleApp);
@@ -23,13 +25,18 @@ export async function prepareApplication(ctx: PanelFrontendPluginContext) {
 
   ctx.plugin(VueService, { app, pinia });
   ctx.plugin(RoutesService);
+  ctx.plugin(SlotsService);
+  ctx.plugin(ConnectionService);
   ctx.plugin(UiService);
   ctx.plugin(MenusService);
   ctx.plugin(ActionsService);
   ctx.plugin(DesktopService);
 
   const applicationContext = await new Promise<PanelFrontendPluginContext>((resolve) => {
-    ctx.inject(["vue", "routes", "ui", "menus", "actions", "desktop"], (scope) => resolve(scope));
+    ctx.inject(
+      ["vue", "routes", "slots", "connection", "ui", "menus", "actions", "desktop"],
+      (scope) => resolve(scope)
+    );
   });
 
   let mounted = false;

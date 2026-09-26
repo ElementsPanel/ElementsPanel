@@ -54,6 +54,23 @@ types, finite numbers, bounds and select values. Set `restartRequired: true` on
 forms whose writes only take effect at startup. Backend config is never included
 in the public browser manifest; `frontendConfig` is the explicit public input.
 
+Browser entries can also declare their activation graph in `plugin.json`:
+
+```json
+{
+  "frontendInject": ["runtime", "i18n", "console"],
+  "frontendImmediate": false,
+  "frontendRequired": false
+}
+```
+
+`frontendInject` contains plugin ids, not Cordis service names. The browser
+topologically orders the graph and reports missing dependencies and cycles.
+`frontendRequired` turns a failed or pending entry into a startup failure;
+optional entries remain visible in diagnostics while the rest of the UI starts.
+`frontendImmediate` identifies foundation/prefetch entries for hosts that split
+activation into tiers.
+
 ## Results and lifecycle
 
 Enablement endpoints retain their inventory fields and add:
@@ -98,6 +115,28 @@ Foundational browser replacements require a page refresh; a backend with newer
 code/config on disk first requires a service restart. Failed frontend activation
 is visible in plugin settings and in `window.ElementsPanelPlugins.loaded()`;
 `reload(id)` retries an ordinary plugin. This is not state-preserving code HMR.
+`window.ElementsPanelPlugins.diagnostics()` exposes state, required services,
+missing services and the loaded revision; `audit()` throws only for required
+entries that are not active. Reload URLs use the server-provided revision rather
+than timestamps, so one code generation has one browser cache identity.
+
+The console exposes typed extension seats through `ctx.slots.register()`. For
+example, a route-independent overlay is registered and disposed with its plugin:
+
+```ts
+ctx.slots.register("shell.overlay", ExampleDialog, {
+  id: "example-dialog",
+  order: 10
+});
+```
+
+Current seats are `shell.overlay`, `shell.header.leading` and
+`shell.header.actions`. `ctx.ui.globalComponent()` remains a compatibility
+wrapper around `shell.overlay`; new plugins should use slots directly.
+
+Panel API requests now send session tokens with `Authorization: Bearer ...`.
+The backend temporarily accepts the legacy `?token=` form for older clients,
+but new integrations should avoid putting credentials in URLs.
 
 ## Publication and compatibility
 

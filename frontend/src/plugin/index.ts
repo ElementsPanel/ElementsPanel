@@ -12,7 +12,7 @@
  *
  * export function apply(ctx: PanelFrontendPluginContext) {
  *   ctx.i18n.define(localeMessages);
- *   ctx.ui.component("ExampleWidget", ExampleWidget);
+ *   ctx.slots.register("shell.header.actions", ExampleWidget, { id: "example" });
  *   ctx.routes.add({ path: "/example", component: ExamplePage });
  * }
  * ```
@@ -25,6 +25,9 @@ export type {
   FrontendActionsService,
   FrontendDesktopService,
   FrontendConsoleService,
+  FrontendConnectionService,
+  FrontendConnectionState,
+  FrontendConnectionStatus,
   FrontendStartupService,
   FrontendI18nService,
   FrontendInstanceService,
@@ -37,6 +40,7 @@ export type {
   FrontendNodeService,
   FrontendPluginsService,
   FrontendRoutesService,
+  FrontendSlotsService,
   FrontendUiService,
   FrontendUserService,
   FrontendVueService,
@@ -48,15 +52,21 @@ export type {
   PanelFrontendInstanceAction,
   PanelFrontendInstanceActionContext,
   PanelFrontendLoginAction,
+  PanelFrontendPluginDiagnostic,
   PanelFrontendPluginContext,
   PanelLanguageOption,
   PanelFrontendScheduleAction,
+  PanelFrontendSlotEntry,
+  PanelFrontendSlotMap,
+  PanelFrontendSlotName,
+  PanelFrontendSlotProps,
+  PanelFrontendSlotRegistration,
   PanelFrontendTerminalAction,
   PanelFrontendTerminalActionContext,
   PanelFrontendTerminalButton
 } from "./context";
 export { setupPanelFrontendPlugins } from "./install";
-export { getLoadedPlugins } from "./loader";
+export { auditFrontendPlugins, getLoadedPlugins, getPluginDiagnostics } from "./loader";
 export type {
   LoadedPanelFrontendPlugin,
   PanelFrontendPluginMetadata,

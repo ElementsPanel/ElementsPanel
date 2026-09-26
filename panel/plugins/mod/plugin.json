@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "Provides Minecraft mod and plugin discovery, installation and management in normal and Desktop modes.",
   "priority": 150,
+  "frontendInject": ["console", "i18n", "instance", "file"],
   "backend": "backend/index.cjs",
   "frontend": "src/frontend.ts"
 }

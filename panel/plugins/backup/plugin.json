@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Provides instance backup management in normal and Desktop modes.",
   "priority": 150,
+  "frontendInject": ["console", "i18n", "instance"],
   "backend": "backend/index.cjs",
   "frontend": "src/frontend.ts"
 }

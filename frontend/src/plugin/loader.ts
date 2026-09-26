@@ -1,11 +1,17 @@
 import {
   createPluginQueue,
+  resolvePluginDependencyOrder,
+  type PluginState,
   validatePluginCompatibility
 } from "../../../common/src/plugin_contract";
 import { trackPluginDisposal } from "../../../common/src/plugin_lifecycle";
 import { shallowReactive } from "vue";
-import type { ForkScope } from "cordis";
-import { ctx, type PanelFrontendPluginContext } from "./context";
+import type { EffectScope, ForkScope } from "cordis";
+import {
+  ctx,
+  type PanelFrontendPluginContext,
+  type PanelFrontendPluginDiagnostic
+} from "./context";
 import { panelPluginModules } from "virtual:panel-plugins";
 
 const FOUNDATION_SERVICES: Record<string, string> = {
@@ -35,6 +41,11 @@ export interface PanelFrontendPluginMetadata {
   priority?: number;
   frontend?: string;
   ui?: string;
+  frontendInject?: string[];
+  frontendImmediate?: boolean;
+  frontendRequired?: boolean;
+  config?: unknown;
+  restartRequired?: boolean;
   [key: string]: unknown;
 }
 
@@ -57,6 +68,10 @@ interface PluginSource {
 export interface LoadedPanelFrontendPlugin {
   metadata: PanelFrontendPluginMetadata;
   directory: string;
+  state: PluginState;
+  requiredServices: readonly string[];
+  missingServices: readonly string[];
+  revision?: string;
   fork?: ForkScope;
   error?: Error;
   restartRequired?: boolean;
@@ -71,6 +86,65 @@ interface InternalPlugin extends LoadedPanelFrontendPlugin {
 
 const plugins = shallowReactive<InternalPlugin[]>([]);
 const sources = new Map<string, PluginSource>();
+
+function compareSources(a: PluginSource, b: PluginSource) {
+  return (
+    (Number(a.metadata.priority) || 0) - (Number(b.metadata.priority) || 0) ||
+    a.metadata.id.localeCompare(b.metadata.id)
+  );
+}
+
+function requiredServices(module: PanelFrontendPluginModule) {
+  if (Array.isArray(module.inject)) return [...new Set(module.inject)];
+  if (!module.inject) return [];
+  return Object.entries(module.inject)
+    .filter(([, value]) => value?.required)
+    .map(([name]) => name);
+}
+
+function scopeState(scope?: ForkScope): PluginState {
+  if (!scope) return "failed";
+  if (scope.error || scope.runtime.error) return "failed";
+  switch (scope.status) {
+    case 0: // ScopeStatus.PENDING
+      return "pending";
+    case 1: // ScopeStatus.LOADING
+      return "loading";
+    case 2: // ScopeStatus.ACTIVE
+      return "active";
+    case 3: // ScopeStatus.FAILED
+    case 4: // ScopeStatus.DISPOSED
+      return "failed";
+    default:
+      return "pending";
+  }
+}
+
+function refreshPluginState(plugin: InternalPlugin) {
+  plugin.missingServices = plugin.requiredServices.filter((name) => !ctx.get(name as never));
+  plugin.state =
+    plugin.restartRequired || plugin.reloadRequired
+      ? "restart-required"
+      : plugin.error
+      ? "failed"
+      : scopeState(plugin.fork);
+}
+
+function pluginError(plugin: InternalPlugin): Error | undefined {
+  const error = plugin.error || plugin.fork?.error || plugin.fork?.runtime.error;
+  if (error === undefined || error === null) return undefined;
+  return error instanceof Error ? error : new Error(String(error));
+}
+
+function notifyPluginDiagnostics() {
+  for (const plugin of plugins) refreshPluginState(plugin);
+  ctx.get("startup")?.updatePlugins(getPluginDiagnostics());
+}
+
+ctx.on("internal/status", (scope: EffectScope) => {
+  const plugin = plugins.find((candidate) => candidate.fork === scope);
+  if (plugin) notifyPluginDiagnostics();
+});
 
 function normalizeMetadata(value: Record<string, unknown>): PanelFrontendPluginMetadata | null {
   const id = typeof value.id === "string" ? value.id.trim() : "";
@@ -201,31 +275,76 @@ async function discoverSources() {
     if (!metadata || metadata.enabled === false || unique.has(metadata.id)) continue;
     unique.set(metadata.id, { ...source, metadata });
   }
-  // Ascending priority, then by id, so the order never depends on the manifest.
-  return [...unique.values()].sort(
-    (a, b) =>
-      (Number(a.metadata.priority) || 0) - (Number(b.metadata.priority) || 0) ||
-      a.metadata.id.localeCompare(b.metadata.id)
-  );
+  return [...unique.values()].sort(compareSources);
+}
+
+function resolveSourceGraph(discovered: readonly PluginSource[]) {
+  return resolvePluginDependencyOrder(discovered, {
+    id: (source) => source.metadata.id,
+    dependencies: (source) => source.metadata.frontendInject,
+    compare: compareSources
+  });
+}
+
+function recordGraphFailure(source: PluginSource, error: Error) {
+  const existing = plugins.find((plugin) => plugin.metadata.id === source.metadata.id);
+  if (existing) {
+    existing.error = error;
+    existing.state = "failed";
+    notifyPluginDiagnostics();
+    return existing;
+  }
+  const plugin = shallowReactive<InternalPlugin>({
+    source,
+    metadata: source.metadata,
+    directory: source.directory,
+    revision: source.revision,
+    state: "failed",
+    requiredServices: [],
+    missingServices: [],
+    error
+  });
+  plugins.push(plugin);
+  notifyPluginDiagnostics();
+  return plugin;
 }
 
 async function install(source: PluginSource, cacheKey?: string, configOverride?: unknown) {
   const existing = plugins.find((plugin) => plugin.metadata.id === source.metadata.id);
   if (existing) return existing;
 
+  const unavailableDependencies = (source.metadata.frontendInject || []).filter(
+    (id) => plugins.find((plugin) => plugin.metadata.id === id)?.state !== "active"
+  );
+  if (unavailableDependencies.length) {
+    return recordGraphFailure(
+      source,
+      new Error(
+        `Frontend plugin dependencies are not active: ${unavailableDependencies.join(", ")}`
+      )
+    );
+  }
+
   const plugin = shallowReactive<InternalPlugin>({
     source,
     metadata: source.metadata,
-    directory: source.directory
+    directory: source.directory,
+    revision: source.revision,
+    state: "loading",
+    requiredServices: [],
+    missingServices: []
   });
   plugins.push(plugin);
+  notifyPluginDiagnostics();
   try {
     validatePluginCompatibility(source.metadata.elements);
     if (source.metadata.restartRequired)
       throw new Error("The plugin backend requires a restart before this version can load.");
     if (!import.meta.env.DEV) plugin.removeStyles = await loadStyles(source);
     const module = toModule(await source.load(cacheKey), source.metadata.id);
-    if (module) {
+    if (!module) throw new Error(`Panel frontend plugin has no apply() export: ${source.metadata.id}`);
+    plugin.requiredServices = requiredServices(module);
+    {
       // An `async apply()` is awaited here, so a plugin is fully applied before
       // the next one loads and before the app is mounted.
       //
@@ -268,6 +387,7 @@ async function install(source: PluginSource, cacheKey?: string, configOverride?:
       .logger("plugin")
       .error(`Panel frontend plugin failed to load: ${source.metadata.id}`, error);
   }
+  notifyPluginDiagnostics();
   return plugin;
 }
 
@@ -286,6 +406,8 @@ async function unloadPluginInternal(id: string) {
   }
   const plugin = plugins.find((candidate) => candidate.metadata.id === id);
   if (!plugin) return false;
+  plugin.state = "unloading";
+  notifyPluginDiagnostics();
   // Leave the plugin's page before its routes go, or the router lands on
   // nothing.
   const vue = ctx.get("vue");
@@ -301,6 +423,7 @@ async function unloadPluginInternal(id: string) {
   removePluginStyles(plugin.source);
   const index = plugins.indexOf(plugin);
   if (index >= 0) plugins.splice(index, 1);
+  notifyPluginDiagnostics();
   ctx.logger("plugin").info(`Panel frontend plugin unloaded: ${id}`);
   return true;
 }
@@ -327,8 +450,9 @@ async function reloadPluginInternal(id: string) {
   }
   const source = sources.get(id);
   if (!source) throw new Error(`Panel frontend plugin not found: ${id}`);
-  // A fresh URL, or the browser answers the import from its module cache.
-  return install(source, `${Date.now()}`);
+  // The server revision is the cache identity. Reloading unchanged code still
+  // retries activation without manufacturing an unbounded timestamp URL.
+  return install(source, source.revision || String(source.metadata.version || "reload"));
 }
 
 /** Re-reads what is installed and loads or unloads to match. */
@@ -341,13 +465,21 @@ async function refreshPluginsInternal() {
     if (ESSENTIAL_PLUGIN_IDS.has(plugin.metadata.id)) continue;
     if (!next.has(plugin.metadata.id)) await unloadPluginInternal(plugin.metadata.id);
   }
-  for (const source of discovered) {
+  const graph = resolveSourceGraph(discovered);
+  for (const [id, issue] of graph.issues) {
+    const source = next.get(id);
+    if (!source) continue;
+    const current = plugins.find((plugin) => plugin.metadata.id === id);
+    if (current && !ESSENTIAL_PLUGIN_IDS.has(id)) await unloadPluginInternal(id);
+    recordGraphFailure(source, new Error(issue.message));
+  }
+  for (const source of graph.ordered) {
     const current = plugins.find((plugin) => plugin.metadata.id === source.metadata.id);
     if (current) current.restartRequired = Boolean(source.metadata.restartRequired);
     const changed =
       current &&
       (source.revision !== current.source.revision ||
-        JSON.stringify(source.metadata.config) !== JSON.stringify(current.metadata.config) ||
+        JSON.stringify(source.metadata) !== JSON.stringify(current.metadata) ||
         Boolean(source.metadata.restartRequired) !==
           Boolean(current.source.metadata.restartRequired));
     if (current && (changed || source.metadata.restartRequired)) {
@@ -361,6 +493,7 @@ async function refreshPluginsInternal() {
     if (!plugins.some((plugin) => plugin.metadata.id === source.metadata.id)) await install(source);
   }
   await settle();
+  notifyPluginDiagnostics();
   return discovered.map((source) => source.metadata) as readonly PanelFrontendPluginMetadata[];
 }
 
@@ -386,6 +519,34 @@ export async function bootstrapPanelFrontendPlugin(id: string, config?: unknown)
 
 export function getLoadedPlugins(): readonly LoadedPanelFrontendPlugin[] {
   return plugins;
+}
+
+export function getPluginDiagnostics(): readonly PanelFrontendPluginDiagnostic[] {
+  return plugins.map((plugin) => {
+    const error = pluginError(plugin);
+    return {
+      id: plugin.metadata.id,
+      state: plugin.state,
+      required: Boolean(plugin.metadata.frontendRequired),
+      revision: plugin.revision,
+      requiredServices: [...plugin.requiredServices],
+      missingServices: [...plugin.missingServices],
+      ...(error ? { error: error.message } : {})
+    };
+  });
+}
+
+export function auditFrontendPlugins() {
+  notifyPluginDiagnostics();
+  const failures = getPluginDiagnostics().filter(
+    (plugin) => plugin.required && plugin.state !== "active"
+  );
+  if (!failures.length) return;
+  throw new Error(
+    `Required frontend plugins are not active: ${failures
+      .map((plugin) => `${plugin.id} (${plugin.state}${plugin.error ? `: ${plugin.error}` : ""})`)
+      .join(", ")}`
+  );
 }
 
 /** Serialize UI actions and server notifications against the same browser state. */
