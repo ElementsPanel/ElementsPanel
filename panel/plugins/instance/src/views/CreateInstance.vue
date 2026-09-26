@@ -252,7 +252,6 @@ const handleCreated = (instanceUuid: string) => {
                     v-else-if="availableNodes.length === 0"
                     type="warning"
                     variant="tonal"
-                    rounded="xl"
                   >
                     <div class="node-empty-content">
                       <span>{{ t("TXT_CODE_f4110b65") }}</span>

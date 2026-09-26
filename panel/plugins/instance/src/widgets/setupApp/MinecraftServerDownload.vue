@@ -77,7 +77,7 @@ watch(selection, (value) => emit("update:modelValue", value), { immediate: true,
       </VCol>
     </VRow>
     <p v-if="description" class="text-medium-emphasis mt-3">{{ description }}</p>
-    <VAlert v-if="error" type="error" variant="tonal" class="mt-3" rounded="lg">
+    <VAlert v-if="error" type="error" variant="tonal" class="mt-3">
       {{ error }}
       <template #append
         ><VBtn variant="text" :disabled="disabled" @click="retry">{{

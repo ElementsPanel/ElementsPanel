@@ -69,7 +69,7 @@ onUnmounted(() => {
       hide-details="auto"
       @update:model-value="emit('update:modelValue', $event || '')"
     />
-    <VAlert v-if="error" type="error" variant="tonal" class="mt-3" rounded="lg">
+    <VAlert v-if="error" type="error" variant="tonal" class="mt-3">
       {{ error }}
       <template #append>
         <VBtn variant="text" :disabled="disabled || loading" @click="refresh">{{

@@ -17,6 +17,7 @@ export const vuetify = createVuetify({
     VCard: {
       rounded: "xl"
     },
+    VAlert: { rounded: "xl" },
     VAutocomplete: { flat: true, rounded: "xl" },
     VBtn: { flat: true, rounded: "xl" },
     VCombobox: { flat: true, rounded: "xl" },

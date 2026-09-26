@@ -166,7 +166,7 @@ defineExpose({ prepare });
         density="compact"
         hide-details="auto"
       />
-      <VAlert v-if="error" type="error" variant="tonal" class="mt-3" rounded="lg">{{
+      <VAlert v-if="error" type="error" variant="tonal" class="mt-3">{{
         error
       }}</VAlert>
       <VBtn
@@ -193,7 +193,7 @@ defineExpose({ prepare });
         rounded
       />
     </div>
-    <VAlert v-if="installError" type="error" variant="tonal" class="mt-3" rounded="lg">{{
+    <VAlert v-if="installError" type="error" variant="tonal" class="mt-3">{{
       installError
     }}</VAlert>
   </div>

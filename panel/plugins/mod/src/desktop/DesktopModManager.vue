@@ -426,7 +426,7 @@ onMounted(async () => {
                     </div>
                 </div>
 
-                <VAlert v-if="isWindows && isRunning" type="warning" variant="tonal" rounded="xl" class="dmm-alert"
+                <VAlert v-if="isWindows && isRunning" type="warning" variant="tonal" class="dmm-alert"
                     :title="t('TXT_CODE_MOD_WIN_FILE_LOCK_TITLE')">
                     {{ t("TXT_CODE_MOD_WIN_RUNNING_ALERT") }}
                 </VAlert>
