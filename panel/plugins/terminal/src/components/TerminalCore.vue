@@ -390,12 +390,17 @@ onMounted(async () => {
 
     .history {
       display: flex;
+      gap: 8px;
       max-width: 100%;
       overflow: scroll;
       z-index: 10;
       position: absolute;
       top: -35px;
       left: 0;
+
+      :deep(.v-chip) {
+        background-color: var(--background-color-white) !important;
+      }
 
       li {
         list-style: none;
