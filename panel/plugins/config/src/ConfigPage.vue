@@ -4,7 +4,7 @@ import { ctx } from "@/plugin/context";
 import { getValidatorErrorMsg } from "@/tools/validator";
 import { message } from "@/tools/vuetifyToast";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import {
   VAlert,
   VBtn,
@@ -53,6 +53,9 @@ type Scope = "panel" | "node";
 
 const scope = ref<Scope>("panel");
 const route = useRoute();
+const router = useRouter();
+/** The plugin named by the URL, used once its list has actually arrived. */
+const preferredPluginId = ref(String(route.query.plugin ?? ""));
 
 const loading = ref(true);
 const pending = ref<string>("");
@@ -303,6 +306,32 @@ onUnmounted(() => {
   nodePluginsRequest++;
 });
 
+/**
+ * Leaving must not drag this page's parameters into the next one. The shared
+ * `toPage()` helper copies the current query along, and `scope`, `daemonId` and
+ * `plugin` describe a plugin tab, not the page being opened — an instance page
+ * would otherwise inherit a daemon it was never opened for. Only the values this
+ * page contributed are dropped, so a link that asks for a key by another value
+ * still gets it.
+ */
+onBeforeRouteLeave((to) => {
+  if (to.path === "/plugins/config") return true;
+  const query = { ...to.query };
+  const contributed: Record<string, string> = {
+    scope: scope.value,
+    daemonId: selectedNodeId.value,
+    plugin: currentId.value
+  };
+  let inherited = false;
+  for (const [key, value] of Object.entries(contributed)) {
+    if (value && query[key] === value) {
+      delete query[key];
+      inherited = true;
+    }
+  }
+  return inherited ? { path: to.path, query } : true;
+});
+
 watch(scope, (value) => {
   if (value === "node" && !nodes.value.length && !nodeError.value) loadNodes();
 });
@@ -310,8 +339,9 @@ watch(scope, (value) => {
 watch(selectedNodeId, () => loadNodePlugins());
 
 watch(
-  () => [route.query.scope, route.query.daemonId],
-  ([targetScope, daemonId]) => {
+  () => [route.query.scope, route.query.daemonId, route.query.plugin],
+  ([targetScope, daemonId, pluginId]) => {
+    if (typeof pluginId === "string") preferredPluginId.value = pluginId;
     if (targetScope !== "node") return;
     scope.value = "node";
     if (typeof daemonId === "string") selectedNodeId.value = daemonId;
@@ -323,7 +353,8 @@ watch(
   plugins,
   (value) => {
     if (!value.some((item) => item.id === selectedId.value)) {
-      selectedId.value = value[0]?.id || "";
+      selectedId.value =
+        value.find((item) => item.id === preferredPluginId.value)?.id || value[0]?.id || "";
     }
   },
   { immediate: true }
@@ -331,7 +362,8 @@ watch(
 
 watch(nodePlugins, (value) => {
   if (!value.some((item) => item.id === nodeSelectedId.value)) {
-    nodeSelectedId.value = value[0]?.id || "";
+    nodeSelectedId.value =
+      value.find((item) => item.id === preferredPluginId.value)?.id || value[0]?.id || "";
   }
 });
 
@@ -344,6 +376,32 @@ watch(
   },
   { immediate: true }
 );
+
+/**
+ * The address bar follows the open plugin, so a tab can be copied out of it and
+ * reopened: `/plugins/config?scope=panel&plugin=<id>`, or with `daemonId` added
+ * when the plugin belongs to a daemon.
+ *
+ * The rewrite deliberately skips the router. A router navigation runs the global
+ * guard, which starts the top progress bar and leaves it on screen for a second
+ * on every selection. A desktop window hosts this page inside the desktop route,
+ * where the address bar belongs to the desktop, so nothing is written there.
+ */
+let lastSyncedPath = "";
+const syncRoute = () => {
+  if (route.path !== "/plugins/config") return;
+  const query: Record<string, string> = { scope: scope.value };
+  if (scope.value === "node" && selectedNodeId.value) query.daemonId = selectedNodeId.value;
+  if (currentId.value) query.plugin = currentId.value;
+  preferredPluginId.value = currentId.value;
+  const fullPath = router.resolve({ query }).fullPath;
+  if (fullPath === lastSyncedPath) return;
+  lastSyncedPath = fullPath;
+  const { pathname, search } = window.location;
+  window.history.replaceState(window.history.state, "", `${pathname}${search}#${fullPath}`);
+};
+
+watch([scope, currentId, selectedNodeId], syncRoute);
 
 const apply = async (plugin: PluginRecord, enabled: boolean) => {
   pending.value = plugin.id;
