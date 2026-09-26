@@ -20,7 +20,7 @@ const data:
   | undefined = configData[props.configName];
 
 import { computed } from "vue";
-import { VCard, VCardText, VCol } from "vuetify/components";
+import { VCard, VCardText, VCol, VRow } from "vuetify/components";
 
 const parsedConfig = computed(() => jsonToMap(props.config));
 </script>
@@ -70,14 +70,14 @@ const parsedConfig = computed(() => jsonToMap(props.config));
   <VCol v-if="data" cols="12">
     <CardPanel style="height: 100%" class="config-editor-panel">
       <template #body>
-        <div v-if="!isEmpty(props.config)">
-          <div v-for="(item, index) in parsedConfig" :key="index" class="p-1">
-            <LineOption :option-value="parsedConfig" :option-key="String(index)">
+        <VRow v-if="!isEmpty(props.config)" class="config-option-grid">
+          <VCol v-for="(item, index) in parsedConfig" :key="index" cols="12" sm="6" lg="4">
+            <LineOption card :option-value="parsedConfig" :option-key="String(index)">
               <template #title>{{ index }}</template>
               <template #info>{{ getDescriptionByTitle(data?.config, String(index)) }}</template>
             </LineOption>
-          </div>
-        </div>
+          </VCol>
+        </VRow>
         <div v-else>
           {{ t("TXT_CODE_1a730d48") }}
         </div>
@@ -122,6 +122,11 @@ const parsedConfig = computed(() => jsonToMap(props.config));
       background: var(--desktop-window-control-hover) !important;
     }
   }
+}
+
+.config-option-grid {
+  width: 100%;
+  margin: 0;
 }
 
 .config-editor-title { margin: 0 0 6px; font-size: 16px; font-weight: 600; }

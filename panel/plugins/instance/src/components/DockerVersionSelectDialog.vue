@@ -74,7 +74,6 @@ defineExpose({
 
 .choose-card {
   flex: 1;
-  border-radius: 8px;
   transition: all 0.2s ease;
 }
 

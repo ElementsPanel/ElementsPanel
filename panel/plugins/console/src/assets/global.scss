@@ -204,8 +204,10 @@ body::-webkit-scrollbar-track {
   background-color: var(--background-color) !important;
 }
 
+// Card surfaces across the app follow Vuetify's `rounded="xl"` scale so panels
+// and the cards nested inside them share one corner radius.
 .global-card-container-shadow {
-  border-radius: 12px;
+  border-radius: var(--app-dialog-radius);
 }
 
 .global-action-float-enter-active,

@@ -9,6 +9,7 @@ const props = defineProps<{
   optionKey?: any;
   custom?: boolean;
   isDesktop?: boolean;
+  card?: boolean;
 }>();
 
 enum CONTROL {
@@ -59,14 +60,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="line-option-wrapper">
-    <VCard class="line-option-card" :variant="isDesktop ? 'tonal' : 'outlined'" rounded="xl">
+  <div class="line-option-wrapper" :class="{ 'option-card': card }">
+    <VCard class="line-option-card" :variant="card || isDesktop ? 'tonal' : 'outlined'" rounded="xl">
       <VCardText>
         <div v-if="!custom">
-          <VRow density="compact" class="align-center">
-            <VCol cols="12" md="7"><slot name="title"></slot></VCol>
-            <VCol cols="12" md="11"><slot name="info"></slot></VCol>
-            <VCol cols="12" md="6">
+          <VRow :density="card ? 'comfortable' : 'compact'" :class="card ? 'option-card-body' : 'align-center'">
+            <VCol cols="12" :md="card ? 12 : 7" class="option-title"><slot name="title"></slot></VCol>
+            <VCol cols="12" :md="card ? 12 : 11" class="option-info"><slot name="info"></slot></VCol>
+            <VCol cols="12" :md="card ? 12 : 6">
               <div v-if="$slots.optionInput"><slot name="optionInput"></slot></div>
               <div v-else class="line-option-control">
                 <VTextField v-if="type == CONTROL.INPUT" v-model="computedValue" variant="solo" density="compact" hide-details />
@@ -88,10 +89,34 @@ onMounted(() => {
   margin-bottom: 6px;
   .line-option-card {
     transition: all 0.4s;
-    border-radius: 6px;
   }
   .line-option-card:hover {
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.16);
+  }
+}
+
+// Card variant: the option is stacked inside its own tile instead of being one
+// more row in a vertical list, so it can live in a responsive grid.
+.option-card {
+  height: 100%;
+  margin-bottom: 0;
+
+  .line-option-card {
+    height: 100%;
+  }
+}
+
+.option-card-body {
+  .option-title {
+    font-weight: 600;
+    word-break: break-all;
+  }
+
+  .option-info {
+    color: var(--text-color);
+    opacity: 0.6;
+    font-size: 13px;
+    line-height: 1.5;
   }
 }
 
