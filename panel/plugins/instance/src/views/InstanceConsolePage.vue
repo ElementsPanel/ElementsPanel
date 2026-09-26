@@ -406,11 +406,11 @@ onUnmounted(() => {
       }}</VAlert>
 
       <VCard v-if="instanceInfo" class="console-state-card" rounded="xl" flat>
+        <VCardTitle class="console-state-title">
+          <VIcon icon="mdi-chart-line" color="info" class="mr-4" />
+          {{ t("TXT_CODE_5476e012") }}
+        </VCardTitle>
         <VCardText class="console-state-content">
-          <div class="console-state-heading">
-            <VIcon icon="mdi-chart-line" color="info" />
-            <span>{{ t("TXT_CODE_5476e012") }}</span>
-          </div>
           <component
             :is="TerminalTopTags"
             v-if="displayInfo && !isDisplayStopped"
@@ -426,7 +426,7 @@ onUnmounted(() => {
         <VCol cols="12" lg="7" class="console-function-column">
           <VCard v-if="instanceFunctionItems.length" class="console-function-card" rounded="xl" flat>
             <VCardTitle class="console-function-title">
-              <VIcon icon="mdi-view-grid-outline" color="info" class="mr-2" />
+              <VIcon icon="mdi-view-grid-outline" color="info" class="mr-4" />
               {{ t("TXT_CODE_efd37c48") }}
             </VCardTitle>
             <VCardText>
@@ -454,7 +454,7 @@ onUnmounted(() => {
         <VCol cols="12" lg="5" class="console-basic-column">
           <VCard class="summary-card" rounded="xl" flat>
             <VCardTitle
-              ><VIcon icon="mdi-information-outline" color="info" class="mr-2" />{{
+              ><VIcon icon="mdi-information-outline" color="info" class="mr-4" />{{
                 t("TXT_CODE_eadb4f60")
               }}</VCardTitle
             >
@@ -680,21 +680,18 @@ onUnmounted(() => {
   margin-bottom: 20px;
   background: var(--background-color-white);
 }
+.console-state-title {
+  display: flex;
+  align-items: center;
+  padding: 18px 20px 8px;
+  color: var(--text-color);
+  font-size: 16px;
+}
 .console-state-content {
   display: flex;
   min-width: 0;
   align-items: center;
-  gap: 16px;
-  padding: 12px 20px;
-}
-.console-state-heading {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-color);
-  font-size: 16px;
-  font-weight: 500;
+  padding: 10px 20px 20px;
 }
 .console-state-metrics {
   min-width: 0;
