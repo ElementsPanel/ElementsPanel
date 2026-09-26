@@ -5,31 +5,37 @@ const TERMINAL_HISTORY_KEY = "TERMINAL_HISTORY_KEY";
 
 const useGlobalHistory = createGlobalState(() => {
   const history = ref<string[]>([]);
+  const recentHistory = ref<string[]>([]);
   const commandInputValue = ref<string>("");
   const focusHistoryList = ref(false);
   const selectLocation = ref(0);
-  return { history, commandInputValue, focusHistoryList, selectLocation };
+  return { history, recentHistory, commandInputValue, focusHistoryList, selectLocation };
 });
 
 export function useCommandHistory() {
-  const { history, commandInputValue, focusHistoryList, selectLocation } = useGlobalHistory();
+  const { history, recentHistory, commandInputValue, focusHistoryList, selectLocation } =
+    useGlobalHistory();
+
+  const readStoredHistory = () =>
+    JSON.parse(localStorage.getItem(TERMINAL_HISTORY_KEY) || "[]") as string[];
 
   const setHistory = (text: string) => {
     if (!text) return;
-    const stored = JSON.parse(localStorage.getItem(TERMINAL_HISTORY_KEY) || "[]") as string[];
+    const stored = readStoredHistory();
     const index = stored.indexOf(text);
     if (index !== -1) stored.splice(index, 1);
     stored.unshift(text);
     if (stored.length > 30) stored.pop();
     localStorage.setItem(TERMINAL_HISTORY_KEY, JSON.stringify(stored));
+    recentHistory.value = stored.slice(0, 10);
   };
 
   const getHistory = () => {
-    const stored = JSON.parse(localStorage.getItem(TERMINAL_HISTORY_KEY) || "[]") as string[];
-    return stored.filter((item) => item.startsWith(commandInputValue.value)).splice(0, 10);
+    return readStoredHistory().filter((item) => item.startsWith(commandInputValue.value)).slice(0, 10);
   };
 
   history.value = getHistory();
+  recentHistory.value = readStoredHistory().slice(0, 10);
 
   const openHistoryList = () => {
     history.value = getHistory();
@@ -78,6 +84,7 @@ export function useCommandHistory() {
 
   return {
     history,
+    recentHistory,
     focusHistoryList,
     selectLocation,
     commandInputValue,

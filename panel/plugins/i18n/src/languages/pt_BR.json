@@ -2470,6 +2470,7 @@
   "TXT_CODE_CONSOLE_LOGO_LIGHT": "Imagem do logotipo (modo claro)",
   "TXT_CODE_CONSOLE_LOGO_DARK": "Imagem do logotipo (modo escuro)",
   "TXT_CODE_CONSOLE_LOGO_HINT": "Defina o logotipo para este modo. Deixe em branco para usar o logotipo padrão.",
+  "TXT_CODE_INSTANCE_COMMAND_HISTORY": "Histórico",
   "TXT_CODE_minecraft.upload": "Enviar seu servidor",
   "TXT_CODE_minecraft.uploadHint": "Envie um arquivo JAR ou ZIP para usar seu próprio servidor.",
   "TXT_CODE_minecraft.download": "Baixar pelo painel",

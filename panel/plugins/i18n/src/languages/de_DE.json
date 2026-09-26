@@ -2470,6 +2470,7 @@
   "TXT_CODE_CONSOLE_LOGO_LIGHT": "Logo für den hellen Modus",
   "TXT_CODE_CONSOLE_LOGO_DARK": "Logo für den dunklen Modus",
   "TXT_CODE_CONSOLE_LOGO_HINT": "Legen Sie das Logo für diesen Modus fest. Lassen Sie das Feld leer, um das Standardlogo zu verwenden.",
+  "TXT_CODE_INSTANCE_COMMAND_HISTORY": "Verlauf",
   "TXT_CODE_minecraft.upload": "Eigenen Server hochladen",
   "TXT_CODE_minecraft.uploadHint": "Eine JAR-Datei oder ein ZIP-Archiv für den eigenen Server hochladen.",
   "TXT_CODE_minecraft.download": "Über das Panel herunterladen",

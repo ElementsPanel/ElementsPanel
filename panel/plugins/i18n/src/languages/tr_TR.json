@@ -2470,6 +2470,7 @@
   "TXT_CODE_CONSOLE_LOGO_LIGHT": "Logo görseli (açık mod)",
   "TXT_CODE_CONSOLE_LOGO_DARK": "Logo görseli (koyu mod)",
   "TXT_CODE_CONSOLE_LOGO_HINT": "Bu mod için logo görselini ayarlayın. Varsayılan logoyu kullanmak için boş bırakın.",
+  "TXT_CODE_INSTANCE_COMMAND_HISTORY": "Geçmiş",
   "TXT_CODE_minecraft.upload": "Kendi sunucunuzu yükleyin",
   "TXT_CODE_minecraft.uploadHint": "Kendi sunucunuzu kullanmak için bir JAR dosyası veya ZIP arşivi yükleyin.",
   "TXT_CODE_minecraft.download": "Panel üzerinden indir",

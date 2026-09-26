@@ -2470,6 +2470,7 @@
   "TXT_CODE_CONSOLE_LOGO_LIGHT": "로고 이미지 (라이트 모드)",
   "TXT_CODE_CONSOLE_LOGO_DARK": "로고 이미지 (다크 모드)",
   "TXT_CODE_CONSOLE_LOGO_HINT": "이 모드에서 사용할 로고 이미지를 설정합니다. 비워 두면 기본 로고를 사용합니다.",
+  "TXT_CODE_INSTANCE_COMMAND_HISTORY": "기록",
   "TXT_CODE_minecraft.upload": "서버 직접 업로드",
   "TXT_CODE_minecraft.uploadHint": "JAR 파일 또는 ZIP 압축 파일을 업로드하여 자신의 서버를 사용합니다.",
   "TXT_CODE_minecraft.download": "패널에서 다운로드",

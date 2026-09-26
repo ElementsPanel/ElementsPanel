@@ -2470,6 +2470,7 @@
   "TXT_CODE_CONSOLE_LOGO_LIGHT": "ロゴ画像（ライトモード）",
   "TXT_CODE_CONSOLE_LOGO_DARK": "ロゴ画像（ダークモード）",
   "TXT_CODE_CONSOLE_LOGO_HINT": "このモードで使用するロゴ画像を設定します。空欄の場合は標準のロゴを使用します。",
+  "TXT_CODE_INSTANCE_COMMAND_HISTORY": "履歴",
   "TXT_CODE_minecraft.upload": "サーバーを自分でアップロード",
   "TXT_CODE_minecraft.uploadHint": "JAR ファイルまたは ZIP アーカイブをアップロードして、自分のサーバーを使用します。",
   "TXT_CODE_minecraft.download": "パネルでダウンロード",

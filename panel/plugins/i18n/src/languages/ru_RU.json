@@ -2470,6 +2470,7 @@
   "TXT_CODE_CONSOLE_LOGO_LIGHT": "Изображение логотипа (светлая тема)",
   "TXT_CODE_CONSOLE_LOGO_DARK": "Изображение логотипа (тёмная тема)",
   "TXT_CODE_CONSOLE_LOGO_HINT": "Укажите логотип для этой темы. Оставьте поле пустым, чтобы использовать логотип по умолчанию.",
+  "TXT_CODE_INSTANCE_COMMAND_HISTORY": "История",
   "TXT_CODE_minecraft.upload": "Загрузить свой сервер",
   "TXT_CODE_minecraft.uploadHint": "Загрузите файл JAR или архив ZIP, чтобы использовать свой сервер.",
   "TXT_CODE_minecraft.download": "Скачать через панель",

@@ -57,6 +57,7 @@ const terminalService = usePluginService<FrontendTerminalService>("terminal");
 if (!terminalService) throw new Error("The terminal plugin is required by the instance console.");
 const TerminalCore = terminalService.TerminalCore;
 const TerminalTopTags = terminalService.TerminalTopTags;
+const { recentHistory, clickHistoryItem } = terminalService.useCommandHistory();
 const terminalHook = terminalService.useTerminal();
 const {
   state: instanceInfo,
@@ -91,6 +92,11 @@ const instanceGameServerInfo = computed(() => {
   };
 });
 const crashTimer = ref<ReturnType<typeof setTimeout>>();
+const terminalCoreRef = ref<{ focusCommandInput?: () => void }>();
+const selectCommandHistory = (command: string) => {
+  clickHistoryItem(command);
+  terminalCoreRef.value?.focusCommandInput?.();
+};
 const { execute: requestOpenInstance, isLoading: openLoading } = openInstance();
 const pluginActions = computed(() => {
   return ctx.actions.terminalButtons({
@@ -394,6 +400,7 @@ onUnmounted(() => {
         <VCardText class="console-card-content"
           ><component
             :is="TerminalCore"
+            ref="terminalCoreRef"
             :instance-id="instanceId"
             :daemon-id="daemonId"
             height="min(70vh, 640px)"
@@ -405,22 +412,51 @@ onUnmounted(() => {
         t("TXT_CODE_181f2f08")
       }}</VAlert>
 
-      <VCard v-if="instanceInfo" class="console-state-card" rounded="xl" flat>
-        <VCardTitle class="console-state-title">
-          <VIcon icon="mdi-chart-line" color="info" class="mr-4" />
-          {{ t("TXT_CODE_5476e012") }}
-        </VCardTitle>
-        <VCardText class="console-state-content">
-          <component
-            :is="TerminalTopTags"
-            v-if="displayInfo && !isDisplayStopped"
-            class="console-state-metrics"
-            :info="displayInfo"
-            :is-stopped="isDisplayStopped"
-          />
-          <span v-else class="console-state-empty">{{ t("TXT_CODE_NO_DATA") }}</span>
-        </VCardText>
-      </VCard>
+      <VRow v-if="instanceInfo" class="console-state-row" density="comfortable">
+        <VCol cols="12" lg="7">
+          <VCard class="console-state-card" rounded="xl" flat>
+            <VCardTitle class="console-state-title">
+              <VIcon icon="mdi-chart-line" color="info" class="mr-4" />
+              {{ t("TXT_CODE_5476e012") }}
+            </VCardTitle>
+            <VCardText class="console-state-content">
+              <component
+                :is="TerminalTopTags"
+                v-if="displayInfo && !isDisplayStopped"
+                class="console-state-metrics"
+                :info="displayInfo"
+                :is-stopped="isDisplayStopped"
+              />
+              <span v-else class="console-state-empty">{{ t("TXT_CODE_NO_DATA") }}</span>
+            </VCardText>
+          </VCard>
+        </VCol>
+        <VCol cols="12" lg="5">
+          <VCard class="command-history-card" rounded="xl" flat>
+            <VCardTitle class="command-history-title">
+              <VIcon icon="mdi-history" color="info" class="mr-4" />
+              {{ t("TXT_CODE_INSTANCE_COMMAND_HISTORY") }}
+            </VCardTitle>
+            <VCardText class="command-history-content">
+              <div v-if="recentHistory.length" class="command-history-list">
+                <VChip
+                  v-for="command in recentHistory"
+                  :key="command"
+                  :title="command"
+                  prepend-icon="mdi-console-line"
+                  size="small"
+                  variant="tonal"
+                  class="command-history-item"
+                  @click="selectCommandHistory(command)"
+                >
+                  {{ command }}
+                </VChip>
+              </div>
+              <span v-else class="console-state-empty">{{ t("TXT_CODE_NO_DATA") }}</span>
+            </VCardText>
+          </VCard>
+        </VCol>
+      </VRow>
 
       <VRow v-if="instanceInfo" class="console-summary" density="comfortable">
         <VCol cols="12" lg="7" class="console-function-column">
@@ -680,6 +716,25 @@ onUnmounted(() => {
   margin-bottom: 20px;
   background: var(--background-color-white);
 }
+.console-state-row {
+  --console-state-card-height: 132px;
+  margin-top: 16px;
+  margin-bottom: 20px;
+}
+.console-state-row > .v-col {
+  display: flex;
+  min-height: 0;
+}
+.console-state-row .console-state-card,
+.command-history-card {
+  display: flex;
+  min-height: 0;
+  height: var(--console-state-card-height);
+  max-height: var(--console-state-card-height);
+  width: 100%;
+  margin: 0;
+  flex-direction: column;
+}
 .console-state-title {
   display: flex;
   align-items: center;
@@ -689,8 +744,11 @@ onUnmounted(() => {
 }
 .console-state-content {
   display: flex;
+  flex: 1 1 auto;
   min-width: 0;
+  min-height: 0;
   align-items: center;
+  overflow: hidden;
   padding: 10px 20px 20px;
 }
 .console-state-metrics {
@@ -708,6 +766,41 @@ onUnmounted(() => {
 .console-state-empty {
   color: var(--color-gray-6);
   font-size: 13px;
+}
+.command-history-title {
+  display: flex;
+  align-items: center;
+  padding: 18px 20px 8px;
+  color: var(--text-color);
+  font-size: 16px;
+}
+.command-history-content {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  padding: 10px 20px 20px;
+}
+.command-history-list {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+}
+.command-history-item {
+  max-width: 100%;
+  cursor: pointer;
+}
+.command-history-item :deep(.v-chip__content) {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .console-function-column {
   order: 2;

@@ -74,6 +74,8 @@ const handleClickHistoryItem = (item: string) => {
   inputRef.value?.focus();
 };
 
+defineExpose({ focusCommandInput: () => inputRef.value?.focus() });
+
 const initTerminal = async () => {
   const dom = document.getElementById(terminalDomId);
   if (dom) {

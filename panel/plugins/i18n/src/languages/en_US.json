@@ -2470,6 +2470,7 @@
   "TXT_CODE_CONSOLE_LOGO_LIGHT": "Logo image (light mode)",
   "TXT_CODE_CONSOLE_LOGO_DARK": "Logo image (dark mode)",
   "TXT_CODE_CONSOLE_LOGO_HINT": "Set the logo image for this mode. Leave blank to use the default logo.",
+  "TXT_CODE_INSTANCE_COMMAND_HISTORY": "History",
   "TXT_CODE_minecraft.upload": "Upload your server",
   "TXT_CODE_minecraft.uploadHint": "Upload a JAR file or ZIP archive to use your own server.",
   "TXT_CODE_minecraft.download": "Download with the panel",

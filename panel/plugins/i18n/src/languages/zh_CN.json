@@ -2470,6 +2470,7 @@
   "TXT_CODE_CONSOLE_LOGO_LIGHT": "图标图片（浅色模式）",
   "TXT_CODE_CONSOLE_LOGO_DARK": "图标图片（深色模式）",
   "TXT_CODE_CONSOLE_LOGO_HINT": "设置此模式的 Logo 图片，留空使用默认 Logo。",
+  "TXT_CODE_INSTANCE_COMMAND_HISTORY": "历史记录",
   "TXT_CODE_minecraft.upload": "自行上传服务端",
   "TXT_CODE_minecraft.uploadHint": "上传 JAR 文件或 ZIP 压缩包，使用自己的服务端。",
   "TXT_CODE_minecraft.download": "由面板下载",
