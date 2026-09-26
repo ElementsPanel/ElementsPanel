@@ -70,7 +70,6 @@ const checkAndConfirm = async (
     const { createVNode } = await import("vue");
     Modal.confirm({
       title: t("TXT_CODE_MOD_WIN_FILE_LOCK_TITLE"),
-      icon: createVNode("i", { class: "mdi mdi-alert-circle-outline" }),
       content: t("TXT_CODE_MOD_WIN_FILE_LOCK_DESC"),
       okText: t("TXT_CODE_MOD_ADD_TO_QUEUE"),
       cancelText: t("TXT_CODE_MOD_TRY_IMMEDIATELY"),

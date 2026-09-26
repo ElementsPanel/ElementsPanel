@@ -38,7 +38,6 @@ import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import { v4 } from "uuid";
 import { computed, createVNode, onMounted, onUnmounted, reactive, ref, watch, type VNodeRef } from "vue";
-import { VIcon } from "vuetify/components";
 
 type Key = string | number;
 
@@ -731,7 +730,6 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
           const overwriteRef = ref(false);
           Modal.confirm({
             title: t("TXT_CODE_99ca8563"),
-            icon: createVNode(VIcon, { icon: "mdi-alert-circle-outline" }),
             content: createVNode(
               OverwriteFilesPopUpContent,
               {

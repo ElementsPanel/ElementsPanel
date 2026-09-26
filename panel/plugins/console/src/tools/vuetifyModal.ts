@@ -7,7 +7,6 @@ type Renderable = string | VNode | Renderable[] | (() => Renderable) | undefined
 export interface ModalOptions {
   title?: Renderable;
   content?: Renderable;
-  icon?: Renderable;
   onOk?: () => unknown;
   onCancel?: () => unknown;
   okText?: string;
@@ -96,16 +95,12 @@ function openDialog(options: ModalOptions, variant: "confirm" | "alert"): ModalH
     setup() {
       return () => {
         const title = resolveRenderable(state.title);
-        const icon = resolveRenderable(state.icon);
         const hasTitleSlot = title != null && typeof title !== "string";
         const dialogSlots: Record<string, any> = {
           default: () => asChildren(state.content)
         };
         if (state.footer != null) {
           dialogSlots.footer = () => asChildren(state.footer);
-        }
-        if (icon != null) {
-          dialogSlots.prepend = () => asChildren(icon);
         }
         if (hasTitleSlot) {
           dialogSlots.title = () => asChildren(title);

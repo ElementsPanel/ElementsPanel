@@ -228,7 +228,6 @@ export function useModSearch(
         finalType = await new Promise((resolve, reject) => {
           const modal = Modal.confirm({
             title: t("TXT_CODE_MOD_SELECT_SAVE_DIR"),
-      icon: createVNode("i", { class: "mdi mdi-alert-circle-outline" }),
             content: "",
             footer: createVNode("div", { style: "text-align: right; margin-top: 20px;" }, [
               createVNode(

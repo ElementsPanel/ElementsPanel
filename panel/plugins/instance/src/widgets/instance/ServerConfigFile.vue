@@ -129,7 +129,7 @@ onMounted(async () => {
 <template>
   <main class="server-config-page">
     <VContainer fluid class="server-config-page-container">
-      <PageToolbar :title="t('TXT_CODE_1c45f7fe')" icon="mdi-file-document-edit-outline">
+      <PageToolbar class="mb-16" :title="t('TXT_CODE_1c45f7fe')" icon="mdi-file-document-edit-outline">
         <template #actions>
           <VBtn variant="tonal" @click="toConfigOverview">
             {{ t("TXT_CODE_c14b2ea3") }}

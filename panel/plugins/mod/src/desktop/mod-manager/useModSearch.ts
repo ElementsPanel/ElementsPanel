@@ -10,7 +10,7 @@ import { useLocalStorage } from "@vueuse/core";
 import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import { notifyDesktop } from "../notice";
-import { VBtn, VIcon } from "vuetify/components";
+import { VBtn } from "vuetify/components";
 import { computed, createVNode, ref, type Ref } from "vue";
 
 export function useModSearch(
@@ -256,7 +256,6 @@ export function useModSearch(
           finalType = await new Promise((resolve, reject) => {
             const modal = Modal.confirm({
               title: t("TXT_CODE_MOD_SELECT_SAVE_DIR"),
-              icon: createVNode(VIcon, { icon: "mdi-alert-circle-outline" }),
               content: "",
               footer: createVNode("div", { style: "text-align: right; margin-top: 20px;" }, [
                 createVNode(

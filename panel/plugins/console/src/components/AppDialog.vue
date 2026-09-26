@@ -155,9 +155,6 @@ const afterLeave = () => {
     :close-on-back="props.keyboard !== false" @after-leave="afterLeave">
     <VCard v-if="renderCard" :title="props.title || undefined" class="app-dialog-card" rounded="xl"
       :style="{ width: dialogWidth }">
-      <template v-if="slots.prepend" #prepend>
-        <slot name="prepend" />
-      </template>
       <template v-if="slots.title" #title>
         <slot name="title" />
       </template>

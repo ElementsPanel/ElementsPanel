@@ -8,7 +8,7 @@ import {
 } from "@/services/apis/instance";
 import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
-import { computed, h, onUnmounted, ref } from "vue";
+import { computed, onUnmounted, ref } from "vue";
 import AppDialog from "@/components/AppDialog.vue";
 import {
     VBtn,
@@ -185,7 +185,6 @@ const startQuery = () => {
 const handleDelete = (backupName: string) => {
     Modal.confirm({
         title: t("TXT_CODE_71155575"),
-        icon: () => h(VIcon, { icon: "mdi-alert-circle-outline", color: "error" }),
         content: t("TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM", { name: backupName }),
         okButtonProps: { danger: true },
         onOk: async () => {
@@ -210,7 +209,6 @@ const handleDelete = (backupName: string) => {
 const handleRestore = (backupName: string) => {
     Modal.confirm({
         title: t("TXT_CODE_INSTANCE_BACKUP_RESTORE"),
-        icon: () => h(VIcon, { icon: "mdi-backup-restore" }),
         content: t("TXT_CODE_INSTANCE_BACKUP_RESTORE_CONFIRM", { name: backupName }),
         onOk: async () => {
             try {

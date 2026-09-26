@@ -1,4 +1,4 @@
-import { ref, watch, createVNode, type Ref } from "vue";
+import { ref, watch, type Ref } from "vue";
 import { t } from "@/lang/i18n";
 import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
@@ -101,7 +101,6 @@ export function useModUpload(
 
     Modal.confirm({
       title: t("TXT_CODE_CONFIRM_UPLOAD"),
-      icon: createVNode("i", { class: "mdi mdi-alert-circle-outline" }),
       content: `${t("TXT_CODE_CONFIRM_UPLOAD")} ${name} ?`,
       async onOk() {
         const targetDir = activeKey.value === "1" ? "mods" : "plugins";

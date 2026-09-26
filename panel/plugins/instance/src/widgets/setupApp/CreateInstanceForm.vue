@@ -11,7 +11,7 @@ import { defaultInstanceInfo } from "@/types/const";
 import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import { cloneDeep } from "lodash";
-import { computed, createVNode, onUnmounted, reactive, ref, watch } from "vue";
+import { computed, onUnmounted, reactive, ref, watch } from "vue";
 import type { MinecraftServerSelection } from "../../../../../../common/src/minecraft";
 import {
   bindJavaCommand,
@@ -211,7 +211,6 @@ async function showConfirmation() {
   confirming.value = true;
   confirmation = Modal.confirm({
     title: t("TXT_CODE_2a3b0c17"),
-    icon: createVNode("span", { class: "mdi mdi-information-outline" }),
     content: isDownloadMode.value
       ? t("TXT_CODE_minecraft.confirmDownload")
       : needUpload.value
