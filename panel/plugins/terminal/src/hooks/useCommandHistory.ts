@@ -2,6 +2,8 @@ import { createGlobalState } from "@vueuse/core";
 import { ref } from "vue";
 
 const TERMINAL_HISTORY_KEY = "TERMINAL_HISTORY_KEY";
+const MAX_STORED_HISTORY = 40;
+const RECENT_HISTORY_DISPLAY_LIMIT = 40;
 
 const useGlobalHistory = createGlobalState(() => {
   const history = ref<string[]>([]);
@@ -25,9 +27,9 @@ export function useCommandHistory() {
     const index = stored.indexOf(text);
     if (index !== -1) stored.splice(index, 1);
     stored.unshift(text);
-    if (stored.length > 30) stored.pop();
+    if (stored.length > MAX_STORED_HISTORY) stored.pop();
     localStorage.setItem(TERMINAL_HISTORY_KEY, JSON.stringify(stored));
-    recentHistory.value = stored.slice(0, 10);
+    recentHistory.value = stored.slice(0, RECENT_HISTORY_DISPLAY_LIMIT);
   };
 
   const getHistory = () => {
@@ -35,7 +37,7 @@ export function useCommandHistory() {
   };
 
   history.value = getHistory();
-  recentHistory.value = readStoredHistory().slice(0, 10);
+  recentHistory.value = readStoredHistory().slice(0, RECENT_HISTORY_DISPLAY_LIMIT);
 
   const openHistoryList = () => {
     history.value = getHistory();
