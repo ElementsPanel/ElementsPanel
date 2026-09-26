@@ -349,7 +349,6 @@ onUnmounted(() => {
   <main class="instance-console-page">
     <VContainer fluid class="instance-console-container">
       <VToolbar class="console-toolbar" color="transparent" flat>
-        <VIcon icon="mdi-console-line" color="info" class="mr-3" />
         <div class="console-title">
           <strong>{{ instanceName }}</strong
           ><span>{{ instanceTypeText }}</span>
