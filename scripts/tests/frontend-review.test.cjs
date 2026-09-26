@@ -584,6 +584,50 @@ test("user search rejects an older response and fixes pagination after deleting 
   assert.equal(state.operationForm.value.currentPage, 1);
 });
 
+test("login keeps its loading state until the final route settles", async () => {
+  const navigation = deferred();
+  const navigations = [];
+  const reports = [];
+  const state = setupSfc("panel/plugins/user/src/widgets/LoginCard.vue", {
+    "@/config/router": {
+      router: {
+        currentRoute: { value: { query: {} } },
+        replace: (target) => {
+          navigations.push(target);
+          return navigation.promise;
+        }
+      }
+    },
+    "@/plugin/context": { ctx: { menus: { loginActions: [] } } },
+    "@/services/apis": {
+      loginPageInfo: () => ({ state: vue.ref(), execute: async () => {} }),
+      loginUser: () => ({ execute: async () => ({ value: "session-token" }) }),
+      ssoConfig: () => ({ execute: async () => ({ value: null }) })
+    },
+    "@/stores/useAppStateStore": {
+      useAppStateStore: () => ({
+        updateUserInfo: async () => {}
+      })
+    },
+    "@/tools/safe": { markdownToHTML: (value) => value },
+    "@/tools/validator": { reportErrorMsg: (error) => reports.push(error) },
+    "@/tools/vuetifyToast": { message: { error() {} } },
+    "@/tools/vuetifyModal": { Modal: { error() {} } }
+  });
+  state.formData.username = "admin";
+  state.formData.password = "password";
+  const pending = state.handleLogin();
+  await settle();
+  assert.deepEqual(navigations, [{ path: "/" }]);
+  assert.equal(state.loading.value, true);
+  await state.handleLogin();
+  assert.equal(navigations.length, 1);
+  navigation.resolve();
+  await pending;
+  assert.equal(state.loading.value, false);
+  assert.deepEqual(reports, []);
+});
+
 test("terminal setup is shared and an unmounted terminal cannot create a late socket", async () => {
   const wait = deferred();
   let dispose,

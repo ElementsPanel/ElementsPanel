@@ -29,7 +29,7 @@ const formData = reactive({
 });
 
 const { execute: login } = loginUser();
-const { updateUserInfo, isAdmin } = useAppStateStore();
+const { updateUserInfo } = useAppStateStore();
 const loginActions = computed(() =>
   ctx.menus.loginActions
     .filter((action) =>
@@ -57,15 +57,15 @@ const handleLogin = async () => {
       data: formData
     });
     if (result.value === "NEED_2FA") {
-      loading.value = false;
       is2Fa.value = true;
       return;
     }
     is2Fa.value = false;
     await handleNext();
   } catch (error: any) {
-    loading.value = false;
     reportErrorMsg(error);
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -74,7 +74,6 @@ const handleNext = async () => {
     await updateUserInfo();
     await loginSuccess();
   } catch (error: any) {
-    loading.value = false;
     console.error(error);
     Modal.error({
       title: t("TXT_CODE_da2fb99a"),
@@ -84,13 +83,7 @@ const handleNext = async () => {
 };
 
 const loginSuccess = async () => {
-  if (isAdmin.value) {
-    router.push({
-      path: "/"
-    });
-  } else {
-    router.push({ path: "/customer" });
-  }
+  await router.replace({ path: "/" });
 };
 
 const handleSsoLogin = () => {

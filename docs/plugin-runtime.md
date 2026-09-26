@@ -105,8 +105,14 @@ The browser must support native import maps. Other dependencies are compiled int
 boundary; a breaking public change needs a new major.
 
 Production resources use `/plugins/<folder>@<revision>/frontend/...`. The revision
-covers the complete frontend directory, so relative imports of nested chunks
-and styles share a generation. Unknown/stale revisions return 404. The manifest
+covers the complete frontend directory, so plugin-local chunks and styles share
+a generation. Host builds put only plugin entry chunks in these directories;
+shared JavaScript chunks live in the host's content-hashed `/assets/` directory.
+Relative imports from every versioned entry resolve to the same host URL, so
+router, user state and API clients are not instantiated separately through
+versioned and unversioned plugin URLs. Independently compiled plugins may keep
+their own nested chunks under their versioned directory and use the host import
+map for shared SDK dependencies. Unknown/stale revisions return 404. The manifest
 contains URLs and public metadata only, never local filesystem directories.
 `/plugins/events` sends graph generation changes and heartbeat comments over SSE.
 Reconnect receives the current generation. Browsers serialize notifications with

@@ -46,6 +46,37 @@ interface DiscoveredPanelPlugin {
   buildEntryId: string;
 }
 
+/**
+ * Vite writes CSS URLs relative to the CSS asset's original output directory.
+ * Plugin packaging relocates that CSS under `plugins/<id>/frontend/assets`, so
+ * every relative URL has to be rebased or fonts/images will be requested from
+ * the plugin directory instead of their emitted location.
+ */
+function relocateCssUrls(
+  source: string | Uint8Array,
+  originalFile: string,
+  relocatedFile: string
+) {
+  const css = typeof source === "string" ? source : new TextDecoder().decode(source);
+  const originalDirectory = path.posix.dirname(normalizePath(originalFile));
+  const relocatedDirectory = path.posix.dirname(normalizePath(relocatedFile));
+  return css.replace(
+    /url\(\s*(["']?)([^"')]+)\1\s*\)/g,
+    (match, quote: string, value: string) => {
+      const reference = value.trim();
+      if (!reference || /^(?:[a-z][a-z\d+.-]*:|\/\/|\/|#)/i.test(reference)) return match;
+      const parts = reference.match(/^([^?#]*)([?#].*)?$/);
+      const pathname = parts?.[1];
+      if (!pathname) return match;
+      const suffix = parts?.[2] || "";
+      const emittedFile = path.posix.normalize(path.posix.join(originalDirectory, pathname));
+      let rebased = path.posix.relative(relocatedDirectory, emittedFile);
+      if (!rebased.startsWith(".")) rebased = `./${rebased}`;
+      return `url(${quote}${rebased}${suffix}${quote})`;
+    }
+  );
+}
+
 function discoverPanelPlugins(includeExternal = false): DiscoveredPanelPlugin[] {
   // Discovery is shared with the panel and daemon backends, so the four places
   // that read `plugin.json` cannot drift apart. Only the entry field and the
@@ -84,7 +115,10 @@ function discoverPanelPlugins(includeExternal = false): DiscoveredPanelPlugin[] 
   )
     .filter((plugin) => plugin.entry && (!includeExternal || plugin.manifest.enabled !== false))
     .map((plugin) => ({
-      metadata: createFrontendPluginMetadata(plugin.manifest) as Record<string, unknown>,
+      metadata: createFrontendPluginMetadata(plugin.manifest) as unknown as Record<
+        string,
+        unknown
+      >,
       directory: plugin.directory,
       folder: plugin.folder,
       entry: plugin.entry!,
@@ -263,7 +297,11 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
             const target = `plugins/${sanitizePluginFolder(
               plugin.folder
             )}/frontend/assets/style-${index}-${path.posix.basename(cssFile)}`;
-            bundle[target] = { ...asset, fileName: target };
+            bundle[target] = {
+              ...asset,
+              fileName: target,
+              source: relocateCssUrls(asset.source, cssFile, target)
+            };
             for (const chunk of chunks) {
               const importedCss = chunk.viteMetadata?.importedCss as Set<string> | undefined;
               if (!importedCss?.delete(cssFile)) continue;
@@ -306,6 +344,16 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
 let panelPluginBuildEntries = discoverPanelPlugins(false);
 const sanitizePluginFolder = (folder: string) => folder.replace(/[^a-zA-Z0-9_-]/g, "_");
 
+function findPanelPluginEntry(chunkInfo: { facadeModuleId: string | null; name: string }) {
+  const facade = normalizePath(chunkInfo.facadeModuleId || "");
+  return panelPluginBuildEntries.find(
+    (candidate) =>
+      facade === normalizePath(candidate.entry) ||
+      facade === normalizePath(candidate.buildEntryId) ||
+      chunkInfo.name === `panel-plugin-${sanitizePluginFolder(candidate.folder)}`
+  );
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
@@ -314,39 +362,19 @@ export default defineConfig({
     rollupOptions: {
       output: {
         entryFileNames: (chunkInfo) => {
-          const plugin = panelPluginBuildEntries.find(
-            (candidate) =>
-              normalizePath(chunkInfo.facadeModuleId || "") === normalizePath(candidate.entry) ||
-              chunkInfo.name === `panel-plugin-${sanitizePluginFolder(candidate.folder)}`
-          );
+          const plugin = findPanelPluginEntry(chunkInfo);
           if (plugin) {
             return `plugins/${sanitizePluginFolder(plugin.folder)}/frontend/frontend-[hash].js`;
           }
           return "assets/[name]-[hash].js";
         },
         chunkFileNames: (chunkInfo) => {
-          // Prefer the chunk's declared plugin entry before inspecting all of
-          // its modules. Feature entries import console-owned helpers, so a
-          // module-first search can otherwise assign `panel-plugin-file` (for
-          // example) to the console directory and leave file/plugin.json
-          // pointing at an asset its package never receives.
-          const plugin =
-            panelPluginBuildEntries.find((candidate) => {
-              const entry = normalizePath(candidate.entry);
-              return (
-                normalizePath(chunkInfo.facadeModuleId || "") === entry ||
-                chunkInfo.name === `panel-plugin-${sanitizePluginFolder(candidate.folder)}`
-              );
-            }) ||
-            panelPluginBuildEntries.find((candidate) => {
-              const entry = normalizePath(candidate.entry);
-              const pluginRoot = `${normalizePath(candidate.directory)}/`;
-              return chunkInfo.moduleIds.some(
-                (moduleId) =>
-                  normalizePath(moduleId) === entry ||
-                  normalizePath(moduleId).startsWith(pluginRoot)
-              );
-            });
+          // Only plugin entries are revision-scoped. Assigning shared chunks
+          // by moduleIds exposes e.g. router.js at both console@rev/... (local
+          // import) and console/... (cross-plugin import). Browsers then create
+          // separate router/store/API instances. Keep helpers in host assets
+          // so every entry resolves them to the same URL, regardless of revision.
+          const plugin = findPanelPluginEntry(chunkInfo);
           if (plugin) {
             return `plugins/${sanitizePluginFolder(plugin.folder)}/frontend/[name]-[hash].js`;
           }
