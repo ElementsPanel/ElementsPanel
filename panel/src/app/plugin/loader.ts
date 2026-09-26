@@ -171,6 +171,28 @@ async function loadModule(entry: string): Promise<unknown> {
   try {
     // eval keeps webpack from trying to bundle files supplied at runtime.
     const runtimeRequire = eval("require") as NodeRequire;
+    if (process.env.NODE_ENV === "development") {
+      const externalRoot = path.resolve(process.cwd(), "..", "external");
+      const resolvedEntry = path.resolve(entry);
+      if (resolvedEntry.startsWith(`${externalRoot}${path.sep}`)) {
+        const hostModules = path.resolve(process.cwd(), "node_modules");
+        if (fs.existsSync(hostModules)) {
+          const searchPaths = (process.env.NODE_PATH || "")
+            .split(path.delimiter)
+            .filter(Boolean);
+          if (!searchPaths.includes(hostModules)) {
+            process.env.NODE_PATH = [...searchPaths, hostModules].join(path.delimiter);
+            const nodeModule = runtimeRequire("module") as {
+              Module?: { _initPaths?: () => void };
+              _initPaths?: () => void;
+            };
+            (nodeModule.Module?._initPaths || nodeModule._initPaths)?.call(
+              nodeModule.Module || nodeModule
+            );
+          }
+        }
+      }
+    }
     if (process.env.NODE_ENV === "development" && /\.[cm]?tsx?$/.test(entry)) {
       runtimeRequire("ts-node/register/transpile-only");
     }
