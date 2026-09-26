@@ -21,8 +21,22 @@ test("host SDK maps all compiler externals before module scripts, with prefix-re
     vite: { defineConfig: (value) => value, normalizePath: (value) => value.replaceAll("\\", "/") },
     "./plugin-sdk.config.mjs": { pluginSdkModules },
     "../common/src/plugin_manifest": {
-      discoverPluginsFromRoots: () => [],
-      discoverExternalPluginRoots: () => []
+      discoverPluginsFromRoots: () => [
+        {
+          manifest: { id: "console" },
+          directory: "/virtual/plugins/console",
+          folder: "console",
+          entry: "/virtual/plugins/console/src/frontend.ts"
+        },
+        {
+          manifest: { id: "file" },
+          directory: "/virtual/plugins/file",
+          folder: "file",
+          entry: "/virtual/plugins/file/src/frontend.ts"
+        }
+      ],
+      discoverExternalPluginRoots: () => [],
+      createFrontendPluginMetadata: (manifest) => ({ id: manifest.id })
     },
     "../common/src/plugin_overrides": { applyPluginOverrides: (value) => value },
     "node:module": { createRequire: () => ({ resolve: (name) => `/virtual/${name}` }) }
@@ -45,6 +59,18 @@ test("host SDK maps all compiler externals before module scripts, with prefix-re
     filename
   );
   const plugin = mod.exports.default.plugins.find((item) => item.name === "elements-panel-plugins");
+  const chunkFileNames = mod.exports.default.build.rollupOptions.output.chunkFileNames;
+  assert.match(
+    chunkFileNames({
+      name: "panel-plugin-file",
+      facadeModuleId: "\0panel-plugin-build-entry:file",
+      moduleIds: [
+        "/virtual/plugins/console/src/shared.ts",
+        "/virtual/plugins/file/src/frontend.ts"
+      ]
+    }),
+    /^plugins\/file\/frontend\//
+  );
   const emitted = [];
   const context = {
     emitFile(file) {

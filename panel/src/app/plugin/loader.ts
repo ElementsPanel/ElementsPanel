@@ -96,6 +96,16 @@ export interface PanelFrontendPluginEntry {
 }
 
 const loaded: LoadedPanelPlugin[] = [];
+const frontendManifestWarnings = new Set<string>();
+
+function warnFrontendManifest(message: string, error?: unknown) {
+  const detail = error instanceof Error ? `${error.name}:${error.message}` : String(error || "");
+  const signature = `${message}\0${detail}`;
+  if (frontendManifestWarnings.has(signature)) return;
+  frontendManifestWarnings.add(signature);
+  if (error === undefined) logger.warn(message);
+  else logger.warn(message, error);
+}
 
 function discoverPanelPlugins(options: DiscoverPluginsOptions) {
   // Built-in first: the shared discovery keeps the first root's plugin when two
@@ -344,7 +354,7 @@ export function getPanelFrontendManifest(): PanelFrontendPluginEntry[] {
   const entries: PanelFrontendPluginEntry[] = [];
   for (const plugin of discoverPanelPlugins({
     entryFields: ["frontend", "ui"],
-    onWarning: (message, error) => logger.warn(message, error)
+    onWarning: warnFrontendManifest
   })) {
     // A packaged plugin serves its frontend from `<plugin>/frontend`, and only
     // from there: the manifest must never point the browser at plugin sources.

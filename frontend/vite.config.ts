@@ -325,19 +325,28 @@ export default defineConfig({
           return "assets/[name]-[hash].js";
         },
         chunkFileNames: (chunkInfo) => {
-          const plugin = panelPluginBuildEntries.find((candidate) => {
-            const entry = normalizePath(candidate.entry);
-            const pluginRoot = `${normalizePath(candidate.directory)}/`;
-            return (
-              normalizePath(chunkInfo.facadeModuleId || "") === entry ||
-              chunkInfo.name === `panel-plugin-${sanitizePluginFolder(candidate.folder)}` ||
-              chunkInfo.moduleIds.some(
+          // Prefer the chunk's declared plugin entry before inspecting all of
+          // its modules. Feature entries import console-owned helpers, so a
+          // module-first search can otherwise assign `panel-plugin-file` (for
+          // example) to the console directory and leave file/plugin.json
+          // pointing at an asset its package never receives.
+          const plugin =
+            panelPluginBuildEntries.find((candidate) => {
+              const entry = normalizePath(candidate.entry);
+              return (
+                normalizePath(chunkInfo.facadeModuleId || "") === entry ||
+                chunkInfo.name === `panel-plugin-${sanitizePluginFolder(candidate.folder)}`
+              );
+            }) ||
+            panelPluginBuildEntries.find((candidate) => {
+              const entry = normalizePath(candidate.entry);
+              const pluginRoot = `${normalizePath(candidate.directory)}/`;
+              return chunkInfo.moduleIds.some(
                 (moduleId) =>
                   normalizePath(moduleId) === entry ||
                   normalizePath(moduleId).startsWith(pluginRoot)
-              )
-            );
-          });
+              );
+            });
           if (plugin) {
             return `plugins/${sanitizePluginFolder(plugin.folder)}/frontend/[name]-[hash].js`;
           }

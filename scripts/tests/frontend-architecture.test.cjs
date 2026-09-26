@@ -240,3 +240,16 @@ test("startup diagnostics render with textContent and reloads use source revisio
   assert.match(loader, /source\.revision \|\| String\(source\.metadata\.version/);
   assert.doesNotMatch(loader, /panel_plugin_reload[^\n]*Date\.now/);
 });
+
+test("production plugin packaging validates the emitted entry file", () => {
+  const packaging = fs.readFileSync(
+    path.join(root, "scripts/package-panel-plugins.mjs"),
+    "utf8"
+  );
+  assert.match(packaging, /fs\.existsSync\(builtEntry\)/);
+  assert.match(packaging, /packagedMetadata\.frontend = packagedEntry/);
+  assert.doesNotMatch(
+    packaging,
+    /manifestEntry\?\.entry && fs\.existsSync\(builtPluginDirectory\)/
+  );
+});
