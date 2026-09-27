@@ -249,12 +249,15 @@ export function registerFileEvents() {
 
       const maxDownloadFromUrlFileCount = settings().config.maxDownloadFromUrlFileCount;
       if (
-        maxDownloadFromUrlFileCount > 0 &&
-        transfer().downloads.downloadingCount >= maxDownloadFromUrlFileCount
+        (data.ifIdle === true && transfer().downloads.downloadingCount > 0) ||
+        (maxDownloadFromUrlFileCount > 0 &&
+          transfer().downloads.downloadingCount >= maxDownloadFromUrlFileCount)
       ) {
         protocol().responseError(
           ctx,
-          $t("TXT_CODE_821a742e", { count: maxDownloadFromUrlFileCount }),
+          $t("TXT_CODE_821a742e", {
+            count: data.ifIdle === true ? 1 : maxDownloadFromUrlFileCount
+          }),
           {
             disablePrint: true
           }

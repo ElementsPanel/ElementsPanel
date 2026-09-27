@@ -7,11 +7,13 @@ const API_URL = "https://api.mslmc.cn/v4";
 const CACHE_TTL = 5 * 60 * 1000;
 
 export class MslMirrorsService {
+  constructor(private translate: (key: string) => string = $t) {}
+
   private readonly cache = new Map<string, { expires: number; data: unknown }>();
 
   private segment(value: unknown): string {
     if (typeof value !== "string" || !/^[a-zA-Z0-9][a-zA-Z0-9._+-]{0,127}$/.test(value)) {
-      throw new Error($t("TXT_CODE_minecraft.invalidSelection"));
+      throw new Error(this.translate("TXT_CODE_minecraft.invalidSelection"));
     }
     return encodeURIComponent(value);
   }
@@ -44,14 +46,16 @@ export class MslMirrorsService {
       return result;
     } catch (error: any) {
       throw new Error(
-        `${$t("TXT_CODE_minecraft.sourceError")} ${error.response?.data?.message || error.message}`
+        `${this.translate("TXT_CODE_minecraft.sourceError")} ${
+          error.response?.data?.message || error.message
+        }`
       );
     }
   }
 
   private strings(data: unknown): string[] {
     if (!Array.isArray(data) || data.some((value) => typeof value !== "string")) {
-      throw new Error($t("TXT_CODE_minecraft.sourceError"));
+      throw new Error(this.translate("TXT_CODE_minecraft.sourceError"));
     }
     return [...new Set(data)].filter((value) => /^[a-zA-Z0-9][a-zA-Z0-9._+-]{0,127}$/.test(value));
   }
@@ -63,7 +67,7 @@ export class MslMirrorsService {
   async versions(server: string) {
     const encoded = this.segment(server);
     if (!(await this.servers()).includes(server))
-      throw new Error($t("TXT_CODE_minecraft.invalidSelection"));
+      throw new Error(this.translate("TXT_CODE_minecraft.invalidSelection"));
     return this.request(`/mirrors/${encoded}`, (data) => ({
       versions: this.strings(data?.versions),
       description: typeof data?.description === "string" ? data.description : ""
@@ -74,7 +78,7 @@ export class MslMirrorsService {
     const encodedServer = this.segment(server);
     const encodedVersion = this.segment(version);
     if (!(await this.versions(server)).versions.includes(version))
-      throw new Error($t("TXT_CODE_minecraft.invalidSelection"));
+      throw new Error(this.translate("TXT_CODE_minecraft.invalidSelection"));
     return this.request(`/mirrors/${encodedServer}/${encodedVersion}`, (data) =>
       this.strings(data)
     );
@@ -89,12 +93,13 @@ export class MslMirrorsService {
       !minecraftServersForType(await this.servers(), instanceType).includes(server) ||
       !(await this.builds(server, version)).includes(build)
     ) {
-      throw new Error($t("TXT_CODE_minecraft.invalidSelection"));
+      throw new Error(this.translate("TXT_CODE_minecraft.invalidSelection"));
     }
     const result = await this.request(
       `/download/server/${encodedServer}/${encodedVersion}?build=${encodedBuild}`,
       (data): { url: string; sha256?: string } => {
-        if (typeof data?.url !== "string") throw new Error($t("TXT_CODE_minecraft.sourceError"));
+        if (typeof data?.url !== "string")
+          throw new Error(this.translate("TXT_CODE_minecraft.sourceError"));
         const url = new URL(data.url);
         if (
           url.protocol !== "https:" ||
@@ -103,7 +108,7 @@ export class MslMirrorsService {
           (data.sha256 != null &&
             (typeof data.sha256 !== "string" || !/^[a-f0-9]{64}$/i.test(data.sha256)))
         ) {
-          throw new Error($t("TXT_CODE_minecraft.sourceError"));
+          throw new Error(this.translate("TXT_CODE_minecraft.sourceError"));
         }
         return { url: data.url, sha256: data.sha256 };
       },

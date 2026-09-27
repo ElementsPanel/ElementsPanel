@@ -341,6 +341,8 @@ export function createInstanceInstallTaskClass(
         JSON.stringify({
           taskId: this.taskId,
           status: this.status(),
+          completed: this.finished,
+          cancelled: this.cancelled,
           instanceUuid: this.instance.instanceUuid,
           instanceStatus: this.instance.status(),
           instanceConfig: this.instance.config,

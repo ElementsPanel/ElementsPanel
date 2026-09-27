@@ -522,6 +522,8 @@ test("signed/extensionless JAR URLs use a safe filename, verify SHA-256 and keep
   const task = f.create({ ...paper, sha256: createHash("sha256").update(f.bytes).digest("hex") });
   await task.start();
   assert.equal(task.status(), AsyncTask.STATUS_STOP);
+  assert.equal(task.toObject().completed, true);
+  assert.equal(task.toObject().cancelled, false);
   assert.equal(f.instance.config.cwd, f.cwd);
   assert.equal(task.filePath, path.join(f.cwd, "server.jar"));
   assert.deepEqual(fs.readFileSync(task.filePath), f.bytes);
@@ -951,6 +953,8 @@ test("cancelling a download prevents installation from continuing", async (t) =>
   await task.stop();
   await running;
   assert.equal(task.status(), AsyncTask.STATUS_STOP);
+  assert.equal(task.toObject().completed, false);
+  assert.equal(task.toObject().cancelled, true);
   assert.equal(f.instance.config.startCommand, "");
   assert.equal(f.updates.length, 0);
   assert.ok(!f.output.some((line) => line.includes("TXT_CODE_1562f6cf")));
