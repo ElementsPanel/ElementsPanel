@@ -29,6 +29,8 @@
   "TXT_CODE_PLUGIN_MARKET": "Plugin market",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "Market address",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "Address of the plugin market website, where the plugin list comes from",
+  "TXT_CODE_PLUGIN_MARKET_ADDR_INVALID": "Invalid market address: use an http(s) address with no query, fragment or credentials",
+  "TXT_CODE_PLUGIN_MARKET_BAD_CHECKSUM": "The downloaded files do not match the package published on the market",
   "TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE": "The package contains an illegal file path",
   "TXT_CODE_PLUGIN_MARKET_BY": "by {name}",
   "TXT_CODE_PLUGIN_MARKET_CANCEL": "Cancel",

@@ -29,6 +29,8 @@
   "TXT_CODE_PLUGIN_MARKET": "Mercado de plugins",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "Dirección del mercado",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "Dirección del sitio del mercado de plugins, de ahí viene la lista",
+  "TXT_CODE_PLUGIN_MARKET_ADDR_INVALID": "Dirección de mercado no válida: usa una dirección http(s) sin consulta, fragmento ni credenciales",
+  "TXT_CODE_PLUGIN_MARKET_BAD_CHECKSUM": "Los archivos descargados no coinciden con el paquete publicado en el mercado",
   "TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE": "El paquete contiene una ruta de archivo no válida",
   "TXT_CODE_PLUGIN_MARKET_BY": "por {name}",
   "TXT_CODE_PLUGIN_MARKET_CANCEL": "Cancelar",

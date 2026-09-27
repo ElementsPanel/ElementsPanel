@@ -29,6 +29,8 @@
   "TXT_CODE_PLUGIN_MARKET": "플러그인 마켓",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "마켓 주소",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "플러그인 목록을 가져오는 마켓 사이트 주소",
+  "TXT_CODE_PLUGIN_MARKET_ADDR_INVALID": "마켓 주소가 올바르지 않습니다. 쿼리, 프래그먼트, 자격 증명이 없는 http(s) 주소를 입력하세요",
+  "TXT_CODE_PLUGIN_MARKET_BAD_CHECKSUM": "다운로드한 파일이 마켓에 게시된 패키지와 일치하지 않습니다",
   "TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE": "패키지에 잘못된 파일 경로가 있습니다",
   "TXT_CODE_PLUGIN_MARKET_BY": "제작자: {name}",
   "TXT_CODE_PLUGIN_MARKET_CANCEL": "취소",

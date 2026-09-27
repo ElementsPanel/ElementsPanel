@@ -29,6 +29,8 @@
   "TXT_CODE_PLUGIN_MARKET": "Eklenti marketi",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "Market adresi",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "Eklenti listesinin geldiği market sitesinin adresi",
+  "TXT_CODE_PLUGIN_MARKET_ADDR_INVALID": "Geçersiz market adresi: sorgu, parça veya kimlik bilgisi içermeyen bir http(s) adresi girin",
+  "TXT_CODE_PLUGIN_MARKET_BAD_CHECKSUM": "İndirilen dosyalar markette yayımlanan paketle eşleşmiyor",
   "TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE": "Paket geçersiz bir dosya yolu içeriyor",
   "TXT_CODE_PLUGIN_MARKET_BY": "{name} tarafından",
   "TXT_CODE_PLUGIN_MARKET_CANCEL": "İptal",

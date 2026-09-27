@@ -29,6 +29,8 @@
   "TXT_CODE_PLUGIN_MARKET": "Plugin-Markt",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "Markt-Adresse",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "Adresse der Plugin-Markt-Website, von dort kommt die Plugin-Liste",
+  "TXT_CODE_PLUGIN_MARKET_ADDR_INVALID": "Ungültige Marktadresse: eine http(s)-Adresse ohne Query, Fragment oder Zugangsdaten",
+  "TXT_CODE_PLUGIN_MARKET_BAD_CHECKSUM": "Die heruntergeladenen Dateien stimmen nicht mit dem Paket im Markt überein",
   "TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE": "Das Paket enthält einen ungültigen Dateipfad",
   "TXT_CODE_PLUGIN_MARKET_BY": "von {name}",
   "TXT_CODE_PLUGIN_MARKET_CANCEL": "Abbrechen",

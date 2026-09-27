@@ -51,9 +51,10 @@ function version(number) {
   };
 }
 
-async function backendFixture() {
+async function backendFixture(get) {
   const routes = new Map();
   const calls = [];
+  const warnings = [];
   const detail = {
     id: "plugin/one",
     name: "one",
@@ -63,7 +64,7 @@ async function backendFixture() {
   const axios = {
     get: async (...args) => {
       calls.push(args);
-      return { data: detail };
+      return get ? get(...args) : { data: detail };
     },
     isAxiosError: () => false
   };
@@ -93,6 +94,7 @@ async function backendFixture() {
   );
   await plugin.apply({
     i18n: { define() {}, $t: (key) => key },
+    logger: { warn: (message) => warnings.push(message) },
     roles: { USER: 1, ADMIN: 10 },
     middleware: {
       validator: load("panel/plugins/runtime/src/backend/middleware/validator.ts").default,
@@ -107,13 +109,99 @@ async function backendFixture() {
     koa: { router: () => router },
     settingsForm: { declare() {} }
   });
-  async function request(query, role = 10) {
+  async function request(query, role = 10, route = "get /plugin/detail") {
     const ctx = { query, role, request: {} };
-    await panelRequire("koa-compose")(routes.get("get /plugin/detail"))(ctx);
+    await panelRequire("koa-compose")(routes.get(route))(ctx);
     return ctx;
   }
-  return { request, calls, detail };
+  return { request, calls, detail, warnings };
 }
+
+test("the plugin list reads every page the market serves, not only the first", async () => {
+  const all = Array.from({ length: 100 }, (_, index) => ({ id: `plugin-${index}` }));
+  const { request, calls } = await backendFixture(async (url, options) => {
+    assert.equal(url, "https://market.example/api/plugins");
+    const { page, pageSize } = options.params;
+    return {
+      data: { items: all.slice((page - 1) * pageSize, page * pageSize), total: all.length }
+    };
+  });
+  const { body } = await request({}, 10, "get /plugin/list");
+  assert.deepEqual(
+    body.map((item) => item.id),
+    all.map((item) => item.id)
+  );
+  assert.deepEqual(
+    calls.map((call) => call[1].params),
+    [1, 2, 3].map((page) => ({ page, pageSize: 48 }))
+  );
+});
+
+test("a market source that ignores paging is read once instead of forever", async () => {
+  const { request, calls } = await backendFixture(async () => ({
+    data: { items: [{ id: "a" }, { id: "b" }], total: 5 }
+  }));
+  const { body } = await request({}, 10, "get /plugin/list");
+  assert.deepEqual(
+    body.map((item) => item.id),
+    ["a", "b"]
+  );
+  assert.equal(calls.length, 2, "the repeated page ends the loop");
+});
+
+test("a plugin listed twice on one page is taken once and does not end the paging early", async () => {
+  const pages = [
+    { items: [{ id: "a" }, { id: "a" }, { id: "b" }], total: 3 },
+    { items: [{ id: "c" }], total: 3 }
+  ];
+  const { request, calls } = await backendFixture(async (_url, options) => ({
+    data: pages[options.params.page - 1] ?? { items: [], total: 3 }
+  }));
+  const { body } = await request({}, 10, "get /plugin/list");
+  assert.deepEqual(
+    body.map((item) => item.id),
+    ["a", "b", "c"],
+    "a duplicate must not be counted towards total, nor reach the page twice"
+  );
+  assert.equal(calls.length, 2);
+});
+
+test("list items without an id are skipped rather than collapsed into one plugin", async () => {
+  const { request } = await backendFixture(async (_url, options) => ({
+    data:
+      options.params.page === 1
+        ? { items: [{ name: "no id" }, { id: "" }, { id: "real" }, { pluginId: "wrong field" }], total: 2 }
+        : { items: [{ id: "second" }], total: 2 }
+  }));
+  const { body } = await request({}, 10, "get /plugin/list");
+  assert.deepEqual(
+    body.map((item) => item.id),
+    ["real", "second"]
+  );
+});
+
+test("a page that fails keeps the plugins already read instead of failing the whole list", async () => {
+  const { request, warnings } = await backendFixture(async (_url, options) => {
+    if (options.params.page === 2) throw new Error("gateway reset");
+    return { data: { items: [{ id: "first" }], total: 5 } };
+  });
+  const { body } = await request({}, 10, "get /plugin/list");
+  assert.deepEqual(
+    body.map((item) => item.id),
+    ["first"]
+  );
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /page 2/);
+});
+
+test("a first page that fails is still an error, because nothing could be listed", async () => {
+  const { request } = await backendFixture(async () => {
+    throw new Error("unreachable");
+  });
+  await assert.rejects(request({}, 10, "get /plugin/list"), {
+    message: "TXT_CODE_PLUGIN_MARKET_UNREACHABLE"
+  });
+});
 
 test("detail API requires admin and a plugin id before contacting the market", async () => {
   const { request, calls } = await backendFixture();
@@ -402,6 +490,32 @@ test("desktop cards support keyboard selection and preserve search when installe
     props.embedded = false;
     state.selectPlugin(first);
     assert.equal(events.length, 1, "normal cards keep their native route link");
+  } finally {
+    app.unmount();
+  }
+});
+
+test("an empty catalogue reads as empty, and only a failed refresh as unreachable", async () => {
+  let fail = true;
+  const component = load("panel/plugins/market/src/components/PluginMarketList.vue", {
+    ...sharedViewOverrides,
+    "../api": {
+      pluginMarketList: () => ({
+        execute: async () => {
+          if (fail) throw new Error("offline");
+          return { value: [] };
+        }
+      })
+    }
+  }).default;
+  const { state, app } = setupFixture(component, vue.reactive({ embedded: true }));
+  try {
+    await new Promise(setImmediate);
+    assert.equal(state.failed.value, true);
+    fail = false;
+    await state.refresh();
+    assert.equal(state.failed.value, false);
+    assert.deepEqual(state.plugins.value, []);
   } finally {
     app.unmount();
   }

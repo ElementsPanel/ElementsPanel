@@ -6,6 +6,43 @@ export { PLUGIN_API_VERSION, validatePluginCompatibility } from "./plugin_contra
 
 export const MARKET_INSTALL_MARKER = ".market-install.json";
 
+/**
+ * The extensions a published plugin package may contain. This is the one rule for
+ * what a package holds, applied wherever a package crosses a trust boundary: the
+ * panel's market download (`splitPackagePath`), the daemon's `plugin/install`, the
+ * publish script (`scripts/publish-plugin.mjs`) and the plugin market's upload
+ * (EPanel_Market `server/utils/package-rules.ts`). The last two keep copies because
+ * neither can import this file — change all three together.
+ */
+export const PLUGIN_PACKAGE_EXTENSIONS: ReadonlySet<string> = new Set([
+  ".json",
+  ".js",
+  ".cjs",
+  ".mjs",
+  ".svg",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".webp",
+  ".woff",
+  ".woff2",
+  ".ttf",
+  ".eot",
+  ".wasm",
+  ".css",
+  ".scss",
+  ".md",
+  ".txt"
+]);
+
+/**
+ * The one PNG a package may carry: its icon, at the root of a side. The byte cap is
+ * enforced where an icon is decoded — the daemon's `plugin/install` and the panel's
+ * market icon proxy (`panel/plugins/market/src/backend/plugin_icon.ts`).
+ */
+export const PLUGIN_ICON_FILE = "icon.png";
+export const MAX_PLUGIN_ICON_BYTES = 1024 * 1024;
+
 export class PluginPackageError extends Error {}
 
 export interface PluginInstallation {

@@ -137,6 +137,34 @@ export async function apply(ctx: PanelPluginContext) {
     }
   );
 
+  /**
+   * The plugin market's address, as the settings form accepts it. Every market call
+   * is built from it, so it is checked here rather than failing one request at a
+   * time; an empty value simply means no market is configured.
+   */
+  function normalizePluginMarketAddr(value: unknown): string {
+    const raw = String(value).trim().replace(/\/+$/, "");
+    if (!raw) return "";
+    const invalid = () =>
+      Object.assign(new Error(ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_ADDR_INVALID")), { status: 400 });
+    let parsed: URL;
+    try {
+      parsed = new URL(raw);
+    } catch {
+      throw invalid();
+    }
+    if (
+      (parsed.protocol !== "http:" && parsed.protocol !== "https:") ||
+      parsed.search ||
+      parsed.hash ||
+      parsed.username ||
+      parsed.password
+    ) {
+      throw invalid();
+    }
+    return `${parsed.origin}${parsed.pathname}`.replace(/\/+$/, "");
+  }
+
   async function writeMarketSettings(values: Record<string, unknown>) {
     const settings = marketSettings();
     if (values.presetPackAddr != null) {
@@ -150,8 +178,10 @@ export async function apply(ctx: PanelPluginContext) {
       settings.presetPackAddr = address;
     }
     if (values.allowUsePreset != null) settings.allowUsePreset = Boolean(values.allowUsePreset);
-    if (values.pluginMarketAddr != null)
-      settings.pluginMarketAddr = String(values.pluginMarketAddr).trim().replace(/\/+$/, "");
+    // Only a new address is checked: an address stored before this check existed
+    // must not make every other setting on the form unsavable.
+    if (values.pluginMarketAddr != null && values.pluginMarketAddr !== settings.pluginMarketAddr)
+      settings.pluginMarketAddr = normalizePluginMarketAddr(values.pluginMarketAddr);
     await saveMarketSettings(ctx);
   }
 
@@ -167,14 +197,74 @@ export async function apply(ctx: PanelPluginContext) {
   // The catalogue above installs instances; these install plugins, into the
   // panel's and the daemon's own plugin directories.
 
-  /** Plugins are listed publicly by the market, so this needs no token. */
+  /** The largest page the market serves; it answers 12 plugins per page by default. */
+  const MARKET_PAGE_SIZE = 48;
+  /** A source that never reports the end is bounded by pages, plugins and wall clock. */
+  const MAX_MARKET_PAGES = 100;
+  const MAX_MARKET_PLUGINS = 2000;
+  const MARKET_PAGE_TIMEOUT_MS = 15000;
+  const MARKET_LIST_BUDGET_MS = 40000;
+  const MAX_MARKET_PAGE_BYTES = 8 * 1024 * 1024;
+
+  /**
+   * Plugins are listed publicly by the market, so this needs no token.
+   *
+   * The market pages its list, and the page searches and filters what this returns,
+   * so every page is read: stopping at the first one would hide every plugin that
+   * did not fit on it. Reading many pages is what the budget above bounds — one
+   * request must not be able to occupy a connection for as long as the pages allow.
+   */
   async function fetchMarketPlugins(addr: string) {
-    const response = await axios.get<{ items: Array<Record<string, unknown>> }>(
-      `${addr}/api/plugins`,
-      { timeout: 15000 }
-    );
+    const items: Array<Record<string, unknown>> = [];
+    const seen = new Set<string>();
+    const deadline = Date.now() + MARKET_LIST_BUDGET_MS;
+
+    for (let page = 1; page <= MAX_MARKET_PAGES; page++) {
+      let listed: Array<Record<string, unknown>> = [];
+      let total: unknown;
+      try {
+        const response = await axios.get<{
+          items?: Array<Record<string, unknown>>;
+          total?: unknown;
+        }>(`${addr}/api/plugins`, {
+          params: { page, pageSize: MARKET_PAGE_SIZE },
+          timeout: Math.max(1000, Math.min(MARKET_PAGE_TIMEOUT_MS, deadline - Date.now())),
+          maxContentLength: MAX_MARKET_PAGE_BYTES,
+          maxBodyLength: MAX_MARKET_PAGE_BYTES
+        });
+        listed = response.data?.items ?? [];
+        total = response.data?.total;
+      } catch (error) {
+        // A page that fails says nothing about the pages already read: answering
+        // with what the market did give beats turning the whole list into an error.
+        if (!items.length) throw error;
+        ctx.logger.warn(`Failed to read page ${page} of the plugin market list: ${error}`);
+        break;
+      }
+
+      let added = 0;
+      for (const item of listed) {
+        // An item without an id cannot be installed, opened or told apart from
+        // another, so it is not a plugin this panel can offer.
+        const id = typeof item.id === "string" ? item.id.trim() : "";
+        if (!id || seen.has(id)) continue;
+        seen.add(id);
+        items.push(item);
+        added++;
+      }
+
+      // Nothing new on this page: either the market has run out of plugins, or it
+      // ignores `page` and is answering with the same ones.
+      if (!added || items.length >= MAX_MARKET_PLUGINS) break;
+      if (typeof total !== "number" || items.length >= total) break;
+      if (Date.now() >= deadline) {
+        ctx.logger.warn(`The plugin market list took too long; stopped after page ${page}.`);
+        break;
+      }
+    }
+
     const installed = new Map(listInstalled().map((item) => [item.pluginId, item]));
-    return (response.data?.items ?? []).map((item) => ({
+    return items.map((item) => ({
       ...item,
       installedVersion: installed.get(String(item.id))?.version,
       installedDaemonIds: installed.get(String(item.id))?.daemonIds ?? []
@@ -195,7 +285,7 @@ export async function apply(ctx: PanelPluginContext) {
       DIR_TAKEN: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_DIR_TAKEN"),
       EMPTY_PACKAGE: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_EMPTY_PACKAGE"),
       BAD_PATH: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE"),
-      BAD_CHECKSUM: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE"),
+      BAD_CHECKSUM: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_BAD_CHECKSUM"),
       INCOMPATIBLE: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE"),
       NO_NODES: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_SELECT_NODES")
     };
