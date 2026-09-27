@@ -8,6 +8,8 @@ import { visualizer } from "rollup-plugin-visualizer";
 import Components from "unplugin-vue-components/vite";
 // @ts-ignore Shared ESM build contract also consumed by compile-plugin.mjs.
 import { pluginSdkModules } from "./plugin-sdk.config.mjs";
+// @ts-ignore Shared dependency resolution for external plugin workspaces.
+import { frontendDependencyFallback } from "./plugin-dependencies.config.mjs";
 import { defineConfig, normalizePath, type Plugin } from "vite";
 import {
   discoverExternalPluginRoots,
@@ -451,58 +453,14 @@ export default defineConfig({
 
   plugins: [
     panelPlugins(panelPluginBuildEntries),
+    frontendDependencyFallback(fileURLToPath(new URL(".", import.meta.url))),
     vue(),
     vueJsx(),
     Components(),
     visualizer({ emitFile: true, filename: "stats.html" })
   ],
   resolve: {
-    dedupe: [
-      "@codemirror/commands",
-      "@codemirror/lang-css",
-      "@codemirror/lang-html",
-      "@codemirror/lang-javascript",
-      "@codemirror/lang-json",
-      "@codemirror/lang-python",
-      "@codemirror/lang-xml",
-      "@codemirror/language",
-      "@codemirror/legacy-modes",
-      "@codemirror/lint",
-      "@codemirror/search",
-      "@codemirror/state",
-      "@codemirror/view",
-      "@cordisjs/logger",
-      "@uiw/codemirror-theme-dracula",
-      "@uiw/codemirror-theme-tokyo-night",
-      "@vueuse/core",
-      "axios",
-      // One cordis instance: a plugin chunk and the main bundle must share the
-      // container, or a plugin would register its services on a copy of it.
-      "cordis",
-      "codemirror",
-      "cosmokit",
-      "crc",
-      "dayjs",
-      "echarts",
-      "eventemitter3",
-      "lodash",
-      "marked",
-      "monaco-editor",
-      "pinia",
-      "pretty-bytes",
-      "sanitize-html",
-      "spark-md5",
-      "uuid",
-      "vue",
-      "vue-i18n",
-      "vue-router",
-      // Terminal code lives in `panel/plugins/terminal`, while its packages
-      // are installed with the frontend workspace dependencies.
-      "@xterm/addon-canvas",
-      "@xterm/addon-fit",
-      "@xterm/addon-webgl",
-      "@xterm/xterm"
-    ],
+    dedupe: pluginSdkModules,
     alias: {
       "@elements-panel/sdk": fileURLToPath(new URL("./src/plugin/sdk.ts", import.meta.url)),
       // Plugin files live outside the frontend package. Resolve Vuetify from

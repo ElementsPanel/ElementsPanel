@@ -44,6 +44,12 @@ if (names.length !== 1 || names[0].startsWith("-")) {
     const folder = normalizeFolder(names[0]);
     const workspace = path.join(externalRoot, folder);
     const files = {
+      "package.json": `${JSON.stringify(
+        { name: folder, version: "0.1.0", private: true, dependencies: {} },
+        null,
+        2
+      )}\n`,
+      ".gitignore": "node_modules/\n.dist/\n",
       "panel/plugin.json": `${JSON.stringify(
         {
           id: folder,
@@ -131,6 +137,21 @@ servers are running. The panel and daemon halves are kept independent:
 
 - \`panel/\` contains the panel backend and frontend sources.
 - \`daemon/\` contains the daemon backend sources.
+
+Install private npm dependencies in this workspace, without changing the parent
+project's dependencies (run this from the ElementsPanel project root):
+
+\`\`\`bash
+npm install --prefix external/${folder} package-name
+\`\`\`
+
+The generated \`package.json\` is private to this plugin workspace. Commit it and
+\`package-lock.json\`; restore dependencies with \`npm ci --prefix external/${folder}\`.
+For dependencies used by only one half, you may instead maintain a package.json
+and node_modules in \`panel/\` or \`daemon/\`.
+Ordinary packages resolve locally first and are bundled into the published plugin;
+host dependencies are a fallback. Vue, Cordis and the SDK keep using shared host
+instances. Publishing does not run npm install or upload node_modules or .npmrc.
 
 Publish it to the plugin market with:
 

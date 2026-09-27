@@ -105,67 +105,114 @@ function isEsmPackage(modulesDir, moduleName) {
  * `modulesDir` 必须显式给出，否则 webpack-node-externals 找不到依赖，
  * 会把 koa 之类的宿主依赖一起打进产物。
  */
-async function compileBackend(side, workspace, outSideDir) {
+export function createBackendConfig(side, workspace, outSideDir) {
   const sideRoot = side === "panel" ? PANEL_ROOT : DAEMON_ROOT;
   const entry = path.join(workspace, side, "src", "backend", "index.ts");
   if (!fs.existsSync(entry)) return false;
 
-  log(`[compile] ${side}: 编译后端 ${path.relative(PROJECT_ROOT, entry)}`);
-
   const sideRequire = createRequire(path.join(sideRoot, "package.json"));
-  const webpack = sideRequire("webpack");
   const nodeExternals = sideRequire("webpack-node-externals");
   const cordisExternals = sideRequire(
     path.join(PROJECT_ROOT, "scripts", "webpack-cordis-externals.cjs")
   );
   const modulesDir = path.join(sideRoot, "node_modules");
+  const hostModuleDirs = [modulesDir, path.join(PROJECT_ROOT, "node_modules")];
+  const hostExternals = nodeExternals({
+    modulesDir,
+    additionalModuleDirs: hostModuleDirs.slice(1),
+    allowlist: ["mcsmanager-common", (name) => isEsmPackage(modulesDir, name)]
+  });
 
-  const stats = await new Promise((resolve, reject) => {
-    webpack({
-      mode: "production",
-      context: sideRoot,
-      entry,
-      target: "node",
-      devtool: false,
-      module: {
-        rules: [
-          {
-            test: /\.ts$/,
-            exclude: /node_modules/,
-            use: {
-              loader: "ts-loader",
-              // 不指定时 ts-loader 会从 external/ 往上找 tsconfig，找不到就用默认配置
-              options: { configFile: path.join(sideRoot, "tsconfig.json") }
+  // A dependency may share a name with a host package but resolve to a private
+  // version in the plugin (including a nested transitive dependency). Only
+  // externalize it when resolution actually selects the host's own package.
+  const externalizeHostPackage = (data, callback) => {
+    hostExternals(data, (error, external) => {
+      if (error || !external) return callback(error, external);
+      const name = data.request.startsWith("@")
+        ? data.request.split("/").slice(0, 2).join("/")
+        : data.request.split("/")[0];
+      data.getResolve({ symlinks: false })(data.context, data.request, (error, resolved) => {
+        if (error) return callback(error);
+        const hostPackage =
+          typeof resolved === "string" &&
+          hostModuleDirs.some((directory) => {
+            const relative = path.relative(path.join(directory, name), resolved);
+            return (
+              relative === "" ||
+              (!relative.startsWith(`..${path.sep}`) &&
+                relative !== ".." &&
+                !path.isAbsolute(relative))
+            );
+          });
+        callback(null, hostPackage ? external : undefined);
+      });
+    });
+  };
+
+  return {
+    mode: "production",
+    context: sideRoot,
+    entry,
+    target: "node",
+    devtool: false,
+    module: {
+      rules: [
+        {
+          test: /\.ts$/,
+          exclude: /node_modules/,
+          use: {
+            loader: "ts-loader",
+            // 不指定时 ts-loader 会从 external/ 往上找 tsconfig，找不到就用默认配置
+            options: {
+              configFile: path.join(sideRoot, "tsconfig.json"),
+              resolveModuleName(name, file, options, host, resolve) {
+                if (Object.hasOwn(cordisExternals, name) || name === "mcsmanager-common")
+                  return resolve(name, path.join(sideRoot, "package.json"), options, host);
+                // Host tsconfig paths (including exact @types overrides) must
+                // not override private npm types. Host aliases remain a fallback.
+                const local = resolve(
+                  name,
+                  file,
+                  { ...options, paths: undefined, baseUrl: undefined },
+                  host
+                );
+                return local.resolvedModule ? local : resolve(name, file, options, host);
+              }
             }
           }
-        ]
-      },
-      resolve: {
-        extensions: [".ts", ".js"],
-        modules: [modulesDir, "node_modules"],
-        alias: {
-          "mcsmanager-common": path.join(PROJECT_ROOT, "common", "src", "index.ts")
         }
-      },
-      resolveLoader: {
-        modules: [modulesDir, "node_modules"]
-      },
-      externalsPresets: { node: true },
-      externals: [
-        cordisExternals,
-        nodeExternals({
-          modulesDir,
-          additionalModuleDirs: [path.join(PROJECT_ROOT, "node_modules")],
-          allowlist: ["mcsmanager-common", (name) => isEsmPackage(modulesDir, name)]
-        })
-      ],
-      optimization: { minimize: false },
-      output: {
-        filename: "backend/index.cjs",
-        path: outSideDir,
-        library: { type: "commonjs2" }
+      ]
+    },
+    resolve: {
+      extensions: [".ts", ".js"],
+      modules: ["node_modules", modulesDir],
+      alias: {
+        "mcsmanager-common": path.join(PROJECT_ROOT, "common", "src", "index.ts")
       }
-    }).run((error, result) => (error ? reject(error) : resolve(result)));
+    },
+    resolveLoader: {
+      modules: [modulesDir, "node_modules"]
+    },
+    externalsPresets: { node: true },
+    externals: [cordisExternals, externalizeHostPackage],
+    optimization: { minimize: false },
+    output: {
+      filename: "backend/index.cjs",
+      path: outSideDir,
+      library: { type: "commonjs2" }
+    }
+  };
+}
+
+async function compileBackend(side, workspace, outSideDir) {
+  const config = createBackendConfig(side, workspace, outSideDir);
+  if (!config) return false;
+  log(`[compile] ${side}: 编译后端 ${path.relative(PROJECT_ROOT, config.entry)}`);
+  const sideRoot = side === "panel" ? PANEL_ROOT : DAEMON_ROOT;
+  const webpack = createRequire(path.join(sideRoot, "package.json"))("webpack");
+  const stats = await new Promise((resolve, reject) => {
+    webpack(config).run((error, result) => (error ? reject(error) : resolve(result)));
   });
 
   if (stats.hasErrors()) {
@@ -186,19 +233,21 @@ function resolveFromFrontend(specifier) {
  * 之类的插件由 vite 自己按 frontend 工作区的依赖解析，跟项目自己的
  * vite.config.ts 走同一条解析路径。
  */
-async function compileFrontend(workspace, outSideDir) {
+export function createFrontendConfigSource(workspace, outSideDir) {
   const sourceDir = path.join(workspace, "panel");
   const entry = FRONTEND_ENTRIES.map((relative) => path.join(sourceDir, relative)).find(
     (candidate) => fs.existsSync(candidate)
   );
   if (!entry) return null;
 
-  log(`[compile] panel: 编译前端 ${path.relative(PROJECT_ROOT, entry)}`);
-
   const outFrontendDir = path.join(outSideDir, "frontend");
   const viteDir = path.dirname(resolveFromFrontend("vite/package.json"));
   const viteEntry = path.join(viteDir, "dist", "node", "index.js");
   const configPath = path.join(FRONTEND_ROOT, ".workspace-plugin-build.config.mjs");
+
+  // SDK instances belong to the host. Ordinary npm dependencies belong to the
+  // importing plugin, with frontend/node_modules used only as a fallback.
+  const frontendDedupe = FRONTEND_EXTERNALS.filter((item) => typeof item === "string");
 
   // 正则要原样写进配置源码，JSON.stringify 会把它变成字符串字面量
   const externalSource = `[${FRONTEND_EXTERNALS.map((item) =>
@@ -207,6 +256,7 @@ async function compileFrontend(workspace, outSideDir) {
 
   const configSource = `import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import { frontendDependencyFallback } from "./plugin-dependencies.config.mjs";
 
 export default defineConfig({
   root: ${JSON.stringify(FRONTEND_ROOT)},
@@ -214,7 +264,7 @@ export default defineConfig({
   // into every plugin package, where it does not belong.
   publicDir: false,
   logLevel: "warn",
-  plugins: [vue(), {
+  plugins: [vue(), frontendDependencyFallback(${JSON.stringify(FRONTEND_ROOT)}), {
     name: "elements-plugin-sdk-boundary",
     enforce: "pre",
     resolveId(source) {
@@ -225,7 +275,7 @@ export default defineConfig({
     }
   }],
   resolve: {
-    dedupe: ["vue", "vue-router", "pinia", "vue-i18n", "cordis", "@vueuse/core"],
+    dedupe: ${JSON.stringify(frontendDedupe)},
     alias: {
       "vuetify/styles": ${JSON.stringify(resolveFromFrontend("vuetify/styles"))},
       "vuetify/components": ${JSON.stringify(resolveFromFrontend("vuetify/components"))},
@@ -261,6 +311,14 @@ export default defineConfig({
 });
 `;
 
+  return { configSource, configPath, viteEntry, entry, outFrontendDir };
+}
+
+async function compileFrontend(workspace, outSideDir) {
+  const config = createFrontendConfigSource(workspace, outSideDir);
+  if (!config) return null;
+  const { configSource, configPath, viteEntry, entry, outFrontendDir } = config;
+  log(`[compile] panel: 编译前端 ${path.relative(PROJECT_ROOT, entry)}`);
   fs.writeFileSync(configPath, configSource, "utf8");
   try {
     const { build } = await import(pathToFileURL(viteEntry).href);
@@ -497,7 +555,9 @@ function resolveRealPath(target) {
   return parent === target ? target : path.join(resolveRealPath(parent), path.basename(target));
 }
 
-main().catch((error) => {
-  log(`[compile] 失败：${error instanceof Error ? error.message : String(error)}`);
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch((error) => {
+    log(`[compile] 失败：${error instanceof Error ? error.message : String(error)}`);
+    process.exitCode = 1;
+  });
+}

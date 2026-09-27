@@ -12,6 +12,9 @@ async function loadHostConfig() {
   const { pluginSdkModules } = await import(
     pathToFileURL(path.join(root, "frontend/plugin-sdk.config.mjs"))
   );
+  const { frontendDependencyFallback } = await import(
+    pathToFileURL(path.join(root, "frontend/plugin-dependencies.config.mjs"))
+  );
   const filename = path.join(root, "frontend/vite.config.ts");
   const mod = new Module(filename, module);
   const overrides = {
@@ -21,6 +24,7 @@ async function loadHostConfig() {
     "unplugin-vue-components/vite": () => ({}),
     vite: { defineConfig: (value) => value, normalizePath: (value) => value.replaceAll("\\", "/") },
     "./plugin-sdk.config.mjs": { pluginSdkModules },
+    "./plugin-dependencies.config.mjs": { frontendDependencyFallback },
     "../common/src/plugin_manifest": {
       discoverPluginsFromRoots: () =>
         ["console", "runtime", "user", "file"].map((id) => ({

@@ -94,6 +94,40 @@ not imply every node installed or activated the same version.
 
 ## Independent browser plugins
 
+### Plugin-local npm dependencies
+
+External workspaces can own their npm dependencies. New workspaces created with
+`npm run create-plugin -- example` include a private `package.json` and a
+`.gitignore` for `node_modules/` and `.dist/`. From the project root, install a
+package with:
+
+```bash
+npm install --prefix external/example package-name
+```
+
+For an existing workspace without `package.json`, first run `npm init -y` from
+that workspace and set `private: true`. Keep its `package.json` and lockfile in
+version control; use `npm ci --prefix external/example` when checking it out.
+`panel/` and `daemon/` can also have separate package manifests and installations
+when their dependencies differ. npm registry configuration works through the
+usual npm configuration; credentials are not part of the published plugin.
+
+The resolver starts at the importing file, so the nearest plugin-local package
+wins, including scoped packages, subpaths and transitive dependencies. When no
+local package resolves, the panel/daemon/frontend workspace provides its existing
+dependencies as a fallback. Frontend development and independent publishing use
+the same fallback. SDK modules (including Vue and Cordis) retain shared host
+instances. Backend type resolution follows the same local-first policy.
+
+The publishing compiler bundles plugin-local JavaScript dependencies into its
+frontend/backend output; it does not upload the source `node_modules`, npm
+configuration or lockfiles, and does not install packages on the destination.
+Install dependencies before publishing. Packages requiring native addons or
+runtime filesystem assets need additional packaging support; installing a package
+locally alone does not make those assets part of the compiled output.
+
+### Shared browser SDK
+
 Import host services through `@elements-panel/sdk` (`ctx`, `usePluginService`,
 `serviceRevision`, API/SDK constants and context types). Prefer the scoped `ctx`
 passed to `apply` for registration. The compiler redirects legacy host-runtime
