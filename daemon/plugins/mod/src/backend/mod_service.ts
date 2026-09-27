@@ -31,9 +31,20 @@ export interface ModConfigFile {
   path: string;
 }
 
+interface ModInstallTask {
+  taskId: string;
+  instanceUuid: string;
+  path: string;
+  state: "running" | "completed" | "failed";
+  updatedAt: number;
+  error?: "file_exists" | "busy" | "download_failed";
+  progress?: { current: number; total: number };
+}
+
 export class ModService {
   private disposed = false;
-  private download: { path: string } | undefined;
+  private download: { path: string; task?: object } | undefined;
+  private installs = new Map<string, ModInstallTask>();
   private readonly MAX_CACHE_SIZE = 2000;
   private cache: Map<
     string,
@@ -45,8 +56,9 @@ export class ModService {
     ctx.effect(() => () => {
       this.disposed = true;
       this.cache.clear();
+      this.installs.clear();
       // The transfer service is shared: never stop another feature's download.
-      if (this.download && downloads.task?.path === this.download.path) downloads.stop();
+      if (this.download?.task && downloads.task === this.download.task) downloads.stop();
       this.download = undefined;
     });
   }
@@ -353,9 +365,11 @@ export class ModService {
     url: string,
     fileName: string,
     type: "mod" | "plugin",
-    options: { fallbackUrl?: string } = {}
+    options: { fallbackUrl?: string; ifIdle?: boolean; overwrite?: boolean } = {},
+    task?: ModInstallTask
   ) {
     this.checkModFileName(fileName);
+    if (type !== "mod" && type !== "plugin") throw new Error("Invalid project type");
     const fileManager = this.ctx.files.getFileManager(instanceUuid);
     const rootDir = fileManager.toAbsolutePath(".");
 
@@ -373,6 +387,10 @@ export class ModService {
     const relativePath = path.join(saveDir, fileName);
     if (!fileManager.checkPath(relativePath)) throw new Error("Invalid file path");
     const targetPath = fileManager.toAbsolutePath(relativePath);
+    if (task) task.path = relativePath.replace(/\\/g, "/");
+    if (options.overwrite === false && (await fs.pathExists(targetPath))) {
+      throw Object.assign(new Error("The target file already exists."), { code: "EEXIST" });
+    }
 
     this.ctx.logger.info(
       `[ModService] Instance ${instanceUuid} Install Mod: ${fileName} from ${url} to ${targetPath}`
@@ -380,13 +398,102 @@ export class ModService {
     this.ctx.logger.info(`[ModService] Options: ${JSON.stringify(options)}`);
 
     if (this.disposed) throw new Error("The mod plugin has been unloaded.");
-    const download = { path: targetPath };
+    const downloads = this.ctx.transfer.downloads;
+    if (options.ifIdle && downloads.downloadingCount > 0) {
+      throw Object.assign(new Error("The file downloader is busy."), { code: "DOWNLOAD_BUSY" });
+    }
+    const download: NonNullable<ModService["download"]> = { path: targetPath };
     this.download = download;
     try {
-      await this.ctx.transfer.downloads.downloadFromUrl(url, targetPath, options.fallbackUrl);
+      const pending = downloads.downloadFromUrl(url, targetPath, options.fallbackUrl, options);
+      download.task = downloads.task || undefined;
+      if (task && downloads.task?.path === targetPath) task.progress = downloads.task;
+      await pending;
     } finally {
       if (this.download === download) this.download = undefined;
     }
+  }
+
+  public startInstall(
+    instanceUuid: string,
+    url: string,
+    fileName: string,
+    type: "mod" | "plugin",
+    options: { fallbackUrl?: string; overwrite?: boolean } = {}
+  ) {
+    this.checkModFileName(fileName);
+    if (
+      this.disposed ||
+      (type !== "mod" && type !== "plugin") ||
+      (options.overwrite !== undefined && typeof options.overwrite !== "boolean")
+    )
+      throw new Error("Invalid mod installation request");
+    for (const [id, entry] of this.installs) {
+      if (entry.state !== "running" && entry.updatedAt < Date.now() - 30 * 60_000)
+        this.installs.delete(id);
+    }
+    if (this.installs.size >= 256) {
+      const oldest = [...this.installs.values()].find((entry) => entry.state !== "running");
+      if (oldest) this.installs.delete(oldest.taskId);
+      else throw new Error("Too many mod installation tasks");
+    }
+    const task: ModInstallTask = {
+      taskId: crypto.randomUUID(),
+      instanceUuid,
+      path: `${type === "plugin" ? "plugins" : "mods"}/${fileName}`,
+      state: "running",
+      updatedAt: Date.now()
+    };
+    this.installs.set(task.taskId, task);
+    void this.installMod(
+      instanceUuid,
+      url,
+      fileName,
+      type,
+      {
+        fallbackUrl: options.fallbackUrl,
+        overwrite: options.overwrite === true,
+        ifIdle: true
+      },
+      task
+    ).then(
+      () => {
+        task.state = "completed";
+        task.updatedAt = Date.now();
+      },
+      (error) => {
+        task.state = "failed";
+        task.error =
+          error?.code === "EEXIST"
+            ? "file_exists"
+            : error?.code === "DOWNLOAD_BUSY"
+            ? "busy"
+            : "download_failed";
+        task.updatedAt = Date.now();
+        this.ctx.logger.warn("Mod installation failed:", error);
+      }
+    );
+    return { taskId: task.taskId, accepted: true };
+  }
+
+  public installStatus(instanceUuid: string, taskId: string) {
+    const task = this.installs.get(taskId);
+    if (
+      !task ||
+      task.instanceUuid !== instanceUuid ||
+      (task.state !== "running" && task.updatedAt < Date.now() - 30 * 60_000)
+    ) {
+      return { taskId, state: "unknown" };
+    }
+    // Never return global transfer tasks, absolute paths, URLs or raw errors.
+    return {
+      taskId,
+      path: task.path,
+      state: task.state,
+      downloadedBytes: task.progress?.current || 0,
+      totalBytes: task.progress?.total || 0,
+      ...(task.error ? { error: task.error } : {})
+    };
   }
 
   private checkModFileName(fileName: string) {

@@ -267,7 +267,7 @@ async function daemonFixture(t, downloads = { task: null, downloadingCount: 0, s
 test("daemon mod routes use instance/file services and disappear when a dependency is removed", async (t) => {
   const { ctx, filesFork, directory, request } = await daemonFixture(t);
   assert.equal(ctx.features.has("modManager"), true);
-  assert.equal(ctx.protocol.handlers.size, 5);
+  assert.equal(ctx.protocol.handlers.size, 7);
   await request("instance/mods/list", { instanceUuid: "missing" });
   assert.match(ctx.protocol.replies.pop().error.err, /does not exist/);
   await request("instance/mods/list", { instanceUuid: "instance" });
@@ -321,6 +321,149 @@ test("daemon unload cancels its own download and leaves an unrelated transfer ru
     assert.equal(stopped, unrelated ? 0 : 1);
     finish();
   }
+});
+
+test("tracked mod downloads expose instance-scoped progress and retain completion after global task cleanup", async (t) => {
+  let finish;
+  const downloads = {
+    task: null,
+    downloadingCount: 0,
+    downloadFromUrl(_url, target, _fallback, options) {
+      assert.equal(options.ifIdle, true);
+      assert.equal(options.overwrite, false);
+      this.downloadingCount = 1;
+      this.task = { path: target, current: 4, total: 10, status: 0 };
+      return new Promise((resolve) => {
+        finish = resolve;
+      });
+    },
+    stop() {
+      finish?.();
+      this.task = null;
+      this.downloadingCount = 0;
+    }
+  };
+  const { ctx, request } = await daemonFixture(t, downloads);
+  assert.equal(ctx.features.has("modInstallTasks"), true);
+  await request("instance/mods/install_task", {
+    instanceUuid: "instance",
+    url: "https://cdn.modrinth.com/example.jar",
+    fileName: "example.jar",
+    type: "plugin"
+  });
+  const receipt = ctx.protocol.replies.pop().data;
+  assert.equal(receipt.accepted, true);
+  await until(() => downloads.task !== null);
+  const status = async (instanceUuid = "instance") => {
+    await request("instance/mods/install_status", { instanceUuid, taskId: receipt.taskId });
+    return ctx.protocol.replies.pop().data;
+  };
+  assert.deepEqual(await status(), {
+    taskId: receipt.taskId,
+    state: "running",
+    path: "plugins/example.jar",
+    downloadedBytes: 4,
+    totalBytes: 10
+  });
+  ctx.instances.subsystem.exists = () => true;
+  assert.deepEqual(await status("other"), { taskId: receipt.taskId, state: "unknown" });
+  downloads.task.current = 10;
+  finish();
+  downloads.task = null;
+  downloads.downloadingCount = 0;
+  await settle();
+  const complete = await status();
+  assert.equal(complete.state, "completed");
+  assert.equal(complete.downloadedBytes, 10);
+  assert.doesNotMatch(JSON.stringify(complete), /https:|absolute|error/);
+});
+
+test("tracked mod downloads protect existing files and busy transfers without cancelling them", async (t) => {
+  let called = 0;
+  let stopped = 0;
+  const downloads = {
+    task: { path: "/another-instance/private.jar", current: 5, total: 10 },
+    downloadingCount: 1,
+    async downloadFromUrl() {
+      called++;
+    },
+    stop() {
+      stopped++;
+    }
+  };
+  const { ctx, fork, directory, request } = await daemonFixture(t, downloads);
+  fs.writeFileSync(path.join(directory, "mods/existing.jar"), "existing");
+  for (const [fileName, reason] of [
+    ["existing.jar", "file_exists"],
+    ["new.jar", "busy"]
+  ]) {
+    await request("instance/mods/install_task", {
+      instanceUuid: "instance",
+      url: "https://cdn.modrinth.com/example.jar",
+      fileName,
+      type: "mod"
+    });
+    const { taskId } = ctx.protocol.replies.pop().data;
+    let status;
+    for (let i = 0; i < 100; i++) {
+      await request("instance/mods/install_status", { instanceUuid: "instance", taskId });
+      status = ctx.protocol.replies.pop().data;
+      if (status.state === "failed") break;
+      await settle();
+    }
+    assert.equal(status.state, "failed");
+    assert.equal(status.error, reason);
+    assert.doesNotMatch(JSON.stringify(status), /another-instance|private/);
+  }
+  assert.equal(called, 0);
+  assert.equal(fs.readFileSync(path.join(directory, "mods/existing.jar"), "utf8"), "existing");
+  fork.dispose();
+  await settle();
+  assert.equal(stopped, 0);
+});
+
+test("tracked downloads validate destinations, preserve folder case and sanitize failures", async (t) => {
+  const downloads = {
+    task: null,
+    downloadingCount: 0,
+    async downloadFromUrl(_url, target, _fallback, options) {
+      assert.equal(path.basename(path.dirname(target)), "Plugins");
+      assert.equal(options.overwrite, true);
+      throw new Error("https://user:PRIVATE@internal.example/absolute/path");
+    },
+    stop() {}
+  };
+  const { ctx, directory, request } = await daemonFixture(t, downloads);
+  fs.mkdirSync(path.join(directory, "Plugins"));
+  for (const extra of [{ fileName: "../escape.jar" }, { type: "other" }, { overwrite: "true" }]) {
+    await request("instance/mods/install_task", {
+      instanceUuid: "instance",
+      url: "https://cdn.modrinth.com/example.jar",
+      fileName: "example.jar",
+      type: "plugin",
+      ...extra
+    });
+    assert.ok(ctx.protocol.replies.pop().error);
+  }
+  await request("instance/mods/install_task", {
+    instanceUuid: "instance",
+    url: "https://cdn.modrinth.com/example.jar",
+    fileName: "example.jar",
+    type: "plugin",
+    overwrite: true
+  });
+  const { taskId } = ctx.protocol.replies.pop().data;
+  let status;
+  for (let i = 0; i < 100; i++) {
+    await request("instance/mods/install_status", { instanceUuid: "instance", taskId });
+    status = ctx.protocol.replies.pop().data;
+    if (status.state === "failed") break;
+    await settle();
+  }
+  assert.equal(status.path, "Plugins/example.jar");
+  assert.equal(status.state, "failed");
+  assert.equal(status.error, "download_failed");
+  assert.doesNotMatch(JSON.stringify(status), /PRIVATE|internal|absolute/);
 });
 
 test("frontend registration and feature gating follow the mod and file plugin lifetimes", async (t) => {

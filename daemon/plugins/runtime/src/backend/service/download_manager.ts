@@ -29,8 +29,14 @@ class DownloadManager {
   public async downloadFromUrl(
     url: string,
     targetPath: string,
-    fallbackUrl?: string
+    fallbackUrl?: string,
+    options: { ifIdle?: boolean; overwrite?: boolean } = {}
   ): Promise<void> {
+    // Check and reserve synchronously, before the first await. Two callers cannot
+    // both pass an idle check and then cancel one another's download.
+    if (options.ifIdle && this.downloadingCount > 0) {
+      throw Object.assign(new Error("The file downloader is busy."), { code: "DOWNLOAD_BUSY" });
+    }
     this.stop();
     const controller = new AbortController();
     const task: DownloadTask = { path: targetPath, total: 0, current: 0, status: 0 };
@@ -64,10 +70,18 @@ class DownloadManager {
             await pipeline(stream, writer, { signal: controller.signal });
           }
           controller.signal.throwIfAborted();
-          await fs.rename(temporary, targetPath);
+          if (options.overwrite === false) {
+            // Both paths share a filesystem. Linking publishes the completed file
+            // atomically and fails if another writer has already created it.
+            await fs.link(temporary, targetPath);
+          } else {
+            await fs.rename(temporary, targetPath);
+          }
           task.status = 1;
           return;
         } catch (error) {
+          if (options.overwrite === false && (error as NodeJS.ErrnoException)?.code === "EEXIST")
+            throw error;
           if (controller.signal.aborted || index === sources.length - 1) throw error;
         }
       }

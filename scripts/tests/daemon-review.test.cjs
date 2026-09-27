@@ -290,6 +290,66 @@ test("failed or cancelled downloads preserve existing files and isolate replacem
   assert.deepEqual(fs.readdirSync(cwd), ["server.jar"]);
 });
 
+test("idle-only downloads reject concurrent starts without cancelling the active transfer", async (t) => {
+  const cwd = directory(t);
+  const stream = new PassThrough();
+  let ready;
+  const requested = new Promise((resolve) => {
+    ready = resolve;
+  });
+  let requests = 0;
+  const manager = downloadsFixture(t, async () => {
+    requests++;
+    ready();
+    return { headers: {}, data: stream };
+  });
+  const first = manager.downloadFromUrl(
+    "https://example.com/first",
+    path.join(cwd, "first.jar"),
+    undefined,
+    { ifIdle: true }
+  );
+  // The reservation must exist even before any filesystem/network await settles.
+  const ownedTask = manager.task;
+  await assert.rejects(
+    manager.downloadFromUrl("https://example.com/second", path.join(cwd, "second.jar"), undefined, {
+      ifIdle: true
+    }),
+    { code: "DOWNLOAD_BUSY" }
+  );
+  assert.equal(manager.task, ownedTask);
+  await requested;
+  stream.end("completed");
+  await first;
+  assert.equal(requests, 1);
+  assert.equal(fs.readFileSync(path.join(cwd, "first.jar"), "utf8"), "completed");
+  assert.equal(fs.existsSync(path.join(cwd, "second.jar")), false);
+});
+
+test("non-overwriting downloads atomically preserve a target created during transfer", async (t) => {
+  const cwd = directory(t);
+  const target = path.join(cwd, "mod.jar");
+  const manager = downloadsFixture(t, async () => {
+    fs.writeFileSync(target, "another writer");
+    return { headers: {}, data: Readable.from([Buffer.from("downloaded")]) };
+  });
+  await assert.rejects(
+    manager.downloadFromUrl("https://example.com/mod", target, undefined, { overwrite: false }),
+    { code: "EEXIST" }
+  );
+  assert.equal(fs.readFileSync(target, "utf8"), "another writer");
+  assert.equal(manager.task.status, 2);
+  assert.deepEqual(fs.readdirSync(cwd), ["mod.jar"]);
+  const clean = downloadsFixture(t, async () => ({
+    headers: {},
+    data: Readable.from([Buffer.from("new")])
+  }));
+  const next = path.join(cwd, "new.jar");
+  await clean.downloadFromUrl("https://example.com/new", next, undefined, { overwrite: false });
+  assert.equal(fs.readFileSync(next, "utf8"), "new");
+  assert.deepEqual(fs.readdirSync(cwd).sort(), ["mod.jar", "new.jar"]);
+});
+
 test("file paths reject sibling-prefix traversal and outside junctions", (t) => {
   const cwd = directory(t);
   const rootDir = path.join(cwd, "instance");

@@ -7,6 +7,7 @@ export function apply(ctx: DaemonPluginContext) {
   const modService = new ModService(ctx);
   const downloads = ctx.transfer.downloads;
   ctx.features.add("modManager");
+  ctx.features.add("modInstallTasks");
 
   // Validate at this boundary as well as in the instance plugin's middleware.
   // These routes must never depend on another plugin's registration order.
@@ -102,6 +103,24 @@ export function apply(ctx: DaemonPluginContext) {
     } catch (err: any) {
       ctx.protocol.responseError(routerCtx, err, { disablePrint: true });
     }
+  });
+
+  on("instance/mods/install_task", (routerCtx, data) => {
+    try {
+      ctx.protocol.response(
+        routerCtx,
+        modService.startInstall(data.instanceUuid, data.url, data.fileName, data.type, {
+          fallbackUrl: data.fallbackUrl,
+          overwrite: data.overwrite
+        })
+      );
+    } catch (err: any) {
+      ctx.protocol.responseError(routerCtx, err, { disablePrint: true });
+    }
+  });
+
+  on("instance/mods/install_status", (routerCtx, data) => {
+    ctx.protocol.response(routerCtx, modService.installStatus(data.instanceUuid, data.taskId));
   });
 
   on("instance/mods/config_files", async (routerCtx, data) => {
