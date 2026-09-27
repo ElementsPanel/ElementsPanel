@@ -70,7 +70,9 @@ export interface SettingField {
   fields?: SettingField[];
   maxItems?: number;
   itemTitleKey?: string;
+  listEditor?: "inline" | "dialog";
   addLabel?: string;
+  editLabel?: string;
   removeLabel?: string;
   required?: boolean;
 }

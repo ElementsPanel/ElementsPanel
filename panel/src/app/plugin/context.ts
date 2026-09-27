@@ -86,7 +86,9 @@ export interface PanelSettingField {
   fields?: PanelSettingField[];
   maxItems?: number;
   itemTitleKey?: string;
+  listEditor?: "inline" | "dialog";
   addLabel?: string;
+  editLabel?: string;
   removeLabel?: string;
   required?: boolean;
 }

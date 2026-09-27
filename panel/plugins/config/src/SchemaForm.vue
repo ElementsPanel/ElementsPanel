@@ -4,8 +4,18 @@ import { t } from "@/lang/i18n";
 import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
 import { router } from "@/config/router";
-import { computed, reactive } from "vue";
-import { VBtn, VForm, VSelect, VTextField, VTextarea } from "vuetify/components";
+import { computed, reactive, ref, watch } from "vue";
+import {
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardText,
+  VDialog,
+  VForm,
+  VSelect,
+  VTextField,
+  VTextarea
+} from "vuetify/components";
 import type { SettingField } from "./api";
 
 // The one form that renders every plugin's configuration. It knows nothing about
@@ -34,13 +44,13 @@ const allYesNo = [
  * A field is hidden unless every condition holds. A condition is either a field
  * name 鈥?true when that field is truthy 鈥?or `"name=value"`.
  */
-const visible = (field: SettingField) => {
+const visible = (field: SettingField, values = props.values) => {
   const conditions = field.visibleWhen;
   if (!conditions) return true;
   const list = Array.isArray(conditions) ? conditions : [conditions];
   return list.every((condition) => {
     const [key, expected] = condition.split("=");
-    const value = props.values[key];
+    const value = values[key];
     return expected === undefined ? Boolean(value) : String(value ?? "") === expected;
   });
 };
@@ -62,9 +72,8 @@ const items = (field: SettingField): Record<string, unknown>[] =>
   Array.isArray(props.values[field.key!])
     ? (props.values[field.key!] as Record<string, unknown>[])
     : [];
-const addItem = (field: SettingField) => {
-  if (items(field).length >= (field.maxItems ?? 100)) return;
-  const item = Object.fromEntries(
+const emptyItem = (field: SettingField) =>
+  Object.fromEntries(
     (field.fields || [])
       .filter((child) => child.key && child.type !== "link")
       .map((child) => [
@@ -78,7 +87,69 @@ const addItem = (field: SettingField) => {
           : ""
       ])
   );
-  set(field, [...items(field), item]);
+
+const editor = ref<{
+  field: SettingField;
+  original?: Record<string, unknown>;
+  draft: Record<string, unknown>;
+}>();
+const editorOpen = ref(false);
+// Configuration values are JSON data. Copy the whole item to retain IDs and
+// secret-preservation flags while keeping cancelled edits out of the list.
+const copyItem = (item: Record<string, unknown>) =>
+  JSON.parse(JSON.stringify(item)) as Record<string, unknown>;
+const editItem = (field: SettingField, item?: Record<string, unknown>) => {
+  if (!item && items(field).length >= (field.maxItems ?? 100)) return;
+  editor.value = { field, original: item, draft: item ? copyItem(item) : emptyItem(field) };
+  editorOpen.value = true;
+};
+const cancelEditor = () => {
+  editorOpen.value = false;
+};
+const clearEditor = () => {
+  if (!editorOpen.value) editor.value = undefined;
+};
+const canConfirm = computed(() => {
+  const current = editor.value;
+  if (!current || !editorOpen.value) return false;
+  if (!current.original && items(current.field).length >= (current.field.maxItems ?? 100))
+    return false;
+  return (current.field.fields || []).every((field) => {
+    if (!field.required || !field.key || !visible(field, current.draft)) return true;
+    const value = current.draft[field.key];
+    return value !== undefined && value !== null && (typeof value !== "string" || !!value.trim());
+  });
+});
+const confirmEditor = () => {
+  const current = editor.value;
+  if (!current || !canConfirm.value) return;
+  const entries = [...items(current.field)];
+  if (current.original) {
+    const index = entries.indexOf(current.original);
+    // A replaced/removed item must never cause another row to be overwritten.
+    if (index === -1) {
+      cancelEditor();
+      return;
+    }
+    entries[index] = copyItem(current.draft);
+  } else {
+    entries.push(copyItem(current.draft));
+  }
+  set(current.field, entries);
+  cancelEditor();
+};
+watch(
+  () => [props.values, props.fields],
+  () => {
+    cancelEditor();
+    clearEditor();
+  }
+);
+
+const addItem = (field: SettingField) => {
+  if (items(field).length >= (field.maxItems ?? 100)) return;
+  if (field.listEditor === "dialog") editItem(field);
+  else set(field, [...items(field), emptyItem(field)]);
 };
 const removeItem = (field: SettingField, index: number) =>
   set(
@@ -127,26 +198,50 @@ const open = (field: SettingField) => {
             v-for="(item, itemIndex) in items(field)"
             :key="itemIndex"
             class="setting-list-item"
+            :class="{ 'setting-list-item--compact': field.listEditor === 'dialog' }"
           >
             <div class="setting-list-header">
-              <strong>{{
-                String(item[field.itemTitleKey || "name"] || `${field.title} ${itemIndex + 1}`)
-              }}</strong>
-              <VBtn
-                type="button"
-                icon="mdi-delete-outline"
-                variant="text"
-                size="small"
-                :aria-label="field.removeLabel || t('TXT_CODE_6f2c1806')"
-                @click="removeItem(field, itemIndex)"
-              />
+              <strong
+                class="setting-list-name"
+                :title="String(item[field.itemTitleKey || 'name'] || '')"
+                >{{
+                  String(item[field.itemTitleKey || "name"] || `${field.title} ${itemIndex + 1}`)
+                }}</strong
+              >
+              <div class="setting-list-actions">
+                <VBtn
+                  v-if="field.listEditor === 'dialog'"
+                  type="button"
+                  icon="mdi-pencil-outline"
+                  variant="text"
+                  size="small"
+                  :title="field.editLabel || t('TXT_CODE_ad207008')"
+                  :aria-label="field.editLabel || t('TXT_CODE_ad207008')"
+                  @click="editItem(field, item)"
+                />
+                <VBtn
+                  type="button"
+                  icon="mdi-delete-outline"
+                  variant="text"
+                  size="small"
+                  :title="field.removeLabel || t('TXT_CODE_6f2c1806')"
+                  :aria-label="field.removeLabel || t('TXT_CODE_6f2c1806')"
+                  @click="removeItem(field, itemIndex)"
+                />
+              </div>
             </div>
-            <SchemaForm :fields="field.fields || []" :values="item" nested />
+            <SchemaForm
+              v-if="field.listEditor !== 'dialog'"
+              :fields="field.fields || []"
+              :values="item"
+              nested
+            />
           </section>
           <VBtn
             type="button"
             prepend-icon="mdi-plus"
             variant="tonal"
+            class="mt-3"
             :disabled="items(field).length >= (field.maxItems ?? 100)"
             @click="addItem(field)"
           >
@@ -243,6 +338,24 @@ const open = (field: SettingField) => {
       </div>
     </template>
   </component>
+  <VDialog v-if="editor" v-model="editorOpen" max-width="640" scrollable @after-leave="clearEditor">
+    <VCard
+      :title="t(editor.original ? 'TXT_CODE_ad207008' : 'TXT_CODE_a1d885c1')"
+      class="setting-list-editor"
+    >
+      <VForm @submit.stop.prevent="confirmEditor">
+        <VCardText class="pl-8">
+          <SchemaForm :fields="editor.field.fields || []" :values="editor.draft" nested />
+        </VCardText>
+        <VCardActions class="justify-end">
+          <VBtn type="button" @click="cancelEditor">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+          <VBtn type="submit" color="primary" variant="flat" :disabled="!canConfirm">{{
+            t("TXT_CODE_d507abff")
+          }}</VBtn>
+        </VCardActions>
+      </VForm>
+    </VCard>
+  </VDialog>
 </template>
 
 <style scoped>
@@ -259,6 +372,40 @@ const open = (field: SettingField) => {
   gap: 8px;
   margin-bottom: 12px;
   overflow-wrap: anywhere;
+}
+.setting-list-item--compact {
+  padding: 8px 0;
+  margin-bottom: 0;
+  border: 0;
+  border-radius: 0;
+}
+.setting-list-item--compact .setting-list-header {
+  margin-bottom: 0;
+}
+.setting-list-name {
+  flex: 1;
+  min-width: 0;
+}
+.setting-list-item--compact .setting-list-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.setting-list-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+}
+.setting-list-editor :deep(.setting-control) {
+  width: 100%;
+}
+.setting-list-editor > :deep(.v-form) {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.setting-list-editor :deep(.v-card-text) {
+  overflow-y: auto;
 }
 .setting-field,
 .setting-link-row {
