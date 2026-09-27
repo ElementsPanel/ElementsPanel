@@ -885,8 +885,19 @@ export class ModManagerService {
       });
       const versions = res.data;
       return versions.map((v: any, index: number) => {
-        // Clean resource name for filename
-        const safeName = resourceName.replace(/[\\\/\:\*\?\"\<\>\|]/g, "_").replace(/\s+/g, "_");
+        // Version names are display text too (for example "1.2/1.3: stable").
+        // Sanitize the complete generated name, without weakening daemon path checks.
+        const baseName = `${resourceName}-${v.name}`
+          .replace(/[\\/:*?"<>|\x00-\x1f\x7f]/g, "_")
+          .replace(/\s+/g, "_");
+        let safeName = "";
+        for (const character of baseName) {
+          if (Buffer.byteLength(safeName + character, "utf8") > 240) break;
+          safeName += character;
+        }
+        if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(safeName))
+          safeName = `_${safeName}`;
+        const fileName = `${safeName}.jar`;
         // Use version-less download URL for the latest version to bypass SpigotMC Cloudflare via Spiget CDN
         // Spiget API returns versions sorted by releaseDate descending (newest first)
         const isLatest = index === 0;
@@ -908,12 +919,12 @@ export class ModManagerService {
           files: [
             {
               url: cdnDownloadUrl,
-              filename: `${safeName}-${v.name}.jar`,
+              filename: fileName,
               primary: true
             },
             {
               url: downloadUrl,
-              filename: `${safeName}-${v.name}.jar`,
+              filename: fileName,
               primary: false
             }
           ]

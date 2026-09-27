@@ -62,6 +62,22 @@ export function isPublicAddress(address: string): boolean {
 
 const hostname = (value: string) => value.replace(/^\[|\]$/g, "").toLowerCase();
 
+// Clash/Mihomo and sing-box can resolve public CDNs to these synthetic ranges.
+// They are still non-public: only verified HTTPS to known catalog hosts may use
+// them, never arbitrary downloads, literal IPs or other private addresses.
+const proxyAddresses = new BlockList();
+proxyAddresses.addSubnet("198.18.0.0", 15, "ipv4");
+proxyAddresses.addSubnet("fdfe:dcba:9876::", 48, "ipv6");
+const isCatalogHost = (host: string) => {
+  const domain = hostname(host).replace(/\.$/, "");
+  return (
+    ["cdn.modrinth.com", "api.spiget.org", "cdn.spiget.org"].includes(domain) ||
+    domain.endsWith(".forgecdn.net")
+  );
+};
+const isProxyAddress = (address: string) =>
+  !address.includes("%") && proxyAddresses.check(address, isIP(address) === 4 ? "ipv4" : "ipv6");
+
 export function assertPublicDownloadUrl(value: string): URL {
   const url = new URL(value);
   if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) throw denied();
@@ -78,33 +94,54 @@ export function assertPublicDownloadUrl(value: string): URL {
 }
 
 /** Validate exactly the addresses handed to the socket; there is no second DNS lookup. */
-export const lookupPublicAddress: LookupFunction = (host, options, callback) => {
+function lookupDownloadAddress(
+  host: string,
+  options: Parameters<LookupFunction>[1],
+  callback: Parameters<LookupFunction>[2],
+  allowProxyAddress = false
+) {
   lookup(host, { ...options, all: true }, (error, addresses) => {
     if (error) return callback(error, []);
     if (
       !addresses.length ||
       addresses.some(
-        (entry) => isIP(entry.address) !== entry.family || !isPublicAddress(entry.address)
+        (entry) =>
+          isIP(entry.address) !== entry.family ||
+          (!isPublicAddress(entry.address) && !(allowProxyAddress && isProxyAddress(entry.address)))
       )
     )
       return callback(denied(), []);
     if (options.all) callback(null, addresses);
     else callback(null, addresses[0].address, addresses[0].family);
   });
-};
+}
+
+export const lookupPublicAddress: LookupFunction = (host, options, callback) =>
+  lookupDownloadAddress(host, options, callback);
+const lookupCatalogAddress: LookupFunction = (host, options, callback) =>
+  lookupDownloadAddress(host, options, callback, isCatalogHost(host));
 
 // Dedicated agents cannot reuse a socket opened by an unrelated, unchecked API.
 const httpAgent = new HttpAgent({ keepAlive: false, lookup: lookupPublicAddress });
 const httpsAgent = new HttpsAgent({ keepAlive: false, lookup: lookupPublicAddress });
+const catalogHttpsAgent = new HttpsAgent({
+  keepAlive: false,
+  lookup: lookupCatalogAddress,
+  rejectUnauthorized: true
+});
+const httpsAgentFor = (url: URL) =>
+  url.protocol === "https:" && !url.port && isCatalogHost(url.hostname)
+    ? catalogHttpsAgent
+    : httpsAgent;
 
 export function publicDownloadRequestOptions(url: string) {
-  assertPublicDownloadUrl(url);
+  const parsed = assertPublicDownloadUrl(url);
   return {
     adapter: "http" as const,
     // Environment proxies would move DNS resolution outside our checked socket.
     proxy: false as const,
     httpAgent,
-    httpsAgent,
+    httpsAgent: httpsAgentFor(parsed),
     beforeRedirect(options: Record<string, unknown>) {
       const redirect = assertPublicDownloadUrl(String(options.href));
       if (
@@ -115,6 +152,9 @@ export function publicDownloadRequestOptions(url: string) {
       ) {
         throw denied();
       }
+      // follow-redirects selects the next socket's agent from this map. Leaving
+      // the catalog (or port 443) restores the strict public-address policy.
+      options.agents = { http: httpAgent, https: httpsAgentFor(redirect) };
     }
   };
 }

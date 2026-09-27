@@ -134,6 +134,63 @@ test("redirects recheck literal destinations and retain DNS checks for redirecte
   await assert.rejects(lookup(p), { code: "ERR_UNSAFE_DOWNLOAD_URL" });
 });
 
+test("known HTTPS mod CDNs support proxy Fake-IP answers without relaxing arbitrary destinations", async (t) => {
+  const p = policy(t, [
+    { address: "fdfe:dcba:9876::7a", family: 6 },
+    { address: "198.18.0.125", family: 4 }
+  ]);
+  const resolveWith = (url, host = new URL(url).hostname) => {
+    const options = p.publicDownloadRequestOptions(url);
+    const agent = url.startsWith("https:") ? options.httpsAgent : options.httpAgent;
+    t.after(() => agent.destroy());
+    return new Promise((resolve, reject) => {
+      agent.options.lookup(host, { all: true }, (error, addresses) =>
+        error ? reject(error) : resolve(addresses)
+      );
+    });
+  };
+  for (const host of ["cdn.modrinth.com", "mediafilez.forgecdn.net", "cdn.spiget.org", "api.spiget.org"]) {
+    const url = `https://${host}/mod.jar`;
+    assert.deepEqual(await resolveWith(url), p.resolver.records);
+    assert.equal(p.publicDownloadRequestOptions(url).httpsAgent.options.rejectUnauthorized, true);
+  }
+  for (const url of [
+    "https://downloads.example/mod.jar", "https://cdn.modrinth.com.evil.example/mod.jar",
+    "http://cdn.modrinth.com/mod.jar", "https://cdn.modrinth.com:8443/mod.jar"
+  ]) await assert.rejects(resolveWith(url), { code: "ERR_UNSAFE_DOWNLOAD_URL" });
+  await assert.rejects(resolveWith("https://cdn.modrinth.com/mod.jar", "internal.example"), {
+    code: "ERR_UNSAFE_DOWNLOAD_URL"
+  });
+  for (const address of ["127.0.0.1", "192.168.1.1", "169.254.169.254", "fd00::1"]) {
+    p.resolver.records = [{ address, family: address.includes(":") ? 6 : 4 }];
+    await assert.rejects(resolveWith("https://cdn.modrinth.com/mod.jar"), {
+      code: "ERR_UNSAFE_DOWNLOAD_URL"
+    });
+  }
+  for (const url of ["https://198.18.0.125/mod.jar", "https://[fdfe:dcba:9876::7a]/mod.jar"])
+    assert.throws(() => p.publicDownloadRequestOptions(url), { code: "ERR_UNSAFE_DOWNLOAD_URL" });
+});
+
+test("catalog redirects select the correct DNS policy at every hop", (t) => {
+  const p = policy(t);
+  const catalog = p.publicDownloadRequestOptions("https://cdn.modrinth.com/mod.jar");
+  t.after(() => catalog.httpsAgent.destroy());
+  const redirect = (href) => {
+    const url = new URL(href);
+    return { href, hostname: url.hostname, protocol: url.protocol };
+  };
+  for (const href of ["https://downloads.example/mod.jar", "https://cdn.modrinth.com:8443/mod.jar"]) {
+    const target = redirect(href);
+    catalog.beforeRedirect(target);
+    assert.equal(target.agents.https.options.lookup, p.lookupPublicAddress);
+  }
+  const target = redirect("https://cdn.spiget.org/mod.jar");
+  p.options.beforeRedirect(target);
+  assert.equal(target.agents.https.options.rejectUnauthorized, true);
+  assert.equal(target.agents.https, catalog.httpsAgent);
+  assert.equal(target.agents.http.options.lookup, p.lookupPublicAddress);
+});
+
 test("download transport disables environment proxies and keeps retry and cancellation behavior", async (t) => {
   const p = policy(t);
   const requests = [];

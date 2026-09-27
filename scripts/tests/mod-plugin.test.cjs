@@ -205,6 +205,44 @@ test("panel mod API preserves authorization, validation and daemon event names",
   assert.equal(calls.length, 1);
 });
 
+test("Spigot version filenames are safe for batch downloads and match their fallback file", async () => {
+  const cases = [
+    { name: "Example Plugin", versions: ["1.2.3", "1.2/1.3: stable", '1.4\\beta?*"<>|\u0000'] },
+    { name: "CON.unsafe", versions: ["latest"] },
+    { name: "插件😀".repeat(100), versions: ["最新版😀".repeat(100)] }
+  ];
+  for (const resource of cases) {
+    const { ModManagerService } = load("panel/plugins/mod/src/backend/mod_manager.ts", {
+      axios: async ({ url }) => ({
+        data: url.endsWith("/versions")
+          ? resource.versions.map((name, id) => ({ name, id }))
+          : { name: resource.name }
+      })
+    });
+    const manager = new ModManagerService({
+      effect() {},
+      setInterval() {},
+      logger: { warn: (...args) => assert.fail(args.join(" ")) }
+    });
+    const versions = await manager.getSpigotVersions("123");
+    assert.equal(versions.length, resource.versions.length);
+    for (const [index, version] of versions.entries()) {
+      const fileName = version.files[0].filename;
+      assert.equal(version.files[1].filename, fileName);
+      assert.match(fileName, /\.jar$/);
+      assert.doesNotMatch(fileName, /[\\/:*?"<>|\x00-\x1f\x7f]/);
+      assert.doesNotMatch(fileName, /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i);
+      assert.ok(Buffer.byteLength(fileName, "utf8") <= 255);
+      assert.equal(Buffer.from(fileName).toString("utf8"), fileName);
+      assert.equal(version.name, resource.versions[index], "keep the original display name");
+    }
+    if (resource.name === "Example Plugin") {
+      assert.equal(versions[0].files[0].filename, "Example_Plugin-1.2.3.jar");
+      assert.equal(versions[1].files[0].filename, "Example_Plugin-1.2_1.3__stable.jar");
+    }
+  }
+});
+
 function temporaryDirectory(t) {
   const parent = path.resolve(os.tmpdir());
   const directory = fs.mkdtempSync(path.join(parent, "elements-mod-test-"));

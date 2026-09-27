@@ -502,7 +502,7 @@ export class ModService {
       /[\\/:\0]/.test(fileName) ||
       !/\.jar(?:\.disabled)?$/i.test(fileName)
     ) {
-      throw new Error("Invalid mod file name");
+      throw new Error(`Invalid mod file name: ${JSON.stringify(fileName)?.slice(0, 300)}`);
     }
   }
 
