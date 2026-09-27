@@ -20,6 +20,16 @@ function normalizeFolder(value) {
     .replace(/-{2,}/g, "-")
     .replace(/^[-_]+|[-_]+$/g, "");
   if (!normalized) throw new Error("Plugin folder must contain a letter or number.");
+  // The folder becomes the plugin's `id`, which the plugin market publishes it
+  // under and installs it as; the market's upload applies the same rule.
+  if (
+    !/^[a-z][a-z0-9_-]{1,63}$/.test(normalized) ||
+    /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/.test(normalized)
+  ) {
+    throw new Error(
+      `"${normalized}" cannot be a plugin id: use 2-64 lowercase letters, digits, "_" or "-", starting with a letter, and not a Windows device name.`
+    );
+  }
   return normalized;
 }
 
@@ -131,8 +141,13 @@ npm run publish-plugin -- ${folder}
 That compiles both halves and uploads the result, which the market puts in its
 review queue. Everything the market shows — display name, version, summary,
 description, category, changelog — is read from \`panel/plugin.json\` (or
-\`daemon/plugin.json\` for a daemon-only workspace), so edit it there. Only
-\`--version\` and \`--changelog\` are worth passing per upload.
+\`daemon/plugin.json\` for a daemon-only workspace), so edit it there; the market
+shows the new details once that upload is approved. Only \`--version\` and
+\`--changelog\` are worth passing per upload.
+
+The first upload links your market account in the browser, and the token is kept
+under \`data/\`. \`npm run publish-plugin -- --disconnect\` revokes it again; so does
+the market's account page.
 
 The plugin's own description for users lives in \`panel/README.md\` (or
 \`daemon/README.md\`): it is packaged with the plugin and rendered on the market's

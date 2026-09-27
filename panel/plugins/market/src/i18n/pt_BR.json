@@ -29,6 +29,8 @@
   "TXT_CODE_PLUGIN_MARKET": "Mercado de plugins",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "Endereço do mercado",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "Endereço do site do mercado, de onde vem a lista de plugins",
+  "TXT_CODE_PLUGIN_MARKET_ADDR_INVALID": "Endereço do mercado inválido: use um endereço http(s) sem query, fragmento ou credenciais",
+  "TXT_CODE_PLUGIN_MARKET_BAD_CHECKSUM": "Os arquivos baixados não correspondem ao pacote publicado no mercado",
   "TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE": "O pacote contém um caminho de arquivo inválido",
   "TXT_CODE_PLUGIN_MARKET_BY": "por {name}",
   "TXT_CODE_PLUGIN_MARKET_CANCEL": "Cancelar",

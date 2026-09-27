@@ -29,6 +29,8 @@
   "TXT_CODE_PLUGIN_MARKET": "ตลาดปลั๊กอิน",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "ที่อยู่ตลาด",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "ที่อยู่ของเว็บตลาดปลั๊กอิน ซึ่งเป็นแหล่งที่มาของรายการปลั๊กอิน",
+  "TXT_CODE_PLUGIN_MARKET_ADDR_INVALID": "ที่อยู่ตลาดไม่ถูกต้อง: ใช้ที่อยู่ http(s) ที่ไม่มี query, fragment หรือข้อมูลรับรอง",
+  "TXT_CODE_PLUGIN_MARKET_BAD_CHECKSUM": "ไฟล์ที่ดาวน์โหลดไม่ตรงกับแพ็กเกจที่เผยแพร่ในตลาด",
   "TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE": "แพ็กเกจมีเส้นทางไฟล์ที่ไม่ถูกต้อง",
   "TXT_CODE_PLUGIN_MARKET_BY": "โดย {name}",
   "TXT_CODE_PLUGIN_MARKET_CANCEL": "ยกเลิก",

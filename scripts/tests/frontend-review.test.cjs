@@ -476,7 +476,14 @@ test("switching node/plugin configuration cannot display or save a stale schema"
   const requests = [];
   const saved = [];
   const state = setupSfc("panel/plugins/config/src/ConfigPage.vue", {
-    "vue-router": { useRoute: () => ({ query: {} }) },
+    "vue-router": {
+      useRoute: () => ({ query: {} }),
+      // ConfigPage reads the router to rewrite the URL and guards the route on
+      // leave; this test drives the schema load/save race and never navigates, so
+      // both are stubbed to what vue-router would provide.
+      useRouter: () => ({ resolve: () => ({ fullPath: "/plugins/config" }) }),
+      onBeforeRouteLeave: () => {}
+    },
     "@/plugin/context": { ctx: {} },
     "@/tools/validator": { getValidatorErrorMsg: (error) => error.message },
     "@/tools/vuetifyToast": { message: { success() {}, error() {} } },

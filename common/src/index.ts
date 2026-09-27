@@ -30,6 +30,9 @@ export * from "./plugin_lifecycle";
 export * from "./plugin_revision";
 export {
   MARKET_INSTALL_MARKER,
+  MAX_PLUGIN_ICON_BYTES,
+  PLUGIN_ICON_FILE,
+  PLUGIN_PACKAGE_EXTENSIONS,
   PluginPackageError,
   pluginPackageDirectory,
   writePluginPackage,

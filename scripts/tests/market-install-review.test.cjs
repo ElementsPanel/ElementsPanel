@@ -81,28 +81,33 @@ async function fixture(t, { sides = ["daemon"], development = false } = {}) {
     ])
   );
   const state = { sides, request: async () => ({ removed: true }), panelReloads: 0 };
+  // `/files` advertises each file's real size: the installer refuses bytes that do not match it.
+  const manifest = (version) =>
+    Buffer.from(
+      JSON.stringify({
+        id: "sample",
+        version,
+        ...(state.elements ? { elements: state.elements } : {})
+      })
+    );
   const axios = {
     isAxiosError: () => false,
     async get(url, options) {
       networkCalls.push({ url, options });
-      if (url.endsWith("/files"))
+      if (url.endsWith("/files")) {
+        const version = options.params.version || "1.0.0";
         return {
           data: {
             name: "sample",
-            version: options.params.version || "1.0.0",
-            files: state.sides.map((side) => ({ path: `${side}/plugin.json`, size: 2 }))
+            version,
+            files: state.sides.map((side) => ({
+              path: `${side}/plugin.json`,
+              size: manifest(version).length
+            }))
           }
         };
-      if (url.endsWith("/file"))
-        return {
-          data: Buffer.from(
-            JSON.stringify({
-              id: "sample",
-              version: options.params.version || "1.0.0",
-              ...(state.elements ? { elements: state.elements } : {})
-            })
-          )
-        };
+      }
+      if (url.endsWith("/file")) return { data: manifest(options.params.version || "1.0.0") };
       if (url.endsWith("/api/plugins"))
         return { data: { items: [{ id: "sample", name: "sample" }] } };
       return { data: { latestVersion: { version: "1.0.0", status: "approved" } } };
@@ -405,6 +410,94 @@ test("market compatibility is negotiated before installation and downloaded byte
   assert.deepEqual((await service.downloadPackage("https://example.test", pkg))[0].content, bytes);
   corrupt = true;
   await assert.rejects(service.downloadPackage("https://example.test", pkg), /BAD_CHECKSUM/);
+});
+
+test("a download whose digest differs is refused even when its length matches", async () => {
+  const bytes = Buffer.from('{"id":"sample"}');
+  const checksum = require("node:crypto").createHash("sha256").update(bytes).digest("hex");
+  // Same length, different bytes: only the digest can tell these apart.
+  let body = bytes;
+  const service = load(serviceFile, {
+    axios: {
+      async get(url) {
+        if (url.endsWith("/files"))
+          return {
+            data: {
+              name: "sample",
+              version: "1",
+              files: [{ path: "panel/plugin.json", size: bytes.length, sha256: checksum }]
+            }
+          };
+        return { data: body };
+      }
+    }
+  });
+  const pkg = await service.fetchPackage("https://example.test", { pluginId: "sample" });
+  assert.deepEqual((await service.downloadPackage("https://example.test", pkg))[0].content, bytes);
+  body = Buffer.from('{"id":"samply"}');
+  assert.equal(body.length, bytes.length, "the fixture must exercise the digest, not the length");
+  await assert.rejects(service.downloadPackage("https://example.test", pkg), /BAD_CHECKSUM/);
+});
+
+test("a download that differs from its advertised size is refused even without a digest", async () => {
+  const bytes = Buffer.from('{"id":"sample"}');
+  let body = bytes;
+  const service = load(serviceFile, {
+    axios: {
+      async get(url) {
+        if (url.endsWith("/files"))
+          return {
+            data: {
+              name: "sample",
+              version: "1",
+              files: [{ path: "panel/plugin.json", size: bytes.length }]
+            }
+          };
+        return { data: body };
+      }
+    }
+  });
+  const pkg = await service.fetchPackage("https://example.test", { pluginId: "sample" });
+  assert.deepEqual((await service.downloadPackage("https://example.test", pkg))[0].content, bytes);
+  body = bytes.subarray(0, 4);
+  await assert.rejects(service.downloadPackage("https://example.test", pkg), /BAD_CHECKSUM/);
+});
+
+test("a listed file the panel could not install is refused before it is downloaded", async () => {
+  const listed = [{ path: "panel/plugin.json", size: 2 }];
+  const service = load(serviceFile, {
+    axios: {
+      async get(url) {
+        if (url.endsWith("/files")) return { data: { name: "sample", version: "1", files: listed } };
+        return { data: Buffer.from("{}") };
+      }
+    }
+  });
+  // The daemon applies the same rule to its own half; the panel must not be the
+  // one side that writes whatever the market lists.
+  for (const bad of [
+    "panel/payload.exe",
+    "panel/native.node",
+    "panel/install.sh",
+    "panel/src/index.ts",
+    "panel/assets/logo.png",
+    "panel/no-extension"
+  ]) {
+    listed.push({ path: bad, size: 1 });
+    await assert.rejects(
+      service.fetchPackage("https://example.test", { pluginId: "sample" }),
+      /BAD_PATH/,
+      bad
+    );
+    listed.pop();
+  }
+  // The icon is the one PNG a package may carry, and only at the root of a side.
+  listed.push({ path: "panel/icon.png", size: 1 });
+  const pkg = await service.fetchPackage("https://example.test", { pluginId: "sample" });
+  assert.deepEqual(
+    pkg.files.map((file) => file.relative),
+    ["plugin.json", "icon.png"].map((file) => file.split("/").join(require("node:path").sep))
+  );
 });
 
 test("a declared daemon package is sent only to nodes that advertise the required API", async (t) => {

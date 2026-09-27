@@ -29,6 +29,8 @@
   "TXT_CODE_PLUGIN_MARKET": "プラグインマーケット",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "マーケットのアドレス",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "プラグイン一覧の取得元となるマーケットサイトのアドレス",
+  "TXT_CODE_PLUGIN_MARKET_ADDR_INVALID": "マーケットアドレスが不正です。クエリ・フラグメント・認証情報を含まない http(s) のアドレスを入力してください",
+  "TXT_CODE_PLUGIN_MARKET_BAD_CHECKSUM": "ダウンロードしたファイルがマーケットで公開されているパッケージと一致しません",
   "TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE": "パッケージに不正なファイルパスが含まれています",
   "TXT_CODE_PLUGIN_MARKET_BY": "作者: {name}",
   "TXT_CODE_PLUGIN_MARKET_CANCEL": "キャンセル",

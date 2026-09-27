@@ -1,7 +1,10 @@
 import fs from "fs";
 import path from "path";
 import {
+  MAX_PLUGIN_ICON_BYTES,
   PLUGIN_API_VERSION,
+  PLUGIN_ICON_FILE,
+  PLUGIN_PACKAGE_EXTENSIONS,
   pluginPackageDirectory,
   removePluginPackage,
   writePluginPackage
@@ -31,34 +34,12 @@ const ESSENTIAL = new Set(["i18n", "storage", "runtime", "server"]);
 /** New installations use the existing persistent data volume. */
 const MARKET_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "data", "plugins");
 
-/** The extensions a plugin package is allowed to contain. */
-const ALLOWED_EXTENSIONS = new Set([
-  ".json",
-  ".js",
-  ".cjs",
-  ".mjs",
-  ".svg",
-  ".jpg",
-  ".jpeg",
-  ".gif",
-  ".webp",
-  ".woff",
-  ".woff2",
-  ".ttf",
-  ".eot",
-  ".wasm",
-  ".css",
-  ".scss",
-  ".md",
-  ".txt"
-]);
-const MAX_PLUGIN_ICON_BYTES = 1024 * 1024;
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 function validateTransferFile(file: TransferFile, destination: string) {
   // Icons are plugin-level metadata and may only live at the package root. Do
   // not turn the general package whitelist into an arbitrary image upload.
-  if (file.path === "icon.png") {
+  if (file.path === PLUGIN_ICON_FILE) {
     const encodedLimit = Math.ceil(MAX_PLUGIN_ICON_BYTES / 3) * 4 + 8;
     if (file.content.length > encodedLimit) throw new Error("Plugin icon is too large.");
     const data = Buffer.from(file.content, "base64");
@@ -67,7 +48,9 @@ function validateTransferFile(file: TransferFile, destination: string) {
       throw new Error("Invalid plugin icon.");
     return;
   }
-  if (!ALLOWED_EXTENSIONS.has(path.extname(destination).toLowerCase())) {
+  // The extensions a package may contain are shared with the publish script and
+  // the plugin market's upload check (`PLUGIN_PACKAGE_EXTENSIONS`).
+  if (!PLUGIN_PACKAGE_EXTENSIONS.has(path.extname(destination).toLowerCase())) {
     throw new Error(`The package contains an unacceptable file: ${file.path}`);
   }
 }
@@ -206,9 +189,8 @@ export function apply(ctx: DaemonPluginContext) {
   });
 
   // Re-scan the plugin directories, for a plugin that arrived while the daemon
-  // was running — the plugin market installs one into `market_plugins/` in a
-  // source checkout. Development only: `ctx.plugins.reload()` refuses otherwise,
-  // and the panel is told why.
+  // was running — the plugin market installs one into `data/plugins/`. Development
+  // only: `ctx.plugins.reload()` refuses otherwise, and the panel is told why.
   ctx.protocol.on("plugin/reload", async (routerCtx) => {
     try {
       await ctx.plugins.reload();

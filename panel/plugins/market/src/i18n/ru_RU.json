@@ -29,6 +29,8 @@
   "TXT_CODE_PLUGIN_MARKET": "Маркет плагинов",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "Адрес маркета",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "Адрес сайта маркета плагинов, откуда берётся список",
+  "TXT_CODE_PLUGIN_MARKET_ADDR_INVALID": "Некорректный адрес маркета: укажите http(s)-адрес без query, фрагмента и учётных данных",
+  "TXT_CODE_PLUGIN_MARKET_BAD_CHECKSUM": "Загруженные файлы не совпадают с пакетом, опубликованным в маркете",
   "TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE": "Пакет содержит недопустимый путь",
   "TXT_CODE_PLUGIN_MARKET_BY": "автор: {name}",
   "TXT_CODE_PLUGIN_MARKET_CANCEL": "Отмена",

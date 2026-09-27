@@ -29,6 +29,8 @@
   "TXT_CODE_PLUGIN_MARKET": "插件市场",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "插件市场地址",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "插件市场网站的地址，插件列表从这里获取",
+  "TXT_CODE_PLUGIN_MARKET_ADDR_INVALID": "插件市场地址无效：请填写不带查询参数、片段或账号密码的 http(s) 地址",
+  "TXT_CODE_PLUGIN_MARKET_BAD_CHECKSUM": "下载的文件与插件市场公布的不一致，请重试",
   "TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE": "插件包包含非法的文件路径",
   "TXT_CODE_PLUGIN_MARKET_BY": "作者：{name}",
   "TXT_CODE_PLUGIN_MARKET_CANCEL": "取消",

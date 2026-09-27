@@ -26,6 +26,8 @@ import PluginMarketSideBadge from "./PluginMarketSideBadge.vue";
 const props = defineProps<{ embedded?: boolean }>();
 const emit = defineEmits<{ select: [pluginId: string] }>();
 const loading = ref(false);
+// Whether the last refresh failed: an empty list then means "unreachable", not "no plugins".
+const failed = ref(false);
 const plugins = ref<MarketPlugin[]>([]);
 const keyword = ref<string | null>("");
 const { icons, load } = usePluginIcons();
@@ -58,9 +60,15 @@ async function refresh() {
   try {
     const { execute } = pluginMarketList();
     const response = await execute();
-    if (request === requestId) plugins.value = response.value ?? [];
+    if (request === requestId) {
+      plugins.value = response.value ?? [];
+      failed.value = false;
+    }
   } catch (error) {
-    if (request === requestId) message.error(getValidatorErrorMsg(error));
+    if (request === requestId) {
+      failed.value = true;
+      message.error(getValidatorErrorMsg(error));
+    }
   } finally {
     if (request === requestId) loading.value = false;
   }
@@ -111,9 +119,14 @@ onBeforeUnmount(() => requestId++);
       <VProgressLinear v-if="loading && !plugins.length" indeterminate class="mb-4" />
 
       <div v-if="!loading && !plugins.length" class="plugin-market-empty" role="status">
-        <VIcon icon="mdi-puzzle-outline" size="48" class="plugin-market-empty-icon" />
-        <div class="plugin-market-empty-title">{{ t("TXT_CODE_PLUGIN_MARKET_EMPTY") }}</div>
-        <div class="plugin-market-empty-text">{{ t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE") }}</div>
+        <VIcon
+          :icon="failed ? 'mdi-lan-disconnect' : 'mdi-puzzle-outline'"
+          size="48"
+          class="plugin-market-empty-icon"
+        />
+        <div class="plugin-market-empty-title">
+          {{ failed ? t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE") : t("TXT_CODE_PLUGIN_MARKET_EMPTY") }}
+        </div>
       </div>
 
       <VRow v-else-if="visiblePlugins.length" class="plugin-market-grid">
@@ -249,13 +262,6 @@ onBeforeUnmount(() => requestId++);
   color: var(--color-gray-8);
   font-size: 1rem;
   font-weight: 600;
-}
-
-.plugin-market-empty-text {
-  max-width: 460px;
-  color: var(--color-gray-7);
-  font-size: 0.875rem;
-  line-height: 1.5;
 }
 
 .plugin-market-empty--filtered {

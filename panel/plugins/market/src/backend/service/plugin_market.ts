@@ -4,6 +4,8 @@ import axios from "axios";
 import fs from "fs-extra";
 import {
   MARKET_INSTALL_MARKER as MARKER_FILE,
+  PLUGIN_ICON_FILE,
+  PLUGIN_PACKAGE_EXTENSIONS,
   PluginPackageError as PluginMarketError,
   pluginPackageDirectory,
   removePluginPackage,
@@ -276,6 +278,12 @@ function splitPackagePath(rawPath: string): { side: PluginSide; relative: string
   )
     return null;
 
+  // What a package may contain, checked before anything is downloaded. The daemon
+  // applies the same rule to the half it is sent (`plugin/install`); without this
+  // the panel's own half would be the one place the rule is not enforced.
+  const isIcon = rest.length === 1 && rest[0] === PLUGIN_ICON_FILE;
+  if (!isIcon && !PLUGIN_PACKAGE_EXTENSIONS.has(path.extname(rawPath).toLowerCase())) return null;
+
   return { side, relative: rest.join(path.sep) };
 }
 
@@ -333,6 +341,9 @@ export async function fetchPackage(
   };
 }
 
+/** A published package is a few hundred kilobytes; this only bounds a hostile source. */
+const MAX_PACKAGE_FILE_BYTES = 20 * 1024 * 1024;
+
 /** Downloads every file of a package, keeping each one's side. */
 export async function downloadPackage(
   addr: string,
@@ -344,13 +355,16 @@ export async function downloadPackage(
     const response = await axios.get<ArrayBuffer>(marketUrl(addr, pkg.pluginId, "/file"), {
       params: { ...params, path: file.path },
       responseType: "arraybuffer",
-      timeout: 60000
+      timeout: 60000,
+      maxContentLength: MAX_PACKAGE_FILE_BYTES,
+      maxBodyLength: MAX_PACKAGE_FILE_BYTES
     });
     const content = Buffer.from(response.data);
+    // Every market reports each file's size, and current ones a digest as well:
+    // a truncated or substituted download is refused before anything is written.
     if (
-      file.sha256 &&
-      (content.length !== file.size ||
-        createHash("sha256").update(content).digest("hex") !== file.sha256)
+      (Number.isFinite(file.size) && content.length !== file.size) ||
+      (file.sha256 && createHash("sha256").update(content).digest("hex") !== file.sha256)
     )
       throw new PluginMarketError("BAD_CHECKSUM");
     downloaded.push({

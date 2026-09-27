@@ -155,8 +155,9 @@ The market reads compatibility from each side's artifact (no DB migration),
 validates both halves and declared entries before publication, and returns it in
 version summaries and `/files`. New clients send `pluginApi=1&pluginSdk=1` with
 that request. Declared packages require matching client capabilities; old clients
-can still fetch legacy packages. `/files` includes SHA-256 for each file; the
-panel verifies checksummed bytes before writing or distributing them. Declared daemon packages
+can still fetch legacy packages. `/files` includes the size and SHA-256 of each file;
+the panel verifies downloaded bytes against them before writing or distributing them
+(a market without digests is still checked by size). Declared daemon packages
 also require a matching `plugin/capabilities` response from each target node;
 legacy nodes must be updated before installing those packages. Older market
 servers without these fields remain readable. A digest detects mismatched bytes;
