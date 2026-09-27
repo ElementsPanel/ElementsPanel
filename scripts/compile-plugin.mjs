@@ -18,7 +18,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { createRequire } from "node:module";
+import { createRequire, isBuiltin } from "node:module";
 import { pluginSdkModules } from "../frontend/plugin-sdk.config.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -127,6 +127,9 @@ export function createBackendConfig(side, workspace, outSideDir) {
   // version in the plugin (including a nested transitive dependency). Only
   // externalize it when resolution actually selects the host's own package.
   const externalizeHostPackage = (data, callback) => {
+    // Core modules have no package file to resolve (even if an npm package with
+    // the same name is installed). Leave them to Node before resolving packages.
+    if (isBuiltin(data.request)) return callback(null, `commonjs ${data.request}`);
     hostExternals(data, (error, external) => {
       if (error || !external) return callback(error, external);
       const name = data.request.startsWith("@")
@@ -186,7 +189,7 @@ export function createBackendConfig(side, workspace, outSideDir) {
     },
     resolve: {
       extensions: [".ts", ".js"],
-      modules: ["node_modules", modulesDir],
+      modules: ["node_modules", ...hostModuleDirs],
       alias: {
         "mcsmanager-common": path.join(PROJECT_ROOT, "common", "src", "index.ts")
       }

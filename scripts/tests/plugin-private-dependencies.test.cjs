@@ -108,6 +108,11 @@ for (const side of ["panel", "daemon"]) {
     assert.equal(await f.external("fs-extra/feature"), undefined);
     assert.equal(await f.external("cordis"), "commonjs2 cordis");
     assert.equal(f.config.externalsPresets.node, true);
+    install(f.workspace, "crypto");
+    for (const request of ["crypto", "node:crypto", "fs/promises", "node:fs/promises", "node:test"])
+      assert.equal(await f.external(request), `commonjs ${request}`);
+    const axiosFile = f.sideRequire.resolve("axios");
+    assert.equal(await f.external("crypto", axiosFile), "commonjs crypto");
   });
 
   test(`${side}: private TypeScript declarations match private runtime resolution`, async (t) => {

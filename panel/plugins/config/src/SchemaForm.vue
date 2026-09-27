@@ -84,6 +84,8 @@ const emptyItem = (field: SettingField) =>
           ? []
           : child.type === "number"
           ? child.min ?? 0
+          : child.type === "select"
+          ? child.options?.[0]?.value ?? ""
           : ""
       ])
   );
