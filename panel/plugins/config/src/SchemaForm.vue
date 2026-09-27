@@ -344,7 +344,7 @@ const open = (field: SettingField) => {
       class="setting-list-editor"
     >
       <VForm @submit.stop.prevent="confirmEditor">
-        <VCardText class="pl-8">
+        <VCardText class="setting-list-editor-content">
           <SchemaForm :fields="editor.field.fields || []" :values="editor.draft" nested />
         </VCardText>
         <VCardActions class="justify-end">
@@ -404,7 +404,9 @@ const open = (field: SettingField) => {
   flex-direction: column;
   min-height: 0;
 }
-.setting-list-editor :deep(.v-card-text) {
+.setting-list-editor-content {
+  /* VForm separates this body from the card, bypassing VDialog's padding rules. */
+  padding: 16px 24px 24px 30px;
   overflow-y: auto;
 }
 .setting-field,
