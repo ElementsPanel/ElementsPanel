@@ -228,6 +228,24 @@ export default class FileManager {
     await fs.createFile(target);
   }
 
+  /** Exclusive creation: never truncate an existing file or follow its symlink. */
+  async createTextFile(target: string, text: string) {
+    if (!this.checkPath(target)) throw new Error(ERROR_MSG_01());
+    const content = iconv.encode(text, this.fileCode || "utf-8");
+    if (content.length > 64 * 1024) throw new Error("File content exceeds 64 KiB");
+    await fs.writeFile(this.toAbsolutePath(target), content, { flag: "wx" });
+    return true;
+  }
+
+  /** Unlink one regular file; never recursively remove directories. */
+  async removeFile(target: string) {
+    if (!this.check(target)) throw new Error(ERROR_MSG_01());
+    const absolute = this.toAbsolutePath(target);
+    if (!(await fs.lstat(absolute)).isFile()) throw new Error("Expected a regular file");
+    await fs.unlink(absolute);
+    return true;
+  }
+
   async copy(target1: string, target2: string) {
     if (!this.checkPath(target2) || !this.check(target1)) throw new Error(ERROR_MSG_01());
     const targetPath = this.toAbsolutePath(target1);

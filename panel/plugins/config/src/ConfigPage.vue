@@ -342,7 +342,12 @@ watch(
   () => [route.query.scope, route.query.daemonId, route.query.plugin],
   ([targetScope, daemonId, pluginId]) => {
     if (typeof pluginId === "string") preferredPluginId.value = pluginId;
-    if (targetScope !== "node") return;
+    if (targetScope !== "node") {
+      if (targetScope === "panel") scope.value = "panel";
+      if (typeof pluginId === "string" && plugins.value.some((item) => item.id === pluginId))
+        selectedId.value = pluginId;
+      return;
+    }
     scope.value = "node";
     if (typeof daemonId === "string") selectedNodeId.value = daemonId;
   },

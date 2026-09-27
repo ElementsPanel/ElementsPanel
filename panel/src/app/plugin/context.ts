@@ -43,6 +43,7 @@ export type PanelSettingFieldType =
   | "number"
   | "boolean"
   | "select"
+  | "list"
   | "link";
 
 export interface PanelSettingOption {
@@ -81,6 +82,13 @@ export interface PanelSettingField {
   visibleWhen?: string | string[];
   /** `link`: a frontend route the form offers as a button. */
   route?: string;
+  /** `list`: an editable array of objects, each rendered using these fields. */
+  fields?: PanelSettingField[];
+  maxItems?: number;
+  itemTitleKey?: string;
+  addLabel?: string;
+  removeLabel?: string;
+  required?: boolean;
 }
 
 /**

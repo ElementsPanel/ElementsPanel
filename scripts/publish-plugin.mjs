@@ -30,7 +30,7 @@ const PROJECT_ROOT = path.resolve(SCRIPT_DIR, "..");
 const EXTERNAL_ROOT = path.join(PROJECT_ROOT, "external");
 const TOKEN_FILE = path.join(PROJECT_ROOT, "data", "epanel-market.json");
 
-const DEFAULT_MARKET_URL = "http://localhost:4500";
+const DEFAULT_MARKET_URL = "https://market.elementspanel.top";
 const CONNECT_TIMEOUT_MS = 5 * 60 * 1000;
 const POLL_INTERVAL_MS = 2000;
 const MAX_PNG_BYTES = 1024 * 1024;

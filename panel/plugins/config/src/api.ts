@@ -39,6 +39,7 @@ export type SettingFieldType =
   | "number"
   | "boolean"
   | "select"
+  | "list"
   | "link";
 
 export interface SettingOption {
@@ -66,6 +67,12 @@ export interface SettingField {
   visibleWhen?: string | string[];
   /** `link`: a frontend route the form offers as a button. */
   route?: string;
+  fields?: SettingField[];
+  maxItems?: number;
+  itemTitleKey?: string;
+  addLabel?: string;
+  removeLabel?: string;
+  required?: boolean;
 }
 
 /** One plugin's form and its current values. */

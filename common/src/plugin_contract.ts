@@ -167,6 +167,8 @@ export interface PluginSettingField {
   max?: number;
   required?: boolean;
   options?: Array<{ value: unknown }>;
+  fields?: PluginSettingField[];
+  maxItems?: number;
 }
 
 /** Validate the form contract on the server before invoking plugin-owned validation. */
@@ -182,6 +184,12 @@ export function validatePluginSettings(
     const value = input[field.key];
     if (value === undefined || value === null) {
       if (field.required) throw new Error(`${field.title || field.key}: required`);
+      continue;
+    }
+    if (field.type === "list") {
+      if (!Array.isArray(value) || value.length > (field.maxItems ?? 100))
+        throw new Error(`${field.title || field.key}: invalid list`);
+      for (const item of value) validatePluginSettings(field.fields || [], item);
       continue;
     }
     const valid =

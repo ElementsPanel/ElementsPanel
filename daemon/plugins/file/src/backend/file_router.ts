@@ -175,6 +175,35 @@ export function registerFileEvents() {
   });
 
   // Create a new file
+  protocol().on("file/create-text", async (ctx, data) => {
+    try {
+      if (
+        typeof data.target !== "string" ||
+        !data.target ||
+        data.target.length > 1024 ||
+        typeof data.text !== "string" ||
+        Buffer.byteLength(data.text, "utf8") > 64 * 1024 ||
+        /[\x00-\x08\x0b\x0c\x0e-\x1f\ufffd]/.test(data.text)
+      )
+        throw new Error("Invalid text file request");
+      const result = await getFileManager(data.instanceUuid).createTextFile(data.target, data.text);
+      protocol().response(ctx, result);
+    } catch (error: any) {
+      protocol().responseError(ctx, error);
+    }
+  });
+
+  protocol().on("file/remove-file", async (ctx, data) => {
+    try {
+      if (typeof data.target !== "string" || !data.target || data.target.length > 1024)
+        throw new Error("Invalid file request");
+      const result = await getFileManager(data.instanceUuid).removeFile(data.target);
+      protocol().response(ctx, result);
+    } catch (error: any) {
+      protocol().responseError(ctx, error);
+    }
+  });
+
   protocol().on("file/touch", (ctx, data) => {
     try {
       const target = data.target;

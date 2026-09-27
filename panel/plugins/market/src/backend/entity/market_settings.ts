@@ -10,5 +10,5 @@ export default class MarketSettings {
   allowUsePreset: boolean = false;
 
   /** Base address of the plugin market, which supplies installable plugins. */
-  pluginMarketAddr: string = "http://localhost:4500";
+  pluginMarketAddr: string = "https://market.elementspanel.top";
 }
