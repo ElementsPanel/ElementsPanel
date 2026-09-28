@@ -226,13 +226,13 @@ test("daemon validates every package file before writing and reports ownership f
   };
   await handlers.get("plugin/install")({}, payload);
   assert.match(replies.pop().error.message, /unacceptable/);
-  assert.equal(fs.existsSync(path.join(dir, "data", "plugins", "sample")), false);
+  assert.equal(fs.existsSync(path.join(dir, "plugins", "sample")), false);
   payload.files.pop();
   await handlers.get("plugin/install")({}, payload);
   assert.equal(replies.pop().data.version, "1");
   await handlers.get("plugin/uninstall")({}, { name: "sample", pluginId: "other" });
   assert.match(replies.pop().error.message, /DIR_TAKEN/);
-  assert.equal(fs.existsSync(path.join(dir, "data", "plugins", "sample")), true);
+  assert.equal(fs.existsSync(path.join(dir, "plugins", "sample")), true);
 });
 
 test("persistent installs reject collisions with bundled identities and allow upgrading the same legacy owner", async (t) => {

@@ -44,7 +44,8 @@ const BUILT_IN_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "plugins");
 /**
  * Plugins installed from the plugin market. They live apart from the built-in
  * tree so an installation never adds files to the repository: `market_plugins/`
- * is git-ignored. New installations use data/plugins; this root remains readable.
+ * is git-ignored. Development installations use data/plugins; production
+ * installations use the regular plugins root. Both roots remain readable.
  */
 const MARKET_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "market_plugins");
 const ENTRY_FIELDS = ["panel", "backend", "main", "entry"];

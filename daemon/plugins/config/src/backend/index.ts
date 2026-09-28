@@ -31,8 +31,15 @@ const SELF = "config";
  */
 const ESSENTIAL = new Set(["i18n", "storage", "runtime", "server"]);
 
-/** New installations use the existing persistent data volume. */
-const MARKET_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "data", "plugins");
+function isDevelopmentCheckout() {
+  return fs.existsSync(path.resolve(process.cwd(), "src", "plugin"));
+}
+
+/** Development stays isolated; production installs directly into daemon/plugins. */
+const MARKET_PLUGINS_DIRECTORY = () =>
+  isDevelopmentCheckout()
+    ? path.resolve(process.cwd(), "data", "plugins")
+    : path.resolve(process.cwd(), "plugins");
 
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
@@ -173,6 +180,7 @@ export function apply(ctx: DaemonPluginContext) {
       const payload = (data ?? {}) as { name?: unknown; pluginId?: unknown };
       for (const root of [
         MARKET_PLUGINS_DIRECTORY(),
+        path.resolve(process.cwd(), "data", "plugins"),
         path.resolve(process.cwd(), "market_plugins"),
         path.resolve(process.cwd(), "plugins")
       ]) {
@@ -189,8 +197,9 @@ export function apply(ctx: DaemonPluginContext) {
   });
 
   // Re-scan the plugin directories, for a plugin that arrived while the daemon
-  // was running — the plugin market installs one into `data/plugins/`. Development
-  // only: `ctx.plugins.reload()` refuses otherwise, and the panel is told why.
+  // was running — the plugin market installs one into `plugins/` in production
+  // and `data/plugins/` in development. `ctx.plugins.reload()` refuses otherwise,
+  // and the panel is told why.
   ctx.protocol.on("plugin/reload", async (routerCtx) => {
     try {
       await ctx.plugins.reload();

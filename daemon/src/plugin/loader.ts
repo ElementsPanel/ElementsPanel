@@ -40,7 +40,8 @@ const codeRevisions = new Map<string, string>();
 const BUILT_IN_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "plugins");
 /**
  * Plugins installed from the plugin market, kept apart from the built-in tree and
- * git-ignored. New installations use data/plugins; this root remains readable.
+ * git-ignored. Development installations use data/plugins; production
+ * installations use the regular plugins root. Both roots remain readable.
  */
 const MARKET_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "market_plugins");
 const ENTRY_FIELDS = ["daemon", "backend", "main", "entry"];

@@ -544,7 +544,8 @@ test("market paths stay under the running panel directory and cannot overwrite b
   const market = load("panel/plugins/market/src/backend/service/plugin_market.ts", {
     "mcsmanager-common": load("common/src/plugin_package.ts")
   });
-  assert.equal(market.installRoot("panel"), path.join(directory, "web", "data", "plugins"));
+  assert.equal(market.installRoot("panel"), path.join(directory, "web", "plugins"));
+  assert.equal(market.installRoot("daemon"), path.join(directory, "daemon", "plugins"));
   for (const name of ["../escape", "..\\escape", "C:drive", "/absolute"]) {
     assert.throws(() => market.installDirectory("panel", name), /BAD_PATH/);
   }

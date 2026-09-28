@@ -26,7 +26,8 @@ files fail visibly and must be corrected, rather than silently enabling plugins.
 The management API writes atomically through one per-process queue. Direct file
 edits take effect on restart. It does not implement multiple writable profiles
 or watch configuration files. Back up `data` as before. New market installations
-live in `data/plugins`; the loaders still discover `plugins` and `market_plugins`.
+live in `plugins` on production deployments and `data/plugins` during development;
+the loaders still discover both roots and `market_plugins`.
 A persistent package can supersede a legacy installation only with the same
 market ownership marker; it cannot shadow a bundled plugin. Existing legacy
 copies remain until uninstall and are not silently deleted or moved.

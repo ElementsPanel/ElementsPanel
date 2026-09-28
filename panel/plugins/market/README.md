@@ -149,7 +149,9 @@ Desktop layouts respond to the window width, including while it is resized.
 
 A published package is laid out with the side as its first path segment
 (`panel/plugin.json`, `daemon/backend/index.cjs`, …), so installing is mostly
-splitting that prefix and writing each file under `<side>/data/plugins/<name>/`.
+splitting that prefix and writing each file under the side's plugin root. In
+development that is `<side>/data/plugins/<name>/`; production uses
+`<side>/plugins/<name>/`.
 `src/backend/service/plugin_market.ts` owns that, and marks every installed
 directory with `.market-install.json` — without the marker a directory in a
 plugin root is indistinguishable from a built-in plugin.
@@ -166,21 +168,20 @@ whose length or digest differs from what `/files` advertised is refused before
 anything is written or sent to a node. A market source that predates these fields
 still installs, checked by size only.
 
-**Where each half lands.** The panel half is written into this process's plugin
-data directory: `installRoot()` puts it in `panel/data/plugins/` (the working
-directory's `data/plugins/` in a built deployment), so an installation never adds
-files to the repository and survives a container being replaced. Both loaders and
-`frontend/vite.config.ts` list `data/plugins` as a discovery root — and still read
-the legacy `plugins/` and `market_plugins/` roots — with the built-in directory
-first so a market plugin cannot shadow one of ours.
+**Where each half lands.** `installRoot()` writes the panel half to
+`panel/data/plugins/` in development and `web/plugins/` in production. Both
+loaders and `frontend/vite.config.ts` continue to discover the legacy
+`data/plugins/` and `market_plugins/` roots, with the built-in directory first so
+a market plugin cannot shadow one of ours.
 
 The daemon half has to sit on every machine that loads it, so it is not written
 here at all: the page asks which nodes to send it to (all of them selected to
 start with), and `plugin/install` carries the files over the panel's existing
 daemon connection, base64 in the event payload — the socket is already configured
 for a 100 MB buffer, and a compiled plugin is a few hundred kilobytes. The daemon
-writes them into its own `data/plugins/<name>/`, which both loaders scan, and marks
-the directory with the same `.market-install.json` the panel uses; the panel keeps
+writes them into its own `plugins/<name>/` in production (`data/plugins/<name>/`
+in development), which both loaders scan, and marks the directory with the same
+`.market-install.json` the panel uses; the panel keeps
 a record of each node it installed on under `data/market-installs/`. Path escapes,
 extensions outside `PLUGIN_PACKAGE_EXTENSIONS` (`common/src/plugin_package.ts`, the
 same list the publish script and the market's upload check), and a name that is not

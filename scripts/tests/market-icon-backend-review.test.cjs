@@ -214,7 +214,7 @@ test("daemon accepts only a root PNG icon and validates the whole transfer befor
   await fixture.handlers.get("plugin/install")({}, installPayload(png(32)));
   const success = fixture.replies.pop();
   assert.equal(success.error, undefined);
-  const installed = path.join(fixture.directory, "data", "plugins", "sample");
+  const installed = path.join(fixture.directory, "plugins", "sample");
   assert.equal(fs.readFileSync(path.join(installed, "icon.png")).length, 32);
 
   for (const [icon, extra, pattern] of [

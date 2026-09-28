@@ -26,9 +26,9 @@ export { PluginMarketError };
 // The two halves do not travel the same way. The panel half is written into this
 // process's own plugin directory; the daemon half has to land on every machine
 // that loads it, so it is sent to the daemons the user picked and written by the
-// daemon itself (`plugin/install`). Both sides use data/plugins so container
-// replacement preserves installed code on the existing data volume. Legacy
-// plugins and market_plugins roots are still inventoried.
+// daemon itself (`plugin/install`). Development uses data/plugins, while a
+// production deployment writes directly to each side's plugins directory.
+// Legacy data/plugins and market_plugins roots are still inventoried.
 
 const SIDES = ["panel", "daemon"] as const;
 export type PluginSide = (typeof SIDES)[number];
@@ -93,10 +93,12 @@ export function isDevelopment(): boolean {
   return fs.existsSync(path.join(projectRoot(), "panel", "src", "app"));
 }
 
-/** Install into the existing persistent data volume in every environment. */
+/** Keep development isolated; production installs directly into web/daemon plugins. */
 export function installRoot(side: PluginSide): string {
   const directory = side === "panel" ? process.cwd() : path.join(projectRoot(), side);
-  return path.join(directory, "data", "plugins");
+  return isDevelopment()
+    ? path.join(directory, "data", "plugins")
+    : path.join(directory, "plugins");
 }
 
 /** Both are searched: an installation may have been made under either. */
