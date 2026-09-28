@@ -317,6 +317,35 @@ routerApp.on("instance/delete", async (ctx, data) => {
   });
 });
 
+// Delete only an instance's working directory while retaining its configuration.
+routerApp.on("instance/delete-directory", async (ctx, data) => {
+  const instanceUuid = data.instanceUuid;
+  try {
+    const instance = InstanceSubsystem.getInstance(instanceUuid);
+    if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+    if (instanceUuid === InstanceSubsystem.GLOBAL_INSTANCE_UUID)
+      throw new Error("Cannot delete the global terminal instance");
+    if (instance.status() !== Instance.STATUS_STOP) throw new Error($t("TXT_CODE_fb547313"));
+    const directory = path.resolve(instance.absoluteCwdPath());
+    if (directory === path.parse(directory).root)
+      throw new Error($t("TXT_CODE_Instance_router.accessFileErr"));
+    instance.status(Instance.STATUS_BUSY);
+    try {
+      await fs.remove(directory);
+    } finally {
+      instance.status(Instance.STATUS_STOP);
+    }
+    protocol.msg(ctx, "instance/delete-directory", { instanceUuid, deleted: true });
+  } catch (err: any) {
+    logger.warn(`Cannot delete instance directory ${instanceUuid}:`, err);
+    protocol.error(ctx, "instance/delete-directory", {
+      instanceUuid,
+      deleted: false,
+      err: err.message
+    });
+  }
+});
+
 // perform complex asynchronous tasks
 routerApp.on("instance/asynchronous", (ctx, data) => {
   const instanceUuid = data.instanceUuid;
