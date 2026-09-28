@@ -17,7 +17,6 @@
       --loading-bg-color: #f3efef;
       --loading-color: #2a2828;
       --loading-subtitle-color: #3b3939;
-      --loading-logo-image: url('/logo_b.svg?v=20260929');
     }
 
     @media (prefers-color-scheme: dark) {
@@ -25,7 +24,6 @@
         --loading-bg-color: #242323;
         --loading-color: #f3efef;
         --loading-subtitle-color: #9d9999;
-        --loading-logo-image: url('/logo.svg?v=20260929');
       }
     }
 
@@ -51,24 +49,11 @@
       align-items: center;
     }
 
-    #before-app-mounted .loading {
-      margin: 0 20px 16px;
-      width: 70px;
-      height: 70px;
-      opacity: 0.1;
-      background-image: var(--loading-logo-image);
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-    }
-
     #before-app-mounted .loading-dots {
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-top: 0;
-      margin-bottom: 20px;
-      transform: translateY(12px);
+      margin: 0;
     }
 
     #before-app-mounted .loading-dots div {
@@ -201,11 +186,9 @@
         const errorMessage = errorBox.querySelector(".error-message");
 
         // Hide loading spinner and title
-        const loading = loadingBox.querySelector(".loading");
         const loadingDots = loadingBox.querySelector(".loading-dots");
         const loadingTitle = loadingBox.querySelector(".loading-title");
         const loadingPlugins = loadingBox.querySelector(".loading-plugins");
-        if (loading) loading.style.display = "none";
         if (loadingDots) loadingDots.style.display = "none";
         if (loadingTitle) loadingTitle.style.display = "none";
         if (loadingPlugins) loadingPlugins.style.display = "none";
@@ -247,7 +230,6 @@
   <div id="before-app-mounted">
     <noscript>You need to enable JavaScript to run this Website.</noscript>
     <div class="loading-box">
-      <div class="loading"></div>
       <div class="loading-dots">
         <div></div>
         <div></div>
