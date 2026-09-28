@@ -1,0 +1,5 @@
+{
+  "TXT_CODE_DAEMON_PLUGIN_ESSENTIAL_DISABLE": "The web server cannot be disabled remotely: the panel would lose the connection it manages this daemon over. Set enabled to false in its plugin.json on the host instead.",
+  "TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED": "A plugin id is required.",
+  "TXT_CODE_DAEMON_PLUGIN_SELF_DISABLE": "Plugin management cannot disable itself: the panel would lose the events it administers this daemon with. Set enabled to false in its plugin.json on the host instead."
+}

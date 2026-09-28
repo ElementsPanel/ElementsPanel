@@ -2,94 +2,95 @@
 import { t } from "@/lang/i18n";
 import { getDesktopLayoutConfig, setDesktopLayoutConfig } from "./api";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
-import { getPanelFrontendService } from "@/pluginServices";
+import {
+    ctx,
+    usePluginService,
+    type PanelFrontendDesktopApp,
+    type PanelFrontendInstanceAction,
+    type PanelFrontendDesktopWindowRequest
+} from "@/plugin/context";
+import type { FrontendFileManagerService, FrontendUserService } from "@/plugin";
 import { logoutUser } from "@/services/apis/index";
 import { useAppStateStore } from "@/stores/useAppStateStore";
-import { useLayoutConfigStore } from "@/stores/useLayoutConfig";
-import {
-    getPanelFrontendDesktopApps,
-    getPanelFrontendInstanceActions,
-    type PanelFrontendDesktopApp,
-    type PanelFrontendInstanceAction
-} from "@/plugins";
-import type { ContextMenuItem } from "./widgets/desktop/DesktopContextMenu.vue";
+import { getAppearance } from "@/services/apis/appearance";
 import DesktopContextMenu from "./widgets/desktop/DesktopContextMenu.vue";
-import DesktopEventConfig from "./widgets/desktop/DesktopEventConfig.vue";
-import DesktopFileEditor from "./widgets/desktop/DesktopFileEditor.vue";
-import DesktopFileManager from "./widgets/desktop/DesktopFileManager.vue";
+import type { ContextMenuItem } from "./widgets/desktop/DesktopContextMenu.vue";
 import DesktopIcon from "./widgets/desktop/DesktopIcon.vue";
-import DesktopImageViewer from "./widgets/desktop/DesktopImageViewer.vue";
-import DesktopInstanceConsole from "./widgets/desktop/DesktopInstanceConsole.vue";
-import DesktopInstanceManager from "./widgets/desktop/DesktopInstanceManager.vue";
-import DesktopJavaManager from "./widgets/desktop/DesktopJavaManager.vue";
-import DesktopMcPing from "./widgets/desktop/DesktopMcPing.vue";
-import DesktopModManager from "./widgets/desktop/DesktopModManager.vue";
-import DesktopMyApps from "./widgets/desktop/DesktopMyApps.vue";
-import DesktopNewInstance from "./widgets/desktop/DesktopNewInstance.vue";
-import DesktopSchedule from "./widgets/desktop/DesktopSchedule.vue";
-import DesktopServerConfig from "./widgets/desktop/DesktopServerConfig.vue";
-import DesktopSettings from "./widgets/desktop/DesktopSettings.vue";
 import type { TaskbarWindow } from "./widgets/desktop/DesktopTaskbar.vue";
 import DesktopTaskbar from "./widgets/desktop/DesktopTaskbar.vue";
-import DesktopTermConfig from "./widgets/desktop/DesktopTermConfig.vue";
-import DesktopTerminalSelector from "./widgets/desktop/DesktopTerminalSelector.vue";
 import DesktopWindow from "./widgets/desktop/DesktopWindow.vue";
-import {
-    AppstoreOutlined,
-    BuildOutlined,
-    CloseOutlined,
-    CloseSquareOutlined,
-    CodeOutlined,
-    ControlOutlined,
-    DashboardOutlined,
-    DeleteOutlined,
-    DesktopOutlined,
-    EditOutlined,
-    FieldTimeOutlined,
-    FolderOpenOutlined,
-    FullscreenExitOutlined,
-    FullscreenOutlined,
-    MinusOutlined,
-    PictureOutlined,
-    SettingOutlined,
-    TeamOutlined,
-    UsbOutlined,
-    UsergroupDeleteOutlined,
-    UserOutlined
-} from "@ant-design/icons-vue";
+import { migrateLegacyInstanceWindow } from "./legacyWindows";
+import { VIcon } from "vuetify/components";
 import { computed, markRaw, onMounted, onUnmounted, reactive, ref, watch, type Component, type CSSProperties } from "vue";
 import { useRouter } from "vue-router";
+
+const CloseOutlined = "mdi-close";
+const CloseSquareOutlined = "mdi-close-box-outline";
+const DeleteOutlined = "mdi-delete-outline";
+const DesktopOutlined = "mdi-monitor";
+const EditOutlined = "mdi-pencil-outline";
+const FullscreenExitOutlined = "mdi-fullscreen-exit";
+const FullscreenOutlined = "mdi-fullscreen";
+const MinusOutlined = "mdi-minus";
+const PictureOutlined = "mdi-image-outline";
+const TeamOutlined = "mdi-account-group-outline";
+const UserOutlined = "mdi-account-outline";
+
+// Desktop surfaces render icons through Vuetify's MDI set. Feature plugins
+// still expose legacy component icons for the normal panel, so map known
+// desktop app/action ids at this boundary.
+const DESKTOP_ICON_MAP: Record<string, string> = {
+    overview: "mdi-view-dashboard-outline",
+    config: "mdi-view-grid-plus-outline",
+    market: "mdi-storefront-outline",
+    nodes: "mdi-server-network-outline",
+    "operation-log": "mdi-file-document-outline",
+    backup: "mdi-cloud-outline",
+    "java-manager": "mdi-hammer-wrench",
+    mcstats: "mdi-account-group-outline",
+    "terminal-config": "mdi-code-tags",
+    "file-manager": "mdi-folder-open-outline"
+};
+
+const getDesktopIcon = (id: string, icon?: Component | string): string | Component =>
+    DESKTOP_ICON_MAP[id] || (typeof icon === "string" && icon.startsWith("mdi-") ? icon : "mdi-application-outline");
 
 const router = useRouter();
 const { state: appState, isAdmin, isLogged, authEnabled } = useAppStateStore();
 
 // Login, account and user-management windows are owned by the "user" plugin.
 // Without it the panel has no authentication, so they simply do not exist.
-const desktopLoginWindow = computed(() =>
-    getPanelFrontendService<Component>("user.desktopLoginWindow")
-);
-const desktopUsersWindow = computed(() => getPanelFrontendService<Component>("user.desktopUsers"));
-const desktopUserInfoWindow = computed(() =>
-    getPanelFrontendService<Component>("user.desktopUserInfo")
-);
-const desktopStartMenuAvatar = computed(() =>
-    getPanelFrontendService<Component>("user.desktopStartMenuAvatar")
-);
-const { getSettingsConfig } = useLayoutConfigStore();
+const user = computed(() => usePluginService<FrontendUserService>("user"));
+const desktopLoginWindow = computed(() => user.value?.desktopLoginWindow);
+const desktopUsersWindow = computed(() => user.value?.desktopUsers);
+const desktopUserInfoWindow = computed(() => user.value?.desktopUserInfo);
+const desktopStartMenuAvatar = computed(() => user.value?.desktopStartMenuAvatar);
+
+// The file manager, its editor and the image viewer are owned by the
+// "file" plugin. Without it those windows have nothing to render, and the
+// menu entries that open them are hidden the same way the account ones are.
+const fileManager = computed(() => usePluginService<FrontendFileManagerService>("file"));
+const desktopFileEditorWindow = computed(() => fileManager.value?.DesktopFileEditor);
+const desktopImageViewerWindow = computed(() => fileManager.value?.DesktopImageViewer);
 const { isDarkTheme } = useAppConfigStore();
 
-//─── Wallpaper ───
+//閳光偓閳光偓閳光偓 Wallpaper 閳光偓閳光偓閳光偓
 const backgroundImageUrl = ref<string>("");
 
 const wallpaperStyle = computed<CSSProperties>(() => {
     if (!backgroundImageUrl.value) {
-        return { backgroundColor: "var(--desktop-bg-color, #232429)" };
+        // The fallback only applies before the plugin's theme.scss is injected;
+        // keep it on the same side as the active theme so it cannot flash light.
+        const fallback = isDarkTheme.value ? "#232429" : "#f5f5f5";
+        return { backgroundColor: `var(--desktop-bg-color, ${fallback})` };
     }
+    // A bare color is not a valid background-image layer: it invalidates the whole
+    // declaration and the wallpaper disappears. Use a flat gradient instead.
     const overlay = isDarkTheme.value
         ? "rgba(0,0,0,0.65)"
         : "rgba(255,255,255,0.2)";
     return {
-        backgroundImage: `${overlay}, url(${backgroundImageUrl.value})`,
+        backgroundImage: `linear-gradient(${overlay}, ${overlay}), url(${backgroundImageUrl.value})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat"
@@ -98,16 +99,16 @@ const wallpaperStyle = computed<CSSProperties>(() => {
 
 onMounted(async () => {
     try {
-        const settings = await getSettingsConfig();
-        if (settings?.theme?.backgroundImage) {
-            backgroundImageUrl.value = settings.theme.backgroundImage;
+        const { value: appearance } = await getAppearance().execute();
+        if (appearance?.backgroundImage) {
+            backgroundImageUrl.value = appearance.backgroundImage;
         }
     } catch (e) {
         // Silently ignore
     }
 });
 
-//─── Login ───
+//閳光偓閳光偓閳光偓 Login 閳光偓閳光偓閳光偓
 const showLoginOverlay = ref(authEnabled.value && !isLogged.value);
 
 const handleLoginSuccess = () => {
@@ -122,7 +123,7 @@ watch(isLogged, (logged) => {
     }
 });
 
-//─── Desktop Icons ───
+//閳光偓閳光偓閳光偓 Desktop Icons 閳光偓閳光偓閳光偓
 interface DesktopApp {
     id: string;
     label: string;
@@ -139,7 +140,7 @@ const getDesktopAppLabel = (app: PanelFrontendDesktopApp) =>
     typeof app.label === "function" ? app.label() : app.label;
 
 const pluginDesktopApps = computed<DesktopApp[]>(() =>
-    getPanelFrontendDesktopApps()
+    ctx.desktop.apps
         .filter((app) =>
             typeof app.condition === "function"
                 ? app.condition()
@@ -148,10 +149,10 @@ const pluginDesktopApps = computed<DesktopApp[]>(() =>
         .map((app) => ({
             id: app.id,
             label: getDesktopAppLabel(app),
-            icon: typeof app.icon === "string" ? app.icon : markRaw(app.icon),
+            icon: getDesktopIcon(app.id, app.icon),
             color: app.color || "#1677ff",
             route: app.route,
-            windowContent: `panel-plugin:${app.id}`,
+            windowContent: app.view || `panel-plugin:${app.id}`,
             component: app.component ? markRaw(app.component) : undefined,
             initialWidth: app.initialWidth,
             initialHeight: app.initialHeight
@@ -159,52 +160,17 @@ const pluginDesktopApps = computed<DesktopApp[]>(() =>
 );
 
 const pluginInstanceActions = computed<PanelFrontendInstanceAction[]>(() => [
-    ...getPanelFrontendInstanceActions()
+    ...ctx.actions.instances
 ]);
 
 const availableDesktopApps = computed<DesktopApp[]>(() => {
-    const apps: DesktopApp[] = [
-        {
-            id: "instances",
-            label: t("TXT_CODE_e21473bc"),
-            icon: markRaw(DesktopOutlined),
-            color: "#1677ff",
-            route: "/instances", windowContent: "instances"
-        },
-        {
-            id: "settings",
-            label: t("TXT_CODE_3fe97dcc"),
-            icon: markRaw(SettingOutlined),
-            color: "#13c2c2",
-            route: "/settings",
-            windowContent: "settings"
-        },
-        {
-            id: "terminal",
-            label: t("TXT_CODE_524e3036"),
-            icon: markRaw(CodeOutlined),
-            color: "#434343",
-            windowContent: "terminal"
-        }
-    ];
-
-    if (!isAdmin.value) {
-        return [
-            {
-                id: "my-apps",
-                label: t("TXT_CODE_DESKTOP_MY_APPS"),
-                icon: markRaw(AppstoreOutlined),
-                color: "#1677ff",
-                windowContent: "my-apps"
-            },
-            ...pluginDesktopApps.value
-        ];
-    }
+    const apps: DesktopApp[] = [];
+    if (!isAdmin.value) return pluginDesktopApps.value;
     if (desktopUsersWindow.value) {
         apps.push({
             id: "users",
             label: t("TXT_CODE_1deaa2dd"),
-            icon: markRaw(TeamOutlined),
+            icon: TeamOutlined,
             color: "#722ed1",
             route: "/users",
             windowContent: "users"
@@ -227,7 +193,7 @@ const selectIcon = (id: string) => {
     selectedIconId.value = id;
 };
 
-//─── Icon Positions ───
+//閳光偓閳光偓閳光偓 Icon Positions 閳光偓閳光偓閳光偓
 const iconPositions = reactive<Map<string, { x: number; y: number }>>(new Map());
 const desktopIconsRef = ref<HTMLElement | null>(null);
 
@@ -290,7 +256,7 @@ function findEmptyCell(col: number, row: number, excludeId: string): { col: numb
     return { col, row };
 }
 
-//─── Drag State ───
+//閳光偓閳光偓閳光偓 Drag State 閳光偓閳光偓閳光偓
 const DRAG_THRESHOLD = 5;
 
 const isDragging = ref(false);
@@ -419,7 +385,7 @@ const handleTaskbarAppDrop = (appId: string, clientX: number, clientY: number) =
     addDesktopShortcutAt(appId, clientX - (rect?.left || 0), clientY - (rect?.top || 0));
 };
 
-//─── Window Management ───
+//閳光偓閳光偓閳光偓 Window Management 閳光偓閳光偓閳光偓
 interface WindowState {
     id: string;
     title: string;
@@ -439,13 +405,14 @@ interface WindowState {
     filePath?: string;
     fileName?: string;
     component?: Component;
+    props?: Record<string, unknown>;
 }
 
 const windows = reactive<Map<string, WindowState>>(new Map());
 let nextZIndex = 100;
 let windowOffset = 0;
 
-// ─── Layout Persistence ───
+// 閳光偓閳光偓閳光偓 Layout Persistence 閳光偓閳光偓閳光偓
 const { execute: executeGetLayout } = getDesktopLayoutConfig();
 const { execute: executeSaveLayout } = setDesktopLayoutConfig();
 
@@ -473,7 +440,8 @@ const saveDesktopLayout = () => {
                     daemonId: win.daemonId,
                     type: win.type,
                     filePath: win.filePath,
-                    fileName: win.fileName
+                    fileName: win.fileName,
+                    props: win.props
                 });
             });
             const iconList: any[] = [];
@@ -544,25 +512,29 @@ watch(
     { flush: "sync" }
 );
 
-const ICON_MAP: Record<string, Component> = {
-    "instances": markRaw(DesktopOutlined),
-    "users": markRaw(TeamOutlined),
-    "settings": markRaw(SettingOutlined),
-    "terminal": markRaw(CodeOutlined),
-    "my-apps": markRaw(AppstoreOutlined),
-    "instance-console": markRaw(CodeOutlined),
-    "file-manager": markRaw(FolderOpenOutlined),
-    "file-editor": markRaw(EditOutlined),
-    "image-viewer": markRaw(PictureOutlined),
-    "server-config": markRaw(ControlOutlined),
-    "schedule": markRaw(FieldTimeOutlined),
-    "event-config": markRaw(DashboardOutlined),
-    "term-config": markRaw(CodeOutlined),
-    "java-manager": markRaw(BuildOutlined),
-    "new-instance": markRaw(DesktopOutlined),
-    "user-info": markRaw(UserOutlined),
-    "mc-ping": markRaw(UsergroupDeleteOutlined),
-    "mod-manager": markRaw(UsbOutlined)
+const pluginViews = computed(() => ctx.desktop.views.filter((view) => !view.condition || view.condition()));
+const findView = (id: string) => pluginViews.value.find((view) => view.id === id);
+const savedViewProps = (win: WindowState) => win.props ?? {
+    instanceId: win.instanceId, daemonId: win.daemonId, type: win.type
+};
+
+let registeredViewIds = new Set(pluginViews.value.map((view) => view.id));
+watch(pluginViews, (views) => {
+    const next = new Set(views.map((view) => view.id));
+    let changed = false;
+    for (const [id, win] of windows) {
+        if (registeredViewIds.has(win.content) && !next.has(win.content)) {
+            windows.delete(id);
+            changed = true;
+        }
+    }
+    registeredViewIds = next;
+    if (changed) saveDesktopLayout();
+}, { flush: "sync" });
+
+const ICON_MAP: Record<string, Component | string> = {
+    "users": TeamOutlined, "file-editor": EditOutlined,
+    "image-viewer": PictureOutlined, "user-info": UserOutlined
 };
 
 const loadDesktopLayout = async () => {
@@ -577,35 +549,45 @@ const loadDesktopLayout = async () => {
                     desktopShortcutIds.add(id);
                 }
             }
-        } else {
-            for (const id of availableAppIds) {
-                desktopShortcutIds.add(id);
-            }
         }
         shortcutsLoaded.value = true;
 
         if (layout && Array.isArray(layout.windows) && layout.windows.length > 0) {
             windows.clear();
-            for (const win of layout.windows) {
+            for (const savedWindow of layout.windows) {
+                const win = migrateLegacyInstanceWindow(savedWindow);
+                const content = win.content;
+                if (typeof content !== "string") continue;
+                const view = findView(content);
+                const props = savedViewProps(win);
+                if (view?.accepts && !view.accepts(props)) continue;
+                if (!view && !content.startsWith("panel-plugin:") && !content.startsWith("instance-action:") &&
+                    !["backup", "java-manager", "file-manager", "term-config"].includes(content) && !ICON_MAP[content]) continue;
                 const desktopApp = availableDesktopApps.value.find(
-                    (app) => app.windowContent === win.content || app.id === win.content
+                    (app) => app.windowContent === content || app.id === content
                 );
                 const instanceActionId =
-                    win.content === "backup"
+                    content === "backup"
                         ? "backup"
-                        : typeof win.content === "string" && win.content.startsWith("instance-action:")
-                        ? win.content.slice("instance-action:".length)
+                        : content === "java-manager"
+                        ? "java-manager"
+                        : content === "file-manager"
+                        ? "file-manager"
+                        : content === "term-config"
+                        ? "terminal-config"
+                        : typeof content === "string" && content.startsWith("instance-action:")
+                        ? content.slice("instance-action:".length)
                         : undefined;
                 const instanceAction = instanceActionId
                     ? pluginInstanceActions.value.find((action) => action.id === instanceActionId)
                     : undefined;
-                if (win.content.startsWith("panel-plugin:") && !desktopApp?.component) continue;
+                if (content.startsWith("panel-plugin:") && !desktopApp?.component) continue;
                 if (instanceActionId && !instanceAction?.desktopComponent) continue;
                 const icon =
-                    desktopApp?.icon ||
-                    (instanceAction?.icon ? markRaw(instanceAction.icon) : undefined) ||
-                    ICON_MAP[win.content] ||
-                    markRaw(DesktopOutlined);
+                    view?.icon || desktopApp?.icon ||
+                    (instanceActionId ? getDesktopIcon(instanceActionId, instanceAction?.mdiIcon || instanceAction?.icon) : undefined) ||
+                    ICON_MAP[content] ||
+                    DesktopOutlined;
                 const zIndex = typeof win.zIndex === "number" ? win.zIndex : ++nextZIndex;
                 if (zIndex > nextZIndex) nextZIndex = zIndex;
                 windows.set(win.id, {
@@ -619,7 +601,7 @@ const loadDesktopLayout = async () => {
                     content:
                         instanceActionId
                             ? `instance-action:${instanceActionId}`
-                            : desktopApp?.windowContent || win.content,
+                            : desktopApp?.windowContent || content,
                     initialX: win.x ?? 100,
                     initialY: win.y ?? 60,
                     initialWidth: win.width ?? 800,
@@ -629,8 +611,9 @@ const loadDesktopLayout = async () => {
                     type: win.type,
                     filePath: win.filePath,
                     fileName: win.fileName,
+                    props,
                     component:
-                        desktopApp?.component ||
+                        view?.component || desktopApp?.component ||
                         (instanceAction?.desktopComponent
                             ? markRaw(instanceAction.desktopComponent)
                             : undefined)
@@ -648,7 +631,6 @@ const loadDesktopLayout = async () => {
         layoutLoaded = true;
     } catch (e) {
         desktopShortcutIds.clear();
-        availableDesktopApps.value.forEach((app) => desktopShortcutIds.add(app.id));
         shortcutsLoaded.value = true;
         layoutLoaded = true;
         // Silently ignore
@@ -665,6 +647,11 @@ onMounted(async () => {
 const openWindow = (appId: string) => {
     const app = availableDesktopApps.value.find((a) => a.id === appId);
     if (!app) return;
+
+    if (app.windowContent && findView(app.windowContent)) {
+        openPluginWindow({ id: app.id, view: app.windowContent, title: app.label });
+        return;
+    }
 
     if (!app.component && app.windowContent?.startsWith("panel-plugin:") && app.route) {
         void router.push(app.route);
@@ -701,65 +688,8 @@ const openWindow = (appId: string) => {
     saveDesktopLayout();
 };
 
-const openInstanceConsole = (instance: any, daemonId: string) => {
-    const windowId = `console-${instance.instanceUuid}`;
-    const existing = windows.get(windowId);
-
-    if (existing) {
-        existing.minimized = false;
-        existing.visible = true;
-        focusWindow(windowId);
-        return;
-    }
-
-    windowOffset = (windowOffset + 1) % 8;
-    const offsetX = 100 + windowOffset * 30;
-    const offsetY = 60 + windowOffset * 30;
-
-    windows.set(windowId, {
-        id: windowId,
-        title: instance.config.nickname || "Console",
-        icon: markRaw(CodeOutlined),
-        visible: true,
-        minimized: false,
-        maximized: false,
-        zIndex: ++nextZIndex,
-        content: "instance-console",
-        initialX: offsetX,
-        initialY: offsetY,
-        initialWidth: 1000,
-        initialHeight: 650,
-        instanceId: instance.instanceUuid,
-        daemonId: daemonId
-    });
-    saveDesktopLayout();
-};
-
-const openFileManagerWindow = (instanceId: string, daemonId: string, instanceName: string) => {
-    const windowId = `file-manager-${instanceId}-${Date.now()}`;
-
-    windowOffset = (windowOffset + 1) % 8;
-    const offsetX = 120 + windowOffset * 30;
-    const offsetY = 80 + windowOffset * 30;
-
-    windows.set(windowId, {
-        id: windowId,
-        title: `${instanceName} - ${t("TXT_CODE_ae533703")}`,
-        icon: markRaw(FolderOpenOutlined),
-        visible: true,
-        minimized: false,
-        maximized: false,
-        zIndex: ++nextZIndex,
-        content: "file-manager",
-        initialX: offsetX,
-        initialY: offsetY,
-        initialWidth: 900,
-        initialHeight: 600,
-        instanceId: instanceId,
-        daemonId: daemonId
-    });
-    saveDesktopLayout();
-};
+const openInstanceConsole = (instance: unknown, daemonId: string) =>
+    ctx.get("instance")?.openConsole(instance, daemonId);
 
 const openFileEditorWindow = (instanceId: string, daemonId: string, filePath: string, fileName: string) => {
     const windowId = `file-editor-${instanceId}-${Date.now()}`;
@@ -771,7 +701,7 @@ const openFileEditorWindow = (instanceId: string, daemonId: string, filePath: st
     windows.set(windowId, {
         id: windowId,
         title: fileName,
-        icon: markRaw(EditOutlined),
+        icon: EditOutlined,
         visible: true,
         minimized: false,
         maximized: false,
@@ -799,7 +729,7 @@ const openImageViewerWindow = (instanceId: string, daemonId: string, filePath: s
     windows.set(windowId, {
         id: windowId,
         title: fileName,
-        icon: markRaw(PictureOutlined),
+        icon: PictureOutlined,
         visible: true,
         minimized: false,
         maximized: false,
@@ -817,316 +747,42 @@ const openImageViewerWindow = (instanceId: string, daemonId: string, filePath: s
     saveDesktopLayout();
 };
 
-const openServerConfigWindow = (instanceId: string, daemonId: string, type: string) => {
-    const windowId = `server-config-${instanceId}`;
-    const existing = windows.get(windowId);
-
+const openPluginWindow = (request: PanelFrontendDesktopWindowRequest): boolean => {
+    const view = findView(request.view);
+    const action = request.view.startsWith("instance-action:")
+        ? pluginInstanceActions.value.find((item) => item.id === request.view.slice("instance-action:".length))
+        : undefined;
+    const props = request.props ?? {};
+    if ((!view && !action?.desktopComponent) || (view?.accepts && !view.accepts(props))) return false;
+    if (action && (!props.instanceId || !props.daemonId)) return false;
+    const existing = windows.get(request.id);
     if (existing) {
         existing.minimized = false;
         existing.visible = true;
-        focusWindow(windowId);
-        return;
+        focusWindow(request.id);
+        return true;
     }
-
     windowOffset = (windowOffset + 1) % 8;
-    const offsetX = 120 + windowOffset * 30;
-    const offsetY = 80 + windowOffset * 30;
-
-    windows.set(windowId, {
-        id: windowId,
-        title: t("TXT_CODE_d07742fe"),
-        icon: markRaw(ControlOutlined),
-        visible: true,
-        minimized: false,
-        maximized: false,
-        zIndex: ++nextZIndex,
-        content: "server-config",
-        initialX: offsetX,
-        initialY: offsetY,
-        initialWidth: 800,
-        initialHeight: 600,
-        instanceId: instanceId,
-        daemonId: daemonId,
-        type: type
+    const title = view?.title ?? action!.title;
+    windows.set(request.id, {
+        id: request.id,
+        content: request.view,
+        title: request.title || (typeof title === "function" ? title() : title),
+        icon: view?.icon || getDesktopIcon(action!.id, action!.mdiIcon || action!.icon),
+        visible: true, minimized: false, maximized: false, zIndex: ++nextZIndex,
+        initialX: 120 + windowOffset * 30, initialY: 80 + windowOffset * 30,
+        initialWidth: view?.initialWidth || action?.desktopInitialWidth || 800,
+        initialHeight: view?.initialHeight || action?.desktopInitialHeight || 500,
+        component: markRaw(view?.component || action!.desktopComponent!),
+        props,
+        instanceId: typeof props.instanceId === "string" ? props.instanceId : undefined,
+        daemonId: typeof props.daemonId === "string" ? props.daemonId : undefined
     });
     saveDesktopLayout();
+    return true;
 };
-
-const openScheduleWindow = (instanceId: string, daemonId: string) => {
-    const windowId = `schedule-${instanceId}`;
-    const existing = windows.get(windowId);
-
-    if (existing) {
-        existing.minimized = false;
-        existing.visible = true;
-        focusWindow(windowId);
-        return;
-    }
-
-    windowOffset = (windowOffset + 1) % 8;
-    const offsetX = 120 + windowOffset * 30;
-    const offsetY = 80 + windowOffset * 30;
-
-    windows.set(windowId, {
-        id: windowId,
-        title: t("TXT_CODE_b7d026f8"),
-        icon: markRaw(FieldTimeOutlined),
-        visible: true,
-        minimized: false,
-        maximized: false,
-        zIndex: ++nextZIndex,
-        content: "schedule",
-        initialX: offsetX,
-        initialY: offsetY,
-        initialWidth: 700,
-        initialHeight: 500,
-        instanceId: instanceId,
-        daemonId: daemonId
-    });
-    saveDesktopLayout();
-};
-
-const openEventConfigWindow = (instanceId: string, daemonId: string) => {
-    const windowId = `event-config-${instanceId}`;
-    const existing = windows.get(windowId);
-
-    if (existing) {
-        existing.minimized = false;
-        existing.visible = true;
-        focusWindow(windowId);
-        return;
-    }
-
-    windowOffset = (windowOffset + 1) % 8;
-    const offsetX = 120 + windowOffset * 30;
-    const offsetY = 80 + windowOffset * 30;
-
-    windows.set(windowId, {
-        id: windowId,
-        title: t("TXT_CODE_10150756"),
-        icon: markRaw(DashboardOutlined),
-        visible: true,
-        minimized: false,
-        maximized: false,
-        zIndex: ++nextZIndex,
-        content: "event-config",
-        initialX: offsetX,
-        initialY: offsetY,
-        initialWidth: 500,
-        initialHeight: 450,
-        instanceId: instanceId,
-        daemonId: daemonId
-    });
-    saveDesktopLayout();
-};
-
-const openTermConfigWindow = (instanceId: string, daemonId: string) => {
-    const windowId = `term-config-${instanceId}`;
-    const existing = windows.get(windowId);
-
-    if (existing) {
-        existing.minimized = false;
-        existing.visible = true;
-        focusWindow(windowId);
-        return;
-    }
-
-    windowOffset = (windowOffset + 1) % 8;
-    const offsetX = 120 + windowOffset * 30;
-    const offsetY = 80 + windowOffset * 30;
-
-    windows.set(windowId, {
-        id: windowId,
-        title: t("TXT_CODE_d23631cb"),
-        icon: markRaw(CodeOutlined),
-        visible: true,
-        minimized: false,
-        maximized: false,
-        zIndex: ++nextZIndex,
-        content: "term-config",
-        initialX: offsetX,
-        initialY: offsetY,
-        initialWidth: 700,
-        initialHeight: 500,
-        instanceId: instanceId,
-        daemonId: daemonId
-    });
-    saveDesktopLayout();
-};
-
-const openJavaManagerWindow = (instanceId: string, daemonId: string) => {
-    const windowId = `java-manager-${instanceId}`;
-    const existing = windows.get(windowId);
-
-    if (existing) {
-        existing.minimized = false;
-        existing.visible = true;
-        focusWindow(windowId);
-        return;
-    }
-
-    windowOffset = (windowOffset + 1) % 8;
-    const offsetX = 120 + windowOffset * 30;
-    const offsetY = 80 + windowOffset * 30;
-
-    windows.set(windowId, {
-        id: windowId,
-        title: t("TXT_CODE_3fee13ed"),
-        icon: markRaw(BuildOutlined),
-        visible: true,
-        minimized: false,
-        maximized: false,
-        zIndex: ++nextZIndex,
-        content: "java-manager",
-        initialX: offsetX,
-        initialY: offsetY,
-        initialWidth: 800,
-        initialHeight: 600,
-        instanceId: instanceId,
-        daemonId: daemonId
-    });
-    saveDesktopLayout();
-};
-
-const openMcPingWindow = (instanceId: string, daemonId: string) => {
-    const windowId = `mc-ping-${instanceId}`;
-    const existing = windows.get(windowId);
-
-    if (existing) {
-        existing.minimized = false;
-        existing.visible = true;
-        focusWindow(windowId);
-        return;
-    }
-
-    windowOffset = (windowOffset + 1) % 8;
-    const offsetX = 120 + windowOffset * 30;
-    const offsetY = 80 + windowOffset * 30;
-
-    windows.set(windowId, {
-        id: windowId,
-        title: t("TXT_CODE_40241d8e"),
-        icon: markRaw(UsergroupDeleteOutlined),
-        visible: true,
-        minimized: false,
-        maximized: false,
-        zIndex: ++nextZIndex,
-        content: "mc-ping",
-        initialX: offsetX,
-        initialY: offsetY,
-        initialWidth: 500,
-        initialHeight: 400,
-        instanceId: instanceId,
-        daemonId: daemonId
-    });
-    saveDesktopLayout();
-};
-
-const openModManagerWindow = (instanceId: string, daemonId: string) => {
-    const windowId = `mod-manager-${instanceId}`;
-    const existing = windows.get(windowId);
-
-    if (existing) {
-        existing.minimized = false;
-        existing.visible = true;
-        focusWindow(windowId);
-        return;
-    }
-
-    windowOffset = (windowOffset + 1) % 8;
-    const offsetX = 120 + windowOffset * 30;
-    const offsetY = 80 + windowOffset * 30;
-
-    windows.set(windowId, {
-        id: windowId,
-        title: t("TXT_CODE_MOD_MANAGER"),
-        icon: markRaw(UsbOutlined),
-        visible: true,
-        minimized: false,
-        maximized: false,
-        zIndex: ++nextZIndex,
-        content: "mod-manager",
-        initialX: offsetX,
-        initialY: offsetY,
-        initialWidth: 900,
-        initialHeight: 600,
-        instanceId: instanceId,
-        daemonId: daemonId
-    });
-    saveDesktopLayout();
-};
-
-const openInstanceActionWindow = (actionId: string, instanceId: string, daemonId: string) => {
-    const action = pluginInstanceActions.value.find(
-        (candidate) => candidate.id === actionId && candidate.desktopComponent
-    );
-    if (!action?.desktopComponent) return;
-
-    const windowId = `instance-action-${actionId}-${instanceId}`;
-    const existing = windows.get(windowId);
-
-    if (existing) {
-        existing.minimized = false;
-        existing.visible = true;
-        focusWindow(windowId);
-        return;
-    }
-
-    windowOffset = (windowOffset + 1) % 8;
-    const offsetX = 120 + windowOffset * 30;
-    const offsetY = 80 + windowOffset * 30;
-
-    windows.set(windowId, {
-        id: windowId,
-        title: typeof action.title === "function" ? action.title() : action.title,
-        icon: markRaw(action.icon),
-        visible: true,
-        minimized: false,
-        maximized: false,
-        zIndex: ++nextZIndex,
-        content: `instance-action:${action.id}`,
-        initialX: offsetX,
-        initialY: offsetY,
-        initialWidth: action.desktopInitialWidth || 700,
-        initialHeight: action.desktopInitialHeight || 500,
-        instanceId: instanceId,
-        daemonId: daemonId,
-        component: markRaw(action.desktopComponent)
-    });
-    saveDesktopLayout();
-};
-
-const openNewInstanceWindow = () => {
-    const windowId = "new-instance";
-    const existing = windows.get(windowId);
-
-    if (existing) {
-        existing.minimized = false;
-        existing.visible = true;
-        focusWindow(windowId);
-        return;
-    }
-
-    windowOffset = (windowOffset + 1) % 8;
-    const offsetX = 120 + windowOffset * 30;
-    const offsetY = 80 + windowOffset * 30;
-
-    windows.set(windowId, {
-        id: windowId,
-        title: t("TXT_CODE_DESKTOP_IM_NEW_INSTANCE"),
-        icon: markRaw(DesktopOutlined),
-        visible: true,
-        minimized: false,
-        maximized: false,
-        zIndex: ++nextZIndex,
-        content: "new-instance",
-        initialX: offsetX,
-        initialY: offsetY,
-        initialWidth: 500,
-        initialHeight: 400
-    });
-    saveDesktopLayout();
-};
+const releaseOpener = ctx.desktop.provideOpener(openPluginWindow);
+onUnmounted(releaseOpener);
 
 const openUserInfoWindow = () => {
     if (!desktopUserInfoWindow.value) return;
@@ -1147,7 +803,7 @@ const openUserInfoWindow = () => {
     windows.set(windowId, {
         id: windowId,
         title: t("TXT_CODE_9bb2f08b"),
-        icon: markRaw(UserOutlined),
+        icon: UserOutlined,
         visible: true,
         minimized: false,
         maximized: false,
@@ -1199,7 +855,7 @@ const toggleWindow = (id: string) => {
     }
 };
 
-// ─── Window events ───
+// 閳光偓閳光偓閳光偓 Window events 閳光偓閳光偓閳光偓
 const handleWindowMoved = (id: string, newX: number, newY: number) => {
     const win = windows.get(id);
     if (win) {
@@ -1246,6 +902,13 @@ const taskbarWindows = computed<TaskbarWindow[]>(() => {
     return list;
 });
 
+const taskbarCovered = computed(() => {
+    for (const win of windows.values()) {
+        if (win.maximized && win.visible && !win.minimized) return true;
+    }
+    return false;
+});
+
 const handleReorderWindows = (newOrder: string[]) => {
     const newWindowsMap = new Map<string, WindowState>();
 
@@ -1269,7 +932,7 @@ const handleReorderWindows = (newOrder: string[]) => {
     saveDesktopLayout();
 };
 
-// ─── Route ───
+// 閳光偓閳光偓閳光偓 Route 閳光偓閳光偓閳光偓
 const navigateToRoute = (appId: string) => {
     const app = availableDesktopApps.value.find((a) => a.id === appId);
     if (app?.route) {
@@ -1277,7 +940,7 @@ const navigateToRoute = (appId: string) => {
     }
 };
 
-// ─── Context Menu ───
+// 閳光偓閳光偓閳光偓 Context Menu 閳光偓閳光偓閳光偓
 const ctxMenu = reactive({
     visible: false,
     x: 0,
@@ -1294,7 +957,7 @@ const ctxMenuItems = computed<ContextMenuItem[]>(() => {
         const shortcutId = ctxMenu.targetShortcutId;
         items.push({
             label: t("TXT_CODE_DESKTOP_REMOVE_SHORTCUT"),
-            icon: markRaw(DeleteOutlined),
+            icon: DeleteOutlined,
             action: () => removeDesktopShortcut(shortcutId)
         });
         return items;
@@ -1306,7 +969,7 @@ const ctxMenuItems = computed<ContextMenuItem[]>(() => {
             if (win) {
                 items.push({
                     label: t("TXT_CODE_DESKTOP_MINIMIZE"),
-                    icon: markRaw(MinusOutlined),
+                    icon: MinusOutlined,
                     action: () => {
                         if (ctxMenu.targetWindowId) {
                             minimizeWindow(ctxMenu.targetWindowId);
@@ -1315,32 +978,30 @@ const ctxMenuItems = computed<ContextMenuItem[]>(() => {
                 });
                 items.push({
                     label: win.maximized ? (t("TXT_CODE_DESKTOP_RESTORE")) : (t("TXT_CODE_DESKTOP_MAXIMIZE")),
-                    icon: markRaw(win.maximized ? FullscreenExitOutlined : FullscreenOutlined),
+                    icon: win.maximized ? FullscreenExitOutlined : FullscreenOutlined,
                     action: () => {
                         if (ctxMenu.targetWindowId) {
                             maximizeWindow(ctxMenu.targetWindowId);
                         }
                     }
                 });
-                items.push({ divider: true } as any);
             }
         }
 
         items.push({
             label: t("TXT_CODE_a7e9d4e"),
-            icon: markRaw(CloseOutlined),
+            icon: CloseOutlined,
             action: () => {
                 if (ctxMenu.targetWindowId) {
                     closeWindow(ctxMenu.targetWindowId);
                 }
             }
         });
-        items.push({ divider: true } as any);
     }
 
     items.push({
         label: t("TXT_CODE_DESKTOP_CLOSE_ALL"),
-        icon: markRaw(CloseSquareOutlined),
+        icon: CloseSquareOutlined,
         action: () => {
             windows.clear();
             saveDesktopLayout();
@@ -1402,9 +1063,13 @@ const onDesktopKeyDown = (event: KeyboardEvent) => {
     ctxMenu.visible = false;
 };
 
-onMounted(() => document.addEventListener("keydown", onDesktopKeyDown));
+onMounted(() => {
+    document.body.classList.add("desktop-mode-active");
+    document.addEventListener("keydown", onDesktopKeyDown);
+});
 onUnmounted(() => {
     document.removeEventListener("keydown", onDesktopKeyDown);
+    document.body.classList.remove("desktop-mode-active");
     if (saveLayoutTimer) clearTimeout(saveLayoutTimer);
 });
 
@@ -1417,13 +1082,14 @@ const onDesktopClick = () => {
     ctxMenu.visible = false;
 };
 
-// ─── Exit ───
+// 閳光偓閳光偓閳光偓 Exit 閳光偓閳光偓閳光偓
 const exitDesktop = async () => {
     if (authEnabled.value) await logoutUser().execute();
     window.location.reload();
 };
 
 const username = computed(() => appState.userInfo?.userName || "User");
+const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof icon === "string" && icon.startsWith("mdi-");
 </script>
 
 <template>
@@ -1452,6 +1118,8 @@ const username = computed(() => appState.userInfo?.userName || "User");
                             <div v-if="app.id === droppingIconId" class="drag-ghost__inner">
                                 <component :is="app.icon" v-if="typeof app.icon !== 'string'"
                                     class="drag-ghost__icon" />
+                                <VIcon v-else-if="isMdiIcon(app.icon)" :icon="app.icon" size="42"
+                                    class="drag-ghost__icon" />
                                 <span v-else class="drag-ghost__emoji">{{ app.icon }}</span>
                                 <span class="drag-ghost__label">{{ app.label }}</span>
                             </div>
@@ -1468,77 +1136,27 @@ const username = computed(() => appState.userInfo?.userName || "User");
                         @moved="handleWindowMoved" @resized="handleWindowResized"
                         @contextmenu-titlebar="onTitlebarContextMenu">
                         <div class="window-inner-content">
-                            <DesktopMyApps v-if="win.content === 'my-apps'" @open-console="openInstanceConsole" />
-
-                            <DesktopInstanceManager v-else-if="win.content === 'instances'"
-                                @open-console="openInstanceConsole" @open-new-instance="openNewInstanceWindow" />
-
-                            <DesktopNewInstance v-else-if="win.content === 'new-instance'"
-                                @close="closeWindow(win.id)" />
-
-                            <DesktopInstanceConsole
-                                v-else-if="win.content === 'instance-console' && win.instanceId && win.daemonId"
-                                :instance-id="win.instanceId" :daemon-id="win.daemonId"
-                                @open-server-config="openServerConfigWindow" @open-file-manager="openFileManagerWindow"
-                                @open-mod-manager="openModManagerWindow" @open-schedule="openScheduleWindow"
-                                @open-event-config="openEventConfigWindow" @open-term-config="openTermConfigWindow"
-                                @open-mc-ping="openMcPingWindow" @open-java-manager="openJavaManagerWindow"
-                                @open-instance-action="openInstanceActionWindow" />
+                            <component v-if="findView(win.content)" :is="findView(win.content)!.component"
+                                v-bind="savedViewProps(win)" @close="closeWindow(win.id)" />
 
                             <component :is="win.component"
                                 v-else-if="win.content.startsWith('instance-action:') && win.component && win.instanceId && win.daemonId"
-                                :instance-uuid="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)"
-                                @open-file-editor="(filePath: string, fileName: string) => openFileEditorWindow(win.instanceId!, win.daemonId!, filePath, fileName)" />
-
-                            <DesktopServerConfig
-                                v-else-if="win.content === 'server-config' && win.instanceId && win.daemonId && win.type"
-                                :instance-id="win.instanceId" :daemon-id="win.daemonId" :type="win.type" />
-
-                            <DesktopSchedule v-else-if="win.content === 'schedule' && win.instanceId && win.daemonId"
-                                :instance-id="win.instanceId" :daemon-id="win.daemonId" />
-
-                            <DesktopEventConfig
-                                v-else-if="win.content === 'event-config' && win.instanceId && win.daemonId"
-                                :instance-id="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)" />
-
-                            <DesktopTermConfig
-                                v-else-if="win.content === 'term-config' && win.instanceId && win.daemonId"
-                                :instance-id="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)" />
-
-                            <DesktopMcPing v-else-if="win.content === 'mc-ping' && win.instanceId && win.daemonId"
-                                :instance-id="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)" />
-
-                            <DesktopJavaManager
-                                v-else-if="win.content === 'java-manager' && win.instanceId && win.daemonId"
-                                :instance-id="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)" />
-
-                            <DesktopModManager
-                                v-else-if="win.content === 'mod-manager' && win.instanceId && win.daemonId"
-                                :instance-id="win.instanceId" :daemon-id="win.daemonId" @close="closeWindow(win.id)"
-                                @open-file-editor="(filePath: string, fileName: string) => openFileEditorWindow(win.instanceId!, win.daemonId!, filePath, fileName)" />
-
-                            <DesktopFileManager
-                                v-else-if="win.content === 'file-manager' && win.instanceId && win.daemonId"
-                                :instance-id="win.instanceId" :daemon-id="win.daemonId" :session-id="win.id"
+                                :instance-uuid="win.instanceId" :daemon-id="win.daemonId" :session-id="win.id"
+                                @close="closeWindow(win.id)"
                                 @open-file-editor="(filePath: string, fileName: string) => openFileEditorWindow(win.instanceId!, win.daemonId!, filePath, fileName)"
                                 @open-image-viewer="(filePath: string, fileName: string) => openImageViewerWindow(win.instanceId!, win.daemonId!, filePath, fileName)" />
 
-                            <DesktopFileEditor
-                                v-else-if="win.content === 'file-editor' && win.instanceId && win.daemonId && win.filePath && win.fileName"
+                            <component :is="desktopFileEditorWindow"
+                                v-else-if="win.content === 'file-editor' && desktopFileEditorWindow && win.instanceId && win.daemonId && win.filePath && win.fileName"
                                 :instance-id="win.instanceId" :daemon-id="win.daemonId" :file-path="win.filePath"
                                 :file-name="win.fileName" @close="closeWindow(win.id)" />
 
-                            <DesktopImageViewer
-                                v-else-if="win.content === 'image-viewer' && win.instanceId && win.daemonId && win.filePath && win.fileName"
+                            <component :is="desktopImageViewerWindow"
+                                v-else-if="win.content === 'image-viewer' && desktopImageViewerWindow && win.instanceId && win.daemonId && win.filePath && win.fileName"
                                 :instance-id="win.instanceId" :daemon-id="win.daemonId" :file-path="win.filePath"
                                 :file-name="win.fileName" @close="closeWindow(win.id)" />
 
                             <component :is="desktopUsersWindow" v-else-if="win.content === 'users' && desktopUsersWindow" />
-
-                            <DesktopSettings v-else-if="win.content === 'settings'" />
-
-                            <DesktopTerminalSelector v-else-if="win.content === 'terminal'"
-                                @open-console="openInstanceConsole" />
 
                             <component :is="desktopUserInfoWindow"
                                 v-else-if="win.content === 'user-info' && desktopUserInfoWindow" />
@@ -1556,7 +1174,7 @@ const username = computed(() => appState.userInfo?.userName || "User");
                     </DesktopWindow>
                 </TransitionGroup>
                 <DesktopTaskbar :windows="taskbarWindows" :apps="availableDesktopApps" :username="username"
-                    :user-avatar="desktopStartMenuAvatar"
+                    :user-avatar="desktopStartMenuAvatar" :covered="taskbarCovered"
                     @toggle-window="toggleWindow" @open-app="openWindow"
                     @add-shortcut="handleTaskbarAppDrop"
                     @exit-desktop="exitDesktop" @open-user-info="openUserInfoWindow"
@@ -1656,7 +1274,7 @@ const username = computed(() => appState.userInfo?.userName || "User");
     width: 74px;
     height: 74px;
     border-radius: 12px;
-    border: 2px dashed rgba(255, 255, 255, 0.45);
+    border: 0;
     background: rgba(255, 255, 255, 0.06);
 }
 

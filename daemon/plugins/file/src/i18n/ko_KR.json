@@ -1,0 +1,8 @@
+{
+  "TXT_CODE_file_router.instanceNotExist": "{{instanceUuid}} 인스턴스가 존재하지 않습니다.",
+  "TXT_CODE_file_router.unzipLimit": "동시 압축 해제 작업의 최대 개수는 {{maxFileTask}}개를 초과했습니다. 현재 진행 중인 작업은 {{fileLock}}개입니다.",
+  "TXT_CODE_file_router_service.instanceNotExit": "{{uuid}} 인스턴스가 존재하지 않습니다.",
+  "TXT_CODE_system_file.execLimit": "최대 파일 편집 제한을 초과했습니다.",
+  "TXT_CODE_system_file.illegalAccess": "잘못된 액세스 경로",
+  "TXT_CODE_system_file.unzipLimit": "파일 압축 해제는 최대 {{max}}GB까지의 파일 압축 해제만 지원합니다. 상한을 변경해야 하는 경우 data/Config/global.json 파일로 이동하세요."
+}

@@ -1,6 +1,11 @@
 import { useOverviewInfo, type ComputedNodeInfo } from "@/hooks/useOverviewInfo";
-import { computed, ref } from "vue";
-import { addNode as addNodeApi, connectNode, deleteNode as deleteNodeApi, editNode as editNodeApi } from "../api";
+import { computed, ref, watch } from "vue";
+import {
+  addNode as addNodeApi,
+  connectNode,
+  deleteNode as deleteNodeApi,
+  editNode as editNodeApi
+} from "../api";
 
 export interface RemoteNodeDetail {
   ip: string;
@@ -19,34 +24,39 @@ export interface RemoteNodeDetail {
   softShutdownWaitSeconds: number;
 }
 
-export function useRemoteNode() {
+export function useRemoteNode(options: { poll?: boolean } = {}) {
   const operationForm = ref({ name: "", current: 1, pageSize: 8, total: 0 });
   const ALL = "all";
   const currentStatus = ref<any>(ALL);
-  const { state, refresh } = useOverviewInfo();
-  const refreshLoading = ref(false);
+  const { state, refresh, isLoading: refreshLoading } = useOverviewInfo(options);
 
   const filterByName = (node: ComputedNodeInfo) =>
     operationForm.value.name !== ""
       ? node.remarks.toLowerCase().includes(operationForm.value.name.toLowerCase())
       : true;
 
-  const remoteNodes = computed(() => {
-    const nodeList = state.value?.remote;
-    const filteredNodes =
-      nodeList?.filter(
+  const filteredNodes = computed(
+    () =>
+      state.value?.remote?.filter(
         (node) =>
           (currentStatus.value === ALL || node.available === currentStatus.value) &&
           filterByName(node)
-      ) || [];
-    operationForm.value.total = filteredNodes.length;
+      ) || []
+  );
+
+  watch(
+    () => [filteredNodes.value.length, operationForm.value.pageSize, operationForm.value.current],
+    ([total, pageSize, current]) => {
+      operationForm.value.total = total;
+      const lastPage = Math.max(1, Math.ceil(total / pageSize));
+      operationForm.value.current = Math.min(Math.max(1, current), lastPage);
+    },
+    { immediate: true }
+  );
+
+  const remoteNodes = computed(() => {
     const startIndex = (operationForm.value.current - 1) * operationForm.value.pageSize;
-    const sliceFilteredNodes = filteredNodes.slice(startIndex, startIndex + operationForm.value.pageSize);
-    if (sliceFilteredNodes.length === 0 && operationForm.value.current > 1) {
-      operationForm.value.current -= 1;
-      refresh();
-    }
-    return sliceFilteredNodes;
+    return filteredNodes.value.slice(startIndex, startIndex + operationForm.value.pageSize);
   });
 
   const addNode = async (data: any) => {
@@ -79,4 +89,3 @@ export function useRemoteNode() {
     updateNode
   };
 }
-

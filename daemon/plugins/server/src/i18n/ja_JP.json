@@ -1,0 +1,13 @@
+{
+  "TXT_CODE_DSERVER_IP": "待ち受け IP",
+  "TXT_CODE_DSERVER_IP_TIP": "複数のアドレスを持つホストで有用です。空欄の場合はすべてで待ち受けます。",
+  "TXT_CODE_DSERVER_PATH_TIP": "絶対パス、またはデーモンディレクトリからの相対パス。",
+  "TXT_CODE_DSERVER_PORT": "デーモンのポート",
+  "TXT_CODE_DSERVER_PORT_TIP": "パネルが接続するポート。デーモンの起動時に適用されるため、変更には再起動が必要です。",
+  "TXT_CODE_DSERVER_PREFIX": "パスプレフィックス",
+  "TXT_CODE_DSERVER_PREFIX_TIP": "デーモンをサブパス（例: /daemon）で公開します。空欄の場合はルートで公開します。",
+  "TXT_CODE_DSERVER_SSL": "SSL/TLS を有効にする",
+  "TXT_CODE_DSERVER_SSL_KEY": "秘密鍵ファイル (.key)",
+  "TXT_CODE_DSERVER_SSL_PEM": "証明書ファイル (.pem)",
+  "TXT_CODE_DSERVER_SSL_TIP": "以下の証明書を使用して HTTPS と WSS で公開します。両方のファイルが必要です。"
+}

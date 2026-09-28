@@ -1,0 +1,5 @@
+{
+  "TXT_CODE_DAEMON_PLUGIN_ESSENTIAL_DISABLE": "Web sunucusu uzaktan devre dışı bırakılamaz: panel bu daemon u yönettiği bağlantıyı kaybeder. Bunun yerine ana makinede plugin.json dosyasında enabled değerini false yapın.",
+  "TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED": "Bir eklenti kimliği gerekli.",
+  "TXT_CODE_DAEMON_PLUGIN_SELF_DISABLE": "Eklenti yöneticisi kendisini devre dışı bırakamaz: panel bu daemon u yönettiği olayları kaybeder. Bunun yerine ana makinede plugin.json dosyasında enabled değerini false yapın."
+}

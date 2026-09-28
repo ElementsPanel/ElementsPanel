@@ -4,21 +4,41 @@
     "env.d.ts",
     "src/**/*",
     "src/**/*.vue",
-    "src/config/**/*",
-    "src/lang/**/*.json",
     "../panel/plugins/**/*.ts",
     "../panel/plugins/**/*.vue",
+    "../panel/plugins/**/*.json",
+    "../external/*/panel/**/*.ts",
+    "../external/*/panel/**/*.tsx",
+    "../external/*/panel/**/*.vue",
+    "../external/*/panel/**/*.json",
     "ant.d.ts",
     "components.d.ts",
     "../common/global.d.ts"
   ],
-  "exclude": ["src/**/__tests__/*", "../panel/plugins/*/src/backend/**"],
+  "exclude": [
+    "src/**/__tests__/*",
+    "../panel/plugins/*/src/backend/**",
+    "../external/*/panel/src/backend/**"
+  ],
   "compilerOptions": {
     "composite": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@languages": ["../languages/*"],
+      "@elements-panel/sdk": ["./src/plugin/sdk.ts"],
+      "@/plugin": ["./src/plugin/index.ts"],
+      "@/plugin/*": ["./src/plugin/*"],
+      "@/lang/*": ["../panel/plugins/i18n/src/lang/*"],
+      "@/*": ["../panel/plugins/console/src/*"],
+      "@console/*": ["../panel/plugins/console/src/*"],
+      "@instance/*": ["../panel/plugins/instance/src/*"],
+      "vuetify/components": [
+        "./node_modules/vuetify/lib/components/index.d.ts",
+        "./node_modules/vuetify/lib/components/index.d.mts"
+      ],
+      "vuetify/iconsets/mdi": [
+        "./node_modules/vuetify/lib/iconsets/mdi.d.ts",
+        "./node_modules/vuetify/lib/iconsets/mdi.d.mts"
+      ],
       "lodash": ["./node_modules/@types/lodash/index.d.ts"],
       "*": ["./node_modules/*"]
     },

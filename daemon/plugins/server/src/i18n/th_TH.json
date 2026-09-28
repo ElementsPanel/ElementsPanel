@@ -1,0 +1,13 @@
+{
+  "TXT_CODE_DSERVER_IP": "IP ที่รับฟัง",
+  "TXT_CODE_DSERVER_IP_TIP": "มีประโยชน์เมื่อโฮสต์มีหลายที่อยู่ เว้นว่างไว้เพื่อรับฟังทุกที่อยู่",
+  "TXT_CODE_DSERVER_PATH_TIP": "เส้นทางแบบสัมบูรณ์ หรือแบบสัมพัทธ์กับไดเรกทอรีของดีมอน",
+  "TXT_CODE_DSERVER_PORT": "พอร์ตของดีมอน",
+  "TXT_CODE_DSERVER_PORT_TIP": "พอร์ตที่แผงควบคุมใช้เชื่อมต่อ จะมีผลเมื่อดีมอนเริ่มทำงาน ดังนั้นการแก้ไขต้องรีสตาร์ท",
+  "TXT_CODE_DSERVER_PREFIX": "คำนำหน้าเส้นทาง",
+  "TXT_CODE_DSERVER_PREFIX_TIP": "ให้บริการดีมอนภายใต้เส้นทางย่อย เช่น /daemon เว้นว่างไว้เพื่อให้บริการจากราก",
+  "TXT_CODE_DSERVER_SSL": "เปิดใช้งาน SSL/TLS",
+  "TXT_CODE_DSERVER_SSL_KEY": "ไฟล์คีย์ส่วนตัว (.key)",
+  "TXT_CODE_DSERVER_SSL_PEM": "ไฟล์ใบรับรอง (.pem)",
+  "TXT_CODE_DSERVER_SSL_TIP": "ให้บริการผ่าน HTTPS และ WSS โดยใช้ใบรับรองด้านล่าง ต้องระบุทั้งสองไฟล์"
+}

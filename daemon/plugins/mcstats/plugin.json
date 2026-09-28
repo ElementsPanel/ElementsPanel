@@ -1,0 +1,8 @@
+{
+  "id": "mcstats",
+  "name": "Minecraft Status",
+  "version": "1.0.0",
+  "description": "Provides Minecraft Java and Bedrock server status polling and player counts.",
+  "priority": 110,
+  "backend": "backend/index.cjs"
+}

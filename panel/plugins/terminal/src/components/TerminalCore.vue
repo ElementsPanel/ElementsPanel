@@ -1,0 +1,423 @@
+<script setup lang="ts">
+import connectErrorImage from "@/assets/daemon_connection_error.png";
+import { useCommandHistory } from "../hooks/useCommandHistory";
+import { useXhrPollError } from "@/hooks/useXhrPollError";
+import { t } from "@/lang/i18n";
+import { getInstanceOutputLog } from "../api";
+import { logInstanceCrash, logInstanceAutoRestart } from "@/services/apis/operationLog";
+import { Terminal } from "@xterm/xterm";
+import { message } from "@/tools/vuetifyToast";
+import { onMounted, ref } from "vue";
+import { encodeConsoleColor, type UseTerminalHook } from "../hooks/useTerminal";
+import { getRandomId } from "@/tools/randId";
+import {
+  VBtn,
+  VChip,
+  VProgressCircular,
+  VTextField,
+  VTooltip
+} from "vuetify/components";
+
+// Module-level dedup: prevent duplicate crash/restart logs across multiple TerminalCore instances
+let lastCrashLogTime = 0;
+const CRASH_LOG_DEDUP_MS = 8000;
+let lastAutoRestartLogTime = 0;
+const AUTO_RESTART_LOG_DEDUP_MS = 8000;
+
+const props = defineProps<{
+  instanceId: string;
+  daemonId: string;
+  height: string;
+  useTerminalHook: UseTerminalHook;
+}>();
+
+const {
+  focusHistoryList,
+  selectLocation,
+  history,
+  commandInputValue,
+  handleHistorySelect,
+  clickHistoryItem
+} = useCommandHistory();
+
+const {
+  state,
+  events,
+  isConnect,
+  socketAddress,
+  execute: setUpTerminal,
+  initTerminalWindow,
+  sendCommand,
+  clearTerminal
+} = props.useTerminalHook;
+
+const instanceId = props.instanceId;
+const daemonId = props.daemonId;
+
+const terminalDomId = `terminal-window-${getRandomId()}`;
+
+const socketError = ref<Error>();
+const { isXhrPollError, xhrPollErrorReason } = useXhrPollError(socketError);
+
+let term: Terminal | undefined;
+
+let inputRef = ref<HTMLElement | null>(null);
+
+const handleSendCommand = () => {
+  if (focusHistoryList.value) return;
+  sendCommand(commandInputValue.value || "");
+  commandInputValue.value = "";
+};
+
+const handleClickHistoryItem = (item: string) => {
+  clickHistoryItem(item);
+  inputRef.value?.focus();
+};
+
+defineExpose({ focusCommandInput: () => inputRef.value?.focus() });
+
+const initTerminal = async () => {
+  const dom = document.getElementById(terminalDomId);
+  if (dom) {
+    const term = initTerminalWindow(dom);
+    return term;
+  }
+  throw new Error(t("TXT_CODE_42bcfe0c"));
+};
+
+events.on("opened", () => {
+  message.success(t("TXT_CODE_e13abbb1"));
+});
+
+events.on("stopped", () => {
+  message.success(t("TXT_CODE_efb6d377"));
+});
+
+events.on("crashed", (data: { exitCode: number }) => {
+  const now = Date.now();
+  if (now - lastCrashLogTime < CRASH_LOG_DEDUP_MS) return;
+  lastCrashLogTime = now;
+  logInstanceCrash()
+    .execute({
+      data: {
+        daemonId: daemonId,
+        instanceId: instanceId,
+        instanceName: state.value?.config?.nickname,
+        exitCode: data?.exitCode
+      }
+    })
+    .catch(() => {});
+});
+
+events.on("autoRestarted", () => {
+  const now = Date.now();
+  if (now - lastAutoRestartLogTime < AUTO_RESTART_LOG_DEDUP_MS) return;
+  lastAutoRestartLogTime = now;
+  logInstanceAutoRestart()
+    .execute({
+      data: {
+        daemonId: daemonId,
+        instanceId: instanceId,
+        instanceName: state.value?.config?.nickname
+      }
+    })
+    .catch(() => {});
+});
+
+events.on("error", (error: Error) => {
+  socketError.value = error;
+});
+
+events.once("detail", async () => {
+  try {
+    const { value } = await getInstanceOutputLog().execute({
+      params: { uuid: instanceId || "", daemonId: daemonId || "" }
+    });
+
+    if (value) {
+      if (state.value?.config?.terminalOption?.haveColor) {
+        term?.write(encodeConsoleColor(value));
+      } else {
+        term?.write(value);
+      }
+    }
+  } catch (error: any) {}
+});
+
+const refreshPage = () => {
+  window.location.reload();
+};
+
+// Initialize the terminal when the component is mounted.
+// Do not reinitialize it in the parent component.
+onMounted(async () => {
+  try {
+    if (instanceId && daemonId) {
+      await setUpTerminal({
+        instanceId,
+        daemonId
+      });
+    }
+    term = await initTerminal();
+  } catch (error: any) {
+    console.error(error);
+    throw error;
+  }
+});
+</script>
+
+<template>
+  <!-- Terminal Page View -->
+  <div class="console-wrapper">
+    <div v-if="!isConnect" class="terminal-loading">
+      <VProgressCircular indeterminate color="white" size="64" />
+    </div>
+    <div class="terminal-button-group position-absolute-right position-absolute-top">
+      <ul>
+        <li>
+          <VTooltip location="top">
+            <template #activator="{ props: tooltipProps }">
+              <VBtn
+                v-bind="tooltipProps"
+                icon="mdi-delete-outline"
+                variant="text"
+                size="small"
+                color="white"
+                :aria-label="t('TXT_CODE_b1e2e1b4')"
+                @click="clearTerminal()"
+              />
+            </template>
+            <span>{{ t("TXT_CODE_b1e2e1b4") }}</span>
+          </VTooltip>
+        </li>
+      </ul>
+    </div>
+    <div class="terminal-wrapper global-card-container-shadow position-relative">
+      <div class="terminal-container">
+        <div
+          :id="terminalDomId"
+          :style="{ height: props.height }"
+        ></div>
+      </div>
+    </div>
+    <div class="command-input">
+      <div v-show="focusHistoryList" class="history">
+        <li v-for="(item, key) in history" :key="item">
+          <VChip
+            size="small"
+            :color="key !== selectLocation ? 'info' : 'primary'"
+            @click="handleClickHistoryItem(item)"
+          >
+            {{ item.length > 14 ? item.slice(0, 14) + "..." : item }}
+          </VChip>
+        </li>
+      </div>
+      <VTextField
+        ref="inputRef"
+        v-model="commandInputValue"
+        :placeholder="t('TXT_CODE_555e2c1b')"
+        prepend-inner-icon="mdi-code-tags"
+        variant="outlined"
+        density="comfortable"
+        hide-details
+        autofocus
+        :disabled="!isConnect"
+        @keydown="handleHistorySelect"
+        @keyup.enter="handleSendCommand"
+      />
+    </div>
+
+    <!-- Error Dialog -->
+    <div v-if="socketError" class="error-card">
+      <div class="error-card-container">
+        <h3>{{ $t("TXT_CODE_6929b0b2") }}</h3>
+        <p>
+          {{ $t("TXT_CODE_812a629e") + socketAddress }}
+        </p>
+        <div>
+          <img :src="connectErrorImage" style="width: 100%; height: 110px" />
+        </div>
+        <h3>{{ $t("TXT_CODE_9c95b60f") }}</h3>
+        <div>
+          <pre style="font-size: 12px"><code>{{ socketError?.message||"" }}</code></pre>
+
+          <div v-if="isXhrPollError" style="font-size: 12px">
+            <span> {{ xhrPollErrorReason }}</span>
+          </div>
+        </div>
+        <div v-if="isXhrPollError">
+          <div class="flex" style="gap: 8px; font-size: 12px">
+            <span>
+              <strong>{{ $t("TXT_CODE_d4c8fb3b") }}</strong>
+            </span>
+            <a
+              href="https://docs.mcsmanager.com/ops/proxy_https.html"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ $t("TXT_CODE_9b3ce825") }}
+            </a>
+            <span>|</span>
+            <a
+              href="https://docs.mcsmanager.com/ops/mcsm_network.html"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ $t("TXT_CODE_10cc2794") }}
+            </a>
+          </div>
+        </div>
+        <h3>{{ $t("TXT_CODE_f1c96d8a") }}</h3>
+        <div>
+          <ul>
+            <li>
+              {{ $t("TXT_CODE_ceba9262") }}
+            </li>
+            <li>
+              {{ $t("TXT_CODE_84099e5") }}
+            </li>
+            <li>
+              {{ $t("TXT_CODE_86ff658a") }}
+            </li>
+          </ul>
+          <div class="flex flex-center">
+            <VBtn variant="text" color="primary" @click="refreshPage">
+              {{ $t("TXT_CODE_f8b28901") }}
+            </VBtn>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style lang="scss" scoped>
+.error-card {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  z-index: 10;
+  border-radius: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .error-card-container {
+    overflow: hidden;
+    max-width: 440px;
+    border: 1px solid var(--color-gray-6) !important;
+    background-color: var(--color-gray-1);
+    border-radius: 4px;
+    padding: 12px;
+    box-shadow: 0px 0px 2px var(--color-gray-7);
+  }
+
+  @media (max-width: 992px) {
+    .error-card-container {
+      max-width: 90vw !important;
+    }
+  }
+}
+.console-wrapper {
+  position: relative;
+
+  .terminal-loading {
+    z-index: 12;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .terminal-button-group {
+    z-index: 11;
+    margin-right: 20px;
+    padding-bottom: 50px;
+    padding-left: 50px;
+    border-radius: 6px;
+    color: #fff;
+
+    &:hover {
+      ul {
+        transition: all 1s;
+        opacity: 0.8;
+      }
+    }
+
+    ul {
+      display: flex;
+      opacity: 0;
+
+      li {
+        cursor: pointer;
+        list-style: none;
+        padding: 5px;
+        margin-left: 5px;
+        border-radius: 6px;
+        font-size: 20px;
+
+        &:hover {
+          background-color: #3e3e3e;
+        }
+      }
+    }
+  }
+
+  .terminal-wrapper {
+    border: none;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    background-color: #1e1e1e;
+    padding: 8px;
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    .terminal-container {
+      // min-width: 1200px;
+      height: 100%;
+    }
+
+    margin-bottom: 12px;
+  }
+
+  .command-input {
+    position: relative;
+
+    .history {
+      display: flex;
+      gap: 8px;
+      max-width: 100%;
+      overflow: scroll;
+      z-index: 10;
+      position: absolute;
+      top: -35px;
+      left: 0;
+
+      :deep(.v-chip) {
+        background-color: var(--background-color-white) !important;
+      }
+
+      li {
+        list-style: none;
+        span {
+          padding: 3px 20px;
+          max-width: 300px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          cursor: pointer;
+        }
+      }
+
+      &::-webkit-scrollbar {
+        width: 0 !important;
+        height: 0 !important;
+      }
+    }
+  }
+}
+</style>

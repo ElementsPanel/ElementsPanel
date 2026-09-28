@@ -1,14 +1,18 @@
-import Router from "@koa/router";
-import type { PanelPluginContext } from "../../../../src/app/plugins";
+import type { PanelPluginContext } from "../../../../src/app/plugin";
 
-export function setup(context: PanelPluginContext) {
-  const router = new Router({ prefix: "/api/protected_instance" });
-  const validator = context.middleware.validator;
-  const requireUser = context.middleware.permission({ level: context.roles.USER });
-  const RemoteRequest = context.services.remoteRequest;
-  const remoteServices = context.services.remote;
+// Panel side of instance backup: the browser talks to the panel, the panel
+// forwards to the node that owns the instance. See `daemon/plugins/backup`.
 
-  router.use(context.middleware.instanceAccess);
+export const inject = ["koa", "middleware", "roles", "remote"];
+
+export function apply(ctx: PanelPluginContext) {
+  const router = ctx.koa.router("/api/protected_instance");
+  const validator = ctx.middleware.validator;
+  const requireUser = ctx.middleware.permission({ level: ctx.roles.USER });
+  const RemoteRequest = ctx.remote.Request;
+  const remoteServices = ctx.remote.services;
+
+  router.use(ctx.middleware.instanceAccess);
 
   router.get(
     "/backup",
@@ -67,6 +71,4 @@ export function setup(context: PanelPluginContext) {
       }
     }
   );
-
-  context.registerRouter(router);
 }

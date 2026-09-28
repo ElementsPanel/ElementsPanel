@@ -5,7 +5,7 @@ import type {
   RequestGuard,
   RequestIdentity,
   UserRecords
-} from "../../../../src/app/service/request_guard";
+} from "../../../../src/app/plugin/guard";
 import guardRoute from "./middleware/permission";
 import { globalVariable, ROLE } from "./runtime";
 import {
@@ -16,8 +16,11 @@ import {
   LOGIN_FAILED_COUNT_KEY,
   loginSuccess
 } from "./service/passport_service";
+import { authSettings } from "./service/auth_settings";
 import { isHaveInstance, isTopPermission } from "./service/permission_service";
 import userSystem from "./service/user_service";
+import { core } from "./runtime";
+import { getUserProfile } from "./service/user_profile";
 
 // The complete authorization policy for the panel. The core holds none of it:
 // it only asks whichever guard is installed, and serves everything when there
@@ -69,6 +72,15 @@ export function createRequestGuard(): RequestGuard {
     // Unrestricted multipart uploads would let any account fill the disk.
     canUpload: (ctx) => getUserFromCtx(ctx)?.permission === ROLE().ADMIN,
 
+    accessPolicy() {
+      const settings = authSettings();
+      return {
+        allowChangeCmd: settings.allowChangeCmd,
+        canFileManager: settings.canFileManager,
+        allowJavaManager: settings.allowJavaManager
+      };
+    },
+
     stats(): AuthStats {
       const GlobalVariable = globalVariable();
       return {
@@ -80,7 +92,8 @@ export function createRequestGuard(): RequestGuard {
     },
 
     accounts: {
-      loginSuccess: (ctx, userName) => loginSuccess(ctx, userName)
+      loginSuccess: (ctx, userName) => loginSuccess(ctx, userName),
+      getProfile: (uuid, daemonId, advanced) => getUserProfile(core(), uuid, daemonId, advanced)
     },
 
     users: userRecords()

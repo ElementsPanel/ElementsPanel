@@ -1,0 +1,6 @@
+{
+  "TXT_CODE_auth_router.access": "Сеанс {{id}} ({{address}}) успешно аутентифицирован",
+  "TXT_CODE_auth_router.disconnect": "Сеанс {{id}} ({{address}}) отключен из-за длительной неаутентификации",
+  "TXT_CODE_auth_router.illegalAccess": "Незаконный доступ",
+  "TXT_CODE_auth_router.notAccess": "Сеанс {{id}} ({{address}}) попытался совершить несанкционированный доступ к {{event}}, и был заблокирован."
+}

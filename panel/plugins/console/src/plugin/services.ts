@@ -1,0 +1,314 @@
+import { Service, type Context } from "cordis";
+import { markRaw, shallowReactive, shallowRef, type App, type Component } from "vue";
+import { remove } from "cosmokit";
+import type { Pinia } from "pinia";
+import type { RouteRecordRaw } from "vue-router";
+import { router } from "@console/config/router";
+import type {
+  FrontendActionsService,
+  FrontendDesktopService,
+  FrontendMenusService,
+  FrontendRoutesService,
+  FrontendUiService,
+  FrontendVueService,
+  PanelFrontendAppMenu,
+  PanelFrontendDesktopApp,
+  PanelFrontendDesktopView,
+  PanelFrontendDesktopWindowRequest,
+  PanelFrontendInstanceAction,
+  PanelFrontendLoginAction,
+  PanelFrontendScheduleAction,
+  PanelFrontendTerminalAction,
+  PanelFrontendTerminalActionContext
+} from "@/plugin/context";
+
+/**
+ * The console plugin's UI registration services.
+ *
+ * Every method that accepts a registration wraps it in `this.ctx.effect()`, so
+ * the registration belongs to the plugin that made the call and is undone when
+ * that plugin unloads. The underlying stores stay `shallowReactive` so Vue
+ * re-renders on every such change.
+ *
+ * A cordis `Context` is itself a `Proxy`; the Vue app, pinia and router are
+ * stored `markRaw` so Vue never tries to make one reactive.
+ */
+
+export class VueService extends Service implements FrontendVueService {
+  readonly app: App;
+  readonly pinia: Pinia;
+  readonly router = markRaw(router);
+
+  constructor(ctx: Context, options: { app: App; pinia: Pinia }) {
+    super(ctx, "vue", true);
+    this.app = markRaw(options.app);
+    this.pinia = markRaw(options.pinia);
+  }
+}
+
+export class RoutesService extends Service implements FrontendRoutesService {
+  /** Route path to the name of the plugin that added it. */
+  private readonly owners = new Map<string, string>();
+  private readonly generation = shallowRef(0);
+
+  constructor(ctx: Context) {
+    super(ctx, "routes", true);
+  }
+
+  get revision() {
+    return this.generation.value;
+  }
+
+  isPluginRoute(path: string) {
+    void this.generation.value;
+    return this.owners.has(path);
+  }
+
+  ownerOf(path: string) {
+    void this.generation.value;
+    return this.owners.get(path);
+  }
+
+  add(route: RouteRecordRaw) {
+    // `ctx.name` is the calling plugin, which is how a route is attributed
+    // without the caller having to pass its own id.
+    const owner = this.ctx.name;
+    return this.ctx.effect(() => {
+      const before = new Set(router.getRoutes());
+      const removeRoute = router.addRoute(route);
+      const added = router.getRoutes().filter((record) => !before.has(record));
+      for (const record of added) this.owners.set(record.path, owner);
+      this.generation.value += 1;
+      return () => {
+        removeRoute();
+        for (const record of added) this.owners.delete(record.path);
+        this.generation.value += 1;
+      };
+    });
+  }
+}
+
+interface ComponentStack {
+  original?: Component;
+  registrations: Component[];
+}
+
+/**
+ * A stack of component registrations for one name, so a plugin can override a
+ * core component and have the original restored when it unloads.
+ */
+interface ComponentSlots {
+  stacks: Map<string, ComponentStack>;
+  read(name: string): Component | undefined;
+  write(name: string, component: Component): void;
+  clear(name: string): void;
+}
+
+export class UiService extends Service implements FrontendUiService {
+  // Declared because `app()` reads `ctx.vue` on every registration; without it
+  // cordis warns once per call that the service was not injected.
+  static inject = ["vue", "slots"];
+
+  get globalComponents() {
+    return this.ctx.slots.entries("shell.overlay", {}).map((entry) => entry.component);
+  }
+
+  private readonly vueComponents: ComponentSlots = {
+    stacks: new Map(),
+    read: (name) => this.app().component(name),
+    write: (name, component) => void this.app().component(name, component),
+    clear: (name) => void delete this.app()._context.components[name]
+  };
+
+  constructor(ctx: Context) {
+    super(ctx, "ui", true);
+  }
+
+  component(name: string, component: Component) {
+    return this.ctx.effect(() => this.push(this.vueComponents, name, component));
+  }
+
+  globalComponent(component: Component) {
+    return this.ctx.slots.register("shell.overlay", component);
+  }
+
+  /**
+   * Stacks a registration so a plugin can override a core component or card and
+   * have the original restored when it unloads. The last registration wins.
+   */
+  private push(slots: ComponentSlots, name: string, component: Component) {
+    let stack = slots.stacks.get(name);
+    if (!stack) {
+      stack = { original: slots.read(name), registrations: [] };
+      slots.stacks.set(name, stack);
+    }
+    stack.registrations.push(component);
+    this.apply(slots, name);
+    return () => {
+      if (!slots.stacks.has(name)) return;
+      remove(slots.stacks.get(name)!.registrations, component);
+      this.apply(slots, name);
+    };
+  }
+
+  private apply(slots: ComponentSlots, name: string) {
+    const stack = slots.stacks.get(name);
+    if (!stack) return;
+    const latest = stack.registrations[stack.registrations.length - 1];
+    if (latest) return slots.write(name, latest);
+    if (stack.original) slots.write(name, stack.original);
+    else slots.clear(name);
+    slots.stacks.delete(name);
+  }
+
+  private app() {
+    return this.ctx.vue.app;
+  }
+}
+
+export class MenusService extends Service implements FrontendMenusService {
+  readonly appMenus = shallowReactive<PanelFrontendAppMenu[]>([]);
+  readonly loginActions = shallowReactive<PanelFrontendLoginAction[]>([]);
+
+  constructor(ctx: Context) {
+    super(ctx, "menus", true);
+  }
+
+  app(menu: PanelFrontendAppMenu) {
+    return this.ctx.effect(() => {
+      this.appMenus.push(menu);
+      return () => remove(this.appMenus, menu);
+    });
+  }
+
+  login(action: PanelFrontendLoginAction) {
+    return this.ctx.effect(() => {
+      this.loginActions.push(action);
+      return () => remove(this.loginActions, action);
+    });
+  }
+}
+
+export class ActionsService extends Service implements FrontendActionsService {
+  readonly instances = shallowReactive<PanelFrontendInstanceAction[]>([]);
+  readonly schedules = shallowReactive<PanelFrontendScheduleAction[]>([]);
+  readonly terminals = shallowReactive<PanelFrontendTerminalAction[]>([]);
+
+  constructor(ctx: Context) {
+    super(ctx, "actions", true);
+  }
+
+  instance(action: PanelFrontendInstanceAction) {
+    if (!action.normalComponent && !action.desktopComponent) {
+      throw new Error(`Instance action "${action.id}" needs a normal or desktop component.`);
+    }
+    return this.claim(this.instances, "instance action", action, (item) => item.id === action.id);
+  }
+
+  schedule(action: PanelFrontendScheduleAction) {
+    return this.claim(
+      this.schedules,
+      "schedule action",
+      action,
+      (item) => item.type === action.type
+    );
+  }
+
+  terminal(action: PanelFrontendTerminalAction) {
+    return this.claim(this.terminals, "terminal action", action, (item) => item.id === action.id);
+  }
+
+  terminalButtons(state: PanelFrontendTerminalActionContext) {
+    return this.terminals.map((action) => ({
+      id: action.id,
+      title: typeof action.title === "function" ? action.title() : action.title,
+      icon: action.icon,
+      type: action.type ?? "default",
+      class: action.class,
+      noConfirm: action.noConfirm ?? true,
+      props: action.props ?? {},
+      click: () => action.click(state),
+      condition: () => (action.condition ? action.condition(state) : true)
+    }));
+  }
+
+  private claim<T>(items: T[], kind: string, item: T, isDuplicate: (other: T) => boolean) {
+    return this.ctx.effect(() => {
+      if (items.some(isDuplicate)) throw new Error(`Duplicate ${kind} registration.`);
+      items.push(item);
+      return () => remove(items, item);
+    });
+  }
+}
+
+/**
+ * Desktop mode's application registry and window shell.
+ *
+ * The console provides this registry even when Desktop is absent. Each
+ * registration belongs to the calling plugin and is removed with its scope.
+ */
+export class DesktopService extends Service implements FrontendDesktopService {
+  readonly apps = shallowReactive<PanelFrontendDesktopApp[]>([]);
+  readonly views = shallowReactive<PanelFrontendDesktopView[]>([]);
+  private readonly shell = shallowRef<Component>();
+  private readonly opener = shallowRef<(request: PanelFrontendDesktopWindowRequest) => boolean>();
+
+  constructor(ctx: Context) {
+    super(ctx, "desktop", true);
+  }
+
+  /** The window a Desktop component is mounted inside, once Desktop is installed. */
+  get window() {
+    return this.shell.value;
+  }
+
+  provideWindow(component: Component) {
+    return this.ctx.effect(() => {
+      this.shell.value = component;
+      return () => {
+        this.shell.value = undefined;
+      };
+    });
+  }
+
+  view(view: PanelFrontendDesktopView) {
+    const entry = { ...view, id: view.id.trim(), component: markRaw(view.component) };
+    if (!entry.id) throw new Error("A Desktop view needs an id.");
+    return this.ctx.effect(() => {
+      if (this.views.some((item) => item.id === entry.id)) {
+        throw new Error(`Desktop view id is already registered: ${entry.id}`);
+      }
+      this.views.push(entry);
+      return () => remove(this.views, entry);
+    });
+  }
+
+  open(request: PanelFrontendDesktopWindowRequest) {
+    return this.opener.value?.(request) ?? false;
+  }
+
+  provideOpener(open: (request: PanelFrontendDesktopWindowRequest) => boolean) {
+    return this.ctx.effect(() => {
+      this.opener.value = open;
+      return () => {
+        if (this.opener.value === open) this.opener.value = undefined;
+      };
+    });
+  }
+
+  app(desktopApp: PanelFrontendDesktopApp) {
+    const id = desktopApp.id.trim();
+    if (!id) throw new Error("A Desktop application needs an id.");
+    if (!desktopApp.component && !desktopApp.route && !desktopApp.view) {
+      throw new Error(`Desktop application "${id}" needs a view, component or route.`);
+    }
+    const entry = { ...desktopApp, id };
+    return this.ctx.effect(() => {
+      if (this.apps.some((app) => app.id === id)) {
+        throw new Error(`Desktop application id is already registered: ${id}`);
+      }
+      this.apps.push(entry);
+      return () => remove(this.apps, entry);
+    });
+  }
+}

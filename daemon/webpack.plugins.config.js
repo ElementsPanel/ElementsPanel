@@ -1,6 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 const nodeExternals = require("webpack-node-externals");
+const cordisExternals = require("../scripts/webpack-cordis-externals.cjs");
 
 const pluginsRoot = path.resolve(__dirname, "plugins");
 
@@ -51,6 +52,8 @@ module.exports = {
   // dependency that is not installed into the production bundle, so it has to
   // be compiled in — the same allowlist the main config uses.
   externals: [
+    // One cordis instance, shared with every plugin bundle. See the module.
+    cordisExternals,
     nodeExternals({
       allowlist: ["mcsmanager-common"]
     })
@@ -63,7 +66,6 @@ module.exports = {
   resolve: {
     extensions: [".ts", ".js"],
     alias: {
-      "@languages": path.resolve(__dirname, "../languages"),
       "mcsmanager-common": path.resolve(__dirname, "../common/src/index.ts")
     }
   }

@@ -1,0 +1,17 @@
+{
+  "TXT_CODE_1562f6cf": "Alle Installationsvorgänge wurden abgeschlossen. \nBitte versuchen Sie, die Instanz zu starten ...",
+  "TXT_CODE_4eccdde8": "Konfiguration erfolgreich erstellt!",
+  "TXT_CODE_5b0e93b5": "Die Installation kann nicht gestartet werden, da andere asynchrone Aufgaben in Arbeit sind. \nBitte beenden Sie zuerst andere Aufgaben auf der Terminalseite!",
+  "TXT_CODE_9b4985d3": "Instanz erfolgreich aktualisiert!",
+  "TXT_CODE_9df98e2": "Konfiguration aufbauen ...",
+  "TXT_CODE_ac225d07": "Parameter der Build-Paketinstanz:",
+  "TXT_CODE_b135e9bd": "Herunterladen ...",
+  "TXT_CODE_e166bc2f": "Die Installationsaufgabe beginnt ...",
+  "TXT_CODE_e4a926bf": "Unkomprimierende Dateien ...",
+  "TXT_CODE_e577c77c": "Aktualisieren der Instanz ...",
+  "TXT_CODE_quick_install.unzipError": "Das Dekomprimieren des Archivs ist fehlgeschlagen",
+  "TXT_CODE_minecraft.invalidDownload": "Ungültige Minecraft-Downloadparameter.",
+  "TXT_CODE_minecraft.platformMismatch": "Der Bedrock-Server ist mit diesem Knoten nicht kompatibel. Eine Version passend zu Windows/Linux auswählen und einen x64-Knoten verwenden.",
+  "TXT_CODE_minecraft.missingFiles": "Die Startdateien des installierten Servers wurden nicht gefunden. Das heruntergeladene Paket und das Installationsprotokoll prüfen.",
+  "TXT_CODE_minecraft.hashMismatch": "Die SHA-256-Prüfung der heruntergeladenen Datei ist fehlgeschlagen. Die Installation wurde gestoppt. Bitte erneut versuchen."
+}

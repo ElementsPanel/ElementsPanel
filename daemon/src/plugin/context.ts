@@ -1,0 +1,456 @@
+import type { PluginChangeResult } from "mcsmanager-common";
+import { Context } from "cordis";
+import type Koa from "koa";
+import type Router from "@koa/router";
+import type { Server as SocketIOServer } from "socket.io";
+import type { GitignoreMatcher } from "../../plugins/runtime/src/backend/common/gitignore_matcher";
+import type {
+  compress,
+  decompress,
+  listArchiveEntries,
+  decompressWithProgress
+} from "../../plugins/runtime/src/backend/common/compress";
+import type { getCommonHeaders } from "../../plugins/runtime/src/backend/common/network";
+import type downloadManager from "../../plugins/runtime/src/backend/service/download_manager";
+import type { missionPassport } from "../../plugins/runtime/src/backend/service/mission_passport";
+import type { sendFile } from "../../plugins/runtime/src/backend/utils/speed_limit";
+import type { globalConfiguration } from "../../plugins/runtime/src/backend/entity/config";
+type Instance = any;
+type InstanceConfig = any;
+type ILifeCycleTask = any;
+type InstanceCommand = any;
+type commandStringToArray = (text: string) => string[];
+type IAsyncTask = any;
+type IPresetCommand = string;
+import type RouterContext from "../../plugins/server/src/backend/context";
+import type i18next from "i18next";
+import type { check7zipStatus } from "../../plugins/runtime/src/backend/service/seven_zip_service";
+import type { DaemonPluginEntry, DaemonPluginRecord } from "./loader";
+import type { InstanceInstallTaskClass } from "../../plugins/instance/src/backend/install_task";
+
+/**
+ * The daemon's cordis container, and the complete list of what a plugin can see.
+ *
+ * Every capability is a service on the context; every registration a plugin
+ * makes is an effect owned by that plugin's scope, so unloading a plugin undoes
+ * its contributions and no plugin ever writes cleanup code. `ctx.logger` and the
+ * timer helpers (`ctx.setTimeout`, `ctx.setInterval`, `ctx.sleep`,
+ * `ctx.throttle`, `ctx.debounce`) come with cordis itself.
+ *
+ * The declarations below are the API documentation: only `import type` here, so
+ * this module stays a leaf that core code can import without a cycle. The
+ * runtime values are provided by the foundation plugins (`storage`, `i18n`,
+ * and `runtime`).
+ */
+export const ctx = new Context();
+
+/** Daemon configuration, plus the calls that persist and re-language it. */
+export interface DaemonSettingsService {
+  readonly config: typeof globalConfiguration.config;
+  /** Version detected by the runtime foundation for this daemon process. */
+  readonly version: string;
+  save(): void;
+  /** Switch the daemon language and drop the bootstrap language preset file. */
+  setLanguage(language: string): void;
+}
+
+/** Entity and file persistence supplied by `plugins/storage`. */
+export interface DaemonStorageService {
+  store(category: string, uuid: string, object: any): void;
+  load(category: string, classz: any, uuid: string): any;
+  list(category: string): string[];
+  delete(category: string, uuid: string): void;
+  writeFile(name: string, data: string): void;
+  readFile(name: string): string;
+  readDir(dirName: string): string[];
+}
+
+/** What a declared setting renders as. `link` reads and writes nothing. */
+export type DaemonSettingFieldType =
+  | "string"
+  /** Multi-line string. */
+  | "text"
+  | "number"
+  | "boolean"
+  | "select"
+  | "link";
+
+export interface DaemonSettingOption {
+  value: string | number | boolean;
+  label: string;
+}
+
+/**
+ * One row of a plugin's configuration form, described rather than drawn.
+ *
+ * Labels are plain strings, already translated: the panel renders this form, and
+ * the browser has no copy of a daemon plugin's catalogue. Whoever declares the
+ * field resolves it, in whatever language the panel last pushed to this daemon.
+ */
+export interface DaemonSettingField {
+  /** The key in `read()`'s result and `write()`'s argument. Absent for `link`. */
+  key?: string;
+  type: DaemonSettingFieldType;
+  title: string;
+  description?: string;
+  placeholder?: string;
+  /** `number`: inclusive bounds, enforced by the form and by `write()`. */
+  min?: number;
+  max?: number;
+  /** `select`: the allowed values. */
+  options?: DaemonSettingOption[];
+  /** `string`: render as a password input. */
+  secret?: boolean;
+  /**
+   * Shown only while every listed condition holds. A condition is either a field
+   * name, true when that field is truthy, or `"name=value"`, true when that
+   * field's value stringifies to `value`.
+   */
+  visibleWhen?: string | string[];
+  /** `link`: a panel route the form offers as a button. */
+  route?: string;
+}
+
+/**
+ * A plugin's configuration, as its backend declares it.
+ *
+ * `fields` is a function so that it is resolved per request: a plugin's titles
+ * come from its own catalogue, and the daemon's language changes when the panel
+ * pushes a new one.
+ */
+export interface DaemonSettingsDeclaration {
+  /** Changes to this form require a process restart. */
+  restartRequired?: boolean;
+  fields(): DaemonSettingField[];
+  read(): Record<string, unknown> | Promise<Record<string, unknown>>;
+  write(values: Record<string, unknown>): void | Promise<void>;
+}
+
+/** One plugin's form and its current values, as the panel fetches them. */
+export interface DaemonSettingsSchema {
+  id: string;
+  fields: DaemonSettingField[];
+  values: Record<string, unknown>;
+}
+
+/**
+ * The register of plugin configuration forms.
+ *
+ * A daemon plugin has no browser half at all, so it cannot ship a component for
+ * its settings. It describes them here instead, and the panel's plugin manager
+ * renders the description with the same generic form it uses for its own plugins.
+ */
+export interface DaemonSettingsFormService {
+  /** Declares the calling plugin's form. An effect: it leaves with the plugin. */
+  declare(declaration: DaemonSettingsDeclaration): () => void;
+  /** The ids that declared a form, in declaration order. */
+  declared(): string[];
+  /** One plugin's fields and values, or `null` when it declared nothing. */
+  read(id: string): Promise<DaemonSettingsSchema | null>;
+  /** Hands `values` to that plugin's own `write()`. */
+  write(id: string, values: Record<string, unknown>): Promise<PluginChangeResult>;
+}
+
+export interface DaemonI18nService {
+  readonly $t: typeof i18next.t;
+  /** Merge the plugin's translations, keyed by locale. Removed on unload. */
+  define(messages: Record<string, Record<string, unknown>>): () => void;
+}
+
+/**
+ * The daemon's Koa application, for the few plugins that serve HTTP directly.
+ * `use()` and `router()` are scoped to the calling plugin.
+ *
+ * Provided by `plugins/server`, which owns the application itself.
+ */
+export interface DaemonKoaService {
+  readonly app: Koa;
+  use(middleware: Koa.Middleware): () => void;
+  router(prefix?: string): Router;
+}
+
+/**
+ * The Socket.io server the panel connects to. Provided by `plugins/server`; the
+ * `plugins/server` also owns connection navigation and protocol dispatch, and a
+ * plugin that needs to reach every connected client directly can use the socket.
+ */
+export interface DaemonWebsocketService {
+  readonly io: SocketIOServer;
+}
+
+/**
+ * The base Koa middleware the web server mounts ahead of the body parser.
+ *
+ * Both consult the upload subsystem — the passports that authorize an upload and
+ * the configured rate limit — and are exposed by the runtime foundation for the
+ * server plugin to mount.
+ */
+export interface DaemonMiddlewareService {
+  readonly uploadFileCheck: Koa.Middleware;
+  readonly uploadSpeedLimit: Koa.Middleware;
+}
+
+/**
+ * The Socket.io protocol the panel talks to this daemon over.
+ *
+ * `on()` and `use()` are scoped to the calling plugin, but note that the server
+ * snapshots the handler list per connection: a handler
+ * registered after a client connected is invisible to that client's socket.
+ * Plugins load before the server starts listening, so this only limits
+ * hot-reloading a plugin on a running daemon.
+ */
+export interface DaemonProtocolService {
+  on(event: string, handler: (ctx: RouterContext, data: any) => void): () => void;
+  use(handler: (event: string, ctx: RouterContext, data: any, next: Function) => void): () => void;
+  readonly response: (ctx: RouterContext, data: any) => void;
+  readonly responseError: (
+    ctx: RouterContext,
+    error: Error | string,
+    config?: { disablePrint: boolean }
+  ) => void;
+  readonly error: (
+    ctx: RouterContext,
+    event: string,
+    error: any,
+    config?: { disablePrint: boolean }
+  ) => void;
+  readonly msg: (ctx: RouterContext, event: string, data: any) => void;
+  readonly ROLE: { ADMIN: number; USER: number; GUEST: number; BAN: number };
+  /** Marker an error message carries to keep `error()` from printing it. */
+  readonly IGNORE: string;
+}
+
+/** The instances this daemon runs, and the pieces needed to build a new one. */
+export interface DaemonInstancesService {
+  readonly subsystem: any;
+  readonly Instance: any;
+  readonly Config: any;
+  readonly Command: any;
+  readonly UpdateAction: any;
+  /** Shared download, extraction, progress and cancellation lifecycle for installers. */
+  readonly InstallTask: InstanceInstallTaskClass;
+  readonly fileManager: (instanceUuid: string) => DaemonFileManager;
+  readonly headers: typeof getCommonHeaders;
+  readonly commandStringToArray: commandStringToArray;
+}
+
+/** Builds an optional lifecycle task for one instance. */
+export type DaemonLifecycleTaskFactory = (instance: Instance) => ILifeCycleTask | undefined;
+
+/** Lifecycle tasks contributed by daemon plugins and applied by the dispatcher. */
+export interface DaemonLifecycleService {
+  register(factory: DaemonLifecycleTaskFactory): () => void;
+  entries(): readonly DaemonLifecycleTaskFactory[];
+}
+
+export interface DaemonAsyncTaskRegistration {
+  type: string;
+  create: (instance: Instance, parameter?: any) => IAsyncTask;
+  /**
+   * Set to false for a task that builds its own instance, such as creating one
+   * from a market package. Those receive `undefined` as the instance.
+   */
+  requiresInstance?: boolean;
+  /** Minimum caller role the panel must report. Unset means any role. */
+  requiredRole?: number;
+}
+
+/** Long-running work the panel starts through `instance/asynchronous`. */
+export interface DaemonTasksService {
+  readonly AsyncTask: any;
+  readonly Center: {
+    addTask(task: any): void;
+    getTask(taskId: string, type?: string): any;
+    getTasks(type?: string): any[];
+  };
+  register(taskName: string, registration: DaemonAsyncTaskRegistration): () => void;
+  get(taskName: string): DaemonAsyncTaskRegistration | undefined;
+}
+
+/** Builds the command backing one instance preset, per instance. */
+export type DaemonPresetCommandFactory = () => InstanceCommand;
+
+/**
+ * The command behind one instance preset. `FunctionDispatcher` applies these
+ * after its own defaults, so a plugin can provide a preset the core has no
+ * implementation for — `install`, owned by `plugins/market` — or replace one it
+ * does. Without the plugin the preset is absent and `execPreset` does nothing.
+ */
+export interface DaemonPresetsService {
+  register(preset: IPresetCommand, factory: DaemonPresetCommandFactory): () => void;
+  entries(): ReadonlyMap<IPresetCommand, DaemonPresetCommandFactory>;
+}
+
+export type DaemonScheduleActionHandler = (
+  instance: Instance,
+  payload: string
+) => Promise<void> | void;
+
+/** Action types a scheduled task may run. */
+export interface DaemonSchedulesService {
+  register(actionType: string, handler: DaemonScheduleActionHandler): () => void;
+  get(actionType: string): DaemonScheduleActionHandler | undefined;
+}
+
+/** Capability flags the panel reads from `info/overview` to shape its UI. */
+export interface DaemonFeaturesService {
+  add(feature: string): () => void;
+  has(feature: string): boolean;
+  all(): Record<string, boolean>;
+}
+
+/** Fields a plugin adds to the `info/overview` payload the panel reads. */
+export type DaemonOverviewProvider = () =>
+  | Record<string, unknown>
+  | Promise<Record<string, unknown>>;
+
+export interface DaemonOverviewService {
+  provide(provider: DaemonOverviewProvider): () => void;
+  collect(): Promise<Record<string, unknown>>;
+}
+
+/** Archive handling, shared by the backup, install and file manager plugins. */
+export interface DaemonArchiveService {
+  readonly GitignoreMatcher: typeof GitignoreMatcher;
+  readonly compress: typeof compress;
+  readonly decompress: typeof decompress;
+  readonly listArchiveEntries: typeof listArchiveEntries;
+  readonly decompressWithProgress: typeof decompressWithProgress;
+  readonly check7zipStatus: typeof check7zipStatus;
+  readonly sevenZipPath: string;
+  readonly zipTimeoutSeconds: number;
+}
+
+/**
+ * The plumbing a file transfer needs from the runtime foundation: the passports that authorize
+ * one, the URL downloader instance management shares with it, the rate-limited
+ * file sender and the temp-file cleanup.
+ *
+ * These stay in the runtime foundation because other features use them too —
+ * `plugins/auth` issues passports, `plugins/terminal` checks stream passports, and the Java
+ * manager and mod service download by URL.
+ */
+export interface DaemonTransferService {
+  readonly passports: typeof missionPassport;
+  readonly downloads: typeof downloadManager;
+  readonly sendFile: typeof sendFile;
+}
+
+/** Java runtime management supplied by `plugins/java`. */
+export interface DaemonJavaManagerService {
+  list(): IJavaRuntime[];
+  getJava(id: string): IJavaRuntime | undefined;
+  exists(id: string): boolean;
+  getJavaDataDir(): string;
+  getJavaDownloadUrl(
+    info: IJavaInfo & { name: string; version?: string }
+  ): Promise<string | undefined>;
+  getAvailableVersions(): Promise<import("../../../common/src/java").JavaCatalog>;
+  startInstall(version: string): Promise<IJavaRuntime>;
+  addJava(info: IJavaInfo & { name: string; version?: string }): void;
+  updateJavaInfo(info: IJavaInfo & { name: string; version?: string }): void;
+  getJavaRuntimeCommand(id: string): Promise<string>;
+  removeJava(id: string): Promise<boolean>;
+}
+
+/** One instance's working directory, as the core and its plugins use it. */
+export interface DaemonFileManager {
+  check(destPath: string): boolean;
+  checkPath(fileNameOrPath: string): boolean;
+  toAbsolutePath(fileName?: string): string;
+  readFile(fileName: string): Promise<string>;
+  writeFile(fileName: string, data: string): Promise<boolean>;
+  unzip(sourceZip: string, destDir: string, code?: string): Promise<boolean>;
+}
+
+/** One chunked upload in flight, as the instance overview reports it. */
+export interface DaemonUploadTask {
+  readonly cwd: string;
+  readonly path: string;
+  /** Total bytes the file will be. */
+  readonly size: number;
+  /** The byte ranges written so far. */
+  readonly received: ReadonlyArray<{ start: number; end: number }>;
+  readonly writer: { stop(): void };
+}
+
+/**
+ * The daemon's file primitives.
+ *
+ * **Provided by `plugins/file`.** The core declares only the shape its own
+ * few callers need — instance creation, the Java manager, SteamCMD, the mod
+ * service — and consumers resolve it through their plugin context, so
+ * removing that plugin removes the daemon's ability to touch instance files
+ * rather than breaking the build.
+ */
+export interface DaemonFilesService {
+  readonly FileManager: {
+    new (topPath?: string, fileCode?: string): DaemonFileManager;
+    checkFileName(fileName: string): boolean;
+  };
+  /** Chunked uploads in flight. */
+  readonly uploads: {
+    getUploads(): Map<string, DaemonUploadTask>;
+    get(id: string): DaemonUploadTask | undefined;
+    exit(): Promise<void>;
+  };
+  getFileManager(instanceUuid: string): DaemonFileManager;
+  getWindowsDisks(): string[];
+}
+
+/** What is installed, what is running, and the switch that decides. */
+export interface DaemonPluginsService {
+  readonly loaded: readonly DaemonPluginEntry[];
+  /** Every installed plugin, disabled ones included. */
+  inventory(): DaemonPluginRecord[];
+  /**
+   * Turns a plugin on or off: persists the switch in data/plugin-overrides.json and
+   * applies it to the running daemon. Disabling disposes the plugin's scope, so
+   * its protocol handlers, tasks, timers and services go with it.
+   */
+  setEnabled(id: string, enabled: boolean): Promise<DaemonPluginRecord>;
+  configure(id: string, config: Record<string, unknown>): Promise<DaemonPluginRecord>;
+  configuration(id: string): DaemonSettingsSchema;
+  runExclusive<T>(operation: () => Promise<T>): Promise<T>;
+  /**
+   * Re-scans the plugin directories: a plugin that has appeared since startup is
+   * installed, one that is gone or disabled is disposed. Development only.
+   */
+  reload(): Promise<readonly DaemonPluginEntry[]>;
+}
+
+declare module "cordis" {
+  interface Context {
+    // Shared services supplied by foundation plugins before feature plugins load.
+    settings: DaemonSettingsService;
+    storage: DaemonStorageService;
+    settingsForm: DaemonSettingsFormService;
+    i18n: DaemonI18nService;
+    middleware: DaemonMiddlewareService;
+    protocol: DaemonProtocolService;
+    instances: DaemonInstancesService;
+    instanceLifecycle: DaemonLifecycleService;
+    tasks: DaemonTasksService;
+    presets: DaemonPresetsService;
+    schedules: DaemonSchedulesService;
+    features: DaemonFeaturesService;
+    overview: DaemonOverviewService;
+    archive: DaemonArchiveService;
+    transfer: DaemonTransferService;
+    javaManager: DaemonJavaManagerService;
+    plugins: DaemonPluginsService;
+
+    // Provided by `plugins/server`, the daemon's network layer. Without it the
+    // daemon listens on nothing, so `inject` them rather than assuming.
+    /**
+     * The file primitives. Provided by `plugins/file`, which owns the
+     * whole file subsystem — instance files are unreachable without it.
+     */
+    files: DaemonFilesService;
+    koa: DaemonKoaService;
+    websocket: DaemonWebsocketService;
+  }
+}
+
+/** The context a daemon plugin's `apply()` receives. */
+export type DaemonPluginContext = Context;

@@ -1,0 +1,189 @@
+/* eslint-disable no-unused-vars */
+import logo from "@/assets/logo.svg";
+import logoB from "@/assets/logo_b.svg";
+import { getCurrentLang, setLanguage } from "@/lang/i18n";
+import { AppTheme, THEME_AUTO_MIGRATED_KEY, THEME_KEY } from "@/types/const";
+import { createGlobalState, useBreakpoints, useLocalStorage, usePreferredDark } from "@vueuse/core";
+import { getAppearance, type PanelAppearance } from "@/services/apis/appearance";
+import { computed, onMounted, reactive, ref, watch } from "vue";
+
+/**
+ * Older builds defaulted to LIGHT and wrote that value on the very first visit,
+ * so an upgraded browser keeps rendering the light background even on a dark
+ * system. Rewrite that one stored value to AUTO, once: a light theme picked
+ * after this has run is left alone.
+ */
+const migrateLegacyLightDefault = () => {
+  try {
+    if (localStorage.getItem(THEME_AUTO_MIGRATED_KEY)) return;
+    localStorage.setItem(THEME_AUTO_MIGRATED_KEY, "1");
+    if (Number(localStorage.getItem(THEME_KEY)) === AppTheme.LIGHT) {
+      localStorage.setItem(THEME_KEY, String(AppTheme.AUTO));
+    }
+  } catch {
+    // Storage can be unavailable (private mode, blocked cookies): nothing to migrate.
+  }
+};
+
+migrateLegacyLightDefault();
+
+export const useAppConfigStore = createGlobalState(() => {
+  const isPreferredDark = usePreferredDark();
+
+  const appConfig = reactive({
+    logoImage: "",
+    logoImageLight: undefined as string | undefined,
+    logoImageDark: undefined as string | undefined
+  });
+
+  const isDarkTheme = computed(() => {
+    if (currentTheme.value === AppTheme.DARK) return true;
+    if (currentTheme.value === AppTheme.AUTO) return isPreferredDark.value;
+    return false;
+  });
+
+  const logoImage = computed(() => {
+    const themedLogo = isDarkTheme.value ? appConfig.logoImageDark : appConfig.logoImageLight;
+    return (themedLogo ?? appConfig.logoImage) || (isDarkTheme.value ? logo : logoB);
+  });
+
+  // Default to AUTO so a fresh visit follows the system dark mode
+  // (index.html's loading screen already does the same).
+  const currentTheme = useLocalStorage<AppTheme>(THEME_KEY, AppTheme.AUTO);
+
+  const hasBgImage = ref(false);
+
+  /** Desktop uses the sidebar/header layout; phones keep the compact navigation. */
+  const breakpoints = useBreakpoints({ sidebar: 993 });
+  const isWideEnoughForSidebar = breakpoints.greaterOrEqual("sidebar");
+  const useSidebarLayout = computed(() => isWideEnoughForSidebar.value);
+  const sidebarOpen = useLocalStorage("app-sidebar-open", true);
+  const isSidebarOpen = computed(() => useSidebarLayout.value && sidebarOpen.value);
+
+  const toggleSidebar = () => {
+    sidebarOpen.value = !sidebarOpen.value;
+  };
+
+  const clearBackgroundImage = () => {
+    const body = document.querySelector("body");
+    if (!body) return;
+    body.style.removeProperty("background-image");
+    body.style.removeProperty("background-size");
+    body.style.removeProperty("background-position");
+    body.style.removeProperty("background-repeat");
+    body.classList.remove("app-light-extend-theme", "app-dark-extend-theme");
+    hasBgImage.value = false;
+  };
+
+  const setBackgroundImage = (url: string) => {
+    if (!url) {
+      clearBackgroundImage();
+      return;
+    }
+    const body = document.querySelector("body");
+    if (body) {
+      body.style.backgroundSize = "cover";
+      body.style.backgroundPosition = "center";
+      body.style.backgroundRepeat = "no-repeat";
+      if (isDarkTheme.value) {
+        body.style.backgroundImage = `linear-gradient(135deg, rgba(0,0,0,0.65), rgba(0,0,0,0.65) 100%), url(${url})`;
+        body.classList.remove("app-light-extend-theme");
+        body.classList.add("app-dark-extend-theme");
+      } else {
+        body.style.backgroundImage = `linear-gradient(135deg, rgba(220,220,220,0.3), rgba(53,53,53,0.3) 100%), url(${url})`;
+        body.classList.remove("app-dark-extend-theme");
+        body.classList.add("app-light-extend-theme");
+      }
+
+      hasBgImage.value = true;
+    }
+  };
+
+  const setLight = () => {
+    document.body.classList.add("app-light-theme");
+    document.body.classList.remove("app-dark-theme");
+  };
+
+  const setDark = () => {
+    document.body.classList.add("app-dark-theme");
+    document.body.classList.remove("app-light-theme");
+  };
+
+  const resetTheme = () => (currentTheme.value = AppTheme.AUTO);
+
+  const initAppTheme = async () => {
+    if (
+      isNaN(currentTheme.value) ||
+      currentTheme.value < AppTheme.AUTO ||
+      currentTheme.value > AppTheme.DARK
+    ) {
+      resetTheme();
+    }
+    const fn = {
+      [AppTheme.AUTO]: () => (isPreferredDark.value ? setDark() : setLight()),
+      [AppTheme.LIGHT]: () => setLight(),
+      [AppTheme.DARK]: () => setDark()
+    };
+    fn[currentTheme.value]?.();
+
+    const { value: appearance } = await getAppearance().execute();
+    setLogoImages(appearance);
+    setBackgroundImage(appearance?.backgroundImage || "");
+  };
+
+  const setTheme = (t: AppTheme) => {
+    currentTheme.value = t;
+    initAppTheme();
+  };
+
+  const changeLanguage = (lang: string) => {
+    setLanguage(lang);
+  };
+
+  const getCurrentLanguage = () => {
+    return getCurrentLang() ?? "en_us";
+  };
+
+  const setLogoImage = (url: string) => {
+    appConfig.logoImage = url;
+  };
+
+  const setLogoImages = (appearance?: PanelAppearance) => {
+    setLogoImage(appearance?.logoImage || "");
+    appConfig.logoImageLight = appearance?.logoImageLight;
+    appConfig.logoImageDark = appearance?.logoImageDark;
+  };
+
+  watch(isPreferredDark, () => {
+    if (currentTheme.value === AppTheme.AUTO) {
+      initAppTheme();
+    }
+  });
+
+  onMounted(async () => {
+    try {
+      const { value: appearance } = await getAppearance().execute();
+      setLogoImages(appearance);
+    } catch (error) {
+      console.error("Failed to load appearance settings:", error);
+    }
+  });
+
+  return {
+    appConfig,
+    logoImage,
+    hasBgImage,
+    useSidebarLayout,
+    isSidebarOpen,
+    toggleSidebar,
+    setLogoImage,
+    changeLanguage,
+    getCurrentLanguage,
+    isDarkTheme,
+    initAppTheme,
+    setTheme,
+    clearBackgroundImage,
+    setBackgroundImage,
+    currentTheme
+  };
+});

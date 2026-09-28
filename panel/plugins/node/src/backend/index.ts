@@ -1,10 +1,18 @@
-import Router from "@koa/router";
 import type Koa from "koa";
-import type { PanelPluginContext } from "../../../../src/app/plugins";
+import type { PanelPluginContext } from "../../../../src/app/plugin";
+import { localeMessages } from "../i18n";
+import RemoteRequest, { RemoteRequestTimeoutError } from "./remote_command";
+import remoteServices from "./remote_service";
+import { setPluginContext } from "./runtime";
 
-// Panel side of the node plugin. It owns every HTTP route the node management
-// UI talks to; the panel core only keeps the remote service subsystem itself,
-// because instance routing, sockets and the overview all depend on it.
+// Panel side of the node plugin. It owns the remote-node subsystem itself — the
+// daemon connections, their stored configuration and the request helper — and
+// every HTTP route the node management UI talks to.
+//
+// The subsystem is handed to everyone else as `ctx.remote`, which is why this is
+// the one plugin the panel cannot reach a daemon without: the core resolves it
+// through the shared plugin context, and consumers inject it. It
+// therefore loads early, ahead of the plugins that do.
 
 interface RemoteServiceLike {
   uuid: string;
@@ -31,13 +39,41 @@ function describeNode(remoteService: RemoteServiceLike) {
   };
 }
 
-export function setup(context: PanelPluginContext) {
-  const router = new Router({ prefix: "/api/service" });
-  const remoteServices = context.services.remote;
-  const RemoteRequest = context.services.remoteRequest;
-  const operationLogger = context.services.operationLogger;
-  const validator = context.middleware.validator;
-  const requireAdmin = context.middleware.permission({ level: context.roles.ADMIN });
+export const inject = ["koa", "i18n", "storage", "settings", "middleware", "roles", "operations"];
+
+export async function apply(ctx: PanelPluginContext) {
+  // Before anything else: the subsystem's modules read the logger, the storage,
+  // the panel configuration and `$t` through this handle, and every string they
+  // translate — the connection, authentication and timeout messages — belongs to
+  // this plugin, so the catalogue has to be registered before the first log line.
+  setPluginContext(ctx);
+  ctx.i18n.define(localeMessages);
+
+  // Loads every stored node and starts connecting. Awaited, so `ctx.remote` is
+  // never handed over half-initialised.
+  await remoteServices.initialize();
+
+  // `ctx.set()` from inside a plugin belongs to that plugin: the subsystem — and
+  // with it the panel's ability to reach any daemon — leaves when this plugin
+  // unloads. The core reads it through `remoteSubsystem()`, which says so.
+  ctx.set("remote", {
+    services: remoteServices,
+    Request: RemoteRequest,
+    RequestTimeoutError: RemoteRequestTimeoutError
+  });
+
+  ctx.effect(() => () => {
+    // Sockets are not cordis effects, so closing them is this plugin's job.
+    // `close()` rather than `disconnect()`: this runs while the scope is being
+    // disposed, when there is no `ctx.logger` left to announce it with.
+    for (const service of remoteServices.services.values()) service.close();
+    remoteServices.services.clear();
+  });
+
+  const router = ctx.koa.router("/api/service");
+  const operationLogger = ctx.operations;
+  const validator = ctx.middleware.validator;
+  const requireAdmin = ctx.middleware.permission({ level: ctx.roles.ADMIN });
 
   // Get the list of remote services.
   // Contains only service information, not a list of instance information.
@@ -86,7 +122,7 @@ export function setup(context: PanelPluginContext) {
   router.post(
     "/remote_service",
     requireAdmin,
-    validator({ body: { apiKey: String, port: Number, ip: String, remarks: String } }),
+    validator({ body: { apiKey: String, port: Number, ip: String } }),
     async (ctx: Koa.ParameterizedContext) => {
       const parameter = ctx.request.body;
       // do asynchronous registration
@@ -119,7 +155,7 @@ export function setup(context: PanelPluginContext) {
       const daemonSetting = parameter?.setting || {};
       const daemon = remoteServices.getInstance(uuid);
 
-      if (daemonSetting && daemon?.available) {
+      if (parameter.setting && daemon?.available) {
         await new RemoteRequest(daemon).request("info/setting", {
           ...daemonSetting,
           port: parameter.daemonPort
@@ -131,10 +167,10 @@ export function setup(context: PanelPluginContext) {
       await remoteServices.edit(uuid, {
         port: parameter.port,
         ip: parameter.ip,
-        prefix: parameter.prefix ?? "",
+        prefix: parameter.prefix,
         apiKey: parameter.apiKey,
         remarks: parameter.remarks,
-        remoteMappings: parameter.remoteMappings ?? []
+        remoteMappings: parameter.remoteMappings
       });
 
       operationLogger.log("daemon_config_change", {
@@ -181,6 +217,4 @@ export function setup(context: PanelPluginContext) {
       }
     }
   );
-
-  context.registerRouter(router);
 }

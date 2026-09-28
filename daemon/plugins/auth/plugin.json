@@ -1,0 +1,8 @@
+{
+  "id": "auth",
+  "name": "Authentication",
+  "version": "1.0.0",
+  "description": "Owns the daemon's identity check: the top-level middleware that gates every protocol event, the key verification the panel authenticates with, and the panel IP whitelist. Removing this plugin leaves the daemon answering to anyone who connects.",
+  "priority": 20,
+  "backend": "backend/index.cjs"
+}

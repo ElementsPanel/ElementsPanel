@@ -1,0 +1,586 @@
+@import "./xterm.scss";
+
+// `--background-color` only exists on the theme class that initAppTheme() puts on
+// <body>, so until that happens (and on <html>, which never carries the class)
+// the canvas falls back to the UA default — white. Letting the UA follow the
+// system keeps that window dark on a dark desktop instead of flashing light.
+// The theme classes narrow this to the theme actually in use, which also makes
+// native widgets and scrollbars match.
+html {
+  color-scheme: light dark;
+}
+
+body,
+html {
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: var(--background-color);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+// The mount point is the page scroller in top-header mode. Keep the scrollbar
+// on demand so a track is not permanently visible on pages that fit.
+#app-mount-point {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100svh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  scrollbar-gutter: auto;
+}
+
+// The page shell owns scrolling; its native scrollbar is rendered flush with
+// the viewport edge and appears as a persistent vertical rule on Windows.
+// Keep scrollbars available inside feature panels, but remove only the shell
+// scrollbar from the viewport edge.
+#app-mount-point,
+.main-content.app-layout-sidebar-only {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scrollbar-color: transparent transparent;
+}
+
+#app-mount-point::-webkit-scrollbar,
+.main-content.app-layout-sidebar-only::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+#app-mount-point::-webkit-scrollbar-thumb,
+#app-mount-point::-webkit-scrollbar-track,
+.main-content.app-layout-sidebar-only::-webkit-scrollbar-thumb,
+.main-content.app-layout-sidebar-only::-webkit-scrollbar-track {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+// The browser may promote html/body to the scrolling root even while the
+// application shell is mounted below it. Keep that root scrollbar invisible
+// as well so no one-pixel rule can remain at the viewport edge.
+html,
+body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scrollbar-color: transparent transparent;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+// Sidebar mode owns scrolling on the main content column. Avoid creating a
+// second scrollbar on the mount point when that layout is active.
+#app-mount-point:has(.app-layout-sidebar-only) {
+  overflow-y: hidden;
+  scrollbar-gutter: auto;
+}
+
+.global-text-color {
+  color: var(--text-color) !important;
+}
+
+.vuetify-toast {
+  position: fixed;
+  inset: 0;
+  padding: 0;
+  margin: 16px;
+  margin-inline-end: calc(16px + var(--v-scrollbar-offset, 0px));
+}
+
+.vuetify-toast .v-snackbar__content {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.vuetify-toast .v-snackbar__actions {
+  display: none;
+}
+
+// Use one flat field treatment for every Vuetify input and select.
+.v-field {
+  // Keep fields distinct from the page background in both theme modes.
+  // Component-specific desktop surfaces can still override this locally.
+  background-color: rgb(var(--v-theme-surface));
+  box-shadow: none !important;
+}
+
+// Vuetify splits a field's visible text between the native input, the select
+// selection wrapper, and the floating label. Keep all of them tied to the
+// application theme so light mode never inherits a white-on-white value.
+.v-field,
+.v-field__input,
+.v-field__input input,
+.v-field__input textarea,
+.v-field-label,
+.v-select__selection-text,
+.v-autocomplete__selection-text,
+.v-combobox__selection-text,
+.v-field__prepend-inner > .v-icon,
+.v-field__append-inner > .v-icon {
+  color: var(--text-color) !important;
+}
+
+.v-field__input input::placeholder,
+.v-field__input textarea::placeholder {
+  color: var(--text-color) !important;
+  opacity: 0.55 !important;
+}
+
+// Select/autocomplete menus are teleported outside the component that opened
+// them, so their list text and surface need a global theme rule as well.
+.v-select__content,
+.v-autocomplete__content,
+.v-combobox__content {
+  background-color: rgb(var(--v-theme-surface)) !important;
+  color: var(--text-color) !important;
+}
+
+.v-select__content > .v-list,
+.v-autocomplete__content > .v-list,
+.v-combobox__content > .v-list,
+.v-select__content .v-list,
+.v-autocomplete__content .v-list,
+.v-combobox__content .v-list,
+.v-select__content .v-list-item,
+.v-autocomplete__content .v-list-item,
+.v-combobox__content .v-list-item,
+.v-select__content .v-list-item-title,
+.v-autocomplete__content .v-list-item-title,
+.v-combobox__content .v-list-item-title,
+.v-select__content .v-list-item-subtitle,
+.v-autocomplete__content .v-list-item-subtitle,
+.v-combobox__content .v-list-item-subtitle,
+.v-select__content .v-icon,
+.v-autocomplete__content .v-icon,
+.v-combobox__content .v-icon {
+  color: var(--text-color) !important;
+}
+
+.v-select__content > .v-list,
+.v-autocomplete__content > .v-list,
+.v-combobox__content > .v-list,
+.v-select__content .v-list,
+.v-autocomplete__content .v-list,
+.v-combobox__content .v-list {
+  background-color: rgb(var(--v-theme-surface)) !important;
+}
+
+// Text/plain buttons inherit their parent color when no explicit Vuetify
+// color is supplied. Bind those neutral actions to the active theme while
+// leaving `primary`, `error`, and other explicitly colored buttons intact.
+.v-btn--variant-text:not([class*="text-"]):not([class*="bg-"]),
+.v-btn--variant-plain:not([class*="text-"]):not([class*="bg-"]),
+.v-btn--variant-tonal:not([class*="text-"]):not([class*="bg-"]),
+.v-btn--variant-outlined:not([class*="text-"]):not([class*="bg-"]) {
+  color: var(--text-color) !important;
+}
+
+.v-field::before,
+.v-field::after,
+.v-field__outline {
+  display: none !important;
+}
+
+.global-bg-color {
+  background-color: var(--background-color) !important;
+}
+
+// Card surfaces across the app follow Vuetify's `rounded="xl"` scale so panels
+// and the cards nested inside them share one corner radius.
+.global-card-container-shadow {
+  border-radius: var(--app-dialog-radius);
+}
+
+.global-action-float-enter-active,
+.global-action-float-leave-active {
+  transition: all 0.4s ease;
+  opacity: 1 !important;
+  transform: scale(1);
+  position: absolute;
+}
+
+.global-action-float-enter-from,
+.global-action-float-leave-to {
+  opacity: 0 !important;
+  transform: scale(0.96);
+  position: absolute;
+}
+
+.global-app-container {
+  display: flex;
+  flex-direction: column;
+  max-width: var(--app-max-width);
+  height: 100svh;
+  margin: auto;
+
+  &:has(.app-layout-sidebar-only) {
+    max-width: 100%;
+  }
+}
+
+.app-shell-content {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.app-shell-content--sidebar {
+  display: flex;
+  min-width: 0;
+}
+
+.app-sidebar-shell {
+  flex: 0 0 240px;
+  width: 240px;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  visibility: visible;
+  transition:
+    width 0.2s ease,
+    flex-basis 0.2s ease,
+    visibility 0s linear 0s;
+
+  > .left-sidebar {
+    transform: translateX(0);
+    transition: transform 0.2s ease;
+  }
+}
+
+.app-sidebar-shell--collapsed {
+  flex-basis: 0;
+  width: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    width 0.2s ease,
+    flex-basis 0.2s ease,
+    visibility 0s linear 0.2s;
+
+  > .left-sidebar {
+    transform: translateX(-100%);
+  }
+}
+
+.app-layout-sidebar-only {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: auto;
+
+  .breadcrumbs,
+  .main-layout-container,
+  .plugin-config-page {
+    margin: 0 auto;
+    width: calc(100% - 48px) !important;
+    max-width: var(--app-max-width) !important;
+  }
+
+  .main-layout-container {
+    box-sizing: border-box;
+    padding-left: 12px;
+    padding-right: 12px;
+
+    >.v-row {
+      width: 100%;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+  }
+}
+
+.main-content.app-layout-sidebar-only {
+  flex: 1 1 auto;
+  min-width: 0;
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+@media (max-width: 1400px) {
+  .global-app-container {
+    margin: 0 24px;
+  }
+
+  .global-app-container:has(.app-layout-sidebar-only) {
+    margin: 0;
+  }
+}
+
+@media (max-width: 992px) {
+  .global-app-container {
+    margin: 0 12px 60px;
+  }
+}
+
+// For markdown
+.global-markdown-html {
+  img {
+    border: 0;
+    border-radius: 12px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: 16/9;
+  }
+
+  ul,
+  ol {
+    margin-left: 0;
+    padding-left: 16px;
+  }
+
+  .app-dark-theme {
+    img {
+      filter: brightness(0.7);
+    }
+  }
+
+  blockquote,
+  pre {
+    background-color: var(--color-gray-3);
+    padding: 8px;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  table {
+    width: 100%;
+    margin-bottom: 10px;
+
+    tbody {
+      width: 100%;
+    }
+
+    td,
+    th {
+      text-align: center;
+      padding: 8px;
+      border: 1px solid var(--color-gray-4);
+    }
+
+    th {
+      background-color: var(--color-gray-2);
+    }
+  }
+}
+
+:root {
+  --app-dialog-radius: 24px;
+}
+
+.v-dialog > .v-overlay__content {
+  border-radius: var(--app-dialog-radius) !important;
+}
+
+.v-bottom-sheet > .v-overlay__content > .v-card,
+.v-bottom-sheet > .v-overlay__content > form > .v-card,
+.v-overlay__content.v-bottom-sheet__content > .v-card,
+.v-overlay__content.v-bottom-sheet__content > form > .v-card {
+  border-radius: var(--app-dialog-radius) var(--app-dialog-radius) 0 0 !important;
+}
+
+.v-overlay__content > .v-card,
+.v-overlay__content > .v-sheet {
+  border-radius: inherit !important;
+}
+
+.main-layout-container>.v-row {
+  width: 100%;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.main-layout-container {
+  min-width: 0;
+}
+
+// Vuetify tooltips are teleported to the overlay container, so keep their
+// contrast independent of the surrounding page or plugin styles.
+.v-tooltip>.v-overlay__content {
+  background: #262626 !important;
+  color: #ffffff !important;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+}
+
+// Custom Top Progress Bar
+#top-progress-bar {
+  pointer-events: none;
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: #2982ff;
+  opacity: 0;
+  transition: width 0.3s ease, opacity 0.4s ease;
+}
+
+#top-progress-bar.active {
+  opacity: 1;
+}
+
+// Scrollbar
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  box-shadow: inset 0 0 5px rgba(69, 69, 69, 0.082);
+  background: #74717167;
+}
+
+*::-webkit-scrollbar-track {
+  border-radius: 4px;
+  background: transparent;
+}
+
+// Vuetify keeps the native slider element for its selected-tab animation.
+// Draw a shorter, heavier indicator inside it so the movement animation is
+// preserved while the visible handle is inset from both sides.
+.v-btn.v-tab .v-tab__slider {
+  height: 4px !important;
+  background: transparent !important;
+}
+
+.v-btn.v-tab .v-tab__slider::after {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 40%;
+  height: 4px;
+  border-radius: 4px 4px 0 0;
+  background-color: currentColor;
+  content: "";
+  transform: translateX(-50%);
+}
+
+.package-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: space-between;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.package-image-container {
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.package-info {
+  flex: 1;
+}
+
+.package-action {
+  display: flex;
+  justify-content: center;
+}
+
+.download-button {
+  margin: 0 auto;
+  transition: all 0.3s ease;
+  max-width: 140px;
+}
+
+.package-image {
+  user-select: none;
+  position: relative;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  height: 160px;
+  background-color: var(--color-gray-1);
+}
+
+.v-card:hover .download-button {
+  transform: scale(1.08);
+  box-shadow:
+    0 8px 20px rgba(24, 144, 255, 0.4),
+    0 0 15px rgba(24, 144, 255, 0.2);
+  background: linear-gradient(45deg, #1890ff, #40a9ff);
+  border: none;
+  animation: pulse-glow 2s infinite;
+}
+
+.package-subtitle {
+  cursor: pointer;
+  background-color: var(--card-bottom-background-color);
+  color: rgb(255, 255, 255) !important;
+  padding: 8px;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  text-align: center;
+  z-index: 1;
+  margin: 0;
+}
+
+.package-image-container-summary {
+  position: relative;
+}
+
+.selected {
+  box-shadow: inset 0 0 0 1px var(--color-blue-6) !important;
+  user-select: none;
+  transition: all 0.3s;
+
+  &:hover {
+    box-shadow: inset 0 0 0 1.5px var(--color-blue-6);
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow:
+      0 8px 20px rgba(24, 144, 255, 0.4),
+      0 0 15px rgba(24, 144, 255, 0.2);
+  }
+
+  50% {
+    box-shadow:
+      0 8px 25px rgba(24, 144, 255, 0.6),
+      0 0 25px rgba(24, 144, 255, 0.4);
+  }
+}
+
+.compact-btn-right {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+.compact-btn-left {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}

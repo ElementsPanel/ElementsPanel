@@ -1,0 +1,5 @@
+{
+  "TXT_CODE_DAEMON_PLUGIN_ESSENTIAL_DISABLE": "O servidor web não pode ser desativado remotamente: o painel perderia a conexão pela qual administra este daemon. Defina enabled como false no plugin.json dele no host.",
+  "TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED": "É necessário informar o id do plugin.",
+  "TXT_CODE_DAEMON_PLUGIN_SELF_DISABLE": "O gerenciador de plugins não pode desativar a si mesmo: o painel perderia os eventos pelos quais administra este daemon. Defina enabled como false no plugin.json dele no host."
+}

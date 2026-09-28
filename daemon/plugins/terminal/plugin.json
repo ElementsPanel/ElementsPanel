@@ -1,0 +1,8 @@
+{
+  "id": "terminal",
+  "name": "Terminal",
+  "version": "1.0.0",
+  "description": "Owns the daemon terminal stream protocol and stream authentication.",
+  "priority": 110,
+  "backend": "backend/index.cjs"
+}

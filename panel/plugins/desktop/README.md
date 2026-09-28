@@ -5,6 +5,10 @@ theme variables and icons. Its backend entry provides the authenticated
 `/api/overview/desktop_layout` endpoints and keeps existing user layouts in
 `data/desktop_layouts`.
 
+Mod management is contributed by `plugins/mod` through `ctx.actions.instance()`.
+The desktop shell only migrates its legacy window identifier; it does not import
+the manager, call its API or decide whether it is available.
+
 Set `enabled` to `false` in `plugin.json` to exclude it when plugins are
 discovered. The frontend entry is emitted to `dist/plugins/desktop/`, then
 collected under `production-code/web/plugins/desktop/frontend/`; it can be
@@ -16,3 +20,9 @@ Removing the production
 `enabled` to `false` prevents the frontend plugin from appearing in the runtime
 manifest. The packaged `backend/` entry is loaded when the panel process
 starts.
+
+Business windows are contributed through the console-owned `ctx.desktop`
+registry. Instance management and configuration live in `plugins/instance`, and
+the terminal selector lives in `plugins/terminal`. Desktop depends on neither
+plugin. It persists view ids and props, restores only available valid views, and
+closes a provider's windows when that provider unloads.

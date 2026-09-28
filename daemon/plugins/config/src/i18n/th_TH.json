@@ -1,0 +1,5 @@
+{
+  "TXT_CODE_DAEMON_PLUGIN_ESSENTIAL_DISABLE": "ไม่สามารถปิดใช้งานเว็บเซิร์ฟเวอร์จากระยะไกลได้ แผงควบคุมจะเสียการเชื่อมต่อที่ใช้จัดการดีมอนนี้ กรุณาตั้ง enabled เป็น false ใน plugin.json ของมันบนเครื่องโฮสต์",
+  "TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED": "ต้องระบุรหัสปลั๊กอิน",
+  "TXT_CODE_DAEMON_PLUGIN_SELF_DISABLE": "ตัวจัดการปลั๊กอินปิดใช้งานตัวเองไม่ได้ แผงควบคุมจะเสียอีเวนต์ที่ใช้จัดการดีมอนนี้ กรุณาตั้ง enabled เป็น false ใน plugin.json ของมันบนเครื่องโฮสต์"
+}

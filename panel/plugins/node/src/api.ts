@@ -53,6 +53,7 @@ export const connectNode = useDefineApi<
   any
 >({
   url: "/api/service/link_remote_service",
-  method: "GET"
+  method: "GET",
+  forceRequest: true
 });
 

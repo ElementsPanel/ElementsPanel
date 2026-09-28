@@ -1,0 +1,5 @@
+{
+  "TXT_CODE_DAEMON_PLUGIN_ESSENTIAL_DISABLE": "Web サーバーはリモートから無効にできません。パネルがこのデーモンを管理している接続を失います。ホスト上で plugin.json の enabled を false に設定してください。",
+  "TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED": "プラグイン ID を指定してください。",
+  "TXT_CODE_DAEMON_PLUGIN_SELF_DISABLE": "プラグイン管理は自身を無効にできません。パネルがこのデーモンを管理しているイベントを失います。ホスト上で plugin.json の enabled を false に設定してください。"
+}

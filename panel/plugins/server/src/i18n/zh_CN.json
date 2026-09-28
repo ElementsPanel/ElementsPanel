@@ -1,0 +1,22 @@
+{
+  "TXT_CODE_233624ad": "网页访问端口，请填写一个纯数字，默认端口是 23333 端口。",
+  "TXT_CODE_2b85af6d": "如果您正在使用反向代理访问面板，请开启此选项。面板将会从特定的请求头来获取真实IP。",
+  "TXT_CODE_328191e": "适用于主机上拥有多张网卡多个IP地址的情况，如果您只有一个公网IP，那么请不要配置此项。",
+  "TXT_CODE_405cd346": "跨域请求 API 接口",
+  "TXT_CODE_514e064a": "面板绑定IP",
+  "TXT_CODE_6655c905": "HTTP 响应将会加入 access-control-allow-origin: *，可能会降低安全性，但是会提高开发扩展性。",
+  "TXT_CODE_66aeac82": "反向代理请求头",
+  "TXT_CODE_7f0017d2": "面板端口",
+  "TXT_CODE_SERVER_PREFIX": "路径前缀",
+  "TXT_CODE_SERVER_PREFIX_TIP": "让面板运行在子路径下，例如 /panel。留空则从根路径提供服务。",
+  "TXT_CODE_SERVER_RESTART_TIP": "这些设置在 Web 服务器启动时生效，修改后需要重启面板。",
+  "TXT_CODE_SERVER_SSL": "启用 SSL/TLS (HTTPS)",
+  "TXT_CODE_SERVER_SSL_KEY": "私钥文件 (.key)",
+  "TXT_CODE_SERVER_SSL_KEY_TIP": "私钥文件路径，可以是绝对路径或相对于面板目录的路径。",
+  "TXT_CODE_SERVER_SSL_PEM": "证书文件 (.pem)",
+  "TXT_CODE_SERVER_SSL_PEM_TIP": "证书文件路径，可以是绝对路径或相对于面板目录的路径。",
+  "TXT_CODE_SERVER_SSL_TIP": "使用下方的证书通过 HTTPS 提供服务，两个文件都必须填写。",
+  "TXT_CODE_SERVER_TITLE": "Web 服务器",
+  "TXT_CODE_f0789d81": "反向代理模式",
+  "TXT_CODE_fd8bc51f": "当反向代理模式开启时，面板将会从这个请求头中获取用户真实IP。"
+}

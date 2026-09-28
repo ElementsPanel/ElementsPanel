@@ -1,0 +1,22 @@
+{
+  "TXT_CODE_233624ad": "Webseitenzugriffsport, bitte geben Sie reine Zahlen ein, der Standardport ist 23333.",
+  "TXT_CODE_2b85af6d": "Wenn Sie über einen Reverse-Proxy auf das Panel zugreifen, aktivieren Sie diese Option. Das Panel liest Ihre echte IP-Adresse aus einem bestimmten Request-Header.",
+  "TXT_CODE_328191e": "Es eignet sich für Situationen, in denen der Host über mehrere Netzwerkkarten und mehrere IP-Adressen verfügt. Wenn Sie nur eine öffentliche IP haben, legen Sie dieses Element bitte nicht fest.",
+  "TXT_CODE_405cd346": "API-Schnittstelle für domänenübergreifende Anfragen",
+  "TXT_CODE_514e064a": "Panel-Bindungs-IP",
+  "TXT_CODE_6655c905": "Die HTTP-Antwort fügt access-control-allow-origin: * hinzu, was möglicherweise die Sicherheit verringert, aber die Skalierbarkeit der Entwicklung verbessert.",
+  "TXT_CODE_66aeac82": "Reverse-Proxy-Request-Header",
+  "TXT_CODE_7f0017d2": "Anschluss für Panel-Anschluss",
+  "TXT_CODE_SERVER_PREFIX": "Pfadpräfix",
+  "TXT_CODE_SERVER_PREFIX_TIP": "Betreibt das Panel unter einem Unterpfad, zum Beispiel /panel. Leer lassen, um es im Stammverzeichnis bereitzustellen.",
+  "TXT_CODE_SERVER_RESTART_TIP": "Diese Einstellungen werden beim Start des Webservers angewendet. Starten Sie das Panel neu, damit eine Änderung wirksam wird.",
+  "TXT_CODE_SERVER_SSL": "SSL/TLS (HTTPS) aktivieren",
+  "TXT_CODE_SERVER_SSL_KEY": "Datei mit privatem Schlüssel (.key)",
+  "TXT_CODE_SERVER_SSL_KEY_TIP": "Pfad zur Datei mit dem privaten Schlüssel, absolut oder relativ zum Panel-Verzeichnis.",
+  "TXT_CODE_SERVER_SSL_PEM": "Zertifikatsdatei (.pem)",
+  "TXT_CODE_SERVER_SSL_PEM_TIP": "Pfad zur Zertifikatsdatei, absolut oder relativ zum Panel-Verzeichnis.",
+  "TXT_CODE_SERVER_SSL_TIP": "Stellt das Panel über HTTPS mit dem untenstehenden Zertifikat bereit. Beide Dateien sind erforderlich.",
+  "TXT_CODE_SERVER_TITLE": "Webserver",
+  "TXT_CODE_f0789d81": "Reverse-Proxy-Modus",
+  "TXT_CODE_fd8bc51f": "Wenn der Reverse-Proxy-Modus aktiviert ist, liest das Panel die echte IP-Adresse des Benutzers aus diesem Request-Header aus."
+}

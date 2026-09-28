@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
 import { getRandomId } from "@/tools/randId";
-import { Flex } from "ant-design-vue";
 import { onMounted, watch } from "vue";
 import { useSimpleChart } from "@/hooks/useOverviewChart";
+import { VCol, VRow } from "vuetify/components";
 
 const props = defineProps<{
   cpuData: number[];
@@ -55,22 +55,22 @@ watch(props, () => {
 
 <template>
   <div class="node-simple-chart" style="width: 100%">
-    <a-row :gutter="[24, 24]">
-      <a-col :span="12">
-        <Flex justify="space-between" align="center">
+    <VRow density="compact">
+      <VCol cols="12" sm="6">
+        <div class="usage-header">
           <span class="usage-title">{{ t("TXT_CODE_eca8f1b3") }}</span>
           <span class="usage-info">{{ cpuUsage }}</span>
-        </Flex>
+        </div>
         <div :id="chartCpuDomId" class="node-chart-container"></div>
-      </a-col>
-      <a-col :span="12">
-        <Flex justify="space-between" align="center">
+      </VCol>
+      <VCol cols="12" sm="6">
+        <div class="usage-header">
           <span class="usage-title">{{ t("TXT_CODE_6ca6667f") }}</span>
           <span class="usage-info">{{ memUsage }}</span>
-        </Flex>
+        </div>
         <div :id="chartMemDomId" class="node-chart-container"></div>
-      </a-col>
-    </a-row>
+      </VCol>
+    </VRow>
   </div>
 </template>
 
@@ -80,6 +80,11 @@ watch(props, () => {
     height: 78px;
     width: 100%;
     margin-top: 16px;
+  }
+  .usage-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
   .usage-title {
     opacity: 1;

@@ -3,50 +3,47 @@ import { Socket } from "socket.io";
 // Application instance data stream forwarding adapter
 export default class InstanceStreamListener {
   public readonly listenMap = new Map<string, Socket[]>();
-
-  public constructor() {}
+  private readonly disconnectHandlers = new Map<Socket, () => void>();
 
   public requestForward(socket: Socket, instanceUuid: string) {
-    if (this.listenMap.has(instanceUuid)) {
-      const sockets = this.listenMap.get(instanceUuid);
-      if (!sockets) return;
-      for (const iterator of sockets)
-        if (iterator.id === socket.id)
-          throw new Error(
-            `This Socket ${socket.id} already exists in the specified instance listening table`
-          );
-      sockets.push(socket);
-    } else {
-      this.listenMap.set(instanceUuid, [socket]);
+    const sockets = this.listenMap.get(instanceUuid) ?? [];
+    if (sockets.some((listener) => listener.id === socket.id)) return;
+    sockets.push(socket);
+    this.listenMap.set(instanceUuid, sockets);
+    if (!this.disconnectHandlers.has(socket)) {
+      const disconnect = () => {
+        for (const uuid of this.listenMap.keys()) this.cannelForward(socket, uuid);
+      };
+      this.disconnectHandlers.set(socket, disconnect);
+      socket.once("disconnect", disconnect);
     }
   }
 
   public cannelForward(socket: Socket, instanceUuid: string) {
-    if (!this.listenMap.has(instanceUuid))
-      throw new Error(`The specified ${instanceUuid} does not exist in the listening table`);
-    const socketList = this.listenMap.get(instanceUuid);
-    socketList?.forEach((v, index) => {
-      if (v.id === socket.id) socketList?.splice(index, 1);
-    });
+    const remaining = this.listenMap
+      .get(instanceUuid)
+      ?.filter((listener) => listener.id !== socket.id);
+    if (remaining?.length) this.listenMap.set(instanceUuid, remaining);
+    else this.listenMap.delete(instanceUuid);
+    if (![...this.listenMap.values()].some((sockets) => sockets.includes(socket))) {
+      const disconnect = this.disconnectHandlers.get(socket);
+      if (disconnect) socket.off("disconnect", disconnect);
+      this.disconnectHandlers.delete(socket);
+    }
   }
 
   public forward(instanceUuid: string, data: any) {
-    const sockets = this.listenMap.get(instanceUuid);
-    sockets?.forEach((socket) => {
-      if (socket && socket.connected) socket.emit("instance/stdout", data);
-    });
+    this.forwardViaCallback(instanceUuid, (socket) => socket.emit("instance/stdout", data));
   }
 
   public forwardViaCallback(instanceUuid: string, callback: (socket: Socket) => void) {
-    if (this.listenMap.has(instanceUuid)) {
-      const sockets = this.listenMap.get(instanceUuid);
-      sockets?.forEach((socket) => {
-        if (socket && socket.connected) callback(socket);
-      });
+    for (const socket of this.listenMap.get(instanceUuid) ?? []) {
+      if (socket.connected) callback(socket);
+      else this.cannelForward(socket, instanceUuid);
     }
   }
 
   public hasListenInstance(instanceUuid: string) {
-    return this.listenMap.has(instanceUuid) && this.listenMap?.get(instanceUuid)!.length > 0;
+    return this.listenMap.get(instanceUuid)?.some((socket) => socket.connected) ?? false;
   }
 }

@@ -118,13 +118,25 @@ for (const item of fs.readdirSync(sourceRoot, { withFileTypes: true })) {
     ? frontendManifest.find((entry) => entry?.assetDirectory === item.name)
     : null;
   const builtPluginDirectory = path.join(buildRoot, item.name);
-  if (manifestEntry?.entry && fs.existsSync(builtPluginDirectory)) {
-    copyDirectory(builtPluginDirectory, outputDirectory);
-    const entryPath = toPosix(manifestEntry.entry);
-    const pluginPrefix = `${item.name}/`;
-    packagedMetadata.frontend = entryPath.startsWith(pluginPrefix)
-      ? entryPath.slice(pluginPrefix.length)
-      : entryPath;
+  const entryPath = typeof manifestEntry?.entry === "string" ? toPosix(manifestEntry.entry) : "";
+  const builtEntry = path.resolve(buildRoot, entryPath);
+  const resolvedBuildRoot = path.resolve(buildRoot);
+  const entryParts = entryPath.split("/").filter(Boolean);
+  const entryOwner = entryParts.shift();
+  const packagedEntry = entryParts.join("/");
+  const validBuiltEntry =
+    entryOwner &&
+    packagedEntry &&
+    builtEntry.startsWith(`${resolvedBuildRoot}${path.sep}`) &&
+    fs.existsSync(builtEntry) &&
+    fs.statSync(builtEntry).isFile();
+  if (validBuiltEntry) {
+    // Normally the entry owner equals the plugin folder. Copying the actual
+    // owner as a fallback also keeps packages valid when a bundler factors an
+    // entry into another plugin-owned directory.
+    copyDirectory(path.join(buildRoot, entryOwner), outputDirectory);
+    if (entryOwner !== item.name) copyDirectory(builtPluginDirectory, outputDirectory);
+    packagedMetadata.frontend = packagedEntry;
     delete packagedMetadata.ui;
     packagedMetadata.styles = packageFrontendStyles(
       Array.isArray(manifestEntry.styles) ? manifestEntry.styles : [],

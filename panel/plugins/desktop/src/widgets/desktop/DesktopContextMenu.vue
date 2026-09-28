@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref, watch, type Component } from "vue";
+import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+import { VIcon, VList, VListItem, VListItemTitle } from "vuetify/components";
 
 export interface ContextMenuItem {
     label: string;
-    icon?: Component | string | null;
+    icon?: string | null;
     action: () => void;
-    divider?: boolean;
 }
 
 const props = defineProps<{
@@ -70,10 +70,6 @@ const handleClickOutside = () => {
     }
 };
 
-const isComponent = (icon: unknown): icon is Component => {
-    return icon !== null && icon !== undefined && typeof icon !== "string";
-};
-
 onMounted(() => {
     document.addEventListener("click", handleClickOutside);
 });
@@ -87,16 +83,17 @@ onUnmounted(() => {
     <Transition name="ctx-menu">
         <div v-if="visible" ref="menuRef" class="desktop-context-menu"
             :style="{ left: `${adjustedX}px`, top: `${adjustedY}px` }" @click.stop>
-            <div v-for="(item, index) in items" :key="index">
-                <div v-if="item.divider" class="ctx-menu__divider"></div>
-                <div v-else class="ctx-menu__item" @click="handleClick(item)">
-                    <span v-if="item.icon" class="ctx-menu__icon">
-                        <component :is="item.icon" v-if="isComponent(item.icon)" />
-                        <template v-else>{{ item.icon }}</template>
-                    </span>
-                    <span class="ctx-menu__label">{{ item.label }}</span>
-                </div>
-            </div>
+            <VList class="ctx-menu__list" density="compact" bg-color="transparent">
+                <VListItem v-for="(item, index) in items" :key="index"
+                    class="ctx-menu__item" rounded="xl" @click="handleClick(item)">
+                    <template #prepend>
+                        <span v-if="item.icon" class="ctx-menu__icon">
+                            <VIcon :icon="item.icon" size="small" />
+                        </span>
+                    </template>
+                    <VListItemTitle class="ctx-menu__label">{{ item.label }}</VListItemTitle>
+                </VListItem>
+            </VList>
         </div>
     </Transition>
 </template>
@@ -108,7 +105,6 @@ onUnmounted(() => {
     background: var(--desktop-menu-bg);
     backdrop-filter: saturate(180%) blur(24px);
     border-radius: 8px;
-    border: 1px solid var(--desktop-menu-border);
     box-shadow: 0 8px 32px var(--desktop-menu-shadow);
     z-index: 100001;
     padding: 4px 0;
@@ -116,11 +112,6 @@ onUnmounted(() => {
 }
 
 .ctx-menu__item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    cursor: pointer;
     color: var(--desktop-menu-text);
     font-size: 13px;
     transition: background-color 0.12s;
@@ -130,6 +121,10 @@ onUnmounted(() => {
     }
 }
 
+.ctx-menu__list {
+    padding: 4px;
+}
+
 .ctx-menu__icon {
     font-size: 14px;
     width: 20px;
@@ -137,12 +132,6 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.ctx-menu__divider {
-    height: 1px;
-    background: var(--desktop-menu-divider);
-    margin: 4px 12px;
 }
 
 .ctx-menu-enter-active {

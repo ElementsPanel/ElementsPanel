@@ -1,28 +1,33 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import { fileContent, touchFile } from "@/services/apis/fileManager";
+import type { FrontendFileManagerService } from "@/plugin";
+import { ctx, usePluginService } from "@/plugin/context";
 import {
     createAsyncTask,
     queryAsyncTask
 } from "@/services/apis/instance";
-import { getPanelFrontendService } from "@/pluginServices";
-import {
-    CloudDownloadOutlined,
-    DeleteOutlined,
-    EditOutlined,
-    ExclamationCircleOutlined,
-    LoadingOutlined,
-    PlusCircleOutlined,
-    RollbackOutlined,
-    SyncOutlined
-} from "@ant-design/icons-vue";
-import { message } from "ant-design-vue";
-import { computed, onMounted, onUnmounted, ref, type Component } from "vue";
+import { notifyDesktop } from "@/tools/desktopNotice";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { deleteBackup, getBackupList, restoreBackup } from "../api";
+import { VBtn, VIcon } from "vuetify/components";
 
-const desktopWindowComponent = computed(() =>
-    getPanelFrontendService<Component>("desktop.window")
-);
+const ExclamationCircleOutlined = "mdi-alert-circle-outline";
+
+/**
+ * The file API belongs to `plugins/file`. A backup that edits an
+ * instance file needs it; without the plugin the edit path is unavailable
+ * rather than broken.
+ */
+const fileApi = () => {
+    const service = usePluginService<FrontendFileManagerService>("file");
+    if (!service) throw new Error("file plugin is not installed");
+    return service.api as {
+        fileContent: () => { execute: (config?: any) => Promise<any> };
+        touchFile: () => { execute: (config?: any) => Promise<any> };
+    };
+};
+
+const desktopWindowComponent = computed(() => ctx.desktop.window);
 
 const props = defineProps<{
     instanceUuid: string;
@@ -98,7 +103,7 @@ const fetchBackupList = async () => {
             backupList.value = res.value;
         }
     } catch (error: any) {
-        message.error(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_FETCH"));
+        notifyDesktop(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_FETCH"), "error");
     } finally {
         listLoading.value = false;
     }
@@ -128,11 +133,11 @@ const startBackup = async () => {
                     });
                     if (res.value) {
                         taskId.value = res.value.taskId;
-                        message.success(t("TXT_CODE_INSTANCE_BACKUP_STARTED"));
+                        notifyDesktop(t("TXT_CODE_INSTANCE_BACKUP_STARTED"), "success");
                         startQuery();
                     }
                 } catch (error: any) {
-                    message.error(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_START"));
+                    notifyDesktop(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_START"), "error");
                 } finally {
                     loading.value = false;
                 }
@@ -164,7 +169,7 @@ const startQuery = () => {
                     timer = null;
                     fetchBackupList();
                     if (taskStatus.value === 0) {
-                        message.success(t("TXT_CODE_INSTANCE_BACKUP_COMPLETED"));
+                        notifyDesktop(t("TXT_CODE_INSTANCE_BACKUP_COMPLETED"), "success");
                     }
                 }
             }
@@ -191,10 +196,10 @@ const handleDelete = (backupName: string) => {
                             backupName
                         }
                     });
-                    message.success(t("TXT_CODE_28190dbc"));
+                    notifyDesktop(t("TXT_CODE_28190dbc"), "success");
                     fetchBackupList();
                 } catch (error: any) {
-                    message.error(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_DELETE"));
+                    notifyDesktop(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_DELETE"), "error");
                 }
             }
         }
@@ -205,7 +210,7 @@ const handleEditEpbaklst = async () => {
     const filePath = ".epbaklst";
     const fileName = ".epbaklst";
     try {
-        const { execute: readFile } = fileContent();
+        const { execute: readFile } = fileApi().fileContent();
         const res = await readFile({
             params: {
                 daemonId: props.daemonId,
@@ -225,7 +230,7 @@ const handleEditEpbaklst = async () => {
                 epbaklstConfirmDialog.value.show = false;
                 if (val) {
                     try {
-                        const { execute: createFile } = touchFile();
+                        const { execute: createFile } = fileApi().touchFile();
                         await createFile({
                             params: {
                                 daemonId: props.daemonId,
@@ -235,7 +240,7 @@ const handleEditEpbaklst = async () => {
                                 target: filePath
                             }
                         });
-                        const { execute: writeFile } = fileContent();
+                        const { execute: writeFile } = fileApi().fileContent();
                         await writeFile({
                             params: {
                                 daemonId: props.daemonId,
@@ -243,13 +248,13 @@ const handleEditEpbaklst = async () => {
                             },
                             data: {
                                 target: filePath,
-                                text: "$black\n\n# $black = 黑名单匹配；$white = 白名单匹配\n# 该文件使用 .gitignore 语法\n# ---\n# $black = blacklist matching; $white = whitelist matching\n# This file uses .gitignore syntax\n"
+                                text: "$black\n\n# $black = 濮掓稒鍨甸幃鏇㈠础閺囩偛鐖遍梺鏉跨▌缁?white = 闁谎嗘閹洟宕￠弴鐐茬埍闂佹澘纭祅# 閻犲洢鍎查弸鍐╃閺堥潧鈻忛柣?.gitignore 閻犲浂鍘界涵绂眓# ---\n# $black = blacklist matching; $white = whitelist matching\n# This file uses .gitignore syntax\n"
                             }
                         });
-                        message.success(t("TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATED"));
+                        notifyDesktop(t("TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATED"), "success");
                         emit("open-file-editor", filePath, fileName);
                     } catch (error: any) {
-                        message.error(error.message);
+                        notifyDesktop(error.message, "error");
                     }
                 }
             }
@@ -273,9 +278,9 @@ const handleRestore = (backupName: string) => {
                             backupName
                         }
                     });
-                    message.success(t("TXT_CODE_INSTANCE_BACKUP_RESTORE_STARTED"));
+                    notifyDesktop(t("TXT_CODE_INSTANCE_BACKUP_RESTORE_STARTED"), "success");
                 } catch (error: any) {
-                    message.error(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_RESTORE"));
+                    notifyDesktop(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_RESTORE"), "error");
                 }
             }
         }
@@ -312,7 +317,7 @@ onUnmounted(() => {
             <div class="ds-backup-list-container">
                 <div class="list-header">
                     {{ t("TXT_CODE_INSTANCE_BACKUP_LIST") }}
-                    <SyncOutlined :spin="listLoading" class="refresh-btn" @click="fetchBackupList" />
+                    <VIcon icon="mdi-sync" :class="{ 'desktop-icon-spin': listLoading }" class="refresh-btn" @click="fetchBackupList"  />
                 </div>
                 <div v-if="backupList.length > 0" class="backup-list">
                     <div v-for="item in backupList" :key="item.name" class="backup-item">
@@ -325,36 +330,33 @@ onUnmounted(() => {
                             </div>
                         </div>
                         <div class="backup-item__actions">
-                            <button class="action-btn action-btn--restore"
+                            <VBtn icon variant="text" rounded="xl" class="action-btn action-btn--restore"
                                 :title="t('TXT_CODE_INSTANCE_BACKUP_RESTORE')" @click="handleRestore(item.name)">
-                                <RollbackOutlined />
-                            </button>
-                            <button class="action-btn action-btn--delete" :title="t('TXT_CODE_INSTANCE_BACKUP_DELETE')"
+                                <VIcon icon="mdi-restore"  />
+                            </VBtn>
+                            <VBtn icon variant="text" rounded="xl" class="action-btn action-btn--delete" :title="t('TXT_CODE_INSTANCE_BACKUP_DELETE')"
                                 @click="handleDelete(item.name)">
-                                <DeleteOutlined />
-                            </button>
+                                <VIcon icon="mdi-delete-outline"  />
+                            </VBtn>
                         </div>
                     </div>
                 </div>
                 <div v-else-if="!listLoading" class="ds-backup-intro">
-                    <CloudDownloadOutlined class="intro-icon" />
+                    <VIcon icon="mdi-cloud-download-outline" class="intro-icon"  />
                     <p>{{ t("TXT_CODE_INSTANCE_BACKUP_INTRO") }}</p>
                 </div>
                 <div v-else class="list-loading">
-                    <LoadingOutlined />
+                    <VIcon icon="mdi-loading"  />
                 </div>
             </div>
         </div>
         <div class="ds-backup-footer">
-            <button class="ds-dialog-btn ds-dialog-btn--default" :disabled="loading" @click="handleEditEpbaklst">
-                <EditOutlined />
+            <VBtn class="ds-dialog-btn ds-dialog-btn--default" variant="text" rounded="xl" :disabled="loading" @click="handleEditEpbaklst">
                 {{ t("TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST") }}
-            </button>
-            <button class="ds-dialog-btn ds-dialog-btn--primary" :disabled="loading" @click="startBackup">
-                <SyncOutlined v-if="loading" spin />
-                <PlusCircleOutlined v-else />
+            </VBtn>
+            <VBtn class="ds-dialog-btn ds-dialog-btn--primary" variant="text" rounded="xl" :disabled="loading" @click="startBackup">
                 {{ t("TXT_CODE_INSTANCE_BACKUP_CREATE") }}
-            </button>
+            </VBtn>
         </div>
 
         <Teleport to="body">
@@ -367,21 +369,21 @@ onUnmounted(() => {
                     :resizable="false" @close="deleteDialog.resolve && deleteDialog.resolve(false)">
                     <div class="ds-dialog-content">
                         <div class="ds-dialog__body ds-dialog__body--column">
-                            <ExclamationCircleOutlined class="ds-dialog__warn-icon" />
+                            <VIcon icon="mdi-alert-circle-outline" class="ds-dialog__warn-icon"  />
                             <p class="ds-dialog__desc">
                                 {{ t("TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM", { name: deleteDialog.name }) }}
                             </p>
                         </div>
                         <div class="ds-dialog__footer">
-                            <button class="ds-dialog-btn ds-dialog-btn--default"
+                            <VBtn class="ds-dialog-btn ds-dialog-btn--default" variant="text" rounded="xl"
                                 @click="deleteDialog.resolve && deleteDialog.resolve(false)">
                                 {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="ds-dialog-btn ds-dialog-btn--primary"
+                            </VBtn>
+                            <VBtn class="ds-dialog-btn ds-dialog-btn--primary" variant="text" rounded="xl"
                                 style="background: var(--color-red-5); border-color: var(--color-red-5);"
                                 @click="deleteDialog.resolve && deleteDialog.resolve(true)">
                                 {{ t("TXT_CODE_d507abff") }}
-                            </button>
+                            </VBtn>
                         </div>
                     </div>
                 </component>
@@ -399,20 +401,20 @@ onUnmounted(() => {
                     :resizable="false" @close="restoreDialog.resolve && restoreDialog.resolve(false)">
                     <div class="ds-dialog-content">
                         <div class="ds-dialog__body ds-dialog__body--column">
-                            <ExclamationCircleOutlined class="ds-dialog__warn-icon" />
+                            <VIcon icon="mdi-alert-circle-outline" class="ds-dialog__warn-icon"  />
                             <p class="ds-dialog__desc">
                                 {{ t("TXT_CODE_INSTANCE_BACKUP_RESTORE_CONFIRM", { name: restoreDialog.name }) }}
                             </p>
                         </div>
                         <div class="ds-dialog__footer">
-                            <button class="ds-dialog-btn ds-dialog-btn--default"
+                            <VBtn class="ds-dialog-btn ds-dialog-btn--default" variant="text" rounded="xl"
                                 @click="restoreDialog.resolve && restoreDialog.resolve(false)">
                                 {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="ds-dialog-btn ds-dialog-btn--primary"
+                            </VBtn>
+                            <VBtn class="ds-dialog-btn ds-dialog-btn--primary" variant="text" rounded="xl"
                                 @click="restoreDialog.resolve && restoreDialog.resolve(true)">
                                 {{ t("TXT_CODE_d507abff") }}
-                            </button>
+                            </VBtn>
                         </div>
                     </div>
                 </component>
@@ -423,27 +425,26 @@ onUnmounted(() => {
             <Transition name="ds-dialog-fade">
                 <component :is="desktopWindowComponent" v-if="desktopWindowComponent && epbaklstConfirmDialog.show"
                     id="backup-epbaklst-confirm-dialog"
-                    :title="t('TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST')" :icon="ExclamationCircleOutlined"
+                    :title="t('TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST')"
                     :visible="epbaklstConfirmDialog.show" :minimized="false" :maximized="false" :active="true"
                     :initial-width="400" :initial-height="200" :initial-x="windowWidth / 2 - 200"
                     :initial-y="windowHeight / 2 - 100" :z-index="10007" :show-minimize="false" :show-maximize="false"
                     :resizable="false" @close="epbaklstConfirmDialog.resolve && epbaklstConfirmDialog.resolve(false)">
                     <div class="ds-dialog-content">
                         <div class="ds-dialog__body ds-dialog__body--column">
-                            <ExclamationCircleOutlined class="ds-dialog__warn-icon" />
                             <p class="ds-dialog__desc">
                                 {{ t("TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM") }}
                             </p>
                         </div>
                         <div class="ds-dialog__footer">
-                            <button class="ds-dialog-btn ds-dialog-btn--default"
+                            <VBtn class="ds-dialog-btn ds-dialog-btn--default" variant="text" rounded="xl"
                                 @click="epbaklstConfirmDialog.resolve && epbaklstConfirmDialog.resolve(false)">
                                 {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="ds-dialog-btn ds-dialog-btn--primary"
+                            </VBtn>
+                            <VBtn class="ds-dialog-btn ds-dialog-btn--primary" variant="text" rounded="xl"
                                 @click="epbaklstConfirmDialog.resolve && epbaklstConfirmDialog.resolve(true)">
                                 {{ t("TXT_CODE_d507abff") }}
-                            </button>
+                            </VBtn>
                         </div>
                     </div>
                 </component>
@@ -454,27 +455,26 @@ onUnmounted(() => {
             <Transition name="ds-dialog-fade">
                 <component :is="desktopWindowComponent" v-if="desktopWindowComponent && backupConfirmDialog.show"
                     id="backup-confirm-dialog"
-                    :title="t('TXT_CODE_INSTANCE_BACKUP_CREATE')" :icon="ExclamationCircleOutlined"
+                    :title="t('TXT_CODE_INSTANCE_BACKUP_CREATE')"
                     :visible="backupConfirmDialog.show" :minimized="false" :maximized="false" :active="true"
                     :initial-width="400" :initial-height="200" :initial-x="windowWidth / 2 - 200"
                     :initial-y="windowHeight / 2 - 100" :z-index="10006" :show-minimize="false" :show-maximize="false"
                     :resizable="false" @close="backupConfirmDialog.resolve && backupConfirmDialog.resolve(false)">
                     <div class="ds-dialog-content">
                         <div class="ds-dialog__body ds-dialog__body--column">
-                            <ExclamationCircleOutlined class="ds-dialog__warn-icon" />
                             <p class="ds-dialog__desc">
                                 {{ t("TXT_CODE_INSTANCE_BACKUP_CREATE_CONFIRM") }}
                             </p>
                         </div>
                         <div class="ds-dialog__footer">
-                            <button class="ds-dialog-btn ds-dialog-btn--default"
+                            <VBtn class="ds-dialog-btn ds-dialog-btn--default" variant="text" rounded="xl"
                                 @click="backupConfirmDialog.resolve && backupConfirmDialog.resolve(false)">
                                 {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="ds-dialog-btn ds-dialog-btn--primary"
+                            </VBtn>
+                            <VBtn class="ds-dialog-btn ds-dialog-btn--primary" variant="text" rounded="xl"
                                 @click="backupConfirmDialog.resolve && backupConfirmDialog.resolve(true)">
                                 {{ t("TXT_CODE_d507abff") }}
-                            </button>
+                            </VBtn>
                         </div>
                     </div>
                 </component>
@@ -584,7 +584,8 @@ onUnmounted(() => {
     .backup-item {
         background: var(--desktop-window-titlebar-bg);
         border: 1px solid var(--desktop-window-border);
-        border-radius: 8px;
+        border-radius: 16px;
+        overflow: hidden;
         padding: 12px 16px;
         display: flex;
         align-items: center;

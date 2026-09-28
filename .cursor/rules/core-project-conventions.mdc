@@ -11,6 +11,15 @@ The codebase is split into: `web backend (panel/*.*)`, `daemon/node (daemon/*.*)
 - **Web backend**: user management, node connections, auth, and API.
 - **Web frontend**: UI, backend communication; some features talk to the daemon directly to reduce load.
 
+# Plugins
+
+Most features live in plugins, not in the core: `panel/plugins/*`,
+`daemon/plugins/*`. The plugin system is cordis — a plugin exports `apply(ctx)`
+and optional `inject`, and everything it registers is undone when it unloads, so
+a plugin never writes cleanup code. Read `panel/plugins/README.md` before working
+on a plugin, and `daemon/plugins/README.md` for the node side. A plugin must only
+`import type` from the core and from cordis, never at runtime.
+
 # Code requirements
 
 - Prefer **minimal changes**. Before coding, check `hooks/services/stores/utils` in the relevant subproject to avoid duplicate logic.

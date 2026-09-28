@@ -2,22 +2,9 @@ import { useDefineApi } from "@/stores/useDefineApi";
 import type { BaseUserInfo, EditUserInfo, LoginUserInfo, UserInstance } from "@/types/user";
 import type { SsoPublicConfig } from "@/services/apis/user";
 
-// The real /api/auth definitions. The panel core re-exports facades over these
-// (see frontend/src/services/apis/user.ts) so nothing outside this plugin has
+// The real /api/auth definitions. The console plugin re-exports facades over
+// these (see plugins/console/src/services/apis/user.ts) so nothing outside this plugin has
 // to know they exist.
-
-export const panelInstall = useDefineApi<
-  {
-    data: {
-      username: string;
-      password: string;
-    };
-  },
-  any
->({
-  url: "/api/auth/install",
-  method: "POST"
-});
 
 export const loginUser = useDefineApi<
   | {
@@ -46,7 +33,8 @@ export const loginPageInfo = useDefineApi<
 
 export const logoutUser = useDefineApi<any, any>({
   url: "/api/auth/logout",
-  method: "GET"
+  method: "GET",
+  forceRequest: true
 });
 
 export const userInfoApi = useDefineApi<any, LoginUserInfo>({
@@ -227,35 +215,6 @@ export const ssoUnbind = useDefineApi<
   method: "PUT"
 });
 
-export interface AuthSettings {
-  loginInfo: string;
-  loginCheckIp: boolean;
-  totpDriftToleranceSteps: number;
-  ssoEnabled: boolean;
-  ssoType: "oidc" | "oauth2";
-  ssoOnlyMode: boolean;
-  ssoAutoRedirect: boolean;
-  ssoProviderName: string;
-  ssoIconUrl: string;
-  ssoIssuer: string;
-  ssoAuthorizeUrl: string;
-  ssoTokenUrl: string;
-  ssoUserinfoUrl: string;
-  ssoUserIdField: string;
-  ssoScopes: string;
-  ssoClientId: string;
-  ssoClientSecret: string;
-  ssoCallbackUrl: string;
-}
 
-export const getAuthSettings = useDefineApi<any, AuthSettings>({
-  url: "/api/auth/settings",
-  method: "GET"
-});
-
-export const setAuthSettings = useDefineApi<{ data: Partial<AuthSettings> }, string>({
-  url: "/api/auth/settings",
-  method: "PUT"
-});
 
 export type { SsoPublicConfig };

@@ -1,0 +1,5 @@
+{
+  "TXT_CODE_DAEMON_PLUGIN_ESSENTIAL_DISABLE": "Web 服务器不能远程禁用：面板会失去用来管理这个守护进程的连接。请在宿主机上把它的 plugin.json 里的 enabled 设为 false。",
+  "TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED": "必须提供插件 ID。",
+  "TXT_CODE_DAEMON_PLUGIN_SELF_DISABLE": "插件管理无法禁用自己：面板会失去用来管理这个守护进程的事件。请在宿主机上把它的 plugin.json 里的 enabled 设为 false。"
+}

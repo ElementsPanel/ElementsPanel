@@ -1,22 +1,24 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import { fileContent, touchFile } from "@/services/apis/fileManager";
+import type { FrontendFileManagerService } from "@/plugin";
+import { usePluginService } from "@/plugin/context";
 import {
     createAsyncTask,
     queryAsyncTask
 } from "@/services/apis/instance";
+import { message } from "@/tools/vuetifyToast";
+import { Modal } from "@/tools/vuetifyModal";
+import { computed, onUnmounted, ref } from "vue";
+import AppDialog from "@/components/AppDialog.vue";
 import {
-    CloudDownloadOutlined,
-    DeleteOutlined,
-    EditOutlined,
-    ExclamationCircleOutlined,
-    PlusCircleOutlined,
-    RollbackOutlined,
-    SyncOutlined
-} from "@ant-design/icons-vue";
-import { message, Modal } from "ant-design-vue";
-import { h, onUnmounted, ref } from "vue";
-import FileEditor from "@/widgets/instance/dialogs/FileEditor.vue";
+    VBtn,
+    VIcon,
+    VList,
+    VListItem,
+    VListItemSubtitle,
+    VListItemTitle,
+    VProgressCircular
+} from "vuetify/components";
 import { deleteBackup, getBackupList, restoreBackup } from "../api";
 
 const props = defineProps<{
@@ -34,7 +36,32 @@ const taskId = ref<string | null>(null);
 const taskStatus = ref<number>(0);
 const backupList = ref<{ name: string; size: number; time: string }[]>([]);
 const listLoading = ref(false);
-const fileEditorDialog = ref<InstanceType<typeof FileEditor>>();
+const fileEditorDialog = ref<any>();
+
+/**
+ * The file API belongs to `plugins/file`. A backup that edits an
+ * instance file needs it; without the plugin the edit path is unavailable
+ * rather than broken.
+ */
+const fileApi = () => {
+    const service = usePluginService<FrontendFileManagerService>("file");
+    if (!service) throw new Error("file plugin is not installed");
+    return service.api as {
+        fileContent: () => { execute: (config?: any) => Promise<any> };
+        touchFile: () => { execute: (config?: any) => Promise<any> };
+    };
+};
+
+
+/**
+ * The file editor belongs to `plugins/file`. Resolved through a
+ * `computed` so the dialog appears and disappears with the plugin; without it
+ * the button that opens it simply has nothing to open.
+ */
+const fileEditorComponent = computed(
+  () => usePluginService<FrontendFileManagerService>("file")?.FileEditor
+);
+
 let timer: any = null;
 
 const fetchBackupList = async () => {
@@ -90,7 +117,6 @@ const startBackup = async () => {
     if (taskStatus.value === 1 || loading.value) return;
     Modal.confirm({
         title: t("TXT_CODE_INSTANCE_BACKUP_CREATE"),
-        icon: () => h(ExclamationCircleOutlined),
         content: t("TXT_CODE_INSTANCE_BACKUP_CREATE_CONFIRM"),
         onOk: async () => {
             if (taskStatus.value === 1 || loading.value) return;
@@ -159,7 +185,6 @@ const startQuery = () => {
 const handleDelete = (backupName: string) => {
     Modal.confirm({
         title: t("TXT_CODE_71155575"),
-        icon: () => h(ExclamationCircleOutlined),
         content: t("TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM", { name: backupName }),
         okButtonProps: { danger: true },
         onOk: async () => {
@@ -184,7 +209,6 @@ const handleDelete = (backupName: string) => {
 const handleRestore = (backupName: string) => {
     Modal.confirm({
         title: t("TXT_CODE_INSTANCE_BACKUP_RESTORE"),
-        icon: () => h(ExclamationCircleOutlined),
         content: t("TXT_CODE_INSTANCE_BACKUP_RESTORE_CONFIRM", { name: backupName }),
         onOk: async () => {
             try {
@@ -208,7 +232,7 @@ const handleEditEpbaklst = async () => {
     const filePath = ".epbaklst";
     const fileName = ".epbaklst";
     try {
-        const { execute: readFile } = fileContent();
+        const { execute: readFile } = fileApi().fileContent();
         const res = await readFile({
             params: {
                 daemonId: props.daemonId,
@@ -222,11 +246,10 @@ const handleEditEpbaklst = async () => {
     } catch {
         Modal.confirm({
             title: t("TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST"),
-            icon: () => h(ExclamationCircleOutlined),
             content: t("TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM"),
             onOk: async () => {
                 try {
-                    const { execute: createFile } = touchFile();
+                    const { execute: createFile } = fileApi().touchFile();
                     await createFile({
                         params: {
                             daemonId: props.daemonId,
@@ -236,7 +259,7 @@ const handleEditEpbaklst = async () => {
                             target: filePath
                         }
                     });
-                    const { execute: writeFile } = fileContent();
+                    const { execute: writeFile } = fileApi().fileContent();
                     await writeFile({
                         params: {
                             daemonId: props.daemonId,
@@ -244,7 +267,7 @@ const handleEditEpbaklst = async () => {
                         },
                         data: {
                             target: filePath,
-                            text: "$black\n\n# $black = 黑名单匹配；$white = 白名单匹配\n# 该文件使用 .gitignore 语法\n# ---\n# $black = blacklist matching; $white = whitelist matching\n# This file uses .gitignore syntax\n"
+                            text: "$black\n\n# $black = 榛戝悕鍗曞尮閰嶏紱$white = 鐧藉悕鍗曞尮閰峔n# 璇ユ枃浠朵娇鐢?.gitignore 璇硶\n# ---\n# $black = blacklist matching; $white = whitelist matching\n# This file uses .gitignore syntax\n"
                         }
                     });
                     message.success(t("TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATED"));
@@ -272,7 +295,11 @@ const open = () => {
 
 const close = () => {
     visible.value = false;
+};
+
+const afterClose = () => {
     if (timer) clearInterval(timer);
+    timer = null;
     emit("close");
 };
 
@@ -284,65 +311,82 @@ defineExpose({ open });
 </script>
 
 <template>
-    <a-modal v-model:open="visible" :title="t('TXT_CODE_INSTANCE_BACKUP')" width="800px" :footer="null" @cancel="close">
+    <AppDialog
+        v-model:open="visible"
+        :title="t('TXT_CODE_INSTANCE_BACKUP')"
+        :max-width="800"
+        :footer="null"
+        @after-close="afterClose"
+    >
         <div class="instance-backup-container">
             <div class="backup-list-area">
                 <div class="list-header">
-                    <a-button type="text" :loading="listLoading" @click="fetchBackupList" class="refresh-btn">
-                        <template #icon>
-                            <SyncOutlined />
-                        </template>
-                    </a-button>
+                    <VBtn
+                        class="refresh-btn"
+                        icon="mdi-refresh"
+                        variant="text"
+                        :loading="listLoading"
+                        @click="fetchBackupList"
+                    />
                 </div>
-                <a-spin :spinning="listLoading">
-                    <div v-if="backupList.length > 0" class="backup-list">
-                        <a-list :data-source="backupList" :split="false">
-                            <template #renderItem="{ item }">
-                                <a-list-item class="backup-item">
-                                    <a-list-item-meta>
-                                        <template #title>
-                                            <span class="backup-name">{{ item.name }}</span>
-                                        </template>
-                                        <template #description>
-                                            <span>{{ formatSize(item.size) }} | {{ item.time }}</span>
-                                        </template>
-                                    </a-list-item-meta>
-                                    <template #actions>
-                                        <a-button type="link" @click="handleRestore(item.name)">
-                                            <RollbackOutlined /> {{ t("TXT_CODE_INSTANCE_BACKUP_RESTORE") }}
-                                        </a-button>
-                                        <a-button type="link" danger @click="handleDelete(item.name)">
-                                            <DeleteOutlined /> {{ t("TXT_CODE_INSTANCE_BACKUP_DELETE") }}
-                                        </a-button>
-                                    </template>
-                                </a-list-item>
-                            </template>
-                        </a-list>
-                    </div>
-                    <div v-else class="empty-backup">
-                        <CloudDownloadOutlined class="empty-icon" />
-                        <p>{{ t("TXT_CODE_INSTANCE_BACKUP_INTRO") }}</p>
-                    </div>
-                </a-spin>
+                <div v-if="listLoading && backupList.length === 0" class="backup-loading">
+                    <VProgressCircular indeterminate color="primary" size="32" width="3" />
+                </div>
+                <VList v-else-if="backupList.length > 0" class="backup-list">
+                    <VListItem v-for="item in backupList" :key="item.name" class="backup-item" rounded="xl">
+                        <template #prepend>
+                            <VIcon icon="mdi-cloud-check-outline" class="backup-item-icon" />
+                        </template>
+                        <VListItemTitle class="backup-name">{{ item.name }}</VListItemTitle>
+                        <VListItemSubtitle>
+                            {{ formatSize(item.size) }} · {{ item.time }}
+                        </VListItemSubtitle>
+                        <template #append>
+                            <div class="backup-item-actions">
+                                <VBtn
+                                    variant="text"
+                                    prepend-icon="mdi-backup-restore"
+                                    @click="handleRestore(item.name)"
+                                >
+                                    {{ t("TXT_CODE_INSTANCE_BACKUP_RESTORE") }}
+                                </VBtn>
+                                <VBtn
+                                    color="error"
+                                    variant="text"
+                                    prepend-icon="mdi-delete-outline"
+                                    @click="handleDelete(item.name)"
+                                >
+                                    {{ t("TXT_CODE_INSTANCE_BACKUP_DELETE") }}
+                                </VBtn>
+                            </div>
+                        </template>
+                    </VListItem>
+                </VList>
+                <div v-else class="empty-backup">
+                    <VIcon icon="mdi-cloud-outline" class="empty-icon" />
+                    <p>{{ t("TXT_CODE_INSTANCE_BACKUP_INTRO") }}</p>
+                </div>
             </div>
             <div class="backup-footer">
-                <a-button @click="handleEditEpbaklst">
-                    <template #icon>
-                        <EditOutlined />
-                    </template>
+                <VBtn variant="text" @click="close">
+                    {{ t("TXT_CODE_b1dedda3") }}
+                </VBtn>
+                <VBtn variant="text" @click="handleEditEpbaklst">
                     {{ t("TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST") }}
-                </a-button>
-                <a-button type="primary" :loading="loading" @click="startBackup">
-                    <template #icon>
-                        <PlusCircleOutlined />
-                    </template>
+                </VBtn>
+                <VBtn
+                    color="primary"
+                    :loading="loading"
+                    :disabled="taskStatus === 1"
+                    @click="startBackup"
+                >
                     {{ t("TXT_CODE_INSTANCE_BACKUP_CREATE") }}
-                </a-button>
+                </VBtn>
             </div>
         </div>
-    </a-modal>
+    </AppDialog>
 
-    <FileEditor v-if="daemonId && instanceUuid" ref="fileEditorDialog" :daemon-id="daemonId"
+    <component :is="fileEditorComponent" v-if="fileEditorComponent && daemonId && instanceUuid" ref="fileEditorDialog" :daemon-id="daemonId"
         :instance-id="instanceUuid" />
 </template>
 
@@ -350,15 +394,14 @@ defineExpose({ open });
 .instance-backup-container {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
 }
 
 .list-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-weight: 500;
-    margin-bottom: 12px;
+    min-height: 40px;
+    margin-bottom: 4px;
 
     .refresh-btn {
         margin-left: auto;
@@ -368,12 +411,39 @@ defineExpose({ open });
 .backup-list {
     max-height: 400px;
     overflow-y: auto;
+    padding: 0;
+    background: transparent;
 }
 
 .backup-item {
+    min-height: 72px;
+    margin-bottom: 8px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(var(--v-theme-on-surface), 0.035);
+
     .backup-name {
-        font-weight: 500;
+        color: var(--text-color);
+        font-weight: 600;
     }
+}
+
+.backup-item-icon {
+    margin-right: 14px;
+    color: var(--color-gray-8);
+}
+
+.backup-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.backup-loading {
+    display: flex;
+    min-height: 220px;
+    align-items: center;
+    justify-content: center;
 }
 
 .empty-backup {
@@ -382,12 +452,12 @@ defineExpose({ open });
 
     .empty-icon {
         font-size: 64px;
-        color: #d9d9d9;
+        color: var(--color-gray-5);
         margin-bottom: 16px;
     }
 
     p {
-        color: #999;
+        color: var(--color-gray-7);
     }
 }
 
@@ -396,5 +466,22 @@ defineExpose({ open });
     justify-content: flex-end;
     padding-top: 16px;
     gap: 8px;
+}
+
+@media (max-width: 720px) {
+    .backup-item :deep(.v-list-item__append) {
+        align-self: stretch;
+        margin-inline-start: 0;
+        padding-top: 8px;
+    }
+
+    .backup-item-actions {
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .backup-footer {
+        flex-wrap: wrap;
+    }
 }
 </style>

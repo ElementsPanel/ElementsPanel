@@ -1,9 +1,12 @@
 # User Management
 
 > **Removing this plugin removes panel authentication.** The panel then treats
-> every request as an anonymous administrator and every API is open. The OOBE
-> plugin remains available but skips its optional administrator-account step.
-> The default build ships with this plugin installed.
+> every request as an anonymous administrator and every API is open. The default
+> build ships with this plugin installed.
+
+On the first initialization, when no account exists, this plugin creates the
+administrator `epanel` with a random 10-character password. The password is
+logged once by the user plugin immediately after it is persisted.
 
 Owns login, multi-user management, permissions, 2FA, API keys and SSO, on both
 the panel backend and the frontend (including Desktop mode).
@@ -17,7 +20,7 @@ so a second copy would create a second storage subsystem and system config.
 Everything it needs is injected through the plugin context and read via
 `src/backend/runtime.ts`.
 
-`setup()` initializes the user store and calls `context.registerRequestGuard()`,
+`apply()` initializes the user store and calls `ctx.set("guard", ...)`,
 which is what switches the whole panel from "open" to "authenticated". It then
 mounts:
 
@@ -26,7 +29,6 @@ mounts:
 | `POST` | `/api/auth/login` |
 | `GET` | `/api/auth/logout` |
 | `ALL` | `/api/auth/login_info` |
-| `ALL` | `/api/auth/install` |
 | `GET` `POST` `PUT` `DELETE` | `/api/auth` (account CRUD) |
 | `GET` | `/api/auth/search`, `/api/auth/token`, `/api/auth/query_username` |
 | `GET` | `/api/auth/overview` |
@@ -38,9 +40,9 @@ mounts:
 They are nested under one `/api` router in the order the core used to mount
 them, because several share the `/auth/` path and differ only by method.
 
-`/api/auth/status` and `/api/auth/proxy` stay in the panel core
-(`src/app/routers/panel_status_router.ts`): the frontend reads `/status` during
-bootstrap, before any plugin has loaded.
+`/api/auth/status` is owned by this plugin; `/api/auth/proxy` is provided by the
+panel `server` plugin. The frontend reads `/status` during bootstrap, after the
+foundation plugins have loaded.
 
 ### What the core keeps
 
@@ -58,6 +60,7 @@ every call site is unconditional.
 | `identify(ctx)` | session / API key → uuid, user name, role, elevation |
 | `canAccessInstance` | instance ownership |
 | `canUpload` | admin-only multipart uploads |
+| `accessPolicy` | ordinary-user command, file-manager and Java-manager capabilities |
 | `stats` | the login counters the panel overview reports |
 | `accounts`, `users` | session establishment and the user records |
 
@@ -65,67 +68,61 @@ The core's `middleware/permission.ts` is pure late binding: routers declare
 requirements at module load, long before plugins exist, so the guard is resolved
 per request.
 
-Business-mode redeem (`instance_exchange_router`) and the redeem flow in
-`service/exchange_service.ts` genuinely need accounts, so they declare a hard
-dependency through `requireGuardFeature()` and fail with a clear error instead of
-behaving as if everyone were an administrator.
-
 ## Settings
 
-Login page text, the login IP limit, the 2FA drift tolerance and the entire SSO
-block used to sit in the panel's `SystemConfig` and on the Settings page. They
-are authentication settings, so this plugin owns them: `entity/auth_settings.ts`
-defines them, `service/auth_settings.ts` stores them under `AuthSettings/config`
-and `routers/auth_settings_router.ts` serves `/api/auth/settings`. The SSO
-provider plumbing (`service/sso_service.ts`) moved across with them.
+Login page text, the login IP limit, the 2FA drift tolerance, the ordinary-user
+capability switches and the entire SSO block used to sit in the panel's
+`SystemConfig` and on the Settings page. This plugin now owns all of them:
+`entity/auth_settings.ts` defines them, `service/auth_settings.ts` stores them
+under `AuthSettings/config` and `routers/auth_settings_router.ts` serves
+`/api/auth/settings`. The SSO provider plumbing (`service/sso_service.ts`) moved
+across with them.
 
 On first start the plugin copies the values out of the panel's stored
 `SystemConfig` once, so upgrades keep their configuration. `/api/auth/status` no
 longer reports SSO at all; anything that needs to know asks the plugin's public
 `/api/auth/sso/config`.
 
-They are edited through the `config` plugin's page — this plugin exports a
-`configuration.component` (`src/PluginConfig.vue`) rather than adding a tab to
-the panel Settings page.
+They are edited through the `config` plugin's generic page. This plugin declares
+the form with `ctx.settingsForm.declare()`, including its read and write handlers,
+rather than adding a tab to the panel Settings page.
 
 ## Frontend
 
 `src/api.ts` holds the real `/api/auth/*` definitions and is registered as the
-`user.api` service. `frontend/src/services/apis/user.ts` in the core is a facade
-over it, re-exported from `@/services/apis`, so existing call sites are
-unchanged and `useAppStateStore().authEnabled` reports whether this plugin is
-installed.
+`user.api` service. The console plugin's shared API facade re-exports it from
+`@/services/apis`, so existing call sites remain scoped to the loaded plugin and
+`useAppStateStore().authEnabled` reports whether this plugin is installed.
 
 Registered by `src/frontend.ts`:
 
 - Routes `/login`, `/sso/bind`, `/users` (+ `/users/resources`), `/user`
-- Layout cards `LoginCard`, `UserList`, `UserStatusBlock`, `UserInstanceList`,
-  `UserAccessSettings`
+- Fixed login page component `LoginCard`
+- Layout cards `UserList`, `UserStatusBlock`, `UserInstanceList`, `UserAccessSettings`
 - Global component `MyselfInfoDialog`
 - Services `user.api`, `user.desktopLoginWindow`, `user.desktopUsers`,
-  `user.desktopUserInfo`, `user.desktopStartMenuAvatar`,
-  `user.oobeCreateAdminAccount`
+  `user.desktopUserInfo`, `user.desktopStartMenuAvatar`
 
 The Desktop plugin resolves these services at render time and hides the login
 overlay, the "Users" icon, the account window and the start-menu avatar when
 they are missing. `src/desktop/DesktopWindow.vue` and `src/assets.ts` are
 per-plugin copies, the same convention the `node` plugin uses.
 
-The standalone `oobe` plugin owns `/install` and injects
-`user.oobeCreateAdminAccount` for the administrator-account step. The account
-form, validation and `/api/auth/install` request therefore remain owned by this
-plugin even though the surrounding first-run flow does not. If this plugin is
-absent, OOBE skips that optional step and can still complete normally.
-
 ## Translations
 
 `src/i18n/` holds every string only this plugin uses — the login and account
 pages, the user list, the SSO settings block, the Desktop user windows and the
 messages the backend logs or throws. `src/frontend.ts` passes them to the panel
-as `localeMessages`; `src/backend/index.ts` registers the same catalogue with
-the panel's i18next instance before it initializes anything, so a router that
-throws a translated error never depends on the root `languages/` catalogue.
+with `ctx.i18n.define()`, and `src/backend/index.ts` does the same on the panel's
+i18next instance before it initializes anything, so a router that throws a
+translated error never depends on another plugin or a repository-level catalogue.
 
 Strings shared with the panel core or with another plugin (the `desktop`
-window chrome, for instance) stay in `languages/*.json`. Adding a string here
-means adding it to all twelve files in `src/i18n/`.
+window chrome, for instance) stay in the foundational `plugins/i18n` catalogue.
+Adding a string here means adding it to all twelve files in `src/i18n/`.
+
+Account profiles and authentication remain active without the instance plugin.
+Advanced profiles optionally enrich stored instance references through
+`ctx.instances.getDetails`; unavailable enrichment preserves the account response.
+Frontend resource assignment is registered only while instance and node services
+are present; login, SSO and user CRUD keep their own lifetime.

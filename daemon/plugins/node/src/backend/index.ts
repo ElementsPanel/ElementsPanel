@@ -1,8 +1,8 @@
-import type { DaemonPluginContext } from "../../../../src/service/plugins";
+import type { DaemonPluginContext } from "../../../../src/plugin";
 
 // Daemon side of the node plugin. It owns "info/setting", the protocol event
-// the panel node plugin uses to write this node's configuration. The daemon
-// core only reports its configuration through "info/overview".
+// the panel node plugin uses to write this node's configuration. The instance
+// and monitor plugins own the corresponding "info/overview" payload.
 
 // Inlined from mcsmanager-common so the plugin does not depend on how the
 // daemon bundles it.
@@ -26,11 +26,11 @@ function toBoolean(value: unknown): boolean | null {
   return Boolean(value);
 }
 
-const BACKUP_FORMATS = ["zip", "tar.gz", "7z"];
+export const inject = ["protocol", "settings"];
 
-export function setup(context: DaemonPluginContext) {
-  context.registerProtocolHandler("info/setting", async (ctx: any, data: any) => {
-    const config = context.config;
+export function apply(ctx: DaemonPluginContext) {
+  ctx.protocol.on("info/setting", async (routerCtx: any, data: any) => {
+    const config = ctx.settings.config;
     const payload = data || {};
 
     const language = toText(payload.language);
@@ -45,12 +45,9 @@ export function setup(context: DaemonPluginContext) {
     const enableSoftShutdown = toBoolean(payload.enableSoftShutdown);
     const softShutdownSkipDocker = toBoolean(payload.softShutdownSkipDocker);
     const softShutdownWaitSeconds = toNumber(payload.softShutdownWaitSeconds);
-    const instanceBackupPath = toText(payload.instanceBackupPath);
-    const instanceBackupFormat = toText(payload.instanceBackupFormat);
-    const instanceBackupCompressionLevel = toNumber(payload.instanceBackupCompressionLevel);
 
-    if (language) {
-      context.setLanguage(language);
+    if (language && config.followPanelLanguage !== false) {
+      ctx.settings.setLanguage(language);
     }
     if (uploadSpeedRate != null && uploadSpeedRate >= 0) {
       config.uploadSpeedRate = uploadSpeedRate;
@@ -87,22 +84,8 @@ export function setup(context: DaemonPluginContext) {
     ) {
       config.softShutdownWaitSeconds = softShutdownWaitSeconds;
     }
-    if (instanceBackupPath != null) {
-      config.instanceBackupPath = instanceBackupPath;
-    }
-    if (instanceBackupFormat != null && BACKUP_FORMATS.includes(instanceBackupFormat)) {
-      config.instanceBackupFormat = instanceBackupFormat;
-    }
-    if (
-      instanceBackupCompressionLevel != null &&
-      Number.isInteger(instanceBackupCompressionLevel) &&
-      instanceBackupCompressionLevel >= 0 &&
-      instanceBackupCompressionLevel <= 9
-    ) {
-      config.instanceBackupCompressionLevel = instanceBackupCompressionLevel;
-    }
 
-    context.saveConfig();
-    context.protocol.response(ctx, true);
+    ctx.settings.save();
+    ctx.protocol.response(routerCtx, true);
   });
 }

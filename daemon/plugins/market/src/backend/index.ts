@@ -1,4 +1,4 @@
-import type { DaemonPluginContext } from "../../../../src/service/plugins";
+import type { DaemonPluginContext } from "../../../../src/plugin";
 import { localeMessages } from "../i18n";
 import { createInstallCommandClass } from "./install_command";
 import { createQuickInstallTaskClass } from "./quick_install";
@@ -8,16 +8,18 @@ import { createQuickInstallTaskClass } from "./quick_install";
 // the `install` preset reinstalls an existing one. The daemon core keeps
 // neither, so a daemon without this plugin simply cannot install packages.
 
-export function setup(context: DaemonPluginContext) {
-  context.registerLocaleMessages(localeMessages);
+export const inject = ["i18n", "instances", "tasks", "presets"];
 
-  const QuickInstallTask = createQuickInstallTaskClass(context);
-  const MarketInstallCommand = createInstallCommandClass(context, QuickInstallTask);
+export function apply(ctx: DaemonPluginContext) {
+  ctx.i18n.define(localeMessages);
+
+  const QuickInstallTask = createQuickInstallTaskClass(ctx);
+  const MarketInstallCommand = createInstallCommandClass(ctx, QuickInstallTask);
   const ADMIN_ROLE = 10;
 
-  context.registerPresetCommand("install", () => new MarketInstallCommand());
+  ctx.presets.register("install", () => new MarketInstallCommand());
 
-  context.registerAsyncTask("quick_install", {
+  ctx.tasks.register("quick_install", {
     type: QuickInstallTask.TYPE,
     // The instance does not exist yet: the task creates it around the package.
     requiresInstance: false,
@@ -26,7 +28,7 @@ export function setup(context: DaemonPluginContext) {
       const newInstanceName = String(parameter?.newInstanceName ?? "");
       const targetLink = String(parameter?.targetLink ?? "");
       if (!newInstanceName) throw new Error("Instance name is empty!");
-      context.logger.info(`Quick install: Name: ${newInstanceName} | Download: ${targetLink}`);
+      ctx.logger.info(`Quick install: Name: ${newInstanceName} | Download: ${targetLink}`);
       return new QuickInstallTask(newInstanceName, targetLink, parameter?.setupInfo);
     }
   });

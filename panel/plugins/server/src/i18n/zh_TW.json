@@ -1,0 +1,22 @@
+{
+  "TXT_CODE_233624ad": "網頁存取連接埠，請填寫純數字，預設為 23333。",
+  "TXT_CODE_2b85af6d": "如果您正在使用反向代理訪問面板，請開啟此選項。面板將會從特定的請求頭来獲取真實IP。",
+  "TXT_CODE_328191e": "適用於主機上擁有多張網路卡多個 IP 位址的情況，如果您只有一個公網 IP，那麼請不要設定此項目。",
+  "TXT_CODE_405cd346": "跨域請求 API 介面",
+  "TXT_CODE_514e064a": "面板綁定IP",
+  "TXT_CODE_6655c905": "HTTP 回應將會加入 access-control-allow-origin: *，可能會降低安全性，但是會提高開發擴充性。",
+  "TXT_CODE_66aeac82": "反向代理請求頭",
+  "TXT_CODE_7f0017d2": "面板連接埠",
+  "TXT_CODE_SERVER_PREFIX": "路徑前綴",
+  "TXT_CODE_SERVER_PREFIX_TIP": "讓面板運行在子路徑下，例如 /panel。留空則從根路徑提供服務。",
+  "TXT_CODE_SERVER_RESTART_TIP": "這些設定在 Web 伺服器啟動時生效，修改後需要重新啟動面板。",
+  "TXT_CODE_SERVER_SSL": "啟用 SSL/TLS (HTTPS)",
+  "TXT_CODE_SERVER_SSL_KEY": "私鑰檔案 (.key)",
+  "TXT_CODE_SERVER_SSL_KEY_TIP": "私鑰檔案路徑，可以是絕對路徑或相對於面板目錄的路徑。",
+  "TXT_CODE_SERVER_SSL_PEM": "憑證檔案 (.pem)",
+  "TXT_CODE_SERVER_SSL_PEM_TIP": "憑證檔案路徑，可以是絕對路徑或相對於面板目錄的路徑。",
+  "TXT_CODE_SERVER_SSL_TIP": "使用下方的憑證透過 HTTPS 提供服務，兩個檔案都必須填寫。",
+  "TXT_CODE_SERVER_TITLE": "Web 伺服器",
+  "TXT_CODE_f0789d81": "反向代理模式",
+  "TXT_CODE_fd8bc51f": "當反向代理模式開啟時，面板將會從这个請求頭中獲取用戶真實IP。"
+}

@@ -1,0 +1,18 @@
+{
+  "TXT_CODE_d23631cb": "Konsoleneinstellungen",
+  "TXT_CODE_ef650d57": "Analoge Konsole",
+  "TXT_CODE_feeea328": "Erhalten Sie vollständige Konsoleninteraktivität, indem Sie eine Konsolenweiterleitung simulieren. \nEinschließlich der Verwendung der Tabulator-, Strg-Funktionstasten usw.",
+  "TXT_CODE_d6e7f572": "Sollten bei der Nutzung Probleme auftreten, empfiehlt es sich, diese zu schließen.",
+  "TXT_CODE_e1a3b150": "Front-End-Farbwiedergabe",
+  "TXT_CODE_6a515e35": "Die Webseite fügt dem Ausgabeinhalt automatisch eine Farbwiedergabe hinzu, und die gerenderten Farben sind möglicherweise nicht vollständig korrekt.",
+  "TXT_CODE_1295831e": "Wenn die Farbwiedergabefunktion mit der Farbfunktion der Software in Konflikt steht, können Sie diese Funktion deaktivieren.",
+  "TXT_CODE_b91a94f9": "Wagenrücklaufsymbol für die Befehlsausführung",
+  "TXT_CODE_5b2daea0": "Wenn beim Eingeben eines Befehls und Drücken der Eingabetaste nichts passiert, können Sie versuchen, diese Option anzupassen.",
+  "TXT_CODE_b94f13ce": "Unter der Windows-Plattform ist es normalerweise „Wagenrücklauf und Zeilenvorschub“, und unter der Linux/MacOS-Plattform ist es normalerweise „Zeilenvorschub“.",
+  "TXT_CODE_449d1581": "Eingabe- und Ausgabekodierung",
+  "TXT_CODE_d16d82ab": "Wenn der Inhalt in der Konsole verstümmelt ist, können Sie versuchen, die Kodierung zu ändern, um das Problem zu lösen.",
+  "TXT_CODE_bd2559f3": "Kodierung der Konsoleneingabe",
+  "TXT_CODE_6e96b2a9": "Codierung der Konsolenausgabe",
+  "TXT_CODE_365aabd4": "Newline-Symbol",
+  "TXT_CODE_20cec54": "Wagenrücklauf-Zeilenvorschubsymbol"
+}

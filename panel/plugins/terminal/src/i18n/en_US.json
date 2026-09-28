@@ -1,0 +1,18 @@
+{
+  "TXT_CODE_d23631cb": "Terminal Settings",
+  "TXT_CODE_ef650d57": "Emulated Terminal",
+  "TXT_CODE_feeea328": "Gain full terminal interaction capability through an emulated terminal. This includes using Tab, Ctrl keys, and more.",
+  "TXT_CODE_d6e7f572": "If you encounter issues, it is recommended to disable this feature.",
+  "TXT_CODE_e1a3b150": "Color Rendering",
+  "TXT_CODE_6a515e35": "The web page automatically adds color to the output, but the colors may not be entirely accurate.",
+  "TXT_CODE_1295831e": "If the color rendering feature conflicts with the software's built-in color functionality, you can disable this feature.",
+  "TXT_CODE_b91a94f9": "Command Execution Carriage Return",
+  "TXT_CODE_5b2daea0": "If you enter a command and pressing Enter doesn't yield a response, you can try adjusting this option.",
+  "TXT_CODE_b94f13ce": "On Windows platforms, it's generally 'Carriage Return and Line Feed' (\\r\\n), while on Linux/MacOS platforms, it's typically 'Line Feed' (\\n).",
+  "TXT_CODE_449d1581": "Input and Output Encoding",
+  "TXT_CODE_d16d82ab": "If you encounter garbled content in the console, you can try modifying this encoding to resolve the issue.",
+  "TXT_CODE_bd2559f3": "Terminal Input Encoding",
+  "TXT_CODE_6e96b2a9": "Terminal Output Encoding",
+  "TXT_CODE_365aabd4": "Line Feed",
+  "TXT_CODE_20cec54": "Carriage Return and Line Feed"
+}

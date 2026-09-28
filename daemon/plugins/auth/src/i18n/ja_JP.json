@@ -1,0 +1,6 @@
+{
+  "TXT_CODE_auth_router.access": "セッション {{id}}({{address}}) の本人確認が成功しました",
+  "TXT_CODE_auth_router.disconnect": "セッション {{id}}({{address}}) は、長期間 ID が確認されなかったため切断されました。",
+  "TXT_CODE_auth_router.illegalAccess": "不正アクセス",
+  "TXT_CODE_auth_router.notAccess": "セッション {{id}}({{address}}) は {{event}} への不正アクセスを試みたため、現在ブロックされています。"
+}

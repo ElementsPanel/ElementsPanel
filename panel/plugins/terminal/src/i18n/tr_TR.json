@@ -1,0 +1,18 @@
+{
+  "TXT_CODE_d23631cb": "Terminal Ayarları",
+  "TXT_CODE_ef650d57": "Emulated Terminal",
+  "TXT_CODE_feeea328": "Taklit edilmiş bir terminal aracılığıyla tam terminal etkileşimi yeteneği kazanın. Bu, Tab, Ctrl tuşlarını ve daha fazlasını kullanmayı içerir.",
+  "TXT_CODE_d6e7f572": "Sorunlarla karşılaşırsanız, bu özelliği devre dışı bırakmanız önerilir.",
+  "TXT_CODE_e1a3b150": "Renk İşleme",
+  "TXT_CODE_6a515e35": "Web sayfası çıktıya otomatik olarak renk ekler, ancak renkler tam olarak doğru olmayabilir.",
+  "TXT_CODE_1295831e": "Renk oluşturma özelliği yazılımın yerleşik renk işleviyle çakışırsa, bu özelliği devre dışı bırakabilirsiniz.",
+  "TXT_CODE_b91a94f9": "Komut Yürütme Satır Başı",
+  "TXT_CODE_5b2daea0": "Bir komut girdiğinizde Enter tuşuna basmanız bir yanıt vermezse, bu seçeneği ayarlamayı deneyebilirsiniz.",
+  "TXT_CODE_b94f13ce": "Windows platformlarında genellikle 'Satır Başı ve Satır Besleme' (\\r\\n), Linux/MacOS platformlarında ise genellikle 'Satır Besleme' (\\n) şeklindedir.",
+  "TXT_CODE_449d1581": "Giriş ve Çıkış Kodlaması",
+  "TXT_CODE_d16d82ab": "Konsolda bozuk içerikle karşılaşırsanız, sorunu çözmek için bu kodlamayı değiştirmeyi deneyebilirsiniz.",
+  "TXT_CODE_bd2559f3": "Terminal Giriş Kodlaması",
+  "TXT_CODE_6e96b2a9": "Terminal Çıktı Kodlaması",
+  "TXT_CODE_365aabd4": "Satır Besleme",
+  "TXT_CODE_20cec54": "Satır Başı ve Satır Besleme"
+}

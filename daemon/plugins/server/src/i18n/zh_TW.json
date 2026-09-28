@@ -1,0 +1,13 @@
+{
+  "TXT_CODE_DSERVER_IP": "監聽 IP",
+  "TXT_CODE_DSERVER_IP_TIP": "主機有多個位址時有用。留空則監聽全部位址。",
+  "TXT_CODE_DSERVER_PATH_TIP": "絕對路徑，或相對於守護行程目錄的路徑。",
+  "TXT_CODE_DSERVER_PORT": "守護行程連接埠",
+  "TXT_CODE_DSERVER_PORT_TIP": "面板連線使用的連接埠。在守護行程啟動時生效，修改後需要重新啟動。",
+  "TXT_CODE_DSERVER_PREFIX": "路徑前綴",
+  "TXT_CODE_DSERVER_PREFIX_TIP": "讓守護行程運行在子路徑下，例如 /daemon。留空則從根路徑提供服務。",
+  "TXT_CODE_DSERVER_SSL": "啟用 SSL/TLS",
+  "TXT_CODE_DSERVER_SSL_KEY": "私鑰檔案 (.key)",
+  "TXT_CODE_DSERVER_SSL_PEM": "憑證檔案 (.pem)",
+  "TXT_CODE_DSERVER_SSL_TIP": "使用下方的憑證透過 HTTPS 與 WSS 提供服務，兩個檔案都必須填寫。"
+}

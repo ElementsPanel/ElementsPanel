@@ -1,0 +1,102 @@
+import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } from "@/plugin";
+import { t } from "@/lang/i18n";
+import { useAppStateStore } from "@/stores/useAppStateStore";
+import * as fileManagerApi from "./api";
+import UploadBubble from "./components/UploadBubble.vue";
+import { useDownloadFileDialog, useImageViewerDialog, useUploadFileDialog } from "./dialogs";
+import DesktopFileEditor from "./desktop/DesktopFileEditor.vue";
+import DesktopFileManager from "./desktop/DesktopFileManager.vue";
+import DesktopImageViewer from "./desktop/DesktopImageViewer.vue";
+import { getFileConfigAddr, useFileManager } from "./hooks/useFileManager";
+import FileEditor from "./normal/FileEditor.vue";
+import FileManagerAction from "./normal/FileManagerAction.vue";
+import FileManager from "./normal/FileManager.vue";
+import DesktopFileManagerAction from "./desktop/DesktopFileManagerAction.vue";
+import ImageViewer from "./normal/ImageViewer.vue";
+import uploadService, { UploadFiles } from "./services/uploadService";
+import { filterFileName, getFileExtName, getFileIcon, isCompressFile } from "./tools/fileManager";
+import { VIcon } from "vuetify/components";
+import { h } from "vue";
+import { localeMessages } from "./i18n";
+
+// The file manager, browser side. It owns the instance file card and its Desktop
+// window, the file editor, the image viewer, the upload queue and the three
+// dialogs the panel mounts on demand.
+//
+// Everything another plugin or the console implementation needs of it is published as
+// `ctx.set("file", ...)`: the upload dialog the settings page opens for a
+// logo, the file editor the mod manager and the backup plugin open, the
+// extension helpers the code editor uses. Those callers resolve it with
+// `usePluginService` and degrade when it is absent, which is what makes this
+// plugin removable.
+
+const ROLE_USER = 1;
+const ROLE_ADMIN = 10;
+
+const isFileManagerAvailable = (_context: PanelFrontendInstanceActionContext) => {
+  const { state, isAdmin } = useAppStateStore();
+  return state.settings.canFileManager || isAdmin.value;
+};
+
+export const inject = ["console", "i18n", "slots", "actions", "routes"];
+
+export function apply(ctx: PanelFrontendPluginContext) {
+  ctx.i18n.define(localeMessages);
+  ctx.set("file", {
+    api: fileManagerApi,
+    useFileManager,
+    getFileConfigAddr,
+    uploadService,
+    UploadFiles,
+    getFileIcon,
+    getFileExtName,
+    filterFileName,
+    isCompressFile,
+    FileEditor,
+    ImageViewer,
+    DesktopFileManager,
+    DesktopFileEditor,
+    DesktopImageViewer,
+    useUploadFileDialog,
+    useDownloadFileDialog,
+    useImageViewerDialog
+  });
+
+  ctx.routes.add({
+    path: "/instances/terminal/files",
+    name: t("TXT_CODE_ae533703"),
+    component: FileManager,
+    meta: {
+      permission: ROLE_USER,
+      breadcrumbs: [
+        {
+          name: t("TXT_CODE_e21473bc"),
+          path: "/instances",
+          mainMenu: true,
+          permission: ROLE_ADMIN
+        },
+        {
+          name: t("TXT_CODE_524e3036"),
+          path: "/instances/terminal",
+          permission: ROLE_USER
+        }
+      ]
+    }
+  });
+
+  ctx.actions.instance({
+    id: "file-manager",
+    title: () => t("TXT_CODE_ae533703"),
+    icon: () => h(VIcon, { icon: "mdi-folder-open-outline" }),
+    normalComponent: FileManagerAction,
+    desktopComponent: DesktopFileManagerAction,
+    condition: isFileManagerAvailable,
+    desktopInitialWidth: 900,
+    desktopInitialHeight: 600
+  });
+
+  // The upload progress bubble is an overlay that belongs to no route, and it
+  // reports this plugin's own upload queue, so it is mounted for the plugin's
+  // lifetime rather than by `App.vue`.
+  ctx.slots.register("shell.overlay", UploadBubble, { id: "file-upload-progress" });
+}

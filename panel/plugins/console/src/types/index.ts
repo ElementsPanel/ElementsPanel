@@ -1,0 +1,240 @@
+/* eslint-disable no-unused-vars */
+import type { Dayjs } from "dayjs";
+import type { INSTANCE_STATUS_CODE, ScheduleCreateType } from "./const";
+
+export type JsonData = IJsonData;
+export type MapData<T> = IMapData<T>;
+
+export interface InstanceRuntimeInfo {
+  mcPingOnline: boolean;
+  currentPlayers: number;
+  maxPlayers: number;
+  version: string;
+  fileLock: number;
+  playersChart: { value: string }[];
+  openFrpStatus: boolean;
+  latency: number;
+  cpuUsage?: number;
+  memoryUsagePercent?: number;
+  rxBytes?: number;
+  txBytes?: number;
+  rxRate?: number;
+  txRate?: number;
+  networkInterfaces?: string[];
+  networkStatsSource?: "docker";
+  readBytes?: number;
+  writeBytes?: number;
+  memoryUsage?: number;
+  memoryLimit?: number;
+  storageUsage?: number;
+  storageLimit?: number;
+  allocatedPorts?: {
+    host: number;
+    container: number;
+    protocol: string;
+  }[];
+}
+
+export interface InstanceDetail {
+  instanceUuid: string;
+  started: number;
+  autoRestarted: number;
+  status: INSTANCE_STATUS_CODE;
+  info: InstanceRuntimeInfo;
+  config: IGlobalInstanceConfig;
+  watcher?: number;
+}
+
+export interface NodeStatus {
+  available: boolean;
+  ip: string;
+  port: number;
+  prefix: string;
+  remarks: string;
+  uuid: string;
+  brand?: string;
+  features?: {
+    instanceBackup?: boolean;
+    [key: string]: any;
+  };
+}
+
+export interface Settings {
+  httpPort: number;
+  httpIp: any;
+  reverseProxyMode: boolean;
+  reverseProxyHeader: string;
+  dataPort: number;
+  forwardType: number;
+  crossDomain: boolean;
+  gzip: boolean;
+  maxCompress: number;
+  maxDownload: number;
+  zipType: number;
+  redisUrl: string;
+}
+
+export interface ImageInfo {
+  Containers: number;
+  Created: number;
+  Id: string;
+  Labels: null;
+  ParentId: string;
+  RepoDigests: string[];
+  RepoTags: string[];
+  SharedSize: number;
+  Size: number;
+  VirtualSize: number;
+}
+
+export interface DockerNetworkModes {
+  Name: string;
+  Id: string;
+  Created: string;
+  Scope: string;
+  Driver: string;
+  EnableIPv6: boolean;
+  IPAM: {
+    Driver: string;
+    Options: null;
+    Config: [
+      {
+        Subnet: string;
+        Gateway: string;
+      }
+    ];
+  };
+  Internal: boolean;
+  Attachable: boolean;
+  Ingress: boolean;
+  ConfigFrom: {
+    Network: string;
+    [propName: string]: unknown;
+  };
+  ConfigOnly: boolean;
+  Containers: {
+    [propName: string]: unknown;
+  };
+  Options: {
+    [propName: string]: unknown;
+  };
+  Labels: {
+    [propName: string]: unknown;
+  };
+}
+
+export interface ContainerInfo {
+  Id: string;
+  Names: string[];
+  Image: string;
+  ImageID: string;
+  Command: string;
+  Created: number;
+  Ports: {
+    IP: string;
+    PrivatePort: number;
+    PublicPort: number;
+    Type: string;
+  }[];
+  Labels: {
+    [propName: string]: unknown;
+  };
+  State: string;
+  Status: string;
+  HostConfig: {
+    NetworkMode: string;
+    [propName: string]: unknown;
+  };
+  NetworkSettings: {
+    Networks: {
+      bridge: {
+        IPAMConfig: null;
+        Links: null;
+        Aliases: null;
+        NetworkID: string;
+        EndpointID: string;
+        Gateway: string;
+        IPAddress: string;
+        IPPrefixLen: number;
+        IPv6Gateway: string;
+        GlobalIPv6Address: string;
+        GlobalIPv6PrefixLen: number;
+        MacAddress: string;
+        DriverOpts: null;
+        [propName: string]: unknown;
+      };
+      [propName: string]: unknown;
+    };
+  };
+  Mounts: [
+    {
+      Type: string;
+      Source: string;
+      Destination: string;
+      Mode: string;
+      RW: true;
+      Propagation: string;
+    }
+  ];
+}
+
+export type QuickStartTemplate = IQuickStartTemplate;
+export type QuickStartPackages = IQuickStartPackages;
+
+export interface LabelValueOption {
+  label: string;
+  value: string;
+}
+
+export interface MountComponent<T = any> {
+  destroyComponent(delay?: number): void;
+  emitResult(data?: T): void;
+}
+
+export interface Schedule {
+  instanceUuid: string;
+  name: string;
+  count: number | string;
+  time: string;
+  actions: ScheduleAction[];
+  type: number;
+}
+
+export interface ScheduleAction {
+  type: string;
+  payload: string;
+}
+
+export interface NewScheduleTask {
+  name: string;
+  count: number | string;
+  time: string;
+  type: ScheduleCreateType;
+}
+
+export interface ScheduleTaskForm extends NewScheduleTask {
+  weekend: number[];
+  cycle: string[];
+  actions: ScheduleAction[];
+  objTime: Dayjs;
+}
+
+export interface PanelStatus {
+  language: string;
+  versionChange?: boolean;
+  settings: {
+    canFileManager: boolean;
+    allowChangeCmd: boolean;
+    allowJavaManager: boolean;
+  };
+}
+
+/**
+ * One entry of an app-market filter dropdown. Shared with the core
+ * instance-detail dialog, which renders these lists when the market editor
+ * reuses it to edit a package.
+ */
+export interface FilterOption {
+  label: string;
+  value: string;
+}

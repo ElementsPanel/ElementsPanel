@@ -1,0 +1,8 @@
+{
+  "TXT_CODE_file_router.instanceNotExist": "La instancia {{instanceUuid}} no existe",
+  "TXT_CODE_file_router.unzipLimit": "Se ha excedido el número máximo de tareas de descompresión simultáneas. El máximo permitido es {{maxFileTask}}. Actualmente hay {{fileLock}} tareas en progreso.",
+  "TXT_CODE_file_router_service.instanceNotExit": "La instancia {{uuid}} no existe",
+  "TXT_CODE_system_file.execLimit": "Se superó el límite máximo de edición de archivos",
+  "TXT_CODE_system_file.illegalAccess": "Ruta de acceso incorrecta",
+  "TXT_CODE_system_file.unzipLimit": "La descompresión de archivos solo admite la descompresión de archivos de hasta {{max}} GB. Si necesita cambiar el límite superior, vaya al archivo data/Config/global.json."
+}

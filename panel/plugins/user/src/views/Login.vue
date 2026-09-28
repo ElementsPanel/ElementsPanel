@@ -1,103 +1,51 @@
 <script setup lang="ts">
-import type { LayoutCard } from "@/types";
 import LoginCard from "../widgets/LoginCard.vue";
-import { useScreen } from "@/hooks/useScreen";
-import LayoutContainer from "@/views/LayoutContainer.vue";
-
-defineProps<{
-  card: LayoutCard;
-}>();
-
-const { isPhone } = useScreen();
-
-const skeletonConfigs = [
-  { span: 6, rows: 4 },
-  { span: 6, rows: 4 },
-  { span: 6, rows: 4 },
-  { span: 6, rows: 4 },
-  { span: 24, rows: 9 },
-  { span: 8, rows: 6 },
-  { span: 16, rows: 6 },
-  { span: 8, rows: 6 },
-  { span: 16, rows: 6 }
-];
 </script>
 
 <template>
-  <div v-if="!isPhone" class="login-wrapper-fixed">
-    <div class="login-page-container">
-      <div class="login-page-body">
-        <LayoutContainer></LayoutContainer>
-      </div>
+  <div class="login-wrapper-fixed">
+    <div class="login-card-container">
+      <LoginCard />
     </div>
-  </div>
-  <div v-else class="login-wrapper-fixed">
-    <LoginCard></LoginCard>
   </div>
 </template>
 
-<style>
+<style lang="scss" scoped>
 .login-wrapper-fixed {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
   z-index: 100;
-  overflow: hidden;
-}
-</style>
-
-<style lang="scss">
-@keyframes scaleAnimation {
-  0% {
-    transform: scale(1);
-  }
-
-  20% {
-    transform: scale(0.9);
-    opacity: 1;
-  }
-
-  100% {
-    transform: scale(1.6);
-    opacity: 0;
-  }
-}
-
-.login-page-container {
-  position: fixed;
-  left: 0px;
-  right: 0px;
-  bottom: 0px;
-  top: 0px;
-
-  background-color: #29292957;
-  backdrop-filter: saturate(120%) blur(10px);
-  transition: all 0.8s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
 
-  .login-page-body {
-    padding: 12px;
-    padding-top: 84px;
-    max-width: 1260px !important;
-    margin: 0 auto;
-    height: 100%;
-    position: relative;
+.login-wrapper-fixed::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
 
-    .main-flex-center {
-      margin-top: 0 !important;
-      position: absolute;
-      left: 0px;
-      right: 0px;
-      bottom: 0px;
-      top: 0px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: left !important;
-    }
+.login-wrapper-fixed::-webkit-scrollbar-thumb,
+.login-wrapper-fixed::-webkit-scrollbar-track {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.login-card-container {
+  width: min(100%, 420px);
+}
+
+@media (max-width: 480px) {
+  .login-wrapper-fixed {
+    align-items: flex-start;
+    padding: 16px;
   }
 }
 </style>

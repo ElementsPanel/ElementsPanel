@@ -1,11 +1,15 @@
-import Router from "@koa/router";
 import type Koa from "koa";
-import type { PanelPluginContext } from "../../../../src/app/plugins";
+import type { PanelPluginContext } from "../../../../src/app/plugin";
 import { getDesktopLayout, setDesktopLayout } from "./desktop-layout-service";
 
-export function setup(context: PanelPluginContext) {
-  const router = new Router({ prefix: "/api/overview" });
-  const requireUser = context.middleware.permission({ level: context.roles.USER });
+// Panel side of Desktop mode: it persists one window layout per user.
+
+export const inject = ["koa", "middleware", "roles"];
+
+export function apply(ctx: PanelPluginContext) {
+  const router = ctx.koa.router("/api/overview");
+  const requireUser = ctx.middleware.permission({ level: ctx.roles.USER });
+  const logger = ctx.logger;
 
   router.get("/desktop_layout", requireUser, async (ctx: Koa.ParameterizedContext) => {
     const userUuid = ctx.session?.uuid;
@@ -14,7 +18,7 @@ export function setup(context: PanelPluginContext) {
       ctx.body = "User not logged in";
       return;
     }
-    ctx.body = getDesktopLayout(userUuid, context.logger) || { windows: [], updatedAt: 0 };
+    ctx.body = getDesktopLayout(userUuid, logger) || { windows: [], updatedAt: 0 };
   });
 
   router.post("/desktop_layout", requireUser, async (ctx: Koa.ParameterizedContext) => {
@@ -24,9 +28,7 @@ export function setup(context: PanelPluginContext) {
       ctx.body = "User not logged in";
       return;
     }
-    setDesktopLayout(userUuid, ctx.request.body, context.logger);
+    setDesktopLayout(userUuid, ctx.request.body, logger);
     ctx.body = true;
   });
-
-  context.registerRouter(router);
 }

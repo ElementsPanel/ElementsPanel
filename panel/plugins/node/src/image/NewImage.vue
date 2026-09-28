@@ -3,11 +3,9 @@ import { ref, onMounted } from "vue";
 import { t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";
 import CardPanel from "@/components/CardPanel.vue";
-import BetweenMenus from "@/components/BetweenMenus.vue";
-import { useScreen } from "@/hooks/useScreen";
-import { useLayoutCardTools } from "@/hooks/useCardTools";
+import PageToolbar from "@/components/PageToolbar.vue";
 import { useAppRouters } from "@/hooks/useAppRouters";
-import type { LayoutCard } from "@/types";
+import { useRoute } from "vue-router";
 import {
   defaultDockerfile,
   jdk17Dockerfile,
@@ -20,15 +18,11 @@ import {
 import { getCurrentLang } from "@/lang/i18n";
 import DockerFileForm from "./DockerFileForm.vue";
 import BuildProgress from "./BuildProgress.vue";
-
-const props = defineProps<{
-  card: LayoutCard;
-}>();
+import { VBtn, VCard, VCardText, VCol, VContainer, VDialog, VRow } from "vuetify/components";
 
 const { toPage } = useAppRouters();
-const { getMetaOrRouteValue } = useLayoutCardTools(props.card);
-const daemonId: string | undefined = getMetaOrRouteValue("daemonId");
-const { isPhone } = useScreen();
+const route = useRoute();
+const daemonId: string = String(route.query.daemonId ?? "");
 const buildProgressDialog = ref<InstanceType<typeof BuildProgress>>();
 const dockerFileDrawer = ref(false);
 const imageList = [
@@ -99,50 +93,40 @@ onMounted(async () => {});
 </script>
 
 <template>
-  <div style="height: 100%" class="container">
-    <a-row :gutter="[24, 24]" style="height: 100%">
-      <a-col :span="24">
-        <BetweenMenus>
-          <template v-if="!isPhone" #left>
-            <a-typography-title class="mb-0" :level="4">
-              {{ card.title }}
-            </a-typography-title>
-          </template>
-          <template #right>
-            <a-button @click="toImageListPage">
-              {{ t("TXT_CODE_3a818e91") }}
-            </a-button>
-            <a-button type="primary" @click="buildProgressDialog?.openDialog()">
-              {{ t("TXT_CODE_5544ec22") }}
-            </a-button>
-          </template>
-        </BetweenMenus>
-      </a-col>
+  <main class="node-image-page">
+    <VContainer fluid class="node-image-page-container">
+      <PageToolbar :title="t('TXT_CODE_3d09f0ac')" icon="mdi-image-plus">
+        <template #actions>
+          <VBtn variant="tonal" @click="toImageListPage">
+            {{ t("TXT_CODE_3a818e91") }}
+          </VBtn>
+          <VBtn color="primary" @click="buildProgressDialog?.openDialog()">
+            {{ t("TXT_CODE_5544ec22") }}
+          </VBtn>
+        </template>
+      </PageToolbar>
 
-      <a-col :span="24">
+      <VRow density="compact" class="node-image-row">
+        <VCol cols="12">
         <CardPanel style="height: 100%">
           <template #body>
-            <a-typography>
-              <a-typography-paragraph>
-                <a-typography-title :level="5">{{ t("TXT_CODE_d76ccb4f") }}</a-typography-title>
-                <a-typography-text>
+            <div>
+                <h5 class="text-title-large mb-2">{{ t("TXT_CODE_d76ccb4f") }}</h5>
+                <p class="text-body-medium text-medium-emphasis">
                   {{ t("TXT_CODE_528753e7") }}
-                </a-typography-text>
-              </a-typography-paragraph>
-              <a-typography-paragraph>
-                <a-typography-title :level="5">
+                </p>
+                <h5 class="text-title-large mb-2">
                   {{ t("TXT_CODE_2ea7af21") }}
-                </a-typography-title>
-                <a-typography-text>
+                </h5>
+                <p class="text-body-medium text-medium-emphasis">
                   {{ t("TXT_CODE_ba1eb3b5") }}
-                </a-typography-text>
-              </a-typography-paragraph>
-            </a-typography>
+                </p>
+            </div>
           </template>
         </CardPanel>
-      </a-col>
+      </VCol>
 
-      <a-col
+      <VCol
         v-for="i in imageList"
         :key="i.title + i.description + i.type"
         :span="24"
@@ -153,22 +137,18 @@ onMounted(async () => {});
         <CardPanel class="images-card" @click="selectType(i.type)">
           <template #title>{{ i.title }}</template>
           <template #body>
-            <a-typography-text>
+            <span>
               {{ i.description }}
-            </a-typography-text>
+            </span>
           </template>
         </CardPanel>
-      </a-col>
-    </a-row>
-  </div>
+      </VCol>
+      </VRow>
+    </VContainer>
 
-  <a-drawer
-    v-model:open="dockerFileDrawer"
-    :width="isPhone ? 'auto' : '768px'"
-    title="DockerFile"
-    placement="right"
-    destroy-on-close
-  >
+    <VDialog v-model="dockerFileDrawer" max-width="768" scrollable>
+    <VCard :title="t('TXT_CODE_NODE_DOCKERFILE_EDITOR')">
+      <VCardText>
     <DockerFileForm
       :docker-file="dockerFile"
       :name="name"
@@ -176,12 +156,38 @@ onMounted(async () => {});
       :daemon-id="daemonId ?? ''"
       @close="dockerFileDrawer = false"
     />
-  </a-drawer>
+      </VCardText>
+    </VCard>
+  </VDialog>
 
-  <BuildProgress ref="buildProgressDialog" :daemon-id="daemonId ?? ''" />
+    <BuildProgress ref="buildProgressDialog" :daemon-id="daemonId ?? ''" />
+  </main>
 </template>
 
 <style lang="scss" scoped>
+.node-image-page {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+.node-image-page-container {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: 20px 24px 32px;
+}
+
+.node-image-row {
+  width: 100%;
+  margin: 0;
+}
+
+@media (max-width: 992px) {
+  .node-image-page-container {
+    padding: 16px 12px 28px;
+  }
+}
+
 .images-card {
   cursor: pointer;
 

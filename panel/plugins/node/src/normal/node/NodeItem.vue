@@ -1,31 +1,27 @@
 <script setup lang="ts">
-import CardPanel from "@/components/CardPanel.vue";
-import IconBtn from "@/components/IconBtn.vue";
-import NodeSimpleChart from "../NodeSimpleChart.vue";
 import { GLOBAL_INSTANCE_UUID } from "@/config/const";
 import { useAppRouters } from "@/hooks/useAppRouters";
-import { useLayoutCardTools } from "@/hooks/useCardTools";
-import { useOverviewInfo, type ComputedNodeInfo } from "@/hooks/useOverviewInfo";
+import type { ComputedNodeInfo } from "@/hooks/useOverviewInfo";
 import { SocketStatus, useSocketIoClient } from "@/hooks/useSocketIo";
 import { t } from "@/lang/i18n";
-import { connectNode } from "../../api";
 import { arrayFilter } from "@/tools/array";
 import { reportErrorMsg } from "@/tools/validator";
 import { hasVersionUpdate } from "@/tools/version";
-import type { LayoutCard } from "@/types";
-import {
-  BlockOutlined,
-  CheckCircleOutlined,
-  CloudServerOutlined,
-  CodeOutlined,
-  FolderOpenOutlined,
-  InfoCircleOutlined,
-  LoadingOutlined,
-  ReloadOutlined,
-  SettingOutlined
-} from "@ant-design/icons-vue";
-import { message } from "ant-design-vue";
+import { message } from "@/tools/vuetifyToast";
 import { computed, onMounted, ref } from "vue";
+import {
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardText,
+  VCardTitle,
+  VCol,
+  VIcon,
+  VRow,
+  VTooltip
+} from "vuetify/components";
+import { connectNode } from "../../api";
+import NodeSimpleChart from "../NodeSimpleChart.vue";
 import NodeDetailDialog from "./NodeDetailDialog.vue";
 
 const { testFrontendSocket, socketStatus } = useSocketIoClient();
@@ -34,28 +30,11 @@ const nodeDetailDialog = ref<InstanceType<typeof NodeDetailDialog>>();
 
 const props = defineProps<{
   item?: ComputedNodeInfo;
-  card?: LayoutCard;
+  specifiedDaemonVersion?: string;
 }>();
 
-const { state: AllDaemonData } = useOverviewInfo();
-
-const itemDaemonId = ref<string>();
-const specifiedDaemonVersion = computed(() => AllDaemonData.value?.specifiedDaemonVersion);
-
-const remoteNode = computed(() => {
-  const myDaemon = AllDaemonData.value?.remote.find((node) => {
-    return node.uuid === itemDaemonId.value;
-  });
-  return myDaemon ?? props.item;
-});
-
-if (props.card) {
-  const { getMetaOrRouteValue } = useLayoutCardTools(props.card);
-  const daemonId = getMetaOrRouteValue("daemonId");
-  if (daemonId) {
-    itemDaemonId.value = daemonId;
-  }
-}
+const specifiedDaemonVersion = computed(() => props.specifiedDaemonVersion);
+const remoteNode = computed(() => props.item);
 
 const tryConnectNode = async (uuid: string, showMsg = true) => {
   const { execute } = connectNode();
@@ -130,7 +109,7 @@ const nodeOperations = computed(() =>
   arrayFilter([
     {
       title: t("TXT_CODE_ae533703"),
-      icon: FolderOpenOutlined,
+      icon: "mdi-folder-open-outline",
       click: (item: ComputedNodeInfo) => {
         const daemonId = item.uuid;
         const instanceId = GLOBAL_INSTANCE_UUID;
@@ -146,7 +125,7 @@ const nodeOperations = computed(() =>
     },
     {
       title: t("TXT_CODE_524e3036"),
-      icon: CodeOutlined,
+      icon: "mdi-console-line",
       click: (item: ComputedNodeInfo) => {
         const daemonId = item.uuid;
         const instanceId = GLOBAL_INSTANCE_UUID;
@@ -162,7 +141,7 @@ const nodeOperations = computed(() =>
     },
     {
       title: t("TXT_CODE_e6c30866"),
-      icon: BlockOutlined,
+      icon: "mdi-image-outline",
       click: (item: ComputedNodeInfo) => {
         const daemonId = item.uuid;
         toPage({
@@ -176,7 +155,7 @@ const nodeOperations = computed(() =>
     },
     {
       title: t("TXT_CODE_f8b28901"),
-      icon: ReloadOutlined,
+      icon: "mdi-refresh",
       click: async (node: ComputedNodeInfo) => {
         await tryConnectNode(node.uuid);
       },
@@ -184,13 +163,19 @@ const nodeOperations = computed(() =>
     },
     {
       title: t("TXT_CODE_b5c7b82d"),
-      icon: SettingOutlined,
+      icon: "mdi-cog-outline",
       click: (node: ComputedNodeInfo) => {
         nodeDetailDialog.value?.openDialog(node, node.uuid);
       }
     }
   ])
 );
+
+const copyValue = async (value: unknown) => {
+  if (value == null) return;
+  await navigator.clipboard?.writeText(String(value));
+  message.success(t("TXT_CODE_7f0c746d"));
+};
 
 onMounted(() => {
   testFrontendSocket(remoteNode.value);
@@ -199,63 +184,98 @@ onMounted(() => {
 
 <template>
   <div style="height: 100%" class="container">
-    <CardPanel style="height: 100%">
-      <template #title>
+    <VCard style="height: 100%" rounded="xl" flat class="node-card">
+      <VCardTitle class="node-card-title">
         <div class="flex-center">
           <span :class="{ 'color-danger': !remoteNode?.available }">
-            <CloudServerOutlined />
+            <VIcon icon="mdi-server-network-outline" class="mr-2" />
             {{ remoteNode?.remarks || remoteNode?.ip }}
           </span>
         </div>
-      </template>
-      <template v-if="remoteNode" #operator>
-        <span v-for="operation in nodeOperations" :key="operation.title" size="default" class="mr-2">
-          <IconBtn :icon="operation.icon" :title="operation.title" @click="remoteNode && operation.click(remoteNode)">
-          </IconBtn>
-        </span>
-      </template>
-      <template v-if="remoteNode" #body>
-        <a-row :gutter="[24, 0]" class="mt-2">
-          <a-col v-for="detail in detailList(remoteNode)" :key="detail.title + detail.value" :span="6">
-            <a-typography-paragraph>
+        <VCardActions v-if="remoteNode" class="node-card-actions">
+          <VTooltip v-for="operation in nodeOperations" :key="operation.title" location="top">
+            <template #activator="{ props: tooltipProps }">
+              <VBtn
+                v-bind="tooltipProps"
+                icon
+                variant="text"
+                size="small"
+                :aria-label="operation.title"
+                @click="remoteNode && operation.click(remoteNode)"
+              >
+                <VIcon :icon="operation.icon" size="18" />
+              </VBtn>
+            </template>
+            <span>{{ operation.title }}</span>
+          </VTooltip>
+        </VCardActions>
+      </VCardTitle>
+      <VCardText v-if="remoteNode" class="node-card-content">
+        <VRow density="compact">
+          <VCol
+            v-for="detail in detailList(remoteNode)"
+            :key="detail.title + detail.value"
+            cols="6"
+            sm="3"
+          >
+            <div class="node-detail">
               <div :title="detail.onlyCopy ? detail.value : ''">
                 {{ detail.title }}
               </div>
 
               <div v-if="detail.onlyCopy">
-                <a-typography-text :copyable="{ text: detail.value ?? '' }"></a-typography-text>
+                <VBtn
+                  icon="mdi-content-copy"
+                  variant="text"
+                  size="x-small"
+                  density="compact"
+                  class="node-copy-btn"
+                  :aria-label="`Copy ${detail.title}`"
+                  @click="copyValue(detail.value)"
+                />
               </div>
               <div v-else style="font-size: 13px">
-                <a-tooltip v-if="detail.warn && detail.value">
-                  <template #title>
-                    {{ detail.warnText }}
+                <VTooltip v-if="detail.warn && detail.value" location="top">
+                  <template #activator="{ props: tooltipProps }">
+                    <span
+                      v-bind="tooltipProps"
+                      :class="
+                        detail.danger
+                          ? 'color-danger'
+                          : remoteNode?.brand !== 'ElementsPanel'
+                          ? 'color-warning'
+                          : 'color-danger'
+                      "
+                    >
+                      <VIcon icon="mdi-information-outline" size="16" /> {{ detail.value }}
+                    </span>
                   </template>
-                  <span
-                    :class="detail.danger ? 'color-danger' : remoteNode?.brand !== 'ElementsPanel' ? 'color-warning' : 'color-danger'">
-                    <InfoCircleOutlined /> {{ detail.value }}
-                  </span>
-                </a-tooltip>
+                  <span>{{ detail.warnText }}</span>
+                </VTooltip>
                 <span v-else-if="detail.loading">
-                  <div class="flex mt-4">
-                    <LoadingOutlined style="font-size: 18px" />
-                  </div>
+                  <VIcon icon="mdi-loading" class="mdi-spin" size="18" />
                 </span>
                 <span v-else-if="detail.success">
                   <span class="color-success">
-                    <CheckCircleOutlined /> {{ detail.value }}
+                    <VIcon icon="mdi-check-circle-outline" size="16" /> {{ detail.value }}
                   </span>
                 </span>
                 <span v-else style="white-space: pre-wrap">{{
                   String(detail.value ?? "").trim() ? detail.value : "--"
                 }}</span>
               </div>
-            </a-typography-paragraph>
-          </a-col>
-        </a-row>
-        <NodeSimpleChart class="mt-8" :cpu-usage="remoteNode.cpuInfo ?? ''" :mem-usage="remoteNode.memText ?? ''"
-          :cpu-data="remoteNode.cpuChartData ?? []" :mem-data="remoteNode.memChartData ?? []" />
-      </template>
-    </CardPanel>
+            </div>
+          </VCol>
+        </VRow>
+        <NodeSimpleChart
+          class="mt-8"
+          :cpu-usage="remoteNode.cpuInfo ?? ''"
+          :mem-usage="remoteNode.memText ?? ''"
+          :cpu-data="remoteNode.cpuChartData ?? []"
+          :mem-data="remoteNode.memChartData ?? []"
+        />
+      </VCardText>
+    </VCard>
   </div>
   <NodeDetailDialog ref="nodeDetailDialog"></NodeDetailDialog>
 </template>
@@ -265,6 +285,47 @@ onMounted(() => {
   transition: all 0.4s;
   text-align: center;
   width: 50%;
+}
+
+.node-card {
+  background: var(--background-color-white);
+  color: var(--text-color);
+}
+
+.node-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px 14px 24px;
+  color: var(--text-color);
+}
+
+.node-card-actions {
+  min-height: auto;
+  padding: 0;
+  gap: 2px;
+}
+
+.node-card-content {
+  padding: 24px;
+  color: var(--text-color);
+}
+
+.node-detail {
+  min-height: 44px;
+  color: var(--text-color);
+}
+
+.node-copy-btn {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+}
+
+.node-copy-btn :deep(.v-icon) {
+  font-size: 16px;
 }
 
 @media (max-width: 992px) {

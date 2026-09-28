@@ -1,0 +1,17 @@
+{
+  "TXT_CODE_1562f6cf": "所有安裝操作已完成。請嘗試啟動實例...",
+  "TXT_CODE_4eccdde8": "設定建置成功！",
+  "TXT_CODE_5b0e93b5": "由於有其他異步任務正在進行，無法啟動安裝。請先在終端頁面終止其他任務！",
+  "TXT_CODE_9b4985d3": "實例更新成功！",
+  "TXT_CODE_9df98e2": "正在建置設定...",
+  "TXT_CODE_ac225d07": "建置包實例參數：",
+  "TXT_CODE_b135e9bd": "下載中...",
+  "TXT_CODE_e166bc2f": "安裝任務正在啟動...",
+  "TXT_CODE_e4a926bf": "正在解壓檔案...",
+  "TXT_CODE_e577c77c": "正在更新實例...",
+  "TXT_CODE_quick_install.unzipError": "解壓縮檔案失敗",
+  "TXT_CODE_minecraft.invalidDownload": "Minecraft 下載參數無效。",
+  "TXT_CODE_minecraft.platformMismatch": "基岩版伺服器與節點不相容，請選擇與節點 Windows/Linux 系統一致的版本，並使用 x64 節點。",
+  "TXT_CODE_minecraft.missingFiles": "找不到安裝後的伺服器啟動檔案，請檢查下載套件和安裝記錄。",
+  "TXT_CODE_minecraft.hashMismatch": "下載檔案的 SHA-256 驗證失敗，已停止安裝，請重試。"
+}

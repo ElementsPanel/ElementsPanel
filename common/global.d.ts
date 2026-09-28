@@ -65,6 +65,8 @@ declare global {
     path?: string;
     installTime: number;
     downloading: boolean;
+    progress?: number;
+    error?: string;
   }
 
   interface IJavaRuntime {
@@ -133,6 +135,7 @@ declare global {
 
   interface IPanelOverviewRemoteResponse {
     version: string;
+    features?: Record<string, boolean>;
     process?: {
       cpu: number;
       memory: number;
@@ -182,9 +185,6 @@ declare global {
       enableSoftShutdown: boolean;
       softShutdownSkipDocker: boolean;
       softShutdownWaitSeconds: number;
-      instanceBackupPath: string;
-      instanceBackupFormat: string;
-      instanceBackupCompressionLevel: number;
     };
     dockerPlatforms?: string[];
   }
@@ -236,41 +236,6 @@ declare global {
 
   interface IMapData<T> {
     [key: string]: T;
-  }
-
-  interface IPageLayoutConfig {
-    page: string;
-    items: ILayoutCard[];
-    theme?: {
-      pageTitle: string;
-      logoImage: string;
-      backgroundImage: string;
-      /** Main app navigation: "left" = sidebar, "right" = top header only */
-      sidebarPosition?: "left" | "right";
-    };
-  }
-
-  interface ILayoutCardParams {
-    field: string;
-    label: string;
-    type: "string" | "number" | "boolean" | "instance";
-  }
-
-  interface ILayoutCard {
-    id: string;
-    type: string;
-    title: string;
-    width: number;
-    height: string;
-    meta: IJsonData;
-    disableAdd?: boolean;
-    onlyPath?: string[];
-    params?: ILayoutCardParams[];
-    followId?: string;
-    description?: string;
-    allowedPages?: Array<string> | null;
-    line?: number;
-    disableDelete?: boolean;
   }
 
   interface IQuickStartPackages {

@@ -5,13 +5,14 @@ both the normal panel and Desktop mode. It registers one removable instance
 action with normal and Desktop components, and owns the panel-side backup HTTP
 routes under `/api/protected_instance/backup`.
 
-The generic asynchronous-task and file-editor APIs remain in the panel core;
+The generic asynchronous-task and file-editor APIs remain in the console
+plugin's shared browser implementation;
 the backup plugin composes them to run backup jobs and edit `.epbaklst`.
 
 ## Translations
 
 `src/i18n/` holds the strings for the backup UI, passed to the panel as
-`localeMessages` by `src/frontend.ts`. The lines an instance prints while a
+`ctx.i18n.define()` by `src/frontend.ts`. The lines an instance prints while a
 backup runs belong to `daemon/plugins/backup`, which ships its own catalogue —
 the two never share a key.
 

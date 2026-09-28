@@ -1,27 +1,20 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
+import { usePluginService } from "@/plugin/context";
 import { addUser as addUserApi, deleteUser as deleteUserApi, editUserInfo as editUserInfoApi, getUserInfo as getUserInfoApi, remoteInstances, remoteNodeList, updateUserInstance, userInfoApiAdvanced } from "@/services/apis";
 import { computeNodeName } from "@/tools/nodes";
 import type { NodeStatus } from "@/types";
 import { INSTANCE_STATUS } from "@/types/const";
 import type { BaseUserInfo, EditUserInfo, UserInstance } from "@/types/user";
-import {
-    CheckCircleOutlined,
-    CloseCircleOutlined,
-    DatabaseOutlined,
-    DeleteOutlined,
-    EditOutlined,
-    ExclamationCircleOutlined,
-    KeyOutlined,
-    LinkOutlined,
-    PlusOutlined,
-    SafetyOutlined,
-    SearchOutlined,
-    UserOutlined
-} from "@ant-design/icons-vue";
-import { message } from "ant-design-vue";
-import { computed, onMounted, reactive, ref } from "vue";
+import { notifyDesktop } from "@/tools/desktopNotice";
+import { computed, onMounted, onUnmounted, reactive, ref, shallowRef, watch } from "vue";
 import DesktopWindow from "./DesktopWindow.vue";
+import { VBtn, VChip, VDataTable, VIcon, VRadio, VRadioGroup, VSelect, VTextField } from "vuetify/components";
+
+const PlusOutlined = "mdi-plus";
+const EditOutlined = "mdi-pencil-outline";
+const ExclamationCircleOutlined = "mdi-alert-circle-outline";
+const LinkOutlined = "mdi-link-variant";
 
 const { execute: fetchUsersApi, isLoading: loading } = getUserInfoApi();
 const { execute: addUserApiExec } = addUserApi();
@@ -35,6 +28,17 @@ const total = ref(0);
 const searchQuery = ref("");
 const currentPage = ref(1);
 const pageSize = 20;
+
+const userHeaders = [
+    { title: t("TXT_CODE_eb9fcdad"), key: "userName" },
+    { title: t("TXT_CODE_511aea70"), key: "permission" },
+    { title: t("TXT_CODE_c5c56801"), key: "registerTime" },
+    { title: t("TXT_CODE_d7ee9ba"), key: "loginTime" },
+    { title: t("TXT_CODE_e21473bc"), key: "instances" },
+    { title: "2FA", key: "twoFactor", sortable: false },
+    { title: "SSO", key: "sso", sortable: false },
+    { title: t("TXT_CODE_OPERATE"), key: "actions", sortable: false }
+];
 
 const showDialog = ref(false);
 const dialogMode = ref<"add" | "edit">("add");
@@ -55,9 +59,23 @@ const assignTargetUser = ref<BaseUserInfo | null>(null);
 const assignedInstances = ref<UserInstance[]>([]);
 const assignSaving = ref(false);
 
-const { execute: getNodes, state: nodes } = remoteNodeList();
-const { execute: getInstances, state: instances, isLoading: instancesLoading } = remoteInstances();
+const instanceService = computed(() => usePluginService("instance"));
+const nodeService = computed(() => usePluginService("node"));
+const canAssignInstances = computed(() => !!instanceService.value && !!nodeService.value);
+// Only create domain requests while the optional resource-assignment UI is open.
+const nodeRequest = shallowRef<ReturnType<typeof remoteNodeList>>();
+const instanceRequest = shallowRef<ReturnType<typeof remoteInstances>>();
+const nodes = computed(() => nodeRequest.value?.state.value);
+const instances = computed(() => instanceRequest.value?.state.value);
+const instancesLoading = computed(() => instanceRequest.value?.isLoading.value ?? false);
+let assignmentRequest = 0;
 const currentRemoteNode = ref<NodeStatus>();
+const currentRemoteNodeId = ref("");
+const assignNodeItems = computed(() => (nodes.value || []).map((node) => ({
+    title: computeNodeName(node.ip, node.available, node.remarks),
+    value: node.uuid,
+    disabled: !node.available
+})));
 const assignForm = reactive({
     instanceName: "",
     currentPage: 1,
@@ -68,16 +86,19 @@ const assignForm = reactive({
 const windowWidth = ref(window.innerWidth);
 const windowHeight = ref(window.innerHeight);
 
+const updateWindowSize = () => {
+    windowWidth.value = window.innerWidth;
+    windowHeight.value = window.innerHeight;
+};
+
 onMounted(() => {
-    const updateWindowSize = () => {
-        windowWidth.value = window.innerWidth;
-        windowHeight.value = window.innerHeight;
-    };
     window.addEventListener('resize', updateWindowSize);
     fetchUsers();
 });
 
+let latestRequest = 0;
 const fetchUsers = async () => {
+    const request = ++latestRequest;
     try {
         const res = await fetchUsersApi({
             params: {
@@ -87,17 +108,23 @@ const fetchUsers = async () => {
                 role: ""
             }
         });
-        if (res?.value) {
+        if (request === latestRequest && res?.value) {
             users.value = res.value.data || [];
             total.value = res.value.total || 0;
         }
     } catch {
+        if (request !== latestRequest) return;
         users.value = [];
         total.value = 0;
     }
 };
 
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
+onUnmounted(() => {
+    latestRequest++;
+    clearTimeout(searchTimer);
+    window.removeEventListener('resize', updateWindowSize);
+});
 const onSearchInput = () => {
     if (searchTimer) clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
@@ -230,11 +257,16 @@ const cancelDelete = () => {
 };
 
 const openAssignDialog = async (user: BaseUserInfo) => {
+    if (!canAssignInstances.value) return;
+    const request = ++assignmentRequest;
+    nodeRequest.value = remoteNodeList();
+    instanceRequest.value = remoteInstances();
     assignTargetUser.value = user;
     try {
         const res = await fetchUserAdvanced({
             params: { uuid: user.uuid, advanced: true }
         });
+        if (request !== assignmentRequest) return;
         if (res?.value?.instances) {
             assignedInstances.value = res.value.instances.map((inst: any) => ({
                 instanceUuid: inst.instanceUuid,
@@ -247,6 +279,7 @@ const openAssignDialog = async (user: BaseUserInfo) => {
             assignedInstances.value = [];
         }
     } catch {
+        if (request !== assignmentRequest) return;
         assignedInstances.value = user.instances ? [...user.instances] : [];
     }
     assignForm.instanceName = "";
@@ -258,16 +291,27 @@ const openAssignDialog = async (user: BaseUserInfo) => {
 };
 
 const closeAssignDialog = () => {
+    assignmentRequest++;
     showAssignDialog.value = false;
     assignTargetUser.value = null;
     assignedInstances.value = [];
+    nodeRequest.value = undefined;
+    instanceRequest.value = undefined;
+    currentRemoteNode.value = undefined;
+    currentRemoteNodeId.value = "";
 };
 
+watch([instanceService, nodeService], closeAssignDialog, { flush: "sync" });
+onUnmounted(closeAssignDialog);
+
 const initAssignNodes = async () => {
-    await getNodes();
+    const request = assignmentRequest;
+    await nodeRequest.value?.execute();
+    if (request !== assignmentRequest) return;
     if (nodes?.value?.length) {
         nodes.value.sort((a, b) => (a.available === b.available ? 0 : a.available ? -1 : 1));
         currentRemoteNode.value = nodes.value[0];
+        currentRemoteNodeId.value = nodes.value[0].uuid;
         await loadRemoteInstances();
     }
 };
@@ -275,7 +319,7 @@ const initAssignNodes = async () => {
 const loadRemoteInstances = async () => {
     if (!currentRemoteNode.value) return;
     try {
-        await getInstances({
+        await instanceRequest.value?.execute({
             params: {
                 daemonId: currentRemoteNode.value.uuid,
                 page: assignForm.currentPage,
@@ -289,8 +333,11 @@ const loadRemoteInstances = async () => {
     }
 };
 
-const handleAssignNodeChange = async (node: NodeStatus) => {
+const handleAssignNodeChange = async (nodeId: string) => {
+    const node = nodes.value?.find((item) => item.uuid === nodeId);
+    if (!node) return;
     currentRemoteNode.value = node;
+    currentRemoteNodeId.value = node.uuid;
     assignForm.currentPage = 1;
     await loadRemoteInstances();
 };
@@ -315,7 +362,7 @@ const removeAssignedInstance = (instanceUuid: string) => {
 };
 
 const saveAssignedInstances = async () => {
-    if (!assignTargetUser.value) return;
+    if (!assignTargetUser.value || !canAssignInstances.value) return;
     assignSaving.value = true;
     try {
         await updateUserInstanceExec({
@@ -326,13 +373,13 @@ const saveAssignedInstances = async () => {
                 uuid: assignTargetUser.value.uuid
             }
         });
-        message.success(t("TXT_CODE_DESKTOP_USERS_ASSIGN_SUCCESS"));
+        notifyDesktop(t("TXT_CODE_DESKTOP_USERS_ASSIGN_SUCCESS"), "success");
         showAssignDialog.value = false;
         assignTargetUser.value = null;
         assignedInstances.value = [];
         fetchUsers();
     } catch (e: any) {
-        message.error(e?.message || "Error");
+        notifyDesktop(e?.message || "Error", "error");
     } finally {
         assignSaving.value = false;
     }
@@ -362,95 +409,37 @@ const getInstanceStatusLabel = (status: number): string => {
     <div class="desktop-users">
         <div class="du-toolbar">
             <div class="du-search">
-                <SearchOutlined class="du-search__icon" />
-                <input v-model="searchQuery" class="du-search__input" :placeholder="t('TXT_CODE_DESKTOP_USERS_SEARCH')"
-                    autocomplete="off" spellcheck="false" @input="onSearchInput" />
+                <VTextField v-model="searchQuery" class="du-search__input" :placeholder="t('TXT_CODE_DESKTOP_USERS_SEARCH')"
+                    prepend-inner-icon="mdi-magnify" variant="solo" density="compact" rounded="xl" hide-details clearable
+                    autocomplete="off" spellcheck="false" @update:model-value="onSearchInput" />
             </div>
-            <button class="du-btn du-btn--primary" @click="openAddDialog">
-                <PlusOutlined />
+            <VBtn class="du-btn du-btn--primary" variant="text" rounded="xl" @click="openAddDialog">
+                <VIcon icon="mdi-plus"  />
                 {{ t("TXT_CODE_DESKTOP_USERS_ADD") }}
-            </button>
+            </VBtn>
         </div>
 
-        <div class="du-table-wrap">
-            <table class="du-table">
-                <thead>
-                    <tr>
-                        <th class="du-table__col--name">{{ t("TXT_CODE_eb9fcdad") }}</th>
-                        <th class="du-table__col--perm">{{ t("TXT_CODE_511aea70") }}</th>
-                        <th class="du-table__col--time">{{ t("TXT_CODE_c5c56801") }}</th>
-                        <th class="du-table__col--time">{{ t("TXT_CODE_d7ee9ba") }}</th>
-                        <th class="du-table__col--inst">{{ t("TXT_CODE_e21473bc") }}</th>
-                        <th class="du-table__col--badge">2FA</th>
-                        <th class="du-table__col--badge">SSO</th>
-                        <th class="du-table__col--actions">{{ t("TXT_CODE_OPERATE") }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-if="loading">
-                        <td colspan="8" class="du-table__empty">
-                            <div class="du-loading">{{ t("TXT_CODE_b197be11") }}</div>
-                        </td>
-                    </tr>
-                    <tr v-else-if="users.length === 0">
-                        <td colspan="8" class="du-table__empty">
-                            <div class="du-empty">{{ t("TXT_CODE_DESKTOP_USERS_NO_RESULTS") }}</div>
-                        </td>
-                    </tr>
-                    <tr v-for="user in users" :key="user.uuid" class="du-table__row">
-                        <td class="du-table__col--name">
-                            <div class="du-user-name">
-                                <UserOutlined class="du-user-name__icon" />
-                                <span>{{ user.userName }}</span>
-                            </div>
-                        </td>
-                        <td class="du-table__col--perm">
-                            <span
-                                :class="['du-perm-badge', user.permission >= 10 ? 'du-perm-badge--admin' : 'du-perm-badge--user']">
-                                {{ permissionLabel(user.permission) }}
-                            </span>
-                        </td>
-                        <td class="du-table__col--time">{{ formatTime(user.registerTime) }}</td>
-                        <td class="du-table__col--time">{{ formatTime(user.loginTime) }}</td>
-                        <td class="du-table__col--inst">{{ user.instances?.length ?? 0 }}</td>
-                        <td class="du-table__col--badge">
-                            <CheckCircleOutlined v-if="user.open2FA" class="du-badge-icon du-badge-icon--yes" />
-                            <CloseCircleOutlined v-else class="du-badge-icon du-badge-icon--no" />
-                        </td>
-                        <td class="du-table__col--badge">
-                            <CheckCircleOutlined v-if="user.ssoBound" class="du-badge-icon du-badge-icon--yes" />
-                            <CloseCircleOutlined v-else class="du-badge-icon du-badge-icon--no" />
-                        </td>
-                        <td class="du-table__col--actions">
-                            <div class="du-action-btns">
-                                <button class="du-action-btn du-action-btn--assign"
-                                    :title="t('TXT_CODE_9393b484')"
-                                    @click="openAssignDialog(user)">
-                                    <LinkOutlined />
-                                </button>
-                                <button class="du-action-btn du-action-btn--edit"
-                                    :title="t('TXT_CODE_79f9a172')" @click="openEditDialog(user)">
-                                    <EditOutlined />
-                                </button>
-                                <button class="du-action-btn du-action-btn--delete"
-                                    :title="t('TXT_CODE_DESKTOP_USERS_DELETE')" @click="confirmDelete(user)">
-                                    <DeleteOutlined />
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <VDataTable class="du-table" :headers="userHeaders" :items="users" :loading="loading" item-value="uuid"
+            :items-per-page="pageSize" density="comfortable" hide-default-footer>
+            <template #item.userName="{ item }"><div class="du-user-name"><VIcon icon="mdi-account-outline" class="du-user-name__icon" /><span>{{ item.userName }}</span></div></template>
+            <template #item.permission="{ item }"><VChip size="small" variant="tonal" :color="item.permission >= 10 ? 'primary' : 'default'">{{ permissionLabel(item.permission) }}</VChip></template>
+            <template #item.registerTime="{ item }">{{ formatTime(item.registerTime) }}</template>
+            <template #item.loginTime="{ item }">{{ formatTime(item.loginTime) }}</template>
+            <template #item.instances="{ item }">{{ item.instances?.length ?? 0 }}</template>
+            <template #item.twoFactor="{ item }"><VIcon :icon="item.open2FA ? 'mdi-check-circle-outline' : 'mdi-close-circle-outline'" :class="item.open2FA ? 'du-badge-icon--yes' : 'du-badge-icon--no'" /></template>
+            <template #item.sso="{ item }"><VIcon :icon="item.ssoBound ? 'mdi-check-circle-outline' : 'mdi-close-circle-outline'" :class="item.ssoBound ? 'du-badge-icon--yes' : 'du-badge-icon--no'" /></template>
+            <template #item.actions="{ item }"><div class="du-action-btns"><VBtn v-if="canAssignInstances" icon variant="text" rounded="xl" class="du-action-btn" :title="t('TXT_CODE_9393b484')" @click="openAssignDialog(item)"><VIcon icon="mdi-link-variant" /></VBtn><VBtn icon variant="text" rounded="xl" class="du-action-btn" :title="t('TXT_CODE_79f9a172')" @click="openEditDialog(item)"><VIcon icon="mdi-pencil-outline" /></VBtn><VBtn icon variant="text" rounded="xl" color="error" class="du-action-btn" :title="t('TXT_CODE_DESKTOP_USERS_DELETE')" @click="confirmDelete(item)"><VIcon icon="mdi-delete-outline" /></VBtn></div></template>
+            <template #no-data><div class="du-empty">{{ t("TXT_CODE_DESKTOP_USERS_NO_RESULTS") }}</div></template>
+        </VDataTable>
 
         <div v-if="total > pageSize" class="du-pagination">
-            <button class="du-page-btn" :disabled="currentPage <= 1" @click="prevPage">
+            <VBtn class="du-page-btn" variant="text" rounded="xl" :disabled="currentPage <= 1" @click="prevPage">
                 {{ t("TXT_CODE_DESKTOP_IM_PREV") }}
-            </button>
+            </VBtn>
             <span class="du-page-info">{{ currentPage }} / {{ maxPage }}</span>
-            <button class="du-page-btn" :disabled="currentPage >= maxPage" @click="nextPage">
+            <VBtn class="du-page-btn" variant="text" rounded="xl" :disabled="currentPage >= maxPage" @click="nextPage">
                 {{ t("TXT_CODE_5e9022f8") }}
-            </button>
+            </VBtn>
         </div>
 
         <Teleport to="body">
@@ -465,17 +454,17 @@ const getInstanceStatusLabel = (status: number): string => {
                         <div class="du-dialog__body">
                             <div class="du-form-group">
                                 <label class="du-form-label">
-                                    <UserOutlined /> {{ t("TXT_CODE_eb9fcdad") }}
+                                    <VIcon icon="mdi-account-outline"  /> {{ t("TXT_CODE_eb9fcdad") }}
                                 </label>
-                                <input v-model="form.username" class="du-form-input" autocomplete="new-password"
+                                <VTextField v-model="form.username" class="du-form-input" variant="solo" density="compact" rounded="xl" hide-details autocomplete="new-password"
                                     :placeholder="t('TXT_CODE_eb9fcdad')"
                                     :disabled="dialogMode === 'edit'" />
                             </div>
                             <div class="du-form-group">
                                 <label class="du-form-label">
-                                    <KeyOutlined /> {{ t("TXT_CODE_551b0348") }}
+                                    <VIcon icon="mdi-key-outline"  /> {{ t("TXT_CODE_551b0348") }}
                                 </label>
-                                <input v-model="form.password" type="password" class="du-form-input"
+                                <VTextField v-model="form.password" type="password" class="du-form-input" variant="solo" density="compact" rounded="xl" hide-details
                                     autocomplete="new-password"
                                     :placeholder="dialogMode === 'edit' ? t('TXT_CODE_DESKTOP_USERS_PASSWORD_HELP') : ''" />
                                 <span v-if="dialogMode === 'edit'" class="du-form-hint">
@@ -484,29 +473,22 @@ const getInstanceStatusLabel = (status: number): string => {
                             </div>
                             <div class="du-form-group">
                                 <label class="du-form-label">
-                                    <SafetyOutlined /> {{ t("TXT_CODE_511aea70") }}
+                                    <VIcon icon="mdi-shield-check-outline"  /> {{ t("TXT_CODE_511aea70") }}
                                 </label>
-                                <div class="du-radio-group">
-                                    <label class="du-radio" :class="{ 'du-radio--active': form.permission >= 10 }">
-                                        <input v-model="form.permission" type="radio" name="perm" :value="10" />
-                                        <span>{{ t("TXT_CODE_cd978243") }}</span>
-                                    </label>
-                                    <label class="du-radio"
-                                        :class="{ 'du-radio--active': form.permission >= 1 && form.permission < 10 }">
-                                        <input v-model="form.permission" type="radio" name="perm" :value="1" />
-                                        <span>{{ t("TXT_CODE_eb880db2") }}</span>
-                                    </label>
-                                </div>
+                                <VRadioGroup v-model="form.permission" inline hide-details class="du-radio-group">
+                                    <VRadio :value="10" :label="t('TXT_CODE_cd978243')" />
+                                    <VRadio :value="1" :label="t('TXT_CODE_eb880db2')" />
+                                </VRadioGroup>
                             </div>
                             <div v-if="formError" class="du-form-error">{{ formError }}</div>
                         </div>
                         <div class="du-dialog__footer">
-                            <button class="du-btn du-btn--default" @click="closeDialog">
+                            <VBtn class="du-btn du-btn--default" variant="text" rounded="xl" @click="closeDialog">
                                 {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="du-btn du-btn--primary" :disabled="saving" @click="saveUser">
+                            </VBtn>
+                            <VBtn class="du-btn du-btn--primary" variant="text" rounded="xl" :disabled="saving" @click="saveUser">
                                 {{ t("TXT_CODE_abfe9512") }}
-                            </button>
+                            </VBtn>
                         </div>
                     </div>
                 </DesktopWindow>
@@ -523,20 +505,20 @@ const getInstanceStatusLabel = (status: number): string => {
                     :resizable="false" @close="cancelDelete">
                     <div class="du-dialog-content">
                         <div class="du-dialog__body du-dialog__body--column">
-                            <ExclamationCircleOutlined class="du-dialog__warn-icon" />
+                            <VIcon icon="mdi-alert-circle-outline" class="du-dialog__warn-icon"  />
                             <p class="du-dialog__desc">
                                 {{ t("TXT_CODE_DESKTOP_USERS_DELETE_CONFIRM", { name: deletingUser?.userName }) }}
                             </p>
                         </div>
                         <div class="du-dialog__footer">
-                            <button class="du-btn du-btn--default" @click="cancelDelete">
+                            <VBtn class="du-btn du-btn--default" variant="text" rounded="xl" @click="cancelDelete">
                                 {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="du-btn du-btn--primary"
+                            </VBtn>
+                            <VBtn class="du-btn du-btn--primary" variant="text" rounded="xl"
                                 style="background: var(--color-red-5); border-color: var(--color-red-5);"
                                 :disabled="saving" @click="executeDelete">
                                 {{ t("TXT_CODE_DESKTOP_USERS_DELETE") }}
-                            </button>
+                            </VBtn>
                         </div>
                     </div>
                 </DesktopWindow>
@@ -555,7 +537,7 @@ const getInstanceStatusLabel = (status: number): string => {
                         <div class="du-assign-layout">
                             <div class="du-assign-panel du-assign-panel--assigned">
                                 <div class="du-assign-panel__header">
-                                    <DatabaseOutlined />
+                                    <VIcon icon="mdi-database-outline"  />
                                     {{ t("TXT_CODE_DESKTOP_USERS_ASSIGNED") }}
                                     <span class="du-assign-count">{{ assignedInstances.length }}</span>
                                 </div>
@@ -570,10 +552,10 @@ const getInstanceStatusLabel = (status: number): string => {
                                                 t("TXT_CODE_DESKTOP_IM_UNNAMED") }}</span>
                                             <span class="du-assign-item__node">{{ inst.hostIp }}</span>
                                         </div>
-                                        <button class="du-assign-item__remove"
-                                            @click="removeAssignedInstance(inst.instanceUuid)">
-                                            <CloseCircleOutlined />
-                                        </button>
+                                        <VBtn icon variant="text" rounded="xl" class="du-assign-item__remove"
+                                            @click.stop="removeAssignedInstance(inst.instanceUuid)">
+                                            <VIcon icon="mdi-close-circle-outline"  />
+                                        </VBtn>
                                     </div>
                                 </div>
                             </div>
@@ -584,19 +566,14 @@ const getInstanceStatusLabel = (status: number): string => {
                                 </div>
                                 <div class="du-assign-browse-toolbar">
                                     <div class="du-assign-node-select">
-                                        <select v-if="nodes?.length" v-model="currentRemoteNode"
-                                            class="du-assign-select"
-                                            @change="handleAssignNodeChange(currentRemoteNode!)">
-                                            <option v-for="node in nodes" :key="node.uuid" :value="node"
-                                                :disabled="!node.available">
-                                                {{ computeNodeName(node.ip, node.available, node.remarks) }}
-                                            </option>
-                                        </select>
+                                        <VSelect v-if="nodes?.length" v-model="currentRemoteNodeId" :items="assignNodeItems"
+                                            class="du-assign-select" variant="solo" density="compact" rounded="xl" hide-details
+                                            @update:model-value="handleAssignNodeChange" />
                                     </div>
                                     <div class="du-assign-search">
-                                        <input v-model="assignForm.instanceName" class="du-assign-search__input"
-                                            :placeholder="t('TXT_CODE_DESKTOP_IM_SEARCH')"
-                                            @input="handleAssignSearch" />
+                                        <VTextField v-model="assignForm.instanceName" class="du-assign-search__input" variant="solo" density="compact" rounded="xl" hide-details
+                                            prepend-inner-icon="mdi-magnify" :placeholder="t('TXT_CODE_DESKTOP_IM_SEARCH')"
+                                            @update:model-value="handleAssignSearch" />
                                     </div>
                                 </div>
                                 <div class="du-assign-panel__body">
@@ -617,43 +594,43 @@ const getInstanceStatusLabel = (status: number): string => {
                                                 {{ getInstanceStatusLabel(inst.status) }}
                                             </span>
                                         </div>
-                                        <button v-if="!isInstanceAssigned(inst.instanceUuid)"
-                                            class="du-assign-item__add" @click="addAssignedInstance({
+                                        <VBtn v-if="!isInstanceAssigned(inst.instanceUuid)" icon variant="text" rounded="xl"
+                                            class="du-assign-item__add" @click.stop="addAssignedInstance({
                                                 instanceUuid: inst.instanceUuid,
                                                 daemonId: currentRemoteNode?.uuid ?? '',
                                                 nickname: inst.config.nickname,
                                                 status: inst.status,
                                                 hostIp: currentRemoteNode ? `${currentRemoteNode.ip}:${currentRemoteNode.port}` : ''
                                             })">
-                                            <PlusOutlined />
-                                        </button>
+                                            <VIcon icon="mdi-plus"  />
+                                        </VBtn>
                                         <span v-else class="du-assign-item__check">
-                                            <CheckCircleOutlined />
+                                            <VIcon icon="mdi-check-circle-outline"  />
                                         </span>
                                     </div>
                                 </div>
                                 <div v-if="instances" class="du-assign-pagination">
-                                    <button class="du-page-btn" :disabled="assignForm.currentPage <= 1"
+                                    <VBtn class="du-page-btn" variant="text" rounded="xl" :disabled="assignForm.currentPage <= 1"
                                         @click="assignForm.currentPage--; loadRemoteInstances()">
                                         {{ t("TXT_CODE_DESKTOP_IM_PREV") }}
-                                    </button>
+                                    </VBtn>
                                     <span class="du-page-info">{{ assignForm.currentPage }} / {{ instances.maxPage
                                     }}</span>
-                                    <button class="du-page-btn" :disabled="assignForm.currentPage >= instances.maxPage"
+                                    <VBtn class="du-page-btn" variant="text" rounded="xl" :disabled="assignForm.currentPage >= instances.maxPage"
                                         @click="assignForm.currentPage++; loadRemoteInstances()">
                                         {{ t("TXT_CODE_5e9022f8") }}
-                                    </button>
+                                    </VBtn>
                                 </div>
                             </div>
                         </div>
                         <div class="du-assign-footer">
-                            <button class="du-btn du-btn--default" @click="closeAssignDialog">
+                            <VBtn class="du-btn du-btn--default" variant="text" rounded="xl" @click="closeAssignDialog">
                                 {{ t("TXT_CODE_a0451c97") }}
-                            </button>
-                            <button class="du-btn du-btn--primary" :disabled="assignSaving"
+                            </VBtn>
+                            <VBtn class="du-btn du-btn--primary" variant="text" rounded="xl" :disabled="assignSaving"
                                 @click="saveAssignedInstances">
                                 {{ t("TXT_CODE_abfe9512") }}
-                            </button>
+                            </VBtn>
                         </div>
                     </div>
                 </DesktopWindow>

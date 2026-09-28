@@ -1,15 +1,9 @@
 <script setup lang="ts">
 import { router } from "@/config/router";
+import PageToolbar from "@/components/PageToolbar.vue";
 import { t } from "@/lang/i18n";
-import type { LayoutCard } from "@/types";
 import McPreset from "./McPreset.vue";
-import { DatabaseOutlined } from "@ant-design/icons-vue";
-import { Divider, Flex } from "ant-design-vue";
-import Link from "ant-design-vue/es/typography/Link";
-
-defineProps<{
-  card: LayoutCard;
-}>();
+import { VBtn, VContainer, VDivider } from "vuetify/components";
 
 const openEditor = () => {
   router.push("/market/editor");
@@ -17,29 +11,48 @@ const openEditor = () => {
 </script>
 
 <template>
-  <div style="height: 100%">
-    <div>
-      <a-typography-title :level="4" style="margin-bottom: 8px">
-        <DatabaseOutlined />
-        {{ t("TXT_CODE_88249aee") }}
-      </a-typography-title>
-      <a-typography-paragraph>
-        <Flex justify="space-between" align="flex-start">
-          <p style="opacity: 0.6">
-            <span>{{ t("TXT_CODE_c9ce7427") }}</span>
-          </p>
-          <p style="opacity: 0.6">
-            <Link target="_blank" @click="openEditor">
-              {{ t("TXT_CODE_85c10fde") }}
-            </Link>
-            <Divider type="vertical" />
-            <Link href="https://github.com/MCSManager/Script/issues/77" target="_blank">
-              {{ t("TXT_CODE_709c2db4") }}
-            </Link>
-          </p>
-        </Flex>
-      </a-typography-paragraph>
-      <McPreset :card="card" />
-    </div>
-  </div>
+  <main class="market-page">
+    <VContainer fluid class="market-page-container">
+      <PageToolbar :title="t('TXT_CODE_27594db8')" icon="mdi-storefront-outline">
+        <template #actions>
+          <VBtn variant="text" @click="openEditor">{{ t("TXT_CODE_85c10fde") }}</VBtn>
+          <VDivider vertical class="mx-2" />
+          <VBtn href="https://github.com/MCSManager/Script/issues/77" target="_blank" variant="text">
+            {{ t("TXT_CODE_709c2db4") }}
+          </VBtn>
+        </template>
+      </PageToolbar>
+      <div class="market-description">
+        <div class="market-description-text">
+          <span>{{ t("TXT_CODE_c9ce7427") }}</span>
+        </div>
+      </div>
+      <McPreset />
+    </VContainer>
+  </main>
 </template>
+
+<style lang="scss" scoped>
+.market-page {
+  width: 100%;
+  min-height: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+.market-page-container {
+  width: 100%;
+  min-width: 0;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 20px 24px 32px;
+}
+.market-description { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; color:var(--color-gray-7); margin-bottom:16px; }
+
+@media (max-width: 992px) {
+  .market-page-container {
+    padding: 16px 12px 28px;
+  }
+}
+</style>

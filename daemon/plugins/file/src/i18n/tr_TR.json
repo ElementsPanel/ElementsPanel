@@ -1,0 +1,8 @@
+{
+  "TXT_CODE_file_router.instanceNotExist": "Örnek {{instanceUuid}} mevcut değil",
+  "TXT_CODE_file_router.unzipLimit": "Eşzamanlı dekompresyon görevlerinin maksimum sayısı aşıldı. İzin verilen maksimum sayı {{maxFileTask}} ve şu anda {{fileLock}} görevleri devam ediyor. Lütfen sabırlı olun.",
+  "TXT_CODE_file_router_service.instanceNotExit": "Örnek {{uuid}} mevcut değil",
+  "TXT_CODE_system_file.execLimit": "Maksimum dosya düzenleme sınırı aşıldı",
+  "TXT_CODE_system_file.illegalAccess": "Yasadışı erişim yolu",
+  "TXT_CODE_system_file.unzipLimit": "Dosya açma yalnızca {{max}}GB'a kadar olan dosyaları destekler. Bu sınırı değiştirmek için lütfen data/Config/global.json dosyasına gidin."
+}

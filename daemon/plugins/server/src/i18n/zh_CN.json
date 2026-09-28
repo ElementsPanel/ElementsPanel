@@ -1,0 +1,13 @@
+{
+  "TXT_CODE_DSERVER_IP": "监听 IP",
+  "TXT_CODE_DSERVER_IP_TIP": "主机有多个地址时有用。留空则监听全部地址。",
+  "TXT_CODE_DSERVER_PATH_TIP": "绝对路径，或相对于守护进程目录的路径。",
+  "TXT_CODE_DSERVER_PORT": "守护进程端口",
+  "TXT_CODE_DSERVER_PORT_TIP": "面板连接使用的端口。在守护进程启动时生效，修改后需要重启。",
+  "TXT_CODE_DSERVER_PREFIX": "路径前缀",
+  "TXT_CODE_DSERVER_PREFIX_TIP": "让守护进程运行在子路径下，例如 /daemon。留空则从根路径提供服务。",
+  "TXT_CODE_DSERVER_SSL": "启用 SSL/TLS",
+  "TXT_CODE_DSERVER_SSL_KEY": "私钥文件 (.key)",
+  "TXT_CODE_DSERVER_SSL_PEM": "证书文件 (.pem)",
+  "TXT_CODE_DSERVER_SSL_TIP": "使用下方的证书通过 HTTPS 与 WSS 提供服务，两个文件都必须填写。"
+}

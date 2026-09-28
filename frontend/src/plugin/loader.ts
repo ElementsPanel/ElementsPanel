@@ -1,0 +1,594 @@
+import {
+  createPluginQueue,
+  resolvePluginDependencyOrder,
+  type PluginState,
+  validatePluginCompatibility
+} from "../../../common/src/plugin_contract";
+import { trackPluginDisposal } from "../../../common/src/plugin_lifecycle";
+import { shallowReactive } from "vue";
+import type { EffectScope, ForkScope } from "cordis";
+import {
+  ctx,
+  type PanelFrontendPluginContext,
+  type PanelFrontendPluginDiagnostic
+} from "./context";
+import { panelPluginModules } from "virtual:panel-plugins";
+
+const FOUNDATION_SERVICES: Record<string, string> = {
+  runtime: "startup",
+  i18n: "i18n",
+  console: "console"
+};
+const ESSENTIAL_PLUGIN_IDS = new Set(Object.keys(FOUNDATION_SERVICES));
+const change = createPluginQueue();
+const settle = trackPluginDisposal(ctx);
+
+/**
+ * Fetches plugin code and hands it to cordis.
+ *
+ * Discovery is unchanged: in development the Vite plugin supplies a virtual
+ * module of static imports; in production the browser fetches
+ * `plugins/manifest.json` and imports each entry by URL. What that feeds is now
+ * `ctx.plugin()`, and unloading is `fork.dispose()` — every route, card, menu,
+ * action and translation the plugin registered is an effect of its scope.
+ */
+
+export interface PanelFrontendPluginMetadata {
+  id: string;
+  version?: string;
+  description?: string;
+  enabled?: boolean;
+  priority?: number;
+  frontend?: string;
+  ui?: string;
+  frontendInject?: string[];
+  frontendImmediate?: boolean;
+  frontendRequired?: boolean;
+  config?: unknown;
+  restartRequired?: boolean;
+  [key: string]: unknown;
+}
+
+/** A frontend plugin module, as its entry exports it. */
+export interface PanelFrontendPluginModule {
+  inject?: string[] | Record<string, { required: boolean }>;
+  apply(ctx: PanelFrontendPluginContext, config?: unknown): void | Promise<void>;
+}
+
+interface PluginSource {
+  metadata: PanelFrontendPluginMetadata;
+  directory: string;
+  assetDirectory: string;
+  entry?: string;
+  revision?: string;
+  styles?: string[];
+  load: (cacheKey?: string) => Promise<Record<string, unknown>>;
+}
+
+export interface LoadedPanelFrontendPlugin {
+  metadata: PanelFrontendPluginMetadata;
+  directory: string;
+  state: PluginState;
+  requiredServices: readonly string[];
+  missingServices: readonly string[];
+  revision?: string;
+  fork?: ForkScope;
+  error?: Error;
+  restartRequired?: boolean;
+  reloadRequired?: boolean;
+}
+
+interface InternalPlugin extends LoadedPanelFrontendPlugin {
+  source: PluginSource;
+  /** Only the stylesheet links, which are not cordis effects. */
+  removeStyles?: () => void;
+}
+
+const plugins = shallowReactive<InternalPlugin[]>([]);
+const sources = new Map<string, PluginSource>();
+
+function compareSources(a: PluginSource, b: PluginSource) {
+  return (
+    (Number(a.metadata.priority) || 0) - (Number(b.metadata.priority) || 0) ||
+    a.metadata.id.localeCompare(b.metadata.id)
+  );
+}
+
+function requiredServices(module: PanelFrontendPluginModule) {
+  if (Array.isArray(module.inject)) return [...new Set(module.inject)];
+  if (!module.inject) return [];
+  return Object.entries(module.inject)
+    .filter(([, value]) => value?.required)
+    .map(([name]) => name);
+}
+
+function scopeState(scope?: ForkScope): PluginState {
+  if (!scope) return "failed";
+  if (scope.error || scope.runtime.error) return "failed";
+  switch (scope.status) {
+    case 0: // ScopeStatus.PENDING
+      return "pending";
+    case 1: // ScopeStatus.LOADING
+      return "loading";
+    case 2: // ScopeStatus.ACTIVE
+      return "active";
+    case 3: // ScopeStatus.FAILED
+    case 4: // ScopeStatus.DISPOSED
+      return "failed";
+    default:
+      return "pending";
+  }
+}
+
+function refreshPluginState(plugin: InternalPlugin) {
+  plugin.missingServices = plugin.requiredServices.filter((name) => !ctx.get(name as never));
+  plugin.state =
+    plugin.restartRequired || plugin.reloadRequired
+      ? "restart-required"
+      : plugin.error
+      ? "failed"
+      : scopeState(plugin.fork);
+}
+
+function pluginError(plugin: InternalPlugin): Error | undefined {
+  const error = plugin.error || plugin.fork?.error || plugin.fork?.runtime.error;
+  if (error === undefined || error === null) return undefined;
+  return error instanceof Error ? error : new Error(String(error));
+}
+
+function notifyPluginDiagnostics() {
+  for (const plugin of plugins) refreshPluginState(plugin);
+  if (import.meta.env.DEV) ctx.get("startup")?.updatePlugins(getPluginDiagnostics());
+}
+
+ctx.on("internal/status", (scope: EffectScope) => {
+  const plugin = plugins.find((candidate) => candidate.fork === scope);
+  if (plugin) notifyPluginDiagnostics();
+});
+
+function normalizeMetadata(value: Record<string, unknown>): PanelFrontendPluginMetadata | null {
+  const id = typeof value.id === "string" ? value.id.trim() : "";
+  if (!id) return null;
+  return { ...value, id } as PanelFrontendPluginMetadata;
+}
+
+/**
+ * The plugin object a module exports, whether as named exports or as `default`.
+ *
+ * Only an object counts: every function has `Function.prototype.apply`, so a
+ * module whose default export is a function would otherwise be mistaken for a
+ * plugin and then called with the context as `this`.
+ */
+function toModule(value: any, id: string): PanelFrontendPluginModule | undefined {
+  for (const candidate of [value, value?.default]) {
+    if (typeof candidate !== "object" || candidate === null) continue;
+    if (typeof candidate.apply === "function") return candidate;
+  }
+  ctx.logger("plugin").warn(`Panel frontend plugin "${id}" must export an apply() function.`);
+  return undefined;
+}
+
+async function loadStyles(source: PluginSource) {
+  const links: HTMLLinkElement[] = [];
+  try {
+    await Promise.all(
+      (source.styles || []).map(
+        (href) =>
+          new Promise<void>((resolve, reject) => {
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = href;
+            link.dataset.panelPlugin = source.metadata.id;
+            link.addEventListener("load", () => resolve(), { once: true });
+            link.addEventListener(
+              "error",
+              () => reject(new Error(`Failed to load panel plugin stylesheet: ${href}`)),
+              { once: true }
+            );
+            document.head.appendChild(link);
+            links.push(link);
+          })
+      )
+    );
+  } catch (error) {
+    links.forEach((link) => link.remove());
+    throw error;
+  }
+  return () => links.forEach((link) => link.remove());
+}
+
+/**
+ * Removes stylesheets the plugin injected itself, which the core cannot track:
+ * `<style>` elements it tagged, and any `<link>` matching one of its hrefs.
+ */
+function removePluginStyles(source: PluginSource) {
+  document
+    .querySelectorAll<HTMLStyleElement>(
+      `style[data-panel-plugin=${JSON.stringify(source.metadata.id)}]`
+    )
+    .forEach((style) => style.remove());
+  for (const href of source.styles || []) {
+    const normalizedHref = new URL(href, document.baseURI).href;
+    document.querySelectorAll<HTMLLinkElement>("link[rel='stylesheet']").forEach((link) => {
+      try {
+        if (new URL(link.href, document.baseURI).href === normalizedHref) link.remove();
+      } catch {
+        // Ignore malformed third-party stylesheet URLs.
+      }
+    });
+  }
+}
+
+async function fetchProductionSources(): Promise<PluginSource[]> {
+  const manifestUrl = new URL("plugins/manifest.json", document.baseURI);
+  const response = await fetch(manifestUrl.href, { cache: "no-store" });
+  if (!response.ok) {
+    if (response.status === 404) return [];
+    throw new Error(`Failed to load panel plugin manifest: HTTP ${response.status}`);
+  }
+  const body = await response.json();
+  // Older panel builds may still pass the manifest through the standard API
+  // envelope. Accept both the raw array and `{ data: [...] }` forms.
+  const manifest = Array.isArray(body) ? body : body?.data;
+  if (!Array.isArray(manifest)) throw new Error("Invalid panel plugin manifest.");
+
+  const toUrl = (value: string) => new URL(value, manifestUrl).href;
+  const result: PluginSource[] = [];
+  for (const item of manifest) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+    const metadata = normalizeMetadata((item as any).metadata || item);
+    const entry = typeof (item as any).entry === "string" ? (item as any).entry : "";
+    if (!metadata || metadata.enabled === false || !entry) continue;
+    const entryUrl = toUrl(entry);
+    result.push({
+      metadata,
+      directory:
+        typeof (item as any).directory === "string" ? (item as any).directory : metadata.id,
+      assetDirectory:
+        typeof (item as any).assetDirectory === "string"
+          ? (item as any).assetDirectory
+          : metadata.id,
+      entry: entryUrl,
+      revision: typeof item.revision === "string" ? item.revision : String(metadata.version || ""),
+      styles: Array.isArray((item as any).styles)
+        ? (item as any).styles
+            .filter((style: unknown): style is string => typeof style === "string")
+            .map(toUrl)
+        : [],
+      load: async (cacheKey) => {
+        const url = new URL(entryUrl);
+        if (cacheKey) url.searchParams.set("panel_plugin_reload", cacheKey);
+        return import(/* @vite-ignore */ url.href) as Promise<Record<string, unknown>>;
+      }
+    });
+  }
+  return result;
+}
+
+async function discoverSources() {
+  const discovered = import.meta.env.DEV
+    ? (panelPluginModules as PluginSource[])
+    : await fetchProductionSources();
+  const unique = new Map<string, PluginSource>();
+  for (const source of discovered) {
+    const metadata = normalizeMetadata(source.metadata);
+    if (!metadata || metadata.enabled === false || unique.has(metadata.id)) continue;
+    unique.set(metadata.id, { ...source, metadata });
+  }
+  return [...unique.values()].sort(compareSources);
+}
+
+function resolveSourceGraph(discovered: readonly PluginSource[]) {
+  return resolvePluginDependencyOrder(discovered, {
+    id: (source) => source.metadata.id,
+    dependencies: (source) => source.metadata.frontendInject,
+    compare: compareSources
+  });
+}
+
+function recordGraphFailure(source: PluginSource, error: Error) {
+  const existing = plugins.find((plugin) => plugin.metadata.id === source.metadata.id);
+  if (existing) {
+    existing.error = error;
+    existing.state = "failed";
+    notifyPluginDiagnostics();
+    return existing;
+  }
+  const plugin = shallowReactive<InternalPlugin>({
+    source,
+    metadata: source.metadata,
+    directory: source.directory,
+    revision: source.revision,
+    state: "failed",
+    requiredServices: [],
+    missingServices: [],
+    error
+  });
+  plugins.push(plugin);
+  notifyPluginDiagnostics();
+  return plugin;
+}
+
+async function install(source: PluginSource, cacheKey?: string, configOverride?: unknown) {
+  const existing = plugins.find((plugin) => plugin.metadata.id === source.metadata.id);
+  if (existing) return existing;
+
+  const unavailableDependencies = (source.metadata.frontendInject || []).filter(
+    (id) => plugins.find((plugin) => plugin.metadata.id === id)?.state !== "active"
+  );
+  if (unavailableDependencies.length) {
+    return recordGraphFailure(
+      source,
+      new Error(
+        `Frontend plugin dependencies are not active: ${unavailableDependencies.join(", ")}`
+      )
+    );
+  }
+
+  const plugin = shallowReactive<InternalPlugin>({
+    source,
+    metadata: source.metadata,
+    directory: source.directory,
+    revision: source.revision,
+    state: "loading",
+    requiredServices: [],
+    missingServices: []
+  });
+  plugins.push(plugin);
+  notifyPluginDiagnostics();
+  try {
+    validatePluginCompatibility(source.metadata.elements);
+    if (source.metadata.restartRequired)
+      throw new Error("The plugin backend requires a restart before this version can load.");
+    if (!import.meta.env.DEV) plugin.removeStyles = await loadStyles(source);
+    const module = toModule(await source.load(cacheKey), source.metadata.id);
+    if (!module) throw new Error(`Panel frontend plugin has no apply() export: ${source.metadata.id}`);
+    plugin.requiredServices = requiredServices(module);
+    {
+      // An `async apply()` is awaited here, so a plugin is fully applied before
+      // the next one loads and before the app is mounted.
+      //
+      // cordis catches a synchronous throw from `apply()` and cancels the scope
+      // itself, so the wrapper keeps a copy of it: without that, a plugin that
+      // failed on its first line would still be reported as loaded.
+      let applied: unknown;
+      let thrown: unknown;
+      // The manifest id is the plugin's name, so `ctx.name` — which is what
+      // appears in its log lines — always matches `plugin.json`.
+      plugin.fork = ctx.plugin(
+        {
+          ...module,
+          name: source.metadata.id,
+          apply: (...args) => {
+            try {
+              return (applied = module.apply(...args));
+            } catch (error) {
+              thrown = error;
+              throw error;
+            }
+          }
+        },
+        configOverride === undefined
+          ? (source.metadata as { config?: unknown }).config
+          : configOverride
+      );
+      if (thrown) throw thrown;
+      await applied;
+      ctx.logger("plugin").info(`Panel frontend plugin loaded: ${source.metadata.id}`);
+    }
+  } catch (error: any) {
+    // Failure is atomic: whatever the plugin managed to register before it threw
+    // goes with its scope, so a half-loaded plugin never stays behind.
+    plugin.error = error instanceof Error ? error : new Error(String(error));
+    plugin.fork?.dispose();
+    plugin.fork = undefined;
+    plugin.removeStyles?.();
+    ctx
+      .logger("plugin")
+      .error(`Panel frontend plugin failed to load: ${source.metadata.id}`, error);
+  }
+  notifyPluginDiagnostics();
+  return plugin;
+}
+
+function isCurrentRoute(plugin: InternalPlugin) {
+  const vue = ctx.get("vue");
+  const routes = ctx.get("routes");
+  if (!vue || !routes) return false;
+  return vue.router.currentRoute.value.matched.some(
+    (record) => routes.ownerOf(record.path) === plugin.metadata.id
+  );
+}
+
+async function unloadPluginInternal(id: string) {
+  if (ESSENTIAL_PLUGIN_IDS.has(id)) {
+    throw new Error(`The essential frontend plugin "${id}" cannot be unloaded.`);
+  }
+  const plugin = plugins.find((candidate) => candidate.metadata.id === id);
+  if (!plugin) return false;
+  plugin.state = "unloading";
+  notifyPluginDiagnostics();
+  // Leave the plugin's page before its routes go, or the router lands on
+  // nothing.
+  const vue = ctx.get("vue");
+  if (vue && isCurrentRoute(plugin)) await vue.router.replace("/404");
+  plugin.fork?.dispose();
+  try {
+    await settle();
+  } catch (error) {
+    plugin.error = error instanceof Error ? error : new Error(String(error));
+    throw error;
+  }
+  plugin.removeStyles?.();
+  removePluginStyles(plugin.source);
+  const index = plugins.indexOf(plugin);
+  if (index >= 0) plugins.splice(index, 1);
+  notifyPluginDiagnostics();
+  ctx.logger("plugin").info(`Panel frontend plugin unloaded: ${id}`);
+  return true;
+}
+
+async function loadPluginInternal(id: string) {
+  let source = sources.get(id);
+  if (!source && !import.meta.env.DEV) {
+    await refreshPluginsInternal();
+    source = sources.get(id);
+  }
+  if (!source) throw new Error(`Panel frontend plugin not found: ${id}`);
+  return install(source);
+}
+
+async function reloadPluginInternal(id: string) {
+  if (ESSENTIAL_PLUGIN_IDS.has(id)) {
+    throw new Error(`The essential frontend plugin "${id}" cannot be reloaded.`);
+  }
+  await unloadPluginInternal(id);
+  if (!import.meta.env.DEV) {
+    const discovered = await discoverSources();
+    sources.clear();
+    discovered.forEach((source) => sources.set(source.metadata.id, source));
+  }
+  const source = sources.get(id);
+  if (!source) throw new Error(`Panel frontend plugin not found: ${id}`);
+  // The server revision is the cache identity. Reloading unchanged code still
+  // retries activation without manufacturing an unbounded timestamp URL.
+  return install(source, source.revision || String(source.metadata.version || "reload"));
+}
+
+/** Re-reads what is installed and loads or unloads to match. */
+async function refreshPluginsInternal() {
+  const discovered = await discoverSources();
+  const next = new Map(discovered.map((source) => [source.metadata.id, source]));
+  sources.clear();
+  next.forEach((source, id) => sources.set(id, source));
+  for (const plugin of [...plugins].reverse()) {
+    if (ESSENTIAL_PLUGIN_IDS.has(plugin.metadata.id)) continue;
+    if (!next.has(plugin.metadata.id)) await unloadPluginInternal(plugin.metadata.id);
+  }
+  const graph = resolveSourceGraph(discovered);
+  for (const [id, issue] of graph.issues) {
+    const source = next.get(id);
+    if (!source) continue;
+    const current = plugins.find((plugin) => plugin.metadata.id === id);
+    if (current && !ESSENTIAL_PLUGIN_IDS.has(id)) await unloadPluginInternal(id);
+    recordGraphFailure(source, new Error(issue.message));
+  }
+  for (const source of graph.ordered) {
+    const current = plugins.find((plugin) => plugin.metadata.id === source.metadata.id);
+    if (current) current.restartRequired = Boolean(source.metadata.restartRequired);
+    const changed =
+      current &&
+      (source.revision !== current.source.revision ||
+        JSON.stringify(source.metadata) !== JSON.stringify(current.metadata) ||
+        Boolean(source.metadata.restartRequired) !==
+          Boolean(current.source.metadata.restartRequired));
+    if (current && (changed || source.metadata.restartRequired)) {
+      if (ESSENTIAL_PLUGIN_IDS.has(source.metadata.id) || source.metadata.restartRequired) {
+        current.restartRequired = Boolean(source.metadata.restartRequired);
+        current.reloadRequired = Boolean(changed && ESSENTIAL_PLUGIN_IDS.has(source.metadata.id));
+        continue;
+      }
+      await unloadPluginInternal(source.metadata.id);
+    }
+    if (!plugins.some((plugin) => plugin.metadata.id === source.metadata.id)) await install(source);
+  }
+  await settle();
+  notifyPluginDiagnostics();
+  return discovered.map((source) => source.metadata) as readonly PanelFrontendPluginMetadata[];
+}
+
+/** Loads a foundation and verifies that it provided its declared service. */
+export async function bootstrapPanelFrontendPlugin(id: string, config?: unknown) {
+  if (!ESSENTIAL_PLUGIN_IDS.has(id)) {
+    throw new Error(`Panel frontend plugin "${id}" is not a foundational plugin.`);
+  }
+
+  const discovered = await discoverSources();
+  sources.clear();
+  discovered.forEach((source) => sources.set(source.metadata.id, source));
+  const source = sources.get(id);
+  if (!source) throw new Error(`Panel frontend foundation plugin not found: ${id}`);
+
+  const plugin = await install(source, undefined, config);
+  if (plugin.error) throw plugin.error;
+  if (!plugin.fork || !ctx.get(FOUNDATION_SERVICES[id])) {
+    throw new Error(`Panel frontend foundation plugin failed to initialize: ${id}`);
+  }
+  return plugin;
+}
+
+export function getLoadedPlugins(): readonly LoadedPanelFrontendPlugin[] {
+  return plugins;
+}
+
+export function getPluginDiagnostics(): readonly PanelFrontendPluginDiagnostic[] {
+  return plugins.map((plugin) => {
+    const error = pluginError(plugin);
+    return {
+      id: plugin.metadata.id,
+      state: plugin.state,
+      required: Boolean(plugin.metadata.frontendRequired),
+      revision: plugin.revision,
+      requiredServices: [...plugin.requiredServices],
+      missingServices: [...plugin.missingServices],
+      ...(error ? { error: error.message } : {})
+    };
+  });
+}
+
+export function auditFrontendPlugins() {
+  notifyPluginDiagnostics();
+  const failures = getPluginDiagnostics().filter(
+    (plugin) => plugin.required && plugin.state !== "active"
+  );
+  if (!failures.length) return;
+  throw new Error(
+    `Required frontend plugins are not active: ${failures
+      .map((plugin) => `${plugin.id} (${plugin.state}${plugin.error ? `: ${plugin.error}` : ""})`)
+      .join(", ")}`
+  );
+}
+
+/** Serialize UI actions and server notifications against the same browser state. */
+export const unloadPlugin = (id: string) => change(() => unloadPluginInternal(id));
+export const loadPlugin = (id: string) => change(() => loadPluginInternal(id));
+export const reloadPlugin = (id: string) => change(() => reloadPluginInternal(id));
+export const refreshPlugins = () =>
+  change(async () => {
+    const result = await refreshPluginsInternal();
+    window.dispatchEvent(new CustomEvent("elementspanel:plugins-changed"));
+    return result;
+  });
+
+/** Reconnect receives the complete current generation; no event history is needed. */
+export function watchPluginChanges(): () => void {
+  if (import.meta.env.DEV || typeof EventSource === "undefined") return () => {};
+  const events = new EventSource(new URL("plugins/events", document.baseURI).href);
+  let revision = "";
+  let stopped = false;
+  let retry: ReturnType<typeof setTimeout> | undefined;
+  const synchronize = () => {
+    if (stopped) return;
+    void refreshPlugins().catch((error) => {
+      ctx.logger("plugin").error("Failed to synchronize plugins", error);
+      retry = setTimeout(synchronize, 2000);
+    });
+  };
+  events.onmessage = (event) => {
+    let next: string;
+    try {
+      next = JSON.parse(event.data).revision;
+    } catch {
+      return;
+    }
+    if (typeof next !== "string" || next === revision || stopped) return;
+    revision = next;
+    if (retry) clearTimeout(retry);
+    synchronize();
+  };
+  return () => {
+    stopped = true;
+    if (retry) clearTimeout(retry);
+    events.close();
+  };
+}

@@ -1,0 +1,180 @@
+import { useMountComponent } from "@/hooks/useMountComponent";
+import { usePluginService, type FrontendInstanceService } from "@/plugin/context";
+import type { UserInstance } from "@/types/user";
+
+import KvOptionsDialogVue from "@/components/fc/KvOptionsDialog.vue";
+import { t } from "@/lang/i18n";
+import TaskLoadingDialog from "./TaskLoadingDialog.vue";
+
+// The file manager's own dialogs — upload, download-from-URL and the image
+// viewer — moved to `plugins/file`, which owns the components they mount.
+
+interface DockerConfigItem {
+  host: string;
+  container: string;
+}
+interface PortConfigItem extends DockerConfigItem {
+  protocol: string;
+}
+
+interface DockerEnvItem {
+  label: string;
+  value: string;
+}
+
+interface DockerLabelItem {
+  label: string;
+  value: string;
+}
+
+interface DockerCapabilityItem {
+  label: string;
+  value: string;
+}
+
+interface DockerDeviceItem {
+  PathOnHost: string;
+  PathInContainer: string;
+  CgroupPermissions: string;
+}
+
+function instanceComponents() {
+  const instance = usePluginService<FrontendInstanceService>("instance");
+  if (!instance) throw new Error('Panel frontend plugin "instance" is not loaded.');
+  return instance.components;
+}
+
+export async function useSelectInstances(data: UserInstance[] = []) {
+  return useMountComponent({ data }).mount<UserInstance[]>(instanceComponents().SelectInstances);
+}
+
+export async function useCmdAssistantDialog() {
+  return await useMountComponent().mount<string>(instanceComponents().CmdAssistantDialog);
+}
+
+export async function usePortEditDialog(data: PortConfigItem[] = []) {
+  return useMountComponent({ data }).mount<PortConfigItem[]>(instanceComponents().DockerPortDialog);
+}
+
+export async function useVolumeEditDialog(data: DockerConfigItem[] = []) {
+  return useMountComponent({
+    data,
+    subTitle: t("TXT_CODE_6c232c9c"),
+    title: t("TXT_CODE_820ebc92"),
+    columns: [
+      {
+        align: "center",
+        dataIndex: "host",
+        title: t("TXT_CODE_681aaeb9")
+      },
+      {
+        align: "center",
+        dataIndex: "container",
+        title: t("TXT_CODE_30258325")
+      }
+    ],
+    textarea: true
+  }).mount<DockerConfigItem[]>(KvOptionsDialogVue);
+}
+
+export async function useDockerEnvEditDialog(data: DockerEnvItem[] = []) {
+  return useMountComponent({
+    data,
+    title: t("TXT_CODE_90a9d317"),
+    columns: [
+      {
+        align: "center",
+        dataIndex: "label",
+        title: t("TXT_CODE_a42984e")
+      },
+      {
+        align: "center",
+        dataIndex: "value",
+        title: t("TXT_CODE_115e8a25")
+      }
+    ],
+    textarea: true
+  }).mount<DockerEnvItem[]>(KvOptionsDialogVue);
+}
+
+export async function useDockerLabelEditDialog(data: DockerLabelItem[] = []) {
+  return useMountComponent({
+    data,
+    title: t("TXT_CODE_g1c43s2h"),
+    subTitle: t("TXT_CODE_MimBB1Ea"),
+    columns: [
+      {
+        align: "center",
+        dataIndex: "label",
+        title: t("TXT_CODE_a42984e")
+      },
+      {
+        align: "center",
+        dataIndex: "value",
+        title: t("TXT_CODE_115e8a25")
+      }
+    ],
+    textarea: true
+  }).mount<DockerLabelItem[]>(KvOptionsDialogVue);
+}
+
+export async function useDockerCapabilityEditDialog(data: DockerCapabilityItem[] = []) {
+  return useMountComponent({
+    data,
+    title: t("TXT_CODE_bbbd4133"),
+    subTitle: t("TXT_CODE_377319df"),
+    textarea: false
+  }).mount<DockerCapabilityItem[]>(instanceComponents().DockerCapabilityDialog);
+}
+
+export async function useDockerDeviceEditDialog(data: DockerDeviceItem[] = []) {
+  return useMountComponent({
+    data,
+    title: t("TXT_CODE_b3a60c78"),
+    subTitle: t("TXT_CODE_b6e18b87"),
+    textarea: false
+  }).mount<DockerDeviceItem[]>(instanceComponents().DockerDeviceDialog);
+}
+
+export async function openLoadingDialog(title: string, text: string, subTitle?: string) {
+  const component = useMountComponent({
+    title,
+    text,
+    subTitle
+  }).load<InstanceType<typeof TaskLoadingDialog>>(TaskLoadingDialog);
+  return component;
+}
+
+export async function openInstanceTagsEditor(
+  instanceId: string,
+  daemonId: string,
+  tags: string[],
+  tagsTips?: string[]
+) {
+  return await useMountComponent({
+    instanceId,
+    daemonId,
+    tagsTips,
+    tags
+  })
+    .load<any>(instanceComponents().TagsDialog)
+    .openDialog();
+}
+
+export async function useDeleteInstanceDialog(instanceId: string, daemonId: string) {
+  return await useMountComponent({ instanceId, daemonId }).mount<boolean>(
+    instanceComponents().DeleteInstanceDialog
+  );
+}
+
+export async function openNodeSelectDialog(targetPlatforms?: string[]) {
+  const dialog = useMountComponent({ targetPlatforms }).load<any>(
+    instanceComponents().NodeSelectDialog
+  );
+  return dialog!.openDialog();
+}
+
+export async function openDockerVersionSelectDialog() {
+  const dialog = useMountComponent().load<any>(instanceComponents().DockerVersionSelectDialog);
+  return dialog!.openDialog();
+}

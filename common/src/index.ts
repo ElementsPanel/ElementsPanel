@@ -24,6 +24,38 @@ export {
 } from "./typecheck";
 
 export { arrayUnique } from "./array";
+export * from "./plugin_contract";
+export * from "./plugin_overrides";
+export * from "./plugin_lifecycle";
+export * from "./plugin_revision";
+export {
+  MARKET_INSTALL_MARKER,
+  MAX_PLUGIN_ICON_BYTES,
+  PLUGIN_ICON_FILE,
+  PLUGIN_PACKAGE_EXTENSIONS,
+  PluginPackageError,
+  pluginPackageDirectory,
+  writePluginPackage,
+  removePluginPackage
+} from "./plugin_package";
+export type { PluginInstallation, PluginPackageFile } from "./plugin_package";
+
+export {
+  discoverPlugins,
+  discoverPluginsFromRoots,
+  discoverExternalPluginRoots,
+  createFrontendPluginMetadata,
+  readPluginManifest,
+  resolvePluginEntry,
+  sortPlugins
+} from "./plugin_manifest";
+export type {
+  DiscoveredPlugin,
+  DiscoverPluginsOptions,
+  FrontendPluginMetadata,
+  PluginDiscoveryRoot,
+  PluginManifest
+} from "./plugin_manifest";
 
 export { removeTrail } from "./string_utils";
 

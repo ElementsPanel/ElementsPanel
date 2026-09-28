@@ -1,0 +1,222 @@
+<script setup lang="ts">
+import {
+  useHeaderMenus,
+  type SidebarRouteEntry
+} from "@/hooks/useHeaderMenus";
+import { computed } from "vue";
+import { useRoute } from "vue-router";
+import {
+  VList,
+  VListItem,
+  VSheet
+} from "vuetify/components";
+
+const route = useRoute();
+const { sidebarItems, handleToPage } = useHeaderMenus();
+
+/**
+ * Only the most specific entry counts as active. `/market/plugins` is a menu item
+ * of its own, and a plain prefix test would light it up together with `/market`
+ * — which also decides which icon is drawn filled.
+ */
+const activePath = computed(() => {
+  let exact = "";
+  let longest = "";
+  for (const entry of sidebarItems.value) {
+    const path = entry.path;
+    if (path === "/") continue;
+    if (route.path === path) {
+      exact = path;
+      break;
+    }
+    if (route.path.startsWith(`${path}/`) && path.length > longest.length) longest = path;
+  }
+  return exact || longest;
+});
+
+const isRouteActive = (path: string): boolean => activePath.value === path;
+
+const routePathIcons: Record<string, string> = {
+  "/instances": "mdi-view-grid-outline",
+  "/users": "mdi-account-group-outline",
+  "/customer": "mdi-account-outline",
+  "/login": "mdi-login",
+  "/plugins/config": "mdi-view-grid-plus",
+  "/overview": "mdi-view-dashboard-outline",
+  "/node": "mdi-sitemap-outline",
+  "/market": "mdi-storefront-outline"
+};
+
+const mdiIconMap: Record<string, string> = {
+  AppstoreAddOutlined: "mdi-view-grid-plus",
+  AreaChartOutlined: "mdi-chart-areaspline",
+  BgColorsOutlined: "mdi-palette-outline",
+  BuildOutlined: "mdi-hammer-wrench",
+  CloudDownloadOutlined: "mdi-cloud-download-outline",
+  CloudUploadOutlined: "mdi-cloud-upload-outline",
+  ClusterOutlined: "mdi-server-network-outline",
+  CodeOutlined: "mdi-code-tags",
+  CloseCircleOutlined: "mdi-close-circle-outline",
+  DesktopOutlined: "mdi-monitor",
+  DashboardOutlined: "mdi-view-dashboard-outline",
+  FileExcelOutlined: "mdi-file-excel-outline",
+  FileTextOutlined: "mdi-file-document-outline",
+  FileZipOutlined: "mdi-folder-zip-outline",
+  FolderOpenOutlined: "mdi-folder-open-outline",
+  GithubFilled: "mdi-github",
+  HomeOutlined: "mdi-home-outline",
+  InteractionOutlined: "mdi-gesture-tap-button",
+  LinkOutlined: "mdi-link-variant",
+  LogoutOutlined: "mdi-logout",
+  MenuOutlined: "mdi-menu",
+  NodeIndexOutlined: "mdi-source-branch",
+  RedoOutlined: "mdi-restore",
+  SaveOutlined: "mdi-content-save-outline",
+  ShopOutlined: "mdi-storefront-outline",
+  ShoppingCartOutlined: "mdi-cart-outline",
+  TeamOutlined: "mdi-account-group-outline",
+  TransactionOutlined: "mdi-swap-horizontal",
+  UserOutlined: "mdi-account-outline",
+  UsergroupDeleteOutlined: "mdi-account-multiple-minus-outline",
+  LoginOutlined: "mdi-login"
+};
+
+const getMdiIcon = (icon: unknown, fallback?: string): string => {
+  if (typeof icon === "string" && icon.startsWith("mdi-")) return icon;
+  const component = icon as
+    | {
+      name?: string;
+      displayName?: string;
+      __name?: string;
+      type?: { name?: string; __name?: string };
+    }
+    | undefined;
+  const iconName =
+    component?.name ??
+    component?.displayName ??
+    component?.__name ??
+    component?.type?.name ??
+    component?.type?.__name;
+  return (iconName && mdiIconMap[iconName]) || fallback || "mdi-menu";
+};
+
+const getRouteIcon = (entry: SidebarRouteEntry): string =>
+  routePathIcons[entry.path] || getMdiIcon(entry.icon);
+
+// Default (inactive) sidebar icons use the linear/outline style; the active
+// item swaps to its filled counterpart. Only verified outline/filled pairs are
+// listed here — icons without an outline variant keep the same glyph.
+const filledIconMap: Record<string, string> = {
+  "mdi-view-grid-outline": "mdi-view-grid",
+  "mdi-view-grid-plus-outline": "mdi-view-grid-plus",
+  "mdi-account-group-outline": "mdi-account-group",
+  "mdi-account-outline": "mdi-account",
+  "mdi-sitemap-outline": "mdi-sitemap",
+  "mdi-server-network-outline": "mdi-server-network",
+  "mdi-storefront-outline": "mdi-storefront",
+  "mdi-view-dashboard-outline": "mdi-view-dashboard",
+  "mdi-puzzle-outline": "mdi-puzzle"
+};
+
+const toOutlineIcon = (icon: string): string => {
+  if (icon.endsWith("-outline")) return icon;
+  const outline = Object.keys(filledIconMap).find((key) => filledIconMap[key] === icon);
+  return outline ?? icon;
+};
+
+const toFilledIcon = (icon: string): string => {
+  const outline = toOutlineIcon(icon);
+  return filledIconMap[outline] ?? outline;
+};
+
+const getSidebarIcon = (entry: SidebarRouteEntry): string => {
+  const icon = getRouteIcon(entry);
+  return isRouteActive(entry.path) ? toFilledIcon(icon) : toOutlineIcon(icon);
+};
+</script>
+
+<template>
+  <VSheet tag="aside" class="left-sidebar" elevation="0" rounded="0">
+    <VList class="sidebar-menu" density="comfortable" nav>
+      <VListItem
+        v-for="entry in sidebarItems"
+        :key="entry.path"
+        class="sidebar-item"
+        :class="entry.customClass"
+        :active="isRouteActive(entry.path)"
+        color="primary"
+        rounded="xl"
+        :title="String(entry.name ?? '')"
+        :prepend-icon="getSidebarIcon(entry)"
+        @click="handleToPage(entry.path)"
+      />
+    </VList>
+  </VSheet>
+</template>
+
+<style lang="scss" scoped>
+.left-sidebar {
+  display: flex;
+  flex: 0 0 240px;
+  flex-direction: column;
+  width: 240px;
+  min-width: 240px;
+  height: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  background-color: var(--app-header-bg);
+  color: var(--app-header-text-color);
+  backdrop-filter: saturate(180%) blur(20px);
+  padding: 0 0 20px;
+}
+
+.sidebar-menu {
+  flex: 1;
+  min-height: 0;
+  width: calc(100%);
+  max-width: none !important;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 20px 8px;
+  box-sizing: border-box;
+  color: var(--app-header-text-color);
+  background: transparent;
+}
+
+.sidebar-item {
+  width: calc(100% + 24px);
+  max-width: none !important;
+  min-height: 44px;
+  margin: 3px 0 3px -20px;
+  padding-left: 36px !important;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 0 24px 24px 0 !important;
+  background-color: transparent !important;
+
+  :deep(.v-list-item__prepend > .v-icon) {
+    margin-inline-end: 12px;
+    color: currentColor;
+  }
+
+  :deep(.v-list-item-title) {
+    font-size: 14px;
+  }
+}
+
+.sidebar-item :deep(.v-list-item__overlay) {
+  background: currentColor;
+  opacity: 0;
+}
+
+.sidebar-item:hover :deep(.v-list-item__overlay),
+.sidebar-item:focus-visible :deep(.v-list-item__overlay) {
+  opacity: 0;
+}
+
+.sidebar-item.v-list-item--active {
+  background-color: rgba(64, 156, 216, 0.16) !important;
+  color: inherit;
+}
+
+</style>

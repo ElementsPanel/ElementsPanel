@@ -14,9 +14,14 @@ lib/
 production/
 .DS_Store
 production-code/
+/external/
 # Compiled plugin backends (built from plugins/*/src/backend/index.ts)
 panel/plugins/*/backend/
 daemon/plugins/*/backend/
+# Plugins installed from the plugin market (never part of the repository)
+market_plugins/
+panel/market_plugins/
+daemon/market_plugins/
 test.js
 .idea/
 ai-api.key

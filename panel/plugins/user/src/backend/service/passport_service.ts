@@ -34,7 +34,8 @@ export function isApiRequest(ctx: Koa.ParameterizedContext) {
 }
 
 export function getApiKey(ctx: Koa.ParameterizedContext) {
-  return String(ctx.query.apikey || ctx.request?.header["x-request-api-key"] || "");
+  const key = ctx.request?.header["x-request-api-key"] || ctx.query.apikey;
+  return typeof key === "string" ? key : "";
 }
 
 export function isAjax(ctx: Koa.ParameterizedContext) {
@@ -108,7 +109,8 @@ export function login(
 export function loginSuccess(ctx: Koa.ParameterizedContext, userName: string) {
   const ip = getLoginIp(ctx);
   const user = userSystem.getUserByUserName(userName);
-  if (!user) throw new Error($t("TXT_CODE_router.login.nameOrPassError"));
+  if (!user || user.permission < ROLE().USER)
+    throw new Error($t("TXT_CODE_router.login.nameOrPassError"));
   if (!ctx.session) throw new Error("Session is Null!");
 
   user.loginTime = new Date().toLocaleString();
@@ -121,7 +123,6 @@ export function loginSuccess(ctx: Koa.ParameterizedContext, userName: string) {
 
   logger().info($t("TXT_CODE_42036f92"));
   logger().info(`[LOGIN] IP: ${ip} Login ${userName} successful!`);
-  logger().info(`[LOGIN] Token: ${ctx.session["token"]}`);
   logger().info($t("TXT_CODE_42036f92"));
 
   return String(ctx.session["token"]);
@@ -129,29 +130,24 @@ export function loginSuccess(ctx: Koa.ParameterizedContext, userName: string) {
 
 export async function bind2FA(ctx: Koa.ParameterizedContext) {
   if (!ctx.session) throw new Error("Session is Null!");
-  const userName = ctx.session["userName"];
-  const user = userSystem.getUserByUserName(userName);
+  const user = getUserFromCtx(ctx);
   if (!user) throw new Error("User is Null!");
-  try {
-    const secret = authenticator.generateSecret();
-    const qrCode = await QRCode.toDataURL(authenticator.keyuri(userName, "ElementsPanel", secret));
-    userSystem.edit(user.uuid, { secret, open2FA: false });
-    return qrCode;
-  } catch (err) {
-    user.secret = "";
-  }
+  if (user.open2FA) throw new Error($t("TXT_CODE_3d68e43b"));
+  const secret = authenticator.generateSecret();
+  const qrCode = await QRCode.toDataURL(authenticator.keyuri(user.userName, "ElementsPanel", secret));
+  await userSystem.edit(user.uuid, { secret, open2FA: false });
+  return qrCode;
 }
 
 export async function confirm2FaQRCode(userUuid: string, isEnable: boolean) {
   await userSystem.edit(userUuid, {
-    open2FA: isEnable
+    open2FA: isEnable,
+    ...(isEnable ? {} : { secret: "" })
   });
 }
 
 export function check(ctx: Koa.ParameterizedContext) {
-  if (!ctx.session) return false;
-  if (ctx.session["login"] && ctx.session["userName"] && ctx.session["token"]) return true;
-  return false;
+  return Boolean(ctx.session?.["login"] === true && ctx.session["token"] && getUserFromCtx(ctx));
 }
 
 export function logout(ctx: Koa.ParameterizedContext): boolean {
@@ -214,11 +210,13 @@ export function getUserNameBySession(ctx: Koa.ParameterizedContext): string {
 
 export function getUserFromCtx(ctx: Koa.ParameterizedContext) {
   try {
+    let user: User | undefined | null;
     if (isApiRequest(ctx)) {
-      const user = getUuidByApiKey(getApiKey(ctx));
-      return user || undefined;
+      user = getUuidByApiKey(getApiKey(ctx));
+    } else if (ctx.session?.["login"] === true && ctx.session["token"]) {
+      user = userSystem.getInstance(ctx.session["uuid"] || "");
     }
-    return userSystem.getInstance(ctx.session?.["uuid"] || "") || undefined;
+    return user && user.permission >= ROLE().USER ? user : undefined;
   } catch (error) {
     return undefined;
   }

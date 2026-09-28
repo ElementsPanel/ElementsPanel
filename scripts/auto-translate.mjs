@@ -106,78 +106,87 @@ async function translateText(chatAiSession, textList = [], targetLanguage = "") 
  */
 async function checkAndFillMissingKeys() {
   const apiKey = await getApiKey();
-  const languagesPath = path.join(import.meta.dirname, "../languages");
+  const languagesPaths = [
+    path.join(import.meta.dirname, "../panel/plugins/i18n/src/languages"),
+    path.join(import.meta.dirname, "../daemon/plugins/i18n/src/languages")
+  ];
 
-  // Read standard file en_US.json
-  const standardFilePath = path.join(languagesPath, "en_US.json");
-  const standardContent = await readFile(standardFilePath, "utf8");
-  const standardJson = JSON.parse(standardContent);
-  const standardKeys = Object.keys(standardJson);
+  for (const languagesPath of languagesPaths) {
+    // Read standard file en_US.json
+    const standardFilePath = path.join(languagesPath, "en_US.json");
+    const standardContent = await readFile(standardFilePath, "utf8");
+    const standardJson = JSON.parse(standardContent);
+    const standardKeys = Object.keys(standardJson);
 
-  console.log(`Standard file en_US.json contains ${standardKeys.length} key-value pairs`);
+    console.log(`Standard file en_US.json contains ${standardKeys.length} key-value pairs`);
 
-  // Get all language files
-  const languageFiles = await readdir(languagesPath);
-  const targetFiles = languageFiles.filter(
-    (file) => file.endsWith(".json") && file !== "en_US.json"
-  );
+    // Get all language files
+    const languageFiles = await readdir(languagesPath);
+    const targetFiles = languageFiles.filter(
+      (file) => file.endsWith(".json") && file !== "en_US.json"
+    );
 
-  // Process each language file concurrently
-  const processFile = async (file) => {
-    const systemPrompt = SYSTEM_PROMPT.replace(/{target}/g, LANGUAGE_MAP[file]);
-    const chatAiSession = new AiChatSession(apiKey, systemPrompt);
+    // Process each language file concurrently
+    const processFile = async (file) => {
+      const systemPrompt = SYSTEM_PROMPT.replace(/{target}/g, LANGUAGE_MAP[file]);
+      const chatAiSession = new AiChatSession(apiKey, systemPrompt);
 
-    const filePath = path.join(languagesPath, file);
-    const content = await readFile(filePath, "utf8");
-    const json = JSON.parse(content);
+      const filePath = path.join(languagesPath, file);
+      const content = await readFile(filePath, "utf8");
+      const json = JSON.parse(content);
 
-    // Find missing keys
-    const missingKeys = standardKeys.filter((key) => !json.hasOwnProperty(key));
+      // Find missing keys
+      const missingKeys = standardKeys.filter((key) => !json.hasOwnProperty(key));
 
-    if (missingKeys.length === 0) {
-      console.log(`✅ ${file} has no missing key-value pairs`);
-      return;
-    }
-
-    console.log(`🔍 ${file} is missing ${missingKeys.length} key-value pairs. Translating...`);
-
-    // Prepare translation data
-    const textsToTranslate = missingKeys.map((key) => ({
-      key: key,
-      text: standardJson[key]
-    }));
-
-    // Get target language
-    const targetLanguage = LANGUAGE_MAP[file];
-    if (!targetLanguage) {
-      console.warn(`⚠️  No language mapping found for ${file}. Skipping.`);
-      return;
-    }
-
-    try {
-      // Call translation function
-      console.log(`🌍 Translating to ${targetLanguage}...`);
-      const translatedTexts = await translateText(chatAiSession, textsToTranslate, targetLanguage);
-
-      // Merge translation results into current language JSON
-      for (const translatedItem of translatedTexts) {
-        json[translatedItem.key] = translatedItem.text;
+      if (missingKeys.length === 0) {
+        console.log(`✅ ${file} has no missing key-value pairs`);
+        return;
       }
 
-      // Write updated content back to file
-      const updatedContent = JSON.stringify(json, null, 2);
-      await writeFile(filePath, updatedContent, "utf8");
+      console.log(`🔍 ${file} is missing ${missingKeys.length} key-value pairs. Translating...`);
 
-      console.log(`✅ ${file} filled ${missingKeys.length} missing key-value pairs`);
+      // Prepare translation data
+      const textsToTranslate = missingKeys.map((key) => ({
+        key: key,
+        text: standardJson[key]
+      }));
 
-      // Clear conversation history to avoid long context
-      chatAiSession.clearHistory();
-    } catch (error) {
-      console.error(`\n\n❌ Error translating ${file}: ${error.message} \n`);
-    }
-  };
+      // Get target language
+      const targetLanguage = LANGUAGE_MAP[file];
+      if (!targetLanguage) {
+        console.warn(`⚠️  No language mapping found for ${file}. Skipping.`);
+        return;
+      }
 
-  await Promise.all(targetFiles.map((file) => processFile(file)));
+      try {
+        // Call translation function
+        console.log(`🌍 Translating to ${targetLanguage}...`);
+        const translatedTexts = await translateText(
+          chatAiSession,
+          textsToTranslate,
+          targetLanguage
+        );
+
+        // Merge translation results into current language JSON
+        for (const translatedItem of translatedTexts) {
+          json[translatedItem.key] = translatedItem.text;
+        }
+
+        // Write updated content back to file
+        const updatedContent = JSON.stringify(json, null, 2);
+        await writeFile(filePath, updatedContent, "utf8");
+
+        console.log(`✅ ${file} filled ${missingKeys.length} missing key-value pairs`);
+
+        // Clear conversation history to avoid long context
+        chatAiSession.clearHistory();
+      } catch (error) {
+        console.error(`\n\n❌ Error translating ${file}: ${error.message} \n`);
+      }
+    };
+
+    await Promise.all(targetFiles.map((file) => processFile(file)));
+  }
 
   console.log("🎉 All language files checked and filled!");
 }

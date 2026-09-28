@@ -1,8 +1,9 @@
 import Koa from "koa";
-import type { GuardedRoute } from "../../../../../src/app/service/request_guard";
+import type { GuardedRoute } from "../../../../../src/app/plugin/guard";
 import { $t, globalVariable } from "../runtime";
 import {
   checkSafeName,
+  getApiKey,
   getUuidByApiKey,
   ILLEGAL_ACCESS_KEY,
   isAjax,
@@ -50,8 +51,16 @@ function apiError(ctx: Koa.ParameterizedContext) {
 }
 
 function tooFast(ctx: Koa.ParameterizedContext) {
-  ctx.status = 500;
+  ctx.status = 429;
   ctx.body = `${$t("TXT_CODE_permission.tooFast")}`;
+}
+
+function getRequestToken(ctx: Koa.ParameterizedContext): string | undefined {
+  const authorization = ctx.get("authorization");
+  const bearer = authorization.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
+  if (bearer) return bearer;
+  // Compatibility for older clients and third-party integrations.
+  return typeof ctx.query.token === "string" ? ctx.query.token : undefined;
 }
 
 // Basic user permission middleware
@@ -70,7 +79,7 @@ export default function permission(parameter: GuardedRoute): Koa.Middleware {
     // If it is an API request, perform API-level permission judgment
     const key = ctx.request?.header["x-request-api-key"] || ctx.query.apikey;
     if (key) {
-      const apiKey = String(key);
+      const apiKey = getApiKey(ctx);
       if (!checkSafeName(apiKey)) {
         return apiError(ctx);
       }
@@ -85,9 +94,9 @@ export default function permission(parameter: GuardedRoute): Koa.Middleware {
     // If the route requires Token verification, it will be verified, the default is automatic verification
     if (parameter.token !== false) {
       if (!isAjax(ctx)) return ajaxError(ctx);
-      const requestToken = ctx.query.token;
+      const requestToken = getRequestToken(ctx);
       const realToken = ctx.session?.["token"];
-      if (requestToken !== realToken) {
+      if (!realToken || requestToken !== realToken) {
         return tokenError(ctx);
       }
     }
@@ -100,7 +109,8 @@ export default function permission(parameter: GuardedRoute): Koa.Middleware {
 
         // ban check
         if (user && user.permission < 0) {
-          return logout(ctx) as unknown as void;
+          logout(ctx);
+          return verificationFailed(ctx);
         }
 
         // Judgment of permissions for ordinary users and administrative users

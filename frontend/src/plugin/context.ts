@@ -1,0 +1,516 @@
+import { Context } from "cordis";
+import { shallowRef, type App, type Component } from "vue";
+import type { Pinia } from "pinia";
+import type { RouteRecordRaw, Router } from "vue-router";
+import type { I18n } from "vue-i18n";
+import type { RemoteNodeHook } from "@console/hooks/useRemoteNode";
+import type { NodePluginApi } from "@console/services/apis/node";
+import type { UserPluginApi } from "@console/services/apis/user";
+import type { LoadedPanelFrontendPlugin, PanelFrontendPluginMetadata } from "./loader";
+import type { PluginState } from "../../../common/src/plugin_contract";
+
+/**
+ * The frontend's cordis container, and the complete list of what a plugin can
+ * see.
+ *
+ * Every capability is a service on the context; every registration a plugin
+ * makes is an effect owned by that plugin's scope, so unloading a plugin undoes
+ * its routes, cards, menus, actions and translations without the plugin writing
+ * any cleanup code. `ctx.logger` and the timer helpers come with cordis itself.
+ *
+ * Keep this module import-light. Panel code that only needs to resolve a
+ * plugin-provided service — `services/apis/user.ts`, say — imports it, and
+ * pulling the card and route registries in here would drag every widget into the
+ * app entry graph and create an import cycle with `@/lang/i18n`.
+ */
+export const ctx = new Context();
+
+/**
+ * Bumped whenever any service appears or disappears. A `computed()` that reads
+ * a plugin-provided service must read this first, or it will not re-evaluate
+ * when the owning plugin is loaded or unloaded — cordis's registry is not a Vue
+ * reactive source.
+ */
+export const serviceRevision = shallowRef(0);
+ctx.on("internal/service", () => {
+  serviceRevision.value += 1;
+});
+
+/**
+ * Resolve a service a plugin may or may not provide, reactively. Returns
+ * `undefined` when nothing provides it, so callers degrade instead of throwing.
+ */
+export function usePluginService<T>(name: string): T | undefined {
+  void serviceRevision.value;
+  return ctx.get(name as never) as T | undefined;
+}
+
+export interface PanelFrontendAppMenuItem {
+  value: string | number;
+  title: string | (() => string);
+}
+
+export interface PanelFrontendAppMenu {
+  title: string | (() => string);
+  leftSideTitle?: string | (() => string);
+  iconText?: string;
+  icon?: Component | string;
+  /** Vuetify/MDI icon name used by the normal panel shell. */
+  mdiIcon?: string;
+  click: (...args: any[]) => unknown;
+  conditions?: boolean | (() => boolean);
+  onlyPC?: boolean;
+  onlyHeader?: boolean;
+  customClass?: string[];
+  menus?: PanelFrontendAppMenuItem[];
+}
+
+export interface PanelFrontendLoginAction {
+  title: string | (() => string);
+  icon?: Component | string;
+  click: () => unknown;
+  condition?: boolean | (() => boolean);
+}
+
+export interface PanelFrontendDesktopApp {
+  id: string;
+  label: string | (() => string);
+  icon: Component | string;
+  color?: string;
+  route?: string;
+  component?: Component;
+  condition?: boolean | (() => boolean);
+  initialWidth?: number;
+  initialHeight?: number;
+  /** Registered view id, also used to restore saved windows. */
+  view?: string;
+}
+
+export interface PanelFrontendDesktopView {
+  id: string;
+  component: Component;
+  title: string | (() => string);
+  icon: string;
+  initialWidth?: number;
+  initialHeight?: number;
+  condition?: () => boolean;
+  accepts?: (props: Record<string, unknown>) => boolean;
+}
+
+export interface PanelFrontendDesktopWindowRequest {
+  id: string;
+  view: string;
+  title?: string;
+  props?: Record<string, unknown>;
+}
+
+export interface PanelFrontendInstanceActionContext {
+  mode: "normal" | "desktop";
+  instanceId: string;
+  daemonId: string;
+  instanceInfo: unknown;
+  daemon?: unknown;
+  isGlobalTerminal: boolean;
+}
+
+export interface PanelFrontendInstanceAction {
+  id: string;
+  title: string | (() => string);
+  icon: Component | string;
+  /** Optional Material Design icon for shells that render MDI icons. */
+  mdiIcon?: string;
+  normalComponent?: Component;
+  desktopComponent?: Component;
+  condition?: (context: PanelFrontendInstanceActionContext) => boolean;
+  desktopInitialWidth?: number;
+  desktopInitialHeight?: number;
+}
+
+export interface PanelFrontendScheduleAction {
+  type: string;
+  title: string | (() => string);
+  inputPlaceholder?: string | (() => string);
+  condition?: () => boolean;
+}
+
+/**
+ * State a terminal action's `click` and `condition` are given. It mirrors what
+ * the terminal itself knows about the instance in front of the user, so a plugin
+ * button behaves the same in the normal terminal and in a Desktop console.
+ */
+export interface PanelFrontendTerminalActionContext {
+  mode: "normal" | "desktop";
+  instanceId: string;
+  daemonId: string;
+  instanceInfo: unknown;
+  isStopped: boolean;
+  isRunning: boolean;
+  isGlobalTerminal: boolean;
+  isDockerMode: boolean;
+  clearTerminal: () => void;
+}
+
+/** A button a plugin adds to the terminal's instance-operations row. */
+export interface PanelFrontendTerminalAction {
+  id: string;
+  title: string | (() => string);
+  icon: Component | string;
+  /** Matches the core buttons: "default" | "danger". */
+  type?: string;
+  class?: string;
+  noConfirm?: boolean;
+  props?: Record<string, unknown>;
+  click: (context: PanelFrontendTerminalActionContext) => unknown;
+  condition?: (context: PanelFrontendTerminalActionContext) => boolean;
+}
+
+/** The button descriptor both terminals render. */
+export interface PanelFrontendTerminalButton {
+  id: string;
+  title: string;
+  icon: Component | string;
+  type: string;
+  class?: string;
+  noConfirm: boolean;
+  props: Record<string, unknown>;
+  click: () => unknown;
+  condition: () => boolean;
+}
+
+/** The Vue application a plugin registers into. Stored raw, never reactive. */
+export interface FrontendVueService {
+  readonly app: App;
+  readonly pinia: Pinia;
+  readonly router: Router;
+}
+
+/** Startup state and errors. Provided by the foundational `runtime` plugin. */
+export interface FrontendStartupService {
+  readonly language: string;
+  showError(error: unknown): void;
+  updatePlugins(plugins: readonly PanelFrontendPluginDiagnostic[]): void;
+}
+
+/** The panel shell. Provided by the foundational `console` plugin. */
+export interface FrontendConsoleService {
+  readonly root: Component;
+}
+
+export interface PanelLanguageOption {
+  label: string;
+  value: string;
+}
+
+export interface FrontendI18nService {
+  readonly instance: I18n;
+  readonly supportedLanguages: readonly PanelLanguageOption[];
+  getSupportLanguages(): string[];
+  searchSupportLanguage(language: string): string;
+  getCurrentLang(): string;
+  setLanguage(language: string, reload?: boolean): void;
+  isCN(): boolean;
+  isEN(): boolean;
+  translate(...args: any[]): string;
+  /**
+   * Merge the plugin's translations, keyed by locale (`en_us`, `zh_cn`, ...).
+   * The base catalogue is snapshotted and re-applied on unload, so a plugin's
+   * strings — including any that override a core string — leave with it.
+   */
+  define(messages: Record<string, Record<string, unknown>>): () => void;
+}
+
+export interface FrontendRoutesService {
+  /** Adds a route, removed again when the calling plugin unloads. */
+  add(route: RouteRecordRaw): () => void;
+  /** Read inside a `computed()` that enumerates routes, to make it reactive. */
+  readonly revision: number;
+  /** Whether a path belongs to a plugin rather than to the core. */
+  isPluginRoute(path: string): boolean;
+  /** The name of the plugin that added a path, if a plugin did. */
+  ownerOf(path: string): string | undefined;
+}
+
+export interface FrontendUiService {
+  /** Registers a global component; a previous registration is restored on unload. */
+  component(name: string, component: Component): () => void;
+  /**
+   * Mounts a component for the lifetime of the plugin, alongside the panel's own
+   * dialog providers. For global overlays that belong to no route.
+   */
+  globalComponent(component: Component): () => void;
+  readonly globalComponents: readonly Component[];
+}
+
+/** Slots owned by the console shell and available to independently loaded plugins. */
+export interface PanelFrontendSlotMap {
+  "shell.overlay": { props: Record<string, never> };
+  "shell.header.leading": { props: { mobile: boolean } };
+  "shell.header.actions": { props: { mobile: boolean } };
+}
+
+export type PanelFrontendSlotName = keyof PanelFrontendSlotMap & string;
+export type PanelFrontendSlotProps<K extends PanelFrontendSlotName> =
+  PanelFrontendSlotMap[K]["props"];
+
+export interface PanelFrontendSlotEntry<K extends PanelFrontendSlotName = PanelFrontendSlotName> {
+  readonly id: string;
+  readonly owner: string;
+  readonly name: K;
+  readonly component: Component;
+  readonly order: number;
+  readonly props: Record<string, unknown>;
+}
+
+export interface PanelFrontendSlotRegistration<K extends PanelFrontendSlotName> {
+  /** Stable identity inside one slot. Defaults to `<plugin>:<sequence>`. */
+  id?: string;
+  /** Lower values render first. */
+  order?: number;
+  /** Static props merged after the shell-owned props. */
+  props?: Record<string, unknown>;
+  /** Evaluated whenever the shell enumerates the slot. */
+  condition?: (props: PanelFrontendSlotProps<K>) => boolean;
+}
+
+export interface FrontendSlotsService {
+  register<K extends PanelFrontendSlotName>(
+    name: K,
+    component: Component,
+    options?: PanelFrontendSlotRegistration<K>
+  ): () => void;
+  entries<K extends PanelFrontendSlotName>(
+    name: K,
+    props: PanelFrontendSlotProps<K>
+  ): readonly PanelFrontendSlotEntry<K>[];
+}
+
+export interface FrontendMenusService {
+  app(menu: PanelFrontendAppMenu): () => void;
+  login(action: PanelFrontendLoginAction): () => void;
+  readonly appMenus: readonly PanelFrontendAppMenu[];
+  readonly loginActions: readonly PanelFrontendLoginAction[];
+}
+
+export interface FrontendActionsService {
+  instance(action: PanelFrontendInstanceAction): () => void;
+  schedule(action: PanelFrontendScheduleAction): () => void;
+  terminal(action: PanelFrontendTerminalAction): () => void;
+  readonly instances: readonly PanelFrontendInstanceAction[];
+  readonly schedules: readonly PanelFrontendScheduleAction[];
+  readonly terminals: readonly PanelFrontendTerminalAction[];
+  /**
+   * The registered terminal actions as the button descriptors both terminals
+   * already render, so neither call site has to know how a registration looks.
+   */
+  terminalButtons(state: PanelFrontendTerminalActionContext): PanelFrontendTerminalButton[];
+}
+
+export interface FrontendPluginsService {
+  readonly loaded: readonly LoadedPanelFrontendPlugin[];
+  readonly diagnostics: readonly PanelFrontendPluginDiagnostic[];
+  load(id: string): Promise<LoadedPanelFrontendPlugin>;
+  unload(id: string): Promise<boolean>;
+  reload(id: string): Promise<LoadedPanelFrontendPlugin>;
+  /** Re-reads the installed plugins and loads or unloads to match. */
+  refresh(): Promise<readonly PanelFrontendPluginMetadata[]>;
+  /** Throws only when an entry declared `frontendRequired` is not active. */
+  audit(): void;
+}
+
+export interface PanelFrontendPluginDiagnostic {
+  id: string;
+  state: PluginState;
+  required: boolean;
+  revision?: string;
+  requiredServices: readonly string[];
+  missingServices: readonly string[];
+  error?: string;
+}
+
+export type FrontendConnectionStatus =
+  | "connecting"
+  | "connected"
+  | "degraded"
+  | "disconnected";
+
+export interface FrontendConnectionState {
+  status: FrontendConnectionStatus;
+  networkAvailable: boolean;
+  generation: number;
+  retryAttempt: number;
+  lastError?: string;
+  changedAt: number;
+}
+
+export interface FrontendConnectionService {
+  readonly state: Readonly<FrontendConnectionState>;
+  /** Cancels the current retry delay and probes the panel immediately. */
+  reconnect(): void;
+}
+
+/**
+ * Desktop mode's application registry.
+ *
+ * Supplied by the console plugin even though Desktop mode is optional. An
+ * application belongs to whichever plugin owns the page and is disposed with
+ * that plugin rather than with Desktop. Without `plugins/desktop` nothing renders
+ * the registry and `window` is absent.
+ */
+export interface FrontendDesktopService {
+  /** Adds an application to the Desktop, removed when the calling plugin unloads. */
+  app(desktopApp: PanelFrontendDesktopApp): () => void;
+  readonly apps: readonly PanelFrontendDesktopApp[];
+  view(view: PanelFrontendDesktopView): () => void;
+  readonly views: readonly PanelFrontendDesktopView[];
+  open(request: PanelFrontendDesktopWindowRequest): boolean;
+  provideOpener(open: (request: PanelFrontendDesktopWindowRequest) => boolean): () => void;
+  /** The window shell a Desktop-mode component is mounted inside. */
+  readonly window: Component | undefined;
+  /** Supplies that shell. Called by `plugins/desktop`. */
+  provideWindow(component: Component): () => void;
+}
+
+/**
+ * The file manager. Provided by `plugins/file`.
+ *
+ * It publishes more than a page: the upload queue the settings page and the
+ * create-instance form drive, the file editor the mod manager and the backup
+ * plugin open, the dialogs the panel mounts on demand, and the filename helpers
+ * the code editor and archive preview use. Every consumer resolves it with
+ * `usePluginService` and degrades when the plugin is absent.
+ */
+export interface FrontendFileManagerService {
+  readonly api: Record<string, unknown>;
+  readonly useFileManager: (...args: any[]) => any;
+  readonly getFileConfigAddr: (...args: any[]) => any;
+  readonly uploadService: any;
+  readonly UploadFiles: any;
+  readonly getFileIcon: (fileName: string, type?: number) => string;
+  readonly getFileExtName: (fileName: string) => string;
+  readonly filterFileName: (fileName: string) => string;
+  readonly isCompressFile: (fileName: string) => boolean;
+  readonly FileEditor: Component;
+  readonly ImageViewer: Component;
+  readonly DesktopFileManager: Component;
+  readonly DesktopFileEditor: Component;
+  readonly DesktopImageViewer: Component;
+  useUploadFileDialog(): Promise<string>;
+  useDownloadFileDialog(): Promise<any>;
+  useImageViewerDialog(
+    instanceId: string,
+    daemonId: string,
+    fileName: string,
+    frontDir: string
+  ): Promise<any>;
+}
+
+/** The instance terminal and its stream client. Provided by `plugins/terminal`. */
+export interface FrontendTerminalService {
+  readonly api: Record<string, unknown>;
+  readonly TerminalCore: Component;
+  readonly TerminalTags: Component;
+  readonly TerminalTopTags: Component;
+  readonly useTerminal: (...args: any[]) => any;
+  readonly useCommandHistory: (...args: any[]) => any;
+  readonly encodeConsoleColor: (text: string) => string;
+}
+
+/** Minecraft mod and plugin APIs. Provided by `plugins/mod`. */
+export interface FrontendModManagerService {
+  readonly api: typeof import("../../../panel/plugins/mod/src/api");
+}
+
+/** Optional Java environment selector used while creating an instance. */
+export interface FrontendJavaService {
+  readonly setupComponent: Component;
+}
+
+/** Application instance pages, APIs, hooks and dialogs. Provided by `plugins/instance`. */
+export interface FrontendInstanceService {
+  readonly api: Record<string, (...args: any[]) => any>;
+  openConsole(instance: unknown, daemonId: string): boolean;
+  readonly hooks: typeof import("../../../panel/plugins/instance/src/hooks/useInstance") &
+    typeof import("../../../panel/plugins/instance/src/hooks/useInstanceTag") &
+    typeof import("../../../panel/plugins/instance/src/hooks/quickStartFlow") & {
+      useSchedule: typeof import("../../../panel/plugins/instance/src/hooks/useSchedule").useSchedule;
+      useServerConfig: typeof import("../../../panel/plugins/instance/src/hooks/useServerConfig").useServerConfig;
+      useStartCmdBuilder: typeof import("../../../panel/plugins/instance/src/hooks/useGenerateStartCmd").useStartCmdBuilder;
+    };
+  readonly components: {
+    readonly CmdAssistantDialog: Component;
+    readonly CreateInstanceForm: Component;
+    readonly InstanceDetail: Component;
+    readonly DeleteInstanceDialog: Component;
+    readonly DockerCapabilityDialog: Component;
+    readonly DockerDeviceDialog: Component;
+    readonly DockerPortDialog: Component;
+    readonly DockerVersionSelectDialog: Component;
+    readonly NodeSelectDialog: Component;
+    readonly SelectInstances: Component;
+    readonly TagsDialog: Component;
+  };
+}
+
+/** Accounts and sessions. Provided by `plugins/user`. */
+export interface FrontendUserService {
+  restoreSession(): Promise<void>;
+  readonly api: UserPluginApi;
+  readonly desktopLoginWindow: Component;
+  readonly desktopUsers: Component;
+  readonly desktopUserInfo: Component;
+  readonly desktopStartMenuAvatar: Component;
+}
+
+/** The app market. Provided by `plugins/market`. */
+export interface FrontendMarketService {
+  readonly api: Record<string, unknown>;
+  openMarketDialog(
+    daemonId?: string,
+    instanceId?: string,
+    options?: { autoInstall?: boolean; onlyDockerTemplate?: boolean }
+  ): Promise<unknown>;
+  useMarketPackages(options?: Record<string, unknown>): unknown;
+}
+
+/** Node management. Provided by `plugins/node`. */
+export interface FrontendNodeService {
+  readonly api: NodePluginApi;
+  useRemoteNode(): RemoteNodeHook;
+}
+
+declare module "cordis" {
+  interface Events {
+    "plugins/loaded"(): void | Promise<void>;
+  }
+
+  interface Context {
+    startup: FrontendStartupService;
+    // Services provided by the foundational frontend plugins.
+    vue: FrontendVueService;
+    console: FrontendConsoleService;
+    // Provided first by the foundational `i18n` plugin.
+    i18n: FrontendI18nService;
+    routes: FrontendRoutesService;
+    ui: FrontendUiService;
+    slots: FrontendSlotsService;
+    menus: FrontendMenusService;
+    actions: FrontendActionsService;
+    plugins: FrontendPluginsService;
+    desktop: FrontendDesktopService;
+    connection: FrontendConnectionService;
+
+    // Provided by plugins. Read them with `usePluginService()` for graceful
+    // degradation, or `inject` them from a plugin that cannot work without one.
+    user: FrontendUserService;
+    market: FrontendMarketService;
+    node: FrontendNodeService;
+    instance: FrontendInstanceService;
+    mod: FrontendModManagerService;
+    java: FrontendJavaService;
+    file: FrontendFileManagerService;
+    terminal: FrontendTerminalService;
+  }
+}
+
+/** The context a frontend plugin's `apply()` receives. */
+export type PanelFrontendPluginContext = Context;

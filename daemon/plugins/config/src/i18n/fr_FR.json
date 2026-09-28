@@ -1,0 +1,5 @@
+{
+  "TXT_CODE_DAEMON_PLUGIN_ESSENTIAL_DISABLE": "Le serveur web ne peut pas être désactivé à distance : le panneau perdrait la connexion par laquelle il administre ce démon. Définissez enabled à false dans son plugin.json sur l hôte.",
+  "TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED": "Un identifiant d extension est requis.",
+  "TXT_CODE_DAEMON_PLUGIN_SELF_DISABLE": "Le gestionnaire d extensions ne peut pas se désactiver lui-même : le panneau perdrait les événements par lesquels il administre ce démon. Définissez enabled à false dans son plugin.json sur l hôte."
+}

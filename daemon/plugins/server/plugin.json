@@ -1,0 +1,8 @@
+{
+  "id": "server",
+  "name": "Web Server",
+  "version": "1.0.0",
+  "description": "Owns the daemon's network layer: the Koa application, its base middleware, the HTTP/HTTPS listener and the Socket.io server the panel connects to. Provides ctx.koa and ctx.websocket.",
+  "priority": 10,
+  "backend": "backend/index.cjs"
+}

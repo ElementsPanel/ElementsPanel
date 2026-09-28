@@ -1,0 +1,6 @@
+{
+  "TXT_CODE_auth_router.access": "Sesión {{id}}({{address}}) Verificación de identidad exitosa",
+  "TXT_CODE_auth_router.disconnect": "La sesión {{id}}({{address}}) se desconectó debido a un largo período de identidad no verificada.",
+  "TXT_CODE_auth_router.illegalAccess": "Acceso no autorizado",
+  "TXT_CODE_auth_router.notAccess": "La sesión {{id}}({{address}}) intentó acceder no autorizado a {{event}} y ahora está bloqueada."
+}

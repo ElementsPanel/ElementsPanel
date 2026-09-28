@@ -1,0 +1,6 @@
+{
+  "TXT_CODE_auth_router.access": "เซสชัน {{id}} ({{address}}) ยืนยันตัวตนสำเร็จแล้ว",
+  "TXT_CODE_auth_router.disconnect": "เซสชัน {{id}} ({{address}}) ถูกตัดการเชื่อมต่อเนื่องจากไม่มีการยืนยันตัวตนเป็นเวลานาน",
+  "TXT_CODE_auth_router.illegalAccess": "การเข้าถึงที่ไม่ถูกต้อง",
+  "TXT_CODE_auth_router.notAccess": "เซสชัน {{id}} ({{address}}) พยายามเข้าถึง {{event}} โดยไม่ได้รับอนุญาตและถูกบล็อก"
+}

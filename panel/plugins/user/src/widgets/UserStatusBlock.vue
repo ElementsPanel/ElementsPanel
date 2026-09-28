@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { useLayoutCardTools } from "@/hooks/useCardTools";
+import CardPanel from "@/components/CardPanel.vue";
 
 import { t } from "@/lang/i18n";
-import type { LayoutCard } from "@/types";
 import { computed, onMounted } from "vue";
 
 import { userInfoApi } from "@/services/apis/index";
 
 const props = defineProps<{
-  card: LayoutCard;
+  type: string;
 }>();
 
 const { execute, state } = userInfoApi();
@@ -20,10 +19,6 @@ const getInstanceList = async () => {
     }
   });
 };
-
-const { getMetaValue } = useLayoutCardTools(props.card);
-
-const type = getMetaValue<string>("type");
 
 const computedStatusList = computed(() => {
   if (!state.value) return [];
@@ -53,7 +48,7 @@ const computedStatusList = computed(() => {
   ];
 });
 
-const realStatus = computed(() => computedStatusList.value.find((v) => v.type === type));
+const realStatus = computed(() => computedStatusList.value.find((v) => v.type === props.type));
 onMounted(() => {
   getInstanceList();
 });
@@ -61,11 +56,11 @@ onMounted(() => {
 
 <template>
   <CardPanel class="StatusBlock" style="height: 100%">
-    <template #title>{{ card.title }}</template>
+    <template #title>{{ realStatus?.title }}</template>
     <template #body>
-      <a-typography-text class="color-info">
+      <span class="color-info">
         {{ realStatus?.title }}
-      </a-typography-text>
+      </span>
       <div class="value">{{ realStatus?.value }}</div>
     </template>
   </CardPanel>

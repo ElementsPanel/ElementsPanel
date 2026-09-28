@@ -1,0 +1,8 @@
+{
+  "id": "config",
+  "name": "Plugin Management",
+  "version": "1.0.0",
+  "description": "Exposes this daemon's plugin inventory and enable switch over the protocol, so the panel's plugin manager can administer it remotely.",
+  "priority": 10000,
+  "backend": "backend/index.cjs"
+}

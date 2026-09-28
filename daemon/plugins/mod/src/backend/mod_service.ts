@@ -1,0 +1,612 @@
+import crypto from "crypto";
+import fs from "fs-extra";
+import StreamZip from "node-stream-zip";
+import path from "path";
+import toml from "smol-toml";
+import yaml from "yaml";
+import type { DaemonPluginContext } from "../../../../src/plugin";
+
+export interface ModInfo {
+  name: string;
+  version: string;
+  id: string;
+  description: string;
+  type: "mod" | "plugin" | "unknown";
+  file: string;
+  enabled: boolean;
+  hash?: string;
+  folder?: string;
+}
+
+export interface ModListResult {
+  mods: ModInfo[];
+  folders: string[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface ModConfigFile {
+  name: string;
+  path: string;
+}
+
+interface ModInstallTask {
+  taskId: string;
+  instanceUuid: string;
+  path: string;
+  state: "running" | "completed" | "failed";
+  updatedAt: number;
+  error?: "file_exists" | "busy" | "download_failed";
+  progress?: { current: number; total: number };
+}
+
+export class ModService {
+  private disposed = false;
+  private download: { path: string; task?: object } | undefined;
+  private installs = new Map<string, ModInstallTask>();
+  private readonly MAX_CACHE_SIZE = 2000;
+  private cache: Map<
+    string,
+    { mtime: number; size: number; info: Partial<ModInfo>; hash: string }
+  > = new Map();
+
+  constructor(private readonly ctx: DaemonPluginContext) {
+    const downloads = ctx.transfer.downloads;
+    ctx.effect(() => () => {
+      this.disposed = true;
+      this.cache.clear();
+      this.installs.clear();
+      // The transfer service is shared: never stop another feature's download.
+      if (this.download?.task && downloads.task === this.download.task) downloads.stop();
+      this.download = undefined;
+    });
+  }
+
+  private async getFileHash(filePath: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const hash = crypto.createHash("sha1");
+      const stream = fs.createReadStream(filePath);
+      stream.on("data", (data) => hash.update(data));
+      stream.on("end", () => resolve(hash.digest("hex")));
+      stream.on("error", (err) => reject(err));
+    });
+  }
+
+  private async parseJarMetadata(jarPath: string): Promise<Partial<ModInfo> | null> {
+    const zip = new StreamZip.async({ file: jarPath });
+    try {
+      const entries = await zip.entries();
+
+      // Fabric
+      if (entries["fabric.mod.json"]) {
+        const data = await zip.entryData("fabric.mod.json");
+        const json = JSON.parse(data.toString());
+        return {
+          id: json.id,
+          name: json.name || json.id,
+          version: json.version,
+          description: json.description,
+          type: "mod"
+        };
+      }
+
+      // Forge (mods.toml)
+      if (entries["META-INF/mods.toml"]) {
+        const data = await zip.entryData("META-INF/mods.toml");
+        const config = toml.parse(data.toString()) as any;
+        const mod = config.mods ? config.mods[0] : {};
+        return {
+          id: mod.modId,
+          name: mod.displayName || mod.modId,
+          version: mod.version,
+          description: mod.description,
+          type: "mod"
+        };
+      }
+
+      // Forge (mcmod.info)
+      if (entries["mcmod.info"]) {
+        const data = await zip.entryData("mcmod.info");
+        try {
+          const json = JSON.parse(data.toString());
+          const mod = Array.isArray(json) ? json[0] : json.modList ? json.modList[0] : json;
+          return {
+            id: mod.modid,
+            name: mod.name || mod.modid,
+            version: mod.version,
+            description: mod.description,
+            type: "mod"
+          };
+        } catch (e) {}
+      }
+
+      // Quilt
+      if (entries["quilt.mod.json"]) {
+        const data = await zip.entryData("quilt.mod.json");
+        const json = JSON.parse(data.toString());
+        const loader = json.quilt_loader || json;
+        const mod = loader.metadata || loader;
+        return {
+          id: loader.id,
+          name: mod.name || loader.id,
+          version: loader.version,
+          description: mod.description,
+          type: "mod"
+        };
+      }
+
+      // Velocity
+      if (entries["velocity-plugin.json"]) {
+        const data = await zip.entryData("velocity-plugin.json");
+        const json = JSON.parse(data.toString());
+        return {
+          id: json.id,
+          name: json.name || json.id,
+          version: json.version,
+          description: json.description,
+          type: "plugin"
+        };
+      }
+
+      // Bukkit/Spigot (plugin.yml)
+      if (entries["plugin.yml"]) {
+        const data = await zip.entryData("plugin.yml");
+        const yml = yaml.parse(data.toString());
+        return {
+          id: yml.name,
+          name: yml.name,
+          version: yml.version,
+          description: yml.description,
+          type: "plugin"
+        };
+      }
+
+      // BungeeCord (bungee.yml)
+      if (entries["bungee.yml"]) {
+        const data = await zip.entryData("bungee.yml");
+        const yml = yaml.parse(data.toString());
+        return {
+          id: yml.name,
+          name: yml.name,
+          version: yml.version,
+          description: yml.description,
+          type: "plugin"
+        };
+      }
+    } catch (e) {
+      // Ignore parse errors
+    } finally {
+      await zip.close();
+    }
+    return null;
+  }
+
+  public async listMods(
+    instanceUuid: string,
+    page: number = 1,
+    pageSize: number = 50,
+    folder?: string
+  ): Promise<ModListResult> {
+    // Enforce max page size of 50
+    pageSize = Number.isSafeInteger(pageSize) && pageSize > 0 ? Math.min(pageSize, 50) : 10;
+    page = Number.isSafeInteger(page) && page > 0 ? page : 1;
+
+    const fileManager = this.ctx.files.getFileManager(instanceUuid);
+
+    // if (!FileManager.checkFileName(folder ?? "")) {
+    //   throw new Error("Invalid folder name");
+    // }
+
+    const result: ModInfo[] = [];
+    const folders: string[] = [];
+    const tasks: (() => Promise<void>)[] = [];
+
+    const scanDir = async (dirName: string, defaultType: "mod" | "plugin") => {
+      const dir = fileManager.toAbsolutePath(dirName);
+      if (await fs.pathExists(dir)) {
+        if (!folders.includes(dirName.toLowerCase())) {
+          folders.push(dirName.toLowerCase());
+        }
+        const files = await fs.readdir(dir);
+        for (const file of files) {
+          if (file.endsWith(".jar") || file.endsWith(".jar.disabled")) {
+            const fullPath = fileManager.toAbsolutePath(path.join(dirName, file));
+            const enabled = !file.endsWith(".disabled");
+
+            tasks.push(async () => {
+              try {
+                const stat = await fs.stat(fullPath);
+                const cacheKey = `${instanceUuid}:${fullPath}`;
+                const cached = this.cache.get(cacheKey);
+
+                let metadata: Partial<ModInfo> | null = null;
+                let hash = "";
+
+                if (cached && cached.mtime === stat.mtimeMs && cached.size === stat.size) {
+                  metadata = cached.info;
+                  hash = cached.hash;
+                } else {
+                  metadata = await this.parseJarMetadata(fullPath);
+                  hash = await this.getFileHash(fullPath);
+                  if (this.cache.size >= this.MAX_CACHE_SIZE) {
+                    const firstKey = this.cache.keys().next().value;
+                    if (firstKey) this.cache.delete(firstKey);
+                  }
+                  this.cache.set(cacheKey, {
+                    mtime: stat.mtimeMs,
+                    size: stat.size,
+                    info: metadata || {},
+                    hash
+                  });
+                }
+
+                result.push({
+                  name: metadata?.name || file,
+                  version: metadata?.version || "Unknown",
+                  id: metadata?.id || file,
+                  description: metadata?.description || "",
+                  type: metadata?.type || defaultType,
+                  file: file,
+                  enabled: enabled,
+                  hash: hash,
+                  folder: dirName.toLowerCase()
+                });
+              } catch (err) {
+                result.push({
+                  name: file,
+                  version: "Unknown",
+                  id: file,
+                  description: "",
+                  type: defaultType,
+                  file: file,
+                  enabled: enabled,
+                  folder: dirName.toLowerCase()
+                });
+              }
+            });
+          }
+        }
+      }
+    };
+
+    await scanDir("mods", "mod");
+    await scanDir("plugins", "plugin");
+    await scanDir("Mods", "mod");
+    await scanDir("Plugins", "plugin");
+
+    // Limit concurrency to 10
+    const limit = 10;
+    for (let i = 0; i < tasks.length; i += limit) {
+      const batch = tasks.slice(i, i + limit);
+      await Promise.all(batch.map((task) => task()));
+    }
+
+    // Remove duplicates
+    const uniqueResult = result.filter(
+      (v, i, a) => a.findIndex((t) => t.file === v.file && t.folder === v.folder) === i
+    );
+
+    // Filter by folder if specified
+    const filteredResult = folder
+      ? uniqueResult.filter((m) => m.folder === folder.toLowerCase())
+      : uniqueResult;
+
+    // Sort by name for consistent pagination
+    filteredResult.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
+    const total = filteredResult.length;
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedMods = filteredResult.slice(startIndex, endIndex);
+
+    return {
+      mods: paginatedMods,
+      folders,
+      total,
+      page,
+      pageSize
+    };
+  }
+
+  public async toggleMod(instanceUuid: string, fileName: string): Promise<void> {
+    const fileManager = this.ctx.files.getFileManager(instanceUuid);
+    this.checkModFileName(fileName);
+
+    const possibleDirs = ["mods", "plugins", "Mods", "Plugins"];
+    let filePath = "";
+
+    for (const dirName of possibleDirs) {
+      const p = fileManager.toAbsolutePath(path.join(dirName, fileName));
+      if (await fs.pathExists(p)) {
+        filePath = p;
+        break;
+      }
+    }
+
+    if (!filePath) {
+      throw new Error("File not found");
+    }
+
+    let newPath: string;
+    if (fileName.endsWith(".disabled")) {
+      newPath = filePath.slice(0, -".disabled".length);
+    } else {
+      newPath = filePath + ".disabled";
+    }
+
+    await fs.rename(filePath, newPath);
+  }
+
+  public async deleteMod(instanceUuid: string, fileName: string): Promise<void> {
+    const fileManager = this.ctx.files.getFileManager(instanceUuid);
+    this.checkModFileName(fileName);
+
+    const possibleDirs = ["mods", "plugins", "Mods", "Plugins"];
+    let filePath = "";
+
+    for (const dirName of possibleDirs) {
+      const p = fileManager.toAbsolutePath(path.join(dirName, fileName));
+      if (await fs.pathExists(p)) {
+        filePath = p;
+        break;
+      }
+    }
+
+    if (!filePath) {
+      throw new Error("File not found");
+    }
+
+    await fs.remove(filePath);
+  }
+
+  public async installMod(
+    instanceUuid: string,
+    url: string,
+    fileName: string,
+    type: "mod" | "plugin",
+    options: { fallbackUrl?: string; ifIdle?: boolean; overwrite?: boolean } = {},
+    task?: ModInstallTask
+  ) {
+    this.checkModFileName(fileName);
+    if (type !== "mod" && type !== "plugin") throw new Error("Invalid project type");
+    const fileManager = this.ctx.files.getFileManager(instanceUuid);
+    const rootDir = fileManager.toAbsolutePath(".");
+
+    // Determine the save directory based on what exists (case-sensitive check for Linux)
+    let saveDir = type === "plugin" ? "plugins" : "mods";
+    const variants = type === "plugin" ? ["plugins", "Plugins"] : ["mods", "Mods"];
+
+    for (const v of variants) {
+      if (await fs.pathExists(path.join(rootDir, v))) {
+        saveDir = v;
+        break;
+      }
+    }
+
+    const relativePath = path.join(saveDir, fileName);
+    if (!fileManager.checkPath(relativePath)) throw new Error("Invalid file path");
+    const targetPath = fileManager.toAbsolutePath(relativePath);
+    if (task) task.path = relativePath.replace(/\\/g, "/");
+    if (options.overwrite === false && (await fs.pathExists(targetPath))) {
+      throw Object.assign(new Error("The target file already exists."), { code: "EEXIST" });
+    }
+
+    this.ctx.logger.info(
+      `[ModService] Instance ${instanceUuid} Install Mod: ${fileName} from ${url} to ${targetPath}`
+    );
+    this.ctx.logger.info(`[ModService] Options: ${JSON.stringify(options)}`);
+
+    if (this.disposed) throw new Error("The mod plugin has been unloaded.");
+    const downloads = this.ctx.transfer.downloads;
+    if (options.ifIdle && downloads.downloadingCount > 0) {
+      throw Object.assign(new Error("The file downloader is busy."), { code: "DOWNLOAD_BUSY" });
+    }
+    const download: NonNullable<ModService["download"]> = { path: targetPath };
+    this.download = download;
+    try {
+      const pending = downloads.downloadFromUrl(url, targetPath, options.fallbackUrl, options);
+      download.task = downloads.task || undefined;
+      if (task && downloads.task?.path === targetPath) task.progress = downloads.task;
+      await pending;
+    } finally {
+      if (this.download === download) this.download = undefined;
+    }
+  }
+
+  public startInstall(
+    instanceUuid: string,
+    url: string,
+    fileName: string,
+    type: "mod" | "plugin",
+    options: { fallbackUrl?: string; overwrite?: boolean } = {}
+  ) {
+    this.checkModFileName(fileName);
+    if (
+      this.disposed ||
+      (type !== "mod" && type !== "plugin") ||
+      (options.overwrite !== undefined && typeof options.overwrite !== "boolean")
+    )
+      throw new Error("Invalid mod installation request");
+    for (const [id, entry] of this.installs) {
+      if (entry.state !== "running" && entry.updatedAt < Date.now() - 30 * 60_000)
+        this.installs.delete(id);
+    }
+    if (this.installs.size >= 256) {
+      const oldest = [...this.installs.values()].find((entry) => entry.state !== "running");
+      if (oldest) this.installs.delete(oldest.taskId);
+      else throw new Error("Too many mod installation tasks");
+    }
+    const task: ModInstallTask = {
+      taskId: crypto.randomUUID(),
+      instanceUuid,
+      path: `${type === "plugin" ? "plugins" : "mods"}/${fileName}`,
+      state: "running",
+      updatedAt: Date.now()
+    };
+    this.installs.set(task.taskId, task);
+    void this.installMod(
+      instanceUuid,
+      url,
+      fileName,
+      type,
+      {
+        fallbackUrl: options.fallbackUrl,
+        overwrite: options.overwrite === true,
+        ifIdle: true
+      },
+      task
+    ).then(
+      () => {
+        task.state = "completed";
+        task.updatedAt = Date.now();
+      },
+      (error) => {
+        task.state = "failed";
+        task.error =
+          error?.code === "EEXIST"
+            ? "file_exists"
+            : error?.code === "DOWNLOAD_BUSY"
+            ? "busy"
+            : "download_failed";
+        task.updatedAt = Date.now();
+        this.ctx.logger.warn("Mod installation failed:", error);
+      }
+    );
+    return { taskId: task.taskId, accepted: true };
+  }
+
+  public installStatus(instanceUuid: string, taskId: string) {
+    const task = this.installs.get(taskId);
+    if (
+      !task ||
+      task.instanceUuid !== instanceUuid ||
+      (task.state !== "running" && task.updatedAt < Date.now() - 30 * 60_000)
+    ) {
+      return { taskId, state: "unknown" };
+    }
+    // Never return global transfer tasks, absolute paths, URLs or raw errors.
+    return {
+      taskId,
+      path: task.path,
+      state: task.state,
+      downloadedBytes: task.progress?.current || 0,
+      totalBytes: task.progress?.total || 0,
+      ...(task.error ? { error: task.error } : {})
+    };
+  }
+
+  private checkModFileName(fileName: string) {
+    if (
+      typeof fileName !== "string" ||
+      /[\\/:\0]/.test(fileName) ||
+      !/\.jar(?:\.disabled)?$/i.test(fileName)
+    ) {
+      throw new Error(`Invalid mod file name: ${JSON.stringify(fileName)?.slice(0, 300)}`);
+    }
+  }
+
+  public async getModConfig(
+    instanceUuid: string,
+    modId: string,
+    type: "mod" | "plugin",
+    fileName?: string
+  ): Promise<ModConfigFile[]> {
+    const fileManager = this.ctx.files.getFileManager(instanceUuid);
+    if (fileName && !fileManager.checkPath(fileName)) throw new Error("Invalid file name");
+    if (modId && !fileManager.checkPath(modId)) throw new Error("Invalid mod ID");
+    const rootDir = fileManager.toAbsolutePath(".");
+    const configFiles: ModConfigFile[] = [];
+
+    const searchTerms = new Set<string>();
+    if (modId) searchTerms.add(modId.toLowerCase());
+    if (fileName) {
+      let nameOnly = fileName.replace(/\.jar(\.disabled)?$/i, "");
+      // Try to remove version info (e.g., -1.18.2 or _1.18.2)
+      nameOnly = nameOnly.replace(/[-_]v?\d+\.\d+.*$/i, "");
+      searchTerms.add(nameOnly.toLowerCase());
+      const parts = nameOnly.split(/[-_]/);
+      if (parts[0]) searchTerms.add(parts[0].toLowerCase());
+    }
+
+    if (type === "mod") {
+      // Mods usually have configs in /config directory
+      const configDir = fileManager.toAbsolutePath("config");
+      if (await fs.pathExists(configDir)) {
+        const files = await fs.readdir(configDir);
+        for (const file of files) {
+          const lowerFile = file.toLowerCase();
+          const fullPath = fileManager.toAbsolutePath(path.join("config", file));
+          const stat = await fs.stat(fullPath);
+
+          let matched = false;
+          for (const term of searchTerms) {
+            if (lowerFile.includes(term)) {
+              matched = true;
+              break;
+            }
+          }
+
+          if (matched) {
+            if (stat.isFile()) {
+              configFiles.push({
+                name: file,
+                path: path.join("config", file)
+              });
+            } else if (stat.isDirectory()) {
+              const subFiles = await fs.readdir(fullPath);
+              for (const subFile of subFiles) {
+                const subFullPath = fileManager.toAbsolutePath(path.join("config", file, subFile));
+                if ((await fs.stat(subFullPath)).isFile()) {
+                  configFiles.push({
+                    name: `${file}/${subFile}`,
+                    path: path.join("config", file, subFile)
+                  });
+                }
+              }
+            }
+          }
+        }
+      }
+    } else {
+      // Plugins usually have configs in /plugins/PluginName directory
+      // Try direct match first
+      let pluginConfigDir = fileManager.toAbsolutePath(path.join("plugins", modId));
+      if (!(await fs.pathExists(pluginConfigDir)) && fileName) {
+        // Try matching by search terms in plugins directory
+        const pluginsDir = fileManager.toAbsolutePath("plugins");
+        if (await fs.pathExists(pluginsDir)) {
+          const dirs = await fs.readdir(pluginsDir);
+          for (const dir of dirs) {
+            const lowerDir = dir.toLowerCase();
+            for (const term of searchTerms) {
+              if (lowerDir === term || lowerDir === term.replace(/\s+/g, "")) {
+                pluginConfigDir = fileManager.toAbsolutePath(path.join("plugins", dir));
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      if (
+        (await fs.pathExists(pluginConfigDir)) &&
+        (await fs.stat(pluginConfigDir)).isDirectory()
+      ) {
+        const files = await fs.readdir(pluginConfigDir);
+        for (const file of files) {
+          const fullPath = fileManager.toAbsolutePath(path.join(pluginConfigDir, file));
+          const stat = await fs.stat(fullPath);
+          if (stat.isFile()) {
+            configFiles.push({
+              name: file,
+              path: path.join(path.relative(rootDir, pluginConfigDir), file)
+            });
+          }
+        }
+      }
+    }
+
+    return configFiles;
+  }
+}

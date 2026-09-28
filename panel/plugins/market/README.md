@@ -46,7 +46,7 @@ used to do in `version_adapter.ts`.
 Registered by `src/frontend.ts`:
 
 - Routes `/market` and `/market/editor`
-- Layout cards `Market`, `MarketEditor`, `McPreset`, plus their card-pool entries
+- Fixed pages for `Market` and `MarketEditor`, plus the `McPreset` layout card used by quick start
 - A Desktop application (`DesktopMarket`)
 - A terminal action — the "reinstall from a package" button
 - Services `market.api`, `market.openMarketDialog`, `market.useMarketPackages`
@@ -54,25 +54,25 @@ Registered by `src/frontend.ts`:
 `src/hooks/useMarketPackages.ts` holds the catalogue fetch and all the filter
 state. `src/market-dialog.ts` mounts the package picker; it is registered as
 `market.openMarketDialog` so the core Iframe bridge
-(`frontend/src/components/IframeBox/handler.ts`) can open it without importing
+(`plugins/console/src/components/IframeBox/handler.ts`) can open it without importing
 this plugin, and reports a clear error when the plugin is absent.
 
 `src/runtime.ts` caches the install permission once the plugin is ready, because
 the terminal button's `condition` is evaluated synchronously on every render.
 
-### What the core keeps
+### Shared console implementation
 
-`FilterOption` and `SEARCH_ALL_KEY` live in `frontend/src/types`, and
-`InstanceDetail.vue` stays in the core: the market editor reuses that dialog to
-edit a package's instance configuration, so the dependency points from the
-plugin into the core rather than the other way round.
+`FilterOption` and `SEARCH_ALL_KEY` live in the console plugin's shared types,
+and `InstanceDetail.vue` is provided by the instance plugin: the market editor
+uses that plugin service directly when it edits a package's instance
+configuration.
 
-The default layouts for `/market` and `/market/editor` remain in the panel
-core's `service/frontend_layout.ts`, the same as the `node` and `users` pages.
+The default layouts for `/market` and `/market/editor` are contributed through
+the console layout registry, alongside the node and users pages. The panel core
+does not own feature layout definitions.
 
-`frontend/src/components/InstallOptionButton.vue` moved out of the old
-`widgets/market/` folder into the core components: it is a generic button used
-by the instance-creation page and has nothing to do with the market.
+`plugins/console/src/components/InstallOptionButton.vue` is a generic button
+used by the instance-creation page and has nothing to do with the market.
 
 ## Daemon side
 
@@ -80,3 +80,142 @@ by the instance-creation page and has nothing to do with the market.
 `quick_install` asynchronous task (create an instance around a package) and the
 `install` instance preset (reinstall an existing one). A daemon without it stays
 fully usable; it simply cannot install packages.
+
+## Plugin market
+
+`/market/plugins` is a second market: it installs **plugins**, not instance
+templates. Its source is EPanel_Market, whose address is the `pluginMarketAddr`
+setting on this plugin's own settings form.
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| GET | `/api/market/plugin/list` | the market's published plugins, each with the version installed here |
+| GET | `/api/market/plugin/detail` | public plugin details and approved versions; accepts `pluginId` and optional `version`, and adds the locally installed version |
+| GET | `/api/market/plugin/installed` | what has been installed from the market |
+| GET | `/api/market/plugin/icon` | the plugin's icon as a data URL, proxied from the market; accepts `pluginId` and optional `version` |
+| GET | `/api/market/plugin/nodes` | the daemons a daemon half can be sent to |
+| GET | `/api/market/plugin/package` | what a published package contains, before installing it |
+| POST | `/api/market/plugin/install` | download a package, write the panel half, send the daemon half to the named nodes |
+| DELETE | `/api/market/plugin/uninstall` | remove it again, here and on the named nodes |
+
+Selecting a plugin opens `/market/plugins/:pluginId`. The page is laid out like a
+store listing: a header with the plugin's name, author and install action, a
+Readme / Versions / Updates tab set, and a sidebar carrying the category and the
+plugin's id, vendor and versions. The Readme tab renders the description the
+market publishes with the plugin, which is the package's own `README.md`
+(`readme` on the detail response); a market source that does not send one falls
+back to the plugin's long description, and the rendering and sanitizing happen
+here because that source is a configurable address. Versions lists
+every approved release with its date, file count and package size, and each row
+carries its own install button — the header's installs the latest release. The
+Updates tab lists every release's notes. A row is not a link: clicking one no
+longer switches the page to that release, and the page no longer reads or writes
+the `version` query parameter. Installing uses the release the clicked button
+belongs to for both the package lookup and download, including after the node
+picker is confirmed.
+The install and uninstall dialogs live in `components/PluginMarketInstall.vue`;
+its `installOnly` flag drops the uninstall action for the release rows, since
+uninstalling concerns the plugin rather than one release. Uninstall checks the
+installed version's package when deciding whether to offer daemon removal.
+Details are fetched through the panel backend, using the configured EPanel_Market
+source and the same administrator permission as installation.
+
+A card and the detail header both say which halves a plugin has. The market
+reports the sides of each release — the first path segment of its package — as
+`sides`, and `components/PluginMarketSideBadge.vue` turns that into
+"Panel插件", "Daemon插件" or "双端插件". The list uses the plugin's own `sides`
+(the latest release's) and the detail header the latest release's. A market source
+that predates the field sends nothing, in which case no badge is shown rather than
+a guess.
+
+A card and the detail header also show the plugin's icon: the package's own
+`icon.png`, announced as `hasIcon` on the market response. `hooks/usePluginIcons.ts`
+fetches it once per plugin, through `/api/market/plugin/icon` rather than straight
+from the market — the market's address is a backend setting, so the browser cannot
+build that URL itself, the same reason every other market call goes through the
+panel. That route answers with a **data URL**, not the image: the panel's request
+layer only reads JSON (`console`'s `apiService` returns the body's `data` field),
+so a binary response would not arrive. A plugin without an icon, or a market
+source that predates `hasIcon`, simply has no entry and the page keeps the default
+puzzle icon.
+
+The desktop registers a separate administrator-only `plugin-market` application.
+`desktop/DesktopPluginMarket.vue` keeps list/detail navigation inside its window,
+leaving the desktop route unchanged. It shares
+`components/PluginMarketList.vue`, `components/PluginMarketDetail.vue` and the
+installation dialogs with normal mode. Returning to the list preserves its search
+and scroll position, and installation events update the list's installed badges.
+Desktop layouts respond to the window width, including while it is resized.
+
+A published package is laid out with the side as its first path segment
+(`panel/plugin.json`, `daemon/backend/index.cjs`, …), so installing is mostly
+splitting that prefix and writing each file under the side's plugin root. In
+development that is `<side>/data/plugins/<name>/`; production uses
+`<side>/plugins/<name>/`.
+`src/backend/service/plugin_market.ts` owns that, and marks every installed
+directory with `.market-install.json` — without the marker a directory in a
+plugin root is indistinguishable from a built-in plugin.
+
+**The list is read in full.** The market pages `GET /api/plugins` (12 plugins by
+default, at most 48 per page), and the page searches and filters on the client, so
+`/api/market/plugin/list` reads every page before answering.
+
+**Compatibility and checksums.** `/files` is asked with `pluginApi=1&pluginSdk=1`;
+the market answers `409` for a package that declares another API or SDK, and
+reports each side's `compatibility` (also on every version summary, which is what
+greys out a release's install button) and each file's `sha256`. A downloaded file
+whose length or digest differs from what `/files` advertised is refused before
+anything is written or sent to a node. A market source that predates these fields
+still installs, checked by size only.
+
+**Where each half lands.** `installRoot()` writes the panel half to
+`panel/data/plugins/` in development and `web/plugins/` in production. Both
+loaders and `frontend/vite.config.ts` continue to discover the legacy
+`data/plugins/` and `market_plugins/` roots, with the built-in directory first so
+a market plugin cannot shadow one of ours.
+
+The daemon half has to sit on every machine that loads it, so it is not written
+here at all: the page asks which nodes to send it to (all of them selected to
+start with), and `plugin/install` carries the files over the panel's existing
+daemon connection, base64 in the event payload — the socket is already configured
+for a 100 MB buffer, and a compiled plugin is a few hundred kilobytes. The daemon
+writes them into its own `plugins/<name>/` in production (`data/plugins/<name>/`
+in development), which both loaders scan, and marks the directory with the same
+`.market-install.json` the panel uses; the panel keeps
+a record of each node it installed on under `data/market-installs/`. Path escapes,
+extensions outside `PLUGIN_PACKAGE_EXTENSIONS` (`common/src/plugin_package.ts`, the
+same list the publish script and the market's upload check), and a name that is not
+a plain directory name are all rejected there: the payload arrives from the network.
+
+`src/backend/service/plugin_market.ts` owns the package — fetching its file list,
+downloading it, writing a side, marking the directory — and the route decides
+where each half goes.
+
+**How "development" is detected.** Not with `process.env.NODE_ENV`: webpack bakes
+`"production"` into every plugin bundle, and a plugin's `backend/index.cjs` is
+what runs even while the dev servers are up, so the check would always say
+production. `isDevelopment()` looks for `panel/src/app` instead — present in a
+source checkout, absent from a built deployment, which is only
+`production-code/web` and `production-code/daemon`.
+
+**Restart required — except in development.** The panel and the daemon load their
+plugins at startup, so in a deployment an install or an uninstall only takes
+effect after both are restarted; the install route answers
+`restartRequired: true`.
+
+A source checkout reloads instead: the route calls `ctx.plugins.reload()`, which
+re-scans the panel's own directories — installing what has appeared and disposing
+what is gone — and asks the daemons the package was sent to do the same over
+`plugin/reload`, reconnecting each node afterwards because a daemon binds its
+protocol handlers onto each socket as that socket connects. The browser half
+needs nothing: the Vite dev server watches the plugin directories and reloads the
+page. `reload()` itself refuses to run outside development, so a built
+deployment keeps the restart it asks for. What reload cannot do is replace a
+plugin that is already loaded — installing a newer version of one still needs a
+restart.
+
+**A node that cannot be reached.** Sending the daemon half to one node says
+nothing about the others, so a failure is collected instead of thrown: the panel
+half is already installed by then, and the route answers with the `failedNodes`
+it could not update, which the page names. A package whose daemon half reached no
+node at all is a package installed into the panel alone.

@@ -1,0 +1,107 @@
+@import "./tools.scss";
+
+.bg-extend-css {
+  .card-panel {
+    backdrop-filter: saturate(180%) blur(20px);
+  }
+
+  .left-menu,
+  .action-btn-item,
+  .inner-card-wrapper,
+  .file-breadcrumbs {
+    background-color: var(--level-2-bg-color) !important;
+  }
+
+  .card-panel {
+    background-color: var(--level-1-bg-color) !important;
+    backdrop-filter: saturate(180%) blur(20px) !important;
+  }
+
+  .inner-card-wrapper {
+    backdrop-filter: saturate(180%) blur(20px) !important;
+  }
+
+}
+
+.extend-light-css {
+  .breadcrumbs {
+    @extend .text-white-shadow;
+  }
+
+  .v-btn.text-error {
+    color: #fff;
+
+    &:not(:disabled):hover {
+      color: #ffe1e0 !important;
+    }
+  }
+
+  .terminal-wrapper {
+    background-color: rgba(0, 0, 0, 0.8) !important;
+    backdrop-filter: saturate(180%) blur(20px) !important;
+  }
+
+  .app-header-content-for-phone {
+    .card-panel {
+      background-color: #000000b4 !important;
+    }
+  }
+}
+
+.extend-dark-css {
+  .breadcrumbs {
+    @extend .text-black-shadow;
+  }
+
+  .v-btn.text-error {
+    color: #ffa4a4;
+  }
+
+  .terminal-wrapper {
+    background-color: var(--level-1-bg-color) !important;
+    backdrop-filter: saturate(180%) blur(20px) !important;
+  }
+}
+
+// PC
+.app-light-extend-theme {
+  --level-0-bg-color: #ffffffd0;
+  --level-1-bg-color: #ffffffae;
+  --level-2-bg-color: #ffffff84;
+  --primary-btn-color: #1669dccf;
+  --danger-btn-color: #d32f2fac;
+  --background-color-white: var(--level-1-bg-color);
+
+  @extend .bg-extend-css;
+  @extend .extend-light-css;
+}
+
+// PC
+.app-dark-extend-theme {
+  --level-0-bg-color: #000000b4;
+  --level-1-bg-color: #000000a9;
+  --level-2-bg-color: #1919196b;
+  --primary-btn-color: #1669dccf;
+  --danger-btn-color: #d32f2fac;
+  --background-color-white: var(--level-1-bg-color);
+  @extend .bg-extend-css;
+  @extend .extend-dark-css;
+}
+
+// Phone
+@media (max-width: 992px) {
+  .app-dark-extend-theme {
+    --level-0-bg-color: #000000f2;
+    --level-1-bg-color: #000000dd;
+    --level-2-bg-color: #0000006b;
+    --background-color-white: var(--level-1-bg-color);
+    --app-header-bg: var(--level-0-bg-color);
+  }
+
+  .app-light-extend-theme {
+    --level-0-bg-color: #ffffffe8;
+    --level-1-bg-color: #ffffffc5;
+    --level-2-bg-color: #ffffff90;
+    --background-color-white: var(--level-1-bg-color);
+  }
+}

@@ -1,0 +1,221 @@
+<script setup lang="ts">
+import { useDialog } from "@/hooks/useDialog";
+import type { ComputedNodeInfo } from "@/hooks/useOverviewInfo";
+import { useRemoteNode } from "@/hooks/useRemoteNode";
+import { t } from "@/lang/i18n";
+import { reportErrorMsg } from "@/tools/validator";
+import { computed, onMounted, onUnmounted } from "vue";
+import { VBtn, VCard, VCardActions, VCardText, VChip, VDialog, VIcon, VSpacer } from "vuetify/components";
+
+interface Props {
+  destroyComponent(delay?: number): void;
+  emitResult(data?: ComputedNodeInfo): void;
+  targetPlatforms?: string[];
+}
+
+const props = defineProps<Props>();
+
+const { isVisible, openDialog, cancel, submit } = useDialog<ComputedNodeInfo>(props);
+
+// 获取可用节点
+const { response, refresh: refreshOverviewInfo, refreshLoading } = useRemoteNode({ poll: false });
+
+const availableNodes = computed(() => response.value?.remote?.filter((node) => node.available) || []);
+let disposed = false;
+onUnmounted(() => { disposed = true; });
+
+const refreshNodes = async () => {
+  if (refreshLoading.value) return;
+  try {
+    await refreshOverviewInfo(true);
+  } catch (error) {
+    if (!disposed) reportErrorMsg(error);
+  }
+};
+
+// check node is supported target platforms
+const isNodeSupported = (node: ComputedNodeInfo): boolean => {
+  if (!props.targetPlatforms || props.targetPlatforms.length === 0) {
+    return true;
+  }
+  
+  if (!node.dockerPlatforms || node.dockerPlatforms.length === 0) {
+    return false;
+  }
+  return node.dockerPlatforms?.some((platform) => props.targetPlatforms?.includes(platform));
+};
+
+// sorted nodes list: supported nodes first, unsupported nodes last
+const sortedNodes = computed(() => {
+  const nodes = [...availableNodes.value];
+  return nodes.sort((a, b) => {
+    const aSupported = isNodeSupported(a);
+    const bSupported = isNodeSupported(b);
+    if (aSupported === bSupported) return 0;
+    return aSupported ? -1 : 1;
+  });
+});
+
+const selectNode = (node: ComputedNodeInfo) => {
+  if (!node.available) {
+    reportErrorMsg(t("TXT_CODE_4ec4f7bb"));
+    return;
+  }
+  submit(node);
+};
+
+onMounted(refreshNodes);
+
+defineExpose({
+  openDialog
+});
+</script>
+
+<template>
+  <VDialog v-model="isVisible" max-width="840" persistent>
+    <VCard :title="t('TXT_CODE_7e267ba')">
+      <VCardText>
+    <div class="node-select-container">
+      <p class="node-select-description text-body-medium text-medium-emphasis">
+        {{ t("TXT_CODE_ad24269a") }}
+      </p>
+      <div class="node-grid">
+        <div v-if="availableNodes.length === 0">
+          <div class="justify-center" flex-center>
+            <div>
+              <div class="mb-2">
+                <p style="opacity: 0.8">
+                  {{ t("TXT_CODE_f4110b65") }}
+                </p>
+              </div>
+              <div>
+                <VBtn color="primary" :loading="refreshLoading" @click="refreshNodes">
+                  {{ t("TXT_CODE_4fe5dce5") }}
+                </VBtn>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          v-for="item in sortedNodes"
+          v-else
+          :key="item.uuid + item.remarks + item.ip"
+          :data-ip="item.ip"
+          :data-uuid="item.uuid"
+          class="node-item"
+          :class="{ 'node-unsupported': props.targetPlatforms && props.targetPlatforms.length > 0 && !isNodeSupported(item) }"
+          @click="selectNode(item)"
+        >
+          <div class="node-content">
+            <div class="node-header">
+              <span class="node-name">{{ item.remarks || `${item.ip}:${item.port}` }}</span>
+              <div class="node-tags">
+                <VChip v-if="item.available" color="success" size="small" variant="tonal">{{ t("TXT_CODE_b078a763") }}</VChip>
+                <VChip v-else color="error" size="small" variant="tonal">{{ t("TXT_CODE_6cbb84a9") }}</VChip>
+                <VChip
+                  v-if="props.targetPlatforms && props.targetPlatforms.length > 0 && !isNodeSupported(item)"
+                  color="warning" size="small" variant="tonal"
+                >
+                  <VIcon start icon="mdi-alert-circle-outline" />
+                  {{ t("TXT_CODE_node_platform_unsupported") }}
+                </VChip>
+              </div>
+            </div>
+            <div class="node-details">
+              <span>ID: {{ item.uuid }}</span>
+              <span>{{ t("TXT_CODE_3d0885c0") }}: {{ item?.platformText }}</span>
+              <span
+                :class="{
+                  'node-warning-text': props.targetPlatforms && props.targetPlatforms.length > 0 && !isNodeSupported(item)
+                }"
+              >
+                <template v-if="props.targetPlatforms && props.targetPlatforms.length > 0 && !isNodeSupported(item)">
+                  <VIcon icon="mdi-alert-circle-outline" class="mr-1" />
+                </template>
+                Docker platforms: {{ item?.dockerPlatforms?.join(",") || "--" }}
+              </span>
+              <span>{{ t("TXT_CODE_c7d0002e") }}: {{ item.ip }}:{{ item.port }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+      </VCardText>
+      <VCardActions>
+        <VSpacer />
+        <VBtn variant="text" @click="cancel">{{ t("TXT_CODE_a7e9d4e") }}</VBtn>
+      </VCardActions>
+    </VCard>
+  </VDialog>
+</template>
+
+<style lang="scss" scoped>
+.node-select-description {
+  margin-bottom: 16px;
+}
+
+.node-select-container {
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 4px;
+  .node-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .node-item {
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background-color: var(--color-gray-2);
+    border: 1px solid var(--color-gray-3);
+
+    &:hover {
+      background-color: var(--color-gray-4);
+      border-color: var(--color-gray-5);
+    }
+
+    &.node-unsupported {
+      border-color: var(--color-warning);
+      background-color: var(--color-warning-bg, rgba(255, 193, 7, 0.1));
+    }
+
+    .node-content {
+      .node-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+
+        .node-name {
+          font-weight: 600;
+          color: var(--color-gray-10);
+          flex: 1;
+          margin-right: 8px;
+        }
+
+        .node-tags {
+          display: flex;
+          gap: 4px;
+          align-items: center;
+        }
+      }
+
+      .node-details {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        color: var(--color-gray-8);
+        font-size: 12px;
+
+        .node-warning-text {
+          color: var(--color-warning, #faad14);
+          font-weight: 500;
+        }
+      }
+    }
+  }
+}
+</style>

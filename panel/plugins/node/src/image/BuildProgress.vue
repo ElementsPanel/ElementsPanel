@@ -5,6 +5,8 @@ import { useScreen } from "@/hooks/useScreen";
 import { reportErrorMsg } from "@/tools/validator";
 import { buildProgress } from "@/services/apis/envImage";
 import Loading from "@/components/Loading.vue";
+import CardPanel from "@/components/CardPanel.vue";
+import { VBtn, VCard, VCardActions, VCardText, VCol, VDialog, VProgressLinear, VRow } from "vuetify/components";
 const props = defineProps<{
   daemonId: string;
 }>();
@@ -53,34 +55,28 @@ defineExpose({
 </script>
 
 <template>
-  <a-modal
-    v-model:open="open"
-    centered
-    :width="isPhone ? '100%' : 'calc(100% - 30vw)'"
-    :title="t('TXT_CODE_4bbd3fde')"
-  >
-    <a-row v-if="!isLoading" :gutter="[24, 24]">
-      <a-col v-for="i in progressList" :key="i.name + i.status" :span="24" :lg="6" :md="8" :sm="12">
+  <VDialog v-model="open" max-width="900" persistent>
+    <VCard :title="t('TXT_CODE_4bbd3fde')">
+      <VCardText>
+    <VRow v-if="!isLoading" density="compact">
+      <VCol v-for="i in progressList" :key="i.name + i.status" cols="12" lg="6" md="8" sm="12">
         <CardPanel>
           <template #title>{{ i.name }}</template>
           <template #body>
-            <a-typography-text>
+            <span>
               {{ statusType[i.status.toString()] }}
-            </a-typography-text>
+            </span>
           </template>
         </CardPanel>
-      </a-col>
-    </a-row>
-    <a-row v-else :gutter="[24, 24]">
-      <a-col :span="24">
+      </VCol>
+    </VRow>
+    <VRow v-else>
+      <VCol cols="12">
         <Loading />
-      </a-col>
-    </a-row>
-    <template #footer>
-      <a-space>
-        <a-button :loading="isLoading" @click="getProgress">{{ t("TXT_CODE_b76d94e0") }}</a-button>
-        <a-button type="primary" @click="open = false">{{ t("TXT_CODE_b1dedda3") }}</a-button>
-      </a-space>
-    </template>
-  </a-modal>
+      </VCol>
+    </VRow>
+      </VCardText>
+      <VCardActions><VBtn :loading="isLoading" variant="tonal" @click="getProgress">{{ t("TXT_CODE_b76d94e0") }}</VBtn><VBtn color="primary" @click="open = false">{{ t("TXT_CODE_b1dedda3") }}</VBtn></VCardActions>
+    </VCard>
+  </VDialog>
 </template>

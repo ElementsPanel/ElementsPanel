@@ -1,6 +1,3 @@
-// Using SLT (Server List Ping) provided by Minecraft.
-// https://wiki.vg/Server_List_Ping#Response
-
 import net from "net";
 
 export interface MinecraftPingResponse {
@@ -15,18 +12,22 @@ export interface MinecraftPingResponse {
 }
 
 export default class PingMinecraftServer {
-  public port: number;
-  public host: string;
   public status: MinecraftPingResponse;
   public client?: net.Socket;
+  private pending?: Promise<MinecraftPingResponse>;
 
-  constructor(port: number, host: string) {
-    this.port = port;
-    this.host = host;
-    this.status = {
+  constructor(
+    public port: number,
+    public host: string
+  ) {
+    this.status = this.offlineStatus();
+  }
+
+  private offlineStatus(): MinecraftPingResponse {
+    return {
       online: false,
-      host,
-      port,
+      host: this.host,
+      port: this.port,
       version: "",
       motd: "",
       current_players: 0,
@@ -35,97 +36,83 @@ export default class PingMinecraftServer {
     };
   }
 
-  getStatus() {
-    return new Promise<MinecraftPingResponse>((resolve, reject) => {
-      var start_time = new Date().getTime();
-      this.client = net.connect(
-        {
-          host: this.host,
-          port: this.port,
-          timeout: 1000 * 15
-        },
-        () => {
-          this.status.latency = Math.round(new Date().getTime() - start_time);
-          // 0xFE packet identifier for a server list ping
-          // 0x01 server list ping's payload (always 1)
-          let data = Buffer.from([0xfe, 0x01]);
-          this?.client?.write(data);
-        }
+  getStatus(): Promise<MinecraftPingResponse> {
+    if (this.pending) return this.pending;
+    this.status = this.offlineStatus();
+    this.pending = new Promise<MinecraftPingResponse>((resolve, reject) => {
+      const startedAt = Date.now();
+      const client = net.connect({ host: this.host, port: this.port });
+      this.client = client;
+      let received = Buffer.alloc(0);
+      let settled = false;
+      const finish = (error?: Error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeout);
+        client.destroy();
+        this.client = undefined;
+        if (error) reject(error);
+        else resolve(this.status);
+      };
+      const timeout = setTimeout(
+        () => finish(new Error("Minecraft status request timed out")),
+        15000
       );
-
-      // The client can also receive data from the server by reading from its socket.
-      this?.client?.on("data", (response: any) => {
-        // Check the readme for a simple explanation
-        var server_info = response.toString().split("\x00\x00");
-
-        this.status = {
-          online: true,
-          host: this.host,
-          port: this.port,
-          version: server_info[2].replace(/\u0000/g, ""),
-          motd: server_info[3].replace(/\u0000/g, ""),
-          current_players: server_info[4].replace(/\u0000/g, ""),
-          max_players: server_info[5].replace(/\u0000/g, ""),
-          latency: this.status.latency
-        };
-
-        // Request an end to the connection after the data has been received.
-        this?.client?.end();
-        resolve(this.status);
-        this.destroy();
+      client.once("connect", () => client.write(Buffer.from([0xfe, 0x01])));
+      client.on("data", (chunk: Buffer) => {
+        if (settled) return;
+        try {
+          received = Buffer.concat([received, chunk]);
+          // Legacy status packets contain an unsigned UTF-16 character count.
+          if (received.length > 3 + 0xffff * 2)
+            throw new Error("Minecraft status response is too large");
+          if (received.length < 3) return;
+          if (received[0] !== 0xff) throw new Error("Invalid Minecraft status packet");
+          const length = 3 + received.readUInt16BE(1) * 2;
+          if (received.length < length) return;
+          const fields = Buffer.from(received.subarray(3, length))
+            .swap16()
+            .toString("utf16le")
+            .split("\0");
+          if (
+            fields.length !== 6 ||
+            fields[0] !== "§1" ||
+            !/^\d+$/.test(fields[4]) ||
+            !/^\d+$/.test(fields[5])
+          ) {
+            throw new Error("Invalid Minecraft status response");
+          }
+          const currentPlayers = Number(fields[4]);
+          const maxPlayers = Number(fields[5]);
+          if (!Number.isSafeInteger(currentPlayers) || !Number.isSafeInteger(maxPlayers)) {
+            throw new Error("Invalid Minecraft player count");
+          }
+          this.status = {
+            host: this.host,
+            port: this.port,
+            online: true,
+            version: fields[2],
+            motd: fields[3],
+            current_players: currentPlayers,
+            max_players: maxPlayers,
+            latency: Date.now() - startedAt
+          };
+          finish();
+        } catch (error) {
+          finish(error instanceof Error ? error : new Error(String(error)));
+        }
       });
-
-      this?.client?.on("end", () => {
-        resolve(this.status);
-        this.destroy();
-      });
-
-      this?.client?.on("error", (err: any) => {
-        reject(err);
-        this.destroy();
-      });
+      client.once("error", finish);
+      client.once("close", () =>
+        finish(received.length ? new Error("Incomplete Minecraft status response") : undefined)
+      );
+    }).finally(() => {
+      this.pending = undefined;
     });
+    return this.pending;
   }
 
-  private destroy() {
-    this.client?.removeAllListeners();
-  }
-
-  async asyncStatus() {
-    let status = await this.getStatus();
-    return status;
+  asyncStatus() {
+    return this.getStatus();
   }
 }
-
-// async function test() {
-//   try {
-//     var status = await new MCServStatus(25565, "localhost").asyncStatus();
-//     // console.log("status: ", status);
-//   } catch (error) {
-//     console.error("错误:", error);
-//   }
-//   const memoryUsage = process.memoryUsage();
-//   console.log(
-//     "RSS (Resident Set Size):",
-//     (memoryUsage.rss / 1024 / 1024).toFixed(2),
-//     "MB",
-//     "Heap Total:",
-//     (memoryUsage.heapTotal / 1024 / 1024).toFixed(2),
-//     "MB",
-//     "Heap Used:",
-//     (memoryUsage.heapUsed / 1024 / 1024).toFixed(2),
-//     "MB",
-//     "External:",
-//     (memoryUsage.external / 1024 / 1024).toFixed(2),
-//     "MB"
-//   );
-//   // console.log("Heap Total:", (memoryUsage.heapTotal / 1024 / 1024).toFixed(2), "MB");
-//   // console.log("External:", (memoryUsage.external / 1024 / 1024).toFixed(2), "MB");
-//   // console.log("Heap Used:", (memoryUsage.heapUsed / 1024 / 1024).toFixed(2), "MB");
-// }
-
-// for (let index = 0; index < 10000; index++) {
-//   test();
-//   // @ts-ignore
-//   // global.gc();
-// }

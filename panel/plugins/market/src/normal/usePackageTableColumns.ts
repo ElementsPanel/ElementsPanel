@@ -1,6 +1,5 @@
 import { t } from "@/lang/i18n";
 import type { QuickStartPackages } from "@/types";
-import type { AntColumnsType } from "@/types/ant";
 import { computed, type ComputedRef } from "vue";
 
 /**
@@ -85,26 +84,9 @@ function buildColumnDefs(): PackageTableColumnDef[] {
   ];
 }
 
-function columnDefToAntColumn(def: PackageTableColumnDef): AntColumnsType {
-  const col: AntColumnsType = {
-    key: def.key,
-    dataIndex: def.dataIndex as string,
-    title: def.title,
-    align: def.align,
-    ellipsis: !def.useTag && !def.useMultiTag && !def.isImage && def.key !== "action"
-  } as AntColumnsType;
-  if (def.width != null) col.width = def.width;
-  if (def.minWidth != null) col.minWidth = def.minWidth;
-  if (def.maxWidth != null) col.maxWidth = def.maxWidth;
-  if (def.fixed) col.fixed = def.fixed;
-  return col;
-}
-
 export function usePackageTableColumns(): {
-  columns: ComputedRef<AntColumnsType[]>;
   columnDefs: ComputedRef<PackageTableColumnDef[]>;
 } {
   const columnDefs = computed<PackageTableColumnDef[]>(() => buildColumnDefs());
-  const columns = computed<AntColumnsType[]>(() => columnDefs.value.map(columnDefToAntColumn));
-  return { columns, columnDefs };
+  return { columnDefs };
 }

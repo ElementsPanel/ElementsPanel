@@ -1,0 +1,18 @@
+{
+  "TXT_CODE_d23631cb": "Configurações do Terminal",
+  "TXT_CODE_ef650d57": "Terminal Emulado",
+  "TXT_CODE_feeea328": "Obtenha capacidade total de interação com terminal por meio de um terminal emulado. Isso inclui o uso de teclas Tab, Ctrl e mais.",
+  "TXT_CODE_d6e7f572": "Se você encontrar problemas, é recomendável desativar este recurso.",
+  "TXT_CODE_e1a3b150": "Renderização de Cores",
+  "TXT_CODE_6a515e35": "A página da web adiciona automaticamente cor à saída, mas as cores podem não ser totalmente precisas.",
+  "TXT_CODE_1295831e": "Se o recurso de renderização de cores entrar em conflito com a funcionalidade de cores integrada do software, você pode desativar este recurso.",
+  "TXT_CODE_b91a94f9": "Retorno de Carro na Execução de Comando",
+  "TXT_CODE_5b2daea0": "Se você inserir um comando e pressionar Enter não gerar uma resposta, você pode tentar ajustar esta opção.",
+  "TXT_CODE_b94f13ce": "Nas plataformas Windows, geralmente é 'Retorno de Carro e Avanço de Linha' (\\r\\n), enquanto nas plataformas Linux/MacOS, é 'Avanço de Linha' (\\n).",
+  "TXT_CODE_449d1581": "Codificação de Entrada e Saída",
+  "TXT_CODE_d16d82ab": "Se você encontrar conteúdo ilegível no console, você pode tentar modificar esta codificação para resolver o problema.",
+  "TXT_CODE_bd2559f3": "Codificação de Entrada do Terminal",
+  "TXT_CODE_6e96b2a9": "Codificação de Saída do Terminal",
+  "TXT_CODE_365aabd4": "Alimentação de Linha",
+  "TXT_CODE_20cec54": "Retorno de Carro e Alimentação de Linha"
+}

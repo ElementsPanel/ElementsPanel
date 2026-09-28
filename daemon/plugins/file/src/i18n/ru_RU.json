@@ -1,0 +1,8 @@
+{
+  "TXT_CODE_file_router.instanceNotExist": "Экземпляр {{instanceUuid}} не существует",
+  "TXT_CODE_file_router.unzipLimit": "Превышено максимальное количество одновременных задач разархивирования. Максимально допустимое количество — {{maxFileTask}}, в настоящее время выполняется {{fileLock}} задач. Пожалуйста, будьте терпеливы.",
+  "TXT_CODE_file_router_service.instanceNotExit": "Экземпляр {{uuid}} не существует",
+  "TXT_CODE_system_file.execLimit": "Превышен лимит редактирования файлов",
+  "TXT_CODE_system_file.illegalAccess": "Незаконный путь доступа",
+  "TXT_CODE_system_file.unzipLimit": "Распаковка файлов поддерживается только для файлов до {{max}}GB. Чтобы изменить этот лимит, пожалуйста, перейдите в файл data/Config/global.json."
+}

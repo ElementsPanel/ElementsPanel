@@ -1,0 +1,151 @@
+<script setup lang="ts">
+import ActionButton from "@/components/ActionButton.vue";
+import CardPanel from "@/components/CardPanel.vue";
+import PageToolbar from "@/components/PageToolbar.vue";
+import Loading from "@/components/Loading.vue";
+import { useScreen } from "@/hooks/useScreen";
+import {
+  QUICKSTART_ACTION_TYPE,
+  QUICKSTART_METHOD,
+  useQuickStartFlow
+} from "@/hooks/widgets/quickStartFlow";
+import { t } from "@/lang/i18n";
+import CreateInstanceForm from "./CreateInstanceForm.vue";
+import { useRoute } from "vue-router";
+import FadeUpAnimation from "@/components/FadeUpAnimation.vue";
+import { VCol, VContainer, VIcon, VRow } from "vuetify/components";
+const { isPhone } = useScreen();
+const route = useRoute();
+
+const {
+  formData,
+  toStep2,
+  toStep3,
+  toStep4,
+  toStep5,
+  isLoading,
+  isFormStep,
+  isNormalStep,
+  currentIcon
+} = useQuickStartFlow();
+
+const presetAppType = String(route.query.appType);
+const presetCreateMethod = String(route.query.createMethod);
+
+if (presetAppType in QUICKSTART_ACTION_TYPE) {
+  toStep2(presetAppType as QUICKSTART_ACTION_TYPE);
+}
+
+if (presetCreateMethod in QUICKSTART_METHOD) {
+  toStep4(presetCreateMethod as QUICKSTART_METHOD);
+}
+
+const handleNext = (key: string) => {
+  if (formData.step === 1) {
+    return toStep2(key as QUICKSTART_ACTION_TYPE);
+  }
+
+  if (formData.step === 2) {
+    return toStep3(key);
+  }
+
+  if (formData.step === 3) {
+    return toStep4(key as QUICKSTART_METHOD);
+  }
+
+  if (formData.step === 4) {
+    return toStep5(key);
+  }
+};
+</script>
+
+<template>
+  <main class="quickstart-page">
+    <VContainer fluid class="quickstart-page-container">
+      <PageToolbar :title="t('TXT_CODE_9b99b72e')" icon="mdi-rocket-launch-outline" />
+      <CardPanel class="card-wrapper">
+        <template #body>
+      <div v-if="!isLoading" class="pd-24 h-100">
+        <VRow v-if="isNormalStep" class="h-100" density="compact">
+          <VCol v-if="!isPhone" lg="6">
+            <div class="quickstart-icon flex-center h-100">
+              <Transition name="global-action-float">
+                <VIcon :icon="currentIcon" size="180" />
+              </Transition>
+            </div>
+          </VCol>
+          <VCol lg="6">
+            <div class="text-left" style="text-align: left">
+              <h3 class="mb-24">
+                {{ formData.title }}
+              </h3>
+              <div style="max-height: 400px; overflow-x: hidden">
+                <p v-if="formData.actions?.length === 0">
+                  {{ formData.emptyActionsText }}
+                </p>
+                <VRow density="compact">
+                  <fade-up-animation>
+                    <action-button
+                      v-for="(action, index) in formData.actions"
+                      :key="action.key"
+                      :data-index="index"
+                      :title="action.title"
+                      :icon="action.icon"
+                      :click="() => (action.click ? action.click() : handleNext(action.key))"
+                    />
+                  </fade-up-animation>
+                </VRow>
+              </div>
+            </div>
+          </VCol>
+        </VRow>
+        <div v-else-if="isFormStep && formData.appType && formData.createMethod">
+          <CreateInstanceForm
+            :app-type="formData.appType"
+            :create-method="formData.createMethod"
+            :daemon-id="formData.daemonId ? formData.daemonId : ''"
+            @next-step="handleNext"
+          />
+        </div>
+      </div>
+      <div v-else class="loading flex-center w-100 h-100">
+        <Loading />
+      </div>
+      </template>
+    </CardPanel>
+    </VContainer>
+  </main>
+</template>
+
+<style lang="scss" scoped>
+.quickstart-page {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+.quickstart-page-container {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: 20px 24px 32px;
+}
+
+@media (max-width: 992px) {
+  .quickstart-page-container {
+    padding: 16px 12px 28px;
+  }
+}
+
+.card-wrapper {
+  min-height: 500px;
+}
+.btn-area {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+}
+
+.quickstart-icon {
+  font-size: 180px;
+}
+</style>

@@ -1,0 +1,5 @@
+{
+  "TXT_CODE_DAEMON_PLUGIN_ESSENTIAL_DISABLE": "Web 伺服器不能遠端停用：面板會失去用來管理這個守護行程的連線。請在主機上把它的 plugin.json 裡的 enabled 設為 false。",
+  "TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED": "必須提供外掛 ID。",
+  "TXT_CODE_DAEMON_PLUGIN_SELF_DISABLE": "外掛管理無法停用自己：面板會失去用來管理這個守護行程的事件。請在主機上把它的 plugin.json 裡的 enabled 設為 false。"
+}

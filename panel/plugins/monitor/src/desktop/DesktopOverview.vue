@@ -1,15 +1,7 @@
 <script setup lang="ts">
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { t } from "@/lang/i18n";
-import {
-    ApiOutlined,
-    ArrowDownOutlined,
-    ArrowUpOutlined,
-    CheckCircleOutlined,
-    CloseCircleOutlined,
-    CloudServerOutlined,
-    HddOutlined
-} from "@ant-design/icons-vue";
+import { VIcon } from "vuetify/components";
 import { computed } from "vue";
 
 const { state: overviewData } = useOverviewInfo();
@@ -74,7 +66,7 @@ const memColor = computed(() => {
         <div class="ov-stats-row">
             <div class="ov-stat-card ov-stat-card--instances">
                 <div class="ov-stat-card__icon">
-                    <CloudServerOutlined />
+                    <VIcon icon="mdi-server-outline" />
                 </div>
                 <div class="ov-stat-card__body">
                     <div class="ov-stat-card__value">{{ totalInstances }}</div>
@@ -82,17 +74,17 @@ const memColor = computed(() => {
                 </div>
                 <div class="ov-stat-card__extra">
                     <span class="ov-stat-card__running">
-                        <CheckCircleOutlined /> {{ runningInstances }}
+                        <VIcon icon="mdi-check-circle-outline" /> {{ runningInstances }}
                     </span>
                     <span class="ov-stat-card__stopped">
-                        <CloseCircleOutlined /> {{ stoppedInstances }}
+                        <VIcon icon="mdi-close-circle-outline" /> {{ stoppedInstances }}
                     </span>
                 </div>
             </div>
 
             <div class="ov-stat-card ov-stat-card--nodes">
                 <div class="ov-stat-card__icon">
-                    <ApiOutlined />
+                    <VIcon icon="mdi-api" />
                 </div>
                 <div class="ov-stat-card__body">
                     <div class="ov-stat-card__value">{{ remoteCount.available }} / {{ remoteCount.total }}</div>
@@ -100,17 +92,17 @@ const memColor = computed(() => {
                 </div>
                 <div class="ov-stat-card__extra">
                     <span class="ov-stat-card__online">
-                        <CheckCircleOutlined /> {{ remoteCount.available }}
+                        <VIcon icon="mdi-check-circle-outline" /> {{ remoteCount.available }}
                     </span>
                     <span class="ov-stat-card__offline">
-                        <CloseCircleOutlined /> {{ remoteCount.total - remoteCount.available }}
+                        <VIcon icon="mdi-close-circle-outline" /> {{ remoteCount.total - remoteCount.available }}
                     </span>
                 </div>
             </div>
 
             <div class="ov-stat-card ov-stat-card--cpu">
                 <div class="ov-stat-card__icon">
-                    <HddOutlined />
+                    <VIcon icon="mdi-chip" />
                 </div>
                 <div class="ov-stat-card__body">
                     <div class="ov-stat-card__value">{{ panelCpu }}%</div>
@@ -123,7 +115,7 @@ const memColor = computed(() => {
 
             <div class="ov-stat-card ov-stat-card--mem">
                 <div class="ov-stat-card__icon">
-                    <HddOutlined />
+                    <VIcon icon="mdi-memory" />
                 </div>
                 <div class="ov-stat-card__body">
                     <div class="ov-stat-card__value">{{ panelMem }}%</div>
@@ -233,10 +225,10 @@ const memColor = computed(() => {
                         </div>
                         <div v-if="node.system" class="ov-node-item__stats">
                             <span class="ov-node-item__stat" :title="'CPU'">
-                                <ArrowUpOutlined /> {{ (node.system.cpuUsage * 100).toFixed(0) }}%
+                                <VIcon icon="mdi-arrow-up" /> {{ (node.system.cpuUsage * 100).toFixed(0) }}%
                             </span>
                             <span class="ov-node-item__stat" :title="'RAM'">
-                                <ArrowDownOutlined /> {{ (node.system.memUsage * 100).toFixed(0) }}%
+                                <VIcon icon="mdi-arrow-down" /> {{ (node.system.memUsage * 100).toFixed(0) }}%
                             </span>
                         </div>
                     </div>
