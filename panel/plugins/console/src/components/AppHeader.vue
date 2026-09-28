@@ -426,8 +426,9 @@ const openPhoneMenu = (b = false) => {
   justify-content: flex-start;
 
   img {
-    max-width: 130px;
-    height: 20px;
+    max-width: 160px;
+    height: 32px;
+    object-fit: contain;
   }
 }
 
@@ -444,8 +445,9 @@ const openPhoneMenu = (b = false) => {
   margin-left: 4px;
 
   img {
-    max-width: 120px;
-    height: 18px;
+    max-width: 140px;
+    height: 26px;
+    object-fit: contain;
   }
 }
 

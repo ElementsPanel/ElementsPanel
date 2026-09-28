@@ -17,6 +17,7 @@
       --loading-bg-color: #f3efef;
       --loading-color: #2a2828;
       --loading-subtitle-color: #3b3939;
+      --loading-logo-image: url('/logo_b.svg?v=20260929');
     }
 
     @media (prefers-color-scheme: dark) {
@@ -24,6 +25,7 @@
         --loading-bg-color: #242323;
         --loading-color: #f3efef;
         --loading-subtitle-color: #9d9999;
+        --loading-logo-image: url('/logo.svg?v=20260929');
       }
     }
 
@@ -50,11 +52,11 @@
     }
 
     #before-app-mounted .loading {
-      margin: 40px 20px -30px 20px;
-      width: 120px;
-      height: 120px;
+      margin: 0 20px 16px;
+      width: 70px;
+      height: 70px;
       opacity: 0.1;
-      background-image: url('/logo.svg');
+      background-image: var(--loading-logo-image);
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
@@ -64,8 +66,9 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-top: 4px;
+      margin-top: 0;
       margin-bottom: 20px;
+      transform: translateY(12px);
     }
 
     #before-app-mounted .loading-dots div {
