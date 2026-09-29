@@ -121,7 +121,10 @@ async function readWorkspaceManifest(folder) {
   const panelFile = path.join(EXTERNAL_ROOT, folder, "panel", "plugin.json");
   const daemonFile = path.join(EXTERNAL_ROOT, folder, "daemon", "plugin.json");
   const panelManifest = await readJson(panelFile);
-  const daemonManifest = await readJson(daemonFile);
+  // A two-sided plugin is described exclusively by its panel manifest. Only a
+  // daemon-only workspace falls back to the daemon manifest, whose runtime-only
+  // shape is otherwise deliberately ignored here.
+  const daemonManifest = panelManifest ? null : await readJson(daemonFile);
   const manifest = panelManifest ?? daemonManifest;
   if (!manifest) {
     throw new Error(`No plugin.json in external/${folder}/panel or external/${folder}/daemon.`);
@@ -135,13 +138,6 @@ async function readWorkspaceManifest(folder) {
   if (!PLUGIN_ID_PATTERN.test(id) || RESERVED_NAMES.test(id)) {
     throw new Error(
       `The id "${id}" in ${source} cannot be published: use 2-64 lowercase letters, digits, "_" or "-", starting with a letter, and not a Windows device name.`
-    );
-  }
-  // Both halves are published as one plugin, under the id the panel half declares.
-  // A daemon half naming itself something else installs under this id anyway.
-  if (panelManifest && daemonManifest && String(daemonManifest.id ?? "").trim() !== id) {
-    console.warn(
-      `Warning: daemon/plugin.json declares id "${daemonManifest.id ?? ""}"; publishing both halves as "${id}".`
     );
   }
   const description = typeof manifest.description === "string" ? manifest.description : "";
@@ -423,17 +419,22 @@ async function validatePackageFile(filename, relativeFile) {
 }
 
 /**
- * 市场从包里自己的 plugin.json 读插件信息，所以 `--version` / `--changelog` 要写进
- * 编译产物里的那份。工作区的 plugin.json 保持不动：覆盖只针对这一次上传。
+ * 市场按 panel → daemon 的顺序取插件信息，所以 `--version` / `--changelog` 只写进
+ * 实际描述整包的那份清单。双端插件的 daemon 清单保持为纯运行入口。
+ * 工作区的 plugin.json 保持不动：覆盖只针对这一次上传。
  */
 async function applyOverrides(outDir, files, manifest) {
-  for (const relativeFile of files.filter((file) => file.endsWith("plugin.json"))) {
-    const filePath = path.join(outDir, relativeFile);
-    const packaged = JSON.parse(await fs.readFile(filePath, "utf8"));
-    packaged.version = manifest.version;
-    packaged.changelog = manifest.changelog;
-    await fs.writeFile(filePath, `${JSON.stringify(packaged, null, 2)}\n`, "utf8");
-  }
+  const relativeFile = files.includes("panel/plugin.json")
+    ? "panel/plugin.json"
+    : files.includes("daemon/plugin.json")
+      ? "daemon/plugin.json"
+      : null;
+  if (!relativeFile) throw new Error("The compiled package has no plugin.json.");
+  const filePath = path.join(outDir, relativeFile);
+  const packaged = JSON.parse(await fs.readFile(filePath, "utf8"));
+  packaged.version = manifest.version;
+  packaged.changelog = manifest.changelog;
+  await fs.writeFile(filePath, `${JSON.stringify(packaged, null, 2)}\n`, "utf8");
 }
 
 async function upload(connection, outDir, files) {

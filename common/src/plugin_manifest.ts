@@ -121,7 +121,8 @@ const MANIFEST_FILES = ["plugin.json", "manifest.json", "package.json"];
 /** Reads the manifest of one plugin directory, or null if it has none. */
 export function readPluginManifest(
   directory: string,
-  onWarning?: (message: string, error?: unknown) => void
+  onWarning?: (message: string, error?: unknown) => void,
+  fallbackId = path.basename(directory)
 ): PluginManifest | null {
   for (const file of MANIFEST_FILES) {
     const filePath = path.join(directory, file);
@@ -129,7 +130,7 @@ export function readPluginManifest(
     try {
       const value = JSON.parse(fs.readFileSync(filePath, "utf8")) as Record<string, unknown> | null;
       if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-      const id = typeof value.id === "string" ? value.id : path.basename(directory);
+      const id = typeof value.id === "string" ? value.id : fallbackId;
       if (!id.trim()) return null;
       return { ...value, id: id.trim() } as PluginManifest;
     } catch (error) {
@@ -167,7 +168,10 @@ function discoverPluginDirectory(
   options: DiscoverPluginsOptions,
   folder = path.basename(directory)
 ): DiscoveredPlugin | null {
-  const manifest = readPluginManifest(directory, options.onWarning);
+  // External workspaces point directly at `<workspace>/<side>`, so the side
+  // directory name ("panel"/"daemon") is not the plugin id. Their root supplies
+  // the outer workspace folder as the fallback id.
+  const manifest = readPluginManifest(directory, options.onWarning, folder);
   if (!manifest) return null;
   if (manifest.enabled === false && !options.includeDisabled) return null;
 

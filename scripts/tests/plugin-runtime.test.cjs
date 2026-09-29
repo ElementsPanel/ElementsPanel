@@ -319,6 +319,25 @@ test("user installation precedence applies only to the same market owner", (t) =
   );
 });
 
+test("external workspace manifests can use the workspace folder as their id", (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "elements-plugin-workspace-"));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const { discoverExternalPluginRoots, discoverPluginsFromRoots } = load(
+    "common/src/plugin_manifest.ts"
+  );
+  const daemon = path.join(directory, "external/runtime-only/daemon");
+  fs.mkdirSync(daemon, { recursive: true });
+  fs.writeFileSync(path.join(daemon, "index.cjs"), "exports.apply=()=>{};");
+  fs.writeFileSync(path.join(daemon, "plugin.json"), '{"backend":"index.cjs"}');
+
+  const plugins = discoverPluginsFromRoots(discoverExternalPluginRoots(directory, "daemon"), {
+    entryFields: ["backend"]
+  });
+  assert.equal(plugins.length, 1);
+  assert.equal(plugins[0].manifest.id, "runtime-only");
+  assert.equal(plugins[0].folder, "runtime-only");
+});
+
 test("settings forms validate server-side before the plugin writes and report restart-only settings", async (t) => {
   const f = fixture(t);
   await f.start();

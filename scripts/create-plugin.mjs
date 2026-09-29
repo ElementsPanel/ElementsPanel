@@ -87,15 +87,6 @@ export function apply(ctx: PanelFrontendPluginContext) {
 `,
       "daemon/plugin.json": `${JSON.stringify(
         {
-          id: folder,
-          name: `${folder} daemon plugin`,
-          displayName: `${folder} daemon plugin`,
-          version: "0.1.0",
-          description: "A custom ElementsPanel daemon plugin.",
-          summary: "A custom ElementsPanel daemon plugin.",
-          category: "",
-          changelog: "",
-          priority: 100,
           backend: "src/backend/index.ts"
         },
         null,
@@ -163,8 +154,10 @@ That compiles both halves and uploads the result, which the market puts in its
 review queue. Everything the market shows — display name, version, summary,
 description, category, changelog — is read from \`panel/plugin.json\` (or
 \`daemon/plugin.json\` for a daemon-only workspace), so edit it there; the market
-shows the new details once that upload is approved. Only \`--version\` and
-\`--changelog\` are worth passing per upload.
+shows the new details once that upload is approved. In a normal two-sided plugin,
+\`daemon/plugin.json\` intentionally contains only its runtime entry and does not
+duplicate the panel metadata. Only \`--version\` and \`--changelog\` are worth
+passing per upload.
 
 The first upload links your market account in the browser, and the token is kept
 under \`data/\`. \`npm run publish-plugin -- --disconnect\` revokes it again; so does

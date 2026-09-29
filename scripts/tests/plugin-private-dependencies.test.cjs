@@ -149,6 +149,13 @@ test("new plugin scaffolds keep npm manifests and installs inside the plugin wor
   const manifest = JSON.parse(fs.readFileSync(path.join(workspace, "package.json")));
   assert.equal(manifest.private, true);
   assert.deepEqual(manifest.dependencies, {});
+  assert.deepEqual(
+    JSON.parse(fs.readFileSync(path.join(workspace, "daemon/plugin.json"))),
+    { backend: "src/backend/index.ts" }
+  );
+  const panelManifest = JSON.parse(fs.readFileSync(path.join(workspace, "panel/plugin.json")));
+  assert.equal(panelManifest.id, "private-example");
+  assert.equal(panelManifest.version, "0.1.0");
   assert.match(fs.readFileSync(path.join(workspace, ".gitignore"), "utf8"), /node_modules\//);
   assert.match(
     fs.readFileSync(path.join(workspace, "README.md"), "utf8"),
