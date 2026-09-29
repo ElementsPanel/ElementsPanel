@@ -156,6 +156,8 @@ test("new plugin scaffolds keep npm manifests and installs inside the plugin wor
   const panelManifest = JSON.parse(fs.readFileSync(path.join(workspace, "panel/plugin.json")));
   assert.equal(panelManifest.id, "private-example");
   assert.equal(panelManifest.version, "0.1.0");
+  assert.equal(panelManifest.description, "A custom ElementsPanel panel plugin.");
+  assert.equal(Object.hasOwn(panelManifest, "summary"), false);
   assert.match(fs.readFileSync(path.join(workspace, ".gitignore"), "utf8"), /node_modules\//);
   assert.match(
     fs.readFileSync(path.join(workspace, "README.md"), "utf8"),

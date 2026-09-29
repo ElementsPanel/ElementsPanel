@@ -59,7 +59,6 @@ if (names.length !== 1 || names[0].startsWith("-")) {
           displayName: `${folder} panel plugin`,
           version: "0.1.0",
           description: "A custom ElementsPanel panel plugin.",
-          summary: "A custom ElementsPanel panel plugin.",
           category: "",
           changelog: "",
           priority: 100,
@@ -151,8 +150,8 @@ npm run publish-plugin -- ${folder}
 \`\`\`
 
 That compiles both halves and uploads the result, which the market puts in its
-review queue. Everything the market shows — display name, version, summary,
-description, category, changelog — is read from \`panel/plugin.json\` (or
+review queue. Everything the market shows — display name, version, description,
+category and changelog — is read from \`panel/plugin.json\` (or
 \`daemon/plugin.json\` for a daemon-only workspace), so edit it there; the market
 shows the new details once that upload is approved. In a normal two-sided plugin,
 \`daemon/plugin.json\` intentionally contains only its runtime entry and does not

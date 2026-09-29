@@ -145,7 +145,6 @@ async function readWorkspaceManifest(folder) {
     name: id,
     displayName: String(manifest.displayName ?? manifest.name ?? id),
     version: String(manifest.version ?? "0.1.0"),
-    summary: String(manifest.summary ?? description),
     description,
     category: String(manifest.category ?? ""),
     changelog: String(manifest.changelog ?? "")
