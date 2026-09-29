@@ -102,36 +102,28 @@ onMounted(async () => {
 <style lang="scss">
 .page-enter-active,
 .page-leave-active {
-  transform-origin: center top;
-  will-change: transform, opacity;
+  will-change: opacity;
 }
 
 .page-enter-active {
-  transition:
-    opacity 260ms ease-out,
-    transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 260ms ease-out;
 }
 
 .page-leave-active {
-  transition:
-    opacity 180ms ease-in,
-    transform 180ms ease-in;
+  transition: opacity 180ms ease-in;
 }
 
 .page-enter-from {
   opacity: 0;
-  transform: scale(1.04);
 }
 
 .page-enter-to,
 .page-leave-from {
   opacity: 1;
-  transform: scale(1);
 }
 
 .page-leave-to {
   opacity: 0;
-  transform: scale(0.96);
 }
 
 @media (prefers-reduced-motion: reduce) {
