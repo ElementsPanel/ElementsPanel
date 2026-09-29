@@ -14,5 +14,5 @@
 确保你已经安装 [Node.js](https://nodejs.org)
 
 1. 运行仓库根目录内的 “install-dependents” 脚本
-2. 在仓库根目录运行 “npm run all” 或运行 “npm-dev-windows” 脚本
+2. 在仓库根目录运行 “npm run all” 或运行 “npm-dev-*” 脚本
 3. 如需构建，运行 “build” 脚本
