@@ -96,7 +96,9 @@ export function createEnvironmentRouter() {
     async (ctx) => {
       try {
         const remoteService = remoteSubsystem().getInstance(String(ctx.query.daemonId));
-        ctx.body = await remoteRequest(remoteService).request("environment/progress", {});
+        ctx.body = await remoteRequest(remoteService).request("environment/progress", {
+          details: ctx.query.details === "true"
+        });
       } catch (error) {
         ctx.body = error;
       }

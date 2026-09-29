@@ -1,4 +1,5 @@
 import Docker from "dockerode";
+import { DockerBuildTracker, type DockerBuildProgress } from "./docker_build_progress";
 import http from "http";
 import https from "https";
 import { normalizeDockerPlatform } from "mcsmanager-common";
@@ -83,6 +84,7 @@ export class DefaultDocker extends Docker {
 export class DockerManager {
   // 1=creating 2=creating completed -1=creating error
   public static readonly builderProgress = new Map<string, number>();
+  public static readonly builderDetails = new Map<string, DockerBuildProgress>();
 
   public docker: Docker;
 
@@ -103,6 +105,9 @@ export class DockerManager {
   }
 
   async startBuildImage(dockerFileDir: string, dockerImageName: string) {
+    const tracker = new DockerBuildTracker();
+    const publish = () => DockerManager.builderDetails.set(dockerImageName, tracker.snapshot());
+    publish();
     try {
       // Set the current image creation progress
       DockerManager.setBuilderProgress(dockerImageName, 1);
@@ -116,15 +121,22 @@ export class DockerManager {
       );
       // wait for creation to complete
       await new Promise((resolve, reject) => {
-        this.docker.modem.followProgress(Readable.from(stream), (err, res) =>
-          err ? reject(err) : resolve(res)
+        this.docker.modem.followProgress(
+          Readable.from(stream),
+          (err, res) => err ? reject(err) : resolve(res),
+          (event) => { tracker.update(event); publish(); }
         );
       });
       // Set the current image creation progress
+      tracker.finish();
+      publish();
       DockerManager.setBuilderProgress(dockerImageName, 2);
     } catch (error: any) {
       // Set the current image creation progress
+      tracker.finish(error ?? new Error("Docker build failed"));
+      publish();
       DockerManager.setBuilderProgress(dockerImageName, -1);
+      throw error;
     }
   }
 
