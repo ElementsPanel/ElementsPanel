@@ -10,7 +10,6 @@ import {
   VChip,
   VContainer,
   VIcon,
-  VImg,
   VProgressLinear,
   VTab,
   VTabs
@@ -137,7 +136,7 @@ onBeforeUnmount(() => requestId++);
               class="plugin-detail-icon"
               :class="{ 'plugin-detail-icon--image': Boolean(icon) }"
             >
-              <VImg v-if="icon" :src="icon" alt="" cover />
+              <img v-if="icon" :src="icon" alt="" @error="delete icons[plugin.id]" />
               <VIcon v-else icon="mdi-puzzle-outline" size="34" />
             </span>
             <div class="plugin-detail-heading-text">
@@ -355,12 +354,16 @@ onBeforeUnmount(() => requestId++);
   background: rgba(var(--v-theme-primary), 0.12);
 }
 
-// 有图标时让图片铺满这个圆角方块；保留底色，透明的 PNG 也看得清。
+// Custom artwork keeps its original colors on a neutral background.
 .plugin-detail-icon--image {
   padding: 0;
   overflow: hidden;
 
-  :deep(.v-img) {
+  background: rgb(var(--v-theme-surface));
+
+  img {
+    display: block;
+    object-fit: cover;
     width: 100%;
     height: 100%;
   }

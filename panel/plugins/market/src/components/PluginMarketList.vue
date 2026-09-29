@@ -14,7 +14,6 @@ import {
   VCol,
   VContainer,
   VIcon,
-  VImg,
   VProgressLinear,
   VRow,
   VTextField
@@ -143,18 +142,25 @@ onBeforeUnmount(() => requestId++);
           >
             <VCardText class="plugin-market-card-content">
               <div class="plugin-market-card-head">
-                <!-- 包里的 icon.png；市场没给图标时仍是那块拼图 -->
-                <VAvatar size="40" rounded="lg" color="surface-variant">
-                  <VImg v-if="icons[plugin.id]" :src="icons[plugin.id]" alt="" cover />
-                  <VIcon v-else icon="mdi-puzzle-outline" size="22" />
+                <!-- Use the package icon when available, with a fallback on image errors. -->
+                <VAvatar class="plugin-market-icon" size="52" rounded="lg" color="surface" variant="flat">
+                  <img
+                    v-if="icons[plugin.id]"
+                    :src="icons[plugin.id]"
+                    alt=""
+                    @error="delete icons[plugin.id]"
+                  />
+                  <VIcon v-else icon="mdi-puzzle-outline" size="28" />
                 </VAvatar>
-                <div class="text-h6">
-                  {{ plugin.displayName }}
+                <div class="plugin-market-card-heading">
+                  <div class="text-h6">
+                    {{ plugin.displayName }}
+                  </div>
+                  <div class="text-caption text-medium-emphasis">
+                    {{ plugin.author?.displayName ?? "" }}
+                    <span v-if="plugin.category">· {{ plugin.category }}</span>
+                  </div>
                 </div>
-              </div>
-              <div class="text-caption text-medium-emphasis">
-                {{ t("TXT_CODE_PLUGIN_MARKET_BY", { name: plugin.author?.displayName ?? "" }) }}
-                <span v-if="plugin.category">· {{ plugin.category }}</span>
               </div>
               <div class="plugin-market-card-summary text-body-2 mt-2">
                 {{ plugin.summary || t("TXT_CODE_PLUGIN_MARKET_NO_SUMMARY") }}
@@ -224,7 +230,24 @@ onBeforeUnmount(() => requestId++);
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 4px;
+  margin-bottom: 12px;
+}
+
+.plugin-market-card-heading {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.plugin-market-icon {
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.plugin-market-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .plugin-market-card-summary {
