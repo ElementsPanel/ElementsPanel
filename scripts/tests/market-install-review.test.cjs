@@ -201,7 +201,7 @@ test("daemon-only installation survives service reload and is visible in install
   assert.deepEqual(await env.install({ daemonIds: ["node-1", "node-1", " node-2 "] }), {
     failedNodes: [],
     installedVersion: "1.0.0",
-    restartRequired: true
+    restartRequired: false
   });
   assert.equal(env.rpcCalls.filter((call) => call.event === "plugin/install").length, 2);
   assert.equal(fs.existsSync(path.join(env.panelDirectory, "plugins", "sample")), false);
@@ -252,7 +252,7 @@ test("partial upgrades retain old node metadata and uninstall failures can be re
     removed: false,
     installedVersion: "1.0.0",
     failedNodes: ["node-2"],
-    restartRequired: true
+    restartRequired: false
   });
   assert.deepEqual((await env.installed())[0].daemonIds, ["node-2"]);
   assert.equal(
@@ -264,7 +264,7 @@ test("partial upgrades retain old node metadata and uninstall failures can be re
     removed: true,
     installedVersion: undefined,
     failedNodes: [],
-    restartRequired: true
+    restartRequired: false
   });
   assert.deepEqual(await env.installed(), []);
   assert.deepEqual(fs.readdirSync(path.join(env.panelDirectory, "data", "market-installs")), []);
@@ -335,16 +335,20 @@ test("same-plugin operations stay serialized across installs and a queued uninst
     env.rpcCalls.map((call) => [call.event, call.daemonId]),
     [
       ["plugin/install", "node-1"],
+      ["plugin/reload", "node-1"],
       ["plugin/install", "node-2"],
+      ["plugin/reload", "node-2"],
       ["plugin/uninstall", "node-1"],
-      ["plugin/uninstall", "node-2"]
+      ["plugin/uninstall", "node-2"],
+      ["plugin/reload", "node-1"],
+      ["plugin/reload", "node-2"]
     ]
   );
   assert.deepEqual(await env.installed(), []);
 });
 
-test("development reload failures require restart and only changed nodes are reloaded", async (t) => {
-  const env = await fixture(t, { development: true });
+test("reload failures require restart and only changed nodes are reloaded", async (t) => {
+  const env = await fixture(t);
   env.state.request = async ({ event }) => {
     if (event === "plugin/reload") throw new Error("requires daemon restart");
     return {};
@@ -364,8 +368,8 @@ test("development reload failures require restart and only changed nodes are rel
   assert.equal(env.rpcCalls.length, 0);
 });
 
-test("development discovery loads new nodes but upgrades still require a restart", async (t) => {
-  const env = await fixture(t, { development: true });
+test("production discovery loads new nodes but upgrades still require a restart", async (t) => {
+  const env = await fixture(t);
   const first = await env.install({ daemonIds: ["node-1"] });
   assert.equal(first.restartRequired, false);
   assert.equal(first.installedVersion, "1.0.0");

@@ -196,10 +196,9 @@ export function apply(ctx: DaemonPluginContext) {
     }
   });
 
-  // Re-scan the plugin directories, for a plugin that arrived while the daemon
-  // was running — the plugin market installs one into `plugins/` in production
-  // and `data/plugins/` in development. `ctx.plugins.reload()` refuses otherwise,
-  // and the panel is told why.
+  // Re-scan the plugin directories for a plugin that arrived while the daemon
+  // was running. The panel reconnects after this response so protocol handlers
+  // from a newly loaded plugin are bound to a fresh socket.
   ctx.protocol.on("plugin/reload", async (routerCtx) => {
     try {
       await ctx.plugins.reload();

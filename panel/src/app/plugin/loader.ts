@@ -295,18 +295,15 @@ export async function loadPanelPlugins(): Promise<readonly LoadedPanelPlugin[]> 
  * plugin that has appeared since startup is installed, and one whose directory
  * is gone — or whose manifest now says `enabled: false` — is disposed.
  *
- * Development only: a plugin loaded into a running process is never fully
- * reversible, because whatever it captured outside its own scope stays behind.
- * This is the convenience it was written for — a plugin installed from the
- * market in a source checkout — and nothing a production panel should do.
+ * This is safe for newly installed, removed and disabled packaged plugins in a
+ * production process. It deliberately does not replace code that has already
+ * run: `installPlugin()` compares backend revisions and leaves a changed plugin
+ * in `restart-required` state instead.
  *
- * The browser half needs nothing here: the Vite dev server watches the plugin
- * directories and reloads the page when one changes.
+ * The browser half needs nothing here: Vite watches source checkouts, while a
+ * production browser receives the changed frontend manifest over plugin SSE.
  */
 export async function reloadPanelPlugins(): Promise<readonly LoadedPanelPlugin[]> {
-  if (process.env.NODE_ENV !== "development") {
-    throw new Error("Reloading plugins is only supported in a development environment.");
-  }
   return change(async () => {
     ensurePanelPluginService();
     const discovered = discoverPanelPlugins({

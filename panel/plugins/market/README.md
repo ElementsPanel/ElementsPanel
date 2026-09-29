@@ -198,21 +198,19 @@ production. `isDevelopment()` looks for `panel/src/app` instead — present in a
 source checkout, absent from a built deployment, which is only
 `production-code/web` and `production-code/daemon`.
 
-**Restart required — except in development.** The panel and the daemon load their
-plugins at startup, so in a deployment an install or an uninstall only takes
-effect after both are restarted; the install route answers
-`restartRequired: true`.
+**Hot loading and restart boundaries.** After an install or uninstall, the route
+calls `ctx.plugins.reload()`, which re-scans the panel's own directories — loading
+what has appeared and disposing what is gone — and asks the selected daemons to
+do the same over `plugin/reload`. Each node reconnects afterwards because a daemon
+binds protocol handlers onto each socket as that socket connects. This works in a
+built production deployment as well as a source checkout. In production the
+browser watches `/plugins/events`, re-reads the frontend manifest and applies the
+new plugin graph; Vite handles source-checkout changes during development.
 
-A source checkout reloads instead: the route calls `ctx.plugins.reload()`, which
-re-scans the panel's own directories — installing what has appeared and disposing
-what is gone — and asks the daemons the package was sent to do the same over
-`plugin/reload`, reconnecting each node afterwards because a daemon binds its
-protocol handlers onto each socket as that socket connects. The browser half
-needs nothing: the Vite dev server watches the plugin directories and reloads the
-page. `reload()` itself refuses to run outside development, so a built
-deployment keeps the restart it asks for. What reload cannot do is replace a
-plugin that is already loaded — installing a newer version of one still needs a
-restart.
+Reload does not replace backend code that has already run. Installing a newer
+revision of an existing panel or daemon plugin therefore still answers
+`restartRequired: true`; a completely new plugin, removal, or activation does not
+require a service restart when each affected side reloads successfully.
 
 **A node that cannot be reached.** Sending the daemon half to one node says
 nothing about the others, so a failure is collected instead of thrown: the panel

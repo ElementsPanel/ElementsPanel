@@ -239,18 +239,13 @@ export async function loadDaemonPlugins(): Promise<readonly DaemonPluginEntry[]>
  * plugin that has appeared since startup is installed, and one whose directory
  * is gone — or whose manifest now says `enabled: false` — is disposed.
  *
- * Development only. Loading a plugin into a running process is never fully
- * reversible: whatever it captured outside its own scope stays behind, and the
- * daemon binds its protocol handlers onto each socket as that socket connects
- * (`plugin/context.ts`), so a plugin that has just appeared is invisible to a
- * connection that is already open. That makes this the convenience it was
- * written for — a plugin installed from the market in a source checkout — and
- * nothing a production daemon should be asked to do.
+ * This is safe for newly installed, removed and disabled packaged plugins in a
+ * production process. It deliberately does not replace code that has already
+ * run: `installPlugin()` compares backend revisions and leaves a changed plugin
+ * in `restart-required` state instead. A caller must reconnect afterwards so
+ * protocol handlers from a new plugin are bound to a fresh socket.
  */
 export async function reloadDaemonPlugins(): Promise<readonly DaemonPluginEntry[]> {
-  if (process.env.NODE_ENV !== "development") {
-    throw new Error("Reloading plugins is only supported in a development environment.");
-  }
   return change(async () => {
     ensureDaemonPluginService();
     const discovered = discoverDaemonPlugins({

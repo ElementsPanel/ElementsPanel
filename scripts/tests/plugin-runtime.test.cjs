@@ -72,11 +72,50 @@ function fixture(t, side = "panel") {
     loader,
     write,
     start: loader[`load${cap}Plugins`],
+    reload: loader[`reload${cap}Plugins`],
     inventory: loader[`get${cap}PluginInventory`],
     enabled: loader[`set${cap}PluginEnabled`],
     remove: loader[`remove${cap}Plugin`],
     configure: loader[`configure${cap}Plugin`]
   };
+}
+for (const side of ["panel", "daemon"]) {
+  test(`${side}: production reload activates new packages without replacing running code`, async (t) => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+    t.after(() => {
+      if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = previousNodeEnv;
+    });
+    const f = fixture(t, side);
+    const original = f.write(
+      "original",
+      'exports.apply=ctx=>ctx.set("originalValue",1);'
+    );
+    await f.start();
+    assert.equal(f.ctx.originalValue, 1);
+
+    const added = f.write("added", 'exports.apply=ctx=>ctx.set("addedValue",true);');
+    await f.reload();
+    assert.equal(f.ctx.addedValue, true);
+    assert.equal(f.inventory().find((plugin) => plugin.id === "added").state, "active");
+
+    fs.writeFileSync(
+      path.join(original, "index.cjs"),
+      'exports.apply=ctx=>ctx.set("originalValue",2);'
+    );
+    await f.reload();
+    assert.equal(f.ctx.originalValue, 1);
+    assert.equal(
+      f.inventory().find((plugin) => plugin.id === "original").state,
+      "restart-required"
+    );
+
+    fs.rmSync(added, { recursive: true, force: true });
+    await f.reload();
+    assert.equal(f.ctx.addedValue, undefined);
+    assert.equal(f.inventory().some((plugin) => plugin.id === "added"), false);
+  });
 }
 for (const side of ["panel", "daemon"]) {
   test(`${side}: dependencies report pending; enablement survives upgrades without rewriting the package`, async (t) => {

@@ -2,7 +2,9 @@
 
 Panel, Daemon and browser still use Cordis 3.18.1. Deployment remains `node app.js`
 with precompiled plugins; no runtime package manager, compiler or extra port is
-required. Backend package upgrades continue to require a process restart.
+required. Newly installed precompiled plugins are discovered and activated in a
+running production deployment. Backend package upgrades continue to require a
+process restart because code that has already run is never replaced in-process.
 
 ## Defaults, overrides and configuration
 
@@ -89,9 +91,13 @@ registrations and explicit `ctx.effect()` disposers participate in cleanup;
 untracked module/global side effects remain the plugin author's responsibility.
 
 Daemon protocol handlers are bound at socket connection time. The panel's
-management endpoint reconnects after toggling a daemon plugin. Package operations
-continue to report failed nodes independently; a successful panel install does
-not imply every node installed or activated the same version.
+management endpoint reconnects after toggling or installing a daemon plugin.
+Market install and uninstall operations re-scan the production panel and selected
+nodes immediately; newly added or removed plugins therefore do not require a
+service restart. Package operations continue to report failed nodes independently;
+a successful panel install does not imply every node installed or activated the
+same version. Replacing an already running backend revision reports
+`restart-required` and takes effect after the affected process restarts.
 
 ## Independent browser plugins
 

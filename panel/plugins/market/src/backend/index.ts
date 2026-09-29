@@ -6,7 +6,6 @@ import {
   downloadPackage,
   fetchPackage,
   forgetRemoteInstall,
-  isDevelopment,
   listInstalled,
   PluginMarketError,
   readRemoteInstalls,
@@ -439,19 +438,16 @@ export async function apply(ctx: PanelPluginContext) {
   /**
    * Makes a freshly written package take effect without a restart.
    *
-   * Both halves load their plugins once, at startup, so installing normally
-   * only writes files and the answer tells the page to ask for a restart. In a
-   * source checkout the two re-scan instead: the panel its own directories, and
-   * the daemons the package was sent to the ones they own. A production install
-   * still answers `restartRequired`, because `ctx.plugins.reload()` refuses to
-   * run there.
+   * Both halves re-scan after the package is written: the panel scans its own
+   * directories, and the selected daemons scan theirs before reconnecting.
+   * Loaders accept new packaged plugins in production, but retain an already
+   * running backend revision; replacing that revision still requires restart.
    */
   async function hotReload(
     sides: PluginSide[],
     daemonIds: readonly string[] = []
   ): Promise<boolean> {
     if (!sides.length) return true;
-    if (!isDevelopment()) return false;
     try {
       if (sides.includes("panel")) await ctx.plugins.reload();
       if (sides.includes("daemon")) return await reloadNodes(daemonIds);
@@ -575,8 +571,8 @@ export async function apply(ctx: PanelPluginContext) {
 
   // Installing writes the panel half into this process's plugin directory and
   // sends the daemon half to the nodes the user picked. Both halves load their
-  // plugins at startup, so in a development checkout the two are asked to
-  // re-scan, and everywhere else the answer tells the page to ask for a restart.
+  // plugins at startup, so both sides are asked to re-scan after files arrive.
+  // Existing backend revisions are not replaced in-process.
   router.post(
     "/plugin/install",
     requireAdmin,
@@ -617,8 +613,8 @@ export async function apply(ctx: PanelPluginContext) {
             : { failedNodes: [], changedNodes: [] };
           if (changedNodes.length) sides.push("daemon");
           const reloaded = await hotReload(sides, changedNodes);
-          // Development discovery loads new plugins, but retains already loaded
-          // module instances. Replacing an existing side still needs a restart.
+          // Discovery loads new plugins, but retains already loaded module
+          // instances. Replacing an existing side still needs a restart.
           const replaced =
             (panelFiles.length > 0 && previous?.sides.includes("panel")) ||
             changedNodes.some((daemonId) => previous?.daemonIds.includes(daemonId));
