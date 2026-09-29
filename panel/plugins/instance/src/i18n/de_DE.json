@@ -5,5 +5,6 @@
   "TXT_CODE_DESKTOP_IM_NO_INSTANCES": "Keine Instanzen gefunden",
   "TXT_CODE_DESKTOP_IM_SEARCH": "Instanzen suchen...",
   "TXT_CODE_DESKTOP_MY_APPS": "meine Bewerbung",
-  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Wählen Sie eine Methode zum Erstellen Ihrer neuen Instanz"
+  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Wählen Sie eine Methode zum Erstellen Ihrer neuen Instanz",
+  "TXT_CODE_INSTANCE_CONFIRM_CREATE": "Erstellung bestätigen"
 }

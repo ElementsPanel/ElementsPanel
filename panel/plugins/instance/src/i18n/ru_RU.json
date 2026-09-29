@@ -5,5 +5,6 @@
   "TXT_CODE_DESKTOP_IM_NO_INSTANCES": "Экземпляры не найдены",
   "TXT_CODE_DESKTOP_IM_SEARCH": "Поиск экземпляров...",
   "TXT_CODE_DESKTOP_MY_APPS": "Мое приложение",
-  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Выберите способ создания нового экземпляра"
+  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Выберите способ создания нового экземпляра",
+  "TXT_CODE_INSTANCE_CONFIRM_CREATE": "Подтвердить создание"
 }

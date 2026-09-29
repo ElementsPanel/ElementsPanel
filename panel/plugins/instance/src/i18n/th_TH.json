@@ -5,5 +5,6 @@
   "TXT_CODE_DESKTOP_IM_NO_INSTANCES": "ไม่พบอินสแตนซ์",
   "TXT_CODE_DESKTOP_IM_SEARCH": "ค้นหาอินสแตนซ์...",
   "TXT_CODE_DESKTOP_MY_APPS": "แอปพลิเคชันของฉัน",
-  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "เลือกวิธีสร้างอินสแตนซ์ใหม่"
+  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "เลือกวิธีสร้างอินสแตนซ์ใหม่",
+  "TXT_CODE_INSTANCE_CONFIRM_CREATE": "ยืนยันการสร้าง"
 }

@@ -5,5 +5,6 @@
   "TXT_CODE_DESKTOP_IM_NO_INSTANCES": "No se encontraron instancias",
   "TXT_CODE_DESKTOP_IM_SEARCH": "Buscar instancias...",
   "TXT_CODE_DESKTOP_MY_APPS": "mi aplicación",
-  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Elige un método para crear tu nueva instancia"
+  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Elige un método para crear tu nueva instancia",
+  "TXT_CODE_INSTANCE_CONFIRM_CREATE": "Confirmar creación"
 }

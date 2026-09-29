@@ -5,5 +5,6 @@
   "TXT_CODE_DESKTOP_IM_NO_INSTANCES": "Örnek bulunamadı",
   "TXT_CODE_DESKTOP_IM_SEARCH": "Örneklerde ara...",
   "TXT_CODE_DESKTOP_MY_APPS": "Benim Uygulamam",
-  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Yeni örneğinizi oluşturma yöntemini seçin"
+  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Yeni örneğinizi oluşturma yöntemini seçin",
+  "TXT_CODE_INSTANCE_CONFIRM_CREATE": "Oluşturmayı onayla"
 }

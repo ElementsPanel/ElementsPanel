@@ -22,6 +22,7 @@ daemon/plugins/*/backend/
 market_plugins/
 panel/market_plugins/
 daemon/market_plugins/
+daemon/tmp/
 test.js
 .idea/
 ai-api.key

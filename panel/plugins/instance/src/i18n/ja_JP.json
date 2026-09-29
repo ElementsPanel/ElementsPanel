@@ -5,5 +5,6 @@
   "TXT_CODE_DESKTOP_IM_NO_INSTANCES": "インスタンスが見つかりません",
   "TXT_CODE_DESKTOP_IM_SEARCH": "インスタンスを検索...",
   "TXT_CODE_DESKTOP_MY_APPS": "アプリケーション一覧",
-  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "新しいインスタンスの作成方法を選択してください"
+  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "新しいインスタンスの作成方法を選択してください",
+  "TXT_CODE_INSTANCE_CONFIRM_CREATE": "作成を確認"
 }

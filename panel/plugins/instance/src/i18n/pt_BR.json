@@ -5,5 +5,6 @@
   "TXT_CODE_DESKTOP_IM_NO_INSTANCES": "Nenhuma instância encontrada",
   "TXT_CODE_DESKTOP_IM_SEARCH": "Pesquisar instâncias...",
   "TXT_CODE_DESKTOP_MY_APPS": "Minha Aplicação",
-  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Escolha uma forma de criar sua nova instância"
+  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Escolha uma forma de criar sua nova instância",
+  "TXT_CODE_INSTANCE_CONFIRM_CREATE": "Confirmar criação"
 }

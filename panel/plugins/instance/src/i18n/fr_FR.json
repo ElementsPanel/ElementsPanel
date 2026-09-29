@@ -5,5 +5,6 @@
   "TXT_CODE_DESKTOP_IM_NO_INSTANCES": "Aucune instance trouvée",
   "TXT_CODE_DESKTOP_IM_SEARCH": "Rechercher des instances...",
   "TXT_CODE_DESKTOP_MY_APPS": "mon application",
-  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Choisissez une méthode pour créer votre nouvelle instance"
+  "TXT_CODE_DESKTOP_NEW_INSTANCE_DESC": "Choisissez une méthode pour créer votre nouvelle instance",
+  "TXT_CODE_INSTANCE_CONFIRM_CREATE": "Confirmer la création"
 }

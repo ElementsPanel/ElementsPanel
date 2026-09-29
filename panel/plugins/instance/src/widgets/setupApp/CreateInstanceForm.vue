@@ -485,32 +485,41 @@ async function createInstance() {
     <div v-else-if="!isDownloadMode" class="desktop-create-hint mt-3">
       {{ t("TXT_CODE_7da6e84") }}
     </div>
-    <VBtn
-      v-if="needUpload"
-      color="primary"
-      variant="text"
-      rounded="xl"
-      class="mt-3 align-self-start"
-      :disabled="busy || !uFile || (needsJava && !!javaService && !javaValid)"
-      :loading="submitting"
-      @click="finalConfirm"
-      ><VIcon icon="mdi-upload-outline" start />{{ percentText }}</VBtn
-    >
-    <VBtn
-      v-else
-      color="primary"
-      variant="text"
-      rounded="xl"
-      class="mt-3 align-self-start"
-      :disabled="
-        busy || (isDownloadMode && !downloadSelection) || (needsJava && !!javaService && !javaValid)
-      "
-      :loading="submitting"
-      @click="finalConfirm"
-      ><VIcon :icon="isDownloadMode ? 'mdi-cloud-download-outline' : 'mdi-plus'" start />{{
-        isDownloadMode ? t("TXT_CODE_minecraft.create") : t("TXT_CODE_5a74975b")
-      }}</VBtn
-    >
+    <div :class="{ 'create-form-actions': $slots['back-action'] }">
+      <slot name="back-action" />
+      <VBtn
+        v-if="needUpload"
+        color="primary"
+        :variant="$slots['back-action'] ? 'flat' : 'text'"
+        rounded="xl"
+        :class="$slots['back-action'] ? '' : 'mt-3 align-self-start'"
+        :disabled="busy || !uFile || (needsJava && !!javaService && !javaValid)"
+        :loading="submitting"
+        @click="finalConfirm"
+        ><VIcon icon="mdi-upload-outline" start />{{
+          $slots["back-action"] ? t("TXT_CODE_INSTANCE_CONFIRM_CREATE") : percentText
+        }}</VBtn
+      >
+      <VBtn
+        v-else
+        color="primary"
+        :variant="$slots['back-action'] ? 'flat' : 'text'"
+        rounded="xl"
+        :class="$slots['back-action'] ? '' : 'mt-3 align-self-start'"
+        :disabled="
+          busy || (isDownloadMode && !downloadSelection) || (needsJava && !!javaService && !javaValid)
+        "
+        :loading="submitting"
+        @click="finalConfirm"
+        ><VIcon :icon="isDownloadMode ? 'mdi-cloud-download-outline' : 'mdi-plus'" start />{{
+          $slots["back-action"]
+            ? t("TXT_CODE_INSTANCE_CONFIRM_CREATE")
+            : isDownloadMode
+            ? t("TXT_CODE_minecraft.create")
+            : t("TXT_CODE_5a74975b")
+        }}</VBtn
+      >
+    </div>
   </VForm>
   <VBtn
     v-if="createdInstanceUuid && needUpload"
@@ -527,6 +536,16 @@ async function createInstance() {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+.create-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+}
+.create-form-actions > :deep(.v-btn) {
+  flex-shrink: 0;
 }
 .desktop-create-hint {
   color: rgba(var(--v-theme-on-surface), 0.68);

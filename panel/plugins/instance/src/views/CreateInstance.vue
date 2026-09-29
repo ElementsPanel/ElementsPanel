@@ -325,12 +325,13 @@ const handleCreated = (instanceUuid: string) => {
                     :is-desktop="true"
                     @next-step="handleCreated"
                     @busy="formBusy = $event"
-                  />
-                  <div class="step-actions">
-                    <VBtn variant="text" :disabled="formBusy" @click="goBack"
-                      ><VIcon icon="mdi-arrow-left" />{{ t("TXT_CODE_c14b2ea3") }}</VBtn
-                    >
-                  </div>
+                  >
+                    <template #back-action>
+                      <VBtn variant="text" :disabled="formBusy" @click="goBack"
+                        ><VIcon icon="mdi-arrow-left" />{{ t("TXT_CODE_c14b2ea3") }}</VBtn
+                      >
+                    </template>
+                  </CreateInstanceForm>
                 </div>
               </VStepperWindowItem>
             </VStepperWindow>
