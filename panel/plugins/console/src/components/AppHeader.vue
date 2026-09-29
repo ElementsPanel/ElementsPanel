@@ -427,7 +427,7 @@ const openPhoneMenu = (b = false) => {
 
   img {
     max-width: 160px;
-    height: 32px;
+    height: 28px;
     object-fit: contain;
   }
 }
@@ -446,7 +446,7 @@ const openPhoneMenu = (b = false) => {
 
   img {
     max-width: 140px;
-    height: 26px;
+    height: 24px;
     object-fit: contain;
   }
 }
