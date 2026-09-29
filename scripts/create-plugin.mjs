@@ -99,26 +99,26 @@ export function apply(ctx: DaemonPluginContext) {
   ctx.logger.info("Custom daemon plugin loaded.");
 }
 `,
-      // 这两份是插件对使用者说的话，会随包发布、在插件市场的「自述」页签里按 markdown
-      // 渲染。与工作区根目录的 README.md 不同，那份是写给开发者的。
+      // These user-facing readmes ship with the package and appear in the market.
+      // The workspace root README.md is a separate guide for developers.
       "panel/README.md": `# ${folder} panel plugin
 
-这一份是插件的自述：发布后会随包上传，在插件市场的「自述」页签里按 markdown 显示。
+This readme ships with the plugin and appears as Markdown in the market readme tab.
 
-## 它做什么
+## Features
 
-在这里写清楚插件做什么、怎么配置、有什么注意事项。
+Describe what this plugin does, how to configure it, and any limitations.
 
-## 用法
+## Usage
 
 \`\`\`bash
-# 发布到插件市场
+# Publish to the plugin market
 npm run publish-plugin -- ${folder}
 \`\`\`
 `,
       "daemon/README.md": `# ${folder} daemon plugin
 
-这一份是插件的自述：发布后会随包上传，在插件市场的「自述」页签里按 markdown 显示。
+This readme ships with the plugin and appears as Markdown in the market readme tab.
 `,
       "README.md": `# ${folder}
 
@@ -164,7 +164,7 @@ the market's account page.
 
 The plugin's own description for users lives in \`panel/README.md\` (or
 \`daemon/README.md\`): it is packaged with the plugin and rendered on the market's
-自述 tab. This file is the developer's guide, and is not published.
+readme tab. This file is the developer's guide, and is not published.
 
 The plugin's face on the market is \`icon.png\` at the root of this workspace.
 Unlike the manifest and the readme, it is not per half: put one PNG here (at most

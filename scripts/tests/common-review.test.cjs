@@ -412,7 +412,7 @@ test("plugin compiler refuses to erase source trees and unowned output directori
       encoding: "utf8"
     });
     assert.equal(result.status, 1);
-    assert.match(result.stderr, /拒绝清理|不能包含/);
+    assert.match(result.stderr, /Refusing to clear|must not contain/);
     assert.equal(fs.readFileSync(path.join(sourceDirectory, "source.txt"), "utf8"), "keep panel");
     assert.equal(fs.readFileSync(path.join(workspace, "source.txt"), "utf8"), "keep source");
   }

@@ -23,7 +23,7 @@ class InstanceSubsystem extends EventEmitter {
   public readonly LOG_DIR = "data/InstanceLog/";
 
   public readonly instances = new Map<string, Instance>();
-  public readonly instanceStream = new InstanceStreamListener();
+  public readonly instanceStream = new InstanceStreamListener<Socket>();
   private instanceDataDir = "";
 
   constructor() {

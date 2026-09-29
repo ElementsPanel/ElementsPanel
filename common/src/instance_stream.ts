@@ -1,11 +1,19 @@
-import { Socket } from "socket.io";
+// Only the transport operations used by forwarding belong in this shared API.
+// Keep the concrete socket type local to each consumer's Socket.IO installation.
+export interface ForwardSocket {
+  id: string;
+  connected: boolean;
+  once(event: "disconnect", listener: () => void): unknown;
+  off(event: "disconnect", listener: () => void): unknown;
+  emit(event: string, data: any): unknown;
+}
 
 // Application instance data stream forwarding adapter
-export default class InstanceStreamListener {
-  public readonly listenMap = new Map<string, Socket[]>();
-  private readonly disconnectHandlers = new Map<Socket, () => void>();
+export default class InstanceStreamListener<S extends ForwardSocket = ForwardSocket> {
+  public readonly listenMap = new Map<string, S[]>();
+  private readonly disconnectHandlers = new Map<S, () => void>();
 
-  public requestForward(socket: Socket, instanceUuid: string) {
+  public requestForward(socket: S, instanceUuid: string) {
     const sockets = this.listenMap.get(instanceUuid) ?? [];
     if (sockets.some((listener) => listener.id === socket.id)) return;
     sockets.push(socket);
@@ -19,7 +27,7 @@ export default class InstanceStreamListener {
     }
   }
 
-  public cannelForward(socket: Socket, instanceUuid: string) {
+  public cannelForward(socket: S, instanceUuid: string) {
     const remaining = this.listenMap
       .get(instanceUuid)
       ?.filter((listener) => listener.id !== socket.id);
@@ -36,7 +44,7 @@ export default class InstanceStreamListener {
     this.forwardViaCallback(instanceUuid, (socket) => socket.emit("instance/stdout", data));
   }
 
-  public forwardViaCallback(instanceUuid: string, callback: (socket: Socket) => void) {
+  public forwardViaCallback(instanceUuid: string, callback: (socket: S) => void) {
     for (const socket of this.listenMap.get(instanceUuid) ?? []) {
       if (socket.connected) callback(socket);
       else this.cannelForward(socket, instanceUuid);

@@ -418,9 +418,9 @@ async function validatePackageFile(filename, relativeFile) {
 }
 
 /**
- * 市场按 panel → daemon 的顺序取插件信息，所以 `--version` / `--changelog` 只写进
- * 实际描述整包的那份清单。双端插件的 daemon 清单保持为纯运行入口。
- * 工作区的 plugin.json 保持不动：覆盖只针对这一次上传。
+ * The market reads panel metadata first, then daemon metadata. Apply version and
+ * changelog overrides only to the manifest describing the package. Keep a paired
+ * daemon manifest runtime-only, and leave workspace manifests unchanged.
  */
 async function applyOverrides(outDir, files, manifest) {
   const relativeFile = files.includes("panel/plugin.json")
@@ -518,13 +518,14 @@ async function main() {
   console.log(`Publishing ${manifest.displayName} (${manifest.name}) v${manifest.version}`);
 
   const outDir = path.join(workspace, ".dist");
+  await fs.rm(outDir, { recursive: true, force: true });
   const compiled = await compile(folder, workspace, outDir);
   if (!compiled.files?.length) throw new Error("Compiling produced no files.");
   console.log(
     `Compiled ${compiled.files.length} files into ${path.relative(PROJECT_ROOT, outDir)}`
   );
 
-  // 市场不再收单独的 manifest 字段：它读包里自己的 plugin.json，所以覆盖值要写进去。
+  // The market reads plugin.json from the package, so write overrides there.
   await applyOverrides(outDir, compiled.files, manifest);
 
   if (flags["compile-only"] === true) return;

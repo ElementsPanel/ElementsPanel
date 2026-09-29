@@ -1,19 +1,14 @@
 #!/usr/bin/env node
 
-// 把一个 external/<name> 插件工作区编译成可发布的插件包。
-//
-// 编译用的就是项目自己的两个编译器：后端走 webpack + ts-loader（与
-// panel/webpack.plugins.config.js 同一套 externals），前端走 vite 的 lib 模式
-// （与 frontend/vite.config.ts 同一套别名）。产出目录的布局与
-// scripts/package-panel-plugins.mjs 一致：
-//
+// Compile an external/<name> workspace into a publishable plugin package.
+// Backends use webpack and ts-loader with the host externals; frontends use
+// Vite library mode with the host aliases. Output layout:
 //   <out>/<side>/plugin.json
-//   <out>/<side>/README.md               （工作区里带自述时）
-//   <out>/<side>/icon.png                （工作区根目录带图标时）
+//   <out>/<side>/README.md          (optional user readme)
+//   <out>/<side>/icon.png           (optional workspace icon)
 //   <out>/<side>/backend/index.cjs
-//   <out>/<side>/frontend/index.js       （仅 panel 侧有前端时）
-//
-// 进度日志写 stderr，最后一行结果 JSON 写 stdout，供调用方解析。
+//   <out>/<side>/frontend/index.js  (panel only)
+// Progress goes to stderr; the final JSON result goes to stdout.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -100,10 +95,8 @@ function isEsmPackage(modulesDir, moduleName) {
   }
 }
 
-/**
- * 后端：TypeScript → `<out>/<side>/backend/index.cjs`。
- * `modulesDir` 必须显式给出，否则 webpack-node-externals 找不到依赖，
- * 会把 koa 之类的宿主依赖一起打进产物。
+/** Compile TypeScript to backend/index.cjs. Explicit modulesDir settings keep
+ * host dependencies such as koa external to the package.
  */
 export function createBackendConfig(side, workspace, outSideDir) {
   const sideRoot = side === "panel" ? PANEL_ROOT : DAEMON_ROOT;
@@ -166,7 +159,7 @@ export function createBackendConfig(side, workspace, outSideDir) {
           exclude: /node_modules/,
           use: {
             loader: "ts-loader",
-            // 不指定时 ts-loader 会从 external/ 往上找 tsconfig，找不到就用默认配置
+            // Set the host tsconfig explicitly instead of searching upward from external/.
             options: {
               configFile: path.join(sideRoot, "tsconfig.json"),
               resolveModuleName(name, file, options, host, resolve) {
@@ -211,7 +204,7 @@ export function createBackendConfig(side, workspace, outSideDir) {
 async function compileBackend(side, workspace, outSideDir) {
   const config = createBackendConfig(side, workspace, outSideDir);
   if (!config) return false;
-  log(`[compile] ${side}: 编译后端 ${path.relative(PROJECT_ROOT, config.entry)}`);
+  log(`[compile] ${side}: Compiling backend ${path.relative(PROJECT_ROOT, config.entry)}`);
   const sideRoot = side === "panel" ? PANEL_ROOT : DAEMON_ROOT;
   const webpack = createRequire(path.join(sideRoot, "package.json"))("webpack");
   const stats = await new Promise((resolve, reject) => {
@@ -229,12 +222,8 @@ function resolveFromFrontend(specifier) {
   return frontendRequire.resolve(specifier);
 }
 
-/**
- * 前端：`src/frontend.ts` → `<out>/panel/frontend/index.js`。
- *
- * 配置写成 frontend/ 下的临时文件再交给 vite 加载，这样 `@vitejs/plugin-vue`
- * 之类的插件由 vite 自己按 frontend 工作区的依赖解析，跟项目自己的
- * vite.config.ts 走同一条解析路径。
+/** Generate frontend configuration under the host frontend workspace so Vite
+ * resolves plugins and dependencies through the same paths as the host build.
  */
 export function createFrontendConfigSource(workspace, outSideDir) {
   const sourceDir = path.join(workspace, "panel");
@@ -252,7 +241,7 @@ export function createFrontendConfigSource(workspace, outSideDir) {
   // importing plugin, with frontend/node_modules used only as a fallback.
   const frontendDedupe = FRONTEND_EXTERNALS.filter((item) => typeof item === "string");
 
-  // 正则要原样写进配置源码，JSON.stringify 会把它变成字符串字面量
+  // Preserve the regex literal in generated source; JSON.stringify would quote it.
   const externalSource = `[${FRONTEND_EXTERNALS.map((item) =>
     item instanceof RegExp ? item.toString() : JSON.stringify(item)
   ).join(", ")}]`;
@@ -321,7 +310,7 @@ async function compileFrontend(workspace, outSideDir) {
   const config = createFrontendConfigSource(workspace, outSideDir);
   if (!config) return null;
   const { configSource, configPath, viteEntry, entry, outFrontendDir } = config;
-  log(`[compile] panel: 编译前端 ${path.relative(PROJECT_ROOT, entry)}`);
+  log(`[compile] panel: Compiling frontend ${path.relative(PROJECT_ROOT, entry)}`);
   fs.writeFileSync(configPath, configSource, "utf8");
   try {
     const { build } = await import(pathToFileURL(viteEntry).href);
@@ -336,29 +325,20 @@ async function compileFrontend(workspace, outSideDir) {
   };
 }
 
-/**
- * 自述：工作区里 `<side>/README.md`。它是插件对使用者说的话，会随包一起发布；工作区根
- * 目录那份 README.md 是写给开发者的，不在这里取用。
- *
- * 自述是可选的，没有就不带——详情页的「自述」页签据此显示，缺了只是空着。
+/** Package the optional user-facing readme from <side>/README.md.
+ * The workspace root readme is for developers and is not published.
  */
 function copyReadme(workspace, side, outSideDir) {
   const source = path.join(workspace, side, "README.md");
   if (!assertRegularFile(source, `${side}/README.md`)) return null;
 
   fs.copyFileSync(source, path.join(outSideDir, "README.md"));
-  log(`[compile] ${side}: 带上自述 ${path.relative(PROJECT_ROOT, source)}`);
+  log(`[compile] ${side}: Including readme ${path.relative(PROJECT_ROOT, source)}`);
   return source;
 }
 
-/**
- * 图标：工作区根目录的 `icon.png`。它会随包发布，做插件在插件市场里的门面——卡片和详情页
- * 都显示它。
- *
- * 图标是插件级的（一个插件一个图标），所以只放进描述整包的那一端：有 panel 就 panel，
- * 否则 daemon，与 plugin.json / README.md 的取用顺序一致。两端各存一份同样的图没有必要。
- *
- * 图标是可选的，没有就不带——页面据「包里有没有这个文件」回退到默认图标。
+/** Package the optional workspace icon on the metadata-owning side:
+ * panel when present, otherwise daemon. The market supplies a fallback icon.
  */
 function copyIcon(workspace, side, outSideDir) {
   const source = path.join(workspace, ICON_FILE);
@@ -370,11 +350,11 @@ function copyIcon(workspace, side, outSideDir) {
   if (side !== preferred) return false;
 
   fs.copyFileSync(source, path.join(outSideDir, ICON_FILE));
-  log(`[compile] ${side}: 带上图标 ${path.relative(PROJECT_ROOT, source)}`);
+  log(`[compile] ${side}: Including icon ${path.relative(PROJECT_ROOT, source)}`);
   return true;
 }
 
-/** 产出的 plugin.json 指向编译后的文件，和打包脚本的产出保持一致。 */
+/** Point the output manifest at compiled files, matching the packaging scripts. */
 function writeManifest(side, workspace, outSideDir, backend, frontend) {
   const manifestPath = path.join(workspace, side, "plugin.json");
   const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
@@ -456,10 +436,10 @@ async function main() {
   const workspace = path.resolve(args.workspace);
   const outDir = path.resolve(args.out);
   if (!outDir.startsWith(PROJECT_ROOT + path.sep)) {
-    throw new Error(`输出目录必须位于项目之内：${outDir}`);
+    throw new Error(`Output directory must be inside the project: ${outDir}`);
   }
   if (!fs.existsSync(workspace)) {
-    throw new Error(`工作区不存在：${workspace}`);
+    throw new Error(`Workspace does not exist: ${workspace}`);
   }
 
   // Validate source assets before clearing an existing build. A malformed or
@@ -481,7 +461,7 @@ async function main() {
     outputRelative.startsWith(`..${path.sep}`) ||
     path.isAbsolute(outputRelative)
   ) {
-    throw new Error("输出目录不能通过符号链接离开项目。");
+    throw new Error("Output directory must not escape the project through symlinks.");
   }
   const sourceRelative = path.relative(realOutput, realWorkspace);
   if (
@@ -490,7 +470,7 @@ async function main() {
       sourceRelative !== ".." &&
       !path.isAbsolute(sourceRelative))
   ) {
-    throw new Error("输出目录不能包含插件源代码工作区。");
+    throw new Error("Output directory must not contain the plugin source workspace.");
   }
   const markerPath = path.join(outDir, OUTPUT_MARKER);
   if (fs.existsSync(outDir) && fs.readdirSync(outDir).length > 0) {
@@ -498,10 +478,10 @@ async function main() {
     try {
       owner = JSON.parse(fs.readFileSync(markerPath, "utf8"));
     } catch {
-      throw new Error(`拒绝清理非插件构建目录：${outDir}`);
+      throw new Error(`Refusing to clear a directory without a plugin build marker: ${outDir}`);
     }
     if (owner.workspace !== realWorkspace) {
-      throw new Error(`输出目录属于其他插件工作区：${outDir}`);
+      throw new Error(`Output directory belongs to another plugin workspace: ${outDir}`);
     }
   }
 
@@ -533,13 +513,13 @@ async function main() {
     });
   }
 
-  if (!sides.length) throw new Error("工作区里没有可编译的插件（缺少 plugin.json）");
+  if (!sides.length) throw new Error("Workspace contains no compilable plugin (missing plugin.json).");
 
   stripSourceMaps(outDir);
   const files = listFiles(outDir);
-  log(`[compile] 完成，共 ${files.length} 个文件`);
+  log(`[compile] Done: ${files.length} files`);
 
-  // stdout 只写这一行结果，调用方直接 JSON.parse
+  // Emit only this result on stdout so callers can parse it as JSON.
   process.stdout.write(
     `${JSON.stringify({
       ok: true,
@@ -560,7 +540,7 @@ function resolveRealPath(target) {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().catch((error) => {
-    log(`[compile] 失败：${error instanceof Error ? error.message : String(error)}`);
+    log(`[compile] Failed: ${error instanceof Error ? error.message : String(error)}`);
     process.exitCode = 1;
   });
 }
