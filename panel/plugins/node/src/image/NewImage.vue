@@ -95,7 +95,7 @@ onMounted(async () => {});
 <template>
   <main class="node-image-page">
     <VContainer fluid class="node-image-page-container">
-      <PageToolbar :title="t('TXT_CODE_3d09f0ac')" icon="mdi-image-plus">
+      <PageToolbar class="mb-16" :title="t('TXT_CODE_3d09f0ac')" icon="mdi-image-plus">
         <template #actions>
           <VBtn variant="tonal" @click="toImageListPage">
             {{ t("TXT_CODE_3a818e91") }}
