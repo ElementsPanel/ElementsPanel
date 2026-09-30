@@ -1,3 +1,4 @@
 {
-  "TXT_CODE_DESKTOP_FM_NO_FILES": "파일을 찾을 수 없음"
+  "TXT_CODE_DESKTOP_FM_NO_FILES": "파일을 찾을 수 없음",
+  "TXT_CODE_FILE_NO_OPEN_FOLDERS": "열린 폴더가 없습니다. +를 클릭하여 폴더를 여세요."
 }

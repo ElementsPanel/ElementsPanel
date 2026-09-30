@@ -583,6 +583,7 @@ test("desktop overwrite dialogs settle dismissal, replacement, and window close"
         usePolling: (refresh, interval) => polls.push({ refresh, interval })
       },
       "../components/ArchivePreview.vue": {},
+      "../components/FileManagerTabs.vue": {},
       "../services/uploadService": { uiData: vue.ref({}) },
       "../tools/fileManager": {},
       "@/tools/fileSize": {},

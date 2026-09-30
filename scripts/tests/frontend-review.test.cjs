@@ -339,12 +339,12 @@ test("upload pause/resume ignores the aborted worker and reports active chunk pr
   assert.deepEqual(errors, []);
 });
 
-function fileManagerFixture(api = {}) {
+function fileManagerFixture(api = {}, savedTabs = {}) {
   const errors = [];
   const scope = vue.effectScope();
   const { useFileManager } = load("panel/plugins/file/src/hooks/useFileManager.ts", {
     vue: { ...vue, onMounted() {}, onUnmounted() {} },
-    "@vueuse/core": { useLocalStorage: (_key, value) => vue.ref(value) },
+    "@vueuse/core": { useLocalStorage: () => vue.ref(savedTabs) },
     "@/components/fc": {},
     "../dialogs": {},
     "../components/OverwriteFilesPopUpContent.vue": {},
@@ -399,6 +399,66 @@ test("file lists ignore stale responses while cancelled dialogs settle without c
   manager.dialog.value.cancel();
   await create;
   assert.equal(created, 0);
+});
+
+test("closing the last folder leaves a persistent empty workspace and ignores late requests", async (t) => {
+  const pending = [];
+  const fixture = fileManagerFixture({
+    fileList: () => ({ execute() {
+      const wait = deferred();
+      pending.push(wait);
+      return wait.promise;
+    } })
+  });
+  t.after(fixture.dispose);
+  const { manager } = fixture;
+  const loading = manager.getFileList();
+  assert.equal(manager.currentTabs.value.length, 1);
+  manager.selectedRowKeys.value = ["old-file"];
+  manager.operationForm.value.total = 5;
+  manager.onEditTabs(manager.activeTab.value, "remove");
+  assert.equal(manager.activeTab.value, "");
+  assert.deepEqual(manager.currentTabs.value, []);
+  assert.deepEqual(manager.selectedRowKeys.value, []);
+  assert.equal(manager.operationForm.value.total, 0);
+  assert.equal(manager.spinning.value, false);
+  pending[0].resolve({ value: { items: [{ name: "late" }], total: 1 } });
+  assert.equal(await loading, false);
+  assert.deepEqual(manager.dataSource.value, []);
+  assert.equal(await manager.getFileList(), false);
+  assert.equal(pending.length, 1);
+
+  const restored = fileManagerFixture({}, manager.tabList.value);
+  t.after(restored.dispose);
+  assert.equal(await restored.manager.getFileList(), false);
+  assert.deepEqual(restored.manager.currentTabs.value, []);
+
+  manager.onEditTabs("", "add");
+  assert.equal(manager.currentTabs.value.length, 1);
+  assert.equal(manager.currentPath.value, "/");
+  pending[1].resolve({ value: { items: [{ name: "reopened" }], total: 1 } });
+  await settle();
+  assert.equal(manager.dataSource.value[0].name, "reopened");
+});
+
+test("closing inactive folders preserves selection of the active tab and closing the active folder selects a neighbour", async (t) => {
+  const fixture = fileManagerFixture({
+    fileList: () => ({ execute: async () => ({ value: { items: [], total: 0 } }) })
+  });
+  t.after(fixture.dispose);
+  const { manager } = fixture;
+  await manager.getFileList();
+  const first = manager.activeTab.value;
+  manager.onEditTabs("", "add");
+  const second = manager.activeTab.value;
+  manager.onEditTabs("", "add");
+  const third = manager.activeTab.value;
+  manager.onEditTabs(second, "remove");
+  assert.equal(manager.activeTab.value, third);
+  manager.onEditTabs(third, "remove");
+  assert.equal(manager.activeTab.value, first);
+  assert.equal(manager.currentTabs.value.length, 1);
+  await settle();
 });
 
 test("download links encode reserved filename characters and do not turn them into query/fragment syntax", async (t) => {

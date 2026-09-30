@@ -140,14 +140,6 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     return tab;
   };
 
-  // A file list can be requested by both the table and the page mount. Create
-  // the persistent root tab before either request starts, not after it returns.
-  const initDefaultTab = (path = "/") => {
-    const tab = ensureActiveTab(path);
-    currentDisk.value = t("TXT_CODE_28124988");
-    void handleChangeTab(tab.key);
-  };
-
   normalizeTabs(currentTabKey);
 
   // clear old tabs
@@ -175,7 +167,16 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     if (index !== -1) {
       currentTabs.value.splice(index, 1);
       if (!currentTabs.value.length) {
-        initDefaultTab();
+        // Invalidate pending requests before publishing the empty workspace.
+        fileListRequest++;
+        activeTab.value = "";
+        dataSource.value = [];
+        clearSelected();
+        operationForm.value.name = "";
+        operationForm.value.current = 1;
+        operationForm.value.total = 0;
+        spinning.value = false;
+        updateBreadcrumbs("/");
         return;
       }
 
@@ -197,6 +198,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
       }
       const path = "/";
       const key = v4();
+      tabList.value[currentTabKey] ||= [];
       currentTabs.value.push({
         name: path,
         path,
@@ -412,7 +414,9 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
   };
 
   const getFileList = async (throwErr = false, initPath?: string) => {
-    if (disposed) return false;
+    // An explicitly empty saved tab list means the user closed every folder.
+    // Background refreshes and table events must not reopen it.
+    if (disposed || tabList.value[currentTabKey]?.length === 0) return false;
     const request = ++fileListRequest;
     spinning.value = true;
     const { execute } = getFileListApi();

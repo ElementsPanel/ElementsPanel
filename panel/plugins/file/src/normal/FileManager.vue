@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import FileManagerTabs from "../components/FileManagerTabs.vue";
 import ArchivePreview from "../components/ArchivePreview.vue";
 import UploadTaskProgress from "../components/UploadTaskProgress.vue";
 import { useDownloadFileDialog } from "../dialogs";
@@ -34,8 +35,6 @@ import {
   VRow,
   VSelect,
   VSpacer,
-  VTab,
-  VTabs,
   VTextField
 } from "vuetify/components";
 import FileEditor from "./FileEditor.vue";
@@ -155,6 +154,7 @@ const FileEditorDialog = ref<InstanceType<typeof FileEditor>>();
 const opacity = ref(false);
 const handleDragover = (e: DragEvent) => {
   e.preventDefault();
+  if (!currentTabs.value.length) return;
   opacity.value = true;
 };
 
@@ -167,7 +167,7 @@ const handleDrop = (e: DragEvent) => {
   e.preventDefault();
   const files = e.dataTransfer?.files;
   opacity.value = false;
-  if (!files) return;
+  if (!currentTabs.value.length || !files) return;
   if (files.length === 0) return;
   let name = "";
   if (files.length === 1) {
@@ -388,20 +388,20 @@ onUnmounted(() => {
           <span>{{ pageTitle }}</span>
         </VCol>
         <VCol cols="12" lg="4" class="file-manager-search">
-          <VTextField v-model.trim.lazy="operationForm.name" :placeholder="t('TXT_CODE_7cad42a5')" prepend-inner-icon="mdi-magnify" hide-details @change="handleSearchChange" />
+          <VTextField :disabled="!currentTabs.length" v-model.trim.lazy="operationForm.name" :placeholder="t('TXT_CODE_7cad42a5')" prepend-inner-icon="mdi-magnify" hide-details @change="handleSearchChange" />
         </VCol>
         <VCol cols="12" lg="5" class="file-manager-actions">
           <span class="selected-count" :class="{ 'selected-count-empty': !selectedRowKeys.length }">
             {{ `${t("TXT_CODE_7b2c5414")} ${String(selectedRowKeys.length)} ${t("TXT_CODE_5cd3b4bd")}` }}
           </span>
-          <VBtn variant="text" prepend-icon="mdi-link-variant" @click="downloadFromURLFile">{{ t("TXT_CODE_5b364aef") }}</VBtn>
-          <VFileInput v-model="fileList" class="file-upload-input" multiple hide-details hide-input accept="*/*" @update:model-value="onFileSelect" />
-          <VBtn variant="text" prepend-icon="mdi-upload" @click="openFilePicker">{{ t("TXT_CODE_e00c858c") }}</VBtn>
-          <VBtn v-if="clipboard?.value?.length" color="primary" variant="text" @click="paste">{{ t("TXT_CODE_f0260e51") }}</VBtn>
-          <VBtn v-else variant="text" prepend-icon="mdi-refresh" @click="reloadList">{{ t("TXT_CODE_a53573af") }}</VBtn>
-          <VMenu location="bottom end">
+          <VBtn :disabled="!currentTabs.length" variant="text" prepend-icon="mdi-link-variant" @click="downloadFromURLFile">{{ t("TXT_CODE_5b364aef") }}</VBtn>
+          <VFileInput :disabled="!currentTabs.length" v-model="fileList" class="file-upload-input" multiple hide-details hide-input accept="*/*" @update:model-value="onFileSelect" />
+          <VBtn :disabled="!currentTabs.length" variant="text" prepend-icon="mdi-upload" @click="openFilePicker">{{ t("TXT_CODE_e00c858c") }}</VBtn>
+          <VBtn :disabled="!currentTabs.length" v-if="clipboard?.value?.length" color="primary" variant="text" @click="paste">{{ t("TXT_CODE_f0260e51") }}</VBtn>
+          <VBtn :disabled="!currentTabs.length" v-else variant="text" prepend-icon="mdi-refresh" @click="reloadList">{{ t("TXT_CODE_a53573af") }}</VBtn>
+          <VMenu :disabled="!currentTabs.length" location="bottom end">
             <template #activator="{ props: menuProps }">
-              <VBtn v-bind="menuProps" color="primary" append-icon="mdi-chevron-down">{{ isMultiple ? t("TXT_CODE_5cb656b9") : t("TXT_CODE_b147fabc") }}</VBtn>
+              <VBtn :disabled="!currentTabs.length" v-bind="menuProps" color="primary" append-icon="mdi-chevron-down">{{ isMultiple ? t("TXT_CODE_5cb656b9") : t("TXT_CODE_b147fabc") }}</VBtn>
             </template>
             <VList>
               <template v-if="isMultiple">
@@ -430,16 +430,9 @@ onUnmounted(() => {
             <div class="upload-progress-line"><VProgressLinear :model-value="progress" color="primary" height="6" rounded="xl" /><span>{{ convertFileSize(uploadData.current![0].toString()) }} / {{ convertFileSize(uploadData.current![1].toString()) }}</span></div>
           </div>
 
-          <div class="file-tabs-row">
-            <VTabs v-model="activeTab" density="compact" show-arrows @update:model-value="handleTabChange">
-              <VTab v-for="tab in currentTabs" :key="tab.key" :value="tab.key">
-                <span>{{ tab.name }}</span>
-                <VBtn v-if="tab.closable" icon="mdi-close" size="x-small" variant="text" class="tab-close" @click.stop="onEditTabs(tab.key, 'remove')" />
-              </VTab>
-            </VTabs>
-            <VBtn icon="mdi-plus" size="small" variant="text" :aria-label="t('TXT_CODE_1644b775')" @click="onEditTabs('', 'add')" />
-          </div>
+          <FileManagerTabs :active-tab="activeTab" :tabs="currentTabs" @select="handleTabChange" @close="onEditTabs($event, 'remove')" @add="onEditTabs('', 'add')" />
 
+          <template v-if="currentTabs.length">
           <div class="path-row">
             <VSelect v-if="isShowDiskList" v-model="currentDisk" :items="['/', ...(fileStatus?.disks || [])]" class="disk-select" hide-details @update:model-value="toDisk" />
             <div class="file-breadcrumbs">
@@ -483,6 +476,7 @@ onUnmounted(() => {
               </VMenu>
             </template>
           </VDataTableServer>
+          </template>
         </VCardText>
       </VCard>
     </VContainer>
@@ -584,7 +578,6 @@ onUnmounted(() => {
 .upload-status-line,
 .upload-progress-line,
 .upload-task-list,
-.file-tabs-row,
 .path-row {
   display: flex;
   align-items: center;
@@ -611,30 +604,6 @@ onUnmounted(() => {
   margin-top: 4px;
   font-size: 12px;
   white-space: nowrap;
-}
-
-.file-tabs-row {
-  justify-content: space-between;
-  min-width: 0;
-  margin: 0 -4px 12px;
-}
-
-.file-tabs-row :deep(.v-tabs) {
-  min-width: 0;
-  flex: 1;
-}
-
-.tab-close {
-  margin-left: 4px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.16s ease;
-}
-
-.file-tabs-row :deep(.v-tab:hover .tab-close),
-.file-tabs-row :deep(.v-tab:focus-within .tab-close) {
-  opacity: 1;
-  pointer-events: auto;
 }
 
 .path-row {
