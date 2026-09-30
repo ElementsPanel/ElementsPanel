@@ -5,7 +5,7 @@
 
 # ElementsPanel
 
-一款基于 [MCSManager](https://www.mcsmanager.com) 和 Cordis 的游戏面板
+一款基于 [MCSManager](https://www.mcsmanager.com) 和 [Cordis](https://github.com/cordiverse/cordis) 的游戏面板
 
 </div>
 
