@@ -55,7 +55,6 @@ const actionTypeItems = computed(() => Object.entries(scheduleActionTypes.value)
     title,
     value
 })));
-const selectMenuProps = { zIndex: 10010 };
 
 const windowWidth = ref(window.innerWidth);
 const windowHeight = ref(window.innerHeight);
@@ -301,7 +300,7 @@ onMounted(async () => {
 
                         <label class="ds-form-label">{{ t('TXT_CODE_a62c99d1') }}</label>
                         <VSelect v-model="formTask.type" :items="scheduleTypeItems" variant="solo" density="compact" rounded="xl" hide-details
-                            :placeholder="t('TXT_CODE_3bb646e4')" :menu-props="selectMenuProps" />
+                            :placeholder="t('TXT_CODE_3bb646e4')" />
 
                         <template v-if="formTask.type === ScheduleCreateType.INTERVAL">
                             <label class="ds-form-label">{{ t('TXT_CODE_3554dac0') }}</label>
@@ -346,7 +345,7 @@ onMounted(async () => {
                             </div>
                             <div v-for="(action, index) in formTask.actions" :key="index" class="ds-action-row">
                                     <VSelect v-model="action.type" :items="actionTypeItems" variant="solo" density="compact" rounded="xl" hide-details
-                                        :menu-props="selectMenuProps" @update:model-value="action.payload = ''" />
+                                        @update:model-value="action.payload = ''" />
                                     <VTextField v-model="action.payload" variant="solo" density="compact" rounded="xl" hide-details
                                         :placeholder="getInputPlaceholder(action) || t('TXT_CODE_6cbb84a9')"
                                         :disabled="!getInputPlaceholder(action)" />

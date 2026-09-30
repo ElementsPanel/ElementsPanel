@@ -193,11 +193,23 @@
   box-shadow: none !important;
 }
 
-/* Match every desktop-mode input and dropdown surface to its window.  Menus
-   are teleported outside the window, so target their list surface globally. */
-.desktop-mode-active .v-field,
+/* Give the editable field a distinct surface in both themes, including in
+   teleported dialogs. Leave input wrappers unpainted so labels, hints and
+   validation messages remain on the surrounding window surface. */
+.desktop-mode-active .v-field {
+  background: rgb(var(--v-theme-surface-variant)) !important;
+}
+
+/* Legacy control classes can paint the Vuetify root as well as its field.
+   Clear those outer surfaces so only the rounded field has a background. */
 .desktop-mode-active .v-input,
-.desktop-mode-active .v-input__control,
+.desktop-mode-active .v-input__control {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Menus are teleported outside the window, so target their list surface
+   globally while retaining the desktop window background. */
 .desktop-mode-active .v-select__content,
 .desktop-mode-active .v-autocomplete__content,
 .desktop-mode-active .v-combobox__content,

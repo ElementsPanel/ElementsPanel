@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
     VBtn,
+    VDefaultsProvider,
     VIcon
 } from "vuetify/components";
 import { computed, onMounted, onUnmounted, ref, type Component } from "vue";
@@ -8,7 +9,7 @@ import { computed, onMounted, onUnmounted, ref, type Component } from "vue";
 export interface DesktopWindowProps {
     id: string;
     title: string;
-    icon: Component | string;
+    icon?: Component | string;
     visible: boolean;
     minimized: boolean;
     maximized: boolean;
@@ -45,6 +46,13 @@ const emit = defineEmits<{
     (e: "resized", id: string, x: number, y: number, width: number, height: number): void;
     (e: "contextmenu-titlebar", event: MouseEvent, id: string): void;
 }>();
+
+// Keep menus in their owning window's stacking context, outside the clipped frame.
+const windowElement = ref<HTMLElement>();
+const overlayDefaults = computed(() => ({
+    VMenu: { attach: windowElement.value },
+    VTooltip: { attach: windowElement.value }
+}));
 
 const x = ref(props.initialX);
 const y = ref(props.initialY);
@@ -246,38 +254,42 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div v-show="visible && !minimized" class="desktop-window" :class="{
+    <div ref="windowElement" v-show="visible && !minimized" class="desktop-window" :class="{
         'desktop-window--active': active,
         'desktop-window--maximized': maximized,
         'desktop-window--dragging': isDragging,
         'desktop-window--resizing': isResizing
     }" :style="windowStyle" @mousedown="handleFocus">
-        <div class="window__titlebar" @mousedown="onMouseDownTitlebar" @dblclick="handleMaximize"
-            @contextmenu.stop.prevent="onContextMenuTitlebar">
-            <div class="window__titlebar-left">
-                <span class="window__icon">
-                    <component :is="icon" v-if="isComponentIcon" />
-                    <VIcon v-else-if="isMdiIcon" :icon="icon as string" size="small" />
-                    <img v-else :src="icon as string" alt="icon" />
-                </span>
-                <span class="window__title">{{ title }}</span>
+        <div class="window__frame">
+            <div class="window__titlebar" @mousedown="onMouseDownTitlebar" @dblclick="handleMaximize"
+                @contextmenu.stop.prevent="onContextMenuTitlebar">
+                <div class="window__titlebar-left">
+                    <span v-if="icon" class="window__icon">
+                        <component :is="icon" v-if="isComponentIcon" />
+                        <VIcon v-else-if="isMdiIcon" :icon="icon as string" size="small" />
+                        <img v-else :src="icon as string" alt="icon" />
+                    </span>
+                    <span class="window__title">{{ title }}</span>
+                </div>
+                <div class="window__controls" @mousedown.stop>
+                    <VBtn v-if="showMinimize" class="window__control window__control--minimize" icon="mdi-minus"
+                        variant="text" density="compact" size="small" :aria-label="`Minimize ${title}`"
+                        @click.stop="emit('minimize', id)" />
+                    <VBtn v-if="showMaximize" class="window__control window__control--maximize"
+                        :icon="maximized ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" variant="text" density="compact"
+                        size="small" :aria-label="maximized ? `Restore ${title}` : `Maximize ${title}`"
+                        @click.stop="handleMaximize" />
+                    <VBtn v-if="showClose" class="window__control window__control--close" icon="mdi-close"
+                        variant="text" density="compact" size="small" :aria-label="`Close ${title}`"
+                        @click.stop="emit('close', id)" />
+                </div>
             </div>
-            <div class="window__controls" @mousedown.stop>
-                <VBtn v-if="showMinimize" class="window__control window__control--minimize" icon="mdi-minus"
-                    variant="text" density="compact" size="small" :aria-label="`Minimize ${title}`"
-                    @click.stop="emit('minimize', id)" />
-                <VBtn v-if="showMaximize" class="window__control window__control--maximize"
-                    :icon="maximized ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" variant="text" density="compact"
-                    size="small" :aria-label="maximized ? `Restore ${title}` : `Maximize ${title}`"
-                    @click.stop="handleMaximize" />
-                <VBtn v-if="showClose" class="window__control window__control--close" icon="mdi-close"
-                    variant="text" density="compact" size="small" :aria-label="`Close ${title}`"
-                    @click.stop="emit('close', id)" />
-            </div>
-        </div>
 
-        <div class="window__content" @contextmenu.stop>
-            <slot></slot>
+            <div class="window__content" @contextmenu.stop>
+                <VDefaultsProvider :defaults="overlayDefaults">
+                    <slot></slot>
+                </VDefaultsProvider>
+            </div>
         </div>
 
         <template v-if="!maximized && resizable">
@@ -292,12 +304,9 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .desktop-window {
     position: fixed;
-    background: var(--desktop-window-bg);
-    backdrop-filter: saturate(180%) blur(20px);
     box-shadow: 0 8px 32px var(--desktop-window-shadow);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
     transition: left 0.2s ease,
         top 0.2s ease,
         width 0.2s ease,
@@ -316,6 +325,17 @@ onUnmounted(() => {
 
     &--maximized {
     }
+}
+
+.window__frame {
+    background: var(--desktop-window-bg);
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    border-radius: inherit;
+    overflow: hidden;
+    backdrop-filter: saturate(180%) blur(20px);
 }
 
 .window__titlebar {
