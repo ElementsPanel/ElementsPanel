@@ -8,8 +8,11 @@ import { useRoute } from "vue-router";
 import {
   VList,
   VListItem,
-  VSheet
+  VSheet,
+  VTooltip
 } from "vuetify/components";
+
+withDefaults(defineProps<{ collapsed?: boolean }>(), { collapsed: false });
 
 const route = useRoute();
 const { sidebarItems, handleToPage } = useHeaderMenus();
@@ -136,20 +139,30 @@ const getSidebarIcon = (entry: SidebarRouteEntry): string => {
 </script>
 
 <template>
-  <VSheet tag="aside" class="left-sidebar" elevation="0" rounded="0">
+  <VSheet tag="aside" class="left-sidebar" :class="{ 'left-sidebar--collapsed': collapsed }" elevation="0" rounded="0">
     <VList class="sidebar-menu" density="comfortable" nav>
-      <VListItem
+      <VTooltip
         v-for="entry in sidebarItems"
         :key="entry.path"
-        class="sidebar-item"
-        :class="entry.customClass"
-        :active="isRouteActive(entry.path)"
-        color="primary"
-        rounded="xl"
-        :title="String(entry.name ?? '')"
-        :prepend-icon="getSidebarIcon(entry)"
-        @click="handleToPage(entry.path)"
-      />
+        :text="String(entry.name ?? '')"
+        :disabled="!collapsed"
+        location="end"
+      >
+        <template #activator="{ props }">
+          <VListItem
+            v-bind="props"
+            class="sidebar-item"
+            :class="entry.customClass"
+            :active="isRouteActive(entry.path)"
+            color="primary"
+            rounded="xl"
+            :title="String(entry.name ?? '')"
+            :aria-label="String(entry.name ?? '')"
+            :prepend-icon="getSidebarIcon(entry)"
+            @click="handleToPage(entry.path)"
+          />
+        </template>
+      </VTooltip>
     </VList>
   </VSheet>
 </template>
@@ -157,10 +170,10 @@ const getSidebarIcon = (entry: SidebarRouteEntry): string => {
 <style lang="scss" scoped>
 .left-sidebar {
   display: flex;
-  flex: 0 0 240px;
+  flex: 1 1 auto;
   flex-direction: column;
-  width: 240px;
-  min-width: 240px;
+  width: 100%;
+  min-width: 0;
   height: 100%;
   box-sizing: border-box;
   text-align: left;
@@ -193,14 +206,56 @@ const getSidebarIcon = (entry: SidebarRouteEntry): string => {
   cursor: pointer;
   border-radius: 0 24px 24px 0 !important;
   background-color: transparent !important;
+  transition:
+    width 240ms cubic-bezier(0.4, 0, 0.2, 1),
+    padding-left 240ms cubic-bezier(0.4, 0, 0.2, 1);
 
   :deep(.v-list-item__prepend > .v-icon) {
     margin-inline-end: 12px;
     color: currentColor;
+    transition: margin-inline-end 240ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  :deep(.v-list-item__prepend > .v-list-item__spacer) {
+    transition: width 240ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  :deep(.v-list-item__content) {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 160ms ease, transform 240ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   :deep(.v-list-item-title) {
     font-size: 14px;
+  }
+}
+
+.left-sidebar--collapsed .sidebar-item {
+  width: calc(100% + 32px);
+  padding-left: 24px !important;
+
+  :deep(.v-list-item__prepend > .v-icon) {
+    margin-inline-end: 0;
+  }
+
+  :deep(.v-list-item__prepend > .v-list-item__spacer) {
+    width: 0;
+  }
+
+  :deep(.v-list-item__content) {
+    opacity: 0;
+    transform: translateX(-8px);
+    pointer-events: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-item,
+  .sidebar-item :deep(.v-list-item__prepend > .v-icon),
+  .sidebar-item :deep(.v-list-item__prepend > .v-list-item__spacer),
+  .sidebar-item :deep(.v-list-item__content) {
+    transition: none;
   }
 }
 

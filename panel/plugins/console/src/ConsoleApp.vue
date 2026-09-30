@@ -64,9 +64,8 @@ onMounted(async () => {
             id="app-sidebar"
             class="app-sidebar-shell"
             :class="{ 'app-sidebar-shell--collapsed': !isSidebarOpen }"
-            :aria-hidden="!isSidebarOpen"
           >
-            <AppSidebarMenu />
+            <AppSidebarMenu :collapsed="!isSidebarOpen" />
           </div>
           <main
             class="main-content"
