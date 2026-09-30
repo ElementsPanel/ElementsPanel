@@ -168,7 +168,7 @@ onBeforeUnmount(() => requestId++);
             <PluginMarketInstall
               :key="plugin.id"
               :plugin="plugin"
-              :version="plugin.selectedVersion"
+              :version="plugin.latestVersion || plugin.selectedVersion"
               :disabled="busy || loading"
               @installed="updateInstalled"
               @busy="trackBusy"
@@ -197,7 +197,7 @@ onBeforeUnmount(() => requestId++);
               </p>
             </template>
 
-            <!-- 版本页签只列出历史，并给每个版本自己的安装入口；点一行不会切换页面 -->
+            <!-- 未安装时可以选择历史版本；已安装后的更新入口统一放在页头。 -->
             <template v-else-if="activeTab === 'versions'">
               <ul class="plugin-detail-versions">
                 <li
@@ -225,6 +225,7 @@ onBeforeUnmount(() => requestId++);
                     </span>
                   </div>
                   <PluginMarketInstall
+                    v-if="!plugin.installedVersion"
                     :plugin="plugin"
                     :version="item"
                     :disabled="busy || loading"

@@ -241,7 +241,7 @@ function installFixture(overrides = {}) {
   const successes = [];
   const warnings = [];
   const props = vue.reactive({
-    plugin: { id: "one", name: "one", installedVersion: "1.0.0", latestVersion: version("2.0.0") },
+    plugin: { id: "one", name: "one", installedVersion: "0.9.0", latestVersion: version("2.0.0") },
     version: version("1.0.0"),
     disabled: false
   });
@@ -253,6 +253,7 @@ function installFixture(overrides = {}) {
   });
   const component = load("panel/plugins/market/src/components/PluginMarketInstall.vue", {
     vue,
+    "../version": load("panel/plugins/market/src/version.ts"),
     "vuetify/components": {},
     "@/lang/i18n": { t: (key) => key },
     "@/tools/validator": { getValidatorErrorMsg: (err) => err.message },
@@ -294,6 +295,50 @@ function installFixture(overrides = {}) {
   );
   return { props, state, calls, events, errors, successes, warnings, scope };
 }
+
+test("market updates require a greater version, including numeric and prerelease ordering", () => {
+  const { isNewerVersion } = load("panel/plugins/market/src/version.ts");
+  for (const [candidate, installed, expected] of [
+    ["1.10.0", "1.9.0", true],
+    ["2.0.0", "1.99.99", true],
+    ["1.0.0", "1.0.0", false],
+    ["1.9.0", "1.10.0", false],
+    ["1.0.0", "1.0.0-rc.1", true],
+    ["1.0.0-rc.1", "1.0.0", false],
+    ["1.0.0-rc.10", "1.0.0-rc.2", true],
+    ["1.0.0-beta", "1.0.0-alpha", true],
+    ["1.0.0-alpha.1", "1.0.0-alpha", true],
+    ["1.0.0-alpha", "1.0.0-alpha.1", false],
+    ["1.0.0-beta", "1.0.0-10", true],
+    ["1.0.0+build.2", "1.0.0+build.1", false],
+    ["v1.2.0", "1.2", false],
+    ["invalid", "1.0.0", false],
+    ["1.0.0", "invalid", false]
+  ]) assert.equal(isNewerVersion(candidate, installed), expected, `${candidate} > ${installed}`);
+});
+
+test("installed plugins offer updates only for newer releases and cannot reinstall or downgrade", async () => {
+  const { props, state, calls, scope } = installFixture();
+  try {
+    assert.equal(state.canInstall.value, false);
+    assert.equal(state.canUpdate.value, true);
+    props.installOnly = true;
+    assert.equal(state.canUpdate.value, false, "historical rows cannot update installed plugins");
+    props.installOnly = false;
+    for (const installed of ["1.0.0", "2.0.0"]) {
+      props.plugin.installedVersion = installed;
+      assert.equal(state.canInstall.value, false);
+      assert.equal(state.canUpdate.value, false);
+      await state.install();
+    }
+    assert.equal(calls.length, 0);
+    props.plugin.installedVersion = undefined;
+    assert.equal(state.canInstall.value, true);
+    assert.equal(state.canUpdate.value, false);
+  } finally {
+    scope.stop();
+  }
+});
 
 test("node confirmation installs the captured version and reports partial failure and restart", async () => {
   const { props, state, calls, events, errors, successes, warnings, scope } = installFixture();
@@ -683,6 +728,7 @@ test("detail locks every release action and its tabs while a plugin operation is
           execute: async () => ({
             value: {
               id: "one",
+              latestVersion: version("3.0.0"),
               selectedVersion: version("2.0.0"),
               versions: [version("2.0.0"), version("1.0.0")]
             }
@@ -710,6 +756,7 @@ test("detail locks every release action and its tabs while a plugin operation is
     await vue.nextTick();
     const installs = findComponents(Install);
     assert.equal(installs.length, 3);
+    assert.equal(installs[0].props.version.version, "3.0.0", "header actions target the latest release");
     installs[1].emit("busy", true);
     await vue.nextTick();
     assert.equal(
@@ -728,6 +775,13 @@ test("detail locks every release action and its tabs while a plugin operation is
       installs.some((item) => item.props.disabled),
       false
     );
+    installs[0].emit("installed", "one", "3.0.0");
+    await vue.nextTick();
+    assert.equal(findComponents(Install).length, 1, "installed plugins have no historical install buttons");
+    assert.equal(installs[0].props.plugin.installedVersion, "3.0.0");
+    installs[0].emit("installed", "one", undefined);
+    await vue.nextTick();
+    assert.equal(findComponents(Install).length, 3, "uninstall restores release installation choices");
   } finally {
     app.unmount();
   }

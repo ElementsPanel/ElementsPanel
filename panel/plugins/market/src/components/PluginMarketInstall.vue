@@ -23,6 +23,7 @@ import {
   type MarketPlugin,
   type MarketPluginVersion
 } from "../api";
+import { isNewerVersion } from "../version";
 
 const props = defineProps<{
   plugin: MarketPlugin;
@@ -39,6 +40,15 @@ const emit = defineEmits<{
   busy: [value: boolean];
 }>();
 const pendingId = ref("");
+const canInstall = computed(() => Boolean(props.version && !props.plugin.installedVersion));
+const canUpdate = computed(() =>
+  Boolean(
+    !props.installOnly &&
+      props.version &&
+      props.plugin.installedVersion &&
+      isNewerVersion(props.version.version, props.plugin.installedVersion)
+  )
+);
 const incompatible = computed(() =>
   Object.values(props.version?.compatibility || {}).some(
     (contract) =>
@@ -132,6 +142,7 @@ function confirmNodes() {
  */
 async function install() {
   if (disposed || props.disabled || incompatible.value || busy.value || !props.version) return;
+  if (!canInstall.value && !canUpdate.value) return;
   const plugin = { ...props.plugin, latestVersion: props.version };
   pendingId.value = plugin.id;
   try {
@@ -271,7 +282,7 @@ onScopeDispose(() => {
   <div>
     <div class="d-flex flex-wrap ga-2">
       <VBtn
-        v-if="version"
+        v-if="canInstall"
         color="primary"
         prepend-icon="mdi-download"
         :loading="Boolean(pendingId)"
@@ -288,6 +299,16 @@ onScopeDispose(() => {
         @click="uninstallTarget = { ...plugin }"
       >
         {{ t("TXT_CODE_PLUGIN_MARKET_UNINSTALL") }}
+      </VBtn>
+      <VBtn
+        v-if="canUpdate"
+        color="primary"
+        prepend-icon="mdi-update"
+        :loading="Boolean(pendingId)"
+        :disabled="busy || disabled || incompatible"
+        @click="install"
+      >
+        {{ t("TXT_CODE_40ca4f2") }}
       </VBtn>
     </div>
     <VDialog v-model="uninstallShown" max-width="420">

@@ -30,7 +30,12 @@ market publishes with the plugin, which is the package's own `README.md`
 back to the plugin's long description, and the rendering and sanitizing happen
 here because that source is a configurable address. Versions lists
 every approved release with its date, file count and package size, and each row
-carries its own install button — the header's installs the latest release. The
+carries its own install button when the plugin is not installed — the header's
+installs the latest release. Installed plugins show Uninstall in the header,
+followed by Update only when the latest market version is greater than the
+installed version. Numeric version segments and SemVer prereleases determine
+the order; build metadata does not affect it. Historical install buttons remain
+hidden until the plugin is uninstalled. The
 Updates tab lists every release's notes. A row is not a link: clicking one no
 longer switches the page to that release, and the page no longer reads or writes
 the `version` query parameter. Installing uses the release the clicked button
