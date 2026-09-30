@@ -3,19 +3,13 @@ import path from "path";
 import type { PanelPluginContext } from "../../../../../src/app/plugin";
 import MarketSettings from "../entity/market_settings";
 
-const CATEGORY = "MarketSettings";
+const CATEGORY = "PluginMarketSettings";
 const ID = "config";
 
-// The panel used to keep these two fields in its own SystemConfig. That file is
+// Older panel versions stored plugin market settings in SystemConfig. That file is
 // written by the core's file-backed storage, so the one-time migration reads it
 // directly rather than going through the (possibly Redis-backed) entity store.
 const LEGACY_CONFIG_FILE = path.join(process.cwd(), "data", "SystemConfig", "config.json");
-
-/** Market sources older than v2 no longer resolve; upgrade them on migration. */
-const LEGACY_SOURCE_ADDRESSES = [
-  "https://script.mcsmanager.com/templates.json",
-  "https://script.mcsmanager.com/market.json"
-];
 
 let settings = new MarketSettings();
 
@@ -46,15 +40,14 @@ export async function initMarketSettings(ctx: PanelPluginContext) {
     return;
   }
   settings = new MarketSettings();
-  if (migrateFromSystemConfig(ctx)) {
-    ctx.logger.info("Migrated market settings from the panel configuration.");
+  const legacy = await ctx.storage.getStorage().load("MarketSettings", MarketSettings, ID);
+  if (legacy) {
+    for (const key of Object.keys(settings) as Array<keyof MarketSettings>) {
+      if (legacy[key] !== undefined) (settings as any)[key] = legacy[key];
+    }
   }
-  if (LEGACY_SOURCE_ADDRESSES.includes(settings.presetPackAddr)) {
-    const upgraded = new MarketSettings().presetPackAddr;
-    ctx.logger.warn(
-      `Upgrading market source address from ${settings.presetPackAddr} to ${upgraded}`
-    );
-    settings.presetPackAddr = upgraded;
+  if (!legacy && migrateFromSystemConfig(ctx)) {
+    ctx.logger.info("Migrated market settings from the panel configuration.");
   }
   await saveMarketSettings(ctx);
 }

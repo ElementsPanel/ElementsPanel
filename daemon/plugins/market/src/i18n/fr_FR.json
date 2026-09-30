@@ -1,8 +1,0 @@
-{
-  "TXT_CODE_47d56d0d": "La mise à jour de l'instance a échoué! \nRaison:",
-  "TXT_CODE_906c5d6a": "Suppression terminée !",
-  "TXT_CODE_b9ca022b": "Installation des fichiers d'instance, veuillez patienter patiemment...",
-  "TXT_CODE_cbc235ad": "Effacement des fichiers existants de l'instance, veuillez patienter patiemment...",
-  "TXT_CODE_e5ba712d": "Construire le serveur comme package par défaut :",
-  "TXT_CODE_f8145844": "Ce modèle d'application ne peut pas être utilisé pour la réinstallation. \nLes instances créées à l'aide de conteneurs Docker ne peuvent pas être réinstallées comme modèles normaux. \nVeuillez sélectionner un package prédéfini avec l'étiquette Docker pour la réinstallation. \nSi vous avez besoin d'installer d'autres modèles, veuillez contacter l'administrateur pour désactiver manuellement les paramètres de contenerisation de l'instance."
-}

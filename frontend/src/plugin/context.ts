@@ -461,7 +461,7 @@ export interface FrontendUserService {
   readonly desktopStartMenuAvatar: Component;
 }
 
-/** The app market. Provided by `plugins/market`. */
+/** The app market. Provided by `external/epanel-plugin-mcsm-market`. */
 export interface FrontendMarketService {
   readonly api: Record<string, unknown>;
   openMarketDialog(

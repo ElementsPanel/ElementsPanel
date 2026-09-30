@@ -1,8 +1,0 @@
-{
-  "TXT_CODE_47d56d0d": "A atualização da instância falhou! \nRazão:",
-  "TXT_CODE_906c5d6a": "Exclusão Concluída!",
-  "TXT_CODE_b9ca022b": "Instalando arquivos de instância, por favor, aguarde pacientemente...",
-  "TXT_CODE_cbc235ad": "Limpando os arquivos existentes da instância, por favor, aguarde pacientemente...",
-  "TXT_CODE_e5ba712d": "Construindo o servidor como um pacote pré-definido:",
-  "TXT_CODE_f8145844": "Este modelo de aplicativo não pode ser usado para reinstalação. \nInstâncias criadas usando recipientes do Docker não podem ser reinstaladas como modelos normais. \nSelecione um pacote predefinido com o rótulo do Docker para reinstalação. \nSe você precisar instalar outros modelos, entre em contato com o administrador para desativar manualmente as configurações de contêiner da instância."
-}

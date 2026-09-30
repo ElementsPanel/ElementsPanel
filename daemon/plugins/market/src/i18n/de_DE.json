@@ -1,8 +1,0 @@
-{
-  "TXT_CODE_47d56d0d": "Instanz -Update fehlgeschlagen! \nGrund:",
-  "TXT_CODE_906c5d6a": "Löschung abgeschlossen!",
-  "TXT_CODE_b9ca022b": "Instanzdateien werden installiert, bitte warten Sie geduldig ...",
-  "TXT_CODE_cbc235ad": "Die vorhandenen Dateien der Instanz werden gelöscht. Bitte warten Sie geduldig ...",
-  "TXT_CODE_e5ba712d": "Build-Server als Standardpaket:",
-  "TXT_CODE_f8145844": "Diese Anwendungsvorlage kann nicht zur Neuinstallation verwendet werden. \nMit Docker -Containern erstellte Instanzen können nicht als normale Vorlagen neu installiert werden. \nBitte wählen Sie ein voreingestelltes Paket mit dem Docker -Label zur Neuinstallation aus. \nWenn Sie andere Vorlagen installieren müssen, wenden Sie sich bitte an den Administrator, um die Containerisierungseinstellungen der Instanz manuell auszuschalten."
-}

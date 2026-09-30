@@ -471,26 +471,6 @@ test("download links encode reserved filename characters and do not turn them in
   assert.equal(link, "https://node/download/key/report%20%231%3F.txt");
 });
 
-test("market reset clears platform/language filters and returns all languages", () => {
-  const { useMarketPackages } = load("panel/plugins/market/src/hooks/useMarketPackages.ts", {
-    "@/lang/i18n": i18n,
-    "@/tools/validator": {},
-    "@/types/const": { SEARCH_ALL_KEY: "ALL" },
-    "@/tools/vuetifyModal": {},
-    "../api": { quickInstallListAddr: () => ({}) }
-  });
-  const market = useMarketPackages();
-  market.packages.value = ["zh_cn", "en_us", "ja_jp"].map((language) => ({
-    language,
-    gameType: "test",
-    platform: "linux"
-  }));
-  market.searchForm.platform = "windows";
-  market.handleReset();
-  assert.equal(market.searchForm.platform, "ALL");
-  assert.equal(market.getFilteredPackages().length, 3);
-});
-
 test("schedule edits forward an atomic replacement and propagate a failed save", async () => {
   const calls = [];
   const failure = new Error("schedule rejected");

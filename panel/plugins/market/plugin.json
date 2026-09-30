@@ -1,9 +1,12 @@
 {
   "id": "market",
   "version": "1.0.0",
-  "description": "Provides the application market: package browsing, one-click instance creation, reinstall-from-package and the custom market editor.",
+  "description": "Provides the ElementsPanel plugin market: browsing, installation, updates and removal.",
   "priority": 175,
-  "frontendInject": ["console", "i18n", "instance"],
+  "frontendInject": [
+    "console",
+    "i18n"
+  ],
   "backend": "backend/index.cjs",
   "frontend": "src/frontend.ts"
 }

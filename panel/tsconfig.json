@@ -17,7 +17,9 @@
     "baseUrl": ".",
     "paths": {
       "mcsmanager-common": ["../common/src/index.ts"],
-      "*": ["node_modules/*", "src/types/*"]
+      "*": ["node_modules/*", "src/types/*"],
+      "koa": ["node_modules/@types/koa/index.d.ts"],
+      "fs-extra": ["node_modules/@types/fs-extra/index.d.ts"]
     }
   },
   "include": [

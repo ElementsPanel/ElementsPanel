@@ -1,8 +1,0 @@
-{
-  "TXT_CODE_47d56d0d": "¡Falló la actualización de la instancia! \nRazón:",
-  "TXT_CODE_906c5d6a": "Eliminación completada!",
-  "TXT_CODE_b9ca022b": "Instalando archivos de instancia, espere pacientemente...",
-  "TXT_CODE_cbc235ad": "Borrando los archivos existentes de la instancia, espere pacientemente...",
-  "TXT_CODE_e5ba712d": "Construyendo el servidor como paquete predeterminado:",
-  "TXT_CODE_f8145844": "Esta plantilla de aplicación no se puede utilizar para la reinstalación. \nLas instancias creadas con contenedores Docker no se pueden reinstalar como plantillas normales. \nSeleccione un paquete preestablecido con la etiqueta Docker para la reinstalación. \nSi necesita instalar otras plantillas, comuníquese con el administrador para apagar manualmente la configuración de contenedorización de la instancia."
-}

@@ -255,7 +255,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 | `ctx.desktop` | `app`, `apps`, `view`, `views`, `open`, `provideOpener`, `window`, `provideWindow`. |
 | `ctx.plugins` | `loaded`, `load`, `unload`, `reload`, `refresh`. |
 | `ctx.user` | Account API and windows. **Provided by `plugins/user`.** |
-| `ctx.market` | Package picker and API. **Provided by `plugins/market`.** |
+| `ctx.market` | Package picker and API. **Provided by `external/epanel-plugin-mcsm-market`.** |
 | `ctx.node` | Node API and hook. **Provided by `plugins/node`.** |
 | `ctx.file` | File API, hook, upload queue, filename helpers, editor/viewer components and the file dialogs. **Provided by `plugins/file`.** |
 | `ctx.terminal` | Terminal components, hooks and stream APIs. **Provided by `plugins/terminal`.** |

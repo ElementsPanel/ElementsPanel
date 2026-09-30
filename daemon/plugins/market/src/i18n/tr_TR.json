@@ -1,8 +1,0 @@
-{
-  "TXT_CODE_47d56d0d": "Örnek güncellemesi başarısız oldu! \nSebep:",
-  "TXT_CODE_906c5d6a": "Silme İşlemi Tamamlandı!",
-  "TXT_CODE_b9ca022b": "Örnek dosyaları yükleniyor, lütfen sabırla bekleyin...",
-  "TXT_CODE_cbc235ad": "Örneğin mevcut dosyaları temizleniyor, lütfen sabırla bekleyin...",
-  "TXT_CODE_e5ba712d": "Sunucuyu önceden ayarlanmış bir paket olarak oluşturma:",
-  "TXT_CODE_f8145844": "Bu uygulama şablonu yeniden yükleme için kullanılamaz. \nDocker kapları kullanılarak oluşturulan örnekler normal şablonlar olarak yeniden yüklenemez. \nYeniden yükleme için Docker etiketine sahip önceden ayarlanmış bir paket seçin. \nDiğer şablonları yüklemeniz gerekiyorsa, örneğin kapsayıcılık ayarlarını manuel olarak kapatmak için lütfen yöneticiyle iletişime geçin."
-}

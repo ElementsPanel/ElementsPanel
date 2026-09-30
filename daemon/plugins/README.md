@@ -111,7 +111,7 @@ knowledge of any particular task.
 `ctx.presets.register(preset, factory)` supplies the command behind one instance
 preset. `FunctionDispatcher` applies these after its own defaults, so a plugin can
 provide a preset the core has no implementation for — `install`, owned by
-`plugins/market` — or replace one it does. Without the owning plugin the preset is
+`external/epanel-plugin-mcsm-market` — or replace one it does. Without the owning plugin the preset is
 simply absent and `execPreset` does nothing.
 
 Authentication is not on this list, because it is not a service: `plugins/auth`
@@ -173,7 +173,7 @@ external framework copy. Do not bundle another Cordis copy or import the host's
 `ctx` singleton.
 
 This is why a class that has to extend something the core owns is built by a
-factory that takes `ctx`: see `plugins/market/src/backend/quick_install.ts`, whose
+factory that takes `ctx`: see `external/epanel-plugin-mcsm-market/daemon/src/backend/quick_install.ts`, whose
 task extends `ctx.tasks.AsyncTask` rather than an imported `AsyncTask`.
 
 Entries are TypeScript at `src/backend/index.ts`.
@@ -212,7 +212,7 @@ flag. It ships the console lines and errors it prints in `src/i18n/`. See
 
 `market` owns the `quick_install` asynchronous task and the `install` instance
 preset — the two ways a market package reaches an instance. See
-`panel/plugins/market`.
+`external/epanel-plugin-mcsm-market/panel`.
 
 `monitor` samples this host's CPU and memory and contributes the history to
 `info/overview` as `cpuMemChart`. See `panel/plugins/monitor`.

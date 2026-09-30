@@ -679,7 +679,7 @@ test("instance registers Minecraft as a separate admin task and validates before
   assert.equal(created[0][4].fileName, "server.jar");
 });
 
-test("the instance plugin installs Minecraft before market loads and while market is unloaded", async (t) => {
+test("Minecraft installation survives loading and unloading an unrelated task plugin", async (t) => {
   const daemonRequire = Module.createRequire(path.join(root, "daemon/package.json"));
   const { Context, Service } = daemonRequire("cordis");
   let downloadGate;
@@ -754,8 +754,8 @@ test("the instance plugin installs Minecraft before market loads and while marke
     minecraft: paper
   };
   assert.equal(ctx.features.has("minecraftInstall"), true);
-  assert.equal(ctx.tasks.get("quick_install"), undefined);
-  assert.equal(ctx.presets.entries().has("install"), false);
+  assert.equal(ctx.tasks.get("test_install"), undefined);
+  assert.equal(ctx.presets.entries().has("test-preset"), false);
   const first = minecraft.create(undefined, parameters);
   await first.start();
   assert.equal(first.status(), AsyncTask.STATUS_STOP);
@@ -763,23 +763,31 @@ test("the instance plugin installs Minecraft before market loads and while marke
   assert.ok(first.taskId.startsWith("MinecraftInstallTask-"));
   assert.equal(fs.existsSync(path.join(f.cwd, "server.jar")), true);
 
-  const marketPlugin = load("daemon/plugins/market/src/backend/index.ts", {
-    "../i18n": load("daemon/plugins/market/src/i18n/index.ts"),
-    "./quick_install": load("daemon/plugins/market/src/backend/quick_install.ts"),
-    "./install_command": load("daemon/plugins/market/src/backend/install_command.ts")
-  });
-  const marketScope = ctx.plugin(marketPlugin);
-  await until(() => ctx.tasks.get("quick_install"));
-  assert.equal(ctx.presets.entries().has("install"), true);
-  assert.equal(ctx.tasks.get("quick_install").type, "QuickInstallTask");
+  const examplePlugin = {
+    inject: ["i18n", "tasks", "presets"],
+    apply(pluginCtx) {
+      pluginCtx.i18n.define({ en_us: { "TXT_CODE_test.plugin": "Test plugin message" } });
+      pluginCtx.presets.register("test-preset", () => ({}));
+      pluginCtx.tasks.register("test_install", {
+        type: "TestInstallTask",
+        requiresInstance: false,
+        requiredRole: 10,
+        create() { throw new Error("This fixture task is not meant to run"); }
+      });
+    }
+  };
+  const exampleScope = ctx.plugin(examplePlugin);
+  await until(() => ctx.tasks.get("test_install"));
+  assert.equal(ctx.presets.entries().has("test-preset"), true);
+  assert.equal(ctx.tasks.get("test_install").type, "TestInstallTask");
   assert.equal(ctx.tasks.get("minecraft_install"), minecraft);
   downloadGate = deferred();
   const active = minecraft.create(undefined, parameters);
   ctx.tasks.Center.addTask(active);
   await until(() => f.downloads.length === 2);
-  await marketScope.dispose();
-  assert.equal(ctx.tasks.get("quick_install"), undefined);
-  assert.equal(ctx.presets.entries().has("install"), false);
+  await exampleScope.dispose();
+  assert.equal(ctx.tasks.get("test_install"), undefined);
+  assert.equal(ctx.presets.entries().has("test-preset"), false);
   assert.equal(ctx.tasks.get("minecraft_install"), minecraft);
   assert.equal(ctx.features.has("minecraftInstall"), true);
   assert.equal(active.status(), AsyncTask.STATUS_RUNNING);
@@ -788,7 +796,7 @@ test("the instance plugin installs Minecraft before market loads and while marke
     "TXT_CODE_minecraft.hashMismatch"
   );
   assert.notEqual(ctx.i18n.$t("TXT_CODE_e166bc2f"), "TXT_CODE_e166bc2f");
-  assert.equal(ctx.i18n.$t("TXT_CODE_cbc235ad"), "TXT_CODE_cbc235ad");
+  assert.equal(ctx.i18n.$t("TXT_CODE_test.plugin"), "TXT_CODE_test.plugin");
   downloadGate.resolve();
   await active.wait();
   await until(() => !f.instance.asynchronousTask);
@@ -802,77 +810,6 @@ test("the instance plugin installs Minecraft before market loads and while marke
   assert.equal(ctx.instances, undefined);
   assert.equal(ctx.tasks, undefined);
   assert.equal(ctx.i18n.$t("TXT_CODE_minecraft.hashMismatch"), "TXT_CODE_minecraft.hashMismatch");
-});
-
-test("market packages retain bundled config, explicit overrides and nonfatal update failures", async (t) => {
-  const f = taskFixture(t, {
-    update: async () => {
-      throw new Error("template update failed");
-    }
-  });
-  const { createQuickInstallTaskClass } = load(
-    "daemon/plugins/market/src/backend/quick_install.ts"
-  );
-  const QuickInstallTask = createQuickInstallTaskClass(f.ctx);
-  fs.writeFileSync(
-    path.join(f.cwd, "mcsmanager-config.json"),
-    JSON.stringify({
-      startCommand: "bundled start",
-      updateCommand: "bundled update"
-    })
-  );
-  const bundled = new QuickInstallTask("Market", "https://cdn.example/package.zip", {});
-  await bundled.start();
-  assert.equal(bundled.type, "QuickInstallTask");
-  assert.equal(bundled.status(), AsyncTask.STATUS_STOP);
-  assert.equal(f.instance.config.startCommand, "bundled start");
-  assert.deepEqual(f.unzips, ["mcsm_install_package.zip"]);
-  assert.deepEqual(f.updates, ["bundled update"]);
-  assert.ok(f.output.some((line) => line.includes("template update failed")));
-  const explicit = new QuickInstallTask("Market", undefined, { startCommand: "explicit start" });
-  await explicit.start();
-  assert.equal(f.instance.config.startCommand, "explicit start");
-  assert.equal(explicit.status(), AsyncTask.STATUS_STOP);
-});
-
-test("the market reinstall preset retains the current instance and releases its lock", async (t) => {
-  const f = taskFixture(t);
-  f.instance.setLock = (locked) => {
-    f.instance.locked = locked;
-  };
-  f.instance.hasCwdPath = () => true;
-  f.instance.status(0);
-  fs.writeFileSync(path.join(f.cwd, "old-file.txt"), "old contents");
-  const { createQuickInstallTaskClass } = load(
-    "daemon/plugins/market/src/backend/quick_install.ts"
-  );
-  const QuickInstallTask = createQuickInstallTaskClass(f.ctx);
-  const { createInstallCommandClass } = load(
-    "daemon/plugins/market/src/backend/install_command.ts"
-  );
-  const Command = createInstallCommandClass(f.ctx, QuickInstallTask);
-  await new Command().exec(f.instance, {
-    targetLink: "https://cdn.example/package.zip",
-    setupInfo: { startCommand: "new start", processType: "general" }
-  });
-  assert.equal(fs.existsSync(path.join(f.cwd, "old-file.txt")), false);
-  assert.equal(f.instance.instanceUuid, "instance");
-  assert.equal(f.instance.config.startCommand, "new start");
-  assert.equal(f.instance.locked, false);
-  assert.equal(f.instance.asynchronousTask, undefined);
-  assert.equal(f.instance.status(), 0);
-  assert.equal(f.unzips.length, 1);
-
-  f.instance.config.processType = "docker";
-  const incompatible = new QuickInstallTask(
-    "Market",
-    undefined,
-    { processType: "general" },
-    f.instance
-  );
-  await incompatible.start();
-  assert.equal(f.instance.config.processType, "docker");
-  assert.ok(f.output.some((line) => line.includes("TXT_CODE_f8145844")));
 });
 
 test("installer failure restores the update command and is reported as a failed task", async (t) => {

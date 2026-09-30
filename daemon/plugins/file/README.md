@@ -23,7 +23,7 @@ and the upload/download HTTP routes.
 
 This is the one plugin the daemon cannot touch instance files without: instance
 creation and update, the Java manager, SteamCMD and the mod service all go
-through it, and so does `ctx.instances.fileManager`, which `plugins/market` uses
+through it, and so does `ctx.instances.fileManager`, which `external/epanel-plugin-mcsm-market` uses
 to write a package's configuration. The core declares only the shape it needs
 (`DaemonFilesService` in `src/plugin/context.ts`) and resolves it at use time
 through the context service, so removing the plugin leaves those callers

@@ -273,7 +273,7 @@ export type DaemonPresetCommandFactory = () => InstanceCommand;
 /**
  * The command behind one instance preset. `FunctionDispatcher` applies these
  * after its own defaults, so a plugin can provide a preset the core has no
- * implementation for — `install`, owned by `plugins/market` — or replace one it
+ * implementation for — `install`, owned by `external/epanel-plugin-mcsm-market` — or replace one it
  * does. Without the plugin the preset is absent and `execPreset` does nothing.
  */
 export interface DaemonPresetsService {

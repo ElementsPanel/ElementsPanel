@@ -1,8 +1,0 @@
-{
-  "TXT_CODE_47d56d0d": "Instance update failed! Reason:",
-  "TXT_CODE_906c5d6a": "Deletion Completed!",
-  "TXT_CODE_b9ca022b": "Installing instance files, please wait patiently...",
-  "TXT_CODE_cbc235ad": "Clearing the existing files of the instance, please wait patiently...",
-  "TXT_CODE_e5ba712d": "Building the server as a preset package:",
-  "TXT_CODE_f8145844": "This application template cannot be used for reinstallation. Instances created using Docker containers cannot be reinstalled as normal templates. Please select a preset package with the Docker label for reinstallation. If you do need to install other templates, please contact the administrator to manually turn off the containerization settings of the instance."
-}

@@ -99,8 +99,9 @@ export function useQuickStartFlow() {
         key: QUICKSTART_METHOD.FAST,
         icon: "mdi-apps",
         condition: () =>
-          formData.appType === QUICKSTART_ACTION_TYPE.Minecraft ||
-          formData.appType === QUICKSTART_ACTION_TYPE.Bedrock,
+          router.getRoutes().some((route) => route.path === "/quickstart/minecraft") &&
+          (formData.appType === QUICKSTART_ACTION_TYPE.Minecraft ||
+            formData.appType === QUICKSTART_ACTION_TYPE.Bedrock),
         click: () => {
           router.push({
             path: "/quickstart/minecraft",
