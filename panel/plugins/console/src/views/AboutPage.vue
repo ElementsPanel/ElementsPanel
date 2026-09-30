@@ -1,17 +1,19 @@
 <script setup lang="ts">
+import aboutLogoLight from "@/assets/logo_full.svg";
+import aboutLogoDark from "@/assets/logo_full_dark.svg";
 import { t } from "@/lang/i18n";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { Translation as I18nT } from "vue-i18n";
 import { VBtn } from "vuetify/components";
 
-const { logoImage } = useAppConfigStore();
+const { isDarkTheme } = useAppConfigStore();
 const repositoryUrl = "https://github.com/ElementsPanel/ElementsPanel";
 </script>
 
 <template>
   <div class="about-page">
     <div class="about-brand">
-      <img :src="logoImage" alt="ElementsPanel" class="about-logo" />
+      <img :src="isDarkTheme ? aboutLogoDark : aboutLogoLight" alt="ElementsPanel" class="about-logo" />
       <I18nT keypath="TXT_CODE_ABOUT_ORIGIN" tag="p" scope="global" class="about-origin">
         <template #project>
           <a
