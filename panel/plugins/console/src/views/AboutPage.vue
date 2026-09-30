@@ -18,9 +18,7 @@ const repositoryUrl = "https://github.com/ElementsPanel/ElementsPanel";
             href="https://github.com/MCSManager/MCSManager"
             target="_blank"
             rel="noopener noreferrer"
-          >
-            MCSManager
-          </a>
+          >MCSManager</a>
         </template>
       </I18nT>
       <VBtn
