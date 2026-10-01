@@ -80,6 +80,45 @@ function fixture(t, side = "panel") {
   };
 }
 for (const side of ["panel", "daemon"]) {
+  test(`${side}: external plugins resolve host dependencies after plugin-local dependencies`, async (t) => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    const previousNodePath = process.env.NODE_PATH;
+    process.env.NODE_ENV = "development";
+    t.after(() => {
+      if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = previousNodeEnv;
+      if (previousNodePath === undefined) delete process.env.NODE_PATH;
+      else process.env.NODE_PATH = previousNodePath;
+      Module._initPaths();
+    });
+    const f = fixture(t, side);
+    const host = path.join(f.directory, side);
+    const workspace = path.join(f.directory, "external", "dependency-test");
+    const entry = path.join(workspace, side);
+    const install = (directory, name, value) => {
+      const target = path.join(directory, "node_modules", name);
+      fs.mkdirSync(target, { recursive: true });
+      fs.writeFileSync(path.join(target, "index.js"), `module.exports = ${JSON.stringify(value)};`);
+    };
+    install(host, "external-host-only", "host fallback");
+    install(host, "external-private", "wrong host version");
+    install(workspace, "external-private", "plugin version");
+    fs.mkdirSync(entry, { recursive: true });
+    fs.writeFileSync(path.join(entry, "plugin.json"), JSON.stringify({
+      id: "dependency-test", backend: "index.cjs"
+    }));
+    fs.writeFileSync(path.join(entry, "nested.cjs"),
+      'module.exports = [require("external-host-only"), require("external-private")];');
+    fs.writeFileSync(path.join(entry, "index.cjs"),
+      'const values = require("./nested.cjs"); exports.apply = ctx => ctx.set("dependencyValues", values);');
+    process.chdir(host);
+    await f.start();
+    assert.equal(f.inventory().find((plugin) => plugin.id === "dependency-test")?.state, "active");
+    assert.deepEqual(f.ctx.dependencyValues, ["host fallback", "plugin version"]);
+    const searchPaths = process.env.NODE_PATH.split(path.delimiter);
+    assert.equal(searchPaths.filter((entry) => entry === path.join(host, "node_modules")).length, 1);
+  });
+
   test(`${side}: production reload activates new packages without replacing running code`, async (t) => {
     const previousNodeEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = "production";
