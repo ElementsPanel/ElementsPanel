@@ -45,6 +45,7 @@ export const vuetify = createVuetify({
         colors: {
           background: "#f5f5f5",
           surface: "#ffffff",
+          "field-surface": "#e8e8e8",
           "surface-variant": "#f0f0f0",
           "on-background": "#262626",
           "on-surface": "#262626",
@@ -59,6 +60,7 @@ export const vuetify = createVuetify({
         colors: {
           background: "#232429",
           surface: "#202020",
+          "field-surface": "#202020",
           "surface-variant": "#303136",
           "on-background": "#bfbfbf",
           "on-surface": "#bfbfbf",
