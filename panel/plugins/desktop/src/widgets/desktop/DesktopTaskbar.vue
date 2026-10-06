@@ -2,12 +2,13 @@
 import { router } from "@/config/router";
 import { t } from "@/lang/i18n";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
-import { AppTheme } from "@/types/const";
+import { useThemeSwitch } from "@/hooks/useThemeSwitch";
 import { desktopIconDarkUrl, desktopIconUrl } from "../../assets";
 import { VBtn, VIcon, VList, VListItem, VMenu } from "vuetify/components";
 import { onBeforeUnmount, ref, type Component } from "vue";
 
-const { currentTheme, isDarkTheme, setTheme } = useAppConfigStore();
+const { isDarkTheme } = useAppConfigStore();
+const { themeIcon, themeTitle, cycleTheme } = useThemeSwitch();
 
 export interface TaskbarWindow {
     id: string;
@@ -122,10 +123,6 @@ const handleOpenUserInfo = () => {
     emit("open-user-info");
 };
 
-const handleThemeMenuClick = ({ key }: { key: string | number }) => {
-    setTheme(Number(key) as AppTheme);
-};
-
 const handleAccountMenuClick = ({ key }: { key: string | number }) => {
     if (String(key) === "exit-desktop") {
         handleSwitchToNormalMode();
@@ -217,28 +214,10 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
                     <VIcon v-else icon="mdi-account-outline" />
                 </VBtn>
                 <div class="start-menu__sidebar-spacer"></div>
-                <VMenu location="top end">
-                    <template #activator="{ props: menuProps }">
-                        <VBtn v-bind="menuProps" class="start-menu__function-btn" icon variant="text"
-                            aria-label="Theme">
-                            <VIcon icon="mdi-palette-outline" />
-                        </VBtn>
-                    </template>
-                    <VList>
-                        <VListItem :active="currentTheme === AppTheme.AUTO"
-                            @click="handleThemeMenuClick({ key: AppTheme.AUTO })">
-                            {{ t("TXT_CODE_dc8de4ff") }}
-                        </VListItem>
-                        <VListItem :active="currentTheme === AppTheme.LIGHT"
-                            @click="handleThemeMenuClick({ key: AppTheme.LIGHT })">
-                            {{ t("TXT_CODE_673eac8e") }}
-                        </VListItem>
-                        <VListItem :active="currentTheme === AppTheme.DARK"
-                            @click="handleThemeMenuClick({ key: AppTheme.DARK })">
-                            {{ t("TXT_CODE_5e4a370d") }}
-                        </VListItem>
-                    </VList>
-                </VMenu>
+                <VBtn class="start-menu__function-btn" icon variant="text"
+                    :aria-label="themeTitle" :title="themeTitle" @click="cycleTheme">
+                    <VIcon :icon="themeIcon" />
+                </VBtn>
                 <VMenu location="top end">
                     <template #activator="{ props: menuProps }">
                         <VBtn v-bind="menuProps" class="start-menu__function-btn" icon variant="text"

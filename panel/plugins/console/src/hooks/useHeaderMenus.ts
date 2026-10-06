@@ -3,11 +3,10 @@ import { ctx } from "@/plugin/context";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { t } from "@/lang/i18n";
 import { logoutUser } from "@/services/apis/index";
-import { useAppConfigStore } from "@/stores/useAppConfigStore";
+import { useThemeSwitch } from "@/hooks/useThemeSwitch";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useAppToolsStore } from "@/stores/useAppToolsStore";
 import { useUiStore } from "@/stores/useUiStore";
-import { AppTheme } from "@/types/const";
 import { message } from "@/tools/vuetifyToast";
 import { Modal } from "@/tools/vuetifyModal";
 import type { Component } from "vue";
@@ -46,7 +45,7 @@ const getMdiIcon = (icon: unknown, title?: string): string => {
 
 export function useHeaderMenus() {
   const { toPage } = useAppRouters();
-  const { setTheme } = useAppConfigStore();
+  const { themeIcon, themeTitle, cycleTheme } = useThemeSwitch();
   const { uiState } = useUiStore();
   const { state: appTools } = useAppToolsStore();
   const { state: appState, isAdmin, isLogged, authEnabled } = useAppStateStore();
@@ -107,20 +106,13 @@ export function useHeaderMenus() {
         onlyPC: false
       },
       {
-        title: t("TXT_CODE_5d88a9b"),
+        title: themeTitle.value,
         leftSideTitle: t("TXT_CODE_ee01c10c"),
-        icon: "mdi-palette-outline",
-        mdiIcon: "mdi-palette-outline",
-        click: (key: string) => {
-          setTheme(Number(key) as AppTheme);
-        },
+        icon: themeIcon.value,
+        mdiIcon: themeIcon.value,
+        click: cycleTheme,
         conditions: true,
-        onlyPC: false,
-        menus: [
-          { value: AppTheme.AUTO, title: t("TXT_CODE_dc8de4ff") },
-          { value: AppTheme.LIGHT, title: t("TXT_CODE_673eac8e") },
-          { value: AppTheme.DARK, title: t("TXT_CODE_5e4a370d") }
-        ]
+        onlyPC: false
       },
       {
         title: t("TXT_CODE_8c3164c9"),
