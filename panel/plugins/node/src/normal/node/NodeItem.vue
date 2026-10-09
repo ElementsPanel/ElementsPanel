@@ -188,7 +188,7 @@ onMounted(() => {
       <VCardTitle class="node-card-title">
         <div class="flex-center">
           <span :class="{ 'color-danger': !remoteNode?.available }">
-            <VIcon icon="mdi-server-network-outline" class="mr-2" />
+            <VIcon icon="mdi-server" size="20" class="mr-2" />
             {{ remoteNode?.remarks || remoteNode?.ip }}
           </span>
         </div>
