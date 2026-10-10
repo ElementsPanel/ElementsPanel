@@ -533,7 +533,6 @@ const confirmRemove = async () => {
         :items="nodeItems"
         :loading="loading"
         :placeholder="t('TXT_CODE_PLUGIN_NODE_SELECT')"
-        :menu-props="{ contentClass: 'plugin-config-select-menu' }"
         hide-details
       />
 
@@ -546,7 +545,6 @@ const confirmRemove = async () => {
         :label="t('TXT_CODE_PLUGIN_LIST')"
         :no-data-text="t('TXT_CODE_NO_DATA')"
         :loading="loading"
-        :menu-props="{ contentClass: 'plugin-config-select-menu' }"
         hide-details
       >
         <template #item="{ props: itemProps, item }">
@@ -980,28 +978,6 @@ const confirmRemove = async () => {
   background: var(--color-gray-6);
 }
 
-:global(.plugin-config-select-menu) {
-  max-width: min(420px, calc(100vw - 32px));
-  overflow: hidden;
-  border-radius: 16px !important;
-}
-
-:global(.plugin-config-select-menu .v-list) {
-  padding: 4px;
-  background: rgb(var(--v-theme-surface));
-}
-
-:global(.plugin-config-select-menu .v-list-item) {
-  min-height: 40px;
-  border-radius: 12px;
-}
-
-:global(.plugin-config-select-menu .v-list-item-title) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .plugin-config-empty,
 .plugin-config-no-config {
   padding: 28px 12px;
@@ -1178,15 +1154,6 @@ const confirmRemove = async () => {
 
   .plugin-config-confirm-card :deep(.v-card-actions) {
     flex-wrap: wrap;
-  }
-
-  :global(.plugin-config-select-menu .v-list-item) {
-    min-height: 44px;
-  }
-
-  :global(.plugin-config-select-menu .v-list-item-title) {
-    white-space: normal;
-    overflow-wrap: anywhere;
   }
 
   :global(.desktop-container .plugin-config-page) {

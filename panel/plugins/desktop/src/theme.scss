@@ -157,17 +157,16 @@
 .desktop-container .v-card,
 .desktop-container .v-field,
 .desktop-container .v-input,
-.desktop-container .v-list,
-.desktop-container .v-menu > .v-overlay__content {
+.desktop-container .v-list {
   box-shadow: none !important;
 }
 
-/* Menus and dialogs are teleported to body, so keep their Vuetify surfaces
-   consistent with the borderless desktop even after leaving the root node. */
-.desktop-mode-active .v-overlay,
-.desktop-mode-active .v-overlay *,
-.desktop-mode-active .v-overlay *::before,
-.desktop-mode-active .v-overlay *::after,
+/* Dialogs and toasts retain the desktop treatment after teleporting to body.
+   Selection menus use the console's shared menu styles in every layout. */
+.desktop-mode-active .v-overlay:not(.v-menu),
+.desktop-mode-active .v-overlay:not(.v-menu) *,
+.desktop-mode-active .v-overlay:not(.v-menu) *::before,
+.desktop-mode-active .v-overlay:not(.v-menu) *::after,
 .desktop-mode-active .v-snackbar,
 .desktop-mode-active .v-snackbar * {
   border: 0 !important;
@@ -176,20 +175,12 @@
   box-shadow: none !important;
 }
 
-.desktop-mode-active .v-overlay [class*="divider"],
-.desktop-mode-active .v-overlay [class*="separator"],
-.desktop-mode-active .v-overlay hr {
+.desktop-mode-active .v-overlay:not(.v-menu) [class*="divider"],
+.desktop-mode-active .v-overlay:not(.v-menu) [class*="separator"],
+.desktop-mode-active .v-overlay:not(.v-menu) hr {
   border: 0 !important;
   background-color: transparent !important;
   background-image: none !important;
-  box-shadow: none !important;
-}
-
-/* Dropdown menus use the same surface as a VSelect menu.  Keep button menus
-   from introducing their own rounded items or elevation. */
-.desktop-mode-active .v-select__content,
-.desktop-mode-active .v-menu > .v-overlay__content {
-  border-radius: 4px !important;
   box-shadow: none !important;
 }
 
@@ -206,30 +197,6 @@
 .desktop-mode-active .v-input__control {
   background: transparent !important;
   box-shadow: none !important;
-}
-
-/* Menus are teleported outside the window, so target their list surface
-   globally while retaining the desktop window background. */
-.desktop-mode-active .v-select__content,
-.desktop-mode-active .v-autocomplete__content,
-.desktop-mode-active .v-combobox__content,
-.desktop-mode-active .v-menu > .v-overlay__content,
-.desktop-mode-active .v-select__content > .v-list,
-.desktop-mode-active .v-autocomplete__content > .v-list,
-.desktop-mode-active .v-combobox__content > .v-list,
-.desktop-mode-active .v-menu > .v-overlay__content > .v-list {
-  background: var(--desktop-window-bg) !important;
-}
-
-.desktop-mode-active .v-select__content > .v-list,
-.desktop-mode-active .v-menu > .v-overlay__content > .v-list {
-  border-radius: 4px !important;
-  box-shadow: none !important;
-}
-
-.desktop-mode-active .v-select__content .v-list-item,
-.desktop-mode-active .v-menu > .v-overlay__content .v-list-item {
-  border-radius: 0 !important;
 }
 
 .desktop-container .v-field::before,

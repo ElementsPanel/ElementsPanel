@@ -1,0 +1,40 @@
+// Vuetify teleports selection menus outside their fields. Style the built-in
+// content classes once so every page and plugin shares the same menu surface.
+:is(.v-select__content, .v-autocomplete__content, .v-combobox__content) {
+  max-width: min(420px, calc(100vw - 32px));
+  overflow: hidden;
+  border-radius: 16px !important;
+  background-color: rgb(var(--v-theme-surface)) !important;
+  color: var(--text-color) !important;
+
+  .v-list {
+    padding: 4px;
+    background-color: rgb(var(--v-theme-surface)) !important;
+  }
+
+  :is(.v-list, .v-list-item, .v-list-item-title, .v-list-item-subtitle, .v-icon) {
+    color: var(--text-color) !important;
+  }
+
+  .v-list-item {
+    min-height: 40px;
+    border-radius: 12px;
+  }
+
+  .v-list-item-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 992px) {
+    .v-list-item {
+      min-height: 44px;
+    }
+
+    .v-list-item-title {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+  }
+}
