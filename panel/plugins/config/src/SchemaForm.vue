@@ -456,4 +456,84 @@ const open = (field: SettingField) => {
 .setting-file-input :deep(.v-input) {
   flex: 1;
 }
+
+@media (max-width: 992px) {
+  .setting-field,
+  .setting-link-row,
+  .setting-list,
+  .setting-file-input {
+    min-width: 0;
+  }
+
+  .setting-field-title,
+  .setting-field-description {
+    overflow-wrap: anywhere;
+  }
+
+  .setting-control,
+  .setting-file-input {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .setting-control :deep(.v-input__control),
+  .setting-control :deep(.v-field),
+  .setting-control :deep(.v-field__input) {
+    min-width: 0;
+  }
+
+  .setting-control :deep(.v-select__selection-text) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .setting-file-input {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .setting-file-input :deep(.v-input) {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .setting-link-row :deep(.v-btn),
+  .setting-list > :deep(.v-btn),
+  .setting-file-input :deep(.v-btn) {
+    width: 100%;
+    min-height: 44px;
+    height: auto;
+    padding: 12px 16px;
+  }
+
+  .setting-link-row :deep(.v-btn__content),
+  .setting-list > :deep(.v-btn .v-btn__content),
+  .setting-file-input :deep(.v-btn__content) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .setting-list-item:not(.setting-list-item--compact) {
+    padding: 12px;
+  }
+
+  .setting-list-actions :deep(.v-btn) {
+    width: 44px;
+    height: 44px;
+  }
+
+  .setting-list-editor-content {
+    padding: 16px;
+  }
+
+  .setting-list-editor :deep(.v-card-title) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .setting-list-editor :deep(.v-card-actions) {
+    flex-wrap: wrap;
+  }
+}
 </style>

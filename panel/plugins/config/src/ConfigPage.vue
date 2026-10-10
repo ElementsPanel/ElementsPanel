@@ -533,9 +533,36 @@ const confirmRemove = async () => {
         :items="nodeItems"
         :loading="loading"
         :placeholder="t('TXT_CODE_PLUGIN_NODE_SELECT')"
-        :menu-props="{ contentClass: 'plugin-config-node-menu' }"
+        :menu-props="{ contentClass: 'plugin-config-select-menu' }"
         hide-details
       />
+
+      <VSelect
+        v-model="currentId"
+        class="plugin-config-plugin-select"
+        :items="currentList"
+        item-title="id"
+        item-value="id"
+        :label="t('TXT_CODE_PLUGIN_LIST')"
+        :no-data-text="t('TXT_CODE_NO_DATA')"
+        :loading="loading"
+        :menu-props="{ contentClass: 'plugin-config-select-menu' }"
+        hide-details
+      >
+        <template #item="{ props: itemProps, item }">
+          <VListItem v-bind="itemProps">
+            <template #append>
+              <span
+                class="plugin-config-item-dot"
+                :class="{
+                  'plugin-config-item-dot-off':
+                    !item.enabled || (item.state && item.state !== 'active')
+                }"
+              ></span>
+            </template>
+          </VListItem>
+        </template>
+      </VSelect>
 
       <div class="plugin-config-heading">{{ t("TXT_CODE_PLUGIN_LIST") }}</div>
       <VList class="plugin-config-list" density="compact">
@@ -592,83 +619,85 @@ const confirmRemove = async () => {
             <span v-if="selectedPlugin.version" class="plugin-config-version">
               {{ t("TXT_CODE_VERSION") }} {{ selectedPlugin.version }}
             </span>
-            <VTooltip
-              :text="t(selectedPlugin.enabled ? 'TXT_CODE_PLUGIN_DISABLE' : 'TXT_CODE_PLUGIN_ENABLE')"
-              location="top"
-            >
-              <template #activator="{ props: tooltipProps }">
-                <span v-bind="tooltipProps">
-                  <VBtn
-                    :icon="selectedPlugin.enabled ? 'mdi-power-off' : 'mdi-power'"
-                    :color="selectedPlugin.enabled ? 'warning' : 'success'"
-                    variant="text"
-                    :loading="pending === selectedPlugin.id"
-                    :disabled="Boolean(pending)"
-                    :aria-label="
-                      t(
-                        selectedPlugin.enabled
-                          ? 'TXT_CODE_PLUGIN_DISABLE'
-                          : 'TXT_CODE_PLUGIN_ENABLE'
-                      )
-                    "
-                    @click="toggleSelected(!selectedPlugin.enabled)"
-                  />
-                </span>
-              </template>
-            </VTooltip>
-            <VTooltip
-              v-if="schema?.fields.some((field) => field.type !== 'link')"
-              :text="t('TXT_CODE_PLUGIN_SAVE_SETTINGS')"
-              location="top"
-            >
-              <template #activator="{ props: tooltipProps }">
-                <span v-bind="tooltipProps">
-                  <VBtn
-                    icon="mdi-content-save"
-                    color="primary"
-                    variant="text"
-                    :loading="savingSettings"
-                    :disabled="schemaLoading"
-                    :aria-label="t('TXT_CODE_PLUGIN_SAVE_SETTINGS')"
-                    @click="saveSettings"
-                  />
-                </span>
-              </template>
-            </VTooltip>
-            <VTooltip
-              v-if="scope === 'panel'"
-              :text="
-                t(
-                  selectedPanelPlugin?.removable
-                    ? 'TXT_CODE_PLUGIN_DELETE'
-                    : 'TXT_CODE_PLUGIN_DELETE_UNAVAILABLE'
-                )
-              "
-              location="top"
-            >
-              <template #activator="{ props: tooltipProps }">
-                <span v-bind="tooltipProps">
-                  <VBtn
-                    icon="mdi-delete"
-                    color="error"
-                    variant="text"
-                    :loading="deletingPlugin"
-                    :disabled="!selectedPanelPlugin?.removable || deletingPlugin"
-                    :aria-label="
-                      t(
-                        selectedPanelPlugin?.removable
-                          ? 'TXT_CODE_PLUGIN_DELETE'
-                          : 'TXT_CODE_PLUGIN_DELETE_UNAVAILABLE'
-                      )
-                    "
-                    @click="
-                      deleteCandidate = selectedPanelPlugin || null;
-                      deleteConfirmOpen = Boolean(deleteCandidate)
-                    "
-                  />
-                </span>
-              </template>
-            </VTooltip>
+            <div class="plugin-config-actions">
+              <VTooltip
+                :text="t(selectedPlugin.enabled ? 'TXT_CODE_PLUGIN_DISABLE' : 'TXT_CODE_PLUGIN_ENABLE')"
+                location="top"
+              >
+                <template #activator="{ props: tooltipProps }">
+                  <span v-bind="tooltipProps">
+                    <VBtn
+                      :icon="selectedPlugin.enabled ? 'mdi-power-off' : 'mdi-power'"
+                      :color="selectedPlugin.enabled ? 'warning' : 'success'"
+                      variant="text"
+                      :loading="pending === selectedPlugin.id"
+                      :disabled="Boolean(pending)"
+                      :aria-label="
+                        t(
+                          selectedPlugin.enabled
+                            ? 'TXT_CODE_PLUGIN_DISABLE'
+                            : 'TXT_CODE_PLUGIN_ENABLE'
+                        )
+                      "
+                      @click="toggleSelected(!selectedPlugin.enabled)"
+                    />
+                  </span>
+                </template>
+              </VTooltip>
+              <VTooltip
+                v-if="schema?.fields.some((field) => field.type !== 'link')"
+                :text="t('TXT_CODE_PLUGIN_SAVE_SETTINGS')"
+                location="top"
+              >
+                <template #activator="{ props: tooltipProps }">
+                  <span v-bind="tooltipProps">
+                    <VBtn
+                      icon="mdi-content-save"
+                      color="primary"
+                      variant="text"
+                      :loading="savingSettings"
+                      :disabled="schemaLoading"
+                      :aria-label="t('TXT_CODE_PLUGIN_SAVE_SETTINGS')"
+                      @click="saveSettings"
+                    />
+                  </span>
+                </template>
+              </VTooltip>
+              <VTooltip
+                v-if="scope === 'panel'"
+                :text="
+                  t(
+                    selectedPanelPlugin?.removable
+                      ? 'TXT_CODE_PLUGIN_DELETE'
+                      : 'TXT_CODE_PLUGIN_DELETE_UNAVAILABLE'
+                  )
+                "
+                location="top"
+              >
+                <template #activator="{ props: tooltipProps }">
+                  <span v-bind="tooltipProps">
+                    <VBtn
+                      icon="mdi-delete"
+                      color="error"
+                      variant="text"
+                      :loading="deletingPlugin"
+                      :disabled="!selectedPanelPlugin?.removable || deletingPlugin"
+                      :aria-label="
+                        t(
+                          selectedPanelPlugin?.removable
+                            ? 'TXT_CODE_PLUGIN_DELETE'
+                            : 'TXT_CODE_PLUGIN_DELETE_UNAVAILABLE'
+                        )
+                      "
+                      @click="
+                        deleteCandidate = selectedPanelPlugin || null;
+                        deleteConfirmOpen = Boolean(deleteCandidate)
+                      "
+                    />
+                  </span>
+                </template>
+              </VTooltip>
+            </div>
           </div>
         </div>
 
@@ -849,7 +878,8 @@ const confirmRemove = async () => {
   color: #fff !important;
 }
 
-.plugin-config-node-select {
+.plugin-config-node-select,
+.plugin-config-plugin-select {
   flex: 0 0 auto;
   width: 100%;
   max-width: 100%;
@@ -859,20 +889,28 @@ const confirmRemove = async () => {
 }
 
 .plugin-config-node-select :deep(.v-input__control),
-.plugin-config-node-select :deep(.v-field) {
+.plugin-config-node-select :deep(.v-field),
+.plugin-config-plugin-select :deep(.v-input__control),
+.plugin-config-plugin-select :deep(.v-field) {
   width: 100%;
   min-width: 0;
 }
 
-.plugin-config-node-select :deep(.v-field__input) {
+.plugin-config-node-select :deep(.v-field__input),
+.plugin-config-plugin-select :deep(.v-field__input) {
   min-width: 0;
   overflow: hidden;
 }
 
-.plugin-config-node-select :deep(.v-select__selection-text) {
+.plugin-config-node-select :deep(.v-select__selection-text),
+.plugin-config-plugin-select :deep(.v-select__selection-text) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.plugin-config-plugin-select {
+  display: none;
 }
 
 .plugin-config-heading {
@@ -942,23 +980,23 @@ const confirmRemove = async () => {
   background: var(--color-gray-6);
 }
 
-:global(.plugin-config-node-menu) {
+:global(.plugin-config-select-menu) {
   max-width: min(420px, calc(100vw - 32px));
   overflow: hidden;
   border-radius: 16px !important;
 }
 
-:global(.plugin-config-node-menu .v-list) {
+:global(.plugin-config-select-menu .v-list) {
   padding: 4px;
   background: rgb(var(--v-theme-surface));
 }
 
-:global(.plugin-config-node-menu .v-list-item) {
+:global(.plugin-config-select-menu .v-list-item) {
   min-height: 40px;
   border-radius: 12px;
 }
 
-:global(.plugin-config-node-menu .v-list-item-title) {
+:global(.plugin-config-select-menu .v-list-item-title) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1004,6 +1042,12 @@ const confirmRemove = async () => {
   gap: 12px;
 }
 
+.plugin-config-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .plugin-config-version {
   color: var(--text-color);
   font-size: 12px;
@@ -1033,32 +1077,121 @@ const confirmRemove = async () => {
   justify-content: center;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 992px) {
   .plugin-config-page {
     flex-direction: column;
     height: auto;
+    min-width: 0;
     min-height: 0;
   }
 
   .plugin-config-sidebar {
-    flex-basis: auto;
-    max-height: 220px;
-    padding: 16px 12px;
+    flex: none;
+    min-width: 0;
+    padding: 16px;
   }
 
+  .plugin-config-scope {
+    flex: none;
+    height: auto;
+    padding: 0 0 12px;
+  }
+
+  .plugin-config-scope :deep(.v-btn) {
+    min-width: 0;
+    min-height: 44px;
+    height: auto;
+    padding: 8px;
+  }
+
+  .plugin-config-scope :deep(.v-btn__content) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .plugin-config-heading,
   .plugin-config-list {
-    flex: initial;
-    max-height: 140px;
+    display: none;
+  }
+
+  .plugin-config-plugin-select {
+    display: grid;
+    margin-bottom: 0;
   }
 
   .plugin-config-content {
-    padding: 24px;
+    flex: none;
+    padding: 8px 16px 20px;
+    overflow: visible;
   }
 
   .plugin-config-title-row {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .plugin-config-title-row h2,
+  .plugin-config-version,
+  .plugin-config-alert {
+    overflow-wrap: anywhere;
+  }
+
+  .plugin-config-meta {
+    min-width: 0;
+    justify-content: flex-start;
     gap: 8px;
+  }
+
+  .plugin-config-actions {
+    flex: 0 0 100%;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .plugin-config-version {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .plugin-config-meta :deep(.v-chip) {
+    max-width: 100%;
+    min-height: 24px;
+    height: auto;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  .plugin-config-meta :deep(.v-chip__content) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .plugin-config-alert :deep(.v-alert__content) {
+    min-width: 0;
+  }
+
+  .plugin-config-confirm-card :deep(.v-card-title) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .plugin-config-confirm-card :deep(.v-card-actions) {
+    flex-wrap: wrap;
+  }
+
+  :global(.plugin-config-select-menu .v-list-item) {
+    min-height: 44px;
+  }
+
+  :global(.plugin-config-select-menu .v-list-item-title) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  :global(.desktop-container .plugin-config-page) {
+    height: 100%;
+    overflow-y: auto;
   }
 }
 </style>
