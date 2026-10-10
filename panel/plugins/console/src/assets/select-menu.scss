@@ -7,13 +7,18 @@
   color: var(--text-color) !important;
 
   .v-list {
-    padding: 4px;
+    margin: 0;
+    padding: 4px !important;
     background-color: rgb(var(--v-theme-surface)) !important;
     // Action items inherit this unless they specify a semantic color.
     color: var(--text-color) !important;
   }
 
   .v-list-item {
+    // Use the standard select option spacing for every menu, including lists
+    // with compact/comfortable density or navigation-item spacing.
+    margin: 0 !important;
+    padding: 4px 16px !important;
     // Include the gap in the row height measured by Vuetify's virtual scrolling.
     min-height: 44px;
     border-block: 2px solid transparent;
