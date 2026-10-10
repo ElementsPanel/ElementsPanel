@@ -427,8 +427,8 @@ body::-webkit-scrollbar-track {
   overflow: visible !important;
 }
 
-.v-btn.v-tab > .v-btn__overlay,
-.v-btn.v-tab > .v-btn__underlay {
+.v-btn.v-tab>.v-btn__overlay,
+.v-btn.v-tab>.v-btn__underlay {
   border-radius: inherit;
 }
 
@@ -585,6 +585,18 @@ body::-webkit-scrollbar-track {
   .v-list-item {
     border-radius: 8px !important;
     margin-bottom: 2px !important;
+  }
+
+  .v-list-item__overlay,
+  .v-list-item__underlay {
+    border-radius: inherit;
+  }
+
+  // Select/autocomplete lists are marked navigable by Vuetify, which
+  // disables the default overlay transition for keyboard navigation.
+  .v-list.v-list--navigable .v-list-item__overlay {
+    transition: 0.2s ease-in-out;
+    transition-property: opacity, color;
   }
 
   .v-list-item:last-child {

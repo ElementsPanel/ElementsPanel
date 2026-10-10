@@ -1,9 +1,9 @@
-import "vuetify/styles";
 import "@mdi/font/css/materialdesignicons.css";
+import "vuetify/styles";
 
+import type { App } from "vue";
 import { createVuetify } from "vuetify";
 import { aliases, mdi } from "vuetify/iconsets/mdi";
-import type { App } from "vue";
 
 /**
  * Vuetify is installed by the console plugin so feature plugins can use the
@@ -13,6 +13,9 @@ export const vuetify = createVuetify({
   defaults: {
     VDialog: {
       scrollable: true
+    },
+    VList: {
+      VDivider: { class: "my-6" }
     },
     VCard: {
       rounded: "xl"
