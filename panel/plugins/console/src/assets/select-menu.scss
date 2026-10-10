@@ -1,7 +1,6 @@
-// Vuetify teleports selection menus outside their fields. Style the built-in
-// content classes once so every page and plugin shares the same menu surface.
-:is(.v-select__content, .v-autocomplete__content, .v-combobox__content) {
-  max-width: min(420px, calc(100vw - 32px));
+// Vuetify teleports both field dropdowns and button menus. They all use VMenu,
+// so target its overlay content instead of only the selection-field classes.
+.v-menu > .v-overlay__content {
   overflow: hidden;
   border-radius: 16px !important;
   background-color: rgb(var(--v-theme-surface)) !important;
@@ -10,9 +9,7 @@
   .v-list {
     padding: 4px;
     background-color: rgb(var(--v-theme-surface)) !important;
-  }
-
-  :is(.v-list, .v-list-item, .v-list-item-title, .v-list-item-subtitle, .v-icon) {
+    // Action items inherit this unless they specify a semantic color.
     color: var(--text-color) !important;
   }
 
@@ -22,6 +19,10 @@
     border-block: 2px solid transparent;
     border-radius: 12px;
     background-clip: padding-box;
+
+    &::after {
+      border-radius: inherit;
+    }
   }
 
   .v-list-item-title {
@@ -39,5 +40,15 @@
       white-space: normal;
       overflow-wrap: anywhere;
     }
+  }
+}
+
+// Keep field-specific sizing and forced text colors on selection menus:
+// button menus can contain wider cards and explicitly colored actions.
+:is(.v-select__content, .v-autocomplete__content, .v-combobox__content) {
+  max-width: min(420px, calc(100vw - 32px));
+
+  :is(.v-list-item, .v-list-item-title, .v-list-item-subtitle, .v-icon) {
+    color: var(--text-color) !important;
   }
 }

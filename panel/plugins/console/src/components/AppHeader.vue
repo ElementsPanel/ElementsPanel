@@ -111,7 +111,7 @@ useEventListener("keydown", (event) => {
                 <VIcon :icon="getMdiIcon(item.mdiIcon || getFallbackMdiIcon(item.icon))" />
               </VBtn>
             </template>
-            <VList class="header-menu-list" density="compact">
+            <VList density="compact">
               <VListItem
                 v-for="menuItem in item.menus"
                 :key="menuItem.value"
@@ -190,7 +190,7 @@ useEventListener("keydown", (event) => {
                 <VIcon :icon="getMdiIcon(item.mdiIcon || getFallbackMdiIcon(item.icon))" />
               </VBtn>
             </template>
-            <VList class="header-menu-list" density="compact">
+            <VList density="compact">
               <VListItem
                 v-for="menuItem in item.menus"
                 :key="menuItem.value"
@@ -260,15 +260,6 @@ useEventListener("keydown", (event) => {
 
 .nav-button-success:hover {
   background-color: #48e6635a !important;
-}
-
-.header-menu-list {
-  color: var(--app-header-text-color) !important;
-
-  :deep(.v-list-item),
-  :deep(.v-list-item-title) {
-    color: var(--app-header-text-color) !important;
-  }
 }
 
 .app-header-content-for-phone {
