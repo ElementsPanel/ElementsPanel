@@ -4,7 +4,6 @@ import "@/assets/tools.scss";
 import "@/assets/variables.scss";
 import "@/assets/variables-dark.scss";
 import "@/assets/global.scss";
-import "@/assets/select-menu.scss";
 import "@/assets/bg-extend-theme.scss";
 import "@/initLib";
 
