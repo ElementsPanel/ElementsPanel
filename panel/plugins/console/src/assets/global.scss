@@ -135,8 +135,8 @@ body::-webkit-scrollbar-track {
 .v-select__selection-text,
 .v-autocomplete__selection-text,
 .v-combobox__selection-text,
-.v-field__prepend-inner > .v-icon,
-.v-field__append-inner > .v-icon {
+.v-field__prepend-inner>.v-icon,
+.v-field__append-inner>.v-icon {
   color: var(--text-color) !important;
 }
 
@@ -349,19 +349,19 @@ body::-webkit-scrollbar-track {
   --app-dialog-radius: 24px;
 }
 
-.v-dialog > .v-overlay__content {
+.v-dialog>.v-overlay__content {
   border-radius: var(--app-dialog-radius) !important;
 }
 
-.v-bottom-sheet > .v-overlay__content > .v-card,
-.v-bottom-sheet > .v-overlay__content > form > .v-card,
-.v-overlay__content.v-bottom-sheet__content > .v-card,
-.v-overlay__content.v-bottom-sheet__content > form > .v-card {
+.v-bottom-sheet>.v-overlay__content>.v-card,
+.v-bottom-sheet>.v-overlay__content>form>.v-card,
+.v-overlay__content.v-bottom-sheet__content>.v-card,
+.v-overlay__content.v-bottom-sheet__content>form>.v-card {
   border-radius: var(--app-dialog-radius) var(--app-dialog-radius) 0 0 !important;
 }
 
-.v-overlay__content > .v-card,
-.v-overlay__content > .v-sheet {
+.v-overlay__content>.v-card,
+.v-overlay__content>.v-sheet {
   border-radius: inherit !important;
 }
 
@@ -420,9 +420,22 @@ body::-webkit-scrollbar-track {
 }
 
 // Vuetify keeps the native slider element for its selected-tab animation.
-// Draw a shorter, heavier indicator inside it so the movement animation is
-// preserved while the visible handle is inset from both sides.
+// VTab inherits VBtn's overflow clipping, which cuts the slider off while it
+// travels through the neighboring tab. Let the indicator cross that boundary
+// and keep it above adjacent tab content during the transition.
+.v-btn.v-tab {
+  overflow: visible !important;
+}
+
+.v-btn.v-tab > .v-btn__overlay,
+.v-btn.v-tab > .v-btn__underlay {
+  border-radius: inherit;
+}
+
+// Draw a shorter, heavier indicator inside the native slider so the visible
+// handle is inset from both sides without replacing Vuetify's animation.
 .v-btn.v-tab .v-tab__slider {
+  z-index: 1;
   height: 4px !important;
   background: transparent !important;
 }
@@ -546,7 +559,7 @@ body::-webkit-scrollbar-track {
 }
 
 // Vuetify teleports both field dropdowns and button menus.
-.v-menu > .v-overlay__content,
+.v-menu>.v-overlay__content,
 .v-select__content,
 .v-autocomplete__content,
 .v-combobox__content {
