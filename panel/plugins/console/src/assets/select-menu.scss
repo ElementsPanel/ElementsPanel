@@ -1,50 +1,34 @@
-// Vuetify teleports both field dropdowns and button menus. They all use VMenu,
-// so target its overlay content instead of only the selection-field classes.
-.v-menu > .v-overlay__content {
+// Vuetify teleports both field dropdowns and button menus.
+.v-menu > .v-overlay__content,
+.v-select__content,
+.v-autocomplete__content,
+.v-combobox__content {
   overflow: hidden;
   border-radius: 16px !important;
   background-color: rgb(var(--v-theme-surface)) !important;
   color: var(--text-color) !important;
+}
 
+.v-menu,
+.v-select__content,
+.v-autocomplete__content,
+.v-combobox__content {
   .v-list {
     margin: 0;
-    padding: 4px !important;
+    padding: 8px !important;
     background-color: rgb(var(--v-theme-surface)) !important;
+    border-radius: inherit !important;
     // Action items inherit this unless they specify a semantic color.
     color: var(--text-color) !important;
   }
 
   .v-list-item {
-    // Use the standard select option spacing for every menu, including lists
-    // with compact/comfortable density or navigation-item spacing.
-    margin: 0 !important;
-    padding: 4px 16px !important;
-    // Include the gap in the row height measured by Vuetify's virtual scrolling.
-    min-height: 44px;
-    border-block: 2px solid transparent;
-    border-radius: 12px;
-    background-clip: padding-box;
-
-    &::after {
-      border-radius: inherit;
-    }
+    border-radius: 8px !important;
+    margin-bottom: 2px !important;
   }
 
-  .v-list-item-title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  @media (max-width: 992px) {
-    .v-list-item {
-      min-height: 48px;
-    }
-
-    .v-list-item-title {
-      white-space: normal;
-      overflow-wrap: anywhere;
-    }
+  .v-list-item:last-child {
+    margin-bottom: 0 !important;
   }
 }
 
