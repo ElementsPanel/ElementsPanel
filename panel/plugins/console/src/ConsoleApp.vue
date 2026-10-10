@@ -12,7 +12,7 @@ import Breadcrumbs from "./components/Breadcrumbs.vue";
 import InputDialogProvider from "./components/InputDialogProvider.vue";
 import { ctx } from "@/plugin/context";
 import { closeAppLoading, setLoadingTitle } from "@/tools/dom";
-import { VThemeProvider } from "vuetify/components";
+import { VLayout, VThemeProvider } from "vuetify/components";
 import { setVuetifyTheme } from "./vuetify";
 
 const {
@@ -51,7 +51,7 @@ onMounted(async () => {
 <template>
   <VThemeProvider :theme="vuetifyTheme">
     <AppConfigProvider :has-bg-image="hasBgImage">
-      <div class="global-app-container">
+      <VLayout class="global-app-container">
         <AppHeader v-if="!isLoginPage && !isImmersivePage" />
         <div
           class="app-shell-content"
@@ -83,7 +83,7 @@ onMounted(async () => {
             </div>
           </main>
         </div>
-      </div>
+      </VLayout>
 
       <AppBottomNav v-if="isPhone && !useSidebarLayout && !isLoginPage && !isImmersivePage" />
 

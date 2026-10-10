@@ -317,7 +317,16 @@ body::-webkit-scrollbar-track {
 
 @media (max-width: 992px) {
   .global-app-container {
-    margin: 0 12px 60px;
+    margin: 0 0 60px;
+
+    &:has(> .app-header-content-for-phone) {
+      box-sizing: border-box;
+      padding-top: 60px;
+    }
+  }
+
+  .app-shell-content {
+    margin: 0 12px;
   }
 }
 

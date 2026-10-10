@@ -3,25 +3,25 @@ import { useHeaderMenus } from "@/hooks/useHeaderMenus";
 import { useScreen } from "@/hooks/useScreen";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useUiStore } from "@/stores/useUiStore";
+import { useEventListener } from "@vueuse/core";
 import {
   VBtn,
-  VDialog,
   VList,
   VListItem,
   VMenu,
   VIcon,
+  VNavigationDrawer,
   VToolbar,
   VTooltip
 } from "vuetify/components";
-import { computed } from "vue";
-import { useRoute } from "vue-router";
+import { computed, watch } from "vue";
 import { ctx } from "@/plugin/context";
+import AppSidebarMenu from "./AppSidebarMenu.vue";
 
-const route = useRoute();
 const { uiState } = useUiStore();
 const { isSidebarOpen, logoImage, toggleSidebar, useSidebarLayout } = useAppConfigStore();
 
-const { menus, appMenus, handleToPage } = useHeaderMenus();
+const { appMenus } = useHeaderMenus();
 const desktopAppMenus = computed(() => appMenus.value.filter((item) => !item.onlyHeader));
 
 const getMdiIcon = (explicitIcon?: string) => {
@@ -32,28 +32,6 @@ const getFallbackMdiIcon = (icon: unknown) => {
   if (typeof icon === "string" && icon.startsWith("mdi-")) return icon;
   return "mdi-help-circle-outline";
 };
-
-/**
- * Only the most specific menu entry counts as active: `/market/plugins` is a menu
- * item of its own, so a plain prefix test would light it up together with
- * `/market`.
- */
-const activePath = computed(() => {
-  let exact = "";
-  let longest = "";
-  for (const item of menus.value) {
-    const path = item.path;
-    if (path === "/") continue;
-    if (route.path === path) {
-      exact = path;
-      break;
-    }
-    if (route.path.startsWith(`${path}/`) && path.length > longest.length) longest = path;
-  }
-  return exact || longest;
-});
-
-const isRouteActive = (path: string): boolean => activePath.value === path;
 
 const { isPhone } = useScreen();
 const leadingSlots = computed(() =>
@@ -66,6 +44,14 @@ const actionSlots = computed(() =>
 const openPhoneMenu = (b = false) => {
   uiState.showPhoneMenu = b;
 };
+
+watch(isPhone, (phone) => {
+  if (!phone) openPhoneMenu(false);
+});
+
+useEventListener("keydown", (event) => {
+  if (event.key === "Escape" && uiState.showPhoneMenu) openPhoneMenu(false);
+});
 </script>
 
 <template>
@@ -175,13 +161,12 @@ const openPhoneMenu = (b = false) => {
           variant="text"
           aria-label="MENU"
           title="MENU"
+          aria-controls="app-phone-sidebar"
+          :aria-expanded="uiState.showPhoneMenu"
           @click="openPhoneMenu(true)"
         >
-          <span class="mdi mdi-menu" aria-hidden="true"></span>
+          <VIcon icon="mdi-menu" />
         </VBtn>
-        <a href="." class="phone-logo" aria-label="ElementsPanel">
-          <img :src="logoImage" alt="ElementsPanel" />
-        </a>
         <component
           :is="entry.component"
           v-for="entry in leadingSlots"
@@ -240,23 +225,20 @@ const openPhoneMenu = (b = false) => {
     </div>
   </VToolbar>
 
-  <VDialog
+  <VNavigationDrawer
+    v-if="isPhone"
+    id="app-phone-sidebar"
     v-model="uiState.showPhoneMenu"
-    class="phone-menu-dialog"
-    max-width="500"
-    location="top"
-    transition="dialog-top-transition"
+    class="phone-menu-drawer"
+    color="surface"
+    location="left"
+    width="280"
+    temporary
+    retain-focus
+    capture-focus
   >
-    <VList class="phone-menu" density="comfortable">
-      <VListItem
-        v-for="item in menus"
-        :key="item.path"
-        :title="String(item.name)"
-        :active="isRouteActive(item.path)"
-        @click="handleToPage(item.path)"
-      />
-    </VList>
-  </VDialog>
+    <AppSidebarMenu />
+  </VNavigationDrawer>
 </template>
 
 <style lang="scss" scoped>
@@ -280,24 +262,6 @@ const openPhoneMenu = (b = false) => {
   background-color: #48e6635a !important;
 }
 
-.phone-menu {
-  width: 100%;
-  padding: 8px 12px;
-  background: transparent;
-  color: var(--app-header-text-color) !important;
-
-  :deep(.v-list-item) {
-    min-height: 44px;
-    margin: 4px 0;
-    border-radius: 12px;
-    color: var(--app-header-text-color) !important;
-  }
-
-  :deep(.v-list-item--active) {
-    background-color: rgba(64, 156, 216, 0.12);
-  }
-}
-
 .header-menu-list {
   color: var(--app-header-text-color) !important;
 
@@ -308,6 +272,11 @@ const openPhoneMenu = (b = false) => {
 }
 
 .app-header-content-for-phone {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 20;
   height: 60px;
   width: 100%;
   background-color: var(--app-header-bg) !important;
@@ -340,15 +309,12 @@ const openPhoneMenu = (b = false) => {
   color: var(--app-header-text-color) !important;
 }
 
-.phone-menu-dialog :deep(.v-overlay__content) {
-  width: calc(100% - 24px);
-  margin: 12px;
+.phone-menu-drawer {
+  max-width: calc(100vw - 48px);
 }
 
-.phone-menu-dialog :deep(.v-list) {
-  background-color: var(--app-header-bg);
-  color: var(--app-header-text-color) !important;
-  border-radius: 24px;
+.phone-menu-drawer + :deep(.v-navigation-drawer__scrim) {
+  position: fixed;
 }
 
 .app-header-wrapper {
@@ -436,19 +402,6 @@ const openPhoneMenu = (b = false) => {
   flex: 1 1 auto;
   justify-content: flex-end;
   padding: 0 24px;
-}
-
-.phone-logo {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  margin-left: 4px;
-
-  img {
-    max-width: 140px;
-    height: 24px;
-    object-fit: contain;
-  }
 }
 
 .nav-button {
