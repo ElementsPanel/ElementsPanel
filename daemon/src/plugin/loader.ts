@@ -3,6 +3,7 @@ import fs from "fs-extra";
 import {
   pluginDirectoryRevision,
   applyPluginOverrides,
+  removePluginOverride,
   writePluginOverride,
   validatePluginCompatibility,
   validatePluginSettings,
@@ -38,6 +39,10 @@ const unloading = new Set<string>();
 const codeRevisions = new Map<string, string>();
 
 const BUILT_IN_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "plugins");
+function isDevelopmentCheckout() {
+  return fs.existsSync(path.resolve(process.cwd(), "src", "plugin"));
+}
+
 /**
  * Plugins installed from the plugin market, kept apart from the built-in tree and
  * git-ignored. Development installations use data/plugins; production
@@ -54,6 +59,7 @@ const ENTRY_CANDIDATES = [
   "src/daemon.mjs"
 ];
 const FOUNDATION_PLUGIN_IDS = new Set(["i18n", "storage", "runtime"]);
+const NON_REMOVABLE_PLUGIN_IDS = new Set([...FOUNDATION_PLUGIN_IDS, "config", "server"]);
 
 /** A daemon plugin module, as its backend entry exports it. */
 export interface DaemonPluginModule {
@@ -99,6 +105,7 @@ function ensureDaemonPluginService() {
     },
     inventory: getDaemonPluginInventory,
     setEnabled: setDaemonPluginEnabled,
+    remove: removeDaemonPlugin,
     configure: configureDaemonPlugin,
     configuration: (id: string): DaemonSettingsSchema => {
       const manifest = findPlugin(id).manifest;
@@ -348,6 +355,8 @@ export interface DaemonPluginRecord {
   running: boolean;
   /** Why it is not running, when it should be. */
   error?: string;
+  /** Whether the daemon may remove this plugin package in the current environment. */
+  removable: boolean;
 }
 
 /**
@@ -356,12 +365,24 @@ export interface DaemonPluginRecord {
  * purpose: the inventory describes what is installed, not what compiled.
  */
 export function getDaemonPluginInventory(): DaemonPluginRecord[] {
+  const externalRoots =
+    isDevelopmentCheckout()
+      ? discoverExternalPluginRoots(path.resolve(process.cwd(), ".."), "daemon")
+      : [];
+  const builtInRoot = path.resolve(BUILT_IN_PLUGINS_DIRECTORY());
   return discoverDaemonPlugins({
     entryFields: [],
     includeDisabled: true,
     onWarning: (message, error) => logger.warn(message, error)
   }).map((plugin) => {
     const running = loaded.find((item) => item.manifest.id === plugin.manifest.id);
+    const directory = path.resolve(plugin.directory);
+    const inRoot = (root: string) =>
+      directory === root || directory.startsWith(`${root}${path.sep}`);
+    const protectedDevelopmentSource =
+      isDevelopmentCheckout() &&
+      (inRoot(builtInRoot) ||
+        externalRoots.some((root) => inRoot(path.resolve(root.directory))));
     return {
       id: plugin.manifest.id,
       name: typeof plugin.manifest.name === "string" ? plugin.manifest.name : undefined,
@@ -375,7 +396,8 @@ export function getDaemonPluginInventory(): DaemonPluginRecord[] {
       error:
         running?.error?.message ||
         running?.fork?.runtime.error?.message ||
-        running?.fork?.error?.message
+        running?.fork?.error?.message,
+      removable: !protectedDevelopmentSource && !NON_REMOVABLE_PLUGIN_IDS.has(plugin.manifest.id)
     };
   });
 }
@@ -405,6 +427,37 @@ export function setDaemonPluginEnabled(id: string, enabled: boolean): Promise<Da
       failure = String(error);
     }
     return changedRecord(id, failure);
+  });
+}
+
+/** Remove an installed daemon plugin package. Source workspaces are never removable here. */
+export function removeDaemonPlugin(id: string): Promise<void> {
+  return change(async () => {
+    const plugin = findPlugin(id);
+    if (NON_REMOVABLE_PLUGIN_IDS.has(id))
+      throw new Error(`The plugin "${id}" cannot be removed.`);
+
+    const directory = path.resolve(plugin.directory);
+    const builtInRoot = path.resolve(BUILT_IN_PLUGINS_DIRECTORY());
+    const dataRoot = path.resolve(process.cwd(), "data", "plugins");
+    const marketRoot = path.resolve(MARKET_PLUGINS_DIRECTORY());
+    const inRoot = (root: string) =>
+      directory === root || directory.startsWith(`${root}${path.sep}`);
+    const externalRoots =
+      isDevelopmentCheckout()
+        ? discoverExternalPluginRoots(path.resolve(process.cwd(), ".."), "daemon")
+        : [];
+    if (
+      isDevelopmentCheckout() &&
+      (inRoot(builtInRoot) || externalRoots.some((root) => inRoot(path.resolve(root.directory))))
+    )
+      throw new Error("Source and custom workspace plugins cannot be removed.");
+    if (!inRoot(builtInRoot) && !inRoot(dataRoot) && !inRoot(marketRoot))
+      throw new Error("Plugin source is not removable.");
+
+    await removeRunning(id);
+    fs.removeSync(directory);
+    removePluginOverride(id);
   });
 }
 

@@ -29,6 +29,7 @@ import {
   pluginList,
   pluginSettings,
   removePlugin,
+  removeNodePlugin,
   setNodePluginEnabled,
   setPluginEnabled,
   updateNodePluginSettings,
@@ -94,9 +95,6 @@ const currentId = computed({
 const selectedPlugin = computed(() =>
   currentList.value.find((item) => item.id === currentId.value)
 );
-const selectedPanelPlugin = computed(() =>
-  scope.value === "panel" ? plugins.value.find((item) => item.id === selectedId.value) : undefined
-);
 
 /** The selected plugin's declared form, or null when it declared none. */
 const schema = ref<SettingsSchema | null>(null);
@@ -133,7 +131,11 @@ const disableCandidate = ref<{
 const disableConfirmOpen = ref(false);
 const deleteConfirmOpen = ref(false);
 const deletingPlugin = ref(false);
-const deleteCandidate = ref<PluginRecord | null>(null);
+const deleteCandidate = ref<{
+  scope: Scope;
+  plugin: PluginRecord | NodePluginRecord;
+  nodeId: string;
+} | null>(null);
 const notify = (text: string, color: "success" | "error") => {
   if (color === "error") message.error(text);
   else message.success(text);
@@ -495,16 +497,24 @@ const confirmDisable = () => {
 };
 
 const confirmRemove = async () => {
-  const plugin = deleteCandidate.value;
-  if (!plugin || !plugin.removable || deletingPlugin.value) return;
+  const candidate = deleteCandidate.value;
+  if (!candidate || !candidate.plugin.removable || deletingPlugin.value) return;
   deletingPlugin.value = true;
   try {
-    const { execute } = removePlugin();
-    await execute({ params: { id: plugin.id } });
+    if (candidate.scope === "panel") {
+      const { execute } = removePlugin();
+      await execute({ params: { id: candidate.plugin.id } });
+      await ctx.plugins.refresh();
+      await load();
+    } else {
+      const { execute } = removeNodePlugin();
+      await execute({
+        params: { daemonId: candidate.nodeId, id: candidate.plugin.id }
+      });
+      await reloadNodePluginsAfterToggle();
+    }
     deleteConfirmOpen.value = false;
     deleteCandidate.value = null;
-    await ctx.plugins.refresh();
-    await load();
     notify(t("TXT_CODE_PLUGIN_DELETED"), "success");
   } catch (error) {
     notifyError(error);
@@ -662,10 +672,9 @@ const confirmRemove = async () => {
                 </template>
               </VTooltip>
               <VTooltip
-                v-if="scope === 'panel'"
                 :text="
                   t(
-                    selectedPanelPlugin?.removable
+                    selectedPlugin?.removable
                       ? 'TXT_CODE_PLUGIN_DELETE'
                       : 'TXT_CODE_PLUGIN_DELETE_UNAVAILABLE'
                   )
@@ -679,16 +688,18 @@ const confirmRemove = async () => {
                       color="error"
                       variant="text"
                       :loading="deletingPlugin"
-                      :disabled="!selectedPanelPlugin?.removable || deletingPlugin"
+                      :disabled="!selectedPlugin?.removable || deletingPlugin"
                       :aria-label="
                         t(
-                          selectedPanelPlugin?.removable
+                          selectedPlugin?.removable
                             ? 'TXT_CODE_PLUGIN_DELETE'
                             : 'TXT_CODE_PLUGIN_DELETE_UNAVAILABLE'
                         )
                       "
                       @click="
-                        deleteCandidate = selectedPanelPlugin || null;
+                        deleteCandidate = selectedPlugin
+                          ? { scope, plugin: selectedPlugin, nodeId: selectedNodeId }
+                          : null;
                         deleteConfirmOpen = Boolean(deleteCandidate)
                       "
                     />
@@ -782,7 +793,11 @@ const confirmRemove = async () => {
 
     <VDialog v-model="deleteConfirmOpen" max-width="460">
       <VCard
-        :title="t('TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE', { name: deleteCandidate?.id || '' })"
+        :title="
+          t('TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE', {
+            name: deleteCandidate?.plugin.id || ''
+          })
+        "
         class="plugin-config-confirm-card"
         rounded="xl"
       >

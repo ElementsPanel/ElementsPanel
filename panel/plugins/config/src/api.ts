@@ -119,7 +119,7 @@ export const updatePluginSettings = useDefineApi<
   method: "PUT"
 });
 
-// The node half of the page. These three exist only while `plugins/node` is
+// The node half of the page. These calls exist only while `plugins/node` is
 // installed, because they go through the panel's daemon connections.
 
 /** One connected node, as the page lists it for selection. */
@@ -150,6 +150,8 @@ export interface NodePluginRecord {
   error?: string;
   /** Whether the plugin declared a configuration form. */
   hasSettings?: boolean;
+  /** Whether the daemon may remove this plugin package in the current environment. */
+  removable: boolean;
 }
 
 /** The nodes this panel can administer. */
@@ -171,6 +173,15 @@ export const setNodePluginEnabled = useDefineApi<
 >({
   url: "/api/plugins/node/enabled",
   method: "PUT"
+});
+
+/** Unloads and removes one daemon plugin package on the selected node. */
+export const removeNodePlugin = useDefineApi<
+  { params: { daemonId: string; id: string } },
+  void
+>({
+  url: "/api/plugins/node",
+  method: "DELETE"
 });
 
 /** One daemon plugin's declared form and values, straight from that daemon. */

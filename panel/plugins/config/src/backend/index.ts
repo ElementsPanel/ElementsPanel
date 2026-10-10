@@ -186,6 +186,20 @@ export function apply(ctx: PanelPluginContext) {
       }
     );
 
+    nodeRouter.delete(
+      "/",
+      requireAdmin,
+      ctx.middleware.validator({ query: { daemonId: String, id: String } }),
+      async (requestCtx: Koa.ParameterizedContext) => {
+        const node = nodeOf(requestCtx);
+        await new RemoteRequest(node).request("plugin/remove", {
+          id: String(requestCtx.request.query.id)
+        });
+        node.refreshReconnect();
+        requestCtx.body = { removed: true };
+      }
+    );
+
     // A daemon plugin's configuration, described by the plugin itself and
     // rendered by the same generic form. Nothing about the form lives here.
     nodeRouter.get(

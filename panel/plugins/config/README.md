@@ -52,8 +52,9 @@ a thin proxy onto the daemon-side `config` plugin, which exposes the daemon's ow
 | `GET` | `/api/plugins/node/list` | the panel's own node list |
 | `GET` | `/api/plugins/node/plugins?daemonId=` | `plugin/list` |
 | `PUT` | `/api/plugins/node/enabled?daemonId=` | `plugin/enabled` |
+| `DELETE` | `/api/plugins/node?daemonId=&id=` | `plugin/remove` |
 
-All three live inside `ctx.inject(["remote"], ...)`, so a panel without
+All four live inside `ctx.inject(["remote"], ...)`, so a panel without
 `plugins/node` still manages its own plugins — the node scope simply reports that
 it cannot list anything. Nothing here decides *which* daemon plugins may be
 switched off: that is the daemon's call, and its refusal arrives as a protocol
@@ -61,10 +62,12 @@ error, translated by the node itself.
 
 A daemon binds its protocol events onto each socket as that socket connects, so a
 handler that has just appeared is invisible to the connection the panel is already
-holding. The `PUT` therefore reconnects the node once the daemon has answered,
-which is what makes the change reachable; the page re-reads the list with a few
-retries, because the first attempt often lands while the socket is still coming
-back up.
+holding. The `PUT` and `DELETE` therefore reconnect the node once the daemon has
+answered, which is what makes the change reachable; the page re-reads the list
+with a few retries, because the first attempt often lands while the socket is
+still coming back up. Source workspaces and foundational daemon plugins are
+marked non-removable and rejected by the daemon even if a request is sent
+manually.
 
 | `GET` | `/api/plugins/node/settings?daemonId=&id=` | `plugin/config` |
 | `PUT` | `/api/plugins/node/settings?daemonId=&id=` | `plugin/config/write` |
