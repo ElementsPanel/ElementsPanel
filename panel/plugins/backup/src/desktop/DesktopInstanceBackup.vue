@@ -248,7 +248,7 @@ const handleEditEpbaklst = async () => {
                             },
                             data: {
                                 target: filePath,
-                                text: "$black\n\n# $black = 濮掓稒鍨甸幃鏇㈠础閺囩偛鐖遍梺鏉跨▌缁?white = 闁谎嗘閹洟宕￠弴鐐茬埍闂佹澘纭祅# 閻犲洢鍎查弸鍐╃閺堥潧鈻忛柣?.gitignore 閻犲浂鍘界涵绂眓# ---\n# $black = blacklist matching; $white = whitelist matching\n# This file uses .gitignore syntax\n"
+                                text: "$black\n"
                             }
                         });
                         notifyDesktop(t("TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATED"), "success");
