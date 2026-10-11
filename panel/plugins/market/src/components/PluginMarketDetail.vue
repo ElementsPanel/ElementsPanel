@@ -10,6 +10,7 @@ import {
   VChip,
   VContainer,
   VIcon,
+  VImg,
   VProgressLinear,
   VTab,
   VTabs
@@ -33,12 +34,9 @@ let requestId = 0;
 // Keep every action for this plugin disabled until the active action settles.
 let running = 0;
 
-// 包里的 icon.png 是插件的门面；市场没给图标时退回默认拼图图标。
 const { icons, load } = usePluginIcons();
 const icon = computed(() => (plugin.value ? icons.value[plugin.value.id] : undefined));
 
-// 自述优先用包里的 README.md；市场没给（旧市场源，或包里没有自述）就退到插件说明。
-// 渲染与净化都在这里做，因为这个市场源可以是任意地址。
 const readme = computed(() =>
   markdownToHTML(plugin.value?.readme || plugin.value?.description || "")
 );
@@ -136,8 +134,16 @@ onBeforeUnmount(() => requestId++);
               class="plugin-detail-icon"
               :class="{ 'plugin-detail-icon--image': Boolean(icon) }"
             >
-              <img v-if="icon" :src="icon" alt="" @error="delete icons[plugin.id]" />
-              <VIcon v-else icon="mdi-puzzle-outline" size="34" />
+              <VImg
+                v-if="plugin.hasIcon && icon"
+                :src="icon"
+                alt=""
+                cover
+                transition="fade-transition"
+                class="plugin-detail-icon-image"
+                @error="delete icons[plugin.id]"
+              />
+              <VIcon v-else-if="!plugin.hasIcon" icon="mdi-puzzle-outline" size="34" />
             </span>
             <div class="plugin-detail-heading-text">
               <h1 class="plugin-detail-title">{{ plugin.displayName }}</h1>
@@ -197,7 +203,6 @@ onBeforeUnmount(() => requestId++);
               </p>
             </template>
 
-            <!-- 未安装时可以选择历史版本；已安装后的更新入口统一放在页头。 -->
             <template v-else-if="activeTab === 'versions'">
               <ul class="plugin-detail-versions">
                 <li
@@ -361,13 +366,11 @@ onBeforeUnmount(() => requestId++);
   overflow: hidden;
 
   background: rgb(var(--v-theme-surface));
+}
 
-  img {
-    display: block;
-    object-fit: cover;
-    width: 100%;
-    height: 100%;
-  }
+.plugin-detail-icon-image {
+  width: 100%;
+  height: 100%;
 }
 
 .plugin-detail-heading-text {
@@ -484,7 +487,6 @@ onBeforeUnmount(() => requestId++);
   list-style: none;
 }
 
-// 每一行只做两件事：说清是哪个版本，给出这个版本自己的安装入口。
 .plugin-detail-version {
   display: flex;
   align-items: center;

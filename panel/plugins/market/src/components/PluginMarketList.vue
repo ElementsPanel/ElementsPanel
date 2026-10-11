@@ -14,6 +14,7 @@ import {
   VCol,
   VContainer,
   VIcon,
+  VImg,
   VProgressLinear,
   VRow,
   VTextField
@@ -142,15 +143,18 @@ onBeforeUnmount(() => requestId++);
           >
             <VCardText class="plugin-market-card-content">
               <div class="plugin-market-card-head">
-                <!-- Use the package icon when available, with a fallback on image errors. -->
+                <!-- Keep the generic icon out while a declared custom icon is loading. -->
                 <VAvatar class="plugin-market-icon" size="52" rounded="lg" color="surface" variant="flat">
-                  <img
-                    v-if="icons[plugin.id]"
+                  <VImg
+                    v-if="plugin.hasIcon && icons[plugin.id]"
                     :src="icons[plugin.id]"
                     alt=""
+                    cover
+                    transition="fade-transition"
+                    class="plugin-market-icon-image"
                     @error="delete icons[plugin.id]"
                   />
-                  <VIcon v-else icon="mdi-puzzle-outline" size="28" />
+                  <VIcon v-else-if="!plugin.hasIcon" icon="mdi-puzzle-outline" size="28" />
                 </VAvatar>
                 <div class="plugin-market-card-heading">
                   <div class="text-h6">
@@ -243,11 +247,9 @@ onBeforeUnmount(() => requestId++);
   overflow: hidden;
 }
 
-.plugin-market-icon img {
-  display: block;
+.plugin-market-icon-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
 }
 
 .plugin-market-card-summary {
