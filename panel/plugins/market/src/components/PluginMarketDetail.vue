@@ -418,22 +418,8 @@ onBeforeUnmount(() => requestId++);
   text-align: right;
 }
 
-// `VTabs` draws its own slider; this rule only extends it across the page, as
-// a background rather than a border because Desktop mode strips every border
-// inside a window.
 .plugin-detail-tabs {
-  position: relative;
   margin-bottom: 24px;
-
-  &::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 1px;
-    background: rgba(var(--v-theme-on-surface), 0.12);
-  }
 }
 
 .plugin-detail-body {
