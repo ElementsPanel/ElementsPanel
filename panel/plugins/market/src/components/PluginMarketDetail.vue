@@ -6,6 +6,7 @@ import { getValidatorErrorMsg } from "@/tools/validator";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import {
   VAlert,
+  VAvatar,
   VBtn,
   VChip,
   VContainer,
@@ -130,10 +131,7 @@ onBeforeUnmount(() => requestId++);
       <template v-if="plugin">
         <header class="plugin-detail-header">
           <div class="plugin-detail-heading">
-            <span
-              class="plugin-detail-icon"
-              :class="{ 'plugin-detail-icon--image': Boolean(icon) }"
-            >
+            <VAvatar class="plugin-detail-icon" size="64" rounded="12px" color="surface" variant="flat">
               <VImg
                 v-if="plugin.hasIcon && icon"
                 :src="icon"
@@ -144,7 +142,7 @@ onBeforeUnmount(() => requestId++);
                 @error="delete icons[plugin.id]"
               />
               <VIcon v-else-if="!plugin.hasIcon" icon="mdi-puzzle-outline" size="34" />
-            </span>
+            </VAvatar>
             <div class="plugin-detail-heading-text">
               <h1 class="plugin-detail-title">{{ plugin.displayName }}</h1>
               <p class="plugin-detail-summary">
@@ -350,22 +348,7 @@ onBeforeUnmount(() => requestId++);
 
 .plugin-detail-icon {
   flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 14px;
-  color: rgb(var(--v-theme-primary));
-  background: rgba(var(--v-theme-primary), 0.12);
-}
-
-// Custom artwork keeps its original colors on a neutral background.
-.plugin-detail-icon--image {
-  padding: 0;
   overflow: hidden;
-
-  background: rgb(var(--v-theme-surface));
 }
 
 .plugin-detail-icon-image {

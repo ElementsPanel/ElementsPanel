@@ -144,7 +144,7 @@ onBeforeUnmount(() => requestId++);
             <VCardText class="plugin-market-card-content">
               <div class="plugin-market-card-head">
                 <!-- Keep the generic icon out while a declared custom icon is loading. -->
-                <VAvatar class="plugin-market-icon" size="52" rounded="lg" color="surface" variant="flat">
+                <VAvatar class="plugin-market-icon" size="52" rounded="12px" color="surface" variant="flat">
                   <VImg
                     v-if="plugin.hasIcon && icons[plugin.id]"
                     :src="icons[plugin.id]"
