@@ -2,17 +2,17 @@
 import { useScreen } from "@/hooks/useScreen";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 
+import { ctx } from "@/plugin/context";
+import { closeAppLoading, setLoadingTitle } from "@/tools/dom";
 import { computed, onMounted, watch } from "vue";
 import { RouterView, useRoute } from "vue-router";
+import { VLayout, VThemeProvider } from "vuetify/components";
 import AppBottomNav from "./components/AppBottomNav.vue";
 import AppConfigProvider from "./components/AppConfigProvider.vue";
 import AppHeader from "./components/AppHeader.vue";
 import AppSidebarMenu from "./components/AppSidebarMenu.vue";
 import Breadcrumbs from "./components/Breadcrumbs.vue";
 import InputDialogProvider from "./components/InputDialogProvider.vue";
-import { ctx } from "@/plugin/context";
-import { closeAppLoading, setLoadingTitle } from "@/tools/dom";
-import { VLayout, VThemeProvider } from "vuetify/components";
 import { setVuetifyTheme } from "./vuetify";
 
 const {
