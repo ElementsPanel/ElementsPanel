@@ -100,10 +100,13 @@ const UNASSIGNED_GROUP_ID = "__unassigned__";
 const pluginGroupsState = ref<PluginGroup[]>([]);
 const draggedPluginId = ref("");
 const dragOverGroupId = ref("");
+let dragPreview: HTMLElement | null = null;
 const groupDialogOpen = ref(false);
 const groupDialogMode = ref<"create" | "rename">("create");
 const groupDialogName = ref("");
 const editingGroupId = ref("");
+const groupDeleteConfirmOpen = ref(false);
+const groupDeleteCandidate = ref<PluginGroupView | null>(null);
 
 let groupsRequest = 0;
 
@@ -201,11 +204,24 @@ const saveGroup = () => {
   groupDialogOpen.value = false;
 };
 
-const removeGroup = (group: PluginGroupView) => {
+const requestRemoveGroup = (group: PluginGroupView) => {
   if (group.unassigned) return;
+  groupDeleteCandidate.value = group;
+  groupDeleteConfirmOpen.value = true;
+};
+
+const confirmRemoveGroup = () => {
+  const group = groupDeleteCandidate.value;
+  if (!group) return;
   pluginGroupsState.value = pluginGroupsState.value.filter((item) => item.id !== group.id);
   void savePluginGroups();
+  groupDeleteConfirmOpen.value = false;
+  groupDeleteCandidate.value = null;
 };
+
+watch(groupDeleteConfirmOpen, (open) => {
+  if (!open) groupDeleteCandidate.value = null;
+});
 
 const movePluginToGroup = (pluginId: string, groupId: string) => {
   for (const group of pluginGroupsState.value) {
@@ -217,10 +233,37 @@ const movePluginToGroup = (pluginId: string, groupId: string) => {
   void savePluginGroups();
 };
 
+const clearDragPreview = () => {
+  dragPreview?.remove();
+  dragPreview = null;
+};
+
 const startPluginDrag = (pluginId: string, event?: DragEvent) => {
   draggedPluginId.value = pluginId;
-  event?.dataTransfer?.setData("text/plain", pluginId);
-  if (event?.dataTransfer) event.dataTransfer.effectAllowed = "move";
+  if (!event?.dataTransfer) return;
+  event.dataTransfer.setData("text/plain", pluginId);
+  event.dataTransfer.effectAllowed = "move";
+
+  // Vuetify list items contain overlays and nested layout elements. Chromium
+  // may use that whole rendered tree as the native drag image, which produces
+  // a distorted preview. Use a small, plain element instead.
+  clearDragPreview();
+  dragPreview = document.createElement("span");
+  dragPreview.textContent = pluginId;
+  Object.assign(dragPreview.style, {
+    position: "fixed",
+    top: "-1000px",
+    left: "-1000px",
+    padding: "4px 10px",
+    borderRadius: "14px",
+    background: "rgb(var(--v-theme-surface, 255 255 255))",
+    color: "rgb(var(--v-theme-on-surface, 0 0 0))",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+    font: "12px sans-serif",
+    whiteSpace: "nowrap"
+  });
+  document.body.appendChild(dragPreview);
+  event.dataTransfer.setDragImage(dragPreview, 12, 14);
 };
 
 const dropPlugin = (groupId: string) => {
@@ -232,6 +275,7 @@ const dropPlugin = (groupId: string) => {
 const endPluginDrag = () => {
   draggedPluginId.value = "";
   dragOverGroupId.value = "";
+  clearDragPreview();
 };
 
 watch([scope, selectedNodeId], () => void loadPluginGroups(), { immediate: true });
@@ -757,7 +801,7 @@ const confirmRemove = async () => {
                 size="x-small"
                 variant="text"
                 :aria-label="t('TXT_CODE_PLUGIN_GROUP_DELETE')"
-                @click.stop="removeGroup(group)"
+                @click.stop="requestRemoveGroup(group)"
               />
             </span>
           </VListSubheader>
@@ -1037,6 +1081,29 @@ const confirmRemove = async () => {
         </VCardActions>
       </VCard>
     </VDialog>
+
+    <VDialog v-model="groupDeleteConfirmOpen" max-width="460">
+      <VCard
+        :title="
+          t('TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM_TITLE', {
+            name: groupDeleteCandidate?.name || ''
+          })
+        "
+        class="plugin-config-confirm-card"
+        rounded="xl"
+      >
+        <VCardText>{{ t("TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM") }}</VCardText>
+        <VCardActions>
+          <VSpacer />
+          <VBtn variant="text" @click="groupDeleteConfirmOpen = false">
+            {{ t("TXT_CODE_PLUGIN_CANCEL") }}
+          </VBtn>
+          <VBtn color="error" @click="confirmRemoveGroup">
+            {{ t("TXT_CODE_PLUGIN_GROUP_DELETE") }}
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>
 
@@ -1213,17 +1280,19 @@ const confirmRemove = async () => {
 }
 
 .plugin-config-group-actions :deep(.v-btn) {
-  --v-btn-height: 20px;
+  --v-btn-height: 16px;
 
-  width: 20px;
-  min-width: 20px;
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  min-height: 16px;
   padding: 0;
   color: var(--text-color);
   opacity: 0.62;
 }
 
 .plugin-config-group-actions :deep(.v-icon) {
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .plugin-config-group-actions :deep(.v-btn:hover) {

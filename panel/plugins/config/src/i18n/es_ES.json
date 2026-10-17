@@ -26,6 +26,8 @@
   "TXT_CODE_PLUGIN_GROUP_EDIT": "Editar grupo de plugins",
   "TXT_CODE_PLUGIN_GROUP_RENAME": "Cambiar nombre del grupo",
   "TXT_CODE_PLUGIN_GROUP_DELETE": "Eliminar grupo",
+  "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM_TITLE": "¿Eliminar el grupo {name}?",
+  "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM": "Se eliminarán el grupo y sus asignaciones de plugins. Los plugins no se eliminarán.",
   "TXT_CODE_PLUGIN_GROUP_NAME": "Nombre del grupo",
   "TXT_CODE_PLUGIN_GROUP_MOVE": "Mover plugin",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "Nodos",

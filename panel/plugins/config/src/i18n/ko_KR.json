@@ -26,6 +26,8 @@
   "TXT_CODE_PLUGIN_GROUP_EDIT": "플러그인 그룹 편집",
   "TXT_CODE_PLUGIN_GROUP_RENAME": "그룹 이름 변경",
   "TXT_CODE_PLUGIN_GROUP_DELETE": "그룹 삭제",
+  "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM_TITLE": "{name} 그룹을 삭제하시겠습니까?",
+  "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM": "그룹과 플러그인 할당이 삭제됩니다. 플러그인 자체는 삭제되지 않습니다.",
   "TXT_CODE_PLUGIN_GROUP_NAME": "그룹 이름",
   "TXT_CODE_PLUGIN_GROUP_MOVE": "플러그인 이동",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "노드",

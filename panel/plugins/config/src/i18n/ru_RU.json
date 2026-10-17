@@ -26,6 +26,8 @@
   "TXT_CODE_PLUGIN_GROUP_EDIT": "Редактировать группу плагинов",
   "TXT_CODE_PLUGIN_GROUP_RENAME": "Переименовать группу",
   "TXT_CODE_PLUGIN_GROUP_DELETE": "Удалить группу",
+  "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM_TITLE": "Удалить группу {name}?",
+  "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM": "Группа и привязанные к ней плагины будут удалены из списка. Сами плагины удалены не будут.",
   "TXT_CODE_PLUGIN_GROUP_NAME": "Название группы",
   "TXT_CODE_PLUGIN_GROUP_MOVE": "Переместить плагин",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "Узлы",

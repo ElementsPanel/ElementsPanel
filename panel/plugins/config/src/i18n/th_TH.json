@@ -26,6 +26,8 @@
   "TXT_CODE_PLUGIN_GROUP_EDIT": "แก้ไขกลุ่มปลั๊กอิน",
   "TXT_CODE_PLUGIN_GROUP_RENAME": "เปลี่ยนชื่อกลุ่ม",
   "TXT_CODE_PLUGIN_GROUP_DELETE": "ลบกลุ่ม",
+  "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM_TITLE": "ลบกลุ่ม {name} หรือไม่",
+  "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM": "กลุ่มและการกำหนดปลั๊กอินจะถูกลบ ปลั๊กอินจะไม่ถูกลบ",
   "TXT_CODE_PLUGIN_GROUP_NAME": "ชื่อกลุ่ม",
   "TXT_CODE_PLUGIN_GROUP_MOVE": "ย้ายปลั๊กอิน",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "โหนด",
