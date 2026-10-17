@@ -16,27 +16,34 @@ import {
   VDialog,
   VList,
   VListItem,
+  VListSubheader,
   VProgressCircular,
   VProgressLinear,
   VSelect,
+  VTextField,
   VSpacer,
   VTooltip
 } from "vuetify/components";
 import {
   nodeList,
+  nodePluginGroupList,
   nodePluginList,
   nodePluginSettings,
   pluginList,
+  pluginGroupList,
   pluginSettings,
   removePlugin,
   removeNodePlugin,
   setNodePluginEnabled,
   setPluginEnabled,
   updateNodePluginSettings,
+  updateNodePluginGroupList,
   updatePluginSettings,
+  updatePluginGroupList,
   type NodePluginRecord,
   type NodeSummary,
   type PluginRecord,
+  type PluginGroup,
   type PluginChangeResult,
   type SettingsSchema
 } from "./api";
@@ -83,6 +90,151 @@ const nodeItems = computed(() =>
 const currentList = computed<Array<PluginRecord | NodePluginRecord>>(() =>
   scope.value === "panel" ? plugins.value : nodePlugins.value
 );
+
+interface PluginGroupView extends PluginGroup {
+  plugins: Array<PluginRecord | NodePluginRecord>;
+  unassigned: boolean;
+}
+
+const UNASSIGNED_GROUP_ID = "__unassigned__";
+const pluginGroupsState = ref<PluginGroup[]>([]);
+const draggedPluginId = ref("");
+const dragOverGroupId = ref("");
+const groupDialogOpen = ref(false);
+const groupDialogMode = ref<"create" | "rename">("create");
+const groupDialogName = ref("");
+const editingGroupId = ref("");
+
+let groupsRequest = 0;
+
+const loadPluginGroups = async () => {
+  const request = ++groupsRequest;
+  pluginGroupsState.value = [];
+  if (scope.value === "node" && !selectedNodeId.value) return;
+  try {
+    const stored =
+      scope.value === "panel"
+        ? (await pluginGroupList().execute()).value
+        : (
+            await nodePluginGroupList().execute({
+              params: { daemonId: selectedNodeId.value }
+            })
+          ).value;
+    if (request === groupsRequest) pluginGroupsState.value = Array.isArray(stored) ? stored : [];
+  } catch (error) {
+    if (request !== groupsRequest) return;
+    pluginGroupsState.value = [];
+    console.error("Failed to load plugin groups:", error);
+  }
+};
+
+const savePluginGroups = async () => {
+  const groups = pluginGroupsState.value.map((group) => ({
+    id: group.id,
+    name: group.name,
+    pluginIds: [...group.pluginIds]
+  }));
+  try {
+    if (scope.value === "panel") {
+      await updatePluginGroupList().execute({ data: { groups } });
+    } else if (selectedNodeId.value) {
+      await updateNodePluginGroupList().execute({
+        params: { daemonId: selectedNodeId.value },
+        data: { groups }
+      });
+    }
+  } catch (error) {
+    notifyError(error);
+  }
+};
+
+const pluginGroups = computed<PluginGroupView[]>(() => {
+  const assigned = new Set<string>();
+  const groups: PluginGroupView[] = pluginGroupsState.value.map((group) => {
+    const plugins = currentList.value.filter(
+      (plugin) => group.pluginIds.includes(plugin.id) && !assigned.has(plugin.id)
+    );
+    plugins.forEach((plugin) => assigned.add(plugin.id));
+    return { ...group, plugins, unassigned: false };
+  });
+  const unassigned = currentList.value.filter((plugin) => !assigned.has(plugin.id));
+  if (unassigned.length || !groups.length) {
+    groups.push({
+      id: UNASSIGNED_GROUP_ID,
+      name: t("TXT_CODE_PLUGIN_GROUP_UNASSIGNED"),
+      pluginIds: [],
+      plugins: unassigned,
+      unassigned: true
+    });
+  }
+  return groups;
+});
+
+const createGroupId = () =>
+  `group-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+const openCreateGroup = () => {
+  groupDialogMode.value = "create";
+  groupDialogName.value = "";
+  editingGroupId.value = "";
+  groupDialogOpen.value = true;
+};
+
+const openRenameGroup = (group: PluginGroupView) => {
+  if (group.unassigned) return;
+  groupDialogMode.value = "rename";
+  groupDialogName.value = group.name;
+  editingGroupId.value = group.id;
+  groupDialogOpen.value = true;
+};
+
+const saveGroup = () => {
+  const name = groupDialogName.value.trim();
+  if (!name) return;
+  if (groupDialogMode.value === "create") {
+    pluginGroupsState.value.push({ id: createGroupId(), name, pluginIds: [] });
+  } else {
+    const group = pluginGroupsState.value.find((item) => item.id === editingGroupId.value);
+    if (group) group.name = name;
+  }
+  void savePluginGroups();
+  groupDialogOpen.value = false;
+};
+
+const removeGroup = (group: PluginGroupView) => {
+  if (group.unassigned) return;
+  pluginGroupsState.value = pluginGroupsState.value.filter((item) => item.id !== group.id);
+  void savePluginGroups();
+};
+
+const movePluginToGroup = (pluginId: string, groupId: string) => {
+  for (const group of pluginGroupsState.value) {
+    group.pluginIds = group.pluginIds.filter((id) => id !== pluginId);
+  }
+  if (groupId !== UNASSIGNED_GROUP_ID) {
+    pluginGroupsState.value.find((group) => group.id === groupId)?.pluginIds.push(pluginId);
+  }
+  void savePluginGroups();
+};
+
+const startPluginDrag = (pluginId: string, event?: DragEvent) => {
+  draggedPluginId.value = pluginId;
+  event?.dataTransfer?.setData("text/plain", pluginId);
+  if (event?.dataTransfer) event.dataTransfer.effectAllowed = "move";
+};
+
+const dropPlugin = (groupId: string) => {
+  if (draggedPluginId.value) movePluginToGroup(draggedPluginId.value, groupId);
+  draggedPluginId.value = "";
+  dragOverGroupId.value = "";
+};
+
+const endPluginDrag = () => {
+  draggedPluginId.value = "";
+  dragOverGroupId.value = "";
+};
+
+watch([scope, selectedNodeId], () => void loadPluginGroups(), { immediate: true });
 
 const currentId = computed({
   get: () => (scope.value === "panel" ? selectedId.value : nodeSelectedId.value),
@@ -572,30 +724,70 @@ const confirmRemove = async () => {
         </template>
       </VSelect>
 
-      <div class="plugin-config-heading">{{ t("TXT_CODE_PLUGIN_LIST") }}</div>
+      <div class="plugin-config-heading">
+        <span>{{ t("TXT_CODE_PLUGIN_LIST") }}</span>
+        <VBtn
+          icon="mdi-plus"
+          size="x-small"
+          variant="text"
+          :aria-label="t('TXT_CODE_PLUGIN_GROUP_ADD')"
+          @click="openCreateGroup"
+        />
+      </div>
       <VList class="plugin-config-list" density="compact">
-        <VListItem
-          v-for="plugin in currentList"
-          :key="plugin.id"
-          :active="plugin.id === currentId"
-          :class="{ 'plugin-config-item-off': !plugin.enabled }"
-          :title="plugin.id"
-          @click="currentId = plugin.id"
-        >
-          <template #append>
-            <span
-              class="plugin-config-item-dot"
-              :class="{
-                'plugin-config-item-dot-off':
-                  !plugin.enabled || (plugin.state && plugin.state !== 'active')
-              }"
-            ></span>
-          </template>
-        </VListItem>
+        <template v-for="group in pluginGroups" :key="group.id">
+          <VListSubheader
+            class="plugin-config-group-heading"
+            :class="{ 'plugin-config-group-heading-over': dragOverGroupId === group.id }"
+            @dragover.prevent="dragOverGroupId = group.id"
+            @dragleave="dragOverGroupId = ''"
+            @drop.prevent="dropPlugin(group.id)"
+          >
+            <span>{{ group.name }}</span>
+            <span v-if="!group.unassigned" class="plugin-config-group-actions">
+              <VBtn
+                icon="mdi-pencil-outline"
+                size="x-small"
+                variant="text"
+                :aria-label="t('TXT_CODE_PLUGIN_GROUP_RENAME')"
+                @click.stop="openRenameGroup(group)"
+              />
+              <VBtn
+                icon="mdi-delete-outline"
+                size="x-small"
+                variant="text"
+                :aria-label="t('TXT_CODE_PLUGIN_GROUP_DELETE')"
+                @click.stop="removeGroup(group)"
+              />
+            </span>
+          </VListSubheader>
+          <VListItem
+            v-for="plugin in group.plugins"
+            :key="plugin.id"
+            draggable="true"
+            :active="plugin.id === currentId"
+            :class="{ 'plugin-config-item-off': !plugin.enabled }"
+            :title="plugin.id"
+            @click="currentId = plugin.id"
+            @dragstart="startPluginDrag(plugin.id, $event)"
+            @dragend="endPluginDrag"
+          >
+            <template #append>
+              <span
+                class="plugin-config-item-dot"
+                :class="{
+                  'plugin-config-item-dot-off':
+                    !plugin.enabled || (plugin.state && plugin.state !== 'active')
+                }"
+              ></span>
+            </template>
+          </VListItem>
+        </template>
         <div v-if="!currentList.length" class="plugin-config-empty">
           {{ t("TXT_CODE_NO_DATA") }}
         </div>
       </VList>
+
     </div>
 
     <div class="plugin-config-content">
@@ -818,6 +1010,33 @@ const confirmRemove = async () => {
         </VCardActions>
       </VCard>
     </VDialog>
+
+    <VDialog v-model="groupDialogOpen" max-width="460">
+      <VCard
+        :title="t('TXT_CODE_PLUGIN_GROUP_EDIT')"
+        class="plugin-config-confirm-card"
+        rounded="xl"
+      >
+        <VCardText>
+          <VTextField
+            v-model="groupDialogName"
+            autofocus
+            :label="t('TXT_CODE_PLUGIN_GROUP_NAME')"
+            hide-details
+            @keyup.enter="saveGroup"
+          />
+        </VCardText>
+        <VCardActions>
+          <VSpacer />
+          <VBtn variant="text" @click="groupDialogOpen = false">
+            {{ t("TXT_CODE_PLUGIN_CANCEL") }}
+          </VBtn>
+          <VBtn color="primary" :disabled="!groupDialogName.trim()" @click="saveGroup">
+            {{ t("TXT_CODE_PLUGIN_SAVE_SETTINGS") }}
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>
 
@@ -927,6 +1146,9 @@ const confirmRemove = async () => {
 }
 
 .plugin-config-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   flex-shrink: 0;
   margin: 12px 10px 8px;
   line-height: 20px;
@@ -955,6 +1177,65 @@ const confirmRemove = async () => {
   overflow: hidden;
   border-radius: 24px !important;
   color: var(--text-color);
+}
+
+.plugin-config-list :deep(.plugin-config-group-heading) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 28px;
+  padding-inline: 8px;
+  color: var(--text-color);
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.55;
+}
+
+.plugin-config-list :deep(.plugin-config-group-heading-over) {
+  border-radius: 8px;
+  background: rgba(22, 119, 255, 0.12);
+  opacity: 1;
+}
+
+.plugin-config-group-actions {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.plugin-config-list :deep(.plugin-config-group-heading:hover .plugin-config-group-actions),
+.plugin-config-list :deep(.plugin-config-group-heading:focus-within .plugin-config-group-actions) {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.plugin-config-group-actions :deep(.v-btn) {
+  --v-btn-height: 20px;
+
+  width: 20px;
+  min-width: 20px;
+  padding: 0;
+  color: var(--text-color);
+  opacity: 0.62;
+}
+
+.plugin-config-group-actions :deep(.v-icon) {
+  font-size: 14px;
+}
+
+.plugin-config-group-actions :deep(.v-btn:hover) {
+  opacity: 1;
+}
+
+.plugin-config-list :deep(.v-list-item[draggable="true"]) {
+  cursor: grab;
+}
+
+.plugin-config-list :deep(.v-list-item[draggable="true"]:active) {
+  cursor: grabbing;
 }
 
 .plugin-config-list :deep(.v-list-item__content) {

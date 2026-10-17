@@ -84,6 +84,13 @@ export interface SettingsSchema {
   values: Record<string, unknown>;
 }
 
+/** A user-defined plugin group persisted by the panel or its daemon. */
+export interface PluginGroup {
+  id: string;
+  name: string;
+  pluginIds: string[];
+}
+
 /** Every installed plugin, disabled ones included. */
 export const pluginList = useDefineApi<unknown, PluginRecord[]>({
   url: "/api/plugins",
@@ -116,6 +123,20 @@ export const updatePluginSettings = useDefineApi<
   PluginChangeResult | boolean
 >({
   url: "/api/plugins/settings",
+  method: "PUT"
+});
+
+/** Panel-side plugin groups, persisted by the panel storage service. */
+export const pluginGroupList = useDefineApi<unknown, PluginGroup[]>({
+  url: "/api/plugins/groups",
+  method: "GET"
+});
+
+export const updatePluginGroupList = useDefineApi<
+  { data: { groups: PluginGroup[] } },
+  PluginGroup[]
+>({
+  url: "/api/plugins/groups",
   method: "PUT"
 });
 
@@ -198,5 +219,22 @@ export const updateNodePluginSettings = useDefineApi<
   PluginChangeResult | boolean
 >({
   url: "/api/plugins/node/settings",
+  method: "PUT"
+});
+
+/** Daemon-side plugin groups, persisted by the selected daemon. */
+export const nodePluginGroupList = useDefineApi<
+  { params: { daemonId: string } },
+  PluginGroup[]
+>({
+  url: "/api/plugins/node/groups",
+  method: "GET"
+});
+
+export const updateNodePluginGroupList = useDefineApi<
+  { params: { daemonId: string }; data: { groups: PluginGroup[] } },
+  PluginGroup[]
+>({
+  url: "/api/plugins/node/groups",
   method: "PUT"
 });

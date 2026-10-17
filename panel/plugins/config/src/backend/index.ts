@@ -22,6 +22,43 @@ const SELF = "config";
  * that is needed to turn it back on.
  */
 const ESSENTIAL = new Set(["console", "i18n", "storage", "runtime", "server"]);
+const PLUGIN_GROUPS_CATEGORY = "PluginGroups";
+
+interface PluginGroup {
+  id: string;
+  name: string;
+  pluginIds: string[];
+}
+
+class StoredPluginGroups {
+  groups: PluginGroup[] = [];
+}
+
+function normalizePluginGroups(input: unknown): PluginGroup[] {
+  if (!Array.isArray(input)) throw new Error("Plugin groups must be an array.");
+  if (input.length > 100) throw new Error("Too many plugin groups.");
+  return input.map((value) => {
+    if (!value || typeof value !== "object") throw new Error("Invalid plugin group.");
+    const group = value as Partial<PluginGroup>;
+    const id = String(group.id ?? "").trim();
+    const name = String(group.name ?? "").trim();
+    if (!id || id.length > 128 || !name || name.length > 200) {
+      throw new Error("Invalid plugin group.");
+    }
+    if (
+      !Array.isArray(group.pluginIds) ||
+      group.pluginIds.length > 2000 ||
+      group.pluginIds.some((pluginId) => typeof pluginId !== "string")
+    ) {
+      throw new Error("Invalid plugin group plugins.");
+    }
+    return {
+      id,
+      name,
+      pluginIds: [...new Set(group.pluginIds.map((pluginId) => pluginId.trim()).filter(Boolean))]
+    };
+  });
+}
 
 export const inject = [
   "koa",
@@ -29,6 +66,7 @@ export const inject = [
   "middleware",
   "roles",
   "plugins",
+  "storage",
   "settings",
   "identity",
   "operations"
@@ -99,6 +137,26 @@ export function apply(ctx: PanelPluginContext) {
       );
     }
   );
+
+  const groupsStorageId = (requestCtx: Koa.ParameterizedContext) =>
+    String(ctx.identity.of(requestCtx).uuid || "anonymous");
+
+  router.get("/groups", requireAdmin, async (requestCtx) => {
+    const stored = (await ctx.storage.getStorage().load(
+      PLUGIN_GROUPS_CATEGORY,
+      StoredPluginGroups,
+      groupsStorageId(requestCtx)
+    )) as StoredPluginGroups | null;
+    requestCtx.body = stored?.groups ?? [];
+  });
+
+  router.put("/groups", requireAdmin, async (requestCtx) => {
+    const groups = normalizePluginGroups((requestCtx.request.body as { groups?: unknown })?.groups);
+    await ctx.storage.getStorage().store(PLUGIN_GROUPS_CATEGORY, groupsStorageId(requestCtx), {
+      groups
+    });
+    requestCtx.body = groups;
+  });
 
   router.put(
     "/enabled",
@@ -224,6 +282,28 @@ export function apply(ctx: PanelPluginContext) {
             id: String(requestCtx.request.query.id),
             values: (requestCtx.request.body ?? {}) as Record<string, unknown>
           }
+        );
+      }
+    );
+
+    nodeRouter.get(
+      "/groups",
+      requireAdmin,
+      ctx.middleware.validator({ query: { daemonId: String } }),
+      async (requestCtx: Koa.ParameterizedContext) => {
+        requestCtx.body = await new RemoteRequest(nodeOf(requestCtx)).request("plugin/groups");
+      }
+    );
+
+    nodeRouter.put(
+      "/groups",
+      requireAdmin,
+      ctx.middleware.validator({ query: { daemonId: String } }),
+      async (requestCtx: Koa.ParameterizedContext) => {
+        const groups = (requestCtx.request.body as { groups?: unknown })?.groups;
+        requestCtx.body = await new RemoteRequest(nodeOf(requestCtx)).request(
+          "plugin/groups/write",
+          { groups }
         );
       }
     );

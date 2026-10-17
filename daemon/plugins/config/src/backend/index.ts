@@ -30,6 +30,44 @@ const SELF = "config";
  * and with it every event that could turn it back on.
  */
 const ESSENTIAL = new Set(["i18n", "storage", "runtime", "server"]);
+const PLUGIN_GROUPS_CATEGORY = "PluginGroups";
+const PLUGIN_GROUPS_ID = "config";
+
+interface PluginGroup {
+  id: string;
+  name: string;
+  pluginIds: string[];
+}
+
+class StoredPluginGroups {
+  groups: PluginGroup[] = [];
+}
+
+function normalizePluginGroups(input: unknown): PluginGroup[] {
+  if (!Array.isArray(input)) throw new Error("Plugin groups must be an array.");
+  if (input.length > 100) throw new Error("Too many plugin groups.");
+  return input.map((value) => {
+    if (!value || typeof value !== "object") throw new Error("Invalid plugin group.");
+    const group = value as Partial<PluginGroup>;
+    const id = String(group.id ?? "").trim();
+    const name = String(group.name ?? "").trim();
+    if (!id || id.length > 128 || !name || name.length > 200) {
+      throw new Error("Invalid plugin group.");
+    }
+    if (
+      !Array.isArray(group.pluginIds) ||
+      group.pluginIds.length > 2000 ||
+      group.pluginIds.some((pluginId) => typeof pluginId !== "string")
+    ) {
+      throw new Error("Invalid plugin group plugins.");
+    }
+    return {
+      id,
+      name,
+      pluginIds: [...new Set(group.pluginIds.map((pluginId) => pluginId.trim()).filter(Boolean))]
+    };
+  });
+}
 
 function isDevelopmentCheckout() {
   return fs.existsSync(path.resolve(process.cwd(), "src", "plugin"));
@@ -80,7 +118,7 @@ function toTransferFiles(files: unknown): TransferFile[] {
   }));
 }
 
-export const inject = ["protocol", "i18n", "plugins"];
+export const inject = ["protocol", "i18n", "plugins", "storage"];
 
 export function apply(ctx: DaemonPluginContext) {
   ctx.i18n.define(localeMessages);
@@ -228,6 +266,29 @@ export function apply(ctx: DaemonPluginContext) {
       if (!id) throw new Error(ctx.i18n.$t("TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED"));
       const values = (payload.values ?? {}) as Record<string, unknown>;
       ctx.protocol.response(routerCtx, await settingsForm.write(id, values));
+    } catch (error: any) {
+      ctx.protocol.responseError(routerCtx, error);
+    }
+  });
+
+  ctx.protocol.on("plugin/groups", (routerCtx) => {
+    try {
+      const stored = ctx.storage.load(
+        PLUGIN_GROUPS_CATEGORY,
+        StoredPluginGroups,
+        PLUGIN_GROUPS_ID
+      ) as StoredPluginGroups | null;
+      ctx.protocol.response(routerCtx, stored?.groups ?? []);
+    } catch (error: any) {
+      ctx.protocol.responseError(routerCtx, error);
+    }
+  });
+
+  ctx.protocol.on("plugin/groups/write", (routerCtx, data) => {
+    try {
+      const groups = normalizePluginGroups((data as { groups?: unknown })?.groups);
+      ctx.storage.store(PLUGIN_GROUPS_CATEGORY, PLUGIN_GROUPS_ID, { groups });
+      ctx.protocol.response(routerCtx, groups);
     } catch (error: any) {
       ctx.protocol.responseError(routerCtx, error);
     }
