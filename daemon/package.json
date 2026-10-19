@@ -7,6 +7,7 @@
     "dev": "nodemon",
     "build": "webpack --config webpack.config.js && webpack --config webpack.plugins.config.js"
   },
+  "homepage": "https://elementspanel.top/",
   "author": "Csituka_D <694428809@qq.com> (https://github.com/JessDaodao)",
   "contributors": [
     "Yumao <unitwk@outlook.com> (https://github.com/yumao233)"

@@ -1,14 +1,17 @@
 {
-  "name": "mcsmanager-common",
+  "name": "elements-common",
   "version": "1.2.0",
-  "description": "MCSManager Common layer",
+  "description": "ElementsPanel Common layer",
   "main": "dist/index.js",
-  "homepage": "https://mcsmanager.com/",
-  "author": "https://github.com/yumao233",
+  "homepage": "https://elementspanel.top/",
+  "author": "Csituka_D <694428809@qq.com> (https://github.com/JessDaodao)",
+  "contributors": [
+    "Yumao <unitwk@outlook.com> (https://github.com/yumao233)"
+  ],
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MCSManager/MCSManager"
+    "url": "https://github.com/ElementsPanel/ElementsPanel"
   },
   "scripts": {
     "type-check": "tsc --noEmit --project tsconfig.json",
