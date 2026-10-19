@@ -84,7 +84,7 @@ onMounted(refreshTableData);
 
 <template>
   <main class="user-access-page">
-    <PageToolbar :title="t('TXT_CODE_76d20724')" icon="mdi-account-key-outline">
+    <PageToolbar class="mb-16" :title="t('TXT_CODE_76d20724')" icon="mdi-account-key-outline">
       <template #actions>
         <VBtn variant="text" prepend-icon="mdi-refresh" @click="refreshTableData">{{ t("TXT_CODE_b76d94e0") }}</VBtn>
         <VBtn color="primary" prepend-icon="mdi-plus" @click="assignApp">{{ t("TXT_CODE_9393b484") }}</VBtn>
