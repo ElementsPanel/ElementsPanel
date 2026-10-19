@@ -42,7 +42,7 @@ const handleOpenDetailDialog = async () => {
 <template>
   <main class="node-page">
     <VContainer fluid class="node-page-container">
-      <PageToolbar class="mb-16" :title="t('TXT_CODE_20509fa0')" icon="mdi-server-network-outline">
+      <PageToolbar :title="t('TXT_CODE_20509fa0')" icon="mdi-server-network-outline">
         <template #search>
           <div class="node-search-row">
             <VSelect

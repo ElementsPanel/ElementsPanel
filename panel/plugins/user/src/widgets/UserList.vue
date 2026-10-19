@@ -262,7 +262,6 @@ onMounted(async () => {
   <main class="user-page">
     <div class="user-page-container">
       <PageToolbar
-        class="mb-16"
         :title="`${t('TXT_CODE_1deaa2dd')} (${total})`"
         icon="mdi-account-group-outline"
       >

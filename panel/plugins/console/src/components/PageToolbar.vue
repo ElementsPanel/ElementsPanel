@@ -30,6 +30,7 @@ withDefaults(
 <style lang="scss" scoped>
 .page-toolbar {
   width: 100%;
+  margin-bottom: 20px;
 }
 
 .page-toolbar > .v-col {
