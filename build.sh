@@ -34,6 +34,10 @@ mv "${BASE_PATH}/daemon/production/app.js" "${BASE_PATH}/production-code/daemon"
 mv "${BASE_PATH}/daemon/production/app.js.map" "${BASE_PATH}/production-code/daemon"
 cp -f "${BASE_PATH}/daemon/package.json" "${BASE_PATH}/production-code/daemon/package.json"
 cp -f "${BASE_PATH}/daemon/package-lock.json" "${BASE_PATH}/production-code/daemon/package-lock.json"
+if [ -d "${BASE_PATH}/daemon/lib" ]; then
+  echo "Copying daemon lib binaries..."
+  cp -rf "${BASE_PATH}/daemon/lib" "${BASE_PATH}/production-code/daemon/lib"
+fi
 node scripts/package-daemon-plugins.mjs
 
 mv "${BASE_PATH}/panel/production/app.js" "${BASE_PATH}/production-code/web"

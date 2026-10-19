@@ -31,6 +31,11 @@ copy ".\daemon\production\app.js.map" ".\production-code\daemon\app.js.map"
 copy ".\daemon\package.json" ".\production-code\daemon\package.json"
 copy ".\daemon\package-lock.json" ".\production-code\daemon\package-lock.json"
 
+if exist ".\daemon\lib" (
+  echo "Copying daemon lib binaries..."
+  xcopy ".\daemon\lib" ".\production-code\daemon\lib" /E /I /H /Y
+)
+
 call node scripts\package-daemon-plugins.mjs
 
 copy ".\panel\production\app.js" ".\production-code\web\app.js"
