@@ -89,7 +89,7 @@ const handleOpenDetailDialog = async () => {
         <div class="node-empty-text">{{ t("TXT_CODE_NO_DATA") }}</div>
       </div>
 
-      <VRow v-else-if="remotes.length || refreshLoading" density="compact" class="node-list-row">
+      <VRow v-else-if="remotes.length || refreshLoading" density="comfortable" class="node-list-row">
         <VCol cols="12">
           <div class="desc">
             <div class="desc-text">
