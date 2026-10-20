@@ -132,3 +132,31 @@ test("oversized icons are rejected", (t) => {
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /no larger than/);
 });
+
+test("a two-sided workspace must claim one id across its halves", (t) => {
+  const env = workspace(
+    t,
+    {
+      "panel/plugin.json": { id: "one", version: "1.0.0" },
+      "daemon/plugin.json": { id: "two", version: "1.0.0" }
+    },
+    {}
+  );
+  const result = compile(env.directory, env.output);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /different ids/);
+});
+
+test("a version skew between the halves compiles with a warning", (t) => {
+  const env = workspace(
+    t,
+    {
+      "panel/plugin.json": { id: "one", version: "1.1.0" },
+      "daemon/plugin.json": { id: "one", version: "1.0.0" }
+    },
+    {}
+  );
+  const result = compile(env.directory, env.output);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stderr, /versions differ/);
+});

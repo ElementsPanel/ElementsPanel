@@ -128,7 +128,9 @@ export function apply(ctx: DaemonPluginContext) {
 
   // The panel's node page compares daemon plugins against its own inventory, so
   // the id/version pairs ride along on the overview payload it already polls.
-  ctx.overview.provide(() => ({
+  // Best-effort: hosts without an overview service (tests, minimal daemons)
+  // keep loading this plugin without the extra payload.
+  ctx.overview?.provide(() => ({
     plugins: ctx.plugins
       .inventory()
       .map((record) => ({ id: record.id, version: record.version }))

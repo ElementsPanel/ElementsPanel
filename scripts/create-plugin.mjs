@@ -84,8 +84,13 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.logger.info("Custom panel frontend plugin loaded.");
 }
 `,
+      // The daemon half carries the same id/version as the panel half: the node
+      // page's compatibility check compares the two inventories, so a missing
+      // version would read as "inconsistent". Display metadata stays panel-only.
       "daemon/plugin.json": `${JSON.stringify(
         {
+          id: folder,
+          version: "0.1.0",
           backend: "src/backend/index.ts"
         },
         null,
@@ -154,8 +159,11 @@ review queue. Everything the market shows — display name, version, description
 category and changelog — is read from \`panel/plugin.json\` (or
 \`daemon/plugin.json\` for a daemon-only workspace), so edit it there; the market
 shows the new details once that upload is approved. In a normal two-sided plugin,
-\`daemon/plugin.json\` intentionally contains only its runtime entry and does not
-duplicate the panel metadata. Only \`--version\` and \`--changelog\` are worth
+\`daemon/plugin.json\` carries the same \`id\` and \`version\` as the panel half —
+the node page's compatibility check compares the two plugin inventories, so both
+halves must report the same identity and version — while the rest of the display
+metadata stays in \`panel/plugin.json\`; publishing stamps the chosen version
+into both halves. Only \`--version\` and \`--changelog\` are worth
 passing per upload.
 
 The first upload links your market account in the browser, and the token is kept

@@ -172,7 +172,20 @@ export async function apply(ctx: PanelPluginContext) {
   ctx.set("operations", operations);
   ctx.on("dispose", () => operations.dispose());
   ctx.plugin(OverviewService);
-  ctx.inject(["koa", "overview", "middleware", "roles", "globals", "identity", "plugins"], registerOverview);
+  // The plugin inventory is best-effort: environments without a plugin service
+  // (minimal hosts, tests) still serve the overview without compatibility data.
+  ctx.inject(
+    {
+      koa: { required: true },
+      overview: { required: true },
+      middleware: { required: true },
+      roles: { required: true },
+      globals: { required: true },
+      identity: { required: true },
+      plugins: { required: false }
+    },
+    registerOverview
+  );
   const version = getVersion();
   console.log(`
  _____ _                   _       _____             _

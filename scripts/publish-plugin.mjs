@@ -418,22 +418,26 @@ async function validatePackageFile(filename, relativeFile) {
 }
 
 /**
- * The market reads panel metadata first, then daemon metadata. Apply version and
- * changelog overrides only to the manifest describing the package. Keep a paired
- * daemon manifest runtime-only, and leave workspace manifests unchanged.
+ * The market reads panel metadata first, then daemon metadata. Stamp the chosen
+ * version and changelog into every manifest the package carries, so both halves
+ * report the same version, and leave workspace manifests unchanged.
  */
 async function applyOverrides(outDir, files, manifest) {
-  const relativeFile = files.includes("panel/plugin.json")
-    ? "panel/plugin.json"
-    : files.includes("daemon/plugin.json")
-      ? "daemon/plugin.json"
-      : null;
-  if (!relativeFile) throw new Error("The compiled package has no plugin.json.");
-  const filePath = path.join(outDir, relativeFile);
-  const packaged = JSON.parse(await fs.readFile(filePath, "utf8"));
-  packaged.version = manifest.version;
-  packaged.changelog = manifest.changelog;
-  await fs.writeFile(filePath, `${JSON.stringify(packaged, null, 2)}\n`, "utf8");
+  // Both halves report the plugin's id/version to their own process, and the
+  // node page's compatibility check compares the two inventories — so the
+  // chosen version lands in every plugin.json the package carries, not just
+  // the half the market metadata is read from.
+  const manifestFiles = files.filter((file) =>
+    ["panel/plugin.json", "daemon/plugin.json"].includes(file)
+  );
+  if (!manifestFiles.length) throw new Error("The compiled package has no plugin.json.");
+  for (const relativeFile of manifestFiles) {
+    const filePath = path.join(outDir, relativeFile);
+    const packaged = JSON.parse(await fs.readFile(filePath, "utf8"));
+    packaged.version = manifest.version;
+    packaged.changelog = manifest.changelog;
+    await fs.writeFile(filePath, `${JSON.stringify(packaged, null, 2)}\n`, "utf8");
+  }
 }
 
 async function upload(connection, outDir, files) {

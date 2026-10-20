@@ -151,7 +151,7 @@ test("new plugin scaffolds keep npm manifests and installs inside the plugin wor
   assert.deepEqual(manifest.dependencies, {});
   assert.deepEqual(
     JSON.parse(fs.readFileSync(path.join(workspace, "daemon/plugin.json"))),
-    { backend: "src/backend/index.ts" }
+    { id: "private-example", version: "0.1.0", backend: "src/backend/index.ts" }
   );
   const panelManifest = JSON.parse(fs.readFileSync(path.join(workspace, "panel/plugin.json")));
   assert.equal(panelManifest.id, "private-example");

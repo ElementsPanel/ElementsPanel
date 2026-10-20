@@ -452,6 +452,44 @@ async function main() {
     assertRegularFile(path.join(sourceDir, "README.md"), `${side}/README.md`);
   }
 
+  // A two-sided workspace is one plugin: the node page's compatibility check
+  // compares the panel's plugin inventory with the daemon's, so both halves
+  // must claim the same id, and a version skew is worth flagging before any
+  // output is written.
+  const sourceManifests = {};
+  for (const side of ["panel", "daemon"]) {
+    const manifestPath = path.join(workspace, side, "plugin.json");
+    if (!fs.existsSync(manifestPath)) continue;
+    sourceManifests[side] = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  }
+  if (sourceManifests.panel && sourceManifests.daemon) {
+    const id = (manifest) => (typeof manifest.id === "string" ? manifest.id : undefined);
+    const version = (manifest) =>
+      typeof manifest.version === "string" ? manifest.version : undefined;
+    if (
+      id(sourceManifests.panel) &&
+      id(sourceManifests.daemon) &&
+      id(sourceManifests.panel) !== id(sourceManifests.daemon)
+    ) {
+      throw new Error(
+        `Panel and daemon manifests declare different ids: "${id(
+          sourceManifests.panel
+        )}" vs "${id(sourceManifests.daemon)}".`
+      );
+    }
+    if (
+      version(sourceManifests.panel) &&
+      version(sourceManifests.daemon) &&
+      version(sourceManifests.panel) !== version(sourceManifests.daemon)
+    ) {
+      log(
+        `[compile] Warning: panel and daemon versions differ (${version(
+          sourceManifests.panel
+        )} vs ${version(sourceManifests.daemon)}); publishing stamps the chosen version into both halves.`
+      );
+    }
+  }
+
   const realWorkspace = fs.realpathSync(workspace);
   const realOutput = resolveRealPath(outDir);
   const outputRelative = path.relative(fs.realpathSync(PROJECT_ROOT), realOutput);
