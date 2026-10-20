@@ -40,6 +40,7 @@
   "TXT_CODE_NODE_COMPAT_VERSION_TITLE": "Sürüm karşılaştırması",
   "TXT_CODE_NODE_COMPAT_PLUGINS_TITLE": "Eklenti karşılaştırması",
   "TXT_CODE_NODE_COMPAT_PANEL_VERSION": "Panel sürümü",
+  "TXT_CODE_NODE_COMPAT_REQUIRED_NODE": "Karşılık gelen düğüm sürümü",
   "TXT_CODE_NODE_COMPAT_NODE_VERSION": "Düğüm sürümü",
   "TXT_CODE_NODE_COMPAT_PLUGIN_NAME": "Eklenti",
   "TXT_CODE_NODE_COMPAT_STATUS": "Durum",

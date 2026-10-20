@@ -40,6 +40,7 @@
   "TXT_CODE_NODE_COMPAT_VERSION_TITLE": "Comparação de versões",
   "TXT_CODE_NODE_COMPAT_PLUGINS_TITLE": "Comparação de plugins",
   "TXT_CODE_NODE_COMPAT_PANEL_VERSION": "Versão do painel",
+  "TXT_CODE_NODE_COMPAT_REQUIRED_NODE": "Versão de nó correspondente",
   "TXT_CODE_NODE_COMPAT_NODE_VERSION": "Versão do nó",
   "TXT_CODE_NODE_COMPAT_PLUGIN_NAME": "Plugin",
   "TXT_CODE_NODE_COMPAT_STATUS": "Status",

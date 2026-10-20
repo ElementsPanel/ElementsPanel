@@ -40,6 +40,7 @@
   "TXT_CODE_NODE_COMPAT_VERSION_TITLE": "Сравнение версий",
   "TXT_CODE_NODE_COMPAT_PLUGINS_TITLE": "Сравнение плагинов",
   "TXT_CODE_NODE_COMPAT_PANEL_VERSION": "Версия панели",
+  "TXT_CODE_NODE_COMPAT_REQUIRED_NODE": "Соответствующая версия узла",
   "TXT_CODE_NODE_COMPAT_NODE_VERSION": "Версия узла",
   "TXT_CODE_NODE_COMPAT_PLUGIN_NAME": "Плагин",
   "TXT_CODE_NODE_COMPAT_STATUS": "Статус",

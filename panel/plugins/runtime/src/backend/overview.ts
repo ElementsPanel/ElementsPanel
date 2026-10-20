@@ -17,6 +17,7 @@ function hasDaemonVersionUpdate(panelVersion: string, daemonVersion?: string) {
  */
 function buildCompatibility(
   panelVersion: string,
+  requiredDaemonVersion: string,
   panelPlugins: Map<string, string>,
   node: {
     version?: string;
@@ -30,8 +31,9 @@ function buildCompatibility(
     ok:
       node.available === true &&
       !brandMismatch &&
-      !hasDaemonVersionUpdate(panelVersion, node.version),
+      !hasDaemonVersionUpdate(requiredDaemonVersion, node.version),
     panelVersion,
+    requiredDaemonVersion,
     daemonVersion: node.version,
     brandMismatch
   };
@@ -81,7 +83,8 @@ export function registerOverview(ctx: PanelPluginContext) {
 
   overviewRouter.get("/", requireUser, async (requestCtx) => {
     const remote = ctx.get("remote");
-    const panelVersion = ctx.globals.get("specifiedDaemonVersion", "1.0.0");
+    const panelVersion = ctx.globals.get("version", "Unknown");
+    const requiredDaemonVersion = ctx.globals.get("specifiedDaemonVersion", "1.0.0");
     const panelPlugins = new Map(
       (ctx.get("plugins")?.inventory() ?? []).map((plugin) => [
         plugin.id,
@@ -104,14 +107,19 @@ export function registerOverview(ctx: PanelPluginContext) {
         remoteInfo.remarks = remoteService.config.remarks;
         remoteInfo.brand = remoteService.config.brand;
         remoteInfo.remoteMappings = remoteService.config.remoteMappings;
-        remoteInfo.compatibility = buildCompatibility(panelVersion, panelPlugins, remoteInfo);
+        remoteInfo.compatibility = buildCompatibility(
+          panelVersion,
+          requiredDaemonVersion,
+          panelPlugins,
+          remoteInfo
+        );
         return remoteInfo;
       }
     );
     const selfInfo = systemInfo();
     const overviewData = {
       version: ctx.globals.get("version", "Unknown"),
-      specifiedDaemonVersion: ctx.globals.get("specifiedDaemonVersion", "1.0.0"),
+      specifiedDaemonVersion: requiredDaemonVersion,
       process: { cpu: selfInfo.processCpu, memory: process.memoryUsage().rss, cwd: selfInfo.cwd },
       record: ctx.identity.stats,
       system: {

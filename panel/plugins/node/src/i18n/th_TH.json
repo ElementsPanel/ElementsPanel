@@ -40,6 +40,7 @@
   "TXT_CODE_NODE_COMPAT_VERSION_TITLE": "เปรียบเทียบเวอร์ชัน",
   "TXT_CODE_NODE_COMPAT_PLUGINS_TITLE": "เปรียบเทียบปลั๊กอิน",
   "TXT_CODE_NODE_COMPAT_PANEL_VERSION": "เวอร์ชันแผงควบคุม",
+  "TXT_CODE_NODE_COMPAT_REQUIRED_NODE": "เวอร์ชันโหนดที่สอดคล้องกัน",
   "TXT_CODE_NODE_COMPAT_NODE_VERSION": "เวอร์ชันโหนด",
   "TXT_CODE_NODE_COMPAT_PLUGIN_NAME": "ปลั๊กอิน",
   "TXT_CODE_NODE_COMPAT_STATUS": "สถานะ",

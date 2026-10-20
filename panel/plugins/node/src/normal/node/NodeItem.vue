@@ -36,6 +36,12 @@ const remoteNode = computed(() => props.item);
 
 const compatMenuOpen = ref(false);
 
+const compatPanelVersionText = computed(() => {
+  const version = remoteNode.value?.compatibility?.version;
+  if (!version?.panelVersion) return "--";
+  return `${version.panelVersion}（${t("TXT_CODE_NODE_COMPAT_REQUIRED_NODE")} ${version.requiredDaemonVersion}）`;
+});
+
 const compatStatusText = (status: IPanelNodeCompatibilityPluginItem["status"]) =>
   ({
     ok: t("TXT_CODE_NODE_COMPAT_PLUGIN_MATCH"),
@@ -282,7 +288,9 @@ onMounted(() => {
                       </div>
                       <div class="node-compat-row node-compat-version-row">
                         <span>{{ t("TXT_CODE_NODE_COMPAT_PANEL_VERSION") }}</span>
-                        <span>{{ remoteNode.compatibility?.version.panelVersion ?? "--" }}</span>
+                        <span :title="compatPanelVersionText">
+                          {{ compatPanelVersionText }}
+                        </span>
                       </div>
                       <div class="node-compat-row node-compat-version-row">
                         <span>{{ t("TXT_CODE_NODE_COMPAT_NODE_VERSION") }}</span>

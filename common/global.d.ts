@@ -145,6 +145,7 @@ declare global {
     version: {
       ok: boolean;
       panelVersion: string;
+      requiredDaemonVersion: string;
       daemonVersion?: string;
       brandMismatch?: boolean;
     };
