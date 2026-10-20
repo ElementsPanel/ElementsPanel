@@ -2178,7 +2178,7 @@
   "TXT_CODE_e4dbff32": "Sponge Server",
   "TXT_CODE_e4dce83f": "En ligne",
   "TXT_CODE_e4e975f0": "Réveillez les villageois à chaque tic-tac",
-  "TXT_CODE_e520908a": "Cela peut provoquer un fonctionnement anormal. Veuillez mettre à jour le nœud distant immédiatement !",
+  "TXT_CODE_e520908a": "Cela peut provoquer un fonctionnement anormal !",
   "TXT_CODE_e543f6c0": "PurpurMC Server",
   "TXT_CODE_e576a340": "Réglé sur False pour faire continuer la pluie même après le sommeil d'un joueur",
   "TXT_CODE_e57bd50f": "Accord Open Source",

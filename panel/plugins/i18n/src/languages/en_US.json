@@ -2178,7 +2178,7 @@
   "TXT_CODE_e4dbff32": "Sponge Server",
   "TXT_CODE_e4dce83f": "Online",
   "TXT_CODE_e4e975f0": "Villagers Awakened Every x Ticks",
-  "TXT_CODE_e520908a": "This may cause critical issues. Please update the remote daemon immediately!",
+  "TXT_CODE_e520908a": "This may cause critical issues!",
   "TXT_CODE_e543f6c0": "PurpurMC Server",
   "TXT_CODE_e576a340": "Set to false to make rain continue even after a player sleeps",
   "TXT_CODE_e57bd50f": "License",
