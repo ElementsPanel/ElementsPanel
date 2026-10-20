@@ -2178,7 +2178,7 @@
   "TXT_CODE_e4dbff32": "Sponge Server",
   "TXT_CODE_e4dce83f": "オンライン",
   "TXT_CODE_e4e975f0": "ティックごとに村人を起こします",
-  "TXT_CODE_e520908a": "動作に異常が発生する可能性があります。",
+  "TXT_CODE_e520908a": "ノードのプラグインまたはバージョンがパネルと一致していないため、機能に異常が発生する可能性があります。",
   "TXT_CODE_e543f6c0": "PurpurMC Server",
   "TXT_CODE_e576a340": "プレーヤーが眠った後でも雨を続けるためにfalseに設定",
   "TXT_CODE_e57bd50f": "オープンソース契約",
