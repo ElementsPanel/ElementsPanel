@@ -274,6 +274,11 @@ onMounted(() => {
                         <span>{{ detail.warnText }}</span>
                       </VTooltip>
                       <span v-else :class="detail.success ? 'color-success' : ''">
+                        <VIcon
+                          v-if="detail.success"
+                          icon="mdi-check-circle-outline"
+                          size="16"
+                        />
                         {{ detail.value }}
                       </span>
                       <VIcon size="16" class="node-compat-chevron">
