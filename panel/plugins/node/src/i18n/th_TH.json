@@ -37,6 +37,7 @@
   "TXT_CODE_NODE_COMPAT": "ความเข้ากันได้",
   "TXT_CODE_NODE_COMPAT_OK": "เข้ากันได้",
   "TXT_CODE_NODE_COMPAT_BAD": "ไม่เข้ากันได้",
+  "TXT_CODE_NODE_COMPAT_MCSM": "โหนด MCSM",
   "TXT_CODE_NODE_COMPAT_VERSION_TITLE": "เปรียบเทียบเวอร์ชัน",
   "TXT_CODE_NODE_COMPAT_PLUGINS_TITLE": "เปรียบเทียบปลั๊กอิน",
   "TXT_CODE_NODE_COMPAT_PANEL_VERSION": "เวอร์ชันแผงควบคุม",

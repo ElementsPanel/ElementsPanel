@@ -37,6 +37,7 @@
   "TXT_CODE_NODE_COMPAT": "Kompatibilität",
   "TXT_CODE_NODE_COMPAT_OK": "Kompatibel",
   "TXT_CODE_NODE_COMPAT_BAD": "Inkompatibel",
+  "TXT_CODE_NODE_COMPAT_MCSM": "MCSM-Knoten",
   "TXT_CODE_NODE_COMPAT_VERSION_TITLE": "Versionsvergleich",
   "TXT_CODE_NODE_COMPAT_PLUGINS_TITLE": "Plugin-Vergleich",
   "TXT_CODE_NODE_COMPAT_PANEL_VERSION": "Panel-Version",

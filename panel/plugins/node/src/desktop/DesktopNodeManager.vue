@@ -369,11 +369,11 @@ const closeAdvancedSettings = () => {
       >
       <template #item.compatibility="{ item }"
         ><VTooltip
-          v-if="item.available && nodeCompatMap[item.uuid]?.version.brandMismatch"
+          v-if="nodeCompatMap[item.uuid]?.version.brandMismatch"
           :text="t('TXT_CODE_NODE_BRAND_ERR')"
           ><template #activator="{ props: tooltipProps }"
-            ><span v-bind="tooltipProps" class="dn-badge-icon--warn"
-              ><VIcon icon="mdi-information-outline" /></span></template></VTooltip
+            ><span v-bind="tooltipProps" class="dn-badge-icon--no"
+              ><VIcon icon="mdi-alert-circle-outline" /></span></template></VTooltip
         ><VIcon
           v-else-if="item.available && nodeCompatMap[item.uuid]?.ok"
           icon="mdi-check-circle-outline"

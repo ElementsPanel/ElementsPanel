@@ -106,15 +106,21 @@ const detailList = (node: ComputedNodeInfo) => [
   {
     title: t("TXT_CODE_NODE_COMPAT"),
     value:
-      !node.available || !node.compatibility
-        ? "--"
-        : node.compatibility.ok
-        ? t("TXT_CODE_NODE_COMPAT_OK")
-        : t("TXT_CODE_NODE_COMPAT_BAD"),
+      node.brand !== "ElementsPanel"
+        ? t("TXT_CODE_NODE_COMPAT_MCSM")
+        : !node.available || !node.compatibility
+          ? "--"
+          : node.compatibility.ok
+            ? t("TXT_CODE_NODE_COMPAT_OK")
+            : t("TXT_CODE_NODE_COMPAT_BAD"),
     success: node.available === true && node.compatibility?.ok === true,
     warn:
-      node.available === true && node.compatibility != null && node.compatibility.ok === false,
-    warnText: node.brand !== "ElementsPanel" ? t("TXT_CODE_NODE_BRAND_ERR") : t("TXT_CODE_e520908a"),
+      node.brand === "ElementsPanel" &&
+      node.available === true &&
+      node.compatibility != null &&
+      node.compatibility.ok === false,
+    warnText: t("TXT_CODE_e520908a"),
+    danger: node.brand !== "ElementsPanel",
     compatibility: true
   },
   {
@@ -255,7 +261,7 @@ onMounted(() => {
               </div>
               <div v-else style="font-size: 13px">
                 <VMenu
-                  v-if="detail.compatibility"
+                  v-if="detail.compatibility && !detail.danger"
                   v-model="compatMenuOpen"
                   :close-on-content-click="false"
                   location="bottom"
@@ -354,6 +360,15 @@ onMounted(() => {
                     </div>
                   </div>
                 </VMenu>
+                <!-- An MCSM node keeps no dropdown: the plugin comparison is meaningless. -->
+                <VTooltip v-else-if="detail.compatibility && detail.danger" location="top">
+                  <template #activator="{ props: tooltipProps }">
+                    <span v-bind="tooltipProps" class="color-danger">
+                      <VIcon icon="mdi-alert-circle-outline" size="16" /> {{ detail.value }}
+                    </span>
+                  </template>
+                  <span>{{ t("TXT_CODE_NODE_BRAND_ERR") }}</span>
+                </VTooltip>
                 <VTooltip v-else-if="detail.warn && detail.value" location="top">
                   <template #activator="{ props: tooltipProps }">
                     <span

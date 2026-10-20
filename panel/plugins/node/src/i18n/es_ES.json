@@ -37,6 +37,7 @@
   "TXT_CODE_NODE_COMPAT": "Compatibilidad",
   "TXT_CODE_NODE_COMPAT_OK": "Compatible",
   "TXT_CODE_NODE_COMPAT_BAD": "Incompatible",
+  "TXT_CODE_NODE_COMPAT_MCSM": "Nodo MCSM",
   "TXT_CODE_NODE_COMPAT_VERSION_TITLE": "Comparación de versiones",
   "TXT_CODE_NODE_COMPAT_PLUGINS_TITLE": "Comparación de complementos",
   "TXT_CODE_NODE_COMPAT_PANEL_VERSION": "Versión del panel",

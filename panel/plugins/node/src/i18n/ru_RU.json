@@ -37,6 +37,7 @@
   "TXT_CODE_NODE_COMPAT": "Совместимость",
   "TXT_CODE_NODE_COMPAT_OK": "Совместимо",
   "TXT_CODE_NODE_COMPAT_BAD": "Несовместимо",
+  "TXT_CODE_NODE_COMPAT_MCSM": "Узел MCSM",
   "TXT_CODE_NODE_COMPAT_VERSION_TITLE": "Сравнение версий",
   "TXT_CODE_NODE_COMPAT_PLUGINS_TITLE": "Сравнение плагинов",
   "TXT_CODE_NODE_COMPAT_PANEL_VERSION": "Версия панели",
