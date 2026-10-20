@@ -49,5 +49,7 @@
   "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "Mismatch",
   "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "Panel only",
   "TXT_CODE_NODE_COMPAT_ONLY_NODE": "Node only",
+  "TXT_CODE_NODE_COMPAT_MISSING_PANEL": "Missing panel side",
+  "TXT_CODE_NODE_COMPAT_MISSING_DAEMON": "Missing daemon side",
   "TXT_CODE_NODE_COMPAT_NO_DATA": "The node is unavailable or its data is missing; compatibility information cannot be retrieved."
 }

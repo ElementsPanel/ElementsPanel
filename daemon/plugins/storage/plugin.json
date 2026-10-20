@@ -2,6 +2,7 @@
   "id": "storage",
   "name": "Storage",
   "version": "1.0.0",
+  "dual": true,
   "description": "Provides the daemon's local entity storage.",
   "priority": -9500,
   "backend": "backend/index.cjs"

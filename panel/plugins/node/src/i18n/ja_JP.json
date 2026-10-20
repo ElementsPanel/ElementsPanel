@@ -49,5 +49,7 @@
   "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "不一致",
   "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "パネルのみ",
   "TXT_CODE_NODE_COMPAT_ONLY_NODE": "ノードのみ",
+  "TXT_CODE_NODE_COMPAT_MISSING_PANEL": "パネル側が未導入",
+  "TXT_CODE_NODE_COMPAT_MISSING_DAEMON": "ノード側が未導入",
   "TXT_CODE_NODE_COMPAT_NO_DATA": "ノードが利用できないかデータが欠落しているため、互換性情報を取得できません。"
 }

@@ -427,6 +427,8 @@ export interface PanelPluginRecord {
   priority?: number;
   /** Effective enablement after applying the user override. */
   enabled: boolean;
+  /** Declares a two-sided plugin whose other half must exist on the daemon. */
+  dual: boolean;
   /** Which halves the manifest declares. Neither has to have been built yet. */
   sides: { backend: boolean; frontend: boolean };
   /** Whether the backend half is running in this process right now. */
@@ -469,6 +471,7 @@ export function getPanelPluginInventory(): PanelPluginRecord[] {
       description: plugin.manifest.description,
       priority: plugin.manifest.priority,
       enabled: plugin.manifest.enabled !== false,
+      dual: plugin.manifest.dual === true,
       sides: { backend: has(ENTRY_FIELDS), frontend: has(FRONTEND_FIELDS) },
       running: pluginState(plugin, running) === "active",
       state: pluginState(plugin, running),

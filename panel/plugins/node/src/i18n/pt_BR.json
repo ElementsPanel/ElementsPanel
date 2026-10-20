@@ -49,5 +49,7 @@
   "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "Diferente",
   "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "Somente no painel",
   "TXT_CODE_NODE_COMPAT_ONLY_NODE": "Somente no nó",
+  "TXT_CODE_NODE_COMPAT_MISSING_PANEL": "Lado do painel ausente",
+  "TXT_CODE_NODE_COMPAT_MISSING_DAEMON": "Lado do nó ausente",
   "TXT_CODE_NODE_COMPAT_NO_DATA": "O nó está indisponível ou os dados estão ausentes; não é possível obter as informações de compatibilidade."
 }

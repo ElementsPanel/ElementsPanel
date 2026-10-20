@@ -137,7 +137,7 @@ declare global {
     id: string;
     panelVersion?: string;
     daemonVersion?: string;
-    status: "ok" | "mismatch" | "panel_only" | "daemon_only";
+    status: "ok" | "mismatch" | "panel_only" | "daemon_only" | "missing_panel" | "missing_daemon";
   }
 
   interface IPanelNodeCompatibility {

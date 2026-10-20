@@ -49,5 +49,7 @@
   "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "ไม่ตรงกัน",
   "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "เฉพาะแผงควบคุม",
   "TXT_CODE_NODE_COMPAT_ONLY_NODE": "เฉพาะโหนด",
+  "TXT_CODE_NODE_COMPAT_MISSING_PANEL": "ฝั่งแผงควบคุมขาดหาย",
+  "TXT_CODE_NODE_COMPAT_MISSING_DAEMON": "ฝั่งโหนดขาดหาย",
   "TXT_CODE_NODE_COMPAT_NO_DATA": "โหนดไม่พร้อมใช้งานหรือข้อมูลสูญหาย ไม่สามารถดึงข้อมูลความเข้ากันได้ได้"
 }

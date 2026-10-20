@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import PageToolbar from "@/components/PageToolbar.vue";
-import FadeUpAnimation from "@/components/FadeUpAnimation.vue";
 import { t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";
 import { ref } from "vue";
@@ -114,17 +113,9 @@ const handleOpenDetailDialog = async () => {
             </div>
           </div>
         </VCol>
-        <fade-up-animation :delay="3000">
-          <VCol
-            v-for="(item, index) in remotes"
-            :key="item.uuid + item.available + item.ip"
-            :data-index="index"
-            cols="12"
-            lg="6"
-          >
-            <NodeItem :item="item" />
-          </VCol>
-        </fade-up-animation>
+        <VCol v-for="item in remotes" :key="item.uuid + item.available + item.ip" cols="12" lg="6">
+          <NodeItem :item="item" />
+        </VCol>
       </VRow>
     </VContainer>
     <NodeDetailDialog ref="nodeDetailDialog" />

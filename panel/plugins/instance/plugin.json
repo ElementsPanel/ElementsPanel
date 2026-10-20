@@ -1,6 +1,7 @@
 {
   "id": "instance",
   "version": "1.0.0",
+  "dual": true,
   "description": "Owns application instance management, creation, console routes, base instance cards and panel-to-daemon instance APIs.",
   "priority": 40,
   "frontendInject": ["console", "i18n"],

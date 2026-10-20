@@ -49,5 +49,7 @@
   "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "Abweichend",
   "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "Nur Panel",
   "TXT_CODE_NODE_COMPAT_ONLY_NODE": "Nur Knoten",
+  "TXT_CODE_NODE_COMPAT_MISSING_PANEL": "Panel-Seite fehlt",
+  "TXT_CODE_NODE_COMPAT_MISSING_DAEMON": "Node-Seite fehlt",
   "TXT_CODE_NODE_COMPAT_NO_DATA": "Der Knoten ist nicht verfügbar oder es fehlen Daten; Kompatibilitätsinformationen können nicht abgerufen werden."
 }

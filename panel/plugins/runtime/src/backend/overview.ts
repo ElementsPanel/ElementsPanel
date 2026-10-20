@@ -13,17 +13,18 @@ function hasDaemonVersionUpdate(panelVersion: string, daemonVersion?: string) {
 /**
  * Compares one daemon's plugin inventory against the panel's. Plugins present on
  * both sides must carry the same version; plugins on a single side only are
- * normal (the built-in halves differ by design) and stay informational.
+ * informational unless the present half declares `dual` — then the absent other
+ * half is a fault ("missing panel/daemon side").
  */
 function buildCompatibility(
   panelVersion: string,
   requiredDaemonVersion: string,
-  panelPlugins: Map<string, string>,
+  panelPlugins: Map<string, { version: string; dual: boolean }>,
   node: {
     version?: string;
     brand?: string;
     available?: boolean;
-    plugins?: { id?: unknown; version?: unknown }[];
+    plugins?: { id?: unknown; version?: unknown; dual?: unknown }[];
   }
 ) {
   const brandMismatch = node.brand !== "ElementsPanel";
@@ -41,7 +42,7 @@ function buildCompatibility(
     id: string;
     panelVersion?: string;
     daemonVersion?: string;
-    status: "ok" | "mismatch" | "panel_only" | "daemon_only";
+    status: "ok" | "mismatch" | "panel_only" | "daemon_only" | "missing_panel" | "missing_daemon";
   }[] = [];
   let pluginsOk = true;
   const daemonIds = new Set<string>();
@@ -50,18 +51,29 @@ function buildCompatibility(
     if (!id || daemonIds.has(id)) continue;
     daemonIds.add(id);
     const daemonVersion = typeof plugin.version === "string" ? plugin.version : undefined;
-    const ownVersion = panelPlugins.get(id);
-    if (ownVersion === undefined) {
-      items.push({ id, daemonVersion, status: "daemon_only" });
-    } else if (ownVersion !== (daemonVersion ?? "")) {
+    const own = panelPlugins.get(id);
+    if (own === undefined) {
+      if (plugin.dual === true) {
+        pluginsOk = false;
+        items.push({ id, daemonVersion, status: "missing_panel" });
+      } else {
+        items.push({ id, daemonVersion, status: "daemon_only" });
+      }
+    } else if (own.version !== (daemonVersion ?? "")) {
       pluginsOk = false;
-      items.push({ id, panelVersion: ownVersion, daemonVersion, status: "mismatch" });
+      items.push({ id, panelVersion: own.version, daemonVersion, status: "mismatch" });
     } else {
-      items.push({ id, panelVersion: ownVersion, daemonVersion, status: "ok" });
+      items.push({ id, panelVersion: own.version, daemonVersion, status: "ok" });
     }
   }
-  for (const [id, ownVersion] of panelPlugins) {
-    if (!daemonIds.has(id)) items.push({ id, panelVersion: ownVersion, status: "panel_only" });
+  for (const [id, own] of panelPlugins) {
+    if (daemonIds.has(id)) continue;
+    if (own.dual) {
+      pluginsOk = false;
+      items.push({ id, panelVersion: own.version, status: "missing_daemon" });
+    } else {
+      items.push({ id, panelVersion: own.version, status: "panel_only" });
+    }
   }
   return {
     ok: version.ok && pluginsOk,
@@ -88,7 +100,7 @@ export function registerOverview(ctx: PanelPluginContext) {
     const panelPlugins = new Map(
       (ctx.get("plugins")?.inventory() ?? []).map((plugin) => [
         plugin.id,
-        String(plugin.version ?? "")
+        { version: String(plugin.version ?? ""), dual: Boolean(plugin.dual) }
       ])
     );
     const requestTasks = Array.from(remote?.services.services.entries() ?? []).map(

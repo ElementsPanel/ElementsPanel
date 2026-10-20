@@ -2,6 +2,7 @@
   "id": "node",
   "name": "Node Configuration",
   "version": "1.0.0",
+  "dual": true,
   "description": "Applies the node configuration pushed by the panel node plugin.",
   "priority": 200,
   "backend": "backend/index.cjs"

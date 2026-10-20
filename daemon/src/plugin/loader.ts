@@ -349,6 +349,8 @@ export interface DaemonPluginRecord {
   priority?: number;
   /** Effective enablement after applying the user override. */
   enabled: boolean;
+  /** Declares a two-sided plugin whose other half must exist on the panel. */
+  dual: boolean;
   /** Whether the manifest names an entry module at all. */
   hasEntry: boolean;
   /** Whether the plugin is running in this process right now. */
@@ -390,6 +392,7 @@ export function getDaemonPluginInventory(): DaemonPluginRecord[] {
       description: plugin.manifest.description,
       priority: plugin.manifest.priority,
       enabled: plugin.manifest.enabled !== false,
+      dual: plugin.manifest.dual === true,
       hasEntry: ENTRY_FIELDS.some((field) => typeof plugin.manifest[field] === "string"),
       running: pluginState(plugin, running) === "active",
       state: pluginState(plugin, running),

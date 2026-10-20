@@ -49,5 +49,7 @@
   "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "불일치",
   "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "패널 전용",
   "TXT_CODE_NODE_COMPAT_ONLY_NODE": "노드 전용",
+  "TXT_CODE_NODE_COMPAT_MISSING_PANEL": "패널 측 누락",
+  "TXT_CODE_NODE_COMPAT_MISSING_DAEMON": "노드 측 누락",
   "TXT_CODE_NODE_COMPAT_NO_DATA": "노드를 사용할 수 없거나 데이터가 없어 호환성 정보를 가져올 수 없습니다."
 }

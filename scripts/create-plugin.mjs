@@ -58,6 +58,7 @@ if (names.length !== 1 || names[0].startsWith("-")) {
           // and the rest is what its page shows. Edit them here, not at upload time.
           displayName: `${folder} panel plugin`,
           version: "0.1.0",
+          dual: true,
           description: "A custom ElementsPanel panel plugin.",
           category: "",
           changelog: "",
@@ -86,11 +87,15 @@ export function apply(ctx: PanelFrontendPluginContext) {
 `,
       // The daemon half carries the same id/version as the panel half: the node
       // page's compatibility check compares the two inventories, so a missing
-      // version would read as "inconsistent". Display metadata stays panel-only.
+      // version would read as "inconsistent". `dual: true` declares a two-sided
+      // plugin — if only one half is installed, the node page reports the other
+      // side as missing instead of treating the lone half as intentional.
+      // Display metadata stays panel-only.
       "daemon/plugin.json": `${JSON.stringify(
         {
           id: folder,
           version: "0.1.0",
+          dual: true,
           backend: "src/backend/index.ts"
         },
         null,
@@ -163,7 +168,11 @@ shows the new details once that upload is approved. In a normal two-sided plugin
 the node page's compatibility check compares the two plugin inventories, so both
 halves must report the same identity and version — while the rest of the display
 metadata stays in \`panel/plugin.json\`; publishing stamps the chosen version
-into both halves. Only \`--version\` and \`--changelog\` are worth
+into both halves. Both halves also declare \`dual: true\`, which marks them as a
+two-sided plugin: if only one half is installed, the node page's compatibility
+indicator reports the other side as missing instead of treating the lone half as
+intentional. Remove that flag on both halves if the plugin is really one-sided.
+Only \`--version\` and \`--changelog\` are worth
 passing per upload.
 
 The first upload links your market account in the browser, and the token is kept

@@ -49,5 +49,7 @@
   "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "Не совпадает",
   "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "Только на панели",
   "TXT_CODE_NODE_COMPAT_ONLY_NODE": "Только на узле",
+  "TXT_CODE_NODE_COMPAT_MISSING_PANEL": "Отсутствует панельная часть",
+  "TXT_CODE_NODE_COMPAT_MISSING_DAEMON": "Отсутствует часть узла",
   "TXT_CODE_NODE_COMPAT_NO_DATA": "Узел недоступен или данные отсутствуют; информацию о совместимости получить невозможно."
 }

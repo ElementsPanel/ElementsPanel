@@ -49,5 +49,7 @@
   "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "Différent",
   "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "Panneau uniquement",
   "TXT_CODE_NODE_COMPAT_ONLY_NODE": "Nœud uniquement",
+  "TXT_CODE_NODE_COMPAT_MISSING_PANEL": "Côté panel manquant",
+  "TXT_CODE_NODE_COMPAT_MISSING_DAEMON": "Côté nœud manquant",
   "TXT_CODE_NODE_COMPAT_NO_DATA": "Le nœud est indisponible ou ses données sont manquantes ; impossible de récupérer les informations de compatibilité."
 }

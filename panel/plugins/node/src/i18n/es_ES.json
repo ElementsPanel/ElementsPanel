@@ -49,5 +49,7 @@
   "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "No coincide",
   "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "Solo en el panel",
   "TXT_CODE_NODE_COMPAT_ONLY_NODE": "Solo en el nodo",
+  "TXT_CODE_NODE_COMPAT_MISSING_PANEL": "Falta el lado del panel",
+  "TXT_CODE_NODE_COMPAT_MISSING_DAEMON": "Falta el lado del nodo",
   "TXT_CODE_NODE_COMPAT_NO_DATA": "El nodo no está disponible o faltan datos; no se puede obtener la información de compatibilidad."
 }

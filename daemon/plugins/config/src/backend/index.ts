@@ -128,12 +128,14 @@ export function apply(ctx: DaemonPluginContext) {
 
   // The panel's node page compares daemon plugins against its own inventory, so
   // the id/version pairs ride along on the overview payload it already polls.
+  // `dual` marks a two-sided plugin: if its panel half is absent there, the node
+  // page reports the plugin as missing rather than daemon-only by design.
   // Best-effort: hosts without an overview service (tests, minimal daemons)
   // keep loading this plugin without the extra payload.
   ctx.overview?.provide(() => ({
     plugins: ctx.plugins
       .inventory()
-      .map((record) => ({ id: record.id, version: record.version }))
+      .map((record) => ({ id: record.id, version: record.version, dual: record.dual }))
   }));
 
   ctx.protocol.on("plugin/capabilities", (routerCtx) => {

@@ -2,6 +2,7 @@
   "id": "runtime",
   "name": "Panel Runtime",
   "version": "1.0.0",
+  "dual": true,
   "description": "Initializes panel configuration and frontend startup state, and exposes shared runtime services to plugins.",
   "priority": -9000,
   "frontendInject": [],

@@ -49,5 +49,7 @@
   "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "Eşleşmiyor",
   "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "Yalnızca panelde",
   "TXT_CODE_NODE_COMPAT_ONLY_NODE": "Yalnızca düğümde",
+  "TXT_CODE_NODE_COMPAT_MISSING_PANEL": "Panel tarafı eksik",
+  "TXT_CODE_NODE_COMPAT_MISSING_DAEMON": "Düğüm tarafı eksik",
   "TXT_CODE_NODE_COMPAT_NO_DATA": "Düğüm kullanılamıyor veya verileri eksik; uyumluluk bilgileri alınamıyor."
 }
