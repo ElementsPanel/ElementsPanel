@@ -2178,7 +2178,7 @@
   "TXT_CODE_e4dbff32": "Sponge Server",
   "TXT_CODE_e4dce83f": "線上數",
   "TXT_CODE_e4e975f0": "每隔多少ticks喚醒村民",
-  "TXT_CODE_e520908a": "遠端節點版本與面板端所需版本不一致，這可能會導致工作異常，請立即更新遠端節點！",
+  "TXT_CODE_e520908a": "這可能會導致工作異常，請立即更新遠端節點！",
   "TXT_CODE_e543f6c0": "PurpurMC Server",
   "TXT_CODE_e576a340": "設定為 false 讓降雨在玩家睡覺後持續",
   "TXT_CODE_e57bd50f": "開源協定",
