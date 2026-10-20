@@ -13,5 +13,11 @@
   "TXT_CODE_minecraft.invalidDownload": "พารามิเตอร์ดาวน์โหลด Minecraft ไม่ถูกต้อง",
   "TXT_CODE_minecraft.platformMismatch": "เซิร์ฟเวอร์ Bedrock ไม่เข้ากันกับโหนดนี้ โปรดเลือกเวอร์ชันที่ตรงกับ Windows/Linux ของโหนดและใช้โหนด x64",
   "TXT_CODE_minecraft.missingFiles": "ไม่พบไฟล์เริ่มต้นของเซิร์ฟเวอร์ที่ติดตั้ง โปรดตรวจสอบแพ็กเกจที่ดาวน์โหลดและบันทึกการติดตั้ง",
-  "TXT_CODE_minecraft.hashMismatch": "ไฟล์ที่ดาวน์โหลดไม่ผ่านการตรวจสอบ SHA-256 ระบบหยุดการติดตั้งแล้ว โปรดลองอีกครั้ง"
+  "TXT_CODE_minecraft.hashMismatch": "ไฟล์ที่ดาวน์โหลดไม่ผ่านการตรวจสอบ SHA-256 ระบบหยุดการติดตั้งแล้ว โปรดลองอีกครั้ง",
+  "TXT_CODE_daemon_enableSoftShutdown": "เปิดใช้งานการปิดแบบนุ่มนวล",
+  "TXT_CODE_daemon_enableSoftShutdownInfo": "หากปิดใช้งาน การออกจากดีมอนจะบังคับปิดอินสแตนซ์ทั้งหมดเสมอ",
+  "TXT_CODE_daemon_softShutdownSkipDocker": "ข้าม Docker ในการปิดแบบนุ่มนวล",
+  "TXT_CODE_daemon_softShutdownSkipDockerInfo": "หากเปิดใช้งาน อินสแตนซ์ Docker จะถูกละเว้นระหว่างการปิดแบบนุ่มนวล",
+  "TXT_CODE_daemon_softShutdownWaitSeconds": "เวลารอปิดแบบนุ่มนวล (วินาที)",
+  "TXT_CODE_daemon_softShutdownWaitSecondsInfo": "เวลาจำกัดก่อนบังคับปิดอินสแตนซ์เป้าหมายที่เหลือ (1-600 วินาที)"
 }

@@ -13,5 +13,11 @@
   "TXT_CODE_minecraft.invalidDownload": "Minecraft のダウンロードパラメーターが無効です。",
   "TXT_CODE_minecraft.platformMismatch": "Bedrock サーバーはこのノードに対応していません。ノードの Windows/Linux に合うバージョンを選び、x64 ノードを使用してください。",
   "TXT_CODE_minecraft.missingFiles": "インストールされたサーバーの起動ファイルが見つかりません。ダウンロードしたパッケージとインストールログを確認してください。",
-  "TXT_CODE_minecraft.hashMismatch": "ダウンロードしたファイルの SHA-256 検証に失敗したため、インストールを停止しました。再試行してください。"
+  "TXT_CODE_minecraft.hashMismatch": "ダウンロードしたファイルの SHA-256 検証に失敗したため、インストールを停止しました。再試行してください。",
+  "TXT_CODE_daemon_enableSoftShutdown": "ソフトシャットダウンを有効化",
+  "TXT_CODE_daemon_enableSoftShutdownInfo": "無効の場合、デーモン終了時は常に全インスタンスを強制終了します。",
+  "TXT_CODE_daemon_softShutdownSkipDocker": "ソフトシャットダウン時にDockerをスキップ",
+  "TXT_CODE_daemon_softShutdownSkipDockerInfo": "有効の場合、ソフトシャットダウン時にDockerインスタンスは無視されます。",
+  "TXT_CODE_daemon_softShutdownWaitSeconds": "ソフトシャットダウンの待機秒数",
+  "TXT_CODE_daemon_softShutdownWaitSecondsInfo": "残存ターゲットインスタンスを強制終了するまでのタイムアウト（1〜600秒）。"
 }

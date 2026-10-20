@@ -1,0 +1,4 @@
+{
+  "TXT_CODE_daemon_outputBufferSize": "Günlük Arabellek Boyutu",
+  "TXT_CODE_daemon_outputBufferSizeInfo": "Arabelleği büyütmek terminal çıktı içeriğinin bütünlüğünü daha iyi sağlayabilir, ancak bellek ve performans üzerindeki baskıyı artırır, hatta bellek sızıntısına neden olabilir."
+}

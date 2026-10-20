@@ -1,0 +1,10 @@
+{
+  "TXT_CODE_bbe23ee7": "Node direct connection address mappings",
+  "TXT_CODE_497568db": "Configure how the node is directly connected when user reaches panel from different endpoints, useful when node is behind a reverse proxy.",
+  "TXT_CODE_8d8fbbf4": "Add a mapping",
+  "TXT_CODE_2ee6fd18": "When accessing panel from",
+  "TXT_CODE_6f27624c": "Access daemon from",
+  "TXT_CODE_54312194": "Address and port",
+  "TXT_CODE_f49149d0": "Port",
+  "TXT_CODE_941d83b8": "Path prefix"
+}

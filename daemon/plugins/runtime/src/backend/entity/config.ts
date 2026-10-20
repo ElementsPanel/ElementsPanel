@@ -14,6 +14,11 @@ class Config {
   public ip = "";
   public port = 24444;
   public prefix = "";
+  // Undefined until the node plugin imports the panel's legacy mappings or saves its own.
+  public remoteMappings?: Array<{
+    from: { ip: string; port: number; prefix: string };
+    to: { ip: string; port: number; prefix: string };
+  }>;
   public key = builderPassword();
   public maxFileTask = 2;
   public maxZipFileSize = 200;

@@ -4,5 +4,12 @@
   "TXT_CODE_file_router_service.instanceNotExit": "实例 {{uuid}} 不存在",
   "TXT_CODE_system_file.execLimit": "超出最大文件编辑限制",
   "TXT_CODE_system_file.illegalAccess": "非法访问路径",
-  "TXT_CODE_system_file.unzipLimit": "文件解压缩只支持最大 {{max}}GB 文件的解压缩，如需改变上限请前往 data/Config/global.json 文件"
+  "TXT_CODE_system_file.unzipLimit": "文件解压缩只支持最大 {{max}}GB 文件的解压缩，如需改变上限请前往 data/Config/global.json 文件",
+  "TXT_CODE_e3a77a77": "无限制",
+  "TXT_CODE_fde31068": "用户上传文件速率",
+  "TXT_CODE_d8d19932": "限制每个 HTTP 请求，上传文件最大速度",
+  "TXT_CODE_785a0fcf": "用户下载文件速率",
+  "TXT_CODE_b9fc604c": "限制每个 HTTP 请求，下载文件最大速度",
+  "TXT_CODE_a15fca22": "从URL下载文件最大任务数",
+  "TXT_CODE_ecaf78a2": "设置为 0 为无限制"
 }

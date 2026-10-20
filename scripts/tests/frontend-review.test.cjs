@@ -780,7 +780,6 @@ test("desktop node refresh ignores stale results, validates ports and reports fa
       reportErrorMsg: (error) => errors.push(error.message),
       getValidatorErrorMsg: (error) => error.message
     },
-    "./DesktopNodeAdvancedSettings.vue": {},
     "./DesktopWindow.vue": {},
     "../api": {
       remoteNodeList: () => ({
@@ -815,4 +814,35 @@ test("desktop node refresh ignores stale results, validates ports and reports fa
   assert.equal(state.showDeleteConfirm.value, true);
   await state.reconnectNode(node);
   assert.deepEqual(errors, ["delete failed", "connect failed"]);
+});
+
+test("editing node connection details preserves plugin settings and a blank API key", async () => {
+  const writes = [];
+  const state = setupSfc("panel/plugins/node/src/normal/node/NodeDetailDialog.vue", {
+    "../../hooks/useRemoteNode": {
+      useRemoteNode: () => ({
+        updateNode: async (uuid, data) => writes.push({ uuid, data }),
+        addNode() {}, deleteNode() {}
+      })
+    },
+    "@/tools/validator": { isLocalNetworkIP: () => false, getValidatorErrorMsg() {}, reportErrorMsg(error) { throw error; } },
+    "@/tools/vuetifyToast": { message: { success() {} } },
+    "@/tools/vuetifyModal": { Modal: {} }
+  });
+  state.openDialog({
+    uuid: "node", ip: "example.com", port: 24444, prefix: "/daemon", remarks: "Existing",
+    apiKey: "private", available: true,
+    config: { port: 25565, uploadSpeedRate: 128, outputBufferSize: 1024, enableSoftShutdown: false },
+    remoteMappings: [{ from: {}, to: {} }]
+  }, "node");
+  const expected = { ip: "example.com", port: 24444, prefix: "/daemon", remarks: "Existing", apiKey: "" };
+  assert.deepEqual({ ...state.dialog.data }, expected);
+  const originalTimeout = global.setTimeout;
+  global.setTimeout = () => 0; // Do not reload the browser after the successful save.
+  try {
+    await state.submit();
+  } finally {
+    global.setTimeout = originalTimeout;
+  }
+  assert.deepEqual(writes, [{ uuid: "node", data: { ...expected, apiKey: undefined } }]);
 });

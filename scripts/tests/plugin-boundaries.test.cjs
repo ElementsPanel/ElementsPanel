@@ -352,7 +352,7 @@ test("daemon runtime answers capabilities and overview across monitor unload and
   assert.equal((await ctx.protocol.request("info/overview")).cpuMemChart.length, 200);
 });
 
-test("node settings cannot write backup configuration; the backup settings declaration owns validation", async () => {
+test("node settings cannot write other plugins' configuration; the backup declaration owns its settings", async () => {
   const config = {
     allocatablePortRange: [1000, 2000],
     instanceBackupPath: "original",
@@ -377,7 +377,9 @@ test("node settings cannot write backup configuration; the backup settings decla
     archive: {},
     features: { add() {} }
   };
-  load("daemon/plugins/node/src/backend/index.ts").apply(ctx);
+  load("daemon/plugins/node/src/backend/index.ts", {
+    "./settings": { registerSettings() {} }
+  }).apply(ctx);
   await handlers.get("info/setting")(
     {},
     {
@@ -388,7 +390,7 @@ test("node settings cannot write backup configuration; the backup settings decla
       instanceBackupMaxSize: 0
     }
   );
-  assert.equal(config.uploadSpeedRate, 128);
+  assert.equal(config.uploadSpeedRate, undefined);
   assert.equal(config.instanceBackupPath, "original");
   assert.equal(config.instanceBackupFormat, "zip");
   assert.equal(config.instanceBackupCompressionLevel, 6);
@@ -687,4 +689,148 @@ test("instance hook compatibility resolves current providers and never retains t
   assert.deepEqual([...data], ["new", "extra"]);
   assert.deepEqual(Object.keys(data), ["0", "1"]);
   assert.equal(size.value, 2);
+});
+
+function daemonSettingsFixture(plugin, initialConfig = {}) {
+  const config = structuredClone(initialConfig);
+  const saved = [];
+  const handlers = new Map();
+  let declaration;
+  let overview;
+  const ctx = {
+    settings: { config, save: () => saved.push(structuredClone(config)) },
+    i18n: { $t: (key) => key },
+    inject: (_names, callback) => callback(ctx),
+    settingsForm: { declare: (value) => { declaration = value; } },
+    overview: { provide: (provider) => { overview = provider; } },
+    protocol: {
+      on: (event, handler) => handlers.set(event, handler),
+      response: (request, value) => { request.body = value; },
+      responseError: (_request, error) => { throw error; }
+    }
+  };
+  load(`daemon/plugins/${plugin}/src/backend/settings.ts`).registerSettings(ctx);
+  const { validatePluginSettings } = load("common/src/plugin_contract.ts");
+  return {
+    config, saved, handlers,
+    read: () => declaration.read(),
+    overview: () => overview(),
+    write: (values) => {
+      validatePluginSettings(declaration.fields(), values);
+      declaration.write(values);
+    }
+  };
+}
+
+test("file, terminal and instance forms retain stored settings and reject invalid changes atomically", () => {
+  const file = daemonSettingsFixture("file", {
+    uploadSpeedRate: 40, downloadSpeedRate: 128, maxDownloadFromUrlFileCount: 3,
+    outputBufferSize: 256
+  });
+  file.write(file.read()); // Existing rates outside the former dropdown remain editable.
+  file.write({ uploadSpeedRate: 0, downloadSpeedRate: 32, maxDownloadFromUrlFileCount: 0, outputBufferSize: 512 });
+  assert.equal(file.config.outputBufferSize, 256);
+  assert.equal(file.config.uploadSpeedRate, 0);
+  assert.equal(file.config.maxDownloadFromUrlFileCount, 0);
+  const beforeFile = structuredClone(file.config);
+  assert.throws(() => file.write({ uploadSpeedRate: 128, maxDownloadFromUrlFileCount: 1.5 }));
+  assert.throws(() => file.write({ downloadSpeedRate: -1 }));
+  assert.deepEqual(file.config, beforeFile);
+  assert.equal(file.saved.length, 2);
+
+  const terminal = daemonSettingsFixture("terminal", { outputBufferSize: 256 });
+  for (const invalid of [15, 4097, 32.5, Infinity, "256"]) {
+    assert.throws(() => terminal.write({ outputBufferSize: invalid }));
+  }
+  assert.equal(terminal.saved.length, 0);
+  terminal.write({ outputBufferSize: 4096 });
+  assert.equal(terminal.config.outputBufferSize, 4096);
+
+  const instance = daemonSettingsFixture("instance", {
+    enableSoftShutdown: true, softShutdownSkipDocker: false, softShutdownWaitSeconds: 45
+  });
+  const beforeInstance = instance.read();
+  for (const invalid of [0, 601, 1.5, Infinity, "30"]) {
+    assert.throws(() => instance.write({ enableSoftShutdown: false, softShutdownWaitSeconds: invalid }));
+    assert.deepEqual(instance.read(), beforeInstance);
+  }
+  instance.write({ enableSoftShutdown: false, softShutdownSkipDocker: true, softShutdownWaitSeconds: 60 });
+  assert.deepEqual(instance.saved[0], {
+    enableSoftShutdown: false, softShutdownSkipDocker: true, softShutdownWaitSeconds: 60
+  });
+});
+
+test("node mappings migrate once, validate before saving and preserve an intentionally empty list", () => {
+  const node = daemonSettingsFixture("node");
+  assert.deepEqual(node.overview(), { remoteMappings: null });
+  const legacy = [{
+    from: { ip: "panel.example", port: 443, prefix: "/panel" },
+    to: { ip: "node.example", port: 443, prefix: "/node" }
+  }];
+  const request = {};
+  node.handlers.get("node/mappings")(request, { remoteMappings: legacy });
+  assert.deepEqual(request.body, legacy);
+  assert.equal(node.saved.length, 1);
+  assert.notEqual(node.config.remoteMappings, legacy);
+  const editable = node.read();
+  editable.remoteMappings[0].toPort = 8443;
+  node.write(editable);
+  assert.equal(node.config.remoteMappings[0].to.port, 8443);
+  const saved = structuredClone(node.config.remoteMappings);
+  for (const invalid of [0, 65536, 443.5, "443"]) {
+    editable.remoteMappings[0].toPort = invalid;
+    assert.throws(() => node.write(editable));
+    assert.deepEqual(node.config.remoteMappings, saved);
+  }
+  node.write({ remoteMappings: [] });
+  node.handlers.get("node/mappings")(request, { remoteMappings: legacy });
+  assert.deepEqual(request.body, []);
+  assert.deepEqual(node.overview(), { remoteMappings: [] });
+  assert.equal(node.saved.length, 3);
+});
+
+test("daemon settings declarations keep their plugin ownership and leave when the plugin unloads", async (t) => {
+  const { Context, Service } = from("daemon")("cordis");
+  const ctx = new Context();
+  t.after(() => ctx.stop());
+  ctx.plugin(translations(Service));
+  ctx.set("settings", { config: { outputBufferSize: 256 }, save() {} });
+  ctx.set("plugins", { runExclusive: (operation) => operation(), configuration: (id) => ({ id, fields: [], values: {} }) });
+  const { SettingsFormService } = load("daemon/plugins/config/src/backend/settings.ts", {
+    "mcsmanager-common": load("common/src/plugin_contract.ts")
+  });
+  ctx.plugin(SettingsFormService);
+  const plugin = ctx.plugin({
+    name: "terminal",
+    inject: ["settings", "i18n"],
+    apply: load("daemon/plugins/terminal/src/backend/settings.ts").registerSettings
+  });
+  await ctx.start();
+  assert.deepEqual(ctx.settingsForm.declared(), ["terminal"]);
+  assert.equal((await ctx.settingsForm.read("terminal")).values.outputBufferSize, 256);
+  await ctx.settingsForm.write("terminal", { outputBufferSize: 1024 });
+  assert.equal(ctx.settings.config.outputBufferSize, 1024);
+  await plugin.dispose();
+  await tick();
+  assert.deepEqual(ctx.settingsForm.declared(), []);
+});
+
+test("daemon storage preserves migrated and cleared mappings across reloads", () => {
+  const { Config } = load("daemon/plugins/runtime/src/backend/entity/config.ts");
+  const { default: Storage } = load("common/src/system_storage.ts");
+  const storage = new Storage();
+  let saved;
+  storage.writeFile = (_name, content) => { saved = content; };
+  storage.readFile = () => saved;
+  storage.fileExists = () => true;
+  const config = new Config();
+  assert.equal(config.remoteMappings, undefined);
+  for (const mappings of [[{
+    from: { ip: "panel.example", port: 443, prefix: "" },
+    to: { ip: "node.example", port: 8443, prefix: "/daemon" }
+  }], []]) {
+    config.remoteMappings = mappings;
+    storage.store("Config", "global", config);
+    assert.deepEqual(storage.load("Config", Config, "global").remoteMappings, mappings);
+  }
 });

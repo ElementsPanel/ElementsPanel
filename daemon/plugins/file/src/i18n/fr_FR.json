@@ -4,5 +4,12 @@
   "TXT_CODE_file_router_service.instanceNotExit": "L'instance {{uuid}} n'existe pas",
   "TXT_CODE_system_file.execLimit": "Limite maximale de modification de fichier dépassée",
   "TXT_CODE_system_file.illegalAccess": "Mauvais chemin d'accès",
-  "TXT_CODE_system_file.unzipLimit": "La décompression de fichiers ne prend en charge que la décompression de fichiers jusqu'à {{max}} Go. Si vous devez modifier la limite supérieure, veuillez accéder au fichier data/Config/global.json."
+  "TXT_CODE_system_file.unzipLimit": "La décompression de fichiers ne prend en charge que la décompression de fichiers jusqu'à {{max}} Go. Si vous devez modifier la limite supérieure, veuillez accéder au fichier data/Config/global.json.",
+  "TXT_CODE_e3a77a77": "Illimité",
+  "TXT_CODE_fde31068": "Taux de téléchargement de fichiers utilisateur",
+  "TXT_CODE_d8d19932": "Limite par demande HTTP, vitesse maximale de téléchargement de fichiers",
+  "TXT_CODE_785a0fcf": "Taux de téléchargement des fichiers utilisateur",
+  "TXT_CODE_b9fc604c": "Limite par demande HTTP, vitesse de téléchargement de fichiers maximum",
+  "TXT_CODE_a15fca22": "Maximum de téléchargements depuis l'URL",
+  "TXT_CODE_ecaf78a2": "Mettre 0 pour illimité"
 }

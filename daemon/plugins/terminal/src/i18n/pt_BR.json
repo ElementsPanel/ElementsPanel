@@ -1,0 +1,4 @@
+{
+  "TXT_CODE_daemon_outputBufferSize": "Tamanho do buffer de log",
+  "TXT_CODE_daemon_outputBufferSizeInfo": "Aumentar o buffer pode garantir melhor a integridade do conteúdo de saída do terminal, mas aumentará a pressão sobre a memória e o desempenho, podendo até causar vazamentos de memória."
+}

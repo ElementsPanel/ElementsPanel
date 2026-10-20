@@ -13,5 +13,11 @@
   "TXT_CODE_minecraft.invalidDownload": "Parámetros de descarga de Minecraft no válidos.",
   "TXT_CODE_minecraft.platformMismatch": "El servidor Bedrock no es compatible con este nodo. Selecciona una versión que coincida con Windows/Linux del nodo y utiliza un nodo x64.",
   "TXT_CODE_minecraft.missingFiles": "No se encontraron los archivos de inicio del servidor instalado. Revisa el paquete descargado y el registro de instalación.",
-  "TXT_CODE_minecraft.hashMismatch": "El archivo descargado no superó la verificación SHA-256. Se detuvo la instalación; inténtalo de nuevo."
+  "TXT_CODE_minecraft.hashMismatch": "El archivo descargado no superó la verificación SHA-256. Se detuvo la instalación; inténtalo de nuevo.",
+  "TXT_CODE_daemon_enableSoftShutdown": "Habilitar Apagado Suave",
+  "TXT_CODE_daemon_enableSoftShutdownInfo": "Si se deshabilita, la salida del daemon siempre fuerza la terminación de todas las instancias.",
+  "TXT_CODE_daemon_softShutdownSkipDocker": "Omitir Docker en Apagado Suave",
+  "TXT_CODE_daemon_softShutdownSkipDockerInfo": "Si se habilita, las instancias Docker se ignoran durante el apagado suave.",
+  "TXT_CODE_daemon_softShutdownWaitSeconds": "Segundos de Espera para Apagado Suave",
+  "TXT_CODE_daemon_softShutdownWaitSecondsInfo": "Tiempo de espera antes de forzar la terminación de instancias objetivo restantes (1-600 segundos)."
 }

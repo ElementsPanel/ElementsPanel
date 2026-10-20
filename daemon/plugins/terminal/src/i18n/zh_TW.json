@@ -1,0 +1,4 @@
+{
+  "TXT_CODE_daemon_outputBufferSize": "日誌緩衝區大小",
+  "TXT_CODE_daemon_outputBufferSizeInfo": "增大緩衝區可更好的保證終端輸出的內容完整性，但記憶體和效能的壓力將會更大，甚至記憶體洩漏。"
+}

@@ -7,7 +7,6 @@ import { addNode, connectNode, deleteNode, editNode, remoteNodeList } from "../a
 import { getValidatorErrorMsg, reportErrorMsg } from "@/tools/validator";
 import type { NodeStatus } from "@/types";
 import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
-import DesktopNodeAdvancedSettings from "./DesktopNodeAdvancedSettings.vue";
 import DesktopWindow from "./DesktopWindow.vue";
 import { VBtn, VDataTable, VIcon, VTextField, VTooltip } from "vuetify/components";
 
@@ -94,9 +93,6 @@ const saving = ref(false);
 
 const showDeleteConfirm = ref(false);
 const deletingNode = ref<NodeStatus | null>(null);
-
-const showAdvancedSettings = ref(false);
-const advancedSettingsNode = ref<NodeStatus | null>(null);
 
 const windowWidth = ref(window.innerWidth);
 const windowHeight = ref(window.innerHeight);
@@ -305,16 +301,6 @@ const reconnectNode = async (node: NodeStatus) => {
     reconnecting.delete(node.uuid);
   }
 };
-
-const openAdvancedSettings = (node: NodeStatus) => {
-  advancedSettingsNode.value = node;
-  showAdvancedSettings.value = true;
-};
-
-const closeAdvancedSettings = () => {
-  showAdvancedSettings.value = false;
-  advancedSettingsNode.value = null;
-};
 </script>
 
 <template>
@@ -416,8 +402,8 @@ const closeAdvancedSettings = () => {
             variant="text"
             rounded="xl"
             class="dn-action-btn"
-            :title="t('TXT_CODE_31a1d824')"
-            @click="openAdvancedSettings(item)"
+            :title="t('TXT_CODE_PLUGIN_CONFIG')"
+            :to="{ path: '/plugins/config', query: { scope: 'node', daemonId: item.uuid } }"
             ><VIcon icon="mdi-cog-outline" /></VBtn
           ><VBtn
             icon
@@ -622,17 +608,6 @@ const closeAdvancedSettings = () => {
             </div>
           </div>
         </DesktopWindow>
-      </Transition>
-    </Teleport>
-
-    <Teleport to="body">
-      <Transition name="dn-dialog-fade">
-        <DesktopNodeAdvancedSettings
-          v-if="showAdvancedSettings && advancedSettingsNode"
-          :visible="showAdvancedSettings"
-          :node="advancedSettingsNode"
-          @close="closeAdvancedSettings"
-        />
       </Transition>
     </Teleport>
   </div>
@@ -878,11 +853,6 @@ const closeAdvancedSettings = () => {
   &--reconnect:hover {
     background: rgba(22, 119, 255, 0.15);
     color: #1677ff;
-  }
-
-  &--advanced:hover {
-    background: rgba(250, 173, 20, 0.15);
-    color: #faad14;
   }
 
   &--delete:hover {

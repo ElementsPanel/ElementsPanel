@@ -1,0 +1,4 @@
+{
+  "TXT_CODE_daemon_outputBufferSize": "Tamaño del búfer de registro",
+  "TXT_CODE_daemon_outputBufferSizeInfo": "Aumentar el búfer puede garantizar mejor la integridad del contenido de salida del terminal, pero ejercerá mayor presión sobre la memoria y el rendimiento, e incluso puede causar fugas de memoria."
+}

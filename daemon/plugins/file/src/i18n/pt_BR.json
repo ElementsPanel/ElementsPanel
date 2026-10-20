@@ -4,5 +4,12 @@
   "TXT_CODE_file_router_service.instanceNotExit": "A instância {{uuid}} não existe",
   "TXT_CODE_system_file.execLimit": "Limite máximo de edição de arquivos excedido",
   "TXT_CODE_system_file.illegalAccess": "Caminho de acesso ilegal",
-  "TXT_CODE_system_file.unzipLimit": "A descompactação de arquivos suporta apenas arquivos de até {{max}}GB. Para alterar esse limite, vá até o arquivo data/Config/global.json."
+  "TXT_CODE_system_file.unzipLimit": "A descompactação de arquivos suporta apenas arquivos de até {{max}}GB. Para alterar esse limite, vá até o arquivo data/Config/global.json.",
+  "TXT_CODE_e3a77a77": "Ilimitado",
+  "TXT_CODE_fde31068": "Taxa de upload de arquivos do usuário",
+  "TXT_CODE_d8d19932": "Limite por solicitação HTTP, velocidade máxima de upload do arquivo",
+  "TXT_CODE_785a0fcf": "Taxa de download de arquivos do usuário",
+  "TXT_CODE_b9fc604c": "Limite por solicitação HTTP, velocidade máxima de download de arquivo",
+  "TXT_CODE_a15fca22": "Máximo de downloads por URL",
+  "TXT_CODE_ecaf78a2": "Defina 0 para ilimitado"
 }

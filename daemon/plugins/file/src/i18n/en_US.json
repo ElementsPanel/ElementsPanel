@@ -4,5 +4,12 @@
   "TXT_CODE_file_router_service.instanceNotExit": "Instance {{uuid}} does not exist",
   "TXT_CODE_system_file.execLimit": "Exceeded maximum file editing limit",
   "TXT_CODE_system_file.illegalAccess": "Illegal access path",
-  "TXT_CODE_system_file.unzipLimit": "File decompression only supports file up to {{max}}GB. To change this limit, please go to the data/Config/global.json file."
+  "TXT_CODE_system_file.unzipLimit": "File decompression only supports file up to {{max}}GB. To change this limit, please go to the data/Config/global.json file.",
+  "TXT_CODE_e3a77a77": "Unlimited",
+  "TXT_CODE_fde31068": "User file upload rate",
+  "TXT_CODE_d8d19932": "Limit per HTTP request, maximum file upload speed",
+  "TXT_CODE_785a0fcf": "User file download rate",
+  "TXT_CODE_b9fc604c": "Limit per HTTP request, maximum file download speed",
+  "TXT_CODE_a15fca22": "Maximum of download from URL",
+  "TXT_CODE_ecaf78a2": "Set to 0 to unlimited"
 }

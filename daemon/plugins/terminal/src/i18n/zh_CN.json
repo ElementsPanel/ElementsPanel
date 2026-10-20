@@ -1,0 +1,4 @@
+{
+  "TXT_CODE_daemon_outputBufferSize": "日志缓冲区大小",
+  "TXT_CODE_daemon_outputBufferSizeInfo": "增大缓冲区可更好的保证终端输出的内容完整性，但内存和性能的压力将会更大，甚至内存泄漏。"
+}

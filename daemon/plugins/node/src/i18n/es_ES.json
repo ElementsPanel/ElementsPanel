@@ -1,0 +1,10 @@
+{
+  "TXT_CODE_bbe23ee7": "Asignaciones de dirección de conexión directa del nodo",
+  "TXT_CODE_497568db": "Configura cómo se conecta directamente el nodo cuando el usuario accede al panel desde diferentes endpoints, útil cuando el nodo está detrás de un proxy inverso.",
+  "TXT_CODE_8d8fbbf4": "Añadir asignación",
+  "TXT_CODE_2ee6fd18": "Al acceder al panel desde",
+  "TXT_CODE_6f27624c": "Acceder al daemon desde",
+  "TXT_CODE_54312194": "Dirección y puerto",
+  "TXT_CODE_f49149d0": "puerto de conexión",
+  "TXT_CODE_941d83b8": "Prefijo de ruta"
+}

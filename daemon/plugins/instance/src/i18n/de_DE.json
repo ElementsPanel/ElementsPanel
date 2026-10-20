@@ -13,5 +13,11 @@
   "TXT_CODE_minecraft.invalidDownload": "Ungültige Minecraft-Downloadparameter.",
   "TXT_CODE_minecraft.platformMismatch": "Der Bedrock-Server ist mit diesem Knoten nicht kompatibel. Eine Version passend zu Windows/Linux auswählen und einen x64-Knoten verwenden.",
   "TXT_CODE_minecraft.missingFiles": "Die Startdateien des installierten Servers wurden nicht gefunden. Das heruntergeladene Paket und das Installationsprotokoll prüfen.",
-  "TXT_CODE_minecraft.hashMismatch": "Die SHA-256-Prüfung der heruntergeladenen Datei ist fehlgeschlagen. Die Installation wurde gestoppt. Bitte erneut versuchen."
+  "TXT_CODE_minecraft.hashMismatch": "Die SHA-256-Prüfung der heruntergeladenen Datei ist fehlgeschlagen. Die Installation wurde gestoppt. Bitte erneut versuchen.",
+  "TXT_CODE_daemon_enableSoftShutdown": "Aktivieren Sie Soft Shutdown",
+  "TXT_CODE_daemon_enableSoftShutdownInfo": "Wenn deaktiviert, führt der Daemon-Exit immer zum zwangsweisen Abbruch aller Instanzen.",
+  "TXT_CODE_daemon_softShutdownSkipDocker": "Überspringen Sie Docker beim sanften Herunterfahren",
+  "TXT_CODE_daemon_softShutdownSkipDockerInfo": "Wenn diese Option aktiviert ist, werden Docker-Instanzen beim sanften Herunterfahren ignoriert.",
+  "TXT_CODE_daemon_softShutdownWaitSeconds": "Soft-Shutdown-Wartesekunden",
+  "TXT_CODE_daemon_softShutdownWaitSecondsInfo": "Zeitüberschreitung vor dem erzwungenen Töten verbleibender Zielinstanzen (1–600 Sekunden)."
 }

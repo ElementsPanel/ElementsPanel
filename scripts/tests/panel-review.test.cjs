@@ -640,3 +640,60 @@ test("enabled user plugin failure denies requests/uploads until its guard return
   });
   assert.equal(reached, 3);
 });
+
+test("node overview imports legacy mappings and refreshes the addresses used by file and terminal access", async () => {
+  const { default: RemoteRequest } = load("panel/plugins/node/src/backend/remote_command.ts", {
+    "./remote_entity": { default: { STATUS_OK: 200 }, __esModule: true },
+    "./runtime": { $t: (key) => key }
+  });
+  const { RemoteServiceConfig } = load("panel/plugins/node/src/backend/remote_config.ts", {
+    "mcsmanager-common": { removeTrail: (value) => value }
+  });
+  const config = new RemoteServiceConfig();
+  const legacy = [{
+    from: { ip: "panel.example", port: 443, prefix: "/panel" },
+    to: { ip: "node.example", port: 443, prefix: "/node" }
+  }];
+  config.remoteMappings = legacy;
+  let mappings = null;
+  let supportsMappings = true;
+  let migrations = 0;
+  class Socket extends EventEmitter {
+    connected = true;
+    emit(event, packet) {
+      queueMicrotask(() => {
+        let data;
+        if (event === "info/overview") {
+          data = { version: "test", ...(supportsMappings ? { remoteMappings: mappings } : {}) };
+        } else {
+          assert.equal(event, "node/mappings");
+          migrations++;
+          mappings = structuredClone(packet.data.remoteMappings);
+          data = mappings;
+        }
+        super.emit(event, { uuid: packet.uuid, status: 200, data });
+      });
+      return true;
+    }
+  }
+  const service = { socket: new Socket(), available: true, pendingRequests: new Set(), config };
+  const request = new RemoteRequest(service);
+  assert.deepEqual((await request.request("info/overview")).remoteMappings, legacy);
+  assert.equal(migrations, 1);
+  mappings = structuredClone(legacy);
+  mappings[0].to.port = 8443;
+  await request.request("info/overview");
+  assert.deepEqual(config.getConvertedRemoteMappings(), [{
+    from: { addr: "panel.example:443", prefix: "/panel" },
+    to: { addr: "node.example:8443", prefix: "/node" }
+  }]);
+  mappings = [];
+  await request.request("info/overview");
+  assert.deepEqual(config.getConvertedRemoteMappings(), []);
+  assert.equal(migrations, 1);
+  supportsMappings = false;
+  config.remoteMappings = legacy;
+  assert.equal((await request.request("info/overview")).version, "test");
+  assert.deepEqual(config.remoteMappings, legacy);
+  assert.equal(service.pendingRequests.size, 0);
+});

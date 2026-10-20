@@ -4,5 +4,12 @@
   "TXT_CODE_file_router_service.instanceNotExit": "La instancia {{uuid}} no existe",
   "TXT_CODE_system_file.execLimit": "Se superó el límite máximo de edición de archivos",
   "TXT_CODE_system_file.illegalAccess": "Ruta de acceso incorrecta",
-  "TXT_CODE_system_file.unzipLimit": "La descompresión de archivos solo admite la descompresión de archivos de hasta {{max}} GB. Si necesita cambiar el límite superior, vaya al archivo data/Config/global.json."
+  "TXT_CODE_system_file.unzipLimit": "La descompresión de archivos solo admite la descompresión de archivos de hasta {{max}} GB. Si necesita cambiar el límite superior, vaya al archivo data/Config/global.json.",
+  "TXT_CODE_e3a77a77": "Ilimitado",
+  "TXT_CODE_fde31068": "Tasa de carga de archivo de usuario",
+  "TXT_CODE_d8d19932": "Límite por solicitud HTTP, velocidad máxima de carga de archivo",
+  "TXT_CODE_785a0fcf": "Tasa de descarga de archivos de usuario",
+  "TXT_CODE_b9fc604c": "Límite por solicitud HTTP, velocidad máxima de descarga de archivo",
+  "TXT_CODE_a15fca22": "Máximo de descargas desde URL",
+  "TXT_CODE_ecaf78a2": "Establecer en 0 para ilimitado"
 }

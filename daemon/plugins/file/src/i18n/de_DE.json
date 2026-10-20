@@ -4,5 +4,12 @@
   "TXT_CODE_file_router_service.instanceNotExit": "Instanz {{uuid}} existiert nicht",
   "TXT_CODE_system_file.execLimit": "Maximale Dateibearbeitungsgrenze überschritten",
   "TXT_CODE_system_file.illegalAccess": "Falscher Zugriffspfad",
-  "TXT_CODE_system_file.unzipLimit": "Die Dateidekomprimierung unterstützt nur die Dekomprimierung von Dateien bis zu {{max}} GB. Wenn Sie die Obergrenze ändern müssen, gehen Sie bitte zur Datei data/Config/global.json."
+  "TXT_CODE_system_file.unzipLimit": "Die Dateidekomprimierung unterstützt nur die Dekomprimierung von Dateien bis zu {{max}} GB. Wenn Sie die Obergrenze ändern müssen, gehen Sie bitte zur Datei data/Config/global.json.",
+  "TXT_CODE_e3a77a77": "Unbegrenzt",
+  "TXT_CODE_fde31068": "Upload -Rate für Benutzerdatei",
+  "TXT_CODE_d8d19932": "Begrenzung pro HTTP",
+  "TXT_CODE_785a0fcf": "Benutzerdatei -Download -Rate",
+  "TXT_CODE_b9fc604c": "Limit pro HTTP -Anforderung, Maximale Datei -Download -Geschwindigkeit",
+  "TXT_CODE_a15fca22": "Maximale Downloads von URL",
+  "TXT_CODE_ecaf78a2": "0 für unbegrenzt"
 }

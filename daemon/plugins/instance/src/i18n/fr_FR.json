@@ -13,5 +13,11 @@
   "TXT_CODE_minecraft.invalidDownload": "Paramètres de téléchargement Minecraft invalides.",
   "TXT_CODE_minecraft.platformMismatch": "Le serveur Bedrock est incompatible avec ce nœud. Choisissez une version correspondant à Windows/Linux et utilisez un nœud x64.",
   "TXT_CODE_minecraft.missingFiles": "Les fichiers de démarrage du serveur installé sont introuvables. Vérifiez le paquet téléchargé et le journal d’installation.",
-  "TXT_CODE_minecraft.hashMismatch": "La vérification SHA-256 du fichier téléchargé a échoué. Installation arrêtée ; veuillez réessayer."
+  "TXT_CODE_minecraft.hashMismatch": "La vérification SHA-256 du fichier téléchargé a échoué. Installation arrêtée ; veuillez réessayer.",
+  "TXT_CODE_daemon_enableSoftShutdown": "Activer l'arrêt progressif",
+  "TXT_CODE_daemon_enableSoftShutdownInfo": "Si désactivé, la sortie du démon force toujours l'arrêt de toutes les instances.",
+  "TXT_CODE_daemon_softShutdownSkipDocker": "Ignorer Docker lors de l'arrêt progressif",
+  "TXT_CODE_daemon_softShutdownSkipDockerInfo": "Si activé, les instances Docker sont ignorées pendant l'arrêt progressif.",
+  "TXT_CODE_daemon_softShutdownWaitSeconds": "Secondes d'attente pour l'arrêt progressif",
+  "TXT_CODE_daemon_softShutdownWaitSecondsInfo": "Délai avant de forcer l'arrêt des instances cibles restantes (1 à 600 secondes)."
 }

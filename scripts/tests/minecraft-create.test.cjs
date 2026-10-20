@@ -716,6 +716,7 @@ test("Minecraft installation survives loading and unloading an unrelated task pl
   const instancePlugin = load("daemon/plugins/instance/src/backend/index.ts", {
     "./tools/steam_cmd": { initSteamCmd() {} },
     "./service/version_adapter": { migrateConfig() {} },
+    "./settings": load("daemon/plugins/instance/src/backend/settings.ts"),
     "./runtime": { setPluginContext() {} },
     "./service/router": { routerApp: { dispose() {} } },
     "./registries": registries,

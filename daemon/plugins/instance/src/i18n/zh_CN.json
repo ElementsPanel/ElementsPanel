@@ -13,5 +13,11 @@
   "TXT_CODE_minecraft.invalidDownload": "Minecraft 下载参数无效。",
   "TXT_CODE_minecraft.platformMismatch": "基岩版服务端与节点不兼容，请选择与节点 Windows/Linux 系统一致的版本，并使用 x64 节点。",
   "TXT_CODE_minecraft.missingFiles": "未找到安装后的服务端启动文件，请检查下载包和安装日志。",
-  "TXT_CODE_minecraft.hashMismatch": "下载文件的 SHA-256 校验失败，已停止安装，请重试。"
+  "TXT_CODE_minecraft.hashMismatch": "下载文件的 SHA-256 校验失败，已停止安装，请重试。",
+  "TXT_CODE_daemon_enableSoftShutdown": "启用软关闭",
+  "TXT_CODE_daemon_enableSoftShutdownInfo": "关闭后，守护进程退出时将始终强制关闭所有实例。",
+  "TXT_CODE_daemon_softShutdownSkipDocker": "软关闭时跳过 Docker",
+  "TXT_CODE_daemon_softShutdownSkipDockerInfo": "开启后，软关闭阶段会忽略 Docker 实例。",
+  "TXT_CODE_daemon_softShutdownWaitSeconds": "软关闭等待秒数",
+  "TXT_CODE_daemon_softShutdownWaitSecondsInfo": "超过该时间后将强制关闭剩余目标实例（1-600 秒）。"
 }

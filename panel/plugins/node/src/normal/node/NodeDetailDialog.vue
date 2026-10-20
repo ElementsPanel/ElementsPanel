@@ -11,63 +11,23 @@ import {
   VCard,
   VCardActions,
   VCardText,
-  VCol,
   VDialog,
   VForm,
-  VRow,
-  VSelect,
-  VSheet,
-  VSwitch,
-  VTab,
-  VTabs,
-  VTextField,
-  VWindow,
-  VWindowItem
+  VTextField
 } from "vuetify/components";
 import { useRemoteNode } from "../../hooks/useRemoteNode";
-import NodeRemoteMappingEdit from "../NodeRemoteMappingEdit.vue";
 
 const { addNode, deleteNode, updateNode } = useRemoteNode({ poll: false });
 const editMode = ref(false);
 const formRef = ref<{ validate: () => Promise<{ valid: boolean }> }>();
-const activeTabKey = ref("basic");
-const daemonInfo = ref<ComputedNodeInfo | null>(null);
 
 const DEFAULT_CONFIG = {
   ip: "",
   port: 24444,
   prefix: "",
   remarks: "Unnamed Node",
-  apiKey: "",
-  language: "",
-  uploadSpeedRate: 0,
-  downloadSpeedRate: 0,
-  maxDownloadFromUrlFileCount: 1,
-  portRangeStart: 0,
-  portRangeEnd: 0,
-  portAssignInterval: 0,
-  daemonPort: 24444,
-  remoteMappings: [] as IPanelOverviewRemoteMappingResponse[],
-  outputBufferSize: 256,
-  enableSoftShutdown: true,
-  softShutdownSkipDocker: true,
-  softShutdownWaitSeconds: 10,
+  apiKey: ""
 };
-
-const SPEED_RATE_OPTIONS = [
-  { title: t("TXT_CODE_e3a77a77"), value: 0 },
-  { title: "320KB/s", value: 5 },
-  { title: "640KB/s", value: 10 },
-  { title: "1MB/s", value: 16 },
-  { title: "2MB/s", value: 32 },
-  { title: "4MB/s", value: 64 },
-  { title: "6MB/s", value: 96 },
-  { title: "8MB/s", value: 128 },
-  { title: "10MB/s", value: 160 },
-  { title: "15MB/s", value: 240 },
-  { title: "20MB/s", value: 320 },
-  { title: "30MB/s", value: 480 }
-];
 
 const dialog = reactive({
   status: false,
@@ -83,24 +43,17 @@ const apiKeyRule = (value: unknown) => editMode.value || requiredRule(value);
 
 const openDialog = (data?: ComputedNodeInfo, uuid?: string) => {
   if (data && uuid) {
-    daemonInfo.value = data;
     editMode.value = true;
     dialog.uuid = uuid;
     dialog.data = {
       ..._.cloneDeep(DEFAULT_CONFIG),
-      ...data,
-      ..._.pick(data.config, Object.keys(DEFAULT_CONFIG)),
-      port: data.port,
-      daemonPort: data.config?.port ?? 24444,
-      apiKey: "",
-      remoteMappings: data.remoteMappings ?? []
+      ..._.pick(data, Object.keys(DEFAULT_CONFIG)),
+      apiKey: ""
     };
   } else {
-    daemonInfo.value = null;
     editMode.value = false;
     dialog.data = _.cloneDeep(DEFAULT_CONFIG);
   }
-  activeTabKey.value = "basic";
   dialog.status = true;
 };
 
@@ -116,7 +69,7 @@ const submit = async () => {
     if (result && !result.valid) return;
     dialog.loading = true;
     if (editMode.value)
-      await updateNode(dialog.uuid, { ...dialog.data, setting: { ...dialog.data } });
+      await updateNode(dialog.uuid, { ...dialog.data, apiKey: dialog.data.apiKey || undefined });
     else await addNode(dialog.data);
     message.success(t("TXT_CODE_e74d658c"));
     const wasEdit = editMode.value;
@@ -154,151 +107,50 @@ defineExpose({ openDialog });
   <VDialog v-model="dialog.status" class="app-dialog node-detail-dialog" max-width="900px">
     <VCard :title="t(editMode ? 'TXT_CODE_39c5229e' : 'TXT_CODE_15a381d5')" rounded="xl">
       <VCardText class="node-dialog-content">
-        <VTabs v-model="activeTabKey" color="primary" density="comfortable" class="mb-4">
-          <VTab value="basic">{{ t("TXT_CODE_cc7b54b9") }}</VTab>
-          <VTab v-if="daemonInfo?.available" value="advanced">{{ t("TXT_CODE_31a1d824") }}</VTab>
-        </VTabs>
-
-        <VWindow v-model="activeTabKey" class="node-dialog-form">
-          <VWindowItem value="basic">
-            <VForm ref="formRef" @submit.prevent="submit">
-              <VTextField
-                v-model="dialog.data.remarks"
-                :label="t('TXT_CODE_a884de59')"
-                :placeholder="t('TXT_CODE_4b1d5199')"
-                :rules="[(v) => !!String(v ?? '').trim() || t('TXT_CODE_cb08d342')]"
-                required
-              />
-              <VTextField
-                v-model="dialog.data.ip"
-                :label="t('TXT_CODE_93f9b02a')"
-                :hint="`${t('TXT_CODE_be7a689a')} ${t('TXT_CODE_c82a51b0')}`"
-                :rules="[requiredRule]"
-                persistent-hint
-                required
-              />
-              <div v-if="ipNeedsMapping(dialog.data.ip)" class="form-hint">
-                {{ t("TXT_CODE_93c3cb78") }}
-              </div>
-              <VTextField
-                v-model.number="dialog.data.port"
-                type="number"
-                :label="t('TXT_CODE_4a6bf8c6')"
-                :hint="t('TXT_CODE_df455795')"
-                :rules="[requiredRule]"
-                persistent-hint
-                required
-              />
-              <VTextField
-                v-model="dialog.data.apiKey"
-                :label="t('TXT_CODE_300c2ff4')"
-                :placeholder="editMode ? t('TXT_CODE_dc570cf2') : t('TXT_CODE_fe25087f')"
-                :hint="t('TXT_CODE_5ef2cf20')"
-                :rules="[apiKeyRule]"
-                persistent-hint
-                :required="!editMode"
-              />
-              <VTextField
-                v-model="dialog.data.prefix"
-                :label="t('TXT_CODE_693f31d6')"
-                :hint="t('TXT_CODE_3e93e31e')"
-                persistent-hint
-              />
-            </VForm>
-          </VWindowItem>
-
-          <VWindowItem value="advanced">
-            <VRow>
-              <VCol cols="12" md="6">
-                <VSelect
-                  v-model="dialog.data.uploadSpeedRate"
-                  :items="SPEED_RATE_OPTIONS"
-                  item-title="title"
-                  item-value="value"
-                  :label="t('TXT_CODE_fde31068')"
-                  :hint="t('TXT_CODE_d8d19932')"
-                  persistent-hint
-                />
-              </VCol>
-              <VCol cols="12" md="6">
-                <VSelect
-                  v-model="dialog.data.downloadSpeedRate"
-                  :items="SPEED_RATE_OPTIONS"
-                  item-title="title"
-                  item-value="value"
-                  :label="t('TXT_CODE_785a0fcf')"
-                  :hint="t('TXT_CODE_b9fc604c')"
-                  persistent-hint
-                />
-              </VCol>
-              <VCol cols="12" md="6">
-                <VTextField
-                  v-model.number="dialog.data.maxDownloadFromUrlFileCount"
-                  type="number"
-                  :label="t('TXT_CODE_a15fca22')"
-                  :hint="t('TXT_CODE_ecaf78a2')"
-                  persistent-hint
-                />
-              </VCol>
-              <VCol cols="12" md="6">
-                <VTextField
-                  v-model.number="dialog.data.outputBufferSize"
-                  type="number"
-                  :label="t('TXT_CODE_daemon_outputBufferSize')"
-                  :hint="t('TXT_CODE_daemon_outputBufferSizeInfo')"
-                  persistent-hint
-                />
-              </VCol>
-              <VCol cols="12" md="6">
-                <VSwitch
-                  v-model="dialog.data.enableSoftShutdown"
-                  :label="t('TXT_CODE_daemon_enableSoftShutdown')"
-                  :hint="t('TXT_CODE_daemon_enableSoftShutdownInfo')"
-                  persistent-hint
-                  color="primary"
-                />
-              </VCol>
-              <VCol cols="12" md="6">
-                <VSwitch
-                  v-model="dialog.data.softShutdownSkipDocker"
-                  :label="t('TXT_CODE_daemon_softShutdownSkipDocker')"
-                  :hint="t('TXT_CODE_daemon_softShutdownSkipDockerInfo')"
-                  persistent-hint
-                  color="primary"
-                />
-              </VCol>
-              <VCol cols="12" md="6">
-                <VTextField
-                  v-model.number="dialog.data.softShutdownWaitSeconds"
-                  type="number"
-                  :label="t('TXT_CODE_daemon_softShutdownWaitSeconds')"
-                  :hint="t('TXT_CODE_daemon_softShutdownWaitSecondsInfo')"
-                  persistent-hint
-                />
-              </VCol>
-              <VCol cols="12">
-                <VTextField
-                  v-model.number="dialog.data.daemonPort"
-                  type="number"
-                  :label="t('TXT_CODE_cd1f9ef7')"
-                  :hint="t('TXT_CODE_75ef0619')"
-                  persistent-hint
-                />
-              </VCol>
-              <VCol cols="12">
-                <VBtn :to="{ path: '/plugins/config', query: { scope: 'node', daemonId: dialog.uuid } }"
-                  variant="tonal" @click="closeDialog">{{ t("TXT_CODE_PLUGIN_CONFIG") }}</VBtn>
-              </VCol>
-              <VCol cols="12">
-                <VSheet class="mapping-sheet" rounded="xl" variant="tonal">
-                  <div class="mapping-label">{{ t("TXT_CODE_bbe23ee7") }}</div>
-                  <div class="form-hint">{{ t("TXT_CODE_497568db") }}</div>
-                  <NodeRemoteMappingEdit v-model:value="dialog.data.remoteMappings" />
-                </VSheet>
-              </VCol>
-            </VRow>
-          </VWindowItem>
-        </VWindow>
+        <VForm ref="formRef" @submit.prevent="submit">
+          <VTextField
+            v-model="dialog.data.remarks"
+            :label="t('TXT_CODE_a884de59')"
+            :placeholder="t('TXT_CODE_4b1d5199')"
+            :rules="[(v) => !!String(v ?? '').trim() || t('TXT_CODE_cb08d342')]"
+            required
+          />
+          <VTextField
+            v-model="dialog.data.ip"
+            :label="t('TXT_CODE_93f9b02a')"
+            :hint="`${t('TXT_CODE_be7a689a')} ${t('TXT_CODE_c82a51b0')}`"
+            :rules="[requiredRule]"
+            persistent-hint
+            required
+          />
+          <div v-if="ipNeedsMapping(dialog.data.ip)" class="form-hint">
+            {{ t("TXT_CODE_93c3cb78") }}
+          </div>
+          <VTextField
+            v-model.number="dialog.data.port"
+            type="number"
+            :label="t('TXT_CODE_4a6bf8c6')"
+            :hint="t('TXT_CODE_df455795')"
+            :rules="[requiredRule]"
+            persistent-hint
+            required
+          />
+          <VTextField
+            v-model="dialog.data.apiKey"
+            :label="t('TXT_CODE_300c2ff4')"
+            :placeholder="editMode ? t('TXT_CODE_dc570cf2') : t('TXT_CODE_fe25087f')"
+            :hint="t('TXT_CODE_5ef2cf20')"
+            :rules="[apiKeyRule]"
+            persistent-hint
+            :required="!editMode"
+          />
+          <VTextField
+            v-model="dialog.data.prefix"
+            :label="t('TXT_CODE_693f31d6')"
+            :hint="t('TXT_CODE_3e93e31e')"
+            persistent-hint
+          />
+        </VForm>
       </VCardText>
       <VCardActions class="node-dialog-actions">
         <VBtn
@@ -337,14 +189,5 @@ defineExpose({ openDialog });
   margin: -8px 0 12px;
   color: var(--color-gray-7);
   font-size: 12px;
-}
-
-.mapping-sheet {
-  padding: 16px;
-}
-
-.mapping-label {
-  margin-bottom: 4px;
-  font-weight: 600;
 }
 </style>

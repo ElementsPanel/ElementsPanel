@@ -4,5 +4,12 @@
   "TXT_CODE_file_router_service.instanceNotExit": "Örnek {{uuid}} mevcut değil",
   "TXT_CODE_system_file.execLimit": "Maksimum dosya düzenleme sınırı aşıldı",
   "TXT_CODE_system_file.illegalAccess": "Yasadışı erişim yolu",
-  "TXT_CODE_system_file.unzipLimit": "Dosya açma yalnızca {{max}}GB'a kadar olan dosyaları destekler. Bu sınırı değiştirmek için lütfen data/Config/global.json dosyasına gidin."
+  "TXT_CODE_system_file.unzipLimit": "Dosya açma yalnızca {{max}}GB'a kadar olan dosyaları destekler. Bu sınırı değiştirmek için lütfen data/Config/global.json dosyasına gidin.",
+  "TXT_CODE_e3a77a77": "Sınırsız",
+  "TXT_CODE_fde31068": "Kullanıcı Dosyası Yükleme Oranı",
+  "TXT_CODE_d8d19932": "HTTP isteği başına sınır, maksimum dosya yükleme hızı",
+  "TXT_CODE_785a0fcf": "Kullanıcı Dosyası İndirme Oranı",
+  "TXT_CODE_b9fc604c": "HTTP İsteği Başına Limit, Maksimum Dosya İndirme Hızı",
+  "TXT_CODE_a15fca22": "URL'den maksimum indirme",
+  "TXT_CODE_ecaf78a2": "Sınırsız için 0'a ayarla"
 }

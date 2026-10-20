@@ -4,5 +4,12 @@
   "TXT_CODE_file_router_service.instanceNotExit": "インスタンス {{uuid}} は存在しません",
   "TXT_CODE_system_file.execLimit": "ファイル編集の最大制限を超えました",
   "TXT_CODE_system_file.illegalAccess": "間違ったアクセスパス",
-  "TXT_CODE_system_file.unzipLimit": "ファイルの解凍では、最大 {{max}} GB のファイルの解凍のみがサポートされます。上限を変更する必要がある場合は、data/Config/global.json ファイルに移動してください。"
+  "TXT_CODE_system_file.unzipLimit": "ファイルの解凍では、最大 {{max}} GB のファイルの解凍のみがサポートされます。上限を変更する必要がある場合は、data/Config/global.json ファイルに移動してください。",
+  "TXT_CODE_e3a77a77": "無制限",
+  "TXT_CODE_fde31068": "ユーザーファイルのアップロードレート",
+  "TXT_CODE_d8d19932": "HTTPリクエストごとに制限、最大ファイルアップロード速度",
+  "TXT_CODE_785a0fcf": "ユーザーファイルのダウンロードレート",
+  "TXT_CODE_b9fc604c": "HTTP要求ごとに制限、最大ファイルのダウンロード速度",
+  "TXT_CODE_a15fca22": "URLからの最大ダウンロード数",
+  "TXT_CODE_ecaf78a2": "0で無制限に設定"
 }

@@ -4,5 +4,12 @@
   "TXT_CODE_file_router_service.instanceNotExit": "ไม่พบอินสแตนซ์ {{uuid}}",
   "TXT_CODE_system_file.execLimit": "เกินขีดจำกัดการแก้ไขไฟล์สูงสุด",
   "TXT_CODE_system_file.illegalAccess": "เส้นทางการเข้าถึงไม่ถูกต้อง",
-  "TXT_CODE_system_file.unzipLimit": "การแตกไฟล์รองรับไฟล์ขนาดไม่เกิน {{max}}GB หากต้องการเปลี่ยนขีดจำกัดนี้ กรุณาไปที่ไฟล์ data/Config/global.json"
+  "TXT_CODE_system_file.unzipLimit": "การแตกไฟล์รองรับไฟล์ขนาดไม่เกิน {{max}}GB หากต้องการเปลี่ยนขีดจำกัดนี้ กรุณาไปที่ไฟล์ data/Config/global.json",
+  "TXT_CODE_e3a77a77": "ไม่จำกัด",
+  "TXT_CODE_fde31068": "อัตราการอัปโหลดไฟล์ผู้ใช้",
+  "TXT_CODE_d8d19932": "ขีด จำกัด ต่อคำขอ HTTP ความเร็วในการอัปโหลดไฟล์สูงสุด",
+  "TXT_CODE_785a0fcf": "อัตราการดาวน์โหลดไฟล์ผู้ใช้",
+  "TXT_CODE_b9fc604c": "ขีด จำกัด ต่อคำขอ HTTP ความเร็วในการดาวน์โหลดไฟล์สูงสุด",
+  "TXT_CODE_a15fca22": "จำนวนสูงสุดของการดาวน์โหลดจาก URL",
+  "TXT_CODE_ecaf78a2": "ตั้งเป็น 0 สำหรับไม่จำกัด"
 }

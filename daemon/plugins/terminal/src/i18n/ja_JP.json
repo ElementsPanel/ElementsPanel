@@ -1,0 +1,4 @@
+{
+  "TXT_CODE_daemon_outputBufferSize": "ログバッファサイズ",
+  "TXT_CODE_daemon_outputBufferSizeInfo": "バッファを増やすことでターミナル出力の内容の完全性をより確保できますが、メモリとパフォーマンスへの負荷が大きくなり、メモリリークが発生する可能性もあります。"
+}

@@ -13,5 +13,11 @@
   "TXT_CODE_minecraft.invalidDownload": "Parâmetros de download do Minecraft inválidos.",
   "TXT_CODE_minecraft.platformMismatch": "O servidor Bedrock é incompatível com este nó. Selecione uma versão correspondente ao Windows/Linux do nó e use um nó x64.",
   "TXT_CODE_minecraft.missingFiles": "Os arquivos de inicialização do servidor instalado não foram encontrados. Verifique o pacote baixado e o registro da instalação.",
-  "TXT_CODE_minecraft.hashMismatch": "O arquivo baixado falhou na verificação SHA-256. A instalação foi interrompida; tente novamente."
+  "TXT_CODE_minecraft.hashMismatch": "O arquivo baixado falhou na verificação SHA-256. A instalação foi interrompida; tente novamente.",
+  "TXT_CODE_daemon_enableSoftShutdown": "Habilitar Desligamento Suave",
+  "TXT_CODE_daemon_enableSoftShutdownInfo": "Se desabilitado, a saída do daemon sempre força o encerramento de todas as instâncias.",
+  "TXT_CODE_daemon_softShutdownSkipDocker": "Ignorar Docker no Desligamento Suave",
+  "TXT_CODE_daemon_softShutdownSkipDockerInfo": "Se habilitado, as instâncias Docker são ignoradas durante o desligamento suave.",
+  "TXT_CODE_daemon_softShutdownWaitSeconds": "Segundos de Espera para Desligamento Suave",
+  "TXT_CODE_daemon_softShutdownWaitSecondsInfo": "Tempo limite antes de forçar o encerramento das instâncias restantes (1-600 segundos)."
 }

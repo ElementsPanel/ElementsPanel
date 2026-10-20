@@ -152,16 +152,6 @@ export async function apply(ctx: PanelPluginContext) {
     async (ctx: Koa.ParameterizedContext) => {
       const uuid = String(ctx.request.query.uuid);
       const parameter = ctx.request.body || {};
-      const daemonSetting = parameter?.setting || {};
-      const daemon = remoteServices.getInstance(uuid);
-
-      if (parameter.setting && daemon?.available) {
-        await new RemoteRequest(daemon).request("info/setting", {
-          ...daemonSetting,
-          port: parameter.daemonPort
-        });
-      }
-
       if (!remoteServices.services.has(uuid)) throw new Error("Instance does not exist");
 
       await remoteServices.edit(uuid, {
@@ -169,8 +159,7 @@ export async function apply(ctx: PanelPluginContext) {
         ip: parameter.ip,
         prefix: parameter.prefix,
         apiKey: parameter.apiKey,
-        remarks: parameter.remarks,
-        remoteMappings: parameter.remoteMappings
+        remarks: parameter.remarks
       });
 
       operationLogger.log("daemon_config_change", {

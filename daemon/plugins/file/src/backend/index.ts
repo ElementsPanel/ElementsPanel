@@ -6,6 +6,7 @@ import { registerHttpRoutes } from "./http_router";
 import { setPluginContext } from "./runtime";
 import FileManager from "./system_file";
 import uploadManager from "./upload_manager";
+import { registerSettings } from "./settings";
 
 // The daemon's file subsystem.
 //
@@ -39,6 +40,7 @@ export function apply(ctx: DaemonPluginContext) {
   // the instances and `$t` through this handle.
   setPluginContext(ctx);
   ctx.i18n.define(localeMessages);
+  registerSettings(ctx);
 
   // `ctx.set()` from inside a plugin belongs to that plugin: the primitives — and
   // with them the daemon's access to instance files — leave when it unloads.

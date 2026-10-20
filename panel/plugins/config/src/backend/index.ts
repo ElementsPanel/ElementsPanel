@@ -276,13 +276,21 @@ export function apply(ctx: PanelPluginContext) {
       requireAdmin,
       ctx.middleware.validator({ query: { daemonId: String, id: String } }),
       async (requestCtx: Koa.ParameterizedContext) => {
-        requestCtx.body = await new RemoteRequest(nodeOf(requestCtx)).request(
+        const request = new RemoteRequest(nodeOf(requestCtx));
+        requestCtx.body = await request.request(
           "plugin/config/write",
           {
             id: String(requestCtx.request.query.id),
             values: (requestCtx.request.body ?? {}) as Record<string, unknown>
           }
         );
+        // Refresh node-owned connection metadata before subsequent file/terminal requests.
+        // A refresh failure must not turn a successfully saved setting into an error.
+        try {
+          await request.request("info/overview");
+        } catch (error) {
+          ctx.logger.warn("Failed to refresh node information after saving plugin settings:", error);
+        }
       }
     );
 

@@ -39,7 +39,7 @@ export default class RemoteRequest {
     const socket = this.rService.socket;
     const disconnectedMessage = $t("TXT_CODE_7c650d80") + ` IP: ${service.config.ip}`;
     const timeoutMessage = [$t("TXT_CODE_bd99b64e"), service.config.ip].join(" ");
-    return new Promise((resolve, reject) => {
+    const result = await new Promise<T>((resolve, reject) => {
       let countdownTask: NodeJS.Timeout | undefined;
       const uuid = [v4(), new Date().getTime()].join("");
       const protocolData: IRequestPacket = { uuid, data };
@@ -80,5 +80,19 @@ export default class RemoteRequest {
         reject(error);
       }
     });
+
+    if (event === "info/overview" && service.socket === socket && socket.connected) {
+      const overview = result as { remoteMappings?: typeof service.config.remoteMappings | null };
+      // Older daemons omit this field and continue to use the panel's saved mappings.
+      if (overview?.remoteMappings === null) {
+        overview.remoteMappings = await this.request("node/mappings", {
+          remoteMappings: service.config.remoteMappings
+        });
+      }
+      if (Array.isArray(overview?.remoteMappings) && service.socket === socket && socket.connected) {
+        service.config.remoteMappings = overview.remoteMappings;
+      }
+    }
+    return result;
   }
 }

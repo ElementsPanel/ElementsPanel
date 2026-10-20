@@ -14,7 +14,6 @@ export const editNode = useDefineApi<
       port?: number;
       prefix?: string;
       remarks?: string;
-      setting?: any;
       [key: string]: any;
     };
   },

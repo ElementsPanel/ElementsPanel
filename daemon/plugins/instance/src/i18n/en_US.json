@@ -13,5 +13,11 @@
   "TXT_CODE_minecraft.invalidDownload": "Invalid Minecraft download parameters.",
   "TXT_CODE_minecraft.platformMismatch": "The Bedrock server is incompatible with this node. Select a version matching the node’s Windows/Linux OS and use an x64 node.",
   "TXT_CODE_minecraft.missingFiles": "Installed server startup files were not found. Check the downloaded package and installation log.",
-  "TXT_CODE_minecraft.hashMismatch": "The downloaded file failed SHA-256 verification. Installation stopped; please retry."
+  "TXT_CODE_minecraft.hashMismatch": "The downloaded file failed SHA-256 verification. Installation stopped; please retry.",
+  "TXT_CODE_daemon_enableSoftShutdown": "Enable Soft Shutdown",
+  "TXT_CODE_daemon_enableSoftShutdownInfo": "If disabled, daemon exit always force-kills all instances.",
+  "TXT_CODE_daemon_softShutdownSkipDocker": "Skip Docker On Soft Shutdown",
+  "TXT_CODE_daemon_softShutdownSkipDockerInfo": "If enabled, Docker instances are ignored during soft shutdown.",
+  "TXT_CODE_daemon_softShutdownWaitSeconds": "Soft Shutdown Wait Seconds",
+  "TXT_CODE_daemon_softShutdownWaitSecondsInfo": "Timeout before force-killing remaining target instances (1-600 seconds)."
 }

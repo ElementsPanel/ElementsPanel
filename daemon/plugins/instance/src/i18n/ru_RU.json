@@ -13,5 +13,11 @@
   "TXT_CODE_minecraft.invalidDownload": "Недопустимые параметры скачивания Minecraft.",
   "TXT_CODE_minecraft.platformMismatch": "Сервер Bedrock несовместим с этим узлом. Выберите версию для Windows/Linux узла и используйте узел x64.",
   "TXT_CODE_minecraft.missingFiles": "Файлы запуска установленного сервера не найдены. Проверьте скачанный пакет и журнал установки.",
-  "TXT_CODE_minecraft.hashMismatch": "Скачанный файл не прошёл проверку SHA-256. Установка остановлена, повторите попытку."
+  "TXT_CODE_minecraft.hashMismatch": "Скачанный файл не прошёл проверку SHA-256. Установка остановлена, повторите попытку.",
+  "TXT_CODE_daemon_enableSoftShutdown": "Включить плавное завершение",
+  "TXT_CODE_daemon_enableSoftShutdownInfo": "Если отключено, демон всегда принудительно завершает все экземпляры.",
+  "TXT_CODE_daemon_softShutdownSkipDocker": "Пропускать Docker при плавном завершении",
+  "TXT_CODE_daemon_softShutdownSkipDockerInfo": "Если включено, экземпляры Docker игнорируются при плавном завершении.",
+  "TXT_CODE_daemon_softShutdownWaitSeconds": "Время ожидания плавного завершения (сек.)",
+  "TXT_CODE_daemon_softShutdownWaitSecondsInfo": "Таймаут перед принудительным завершением оставшихся целевых экземпляров (1-600 секунд)."
 }

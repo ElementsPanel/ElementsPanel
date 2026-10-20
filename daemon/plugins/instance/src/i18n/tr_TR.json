@@ -13,5 +13,11 @@
   "TXT_CODE_minecraft.invalidDownload": "Geçersiz Minecraft indirme parametreleri.",
   "TXT_CODE_minecraft.platformMismatch": "Bedrock sunucusu bu düğümle uyumlu değil. Düğümün Windows/Linux sistemine uygun bir sürüm seçin ve x64 düğüm kullanın.",
   "TXT_CODE_minecraft.missingFiles": "Kurulan sunucunun başlatma dosyaları bulunamadı. İndirilen paketi ve kurulum günlüğünü kontrol edin.",
-  "TXT_CODE_minecraft.hashMismatch": "İndirilen dosyanın SHA-256 doğrulaması başarısız oldu. Kurulum durduruldu; lütfen tekrar deneyin."
+  "TXT_CODE_minecraft.hashMismatch": "İndirilen dosyanın SHA-256 doğrulaması başarısız oldu. Kurulum durduruldu; lütfen tekrar deneyin.",
+  "TXT_CODE_daemon_enableSoftShutdown": "Yumuşak Kapatmayı Etkinleştir",
+  "TXT_CODE_daemon_enableSoftShutdownInfo": "Devre dışı bırakılırsa, arka plan programı çıkışı her zaman tüm örnekleri zorla sonlandırır.",
+  "TXT_CODE_daemon_softShutdownSkipDocker": "Yumuşak Kapatmada Docker'ı Atla",
+  "TXT_CODE_daemon_softShutdownSkipDockerInfo": "Etkinleştirilirse, yumuşak kapatma sırasında Docker örnekleri göz ardı edilir.",
+  "TXT_CODE_daemon_softShutdownWaitSeconds": "Yumuşak Kapatma Bekleme Süresi (Saniye)",
+  "TXT_CODE_daemon_softShutdownWaitSecondsInfo": "Kalan hedef örnekleri zorla sonlandırmadan önceki zaman aşımı (1-600 saniye)."
 }

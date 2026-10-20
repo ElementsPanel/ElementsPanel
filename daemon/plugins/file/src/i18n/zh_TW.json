@@ -4,5 +4,12 @@
   "TXT_CODE_file_router_service.instanceNotExit": "實例 {{uuid}} 不存在",
   "TXT_CODE_system_file.execLimit": "超出最大檔案編輯限制",
   "TXT_CODE_system_file.illegalAccess": "錯誤存取路徑",
-  "TXT_CODE_system_file.unzipLimit": "檔案解壓縮只支援最大 {{max}}GB 檔案的解壓縮，如需改變上限請前往 data/Config/global.json 檔案"
+  "TXT_CODE_system_file.unzipLimit": "檔案解壓縮只支援最大 {{max}}GB 檔案的解壓縮，如需改變上限請前往 data/Config/global.json 檔案",
+  "TXT_CODE_e3a77a77": "無限制",
+  "TXT_CODE_fde31068": "使用者上傳檔案速率",
+  "TXT_CODE_d8d19932": "限制每個 HTTP 請求，上傳檔案最大速度",
+  "TXT_CODE_785a0fcf": "使用者下載檔案速率",
+  "TXT_CODE_b9fc604c": "限制每個 HTTP 請求，下載檔案最大速度",
+  "TXT_CODE_a15fca22": "網址下載上限",
+  "TXT_CODE_ecaf78a2": "設為 0 表示無限制"
 }

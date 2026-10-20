@@ -73,6 +73,7 @@ export type DaemonSettingFieldType =
   | "number"
   | "boolean"
   | "select"
+  | "list"
   | "link";
 
 export interface DaemonSettingOption {
@@ -109,6 +110,14 @@ export interface DaemonSettingField {
   visibleWhen?: string | string[];
   /** `link`: a panel route the form offers as a button. */
   route?: string;
+  fields?: DaemonSettingField[];
+  maxItems?: number;
+  itemTitleKey?: string;
+  listEditor?: "inline" | "dialog";
+  addLabel?: string;
+  editLabel?: string;
+  removeLabel?: string;
+  required?: boolean;
 }
 
 /**

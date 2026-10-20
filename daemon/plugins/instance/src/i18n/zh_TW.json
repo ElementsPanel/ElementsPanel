@@ -13,5 +13,11 @@
   "TXT_CODE_minecraft.invalidDownload": "Minecraft 下載參數無效。",
   "TXT_CODE_minecraft.platformMismatch": "基岩版伺服器與節點不相容，請選擇與節點 Windows/Linux 系統一致的版本，並使用 x64 節點。",
   "TXT_CODE_minecraft.missingFiles": "找不到安裝後的伺服器啟動檔案，請檢查下載套件和安裝記錄。",
-  "TXT_CODE_minecraft.hashMismatch": "下載檔案的 SHA-256 驗證失敗，已停止安裝，請重試。"
+  "TXT_CODE_minecraft.hashMismatch": "下載檔案的 SHA-256 驗證失敗，已停止安裝，請重試。",
+  "TXT_CODE_daemon_enableSoftShutdown": "啟用軟關機",
+  "TXT_CODE_daemon_enableSoftShutdownInfo": "若停用，守護程式退出時將強制終止所有執行個體。",
+  "TXT_CODE_daemon_softShutdownSkipDocker": "軟關機時略過 Docker",
+  "TXT_CODE_daemon_softShutdownSkipDockerInfo": "若啟用，軟關機期間將忽略 Docker 執行個體。",
+  "TXT_CODE_daemon_softShutdownWaitSeconds": "軟關機等待秒數",
+  "TXT_CODE_daemon_softShutdownWaitSecondsInfo": "強制終止剩餘目標執行個體前的逾時時間（1-600 秒）。"
 }

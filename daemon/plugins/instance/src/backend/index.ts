@@ -7,6 +7,7 @@ import { routerApp } from "./service/router";
 import { localeMessages } from "../i18n";
 import { createInstanceInstallTaskClass } from "./install_task";
 import * as minecraftInstall from "./minecraft_task";
+import { registerSettings } from "./settings";
 
 export const inject = {
   i18n: { required: true },
@@ -24,6 +25,7 @@ export const inject = {
 
 export function apply(ctx: DaemonPluginContext) {
   ctx.i18n.define(localeMessages);
+  registerSettings(ctx);
   ctx.plugin(TasksService);
   ctx.plugin(LifecycleService);
   ctx.plugin(PresetsService);

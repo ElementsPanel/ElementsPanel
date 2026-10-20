@@ -1,0 +1,10 @@
+{
+  "TXT_CODE_bbe23ee7": "Mappages d'adresses de connexion directe du nœud",
+  "TXT_CODE_497568db": "Configurez la connexion directe du nœud selon l'origine d'accès au panneau, utile avec reverse proxy.",
+  "TXT_CODE_8d8fbbf4": "Ajouter un mappage",
+  "TXT_CODE_2ee6fd18": "Accès au panneau depuis",
+  "TXT_CODE_6f27624c": "Accéder au démon depuis",
+  "TXT_CODE_54312194": "Adresse et port",
+  "TXT_CODE_f49149d0": "Port de connexion",
+  "TXT_CODE_941d83b8": "Préfixe de chemin"
+}

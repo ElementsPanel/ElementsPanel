@@ -1,0 +1,4 @@
+{
+  "TXT_CODE_daemon_outputBufferSize": "Taille du tampon de journalisation",
+  "TXT_CODE_daemon_outputBufferSizeInfo": "Augmenter le tampon permet de mieux garantir l'intégrité du contenu de sortie du terminal, mais augmente la pression sur la mémoire et les performances, pouvant même provoquer des fuites de mémoire."
+}
