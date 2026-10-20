@@ -33,5 +33,19 @@
   "TXT_CODE_systemRemoteService.autoCheckDaemon": "Обнаружен локальный демон, автоматически получаю ключ и порт...",
   "TXT_CODE_systemRemoteService.error": "Не удалось автоматически получить конфигурацию локального демона. Пожалуйста, подключите демон вручную через панель. Для получения дополнительной информации посетите https://docs.mcsmanager.com/",
   "TXT_CODE_systemRemoteService.loadDaemonTitle": "Пытаюсь прочитать локальный демон {{localKeyFilePath}}",
-  "TXT_CODE_systemRemoteService.nodeCount": "Количество удаленных демонов: {{n}}"
+  "TXT_CODE_systemRemoteService.nodeCount": "Количество удаленных демонов: {{n}}",
+  "TXT_CODE_NODE_COMPAT": "Совместимость",
+  "TXT_CODE_NODE_COMPAT_OK": "Совместимо",
+  "TXT_CODE_NODE_COMPAT_BAD": "Несовместимо",
+  "TXT_CODE_NODE_COMPAT_VERSION_TITLE": "Сравнение версий",
+  "TXT_CODE_NODE_COMPAT_PLUGINS_TITLE": "Сравнение плагинов",
+  "TXT_CODE_NODE_COMPAT_PANEL_VERSION": "Версия панели",
+  "TXT_CODE_NODE_COMPAT_NODE_VERSION": "Версия узла",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_NAME": "Плагин",
+  "TXT_CODE_NODE_COMPAT_STATUS": "Статус",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_MATCH": "Совпадает",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "Не совпадает",
+  "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "Только на панели",
+  "TXT_CODE_NODE_COMPAT_ONLY_NODE": "Только на узле",
+  "TXT_CODE_NODE_COMPAT_NO_DATA": "Узел недоступен или данные отсутствуют; информацию о совместимости получить невозможно."
 }

@@ -33,5 +33,19 @@
   "TXT_CODE_systemRemoteService.autoCheckDaemon": "Detected local daemon, automatically obtaining key and port...",
   "TXT_CODE_systemRemoteService.error": "Unable to automatically retrieve local daemon configuration. Please manually connect the daemon through the panel. Visit https://docs.mcsmanager.com/ for more information.",
   "TXT_CODE_systemRemoteService.loadDaemonTitle": "Attempting to read local daemon {{localKeyFilePath}}",
-  "TXT_CODE_systemRemoteService.nodeCount": "Number of remote daemons: {{n}}"
+  "TXT_CODE_systemRemoteService.nodeCount": "Number of remote daemons: {{n}}",
+  "TXT_CODE_NODE_COMPAT": "Compatibility",
+  "TXT_CODE_NODE_COMPAT_OK": "Compatible",
+  "TXT_CODE_NODE_COMPAT_BAD": "Incompatible",
+  "TXT_CODE_NODE_COMPAT_VERSION_TITLE": "Version comparison",
+  "TXT_CODE_NODE_COMPAT_PLUGINS_TITLE": "Plugin comparison",
+  "TXT_CODE_NODE_COMPAT_PANEL_VERSION": "Panel version",
+  "TXT_CODE_NODE_COMPAT_NODE_VERSION": "Node version",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_NAME": "Plugin",
+  "TXT_CODE_NODE_COMPAT_STATUS": "Status",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_MATCH": "Match",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "Mismatch",
+  "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "Panel only",
+  "TXT_CODE_NODE_COMPAT_ONLY_NODE": "Node only",
+  "TXT_CODE_NODE_COMPAT_NO_DATA": "The node is unavailable or its data is missing; compatibility information cannot be retrieved."
 }

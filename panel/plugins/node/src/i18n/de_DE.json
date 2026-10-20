@@ -33,5 +33,19 @@
   "TXT_CODE_systemRemoteService.autoCheckDaemon": "Lokaler Daemon erkannt, erhält automatisch Schlüssel und Verbindungsport ...",
   "TXT_CODE_systemRemoteService.error": "Die lokale Daemon-Konfigurationsdatei kann nicht automatisch abgerufen werden. Gehen Sie zu https://docs.mcsmanager.com/, um mehr zu erfahren.",
   "TXT_CODE_systemRemoteService.loadDaemonTitle": "Versucht, den lokalen Daemon {{localKeyFilePath}} zu lesen",
-  "TXT_CODE_systemRemoteService.nodeCount": "Anzahl entfernter Knoten: {{n}}"
+  "TXT_CODE_systemRemoteService.nodeCount": "Anzahl entfernter Knoten: {{n}}",
+  "TXT_CODE_NODE_COMPAT": "Kompatibilität",
+  "TXT_CODE_NODE_COMPAT_OK": "Kompatibel",
+  "TXT_CODE_NODE_COMPAT_BAD": "Inkompatibel",
+  "TXT_CODE_NODE_COMPAT_VERSION_TITLE": "Versionsvergleich",
+  "TXT_CODE_NODE_COMPAT_PLUGINS_TITLE": "Plugin-Vergleich",
+  "TXT_CODE_NODE_COMPAT_PANEL_VERSION": "Panel-Version",
+  "TXT_CODE_NODE_COMPAT_NODE_VERSION": "Knoten-Version",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_NAME": "Plugin",
+  "TXT_CODE_NODE_COMPAT_STATUS": "Status",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_MATCH": "Übereinstimmend",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "Abweichend",
+  "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "Nur Panel",
+  "TXT_CODE_NODE_COMPAT_ONLY_NODE": "Nur Knoten",
+  "TXT_CODE_NODE_COMPAT_NO_DATA": "Der Knoten ist nicht verfügbar oder es fehlen Daten; Kompatibilitätsinformationen können nicht abgerufen werden."
 }

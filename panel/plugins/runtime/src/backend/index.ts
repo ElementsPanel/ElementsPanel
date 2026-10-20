@@ -172,7 +172,7 @@ export async function apply(ctx: PanelPluginContext) {
   ctx.set("operations", operations);
   ctx.on("dispose", () => operations.dispose());
   ctx.plugin(OverviewService);
-  ctx.inject(["koa", "overview", "middleware", "roles", "globals", "identity"], registerOverview);
+  ctx.inject(["koa", "overview", "middleware", "roles", "globals", "identity", "plugins"], registerOverview);
   const version = getVersion();
   console.log(`
  _____ _                   _       _____             _

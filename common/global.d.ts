@@ -133,6 +133,27 @@ declare global {
     };
   }
 
+  interface IPanelNodeCompatibilityPluginItem {
+    id: string;
+    panelVersion?: string;
+    daemonVersion?: string;
+    status: "ok" | "mismatch" | "panel_only" | "daemon_only";
+  }
+
+  interface IPanelNodeCompatibility {
+    ok: boolean;
+    version: {
+      ok: boolean;
+      panelVersion: string;
+      daemonVersion?: string;
+      brandMismatch?: boolean;
+    };
+    plugins: {
+      ok: boolean;
+      items: IPanelNodeCompatibilityPluginItem[];
+    };
+  }
+
   interface IPanelOverviewRemoteResponse {
     version: string;
     features?: Record<string, boolean>;
@@ -172,6 +193,7 @@ declare global {
     available: boolean;
     remarks: string;
     brand?: string;
+    compatibility?: IPanelNodeCompatibility;
     config: {
       language: string;
       uploadSpeedRate: number;

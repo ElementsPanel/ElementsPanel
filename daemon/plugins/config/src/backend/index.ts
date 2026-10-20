@@ -118,13 +118,22 @@ function toTransferFiles(files: unknown): TransferFile[] {
   }));
 }
 
-export const inject = ["protocol", "i18n", "plugins", "storage"];
+export const inject = ["protocol", "i18n", "plugins", "storage", "overview"];
 
 export function apply(ctx: DaemonPluginContext) {
   ctx.i18n.define(localeMessages);
   ctx.plugin(SettingsFormService);
   const settingsForm = ctx.get("settingsForm");
   if (!settingsForm) throw new Error("Daemon settings form service is unavailable.");
+
+  // The panel's node page compares daemon plugins against its own inventory, so
+  // the id/version pairs ride along on the overview payload it already polls.
+  ctx.overview.provide(() => ({
+    plugins: ctx.plugins
+      .inventory()
+      .map((record) => ({ id: record.id, version: record.version }))
+  }));
+
   ctx.protocol.on("plugin/capabilities", (routerCtx) => {
     ctx.protocol.response(routerCtx, { api: PLUGIN_API_VERSION });
   });

@@ -33,5 +33,19 @@
   "TXT_CODE_systemRemoteService.autoCheckDaemon": "Démon local détecté, obtenant automatiquement la clé et le port de connexion...",
   "TXT_CODE_systemRemoteService.error": "Le fichier de configuration du démon local ne peut pas être obtenu automatiquement. Veuillez accéder au panneau pour connecter manuellement le démon. Accédez à https://docs.mcsmanager.com/ pour en savoir plus.",
   "TXT_CODE_systemRemoteService.loadDaemonTitle": "Essayer de lire le démon local {{localKeyFilePath}}",
-  "TXT_CODE_systemRemoteService.nodeCount": "Nombre de nœuds distants : {{n}}"
+  "TXT_CODE_systemRemoteService.nodeCount": "Nombre de nœuds distants : {{n}}",
+  "TXT_CODE_NODE_COMPAT": "Compatibilité",
+  "TXT_CODE_NODE_COMPAT_OK": "Compatible",
+  "TXT_CODE_NODE_COMPAT_BAD": "Incompatible",
+  "TXT_CODE_NODE_COMPAT_VERSION_TITLE": "Comparaison des versions",
+  "TXT_CODE_NODE_COMPAT_PLUGINS_TITLE": "Comparaison des plugins",
+  "TXT_CODE_NODE_COMPAT_PANEL_VERSION": "Version du panneau",
+  "TXT_CODE_NODE_COMPAT_NODE_VERSION": "Version du nœud",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_NAME": "Plugin",
+  "TXT_CODE_NODE_COMPAT_STATUS": "Statut",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_MATCH": "Identique",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "Différent",
+  "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "Panneau uniquement",
+  "TXT_CODE_NODE_COMPAT_ONLY_NODE": "Nœud uniquement",
+  "TXT_CODE_NODE_COMPAT_NO_DATA": "Le nœud est indisponible ou ses données sont manquantes ; impossible de récupérer les informations de compatibilité."
 }

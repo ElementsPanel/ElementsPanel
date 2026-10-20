@@ -33,5 +33,19 @@
   "TXT_CODE_systemRemoteService.autoCheckDaemon": "ตรวจพบ Daemon ในเครื่อง กำลังรับคีย์และพอร์ตโดยอัตโนมัติ...",
   "TXT_CODE_systemRemoteService.error": "ไม่สามารถรับการตั้งค่า Daemon ในเครื่องโดยอัตโนมัติ กรุณาเชื่อมต่อ Daemon ผ่านแผงควบคุมด้วยตนเอง เยี่ยมชม https://docs.mcsmanager.com/ สำหรับข้อมูลเพิ่มเติม",
   "TXT_CODE_systemRemoteService.loadDaemonTitle": "กำลังพยายามอ่าน Daemon ในเครื่อง {{localKeyFilePath}}",
-  "TXT_CODE_systemRemoteService.nodeCount": "จำนวน Daemon ระยะไกล: {{n}}"
+  "TXT_CODE_systemRemoteService.nodeCount": "จำนวน Daemon ระยะไกล: {{n}}",
+  "TXT_CODE_NODE_COMPAT": "ความเข้ากันได้",
+  "TXT_CODE_NODE_COMPAT_OK": "เข้ากันได้",
+  "TXT_CODE_NODE_COMPAT_BAD": "ไม่เข้ากันได้",
+  "TXT_CODE_NODE_COMPAT_VERSION_TITLE": "เปรียบเทียบเวอร์ชัน",
+  "TXT_CODE_NODE_COMPAT_PLUGINS_TITLE": "เปรียบเทียบปลั๊กอิน",
+  "TXT_CODE_NODE_COMPAT_PANEL_VERSION": "เวอร์ชันแผงควบคุม",
+  "TXT_CODE_NODE_COMPAT_NODE_VERSION": "เวอร์ชันโหนด",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_NAME": "ปลั๊กอิน",
+  "TXT_CODE_NODE_COMPAT_STATUS": "สถานะ",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_MATCH": "ตรงกัน",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "ไม่ตรงกัน",
+  "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "เฉพาะแผงควบคุม",
+  "TXT_CODE_NODE_COMPAT_ONLY_NODE": "เฉพาะโหนด",
+  "TXT_CODE_NODE_COMPAT_NO_DATA": "โหนดไม่พร้อมใช้งานหรือข้อมูลสูญหาย ไม่สามารถดึงข้อมูลความเข้ากันได้ได้"
 }

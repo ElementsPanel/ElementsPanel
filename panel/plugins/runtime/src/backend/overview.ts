@@ -2,6 +2,72 @@ import { systemInfo } from "mcsmanager-common";
 import os from "os";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
 
+/** Same major.minor rule the node page uses: patch differences stay compatible. */
+function hasDaemonVersionUpdate(panelVersion: string, daemonVersion?: string) {
+  if (!daemonVersion) return true;
+  const [panelMajor, panelMinor] = panelVersion.split(".");
+  const [daemonMajor, daemonMinor] = daemonVersion.split(".");
+  return panelMajor !== daemonMajor || panelMinor !== daemonMinor;
+}
+
+/**
+ * Compares one daemon's plugin inventory against the panel's. Plugins present on
+ * both sides must carry the same version; plugins on a single side only are
+ * normal (the built-in halves differ by design) and stay informational.
+ */
+function buildCompatibility(
+  panelVersion: string,
+  panelPlugins: Map<string, string>,
+  node: {
+    version?: string;
+    brand?: string;
+    available?: boolean;
+    plugins?: { id?: unknown; version?: unknown }[];
+  }
+) {
+  const brandMismatch = node.brand !== "ElementsPanel";
+  const version = {
+    ok:
+      node.available === true &&
+      !brandMismatch &&
+      !hasDaemonVersionUpdate(panelVersion, node.version),
+    panelVersion,
+    daemonVersion: node.version,
+    brandMismatch
+  };
+  const items: {
+    id: string;
+    panelVersion?: string;
+    daemonVersion?: string;
+    status: "ok" | "mismatch" | "panel_only" | "daemon_only";
+  }[] = [];
+  let pluginsOk = true;
+  const daemonIds = new Set<string>();
+  for (const plugin of Array.isArray(node.plugins) ? node.plugins : []) {
+    const id = typeof plugin?.id === "string" ? plugin.id : "";
+    if (!id || daemonIds.has(id)) continue;
+    daemonIds.add(id);
+    const daemonVersion = typeof plugin.version === "string" ? plugin.version : undefined;
+    const ownVersion = panelPlugins.get(id);
+    if (ownVersion === undefined) {
+      items.push({ id, daemonVersion, status: "daemon_only" });
+    } else if (ownVersion !== (daemonVersion ?? "")) {
+      pluginsOk = false;
+      items.push({ id, panelVersion: ownVersion, daemonVersion, status: "mismatch" });
+    } else {
+      items.push({ id, panelVersion: ownVersion, daemonVersion, status: "ok" });
+    }
+  }
+  for (const [id, ownVersion] of panelPlugins) {
+    if (!daemonIds.has(id)) items.push({ id, panelVersion: ownVersion, status: "panel_only" });
+  }
+  return {
+    ok: version.ok && pluginsOk,
+    version,
+    plugins: { ok: pluginsOk, items }
+  };
+}
+
 /** Base node and host information remains available without monitoring. */
 export function registerOverview(ctx: PanelPluginContext) {
   const getOverview = () => {
@@ -15,6 +81,13 @@ export function registerOverview(ctx: PanelPluginContext) {
 
   overviewRouter.get("/", requireUser, async (requestCtx) => {
     const remote = ctx.get("remote");
+    const panelVersion = ctx.globals.get("specifiedDaemonVersion", "1.0.0");
+    const panelPlugins = new Map(
+      (ctx.get("plugins")?.inventory() ?? []).map((plugin) => [
+        plugin.id,
+        String(plugin.version ?? "")
+      ])
+    );
     const requestTasks = Array.from(remote?.services.services.entries() ?? []).map(
       async ([, remoteService]) => {
         let remoteInfo: any = {};
@@ -31,6 +104,7 @@ export function registerOverview(ctx: PanelPluginContext) {
         remoteInfo.remarks = remoteService.config.remarks;
         remoteInfo.brand = remoteService.config.brand;
         remoteInfo.remoteMappings = remoteService.config.remoteMappings;
+        remoteInfo.compatibility = buildCompatibility(panelVersion, panelPlugins, remoteInfo);
         return remoteInfo;
       }
     );

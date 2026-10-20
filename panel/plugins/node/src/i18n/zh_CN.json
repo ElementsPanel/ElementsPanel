@@ -33,5 +33,19 @@
   "TXT_CODE_systemRemoteService.autoCheckDaemon": "检测到本地守护进程，正在自动获取密钥和端口...",
   "TXT_CODE_systemRemoteService.error": "无法自动获取本地守护进程配置文件，请前往面板手动连接守护进程，前往 https://docs.mcsmanager.com/ 了解更多。",
   "TXT_CODE_systemRemoteService.loadDaemonTitle": "正在尝试读取本地守护进程 {{localKeyFilePath}}",
-  "TXT_CODE_systemRemoteService.nodeCount": "远程节点数：{{n}}"
+  "TXT_CODE_systemRemoteService.nodeCount": "远程节点数：{{n}}",
+  "TXT_CODE_NODE_COMPAT": "兼容性",
+  "TXT_CODE_NODE_COMPAT_OK": "兼容",
+  "TXT_CODE_NODE_COMPAT_BAD": "不兼容",
+  "TXT_CODE_NODE_COMPAT_VERSION_TITLE": "版本对比",
+  "TXT_CODE_NODE_COMPAT_PLUGINS_TITLE": "插件对比",
+  "TXT_CODE_NODE_COMPAT_PANEL_VERSION": "面板版本",
+  "TXT_CODE_NODE_COMPAT_NODE_VERSION": "节点版本",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_NAME": "插件",
+  "TXT_CODE_NODE_COMPAT_STATUS": "状态",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_MATCH": "一致",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "不一致",
+  "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "仅面板安装",
+  "TXT_CODE_NODE_COMPAT_ONLY_NODE": "仅节点安装",
+  "TXT_CODE_NODE_COMPAT_NO_DATA": "节点不可用或数据缺失，无法获取兼容性信息。"
 }

@@ -33,5 +33,19 @@
   "TXT_CODE_systemRemoteService.autoCheckDaemon": "ローカルデーモンが検出され、キーと接続ポートを自動的に取得しています...",
   "TXT_CODE_systemRemoteService.error": "ローカル デーモン構成ファイルは自動的に取得できません。詳細については、https://docs.mcsmanager.com/ にアクセスしてデーモンを手動で接続してください。",
   "TXT_CODE_systemRemoteService.loadDaemonTitle": "ローカル デーモン {{localKeyFilePath}} を読み取ろうとしています",
-  "TXT_CODE_systemRemoteService.nodeCount": "リモートノードの数: {{n}}"
+  "TXT_CODE_systemRemoteService.nodeCount": "リモートノードの数: {{n}}",
+  "TXT_CODE_NODE_COMPAT": "互換性",
+  "TXT_CODE_NODE_COMPAT_OK": "互換",
+  "TXT_CODE_NODE_COMPAT_BAD": "非互換",
+  "TXT_CODE_NODE_COMPAT_VERSION_TITLE": "バージョン比較",
+  "TXT_CODE_NODE_COMPAT_PLUGINS_TITLE": "プラグイン比較",
+  "TXT_CODE_NODE_COMPAT_PANEL_VERSION": "パネル バージョン",
+  "TXT_CODE_NODE_COMPAT_NODE_VERSION": "ノード バージョン",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_NAME": "プラグイン",
+  "TXT_CODE_NODE_COMPAT_STATUS": "状態",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_MATCH": "一致",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "不一致",
+  "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "パネルのみ",
+  "TXT_CODE_NODE_COMPAT_ONLY_NODE": "ノードのみ",
+  "TXT_CODE_NODE_COMPAT_NO_DATA": "ノードが利用できないかデータが欠落しているため、互換性情報を取得できません。"
 }

@@ -6,7 +6,6 @@ import { SocketStatus, useSocketIoClient } from "@/hooks/useSocketIo";
 import { t } from "@/lang/i18n";
 import { arrayFilter } from "@/tools/array";
 import { reportErrorMsg } from "@/tools/validator";
-import { hasVersionUpdate } from "@/tools/version";
 import { message } from "@/tools/vuetifyToast";
 import { computed, onMounted, ref } from "vue";
 import {
@@ -17,6 +16,7 @@ import {
   VCardTitle,
   VCol,
   VIcon,
+  VMenu,
   VRow,
   VTooltip
 } from "vuetify/components";
@@ -30,11 +30,22 @@ const nodeDetailDialog = ref<InstanceType<typeof NodeDetailDialog>>();
 
 const props = defineProps<{
   item?: ComputedNodeInfo;
-  specifiedDaemonVersion?: string;
 }>();
 
-const specifiedDaemonVersion = computed(() => props.specifiedDaemonVersion);
 const remoteNode = computed(() => props.item);
+
+const compatMenuOpen = ref(false);
+
+const compatStatusText = (status: IPanelNodeCompatibilityPluginItem["status"]) =>
+  ({
+    ok: t("TXT_CODE_NODE_COMPAT_PLUGIN_MATCH"),
+    mismatch: t("TXT_CODE_NODE_COMPAT_PLUGIN_DIFF"),
+    panel_only: t("TXT_CODE_NODE_COMPAT_ONLY_PANEL"),
+    daemon_only: t("TXT_CODE_NODE_COMPAT_ONLY_NODE")
+  })[status];
+
+const compatStatusClass = (status: IPanelNodeCompatibilityPluginItem["status"]) =>
+  status === "ok" ? "color-success" : status === "mismatch" ? "color-danger" : "";
 
 const tryConnectNode = async (uuid: string, showMsg = true) => {
   const { execute } = connectNode();
@@ -87,16 +98,18 @@ const detailList = (node: ComputedNodeInfo) => [
     value: node.platformText
   },
   {
-    title: t("TXT_CODE_81634069"),
-    value: node.version,
-    success:
-      !hasVersionUpdate(specifiedDaemonVersion.value, node.version) &&
-      node.brand === "ElementsPanel",
+    title: t("TXT_CODE_NODE_COMPAT"),
+    value:
+      !node.available || !node.compatibility
+        ? "--"
+        : node.compatibility.ok
+        ? t("TXT_CODE_NODE_COMPAT_OK")
+        : t("TXT_CODE_NODE_COMPAT_BAD"),
+    success: node.available === true && node.compatibility?.ok === true,
     warn:
-      (hasVersionUpdate(specifiedDaemonVersion.value, node.version) ||
-        node.brand !== "ElementsPanel") &&
-      node.available,
-    warnText: node.brand !== "ElementsPanel" ? t("TXT_CODE_NODE_BRAND_ERR") : t("TXT_CODE_e520908a")
+      node.available === true && node.compatibility != null && node.compatibility.ok === false,
+    warnText: node.brand !== "ElementsPanel" ? t("TXT_CODE_NODE_BRAND_ERR") : t("TXT_CODE_e520908a"),
+    compatibility: true
   },
   {
     title: "Daemon ID",
@@ -235,7 +248,100 @@ onMounted(() => {
                 />
               </div>
               <div v-else style="font-size: 13px">
-                <VTooltip v-if="detail.warn && detail.value" location="top">
+                <VMenu
+                  v-if="detail.compatibility"
+                  v-model="compatMenuOpen"
+                  :close-on-content-click="false"
+                  location="bottom"
+                  origin="top"
+                  offset="6"
+                  scroll-strategy="reposition"
+                >
+                  <template #activator="{ props: menuProps }">
+                    <span v-bind="menuProps" class="node-compat-toggle" role="button">
+                      <VTooltip v-if="detail.warn" location="top">
+                        <template #activator="{ props: tooltipProps }">
+                          <span v-bind="tooltipProps" class="color-warning">
+                            <VIcon icon="mdi-information-outline" size="16" /> {{ detail.value }}
+                          </span>
+                        </template>
+                        <span>{{ detail.warnText }}</span>
+                      </VTooltip>
+                      <span v-else :class="detail.success ? 'color-success' : ''">
+                        {{ detail.value }}
+                      </span>
+                      <VIcon size="16" class="node-compat-chevron">
+                        {{ compatMenuOpen ? "mdi-chevron-up" : "mdi-chevron-down" }}
+                      </VIcon>
+                    </span>
+                  </template>
+                  <div v-if="remoteNode" class="node-compat-panel">
+                    <div class="node-compat-section">
+                      <div class="node-compat-title">
+                        {{ t("TXT_CODE_NODE_COMPAT_VERSION_TITLE") }}
+                      </div>
+                      <div class="node-compat-row node-compat-version-row">
+                        <span>{{ t("TXT_CODE_NODE_COMPAT_PANEL_VERSION") }}</span>
+                        <span>{{ remoteNode.compatibility?.version.panelVersion ?? "--" }}</span>
+                      </div>
+                      <div class="node-compat-row node-compat-version-row">
+                        <span>{{ t("TXT_CODE_NODE_COMPAT_NODE_VERSION") }}</span>
+                        <span
+                          :class="
+                            remoteNode.available && remoteNode.compatibility?.version.ok === false
+                              ? 'color-danger'
+                              : ''
+                          "
+                        >
+                          {{ remoteNode.compatibility?.version.daemonVersion ?? "--" }}
+                        </span>
+                      </div>
+                      <div
+                        v-if="remoteNode.compatibility?.version.brandMismatch"
+                        class="node-compat-note"
+                      >
+                        {{ t("TXT_CODE_NODE_BRAND_ERR") }}
+                      </div>
+                    </div>
+                    <div class="node-compat-section">
+                      <div class="node-compat-title">
+                        {{ t("TXT_CODE_NODE_COMPAT_PLUGINS_TITLE") }}
+                      </div>
+                      <template v-if="remoteNode.compatibility?.plugins.items.length">
+                        <div class="node-compat-row node-compat-header">
+                          <span>{{ t("TXT_CODE_NODE_COMPAT_PLUGIN_NAME") }}</span>
+                          <span>{{ t("TXT_CODE_NODE_COMPAT_PANEL_VERSION") }}</span>
+                          <span>{{ t("TXT_CODE_NODE_COMPAT_NODE_VERSION") }}</span>
+                          <span>{{ t("TXT_CODE_NODE_COMPAT_STATUS") }}</span>
+                        </div>
+                        <div
+                          v-for="item in remoteNode.compatibility.plugins.items"
+                          :key="item.id"
+                          class="node-compat-row"
+                        >
+                          <span :title="item.id" class="node-compat-plugin-id">{{ item.id }}</span>
+                          <span>{{ item.panelVersion ?? "--" }}</span>
+                          <span>{{ item.daemonVersion ?? "--" }}</span>
+                          <span :class="compatStatusClass(item.status)">
+                            <VIcon
+                              :icon="
+                                item.status === 'ok'
+                                  ? 'mdi-check-circle-outline'
+                                  : 'mdi-alert-circle-outline'
+                              "
+                              size="14"
+                            />
+                            {{ compatStatusText(item.status) }}
+                          </span>
+                        </div>
+                      </template>
+                      <div v-else class="node-compat-note">
+                        {{ t("TXT_CODE_NODE_COMPAT_NO_DATA") }}
+                      </div>
+                    </div>
+                  </div>
+                </VMenu>
+                <VTooltip v-else-if="detail.warn && detail.value" location="top">
                   <template #activator="{ props: tooltipProps }">
                     <span
                       v-bind="tooltipProps"
@@ -326,6 +432,73 @@ onMounted(() => {
 
 .node-copy-btn :deep(.v-icon) {
   font-size: 16px;
+}
+
+.node-compat-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.node-compat-chevron {
+  opacity: 0.7;
+}
+
+.node-compat-panel {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--background-color-white);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  min-width: 420px;
+  max-width: 92vw;
+  max-height: 340px;
+  overflow-y: auto;
+  font-size: 12px;
+  color: var(--text-color);
+}
+
+.node-compat-section + .node-compat-section {
+  margin-top: 12px;
+}
+
+.node-compat-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.node-compat-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) 1fr 1fr 1.4fr;
+  gap: 8px;
+  align-items: center;
+  padding: 2px 0;
+}
+
+.node-compat-row > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.node-compat-version-row {
+  grid-template-columns: 1fr 1fr;
+}
+
+.node-compat-header {
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.node-compat-plugin-id {
+  font-family: monospace;
+}
+
+.node-compat-note {
+  margin-top: 6px;
+  opacity: 0.85;
 }
 
 @media (max-width: 992px) {

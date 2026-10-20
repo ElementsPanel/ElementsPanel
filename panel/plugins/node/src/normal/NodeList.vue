@@ -122,7 +122,7 @@ const handleOpenDetailDialog = async () => {
             cols="12"
             lg="6"
           >
-            <NodeItem :item="item" :specified-daemon-version="response?.specifiedDaemonVersion" />
+            <NodeItem :item="item" />
           </VCol>
         </fade-up-animation>
       </VRow>

@@ -33,5 +33,19 @@
   "TXT_CODE_systemRemoteService.autoCheckDaemon": "로컬 데몬이 감지되어 자동으로 키와 연결 포트를 가져옵니다...",
   "TXT_CODE_systemRemoteService.error": "로컬 데몬 구성 파일을 자동으로 가져올 수 없습니다. 자세한 내용을 보려면 https://docs.mcsmanager.com/으로 이동하여 패널로 이동하세요.",
   "TXT_CODE_systemRemoteService.loadDaemonTitle": "로컬 데몬 {{localKeyFilePath}}을(를) 읽으려고 합니다.",
-  "TXT_CODE_systemRemoteService.nodeCount": "데몬 수: {{n}}"
+  "TXT_CODE_systemRemoteService.nodeCount": "데몬 수: {{n}}",
+  "TXT_CODE_NODE_COMPAT": "호환성",
+  "TXT_CODE_NODE_COMPAT_OK": "호환",
+  "TXT_CODE_NODE_COMPAT_BAD": "비호환",
+  "TXT_CODE_NODE_COMPAT_VERSION_TITLE": "버전 비교",
+  "TXT_CODE_NODE_COMPAT_PLUGINS_TITLE": "플러그인 비교",
+  "TXT_CODE_NODE_COMPAT_PANEL_VERSION": "패널 버전",
+  "TXT_CODE_NODE_COMPAT_NODE_VERSION": "노드 버전",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_NAME": "플러그인",
+  "TXT_CODE_NODE_COMPAT_STATUS": "상태",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_MATCH": "일치",
+  "TXT_CODE_NODE_COMPAT_PLUGIN_DIFF": "불일치",
+  "TXT_CODE_NODE_COMPAT_ONLY_PANEL": "패널 전용",
+  "TXT_CODE_NODE_COMPAT_ONLY_NODE": "노드 전용",
+  "TXT_CODE_NODE_COMPAT_NO_DATA": "노드를 사용할 수 없거나 데이터가 없어 호환성 정보를 가져올 수 없습니다."
 }
