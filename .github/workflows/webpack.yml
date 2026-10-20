@@ -1,4 +1,4 @@
-name: Build MCSManager
+name: Build ElementsPanel
 
 on:
   push:
