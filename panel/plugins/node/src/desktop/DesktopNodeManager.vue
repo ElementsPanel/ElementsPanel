@@ -4,7 +4,6 @@ import { testSocketConnection, SocketStatus } from "@/hooks/useSocketIo";
 import { usePolling } from "@/hooks/usePolling";
 import { t } from "@/lang/i18n";
 import { addNode, connectNode, deleteNode, editNode, remoteNodeList } from "../api";
-import { hasVersionUpdate } from "@/tools/version";
 import { getValidatorErrorMsg, reportErrorMsg } from "@/tools/validator";
 import type { NodeStatus } from "@/types";
 import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
@@ -19,7 +18,7 @@ const ExclamationCircleOutlined = "mdi-alert-circle-outline";
 const nodeHeaders = [
   { title: t("TXT_CODE_759fb403"), key: "status", sortable: false },
   { title: t("TXT_CODE_DESKTOP_NODES_SOCKET"), key: "socket", sortable: false },
-  { title: t("TXT_CODE_81634069"), key: "version", sortable: false },
+  { title: t("TXT_CODE_NODE_COMPAT"), key: "compatibility", sortable: false },
   { title: t("TXT_CODE_b8e8e6f5"), key: "name", sortable: false },
   { title: t("TXT_CODE_DESKTOP_NODES_IP"), key: "ip" },
   { title: t("TXT_CODE_f49149d0"), key: "port" },
@@ -35,7 +34,6 @@ const { execute: deleteNodeApiExec } = deleteNode();
 const { execute: connectNodeApiExec } = connectNode();
 
 const { state: allDaemonData } = useOverviewInfo();
-const specifiedDaemonVersion = computed(() => allDaemonData.value?.specifiedDaemonVersion);
 
 const nodes = ref<NodeStatus[]>([]);
 const searchQuery = ref("");
@@ -46,12 +44,12 @@ let disposed = false;
 let latestFetch = 0;
 const reconnecting = new Set<string>();
 
-const nodeVersionMap = computed<Record<string, string | undefined>>(() => {
-  const map: Record<string, string | undefined> = {};
+const nodeCompatMap = computed<Record<string, IPanelNodeCompatibility | undefined>>(() => {
+  const map: Record<string, IPanelNodeCompatibility | undefined> = {};
   const remotes = allDaemonData.value?.remote;
   if (remotes) {
     for (const remote of remotes) {
-      map[remote.uuid] = remote.version;
+      map[remote.uuid] = remote.compatibility;
     }
   }
   return map;
@@ -369,22 +367,24 @@ const closeAdvancedSettings = () => {
               ><VIcon icon="mdi-information-outline" /></span></template></VTooltip
         ><span v-else>--</span></template
       >
-      <template #item.version="{ item }"
+      <template #item.compatibility="{ item }"
         ><VTooltip
-          v-if="item.available && item.brand !== 'ElementsPanel'"
+          v-if="item.available && nodeCompatMap[item.uuid]?.version.brandMismatch"
           :text="t('TXT_CODE_NODE_BRAND_ERR')"
           ><template #activator="{ props: tooltipProps }"
             ><span v-bind="tooltipProps" class="dn-badge-icon--warn"
               ><VIcon icon="mdi-information-outline" /></span></template></VTooltip
         ><VIcon
-          v-else-if="
-            item.available &&
-            nodeVersionMap[item.uuid] &&
-            !hasVersionUpdate(specifiedDaemonVersion, nodeVersionMap[item.uuid])
-          "
+          v-else-if="item.available && nodeCompatMap[item.uuid]?.ok"
           icon="mdi-check-circle-outline"
           class="dn-badge-icon--yes"
-        /><span v-else>--</span></template
+        /><VTooltip
+          v-else-if="item.available && nodeCompatMap[item.uuid]"
+          :text="t('TXT_CODE_e520908a')"
+          ><template #activator="{ props: tooltipProps }"
+            ><span v-bind="tooltipProps" class="dn-badge-icon--warn"
+              ><VIcon icon="mdi-alert-circle-outline" /></span></template></VTooltip
+        ><span v-else>--</span></template
       >
       <template #item.name="{ item }"
         ><div class="dn-node-name">
