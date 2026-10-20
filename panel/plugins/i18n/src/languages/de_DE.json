@@ -1514,7 +1514,7 @@
   "TXT_CODE_LEAVES_YGGDRASIL_ENABLE": "Aktivieren Sie den zusätzlichen Yggdrasil-Authentifizierungsserver.",
   "TXT_CODE_LEAVES_ZERO_TICK_PLANTS": "Wiedereinführung des Zero-Tick-Pflanzenwachstums vor 1,5.",
   "TXT_CODE_MimBB1Ea": "Geben Sie die Etiketten an den Behälter weiter",
-  "TXT_CODE_NODE_BRAND_ERR": "Dieser Knoten ist ein MCSManager-Knoten, was zu Kompatibilitätsproblemen führen kann.",
+  "TXT_CODE_NODE_BRAND_ERR": "Dieser Knoten ist ein vorgelagerter MCSManager-Knoten; die meisten Funktionen werden nicht korrekt funktionieren!",
   "TXT_CODE_NO_DATA": "Keine Daten",
   "TXT_CODE_OPERATE": "Arbeiten",
   "TXT_CODE_PLUGIN_LIST": "Plugins",

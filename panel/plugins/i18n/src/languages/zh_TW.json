@@ -1514,7 +1514,7 @@
   "TXT_CODE_LEAVES_YGGDRASIL_ENABLE": "啟用額外的 Yggdrasil 身份驗證伺服器。",
   "TXT_CODE_LEAVES_ZERO_TICK_PLANTS": "重新引入 1.5 之前的零刻作物生長。",
   "TXT_CODE_MimBB1Ea": "傳遞標籤到容器",
-  "TXT_CODE_NODE_BRAND_ERR": "该節點为 MCSManager 節點，可能會出现兼容性問題。",
+  "TXT_CODE_NODE_BRAND_ERR": "該節點為上游 MCSManager 節點，大部分功能將會異常！",
   "TXT_CODE_NO_DATA": "暫無數據",
   "TXT_CODE_OPERATE": "操作",
   "TXT_CODE_PLUGIN_LIST": "插件 列表",
