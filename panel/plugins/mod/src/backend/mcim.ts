@@ -1,20 +1,57 @@
 // MCIM preserves the upstream API paths and response shapes.
 // https://mcimirror.top/guide/start/getting-started
-export const MODRINTH_API = "https://mod.mcimirror.top/modrinth/v2";
-export const CURSEFORGE_API = "https://mod.mcimirror.top/curseforge/v1";
 
-export function upstreamRequest(url: string) {
-  if (url.startsWith(`${MODRINTH_API}/`)) {
-    return { url: url.replace(MODRINTH_API, "https://api.modrinth.com/v2") };
+/**
+ * Which upstream to try first. The other one stays available as a fallback, so
+ * a preference never removes a path — it only decides the order.
+ */
+export type ModSourcePreference = "mirror" | "official";
+
+const API_BASES = {
+  mirror: {
+    modrinth: "https://mod.mcimirror.top/modrinth/v2",
+    curseforge: "https://mod.mcimirror.top/curseforge/v1"
+  },
+  official: {
+    modrinth: "https://api.modrinth.com/v2",
+    curseforge: "https://api.curse.tools/v1/cf"
   }
-  if (url.startsWith(`${CURSEFORGE_API}/`)) {
-    return {
-      url: url.replace(CURSEFORGE_API, "https://api.curse.tools/v1/cf"),
-      // Retain the previous provider's header only on requests to that provider.
-      headers: {
-        "x-api-key": "$2a$10$S.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6"
-      }
-    };
+} as const;
+
+/** The base URLs of the preferred upstream, one per API. */
+export function apiBase(preference: ModSourcePreference) {
+  return API_BASES[preference];
+}
+
+// The official CurseForge API authenticates every request with this key; the
+// mirror proxies it, so only requests that actually reach the official base
+// carry it.
+const CURSEFORGE_KEY_HEADERS = {
+  "x-api-key": "$2a$10$S.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6"
+};
+
+export function curseforgeKeyHeaders(url: string) {
+  return url.startsWith(`${API_BASES.official.curseforge}/`) ? CURSEFORGE_KEY_HEADERS : {};
+}
+
+/**
+ * Maps a URL on either base onto the other base, which is what makes the
+ * fallback direction follow the preference instead of being hard-wired.
+ */
+export function upstreamRequest(url: string) {
+  const mirror = API_BASES.mirror;
+  const official = API_BASES.official;
+  if (url.startsWith(`${mirror.modrinth}/`)) {
+    return { url: url.replace(mirror.modrinth, official.modrinth) };
+  }
+  if (url.startsWith(`${mirror.curseforge}/`)) {
+    return { url: url.replace(mirror.curseforge, official.curseforge) };
+  }
+  if (url.startsWith(`${official.modrinth}/`)) {
+    return { url: url.replace(official.modrinth, mirror.modrinth) };
+  }
+  if (url.startsWith(`${official.curseforge}/`)) {
+    return { url: url.replace(official.curseforge, mirror.curseforge) };
   }
 }
 
@@ -39,11 +76,20 @@ function mirrorFileUrl(value: string): string {
   }
 }
 
+/**
+ * Orders one file's download URLs by the preference: the preferred host becomes
+ * `url` and the other one becomes `fallbackUrl`. Files the mirror does not
+ * proxy keep their single URL in either mode.
+ */
 export function withMirrorDownload<T extends { url?: string }>(
-  file: T
+  file: T,
+  preference: ModSourcePreference
 ): T & { fallbackUrl?: string } {
   if (!file.url) return file;
   const fallbackUrl = mirrorFileUrl(file.url);
-  // MCIM recommends trying the official file first and its mirror on failure.
-  return fallbackUrl === file.url ? file : { ...file, fallbackUrl };
+  // Nothing to reorder when the mirror cannot proxy this file.
+  if (fallbackUrl === file.url) return file;
+  return preference === "mirror"
+    ? { ...file, url: fallbackUrl, fallbackUrl: file.url }
+    : { ...file, fallbackUrl };
 }

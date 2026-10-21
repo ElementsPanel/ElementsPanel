@@ -1,6 +1,12 @@
 import axios from "axios";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
-import { CURSEFORGE_API, MODRINTH_API, upstreamRequest, withMirrorDownload } from "./mcim";
+import {
+  apiBase,
+  curseforgeKeyHeaders,
+  upstreamRequest,
+  withMirrorDownload,
+  type ModSourcePreference
+} from "./mcim";
 
 export interface ModrinthProject {
   id: string;
@@ -20,15 +26,18 @@ export interface ModrinthVersion {
 }
 
 export class ModManagerService {
-  private readonly baseUrl = MODRINTH_API;
-  private readonly curseforgeUrl = CURSEFORGE_API;
+  private preference: ModSourcePreference;
   private readonly MAX_CACHE_SIZE = 1000;
   private cache = new Map<string, any>();
   private mcVersionsCache: string[] = [];
   private mcVersionsLastFetch = 0;
   private readonly controller = new AbortController();
 
-  constructor(private readonly ctx: PanelPluginContext) {
+  constructor(
+    private readonly ctx: PanelPluginContext,
+    sourcePreference: ModSourcePreference = "mirror"
+  ) {
+    this.preference = sourcePreference;
     ctx.effect(() => () => {
       this.controller.abort();
       this.cache.clear();
@@ -42,6 +51,27 @@ export class ModManagerService {
       },
       1000 * 60 * 60 * 24
     );
+  }
+
+  /** The upstream tried first for every request and download. */
+  public get sourcePreference(): ModSourcePreference {
+    return this.preference;
+  }
+
+  /**
+   * Switches the preferred upstream at runtime. Cached metadata stays valid
+   * either way — both bases serve the same upstream data.
+   */
+  public setSourcePreference(preference: ModSourcePreference) {
+    this.preference = preference;
+  }
+
+  private get baseUrl() {
+    return apiBase(this.preference).modrinth;
+  }
+
+  private get curseforgeUrl() {
+    return apiBase(this.preference).curseforge;
   }
 
   private setCache(key: string, value: any) {
@@ -170,7 +200,11 @@ export class ModManagerService {
     try {
       return await axios({
         ...config,
-        headers: { ...config.headers, "User-Agent": "ElementsPanel" },
+        headers: {
+          ...config.headers,
+          ...curseforgeKeyHeaders(config.url),
+          "User-Agent": "ElementsPanel"
+        },
         timeout: config.timeout || 5000,
         signal: this.controller.signal
       });
@@ -182,10 +216,12 @@ export class ModManagerService {
       const shouldFallback =
         fallback &&
         (!err.response || [403, 404, 408, 429, 500, 502, 503, 504].includes(err.response.status));
-      if ([`${MODRINTH_API}/search`, `${CURSEFORGE_API}/mods/search`].includes(config.url)) {
-        const source = config.url === `${MODRINTH_API}/search` ? "Modrinth" : "CurseForge";
+      if ([`${this.baseUrl}/search`, `${this.curseforgeUrl}/mods/search`].includes(config.url)) {
+        const source = config.url === `${this.baseUrl}/search` ? "Modrinth" : "CurseForge";
+        const primary = this.preference === "mirror" ? "MCIM " : "";
+        const alternate = this.preference === "mirror" ? "the original API" : "the MCIM mirror";
         this.ctx.logger.warn(
-          `MCIM ${source} search failed${shouldFallback ? "; falling back to the original API" : ""}:`,
+          `${primary}${source} search failed${shouldFallback ? `; falling back to ${alternate}` : ""}:`,
           {
             url: config.url,
             status: err.response?.status,
@@ -198,8 +234,7 @@ export class ModManagerService {
         return await this.requestWithRetry(
           {
             ...config,
-            url: fallback.url,
-            headers: { ...config.headers, ...fallback.headers }
+            url: fallback.url
           },
           retries
         );
@@ -707,7 +742,7 @@ export class ModManagerService {
 
       return items.slice(0, 200).map((v: any) => ({
         ...v,
-        files: (v.files || []).map(withMirrorDownload),
+        files: (v.files || []).map((file: any) => withMirrorDownload(file, this.preference)),
         project_type: projectType
       }));
     } catch (err) {
@@ -779,11 +814,14 @@ export class ModManagerService {
           loaders: loaders,
           project_type: isPlugin ? "plugin" : "mod",
           files: [
-            withMirrorDownload({
-              url: file.downloadUrl,
-              filename: file.fileName,
-              primary: true
-            })
+            withMirrorDownload(
+              {
+                url: file.downloadUrl,
+                filename: file.fileName,
+                primary: true
+              },
+              this.preference
+            )
           ]
         };
       });
