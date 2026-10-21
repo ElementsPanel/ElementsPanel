@@ -703,7 +703,12 @@ onUnmounted(() => {
   background: var(--background-color-white);
 }
 .console-card-content {
-  padding: 12px;
+  --console-card-padding: 12px;
+  padding: var(--console-card-padding);
+}
+.console-card-content :deep(.command-input .v-field) {
+  // Keep the inset corners concentric with the outer card.
+  border-radius: calc(var(--app-dialog-radius) - var(--console-card-padding));
 }
 .console-function-card {
   height: 100%;
