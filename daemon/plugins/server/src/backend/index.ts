@@ -241,7 +241,6 @@ export function apply(ctx: DaemonPluginContext) {
 
     ctx.logger.info("----------------------------");
     ctx.logger.info($t("TXT_CODE_app.started"));
-    ctx.logger.info($t("TXT_CODE_app.doc"));
     let appHost = $t("TXT_CODE_app.host", { port: config.port });
     if (config.ssl) appHost = appHost.replace("http", "https");
     ctx.logger.info(appHost);

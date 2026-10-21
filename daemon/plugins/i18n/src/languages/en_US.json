@@ -66,7 +66,6 @@
   "TXT_CODE_ae441ea3": "The additional mounting path of the instance container is configured incorrectly!",
   "TXT_CODE_ae441ea4": "The devices of the instance container are configured incorrectly!",
   "TXT_CODE_app.configPathTip": "Configuration File: data/Config/global.json",
-  "TXT_CODE_app.doc": "Reference Documentation: https://docs.mcsmanager.com/",
   "TXT_CODE_app.exitTip": "You can use the Ctrl+C shortcut to close the program",
   "TXT_CODE_app.host": "Access URL: http://localhost:{{port}}",
   "TXT_CODE_app.httpSetupError": "HTTP/Socket service startup error, possibly due to port occupation, insufficient permissions, or unavailable network device.",

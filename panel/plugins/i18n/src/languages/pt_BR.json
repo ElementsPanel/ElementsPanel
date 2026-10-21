@@ -1665,7 +1665,6 @@
   "TXT_CODE_app.httpSetupError": "Erro de inicialização do serviço HTTP/Socket, possivelmente devido à ocupação da porta, permissões insuficientes ou dispositivo de rede indisponível.",
   "TXT_CODE_app.panelStarted": "O painel de controle foi iniciado",
   "TXT_CODE_app.portTip": "O acesso público requer a abertura das portas {{port}} e da porta do daemon.",
-  "TXT_CODE_app.reference": "Projeto de Referência: https://github.com/mcsmanager",
   "TXT_CODE_b029a155": "A instância não poderá ser iniciada após a expiração.",
   "TXT_CODE_b02f295d": "Caminho de configuração padrão para servidores",
   "TXT_CODE_b05948d1": "Permissão alterada.",

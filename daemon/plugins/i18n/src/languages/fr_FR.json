@@ -66,7 +66,6 @@
   "TXT_CODE_ae441ea3": "Le chemin de montage supplémentaire du conteneur d'instance n'est pas configuré correctement ! \nVérifiez s'il vous plaît!",
   "TXT_CODE_ae441ea4": "Les périphériques du conteneur d'instance sont mal configurés !",
   "TXT_CODE_app.configPathTip": "Fichier de configuration : data/Config/global.json",
-  "TXT_CODE_app.doc": "Document de référence : https://docs.mcsmanager.com/",
   "TXT_CODE_app.exitTip": "Vous pouvez utiliser la touche de raccourci Ctrl C pour fermer le programme",
   "TXT_CODE_app.host": "Adresse d'accès : http://localhost :{{port}}",
   "TXT_CODE_app.httpSetupError": "Il y a une erreur lors du démarrage du service HTTP/Socket. Le port de connexion est peut-être occupé, les autorisations sont insuffisantes ou le périphérique de la carte réseau n'est pas disponible.",

@@ -1665,7 +1665,6 @@
   "TXT_CODE_app.httpSetupError": "HTTP/Socket 服務啟動錯誤，可能是連接埠被占用、權限不足或網路介面不可用。",
   "TXT_CODE_app.panelStarted": "面板端已啟動",
   "TXT_CODE_app.portTip": "軟體公網存取需開放連接埠 {{port}} 與守護程式連接埠",
-  "TXT_CODE_app.reference": "專案參考: https://github.com/mcsmanager",
   "TXT_CODE_b029a155": "到期後實例將無法啟動",
   "TXT_CODE_b02f295d": "伺服器預設設定檔路徑",
   "TXT_CODE_b05948d1": "更改權限成功",

@@ -66,7 +66,6 @@
   "TXT_CODE_ae441ea3": "實例容器額外掛載路徑設定錯誤！請檢查！",
   "TXT_CODE_ae441ea4": "實例容器的裝置設定錯誤！",
   "TXT_CODE_app.configPathTip": "設定檔：data/Config/global.json",
-  "TXT_CODE_app.doc": "參考檔案：https://docs.mcsmanager.com/",
   "TXT_CODE_app.exitTip": "你可以使用 Ctrl+C 快速鍵即可關閉程式",
   "TXT_CODE_app.host": "存取位址: http://localhost:{{port}}",
   "TXT_CODE_app.httpSetupError": "HTTP/Socket 服務啟動錯誤，可能是連接埠被占用、權限不足或網路介面不可用。",

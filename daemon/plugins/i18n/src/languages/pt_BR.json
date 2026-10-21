@@ -66,7 +66,6 @@
   "TXT_CODE_ae441ea3": "O caminho de montagem adicional do contêiner da instância está configurado incorretamente!",
   "TXT_CODE_ae441ea4": "Os dispositivos do contêiner da instância estão configurados incorretamente!",
   "TXT_CODE_app.configPathTip": "Arquivo de Configuração: data/Config/global.json",
-  "TXT_CODE_app.doc": "Documentação de Referência: https://docs.mcsmanager.com/",
   "TXT_CODE_app.exitTip": "Você pode usar o atalho Ctrl+C para fechar o programa",
   "TXT_CODE_app.host": "URL de Acesso: http://localhost:{{port}}",
   "TXT_CODE_app.httpSetupError": "Erro de inicialização do serviço HTTP/Socket, possivelmente devido à ocupação da porta, permissões insuficientes ou dispositivo de rede indisponível.",

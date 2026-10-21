@@ -1665,7 +1665,6 @@
   "TXT_CODE_app.httpSetupError": "HTTP/Socket サービスの開始時にエラーが発生しました。接続ポートが占有されているか、権限が不十分であるか、ネットワーク カード デバイスが使用できない可能性があります。",
   "TXT_CODE_app.panelStarted": "パネル側が起動しました",
   "TXT_CODE_app.portTip": "ソフトウェアのパブリック ネットワーク アクセスには、ポート {{port}} とデーモン接続ポートを開く必要があります",
-  "TXT_CODE_app.reference": "プロジェクト参照: https://github.com/mcsmanager",
   "TXT_CODE_b029a155": "有効期限が切れるとインスタンスは起動できなくなります",
   "TXT_CODE_b02f295d": "サーバーのデフォルトの構成パス",
   "TXT_CODE_b05948d1": "権限が正常に変更されました",

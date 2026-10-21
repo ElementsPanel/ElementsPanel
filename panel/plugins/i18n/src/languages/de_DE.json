@@ -1665,7 +1665,6 @@
   "TXT_CODE_app.httpSetupError": "Beim Starten des HTTP/Socket-Dienstes ist ein Fehler aufgetreten. Der Verbindungsport ist möglicherweise belegt, die Berechtigungen sind unzureichend oder das Netzwerkkartengerät ist nicht verfügbar.",
   "TXT_CODE_app.panelStarted": "Die Panelseite wurde gestartet",
   "TXT_CODE_app.portTip": "Für den Zugriff auf das öffentliche Netzwerk der Software ist das Öffnen des Ports {{port}} und des Daemon-Verbindungsports erforderlich",
-  "TXT_CODE_app.reference": "Projektreferenz: https://github.com/mcsmanager",
   "TXT_CODE_b029a155": "Die Instanz kann nach Ablauf nicht mehr gestartet werden",
   "TXT_CODE_b02f295d": "Standardkonfigurationspfad für Server",
   "TXT_CODE_b05948d1": "Berechtigungen wurden erfolgreich geändert",

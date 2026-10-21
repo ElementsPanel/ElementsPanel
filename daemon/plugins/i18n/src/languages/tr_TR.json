@@ -66,7 +66,6 @@
   "TXT_CODE_ae441ea3": "Örnek kapsayıcının ek montaj yolu yanlış yapılandırılmış!",
   "TXT_CODE_ae441ea4": "Örnek konteyner cihazları yanlış yapılandırıldı!",
   "TXT_CODE_app.configPathTip": "Yapılandırma Dosyası: data/Config/global.json",
-  "TXT_CODE_app.doc": "Referans Dokümantasyon: https://docs.mcsmanager.com/",
   "TXT_CODE_app.exitTip": "Programı kapatmak için Ctrl+C kısayolunu kullanabilirsiniz",
   "TXT_CODE_app.host": "Erişim URL'si: http://localhost:{{port}}",
   "TXT_CODE_app.httpSetupError": "HTTP/Soket hizmeti başlatma hatası, muhtemelen bağlantı noktası işgali, yetersiz izinler veya kullanılamayan ağ aygıtı nedeniyle.",

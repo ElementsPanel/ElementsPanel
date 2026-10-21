@@ -66,7 +66,6 @@
   "TXT_CODE_ae441ea3": "Der zusätzliche Mountpfad des Instanzcontainers ist falsch konfiguriert! \nÜberprüfen Sie bitte!",
   "TXT_CODE_ae441ea4": "Die Geräte des Instanzcontainers sind falsch konfiguriert!",
   "TXT_CODE_app.configPathTip": "Konfigurationsdatei: data/Config/global.json",
-  "TXT_CODE_app.doc": "Referenzdokument: https://docs.mcsmanager.com/",
   "TXT_CODE_app.exitTip": "Sie können das Programm mit der Tastenkombination Strg C schließen",
   "TXT_CODE_app.host": "Zugriffsadresse: http://localhost:{{port}}",
   "TXT_CODE_app.httpSetupError": "Beim Starten des HTTP/Socket-Dienstes ist ein Fehler aufgetreten. Der Verbindungsport ist möglicherweise belegt, die Berechtigungen sind unzureichend oder das Netzwerkkartengerät ist nicht verfügbar.",

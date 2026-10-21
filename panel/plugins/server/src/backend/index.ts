@@ -300,7 +300,6 @@ export function apply(ctx: PanelPluginContext) {
     httpServer.listen(port, config.httpIp);
     ctx.logger.info("==================================");
     ctx.logger.info($t("TXT_CODE_app.panelStarted"));
-    ctx.logger.info($t("TXT_CODE_app.reference"));
     let appHost = $t("TXT_CODE_app.host", { port });
     if (config.ssl) appHost = appHost.replace("http", "https");
     ctx.logger.info(appHost);

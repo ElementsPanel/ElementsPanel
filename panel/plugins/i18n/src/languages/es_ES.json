@@ -1665,7 +1665,6 @@
   "TXT_CODE_app.httpSetupError": "Hay un error al iniciar el servicio HTTP/Socket. Es posible que el puerto de conexión esté ocupado, los permisos sean insuficientes o el dispositivo de la tarjeta de red no esté disponible.",
   "TXT_CODE_app.panelStarted": "El lado del panel ha sido iniciado.",
   "TXT_CODE_app.portTip": "El acceso a la red pública de software requiere abrir el puerto {{port}} y el puerto de conexión del demonio",
-  "TXT_CODE_app.reference": "Referencia del proyecto: https://github.com/mcsmanager",
   "TXT_CODE_b029a155": "La instancia no podrá iniciarse después de su vencimiento.",
   "TXT_CODE_b02f295d": "Ruta de configuración predeterminada para servidores",
   "TXT_CODE_b05948d1": "Los permisos cambiaron exitosamente",

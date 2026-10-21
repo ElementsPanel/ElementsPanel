@@ -1665,7 +1665,6 @@
   "TXT_CODE_app.httpSetupError": "HTTP/Socket 服务启动错误，可能是端口被占用，权限不足或网卡设备不可用。",
   "TXT_CODE_app.panelStarted": "控制面板端已启动",
   "TXT_CODE_app.portTip": "软件公网访问需开放端口 {{port}} 与守护进程端口",
-  "TXT_CODE_app.reference": "项目参考: https://github.com/mcsmanager",
   "TXT_CODE_b029a155": "到期后实例将无法启动",
   "TXT_CODE_b02f295d": "服务端默认配置文件路径",
   "TXT_CODE_b05948d1": "更改权限成功",

@@ -1665,7 +1665,6 @@
   "TXT_CODE_app.httpSetupError": "HTTP/Soket hizmeti başlatma hatası, muhtemelen bağlantı noktası işgali, yetersiz izinler veya kullanılamayan ağ aygıtı nedeniyle.",
   "TXT_CODE_app.panelStarted": "Kontrol paneli başlatıldı",
   "TXT_CODE_app.portTip": "Genel erişim için {{port}} portunun ve daemon portunun açılması gerekir.",
-  "TXT_CODE_app.reference": "Proje Referansı: https://github.com/mcsmanager",
   "TXT_CODE_b029a155": "Örnek, sürenin dolmasından sonra başlatılamayacak.",
   "TXT_CODE_b02f295d": "Sunucular için varsayılan yapılandırma yolu",
   "TXT_CODE_b05948d1": "İzin değiştirildi.",

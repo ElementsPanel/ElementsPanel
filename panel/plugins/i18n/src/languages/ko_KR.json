@@ -1665,7 +1665,6 @@
   "TXT_CODE_app.httpSetupError": "HTTP/소켓 서비스 시작 중 오류가 발생했습니다. 연결 포트가 사용 중이거나 권한이 부족하거나 네트워크 카드 장치를 사용할 수 없습니다.",
   "TXT_CODE_app.panelStarted": "패널측이 시작되었습니다",
   "TXT_CODE_app.portTip": "소프트웨어 공용 네트워크에 액세스하려면 포트 {{port}} 및 데몬 연결 포트를 열어야 합니다.",
-  "TXT_CODE_app.reference": "프로젝트 참조: https://github.com/mcsmanager",
   "TXT_CODE_b029a155": "만료 후에는 인스턴스를 시작할 수 없습니다.",
   "TXT_CODE_b02f295d": "서버의 기본 구성 경로",
   "TXT_CODE_b05948d1": "권한이 성공적으로 변경되었습니다.",

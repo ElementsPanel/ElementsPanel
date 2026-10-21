@@ -1665,7 +1665,6 @@
   "TXT_CODE_app.httpSetupError": "Il y a une erreur lors du démarrage du service HTTP/Socket. Le port de connexion est peut-être occupé, les autorisations sont insuffisantes ou le périphérique de la carte réseau n'est pas disponible.",
   "TXT_CODE_app.panelStarted": "Le côté du panneau a été démarré",
   "TXT_CODE_app.portTip": "L'accès au réseau public du logiciel nécessite l'ouverture du port {{port}} et du port de connexion du démon.",
-  "TXT_CODE_app.reference": "Référence du projet : https://github.com/mcsmanager",
   "TXT_CODE_b029a155": "L'instance ne pourra pas démarrer après l'expiration",
   "TXT_CODE_b02f295d": "Chemin de configuration par défaut pour les serveurs",
   "TXT_CODE_b05948d1": "Les autorisations ont été modifiées avec succès",

@@ -66,7 +66,6 @@
   "TXT_CODE_ae441ea3": "实例容器额外挂载路径配置错误！请检查！",
   "TXT_CODE_ae441ea4": "实例容器的设备配置有误！",
   "TXT_CODE_app.configPathTip": "配置文件：data/Config/global.json",
-  "TXT_CODE_app.doc": "参考文档：https://docs.mcsmanager.com/",
   "TXT_CODE_app.exitTip": "你可以使用 Ctrl+C 快捷键即可关闭程序",
   "TXT_CODE_app.host": "访问地址: http://localhost:{{port}}",
   "TXT_CODE_app.httpSetupError": "HTTP/Socket 服务启动错误，可能是端口被占用，权限不足或网卡设备不可用。",

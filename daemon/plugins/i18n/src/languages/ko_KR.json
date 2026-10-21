@@ -66,7 +66,6 @@
   "TXT_CODE_ae441ea3": "인스턴스 컨테이너의 추가 장착 경로가 잘못 구성되었습니다! \n확인해주십시오!",
   "TXT_CODE_ae441ea4": "인스턴스 컨테이너의 장치가 올바르게 구성되지 않았습니다!",
   "TXT_CODE_app.configPathTip": "구성 파일: data/Config/global.json",
-  "TXT_CODE_app.doc": "참고문서: https://docs.mcsmanager.com/",
   "TXT_CODE_app.exitTip": "Ctrl C 단축키를 사용하여 프로그램을 닫을 수 있습니다",
   "TXT_CODE_app.host": "접속 주소: http://localhost:{{port}}",
   "TXT_CODE_app.httpSetupError": "HTTP/소켓 서비스 시작 중 오류가 발생했습니다. 연결 포트가 사용 중이거나 권한이 부족하거나 네트워크 카드 장치를 사용할 수 없습니다.",

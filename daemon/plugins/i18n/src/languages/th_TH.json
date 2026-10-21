@@ -66,7 +66,6 @@
   "TXT_CODE_ae441ea3": "เส้นทางการเมาท์เพิ่มเติมของคอนเทนเนอร์อินสแตนซ์ถูกกำหนดค่าไม่ถูกต้อง!",
   "TXT_CODE_ae441ea4": "อุปกรณ์ของคอนเทนเนอร์อินสแตนซ์ถูกตั้งค่าผิด!",
   "TXT_CODE_app.configPathTip": "ไฟล์การตั้งค่า: data/Config/global.json",
-  "TXT_CODE_app.doc": "เอกสารอ้างอิง: https://docs.mcsmanager.com/",
   "TXT_CODE_app.exitTip": "คุณสามารถใช้ปุ่มลัด Ctrl+C เพื่อปิดโปรแกรม",
   "TXT_CODE_app.host": "URL การเข้าถึง: http://localhost:{{port}}",
   "TXT_CODE_app.httpSetupError": "เกิดข้อผิดพลาดในการเริ่มบริการ HTTP/Socket อาจเป็นเพราะพอร์ตถูกใช้งาน สิทธิ์ไม่เพียงพอ หรืออุปกรณ์เครือข่ายไม่พร้อมใช้งาน",

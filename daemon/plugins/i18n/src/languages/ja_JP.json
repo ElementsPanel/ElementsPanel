@@ -66,7 +66,6 @@
   "TXT_CODE_ae441ea3": "インスタンス コンテナの追加のマウント パスが正しく構成されていません。\nチェックしてください！",
   "TXT_CODE_ae441ea4": "インスタンスコンテナのデバイス設定が不正です！",
   "TXT_CODE_app.configPathTip": "設定ファイル: data/Config/global.json",
-  "TXT_CODE_app.doc": "参考ドキュメント：https://docs.mcsmanager.com/",
   "TXT_CODE_app.exitTip": "Ctrl C ショートカット キーを使用してプログラムを閉じることができます。",
   "TXT_CODE_app.host": "アクセスアドレス: http://localhost:{{port}}",
   "TXT_CODE_app.httpSetupError": "HTTP/Socket サービスの開始時にエラーが発生しました。接続ポートが占有されているか、権限が不十分であるか、ネットワーク カード デバイスが使用できない可能性があります。",
