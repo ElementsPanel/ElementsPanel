@@ -250,9 +250,13 @@ export function apply(ctx: PanelPluginContext) {
       ctx.middleware.validator({ query: { daemonId: String, id: String } }),
       async (requestCtx: Koa.ParameterizedContext) => {
         const node = nodeOf(requestCtx);
-        await new RemoteRequest(node).request("plugin/remove", {
-          id: String(requestCtx.request.query.id)
-        });
+        // Removing unloads the plugin's scope before the files go, which can
+        // outlast the default request window; the market uninstall waits 30s too.
+        await new RemoteRequest(node).request(
+          "plugin/remove",
+          { id: String(requestCtx.request.query.id) },
+          30000
+        );
         node.refreshReconnect();
         requestCtx.body = { removed: true };
       }

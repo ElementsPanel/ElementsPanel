@@ -138,6 +138,20 @@ export function apply(ctx: DaemonPluginContext) {
       .map((record) => ({ id: record.id, version: record.version, dual: record.dual }))
   }));
 
+  // Unloads and deletes one installed plugin package. What may be removed —
+  // essential plugins, development sources — is the loader's own decision; its
+  // refusal arrives as a protocol error the panel's page reports.
+  ctx.protocol.on("plugin/remove", async (routerCtx, data) => {
+    try {
+      const id = String((data as { id?: unknown })?.id ?? "");
+      if (!id) throw new Error(ctx.i18n.$t("TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED"));
+      await ctx.plugins.remove(id);
+      ctx.protocol.response(routerCtx, { removed: true });
+    } catch (error: any) {
+      ctx.protocol.responseError(routerCtx, error);
+    }
+  });
+
   ctx.protocol.on("plugin/capabilities", (routerCtx) => {
     ctx.protocol.response(routerCtx, { api: PLUGIN_API_VERSION });
   });
