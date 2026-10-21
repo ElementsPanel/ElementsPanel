@@ -1,5 +1,3 @@
-import type { PanelFrontendPluginDiagnostic } from "@/plugin/context";
-
 export function findParentWithClass(element: HTMLElement, className: string): HTMLElement | null {
   if (element.classList.contains(className)) {
     return element;
@@ -26,8 +24,4 @@ export function setLoadingTitle(title: string) {
 
 export function setAppLoadingError(error: string) {
   window.setAppLoadingError(error);
-}
-
-export function setAppLoadingPlugins(plugins: readonly PanelFrontendPluginDiagnostic[]) {
-  window.setAppLoadingPlugins(plugins);
 }

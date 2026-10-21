@@ -138,7 +138,6 @@ function pluginError(plugin: InternalPlugin): Error | undefined {
 
 function notifyPluginDiagnostics() {
   for (const plugin of plugins) refreshPluginState(plugin);
-  if (import.meta.env.DEV) ctx.get("startup")?.updatePlugins(getPluginDiagnostics());
 }
 
 ctx.on("internal/status", (scope: EffectScope) => {

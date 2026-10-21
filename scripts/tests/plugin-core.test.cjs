@@ -91,8 +91,7 @@ function frontendFixture(t, { user = true, failStatus = false } = {}) {
   };
   const loading = {
     setLoadingTitle() {},
-    setAppLoadingError() {},
-    setAppLoadingPlugins() {}
+    setAppLoadingError() {}
   };
   const runtime = load("panel/plugins/runtime/src/frontend.ts", {
     "@console/stores/useAppStateStore": { useAppStateStore: () => store },

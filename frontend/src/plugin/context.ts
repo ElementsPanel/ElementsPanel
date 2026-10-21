@@ -188,7 +188,6 @@ export interface FrontendVueService {
 export interface FrontendStartupService {
   readonly language: string;
   showError(error: unknown): void;
-  updatePlugins(plugins: readonly PanelFrontendPluginDiagnostic[]): void;
 }
 
 /** The panel shell. Provided by the foundational `console` plugin. */

@@ -229,14 +229,8 @@ test("permission middleware accepts bearer tokens and retains legacy query compa
   assert.equal((await request({ authorization: "Bearer wrong" })).status, 403);
 });
 
-test("startup diagnostics render with textContent and reloads use source revisions", () => {
-  const html = fs.readFileSync(path.join(root, "frontend/index.html"), "utf8");
+test("plugin reloads use source revisions", () => {
   const loader = fs.readFileSync(path.join(root, "frontend/src/plugin/loader.ts"), "utf8");
-  assert.match(html, /window\.setAppLoadingPlugins/);
-  assert.match(html, /state\.textContent/);
-  assert.match(html, /list\.style\.display = plugins\.length \? "flex" : "none"/);
-  assert.doesNotMatch(html, /loadingPlugins[^\n]*innerHTML/);
-  assert.match(loader, /if \(import\.meta\.env\.DEV\).*updatePlugins/);
   assert.match(loader, /source\.revision \|\| String\(source\.metadata\.version/);
   assert.doesNotMatch(loader, /panel_plugin_reload[^\n]*Date\.now/);
 });
