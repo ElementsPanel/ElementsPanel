@@ -470,7 +470,7 @@ onMounted(async () => {
                                     <VSelect v-model="searchFilters.version" :items="[{title:t('TXT_CODE_2af87548'),value:''}, ...mcVersions.map(v=>({title:v,value:v}))]" clearable :placeholder="t('TXT_CODE_743b4fe7')" variant="solo" density="compact" rounded="xl" hide-details />
                                     <VSelect v-model="searchFilters.type" :items="[{title:t('TXT_CODE_cc4db8f0'),value:'all'},{title:t('TXT_CODE_MOD'),value:'mod'},{title:t('TXT_CODE_PLUGIN'),value:'plugin'}]" variant="solo" density="compact" rounded="xl" hide-details />
                                     <VSelect v-model="searchFilters.environment" :items="[{title:t('TXT_CODE_74e77b4c'),value:'all'},{title:t('TXT_CODE_SERVER'),value:'server'},{title:t('TXT_CODE_CLIENT'),value:'client'}]" variant="solo" density="compact" rounded="xl" hide-details />
-                                    <VSelect v-model="searchFilters.loader" :items="loaderOptions" item-title="label" item-value="value" clearable :placeholder="t('TXT_CODE_SELECT_LOADER')" variant="solo" density="compact" rounded="xl" hide-details />
+                                    <VSelect v-model="searchFilters.loader" :items="loaderOptions.flatMap((group) => group.options)" item-title="label" item-value="value" clearable :placeholder="t('TXT_CODE_SELECT_LOADER')" variant="solo" density="compact" rounded="xl" hide-details />
                                 </div>
                                 <div class="dmm-search-actions">
                                     <VBtn color="primary" size="small" variant="text" rounded="xl" :loading="searchLoading" @click="onSearch">

@@ -501,7 +501,7 @@ onMounted(async () => {
                         <VCol cols="6" :md="2"><VSelect v-model="searchFilters.version" :items="[{ title: t('TXT_CODE_2af87548'), value: '' }, ...mcVersions.map((v) => ({ title: v, value: v }))]" :placeholder="t('TXT_CODE_743b4fe7')" clearable density="compact" hide-details /></VCol>
                         <VCol cols="6" :md="2"><VSelect v-model="searchFilters.type" :items="[{ title: t('TXT_CODE_cc4db8f0'), value: 'all' }, { title: t('TXT_CODE_MOD'), value: 'mod' }, { title: t('TXT_CODE_PLUGIN'), value: 'plugin' }]" density="compact" hide-details /></VCol>
                         <VCol cols="6" :md="2"><VSelect v-model="searchFilters.environment" :items="[{ title: t('TXT_CODE_74e77b4c'), value: 'all' }, { title: t('TXT_CODE_SERVER'), value: 'server' }, { title: t('TXT_CODE_CLIENT'), value: 'client' }]" density="compact" hide-details /></VCol>
-                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.loader" :items="loaderOptions.flatMap((group) => group.options)" :placeholder="t('TXT_CODE_SELECT_LOADER')" clearable density="compact" hide-details /></VCol>
+                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.loader" :items="loaderOptions.flatMap((group) => group.options)" item-title="label" item-value="value" :placeholder="t('TXT_CODE_SELECT_LOADER')" clearable density="compact" hide-details /></VCol>
                       </VRow>
                       <div class="d-flex ga-2 justify-end mt-2">
                         <VBtn color="primary" :loading="searchLoading" @click="onSearch"><VIcon start icon="mdi-magnify" />{{ t("TXT_CODE_SEARCH") }}</VBtn>
