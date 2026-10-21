@@ -64,7 +64,10 @@ function directory(t) {
   return cwd;
 }
 
-const catalog = load("panel/plugins/instance/src/minecraft.ts");
+const instanceContract = load("common/src/instance_contract.ts");
+const catalog = load("panel/plugins/instance/src/minecraft.ts", {
+  "../../../../common/src/instance_contract": instanceContract
+});
 const javaCommands = load("common/src/java.ts");
 const install = load("daemon/plugins/instance/src/backend/minecraft_install.ts", {
   "../../../../../common/src/java": javaCommands
@@ -103,14 +106,73 @@ function mirrorFixture(override) {
   return { mirrors: new MslMirrorsService(), requests };
 }
 
+test("server downloads are grouped by edition and proxy category while keeping installer kinds", () => {
+  const servers = Object.keys(catalog.MINECRAFT_SERVERS);
+  const java = catalog.minecraftServersForType(servers, "minecraft/java");
+  assert.ok(["paper", "forge", "neoforge", "fabric", "spongevanilla"].every((id) => java.includes(id)));
+  assert.ok(!java.includes("velocity") && !java.includes("bungeecord"));
+  assert.deepEqual(catalog.minecraftServersForType(servers, "minecraft/java/bungeecord"), ["lightfall", "travertine", "bungeecord", "velocity"]);
+  assert.deepEqual(catalog.minecraftServersForType(servers, "minecraft/bedrock"), ["bedrock-server", "nukkitx"]);
+  assert.equal(catalog.MINECRAFT_SERVERS.forge.kind, "forge");
+  assert.equal(catalog.MINECRAFT_SERVERS.neoforge.kind, "neoforge");
+  assert.equal(catalog.MINECRAFT_SERVERS.nukkitx.kind, "jar");
+  assert.equal(catalog.defaultMinecraftServer(servers, "minecraft/java/bungeecord"), "bungeecord");
+  assert.ok(Object.values(catalog.MINECRAFT_SERVERS).every((entry) => instanceContract.INSTANCE_TYPES.includes(entry.type)));
+});
+
+test("category menus expose seven categories and configuration editors retain subtype files", () => {
+  const hooks = load("panel/plugins/instance/src/hooks/useInstance.ts", {
+    "@elements-panel/sdk": instanceContract,
+    "@/config/const": {},
+    "@/lang/i18n": { t: translate },
+    "@/services/apis/instance": { getInstanceInfo: () => ({ state: vue.ref() }) },
+    "@/types/const": { INSTANCE_STATUS_CODE: {}, INSTANCE_STATUS: {} },
+    "@/tools/vuetifyToast": {},
+    "@/tools/vuetifyModal": {},
+    "@/hooks/usePolling": {},
+    vue
+  });
+  assert.deepEqual(instanceContract.INSTANCE_TYPES, [
+    "universal", "minecraft/java", "minecraft/bedrock", "minecraft/java/bungeecord",
+    "steam/universal", "hytale", "steam/terraria"
+  ]);
+  assert.deepEqual(Object.keys(hooks.INSTANCE_TYPE_TRANSLATION), instanceContract.INSTANCE_TYPES);
+  const files = (type) => hooks.getInstanceConfigByType(type).map((file) => file.redirect);
+  assert.ok(["paper/paper-global.yml", "forge/fml.toml", "neoforge/neoforge-server.toml", "mcdr/config.yml"].every((file) => files("minecraft/java").includes(file)));
+  assert.deepEqual(files("minecraft/java/bungeecord"), ["bungeecord/config.yml", "velocity/velocity.toml", "geyser/config.yml"]);
+  assert.deepEqual(files("minecraft/bedrock"), ["bds/server.properties"]);
+  const info = vue.ref({ config: { type: "minecraft/java/bungeecord" } });
+  assert.equal(hooks.useInstanceInfo({ instanceInfo: info }).instanceTypeText.value, hooks.INSTANCE_TYPE_TRANSLATION["minecraft/java/bungeecord"]);
+});
+
+test("merged Bedrock instances retain Java management for Nukkit and managed Java commands", () => {
+  let action;
+  const plugin = load("panel/plugins/java/src/frontend.ts", {
+    "@/lang/i18n": { t: translate },
+    "@/hooks/useInstance": instanceContract,
+    "../../../../common/src/java": javaCommands,
+    "@/stores/useAppStateStore": { useAppStateStore: () => ({ state: { settings: { allowJavaManager: true } }, isAdmin: vue.ref(false) }) },
+    "./desktop/DesktopJavaManager.vue": {},
+    "./normal/JavaManager.vue": {},
+    "./components/JavaSetup.vue": {},
+    "./i18n": { localeMessages: {} }
+  });
+  plugin.apply({ i18n: { define() {} }, set() {}, actions: { instance: (value) => { action = value; } } });
+  const available = (config) => action.condition({ daemon: { features: { javaManager: true } }, instanceInfo: { config: { processType: "general", ...config } } });
+  assert.equal(available({ type: "minecraft/bedrock", startCommand: '"/opt/Java 21/bin/java" -jar nukkit.jar' }), true);
+  assert.equal(available({ type: "minecraft/bedrock", java: { id: "java21" } }), true);
+  assert.equal(available({ type: "minecraft/bedrock", startCommand: "./bedrock_server" }), false);
+  assert.equal(available({ type: "minecraft/java/bungeecord" }), true);
+});
+
 test("MSL metadata is cached, download links are refreshed, and the app identifies itself", async () => {
   const { mirrors, requests } = mirrorFixture();
   const selected = { server: "paper", version: "1.21.4", build: "latest" };
   const first = await mirrors.resolve(selected, "minecraft/java");
-  assert.equal(first.type, "minecraft/java/paper");
+  assert.equal(first.type, "minecraft/java");
   assert.equal(first.url, "https://cdn.example/server/jar?signature=123");
   assert.equal(first.sha256, "a".repeat(64));
-  await mirrors.resolve(selected, "minecraft/java/paper");
+  await mirrors.resolve(selected, "minecraft/java");
   assert.equal(requests.filter((entry) => entry.endpoint.startsWith("/download/")).length, 2);
   assert.equal(requests.filter((entry) => entry.endpoint.startsWith("/mirrors")).length, 3);
   for (const entry of requests) {
@@ -199,7 +261,7 @@ test("Minecraft API requires an administrator and resolves downloads on the pane
             return {
               url: "https://cdn.example/server.jar",
               sha256: "b".repeat(64),
-              type: "minecraft/java/paper",
+              type: "minecraft/java",
               kind: "jar"
             };
           }
@@ -240,7 +302,7 @@ test("Minecraft API requires an administrator and resolves downloads on the pane
   assert.equal(task.taskName, "minecraft_install");
   assert.equal(task.parameter.targetLink, "https://cdn.example/server.jar");
   assert.equal(task.parameter.minecraft.sha256, "b".repeat(64));
-  assert.equal(task.parameter.setupInfo.type, "minecraft/java/paper");
+  assert.equal(task.parameter.setupInfo.type, "minecraft/java");
   assert.equal(task.parameter.setupInfo.cwd, "");
   assert.equal(logs.length, 1);
   for (const unsupported of [
@@ -968,7 +1030,7 @@ const methods = Object.fromEntries(
   ["IMPORT", "DOWNLOAD", "FILE", "DOCKER", "EXIST"].map((value) => [value, value])
 );
 const instanceTypes = {
-  TYPE_MINECRAFT_BUNGEECORD: "minecraft/java/bungeecord",
+  ...instanceContract,
   INSTANCE_TYPE_TRANSLATION: { universal: "Any app", "minecraft/java": "Minecraft" }
 };
 
@@ -1149,6 +1211,25 @@ function formFixture(t, createMethod = "DOWNLOAD", javaSetup) {
   if (javaSetup) state.javaSetup = javaSetup;
   return { state, constants, confirms, creates, uploads, errors, successes, capability };
 }
+
+test("merged creation categories retain per-server stop commands and detect Bedrock Java uploads", async (t) => {
+  const download = formFixture(t);
+  download.state.formData.type = "minecraft/java/bungeecord";
+  for (const [server, command] of [["bungeecord", "end"], ["velocity", "shutdown"]]) {
+    download.state.downloadSelection = { server, version: "latest", build: "latest" };
+    await vue.nextTick();
+    assert.equal(download.state.formData.stopCommand, command);
+    assert.equal(download.state.needsJava, true);
+  }
+  const upload = formFixture(t, "IMPORT");
+  upload.state.formData.type = "minecraft/bedrock";
+  upload.state.onFileChange({ name: "nukkit.jar", size: 10 });
+  assert.equal(upload.state.needsJava, true);
+  upload.state.onFileChange({ name: "bedrock.zip", size: 10 });
+  assert.equal(upload.state.needsJava, false);
+  upload.state.formData.startCommand = "{mcsm_java} -jar nukkit.jar";
+  assert.equal(upload.state.needsJava, true);
+});
 
 test("download submission is validated and concurrent clicks create just one instance", async (t) => {
   const f = formFixture(t);

@@ -2,6 +2,7 @@
 import { getInstanceDeleteError } from "../tools/deletion";
 import { useInstanceTagSearch, useInstanceTagTips } from "@/hooks/useInstanceTag";
 import { t } from "@/lang/i18n";
+import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
 import { remoteInstances, remoteNodeList } from "@/services/apis";
 import {
     batchDelete,
@@ -681,7 +682,7 @@ onUnmounted(() => {
                                 t('TXT_CODE_abc080d') }}
                         </span>
                         <span v-if="instance.config.type" class="dim-instance__type">
-                            {{ instance.config.type }}
+                            {{ INSTANCE_TYPE_TRANSLATION[instance.config.type] }}
                         </span> <span v-if="
                             instance.info?.currentPlayers !== undefined &&
                             instance.info?.maxPlayers !== undefined &&

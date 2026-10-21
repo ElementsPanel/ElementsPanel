@@ -1,7 +1,12 @@
 import { t } from "@/lang/i18n";
 import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } from "@/plugin";
 import { useAppStateStore } from "@/stores/useAppStateStore";
-import { TYPE_MINECRAFT_JAVA, TYPE_MINECRAFT_NUKKIT } from "@/hooks/useInstance";
+import {
+  TYPE_MINECRAFT_JAVA,
+  TYPE_MINECRAFT_BEDROCK,
+  TYPE_MINECRAFT_BUNGEECORD
+} from "@/hooks/useInstance";
+import { isJavaCommand } from "../../../../common/src/java";
 import DesktopJavaManager from "./desktop/DesktopJavaManager.vue";
 import { localeMessages } from "./i18n";
 import JavaManager from "./normal/JavaManager.vue";
@@ -14,10 +19,13 @@ const isJavaManagerAvailable = ({
 }: PanelFrontendInstanceActionContext) => {
   if (isGlobalTerminal) return false;
   const config = (instanceInfo as any)?.config;
-  if (
-    (!config?.type?.includes(TYPE_MINECRAFT_JAVA) && config?.type !== TYPE_MINECRAFT_NUKKIT) ||
-    config.processType !== "general"
-  ) {
+  const type = config?.type;
+  const needsJava =
+    type === TYPE_MINECRAFT_JAVA ||
+    type === TYPE_MINECRAFT_BUNGEECORD ||
+    (type === TYPE_MINECRAFT_BEDROCK &&
+      (config?.java?.id || isJavaCommand(config?.startCommand || "")));
+  if (!needsJava || config?.processType !== "general") {
     return false;
   }
   if (!(daemon as any)?.features?.javaManager) return false;

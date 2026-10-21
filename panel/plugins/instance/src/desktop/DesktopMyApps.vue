@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
+import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
 import { userInfoApiAdvanced } from "@/services/apis/index";
 import {
     killInstance,
@@ -289,7 +290,7 @@ onUnmounted(() => {
                                 t('TXT_CODE_abc080d') }}
                         </span>
                         <span v-if="instance.config?.type" class="ma-instance__type">
-                            {{ instance.config.type }}
+                            {{ INSTANCE_TYPE_TRANSLATION[instance.config.type] }}
                         </span>
                         <span v-if="
                             instance.info?.currentPlayers !== undefined &&

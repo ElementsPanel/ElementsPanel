@@ -15,6 +15,7 @@ import { computed, onUnmounted, reactive, ref, watch } from "vue";
 import type { MinecraftServerSelection } from "../../../../../../common/src/minecraft";
 import {
   bindJavaCommand,
+  isJavaCommand,
   javaExecutableCommand,
   type PreparedJava
 } from "../../../../../../common/src/java";
@@ -86,7 +87,9 @@ const needsJava = computed(
     props.createMethod !== QUICKSTART_METHOD.DOCKER &&
     (isDownloadMode.value
       ? !!downloadSelection.value && downloadSelection.value.server !== "bedrock-server"
-      : formData.type.startsWith("minecraft/java") || formData.type === "minecraft/bedrock/nukkit")
+      : formData.type.startsWith("minecraft/java") ||
+        (formData.type === "minecraft/bedrock" &&
+          (uFile.value?.name.toLowerCase().endsWith(".jar") || isJavaCommand(formData.startCommand))))
 );
 
 function changeInstanceType(type: string) {
@@ -113,7 +116,7 @@ watch(
   (server) => {
     if (server && server !== lastDownloadServer) {
       lastDownloadServer = server;
-      changeInstanceType(MINECRAFT_SERVERS[server].type);
+      formData.stopCommand = MINECRAFT_SERVERS[server].stopCommand;
     }
   }
 );
@@ -275,7 +278,7 @@ async function selectedFile() {
   ) {
     const nogui =
       config.type.startsWith("minecraft/java") &&
-      ![TYPE_MINECRAFT_BUNGEECORD, "minecraft/java/velocity"].includes(config.type);
+      config.type !== TYPE_MINECRAFT_BUNGEECORD;
     config.startCommand = `${javaExecutableCommand(
       javaPath.value.trim() || "java"
     )} -jar "${uFile.value.name.replace(/"/g, "{quotes}")}"${nogui ? " nogui" : ""}`;

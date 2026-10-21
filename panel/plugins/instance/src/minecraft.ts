@@ -1,15 +1,28 @@
 import type { MinecraftInstallOptions } from "../../../../common/src/minecraft";
+import {
+  TYPE_MINECRAFT_JAVA,
+  TYPE_MINECRAFT_BEDROCK,
+  TYPE_MINECRAFT_BUNGEECORD,
+  type InstanceType
+} from "../../../../common/src/instance_contract";
 
 interface MinecraftServer {
   title: string;
-  type: string;
+  type: InstanceType;
   kind: MinecraftInstallOptions["kind"];
+  stopCommand: string;
 }
 
-const java = (title: string, type = "minecraft/java"): MinecraftServer => ({
+const java = (title: string, type: InstanceType = TYPE_MINECRAFT_JAVA): MinecraftServer => ({
   title,
   type,
-  kind: "jar"
+  kind: "jar",
+  stopCommand: "stop"
+});
+
+const proxy = (title: string, stopCommand = "end"): MinecraftServer => ({
+  ...java(title, TYPE_MINECRAFT_BUNGEECORD),
+  stopCommand
 });
 
 // Only advertise artifacts that can be installed as a standalone server. For
@@ -17,36 +30,37 @@ const java = (title: string, type = "minecraft/java"): MinecraftServer => ({
 export const MINECRAFT_SERVERS: Record<string, MinecraftServer> = {
   vanilla: java("Vanilla"),
   "vanilla-snapshot": java("Vanilla Snapshot"),
-  paper: java("Paper", "minecraft/java/paper"),
-  purpur: java("Purpur", "minecraft/java/purpur"),
+  paper: java("Paper"),
+  purpur: java("Purpur"),
   leaf: java("Leaf"),
-  leaves: java("Leaves", "minecraft/java/leaves"),
-  spigot: java("Spigot", "minecraft/java/spigot"),
-  bukkit: java("Bukkit", "minecraft/java/bukkit"),
-  folia: java("Folia", "minecraft/java/folia"),
-  pufferfish: java("Pufferfish", "minecraft/java/pufferfish"),
-  pufferfish_purpur: java("Pufferfish Purpur", "minecraft/java/pufferfish"),
-  fabric: java("Fabric", "minecraft/java/fabric"),
-  forge: { title: "Forge", type: "minecraft/java/forge", kind: "forge" },
-  neoforge: { title: "NeoForge", type: "minecraft/java/neoforge", kind: "neoforge" },
+  leaves: java("Leaves"),
+  spigot: java("Spigot"),
+  bukkit: java("Bukkit"),
+  folia: java("Folia"),
+  pufferfish: java("Pufferfish"),
+  pufferfish_purpur: java("Pufferfish Purpur"),
+  fabric: java("Fabric"),
+  forge: { ...java("Forge"), kind: "forge" },
+  neoforge: { ...java("NeoForge"), kind: "neoforge" },
   "arclight-forge": java("Arclight Forge"),
   "arclight-fabric": java("Arclight Fabric"),
   "arclight-neoforge": java("Arclight NeoForge"),
-  spongevanilla: java("SpongeVanilla", "minecraft/java/sponge"),
+  spongevanilla: java("SpongeVanilla"),
   youer: java("Youer"),
-  mohist: java("Mohist", "minecraft/java/mohist"),
+  mohist: java("Mohist"),
   catserver: java("CatServer"),
   banner: java("Banner"),
-  lightfall: java("Lightfall", "minecraft/java/bungeecord"),
-  travertine: java("Travertine", "minecraft/java/bungeecord"),
-  bungeecord: java("BungeeCord", "minecraft/java/bungeecord"),
-  velocity: java("Velocity", "minecraft/java/velocity"),
+  lightfall: proxy("Lightfall"),
+  travertine: proxy("Travertine"),
+  bungeecord: proxy("BungeeCord"),
+  velocity: proxy("Velocity", "shutdown"),
   "bedrock-server": {
     title: "Bedrock Dedicated Server",
-    type: "minecraft/bedrock/bds",
-    kind: "bedrock"
+    type: TYPE_MINECRAFT_BEDROCK,
+    kind: "bedrock",
+    stopCommand: "stop"
   },
-  nukkitx: java("Nukkit", "minecraft/bedrock/nukkit")
+  nukkitx: java("Nukkit", TYPE_MINECRAFT_BEDROCK)
 };
 
 export function minecraftServersForType(servers: string[], type: string) {
@@ -55,19 +69,16 @@ export function minecraftServersForType(servers: string[], type: string) {
       ? MINECRAFT_SERVERS[server]
       : undefined;
     if (!entry) return false;
-    if (type === "minecraft/java" || type === "minecraft/bedrock") {
-      return entry.type === type || entry.type.startsWith(`${type}/`);
-    }
     return entry.type === type;
   });
 }
 
 export function defaultMinecraftServer(servers: string[], type: string) {
   const preferred =
-    type === "minecraft/java"
+    type === TYPE_MINECRAFT_JAVA
       ? "vanilla"
-      : type === "minecraft/bedrock"
+      : type === TYPE_MINECRAFT_BEDROCK
       ? "bedrock-server"
-      : type.split("/").pop();
+      : "bungeecord";
   return servers.find((server) => server === preferred) || servers[0] || "";
 }

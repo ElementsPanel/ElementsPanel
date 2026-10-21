@@ -8,34 +8,32 @@ import { Modal } from "@/tools/vuetifyModal";
 import { usePolling } from "@/hooks/usePolling";
 import { computed, h, ref, type Ref } from "vue";
 
-import { TYPE_UNIVERSAL, TYPE_WEB_SHELL, TYPE_MINECRAFT_MCDR, TYPE_MINECRAFT_JAVA, TYPE_MINECRAFT_BUKKIT, TYPE_MINECRAFT_SPIGOT, TYPE_MINECRAFT_PAPER, TYPE_MINECRAFT_FOLIA, TYPE_MINECRAFT_LEAVES, TYPE_MINECRAFT_PUFFERFISH, TYPE_MINECRAFT_FORGE, TYPE_MINECRAFT_NEOFORGE, TYPE_MINECRAFT_FABRIC, TYPE_MINECRAFT_BUNGEECORD, TYPE_MINECRAFT_VELOCITY, TYPE_MINECRAFT_GEYSER, TYPE_MINECRAFT_SPONGE, TYPE_MINECRAFT_MOHIST, TYPE_MINECRAFT_PURPUR, TYPE_MINECRAFT_BEDROCK, TYPE_MINECRAFT_BDS, TYPE_MINECRAFT_NUKKIT, TYPE_HYTALE, TYPE_STEAM_SERVER_UNIVERSAL, TYPE_TERRARIA } from "@elements-panel/sdk";
-export { TYPE_UNIVERSAL, TYPE_WEB_SHELL, TYPE_MINECRAFT_MCDR, TYPE_MINECRAFT_JAVA, TYPE_MINECRAFT_BUKKIT, TYPE_MINECRAFT_SPIGOT, TYPE_MINECRAFT_PAPER, TYPE_MINECRAFT_FOLIA, TYPE_MINECRAFT_LEAVES, TYPE_MINECRAFT_PUFFERFISH, TYPE_MINECRAFT_FORGE, TYPE_MINECRAFT_NEOFORGE, TYPE_MINECRAFT_FABRIC, TYPE_MINECRAFT_BUNGEECORD, TYPE_MINECRAFT_VELOCITY, TYPE_MINECRAFT_GEYSER, TYPE_MINECRAFT_SPONGE, TYPE_MINECRAFT_MOHIST, TYPE_MINECRAFT_PURPUR, TYPE_MINECRAFT_BEDROCK, TYPE_MINECRAFT_BDS, TYPE_MINECRAFT_NUKKIT, TYPE_HYTALE, TYPE_STEAM_SERVER_UNIVERSAL, TYPE_TERRARIA } from "@elements-panel/sdk";
+import {
+  TYPE_UNIVERSAL,
+  TYPE_MINECRAFT_JAVA,
+  TYPE_MINECRAFT_BEDROCK,
+  TYPE_MINECRAFT_BUNGEECORD,
+  TYPE_STEAM_SERVER_UNIVERSAL,
+  TYPE_HYTALE,
+  TYPE_TERRARIA
+} from "@elements-panel/sdk";
+export {
+  TYPE_UNIVERSAL,
+  TYPE_MINECRAFT_JAVA,
+  TYPE_MINECRAFT_BEDROCK,
+  TYPE_MINECRAFT_BUNGEECORD,
+  TYPE_STEAM_SERVER_UNIVERSAL,
+  TYPE_HYTALE,
+  TYPE_TERRARIA
+} from "@elements-panel/sdk";
 
 export const INSTANCE_TYPE_TRANSLATION: MapData<string> = {
   [TYPE_UNIVERSAL]: t("TXT_CODE_a92a4aa1"),
-  [TYPE_STEAM_SERVER_UNIVERSAL]: t("TXT_CODE_3d7fbe30"),
   [TYPE_MINECRAFT_JAVA]: t("TXT_CODE_97f779b3"),
   [TYPE_MINECRAFT_BEDROCK]: t("TXT_CODE_7f1aef9f"),
-  [TYPE_MINECRAFT_NUKKIT]: t("TXT_CODE_8f3e5807"),
-  [TYPE_MINECRAFT_SPIGOT]: t("TXT_CODE_6c08319b"),
-  [TYPE_MINECRAFT_PAPER]: t("TXT_CODE_ec0cda88"),
-  [TYPE_MINECRAFT_FOLIA]: t("TXT_CODE_de449b5f"),
-  [TYPE_MINECRAFT_LEAVES]: t("TXT_CODE_8a5305a6"),
-  [TYPE_MINECRAFT_PUFFERFISH]: t("TXT_CODE_c6d3bd8"),
   [TYPE_MINECRAFT_BUNGEECORD]: t("TXT_CODE_ba86f4a"),
-  [TYPE_MINECRAFT_VELOCITY]: t("TXT_CODE_a3abb092"),
-  [TYPE_MINECRAFT_PURPUR]: t("TXT_CODE_e543f6c0"),
-  [TYPE_MINECRAFT_BDS]: t("TXT_CODE_67b5f678"),
-  [TYPE_MINECRAFT_SPONGE]: t("TXT_CODE_e4dbff32"),
-  [TYPE_MINECRAFT_FORGE]: t("TXT_CODE_5112fcb2"),
-  [TYPE_MINECRAFT_NEOFORGE]: t("TXT_CODE_98b4ac74"),
-  [TYPE_MINECRAFT_MOHIST]: t("TXT_CODE_82e624d1"),
-  [TYPE_MINECRAFT_FABRIC]: t("TXT_CODE_7af6d85a"),
-  [TYPE_MINECRAFT_BUKKIT]: t("TXT_CODE_992bf9bc"),
-  [TYPE_MINECRAFT_GEYSER]: t("TXT_CODE_4f57868"),
-  [TYPE_MINECRAFT_MCDR]: t("TXT_CODE_fa6f95a1"),
+  [TYPE_STEAM_SERVER_UNIVERSAL]: t("TXT_CODE_3d7fbe30"),
   [TYPE_HYTALE]: t("TXT_CODE_2025658e"),
-  [TYPE_WEB_SHELL]: t("TXT_CODE_31c5a4d0"),
   [TYPE_TERRARIA]: t("TXT_CODE_f25df30a")
 };
 
@@ -146,20 +144,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     redirect: "common/server.properties",
     type: "properties",
     info: t("TXT_CODE_12e3afa9"),
-    category: [
-      TYPE_MINECRAFT_SPIGOT,
-      TYPE_MINECRAFT_PAPER,
-      TYPE_MINECRAFT_FOLIA,
-      TYPE_MINECRAFT_JAVA,
-      TYPE_MINECRAFT_BUKKIT,
-      TYPE_MINECRAFT_FORGE,
-      TYPE_MINECRAFT_NEOFORGE,
-      TYPE_MINECRAFT_FABRIC,
-      TYPE_MINECRAFT_SPONGE,
-      TYPE_MINECRAFT_PURPUR,
-      TYPE_MINECRAFT_PUFFERFISH,
-      TYPE_MINECRAFT_LEAVES
-    ]
+    category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: t("TXT_CODE_90f684dc"),
@@ -167,20 +152,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     info: t("TXT_CODE_ab4cc2dc"),
     path: "eula.txt",
     redirect: "common/eula.txt",
-    category: [
-      TYPE_MINECRAFT_SPIGOT,
-      TYPE_MINECRAFT_PAPER,
-      TYPE_MINECRAFT_FOLIA,
-      TYPE_MINECRAFT_JAVA,
-      TYPE_MINECRAFT_BUKKIT,
-      TYPE_MINECRAFT_FABRIC,
-      TYPE_MINECRAFT_FORGE,
-      TYPE_MINECRAFT_NEOFORGE,
-      TYPE_MINECRAFT_SPONGE,
-      TYPE_MINECRAFT_PURPUR,
-      TYPE_MINECRAFT_PUFFERFISH,
-      TYPE_MINECRAFT_LEAVES
-    ]
+    category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: "[Spigot] spigot.yml",
@@ -188,16 +160,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     redirect: "bukkit/spigot.yml",
     type: "yml",
     info: t("TXT_CODE_509d7d9a"),
-    category: [
-      TYPE_MINECRAFT_SPIGOT,
-      TYPE_MINECRAFT_PAPER,
-      TYPE_MINECRAFT_FOLIA,
-      TYPE_MINECRAFT_JAVA,
-      TYPE_MINECRAFT_BUKKIT,
-      TYPE_MINECRAFT_PURPUR,
-      TYPE_MINECRAFT_PUFFERFISH,
-      TYPE_MINECRAFT_LEAVES
-    ]
+    category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: "[Bukkit] bukkit.yml",
@@ -205,16 +168,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     redirect: "bukkit/bukkit.yml",
     type: "yml",
     info: t("TXT_CODE_d03c3e0e"),
-    category: [
-      TYPE_MINECRAFT_SPIGOT,
-      TYPE_MINECRAFT_PAPER,
-      TYPE_MINECRAFT_FOLIA,
-      TYPE_MINECRAFT_JAVA,
-      TYPE_MINECRAFT_BUKKIT,
-      TYPE_MINECRAFT_PURPUR,
-      TYPE_MINECRAFT_PUFFERFISH,
-      TYPE_MINECRAFT_LEAVES
-    ]
+    category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: "[Bungeecord] config.yml",
@@ -222,7 +176,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     info: t("TXT_CODE_e9dcbfe4"),
     path: "config.yml",
     redirect: "bungeecord/config.yml",
-    category: [TYPE_MINECRAFT_JAVA, TYPE_MINECRAFT_BUNGEECORD]
+    category: [TYPE_MINECRAFT_BUNGEECORD]
   },
   {
     fileName: "[Velocity] velocity.toml",
@@ -230,7 +184,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     info: t("TXT_CODE_751f9bc1"),
     path: "velocity.toml",
     redirect: "velocity/velocity.toml",
-    category: [TYPE_MINECRAFT_JAVA, TYPE_MINECRAFT_VELOCITY]
+    category: [TYPE_MINECRAFT_BUNGEECORD]
   },
   {
     fileName: "[Bedrock] server.properties",
@@ -238,7 +192,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     redirect: "bds/server.properties",
     type: "properties",
     info: t("TXT_CODE_3a3f9a57"),
-    category: [TYPE_MINECRAFT_BDS, TYPE_MINECRAFT_BEDROCK]
+    category: [TYPE_MINECRAFT_BEDROCK]
   },
   {
     fileName: "[Mohist] mohist.yml",
@@ -246,7 +200,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     redirect: "mohist-config/mohist.yml",
     type: "yml",
     info: t("TXT_CODE_6eead111"),
-    category: [TYPE_MINECRAFT_JAVA, TYPE_MINECRAFT_MOHIST]
+    category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: "[Paper] paper.yml",
@@ -254,7 +208,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     info: t("TXT_CODE_f3fc17f3"),
     path: "paper.yml",
     redirect: "paper/paper.yml",
-    category: [TYPE_MINECRAFT_JAVA, TYPE_MINECRAFT_PAPER]
+    category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: "[Paper] paper-global.yml",
@@ -262,14 +216,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     info: t("TXT_CODE_2931127f"),
     path: "config/paper-global.yml",
     redirect: "paper/paper-global.yml",
-    category: [
-      TYPE_MINECRAFT_JAVA,
-      TYPE_MINECRAFT_PAPER,
-      TYPE_MINECRAFT_FOLIA,
-      TYPE_MINECRAFT_PUFFERFISH,
-      TYPE_MINECRAFT_PURPUR,
-      TYPE_MINECRAFT_LEAVES
-    ]
+    category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: "[Paper] paper-world-defaults.yml",
@@ -277,14 +224,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     info: t("TXT_CODE_4880ef77"),
     path: "config/paper-world-defaults.yml",
     redirect: "paper/paper-world-defaults.yml",
-    category: [
-      TYPE_MINECRAFT_JAVA,
-      TYPE_MINECRAFT_PAPER,
-      TYPE_MINECRAFT_FOLIA,
-      TYPE_MINECRAFT_PUFFERFISH,
-      TYPE_MINECRAFT_PURPUR,
-      TYPE_MINECRAFT_LEAVES
-    ]
+    category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: "[Purpur] pupur.yml",
@@ -292,7 +232,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     info: t("TXT_CODE_98e50717"),
     path: "purpur.yml",
     redirect: "purpur/purpur.yml",
-    category: [TYPE_MINECRAFT_JAVA, TYPE_MINECRAFT_PAPER, TYPE_MINECRAFT_PURPUR]
+    category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: "[Pufferfish] pufferfish.yml",
@@ -300,7 +240,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     info: t("TXT_CODE_9213f8e3"),
     path: "pufferfish.yml",
     redirect: "pufferfish/pufferfish.yml",
-    category: [TYPE_MINECRAFT_JAVA, TYPE_MINECRAFT_PUFFERFISH]
+    category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: "[Geyser] config.yml",
@@ -308,7 +248,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     info: t("TXT_CODE_1d39feca"),
     path: "config.yml",
     redirect: "geyser/config.yml",
-    category: [TYPE_MINECRAFT_JAVA, TYPE_MINECRAFT_GEYSER]
+    category: [TYPE_MINECRAFT_BUNGEECORD]
   },
   {
     fileName: "[MCDR] config.yml",
@@ -316,7 +256,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     info: t("TXT_CODE_25699fea"),
     path: "config.yml",
     redirect: "mcdr/config.yml",
-    category: [TYPE_MINECRAFT_JAVA, TYPE_MINECRAFT_MCDR]
+    category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: "[MCDR] permission.yml",
@@ -324,7 +264,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     info: t("TXT_CODE_5207688f"),
     path: "permission.yml",
     redirect: "mcdr/permission.yml",
-    category: [TYPE_MINECRAFT_JAVA, TYPE_MINECRAFT_MCDR]
+    category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: "[Tshock] config.json",
@@ -340,7 +280,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     info: t("TXT_CODE_7e6a82d8"),
     path: "config/fml.toml",
     redirect: "forge/fml.toml",
-    category: [TYPE_MINECRAFT_FORGE]
+    category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: "[NeoForge] neoforge-server.toml",
@@ -348,7 +288,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     info: t("TXT_CODE_5b6f3691"),
     path: "config/neoforge-server.toml",
     redirect: "neoforge/neoforge-server.toml",
-    category: [TYPE_MINECRAFT_NEOFORGE]
+    category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: "[NeoForge] neoforge-common.toml",
@@ -356,7 +296,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     info: t("TXT_CODE_1efc7c5f"),
     path: "config/neoforge-common.toml",
     redirect: "neoforge/neoforge-common.toml",
-    category: [TYPE_MINECRAFT_NEOFORGE]
+    category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: "[Leaves] leaves.yml",
@@ -364,12 +304,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     info: t("TXT_CODE_LEAVES_CONFIG_INFO"),
     path: "leaves.yml",
     redirect: "leaves/leaves.yml",
-    category: [
-      TYPE_MINECRAFT_JAVA,
-      TYPE_MINECRAFT_PUFFERFISH,
-      TYPE_MINECRAFT_PURPUR,
-      TYPE_MINECRAFT_LEAVES
-    ]
+    category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: "[Terraria] serverconfig.txt",
