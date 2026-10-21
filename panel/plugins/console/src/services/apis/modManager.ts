@@ -3,9 +3,9 @@ import { usePluginService, type FrontendModManagerService } from "@/plugin/conte
 type ModManagerApi = FrontendModManagerService["api"];
 
 function resolveModManagerApi(): ModManagerApi {
-  const mod = usePluginService<FrontendModManagerService>("mod");
+  const mod = usePluginService<FrontendModManagerService>("mod-manager");
   if (!mod) {
-    throw new Error('Panel frontend plugin "mod" is not loaded.');
+    throw new Error('Panel frontend plugin "mod-manager" is not loaded.');
   }
   return mod.api;
 }

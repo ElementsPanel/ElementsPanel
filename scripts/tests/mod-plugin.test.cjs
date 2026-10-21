@@ -118,7 +118,7 @@ async function panelFixture(t) {
   const plugin = load("panel/plugins/mod/src/backend/index.ts", {
     "./mod_manager": { ModManagerService }
   });
-  const fork = ctx.plugin({ ...plugin, name: "mod" });
+  const fork = ctx.plugin({ ...plugin, name: "mod-manager" });
   await ctx.start();
   const dispatch = panelRequire("koa-compose")(app.middleware);
   const request = async (url, options = {}) => {
@@ -296,7 +296,7 @@ async function daemonFixture(t, downloads = { task: null, downloadingCount: 0, s
   };
   const filesFork = ctx.plugin((scoped) => scoped.set("files", files));
   const plugin = load("daemon/plugins/mod/src/backend/index.ts");
-  const fork = ctx.plugin({ ...plugin, name: "mod" });
+  const fork = ctx.plugin({ ...plugin, name: "mod-manager" });
   await ctx.start();
   const request = (event, data) => ctx.protocol.handlers.get(event)({}, data);
   return { ctx, fork, filesFork, directory, request };
@@ -520,11 +520,11 @@ test("frontend registration and feature gating follow the mod and file plugin li
     "./normal/ModManager.vue": component,
     "./normal/ModManagerAction.vue": component
   });
-  ctx.plugin({ ...plugin, name: "mod" });
+  ctx.plugin({ ...plugin, name: "mod-manager" });
   await ctx.start();
-  assert.equal(ctx.get("mod"), undefined);
+  assert.equal(ctx.get("mod-manager"), undefined);
   const fileFork = ctx.plugin((scoped) => scoped.set("file", {}));
-  await until(() => ctx.get("mod"));
+  await until(() => ctx.get("mod-manager"));
   const action = [...ctx.actions.items][0];
   const state = {
     daemon: { features: { modManager: true } },
@@ -540,7 +540,7 @@ test("frontend registration and feature gating follow the mod and file plugin li
   assert.equal(action.condition(state), true);
   assert.equal([...ctx.routes.items][0].path, "/instances/terminal/mods");
   fileFork.dispose();
-  await until(() => ctx.get("mod") === undefined);
+  await until(() => ctx.get("mod-manager") === undefined);
   for (const name of ["i18n", "routes", "ui", "actions"]) assert.equal(ctx.get(name).items.size, 0);
 });
 

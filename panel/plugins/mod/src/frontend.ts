@@ -23,7 +23,7 @@ export const inject = ["console", "i18n", "ui", "routes", "actions", "desktop", 
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
-  ctx.set("mod", { api });
+  ctx.set("mod-manager", { api });
   ctx.routes.add({
     path: "/instances/terminal/mods",
     name: t("TXT_CODE_MOD_MANAGER"),
