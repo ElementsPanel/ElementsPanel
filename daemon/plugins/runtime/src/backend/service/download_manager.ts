@@ -30,7 +30,7 @@ class DownloadManager {
     url: string,
     targetPath: string,
     fallbackUrl?: string,
-    options: { ifIdle?: boolean; overwrite?: boolean } = {}
+    options: { ifIdle?: boolean; overwrite?: boolean; userAgent?: string } = {}
   ): Promise<void> {
     // Check and reserve synchronously, before the first await. Two callers cannot
     // both pass an idle check and then cancel one another's download.
@@ -53,7 +53,7 @@ class DownloadManager {
       const sources = fallbackUrl ? [url, fallbackUrl] : [url];
       for (let index = 0; index < sources.length; index++) {
         try {
-          const response = await this.requestWithRetry(sources[index], controller);
+          const response = await this.requestWithRetry(sources[index], controller, options.userAgent);
           const stream = response.data;
           task.total = Number(response.headers["content-length"]) || 0;
           task.current = 0;
@@ -118,6 +118,7 @@ class DownloadManager {
   private async requestWithRetry(
     url: string,
     controller: AbortController,
+    userAgent?: string,
     retries = 2
   ): Promise<any> {
     try {
@@ -127,7 +128,10 @@ class DownloadManager {
         url,
         responseType: "stream",
         timeout: 60000,
-        headers: getCommonHeaders(url),
+        headers: {
+          ...getCommonHeaders(url),
+          ...(userAgent ? { "User-Agent": userAgent } : {})
+        },
         maxRedirects: 10,
         signal: controller.signal
       });
@@ -139,7 +143,7 @@ class DownloadManager {
       const isRetryableStatus = [500, 502, 503, 504].includes(err.response?.status);
       if (retries > 0 && (isNetworkError || isRetryableStatus)) {
         await delay(2000, undefined, { signal: controller.signal });
-        return await this.requestWithRetry(url, controller, retries - 1);
+        return await this.requestWithRetry(url, controller, userAgent, retries - 1);
       }
       if (err.response?.status === 403) {
         throw new Error(

@@ -405,7 +405,10 @@ export class ModService {
     const download: NonNullable<ModService["download"]> = { path: targetPath };
     this.download = download;
     try {
-      const pending = downloads.downloadFromUrl(url, targetPath, options.fallbackUrl, options);
+      const pending = downloads.downloadFromUrl(url, targetPath, options.fallbackUrl, {
+        ...options,
+        userAgent: "ElementsPanel"
+      });
       download.task = downloads.task || undefined;
       if (task && downloads.task?.path === targetPath) task.progress = downloads.task;
       await pending;

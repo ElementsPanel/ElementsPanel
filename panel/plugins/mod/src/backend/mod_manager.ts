@@ -165,6 +165,7 @@ export class ModManagerService {
     try {
       return await axios({
         ...config,
+        headers: { ...config.headers, "User-Agent": "ElementsPanel" },
         timeout: config.timeout || 5000,
         signal: this.controller.signal
       });
@@ -784,9 +785,6 @@ export class ModManagerService {
           fields: "id,name,tag,icon,rating,downloads,updateDate,version",
           sort: "-updateDate"
         },
-        headers: {
-          "User-Agent": "MCSManager"
-        },
         validateStatus: (status: number) => (status >= 200 && status < 300) || status === 404
       });
 
@@ -814,10 +812,7 @@ export class ModManagerService {
                   const vRes = await this.requestWithRetry({
                     method: "GET",
                     url: `https://api.spiget.org/v2/resources/${item.id}/versions/${item.version.id}`,
-                    timeout: 4000,
-                    headers: {
-                      "User-Agent": "MCSManager"
-                    }
+                    timeout: 4000
                   });
                   if (vRes.data?.name) {
                     versionNamesMap[item.version.id] = vRes.data.name;
@@ -867,10 +862,7 @@ export class ModManagerService {
       try {
         const resourceRes = await this.requestWithRetry({
           method: "GET",
-          url: `https://api.spiget.org/v2/resources/${projectId}`,
-          headers: {
-            "User-Agent": "MCSManager"
-          }
+          url: `https://api.spiget.org/v2/resources/${projectId}`
         });
         resourceName = resourceRes.data.name;
       } catch (e) {}
@@ -878,10 +870,7 @@ export class ModManagerService {
       const res = await this.requestWithRetry({
         method: "GET",
         url: `https://api.spiget.org/v2/resources/${projectId}/versions`,
-        params: { size: 100 },
-        headers: {
-          "User-Agent": "MCSManager"
-        }
+        params: { size: 100 }
       });
       const versions = res.data;
       return versions.map((v: any, index: number) => {
