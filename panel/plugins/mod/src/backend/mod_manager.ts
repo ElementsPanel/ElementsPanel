@@ -179,10 +179,22 @@ export class ModManagerService {
       const fallback = upstreamRequest(config.url);
       // A miss queues an upstream refresh at MCIM. Do not repeatedly poll the
       // mirror while it catches up, or leave searches empty during an outage.
-      if (
+      const shouldFallback =
         fallback &&
-        (!err.response || [403, 404, 408, 429, 500, 502, 503, 504].includes(err.response.status))
-      ) {
+        (!err.response || [403, 404, 408, 429, 500, 502, 503, 504].includes(err.response.status));
+      if ([`${MODRINTH_API}/search`, `${CURSEFORGE_API}/mods/search`].includes(config.url)) {
+        const source = config.url === `${MODRINTH_API}/search` ? "Modrinth" : "CurseForge";
+        this.ctx.logger.warn(
+          `MCIM ${source} search failed${shouldFallback ? "; falling back to the original API" : ""}:`,
+          {
+            url: config.url,
+            status: err.response?.status,
+            code: err.code,
+            message: err.message
+          }
+        );
+      }
+      if (shouldFallback) {
         return await this.requestWithRetry(
           {
             ...config,
@@ -718,7 +730,7 @@ export class ModManagerService {
         });
         modData = modRes.data.data;
         projectName = modData.name;
-      } catch (e) {}
+      } catch (e) { }
 
       const res = await this.requestWithRetry({
         method: "GET",
@@ -837,11 +849,11 @@ export class ModManagerService {
                   if (vRes.data?.name) {
                     versionNamesMap[item.version.id] = vRes.data.name;
                   }
-                } catch (e) {}
+                } catch (e) { }
               }
             })
           );
-        } catch (e) {}
+        } catch (e) { }
       }
 
       const hits = data.map((item: any) => ({
@@ -885,7 +897,7 @@ export class ModManagerService {
           url: `https://api.spiget.org/v2/resources/${projectId}`
         });
         resourceName = resourceRes.data.name;
-      } catch (e) {}
+      } catch (e) { }
 
       const res = await this.requestWithRetry({
         method: "GET",
