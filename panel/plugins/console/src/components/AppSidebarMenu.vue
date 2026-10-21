@@ -44,7 +44,7 @@ const routePathIcons: Record<string, string> = {
   "/users": "mdi-account-group-outline",
   "/customer": "mdi-account-outline",
   "/login": "mdi-login",
-  "/plugins/config": "mdi-view-grid-plus",
+  "/plugins/config": "mdi-cog-outline",
   "/overview": "mdi-view-dashboard-outline",
   "/node": "mdi-sitemap-outline",
   "/market": "mdi-storefront-outline"
@@ -110,6 +110,7 @@ const getRouteIcon = (entry: SidebarRouteEntry): string =>
 // item swaps to its filled counterpart. Only verified outline/filled pairs are
 // listed here — icons without an outline variant keep the same glyph.
 const filledIconMap: Record<string, string> = {
+  "mdi-cog-outline": "mdi-cog",
   "mdi-view-grid-outline": "mdi-view-grid",
   "mdi-view-grid-plus-outline": "mdi-view-grid-plus",
   "mdi-account-group-outline": "mdi-account-group",
