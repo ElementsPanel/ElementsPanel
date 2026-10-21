@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import connectErrorImage from "@/assets/daemon_connection_error.png";
-import { useCommandHistory } from "../hooks/useCommandHistory";
 import { useXhrPollError } from "@/hooks/useXhrPollError";
 import { t } from "@/lang/i18n";
-import { getInstanceOutputLog } from "../api";
-import { logInstanceCrash, logInstanceAutoRestart } from "@/services/apis/operationLog";
-import { Terminal } from "@xterm/xterm";
-import { message } from "@/tools/vuetifyToast";
-import { onMounted, ref } from "vue";
-import { encodeConsoleColor, type UseTerminalHook } from "../hooks/useTerminal";
+import { logInstanceAutoRestart, logInstanceCrash } from "@/services/apis/operationLog";
 import { getRandomId } from "@/tools/randId";
+import { message } from "@/tools/vuetifyToast";
+import { Terminal } from "@xterm/xterm";
+import { onMounted, ref } from "vue";
 import {
   VBtn,
   VChip,
@@ -17,6 +14,9 @@ import {
   VTextField,
   VTooltip
 } from "vuetify/components";
+import { getInstanceOutputLog } from "../api";
+import { useCommandHistory } from "../hooks/useCommandHistory";
+import { encodeConsoleColor, type UseTerminalHook } from "../hooks/useTerminal";
 
 // Module-level dedup: prevent duplicate crash/restart logs across multiple TerminalCore instances
 let lastCrashLogTime = 0;
@@ -373,7 +373,7 @@ onMounted(async () => {
     height: 100%;
     background-color: #1e1e1e;
     padding: 8px;
-    border-radius: 6px;
+    border-radius: 12px;
     overflow: hidden;
     display: flex;
     flex-direction: column;

@@ -5,6 +5,8 @@ import {
   TYPE_STEAM_SERVER_UNIVERSAL,
   verifyEULA
 } from "@/hooks/useInstance";
+import { useOverviewInfo } from "@/hooks/useOverviewInfo";
+import { useServerConfig } from "@/hooks/useServerConfig";
 import { t } from "@/lang/i18n";
 import {
   ctx,
@@ -12,9 +14,6 @@ import {
   type FrontendTerminalService,
   type PanelFrontendInstanceActionContext
 } from "@/plugin/context";
-import { useOverviewInfo } from "@/hooks/useOverviewInfo";
-import { useServerConfig } from "@/hooks/useServerConfig";
-import { useAppStateStore } from "@/stores/useAppStateStore";
 import {
   killInstance,
   openInstance,
@@ -22,12 +21,13 @@ import {
   stopInstance,
   updateInstance
 } from "@/services/apis/instance";
+import { useAppStateStore } from "@/stores/useAppStateStore";
 import { sleep } from "@/tools/common";
-import { reportErrorMsg } from "@/tools/validator";
-import { parseTimestamp } from "@/tools/time";
 import { toCopy } from "@/tools/copy";
-import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@/types/const";
+import { parseTimestamp } from "@/tools/time";
+import { reportErrorMsg } from "@/tools/validator";
 import { Modal } from "@/tools/vuetifyModal";
+import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@/types/const";
 import { computed, onUnmounted, ref, watch, type ComponentPublicInstance } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
@@ -39,14 +39,13 @@ import {
   VChip,
   VCol,
   VContainer,
-  VDivider,
   VIcon,
   VRow,
   VSpacer,
   VToolbar
 } from "vuetify/components";
-import EventConfig from "../widgets/instance/dialogs/EventConfig.vue";
 import DockerInfo from "../widgets/instance/dialogs/DockerInfo.vue";
+import EventConfig from "../widgets/instance/dialogs/EventConfig.vue";
 import InstanceDetail from "../widgets/instance/dialogs/InstanceDetail.vue";
 import InstanceFundamentalDetail from "../widgets/instance/dialogs/InstanceFundamentalDetail.vue";
 import RconSettings from "../widgets/instance/dialogs/RconSettings.vue";
