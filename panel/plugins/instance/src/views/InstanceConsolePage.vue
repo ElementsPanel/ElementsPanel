@@ -420,13 +420,13 @@ onUnmounted(() => {
               {{ t("TXT_CODE_5476e012") }}
             </VCardTitle>
             <VCardText class="console-state-content">
-              <component
-                :is="TerminalTopTags"
-                v-if="displayInfo && !isDisplayStopped"
-                class="console-state-metrics"
-                :info="displayInfo"
-                :is-stopped="isDisplayStopped"
-              />
+              <div v-if="displayInfo && !isDisplayStopped" class="console-state-metrics">
+                <component
+                  :is="TerminalTopTags"
+                  :info="displayInfo"
+                  :is-stopped="isDisplayStopped"
+                />
+              </div>
               <span v-else class="console-state-empty">{{ t("TXT_CODE_NO_DATA") }}</span>
             </VCardText>
           </VCard>
@@ -755,6 +755,7 @@ onUnmounted(() => {
   min-width: 0;
   flex: 1 1 auto;
   overflow-x: auto;
+  overflow-y: hidden;
 }
 .console-state-metrics :deep(.perf-cards) {
   flex-wrap: nowrap;
