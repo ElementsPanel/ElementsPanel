@@ -149,14 +149,16 @@ test("known HTTPS mod CDNs support proxy Fake-IP answers without relaxing arbitr
       );
     });
   };
-  for (const host of ["cdn.modrinth.com", "mediafilez.forgecdn.net", "cdn.spiget.org", "api.spiget.org"]) {
+  for (const host of ["cdn.modrinth.com", "mediafilez.forgecdn.net", "cdn.spiget.org", "api.spiget.org", "mod.mcimirror.top"]) {
     const url = `https://${host}/mod.jar`;
     assert.deepEqual(await resolveWith(url), p.resolver.records);
     assert.equal(p.publicDownloadRequestOptions(url).httpsAgent.options.rejectUnauthorized, true);
   }
   for (const url of [
     "https://downloads.example/mod.jar", "https://cdn.modrinth.com.evil.example/mod.jar",
-    "http://cdn.modrinth.com/mod.jar", "https://cdn.modrinth.com:8443/mod.jar"
+    "http://cdn.modrinth.com/mod.jar", "https://cdn.modrinth.com:8443/mod.jar",
+    "https://mod.mcimirror.top.evil.example/mod.jar", "http://mod.mcimirror.top/mod.jar",
+    "https://mod.mcimirror.top:8443/mod.jar"
   ]) await assert.rejects(resolveWith(url), { code: "ERR_UNSAFE_DOWNLOAD_URL" });
   await assert.rejects(resolveWith("https://cdn.modrinth.com/mod.jar", "internal.example"), {
     code: "ERR_UNSAFE_DOWNLOAD_URL"

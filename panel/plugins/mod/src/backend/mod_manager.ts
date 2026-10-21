@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
+import { CURSEFORGE_API, MODRINTH_API, upstreamRequest, withMirrorDownload } from "./mcim";
 
 export interface ModrinthProject {
   id: string;
@@ -19,8 +20,8 @@ export interface ModrinthVersion {
 }
 
 export class ModManagerService {
-  private readonly baseUrl = "https://api.modrinth.com/v2";
-  private readonly curseforgeUrl = "https://api.curse.tools";
+  private readonly baseUrl = MODRINTH_API;
+  private readonly curseforgeUrl = CURSEFORGE_API;
   private readonly MAX_CACHE_SIZE = 1000;
   private cache = new Map<string, any>();
   private mcVersionsCache: string[] = [];
@@ -64,7 +65,11 @@ export class ModManagerService {
         url: `${this.baseUrl}/tag/game_version`
       });
       const versions = res.data
-        .filter((v: any) => v.project_type === "minecraft" && /^\d+\.\d+(\.\d+)?$/.test(v.version))
+        .filter(
+          (v: any) =>
+            (v.project_type == null || v.project_type === "minecraft") &&
+            /^\d+\.\d+(\.\d+)?$/.test(v.version)
+        )
         .map((v: any) => v.version)
         .sort((a: string, b: string) => {
           const pa = a.split(".").map(Number);
@@ -170,6 +175,23 @@ export class ModManagerService {
         signal: this.controller.signal
       });
     } catch (err: any) {
+      if (this.controller.signal.aborted) throw err;
+      const fallback = upstreamRequest(config.url);
+      // A miss queues an upstream refresh at MCIM. Do not repeatedly poll the
+      // mirror while it catches up, or leave searches empty during an outage.
+      if (
+        fallback &&
+        (!err.response || [403, 404, 408, 429, 500, 502, 503, 504].includes(err.response.status))
+      ) {
+        return await this.requestWithRetry(
+          {
+            ...config,
+            url: fallback.url,
+            headers: { ...config.headers, ...fallback.headers }
+          },
+          retries
+        );
+      }
       const isNetworkError =
         !err.response &&
         (err.code === "ECONNRESET" || err.code === "ETIMEDOUT" || err.code === "ECONNABORTED");
@@ -587,11 +609,10 @@ export class ModManagerService {
 
       const res = await this.requestWithRetry({
         method: "GET",
-        url: `${this.curseforgeUrl}/v1/cf/mods/search`,
+        url: `${this.curseforgeUrl}/mods/search`,
         params,
         headers: {
-          Accept: "application/json",
-          "x-api-key": "$2a$10$S.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6"
+          Accept: "application/json"
         },
         timeout: 10000
       });
@@ -674,6 +695,7 @@ export class ModManagerService {
 
       return items.slice(0, 200).map((v: any) => ({
         ...v,
+        files: (v.files || []).map(withMirrorDownload),
         project_type: projectType
       }));
     } catch (err) {
@@ -689,10 +711,9 @@ export class ModManagerService {
       try {
         const modRes = await this.requestWithRetry({
           method: "GET",
-          url: `${this.curseforgeUrl}/v1/cf/mods/${projectId}`,
+          url: `${this.curseforgeUrl}/mods/${projectId}`,
           headers: {
-            Accept: "application/json",
-            "x-api-key": "$2a$10$S.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6"
+            Accept: "application/json"
           }
         });
         modData = modRes.data.data;
@@ -701,10 +722,9 @@ export class ModManagerService {
 
       const res = await this.requestWithRetry({
         method: "GET",
-        url: `${this.curseforgeUrl}/v1/cf/mods/${projectId}/files`,
+        url: `${this.curseforgeUrl}/mods/${projectId}/files`,
         headers: {
-          Accept: "application/json",
-          "x-api-key": "$2a$10$S.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6.v.m6"
+          Accept: "application/json"
         }
       });
 
@@ -747,11 +767,11 @@ export class ModManagerService {
           loaders: loaders,
           project_type: isPlugin ? "plugin" : "mod",
           files: [
-            {
+            withMirrorDownload({
               url: file.downloadUrl,
               filename: file.fileName,
               primary: true
-            }
+            })
           ]
         };
       });

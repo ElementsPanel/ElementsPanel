@@ -206,9 +206,9 @@ export function useModSearch(
     const file = version.files.find((f: any) => f.primary) || version.files[0];
     if (!file) return;
 
-    // Find fallback URL if available (e.g., from SpigotMC version list)
+    // Prefer this file's mirror, then an alternate URL from the version list (e.g. SpigotMC).
     const fallbackFile = version.files.find((f: any) => f.url !== file.url);
-    const fallbackUrl = fallbackFile?.url;
+    const fallbackUrl = file.fallbackUrl || fallbackFile?.url;
 
     // 1. Automatic detection logic
     let detectedType = version.project_type || selectedMod.value?.project_type || "mod";

@@ -816,6 +816,49 @@ test("desktop node refresh ignores stale results, validates ports and reports fa
   assert.deepEqual(errors, ["delete failed", "connect failed"]);
 });
 
+for (const layout of ["normal", "desktop"]) {
+  test(`${layout} mod downloads keep the selected file's MCIM fallback for queued and immediate downloads`, async () => {
+    const requests = [];
+    const { useModSearch } = load(`panel/plugins/mod/src/${layout}/mod-manager/useModSearch.ts`, {
+      "@/lang/i18n": i18n,
+      "@vueuse/core": { useLocalStorage: (_key, value) => vue.ref(value) },
+      "@/tools/vuetifyToast": { message: { success() {}, error(error) { assert.fail(error); } } },
+      "@/tools/vuetifyModal": { Modal: {} },
+      "vuetify/components": {},
+      "../notice": { notifyDesktop() {} },
+      "../../api": {
+        downloadModApi: () => ({ execute: async (config) => requests.push(config) })
+      }
+    });
+    const state = useModSearch("instance", "node", () => [], async () => {}, vue.ref(["mods"]), layout === "desktop");
+    state.selectedMod.value = { id: "project", title: "Example", source: "Modrinth" };
+    const primary = {
+      primary: true,
+      filename: "mod.jar",
+      url: "https://cdn.modrinth.com/data/project/versions/v1/mod.jar",
+      fallbackUrl: "https://mod.mcimirror.top/data/project/versions/v1/mod.jar"
+    };
+    const task = await state.onDownload({
+      id: "v1", project_type: "mod",
+      files: [{ url: "https://cdn.modrinth.com/data/project/versions/v1/mod-sources.jar" }, primary]
+    });
+    assert.equal(task.data.url, primary.url);
+    assert.equal(task.data.fallbackUrl, primary.fallbackUrl);
+    assert.equal(task.data.fileName, primary.filename);
+    await task.immediateFn();
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].data.url, primary.url);
+    assert.equal(requests[0].data.fallbackUrl, primary.fallbackUrl);
+
+    state.selectedMod.value = { id: "123", source: "SpigotMC" };
+    const spigot = await state.onDownload({ files: [
+      { primary: true, filename: "plugin.jar", url: "https://api.spiget.org/v2/resources/123/download" },
+      { url: "https://cdn.spiget.org/file/123.jar" }
+    ] });
+    assert.equal(spigot.data.fallbackUrl, "https://cdn.spiget.org/file/123.jar");
+  });
+}
+
 test("editing node connection details preserves plugin settings and a blank API key", async () => {
   const writes = [];
   const state = setupSfc("panel/plugins/node/src/normal/node/NodeDetailDialog.vue", {

@@ -590,3 +590,123 @@ test("legacy mod windows restore under the action ID without losing layout or op
   assert.equal(migrateLegacyInstanceWindow(migrated), migrated);
   assert.equal(saved.content, "mod-manager", "the stored source is not mutated");
 });
+
+function mirrorManager(respond) {
+  const requests = [];
+  let dispose;
+  const { ModManagerService } = load("panel/plugins/mod/src/backend/mod_manager.ts", {
+    axios: async (config) => {
+      requests.push(config);
+      return await respond(config, requests.length);
+    }
+  });
+  const manager = new ModManagerService({
+    effect(callback) { dispose = callback(); },
+    setInterval() {},
+    sleep: async () => {},
+    logger: { warn() {} }
+  });
+  return { manager, requests, dispose: () => dispose() };
+}
+
+test("Modrinth search, metadata, version lists and hash lookup use MCIM with ElementsPanel UA", async () => {
+  const responses = {
+    "/tag/game_version": [{ version: "1.21.1", version_type: "release" }],
+    "/search": { hits: [{ project_id: "sodium", title: "Sodium", project_type: "mod" }], total_hits: 1 },
+    "/project/sodium": { id: "sodium", project_type: "mod", title: "Sodium" },
+    "/project/sodium/version": [{
+      id: "v1", files: [{ url: "https://cdn.modrinth.com/data/sodium/versions/v1/mod.jar", filename: "mod.jar", primary: true }]
+    }],
+    "/version_file/hash": { id: "v1", project_id: "sodium" },
+    "/version_files": { hash2: { id: "v1", project_id: "sodium" } },
+    "/projects": [{ id: "sodium", title: "Sodium" }]
+  };
+  const f = mirrorManager(({ url }) => {
+    const parsed = new URL(url);
+    assert.equal(parsed.origin, "https://mod.mcimirror.top");
+    assert.ok(parsed.pathname.startsWith("/modrinth/v2/"));
+    const key = parsed.pathname.slice("/modrinth/v2".length);
+    assert.ok(Object.hasOwn(responses, key), key);
+    return { data: responses[key] };
+  });
+  assert.deepEqual(await f.manager.getMinecraftVersions(), ["1.21.1"]);
+  assert.equal((await f.manager.searchProjects("sodium", 0, 10, { source: "modrinth", type: "mod" })).hits[0].source, "Modrinth");
+  const versions = await f.manager.getProjectVersions("sodium", "Modrinth");
+  assert.equal(versions[0].files[0].url, "https://cdn.modrinth.com/data/sodium/versions/v1/mod.jar");
+  assert.equal(versions[0].files[0].fallbackUrl, "https://mod.mcimirror.top/data/sodium/versions/v1/mod.jar");
+  assert.equal((await f.manager.getInfoByHash("hash")).project.id, "sodium");
+  assert.equal((await f.manager.getInfosByHashes(["hash2"])).hash2.project.id, "sodium");
+  assert.equal(responses["/project/sodium/version"][0].files[0].fallbackUrl, undefined, "leave upstream responses untouched");
+  for (const request of f.requests) {
+    assert.equal(request.headers["User-Agent"], "ElementsPanel");
+    assert.equal(request.headers["x-api-key"], undefined);
+  }
+});
+
+test("CurseForge MCIM requests need no API key and only supported file hosts gain a mirror fallback", async () => {
+  const f = mirrorManager(({ url }) => {
+    const parsed = new URL(url);
+    assert.equal(parsed.origin, "https://mod.mcimirror.top");
+    if (parsed.pathname === "/curseforge/v1/mods/search") {
+      return { data: { data: [{ id: 238222, name: "Example", classId: 6 }], pagination: { totalCount: 1 } } };
+    }
+    if (parsed.pathname === "/curseforge/v1/mods/238222") {
+      return { data: { data: { id: 238222, name: "Example", classId: 6 } } };
+    }
+    assert.equal(parsed.pathname, "/curseforge/v1/mods/238222/files");
+    return { data: { data: ["edge.forgecdn.net", "mediafilez.forgecdn.net"].map((host, index) => ({
+      id: index + 1, fileName: "mod.jar", gameVersions: ["1.21.1", "Fabric"],
+      downloadUrl: `https://${host}/files/1/2/mod.jar`
+    })) } };
+  });
+  const search = await f.manager.searchProjects("Example", 0, 10, { source: "curseforge", type: "mod" });
+  assert.equal(search.hits[0].source, "CurseForge");
+  const versions = await f.manager.getProjectVersions("238222", "CurseForge");
+  assert.equal(versions[0].files[0].fallbackUrl, "https://mod.mcimirror.top/files/1/2/mod.jar");
+  assert.equal(versions[1].files[0].url, "https://mediafilez.forgecdn.net/files/1/2/mod.jar");
+  assert.equal(versions[1].files[0].fallbackUrl, undefined);
+  for (const request of f.requests) {
+    assert.equal(request.headers["User-Agent"], "ElementsPanel");
+    assert.equal(request.headers["x-api-key"], undefined);
+    assert.equal(request.headers.Accept, "application/json");
+  }
+});
+
+test("MCIM misses and outages fall back to existing APIs without polling the mirror or losing request data", async () => {
+  for (const status of [404, 503]) {
+    const f = mirrorManager(({ url }) => {
+      if (new URL(url).hostname === "mod.mcimirror.top") throw { response: { status } };
+      if (url === "https://api.modrinth.com/v2/version_files") return { data: {} };
+      assert.equal(url, "https://api.curse.tools/v1/cf/mods/search");
+      return { data: { data: [], pagination: { totalCount: 0 } } };
+    });
+    await f.manager.getInfosByHashes(["sha1"]);
+    await f.manager.searchProjects("test", 10, 5, { source: "curseforge", type: "mod" });
+    assert.equal(f.requests.length, 4);
+    assert.deepEqual(f.requests[0].data, f.requests[1].data);
+    assert.deepEqual(f.requests[2].params, f.requests[3].params);
+    assert.equal(f.requests[2].headers["x-api-key"], undefined);
+    assert.ok(f.requests[3].headers["x-api-key"]);
+    assert.ok(f.requests.every((request) => request.headers["User-Agent"] === "ElementsPanel"));
+  }
+  const cancelled = mirrorManager(() => {
+    cancelled.dispose();
+    throw { code: "ERR_CANCELED" };
+  });
+  await cancelled.manager.searchProjects("test", 0, 10, { source: "modrinth" });
+  assert.equal(cancelled.requests.length, 1);
+});
+
+test("MCIM file mapping preserves encoded paths and excludes lookalike hosts, credentials and custom ports", () => {
+  const { withMirrorDownload } = load("panel/plugins/mod/src/backend/mcim.ts");
+  const original = { url: "https://cdn.modrinth.com/data/a/versions/b/file%20name.jar?token=example", filename: "file name.jar", hashes: { sha1: "hash" } };
+  const mirrored = withMirrorDownload(original);
+  assert.equal(mirrored.fallbackUrl, "https://mod.mcimirror.top/data/a/versions/b/file%20name.jar?token=example");
+  assert.equal(mirrored.url, original.url);
+  assert.deepEqual(mirrored.hashes, original.hashes);
+  for (const url of [
+    "https://cdn.modrinth.com.evil.example/file.jar", "https://edge.forgecdn.net:8443/file.jar",
+    "https://user:password@cdn.modrinth.com/file.jar", "https://mediafilez.forgecdn.net/file.jar",
+    "https://api.spiget.org/v2/resources/1/download", "https://mod.mcimirror.top/data/a/file.jar", "invalid"
+  ]) assert.equal(withMirrorDownload({ url }).fallbackUrl, undefined);
+});
