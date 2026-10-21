@@ -415,7 +415,7 @@ onMounted(async () => {
           @click="clearTags">{{
             t("TXT_CODE_7333c7f7") }}</VChip>
         <VChip v-for="tag in tagTips" :key="tag" :color="isTagSelected(tag) ? 'primary' : undefined"
-          :variant="isTagSelected(tag) ? 'tonal' : 'outlined'"
+          :variant="isTagSelected(tag) ? 'tonal' : 'flat'"
           @click="isTagSelected(tag) ? removeTag(tag) : selectTag(tag)">
           {{ tag }}</VChip>
       </div>

@@ -126,7 +126,7 @@ defineExpose({ openDialog });
             <VBtn
               v-else
               class="tag-add"
-              variant="outlined"
+              variant="flat"
               rounded="xl"
               prepend-icon="mdi-plus"
               @click="showInput"
@@ -144,7 +144,7 @@ defineExpose({ openDialog });
               v-for="tag in instanceTagsTips"
               :key="tag"
               class="tag-item tag-option"
-              variant="outlined"
+              variant="flat"
               rounded="xl"
               @click="addTag(tag)"
             >
