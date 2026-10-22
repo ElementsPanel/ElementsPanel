@@ -37,11 +37,19 @@ const pos = reactive({ x: 0, y: 0 });
 const isDragging = ref(false);
 const dragStart = reactive({ x: 0, y: 0 });
 
+const fitWindow = () => {
+    const bounds = windowRef.value?.getBoundingClientRect();
+    const width = Math.min(bounds?.width || 380, window.innerWidth);
+    const height = Math.min(bounds?.height || 460, window.innerHeight);
+    pos.x = Math.max(0, Math.min(pos.x, window.innerWidth - width));
+    pos.y = Math.max(0, Math.min(pos.y, window.innerHeight - height));
+};
+
 const centerWindow = () => {
-    const w = 380;
-    const h = 460;
-    pos.x = Math.round((window.innerWidth - w) / 2);
-    pos.y = Math.round((window.innerHeight - h) / 2) + 100;
+    const bounds = windowRef.value?.getBoundingClientRect();
+    pos.x = Math.round((window.innerWidth - (bounds?.width || 380)) / 2);
+    pos.y = Math.round((window.innerHeight - (bounds?.height || 460)) / 2);
+    fitWindow();
 };
 
 const onMouseDown = (e: MouseEvent) => {
@@ -74,11 +82,13 @@ const onMouseUp = () => {
 
 onMounted(() => {
     centerWindow();
+    window.addEventListener("resize", fitWindow);
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
 });
 
 onBeforeUnmount(() => {
+    window.removeEventListener("resize", fitWindow);
     document.removeEventListener("mousemove", onMouseMove);
     document.removeEventListener("mouseup", onMouseUp);
 });
@@ -184,6 +194,9 @@ const handleNext = async () => {
 .desktop-login-window {
     position: absolute;
     width: 380px;
+    max-width: 100vw;
+    max-height: 100vh;
+    box-sizing: border-box;
     border: 1px solid var(--desktop-window-border);
     border-radius: 10px;
     box-shadow: 0 8px 32px var(--desktop-window-shadow);
@@ -291,6 +304,8 @@ const handleNext = async () => {
 
 .desktop-login-body {
     padding: 20px 28px 28px;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .desktop-login-subtitle {

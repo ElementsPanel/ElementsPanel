@@ -222,6 +222,60 @@ function dialogFixture(t, shellStyleLast) {
 
 const transitionFrame = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
+function viewportFixture(t, width, height) {
+  const previous = { width: window.innerWidth, height: window.innerHeight };
+  const resize = (width, height) => {
+    window.innerWidth = width;
+    window.innerHeight = height;
+    window.dispatchEvent(new window.Event("resize"));
+  };
+  resize(width, height);
+  t.after(() => resize(previous.width, previous.height));
+  return resize;
+}
+
+function boundsFixture(t, initial = {}) {
+  const state = vue.reactive({
+    visible: true, minimized: false, maximized: false,
+    initialX: 100, initialY: 60, initialWidth: 800, initialHeight: 500, ...initial
+  });
+  const changes = [];
+  const target = document.createElement("div");
+  document.body.appendChild(target);
+  const app = vue.createApp({
+    render: () => vue.h(DesktopWindow, {
+      id: "bounds", title: "Bounds", active: true, ...state,
+      onMaximize: () => { state.maximized = !state.maximized; },
+      onResized: (_id, x, y, width, height) => {
+        changes.push({ x, y, width, height });
+        Object.assign(state, { initialX: x, initialY: y, initialWidth: width, initialHeight: height });
+      }
+    })
+  });
+  app.use(Vuetify.createVuetify());
+  app.mount(target);
+  t.after(() => { if (target.childElementCount) app.unmount(); target.remove(); });
+  const element = target.querySelector(".desktop-window");
+  const bounds = () => Object.fromEntries(["left", "top", "width", "height"]
+    .map((key) => [key, Number.parseFloat(element.style[key])]));
+  const assertInside = () => {
+    const box = bounds();
+    assert.ok(box.left >= 0 && box.top >= 0, JSON.stringify(box));
+    assert.ok(box.width > 0 && box.height > 0, JSON.stringify(box));
+    assert.ok(box.left + box.width <= window.innerWidth, JSON.stringify(box));
+    assert.ok(box.top + box.height <= window.innerHeight - 48, JSON.stringify(box));
+  };
+  const dragOutside = () => {
+    const box = bounds();
+    element.querySelector(".window__titlebar").dispatchEvent(new MouseEvent("mousedown", {
+      clientX: box.left + 40, clientY: box.top + 20, bubbles: true, button: 0
+    }));
+    document.dispatchEvent(new MouseEvent("mousemove", { clientX: window.innerWidth - 24, clientY: window.innerHeight - 24 }));
+    document.dispatchEvent(new MouseEvent("mouseup"));
+  };
+  return { state, element, app, changes, bounds, assertInside, dragOutside };
+}
+
 function confirmationFixture(t, options = {}) {
   const open = vue.ref(true);
   const loading = vue.ref(false);
@@ -668,4 +722,119 @@ test("desktop confirmations preserve multiple choices and stack independently ac
   firstWindow.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
   await flush();
   assert.ok(Number(firstWindow.style.zIndex) > Number(secondWindow.style.zIndex));
+});
+
+for (const scenario of [
+  { name: "negative centered coordinates", viewport: [1024, 768], initial: { initialX: -200, initialY: -90, initialWidth: 440, initialHeight: 420 }, expected: { left: 0, top: 0, width: 440, height: 420 } },
+  { name: "saved coordinates beyond the bottom right", viewport: [1024, 768], initial: { initialX: 900, initialY: 650, initialWidth: 500, initialHeight: 400 }, expected: { left: 524, top: 320, width: 500, height: 400 } },
+  { name: "an oversized application", viewport: [1024, 768], initial: { initialX: 150, initialY: 110, initialWidth: 1600, initialHeight: 900 }, expected: { left: 0, top: 0, width: 1024, height: 720 } },
+  { name: "a subwindow on a small screen", viewport: [320, 240], initial: { initialX: -60, initialY: -90, initialWidth: 440, initialHeight: 420, resizable: false }, expected: { left: 0, top: 0, width: 320, height: 192 } }
+]) {
+  test(`windows fit before the first frame with ${scenario.name}`, async (t) => {
+    viewportFixture(t, ...scenario.viewport);
+    const f = boundsFixture(t, scenario.initial);
+    assert.deepEqual(f.bounds(), scenario.expected, "the first rendered style must already be within the work area");
+    f.assertInside();
+    await flush();
+    const { left: x, top: y, width, height } = scenario.expected;
+    assert.deepEqual(f.changes, [{ x, y, width, height }], "publish corrected geometry for layout persistence");
+  });
+}
+
+test("viewport changes fit existing windows, preserve the taskbar and stop observing after unmount", async (t) => {
+  const resize = viewportFixture(t, 1280, 900);
+  const f = boundsFixture(t, { initialX: 200, initialY: 150, initialWidth: 900, initialHeight: 650 });
+  await flush();
+  assert.equal(f.changes.length, 0);
+  resize(640, 480);
+  await flush();
+  assert.deepEqual(f.bounds(), { left: 0, top: 0, width: 640, height: 432 });
+  f.assertInside();
+  assert.deepEqual(f.changes.at(-1), { x: 0, y: 0, width: 640, height: 432 });
+  resize(1280, 900);
+  await flush();
+  f.assertInside();
+  const updates = f.changes.length;
+  f.app.unmount();
+  resize(320, 240);
+  assert.equal(f.changes.length, updates);
+});
+
+for (const channel of ["visible", "minimized"]) {
+  test(`showing a window through ${channel} fits a previously dragged position`, async (t) => {
+    viewportFixture(t, 1024, 768);
+    const f = boundsFixture(t, { initialWidth: 400, initialHeight: 300 });
+    await flush();
+    f.dragOutside();
+    await flush();
+    assert.ok(f.bounds().left + f.bounds().width > window.innerWidth);
+    f.state[channel] = channel === "minimized";
+    await flush();
+    f.state[channel] = channel === "visible";
+    await flush();
+    f.assertInside();
+    assert.notEqual(f.element.style.display, "none");
+  });
+}
+
+test("context-menu maximization restores the latest user size and remains bounded after a screen change", async (t) => {
+  const resize = viewportFixture(t, 1280, 900);
+  const f = boundsFixture(t);
+  await flush();
+  f.element.querySelector(".window__resize-handle--se").dispatchEvent(new MouseEvent("mousedown", {
+    clientX: 900, clientY: 560, bubbles: true, button: 0
+  }));
+  document.dispatchEvent(new MouseEvent("mousemove", { clientX: 1000, clientY: 710 }));
+  document.dispatchEvent(new MouseEvent("mouseup"));
+  await flush();
+  const resized = f.bounds();
+  assert.deepEqual(resized, { left: 100, top: 60, width: 900, height: 650 });
+  f.state.maximized = true;
+  await flush();
+  f.state.maximized = false;
+  await flush();
+  assert.deepEqual(f.bounds(), resized);
+  f.state.maximized = true;
+  await flush();
+  resize(640, 480);
+  await flush();
+  f.state.maximized = false;
+  await flush();
+  f.assertInside();
+  assert.deepEqual(f.bounds(), { left: 0, top: 0, width: 640, height: 432 });
+});
+
+test("the standalone desktop login window centers using its actual size and stays inside a smaller screen", async (t) => {
+  const resize = viewportFixture(t, 800, 600);
+  const getRect = HTMLElement.prototype.getBoundingClientRect;
+  HTMLElement.prototype.getBoundingClientRect = function () {
+    return this.classList.contains("desktop-login-window")
+      ? { width: Math.min(380, window.innerWidth), height: Math.min(340, window.innerHeight) }
+      : getRect.call(this);
+  };
+  t.after(() => { HTMLElement.prototype.getBoundingClientRect = getRect; });
+  const Login = loadSfc("panel/plugins/user/src/desktop/DesktopLoginWindow.vue", {
+    "@/config/router": { router: { push() {} } },
+    "@/lang/i18n": translations,
+    "@/services/apis": { loginUser: () => ({ execute: async () => ({}) }) },
+    "@/stores/useAppStateStore": { useAppStateStore: () => ({ updateUserInfo: async () => {} }) },
+    "@/stores/useAppConfigStore": { useAppConfigStore: () => ({ isDarkTheme: vue.ref(false) }) },
+    "@/tools/common": { sleep: async () => {} },
+    "@/tools/desktopNotice": {},
+    "../assets": { desktopIconDarkUrl: "/icon.svg", desktopIconUrl: "/icon.svg" }
+  });
+  const target = document.createElement("div");
+  document.body.appendChild(target);
+  const app = vue.createApp(Login);
+  app.use(Vuetify.createVuetify());
+  app.mount(target);
+  t.after(() => { app.unmount(); target.remove(); });
+  await flush();
+  const element = target.querySelector(".desktop-login-window");
+  assert.equal(element.style.left, "210px");
+  assert.equal(element.style.top, "130px");
+  resize(320, 240);
+  await flush();
+  assert.equal(element.style.left, "0px");
+  assert.equal(element.style.top, "0px");
 });

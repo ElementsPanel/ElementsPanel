@@ -136,10 +136,52 @@ watch(() => [props.visible, props.minimized] as const, async ([visible, minimize
     };
 });
 
-const x = ref(props.initialX);
-const y = ref(props.initialY);
-const width = ref(props.initialWidth);
-const height = ref(props.initialHeight);
+const TASKBAR_HEIGHT = 48;
+interface WindowBounds {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
+const fitBounds = (bounds: WindowBounds): WindowBounds => {
+    const availableWidth = Math.max(1, window.innerWidth);
+    const availableHeight = Math.max(1, window.innerHeight - TASKBAR_HEIGHT);
+    const fittedWidth = Math.min(Math.max(1, Number.isFinite(bounds.width) ? bounds.width : 800), availableWidth);
+    const fittedHeight = Math.min(Math.max(1, Number.isFinite(bounds.height) ? bounds.height : 500), availableHeight);
+    return {
+        x: Math.max(0, Math.min(Number.isFinite(bounds.x) ? bounds.x : 0, availableWidth - fittedWidth)),
+        y: Math.max(0, Math.min(Number.isFinite(bounds.y) ? bounds.y : 0, availableHeight - fittedHeight)),
+        width: fittedWidth,
+        height: fittedHeight
+    };
+};
+
+// Fit before the first render so even centered subwindows and saved layouts open fully on screen.
+const requestedBounds = { x: props.initialX, y: props.initialY, width: props.initialWidth, height: props.initialHeight };
+const initialBounds = fitBounds(requestedBounds);
+const x = ref(initialBounds.x);
+const y = ref(initialBounds.y);
+const width = ref(initialBounds.width);
+const height = ref(initialBounds.height);
+
+const currentBounds = (): WindowBounds => ({ x: x.value, y: y.value, width: width.value, height: height.value });
+const boundsDiffer = (a: WindowBounds, b: WindowBounds) =>
+    a.x !== b.x || a.y !== b.y || a.width !== b.width || a.height !== b.height;
+const setBounds = (bounds: WindowBounds) => {
+    x.value = bounds.x;
+    y.value = bounds.y;
+    width.value = bounds.width;
+    height.value = bounds.height;
+};
+const reportBounds = () => emit("resized", props.id, x.value, y.value, width.value, height.value);
+const fitWindow = () => {
+    const previous = currentBounds();
+    const fitted = fitBounds(previous);
+    if (!boundsDiffer(previous, fitted)) return;
+    setBounds(fitted);
+    reportBounds();
+};
 
 const isDragging = ref(false);
 const isResizing = ref(false);
@@ -147,7 +189,25 @@ const resizeDirection = ref("");
 const dragOffset = ref({ x: 0, y: 0 });
 const resizeStart = ref({ x: 0, y: 0, w: 0, h: 0, winX: 0, winY: 0 });
 
-const savedPos = ref({ x: props.initialX, y: props.initialY, w: props.initialWidth, h: props.initialHeight });
+const savedPos = ref({ x: initialBounds.x, y: initialBounds.y, w: initialBounds.width, h: initialBounds.height });
+
+watch(() => [props.visible, props.minimized, props.maximized] as const,
+    ([visible, minimized, maximized], [, , wasMaximized]) => {
+        if (maximized && !wasMaximized) {
+            savedPos.value = { x: x.value, y: y.value, w: width.value, h: height.value };
+        } else if (!maximized && wasMaximized) {
+            const restored = fitBounds({ x: savedPos.value.x, y: savedPos.value.y, width: savedPos.value.w, height: savedPos.value.h });
+            setBounds(restored);
+            reportBounds();
+        }
+        if (visible && !minimized && !maximized) fitWindow();
+    }, { flush: "sync" });
+
+const onViewportResize = () => {
+    fitWindow();
+    const saved = fitBounds({ x: savedPos.value.x, y: savedPos.value.y, width: savedPos.value.w, height: savedPos.value.h });
+    savedPos.value = { x: saved.x, y: saved.y, w: saved.width, h: saved.height };
+};
 
 const isComponentIcon = computed(() => typeof props.icon !== "string");
 const isMdiIcon = computed(() => typeof props.icon === "string" && props.icon.startsWith("mdi-"));
@@ -158,7 +218,7 @@ const windowStyle = computed(() => {
             left: "0px",
             top: "0px",
             width: "100vw",
-            height: "calc(100vh - 48px)",
+            height: `max(1px, calc(100vh - ${TASKBAR_HEIGHT}px))`,
             zIndex: props.zIndex,
             borderRadius: "0px"
         };
@@ -305,14 +365,6 @@ const onResizeStart = (e: MouseEvent, dir: string) => {
 
 const handleMaximize = () => {
     if (!props.showMaximize) return;
-    if (!props.maximized) {
-        savedPos.value = { x: x.value, y: y.value, w: width.value, h: height.value };
-    } else {
-        x.value = savedPos.value.x;
-        y.value = savedPos.value.y;
-        width.value = savedPos.value.w;
-        height.value = savedPos.value.h;
-    }
     emit("maximize", props.id);
 };
 
@@ -325,12 +377,15 @@ const onContextMenuTitlebar = (e: MouseEvent) => {
 };
 
 onMounted(() => {
+    if (boundsDiffer(requestedBounds, initialBounds)) reportBounds();
+    window.addEventListener("resize", onViewportResize);
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
 });
 
 onUnmounted(() => {
     stopVisibilityAnimation();
+    window.removeEventListener("resize", onViewportResize);
     document.removeEventListener("mousemove", onMouseMove);
     document.removeEventListener("mouseup", onMouseUp);
 });
