@@ -94,7 +94,8 @@ export function withMirrorDownload<T extends { url?: string }>(
     : { ...file, fallbackUrl };
 }
 
-function isMirrorDownloadUrl(value: string): boolean {
+/** Whether a download URL is served by the mirror rather than the upstream CDN. */
+export function isMirrorDownloadUrl(value: string): boolean {
   try {
     return new URL(value).hostname === "mod.mcimirror.top";
   } catch {
