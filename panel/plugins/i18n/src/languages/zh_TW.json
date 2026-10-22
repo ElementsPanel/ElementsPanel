@@ -1,6 +1,4 @@
 {
-  "TXT_CODE_ABOUT_ORIGIN": "ElementsPanel 的誕生離不開 {project} 及其他開源軟體",
-  "TXT_CODE_ABOUT_SOURCE": "專案原始碼",
   "TXT_CODE_LEAVES_DONT_RESPOND_PING": "在伺服器完全啟動前不回應 Ping 請求。",
   "TXT_CODE_LEAVES_HOPPER_COUNTER": "啟用漏斗計數器。",
   "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "啟用 LMS Paster 協定支援。",
@@ -395,7 +393,6 @@
   "TXT_CODE_3b1cc020": "取消",
   "TXT_CODE_3b346a65": "區域保護是否應適用於箱子",
   "TXT_CODE_3b4260f8": "雕像在停止產生之前可以產生多少 NPC。預設值 10。",
-  "TXT_CODE_3b4b656d": "關於",
   "TXT_CODE_3bb646e4": "請選擇",
   "TXT_CODE_3be23278": "確定爆炸是否可引發火災",
   "TXT_CODE_3beb6e5c": "設定晝夜循環的完成時間",

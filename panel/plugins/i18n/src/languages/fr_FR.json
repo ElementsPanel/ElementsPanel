@@ -1,6 +1,4 @@
 {
-  "TXT_CODE_ABOUT_ORIGIN": "ElementsPanel n’aurait pas pu voir le jour sans {project} et d’autres logiciels open source.",
-  "TXT_CODE_ABOUT_SOURCE": "Code source",
   "TXT_CODE_LEAVES_DONT_RESPOND_PING": "Ne pas répondre aux requêtes ping avant le démarrage complet du serveur.",
   "TXT_CODE_LEAVES_HOPPER_COUNTER": "Activer les compteurs d’entonnoirs.",
   "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "Activer la prise en charge du protocole LMS Paster.",
@@ -395,7 +393,6 @@
   "TXT_CODE_3b1cc020": "Annuler",
   "TXT_CODE_3b346a65": "La protection de zone doit-elle s’appliquer aux box ?",
   "TXT_CODE_3b4260f8": "Combien de PNJ une statue peut-elle engendrer avant qu'elle ne cesse d'apparaître. \nValeur par défaut 10.",
-  "TXT_CODE_3b4b656d": "À propos",
   "TXT_CODE_3bb646e4": "Veuillez sélectionner",
   "TXT_CODE_3be23278": "Que l'explosion puisse provoquer un feu ou non",
   "TXT_CODE_3beb6e5c": "Définissez la durée du cycle du jour",

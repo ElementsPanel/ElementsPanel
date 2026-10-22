@@ -1,6 +1,4 @@
 {
-  "TXT_CODE_ABOUT_ORIGIN": "ElementsPanel wäre ohne {project} und andere Open-Source-Software nicht möglich gewesen.",
-  "TXT_CODE_ABOUT_SOURCE": "Quellcode",
   "TXT_CODE_LEAVES_DONT_RESPOND_PING": "Ping-Anfragen erst nach dem vollständigen Serverstart beantworten.",
   "TXT_CODE_LEAVES_HOPPER_COUNTER": "Trichterzähler aktivieren.",
   "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "Unterstützung für das LMS-Paster-Protokoll aktivieren.",
@@ -395,7 +393,6 @@
   "TXT_CODE_3b1cc020": "Stornieren",
   "TXT_CODE_3b346a65": "Sollte Zonenschutz für Boxen gelten?",
   "TXT_CODE_3b4260f8": "Wie viele NPCs kann eine Statue spawnen, bevor sie nicht mehr spawnt? \nStandardwert 10.",
-  "TXT_CODE_3b4b656d": "Über ElementsPanel",
   "TXT_CODE_3bb646e4": "Bitte auswählen",
   "TXT_CODE_3be23278": "Ob die Explosion einen Brand verursachen kann oder nicht",
   "TXT_CODE_3beb6e5c": "Legen Sie fest, wie lange der Tageslichtzyklus aktiviert ist",

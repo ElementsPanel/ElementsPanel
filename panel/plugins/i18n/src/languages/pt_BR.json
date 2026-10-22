@@ -1,6 +1,4 @@
 {
-  "TXT_CODE_ABOUT_ORIGIN": "O ElementsPanel não teria sido possível sem o {project} e outros softwares de código aberto.",
-  "TXT_CODE_ABOUT_SOURCE": "Código-fonte",
   "TXT_CODE_LEAVES_DONT_RESPOND_PING": "Não responder às solicitações de ping até que o servidor tenha iniciado completamente.",
   "TXT_CODE_LEAVES_HOPPER_COUNTER": "Ativar contadores de funis.",
   "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "Ativar o suporte ao protocolo LMS Paster.",
@@ -395,7 +393,6 @@
   "TXT_CODE_3b1cc020": "Cancelar",
   "TXT_CODE_3b346a65": "Se a proteção de região deve se aplicar a baús.",
   "TXT_CODE_3b4260f8": "Quantos NPCs no total podem ser gerados por estátuas antes de parar de gerar. O padrão é 10.",
-  "TXT_CODE_3b4b656d": "Sobre",
   "TXT_CODE_3bb646e4": "Por Favor, Selecione",
   "TXT_CODE_3be23278": "Se a explosão pode causar fogo ou não",
   "TXT_CODE_3beb6e5c": "Defina quanto tempo o ciclo do dia está marcado",

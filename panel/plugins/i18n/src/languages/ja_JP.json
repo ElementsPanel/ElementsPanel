@@ -1,6 +1,4 @@
 {
-  "TXT_CODE_ABOUT_ORIGIN": "ElementsPanel の誕生には、{project} やその他のオープンソースソフトウェアが欠かせませんでした。",
-  "TXT_CODE_ABOUT_SOURCE": "ソースコード",
   "TXT_CODE_LEAVES_DONT_RESPOND_PING": "サーバーの起動が完了するまで Ping リクエストに応答しません。",
   "TXT_CODE_LEAVES_HOPPER_COUNTER": "ホッパーカウンターを有効にします。",
   "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "LMS Paster プロトコルのサポートを有効にします。",
@@ -395,7 +393,6 @@
   "TXT_CODE_3b1cc020": "キャンセル",
   "TXT_CODE_3b346a65": "ゾーン保護をボックスに適用する必要がありますか?",
   "TXT_CODE_3b4260f8": "彫像がスポーンを停止する前に、彫像が何人の NPC をスポーンできるか。\nデフォルト値は 10 です。",
-  "TXT_CODE_3b4b656d": "私たちについて",
   "TXT_CODE_3bb646e4": "選んでください",
   "TXT_CODE_3be23278": "爆発が火を引き起こす可能性があるかどうか",
   "TXT_CODE_3beb6e5c": "日光サイクルがチェックされる時間を設定します",

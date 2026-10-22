@@ -290,7 +290,6 @@ test("production URL identities share login state, registered routes and API aut
     "vuetify/components": {},
     "./bootstrap": { prepareApplication: async () => ({ app: {}, ctx }) },
     "./vuetify": { installVuetify() {} },
-    "./views/AboutPage.vue": component,
     "./widgets/Page404.vue": component,
     "./ConsoleApp.vue": component,
     "./components/BackgroundTasksSidebar.vue": component

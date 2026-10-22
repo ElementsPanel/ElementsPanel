@@ -1,6 +1,4 @@
 {
-  "TXT_CODE_ABOUT_ORIGIN": "ElementsPanel 的诞生离不开 {project} 及其他开源软件",
-  "TXT_CODE_ABOUT_SOURCE": "项目源码",
   "TXT_CODE_LEAVES_DONT_RESPOND_PING": "在服务器完全启动前不响应 Ping 请求。",
   "TXT_CODE_LEAVES_HOPPER_COUNTER": "启用漏斗计数器。",
   "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "启用 LMS Paster 协议支持。",
@@ -395,7 +393,6 @@
   "TXT_CODE_3b1cc020": "放弃",
   "TXT_CODE_3b346a65": "区域保护是否应适用于箱子",
   "TXT_CODE_3b4260f8": "雕像在停止生成之前可以生成多少个 NPC。默认值 10。",
-  "TXT_CODE_3b4b656d": "关于",
   "TXT_CODE_3bb646e4": "请选择",
   "TXT_CODE_3be23278": "确定爆炸是否可引发火灾",
   "TXT_CODE_3beb6e5c": "设定昼夜循环的完成时间",

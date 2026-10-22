@@ -1,6 +1,4 @@
 {
-  "TXT_CODE_ABOUT_ORIGIN": "ElementsPanel, {project} ve diğer açık kaynaklı yazılımlar olmadan ortaya çıkamazdı.",
-  "TXT_CODE_ABOUT_SOURCE": "Kaynak kodu",
   "TXT_CODE_LEAVES_DONT_RESPOND_PING": "Sunucu tamamen başlatılana kadar ping isteklerine yanıt verme.",
   "TXT_CODE_LEAVES_HOPPER_COUNTER": "Huni sayaçlarını etkinleştir.",
   "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "LMS Paster protokolü desteğini etkinleştir.",
@@ -395,7 +393,6 @@
   "TXT_CODE_3b1cc020": "İptal",
   "TXT_CODE_3b346a65": "Bölge korumasının sandıklar için geçerli olup olmayacağı.",
   "TXT_CODE_3b4260f8": "Durak oluşturmadan önce heykeller tarafından toplam kaç NPC oluşturulabilir. Varsayılan değer 10'dur.",
-  "TXT_CODE_3b4b656d": "Hakkında",
   "TXT_CODE_3bb646e4": "Lütfen Seçiniz",
   "TXT_CODE_3be23278": "Patlamanın ateşe neden olup olmayacağı",
   "TXT_CODE_3beb6e5c": "Gün ışığı döngüsünün ne kadar sürdüğünü ayarlayın",

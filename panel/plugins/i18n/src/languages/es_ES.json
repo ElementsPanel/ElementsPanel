@@ -1,6 +1,4 @@
 {
-  "TXT_CODE_ABOUT_ORIGIN": "ElementsPanel no habría sido posible sin {project} y otros programas de código abierto.",
-  "TXT_CODE_ABOUT_SOURCE": "Código fuente",
   "TXT_CODE_LEAVES_DONT_RESPOND_PING": "No responder a las solicitudes de ping hasta que el servidor se haya iniciado por completo.",
   "TXT_CODE_LEAVES_HOPPER_COUNTER": "Activar los contadores de tolvas.",
   "TXT_CODE_LEAVES_LMS_PASTER_PROTOCOL": "Activar la compatibilidad con el protocolo LMS Paster.",
@@ -395,7 +393,6 @@
   "TXT_CODE_3b1cc020": "Cancelar",
   "TXT_CODE_3b346a65": "¿Debería aplicarse la protección de zona a las cajas?",
   "TXT_CODE_3b4260f8": "¿Cuántos NPC puede generar una estatua antes de que deje de aparecer? \nValor predeterminado 10.",
-  "TXT_CODE_3b4b656d": "Acerca de",
   "TXT_CODE_3bb646e4": "Por favor seleccione",
   "TXT_CODE_3be23278": "Si la explosión puede causar fuego o no",
   "TXT_CODE_3beb6e5c": "Establezca cuánto tiempo se marca el ciclo de luz del día",
