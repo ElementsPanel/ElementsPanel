@@ -4,6 +4,7 @@ import { useFileManager } from "../hooks/useFileManager";
 import { usePolling } from "@/hooks/usePolling";
 import ArchivePreview from "../components/ArchivePreview.vue";
 import { t } from "@/lang/i18n";
+import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
 import uploadService from "../services/uploadService";
 import { filterFileName, getFileExtName, isCompressFile } from "../tools/fileManager";
 import { convertFileSize } from "@/tools/fileSize";
@@ -11,7 +12,7 @@ import type { DataType } from "@/types/fileManager";
 import dayjs from "dayjs";
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { notifyDesktopError } from "@/tools/desktopNotice";
-import { VAlert, VBtn, VCard, VCardText, VCheckbox, VDataTableServer, VDialog, VIcon, VList, VListItem, VMenu, VProgressCircular, VProgressLinear, VRadio, VRadioGroup, VSelect, VSpacer, VTextField } from "vuetify/components";
+import { VAlert, VBtn, VCard, VCardText, VCheckbox, VDataTableServer, VIcon, VList, VListItem, VMenu, VProgressCircular, VProgressLinear, VRadio, VRadioGroup, VSelect, VSpacer, VTextField } from "vuetify/components";
 
 /**
  * The shell Desktop mode mounts a component inside. `plugins/desktop` supplies it
@@ -19,6 +20,7 @@ import { VAlert, VBtn, VCard, VCardText, VCheckbox, VDataTableServer, VDialog, V
  * plugin's source tree for it.
  */
 const desktopVuetifyMode = true;
+const desktopWindowComponent = computed(() => usePluginService<FrontendDesktopService>("desktop")?.window);
 let disposed = false;
 
 const props = defineProps<{
@@ -648,6 +650,24 @@ const onTableMouseUp = () => finishDragSelection();
 
 const windowWidth = ref(window.innerWidth);
 const windowHeight = ref(window.innerHeight);
+const getDesktopDialogProps = (name: string, preferredWidth: number, preferredHeight: number, layer = 0) => {
+    const width = Math.min(preferredWidth, Math.max(1, windowWidth.value - 32));
+    const height = Math.min(preferredHeight, Math.max(1, windowHeight.value - 80));
+    return {
+        id: `file-manager:${props.daemonId}:${props.instanceId}:${props.sessionId || "default"}:${name}`,
+        minimized: false,
+        maximized: false,
+        active: true,
+        initialWidth: width,
+        initialHeight: height,
+        initialX: (windowWidth.value - width) / 2,
+        initialY: Math.max(16, (windowHeight.value - 48 - height) / 2),
+        zIndex: 10010 + layer,
+        showMinimize: false,
+        showMaximize: false,
+        resizable: false
+    };
+};
 const updateWindowSize = () => {
     windowWidth.value = window.innerWidth;
     windowHeight.value = window.innerHeight;
@@ -808,13 +828,163 @@ onUnmounted(() => {
             </VList>
         </VMenu>
 
-        <VDialog v-model="archivePreview.show" max-width="960" scrollable><VCard :title="`${t('TXT_CODE_ARCHIVE_PREVIEW')}: ${archivePreview.title}`" rounded="xl"><VCardText><ArchivePreview compact :entries="archivePreview.entries" :loading="archivePreview.loading" /></VCardText><VCardText class="dfm-v-dialog-actions"><VBtn variant="text" rounded="xl" @click="closeArchivePreview">{{ t("TXT_CODE_a0451c97") }}</VBtn></VCardText></VCard></VDialog>
-        <VDialog v-model="dialog.show" max-width="520" scrollable><VCard :title="dialog.title" rounded="xl"><VCardText><p>{{ dialog.info }}</p><VTextField v-if="dialog.mode === '' || dialog.mode === 'zip'" v-model="dialog.value" variant="solo" density="compact" hide-details :placeholder="t('TXT_CODE_4ea93630')" /><template v-if="dialog.mode === 'unzip'"><div class="dfm-dialog-label">{{ t("TXT_CODE_a6453188") }}</div><VRadioGroup v-model="dialog.unzipmode" inline><VRadio value="0" :label="t('TXT_CODE_7907c99')" /><VRadio value="1" :label="t('TXT_CODE_329fb904')" /></VRadioGroup><VTextField v-if="dialog.unzipmode === '1'" v-model="dialog.value" variant="solo" density="compact" hide-details :placeholder="t('TXT_CODE_377e5535')" /><div class="dfm-dialog-label">{{ t("TXT_CODE_2841f4a") }}</div><VRadioGroup v-model="dialog.code" inline><VRadio value="utf-8" label="UTF-8" /><VRadio value="gbk" label="GBK" /><VRadio value="big5" label="BIG5" /></VRadioGroup></template><template v-if="dialog.mode === 'permission'"><VProgressCircular v-if="permission.loading" indeterminate /><div v-for="item in permission.item" :key="item.key" class="dfm-permission"><strong>{{ item.key }}</strong><VCheckbox v-model="permission.data[item.role]" value="4" :label="t('TXT_CODE_798f592e')" hide-details /><VCheckbox v-model="permission.data[item.role]" value="2" :label="t('TXT_CODE_46c4e9ac')" hide-details /><VCheckbox v-model="permission.data[item.role]" value="1" :label="t('TXT_CODE_e97669d8')" hide-details /></div><VCheckbox v-model="permission.deep" :label="t('TXT_CODE_74fd665e')" hide-details /></template></VCardText><VCardText class="dfm-v-dialog-actions"><VBtn variant="text" rounded="xl" @click="dialog.cancel()">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="primary" variant="text" rounded="xl" :loading="dialog.loading" @click="dialog.ok()">{{ t("TXT_CODE_abfe9512") }}</VBtn></VCardText></VCard></VDialog>
-        <VDialog v-model="downloadDialog.show" max-width="520" scrollable><VCard :title="t('TXT_CODE_f27b68b3')" rounded="xl"><VCardText><VTextField v-model="downloadDialog.url" :label="t('TXT_CODE_ab8dd5a0')" variant="solo" density="compact" hide-details class="mb-4" /><VTextField v-model="downloadDialog.fileName" :label="t('TXT_CODE_2eace3d5')" variant="solo" density="compact" hide-details /></VCardText><VCardText class="dfm-v-dialog-actions"><VBtn variant="text" rounded="xl" @click="cancelDownloadDialog">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="primary" variant="text" rounded="xl" @click="submitDownloadDialog">{{ t("TXT_CODE_d507abff") }}</VBtn></VCardText></VCard></VDialog>
-        <VDialog v-model="loadingWindow.show" max-width="420" persistent><VCard :title="loadingWindow.title" rounded="xl"><VCardText class="dfm-loading-dialog"><VProgressCircular indeterminate size="34" /><span>{{ loadingWindow.text }}</span></VCardText></VCard></VDialog>
-        <VDialog v-model="uploadConfirmDialog.show" max-width="520" scrollable><VCard :title="t('TXT_CODE_52bc24ec')" rounded="xl"><VCardText>{{ t("TXT_CODE_52bc24ec") }} {{ uploadConfirmDialog.name }}?</VCardText><VCardText class="dfm-v-dialog-actions"><VBtn variant="text" rounded="xl" @click="handleUploadConfirmCancel">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="primary" variant="text" rounded="xl" @click="handleUploadConfirmOk">{{ t("TXT_CODE_d507abff") }}</VBtn></VCardText></VCard></VDialog>
-        <VDialog v-model="overwriteDialog.show" max-width="520" scrollable><VCard :title="t('TXT_CODE_99ca8563')" rounded="xl"><VCardText>{{ t("TXT_CODE_58a55f17", { name: overwriteDialog.fileName }) }}<VCheckbox v-model="overwriteDialog.overwrite" :label="t('TXT_CODE_5bf41818')" hide-details /><VCheckbox v-if="overwriteDialog.count > 1" v-model="overwriteDialog.all" :label="t('TXT_CODE_5445f34b', { num: overwriteDialog.count - 1 })" hide-details /></VCardText><VCardText class="dfm-v-dialog-actions"><VBtn variant="text" rounded="xl" @click="handleOverwriteCancel">{{ t("TXT_CODE_518528d0") }}</VBtn><VBtn color="primary" variant="text" rounded="xl" @click="handleOverwriteOk">{{ t("TXT_CODE_ae09d79d") }}</VBtn></VCardText></VCard></VDialog>
-        <VDialog v-model="deleteDialog.show" max-width="520" scrollable><VCard :title="t('TXT_CODE_71155575')" rounded="xl"><VCardText>{{ t("TXT_CODE_6a10302d") }}</VCardText><VCardText class="dfm-v-dialog-actions"><VBtn variant="text" rounded="xl" @click="deleteDialog.resolve && deleteDialog.resolve(false)">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="error" variant="text" rounded="xl" @click="deleteDialog.resolve && deleteDialog.resolve(true)">{{ t("TXT_CODE_d507abff") }}</VBtn></VCardText></VCard></VDialog>
+        <Teleport to="body">
+            <Transition name="desktop-window">
+                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && archivePreview.show"
+                    v-bind="getDesktopDialogProps('archive-preview', 960, 600)"
+                    :title="`${t('TXT_CODE_ARCHIVE_PREVIEW')}: ${archivePreview.title}`" icon="mdi-archive-eye-outline"
+                    :visible="archivePreview.show" :resizable="true" @close="closeArchivePreview"
+                    @keydown.esc.stop="closeArchivePreview">
+                    <div class="dfm-dialog-content">
+                        <div class="dfm-dialog__body dfm-dialog__body--archive">
+                            <ArchivePreview compact :entries="archivePreview.entries" :loading="archivePreview.loading" />
+                        </div>
+                        <div class="dfm-dialog__footer">
+                            <VBtn variant="text" rounded="xl" @click="closeArchivePreview">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+                        </div>
+                    </div>
+                </component>
+            </Transition>
+        </Teleport>
+
+        <Teleport to="body">
+            <Transition name="desktop-window">
+                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && dialog.show"
+                    v-bind="getDesktopDialogProps('operation', 520, dialog.mode === 'unzip' ? 500 : dialog.mode === 'permission' ? 520 : 260)"
+                    :title="dialog.title" icon="mdi-file-cog-outline" :visible="dialog.show"
+                    @close="dialog.cancel()" @keydown.esc.stop="dialog.cancel()">
+                    <div class="dfm-dialog-content">
+                        <div class="dfm-dialog__body">
+                            <p>{{ dialog.info }}</p>
+                            <VTextField v-if="dialog.mode === '' || dialog.mode === 'zip'" v-model="dialog.value"
+                                variant="solo" density="compact" hide-details autofocus :placeholder="t('TXT_CODE_4ea93630')" />
+                            <template v-if="dialog.mode === 'unzip'">
+                                <div class="dfm-dialog-label">{{ t("TXT_CODE_a6453188") }}</div>
+                                <VRadioGroup v-model="dialog.unzipmode" inline>
+                                    <VRadio value="0" :label="t('TXT_CODE_7907c99')" />
+                                    <VRadio value="1" :label="t('TXT_CODE_329fb904')" />
+                                </VRadioGroup>
+                                <VTextField v-if="dialog.unzipmode === '1'" v-model="dialog.value" variant="solo"
+                                    density="compact" hide-details :placeholder="t('TXT_CODE_377e5535')" />
+                                <div class="dfm-dialog-label">{{ t("TXT_CODE_2841f4a") }}</div>
+                                <VRadioGroup v-model="dialog.code" inline>
+                                    <VRadio value="utf-8" label="UTF-8" />
+                                    <VRadio value="gbk" label="GBK" />
+                                    <VRadio value="big5" label="BIG5" />
+                                </VRadioGroup>
+                            </template>
+                            <template v-if="dialog.mode === 'permission'">
+                                <VProgressCircular v-if="permission.loading" indeterminate />
+                                <div v-for="item in permission.item" :key="item.key" class="dfm-permission">
+                                    <strong>{{ item.key }}</strong>
+                                    <VCheckbox v-model="permission.data[item.role]" value="4" :label="t('TXT_CODE_798f592e')" hide-details />
+                                    <VCheckbox v-model="permission.data[item.role]" value="2" :label="t('TXT_CODE_46c4e9ac')" hide-details />
+                                    <VCheckbox v-model="permission.data[item.role]" value="1" :label="t('TXT_CODE_e97669d8')" hide-details />
+                                </div>
+                                <VCheckbox v-model="permission.deep" :label="t('TXT_CODE_74fd665e')" hide-details />
+                            </template>
+                        </div>
+                        <div class="dfm-dialog__footer">
+                            <VBtn variant="text" rounded="xl" @click="dialog.cancel()">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+                            <VBtn color="primary" variant="text" rounded="xl" :loading="dialog.loading" @click="dialog.ok()">{{ t("TXT_CODE_abfe9512") }}</VBtn>
+                        </div>
+                    </div>
+                </component>
+            </Transition>
+        </Teleport>
+
+        <Teleport to="body">
+            <Transition name="desktop-window">
+                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && downloadDialog.show"
+                    v-bind="getDesktopDialogProps('download-url', 520, 300)" :title="t('TXT_CODE_f27b68b3')"
+                    icon="mdi-cloud-download-outline" :visible="downloadDialog.show" @close="cancelDownloadDialog"
+                    @keydown.esc.stop="cancelDownloadDialog">
+                    <div class="dfm-dialog-content">
+                        <div class="dfm-dialog__body">
+                            <VTextField v-model="downloadDialog.url" :label="t('TXT_CODE_ab8dd5a0')" variant="solo"
+                                density="compact" hide-details autofocus class="mb-4" />
+                            <VTextField v-model="downloadDialog.fileName" :label="t('TXT_CODE_2eace3d5')" variant="solo"
+                                density="compact" hide-details />
+                        </div>
+                        <div class="dfm-dialog__footer">
+                            <VBtn variant="text" rounded="xl" @click="cancelDownloadDialog">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+                            <VBtn color="primary" variant="text" rounded="xl" @click="submitDownloadDialog">{{ t("TXT_CODE_d507abff") }}</VBtn>
+                        </div>
+                    </div>
+                </component>
+            </Transition>
+        </Teleport>
+
+        <Teleport to="body">
+            <Transition name="desktop-window">
+                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && loadingWindow.show"
+                    v-bind="getDesktopDialogProps('progress', 420, 200, 1)" :title="loadingWindow.title"
+                    icon="mdi-progress-clock" :visible="loadingWindow.show" :show-close="false" @keydown.esc.stop>
+                    <div class="dfm-dialog-content">
+                        <div class="dfm-dialog__body dfm-loading-dialog">
+                            <VProgressCircular indeterminate size="34" />
+                            <span>{{ loadingWindow.text }}</span>
+                        </div>
+                    </div>
+                </component>
+            </Transition>
+        </Teleport>
+
+        <Teleport to="body">
+            <Transition name="desktop-window">
+                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && uploadConfirmDialog.show"
+                    v-bind="getDesktopDialogProps('upload-confirm', 520, 250)" :title="t('TXT_CODE_52bc24ec')"
+                    icon="mdi-upload-outline" :visible="uploadConfirmDialog.show" @close="handleUploadConfirmCancel"
+                    @keydown.esc.stop="handleUploadConfirmCancel">
+                    <div class="dfm-dialog-content">
+                        <div class="dfm-dialog__body">{{ t("TXT_CODE_52bc24ec") }} {{ uploadConfirmDialog.name }}?</div>
+                        <div class="dfm-dialog__footer">
+                            <VBtn variant="text" rounded="xl" @click="handleUploadConfirmCancel">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+                            <VBtn color="primary" variant="text" rounded="xl" @click="handleUploadConfirmOk">{{ t("TXT_CODE_d507abff") }}</VBtn>
+                        </div>
+                    </div>
+                </component>
+            </Transition>
+        </Teleport>
+
+        <Teleport to="body">
+            <Transition name="desktop-window">
+                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && overwriteDialog.show"
+                    v-bind="getDesktopDialogProps('overwrite-confirm', 520, 340, 2)" :title="t('TXT_CODE_99ca8563')"
+                    icon="mdi-content-duplicate" :visible="overwriteDialog.show" @close="handleOverwriteCancel"
+                    @keydown.esc.stop="handleOverwriteCancel">
+                    <div class="dfm-dialog-content">
+                        <div class="dfm-dialog__body">
+                            {{ t("TXT_CODE_58a55f17", { name: overwriteDialog.fileName }) }}
+                            <VCheckbox v-model="overwriteDialog.overwrite" :label="t('TXT_CODE_5bf41818')" hide-details />
+                            <VCheckbox v-if="overwriteDialog.count > 1" v-model="overwriteDialog.all"
+                                :label="t('TXT_CODE_5445f34b', { num: overwriteDialog.count - 1 })" hide-details />
+                        </div>
+                        <div class="dfm-dialog__footer">
+                            <VBtn variant="text" rounded="xl" @click="handleOverwriteCancel">{{ t("TXT_CODE_518528d0") }}</VBtn>
+                            <VBtn color="primary" variant="text" rounded="xl" @click="handleOverwriteOk">{{ t("TXT_CODE_ae09d79d") }}</VBtn>
+                        </div>
+                    </div>
+                </component>
+            </Transition>
+        </Teleport>
+
+        <Teleport to="body">
+            <Transition name="desktop-window">
+                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && deleteDialog.show"
+                    v-bind="getDesktopDialogProps('delete-confirm', 520, 240)" :title="t('TXT_CODE_71155575')"
+                    icon="mdi-delete-outline" :visible="deleteDialog.show"
+                    @close="deleteDialog.resolve?.(false)" @keydown.esc.stop="deleteDialog.resolve?.(false)">
+                    <div class="dfm-dialog-content">
+                        <div class="dfm-dialog__body">{{ t("TXT_CODE_6a10302d") }}</div>
+                        <div class="dfm-dialog__footer">
+                            <VBtn variant="text" rounded="xl" @click="deleteDialog.resolve?.(false)">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+                            <VBtn color="error" variant="text" rounded="xl" @click="deleteDialog.resolve?.(true)">{{ t("TXT_CODE_d507abff") }}</VBtn>
+                        </div>
+                    </div>
+                </component>
+            </Transition>
+        </Teleport>
     </template>
 </template>
 
@@ -1010,7 +1180,13 @@ onUnmounted(() => {
 .dfm-dialog__body {
     padding: 16px 20px;
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
+
+    &--archive {
+        padding: 0;
+        overflow: hidden;
+    }
 
     &--column {
         display: flex;
@@ -1042,6 +1218,7 @@ onUnmounted(() => {
 }
 
 .dfm-dialog__footer {
+    flex-shrink: 0;
     padding: 12px 20px;
     display: flex;
     justify-content: flex-end;
@@ -1096,7 +1273,6 @@ onUnmounted(() => {
 .dfm-menu-list .v-btn { justify-content: flex-start; }
 .dfm-file-name { display: inline-flex; align-items: center; gap: 8px; }
 .dfm-empty, .dfm-loading-dialog { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 32px; opacity: 0.65; }
-.dfm-v-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 0 !important; }
 .dfm-dialog-label { margin: 12px 0 4px; font-weight: 600; }
 .dfm-permission { margin: 10px 0; }
 </style>

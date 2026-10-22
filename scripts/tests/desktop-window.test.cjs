@@ -204,6 +204,67 @@ function dialogFixture(t, shellStyleLast) {
 
 const transitionFrame = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
+function fileManagerDialogFixture(t) {
+  const events = { cancelled: 0, deleted: [], downloads: [], uploads: [], overwritePromise: undefined };
+  const manager = {
+    dialog: vue.ref({ show: false, title: "Operation", info: "File operation", mode: "", value: "", loading: false, unzipmode: "0", code: "utf-8", ok() {}, cancel() {} }),
+    spinning: vue.ref(false),
+    fileStatus: vue.ref({ platform: "linux", disks: [] }),
+    permission: vue.ref({ loading: false, item: [{ key: "Owner", role: "owner" }], data: { owner: [] }, deep: false }),
+    selectedRowKeys: vue.ref([]),
+    operationForm: vue.ref({ name: "", current: 1, pageSize: 100, total: 0 }),
+    dataSource: vue.ref([]),
+    breadcrumbs: [], currentPath: vue.ref("/"), clipboard: vue.ref(), currentDisk: vue.ref("/"),
+    isMultiple: vue.ref(false), activeTab: vue.ref("root"), currentTabs: vue.ref([{ key: "root", name: "/", path: "/" }]),
+    selectionData: vue.ref([]),
+    loadingWindow: vue.ref({ show: false, title: "Progress", text: "Copying files" }),
+    archivePreview: vue.ref({ show: false, title: "archive.zip", entries: [], loading: false }),
+    deleteDialog: vue.ref({ show: false, loading: false, resolve: undefined }),
+    getFileList: async () => {},
+    handleTableChange() {},
+    downloadFromUrl: async (config) => { events.downloads.push(config); },
+    selectedFiles: async (files, _path, overwriteHandler) => {
+      events.uploads.push(files);
+      events.overwritePromise = overwriteHandler({ count: 2, fileName: files[0].name });
+      await events.overwritePromise;
+    },
+    closeArchivePreview: () => { manager.archivePreview.value.show = false; }
+  };
+  manager.dialog.value.cancel = () => { events.cancelled++; manager.dialog.value.show = false; };
+  manager.deleteDialog.value.resolve = (confirmed) => { events.deleted.push(confirmed); manager.deleteDialog.value.show = false; };
+
+  const fileManagerFilename = path.join(root, "panel/plugins/file/src/desktop/DesktopFileManager.vue");
+  const { descriptor: fileManagerDescriptor } = parse(fs.readFileSync(fileManagerFilename, "utf8"), { filename: fileManagerFilename });
+  const fileManagerScript = compileScript(fileManagerDescriptor, { id: "file-manager-dialog-test", inlineTemplate: true });
+  const fileManagerModule = new Module(fileManagerFilename, module);
+  const overrides = {
+    "../hooks/useFileManager": { useFileManager: () => manager },
+    "@/hooks/usePolling": { usePolling() {} },
+    "@/plugin/context": { usePluginService: () => ({ window: DesktopWindow }) },
+    "@/lang/i18n": { t: (key) => key },
+    "../components/FileManagerTabs.vue": { default: { props: ["activeTab", "tabs"], render: () => vue.h("div") } },
+    "../components/ArchivePreview.vue": { default: { props: ["compact", "entries", "loading"], render: () => vue.h("div", { class: "archive-content" }) } },
+    "../services/uploadService": { default: { uiData: vue.ref({}) } },
+    "../tools/fileManager": {},
+    "@/tools/fileSize": {},
+    "@/tools/desktopNotice": { notifyDesktopError() {} }
+  };
+  fileManagerModule.require = (id) => Object.hasOwn(overrides, id) ? overrides[id]
+    : id === "vuetify/components" ? Vuetify.components : frontendRequire(id);
+  fileManagerModule._compile(ts.transpileModule(fileManagerScript.content, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
+  }).outputText, fileManagerFilename);
+  const target = document.createElement("div");
+  document.body.appendChild(target);
+  const app = vue.createApp(fileManagerModule.exports.default, { instanceId: "instance", daemonId: "node", sessionId: "files-session" });
+  app.use(Vuetify.createVuetify());
+  app.mount(target);
+  t.after(() => { app.unmount(); target.remove(); });
+  const findWindow = (title) => [...document.body.querySelectorAll(".desktop-window")]
+    .find(element => element.querySelector(".window__title")?.textContent === title);
+  return { manager, events, target, findWindow };
+}
+
 test("desktop menus belong to their window, outside its clipped content", async (t) => {
   const f = fixture(t);
   await flush();
@@ -394,3 +455,103 @@ for (const shellStyleLast of [true, false]) {
     assert.equal(element.isConnected, false);
   });
 }
+
+test("file manager operations, archive preview and deletion use desktop subwindows with working cancellation", async (t) => {
+  const f = fileManagerDialogFixture(t);
+  await flush();
+  for (const mode of ["", "zip", "unzip", "permission"]) {
+    Object.assign(f.manager.dialog.value, { mode, show: true });
+    await flush();
+    const operation = f.findWindow("Operation");
+    assert.ok(operation, `missing operation subwindow for ${mode || "create/rename"}`);
+    assert.equal(operation.closest(".v-dialog"), null);
+    assert.equal(operation.querySelector(".window__control--minimize"), null);
+    assert.equal(operation.querySelector(".window__control--maximize"), null);
+    assert.ok(operation.classList.contains("desktop-window-enter-active"));
+    if (mode === "permission") assert.equal(operation.querySelectorAll('input[type="checkbox"]').length, 4);
+    else if (mode === "unzip") assert.equal(operation.querySelectorAll('input[type="radio"]').length, 5);
+    else assert.ok(operation.querySelector('input[type="text"]'));
+    operation.querySelector(".window__control--close").click();
+    await flush();
+    assert.equal(f.manager.dialog.value.show, false);
+    await transitionFrame();
+  }
+  assert.equal(f.events.cancelled, 4);
+
+  f.manager.archivePreview.value.show = true;
+  await flush();
+  const archive = f.findWindow("TXT_CODE_ARCHIVE_PREVIEW: archive.zip");
+  assert.ok(archive.querySelector(".archive-content"));
+  assert.ok(archive.querySelector(".window__resize-handle"));
+  archive.querySelector(".window__control--close").click();
+  await flush();
+  assert.equal(f.manager.archivePreview.value.show, false);
+  await transitionFrame();
+
+  f.manager.deleteDialog.value.show = true;
+  await flush();
+  f.findWindow("TXT_CODE_71155575").querySelector(".window__control--close").click();
+  await flush();
+  assert.deepEqual(f.events.deleted, [false]);
+  assert.equal(f.manager.deleteDialog.value.show, false);
+  await transitionFrame();
+  f.manager.deleteDialog.value.show = true;
+  await flush();
+  const deletion = f.findWindow("TXT_CODE_71155575");
+  [...deletion.querySelectorAll(".dfm-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_d507abff")).click();
+  await flush();
+  assert.deepEqual(f.events.deleted, [false, true]);
+  await transitionFrame();
+});
+
+test("file manager URL downloads and upload overwrite confirmations run in desktop subwindows", async (t) => {
+  const f = fileManagerDialogFixture(t);
+  await flush();
+  [...f.target.querySelectorAll(".dfm-toolbar .v-btn")].find(button => button.textContent.includes("TXT_CODE_5b364aef")).click();
+  await flush();
+  const download = f.findWindow("TXT_CODE_f27b68b3");
+  const urlInput = download.querySelector("input");
+  urlInput.value = "https://example.com/files/server.jar";
+  urlInput.dispatchEvent(new window.Event("input", { bubbles: true }));
+  await flush();
+  assert.equal(download.querySelectorAll("input")[1].value, "server.jar");
+  [...download.querySelectorAll(".dfm-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_d507abff")).click();
+  await flush();
+  assert.deepEqual(f.events.downloads, [{ url: "https://example.com/files/server.jar", fileName: "server.jar" }]);
+  await transitionFrame();
+
+  const uploadInput = f.target.querySelector('input[type="file"]');
+  const files = [new window.File(["data"], "existing.txt")];
+  Object.defineProperty(uploadInput, "files", { value: files });
+  uploadInput.dispatchEvent(new window.Event("change", { bubbles: true }));
+  await flush();
+  const upload = f.findWindow("TXT_CODE_52bc24ec");
+  assert.ok(upload.textContent.includes("existing.txt"));
+  [...upload.querySelectorAll(".dfm-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_d507abff")).click();
+  await flush();
+  assert.equal(f.events.uploads.length, 1);
+  const overwrite = f.findWindow("TXT_CODE_99ca8563");
+  assert.ok(overwrite);
+  assert.equal(overwrite.querySelectorAll('input[type="checkbox"]').length, 2);
+  overwrite.querySelector(".window__control--close").click();
+  assert.deepEqual(await f.events.overwritePromise, { confirmed: false, all: false, overwrite: false });
+  await transitionFrame();
+});
+
+test("file operation progress remains a non-dismissable desktop subwindow", async (t) => {
+  const f = fileManagerDialogFixture(t);
+  await flush();
+  f.manager.loadingWindow.value.show = true;
+  await flush();
+  const progress = f.findWindow("Progress");
+  assert.ok(progress);
+  assert.equal(progress.querySelector(".window__control--close"), null);
+  assert.ok(progress.textContent.includes("Copying files"));
+  progress.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  await flush();
+  assert.equal(f.manager.loadingWindow.value.show, true);
+  f.manager.loadingWindow.value.show = false;
+  await flush();
+  await transitionFrame();
+  assert.equal(progress.isConnected, false);
+});

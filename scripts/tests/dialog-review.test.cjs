@@ -579,6 +579,7 @@ test("desktop overwrite dialogs settle dismissal, replacement, and window close"
     "panel/plugins/file/src/desktop/DesktopFileManager.vue",
     {
       "../hooks/useFileManager": { useFileManager: () => manager },
+      "@/plugin/context": { usePluginService: () => undefined },
       "@/hooks/usePolling": {
         usePolling: (refresh, interval) => polls.push({ refresh, interval })
       },
