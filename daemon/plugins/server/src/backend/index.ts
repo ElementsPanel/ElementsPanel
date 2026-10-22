@@ -145,7 +145,7 @@ export function apply(ctx: DaemonPluginContext) {
     requestCtx.response.set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
     requestCtx.response.set(
       "Access-Control-Allow-Headers",
-      "Content-Type, Cookie, Accept-Encoding, User-Agent, Host, Referer, " +
+      "Content-Type, Authorization, Cookie, Accept-Encoding, User-Agent, Host, Referer, " +
         "X-Requested-With, Accept, Accept-Language, Cache-Control, Connection"
     );
     requestCtx.response.set("X-Power-by", "MCSManager");
