@@ -772,6 +772,89 @@ test("download URLs put the preferred source first and keep the other one as fal
   assert.deepEqual(withMirrorDownload(unproxied, "official"), unproxied);
 });
 
+test("a client URL pair is re-ordered by the current preference before it reaches the daemon", async (t) => {
+  const { preferDownload } = load("panel/plugins/mod/src/backend/mcim.ts");
+  const officialUrl = "https://cdn.modrinth.com/data/a/versions/b/mod.jar";
+  const mirrorUrl = "https://mod.mcimirror.top/data/a/versions/b/mod.jar";
+  // Stale pairs are ordered either way, whichever side the client listed first.
+  assert.deepEqual(
+    preferDownload(officialUrl, mirrorUrl, "mirror"),
+    { url: mirrorUrl, fallbackUrl: officialUrl }
+  );
+  assert.deepEqual(
+    preferDownload(mirrorUrl, officialUrl, "official"),
+    { url: officialUrl, fallbackUrl: mirrorUrl }
+  );
+  assert.deepEqual(
+    preferDownload(officialUrl, mirrorUrl, "official"),
+    { url: officialUrl, fallbackUrl: mirrorUrl }
+  );
+  // Pairs without a mirror counterpart (SpigotMC's CDNs) keep the client order.
+  const spigot = [
+    "https://cdn.spiget.org/file/1/mod.jar",
+    "https://api.spiget.org/v2/resources/1/download"
+  ];
+  assert.deepEqual(preferDownload(...spigot, "official"), {
+    url: spigot[0],
+    fallbackUrl: spigot[1]
+  });
+});
+
+test("the download route applies the live preference to stale version lists", async (t) => {
+  const stored = new Map();
+  const storage = {
+    getStorage: () => ({
+      load: async (category, _classz, uuid) => stored.get(`${category}:${uuid}`) ?? null,
+      store: async (category, uuid, object) => void stored.set(`${category}:${uuid}`, object)
+    })
+  };
+  let declaration;
+  const settingsForm = {
+    declare: (form) => {
+      declaration = form;
+      return () => {};
+    }
+  };
+  const { ctx, remote, calls, request } = await panelFixture(t, { storage, settingsForm });
+  ctx.plugin((scoped) => scoped.set("remote", remote));
+  await until(() => declaration);
+
+  const officialUrl = "https://cdn.modrinth.com/data/a/versions/b/mod.jar";
+  const mirrorUrl = "https://mod.mcimirror.top/data/a/versions/b/mod.jar";
+  const download = (url, fallbackUrl) =>
+    request("/api/mod/download", {
+      method: "POST",
+      request: {
+        body: {
+          daemonId: "node",
+          uuid: "instance",
+          fileName: "mod.jar",
+          projectType: "mod",
+          url,
+          fallbackUrl
+        }
+      }
+    });
+
+  // The default preference is the mirror, so a list fetched with the official
+  // CDN first still downloads through the mirror.
+  await download(officialUrl, mirrorUrl);
+  assert.equal(calls[0].data.url, mirrorUrl);
+  assert.equal(calls[0].data.fallbackUrl, officialUrl);
+
+  // Switching the form takes effect for the next download without a reload.
+  await declaration.write({ sourcePreference: "official" });
+  await download(mirrorUrl, officialUrl);
+  assert.equal(calls[1].data.url, officialUrl);
+  assert.equal(calls[1].data.fallbackUrl, mirrorUrl);
+
+  // SpigotMC has no mirror variant, so its two CDNs stay in the client order.
+  const spigot = ["https://cdn.spiget.org/file/1/mod.jar", "https://api.spiget.org/v2/resources/1/download"];
+  await download(...spigot);
+  assert.equal(calls[2].data.url, spigot[0]);
+  assert.equal(calls[2].data.fallbackUrl, spigot[1]);
+});
+
 test("the stored source preference loads at startup and the settings form switches it live", async (t) => {
   const stored = new Map();
   const storage = {

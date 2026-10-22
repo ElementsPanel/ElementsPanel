@@ -93,3 +93,33 @@ export function withMirrorDownload<T extends { url?: string }>(
     ? { ...file, url: fallbackUrl, fallbackUrl: file.url }
     : { ...file, fallbackUrl };
 }
+
+function isMirrorDownloadUrl(value: string): boolean {
+  try {
+    return new URL(value).hostname === "mod.mcimirror.top";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Re-applies the preference to the pair a client already sent, so a download
+ * follows the current setting even when the version list was fetched under a
+ * different one. Only pairs that MCIM actually proxies are reordered; a client
+ * pair with two upstream hosts (SpigotMC's CDNs) keeps its order.
+ */
+export function preferDownload(
+  url: string,
+  fallbackUrl: string | undefined,
+  preference: ModSourcePreference
+): { url: string; fallbackUrl?: string } {
+  const candidates = [url, mirrorFileUrl(url), fallbackUrl].filter(
+    (value, index, list): value is string => !!value && list.indexOf(value) === index
+  );
+  const mirror = candidates.find(isMirrorDownloadUrl);
+  // No mirror/upstream pair means there is nothing to order.
+  if (!mirror || candidates.every(isMirrorDownloadUrl)) return { url, fallbackUrl };
+  const preferred =
+    preference === "mirror" ? mirror : candidates.find((value) => !isMirrorDownloadUrl(value))!;
+  return { url: preferred, fallbackUrl: candidates.find((value) => value !== preferred) };
+}

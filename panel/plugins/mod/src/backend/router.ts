@@ -1,5 +1,6 @@
 import type { PanelPluginContext } from "../../../../src/app/plugin";
 import type { ModManagerService } from "./mod_manager";
+import { preferDownload } from "./mcim";
 import { checkSafeUrl } from "./url";
 
 export function registerModManagerRoutes(
@@ -173,16 +174,19 @@ export function registerModManagerRoutes(
       try {
         const { daemonId, uuid, url, fileName, projectType, fallbackUrl, extraInfo } =
           requestCtx.request.body;
+        // The client may hold a version list fetched under an older preference,
+        // so the current setting decides which of the two URLs is tried first.
+        const download = preferDownload(url, fallbackUrl, modManagerService.sourcePreference);
 
         // Validate URL to prevent SSRF attacks
-        if (!checkSafeUrl(url)) {
+        if (!checkSafeUrl(download.url)) {
           requestCtx.status = 400;
           requestCtx.body = new Error("Invalid or unsafe URL");
           return;
         }
 
         // Validate fallbackUrl if provided
-        if (fallbackUrl && !checkSafeUrl(fallbackUrl)) {
+        if (download.fallbackUrl && !checkSafeUrl(download.fallbackUrl)) {
           requestCtx.status = 400;
           requestCtx.body = new Error("Invalid or unsafe fallback URL");
           return;
@@ -191,10 +195,10 @@ export function registerModManagerRoutes(
         const remoteService = daemonId;
         const result = await remoteRequest(remoteService).request("instance/mods/install", {
           instanceUuid: uuid,
-          url,
+          url: download.url,
           fileName,
           type: projectType,
-          fallbackUrl,
+          fallbackUrl: download.fallbackUrl,
           extraInfo
         });
         requestCtx.body = result;
