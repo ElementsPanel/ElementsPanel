@@ -1,4 +1,3 @@
-import { openLoadingDialog } from "@/components/fc";
 import { useImageViewerDialog } from "../dialogs";
 import OverwriteFilesPopUpContent from "../components/OverwriteFilesPopUpContent.vue";
 
@@ -309,12 +308,6 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     if (!visible) dialog.value.cancel();
   });
 
-  const loadingWindow = ref({
-    show: false,
-    title: "",
-    text: ""
-  });
-
   const archivePreview = ref({
     show: false,
     loading: false,
@@ -332,16 +325,6 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
   watch(() => deleteDialog.value.show, (visible) => {
     if (!visible) deleteDialog.value.resolve?.(false);
   }, { flush: "sync" });
-
-  const showLoadingWindow = (title: string, text: string) => {
-    loadingWindow.value.title = title;
-    loadingWindow.value.text = text;
-    loadingWindow.value.show = true;
-  };
-
-  const hideLoadingWindow = () => {
-    loadingWindow.value.show = false;
-  };
 
   const previewArchiveFile = async (name: string) => {
     archivePreview.value = {
@@ -613,22 +596,13 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     deleteDialog.value.resolve?.(false);
   });
 
-  const zipFile = async (showLoadingDialog = true) => {
+  const zipFile = async (_showLoadingDialog = true) => {
     if (!selectionData.value || selectionData.value.length === 0)
       return reportErrorMsg(t("TXT_CODE_b152cd75"));
     const filename = await openDialog(t("TXT_CODE_f8a15a94"), t("TXT_CODE_366bad15"), "", "zip");
     if (filename === undefined) return;
     const { execute } = compressFileApi();
-    let loadingDialog: any = null;
-    if (showLoadingDialog) {
-      loadingDialog = await openLoadingDialog(
-        t("TXT_CODE_b3825da"),
-        t("TXT_CODE_ba027d6c"),
-        t("TXT_CODE_e1070b52")
-      );
-    } else {
-      showLoadingWindow(t("TXT_CODE_b3825da"), t("TXT_CODE_ba027d6c"));
-    }
+    message.info(t("TASKS_SUBMITTED"));
     try {
       await execute({
         params: {
@@ -647,26 +621,14 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     } catch (error: any) {
       message.error(t("TXT_CODE_dba9bf61"));
       reportErrorMsg(error.message);
-    } finally {
-      if (loadingDialog) loadingDialog.cancel();
-      hideLoadingWindow();
     }
   };
 
-  const unzipFile = async (name: string, showLoadingDialog = true) => {
+  const unzipFile = async (name: string, _showLoadingDialog = true) => {
     const dirname = await openDialog(t("TXT_CODE_7669fd3f"), "", "", "unzip");
     if (dirname === undefined) return;
     const { execute } = compressFileApi();
-    let loadingDialog: any = null;
-    if (showLoadingDialog) {
-      loadingDialog = await openLoadingDialog(
-        t("TXT_CODE_b3825da"),
-        t("TXT_CODE_b82225c3"),
-        t("TXT_CODE_6f038f25")
-      );
-    } else {
-      showLoadingWindow(t("TXT_CODE_b3825da"), t("TXT_CODE_b82225c3"));
-    }
+    message.info(t("TASKS_SUBMITTED"));
     try {
       await execute({
         params: {
@@ -685,9 +647,6 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     } catch (error: any) {
       message.error(t("TXT_CODE_26d7316f"));
       reportErrorMsg(error.message);
-    } finally {
-      if (loadingDialog) loadingDialog.cancel();
-      hideLoadingWindow();
     }
   };
 
@@ -896,21 +855,12 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     }
   };
 
-  const downloadFromUrl = async (downloadConfig: DownloadFileConfigItem, showLoadingDialog = true) => {
+  const downloadFromUrl = async (downloadConfig: DownloadFileConfigItem, _showLoadingDialog = true) => {
     if (!downloadConfig.url) throw new Error(t("TXT_CODE_f3031262"));
     if (!downloadConfig.fileName) throw new Error(t("TXT_CODE_7b605ad8"));
 
     const { execute } = downloadFromUrlAPI();
-    let loadingDialog: any = null;
-    if (showLoadingDialog) {
-      loadingDialog = await openLoadingDialog(
-        t("TXT_CODE_b3825da"),
-        t("TXT_CODE_2b5b8a3d"),
-        t("TXT_CODE_6f038f25")
-      );
-    } else {
-      showLoadingWindow(t("TXT_CODE_b3825da"), t("TXT_CODE_2b5b8a3d"));
-    }
+    message.info(t("TASKS_SUBMITTED"));
     try {
       await execute({
         params: {
@@ -927,9 +877,6 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     } catch (error: any) {
       message.error(t("TXT_CODE_9ea5696b"));
       reportErrorMsg(error.message);
-    } finally {
-      if (loadingDialog) loadingDialog.cancel();
-      hideLoadingWindow();
     }
   };
 
@@ -1152,7 +1099,6 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     oneSelected,
     isImage,
     showImage,
-    loadingWindow,
     archivePreview,
     previewArchiveFile,
     closeArchivePreview

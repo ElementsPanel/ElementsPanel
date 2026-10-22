@@ -45,7 +45,7 @@ export function apply(ctx: DaemonPluginContext) {
     }
     ctx.transfer.passports.registerMission(data.password, {
       name: data.name,
-      parameter: data.parameter,
+      parameter: { ...data.parameter, _taskOwner: data._taskOwner },
       count: data.count,
       start,
       end

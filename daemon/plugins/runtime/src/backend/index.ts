@@ -27,6 +27,7 @@ import { proxyIncomingMessage, sendFile } from "./utils/speed_limit";
 import type { Context as KoaContext } from "koa";
 import { FeaturesService, OverviewService } from "./registries";
 import { registerOverview } from "./overview";
+import { BackgroundTasks } from "./service/background_tasks";
 
 function isMultipart(requestCtx: KoaContext) {
   return String(requestCtx.request?.headers?.["content-type"] ?? "")
@@ -68,6 +69,9 @@ function createUploadMiddleware(ctx: DaemonPluginContext) {
 export const inject = ["i18n", "storage"];
 
 export async function apply(ctx: DaemonPluginContext) {
+  const backgroundTasks = new BackgroundTasks();
+  ctx.set("backgroundTasks", backgroundTasks);
+  downloadManager.backgroundTasks = backgroundTasks;
   ctx.plugin(FeaturesService);
   ctx.plugin(OverviewService);
   ctx.on("dispose", () => {
@@ -124,6 +128,18 @@ export async function apply(ctx: DaemonPluginContext) {
     zipTimeoutSeconds: ZIP_TIMEOUT_SECONDS
   });
   ctx.inject(["protocol", "features", "overview", "settings"], registerOverview);
+  ctx.inject(["protocol"], (scope) => {
+    scope.protocol.on("tasks/list", (request, data) => {
+      scope.protocol.response(request, backgroundTasks.list(String(data?.owner || "")));
+    });
+    scope.protocol.on("tasks/cancel", (request, data) => {
+      scope.protocol.response(request, backgroundTasks.cancel(String(data?.owner || ""), String(data?.id || "")));
+    });
+    scope.protocol.on("tasks/clear", (request, data) => {
+      backgroundTasks.clear(String(data?.owner || ""));
+      scope.protocol.response(request, true);
+    });
+  });
 
   try {
     fs.chmodSync(GOLANG_ZIP_PATH, 0o755);

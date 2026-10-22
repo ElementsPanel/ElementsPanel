@@ -6,7 +6,6 @@ import { notifyDesktop } from "./notice";
 import { computed, onMounted, ref, watch } from "vue";
 import LocalModTable from "../normal/mod-manager/LocalModTable.vue";
 import ModConfigModal from "./mod-manager/ModConfigModal.vue";
-import ModFloatingTools from "../normal/mod-manager/ModFloatingTools.vue";
 import ModVersionModal from "./mod-manager/ModVersionModal.vue";
 import SearchModTable from "../normal/mod-manager/SearchModTable.vue";
 import { useDeferredTasks } from "../normal/mod-manager/useDeferredTasks";
@@ -113,15 +112,7 @@ const handleFileLockQueue = () => {
     }
 };
 
-const {
-    deferredTasks,
-    autoExecute,
-    isExecuting,
-    addDeferredTask,
-    removeDeferredTask,
-    executeDeferredTask,
-    executeAllDeferredTasks
-} = useDeferredTasks(props.instanceUuid, props.daemonId, async () => {
+const { addDeferredTask } = useDeferredTasks(props.instanceUuid, props.daemonId, async () => {
     await loadMods();
 });
 
@@ -142,7 +133,6 @@ const {
     loadMods: originalLoadMods,
     onToggle,
     onDelete,
-    fileStatus,
     tablePagination
 } = useLocalMods(props.instanceUuid, props.daemonId, checkAndConfirm, addDeferredTask);
 
@@ -485,11 +475,6 @@ onMounted(async () => {
                     :config-loading="configLoading" :is-desktop="true" @edit="handleEditFile" />
             </div>
         </div>
-
-        <ModFloatingTools v-model:deferred-tasks="deferredTasks" v-model:auto-execute="autoExecute"
-            :instance-id="props.instanceUuid" :daemon-id="props.daemonId" :file-status="fileStatus"
-            :is-executing="isExecuting" @execute-task="executeDeferredTask" @execute-all="executeAllDeferredTasks"
-            @remove-task="removeDeferredTask" @refresh="loadMods" />
 
         <input ref="fileInput" type="file" multiple style="display: none" accept=".jar,.zip" @change="onFileChange" />
 

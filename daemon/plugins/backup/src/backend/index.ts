@@ -570,7 +570,10 @@ export function apply(ctx: DaemonPluginContext) {
       if (!fs.existsSync(archivePath)) throw new Error(t("TXT_CODE_Instance_router.accessFileErr"));
       instance.status(Instance.STATUS_BUSY);
       instance.println("INFO", t("TXT_CODE_INSTANCE_BACKUP_RESTORING"));
-      (async () => {
+      const tasks = ctx.get("backgroundTasks");
+      let current = 0;
+      tasks?.progress(() => ({ current, total: 100 }));
+      const pending = (async () => {
         try {
           const destDir = instance.absoluteCwdPath();
           const progressPrefix = `\x1b[K\r`;
@@ -579,6 +582,7 @@ export function apply(ctx: DaemonPluginContext) {
             archivePath,
             destDir,
             (percent: number) => {
+              current = percent;
               if (percent === lastPercent) return;
               lastPercent = percent;
               const barLength = 30;
@@ -591,6 +595,7 @@ export function apply(ctx: DaemonPluginContext) {
           instance.print("\n");
           instance.println("INFO", t("TXT_CODE_INSTANCE_BACKUP_RESTORE_SUCCESS"));
         } catch (error: any) {
+          tasks?.fail(error);
           instance.print("\n");
           logger.error(t("TXT_CODE_INSTANCE_BACKUP_RESTORE_FAILED", { err: error.message }));
           instance.println(
@@ -601,6 +606,7 @@ export function apply(ctx: DaemonPluginContext) {
           instance.status(Instance.STATUS_STOP);
         }
       })();
+      tasks?.follow(pending);
       protocol.response(routerCtx, true);
     } catch (error: any) {
       protocol.responseError(routerCtx, error);

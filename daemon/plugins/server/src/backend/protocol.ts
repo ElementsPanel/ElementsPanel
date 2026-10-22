@@ -183,10 +183,14 @@ export class ProtocolService extends Service implements DaemonProtocolService {
 
   constructor(ctx: Context) {
     super(ctx, "protocol", true);
-    this.responseError = (routerCtx, err, config) =>
+    this.responseError = (routerCtx, err, config) => {
+      ctx.get("backgroundTasks")?.fail(err);
       responseError(routerCtx, err, config, ctx.logger, ctx.i18n.$t);
-    this.error = (routerCtx, event, err, config) =>
+    };
+    this.error = (routerCtx, event, err, config) => {
+      ctx.get("backgroundTasks")?.fail(err?.err || err);
       error(routerCtx, event, err, config, ctx.logger, ctx.i18n.$t);
+    };
     routerApp.setErrorHandler((routerCtx, err) =>
       responseError(routerCtx, err, undefined, ctx.logger, ctx.i18n.$t)
     );
@@ -194,8 +198,18 @@ export class ProtocolService extends Service implements DaemonProtocolService {
 
   on(event: string, handler: (ctx: RouterContext, data: any) => void) {
     return this.ctx.effect(() => {
-      routerApp.on(event, handler);
-      return () => routerApp.off(event, handler);
+      const wrapped = (routerCtx: RouterContext, data: any) => {
+        const tasks = this.ctx.get("backgroundTasks");
+        const work = () => handler(routerCtx, data);
+        try {
+          const pending = tasks ? tasks.runRequest(event, data, work) : work();
+          Promise.resolve(pending).catch((err) => this.responseError(routerCtx, err));
+        } catch (err: any) {
+          this.responseError(routerCtx, err);
+        }
+      };
+      routerApp.on(event, wrapped);
+      return () => routerApp.off(event, wrapped);
     });
   }
 

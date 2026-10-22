@@ -364,8 +364,9 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
 
   // Install instance via preset package
   if (taskName === "install_instance" && instance) {
-    instance
-      .execPreset("install", parameter)
+    const pending = instance.execPreset("install", parameter);
+    daemon.backgroundTasks?.follow(pending);
+    pending
       .then(() => {})
       .catch((err) => {
         logger.error(
@@ -381,8 +382,9 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
 
   // Instance software update via Command
   if (taskName === "update" && instance) {
-    instance
-      .execPreset("update", parameter)
+    const pending = instance.execPreset("update", parameter);
+    daemon.backgroundTasks?.follow(pending);
+    pending
       .then(() => {})
       .catch((err) => {
         logger.error(
@@ -416,6 +418,12 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
       if (runningTask) return protocol.response(ctx, runningTask.toObject());
       const task = registeredTask.create(instance as Instance, parameter);
       TaskCenter.addTask(task);
+      const tasks = daemon.backgroundTasks;
+      tasks?.follow((task as any).wait ? (task as any).wait() : new Promise<void>((resolve, reject) => {
+        task.once("stopped", resolve);
+        task.once("error", reject);
+      }));
+      tasks?.progress(undefined, () => { void task.stop().catch((err: unknown) => logger.warn(err)); });
       return protocol.response(ctx, task.toObject());
     }
   }

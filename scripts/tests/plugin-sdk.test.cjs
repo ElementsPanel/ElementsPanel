@@ -250,7 +250,7 @@ test("production URL identities share login state, registered routes and API aut
   });
   let consoleRouter;
   const component = { render: () => null };
-  const ctx = { set() {}, routes: { add: (route) => consoleRouter.addRoute(route) } };
+  const ctx = { set() {}, routes: { add: (route) => consoleRouter.addRoute(route) }, slots: { register() {} } };
   const overrides = {
     vue: { ...vue, onMounted() {} },
     "vue-router": { ...vueRouter, createWebHashHistory: vueRouter.createMemoryHistory },
@@ -280,7 +280,9 @@ test("production URL identities share login state, registered routes and API aut
     "./vuetify": { installVuetify() {} },
     "./views/AboutPage.vue": component,
     "./widgets/Page404.vue": component,
-    "./ConsoleApp.vue": component
+    "./ConsoleApp.vue": component,
+    "./components/BackgroundTasksButton.vue": component,
+    "./components/BackgroundTasksSidebar.vue": component
   };
   // Evaluate real sources in memory, caching by browser URL, not disk path.
   // Relative imports are derived from the actual output naming callbacks;

@@ -4,6 +4,7 @@ import { localeMessages } from "../i18n";
 import RemoteRequest, { RemoteRequestTimeoutError } from "./remote_command";
 import remoteServices from "./remote_service";
 import { setPluginContext } from "./runtime";
+import { registerBackgroundTaskRoutes } from "./background_tasks";
 
 // Panel side of the node plugin. It owns the remote-node subsystem itself — the
 // daemon connections, their stored configuration and the request helper — and
@@ -39,7 +40,7 @@ function describeNode(remoteService: RemoteServiceLike) {
   };
 }
 
-export const inject = ["koa", "i18n", "storage", "settings", "middleware", "roles", "operations"];
+export const inject = ["koa", "i18n", "storage", "settings", "middleware", "roles", "operations", "identity"];
 
 export async function apply(ctx: PanelPluginContext) {
   // Before anything else: the subsystem's modules read the logger, the storage,
@@ -61,6 +62,7 @@ export async function apply(ctx: PanelPluginContext) {
     Request: RemoteRequest,
     RequestTimeoutError: RemoteRequestTimeoutError
   });
+  registerBackgroundTaskRoutes(ctx);
 
   ctx.effect(() => () => {
     // Sockets are not cordis effects, so closing them is this plugin's job.

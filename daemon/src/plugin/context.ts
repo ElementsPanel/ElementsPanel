@@ -448,6 +448,7 @@ declare module "cordis" {
     overview: DaemonOverviewService;
     archive: DaemonArchiveService;
     transfer: DaemonTransferService;
+    backgroundTasks: import("../../plugins/runtime/src/backend/service/background_tasks").BackgroundTasks;
     javaManager: DaemonJavaManagerService;
     plugins: DaemonPluginsService;
 

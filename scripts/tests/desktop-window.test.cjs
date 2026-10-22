@@ -686,22 +686,66 @@ test("file manager URL downloads and upload overwrite confirmations run in deskt
   await transitionFrame();
 });
 
-test("file operation progress remains a non-dismissable desktop subwindow", async (t) => {
+test("background file operations leave desktop controls accessible without a blocking progress window", async (t) => {
   const f = fileManagerDialogFixture(t);
   await flush();
   f.manager.loadingWindow.value.show = true;
   await flush();
-  const progress = f.findWindow("Progress");
-  assert.ok(progress);
-  assert.equal(progress.querySelector(".window__control--close"), null);
-  assert.ok(progress.textContent.includes("Copying files"));
-  progress.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  assert.equal(f.findWindow("Progress"), undefined);
+  f.manager.dialog.value.title = "Another operation";
+  f.manager.dialog.value.show = true;
   await flush();
-  assert.equal(f.manager.loadingWindow.value.show, true);
-  f.manager.loadingWindow.value.show = false;
+  assert.ok(f.findWindow("Another operation"));
+});
+
+test("the shared task action opens its sidebar and keeps task filters and cancellation working", async (t) => {
+  const account = { state: vue.reactive({ userInfo: { uuid: "alice" } }), isLogged: vue.ref(true) };
+  const cancelled = [];
+  const store = {
+    open: vue.ref(false), tasks: vue.ref([]), unavailable: vue.ref(false), loading: vue.ref(false),
+    error: vue.ref(false), refresh: async () => {},
+    reset() { store.open.value = false; store.tasks.value = []; },
+    cancel: async (task) => { cancelled.push(task.id); }, clear: async () => {}
+  };
+  store.activeCount = vue.computed(() => store.tasks.value.filter(task => task.state === "running").length);
+  const overrides = {
+    "@/lang/i18n": { t: (key) => key },
+    "@/stores/useAppStateStore": { useAppStateStore: () => account },
+    "@/stores/useBackgroundTasks": { useBackgroundTasks: () => store }
+  };
+  const Button = loadSfc("panel/plugins/console/src/components/BackgroundTasksButton.vue", overrides);
+  const Sidebar = loadSfc("panel/plugins/console/src/components/BackgroundTasksSidebar.vue", overrides);
+  const target = document.createElement("div");
+  document.body.appendChild(target);
+  const app = vue.createApp({ render: () => vue.h("div", [vue.h(Button), vue.h(Sidebar)]) });
+  app.use(Vuetify.createVuetify());
+  app.mount(target);
+  t.after(() => { app.unmount(); target.remove(); });
+  store.tasks.value = [
+    { id: "running", daemonId: "node", nodeName: "Node", name: "example.jar", kind: "modDownload", state: "running", current: 5, total: 10, cancellable: true, startedAt: 100 },
+    { id: "finished", daemonId: "node", nodeName: "Node", name: "archive.zip", kind: "extract", state: "completed", current: 0, total: 0, cancellable: false, startedAt: 50 }
+  ];
   await flush();
-  await transitionFrame();
-  assert.equal(progress.isConnected, false);
+  const button = target.querySelector('button[aria-controls="background-tasks-sidebar"]');
+  assert.equal(button.getAttribute("aria-expanded"), "false");
+  button.click();
+  await flush();
+  const sidebar = document.querySelector("#background-tasks-sidebar");
+  assert.ok(sidebar);
+  assert.equal(button.getAttribute("aria-expanded"), "true");
+  assert.equal(sidebar.querySelectorAll("article").length, 2);
+  assert.ok(sidebar.textContent.includes("example.jar"));
+  sidebar.querySelector('button[aria-label="TASKS_CANCEL"]').click();
+  await flush();
+  assert.deepEqual(cancelled, ["running"]);
+  [...sidebar.querySelectorAll(".task-toolbar .v-chip")].find(chip => chip.textContent.includes("TASKS_RUNNING")).click();
+  await flush();
+  assert.equal(sidebar.querySelectorAll("article").length, 1);
+  account.isLogged.value = false;
+  account.state.userInfo = null;
+  await flush();
+  assert.equal(store.open.value, false);
+  assert.deepEqual(store.tasks.value, []);
 });
 
 for (const dismiss of ["button", "titlebar", "escape"]) {

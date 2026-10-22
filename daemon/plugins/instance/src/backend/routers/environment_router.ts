@@ -6,6 +6,7 @@ import { DockerManager } from "../service/docker_service";
 import logger from "../service/log";
 import * as protocol from "../service/protocol";
 import { routerApp } from "../service/router";
+import { ctx as daemon } from "../plugin/context";
 
 // Get the image list of this system
 routerApp.on("environment/images", async (ctx, data) => {
@@ -72,6 +73,7 @@ routerApp.on("environment/new_image", async (ctx, data) => {
       await new DockerManager().startBuildImage(dockerFileDir, dockerImageName);
       logger.info($t("TXT_CODE_environment_router.crateSuccess", { name: name, tag: tag }));
     } catch (error: any) {
+      daemon.backgroundTasks?.fail(error);
       logger.info(
         $t("TXT_CODE_environment_router.crateErr", { name: name, tag: tag, error: error })
       );

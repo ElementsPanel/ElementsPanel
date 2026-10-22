@@ -443,8 +443,7 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <VAlert v-if="fileStatus?.downloadFileFromURLTask && fileStatus.downloadFileFromURLTask > 0" type="info" variant="tonal" density="compact" class="mb-3">{{ t("TXT_CODE_8b7fe641", { count: fileStatus.downloadFileFromURLTask }) }}</VAlert>
-          <VAlert v-if="fileStatus?.instanceFileTask && fileStatus.instanceFileTask > 0" type="info" variant="tonal" density="compact" class="mb-3">{{ t("TXT_CODE_dd06dea2") + fileStatus.instanceFileTask + t("TXT_CODE_3e959ce7") }}</VAlert>
+
 
           <VDataTableServer
             :model-value="selectedRowKeys"

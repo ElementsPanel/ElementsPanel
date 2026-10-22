@@ -334,7 +334,7 @@ export function registerFileEvents() {
           await uploadTask.writer.stop();
         } else {
           // async delete
-          fileManager.delete(target);
+          await fileManager.delete(target);
         }
       }
       protocol().response(ctx, true);

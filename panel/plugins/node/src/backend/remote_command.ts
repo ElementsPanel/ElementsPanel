@@ -1,7 +1,8 @@
 import { v4 } from "uuid";
 import type { IPacket, IRequestPacket } from "../../../../src/app/plugin/packets";
 import RemoteService from "./remote_entity";
-import { $t } from "./runtime";
+import { $t, core } from "./runtime";
+import { taskRequestScope } from "./background_tasks";
 
 class RemoteError extends Error {
   constructor(msg: string) {
@@ -42,7 +43,13 @@ export default class RemoteRequest {
     const result = await new Promise<T>((resolve, reject) => {
       let countdownTask: NodeJS.Timeout | undefined;
       const uuid = [v4(), new Date().getTime()].join("");
-      const protocolData: IRequestPacket = { uuid, data };
+      const requestCtx = taskRequestScope.getStore();
+      // Derive ownership from the authenticated request, never from browser data.
+      const owner = requestCtx ? core().identity.of(requestCtx).uuid || "_anonymous_" : undefined;
+      const protocolData: IRequestPacket = {
+        uuid,
+        data: data && typeof data === "object" && !Array.isArray(data) ? { ...data, _taskOwner: owner } : data
+      };
 
       const cleanup = () => {
         if (countdownTask) clearTimeout(countdownTask);

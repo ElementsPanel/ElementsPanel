@@ -11,7 +11,6 @@ import { usePluginService } from "@/plugin/context";
 import { VAlert, VBadge, VBtn, VCol, VIcon, VRow, VSelect, VTab, VTabs, VTextField, VWindow, VWindowItem } from "vuetify/components";
 import LocalModTable from "./mod-manager/LocalModTable.vue";
 import ModConfigModal from "./mod-manager/ModConfigModal.vue";
-import ModFloatingTools from "./mod-manager/ModFloatingTools.vue";
 import ModVersionModal from "./mod-manager/ModVersionModal.vue";
 import SearchModTable from "./mod-manager/SearchModTable.vue";
 
@@ -127,15 +126,7 @@ const checkAndConfirm = async (
   }
 };
 
-const {
-  deferredTasks,
-  autoExecute,
-  isExecuting,
-  addDeferredTask,
-  removeDeferredTask,
-  executeDeferredTask,
-  executeAllDeferredTasks
-} = useDeferredTasks(instanceId!, daemonId!, async () => {
+const { addDeferredTask } = useDeferredTasks(instanceId!, daemonId!, async () => {
   await loadMods();
 });
 
@@ -157,7 +148,6 @@ const {
   loadMods: originalLoadMods,
   onToggle,
   onDelete,
-  fileStatus,
   tablePagination
 } = useLocalMods(instanceId!, daemonId!, checkAndConfirm, addDeferredTask);
 
@@ -535,11 +525,6 @@ onMounted(async () => {
         </CardPanel>
       </VCol>
     </VRow>
-
-    <ModFloatingTools v-model:deferred-tasks="deferredTasks" v-model:auto-execute="autoExecute"
-      :instance-id="instanceId!" :daemon-id="daemonId!" :file-status="fileStatus" :is-executing="isExecuting"
-      @execute-task="executeDeferredTask" @execute-all="executeAllDeferredTasks" @remove-task="removeDeferredTask"
-      @refresh="loadMods" />
 
     <input ref="fileInput" type="file" multiple style="display: none" accept=".jar,.zip" @change="onFileChange" />
   </div>

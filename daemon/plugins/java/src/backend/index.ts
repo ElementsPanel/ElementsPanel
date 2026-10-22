@@ -15,6 +15,7 @@ export async function apply(ctx: DaemonPluginContext) {
     defaultJavaDataPath: ctx.settings.config.defaultJavaDataPath,
     translate: ctx.i18n.$t,
     logger: ctx.logger,
+    backgroundTasks: ctx.get("backgroundTasks"),
     unzip: (directory, file, destination) =>
       new ctx.files.FileManager(directory, "UTF-8").unzip(file, destination, "UTF-8")
   });

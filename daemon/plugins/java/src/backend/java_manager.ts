@@ -11,6 +11,7 @@ export interface JavaManagerDependencies {
   translate(key: string): string;
   unzip(directory: string, file: string, destination: string): Promise<boolean>;
   logger?: { info(...args: any[]): void; warn(...args: any[]): void };
+  backgroundTasks?: import("../../../runtime/src/backend/service/background_tasks").BackgroundTasks;
 }
 
 export type JavaManagerInfo = IJavaInfo & { name: string; version?: string };
@@ -149,6 +150,9 @@ export class JavaManager {
     const job = { controller: new AbortController(), done: Promise.resolve() };
     this.jobs.set(id, job);
     job.done = this.install(info, job.controller.signal).finally(() => this.jobs.delete(id));
+    const tasks = this.dependencies.backgroundTasks;
+    tasks?.progress(() => ({ current: info.progress || 0, total: 100 }), () => job.controller.abort());
+    tasks?.follow(job.done.then(() => { if (info.error) throw new Error(info.error); }));
     return runtime;
   }
 

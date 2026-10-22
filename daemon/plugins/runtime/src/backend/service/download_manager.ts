@@ -8,6 +8,7 @@ import { Throttle } from "stream-throttle";
 import { globalConfiguration } from "../entity/config";
 import { getCommonHeaders } from "../common/network";
 import { publicDownloadRequestOptions } from "./public_download";
+import type { BackgroundTasks } from "./background_tasks";
 
 interface DownloadTask {
   path: string;
@@ -18,6 +19,7 @@ interface DownloadTask {
 }
 
 class DownloadManager {
+  public backgroundTasks?: BackgroundTasks;
   private controller: AbortController | null = null;
   private cleanupTimer?: NodeJS.Timeout;
   public task: DownloadTask | null = null;
@@ -26,7 +28,24 @@ class DownloadManager {
     return this.controller ? 1 : 0;
   }
 
-  public async downloadFromUrl(
+  public downloadFromUrl(
+    url: string,
+    targetPath: string,
+    fallbackUrl?: string,
+    options: { ifIdle?: boolean; overwrite?: boolean; userAgent?: string } = {}
+  ): Promise<void> {
+    const pending = this.performDownload(url, targetPath, fallbackUrl, options);
+    const task = this.task;
+    if (task?.path === targetPath) {
+      this.backgroundTasks?.progress(() => ({ current: task.current, total: task.total }), () => {
+        if (this.task !== task) return false;
+        return this.stop(targetPath);
+      });
+    }
+    return this.backgroundTasks?.follow(pending) || pending;
+  }
+
+  private async performDownload(
     url: string,
     targetPath: string,
     fallbackUrl?: string,

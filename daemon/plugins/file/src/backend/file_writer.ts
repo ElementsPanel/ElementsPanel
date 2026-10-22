@@ -16,6 +16,11 @@ export default class FileWriter {
   private completed = false;
   readonly received: ChunkRange[] = [];
   lastUpdate: number = Date.now();
+  onFinish?: (error?: unknown, cancelled?: boolean) => void;
+
+  get cancellable() {
+    return !this.completed;
+  }
 
   constructor(
     public readonly cwd: string,
@@ -144,6 +149,7 @@ export default class FileWriter {
   private async finish(cancelled: boolean) {
     if (this.completed) return;
     this.completed = true;
+    let failure: unknown;
     try {
       await this.close();
       if (cancelled) {
@@ -157,13 +163,20 @@ export default class FileWriter {
           logger().info("File unzipped:", this.path);
         }
       }
+    } catch (error) {
+      failure = error;
+      throw error;
     } finally {
       try {
         // Keep ownership until removal/extraction completes, so a newer upload
         // cannot start using the same path while this task is still changing it.
         await this.unlock();
+      } catch (error) {
+        failure ||= error;
+        throw error;
       } finally {
         if (this.id != null) uploadManager.delete(this.id);
+        this.onFinish?.(failure, cancelled);
       }
     }
   }

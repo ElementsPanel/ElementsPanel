@@ -360,7 +360,19 @@ export class ModService {
     await fs.remove(filePath);
   }
 
-  public async installMod(
+  public installMod(
+    instanceUuid: string,
+    url: string,
+    fileName: string,
+    type: "mod" | "plugin",
+    options: { fallbackUrl?: string; ifIdle?: boolean; overwrite?: boolean } = {},
+    task?: ModInstallTask
+  ) {
+    const pending = this.performInstallMod(instanceUuid, url, fileName, type, options, task);
+    return this.ctx.get?.("backgroundTasks")?.follow(pending) || pending;
+  }
+
+  private async performInstallMod(
     instanceUuid: string,
     url: string,
     fileName: string,

@@ -179,7 +179,7 @@ export const compressFile = useDefineApi<
 >({
   url: "/api/files/compress",
   method: "POST",
-  timeout: Number.MAX_SAFE_INTEGER
+  timeout: 0
 });
 
 export const downloadFromUrl = useDefineApi<

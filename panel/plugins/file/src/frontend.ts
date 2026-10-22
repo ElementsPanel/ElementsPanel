@@ -2,7 +2,6 @@ import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } f
 import { t } from "@/lang/i18n";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import * as fileManagerApi from "./api";
-import UploadBubble from "./components/UploadBubble.vue";
 import { useDownloadFileDialog, useImageViewerDialog, useUploadFileDialog } from "./dialogs";
 import DesktopFileEditor from "./desktop/DesktopFileEditor.vue";
 import DesktopFileManager from "./desktop/DesktopFileManager.vue";
@@ -95,8 +94,4 @@ export function apply(ctx: PanelFrontendPluginContext) {
     desktopInitialHeight: 600
   });
 
-  // The upload progress bubble is an overlay that belongs to no route, and it
-  // reports this plugin's own upload queue, so it is mounted for the plugin's
-  // lifetime rather than by `App.vue`.
-  ctx.slots.register("shell.overlay", UploadBubble, { id: "file-upload-progress" });
 }

@@ -17,6 +17,8 @@ import Page404 from "./widgets/Page404.vue";
 import ConsoleApp from "./ConsoleApp.vue";
 import { setLoadingTitle } from "@/tools/dom";
 import { installVuetify } from "./vuetify";
+import BackgroundTasksButton from "./components/BackgroundTasksButton.vue";
+import BackgroundTasksSidebar from "./components/BackgroundTasksSidebar.vue";
 
 /** `/` only ever redirects through its `meta.redirect`; it never renders. */
 const RedirectShell = { render: () => null };
@@ -27,6 +29,13 @@ export async function apply(parent: PanelFrontendPluginContext) {
   const { app, ctx } = await prepareApplication(parent);
   installVuetify(app);
   ctx.set("console", { root: ConsoleApp });
+  ctx.slots.register("shell.header.actions", BackgroundTasksButton, {
+    id: "console:background-tasks-button",
+    order: 10
+  });
+  ctx.slots.register("shell.overlay", BackgroundTasksSidebar, {
+    id: "console:background-tasks-sidebar"
+  });
 
   ctx.routes.add({
     path: "/",

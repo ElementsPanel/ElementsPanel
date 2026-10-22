@@ -168,6 +168,25 @@ export function registerHttpRoutes() {
         await fileWriter.init();
         const id = uploadManager.add(fileWriter);
         fr = { id, writer: fileWriter };
+        const tasks = core().get("backgroundTasks");
+        tasks?.runRequest(unzip ? "file/upload_extract" : "file/upload", {
+          _taskOwner: mission.parameter._taskOwner,
+          instanceUuid: mission.parameter.instanceUuid,
+          fileName: filename
+        }, () => {
+          tasks.progress(() => ({
+            current: fileWriter.received.reduce((sum, range) => sum + range.end - range.start, 0),
+            total: size,
+            cancellable: fileWriter.cancellable
+          }), () => { void fileWriter.stop().catch((err) => core().logger.warn(err)); });
+          tasks.follow(new Promise<void>((resolve, reject) => {
+            fileWriter.onFinish = (error, cancelled) => {
+              if (error) reject(error);
+              else if (cancelled) reject(Object.assign(new Error("Upload cancelled"), { code: "ABORT_ERR" }));
+              else resolve();
+            };
+          }));
+        });
       }
       if (size === 0) await fr.writer.done();
 

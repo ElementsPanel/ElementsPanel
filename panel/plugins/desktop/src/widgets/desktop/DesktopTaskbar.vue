@@ -3,12 +3,14 @@ import { router } from "@/config/router";
 import { t } from "@/lang/i18n";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useThemeSwitch } from "@/hooks/useThemeSwitch";
+import { ctx } from "@/plugin/context";
 import { desktopIconDarkUrl, desktopIconUrl } from "../../assets";
 import { VBtn, VIcon, VList, VListItem, VMenu } from "vuetify/components";
-import { onBeforeUnmount, ref, type Component } from "vue";
+import { computed, onBeforeUnmount, ref, type Component } from "vue";
 
 const { isDarkTheme } = useAppConfigStore();
 const { themeIcon, themeTitle, cycleTheme } = useThemeSwitch();
+const actionSlots = computed(() => ctx.slots.entries("shell.header.actions", { mobile: false }));
 
 export interface TaskbarWindow {
     id: string;
@@ -192,6 +194,8 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
         </div>
 
         <div class="taskbar__tray">
+            <component :is="entry.component" v-for="entry in actionSlots" :key="entry.id"
+                v-bind="{ ...entry.props, mobile: false }" />
             <div class="taskbar__time">
                 <div class="taskbar__time-text">{{ currentTime }}</div>
                 <div class="taskbar__date-text">{{ currentDate }}</div>
