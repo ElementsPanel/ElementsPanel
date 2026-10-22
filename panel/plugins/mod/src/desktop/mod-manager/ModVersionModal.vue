@@ -167,7 +167,7 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
 <template>
   <template v-if="isDesktop">
     <Teleport to="body">
-      <Transition name="du-dialog-fade">
+      <Transition name="desktop-window">
         <component :is="desktopWindowComponent" v-if="visible" id="mod-version-dialog" :title="t('TXT_CODE_VERSION_SELECT')"
           :icon="AppstoreOutlined" :visible="visible" :minimized="false" :maximized="false" :active="true"
           :initial-width="900" :initial-height="600" :initial-x="windowWidth / 2 - 450"
@@ -233,14 +233,4 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
   color: var(--desktop-window-text, #000);
 }
 
-.du-dialog-fade-enter-active,
-.du-dialog-fade-leave-active {
-  transition: all 0.25s cubic-bezier(0.25, 0.10, 0.25, 1.00);
-}
-
-.du-dialog-fade-enter-from,
-.du-dialog-fade-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
 </style>

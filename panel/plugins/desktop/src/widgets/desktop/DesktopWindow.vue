@@ -396,7 +396,9 @@ onUnmounted(() => {
         width 0.2s ease,
         height 0.2s ease,
         border-radius 0.2s ease,
-        box-shadow 0.2s ease;
+        box-shadow 0.2s ease,
+        opacity 0.25s cubic-bezier(0.25, 0.1, 0.25, 1),
+        transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
 
     &--active {
         box-shadow: 0 12px 48px var(--desktop-window-shadow);
@@ -415,6 +417,12 @@ onUnmounted(() => {
 
     &--maximized {
     }
+}
+
+.desktop-window-enter-from,
+.desktop-window-leave-to {
+    opacity: 0;
+    transform: scale(0.95);
 }
 
 .window__frame {

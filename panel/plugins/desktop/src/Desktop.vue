@@ -1120,7 +1120,7 @@ const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof 
                     </div>
                 </div>
 
-                <TransitionGroup name="desktop-window-group">
+                <TransitionGroup name="desktop-window">
                     <DesktopWindow v-for="[id, win] in windows" :key="id" :id="win.id" :title="win.title"
                         :icon="win.icon" :visible="win.visible" :minimized="win.minimized" :maximized="win.maximized"
                         :active="win.id === activeWindowId" :initial-x="win.initialX" :initial-y="win.initialY"
@@ -1302,24 +1302,6 @@ const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof 
             margin: 0;
         }
     }
-}
-
-.desktop-window-group-enter-active {
-    transition: all 0.25s cubic-bezier(0.25, 0.10, 0.25, 1.00);
-}
-
-.desktop-window-group-leave-active {
-    transition: all 0.2s cubic-bezier(0.25, 0.10, 0.25, 1.00);
-}
-
-.desktop-window-group-enter-from {
-    opacity: 0;
-    transform: scale(0.95);
-}
-
-.desktop-window-group-leave-to {
-    opacity: 0;
-    transform: scale(0.95);
 }
 
 .desktop-content-wrapper {

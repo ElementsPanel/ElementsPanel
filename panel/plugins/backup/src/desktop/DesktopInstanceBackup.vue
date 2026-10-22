@@ -360,7 +360,7 @@ onUnmounted(() => {
         </div>
 
         <Teleport to="body">
-            <Transition name="ds-dialog-fade">
+            <Transition name="desktop-window">
                 <component :is="desktopWindowComponent" v-if="desktopWindowComponent && deleteDialog.show"
                     id="backup-delete-dialog" :title="t('TXT_CODE_71155575')"
                     :icon="ExclamationCircleOutlined" :visible="deleteDialog.show" :minimized="false" :maximized="false"
@@ -391,7 +391,7 @@ onUnmounted(() => {
         </Teleport>
 
         <Teleport to="body">
-            <Transition name="ds-dialog-fade">
+            <Transition name="desktop-window">
                 <component :is="desktopWindowComponent" v-if="desktopWindowComponent && restoreDialog.show"
                     id="backup-restore-dialog"
                     :title="t('TXT_CODE_INSTANCE_BACKUP_RESTORE')" :icon="ExclamationCircleOutlined"
@@ -422,7 +422,7 @@ onUnmounted(() => {
         </Teleport>
 
         <Teleport to="body">
-            <Transition name="ds-dialog-fade">
+            <Transition name="desktop-window">
                 <component :is="desktopWindowComponent" v-if="desktopWindowComponent && epbaklstConfirmDialog.show"
                     id="backup-epbaklst-confirm-dialog"
                     :title="t('TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST')"
@@ -452,7 +452,7 @@ onUnmounted(() => {
         </Teleport>
 
         <Teleport to="body">
-            <Transition name="ds-dialog-fade">
+            <Transition name="desktop-window">
                 <component :is="desktopWindowComponent" v-if="desktopWindowComponent && backupConfirmDialog.show"
                     id="backup-confirm-dialog"
                     :title="t('TXT_CODE_INSTANCE_BACKUP_CREATE')"
@@ -697,16 +697,6 @@ onUnmounted(() => {
     }
 }
 
-.ds-dialog-fade-enter-active,
-.ds-dialog-fade-leave-active {
-    transition: all 0.25s cubic-bezier(0.25, 0.10, 0.25, 1.00);
-}
-
-.ds-dialog-fade-enter-from,
-.ds-dialog-fade-leave-to {
-    opacity: 0;
-    transform: scale(0.95);
-}
 
 .ds-dialog-content {
     display: flex;

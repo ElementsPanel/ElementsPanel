@@ -39,7 +39,7 @@ const emit = defineEmits(["update:visible", "edit"]);
 <template>
   <template v-if="isDesktop">
     <Teleport to="body">
-      <Transition name="du-dialog-fade">
+      <Transition name="desktop-window">
         <component :is="desktopWindowComponent" v-if="visible" id="mod-config-dialog" :title="t('TXT_CODE_CONFIG') + ': ' + currentMod?.name"
           :icon="SettingOutlined" :visible="visible" :minimized="false" :maximized="false" :active="true"
           :initial-width="600" :initial-height="400" :initial-x="windowWidth / 2 - 300"
@@ -80,14 +80,4 @@ const emit = defineEmits(["update:visible", "edit"]);
   color: var(--desktop-window-text, #000);
 }
 
-.du-dialog-fade-enter-active,
-.du-dialog-fade-leave-active {
-  transition: all 0.25s cubic-bezier(0.25, 0.10, 0.25, 1.00);
-}
-
-.du-dialog-fade-enter-from,
-.du-dialog-fade-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
 </style>

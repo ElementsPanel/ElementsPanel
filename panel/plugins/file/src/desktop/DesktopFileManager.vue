@@ -999,16 +999,6 @@ onUnmounted(() => {
     }
 }
 
-.dfm-dialog-fade-enter-active,
-.dfm-dialog-fade-leave-active {
-    transition: all 0.25s cubic-bezier(0.25, 0.10, 0.25, 1.00);
-}
-
-.dfm-dialog-fade-enter-from,
-.dfm-dialog-fade-leave-to {
-    opacity: 0;
-    transform: scale(0.95);
-}
 
 .dfm-dialog-content {
     display: flex;

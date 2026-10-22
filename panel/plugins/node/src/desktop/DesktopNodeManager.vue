@@ -426,7 +426,7 @@ const reconnectNode = async (node: NodeStatus) => {
     </VDataTable>
 
     <Teleport to="body">
-      <Transition name="dn-dialog-fade">
+      <Transition name="desktop-window">
         <DesktopWindow
           v-if="showDialog"
           id="node-edit-dialog"
@@ -555,7 +555,7 @@ const reconnectNode = async (node: NodeStatus) => {
     </Teleport>
 
     <Teleport to="body">
-      <Transition name="dn-dialog-fade">
+      <Transition name="desktop-window">
         <DesktopWindow
           v-if="showDeleteConfirm"
           id="node-delete-dialog"
@@ -1046,16 +1046,6 @@ const reconnectNode = async (node: NodeStatus) => {
   margin: 0;
 }
 
-.dn-dialog-fade-enter-active,
-.dn-dialog-fade-leave-active {
-  transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
-}
-
-.dn-dialog-fade-enter-from,
-.dn-dialog-fade-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
 
 .dn-table-wrap::-webkit-scrollbar {
   width: 4px;

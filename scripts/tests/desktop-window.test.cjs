@@ -53,7 +53,8 @@ const vue = frontendRequire("vue");
 const Vuetify = frontendRequire("vuetify/dist/vuetify.js");
 const ts = frontendRequire("typescript");
 
-const { parse, compileScript } = frontendRequire("@vue/compiler-sfc");
+const { parse, compileScript, compileStyle } = frontendRequire("@vue/compiler-sfc");
+const sass = frontendRequire("sass");
 const filename = path.join(root, "panel/plugins/desktop/src/widgets/desktop/DesktopWindow.vue");
 const { descriptor } = parse(fs.readFileSync(filename, "utf8"), { filename });
 const script = compileScript(descriptor, { id: "desktop-window-test", inlineTemplate: true });
@@ -63,6 +64,7 @@ mod._compile(ts.transpileModule(script.content, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
 }).outputText, filename);
 const DesktopWindow = mod.exports.default;
+DesktopWindow.__scopeId = "data-v-desktop-window-test";
 const { VSelect, VDialog } = Vuetify.components;
 const flush = async () => { for (let i = 0; i < 8; i++) await vue.nextTick(); };
 
@@ -80,7 +82,7 @@ function fixture(t) {
   document.body.appendChild(target);
   const app = vue.createApp({
     render: () => vue.h(vue.TransitionGroup, {
-      tag: "div", name: "desktop-window-group",
+      tag: "div", name: "desktop-window",
       onEnter: (_element, done) => { transitions.enters++; done(); },
       onLeave: (_element, done) => { transitions.leaves++; done(); }
     }, () => closed.value ? [] : [vue.h(DesktopWindow, {
@@ -139,6 +141,68 @@ function animationFixture(t) {
   };
   return { ...f, owner, button, sourceRect, targetRect, animations, scrollCalls: () => scrollCalls };
 }
+
+function dialogFixture(t, shellStyleLast) {
+  const proxyFilename = path.join(root, "panel/plugins/instance/src/desktop/DesktopWindow.vue");
+  const { descriptor: proxyDescriptor } = parse(fs.readFileSync(proxyFilename, "utf8"), { filename: proxyFilename });
+  const proxyScript = compileScript(proxyDescriptor, { id: "instance-window-test", inlineTemplate: true });
+  const proxyModule = new Module(proxyFilename, module);
+  proxyModule.require = (id) => id === "@/plugin/context"
+    ? { usePluginService: () => ({ window: DesktopWindow }) }
+    : frontendRequire(id);
+  proxyModule._compile(ts.transpileModule(proxyScript.content, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
+  }).outputText, proxyFilename);
+  const InstanceWindow = proxyModule.exports.default;
+  InstanceWindow.__scopeId = "data-v-instance-window-test";
+
+  const ownerScopeId = "data-v-instance-manager-test";
+  const ownerFilename = path.join(root, "panel/plugins/instance/src/desktop/DesktopInstanceManager.vue");
+  const { descriptor: ownerDescriptor } = parse(fs.readFileSync(ownerFilename, "utf8"), { filename: ownerFilename });
+  const styles = [
+    { descriptor: ownerDescriptor, scopeId: ownerScopeId },
+    { descriptor, scopeId: DesktopWindow.__scopeId }
+  ];
+  if (!shellStyleLast) styles.reverse();
+  const styleElements = styles.map(({ descriptor: source, scopeId }) => {
+    const element = document.createElement("style");
+    element.textContent = source.styles.map((block) => compileStyle({
+      source: sass.compileString(block.content).css,
+      filename: "desktop-dialog-test.vue", id: scopeId, scoped: block.scoped
+    }).code).join("\n");
+    document.head.appendChild(element);
+    return element;
+  });
+
+  const opened = vue.ref(false);
+  let finishEnter, finishLeave;
+  const target = document.createElement("div");
+  document.body.appendChild(target);
+  const app = vue.createApp({
+    __scopeId: ownerScopeId,
+    render: () => vue.h("div", [vue.h(vue.Teleport, { to: "body" }, [vue.h(vue.Transition, {
+      name: "desktop-window",
+      onEnter: (_element, done) => { finishEnter = done; },
+      onLeave: (_element, done) => { finishLeave = done; }
+    }, () => opened.value ? vue.h(InstanceWindow, {
+      id: "instance-manager-tag-dialog", title: "Tags", visible: opened.value,
+      minimized: false, maximized: false, active: true, showMinimize: false, showMaximize: false,
+      onClose: () => { opened.value = false; }
+    }) : null)])])
+  });
+  app.use(Vuetify.createVuetify());
+  app.mount(target);
+  t.after(() => {
+    finishEnter?.();
+    finishLeave?.();
+    app.unmount();
+    target.remove();
+    styleElements.forEach(element => element.remove());
+  });
+  return { opened, finishEnter: () => finishEnter(), finishLeave: () => finishLeave() };
+}
+
+const transitionFrame = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
 test("desktop menus belong to their window, outside its clipped content", async (t) => {
   const f = fixture(t);
@@ -300,3 +364,33 @@ test("missing taskbar targets and reduced motion keep minimizing immediate", asy
   assert.equal(f.owner.style.display, "none");
   assert.equal(f.owner.classList.contains("desktop-window--animating"), false);
 });
+
+for (const shellStyleLast of [true, false]) {
+  test(`instance subwindows fade through their wrapper with shell CSS loaded ${shellStyleLast ? "last" : "first"}`, async (t) => {
+    const f = dialogFixture(t, shellStyleLast);
+    f.opened.value = true;
+    await flush();
+    const element = document.body.querySelector(".desktop-window");
+    assert.ok(element.classList.contains("desktop-window-enter-active"));
+    const enterStyle = window.getComputedStyle(element);
+    assert.equal(enterStyle.opacity, "0");
+    assert.match(enterStyle.transition, /\b(opacity|all)\b/, "opacity must animate regardless of stylesheet order");
+    assert.match(enterStyle.transition, /\b(transform|all)\b/, "the existing dialog scale transition must also animate");
+    await transitionFrame();
+    assert.notEqual(window.getComputedStyle(element).opacity, "0");
+    f.finishEnter();
+
+    element.querySelector(".window__control--close").click();
+    await flush();
+    assert.ok(element.isConnected, "keep the subwindow mounted for its fade-out");
+    assert.notEqual(element.style.display, "none", "the visible prop must not hide a leaving subwindow early");
+    assert.ok(element.classList.contains("desktop-window-leave-active"));
+    await transitionFrame();
+    const leaveStyle = window.getComputedStyle(element);
+    assert.equal(leaveStyle.opacity, "0");
+    assert.match(leaveStyle.transition, /\b(opacity|all)\b/);
+    f.finishLeave();
+    await flush();
+    assert.equal(element.isConnected, false);
+  });
+}

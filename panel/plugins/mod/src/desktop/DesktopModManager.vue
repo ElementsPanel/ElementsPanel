@@ -511,7 +511,7 @@ onMounted(async () => {
         <input ref="fileInput" type="file" multiple style="display: none" accept=".jar,.zip" @change="onFileChange" />
 
         <Teleport to="body">
-            <Transition name="dmm-dialog-fade">
+            <Transition name="desktop-window">
                 <component :is="desktopWindowComponent" v-if="saveLocationDialog.show" id="mod-save-location-dialog"
                     :title="t('TXT_CODE_MOD_SELECT_SAVE_DIR')" :icon="ExclamationCircleOutlined"
                     :visible="saveLocationDialog.show" :minimized="false" :maximized="false" :active="true"
@@ -544,7 +544,7 @@ onMounted(async () => {
         </Teleport>
 
         <Teleport to="body">
-            <Transition name="dmm-dialog-fade">
+            <Transition name="desktop-window">
                 <component :is="desktopWindowComponent" v-if="fileLockDialog.show" id="mod-file-lock-dialog"
                     :title="t('TXT_CODE_MOD_WIN_FILE_LOCK_TITLE')" :icon="ExclamationCircleOutlined"
                     :visible="fileLockDialog.show" :minimized="false" :maximized="false" :active="true"
@@ -777,16 +777,6 @@ onMounted(async () => {
     margin-top: 8px;
 }
 
-.dmm-dialog-fade-enter-active,
-.dmm-dialog-fade-leave-active {
-    transition: all 0.25s cubic-bezier(0.25, 0.10, 0.25, 1.00);
-}
-
-.dmm-dialog-fade-enter-from,
-.dmm-dialog-fade-leave-to {
-    opacity: 0;
-    transform: scale(0.95);
-}
 
 .dmm-dialog-content {
     display: flex;

@@ -262,7 +262,7 @@ onUnmounted(() => {
         </div>
 
         <Teleport to="body">
-            <Transition name="dfm-dialog-fade">
+            <Transition name="desktop-window">
                 <component :is="desktopWindowComponent" v-if="desktopWindowComponent && addJavaDialog.show" id="java-manager-add-dialog" :title="t('TXT_CODE_8900e7ee')"
                     :icon="BuildOutlined" :visible="addJavaDialog.show" :minimized="false" :maximized="false"
                     :active="true" :initial-width="420" :initial-height="315" :initial-x="windowWidth / 2 - 210"
@@ -290,7 +290,7 @@ onUnmounted(() => {
         </Teleport>
 
         <Teleport to="body">
-            <Transition name="dfm-dialog-fade">
+            <Transition name="desktop-window">
                 <component :is="desktopWindowComponent" v-if="desktopWindowComponent && downloadJavaDialog.show" id="java-manager-download-dialog"
                     :title="t('TXT_CODE_84588601')" :icon="DownloadOutlined" :visible="downloadJavaDialog.show"
                     :minimized="false" :maximized="false" :active="true" :initial-width="700" :initial-height="460"
@@ -396,16 +396,6 @@ onUnmounted(() => {
     }
 }
 
-.dfm-dialog-fade-enter-active,
-.dfm-dialog-fade-leave-active {
-    transition: all 0.25s cubic-bezier(0.25, 0.10, 0.25, 1.00);
-}
-
-.dfm-dialog-fade-enter-from,
-.dfm-dialog-fade-leave-to {
-    opacity: 0;
-    transform: scale(0.95);
-}
 
 .djava-dialog-content {
     display: flex;

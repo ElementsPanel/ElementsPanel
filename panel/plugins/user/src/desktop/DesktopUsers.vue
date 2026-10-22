@@ -443,7 +443,7 @@ const getInstanceStatusLabel = (status: number): string => {
         </div>
 
         <Teleport to="body">
-            <Transition name="du-dialog-fade">
+            <Transition name="desktop-window">
                 <DesktopWindow v-if="showDialog" id="user-edit-dialog"
                     :title="dialogMode === 'add' ? t('TXT_CODE_DESKTOP_USERS_ADD') : t('TXT_CODE_79f9a172')"
                     :icon="dialogMode === 'add' ? PlusOutlined : EditOutlined" :visible="showDialog" :minimized="false"
@@ -496,7 +496,7 @@ const getInstanceStatusLabel = (status: number): string => {
         </Teleport>
 
         <Teleport to="body">
-            <Transition name="du-dialog-fade">
+            <Transition name="desktop-window">
                 <DesktopWindow v-if="showDeleteConfirm" id="user-delete-dialog"
                     :title="t('TXT_CODE_DESKTOP_USERS_DELETE')" :icon="ExclamationCircleOutlined"
                     :visible="showDeleteConfirm" :minimized="false" :maximized="false" :active="true"
@@ -526,7 +526,7 @@ const getInstanceStatusLabel = (status: number): string => {
         </Teleport>
 
         <Teleport to="body">
-            <Transition name="du-dialog-fade">
+            <Transition name="desktop-window">
                 <DesktopWindow v-if="showAssignDialog" id="user-assign-dialog"
                     :title="t('TXT_CODE_9393b484')" :icon="LinkOutlined"
                     :visible="showAssignDialog" :minimized="false" :maximized="false" :active="true"
@@ -1363,16 +1363,6 @@ const getInstanceStatusLabel = (status: number): string => {
     border-top: 1px solid var(--desktop-window-border);
 }
 
-.du-dialog-fade-enter-active,
-.du-dialog-fade-leave-active {
-    transition: all 0.25s cubic-bezier(0.25, 0.10, 0.25, 1.00);
-}
-
-.du-dialog-fade-enter-from,
-.du-dialog-fade-leave-to {
-    opacity: 0;
-    transform: scale(0.95);
-}
 
 .du-table-wrap::-webkit-scrollbar {
     width: 4px;

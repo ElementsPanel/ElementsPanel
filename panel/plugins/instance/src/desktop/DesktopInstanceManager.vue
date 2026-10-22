@@ -741,7 +741,7 @@ onUnmounted(() => {
         </div>
 
         <Teleport to="body">
-            <Transition name="dim-dialog-fade">
+            <Transition name="desktop-window">
                 <DesktopWindow v-if="tagDialog.show" id="instance-manager-tag-dialog" :title="t('TXT_CODE_a2544278')"
                     :icon="TagsOutlined" :visible="tagDialog.show" :minimized="false" :maximized="false" :active="true"
                     :initial-width="440" :initial-height="420" :initial-x="windowWidth / 2 - 220"
@@ -801,7 +801,7 @@ onUnmounted(() => {
         </Teleport>
 
         <Teleport to="body">
-            <Transition name="dim-dialog-fade">
+            <Transition name="desktop-window">
                 <DesktopWindow v-if="deleteDialog.show" id="instance-manager-delete-dialog"
                     :title="deleteDialog.deleteFile ? t('TXT_CODE_9ef27367') : t('TXT_CODE_ecbd7449')"
                     :icon="ExclamationCircleOutlined" :visible="deleteDialog.show" :minimized="false" :maximized="false"
@@ -1422,16 +1422,6 @@ onUnmounted(() => {
     }
 }
 
-.dim-dialog-fade-enter-active,
-.dim-dialog-fade-leave-active {
-    transition: all 0.25s cubic-bezier(0.25, 0.10, 0.25, 1.00);
-}
-
-.dim-dialog-fade-enter-from,
-.dim-dialog-fade-leave-to {
-    opacity: 0;
-    transform: scale(0.95);
-}
 
 .dim-dialog-content {
     display: flex;

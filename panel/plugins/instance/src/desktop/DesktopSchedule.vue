@@ -285,7 +285,7 @@ onMounted(async () => {
     </div>
 
     <Teleport to="body">
-        <Transition name="ds-dialog-fade">
+        <Transition name="desktop-window">
             <DesktopWindow v-if="dialogOpen" id="schedule-task-dialog"
                 :title="isEditing ? t('TXT_CODE_1548649e') : t('TXT_CODE_3502273d')" :icon="ClockCircleOutlined"
                 :visible="dialogOpen" :minimized="false" :maximized="false" :active="true" :initial-width="700"
@@ -579,16 +579,6 @@ onMounted(async () => {
     width: 100%;
 }
 
-.ds-dialog-fade-enter-active,
-.ds-dialog-fade-leave-active {
-    transition: all 0.25s cubic-bezier(0.25, 0.10, 0.25, 1.00);
-}
-
-.ds-dialog-fade-enter-from,
-.ds-dialog-fade-leave-to {
-    opacity: 0;
-    transform: scale(0.95);
-}
 
 .ds-dialog-content {
     display: flex;
