@@ -62,7 +62,6 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     height: 100%;
-    background-color: var(--desktop-window-bg);
     color: var(--desktop-window-text);
 }
 

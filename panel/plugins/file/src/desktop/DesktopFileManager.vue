@@ -95,9 +95,6 @@ const desktopFileHeaders = computed(() => {
     if (fileStatus.value?.platform !== "win32") {
         headers.push({ title: t("TXT_CODE_511aea70"), key: "mode", value: "mode", sortable: false });
     }
-    if (!isMultiple.value) {
-        headers.push({ title: t("TXT_CODE_fe731dfc"), key: "action", value: "action", sortable: false });
-    }
     return headers;
 });
 
@@ -493,8 +490,7 @@ const onTableMouseDown = (e: MouseEvent) => {
     if (e.button !== 0) return;
     if (e.shiftKey || e.metaKey) return;
     const target = e.target as HTMLElement;
-    if (target.closest('.dfm-table .v-data-table__td:last-child') ||
-        target.closest('input[type="checkbox"]') ||
+    if (target.closest('input[type="checkbox"]') ||
         target.closest('.v-btn') ||
         target.closest('.v-menu') ||
         target.closest('.v-input') ||
@@ -791,14 +787,13 @@ onUnmounted(() => {
             <VAlert v-if="(fileStatus?.downloadFileFromURLTask || 0) > 0" type="info" variant="tonal" density="compact"><VIcon icon="mdi-loading" class="desktop-icon-spin" />{{ t("TXT_CODE_8b7fe641", { count: fileStatus?.downloadFileFromURLTask || 0 }) }}</VAlert>
             <VAlert v-if="(fileStatus?.instanceFileTask || 0) > 0" type="info" variant="tonal" density="compact"><VIcon icon="mdi-loading" class="desktop-icon-spin" />{{ t("TXT_CODE_dd06dea2") + (fileStatus?.instanceFileTask || 0) + t("TXT_CODE_3e959ce7") }}</VAlert>
             <div class="dfm-table-wrapper" @mousedown="onTableMouseDown">
-            <VDataTableServer v-model="selectedRowKeys" class="dfm-table" :headers="desktopFileHeaders" :items="dataSource || []" item-value="name" :loading="spinning" :items-length="operationForm.total" :items-per-page="operationForm.pageSize || 20" :page="operationForm.current || 1" :items-per-page-options="[25, 50, 100, 200]" show-select density="comfortable" :row-props="getDesktopRowProps" @update:model-value="onDesktopSelectionChange" @update:page="(page) => handleTableChange({ current: page, pageSize: operationForm.pageSize || 20 })" @update:items-per-page="(size) => handleTableChange({ current: operationForm.current || 1, pageSize: size })">
+            <VDataTableServer v-model="selectedRowKeys" class="dfm-table" :headers="desktopFileHeaders" :items="dataSource || []" item-value="name" :loading="spinning" :items-length="operationForm.total" :items-per-page="operationForm.pageSize || 20" :page="operationForm.current || 1" :items-per-page-options="[25, 50, 100, 200]" show-select fixed-header density="compact" :row-props="getDesktopRowProps" @update:model-value="onDesktopSelectionChange" @update:page="(page) => handleTableChange({ current: page, pageSize: operationForm.pageSize || 20 })" @update:items-per-page="(size) => handleTableChange({ current: operationForm.current || 1, pageSize: size })">
                 <template #loading><VProgressCircular indeterminate size="24" width="2" /></template>
                 <template #item.name="{ item }"><span class="dfm-file-name"><VIcon :icon="getDesktopFileIcon(item.name, item.type)" size="small" />{{ item.name }}</span></template>
                 <template #item.type="{ item }">{{ item.type === 1 ? filterFileName(item.name) : t("TXT_CODE_e5f949c") }}</template>
                 <template #item.size="{ item }">{{ item.size ? convertFileSize(String(item.size)) : "--" }}</template>
                 <template #item.time="{ item }">{{ item.time ? dayjs(item.time).format("YYYY-MM-DD HH:mm:ss") : "--" }}</template>
                 <template #item.mode="{ item }">{{ item.mode ?? "--" }}</template>
-                <template #item.action="{ item }"><VMenu location="bottom end"><template #activator="{ props: menuProps }"><VBtn v-bind="menuProps" icon variant="text" size="small" rounded="xl"><VIcon icon="mdi-dots-vertical" /></VBtn></template><VCard rounded="xl"><VCardText class="dfm-menu-list"><VBtn v-for="action in desktopRowMenu(item)" :key="action.title" variant="text" block :color="action.color" @click="action.action()"><VIcon :icon="action.icon" />{{ action.title }}</VBtn></VCardText></VCard></VMenu></template>
                 <template #no-data><div class="dfm-empty"><VIcon icon="mdi-folder-open-outline" size="42" /><span>{{ t("TXT_CODE_DESKTOP_FM_NO_FILES") }}</span></div></template>
             </VDataTableServer>
             <div v-if="dragSelectVisible" class="dfm-drag-select-rect" :style="{ left: dragSelectRect.x + 'px', top: dragSelectRect.y + 'px', width: dragSelectRect.w + 'px', height: dragSelectRect.h + 'px' }"></div>
@@ -873,14 +868,22 @@ onUnmounted(() => {
 }
 
 .dfm-body {
+    display: flex;
+    flex-direction: column;
     flex: 1;
-    overflow: auto;
+    min-height: 0;
+    overflow: hidden;
     padding: 0 12px 12px;
+}
+
+.dfm-body > .v-alert {
+    flex: 0 0 auto;
 }
 
 .dfm-nav {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     gap: 8px;
     margin-bottom: 8px;
 }
@@ -919,7 +922,25 @@ onUnmounted(() => {
 
 .dfm-table-wrapper {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
     user-select: none;
+}
+
+.dfm-table {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    background: transparent;
+}
+
+:deep(.dfm-table > .v-table__wrapper) {
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
 }
 
 :deep(.dfm-table .v-data-table__th),
@@ -928,7 +949,6 @@ onUnmounted(() => {
 }
 
 :deep(.dfm-table .v-data-table__th) {
-    background: var(--desktop-window-titlebar-bg) !important;
     border-bottom: 1px solid var(--desktop-window-border) !important;
     color: var(--desktop-window-text-secondary) !important;
     font-size: 11px !important;
@@ -936,8 +956,8 @@ onUnmounted(() => {
 }
 
 :deep(.dfm-table .v-data-table__td) {
-    border-bottom: 1px solid var(--desktop-window-border) !important;
-    padding: 6px 8px !important;
+    border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
+    padding: 2px 8px !important;
     line-height: 1.4;
 }
 
@@ -946,6 +966,7 @@ onUnmounted(() => {
 }
 
 :deep(.dfm-table .v-data-table-footer) {
+    flex-shrink: 0;
     font-size: 12px;
 }
 

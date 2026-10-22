@@ -184,8 +184,6 @@ const handleNext = async () => {
 .desktop-login-window {
     position: absolute;
     width: 380px;
-    background: var(--desktop-window-bg);
-    backdrop-filter: saturate(180%) blur(20px);
     border: 1px solid var(--desktop-window-border);
     border-radius: 10px;
     box-shadow: 0 8px 32px var(--desktop-window-shadow);

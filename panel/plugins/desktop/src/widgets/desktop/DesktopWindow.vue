@@ -328,14 +328,12 @@ onUnmounted(() => {
 }
 
 .window__frame {
-    background: var(--desktop-window-bg);
     display: flex;
     flex-direction: column;
     flex: 1;
     min-height: 0;
     border-radius: inherit;
     overflow: hidden;
-    backdrop-filter: saturate(180%) blur(20px);
 }
 
 .window__titlebar {

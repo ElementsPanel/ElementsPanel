@@ -1,6 +1,6 @@
 .app-light-theme {
   --desktop-bg-color: rgba(245, 245, 245, 0.85);
-  --desktop-window-bg: rgba(255, 255, 255, 0.92);
+  --desktop-window-bg: #ffffff;
   --desktop-window-border: transparent;
   --desktop-window-shadow: rgba(0, 0, 0, 0.12);
   --desktop-window-titlebar-bg: rgba(0, 0, 0, 0.04);
@@ -43,7 +43,7 @@
 
 .app-dark-theme {
   --desktop-bg-color: rgba(35, 36, 41, 0.85);
-  --desktop-window-bg: rgba(32, 32, 40, 0.92);
+  --desktop-window-bg: #202028;
   --desktop-window-border: transparent;
   --desktop-window-shadow: rgba(0, 0, 0, 0.3);
   --desktop-window-titlebar-bg: rgba(0, 0, 0, 0.2);
@@ -82,6 +82,17 @@
   --desktop-login-footer-link: rgba(255, 255, 255, 0.4);
   --desktop-login-footer-link-hover: rgba(255, 255, 255, 0.6);
   --desktop-resize-handle-color: transparent;
+}
+
+/* Paint window surfaces once so feature views can use the shared background. */
+.desktop-window > .window__frame,
+.desktop-login-window {
+  background: var(--desktop-window-bg);
+}
+
+/* Fixed headers must cover scrolled rows with the same opaque window surface. */
+.desktop-window .v-table--fixed-header > .v-table__wrapper > table > thead > tr > th {
+  background: var(--desktop-window-bg) !important;
 }
 
 /* Desktop mode uses Vuetify surfaces and controls without visible outlines. */

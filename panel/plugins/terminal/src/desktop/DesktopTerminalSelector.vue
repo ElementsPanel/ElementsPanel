@@ -154,7 +154,6 @@ const openConsole = (node: NodeStatus) => {
     border: 1px solid var(--desktop-window-border);
     border-radius: 8px;
     padding: 16px;
-    background: var(--desktop-window-bg);
 }
 
 .dts-grid {

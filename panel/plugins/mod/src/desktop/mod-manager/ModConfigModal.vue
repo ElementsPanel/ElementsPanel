@@ -77,7 +77,6 @@ const emit = defineEmits(["update:visible", "edit"]);
   padding: 20px;
   height: 100%;
   overflow-y: auto;
-  background: var(--desktop-window-bg, #fff);
   color: var(--desktop-window-text, #000);
 }
 

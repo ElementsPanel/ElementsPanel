@@ -940,7 +940,6 @@ const getInstanceStatusLabel = (status: number): string => {
 }
 
 .du-dialog {
-    background: var(--desktop-window-bg);
     border: 1px solid var(--desktop-window-border);
     border-radius: 12px;
     width: 420px;
