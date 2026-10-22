@@ -67,7 +67,11 @@ const { VSelect, VDialog } = Vuetify.components;
 const flush = async () => { for (let i = 0; i < 8; i++) await vue.nextTick(); };
 
 function fixture(t) {
+  const closed = vue.ref(false);
+  const transitions = { enters: 0, leaves: 0 };
+  const visible = vue.ref(true);
   const minimized = vue.ref(false);
+  const maximized = vue.ref(false);
   const zIndex = vue.ref(10003);
   const open = vue.ref(false);
   const dialogOpen = vue.ref(false);
@@ -75,9 +79,15 @@ function fixture(t) {
   const target = document.createElement("div");
   document.body.appendChild(target);
   const app = vue.createApp({
-    render: () => vue.h(DesktopWindow, {
-      id: "owner", title: "Owner", icon: "mdi-window-maximize", visible: true, active: true,
-      minimized: minimized.value, maximized: false, zIndex: zIndex.value
+    render: () => vue.h(vue.TransitionGroup, {
+      tag: "div", name: "desktop-window-group",
+      onEnter: (_element, done) => { transitions.enters++; done(); },
+      onLeave: (_element, done) => { transitions.leaves++; done(); }
+    }, () => closed.value ? [] : [vue.h(DesktopWindow, {
+      key: "owner", id: "owner", title: "Owner", icon: "mdi-window-maximize", visible: visible.value, active: true,
+      minimized: minimized.value, maximized: maximized.value, zIndex: zIndex.value,
+      onMinimize: () => { minimized.value = true; },
+      onClose: () => { closed.value = true; }
     }, { default: () => [
       vue.h(VSelect, { menu: open.value, items: ["node-a", "node-b"] }),
       vue.h(DesktopWindow, {
@@ -87,14 +97,47 @@ function fixture(t) {
       vue.h(VDialog, { modelValue: dialogOpen.value }, {
         default: () => vue.h(VSelect, { menu: dialogOpen.value, items: ["dialog-node"] })
       })
-    ] })
+    ] })])
   });
   app.use(Vuetify.createVuetify({ defaults: {
     VMenu: { transition: false }, VDialog: { transition: false }
   } }));
   app.mount(target);
   t.after(() => { if (target.childElementCount) app.unmount(); target.remove(); });
-  return { minimized, zIndex, open, dialogOpen, childOpen, target, app };
+  return { visible, minimized, maximized, zIndex, open, dialogOpen, childOpen, target, app, transitions };
+}
+
+function animationFixture(t) {
+  const f = fixture(t);
+  const owner = f.target.querySelector(".desktop-window");
+  const taskbar = document.createElement("div");
+  taskbar.className = "desktop-taskbar";
+  const otherButton = document.createElement("div");
+  otherButton.className = "taskbar__window-btn";
+  otherButton.dataset.windowId = "other";
+  const button = document.createElement("div");
+  button.className = "taskbar__window-btn";
+  button.dataset.windowId = "owner";
+  taskbar.append(otherButton, button);
+  document.body.appendChild(taskbar);
+  t.after(() => taskbar.remove());
+
+  const sourceRect = { left: 100, top: 60, width: 800, height: 500 };
+  const targetRect = { left: 240, top: 720, width: 160, height: 32 };
+  owner.getBoundingClientRect = () => sourceRect;
+  button.getBoundingClientRect = () => targetRect;
+  let scrollCalls = 0;
+  button.scrollIntoView = () => { scrollCalls++; };
+  const animations = [];
+  owner.animate = (keyframes, options) => {
+    const animation = {
+      keyframes, options, onfinish: null, cancelled: false,
+      cancel() { this.cancelled = true; }
+    };
+    animations.push(animation);
+    return animation;
+  };
+  return { ...f, owner, button, sourceRect, targetRect, animations, scrollCalls: () => scrollCalls };
 }
 
 test("desktop menus belong to their window, outside its clipped content", async (t) => {
@@ -133,4 +176,127 @@ test("nested windows own their menus and Vuetify dialogs retain their own defaul
   assert.ok(dialogMenu);
   assert.equal(dialogMenu.closest(".desktop-window"), null,
     "a teleported Vuetify dialog must not send its menu back into the desktop window");
+});
+
+test("windows shrink into their own taskbar button and restore from its current position", async (t) => {
+  const f = animationFixture(t);
+  f.owner.querySelector(".window__control--minimize").click();
+  await flush();
+  assert.equal(f.animations.length, 1);
+  assert.notEqual(f.owner.style.display, "none", "keep the window visible until minimization finishes");
+  assert.ok(f.owner.classList.contains("desktop-window--animating"));
+  const minimize = f.animations[0];
+  assert.equal(minimize.keyframes[1].transform, "translate(140px, 660px) scale(0.2, 0.064)");
+  assert.equal(minimize.keyframes[1].opacity, 0);
+  assert.equal(minimize.keyframes[1].transformOrigin, "top left");
+  assert.equal(f.scrollCalls(), 1);
+  minimize.onfinish();
+  await flush();
+  assert.equal(f.owner.style.display, "none");
+  assert.equal(minimize.cancelled, true);
+  assert.equal(f.owner.classList.contains("desktop-window--animating"), false);
+
+  // Taskbar buttons can move after reordering or horizontal scrolling.
+  f.targetRect.left = 480;
+  f.minimized.value = false;
+  await flush();
+  assert.notEqual(f.owner.style.display, "none");
+  const restore = f.animations[1];
+  assert.equal(restore.keyframes[0].transform, "translate(380px, 660px) scale(0.2, 0.064)");
+  assert.equal(restore.keyframes[1].transform, "translate(0px, 0px) scale(1, 1)");
+  restore.onfinish();
+  await flush();
+  assert.notEqual(f.owner.style.display, "none");
+  assert.equal(restore.cancelled, true);
+  assert.equal(f.owner.classList.contains("desktop-window--animating"), false);
+});
+
+test("maximized windows use their rendered bounds for the taskbar animation", async (t) => {
+  const f = animationFixture(t);
+  f.maximized.value = true;
+  Object.assign(f.sourceRect, { left: 0, top: 0, width: 1000, height: 800 });
+  f.minimized.value = true;
+  await flush();
+  assert.equal(f.animations[0].keyframes[1].transform, "translate(240px, 720px) scale(0.16, 0.04)");
+});
+
+test("minimizing and restoring do not trigger the window group's open or close transitions", async (t) => {
+  const f = animationFixture(t);
+  f.minimized.value = true;
+  await flush();
+  f.animations[0].onfinish();
+  await flush();
+  assert.equal(f.transitions.leaves, 0, "the taskbar animation must not be followed by a close transition");
+  assert.equal(f.owner.style.display, "none");
+
+  f.minimized.value = false;
+  await flush();
+  f.animations[1].onfinish();
+  await flush();
+  assert.equal(f.transitions.enters, 0, "restoring must only use the taskbar animation");
+  assert.notEqual(f.owner.style.display, "none");
+
+  f.owner.querySelector(".window__control--close").click();
+  await flush();
+  assert.equal(f.transitions.leaves, 1, "closing still uses the window group's transition");
+  assert.equal(f.owner.isConnected, false);
+});
+
+test("restoring during minimization continues from the current frame and ignores stale completion", async (t) => {
+  const f = animationFixture(t);
+  f.minimized.value = true;
+  await flush();
+  const minimize = f.animations[0];
+  const staleFinish = minimize.onfinish;
+  const originalGetComputedStyle = window.getComputedStyle.bind(window);
+  t.mock.method(window, "getComputedStyle", (element) => element === f.owner
+    ? { transform: "matrix(0.6, 0, 0, 0.6, 70, 330)", opacity: "0.5" }
+    : originalGetComputedStyle(element));
+  f.minimized.value = false;
+  await flush();
+  assert.equal(minimize.cancelled, true);
+  const restore = f.animations[1];
+  assert.equal(restore.keyframes[0].transform, "matrix(0.6, 0, 0, 0.6, 70, 330)");
+  assert.equal(restore.keyframes[0].opacity, "0.5");
+  staleFinish();
+  await flush();
+  assert.notEqual(f.owner.style.display, "none");
+  f.app.unmount();
+  assert.equal(restore.cancelled, true);
+  assert.equal(restore.onfinish, null);
+});
+
+test("hiding a window cancels pending visibility animation", async (t) => {
+  const f = animationFixture(t);
+  f.minimized.value = true;
+  await flush();
+  const minimize = f.animations[0];
+  f.visible.value = false;
+  await flush();
+  assert.equal(minimize.cancelled, true);
+  assert.equal(f.owner.style.display, "none");
+  f.minimized.value = false;
+  f.visible.value = true;
+  await flush();
+  assert.notEqual(f.owner.style.display, "none");
+  assert.equal(f.animations.length, 1);
+});
+
+test("missing taskbar targets and reduced motion keep minimizing immediate", async (t) => {
+  const f = animationFixture(t);
+  f.button.remove();
+  f.minimized.value = true;
+  await flush();
+  assert.equal(f.animations.length, 0);
+  assert.equal(f.owner.style.display, "none");
+  f.minimized.value = false;
+  await flush();
+  assert.notEqual(f.owner.style.display, "none");
+  document.querySelector(".desktop-taskbar").append(f.button);
+  t.mock.method(window, "matchMedia", () => ({ matches: true }));
+  f.minimized.value = true;
+  await flush();
+  assert.equal(f.animations.length, 0);
+  assert.equal(f.owner.style.display, "none");
+  assert.equal(f.owner.classList.contains("desktop-window--animating"), false);
 });

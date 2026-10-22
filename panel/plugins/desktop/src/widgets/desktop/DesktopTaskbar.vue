@@ -171,7 +171,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
 
         <div class="taskbar__windows">
             <TransitionGroup name="taskbar-window-list">
-                <div v-for="(win, index) in windows" :key="win.id" class="taskbar__window-btn" :class="{
+                <div v-for="(win, index) in windows" :key="win.id" :data-window-id="win.id" class="taskbar__window-btn" :class="{
                     'taskbar__window-btn--active': win.active,
                     'taskbar__window-btn--dragging': draggedIndex === index,
                     'taskbar__window-btn--drag-over-left': dragOverIndex === index && draggedIndex !== null && draggedIndex > index,

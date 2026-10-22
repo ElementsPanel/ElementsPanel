@@ -4,7 +4,7 @@ import {
     VDefaultsProvider,
     VIcon
 } from "vuetify/components";
-import { computed, onMounted, onUnmounted, ref, type Component } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch, type Component } from "vue";
 
 export interface DesktopWindowProps {
     id: string;
@@ -53,6 +53,88 @@ const overlayDefaults = computed(() => ({
     VMenu: { attach: windowElement.value },
     VTooltip: { attach: windowElement.value }
 }));
+
+// Use display directly so visibility changes do not invoke the outer window group's transitions.
+const renderWindow = ref(!props.minimized);
+const isAnimatingVisibility = ref(false);
+let visibilityAnimation: Animation | undefined;
+let visibilityChangeId = 0;
+
+const stopVisibilityAnimation = () => {
+    visibilityChangeId++;
+    if (visibilityAnimation) {
+        visibilityAnimation.onfinish = null;
+        visibilityAnimation.cancel();
+        visibilityAnimation = undefined;
+    }
+    isAnimatingVisibility.value = false;
+};
+
+watch(() => [props.visible, props.minimized] as const, async ([visible, minimized], [wasVisible, wasMinimized]) => {
+    const element = windowElement.value;
+    const wasShown = renderWindow.value;
+    const currentStyle = visibilityAnimation && element ? window.getComputedStyle(element) : undefined;
+    const interruptedFrame = currentStyle ? {
+        transform: currentStyle.transform,
+        opacity: currentStyle.opacity,
+        transformOrigin: "top left"
+    } : undefined;
+    stopVisibilityAnimation();
+    const changeId = visibilityChangeId;
+
+    if (!visible || !wasVisible || minimized === wasMinimized || !element || typeof element.animate !== "function" ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+        (minimized && !wasShown) || (!minimized && wasShown && !interruptedFrame)) {
+        renderWindow.value = !minimized;
+        return;
+    }
+
+    // Keep the window mounted and visible until its trip to the taskbar ends.
+    renderWindow.value = true;
+    isAnimatingVisibility.value = true;
+    await nextTick();
+    if (changeId !== visibilityChangeId) return;
+    if (!element.isConnected || !props.visible) {
+        renderWindow.value = !minimized;
+        isAnimatingVisibility.value = false;
+        return;
+    }
+
+    const button = Array.from(document.querySelectorAll<HTMLElement>(".desktop-taskbar .taskbar__window-btn"))
+        .find((item) => item.dataset.windowId === props.id);
+    button?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+    const source = element.getBoundingClientRect();
+    const target = button?.getBoundingClientRect();
+    if (!target || !source.width || !source.height || !target.width || !target.height) {
+        renderWindow.value = !minimized;
+        isAnimatingVisibility.value = false;
+        return;
+    }
+
+    const expandedFrame = {
+        transform: "translate(0px, 0px) scale(1, 1)",
+        opacity: 1,
+        transformOrigin: "top left"
+    };
+    const minimizedFrame = {
+        transform: `translate(${target.left - source.left}px, ${target.top - source.top}px) scale(${target.width / source.width}, ${target.height / source.height})`,
+        opacity: 0,
+        transformOrigin: "top left"
+    };
+    const animation = element.animate(
+        minimized ? [interruptedFrame || expandedFrame, minimizedFrame] : [interruptedFrame || minimizedFrame, expandedFrame],
+        { duration: 300, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "both" }
+    );
+    visibilityAnimation = animation;
+    animation.onfinish = () => {
+        if (visibilityAnimation !== animation) return;
+        renderWindow.value = !minimized;
+        // Hide the minimized window before clearing the final frame.
+        void nextTick(() => {
+            if (visibilityAnimation === animation) stopVisibilityAnimation();
+        });
+    };
+});
 
 const x = ref(props.initialX);
 const y = ref(props.initialY);
@@ -248,18 +330,20 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    stopVisibilityAnimation();
     document.removeEventListener("mousemove", onMouseMove);
     document.removeEventListener("mouseup", onMouseUp);
 });
 </script>
 
 <template>
-    <div ref="windowElement" v-show="visible && !minimized" class="desktop-window" :class="{
+    <div ref="windowElement" class="desktop-window" :class="{
         'desktop-window--active': active,
         'desktop-window--maximized': maximized,
         'desktop-window--dragging': isDragging,
-        'desktop-window--resizing': isResizing
-    }" :style="windowStyle" @mousedown="handleFocus">
+        'desktop-window--resizing': isResizing,
+        'desktop-window--animating': isAnimatingVisibility
+    }" :style="[windowStyle, { display: visible && renderWindow ? undefined : 'none' }]" @mousedown="handleFocus">
         <div class="window__frame">
             <div class="window__titlebar" @mousedown="onMouseDownTitlebar" @dblclick="handleMaximize"
                 @contextmenu.stop.prevent="onContextMenuTitlebar">
@@ -319,8 +403,14 @@ onUnmounted(() => {
     }
 
     &--dragging,
-    &--resizing {
+    &--resizing,
+    &--animating {
         transition: none;
+    }
+
+    &--animating {
+        pointer-events: none;
+        will-change: transform, opacity;
     }
 
     &--maximized {
