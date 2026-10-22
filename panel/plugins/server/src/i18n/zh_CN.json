@@ -16,7 +16,6 @@
   "TXT_CODE_SERVER_SSL_PEM": "证书文件 (.pem)",
   "TXT_CODE_SERVER_SSL_PEM_TIP": "证书文件路径，可以是绝对路径或相对于面板目录的路径。",
   "TXT_CODE_SERVER_SSL_TIP": "使用下方的证书通过 HTTPS 提供服务，两个文件都必须填写。",
-  "TXT_CODE_SERVER_TITLE": "Web 服务器",
   "TXT_CODE_f0789d81": "反向代理模式",
   "TXT_CODE_fd8bc51f": "当反向代理模式开启时，面板将会从这个请求头中获取用户真实IP。"
 }

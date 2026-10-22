@@ -29,7 +29,6 @@
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM_TITLE": "ลบกลุ่ม {name} หรือไม่",
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM": "กลุ่มและการกำหนดปลั๊กอินจะถูกลบ ปลั๊กอินจะไม่ถูกลบ",
   "TXT_CODE_PLUGIN_GROUP_NAME": "ชื่อกลุ่ม",
-  "TXT_CODE_PLUGIN_GROUP_MOVE": "ย้ายปลั๊กอิน",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "โหนด",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "แผงควบคุม",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "ตัวจัดการปลั๊กอินปิดใช้งานตัวเองไม่ได้ กรุณาตั้ง enabled เป็น false ใน plugin.json ของมันแทน",

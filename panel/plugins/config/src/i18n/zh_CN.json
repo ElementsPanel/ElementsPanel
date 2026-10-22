@@ -29,7 +29,6 @@
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM_TITLE": "删除分组“{name}”？",
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM": "将删除该分组及其插件归属，插件本身不会被删除。",
   "TXT_CODE_PLUGIN_GROUP_NAME": "分组名称",
-  "TXT_CODE_PLUGIN_GROUP_MOVE": "移动插件",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "节点",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "面板",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "插件管理自身无法被禁用，请改为在其 plugin.json 中把 enabled 设为 false。",

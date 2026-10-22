@@ -16,7 +16,6 @@
   "TXT_CODE_SERVER_SSL_PEM": "Zertifikatsdatei (.pem)",
   "TXT_CODE_SERVER_SSL_PEM_TIP": "Pfad zur Zertifikatsdatei, absolut oder relativ zum Panel-Verzeichnis.",
   "TXT_CODE_SERVER_SSL_TIP": "Stellt das Panel über HTTPS mit dem untenstehenden Zertifikat bereit. Beide Dateien sind erforderlich.",
-  "TXT_CODE_SERVER_TITLE": "Webserver",
   "TXT_CODE_f0789d81": "Reverse-Proxy-Modus",
   "TXT_CODE_fd8bc51f": "Wenn der Reverse-Proxy-Modus aktiviert ist, liest das Panel die echte IP-Adresse des Benutzers aus diesem Request-Header aus."
 }

@@ -16,7 +16,6 @@
   "TXT_CODE_SERVER_SSL_PEM": "Archivo de certificado (.pem)",
   "TXT_CODE_SERVER_SSL_PEM_TIP": "Ruta al archivo de certificado, absoluta o relativa al directorio del panel.",
   "TXT_CODE_SERVER_SSL_TIP": "Sirve el panel por HTTPS usando el certificado de abajo. Ambos archivos son obligatorios.",
-  "TXT_CODE_SERVER_TITLE": "Servidor web",
   "TXT_CODE_f0789d81": "Modo proxy inverso",
   "TXT_CODE_fd8bc51f": "Cuando el modo de proxy inverso está activo, el panel obtiene la IP real del usuario desde esta cabecera de solicitud."
 }

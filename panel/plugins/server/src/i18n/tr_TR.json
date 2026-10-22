@@ -16,7 +16,6 @@
   "TXT_CODE_SERVER_SSL_PEM": "Sertifika dosyası (.pem)",
   "TXT_CODE_SERVER_SSL_PEM_TIP": "Sertifika dosyasının yolu; mutlak ya da panel dizinine göre göreli olabilir.",
   "TXT_CODE_SERVER_SSL_TIP": "Paneli aşağıdaki sertifikayı kullanarak HTTPS üzerinden sunar. Her iki dosya da gereklidir.",
-  "TXT_CODE_SERVER_TITLE": "Web Sunucusu",
   "TXT_CODE_f0789d81": "Ters Proxy Modu",
   "TXT_CODE_fd8bc51f": "Ters proxy modu etkin olduğunda panel, kullanıcının gerçek IP adresini bu istek başlığından alır."
 }

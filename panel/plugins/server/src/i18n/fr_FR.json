@@ -16,7 +16,6 @@
   "TXT_CODE_SERVER_SSL_PEM": "Fichier de certificat (.pem)",
   "TXT_CODE_SERVER_SSL_PEM_TIP": "Chemin vers le fichier de certificat, absolu ou relatif au répertoire du panneau.",
   "TXT_CODE_SERVER_SSL_TIP": "Sert le panneau en HTTPS à l'aide du certificat ci-dessous. Les deux fichiers sont requis.",
-  "TXT_CODE_SERVER_TITLE": "Serveur web",
   "TXT_CODE_f0789d81": "Mode proxy inverse",
   "TXT_CODE_fd8bc51f": "Lorsque le mode proxy inverse est activé, le panneau récupère l’adresse IP réelle de l’utilisateur depuis cet en-tête de requête."
 }

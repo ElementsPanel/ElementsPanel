@@ -16,7 +16,6 @@
   "TXT_CODE_SERVER_SSL_PEM": "Arquivo de certificado (.pem)",
   "TXT_CODE_SERVER_SSL_PEM_TIP": "Caminho do arquivo de certificado, absoluto ou relativo ao diretório do painel.",
   "TXT_CODE_SERVER_SSL_TIP": "Serve o painel via HTTPS usando o certificado abaixo. Ambos os arquivos são obrigatórios.",
-  "TXT_CODE_SERVER_TITLE": "Servidor Web",
   "TXT_CODE_f0789d81": "Modo de Proxy Reverso",
   "TXT_CODE_fd8bc51f": "Quando o modo de proxy reverso está ativado, o painel obtém o IP real do usuário deste cabeçalho de solicitação."
 }

@@ -29,7 +29,6 @@
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM_TITLE": "Gruppe {name} löschen?",
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM": "Die Gruppe und ihre Plugin-Zuordnungen werden entfernt. Die Plugins selbst werden nicht gelöscht.",
   "TXT_CODE_PLUGIN_GROUP_NAME": "Gruppenname",
-  "TXT_CODE_PLUGIN_GROUP_MOVE": "Plugin verschieben",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "Knoten",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "Panel",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "Die Plugin-Verwaltung kann sich nicht selbst deaktivieren. Setze stattdessen enabled auf false in ihrer plugin.json.",

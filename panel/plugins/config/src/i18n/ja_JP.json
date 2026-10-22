@@ -29,7 +29,6 @@
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM_TITLE": "グループ「{name}」を削除しますか？",
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM": "グループとプラグインの割り当てを削除します。プラグイン自体は削除されません。",
   "TXT_CODE_PLUGIN_GROUP_NAME": "グループ名",
-  "TXT_CODE_PLUGIN_GROUP_MOVE": "プラグインを移動",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "ノード",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "パネル",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "プラグイン管理自身は無効にできません。plugin.json で enabled を false に設定してください。",

@@ -16,7 +16,6 @@
   "TXT_CODE_SERVER_SSL_PEM": "인증서 파일 (.pem)",
   "TXT_CODE_SERVER_SSL_PEM_TIP": "인증서 파일 경로입니다. 절대 경로 또는 패널 디렉터리 기준 상대 경로를 입력하세요.",
   "TXT_CODE_SERVER_SSL_TIP": "아래 인증서를 사용하여 HTTPS로 패널을 제공합니다. 두 파일 모두 필요합니다.",
-  "TXT_CODE_SERVER_TITLE": "웹 서버",
   "TXT_CODE_f0789d81": "역방향 프록시 모드",
   "TXT_CODE_fd8bc51f": "역방향 프록시 모드가 활성화되면 패널은 이 요청 헤더에서 사용자의 실제 IP 주소를 가져옵니다."
 }

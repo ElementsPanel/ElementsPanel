@@ -16,7 +16,6 @@
   "TXT_CODE_SERVER_SSL_PEM": "証明書ファイル (.pem)",
   "TXT_CODE_SERVER_SSL_PEM_TIP": "証明書ファイルのパス。絶対パス、またはパネルディレクトリからの相対パスを指定します。",
   "TXT_CODE_SERVER_SSL_TIP": "以下の証明書を使用して HTTPS でパネルを公開します。両方のファイルが必要です。",
-  "TXT_CODE_SERVER_TITLE": "Web サーバー",
   "TXT_CODE_f0789d81": "リバースプロキシモード",
   "TXT_CODE_fd8bc51f": "リバースプロキシモードが有効な場合、パネルはこのリクエストヘッダーからユーザーの実際のIPアドレスを取得します。"
 }

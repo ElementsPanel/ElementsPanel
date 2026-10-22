@@ -29,7 +29,6 @@
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM_TITLE": "{name} 그룹을 삭제하시겠습니까?",
   "TXT_CODE_PLUGIN_GROUP_DELETE_CONFIRM": "그룹과 플러그인 할당이 삭제됩니다. 플러그인 자체는 삭제되지 않습니다.",
   "TXT_CODE_PLUGIN_GROUP_NAME": "그룹 이름",
-  "TXT_CODE_PLUGIN_GROUP_MOVE": "플러그인 이동",
   "TXT_CODE_PLUGIN_SCOPE_NODE": "노드",
   "TXT_CODE_PLUGIN_SCOPE_PANEL": "패널",
   "TXT_CODE_PLUGIN_SELF_DISABLE": "플러그인 관리자는 자신을 비활성화할 수 없습니다. plugin.json에서 enabled 를 false 로 설정하세요.",

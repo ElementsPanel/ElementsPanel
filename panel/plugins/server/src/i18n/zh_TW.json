@@ -16,7 +16,6 @@
   "TXT_CODE_SERVER_SSL_PEM": "憑證檔案 (.pem)",
   "TXT_CODE_SERVER_SSL_PEM_TIP": "憑證檔案路徑，可以是絕對路徑或相對於面板目錄的路徑。",
   "TXT_CODE_SERVER_SSL_TIP": "使用下方的憑證透過 HTTPS 提供服務，兩個檔案都必須填寫。",
-  "TXT_CODE_SERVER_TITLE": "Web 伺服器",
   "TXT_CODE_f0789d81": "反向代理模式",
   "TXT_CODE_fd8bc51f": "當反向代理模式開啟時，面板將會從这个請求頭中獲取用戶真實IP。"
 }
