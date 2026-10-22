@@ -36,4 +36,16 @@ export function apply(ctx: PanelFrontendPluginContext) {
     component: ConfigPage,
     condition: () => useAppStateStore().isAdmin.value
   });
+
+  ctx.desktop.view({
+    id: "node-plugin-config",
+    title: () => t("TXT_CODE_PLUGIN_CONFIG"),
+    icon: "mdi-cog-outline",
+    component: ConfigPage,
+    initialWidth: 980,
+    initialHeight: 580,
+    condition: () => useAppStateStore().isAdmin.value,
+    accepts: (props) =>
+      props.scope === "node" && typeof props.daemonId === "string" && !!props.daemonId
+  });
 }

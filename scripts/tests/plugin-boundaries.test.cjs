@@ -581,7 +581,7 @@ test("desktop user CRUD loads without resource providers and a late assignment r
   assert.equal(state.users.value[0].userName, "Alice");
 });
 
-test("desktop shell opens/restores contributed windows and survives removal of instance or terminal", async (t) => {
+test("desktop shell opens/restores contributed windows and survives provider removal", async (t) => {
   const { ctx, routes, overrides, state: app } = frontendFixture(t);
   const originalDocument = global.document;
   global.document = {
@@ -606,6 +606,7 @@ test("desktop shell opens/restores contributed windows and survives removal of i
   const instancePlugin = load("panel/plugins/instance/src/frontend.ts", overrides);
   const instance = ctx.plugin(instancePlugin);
   const terminal = ctx.plugin((scope) => scope.set("terminal", {}));
+  const config = ctx.plugin(load("panel/plugins/config/src/frontend.ts", overrides));
   await tick();
   let savedLayout = { windows: [], shortcuts: [] };
   const shell = setupSfc("panel/plugins/desktop/src/Desktop.vue", {
@@ -625,6 +626,17 @@ test("desktop shell opens/restores contributed windows and survives removal of i
   });
   const { windows } = shell.state;
   assert.equal(ctx.desktop.open({ id: "bad", view: "instance-console" }), false);
+  assert.equal(ctx.desktop.open({ id: "bad-config", view: "node-plugin-config" }), false);
+  const configRequest = {
+    id: "node-plugin-config-node", view: "node-plugin-config",
+    props: { scope: "node", daemonId: "node" }
+  };
+  assert.equal(ctx.desktop.open(configRequest), true);
+  const configWindow = windows.get(configRequest.id);
+  configWindow.minimized = true;
+  assert.equal(ctx.desktop.open(configRequest), true);
+  assert.equal(windows.get(configRequest.id), configWindow);
+  assert.equal(configWindow.minimized, false);
   assert.equal(
     ctx.instance.openConsole({ instanceUuid: "one", config: { nickname: "One" } }, "node"),
     true
@@ -636,19 +648,25 @@ test("desktop shell opens/restores contributed windows and survives removal of i
     shortcuts: ["instances"],
     windows: [
       { id: "schedule-one", content: "schedule", instanceId: "one", daemonId: "node" },
+      { id: configRequest.id, content: configRequest.view, props: configRequest.props },
       { id: "bad", content: "schedule" },
       { id: "removed", content: "uninstalled-feature" }
     ]
   };
   await shell.state.loadDesktopLayout();
-  assert.equal(windows.size, 1);
+  assert.equal(windows.size, 2);
   assert.equal(windows.get("schedule-one").props.instanceId, "one");
+  assert.deepEqual(windows.get(configRequest.id).props, configRequest.props);
   ctx.instance.openConsole({ instanceUuid: "one" }, "node");
   await terminal.dispose();
   await tick();
   assert.equal(windows.has("console-one"), false);
   assert.ok(windows.has("schedule-one"));
   await instance.dispose();
+  await tick();
+  assert.equal(windows.size, 1);
+  assert.ok(windows.has(configRequest.id));
+  await config.dispose();
   await tick();
   assert.equal(windows.size, 0);
   assert.equal(

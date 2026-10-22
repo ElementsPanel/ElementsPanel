@@ -11,7 +11,22 @@ import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
 import DesktopWindow from "./DesktopWindow.vue";
 import { VBtn, VDataTable, VIcon, VTextField, VTooltip } from "vuetify/components";
 
-const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
+const desktop = computed(() => usePluginService<FrontendDesktopService>("desktop"));
+const ConfirmDialog = computed(() => desktop.value?.confirmation);
+const pluginConfigAvailable = computed(() =>
+  desktop.value?.views.some(
+    (view) => view.id === "node-plugin-config" && (!view.condition || view.condition())
+  )
+);
+
+const openPluginConfig = (node: NodeStatus) => {
+  desktop.value?.open({
+    id: `node-plugin-config-${node.uuid}`,
+    view: "node-plugin-config",
+    title: `${t("TXT_CODE_PLUGIN_CONFIG")} - ${node.remarks || `${node.ip}:${node.port}`}`,
+    props: { scope: "node", daemonId: node.uuid }
+  });
+};
 
 const PlusOutlined = "mdi-plus";
 const EditOutlined = "mdi-pencil-outline";
@@ -400,12 +415,13 @@ const reconnectNode = async (node: NodeStatus) => {
             @click="openEditDialog(item)"
             ><VIcon icon="mdi-pencil-outline" /></VBtn
           ><VBtn
+            v-if="pluginConfigAvailable"
             icon
             variant="text"
             rounded="xl"
             class="dn-action-btn"
             :title="t('TXT_CODE_PLUGIN_CONFIG')"
-            :to="{ path: '/plugins/config', query: { scope: 'node', daemonId: item.uuid } }"
+            @click="openPluginConfig(item)"
             ><VIcon icon="mdi-cog-outline" /></VBtn
           ><VBtn
             icon

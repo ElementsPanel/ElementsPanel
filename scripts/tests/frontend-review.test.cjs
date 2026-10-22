@@ -565,6 +565,51 @@ test("switching node/plugin configuration cannot display or save a stale schema"
   });
 });
 
+test("desktop plugin configuration loads each window's node without changing the desktop route", async (t) => {
+  const route = vue.reactive({ path: "/desktop", query: { scope: "node", daemonId: "route-node" } });
+  const requests = [];
+  const createPage = (props) => {
+    const scope = vue.effectScope();
+    t.after(() => scope.stop());
+    return scope.run(() => setupSfc("panel/plugins/config/src/ConfigPage.vue", {
+      vue: { ...vue, onMounted() {}, onUnmounted() {} },
+      "vue-router": {
+        useRoute: () => route,
+        useRouter: () => ({ resolve: () => assert.fail("desktop route must stay unchanged") }),
+        onBeforeRouteLeave() {}
+      },
+      "@/plugin/context": { ctx: { plugins: { loaded: [] } } },
+      "@/tools/validator": { getValidatorErrorMsg: String },
+      "@/tools/vuetifyToast": { message: { success() {}, error: assert.fail } },
+      "./SchemaForm.vue": {},
+      "./api": {
+        pluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
+        nodePluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
+        nodeList: () => ({ execute: async () => ({ value: ["one", "two", "route-node"].map(
+          (uuid) => ({ uuid, available: true })
+        ) }) }),
+        nodePluginList: () => ({ execute: async ({ params }) => {
+          requests.push(params.daemonId);
+          return { value: [{ id: "settings" }] };
+        } }),
+        nodePluginSettings: () => ({ execute: async ({ params }) => ({
+          value: { id: params.id, fields: [], values: { daemonId: params.daemonId } }
+        }) })
+      }
+    }, props));
+  };
+  const first = createPage({ scope: "node", daemonId: "one" });
+  const second = createPage({ scope: "node", daemonId: "two" });
+  const fromRoute = createPage({});
+  await settle();
+  assert.equal(first.schema.value.values.daemonId, "one");
+  assert.equal(second.schema.value.values.daemonId, "two");
+  assert.equal(fromRoute.schema.value.values.daemonId, "route-node");
+  assert.deepEqual(requests, ["one", "two", "route-node"]);
+  assert.equal(route.path, "/desktop");
+  assert.deepEqual(route.query, { scope: "node", daemonId: "route-node" });
+});
+
 test("Vuetify key/value form keeps invalid data out of its result callback", async () => {
   const emitted = [];
   let destroyed = false;

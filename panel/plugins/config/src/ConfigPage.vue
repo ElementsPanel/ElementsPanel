@@ -59,6 +59,7 @@ import SchemaForm from "./SchemaForm.vue";
 
 type Scope = "panel" | "node";
 
+const props = defineProps<{ scope?: Scope; daemonId?: string }>();
 const scope = ref<Scope>("panel");
 const route = useRoute();
 const router = useRouter();
@@ -537,7 +538,7 @@ watch(scope, (value) => {
 watch(selectedNodeId, () => loadNodePlugins());
 
 watch(
-  () => [route.query.scope, route.query.daemonId, route.query.plugin],
+  () => [props.scope ?? route.query.scope, props.daemonId ?? route.query.daemonId, route.query.plugin],
   ([targetScope, daemonId, pluginId]) => {
     if (typeof pluginId === "string") preferredPluginId.value = pluginId;
     if (targetScope !== "node") {

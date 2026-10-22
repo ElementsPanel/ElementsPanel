@@ -77,6 +77,57 @@ function loadSfc(relative, overrides = {}) {
   }).outputText, filename);
   return component.exports.default;
 }
+
+test("node plugin configuration buttons open desktop windows for the clicked node", async (t) => {
+  const opened = [];
+  const service = vue.shallowReactive({
+    views: [{ id: "node-plugin-config" }],
+    open: (request) => { opened.push(request); return true; }
+  });
+  const nodes = [
+    { uuid: "one", remarks: "Node One", ip: "one.example", port: 24444, available: false },
+    { uuid: "two", remarks: "", ip: "two.example", port: 24444, available: false }
+  ];
+  const operation = () => ({ execute: async () => {}, isLoading: vue.ref(false) });
+  const Manager = loadSfc("panel/plugins/node/src/desktop/DesktopNodeManager.vue", {
+    "@/lang/i18n": { t: (key) => key },
+    "@/plugin/context": { usePluginService: () => service },
+    "@/hooks/useOverviewInfo": { useOverviewInfo: () => ({ state: vue.ref() }) },
+    "@/hooks/useSocketIo": { SocketStatus: { Error: "error" }, testSocketConnection() {} },
+    "@/hooks/usePolling": { usePolling: (callback) => vue.onMounted(callback) },
+    "@/tools/validator": { getValidatorErrorMsg: String, reportErrorMsg: assert.fail },
+    "./DesktopWindow.vue": { default: {} },
+    "../api": {
+      remoteNodeList: () => ({ ...operation(), execute: async () => ({ value: nodes }) }),
+      addNode: operation, editNode: operation, deleteNode: operation, connectNode: operation
+    }
+  });
+  const target = document.createElement("div");
+  document.body.appendChild(target);
+  const app = vue.createApp(Manager);
+  app.use(Vuetify.createVuetify());
+  app.mount(target);
+  t.after(() => { app.unmount(); target.remove(); });
+  await flush();
+
+  const buttons = [...target.querySelectorAll('button[title="TXT_CODE_PLUGIN_CONFIG"]')];
+  assert.equal(buttons.length, 2);
+  assert.equal(target.querySelector('a[title="TXT_CODE_PLUGIN_CONFIG"]'), null);
+  buttons[1].click();
+  buttons[0].click();
+  buttons[1].click();
+  assert.deepEqual(opened.map(({ view, props }) => ({ view, props })), [
+    { view: "node-plugin-config", props: { scope: "node", daemonId: "two" } },
+    { view: "node-plugin-config", props: { scope: "node", daemonId: "one" } },
+    { view: "node-plugin-config", props: { scope: "node", daemonId: "two" } }
+  ]);
+  assert.equal(opened[0].id, opened[2].id);
+  assert.notEqual(opened[0].id, opened[1].id);
+  service.views = [];
+  await flush();
+  assert.equal(target.querySelector('[title="TXT_CODE_PLUGIN_CONFIG"]'), null);
+});
+
 const translations = { t: (key) => key };
 const DesktopConfirmation = loadSfc("panel/plugins/desktop/src/widgets/desktop/DesktopConfirmDialog.vue", {
   "@/lang/i18n": translations,
