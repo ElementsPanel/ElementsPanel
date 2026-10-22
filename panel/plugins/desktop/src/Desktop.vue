@@ -41,9 +41,9 @@ const UserOutlined = "mdi-account-outline";
 // desktop app/action ids at this boundary.
 const DESKTOP_ICON_MAP: Record<string, string> = {
     overview: "mdi-view-dashboard-outline",
-    config: "mdi-view-grid-plus-outline",
+    config: "mdi-cog-outline",
     market: "mdi-storefront-outline",
-    nodes: "mdi-server-network-outline",
+    nodes: "mdi-sitemap-outline",
     "operation-log": "mdi-file-document-outline",
     backup: "mdi-cloud-outline",
     "java-manager": "mdi-hammer-wrench",

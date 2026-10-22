@@ -35,7 +35,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
     meta: {
       permission: ADMIN_PERMISSION,
       mainMenu: true,
-      icon: "mdi-server-network-outline"
+      icon: "mdi-sitemap-outline"
     }
   });
 
@@ -71,7 +71,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.desktop.app({
     id: "nodes",
     label: () => t("TXT_CODE_e076d90b"),
-    icon: "mdi-vector-link",
+    icon: "mdi-sitemap-outline",
     color: "#fa8c16",
     route: "/node",
     component: DesktopNodeManager,

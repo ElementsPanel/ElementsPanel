@@ -92,7 +92,7 @@ export function registerDesktop(ctx: PanelFrontendPluginContext) {
       id: "instances",
       component: manager,
       title: () => t("TXT_CODE_e21473bc"),
-      icon: "mdi-monitor",
+      icon: "mdi-view-grid-outline",
       initialWidth: 980,
       initialHeight: 580,
       condition: () => isAdmin.value
@@ -102,7 +102,7 @@ export function registerDesktop(ctx: PanelFrontendPluginContext) {
       view: "instances",
       component: manager,
       label: () => t("TXT_CODE_e21473bc"),
-      icon: "mdi-monitor",
+      icon: "mdi-view-grid-outline",
       route: "/instances",
       condition: () => isAdmin.value,
       initialWidth: 980,

@@ -23,14 +23,14 @@ export function apply(ctx: PanelFrontendPluginContext) {
     meta: {
       permission: ROLE_ADMIN,
       mainMenu: true,
-      icon: "mdi-view-grid-plus"
+      icon: "mdi-cog-outline"
     }
   });
 
   ctx.desktop.app({
     id: "config",
     label: () => t("TXT_CODE_PLUGIN_CONFIG"),
-    icon: "mdi-view-grid-plus",
+    icon: "mdi-cog-outline",
     color: "#1677ff",
     route: "/plugins/config",
     component: ConfigPage,
