@@ -38,7 +38,6 @@ const emitPageChange = (page: number, itemsPerPage: number) => emit("change", { 
 </template>
 
 <style scoped>
-.local-mod-table :deep(tbody > tr > td) { padding-block: 10px; }
 .local-mod-name { display: flex; flex-direction: column; min-width: 0; text-align: left; }
 .local-mod-name strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .local-mod-name small { opacity: 0.6; font-size: 11px; }

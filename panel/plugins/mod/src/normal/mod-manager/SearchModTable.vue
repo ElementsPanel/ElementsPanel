@@ -45,7 +45,6 @@ const emitPageChange = (page: number, itemsPerPage: number) => emit("change", { 
 
 <style scoped>
 .search-mod-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 48px 0; opacity: 0.5; }
-.search-mod-table :deep(tbody > tr > td) { padding-block: 10px; }
 .search-mod-name, .search-mod-version { display: flex; flex-direction: column; min-width: 0; text-align: left; }
 .search-mod-name strong, .search-mod-version code, .search-mod-version small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .search-mod-name small { opacity: 0.6; font-size: 11px; }

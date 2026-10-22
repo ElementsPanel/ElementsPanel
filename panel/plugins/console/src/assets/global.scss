@@ -185,6 +185,14 @@ body::-webkit-scrollbar-track {
   max-width: calc(100% - var(--app-list-inset) * 2);
 }
 
+// One vertical padding for every data table row, so list items share the
+// same rhythm across plugins instead of each table redefining it. Tables
+// that explicitly opt into `density="compact"` (e.g. the archive preview)
+// keep Vuetify's tight rows.
+.v-data-table:not(.v-table--density-compact) tbody > tr > td {
+  padding-block: 10px;
+}
+
 .global-action-float-enter-active,
 .global-action-float-leave-active {
   transition: all 0.4s ease;
