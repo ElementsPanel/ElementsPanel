@@ -5,12 +5,31 @@ import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useThemeSwitch } from "@/hooks/useThemeSwitch";
 import { ctx } from "@/plugin/context";
 import { desktopIconDarkUrl, desktopIconUrl } from "../../assets";
-import { VBtn, VIcon, VList, VListItem, VMenu } from "vuetify/components";
+import { VBadge, VBtn, VIcon, VList, VListItem, VMenu } from "vuetify/components";
 import { computed, onBeforeUnmount, ref, type Component } from "vue";
 
 const { isDarkTheme } = useAppConfigStore();
 const { themeIcon, themeTitle, cycleTheme } = useThemeSwitch();
 const actionSlots = computed(() => ctx.slots.entries("shell.header.actions", { mobile: false }));
+// Menu actions that opt into `taskbar` belong to the tray as well, so a plugin
+// button does not vanish when the normal header is replaced by the Desktop.
+const taskbarActions = computed(() =>
+    ctx.menus.appMenus
+        .filter(
+            (item) =>
+                item.taskbar &&
+                (typeof item.conditions === "function" ? item.conditions() : item.conditions !== false)
+        )
+        .map((item) => {
+            const title = typeof item.title === "function" ? item.title() : item.title;
+            return {
+                title,
+                icon: item.mdiIcon || (typeof item.icon === "string" ? item.icon : "mdi-help-circle-outline"),
+                badge: typeof item.badge === "function" ? item.badge() : item.badge,
+                click: item.click
+            };
+        })
+);
 
 export interface TaskbarWindow {
     id: string;
@@ -196,6 +215,12 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
         <div class="taskbar__tray">
             <component :is="entry.component" v-for="entry in actionSlots" :key="entry.id"
                 v-bind="{ ...entry.props, mobile: false }" />
+            <VBadge v-for="(action, index) in taskbarActions" :key="index" :content="action.badge"
+                :model-value="action.badge != null && action.badge !== false" :max="99" color="primary" floating>
+                <VBtn icon variant="text" :aria-label="action.title" :title="action.title" @click="action.click()">
+                    <VIcon :icon="action.icon" />
+                </VBtn>
+            </VBadge>
             <div class="taskbar__time">
                 <div class="taskbar__time-text">{{ currentTime }}</div>
                 <div class="taskbar__date-text">{{ currentDate }}</div>

@@ -250,7 +250,12 @@ test("production URL identities share login state, registered routes and API aut
   });
   let consoleRouter;
   const component = { render: () => null };
-  const ctx = { set() {}, routes: { add: (route) => consoleRouter.addRoute(route) }, slots: { register() {} } };
+  const ctx = {
+    set() {},
+    routes: { add: (route) => consoleRouter.addRoute(route) },
+    slots: { register() {} },
+    menus: { app() {}, loginActions: [] }
+  };
   const overrides = {
     vue: { ...vue, onMounted() {} },
     "vue-router": { ...vueRouter, createWebHashHistory: vueRouter.createMemoryHistory },
@@ -274,6 +279,13 @@ test("production URL identities share login state, registered routes and API aut
     "@/tools/safe": { markdownToHTML: (value) => value },
     "@/tools/dom": { setLoadingTitle() {} },
     "@/services/appearance": { initAppearance: async () => {} },
+    "@/stores/useBackgroundTasks": {
+      useBackgroundTasks: () => ({
+        open: vue.ref(false),
+        activeCount: vue.computed(() => 0),
+        refresh: async () => {}
+      })
+    },
     "@/initLib": {},
     "vuetify/components": {},
     "./bootstrap": { prepareApplication: async () => ({ app: {}, ctx }) },
@@ -281,7 +293,6 @@ test("production URL identities share login state, registered routes and API aut
     "./views/AboutPage.vue": component,
     "./widgets/Page404.vue": component,
     "./ConsoleApp.vue": component,
-    "./components/BackgroundTasksButton.vue": component,
     "./components/BackgroundTasksSidebar.vue": component
   };
   // Evaluate real sources in memory, caching by browser URL, not disk path.

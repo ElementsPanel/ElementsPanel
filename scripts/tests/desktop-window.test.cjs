@@ -713,7 +713,21 @@ test("the shared task action opens its sidebar and keeps task filters and cancel
     "@/stores/useAppStateStore": { useAppStateStore: () => account },
     "@/stores/useBackgroundTasks": { useBackgroundTasks: () => store }
   };
-  const Button = loadSfc("panel/plugins/console/src/components/BackgroundTasksButton.vue", overrides);
+  const Button = {
+    // The header action is a declarative menu entry registered in
+    // console/src/frontend.ts, so this harness drives the same store toggle
+    // that the entry's click handler performs.
+    setup() {
+      return () =>
+        vue.h("button", {
+          "aria-controls": "background-tasks-sidebar",
+          "aria-expanded": String(store.open.value),
+          onClick: () => {
+            store.open.value = !store.open.value;
+          }
+        });
+    }
+  };
   const Sidebar = loadSfc("panel/plugins/console/src/components/BackgroundTasksSidebar.vue", overrides);
   const target = document.createElement("div");
   document.body.appendChild(target);

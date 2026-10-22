@@ -5,6 +5,7 @@ import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useUiStore } from "@/stores/useUiStore";
 import { useEventListener } from "@vueuse/core";
 import {
+  VBadge,
   VBtn,
   VList,
   VListItem,
@@ -122,20 +123,28 @@ useEventListener("keydown", (event) => {
           </VMenu>
           <VTooltip v-else-if="item.conditions" location="bottom">
             <template #activator="{ props: tooltipProps }">
-              <VBtn
-                v-bind="tooltipProps"
-                :class="[item.customClass, 'nav-button', 'right-nav-button']"
-                :aria-label="item.title"
-                :title="item.title"
-                :icon="!item?.iconText"
-                variant="text"
-                @click="item.click()"
+              <VBadge
+                :content="item.badge"
+                :model-value="item.badge != null && item.badge !== false"
+                :max="99"
+                color="primary"
+                floating
               >
-                <VIcon :icon="getMdiIcon(item.mdiIcon || getFallbackMdiIcon(item.icon))" />
-                <span v-if="item?.iconText" class="nav-button-text">
-                  {{ item.iconText }}
-                </span>
-              </VBtn>
+                <VBtn
+                  v-bind="tooltipProps"
+                  :class="[item.customClass, 'nav-button', 'right-nav-button']"
+                  :aria-label="item.title"
+                  :title="item.title"
+                  :icon="!item?.iconText"
+                  variant="text"
+                  @click="item.click()"
+                >
+                  <VIcon :icon="getMdiIcon(item.mdiIcon || getFallbackMdiIcon(item.icon))" />
+                  <span v-if="item?.iconText" class="nav-button-text">
+                    {{ item.iconText }}
+                  </span>
+                </VBtn>
+              </VBadge>
             </template>
             <span>{{ item.title }}</span>
           </VTooltip>
@@ -209,17 +218,25 @@ useEventListener("keydown", (event) => {
           v-bind="{ ...entry.props, mobile: true }"
         />
         <div v-for="(item, index) in appMenus" :key="index">
-          <VBtn
+          <VBadge
             v-if="item.conditions && !item.onlyPC && !item.menus"
-            class="phone-nav-button"
-            icon
-            variant="text"
-            :aria-label="item.title"
-            :title="item.title"
-            @click="item.click()"
+            :content="item.badge"
+            :model-value="item.badge != null && item.badge !== false"
+            :max="99"
+            color="primary"
+            floating
           >
-            <VIcon :icon="getMdiIcon(item.mdiIcon || getFallbackMdiIcon(item.icon))" />
-          </VBtn>
+            <VBtn
+              class="phone-nav-button"
+              icon
+              variant="text"
+              :aria-label="item.title"
+              :title="item.title"
+              @click="item.click()"
+            >
+              <VIcon :icon="getMdiIcon(item.mdiIcon || getFallbackMdiIcon(item.icon))" />
+            </VBtn>
+          </VBadge>
         </div>
       </div>
     </div>

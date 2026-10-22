@@ -59,8 +59,12 @@ export interface PanelFrontendAppMenu {
   mdiIcon?: string;
   click: (...args: any[]) => unknown;
   conditions?: boolean | (() => boolean);
+  /** Badge text rendered on the button; a function keeps it reactive. */
+  badge?: string | number | (() => string | number | undefined | null | false);
   onlyPC?: boolean;
   onlyHeader?: boolean;
+  /** Also render this action in the Desktop console's taskbar tray. */
+  taskbar?: boolean;
   customClass?: string[];
   menus?: PanelFrontendAppMenuItem[];
 }

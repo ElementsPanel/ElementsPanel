@@ -17,8 +17,9 @@ import Page404 from "./widgets/Page404.vue";
 import ConsoleApp from "./ConsoleApp.vue";
 import { setLoadingTitle } from "@/tools/dom";
 import { installVuetify } from "./vuetify";
-import BackgroundTasksButton from "./components/BackgroundTasksButton.vue";
 import BackgroundTasksSidebar from "./components/BackgroundTasksSidebar.vue";
+import { useAppStateStore } from "@/stores/useAppStateStore";
+import { useBackgroundTasks } from "@/stores/useBackgroundTasks";
 
 /** `/` only ever redirects through its `meta.redirect`; it never renders. */
 const RedirectShell = { render: () => null };
@@ -29,9 +30,20 @@ export async function apply(parent: PanelFrontendPluginContext) {
   const { app, ctx } = await prepareApplication(parent);
   installVuetify(app);
   ctx.set("console", { root: ConsoleApp });
-  ctx.slots.register("shell.header.actions", BackgroundTasksButton, {
-    id: "console:background-tasks-button",
-    order: 10
+  // The header action is a declarative menu entry, the same way the user and
+  // desktop plugins contribute theirs, and the sidebar stays a global overlay
+  // driven by the store exactly like the user plugin's profile dialog.
+  ctx.menus.app({
+    title: () => t("TXT_CODE_TASKS_TITLE"),
+    mdiIcon: "mdi-progress-clock",
+    badge: () => useBackgroundTasks().activeCount.value || undefined,
+    taskbar: true,
+    click: () => {
+      const { open, refresh } = useBackgroundTasks();
+      open.value = !open.value;
+      if (open.value) void refresh({ silent: true });
+    },
+    conditions: () => useAppStateStore().isLogged.value
   });
   ctx.slots.register("shell.overlay", BackgroundTasksSidebar, {
     id: "console:background-tasks-sidebar"

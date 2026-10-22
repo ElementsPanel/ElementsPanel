@@ -158,6 +158,7 @@ export function useHeaderMenus() {
           : item.conditions === undefined
           ? true
           : item.conditions,
+      badge: typeof item.badge === "function" ? item.badge() : item.badge,
       menus: item.menus?.map((menu) => ({
         value: menu.value,
         title: typeof menu.title === "function" ? menu.title() : menu.title
