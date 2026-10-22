@@ -30,7 +30,6 @@ const props = defineProps<{
     apps: TaskbarApp[];
     username: string;
     userAvatar?: Component | string;
-    covered?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -162,7 +161,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
 </script>
 
 <template>
-    <div class="desktop-taskbar" :class="{ 'desktop-taskbar--docked': covered }">
+    <div class="desktop-taskbar">
         <VBtn class="taskbar__start" :class="{ 'taskbar__start--active': startMenuOpen }" icon variant="text"
             aria-label="Start" @click="toggleStartMenu">
             <span class="taskbar__start-icon">
@@ -204,8 +203,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
         @drop.prevent="handleAppDrop"></div>
 
     <Transition name="start-menu">
-        <div v-if="startMenuOpen" class="taskbar__start-menu" :class="{ 'taskbar__start-menu--docked': covered }"
-            @click.stop>
+        <div v-if="startMenuOpen" class="taskbar__start-menu" @click.stop>
             <div class="start-menu__sidebar">
                 <VBtn class="start-menu__function-btn" icon variant="text" :title="username"
                     @click="handleOpenUserInfo">
@@ -255,13 +253,11 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
 </template>
 
 <style lang="scss" scoped>
-$taskbar-inset: 10px;
-
 .desktop-taskbar {
     position: fixed;
-    bottom: $taskbar-inset;
-    left: $taskbar-inset;
-    right: $taskbar-inset;
+    bottom: 0;
+    left: 0;
+    right: 0;
     height: 48px;
     background: var(--desktop-taskbar-bg);
     backdrop-filter: saturate(180%) blur(20px);
@@ -269,23 +265,10 @@ $taskbar-inset: 10px;
     align-items: center;
     z-index: 99999;
     border: none;
-    border-radius: 12px;
-    box-shadow: 0 8px 32px var(--desktop-menu-shadow);
+    border-radius: 0;
+    box-shadow: none;
     padding: 0 4px;
     user-select: none;
-    transition: bottom 0.2s ease, left 0.2s ease, right 0.2s ease, border-radius 0.2s ease,
-        box-shadow 0.2s ease;
-
-    &--docked {
-        bottom: 0;
-        left: 0;
-        right: 0;
-        border-radius: 0;
-        border-left: 0;
-        border-right: 0;
-        border-bottom: 0;
-        box-shadow: none;
-    }
 }
 
 .taskbar__start {
@@ -322,8 +305,8 @@ $taskbar-inset: 10px;
 
 .taskbar__start-menu {
     position: fixed;
-    bottom: 66px;
-    left: $taskbar-inset;
+    bottom: 56px;
+    left: 8px;
     width: 420px;
     height: 360px;
     display: flex;
@@ -335,12 +318,6 @@ $taskbar-inset: 10px;
     z-index: 100000;
     overflow: hidden;
     color: var(--desktop-menu-text);
-    transition: bottom 0.2s ease, left 0.2s ease;
-
-    &--docked {
-        bottom: 56px;
-        left: 8px;
-    }
 
     .start-menu__sidebar {
         width: 56px;

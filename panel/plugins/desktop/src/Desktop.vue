@@ -902,13 +902,6 @@ const taskbarWindows = computed<TaskbarWindow[]>(() => {
     return list;
 });
 
-const taskbarCovered = computed(() => {
-    for (const win of windows.values()) {
-        if (win.maximized && win.visible && !win.minimized) return true;
-    }
-    return false;
-});
-
 const handleReorderWindows = (newOrder: string[]) => {
     const newWindowsMap = new Map<string, WindowState>();
 
@@ -1174,7 +1167,7 @@ const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof 
                     </DesktopWindow>
                 </TransitionGroup>
                 <DesktopTaskbar :windows="taskbarWindows" :apps="availableDesktopApps" :username="username"
-                    :user-avatar="desktopStartMenuAvatar" :covered="taskbarCovered"
+                    :user-avatar="desktopStartMenuAvatar"
                     @toggle-window="toggleWindow" @open-app="openWindow"
                     @add-shortcut="handleTaskbarAppDrop"
                     @exit-desktop="exitDesktop" @open-user-info="openUserInfoWindow"
