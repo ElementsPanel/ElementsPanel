@@ -6,6 +6,20 @@ import _ from "lodash";
 axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
 let authToken: string | undefined;
 
+export type ApiMutationListener = () => void;
+
+const mutationListeners = new Set<ApiMutationListener>();
+
+/**
+ * Subscribes to successful write requests. Pull-based views (such as the
+ * background task list) use this to refresh right after a mutation instead of
+ * waiting for their next poll.
+ */
+export function onApiMutation(listener: ApiMutationListener) {
+  mutationListeners.add(listener);
+  return () => mutationListeners.delete(listener);
+}
+
 export interface ApiConnectionReporter {
   requestStarted(): void;
   requestSucceeded(): void;
@@ -92,6 +106,7 @@ class ApiService {
       if (cacheable) this.pending.set(key, request);
       try {
         const data = await request;
+        if (!isRead) mutationListeners.forEach((listener) => listener());
         if (cacheable && generation === this.generation) {
           this.responses.set(key, { expiresAt: Date.now() + 2000, data });
         }

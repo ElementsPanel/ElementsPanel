@@ -22,10 +22,11 @@ const taskbarActions = computed(() =>
         )
         .map((item) => {
             const title = typeof item.title === "function" ? item.title() : item.title;
+            const badge = typeof item.badge === "function" ? item.badge() : item.badge;
             return {
                 title,
                 icon: item.mdiIcon || (typeof item.icon === "string" ? item.icon : "mdi-help-circle-outline"),
-                badge: typeof item.badge === "function" ? item.badge() : item.badge,
+                badge: badge === false || badge == null ? undefined : badge,
                 click: item.click
             };
         })
@@ -216,7 +217,8 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
             <component :is="entry.component" v-for="entry in actionSlots" :key="entry.id"
                 v-bind="{ ...entry.props, mobile: false }" />
             <VBadge v-for="(action, index) in taskbarActions" :key="index" :content="action.badge"
-                :model-value="action.badge != null && action.badge !== false" :max="99" color="primary" floating>
+                :model-value="action.badge != null" :max="99" :offset-x="14" :offset-y="14" color="primary"
+                floating>
                 <VBtn icon variant="text" :aria-label="action.title" :title="action.title" @click="action.click()">
                     <VIcon :icon="action.icon" />
                 </VBtn>

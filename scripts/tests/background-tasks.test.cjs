@@ -296,7 +296,8 @@ test("the browser discards stale task responses when the active account changes"
           requestCount++;
           return nextResponse.promise;
         }
-      }
+      },
+      onApiMutation: () => () => {}
     },
     "./useAppStateStore": { useAppStateStore: () => ({ state, isLogged: vue.ref(true) }) }
   });

@@ -127,6 +127,8 @@ useEventListener("keydown", (event) => {
                 :content="item.badge"
                 :model-value="item.badge != null && item.badge !== false"
                 :max="99"
+                :offset-x="14"
+                :offset-y="14"
                 color="primary"
                 floating
               >
@@ -223,6 +225,8 @@ useEventListener("keydown", (event) => {
             :content="item.badge"
             :model-value="item.badge != null && item.badge !== false"
             :max="99"
+            :offset-x="14"
+            :offset-y="14"
             color="primary"
             floating
           >
