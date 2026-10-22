@@ -97,8 +97,8 @@ export interface PanelFrontendInstanceAction {
   id: string;
   title: string | (() => string);
   icon: Component | string;
-  /** Optional Material Design icon for shells that render MDI icons. */
-  mdiIcon?: string;
+  /** Material Design icon rendered by the panel shells. */
+  mdiIcon: string;
   normalComponent?: Component;
   desktopComponent?: Component;
   condition?: (context: PanelFrontendInstanceActionContext) => boolean;
@@ -135,6 +135,8 @@ export interface PanelFrontendTerminalAction {
   id: string;
   title: string | (() => string);
   icon: Component | string;
+  /** Material Design icon rendered by the panel shells. */
+  mdiIcon: string;
   /** Matches the core buttons: "default" | "danger". */
   type?: string;
   class?: string;
@@ -149,6 +151,7 @@ export interface PanelFrontendTerminalButton {
   id: string;
   title: string;
   icon: Component | string;
+  mdiIcon: string;
   type: string;
   class?: string;
   noConfirm: boolean;

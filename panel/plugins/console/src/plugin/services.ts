@@ -216,6 +216,7 @@ export class ActionsService extends Service implements FrontendActionsService {
       id: action.id,
       title: typeof action.title === "function" ? action.title() : action.title,
       icon: action.icon,
+      mdiIcon: action.mdiIcon,
       type: action.type ?? "default",
       class: action.class,
       noConfirm: action.noConfirm ?? true,

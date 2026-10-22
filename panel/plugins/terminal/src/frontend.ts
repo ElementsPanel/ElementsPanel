@@ -1,4 +1,5 @@
 import type { PanelFrontendPluginContext } from "@/plugin";
+import { isScopedInstance } from "@/hooks/useInstanceActionAvailability";
 import { t } from "@/lang/i18n";
 import * as terminalApi from "./api";
 import TerminalCore from "./components/TerminalCore.vue";
@@ -42,9 +43,11 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.actions.instance({
     id: "terminal-config",
     title: () => t("TXT_CODE_d23631cb"),
-    icon: "mdi-console-line",
+    icon: "mdi-code-tags",
+    mdiIcon: "mdi-code-tags",
     normalComponent: TermConfig,
     desktopComponent: DesktopTermConfig,
+    condition: isScopedInstance,
     desktopInitialWidth: 700,
     desktopInitialHeight: 500
   });

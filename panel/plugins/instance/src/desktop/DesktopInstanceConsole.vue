@@ -26,14 +26,8 @@ const PauseCircleOutlined = "mdi-pause-circle-outline";
 const RedoOutlined = "mdi-redo";
 const CloseOutlined = "mdi-close";
 const CloudDownloadOutlined = "mdi-cloud-download-outline";
-const terminalActionIconMap: Record<string, string> = {
-    "market-reinstall": "mdi-storefront-outline"
-};
-
-const getTerminalActionIcon = (item: { icon?: unknown; id?: string }) => {
-    if (typeof item.icon === "string") return item.icon;
-    return (item.id && terminalActionIconMap[item.id]) || "mdi-lightning-bolt-outline";
-};
+const getTerminalActionIcon = (item: { icon?: unknown; mdiIcon?: string }) =>
+    item.mdiIcon || (typeof item.icon === "string" ? item.icon : "mdi-lightning-bolt-outline");
 
 type DialogPanel = "none" | "file-manager" | "schedule" | "server-config";
 

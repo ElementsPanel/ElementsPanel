@@ -1,4 +1,5 @@
 import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } from "@/plugin";
+import { isScopedInstance } from "@/hooks/useInstanceActionAvailability";
 import { t } from "@/lang/i18n";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import * as fileManagerApi from "./api";
@@ -14,8 +15,6 @@ import DesktopFileManagerAction from "./desktop/DesktopFileManagerAction.vue";
 import ImageViewer from "./normal/ImageViewer.vue";
 import uploadService, { UploadFiles } from "./services/uploadService";
 import { filterFileName, getFileExtName, getFileIcon, isCompressFile } from "./tools/fileManager";
-import { VIcon } from "vuetify/components";
-import { h } from "vue";
 import { localeMessages } from "./i18n";
 
 // The file manager, browser side. It owns the instance file card and its Desktop
@@ -32,7 +31,8 @@ import { localeMessages } from "./i18n";
 const ROLE_USER = 1;
 const ROLE_ADMIN = 10;
 
-const isFileManagerAvailable = (_context: PanelFrontendInstanceActionContext) => {
+const isFileManagerAvailable = (context: PanelFrontendInstanceActionContext) => {
+  if (!isScopedInstance(context)) return false;
   const { state, isAdmin } = useAppStateStore();
   return state.settings.canFileManager || isAdmin.value;
 };
@@ -86,7 +86,8 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.actions.instance({
     id: "file-manager",
     title: () => t("TXT_CODE_ae533703"),
-    icon: () => h(VIcon, { icon: "mdi-folder-open-outline" }),
+    icon: "mdi-folder-open-outline",
+    mdiIcon: "mdi-folder-open-outline",
     normalComponent: FileManagerAction,
     desktopComponent: DesktopFileManagerAction,
     condition: isFileManagerAvailable,

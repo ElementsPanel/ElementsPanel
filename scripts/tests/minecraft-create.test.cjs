@@ -147,9 +147,13 @@ test("category menus expose seven categories and configuration editors retain su
 
 test("merged Bedrock instances retain Java management for Nukkit and managed Java commands", () => {
   let action;
+  const availability = load("panel/plugins/console/src/hooks/useInstanceActionAvailability.ts", {
+    "@/hooks/useInstance": instanceContract
+  });
   const plugin = load("panel/plugins/java/src/frontend.ts", {
     "@/lang/i18n": { t: translate },
     "@/hooks/useInstance": instanceContract,
+    "@/hooks/useInstanceActionAvailability": availability,
     "../../../../common/src/java": javaCommands,
     "@/stores/useAppStateStore": { useAppStateStore: () => ({ state: { settings: { allowJavaManager: true } }, isAdmin: vue.ref(false) }) },
     "./desktop/DesktopJavaManager.vue": {},
@@ -158,7 +162,7 @@ test("merged Bedrock instances retain Java management for Nukkit and managed Jav
     "./i18n": { localeMessages: {} }
   });
   plugin.apply({ i18n: { define() {} }, set() {}, actions: { instance: (value) => { action = value; } } });
-  const available = (config) => action.condition({ daemon: { features: { javaManager: true } }, instanceInfo: { config: { processType: "general", ...config } } });
+  const available = (config) => action.condition({ instanceId: "instance", daemonId: "node", daemon: { features: { javaManager: true } }, instanceInfo: { config: { processType: "general", ...config } } });
   assert.equal(available({ type: "minecraft/bedrock", startCommand: '"/opt/Java 21/bin/java" -jar nukkit.jar' }), true);
   assert.equal(available({ type: "minecraft/bedrock", java: { id: "java21" } }), true);
   assert.equal(available({ type: "minecraft/bedrock", startCommand: "./bedrock_server" }), false);

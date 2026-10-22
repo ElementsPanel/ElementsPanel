@@ -518,8 +518,15 @@ test("frontend registration and feature gating follow the mod and file plugin li
   for (const name of ["console", "desktop", "instance"]) ctx.set(name, {});
   const user = { state: { settings: { canFileManager: true } }, isAdmin: { value: false } };
   const component = {};
+  const availability = load("panel/plugins/console/src/hooks/useInstanceActionAvailability.ts", {
+    "@/hooks/useInstance": {
+      TYPE_MINECRAFT_JAVA: "minecraft/java",
+      TYPE_MINECRAFT_BEDROCK: "minecraft/bedrock"
+    }
+  });
   const plugin = load("panel/plugins/mod/src/frontend.ts", {
     "@/lang/i18n": { t: (key) => key },
+    "@/hooks/useInstanceActionAvailability": availability,
     "@/stores/useAppStateStore": { useAppStateStore: () => user },
     "./api": { modListApi() {} },
     "./desktop/DesktopModManager.vue": component,
@@ -533,6 +540,8 @@ test("frontend registration and feature gating follow the mod and file plugin li
   await until(() => ctx.get("mod-manager"));
   const action = [...ctx.actions.items][0];
   const state = {
+    instanceId: "instance",
+    daemonId: "node",
     daemon: { features: { modManager: true } },
     instanceInfo: { config: { type: "minecraft/java" } },
     isGlobalTerminal: false

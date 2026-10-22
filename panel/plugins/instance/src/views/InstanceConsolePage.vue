@@ -42,7 +42,8 @@ import {
   VIcon,
   VRow,
   VSpacer,
-  VToolbar
+  VToolbar,
+  VTooltip
 } from "vuetify/components";
 import DockerInfo from "../widgets/instance/dialogs/DockerInfo.vue";
 import EventConfig from "../widgets/instance/dialogs/EventConfig.vue";
@@ -111,46 +112,6 @@ const pluginActions = computed(() => {
   });
 });
 
-const mdiIconMap: Record<string, string> = {
-  AppstoreAddOutlined: "mdi-view-grid-plus",
-  BuildOutlined: "mdi-hammer-wrench",
-  CloudDownloadOutlined: "mdi-cloud-download-outline",
-  CodeOutlined: "mdi-code-tags",
-  FileTextOutlined: "mdi-file-document-outline",
-  FolderOpenOutlined: "mdi-folder-open-outline",
-  InteractionOutlined: "mdi-gesture-tap-button",
-  UsergroupDeleteOutlined: "mdi-account-multiple-minus-outline"
-};
-const instanceActionMdiIcons: Record<string, string> = {
-  "file-manager": "mdi-folder-open-outline",
-  "java-manager": "mdi-language-java",
-  mcstats: "mdi-chart-line",
-  backup: "mdi-cloud-outline",
-  "terminal-config": "mdi-code-tags",
-  "operation-log": "mdi-file-document-outline"
-};
-const terminalActionMdiIcons: Record<string, string> = {
-  "market-reinstall": "mdi-storefront-outline"
-};
-const getMdiIcon = (icon: unknown, fallback = "mdi-application-cog-outline") => {
-  if (typeof icon === "string" && icon.startsWith("mdi-")) return icon;
-  const component = icon as
-    | {
-        name?: string;
-        displayName?: string;
-        __name?: string;
-        type?: { name?: string; __name?: string };
-      }
-    | undefined;
-  const name =
-    component?.name ??
-    component?.displayName ??
-    component?.__name ??
-    component?.type?.name ??
-    component?.type?.__name;
-  return (name && mdiIconMap[name]) || fallback;
-};
-
 const { isAdmin, state: appState } = useAppStateStore();
 const { state: overviewState } = useOverviewInfo();
 const nodeInfo = computed(() =>
@@ -211,20 +172,10 @@ const instanceFunctionItems = computed(() => {
   };
   const pluginItems = normalInstanceActions.value.map((action) => ({
     title: typeof action.title === "function" ? action.title() : action.title,
-    icon: action.mdiIcon || instanceActionMdiIcons[action.id] || getMdiIcon(action.icon),
+    icon: action.mdiIcon,
     condition: () => action.condition?.(actionContext) ?? true,
     click: () => openInstanceAction(action.id)
   }));
-  const terminalItems = pluginActions.value
-    .filter((action) => action.condition())
-    .map((action) => ({
-      title: action.title,
-      icon:
-        terminalActionMdiIcons[action.id] ||
-        getMdiIcon(action.icon, "mdi-lightning-bolt-outline"),
-      condition: () => true,
-      click: action.click
-    }));
   const items = [
     {
       title: t("TXT_CODE_d07742fe"),
@@ -264,8 +215,7 @@ const instanceFunctionItems = computed(() => {
           : instanceFundamentalDetailDialog.value
         )?.openDialog()
     },
-    ...pluginItems,
-    ...terminalItems
+    ...pluginItems
   ];
   return items.filter((item) => item.condition());
 });
@@ -392,6 +342,18 @@ onUnmounted(() => {
           <VBtn v-if="canUpdate" prepend-icon="mdi-cloud-download-outline" @click="update">{{
             t("TXT_CODE_40ca4f2")
           }}</VBtn>
+          <VTooltip
+            v-for="action in pluginActions"
+            :key="action.id"
+            location="bottom"
+          >
+            <template #activator="{ props: tooltipProps }">
+              <VBtn v-bind="tooltipProps" icon variant="text" @click="action.click()">
+                <VIcon :icon="action.mdiIcon" />
+              </VBtn>
+            </template>
+            <span>{{ action.title }}</span>
+          </VTooltip>
         </div>
       </VToolbar>
 

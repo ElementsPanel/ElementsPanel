@@ -22,15 +22,6 @@ const FieldTimeOutlined = "mdi-clock-outline";
 const DashboardOutlined = "mdi-view-dashboard-outline";
 const AppstoreAddOutlined = "mdi-view-grid-plus-outline";
 
-const instanceActionIconMap: Record<string, string> = {
-  backup: "mdi-cloud-outline",
-  "java-manager": "mdi-hammer-wrench",
-  mcstats: "mdi-account-group-outline",
-  "operation-log": "mdi-file-document-outline",
-  "terminal-config": "mdi-code-tags",
-  "file-manager": "mdi-folder-open-outline"
-};
-
 const props = defineProps<{
   instanceId: string;
   daemonId: string;
@@ -88,7 +79,7 @@ const btns = computed(() => {
   };
   const pluginActions = desktopInstanceActions.value.map((action) => ({
     title: typeof action.title === "function" ? action.title() : action.title,
-    icon: action.mdiIcon || instanceActionIconMap[action.id] || "mdi-cog-outline",
+    icon: action.mdiIcon,
     condition: () => action.condition?.(actionContext) ?? true,
     click: () => emit("open-instance-action", action.id)
   }));

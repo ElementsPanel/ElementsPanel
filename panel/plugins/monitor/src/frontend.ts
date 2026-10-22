@@ -1,3 +1,4 @@
+import { isScopedInstance } from "@/hooks/useInstanceActionAvailability";
 import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugin";
 import { useAppStateStore } from "@/stores/useAppStateStore";
@@ -14,6 +15,7 @@ const ROLE_ADMIN = 10;
 export const inject = ["console", "i18n", "routes", "slots", "desktop", "actions"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
+  const { isAdmin } = useAppStateStore();
   ctx.i18n.define(localeMessages);
 
   ctx.slots.register("shell.overlay", InstanceLogHost, { id: "monitor-instance-log" });
@@ -23,9 +25,10 @@ export function apply(ctx: PanelFrontendPluginContext) {
     id: "operation-log",
     title: () => t("TXT_CODE_f6a33629"),
     icon: "mdi-file-document-outline",
+    mdiIcon: "mdi-file-document-outline",
     normalComponent: InstanceOperationLogAction,
     desktopComponent: DesktopInstanceOperationLog,
-    condition: ({ instanceId, daemonId }) => Boolean(instanceId && daemonId),
+    condition: (context) => isScopedInstance(context) && isAdmin.value,
     desktopInitialWidth: 680,
     desktopInitialHeight: 500
   });

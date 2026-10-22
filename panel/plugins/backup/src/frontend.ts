@@ -1,3 +1,4 @@
+import { hasNodeFeature, isScopedInstance } from "@/hooks/useInstanceActionAvailability";
 import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugin";
 import DesktopInstanceBackup from "./desktop/DesktopInstanceBackup.vue";
@@ -18,12 +19,13 @@ export function apply(ctx: PanelFrontendPluginContext) {
     id: "backup",
     title: () => t("TXT_CODE_INSTANCE_BACKUP"),
     icon: "mdi-cloud-outline",
+    mdiIcon: "mdi-cloud-outline",
     normalComponent: InstanceBackupModal,
     desktopComponent: DesktopInstanceBackup,
     // The node has to provide the feature, which means its backup plugin has to
     // be installed there too.
-    condition: ({ daemon, isGlobalTerminal }) =>
-      !isGlobalTerminal && Boolean((daemon as any)?.features?.instanceBackup),
+    condition: (context) =>
+      isScopedInstance(context) && hasNodeFeature(context, "instanceBackup"),
     desktopInitialWidth: 700,
     desktopInitialHeight: 500
   });

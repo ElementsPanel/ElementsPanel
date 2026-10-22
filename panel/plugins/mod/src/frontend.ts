@@ -1,5 +1,10 @@
 import { t } from "@/lang/i18n";
 import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } from "@/plugin";
+import {
+  hasNodeFeature,
+  isMinecraftInstance,
+  isScopedInstance
+} from "@/hooks/useInstanceActionAvailability";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import * as api from "./api";
 import DesktopModManager from "./desktop/DesktopModManager.vue";
@@ -7,14 +12,9 @@ import { localeMessages } from "./i18n";
 import ModManager from "./normal/ModManager.vue";
 import ModManagerAction from "./normal/ModManagerAction.vue";
 
-const isModManagerAvailable = ({
-  daemon,
-  instanceInfo,
-  isGlobalTerminal
-}: PanelFrontendInstanceActionContext) => {
-  if (isGlobalTerminal || !(daemon as any)?.features?.modManager) return false;
-  const type = String((instanceInfo as any)?.config?.type || "");
-  if (!type.startsWith("minecraft/java") && !type.startsWith("minecraft/bedrock")) return false;
+const isModManagerAvailable = (context: PanelFrontendInstanceActionContext) => {
+  if (!isScopedInstance(context) || !hasNodeFeature(context, "modManager")) return false;
+  if (!isMinecraftInstance(context)) return false;
   const { state, isAdmin } = useAppStateStore();
   return state.settings.canFileManager || isAdmin.value;
 };
