@@ -2,13 +2,9 @@ import { router, type RouterMetaInfo } from "@/config/router";
 import { ctx } from "@/plugin/context";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { t } from "@/lang/i18n";
-import { logoutUser } from "@/services/apis/index";
 import { useThemeSwitch } from "@/hooks/useThemeSwitch";
 import { useAppStateStore } from "@/stores/useAppStateStore";
-import { useAppToolsStore } from "@/stores/useAppToolsStore";
 import { useUiStore } from "@/stores/useUiStore";
-import { message } from "@/tools/vuetifyToast";
-import { Modal } from "@/tools/vuetifyModal";
 import type { Component } from "vue";
 import { computed } from "vue";
 
@@ -47,8 +43,7 @@ export function useHeaderMenus() {
   const { toPage } = useAppRouters();
   const { themeIcon, themeTitle, cycleTheme } = useThemeSwitch();
   const { uiState } = useUiStore();
-  const { state: appTools } = useAppToolsStore();
-  const { state: appState, isAdmin, isLogged, authEnabled } = useAppStateStore();
+  const { state: appState, isAdmin, isLogged } = useAppStateStore();
 
   const handleToPage = (url: string) => {
     uiState.showPhoneMenu = false;
@@ -106,35 +101,6 @@ export function useHeaderMenus() {
         conditions: true,
         onlyPC: false
       },
-      {
-        title: t("TXT_CODE_8c3164c9"),
-        icon: "mdi-account-outline",
-        mdiIcon: "mdi-account-outline",
-        click: () => {
-          appTools.showUserInfoDialog = true;
-        },
-        conditions: authEnabled.value && isLogged.value,
-        onlyPC: false
-      },
-      {
-        title: t("TXT_CODE_2c69ab15"),
-        icon: "mdi-logout",
-        mdiIcon: "mdi-logout",
-        click: async () => {
-          Modal.confirm({
-            title: t("TXT_CODE_9654b91c"),
-            async onOk() {
-              await logoutUser().execute();
-              message.success(t("TXT_CODE_11673d8c"));
-              setTimeout(() => (window.location.href = "/"), 400);
-            }
-          });
-        },
-        customClass: ["nav-button-danger"],
-        // Nothing to log out of when the "user" plugin is absent.
-        conditions: authEnabled.value && isLogged.value,
-        onlyPC: false
-      }
     ];
     const pluginMenus = ctx.menus.appMenus.map((item) => ({
       ...item,

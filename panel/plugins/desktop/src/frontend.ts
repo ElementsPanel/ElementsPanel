@@ -45,16 +45,21 @@ export function apply(ctx: PanelFrontendPluginContext) {
     }
   });
 
-  ctx.menus.app({
-    title: () => t("TXT_CODE_DESKTOP_MODE"),
-    mdiIcon: "mdi-monitor",
-    click: openDesktop,
-    conditions: () => {
-      const { isLogged } = useAppStateStore();
-      return isLogged.value;
+  ctx.slots.register(
+    "shell.header.actions",
+    {
+      title: () => t("TXT_CODE_DESKTOP_MODE"),
+      mdiIcon: "mdi-monitor",
+      click: openDesktop,
+      // Desktop mode is not available in the phone shell.
+      onlyPC: true
     },
-    onlyPC: true
-  });
+    {
+      id: "desktop:mode-button",
+      order: 30,
+      condition: () => useAppStateStore().isLogged.value
+    }
+  );
 
   ctx.menus.login({
     title: () => t("TXT_CODE_DESKTOP_MODE"),

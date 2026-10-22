@@ -2,6 +2,9 @@ import { restoreSession } from "./session";
 import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugin";
 import { useAppStateStore } from "@/stores/useAppStateStore";
+import { useAppToolsStore } from "@/stores/useAppToolsStore";
+import { message } from "@/tools/vuetifyToast";
+import { Modal } from "@/tools/vuetifyModal";
 import * as userApi from "./api";
 import MyselfInfoDialog from "./components/MyselfInfoDialog.vue";
 import DesktopLoginWindow from "./desktop/DesktopLoginWindow.vue";
@@ -39,6 +42,44 @@ export function apply(ctx: PanelFrontendPluginContext) {
   // manager renders them and this half contributes no form.
 
   ctx.slots.register("shell.overlay", MyselfInfoDialog, { id: "user-self-dialog" });
+
+  // Account actions belong to this plugin; the shell renders the buttons.
+  const accountVisible = () => {
+    const { authEnabled, isLogged } = useAppStateStore();
+    return authEnabled.value && isLogged.value;
+  };
+  ctx.slots.register(
+    "shell.header.actions",
+    {
+      title: () => t("TXT_CODE_8c3164c9"),
+      mdiIcon: "mdi-account-outline",
+      taskbar: false,
+      click: () => {
+        useAppToolsStore().state.showUserInfoDialog = true;
+      }
+    },
+    { id: "user:profile-button", order: 40, condition: accountVisible }
+  );
+  ctx.slots.register(
+    "shell.header.actions",
+    {
+      title: () => t("TXT_CODE_2c69ab15"),
+      mdiIcon: "mdi-logout",
+      customClass: "nav-button-danger",
+      taskbar: false,
+      click: async () => {
+        Modal.confirm({
+          title: t("TXT_CODE_9654b91c"),
+          async onOk() {
+            await userApi.logoutUser().execute();
+            message.success(t("TXT_CODE_11673d8c"));
+            setTimeout(() => (window.location.href = "/"), 400);
+          }
+        });
+      }
+    },
+    { id: "user:logout-button", order: 50, condition: accountVisible }
+  );
 
   ctx.routes.add({
     path: "/login",

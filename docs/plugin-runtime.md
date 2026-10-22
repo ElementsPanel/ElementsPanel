@@ -181,6 +181,29 @@ Current seats are `shell.overlay`, `shell.header.leading` and
 `shell.header.actions`. `ctx.ui.globalComponent()` remains a compatibility
 wrapper around `shell.overlay`; new plugins should use slots directly.
 
+For `shell.header.actions`, pass a descriptor rather than a component so the
+shell owns the button, tooltip, badge and responsive styling:
+
+```ts
+ctx.slots.register(
+  "shell.header.actions",
+  {
+    title: () => t("Example"),
+    mdiIcon: "mdi-creation",
+    badge: () => unread.value || undefined,
+    onlyPC: true,
+    click: () => toggle()
+  },
+  { id: "example-button", order: 20, condition: () => isLogged.value }
+);
+```
+
+`badge` hides itself for `false`/`null`/`undefined`; `title` and `badge` may be
+functions to stay reactive. `onlyPC` hides the button in the phone header and
+`taskbar: false` keeps it out of the Desktop taskbar tray. Registering a
+component in this seat is still supported for older plugins, but the component
+then owns its own styling.
+
 Panel API requests now send session tokens with `Authorization: Bearer ...`.
 The backend temporarily accepts the legacy `?token=` form for older clients,
 but new integrations should avoid putting credentials in URLs.

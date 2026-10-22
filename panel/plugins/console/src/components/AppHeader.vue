@@ -17,6 +17,7 @@ import {
 } from "vuetify/components";
 import { computed, watch } from "vue";
 import { ctx } from "@/plugin/context";
+import type { PanelFrontendHeaderAction } from "@/plugin/context";
 import AppSidebarMenu from "./AppSidebarMenu.vue";
 
 const { uiState } = useUiStore();
@@ -41,6 +42,22 @@ const leadingSlots = computed(() =>
 const actionSlots = computed(() =>
   ctx.slots.entries("shell.header.actions", { mobile: isPhone.value })
 );
+// Descriptors are rendered by the shell so every header button shares one
+// style; components stay supported for older plugins.
+const registeredActions = computed(() =>
+  actionSlots.value.flatMap((entry) =>
+    entry.action ? [{ id: entry.id, action: entry.action }] : []
+  )
+);
+const registeredComponents = computed(() => actionSlots.value.filter((entry) => !entry.action));
+
+const actionTitle = (action: PanelFrontendHeaderAction) =>
+  typeof action.title === "function" ? action.title() : action.title;
+const actionBadge = (action: PanelFrontendHeaderAction) => {
+  const badge = typeof action.badge === "function" ? action.badge() : action.badge;
+  return badge === false || badge == null ? undefined : badge;
+};
+const actionExpanded = (action: PanelFrontendHeaderAction) => action.expanded?.();
 
 const openPhoneMenu = (b = false) => {
   uiState.showPhoneMenu = b;
@@ -93,9 +110,39 @@ useEventListener("keydown", (event) => {
         />
       </div>
       <div class="btns header-actions">
+        <template v-for="entry in registeredActions" :key="entry.id">
+          <div>
+            <VTooltip :text="actionTitle(entry.action)" location="bottom">
+              <template #activator="{ props: tooltipProps }">
+                <VBadge
+                  :content="actionBadge(entry.action)"
+                  :model-value="actionBadge(entry.action) != null"
+                  :max="99"
+                  :offset-x="14"
+                  :offset-y="14"
+                  color="primary"
+                  floating
+                >
+                  <VBtn
+                    v-bind="tooltipProps"
+                    :class="[entry.action.customClass, 'nav-button', 'right-nav-button']"
+                    :aria-label="actionTitle(entry.action)"
+                    :aria-controls="entry.action.ariaControls"
+                    :aria-expanded="actionExpanded(entry.action)"
+                    icon
+                    variant="text"
+                    @click="entry.action.click()"
+                  >
+                    <VIcon :icon="entry.action.mdiIcon" />
+                  </VBtn>
+                </VBadge>
+              </template>
+            </VTooltip>
+          </div>
+        </template>
         <component
           :is="entry.component"
-          v-for="entry in actionSlots"
+          v-for="entry in registeredComponents"
           :key="entry.id"
           v-bind="{ ...entry.props, mobile: false }"
         />
@@ -213,9 +260,34 @@ useEventListener("keydown", (event) => {
         </div>
       </div>
       <div class="phone-toolbar-side phone-toolbar-side-end">
+        <template v-for="entry in registeredActions" :key="entry.id">
+          <div v-if="!entry.action.onlyPC">
+            <VBadge
+              :content="actionBadge(entry.action)"
+              :model-value="actionBadge(entry.action) != null"
+              :max="99"
+              :offset-x="14"
+              :offset-y="14"
+              color="primary"
+              floating
+            >
+              <VBtn
+                class="phone-nav-button"
+                :aria-label="actionTitle(entry.action)"
+                :aria-controls="entry.action.ariaControls"
+                :aria-expanded="actionExpanded(entry.action)"
+                icon
+                variant="text"
+                @click="entry.action.click()"
+              >
+                <VIcon :icon="entry.action.mdiIcon" />
+              </VBtn>
+            </VBadge>
+          </div>
+        </template>
         <component
           :is="entry.component"
-          v-for="entry in actionSlots"
+          v-for="entry in registeredComponents"
           :key="entry.id"
           v-bind="{ ...entry.props, mobile: true }"
         />

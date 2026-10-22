@@ -4,6 +4,7 @@ import { t } from "@/lang/i18n";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useThemeSwitch } from "@/hooks/useThemeSwitch";
 import { ctx } from "@/plugin/context";
+import type { PanelFrontendHeaderAction } from "@/plugin/context";
 import { desktopIconDarkUrl, desktopIconUrl } from "../../assets";
 import { VBadge, VBtn, VIcon, VList, VListItem, VMenu } from "vuetify/components";
 import { computed, onBeforeUnmount, ref, type Component } from "vue";
@@ -11,6 +12,19 @@ import { computed, onBeforeUnmount, ref, type Component } from "vue";
 const { isDarkTheme } = useAppConfigStore();
 const { themeIcon, themeTitle, cycleTheme } = useThemeSwitch();
 const actionSlots = computed(() => ctx.slots.entries("shell.header.actions", { mobile: false }));
+// Descriptors are drawn by the shell; component entries stay supported.
+const slotActions = computed(() =>
+    actionSlots.value.flatMap((entry) =>
+        entry.action && entry.action.taskbar !== false ? [{ id: entry.id, action: entry.action }] : []
+    )
+);
+const slotComponents = computed(() => actionSlots.value.filter((entry) => !entry.action));
+const actionTitle = (action: PanelFrontendHeaderAction) =>
+    typeof action.title === "function" ? action.title() : action.title;
+const actionBadge = (action: PanelFrontendHeaderAction) => {
+    const badge = typeof action.badge === "function" ? action.badge() : action.badge;
+    return badge === false || badge == null ? undefined : badge;
+};
 // Menu actions that opt into `taskbar` belong to the tray as well, so a plugin
 // button does not vanish when the normal header is replaced by the Desktop.
 const taskbarActions = computed(() =>
@@ -214,7 +228,16 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
         </div>
 
         <div class="taskbar__tray">
-            <component :is="entry.component" v-for="entry in actionSlots" :key="entry.id"
+            <template v-for="entry in slotActions" :key="entry.id">
+                <VBadge :content="actionBadge(entry.action)" :model-value="actionBadge(entry.action) != null"
+                    :max="99" :offset-x="14" :offset-y="14" color="primary" floating>
+                    <VBtn icon variant="text" :aria-label="actionTitle(entry.action)"
+                        :title="actionTitle(entry.action)" @click="entry.action.click()">
+                        <VIcon :icon="entry.action.mdiIcon" />
+                    </VBtn>
+                </VBadge>
+            </template>
+            <component :is="entry.component" v-for="entry in slotComponents" :key="entry.id"
                 v-bind="{ ...entry.props, mobile: false }" />
             <VBadge v-for="(action, index) in taskbarActions" :key="index" :content="action.badge"
                 :model-value="action.badge != null" :max="99" :offset-x="14" :offset-y="14" color="primary"

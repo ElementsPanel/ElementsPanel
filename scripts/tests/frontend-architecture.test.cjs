@@ -153,6 +153,41 @@ test("typed slots order entries, reject duplicate ids, honor conditions and disp
   assert.deepEqual(ctx.slots.entries("shell.header.actions", { mobile: true }), []);
 });
 
+test("header action descriptors register without a component for the shell to render", async (t) => {
+  const { Context } = frontendRequire("cordis");
+  const { SlotsService } = load("panel/plugins/console/src/plugin/slots.ts", {
+    cordis: frontendRequire("cordis"),
+    vue: frontendRequire("vue")
+  });
+  const ctx = new Context();
+  t.after(() => ctx.stop());
+  ctx.plugin(SlotsService);
+
+  ctx.plugin({
+    name: "descriptor",
+    inject: ["slots"],
+    apply(scope) {
+      scope.slots.register(
+        "shell.header.actions",
+        {
+          title: () => "Tasks",
+          mdiIcon: "mdi-progress-clock",
+          badge: () => 2,
+          click() {}
+        },
+        { id: "tasks", order: 10 }
+      );
+    }
+  });
+
+  const [entry] = ctx.slots.entries("shell.header.actions", { mobile: false });
+  assert.equal(entry.id, "tasks");
+  assert.equal(entry.component, undefined);
+  assert.equal(entry.action.mdiIcon, "mdi-progress-clock");
+  assert.equal(entry.action.title(), "Tasks");
+  assert.equal(entry.action.badge(), 2);
+});
+
 test("API client sends bearer authentication without adding a query token", async () => {
   let requestInterceptor;
   let captured;

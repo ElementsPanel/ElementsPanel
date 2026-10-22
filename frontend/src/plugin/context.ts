@@ -255,11 +255,36 @@ export type PanelFrontendSlotName = keyof PanelFrontendSlotMap & string;
 export type PanelFrontendSlotProps<K extends PanelFrontendSlotName> =
   PanelFrontendSlotMap[K]["props"];
 
+/**
+ * A declarative header button. The shell owns the button, tooltip and badge
+ * styling, so plugins only describe the icon, label and action.
+ */
+export interface PanelFrontendHeaderAction {
+  /** Tooltip and accessible label text. */
+  title: string | (() => string);
+  /** MDI icon rendered by the shell. */
+  mdiIcon: string;
+  /** Badge text; `false`, `null` and `undefined` hide the badge. */
+  badge?: string | number | (() => string | number | undefined | null | false);
+  click: (...args: any[]) => unknown;
+  /** Extra class for the shell button, e.g. `nav-button-danger`. */
+  customClass?: string | string[];
+  /** Hide in the phone header. */
+  onlyPC?: boolean;
+  /** Also render in the Desktop taskbar tray. Defaults to true. */
+  taskbar?: boolean;
+  /** ARIA controls target for toggle buttons. */
+  ariaControls?: string;
+  /** Current toggle state, for `aria-expanded` and pressed styling. */
+  expanded?: () => boolean;
+}
+
 export interface PanelFrontendSlotEntry<K extends PanelFrontendSlotName = PanelFrontendSlotName> {
   readonly id: string;
   readonly owner: string;
   readonly name: K;
-  readonly component: Component;
+  readonly component?: Component;
+  readonly action?: PanelFrontendHeaderAction;
   readonly order: number;
   readonly props: Record<string, unknown>;
 }
@@ -276,6 +301,12 @@ export interface PanelFrontendSlotRegistration<K extends PanelFrontendSlotName> 
 }
 
 export interface FrontendSlotsService {
+  /** Header action seat: pass a descriptor and the shell renders the button. */
+  register(
+    name: "shell.header.actions",
+    action: PanelFrontendHeaderAction,
+    options?: PanelFrontendSlotRegistration<"shell.header.actions">
+  ): () => void;
   register<K extends PanelFrontendSlotName>(
     name: K,
     component: Component,

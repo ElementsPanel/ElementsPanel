@@ -109,8 +109,10 @@ export class UiService extends Service implements FrontendUiService {
   // cordis warns once per call that the service was not injected.
   static inject = ["vue", "slots"];
 
-  get globalComponents() {
-    return this.ctx.slots.entries("shell.overlay", {}).map((entry) => entry.component);
+  get globalComponents(): readonly Component[] {
+    return this.ctx.slots
+      .entries("shell.overlay", {})
+      .flatMap((entry) => (entry.component ? [entry.component] : []));
   }
 
   private readonly vueComponents: ComponentSlots = {

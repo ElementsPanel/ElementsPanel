@@ -2,6 +2,7 @@ import { Service, type Context } from "cordis";
 import { markRaw, shallowRef, type Component } from "vue";
 import type {
   FrontendSlotsService,
+  PanelFrontendHeaderAction,
   PanelFrontendSlotEntry,
   PanelFrontendSlotName,
   PanelFrontendSlotProps,
@@ -11,6 +12,19 @@ import type {
 interface StoredSlotEntry<K extends PanelFrontendSlotName = PanelFrontendSlotName>
   extends PanelFrontendSlotEntry<K> {
   condition?: (props: PanelFrontendSlotProps<K>) => boolean;
+}
+
+/** Header actions are data; anything else in a slot is a Vue component. */
+function isHeaderAction(
+  target: Component | PanelFrontendHeaderAction
+): target is PanelFrontendHeaderAction {
+  return (
+    typeof target === "object" &&
+    target !== null &&
+    "title" in target &&
+    "mdiIcon" in target &&
+    "click" in target
+  );
 }
 
 /** Effect-scoped, typed UI extension seats owned by the console shell. */
@@ -25,17 +39,19 @@ export class SlotsService extends Service implements FrontendSlotsService {
 
   register<K extends PanelFrontendSlotName>(
     name: K,
-    component: Component,
+    target: Component | PanelFrontendHeaderAction,
     options: PanelFrontendSlotRegistration<K> = {}
   ) {
     const owner = this.ctx.name || "anonymous";
     const id = (options.id || `${owner}:${++this.sequence}`).trim();
     if (!id) throw new Error(`Slot registration in "${name}" needs an id.`);
+    const action = isHeaderAction(target) ? target : undefined;
     const entry: StoredSlotEntry<K> = {
       id,
       owner,
       name,
-      component: markRaw(component),
+      component: action ? undefined : markRaw(target as Component),
+      action,
       order: Number.isFinite(options.order) ? Number(options.order) : 0,
       props: { ...(options.props || {}) },
       condition: options.condition

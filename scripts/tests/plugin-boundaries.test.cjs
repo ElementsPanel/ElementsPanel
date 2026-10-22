@@ -457,6 +457,11 @@ function frontendFixture(t) {
   const overrides = {
     "@/lang/i18n": { t: (key) => key },
     "@/stores/useAppStateStore": { useAppStateStore: () => state },
+    "@/stores/useAppToolsStore": {
+      useAppToolsStore: () => ({ state: { showUserInfoDialog: false } })
+    },
+    "@/tools/vuetifyModal": { Modal: { confirm() {} } },
+    "@/tools/vuetifyToast": { message: { success() {} } },
     "@/config/router": { ROLE: { ADMIN: 10, USER: 1 } },
     "@/plugin/context": pluginContext,
     "./api": {},
