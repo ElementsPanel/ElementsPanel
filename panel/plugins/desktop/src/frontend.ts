@@ -3,6 +3,7 @@ import type { PanelFrontendPluginContext } from "@/plugin";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import DesktopPage from "./Desktop.vue";
 import DesktopWindow from "./widgets/desktop/DesktopWindow.vue";
+import DesktopConfirmDialog from "./widgets/desktop/DesktopConfirmDialog.vue";
 import { localeMessages } from "./i18n";
 import themeCss from "./theme.scss?inline";
 import { h } from "vue";
@@ -30,6 +31,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   });
 
   ctx.desktop.provideWindow(DesktopWindow);
+  ctx.desktop.provideConfirmation(DesktopConfirmDialog);
 
   ctx.routes.add({
     path: "/desktop",

@@ -590,7 +590,7 @@ test("desktop shell opens/restores contributed windows and survives removal of i
     body: { classList: { remove() {} } },
     removeEventListener() {}
   };
-  ctx.plugin(
+  const desktopPlugin = ctx.plugin(
     load("panel/plugins/desktop/src/frontend.ts", {
       ...overrides,
       "./theme.scss?inline": "",
@@ -600,6 +600,7 @@ test("desktop shell opens/restores contributed windows and survives removal of i
   await ctx.start();
   assert.ok(routes.has("/desktop"));
   const windowShell = ctx.desktop.window;
+  assert.ok(ctx.desktop.confirmation);
   assert.equal(ctx.desktop.open({ id: "missing", view: "instance-console" }), false);
   ctx.plugin((scope) => scope.set("node", {}));
   const instancePlugin = load("panel/plugins/instance/src/frontend.ts", overrides);
@@ -663,6 +664,11 @@ test("desktop shell opens/restores contributed windows and survives removal of i
   app.isAdmin.value = false;
   await vue.nextTick();
   assert.equal(windows.has("instances"), false);
+  await desktopPlugin.dispose();
+  await tick();
+  assert.equal(ctx.desktop.confirmation, undefined);
+  assert.equal(ctx.desktop.window, undefined);
+  assert.equal(routes.has("/desktop"), false);
 });
 
 test("instance hook compatibility resolves current providers and never retains the unloaded implementation", () => {

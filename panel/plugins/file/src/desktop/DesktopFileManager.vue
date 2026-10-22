@@ -19,6 +19,8 @@ import { VAlert, VBtn, VCard, VCardText, VCheckbox, VDataTableServer, VIcon, VLi
  * through the core-owned registry, so this plugin never reaches into another
  * plugin's source tree for it.
  */
+const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
+
 const desktopVuetifyMode = true;
 const desktopWindowComponent = computed(() => usePluginService<FrontendDesktopService>("desktop")?.window);
 let disposed = false;
@@ -930,61 +932,25 @@ onUnmounted(() => {
             </Transition>
         </Teleport>
 
-        <Teleport to="body">
-            <Transition name="desktop-window">
-                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && uploadConfirmDialog.show"
-                    v-bind="getDesktopDialogProps('upload-confirm', 520, 250)" :title="t('TXT_CODE_52bc24ec')"
-                    icon="mdi-upload-outline" :visible="uploadConfirmDialog.show" @close="handleUploadConfirmCancel"
-                    @keydown.esc.stop="handleUploadConfirmCancel">
-                    <div class="dfm-dialog-content">
-                        <div class="dfm-dialog__body">{{ t("TXT_CODE_52bc24ec") }} {{ uploadConfirmDialog.name }}?</div>
-                        <div class="dfm-dialog__footer">
-                            <VBtn variant="text" rounded="xl" @click="handleUploadConfirmCancel">{{ t("TXT_CODE_a0451c97") }}</VBtn>
-                            <VBtn color="primary" variant="text" rounded="xl" @click="handleUploadConfirmOk">{{ t("TXT_CODE_d507abff") }}</VBtn>
-                        </div>
-                    </div>
-                </component>
-            </Transition>
-        </Teleport>
+        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="uploadConfirmDialog.show"
+            :id="getDesktopDialogProps('upload-confirm', 400, 220).id" :height="220"
+            :title="t('TXT_CODE_52bc24ec')" :message="`${t('TXT_CODE_52bc24ec')} ${uploadConfirmDialog.name}?`"
+            @cancel="handleUploadConfirmCancel" @confirm="handleUploadConfirmOk" />
 
-        <Teleport to="body">
-            <Transition name="desktop-window">
-                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && overwriteDialog.show"
-                    v-bind="getDesktopDialogProps('overwrite-confirm', 520, 340, 2)" :title="t('TXT_CODE_99ca8563')"
-                    icon="mdi-content-duplicate" :visible="overwriteDialog.show" @close="handleOverwriteCancel"
-                    @keydown.esc.stop="handleOverwriteCancel">
-                    <div class="dfm-dialog-content">
-                        <div class="dfm-dialog__body">
-                            {{ t("TXT_CODE_58a55f17", { name: overwriteDialog.fileName }) }}
-                            <VCheckbox v-model="overwriteDialog.overwrite" :label="t('TXT_CODE_5bf41818')" hide-details />
-                            <VCheckbox v-if="overwriteDialog.count > 1" v-model="overwriteDialog.all"
-                                :label="t('TXT_CODE_5445f34b', { num: overwriteDialog.count - 1 })" hide-details />
-                        </div>
-                        <div class="dfm-dialog__footer">
-                            <VBtn variant="text" rounded="xl" @click="handleOverwriteCancel">{{ t("TXT_CODE_518528d0") }}</VBtn>
-                            <VBtn color="primary" variant="text" rounded="xl" @click="handleOverwriteOk">{{ t("TXT_CODE_ae09d79d") }}</VBtn>
-                        </div>
-                    </div>
-                </component>
-            </Transition>
-        </Teleport>
+        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="overwriteDialog.show"
+            :id="getDesktopDialogProps('overwrite-confirm', 400, 340).id" :height="340"
+            :title="t('TXT_CODE_99ca8563')" :ok-text="t('TXT_CODE_ae09d79d')" :cancel-text="t('TXT_CODE_518528d0')"
+            @cancel="handleOverwriteCancel" @confirm="handleOverwriteOk">
+            <p>{{ t("TXT_CODE_58a55f17", { name: overwriteDialog.fileName }) }}</p>
+            <VCheckbox v-model="overwriteDialog.overwrite" :label="t('TXT_CODE_5bf41818')" hide-details />
+            <VCheckbox v-if="overwriteDialog.count > 1" v-model="overwriteDialog.all"
+                :label="t('TXT_CODE_5445f34b', { num: overwriteDialog.count - 1 })" hide-details />
+        </component>
 
-        <Teleport to="body">
-            <Transition name="desktop-window">
-                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && deleteDialog.show"
-                    v-bind="getDesktopDialogProps('delete-confirm', 520, 240)" :title="t('TXT_CODE_71155575')"
-                    icon="mdi-delete-outline" :visible="deleteDialog.show"
-                    @close="deleteDialog.resolve?.(false)" @keydown.esc.stop="deleteDialog.resolve?.(false)">
-                    <div class="dfm-dialog-content">
-                        <div class="dfm-dialog__body">{{ t("TXT_CODE_6a10302d") }}</div>
-                        <div class="dfm-dialog__footer">
-                            <VBtn variant="text" rounded="xl" @click="deleteDialog.resolve?.(false)">{{ t("TXT_CODE_a0451c97") }}</VBtn>
-                            <VBtn color="error" variant="text" rounded="xl" @click="deleteDialog.resolve?.(true)">{{ t("TXT_CODE_d507abff") }}</VBtn>
-                        </div>
-                    </div>
-                </component>
-            </Transition>
-        </Teleport>
+        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="deleteDialog.show"
+            :id="getDesktopDialogProps('delete-confirm', 400, 220).id" :height="220"
+            :title="t('TXT_CODE_71155575')" :message="t('TXT_CODE_6a10302d')" danger :loading="deleteDialog.loading"
+            @cancel="deleteDialog.resolve?.(false)" @confirm="deleteDialog.resolve?.(true)" />
     </template>
 </template>
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import { usePluginService } from "@/plugin/context";
+import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
 import { addUser as addUserApi, deleteUser as deleteUserApi, editUserInfo as editUserInfoApi, getUserInfo as getUserInfoApi, remoteInstances, remoteNodeList, updateUserInstance, userInfoApiAdvanced } from "@/services/apis";
 import { computeNodeName } from "@/tools/nodes";
 import type { NodeStatus } from "@/types";
@@ -11,9 +11,10 @@ import { computed, onMounted, onUnmounted, reactive, ref, shallowRef, watch } fr
 import DesktopWindow from "./DesktopWindow.vue";
 import { VBtn, VChip, VDataTable, VIcon, VRadio, VRadioGroup, VSelect, VTextField } from "vuetify/components";
 
+const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
+
 const PlusOutlined = "mdi-plus";
 const EditOutlined = "mdi-pencil-outline";
-const ExclamationCircleOutlined = "mdi-alert-circle-outline";
 const LinkOutlined = "mdi-link-variant";
 
 const { execute: fetchUsersApi, isLoading: loading } = getUserInfoApi();
@@ -495,35 +496,11 @@ const getInstanceStatusLabel = (status: number): string => {
             </Transition>
         </Teleport>
 
-        <Teleport to="body">
-            <Transition name="desktop-window">
-                <DesktopWindow v-if="showDeleteConfirm" id="user-delete-dialog"
-                    :title="t('TXT_CODE_DESKTOP_USERS_DELETE')" :icon="ExclamationCircleOutlined"
-                    :visible="showDeleteConfirm" :minimized="false" :maximized="false" :active="true"
-                    :initial-width="400" :initial-height="200" :initial-x="windowWidth / 2 - 200"
-                    :initial-y="windowHeight / 2 - 100" :z-index="10002" :show-minimize="false" :show-maximize="false"
-                    :resizable="false" @close="cancelDelete">
-                    <div class="du-dialog-content">
-                        <div class="du-dialog__body du-dialog__body--column">
-                            <VIcon icon="mdi-alert-circle-outline" class="du-dialog__warn-icon"  />
-                            <p class="du-dialog__desc">
-                                {{ t("TXT_CODE_DESKTOP_USERS_DELETE_CONFIRM", { name: deletingUser?.userName }) }}
-                            </p>
-                        </div>
-                        <div class="du-dialog__footer">
-                            <VBtn class="du-btn du-btn--default" variant="text" rounded="xl" @click="cancelDelete">
-                                {{ t("TXT_CODE_a0451c97") }}
-                            </VBtn>
-                            <VBtn class="du-btn du-btn--primary" variant="text" rounded="xl"
-                                style="background: var(--color-red-5); border-color: var(--color-red-5);"
-                                :disabled="saving" @click="executeDelete">
-                                {{ t("TXT_CODE_DESKTOP_USERS_DELETE") }}
-                            </VBtn>
-                        </div>
-                    </div>
-                </DesktopWindow>
-            </Transition>
-        </Teleport>
+        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="showDeleteConfirm" id="user-delete-dialog"
+            :title="t('TXT_CODE_DESKTOP_USERS_DELETE')"
+            :message="t('TXT_CODE_DESKTOP_USERS_DELETE_CONFIRM', { name: deletingUser?.userName })"
+            danger :loading="saving" :ok-text="t('TXT_CODE_DESKTOP_USERS_DELETE')"
+            @cancel="cancelDelete" @confirm="executeDelete" />
 
         <Teleport to="body">
             <Transition name="desktop-window">
@@ -967,14 +944,6 @@ const getInstanceStatusLabel = (status: number): string => {
 
     &__body {
         padding: 16px 20px;
-
-        &--column {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
     }
 
     &__footer {
@@ -995,19 +964,6 @@ const getInstanceStatusLabel = (status: number): string => {
 
 .du-dialog__footer {
     margin-top: auto;
-}
-
-.du-dialog__warn-icon {
-    font-size: 36px;
-    color: var(--color-warning, #faad14);
-}
-
-.du-dialog__desc {
-    margin: 0;
-    color: var(--desktop-window-text);
-    font-size: 14px;
-    text-align: center;
-    line-height: 1.6;
 }
 
 .du-form-group {
@@ -1362,7 +1318,6 @@ const getInstanceStatusLabel = (status: number): string => {
     padding: 12px 16px;
     border-top: 1px solid var(--desktop-window-border);
 }
-
 
 .du-table-wrap::-webkit-scrollbar {
     width: 4px;

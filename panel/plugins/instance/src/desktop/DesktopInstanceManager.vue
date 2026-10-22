@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
 import { getInstanceDeleteError } from "../tools/deletion";
 import { useInstanceTagSearch, useInstanceTagTips } from "@/hooks/useInstanceTag";
 import { t } from "@/lang/i18n";
@@ -23,6 +24,8 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import DesktopWindow from "./DesktopWindow.vue";
 import { VBtn, VChip, VIcon, VList, VListItem, VMenu, VProgressCircular, VSelect, VTextField } from "vuetify/components";
 
+const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
+
 const ClockCircleOutlined = "mdi-clock-outline";
 const MinusCircleOutlined = "mdi-minus-circle-outline";
 const PauseCircleOutlined = "mdi-pause-circle-outline";
@@ -33,7 +36,6 @@ const CloseOutlined = "mdi-close";
 const DeleteOutlined = "mdi-delete-outline";
 const WarningOutlined = "mdi-alert-outline";
 const TagsOutlined = "mdi-tag-multiple-outline";
-const ExclamationCircleOutlined = "mdi-alert-circle-outline";
 
 const nodes = ref<NodeStatus[]>([]);
 const selectedNodeId = ref<string>("");
@@ -515,7 +517,6 @@ const handleInstanceDblClick = (instance: InstanceDetail) => {
     }
 };
 
-
 watch(selectedNodeId, () => {
     currentPage.value = 1;
     fetchInstances();
@@ -800,39 +801,14 @@ onUnmounted(() => {
             </Transition>
         </Teleport>
 
-        <Teleport to="body">
-            <Transition name="desktop-window">
-                <DesktopWindow v-if="deleteDialog.show" id="instance-manager-delete-dialog"
-                    :title="deleteDialog.deleteFile ? t('TXT_CODE_9ef27367') : t('TXT_CODE_ecbd7449')"
-                    :icon="ExclamationCircleOutlined" :visible="deleteDialog.show" :minimized="false" :maximized="false"
-                    :active="true" :initial-width="420" :initial-height="300" :initial-x="windowWidth / 2 - 210"
-                    :initial-y="windowHeight / 2 - 120" :z-index="10006" :show-minimize="false" :show-maximize="false"
-                    :resizable="false" @close="handleDeleteCancel">
-                    <div class="dim-dialog-content">
-                        <div class="dim-dialog__body dim-dialog__body--column">
-                            <VIcon icon="mdi-alert-circle-outline" class="dim-dialog__warn-icon"  />
-                            <p class="dim-dialog__desc">
-                                {{ deleteDialog.deleteFile ? t("TXT_CODE_18d2f8ae") : t("TXT_CODE_ac01315a") }}
-                            </p>
-                            <p v-if="deleteDialog.paths.length === 1" class="dim-dialog__path">
-                                {{ t("TXT_CODE_91d70059") }}<br />{{ deleteDialog.paths.join() }}
-                            </p>
-                        </div>
-                        <div class="dim-dialog__footer">
-                            <VBtn class="dim-btn dim-btn--default" variant="text" rounded="xl" :disabled="deleteDialog.loading"
-                                @click="handleDeleteCancel">
-                                {{ t("TXT_CODE_a0451c97") }}
-                            </VBtn>
-                            <VBtn class="dim-btn dim-btn--danger" variant="text" rounded="xl" :disabled="deleteDialog.loading"
-                                @click="handleDeleteConfirm">
-                                <VIcon icon="mdi-loading" v-if="deleteDialog.loading"  />
-                                {{ t("TXT_CODE_d507abff") }}
-                            </VBtn>
-                        </div>
-                    </div>
-                </DesktopWindow>
-            </Transition>
-        </Teleport>
+        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="deleteDialog.show" id="instance-manager-delete-dialog" :height="300"
+            :title="deleteDialog.deleteFile ? t('TXT_CODE_9ef27367') : t('TXT_CODE_ecbd7449')"
+            danger :loading="deleteDialog.loading" @cancel="handleDeleteCancel" @confirm="handleDeleteConfirm">
+            <p>{{ deleteDialog.deleteFile ? t("TXT_CODE_18d2f8ae") : t("TXT_CODE_ac01315a") }}</p>
+            <p v-if="deleteDialog.paths.length === 1" class="dim-dialog__path">
+                {{ t("TXT_CODE_91d70059") }}<br />{{ deleteDialog.paths.join() }}
+            </p>
+        </component>
     </div>
 </template>
 
@@ -1422,7 +1398,6 @@ onUnmounted(() => {
     }
 }
 
-
 .dim-dialog-content {
     display: flex;
     flex-direction: column;
@@ -1434,19 +1409,6 @@ onUnmounted(() => {
     padding: 16px 20px;
     flex: 1;
     overflow-y: auto;
-
-    &--column {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-    }
-}
-
-.dim-dialog__warn-icon {
-    font-size: 36px;
-    color: var(--color-warning, #faad14);
 }
 
 .dim-dialog__desc {

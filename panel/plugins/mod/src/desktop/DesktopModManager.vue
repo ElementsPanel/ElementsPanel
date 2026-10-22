@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
 import { useInstanceInfo } from "@/hooks/useInstance";
 import { t } from "@/lang/i18n";
 import { notifyDesktop } from "./notice";
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import LocalModTable from "../normal/mod-manager/LocalModTable.vue";
 import ModConfigModal from "./mod-manager/ModConfigModal.vue";
 import ModFloatingTools from "../normal/mod-manager/ModFloatingTools.vue";
@@ -13,15 +14,13 @@ import { useLocalMods } from "../normal/mod-manager/useLocalMods";
 import { useModConfig } from "../normal/mod-manager/useModConfig";
 import { useModSearch } from "./mod-manager/useModSearch";
 import { useModUpload } from "../normal/mod-manager/useModUpload";
-import { ctx } from "@/plugin/context";
 import { VAlert, VBadge, VBtn, VIcon, VSelect, VTabs, VTab, VTextField, VWindow, VWindowItem } from "vuetify/components";
 
-const desktopWindowComponent = computed(() => ctx.desktop.window);
+const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
 
 const TAB_KEY_MODS = "TAB_KEY_MODS";
 const TAB_KEY_PLUGINS = "TAB_KEY_PLUGINS";
 const TAB_KEY_DOWNLOAD = "TAB_KEY_DOWNLOAD";
-const ExclamationCircleOutlined = "mdi-alert-circle-outline";
 
 const props = defineProps<{
     instanceUuid: string;
@@ -41,22 +40,6 @@ const { instanceInfo, isRunning: isInstanceRunning } = useInstanceInfo({
 
 const activeKey = ref(TAB_KEY_MODS);
 const headerSearchQuery = ref("");
-
-const windowWidth = ref(window.innerWidth);
-const windowHeight = ref(window.innerHeight);
-
-const updateWindowSize = () => {
-    windowWidth.value = window.innerWidth;
-    windowHeight.value = window.innerHeight;
-};
-
-onMounted(() => {
-    window.addEventListener("resize", updateWindowSize);
-});
-
-onUnmounted(() => {
-    window.removeEventListener("resize", updateWindowSize);
-});
 
 const isWindows = computed(() => {
     const config = instanceInfo.value?.config;
@@ -510,67 +493,20 @@ onMounted(async () => {
 
         <input ref="fileInput" type="file" multiple style="display: none" accept=".jar,.zip" @change="onFileChange" />
 
-        <Teleport to="body">
-            <Transition name="desktop-window">
-                <component :is="desktopWindowComponent" v-if="saveLocationDialog.show" id="mod-save-location-dialog"
-                    :title="t('TXT_CODE_MOD_SELECT_SAVE_DIR')" :icon="ExclamationCircleOutlined"
-                    :visible="saveLocationDialog.show" :minimized="false" :maximized="false" :active="true"
-                    :initial-width="360" :initial-height="220" :initial-x="windowWidth / 2 - 180"
-                    :initial-y="windowHeight / 2 - 100" :z-index="10003" :show-minimize="false" :show-maximize="false"
-                    :resizable="false" @close="handleSaveLocationCancel">
-                    <div class="dmm-dialog-content">
-                        <div class="dmm-dialog__body dmm-dialog__body--column">
-                            <VIcon icon="mdi-alert-circle-outline" class="dmm-dialog__warn-icon"  />
-                            <p class="dmm-dialog__desc">{{ t("TXT_CODE_MOD_SELECT_SAVE_DIR") }}</p>
-                        </div>
-                        <div class="dmm-dialog__footer">
-                            <VBtn class="dmm-dialog-btn dmm-dialog-btn--default" variant="text" rounded="xl" @click="handleSaveLocationCancel">
-                                {{ t("TXT_CODE_a0451c97") }}
-                            </VBtn>
-                            <VBtn class="dmm-dialog-btn dmm-dialog-btn--primary" variant="text" rounded="xl"
-                                :class="{ 'dmm-dialog-btn--highlighted': saveLocationDialog.detectedType === 'mod' }"
-                                @click="handleSaveLocationSelect('mod')">
-                                <VIcon icon="mdi-folder-outline"  /> {{ t("TXT_CODE_MOD") }}
-                            </VBtn>
-                            <VBtn class="dmm-dialog-btn dmm-dialog-btn--primary" variant="text" rounded="xl"
-                                :class="{ 'dmm-dialog-btn--highlighted': saveLocationDialog.detectedType === 'plugin' }"
-                                @click="handleSaveLocationSelect('plugin')">
-                                <VIcon icon="mdi-folder-outline"  /> {{ t("TXT_CODE_PLUGIN") }}
-                            </VBtn>
-                        </div>
-                    </div>
-                </component>
-            </Transition>
-        </Teleport>
+        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="saveLocationDialog.show" id="mod-save-location-dialog" :width="440" :height="220"
+            :title="t('TXT_CODE_MOD_SELECT_SAVE_DIR')" :message="t('TXT_CODE_MOD_SELECT_SAVE_DIR')"
+            :actions="[
+                { id: 'mod', text: t('TXT_CODE_MOD'), icon: 'mdi-folder-outline', highlighted: saveLocationDialog.detectedType === 'mod' },
+                { id: 'plugin', text: t('TXT_CODE_PLUGIN'), icon: 'mdi-folder-outline', highlighted: saveLocationDialog.detectedType === 'plugin' }
+            ]" @cancel="handleSaveLocationCancel" @action="(id: string) => handleSaveLocationSelect(id as 'mod' | 'plugin')" />
 
-        <Teleport to="body">
-            <Transition name="desktop-window">
-                <component :is="desktopWindowComponent" v-if="fileLockDialog.show" id="mod-file-lock-dialog"
-                    :title="t('TXT_CODE_MOD_WIN_FILE_LOCK_TITLE')" :icon="ExclamationCircleOutlined"
-                    :visible="fileLockDialog.show" :minimized="false" :maximized="false" :active="true"
-                    :initial-width="400" :initial-height="240" :initial-x="windowWidth / 2 - 200"
-                    :initial-y="windowHeight / 2 - 110" :z-index="10004" :show-minimize="false" :show-maximize="false"
-                    :resizable="false" @close="handleFileLockCancel">
-                    <div class="dmm-dialog-content">
-                        <div class="dmm-dialog__body dmm-dialog__body--column">
-                            <VIcon icon="mdi-alert-circle-outline" class="dmm-dialog__warn-icon"  />
-                            <p class="dmm-dialog__desc">{{ t("TXT_CODE_MOD_WIN_FILE_LOCK_DESC") }}</p>
-                        </div>
-                        <div class="dmm-dialog__footer">
-                            <VBtn class="dmm-dialog-btn dmm-dialog-btn--default" variant="text" rounded="xl" @click="handleFileLockCancel">
-                                {{ t("TXT_CODE_a0451c97") }}
-                            </VBtn>
-                            <VBtn class="dmm-dialog-btn dmm-dialog-btn--danger" variant="text" rounded="xl" @click="handleFileLockImmediate">
-                                {{ t("TXT_CODE_MOD_TRY_IMMEDIATELY") }}
-                            </VBtn>
-                            <VBtn class="dmm-dialog-btn dmm-dialog-btn--primary" variant="text" rounded="xl" @click="handleFileLockQueue">
-                                {{ t("TXT_CODE_MOD_ADD_TO_QUEUE") }}
-                            </VBtn>
-                        </div>
-                    </div>
-                </component>
-            </Transition>
-        </Teleport>
+        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="fileLockDialog.show" id="mod-file-lock-dialog" :width="480" :height="240"
+            :title="t('TXT_CODE_MOD_WIN_FILE_LOCK_TITLE')" :message="t('TXT_CODE_MOD_WIN_FILE_LOCK_DESC')"
+            :actions="[
+                { id: 'immediate', text: t('TXT_CODE_MOD_TRY_IMMEDIATELY'), danger: true },
+                { id: 'queue', text: t('TXT_CODE_MOD_ADD_TO_QUEUE') }
+            ]" @cancel="handleFileLockCancel"
+            @action="(id: string) => id === 'immediate' ? handleFileLockImmediate() : handleFileLockQueue()" />
     </div>
 </template>
 
@@ -775,95 +711,5 @@ onMounted(async () => {
     gap: 8px;
     justify-content: flex-end;
     margin-top: 8px;
-}
-
-
-.dmm-dialog-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background: transparent;
-}
-
-.dmm-dialog__body {
-    padding: 20px;
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &--column {
-        flex-direction: column;
-        gap: 12px;
-    }
-}
-
-.dmm-dialog__warn-icon {
-    font-size: 36px;
-    color: var(--color-warning, #faad14);
-}
-
-.dmm-dialog__desc {
-    margin: 0;
-    color: var(--desktop-window-text);
-    font-size: 14px;
-    text-align: center;
-    line-height: 1.6;
-}
-
-.dmm-dialog__footer {
-    padding: 12px 20px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    border-top: 1px solid var(--desktop-window-border);
-}
-
-.dmm-dialog-btn {
-    padding: 7px 16px;
-    border: none;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.2s;
-    color: var(--desktop-window-text);
-    white-space: nowrap;
-
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    &--primary {
-        background: var(--color-blue-5, #1677ff);
-        color: #fff;
-        border-color: var(--color-blue-5, #1677ff);
-
-        &:hover:not(:disabled) {
-            background: var(--color-blue-6, #4096ff);
-        }
-    }
-
-    &--danger {
-        background: var(--color-red-5, #ff4d4f);
-        color: #fff;
-        border-color: var(--color-red-5, #ff4d4f);
-
-        &:hover:not(:disabled) {
-            background: var(--color-red-6, #ff7875);
-        }
-    }
-
-    &--default {
-        background: var(--desktop-window-titlebar-bg);
-        border: 1px solid var(--desktop-window-border);
-
-        &:hover:not(:disabled) {
-            background: var(--desktop-window-control-hover);
-        }
-    }
 }
 </style>

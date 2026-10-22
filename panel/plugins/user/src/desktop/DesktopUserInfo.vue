@@ -1,12 +1,15 @@
 <script setup lang="ts">
+import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
 import CopyButton from "@/components/CopyButton.vue";
 import { PERMISSION_MAP } from "@/config/const";
 import { t } from "@/lang/i18n";
 import { bind2FA, confirm2FA, setUserApiKey, updatePassword } from "@/services/apis/user";
 import { useAppStateStore } from "@/stores/useAppStateStore";
-import { reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
-import { VBtn, VCard, VCardActions, VCardText, VDialog, VTextField } from "vuetify/components";
+import { VBtn, VTextField } from "vuetify/components";
+
+const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
 
 const { state, updateUserInfo } = useAppStateStore();
 
@@ -193,15 +196,9 @@ const disable2FACode = async () => {
             </div>
         </div>
 
-        <VDialog v-model="revokeApiKeyDialog" class="desktop-dialog" max-width="380" scrollable>
-            <VCard :title="t('TXT_CODE_6819de18')" rounded="xl">
-                <VCardText>{{ t("TXT_CODE_6819de18") }}</VCardText>
-                <VCardActions class="justify-end">
-                    <VBtn variant="text" rounded="xl" @click="revokeApiKeyDialog = false">{{ t("TXT_CODE_3b1cc020") }}</VBtn>
-                    <VBtn color="error" variant="text" rounded="xl" @click="revokeApiKeyDialog = false; handleGenerateApiKey(false)">{{ t("TXT_CODE_718c9310") }}</VBtn>
-                </VCardActions>
-            </VCard>
-        </VDialog>
+        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="revokeApiKeyDialog" :title="t('TXT_CODE_6819de18')"
+            :message="t('TXT_CODE_6819de18')" danger :ok-text="t('TXT_CODE_718c9310')" :cancel-text="t('TXT_CODE_3b1cc020')"
+            @confirm="revokeApiKeyDialog = false; handleGenerateApiKey(false)" />
     </div>
 </template>
 

@@ -65,6 +65,24 @@ mod._compile(ts.transpileModule(script.content, {
 }).outputText, filename);
 const DesktopWindow = mod.exports.default;
 DesktopWindow.__scopeId = "data-v-desktop-window-test";
+function loadSfc(relative, overrides = {}) {
+  const filename = path.join(root, relative);
+  const { descriptor } = parse(fs.readFileSync(filename, "utf8"), { filename });
+  const script = compileScript(descriptor, { id: "confirmation-test", inlineTemplate: true });
+  const component = new Module(filename, module);
+  component.require = (id) => Object.hasOwn(overrides, id) ? overrides[id]
+    : id === "vuetify/components" ? Vuetify.components : frontendRequire(id);
+  component._compile(ts.transpileModule(script.content, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
+  }).outputText, filename);
+  return component.exports.default;
+}
+const translations = { t: (key) => key };
+const DesktopConfirmation = loadSfc("panel/plugins/desktop/src/widgets/desktop/DesktopConfirmDialog.vue", {
+  "@/lang/i18n": translations,
+  "./DesktopWindow.vue": { default: DesktopWindow }
+});
+const desktopService = vue.shallowReactive({ window: DesktopWindow, confirmation: DesktopConfirmation });
 const { VSelect, VDialog } = Vuetify.components;
 const flush = async () => { for (let i = 0; i < 8; i++) await vue.nextTick(); };
 
@@ -204,6 +222,31 @@ function dialogFixture(t, shellStyleLast) {
 
 const transitionFrame = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
+function confirmationFixture(t, options = {}) {
+  const open = vue.ref(true);
+  const loading = vue.ref(false);
+  const disabled = vue.ref(false);
+  const events = { confirmations: 0, cancellations: 0, actions: [] };
+  const target = document.createElement("div");
+  document.body.appendChild(target);
+  const app = vue.createApp({
+    render: () => vue.h(DesktopConfirmation, {
+      title: "Delete user", message: "Delete Alice?", danger: true, ...options,
+      modelValue: open.value, loading: loading.value, disabled: disabled.value,
+      "onUpdate:modelValue": (value) => { open.value = value; },
+      onConfirm: () => { events.confirmations++; },
+      onCancel: () => { events.cancellations++; },
+      onAction: (id) => events.actions.push(id)
+    })
+  });
+  app.use(Vuetify.createVuetify());
+  app.mount(target);
+  t.after(() => { app.unmount(); target.remove(); });
+  const findWindow = () => [...document.body.querySelectorAll(".desktop-confirm")]
+    .find(element => element.querySelector(".window__title").textContent === (options.title || "Delete user"));
+  return { open, loading, disabled, events, findWindow };
+}
+
 function fileManagerDialogFixture(t) {
   const events = { cancelled: 0, deleted: [], downloads: [], uploads: [], overwritePromise: undefined };
   const manager = {
@@ -240,7 +283,7 @@ function fileManagerDialogFixture(t) {
   const overrides = {
     "../hooks/useFileManager": { useFileManager: () => manager },
     "@/hooks/usePolling": { usePolling() {} },
-    "@/plugin/context": { usePluginService: () => ({ window: DesktopWindow }) },
+    "@/plugin/context": { usePluginService: () => desktopService },
     "@/lang/i18n": { t: (key) => key },
     "../components/FileManagerTabs.vue": { default: { props: ["activeTab", "tabs"], render: () => vue.h("div") } },
     "../components/ArchivePreview.vue": { default: { props: ["compact", "entries", "loading"], render: () => vue.h("div", { class: "archive-content" }) } },
@@ -498,7 +541,7 @@ test("file manager operations, archive preview and deletion use desktop subwindo
   f.manager.deleteDialog.value.show = true;
   await flush();
   const deletion = f.findWindow("TXT_CODE_71155575");
-  [...deletion.querySelectorAll(".dfm-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_d507abff")).click();
+  [...deletion.querySelectorAll(".desktop-confirm__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_d507abff")).click();
   await flush();
   assert.deepEqual(f.events.deleted, [false, true]);
   await transitionFrame();
@@ -527,7 +570,7 @@ test("file manager URL downloads and upload overwrite confirmations run in deskt
   await flush();
   const upload = f.findWindow("TXT_CODE_52bc24ec");
   assert.ok(upload.textContent.includes("existing.txt"));
-  [...upload.querySelectorAll(".dfm-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_d507abff")).click();
+  [...upload.querySelectorAll(".desktop-confirm__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_d507abff")).click();
   await flush();
   assert.equal(f.events.uploads.length, 1);
   const overwrite = f.findWindow("TXT_CODE_99ca8563");
@@ -554,4 +597,75 @@ test("file operation progress remains a non-dismissable desktop subwindow", asyn
   await flush();
   await transitionFrame();
   assert.equal(progress.isConnected, false);
+});
+
+for (const dismiss of ["button", "titlebar", "escape"]) {
+  test(`shared desktop confirmations use the user deletion layout and cancel once through ${dismiss}`, async (t) => {
+    const f = confirmationFixture(t);
+    await flush();
+    const dialog = f.findWindow();
+    assert.equal(dialog.closest(".v-dialog"), null);
+    assert.ok(dialog.querySelector(".desktop-confirm__icon.mdi-alert-circle-outline"));
+    assert.ok(dialog.querySelector(".desktop-confirm__message").textContent.includes("Delete Alice?"));
+    assert.ok(dialog.querySelector(".desktop-confirm__button--danger"));
+    assert.equal(dialog.querySelector(".window__control--minimize"), null);
+    assert.equal(dialog.querySelector(".window__control--maximize"), null);
+    assert.equal(document.activeElement, dialog.querySelector(".desktop-confirm__cancel"));
+    if (dismiss === "button") dialog.querySelector(".desktop-confirm__cancel").click();
+    else if (dismiss === "titlebar") dialog.querySelector(".window__control--close").click();
+    else dialog.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await flush();
+    assert.equal(f.open.value, false);
+    assert.equal(f.events.cancellations, 1);
+    assert.equal(f.events.confirmations, 0);
+    await transitionFrame();
+    assert.equal(dialog.isConnected, false);
+  });
+}
+
+test("pending confirmations and required acknowledgements prevent duplicate or premature actions", async (t) => {
+  const f = confirmationFixture(t);
+  f.loading.value = true;
+  await flush();
+  let dialog = f.findWindow();
+  assert.equal(dialog.querySelector(".window__control--close"), null);
+  assert.ok(dialog.querySelector(".desktop-confirm__cancel").disabled);
+  dialog.querySelector(".desktop-confirm__button--danger").click();
+  dialog.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  assert.equal(f.open.value, true);
+  assert.equal(f.events.confirmations + f.events.cancellations, 0);
+  f.loading.value = false;
+  f.disabled.value = true;
+  await flush();
+  dialog = f.findWindow();
+  assert.ok(dialog.querySelector(".window__control--close"));
+  dialog.querySelector(".desktop-confirm__button--danger").click();
+  assert.equal(f.events.confirmations, 0);
+  f.disabled.value = false;
+  await flush();
+  dialog.querySelector(".desktop-confirm__button--danger").click();
+  assert.equal(f.events.confirmations, 1);
+  assert.equal(f.open.value, true, "the owner decides when its asynchronous action has finished");
+});
+
+test("desktop confirmations preserve multiple choices and stack independently across application roots", async (t) => {
+  const first = confirmationFixture(t, { title: "First" });
+  await flush();
+  const second = confirmationFixture(t, { title: "Choose action", actions: [
+    { id: "immediate", text: "Try immediately", danger: true },
+    { id: "queue", text: "Add to queue", highlighted: true }
+  ] });
+  await flush();
+  const firstWindow = first.findWindow();
+  const secondWindow = second.findWindow();
+  assert.notEqual(firstWindow.querySelector('.window__title').id, secondWindow.querySelector('.window__title').id);
+  assert.ok(Number(secondWindow.style.zIndex) > Number(firstWindow.style.zIndex));
+  const highlighted = secondWindow.querySelector(".desktop-confirm__button--highlighted");
+  assert.ok(highlighted.textContent.includes("Add to queue"));
+  highlighted.click();
+  secondWindow.querySelector(".desktop-confirm__button--danger").click();
+  assert.deepEqual(second.events.actions, ["queue", "immediate"]);
+  firstWindow.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+  await flush();
+  assert.ok(Number(firstWindow.style.zIndex) > Number(secondWindow.style.zIndex));
 });

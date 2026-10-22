@@ -367,6 +367,9 @@ export interface FrontendDesktopService {
   readonly window: Component | undefined;
   /** Supplies that shell. Called by `plugins/desktop`. */
   provideWindow(component: Component): () => void;
+  /** The shared confirmation window supplied by `plugins/desktop`. */
+  readonly confirmation: Component | undefined;
+  provideConfirmation(component: Component): () => void;
 }
 
 /**

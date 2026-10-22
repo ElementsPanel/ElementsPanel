@@ -769,6 +769,7 @@ test("desktop node refresh ignores stale results, validates ports and reports fa
     }
   });
   const state = setupSfc("panel/plugins/node/src/desktop/DesktopNodeManager.vue", {
+    "@/plugin/context": { usePluginService: () => undefined },
     "@/hooks/useOverviewInfo": { useOverviewInfo: () => ({ state: vue.ref() }) },
     "@/hooks/useSocketIo": {
       testSocketConnection: async () => {},

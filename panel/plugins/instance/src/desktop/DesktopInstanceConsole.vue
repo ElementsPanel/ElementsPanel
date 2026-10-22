@@ -2,7 +2,7 @@
 import { INSTANCE_TYPE_TRANSLATION, verifyEULA } from "@/hooks/useInstance";
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { t } from "@/lang/i18n";
-import { ctx, usePluginService, type FrontendTerminalService } from "@/plugin/context";
+import { ctx, usePluginService, type FrontendDesktopService, type FrontendTerminalService } from "@/plugin/context";
 import {
     killInstance,
     openInstance,
@@ -18,6 +18,8 @@ import { GLOBAL_INSTANCE_NAME } from "@/config/const";
 import { arrayFilter } from "@/tools/array";
 import DesktopManagerBtns from "./DesktopManagerBtns.vue";
 import { VBtn, VCard, VCardActions, VCardText, VDialog, VIcon } from "vuetify/components";
+
+const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
 
 const PlayCircleOutlined = "mdi-play-circle-outline";
 const PauseCircleOutlined = "mdi-pause-circle-outline";
@@ -476,15 +478,8 @@ onUnmounted(() => {
             </VCard>
         </VDialog>
 
-        <VDialog v-model="confirmDialog" class="desktop-dialog" max-width="380" scrollable>
-            <VCard :title="t('TXT_CODE_276756b2')" rounded="xl">
-                <VCardText>{{ t("TXT_CODE_276756b2") }}</VCardText>
-                <VCardActions class="justify-end">
-                    <VBtn variant="text" rounded="xl" @click="confirmDialog = false">{{ t("TXT_CODE_a0451c97") }}</VBtn>
-                    <VBtn color="primary" variant="text" rounded="xl" @click="confirmPendingAction">{{ t("TXT_CODE_d507abff") }}</VBtn>
-                </VCardActions>
-            </VCard>
-        </VDialog>
+        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="confirmDialog" :title="t('TXT_CODE_276756b2')"
+            :message="t('TXT_CODE_276756b2')" @cancel="pendingAction = null" @confirm="confirmPendingAction" />
     </div>
 </template>
 

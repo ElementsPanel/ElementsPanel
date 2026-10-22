@@ -251,6 +251,7 @@ export class DesktopService extends Service implements FrontendDesktopService {
   readonly apps = shallowReactive<PanelFrontendDesktopApp[]>([]);
   readonly views = shallowReactive<PanelFrontendDesktopView[]>([]);
   private readonly shell = shallowRef<Component>();
+  private readonly confirmationDialog = shallowRef<Component>();
   private readonly opener = shallowRef<(request: PanelFrontendDesktopWindowRequest) => boolean>();
 
   constructor(ctx: Context) {
@@ -267,6 +268,19 @@ export class DesktopService extends Service implements FrontendDesktopService {
       this.shell.value = component;
       return () => {
         this.shell.value = undefined;
+      };
+    });
+  }
+
+  get confirmation() {
+    return this.confirmationDialog.value;
+  }
+
+  provideConfirmation(component: Component) {
+    return this.ctx.effect(() => {
+      this.confirmationDialog.value = markRaw(component);
+      return () => {
+        this.confirmationDialog.value = undefined;
       };
     });
   }

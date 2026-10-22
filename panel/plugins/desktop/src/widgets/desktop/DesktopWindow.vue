@@ -353,7 +353,7 @@ onUnmounted(() => {
                         <VIcon v-else-if="isMdiIcon" :icon="icon as string" size="small" />
                         <img v-else :src="icon as string" alt="icon" />
                     </span>
-                    <span class="window__title">{{ title }}</span>
+                    <span :id="`${id}-title`" class="window__title"><slot name="title">{{ title }}</slot></span>
                 </div>
                 <div class="window__controls" @mousedown.stop>
                     <VBtn v-if="showMinimize" class="window__control window__control--minimize" icon="mdi-minus"

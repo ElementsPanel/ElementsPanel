@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { testSocketConnection, SocketStatus } from "@/hooks/useSocketIo";
 import { usePolling } from "@/hooks/usePolling";
@@ -10,9 +11,10 @@ import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
 import DesktopWindow from "./DesktopWindow.vue";
 import { VBtn, VDataTable, VIcon, VTextField, VTooltip } from "vuetify/components";
 
+const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
+
 const PlusOutlined = "mdi-plus";
 const EditOutlined = "mdi-pencil-outline";
-const ExclamationCircleOutlined = "mdi-alert-circle-outline";
 
 const nodeHeaders = [
   { title: t("TXT_CODE_759fb403"), key: "status", sortable: false },
@@ -554,62 +556,11 @@ const reconnectNode = async (node: NodeStatus) => {
       </Transition>
     </Teleport>
 
-    <Teleport to="body">
-      <Transition name="desktop-window">
-        <DesktopWindow
-          v-if="showDeleteConfirm"
-          id="node-delete-dialog"
-          :title="t('TXT_CODE_8b937b23')"
-          :icon="ExclamationCircleOutlined"
-          :visible="showDeleteConfirm"
-          :minimized="false"
-          :maximized="false"
-          :active="true"
-          :initial-width="400"
-          :initial-height="200"
-          :initial-x="windowWidth / 2 - 200"
-          :initial-y="windowHeight / 2 - 100"
-          :z-index="10002"
-          :show-minimize="false"
-          :show-maximize="false"
-          :resizable="false"
-          @close="cancelDelete"
-        >
-          <div class="dn-dialog-content">
-            <div class="dn-dialog__body dn-dialog__body--column">
-              <VIcon icon="mdi-alert-circle-outline" class="dn-dialog__warn-icon" />
-              <p class="dn-dialog__desc">
-                {{
-                  t("TXT_CODE_DESKTOP_NODES_DELETE_CONFIRM", {
-                    name: deletingNode?.remarks || deletingNode?.ip
-                  })
-                }}
-              </p>
-            </div>
-            <div class="dn-dialog__footer">
-              <VBtn
-                class="dn-btn dn-btn--default"
-                variant="text"
-                rounded="xl"
-                @click="cancelDelete"
-              >
-                {{ t("TXT_CODE_a0451c97") }}
-              </VBtn>
-              <VBtn
-                class="dn-btn dn-btn--primary"
-                variant="text"
-                rounded="xl"
-                style="background: var(--color-red-5); border-color: var(--color-red-5)"
-                :disabled="saving"
-                @click="executeDelete"
-              >
-                {{ t("TXT_CODE_8b937b23") }}
-              </VBtn>
-            </div>
-          </div>
-        </DesktopWindow>
-      </Transition>
-    </Teleport>
+    <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="showDeleteConfirm" id="node-delete-dialog"
+      :title="t('TXT_CODE_8b937b23')"
+      :message="t('TXT_CODE_DESKTOP_NODES_DELETE_CONFIRM', { name: deletingNode?.remarks || deletingNode?.ip })"
+      danger :loading="saving" :ok-text="t('TXT_CODE_8b937b23')"
+      @cancel="cancelDelete" @confirm="executeDelete" />
   </div>
 </template>
 
@@ -1016,27 +967,6 @@ const reconnectNode = async (node: NodeStatus) => {
   padding: 16px 20px;
   flex: 1;
   overflow-y: auto;
-
-  &--column {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-  }
-}
-
-.dn-dialog__warn-icon {
-  font-size: 36px;
-  color: var(--color-warning, #faad14);
-}
-
-.dn-dialog__desc {
-  margin: 0;
-  color: var(--desktop-window-text);
-  font-size: 14px;
-  text-align: center;
-  line-height: 1.6;
 }
 
 .dn-delete-text {
@@ -1045,7 +975,6 @@ const reconnectNode = async (node: NodeStatus) => {
   line-height: 1.6;
   margin: 0;
 }
-
 
 .dn-table-wrap::-webkit-scrollbar {
   width: 4px;

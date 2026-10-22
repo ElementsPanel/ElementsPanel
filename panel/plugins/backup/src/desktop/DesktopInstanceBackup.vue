@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
 import type { FrontendFileManagerService } from "@/plugin";
-import { ctx, usePluginService } from "@/plugin/context";
+import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
 import {
     createAsyncTask,
     queryAsyncTask
@@ -11,7 +11,7 @@ import { computed, onMounted, onUnmounted, ref } from "vue";
 import { deleteBackup, getBackupList, restoreBackup } from "../api";
 import { VBtn, VIcon } from "vuetify/components";
 
-const ExclamationCircleOutlined = "mdi-alert-circle-outline";
+const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
 
 /**
  * The file API belongs to `plugins/file`. A backup that edits an
@@ -26,8 +26,6 @@ const fileApi = () => {
         touchFile: () => { execute: (config?: any) => Promise<any> };
     };
 };
-
-const desktopWindowComponent = computed(() => ctx.desktop.window);
 
 const props = defineProps<{
     instanceUuid: string;
@@ -44,9 +42,6 @@ const taskId = ref<string | null>(null);
 const taskStatus = ref<number>(0);
 const backupList = ref<{ name: string; size: number; time: string }[]>([]);
 const listLoading = ref(false);
-
-const windowWidth = ref(window.innerWidth);
-const windowHeight = ref(window.innerHeight);
 
 const deleteDialog = ref({
     show: false,
@@ -295,19 +290,12 @@ const formatSize = (bytes: number) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
-const updateWindowSize = () => {
-    windowWidth.value = window.innerWidth;
-    windowHeight.value = window.innerHeight;
-};
-
 onMounted(() => {
-    window.addEventListener("resize", updateWindowSize);
     fetchBackupList();
 });
 
 onUnmounted(() => {
     if (timer) clearInterval(timer);
-    window.removeEventListener("resize", updateWindowSize);
 });
 </script>
 
@@ -359,127 +347,22 @@ onUnmounted(() => {
             </VBtn>
         </div>
 
-        <Teleport to="body">
-            <Transition name="desktop-window">
-                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && deleteDialog.show"
-                    id="backup-delete-dialog" :title="t('TXT_CODE_71155575')"
-                    :icon="ExclamationCircleOutlined" :visible="deleteDialog.show" :minimized="false" :maximized="false"
-                    :active="true" :initial-width="400" :initial-height="200" :initial-x="windowWidth / 2 - 200"
-                    :initial-y="windowHeight / 2 - 100" :z-index="10006" :show-minimize="false" :show-maximize="false"
-                    :resizable="false" @close="deleteDialog.resolve && deleteDialog.resolve(false)">
-                    <div class="ds-dialog-content">
-                        <div class="ds-dialog__body ds-dialog__body--column">
-                            <VIcon icon="mdi-alert-circle-outline" class="ds-dialog__warn-icon"  />
-                            <p class="ds-dialog__desc">
-                                {{ t("TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM", { name: deleteDialog.name }) }}
-                            </p>
-                        </div>
-                        <div class="ds-dialog__footer">
-                            <VBtn class="ds-dialog-btn ds-dialog-btn--default" variant="text" rounded="xl"
-                                @click="deleteDialog.resolve && deleteDialog.resolve(false)">
-                                {{ t("TXT_CODE_a0451c97") }}
-                            </VBtn>
-                            <VBtn class="ds-dialog-btn ds-dialog-btn--primary" variant="text" rounded="xl"
-                                style="background: var(--color-red-5); border-color: var(--color-red-5);"
-                                @click="deleteDialog.resolve && deleteDialog.resolve(true)">
-                                {{ t("TXT_CODE_d507abff") }}
-                            </VBtn>
-                        </div>
-                    </div>
-                </component>
-            </Transition>
-        </Teleport>
+        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="deleteDialog.show" id="backup-delete-dialog"
+            :title="t('TXT_CODE_71155575')" :message="t('TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM', { name: deleteDialog.name })"
+            danger @cancel="deleteDialog.resolve?.(false)" @confirm="deleteDialog.resolve?.(true)" />
 
-        <Teleport to="body">
-            <Transition name="desktop-window">
-                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && restoreDialog.show"
-                    id="backup-restore-dialog"
-                    :title="t('TXT_CODE_INSTANCE_BACKUP_RESTORE')" :icon="ExclamationCircleOutlined"
-                    :visible="restoreDialog.show" :minimized="false" :maximized="false" :active="true"
-                    :initial-width="400" :initial-height="250" :initial-x="windowWidth / 2 - 200"
-                    :initial-y="windowHeight / 2 - 110" :z-index="10006" :show-minimize="false" :show-maximize="false"
-                    :resizable="false" @close="restoreDialog.resolve && restoreDialog.resolve(false)">
-                    <div class="ds-dialog-content">
-                        <div class="ds-dialog__body ds-dialog__body--column">
-                            <VIcon icon="mdi-alert-circle-outline" class="ds-dialog__warn-icon"  />
-                            <p class="ds-dialog__desc">
-                                {{ t("TXT_CODE_INSTANCE_BACKUP_RESTORE_CONFIRM", { name: restoreDialog.name }) }}
-                            </p>
-                        </div>
-                        <div class="ds-dialog__footer">
-                            <VBtn class="ds-dialog-btn ds-dialog-btn--default" variant="text" rounded="xl"
-                                @click="restoreDialog.resolve && restoreDialog.resolve(false)">
-                                {{ t("TXT_CODE_a0451c97") }}
-                            </VBtn>
-                            <VBtn class="ds-dialog-btn ds-dialog-btn--primary" variant="text" rounded="xl"
-                                @click="restoreDialog.resolve && restoreDialog.resolve(true)">
-                                {{ t("TXT_CODE_d507abff") }}
-                            </VBtn>
-                        </div>
-                    </div>
-                </component>
-            </Transition>
-        </Teleport>
+        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="restoreDialog.show" id="backup-restore-dialog" :height="250"
+            :title="t('TXT_CODE_INSTANCE_BACKUP_RESTORE')"
+            :message="t('TXT_CODE_INSTANCE_BACKUP_RESTORE_CONFIRM', { name: restoreDialog.name })"
+            @cancel="restoreDialog.resolve?.(false)" @confirm="restoreDialog.resolve?.(true)" />
 
-        <Teleport to="body">
-            <Transition name="desktop-window">
-                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && epbaklstConfirmDialog.show"
-                    id="backup-epbaklst-confirm-dialog"
-                    :title="t('TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST')"
-                    :visible="epbaklstConfirmDialog.show" :minimized="false" :maximized="false" :active="true"
-                    :initial-width="400" :initial-height="200" :initial-x="windowWidth / 2 - 200"
-                    :initial-y="windowHeight / 2 - 100" :z-index="10007" :show-minimize="false" :show-maximize="false"
-                    :resizable="false" @close="epbaklstConfirmDialog.resolve && epbaklstConfirmDialog.resolve(false)">
-                    <div class="ds-dialog-content">
-                        <div class="ds-dialog__body ds-dialog__body--column">
-                            <p class="ds-dialog__desc">
-                                {{ t("TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM") }}
-                            </p>
-                        </div>
-                        <div class="ds-dialog__footer">
-                            <VBtn class="ds-dialog-btn ds-dialog-btn--default" variant="text" rounded="xl"
-                                @click="epbaklstConfirmDialog.resolve && epbaklstConfirmDialog.resolve(false)">
-                                {{ t("TXT_CODE_a0451c97") }}
-                            </VBtn>
-                            <VBtn class="ds-dialog-btn ds-dialog-btn--primary" variant="text" rounded="xl"
-                                @click="epbaklstConfirmDialog.resolve && epbaklstConfirmDialog.resolve(true)">
-                                {{ t("TXT_CODE_d507abff") }}
-                            </VBtn>
-                        </div>
-                    </div>
-                </component>
-            </Transition>
-        </Teleport>
+        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="epbaklstConfirmDialog.show" id="backup-epbaklst-confirm-dialog"
+            :title="t('TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST')" :message="t('TXT_CODE_INSTANCE_BACKUP_EPBAKLST_CREATE_CONFIRM')"
+            @cancel="epbaklstConfirmDialog.resolve?.(false)" @confirm="epbaklstConfirmDialog.resolve?.(true)" />
 
-        <Teleport to="body">
-            <Transition name="desktop-window">
-                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && backupConfirmDialog.show"
-                    id="backup-confirm-dialog"
-                    :title="t('TXT_CODE_INSTANCE_BACKUP_CREATE')"
-                    :visible="backupConfirmDialog.show" :minimized="false" :maximized="false" :active="true"
-                    :initial-width="400" :initial-height="200" :initial-x="windowWidth / 2 - 200"
-                    :initial-y="windowHeight / 2 - 100" :z-index="10006" :show-minimize="false" :show-maximize="false"
-                    :resizable="false" @close="backupConfirmDialog.resolve && backupConfirmDialog.resolve(false)">
-                    <div class="ds-dialog-content">
-                        <div class="ds-dialog__body ds-dialog__body--column">
-                            <p class="ds-dialog__desc">
-                                {{ t("TXT_CODE_INSTANCE_BACKUP_CREATE_CONFIRM") }}
-                            </p>
-                        </div>
-                        <div class="ds-dialog__footer">
-                            <VBtn class="ds-dialog-btn ds-dialog-btn--default" variant="text" rounded="xl"
-                                @click="backupConfirmDialog.resolve && backupConfirmDialog.resolve(false)">
-                                {{ t("TXT_CODE_a0451c97") }}
-                            </VBtn>
-                            <VBtn class="ds-dialog-btn ds-dialog-btn--primary" variant="text" rounded="xl"
-                                @click="backupConfirmDialog.resolve && backupConfirmDialog.resolve(true)">
-                                {{ t("TXT_CODE_d507abff") }}
-                            </VBtn>
-                        </div>
-                    </div>
-                </component>
-            </Transition>
-        </Teleport>
+        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="backupConfirmDialog.show" id="backup-confirm-dialog"
+            :title="t('TXT_CODE_INSTANCE_BACKUP_CREATE')" :message="t('TXT_CODE_INSTANCE_BACKUP_CREATE_CONFIRM')"
+            @cancel="backupConfirmDialog.resolve?.(false)" @confirm="backupConfirmDialog.resolve?.(true)" />
     </div>
 </template>
 
@@ -695,48 +578,5 @@ onUnmounted(() => {
         line-height: 1.6;
         margin: 0;
     }
-}
-
-
-.ds-dialog-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background: transparent;
-}
-
-.ds-dialog__body {
-    padding: 16px 20px;
-    flex: 1;
-    overflow-y: auto;
-
-    &--column {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-    }
-}
-
-.ds-dialog__warn-icon {
-    font-size: 36px;
-    color: var(--color-warning, #faad14);
-}
-
-.ds-dialog__desc {
-    margin: 0;
-    color: var(--desktop-window-text);
-    font-size: 14px;
-    text-align: center;
-    line-height: 1.6;
-}
-
-.ds-dialog__footer {
-    padding: 12px 20px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    border-top: 1px solid var(--desktop-window-border);
 }
 </style>
