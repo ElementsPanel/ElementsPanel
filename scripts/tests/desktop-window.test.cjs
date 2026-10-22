@@ -726,9 +726,9 @@ test("desktop confirmations preserve multiple choices and stack independently ac
 
 for (const scenario of [
   { name: "negative centered coordinates", viewport: [1024, 768], initial: { initialX: -200, initialY: -90, initialWidth: 440, initialHeight: 420 }, expected: { left: 0, top: 0, width: 440, height: 420 } },
-  { name: "saved coordinates beyond the bottom right", viewport: [1024, 768], initial: { initialX: 900, initialY: 650, initialWidth: 500, initialHeight: 400 }, expected: { left: 524, top: 320, width: 500, height: 400 } },
-  { name: "an oversized application", viewport: [1024, 768], initial: { initialX: 150, initialY: 110, initialWidth: 1600, initialHeight: 900 }, expected: { left: 0, top: 0, width: 1024, height: 720 } },
-  { name: "a subwindow on a small screen", viewport: [320, 240], initial: { initialX: -60, initialY: -90, initialWidth: 440, initialHeight: 420, resizable: false }, expected: { left: 0, top: 0, width: 320, height: 192 } }
+  { name: "saved coordinates beyond the bottom right", viewport: [1024, 768], initial: { initialX: 900, initialY: 650, initialWidth: 500, initialHeight: 400 }, expected: { left: 524, top: 16, width: 500, height: 400 } },
+  { name: "an oversized application", viewport: [1024, 768], initial: { initialX: 150, initialY: 110, initialWidth: 1600, initialHeight: 900 }, expected: { left: 0, top: 16, width: 1024, height: 704 } },
+  { name: "a subwindow on a small screen", viewport: [320, 240], initial: { initialX: -60, initialY: -90, initialWidth: 440, initialHeight: 420, resizable: false }, expected: { left: 0, top: 16, width: 320, height: 176 } }
 ]) {
   test(`windows fit before the first frame with ${scenario.name}`, async (t) => {
     viewportFixture(t, ...scenario.viewport);
@@ -758,6 +758,35 @@ test("viewport changes fit existing windows, preserve the taskbar and stop obser
   f.app.unmount();
   resize(320, 240);
   assert.equal(f.changes.length, updates);
+});
+
+test("new windows reaching the bottom work-area edge open with a top gap before their first frame", async (t) => {
+  viewportFixture(t, 1024, 768);
+  const f = boundsFixture(t, { initialX: 120, initialY: 320, initialWidth: 500, initialHeight: 400 });
+  assert.deepEqual(f.bounds(), { left: 120, top: 16, width: 500, height: 400 });
+  await flush();
+  assert.deepEqual(f.changes, [{ x: 120, y: 16, width: 500, height: 400 }]);
+});
+
+test("new windows with space below them keep their requested position", async (t) => {
+  viewportFixture(t, 1024, 768);
+  const f = boundsFixture(t, { initialX: 120, initialY: 319, initialWidth: 500, initialHeight: 400 });
+  assert.deepEqual(f.bounds(), { left: 120, top: 319, width: 500, height: 400 });
+  await flush();
+  assert.equal(f.changes.length, 0);
+});
+
+test("existing windows resize into the work area without restarting at the top", async (t) => {
+  const resize = viewportFixture(t, 1024, 900);
+  const f = boundsFixture(t, { initialX: 120, initialY: 300, initialWidth: 500, initialHeight: 400 });
+  await flush();
+  resize(1024, 748);
+  await flush();
+  assert.deepEqual(f.bounds(), { left: 120, top: 300, width: 500, height: 400 });
+  resize(1024, 700);
+  await flush();
+  assert.deepEqual(f.bounds(), { left: 120, top: 252, width: 500, height: 400 });
+  f.assertInside();
 });
 
 for (const channel of ["visible", "minimized"]) {

@@ -160,6 +160,12 @@ const fitBounds = (bounds: WindowBounds): WindowBounds => {
 // Fit before the first render so even centered subwindows and saved layouts open fully on screen.
 const requestedBounds = { x: props.initialX, y: props.initialY, width: props.initialWidth, height: props.initialHeight };
 const initialBounds = fitBounds(requestedBounds);
+// Keep a small gap when moving a new window back to the top.
+const availableHeight = Math.max(1, window.innerHeight - TASKBAR_HEIGHT);
+if (initialBounds.y >= availableHeight - initialBounds.height) {
+    initialBounds.y = Math.min(16, Math.max(0, availableHeight - 1));
+    initialBounds.height = Math.min(initialBounds.height, availableHeight - initialBounds.y);
+}
 const x = ref(initialBounds.x);
 const y = ref(initialBounds.y);
 const width = ref(initialBounds.width);
