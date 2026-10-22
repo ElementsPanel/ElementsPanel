@@ -147,8 +147,7 @@ defineExpose({
 
 <template>
   <VDialog v-model="open" class="file-editor-dialog app-dialog" :class="{ 'file-editor-dialog--full': fullScreen }"
-    :width="fullScreen ? undefined : '1600px'"
-    :max-width="fullScreen ? undefined : 'calc(100vw - 48px)'" :fullscreen="fullScreen" persistent scrollable>
+    :max-width="fullScreen ? undefined : '1600px'" :fullscreen="fullScreen" persistent scrollable>
     <VCard :title="t('TXT_CODE_1f61e5a3')" :subtitle="fileName" rounded="xl" class="file-editor-card">
       <template v-if="!isPhone" #append>
         <VBtn icon size="small" variant="text" :aria-label="fileName" @click="fullScreen = !fullScreen">

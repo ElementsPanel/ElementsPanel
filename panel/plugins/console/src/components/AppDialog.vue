@@ -101,27 +101,14 @@ const isOpen = computed({
   }
 });
 
-const dialogWidth = computed(() => {
-  const width = props.width ?? props.maxWidth;
-  return typeof width === "number" ? `${width}px` : width;
-});
-
-const normalizeDialogSize = (value: string | number) => {
-  const size = typeof value === "number" ? `${value}px` : value;
-  if (size === "auto") return "min(960px, calc(100vw - 48px))";
-  if (size === "fit-content") return size;
-  return `min(${size}, calc(100vw - 48px))`;
-};
-
-// Let content determine the width for regular dialogs. Confirm dialogs stay
-// compact, while explicit widths remain useful for data-heavy dialogs.
+// Vuetify already sizes and centers every dialog at `calc(100% - 48px)`, so a
+// dialog only needs a ceiling. Declaring `width` as well would replace that
+// viewport gap and force callers to clamp against `100vw` themselves.
 const dialogMaxWidth = computed(() => {
   const width = props.maxWidth ?? props.width;
-  if (width == null) {
-    return props.compact ? "min(460px, calc(100vw - 48px))" : "min(1120px, calc(100vw - 48px))";
-  }
+  if (width == null) return props.compact ? "460px" : "1120px";
   if (props.wrapClassName?.split(/\s+/).includes("full-modal")) return width;
-  return normalizeDialogSize(width);
+  return typeof width === "number" ? `${width}px` : width;
 });
 const dialogStyle = computed(() => [attrs.style as any, props.style] as any);
 
@@ -151,10 +138,9 @@ const afterLeave = () => {
 
 <template>
   <VDialog v-model="isOpen" class="app-dialog" :class="[attrs.class, props.wrapClassName]" :style="dialogStyle"
-    :width="dialogWidth" :max-width="dialogMaxWidth" :persistent="props.maskClosable === false"
+    :max-width="dialogMaxWidth" :persistent="props.maskClosable === false"
     :close-on-back="props.keyboard !== false" @after-leave="afterLeave">
-    <VCard v-if="renderCard" :title="props.title || undefined" class="app-dialog-card" rounded="xl"
-      :style="{ width: dialogWidth }">
+    <VCard v-if="renderCard" :title="props.title || undefined" class="app-dialog-card" rounded="xl">
       <template v-if="slots.title" #title>
         <slot name="title" />
       </template>

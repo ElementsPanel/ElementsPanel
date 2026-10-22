@@ -350,7 +350,7 @@ const contextMenu = reactive({ open: false, x: 0, y: 0, record: null as DataType
 const getRowProps = ({ item }: { item: unknown }) => ({
   onContextmenu: (event: MouseEvent) => handleRightClickRow(event, rawFile(item))
 });
-const dialogMaxWidth = computed(() => (dialog.value.style as { maxWidth?: string })?.maxWidth);
+const dialogMaxWidth = computed(() => (dialog.value.style as { maxWidth?: string })?.maxWidth || "460px");
 
 const downloadFromURLFile = async () => {
   const data = await useDownloadFileDialog();

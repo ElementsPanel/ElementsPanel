@@ -321,10 +321,6 @@ onUnmounted(disposeRequests);
 </template>
 
 <style scoped lang="scss">
-.select-instances-dialog :deep(.v-overlay__content) {
-  width: min(980px, calc(100vw - 48px));
-}
-
 .select-instances-content {
   min-height: 0;
 }
@@ -380,10 +376,6 @@ onUnmounted(disposeRequests);
 }
 
 @media (max-width: 700px) {
-  .select-instances-dialog :deep(.v-overlay__content) {
-    width: calc(100vw - 24px);
-  }
-
   .select-instances-toolbar,
   .select-instances-summary {
     align-items: stretch;

@@ -375,6 +375,17 @@ body::-webkit-scrollbar-track {
   border-radius: var(--app-dialog-radius) !important;
 }
 
+// No centered dialog may touch the screen's left/right edges. The cap is
+// viewport-relative, so it only binds when a dialog's own inline width would
+// overflow the screen; explicit dialog widths (460px, 620px, ...) are never
+// affected. Fullscreen dialogs, bottom sheets and edge-pinned drawers are
+// exempt because they intentionally span the full viewport.
+.v-dialog:not(.v-dialog--fullscreen):not(.v-bottom-sheet):not(.background-tasks-drawer)>.v-overlay__content>.v-card,
+.v-dialog:not(.v-dialog--fullscreen):not(.v-bottom-sheet):not(.background-tasks-drawer)>.v-overlay__content>.v-sheet,
+.v-dialog:not(.v-dialog--fullscreen):not(.v-bottom-sheet):not(.background-tasks-drawer)>.v-overlay__content>form>.v-card {
+  max-width: calc(100vw - 48px);
+}
+
 .v-bottom-sheet>.v-overlay__content>.v-card,
 .v-bottom-sheet>.v-overlay__content>form>.v-card,
 .v-overlay__content.v-bottom-sheet__content>.v-card,
