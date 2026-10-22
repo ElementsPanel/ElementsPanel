@@ -172,6 +172,19 @@ body::-webkit-scrollbar-track {
   border-radius: var(--app-dialog-radius);
 }
 
+// Inset the scrollable viewport so header and row separators keep their
+// spacing from card edges even when the table scrolls horizontally.
+.v-table > .v-table__wrapper {
+  margin-inline: var(--app-list-inset);
+}
+
+// The pagination divider is rendered outside the table's scrollable wrapper.
+.v-table > .v-divider:not(.v-divider--vertical),
+.v-list .v-divider:not(.v-divider--vertical) {
+  margin-inline: var(--app-list-inset);
+  max-width: calc(100% - var(--app-list-inset) * 2);
+}
+
 .global-action-float-enter-active,
 .global-action-float-leave-active {
   transition: all 0.4s ease;
@@ -347,6 +360,7 @@ body::-webkit-scrollbar-track {
 
 :root {
   --app-dialog-radius: 24px;
+  --app-list-inset: 16px;
 }
 
 .v-dialog>.v-overlay__content {
