@@ -2289,7 +2289,7 @@
   "TXT_CODE_TASKS_JAVA_INSTALL": "Install Java",
   "TXT_CODE_TASKS_IMAGE_BUILD": "Build container image",
   "TXT_CODE_TASKS_INSTANCE": "Instance task",
-  "TXT_CODE_TASKS_SUBMITTED": "Task submitted. View progress in Background tasks in the header.",
+  "TXT_CODE_TASKS_SUBMITTED": "Task submitted.",
   "TXT_CODE_TASKS_RESTORE": "Restore backup",
   "TXT_CODE_TASKS_SHOW_FINISHED": "Show finished tasks"
 }

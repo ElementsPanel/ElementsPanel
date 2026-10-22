@@ -2289,7 +2289,7 @@
   "TXT_CODE_TASKS_JAVA_INSTALL": "Instalar Java",
   "TXT_CODE_TASKS_IMAGE_BUILD": "Criar imagem de contêiner",
   "TXT_CODE_TASKS_INSTANCE": "Tarefa da instância",
-  "TXT_CODE_TASKS_SUBMITTED": "Tarefa enviada. Veja o progresso em Tarefas em segundo plano no cabeçalho.",
+  "TXT_CODE_TASKS_SUBMITTED": "Tarefa enviada.",
   "TXT_CODE_TASKS_RESTORE": "Restaurar backup",
   "TXT_CODE_TASKS_SHOW_FINISHED": "Mostrar tarefas finalizadas"
 }

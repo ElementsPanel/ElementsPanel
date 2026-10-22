@@ -2289,7 +2289,7 @@
   "TXT_CODE_TASKS_JAVA_INSTALL": "安装 Java",
   "TXT_CODE_TASKS_IMAGE_BUILD": "构建容器镜像",
   "TXT_CODE_TASKS_INSTANCE": "实例任务",
-  "TXT_CODE_TASKS_SUBMITTED": "任务已提交，可在页眉的后台任务中查看进度。",
+  "TXT_CODE_TASKS_SUBMITTED": "任务已提交。",
   "TXT_CODE_TASKS_RESTORE": "还原备份",
   "TXT_CODE_TASKS_SHOW_FINISHED": "显示已结束任务"
 }

@@ -2289,7 +2289,7 @@
   "TXT_CODE_TASKS_JAVA_INSTALL": "ติดตั้ง Java",
   "TXT_CODE_TASKS_IMAGE_BUILD": "สร้างอิมเมจคอนเทนเนอร์",
   "TXT_CODE_TASKS_INSTANCE": "งานอินสแตนซ์",
-  "TXT_CODE_TASKS_SUBMITTED": "ส่งงานแล้ว ดูความคืบหน้าได้ที่งานเบื้องหลังในส่วนหัว",
+  "TXT_CODE_TASKS_SUBMITTED": "ส่งงานแล้ว",
   "TXT_CODE_TASKS_RESTORE": "กู้คืนข้อมูลสำรอง",
   "TXT_CODE_TASKS_SHOW_FINISHED": "แสดงงานที่สิ้นสุดแล้ว"
 }

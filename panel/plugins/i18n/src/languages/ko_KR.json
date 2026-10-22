@@ -2289,7 +2289,7 @@
   "TXT_CODE_TASKS_JAVA_INSTALL": "Java 설치",
   "TXT_CODE_TASKS_IMAGE_BUILD": "컨테이너 이미지 빌드",
   "TXT_CODE_TASKS_INSTANCE": "인스턴스 작업",
-  "TXT_CODE_TASKS_SUBMITTED": "작업이 제출되었습니다. 머리글의 백그라운드 작업에서 진행 상황을 확인하세요.",
+  "TXT_CODE_TASKS_SUBMITTED": "작업이 제출되었습니다.",
   "TXT_CODE_TASKS_RESTORE": "백업 복원",
   "TXT_CODE_TASKS_SHOW_FINISHED": "종료된 작업 표시"
 }

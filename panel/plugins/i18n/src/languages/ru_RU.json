@@ -2289,7 +2289,7 @@
   "TXT_CODE_TASKS_JAVA_INSTALL": "Установка Java",
   "TXT_CODE_TASKS_IMAGE_BUILD": "Сборка образа контейнера",
   "TXT_CODE_TASKS_INSTANCE": "Задача экземпляра",
-  "TXT_CODE_TASKS_SUBMITTED": "Задача отправлена. Ход выполнения доступен в фоновых задачах в шапке.",
+  "TXT_CODE_TASKS_SUBMITTED": "Задача отправлена.",
   "TXT_CODE_TASKS_RESTORE": "Восстановление резервной копии",
   "TXT_CODE_TASKS_SHOW_FINISHED": "Показывать завершённые задачи"
 }

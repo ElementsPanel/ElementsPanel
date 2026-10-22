@@ -2289,7 +2289,7 @@
   "TXT_CODE_TASKS_JAVA_INSTALL": "Java のインストール",
   "TXT_CODE_TASKS_IMAGE_BUILD": "コンテナイメージのビルド",
   "TXT_CODE_TASKS_INSTANCE": "インスタンスタスク",
-  "TXT_CODE_TASKS_SUBMITTED": "タスクを送信しました。ヘッダーのバックグラウンドタスクで進行状況を確認できます。",
+  "TXT_CODE_TASKS_SUBMITTED": "タスクを送信しました。",
   "TXT_CODE_TASKS_RESTORE": "バックアップの復元",
   "TXT_CODE_TASKS_SHOW_FINISHED": "終了したタスクを表示"
 }

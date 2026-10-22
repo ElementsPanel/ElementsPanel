@@ -2289,7 +2289,7 @@
   "TXT_CODE_TASKS_JAVA_INSTALL": "Java installieren",
   "TXT_CODE_TASKS_IMAGE_BUILD": "Container-Image erstellen",
   "TXT_CODE_TASKS_INSTANCE": "Instanzaufgabe",
-  "TXT_CODE_TASKS_SUBMITTED": "Aufgabe gestartet. Den Fortschritt finden Sie unter Hintergrundaufgaben in der Kopfzeile.",
+  "TXT_CODE_TASKS_SUBMITTED": "Aufgabe übermittelt.",
   "TXT_CODE_TASKS_RESTORE": "Sicherung wiederherstellen",
   "TXT_CODE_TASKS_SHOW_FINISHED": "Beendete Aufgaben anzeigen"
 }

@@ -2289,7 +2289,7 @@
   "TXT_CODE_TASKS_JAVA_INSTALL": "Java kurulumu",
   "TXT_CODE_TASKS_IMAGE_BUILD": "Konteyner imajı oluşturma",
   "TXT_CODE_TASKS_INSTANCE": "Örnek görevi",
-  "TXT_CODE_TASKS_SUBMITTED": "Görev gönderildi. İlerlemeyi üst bilgideki Arka plan görevlerinden izleyebilirsiniz.",
+  "TXT_CODE_TASKS_SUBMITTED": "Görev gönderildi.",
   "TXT_CODE_TASKS_RESTORE": "Yedeği geri yükle",
   "TXT_CODE_TASKS_SHOW_FINISHED": "Biten görevleri göster"
 }
