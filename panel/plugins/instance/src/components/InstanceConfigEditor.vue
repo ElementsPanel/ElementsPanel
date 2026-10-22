@@ -20,7 +20,7 @@ const data:
   | undefined = configData[props.configName];
 
 import { computed } from "vue";
-import { VCard, VCardText, VCol, VRow } from "vuetify/components";
+import { VCol, VRow } from "vuetify/components";
 
 const parsedConfig = computed(() => jsonToMap(props.config));
 </script>
@@ -28,27 +28,23 @@ const parsedConfig = computed(() => jsonToMap(props.config));
 <template>
   <template v-if="isDesktop">
     <VCol cols="12">
-      <VCard class="config-editor-panel" variant="tonal" rounded="xl">
-        <VCardText>
-          <h3 class="config-editor-title">{{ data ? t("TXT_CODE_958fd70c") : t("TXT_CODE_2ce953da") }}</h3>
-          <p class="config-editor-description">{{ data ? data.desc : t("TXT_CODE_75e5af9b") }}</p>
-        </VCardText>
-      </VCard>
+      <div class="config-editor-section">
+        <h3 class="config-editor-title">{{ data ? t("TXT_CODE_958fd70c") : t("TXT_CODE_2ce953da") }}</h3>
+        <p class="config-editor-description">{{ data ? data.desc : t("TXT_CODE_75e5af9b") }}</p>
+      </div>
     </VCol>
     <VCol v-if="data" cols="12">
-      <VCard class="config-editor-panel" variant="tonal" rounded="xl">
-        <VCardText>
-          <div v-if="!isEmpty(props.config)">
-            <div v-for="(item, index) in parsedConfig" :key="index" class="p-1">
-              <LineOption :option-value="parsedConfig" :option-key="String(index)" is-desktop>
-                <template #title>{{ index }}</template>
-                <template #info>{{ getDescriptionByTitle(data?.config, String(index)) }}</template>
-              </LineOption>
-            </div>
+      <div class="config-editor-section">
+        <div v-if="!isEmpty(props.config)">
+          <div v-for="(item, index) in parsedConfig" :key="index" class="p-1">
+            <LineOption :option-value="parsedConfig" :option-key="String(index)" is-desktop>
+              <template #title>{{ index }}</template>
+              <template #info>{{ getDescriptionByTitle(data?.config, String(index)) }}</template>
+            </LineOption>
           </div>
-          <div v-else>{{ t("TXT_CODE_1a730d48") }}</div>
-        </VCardText>
-      </VCard>
+        </div>
+        <div v-else>{{ t("TXT_CODE_1a730d48") }}</div>
+      </div>
     </VCol>
   </template>
   <template v-else>
@@ -88,40 +84,8 @@ const parsedConfig = computed(() => jsonToMap(props.config));
 </template>
 
 <style lang="scss" scoped>
-:deep(.desktop-mode) {
-  .config-editor-panel {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-
-  }
-
-  .line-option-card {
-    background: transparent !important;
-    box-shadow: none !important;
-
-    &:hover {
-      background: var(--desktop-window-control-hover) !important;
-    }
-  }
-}
-
-.desktop-mode {
-  .config-editor-panel {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-
-  }
-
-  :deep(.line-option-card) {
-    background: transparent !important;
-    box-shadow: none !important;
-
-    &:hover {
-      background: var(--desktop-window-control-hover) !important;
-    }
-  }
+.config-editor-section {
+  padding: 16px;
 }
 
 .config-option-grid {

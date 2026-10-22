@@ -175,7 +175,7 @@ onMounted(async () => {
                 </div>
             </div>
 
-            <div v-else class="dsc-editor desktop-mode">
+            <div v-else class="dsc-editor">
                 <div v-if="configFileState" class="dsc-editor__content">
                     <InstanceConfigEditor :key="selectedFile.path + Date.now()" :config="configFileState"
                         :config-name="selectedFile.redirect" is-desktop />
@@ -329,27 +329,6 @@ onMounted(async () => {
 
     &__content {
         height: 100%;
-    }
-
-    &.desktop-mode {
-        :deep(.config-editor-panel) {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-
-        }
-
-        :deep(.line-option-card) {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-
-            &:hover {
-                background: transparent !important;
-                border: none !important;
-                box-shadow: none !important;
-            }
-        }
     }
 }
 

@@ -207,8 +207,6 @@ const filteredInstances = computed(() => {
     return list;
 });
 
-const selectedNode = computed(() => nodes.value.find((n) => n.uuid === selectedNodeId.value));
-
 const instanceCounts = computed(() => {
     const running = instances.value.filter((i) => i.status === INSTANCE_STATUS_CODE.RUNNING).length;
     const stopped = instances.value.filter((i) => i.status === INSTANCE_STATUS_CODE.STOPPED).length;
@@ -628,14 +626,6 @@ onUnmounted(() => {
                 <span class="dim-stats__dot dim-stats__dot--stopped"></span>
                 <span>{{ t("TXT_CODE_4ef6b040") }}: {{ instanceCounts.stopped }}</span>
             </div>
-            <div v-if="selectedNode" class="dim-stats__node">
-                <span>
-                    <VIcon icon="mdi-api"  /> {{ selectedNode.remarks || selectedNode.ip }}
-                </span>
-                <span :class="selectedNode.available ? 'dim-stats__online' : 'dim-stats__offline'">
-                    {{ selectedNode.available ? t("TXT_CODE_823bfe63") : t("TXT_CODE_66ce073e") }}
-                </span>
-            </div>
         </div>
 
         <div v-if="tagTips && tagTips.length > 0" class="dim-tags">
@@ -1012,23 +1002,6 @@ onUnmounted(() => {
         &--stopped {
             background: #8c8c8c;
         }
-    }
-
-    &__node {
-        margin-left: auto;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    &__online {
-        color: #52c41a;
-        font-weight: 500;
-    }
-
-    &__offline {
-        color: #ff4d4f;
-        font-weight: 500;
     }
 }
 
