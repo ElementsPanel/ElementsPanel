@@ -8,12 +8,12 @@ const { isLogged } = useAppStateStore();
 const { open, activeCount, refresh } = useBackgroundTasks();
 const toggle = () => {
   open.value = !open.value;
-  if (open.value) void refresh();
+  if (open.value) void refresh({ silent: true });
 };
 </script>
 
 <template>
-  <VTooltip v-if="isLogged" :text="t('TASKS_TITLE')" location="bottom">
+  <VTooltip v-if="isLogged" :text="t('TXT_CODE_TASKS_TITLE')" location="bottom">
     <template #activator="{ props }">
       <VBadge
         :content="activeCount"
@@ -26,7 +26,7 @@ const toggle = () => {
           v-bind="props"
           icon="mdi-progress-clock"
           variant="text"
-          :aria-label="t('TASKS_TITLE')"
+          :aria-label="t('TXT_CODE_TASKS_TITLE')"
           :aria-expanded="open"
           aria-controls="background-tasks-sidebar"
           @click="toggle"

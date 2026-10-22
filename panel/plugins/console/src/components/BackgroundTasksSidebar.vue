@@ -7,49 +7,49 @@ import {
   VAlert,
   VBtn,
   VCard,
+  VCheckbox,
   VChip,
   VDialog,
-  VDivider,
   VIcon,
   VProgressLinear
 } from "vuetify/components";
 
 const { state, isLogged } = useAppStateStore();
-const { open, tasks, unavailable, loading, error, activeCount, refresh, reset, cancel, clear } =
+const { open, tasks, unavailable, loading, error, refresh, reset, cancel, clear } =
   useBackgroundTasks();
 const cancelling = ref(new Set<string>());
 const clearing = ref(false);
-const activeOnly = ref(false);
+const showFinished = ref(false);
 const visibleTasks = computed(() =>
   [...tasks.value]
-    .filter((task) => !activeOnly.value || task.state === "running")
+    .filter((task) => showFinished.value || task.state === "running")
     .sort(
       (a, b) =>
         Number(b.state === "running") - Number(a.state === "running") || b.startedAt - a.startedAt
     )
 );
 const kinds: Record<string, string> = {
-  download: "TASKS_DOWNLOAD",
-  modDownload: "TASKS_MOD_DOWNLOAD",
-  upload: "TASKS_UPLOAD",
-  uploadExtract: "TASKS_UPLOAD_EXTRACT",
-  compress: "TASKS_COMPRESS",
-  extract: "TASKS_EXTRACT",
-  copy: "TASKS_COPY",
-  move: "TASKS_MOVE",
-  delete: "TASKS_DELETE",
-  permissions: "TASKS_PERMISSIONS",
-  preview: "TASKS_PREVIEW",
-  restore: "TASKS_RESTORE",
-  javaInstall: "TASKS_JAVA_INSTALL",
-  imagePull: "TASKS_IMAGE_BUILD",
-  instanceTask: "TASKS_INSTANCE"
+  download: "TXT_CODE_TASKS_DOWNLOAD",
+  modDownload: "TXT_CODE_TASKS_MOD_DOWNLOAD",
+  upload: "TXT_CODE_TASKS_UPLOAD",
+  uploadExtract: "TXT_CODE_TASKS_UPLOAD_EXTRACT",
+  compress: "TXT_CODE_TASKS_COMPRESS",
+  extract: "TXT_CODE_TASKS_EXTRACT",
+  copy: "TXT_CODE_TASKS_COPY",
+  move: "TXT_CODE_TASKS_MOVE",
+  delete: "TXT_CODE_TASKS_DELETE",
+  permissions: "TXT_CODE_TASKS_PERMISSIONS",
+  preview: "TXT_CODE_TASKS_PREVIEW",
+  restore: "TXT_CODE_TASKS_RESTORE",
+  javaInstall: "TXT_CODE_TASKS_JAVA_INSTALL",
+  imagePull: "TXT_CODE_TASKS_IMAGE_BUILD",
+  instanceTask: "TXT_CODE_TASKS_INSTANCE"
 };
 const statuses = {
-  running: "TASKS_RUNNING",
-  completed: "TASKS_COMPLETED",
-  failed: "TASKS_FAILED",
-  cancelled: "TASKS_CANCELLED"
+  running: "TXT_CODE_TASKS_RUNNING",
+  completed: "TXT_CODE_TASKS_COMPLETED",
+  failed: "TXT_CODE_TASKS_FAILED",
+  cancelled: "TXT_CODE_TASKS_CANCELLED"
 };
 const color = (task: BackgroundTask) =>
   ({ running: "primary", completed: "success", failed: "error", cancelled: "secondary" })[
@@ -101,11 +101,11 @@ watch(
   () => {
     stopPolling();
     reset();
-    activeOnly.value = false;
+    showFinished.value = false;
     if (!isLogged.value) return;
     const generation = pollingGeneration;
     const poll = async () => {
-      await refresh();
+      await refresh({ silent: true });
       if (generation === pollingGeneration) timer = setTimeout(poll, open.value ? 1500 : 4000);
     };
     void poll();
@@ -124,11 +124,11 @@ onBeforeUnmount(() => {
     class="background-tasks-drawer"
     max-width="480"
     transition="slide-x-reverse-transition"
-    :aria-label="t('TASKS_TITLE')"
+    :aria-label="t('TXT_CODE_TASKS_TITLE')"
   >
     <VCard
       id="background-tasks-sidebar"
-      :title="t('TASKS_TITLE')"
+      :title="t('TXT_CODE_TASKS_TITLE')"
       class="background-tasks-card"
       rounded="0"
     >
@@ -138,32 +138,28 @@ onBeforeUnmount(() => {
           size="small"
           variant="text"
           :loading="loading"
-          :title="t('TASKS_REFRESH')"
-          :aria-label="t('TASKS_REFRESH')"
-          @click="refresh"
+          :title="t('TXT_CODE_TASKS_REFRESH')"
+          :aria-label="t('TXT_CODE_TASKS_REFRESH')"
+          @click="refresh()"
         />
         <VBtn
           icon="mdi-close"
           size="small"
           variant="text"
-          :title="t('TASKS_CLOSE')"
-          :aria-label="t('TASKS_CLOSE')"
+          :title="t('TXT_CODE_TASKS_CLOSE')"
+          :aria-label="t('TXT_CODE_TASKS_CLOSE')"
           @click="open = false"
         />
       </template>
       <div class="task-toolbar">
-        <VChip
-          :variant="activeOnly ? 'outlined' : 'tonal'"
+        <VCheckbox
+          v-model="showFinished"
+          class="task-history-toggle"
+          :label="t('TXT_CODE_TASKS_SHOW_FINISHED')"
           color="primary"
-          @click="activeOnly = false"
-          >{{ t("TASKS_ALL") }} · {{ tasks.length }}</VChip
-        >
-        <VChip
-          :variant="activeOnly ? 'tonal' : 'outlined'"
-          color="primary"
-          @click="activeOnly = true"
-          >{{ t("TASKS_RUNNING") }} · {{ activeCount }}</VChip
-        >
+          density="compact"
+          hide-details
+        />
         <VBtn
           class="ml-auto"
           size="small"
@@ -171,10 +167,9 @@ onBeforeUnmount(() => {
           :loading="clearing"
           :disabled="!tasks.some((task) => task.state !== 'running')"
           @click="clearFinished"
-          >{{ t("TASKS_CLEAR") }}</VBtn
+          >{{ t("TXT_CODE_TASKS_CLEAR") }}</VBtn
         >
       </div>
-      <VDivider />
       <div class="task-list" aria-live="polite" aria-relevant="additions removals">
         <VAlert
           v-if="error || unavailable"
@@ -182,11 +177,11 @@ onBeforeUnmount(() => {
           variant="tonal"
           density="compact"
           class="mb-3"
-          >{{ t(error ? "TASKS_LOAD_ERROR" : "TASKS_UNAVAILABLE") }}</VAlert
+          >{{ t(error ? "TXT_CODE_TASKS_LOAD_ERROR" : "TXT_CODE_TASKS_UNAVAILABLE") }}</VAlert
         >
         <div v-if="!visibleTasks.length && !loading" class="task-empty">
           <VIcon icon="mdi-clipboard-check-outline" size="48" class="mb-3" />
-          <div>{{ t("TASKS_EMPTY") }}</div>
+          <div>{{ t("TXT_CODE_TASKS_EMPTY") }}</div>
         </div>
         <article
           v-for="task in visibleTasks"
@@ -194,13 +189,13 @@ onBeforeUnmount(() => {
           class="task-item"
         >
           <div class="task-heading">
-            <span class="text-caption">{{ t(kinds[task.kind] || "TASKS_INSTANCE") }}</span>
+            <span class="text-caption">{{ t(kinds[task.kind] || "TXT_CODE_TASKS_INSTANCE") }}</span>
             <VChip :color="color(task)" size="x-small" variant="tonal">{{
               t(statuses[task.state])
             }}</VChip>
           </div>
           <div class="task-name" :title="task.name">
-            {{ task.name.split(/[\\/]/).pop() || t(kinds[task.kind] || "TASKS_INSTANCE") }}
+            {{ task.name.split(/[\\/]/).pop() || t(kinds[task.kind] || "TXT_CODE_TASKS_INSTANCE") }}
           </div>
           <div class="task-context text-caption">
             {{ task.nodeName
@@ -231,8 +226,8 @@ onBeforeUnmount(() => {
               variant="text"
               color="error"
               :loading="cancelling.has(task.id)"
-              :title="t('TASKS_CANCEL')"
-              :aria-label="t('TASKS_CANCEL')"
+              :title="t('TXT_CODE_TASKS_CANCEL')"
+              :aria-label="t('TXT_CODE_TASKS_CANCEL')"
               @click="stop(task)"
             />
           </div>
@@ -250,12 +245,16 @@ onBeforeUnmount(() => {
   max-width: 100vw !important;
   height: 100dvh;
   max-height: 100dvh !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
 }
 .background-tasks-card {
   height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
 }
 .background-tasks-card > :deep(.v-card-item) {
   flex: 0 0 auto;
@@ -268,6 +267,7 @@ onBeforeUnmount(() => {
 }
 .task-toolbar {
   display: flex;
+  flex: 0 0 auto;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
@@ -277,10 +277,19 @@ onBeforeUnmount(() => {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 16px;
+  overflow-anchor: none;
+  overscroll-behavior: contain;
+  padding: 20px;
+  scrollbar-width: thin;
+}
+.task-history-toggle {
+  flex: 0 1 auto;
 }
 .task-empty {
-  padding: 64px 12px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: clamp(20px, 7dvh, 72px) 4px 24px;
   text-align: center;
   opacity: 0.6;
 }
@@ -315,5 +324,23 @@ onBeforeUnmount(() => {
 .task-footer {
   flex-wrap: wrap;
   opacity: 0.8;
+}
+@media (max-width: 480px) {
+  .background-tasks-drawer :deep(.v-overlay__content),
+  .background-tasks-drawer :deep(.background-tasks-card) {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+  }
+}
+@media (max-width: 360px) {
+  .background-tasks-card > :deep(.v-card-item) {
+    padding-inline: 10px;
+  }
+  .task-list {
+    padding: 16px 12px;
+  }
+  .task-toolbar {
+    padding-inline: 10px;
+  }
 }
 </style>

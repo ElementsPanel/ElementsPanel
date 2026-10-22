@@ -250,14 +250,25 @@ test("the browser discards stale task responses when the active account changes"
   const alice = deferred(),
     bob = deferred();
   let nextResponse = alice;
+  let requestCount = 0;
   const { useBackgroundTasks } = load("panel/plugins/console/src/stores/useBackgroundTasks.ts", {
     vue,
     "@vueuse/core": frontendRequire("@vueuse/core"),
-    "@/services/apiService": { apiService: { subscribe: () => nextResponse.promise } },
+    "@/services/apiService": {
+      apiService: {
+        subscribe: () => {
+          requestCount++;
+          return nextResponse.promise;
+        }
+      }
+    },
     "./useAppStateStore": { useAppStateStore: () => ({ state, isLogged: vue.ref(true) }) }
   });
   const store = useBackgroundTasks();
-  const first = store.refresh();
+  const first = store.refresh({ silent: true });
+  assert.equal(store.loading.value, false);
+  await store.refresh({ silent: true });
+  assert.equal(requestCount, 1, "silent polling must still prevent overlapping requests");
   state.userInfo.uuid = "bob";
   store.reset();
   nextResponse = bob;

@@ -39,13 +39,13 @@ export const useBackgroundTasks = createGlobalState(() => {
     unavailable.value = error.value = loading.value = false;
   };
 
-  const refresh = async () => {
-    if (!isLogged.value || loading.value) return;
+  const refresh = async ({ silent = false }: { silent?: boolean } = {}) => {
+    if (!isLogged.value || controller) return;
     const currentGeneration = generation;
     const userId = state.userInfo?.uuid;
     const requestController = new AbortController();
     controller = requestController;
-    loading.value = true;
+    loading.value = !silent;
     try {
       const result = await apiService.subscribe<{ tasks: BackgroundTask[]; unavailable: boolean }>({
         url: "/api/tasks/",
@@ -72,11 +72,11 @@ export const useBackgroundTasks = createGlobalState(() => {
       method: "POST",
       data: { daemonId: task.daemonId, id: task.id }
     });
-    await refresh();
+    await refresh({ silent: true });
   };
   const clear = async () => {
     await apiService.subscribe({ url: "/api/tasks/", method: "DELETE" });
-    await refresh();
+    await refresh({ silent: true });
   };
 
   return { open, tasks, unavailable, loading, error, activeCount, refresh, reset, cancel, clear };

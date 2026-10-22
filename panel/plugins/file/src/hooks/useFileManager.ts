@@ -602,7 +602,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     const filename = await openDialog(t("TXT_CODE_f8a15a94"), t("TXT_CODE_366bad15"), "", "zip");
     if (filename === undefined) return;
     const { execute } = compressFileApi();
-    message.info(t("TASKS_SUBMITTED"));
+    message.info(t("TXT_CODE_TASKS_SUBMITTED"));
     try {
       await execute({
         params: {
@@ -628,7 +628,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     const dirname = await openDialog(t("TXT_CODE_7669fd3f"), "", "", "unzip");
     if (dirname === undefined) return;
     const { execute } = compressFileApi();
-    message.info(t("TASKS_SUBMITTED"));
+    message.info(t("TXT_CODE_TASKS_SUBMITTED"));
     try {
       await execute({
         params: {
@@ -860,7 +860,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     if (!downloadConfig.fileName) throw new Error(t("TXT_CODE_7b605ad8"));
 
     const { execute } = downloadFromUrlAPI();
-    message.info(t("TASKS_SUBMITTED"));
+    message.info(t("TXT_CODE_TASKS_SUBMITTED"));
     try {
       await execute({
         params: {
