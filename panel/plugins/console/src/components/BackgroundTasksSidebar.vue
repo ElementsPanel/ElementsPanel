@@ -8,7 +8,6 @@ import {
   VBtn,
   VCard,
   VCheckbox,
-  VChip,
   VDialog,
   VIcon,
   VProgressLinear
@@ -183,42 +182,19 @@ onBeforeUnmount(() => {
           <VIcon icon="mdi-clipboard-check-outline" size="48" class="mb-3" />
           <div>{{ t("TXT_CODE_TASKS_EMPTY") }}</div>
         </div>
-        <article
+        <VCard
           v-for="task in visibleTasks"
           :key="`${task.daemonId}:${task.id}`"
+          tag="article"
           class="task-item"
+          color="surface-variant"
+          variant="flat"
+          rounded="xl"
         >
           <div class="task-heading">
-            <span class="text-caption">{{ t(kinds[task.kind] || "TXT_CODE_TASKS_INSTANCE") }}</span>
-            <VChip :color="color(task)" size="x-small" variant="tonal">{{
-              t(statuses[task.state])
-            }}</VChip>
-          </div>
-          <div class="task-name" :title="task.name">
-            {{ task.name.split(/[\\/]/).pop() || t(kinds[task.kind] || "TXT_CODE_TASKS_INSTANCE") }}
-          </div>
-          <div class="task-context text-caption">
-            {{ task.nodeName
-            }}<template v-if="task.instanceUuid"> · {{ task.instanceUuid }}</template>
-          </div>
-          <div v-if="task.error" class="task-error text-caption">{{ task.error }}</div>
-          <VProgressLinear
-            :model-value="percent(task)"
-            :color="color(task)"
-            height="5"
-            rounded
-            :indeterminate="task.state === 'running' && !task.total"
-            class="my-3"
-          />
-          <div class="task-footer text-caption">
-            <span v-if="task.total > 0"
-              >{{ percent(task) }}%<template v-if="!['javaInstall', 'restore'].includes(task.kind)">
-                · {{ bytes(task.current) }} / {{ bytes(task.total) }}</template
-              ></span
-            >
-            <time :datetime="new Date(task.startedAt).toISOString()">{{
-              new Date(task.startedAt).toLocaleString()
-            }}</time>
+            <div class="task-name" :title="task.name.split(/[\\/]/).pop()">
+              {{ task.name.split(/[\\/]/).pop() || t(kinds[task.kind] || "TXT_CODE_TASKS_INSTANCE") }}
+            </div>
             <VBtn
               v-if="task.cancellable"
               icon="mdi-stop"
@@ -231,7 +207,26 @@ onBeforeUnmount(() => {
               @click="stop(task)"
             />
           </div>
-        </article>
+          <div class="task-info text-caption">
+            <span>
+              {{ t(kinds[task.kind] || "TXT_CODE_TASKS_INSTANCE") }} · {{ t(statuses[task.state]) }}
+            </span>
+            <span v-if="task.total > 0">
+              {{ percent(task) }}%<template v-if="!['javaInstall', 'restore'].includes(task.kind)">
+                · {{ bytes(task.current) }} / {{ bytes(task.total) }}</template
+              >
+            </span>
+          </div>
+          <div v-if="task.error" class="task-error text-caption">{{ task.error }}</div>
+          <VProgressLinear
+            :model-value="percent(task)"
+            :color="color(task)"
+            height="5"
+            rounded
+            :indeterminate="task.state === 'running' && !task.total"
+            class="mt-3"
+          />
+        </VCard>
       </div>
     </VCard>
   </VDialog>
@@ -294,36 +289,30 @@ onBeforeUnmount(() => {
   opacity: 0.6;
 }
 .task-item {
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
-  border-radius: 12px;
-  padding: 14px;
+  padding: 16px;
   margin-bottom: 12px;
 }
 .task-heading,
-.task-footer {
+.task-info {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
 .task-name {
+  min-width: 0;
   font-weight: 500;
-  margin-top: 8px;
   overflow-wrap: anywhere;
 }
-.task-context {
+.task-info {
+  flex-wrap: wrap;
   opacity: 0.65;
-  overflow-wrap: anywhere;
   margin-top: 4px;
 }
 .task-error {
   color: rgb(var(--v-theme-error));
   overflow-wrap: anywhere;
   margin-top: 8px;
-}
-.task-footer {
-  flex-wrap: wrap;
-  opacity: 0.8;
 }
 @media (max-width: 480px) {
   .background-tasks-drawer :deep(.v-overlay__content),
