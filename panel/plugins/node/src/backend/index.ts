@@ -57,12 +57,15 @@ export async function apply(ctx: PanelPluginContext) {
   // `ctx.set()` from inside a plugin belongs to that plugin: the subsystem — and
   // with it the panel's ability to reach any daemon — leaves when this plugin
   // unloads. The core reads it through `remoteSubsystem()`, which says so.
-  ctx.set("remote", {
+  const remote = {
     services: remoteServices,
     Request: RemoteRequest,
     RequestTimeoutError: RemoteRequestTimeoutError
-  });
-  registerBackgroundTaskRoutes(ctx);
+  };
+  ctx.set("remote", remote);
+  // These routes belong to the provider itself; pass its service directly
+  // rather than declaring a dependency on the service it is creating.
+  registerBackgroundTaskRoutes(ctx, remote);
 
   ctx.effect(() => () => {
     // Sockets are not cordis effects, so closing them is this plugin's job.

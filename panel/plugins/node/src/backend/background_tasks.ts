@@ -1,10 +1,15 @@
 import { AsyncLocalStorage } from "async_hooks";
 import type Koa from "koa";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
+import type RemoteRequest from "./remote_command";
+import type remoteServices from "./remote_service";
 
 export const taskRequestScope = new AsyncLocalStorage<Koa.ParameterizedContext>();
 
-export function registerBackgroundTaskRoutes(ctx: PanelPluginContext) {
+export function registerBackgroundTaskRoutes(
+  ctx: PanelPluginContext,
+  remote: { services: typeof remoteServices; Request: typeof RemoteRequest }
+) {
   ctx.koa.use((request, next) => taskRequestScope.run(request, next));
   const router = ctx.koa.router("/api/tasks");
   const permission = ctx.middleware.permission({ level: ctx.roles.USER, speedLimit: false });
@@ -12,7 +17,6 @@ export function registerBackgroundTaskRoutes(ctx: PanelPluginContext) {
     ctx.identity.of(request).uuid || "_anonymous_";
 
   router.get("/", permission, async (request) => {
-    const remote = ctx.remote;
     const tasks: any[] = [];
     const unavailable: string[] = [];
     await Promise.all(
@@ -57,8 +61,8 @@ export function registerBackgroundTaskRoutes(ctx: PanelPluginContext) {
     }),
     async (request) => {
       const { daemonId, id } = request.request.body;
-      const node = ctx.remote.services.getInstance(daemonId);
-      const rpc = new ctx.remote.Request(node);
+      const node = remote.services.getInstance(daemonId);
+      const rpc = new remote.Request(node);
       const rows = await rpc.request<any[]>("tasks/list", { owner: owner(request) });
       const task = rows.find((task) => task.id === id);
       if (
@@ -76,10 +80,10 @@ export function registerBackgroundTaskRoutes(ctx: PanelPluginContext) {
 
   router.delete("/", permission, async (request) => {
     await Promise.all(
-      [...ctx.remote.services.services.values()]
+      [...remote.services.services.values()]
         .filter((node) => node.available)
         .map((node) =>
-          new ctx.remote.Request(node)
+          new remote.Request(node)
             .request("tasks/clear", { owner: owner(request) })
             .catch(() => false)
         )

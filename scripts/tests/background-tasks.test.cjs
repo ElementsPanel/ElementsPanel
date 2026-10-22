@@ -171,7 +171,7 @@ function panelFixture() {
       }
     }
   };
-  panelTasks.registerBackgroundTaskRoutes(ctx);
+  panelTasks.registerBackgroundTaskRoutes(ctx, ctx.remote);
   const request = (user = "alice", allowed = ["instance"]) => ({
     user,
     allowed,
@@ -202,6 +202,42 @@ test("the panel aggregates across nodes, filters revoked instances and never acc
   bob.request.body = { daemonId: "node", id: alice.body.tasks[0].id, owner: "alice" };
   await handlers.get("post /cancel")(bob);
   assert.equal(bob.status, 403);
+});
+
+test("task routes consume their provider's remote service without Cordis injection warnings", async (t) => {
+  const { Context } = panelRequire("cordis");
+  const ctx = new Context();
+  t.after(() => ctx.stop());
+  const fixture = panelFixture();
+  const warnings = [];
+  ctx.on("internal/warning", (warning) => warnings.push(warning.message));
+  for (const name of ["koa", "middleware", "roles", "identity"]) {
+    ctx.set(name, fixture.ctx[name]);
+  }
+  ctx.plugin({
+    name: "node-task-provider",
+    inject: ["koa", "middleware", "roles", "identity"],
+    apply(scope) {
+      const remote = fixture.ctx.remote;
+      scope.set("remote", remote);
+      panelTasks.registerBackgroundTaskRoutes(scope, remote);
+    }
+  });
+  await ctx.start();
+  const work = deferred();
+  fixture.tasks.runRequest("file/download_from_url", input(), () => {
+    fixture.tasks.follow(work.promise);
+    fixture.tasks.progress(() => ({ current: 1, total: 10 }), () => work.resolve());
+  });
+  const request = fixture.request();
+  await fixture.handlers.get("get /")(request);
+  assert.equal(request.body.tasks.length, 1);
+  request.request.body = { daemonId: "node", id: request.body.tasks[0].id };
+  await fixture.handlers.get("post /cancel")(request);
+  assert.equal(request.body, true);
+  await fixture.handlers.get("delete /")(request);
+  assert.deepEqual(fixture.tasks.list("alice"), []);
+  assert.deepEqual(warnings, []);
 });
 
 test("remote requests attach the authenticated user instead of caller-supplied task ownership", async () => {
