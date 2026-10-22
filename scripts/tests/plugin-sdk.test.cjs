@@ -254,7 +254,7 @@ test("production URL identities share login state, registered routes and API aut
     set() {},
     routes: { add: (route) => consoleRouter.addRoute(route) },
     slots: { register() {} },
-    menus: { app() {}, loginActions: [] }
+    menus: { loginActions: [] }
   };
   const overrides = {
     vue: { ...vue, onMounted() {} },
@@ -284,6 +284,13 @@ test("production URL identities share login state, registered routes and API aut
         open: vue.ref(false),
         activeCount: vue.computed(() => 0),
         refresh: async () => {}
+      })
+    },
+    "@/hooks/useThemeSwitch": {
+      useThemeSwitch: () => ({
+        themeIcon: vue.computed(() => "mdi-theme-light-dark"),
+        themeTitle: vue.computed(() => "Theme"),
+        cycleTheme() {}
       })
     },
     "@/initLib": {},

@@ -1,8 +1,6 @@
 import { router, type RouterMetaInfo } from "@/config/router";
 import { ctx } from "@/plugin/context";
 import { useAppRouters } from "@/hooks/useAppRouters";
-import { t } from "@/lang/i18n";
-import { useThemeSwitch } from "@/hooks/useThemeSwitch";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useUiStore } from "@/stores/useUiStore";
 import type { Component } from "vue";
@@ -17,30 +15,8 @@ export type SidebarRouteEntry = {
   customClass?: string[];
 };
 
-const mdiIconMap: Record<string, string> = {
-  BgColorsOutlined: "mdi-palette-outline",
-  DesktopOutlined: "mdi-monitor",
-  LogoutOutlined: "mdi-logout",
-  UserOutlined: "mdi-account-outline"
-};
-
-const getMdiIcon = (icon: unknown): string => {
-  if (typeof icon === "string" && icon.startsWith("mdi-")) return icon;
-  const component = icon as
-    | { name?: string; displayName?: string; __name?: string; type?: { name?: string; __name?: string } }
-    | undefined;
-  const iconName =
-    component?.name ??
-    component?.displayName ??
-    component?.__name ??
-    component?.type?.name ??
-    component?.type?.__name;
-  return (iconName && mdiIconMap[iconName]) || "mdi-help-circle-outline";
-};
-
 export function useHeaderMenus() {
   const { toPage } = useAppRouters();
-  const { themeIcon, themeTitle, cycleTheme } = useThemeSwitch();
   const { uiState } = useUiStore();
   const { state: appState, isAdmin, isLogged } = useAppStateStore();
 
@@ -76,44 +52,6 @@ export function useHeaderMenus() {
       }));
   });
 
-  const appMenuGroups = computed(() => {
-    const coreMenus = [
-      {
-        title: themeTitle.value,
-        leftSideTitle: t("TXT_CODE_ee01c10c"),
-        icon: themeIcon.value,
-        mdiIcon: themeIcon.value,
-        click: cycleTheme,
-        conditions: true,
-        onlyPC: false
-      }
-    ];
-    const pluginMenus = ctx.menus.appMenus.map((item) => ({
-      ...item,
-      title: typeof item.title === "function" ? item.title() : item.title,
-      mdiIcon: item.mdiIcon ?? getMdiIcon(item.icon),
-      leftSideTitle:
-        typeof item.leftSideTitle === "function" ? item.leftSideTitle() : item.leftSideTitle,
-      conditions:
-        typeof item.conditions === "function"
-          ? item.conditions()
-          : item.conditions === undefined
-          ? true
-          : item.conditions,
-      badge: typeof item.badge === "function" ? item.badge() : item.badge,
-      menus: item.menus?.map((menu) => ({
-        value: menu.value,
-        title: typeof menu.title === "function" ? menu.title() : menu.title
-      }))
-    }));
-    return { coreMenus, pluginMenus };
-  });
-
-  const appMenus = computed<any[]>(() => {
-    const { coreMenus, pluginMenus } = appMenuGroups.value;
-    return [...coreMenus, ...pluginMenus];
-  });
-
   /** The sidebar owns route navigation; application actions live in the header. */
   const sidebarItems = computed((): SidebarRouteEntry[] =>
     menus.value.map((r) => ({
@@ -125,5 +63,5 @@ export function useHeaderMenus() {
     }))
   );
 
-  return { menus, appMenus, sidebarItems, handleToPage };
+  return { menus, sidebarItems, handleToPage };
 }

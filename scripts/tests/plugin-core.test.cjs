@@ -149,10 +149,9 @@ function frontendFixture(t, { user = true, failStatus = false } = {}) {
       }
     },
     feature: {
-      inject: ["console", "routes", "menus", "desktop"],
+      inject: ["console", "routes", "desktop"],
       apply(scope) {
         scope.routes.add({ path: "/feature", component: Root });
-        scope.menus.app({ title: "Feature", click() {} });
         scope.desktop.app({ id: "feature", label: "Feature", route: "/feature", icon: "icon" });
         scope.on("ready", () => {
           assert.equal(document.querySelector("#plugin-console")?.textContent, "10");
@@ -193,12 +192,10 @@ test("frontend foundations restore language and session before mounting and read
   assert.equal(fixture.ctx.i18n.getCurrentLang(), "zh_cn");
   assert.deepEqual(fixture.events, ["status", "console", "session", "mount", "ready"]);
   assert.equal(fixture.ctx.routes.ownerOf("/feature"), "feature");
-  assert.equal(fixture.ctx.menus.appMenus.length, 1);
   await fixture.router.push("/feature");
   await fixture.loader.unloadPlugin("feature");
   assert.equal(fixture.router.currentRoute.value.path, "/404");
   assert.equal(fixture.ctx.routes.ownerOf("/feature"), undefined);
-  assert.equal(fixture.ctx.menus.appMenus.length, 0);
   assert.equal(fixture.ctx.desktop.apps.length, 0);
 });
 

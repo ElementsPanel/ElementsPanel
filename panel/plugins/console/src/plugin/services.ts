@@ -11,7 +11,6 @@ import type {
   FrontendRoutesService,
   FrontendUiService,
   FrontendVueService,
-  PanelFrontendAppMenu,
   PanelFrontendDesktopApp,
   PanelFrontendDesktopView,
   PanelFrontendDesktopWindowRequest,
@@ -169,18 +168,10 @@ export class UiService extends Service implements FrontendUiService {
 }
 
 export class MenusService extends Service implements FrontendMenusService {
-  readonly appMenus = shallowReactive<PanelFrontendAppMenu[]>([]);
   readonly loginActions = shallowReactive<PanelFrontendLoginAction[]>([]);
 
   constructor(ctx: Context) {
     super(ctx, "menus", true);
-  }
-
-  app(menu: PanelFrontendAppMenu) {
-    return this.ctx.effect(() => {
-      this.appMenus.push(menu);
-      return () => remove(this.appMenus, menu);
-    });
   }
 
   login(action: PanelFrontendLoginAction) {

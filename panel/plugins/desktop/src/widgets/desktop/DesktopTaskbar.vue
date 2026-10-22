@@ -21,30 +21,12 @@ const slotActions = computed(() =>
 const slotComponents = computed(() => actionSlots.value.filter((entry) => !entry.action));
 const actionTitle = (action: PanelFrontendHeaderAction) =>
     typeof action.title === "function" ? action.title() : action.title;
+const actionIcon = (action: PanelFrontendHeaderAction) =>
+    typeof action.mdiIcon === "function" ? action.mdiIcon() : action.mdiIcon;
 const actionBadge = (action: PanelFrontendHeaderAction) => {
     const badge = typeof action.badge === "function" ? action.badge() : action.badge;
     return badge === false || badge == null ? undefined : badge;
 };
-// Menu actions that opt into `taskbar` belong to the tray as well, so a plugin
-// button does not vanish when the normal header is replaced by the Desktop.
-const taskbarActions = computed(() =>
-    ctx.menus.appMenus
-        .filter(
-            (item) =>
-                item.taskbar &&
-                (typeof item.conditions === "function" ? item.conditions() : item.conditions !== false)
-        )
-        .map((item) => {
-            const title = typeof item.title === "function" ? item.title() : item.title;
-            const badge = typeof item.badge === "function" ? item.badge() : item.badge;
-            return {
-                title,
-                icon: item.mdiIcon || (typeof item.icon === "string" ? item.icon : "mdi-help-circle-outline"),
-                badge: badge === false || badge == null ? undefined : badge,
-                click: item.click
-            };
-        })
-);
 
 export interface TaskbarWindow {
     id: string;
@@ -233,19 +215,13 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
                     :max="99" :offset-x="14" :offset-y="14" color="primary" floating>
                     <VBtn icon variant="text" :aria-label="actionTitle(entry.action)"
                         :title="actionTitle(entry.action)" @click="entry.action.click()">
-                        <VIcon :icon="entry.action.mdiIcon" />
+                        <VIcon :icon="actionIcon(entry.action)" />
                     </VBtn>
                 </VBadge>
             </template>
             <component :is="entry.component" v-for="entry in slotComponents" :key="entry.id"
                 v-bind="{ ...entry.props, mobile: false }" />
-            <VBadge v-for="(action, index) in taskbarActions" :key="index" :content="action.badge"
-                :model-value="action.badge != null" :max="99" :offset-x="14" :offset-y="14" color="primary"
-                floating>
-                <VBtn icon variant="text" :aria-label="action.title" :title="action.title" @click="action.click()">
-                    <VIcon :icon="action.icon" />
-                </VBtn>
-            </VBadge>
+
             <div class="taskbar__time">
                 <div class="taskbar__time-text">{{ currentTime }}</div>
                 <div class="taskbar__date-text">{{ currentDate }}</div>

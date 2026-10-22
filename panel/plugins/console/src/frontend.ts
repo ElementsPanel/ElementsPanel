@@ -19,6 +19,7 @@ import { installVuetify } from "./vuetify";
 import BackgroundTasksSidebar from "./components/BackgroundTasksSidebar.vue";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useBackgroundTasks } from "@/stores/useBackgroundTasks";
+import { useThemeSwitch } from "@/hooks/useThemeSwitch";
 
 /** `/` only ever redirects through its `meta.redirect`; it never renders. */
 const RedirectShell = { render: () => null };
@@ -52,6 +53,18 @@ export async function apply(parent: PanelFrontendPluginContext) {
   ctx.slots.register("shell.overlay", BackgroundTasksSidebar, {
     id: "console:background-tasks-sidebar"
   });
+
+  // The theme switcher is shell UI, described like any other header action.
+  ctx.slots.register(
+    "shell.header.actions",
+    {
+      title: () => useThemeSwitch().themeTitle.value,
+      mdiIcon: () => useThemeSwitch().themeIcon.value,
+      taskbar: false,
+      click: () => useThemeSwitch().cycleTheme()
+    },
+    { id: "console:theme-button", order: 60 }
+  );
 
   ctx.routes.add({
     path: "/",

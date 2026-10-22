@@ -45,30 +45,6 @@ export function usePluginService<T>(name: string): T | undefined {
   return ctx.get(name as never) as T | undefined;
 }
 
-export interface PanelFrontendAppMenuItem {
-  value: string | number;
-  title: string | (() => string);
-}
-
-export interface PanelFrontendAppMenu {
-  title: string | (() => string);
-  leftSideTitle?: string | (() => string);
-  iconText?: string;
-  icon?: Component | string;
-  /** Vuetify/MDI icon name used by the normal panel shell. */
-  mdiIcon?: string;
-  click: (...args: any[]) => unknown;
-  conditions?: boolean | (() => boolean);
-  /** Badge text rendered on the button; a function keeps it reactive. */
-  badge?: string | number | (() => string | number | undefined | null | false);
-  onlyPC?: boolean;
-  onlyHeader?: boolean;
-  /** Also render this action in the Desktop console's taskbar tray. */
-  taskbar?: boolean;
-  customClass?: string[];
-  menus?: PanelFrontendAppMenuItem[];
-}
-
 export interface PanelFrontendLoginAction {
   title: string | (() => string);
   icon?: Component | string;
@@ -262,8 +238,8 @@ export type PanelFrontendSlotProps<K extends PanelFrontendSlotName> =
 export interface PanelFrontendHeaderAction {
   /** Tooltip and accessible label text. */
   title: string | (() => string);
-  /** MDI icon rendered by the shell. */
-  mdiIcon: string;
+  /** MDI icon rendered by the shell; a function keeps it reactive. */
+  mdiIcon: string | (() => string);
   /** Badge text; `false`, `null` and `undefined` hide the badge. */
   badge?: string | number | (() => string | number | undefined | null | false);
   click: (...args: any[]) => unknown;
@@ -319,9 +295,7 @@ export interface FrontendSlotsService {
 }
 
 export interface FrontendMenusService {
-  app(menu: PanelFrontendAppMenu): () => void;
   login(action: PanelFrontendLoginAction): () => void;
-  readonly appMenus: readonly PanelFrontendAppMenu[];
   readonly loginActions: readonly PanelFrontendLoginAction[];
 }
 
