@@ -160,6 +160,7 @@ onBeforeUnmount(() => {
           hide-details
         />
         <VBtn
+          v-if="showFinished"
           class="ml-auto"
           size="small"
           variant="text"
