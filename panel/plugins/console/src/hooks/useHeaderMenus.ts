@@ -20,12 +20,11 @@ export type SidebarRouteEntry = {
 const mdiIconMap: Record<string, string> = {
   BgColorsOutlined: "mdi-palette-outline",
   DesktopOutlined: "mdi-monitor",
-  GithubFilled: "mdi-github",
   LogoutOutlined: "mdi-logout",
   UserOutlined: "mdi-account-outline"
 };
 
-const getMdiIcon = (icon: unknown, title?: string): string => {
+const getMdiIcon = (icon: unknown): string => {
   if (typeof icon === "string" && icon.startsWith("mdi-")) return icon;
   const component = icon as
     | { name?: string; displayName?: string; __name?: string; type?: { name?: string; __name?: string } }
@@ -36,7 +35,7 @@ const getMdiIcon = (icon: unknown, title?: string): string => {
     component?.__name ??
     component?.type?.name ??
     component?.type?.__name;
-  return (iconName && mdiIconMap[iconName]) || (title === "GitHub" ? "mdi-github" : "mdi-help-circle-outline");
+  return (iconName && mdiIconMap[iconName]) || "mdi-help-circle-outline";
 };
 
 export function useHeaderMenus() {
@@ -48,10 +47,6 @@ export function useHeaderMenus() {
   const handleToPage = (url: string) => {
     uiState.showPhoneMenu = false;
     toPage({ path: url });
-  };
-
-  const onClickIcon = () => {
-    window.open("https://github.com/MCSManager/MCSManager", "_blank");
   };
 
   const menus = computed(() => {
@@ -84,15 +79,6 @@ export function useHeaderMenus() {
   const appMenuGroups = computed(() => {
     const coreMenus = [
       {
-        iconText: "",
-        title: "GitHub",
-        icon: "mdi-github",
-        mdiIcon: "mdi-github",
-        onlyPC: true,
-        onlyHeader: true,
-        click: onClickIcon
-      },
-      {
         title: themeTitle.value,
         leftSideTitle: t("TXT_CODE_ee01c10c"),
         icon: themeIcon.value,
@@ -100,14 +86,12 @@ export function useHeaderMenus() {
         click: cycleTheme,
         conditions: true,
         onlyPC: false
-      },
+      }
     ];
     const pluginMenus = ctx.menus.appMenus.map((item) => ({
       ...item,
       title: typeof item.title === "function" ? item.title() : item.title,
-      mdiIcon:
-        item.mdiIcon ??
-        getMdiIcon(item.icon, typeof item.title === "function" ? item.title() : item.title),
+      mdiIcon: item.mdiIcon ?? getMdiIcon(item.icon),
       leftSideTitle:
         typeof item.leftSideTitle === "function" ? item.leftSideTitle() : item.leftSideTitle,
       conditions:
