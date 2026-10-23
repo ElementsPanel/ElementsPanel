@@ -7,6 +7,7 @@
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Les plugins sources et essentiels ne peuvent pas être supprimés ici.",
   "TXT_CODE_PLUGIN_DELETED": "Plugin supprimé",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "Enregistrer la configuration",
+  "TXT_CODE_PLUGIN_SAVE_REMINDER": "Pensez à enregistrer la configuration !",
   "TXT_CODE_PLUGIN_DISABLE": "Désactiver",
   "TXT_CODE_PLUGIN_DISABLED": "Extension désactivée",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Tout ce que cette extension fournit est retiré immédiatement.",

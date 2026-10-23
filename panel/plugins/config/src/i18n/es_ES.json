@@ -7,6 +7,7 @@
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Los complementos de código fuente y esenciales no se pueden eliminar aquí.",
   "TXT_CODE_PLUGIN_DELETED": "Complemento eliminado",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "Guardar configuración",
+  "TXT_CODE_PLUGIN_SAVE_REMINDER": "¡Recuerda guardar la configuración!",
   "TXT_CODE_PLUGIN_DISABLE": "Desactivar",
   "TXT_CODE_PLUGIN_DISABLED": "Complemento desactivado",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Todo lo que aporta este complemento se elimina de inmediato.",

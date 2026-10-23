@@ -7,6 +7,7 @@
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "ไม่สามารถลบปลั๊กอินซอร์สและปลั๊กอินที่จำเป็นได้ที่นี่",
   "TXT_CODE_PLUGIN_DELETED": "ลบปลั๊กอินแล้ว",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "บันทึกการตั้งค่า",
+  "TXT_CODE_PLUGIN_SAVE_REMINDER": "อย่าลืมบันทึกการตั้งค่า!",
   "TXT_CODE_PLUGIN_DISABLE": "ปิดใช้งาน",
   "TXT_CODE_PLUGIN_DISABLED": "ปิดใช้งานปลั๊กอินแล้ว",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "ทุกอย่างที่ปลั๊กอินนี้ให้มาจะถูกลบออกทันที",

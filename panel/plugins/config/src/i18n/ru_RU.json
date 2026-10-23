@@ -7,6 +7,7 @@
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Исходные и обязательные плагины нельзя удалить здесь.",
   "TXT_CODE_PLUGIN_DELETED": "Плагин удалён",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "Сохранить настройки",
+  "TXT_CODE_PLUGIN_SAVE_REMINDER": "Не забудьте сохранить настройки!",
   "TXT_CODE_PLUGIN_DISABLE": "Отключить",
   "TXT_CODE_PLUGIN_DISABLED": "Плагин отключён",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Всё, что предоставляет этот плагин, будет удалено сразу.",

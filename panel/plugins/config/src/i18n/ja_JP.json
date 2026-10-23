@@ -7,6 +7,7 @@
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "ソースおよび必須プラグインはここから削除できません。",
   "TXT_CODE_PLUGIN_DELETED": "プラグインを削除しました",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "設定を保存",
+  "TXT_CODE_PLUGIN_SAVE_REMINDER": "設定の保存をお忘れなく！",
   "TXT_CODE_PLUGIN_DISABLE": "無効化",
   "TXT_CODE_PLUGIN_DISABLED": "プラグインを無効にしました",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "このプラグインが提供するすべての要素が即座に削除されます。",

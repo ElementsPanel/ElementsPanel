@@ -7,6 +7,7 @@
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Source and essential plugins cannot be removed here.",
   "TXT_CODE_PLUGIN_DELETED": "Plugin removed",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "Save settings",
+  "TXT_CODE_PLUGIN_SAVE_REMINDER": "Remember to save your settings!",
   "TXT_CODE_PLUGIN_DISABLE": "Disable",
   "TXT_CODE_PLUGIN_DISABLED": "Plugin disabled",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "Everything this plugin provides is removed at once.",

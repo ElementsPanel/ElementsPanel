@@ -7,6 +7,7 @@
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "소스 및 필수 플러그인은 여기서 삭제할 수 없습니다.",
   "TXT_CODE_PLUGIN_DELETED": "플러그인을 삭제했습니다",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "설정 저장",
+  "TXT_CODE_PLUGIN_SAVE_REMINDER": "설정을 저장하는 것을 잊지 마세요!",
   "TXT_CODE_PLUGIN_DISABLE": "비활성화",
   "TXT_CODE_PLUGIN_DISABLED": "플러그인을 비활성화했습니다",
   "TXT_CODE_PLUGIN_DISABLE_CONFIRM": "이 플러그인이 제공하는 모든 구성 요소가 즉시 제거됩니다.",

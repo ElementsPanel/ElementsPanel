@@ -295,6 +295,30 @@ const selectedPlugin = computed(() =>
 
 /** The selected plugin's declared form, or null when it declared none. */
 const schema = ref<SettingsSchema | null>(null);
+const savedSettings = ref("");
+const settingsDirty = computed(
+  () => !!schema.value && JSON.stringify(schema.value.values) !== savedSettings.value
+);
+const toggleTooltipOpen = ref(false);
+const deleteTooltipOpen = ref(false);
+const saveTooltipActive = ref(false);
+const saveTooltipOpen = computed({
+  get: () =>
+    !toggleTooltipOpen.value &&
+    !deleteTooltipOpen.value &&
+    (settingsDirty.value || saveTooltipActive.value),
+  set: (value: boolean) => {
+    saveTooltipActive.value = value;
+  }
+});
+// Take a baseline when a form loads, without treating nested field edits as a new baseline.
+watch(
+  schema,
+  (value) => {
+    savedSettings.value = value ? JSON.stringify(value.values) : "";
+  },
+  { flush: "sync" }
+);
 const schemaLoading = ref(false);
 let schemaRequest = 0;
 let nodePluginsRequest = 0;
@@ -385,13 +409,15 @@ const retryFrontend = async () => {
 
 const saveSettings = async () => {
   if (!schema.value || savingSettings.value) return;
+  const targetSchema = schema.value;
   const targetScope = scope.value;
   const targetNode = selectedNodeId.value;
-  const targetId = schema.value.id;
+  const targetId = targetSchema.id;
+  const submittedSettings = JSON.stringify(targetSchema.values);
   savingSettings.value = true;
-  const reloadPanel = scope.value === "panel" && ["i18n", "console"].includes(schema.value.id);
+  const reloadPanel = targetScope === "panel" && ["i18n", "console"].includes(targetId);
   try {
-    const values = schema.value.values;
+    const values = JSON.parse(submittedSettings) as Record<string, unknown>;
     if (targetScope === "panel") {
       const { execute } = updatePluginSettings();
       recordResult((await execute({ params: { id: targetId }, data: values })).value);
@@ -408,14 +434,18 @@ const saveSettings = async () => {
     }
     if (!lastResult.value || lastResult.value.application === "applied")
       notify(t("TXT_CODE_d3de39b4"), "success");
-    if (reloadPanel) {
+    const editedDuringSave = JSON.stringify(targetSchema.values) !== submittedSettings;
+    if (schema.value === targetSchema) savedSettings.value = submittedSettings;
+    if (reloadPanel && !editedDuringSave) {
       window.setTimeout(() => window.location.reload(), 400);
       return;
     }
     if (
       scope.value === targetScope &&
       selectedNodeId.value === targetNode &&
-      currentId.value === targetId
+      currentId.value === targetId &&
+      schema.value === targetSchema &&
+      !editedDuringSave
     ) {
       await loadSchema();
     }
@@ -576,6 +606,9 @@ watch(
   [scope, currentId, selectedNodeId],
   () => {
     lastResult.value = null;
+    toggleTooltipOpen.value = false;
+    deleteTooltipOpen.value = false;
+    saveTooltipActive.value = false;
     loadSchema();
   },
   { immediate: true }
@@ -866,6 +899,7 @@ const confirmRemove = async () => {
             </span>
             <div class="plugin-config-actions">
               <VTooltip
+                v-model="toggleTooltipOpen"
                 :text="t(selectedPlugin.enabled ? 'TXT_CODE_PLUGIN_DISABLE' : 'TXT_CODE_PLUGIN_ENABLE')"
                 location="top"
               >
@@ -891,7 +925,10 @@ const confirmRemove = async () => {
               </VTooltip>
               <VTooltip
                 v-if="schema?.fields.some((field) => field.type !== 'link')"
-                :text="t('TXT_CODE_PLUGIN_SAVE_SETTINGS')"
+                v-model="saveTooltipOpen"
+                :text="
+                  t(settingsDirty ? 'TXT_CODE_PLUGIN_SAVE_REMINDER' : 'TXT_CODE_PLUGIN_SAVE_SETTINGS')
+                "
                 location="top"
               >
                 <template #activator="{ props: tooltipProps }">
@@ -899,7 +936,7 @@ const confirmRemove = async () => {
                     <VBtn
                       icon="mdi-content-save"
                       color="primary"
-                      variant="text"
+                      :variant="settingsDirty ? 'flat' : 'text'"
                       :loading="savingSettings"
                       :disabled="schemaLoading"
                       :aria-label="t('TXT_CODE_PLUGIN_SAVE_SETTINGS')"
@@ -909,6 +946,7 @@ const confirmRemove = async () => {
                 </template>
               </VTooltip>
               <VTooltip
+                v-model="deleteTooltipOpen"
                 :text="
                   t(
                     selectedPlugin?.removable

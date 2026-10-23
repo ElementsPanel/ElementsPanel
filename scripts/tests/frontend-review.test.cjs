@@ -565,6 +565,129 @@ test("switching node/plugin configuration cannot display or save a stale schema"
   });
 });
 
+test("plugin configuration opens its save tooltip for unsaved edits and preserves edits across saves", async (t) => {
+  for (const targetScope of ["panel", "node"]) await t.test(targetScope, async (t) => {
+    const effect = vue.effectScope();
+    t.after(() => effect.stop());
+    t.mock.method(console, "error", () => {});
+    const errors = [];
+    const writes = [];
+    let stored = { name: "original", entries: [{ name: "first" }] };
+    let failSave = false;
+    let pendingSave;
+    const inventory = [{ id: "settings", enabled: true }, { id: "other", enabled: true }];
+    const read = async ({ params }) => ({ value: {
+      id: params.id,
+      fields: [{ key: "name", type: "string", title: "Name" }],
+      values: JSON.parse(JSON.stringify(stored))
+    } });
+    const write = async (config) => {
+      writes.push(config);
+      if (failSave) throw new Error("save failed");
+      if (pendingSave) await pendingSave.promise;
+      stored = JSON.parse(JSON.stringify(config.data));
+      return { value: { saved: true, application: "applied" } };
+    };
+    const state = effect.run(() => setupSfc("panel/plugins/config/src/ConfigPage.vue", {
+      vue: { ...vue, onMounted() {}, onUnmounted() {} },
+      "vue-router": {
+        useRoute: () => ({ path: "/desktop", query: {} }),
+        useRouter: () => ({}),
+        onBeforeRouteLeave() {}
+      },
+      "@/plugin/context": { ctx: { plugins: { loaded: [] } } },
+      "@/tools/validator": { getValidatorErrorMsg: (error) => error.message },
+      "@/tools/vuetifyToast": { message: {
+        success() {},
+        error: (text) => errors.push(text),
+        warning: () => assert.fail("the save reminder must use the button tooltip")
+      } },
+      "./SchemaForm.vue": {},
+      "./api": {
+        pluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
+        nodePluginGroupList: () => ({ execute: async () => ({ value: [] }) }),
+        nodeList: () => ({ execute: async () => ({ value: [{ uuid: "node", available: true }] }) }),
+        nodePluginList: () => ({ execute: async () => ({ value: inventory }) }),
+        pluginSettings: () => ({ execute: read }),
+        nodePluginSettings: () => ({ execute: read }),
+        updatePluginSettings: () => ({ execute: write }),
+        updateNodePluginSettings: () => ({ execute: write })
+      }
+    }, { scope: targetScope, daemonId: targetScope === "node" ? "node" : undefined }));
+    state.plugins.value = inventory;
+    await settle();
+    assert.equal(state.schema.value.id, "settings");
+    assert.equal(state.settingsDirty.value, false);
+    assert.equal(state.saveTooltipOpen.value, false, "loading the form must not show a save reminder");
+    state.saveTooltipOpen.value = true;
+    assert.equal(state.saveTooltipOpen.value, true, "the regular hover/focus tooltip must still open");
+    state.saveTooltipOpen.value = false;
+    assert.equal(state.saveTooltipOpen.value, false);
+
+    state.schema.value.values.entries[0].name = "edited";
+    await vue.nextTick();
+    assert.equal(state.settingsDirty.value, true);
+    assert.equal(state.saveTooltipOpen.value, true, "editing must open the tooltip without hovering");
+    state.saveTooltipOpen.value = false;
+    assert.equal(state.saveTooltipOpen.value, true, "mouseleave must not hide the unsaved reminder");
+    state.toggleTooltipOpen.value = true;
+    assert.equal(state.saveTooltipOpen.value, false, "the toggle tooltip must take priority");
+    state.deleteTooltipOpen.value = true;
+    state.toggleTooltipOpen.value = false;
+    assert.equal(state.saveTooltipOpen.value, false, "the delete tooltip must keep the reminder hidden");
+    state.deleteTooltipOpen.value = false;
+    assert.equal(state.saveTooltipOpen.value, true, "the reminder must return after other tooltips close");
+    state.schema.value.values.entries.push({ name: "second" });
+    await vue.nextTick();
+    assert.equal(state.saveTooltipOpen.value, true);
+    state.schema.value.values.entries = [{ name: "first" }];
+    await vue.nextTick();
+    assert.equal(state.settingsDirty.value, false);
+    assert.equal(state.saveTooltipOpen.value, false);
+
+    state.schema.value.values.name = "saved";
+    await vue.nextTick();
+    failSave = true;
+    await state.saveSettings();
+    assert.deepEqual(errors, ["save failed"]);
+    assert.equal(state.settingsDirty.value, true, "a failed save must retain the unsaved state");
+    assert.equal(state.saveTooltipOpen.value, true);
+    failSave = false;
+    await state.saveSettings();
+    await vue.nextTick();
+    assert.equal(state.settingsDirty.value, false);
+    assert.equal(state.saveTooltipOpen.value, false, "saving must close the reminder");
+
+    state.schema.value.values.name = "submitted";
+    await vue.nextTick();
+    pendingSave = deferred();
+    const saving = state.saveSettings();
+    state.schema.value.values.name = "newer edit";
+    pendingSave.resolve();
+    await saving;
+    await vue.nextTick();
+    assert.equal(writes.at(-1).data.name, "submitted", "the request must use the submitted snapshot");
+    assert.equal(state.schema.value.values.name, "newer edit");
+    assert.equal(state.settingsDirty.value, true, "edits made during a save must remain unsaved");
+    assert.equal(state.saveTooltipOpen.value, true);
+    pendingSave = undefined;
+    await state.saveSettings();
+    await vue.nextTick();
+    assert.equal(state.settingsDirty.value, false);
+
+    state.schema.value.values.name = "discarded";
+    await vue.nextTick();
+    state.toggleTooltipOpen.value = true;
+    state.deleteTooltipOpen.value = true;
+    state.currentId.value = "other";
+    await settle();
+    assert.equal(state.settingsDirty.value, false, "another plugin must receive a fresh baseline");
+    assert.equal(state.saveTooltipOpen.value, false);
+    assert.equal(state.toggleTooltipOpen.value, false);
+    assert.equal(state.deleteTooltipOpen.value, false);
+  });
+});
+
 test("desktop plugin configuration loads each window's node without changing the desktop route", async (t) => {
   const route = vue.reactive({ path: "/desktop", query: { scope: "node", daemonId: "route-node" } });
   const requests = [];
