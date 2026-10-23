@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DesktopDialog from "@/components/DesktopDialog.vue";
 import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
 import { getInstanceDeleteError } from "../tools/deletion";
 import { useInstanceTagSearch, useInstanceTagTips } from "@/hooks/useInstanceTag";
@@ -21,7 +22,6 @@ import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
 import type { InstanceDetail, NodeStatus } from "@/types";
 import { INSTANCE_STATUS_CODE } from "@/types/const";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-import DesktopWindow from "./DesktopWindow.vue";
 import { VBtn, VChip, VIcon, VList, VListItem, VMenu, VProgressCircular, VSelect, VTextField } from "vuetify/components";
 
 const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
@@ -179,9 +179,6 @@ const saveInstanceTags = async () => {
         tagDialog.value.saving = false;
     }
 };
-
-const windowWidth = ref(window.innerWidth);
-const windowHeight = ref(window.innerHeight);
 
 const { execute: executeNodeList } = remoteNodeList();
 const { execute: executeRemoteInstances } = remoteInstances();
@@ -526,11 +523,6 @@ watch([searchText, statusFilter], () => {
 });
 
 onMounted(async () => {
-    const updateWindowSize = () => {
-        windowWidth.value = window.innerWidth;
-        windowHeight.value = window.innerHeight;
-    };
-    window.addEventListener("resize", updateWindowSize);
 
     await fetchNodes();
     await fetchInstances();
@@ -543,10 +535,6 @@ onUnmounted(() => {
         clearInterval(refreshTimer);
         refreshTimer = null;
     }
-    window.removeEventListener("resize", () => {
-        windowWidth.value = window.innerWidth;
-        windowHeight.value = window.innerHeight;
-    });
 });
 </script>
 
@@ -731,65 +719,62 @@ onUnmounted(() => {
             </VBtn>
         </div>
 
-        <Teleport to="body">
-            <Transition name="desktop-window">
-                <DesktopWindow v-if="tagDialog.show" id="instance-manager-tag-dialog" :title="t('TXT_CODE_a2544278')"
-                    :icon="TagsOutlined" :visible="tagDialog.show" :minimized="false" :maximized="false" :active="true"
-                    :initial-width="440" :initial-height="420" :initial-x="windowWidth / 2 - 220"
-                    :initial-y="windowHeight / 2 - 180" :z-index="10007" :show-minimize="false" :show-maximize="false"
-                    :resizable="false" @close="closeTagDialog">
-                    <div class="dim-dialog-content">
-                        <div class="dim-dialog__body">
-                            <p class="dim-dialog__desc dim-dialog__desc--left">{{ t("TXT_CODE_f84ae54f") }}</p>
-                            <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
-                                {{ t("TXT_CODE_2c1337d") }}
-                            </p>
-                            <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
-                                {{ t("TXT_CODE_e26d53d5") }}
-                            </p>
-                            <div class="dim-tag-editor">
-                                <span v-for="tag in tagDialog.tags" :key="tag" class="dim-tag-editor__tag">
-                                    {{ tag }}
-                                    <VIcon icon="mdi-close" class="dim-tag-editor__remove" @click="removeInstanceTag(tag)"  />
-                                </span>
-                                <VTextField v-if="tagDialog.newTagVisible" ref="tagInputRef" v-model="tagDialog.newTagValue"
-                                    density="compact" variant="solo" rounded="xl" hide-details class="dim-tag-editor__input"
-                                    @blur="confirmNewTag" @keyup.enter="confirmNewTag" />
-                                <VBtn v-else class="dim-tag-editor__add" variant="text" rounded="xl" @click="showNewTagInput">
-                                    <VIcon icon="mdi-plus"  /> {{ t("TXT_CODE_3dd66d98") }}
-                                </VBtn>
-                            </div>
-                            <template v-if="tagSuggestions.length > 0">
-                                <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--strong">
-                                    {{ t("TXT_CODE_67d1ea21") }}
-                                </p>
-                                <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
-                                    {{ t("TXT_CODE_3ecee271") }}
-                                </p>
-                                <div class="dim-tag-editor">
-                                    <span v-for="tag in tagSuggestions" :key="tag"
-                                        class="dim-tag-editor__tag dim-tag-editor__tag--option"
-                                        @click="addSuggestionTag(tag)">
-                                        {{ tag }}
-                                    </span>
-                                </div>
-                            </template>
-                        </div>
-                        <div class="dim-dialog__footer">
-                            <VBtn class="dim-btn dim-btn--default" variant="text" rounded="xl" :disabled="tagDialog.saving"
-                                @click="closeTagDialog">
-                                {{ t("TXT_CODE_a0451c97") }}
-                            </VBtn>
-                            <VBtn class="dim-btn dim-btn--primary" variant="text" rounded="xl" :disabled="tagDialog.saving"
-                                @click="saveInstanceTags">
-                                <VIcon icon="mdi-loading" v-if="tagDialog.saving"  />
-                                {{ t("TXT_CODE_d507abff") }}
-                            </VBtn>
-                        </div>
-                    </div>
-                </DesktopWindow>
-            </Transition>
-        </Teleport>
+        <DesktopDialog
+          id="instance-manager-tag-dialog"
+          :title="t('TXT_CODE_a2544278')"
+          :icon="TagsOutlined"
+          :model-value="tagDialog.show"
+          :width="440"
+          :height="420"
+          :z-index="10007"
+          @close="closeTagDialog"
+        >
+          <p class="dim-dialog__desc dim-dialog__desc--left">{{ t("TXT_CODE_f84ae54f") }}</p>
+          <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
+              {{ t("TXT_CODE_2c1337d") }}
+          </p>
+          <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
+              {{ t("TXT_CODE_e26d53d5") }}
+          </p>
+          <div class="dim-tag-editor">
+              <span v-for="tag in tagDialog.tags" :key="tag" class="dim-tag-editor__tag">
+                  {{ tag }}
+                  <VIcon icon="mdi-close" class="dim-tag-editor__remove" @click="removeInstanceTag(tag)"  />
+              </span>
+              <VTextField v-if="tagDialog.newTagVisible" ref="tagInputRef" v-model="tagDialog.newTagValue"
+                  density="compact" variant="solo" rounded="xl" hide-details class="dim-tag-editor__input"
+                  @blur="confirmNewTag" @keyup.enter="confirmNewTag" />
+              <VBtn v-else class="dim-tag-editor__add" variant="text" rounded="xl" @click="showNewTagInput">
+                  <VIcon icon="mdi-plus"  /> {{ t("TXT_CODE_3dd66d98") }}
+              </VBtn>
+          </div>
+          <template v-if="tagSuggestions.length > 0">
+              <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--strong">
+                  {{ t("TXT_CODE_67d1ea21") }}
+              </p>
+              <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
+                  {{ t("TXT_CODE_3ecee271") }}
+              </p>
+              <div class="dim-tag-editor">
+                  <span v-for="tag in tagSuggestions" :key="tag"
+                      class="dim-tag-editor__tag dim-tag-editor__tag--option"
+                      @click="addSuggestionTag(tag)">
+                      {{ tag }}
+                  </span>
+              </div>
+          </template>
+          <template #footer>
+            <VBtn class="dim-btn dim-btn--default" variant="text" rounded="xl" :disabled="tagDialog.saving"
+                @click="closeTagDialog">
+                {{ t("TXT_CODE_a0451c97") }}
+            </VBtn>
+            <VBtn class="dim-btn dim-btn--primary" variant="text" rounded="xl" :disabled="tagDialog.saving"
+                @click="saveInstanceTags">
+                <VIcon icon="mdi-loading" v-if="tagDialog.saving"  />
+                {{ t("TXT_CODE_d507abff") }}
+            </VBtn>
+          </template>
+        </DesktopDialog>
 
         <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="deleteDialog.show" id="instance-manager-delete-dialog" :height="300"
             :title="deleteDialog.deleteFile ? t('TXT_CODE_9ef27367') : t('TXT_CODE_ecbd7449')"
@@ -1371,19 +1356,6 @@ onUnmounted(() => {
     }
 }
 
-.dim-dialog-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background: transparent;
-}
-
-.dim-dialog__body {
-    padding: 16px 20px;
-    flex: 1;
-    overflow-y: auto;
-}
-
 .dim-dialog__desc {
     margin: 0;
     color: var(--desktop-window-text);
@@ -1416,11 +1388,4 @@ onUnmounted(() => {
     word-break: break-all;
 }
 
-.dim-dialog__footer {
-    padding: 12px 20px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    border-top: 1px solid var(--desktop-window-border);
-}
 </style>

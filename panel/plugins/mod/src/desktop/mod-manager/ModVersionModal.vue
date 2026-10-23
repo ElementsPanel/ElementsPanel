@@ -1,14 +1,12 @@
 <script setup lang="ts">
+import DesktopDialog from "@/components/DesktopDialog.vue";
 import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
 import AppDialog from "@/components/AppDialog.vue";
-import { ctx } from "@/plugin/context";
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onUnmounted, ref, watch } from "vue";
 import { VBtn, VChip, VDataTable, VIcon, VProgressCircular } from "vuetify/components";
 
 const AppstoreOutlined = "mdi-view-grid-outline";
-
-const desktopWindowComponent = computed(() => ctx.desktop.window);
 
 const props = defineProps<{
   visible: boolean;
@@ -23,22 +21,6 @@ const props = defineProps<{
 const emit = defineEmits(["update:visible", "download"]);
 
 const { isPhone } = useScreen();
-
-const windowWidth = ref(window.innerWidth);
-const windowHeight = ref(window.innerHeight);
-
-const updateWindowSize = () => {
-  windowWidth.value = window.innerWidth;
-  windowHeight.value = window.innerHeight;
-};
-
-onMounted(() => {
-  window.addEventListener('resize', updateWindowSize);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('resize', updateWindowSize);
-});
 
 // Track the version ID being downloaded
 const downloadingVersionId = ref<string | number | null>(null);
@@ -166,37 +148,36 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
 
 <template>
   <template v-if="isDesktop">
-    <Teleport to="body">
-      <Transition name="desktop-window">
-        <component :is="desktopWindowComponent" v-if="visible" id="mod-version-dialog" :title="t('TXT_CODE_VERSION_SELECT')"
-          :icon="AppstoreOutlined" :visible="visible" :minimized="false" :maximized="false" :active="true"
-          :initial-width="900" :initial-height="600" :initial-x="windowWidth / 2 - 450"
-          :initial-y="windowHeight / 2 - 300" :z-index="10001" :show-minimize="false" :show-maximize="false"
-          :resizable="false" @close="emit('update:visible', false)">
-          <div class="desktop-modal-content">
-            <p class="mb-8 desktop-modal-hint"><VIcon icon="mdi-alert-outline" /> {{ $t("TXT_CODE_6111bc9e") }}</p>
-            <VDataTable class="mod-version-table" :headers="desktopHeaders" :items="sortedVersions" item-value="id"
-              :loading="versionsLoading" density="comfortable">
-              <template #loading><VProgressCircular indeterminate size="24" width="2" /></template>
-              <template #item.name="{ item }"><strong>{{ item.name }}</strong></template>
-              <template #item.version_number="{ item }">{{ item.version_number }}</template>
-              <template #item.game_versions="{ item }">
-                <VChip v-for="v in item.game_versions?.slice(0, 3)" :key="v" size="small" variant="tonal" :color="v === searchFilters?.version ? 'primary' : undefined" class="mr-1">{{ v }}</VChip>
-              </template>
-              <template #item.loaders="{ item }">
-                <VChip v-for="l in item.loaders" :key="l" size="small" variant="tonal" :color="l.toLowerCase() === searchFilters?.loader?.toLowerCase() ? 'success' : 'orange'" class="mr-1">{{ l }}</VChip>
-              </template>
-              <template #item.action="{ item }">
-                <VBtn icon variant="text" rounded="xl" size="small" :disabled="isInstalled(item) || downloadingVersionId === item.id"
-                  :loading="downloadingVersionId === item.id" :title="isInstalled(item) ? t('TXT_CODE_INSTALLED') : t('TXT_CODE_DOWNLOAD')" @click="handleDownload(item)">
-                  <VIcon :icon="downloadingVersionId === item.id ? 'mdi-loading' : isInstalled(item) ? 'mdi-check-circle-outline' : 'mdi-cloud-download-outline'" />
-                </VBtn>
-              </template>
-            </VDataTable>
-          </div>
-        </component>
-      </Transition>
-    </Teleport>
+    <DesktopDialog
+      id="mod-version-dialog"
+      :title="t('TXT_CODE_VERSION_SELECT')"
+      :icon="AppstoreOutlined"
+      :model-value="visible"
+      :width="900"
+      :height="600"
+      :z-index="10001"
+      @close="emit('update:visible', false)"
+    >
+      <p class="mb-8 desktop-modal-hint"><VIcon icon="mdi-alert-outline" /> {{ $t("TXT_CODE_6111bc9e") }}</p>
+      <VDataTable class="mod-version-table" :headers="desktopHeaders" :items="sortedVersions" item-value="id"
+        :loading="versionsLoading" density="comfortable">
+        <template #loading><VProgressCircular indeterminate size="24" width="2" /></template>
+        <template #item.name="{ item }"><strong>{{ item.name }}</strong></template>
+        <template #item.version_number="{ item }">{{ item.version_number }}</template>
+        <template #item.game_versions="{ item }">
+          <VChip v-for="v in item.game_versions?.slice(0, 3)" :key="v" size="small" variant="tonal" :color="v === searchFilters?.version ? 'primary' : undefined" class="mr-1">{{ v }}</VChip>
+        </template>
+        <template #item.loaders="{ item }">
+          <VChip v-for="l in item.loaders" :key="l" size="small" variant="tonal" :color="l.toLowerCase() === searchFilters?.loader?.toLowerCase() ? 'success' : 'orange'" class="mr-1">{{ l }}</VChip>
+        </template>
+        <template #item.action="{ item }">
+          <VBtn icon variant="text" rounded="xl" size="small" :disabled="isInstalled(item) || downloadingVersionId === item.id"
+            :loading="downloadingVersionId === item.id" :title="isInstalled(item) ? t('TXT_CODE_INSTALLED') : t('TXT_CODE_DOWNLOAD')" @click="handleDownload(item)">
+            <VIcon :icon="downloadingVersionId === item.id ? 'mdi-loading' : isInstalled(item) ? 'mdi-check-circle-outline' : 'mdi-cloud-download-outline'" />
+          </VBtn>
+        </template>
+      </VDataTable>
+    </DesktopDialog>
   </template>
   <AppDialog v-else :visible="visible" :title="t('TXT_CODE_VERSION_SELECT')" :footer="null"
     :width="isPhone ? '100%' : '900px'" @update:visible="(val) => emit('update:visible', val)">
@@ -224,13 +205,3 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
     </VDataTable>
   </AppDialog>
 </template>
-
-<style scoped>
-.desktop-modal-content {
-  padding: 20px;
-  height: 100%;
-  overflow-y: auto;
-  color: var(--desktop-window-text, #000);
-}
-
-</style>

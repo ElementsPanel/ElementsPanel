@@ -1,13 +1,11 @@
 <script setup lang="ts">
+import DesktopDialog from "@/components/DesktopDialog.vue";
 import { t } from "@/lang/i18n";
 import AppDialog from "@/components/AppDialog.vue";
-import { ctx } from "@/plugin/context";
-import { computed, onMounted, onUnmounted, ref } from "vue";
-import { VBtn, VList, VListItem } from "vuetify/components";
 
-const FileTextOutlined = "mdi-file-document-outline";
+import { VBtn, VIcon, VList, VListItem } from "vuetify/components";
+
 const SettingOutlined = "mdi-cog-outline";
-const desktopWindowComponent = computed(() => ctx.desktop.window);
 
 defineProps<{
   visible: boolean;
@@ -17,47 +15,30 @@ defineProps<{
   isDesktop?: boolean;
 }>();
 
-const windowWidth = ref(window.innerWidth);
-const windowHeight = ref(window.innerHeight);
-
-const updateWindowSize = () => {
-  windowWidth.value = window.innerWidth;
-  windowHeight.value = window.innerHeight;
-};
-
-onMounted(() => {
-  window.addEventListener('resize', updateWindowSize);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('resize', updateWindowSize);
-});
-
 const emit = defineEmits(["update:visible", "edit"]);
 </script>
 
 <template>
   <template v-if="isDesktop">
-    <Teleport to="body">
-      <Transition name="desktop-window">
-        <component :is="desktopWindowComponent" v-if="visible" id="mod-config-dialog" :title="t('TXT_CODE_CONFIG') + ': ' + currentMod?.name"
-          :icon="SettingOutlined" :visible="visible" :minimized="false" :maximized="false" :active="true"
-          :initial-width="600" :initial-height="400" :initial-x="windowWidth / 2 - 300"
-          :initial-y="windowHeight / 2 - 200" :z-index="10001" :show-minimize="false" :show-maximize="false"
-          :resizable="false" @close="emit('update:visible', false)">
-          <div class="desktop-modal-content">
-            <VList v-if="!configLoading" rounded="xl">
-              <VListItem v-for="item in configFiles" :key="item.path || item.name" :title="item.name" :subtitle="item.path">
-                <template #prepend><VIcon icon="mdi-file-document-outline" /></template>
-                <template #append><VBtn variant="text" rounded="xl" @click="emit('edit', item)">{{ t("TXT_CODE_EDIT") }}</VBtn></template>
-              </VListItem>
-              <VListItem v-if="!configFiles.length" :title="t('TXT_CODE_NO_DATA')" />
-            </VList>
-            <div v-else class="desktop-modal-loading"><VIcon icon="mdi-loading" /></div>
-          </div>
-        </component>
-      </Transition>
-    </Teleport>
+    <DesktopDialog
+      id="mod-config-dialog"
+      :title="t('TXT_CODE_CONFIG') + ': ' + currentMod?.name"
+      :icon="SettingOutlined"
+      :model-value="visible"
+      :width="600"
+      :height="400"
+      :z-index="10001"
+      @close="emit('update:visible', false)"
+    >
+      <VList v-if="!configLoading" rounded="xl">
+        <VListItem v-for="item in configFiles" :key="item.path || item.name" :title="item.name" :subtitle="item.path">
+          <template #prepend><VIcon icon="mdi-file-document-outline" /></template>
+          <template #append><VBtn variant="text" rounded="xl" @click="emit('edit', item)">{{ t("TXT_CODE_EDIT") }}</VBtn></template>
+        </VListItem>
+        <VListItem v-if="!configFiles.length" :title="t('TXT_CODE_NO_DATA')" />
+      </VList>
+      <div v-else class="desktop-modal-loading"><VIcon icon="mdi-loading" /></div>
+    </DesktopDialog>
   </template>
   <AppDialog v-else :visible="visible" @update:visible="val => emit('update:visible', val)"
     :title="t('TXT_CODE_CONFIG') + ': ' + currentMod?.name" :footer="null">
@@ -71,13 +52,3 @@ const emit = defineEmits(["update:visible", "edit"]);
     <div v-else class="desktop-modal-loading"><VIcon icon="mdi-loading" /></div>
   </AppDialog>
 </template>
-
-<style scoped>
-.desktop-modal-content {
-  padding: 20px;
-  height: 100%;
-  overflow-y: auto;
-  color: var(--desktop-window-text, #000);
-}
-
-</style>

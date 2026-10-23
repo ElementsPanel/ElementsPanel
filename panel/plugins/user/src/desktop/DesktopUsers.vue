@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DesktopDialog from "@/components/DesktopDialog.vue";
 import { t } from "@/lang/i18n";
 import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
 import { addUser as addUserApi, deleteUser as deleteUserApi, editUserInfo as editUserInfoApi, getUserInfo as getUserInfoApi, remoteInstances, remoteNodeList, updateUserInstance, userInfoApiAdvanced } from "@/services/apis";
@@ -8,7 +9,6 @@ import { INSTANCE_STATUS } from "@/types/const";
 import type { BaseUserInfo, EditUserInfo, UserInstance } from "@/types/user";
 import { notifyDesktop } from "@/tools/desktopNotice";
 import { computed, onMounted, onUnmounted, reactive, ref, shallowRef, watch } from "vue";
-import DesktopWindow from "./DesktopWindow.vue";
 import { VBtn, VChip, VDataTable, VIcon, VRadio, VRadioGroup, VSelect, VTextField } from "vuetify/components";
 
 const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
@@ -84,16 +84,7 @@ const assignForm = reactive({
     status: ""
 });
 
-const windowWidth = ref(window.innerWidth);
-const windowHeight = ref(window.innerHeight);
-
-const updateWindowSize = () => {
-    windowWidth.value = window.innerWidth;
-    windowHeight.value = window.innerHeight;
-};
-
 onMounted(() => {
-    window.addEventListener('resize', updateWindowSize);
     fetchUsers();
 });
 
@@ -124,7 +115,6 @@ let searchTimer: ReturnType<typeof setTimeout> | undefined;
 onUnmounted(() => {
     latestRequest++;
     clearTimeout(searchTimer);
-    window.removeEventListener('resize', updateWindowSize);
 });
 const onSearchInput = () => {
     if (searchTimer) clearTimeout(searchTimer);
@@ -443,58 +433,54 @@ const getInstanceStatusLabel = (status: number): string => {
             </VBtn>
         </div>
 
-        <Teleport to="body">
-            <Transition name="desktop-window">
-                <DesktopWindow v-if="showDialog" id="user-edit-dialog"
-                    :title="dialogMode === 'add' ? t('TXT_CODE_DESKTOP_USERS_ADD') : t('TXT_CODE_79f9a172')"
-                    :icon="dialogMode === 'add' ? PlusOutlined : EditOutlined" :visible="showDialog" :minimized="false"
-                    :maximized="false" :active="true" :initial-width="420" :initial-height="335"
-                    :initial-x="windowWidth / 2 - 210" :initial-y="windowHeight / 2 - 190" :z-index="10001"
-                    :show-minimize="false" :show-maximize="false" :resizable="false" @close="closeDialog">
-                    <div class="du-dialog-content">
-                        <div class="du-dialog__body">
-                            <div class="du-form-group">
-                                <label class="du-form-label">
-                                    <VIcon icon="mdi-account-outline"  /> {{ t("TXT_CODE_eb9fcdad") }}
-                                </label>
-                                <VTextField v-model="form.username" class="du-form-input" variant="solo" density="compact" rounded="xl" hide-details autocomplete="new-password"
-                                    :placeholder="t('TXT_CODE_eb9fcdad')"
-                                    :disabled="dialogMode === 'edit'" />
-                            </div>
-                            <div class="du-form-group">
-                                <label class="du-form-label">
-                                    <VIcon icon="mdi-key-outline"  /> {{ t("TXT_CODE_551b0348") }}
-                                </label>
-                                <VTextField v-model="form.password" type="password" class="du-form-input" variant="solo" density="compact" rounded="xl" hide-details
-                                    autocomplete="new-password"
-                                    :placeholder="dialogMode === 'edit' ? t('TXT_CODE_DESKTOP_USERS_PASSWORD_HELP') : ''" />
-                                <span v-if="dialogMode === 'edit'" class="du-form-hint">
-                                    {{ t("TXT_CODE_DESKTOP_USERS_PASSWORD_HELP") }}
-                                </span>
-                            </div>
-                            <div class="du-form-group">
-                                <label class="du-form-label">
-                                    <VIcon icon="mdi-shield-check-outline"  /> {{ t("TXT_CODE_511aea70") }}
-                                </label>
-                                <VRadioGroup v-model="form.permission" inline hide-details class="du-radio-group">
-                                    <VRadio :value="10" :label="t('TXT_CODE_cd978243')" />
-                                    <VRadio :value="1" :label="t('TXT_CODE_eb880db2')" />
-                                </VRadioGroup>
-                            </div>
-                            <div v-if="formError" class="du-form-error">{{ formError }}</div>
-                        </div>
-                        <div class="du-dialog__footer">
-                            <VBtn class="du-btn du-btn--default" variant="text" rounded="xl" @click="closeDialog">
-                                {{ t("TXT_CODE_a0451c97") }}
-                            </VBtn>
-                            <VBtn class="du-btn du-btn--primary" variant="text" rounded="xl" :disabled="saving" @click="saveUser">
-                                {{ t("TXT_CODE_abfe9512") }}
-                            </VBtn>
-                        </div>
-                    </div>
-                </DesktopWindow>
-            </Transition>
-        </Teleport>
+        <DesktopDialog
+          id="user-edit-dialog"
+          :title="dialogMode === 'add' ? t('TXT_CODE_DESKTOP_USERS_ADD') : t('TXT_CODE_79f9a172')"
+          :icon="dialogMode === 'add' ? PlusOutlined : EditOutlined"
+          :model-value="showDialog"
+          :width="420"
+          :height="335"
+          :z-index="10001"
+          @close="closeDialog"
+        >
+          <div class="du-form-group">
+              <label class="du-form-label">
+                  <VIcon icon="mdi-account-outline"  /> {{ t("TXT_CODE_eb9fcdad") }}
+              </label>
+              <VTextField v-model="form.username" class="du-form-input" variant="solo" density="compact" rounded="xl" hide-details autocomplete="new-password"
+                  :placeholder="t('TXT_CODE_eb9fcdad')"
+                  :disabled="dialogMode === 'edit'" />
+          </div>
+          <div class="du-form-group">
+              <label class="du-form-label">
+                  <VIcon icon="mdi-key-outline"  /> {{ t("TXT_CODE_551b0348") }}
+              </label>
+              <VTextField v-model="form.password" type="password" class="du-form-input" variant="solo" density="compact" rounded="xl" hide-details
+                  autocomplete="new-password"
+                  :placeholder="dialogMode === 'edit' ? t('TXT_CODE_DESKTOP_USERS_PASSWORD_HELP') : ''" />
+              <span v-if="dialogMode === 'edit'" class="du-form-hint">
+                  {{ t("TXT_CODE_DESKTOP_USERS_PASSWORD_HELP") }}
+              </span>
+          </div>
+          <div class="du-form-group">
+              <label class="du-form-label">
+                  <VIcon icon="mdi-shield-check-outline"  /> {{ t("TXT_CODE_511aea70") }}
+              </label>
+              <VRadioGroup v-model="form.permission" inline hide-details class="du-radio-group">
+                  <VRadio :value="10" :label="t('TXT_CODE_cd978243')" />
+                  <VRadio :value="1" :label="t('TXT_CODE_eb880db2')" />
+              </VRadioGroup>
+          </div>
+          <div v-if="formError" class="du-form-error">{{ formError }}</div>
+          <template #footer>
+            <VBtn class="du-btn du-btn--default" variant="text" rounded="xl" @click="closeDialog">
+                {{ t("TXT_CODE_a0451c97") }}
+            </VBtn>
+            <VBtn class="du-btn du-btn--primary" variant="text" rounded="xl" :disabled="saving" @click="saveUser">
+                {{ t("TXT_CODE_abfe9512") }}
+            </VBtn>
+          </template>
+        </DesktopDialog>
 
         <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="showDeleteConfirm" id="user-delete-dialog"
             :title="t('TXT_CODE_DESKTOP_USERS_DELETE')"
@@ -502,117 +488,117 @@ const getInstanceStatusLabel = (status: number): string => {
             danger :loading="saving" :ok-text="t('TXT_CODE_DESKTOP_USERS_DELETE')"
             @cancel="cancelDelete" @confirm="executeDelete" />
 
-        <Teleport to="body">
-            <Transition name="desktop-window">
-                <DesktopWindow v-if="showAssignDialog" id="user-assign-dialog"
-                    :title="t('TXT_CODE_9393b484')" :icon="LinkOutlined"
-                    :visible="showAssignDialog" :minimized="false" :maximized="false" :active="true"
-                    :initial-width="780" :initial-height="560" :initial-x="windowWidth / 2 - 390"
-                    :initial-y="windowHeight / 2 - 280" :z-index="10003" :show-minimize="false" :show-maximize="false"
-                    :resizable="false" @close="closeAssignDialog">
-                    <div class="du-assign-content">
-                        <div class="du-assign-layout">
-                            <div class="du-assign-panel du-assign-panel--assigned">
-                                <div class="du-assign-panel__header">
-                                    <VIcon icon="mdi-database-outline"  />
-                                    {{ t("TXT_CODE_DESKTOP_USERS_ASSIGNED") }}
-                                    <span class="du-assign-count">{{ assignedInstances.length }}</span>
-                                </div>
-                                <div class="du-assign-panel__body">
-                                    <div v-if="assignedInstances.length === 0" class="du-assign-empty">
-                                        {{ t("TXT_CODE_DESKTOP_USERS_NO_ASSIGNED") }}
-                                    </div>
-                                    <div v-for="inst in assignedInstances" :key="inst.instanceUuid"
-                                        class="du-assign-item">
-                                        <div class="du-assign-item__info">
-                                            <span class="du-assign-item__name">{{ inst.nickname ||
-                                                t("TXT_CODE_DESKTOP_IM_UNNAMED") }}</span>
-                                            <span class="du-assign-item__node">{{ inst.hostIp }}</span>
-                                        </div>
-                                        <VBtn icon variant="text" rounded="xl" class="du-assign-item__remove"
-                                            @click.stop="removeAssignedInstance(inst.instanceUuid)">
-                                            <VIcon icon="mdi-close-circle-outline"  />
-                                        </VBtn>
-                                    </div>
-                                </div>
-                            </div>
+        <DesktopDialog
+          id="user-assign-dialog"
+          :title="t('TXT_CODE_9393b484')"
+          :icon="LinkOutlined"
+          :model-value="showAssignDialog"
+          :width="780"
+          :height="560"
+          :z-index="10003"
+          @close="closeAssignDialog"
+          :padded="false"
+          :scrollable="false"
+        >
+          <div class="du-assign-layout">
+              <div class="du-assign-panel du-assign-panel--assigned">
+                  <div class="du-assign-panel__header">
+                      <VIcon icon="mdi-database-outline"  />
+                      {{ t("TXT_CODE_DESKTOP_USERS_ASSIGNED") }}
+                      <span class="du-assign-count">{{ assignedInstances.length }}</span>
+                  </div>
+                  <div class="du-assign-panel__body">
+                      <div v-if="assignedInstances.length === 0" class="du-assign-empty">
+                          {{ t("TXT_CODE_DESKTOP_USERS_NO_ASSIGNED") }}
+                      </div>
+                      <div v-for="inst in assignedInstances" :key="inst.instanceUuid"
+                          class="du-assign-item">
+                          <div class="du-assign-item__info">
+                              <span class="du-assign-item__name">{{ inst.nickname ||
+                                  t("TXT_CODE_DESKTOP_IM_UNNAMED") }}</span>
+                              <span class="du-assign-item__node">{{ inst.hostIp }}</span>
+                          </div>
+                          <VBtn icon variant="text" rounded="xl" class="du-assign-item__remove"
+                              @click.stop="removeAssignedInstance(inst.instanceUuid)">
+                              <VIcon icon="mdi-close-circle-outline"  />
+                          </VBtn>
+                      </div>
+                  </div>
+              </div>
 
-                            <div class="du-assign-panel du-assign-panel--browse">
-                                <div class="du-assign-panel__header">
-                                    {{ t("TXT_CODE_DESKTOP_USERS_BROWSE_INSTANCES") }}
-                                </div>
-                                <div class="du-assign-browse-toolbar">
-                                    <div class="du-assign-node-select">
-                                        <VSelect v-if="nodes?.length" v-model="currentRemoteNodeId" :items="assignNodeItems"
-                                            class="du-assign-select" variant="solo" density="compact" rounded="xl" hide-details
-                                            @update:model-value="handleAssignNodeChange" />
-                                    </div>
-                                    <div class="du-assign-search">
-                                        <VTextField v-model="assignForm.instanceName" class="du-assign-search__input" variant="solo" density="compact" rounded="xl" hide-details
-                                            prepend-inner-icon="mdi-magnify" :placeholder="t('TXT_CODE_DESKTOP_IM_SEARCH')"
-                                            @update:model-value="handleAssignSearch" />
-                                    </div>
-                                </div>
-                                <div class="du-assign-panel__body">
-                                    <div v-if="instancesLoading" class="du-assign-empty">
-                                        {{ t("TXT_CODE_b197be11") }}
-                                    </div>
-                                    <div v-else-if="!instances?.data?.length" class="du-assign-empty">
-                                        {{ t("TXT_CODE_DESKTOP_IM_NO_INSTANCES") }}
-                                    </div>
-                                    <div v-for="inst in instances?.data || []" :key="inst.instanceUuid"
-                                        class="du-assign-item"
-                                        :class="{ 'du-assign-item--selected': isInstanceAssigned(inst.instanceUuid) }">
-                                        <div class="du-assign-item__info">
-                                            <span class="du-assign-item__name">{{ inst.config.nickname ||
-                                                t("TXT_CODE_DESKTOP_IM_UNNAMED") }}</span>
-                                            <span class="du-assign-item__status"
-                                                :class="'du-assign-item__status--' + inst.status">
-                                                {{ getInstanceStatusLabel(inst.status) }}
-                                            </span>
-                                        </div>
-                                        <VBtn v-if="!isInstanceAssigned(inst.instanceUuid)" icon variant="text" rounded="xl"
-                                            class="du-assign-item__add" @click.stop="addAssignedInstance({
-                                                instanceUuid: inst.instanceUuid,
-                                                daemonId: currentRemoteNode?.uuid ?? '',
-                                                nickname: inst.config.nickname,
-                                                status: inst.status,
-                                                hostIp: currentRemoteNode ? `${currentRemoteNode.ip}:${currentRemoteNode.port}` : ''
-                                            })">
-                                            <VIcon icon="mdi-plus"  />
-                                        </VBtn>
-                                        <span v-else class="du-assign-item__check">
-                                            <VIcon icon="mdi-check-circle-outline"  />
-                                        </span>
-                                    </div>
-                                </div>
-                                <div v-if="instances" class="du-assign-pagination">
-                                    <VBtn class="du-page-btn" variant="text" rounded="xl" :disabled="assignForm.currentPage <= 1"
-                                        @click="assignForm.currentPage--; loadRemoteInstances()">
-                                        {{ t("TXT_CODE_DESKTOP_IM_PREV") }}
-                                    </VBtn>
-                                    <span class="du-page-info">{{ assignForm.currentPage }} / {{ instances.maxPage
-                                    }}</span>
-                                    <VBtn class="du-page-btn" variant="text" rounded="xl" :disabled="assignForm.currentPage >= instances.maxPage"
-                                        @click="assignForm.currentPage++; loadRemoteInstances()">
-                                        {{ t("TXT_CODE_5e9022f8") }}
-                                    </VBtn>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="du-assign-footer">
-                            <VBtn class="du-btn du-btn--default" variant="text" rounded="xl" @click="closeAssignDialog">
-                                {{ t("TXT_CODE_a0451c97") }}
-                            </VBtn>
-                            <VBtn class="du-btn du-btn--primary" variant="text" rounded="xl" :disabled="assignSaving"
-                                @click="saveAssignedInstances">
-                                {{ t("TXT_CODE_abfe9512") }}
-                            </VBtn>
-                        </div>
-                    </div>
-                </DesktopWindow>
-            </Transition>
-        </Teleport>
+              <div class="du-assign-panel du-assign-panel--browse">
+                  <div class="du-assign-panel__header">
+                      {{ t("TXT_CODE_DESKTOP_USERS_BROWSE_INSTANCES") }}
+                  </div>
+                  <div class="du-assign-browse-toolbar">
+                      <div class="du-assign-node-select">
+                          <VSelect v-if="nodes?.length" v-model="currentRemoteNodeId" :items="assignNodeItems"
+                              class="du-assign-select" variant="solo" density="compact" rounded="xl" hide-details
+                              @update:model-value="handleAssignNodeChange" />
+                      </div>
+                      <div class="du-assign-search">
+                          <VTextField v-model="assignForm.instanceName" class="du-assign-search__input" variant="solo" density="compact" rounded="xl" hide-details
+                              prepend-inner-icon="mdi-magnify" :placeholder="t('TXT_CODE_DESKTOP_IM_SEARCH')"
+                              @update:model-value="handleAssignSearch" />
+                      </div>
+                  </div>
+                  <div class="du-assign-panel__body">
+                      <div v-if="instancesLoading" class="du-assign-empty">
+                          {{ t("TXT_CODE_b197be11") }}
+                      </div>
+                      <div v-else-if="!instances?.data?.length" class="du-assign-empty">
+                          {{ t("TXT_CODE_DESKTOP_IM_NO_INSTANCES") }}
+                      </div>
+                      <div v-for="inst in instances?.data || []" :key="inst.instanceUuid"
+                          class="du-assign-item"
+                          :class="{ 'du-assign-item--selected': isInstanceAssigned(inst.instanceUuid) }">
+                          <div class="du-assign-item__info">
+                              <span class="du-assign-item__name">{{ inst.config.nickname ||
+                                  t("TXT_CODE_DESKTOP_IM_UNNAMED") }}</span>
+                              <span class="du-assign-item__status"
+                                  :class="'du-assign-item__status--' + inst.status">
+                                  {{ getInstanceStatusLabel(inst.status) }}
+                              </span>
+                          </div>
+                          <VBtn v-if="!isInstanceAssigned(inst.instanceUuid)" icon variant="text" rounded="xl"
+                              class="du-assign-item__add" @click.stop="addAssignedInstance({
+                                  instanceUuid: inst.instanceUuid,
+                                  daemonId: currentRemoteNode?.uuid ?? '',
+                                  nickname: inst.config.nickname,
+                                  status: inst.status,
+                                  hostIp: currentRemoteNode ? `${currentRemoteNode.ip}:${currentRemoteNode.port}` : ''
+                              })">
+                              <VIcon icon="mdi-plus"  />
+                          </VBtn>
+                          <span v-else class="du-assign-item__check">
+                              <VIcon icon="mdi-check-circle-outline"  />
+                          </span>
+                      </div>
+                  </div>
+                  <div v-if="instances" class="du-assign-pagination">
+                      <VBtn class="du-page-btn" variant="text" rounded="xl" :disabled="assignForm.currentPage <= 1"
+                          @click="assignForm.currentPage--; loadRemoteInstances()">
+                          {{ t("TXT_CODE_DESKTOP_IM_PREV") }}
+                      </VBtn>
+                      <span class="du-page-info">{{ assignForm.currentPage }} / {{ instances.maxPage
+                      }}</span>
+                      <VBtn class="du-page-btn" variant="text" rounded="xl" :disabled="assignForm.currentPage >= instances.maxPage"
+                          @click="assignForm.currentPage++; loadRemoteInstances()">
+                          {{ t("TXT_CODE_5e9022f8") }}
+                      </VBtn>
+                  </div>
+              </div>
+          </div>
+          <template #footer>
+            <VBtn class="du-btn du-btn--default" variant="text" rounded="xl" @click="closeAssignDialog">
+                {{ t("TXT_CODE_a0451c97") }}
+            </VBtn>
+            <VBtn class="du-btn du-btn--primary" variant="text" rounded="xl" :disabled="assignSaving"
+                @click="saveAssignedInstances">
+                {{ t("TXT_CODE_abfe9512") }}
+            </VBtn>
+          </template>
+        </DesktopDialog>
     </div>
 </template>
 
@@ -906,66 +892,6 @@ const getInstanceStatusLabel = (status: number): string => {
     color: var(--desktop-window-text-muted);
 }
 
-.du-dialog-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 10000;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.du-dialog {
-    border: 1px solid var(--desktop-window-border);
-    border-radius: 12px;
-    width: 420px;
-    max-width: 90vw;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    overflow: hidden;
-
-    &--small {
-        width: 360px;
-    }
-
-    &__header {
-        padding: 16px 20px 0;
-
-        h3 {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--desktop-window-text);
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-    }
-
-    &__body {
-        padding: 16px 20px;
-    }
-
-    &__footer {
-        padding: 12px 20px;
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-        border-top: 1px solid var(--desktop-window-border);
-    }
-}
-
-.du-dialog-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background: transparent;
-}
-
-.du-dialog__footer {
-    margin-top: auto;
-}
-
 .du-form-group {
     margin-bottom: 14px;
 
@@ -1066,13 +992,6 @@ const getInstanceStatusLabel = (status: number): string => {
     color: var(--desktop-window-text);
     line-height: 1.6;
     margin: 0;
-}
-
-.du-assign-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background: transparent;
 }
 
 .du-assign-layout {
@@ -1308,14 +1227,6 @@ const getInstanceStatusLabel = (status: number): string => {
     justify-content: center;
     gap: 8px;
     padding: 8px;
-    border-top: 1px solid var(--desktop-window-border);
-}
-
-.du-assign-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    padding: 12px 16px;
     border-top: 1px solid var(--desktop-window-border);
 }
 

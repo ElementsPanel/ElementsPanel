@@ -4,6 +4,7 @@ import { ctx } from "@/plugin/context";
 import { message } from "@/tools/vuetifyToast";
 import { computed, onMounted, ref } from "vue";
 import AppDialog from "@/components/AppDialog.vue";
+import DesktopDialog from "@/components/DesktopDialog.vue";
 import { VBtn } from "vuetify/components";
 import { getInstanceOperationLog } from "../api";
 import { formatOperationLogItem, type FormattedOperationLog } from "../hooks/useOperationLog";
@@ -25,8 +26,6 @@ const loading = ref(false);
 const logs = ref<FormattedOperationLog[]>([]);
 const desktopWindow = computed(() => ctx.desktop.window);
 const useDesktopWindow = computed(() => props.mode === "desktop" && !!desktopWindow.value);
-const windowWidth = ref(window.innerWidth);
-const windowHeight = ref(window.innerHeight);
 
 const fetchLogs = async () => {
   loading.value = true;
@@ -60,17 +59,12 @@ onMounted(fetchLogs);
 </script>
 
 <template>
-  <Teleport to="body">
-    <Transition v-if="useDesktopWindow" name="monitor-log-fade" @after-leave="emitClose">
-      <component :is="desktopWindow" v-if="dialogOpen" id="instance-operation-log" :title="t('TXT_CODE_f6a33629')"
-        icon="mdi-file-document-outline" :visible="true" :minimized="false" :maximized="false" :active="true"
-        :initial-width="680" :initial-height="500" :initial-x="windowWidth / 2 - 340"
-        :initial-y="windowHeight / 2 - 250" :z-index="10004" :show-minimize="false" :show-maximize="false"
-        :resizable="false" @close="close">
-        <InstanceOperationLogContent :loading="loading" :logs="logs" desktop />
-      </component>
-
-    </Transition>
+  <DesktopDialog v-if="useDesktopWindow" :model-value="dialogOpen"
+    id="instance-operation-log" :title="t('TXT_CODE_f6a33629')" icon="mdi-file-document-outline"
+    :width="680" :height="500" :z-index="10004" :padded="false" :scrollable="false"
+    @close="close" @after-leave="emitClose">
+    <InstanceOperationLogContent :loading="loading" :logs="logs" desktop />
+  </DesktopDialog>
 
     <AppDialog
       v-else
@@ -86,18 +80,4 @@ onMounted(fetchLogs);
         </VBtn>
       </template>
     </AppDialog>
-  </Teleport>
 </template>
-
-<style lang="scss" scoped>
-.monitor-log-fade-enter-active,
-.monitor-log-fade-leave-active {
-  transition: all 0.25s ease;
-}
-
-.monitor-log-fade-enter-from,
-.monitor-log-fade-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-</style>

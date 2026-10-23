@@ -80,6 +80,7 @@ function setupSfc(relative, overrides = {}, props = {}) {
     {
       vue: life.vue,
       "@/lang/i18n": i18n,
+      "@/components/DesktopDialog.vue": {},
       "vuetify/components": {},
       ...overrides
     },

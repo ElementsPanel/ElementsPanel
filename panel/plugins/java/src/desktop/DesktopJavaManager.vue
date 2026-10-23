@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import DesktopDialog from "@/components/DesktopDialog.vue";
 import { t } from "@/lang/i18n";
 import { addJava, deleteJava, downloadJava, usingJava } from "../api";
 import { parseTimestamp } from "@/tools/time";
 import type { AddJavaConfigItem, DownloadJavaConfigItem, JavaInfo } from "../types";
 import { notifyDesktop } from "@/tools/desktopNotice";
 import { computed, onUnmounted, ref } from "vue";
-import { ctx } from "@/plugin/context";
 import { VAlert, VBtn, VDataTable, VIcon, VTextField } from "vuetify/components";
 
 import { useJavaList } from "../hooks/useJavaList";
@@ -22,7 +22,6 @@ const props = defineProps<{
 }>();
 
 const resolvedInstanceId = computed(() => props.instanceUuid ?? props.instanceId ?? "");
-const desktopWindowComponent = computed(() => ctx.desktop.window);
 
 const emit = defineEmits<{
     (e: "close"): void;
@@ -48,9 +47,6 @@ const refreshJavaList = async (out: boolean = false) => {
         notifyDesktop(err.message, "error");
     }
 };
-
-const windowWidth = ref(window.innerWidth);
-const windowHeight = ref(window.innerHeight);
 
 const addJavaDialog = ref({
     show: false,
@@ -190,14 +186,8 @@ const handleUsingJava = async (info: JavaInfo) => {
     await refreshJavaList();
 };
 
-
-const updateWindowSize = () => {
-    windowWidth.value = window.innerWidth;
-    windowHeight.value = window.innerHeight;
-};
-window.addEventListener("resize", updateWindowSize);
 onUnmounted(() => {
-    window.removeEventListener("resize", updateWindowSize);
+
     cancelAddJava();
     cancelDownloadJava();
 });
@@ -261,60 +251,54 @@ onUnmounted(() => {
             </VBtn>
         </div>
 
-        <Teleport to="body">
-            <Transition name="desktop-window">
-                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && addJavaDialog.show" id="java-manager-add-dialog" :title="t('TXT_CODE_8900e7ee')"
-                    :icon="BuildOutlined" :visible="addJavaDialog.show" :minimized="false" :maximized="false"
-                    :active="true" :initial-width="420" :initial-height="315" :initial-x="windowWidth / 2 - 210"
-                    :initial-y="windowHeight / 2 - 140" :z-index="10002" :show-minimize="false" :show-maximize="false"
-                    :resizable="false" @close="cancelAddJava">
-                    <div class="djava-dialog-content">
-                        <div class="djava-dialog__body">
-                            <VTextField v-model="addJavaDialog.data.name" :label="t('TXT_CODE_3f36206f')"
-                                :placeholder="t('TXT_CODE_4ea93630')" variant="solo" density="compact" hide-details class="mb-4" />
-                            <VTextField v-model="addJavaDialog.data.path" :label="t('TXT_CODE_43422ed3')"
-                                :placeholder="t('TXT_CODE_4ea93630')" variant="solo" density="compact" hide-details />
-                        </div>
-                        <div class="djava-dialog__footer">
-                            <VBtn class="djava-btn djava-btn--default" variant="text" rounded="xl" @click="cancelAddJava">
-                                {{ t("TXT_CODE_a0451c97") }}
-                            </VBtn>
-                            <VBtn class="djava-btn djava-btn--primary" variant="text" rounded="xl" @click="confirmAddJava">
-                                <VIcon icon="mdi-check" />
-                                {{ t("TXT_CODE_d507abff") }}
-                            </VBtn>
-                        </div>
-                    </div>
-                </component>
-            </Transition>
-        </Teleport>
+        <DesktopDialog
+          id="java-manager-add-dialog"
+          :title="t('TXT_CODE_8900e7ee')"
+          :icon="BuildOutlined"
+          :model-value="addJavaDialog.show"
+          :width="420"
+          :height="315"
+          :z-index="10002"
+          @close="cancelAddJava"
+        >
+          <VTextField v-model="addJavaDialog.data.name" :label="t('TXT_CODE_3f36206f')"
+              :placeholder="t('TXT_CODE_4ea93630')" variant="solo" density="compact" hide-details class="mb-4" />
+          <VTextField v-model="addJavaDialog.data.path" :label="t('TXT_CODE_43422ed3')"
+              :placeholder="t('TXT_CODE_4ea93630')" variant="solo" density="compact" hide-details />
+          <template #footer>
+            <VBtn class="djava-btn djava-btn--default" variant="text" rounded="xl" @click="cancelAddJava">
+                {{ t("TXT_CODE_a0451c97") }}
+            </VBtn>
+            <VBtn class="djava-btn djava-btn--primary" variant="text" rounded="xl" @click="confirmAddJava">
+                <VIcon icon="mdi-check" />
+                {{ t("TXT_CODE_d507abff") }}
+            </VBtn>
+          </template>
+        </DesktopDialog>
 
-        <Teleport to="body">
-            <Transition name="desktop-window">
-                <component :is="desktopWindowComponent" v-if="desktopWindowComponent && downloadJavaDialog.show" id="java-manager-download-dialog"
-                    :title="t('TXT_CODE_84588601')" :icon="DownloadOutlined" :visible="downloadJavaDialog.show"
-                    :minimized="false" :maximized="false" :active="true" :initial-width="700" :initial-height="460"
-                    :initial-x="windowWidth / 2 - 350" :initial-y="windowHeight / 2 - 230" :z-index="10002"
-                    :show-minimize="false" :show-maximize="false" :resizable="false" @close="cancelDownloadJava">
-                    <div class="djava-dialog-content">
-                        <div class="djava-dialog__body">
-                            <JavaVersionSelect v-model="downloadJavaDialog.version" :daemon-id="daemonId"
-                                :installed-java-list="downloadJavaDialog.installedList" />
-                        </div>
-                        <div class="djava-dialog__footer">
-                            <VBtn class="djava-btn djava-btn--default" variant="text" rounded="xl" @click="cancelDownloadJava">
-                                {{ t("TXT_CODE_a0451c97") }}
-                            </VBtn>
-                            <VBtn class="djava-btn djava-btn--primary" variant="text" rounded="xl"
-                                :disabled="!downloadJavaDialog.version" @click="confirmDownloadJava">
-                                <VIcon icon="mdi-check" />
-                                {{ t("TXT_CODE_d507abff") }}
-                            </VBtn>
-                        </div>
-                    </div>
-                </component>
-            </Transition>
-        </Teleport>
+        <DesktopDialog
+          id="java-manager-download-dialog"
+          :title="t('TXT_CODE_84588601')"
+          :icon="DownloadOutlined"
+          :model-value="downloadJavaDialog.show"
+          :width="700"
+          :height="460"
+          :z-index="10002"
+          @close="cancelDownloadJava"
+        >
+          <JavaVersionSelect v-model="downloadJavaDialog.version" :daemon-id="daemonId"
+              :installed-java-list="downloadJavaDialog.installedList" />
+          <template #footer>
+            <VBtn class="djava-btn djava-btn--default" variant="text" rounded="xl" @click="cancelDownloadJava">
+                {{ t("TXT_CODE_a0451c97") }}
+            </VBtn>
+            <VBtn class="djava-btn djava-btn--primary" variant="text" rounded="xl"
+                :disabled="!downloadJavaDialog.version" @click="confirmDownloadJava">
+                <VIcon icon="mdi-check" />
+                {{ t("TXT_CODE_d507abff") }}
+            </VBtn>
+          </template>
+        </DesktopDialog>
     </div>
 </template>
 
@@ -394,28 +378,6 @@ onUnmounted(() => {
             background: var(--desktop-window-control-hover);
         }
     }
-}
-
-
-.djava-dialog-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background: transparent;
-}
-
-.djava-dialog__body {
-    padding: 16px 20px;
-    flex: 1;
-    overflow-y: auto;
-}
-
-.djava-dialog__footer {
-    padding: 12px 20px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    flex-shrink: 0;
 }
 
 </style>

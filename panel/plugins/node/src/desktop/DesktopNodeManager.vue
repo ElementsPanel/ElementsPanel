@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DesktopDialog from "@/components/DesktopDialog.vue";
 import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { testSocketConnection, SocketStatus } from "@/hooks/useSocketIo";
@@ -7,8 +8,7 @@ import { t } from "@/lang/i18n";
 import { addNode, connectNode, deleteNode, editNode, remoteNodeList } from "../api";
 import { getValidatorErrorMsg, reportErrorMsg } from "@/tools/validator";
 import type { NodeStatus } from "@/types";
-import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
-import DesktopWindow from "./DesktopWindow.vue";
+import { computed, onUnmounted, reactive, ref } from "vue";
 import { VBtn, VDataTable, VIcon, VTextField, VTooltip } from "vuetify/components";
 
 const desktop = computed(() => usePluginService<FrontendDesktopService>("desktop"));
@@ -111,21 +111,8 @@ const saving = ref(false);
 const showDeleteConfirm = ref(false);
 const deletingNode = ref<NodeStatus | null>(null);
 
-const windowWidth = ref(window.innerWidth);
-const windowHeight = ref(window.innerHeight);
-
-const updateWindowSize = () => {
-  windowWidth.value = window.innerWidth;
-  windowHeight.value = window.innerHeight;
-};
-
-onMounted(() => {
-  window.addEventListener("resize", updateWindowSize);
-});
-
 onUnmounted(() => {
   disposed = true;
-  window.removeEventListener("resize", updateWindowSize);
   socketChecks.forEach((controller) => controller.abort());
   socketChecks.clear();
 });
@@ -443,134 +430,113 @@ const reconnectNode = async (node: NodeStatus) => {
       </template>
     </VDataTable>
 
-    <Teleport to="body">
-      <Transition name="desktop-window">
-        <DesktopWindow
-          v-if="showDialog"
-          id="node-edit-dialog"
-          :title="
-            dialogMode === 'add'
-              ? t('TXT_CODE_DESKTOP_NODES_ADD')
-              : t('TXT_CODE_DESKTOP_NODES_EDIT')
+    <DesktopDialog
+      id="node-edit-dialog"
+      :title="dialogMode === 'add' ? t('TXT_CODE_DESKTOP_NODES_ADD') : t('TXT_CODE_DESKTOP_NODES_EDIT')"
+      :icon="dialogMode === 'add' ? PlusOutlined : EditOutlined"
+      :model-value="showDialog"
+      :width="420"
+      :height="485"
+      :z-index="10001"
+      @close="closeDialog"
+    >
+      <div class="dn-form-group">
+        <label class="dn-form-label">
+          {{ t("TXT_CODE_b8e8e6f5") }}
+        </label>
+        <VTextField
+          v-model="form.remarks"
+          class="dn-form-input"
+          variant="solo"
+          density="compact"
+          rounded="xl"
+          hide-details
+          :placeholder="t('TXT_CODE_b8e8e6f5')"
+        />
+      </div>
+      <div class="dn-form-group">
+        <label class="dn-form-label">
+          {{ t("TXT_CODE_DESKTOP_NODES_IP") }}
+        </label>
+        <VTextField
+          v-model="form.ip"
+          class="dn-form-input"
+          variant="solo"
+          density="compact"
+          rounded="xl"
+          hide-details
+          :placeholder="t('TXT_CODE_DESKTOP_NODES_IP')"
+        />
+      </div>
+      <div class="dn-form-group">
+        <label class="dn-form-label">
+          {{ t("TXT_CODE_f49149d0") }}
+        </label>
+        <VTextField
+          v-model="form.port"
+          type="number"
+          class="dn-form-input"
+          variant="solo"
+          density="compact"
+          rounded="xl"
+          hide-details
+          :placeholder="t('TXT_CODE_f49149d0')"
+        />
+      </div>
+      <div class="dn-form-group">
+        <label class="dn-form-label">
+          {{ t("TXT_CODE_DESKTOP_NODES_APIKEY") }}
+        </label>
+        <VTextField
+          v-model="form.apiKey"
+          type="password"
+          class="dn-form-input"
+          variant="solo"
+          density="compact"
+          rounded="xl"
+          hide-details
+          autocomplete="new-password"
+          :placeholder="
+            dialogMode === 'edit' ? t('TXT_CODE_DESKTOP_NODES_APIKEY_HELP') : ''
           "
-          :icon="dialogMode === 'add' ? PlusOutlined : EditOutlined"
-          :visible="showDialog"
-          :minimized="false"
-          :maximized="false"
-          :active="true"
-          :initial-width="420"
-          :initial-height="485"
-          :initial-x="windowWidth / 2 - 210"
-          :initial-y="windowHeight / 2 - 230"
-          :z-index="10001"
-          :show-minimize="false"
-          :show-maximize="false"
-          :resizable="false"
-          @close="closeDialog"
+        />
+        <span v-if="dialogMode === 'edit'" class="dn-form-hint">
+          {{ t("TXT_CODE_DESKTOP_NODES_APIKEY_HELP") }}
+        </span>
+      </div>
+      <div class="dn-form-group">
+        <label class="dn-form-label">
+          {{ t("TXT_CODE_693f31d6") }}
+        </label>
+        <VTextField
+          v-model="form.prefix"
+          class="dn-form-input"
+          variant="solo"
+          density="compact"
+          rounded="xl"
+          hide-details
+          :placeholder="t('TXT_CODE_693f31d6')"
+        />
+        <span class="dn-form-hint">
+          {{ t("TXT_CODE_3e93e31e") }}
+        </span>
+      </div>
+      <div v-if="formError" class="dn-form-error">{{ formError }}</div>
+      <template #footer>
+        <VBtn class="dn-btn dn-btn--default" variant="text" rounded="xl" @click="closeDialog">
+          {{ t("TXT_CODE_a0451c97") }}
+        </VBtn>
+        <VBtn
+          class="dn-btn dn-btn--primary"
+          variant="text"
+          rounded="xl"
+          :disabled="saving"
+          @click="saveNode"
         >
-          <div class="dn-dialog-content">
-            <div class="dn-dialog__body">
-              <div class="dn-form-group">
-                <label class="dn-form-label">
-                  {{ t("TXT_CODE_b8e8e6f5") }}
-                </label>
-                <VTextField
-                  v-model="form.remarks"
-                  class="dn-form-input"
-                  variant="solo"
-                  density="compact"
-                  rounded="xl"
-                  hide-details
-                  :placeholder="t('TXT_CODE_b8e8e6f5')"
-                />
-              </div>
-              <div class="dn-form-group">
-                <label class="dn-form-label">
-                  {{ t("TXT_CODE_DESKTOP_NODES_IP") }}
-                </label>
-                <VTextField
-                  v-model="form.ip"
-                  class="dn-form-input"
-                  variant="solo"
-                  density="compact"
-                  rounded="xl"
-                  hide-details
-                  :placeholder="t('TXT_CODE_DESKTOP_NODES_IP')"
-                />
-              </div>
-              <div class="dn-form-group">
-                <label class="dn-form-label">
-                  {{ t("TXT_CODE_f49149d0") }}
-                </label>
-                <VTextField
-                  v-model="form.port"
-                  type="number"
-                  class="dn-form-input"
-                  variant="solo"
-                  density="compact"
-                  rounded="xl"
-                  hide-details
-                  :placeholder="t('TXT_CODE_f49149d0')"
-                />
-              </div>
-              <div class="dn-form-group">
-                <label class="dn-form-label">
-                  {{ t("TXT_CODE_DESKTOP_NODES_APIKEY") }}
-                </label>
-                <VTextField
-                  v-model="form.apiKey"
-                  type="password"
-                  class="dn-form-input"
-                  variant="solo"
-                  density="compact"
-                  rounded="xl"
-                  hide-details
-                  autocomplete="new-password"
-                  :placeholder="
-                    dialogMode === 'edit' ? t('TXT_CODE_DESKTOP_NODES_APIKEY_HELP') : ''
-                  "
-                />
-                <span v-if="dialogMode === 'edit'" class="dn-form-hint">
-                  {{ t("TXT_CODE_DESKTOP_NODES_APIKEY_HELP") }}
-                </span>
-              </div>
-              <div class="dn-form-group">
-                <label class="dn-form-label">
-                  {{ t("TXT_CODE_693f31d6") }}
-                </label>
-                <VTextField
-                  v-model="form.prefix"
-                  class="dn-form-input"
-                  variant="solo"
-                  density="compact"
-                  rounded="xl"
-                  hide-details
-                  :placeholder="t('TXT_CODE_693f31d6')"
-                />
-                <span class="dn-form-hint">
-                  {{ t("TXT_CODE_3e93e31e") }}
-                </span>
-              </div>
-              <div v-if="formError" class="dn-form-error">{{ formError }}</div>
-            </div>
-            <div class="dn-dialog__footer">
-              <VBtn class="dn-btn dn-btn--default" variant="text" rounded="xl" @click="closeDialog">
-                {{ t("TXT_CODE_a0451c97") }}
-              </VBtn>
-              <VBtn
-                class="dn-btn dn-btn--primary"
-                variant="text"
-                rounded="xl"
-                :disabled="saving"
-                @click="saveNode"
-              >
-                {{ t("TXT_CODE_abfe9512") }}
-              </VBtn>
-            </div>
-          </div>
-        </DesktopWindow>
-      </Transition>
-    </Teleport>
+          {{ t("TXT_CODE_abfe9512") }}
+        </VBtn>
+      </template>
+    </DesktopDialog>
 
     <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="showDeleteConfirm" id="node-delete-dialog"
       :title="t('TXT_CODE_8b937b23')"
@@ -863,62 +829,6 @@ const reconnectNode = async (node: NodeStatus) => {
   line-height: 1.5;
 }
 
-.dn-dialog-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.dn-dialog {
-  border: 1px solid var(--desktop-window-border);
-  border-radius: 12px;
-  width: 420px;
-  max-width: 90vw;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  overflow: hidden;
-
-  &--small {
-    width: 360px;
-  }
-
-  &__header {
-    padding: 16px 20px 0;
-
-    h3 {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--desktop-window-text);
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-  }
-
-  &__footer {
-    padding: 12px 20px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    border-top: 1px solid var(--desktop-window-border);
-  }
-}
-
-.dn-dialog-content {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background: transparent;
-}
-
-.dn-dialog__footer {
-  margin-top: auto;
-}
-
 .dn-form-group {
   margin-bottom: 14px;
 
@@ -977,12 +887,6 @@ const reconnectNode = async (node: NodeStatus) => {
   color: #ff4d4f;
   font-size: 12px;
   margin-top: 8px;
-}
-
-.dn-dialog__body {
-  padding: 16px 20px;
-  flex: 1;
-  overflow-y: auto;
 }
 
 .dn-delete-text {

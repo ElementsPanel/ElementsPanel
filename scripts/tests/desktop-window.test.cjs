@@ -71,12 +71,69 @@ function loadSfc(relative, overrides = {}) {
   const script = compileScript(descriptor, { id: "confirmation-test", inlineTemplate: true });
   const component = new Module(filename, module);
   component.require = (id) => Object.hasOwn(overrides, id) ? overrides[id]
+    : id === "@/components/DesktopDialog.vue" ? { default: DesktopDialog }
     : id === "vuetify/components" ? Vuetify.components : frontendRequire(id);
   component._compile(ts.transpileModule(script.content, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
   }).outputText, filename);
   return component.exports.default;
 }
+
+const DesktopDialog = loadSfc("panel/plugins/console/src/components/DesktopDialog.vue", {
+  "@/plugin/context": { ctx: { desktop: { window: DesktopWindow } } }
+});
+
+test("shared desktop dialogs keep actions outside the scrolling body and fit the viewport", async (t) => {
+  const originalWidth = window.innerWidth;
+  const originalHeight = window.innerHeight;
+  Object.defineProperty(window, "innerWidth", { configurable: true, value: 360 });
+  Object.defineProperty(window, "innerHeight", { configurable: true, value: 640 });
+  t.after(() => {
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: originalWidth });
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: originalHeight });
+  });
+  const open = vue.ref(true);
+  const closable = vue.ref(false);
+  const events = { closes: 0, updates: 0, leaves: 0 };
+  const target = document.createElement("div");
+  document.body.appendChild(target);
+  const app = vue.createApp({ render: () => vue.h(DesktopDialog, {
+    id: "shared-form-dialog", title: "Edit node", modelValue: open.value,
+    width: 1200, height: 900, closable: closable.value,
+    "onUpdate:modelValue": (value) => { events.updates++; open.value = value; },
+    onClose: () => { events.closes++; },
+    onAfterLeave: () => { events.leaves++; }
+  }, {
+    default: () => vue.h("input", { value: "node.example" }),
+    footer: () => vue.h("button", "Save")
+  }) });
+  app.use(Vuetify.createVuetify());
+  app.mount(target);
+  t.after(() => { app.unmount(); target.remove(); });
+  await flush();
+  const dialog = document.querySelector('.desktop-dialog[role="dialog"]');
+  assert.equal(target.contains(dialog), false, "dialogs must escape their parent window's clipping");
+  assert.equal(dialog.getAttribute("role"), "dialog");
+  assert.equal(dialog.getAttribute("aria-labelledby"), dialog.querySelector(".window__title").id);
+  assert.equal(dialog.style.width, "328px");
+  assert.equal(dialog.style.height, "560px");
+  assert.ok(dialog.querySelector(".desktop-dialog__body input"));
+  assert.ok(dialog.querySelector(".desktop-dialog__footer button"));
+  assert.equal(dialog.querySelector(".desktop-dialog__body .desktop-dialog__footer"), null);
+  assert.equal(dialog.querySelector(".window__control--minimize"), null);
+  assert.equal(dialog.querySelector(".window__control--maximize"), null);
+  assert.equal(dialog.querySelector(".window__control--close"), null);
+  dialog.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  assert.equal(open.value, true, "non-closable dialogs must ignore Escape");
+  closable.value = true;
+  await flush();
+  dialog.querySelector(".window__control--close").click();
+  await flush();
+  await transitionFrame();
+  assert.equal(open.value, false);
+  assert.deepEqual(events, { closes: 1, updates: 1, leaves: 1 });
+  assert.equal(dialog.isConnected, false);
+});
 
 test("node plugin configuration buttons open desktop windows for the clicked node", async (t) => {
   const opened = [];
@@ -386,6 +443,7 @@ function fileManagerDialogFixture(t) {
   const fileManagerScript = compileScript(fileManagerDescriptor, { id: "file-manager-dialog-test", inlineTemplate: true });
   const fileManagerModule = new Module(fileManagerFilename, module);
   const overrides = {
+    "@/components/DesktopDialog.vue": { default: DesktopDialog },
     "../hooks/useFileManager": { useFileManager: () => manager },
     "@/hooks/usePolling": { usePolling() {} },
     "@/plugin/context": { usePluginService: () => desktopService },
@@ -646,7 +704,7 @@ test("file manager operations, archive preview and deletion use desktop subwindo
   f.manager.deleteDialog.value.show = true;
   await flush();
   const deletion = f.findWindow("TXT_CODE_71155575");
-  [...deletion.querySelectorAll(".desktop-confirm__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_d507abff")).click();
+  [...deletion.querySelectorAll(".desktop-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_d507abff")).click();
   await flush();
   assert.deepEqual(f.events.deleted, [false, true]);
   await transitionFrame();
@@ -663,7 +721,7 @@ test("file manager URL downloads and upload overwrite confirmations run in deskt
   urlInput.dispatchEvent(new window.Event("input", { bubbles: true }));
   await flush();
   assert.equal(download.querySelectorAll("input")[1].value, "server.jar");
-  [...download.querySelectorAll(".dfm-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_d507abff")).click();
+  [...download.querySelectorAll(".desktop-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_d507abff")).click();
   await flush();
   assert.deepEqual(f.events.downloads, [{ url: "https://example.com/files/server.jar", fileName: "server.jar" }]);
   await transitionFrame();
@@ -675,7 +733,7 @@ test("file manager URL downloads and upload overwrite confirmations run in deskt
   await flush();
   const upload = f.findWindow("TXT_CODE_52bc24ec");
   assert.ok(upload.textContent.includes("existing.txt"));
-  [...upload.querySelectorAll(".desktop-confirm__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_d507abff")).click();
+  [...upload.querySelectorAll(".desktop-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_d507abff")).click();
   await flush();
   assert.equal(f.events.uploads.length, 1);
   const overwrite = f.findWindow("TXT_CODE_99ca8563");
