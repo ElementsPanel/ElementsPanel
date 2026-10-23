@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
-import { getRandomId } from "@/tools/randId";
-import { onMounted, watch } from "vue";
+import { ref } from "vue";
 import { useSimpleChart } from "@/hooks/useOverviewChart";
 import { VCol, VRow } from "vuetify/components";
 
@@ -12,45 +11,10 @@ const props = defineProps<{
   memUsage: string;
 }>();
 
-const chartCpuDomId = `${getRandomId()}-cpu-chart`;
-const chartMemDomId = `${getRandomId()}-mem-chart`;
-
-const chartCpu = useSimpleChart(chartCpuDomId);
-const chartMem = useSimpleChart(chartMemDomId);
-
-onMounted(() => {
-  refreshChart();
-});
-
-const refreshChart = () => {
-  chartCpu.setOption({
-    dataset: {
-      dimensions: ["time", "value"],
-      source: props.cpuData.map((v, index) => {
-        return {
-          value: v,
-          time: index
-        };
-      })
-    }
-  });
-
-  chartMem.setOption({
-    dataset: {
-      dimensions: ["time", "value"],
-      source: props.memData.map((v, index) => {
-        return {
-          value: v,
-          time: index
-        };
-      })
-    }
-  });
-};
-
-watch(props, () => {
-  refreshChart();
-});
+const chartCpuCanvas = ref<HTMLCanvasElement>();
+const chartMemCanvas = ref<HTMLCanvasElement>();
+useSimpleChart(chartCpuCanvas, () => props.cpuData);
+useSimpleChart(chartMemCanvas, () => props.memData);
 </script>
 
 <template>
@@ -61,14 +25,18 @@ watch(props, () => {
           <span class="usage-title">{{ t("TXT_CODE_eca8f1b3") }}</span>
           <span class="usage-info">{{ cpuUsage }}</span>
         </div>
-        <div :id="chartCpuDomId" class="node-chart-container"></div>
+        <div class="node-chart-container">
+          <canvas ref="chartCpuCanvas" role="img" :aria-label="`${t('TXT_CODE_eca8f1b3')}: ${cpuUsage}`" />
+        </div>
       </VCol>
       <VCol cols="12" sm="6">
         <div class="usage-header">
           <span class="usage-title">{{ t("TXT_CODE_6ca6667f") }}</span>
           <span class="usage-info">{{ memUsage }}</span>
         </div>
-        <div :id="chartMemDomId" class="node-chart-container"></div>
+        <div class="node-chart-container">
+          <canvas ref="chartMemCanvas" role="img" :aria-label="`${t('TXT_CODE_6ca6667f')}: ${memUsage}`" />
+        </div>
       </VCol>
     </VRow>
   </div>
@@ -77,6 +45,7 @@ watch(props, () => {
 <style lang="scss" scoped>
 .node-simple-chart {
   .node-chart-container {
+    position: relative;
     height: 78px;
     width: 100%;
     margin-top: 16px;

@@ -1,122 +1,158 @@
-import { init, graphic, type ECharts } from "echarts";
-import { onMounted, onUnmounted, ref } from "vue";
+import {
+  CategoryScale,
+  Chart,
+  Filler,
+  LineController,
+  LineElement,
+  LinearScale,
+  PointElement,
+  Tooltip,
+  type ChartConfiguration
+} from "chart.js";
+import { onBeforeUnmount, onMounted, shallowRef, watch, type Ref } from "vue";
 
-export function useSimpleChart(dom: string) {
-  let chart = ref<ECharts>();
+Chart.register(CategoryScale, LinearScale, LineController, LineElement, PointElement, Filler, Tooltip);
 
-  onMounted(() => {
-    chart.value = init(document.getElementById(dom));
-    chart.value.setOption(getSimpleChartDefaultOption());
-  });
-
-  onUnmounted(() => {
-    chart.value?.dispose();
-    chart.value = undefined;
-  });
-
-  return {
-    instance: chart,
-    setOption: (v: any) => chart.value?.setOption(v)
-  };
+export interface LineChartData {
+  labels: string[];
+  values: readonly (number | null)[];
+  max: number;
 }
 
-function getSimpleChartDefaultOption() {
-  return {
-    tooltip: {
-      trigger: "axis",
-      backgroundColor: "rgba(20, 24, 35, 0.85)",
-      borderColor: "rgba(67, 145, 250, 0.3)",
-      borderWidth: 1,
-      padding: [6, 10],
-      textStyle: {
-        color: "#e0e6f0",
-        fontSize: 12
-      },
-      axisPointer: {
-        type: "line",
-        lineStyle: {
-          color: "rgba(67, 145, 250, 0.5)",
-          width: 1,
-          type: "dashed"
-        }
-      },
-      formatter: (params: any) => {
-        const p = Array.isArray(params) ? params[0] : params;
-        const data = p.data;
-        const val =
-          typeof data === "object" && data !== null && !Array.isArray(data)
-            ? data.value
-            : Array.isArray(p.value)
-              ? p.value[1]
-              : p.value;
-        const xVal =
-          typeof data === "object" && data !== null && !Array.isArray(data)
-            ? data.time
-            : p.axisValue;
-        return `<span style="color:#94b8e0;font-size:11px">#${xVal}</span><br/><span style="font-weight:600;font-size:13px">${Number(val).toFixed(1)}<span style="font-size:11px;font-weight:400;margin-left:1px">%</span></span>`;
-      }
-    },
-    grid: {
-      show: false,
-      borderWidth: 0,
-      top: 6,
-      bottom: 4,
-      left: 34,
-      right: 6
-    },
-    xAxis: { type: "category", show: false },
-    yAxis: {
-      type: "value",
-      min: 0,
-      max: 100,
-      show: true,
-      interval: 50,
-      axisLabel: {
-        formatter: "{value}%",
-        fontSize: 10,
-        color: "rgba(160, 180, 210, 0.7)",
-        margin: 4
-      },
-      splitLine: {
-        show: true,
-        lineStyle: {
-          color: "rgba(100, 130, 180, 0.12)",
-          type: "dashed",
-          width: 1
-        }
-      },
-      axisLine: { show: false },
-      axisTick: { show: false }
-    },
-    series: [
-      {
-        type: "line",
-        smooth: 0.6,
-        smoothMonotone: "x",
-        showSymbol: false,
-        lineStyle: {
-          color: "rgba(67, 145, 250, 0.95)",
-          width: 1.5,
-          shadowColor: "rgba(67, 145, 250, 0.3)",
-          shadowBlur: 4
-        },
-        areaStyle: {
-          color: new graphic.LinearGradient(0, 0, 0, 1, [
-            {
-              offset: 0,
-              color: "rgba(67, 145, 250, 0.55)"
-            },
-            {
-              offset: 0.6,
-              color: "rgba(40, 100, 210, 0.15)"
-            },
-            {
-              offset: 1,
-              color: "rgba(17, 60, 150, 0)"
+interface LineChartOptions {
+  compact?: boolean;
+  percentage?: boolean;
+}
+
+type HistoryChart = Chart<"line", (number | null)[], string>;
+
+export function useLineChart(
+  canvas: Ref<HTMLCanvasElement | undefined>,
+  readData: () => LineChartData,
+  { compact = false, percentage = false }: LineChartOptions = {}
+) {
+  // Chart instances must stay outside Vue's deep reactive proxies.
+  const instance = shallowRef<HistoryChart>();
+  const snapshot = (data: LineChartData) => ({
+    labels: [...data.labels],
+    values: data.values.map((value) => Number.isFinite(value) ? value : null),
+    max: Number.isFinite(data.max) && data.max > 0 ? data.max : 1
+  });
+
+  onMounted(() => {
+    if (!canvas.value) return;
+    const data = snapshot(readData());
+    let gradient: CanvasGradient | undefined;
+    let gradientTop: number | undefined;
+    let gradientBottom: number | undefined;
+    const config: ChartConfiguration<"line", (number | null)[], string> = {
+      type: "line",
+      data: {
+        labels: data.labels,
+        datasets: [{
+          data: data.values,
+          borderColor: "rgba(67, 145, 250, 0.95)",
+          borderWidth: 1.5,
+          pointRadius: 0,
+          pointHoverRadius: 3,
+          pointHitRadius: 8,
+          cubicInterpolationMode: "monotone",
+          fill: true,
+          backgroundColor: ({ chart }) => {
+            const { ctx, chartArea } = chart;
+            if (!chartArea) return "rgba(67, 145, 250, 0.15)";
+            if (!gradient || gradientTop !== chartArea.top || gradientBottom !== chartArea.bottom) {
+              gradientTop = chartArea.top;
+              gradientBottom = chartArea.bottom;
+              gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+              gradient.addColorStop(0, "rgba(67, 145, 250, 0.55)");
+              gradient.addColorStop(0.6, "rgba(40, 100, 210, 0.15)");
+              gradient.addColorStop(1, "rgba(17, 60, 150, 0)");
             }
-          ])
+            return gradient;
+          }
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        interaction: { mode: "index", intersect: false },
+        layout: { padding: { top: compact ? 6 : 8, bottom: compact ? 4 : 0, right: compact ? 6 : 8 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ({ parsed }) => {
+                const value = parsed.y ?? 0;
+                if (percentage) return `${value.toFixed(1)}%`;
+                return Number.isInteger(value) ? String(value) : value.toFixed(1);
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            type: "category",
+            display: !compact,
+            grid: { display: false },
+            border: { color: "rgba(100, 130, 180, 0.2)" },
+            ticks: {
+              autoSkip: true,
+              maxTicksLimit: 6,
+              maxRotation: 0,
+              color: "rgba(160, 180, 210, 0.7)",
+              font: { size: 10 },
+              padding: 4
+            }
+          },
+          y: {
+            type: "linear",
+            min: 0,
+            max: data.max,
+            border: { display: false, dash: [4, 4] },
+            grid: { color: "rgba(100, 130, 180, 0.12)", tickLength: 0 },
+            ticks: {
+              stepSize: percentage ? 50 : undefined,
+              precision: 0,
+              maxTicksLimit: compact ? 3 : 6,
+              color: "rgba(160, 180, 210, 0.7)",
+              font: { size: 10 },
+              padding: 4,
+              callback: (value) => percentage ? `${value}%` : value
+            }
+          }
         }
       }
-    ]
-  };
+    };
+    instance.value = new Chart(canvas.value, config);
+  });
+
+  watch(readData, (value) => {
+    const chart = instance.value;
+    if (!chart) return;
+    const data = snapshot(value);
+    chart.data.labels = data.labels;
+    chart.data.datasets[0].data = data.values;
+    const axis = chart.options.scales?.y;
+    if (axis) axis.max = data.max;
+    chart.update("none");
+  }, { deep: true, flush: "post" });
+
+  onBeforeUnmount(() => {
+    instance.value?.destroy();
+    instance.value = undefined;
+  });
+
+  return { instance };
+}
+
+export function useSimpleChart(
+  canvas: Ref<HTMLCanvasElement | undefined>,
+  readValues: () => readonly number[]
+) {
+  return useLineChart(canvas, () => {
+    const values = readValues();
+    return { labels: values.map((_, index) => String(index)), values, max: 100 };
+  }, { compact: true, percentage: true });
 }

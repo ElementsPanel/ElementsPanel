@@ -400,11 +400,8 @@ export default defineConfig({
           return "assets/[name]-[hash][extname]";
         },
         manualChunks(path) {
-          if (path.includes("node_modules/zrender")) {
-            return "zrender";
-          }
-          if (path.includes("node_modules/echarts")) {
-            return "echart";
+          if (path.includes("node_modules/chart.js") || path.includes("node_modules/@kurkle/color")) {
+            return "chartjs";
           }
           if (path.includes("node_modules/lodash")) {
             return "lodash";

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { t } from "@/lang/i18n";
-import { getRandomId } from "@/tools/randId";
-import { computed, onMounted, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 import {
   VAlert,
   VCard,
@@ -29,10 +28,8 @@ import { useOverviewChart } from "../hooks/useOverviewChart";
 const { state } = useOverviewInfo();
 const { fetchData, formattedLogs } = useOperationLog();
 
-const requestChartId = `monitor-request-${getRandomId()}`;
-const instanceChartId = `monitor-instance-${getRandomId()}`;
-const requestChart = useOverviewChart(requestChartId);
-const instanceChart = useOverviewChart(instanceChartId);
+const requestChartCanvas = ref<HTMLCanvasElement>();
+const instanceChartCanvas = ref<HTMLCanvasElement>();
 
 const panelCpu = computed(() => Math.min(100, Math.max(0, state.value?.cpu ?? 0)));
 const panelMemory = computed(() => state.value?.mem ?? 0);
@@ -47,6 +44,19 @@ const daemonVersion = computed(() => state.value?.specifiedDaemonVersion ?? "--"
 const systemInfo = computed(() => state.value?.system);
 const panelProcess = computed(() => state.value?.process);
 const record = computed(() => state.value?.record);
+
+const chartHistory = computed(() => state.value?.chart?.request ?? []);
+const chartLabels = computed(() => chartHistory.value.map((_, index) => `${chartHistory.value.length - index - 1}s`));
+const requestChartData = computed(() => {
+  const values = chartHistory.value.map((item) => Number(item.value) || 0);
+  return { labels: chartLabels.value, values, max: Math.max(1, ...values) };
+});
+const instanceChartData = computed(() => {
+  const values = chartHistory.value.map((item) => Number(item.runningInstance) || 0);
+  return { labels: chartLabels.value, values, max: Math.max(1, totalInstances.value, ...values) };
+});
+useOverviewChart(requestChartCanvas, () => requestChartData.value);
+useOverviewChart(instanceChartCanvas, () => instanceChartData.value);
 
 const formatBytes = (bytes: number): string => {
   if (!bytes) return "0 B";
@@ -117,29 +127,9 @@ const overviewItems = computed(() => {
   return items.filter((item) => !item.hidden);
 });
 
-const updateCharts = () => {
-  const source = state.value?.chart?.request || [];
-  const request = source.map((item: Record<string, unknown>, index: number) => ({
-    ...item,
-    time: `${source.length - index - 1}s`
-  }));
-  const requestMax = Math.max(1, ...request.map((item: any) => Number(item.value) || 0));
-  const instanceMax = Math.max(1, state.value?.totalInstance ?? 0);
-
-  requestChart.setOption({
-    yAxis: { max: requestMax },
-    dataset: { dimensions: ["time", "value"], source: request }
-  });
-  instanceChart.setOption({
-    yAxis: { max: instanceMax },
-    dataset: { dimensions: ["time", "runningInstance"], source: request }
-  });
-};
-
 const logColor = (color: string) =>
   ({ blue: "info", orange: "warning", red: "error", gray: "grey" })[color] || "info";
 
-watch(state, updateCharts, { deep: true });
 onMounted(fetchData);
 </script>
 
@@ -249,7 +239,11 @@ onMounted(fetchData);
               <VIcon icon="mdi-chart-line" class="mr-2" />
               {{ t("TXT_CODE_a4037a98") }}
             </VCardTitle>
-            <VCardText><div :id="requestChartId" class="monitor-chart" /></VCardText>
+            <VCardText>
+              <div class="monitor-chart">
+                <canvas ref="requestChartCanvas" role="img" :aria-label="t('TXT_CODE_a4037a98')" />
+              </div>
+            </VCardText>
           </VCard>
         </VCol>
         <VCol cols="12" lg="6">
@@ -258,7 +252,11 @@ onMounted(fetchData);
               <VIcon icon="mdi-chart-areaspline" class="mr-2" />
               {{ t("TXT_CODE_d6d9c42c") }}
             </VCardTitle>
-            <VCardText><div :id="instanceChartId" class="monitor-chart" /></VCardText>
+            <VCardText>
+              <div class="monitor-chart">
+                <canvas ref="instanceChartCanvas" role="img" :aria-label="t('TXT_CODE_d6d9c42c')" />
+              </div>
+            </VCardText>
           </VCard>
         </VCol>
       </VRow>
@@ -456,6 +454,7 @@ onMounted(fetchData);
 }
 
 .monitor-chart {
+  position: relative;
   width: 100%;
   height: 250px;
 }
