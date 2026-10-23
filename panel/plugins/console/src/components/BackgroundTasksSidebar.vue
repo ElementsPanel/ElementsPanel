@@ -209,7 +209,6 @@ if (props.desktop) {
           :key="`${task.daemonId}:${task.id}`"
           tag="article"
           class="task-item"
-          color="surface-variant"
           variant="flat"
           rounded="xl"
         >
@@ -315,7 +314,8 @@ if (props.desktop) {
   opacity: 0.6;
 }
 .task-item {
-  padding: 16px;
+  background-color: rgba(var(--v-theme-primary), 0.05);
+  padding: 18px 24px 24px;
   margin-bottom: 12px;
 }
 .task-heading,
