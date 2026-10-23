@@ -42,8 +42,7 @@ import {
   VIcon,
   VRow,
   VSpacer,
-  VToolbar,
-  VTooltip
+  VToolbar
 } from "vuetify/components";
 import DockerInfo from "../widgets/instance/dialogs/DockerInfo.vue";
 import EventConfig from "../widgets/instance/dialogs/EventConfig.vue";
@@ -342,18 +341,13 @@ onUnmounted(() => {
           <VBtn v-if="canUpdate" prepend-icon="mdi-cloud-download-outline" @click="update">{{
             t("TXT_CODE_40ca4f2")
           }}</VBtn>
-          <VTooltip
+          <VBtn
             v-for="action in pluginActions"
             :key="action.id"
-            location="bottom"
+            :prepend-icon="action.mdiIcon"
+            @click="action.click()"
+            >{{ action.title }}</VBtn
           >
-            <template #activator="{ props: tooltipProps }">
-              <VBtn v-bind="tooltipProps" icon variant="text" @click="action.click()">
-                <VIcon :icon="action.mdiIcon" />
-              </VBtn>
-            </template>
-            <span>{{ action.title }}</span>
-          </VTooltip>
         </div>
       </VToolbar>
 
