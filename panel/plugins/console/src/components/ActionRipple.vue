@@ -64,8 +64,8 @@ const remove = (key: number) => {
   pointer-events: none;
 }
 
-/* Fixed to the page so the growth is never clipped by the header, but left in
-   the default layer so dialogs and other overlays still paint above it. */
+/* Fixed to the page so the growth is never clipped by the header, and just
+   above the shell chrome (header uses 20) while dialogs stay on top. */
 .action-ripple-circle {
   position: fixed;
   width: 40px;
@@ -73,6 +73,7 @@ const remove = (key: number) => {
   margin: -20px 0 0 -20px;
   border-radius: 50%;
   pointer-events: none;
+  z-index: 30;
   animation: action-ripple 600ms cubic-bezier(0, -0.04, 0, 0.99) forwards;
 }
 
