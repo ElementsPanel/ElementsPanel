@@ -31,7 +31,11 @@ export const useBackgroundTasks = createGlobalState(() => {
   const loading = ref(false);
   const error = ref(false);
   const streamState = ref<TaskStreamState>("degraded");
+  /** Bumped when a task id appears for the first time; the shell restarts its ripple. */
+  const rippleKey = ref(0);
   const activeCount = computed(() => tasks.value.filter((task) => task.state === "running").length);
+  let knownTaskIds = new Set<string>();
+  let tasksInitialized = false;
   let generation = 0;
   /** Bumped by every pushed snapshot, so an older GET cannot overwrite it. */
   let pushVersion = 0;
@@ -74,6 +78,16 @@ export const useBackgroundTasks = createGlobalState(() => {
     }, 15_000);
   };
 
+  /**
+   * A task the list has never seen before is a new one; the first read after a
+   * login only primes the set so existing work does not ripple.
+   */
+  const trackNewTasks = (list: BackgroundTask[]) => {
+    if (tasksInitialized && list.some((task) => !knownTaskIds.has(task.id))) rippleKey.value++;
+    knownTaskIds = new Set(list.map((task) => task.id));
+    tasksInitialized = true;
+  };
+
   const applyUpdate = (update: TaskStreamUpdate) => {
     pushVersion++;
     const incoming = (update.tasks || []).map((task) => ({
@@ -87,6 +101,7 @@ export const useBackgroundTasks = createGlobalState(() => {
     ].sort(sortTasks);
     unavailable.value = !!update.unavailable;
     error.value = false;
+    trackNewTasks(tasks.value);
     stopFallback();
     armWatchdog();
   };
@@ -114,6 +129,8 @@ export const useBackgroundTasks = createGlobalState(() => {
     open.value = false;
     tasks.value = [];
     unavailable.value = error.value = loading.value = false;
+    knownTaskIds = new Set();
+    tasksInitialized = false;
     disconnect();
   };
 
@@ -146,6 +163,7 @@ export const useBackgroundTasks = createGlobalState(() => {
       tasks.value = (result?.tasks || []).sort(sortTasks);
       unavailable.value = !!result?.unavailable;
       error.value = false;
+      trackNewTasks(tasks.value);
       // An old daemon sends no pushes: start the watchdog from the tasks the
       // first read discovered, not only from a later push.
       armWatchdog();
@@ -215,6 +233,7 @@ export const useBackgroundTasks = createGlobalState(() => {
     loading,
     error,
     streamState,
+    rippleKey,
     activeCount,
     refresh,
     reset,

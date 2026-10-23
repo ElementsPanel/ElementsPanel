@@ -323,6 +323,7 @@ test("pushed snapshots replace one daemon and reset clears the stream", async ()
   store.connect();
   await settle();
   await settle();
+  assert.equal(store.rippleKey.value, 0);
 
   streamOptions.onUpdate({
     daemonId: "node",
@@ -340,6 +341,7 @@ test("pushed snapshots replace one daemon and reset clears the stream", async ()
   assert.equal(store.tasks.value[0].daemonId, "node");
   assert.equal(store.tasks.value[1].nodeName, "Second");
   assert.equal(store.unavailable.value, true);
+  assert.equal(store.rippleKey.value, 2);
 
   streamOptions.onUpdate({
     daemonId: "node",
@@ -348,6 +350,7 @@ test("pushed snapshots replace one daemon and reset clears the stream", async ()
     tasks: []
   });
   assert.deepEqual(store.tasks.value.map((task) => task.id), ["other"]);
+  assert.equal(store.rippleKey.value, 2);
 
   store.reset();
   assert.deepEqual(store.tasks.value, []);

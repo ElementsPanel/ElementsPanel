@@ -256,6 +256,8 @@ export interface PanelFrontendHeaderAction {
   ariaControls?: string;
   /** Current toggle state, for `aria-expanded` and pressed styling. */
   expanded?: () => boolean;
+  /** Changing value restarts a one-shot ripple around the button. */
+  ripple?: () => number | undefined;
 }
 
 export interface PanelFrontendSlotEntry<K extends PanelFrontendSlotName = PanelFrontendSlotName> {

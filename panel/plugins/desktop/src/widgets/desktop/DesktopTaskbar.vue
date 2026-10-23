@@ -3,6 +3,7 @@ import { router } from "@/config/router";
 import { t } from "@/lang/i18n";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useThemeSwitch } from "@/hooks/useThemeSwitch";
+import ActionRipple from "@/components/ActionRipple.vue";
 import { ctx } from "@/plugin/context";
 import type { PanelFrontendHeaderAction } from "@/plugin/context";
 import { desktopIconDarkUrl, desktopIconUrl } from "../../assets";
@@ -27,6 +28,7 @@ const actionBadge = (action: PanelFrontendHeaderAction) => {
     const badge = typeof action.badge === "function" ? action.badge() : action.badge;
     return badge === false || badge == null ? undefined : badge;
 };
+const actionRipple = (action: PanelFrontendHeaderAction) => action.ripple?.();
 
 export interface TaskbarWindow {
     id: string;
@@ -211,13 +213,16 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
 
         <div class="taskbar__tray">
             <template v-for="entry in slotActions" :key="entry.id">
-                <VBadge :content="actionBadge(entry.action)" :model-value="actionBadge(entry.action) != null"
-                    :max="99" :offset-x="14" :offset-y="14" color="primary" floating>
-                    <VBtn icon variant="text" :aria-label="actionTitle(entry.action)"
-                        :title="actionTitle(entry.action)" @click="entry.action.click()">
-                        <VIcon :icon="actionIcon(entry.action)" />
-                    </VBtn>
-                </VBadge>
+                <div class="taskbar__action">
+                    <VBadge :content="actionBadge(entry.action)" :model-value="actionBadge(entry.action) != null"
+                        :max="99" :offset-x="14" :offset-y="14" color="primary" floating>
+                        <VBtn icon variant="text" :aria-label="actionTitle(entry.action)"
+                            :title="actionTitle(entry.action)" @click="entry.action.click()">
+                            <VIcon :icon="actionIcon(entry.action)" />
+                        </VBtn>
+                    </VBadge>
+                    <ActionRipple :trigger="actionRipple(entry.action)" />
+                </div>
             </template>
             <component :is="entry.component" v-for="entry in slotComponents" :key="entry.id"
                 v-bind="{ ...entry.props, mobile: false }" />
@@ -530,6 +535,11 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
     align-items: center;
     padding: 4px 12px;
     margin-left: auto;
+}
+
+.taskbar__action {
+    position: relative;
+    display: inline-flex;
 }
 
 .taskbar__time {

@@ -15,6 +15,7 @@ import { computed, watch } from "vue";
 import { ctx } from "@/plugin/context";
 import type { PanelFrontendHeaderAction } from "@/plugin/context";
 import AppSidebarMenu from "./AppSidebarMenu.vue";
+import ActionRipple from "./ActionRipple.vue";
 
 const { uiState } = useUiStore();
 const { isSidebarOpen, logoImage, toggleSidebar, useSidebarLayout } = useAppConfigStore();
@@ -44,6 +45,7 @@ const actionBadge = (action: PanelFrontendHeaderAction) => {
   return badge === false || badge == null ? undefined : badge;
 };
 const actionExpanded = (action: PanelFrontendHeaderAction) => action.expanded?.();
+const actionRipple = (action: PanelFrontendHeaderAction) => action.ripple?.();
 
 const openPhoneMenu = (b = false) => {
   uiState.showPhoneMenu = b;
@@ -97,7 +99,7 @@ useEventListener("keydown", (event) => {
       </div>
       <div class="btns header-actions">
         <template v-for="entry in registeredActions" :key="entry.id">
-          <div>
+          <div class="header-action">
             <VTooltip :text="actionTitle(entry.action)" location="bottom">
               <template #activator="{ props: tooltipProps }">
                 <VBadge
@@ -124,6 +126,7 @@ useEventListener("keydown", (event) => {
                 </VBadge>
               </template>
             </VTooltip>
+            <ActionRipple :trigger="actionRipple(entry.action)" />
           </div>
         </template>
         <component
@@ -237,6 +240,11 @@ useEventListener("keydown", (event) => {
 
 .nav-button-success:hover {
   background-color: #48e6635a !important;
+}
+
+.header-action {
+  position: relative;
+  display: inline-flex;
 }
 
 .app-header-content-for-phone {

@@ -38,6 +38,7 @@ export async function apply(parent: PanelFrontendPluginContext) {
       title: () => t("TXT_CODE_TASKS_TITLE"),
       mdiIcon: "mdi-progress-clock",
       badge: () => useBackgroundTasks().activeCount.value || undefined,
+      ripple: () => useBackgroundTasks().rippleKey.value,
       click: () => {
         const { open, refresh } = useBackgroundTasks();
         open.value = !open.value;
