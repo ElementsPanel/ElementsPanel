@@ -92,6 +92,12 @@ test("node histories initialize with available data, update nested values and re
   assert.notEqual(chart.data.datasets[0].data, values.value);
   assert.equal(chart.options.scales.y.max, 100);
   assert.equal(chart.options.plugins.tooltip.callbacks.label({ parsed: { y: 23.456 } }), "23.5%");
+  // The hover card is custom-styled and shows only the plotted value.
+  assert.equal(chart.options.plugins.tooltip.callbacks.title(), "");
+  assert.equal(chart.options.plugins.tooltip.displayColors, false);
+  assert.equal(chart.options.plugins.tooltip.backgroundColor, "rgba(20, 24, 35, 0.85)");
+  assert.equal(chart.options.plugins.tooltip.borderWidth, undefined);
+  assert.equal(chart.options.plugins.tooltip.bodyColor, "#e0e6f0");
   values.value[1] = 45;
   await vue.nextTick();
   assert.deepEqual(chart.data.datasets[0].data, [10, 45, 30]);

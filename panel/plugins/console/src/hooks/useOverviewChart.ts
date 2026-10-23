@@ -82,7 +82,18 @@ export function useLineChart(
         plugins: {
           legend: { display: false },
           tooltip: {
+            // Restore the pre-Chart.js hover card: a compact translucent panel
+            // with no border, showing only the plotted value — the percentage on
+            // usage charts. The axis label is redundant with the axis itself,
+            // so the title row is dropped.
+            displayColors: false,
+            backgroundColor: "rgba(20, 24, 35, 0.85)",
+            cornerRadius: 6,
+            padding: { top: 6, bottom: 6, left: 10, right: 10 },
+            bodyColor: "#e0e6f0",
+            bodyFont: { size: 12, weight: 600 },
             callbacks: {
+              title: () => "",
               label: ({ parsed }) => {
                 const value = parsed.y ?? 0;
                 if (percentage) return `${value.toFixed(1)}%`;
