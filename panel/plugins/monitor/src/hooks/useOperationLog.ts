@@ -180,7 +180,7 @@ export const formatOperationLogText = (item: OperationLoggerItem) => {
   const { text } = handler(item as any);
   const values: Record<string, string> = {
     operator_name: item.operator_name || item.operation_id,
-    instance_name: "instance_name" in item ? item.instance_name || item.instance_id : "",
+    instance_name: "instance_id" in item ? item.instance_name || item.instance_id : "",
     file: "file" in item ? item.file || "" : "",
     task_name: "task_name" in item ? item.task_name : "",
     exit_code: "exit_code" in item ? String(item.exit_code) : "",

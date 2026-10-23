@@ -461,7 +461,8 @@ export function registerFileRoutes() {
           operator_ip: ctx.ip,
           operator_name: identity().of(ctx).userName,
           instance_id: instanceUuid,
-          daemon_id: daemonId
+          daemon_id: daemonId,
+          file: uploadDir
         });
         ctx.body = {
           password,

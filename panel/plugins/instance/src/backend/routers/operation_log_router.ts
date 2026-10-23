@@ -1,5 +1,29 @@
 import type { PanelPluginContext } from "../../../../../src/app/plugin";
 
+const missingName = (entry: any) =>
+  !entry?.instance_name || entry.instance_name === entry.instance_id;
+
+/** Logs written before the name was recorded still need one the dialog can show. */
+async function attachInstanceName(
+  ctx: PanelPluginContext,
+  entries: any[],
+  instanceUuid: string,
+  daemonId: string
+) {
+  const provider = ctx.get("instances");
+  if (!provider || !entries.some((entry) => missingName(entry))) return entries;
+  try {
+    const [detail] = await provider.getDetails([{ instanceUuid, daemonId }]);
+    if (!detail?.nickname) return entries;
+    return entries.map((entry) =>
+      missingName(entry) ? { ...entry, instance_name: String(detail.nickname) } : entry
+    );
+  } catch (error) {
+    // The audit view must still render when the instance provider is unavailable.
+    return entries;
+  }
+}
+
 /** Instance audit endpoints consume the runtime logger without requiring a viewer. */
 export function registerOperationLogRoutes(ctx: PanelPluginContext) {
   const overviewRouter = ctx.koa.router("/api/overview");
@@ -15,7 +39,12 @@ export function registerOperationLogRoutes(ctx: PanelPluginContext) {
       return requestCtx.throw(400, "Invalid limit value. It must be a number between 1 and 200.");
     }
     if (!ctx.identity.canAccessInstance(requestCtx, daemonId, instanceId)) requestCtx.throw(403);
-    requestCtx.body = await ctx.operations.getByInstance(instanceId, daemonId, limit);
+    requestCtx.body = await attachInstanceName(
+      ctx,
+      await ctx.operations.getByInstance(instanceId, daemonId, limit),
+      instanceId,
+      daemonId
+    );
   });
 
   overviewRouter.post("/instance_crash", requireUser, async (requestCtx) => {
