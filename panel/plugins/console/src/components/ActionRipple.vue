@@ -7,10 +7,18 @@ import { ref, watch } from "vue";
  * The anchor is an absolutely positioned child of the button wrapper, so its
  * rect is the button's rect. The circles themselves are teleported to `body`;
  * a fixed position there is never clipped by the header, drawer or taskbar.
+ *
+ * `inline` renders the circles inside the button wrapper instead: the desktop
+ * taskbar lives in a stacking context (`.desktop-container`, z-index 100) that
+ * paints over any body-level ripple, while nothing in the taskbar chain clips
+ * overflow. Staying local keeps the ripple above the taskbar and windows, yet
+ * still under the start menu, context menu and dialogs.
  */
 const props = defineProps<{
   /** A changing value starts a new ripple; `0`/`undefined` render nothing. */
   trigger?: number;
+  /** Render the ripple inside the button wrapper instead of the page layer. */
+  inline?: boolean;
 }>();
 
 interface ActiveRipple {
@@ -45,7 +53,7 @@ const remove = (key: number) => {
 
 <template>
   <span ref="anchor" class="action-ripple-anchor" aria-hidden="true" />
-  <Teleport to="body">
+  <Teleport v-if="!inline" to="body">
     <span
       v-for="ripple in ripples"
       :key="ripple.key"
@@ -55,6 +63,16 @@ const remove = (key: number) => {
       @animationend="remove(ripple.key)"
     />
   </Teleport>
+  <template v-else>
+    <span
+      v-for="ripple in ripples"
+      :key="ripple.key"
+      class="action-ripple-circle action-ripple-circle--inline"
+      :style="{ background: ripple.color }"
+      aria-hidden="true"
+      @animationend="remove(ripple.key)"
+    />
+  </template>
 </template>
 
 <style lang="scss" scoped>
@@ -75,6 +93,14 @@ const remove = (key: number) => {
   pointer-events: none;
   z-index: 30;
   animation: action-ripple 600ms cubic-bezier(0, -0.04, 0, 0.99) forwards;
+}
+
+/* Anchored to the button wrapper, so the ripple grows from the button itself
+   and is painted inside the taskbar's own stacking context. */
+.action-ripple-circle--inline {
+  position: absolute;
+  left: 50%;
+  top: 50%;
 }
 
 @keyframes action-ripple {

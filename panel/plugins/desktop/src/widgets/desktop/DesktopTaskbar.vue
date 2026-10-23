@@ -222,7 +222,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
                                 <VIcon :icon="actionIcon(entry.action)" size="small" />
                             </VBtn>
                         </VBadge>
-                        <ActionRipple :trigger="actionRipple(entry.action)" />
+                        <ActionRipple :trigger="actionRipple(entry.action)" inline />
                     </div>
                 </template>
                 <component :is="entry.component" v-for="entry in slotComponents" :key="entry.id"

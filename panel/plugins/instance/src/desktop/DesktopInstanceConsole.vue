@@ -342,7 +342,7 @@ onUnmounted(() => {
                         'status--stopped': isStopped
                     }">
                         <VIcon icon="mdi-check-circle-outline" v-if="isRunning"  />
-                        <VIcon icon="mdi-loading" v-else-if="isBuys"  />
+                        <VIcon icon="mdi-clock-outline" v-else-if="isBuys"  />
                         <VIcon icon="mdi-information-outline" v-else  />
                     </span>
                     <span class="dim-instance__name">{{ getInstanceName }}</span>
