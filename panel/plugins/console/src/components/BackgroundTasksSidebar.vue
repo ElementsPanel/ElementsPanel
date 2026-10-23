@@ -10,7 +10,8 @@ import {
   VCheckbox,
   VDialog,
   VIcon,
-  VProgressLinear
+  VProgressLinear,
+  VTooltip
 } from "vuetify/components";
 
 const { state, isLogged } = useAppStateStore();
@@ -127,10 +128,28 @@ onBeforeUnmount(() => {
   >
     <VCard
       id="background-tasks-sidebar"
-      :title="t('TXT_CODE_TASKS_TITLE')"
       class="background-tasks-card"
       rounded="0"
     >
+      <template #title>
+        {{ t("TXT_CODE_TASKS_TITLE") }}
+        <VTooltip
+          v-if="unavailable && !error"
+          :text="t('TXT_CODE_TASKS_UNAVAILABLE')"
+          location="bottom"
+        >
+          <template #activator="{ props: tooltipProps }">
+            <VIcon
+              v-bind="tooltipProps"
+              icon="mdi-alert-circle-outline"
+              size="small"
+              color="warning"
+              class="ms-2"
+              :aria-label="t('TXT_CODE_TASKS_UNAVAILABLE')"
+            />
+          </template>
+        </VTooltip>
+      </template>
       <template #append>
         <VBtn
           icon="mdi-refresh"
@@ -172,12 +191,12 @@ onBeforeUnmount(() => {
       </div>
       <div class="task-list" aria-live="polite" aria-relevant="additions removals">
         <VAlert
-          v-if="error || unavailable"
+          v-if="error"
           type="warning"
           variant="tonal"
           density="compact"
           class="mb-3"
-          >{{ t(error ? "TXT_CODE_TASKS_LOAD_ERROR" : "TXT_CODE_TASKS_UNAVAILABLE") }}</VAlert
+          >{{ t("TXT_CODE_TASKS_LOAD_ERROR") }}</VAlert
         >
         <div v-if="!visibleTasks.length && !loading" class="task-empty">
           <VIcon icon="mdi-clipboard-check-outline" size="48" class="mb-3" />
