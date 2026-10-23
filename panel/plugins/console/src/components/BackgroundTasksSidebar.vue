@@ -15,7 +15,7 @@ import {
 } from "vuetify/components";
 
 const { state, isLogged } = useAppStateStore();
-const { open, tasks, unavailable, loading, error, refresh, reset, cancel, clear } =
+const { open, tasks, unavailable, loading, error, refresh, reset, connect, disconnect, cancel, clear } =
   useBackgroundTasks();
 const cancelling = ref(new Set<string>());
 const clearing = ref(false);
@@ -90,30 +90,17 @@ const clearFinished = async () => {
   }
 };
 
-let timer: ReturnType<typeof setTimeout> | undefined;
-let pollingGeneration = 0;
-const stopPolling = () => {
-  pollingGeneration++;
-  clearTimeout(timer);
-};
 watch(
   () => [isLogged.value, state.userInfo?.uuid] as const,
   () => {
-    stopPolling();
     reset();
     showFinished.value = false;
-    if (!isLogged.value) return;
-    const generation = pollingGeneration;
-    const poll = async () => {
-      await refresh({ silent: true });
-      if (generation === pollingGeneration) timer = setTimeout(poll, open.value ? 1500 : 4000);
-    };
-    void poll();
+    if (isLogged.value) connect();
   },
   { immediate: true }
 );
 onBeforeUnmount(() => {
-  stopPolling();
+  disconnect();
   reset();
 });
 </script>

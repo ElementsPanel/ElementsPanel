@@ -3,6 +3,7 @@ import { io, ManagerOptions, Socket, SocketOptions } from "socket.io-client";
 import RemoteRequest from "./remote_command";
 import type { RemoteServiceConfig } from "./remote_config";
 import { $t, i18next, logger, systemConfig } from "./runtime";
+import { publishAvailability, publishTasks } from "./task_stream";
 
 export default class RemoteService {
   public static readonly STATUS_OK = 200;
@@ -68,6 +69,12 @@ export default class RemoteService {
     this.socket.on("connect_error", async (error: Error) => {
       await this.onDisconnect();
     });
+
+    // Daemon-side task snapshots are pushed to every authenticated socket;
+    // forward them to the panel's browser stream with this node's identity.
+    this.socket.on("tasks/update", (packet: any) =>
+      publishTasks(this.uuid, this.config.remarks || this.uuid, packet?.data)
+    );
   }
 
   public async setLanguage(language?: string) {
@@ -112,14 +119,17 @@ export default class RemoteService {
 
         if (this.socket !== socket || !socket.connected) return false;
         logger().info($t("TXT_CODE_daemonInfo.authSuccess", { v: daemonInfo }));
+        publishAvailability();
         return true;
       }
       this.available = false;
+      publishAvailability();
       logger().warn($t("TXT_CODE_daemonInfo.authFailure", { v: daemonInfo }));
       return false;
     } catch (error: any) {
       if (this.socket !== socket) return false;
       this.available = false;
+      publishAvailability();
       logger().warn($t("TXT_CODE_daemonInfo.authError", { v: daemonInfo }));
       logger().warn(error);
       return false;
@@ -132,6 +142,7 @@ export default class RemoteService {
 
   private async onDisconnect() {
     this.available = false;
+    publishAvailability();
   }
 
   private async onConnect() {

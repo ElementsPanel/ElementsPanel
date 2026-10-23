@@ -5,6 +5,8 @@ import RemoteRequest, { RemoteRequestTimeoutError } from "./remote_command";
 import remoteServices from "./remote_service";
 import { setPluginContext } from "./runtime";
 import { registerBackgroundTaskRoutes } from "./background_tasks";
+import { disposeTaskTickets, sweepTaskTickets, verifyTaskTicket } from "./task_ticket";
+import { setTaskStreamSink, visibleTasks } from "./task_stream";
 
 // Panel side of the node plugin. It owns the remote-node subsystem itself — the
 // daemon connections, their stored configuration and the request helper — and
@@ -40,7 +42,7 @@ function describeNode(remoteService: RemoteServiceLike) {
   };
 }
 
-export const inject = ["koa", "i18n", "storage", "settings", "middleware", "roles", "operations", "identity"];
+export const inject = ["koa", "i18n", "storage", "settings", "middleware", "roles", "operations", "identity", "websocket"];
 
 export async function apply(ctx: PanelPluginContext) {
   // Before anything else: the subsystem's modules read the logger, the storage,
@@ -66,6 +68,41 @@ export async function apply(ctx: PanelPluginContext) {
   // These routes belong to the provider itself; pass its service directly
   // rather than declaring a dependency on the service it is creating.
   registerBackgroundTaskRoutes(ctx, remote);
+
+  // The task stream shares the panel's Socket.IO transport. Its tickets are
+  // issued by an authenticated HTTP route and swept here; the interval belongs
+  // to this plugin's scope.
+  ctx.setInterval(() => sweepTaskTickets(), 60_000);
+  ctx.on("dispose", () => disposeTaskTickets());
+
+  const anyUnavailable = () =>
+    [...remoteServices.services.values()].some((node) => !node.available);
+
+  ctx.websocket.io.use((socket, next) => {
+    const identity = verifyTaskTicket(socket.handshake.auth?.ticket);
+    if (!identity) return next(new Error("Task stream ticket is invalid or expired"));
+    void socket.join(`tasks:${identity.uuid}`);
+    next();
+  });
+
+  setTaskStreamSink({
+    tasks(daemonId, nodeName, data) {
+      const registry = ctx.identity.users;
+      const tasks = registry
+        ? visibleTasks(daemonId, data.tasks, registry.getInstance(data.owner))
+        : data.tasks;
+      ctx.websocket.io.to(`tasks:${data.owner}`).emit("tasks/update", {
+        daemonId,
+        nodeName,
+        tasks: tasks.map((task) => ({ ...task, daemonId, nodeName })),
+        unavailable: anyUnavailable()
+      });
+    },
+    availability() {
+      ctx.websocket.io.emit("tasks/availability", { unavailable: anyUnavailable() });
+    }
+  });
+  ctx.effect(() => () => setTaskStreamSink(undefined));
 
   ctx.effect(() => () => {
     // Sockets are not cordis effects, so closing them is this plugin's job.

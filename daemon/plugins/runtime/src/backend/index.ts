@@ -77,6 +77,7 @@ export async function apply(ctx: DaemonPluginContext) {
   ctx.on("dispose", () => {
     missionPassport.dispose();
     downloadManager.stop();
+    backgroundTasks.dispose();
   });
   setupLogging(ctx);
   setupProcessLifecycle(ctx);
@@ -129,6 +130,12 @@ export async function apply(ctx: DaemonPluginContext) {
   });
   ctx.inject(["protocol", "features", "overview", "settings"], registerOverview);
   ctx.inject(["protocol"], (scope) => {
+    scope.effect(() => {
+      const push = ({ owner, tasks }: { owner: string; tasks: any[] }) =>
+        scope.protocol.broadcast("tasks/update", { owner, tasks });
+      backgroundTasks.on("changed", push);
+      return () => backgroundTasks.off("changed", push);
+    });
     scope.protocol.on("tasks/list", (request, data) => {
       scope.protocol.response(request, backgroundTasks.list(String(data?.owner || "")));
     });

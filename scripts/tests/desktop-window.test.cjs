@@ -703,7 +703,7 @@ test("the shared task action opens its sidebar and keeps task filters and cancel
   const cancelled = [];
   const store = {
     open: vue.ref(false), tasks: vue.ref([]), unavailable: vue.ref(false), loading: vue.ref(false),
-    error: vue.ref(false), refresh: async () => {},
+    error: vue.ref(false), refresh: async () => {}, connect() {}, disconnect() {},
     reset() { store.open.value = false; store.tasks.value = []; },
     cancel: async (task) => { cancelled.push(task.id); }, clear: async () => {}
   };

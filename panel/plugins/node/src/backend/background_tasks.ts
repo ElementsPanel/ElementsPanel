@@ -3,6 +3,7 @@ import type Koa from "koa";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
 import type RemoteRequest from "./remote_command";
 import type remoteServices from "./remote_service";
+import { issueTaskTicket } from "./task_ticket";
 
 export const taskRequestScope = new AsyncLocalStorage<Koa.ParameterizedContext>();
 
@@ -15,6 +16,14 @@ export function registerBackgroundTaskRoutes(
   const permission = ctx.middleware.permission({ level: ctx.roles.USER, speedLimit: false });
   const owner = (request: Koa.ParameterizedContext) =>
     ctx.identity.of(request).uuid || "_anonymous_";
+
+  router.get("/stream-ticket", permission, async (request) => {
+    const identity = ctx.identity.of(request);
+    request.body = issueTaskTicket({
+      uuid: identity.uuid || "_anonymous_",
+      elevated: identity.elevated
+    });
+  });
 
   router.get("/", permission, async (request) => {
     const tasks: any[] = [];

@@ -10,6 +10,7 @@ import { removeTrail } from "mcsmanager-common";
 import open from "open";
 import os from "os";
 import path from "path";
+import { Server as SocketIOServer } from "socket.io";
 import { v4 } from "uuid";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
 import { localeMessages } from "../i18n";
@@ -266,38 +267,50 @@ export function apply(ctx: PanelPluginContext) {
     })
   );
 
+  // Created here rather than on `ready`: feature plugins register their
+  // Socket.IO handlers during `apply()`, so the transport must already exist
+  // when they run. Only `listen()` waits for the rest of the panel.
+  let httpServer: http.Server | https.Server | undefined;
+  let websocket: SocketIOServer | undefined;
+
+  try {
+    if (config.ssl) {
+      const options = {
+        cert: fs.readFileSync(path.join(config.sslPemPath)),
+        key: fs.readFileSync(path.join(config.sslKeyPath))
+      };
+      httpServer = https.createServer(options, app.callback());
+    } else {
+      httpServer = http.createServer(app.callback());
+    }
+  } catch (error) {
+    // A panel that cannot build its listener is of no use to anyone, and
+    // failing quietly here would leave it running and unreachable.
+    ctx.logger.error($t("TXT_CODE_app.httpSetupError"));
+    ctx.logger.error(error);
+    return process.exit(1);
+  }
+
+  websocket = new SocketIOServer(httpServer, {
+    path: removeTrail(config.prefix, "/") + "/socket.io",
+    serveClient: false,
+    cookie: false,
+    cors: config.crossDomain ? { origin: true, credentials: true } : undefined
+  });
+  ctx.set("websocket", { io: websocket });
+
+  httpServer.on("error", (err) => {
+    ctx.logger.error($t("TXT_CODE_app.httpSetupError"));
+    ctx.logger.error(err);
+    process.exit(1);
+  });
+
   // Bound on `ready`, not here: the panel must not accept a request before every
   // plugin has registered its routes. Cordis runs the hook immediately when the
   // container is already started, so reloading this plugin re-binds cleanly.
-  let httpServer: http.Server | https.Server | undefined;
-
   ctx.on("ready", () => {
-    try {
-      if (config.ssl) {
-        const options = {
-          cert: fs.readFileSync(path.join(config.sslPemPath)),
-          key: fs.readFileSync(path.join(config.sslKeyPath))
-        };
-        httpServer = https.createServer(options, app.callback());
-      } else {
-        httpServer = http.createServer(app.callback());
-      }
-    } catch (error) {
-      // A panel that cannot build its listener is of no use to anyone, and
-      // failing quietly here would leave it running and unreachable.
-      ctx.logger.error($t("TXT_CODE_app.httpSetupError"));
-      ctx.logger.error(error);
-      return process.exit(1);
-    }
-
-    httpServer.on("error", (err) => {
-      ctx.logger.error($t("TXT_CODE_app.httpSetupError"));
-      ctx.logger.error(err);
-      process.exit(1);
-    });
-
     const port = config.httpPort;
-    httpServer.listen(port, config.httpIp);
+    httpServer?.listen(port, config.httpIp);
     ctx.logger.info("==================================");
     ctx.logger.info($t("TXT_CODE_app.panelStarted"));
     let appHost = $t("TXT_CODE_app.host", { port });
@@ -315,9 +328,10 @@ export function apply(ctx: PanelPluginContext) {
   // The core used to leak the listener until the process exited; it now closes
   // with the plugin, and so on shutdown.
   ctx.on("dispose", () => {
-    // A failed `ready` hook can dispose this scope before a listener exists.
-    // Guard the close so unload remains idempotent and does not mask startup
-    // errors with ERR_SERVER_NOT_RUNNING.
+    // Closing Socket.IO first lets it release every connection; a failed
+    // `ready` hook can dispose this scope before a listener exists.
+    websocket?.close();
+    websocket = undefined;
     if (httpServer?.listening) httpServer.close();
     httpServer = undefined;
   });

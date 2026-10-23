@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from "async_hooks";
 import { randomUUID } from "crypto";
+import EventEmitter from "events";
 
 export interface BackgroundTask {
   id: string;
@@ -43,9 +44,63 @@ const EVENTS: Record<string, string> = {
 };
 
 /** Task lifetime follows the work, including promises detached from a response. */
-export class BackgroundTasks {
+export class BackgroundTasks extends EventEmitter {
   private readonly scope = new AsyncLocalStorage<Entry>();
   private readonly entries = new Map<string, Entry>();
+  /** Owners whose snapshot must be sent; running owners stay until they finish. */
+  private readonly pendingOwners = new Set<string>();
+  private flushTimer?: NodeJS.Timeout;
+  private tickTimer?: NodeJS.Timeout;
+
+  /** Stops the push timers and drops the task table as the runtime plugin unloads. */
+  dispose() {
+    clearTimeout(this.flushTimer);
+    clearInterval(this.tickTimer);
+    this.flushTimer = undefined;
+    this.tickTimer = undefined;
+    this.pendingOwners.clear();
+    this.entries.clear();
+    this.removeAllListeners();
+  }
+
+  /**
+   * Coalesces lifecycle changes into one snapshot per owner. A short timer makes
+   * starts and stops visible immediately, while the one-second tick below drives
+   * progress updates for work that is still running.
+   */
+  private mark(owner: string) {
+    if (!owner) return;
+    this.pendingOwners.add(owner);
+    if (this.flushTimer) return;
+    this.flushTimer = setTimeout(() => {
+      this.flushTimer = undefined;
+      this.flush();
+    }, 50);
+    this.flushTimer.unref();
+  }
+
+  /** Emits one snapshot per dirty owner and keeps running owners on the tick. */
+  private flush() {
+    // The tick and a pending lifecycle flush can coincide; the first one wins.
+    clearTimeout(this.flushTimer);
+    this.flushTimer = undefined;
+    const owners = [...this.pendingOwners];
+    this.pendingOwners.clear();
+    for (const owner of owners) {
+      const tasks = this.list(owner);
+      this.emit("changed", { owner, tasks });
+      if (tasks.some((task) => task.state === "running")) this.pendingOwners.add(owner);
+    }
+    if (this.pendingOwners.size === 0) {
+      clearInterval(this.tickTimer);
+      this.tickTimer = undefined;
+      return;
+    }
+    if (!this.tickTimer) {
+      this.tickTimer = setInterval(() => this.flush(), 1000);
+      this.tickTimer.unref();
+    }
+  }
 
   runRequest<T>(event: string, data: any, work: () => T): T {
     const owner = data?._taskOwner;
@@ -78,6 +133,7 @@ export class BackgroundTasks {
       pending: 0
     };
     this.entries.set(entry.task.id, entry);
+    this.mark(owner);
     return this.scope.run(entry, () => {
       try {
         const result = work();
@@ -115,6 +171,7 @@ export class BackgroundTasks {
     if (entry) {
       entry.progress = read;
       entry.cancel = cancel;
+      this.mark(entry.task.owner);
     }
   }
 
@@ -146,13 +203,19 @@ export class BackgroundTasks {
     if (entry.cancel() === false) return false;
     entry.task.state = "cancelled";
     entry.task.updatedAt = Date.now();
+    this.mark(owner);
     return true;
   }
 
   clear(owner: string) {
+    let removed = false;
     for (const [id, entry] of this.entries) {
-      if (entry.task.owner === owner && entry.pending === 0) this.entries.delete(id);
+      if (entry.task.owner === owner && entry.pending === 0) {
+        this.entries.delete(id);
+        removed = true;
+      }
     }
+    if (removed) this.mark(owner);
   }
 
   private failEntry(entry: Entry, error: any) {
@@ -161,6 +224,7 @@ export class BackgroundTasks {
       error?.code === "ABORT_ERR" || error?.code === "ERR_CANCELED" ? "cancelled" : "failed";
     entry.task.error = error?.message || String(error);
     entry.task.updatedAt = Date.now();
+    this.mark(entry.task.owner);
   }
 
   private finish(entry: Entry) {
@@ -168,6 +232,7 @@ export class BackgroundTasks {
     if (entry.task.state === "running") entry.task.state = "completed";
     entry.task.updatedAt = Date.now();
     entry.cancel = undefined;
+    this.mark(entry.task.owner);
   }
 
   private prune() {

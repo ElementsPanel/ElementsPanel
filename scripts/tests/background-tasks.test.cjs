@@ -127,7 +127,10 @@ test("protocol errors recorded without throwing do not turn into successful task
   assert.equal(tasks.list("alice").length, 1);
 });
 
-const panelTasks = load("panel/plugins/node/src/backend/background_tasks.ts");
+const taskTickets = load("panel/plugins/node/src/backend/task_ticket.ts");
+const panelTasks = load("panel/plugins/node/src/backend/background_tasks.ts", {
+  "./task_ticket": taskTickets
+});
 function panelFixture() {
   const tasks = new BackgroundTasks();
   const handlers = new Map();
@@ -202,6 +205,18 @@ test("the panel aggregates across nodes, filters revoked instances and never acc
   bob.request.body = { daemonId: "node", id: alice.body.tasks[0].id, owner: "alice" };
   await handlers.get("post /cancel")(bob);
   assert.equal(bob.status, 403);
+});
+
+test("the ticket route issues a stream ticket for the authenticated user", async () => {
+  const { handlers, request } = panelFixture();
+  const alice = request();
+  await handlers.get("get /stream-ticket")(alice);
+  assert.equal(typeof alice.body.ticket, "string");
+  assert.deepEqual(taskTickets.verifyTaskTicket(alice.body.ticket), {
+    uuid: "alice",
+    elevated: false
+  });
+  taskTickets.disposeTaskTickets();
 });
 
 test("task routes consume their provider's remote service without Cordis injection warnings", async (t) => {
@@ -279,6 +294,66 @@ test("remote requests attach the authenticated user instead of caller-supplied t
   );
 });
 
+test("pushed snapshots replace one daemon and reset clears the stream", async () => {
+  const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
+  const vue = frontendRequire("vue");
+  const state = vue.reactive({ userInfo: { uuid: "alice" } });
+  let streamOptions;
+  const { useBackgroundTasks } = load("panel/plugins/console/src/stores/useBackgroundTasks.ts", {
+    vue,
+    "@vueuse/core": frontendRequire("@vueuse/core"),
+    "@/hooks/useTaskStream": {
+      createTaskStream: (options) => {
+        streamOptions = options;
+        return { connect: () => options.onState("connected"), disconnect() {}, dispose() {} };
+      }
+    },
+    "@/services/apiService": {
+      apiService: {
+        subscribe: async (config) => {
+          if (config.url === "/api/tasks/stream-ticket") return { ticket: "ticket" };
+          return { tasks: [], unavailable: false };
+        }
+      },
+      onApiMutation: () => () => {}
+    },
+    "./useAppStateStore": { useAppStateStore: () => ({ state, isLogged: vue.ref(true) }) }
+  });
+  const store = useBackgroundTasks();
+  store.connect();
+  await settle();
+  await settle();
+
+  streamOptions.onUpdate({
+    daemonId: "node",
+    nodeName: "Node",
+    unavailable: false,
+    tasks: [{ id: "pushed", state: "running", startedAt: 2 }]
+  });
+  streamOptions.onUpdate({
+    daemonId: "second",
+    nodeName: "Second",
+    unavailable: true,
+    tasks: [{ id: "other", state: "completed", startedAt: 1 }]
+  });
+  assert.deepEqual(store.tasks.value.map((task) => task.id), ["pushed", "other"]);
+  assert.equal(store.tasks.value[0].daemonId, "node");
+  assert.equal(store.tasks.value[1].nodeName, "Second");
+  assert.equal(store.unavailable.value, true);
+
+  streamOptions.onUpdate({
+    daemonId: "node",
+    nodeName: "Node",
+    unavailable: false,
+    tasks: []
+  });
+  assert.deepEqual(store.tasks.value.map((task) => task.id), ["other"]);
+
+  store.reset();
+  assert.deepEqual(store.tasks.value, []);
+  assert.equal(store.streamState.value, "degraded");
+});
+
 test("the browser discards stale task responses when the active account changes", async () => {
   const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
   const vue = frontendRequire("vue");
@@ -290,6 +365,9 @@ test("the browser discards stale task responses when the active account changes"
   const { useBackgroundTasks } = load("panel/plugins/console/src/stores/useBackgroundTasks.ts", {
     vue,
     "@vueuse/core": frontendRequire("@vueuse/core"),
+    "@/hooks/useTaskStream": {
+      createTaskStream: () => ({ connect() {}, disconnect() {}, dispose() {} })
+    },
     "@/services/apiService": {
       apiService: {
         subscribe: () => {

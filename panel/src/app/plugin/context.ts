@@ -3,6 +3,7 @@ import type Router from "@koa/router";
 import { Context } from "cordis";
 import type i18next from "i18next";
 import type Koa from "koa";
+import type { Server } from "socket.io";
 import type { GlobalVariable } from "mcsmanager-common";
 import type { IRemoteService, RemoteMappingEntry } from "./packets";
 import type { ROLE } from "../../../plugins/runtime/src/backend/roles";
@@ -180,6 +181,14 @@ export interface PanelKoaService {
   use(middleware: Koa.Middleware): () => void;
   /** Creates a router owned by the calling plugin and mounts it. */
   router(prefix?: string): Router;
+}
+
+/**
+ * The panel's browser-facing Socket.IO server. It shares the HTTP listener and
+ * its path prefix; plugins attach their own authentication middleware and rooms.
+ */
+export interface PanelWebsocketService {
+  readonly io: Server;
 }
 
 /** The shared request middleware. Policy comes from the installed guard. */
@@ -385,6 +394,8 @@ declare module "cordis" {
      * nothing, so almost every plugin injects it.
      */
     koa: PanelKoaService;
+    /** Browser-facing Socket.IO transport, provided by `plugins/server`. */
+    websocket: PanelWebsocketService;
     /**
      * The daemon nodes. Provided by `plugins/node`, which owns the subsystem —
      * the panel reaches no daemon without it.

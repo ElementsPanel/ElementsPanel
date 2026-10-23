@@ -224,6 +224,8 @@ export interface DaemonProtocolService {
     config?: { disablePrint: boolean }
   ) => void;
   readonly msg: (ctx: RouterContext, event: string, data: any) => void;
+  /** Pushes an event to every socket authenticated with the daemon key. */
+  readonly broadcast: (event: string, data: any) => void;
   readonly ROLE: { ADMIN: number; USER: number; GUEST: number; BAN: number };
   /** Marker an error message carries to keep `error()` from printing it. */
   readonly IGNORE: string;

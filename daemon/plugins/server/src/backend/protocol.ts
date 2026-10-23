@@ -137,6 +137,9 @@ function msg(ctx: RouterContext, event: string, data: any) {
 
 function navigation(socket: Socket, logger: ProtocolLogger) {
   const session: any = {};
+  // Authentication marks this session; `broadcast()` uses it to reach only
+  // sockets the panel has authorised with the daemon key.
+  socket.data.session = session;
   for (const handler of routerApp.middlewares) {
     socket.use((packet, next) => {
       const protocol = packet[1] as IPacket;
@@ -173,11 +176,25 @@ export function delGlobalSocket(socket: Socket) {
   globalSockets.delete(socket.id);
 }
 
+/**
+ * Pushes an event to every socket the panel has authenticated with the daemon
+ * key. Browser terminal streams authenticate separately and carry no session
+ * login, so they never receive these payloads.
+ */
+export function broadcast(event: string, data: any) {
+  const packet = new Packet(null, STATUS_OK, event, data);
+  for (const socket of globalSockets.values()) {
+    const session = socket.data?.session;
+    if (session?.login === true && session.id === socket.id) socket.emit(event, packet);
+  }
+}
+
 export class ProtocolService extends Service implements DaemonProtocolService {
   readonly response = response;
   readonly responseError: DaemonProtocolService["responseError"];
   readonly error: DaemonProtocolService["error"];
   readonly msg = msg;
+  readonly broadcast = broadcast;
   readonly ROLE = ROLE;
   readonly IGNORE = IGNORE;
 
