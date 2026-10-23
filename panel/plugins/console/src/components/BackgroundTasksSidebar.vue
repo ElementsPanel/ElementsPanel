@@ -8,8 +8,8 @@ import {
   VBtn,
   VCard,
   VCheckbox,
-  VDialog,
   VIcon,
+  VNavigationDrawer,
   VProgressLinear,
   VTooltip
 } from "vuetify/components";
@@ -25,8 +25,16 @@ const containerProps = computed(() =>
         modelValue: open.value,
         "onUpdate:modelValue": (value: boolean) => { open.value = value; },
         class: "background-tasks-drawer",
-        maxWidth: 480,
-        transition: "slide-x-reverse-transition",
+        location: "right",
+        width: 480,
+        temporary: true,
+        floating: true,
+        disableRouteWatcher: true,
+        disableResizeWatcher: true,
+        touchless: true,
+        retainFocus: true,
+        captureFocus: true,
+        tag: "aside",
         "aria-label": t("TXT_CODE_TASKS_TITLE")
       }
 );
@@ -125,7 +133,7 @@ if (props.desktop) {
 </script>
 
 <template>
-  <component :is="desktop ? 'div' : VDialog" v-bind="containerProps">
+  <component :is="desktop ? 'div' : VNavigationDrawer" v-bind="containerProps">
     <VCard
       :id="desktop ? 'background-tasks-desktop' : 'background-tasks-sidebar'"
       :title="t('TXT_CODE_TASKS_TITLE')"
@@ -258,23 +266,14 @@ if (props.desktop) {
   height: 100%;
   min-height: 0;
 }
-.background-tasks-drawer :deep(.v-overlay__content) {
-  right: 0;
-  margin: 0 !important;
-  width: min(480px, 100vw) !important;
-  max-width: 100vw !important;
-  height: 100dvh;
-  max-height: 100dvh !important;
-  border-top-right-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
+.background-tasks-drawer :deep(.v-navigation-drawer__content) {
+  overflow: hidden;
 }
 .background-tasks-card {
   height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-top-right-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
 }
 .background-tasks-card > :deep(.v-card-item) {
   flex: 0 0 auto;
@@ -339,13 +338,6 @@ if (props.desktop) {
   color: rgb(var(--v-theme-error));
   overflow-wrap: anywhere;
   margin-top: 8px;
-}
-@media (max-width: 480px) {
-  .background-tasks-drawer :deep(.v-overlay__content),
-  .background-tasks-drawer :deep(.background-tasks-card) {
-    border-top-left-radius: 0 !important;
-    border-bottom-left-radius: 0 !important;
-  }
 }
 @media (max-width: 360px) {
   .background-tasks-card > :deep(.v-card-item) {

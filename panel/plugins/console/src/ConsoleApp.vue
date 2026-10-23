@@ -25,7 +25,7 @@ const {
 const { isPhone } = useScreen();
 const route = useRoute();
 
-// Typed, effect-scoped overlays contributed by feature plugins.
+// Keep contributed overlays inside VLayout so native drawers inherit its layout context.
 const OVERLAY_COMPONENTS = computed(() => ctx.slots.entries("shell.overlay", {}));
 
 const isLoginPage = computed(() => route.path === "/login");
@@ -83,17 +83,17 @@ onMounted(async () => {
             </div>
           </main>
         </div>
+        <component
+          :is="entry.component"
+          v-for="entry in OVERLAY_COMPONENTS"
+          :key="entry.id"
+          v-bind="entry.props"
+        />
       </VLayout>
 
       <AppBottomNav v-if="isPhone && !useSidebarLayout && !isLoginPage && !isImmersivePage" />
 
       <InputDialogProvider />
-      <component
-        :is="entry.component"
-        v-for="entry in OVERLAY_COMPONENTS"
-        :key="entry.id"
-        v-bind="entry.props"
-      />
     </AppConfigProvider>
   </VThemeProvider>
 </template>

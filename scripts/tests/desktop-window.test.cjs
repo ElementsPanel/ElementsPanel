@@ -789,7 +789,9 @@ test("the shared task action opens its sidebar and keeps task filters and cancel
   const Sidebar = loadSfc("panel/plugins/console/src/components/BackgroundTasksSidebar.vue", overrides);
   const target = document.createElement("div");
   document.body.appendChild(target);
-  const app = vue.createApp({ render: () => vue.h("div", [vue.h(Button), vue.h(Sidebar)]) });
+  const app = vue.createApp({ render: () => vue.h(Vuetify.components.VLayout, {}, {
+    default: () => [vue.h(Button), vue.h(Sidebar)]
+  }) });
   app.use(Vuetify.createVuetify());
   app.mount(target);
   t.after(() => { app.unmount(); target.remove(); });
@@ -827,6 +829,86 @@ test("the shared task action opens its sidebar and keeps task filters and cancel
   assert.deepEqual(store.tasks.value, []);
 });
 
+test("the shell supplies layout to the native task drawer and closing it preserves its task stream", async (t) => {
+  const lifecycle = { connects: 0, disconnects: 0 };
+  const store = {
+    open: vue.ref(false), tasks: vue.ref([]), unavailable: vue.ref(false), loading: vue.ref(false),
+    error: vue.ref(false), refresh: async () => {},
+    connect() { lifecycle.connects++; }, disconnect() { lifecycle.disconnects++; },
+    reset() { store.open.value = false; store.tasks.value = []; },
+    cancel: async () => {}, clear: async () => {}
+  };
+  const Sidebar = loadSfc("panel/plugins/console/src/components/BackgroundTasksSidebar.vue", {
+    "@/lang/i18n": translations,
+    "@/stores/useAppStateStore": {
+      useAppStateStore: () => ({ state: vue.reactive({ userInfo: { uuid: "alice" } }), isLogged: vue.ref(true) })
+    },
+    "@/stores/useBackgroundTasks": { useBackgroundTasks: () => store }
+  });
+  const route = vue.shallowRef({ path: "/instances", fullPath: "/instances", meta: {} });
+  const empty = { render: () => null };
+  const Shell = loadSfc("panel/plugins/console/src/ConsoleApp.vue", {
+    "@/hooks/useScreen": { useScreen: () => ({ isPhone: vue.ref(false) }) },
+    "@/stores/useAppConfigStore": {
+      useAppConfigStore: () => ({
+        hasBgImage: vue.ref(false), isDarkTheme: vue.ref(false), isSidebarOpen: vue.ref(false),
+        useSidebarLayout: vue.ref(false), initAppTheme: async () => {}
+      })
+    },
+    "@/plugin/context": { ctx: { slots: { entries: () => [{ id: "tasks", component: Sidebar }] } } },
+    "@/tools/dom": { closeAppLoading() {}, setLoadingTitle() {} },
+    "vue-router": { RouterView: empty, useRoute: () => route.value },
+    "./vuetify": { setVuetifyTheme() {} },
+    "./components/AppConfigProvider.vue": { default: { inheritAttrs: false, render() { return this.$slots.default?.(); } } },
+    ...Object.fromEntries(["AppHeader", "AppBottomNav", "AppSidebarMenu", "Breadcrumbs", "InputDialogProvider"]
+      .map(name => [`./components/${name}.vue`, { default: empty }]))
+  });
+  const target = document.createElement("div");
+  document.body.appendChild(target);
+  const originalWidth = window.innerWidth;
+  const app = vue.createApp(Shell);
+  app.config.globalProperties.$router = { currentRoute: route };
+  app.use(Vuetify.createVuetify());
+  t.after(() => {
+    app.unmount();
+    target.remove();
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: originalWidth });
+  });
+  app.mount(target);
+  await flush();
+  store.open.value = true;
+  store.tasks.value = [{
+    id: "running", daemonId: "node", name: "example.jar", kind: "download", state: "running",
+    current: 5, total: 10, cancellable: false, startedAt: 100
+  }];
+  await flush();
+  const drawer = target.querySelector("aside.background-tasks-drawer");
+  assert.ok(drawer.classList.contains("v-navigation-drawer--active"));
+  assert.ok(drawer.classList.contains("v-navigation-drawer--temporary"));
+  assert.ok(drawer.classList.contains("v-navigation-drawer--floating"));
+  assert.equal(drawer.style.transform, "translateX(0px)");
+  assert.equal(drawer.style.width, "480px");
+  assert.ok(drawer.textContent.includes("example.jar"));
+  assert.equal(target.querySelector(".v-dialog"), null);
+  route.value = { path: "/users", fullPath: "/users", meta: {} };
+  Object.defineProperty(window, "innerWidth", { configurable: true, value: 360 });
+  window.dispatchEvent(new window.Event("resize"));
+  await flush();
+  assert.equal(store.open.value, true);
+  target.querySelector(".v-navigation-drawer__scrim").click();
+  await flush();
+  assert.equal(store.open.value, false);
+  assert.equal(drawer.classList.contains("v-navigation-drawer--active"), false);
+  assert.match(drawer.style.transform, /translateX\(calc\(100% \+ 1px\)\)/);
+  assert.equal(store.tasks.value.length, 1);
+  assert.deepEqual(lifecycle, { connects: 1, disconnects: 0 });
+  store.open.value = true;
+  await flush();
+  drawer.querySelector('[aria-label="TXT_CODE_TASKS_CLOSE"]').click();
+  await flush();
+  assert.equal(store.open.value, false);
+});
+
 test("closing a background task desktop window preserves the shared task stream and badge", async (t) => {
   const lifecycle = { connects: 0, disconnects: 0, resets: 0, refreshes: 0 };
   const store = {
@@ -850,13 +932,13 @@ test("closing a background task desktop window preserves the shared task stream 
   const closed = vue.ref(false);
   const target = document.createElement("div");
   document.body.appendChild(target);
-  const app = vue.createApp({ render: () => vue.h("div", [
+  const app = vue.createApp({ render: () => vue.h(Vuetify.components.VLayout, {}, { default: () => [
     vue.h(Sidebar),
     closed.value ? null : vue.h(DesktopWindow, {
       id: "tasks", title: "Tasks", visible: true, active: true, minimized: false, maximized: false,
       onClose: () => { closed.value = true; }
     }, { default: () => vue.h(DesktopTasks) })
-  ]) });
+  ] }) });
   app.use(Vuetify.createVuetify());
   app.mount(target);
   t.after(() => { app.unmount(); target.remove(); });
