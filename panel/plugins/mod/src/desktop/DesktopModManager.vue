@@ -377,12 +377,12 @@ onMounted(async () => {
             <div class="dmm-header__right">
                 <div class="dmm-search">
                     <VTextField v-model="headerSearchQuery" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')"
-                        variant="solo" density="compact" rounded="xl" hide-details clearable prepend-inner-icon="mdi-magnify" width="200" />
+                        variant="solo" density="compact" hide-details clearable prepend-inner-icon="mdi-magnify" width="200" />
                 </div>
-                <VBtn class="dmm-btn dmm-btn--sm" variant="text" rounded="xl" @click="onUploadClick" :title="t('TXT_CODE_ae09d79d')">
+                <VBtn class="dmm-btn dmm-btn--sm" variant="text" @click="onUploadClick" :title="t('TXT_CODE_ae09d79d')">
                     <VIcon icon="mdi-upload-outline"  /> {{ t("TXT_CODE_ae09d79d") }}
                 </VBtn>
-                <VBtn class="dmm-btn dmm-btn--sm dmm-btn--primary" variant="text" rounded="xl" :disabled="loading" @click="() => loadMods()"
+                <VBtn class="dmm-btn dmm-btn--sm dmm-btn--primary" variant="text" :disabled="loading" @click="() => loadMods()"
                     :title="t('TXT_CODE_REFRESH')">
                     <VIcon icon="mdi-refresh" :class="{ 'desktop-icon-spin': loading }"  /> {{ t("TXT_CODE_REFRESH") }}
                 </VBtn>
@@ -438,19 +438,19 @@ onMounted(async () => {
                         <div class="dmm-download">
                             <div class="dmm-search-form">
                                 <div class="dmm-search-grid">
-                                    <VTextField v-model="searchFilters.query" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" variant="solo" density="compact" rounded="xl" hide-details @keyup.enter="onSearch" />
-                                    <VSelect v-model="searchFilters.source" :items="[{title:t('TXT_CODE_9693b0e1'),value:'all'},{title:'Modrinth',value:'modrinth'},{title:'CurseForge',value:'curseforge'},{title:'SpigotMC',value:'spigotmc'}]" variant="solo" density="compact" rounded="xl" hide-details />
-                                    <VSelect v-model="searchFilters.version" :items="[{title:t('TXT_CODE_2af87548'),value:''}, ...mcVersions.map(v=>({title:v,value:v}))]" clearable :placeholder="t('TXT_CODE_743b4fe7')" variant="solo" density="compact" rounded="xl" hide-details />
-                                    <VSelect v-model="searchFilters.type" :items="[{title:t('TXT_CODE_cc4db8f0'),value:'all'},{title:t('TXT_CODE_MOD'),value:'mod'},{title:t('TXT_CODE_PLUGIN'),value:'plugin'}]" variant="solo" density="compact" rounded="xl" hide-details />
-                                    <VSelect v-model="searchFilters.environment" :items="[{title:t('TXT_CODE_74e77b4c'),value:'all'},{title:t('TXT_CODE_SERVER'),value:'server'},{title:t('TXT_CODE_CLIENT'),value:'client'}]" variant="solo" density="compact" rounded="xl" hide-details />
-                                    <VSelect v-model="searchFilters.loader" :items="loaderOptions.flatMap((group) => group.options)" item-title="label" item-value="value" clearable :placeholder="t('TXT_CODE_SELECT_LOADER')" variant="solo" density="compact" rounded="xl" hide-details />
+                                    <VTextField v-model="searchFilters.query" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" variant="solo" density="compact" hide-details @keyup.enter="onSearch" />
+                                    <VSelect v-model="searchFilters.source" :items="[{title:t('TXT_CODE_9693b0e1'),value:'all'},{title:'Modrinth',value:'modrinth'},{title:'CurseForge',value:'curseforge'},{title:'SpigotMC',value:'spigotmc'}]" variant="solo" density="compact" hide-details />
+                                    <VSelect v-model="searchFilters.version" :items="[{title:t('TXT_CODE_2af87548'),value:''}, ...mcVersions.map(v=>({title:v,value:v}))]" clearable :placeholder="t('TXT_CODE_743b4fe7')" variant="solo" density="compact" hide-details />
+                                    <VSelect v-model="searchFilters.type" :items="[{title:t('TXT_CODE_cc4db8f0'),value:'all'},{title:t('TXT_CODE_MOD'),value:'mod'},{title:t('TXT_CODE_PLUGIN'),value:'plugin'}]" variant="solo" density="compact" hide-details />
+                                    <VSelect v-model="searchFilters.environment" :items="[{title:t('TXT_CODE_74e77b4c'),value:'all'},{title:t('TXT_CODE_SERVER'),value:'server'},{title:t('TXT_CODE_CLIENT'),value:'client'}]" variant="solo" density="compact" hide-details />
+                                    <VSelect v-model="searchFilters.loader" :items="loaderOptions.flatMap((group) => group.options)" item-title="label" item-value="value" clearable :placeholder="t('TXT_CODE_SELECT_LOADER')" variant="solo" density="compact" hide-details />
                                 </div>
                                 <div class="dmm-search-actions">
-                                    <VBtn color="primary" size="small" variant="text" rounded="xl" :loading="searchLoading" @click="onSearch">
+                                    <VBtn color="primary" size="small" variant="text" :loading="searchLoading" @click="onSearch">
                                         <VIcon icon="mdi-magnify" />
                                         {{ t("TXT_CODE_SEARCH") }}
                                     </VBtn>
-                                    <VBtn size="small" variant="text" rounded="xl" @click="resetSearch">{{ t("TXT_CODE_880fedf7") }}</VBtn>
+                                    <VBtn size="small" variant="text" @click="resetSearch">{{ t("TXT_CODE_880fedf7") }}</VBtn>
                                 </div>
                             </div>
                             <SearchModTable :loading="searchLoading" :data-source="searchResults" :is-desktop="true"

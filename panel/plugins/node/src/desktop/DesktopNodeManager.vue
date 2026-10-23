@@ -318,14 +318,13 @@ const reconnectNode = async (node: NodeStatus) => {
           prepend-inner-icon="mdi-magnify"
           variant="solo"
           density="compact"
-          rounded="xl"
           hide-details
           clearable
           autocomplete="off"
           spellcheck="false"
         />
       </div>
-      <VBtn class="dn-btn dn-btn--primary" variant="text" rounded="xl" @click="openAddDialog">
+      <VBtn class="dn-btn dn-btn--primary" variant="text" @click="openAddDialog">
         <VIcon icon="mdi-plus" />
         {{ t("TXT_CODE_DESKTOP_NODES_ADD") }}
       </VBtn>
@@ -388,7 +387,6 @@ const reconnectNode = async (node: NodeStatus) => {
           <VBtn
             icon
             variant="text"
-            rounded="xl"
             class="dn-action-btn"
             :title="t('TXT_CODE_f8b28901')"
             @click="reconnectNode(item)"
@@ -396,7 +394,6 @@ const reconnectNode = async (node: NodeStatus) => {
           ><VBtn
             icon
             variant="text"
-            rounded="xl"
             class="dn-action-btn"
             :title="t('TXT_CODE_DESKTOP_NODES_EDIT')"
             @click="openEditDialog(item)"
@@ -405,7 +402,6 @@ const reconnectNode = async (node: NodeStatus) => {
             v-if="pluginConfigAvailable"
             icon
             variant="text"
-            rounded="xl"
             class="dn-action-btn"
             :title="t('TXT_CODE_PLUGIN_CONFIG')"
             @click="openPluginConfig(item)"
@@ -413,7 +409,6 @@ const reconnectNode = async (node: NodeStatus) => {
           ><VBtn
             icon
             variant="text"
-            rounded="xl"
             color="error"
             class="dn-action-btn"
             :title="t('TXT_CODE_8b937b23')"
@@ -449,7 +444,6 @@ const reconnectNode = async (node: NodeStatus) => {
           class="dn-form-input"
           variant="solo"
           density="compact"
-          rounded="xl"
           hide-details
           :placeholder="t('TXT_CODE_b8e8e6f5')"
         />
@@ -463,7 +457,6 @@ const reconnectNode = async (node: NodeStatus) => {
           class="dn-form-input"
           variant="solo"
           density="compact"
-          rounded="xl"
           hide-details
           :placeholder="t('TXT_CODE_DESKTOP_NODES_IP')"
         />
@@ -478,7 +471,6 @@ const reconnectNode = async (node: NodeStatus) => {
           class="dn-form-input"
           variant="solo"
           density="compact"
-          rounded="xl"
           hide-details
           :placeholder="t('TXT_CODE_f49149d0')"
         />
@@ -493,7 +485,6 @@ const reconnectNode = async (node: NodeStatus) => {
           class="dn-form-input"
           variant="solo"
           density="compact"
-          rounded="xl"
           hide-details
           autocomplete="new-password"
           :placeholder="
@@ -513,7 +504,6 @@ const reconnectNode = async (node: NodeStatus) => {
           class="dn-form-input"
           variant="solo"
           density="compact"
-          rounded="xl"
           hide-details
           :placeholder="t('TXT_CODE_693f31d6')"
         />
@@ -523,13 +513,12 @@ const reconnectNode = async (node: NodeStatus) => {
       </div>
       <div v-if="formError" class="dn-form-error">{{ formError }}</div>
       <template #footer>
-        <VBtn class="dn-btn dn-btn--default" variant="text" rounded="xl" @click="closeDialog">
+        <VBtn class="dn-btn dn-btn--default" variant="text" @click="closeDialog">
           {{ t("TXT_CODE_a0451c97") }}
         </VBtn>
         <VBtn
           class="dn-btn dn-btn--primary"
           variant="text"
-          rounded="xl"
           :disabled="saving"
           @click="saveNode"
         >

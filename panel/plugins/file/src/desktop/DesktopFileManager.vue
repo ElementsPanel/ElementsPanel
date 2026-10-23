@@ -767,26 +767,26 @@ onUnmounted(() => {
     <template v-if="desktopVuetifyMode">
         <div ref="dfmRootRef" class="dfm dfm-vuetify" :class="{ 'dfm-vuetify--dragging': opacity }" @dragover.prevent="handleDragover" @dragleave.prevent="handleDragleave" @drop.prevent="handleDrop">
             <div class="dfm-toolbar">
-                <VTextField :disabled="!currentTabs.length" v-model="operationForm.name" :placeholder="t('TXT_CODE_7cad42a5')" prepend-inner-icon="mdi-magnify" variant="solo" density="compact" rounded="xl" hide-details clearable @update:model-value="handleSearchChange()" />
+                <VTextField :disabled="!currentTabs.length" v-model="operationForm.name" :placeholder="t('TXT_CODE_7cad42a5')" prepend-inner-icon="mdi-magnify" variant="solo" density="compact" hide-details clearable @update:model-value="handleSearchChange()" />
                 <VSpacer />
-                <VBtn :disabled="!currentTabs.length" variant="text" rounded="xl" @click="downloadFromURLFile"><VIcon icon="mdi-cloud-download-outline" />{{ t("TXT_CODE_5b364aef") }}</VBtn>
-                <VBtn :disabled="!currentTabs.length" variant="text" rounded="xl" @click="desktopFileInput?.click()"><VIcon icon="mdi-upload-outline" />{{ t("TXT_CODE_e00c858c") }}</VBtn>
+                <VBtn :disabled="!currentTabs.length" variant="text" @click="downloadFromURLFile"><VIcon icon="mdi-cloud-download-outline" />{{ t("TXT_CODE_5b364aef") }}</VBtn>
+                <VBtn :disabled="!currentTabs.length" variant="text" @click="desktopFileInput?.click()"><VIcon icon="mdi-upload-outline" />{{ t("TXT_CODE_e00c858c") }}</VBtn>
                 <input :disabled="!currentTabs.length" ref="desktopFileInput" type="file" multiple hidden @change="onDesktopFileInput" />
-                <VBtn :disabled="!currentTabs.length" v-if="clipboard?.value?.length" color="primary" variant="text" rounded="xl" @click="paste"><VIcon icon="mdi-content-paste" />{{ t("TXT_CODE_f0260e51") }}</VBtn>
-                <VBtn :disabled="!currentTabs.length" v-else variant="text" rounded="xl" @click="reloadList"><VIcon icon="mdi-refresh" />{{ t("TXT_CODE_a53573af") }}</VBtn>
+                <VBtn :disabled="!currentTabs.length" v-if="clipboard?.value?.length" color="primary" variant="text" @click="paste"><VIcon icon="mdi-content-paste" />{{ t("TXT_CODE_f0260e51") }}</VBtn>
+                <VBtn :disabled="!currentTabs.length" v-else variant="text" @click="reloadList"><VIcon icon="mdi-refresh" />{{ t("TXT_CODE_a53573af") }}</VBtn>
                 <VMenu :disabled="!currentTabs.length" location="bottom end">
-                    <template #activator="{ props: menuProps }"><VBtn :disabled="!currentTabs.length" v-bind="menuProps" color="primary" variant="text" rounded="xl"><VIcon icon="mdi-plus" />{{ t("TXT_CODE_b147fabc") }}</VBtn></template>
+                    <template #activator="{ props: menuProps }"><VBtn :disabled="!currentTabs.length" v-bind="menuProps" color="primary" variant="text"><VIcon icon="mdi-plus" />{{ t("TXT_CODE_b147fabc") }}</VBtn></template>
                     <VCard rounded="xl"><VCardText class="dfm-menu-list"><VBtn :disabled="!currentTabs.length" variant="text" block @click="touchFile(true)"><VIcon icon="mdi-folder-plus-outline" />{{ t("TXT_CODE_cfc657db") }}</VBtn><VBtn :disabled="!currentTabs.length" variant="text" block @click="touchFile()"><VIcon icon="mdi-file-plus-outline" />{{ t("TXT_CODE_1e0b63b6") }}</VBtn></VCardText></VCard>
                 </VMenu>
             </div>
             <VProgressLinear v-if="uploadData.current" :model-value="progress" color="primary" height="4" rounded="xl" />
-            <div v-if="uploadData.current" class="dfm-upload-progress__info"><span>{{ `${uploadData.currentFile} ${uploadInstanceTag}`.trim() }}</span><span>({{ uploadData.files[0] }}/{{ uploadData.files[1] }})</span><VBtn icon variant="text" size="small" rounded="xl" @click="uploadData.suspending ? uploadService.unsuspend() : uploadService.suspend()"><VIcon :icon="uploadData.suspending ? 'mdi-play' : 'mdi-pause'" /></VBtn><VBtn icon variant="text" size="small" rounded="xl" @click="uploadService.stop()"><VIcon icon="mdi-close" /></VBtn></div>
+            <div v-if="uploadData.current" class="dfm-upload-progress__info"><span>{{ `${uploadData.currentFile} ${uploadInstanceTag}`.trim() }}</span><span>({{ uploadData.files[0] }}/{{ uploadData.files[1] }})</span><VBtn icon variant="text" size="small" @click="uploadData.suspending ? uploadService.unsuspend() : uploadService.suspend()"><VIcon :icon="uploadData.suspending ? 'mdi-play' : 'mdi-pause'" /></VBtn><VBtn icon variant="text" size="small" @click="uploadService.stop()"><VIcon icon="mdi-close" /></VBtn></div>
             <div class="dfm-body" :style="{ opacity: opacity ? 0.4 : undefined }" @dragover.prevent="handleDragover" @dragleave.prevent="handleDragleave" @drop.prevent="handleDrop">
             <FileManagerTabs :active-tab="activeTab" :tabs="currentTabs" @select="handleChangeTab" @close="onEditTabs($event, 'remove')" @add="onEditTabs('', 'add')" />
             <template v-if="currentTabs.length">
             <div class="dfm-nav">
-                <VSelect v-if="isShowDiskList" v-model="currentDisk" :items="[{ title: t('TXT_CODE_28124988'), value: '/' }, ...(fileStatus?.disks || []).map((disk: string) => ({ title: disk, value: disk }))]" width="125" variant="solo" density="compact" rounded="xl" hide-details @update:model-value="toDisk" />
-                <div class="dfm-breadcrumbs"><VBtn v-for="(item, index) in breadcrumbs" :key="item.path" variant="text" size="small" rounded="xl" @click="handleChangeDir(item.path)">{{ item.name }}<span v-if="index < breadcrumbs.length - 1" class="dfm-breadcrumb-separator">&gt;</span></VBtn></div>
+                <VSelect v-if="isShowDiskList" v-model="currentDisk" :items="[{ title: t('TXT_CODE_28124988'), value: '/' }, ...(fileStatus?.disks || []).map((disk: string) => ({ title: disk, value: disk }))]" width="125" variant="solo" density="compact" hide-details @update:model-value="toDisk" />
+                <div class="dfm-breadcrumbs"><VBtn v-for="(item, index) in breadcrumbs" :key="item.path" variant="text" size="small" @click="handleChangeDir(item.path)">{{ item.name }}<span v-if="index < breadcrumbs.length - 1" class="dfm-breadcrumb-separator">&gt;</span></VBtn></div>
             </div>
 
             <div class="dfm-table-wrapper" @mousedown="onTableMouseDown">
@@ -823,7 +823,7 @@ onUnmounted(() => {
         >
           <ArchivePreview compact :entries="archivePreview.entries" :loading="archivePreview.loading" />
           <template #footer>
-            <VBtn variant="text" rounded="xl" @click="closeArchivePreview">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+            <VBtn variant="text" @click="closeArchivePreview">{{ t("TXT_CODE_a0451c97") }}</VBtn>
           </template>
         </DesktopDialog>
 
@@ -863,8 +863,8 @@ onUnmounted(() => {
               <VCheckbox v-model="permission.deep" :label="t('TXT_CODE_74fd665e')" hide-details />
           </template>
           <template #footer>
-            <VBtn variant="text" rounded="xl" @click="dialog.cancel()">{{ t("TXT_CODE_a0451c97") }}</VBtn>
-            <VBtn color="primary" variant="text" rounded="xl" :loading="dialog.loading" @click="dialog.ok()">{{ t("TXT_CODE_abfe9512") }}</VBtn>
+            <VBtn variant="text" @click="dialog.cancel()">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+            <VBtn color="primary" variant="text" :loading="dialog.loading" @click="dialog.ok()">{{ t("TXT_CODE_abfe9512") }}</VBtn>
           </template>
         </DesktopDialog>
 
@@ -880,8 +880,8 @@ onUnmounted(() => {
           <VTextField v-model="downloadDialog.fileName" :label="t('TXT_CODE_2eace3d5')" variant="solo"
               density="compact" hide-details />
           <template #footer>
-            <VBtn variant="text" rounded="xl" @click="cancelDownloadDialog">{{ t("TXT_CODE_a0451c97") }}</VBtn>
-            <VBtn color="primary" variant="text" rounded="xl" @click="submitDownloadDialog">{{ t("TXT_CODE_d507abff") }}</VBtn>
+            <VBtn variant="text" @click="cancelDownloadDialog">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+            <VBtn color="primary" variant="text" @click="submitDownloadDialog">{{ t("TXT_CODE_d507abff") }}</VBtn>
           </template>
         </DesktopDialog>
 

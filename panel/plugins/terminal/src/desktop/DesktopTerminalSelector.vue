@@ -52,7 +52,7 @@ const openConsole = (node: NodeStatus) => {
         <div class="dts-toolbar">
             <div class="dts-search">
                 <div class="dts-search-input-wrap">
-                    <VTextField v-model="searchQuery" class="dts-search-input" variant="solo" density="compact" rounded="xl"
+                    <VTextField v-model="searchQuery" class="dts-search-input" variant="solo" density="compact"
                         hide-details clearable prepend-inner-icon="mdi-magnify"
                         :placeholder="t('TXT_CODE_461d1a01') || 'Search nodes...'" />
                 </div>

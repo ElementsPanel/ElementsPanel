@@ -544,28 +544,28 @@ onUnmounted(() => {
             <div class="dim-toolbar__left">
                 <div class="dim-select">
                     <VSelect v-model="selectedNodeId" :label="t('TXT_CODE_e076d90b')" :items="nodeSelectItems"
-                        variant="solo" density="compact" rounded="xl" hide-details class="dim-select__input"
+                        variant="solo" density="compact" hide-details class="dim-select__input"
                         :disabled="nodeSelectItems.length === 0" />
                 </div>
 
                 <div class="dim-select">
                     <VSelect v-model="statusFilter" :items="statusSelectItems" variant="solo" density="compact"
-                        rounded="xl" hide-details class="dim-select__input" />
+                        hide-details class="dim-select__input" />
                 </div>
             </div>
 
             <div class="dim-toolbar__right">
                 <div v-if="multipleMode" class="dim-batch-actions">
-                    <VBtn class="dim-btn" variant="text" rounded="xl" @click="exitMultipleMode">
+                    <VBtn class="dim-btn" variant="text" @click="exitMultipleMode">
                         {{ t("TXT_CODE_5366af54") }}
                     </VBtn>
-                    <VBtn class="dim-btn" variant="text" rounded="xl" @click="selectAllInstances">
+                    <VBtn class="dim-btn" variant="text" @click="selectAllInstances">
                         {{ filteredInstances.length === selectedInstance.length ? t("TXT_CODE_df87c46d") :
                             t("TXT_CODE_f466d7a") }}
                     </VBtn>
                     <VMenu location="bottom end">
                         <template #activator="{ props: menuProps }">
-                            <VBtn v-bind="menuProps" class="dim-btn dim-btn--primary" variant="text" rounded="xl">
+                            <VBtn v-bind="menuProps" class="dim-btn dim-btn--primary" variant="text">
                             {{ t("TXT_CODE_8fd8bfd3") }}
                             <VIcon icon="mdi-chevron-down"  />
                             </VBtn>
@@ -581,21 +581,21 @@ onUnmounted(() => {
                     </VMenu>
                 </div>
                 <div v-else class="dim-batch-actions">
-                    <VBtn class="dim-btn" variant="text" rounded="xl" @click="multipleMode = true">
+                    <VBtn class="dim-btn" variant="text" @click="multipleMode = true">
                         {{ t("TXT_CODE_5cb656b9") }}
                     </VBtn>
                 </div>
 
                 <VTextField v-model="searchText" class="dim-search__input" density="compact" variant="solo"
-                    rounded="xl" hide-details clearable :placeholder="t('TXT_CODE_DESKTOP_IM_SEARCH')"
+                    hide-details clearable :placeholder="t('TXT_CODE_DESKTOP_IM_SEARCH')"
                     prepend-inner-icon="mdi-magnify" />
 
-                <VBtn class="dim-btn dim-btn--icon" icon variant="text" rounded="xl" :loading="loading"
+                <VBtn class="dim-btn dim-btn--icon" icon variant="text" :loading="loading"
                     aria-label="Refresh" @click="fetchInstances()">
                     <VIcon icon="mdi-refresh" />
                 </VBtn>
 
-                <VBtn class="dim-btn dim-btn--primary" variant="text" rounded="xl" @click="emit('open-new-instance')">
+                <VBtn class="dim-btn dim-btn--primary" variant="text" @click="emit('open-new-instance')">
                     <VIcon icon="mdi-plus"  /> {{ t("TXT_CODE_DESKTOP_IM_NEW_INSTANCE") }}
                 </VBtn>
             </div>
@@ -676,22 +676,22 @@ onUnmounted(() => {
                 </div>
 
                 <div class="dim-instance__actions">
-                    <VBtn icon variant="text" rounded="xl" class="dim-action dim-action--tag" :title="t('TXT_CODE_78e88c3f')"
+                    <VBtn icon variant="text" class="dim-action dim-action--tag" :title="t('TXT_CODE_78e88c3f')"
                         @click.stop="openTagDialog(instance)">
                         <VIcon icon="mdi-tag-multiple-outline"  />
                     </VBtn>
-                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.STOPPED" icon variant="text" rounded="xl" class="dim-action dim-action--start"
+                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.STOPPED" icon variant="text" class="dim-action dim-action--start"
                         :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_57245e94')"
                         @click.stop="handleStart(instance.instanceUuid)">
                         <VIcon icon="mdi-play"  />
                     </VBtn>
                     <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING"
-                        icon variant="text" rounded="xl"
+                        icon variant="text"
                         class="dim-action dim-action--restart" :disabled="isOperating(instance.instanceUuid)"
                         :title="t('TXT_CODE_47dcfa5')" @click.stop="handleRestart(instance.instanceUuid)">
                         <VIcon icon="mdi-refresh"  />
                     </VBtn>
-                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" icon variant="text" rounded="xl" class="dim-action dim-action--stop"
+                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" icon variant="text" class="dim-action dim-action--stop"
                         :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_b1dedda3')"
                         @click.stop="handleStop(instance.instanceUuid)">
                         <VIcon icon="mdi-stop"  />
@@ -699,7 +699,7 @@ onUnmounted(() => {
                     <VBtn v-if="
                         instance.status === INSTANCE_STATUS_CODE.RUNNING ||
                         instance.status === INSTANCE_STATUS_CODE.STOPPING
-                    " icon variant="text" rounded="xl" class="dim-action dim-action--kill" :disabled="isOperating(instance.instanceUuid)"
+                    " icon variant="text" class="dim-action dim-action--kill" :disabled="isOperating(instance.instanceUuid)"
                         :title="t('TXT_CODE_7b67813a')" @click.stop="handleKill(instance.instanceUuid)">
                         <VIcon icon="mdi-close-circle-outline"  />
                     </VBtn>
@@ -708,11 +708,11 @@ onUnmounted(() => {
         </div>
 
         <div v-if="totalPages > 1" class="dim-pagination">
-            <VBtn class="dim-btn dim-btn--sm" variant="text" rounded="xl" :disabled="currentPage <= 1" @click="currentPage--; fetchInstances()">
+            <VBtn class="dim-btn dim-btn--sm" variant="text" :disabled="currentPage <= 1" @click="currentPage--; fetchInstances()">
                 <VIcon icon="mdi-chevron-left"  /> {{ t("TXT_CODE_DESKTOP_IM_PREV") }}
             </VBtn>
             <span class="dim-pagination__info">{{ currentPage }} / {{ totalPages }}</span>
-            <VBtn class="dim-btn dim-btn--sm" variant="text" rounded="xl" :disabled="currentPage >= totalPages"
+            <VBtn class="dim-btn dim-btn--sm" variant="text" :disabled="currentPage >= totalPages"
                 @click="currentPage++; fetchInstances()">
                 {{ t("TXT_CODE_5e9022f8") }}
                 <VIcon icon="mdi-chevron-right"  />
@@ -742,9 +742,9 @@ onUnmounted(() => {
                   <VIcon icon="mdi-close" class="dim-tag-editor__remove" @click="removeInstanceTag(tag)"  />
               </span>
               <VTextField v-if="tagDialog.newTagVisible" ref="tagInputRef" v-model="tagDialog.newTagValue"
-                  density="compact" variant="solo" rounded="xl" hide-details class="dim-tag-editor__input"
+                  density="compact" variant="solo" hide-details class="dim-tag-editor__input"
                   @blur="confirmNewTag" @keyup.enter="confirmNewTag" />
-              <VBtn v-else class="dim-tag-editor__add" variant="text" rounded="xl" @click="showNewTagInput">
+              <VBtn v-else class="dim-tag-editor__add" variant="text" @click="showNewTagInput">
                   <VIcon icon="mdi-plus"  /> {{ t("TXT_CODE_3dd66d98") }}
               </VBtn>
           </div>
@@ -764,11 +764,11 @@ onUnmounted(() => {
               </div>
           </template>
           <template #footer>
-            <VBtn class="dim-btn dim-btn--default" variant="text" rounded="xl" :disabled="tagDialog.saving"
+            <VBtn class="dim-btn dim-btn--default" variant="text" :disabled="tagDialog.saving"
                 @click="closeTagDialog">
                 {{ t("TXT_CODE_a0451c97") }}
             </VBtn>
-            <VBtn class="dim-btn dim-btn--primary" variant="text" rounded="xl" :disabled="tagDialog.saving"
+            <VBtn class="dim-btn dim-btn--primary" variant="text" :disabled="tagDialog.saving"
                 @click="saveInstanceTags">
                 <VIcon icon="mdi-loading" v-if="tagDialog.saving"  />
                 {{ t("TXT_CODE_d507abff") }}

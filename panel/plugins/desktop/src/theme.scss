@@ -210,6 +210,14 @@
   box-shadow: none !important;
 }
 
+/* Vuetify's rounded utilities live in cascade layers. Discard local pixel
+   overrides for controls so their configured Vuetify defaults determine the
+   radius, including in windows and dialogs teleported outside the desktop. */
+:is(.desktop-mode-active, .desktop-container, .desktop-window, .desktop-dialog, .desktop-login-window)
+  :is(.v-btn, .v-field) {
+  border-radius: revert-layer !important;
+}
+
 .desktop-container .v-field::before,
 .desktop-container .v-field::after,
 .desktop-container .v-input::before,

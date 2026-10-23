@@ -376,20 +376,20 @@ onUnmounted(() => {
                     </span>
                 </div>
                 <template v-for="item in [...quickOperations, ...instanceOperations]" :key="item.title">
-                    <button v-if="item.noConfirm" type="button" class="dim-btn dim-btn--sm" :class="{
+                    <VBtn v-if="item.noConfirm" type="button" variant="text" height="auto" min-width="0" class="dim-btn dim-btn--sm text-none" :class="{
                         'dim-btn--primary': item.class === 'button-color-success',
                         'dim-btn--danger': item.type === 'danger'
                     }" :disabled="isOpenInstanceLoading" @click="item.click" :title="item.title">
                         <VIcon :icon="getTerminalActionIcon(item)" size="1em" />
                         {{ item.title }}
-                    </button>
-                    <button v-else type="button" class="dim-btn dim-btn--sm" :class="{
+                    </VBtn>
+                    <VBtn v-else type="button" variant="text" height="auto" min-width="0" class="dim-btn dim-btn--sm text-none" :class="{
                             'dim-btn--primary': item.class === 'button-color-success',
                             'dim-btn--danger': item.type === 'danger'
                         }" :title="item.title" @click="requestAction(item)">
                             <VIcon :icon="getTerminalActionIcon(item)" size="1em" />
                             {{ item.title }}
-                    </button>
+                    </VBtn>
                 </template>
             </div>
         </div>
@@ -402,7 +402,7 @@ onUnmounted(() => {
 
             <div v-else-if="activeDialog === 'file-manager'" class="dim-dialog">
                 <div class="dim-dialog__header">
-                    <VBtn icon variant="text" rounded="xl" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
+                    <VBtn icon variant="text" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
                         <VIcon icon="mdi-arrow-left"  />
                     </VBtn>
                     <span class="dim-dialog__title">
@@ -420,7 +420,7 @@ onUnmounted(() => {
 
             <div v-else-if="activeDialog === 'schedule'" class="dim-dialog">
                 <div class="dim-dialog__header">
-                    <VBtn icon variant="text" rounded="xl" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
+                    <VBtn icon variant="text" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
                         <VIcon icon="mdi-arrow-left"  />
                     </VBtn>
                     <span class="dim-dialog__title">
@@ -438,7 +438,7 @@ onUnmounted(() => {
 
             <div v-else-if="activeDialog === 'server-config'" class="dim-dialog">
                 <div class="dim-dialog__header">
-                    <VBtn icon variant="text" rounded="xl" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
+                    <VBtn icon variant="text" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
                         <VIcon icon="mdi-arrow-left"  />
                     </VBtn>
                     <span class="dim-dialog__title">
@@ -467,7 +467,7 @@ onUnmounted(() => {
                     <p v-for="line in errorDialog.lines" :key="line" class="dim-error-line">{{ line }}</p>
                 </VCardText>
                 <VCardActions class="justify-end">
-                    <VBtn variant="text" rounded="xl" @click="errorDialog.show = false">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+                    <VBtn variant="text" @click="errorDialog.show = false">{{ t("TXT_CODE_a0451c97") }}</VBtn>
                 </VCardActions>
             </VCard>
         </VDialog>

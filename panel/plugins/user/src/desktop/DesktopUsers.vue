@@ -401,10 +401,10 @@ const getInstanceStatusLabel = (status: number): string => {
         <div class="du-toolbar">
             <div class="du-search">
                 <VTextField v-model="searchQuery" class="du-search__input" :placeholder="t('TXT_CODE_DESKTOP_USERS_SEARCH')"
-                    prepend-inner-icon="mdi-magnify" variant="solo" density="compact" rounded="xl" hide-details clearable
+                    prepend-inner-icon="mdi-magnify" variant="solo" density="compact" hide-details clearable
                     autocomplete="off" spellcheck="false" @update:model-value="onSearchInput" />
             </div>
-            <VBtn class="du-btn du-btn--primary" variant="text" rounded="xl" @click="openAddDialog">
+            <VBtn class="du-btn du-btn--primary" variant="text" @click="openAddDialog">
                 <VIcon icon="mdi-plus"  />
                 {{ t("TXT_CODE_DESKTOP_USERS_ADD") }}
             </VBtn>
@@ -419,16 +419,16 @@ const getInstanceStatusLabel = (status: number): string => {
             <template #item.instances="{ item }">{{ item.instances?.length ?? 0 }}</template>
             <template #item.twoFactor="{ item }"><VIcon :icon="item.open2FA ? 'mdi-check-circle-outline' : 'mdi-close-circle-outline'" :class="item.open2FA ? 'du-badge-icon--yes' : 'du-badge-icon--no'" /></template>
             <template #item.sso="{ item }"><VIcon :icon="item.ssoBound ? 'mdi-check-circle-outline' : 'mdi-close-circle-outline'" :class="item.ssoBound ? 'du-badge-icon--yes' : 'du-badge-icon--no'" /></template>
-            <template #item.actions="{ item }"><div class="du-action-btns"><VBtn v-if="canAssignInstances" icon variant="text" rounded="xl" class="du-action-btn" :title="t('TXT_CODE_9393b484')" @click="openAssignDialog(item)"><VIcon icon="mdi-link-variant" /></VBtn><VBtn icon variant="text" rounded="xl" class="du-action-btn" :title="t('TXT_CODE_79f9a172')" @click="openEditDialog(item)"><VIcon icon="mdi-pencil-outline" /></VBtn><VBtn icon variant="text" rounded="xl" color="error" class="du-action-btn" :title="t('TXT_CODE_DESKTOP_USERS_DELETE')" @click="confirmDelete(item)"><VIcon icon="mdi-delete-outline" /></VBtn></div></template>
+            <template #item.actions="{ item }"><div class="du-action-btns"><VBtn v-if="canAssignInstances" icon variant="text" class="du-action-btn" :title="t('TXT_CODE_9393b484')" @click="openAssignDialog(item)"><VIcon icon="mdi-link-variant" /></VBtn><VBtn icon variant="text" class="du-action-btn" :title="t('TXT_CODE_79f9a172')" @click="openEditDialog(item)"><VIcon icon="mdi-pencil-outline" /></VBtn><VBtn icon variant="text" color="error" class="du-action-btn" :title="t('TXT_CODE_DESKTOP_USERS_DELETE')" @click="confirmDelete(item)"><VIcon icon="mdi-delete-outline" /></VBtn></div></template>
             <template #no-data><div class="du-empty">{{ t("TXT_CODE_DESKTOP_USERS_NO_RESULTS") }}</div></template>
         </VDataTable>
 
         <div v-if="total > pageSize" class="du-pagination">
-            <VBtn class="du-page-btn" variant="text" rounded="xl" :disabled="currentPage <= 1" @click="prevPage">
+            <VBtn class="du-page-btn" variant="text" :disabled="currentPage <= 1" @click="prevPage">
                 {{ t("TXT_CODE_DESKTOP_IM_PREV") }}
             </VBtn>
             <span class="du-page-info">{{ currentPage }} / {{ maxPage }}</span>
-            <VBtn class="du-page-btn" variant="text" rounded="xl" :disabled="currentPage >= maxPage" @click="nextPage">
+            <VBtn class="du-page-btn" variant="text" :disabled="currentPage >= maxPage" @click="nextPage">
                 {{ t("TXT_CODE_5e9022f8") }}
             </VBtn>
         </div>
@@ -447,7 +447,7 @@ const getInstanceStatusLabel = (status: number): string => {
               <label class="du-form-label">
                   <VIcon icon="mdi-account-outline"  /> {{ t("TXT_CODE_eb9fcdad") }}
               </label>
-              <VTextField v-model="form.username" class="du-form-input" variant="solo" density="compact" rounded="xl" hide-details autocomplete="new-password"
+              <VTextField v-model="form.username" class="du-form-input" variant="solo" density="compact" hide-details autocomplete="new-password"
                   :placeholder="t('TXT_CODE_eb9fcdad')"
                   :disabled="dialogMode === 'edit'" />
           </div>
@@ -455,7 +455,7 @@ const getInstanceStatusLabel = (status: number): string => {
               <label class="du-form-label">
                   <VIcon icon="mdi-key-outline"  /> {{ t("TXT_CODE_551b0348") }}
               </label>
-              <VTextField v-model="form.password" type="password" class="du-form-input" variant="solo" density="compact" rounded="xl" hide-details
+              <VTextField v-model="form.password" type="password" class="du-form-input" variant="solo" density="compact" hide-details
                   autocomplete="new-password"
                   :placeholder="dialogMode === 'edit' ? t('TXT_CODE_DESKTOP_USERS_PASSWORD_HELP') : ''" />
               <span v-if="dialogMode === 'edit'" class="du-form-hint">
@@ -473,10 +473,10 @@ const getInstanceStatusLabel = (status: number): string => {
           </div>
           <div v-if="formError" class="du-form-error">{{ formError }}</div>
           <template #footer>
-            <VBtn class="du-btn du-btn--default" variant="text" rounded="xl" @click="closeDialog">
+            <VBtn class="du-btn du-btn--default" variant="text" @click="closeDialog">
                 {{ t("TXT_CODE_a0451c97") }}
             </VBtn>
-            <VBtn class="du-btn du-btn--primary" variant="text" rounded="xl" :disabled="saving" @click="saveUser">
+            <VBtn class="du-btn du-btn--primary" variant="text" :disabled="saving" @click="saveUser">
                 {{ t("TXT_CODE_abfe9512") }}
             </VBtn>
           </template>
@@ -518,7 +518,7 @@ const getInstanceStatusLabel = (status: number): string => {
                                   t("TXT_CODE_DESKTOP_IM_UNNAMED") }}</span>
                               <span class="du-assign-item__node">{{ inst.hostIp }}</span>
                           </div>
-                          <VBtn icon variant="text" rounded="xl" class="du-assign-item__remove"
+                          <VBtn icon variant="text" class="du-assign-item__remove"
                               @click.stop="removeAssignedInstance(inst.instanceUuid)">
                               <VIcon icon="mdi-close-circle-outline"  />
                           </VBtn>
@@ -533,11 +533,11 @@ const getInstanceStatusLabel = (status: number): string => {
                   <div class="du-assign-browse-toolbar">
                       <div class="du-assign-node-select">
                           <VSelect v-if="nodes?.length" v-model="currentRemoteNodeId" :items="assignNodeItems"
-                              class="du-assign-select" variant="solo" density="compact" rounded="xl" hide-details
+                              class="du-assign-select" variant="solo" density="compact" hide-details
                               @update:model-value="handleAssignNodeChange" />
                       </div>
                       <div class="du-assign-search">
-                          <VTextField v-model="assignForm.instanceName" class="du-assign-search__input" variant="solo" density="compact" rounded="xl" hide-details
+                          <VTextField v-model="assignForm.instanceName" class="du-assign-search__input" variant="solo" density="compact" hide-details
                               prepend-inner-icon="mdi-magnify" :placeholder="t('TXT_CODE_DESKTOP_IM_SEARCH')"
                               @update:model-value="handleAssignSearch" />
                       </div>
@@ -560,7 +560,7 @@ const getInstanceStatusLabel = (status: number): string => {
                                   {{ getInstanceStatusLabel(inst.status) }}
                               </span>
                           </div>
-                          <VBtn v-if="!isInstanceAssigned(inst.instanceUuid)" icon variant="text" rounded="xl"
+                          <VBtn v-if="!isInstanceAssigned(inst.instanceUuid)" icon variant="text"
                               class="du-assign-item__add" @click.stop="addAssignedInstance({
                                   instanceUuid: inst.instanceUuid,
                                   daemonId: currentRemoteNode?.uuid ?? '',
@@ -576,13 +576,13 @@ const getInstanceStatusLabel = (status: number): string => {
                       </div>
                   </div>
                   <div v-if="instances" class="du-assign-pagination">
-                      <VBtn class="du-page-btn" variant="text" rounded="xl" :disabled="assignForm.currentPage <= 1"
+                      <VBtn class="du-page-btn" variant="text" :disabled="assignForm.currentPage <= 1"
                           @click="assignForm.currentPage--; loadRemoteInstances()">
                           {{ t("TXT_CODE_DESKTOP_IM_PREV") }}
                       </VBtn>
                       <span class="du-page-info">{{ assignForm.currentPage }} / {{ instances.maxPage
                       }}</span>
-                      <VBtn class="du-page-btn" variant="text" rounded="xl" :disabled="assignForm.currentPage >= instances.maxPage"
+                      <VBtn class="du-page-btn" variant="text" :disabled="assignForm.currentPage >= instances.maxPage"
                           @click="assignForm.currentPage++; loadRemoteInstances()">
                           {{ t("TXT_CODE_5e9022f8") }}
                       </VBtn>
@@ -590,10 +590,10 @@ const getInstanceStatusLabel = (status: number): string => {
               </div>
           </div>
           <template #footer>
-            <VBtn class="du-btn du-btn--default" variant="text" rounded="xl" @click="closeAssignDialog">
+            <VBtn class="du-btn du-btn--default" variant="text" @click="closeAssignDialog">
                 {{ t("TXT_CODE_a0451c97") }}
             </VBtn>
-            <VBtn class="du-btn du-btn--primary" variant="text" rounded="xl" :disabled="assignSaving"
+            <VBtn class="du-btn du-btn--primary" variant="text" :disabled="assignSaving"
                 @click="saveAssignedInstances">
                 {{ t("TXT_CODE_abfe9512") }}
             </VBtn>

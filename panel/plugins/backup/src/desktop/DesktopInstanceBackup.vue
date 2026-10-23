@@ -318,11 +318,11 @@ onUnmounted(() => {
                             </div>
                         </div>
                         <div class="backup-item__actions">
-                            <VBtn icon variant="text" rounded="xl" class="action-btn action-btn--restore"
+                            <VBtn icon variant="text" class="action-btn action-btn--restore"
                                 :title="t('TXT_CODE_INSTANCE_BACKUP_RESTORE')" @click="handleRestore(item.name)">
                                 <VIcon icon="mdi-restore"  />
                             </VBtn>
-                            <VBtn icon variant="text" rounded="xl" class="action-btn action-btn--delete" :title="t('TXT_CODE_INSTANCE_BACKUP_DELETE')"
+                            <VBtn icon variant="text" class="action-btn action-btn--delete" :title="t('TXT_CODE_INSTANCE_BACKUP_DELETE')"
                                 @click="handleDelete(item.name)">
                                 <VIcon icon="mdi-delete-outline"  />
                             </VBtn>
@@ -339,10 +339,10 @@ onUnmounted(() => {
             </div>
         </div>
         <div class="ds-backup-footer">
-            <VBtn class="ds-dialog-btn ds-dialog-btn--default" variant="text" rounded="xl" :disabled="loading" @click="handleEditEpbaklst">
+            <VBtn class="ds-dialog-btn ds-dialog-btn--default" variant="text" :disabled="loading" @click="handleEditEpbaklst">
                 {{ t("TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST") }}
             </VBtn>
-            <VBtn class="ds-dialog-btn ds-dialog-btn--primary" variant="text" rounded="xl" :disabled="loading" @click="startBackup">
+            <VBtn class="ds-dialog-btn ds-dialog-btn--primary" variant="text" :disabled="loading" @click="startBackup">
                 {{ t("TXT_CODE_INSTANCE_BACKUP_CREATE") }}
             </VBtn>
         </div>

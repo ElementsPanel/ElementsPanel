@@ -141,7 +141,7 @@ const handleNext = async () => {
                     <span class="window__title">ElementsPanel</span>
                 </div>
                 <div class="window__controls">
-                    <VBtn class="window__control" icon variant="text" rounded="xl"
+                    <VBtn class="window__control" icon variant="text"
                         :title="t('TXT_CODE_DESKTOP_EXIT')" :aria-label="t('TXT_CODE_DESKTOP_EXIT')"
                         @click="router.push('/login')">
                         <VIcon icon="mdi-view-grid-outline" />
@@ -155,17 +155,17 @@ const handleNext = async () => {
                     <div v-if="!is2Fa" class="desktop-login-fields-group">
                         <VTextField v-model="formData.username" type="text" :placeholder="t('TXT_CODE_80a560a1')"
                             prepend-inner-icon="mdi-account-outline" autocomplete="username" variant="solo"
-                            rounded="xl" hide-details :disabled="loginStep === 1" />
+                            hide-details :disabled="loginStep === 1" />
                         <VTextField v-model="formData.password" type="password" :placeholder="t('TXT_CODE_551b0348')"
                             prepend-inner-icon="mdi-lock-outline" autocomplete="current-password" variant="solo"
-                            rounded="xl" hide-details @keydown.enter="handleLogin" :disabled="loginStep === 1" />
+                            hide-details @keydown.enter="handleLogin" :disabled="loginStep === 1" />
                     </div>
                     <div v-else>
                         <VTextField v-model="formData.code" type="text" :placeholder="t('TXT_CODE_7ac8b1d3')"
-                            prepend-inner-icon="mdi-lock-outline" autocomplete="off" variant="solo" rounded="xl"
+                            prepend-inner-icon="mdi-lock-outline" autocomplete="off" variant="solo"
                             hide-details @keydown.enter="handleLogin" :disabled="loginStep === 1" />
                     </div>
-                    <VBtn type="submit" class="desktop-login-btn" block variant="flat" rounded="xl"
+                    <VBtn type="submit" class="desktop-login-btn" block variant="flat"
                         :loading="loginStep === 1" :disabled="loginStep === 1">
                         <VIcon v-if="loginStep === 1" icon="mdi-loading" class="mr-2" />
                         {{ loginStep === 1 ? t("TXT_CODE_DESKTOP_LOGGING_IN") : t("TXT_CODE_d2c1a316") }}

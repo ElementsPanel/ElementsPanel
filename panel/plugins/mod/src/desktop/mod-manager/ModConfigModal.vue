@@ -33,7 +33,7 @@ const emit = defineEmits(["update:visible", "edit"]);
       <VList v-if="!configLoading" rounded="xl">
         <VListItem v-for="item in configFiles" :key="item.path || item.name" :title="item.name" :subtitle="item.path">
           <template #prepend><VIcon icon="mdi-file-document-outline" /></template>
-          <template #append><VBtn variant="text" rounded="xl" @click="emit('edit', item)">{{ t("TXT_CODE_EDIT") }}</VBtn></template>
+          <template #append><VBtn variant="text" @click="emit('edit', item)">{{ t("TXT_CODE_EDIT") }}</VBtn></template>
         </VListItem>
         <VListItem v-if="!configFiles.length" :title="t('TXT_CODE_NO_DATA')" />
       </VList>
@@ -45,7 +45,7 @@ const emit = defineEmits(["update:visible", "edit"]);
     <VList v-if="!configLoading" rounded="xl">
       <VListItem v-for="item in configFiles" :key="item.path || item.name" :title="item.name" :subtitle="item.path">
         <template #prepend><VIcon icon="mdi-file-document-outline" /></template>
-        <template #append><VBtn variant="text" rounded="xl" @click="emit('edit', item)">{{ t("TXT_CODE_EDIT") }}</VBtn></template>
+        <template #append><VBtn variant="text" @click="emit('edit', item)">{{ t("TXT_CODE_EDIT") }}</VBtn></template>
       </VListItem>
       <VListItem v-if="!configFiles.length" :title="t('TXT_CODE_NO_DATA')" />
     </VList>

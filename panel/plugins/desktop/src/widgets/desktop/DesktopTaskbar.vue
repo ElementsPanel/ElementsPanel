@@ -191,7 +191,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
 
         <div class="taskbar__windows">
             <TransitionGroup name="taskbar-window-list">
-                <div v-for="(win, index) in windows" :key="win.id" :data-window-id="win.id" class="taskbar__window-btn" :class="{
+                <VBtn v-for="(win, index) in windows" :key="win.id" :data-window-id="win.id" class="taskbar__window-btn" variant="text" :class="{
                     'taskbar__window-btn--active': win.active,
                     'taskbar__window-btn--dragging': draggedIndex === index,
                     'taskbar__window-btn--drag-over-left': dragOverIndex === index && draggedIndex !== null && draggedIndex > index,
@@ -207,7 +207,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
                         <template v-else>{{ win.icon }}</template>
                     </span>
                     <span class="taskbar__window-title">{{ win.title }}</span>
-                </div>
+                </VBtn>
             </TransitionGroup>
         </div>
 
@@ -481,14 +481,24 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
     display: flex;
     align-items: center;
     gap: 6px;
+    height: 32px;
+    min-width: 0;
     padding: 6px 12px;
-    border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.15s;
     color: var(--desktop-taskbar-text);
     white-space: nowrap;
     max-width: 180px;
     font-size: 12px;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+
+    :deep(.v-btn__content) {
+        display: flex;
+        min-width: 0;
+        gap: 6px;
+    }
 
     &:hover {
         background-color: var(--desktop-taskbar-btn-hover);

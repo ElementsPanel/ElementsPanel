@@ -109,17 +109,17 @@ const afterLeave = () => {
     <template v-if="showFooter" #footer>
       <slot name="footer">
         <VBtn v-if="showCancel" class="desktop-confirm__button desktop-confirm__cancel" variant="text"
-          rounded="xl" :disabled="busy" @click="cancel">{{ cancelText ?? t("TXT_CODE_a0451c97") }}</VBtn>
+          :disabled="busy" @click="cancel">{{ cancelText ?? t("TXT_CODE_a0451c97") }}</VBtn>
         <template v-if="actions">
           <VBtn v-for="action in actions" :key="action.id" class="desktop-confirm__button"
             :class="{ 'desktop-confirm__button--primary': !action.danger, 'desktop-confirm__button--danger': action.danger,
               'desktop-confirm__button--highlighted': action.highlighted }"
-            variant="text" rounded="xl" :prepend-icon="action.icon" :disabled="busy || action.disabled"
+            variant="text" :prepend-icon="action.icon" :disabled="busy || action.disabled"
             @click="emit('action', action.id)">{{ action.text }}</VBtn>
         </template>
         <VBtn v-else v-bind="okButtonProps" class="desktop-confirm__button"
           :class="danger ? 'desktop-confirm__button--danger' : 'desktop-confirm__button--primary'"
-          variant="text" rounded="xl" :loading="busy" :disabled="disabled || !!okButtonProps?.disabled"
+          variant="text" :loading="busy" :disabled="disabled || !!okButtonProps?.disabled"
           @click="confirm">{{ okText ?? t("TXT_CODE_d507abff") }}</VBtn>
       </slot>
     </template>

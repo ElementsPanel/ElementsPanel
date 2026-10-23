@@ -225,15 +225,15 @@ onUnmounted(() => {
         <div class="ma-toolbar">
             <div class="ma-toolbar__left">
                 <VSelect v-model="statusFilter" :items="statusSelectItems" variant="solo" density="compact"
-                    rounded="xl" hide-details class="ma-select__input" />
+                    hide-details class="ma-select__input" />
             </div>
 
             <div class="ma-toolbar__right">
                 <VTextField v-model="searchText" class="ma-search__input" density="compact" variant="solo"
-                    rounded="xl" hide-details clearable :placeholder="t('TXT_CODE_DESKTOP_IM_SEARCH')"
+                    hide-details clearable :placeholder="t('TXT_CODE_DESKTOP_IM_SEARCH')"
                     prepend-inner-icon="mdi-magnify" />
 
-                <VBtn class="ma-btn ma-btn--icon" icon variant="text" rounded="xl" :loading="loading"
+                <VBtn class="ma-btn ma-btn--icon" icon variant="text" :loading="loading"
                     aria-label="Refresh" @click="fetchInstances()">
                     <VIcon icon="mdi-refresh" />
                 </VBtn>
@@ -304,17 +304,17 @@ onUnmounted(() => {
                 </div>
 
                 <div class="ma-instance__actions">
-                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.STOPPED" icon variant="text" rounded="xl" class="ma-action ma-action--start"
+                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.STOPPED" icon variant="text" class="ma-action ma-action--start"
                         :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_57245e94')"
                         @click.stop="handleStart(instance.instanceUuid, instance.daemonId)">
                         <VIcon icon="mdi-play"  />
                     </VBtn>
-                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" icon variant="text" rounded="xl" class="ma-action ma-action--restart"
+                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" icon variant="text" class="ma-action ma-action--restart"
                         :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_47dcfa5')"
                         @click.stop="handleRestart(instance.instanceUuid, instance.daemonId)">
                         <VIcon icon="mdi-refresh"  />
                     </VBtn>
-                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" icon variant="text" rounded="xl" class="ma-action ma-action--stop"
+                    <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" icon variant="text" class="ma-action ma-action--stop"
                         :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_b1dedda3')"
                         @click.stop="handleStop(instance.instanceUuid, instance.daemonId)">
                         <VIcon icon="mdi-stop"  />
@@ -322,7 +322,7 @@ onUnmounted(() => {
                     <VBtn v-if="
                         instance.status === INSTANCE_STATUS_CODE.RUNNING ||
                         instance.status === INSTANCE_STATUS_CODE.STOPPING
-                    " icon variant="text" rounded="xl" class="ma-action ma-action--kill" :disabled="isOperating(instance.instanceUuid)"
+                    " icon variant="text" class="ma-action ma-action--kill" :disabled="isOperating(instance.instanceUuid)"
                         :title="t('TXT_CODE_7b67813a')"
                         @click.stop="handleKill(instance.instanceUuid, instance.daemonId)">
                         <VIcon icon="mdi-close-circle-outline"  />

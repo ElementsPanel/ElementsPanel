@@ -132,21 +132,21 @@ onMounted(async () => {
 <template>
     <div class="dsc">
         <div class="dsc__header">
-            <VBtn v-if="selectedFile" icon variant="text" rounded="xl" class="dsc-btn dsc-btn--icon" @click="goBack" :title="t('TXT_CODE_c14b2ea3')">
+            <VBtn v-if="selectedFile" icon variant="text" class="dsc-btn dsc-btn--icon" @click="goBack" :title="t('TXT_CODE_c14b2ea3')">
                 <VIcon icon="mdi-arrow-left"  />
             </VBtn>
             <span class="dsc__title">
                 {{ selectedFile ? selectedFile.fileName : t("TXT_CODE_d07742fe") }}
             </span>
             <div class="dsc__actions">
-                <VBtn v-if="!selectedFile" class="dsc-btn dsc-btn--sm" variant="text" rounded="xl" @click="loadConfigFiles" :disabled="isLoading">
+                <VBtn v-if="!selectedFile" class="dsc-btn dsc-btn--sm" variant="text" @click="loadConfigFiles" :disabled="isLoading">
                     <VIcon icon="mdi-refresh"  /> {{ t("TXT_CODE_b76d94e0") }}
                 </VBtn>
                 <template v-if="selectedFile">
-                    <VBtn class="dsc-btn dsc-btn--sm dsc-btn--primary" variant="text" rounded="xl" @click="saveFile" :disabled="isSaving">
+                    <VBtn class="dsc-btn dsc-btn--sm dsc-btn--primary" variant="text" @click="saveFile" :disabled="isSaving">
                         <VIcon icon="mdi-content-save-outline"  /> {{ t("TXT_CODE_abfe9512") }}
                     </VBtn>
-                    <VBtn class="dsc-btn dsc-btn--sm" variant="text" rounded="xl"
+                    <VBtn class="dsc-btn dsc-btn--sm" variant="text"
                         @click="async () => { if (selectedFile) { await selectFile(selectedFile); notifyDesktop(t('TXT_CODE_7863f28d'), 'success'); } }"
                         :disabled="isFileLoading">
                         <VIcon icon="mdi-refresh"  /> {{ t("TXT_CODE_b76d94e0") }}

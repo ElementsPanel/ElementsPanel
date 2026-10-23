@@ -202,15 +202,15 @@ onUnmounted(() => {
             </p>
 
             <div class="djava-config__toolbar">
-                <VBtn variant="text" rounded="xl" @click="handleAddJava()">
+                <VBtn variant="text" @click="handleAddJava()">
                     <VIcon icon="mdi-plus" />
                     {{ t("TXT_CODE_8900e7ee") }}
                 </VBtn>
-                <VBtn variant="text" rounded="xl" @click="handleDownloadJava()">
+                <VBtn variant="text" @click="handleDownloadJava()">
                     <VIcon :icon="DownloadOutlined" />
                     {{ t("TXT_CODE_9c48100e") }}
                 </VBtn>
-                <VBtn variant="text" rounded="xl" @click="refreshJavaList(true)">
+                <VBtn variant="text" @click="refreshJavaList(true)">
                     <VIcon icon="mdi-refresh" />
                     {{ t("TXT_CODE_b76d94e0") }}
                 </VBtn>
@@ -245,7 +245,7 @@ onUnmounted(() => {
             </VDataTable>
         </div>
         <div class="djava-config__footer">
-            <VBtn class="djava-btn djava-btn--primary" variant="text" rounded="xl" @click="emit('close')">
+            <VBtn class="djava-btn djava-btn--primary" variant="text" @click="emit('close')">
                 <VIcon icon="mdi-close" />
                 {{ t("TXT_CODE_31e92ef3") }}
             </VBtn>
@@ -266,10 +266,10 @@ onUnmounted(() => {
           <VTextField v-model="addJavaDialog.data.path" :label="t('TXT_CODE_43422ed3')"
               :placeholder="t('TXT_CODE_4ea93630')" variant="solo" density="compact" hide-details />
           <template #footer>
-            <VBtn class="djava-btn djava-btn--default" variant="text" rounded="xl" @click="cancelAddJava">
+            <VBtn class="djava-btn djava-btn--default" variant="text" @click="cancelAddJava">
                 {{ t("TXT_CODE_a0451c97") }}
             </VBtn>
-            <VBtn class="djava-btn djava-btn--primary" variant="text" rounded="xl" @click="confirmAddJava">
+            <VBtn class="djava-btn djava-btn--primary" variant="text" @click="confirmAddJava">
                 <VIcon icon="mdi-check" />
                 {{ t("TXT_CODE_d507abff") }}
             </VBtn>
@@ -289,10 +289,10 @@ onUnmounted(() => {
           <JavaVersionSelect v-model="downloadJavaDialog.version" :daemon-id="daemonId"
               :installed-java-list="downloadJavaDialog.installedList" />
           <template #footer>
-            <VBtn class="djava-btn djava-btn--default" variant="text" rounded="xl" @click="cancelDownloadJava">
+            <VBtn class="djava-btn djava-btn--default" variant="text" @click="cancelDownloadJava">
                 {{ t("TXT_CODE_a0451c97") }}
             </VBtn>
-            <VBtn class="djava-btn djava-btn--primary" variant="text" rounded="xl"
+            <VBtn class="djava-btn djava-btn--primary" variant="text"
                 :disabled="!downloadJavaDialog.version" @click="confirmDownloadJava">
                 <VIcon icon="mdi-check" />
                 {{ t("TXT_CODE_d507abff") }}

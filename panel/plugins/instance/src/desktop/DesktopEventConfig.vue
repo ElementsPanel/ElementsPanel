@@ -75,7 +75,7 @@ watch(instanceInfo, (val) => {
                         <p class="devent-form__hint">
                             {{ t("TXT_CODE_9d2fca76") }}
                         </p>
-                        <VTextField v-model="options.config.eventTask.autoRestartMaxTimes" type="number" width="220" variant="solo" density="compact" rounded="xl" hide-details />
+                        <VTextField v-model="options.config.eventTask.autoRestartMaxTimes" type="number" width="220" variant="solo" density="compact" hide-details />
                     </section>
                 </template>
 
@@ -94,7 +94,7 @@ watch(instanceInfo, (val) => {
             </div>
         </div>
         <div class="devent-config__footer">
-            <VBtn class="devent-btn devent-btn--primary" variant="text" rounded="xl" :disabled="isLoading" @click="submit">
+            <VBtn class="devent-btn devent-btn--primary" variant="text" :disabled="isLoading" @click="submit">
                 {{ t("TXT_CODE_abfe9512") }}
             </VBtn>
         </div>

@@ -171,7 +171,7 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
           <VChip v-for="l in item.loaders" :key="l" size="small" variant="tonal" :color="l.toLowerCase() === searchFilters?.loader?.toLowerCase() ? 'success' : 'orange'" class="mr-1">{{ l }}</VChip>
         </template>
         <template #item.action="{ item }">
-          <VBtn icon variant="text" rounded="xl" size="small" :disabled="isInstalled(item) || downloadingVersionId === item.id"
+          <VBtn icon variant="text" size="small" :disabled="isInstalled(item) || downloadingVersionId === item.id"
             :loading="downloadingVersionId === item.id" :title="isInstalled(item) ? t('TXT_CODE_INSTALLED') : t('TXT_CODE_DOWNLOAD')" @click="handleDownload(item)">
             <VIcon :icon="downloadingVersionId === item.id ? 'mdi-loading' : isInstalled(item) ? 'mdi-check-circle-outline' : 'mdi-cloud-download-outline'" />
           </VBtn>
@@ -194,7 +194,7 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
           :color="l.toLowerCase() === searchFilters?.loader?.toLowerCase() ? 'success' : 'warning'" class="mr-1">{{ l }}</VChip>
       </template>
       <template #item.action="{ item }">
-        <VBtn icon variant="text" rounded="xl" size="small"
+        <VBtn icon variant="text" size="small"
           :disabled="isInstalled(item) || downloadingVersionId === item.id"
           :loading="downloadingVersionId === item.id"
           :title="isInstalled(item) ? t('TXT_CODE_INSTALLED') : t('TXT_CODE_DOWNLOAD')"
