@@ -364,7 +364,7 @@ onUnmounted(() => {
                     <span v-if="perfInfo.cpu != null" class="dim-perf__item"
                         :class="`dim-perf__cpu--${perfInfo.cpu > 80 ? 'high' : perfInfo.cpu > 50 ? 'mid' : 'low'}`"
                         :title="t('TXT_CODE_b862a158')">
-                        <VIcon icon="mdi-block-helper" size="1em" /> {{ perfInfo.cpu }}%
+                        <VIcon icon="mdi-cube-outline" size="1em" /> {{ perfInfo.cpu }}%
                     </span>
                     <span v-if="perfInfo.mem != null && perfInfo.memUsed && perfInfo.memTotal" class="dim-perf__item"
                         :class="`dim-perf__mem--${perfInfo.mem > 80 ? 'high' : perfInfo.mem > 50 ? 'mid' : 'low'}`"
