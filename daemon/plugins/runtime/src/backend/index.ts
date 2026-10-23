@@ -44,7 +44,9 @@ function createUploadMiddleware(ctx: DaemonPluginContext) {
     const uploadKey = segments[segments.length - 1] || "";
     const files = ctx.get("files");
     const pieceWriter = files?.uploads.get(uploadKey);
-    const uploadMission = ctx.transfer.passports.getMission(uploadKey, "upload");
+    // Both services are provided by this plugin, so read them through `get()`
+    // instead of as injected properties.
+    const uploadMission = ctx.get("transfer")?.passports.getMission(uploadKey, "upload");
     if (pieceWriter || uploadMission) return await next();
 
     throw new Error("Access denied: Invalid multipart request!");
@@ -52,7 +54,7 @@ function createUploadMiddleware(ctx: DaemonPluginContext) {
 
   const uploadSpeedLimit = async (requestCtx: KoaContext, next: () => Promise<void>) => {
     if (!isMultipart(requestCtx)) return await next();
-    const rate = Number(ctx.settings.config.uploadSpeedRate) || 0;
+    const rate = Number(ctx.get("settings")?.config.uploadSpeedRate) || 0;
     if (rate <= 0) return await next();
     requestCtx.req = proxyIncomingMessage(requestCtx.req, rate);
     return await next();
