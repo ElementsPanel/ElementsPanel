@@ -51,8 +51,10 @@ export function apply(ctx: PanelFrontendPluginContext) {
       title: () => t("TXT_CODE_DESKTOP_MODE"),
       mdiIcon: "mdi-monitor",
       click: openDesktop,
-      // Desktop mode is not available in the phone shell.
-      onlyPC: true
+      // Desktop mode is not available in the phone shell, and the button would
+      // be redundant inside the Desktop taskbar itself.
+      onlyPC: true,
+      taskbar: false
     },
     {
       id: "desktop:mode-button",
