@@ -24,7 +24,7 @@ export function apply(ctx: PanelPluginContext) {
   // The form belongs to the config plugin, which loads long after this one, so
   // it is declared when that service appears rather than held as a dependency.
   // Without it the preference simply stays at its current value.
-  ctx.inject(["settingsForm"], (scope) => {
+  ctx.inject(["settingsForm", "storage"], (scope) => {
     const $t = scope.i18n.$t;
     scope.settingsForm.declare({
       fields: () => [

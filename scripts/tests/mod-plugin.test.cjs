@@ -892,6 +892,8 @@ test("the stored source preference loads at startup and the settings form switch
   };
 
   const first = await panelFixture(t, { storage, settingsForm, axios });
+  const warnings = [];
+  first.ctx.on("internal/warning", (error) => warnings.push(error.message));
   first.ctx.plugin((scoped) => scoped.set("remote", first.remote));
   await until(() => declaration);
 
@@ -913,6 +915,7 @@ test("the stored source preference loads at startup and the settings form switch
 
   // Writing persists the choice and switches the running service without a restart.
   await declaration.write({ sourcePreference: "official" });
+  assert.deepEqual(warnings, [], "loading and saving settings use declared services");
   assert.deepEqual(stored.get("ModManagerSettings:config"), { sourcePreference: "official" });
   assert.deepEqual(await declaration.read(), { sourcePreference: "official" });
   assert.equal(await searchOrigin(first), "https://api.modrinth.com");

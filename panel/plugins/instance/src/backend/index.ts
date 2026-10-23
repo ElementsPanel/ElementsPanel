@@ -11,6 +11,7 @@ import { setPluginContext, middleware, remote, roles } from "./runtime";
 
 export const inject = [
   "koa",
+  "i18n",
   "remote",
   "middleware",
   "roles",

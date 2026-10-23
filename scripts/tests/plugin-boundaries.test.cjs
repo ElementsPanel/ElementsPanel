@@ -224,6 +224,45 @@ test("backend account routes and the guard survive instance provider removal", a
   assert.equal(profile.instances[0].status, -1);
 });
 
+test("panel instance permission errors translate without undeclared service warnings", async (t) => {
+  const { Context, Service } = panelRequire("cordis");
+  const ctx = new Context();
+  t.after(() => ctx.stop());
+  const warnings = [];
+  ctx.on("internal/warning", (error) => warnings.push(error.message));
+  const app = new (panelRequire("koa"))();
+  ctx.plugin(load("panel/plugins/server/src/backend/koa.ts").KoaService, app);
+  ctx.plugin(translations(Service));
+  const pass = () => async (_request, next) => next();
+  ctx.set("roles", { USER: 1, ADMIN: 10 });
+  ctx.set("identity", { canAccessInstance: () => false });
+  ctx.set("middleware", {
+    permission: pass,
+    validator: pass,
+    speedLimit: pass,
+    instanceAccess: pass()
+  });
+  ctx.set("operations", {});
+  ctx.set("remote", {});
+  const runtime = load("panel/plugins/instance/src/backend/runtime.ts");
+  ctx.plugin(load("panel/plugins/instance/src/backend/index.ts", {
+    "./runtime": runtime,
+    "../runtime": runtime
+  }));
+  await ctx.start();
+  const request = {
+    path: "/api/protected_schedule/",
+    method: "GET",
+    query: { uuid: "one", daemonId: "node" },
+    request: {},
+    set() {}
+  };
+  await panelRequire("koa-compose")(app.middleware)(request, async () => {});
+  assert.equal(request.status, 403);
+  assert.equal(request.body, "TXT_CODE_permission.forbiddenInstance");
+  assert.deepEqual(warnings, []);
+});
+
 test("panel runtime keeps overview and audit services alive when monitor is removed", async (t) => {
   const { Context, Service } = panelRequire("cordis");
   const ctx = new Context();
@@ -421,7 +460,12 @@ test("node settings cannot write other plugins' configuration; the backup declar
 function frontendFixture(t) {
   const { Context, Service } = frontendRequire("cordis");
   const ctx = new Context();
-  t.after(() => ctx.stop());
+  const warnings = [];
+  ctx.on("internal/warning", (error) => warnings.push(error.message));
+  t.after(async () => {
+    await ctx.stop();
+    assert.deepEqual(warnings, [], "frontend plugins only access declared services");
+  });
   const routes = new Map();
   ctx.plugin(
     class extends Service {
@@ -822,13 +866,21 @@ test("daemon settings declarations keep their plugin ownership and leave when th
   const { Context, Service } = from("daemon")("cordis");
   const ctx = new Context();
   t.after(() => ctx.stop());
+  const warnings = [];
+  ctx.on("internal/warning", (error) => warnings.push(error.message));
   ctx.plugin(translations(Service));
   ctx.set("settings", { config: { outputBufferSize: 256 }, save() {} });
   ctx.set("plugins", { runExclusive: (operation) => operation(), configuration: (id) => ({ id, fields: [], values: {} }) });
   const { SettingsFormService } = load("daemon/plugins/config/src/backend/settings.ts", {
     "mcsmanager-common": load("common/src/plugin_contract.ts")
   });
-  ctx.plugin(SettingsFormService);
+  ctx.plugin({
+    name: "config",
+    inject: ["plugins"],
+    apply(scope) {
+      scope.plugin(SettingsFormService);
+    }
+  });
   const plugin = ctx.plugin({
     name: "terminal",
     inject: ["settings", "i18n"],
@@ -842,6 +894,7 @@ test("daemon settings declarations keep their plugin ownership and leave when th
   await plugin.dispose();
   await tick();
   assert.deepEqual(ctx.settingsForm.declared(), []);
+  assert.deepEqual(warnings, []);
 });
 
 test("daemon storage preserves migrated and cleared mappings across reloads", () => {
