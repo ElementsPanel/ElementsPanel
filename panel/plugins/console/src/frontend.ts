@@ -17,6 +17,7 @@ import ConsoleApp from "./ConsoleApp.vue";
 import { setLoadingTitle } from "@/tools/dom";
 import { installVuetify } from "./vuetify";
 import BackgroundTasksSidebar from "./components/BackgroundTasksSidebar.vue";
+import DesktopBackgroundTasks from "./components/DesktopBackgroundTasks.vue";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useBackgroundTasks } from "@/stores/useBackgroundTasks";
 import { useThemeSwitch } from "@/hooks/useThemeSwitch";
@@ -30,8 +31,17 @@ export async function apply(parent: PanelFrontendPluginContext) {
   const { app, ctx } = await prepareApplication(parent);
   installVuetify(app);
   ctx.set("console", { root: ConsoleApp });
-  // The header renders the button from this descriptor; only the sidebar is a
-  // component overlay.
+  ctx.desktop.view({
+    id: "console:background-tasks",
+    title: () => t("TXT_CODE_TASKS_TITLE"),
+    icon: "mdi-progress-clock",
+    component: DesktopBackgroundTasks,
+    initialWidth: 540,
+    initialHeight: 600,
+    condition: () => useAppStateStore().isLogged.value
+  });
+
+  // The normal header opens the sidebar; the taskbar opens a managed window.
   ctx.slots.register(
     "shell.header.actions",
     {
@@ -43,6 +53,10 @@ export async function apply(parent: PanelFrontendPluginContext) {
         const { open, refresh } = useBackgroundTasks();
         open.value = !open.value;
         if (open.value) void refresh({ silent: true });
+      },
+      desktopClick: () => {
+        useBackgroundTasks().open.value = false;
+        ctx.desktop.open({ id: "console:background-tasks", view: "console:background-tasks" });
       }
     },
     {

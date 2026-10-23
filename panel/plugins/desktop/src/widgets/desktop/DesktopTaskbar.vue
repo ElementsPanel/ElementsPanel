@@ -218,7 +218,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
                         <VBadge :content="actionBadge(entry.action)" :model-value="actionBadge(entry.action) != null"
                             :max="99" :offset-x="14" :offset-y="14" color="primary" floating>
                             <VBtn icon size="x-small" variant="text" :aria-label="actionTitle(entry.action)"
-                                :title="actionTitle(entry.action)" @click="entry.action.click()">
+                                :title="actionTitle(entry.action)" @click="(entry.action.desktopClick ?? entry.action.click)()">
                                 <VIcon :icon="actionIcon(entry.action)" size="small" />
                             </VBtn>
                         </VBadge>

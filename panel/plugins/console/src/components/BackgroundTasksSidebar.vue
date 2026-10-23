@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { t } from "@/lang/i18n";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useBackgroundTasks, type BackgroundTask } from "@/stores/useBackgroundTasks";
@@ -14,9 +14,22 @@ import {
   VTooltip
 } from "vuetify/components";
 
+const props = defineProps<{ desktop?: boolean }>();
 const { state, isLogged } = useAppStateStore();
 const { open, tasks, unavailable, loading, error, refresh, reset, connect, disconnect, cancel, clear } =
   useBackgroundTasks();
+const containerProps = computed(() =>
+  props.desktop
+    ? { class: "background-tasks-desktop" }
+    : {
+        modelValue: open.value,
+        "onUpdate:modelValue": (value: boolean) => { open.value = value; },
+        class: "background-tasks-drawer",
+        maxWidth: 480,
+        transition: "slide-x-reverse-transition",
+        "aria-label": t("TXT_CODE_TASKS_TITLE")
+      }
+);
 const cancelling = ref(new Set<string>());
 const clearing = ref(false);
 const showFinished = ref(false);
@@ -90,31 +103,32 @@ const clearFinished = async () => {
   }
 };
 
-watch(
-  () => [isLogged.value, state.userInfo?.uuid] as const,
-  () => {
+// The persistent overlay owns the task stream, including while desktop windows
+// are closed or minimized. A desktop view must not reset that shared state.
+if (props.desktop) {
+  onMounted(() => { void refresh({ silent: true }); });
+} else {
+  watch(
+    () => [isLogged.value, state.userInfo?.uuid] as const,
+    () => {
+      reset();
+      showFinished.value = false;
+      if (isLogged.value) connect();
+    },
+    { immediate: true }
+  );
+  onBeforeUnmount(() => {
+    disconnect();
     reset();
-    showFinished.value = false;
-    if (isLogged.value) connect();
-  },
-  { immediate: true }
-);
-onBeforeUnmount(() => {
-  disconnect();
-  reset();
-});
+  });
+}
 </script>
 
 <template>
-  <VDialog
-    v-model="open"
-    class="background-tasks-drawer"
-    max-width="480"
-    transition="slide-x-reverse-transition"
-    :aria-label="t('TXT_CODE_TASKS_TITLE')"
-  >
+  <component :is="desktop ? 'div' : VDialog" v-bind="containerProps">
     <VCard
-      id="background-tasks-sidebar"
+      :id="desktop ? 'background-tasks-desktop' : 'background-tasks-sidebar'"
+      :title="t('TXT_CODE_TASKS_TITLE')"
       class="background-tasks-card"
       rounded="0"
     >
@@ -148,6 +162,7 @@ onBeforeUnmount(() => {
           @click="refresh()"
         />
         <VBtn
+          v-if="!desktop"
           icon="mdi-close"
           size="small"
           variant="text"
@@ -236,10 +251,14 @@ onBeforeUnmount(() => {
         </VCard>
       </div>
     </VCard>
-  </VDialog>
+  </component>
 </template>
 
 <style scoped>
+.background-tasks-desktop {
+  height: 100%;
+  min-height: 0;
+}
 .background-tasks-drawer :deep(.v-overlay__content) {
   right: 0;
   margin: 0 !important;

@@ -769,6 +769,57 @@ test("the shared task action opens its sidebar and keeps task filters and cancel
   assert.deepEqual(store.tasks.value, []);
 });
 
+test("closing a background task desktop window preserves the shared task stream and badge", async (t) => {
+  const lifecycle = { connects: 0, disconnects: 0, resets: 0, refreshes: 0 };
+  const store = {
+    open: vue.ref(false), tasks: vue.ref([]), unavailable: vue.ref(false), loading: vue.ref(false),
+    error: vue.ref(false), refresh: async () => { lifecycle.refreshes++; },
+    connect() { lifecycle.connects++; }, disconnect() { lifecycle.disconnects++; },
+    reset() { lifecycle.resets++; store.open.value = false; store.tasks.value = []; },
+    cancel: async () => {}, clear: async () => {}
+  };
+  const activeCount = vue.computed(() => store.tasks.value.filter(task => task.state === "running").length);
+  const Sidebar = loadSfc("panel/plugins/console/src/components/BackgroundTasksSidebar.vue", {
+    "@/lang/i18n": translations,
+    "@/stores/useAppStateStore": {
+      useAppStateStore: () => ({ state: vue.reactive({ userInfo: { uuid: "alice" } }), isLogged: vue.ref(true) })
+    },
+    "@/stores/useBackgroundTasks": { useBackgroundTasks: () => store }
+  });
+  const DesktopTasks = loadSfc("panel/plugins/console/src/components/DesktopBackgroundTasks.vue", {
+    "./BackgroundTasksSidebar.vue": { default: Sidebar }
+  });
+  const closed = vue.ref(false);
+  const target = document.createElement("div");
+  document.body.appendChild(target);
+  const app = vue.createApp({ render: () => vue.h("div", [
+    vue.h(Sidebar),
+    closed.value ? null : vue.h(DesktopWindow, {
+      id: "tasks", title: "Tasks", visible: true, active: true, minimized: false, maximized: false,
+      onClose: () => { closed.value = true; }
+    }, { default: () => vue.h(DesktopTasks) })
+  ]) });
+  app.use(Vuetify.createVuetify());
+  app.mount(target);
+  t.after(() => { app.unmount(); target.remove(); });
+  store.tasks.value = [{
+    id: "running", daemonId: "node", name: "example.jar", kind: "download", state: "running",
+    current: 5, total: 10, cancellable: false, startedAt: 100
+  }];
+  await flush();
+  const content = target.querySelector("#background-tasks-desktop");
+  assert.ok(content.textContent.includes("example.jar"));
+  assert.equal(content.closest(".v-dialog"), null);
+  assert.equal(document.querySelector(".v-overlay--active.v-dialog"), null);
+  assert.equal(store.open.value, false);
+  assert.deepEqual(lifecycle, { connects: 1, disconnects: 0, resets: 1, refreshes: 1 });
+  target.querySelector(".window__control--close").click();
+  await flush();
+  assert.equal(target.querySelector("#background-tasks-desktop"), null);
+  assert.equal(activeCount.value, 1);
+  assert.deepEqual(lifecycle, { connects: 1, disconnects: 0, resets: 1, refreshes: 1 });
+});
+
 for (const dismiss of ["button", "titlebar", "escape"]) {
   test(`shared desktop confirmations use the user deletion layout and cancel once through ${dismiss}`, async (t) => {
     const f = confirmationFixture(t);

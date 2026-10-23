@@ -246,6 +246,8 @@ export interface PanelFrontendHeaderAction {
   /** Badge text; `false`, `null` and `undefined` hide the badge. */
   badge?: string | number | (() => string | number | undefined | null | false);
   click: (...args: any[]) => unknown;
+  /** Overrides `click` in the Desktop taskbar tray. */
+  desktopClick?: () => unknown;
   /** Extra class for the shell button, e.g. `nav-button-danger`. */
   customClass?: string | string[];
   /** Hide in the phone header. */

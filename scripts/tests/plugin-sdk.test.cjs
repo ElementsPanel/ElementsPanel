@@ -254,6 +254,7 @@ test("production URL identities share login state, registered routes and API aut
     set() {},
     routes: { add: (route) => consoleRouter.addRoute(route) },
     slots: { register() {} },
+    desktop: { view() {} },
     menus: { loginActions: [] }
   };
   const overrides = {
@@ -299,7 +300,8 @@ test("production URL identities share login state, registered routes and API aut
     "./vuetify": { installVuetify() {} },
     "./widgets/Page404.vue": component,
     "./ConsoleApp.vue": component,
-    "./components/BackgroundTasksSidebar.vue": component
+    "./components/BackgroundTasksSidebar.vue": component,
+    "./components/DesktopBackgroundTasks.vue": component
   };
   // Evaluate real sources in memory, caching by browser URL, not disk path.
   // Relative imports are derived from the actual output naming callbacks;
