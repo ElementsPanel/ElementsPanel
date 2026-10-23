@@ -676,6 +676,7 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   const { windows } = shell.state;
   assert.equal(ctx.desktop.open({ id: "bad", view: "instance-console" }), false);
   assert.equal(ctx.desktop.open({ id: "bad-config", view: "node-plugin-config" }), false);
+  assert.equal(ctx.desktop.open({ id: "bad-settings", view: "instance-settings", props: { instanceId: "one" } }), false);
   const configRequest = {
     id: "node-plugin-config-node", view: "node-plugin-config",
     props: { scope: "node", daemonId: "node" }
@@ -691,19 +692,33 @@ test("desktop shell opens/restores contributed windows and survives provider rem
     true
   );
   assert.equal(windows.get("console-one").props.daemonId, "node");
+  const consoleView = ctx.desktop.views.find((view) => view.id === "instance-console");
+  const renderConsole = consoleView.component.setup({}, {
+    attrs: { instanceId: "one", daemonId: "node" }, emit() {}
+  });
+  renderConsole().props.onOpenInstanceSettings("one", "node");
+  const settingsWindow = windows.get("instance-settings-one");
+  assert.equal(settingsWindow.content, "instance-settings");
+  assert.deepEqual(settingsWindow.props, { instanceId: "one", daemonId: "node" });
+  settingsWindow.minimized = true;
+  renderConsole().props.onOpenInstanceSettings("one", "node");
+  assert.equal(windows.get(settingsWindow.id), settingsWindow);
+  assert.equal(settingsWindow.minimized, false);
   shell.state.openWindow("instances");
   assert.ok(windows.has("instances"));
   savedLayout = {
     shortcuts: ["instances"],
     windows: [
       { id: "schedule-one", content: "schedule", instanceId: "one", daemonId: "node" },
+      { id: settingsWindow.id, content: settingsWindow.content, props: settingsWindow.props },
       { id: configRequest.id, content: configRequest.view, props: configRequest.props },
       { id: "bad", content: "schedule" },
       { id: "removed", content: "uninstalled-feature" }
     ]
   };
   await shell.state.loadDesktopLayout();
-  assert.equal(windows.size, 2);
+  assert.equal(windows.size, 3);
+  assert.deepEqual(windows.get(settingsWindow.id).props, settingsWindow.props);
   assert.equal(windows.get("schedule-one").props.instanceId, "one");
   assert.deepEqual(windows.get(configRequest.id).props, configRequest.props);
   ctx.instance.openConsole({ instanceUuid: "one" }, "node");

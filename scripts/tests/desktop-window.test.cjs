@@ -829,6 +829,292 @@ test("the shared task action opens its sidebar and keeps task filters and cancel
   assert.deepEqual(store.tasks.value, []);
 });
 
+function instanceSettingsFixture(t, { admin = true, allowChangeCmd = true, processType = "docker", nickname = "Example" } = {}) {
+  const account = { isAdmin: vue.ref(admin), state: vue.reactive({ settings: { allowChangeCmd } }) };
+  const docker = {
+    image: "java:21", networkMode: "bridge", networkAliases: [], gpuEnabled: false, gpuCount: -1, gpuDeviceIds: [],
+    ports: ["{mcsm_port1}:25565/tcp"], extraVolumes: ["/srv/data|/data"],
+    env: ["TOKEN=a=b"], labels: ["note=keep=this"], capAdd: ["SYS_PTRACE"], capDrop: ["NET_RAW"],
+    devices: ["/dev/a", "/dev/b|/inside/b|rwm"], workingDir: "/data", changeWorkdir: true
+  };
+  const info = vue.ref({
+    instanceUuid: "instance-one", status: 0,
+    config: {
+      nickname, type: "minecraft/java", processType, fileCode: "utf-8",
+      startCommand: "java -jar server.jar", stopCommand: "stop", updateCommand: "", cwd: "/srv/server", endTime: 0,
+      docker, eventTask: { autoRestart: true }, unknownSetting: { preserve: true }
+    }
+  });
+  const writes = [], errors = [], notices = [], reads = [], metadata = [];
+  let failSave = false, failLoad = false;
+  const update = (api) => () => ({
+    execute: async (request) => {
+      if (failSave) throw new Error("Save failed");
+      writes.push({ ...JSON.parse(JSON.stringify(request)), api });
+    }
+  });
+  const commonFilename = path.join(root, "panel/plugins/console/src/tools/common.ts");
+  const common = new Module(commonFilename, module);
+  common.require = frontendRequire;
+  common._compile(ts.transpileModule(fs.readFileSync(commonFilename, "utf8"), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
+  }).outputText, commonFilename);
+  const Settings = loadSfc("panel/plugins/instance/src/desktop/DesktopInstanceSettings.vue", {
+    dayjs: { default: frontendRequire("dayjs") },
+    "@/lang/i18n": translations,
+    "@/hooks/useInstance": { INSTANCE_TYPE_TRANSLATION: { "minecraft/java": "Minecraft Java" } },
+    "@/stores/useAppStateStore": { useAppStateStore: () => account },
+    "@/services/apis/instance": {
+      getInstanceInfo: () => ({ execute: async (request) => {
+        reads.push(request);
+        if (failLoad) throw new Error("Load failed");
+        return vue.ref(info.value);
+      } }),
+      updateAnyInstanceConfig: update("admin"),
+      updateInstanceConfig: update("limited")
+    },
+    "@/services/apis/envImage": {
+      getNetworkModeList: () => ({ execute: async (request) => {
+        metadata.push({ kind: "networks", ...request });
+        return vue.ref([{ Name: "bridge" }, { Name: "custom" }]);
+      } }),
+      imageList: () => ({ execute: async (request) => {
+        metadata.push({ kind: "images", ...request });
+        return vue.ref([{ RepoTags: ["java:21", "java:latest"] }]);
+      } })
+    },
+    "@/tools/common": common.exports,
+    "@/tools/desktopNotice": {
+      notifyDesktop: (...args) => notices.push(args),
+      notifyDesktopError: (error) => errors.push(error.message || String(error))
+    },
+    "@/types/const": { TERMINAL_CODE: ["utf-8"], defaultDockerConfig: docker },
+    "@/config/const": { GLOBAL_INSTANCE_NAME: "Global Terminal" }
+  });
+  const target = document.createElement("div");
+  document.body.appendChild(target);
+  const closed = vue.ref(false);
+  const app = vue.createApp({ render: () => closed.value ? null : vue.h(DesktopWindow, {
+    id: "instance-settings-one", title: "Instance settings", visible: true, active: true,
+    minimized: false, maximized: false, onClose: () => { closed.value = true; }
+  }, { default: () => vue.h(Settings, {
+    instanceId: "instance-one", daemonId: "node-one", onClose: () => { closed.value = true; }
+  }) }) });
+  app.use(Vuetify.createVuetify());
+  t.after(() => { app.unmount(); target.remove(); });
+  app.mount(target);
+  const field = (key) => {
+    const label = [...target.querySelectorAll(".dis__body label[for]")].find((entry) => entry.textContent.trim() === key);
+    assert.ok(label, "field label exists: " + key);
+    return document.getElementById(label.htmlFor);
+  };
+  const setField = (key, value) => {
+    const input = field(key);
+    input.value = value;
+    input.dispatchEvent(new window.Event("input", { bubbles: true }));
+  };
+  return {
+    target, writes, errors, notices, reads, metadata, closed, account, info, field, setField,
+    save: () => target.querySelector(".dis__header .dis-btn--primary").click(),
+    reload: () => [...target.querySelectorAll(".dis__header button")].find((button) => button.textContent.includes("TXT_CODE_b76d94e0")).click(),
+    setFailSave: (value) => { failSave = value; },
+    setFailLoad: (value) => { failLoad = value; }
+  };
+}
+
+const settingsButton = (root, text) => [...root.querySelectorAll("button")].find((button) => button.textContent.includes(text));
+const settingsListEditor = () => document.querySelector(".dis-list-editor:not(.desktop-window-leave-active)");
+
+for (const admin of [true, false]) {
+  test("independent instance settings save through the " + (admin ? "admin" : "limited") + " API without mutating fetched data", async (t) => {
+    const f = instanceSettingsFixture(t, { admin });
+    await flush();
+    const page = f.target.querySelector(".dis");
+    assert.ok(page.closest(".desktop-window"));
+    assert.equal(document.querySelector(".v-overlay--active.v-dialog"), null);
+    assert.equal(f.target.querySelector(".app-dialog"), null);
+    assert.equal(page.querySelector(".dis__body .dis__header"), null);
+    assert.equal(page.querySelectorAll(".dis__tabs button").length, admin ? 4 : 1);
+    assert.deepEqual(f.reads[0].params, { uuid: "instance-one", daemonId: "node-one" });
+    f.setField("TXT_CODE_d12fa808", "java -Xmx2G -jar server.jar");
+    await flush();
+    assert.equal(f.info.value.config.startCommand, "java -jar server.jar");
+    f.setFailSave(true);
+    f.save();
+    await flush();
+    assert.equal(f.closed.value, false);
+    assert.equal(f.writes.length, 0);
+    assert.ok(f.errors.includes("Save failed"));
+    assert.equal(f.field("TXT_CODE_d12fa808").value, "java -Xmx2G -jar server.jar");
+    f.setFailSave(false);
+    f.save();
+    await flush();
+    assert.equal(f.closed.value, false, "saving keeps the desktop editor open");
+    assert.equal(f.writes[0].api, admin ? "admin" : "limited");
+    assert.deepEqual(f.writes[0].params, { uuid: "instance-one", daemonId: "node-one" });
+    assert.equal(f.writes[0].data.startCommand, "java -Xmx2G -jar server.jar");
+    assert.deepEqual(f.writes[0].data.unknownSetting, { preserve: true });
+    assert.deepEqual(f.notices.at(-1), ["TXT_CODE_d3de39b4", "success"]);
+  });
+}
+
+test("independent instance settings discard edits on close and enforce limited-user permissions", async (t) => {
+  const f = instanceSettingsFixture(t, { admin: false });
+  await flush();
+  assert.equal(f.field("TXT_CODE_f70badb9").disabled, true);
+  f.setField("TXT_CODE_d12fa808", "unsaved command");
+  f.account.state.settings.allowChangeCmd = false;
+  await flush();
+  assert.equal(f.target.querySelector(".dis__form"), null);
+  assert.ok(f.target.textContent.includes("TXT_CODE_permission.forbidden"));
+  assert.equal(f.target.querySelector(".dis__header .dis-btn--primary").disabled, true);
+  f.account.state.settings.allowChangeCmd = true;
+  await flush();
+  f.target.querySelector(".window__control--close").click();
+  await flush();
+  assert.equal(f.closed.value, true);
+  assert.deepEqual(f.writes, []);
+  assert.equal(f.info.value.config.startCommand, "java -jar server.jar");
+});
+
+test("independent instance settings retain global-terminal restrictions and block ordinary non-Docker instances", async (t) => {
+  const globalTerminal = instanceSettingsFixture(t, { nickname: "Global Terminal" });
+  const ordinary = instanceSettingsFixture(t, { admin: false, processType: "general" });
+  await flush();
+  assert.equal(globalTerminal.target.querySelectorAll(".dis__tabs button").length, 2);
+  assert.equal(globalTerminal.field("TXT_CODE_f70badb9").disabled, true);
+  assert.equal(globalTerminal.field("TXT_CODE_fa920c0").disabled, true);
+  assert.equal(ordinary.target.querySelector(".dis__form"), null);
+  assert.ok(ordinary.target.textContent.includes("TXT_CODE_permission.forbidden"));
+  assert.equal(ordinary.target.querySelector(".dis__header .dis-btn--primary").disabled, true);
+});
+
+test("independent instance settings serialize expiration, aliases, resource limits and GPU devices", async (t) => {
+  const f = instanceSettingsFixture(t);
+  await flush();
+  f.setField("TXT_CODE_fa920c0", "2030-01-02 03:04:05");
+  settingsButton(f.target.querySelector(".dis__tabs"), "TXT_CODE_afb12200").click();
+  await flush();
+  f.setField("TXT_CODE_10194e6a", " alpha, beta , ");
+  settingsButton(f.target.querySelector(".dis__tabs"), "TXT_CODE_604d8d63").click();
+  await flush();
+  f.setField("TXT_CODE_6fe24924", "2048");
+  f.field("TXT_CODE_gpu_enable").click();
+  await flush();
+  f.target.querySelector('input[type="radio"][value="devices"]').click();
+  await flush();
+  f.setField("TXT_CODE_gpu_device_ids", "GPU-one, GPU-two , ");
+  f.save();
+  await flush();
+  const data = f.writes[0].data;
+  assert.equal(data.endTime, frontendRequire("dayjs")("2030-01-02 03:04:05").valueOf());
+  assert.deepEqual(data.docker.networkAliases, ["alpha", "beta"]);
+  assert.equal(data.docker.memory, 2048);
+  assert.equal(data.docker.gpuCount, 0);
+  assert.deepEqual(data.docker.gpuDeviceIds, ["GPU-one", "GPU-two"]);
+  assert.equal(f.info.value.config.endTime, 0);
+  assert.equal(f.info.value.config.docker.gpuEnabled, false);
+});
+
+test("independent Docker desktop editors round-trip lists and cancel without changing the settings draft", async (t) => {
+  const f = instanceSettingsFixture(t);
+  await flush();
+  settingsButton(f.target.querySelector(".dis__tabs"), "TXT_CODE_afb12200").click();
+  await flush();
+  const before = JSON.parse(JSON.stringify(f.info.value.config.docker));
+  const kinds = [
+    ["TXT_CODE_cf88c936", "ports"], ["TXT_CODE_d9c73520", "extraVolumes"],
+    ["TXT_CODE_b916a8dc", "env"], ["TXT_CODE_g1c43s2h", "labels"],
+    ["TXT_CODE_bbbd4133", "capAdd"], ["TXT_CODE_b3a60c78", "devices"]
+  ];
+  for (const [title] of kinds) {
+    settingsButton(f.target.querySelector(".dis__list-buttons"), title).click();
+    await flush();
+    const editor = settingsListEditor();
+    assert.ok(editor, title + " opens a desktop child window");
+    assert.equal(document.querySelector(".v-overlay--active.v-dialog"), null);
+    assert.equal(f.target.querySelector(".dis__header .dis-btn--primary").disabled, true);
+    settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_d507abff").click();
+    await flush();
+  }
+  settingsButton(f.target.querySelector(".dis__list-buttons"), "TXT_CODE_b916a8dc").click();
+  await flush();
+  let editor = settingsListEditor();
+  const value = editor.querySelector("textarea");
+  assert.equal(value.value, "a=b");
+  value.value = "discard=this";
+  value.dispatchEvent(new window.Event("input", { bubbles: true }));
+  settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_a0451c97").click();
+  await flush();
+  settingsButton(f.target.querySelector(".dis__list-buttons"), "TXT_CODE_b916a8dc").click();
+  await flush();
+  editor = settingsListEditor();
+  assert.equal(editor.querySelector("textarea").value, "a=b");
+  settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_a0451c97").click();
+  await flush();
+  f.save();
+  await flush();
+  for (const [, key] of kinds) assert.deepEqual(f.writes[0].data.docker[key], before[key]);
+  assert.deepEqual(f.writes[0].data.docker.capDrop, before.capDrop);
+});
+
+test("independent Docker port allocation pairs tokens and confirming an empty environment clears it", async (t) => {
+  const f = instanceSettingsFixture(t);
+  await flush();
+  settingsButton(f.target.querySelector(".dis__tabs"), "TXT_CODE_afb12200").click();
+  await flush();
+  settingsButton(f.target.querySelector(".dis__list-buttons"), "TXT_CODE_cf88c936").click();
+  await flush();
+  let editor = settingsListEditor();
+  settingsButton(editor.querySelector(".dis-list-editor__toolbar"), "TXT_CODE_dfc17a0c").click();
+  await flush();
+  const newRow = [...editor.querySelectorAll(".dis-list-editor__row")].at(-1);
+  const automatic = newRow.querySelectorAll('input[type="checkbox"]');
+  automatic[0].click();
+  await flush();
+  automatic[1].click();
+  await flush();
+  assert.deepEqual([...newRow.querySelectorAll('input[type="text"]')].slice(0, 2).map((input) => input.value),
+    ["{mcsm_port2}", "{mcsm_port2}"]);
+  settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_d507abff").click();
+  await flush();
+  settingsButton(f.target.querySelector(".dis__list-buttons"), "TXT_CODE_b916a8dc").click();
+  await flush();
+  editor = settingsListEditor();
+  editor.querySelector('button[aria-label="TXT_CODE_fe731dfc"]').click();
+  await flush();
+  settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_d507abff").click();
+  await flush();
+  f.save();
+  await flush();
+  assert.deepEqual(f.writes[0].data.docker.env, []);
+  assert.deepEqual(f.writes[0].data.docker.ports, ["{mcsm_port1}:25565/tcp", "{mcsm_port2}:{mcsm_port2}/tcp"]);
+  assert.deepEqual(f.info.value.config.docker.env, ["TOKEN=a=b"]);
+});
+
+test("independent instance settings recover from reload failure and scope image/network requests to their node", async (t) => {
+  const f = instanceSettingsFixture(t);
+  await flush();
+  f.setFailLoad(true);
+  f.reload();
+  await flush();
+  assert.ok(f.target.textContent.includes("Load failed"));
+  assert.ok(f.target.querySelector(".dis__form"), "reload failures preserve the editable draft");
+  f.setFailLoad(false);
+  f.reload();
+  await flush();
+  assert.ok(f.target.querySelector(".dis__form"));
+  settingsButton(f.target.querySelector(".dis__tabs"), "TXT_CODE_afb12200").click();
+  await flush();
+  f.field("TXT_CODE_44b585c7").focus();
+  await flush();
+  f.field("TXT_CODE_efcef926").focus();
+  await flush();
+  assert.deepEqual(f.metadata.map((request) => [request.kind, request.params.daemonId]),
+    [["images", "node-one"], ["networks", "node-one"]]);
+  assert.equal(f.metadata[0].method, "GET");
+});
+
 test("the shell supplies layout to the native task drawer and closing it preserves its task stream", async (t) => {
   const lifecycle = { connects: 0, disconnects: 0 };
   const store = {

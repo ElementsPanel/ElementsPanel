@@ -10,8 +10,6 @@ import { useAppStateStore } from "@/stores/useAppStateStore";
 import { computed, ref, watch } from "vue";
 import { arrayFilter } from "@/tools/array";
 import EventConfig from "../widgets/instance/dialogs/EventConfig.vue";
-import InstanceDetail from "../widgets/instance/dialogs/InstanceDetail.vue";
-import InstanceFundamentalDetail from "../widgets/instance/dialogs/InstanceFundamentalDetail.vue";
 import PingConfig from "../widgets/instance/dialogs/PingConfig.vue";
 import RconSettings from "../widgets/instance/dialogs/RconSettings.vue";
 import { VIcon } from "vuetify/components";
@@ -31,6 +29,7 @@ const emit = defineEmits<{
   (e: "open-server-config", type: string): void;
   (e: "open-schedule"): void;
   (e: "open-event-config"): void;
+  (e: "open-instance-settings"): void;
   (e: "open-instance-action", actionId: string): void;
 }>();
 
@@ -41,8 +40,6 @@ const { state: overviewState } = useOverviewInfo();
 const rconSettingsDialog = ref<InstanceType<typeof RconSettings>>();
 const eventConfigDialog = ref<InstanceType<typeof EventConfig>>();
 const pingConfigDialog = ref<InstanceType<typeof PingConfig>>();
-const instanceDetailsDialog = ref<InstanceType<typeof InstanceDetail>>();
-const instanceFundamentalDetailDialog = ref<InstanceType<typeof InstanceFundamentalDetail>>();
 
 const { instanceInfo, execute, isGlobalTerminal } = useInstanceInfo({
   instanceId: props.instanceId,
@@ -127,7 +124,7 @@ const btns = computed(() => {
       icon: AppstoreAddOutlined,
       condition: () => isAdmin.value,
       click: () => {
-        instanceDetailsDialog.value?.openDialog();
+        emit("open-instance-settings");
       }
     },
     {
@@ -138,7 +135,7 @@ const btns = computed(() => {
         instanceInfo.value?.config.processType === "docker" &&
         state.settings.allowChangeCmd,
       click: () => {
-        instanceFundamentalDetailDialog.value?.openDialog();
+        emit("open-instance-settings");
       }
     },
     ...pluginActions
@@ -183,22 +180,6 @@ watch(instanceInfo, (cfg, oldCfg) => {
 
   <PingConfig
     ref="pingConfigDialog"
-    :instance-info="instanceInfo"
-    :instance-id="props.instanceId"
-    :daemon-id="props.daemonId"
-    @update="refreshInstanceInfo"
-  />
-
-  <InstanceDetail
-    ref="instanceDetailsDialog"
-    :instance-info="instanceInfo"
-    :instance-id="props.instanceId"
-    :daemon-id="props.daemonId"
-    @update="refreshInstanceInfo"
-  />
-
-  <InstanceFundamentalDetail
-    ref="instanceFundamentalDetailDialog"
     :instance-info="instanceInfo"
     :instance-id="props.instanceId"
     :daemon-id="props.daemonId"

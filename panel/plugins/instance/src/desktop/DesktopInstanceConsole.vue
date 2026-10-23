@@ -40,6 +40,7 @@ const emit = defineEmits<{
     (e: "open-server-config", instanceId: string, daemonId: string, type: string): void;
     (e: "open-schedule", instanceId: string, daemonId: string): void;
     (e: "open-event-config", instanceId: string, daemonId: string): void;
+    (e: "open-instance-settings", instanceId: string, daemonId: string): void;
     (e: "open-instance-action", actionId: string, instanceId: string, daemonId: string): void;
 }>();
 
@@ -459,6 +460,7 @@ onUnmounted(() => {
             @open-server-config="(type: string) => emit('open-server-config', instanceId, daemonId, type)"
             @open-schedule="emit('open-schedule', instanceId, daemonId)"
             @open-event-config="emit('open-event-config', instanceId, daemonId)"
+            @open-instance-settings="emit('open-instance-settings', instanceId, daemonId)"
             @open-instance-action="(actionId: string) => emit('open-instance-action', actionId, instanceId, daemonId)" />
 
         <VDialog v-model="errorDialog.show" class="desktop-dialog" max-width="460" scrollable>

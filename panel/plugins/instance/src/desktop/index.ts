@@ -9,6 +9,7 @@ import DesktopInstanceConsole from "./DesktopInstanceConsole.vue";
 import DesktopServerConfig from "./DesktopServerConfig.vue";
 import DesktopSchedule from "./DesktopSchedule.vue";
 import DesktopEventConfig from "./DesktopEventConfig.vue";
+import DesktopInstanceSettings from "./DesktopInstanceSettings.vue";
 
 const withEvents = (component: Component, listeners: Record<string, unknown> = {}) =>
   defineComponent({
@@ -71,6 +72,15 @@ export function registerDesktop(ctx: PanelFrontendPluginContext) {
     icon: "mdi-clock-outline",
     initialWidth: 700,
     initialHeight: 500,
+    accepts: hasInstance
+  });
+  ctx.desktop.view({
+    id: "instance-settings",
+    component: DesktopInstanceSettings,
+    title: () => t("TXT_CODE_4f34fc28"),
+    icon: "mdi-view-grid-plus-outline",
+    initialWidth: 1000,
+    initialHeight: 700,
     accepts: hasInstance
   });
   ctx.desktop.view({
@@ -153,6 +163,7 @@ export function registerDesktop(ctx: PanelFrontendPluginContext) {
           open("server-config", id, node, { type }),
         onOpenSchedule: (id: string, node: string) => open("schedule", id, node),
         onOpenEventConfig: (id: string, node: string) => open("event-config", id, node),
+        onOpenInstanceSettings: (id: string, node: string) => open("instance-settings", id, node),
         onOpenInstanceAction: (action: string, id: string, node: string) =>
           scope.desktop.open({
             id: `instance-action-${action}-${id}`,
