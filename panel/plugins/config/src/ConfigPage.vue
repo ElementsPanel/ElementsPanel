@@ -872,7 +872,7 @@ const confirmRemove = async () => {
                 <template #activator="{ props: tooltipProps }">
                   <span v-bind="tooltipProps">
                     <VBtn
-                      :icon="selectedPlugin.enabled ? 'mdi-power-off' : 'mdi-power'"
+                      icon="mdi-power"
                       :color="selectedPlugin.enabled ? 'warning' : 'success'"
                       variant="text"
                       :loading="pending === selectedPlugin.id"
