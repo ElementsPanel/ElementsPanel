@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { t } from "@/lang/i18n";
+import { useScreen } from "@/hooks/useScreen";
 import { ctx } from "@/plugin/context";
 import { getValidatorErrorMsg } from "@/tools/validator";
 import { message } from "@/tools/vuetifyToast";
@@ -14,9 +15,11 @@ import {
   VCardText,
   VChip,
   VDialog,
+  VLayout,
   VList,
   VListItem,
   VListSubheader,
+  VNavigationDrawer,
   VProgressCircular,
   VProgressLinear,
   VSelect,
@@ -60,6 +63,29 @@ import SchemaForm from "./SchemaForm.vue";
 type Scope = "panel" | "node";
 
 const props = defineProps<{ scope?: Scope; daemonId?: string }>();
+const { isPhone } = useScreen();
+const sidebarOpen = ref(false);
+const navigationProps = computed(() =>
+  isPhone.value
+    ? {
+        class: "plugin-config-navigation",
+        modelValue: sidebarOpen.value,
+        "onUpdate:modelValue": (value: boolean) => { sidebarOpen.value = value; },
+        absolute: true,
+        temporary: true,
+        floating: true,
+        disableResizeWatcher: true,
+        retainFocus: true,
+        captureFocus: true,
+        touchless: true,
+        width: 280,
+        "aria-label": t("TXT_CODE_PLUGIN_LIST")
+      }
+    : { class: "plugin-config-navigation" }
+);
+watch(isPhone, (phone) => {
+  if (!phone) sidebarOpen.value = false;
+});
 const scope = ref<Scope>("panel");
 const route = useRoute();
 const router = useRouter();
@@ -83,7 +109,6 @@ const nodeLabel = (node: NodeSummary) =>
     node.available ? "" : ` (${t("TXT_CODE_PLUGIN_NODE_OFFLINE")})`
   }`;
 
-const selectedNode = computed(() => nodes.value.find((item) => item.uuid === selectedNodeId.value));
 const nodeItems = computed(() =>
   nodes.value.map((node) => ({ title: nodeLabel(node), value: node.uuid }))
 );
@@ -289,6 +314,11 @@ const currentId = computed({
   }
 });
 
+const selectPlugin = (id: string) => {
+  currentId.value = id;
+  sidebarOpen.value = false;
+};
+
 const selectedPlugin = computed(() =>
   currentList.value.find((item) => item.id === currentId.value)
 );
@@ -304,12 +334,19 @@ const deleteTooltipOpen = ref(false);
 const saveTooltipActive = ref(false);
 const saveTooltipOpen = computed({
   get: () =>
+    !sidebarOpen.value &&
     !toggleTooltipOpen.value &&
     !deleteTooltipOpen.value &&
     (settingsDirty.value || saveTooltipActive.value),
   set: (value: boolean) => {
     saveTooltipActive.value = value;
   }
+});
+watch(sidebarOpen, (open) => {
+  if (!open) return;
+  toggleTooltipOpen.value = false;
+  deleteTooltipOpen.value = false;
+  saveTooltipActive.value = false;
 });
 // Take a baseline when a form loads, without treating nested field edits as a new baseline.
 watch(
@@ -755,125 +792,120 @@ const confirmRemove = async () => {
 </script>
 
 <template>
-  <div class="plugin-config-page">
+  <VLayout class="plugin-config-page" @keydown.esc="sidebarOpen = false">
     <VProgressLinear v-if="loading" class="plugin-config-loading" color="primary" indeterminate />
 
-    <div class="plugin-config-sidebar">
-      <VBtnToggle v-model="scope" class="plugin-config-scope" mandatory>
-        <VBtn value="panel" size="small" variant="text">{{
-          t("TXT_CODE_PLUGIN_SCOPE_PANEL")
-        }}</VBtn>
-        <VBtn value="node" size="small" variant="text">{{ t("TXT_CODE_PLUGIN_SCOPE_NODE") }}</VBtn>
-      </VBtnToggle>
-
-      <VSelect
-        v-if="scope === 'node'"
-        v-model="selectedNodeId"
-        class="plugin-config-node-select"
-        :items="nodeItems"
-        :loading="loading"
-        :placeholder="t('TXT_CODE_PLUGIN_NODE_SELECT')"
-        hide-details
-      />
-
-      <VSelect
-        v-model="currentId"
-        class="plugin-config-plugin-select"
-        :items="currentList"
-        item-title="id"
-        item-value="id"
-        :label="t('TXT_CODE_PLUGIN_LIST')"
-        :no-data-text="t('TXT_CODE_NO_DATA')"
-        :loading="loading"
-        hide-details
-      >
-        <template #item="{ props: itemProps, item }">
-          <VListItem v-bind="itemProps">
-            <template #append>
-              <span
-                class="plugin-config-item-dot"
-                :class="{
-                  'plugin-config-item-dot-off':
-                    !item.enabled || (item.state && item.state !== 'active')
-                }"
-              ></span>
-            </template>
-          </VListItem>
-        </template>
-      </VSelect>
-
-      <div class="plugin-config-heading">
-        <span>{{ t("TXT_CODE_PLUGIN_LIST") }}</span>
-        <VBtn
-          icon="mdi-plus"
-          size="x-small"
-          variant="text"
-          :aria-label="t('TXT_CODE_PLUGIN_GROUP_ADD')"
-          @click="openCreateGroup"
-        />
-      </div>
-      <VList class="plugin-config-list" density="compact">
-        <template v-for="group in pluginGroups" :key="group.id">
-          <VListSubheader
-            class="plugin-config-group-heading"
-            :class="{ 'plugin-config-group-heading-over': dragOverGroupId === group.id }"
-            @dragover.prevent="dragOverGroupId = group.id"
-            @dragleave="dragOverGroupId = ''"
-            @drop.prevent="dropPlugin(group.id)"
-          >
-            <span>{{ group.name }}</span>
-            <span v-if="!group.unassigned" class="plugin-config-group-actions">
-              <VBtn
-                icon="mdi-pencil-outline"
-                size="x-small"
-                variant="text"
-                :aria-label="t('TXT_CODE_PLUGIN_GROUP_RENAME')"
-                @click.stop="openRenameGroup(group)"
-              />
-              <VBtn
-                icon="mdi-delete-outline"
-                size="x-small"
-                variant="text"
-                :aria-label="t('TXT_CODE_PLUGIN_GROUP_DELETE')"
-                @click.stop="requestRemoveGroup(group)"
-              />
-            </span>
-          </VListSubheader>
-          <VListItem
-            v-for="plugin in group.plugins"
-            :key="plugin.id"
-            draggable="true"
-            :active="plugin.id === currentId"
-            :class="{ 'plugin-config-item-off': !plugin.enabled }"
-            :title="plugin.id"
-            @click="currentId = plugin.id"
-            @dragstart="startPluginDrag(plugin.id, $event)"
-            @dragend="endPluginDrag"
-          >
-            <template #append>
-              <span
-                class="plugin-config-item-dot"
-                :class="{
-                  'plugin-config-item-dot-off':
-                    !plugin.enabled || (plugin.state && plugin.state !== 'active')
-                }"
-              ></span>
-            </template>
-          </VListItem>
-        </template>
-        <div v-if="!currentList.length" class="plugin-config-empty">
-          {{ t("TXT_CODE_NO_DATA") }}
+    <component :is="isPhone ? VNavigationDrawer : 'aside'" v-bind="navigationProps">
+      <div class="plugin-config-sidebar">
+        <div v-if="isPhone" class="plugin-config-sidebar-title">
+          <span>{{ t("TXT_CODE_PLUGIN_CONFIG") }}</span>
+          <VBtn
+            icon="mdi-close"
+            size="small"
+            variant="text"
+            :aria-label="t('TXT_CODE_b1dedda3')"
+            @click="sidebarOpen = false"
+          />
         </div>
-      </VList>
+        <VBtnToggle v-model="scope" class="plugin-config-scope" mandatory>
+          <VBtn value="panel" size="small" variant="text">{{
+            t("TXT_CODE_PLUGIN_SCOPE_PANEL")
+          }}</VBtn>
+          <VBtn value="node" size="small" variant="text">{{ t("TXT_CODE_PLUGIN_SCOPE_NODE") }}</VBtn>
+        </VBtnToggle>
 
-    </div>
+        <VSelect
+          v-if="scope === 'node'"
+          v-model="selectedNodeId"
+          class="plugin-config-node-select"
+          :items="nodeItems"
+          :loading="loading"
+          :placeholder="t('TXT_CODE_PLUGIN_NODE_SELECT')"
+          hide-details
+        />
+
+        <div class="plugin-config-heading">
+          <span>{{ t("TXT_CODE_PLUGIN_LIST") }}</span>
+          <VBtn
+            icon="mdi-plus"
+            size="x-small"
+            variant="text"
+            :aria-label="t('TXT_CODE_PLUGIN_GROUP_ADD')"
+            @click="openCreateGroup"
+          />
+        </div>
+        <VList class="plugin-config-list" density="compact">
+          <template v-for="group in pluginGroups" :key="group.id">
+            <VListSubheader
+              class="plugin-config-group-heading"
+              :class="{ 'plugin-config-group-heading-over': dragOverGroupId === group.id }"
+              @dragover.prevent="dragOverGroupId = group.id"
+              @dragleave="dragOverGroupId = ''"
+              @drop.prevent="dropPlugin(group.id)"
+            >
+              <span>{{ group.name }}</span>
+              <span v-if="!group.unassigned" class="plugin-config-group-actions">
+                <VBtn
+                  icon="mdi-pencil-outline"
+                  size="x-small"
+                  variant="text"
+                  :aria-label="t('TXT_CODE_PLUGIN_GROUP_RENAME')"
+                  @click.stop="openRenameGroup(group)"
+                />
+                <VBtn
+                  icon="mdi-delete-outline"
+                  size="x-small"
+                  variant="text"
+                  :aria-label="t('TXT_CODE_PLUGIN_GROUP_DELETE')"
+                  @click.stop="requestRemoveGroup(group)"
+                />
+              </span>
+            </VListSubheader>
+            <VListItem
+              v-for="plugin in group.plugins"
+              :key="plugin.id"
+              draggable="true"
+              :active="plugin.id === currentId"
+              :class="{ 'plugin-config-item-off': !plugin.enabled }"
+              :title="plugin.id"
+              @click="selectPlugin(plugin.id)"
+              @dragstart="startPluginDrag(plugin.id, $event)"
+              @dragend="endPluginDrag"
+            >
+              <template #append>
+                <span
+                  class="plugin-config-item-dot"
+                  :class="{
+                    'plugin-config-item-dot-off':
+                      !plugin.enabled || (plugin.state && plugin.state !== 'active')
+                  }"
+                ></span>
+              </template>
+            </VListItem>
+          </template>
+          <div v-if="!currentList.length" class="plugin-config-empty">
+            {{ t("TXT_CODE_NO_DATA") }}
+          </div>
+        </VList>
+
+      </div>
+    </component>
 
     <div class="plugin-config-content">
-      <div v-if="selectedPlugin" class="plugin-config-title-row">
-        <div>
-          <h2>{{ selectedPlugin.id }}</h2>
+      <div v-if="selectedPlugin || isPhone" class="plugin-config-title-row">
+        <div class="plugin-config-title">
+          <VBtn
+            v-if="isPhone"
+            icon="mdi-menu"
+            variant="text"
+            :title="t('TXT_CODE_PLUGIN_LIST')"
+            :aria-label="t('TXT_CODE_PLUGIN_LIST')"
+            :aria-expanded="sidebarOpen"
+            @click="sidebarOpen = true"
+          />
+          <h2>{{ selectedPlugin?.id || t("TXT_CODE_PLUGIN_CONFIG") }}</h2>
         </div>
-        <div class="plugin-config-meta">
+        <div v-if="selectedPlugin" class="plugin-config-meta">
           <VChip
             v-if="selectedPlugin.state"
             size="small"
@@ -881,10 +913,10 @@ const confirmRemove = async () => {
           >
             {{ t(stateLabels[selectedPlugin.state]) }}
           </VChip>
-          <span v-if="scope === 'node' && selectedNode" class="plugin-config-version">
-            {{ nodeLabel(selectedNode) }}
-          </span>
-          <span v-if="selectedPlugin.version" class="plugin-config-version">
+          <span
+            v-if="selectedPlugin.version"
+            class="plugin-config-version plugin-config-plugin-version"
+          >
             {{ t("TXT_CODE_VERSION") }} {{ selectedPlugin.version }}
           </span>
           <div class="plugin-config-actions">
@@ -1144,7 +1176,7 @@ const confirmRemove = async () => {
         </VCardActions>
       </VCard>
     </VDialog>
-  </div>
+  </VLayout>
 </template>
 
 <style lang="scss" scoped>
@@ -1173,15 +1205,35 @@ const confirmRemove = async () => {
   --plugin-config-surface-color: #1f1f27;
 }
 
+.plugin-config-navigation {
+  flex: 0 0 240px;
+  min-height: 0;
+}
+
+.plugin-config-navigation :deep(.v-navigation-drawer__content) {
+  overflow: hidden;
+}
+
 .plugin-config-sidebar {
   display: flex;
   flex-direction: column;
-  flex: 0 0 240px;
   box-sizing: border-box;
+  width: 100%;
+  height: 100%;
   min-height: 0;
   padding: 24px 16px;
   overflow: hidden;
   background: var(--background-color-white);
+}
+
+.plugin-config-sidebar-title {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-weight: 600;
 }
 
 :global(.desktop-container .plugin-config-sidebar),
@@ -1217,8 +1269,7 @@ const confirmRemove = async () => {
   color: #fff !important;
 }
 
-.plugin-config-node-select,
-.plugin-config-plugin-select {
+.plugin-config-node-select {
   flex: 0 0 auto;
   width: 100%;
   max-width: 100%;
@@ -1228,28 +1279,20 @@ const confirmRemove = async () => {
 }
 
 .plugin-config-node-select :deep(.v-input__control),
-.plugin-config-node-select :deep(.v-field),
-.plugin-config-plugin-select :deep(.v-input__control),
-.plugin-config-plugin-select :deep(.v-field) {
+.plugin-config-node-select :deep(.v-field) {
   width: 100%;
   min-width: 0;
 }
 
-.plugin-config-node-select :deep(.v-field__input),
-.plugin-config-plugin-select :deep(.v-field__input) {
+.plugin-config-node-select :deep(.v-field__input) {
   min-width: 0;
   overflow: hidden;
 }
 
-.plugin-config-node-select :deep(.v-select__selection-text),
-.plugin-config-plugin-select :deep(.v-select__selection-text) {
+.plugin-config-node-select :deep(.v-select__selection-text) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.plugin-config-plugin-select {
-  display: none;
 }
 
 .plugin-config-heading {
@@ -1425,6 +1468,17 @@ const confirmRemove = async () => {
   font-size: 20px;
 }
 
+.plugin-config-title {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.plugin-config-title > :deep(.v-btn) {
+  flex: 0 0 auto;
+}
+
 .plugin-config-meta {
   display: flex;
   flex-shrink: 0;
@@ -1478,7 +1532,6 @@ const confirmRemove = async () => {
   }
 
   .plugin-config-sidebar {
-    flex: none;
     min-width: 0;
     padding: 16px;
   }
@@ -1501,24 +1554,35 @@ const confirmRemove = async () => {
     overflow-wrap: anywhere;
   }
 
-  .plugin-config-heading,
-  .plugin-config-list {
-    display: none;
+  .plugin-config-list :deep(.plugin-config-group-actions) {
+    opacity: 1;
+    pointer-events: auto;
   }
 
-  .plugin-config-plugin-select {
-    display: grid;
-    margin-bottom: 0;
+  .plugin-config-group-actions :deep(.v-btn) {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
+  }
+
+  .plugin-config-group-actions :deep(.v-icon) {
+    font-size: 16px;
   }
 
   .plugin-config-content {
-    padding: 8px 16px 20px;
+    padding: 16px 16px 20px;
   }
 
   .plugin-config-title-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, auto);
+    gap: 8px;
+  }
+
+  .plugin-config-title {
+    grid-column: 1;
+    grid-row: 1;
   }
 
   .plugin-config-title-row h2,
@@ -1528,15 +1592,18 @@ const confirmRemove = async () => {
   }
 
   .plugin-config-meta {
-    min-width: 0;
-    justify-content: flex-start;
-    gap: 8px;
+    display: contents;
   }
 
   .plugin-config-actions {
-    flex: 0 0 100%;
+    grid-column: 1 / -1;
     justify-content: flex-end;
     gap: 8px;
+  }
+
+  .plugin-config-plugin-version {
+    grid-column: 2;
+    grid-row: 1;
   }
 
   .plugin-config-version {
@@ -1545,6 +1612,8 @@ const confirmRemove = async () => {
   }
 
   .plugin-config-meta :deep(.v-chip) {
+    grid-column: 3;
+    grid-row: 1;
     max-width: 100%;
     min-height: 24px;
     height: auto;

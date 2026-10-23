@@ -214,6 +214,7 @@ useEventListener("keydown", (event) => {
     location="left"
     width="280"
     temporary
+    floating
     retain-focus
     capture-focus
   >

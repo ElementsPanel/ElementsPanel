@@ -63,6 +63,7 @@ function setupSfc(filename, overrides = {}, props = {}) {
     {
       vue: { ...vue, onMounted() {}, onUnmounted() {}, watch() {} },
       "@/lang/i18n": i18n,
+      "@/hooks/useScreen": { useScreen: () => ({ isPhone: vue.ref(false) }) },
       "vuetify/components": {},
       ...overrides
     },
@@ -568,6 +569,7 @@ test("switching node/plugin configuration cannot display or save a stale schema"
 test("plugin configuration opens its save tooltip for unsaved edits and preserves edits across saves", async (t) => {
   for (const targetScope of ["panel", "node"]) await t.test(targetScope, async (t) => {
     const effect = vue.effectScope();
+    const isPhone = vue.ref(false);
     t.after(() => effect.stop());
     t.mock.method(console, "error", () => {});
     const errors = [];
@@ -590,6 +592,7 @@ test("plugin configuration opens its save tooltip for unsaved edits and preserve
     };
     const state = effect.run(() => setupSfc("panel/plugins/config/src/ConfigPage.vue", {
       vue: { ...vue, onMounted() {}, onUnmounted() {} },
+      "@/hooks/useScreen": { useScreen: () => ({ isPhone }) },
       "vue-router": {
         useRoute: () => ({ path: "/desktop", query: {} }),
         useRouter: () => ({}),
@@ -630,6 +633,18 @@ test("plugin configuration opens its save tooltip for unsaved edits and preserve
     assert.equal(state.saveTooltipOpen.value, true, "editing must open the tooltip without hovering");
     state.saveTooltipOpen.value = false;
     assert.equal(state.saveTooltipOpen.value, true, "mouseleave must not hide the unsaved reminder");
+    isPhone.value = true;
+    state.sidebarOpen.value = true;
+    await vue.nextTick();
+    assert.equal(state.saveTooltipOpen.value, false, "the reminder must not overlay the mobile sidebar");
+    state.selectPlugin("settings");
+    assert.equal(state.sidebarOpen.value, false, "selecting the current plugin must also close the sidebar");
+    assert.equal(state.settingsDirty.value, true, "reselecting the plugin must preserve its edits");
+    assert.equal(state.saveTooltipOpen.value, true);
+    state.sidebarOpen.value = true;
+    isPhone.value = false;
+    await vue.nextTick();
+    assert.equal(state.sidebarOpen.value, false, "switching to the desktop layout must reset the drawer");
     state.toggleTooltipOpen.value = true;
     assert.equal(state.saveTooltipOpen.value, false, "the toggle tooltip must take priority");
     state.deleteTooltipOpen.value = true;
@@ -679,8 +694,12 @@ test("plugin configuration opens its save tooltip for unsaved edits and preserve
     await vue.nextTick();
     state.toggleTooltipOpen.value = true;
     state.deleteTooltipOpen.value = true;
-    state.currentId.value = "other";
+    isPhone.value = true;
+    state.sidebarOpen.value = true;
+    state.selectPlugin("other");
     await settle();
+    assert.equal(state.currentId.value, "other");
+    assert.equal(state.sidebarOpen.value, false, "choosing another plugin must close the sidebar");
     assert.equal(state.settingsDirty.value, false, "another plugin must receive a fresh baseline");
     assert.equal(state.saveTooltipOpen.value, false);
     assert.equal(state.toggleTooltipOpen.value, false);
