@@ -869,182 +869,183 @@ const confirmRemove = async () => {
     </div>
 
     <div class="plugin-config-content">
-      <VAlert
-        v-if="scope === 'node' && nodeError"
-        class="plugin-config-alert"
-        type="warning"
-        variant="tonal"
-        :title="t('TXT_CODE_PLUGIN_NODE_LIST_FAILED')"
-        :text="nodeError"
-      />
-
-      <template v-if="selectedPlugin">
-        <div class="plugin-config-title-row">
-          <div>
-            <h2>{{ selectedPlugin.id }}</h2>
-          </div>
-          <div class="plugin-config-meta">
-            <VChip
-              v-if="selectedPlugin.state"
-              size="small"
-              :color="selectedPlugin.state === 'active' ? 'success' : 'warning'"
+      <div v-if="selectedPlugin" class="plugin-config-title-row">
+        <div>
+          <h2>{{ selectedPlugin.id }}</h2>
+        </div>
+        <div class="plugin-config-meta">
+          <VChip
+            v-if="selectedPlugin.state"
+            size="small"
+            :color="selectedPlugin.state === 'active' ? 'success' : 'warning'"
+          >
+            {{ t(stateLabels[selectedPlugin.state]) }}
+          </VChip>
+          <span v-if="scope === 'node' && selectedNode" class="plugin-config-version">
+            {{ nodeLabel(selectedNode) }}
+          </span>
+          <span v-if="selectedPlugin.version" class="plugin-config-version">
+            {{ t("TXT_CODE_VERSION") }} {{ selectedPlugin.version }}
+          </span>
+          <div class="plugin-config-actions">
+            <VTooltip
+              v-model="toggleTooltipOpen"
+              :text="t(selectedPlugin.enabled ? 'TXT_CODE_PLUGIN_DISABLE' : 'TXT_CODE_PLUGIN_ENABLE')"
+              location="top"
             >
-              {{ t(stateLabels[selectedPlugin.state]) }}
-            </VChip>
-            <span v-if="scope === 'node' && selectedNode" class="plugin-config-version">
-              {{ nodeLabel(selectedNode) }}
-            </span>
-            <span v-if="selectedPlugin.version" class="plugin-config-version">
-              {{ t("TXT_CODE_VERSION") }} {{ selectedPlugin.version }}
-            </span>
-            <div class="plugin-config-actions">
-              <VTooltip
-                v-model="toggleTooltipOpen"
-                :text="t(selectedPlugin.enabled ? 'TXT_CODE_PLUGIN_DISABLE' : 'TXT_CODE_PLUGIN_ENABLE')"
-                location="top"
-              >
-                <template #activator="{ props: tooltipProps }">
-                  <span v-bind="tooltipProps">
-                    <VBtn
-                      icon="mdi-power"
-                      :color="selectedPlugin.enabled ? 'warning' : 'success'"
-                      variant="text"
-                      :loading="pending === selectedPlugin.id"
-                      :disabled="Boolean(pending)"
-                      :aria-label="
-                        t(
-                          selectedPlugin.enabled
-                            ? 'TXT_CODE_PLUGIN_DISABLE'
-                            : 'TXT_CODE_PLUGIN_ENABLE'
-                        )
-                      "
-                      @click="toggleSelected(!selectedPlugin.enabled)"
-                    />
-                  </span>
-                </template>
-              </VTooltip>
-              <VTooltip
-                v-if="schema?.fields.some((field) => field.type !== 'link')"
-                v-model="saveTooltipOpen"
-                :text="
-                  t(settingsDirty ? 'TXT_CODE_PLUGIN_SAVE_REMINDER' : 'TXT_CODE_PLUGIN_SAVE_SETTINGS')
-                "
-                location="top"
-              >
-                <template #activator="{ props: tooltipProps }">
-                  <span v-bind="tooltipProps">
-                    <VBtn
-                      icon="mdi-content-save"
-                      color="primary"
-                      :variant="settingsDirty ? 'flat' : 'text'"
-                      :loading="savingSettings"
-                      :disabled="schemaLoading"
-                      :aria-label="t('TXT_CODE_PLUGIN_SAVE_SETTINGS')"
-                      @click="saveSettings"
-                    />
-                  </span>
-                </template>
-              </VTooltip>
-              <VTooltip
-                v-model="deleteTooltipOpen"
-                :text="
-                  t(
-                    selectedPlugin?.removable
-                      ? 'TXT_CODE_PLUGIN_DELETE'
-                      : 'TXT_CODE_PLUGIN_DELETE_UNAVAILABLE'
-                  )
-                "
-                location="top"
-              >
-                <template #activator="{ props: tooltipProps }">
-                  <span v-bind="tooltipProps">
-                    <VBtn
-                      icon="mdi-delete"
-                      color="error"
-                      variant="text"
-                      :loading="deletingPlugin"
-                      :disabled="!selectedPlugin?.removable || deletingPlugin"
-                      :aria-label="
-                        t(
-                          selectedPlugin?.removable
-                            ? 'TXT_CODE_PLUGIN_DELETE'
-                            : 'TXT_CODE_PLUGIN_DELETE_UNAVAILABLE'
-                        )
-                      "
-                      @click="
-                        deleteCandidate = selectedPlugin
-                          ? { scope, plugin: selectedPlugin, nodeId: selectedNodeId }
-                          : null;
-                        deleteConfirmOpen = Boolean(deleteCandidate)
-                      "
-                    />
-                  </span>
-                </template>
-              </VTooltip>
-            </div>
+              <template #activator="{ props: tooltipProps }">
+                <span v-bind="tooltipProps">
+                  <VBtn
+                    icon="mdi-power"
+                    :color="selectedPlugin.enabled ? 'warning' : 'success'"
+                    variant="text"
+                    :loading="pending === selectedPlugin.id"
+                    :disabled="Boolean(pending)"
+                    :aria-label="
+                      t(
+                        selectedPlugin.enabled
+                          ? 'TXT_CODE_PLUGIN_DISABLE'
+                          : 'TXT_CODE_PLUGIN_ENABLE'
+                      )
+                    "
+                    @click="toggleSelected(!selectedPlugin.enabled)"
+                  />
+                </span>
+              </template>
+            </VTooltip>
+            <VTooltip
+              v-if="schema?.fields.some((field) => field.type !== 'link')"
+              v-model="saveTooltipOpen"
+              :text="
+                t(settingsDirty ? 'TXT_CODE_PLUGIN_SAVE_REMINDER' : 'TXT_CODE_PLUGIN_SAVE_SETTINGS')
+              "
+              location="top"
+            >
+              <template #activator="{ props: tooltipProps }">
+                <span v-bind="tooltipProps">
+                  <VBtn
+                    icon="mdi-content-save"
+                    color="primary"
+                    :variant="settingsDirty ? 'flat' : 'text'"
+                    :loading="savingSettings"
+                    :disabled="schemaLoading"
+                    :aria-label="t('TXT_CODE_PLUGIN_SAVE_SETTINGS')"
+                    @click="saveSettings"
+                  />
+                </span>
+              </template>
+            </VTooltip>
+            <VTooltip
+              v-model="deleteTooltipOpen"
+              :text="
+                t(
+                  selectedPlugin?.removable
+                    ? 'TXT_CODE_PLUGIN_DELETE'
+                    : 'TXT_CODE_PLUGIN_DELETE_UNAVAILABLE'
+                )
+              "
+              location="top"
+            >
+              <template #activator="{ props: tooltipProps }">
+                <span v-bind="tooltipProps">
+                  <VBtn
+                    icon="mdi-delete"
+                    color="error"
+                    variant="text"
+                    :loading="deletingPlugin"
+                    :disabled="!selectedPlugin?.removable || deletingPlugin"
+                    :aria-label="
+                      t(
+                        selectedPlugin?.removable
+                          ? 'TXT_CODE_PLUGIN_DELETE'
+                          : 'TXT_CODE_PLUGIN_DELETE_UNAVAILABLE'
+                      )
+                    "
+                    @click="
+                      deleteCandidate = selectedPlugin
+                        ? { scope, plugin: selectedPlugin, nodeId: selectedNodeId }
+                        : null;
+                      deleteConfirmOpen = Boolean(deleteCandidate)
+                    "
+                  />
+                </span>
+              </template>
+            </VTooltip>
           </div>
         </div>
+      </div>
 
+      <div class="plugin-config-body">
         <VAlert
-          v-if="!selectedPlugin.enabled"
+          v-if="scope === 'node' && nodeError"
           class="plugin-config-alert"
           type="warning"
           variant="tonal"
-          :title="t('TXT_CODE_PLUGIN_IS_DISABLED')"
+          :title="t('TXT_CODE_PLUGIN_NODE_LIST_FAILED')"
+          :text="nodeError"
         />
-        <VAlert
-          v-else-if="selectedPlugin.error"
-          class="plugin-config-alert"
-          type="error"
-          variant="tonal"
-          :title="t('TXT_CODE_PLUGIN_LOAD_FAILED')"
-          :text="selectedPlugin.error"
-        />
+        <template v-if="selectedPlugin">
+          <VAlert
+            v-if="!selectedPlugin.enabled"
+            class="plugin-config-alert"
+            type="warning"
+            variant="tonal"
+            :title="t('TXT_CODE_PLUGIN_IS_DISABLED')"
+          />
+          <VAlert
+            v-else-if="selectedPlugin.error"
+            class="plugin-config-alert"
+            type="error"
+            variant="tonal"
+            :title="t('TXT_CODE_PLUGIN_LOAD_FAILED')"
+            :text="selectedPlugin.error"
+          />
 
-        <VAlert
-          v-if="lastResult?.application === 'restart-required' || frontendPlugin?.restartRequired"
-          class="plugin-config-alert"
-          type="warning"
-          variant="tonal"
-          :text="t('TXT_CODE_PLUGIN_RESTART_REQUIRED')"
-        />
-        <VAlert
-          v-else-if="frontendPlugin?.reloadRequired"
-          class="plugin-config-alert"
-          type="warning"
-          variant="tonal"
-          :text="t('TXT_CODE_PLUGIN_REFRESH_REQUIRED')"
-        />
-        <VAlert
-          v-else-if="lastResult?.application === 'pending'"
-          class="plugin-config-alert"
-          type="info"
-          variant="tonal"
-          :text="t('TXT_CODE_PLUGIN_SAVED_PENDING')"
-        />
-        <VAlert
-          v-if="frontendPlugin?.error"
-          class="plugin-config-alert"
-          type="error"
-          variant="tonal"
-          :title="t('TXT_CODE_PLUGIN_FRONTEND_FAILED')"
-          :text="frontendPlugin.error.message"
-        />
+          <VAlert
+            v-if="lastResult?.application === 'restart-required' || frontendPlugin?.restartRequired"
+            class="plugin-config-alert"
+            type="warning"
+            variant="tonal"
+            :text="t('TXT_CODE_PLUGIN_RESTART_REQUIRED')"
+          />
+          <VAlert
+            v-else-if="frontendPlugin?.reloadRequired"
+            class="plugin-config-alert"
+            type="warning"
+            variant="tonal"
+            :text="t('TXT_CODE_PLUGIN_REFRESH_REQUIRED')"
+          />
+          <VAlert
+            v-else-if="lastResult?.application === 'pending'"
+            class="plugin-config-alert"
+            type="info"
+            variant="tonal"
+            :text="t('TXT_CODE_PLUGIN_SAVED_PENDING')"
+          />
+          <VAlert
+            v-if="frontendPlugin?.error"
+            class="plugin-config-alert"
+            type="error"
+            variant="tonal"
+            :title="t('TXT_CODE_PLUGIN_FRONTEND_FAILED')"
+            :text="frontendPlugin.error.message"
+          />
 
-        <VBtn v-if="frontendPlugin?.error" class="mb-4" variant="text" @click="retryFrontend">{{
-          t("TXT_CODE_9277af78")
-        }}</VBtn>
-        <div v-if="schemaLoading" class="plugin-config-schema-loading">
-          <VProgressCircular color="primary" indeterminate size="28" />
-        </div>
-        <div v-else-if="schema && schema.fields.length" class="plugin-config-form">
-          <SchemaForm :fields="schema.fields" :values="schema.values" @save="saveSettings" />
-        </div>
-        <div v-else class="plugin-config-no-config">
-          {{ t("TXT_CODE_PLUGIN_NO_CONFIG") }}
-        </div>
-      </template>
-      <div v-else-if="!nodeError" class="plugin-config-no-config">{{ t("TXT_CODE_NO_DATA") }}</div>
+          <VBtn v-if="frontendPlugin?.error" class="mb-4" variant="text" @click="retryFrontend">{{
+            t("TXT_CODE_9277af78")
+          }}</VBtn>
+          <div v-if="schemaLoading" class="plugin-config-schema-loading">
+            <VProgressCircular color="primary" indeterminate size="28" />
+          </div>
+          <div v-else-if="schema && schema.fields.length" class="plugin-config-form">
+            <SchemaForm :fields="schema.fields" :values="schema.values" @save="saveSettings" />
+          </div>
+          <div v-else class="plugin-config-no-config">
+            {{ t("TXT_CODE_PLUGIN_NO_CONFIG") }}
+          </div>
+        </template>
+        <div v-else-if="!nodeError" class="plugin-config-no-config">{{ t("TXT_CODE_NO_DATA") }}</div>
+      </div>
     </div>
 
     <VDialog v-model="disableConfirmOpen" max-width="460">
@@ -1392,15 +1393,26 @@ const confirmRemove = async () => {
 }
 
 .plugin-config-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   min-width: 0;
   flex: 1;
   padding: 32px;
   padding-top: 20px;
+  overflow: hidden;
+}
+
+.plugin-config-body {
+  min-height: 0;
+  flex: 1;
   overflow: auto;
+  overscroll-behavior: contain;
 }
 
 .plugin-config-title-row {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -1460,7 +1472,7 @@ const confirmRemove = async () => {
 @media (max-width: 992px) {
   .plugin-config-page {
     flex-direction: column;
-    height: auto;
+    height: calc(100dvh - 200px);
     min-width: 0;
     min-height: 0;
   }
@@ -1500,9 +1512,7 @@ const confirmRemove = async () => {
   }
 
   .plugin-config-content {
-    flex: none;
     padding: 8px 16px 20px;
-    overflow: visible;
   }
 
   .plugin-config-title-row {
@@ -1562,7 +1572,6 @@ const confirmRemove = async () => {
 
   :global(.desktop-container .plugin-config-page) {
     height: 100%;
-    overflow-y: auto;
   }
 }
 </style>
