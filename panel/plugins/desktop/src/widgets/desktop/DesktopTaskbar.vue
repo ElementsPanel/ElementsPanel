@@ -372,8 +372,8 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
     }
 
     .start-menu__function-btn {
-        width: 36px;
-        height: 36px;
+        width: 32px;
+        height: 32px;
         margin: 3px 0;
         border: 0;
         border-radius: 6px;
@@ -383,7 +383,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
         color: var(--desktop-menu-text);
         background: transparent;
         cursor: pointer;
-        font-size: 17px;
+        font-size: 16px;
 
         &:hover {
             background: var(--desktop-menu-hover);
