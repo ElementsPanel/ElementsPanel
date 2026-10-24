@@ -152,6 +152,7 @@ export function apply(ctx: DaemonPluginContext) {
 
     private backupPath = "";
     private backupFileName = "";
+    private ownsBusyState = false;
 
     constructor(private readonly instance: InstanceEntity) {
       super();
@@ -160,7 +161,7 @@ export function apply(ctx: DaemonPluginContext) {
     }
 
     async onStart() {
-      let ownsBusyState = false;
+      this.ownsBusyState = false;
       try {
         if (this.instance.status() === Instance.STATUS_BUSY) {
           throw new Error(t("TXT_CODE_instanceConf.instanceBusy"));
@@ -198,7 +199,7 @@ export function apply(ctx: DaemonPluginContext) {
         }
 
         this.instance.status(Instance.STATUS_BUSY);
-        ownsBusyState = true;
+        this.ownsBusyState = true;
         this.instance.println("INFO", t("TXT_CODE_INSTANCE_BACKUP_COMPRESSING"));
 
         const now = new Date();
@@ -436,12 +437,19 @@ export function apply(ctx: DaemonPluginContext) {
           t("TXT_CODE_INSTANCE_BACKUP_FAILED", { err: error.message })
         );
         await this.error(error);
-      } finally {
-        if (ownsBusyState) this.instance.status(Instance.STATUS_STOP);
       }
     }
 
     async onStop() {
+      // Release the busy state here rather than in `onStart`'s finally: `wait()`
+      // resolves from this stop, so a following scheduled action would otherwise
+      // still read STATUS_BUSY and skip itself.
+      if (this.ownsBusyState) {
+        this.ownsBusyState = false;
+        if (this.instance.status() === Instance.STATUS_BUSY) {
+          this.instance.status(Instance.STATUS_STOP);
+        }
+      }
       this.instance.print("\n");
     }
 
