@@ -1,40 +1,17 @@
+const { from, createLoader } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const Module = require("node:module");
 const { EventEmitter, once } = require("node:events");
 const { PassThrough } = require("node:stream");
 const { test } = require("node:test");
 
 const root = path.resolve(__dirname, "../..");
-const commonRequire = Module.createRequire(path.join(root, "common/package.json"));
+const commonRequire = from("common");
 const ts = commonRequire("typescript");
 
-function load(file, overrides = {}, environment = {}) {
-  const filename = path.join(root, file);
-  const mod = new Module(filename, module);
-  const localRequire = Module.createRequire(filename);
-  mod.require = (id) => (Object.hasOwn(overrides, id) ? overrides[id] : localRequire(id));
-  mod.environment = environment;
-  const globals = Object.keys(environment)
-    .map((key) => `const ${key} = module.environment.${key};`)
-    .join("\n");
-  mod._compile(
-    globals +
-      "\n" +
-      ts.transpileModule(fs.readFileSync(filename, "utf8"), {
-        compilerOptions: {
-          module: ts.ModuleKind.CommonJS,
-          target: ts.ScriptTarget.ES2022,
-          esModuleInterop: true
-        },
-        fileName: filename
-      }).outputText,
-    filename
-  );
-  return mod.exports;
-}
+const load = createLoader({ compiler: ts, globals: true });
 
 function storageFixture(t, overrides) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "elements-storage-review-"));

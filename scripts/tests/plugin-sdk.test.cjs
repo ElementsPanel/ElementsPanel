@@ -1,3 +1,4 @@
+const { from } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -5,7 +6,7 @@ const Module = require("node:module");
 const { pathToFileURL } = require("node:url");
 const { test } = require("node:test");
 const root = path.resolve(__dirname, "../..");
-const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
+const frontendRequire = from("frontend");
 const ts = frontendRequire("typescript");
 
 async function loadHostConfig() {

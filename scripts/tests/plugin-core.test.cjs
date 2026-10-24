@@ -1,67 +1,30 @@
+const { from, createBrowser, createLoader } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const Module = require("node:module");
 const { EventEmitter } = require("node:events");
 const { test, after } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
-const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
-const panelRequire = Module.createRequire(path.join(root, "panel/package.json"));
+const frontendRequire = from("frontend");
+const panelRequire = from("panel");
 const ts = panelRequire("typescript");
-const { JSDOM } = frontendRequire("jsdom");
-const dom = new JSDOM("<!doctype html><div id='app-mount-point'></div>", {
-  url: "http://localhost"
-});
-for (const name of [
-  "window",
-  "CustomEvent",
-  "document",
-  "SVGElement",
-  "Element",
-  "Node",
-  "HTMLElement",
-  "localStorage",
-  "history",
-  "location"
-]) {
-  global[name] = dom.window[name];
-}
+const dom = createBrowser("<!doctype html><div id='app-mount-point'></div>");
 after(() => dom.window.close());
 
 const vue = frontendRequire("vue");
 const { Context, Logger, Service } = frontendRequire("cordis");
 const { createRouter, createMemoryHistory } = frontendRequire("vue-router");
 
-function load(filename, overrides = {}, environment = {}) {
-  filename = path.join(root, filename);
-  const mod = new Module(filename, module);
-  const localRequire = Module.createRequire(filename);
-  const requireSource = (id) => {
-    const candidate = path.resolve(path.dirname(filename), id) + ".ts";
-    if (id.startsWith(".") && fs.existsSync(candidate)) return load(path.relative(root, candidate));
-    return localRequire(id);
-  };
-  mod.environment = environment;
-  mod.require = (id) => {
-    if (Object.hasOwn(overrides, id)) return overrides[id];
-    return id.startsWith(".") ? requireSource(id) : frontendRequire(id);
-  };
-  const source = fs.readFileSync(filename, "utf8").replaceAll("import.meta.env.DEV", "true");
-  const compiled = ts.transpileModule(source, {
-    fileName: filename,
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2022,
-      esModuleInterop: true
-    }
-  }).outputText;
-  const globals = Object.keys(environment)
-    .map((key) => `const ${key} = module.environment.${key};`)
-    .join("\n");
-  mod._compile(`${globals}\n${compiled}`, filename);
-  return mod.exports;
-}
+const load = createLoader({
+  compiler: ts,
+  globals: true,
+  transform: (source) => source.replaceAll("import.meta.env.DEV", "true"),
+  resolve(id, { filename, localRequire, load }) {
+    const target = path.resolve(path.dirname(filename), id) + ".ts";
+    if (id.startsWith(".")) return fs.existsSync(target) ? load(target) : localRequire(id);
+    return frontendRequire(id);
+  }
+});
 
 function frontendFixture(t, { user = true, failStatus = false } = {}) {
   const ctx = new Context();

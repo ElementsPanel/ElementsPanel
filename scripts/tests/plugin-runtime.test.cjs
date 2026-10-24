@@ -1,3 +1,4 @@
+const { from, createLoader } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
@@ -6,7 +7,7 @@ const Module = require("node:module");
 const { EventEmitter } = require("node:events");
 const { test } = require("node:test");
 const root = path.resolve(__dirname, "../..");
-const hostRequire = Module.createRequire(path.join(root, "panel/package.json"));
+const hostRequire = from("panel");
 const ts = hostRequire("typescript");
 const { Context } = hostRequire("cordis");
 const commonNames = [
@@ -16,31 +17,15 @@ const commonNames = [
   "plugin_lifecycle",
   "plugin_revision"
 ];
-function load(relative, overrides = {}) {
-  const filename = path.join(root, relative);
-  const mod = new Module(filename, module);
-  const localRequire = Module.createRequire(filename);
-  mod.require = (id) => {
-    if (Object.hasOwn(overrides, id)) return overrides[id];
+const load = createLoader({
+  compiler: ts,
+  resolve(id, { filename, localRequire, load }) {
     if (id === "mcsmanager-common")
       return Object.assign({}, ...commonNames.map((name) => load(`common/src/${name}.ts`)));
     const target = path.resolve(path.dirname(filename), id) + ".ts";
-    if (id.startsWith(".") && fs.existsSync(target)) return load(path.relative(root, target));
-    return localRequire(id);
-  };
-  mod._compile(
-    ts.transpileModule(fs.readFileSync(filename, "utf8"), {
-      fileName: filename,
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2022,
-        esModuleInterop: true
-      }
-    }).outputText,
-    filename
-  );
-  return mod.exports;
-}
+    return id.startsWith(".") && fs.existsSync(target) ? load(target) : localRequire(id);
+  }
+});
 function fixture(t, side = "panel") {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "elements-plugin-runtime-"));
   const previous = process.cwd();

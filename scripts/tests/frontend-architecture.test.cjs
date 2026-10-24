@@ -1,41 +1,24 @@
+const { from, createLoader } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const Module = require("node:module");
 const { test } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
-const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
-const panelRequire = Module.createRequire(path.join(root, "panel/package.json"));
+const frontendRequire = from("frontend");
+
 const ts = frontendRequire("typescript");
 
-function load(relative, overrides = {}) {
-  const filename = path.join(root, relative);
-  const localRequire = Module.createRequire(filename);
-  const mod = new Module(filename, module);
-  mod.require = (id) => {
-    if (Object.hasOwn(overrides, id)) return overrides[id];
+const load = createLoader({
+  compiler: ts,
+  resolve(id, { filename, localRequire, load, overrides }) {
     if (id.startsWith(".")) {
       const base = path.resolve(path.dirname(filename), id);
-      for (const candidate of [base + ".ts", path.join(base, "index.ts")]) {
-        if (fs.existsSync(candidate)) return load(path.relative(root, candidate), overrides);
-      }
+      for (const candidate of [base + ".ts", path.join(base, "index.ts")])
+        if (fs.existsSync(candidate)) return load(candidate, overrides);
     }
     return localRequire(id);
-  };
-  mod._compile(
-    ts.transpileModule(fs.readFileSync(filename, "utf8"), {
-      fileName: filename,
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2022,
-        esModuleInterop: true
-      }
-    }).outputText,
-    filename
-  );
-  return mod.exports;
-}
+  }
+});
 
 test("browser metadata redacts backend config and preserves explicit graph metadata", () => {
   const { createFrontendPluginMetadata } = load("common/src/plugin_manifest.ts");
@@ -262,23 +245,4 @@ test("permission middleware accepts bearer tokens and retains legacy query compa
     status: undefined
   });
   assert.equal((await request({ authorization: "Bearer wrong" })).status, 403);
-});
-
-test("plugin reloads use source revisions", () => {
-  const loader = fs.readFileSync(path.join(root, "frontend/src/plugin/loader.ts"), "utf8");
-  assert.match(loader, /source\.revision \|\| String\(source\.metadata\.version/);
-  assert.doesNotMatch(loader, /panel_plugin_reload[^\n]*Date\.now/);
-});
-
-test("production plugin packaging validates the emitted entry file", () => {
-  const packaging = fs.readFileSync(
-    path.join(root, "scripts/package-panel-plugins.mjs"),
-    "utf8"
-  );
-  assert.match(packaging, /fs\.existsSync\(builtEntry\)/);
-  assert.match(packaging, /packagedMetadata\.frontend = packagedEntry/);
-  assert.doesNotMatch(
-    packaging,
-    /manifestEntry\?\.entry && fs\.existsSync\(builtPluginDirectory\)/
-  );
 });

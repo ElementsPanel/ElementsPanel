@@ -1,3 +1,4 @@
+const { from, createBrowser } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -5,48 +6,8 @@ const Module = require("node:module");
 const { after, test } = require("node:test");
 
 const root = path.resolve(__dirname, "../..");
-const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
-const { JSDOM, VirtualConsole } = frontendRequire("jsdom");
-const virtualConsole = new VirtualConsole();
-virtualConsole.sendTo(console, { omitJSDOMErrors: true });
-virtualConsole.on("jsdomError", (error) => {
-  // jsdom 22 cannot parse Vuetify 4's theme cascade layers.
-  if (error.type === "css parsing" && error.detail?.includes("@layer")) return;
-  throw error;
-});
-const dom = new JSDOM("<!doctype html><html><head></head><body></body></html>", {
-  pretendToBeVisual: true,
-  virtualConsole
-});
-
-for (const key of [
-  "window",
-  "document",
-  "Element",
-  "HTMLElement",
-  "SVGElement",
-  "ShadowRoot",
-  "MouseEvent",
-  "Node",
-  "getComputedStyle"
-]) {
-  global[key] = dom.window[key];
-}
-global.requestAnimationFrame = (callback) => setTimeout(() => callback(performance.now()), 16);
-global.cancelAnimationFrame = (handle) => clearTimeout(handle);
-global.ResizeObserver = class {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-};
-global.CSS = { supports: () => false };
-global.visualViewport = null;
-global.devicePixelRatio = 1;
-window.matchMedia = () => ({
-  matches: false,
-  addEventListener() {},
-  removeEventListener() {}
-});
+const frontendRequire = from("frontend");
+const dom = createBrowser();
 after(() => dom.window.close());
 
 const vue = frontendRequire("vue");

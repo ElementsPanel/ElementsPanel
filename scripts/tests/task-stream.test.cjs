@@ -1,28 +1,11 @@
+const { from, createLoader, deferred } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const path = require("node:path");
-const Module = require("node:module");
 const { test } = require("node:test");
-const root = path.resolve(__dirname, "../..");
-const panelRequire = Module.createRequire(path.join(root, "panel/package.json"));
+
+const panelRequire = from("panel");
 const ts = panelRequire("typescript");
 
-function load(relative) {
-  const filename = path.join(root, relative);
-  const mod = new Module(filename, module);
-  mod.require = (id) => panelRequire(id);
-  mod._compile(
-    ts.transpileModule(fs.readFileSync(filename, "utf8"), {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2022,
-        esModuleInterop: true
-      }
-    }).outputText,
-    filename
-  );
-  return mod.exports;
-}
+const load = createLoader({ compiler: ts, resolve: (id) => panelRequire(id) });
 
 const { BackgroundTasks } = load("daemon/plugins/runtime/src/backend/service/background_tasks.ts");
 const tickets = load("panel/plugins/node/src/backend/task_ticket.ts");
@@ -33,15 +16,6 @@ const input = (owner = "alice") => ({
   instanceUuid: "instance",
   fileName: "example.jar"
 });
-
-function deferred() {
-  let resolve, reject;
-  const promise = new Promise((done, fail) => {
-    resolve = done;
-    reject = fail;
-  });
-  return { promise, resolve, reject };
-}
 
 const nextChanged = (tasks) =>
   new Promise((resolve) => tasks.once("changed", resolve));

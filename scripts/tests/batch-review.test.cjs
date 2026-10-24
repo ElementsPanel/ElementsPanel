@@ -1,29 +1,10 @@
+const { from, createLoader } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const path = require("node:path");
-const Module = require("node:module");
 const { test } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
-const panelRequire = Module.createRequire(path.join(root, "panel/package.json"));
+const panelRequire = from("panel");
 const ts = panelRequire("typescript");
-function load(relative, overrides) {
-  const filename = path.join(root, relative);
-  const mod = new Module(filename, module);
-  const localRequire = Module.createRequire(filename);
-  mod.require = (id) => (Object.hasOwn(overrides, id) ? overrides[id] : localRequire(id));
-  mod._compile(
-    ts.transpileModule(fs.readFileSync(filename, "utf8"), {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2022,
-        esModuleInterop: true
-      }
-    }).outputText,
-    filename
-  );
-  return mod.exports;
-}
+const load = createLoader({ compiler: ts });
 
 test("batch forwarding waits for other nodes after one fails", async () => {
   const { multiOperationForwarding } = load(

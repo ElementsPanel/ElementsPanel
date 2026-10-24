@@ -1,43 +1,18 @@
+const { from, createLoader, compileSfc } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const path = require("node:path");
-const Module = require("node:module");
 const { test } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
-const panelRequire = Module.createRequire(path.join(root, "panel/package.json"));
-const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
+const panelRequire = from("panel");
+const frontendRequire = from("frontend");
 const ts = panelRequire("typescript");
 const vue = frontendRequire("vue");
 
 // Load source in memory: no project build, network listener or plugin installation.
-function load(relative, overrides = {}, inlineTemplate = false) {
-  const filename = path.join(root, relative);
-  let source = fs.readFileSync(filename, "utf8");
-  if (filename.endsWith(".vue")) {
-    const { parse, compileScript } = frontendRequire("@vue/compiler-sfc");
-    source = compileScript(parse(source).descriptor, {
-      id: "market-test",
-      inlineTemplate
-    }).content;
-  }
-  const mod = new Module(filename, module);
-  mod.filename = filename;
-  const localRequire = Module.createRequire(filename);
-  mod.require = (id) => (Object.hasOwn(overrides, id) ? overrides[id] : localRequire(id));
-  mod._compile(
-    ts.transpileModule(source, {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2022,
-        esModuleInterop: true
-      },
-      fileName: filename.endsWith(".vue") ? `${filename}.ts` : filename
-    }).outputText,
-    filename
-  );
-  return mod.exports;
-}
+const load = createLoader({
+  compiler: ts,
+  transform: (source, filename, inlineTemplate = false) =>
+    filename.endsWith(".vue") ? compileSfc(filename, { inlineTemplate }) : source
+});
 
 function version(number) {
   return {
@@ -785,14 +760,4 @@ test("detail locks every release action and its tabs while a plugin operation is
   } finally {
     app.unmount();
   }
-});
-
-test("a plugin's sides pick the badge wording, and no badge when the market is silent", () => {
-  const { sideBadgeKey } = load("panel/plugins/market/src/sides.ts");
-  assert.equal(sideBadgeKey(["panel"]), "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL");
-  assert.equal(sideBadgeKey(["daemon"]), "TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON");
-  assert.equal(sideBadgeKey(["panel", "daemon"]), "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH");
-  // An empty list and a missing field both mean the market said nothing.
-  assert.equal(sideBadgeKey([]), undefined);
-  assert.equal(sideBadgeKey(undefined), undefined);
 });

@@ -1,39 +1,14 @@
+const { from, createLoader, settle, deferred } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const path = require("node:path");
-const Module = require("node:module");
 const { EventEmitter } = require("node:events");
 const { test } = require("node:test");
-const root = path.resolve(__dirname, "../..");
-const panelRequire = Module.createRequire(path.join(root, "panel/package.json"));
+
+const panelRequire = from("panel");
 const ts = panelRequire("typescript");
 
-function load(relative, overrides = {}) {
-  const filename = path.join(root, relative);
-  const mod = new Module(filename, module);
-  mod.require = (id) => (Object.hasOwn(overrides, id) ? overrides[id] : panelRequire(id));
-  mod._compile(
-    ts.transpileModule(fs.readFileSync(filename, "utf8"), {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2022,
-        esModuleInterop: true
-      }
-    }).outputText,
-    filename
-  );
-  return mod.exports;
-}
+const load = createLoader({ compiler: ts, resolve: (id) => panelRequire(id) });
 const { BackgroundTasks } = load("daemon/plugins/runtime/src/backend/service/background_tasks.ts");
-const settle = () => new Promise((resolve) => setImmediate(resolve));
-function deferred() {
-  let resolve, reject;
-  const promise = new Promise((done, fail) => {
-    resolve = done;
-    reject = fail;
-  });
-  return { promise, resolve, reject };
-}
+
 const input = (owner = "alice") => ({
   _taskOwner: owner,
   instanceUuid: "instance",
@@ -295,7 +270,7 @@ test("remote requests attach the authenticated user instead of caller-supplied t
 });
 
 test("pushed snapshots replace one daemon and reset clears the stream", async () => {
-  const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
+  const frontendRequire = from("frontend");
   const vue = frontendRequire("vue");
   const state = vue.reactive({ userInfo: { uuid: "alice" } });
   let streamOptions;
@@ -358,7 +333,7 @@ test("pushed snapshots replace one daemon and reset clears the stream", async ()
 });
 
 test("the browser discards stale task responses when the active account changes", async () => {
-  const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
+  const frontendRequire = from("frontend");
   const vue = frontendRequire("vue");
   const state = vue.reactive({ userInfo: { uuid: "alice" } });
   const alice = deferred(),

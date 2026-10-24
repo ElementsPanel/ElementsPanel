@@ -1,33 +1,18 @@
+const { from, createLoader } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const Module = require("node:module");
 const { test } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
-const panelRequire = Module.createRequire(path.join(root, "panel/package.json"));
-const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
+const panelRequire = from("panel");
+const frontendRequire = from("frontend");
 const ts = panelRequire("typescript");
 const vue = frontendRequire("vue");
 const { JSDOM } = frontendRequire("jsdom");
 
 // Load the real settings and store code in memory without building or serving the app.
-function load(filename, overrides = {}) {
-  filename = path.join(root, filename);
-  const mod = new Module(filename, module);
-  const localRequire = Module.createRequire(filename);
-  mod.require = (id) => Object.hasOwn(overrides, id) ? overrides[id] : localRequire(id);
-  mod._compile(ts.transpileModule(fs.readFileSync(filename, "utf8"), {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2022,
-      esModuleInterop: true
-    },
-    fileName: filename
-  }).outputText, filename);
-  return mod.exports;
-}
+const load = createLoader({ compiler: ts });
 
 const { default: SystemConfig } = load("panel/plugins/runtime/src/backend/entity/setting.ts");
 const i18n = { t: (key) => key, getCurrentLang: () => "en_us", setLanguage() {} };

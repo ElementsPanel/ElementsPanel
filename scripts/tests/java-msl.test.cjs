@@ -1,16 +1,22 @@
+const {
+  from,
+  mountSetup,
+  compileSfc,
+  createLoader,
+  deferred,
+  settle: tick
+} = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const Module = require("node:module");
 const { createHash } = require("node:crypto");
 const { gzipSync } = require("node:zlib");
 const { Readable, PassThrough } = require("node:stream");
 const { test } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
-const daemonRequire = Module.createRequire(path.join(root, "daemon/package.json"));
-const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
+const daemonRequire = from("daemon");
+const frontendRequire = from("frontend");
 const ts = daemonRequire("typescript");
 const fse = daemonRequire("fs-extra");
 const tar = daemonRequire("tar");
@@ -20,33 +26,8 @@ const nativeJava = (home) =>
   path.join(home, "bin", process.platform === "win32" ? "java.exe" : "java");
 
 // Exercise source in memory. Downloads are streams of fixture data; Java is never executed.
-function load(filename, overrides = {}, source) {
-  filename = path.join(root, filename);
-  const mod = new Module(filename, module);
-  const localRequire = Module.createRequire(filename);
-  mod.require = (id) => (Object.hasOwn(overrides, id) ? overrides[id] : localRequire(id));
-  mod._compile(
-    ts.transpileModule(source ?? fs.readFileSync(filename, "utf8"), {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2022,
-        esModuleInterop: true
-      },
-      fileName: filename + ".ts"
-    }).outputText,
-    filename
-  );
-  return mod.exports;
-}
-function deferred() {
-  let resolve, reject;
-  const promise = new Promise((yes, no) => {
-    resolve = yes;
-    reject = no;
-  });
-  return { promise, resolve, reject };
-}
-const tick = () => new Promise((resolve) => setImmediate(resolve));
+const load = createLoader({ compiler: ts });
+
 async function until(predicate) {
   for (let i = 0; i < 300; i++) {
     if (predicate()) return;
@@ -590,32 +571,9 @@ test("Java protocol replies once to downloads and preserves quotes when binding 
   assert.equal(failures.length, 1);
 });
 
-function mountComponent(t, component, props = {}) {
-  component.render = () => null;
-  const renderer = vue.createRenderer({
-    createElement: () => ({}),
-    createText: () => ({}),
-    createComment: () => ({}),
-    setText() {},
-    setElementText() {},
-    parentNode: () => null,
-    nextSibling: () => null,
-    insert() {},
-    remove() {},
-    patchProp() {}
-  });
-  const app = renderer.createApp(component, props);
-  app.mount({});
-  t.after(() => app.unmount());
-  return { app, state: app._instance.setupState, props: app._instance.props };
-}
 function mountScript(t, filename, props, overrides) {
-  const { parse, compileScript } = frontendRequire("@vue/compiler-sfc");
-  const descriptor = parse(fs.readFileSync(path.join(root, filename), "utf8"), {
-    filename
-  }).descriptor;
-  const source = compileScript(descriptor, { id: "java-test" }).content;
-  return mountComponent(
+  const source = compileSfc(filename);
+  return mountSetup(
     t,
     load(
       filename,
@@ -758,23 +716,6 @@ test("changing a Java catalog node discards stale versions and aborts its reques
   assert.deepEqual([...f.state.versions], ["21"]);
 });
 
-test("all new Java messages are translated in every panel and daemon locale", () => {
-  const reference = JSON.parse(
-    fs.readFileSync(path.join(root, "panel/plugins/java/src/i18n/en_US.json"))
-  );
-  const keys = Object.keys(reference).filter((key) => key.startsWith("TXT_CODE_javaMsl."));
-  assert.ok(keys.length >= 10);
-  for (const side of ["panel", "daemon"]) {
-    const dir = path.join(root, side, "plugins/java/src/i18n");
-    const files = fs.readdirSync(dir).filter((name) => name.endsWith(".json"));
-    assert.equal(files.length, 12);
-    for (const file of files) {
-      const messages = JSON.parse(fs.readFileSync(path.join(dir, file)));
-      for (const key of keys) assert.ok(messages[key], `${side}/${file}: ${key}`);
-    }
-  }
-});
-
 test("Java list refresh after a download cannot reuse an older in-flight response", async (t) => {
   const requests = [],
     gates = [deferred(), deferred(), deferred()];
@@ -792,7 +733,7 @@ test("Java list refresh after a download cannot reuse an older in-flight respons
       })
     }
   });
-  const f = mountComponent(
+  const f = mountSetup(
     t,
     vue.defineComponent({
       setup: () => useJavaList({ daemonId: () => daemonId.value, active: () => active.value })

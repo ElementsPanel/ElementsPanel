@@ -1,47 +1,28 @@
+const { from, compileSfc, createLoader, settle: tick } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const Module = require("node:module");
 const { test } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
-const from = (side) => Module.createRequire(path.join(root, side, "package.json"));
 const panelRequire = from("panel");
 const frontendRequire = from("frontend");
 const ts = panelRequire("typescript");
 const vue = frontendRequire("vue");
-const tick = () => new Promise((resolve) => setImmediate(resolve));
 
 // Execute source in memory. No project build, listener, database or network.
-function load(relative, overrides = {}, source) {
-  const filename = path.join(root, relative);
-  const localRequire = Module.createRequire(filename);
-  const mod = new Module(filename, module);
-  mod.require = (id) => {
-    if (Object.hasOwn(overrides, id)) return overrides[id];
+const load = createLoader({
+  compiler: ts,
+  resolve(id, { filename, localRequire, load, overrides }) {
     if (id.endsWith(".vue")) return { name: path.basename(id) };
+    if (id === "vue") return vue;
     if (id.startsWith(".")) {
       const base = path.resolve(path.dirname(filename), id);
-      for (const candidate of [base + ".ts", path.join(base, "index.ts")]) {
-        if (fs.existsSync(candidate)) return load(path.relative(root, candidate), overrides);
-      }
+      for (const candidate of [base + ".ts", path.join(base, "index.ts")])
+        if (fs.existsSync(candidate)) return load(candidate, overrides);
     }
-    if (id === "vue") return vue;
     return localRequire(id);
-  };
-  mod._compile(
-    ts.transpileModule(source ?? fs.readFileSync(filename, "utf8"), {
-      fileName: filename + ".ts",
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2022,
-        esModuleInterop: true
-      }
-    }).outputText,
-    filename
-  );
-  return mod.exports;
-}
+  }
+});
 
 function translations(Service) {
   return class extends Service {
@@ -543,9 +524,7 @@ test("user frontend retains login and account routes while optional instance gra
 });
 
 function setupSfc(relative, overrides) {
-  const { parse, compileScript } = frontendRequire("@vue/compiler-sfc");
-  const { descriptor } = parse(fs.readFileSync(path.join(root, relative), "utf8"));
-  const { content } = compileScript(descriptor, { id: "boundary-test" });
+  const content = compileSfc(relative);
   const scope = vue.effectScope();
   const unmounts = [];
   const component = load(

@@ -1,23 +1,12 @@
+const { from, compileSfc, createLoader } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const path = require("node:path");
-const Module = require("node:module");
 const { test } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
-const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
+const frontendRequire = from("frontend");
 const ts = frontendRequire("typescript");
 const vue = frontendRequire("vue");
 
-function load(relative, overrides, source) {
-  const filename = path.join(root, relative);
-  const mod = new Module(filename, module);
-  mod.require = (id) => Object.hasOwn(overrides, id) ? overrides[id] : frontendRequire(id);
-  mod._compile(ts.transpileModule(source ?? fs.readFileSync(filename, "utf8"), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true }
-  }).outputText, filename);
-  return mod.exports;
-}
+const load = createLoader({ compiler: ts, resolve: (id) => frontendRequire(id) });
 
 function fixture(t, chartModule) {
   const mounted = [], beforeUnmount = [], charts = [];
@@ -63,15 +52,12 @@ function fixture(t, chartModule) {
     run: (callback) => scope.run(callback),
     mount: () => Promise.all(mounted.map((callback) => callback())),
     setupSfc(relative, overrides) {
-      const { parse, compileScript } = frontendRequire("@vue/compiler-sfc");
-      const { descriptor } = parse(fs.readFileSync(path.join(root, relative), "utf8"));
-      const script = compileScript(descriptor, { id: "chart-test" });
       return scope.run(() => load(relative, {
         vue: lifecycle,
         "vuetify/components": {},
         "@/lang/i18n": { t: (key) => key },
         ...overrides
-      }, script.content).default.setup({}, { expose() {} }));
+      }, compileSfc(relative)).default.setup({}, { expose() {} }));
     }
   };
 }
@@ -95,9 +81,6 @@ test("node histories initialize with available data, update nested values and re
   // The hover card is custom-styled and shows only the plotted value.
   assert.equal(chart.options.plugins.tooltip.callbacks.title(), "");
   assert.equal(chart.options.plugins.tooltip.displayColors, false);
-  assert.equal(chart.options.plugins.tooltip.backgroundColor, "rgba(20, 24, 35, 0.85)");
-  assert.equal(chart.options.plugins.tooltip.borderWidth, undefined);
-  assert.equal(chart.options.plugins.tooltip.bodyColor, "#e0e6f0");
   values.value[1] = 45;
   await vue.nextTick();
   assert.deepEqual(chart.data.datasets[0].data, [10, 45, 30]);

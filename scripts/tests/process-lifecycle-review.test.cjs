@@ -1,43 +1,19 @@
+const { from, createLoader, settle, deferred } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const Module = require("node:module");
 const { EventEmitter } = require("node:events");
 const { PassThrough } = require("node:stream");
 const { spawn } = require("node:child_process");
 const { test } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
-const daemonRequire = Module.createRequire(path.join(root, "daemon/package.json"));
+const daemonRequire = from("daemon");
 const ts = daemonRequire("typescript");
 const logger = { info() {}, warn() {}, error() {} };
 const base = "daemon/plugins/instance/src/backend/";
-const settle = () => new Promise((resolve) => setImmediate(resolve));
 
-function load(relative, overrides = {}, environment = {}) {
-  const filename = path.join(root, relative);
-  const mod = new Module(filename, module);
-  mod.environment = environment;
-  mod.require = (id) => Object.hasOwn(overrides, id) ? overrides[id] : daemonRequire(id);
-  const globals = Object.keys(environment)
-    .map((key) => `const ${key} = module.environment.${key};`).join("\n");
-  mod._compile(globals + "\n" + ts.transpileModule(fs.readFileSync(filename, "utf8"), {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2022,
-      esModuleInterop: true
-    },
-    fileName: filename
-  }).outputText, filename);
-  return mod.exports;
-}
-
-function deferred() {
-  let resolve;
-  const promise = new Promise((done) => { resolve = done; });
-  return { promise, resolve };
-}
+const load = createLoader({ compiler: ts, globals: true, resolve: (id) => daemonRequire(id) });
 
 function child() {
   const process = Object.assign(new EventEmitter(), {

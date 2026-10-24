@@ -1,37 +1,17 @@
+const { from, createLoader, settle } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const os = require("node:os");
-const Module = require("node:module");
 const { Readable, PassThrough, Writable } = require("node:stream");
 const { test } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
-const daemonRequire = Module.createRequire(path.join(root, "daemon/package.json"));
+const daemonRequire = from("daemon");
 const ts = daemonRequire("typescript");
 const fse = daemonRequire("fs-extra");
 const logger = { info() {}, warn() {}, error() {} };
-const settle = () => new Promise((resolve) => setImmediate(resolve));
 
-function load(filename, overrides = {}, environment = {}) {
-  const absolute = path.join(root, filename);
-  const mod = new Module(absolute, module);
-  mod.environment = environment;
-  mod.require = (id) => (Object.hasOwn(overrides, id) ? overrides[id] : daemonRequire(id));
-  const compiled = ts.transpileModule(fs.readFileSync(absolute, "utf8"), {
-    fileName: absolute,
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2022,
-      esModuleInterop: true
-    }
-  }).outputText;
-  const globals = Object.keys(environment)
-    .map((key) => `const ${key} = module.environment.${key};`)
-    .join("\n");
-  mod._compile(`${globals}\n${compiled}`, absolute);
-  return mod.exports;
-}
+const load = createLoader({ compiler: ts, globals: true, resolve: (id) => daemonRequire(id) });
 
 function directory(t) {
   const result = fs.mkdtempSync(path.join(os.tmpdir(), "elements-daemon-review-"));

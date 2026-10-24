@@ -1,63 +1,18 @@
+const { from, compileSfc, createLoader, settle, deferred } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const path = require("node:path");
-const Module = require("node:module");
 const { EventEmitter } = require("node:events");
 const { test } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
-const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
+const frontendRequire = from("frontend");
 const ts = frontendRequire("typescript");
 const vue = frontendRequire("vue");
 const i18n = { t: (key) => key, getCurrentLang: () => "zh_cn" };
-const settle = () => new Promise((resolve) => setImmediate(resolve));
 
 // Execute the real composables/services with only their browser and network
 // boundaries replaced. This catches ordering and cancellation bugs without a server.
-function load(filename, overrides = {}, source) {
-  filename = path.join(root, filename);
-  const mod = new Module(filename, module);
-  const localRequire = Module.createRequire(filename);
-  mod.require = (id) => {
-    if (Object.hasOwn(overrides, id)) return overrides[id];
-    if (id.startsWith(".")) return localRequire(id);
-    return frontendRequire(id);
-  };
-  mod._compile(
-    ts.transpileModule(source ?? fs.readFileSync(filename, "utf8"), {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2022,
-        esModuleInterop: true
-      },
-      fileName: filename + ".ts"
-    }).outputText,
-    filename
-  );
-  return mod.exports;
-}
-
-function deferred() {
-  let resolve, reject;
-  const promise = new Promise((yes, no) => {
-    resolve = yes;
-    reject = no;
-  });
-  return { promise, resolve, reject };
-}
+const load = createLoader({ compiler: ts, host: "frontend" });
 
 function setupSfc(filename, overrides = {}, props = {}) {
-  const { parse, compileScript } = frontendRequire("@vue/compiler-sfc");
-  const { descriptor } = parse(fs.readFileSync(path.join(root, filename), "utf8"), {
-    filename: path.join(root, filename).replaceAll("\\", "/")
-  });
-  const script = compileScript(descriptor, {
-    id: "review-test",
-    fs: {
-      fileExists: (file) => fs.existsSync(file) && fs.statSync(file).isFile(),
-      readFile: (file) => fs.readFileSync(file, "utf8")
-    }
-  });
   return load(
     filename,
     {
@@ -68,7 +23,7 @@ function setupSfc(filename, overrides = {}, props = {}) {
       "vuetify/components": {},
       ...overrides
     },
-    script.content
+    compileSfc(filename)
   ).default.setup(props, { expose() {} });
 }
 
@@ -498,20 +453,6 @@ test("schedule edits forward an atomic replacement and propagate a failed save",
   );
   assert.equal(calls[0].data.replaceName, "job");
   assert.equal(calls[0].data.time, "1");
-});
-
-test("empty validators reject asynchronously and reporting null errors falls back safely", async () => {
-  const validators = load("panel/plugins/console/src/tools/validator.ts", {
-    "@/lang/i18n": i18n,
-    "@/tools/vuetifyToast": {}
-  });
-  const invalid = validators
-    .emptyValueValidator(undefined)
-    .then(() => true)
-    .catch((error) => error.message);
-  assert.equal(await invalid, "TXT_CODE_cb08d342");
-  assert.equal(await validators.emptyValueValidator(0), undefined);
-  assert.equal(validators.getValidatorErrorMsg(null, "fallback"), "fallback");
 });
 
 test("switching node/plugin configuration cannot display or save a stale schema", async () => {

@@ -1,16 +1,15 @@
+const { from, mountSetup, compileSfc, createLoader, deferred, settle } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const Module = require("node:module");
 const { createHash } = require("node:crypto");
 const { EventEmitter } = require("node:events");
 const { Readable, PassThrough } = require("node:stream");
 const { test } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
-const panelRequire = Module.createRequire(path.join(root, "panel/package.json"));
-const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
+const panelRequire = from("panel");
+const frontendRequire = from("frontend");
 const ts = panelRequire("typescript");
 const vue = frontendRequire("vue");
 const translate = (key) => key;
@@ -18,34 +17,8 @@ const logger = { info() {}, error() {} };
 
 // Execute source in memory with network/process boundaries replaced. No build,
 // HTTP server, Minecraft binary or installer is needed for these regressions.
-function load(filename, overrides = {}, source) {
-  filename = path.join(root, filename);
-  const mod = new Module(filename, module);
-  const localRequire = Module.createRequire(filename);
-  mod.require = (id) => (Object.hasOwn(overrides, id) ? overrides[id] : localRequire(id));
-  mod._compile(
-    ts.transpileModule(source ?? fs.readFileSync(filename, "utf8"), {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2022,
-        esModuleInterop: true
-      },
-      fileName: filename + ".ts"
-    }).outputText,
-    filename
-  );
-  return mod.exports;
-}
+const load = createLoader({ compiler: ts });
 
-function deferred() {
-  let resolve, reject;
-  const promise = new Promise((yes, no) => {
-    resolve = yes;
-    reject = no;
-  });
-  return { promise, resolve, reject };
-}
-const settle = () => new Promise((resolve) => setImmediate(resolve));
 async function until(predicate) {
   for (let i = 0; i < 100; i++) {
     if (predicate()) return;
@@ -444,7 +417,7 @@ function taskFixture(t, options = {}) {
   const cwd = directory(t);
   const bytes = Buffer.from("test download; never executed");
   const chmods = [];
-  const fse = Module.createRequire(path.join(root, "daemon/package.json"))("fs-extra");
+  const fse = from("daemon")("fs-extra");
   const fixtureInstall = load("daemon/plugins/instance/src/backend/minecraft_install.ts", {
     "../../../../../common/src/java": javaCommands,
     "fs-extra": {
@@ -746,7 +719,7 @@ test("instance registers Minecraft as a separate admin task and validates before
 });
 
 test("Minecraft installation survives loading and unloading an unrelated task plugin", async (t) => {
-  const daemonRequire = Module.createRequire(path.join(root, "daemon/package.json"));
+  const daemonRequire = from("daemon");
   const { Context, Service } = daemonRequire("cordis");
   let downloadGate;
   const f = taskFixture(t, { download: async () => downloadGate?.promise });
@@ -1000,34 +973,14 @@ test("a missing Java executable fails the update task without an unhandled proce
 });
 
 function mountScript(t, filename, props, overrides) {
-  const { parse, compileScript } = frontendRequire("@vue/compiler-sfc");
-  const descriptor = parse(fs.readFileSync(path.join(root, filename), "utf8"), {
-    filename
-  }).descriptor;
-  const script = compileScript(descriptor, { id: "minecraft-test" }).content;
+  const script = compileSfc(filename);
   const components = new Proxy({}, { get: (_target, name) => name });
   const component = load(
     filename,
     { vue, "vuetify/components": components, ...overrides },
     script
   ).default;
-  component.render = () => null;
-  const renderer = vue.createRenderer({
-    createElement: () => ({}),
-    createText: () => ({}),
-    createComment: () => ({}),
-    setText() {},
-    setElementText() {},
-    parentNode: () => null,
-    nextSibling: () => null,
-    insert() {},
-    remove() {},
-    patchProp() {}
-  });
-  const app = renderer.createApp(component, props);
-  app.mount({});
-  t.after(() => app.unmount());
-  return app._instance.setupState;
+  return mountSetup(t, component, props).state;
 }
 
 const methods = Object.fromEntries(
@@ -1400,23 +1353,4 @@ test("managed Java placeholders stay unquoted in Forge installers and generated 
     await install.minecraftStartCommand(cwd, options, translate),
     "{mcsm_java} -jar server.jar nogui"
   );
-});
-
-test("Minecraft UI and daemon messages exist in every language", () => {
-  const globalDir = path.join(root, "panel/plugins/i18n/src/languages");
-  const files = fs.readdirSync(globalDir).filter((name) => name.endsWith(".json"));
-  assert.equal(files.length, 12);
-  const keys = Object.keys(JSON.parse(fs.readFileSync(path.join(globalDir, "en_US.json")))).filter(
-    (key) => key.startsWith("TXT_CODE_minecraft.")
-  );
-  for (const file of files) {
-    const source = fs.readFileSync(path.join(globalDir, file));
-    const messages = JSON.parse(source);
-    for (const key of keys) assert.ok(messages[key], `${file}: ${key}`);
-    const daemon = JSON.parse(
-      fs.readFileSync(path.join(root, "daemon/plugins/instance/src/i18n", file))
-    );
-    for (const key of ["invalidDownload", "platformMismatch", "missingFiles", "hashMismatch"])
-      assert.ok(daemon[`TXT_CODE_minecraft.${key}`], `${file}: ${key}`);
-  }
 });

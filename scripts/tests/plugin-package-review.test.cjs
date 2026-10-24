@@ -1,40 +1,21 @@
+const { from, createLoader } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const Module = require("node:module");
 const { test } = require("node:test");
-const root = path.resolve(__dirname, "../..");
-const commonRequire = Module.createRequire(path.join(root, "common/package.json"));
+
+const commonRequire = from("common");
 const ts = commonRequire("typescript");
 const fse = commonRequire("fs-extra");
-function load(relative, overrides = {}) {
-  const filename = path.join(root, relative);
-  const mod = new Module(filename, module);
-  const localRequire = Module.createRequire(filename);
-  const requireSource = (id) => {
-    const candidate = path.resolve(path.dirname(filename), id) + ".ts";
-    if (id.startsWith(".") && fs.existsSync(candidate)) return load(path.relative(root, candidate));
-    return localRequire(id);
-  };
-  mod.require = (id) =>
-    Object.hasOwn(overrides, id)
-      ? overrides[id]
-      : id === "./plugin_manifest"
-      ? load("common/src/plugin_manifest.ts")
-      : requireSource(id);
-  mod._compile(
-    ts.transpileModule(fs.readFileSync(filename, "utf8"), {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2022,
-        esModuleInterop: true
-      }
-    }).outputText,
-    filename
-  );
-  return mod.exports;
-}
+const load = createLoader({
+  compiler: ts,
+  resolve(id, { filename, localRequire, load }) {
+    if (id === "./plugin_manifest") return load("common/src/plugin_manifest.ts");
+    const target = path.resolve(path.dirname(filename), id) + ".ts";
+    return id.startsWith(".") && fs.existsSync(target) ? load(target) : localRequire(id);
+  }
+});
 const source = "common/src/plugin_package.ts";
 const info = { pluginId: "sample-id", name: "sample", version: "1", installedAt: 1 };
 const files = (version) => [

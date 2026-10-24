@@ -1,55 +1,23 @@
+const { from, createLoader, deferred } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const Module = require("node:module");
 const { test } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
-const panelRequire = Module.createRequire(path.join(root, "panel/package.json"));
+const panelRequire = from("panel");
 const ts = panelRequire("typescript");
 const serviceFile = "panel/plugins/market/src/backend/service/plugin_market.ts";
 
-function load(relative, overrides = {}) {
-  const filename = path.join(root, relative);
-  const source = fs.readFileSync(filename, "utf8");
-  const loaded = new Module(filename, module);
-  loaded.filename = filename;
-  const localRequire = Module.createRequire(filename);
-  const requireSource = (id) => {
-    const candidate = path.resolve(path.dirname(filename), id) + ".ts";
-    if (id.startsWith(".") && fs.existsSync(candidate)) return load(path.relative(root, candidate));
-    return localRequire(id);
-  };
-  loaded.require = (id) =>
-    Object.hasOwn(overrides, id)
-      ? overrides[id]
-      : id === "mcsmanager-common"
-      ? load("common/src/plugin_package.ts")
-      : id === "./plugin_manifest"
-      ? load("common/src/plugin_manifest.ts")
-      : requireSource(id);
-  loaded._compile(
-    ts.transpileModule(source, {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2022,
-        esModuleInterop: true
-      },
-      fileName: filename
-    }).outputText,
-    filename
-  );
-  return loaded.exports;
-}
-
-function deferred() {
-  let resolve;
-  const promise = new Promise((done) => {
-    resolve = done;
-  });
-  return { promise, resolve };
-}
+const load = createLoader({
+  compiler: ts,
+  resolve(id, { filename, localRequire, load }) {
+    if (id === "mcsmanager-common") return load("common/src/plugin_package.ts");
+    if (id === "./plugin_manifest") return load("common/src/plugin_manifest.ts");
+    const target = path.resolve(path.dirname(filename), id) + ".ts";
+    return id.startsWith(".") && fs.existsSync(target) ? load(target) : localRequire(id);
+  }
+});
 
 async function fixture(t, { sides = ["daemon"], development = false } = {}) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "elements-market-install-review-"));

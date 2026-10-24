@@ -1,3 +1,4 @@
+const { from } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
@@ -6,8 +7,8 @@ const Module = require("node:module");
 const { test } = require("node:test");
 
 const root = path.resolve(__dirname, "../..");
-const panelRequire = Module.createRequire(path.join(root, "panel/package.json"));
-const daemonRequire = Module.createRequire(path.join(root, "daemon/package.json"));
+const panelRequire = from("panel");
+const daemonRequire = from("daemon");
 const panelTs = panelRequire("typescript");
 const daemonTs = daemonRequire("typescript");
 

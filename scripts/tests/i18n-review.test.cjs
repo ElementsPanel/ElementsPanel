@@ -1,8 +1,8 @@
+const { from, createLoader } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const Module = require("node:module");
 const { execFileSync } = require("node:child_process");
 const { pathToFileURL } = require("node:url");
 const { test } = require("node:test");
@@ -12,7 +12,7 @@ const { LANGUAGES, readCatalogue, validateCatalogues } = require("../i18n-catalo
 const { createConfig } = require("../../i18-scanner.config.js");
 
 const root = path.resolve(__dirname, "../..");
-const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
+const frontendRequire = from("frontend");
 const ts = frontendRequire("typescript");
 const globalPanel = "panel/plugins/i18n/src/languages";
 const globalDaemon = "daemon/plugins/i18n/src/languages";
@@ -141,35 +141,7 @@ test("repository translations cover every language and static translation refere
   assert.ok(validateCatalogues(root).files >= 240);
 });
 
-function load(filename, overrides = {}, environment = {}) {
-  filename = path.join(root, filename);
-  const mod = new Module(filename, module);
-  const localRequire = Module.createRequire(filename);
-  mod.environment = environment;
-  mod.require = (id) =>
-    Object.hasOwn(overrides, id)
-      ? overrides[id]
-      : id.startsWith(".")
-      ? localRequire(id)
-      : frontendRequire(id);
-  const globals = Object.keys(environment)
-    .map((name) => `const ${name} = module.environment.${name};`)
-    .join("\n");
-  mod._compile(
-    globals +
-      "\n" +
-      ts.transpileModule(fs.readFileSync(filename, "utf8"), {
-        compilerOptions: {
-          module: ts.ModuleKind.CommonJS,
-          target: ts.ScriptTarget.ES2022,
-          esModuleInterop: true
-        },
-        fileName: filename
-      }).outputText,
-    filename
-  );
-  return mod.exports;
-}
+const load = createLoader({ compiler: ts, globals: true, host: "frontend" });
 
 test("frontend resolves regional locales and stores only supported selections", async (t) => {
   const { Context } = frontendRequire("cordis");

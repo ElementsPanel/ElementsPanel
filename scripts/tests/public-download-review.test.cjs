@@ -1,28 +1,13 @@
+const { from, createLoader } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const path = require("node:path");
 const http = require("node:http");
-const Module = require("node:module");
 const { test } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
-const daemonRequire = Module.createRequire(path.join(root, "daemon/package.json"));
+const daemonRequire = from("daemon");
 const ts = daemonRequire("typescript");
 const directory = "daemon/plugins/runtime/src/backend/service/";
 
-function load(relative, overrides = {}) {
-  const filename = path.join(root, relative);
-  const mod = new Module(filename, module);
-  mod.require = (id) => Object.hasOwn(overrides, id) ? overrides[id] : daemonRequire(id);
-  mod._compile(ts.transpileModule(fs.readFileSync(filename, "utf8"), {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2022,
-      esModuleInterop: true
-    }, fileName: filename
-  }).outputText, filename);
-  return mod.exports;
-}
+const load = createLoader({ compiler: ts, resolve: (id) => daemonRequire(id) });
 
 function policy(t, records = [{ address: "8.8.8.8", family: 4 }]) {
   const lookups = [];

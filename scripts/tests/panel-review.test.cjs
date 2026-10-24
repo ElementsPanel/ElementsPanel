@@ -1,42 +1,23 @@
+const { from, createLoader, transpile, settle: tick } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const Module = require("node:module");
 const { EventEmitter } = require("node:events");
 const { test } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
-const panelRequire = Module.createRequire(path.join(root, "panel/package.json"));
+const panelRequire = from("panel");
 const ts = panelRequire("typescript");
 const compose = panelRequire("koa-compose");
-const transpile = (filename) =>
-  ts.transpileModule(fs.readFileSync(filename, "utf8"), {
-    fileName: filename,
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2022,
-      esModuleInterop: true
-    }
-  }).outputText;
+
 require.extensions[".ts"] = (mod, filename) => mod._compile(transpile(filename), filename);
 
-function load(relative, overrides = {}) {
-  const filename = path.join(root, relative);
-  const mod = new Module(filename, module);
-  const localRequire = Module.createRequire(filename);
-  mod.filename = filename;
-  mod.paths = Module._nodeModulePaths(path.dirname(filename));
-  mod.require = (id) => (Object.hasOwn(overrides, id) ? overrides[id] : localRequire(id));
-  mod._compile(transpile(filename), filename);
-  return mod.exports;
-}
+const load = createLoader({ compiler: ts });
 
 const validator = load("panel/plugins/runtime/src/backend/middleware/validator.ts").default;
 const role = { USER: 1, ADMIN: 10, GUEST: 0, BAN: -1 };
 const logger = { info() {}, warn() {}, error() {} };
 const pass = () => async (_ctx, next) => next();
-const tick = () => new Promise((resolve) => setImmediate(resolve));
 
 function userFixture() {
   const writes = [];

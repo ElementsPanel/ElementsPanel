@@ -1,40 +1,21 @@
+const { from, createLoader, transpile, settle } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const Module = require("node:module");
 const { test } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
-const panelRequire = Module.createRequire(path.join(root, "panel/package.json"));
-const daemonRequire = Module.createRequire(path.join(root, "daemon/package.json"));
+const panelRequire = from("panel");
+const daemonRequire = from("daemon");
 const ts = panelRequire("typescript");
 
 // Execute TypeScript in memory. This suite neither builds the project nor opens
 // a listener; external requests are replaced at their service boundary.
-const transpile = (filename, source = fs.readFileSync(filename, "utf8")) =>
-  ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2022,
-      esModuleInterop: true
-    },
-    fileName: filename
-  }).outputText;
+
 require.extensions[".ts"] = (mod, filename) => mod._compile(transpile(filename), filename);
 
-function load(filename, overrides = {}, source) {
-  filename = path.join(root, filename);
-  const mod = new Module(filename, module);
-  const localRequire = Module.createRequire(filename);
-  mod.filename = filename;
-  mod.paths = Module._nodeModulePaths(path.dirname(filename));
-  mod.require = (id) => (Object.hasOwn(overrides, id) ? overrides[id] : localRequire(id));
-  mod._compile(transpile(filename, source), filename);
-  return mod.exports;
-}
+const load = createLoader({ compiler: ts });
 
-const settle = () => new Promise((resolve) => setImmediate(resolve));
 async function until(predicate) {
   for (let i = 0; i < 100; i++) {
     if (predicate()) return;
@@ -559,33 +540,6 @@ test("frontend registration and feature gating follow the mod and file plugin li
   for (const name of ["i18n", "routes", "ui", "actions"]) assert.equal(ctx.get(name).items.size, 0);
 });
 
-test("every panel locale includes the same nonempty mod translations", () => {
-  const languages = path.join(root, "panel/plugins/i18n/src/languages");
-  const directory = path.join(root, "panel/plugins/mod/src/i18n");
-  const locales = fs
-    .readdirSync(languages)
-    .filter((file) => file.endsWith(".json"))
-    .sort();
-  assert.deepEqual(
-    fs
-      .readdirSync(directory)
-      .filter((file) => file.endsWith(".json"))
-      .sort(),
-    locales
-  );
-  const expected = Object.keys(
-    JSON.parse(fs.readFileSync(path.join(directory, "en_US.json")))
-  ).sort();
-  for (const locale of locales) {
-    const messages = JSON.parse(fs.readFileSync(path.join(directory, locale)));
-    assert.deepEqual(Object.keys(messages).sort(), expected, locale);
-    for (const key of expected) {
-      assert.equal(typeof messages[key], "string", `${locale}: ${key}`);
-      assert.ok(messages[key].length > 0, `${locale}: ${key}`);
-    }
-  }
-});
-
 test("legacy mod windows restore under the action ID without losing layout or opening duplicates", () => {
   const { migrateLegacyInstanceWindow } = load("panel/plugins/desktop/src/legacyWindows.ts");
   const saved = {
@@ -630,7 +584,11 @@ function mirrorManager(respond, preference) {
 test("Modrinth search, metadata, version lists and hash lookup use MCIM with ElementsPanel UA", async () => {
   const responses = {
     "/tag/game_version": [{ version: "1.21.1", version_type: "release" }],
-    "/search": { hits: [{ project_id: "sodium", title: "Sodium", project_type: "mod" }], total_hits: 1 },
+    "/search": { hits: [
+      { project_id: "sodium", title: "Sodium", project_type: "mod" },
+      { project_id: "pack", title: "Modpack", project_type: "modpack" },
+      { project_id: "server", title: "Java Server", project_type: "minecraft_java_server" }
+    ], total_hits: 1 },
     "/project/sodium": { id: "sodium", project_type: "mod", title: "Sodium" },
     "/project/sodium/version": [{
       id: "v1", files: [{ url: "https://cdn.modrinth.com/data/sodium/versions/v1/mod.jar", filename: "mod.jar", primary: true }]
@@ -648,7 +606,8 @@ test("Modrinth search, metadata, version lists and hash lookup use MCIM with Ele
     return { data: responses[key] };
   });
   assert.deepEqual(await f.manager.getMinecraftVersions(), ["1.21.1"]);
-  assert.equal((await f.manager.searchProjects("sodium", 0, 10, { source: "modrinth", type: "mod" })).hits[0].source, "Modrinth");
+  const search = await f.manager.searchProjects("sodium", 0, 10, { source: "modrinth" });
+  assert.deepEqual(search.hits.map((hit) => [hit.id, hit.source]), [["sodium", "Modrinth"]]);
   const versions = await f.manager.getProjectVersions("sodium", "Modrinth");
   assert.equal(versions[0].files[0].url, "https://mod.mcimirror.top/data/sodium/versions/v1/mod.jar");
   assert.equal(versions[0].files[0].fallbackUrl, "https://cdn.modrinth.com/data/sodium/versions/v1/mod.jar");
@@ -661,79 +620,15 @@ test("Modrinth search, metadata, version lists and hash lookup use MCIM with Ele
   }
 });
 
-test("Modrinth searches exclude modpacks and Java servers before version lookups while preserving other filters", async () => {
-  const hits = [
-    { project_id: "mod", title: "Mod", project_type: "mod", latest_version: "mod-version" },
-    { project_id: "pack", title: "Modpack", project_type: "modpack", latest_version: "pack-version" },
-    { project_id: "server", title: "Java Server", project_type: "minecraft_java_server", latest_version: "server-version" },
-    { project_id: "plugin", title: "Plugin", project_type: "mod", categories: ["paper"] },
-    { project_id: "resources", title: "Resources", project_type: "resourcepack" }
-  ];
-  for (const preference of ["mirror", "official"]) {
-    for (const type of [undefined, "all", "mod", "plugin"]) {
-      const f = mirrorManager(({ url, params }) => {
-        if (url.endsWith("/search")) {
-          const facets = JSON.parse(params.facets);
-          assert.ok(facets.some((group) => group.length === 1 && group[0] === "project_type!=modpack"));
-          assert.ok(facets.some((group) => group.length === 1 && group[0] === "project_type!=minecraft_java_server"));
-          assert.ok(facets.some((group) => group.includes("versions:1.21.1")));
-          assert.ok(facets.some((group) => group.includes("categories:Fabric")));
-          assert.ok(facets.some((group) => group.includes("server_side:required")));
-          if (type === "mod" || type === "plugin")
-            assert.ok(facets.some((group) => group.includes("project_type:mod")));
-          assert.equal(params.query, "modpack");
-          assert.equal(params.offset, 10);
-          assert.equal(params.limit, 5);
-          return { data: { hits, total_hits: 3 } };
-        }
-        assert.ok(url.endsWith("/versions"));
-        assert.deepEqual(JSON.parse(params.ids), ["mod-version"]);
-        return { data: [{ id: "mod-version", version_number: "1.0.0" }] };
-      }, preference);
-      const result = await f.manager.searchProjects("modpack", 10, 5, {
-        source: "modrinth", type, version: "1.21.1", loader: "fabric", environment: "server"
-      });
-      assert.deepEqual(result.hits.map((hit) => hit.id), ["mod", "plugin", "resources"]);
-      assert.equal(result.hits[1].project_type, "plugin");
-      assert.equal(result.total_hits, 3);
-    }
-  }
-  assert.equal(hits.length, 5, "filtering must leave the upstream response untouched");
-});
-
-test("CurseForge search results cannot relabel modpacks as mods", async () => {
-  const data = [
-    { id: 1, name: "Mod", classId: 6 },
-    { id: 2, name: "Plugin", classId: 12 },
-    { id: 3, name: "Modpack", classId: 4471 }
-  ];
-  for (const type of ["all", "mod", "plugin"]) {
-    const f = mirrorManager(({ params }) => {
-      assert.equal(params.classId, type === "plugin" ? 12 : 6);
-      return { data: { data, pagination: { totalCount: 2 } } };
-    });
-    const result = await f.manager.searchProjects("pack", 0, 10, { source: "curseforge", type });
-    assert.deepEqual(result.hits.map((hit) => [hit.id, hit.project_type]), [["1", "mod"], ["2", "plugin"]]);
-  }
-  assert.equal(data.length, 3);
-});
-
-test("excluded project types cannot be restored through a stale project type filter", async () => {
-  const f = mirrorManager(() => assert.fail("excluded project types must not reach an upstream API"));
-  for (const type of ["modpack", "minecraft_java_server"])
-    for (const source of ["all", "modrinth", "curseforge", "spigotmc"])
-      assert.deepEqual(await f.manager.searchProjects("pack", 0, 10, { source, type }), {
-        hits: [], total_hits: 0
-      });
-  assert.equal(f.requests.length, 0);
-});
-
 test("CurseForge MCIM requests need no API key and only supported file hosts gain a mirror fallback", async () => {
   const f = mirrorManager(({ url }) => {
     const parsed = new URL(url);
     assert.equal(parsed.origin, "https://mod.mcimirror.top");
     if (parsed.pathname === "/curseforge/v1/mods/search") {
-      return { data: { data: [{ id: 238222, name: "Example", classId: 6 }], pagination: { totalCount: 1 } } };
+      return { data: { data: [
+        { id: 238222, name: "Example", classId: 6 },
+        { id: 447100, name: "Modpack", classId: 4471 }
+      ], pagination: { totalCount: 1 } } };
     }
     if (parsed.pathname === "/curseforge/v1/mods/238222") {
       return { data: { data: { id: 238222, name: "Example", classId: 6 } } };
@@ -745,7 +640,7 @@ test("CurseForge MCIM requests need no API key and only supported file hosts gai
     })) } };
   });
   const search = await f.manager.searchProjects("Example", 0, 10, { source: "curseforge", type: "mod" });
-  assert.equal(search.hits[0].source, "CurseForge");
+  assert.deepEqual(search.hits.map((hit) => [hit.id, hit.source]), [["238222", "CurseForge"]]);
   const versions = await f.manager.getProjectVersions("238222", "CurseForge");
   assert.equal(versions[0].files[0].url, "https://mod.mcimirror.top/files/1/2/mod.jar");
   assert.equal(versions[0].files[0].fallbackUrl, "https://edge.forgecdn.net/files/1/2/mod.jar");

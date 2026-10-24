@@ -1,48 +1,13 @@
+const { from, compileSfc, createLoader, settle, deferred } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const path = require("node:path");
-const Module = require("node:module");
 const { test } = require("node:test");
 
-const root = path.resolve(__dirname, "../..");
-const frontendRequire = Module.createRequire(path.join(root, "frontend/package.json"));
+const frontendRequire = from("frontend");
 const ts = frontendRequire("typescript");
 const vue = frontendRequire("vue");
 const i18n = { t: (key) => key };
-const settle = () => new Promise((resolve) => setImmediate(resolve));
 
-function deferred() {
-  let resolve, reject;
-  const promise = new Promise((yes, no) => {
-    resolve = yes;
-    reject = no;
-  });
-  return { promise, resolve, reject };
-}
-
-function load(relative, overrides = {}, source) {
-  const filename = path.join(root, relative);
-  const mod = new Module(filename, module);
-  const localRequire = Module.createRequire(filename);
-  mod.require = (id) =>
-    Object.hasOwn(overrides, id)
-      ? overrides[id]
-      : id.startsWith(".")
-      ? localRequire(id)
-      : frontendRequire(id);
-  mod._compile(
-    ts.transpileModule(source ?? fs.readFileSync(filename, "utf8"), {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2022,
-        esModuleInterop: true
-      },
-      fileName: filename + ".ts"
-    }).outputText,
-    filename
-  );
-  return mod.exports;
-}
+const load = createLoader({ compiler: ts, host: "frontend" });
 
 function lifecycle() {
   const mounted = [],
@@ -64,15 +29,6 @@ function lifecycle() {
 }
 
 function setupSfc(relative, overrides = {}, props = {}) {
-  const { parse, compileScript } = frontendRequire("@vue/compiler-sfc");
-  const filename = path.join(root, relative);
-  const { descriptor } = parse(fs.readFileSync(filename, "utf8"), {
-    filename: filename.replaceAll("\\", "/")
-  });
-  const script = compileScript(descriptor, {
-    id: "dialog-review",
-    fs: { fileExists: fs.existsSync, readFile: (file) => fs.readFileSync(file, "utf8") }
-  });
   const life = lifecycle();
   const emitted = [];
   const component = load(
@@ -84,7 +40,7 @@ function setupSfc(relative, overrides = {}, props = {}) {
       "vuetify/components": {},
       ...overrides
     },
-    script.content
+    compileSfc(relative)
   ).default;
   return {
     ...life,
