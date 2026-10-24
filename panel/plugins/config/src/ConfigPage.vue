@@ -13,6 +13,7 @@ import {
   VCard,
   VCardActions,
   VCardText,
+  VCheckbox,
   VChip,
   VDialog,
   VLayout,
@@ -61,6 +62,24 @@ import SchemaForm from "./SchemaForm.vue";
 // at all 鈥?the browser holds no copy of a daemon plugin.
 
 type Scope = "panel" | "node";
+type PluginAction = "disable" | "remove";
+
+interface NodePluginTarget {
+  node: NodeSummary;
+  plugin: NodePluginRecord;
+}
+
+interface PluginActionCandidate {
+  action: PluginAction;
+  step: "confirm" | "nodes";
+  scope: Scope;
+  plugin: PluginRecord | NodePluginRecord;
+  nodeId: string;
+  checkingNodes: boolean;
+  nodeTargets: NodePluginTarget[];
+  selectedNodeIds: string[];
+  nodeCheckError: string;
+}
 
 const props = defineProps<{ scope?: Scope; daemonId?: string }>();
 const { isPhone } = useScreen();
@@ -381,19 +400,24 @@ const recordResult = (result?: PluginChangeResult | boolean) => {
   if (lastResult.value?.application === "failed")
     notify(lastResult.value.error || t("TXT_CODE_PLUGIN_LOAD_FAILED"), "error");
 };
-const disableCandidate = ref<{
-  scope: Scope;
-  plugin: PluginRecord | NodePluginRecord;
-  nodeId: string;
-} | null>(null);
-const disableConfirmOpen = ref(false);
-const deleteConfirmOpen = ref(false);
 const deletingPlugin = ref(false);
-const deleteCandidate = ref<{
-  scope: Scope;
-  plugin: PluginRecord | NodePluginRecord;
-  nodeId: string;
-} | null>(null);
+const actionCandidate = ref<PluginActionCandidate | null>(null);
+const actionSubmitting = computed(() => Boolean(pending.value || deletingPlugin.value));
+const actionBusy = computed(() => actionSubmitting.value || Boolean(actionCandidate.value));
+const actionConfirmOpen = computed({
+  get: () => actionCandidate.value?.step === "confirm",
+  set: (open: boolean) => {
+    if (!open && actionCandidate.value?.step === "confirm" && !actionSubmitting.value)
+      actionCandidate.value = null;
+  }
+});
+const nodePickerOpen = computed({
+  get: () => actionCandidate.value?.step === "nodes",
+  set: (open: boolean) => {
+    if (!open && actionCandidate.value?.step === "nodes" && !actionSubmitting.value)
+      actionCandidate.value = null;
+  }
+});
 const notify = (text: string, color: "success" | "error") => {
   if (color === "error") message.error(text);
   else message.success(text);
@@ -677,9 +701,115 @@ const syncRoute = () => {
 
 watch([scope, currentId, selectedNodeId], syncRoute);
 
-const apply = async (plugin: PluginRecord, enabled: boolean) => {
+/** Read live inventories: node plugins may have been installed outside the market. */
+const checkNodePlugins = async (candidate: PluginActionCandidate) => {
+  if (
+    candidate.scope !== "panel" ||
+    !plugins.value.some((plugin) => plugin.id === "node" && plugin.enabled && plugin.running)
+  )
+    return;
+
+  candidate.checkingNodes = true;
+  try {
+    const list = (await nodeList().execute()).value ?? [];
+    if (disposed || actionCandidate.value !== candidate) return;
+    const results = await Promise.allSettled(
+      list.map(async (node) => {
+        if (!node.available) throw new Error(t("TXT_CODE_PLUGIN_NODE_OFFLINE"));
+        const inventory = (await nodePluginList().execute({ params: { daemonId: node.uuid } })).value;
+        if (!Array.isArray(inventory)) throw new Error(t("TXT_CODE_PLUGIN_NODE_LIST_FAILED"));
+        return inventory.find((plugin) => plugin.id === candidate.plugin.id);
+      })
+    );
+    if (disposed || actionCandidate.value !== candidate) return;
+    const unchecked: string[] = [];
+    results.forEach((result, index) => {
+      const node = list[index];
+      if (result.status === "rejected") {
+        unchecked.push(nodeLabel(node));
+      } else if (result.value && (candidate.action === "remove" || result.value.enabled)) {
+        candidate.nodeTargets.push({ node, plugin: result.value });
+      }
+    });
+    if (unchecked.length)
+      candidate.nodeCheckError = t("TXT_CODE_PLUGIN_NODE_CHECK_FAILED", {
+        nodes: unchecked.join(", ")
+      });
+  } catch (error) {
+    if (!disposed && actionCandidate.value === candidate)
+      candidate.nodeCheckError = getValidatorErrorMsg(error, t("TXT_CODE_PLUGIN_NODE_LIST_FAILED"));
+  } finally {
+    candidate.checkingNodes = false;
+  }
+};
+
+const requestAction = (plugin: PluginRecord | NodePluginRecord, action: PluginAction) => {
+  if (disposed || actionBusy.value || (action === "remove" && !plugin.removable)) return;
+  actionCandidate.value = {
+    action,
+    step: "confirm",
+    scope: scope.value,
+    plugin: { ...plugin },
+    nodeId: selectedNodeId.value,
+    checkingNodes: false,
+    nodeTargets: [],
+    selectedNodeIds: [],
+    nodeCheckError: ""
+  };
+};
+
+/** Finish node changes before the panel can unload its remote connection service. */
+const syncNodePlugins = async (candidate: PluginActionCandidate) => {
+  const targets = candidate.nodeTargets.filter(
+    ({ node, plugin }) =>
+      candidate.selectedNodeIds.includes(node.uuid) &&
+      (candidate.action !== "remove" || plugin.removable)
+  );
+  const failures: string[] = [];
+  for (const { node, plugin } of targets) {
+    try {
+      if (candidate.action === "remove") {
+        await removeNodePlugin().execute({ params: { daemonId: node.uuid, id: plugin.id } });
+        candidate.nodeTargets = candidate.nodeTargets.filter((target) => target.node.uuid !== node.uuid);
+      } else {
+        const result = (
+          await setNodePluginEnabled().execute({
+            params: { daemonId: node.uuid },
+            data: { id: plugin.id, enabled: false }
+          })
+        ).value?.result;
+        if (result && result.application !== "applied")
+          throw new Error(
+            result.error ||
+              t(
+                result.application === "restart-required"
+                  ? "TXT_CODE_PLUGIN_RESTART_REQUIRED"
+                  : result.application === "pending"
+                  ? "TXT_CODE_PLUGIN_SAVED_PENDING"
+                  : "TXT_CODE_PLUGIN_LOAD_FAILED"
+              )
+          );
+      }
+      // A panel failure can leave the dialog open for a retry. Do not repeat
+      // successful removals against plugins that no longer exist on that node.
+      candidate.selectedNodeIds = candidate.selectedNodeIds.filter((id) => id !== node.uuid);
+    } catch (error) {
+      failures.push(`${nodeLabel(node)}: ${getValidatorErrorMsg(error, t("TXT_CODE_6a365d01"))}`);
+    }
+  }
+  if (failures.length)
+    notify(t("TXT_CODE_PLUGIN_NODE_ACTION_FAILED", { nodes: failures.join("; ") }), "error");
+  return failures.length === 0;
+};
+
+const apply = async (
+  plugin: PluginRecord,
+  enabled: boolean,
+  candidate?: PluginActionCandidate
+) => {
   pending.value = plugin.id;
   try {
+    const nodesSucceeded = candidate ? await syncNodePlugins(candidate) : true;
     const { execute } = setPluginEnabled();
     recordResult((await execute({ data: { id: plugin.id, enabled } })).value?.result);
     // The panel has already applied the change to its own half. The browser
@@ -687,7 +817,7 @@ const apply = async (plugin: PluginRecord, enabled: boolean) => {
     // the plugin's routes, cards and menus appear or disappear with it.
     await ctx.plugins.refresh();
     await load();
-    if (!lastResult.value || lastResult.value.application === "applied")
+    if (nodesSucceeded && (!lastResult.value || lastResult.value.application === "applied"))
       notify(t(enabled ? "TXT_CODE_PLUGIN_ENABLED" : "TXT_CODE_PLUGIN_DISABLED"), "success");
   } catch (error: any) {
     notifyError(error);
@@ -732,6 +862,7 @@ const applyNode = async (
  * plugin contributed 鈥?including, for some plugins, authentication itself.
  */
 const toggle = (plugin: PluginRecord | NodePluginRecord, enabled: boolean) => {
+  if (actionBusy.value) return;
   const targetScope = scope.value;
   const nodeId = selectedNodeId.value;
   const commit = () =>
@@ -739,36 +870,43 @@ const toggle = (plugin: PluginRecord | NodePluginRecord, enabled: boolean) => {
       ? apply(plugin as PluginRecord, enabled)
       : applyNode(plugin as NodePluginRecord, enabled, nodeId);
   if (enabled) return commit();
-  disableCandidate.value = { scope: targetScope, plugin, nodeId };
-  disableConfirmOpen.value = true;
+  requestAction(plugin, "disable");
 };
 
 const toggleSelected = (enabled: boolean) => {
   if (selectedPlugin.value) toggle(selectedPlugin.value, enabled);
 };
 
-watch(disableConfirmOpen, (open) => {
-  if (!open) disableCandidate.value = null;
-});
-
-const confirmDisable = () => {
-  const candidate = disableCandidate.value;
-  if (!candidate) {
-    disableConfirmOpen.value = false;
+const confirmDisable = async () => {
+  const candidate = actionCandidate.value;
+  if (
+    !candidate ||
+    candidate.action !== "disable" ||
+    candidate.checkingNodes ||
+    actionSubmitting.value
+  )
     return;
-  }
-  disableConfirmOpen.value = false;
-  return candidate.scope === "panel"
-    ? apply(candidate.plugin as PluginRecord, false)
-    : applyNode(candidate.plugin as NodePluginRecord, false, candidate.nodeId);
+  if (candidate.scope === "panel")
+    await apply(candidate.plugin as PluginRecord, false, candidate);
+  else await applyNode(candidate.plugin as NodePluginRecord, false, candidate.nodeId);
+  actionCandidate.value = null;
 };
 
 const confirmRemove = async () => {
-  const candidate = deleteCandidate.value;
-  if (!candidate || !candidate.plugin.removable || deletingPlugin.value) return;
+  const candidate = actionCandidate.value;
+  if (
+    !candidate ||
+    candidate.action !== "remove" ||
+    !candidate.plugin.removable ||
+    candidate.checkingNodes ||
+    actionSubmitting.value
+  )
+    return;
   deletingPlugin.value = true;
   try {
+    let nodesSucceeded = true;
     if (candidate.scope === "panel") {
+      nodesSucceeded = await syncNodePlugins(candidate);
       const { execute } = removePlugin();
       await execute({ params: { id: candidate.plugin.id } });
       await ctx.plugins.refresh();
@@ -780,14 +918,30 @@ const confirmRemove = async () => {
       });
       await reloadNodePluginsAfterToggle();
     }
-    deleteConfirmOpen.value = false;
-    deleteCandidate.value = null;
-    notify(t("TXT_CODE_PLUGIN_DELETED"), "success");
+    actionCandidate.value = null;
+    if (nodesSucceeded) notify(t("TXT_CODE_PLUGIN_DELETED"), "success");
   } catch (error) {
     notifyError(error);
   } finally {
     deletingPlugin.value = false;
   }
+};
+
+const confirmAction = async () => {
+  const candidate = actionCandidate.value;
+  if (!candidate || candidate.checkingNodes || actionSubmitting.value) return;
+  if (candidate.step === "confirm") {
+    await checkNodePlugins(candidate);
+    if (disposed || actionCandidate.value !== candidate) return;
+    if (candidate.nodeTargets.length || candidate.nodeCheckError) {
+      candidate.selectedNodeIds = candidate.nodeTargets
+        .filter(({ plugin }) => candidate.action !== "remove" || plugin.removable)
+        .map(({ node }) => node.uuid);
+      candidate.step = "nodes";
+      return;
+    }
+  }
+  return candidate.action === "remove" ? confirmRemove() : confirmDisable();
 };
 </script>
 
@@ -932,7 +1086,7 @@ const confirmRemove = async () => {
                     :color="selectedPlugin.enabled ? 'warning' : 'success'"
                     variant="text"
                     :loading="pending === selectedPlugin.id"
-                    :disabled="Boolean(pending)"
+                    :disabled="actionBusy"
                     :aria-label="
                       t(
                         selectedPlugin.enabled
@@ -985,7 +1139,7 @@ const confirmRemove = async () => {
                     color="error"
                     variant="text"
                     :loading="deletingPlugin"
-                    :disabled="!selectedPlugin?.removable || deletingPlugin"
+                    :disabled="!selectedPlugin?.removable || actionBusy"
                     :aria-label="
                       t(
                         selectedPlugin?.removable
@@ -993,12 +1147,7 @@ const confirmRemove = async () => {
                           : 'TXT_CODE_PLUGIN_DELETE_UNAVAILABLE'
                       )
                     "
-                    @click="
-                      deleteCandidate = selectedPlugin
-                        ? { scope, plugin: selectedPlugin, nodeId: selectedNodeId }
-                        : null;
-                      deleteConfirmOpen = Boolean(deleteCandidate)
-                    "
+                    @click="requestAction(selectedPlugin, 'remove')"
                   />
                 </span>
               </template>
@@ -1080,48 +1229,97 @@ const confirmRemove = async () => {
       </div>
     </div>
 
-    <VDialog v-model="disableConfirmOpen" max-width="460">
+    <VDialog v-model="actionConfirmOpen" :persistent="actionSubmitting" max-width="460">
       <VCard
-        :title="t('TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE', { name: disableCandidate?.plugin.id || '' })"
+        :title="
+          t(
+            actionCandidate?.action === 'remove'
+              ? 'TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE'
+              : 'TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE',
+            { name: actionCandidate?.plugin.id || '' }
+          )
+        "
         class="plugin-config-confirm-card"
         rounded="xl"
       >
-        <VCardText>{{ t("TXT_CODE_PLUGIN_DISABLE_CONFIRM") }}</VCardText>
+        <VCardText>
+          {{
+            t(
+              actionCandidate?.action === "remove"
+                ? "TXT_CODE_PLUGIN_DELETE_CONFIRM"
+                : "TXT_CODE_PLUGIN_DISABLE_CONFIRM"
+            )
+          }}
+        </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn variant="text" @click="disableConfirmOpen = false">
+          <VBtn variant="text" :disabled="actionSubmitting" @click="actionConfirmOpen = false">
             {{ t("TXT_CODE_PLUGIN_CANCEL") }}
           </VBtn>
-          <VBtn color="error" @click="confirmDisable">
-            {{ t("TXT_CODE_PLUGIN_DISABLE") }}
+          <VBtn
+            color="error"
+            :prepend-icon="actionCandidate?.action === 'remove' ? 'mdi-delete' : undefined"
+            :loading="actionSubmitting || actionCandidate?.checkingNodes"
+            :disabled="actionCandidate?.checkingNodes"
+            @click="confirmAction"
+          >
+            {{
+              t(
+                actionCandidate?.action === "remove"
+                  ? "TXT_CODE_PLUGIN_DELETE"
+                  : "TXT_CODE_PLUGIN_DISABLE"
+              )
+            }}
           </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
 
-    <VDialog v-model="deleteConfirmOpen" max-width="460">
-      <VCard
-        :title="
-          t('TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE', {
-            name: deleteCandidate?.plugin.id || ''
-          })
-        "
-        class="plugin-config-confirm-card"
-        rounded="xl"
-      >
-        <VCardText>{{ t("TXT_CODE_PLUGIN_DELETE_CONFIRM") }}</VCardText>
+    <VDialog v-model="nodePickerOpen" :persistent="actionSubmitting" max-width="480">
+      <VCard :title="t('TXT_CODE_PLUGIN_NODE_SELECT')">
+        <VCardText v-if="actionCandidate">
+          <div v-if="actionCandidate.nodeTargets.length" class="mb-2">
+            {{
+              t(
+                actionCandidate.action === "remove"
+                  ? "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM"
+                  : "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM"
+              )
+            }}
+          </div>
+          <VAlert
+            v-if="actionCandidate.nodeCheckError"
+            class="mb-2"
+            type="warning"
+            variant="tonal"
+            :text="actionCandidate.nodeCheckError"
+          />
+          <VCheckbox
+            v-for="target in actionCandidate.nodeTargets"
+            :key="target.node.uuid"
+            v-model="actionCandidate.selectedNodeIds"
+            :value="target.node.uuid"
+            :label="nodeLabel(target.node)"
+            :disabled="
+              actionSubmitting ||
+              (actionCandidate.action === 'remove' && !target.plugin.removable)
+            "
+            :messages="
+              actionCandidate.action === 'remove' && !target.plugin.removable
+                ? t('TXT_CODE_PLUGIN_DELETE_UNAVAILABLE')
+                : undefined
+            "
+            :hide-details="actionCandidate.action !== 'remove' || target.plugin.removable"
+            density="compact"
+          />
+        </VCardText>
         <VCardActions>
           <VSpacer />
-          <VBtn variant="text" @click="deleteConfirmOpen = false">
+          <VBtn variant="text" :disabled="actionSubmitting" @click="nodePickerOpen = false">
             {{ t("TXT_CODE_PLUGIN_CANCEL") }}
           </VBtn>
-          <VBtn
-            color="error"
-            prepend-icon="mdi-delete"
-            :loading="deletingPlugin"
-            @click="confirmRemove"
-          >
-            {{ t("TXT_CODE_PLUGIN_DELETE") }}
+          <VBtn color="primary" :loading="actionSubmitting" @click="confirmAction">
+            {{ t("TXT_CODE_d507abff") }}
           </VBtn>
         </VCardActions>
       </VCard>

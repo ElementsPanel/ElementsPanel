@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "以下のノードにある同じプラグインも無効にしますか？対象のノードを選択してください。",
+  "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "以下のノードにある同じプラグインも削除しますか？対象のノードを選択してください。",
+  "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "以下のノードのプラグインを確認できませんでした：{nodes}。",
+  "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "以下のノードでプラグインの操作が完了しませんでした：{nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "プラグイン設定",
   "TXT_CODE_PLUGIN_CANCEL": "キャンセル",
   "TXT_CODE_PLUGIN_DELETE": "削除",

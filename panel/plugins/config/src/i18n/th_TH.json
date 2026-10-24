@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "ต้องการปิดใช้งานปลั๊กอินเดียวกันบนโหนดต่อไปนี้ด้วยหรือไม่? เลือกโหนดที่ต้องการดำเนินการด้วย",
+  "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "ต้องการลบปลั๊กอินเดียวกันออกจากโหนดต่อไปนี้ด้วยหรือไม่? เลือกโหนดที่ต้องการดำเนินการด้วย",
+  "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "ไม่สามารถตรวจสอบปลั๊กอินบนโหนดเหล่านี้ได้: {nodes}",
+  "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "การดำเนินการกับปลั๊กอินบนโหนดเหล่านี้ไม่สำเร็จ: {nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "การกำหนดค่าปลั๊กอิน",
   "TXT_CODE_PLUGIN_CANCEL": "ยกเลิก",
   "TXT_CODE_PLUGIN_DELETE": "ลบ",

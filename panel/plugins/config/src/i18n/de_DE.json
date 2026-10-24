@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "Möchtest du das entsprechende Plugin auch auf den folgenden Knoten deaktivieren? Wähle die gewünschten Knoten aus.",
+  "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "Möchtest du das entsprechende Plugin auch von den folgenden Knoten entfernen? Wähle die gewünschten Knoten aus.",
+  "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "Die Plugins auf diesen Knoten konnten nicht geprüft werden: {nodes}.",
+  "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "Die Plugin-Aktion wurde auf diesen Knoten nicht abgeschlossen: {nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "Plugin-Konfiguration",
   "TXT_CODE_PLUGIN_CANCEL": "Abbrechen",
   "TXT_CODE_PLUGIN_DELETE": "Entfernen",

@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "是否同时禁用以下节点上的对应插件？请勾选需要同步操作的节点。",
+  "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "是否同时删除以下节点上的对应插件？请勾选需要同步操作的节点。",
+  "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "无法检查以下节点的插件：{nodes}。",
+  "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "以下节点上的插件操作未完成：{nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "插件配置",
   "TXT_CODE_PLUGIN_CANCEL": "取消",
   "TXT_CODE_PLUGIN_DELETE": "删除插件",

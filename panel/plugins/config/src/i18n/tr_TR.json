@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "Aşağıdaki düğümlerdeki aynı eklenti de devre dışı bırakılsın mı? Dahil edilecek düğümleri seçin.",
+  "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "Aşağıdaki düğümlerdeki aynı eklenti de kaldırılsın mı? Dahil edilecek düğümleri seçin.",
+  "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "Bu düğümlerdeki eklentiler kontrol edilemedi: {nodes}.",
+  "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "Bu düğümlerde eklenti işlemi tamamlanamadı: {nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "Eklenti Yapilandirmasi",
   "TXT_CODE_PLUGIN_CANCEL": "Iptal",
   "TXT_CODE_PLUGIN_DELETE": "Kaldır",

@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "是否同時停用以下節點上的對應外掛？請勾選需要同步操作的節點。",
+  "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "是否同時刪除以下節點上的對應外掛？請勾選需要同步操作的節點。",
+  "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "無法檢查以下節點的外掛：{nodes}。",
+  "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "以下節點上的外掛操作未完成：{nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "插件設定",
   "TXT_CODE_PLUGIN_CANCEL": "取消",
   "TXT_CODE_PLUGIN_DELETE": "刪除外掛",

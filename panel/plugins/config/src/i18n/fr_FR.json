@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "Voulez-vous aussi désactiver le plugin correspondant sur les nœuds suivants ? Sélectionnez les nœuds à inclure.",
+  "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "Voulez-vous aussi supprimer le plugin correspondant des nœuds suivants ? Sélectionnez les nœuds à inclure.",
+  "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "Impossible de vérifier les plugins sur ces nœuds : {nodes}.",
+  "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "L’opération sur le plugin n’a pas abouti sur ces nœuds : {nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "Configuration des plugins",
   "TXT_CODE_PLUGIN_CANCEL": "Annuler",
   "TXT_CODE_PLUGIN_DELETE": "Supprimer",

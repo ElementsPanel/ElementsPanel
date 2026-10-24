@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "Desativar também o plugin correspondente nos seguintes nós? Selecione os nós que deseja incluir.",
+  "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "Remover também o plugin correspondente dos seguintes nós? Selecione os nós que deseja incluir.",
+  "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "Não foi possível verificar os plugins nestes nós: {nodes}.",
+  "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "A operação do plugin não foi concluída nestes nós: {nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "Configuracao de plugins",
   "TXT_CODE_PLUGIN_CANCEL": "Cancelar",
   "TXT_CODE_PLUGIN_DELETE": "Remover",

@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "¿Quieres desactivar también el complemento correspondiente en los siguientes nodos? Selecciona los nodos que quieras incluir.",
+  "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "¿Quieres eliminar también el complemento correspondiente de los siguientes nodos? Selecciona los nodos que quieras incluir.",
+  "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "No se pudieron comprobar los complementos de estos nodos: {nodes}.",
+  "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "La operación del complemento no se completó en estos nodos: {nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "Configuracion de plugins",
   "TXT_CODE_PLUGIN_CANCEL": "Cancelar",
   "TXT_CODE_PLUGIN_DELETE": "Eliminar",

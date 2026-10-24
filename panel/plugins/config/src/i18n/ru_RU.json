@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "Отключить соответствующий плагин также на следующих узлах? Выберите нужные узлы.",
+  "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "Удалить соответствующий плагин также со следующих узлов? Выберите нужные узлы.",
+  "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "Не удалось проверить плагины на этих узлах: {nodes}.",
+  "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "Операция с плагином не завершена на этих узлах: {nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "Настройка плагинов",
   "TXT_CODE_PLUGIN_CANCEL": "Отмена",
   "TXT_CODE_PLUGIN_DELETE": "Удалить",

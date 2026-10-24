@@ -1,4 +1,8 @@
 {
+  "TXT_CODE_PLUGIN_NODE_DISABLE_CONFIRM": "Also disable the matching plugin on the following nodes? Select the nodes to include.",
+  "TXT_CODE_PLUGIN_NODE_DELETE_CONFIRM": "Also remove the matching plugin from the following nodes? Select the nodes to include.",
+  "TXT_CODE_PLUGIN_NODE_CHECK_FAILED": "Could not check the plugins on these nodes: {nodes}.",
+  "TXT_CODE_PLUGIN_NODE_ACTION_FAILED": "The plugin action did not complete on these nodes: {nodes}",
   "TXT_CODE_PLUGIN_CONFIG": "Plugin Configuration",
   "TXT_CODE_PLUGIN_CANCEL": "Cancel",
   "TXT_CODE_PLUGIN_DELETE": "Remove",
