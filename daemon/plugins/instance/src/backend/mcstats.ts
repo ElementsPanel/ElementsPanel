@@ -48,8 +48,8 @@ async function requestBedrockStatus(ip: string, port: number): Promise<string[]>
   });
 }
 
-export function createMinecraftStatusCommandClass(ctx: DaemonPluginContext) {
-  const { Command: InstanceCommand } = ctx.instances;
+export function createMinecraftStatusCommandClass(instances: DaemonPluginContext["instances"]) {
+  const { Command: InstanceCommand } = instances;
 
   return class MinecraftStatusCommand extends InstanceCommand {
     constructor() {
@@ -107,7 +107,7 @@ export function createMinecraftStatusTaskClass(ctx: DaemonPluginContext) {
     async start(instance: InstanceEntity) {
       this.stopTask = ctx.setInterval(() => {
         void instance.execPreset("refreshPlayers").catch(() => {
-          // The preset disappears cleanly when the plugin is disabled.
+          // The preset disappears cleanly when the instance plugin is disabled.
         });
       }, 1000 * 60);
     }
@@ -120,10 +120,11 @@ export function createMinecraftStatusTaskClass(ctx: DaemonPluginContext) {
   };
 }
 
-export const inject = ["instances", "presets", "instanceLifecycle", "features"];
-
-export function apply(ctx: DaemonPluginContext) {
-  const MinecraftStatusCommand = createMinecraftStatusCommandClass(ctx);
+export function registerMinecraftStatus(
+  ctx: DaemonPluginContext,
+  instances: DaemonPluginContext["instances"]
+) {
+  const MinecraftStatusCommand = createMinecraftStatusCommandClass(instances);
   const MinecraftStatusTask = createMinecraftStatusTaskClass(ctx);
 
   ctx.features.add("mcstats");
@@ -133,7 +134,7 @@ export function apply(ctx: DaemonPluginContext) {
   );
 
   ctx.on("dispose", () => {
-    for (const instance of ctx.instances.subsystem.getInstances()) {
+    for (const instance of instances.subsystem.getInstances()) {
       if (isMinecraft(instance)) instance.resetPingInfo();
     }
   });

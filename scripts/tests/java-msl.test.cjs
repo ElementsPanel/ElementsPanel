@@ -45,11 +45,11 @@ function directory(t) {
   return cwd;
 }
 const javaCommands = load("common/src/java.ts");
-const { JavaInfo } = load("daemon/plugins/java/src/backend/java_info.ts");
+const { JavaInfo } = load("daemon/plugins/instance/src/backend/java/java_info.ts");
 
 function sourceFixture(platform = "linux", arch = "x64", respond) {
   const requests = [];
-  const { MslJavaSource } = load("daemon/plugins/java/src/backend/msl_java.ts", {
+  const { MslJavaSource } = load("daemon/plugins/instance/src/backend/java/msl_java.ts", {
     axios: {
       get: async (url, options) => {
         requests.push({ url, options });
@@ -164,7 +164,7 @@ function installerFixture(t, payload, overrides = {}) {
     modes = [];
   const controller = new AbortController();
   const stream = overrides.stream || Readable.from([payload]);
-  const installer = load("daemon/plugins/java/src/backend/java_install.ts", {
+  const installer = load("daemon/plugins/instance/src/backend/java/java_install.ts", {
     "fs-extra": {
       ...fse,
       chmod: async (file, mode) => {
@@ -273,9 +273,9 @@ function managerFixture(t, options = {}) {
   const cwd = directory(t),
     installs = [],
     sources = [];
-  const realInstaller = load("daemon/plugins/java/src/backend/java_install.ts");
-  const { JavaManager } = load("daemon/plugins/java/src/backend/java_manager.ts", {
-    "../../../../../common/src/java": javaCommands,
+  const realInstaller = load("daemon/plugins/instance/src/backend/java/java_install.ts");
+  const { JavaManager } = load("daemon/plugins/instance/src/backend/java/java_manager.ts", {
+    "../../../../../../common/src/java": javaCommands,
     "./java_info": { JavaInfo },
     "./msl_java": {
       MslJavaSource: class {
@@ -456,7 +456,7 @@ test("Java HTTP routes allow admin setup before instance creation and retain ins
       (name, ...handlers) => routes.set(`${method}:${name}`, handlers)
     ])
   );
-  const { registerJavaManagerRoutes } = load("panel/plugins/java/src/backend/java_router.ts");
+  const { registerJavaManagerRoutes } = load("panel/plugins/instance/src/backend/routers/java_router.ts");
   registerJavaManagerRoutes({
     koa: { router: () => router },
     roles: { USER: 1, ADMIN: 10 },
@@ -537,8 +537,8 @@ test("Java protocol replies once to downloads and preserves quotes when binding 
       return '"/java/bin/java"';
     }
   };
-  const { registerJavaManagerRoutes } = load("daemon/plugins/java/src/backend/java_router.ts", {
-    "../../../../../common/src/java": javaCommands,
+  const { registerJavaManagerRoutes } = load("daemon/plugins/instance/src/backend/java/java_router.ts", {
+    "../../../../../../common/src/java": javaCommands,
     "./java_info": { JavaInfo }
   });
   registerJavaManagerRoutes(
@@ -590,7 +590,7 @@ function setupFixture(t, options = {}) {
   const installed = [{ info: { fullname: "external", downloading: false }, usingInstances: [] }];
   const fixture = mountScript(
     t,
-    "panel/plugins/java/src/components/JavaSetup.vue",
+    "panel/plugins/instance/src/java/components/JavaSetup.vue",
     { daemonId: "node", onValid: (value) => validEvents.push(value) },
     {
       "@/lang/i18n": { t: translate },
@@ -690,7 +690,7 @@ test("changing a Java catalog node discards stale versions and aborts its reques
     gates = [deferred(), deferred()];
   const f = mountScript(
     t,
-    "panel/plugins/java/src/components/JavaVersionSelect.vue",
+    "panel/plugins/instance/src/java/components/JavaVersionSelect.vue",
     { daemonId: "old" },
     {
       "@/lang/i18n": { t: translate },
@@ -721,7 +721,7 @@ test("Java list refresh after a download cannot reuse an older in-flight respons
     gates = [deferred(), deferred(), deferred()];
   const active = vue.ref(true);
   const daemonId = vue.ref("first");
-  const { useJavaList } = load("panel/plugins/java/src/hooks/useJavaList.ts", {
+  const { useJavaList } = load("panel/plugins/instance/src/java/hooks/useJavaList.ts", {
     vue,
     "../api": {
       getJavaList: () => ({
@@ -775,4 +775,30 @@ test("Java persistence errors are reported instead of rejecting an unobserved ba
   assert.match(runtime.info.error, /persistFailed.*disk is full/);
   await assert.rejects(f.manager.getJavaRuntimeCommand("msl_21"), /persistFailed/);
   await f.manager.dispose();
+});
+
+test("unloading instance during Java initialization prevents late service and route registration", async () => {
+  const ready = deferred();
+  const disposers = [];
+  let manager;
+  const { registerJavaManager } = load("daemon/plugins/instance/src/backend/java/index.ts", {
+    "./java_manager": { JavaManager: class {
+      ready = ready.promise;
+      constructor() { manager = this; }
+      dispose() { this.disposed = true; }
+    } },
+    "./java_router": { registerJavaManagerRoutes: () => assert.fail("disposed instance registered routes") }
+  });
+  const initializing = registerJavaManager({
+    settings: { config: {} },
+    i18n: { $t: translate },
+    get() {},
+    on: (_event, callback) => disposers.push(callback),
+    set: () => assert.fail("disposed instance published a Java service")
+  });
+  assert.equal(disposers.length, 1);
+  await disposers[0]();
+  assert.equal(manager.disposed, true);
+  ready.resolve();
+  assert.equal(await initializing, false);
 });

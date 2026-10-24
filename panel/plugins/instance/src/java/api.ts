@@ -1,6 +1,6 @@
 import { useDefineApi } from "@/stores/useDefineApi";
 import type { JavaRuntime } from "./types";
-import type { JavaCatalog } from "../../../../common/src/java";
+import type { JavaCatalog } from "../../../../../common/src/java";
 
 export const getJavaList = useDefineApi<
   {

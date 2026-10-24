@@ -347,7 +347,7 @@ export interface DaemonTransferService {
   readonly sendFile: typeof sendFile;
 }
 
-/** Java runtime management supplied by `plugins/java`. */
+/** Java runtime management supplied by `plugins/instance`. */
 export interface DaemonJavaManagerService {
   list(): IJavaRuntime[];
   getJava(id: string): IJavaRuntime | undefined;

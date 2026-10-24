@@ -8,6 +8,8 @@ import { localeMessages } from "../i18n";
 import { createInstanceInstallTaskClass } from "./install_task";
 import * as minecraftInstall from "./minecraft_task";
 import { registerSettings } from "./settings";
+import { registerJavaManager } from "./java";
+import { registerMinecraftStatus } from "./mcstats";
 
 export const inject = {
   i18n: { required: true },
@@ -17,10 +19,7 @@ export const inject = {
   transfer: { required: true },
   protocol: { required: true },
   features: { required: true },
-  overview: { required: true },
-  // Java support is installed by a later, optional plugin. Instance startup
-  // resolves it only when a Java runtime is actually needed.
-  javaManager: { required: false }
+  overview: { required: true }
 };
 
 export function apply(ctx: DaemonPluginContext) {
@@ -38,7 +37,7 @@ export function apply(ctx: DaemonPluginContext) {
   // are available on the next turn rather than synchronously in this function.
   // Restoring instances before that point makes the legacy dispatcher read
   // missing `presets` and `instanceLifecycle` services and emit warnings.
-  ctx.inject(["tasks", "instanceLifecycle", "presets", "schedules"], (instanceCtx) => {
+  ctx.inject(["tasks", "instanceLifecycle", "presets", "schedules"], async (instanceCtx) => {
     // The modules are required only after the context has been set and the
     // instance registries are ready. Keeping these synchronous requires keeps
     // webpack's output self-contained and avoids a second copy of the context.
@@ -75,10 +74,15 @@ export function apply(ctx: DaemonPluginContext) {
       },
       commandStringToArray
     };
-    instanceCtx.set("instances", {
+    const instanceServices = {
       ...services,
       InstallTask: createInstanceInstallTaskClass(instanceCtx, services)
-    });
+    };
+    instanceCtx.set("instances", instanceServices);
+    // Restored instances must see their Java runtimes and status presets from
+    // their first lifecycle dispatch, including automatic startup and takeover.
+    if (!(await registerJavaManager(instanceCtx, instanceServices))) return;
+    registerMinecraftStatus(instanceCtx, instanceServices);
     instanceCtx.plugin(minecraftInstall);
 
     // The dispatcher is the instance plugin's built-in preset/lifecycle bridge.

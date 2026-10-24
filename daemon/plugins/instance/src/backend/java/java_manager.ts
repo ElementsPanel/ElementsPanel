@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import os from "os";
 import path from "path";
-import { javaExecutableCommand } from "../../../../../common/src/java";
+import { javaExecutableCommand } from "../../../../../../common/src/java";
 import { JavaInfo } from "./java_info";
 import { findJavaExecutable, installJavaArchive } from "./java_install";
 import { MslJavaSource } from "./msl_java";
@@ -11,7 +11,7 @@ export interface JavaManagerDependencies {
   translate(key: string): string;
   unzip(directory: string, file: string, destination: string): Promise<boolean>;
   logger?: { info(...args: any[]): void; warn(...args: any[]): void };
-  backgroundTasks?: import("../../../runtime/src/backend/service/background_tasks").BackgroundTasks;
+  backgroundTasks?: import("../../../../runtime/src/backend/service/background_tasks").BackgroundTasks;
 }
 
 export type JavaManagerInfo = IJavaInfo & { name: string; version?: string };

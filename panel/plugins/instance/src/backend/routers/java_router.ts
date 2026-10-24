@@ -1,4 +1,4 @@
-import type { PanelPluginContext } from "../../../../src/app/plugin";
+import type { PanelPluginContext } from "../../../../../src/app/plugin";
 
 /** Registers the panel HTTP API that forwards Java Manager requests. */
 export function registerJavaManagerRoutes(ctx: PanelPluginContext) {

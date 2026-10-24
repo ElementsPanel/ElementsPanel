@@ -2,7 +2,7 @@
 import { computed, onUnmounted, ref, watch } from "vue";
 import { VAlert, VBtn, VProgressLinear, VSelect, VTextField } from "vuetify/components";
 import { t } from "@/lang/i18n";
-import type { PreparedJava } from "../../../../../common/src/java";
+import type { PreparedJava } from "../../../../../../common/src/java";
 import { downloadJava, getJavaList } from "../api";
 import { useJavaList } from "../hooks/useJavaList";
 import JavaVersionSelect from "./JavaVersionSelect.vue";

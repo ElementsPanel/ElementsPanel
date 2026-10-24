@@ -438,7 +438,7 @@ export interface FrontendModManagerService {
   readonly api: typeof import("../../../panel/plugins/mod/src/api");
 }
 
-/** Optional Java environment selector used while creating an instance. */
+/** Java environment selector supplied by `plugins/instance`. */
 export interface FrontendJavaService {
   readonly setupComponent: Component;
 }

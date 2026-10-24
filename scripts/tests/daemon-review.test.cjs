@@ -766,9 +766,9 @@ test("Java inventory survives one corrupt metadata record", async (t) => {
     path.join(cwd, "msl_17/java_info.json"),
     JSON.stringify({ name: "msl", version: "17" })
   );
-  const { JavaManager } = load("daemon/plugins/java/src/backend/java_manager.ts", {
-    "../../../../../common/src/java": { javaExecutableCommand() {} },
-    "./java_info": load("daemon/plugins/java/src/backend/java_info.ts"),
+  const { JavaManager } = load("daemon/plugins/instance/src/backend/java/java_manager.ts", {
+    "../../../../../../common/src/java": { javaExecutableCommand() {} },
+    "./java_info": load("daemon/plugins/instance/src/backend/java/java_info.ts"),
     "./java_install": {},
     "./msl_java": {
       MslJavaSource: class {

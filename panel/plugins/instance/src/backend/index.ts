@@ -8,6 +8,8 @@ import { createMinecraftRouter } from "./routers/minecraft_router";
 import { registerOperationLogRoutes } from "./routers/operation_log_router";
 import { getInstanceDetails } from "./service/instance_service";
 import { setPluginContext, middleware, remote, roles } from "./runtime";
+import { localeMessages } from "../i18n";
+import { registerJavaManagerRoutes } from "./routers/java_router";
 
 export const inject = [
   "koa",
@@ -20,6 +22,7 @@ export const inject = [
 ];
 
 export function apply(ctx: PanelPluginContext) {
+  ctx.i18n.define(localeMessages);
   setPluginContext(ctx);
   ctx.set("instances", {
     getDetails: getInstanceDetails,
@@ -31,6 +34,7 @@ export function apply(ctx: PanelPluginContext) {
     }
   });
   registerOperationLogRoutes(ctx);
+  registerJavaManagerRoutes(ctx);
 
   const api = ctx.koa.router("/api");
   const operateRouter = createInstanceOperateRouter();

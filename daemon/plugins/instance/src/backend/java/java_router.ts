@@ -1,14 +1,17 @@
 import path from "path";
-import type { DaemonPluginContext } from "../../../../src/plugin";
-import { bindJavaCommand } from "../../../../../common/src/java";
+import type { DaemonPluginContext } from "../../../../../src/plugin";
+import { bindJavaCommand } from "../../../../../../common/src/java";
 import { JavaInfo } from "./java_info";
 import type { JavaManager } from "./java_manager";
 
-/** Registers the daemon protocol owned by the Java Manager plugin. */
-export function registerJavaManagerRoutes(ctx: DaemonPluginContext, javaManager: JavaManager) {
+/** Registers the instance plugin's Java runtime protocol. */
+export function registerJavaManagerRoutes(
+  ctx: DaemonPluginContext,
+  javaManager: JavaManager,
+  instances = ctx.instances.subsystem
+) {
   const t = ctx.i18n.$t;
   const protocol = ctx.protocol;
-  const instances = ctx.instances.subsystem;
 
   protocol.on("java_manager/list", (routerCtx) => {
     protocol.response(routerCtx, javaManager.list());

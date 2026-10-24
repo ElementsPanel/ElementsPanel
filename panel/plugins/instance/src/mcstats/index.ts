@@ -8,9 +8,7 @@ import { t } from "@/lang/i18n";
 import DesktopMcPing from "./desktop/DesktopMcPing.vue";
 import McPingSettings from "./normal/McPingSettings.vue";
 
-export const inject = ["console", "actions", "instance"];
-
-export function apply(ctx: PanelFrontendPluginContext) {
+export function registerMinecraftStatus(ctx: PanelFrontendPluginContext) {
   ctx.actions.instance({
     id: "mcstats",
     title: () => t("TXT_CODE_40241d8e"),

@@ -1,6 +1,6 @@
 import axios from "axios";
 import os from "os";
-import type { JavaCatalog } from "../../../../../common/src/java";
+import type { JavaCatalog } from "../../../../../../common/src/java";
 
 export interface JavaDownload {
   url: string;

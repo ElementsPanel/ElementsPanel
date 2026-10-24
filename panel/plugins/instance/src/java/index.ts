@@ -7,9 +7,8 @@ import {
   TYPE_MINECRAFT_BEDROCK,
   TYPE_MINECRAFT_BUNGEECORD
 } from "@/hooks/useInstance";
-import { isJavaCommand } from "../../../../common/src/java";
+import { isJavaCommand } from "../../../../../common/src/java";
 import DesktopJavaManager from "./desktop/DesktopJavaManager.vue";
-import { localeMessages } from "./i18n";
 import JavaManager from "./normal/JavaManager.vue";
 import JavaSetup from "./components/JavaSetup.vue";
 
@@ -30,10 +29,7 @@ const isJavaManagerAvailable = (context: PanelFrontendInstanceActionContext) => 
   return state.settings.allowJavaManager || isAdmin.value;
 };
 
-export const inject = ["console", "i18n", "actions", "instance"];
-
-export function apply(ctx: PanelFrontendPluginContext) {
-  ctx.i18n.define(localeMessages);
+export function registerJavaManager(ctx: PanelFrontendPluginContext) {
   ctx.set("java", { setupComponent: JavaSetup });
   ctx.actions.instance({
     id: "java-manager",

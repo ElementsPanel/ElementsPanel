@@ -123,18 +123,17 @@ test("merged Bedrock instances retain Java management for Nukkit and managed Jav
   const availability = load("panel/plugins/console/src/hooks/useInstanceActionAvailability.ts", {
     "@/hooks/useInstance": instanceContract
   });
-  const plugin = load("panel/plugins/java/src/frontend.ts", {
+  const plugin = load("panel/plugins/instance/src/java/index.ts", {
     "@/lang/i18n": { t: translate },
     "@/hooks/useInstance": instanceContract,
     "@/hooks/useInstanceActionAvailability": availability,
-    "../../../../common/src/java": javaCommands,
+    "../../../../../common/src/java": javaCommands,
     "@/stores/useAppStateStore": { useAppStateStore: () => ({ state: { settings: { allowJavaManager: true } }, isAdmin: vue.ref(false) }) },
     "./desktop/DesktopJavaManager.vue": {},
     "./normal/JavaManager.vue": {},
-    "./components/JavaSetup.vue": {},
-    "./i18n": { localeMessages: {} }
+    "./components/JavaSetup.vue": {}
   });
-  plugin.apply({ i18n: { define() {} }, set() {}, actions: { instance: (value) => { action = value; } } });
+  plugin.registerJavaManager({ set() {}, actions: { instance: (value) => { action = value; } } });
   const available = (config) => action.condition({ instanceId: "instance", daemonId: "node", daemon: { features: { javaManager: true } }, instanceInfo: { config: { processType: "general", ...config } } });
   assert.equal(available({ type: "minecraft/bedrock", startCommand: '"/opt/Java 21/bin/java" -jar nukkit.jar' }), true);
   assert.equal(available({ type: "minecraft/bedrock", java: { id: "java21" } }), true);
@@ -718,13 +717,49 @@ test("instance registers Minecraft as a separate admin task and validates before
   assert.equal(created[0][4].fileName, "server.jar");
 });
 
-test("Minecraft installation survives loading and unloading an unrelated task plugin", async (t) => {
+test("instance owns Java and Minecraft status before restoration and survives unrelated plugin changes", async (t) => {
   const daemonRequire = from("daemon");
   const { Context, Service } = daemonRequire("cordis");
   let downloadGate;
   const f = taskFixture(t, { download: async () => downloadGate?.promise });
   const ctx = new Context();
   t.after(() => ctx.stop());
+  const warnings = [];
+  ctx.on("internal/warning", (error) => warnings.push(error.message));
+  const javaReady = deferred();
+  const runtime = { info: { fullname: "msl_21" }, usingInstances: [] };
+  let javaManager;
+  let restored = false;
+  const statusInstance = {
+    instanceUuid: "restored",
+    config: { type: "minecraft/java", java: { id: "msl_21" }, pingConfig: { port: 25565 } },
+    info: {},
+    resets: 0,
+    resetPingInfo() { this.resets++; },
+    isStoppedOrBusy: () => true
+  };
+  const subsystem = Object.assign(new EventEmitter(), f.ctx.instances.subsystem, {
+    loadInstances() {
+      assert.equal(ctx.javaManager, javaManager);
+      assert.ok(ctx.presets.entries().has("refreshPlayers"));
+      assert.equal(ctx.instanceLifecycle.entries().length, 1);
+      restored = true;
+    },
+    getInstance: (id) => id === statusInstance.instanceUuid ? statusInstance : undefined,
+    getInstances: () => restored ? [statusInstance] : [],
+    exit: async () => {}
+  });
+  const handlers = new Map();
+  ctx.plugin(class extends Service {
+    constructor(scope) { super(scope, "protocol", true); }
+    on(name, handler) {
+      return this.ctx.effect(() => {
+        handlers.set(name, handler);
+        return () => handlers.delete(name);
+      });
+    }
+    response(request, data) { request.body = data; }
+  });
   class Translations extends Service {
     messages = [];
     constructor(ctx) {
@@ -747,7 +782,6 @@ test("Minecraft installation survives loading and unloading an unrelated task pl
   ctx.set("settings", { config: {} });
   ctx.set("storage", {});
   ctx.set("transfer", {});
-  ctx.set("protocol", {});
   ctx.set("files", { getFileManager: f.ctx.instances.fileManager });
   const registries = load("daemon/plugins/instance/src/backend/registries.ts", {
     "./service/async_task_core": { AsyncTask, TaskCenter }
@@ -762,14 +796,30 @@ test("Minecraft installation survives loading and unloading an unrelated task pl
     "../i18n": load("daemon/plugins/instance/src/i18n/index.ts"),
     "./install_task": { createInstanceInstallTaskClass: f.createInstanceInstallTaskClass },
     "./minecraft_task": f.minecraftPlugin,
-    "./service/system_instance": {
-      default: {
-        ...f.ctx.instances.subsystem,
-        loadInstances() {},
-        getInstances: () => [],
-        exit: async () => {}
+    "./java": load("daemon/plugins/instance/src/backend/java/index.ts", {
+      "./java_manager": { JavaManager: class {
+        ready = javaReady.promise;
+        constructor() { javaManager = this; }
+        list() { return [runtime]; }
+        getJava(id) { return id === "msl_21" ? runtime : undefined; }
+        dispose() { this.disposed = true; }
+      } },
+      "./java_router": load("daemon/plugins/instance/src/backend/java/java_router.ts", {
+        "../../../../../../common/src/java": javaCommands,
+        "./java_info": load("daemon/plugins/instance/src/backend/java/java_info.ts")
+      })
+    }),
+    "./mcstats": load("daemon/plugins/instance/src/backend/mcstats.ts", {
+      "mcsmanager-common": {
+        MCServerStatus: class {
+          async getStatus() {
+            return { online: true, current_players: "3", max_players: "20", version: "1.21", latency: "12" };
+          }
+        },
+        toNumber: Number
       }
-    },
+    }),
+    "./service/system_instance": { default: subsystem },
     "./entity/instance/instance": { default: f.ctx.instances.Instance },
     "./entity/instance/Instance_config": { default: f.ctx.instances.Config },
     "./entity/commands/base/command": { default: f.ctx.instances.Command },
@@ -784,8 +834,30 @@ test("Minecraft installation survives loading and unloading an unrelated task pl
     "./service/system_instance_control": { default: { dispose() {} } }
   });
   const instanceScope = ctx.plugin(instancePlugin);
-  await ctx.start();
+  const starting = ctx.start();
+  await until(() => javaManager);
+  assert.equal(restored, false);
+  assert.equal(handlers.has("java_manager/list"), false);
+  javaReady.resolve();
+  await starting;
   await until(() => ctx.tasks?.get("minecraft_install"));
+  assert.equal(restored, true);
+  for (const feature of ["javaManager", "javaManagerMsl", "mcstats"]) {
+    assert.equal(ctx.features.has(feature), true);
+  }
+  const listRequest = {};
+  handlers.get("java_manager/list")(listRequest);
+  assert.deepEqual(listRequest.body, [runtime]);
+  subsystem.emit("open", { instanceUuid: "restored" });
+  subsystem.emit("open", { instanceUuid: "restored" });
+  assert.deepEqual(runtime.usingInstances, ["restored"]);
+  subsystem.emit("exit", { instanceUuid: "restored" });
+  assert.deepEqual(runtime.usingInstances, []);
+  const statusCommand = ctx.presets.entries().get("refreshPlayers")();
+  await statusCommand.exec(statusInstance);
+  assert.deepEqual(statusInstance.info, {
+    mcPingOnline: true, currentPlayers: 3, maxPlayers: 20, version: "1.21", latency: 12
+  });
   const minecraft = ctx.tasks.get("minecraft_install");
   const parameters = {
     newInstanceName: "Independent Minecraft",
@@ -794,6 +866,8 @@ test("Minecraft installation survives loading and unloading an unrelated task pl
     minecraft: paper
   };
   assert.equal(ctx.features.has("minecraftInstall"), true);
+  assert.equal(ctx.javaManager, javaManager);
+  assert.ok(ctx.presets.entries().has("refreshPlayers"));
   assert.equal(ctx.tasks.get("test_install"), undefined);
   assert.equal(ctx.presets.entries().has("test-preset"), false);
   const first = minecraft.create(undefined, parameters);
@@ -847,9 +921,20 @@ test("Minecraft installation survives loading and unloading an unrelated task pl
 
   await instanceScope.dispose();
   assert.equal(ctx.features.has("minecraftInstall"), false);
+  for (const feature of ["javaManager", "javaManagerMsl", "mcstats"]) {
+    assert.equal(ctx.features.has(feature), false);
+  }
+  assert.equal(ctx.javaManager, undefined);
+  assert.equal(javaManager.disposed, true);
+  assert.equal(handlers.size, 0);
+  assert.equal(subsystem.listenerCount("open"), 0);
+  assert.equal(subsystem.listenerCount("exit"), 0);
+  assert.equal(subsystem.listenerCount("failure"), 0);
+  assert.ok(statusInstance.resets > 0);
   assert.equal(ctx.instances, undefined);
   assert.equal(ctx.tasks, undefined);
   assert.equal(ctx.i18n.$t("TXT_CODE_minecraft.hashMismatch"), "TXT_CODE_minecraft.hashMismatch");
+  assert.deepEqual(warnings, []);
 });
 
 test("installer failure restores the update command and is reported as a failed task", async (t) => {

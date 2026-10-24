@@ -488,6 +488,11 @@ function frontendFixture(t) {
     "@/tools/vuetifyModal": { Modal: { confirm() {} } },
     "@/tools/vuetifyToast": { message: { success() {} } },
     "@/config/router": { ROLE: { ADMIN: 10, USER: 1 } },
+    "@/hooks/useInstance": load("common/src/instance_contract.ts"),
+    "@/hooks/useInstanceActionAvailability": load(
+      "panel/plugins/console/src/hooks/useInstanceActionAvailability.ts",
+      { "@/hooks/useInstance": load("common/src/instance_contract.ts") }
+    ),
     "@/plugin/context": pluginContext,
     "./api": {},
     "./session": { restoreSession() {} },
@@ -636,6 +641,9 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   const terminal = ctx.plugin((scope) => scope.set("terminal", {}));
   const config = ctx.plugin(load("panel/plugins/config/src/frontend.ts", overrides));
   await tick();
+  assert.ok(ctx.actions.instances.some((action) => action.id === "java-manager"));
+  assert.ok(ctx.actions.instances.some((action) => action.id === "mcstats"));
+  assert.ok(ctx.java.setupComponent);
   let savedLayout = { windows: [], shortcuts: [] };
   const shell = setupSfc("panel/plugins/desktop/src/Desktop.vue", {
     ...overrides,
@@ -707,6 +715,9 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   assert.ok(windows.has("schedule-one"));
   await instance.dispose();
   await tick();
+  assert.equal(ctx.java, undefined);
+  assert.equal(ctx.actions.instances.some((action) => action.id === "java-manager"), false);
+  assert.equal(ctx.actions.instances.some((action) => action.id === "mcstats"), false);
   assert.equal(windows.size, 1);
   assert.ok(windows.has(configRequest.id));
   await config.dispose();

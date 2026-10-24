@@ -2,7 +2,7 @@ import { javaManager } from "../runtime";
 
 export function javaManagerSubsystem() {
   const manager = javaManager();
-  if (!manager) throw new Error("Java runtime management requires the Java plugin.");
+  if (!manager) throw new Error("Instance Java runtime management is not initialized.");
   return manager;
 }
 
