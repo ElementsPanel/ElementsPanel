@@ -45,7 +45,7 @@ if (names.length !== 1 || names[0].startsWith("-")) {
     const workspace = path.join(externalRoot, folder);
     const files = {
       "package.json": `${JSON.stringify(
-        { name: folder, version: "0.1.0", private: true, dependencies: {} },
+        { name: folder, version: "1.0.0", private: true, dependencies: {} },
         null,
         2
       )}\n`,
@@ -57,7 +57,7 @@ if (names.length !== 1 || names[0].startsWith("-")) {
           // The market reads these: `id` is the slug a plugin is published under,
           // and the rest is what its page shows. Edit them here, not at upload time.
           displayName: `${folder} panel plugin`,
-          version: "0.1.0",
+          version: "1.0.0",
           dual: true,
           description: "A custom ElementsPanel panel plugin.",
           category: "",
@@ -94,7 +94,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
       "daemon/plugin.json": `${JSON.stringify(
         {
           id: folder,
-          version: "0.1.0",
+          version: "1.0.0",
           dual: true,
           backend: "src/backend/index.ts"
         },

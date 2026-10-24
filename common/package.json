@@ -1,6 +1,6 @@
 {
   "name": "elements-common",
-  "version": "1.2.0",
+  "version": "1.0.0",
   "description": "ElementsPanel Common layer",
   "main": "dist/index.js",
   "homepage": "https://elementspanel.top/",

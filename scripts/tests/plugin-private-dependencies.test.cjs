@@ -151,11 +151,11 @@ test("new plugin scaffolds keep npm manifests and installs inside the plugin wor
   assert.deepEqual(manifest.dependencies, {});
   assert.deepEqual(
     JSON.parse(fs.readFileSync(path.join(workspace, "daemon/plugin.json"))),
-    { id: "private-example", version: "0.1.0", dual: true, backend: "src/backend/index.ts" }
+    { id: "private-example", version: "1.0.0", dual: true, backend: "src/backend/index.ts" }
   );
   const panelManifest = JSON.parse(fs.readFileSync(path.join(workspace, "panel/plugin.json")));
   assert.equal(panelManifest.id, "private-example");
-  assert.equal(panelManifest.version, "0.1.0");
+  assert.equal(panelManifest.version, "1.0.0");
   assert.equal(panelManifest.dual, true);
   assert.equal(panelManifest.description, "A custom ElementsPanel panel plugin.");
   assert.equal(Object.hasOwn(panelManifest, "summary"), false);
