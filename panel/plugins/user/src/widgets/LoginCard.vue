@@ -135,7 +135,6 @@ onMounted(async () => {
       class="mb-4"
       type="info"
       variant="tonal"
-      rounded="lg"
     >
       {{ t("TXT_CODE_FIRST_STARTUP_NOTICE") }}
     </VAlert>

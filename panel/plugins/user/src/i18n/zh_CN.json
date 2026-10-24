@@ -54,7 +54,7 @@
   "TXT_CODE_DESKTOP_USERS_PASSWORD_REQUIRED": "新用户必须设置密码",
   "TXT_CODE_DESKTOP_USERS_SEARCH": "搜索用户...",
   "TXT_CODE_DESKTOP_USERS_USERNAME_REQUIRED": "用户名不能为空",
-  "TXT_CODE_FIRST_STARTUP_NOTICE": "面板首次启动，已在控制台或安装脚本内打印默认账密",
+  "TXT_CODE_FIRST_STARTUP_NOTICE": "面板首次启动，已在控制台内打印默认账密，你也可以在安装脚本内找到默认账密",
   "TXT_CODE_SSO_AUTHORIZE_URL": "Authorize URL",
   "TXT_CODE_SSO_AUTHORIZE_URL_DESC": "OAuth 2.0 授权端点地址，用户将被重定向到此地址进行登录授权。",
   "TXT_CODE_SSO_AUTO_REDIRECT": "自动跳转至 SSO 登录",
