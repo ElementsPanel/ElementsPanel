@@ -74,6 +74,16 @@ optional entries remain visible in diagnostics while the rest of the UI starts.
 `frontendImmediate` identifies foundation/prefetch entries for hosts that split
 activation into tiers.
 
+Startup reads the browser manifest once and preloads compatible plugin modules
+and styles in parallel while the foundations initialize. Preloading does not
+evaluate module code. After `runtime`, `i18n` and `console` are active, the host
+imports the remaining entries and loads their styles as one asynchronous batch.
+Each plugin's JavaScript and styles load concurrently. Activation still awaits
+each `apply()` in dependency/priority order, so resource completion order cannot
+change registration order. Optional download or activation failures are isolated,
+and styles for failed or dependency-blocked entries are removed. Later manifest
+refreshes batch only new or replaced entries; unchanged active plugins are reused.
+
 ## Results and lifecycle
 
 Enablement endpoints retain their inventory fields and add:

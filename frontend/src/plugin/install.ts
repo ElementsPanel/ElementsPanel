@@ -1,6 +1,6 @@
 import { ctx } from "./context";
 import {
-  bootstrapPanelFrontendPlugin,
+  bootstrapPanelFrontendPlugins,
   auditFrontendPlugins,
   getPluginDiagnostics,
   getLoadedPlugins,
@@ -41,10 +41,7 @@ export async function setupPanelFrontendPlugins() {
     audit: auditFrontendPlugins
   });
 
-  await bootstrapPanelFrontendPlugin("runtime");
-  await bootstrapPanelFrontendPlugin("i18n");
-  await bootstrapPanelFrontendPlugin("console");
-  await refreshPlugins();
+  await bootstrapPanelFrontendPlugins();
   auditFrontendPlugins();
 
   window.ElementsPanelPlugins = {

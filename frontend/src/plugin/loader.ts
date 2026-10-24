@@ -65,6 +65,10 @@ interface PluginSource {
   load: (cacheKey?: string) => Promise<Record<string, unknown>>;
 }
 
+type PreparedPlugin =
+  | { module: PanelFrontendPluginModule; removeStyles?: () => void }
+  | { error: Error };
+
 export interface LoadedPanelFrontendPlugin {
   metadata: PanelFrontendPluginMetadata;
   directory: string;
@@ -285,6 +289,60 @@ function resolveSourceGraph(discovered: readonly PluginSource[]) {
   });
 }
 
+/** Fetch production assets during foundation startup without evaluating plugin code. */
+function preloadPluginAssets(discovered: readonly PluginSource[]) {
+  const links: HTMLLinkElement[] = [];
+  if (!import.meta.env.DEV) {
+    for (const source of resolveSourceGraph(discovered).ordered) {
+      try {
+        validatePluginCompatibility(source.metadata.elements);
+      } catch {
+        continue;
+      }
+      if (source.metadata.restartRequired || !source.entry) continue;
+      const module = document.createElement("link");
+      module.rel = "modulepreload";
+      module.href = source.entry;
+      module.crossOrigin = "anonymous";
+      document.head.appendChild(module);
+      links.push(module);
+      for (const href of source.styles || []) {
+        const style = document.createElement("link");
+        style.rel = "preload";
+        style.setAttribute("as", "style");
+        style.href = href;
+        document.head.appendChild(style);
+        links.push(style);
+      }
+    }
+  }
+  return () => links.forEach((link) => link.remove());
+}
+
+/** Preparation never rejects, so an optional download failure cannot abort the batch. */
+async function preparePlugin(source: PluginSource, cacheKey?: string): Promise<PreparedPlugin> {
+  let removeStyles: (() => void) | undefined;
+  try {
+    validatePluginCompatibility(source.metadata.elements);
+    if (source.metadata.restartRequired)
+      throw new Error("The plugin backend requires a restart before this version can load.");
+    const [styles, entry] = await Promise.allSettled([
+      import.meta.env.DEV ? Promise.resolve(undefined) : loadStyles(source),
+      Promise.resolve().then(() => source.load(cacheKey))
+    ]);
+    if (styles.status === "rejected") throw styles.reason;
+    removeStyles = styles.value;
+    if (entry.status === "rejected") throw entry.reason;
+    const module = toModule(entry.value, source.metadata.id);
+    if (!module)
+      throw new Error(`Panel frontend plugin has no apply() export: ${source.metadata.id}`);
+    return { module, removeStyles };
+  } catch (error) {
+    removeStyles?.();
+    return { error: error instanceof Error ? error : new Error(String(error)) };
+  }
+}
+
 function recordGraphFailure(source: PluginSource, error: Error) {
   const existing = plugins.find((plugin) => plugin.metadata.id === source.metadata.id);
   if (existing) {
@@ -308,7 +366,12 @@ function recordGraphFailure(source: PluginSource, error: Error) {
   return plugin;
 }
 
-async function install(source: PluginSource, cacheKey?: string, configOverride?: unknown) {
+async function install(
+  source: PluginSource,
+  cacheKey?: string,
+  configOverride?: unknown,
+  prepared?: PreparedPlugin
+) {
   const existing = plugins.find((plugin) => plugin.metadata.id === source.metadata.id);
   if (existing) return existing;
 
@@ -316,6 +379,7 @@ async function install(source: PluginSource, cacheKey?: string, configOverride?:
     (id) => plugins.find((plugin) => plugin.metadata.id === id)?.state !== "active"
   );
   if (unavailableDependencies.length) {
+    if (prepared && "module" in prepared) prepared.removeStyles?.();
     return recordGraphFailure(
       source,
       new Error(
@@ -336,16 +400,15 @@ async function install(source: PluginSource, cacheKey?: string, configOverride?:
   plugins.push(plugin);
   notifyPluginDiagnostics();
   try {
-    validatePluginCompatibility(source.metadata.elements);
-    if (source.metadata.restartRequired)
-      throw new Error("The plugin backend requires a restart before this version can load.");
-    if (!import.meta.env.DEV) plugin.removeStyles = await loadStyles(source);
-    const module = toModule(await source.load(cacheKey), source.metadata.id);
-    if (!module) throw new Error(`Panel frontend plugin has no apply() export: ${source.metadata.id}`);
+    const resources = prepared ?? (await preparePlugin(source, cacheKey));
+    if ("error" in resources) throw resources.error;
+    plugin.removeStyles = resources.removeStyles;
+    const { module } = resources;
     plugin.requiredServices = requiredServices(module);
     {
       // An `async apply()` is awaited here, so a plugin is fully applied before
-      // the next one loads and before the app is mounted.
+      // the next one activates and before the app is mounted. Resource loading
+      // happens in parallel before this dependency-ordered activation phase.
       //
       // cordis catches a synchronous throw from `apply()` and cancels the scope
       // itself, so the wrapper keeps a copy of it: without that, a plugin that
@@ -455,8 +518,8 @@ async function reloadPluginInternal(id: string) {
 }
 
 /** Re-reads what is installed and loads or unloads to match. */
-async function refreshPluginsInternal() {
-  const discovered = await discoverSources();
+async function refreshPluginsInternal(discovered?: PluginSource[]) {
+  discovered ??= await discoverSources();
   const next = new Map(discovered.map((source) => [source.metadata.id, source]));
   sources.clear();
   next.forEach((source, id) => sources.set(id, source));
@@ -472,6 +535,7 @@ async function refreshPluginsInternal() {
     if (current && !ESSENTIAL_PLUGIN_IDS.has(id)) await unloadPluginInternal(id);
     recordGraphFailure(source, new Error(issue.message));
   }
+  const pending: PluginSource[] = [];
   for (const source of graph.ordered) {
     const current = plugins.find((plugin) => plugin.metadata.id === source.metadata.id);
     if (current) current.restartRequired = Boolean(source.metadata.restartRequired);
@@ -489,31 +553,38 @@ async function refreshPluginsInternal() {
       }
       await unloadPluginInternal(source.metadata.id);
     }
-    if (!plugins.some((plugin) => plugin.metadata.id === source.metadata.id)) await install(source);
+    if (!plugins.some((plugin) => plugin.metadata.id === source.metadata.id)) pending.push(source);
+  }
+  const prepared = await Promise.all(pending.map((source) => preparePlugin(source)));
+  for (const [index, source] of pending.entries()) {
+    await install(source, undefined, undefined, prepared[index]);
   }
   await settle();
   notifyPluginDiagnostics();
   return discovered.map((source) => source.metadata) as readonly PanelFrontendPluginMetadata[];
 }
 
-/** Loads a foundation and verifies that it provided its declared service. */
-export async function bootstrapPanelFrontendPlugin(id: string, config?: unknown) {
-  if (!ESSENTIAL_PLUGIN_IDS.has(id)) {
-    throw new Error(`Panel frontend plugin "${id}" is not a foundational plugin.`);
-  }
-
+/** Discover once, prefetch assets, then activate foundations before the remaining batch. */
+export async function bootstrapPanelFrontendPlugins() {
   const discovered = await discoverSources();
   sources.clear();
   discovered.forEach((source) => sources.set(source.metadata.id, source));
-  const source = sources.get(id);
-  if (!source) throw new Error(`Panel frontend foundation plugin not found: ${id}`);
-
-  const plugin = await install(source, undefined, config);
-  if (plugin.error) throw plugin.error;
-  if (!plugin.fork || !ctx.get(FOUNDATION_SERVICES[id])) {
-    throw new Error(`Panel frontend foundation plugin failed to initialize: ${id}`);
+  const removePreloads = preloadPluginAssets(discovered);
+  try {
+    for (const id of ESSENTIAL_PLUGIN_IDS) {
+      const source = sources.get(id);
+      if (!source) throw new Error(`Panel frontend foundation plugin not found: ${id}`);
+      const plugin = await install(source);
+      if (plugin.error) throw plugin.error;
+      if (!plugin.fork || !ctx.get(FOUNDATION_SERVICES[id])) {
+        throw new Error(`Panel frontend foundation plugin failed to initialize: ${id}`);
+      }
+    }
+    await refreshPluginsInternal(discovered);
+    window.dispatchEvent(new CustomEvent("elementspanel:plugins-changed"));
+  } finally {
+    removePreloads();
   }
-  return plugin;
 }
 
 export function getLoadedPlugins(): readonly LoadedPanelFrontendPlugin[] {
