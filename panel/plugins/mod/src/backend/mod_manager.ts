@@ -8,6 +8,8 @@ import {
   type ModSourcePreference
 } from "./mcim";
 
+const EXCLUDED_PROJECT_TYPES = new Set(["modpack", "minecraft_java_server"]);
+
 export interface ModrinthProject {
   id: string;
   slug: string;
@@ -394,6 +396,7 @@ export class ModManagerService {
     }
   ) {
     if (limit > 50) throw new Error("Limit cannot be greater than 100");
+    if (EXCLUDED_PROJECT_TYPES.has(filters?.type || "")) return { hits: [], total_hits: 0 };
     const source = filters?.source || "all";
 
     if (source === "modrinth") {
@@ -466,7 +469,7 @@ export class ModManagerService {
     filters?: { version?: string; type?: string; loader?: string; environment?: string }
   ) {
     try {
-      const facets: string[][] = [];
+      const facets: string[][] = [...EXCLUDED_PROJECT_TYPES].map((type) => [`project_type!=${type}`]);
       if (filters?.version) {
         facets.push([`versions:${filters.version}`]);
       }
@@ -533,7 +536,7 @@ export class ModManagerService {
         return { hits: [], total_hits: 0 };
       }
 
-      const hits = res.data.hits;
+      const hits = res.data.hits.filter((hit: any) => !EXCLUDED_PROJECT_TYPES.has(hit.project_type));
       const versionIds = hits.map((h: any) => h.latest_version).filter((id: any) => !!id);
       let versionsMap: Record<string, string> = {};
 
@@ -616,7 +619,6 @@ export class ModManagerService {
       const classIdMap: Record<string, number> = {
         mod: 6,
         plugin: 12,
-        modpack: 4471,
         all: 6
       };
 
@@ -668,7 +670,7 @@ export class ModManagerService {
         return { hits: [], total_hits: 0 };
       }
 
-      const hits = res.data.data.map((mod: any) => {
+      const hits = res.data.data.filter((mod: any) => mod.classId !== 4471).map((mod: any) => {
         const latestFile = mod.latestFiles?.[0];
         const vn = this.cleanCurseForgeVersionName(
           latestFile?.displayName || latestFile?.fileName || "",

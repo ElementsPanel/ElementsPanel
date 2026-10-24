@@ -661,6 +661,73 @@ test("Modrinth search, metadata, version lists and hash lookup use MCIM with Ele
   }
 });
 
+test("Modrinth searches exclude modpacks and Java servers before version lookups while preserving other filters", async () => {
+  const hits = [
+    { project_id: "mod", title: "Mod", project_type: "mod", latest_version: "mod-version" },
+    { project_id: "pack", title: "Modpack", project_type: "modpack", latest_version: "pack-version" },
+    { project_id: "server", title: "Java Server", project_type: "minecraft_java_server", latest_version: "server-version" },
+    { project_id: "plugin", title: "Plugin", project_type: "mod", categories: ["paper"] },
+    { project_id: "resources", title: "Resources", project_type: "resourcepack" }
+  ];
+  for (const preference of ["mirror", "official"]) {
+    for (const type of [undefined, "all", "mod", "plugin"]) {
+      const f = mirrorManager(({ url, params }) => {
+        if (url.endsWith("/search")) {
+          const facets = JSON.parse(params.facets);
+          assert.ok(facets.some((group) => group.length === 1 && group[0] === "project_type!=modpack"));
+          assert.ok(facets.some((group) => group.length === 1 && group[0] === "project_type!=minecraft_java_server"));
+          assert.ok(facets.some((group) => group.includes("versions:1.21.1")));
+          assert.ok(facets.some((group) => group.includes("categories:Fabric")));
+          assert.ok(facets.some((group) => group.includes("server_side:required")));
+          if (type === "mod" || type === "plugin")
+            assert.ok(facets.some((group) => group.includes("project_type:mod")));
+          assert.equal(params.query, "modpack");
+          assert.equal(params.offset, 10);
+          assert.equal(params.limit, 5);
+          return { data: { hits, total_hits: 3 } };
+        }
+        assert.ok(url.endsWith("/versions"));
+        assert.deepEqual(JSON.parse(params.ids), ["mod-version"]);
+        return { data: [{ id: "mod-version", version_number: "1.0.0" }] };
+      }, preference);
+      const result = await f.manager.searchProjects("modpack", 10, 5, {
+        source: "modrinth", type, version: "1.21.1", loader: "fabric", environment: "server"
+      });
+      assert.deepEqual(result.hits.map((hit) => hit.id), ["mod", "plugin", "resources"]);
+      assert.equal(result.hits[1].project_type, "plugin");
+      assert.equal(result.total_hits, 3);
+    }
+  }
+  assert.equal(hits.length, 5, "filtering must leave the upstream response untouched");
+});
+
+test("CurseForge search results cannot relabel modpacks as mods", async () => {
+  const data = [
+    { id: 1, name: "Mod", classId: 6 },
+    { id: 2, name: "Plugin", classId: 12 },
+    { id: 3, name: "Modpack", classId: 4471 }
+  ];
+  for (const type of ["all", "mod", "plugin"]) {
+    const f = mirrorManager(({ params }) => {
+      assert.equal(params.classId, type === "plugin" ? 12 : 6);
+      return { data: { data, pagination: { totalCount: 2 } } };
+    });
+    const result = await f.manager.searchProjects("pack", 0, 10, { source: "curseforge", type });
+    assert.deepEqual(result.hits.map((hit) => [hit.id, hit.project_type]), [["1", "mod"], ["2", "plugin"]]);
+  }
+  assert.equal(data.length, 3);
+});
+
+test("excluded project types cannot be restored through a stale project type filter", async () => {
+  const f = mirrorManager(() => assert.fail("excluded project types must not reach an upstream API"));
+  for (const type of ["modpack", "minecraft_java_server"])
+    for (const source of ["all", "modrinth", "curseforge", "spigotmc"])
+      assert.deepEqual(await f.manager.searchProjects("pack", 0, 10, { source, type }), {
+        hits: [], total_hits: 0
+      });
+  assert.equal(f.requests.length, 0);
+});
+
 test("CurseForge MCIM requests need no API key and only supported file hosts gain a mirror fallback", async () => {
   const f = mirrorManager(({ url }) => {
     const parsed = new URL(url);
