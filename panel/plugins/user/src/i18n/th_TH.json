@@ -54,6 +54,7 @@
   "TXT_CODE_DESKTOP_USERS_PASSWORD_REQUIRED": "ผู้ใช้ใหม่ต้องมีรหัสผ่าน",
   "TXT_CODE_DESKTOP_USERS_SEARCH": "ค้นหาผู้ใช้...",
   "TXT_CODE_DESKTOP_USERS_USERNAME_REQUIRED": "ต้องระบุชื่อผู้ใช้",
+  "TXT_CODE_FIRST_STARTUP_NOTICE": "แผงควบคุมเริ่มทำงานเป็นครั้งแรก ชื่อผู้ใช้และรหัสผ่านเริ่มต้นได้แสดงไว้ในคอนโซลหรือสคริปต์ติดตั้งแล้ว",
   "TXT_CODE_SSO_AUTHORIZE_URL": "Authorize URL",
   "TXT_CODE_SSO_AUTHORIZE_URL_DESC": "OAuth 2.0 authorization endpoint. Users will be redirected here to log in.",
   "TXT_CODE_SSO_AUTO_REDIRECT": "Auto Redirect to SSO Login",

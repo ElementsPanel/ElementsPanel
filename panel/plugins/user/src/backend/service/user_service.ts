@@ -36,9 +36,11 @@ function generateDefaultPassword(): string {
 
 class UserSubsystem {
   public readonly objects: Map<string, User> = new Map();
+  public isFirstStartup = false;
   private readonly mutationLock = new Mutex();
 
   async initialize() {
+    this.isFirstStartup = false;
     this.objects.clear();
     for (const uuid of await storage().getStorage().list("User")) {
       const user = (await storage().getStorage().load("User", User, uuid)) as User;
@@ -51,6 +53,7 @@ class UserSubsystem {
         passWord,
         permission: ROLE().ADMIN
       });
+      this.isFirstStartup = true;
       logger().info(
         $t("TXT_CODE_systemUser.defaultAccount", {
           userName: "epanel",

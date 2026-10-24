@@ -130,6 +130,15 @@ onMounted(async () => {
 <template>
   <!-- eslint-disable vue/no-v-html -->
   <div class="login-card-host">
+    <VAlert
+      v-if="pageInfoResult?.isFirstStartup"
+      class="mb-4"
+      type="info"
+      variant="tonal"
+      rounded="lg"
+    >
+      {{ t("TXT_CODE_FIRST_STARTUP_NOTICE") }}
+    </VAlert>
     <VCard
       class="login-panel"
       elevation="0"

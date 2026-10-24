@@ -36,7 +36,7 @@ export interface UserPluginApi {
     { data: { username: string; password: string; code?: string } } | undefined,
     string
   >;
-  loginPageInfo: () => ApiCall<any, { loginInfo: string }>;
+  loginPageInfo: () => ApiCall<any, { loginInfo: string; isFirstStartup: boolean }>;
   logoutUser: () => ApiCall<any, any>;
   userInfoApi: () => ApiCall<any, LoginUserInfo>;
   userInfoApiAdvanced: () => ApiCall<

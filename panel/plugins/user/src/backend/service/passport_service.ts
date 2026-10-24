@@ -120,6 +120,7 @@ export function loginSuccess(ctx: Koa.ParameterizedContext, userName: string) {
   ctx.session["role"] = user.permission === 10 ? ROLE().ADMIN : ROLE().USER;
   ctx.session["token"] = timeUuid();
   ctx.session.save();
+  userSystem.isFirstStartup = false;
 
   logger().info($t("TXT_CODE_42036f92"));
   logger().info(`[LOGIN] IP: ${ip} Login ${userName} successful!`);

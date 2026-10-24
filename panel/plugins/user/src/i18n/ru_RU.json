@@ -54,6 +54,7 @@
   "TXT_CODE_DESKTOP_USERS_PASSWORD_REQUIRED": "Для новых пользователей требуется пароль",
   "TXT_CODE_DESKTOP_USERS_SEARCH": "Поиск пользователей...",
   "TXT_CODE_DESKTOP_USERS_USERNAME_REQUIRED": "Имя пользователя обязательно",
+  "TXT_CODE_FIRST_STARTUP_NOTICE": "Панель запущена впервые. Имя пользователя и пароль по умолчанию выведены в консоль или в скрипт установки.",
   "TXT_CODE_SSO_AUTHORIZE_URL": "Authorize URL",
   "TXT_CODE_SSO_AUTHORIZE_URL_DESC": "OAuth 2.0 authorization endpoint. Users will be redirected here to log in.",
   "TXT_CODE_SSO_AUTO_REDIRECT": "Auto Redirect to SSO Login",

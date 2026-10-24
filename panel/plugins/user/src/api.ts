@@ -25,6 +25,7 @@ export const loginPageInfo = useDefineApi<
   any,
   {
     loginInfo: string;
+    isFirstStartup: boolean;
   }
 >({
   url: "/api/auth/login_info",

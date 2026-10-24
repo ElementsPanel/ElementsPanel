@@ -4,7 +4,7 @@ import { core, $t, operationLogger } from "../runtime";
 import { authSettings } from "../service/auth_settings";
 import permission from "../middleware/permission";
 import { check, checkBanIp, login, logout } from "../service/passport_service";
-import { TwoFactorError } from "../service/user_service";
+import userSystem, { TwoFactorError } from "../service/user_service";
 
 export default function createLoginRouter() {
   const validator = core().middleware.validator;
@@ -67,7 +67,8 @@ export default function createLoginRouter() {
     permission({ token: false, level: null, speedLimit: false }),
     async (ctx: Koa.ParameterizedContext) => {
       ctx.body = {
-        loginInfo: authSettings().loginInfo
+        loginInfo: authSettings().loginInfo,
+        isFirstStartup: userSystem.isFirstStartup
       };
     }
   );
