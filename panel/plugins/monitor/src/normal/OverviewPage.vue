@@ -39,12 +39,6 @@ const stoppedInstances = computed(() => Math.max(0, totalInstances.value - runni
 const remoteCount = computed(() => state.value?.remoteCount ?? { available: 0, total: 0 });
 const remoteNodes = computed(() => state.value?.remote ?? []);
 
-const panelVersion = computed(() => state.value?.version ?? "--");
-const daemonVersion = computed(() => state.value?.specifiedDaemonVersion ?? "--");
-const systemInfo = computed(() => state.value?.system);
-const panelProcess = computed(() => state.value?.process);
-const record = computed(() => state.value?.record);
-
 const chartHistory = computed(() => state.value?.chart?.request ?? []);
 const chartLabels = computed(() => chartHistory.value.map((_, index) => `${chartHistory.value.length - index - 1}s`));
 const requestChartData = computed(() => {
@@ -315,16 +309,6 @@ onMounted(fetchData);
           </VCard>
         </VCol>
       </VRow>
-
-      <div class="monitor-meta">
-        <span>{{ t("TXT_CODE_413b9c01") }}: {{ systemInfo?.node || "--" }}</span>
-        <span>{{ t("TXT_CODE_af21e6b") }}: {{ panelVersion }}</span>
-        <span>{{ t("TXT_CODE_a0e70887") }}: {{ daemonVersion }}</span>
-        <span>{{ t("TXT_CODE_77d038f7") }}: {{ panelProcess ? formatBytes(panelProcess.memory) : "--" }}</span>
-        <span>{{ t("TXT_CODE_4df7e9bd") }}: {{ systemInfo?.hostname || "--" }}</span>
-        <span>{{ t("TXT_CODE_190ecd56") }}: {{ formatLoadAvg(systemInfo?.loadavg) }}</span>
-        <span>{{ t("TXT_CODE_871fb0d6") }}: {{ record?.loginFailed ?? 0 }} / {{ record?.logined ?? 0 }}</span>
-      </div>
     </VContainer>
   </main>
 </template>
@@ -490,15 +474,6 @@ onMounted(fetchData);
 
 .node-card .v-list {
   background: transparent;
-}
-
-.monitor-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 18px;
-  padding: 4px 8px;
-  color: var(--color-gray-7);
-  font-size: 12px;
 }
 
 @media (max-width: 992px) {
