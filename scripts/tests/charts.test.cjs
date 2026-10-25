@@ -81,10 +81,13 @@ test("node histories initialize with available data, update nested values and re
   // The hover card is custom-styled and shows only the plotted value.
   assert.equal(chart.options.plugins.tooltip.callbacks.title(), "");
   assert.equal(chart.options.plugins.tooltip.displayColors, false);
+  // The hover card is anchored above the hovered point.
+  assert.equal(chart.options.plugins.tooltip.yAlign, "bottom");
   values.value[1] = 45;
   await vue.nextTick();
   assert.deepEqual(chart.data.datasets[0].data, [10, 45, 30]);
-  assert.deepEqual(chart.updates, ["none"]);
+  // The default update mode keeps Chart.js's own transition animation.
+  assert.deepEqual(chart.updates, [undefined]);
   values.value = [];
   await vue.nextTick();
   assert.deepEqual(chart.data.labels, []);

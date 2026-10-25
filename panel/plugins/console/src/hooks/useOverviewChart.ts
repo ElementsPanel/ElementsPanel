@@ -76,7 +76,6 @@ export function useLineChart(
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: false,
         interaction: { mode: "index", intersect: false },
         layout: { padding: { top: compact ? 6 : 8, bottom: compact ? 4 : 0, right: compact ? 6 : 8 } },
         plugins: {
@@ -86,6 +85,10 @@ export function useLineChart(
             // with no border, showing only the plotted value — the percentage on
             // usage charts. The axis label is redundant with the axis itself,
             // so the title row is dropped.
+            // Always anchor the card above the hovered point (the bottom edge
+            // aligns with it) instead of letting Chart.js flip it below when the
+            // point sits in the upper half of the plot.
+            yAlign: "bottom",
             displayColors: false,
             backgroundColor: "rgba(20, 24, 35, 0.85)",
             cornerRadius: 6,
@@ -147,7 +150,8 @@ export function useLineChart(
     chart.data.datasets[0].data = data.values;
     const axis = chart.options.scales?.y;
     if (axis) axis.max = data.max;
-    chart.update("none");
+    // Default update mode keeps Chart.js's own transition between data points.
+    chart.update();
   }, { deep: true, flush: "post" });
 
   onBeforeUnmount(() => {
