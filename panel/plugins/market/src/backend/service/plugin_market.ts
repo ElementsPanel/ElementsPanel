@@ -1,42 +1,43 @@
-import path from "path";
 import { createHash, randomBytes } from "crypto";
+import path from "path";
 import axios from "axios";
 import fs from "fs-extra";
 import {
-  isPackagedRuntime,
-  packagePluginRoots,
-  MARKET_INSTALL_MARKER as MARKER_FILE,
-  PLUGIN_ICON_FILE,
-  PLUGIN_PACKAGE_EXTENSIONS,
-  PluginPackageError as PluginMarketError,
-  pluginPackageDirectory,
-  removePluginPackage,
-  writePluginPackage,
-  validatePluginCompatibility
+  installNpmPlugin,
+  listNpmPlugins,
+  uninstallNpmPlugin,
+  type NpmPluginRecord
 } from "mcsmanager-common";
 
-export { PluginMarketError };
+export type MarketErrorReason =
+  | "NOT_FOUND"
+  | "DIR_TAKEN"
+  | "EMPTY_PACKAGE"
+  | "BAD_PATH"
+  | "BAD_CHECKSUM"
+  | "INCOMPATIBLE"
+  | "NO_NODES"
+  | "BUNDLED";
 
-// Installing a plugin from the plugin market.
-//
-// A published package is laid out the way `scripts/package-panel-plugins.mjs`
-// lays one out, with the side as its first path segment:
-//
-//   panel/plugin.json, panel/backend/index.cjs, panel/frontend/index.js
-//   daemon/plugin.json, daemon/backend/index.cjs
-//
-// The two halves do not travel the same way. The panel half is written into this
-// process's own plugin directory; the daemon half has to land on every machine
-// that loads it, so it is sent to the daemons the user picked and written by the
-// daemon itself (`plugin/install`). Development uses data/plugins, while a
-// production deployment writes directly to each side's plugins directory.
-// Legacy data/plugins and market_plugins roots are still inventoried.
+export class PluginMarketError extends Error {
+  constructor(readonly reason: MarketErrorReason) {
+    super(reason);
+  }
+}
 
-const SIDES = ["panel", "daemon"] as const;
-export type PluginSide = (typeof SIDES)[number];
+// Plugin installation through the market.
+//
+// The market no longer serves package files: it indexes npm packages named
+// `epanel-plugin-*`. Installing one means adding an npm dependency to the
+// installation project, which the runtime resolves like any other npm plugin.
+// Updates are ordinary npm dependency updates, and the market only names the
+// package and the version.
+
+export type PluginSide = "panel" | "daemon";
 
 export interface MarketInstallInfo {
   pluginId: string;
+  /** The npm package name. */
   name: string;
   version: string;
   installedAt: number;
@@ -46,99 +47,23 @@ export interface InstalledMarketPlugin extends MarketInstallInfo {
   sides: PluginSide[];
   directories: string[];
   daemonIds: string[];
+  /** Bundled plugins ship inside the runtime package and cannot be removed here. */
+  source: "bundled" | "project";
+  removable: boolean;
 }
 
 export interface RemoteMarketInstall extends MarketInstallInfo {
   daemonId: string;
 }
 
-/** One file of a published package, with its side taken off the front. */
-export interface MarketPackageFile {
-  /** The path the market publishes it under, which is what `/file` expects. */
-  path: string;
-  side: PluginSide;
-  relative: string;
-  size: number;
-  sha256?: string;
-}
-
-/** A package as the market lists it: enough to decide what an install touches. */
-export interface MarketPackage {
-  pluginId: string;
+export interface MarketPluginDetail {
+  id: string;
   name: string;
-  version: string;
-  files: MarketPackageFile[];
-}
-
-/** One file of a package, ready to be written or sent to a daemon. */
-export interface MarketFileContent {
-  side: PluginSide;
-  relative: string;
-  content: Buffer;
-}
-
-function projectRoot() {
-  // The panel runs with its own directory as the working directory.
-  return path.resolve(process.cwd(), "..");
-}
-
-/**
- * Whether this is a development checkout.
- *
- * `process.env.NODE_ENV` is no use here: webpack bakes `"production"` into every
- * plugin bundle — `webpack.plugins.config.js` builds in production mode, and a
- * plugin's `backend/index.cjs` is what runs even while the dev servers are up.
- * The source tree is the signal that survives: published npm packages contain
- * compiled entries and resources, with no `panel/src`.
- */
-export function isDevelopment(): boolean {
-  return !isPackagedRuntime() && fs.existsSync(path.join(projectRoot(), "panel", "src", "app"));
-}
-
-/** npm installations keep user plugins outside the immutable package directory. */
-export function installRoot(side: PluginSide): string {
-  const directory = side === "panel" ? process.cwd() : path.join(projectRoot(), side);
-  return isPackagedRuntime() || isDevelopment()
-    ? path.join(directory, "data", "plugins")
-    : path.join(directory, "plugins");
-}
-
-/** Both are searched: an installation may have been made under either. */
-function pluginRoots(): string[] {
-  return [
-    path.join(process.cwd(), "data", "plugins"),
-    path.join(process.cwd(), "plugins"),
-    path.join(process.cwd(), "market_plugins")
-  ];
-}
-
-export function installDirectory(side: PluginSide, name: string): string {
-  return pluginPackageDirectory(installRoot(side), name);
-}
-
-function isInstallInfo(value: unknown): value is MarketInstallInfo {
-  if (!value || typeof value !== "object") return false;
-  const info = value as Partial<MarketInstallInfo>;
-  return (
-    typeof info.pluginId === "string" &&
-    Boolean(info.pluginId) &&
-    typeof info.name === "string" &&
-    /^[a-zA-Z0-9_-]{1,128}$/.test(info.name) &&
-    typeof info.version === "string" &&
-    typeof info.installedAt === "number" &&
-    Number.isFinite(info.installedAt)
-  );
-}
-
-function readMarker(directory: string): MarketInstallInfo | null {
-  try {
-    const filename = path.join(directory, MARKER_FILE);
-    if (!fs.lstatSync(filename).isFile()) return null;
-    const parsed: unknown = JSON.parse(fs.readFileSync(filename, "utf8"));
-    return isInstallInfo(parsed) ? parsed : null;
-  } catch {
-    return null;
-  }
+  sides: PluginSide[];
+  selectedVersion: {
+    version: string;
+    sides: PluginSide[];
+  };
 }
 
 function remoteInstallRoot(): string {
@@ -148,6 +73,20 @@ function remoteInstallRoot(): string {
 function remoteInstallFile(pluginId: string): string {
   const key = createHash("sha256").update(pluginId).digest("hex");
   return path.join(remoteInstallRoot(), `${key}.json`);
+}
+
+function isInstallInfo(value: unknown): value is MarketInstallInfo {
+  if (!value || typeof value !== "object") return false;
+  const info = value as Partial<MarketInstallInfo>;
+  return (
+    typeof info.pluginId === "string" &&
+    Boolean(info.pluginId) &&
+    typeof info.name === "string" &&
+    Boolean(info.name) &&
+    typeof info.version === "string" &&
+    typeof info.installedAt === "number" &&
+    Number.isFinite(info.installedAt)
+  );
 }
 
 /** Remote files never live under the panel's plugin directories. */
@@ -172,8 +111,6 @@ export function readRemoteInstalls(pluginId: string): RemoteMarketInstall[] {
 
 async function writeRemoteInstalls(pluginId: string, installations: RemoteMarketInstall[]) {
   const filename = remoteInstallFile(pluginId);
-  // The identifier never becomes a path, and existing links cannot redirect
-  // this record to a different installation's files.
   for (const target of [path.dirname(remoteInstallRoot()), remoteInstallRoot(), filename]) {
     try {
       if ((await fs.lstat(target)).isSymbolicLink()) throw new PluginMarketError("BAD_PATH");
@@ -214,38 +151,26 @@ export async function forgetRemoteInstall(installation: RemoteMarketInstall) {
   await writeRemoteInstalls(pluginId, remaining);
 }
 
-/** Local panel markers and acknowledged remote installs, never sibling daemons. */
+function localRecord(record: NpmPluginRecord): InstalledMarketPlugin {
+  return {
+    pluginId: record.pluginId,
+    name: record.name,
+    version: record.version,
+    installedAt: 0,
+    sides: record.sides,
+    directories: [record.directory],
+    daemonIds: [],
+    source: record.source,
+    removable: record.source === "project"
+  };
+}
+
+/** Local npm dependencies, both bundled and project-installed, plus node records. */
 export function listInstalled(): InstalledMarketPlugin[] {
   const found = new Map<string, InstalledMarketPlugin>();
-  const add = (
-    info: MarketInstallInfo,
-    side: PluginSide,
-    directory?: string,
-    daemonId?: string
-  ) => {
-    let installed = found.get(info.pluginId);
-    if (!installed) {
-      installed = { ...info, sides: [], directories: [], daemonIds: [] };
-      found.set(info.pluginId, installed);
-    } else if (info.installedAt > installed.installedAt) {
-      installed.name = info.name;
-      installed.version = info.version;
-      installed.installedAt = info.installedAt;
-    }
-    if (!installed.sides.includes(side)) installed.sides.push(side);
-    if (directory) installed.directories.push(directory);
-    if (daemonId && !installed.daemonIds.includes(daemonId)) installed.daemonIds.push(daemonId);
-  };
+  for (const record of listNpmPlugins(undefined, { skipInvalid: true }))
+    found.set(record.pluginId, localRecord(record));
 
-  for (const root of pluginRoots()) {
-    if (!fs.existsSync(root) || !fs.lstatSync(root).isDirectory()) continue;
-    for (const item of fs.readdirSync(root, { withFileTypes: true })) {
-      if (!item.isDirectory()) continue;
-      const directory = path.join(root, item.name);
-      const marker = readMarker(directory);
-      if (marker) add(marker, "panel", directory);
-    }
-  }
   const recordRoot = remoteInstallRoot();
   if (fs.existsSync(recordRoot) && fs.lstatSync(recordRoot).isDirectory()) {
     for (const item of fs.readdirSync(recordRoot, { withFileTypes: true })) {
@@ -261,177 +186,89 @@ export function listInstalled(): InstalledMarketPlugin[] {
       }
       if (typeof record?.pluginId !== "string" || remoteInstallFile(record.pluginId) !== filename)
         continue;
-      for (const info of readRemoteInstalls(record.pluginId))
-        add(info, "daemon", undefined, info.daemonId);
+      for (const info of readRemoteInstalls(record.pluginId)) {
+        let installed = found.get(info.pluginId);
+        if (!installed) {
+          installed = {
+            ...info,
+            sides: ["daemon"],
+            directories: [],
+            daemonIds: [],
+            source: "project",
+            removable: true
+          };
+          found.set(info.pluginId, installed);
+        }
+        if (!installed.sides.includes("daemon")) installed.sides.push("daemon");
+        if (!installed.daemonIds.includes(info.daemonId)) installed.daemonIds.push(info.daemonId);
+      }
     }
   }
 
   return [...found.values()];
 }
 
-function splitPackagePath(rawPath: string): { side: PluginSide; relative: string } | null {
-  if (typeof rawPath !== "string" || /[\\:\x00]/.test(rawPath)) return null;
-  const segments = rawPath.split("/");
-  if (segments.length < 2) return null;
-  const side = segments[0];
-  if (side !== "panel" && side !== "daemon") return null;
-
-  const rest = segments.slice(1);
-  if (
-    rest.some((segment) => !segment || segment === "." || segment === ".." || /[. ]$/.test(segment))
-  )
-    return null;
-
-  // What a package may contain, checked before anything is downloaded. The daemon
-  // applies the same rule to the half it is sent (`plugin/install`); without this
-  // the panel's own half would be the one place the rule is not enforced.
-  const isIcon = rest.length === 1 && rest[0] === PLUGIN_ICON_FILE;
-  if (!isIcon && !PLUGIN_PACKAGE_EXTENSIONS.has(path.extname(rawPath).toLowerCase())) return null;
-
-  return { side, relative: rest.join(path.sep) };
-}
-
-function marketUrl(addr: string, pluginId: string, suffix: string) {
-  return `${addr}/api/plugins/${encodeURIComponent(pluginId)}${suffix}`;
+function sidesOf(value: unknown): PluginSide[] {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.filter((item): item is PluginSide => item === "panel" || item === "daemon"))];
 }
 
 /**
- * Asks the market what a package contains, without downloading it.
- *
- * The answer is what the page needs before it can ask the user anything: a
- * package with a daemon half has to be sent to the nodes the user picks, and one
- * without is installed into the panel alone.
+ * Reads the release the page is about to install. The market's catalogue is the
+ * authority for the npm package name, so an install cannot be redirected to a
+ * different package than the one that was listed.
  */
-export async function fetchPackage(
+export async function fetchMarketPluginDetail(
   addr: string,
-  options: { pluginId: string; name?: string; version?: string }
-): Promise<MarketPackage> {
-  const params = {
-    pluginApi: 1,
-    pluginSdk: 1,
-    ...(options.version ? { version: options.version } : {})
-  };
-
-  const meta = await axios.get<{
-    name: string;
-    version: string;
-    compatibility?: Record<string, unknown>;
-    files: Array<{ path: string; size: number; sha256?: string }>;
-  }>(marketUrl(addr, options.pluginId, "/files"), { params, timeout: 20000 });
-
-  if (!Array.isArray(meta.data?.files)) throw new PluginMarketError("EMPTY_PACKAGE");
-  try {
-    for (const contract of Object.values(meta.data.compatibility || {}))
-      validatePluginCompatibility(contract);
-  } catch {
-    throw new PluginMarketError("INCOMPATIBLE");
-  }
-  const files = meta.data.files.map((file) => {
-    const target = splitPackagePath(file?.path);
-    if (!target) throw new PluginMarketError("BAD_PATH");
-    if (file.sha256 !== undefined && !/^[a-f0-9]{64}$/.test(file.sha256))
-      throw new PluginMarketError("BAD_CHECKSUM");
-    return { path: file.path, ...target, size: file.size, sha256: file.sha256 };
-  });
-  if (!files.length) throw new PluginMarketError("EMPTY_PACKAGE");
-
-  const name = String(meta.data?.name || options.name || options.pluginId);
-  installDirectory("panel", name);
+  pluginId: string,
+  version?: string
+): Promise<MarketPluginDetail> {
+  const response = await axios.get<Record<string, any>>(
+    `${addr}/api/plugins/${encodeURIComponent(pluginId)}`,
+    { params: version ? { version } : {}, timeout: 15000 }
+  );
+  const detail = response.data ?? {};
+  const selected =
+    (version && Array.isArray(detail.versions)
+      ? detail.versions.find((item: { version?: unknown }) => item?.version === version)
+      : detail.selectedVersion) ?? detail.latestVersion;
+  if (!selected || typeof selected.version !== "string")
+    throw new PluginMarketError("NOT_FOUND");
+  if (selected.status && selected.status !== "approved") throw new PluginMarketError("NOT_FOUND");
+  const name = typeof detail.name === "string" ? detail.name : "";
+  if (!name) throw new PluginMarketError("BAD_PATH");
   return {
-    pluginId: options.pluginId,
+    id: pluginId,
     name,
-    version: String(meta.data?.version ?? options.version ?? ""),
-    files
+    sides: sidesOf(detail.sides).length ? sidesOf(detail.sides) : sidesOf(selected.sides),
+    selectedVersion: {
+      version: selected.version,
+      sides: sidesOf(selected.sides).length ? sidesOf(selected.sides) : sidesOf(detail.sides)
+    }
   };
 }
 
-/** A published package is a few hundred kilobytes; this only bounds a hostile source. */
-const MAX_PACKAGE_FILE_BYTES = 20 * 1024 * 1024;
-
-/** Downloads every file of a package, keeping each one's side. */
-export async function downloadPackage(
-  addr: string,
-  pkg: MarketPackage
-): Promise<MarketFileContent[]> {
-  const params = pkg.version ? { version: pkg.version } : {};
-  const downloaded: MarketFileContent[] = [];
-  for (const file of pkg.files) {
-    const response = await axios.get<ArrayBuffer>(marketUrl(addr, pkg.pluginId, "/file"), {
-      params: { ...params, path: file.path },
-      responseType: "arraybuffer",
-      timeout: 60000,
-      maxContentLength: MAX_PACKAGE_FILE_BYTES,
-      maxBodyLength: MAX_PACKAGE_FILE_BYTES
+/** Adds one npm package to this installation's dependencies. */
+export async function installPanelPlugin(detail: MarketPluginDetail): Promise<NpmPluginRecord> {
+  try {
+    return await installNpmPlugin({
+      name: detail.name,
+      pluginId: detail.id,
+      version: detail.selectedVersion.version,
+      side: "panel"
     });
-    const content = Buffer.from(response.data);
-    // Every market reports each file's size, and current ones a digest as well:
-    // a truncated or substituted download is refused before anything is written.
-    if (
-      (Number.isFinite(file.size) && content.length !== file.size) ||
-      (file.sha256 && createHash("sha256").update(content).digest("hex") !== file.sha256)
-    )
-      throw new PluginMarketError("BAD_CHECKSUM");
-    downloaded.push({
-      side: file.side,
-      relative: file.relative,
-      content
-    });
+  } catch (error: any) {
+    if (String(error?.message).startsWith("BUNDLED:")) throw new PluginMarketError("BUNDLED");
+    throw error;
   }
-  // Validate every side before writing the panel half or distributing any node half.
-  for (const side of new Set(downloaded.map((file) => file.side))) {
-    const file = downloaded.find(
-      (entry) => entry.side === side && entry.relative === "plugin.json"
-    );
-    if (!file) throw new PluginMarketError("EMPTY_PACKAGE");
-    let manifest: { elements?: unknown };
-    try {
-      manifest = JSON.parse(file.content.toString("utf8"));
-      if (!manifest || typeof manifest !== "object" || Array.isArray(manifest))
-        throw new Error("Invalid manifest");
-    } catch {
-      throw new PluginMarketError("EMPTY_PACKAGE");
-    }
-    try {
-      validatePluginCompatibility(manifest.elements);
-    } catch {
-      throw new PluginMarketError("INCOMPATIBLE");
-    }
-  }
-  return downloaded;
 }
 
-/**
- * Writes one side's files into this process's own plugin directory, and marks
- * the directory so the market can recognise it later.
- */
-export async function writePlugin(
-  side: PluginSide,
-  info: MarketInstallInfo,
-  files: readonly { relative: string; content: Buffer }[]
-): Promise<string> {
-  return writePluginPackage(installRoot(side), info, files, [
-    ...packagePluginRoots("panel"),
-    ...pluginRoots()
-  ]);
-}
-
-/** What a daemon needs to write the same half on its own machine. */
-export function toTransferFiles(files: readonly { relative: string; content: Buffer }[]) {
-  return files.map((file) => ({
-    path: file.relative,
-    content: file.content.toString("base64")
-  }));
-}
-
-/**
- * Removes every local half of an installation and reports what it was, so the
- * caller can ask the same nodes to remove their half too.
- */
-export async function uninstallPlugin(pluginId: string): Promise<InstalledMarketPlugin | null> {
-  const installed = listInstalled().find((item) => item.pluginId === pluginId);
-  if (!installed) return null;
-  for (const directory of installed.directories) {
-    await removePluginPackage(path.dirname(directory), path.basename(directory), pluginId);
+/** Removes one project-installed npm plugin from this installation. */
+export async function uninstallPanelPlugin(pluginId: string): Promise<NpmPluginRecord | null> {
+  try {
+    return await uninstallNpmPlugin(pluginId);
+  } catch (error: any) {
+    if (String(error?.message).startsWith("BUNDLED:")) throw new PluginMarketError("BUNDLED");
+    throw error;
   }
-  return installed;
 }

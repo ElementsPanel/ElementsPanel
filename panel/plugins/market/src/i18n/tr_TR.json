@@ -48,5 +48,7 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Panel ve daemon eklentisi",
   "TXT_CODE_PLUGIN_MARKET_UPDATES": "Güncellemeler",
   "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "Bu eklenti farklı bir ana bilgisayar API veya tarayıcı SDK sürümü gerektiriyor. Önce ElementsPanel’i güncelleyin.",
-  "TXT_CODE_2de92a5d": "Lütfen yüklemeden önce bir düğüm seçin!"
+  "TXT_CODE_2de92a5d": "Lütfen yüklemeden önce bir düğüm seçin!",
+  "TXT_CODE_PLUGIN_MARKET_BUNDLED": "This plugin is bundled with the panel and cannot be uninstalled here.",
+  "TXT_CODE_PLUGIN_MARKET_NPM_FAILED": "npm install failed. Check the network, registry and package name, then retry."
 }

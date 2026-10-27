@@ -48,5 +48,7 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "ปลั๊กอิน Panel และ Daemon",
   "TXT_CODE_PLUGIN_MARKET_UPDATES": "อัปเดต",
   "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "ปลั๊กอินนี้ต้องใช้ API โฮสต์หรือ SDK เบราว์เซอร์เวอร์ชันอื่น โปรดอัปเดต ElementsPanel ก่อน",
-  "TXT_CODE_2de92a5d": "โปรดเลือกโหนดก่อนติดตั้ง!"
+  "TXT_CODE_2de92a5d": "โปรดเลือกโหนดก่อนติดตั้ง!",
+  "TXT_CODE_PLUGIN_MARKET_BUNDLED": "This plugin is bundled with the panel and cannot be uninstalled here.",
+  "TXT_CODE_PLUGIN_MARKET_NPM_FAILED": "npm install failed. Check the network, registry and package name, then retry."
 }

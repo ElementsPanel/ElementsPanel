@@ -48,5 +48,7 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Panel + daemon plugin",
   "TXT_CODE_PLUGIN_MARKET_UPDATES": "Updates",
   "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "This plugin requires a different host API or browser SDK version. Update ElementsPanel before installing.",
-  "TXT_CODE_2de92a5d": "Please select a node before installing!"
+  "TXT_CODE_2de92a5d": "Please select a node before installing!",
+  "TXT_CODE_PLUGIN_MARKET_BUNDLED": "This plugin is bundled with the panel and cannot be uninstalled here.",
+  "TXT_CODE_PLUGIN_MARKET_NPM_FAILED": "npm install failed. Check the network, registry and package name, then retry."
 }

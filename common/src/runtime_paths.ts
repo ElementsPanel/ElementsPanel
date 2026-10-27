@@ -15,17 +15,29 @@ export function packagePath(...parts: string[]): string {
 
 function npmPluginRoots(side?: "panel" | "daemon"): PluginDiscoveryRoot[] {
   // The same resolver is used by the CLI before the bundled application starts.
+  // A development checkout keeps it in the repository, beside the side packages,
+  // so project-installed npm plugins work there as well.
   const runtimeRequire = eval("require") as NodeRequire;
-  const { resolveNpmPlugins } = runtimeRequire(packagePath("runtime/npm-plugins.cjs"));
+  const resolver = isPackagedRuntime()
+    ? packagePath("runtime/npm-plugins.cjs")
+    : path.resolve(packagePath(), "..", "scripts", "runtime", "npm-plugins.cjs");
+  // A development process may run from a fixture directory without a runtime
+  // package; there is nothing to resolve in that case.
+  if (!fs.existsSync(path.join(packagePath(), "package.json"))) return [];
+  if (!isPackagedRuntime() && !fs.existsSync(resolver)) return [];
+  const { resolveNpmPlugins } = runtimeRequire(resolver);
   return resolveNpmPlugins(packagePath(), side);
 }
 
 export function packagePluginRoots(side: "panel" | "daemon"): PluginDiscoveryRoot[] {
-  return isPackagedRuntime() ? npmPluginRoots(side) : [{ directory: packagePath("plugins") }];
+  const roots: PluginDiscoveryRoot[] = isPackagedRuntime() ? [] : [{ directory: packagePath("plugins") }];
+  // Project-installed npm plugins load in development too: they are dependencies
+  // of the development project, not of the published runtime package.
+  roots.push(...npmPluginRoots(side));
+  return roots;
 }
 
 export function isPackagePlugin(directory: string): boolean {
-  if (!isPackagedRuntime()) return false;
   return npmPluginRoots().some((root) => {
     const relative = path.relative(root.directory, path.resolve(directory));
     return (

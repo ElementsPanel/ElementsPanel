@@ -200,51 +200,6 @@ test("directory junctions cannot redirect a plugin write or removal", async (t) 
   assert.equal(fs.readFileSync(path.join(outside, "keep.json"), "utf8"), "keep");
 });
 
-test("daemon validates every package file before writing and reports ownership failures on uninstall", async (t) => {
-  const cwd = process.cwd();
-  t.after(() => process.chdir(cwd));
-  const dir = directory(t);
-  process.chdir(dir);
-  const handlers = new Map(),
-    replies = [];
-  const service = load(source);
-  load("daemon/plugins/config/src/backend/index.ts", {
-    "mcsmanager-common": { ...service, ...load("common/src/runtime_paths.ts") },
-    "../i18n": { localeMessages: {} },
-    "./settings": { SettingsFormService: class {} }
-  }).apply({
-    i18n: { define() {} },
-    plugin() {},
-    get: () => ({}),
-    protocol: {
-      on: (event, handler) => handlers.set(event, handler),
-      response: (_ctx, data) => replies.push({ data }),
-      responseError: (_ctx, error) => replies.push({ error })
-    }
-  });
-  const payload = {
-    name: "sample",
-    pluginId: "sample-id",
-    version: "1",
-    files: [
-      {
-        path: "plugin.json",
-        content: Buffer.from('{"id":"sample","version":"1"}').toString("base64")
-      },
-      { path: "program.exe", content: "" }
-    ]
-  };
-  await handlers.get("plugin/install")({}, payload);
-  assert.match(replies.pop().error.message, /unacceptable/);
-  assert.equal(fs.existsSync(path.join(dir, "plugins", "sample")), false);
-  payload.files.pop();
-  await handlers.get("plugin/install")({}, payload);
-  assert.equal(replies.pop().data.version, "1");
-  await handlers.get("plugin/uninstall")({}, { name: "sample", pluginId: "other" });
-  assert.match(replies.pop().error.message, /DIR_TAKEN/);
-  assert.equal(fs.existsSync(path.join(dir, "plugins", "sample")), true);
-});
-
 test("persistent installs reject collisions with bundled identities and allow upgrading the same legacy owner", async (t) => {
   const dir = directory(t);
   const source = load("common/src/plugin_package.ts");

@@ -48,5 +48,7 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "双端插件",
   "TXT_CODE_PLUGIN_MARKET_UPDATES": "更新",
   "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "此插件需要其他版本的宿主 API 或浏览器 SDK，请先更新 ElementsPanel。",
-  "TXT_CODE_2de92a5d": "请选择一个节点再安装！"
+  "TXT_CODE_2de92a5d": "请选择一个节点再安装！",
+  "TXT_CODE_PLUGIN_MARKET_BUNDLED": "该插件是面板内置依赖，不能在此卸载",
+  "TXT_CODE_PLUGIN_MARKET_NPM_FAILED": "npm 安装失败，请检查网络、registry 或包名后重试"
 }

@@ -57,6 +57,21 @@ export type {
   PluginManifest
 } from "./plugin_manifest";
 
+export {
+  currentPackageRoot,
+  currentProjectRoot,
+  installNpmPlugin,
+  listNpmPlugins,
+  npmPluginRoots,
+  uninstallNpmPlugin
+} from "./plugin_npm";
+export type {
+  InstallNpmPluginOptions,
+  NpmPluginRecord,
+  NpmPluginRoots,
+  NpmPluginSide
+} from "./plugin_npm";
+
 export { removeTrail } from "./string_utils";
 
 export {

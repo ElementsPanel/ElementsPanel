@@ -78,6 +78,60 @@ for (const side of ["panel", "daemon"]) {
   });
 }
 
+test("project-level npm plugins are resolved alongside bundled plugins", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "elements-npm-project-"));
+  const previous = {
+    cwd: process.cwd(),
+    packageRoot: process.env.EPANEL_PACKAGE_ROOT,
+    projectRoot: process.env.EPANEL_PROJECT_ROOT
+  };
+  const work = path.join(root, "project");
+  const packageRoot = path.join(work, "node_modules", "@elementspanel", "panel");
+  fs.mkdirSync(packageRoot, { recursive: true });
+  process.chdir(work);
+  process.env.EPANEL_PACKAGE_ROOT = packageRoot;
+  process.env.EPANEL_PROJECT_ROOT = work;
+  t.after(() => {
+    process.chdir(previous.cwd);
+    for (const [key, value] of [
+      ["EPANEL_PACKAGE_ROOT", previous.packageRoot],
+      ["EPANEL_PROJECT_ROOT", previous.projectRoot]
+    ]) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  const bundled = installNpmPlugin(packageRoot, "panel", "runtime");
+  const project = installNpmPlugin(work, "panel", "custom");
+  const { resolveNpmPlugins } = require("../runtime/npm-plugins.cjs");
+  const records = resolveNpmPlugins(packageRoot, "panel");
+  assert.deepEqual(
+    records.map((record) => record.id).sort(),
+    ["custom", "runtime"]
+  );
+  assert.equal(
+    records.find((record) => record.id === "custom").packageRoot,
+    project.packageRoot
+  );
+
+  const { listNpmPlugins } = load("common/src/plugin_npm.ts");
+  const listed = listNpmPlugins("panel", { packageRoot, projectRoot: work });
+  assert.deepEqual(
+    listed.map((record) => [record.pluginId, record.source]).sort(),
+    [
+      ["custom", "project"],
+      ["runtime", "bundled"]
+    ]
+  );
+  assert.deepEqual(listed.find((record) => record.pluginId === "custom").sides, ["panel"]);
+  assert.equal(
+    bundled.directory,
+    records.find((record) => record.id === "runtime").directory
+  );
+});
+
 test("archive executable permissions and the macOS amd64 alias work without modifying package assets", (t) => {
   const f = fixture(t);
   fs.mkdirSync(path.join(f.packageRoot, "lib"));

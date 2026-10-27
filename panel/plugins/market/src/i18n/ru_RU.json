@@ -48,5 +48,7 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Плагин панели и демона",
   "TXT_CODE_PLUGIN_MARKET_UPDATES": "Обновления",
   "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "Плагину нужна другая версия API хоста или SDK браузера. Сначала обновите ElementsPanel.",
-  "TXT_CODE_2de92a5d": "Пожалуйста, выберите узел перед установкой!"
+  "TXT_CODE_2de92a5d": "Пожалуйста, выберите узел перед установкой!",
+  "TXT_CODE_PLUGIN_MARKET_BUNDLED": "This plugin is bundled with the panel and cannot be uninstalled here.",
+  "TXT_CODE_PLUGIN_MARKET_NPM_FAILED": "npm install failed. Check the network, registry and package name, then retry."
 }

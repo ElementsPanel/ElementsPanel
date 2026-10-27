@@ -9,22 +9,13 @@ const panelRequire = from("panel");
 const ts = panelRequire("typescript");
 const serviceFile = "panel/plugins/market/src/backend/service/plugin_market.ts";
 
-const load = createLoader({
-  compiler: ts,
-  resolve(id, { filename, localRequire, load }) {
-    if (id === "mcsmanager-common") return { ...load("common/src/plugin_package.ts"), ...load("common/src/runtime_paths.ts") };
-    if (id === "./plugin_manifest") return load("common/src/plugin_manifest.ts");
-    const target = path.resolve(path.dirname(filename), id) + ".ts";
-    return id.startsWith(".") && fs.existsSync(target) ? load(target) : localRequire(id);
-  }
-});
+const load = createLoader({ compiler: ts });
 
-async function fixture(t, { sides = ["daemon"], development = false } = {}) {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "elements-market-install-review-"));
+async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "elements-market-npm-review-"));
   const previous = process.cwd();
-  const panelDirectory = path.join(directory, development ? "panel" : "web");
+  const panelDirectory = path.join(directory, "panel");
   fs.mkdirSync(panelDirectory);
-  if (development) fs.mkdirSync(path.join(panelDirectory, "src", "app"), { recursive: true });
   process.chdir(panelDirectory);
   t.after(() => {
     process.chdir(previous);
@@ -34,6 +25,9 @@ async function fixture(t, { sides = ["daemon"], development = false } = {}) {
   const routes = new Map();
   const rpcCalls = [];
   const networkCalls = [];
+  const installs = [];
+  const uninstalls = [];
+  const local = new Map();
   const nodes = new Map(
     ["node-1", "node-2", "node-3"].map((daemonId) => [
       daemonId,
@@ -48,49 +42,78 @@ async function fixture(t, { sides = ["daemon"], development = false } = {}) {
       }
     ])
   );
-  const state = { sides, request: async () => ({ removed: true }), panelReloads: 0 };
-  // `/files` advertises each file's real size: the installer refuses bytes that do not match it.
-  const manifest = (version) =>
-    Buffer.from(
-      JSON.stringify({
-        id: "sample",
-        version,
-        ...(state.elements ? { elements: state.elements } : {})
-      })
-    );
+  const state = { sides, version, request: async () => ({ removed: true }), panelReloads: 0 };
+
+  const common = {
+    async installNpmPlugin(options) {
+      installs.push(options);
+      local.set(options.pluginId, {
+        pluginId: options.pluginId,
+        name: options.name,
+        version: options.version,
+        sides,
+        directory: path.join(panelDirectory, "node_modules", options.name, "panel"),
+        packageRoot: path.join(panelDirectory, "node_modules", options.name),
+        source: "project"
+      });
+      return local.get(options.pluginId);
+    },
+    async uninstallNpmPlugin(pluginId) {
+      uninstalls.push(pluginId);
+      const record = local.get(pluginId) ?? null;
+      local.delete(pluginId);
+      return record;
+    },
+    listNpmPlugins() {
+      return [...local.values()];
+    }
+  };
+
   const axios = {
     isAxiosError: () => false,
     async get(url, options) {
       networkCalls.push({ url, options });
-      if (url.endsWith("/files")) {
-        const version = options.params.version || "1.0.0";
+      if (url.endsWith("/api/plugins")) {
         return {
           data: {
-            name: "sample",
-            version,
-            files: state.sides.map((side) => ({
-              path: `${side}/plugin.json`,
-              size: manifest(version).length
-            }))
+            items: [{ id: "sample", name: "epanel-plugin-sample", sides: state.sides }],
+            total: 1
           }
         };
       }
-      if (url.endsWith("/file")) return { data: manifest(options.params.version || "1.0.0") };
-      if (url.endsWith("/api/plugins"))
-        return { data: { items: [{ id: "sample", name: "sample" }] } };
-      return { data: { latestVersion: { version: "1.0.0", status: "approved" } } };
+      const detail = {
+        id: "sample",
+        name: "epanel-plugin-sample",
+        description: "Sample",
+        sides: state.sides,
+        selectedVersion: {
+          id: `epanel-plugin-sample@${state.version}`,
+          version: state.version,
+          status: "approved",
+          sides: state.sides
+        },
+        versions: [
+          {
+            id: `epanel-plugin-sample@${state.version}`,
+            version: state.version,
+            status: "approved",
+            sides: state.sides
+          }
+        ]
+      };
+      return { data: detail };
     }
   };
-  const service = load(serviceFile, { axios });
+
+  const service = load(serviceFile, { axios, "mcsmanager-common": common });
   const plugin = load("panel/plugins/market/src/backend/index.ts", {
     axios,
-    "./plugin_icon": load("panel/plugins/market/src/backend/plugin_icon.ts"),
     "../i18n": { localeMessages: {} },
     "./service/plugin_market": service,
-    "./service/market_service": {},
     "./service/market_settings": {
       initMarketSettings: async () => {},
-      marketSettings: () => ({ pluginMarketAddr: "https://market.example" })
+      marketSettings: () => ({ pluginMarketAddr: "https://market.example" }),
+      saveMarketSettings: async () => {}
     }
   });
   const pass = () => async (_ctx, next) => next();
@@ -98,11 +121,7 @@ async function fixture(t, { sides = ["daemon"], development = false } = {}) {
     i18n: { define() {}, $t: (key) => key },
     logger: { warn() {} },
     roles: { USER: 1, ADMIN: 10 },
-    middleware: {
-      validator: load("panel/plugins/runtime/src/backend/middleware/validator.ts").default,
-      permission: pass,
-      speedLimit: pass
-    },
+    middleware: { validator: () => pass(), permission: pass, speedLimit: pass },
     koa: {
       router: () =>
         Object.fromEntries(
@@ -114,6 +133,7 @@ async function fixture(t, { sides = ["daemon"], development = false } = {}) {
     },
     settingsForm: { declare() {} },
     plugins: {
+      inventory: () => [],
       reload: async () => {
         state.panelReloads++;
       }
@@ -132,355 +152,192 @@ async function fixture(t, { sides = ["daemon"], development = false } = {}) {
       }
     }
   });
+
   async function request(method, url, values = {}) {
     const query = method === "post" ? {} : values;
     const ctx = { query, request: { query, body: method === "post" ? values : undefined } };
     await panelRequire("koa-compose")(routes.get(`${method} ${url}`))(ctx);
     return ctx.body;
   }
+
   return {
     directory,
     panelDirectory,
     state,
     service,
+    common,
     nodes,
     rpcCalls,
     networkCalls,
+    installs,
+    uninstalls,
+    local,
     install: (values = {}) =>
       request("post", "/plugin/install", {
         pluginId: "sample",
-        name: "sample",
-        daemonIds: ["node-1"],
+        name: "spoofed-name",
+        daemonIds: [],
         ...values
       }),
-    uninstall: (daemonIds = "node-1", pluginId = "sample") =>
-      request("delete", "/plugin/uninstall", {
-        pluginId,
-        daemonIds
-      }),
+    uninstall: (daemonIds = "", pluginId = "sample") =>
+      request("delete", "/plugin/uninstall", { pluginId, daemonIds }),
     installed: () => request("get", "/plugin/installed"),
     list: () => request("get", "/plugin/list"),
-    detail: () => request("get", "/plugin/detail", { pluginId: "sample" })
+    detail: () => request("get", "/plugin/detail", { pluginId: "sample" }),
+    icon: () => request("get", "/plugin/icon")
   };
 }
 
-test("daemon-only installation survives service reload and is visible in installed, list and detail APIs", async (t) => {
+test("panel installation uses the market package name and records the npm dependency", async (t) => {
   const env = await fixture(t);
+  assert.deepEqual(await env.install(), {
+    failedNodes: [],
+    installedVersion: "1.0.0",
+    restartRequired: false
+  });
+  assert.deepEqual(env.installs, [
+    {
+      name: "epanel-plugin-sample",
+      pluginId: "sample",
+      version: "1.0.0",
+      side: "panel"
+    }
+  ]);
+  assert.equal(env.state.panelReloads, 1);
+  const installed = await env.installed();
+  assert.equal(installed.length, 1);
+  assert.equal(installed[0].source, "project");
+  assert.equal(installed[0].removable, true);
+  assert.deepEqual(installed[0].sides, ["panel"]);
+  assert.equal((await env.list())[0].installedVersion, "1.0.0");
+  assert.equal((await env.list())[0].installedRemovable, true);
+  assert.equal((await env.detail()).installedVersion, "1.0.0");
+});
+
+test("daemon-only installation goes to the selected nodes through npm", async (t) => {
+  const env = await fixture(t, { sides: ["daemon"] });
   assert.deepEqual(await env.install({ daemonIds: ["node-1", "node-1", " node-2 "] }), {
     failedNodes: [],
     installedVersion: "1.0.0",
     restartRequired: false
   });
-  assert.equal(env.rpcCalls.filter((call) => call.event === "plugin/install").length, 2);
-  assert.equal(fs.existsSync(path.join(env.panelDirectory, "plugins", "sample")), false);
-  const reloaded = load(serviceFile);
-  const installed = reloaded.listInstalled();
-  assert.equal(installed.length, 1);
+  assert.equal(env.installs.length, 0);
+  assert.deepEqual(
+    env.rpcCalls.map((call) => [call.event, call.daemonId]),
+    [
+      ["plugin/npm/install", "node-1"],
+      ["plugin/npm/install", "node-2"],
+      ["plugin/reload", "node-1"],
+      ["plugin/reload", "node-2"]
+    ]
+  );
+  assert.deepEqual(env.rpcCalls[0].payload, {
+    name: "epanel-plugin-sample",
+    pluginId: "sample",
+    version: "1.0.0"
+  });
+  const installed = await env.installed();
   assert.deepEqual(installed[0].sides, ["daemon"]);
-  assert.deepEqual(installed[0].directories, []);
   assert.deepEqual(installed[0].daemonIds, ["node-1", "node-2"]);
-  assert.deepEqual(await env.installed(), installed);
-  assert.equal((await env.list())[0].installedVersion, "1.0.0");
-  assert.deepEqual((await env.detail()).installedDaemonIds, ["node-1", "node-2"]);
+  await assert.rejects(env.install({ daemonIds: [] }), { status: 400 });
 });
 
-test("all failed daemon installs leave no marker and do not request a meaningless restart", async (t) => {
-  const env = await fixture(t);
+test("failed node installs leave no remote record and unselected nodes stay installed", async (t) => {
+  const env = await fixture(t, { sides: ["daemon"] });
   env.nodes.get("node-1").available = false;
   env.state.request = async () => {
     throw new Error("node refused install");
   };
-  assert.deepEqual(await env.install({ daemonIds: ["node-1", "missing", "node-2"] }), {
-    failedNodes: ["node-1", "missing", "node-2"],
+  assert.deepEqual(await env.install({ daemonIds: ["node-1", "missing", "node-3"] }), {
+    failedNodes: ["node-1", "missing", "node-3"],
     installedVersion: undefined,
     restartRequired: false
   });
   assert.deepEqual(await env.installed(), []);
-  assert.equal(env.rpcCalls.length, 1);
-  await assert.rejects(env.install({ daemonIds: [] }), { status: 400 });
-  assert.deepEqual(await env.installed(), []);
-});
 
-test("partial upgrades retain old node metadata and uninstall failures can be retried", async (t) => {
-  const env = await fixture(t);
-  await env.install({ daemonIds: ["node-1", "node-2"] });
-  env.state.request = async ({ daemonId }) => {
-    if (daemonId === "node-2") throw new Error("offline");
-    return { removed: true };
+  env.state.request = async ({ event, daemonId }) => {
+    if (event === "plugin/npm/install") return {};
+    if (event === "plugin/npm/uninstall" && daemonId === "node-3") throw new Error("offline");
+    return {};
   };
-  const upgrade = await env.install({ daemonIds: ["node-1", "node-2"], version: "2.0.0" });
-  assert.deepEqual(upgrade.failedNodes, ["node-2"]);
-  assert.equal(upgrade.installedVersion, "2.0.0");
-  assert.equal(
-    env.service.readRemoteInstalls("sample").find((item) => item.daemonId === "node-2").version,
-    "1.0.0"
-  );
-  const partial = await env.uninstall("node-1,node-2,node-3");
+  await env.install({ daemonIds: ["node-3"] });
+  const partial = await env.uninstall("node-3");
   assert.deepEqual(partial, {
     removed: false,
     installedVersion: "1.0.0",
-    failedNodes: ["node-2"],
+    failedNodes: ["node-3"],
     restartRequired: false
   });
-  assert.deepEqual((await env.installed())[0].daemonIds, ["node-2"]);
+  assert.deepEqual((await env.installed())[0].daemonIds, ["node-3"]);
   assert.equal(
-    env.rpcCalls.some((call) => call.event === "plugin/uninstall" && call.daemonId === "node-3"),
-    false
+    env.rpcCalls.some((call) => call.event === "plugin/npm/uninstall" && call.daemonId === "node-3"),
+    true
   );
-  env.state.request = async () => ({ removed: true });
-  assert.deepEqual(await env.uninstall("node-2"), {
-    removed: true,
-    installedVersion: undefined,
-    failedNodes: [],
-    restartRequired: false
-  });
-  assert.deepEqual(await env.installed(), []);
-  assert.deepEqual(fs.readdirSync(path.join(env.panelDirectory, "data", "market-installs")), []);
 });
 
-test("unselected nodes remain installed while local removal never touches a sibling daemon directory", async (t) => {
+test("upgrading a release requires a restart while adding a node does not", async (t) => {
   const env = await fixture(t, { sides: ["panel", "daemon"] });
-  const adjacent = path.join(env.directory, "daemon", "plugins", "sample");
-  fs.mkdirSync(adjacent, { recursive: true });
-  fs.writeFileSync(
-    path.join(adjacent, ".market-install.json"),
-    JSON.stringify({
-      pluginId: "sample",
-      name: "sample",
-      version: "99.0.0",
-      installedAt: Date.now() + 10000
-    })
-  );
-  fs.writeFileSync(path.join(adjacent, "keep.txt"), "not owned by the panel");
-  assert.deepEqual(await env.installed(), []);
-  await env.install({ daemonIds: ["node-1", "node-2"] });
-  const response = await env.uninstall("node-1");
-  assert.equal(response.removed, false);
-  assert.deepEqual(response.failedNodes, []);
-  assert.deepEqual((await env.installed())[0].daemonIds, ["node-2"]);
-  assert.deepEqual((await env.installed())[0].sides, ["daemon"]);
-  assert.equal(fs.existsSync(path.join(env.panelDirectory, "plugins", "sample")), false);
-  assert.equal(fs.readFileSync(path.join(adjacent, "keep.txt"), "utf8"), "not owned by the panel");
+  const first = await env.install({ daemonIds: ["node-1"] });
+  assert.equal(first.installedVersion, "1.0.0");
+  assert.equal(first.restartRequired, false);
+
+  env.state.version = "2.0.0";
+  const upgrade = await env.install({ daemonIds: ["node-1"] });
+  assert.equal(upgrade.installedVersion, "2.0.0");
+  assert.equal(upgrade.restartRequired, true);
+
+  const additional = await env.install({ daemonIds: ["node-2"] });
+  assert.equal(additional.installedVersion, "2.0.0");
+  assert.equal(additional.restartRequired, false);
+  assert.equal(env.state.panelReloads, 3);
 });
 
-test("remote records hash untrusted identifiers and replace records atomically", async (t) => {
+test("reload failures require a restart and only changed nodes are reloaded", async (t) => {
+  const env = await fixture(t, { sides: ["daemon"] });
+  env.state.request = async ({ event }) => {
+    if (event === "plugin/reload") throw new Error("requires daemon restart");
+    return {};
+  };
+  const result = await env.install({ daemonIds: ["node-1"] });
+  assert.equal(result.restartRequired, true);
+  assert.deepEqual(
+    env.rpcCalls.filter((call) => call.event === "plugin/reload").map((call) => call.daemonId),
+    ["node-1"]
+  );
+});
+
+test("built-in plugins cannot be installed or removed through the market", async (t) => {
   const env = await fixture(t);
-  const pluginId = "../../outside:plugin\\name";
-  await env.install({ pluginId });
-  await env.install({ pluginId, version: "2.0.0" });
-  const files = fs.readdirSync(path.join(env.panelDirectory, "data", "market-installs"));
-  assert.equal(files.length, 1);
-  assert.match(files[0], /^[a-f0-9]{64}\.json$/);
-  assert.equal(env.service.readRemoteInstalls(pluginId)[0].version, "2.0.0");
-  assert.equal(fs.existsSync(path.join(env.directory, "outside:plugin")), false);
-  assert.equal((await env.uninstall("node-1", pluginId)).removed, true);
+  env.common.installNpmPlugin = async () => {
+    throw new Error("BUNDLED:market");
+  };
+  await assert.rejects(env.install(), { message: "TXT_CODE_PLUGIN_MARKET_BUNDLED" });
+  env.common.uninstallNpmPlugin = async () => {
+    throw new Error("BUNDLED:market");
+  };
+  await assert.rejects(env.uninstall(), { message: "TXT_CODE_PLUGIN_MARKET_BUNDLED" });
 });
 
 test("same-plugin operations stay serialized across installs and a queued uninstall", async (t) => {
   const env = await fixture(t);
   const entered = deferred();
   const release = deferred();
-  env.state.request = async ({ event, payload }) => {
-    if (event === "plugin/install" && payload.version === "1.0.0") {
-      entered.resolve();
-      await release.promise;
-    }
-    return { removed: true };
+  env.service.installPanelPlugin = async () => {
+    entered.resolve();
+    await release.promise;
+    return {};
   };
   const first = env.install();
   await entered.promise;
-  const second = env.install({ daemonIds: ["node-2"], version: "2.0.0" });
-  const removal = env.uninstall("node-1,node-2");
+  const second = env.install();
+  const removal = env.uninstall();
   await new Promise(setImmediate);
-  assert.equal(env.networkCalls.filter((call) => call.url.endsWith("/files")).length, 1);
-  assert.equal(env.rpcCalls.length, 1);
+  assert.equal(env.networkCalls.filter((call) => call.url.endsWith("/api/plugins/sample")).length, 1);
   release.resolve();
-  const [firstResult, secondResult, removalResult] = await Promise.all([first, second, removal]);
-  assert.equal(firstResult.installedVersion, "1.0.0");
-  assert.equal(secondResult.installedVersion, "2.0.0");
-  assert.equal(removalResult.removed, true);
-  assert.deepEqual(
-    env.rpcCalls.map((call) => [call.event, call.daemonId]),
-    [
-      ["plugin/install", "node-1"],
-      ["plugin/reload", "node-1"],
-      ["plugin/install", "node-2"],
-      ["plugin/reload", "node-2"],
-      ["plugin/uninstall", "node-1"],
-      ["plugin/uninstall", "node-2"],
-      ["plugin/reload", "node-1"],
-      ["plugin/reload", "node-2"]
-    ]
-  );
-  assert.deepEqual(await env.installed(), []);
+  await Promise.all([first, second, removal]);
 });
 
-test("reload failures require restart and only changed nodes are reloaded", async (t) => {
+test("the icon endpoint answers the default icon without calling the market", async (t) => {
   const env = await fixture(t);
-  env.state.request = async ({ event }) => {
-    if (event === "plugin/reload") throw new Error("requires daemon restart");
-    return {};
-  };
-  const result = await env.install();
-  assert.equal(result.restartRequired, true);
-  assert.deepEqual(result.failedNodes, []);
-  assert.deepEqual(
-    env.rpcCalls.filter((call) => call.event === "plugin/reload").map((call) => call.daemonId),
-    ["node-1"]
-  );
-  env.state.sides = ["panel", "daemon"];
-  env.rpcCalls.length = 0;
-  const panelOnly = await env.install({ daemonIds: [] });
-  assert.equal(panelOnly.restartRequired, false);
-  assert.equal(env.state.panelReloads, 1);
-  assert.equal(env.rpcCalls.length, 0);
-});
-
-test("production discovery loads new nodes but upgrades still require a restart", async (t) => {
-  const env = await fixture(t);
-  const first = await env.install({ daemonIds: ["node-1"] });
-  assert.equal(first.restartRequired, false);
-  assert.equal(first.installedVersion, "1.0.0");
-  const upgrade = await env.install({ daemonIds: ["node-1"], version: "2.0.0" });
-  assert.equal(upgrade.restartRequired, true);
-  assert.equal(upgrade.installedVersion, "2.0.0");
-  const additional = await env.install({ daemonIds: ["node-2"], version: "2.0.0" });
-  assert.equal(additional.restartRequired, false);
-  assert.deepEqual(additional.failedNodes, []);
-});
-
-test("market compatibility is negotiated before installation and downloaded bytes must match their advertised digest", async () => {
-  const bytes = Buffer.from('{"id":"sample"}');
-  const checksum = require("node:crypto").createHash("sha256").update(bytes).digest("hex");
-  let api = 2;
-  let corrupt = false;
-  const service = load(serviceFile, {
-    axios: {
-      async get(url, options) {
-        if (url.endsWith("/files")) {
-          assert.equal(options.params.pluginApi, 1);
-          assert.equal(options.params.pluginSdk, 1);
-          return {
-            data: {
-              name: "sample",
-              version: "1",
-              compatibility: { panel: { api, sdk: 1 } },
-              files: [{ path: "panel/plugin.json", size: bytes.length, sha256: checksum }]
-            }
-          };
-        }
-        return { data: corrupt ? Buffer.from("corrupt") : bytes };
-      }
-    }
-  });
-  await assert.rejects(
-    service.fetchPackage("https://example.test", { pluginId: "sample" }),
-    /INCOMPATIBLE/
-  );
-  api = 1;
-  const pkg = await service.fetchPackage("https://example.test", { pluginId: "sample" });
-  assert.deepEqual((await service.downloadPackage("https://example.test", pkg))[0].content, bytes);
-  corrupt = true;
-  await assert.rejects(service.downloadPackage("https://example.test", pkg), /BAD_CHECKSUM/);
-});
-
-test("a download whose digest differs is refused even when its length matches", async () => {
-  const bytes = Buffer.from('{"id":"sample"}');
-  const checksum = require("node:crypto").createHash("sha256").update(bytes).digest("hex");
-  // Same length, different bytes: only the digest can tell these apart.
-  let body = bytes;
-  const service = load(serviceFile, {
-    axios: {
-      async get(url) {
-        if (url.endsWith("/files"))
-          return {
-            data: {
-              name: "sample",
-              version: "1",
-              files: [{ path: "panel/plugin.json", size: bytes.length, sha256: checksum }]
-            }
-          };
-        return { data: body };
-      }
-    }
-  });
-  const pkg = await service.fetchPackage("https://example.test", { pluginId: "sample" });
-  assert.deepEqual((await service.downloadPackage("https://example.test", pkg))[0].content, bytes);
-  body = Buffer.from('{"id":"samply"}');
-  assert.equal(body.length, bytes.length, "the fixture must exercise the digest, not the length");
-  await assert.rejects(service.downloadPackage("https://example.test", pkg), /BAD_CHECKSUM/);
-});
-
-test("a download that differs from its advertised size is refused even without a digest", async () => {
-  const bytes = Buffer.from('{"id":"sample"}');
-  let body = bytes;
-  const service = load(serviceFile, {
-    axios: {
-      async get(url) {
-        if (url.endsWith("/files"))
-          return {
-            data: {
-              name: "sample",
-              version: "1",
-              files: [{ path: "panel/plugin.json", size: bytes.length }]
-            }
-          };
-        return { data: body };
-      }
-    }
-  });
-  const pkg = await service.fetchPackage("https://example.test", { pluginId: "sample" });
-  assert.deepEqual((await service.downloadPackage("https://example.test", pkg))[0].content, bytes);
-  body = bytes.subarray(0, 4);
-  await assert.rejects(service.downloadPackage("https://example.test", pkg), /BAD_CHECKSUM/);
-});
-
-test("a listed file the panel could not install is refused before it is downloaded", async () => {
-  const listed = [{ path: "panel/plugin.json", size: 2 }];
-  const service = load(serviceFile, {
-    axios: {
-      async get(url) {
-        if (url.endsWith("/files")) return { data: { name: "sample", version: "1", files: listed } };
-        return { data: Buffer.from("{}") };
-      }
-    }
-  });
-  // The daemon applies the same rule to its own half; the panel must not be the
-  // one side that writes whatever the market lists.
-  for (const bad of [
-    "panel/payload.exe",
-    "panel/native.node",
-    "panel/install.sh",
-    "panel/src/index.ts",
-    "panel/assets/logo.png",
-    "panel/no-extension"
-  ]) {
-    listed.push({ path: bad, size: 1 });
-    await assert.rejects(
-      service.fetchPackage("https://example.test", { pluginId: "sample" }),
-      /BAD_PATH/,
-      bad
-    );
-    listed.pop();
-  }
-  // The icon is the one PNG a package may carry, and only at the root of a side.
-  listed.push({ path: "panel/icon.png", size: 1 });
-  const pkg = await service.fetchPackage("https://example.test", { pluginId: "sample" });
-  assert.deepEqual(
-    pkg.files.map((file) => file.relative),
-    ["plugin.json", "icon.png"].map((file) => file.split("/").join(require("node:path").sep))
-  );
-});
-
-test("a declared daemon package is sent only to nodes that advertise the required API", async (t) => {
-  const env = await fixture(t, { sides: ["daemon"] });
-  env.state.elements = { api: 1 };
-  env.state.request = async ({ daemonId, event }) =>
-    event === "plugin/capabilities" ? { api: daemonId === "node-1" ? 1 : 0 } : { installed: true };
-  const result = await env.install({ daemonIds: ["node-1", "node-2"] });
-  assert.deepEqual(result.failedNodes, ["node-2"]);
-  assert.deepEqual(
-    env.rpcCalls.filter((call) => call.event === "plugin/install").map((call) => call.daemonId),
-    ["node-1"]
-  );
+  assert.deepEqual(await env.icon(), { dataUrl: null });
 });

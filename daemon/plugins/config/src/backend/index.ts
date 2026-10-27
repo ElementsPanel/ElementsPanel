@@ -1,15 +1,7 @@
-import fs from "fs";
-import path from "path";
 import {
-  isPackagedRuntime,
-  packagePluginRoots,
-  MAX_PLUGIN_ICON_BYTES,
+  installNpmPlugin,
   PLUGIN_API_VERSION,
-  PLUGIN_ICON_FILE,
-  PLUGIN_PACKAGE_EXTENSIONS,
-  pluginPackageDirectory,
-  removePluginPackage,
-  writePluginPackage
+  uninstallNpmPlugin
 } from "mcsmanager-common";
 import type { DaemonPluginContext } from "../../../../src/plugin";
 import { localeMessages } from "../i18n";
@@ -69,55 +61,6 @@ function normalizePluginGroups(input: unknown): PluginGroup[] {
       pluginIds: [...new Set(group.pluginIds.map((pluginId) => pluginId.trim()).filter(Boolean))]
     };
   });
-}
-
-function isDevelopmentCheckout() {
-  return !isPackagedRuntime() && fs.existsSync(path.resolve(process.cwd(), "src", "plugin"));
-}
-
-/** npm packages and source checkouts both keep installations in user data. */
-const MARKET_PLUGINS_DIRECTORY = () =>
-  isPackagedRuntime() || isDevelopmentCheckout()
-    ? path.resolve(process.cwd(), "data", "plugins")
-    : path.resolve(process.cwd(), "plugins");
-
-const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-
-function validateTransferFile(file: TransferFile, destination: string) {
-  // Icons are plugin-level metadata and may only live at the package root. Do
-  // not turn the general package whitelist into an arbitrary image upload.
-  if (file.path === PLUGIN_ICON_FILE) {
-    const encodedLimit = Math.ceil(MAX_PLUGIN_ICON_BYTES / 3) * 4 + 8;
-    if (file.content.length > encodedLimit) throw new Error("Plugin icon is too large.");
-    const data = Buffer.from(file.content, "base64");
-    if (data.length > MAX_PLUGIN_ICON_BYTES) throw new Error("Plugin icon is too large.");
-    if (data.length === 0 || !data.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE))
-      throw new Error("Invalid plugin icon.");
-    return;
-  }
-  // The extensions a package may contain are shared with the publish script and
-  // the plugin market's upload check (`PLUGIN_PACKAGE_EXTENSIONS`).
-  if (!PLUGIN_PACKAGE_EXTENSIONS.has(path.extname(destination).toLowerCase())) {
-    throw new Error(`The package contains an unacceptable file: ${file.path}`);
-  }
-}
-
-function pluginDirectory(name: string): string {
-  return pluginPackageDirectory(MARKET_PLUGINS_DIRECTORY(), name);
-}
-
-/** One file of a package, as the panel sends it. */
-interface TransferFile {
-  path: string;
-  content: string;
-}
-
-function toTransferFiles(files: unknown): TransferFile[] {
-  if (!Array.isArray(files)) throw new Error("The package contains no files.");
-  return files.map((file) => ({
-    path: String((file as TransferFile)?.path ?? ""),
-    content: String((file as TransferFile)?.content ?? "")
-  }));
 }
 
 export const inject = ["protocol", "i18n", "plugins", "storage", "overview"];
@@ -191,74 +134,33 @@ export function apply(ctx: DaemonPluginContext) {
     }
   });
 
-  // A plugin installed from the market. The panel has already downloaded the
-  // package and sends the daemon half here, because a daemon plugin has to sit on
-  // the machine that loads it: nothing the panel writes locally is visible to
-  // another host.
-  ctx.protocol.on("plugin/install", async (routerCtx, data) => {
+  // A plugin installed from the market is an npm dependency of the daemon's
+  // installation project. npm runs on the machine that will load the plugin, so
+  // the panel only names the package and the version.
+  ctx.protocol.on("plugin/npm/install", async (routerCtx, data) => {
     try {
       const payload = (data ?? {}) as {
         name?: unknown;
         pluginId?: unknown;
         version?: unknown;
-        files?: unknown;
       };
-      const name = String(payload.name ?? "");
-      const directory = pluginDirectory(name);
-      const root = path.resolve(directory);
-      const files = toTransferFiles(payload.files);
-
-      for (const file of files) {
-        const destination = path.resolve(root, file.path);
-        if (!destination.startsWith(`${root}${path.sep}`)) throw new Error("Illegal plugin path.");
-        validateTransferFile(file, destination);
-      }
-
-      const info = {
+      const record = await installNpmPlugin({
+        name: String(payload.name ?? ""),
         pluginId: String(payload.pluginId ?? ""),
-        name,
         version: String(payload.version ?? ""),
-        installedAt: Date.now()
-      };
-      await writePluginPackage(
-        MARKET_PLUGINS_DIRECTORY(),
-        info,
-        files.map((file) => ({
-          relative: file.path,
-          content: Buffer.from(file.content, "base64")
-        })),
-        [
-          ...packagePluginRoots("daemon"),
-          MARKET_PLUGINS_DIRECTORY(),
-          path.resolve(process.cwd(), "plugins"),
-          path.resolve(process.cwd(), "market_plugins")
-        ]
-      );
-      ctx.protocol.response(routerCtx, { ...info, directory });
+        side: "daemon"
+      });
+      ctx.protocol.response(routerCtx, record);
     } catch (error: any) {
       ctx.protocol.responseError(routerCtx, error);
     }
   });
 
-  // The other half of the same installation. The plugin id has to match the
-  // marker, so a name that happens to collide with a built-in plugin cannot be
-  // used to delete it.
-  ctx.protocol.on("plugin/uninstall", async (routerCtx, data) => {
+  ctx.protocol.on("plugin/npm/uninstall", async (routerCtx, data) => {
     try {
-      const payload = (data ?? {}) as { name?: unknown; pluginId?: unknown };
-      for (const root of [
-        MARKET_PLUGINS_DIRECTORY(),
-        path.resolve(process.cwd(), "data", "plugins"),
-        path.resolve(process.cwd(), "market_plugins"),
-        path.resolve(process.cwd(), "plugins")
-      ]) {
-        // Legacy locations are removed only when owned by this exact market package.
-        const directory = pluginPackageDirectory(root, String(payload.name ?? ""));
-        const marker = path.join(directory, ".market-install.json");
-        if (!fs.existsSync(marker)) continue;
-        await removePluginPackage(root, String(payload.name ?? ""), String(payload.pluginId ?? ""));
-      }
-      ctx.protocol.response(routerCtx, { removed: true });
+      const pluginId = String((data as { pluginId?: unknown })?.pluginId ?? "");
+      const removed = await uninstallNpmPlugin(pluginId);
+      ctx.protocol.response(routerCtx, { removed, pluginId });
     } catch (error: any) {
       ctx.protocol.responseError(routerCtx, error);
     }

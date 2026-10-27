@@ -48,5 +48,7 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Panel + Daemon 플러그인",
   "TXT_CODE_PLUGIN_MARKET_UPDATES": "업데이트",
   "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "이 플러그인에는 다른 호스트 API 또는 브라우저 SDK 버전이 필요합니다. 먼저 ElementsPanel을 업데이트하세요.",
-  "TXT_CODE_2de92a5d": "설치하기 전에 노드를 선택하십시오!"
+  "TXT_CODE_2de92a5d": "설치하기 전에 노드를 선택하십시오!",
+  "TXT_CODE_PLUGIN_MARKET_BUNDLED": "This plugin is bundled with the panel and cannot be uninstalled here.",
+  "TXT_CODE_PLUGIN_MARKET_NPM_FAILED": "npm install failed. Check the network, registry and package name, then retry."
 }

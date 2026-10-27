@@ -18,6 +18,12 @@ export interface MarketPlugin {
   /** Nodes with a recorded installation of this plugin. */
   installedDaemonIds?: string[];
   /**
+   * Whether the installation shown here can be removed from this panel. Bundled
+   * plugins ship inside the runtime package; their npm dependency is not managed
+   * by the market.
+   */
+  installedRemovable?: boolean;
+  /**
    * The halves the latest release carries, as the market reports them. Optional
    * because a market source that predates the field simply does not send it.
    */
@@ -64,6 +70,9 @@ export interface InstalledPlugin {
   installedAt: number;
   sides: string[];
   daemonIds: string[];
+  /** `bundled` plugins ship with the runtime; `project` ones are npm dependencies. */
+  source: "bundled" | "project";
+  removable: boolean;
 }
 
 export const pluginMarketList = useDefineApi<unknown, MarketPlugin[]>({

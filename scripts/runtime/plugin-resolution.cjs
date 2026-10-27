@@ -3,9 +3,35 @@ const path = require("node:path");
 const { createRequire, isBuiltin, registerHooks } = require("node:module");
 const { fileURLToPath, pathToFileURL } = require("node:url");
 const { sharedModules, createSharedResolver } = require("./shared-dependencies.cjs");
-const { resolveNpmPlugins } = require("./npm-plugins.cjs");
+const { resolveNpmPlugins, projectManifestFile } = require("./npm-plugins.cjs");
 
 const shared = new Set(sharedModules);
+
+/**
+ * The plugin market installs dependencies into the project while the process is
+ * running. Caching the npm plugin list by the project manifest's mtime lets a
+ * freshly installed package be resolved without restarting the process.
+ */
+let npmPluginSnapshot = { key: "", records: [] };
+
+function fileStamp(filename) {
+  try {
+    return String(fs.statSync(filename).mtimeMs);
+  } catch {
+    return "-";
+  }
+}
+
+function npmPlugins(packageRoot) {
+  const files = [path.join(packageRoot, "package.json")];
+  const projectFile = projectManifestFile(packageRoot);
+  if (projectFile) files.push(projectFile);
+  const key = files.map(fileStamp).join("|");
+  if (key !== npmPluginSnapshot.key) {
+    npmPluginSnapshot = { key, records: resolveNpmPlugins(packageRoot) };
+  }
+  return npmPluginSnapshot.records;
+}
 
 function resolveFile(filename, context, nextResolve) {
   return nextResolve(
@@ -29,7 +55,6 @@ function installPluginResolution(packageRoot, workRoot) {
   const hostURL = pathToFileURL(path.join(packageRoot, "app.js")).href;
   const hostRequire = createRequire(hostURL);
   const resolveShared = createSharedResolver(packageRoot);
-  const npmPlugins = resolveNpmPlugins(packageRoot);
   const roots = [
     path.join(workRoot, "data", "plugins"),
     path.join(workRoot, "plugins"),
@@ -45,7 +70,8 @@ function installPluginResolution(packageRoot, workRoot) {
         return nextResolve(specifier, context);
       }
       const parent = fileURLToPath(context.parentURL);
-      const npmPlugin = npmPlugins.find((plugin) => within(plugin.packageRoot, parent));
+      const plugins = npmPlugins(packageRoot);
+      const npmPlugin = plugins.find((plugin) => within(plugin.packageRoot, parent));
       const root = roots.find((directory) => within(directory, parent));
       if (!npmPlugin && !root) return nextResolve(specifier, context);
       const plugin =

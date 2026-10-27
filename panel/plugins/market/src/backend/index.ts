@@ -3,26 +3,26 @@ import type Koa from "koa";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
 import { localeMessages } from "../i18n";
 import {
-  downloadPackage,
-  fetchPackage,
+  fetchMarketPluginDetail,
   forgetRemoteInstall,
+  installPanelPlugin,
   listInstalled,
   PluginMarketError,
   readRemoteInstalls,
   recordRemoteInstall,
-  toTransferFiles,
-  uninstallPlugin,
-  writePlugin,
-  type MarketFileContent,
+  uninstallPanelPlugin,
   type MarketInstallInfo,
   type PluginSide,
   type RemoteMarketInstall
 } from "./service/plugin_market";
 import { initMarketSettings, marketSettings, saveMarketSettings } from "./service/market_settings";
-import { encodePluginIcon, MAX_PLUGIN_ICON_BYTES } from "./plugin_icon";
 
 // Built-in plugin market. Application templates are owned by the external
 // epanel-plugin-mcsm-market plugin.
+//
+// The market indexes npm packages named `epanel-plugin-*`. Installing or
+// updating a plugin adds an npm dependency to the installation project; the
+// market service itself never hosts package files.
 
 export const inject = [
   "koa",
@@ -36,8 +36,8 @@ export const inject = [
   "plugins"
 ];
 
-// Install and uninstall must share a queue: a second request cannot overwrite
-// files or installation records while the first request is still using them.
+// Install and uninstall must share a queue: a second request cannot rewrite the
+// project manifest while the first request is still using it.
 const pluginOperations = new Map<string, Promise<void>>();
 
 async function withPluginLock<T>(pluginId: string, operation: () => Promise<T>): Promise<T> {
@@ -101,7 +101,7 @@ export async function apply(ctx: PanelPluginContext) {
   }
 
   // ---- Plugin market -----------------------------------------------------
-  // Install plugins into the panel and daemon plugin directories.
+  // Install npm plugins into the panel and daemon installation projects.
 
   /** The largest page the market serves; it answers 12 plugins per page by default. */
   const MARKET_PAGE_SIZE = 48;
@@ -170,22 +170,33 @@ export async function apply(ctx: PanelPluginContext) {
     }
 
     const installed = new Map(listInstalled().map((item) => [item.pluginId, item]));
-    return items.map((item) => ({
-      ...item,
-      installedVersion: installed.get(String(item.id))?.version,
-      installedDaemonIds: installed.get(String(item.id))?.daemonIds ?? []
-    }));
+    return items.map((item) => {
+      const local = installed.get(String(item.id));
+      return {
+        ...item,
+        installedVersion: local?.version,
+        installedDaemonIds: local?.daemonIds ?? [],
+        installedRemovable: local?.removable ?? true
+      };
+    });
   }
 
-  function reportPluginMarketError(error: unknown): never {
+  function reportPluginMarketError(
+    error: unknown,
+    fallback: "UNREACHABLE" | "NPM_FAILED" = "UNREACHABLE"
+  ): never {
     const reason =
       error instanceof PluginMarketError
-        ? error.message
+        ? error.reason ?? (error as { message?: string }).message
         : axios.isAxiosError(error) && error.response?.status === 404
         ? "NOT_FOUND"
         : axios.isAxiosError(error) && error.response?.status === 409
         ? "INCOMPATIBLE"
-        : "UNREACHABLE";
+        : axios.isAxiosError(error)
+        ? "UNREACHABLE"
+        : fallback;
+    if (reason === "NPM_FAILED")
+      ctx.logger.warn(`Plugin market npm operation failed: ${String(error)}`);
     const messages: Record<string, string> = {
       NOT_FOUND: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_NOT_FOUND"),
       DIR_TAKEN: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_DIR_TAKEN"),
@@ -193,7 +204,9 @@ export async function apply(ctx: PanelPluginContext) {
       BAD_PATH: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_BAD_PACKAGE"),
       BAD_CHECKSUM: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_BAD_CHECKSUM"),
       INCOMPATIBLE: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE"),
-      NO_NODES: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_SELECT_NODES")
+      NO_NODES: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_SELECT_NODES"),
+      BUNDLED: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_BUNDLED"),
+      NPM_FAILED: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_NPM_FAILED")
     };
     const statusByReason: Record<string, number> = {
       NOT_FOUND: 404,
@@ -202,7 +215,9 @@ export async function apply(ctx: PanelPluginContext) {
       BAD_PATH: 400,
       BAD_CHECKSUM: 400,
       INCOMPATIBLE: 409,
-      NO_NODES: 400
+      NO_NODES: 400,
+      BUNDLED: 409,
+      NPM_FAILED: 502
     };
     throw Object.assign(
       new Error(messages[reason] ?? ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE")),
@@ -237,31 +252,13 @@ export async function apply(ctx: PanelPluginContext) {
     ];
   }
 
-  /**
-   * Sends one half of a package to the daemons the user picked.
-   *
-   * A daemon plugin has to sit on the machine that loads it, so the files go
-   * over the socket and the daemon writes them itself. A node that cannot be
-   * reached is reported rather than thrown: the panel half is already installed
-   * by then, and a failure on one node says nothing about the others.
-   */
-  async function pushToNodes(
+  /** Installs the package on each selected node, one npm dependency per node. */
+  async function installOnNodes(
     daemonIds: readonly string[],
-    info: MarketInstallInfo,
-    files: readonly MarketFileContent[]
+    info: MarketInstallInfo
   ): Promise<{ failedNodes: string[]; changedNodes: string[] }> {
-    const payload = {
-      name: info.name,
-      pluginId: info.pluginId,
-      version: info.version,
-      files: toTransferFiles(files)
-    };
     const failedNodes: string[] = [];
     const changedNodes: string[] = [];
-    const manifestFile = files.find((file) => file.relative === "plugin.json");
-    const requiredApi = manifestFile
-      ? JSON.parse(manifestFile.content.toString("utf8")).elements?.api
-      : undefined;
     for (const daemonId of daemonIds) {
       const node = ctx.remote.services.getInstance(daemonId);
       if (!node || !node.available) {
@@ -269,16 +266,11 @@ export async function apply(ctx: PanelPluginContext) {
         continue;
       }
       try {
-        if (requiredApi !== undefined) {
-          const capabilities = (await new ctx.remote.Request(node).request(
-            "plugin/capabilities",
-            {},
-            5000
-          )) as { api?: number };
-          if (capabilities?.api !== requiredApi)
-            throw new Error("Incompatible daemon plugin API; update the node first.");
-        }
-        await new ctx.remote.Request(node).request("plugin/install", payload, 60000);
+        await new ctx.remote.Request(node).request(
+          "plugin/npm/install",
+          { name: info.name, pluginId: info.pluginId, version: info.version },
+          10 * 60 * 1000
+        );
       } catch (error) {
         ctx.logger.warn(`Failed to install a plugin on daemon ${daemonId}: ${error}`);
         failedNodes.push(daemonId);
@@ -290,7 +282,7 @@ export async function apply(ctx: PanelPluginContext) {
     return { failedNodes, changedNodes };
   }
 
-  /** Failed or unselected installs stay recorded until a later successful retry. */
+  /** Failed or unselected uninstalls stay recorded until a later successful retry. */
   async function removeFromNodes(installations: readonly RemoteMarketInstall[]) {
     const failedNodes = new Set<string>();
     const changedNodes = new Set<string>();
@@ -302,7 +294,11 @@ export async function apply(ctx: PanelPluginContext) {
         continue;
       }
       try {
-        await new ctx.remote.Request(node).request("plugin/uninstall", { name, pluginId }, 30000);
+        await new ctx.remote.Request(node).request(
+          "plugin/npm/uninstall",
+          { name, pluginId },
+          10 * 60 * 1000
+        );
       } catch (error) {
         ctx.logger.warn(`Failed to uninstall a plugin on daemon ${daemonId}: ${error}`);
         failedNodes.add(daemonId);
@@ -343,12 +339,12 @@ export async function apply(ctx: PanelPluginContext) {
   }
 
   /**
-   * Makes a freshly written package take effect without a restart.
+   * Makes a freshly installed package take effect without a restart.
    *
-   * Both halves re-scan after the package is written: the panel scans its own
-   * directories, and the selected daemons scan theirs before reconnecting.
-   * Loaders accept new packaged plugins in production, but retain an already
-   * running backend revision; replacing that revision still requires restart.
+   * Both halves re-scan after the dependency is installed: the panel scans its
+   * own npm plugins, and the selected daemons scan theirs before reconnecting.
+   * Loaders accept new npm plugins in production, but retain an already running
+   * backend revision; replacing that revision still requires restart.
    */
   async function hotReload(
     sides: PluginSide[],
@@ -393,8 +389,8 @@ export async function apply(ctx: PanelPluginContext) {
         // Also support market sources that predate the selectedVersion field.
         const selectedVersion = version
           ? detail.versions?.find((item: { version: string }) => item.version === version)
-          : detail.latestVersion;
-        if (!selectedVersion || selectedVersion.status !== "approved") {
+          : detail.selectedVersion ?? detail.latestVersion;
+        if (!selectedVersion || (selectedVersion.status && selectedVersion.status !== "approved")) {
           throw new PluginMarketError("NOT_FOUND");
         }
         const installed = listInstalled().find((item) => item.pluginId === pluginId);
@@ -402,7 +398,8 @@ export async function apply(ctx: PanelPluginContext) {
           ...detail,
           selectedVersion,
           installedVersion: installed?.version,
-          installedDaemonIds: installed?.daemonIds ?? []
+          installedDaemonIds: installed?.daemonIds ?? [],
+          installedRemovable: installed?.removable ?? true
         };
       } catch (error) {
         reportPluginMarketError(error);
@@ -416,59 +413,31 @@ export async function apply(ctx: PanelPluginContext) {
   });
 
   /**
-   * 插件图标。市场地址只配在后端，浏览器拿不到，所以图片也经这里转一手，与其余市场
-   * 接口一致。
-   *
-   * 返回的是 data URL 而不是图片本身：面板的请求层按 JSON 协议收发（console 的
-   * apiService 只取响应体里的 `data`），返回二进制它读不了。图标很小，转成 data URL
-   * 由页面直接放进 <img> 最省事。
-   *
-   * 包里没有 icon.png 时市场返回 404，这里当作「没有图标」——dataUrl 为 null，
-   * 页面回退到拼图图标，缺图标不是错误。
+   * 插件图标。npm 索引不托管图标，页面统一回退到默认拼图图标；保留这个路由是为了让
+   * 浏览器侧不必区分旧版与新版市场。
    */
-  router.get(
-    "/plugin/icon",
-    requireAdmin,
-    validator({ query: { pluginId: String } }),
-    async (requestCtx: Koa.ParameterizedContext) => {
-      const pluginId = String(requestCtx.query.pluginId);
-      const version = requestCtx.query.version ? String(requestCtx.query.version) : undefined;
-      try {
-        const response = await axios.get<ArrayBuffer>(
-          `${marketSettings().pluginMarketAddr}/api/plugins/${encodeURIComponent(pluginId)}/icon`,
-          {
-            params: version ? { version } : {},
-            responseType: "arraybuffer",
-            timeout: 15000,
-            maxContentLength: MAX_PLUGIN_ICON_BYTES,
-            maxBodyLength: MAX_PLUGIN_ICON_BYTES
-          }
-        );
-        requestCtx.body = { dataUrl: encodePluginIcon(response.data) };
-      } catch {
-        // 市场没有图标，或这个市场源不可达：都当作没有图标。
-        requestCtx.body = { dataUrl: null };
-      }
-    }
-  );
+  router.get("/plugin/icon", requireAdmin, async (requestCtx) => {
+    requestCtx.body = { dataUrl: null };
+  });
 
-  // What a package contains, before anything is installed: the page asks this to
-  // find out whether it has to ask the user which nodes to send it to.
+  // What the page needs before it can ask the user anything: a package with a
+  // daemon half has to be installed on the nodes the user picks.
   router.get(
     "/plugin/package",
     requireAdmin,
-    ctx.middleware.validator({ query: { pluginId: String } }),
+    validator({ query: { pluginId: String } }),
     async (requestCtx: Koa.ParameterizedContext) => {
       try {
         const query = requestCtx.request.query;
-        const pkg = await fetchPackage(marketSettings().pluginMarketAddr, {
-          pluginId: String(query.pluginId),
-          version: query.version ? String(query.version) : undefined
-        });
+        const detail = await fetchMarketPluginDetail(
+          marketSettings().pluginMarketAddr,
+          String(query.pluginId),
+          query.version ? String(query.version) : undefined
+        );
         requestCtx.body = {
-          name: pkg.name,
-          version: pkg.version,
-          sides: [...new Set(pkg.files.map((file) => file.side))]
+          name: detail.name,
+          version: detail.selectedVersion.version,
+          sides: detail.selectedVersion.sides
         };
       } catch (error) {
         reportPluginMarketError(error);
@@ -476,10 +445,10 @@ export async function apply(ctx: PanelPluginContext) {
     }
   );
 
-  // Installing writes the panel half into this process's plugin directory and
-  // sends the daemon half to the nodes the user picked. Both halves load their
-  // plugins at startup, so both sides are asked to re-scan after files arrive.
-  // Existing backend revisions are not replaced in-process.
+  // Installing adds a dependency to this installation's package.json and sends the
+  // same npm install to the nodes the user picked. Both sides are asked to re-scan
+  // after the dependency arrives. Existing backend revisions are not replaced
+  // in-process.
   router.post(
     "/plugin/install",
     requireAdmin,
@@ -489,52 +458,55 @@ export async function apply(ctx: PanelPluginContext) {
       const body = (requestCtx.request.body ?? {}) as Record<string, unknown>;
       try {
         requestCtx.body = await withPluginLock(String(body.pluginId), async () => {
-          const addr = marketSettings().pluginMarketAddr;
-          const pkg = await fetchPackage(addr, {
-            pluginId: String(body.pluginId),
-            name: String(body.name),
-            version: body.version ? String(body.version) : undefined
-          });
+          const detail = await fetchMarketPluginDetail(
+            marketSettings().pluginMarketAddr,
+            String(body.pluginId),
+            body.version ? String(body.version) : undefined
+          );
           const daemonIds = requestedNodes(body.daemonIds);
-          if (!pkg.files.some((file) => file.side === "panel") && !daemonIds.length)
+          const sides = detail.selectedVersion.sides;
+          if (!sides.includes("panel") && !daemonIds.length)
             throw new PluginMarketError("NO_NODES");
-          const files = await downloadPackage(addr, pkg);
           const info: MarketInstallInfo = {
-            pluginId: pkg.pluginId,
-            name: pkg.name,
-            version: pkg.version,
+            pluginId: detail.id,
+            name: detail.name,
+            version: detail.selectedVersion.version,
             installedAt: Date.now()
           };
           const previous = listInstalled().find((item) => item.pluginId === info.pluginId);
+          // A source or bundled plugin that ships with the runtime already owns the
+          // id; installing the npm package would be shadowed by it.
+          if (
+            sides.includes("panel") &&
+            previous?.source !== "project" &&
+            ctx.plugins.inventory().some((item) => item.id === info.pluginId)
+          )
+            throw new PluginMarketError("BUNDLED");
+          const replacedVersion = Boolean(previous && previous.version !== info.version);
 
-          const sides: PluginSide[] = [];
-          const ofSide = (side: PluginSide) => files.filter((file) => file.side === side);
-          const panelFiles = ofSide("panel");
-          if (panelFiles.length) {
-            await writePlugin("panel", info, panelFiles);
-            sides.push("panel");
+          const changedSides: PluginSide[] = [];
+          if (sides.includes("panel")) {
+            await installPanelPlugin(detail);
+            changedSides.push("panel");
           }
-          const daemonFiles = ofSide("daemon");
-          const { failedNodes, changedNodes } = daemonFiles.length
-            ? await pushToNodes(daemonIds, info, daemonFiles)
-            : { failedNodes: [], changedNodes: [] };
-          if (changedNodes.length) sides.push("daemon");
-          const reloaded = await hotReload(sides, changedNodes);
-          // Discovery loads new plugins, but retains already loaded module
-          // instances. Replacing an existing side still needs a restart.
-          const replaced =
-            (panelFiles.length > 0 && previous?.sides.includes("panel")) ||
-            changedNodes.some((daemonId) => previous?.daemonIds.includes(daemonId));
+          const { failedNodes, changedNodes } =
+            sides.includes("daemon") && daemonIds.length
+              ? await installOnNodes(daemonIds, info)
+              : { failedNodes: [], changedNodes: [] };
+          if (changedNodes.length) changedSides.push("daemon");
+          const reloaded = await hotReload(changedSides, changedNodes);
 
           return {
-            restartRequired: Boolean(replaced) || !reloaded,
+            restartRequired:
+              ((changedSides.includes("panel") || changedNodes.length > 0) && replacedVersion) ||
+              !reloaded,
             installedVersion: listInstalled().find((item) => item.pluginId === info.pluginId)
               ?.version,
             failedNodes
           };
         });
       } catch (error) {
-        reportPluginMarketError(error);
+        reportPluginMarketError(error, "NPM_FAILED");
       }
     }
   );
@@ -546,23 +518,27 @@ export async function apply(ctx: PanelPluginContext) {
     async (requestCtx: Koa.ParameterizedContext) => {
       const pluginId = String(requestCtx.request.query.pluginId);
       const daemonIds = requestedNodes(requestCtx.request.query.daemonIds);
-      requestCtx.body = await withPluginLock(pluginId, async () => {
-        const selectedNodes = new Set(daemonIds);
-        const installations = readRemoteInstalls(pluginId).filter((item) =>
-          selectedNodes.has(item.daemonId)
-        );
-        const removed = await uninstallPlugin(pluginId);
-        const { failedNodes, changedNodes } = await removeFromNodes(installations);
-        const sides: PluginSide[] = removed?.directories.length ? ["panel"] : [];
-        if (changedNodes.length) sides.push("daemon");
-        const remaining = listInstalled().find((item) => item.pluginId === pluginId);
-        return {
-          removed: !remaining,
-          installedVersion: remaining?.version,
-          failedNodes,
-          restartRequired: !(await hotReload(sides, changedNodes))
-        };
-      });
+      try {
+        requestCtx.body = await withPluginLock(pluginId, async () => {
+          const selectedNodes = new Set(daemonIds);
+          const installations = readRemoteInstalls(pluginId).filter((item) =>
+            selectedNodes.has(item.daemonId)
+          );
+          const removed = await uninstallPanelPlugin(pluginId);
+          const { failedNodes, changedNodes } = await removeFromNodes(installations);
+          const sides: PluginSide[] = removed ? ["panel"] : [];
+          if (changedNodes.length) sides.push("daemon");
+          const remaining = listInstalled().find((item) => item.pluginId === pluginId);
+          return {
+            removed: !remaining,
+            installedVersion: remaining?.version,
+            failedNodes,
+            restartRequired: !(await hotReload(sides, changedNodes))
+          };
+        });
+      } catch (error) {
+        reportPluginMarketError(error, "NPM_FAILED");
+      }
     }
   );
 

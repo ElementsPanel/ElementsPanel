@@ -292,7 +292,7 @@ onScopeDispose(() => {
         {{ t("TXT_CODE_PLUGIN_MARKET_INSTALL") }}
       </VBtn>
       <VBtn
-        v-if="plugin.installedVersion && !installOnly"
+        v-if="plugin.installedVersion && !installOnly && plugin.installedRemovable !== false"
         color="error"
         variant="text"
         :disabled="busy || disabled"

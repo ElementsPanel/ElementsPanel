@@ -513,42 +513,6 @@ test("batch instance forwarding awaits daemon completion, deduplicates IDs and s
   );
 });
 
-test("market paths stay under the running panel directory and cannot overwrite built-ins or traverse", async (t) => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "elements-panel-market-review-"));
-  const previous = process.cwd();
-  fs.mkdirSync(path.join(directory, "web"));
-  process.chdir(path.join(directory, "web"));
-  t.after(() => {
-    process.chdir(previous);
-    fs.rmSync(directory, { recursive: true, force: true });
-  });
-  const market = load("panel/plugins/market/src/backend/service/plugin_market.ts", {
-    "mcsmanager-common": { ...load("common/src/plugin_package.ts"), ...load("common/src/runtime_paths.ts") }
-  });
-  assert.equal(market.installRoot("panel"), path.join(directory, "web", "plugins"));
-  assert.equal(market.installRoot("daemon"), path.join(directory, "daemon", "plugins"));
-  for (const name of ["../escape", "..\\escape", "C:drive", "/absolute"]) {
-    assert.throws(() => market.installDirectory("panel", name), /BAD_PATH/);
-  }
-  const existing = market.installDirectory("panel", "built-in");
-  fs.mkdirSync(existing, { recursive: true });
-  await assert.rejects(
-    market.writePlugin("panel", { pluginId: "other", name: "built-in" }, []),
-    /DIR_TAKEN/
-  );
-  await assert.rejects(
-    market.writePlugin("panel", { pluginId: "safe", name: "safe" }, [
-      { relative: "good.txt", content: Buffer.from("safe") },
-      { relative: "../outside.txt", content: Buffer.from("bad") }
-    ]),
-    /BAD_PATH/
-  );
-  assert.equal(
-    fs.existsSync(path.join(market.installDirectory("panel", "safe"), "good.txt")),
-    false
-  );
-});
-
 test("enabled user plugin failure denies requests/uploads until its guard returns; explicit removal stays supported", async (t) => {
   const cache = load("panel/plugins/runtime/src/backend/service/mini_redis.ts");
   t.after(() => cache.singletonMemoryRedis.dispose());

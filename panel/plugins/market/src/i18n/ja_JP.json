@@ -48,5 +48,7 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Panel・Daemon 両対応プラグイン",
   "TXT_CODE_PLUGIN_MARKET_UPDATES": "更新履歴",
   "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "このプラグインには別のホスト API またはブラウザー SDK が必要です。先に ElementsPanel を更新してください。",
-  "TXT_CODE_2de92a5d": "インストールする前にノードを選択してください！"
+  "TXT_CODE_2de92a5d": "インストールする前にノードを選択してください！",
+  "TXT_CODE_PLUGIN_MARKET_BUNDLED": "This plugin is bundled with the panel and cannot be uninstalled here.",
+  "TXT_CODE_PLUGIN_MARKET_NPM_FAILED": "npm install failed. Check the network, registry and package name, then retry."
 }

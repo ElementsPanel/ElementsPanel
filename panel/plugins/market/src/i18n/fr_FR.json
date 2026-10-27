@@ -48,5 +48,7 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Extension panel et daemon",
   "TXT_CODE_PLUGIN_MARKET_UPDATES": "Nouveautés",
   "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "Ce plugin nécessite une autre version de l’API hôte ou du SDK navigateur. Mettez d’abord ElementsPanel à jour.",
-  "TXT_CODE_2de92a5d": "Veuillez sélectionner un nœud avant l'installation!"
+  "TXT_CODE_2de92a5d": "Veuillez sélectionner un nœud avant l'installation!",
+  "TXT_CODE_PLUGIN_MARKET_BUNDLED": "This plugin is bundled with the panel and cannot be uninstalled here.",
+  "TXT_CODE_PLUGIN_MARKET_NPM_FAILED": "npm install failed. Check the network, registry and package name, then retry."
 }
