@@ -6,13 +6,12 @@ import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
 import { visualizer } from "rollup-plugin-visualizer";
 import Components from "unplugin-vue-components/vite";
-// @ts-ignore Shared ESM build contract also consumed by compile-plugin.mjs.
+// @ts-ignore Shared frontend module identities for the host and built-in plugins.
 import { pluginSdkModules } from "./plugin-sdk.config.mjs";
-// @ts-ignore Shared dependency resolution for external plugin workspaces.
+// @ts-ignore Built-in plugin sources resolve browser dependencies from the frontend package.
 import { frontendDependencyFallback } from "./plugin-dependencies.config.mjs";
 import { defineConfig, normalizePath, type Plugin } from "vite";
 import {
-  discoverExternalPluginRoots,
   discoverPluginsFromRoots,
   createFrontendPluginMetadata
 } from "../common/src/plugin_manifest";
@@ -25,7 +24,6 @@ const PANEL_PLUGIN_BUILD_ENTRY_PREFIX = "panel-plugin-build-entry:";
 const RESOLVED_PANEL_PLUGIN_BUILD_ENTRY_PREFIX = `\0${PANEL_PLUGIN_BUILD_ENTRY_PREFIX}`;
 const PROJECT_DIRECTORY = fileURLToPath(new URL("..", import.meta.url));
 const PANEL_PLUGINS_DIRECTORY = fileURLToPath(new URL("../panel/plugins", import.meta.url));
-const EXTERNAL_PLUGINS_DIRECTORY = fileURLToPath(new URL("../external", import.meta.url));
 // Plugins installed from the market: git-ignored, so they must be discovered the
 // same way as the built-in ones or an installed plugin would never load.
 const MARKET_PANEL_PLUGINS_DIRECTORY = fileURLToPath(
@@ -54,44 +52,33 @@ interface DiscoveredPanelPlugin {
  * every relative URL has to be rebased or fonts/images will be requested from
  * the plugin directory instead of their emitted location.
  */
-function relocateCssUrls(
-  source: string | Uint8Array,
-  originalFile: string,
-  relocatedFile: string
-) {
+function relocateCssUrls(source: string | Uint8Array, originalFile: string, relocatedFile: string) {
   const css = typeof source === "string" ? source : new TextDecoder().decode(source);
   const originalDirectory = path.posix.dirname(normalizePath(originalFile));
   const relocatedDirectory = path.posix.dirname(normalizePath(relocatedFile));
-  return css.replace(
-    /url\(\s*(["']?)([^"')]+)\1\s*\)/g,
-    (match, quote: string, value: string) => {
-      const reference = value.trim();
-      if (!reference || /^(?:[a-z][a-z\d+.-]*:|\/\/|\/|#)/i.test(reference)) return match;
-      const parts = reference.match(/^([^?#]*)([?#].*)?$/);
-      const pathname = parts?.[1];
-      if (!pathname) return match;
-      const suffix = parts?.[2] || "";
-      const emittedFile = path.posix.normalize(path.posix.join(originalDirectory, pathname));
-      let rebased = path.posix.relative(relocatedDirectory, emittedFile);
-      if (!rebased.startsWith(".")) rebased = `./${rebased}`;
-      return `url(${quote}${rebased}${suffix}${quote})`;
-    }
-  );
+  return css.replace(/url\(\s*(["']?)([^"')]+)\1\s*\)/g, (match, quote: string, value: string) => {
+    const reference = value.trim();
+    if (!reference || /^(?:[a-z][a-z\d+.-]*:|\/\/|\/|#)/i.test(reference)) return match;
+    const parts = reference.match(/^([^?#]*)([?#].*)?$/);
+    const pathname = parts?.[1];
+    if (!pathname) return match;
+    const suffix = parts?.[2] || "";
+    const emittedFile = path.posix.normalize(path.posix.join(originalDirectory, pathname));
+    let rebased = path.posix.relative(relocatedDirectory, emittedFile);
+    if (!rebased.startsWith(".")) rebased = `./${rebased}`;
+    return `url(${quote}${rebased}${suffix}${quote})`;
+  });
 }
 
-function discoverPanelPlugins(includeExternal = false): DiscoveredPanelPlugin[] {
+function discoverPanelPlugins(includeInstalled = false): DiscoveredPanelPlugin[] {
   // Discovery is shared with the panel and daemon backends, so the four places
   // that read `plugin.json` cannot drift apart. Only the entry field and the
   // build-time extras are specific to this side.
   const roots = [{ directory: PANEL_PLUGINS_DIRECTORY, overrideManaged: false }];
-  if (includeExternal) {
+  if (includeInstalled) {
     roots.push(
       { directory: path.join(PROJECT_DIRECTORY, "panel/data/plugins"), overrideManaged: true },
-      { directory: MARKET_PANEL_PLUGINS_DIRECTORY, overrideManaged: false },
-      ...discoverExternalPluginRoots(PROJECT_DIRECTORY, "panel").map((root) => ({
-        ...root,
-        overrideManaged: false
-      }))
+      { directory: MARKET_PANEL_PLUGINS_DIRECTORY, overrideManaged: false }
     );
   }
   const discovered = discoverPluginsFromRoots(roots, {
@@ -108,19 +95,16 @@ function discoverPanelPlugins(includeExternal = false): DiscoveredPanelPlugin[] 
     onWarning: (message, error) => console.warn(message, error)
   });
   return (
-    includeExternal
+    includeInstalled
       ? applyPluginOverrides(
           discovered,
           path.join(PROJECT_DIRECTORY, "panel/data/plugin-overrides.json")
         )
       : discovered
   )
-    .filter((plugin) => plugin.entry && (!includeExternal || plugin.manifest.enabled !== false))
+    .filter((plugin) => plugin.entry && (!includeInstalled || plugin.manifest.enabled !== false))
     .map((plugin) => ({
-      metadata: createFrontendPluginMetadata(plugin.manifest) as unknown as Record<
-        string,
-        unknown
-      >,
+      metadata: createFrontendPluginMetadata(plugin.manifest) as unknown as Record<string, unknown>,
       directory: plugin.directory,
       folder: plugin.folder,
       entry: plugin.entry!,
@@ -137,7 +121,6 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
     return [
       PANEL_PLUGINS_DIRECTORY,
       MARKET_PANEL_PLUGINS_DIRECTORY,
-      EXTERNAL_PLUGINS_DIRECTORY,
       path.join(PROJECT_DIRECTORY, "panel/data/plugin-overrides.json"),
       path.join(PROJECT_DIRECTORY, "panel/data/plugins")
     ].some((directory) => {
@@ -196,7 +179,6 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
       server.watcher.add([
         PANEL_PLUGINS_DIRECTORY,
         MARKET_PANEL_PLUGINS_DIRECTORY,
-        EXTERNAL_PLUGINS_DIRECTORY,
         path.join(PROJECT_DIRECTORY, "panel/data/plugin-overrides.json"),
         path.join(PROJECT_DIRECTORY, "panel/data/plugins")
       ]);
@@ -400,7 +382,10 @@ export default defineConfig({
           return "assets/[name]-[hash][extname]";
         },
         manualChunks(path) {
-          if (path.includes("node_modules/chart.js") || path.includes("node_modules/@kurkle/color")) {
+          if (
+            path.includes("node_modules/chart.js") ||
+            path.includes("node_modules/@kurkle/color")
+          ) {
             return "chartjs";
           }
           if (path.includes("node_modules/lodash")) {

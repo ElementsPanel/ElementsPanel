@@ -34,7 +34,6 @@ async function loadHostConfig() {
           folder: id,
           entry: `/virtual/plugins/${id}/src/frontend.ts`
         })),
-      discoverExternalPluginRoots: () => [],
       createFrontendPluginMetadata: (manifest) => ({ id: manifest.id })
     },
     "../common/src/plugin_overrides": { applyPluginOverrides: (value) => value },

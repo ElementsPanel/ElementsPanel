@@ -25,7 +25,6 @@
   "include": [
     "src/**/*",
     "plugins/*/src/backend/**/*",
-    "../external/*/panel/src/backend/**/*",
     "../common/global.d.ts"
   ]
 }

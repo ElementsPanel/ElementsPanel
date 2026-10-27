@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import {
   isPackagedRuntime,
-  packagePath,
+  packagePluginRoots,
   MAX_PLUGIN_ICON_BYTES,
   PLUGIN_API_VERSION,
   PLUGIN_ICON_FILE,
@@ -228,7 +228,7 @@ export function apply(ctx: DaemonPluginContext) {
           content: Buffer.from(file.content, "base64")
         })),
         [
-          packagePath("plugins"),
+          ...packagePluginRoots("daemon"),
           MARKET_PLUGINS_DIRECTORY(),
           path.resolve(process.cwd(), "plugins"),
           path.resolve(process.cwd(), "market_plugins")

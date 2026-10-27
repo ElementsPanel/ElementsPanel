@@ -6,8 +6,10 @@ const { spawn } = require("node:child_process");
 const { createRequire } = require("node:module");
 const { pathToFileURL } = require("node:url");
 const { test } = require("node:test");
+const { installNpmPlugin } = require("./npm-fixtures.cjs");
 const initializer = require("../../packages/create-elementspanel/index.cjs");
 const { installPluginResolution } = require("../runtime/plugin-resolution.cjs");
+const { resolveNpmPlugins } = require("../runtime/npm-plugins.cjs");
 const { parseArgs, planWorkers } = require("../runtime/cli.cjs");
 const repository = path.resolve(__dirname, "../..");
 
@@ -163,8 +165,14 @@ function runtimeFixture(t, behavior = {}) {
     fs.cpSync(path.join(repository, "scripts/runtime"), path.join(root, "runtime"), {
       recursive: true
     });
-    for (const plugin of ["i18n", "storage", "runtime", "server"])
-      write(path.join(root, "plugins", plugin, "plugin.json"), { id: plugin });
+    for (const plugin of [
+      "i18n",
+      "storage",
+      "runtime",
+      "server",
+      ...(side === "panel" ? ["console"] : [])
+    ])
+      installNpmPlugin(root, side, plugin);
     write(path.join(root, "public/index.html"), "fixture");
     for (const name of ["pty", "file_zip", "7z"])
       write(
@@ -348,6 +356,86 @@ test("CLI rejects missing companion packages and shared data directories before 
   assert.equal(result.code, 1);
   assert.match(result.output, /needs @elementspanel\/daemon/);
   assert.equal(f.events().length, 0);
+});
+
+test("CLI reports missing built-in npm dependencies before starting either worker", async (t) => {
+  const f = runtimeFixture(t);
+  fs.renameSync(
+    path.join(f.packages.panel, "node_modules/@elementspanel/epanel-plugin-console"),
+    path.join(f.root, "removed-console")
+  );
+  const result = await execute(f, path.join(f.packages.panel, "bin.cjs"), [
+    "start",
+    "--with-daemon",
+    "--cwd",
+    f.project
+  ]).closed;
+  assert.equal(result.code, 1, result.output);
+  assert.match(result.output, /Missing npm plugin @elementspanel\/epanel-plugin-console/);
+  assert.equal(f.events().length, 0);
+});
+
+test("npm plugin discovery rejects mismatched identities and paths outside the installed package", (t) => {
+  const f = temporary(t);
+  const host = path.join(f.root, "host");
+  const plugin = installNpmPlugin(host, "panel", "sample");
+  const filename = path.join(plugin.packageRoot, "package.json");
+  const metadata = JSON.parse(fs.readFileSync(filename));
+  assert.equal(resolveNpmPlugins(host)[0].directory, plugin.directory);
+  write(filename, { ...metadata, version: "2.0.0" });
+  assert.throws(() => resolveNpmPlugins(host), /identity or version/);
+  write(filename, {
+    ...metadata,
+    elementspanel: {
+      ...metadata.elementspanel,
+      panel: { directory: "../../outside", folder: "sample" }
+    }
+  });
+  assert.throws(() => resolveNpmPlugins(host), /escapes its package/);
+});
+
+test("hoisted npm plugins share host Cordis and retain their declared private dependencies", async (t) => {
+  const f = temporary(t);
+  const project = path.join(f.root, "project");
+  const host = path.join(project, "node_modules/@elementspanel/panel");
+  write(path.join(host, "package.json"), {
+    dependencies: { cordis: "1", "host-only": "1", "private-dep": "2" }
+  });
+  const plugin = installNpmPlugin(host, "panel", "sample", {
+    packageRoot: path.join(project, "node_modules/@elementspanel/epanel-plugin-sample"),
+    dependencies: { "private-dep": "1" }
+  });
+  for (const [root, name, value] of [
+    [host, "cordis", "host cordis"],
+    [host, "host-only", "host dependency"],
+    [host, "private-dep", "wrong host dependency"],
+    [project, "host-only", "wrong hoisted dependency"],
+    [project, "private-dep", "plugin dependency"],
+    [plugin.packageRoot, "cordis", "wrong private cordis"]
+  ])
+    write(
+      path.join(root, "node_modules", name, "index.js"),
+      `module.exports = ${JSON.stringify(value)};`
+    );
+  write(
+    path.join(plugin.directory, "backend/index.cjs"),
+    'module.exports = [require("cordis"), require("host-only"), require("private-dep")];'
+  );
+  write(
+    path.join(plugin.directory, "backend/index.mjs"),
+    'import cordis from "cordis"; import host from "host-only"; import local from "private-dep"; export default [cordis, host, local];'
+  );
+  const hook = installPluginResolution(host, path.join(project, "panel"));
+  try {
+    const expected = ["host cordis", "host dependency", "plugin dependency"];
+    assert.deepEqual(require(path.join(plugin.directory, "backend/index.cjs")), expected);
+    assert.deepEqual(
+      (await import(pathToFileURL(path.join(plugin.directory, "backend/index.mjs")).href)).default,
+      expected
+    );
+  } finally {
+    hook.deregister();
+  }
 });
 
 test("CJS and ESM plugins use host dependencies while retaining private dependencies and one Cordis", async (t) => {

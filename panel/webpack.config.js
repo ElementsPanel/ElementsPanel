@@ -37,11 +37,8 @@ module.exports = {
   target: "node",
   devtool: "source-map",
   optimization: {
-    // Do not substitute `process.env.NODE_ENV` at build time. The plugin loader
-    // reads it at runtime to decide whether to scan `external/` and register
-    // ts-node; webpack's production default would bake "production" in and
-    // dead-code-eliminate both branches, leaving every external plugin backend
-    // invisible however the process was started.
+    // Development and npm installations use the same compiled host. Keep
+    // environment-dependent application behavior configurable at runtime.
     nodeEnv: false,
     chunkIds: "named",
     minimize: false,

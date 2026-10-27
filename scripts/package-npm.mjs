@@ -38,7 +38,6 @@ export function runtimeManifest(side, source) {
     "app.js.map",
     "bin/",
     "runtime/",
-    "plugins/",
     side === "panel" ? "public/" : "lib/",
     "README.md",
     "LICENSE"
@@ -74,13 +73,114 @@ async function verifyPlugin(directory) {
   return manifest;
 }
 
-async function packageRuntime(side, sourceRoot, outputRoot, pluginOutput) {
+async function packageBuiltinPlugins(sourceRoot, outputRoot, stagingRoot) {
+  const plugins = new Map();
+  const hosts = {};
+  for (const side of ["panel", "daemon"]) {
+    hosts[side] = await readJson(path.join(repository, side, "package.json"));
+    const pluginRoot = path.join(repository, side, "plugins");
+    const pluginNames = [];
+    for (const item of await fs.readdir(pluginRoot, { withFileTypes: true })) {
+      if (item.isDirectory() && (await exists(path.join(pluginRoot, item.name, "plugin.json"))))
+        pluginNames.push(item.name);
+    }
+    const pluginOutput = path.join(stagingRoot, side);
+    const packagePlugins = side === "panel" ? packagePanelPlugins : packageDaemonPlugins;
+    packagePlugins({
+      sourceRoot: path.join(sourceRoot, side, "plugins"),
+      buildRoot: path.join(sourceRoot, "frontend/dist/plugins"),
+      outputRoot: pluginOutput,
+      pluginNames
+    });
+    for (const folder of pluginNames) {
+      const directory = path.join(pluginOutput, folder);
+      const manifest = await verifyPlugin(directory);
+      const expected = await readJson(path.join(pluginRoot, folder, "plugin.json"));
+      if (manifest.id !== expected.id || manifest.version !== expected.version)
+        throw new Error(`Unexpected plugin identity or version: ${directory}`);
+      if (!/^[a-z][a-z0-9_-]{1,63}$/.test(manifest.id) || typeof manifest.version !== "string")
+        throw new Error(`Invalid npm plugin metadata: ${directory}`);
+      for (const field of ["backend", "frontend"]) {
+        if (typeof expected[field] === "string" && typeof manifest[field] !== "string")
+          throw new Error(`Missing compiled ${field} for plugin ${manifest.id}`);
+      }
+      let plugin = plugins.get(manifest.id);
+      if (!plugin) {
+        plugin = {
+          id: manifest.id,
+          name: `@elementspanel/epanel-plugin-${manifest.id}`,
+          version: manifest.version,
+          description:
+            manifest.description || manifest.name || `ElementsPanel ${manifest.id} plugin`,
+          sides: {}
+        };
+        plugins.set(manifest.id, plugin);
+      }
+      if (plugin.version !== manifest.version)
+        throw new Error(`Both sides of npm plugin ${manifest.id} must have the same version.`);
+      if (plugin.sides[side]) throw new Error(`Duplicate ${side} plugin id: ${manifest.id}`);
+      plugin.sides[side] = { directory, folder };
+    }
+  }
+  const result = [];
+  for (const plugin of [...plugins.values()].sort((a, b) => a.id.localeCompare(b.id))) {
+    const directory = path.join(outputRoot, `epanel-plugin-${plugin.id}`);
+    const sides = Object.keys(plugin.sides);
+    const owner = hosts[sides[0]];
+    const metadata = {
+      name: plugin.name,
+      version: plugin.version,
+      description: plugin.description,
+      license: owner.license,
+      author: owner.author,
+      repository: owner.repository,
+      engines: { node: ">=22.15.0" },
+      publishConfig: { access: "public" },
+      files: [...sides.map((side) => `${side}/`), "README.md", "LICENSE"],
+      exports: { "./package.json": "./package.json" },
+      elementspanel: { id: plugin.id },
+      // Plugin bundles use the host's shared runtime imports. Optional peers
+      // let a dual plugin be installed on a machine running only one side.
+      peerDependencies: {},
+      peerDependenciesMeta: {}
+    };
+    for (const side of sides) {
+      const source = plugin.sides[side];
+      copyTree(source.directory, path.join(directory, side));
+      metadata.elementspanel[side] = { directory: side, folder: source.folder };
+      metadata.exports[`./${side}/plugin.json`] = `./${side}/plugin.json`;
+      metadata.peerDependencies[`@elementspanel/${side}`] = hosts[side].version;
+      metadata.peerDependenciesMeta[`@elementspanel/${side}`] = { optional: true };
+    }
+    await fs.writeFile(
+      path.join(directory, "package.json"),
+      `${JSON.stringify(metadata, null, 2)}\n`
+    );
+    copyTree(path.join(repository, "LICENSE"), path.join(directory, "LICENSE"));
+    await fs.writeFile(
+      path.join(directory, "README.md"),
+      `# ${plugin.name}\n\n${plugin.description}\n\nBuilt-in ElementsPanel plugin for ${sides.join(
+        " and "
+      )}. Installed automatically as a runtime dependency. Plugin metadata and compiled assets are kept in the corresponding side directory. Configuration is stored in the installation's data/plugin-overrides.json, outside this package.\n\nPublish plugin packages before @elementspanel/panel and @elementspanel/daemon. The host supplies shared runtime dependencies and the browser SDK.\n`
+    );
+    result.push(metadata);
+  }
+  return result;
+}
+
+async function packageRuntime(side, sourceRoot, outputRoot, plugins) {
   const source = path.join(sourceRoot, side, "production");
   const output = path.join(outputRoot, side);
   const metadata = runtimeManifest(
     side,
     await readJson(path.join(repository, side, "package.json"))
   );
+  metadata.elementspanel = { side, plugins: {} };
+  for (const plugin of plugins) {
+    if (!plugin.elementspanel[side]) continue;
+    metadata.dependencies[plugin.name] = plugin.version;
+    metadata.elementspanel.plugins[plugin.elementspanel.id] = plugin.name;
+  }
   const resolveShared = sharedDependencies.createSharedResolver(path.join(repository, side));
   // Webpack leaves these imports external. Declare them directly, with the
   // versions from the same graph used to build the host, so npm need not hoist them.
@@ -99,34 +199,6 @@ async function packageRuntime(side, sourceRoot, outputRoot, pluginOutput) {
     { mode: 0o755 }
   );
 
-  // Use the repository's built-in inventory and the workspace's compiled files.
-  // Installed market plugins never enter the staging directory.
-  const pluginRoot = path.join(repository, side, "plugins");
-  const pluginNames = [];
-  for (const item of await fs.readdir(pluginRoot, { withFileTypes: true })) {
-    if (item.isDirectory() && (await exists(path.join(pluginRoot, item.name, "plugin.json"))))
-      pluginNames.push(item.name);
-  }
-  const packagePlugins = side === "panel" ? packagePanelPlugins : packageDaemonPlugins;
-  packagePlugins({
-    sourceRoot: path.join(sourceRoot, side, "plugins"),
-    buildRoot: path.join(sourceRoot, "frontend/dist/plugins"),
-    outputRoot: pluginOutput,
-    pluginNames
-  });
-  for (const pluginName of pluginNames) {
-    const pluginDirectory = path.join(pluginOutput, pluginName);
-    const manifest = await verifyPlugin(pluginDirectory);
-    const expected = await readJson(path.join(pluginRoot, pluginName, "plugin.json"));
-    if (manifest.id !== expected.id)
-      throw new Error(`Unexpected plugin identity: ${pluginDirectory}`);
-    for (const field of ["backend", "frontend"]) {
-      if (typeof expected[field] === "string" && typeof manifest[field] !== "string") {
-        throw new Error(`Missing compiled ${field} for plugin ${manifest.id}`);
-      }
-    }
-    copyTree(pluginDirectory, path.join(output, "plugins", pluginName));
-  }
   if (side === "panel") {
     const frontend = path.join(sourceRoot, "frontend/dist");
     await fs.stat(path.join(frontend, "index.html"));
@@ -178,18 +250,13 @@ export async function packageNpm({
   const temporary = await fs.mkdtemp(path.join(path.dirname(outputRoot), ".elementspanel-npm-"));
   try {
     const packages = path.join(temporary, "packages");
-    const panel = await packageRuntime(
-      "panel",
+    const plugins = await packageBuiltinPlugins(
       sourceRoot,
       packages,
-      path.join(temporary, "panel-plugins")
+      path.join(temporary, "plugins")
     );
-    const daemon = await packageRuntime(
-      "daemon",
-      sourceRoot,
-      packages,
-      path.join(temporary, "daemon-plugins")
-    );
+    const panel = await packageRuntime("panel", sourceRoot, packages, plugins);
+    const daemon = await packageRuntime("daemon", sourceRoot, packages, plugins);
     const createSource = path.join(repository, "packages/create-elementspanel");
     const createOutput = path.join(packages, "create-elementspanel");
     await fs.mkdir(createOutput);
@@ -204,7 +271,7 @@ export async function packageNpm({
       `${JSON.stringify(create, null, 2)}\n`
     );
     await fs.rename(packages, outputRoot);
-    return { panel, daemon, create };
+    return { panel, daemon, create, plugins };
   } finally {
     await fs.rm(temporary, { recursive: true, force: true });
   }

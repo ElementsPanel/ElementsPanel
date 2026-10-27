@@ -104,16 +104,24 @@ test("workspace packaging includes runnable entry points and excludes user data 
       "data",
       "logs",
       "node_modules",
-      "plugins/market-only",
+      "plugins",
       "public/upload_files",
       "public/plugins",
       "lib/tmp_steamcmd.zip"
     ]) {
       assert.equal(fs.existsSync(path.join(root, excluded)), false, excluded);
     }
-    for (const plugin of fs.readdirSync(path.join(root, "plugins"))) {
-      const pluginRoot = path.join(root, "plugins", plugin);
+    assert.equal(manifest.elementspanel.side, side);
+    for (const [id, name] of Object.entries(manifest.elementspanel.plugins)) {
+      const metadata = result.plugins.find((plugin) => plugin.name === name);
+      assert.ok(metadata, `Missing npm package for ${id}`);
+      assert.equal(manifest.dependencies[name], metadata.version);
+      assert.equal(metadata.peerDependencies[manifest.name], manifest.version);
+      assert.equal(metadata.peerDependenciesMeta[manifest.name].optional, true);
+      const pluginRoot = path.join(f.outputRoot, name.split("/")[1], side);
       const pluginManifest = JSON.parse(fs.readFileSync(path.join(pluginRoot, "plugin.json")));
+      assert.equal(pluginManifest.id, id);
+      assert.equal(pluginManifest.version, metadata.version);
       if (pluginManifest.backend) {
         assert.ok(fs.existsSync(path.join(pluginRoot, pluginManifest.backend)));
         assert.doesNotMatch(
@@ -137,6 +145,11 @@ test("workspace packaging includes runnable entry points and excludes user data 
     );
     assert.match(help, /Usage:/);
   }
+  assert.equal(result.plugins.length, 17);
+  assert.ok(result.plugins.every((plugin) => /^@elementspanel\/epanel-plugin-/.test(plugin.name)));
+  const mod = result.plugins.find((plugin) => plugin.elementspanel.id === "mod-manager");
+  assert.equal(mod.elementspanel.panel.folder, "mod");
+  assert.equal(mod.elementspanel.daemon.folder, "mod");
   assert.ok(fs.existsSync(path.join(f.outputRoot, "panel/public/assets/shared.js")));
   assert.ok(fs.existsSync(path.join(f.sourceRoot, "panel/production/app.js")));
   assert.ok(fs.existsSync(path.join(f.sourceRoot, "panel/plugins/console/backend/index.cjs.map")));
@@ -155,6 +168,35 @@ test("workspace packaging includes runnable entry points and excludes user data 
       assert.ok(fs.statSync(path.join(f.outputRoot, "daemon/lib", filename)).mode & 0o111);
   }
   await assert.rejects(packageNpm(f), /Output already exists/);
+});
+
+test("separate npm plugin packages resolve from hoisted and nested installations", async (t) => {
+  const f = fixture(t);
+  const { packageNpm } = await packaging;
+  const result = await packageNpm(f);
+  const project = path.join(f.directory, "installation");
+  for (const side of ["panel", "daemon"]) {
+    const host = path.join(project, "node_modules/@elementspanel", side);
+    fs.cpSync(path.join(f.outputRoot, side), host, { recursive: true });
+    const selected = result.plugins.filter((plugin) => plugin.elementspanel[side]);
+    for (const [index, plugin] of selected.entries()) {
+      const target = path.join(index % 2 ? host : project, "node_modules", plugin.name);
+      fs.cpSync(path.join(f.outputRoot, plugin.name.split("/")[1]), target, { recursive: true });
+    }
+    const { resolveNpmPlugins } = require(path.join(host, "runtime/npm-plugins.cjs"));
+    const roots = resolveNpmPlugins(host, side);
+    assert.deepEqual(
+      roots.map((plugin) => plugin.id).sort(),
+      selected.map((plugin) => plugin.elementspanel.id).sort()
+    );
+    assert.ok(
+      roots.every((plugin) => fs.existsSync(path.join(plugin.directory, "backend/index.cjs")))
+    );
+    assert.equal(roots.find((plugin) => plugin.id === "mod-manager").folder, "mod");
+    assert.equal(fs.existsSync(path.join(host, "plugins")), false);
+    const { planWorkers } = require(path.join(host, "runtime/cli.cjs"));
+    assert.equal(planWorkers(side, host, { cwd: project }).workers.length, 1);
+  }
 });
 
 test("incomplete builds and symlink assets cannot produce a publishable directory", async (t) => {
@@ -205,13 +247,13 @@ test("staging a plugin rejects symlinks before stripping source maps", async (t)
   assert.equal(fs.readFileSync(secret, "utf8"), original);
 });
 
-test("npm pack uses only the generated runtime files and does not run lifecycle scripts", async (t) => {
+test("npm pack includes runtime and built-in plugin artifacts without sources or user data", async (t) => {
   const npmCLI = process.env.npm_execpath;
   if (!npmCLI) return t.skip("Run through npm test to exercise the npm CLI.");
   const f = fixture(t);
   const { packageNpm } = await packaging;
   await packageNpm(f);
-  for (const name of ["panel", "daemon", "create-elementspanel"]) {
+  for (const name of fs.readdirSync(f.outputRoot)) {
     const output = execFileSync(
       process.execPath,
       [
@@ -230,11 +272,16 @@ test("npm pack uses only the generated runtime files and does not run lifecycle 
     );
     const [archive] = JSON.parse(output);
     assert.ok(archive.files.some((file) => file.path === "LICENSE"));
-    assert.ok(
-      archive.files.some(
-        (file) => file.path === (name === "create-elementspanel" ? "bin.cjs" : `bin/${name}.cjs`)
-      )
-    );
+    if (name.startsWith("epanel-plugin-")) {
+      assert.ok(archive.files.some((file) => /^(panel|daemon)\/plugin.json$/.test(file.path)));
+      assert.ok(archive.files.every((file) => !/(?:^|\/)src\//.test(file.path)));
+    } else {
+      assert.ok(
+        archive.files.some(
+          (file) => file.path === (name === "create-elementspanel" ? "bin.cjs" : `bin/${name}.cjs`)
+        )
+      );
+    }
     assert.ok(
       archive.files.every(
         (file) => !/(?:^|\/)(?:node_modules|data|logs|upload_files)(?:\/|$)/.test(file.path)

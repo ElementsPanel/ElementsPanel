@@ -50,6 +50,35 @@ test("plugin upgrades replace obsolete files and do not expose staging packages 
   assert.deepEqual(fs.readdirSync(dir), ["sample"]);
 });
 
+test("market installs cannot shadow npm plugins by id or public asset folder", async (t) => {
+  const dir = directory(t);
+  const service = load(source);
+  const npmPlugin = path.join(dir, "node_modules/@elementspanel/epanel-plugin-sample/panel");
+  await fse.outputJson(path.join(npmPlugin, "plugin.json"), { id: "builtin", version: "1.0.0" });
+  const roots = [{ directory: npmPlugin, folder: "sample" }];
+  for (const [name, id] of [
+    ["sample", "different"],
+    ["different", "builtin"]
+  ]) {
+    await assert.rejects(
+      service.writePluginPackage(
+        path.join(dir, "data/plugins"),
+        { ...info, name },
+        [
+          {
+            relative: "plugin.json",
+            content: Buffer.from(JSON.stringify({ id, version: "1.0.0" }))
+          }
+        ],
+        roots
+      ),
+      /DIR_TAKEN/
+    );
+    assert.equal(fs.existsSync(path.join(dir, "data/plugins", name)), false);
+  }
+  assert.equal((await fse.readJson(path.join(npmPlugin, "plugin.json"))).id, "builtin");
+});
+
 test("failed writes and failed replacement restore the previous release and marker", async (t) => {
   const dir = directory(t);
   const original = load(source);

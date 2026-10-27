@@ -14,8 +14,6 @@
     "install-dependents": "cd daemon && npm install && cd ../panel && npm install && cd ../frontend && npm install",
     "dev": "npm run all",
     "all": "concurrently -n Daemon,Frontend,Panel -c cyan,magenta,green -p name \"npm run dev --prefix daemon\" \"npm run dev --prefix frontend\" \"npm run dev --prefix panel\"",
-    "create-plugin": "node scripts/create-plugin.mjs",
-    "publish-plugin": "node scripts/publish-plugin.mjs",
     "build:npm": "npm run build --prefix common && npm run build --prefix daemon && npm run build --prefix panel && npm run build-only --prefix frontend && node scripts/package-npm.mjs",
     "package:npm": "node scripts/package-npm.mjs",
     "init:project": "node packages/create-elementspanel/bin.cjs",

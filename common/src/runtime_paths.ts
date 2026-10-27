@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { PluginDiscoveryRoot } from "./plugin_manifest";
 
 /** Set by the npm worker before any application module is loaded. */
 export function isPackagedRuntime(): boolean {
@@ -12,13 +13,26 @@ export function packagePath(...parts: string[]): string {
   return path.resolve(process.env.EPANEL_PACKAGE_ROOT || process.cwd(), ...parts);
 }
 
+function npmPluginRoots(side?: "panel" | "daemon"): PluginDiscoveryRoot[] {
+  // The same resolver is used by the CLI before the bundled application starts.
+  const runtimeRequire = eval("require") as NodeRequire;
+  const { resolveNpmPlugins } = runtimeRequire(packagePath("runtime/npm-plugins.cjs"));
+  return resolveNpmPlugins(packagePath(), side);
+}
+
+export function packagePluginRoots(side: "panel" | "daemon"): PluginDiscoveryRoot[] {
+  return isPackagedRuntime() ? npmPluginRoots(side) : [{ directory: packagePath("plugins") }];
+}
+
 export function isPackagePlugin(directory: string): boolean {
   if (!isPackagedRuntime()) return false;
-  const relative = path.relative(packagePath("plugins"), path.resolve(directory));
-  return (
-    relative === "" ||
-    (!relative.startsWith(`..${path.sep}`) && relative !== ".." && !path.isAbsolute(relative))
-  );
+  return npmPluginRoots().some((root) => {
+    const relative = path.relative(root.directory, path.resolve(directory));
+    return (
+      relative === "" ||
+      (!relative.startsWith(`..${path.sep}`) && relative !== ".." && !path.isAbsolute(relative))
+    );
+  });
 }
 
 export function bundledToolPath(name: string): string {

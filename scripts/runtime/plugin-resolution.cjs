@@ -3,6 +3,7 @@ const path = require("node:path");
 const { createRequire, isBuiltin, registerHooks } = require("node:module");
 const { fileURLToPath, pathToFileURL } = require("node:url");
 const { sharedModules, createSharedResolver } = require("./shared-dependencies.cjs");
+const { resolveNpmPlugins } = require("./npm-plugins.cjs");
 
 const shared = new Set(sharedModules);
 
@@ -28,8 +29,8 @@ function installPluginResolution(packageRoot, workRoot) {
   const hostURL = pathToFileURL(path.join(packageRoot, "app.js")).href;
   const hostRequire = createRequire(hostURL);
   const resolveShared = createSharedResolver(packageRoot);
+  const npmPlugins = resolveNpmPlugins(packageRoot);
   const roots = [
-    path.join(packageRoot, "plugins"),
     path.join(workRoot, "data", "plugins"),
     path.join(workRoot, "plugins"),
     path.join(workRoot, "market_plugins")
@@ -44,9 +45,11 @@ function installPluginResolution(packageRoot, workRoot) {
         return nextResolve(specifier, context);
       }
       const parent = fileURLToPath(context.parentURL);
+      const npmPlugin = npmPlugins.find((plugin) => within(plugin.packageRoot, parent));
       const root = roots.find((directory) => within(directory, parent));
-      if (!root) return nextResolve(specifier, context);
-      const plugin = path.join(root, path.relative(root, parent).split(path.sep)[0]);
+      if (!npmPlugin && !root) return nextResolve(specifier, context);
+      const plugin =
+        npmPlugin?.packageRoot || path.join(root, path.relative(root, parent).split(path.sep)[0]);
       const name = specifier.startsWith("@")
         ? specifier.split("/").slice(0, 2).join("/")
         : specifier.split("/")[0];
@@ -63,7 +66,10 @@ function installPluginResolution(packageRoot, workRoot) {
         failure = error;
       }
       // A plugin's private dependencies take precedence over ordinary host dependencies.
-      if (resolved?.url.startsWith("file:") && within(plugin, fileURLToPath(resolved.url)))
+      if (
+        resolved?.url.startsWith("file:") &&
+        (within(plugin, fileURLToPath(resolved.url)) || npmPlugin?.dependencies.includes(name))
+      )
         return resolved;
       if (hostPackages.has(name)) {
         if (context.conditions.includes("import"))

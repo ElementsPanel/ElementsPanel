@@ -54,9 +54,9 @@ jobs:
         run: npm run build:npm
       - name: Create npm archives
         run: |
-          npm pack ./npm-packages/daemon --ignore-scripts --pack-destination npm-packages
-          npm pack ./npm-packages/panel --ignore-scripts --pack-destination npm-packages
-          npm pack ./npm-packages/create-elementspanel --ignore-scripts --pack-destination npm-packages
+          for package_directory in ./npm-packages/*/; do
+            npm pack "$package_directory" --ignore-scripts --pack-destination npm-packages
+          done
       - name: Upload npm archives
         uses: actions/upload-artifact@v4
         with:

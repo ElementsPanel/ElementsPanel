@@ -4,7 +4,7 @@ import axios from "axios";
 import fs from "fs-extra";
 import {
   isPackagedRuntime,
-  packagePath,
+  packagePluginRoots,
   MARKET_INSTALL_MARKER as MARKER_FILE,
   PLUGIN_ICON_FILE,
   PLUGIN_PACKAGE_EXTENSIONS,
@@ -409,7 +409,10 @@ export async function writePlugin(
   info: MarketInstallInfo,
   files: readonly { relative: string; content: Buffer }[]
 ): Promise<string> {
-  return writePluginPackage(installRoot(side), info, files, [packagePath("plugins"), ...pluginRoots()]);
+  return writePluginPackage(installRoot(side), info, files, [
+    ...packagePluginRoots("panel"),
+    ...pluginRoots()
+  ]);
 }
 
 /** What a daemon needs to write the same half on its own machine. */

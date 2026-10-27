@@ -366,31 +366,3 @@ test("operation histories flush before reads and retain buffered entries after a
   assert.equal((await logger.get(250)).length, 200);
   storage.writeFile = save;
 });
-
-test("plugin compiler refuses to erase source trees and unowned output directories", (t) => {
-  const { directory } = storageFixture(t);
-  fs.mkdirSync(path.join(directory, "scripts"));
-  const script = path.join(directory, "scripts/compile-plugin.mjs");
-  fs.copyFileSync(path.join(root, "scripts/compile-plugin.mjs"), script);
-  fs.mkdirSync(path.join(directory, "frontend"));
-  fs.copyFileSync(
-    path.join(root, "frontend/plugin-sdk.config.mjs"),
-    path.join(directory, "frontend/plugin-sdk.config.mjs")
-  );
-  const workspace = path.join(directory, "external/example");
-  fs.mkdirSync(workspace, { recursive: true });
-  fs.writeFileSync(path.join(workspace, "source.txt"), "keep source");
-  const sourceDirectory = path.join(directory, "panel");
-  fs.mkdirSync(sourceDirectory);
-  fs.writeFileSync(path.join(sourceDirectory, "source.txt"), "keep panel");
-  const { spawnSync } = require("node:child_process");
-  for (const out of [sourceDirectory, workspace, path.join(directory, "external")]) {
-    const result = spawnSync(process.execPath, [script, "--workspace", workspace, "--out", out], {
-      encoding: "utf8"
-    });
-    assert.equal(result.status, 1);
-    assert.match(result.stderr, /Refusing to clear|must not contain/);
-    assert.equal(fs.readFileSync(path.join(sourceDirectory, "source.txt"), "utf8"), "keep panel");
-    assert.equal(fs.readFileSync(path.join(workspace, "source.txt"), "utf8"), "keep source");
-  }
-});

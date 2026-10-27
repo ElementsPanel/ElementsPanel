@@ -3,9 +3,9 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const Module = require("node:module");
 const { EventEmitter } = require("node:events");
 const { test } = require("node:test");
+const { installNpmPlugin } = require("./npm-fixtures.cjs");
 const root = path.resolve(__dirname, "../..");
 const hostRequire = from("panel");
 const ts = hostRequire("typescript");
@@ -75,10 +75,10 @@ for (const side of ["panel", "daemon"]) {
       if (previousRoot === undefined) delete process.env.EPANEL_PACKAGE_ROOT;
       else process.env.EPANEL_PACKAGE_ROOT = previousRoot;
     });
-    const builtin = path.join(packageRoot, "plugins", "bundled");
-    fs.mkdirSync(builtin, { recursive: true });
-    fs.writeFileSync(path.join(builtin, "plugin.json"), '{"id":"bundled","backend":"index.cjs"}');
-    fs.writeFileSync(path.join(builtin, "index.cjs"), 'exports.apply = ctx => ctx.set("bundledValue", true);');
+    const { directory: builtin } = installNpmPlugin(packageRoot, side, "bundled", {
+      source: 'exports.apply = ctx => ctx.set("bundledValue", true);',
+      frontend: side === "panel" ? "export const fixture = true;" : undefined
+    });
     const user = f.write("custom", 'exports.apply = ctx => ctx.set("customValue", true);');
     const userRoot = path.join(f.directory, "data", "plugins");
     fs.mkdirSync(userRoot, { recursive: true });
@@ -87,52 +87,23 @@ for (const side of ["panel", "daemon"]) {
     assert.equal(f.ctx.bundledValue, true);
     assert.equal(f.ctx.customValue, true);
     assert.equal(f.inventory().find((plugin) => plugin.id === "bundled").removable, false);
+    if (side === "panel") {
+      const [entry] = f.loader.getPanelFrontendManifest();
+      assert.equal(entry.assetDirectory, "bundled");
+      assert.equal(entry.frontendDirectory, path.join(builtin, "frontend"));
+      assert.match(entry.entry, /^\.\/bundled@[a-f0-9]{24}\/frontend\/index.js$/);
+    }
     await f.enabled("bundled", false);
-    assert.equal(JSON.parse(fs.readFileSync(path.join(f.directory, "data/plugin-overrides.json"))).plugins.bundled.enabled, false);
+    assert.equal(
+      JSON.parse(fs.readFileSync(path.join(f.directory, "data/plugin-overrides.json"))).plugins
+        .bundled.enabled,
+      false
+    );
     assert.equal(JSON.parse(fs.readFileSync(path.join(builtin, "plugin.json"))).enabled, undefined);
-    await assert.rejects(f.remove("bundled"), /Bundled plugins cannot be removed/);
+    await assert.rejects(f.remove("bundled"), /Npm plugins cannot be removed/);
     await f.remove("custom");
     assert.equal(fs.existsSync(path.join(userRoot, "custom")), false);
     assert.equal(fs.existsSync(path.join(packageRoot, "data")), false);
-  });
-
-  test(`${side}: external plugins resolve host dependencies after plugin-local dependencies`, async (t) => {
-    const previousNodeEnv = process.env.NODE_ENV;
-    const previousNodePath = process.env.NODE_PATH;
-    process.env.NODE_ENV = "development";
-    t.after(() => {
-      if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
-      else process.env.NODE_ENV = previousNodeEnv;
-      if (previousNodePath === undefined) delete process.env.NODE_PATH;
-      else process.env.NODE_PATH = previousNodePath;
-      Module._initPaths();
-    });
-    const f = fixture(t, side);
-    const host = path.join(f.directory, side);
-    const workspace = path.join(f.directory, "external", "dependency-test");
-    const entry = path.join(workspace, side);
-    const install = (directory, name, value) => {
-      const target = path.join(directory, "node_modules", name);
-      fs.mkdirSync(target, { recursive: true });
-      fs.writeFileSync(path.join(target, "index.js"), `module.exports = ${JSON.stringify(value)};`);
-    };
-    install(host, "external-host-only", "host fallback");
-    install(host, "external-private", "wrong host version");
-    install(workspace, "external-private", "plugin version");
-    fs.mkdirSync(entry, { recursive: true });
-    fs.writeFileSync(path.join(entry, "plugin.json"), JSON.stringify({
-      id: "dependency-test", backend: "index.cjs"
-    }));
-    fs.writeFileSync(path.join(entry, "nested.cjs"),
-      'module.exports = [require("external-host-only"), require("external-private")];');
-    fs.writeFileSync(path.join(entry, "index.cjs"),
-      'const values = require("./nested.cjs"); exports.apply = ctx => ctx.set("dependencyValues", values);');
-    process.chdir(host);
-    await f.start();
-    assert.equal(f.inventory().find((plugin) => plugin.id === "dependency-test")?.state, "active");
-    assert.deepEqual(f.ctx.dependencyValues, ["host fallback", "plugin version"]);
-    const searchPaths = process.env.NODE_PATH.split(path.delimiter);
-    assert.equal(searchPaths.filter((entry) => entry === path.join(host, "node_modules")).length, 1);
   });
 
   test(`${side}: production reload activates new packages without replacing running code`, async (t) => {
@@ -143,10 +114,7 @@ for (const side of ["panel", "daemon"]) {
       else process.env.NODE_ENV = previousNodeEnv;
     });
     const f = fixture(t, side);
-    const original = f.write(
-      "original",
-      'exports.apply=ctx=>ctx.set("originalValue",1);'
-    );
+    const original = f.write("original", 'exports.apply=ctx=>ctx.set("originalValue",1);');
     await f.start();
     assert.equal(f.ctx.originalValue, 1);
 
@@ -169,7 +137,10 @@ for (const side of ["panel", "daemon"]) {
     fs.rmSync(added, { recursive: true, force: true });
     await f.reload();
     assert.equal(f.ctx.addedValue, undefined);
-    assert.equal(f.inventory().some((plugin) => plugin.id === "added"), false);
+    assert.equal(
+      f.inventory().some((plugin) => plugin.id === "added"),
+      false
+    );
   });
 }
 for (const side of ["panel", "daemon"]) {
@@ -264,10 +235,7 @@ test("incompatible plugin code never executes", async (t) => {
 
 test("panel: removing a packaged plugin unloads it and clears its user override", async (t) => {
   const f = fixture(t);
-  const directory = f.write(
-    "removable",
-    'exports.apply=ctx=>{ctx.set("removableValue", true);};'
-  );
+  const directory = f.write("removable", 'exports.apply=ctx=>{ctx.set("removableValue", true);};');
   await f.start();
   assert.equal(f.ctx.removableValue, true);
   await f.enabled("removable", false);
@@ -285,10 +253,13 @@ test("panel: removing a packaged plugin unloads it and clears its user override"
     fs.readFileSync(path.join(f.directory, "data/plugin-overrides.json"))
   );
   assert.equal(Object.hasOwn(overrides.plugins, "removable"), false);
-  assert.equal(f.inventory().some((plugin) => plugin.id === "removable"), false);
+  assert.equal(
+    f.inventory().some((plugin) => plugin.id === "removable"),
+    false
+  );
 });
 
-test("panel: development source and external workspace plugins cannot be removed", async (t) => {
+test("panel: built-in sources stay protected and external workspaces are not discovered", async (t) => {
   const f = fixture(t);
   const previousNodeEnv = process.env.NODE_ENV;
   process.env.NODE_ENV = "development";
@@ -312,12 +283,12 @@ test("panel: development source and external workspace plugins cannot be removed
 
   const inventory = f.inventory();
   assert.equal(inventory.find((plugin) => plugin.id === "source").removable, false);
-  assert.equal(inventory.find((plugin) => plugin.id === "workspace").removable, false);
-  await assert.rejects(f.remove("source"), /Source and custom workspace plugins cannot be removed/);
-  await assert.rejects(
-    f.remove("workspace"),
-    /Source and custom workspace plugins cannot be removed/
+  assert.equal(
+    inventory.find((plugin) => plugin.id === "workspace"),
+    undefined
   );
+  await assert.rejects(f.remove("source"), /Source plugins cannot be removed/);
+  await assert.rejects(f.remove("workspace"), /Plugin not found/);
   assert.equal(fs.existsSync(source), true);
   assert.equal(fs.existsSync(path.join(external, "plugin.json")), true);
 });
@@ -411,25 +382,6 @@ test("user installation precedence applies only to the same market owner", (t) =
     discoverPluginsFromRoots(roots, { entryFields: [] })[0].directory,
     path.join(data, "sample")
   );
-});
-
-test("external workspace manifests can use the workspace folder as their id", (t) => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "elements-plugin-workspace-"));
-  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
-  const { discoverExternalPluginRoots, discoverPluginsFromRoots } = load(
-    "common/src/plugin_manifest.ts"
-  );
-  const daemon = path.join(directory, "external/runtime-only/daemon");
-  fs.mkdirSync(daemon, { recursive: true });
-  fs.writeFileSync(path.join(daemon, "index.cjs"), "exports.apply=()=>{};");
-  fs.writeFileSync(path.join(daemon, "plugin.json"), '{"backend":"index.cjs"}');
-
-  const plugins = discoverPluginsFromRoots(discoverExternalPluginRoots(directory, "daemon"), {
-    entryFields: ["backend"]
-  });
-  assert.equal(plugins.length, 1);
-  assert.equal(plugins[0].manifest.id, "runtime-only");
-  assert.equal(plugins[0].folder, "runtime-only");
 });
 
 test("settings forms validate server-side before the plugin writes and report restart-only settings", async (t) => {

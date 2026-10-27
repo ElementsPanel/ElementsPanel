@@ -2,6 +2,7 @@ import { Logger, type ForkScope } from "cordis";
 import fs from "fs-extra";
 import {
   packagePath,
+  packagePluginRoots,
   isPackagedRuntime,
   isPackagePlugin,
   pluginDirectoryRevision,
@@ -14,7 +15,6 @@ import {
   trackPluginDisposal,
   type PluginState,
   type PluginChangeResult,
-  discoverExternalPluginRoots,
   discoverPluginsFromRoots,
   sortPlugins,
   type DiscoverPluginsOptions,
@@ -86,14 +86,11 @@ const loaded: DaemonPluginEntry[] = [];
 
 function discoverDaemonPlugins(options: DiscoverPluginsOptions) {
   const roots = [
-    { directory: BUILT_IN_PLUGINS_DIRECTORY() },
+    ...packagePluginRoots("daemon"),
     { directory: path.resolve(process.cwd(), "data", "plugins"), overrideManaged: true },
     { directory: MARKET_PLUGINS_DIRECTORY() }
   ];
   if (isPackagedRuntime()) roots.push({ directory: path.resolve(process.cwd(), "plugins") });
-  if (process.env.NODE_ENV === "development") {
-    roots.push(...discoverExternalPluginRoots(path.resolve(process.cwd(), ".."), "daemon"));
-  }
   return applyPluginOverrides(
     discoverPluginsFromRoots(roots, { ...options, includeDisabled: true })
   ).filter((plugin) => options.includeDisabled || plugin.manifest.enabled !== false);
@@ -146,33 +143,6 @@ async function loadModule(entry: string): Promise<unknown> {
   try {
     // eval keeps webpack from trying to bundle files supplied at runtime.
     const runtimeRequire = eval("require") as NodeRequire;
-    if (process.env.NODE_ENV === "development") {
-      const externalRoot = path.resolve(process.cwd(), "..", "external");
-      const resolvedEntry = path.resolve(entry);
-      if (resolvedEntry.startsWith(`${externalRoot}${path.sep}`)) {
-        // External source plugins are outside the daemon's directory tree.
-        // Match the panel loader's fallback while keeping plugin-local packages first.
-        const hostModules = path.resolve(process.cwd(), "node_modules");
-        if (fs.existsSync(hostModules)) {
-          const searchPaths = (process.env.NODE_PATH || "")
-            .split(path.delimiter)
-            .filter(Boolean);
-          if (!searchPaths.includes(hostModules)) {
-            process.env.NODE_PATH = [...searchPaths, hostModules].join(path.delimiter);
-            const nodeModule = runtimeRequire("module") as {
-              Module?: { _initPaths?: () => void };
-              _initPaths?: () => void;
-            };
-            (nodeModule.Module?._initPaths || nodeModule._initPaths)?.call(
-              nodeModule.Module || nodeModule
-            );
-          }
-        }
-      }
-    }
-    if (process.env.NODE_ENV === "development" && /\.[cm]?tsx?$/.test(entry)) {
-      runtimeRequire("ts-node/register/transpile-only");
-    }
     return runtimeRequire(entry);
   } catch (error: any) {
     if (error?.code !== "ERR_REQUIRE_ESM") throw error;
@@ -371,10 +341,6 @@ export interface DaemonPluginRecord {
  * purpose: the inventory describes what is installed, not what compiled.
  */
 export function getDaemonPluginInventory(): DaemonPluginRecord[] {
-  const externalRoots =
-    isDevelopmentCheckout()
-      ? discoverExternalPluginRoots(path.resolve(process.cwd(), ".."), "daemon")
-      : [];
   const builtInRoot = path.resolve(BUILT_IN_PLUGINS_DIRECTORY());
   return discoverDaemonPlugins({
     entryFields: [],
@@ -386,10 +352,7 @@ export function getDaemonPluginInventory(): DaemonPluginRecord[] {
     const inRoot = (root: string) =>
       directory === root || directory.startsWith(`${root}${path.sep}`);
     const protectedDevelopmentSource =
-      isPackagePlugin(directory) ||
-      (isDevelopmentCheckout() &&
-        (inRoot(builtInRoot) ||
-          externalRoots.some((root) => inRoot(path.resolve(root.directory)))));
+      isPackagePlugin(directory) || (isDevelopmentCheckout() && inRoot(builtInRoot));
     return {
       id: plugin.manifest.id,
       name: typeof plugin.manifest.name === "string" ? plugin.manifest.name : undefined,
@@ -442,26 +405,24 @@ export function setDaemonPluginEnabled(id: string, enabled: boolean): Promise<Da
 export function removeDaemonPlugin(id: string): Promise<void> {
   return change(async () => {
     const plugin = findPlugin(id);
-    if (NON_REMOVABLE_PLUGIN_IDS.has(id))
-      throw new Error(`The plugin "${id}" cannot be removed.`);
+    if (NON_REMOVABLE_PLUGIN_IDS.has(id)) throw new Error(`The plugin "${id}" cannot be removed.`);
 
     const directory = path.resolve(plugin.directory);
-    if (isPackagePlugin(directory)) throw new Error("Bundled plugins cannot be removed; disable the plugin instead.");
+    if (isPackagePlugin(directory))
+      throw new Error("Npm plugins cannot be removed here; manage them with npm.");
     const builtInRoot = path.resolve(BUILT_IN_PLUGINS_DIRECTORY());
     const dataRoot = path.resolve(process.cwd(), "data", "plugins");
     const marketRoot = path.resolve(MARKET_PLUGINS_DIRECTORY());
     const inRoot = (root: string) =>
       directory === root || directory.startsWith(`${root}${path.sep}`);
-    const externalRoots =
-      isDevelopmentCheckout()
-        ? discoverExternalPluginRoots(path.resolve(process.cwd(), ".."), "daemon")
-        : [];
+    if (isDevelopmentCheckout() && inRoot(builtInRoot))
+      throw new Error("Source plugins cannot be removed.");
     if (
-      isDevelopmentCheckout() &&
-      (inRoot(builtInRoot) || externalRoots.some((root) => inRoot(path.resolve(root.directory))))
+      !inRoot(builtInRoot) &&
+      !inRoot(dataRoot) &&
+      !inRoot(marketRoot) &&
+      !inRoot(path.resolve(process.cwd(), "plugins"))
     )
-      throw new Error("Source and custom workspace plugins cannot be removed.");
-    if (!inRoot(builtInRoot) && !inRoot(dataRoot) && !inRoot(marketRoot) && !inRoot(path.resolve(process.cwd(), "plugins")))
       throw new Error("Plugin source is not removable.");
 
     await removeRunning(id);

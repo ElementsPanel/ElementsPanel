@@ -3,6 +3,7 @@ import path from "path";
 import { pathToFileURL } from "url";
 import {
   packagePath,
+  packagePluginRoots,
   isPackagedRuntime,
   isPackagePlugin,
   pluginDirectoryRevision,
@@ -16,7 +17,6 @@ import {
   trackPluginDisposal,
   type PluginState,
   type PluginChangeResult,
-  discoverExternalPluginRoots,
   discoverPluginsFromRoots,
   sortPlugins,
   type DiscoverPluginsOptions,
@@ -115,14 +115,11 @@ function discoverPanelPlugins(options: DiscoverPluginsOptions) {
   // Built-in first: the shared discovery keeps the first root's plugin when two
   // roots declare the same id, so a market plugin cannot shadow one of ours.
   const roots = [
-    { directory: BUILT_IN_PLUGINS_DIRECTORY() },
+    ...packagePluginRoots("panel"),
     { directory: path.resolve(process.cwd(), "data", "plugins"), overrideManaged: true },
     { directory: MARKET_PLUGINS_DIRECTORY() }
   ];
   if (isPackagedRuntime()) roots.push({ directory: path.resolve(process.cwd(), "plugins") });
-  if (process.env.NODE_ENV === "development") {
-    roots.push(...discoverExternalPluginRoots(path.resolve(process.cwd(), ".."), "panel"));
-  }
   return applyPluginOverrides(
     discoverPluginsFromRoots(roots, { ...options, includeDisabled: true })
   ).filter((plugin) => options.includeDisabled || plugin.manifest.enabled !== false);
@@ -176,31 +173,6 @@ async function loadModule(entry: string): Promise<unknown> {
   try {
     // eval keeps webpack from trying to bundle files supplied at runtime.
     const runtimeRequire = eval("require") as NodeRequire;
-    if (process.env.NODE_ENV === "development") {
-      const externalRoot = path.resolve(process.cwd(), "..", "external");
-      const resolvedEntry = path.resolve(entry);
-      if (resolvedEntry.startsWith(`${externalRoot}${path.sep}`)) {
-        const hostModules = path.resolve(process.cwd(), "node_modules");
-        if (fs.existsSync(hostModules)) {
-          const searchPaths = (process.env.NODE_PATH || "")
-            .split(path.delimiter)
-            .filter(Boolean);
-          if (!searchPaths.includes(hostModules)) {
-            process.env.NODE_PATH = [...searchPaths, hostModules].join(path.delimiter);
-            const nodeModule = runtimeRequire("module") as {
-              Module?: { _initPaths?: () => void };
-              _initPaths?: () => void;
-            };
-            (nodeModule.Module?._initPaths || nodeModule._initPaths)?.call(
-              nodeModule.Module || nodeModule
-            );
-          }
-        }
-      }
-    }
-    if (process.env.NODE_ENV === "development" && /\.[cm]?tsx?$/.test(entry)) {
-      runtimeRequire("ts-node/register/transpile-only");
-    }
     return runtimeRequire(entry);
   } catch (error: any) {
     if (error?.code !== "ERR_REQUIRE_ESM") throw error;
@@ -451,10 +423,6 @@ const FRONTEND_FIELDS = ["frontend", "ui"];
  * purpose: the inventory describes what is installed, not what compiled.
  */
 export function getPanelPluginInventory(): PanelPluginRecord[] {
-  const externalRoots =
-    isDevelopmentCheckout()
-      ? discoverExternalPluginRoots(path.resolve(process.cwd(), ".."), "panel")
-      : [];
   return discoverPanelPlugins({
     entryFields: [],
     includeDisabled: true,
@@ -462,12 +430,11 @@ export function getPanelPluginInventory(): PanelPluginRecord[] {
   }).map((plugin) => {
     const running = loaded.find((item) => item.manifest.id === plugin.manifest.id);
     const directory = path.resolve(plugin.directory);
-    const inRoot = (root: string) => directory === root || directory.startsWith(`${root}${path.sep}`);
+    const inRoot = (root: string) =>
+      directory === root || directory.startsWith(`${root}${path.sep}`);
     const protectedDevelopmentSource =
       isPackagePlugin(directory) ||
-      (isDevelopmentCheckout() &&
-        (inRoot(path.resolve(BUILT_IN_PLUGINS_DIRECTORY())) ||
-          externalRoots.some((root) => inRoot(path.resolve(root.directory)))));
+      (isDevelopmentCheckout() && inRoot(path.resolve(BUILT_IN_PLUGINS_DIRECTORY())));
     const has = (fields: string[]) =>
       fields.some((field) => typeof plugin.manifest[field] === "string");
     return {
@@ -523,18 +490,13 @@ export function removePanelPlugin(id: string): Promise<void> {
     const plugin = findPlugin(id);
     if (NON_REMOVABLE_PLUGIN_IDS.has(id)) throw new Error(`The plugin "${id}" cannot be removed.`);
     const directory = path.resolve(plugin.directory);
-    if (isPackagePlugin(directory)) throw new Error("Bundled plugins cannot be removed; disable the plugin instead.");
+    if (isPackagePlugin(directory))
+      throw new Error("Npm plugins cannot be removed here; manage them with npm.");
     const sourceRoot = path.resolve(BUILT_IN_PLUGINS_DIRECTORY());
-    const inRoot = (root: string) => directory === root || directory.startsWith(`${root}${path.sep}`);
-    const externalRoots =
-      isDevelopmentCheckout()
-        ? discoverExternalPluginRoots(path.resolve(process.cwd(), ".."), "panel")
-        : [];
-    if (
-      isDevelopmentCheckout() &&
-      (inRoot(sourceRoot) || externalRoots.some((root) => inRoot(path.resolve(root.directory))))
-    )
-      throw new Error("Source and custom workspace plugins cannot be removed.");
+    const inRoot = (root: string) =>
+      directory === root || directory.startsWith(`${root}${path.sep}`);
+    if (isDevelopmentCheckout() && inRoot(sourceRoot))
+      throw new Error("Source plugins cannot be removed.");
     if (
       !inRoot(sourceRoot) &&
       !inRoot(path.resolve(process.cwd(), "plugins")) &&

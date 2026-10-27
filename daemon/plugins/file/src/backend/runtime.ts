@@ -10,7 +10,7 @@ import type { DaemonPluginContext } from "../../../../src/plugin";
  * through all of them would say nothing the accessors below do not.
  *
  * A plugin with only a handful of such call sites should pass `ctx` as an
- * argument instead; see `external/epanel-plugin-mcsm-market`.
+ * argument instead.
  */
 let context: DaemonPluginContext | undefined;
 

@@ -1,6 +1,10 @@
 import fs from "fs-extra";
 import path from "path";
-import { readPluginManifest, resolvePluginEntry } from "./plugin_manifest";
+import {
+  readPluginManifest,
+  resolvePluginEntry,
+  type PluginDiscoveryRoot
+} from "./plugin_manifest";
 import { validatePluginCompatibility } from "./plugin_contract";
 export { PLUGIN_API_VERSION, validatePluginCompatibility } from "./plugin_contract";
 
@@ -10,9 +14,8 @@ export const MARKET_INSTALL_MARKER = ".market-install.json";
  * The extensions a published plugin package may contain. This is the one rule for
  * what a package holds, applied wherever a package crosses a trust boundary: the
  * panel's market download (`splitPackagePath`), the daemon's `plugin/install`, the
- * publish script (`scripts/publish-plugin.mjs`) and the plugin market's upload
- * (EPanel_Market `server/utils/package-rules.ts`). The last two keep copies because
- * neither can import this file — change all three together.
+ * plugin market's upload (EPanel_Market `server/utils/package-rules.ts`). Keep
+ * the market's copy of these rules in sync with the runtime.
  */
 export const PLUGIN_PACKAGE_EXTENSIONS: ReadonlySet<string> = new Set([
   ".json",
@@ -130,7 +133,7 @@ export async function writePluginPackage(
   root: string,
   info: PluginInstallation,
   files: readonly PluginPackageFile[],
-  existingRoots: readonly string[] = []
+  existingRoots: readonly (string | PluginDiscoveryRoot)[] = []
 ): Promise<string> {
   root = path.resolve(root);
   const directory = pluginPackageDirectory(root, info.name);
@@ -178,15 +181,31 @@ export async function writePluginPackage(
       }
       await validateManifest(candidate);
       const manifest = readPluginManifest(candidate)!;
-      for (const installedRoot of existingRoots) {
+      for (const root of existingRoots) {
+        const installedRoot = typeof root === "string" ? root : root.directory;
         if (!(await fs.pathExists(installedRoot))) continue;
-        for (const item of await fs.readdir(installedRoot, { withFileTypes: true })) {
-          if (!item.isDirectory()) continue;
-          const existingDirectory = path.join(installedRoot, item.name);
+        const direct =
+          typeof root !== "string" &&
+          (await fs.pathExists(path.join(installedRoot, "plugin.json")));
+        const directories = direct
+          ? [
+              {
+                directory: installedRoot,
+                folder: (typeof root !== "string" && root.folder) || path.basename(installedRoot)
+              }
+            ]
+          : (await fs.readdir(installedRoot, { withFileTypes: true }))
+              .filter((item) => item.isDirectory())
+              .map((item) => ({
+                directory: path.join(installedRoot, item.name),
+                folder: item.name
+              }));
+        for (const item of directories) {
+          const existingDirectory = item.directory;
           const existing = readPluginManifest(existingDirectory);
           if (
             !existing ||
-            (existing.id !== manifest.id && item.name.toLowerCase() !== info.name.toLowerCase())
+            (existing.id !== manifest.id && item.folder.toLowerCase() !== info.name.toLowerCase())
           )
             continue;
           if ((await owner(existingDirectory)) !== info.pluginId)

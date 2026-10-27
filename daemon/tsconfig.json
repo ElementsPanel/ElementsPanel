@@ -34,7 +34,6 @@
   "include": [
     "src/**/*",
     "plugins/*/src/backend/**/*",
-    "../external/*/daemon/src/backend/**/*",
     "../common/global.d.ts"
   ]
 }

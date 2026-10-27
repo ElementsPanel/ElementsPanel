@@ -112,7 +112,7 @@ export interface PluginDiscoveryRoot {
   directory: string;
   /** A persistent installation may supersede its own legacy market directory. */
   overrideManaged?: boolean;
-  /** Used by external workspaces, whose manifest lives below a side directory. */
+  /** Stable public asset name for npm plugins whose manifest lives below a side directory. */
   folder?: string;
 }
 
@@ -168,9 +168,7 @@ function discoverPluginDirectory(
   options: DiscoverPluginsOptions,
   folder = path.basename(directory)
 ): DiscoveredPlugin | null {
-  // External workspaces point directly at `<workspace>/<side>`, so the side
-  // directory name ("panel"/"daemon") is not the plugin id. Their root supplies
-  // the outer workspace folder as the fallback id.
+  // Npm packages expose a side directory; its name is not the public plugin id.
   const manifest = readPluginManifest(directory, options.onWarning, folder);
   if (!manifest) return null;
   if (manifest.enabled === false && !options.includeDisabled) return null;
@@ -215,8 +213,8 @@ export function discoverPlugins(root: string, options: DiscoverPluginsOptions): 
 /**
  * Discovers plugins from several roots while keeping the first root's plugin
  * when ids collide. The built-in root is intentionally passed first by the
- * panel and daemon loaders, so an external workspace cannot shadow a bundled
- * plugin accidentally.
+ * panel and daemon loaders, so an installed market plugin cannot shadow a
+ * built-in npm dependency.
  */
 export function discoverPluginsFromRoots(
   roots: readonly PluginDiscoveryRoot[],
@@ -256,26 +254,6 @@ export function discoverPluginsFromRoots(
     }
   }
   return sortPlugins(discovered);
-}
-
-/**
- * Lists the side-specific roots of custom plugin workspaces below
- * `<projectRoot>/external/<workspace>/<side>`.
- */
-export function discoverExternalPluginRoots(
-  projectRoot: string,
-  side: "panel" | "daemon"
-): PluginDiscoveryRoot[] {
-  const externalRoot = path.resolve(projectRoot, "external");
-  if (!fs.existsSync(externalRoot)) return [];
-  return fs
-    .readdirSync(externalRoot, { withFileTypes: true })
-    .filter((item) => item.isDirectory())
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .map((item) => ({
-      directory: path.join(externalRoot, item.name, side),
-      folder: item.name
-    }));
 }
 
 /** Load order: ascending `priority`, then by id so it never depends on the filesystem. */

@@ -1,8 +1,7 @@
 {
   "extends": "./tsconfig.app.json",
   "exclude": [
-    "../panel/plugins/*/src/backend/**",
-    "../external/*/panel/src/backend/**"
+    "../panel/plugins/*/src/backend/**"
   ],
   "compilerOptions": {
     "composite": true,

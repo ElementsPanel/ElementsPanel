@@ -4,6 +4,7 @@ const os = require("node:os");
 const path = require("node:path");
 const { test } = require("node:test");
 const { createLoader } = require("./helpers.cjs");
+const { installNpmPlugin } = require("./npm-fixtures.cjs");
 const load = createLoader();
 
 function fixture(t) {
@@ -26,11 +27,14 @@ function fixture(t) {
 
 test("npm resources and binary paths are independent of the user's data directory", (t) => {
   const { packageRoot, work, paths } = fixture(t);
+  const plugin = installNpmPlugin(packageRoot, "panel", "runtime");
   const { default: Storage } = load("common/src/system_storage.ts");
   assert.equal(Storage.DATA_PATH, path.join(work, "data"));
   assert.equal(paths.packagePath("public"), path.join(packageRoot, "public"));
   assert.ok(paths.bundledToolPath("pty").startsWith(path.join(packageRoot, "lib") + path.sep));
-  assert.equal(paths.isPackagePlugin(path.join(packageRoot, "plugins/runtime")), true);
+  assert.equal(paths.isPackagePlugin(plugin.directory), true);
+  assert.equal(paths.packagePluginRoots("panel")[0].directory, plugin.directory);
+  assert.equal(paths.isPackagePlugin(path.join(packageRoot, "plugins/runtime")), false);
   assert.equal(paths.isPackagePlugin(path.join(packageRoot, "plugins-other/plugin")), false);
   assert.equal(paths.isPackagePlugin(path.join(work, "data/plugins/custom")), false);
   delete process.env.EPANEL_PACKAGE_ROOT;

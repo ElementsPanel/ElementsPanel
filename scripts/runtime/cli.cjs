@@ -1,6 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { createRequire, registerHooks } = require("node:module");
+const { resolveNpmPlugins } = require("./npm-plugins.cjs");
 const { fork } = require("node:child_process");
 
 function parseArgs(argv, side) {
@@ -45,16 +46,20 @@ function runtimeDirectory(project, override, side) {
 }
 
 function validateRuntime(packageRoot, side) {
-  for (const item of [
-    "app.js",
-    "runtime/worker.cjs",
-    "plugins/i18n/plugin.json",
-    "plugins/storage/plugin.json",
-    "plugins/runtime/plugin.json",
-    "plugins/server/plugin.json"
-  ]) {
+  for (const item of ["app.js", "runtime/worker.cjs"]) {
     if (!fs.existsSync(path.join(packageRoot, item)))
       throw new Error(`Incomplete ${side} package: missing ${item}.`);
+  }
+  const plugins = resolveNpmPlugins(packageRoot, side);
+  for (const id of [
+    "i18n",
+    "storage",
+    "runtime",
+    "server",
+    ...(side === "panel" ? ["console"] : [])
+  ]) {
+    if (!plugins.some((plugin) => plugin.id === id))
+      throw new Error(`Incomplete ${side} installation: missing npm plugin ${id}.`);
   }
   if (side === "panel" && !fs.existsSync(path.join(packageRoot, "public/index.html"))) {
     throw new Error("Incomplete panel package: missing public/index.html.");

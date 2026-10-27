@@ -44,7 +44,6 @@ export type { PluginInstallation, PluginPackageFile } from "./plugin_package";
 export {
   discoverPlugins,
   discoverPluginsFromRoots,
-  discoverExternalPluginRoots,
   createFrontendPluginMetadata,
   readPluginManifest,
   resolvePluginEntry,
