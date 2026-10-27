@@ -8,7 +8,7 @@
   "TXT_CODE_PLUGIN_DELETE": "Remove",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM": "The plugin files and saved configuration will be permanently removed.",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "Remove {name}?",
-  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Source and essential plugins cannot be removed here.",
+  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Plugins are installed as npm dependencies; remove them with npm.",
   "TXT_CODE_PLUGIN_DELETED": "Plugin removed",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "Save settings",
   "TXT_CODE_PLUGIN_SAVE_REMINDER": "Remember to save your settings!",

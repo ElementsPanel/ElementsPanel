@@ -66,7 +66,7 @@ function fixture(t, side = "panel") {
   };
 }
 for (const side of ["panel", "daemon"]) {
-  test(`${side}: npm built-ins stay immutable while user plugins and overrides live outside the package`, async (t) => {
+  test(`${side}: npm built-ins stay immutable while overrides live outside the package`, async (t) => {
     const f = fixture(t, side);
     const previousRoot = process.env.EPANEL_PACKAGE_ROOT;
     const packageRoot = path.join(f.directory, "node_modules", "@elementspanel", side);
@@ -79,13 +79,8 @@ for (const side of ["panel", "daemon"]) {
       source: 'exports.apply = ctx => ctx.set("bundledValue", true);',
       frontend: side === "panel" ? "export const fixture = true;" : undefined
     });
-    const user = f.write("custom", 'exports.apply = ctx => ctx.set("customValue", true);');
-    const userRoot = path.join(f.directory, "data", "plugins");
-    fs.mkdirSync(userRoot, { recursive: true });
-    fs.renameSync(user, path.join(userRoot, "custom"));
     await f.start();
     assert.equal(f.ctx.bundledValue, true);
-    assert.equal(f.ctx.customValue, true);
     assert.equal(f.inventory().find((plugin) => plugin.id === "bundled").removable, false);
     if (side === "panel") {
       const [entry] = f.loader.getPanelFrontendManifest();
@@ -101,8 +96,6 @@ for (const side of ["panel", "daemon"]) {
     );
     assert.equal(JSON.parse(fs.readFileSync(path.join(builtin, "plugin.json"))).enabled, undefined);
     await assert.rejects(f.remove("bundled"), /Npm plugins cannot be removed/);
-    await f.remove("custom");
-    assert.equal(fs.existsSync(path.join(userRoot, "custom")), false);
     assert.equal(fs.existsSync(path.join(packageRoot, "data")), false);
   });
 
@@ -233,30 +226,14 @@ test("incompatible plugin code never executes", async (t) => {
   assert.match(record.error, /Unsupported/);
 });
 
-test("panel: removing a packaged plugin unloads it and clears its user override", async (t) => {
+test("panel: the plugin manager no longer deletes source plugins", async (t) => {
   const f = fixture(t);
-  const directory = f.write("removable", 'exports.apply=ctx=>{ctx.set("removableValue", true);};');
+  const directory = f.write("managed", 'exports.apply=ctx=>{ctx.set("managedValue", true);};');
   await f.start();
-  assert.equal(f.ctx.removableValue, true);
-  await f.enabled("removable", false);
-  assert.equal(
-    JSON.parse(fs.readFileSync(path.join(f.directory, "data/plugin-overrides.json"))).plugins
-      .removable.enabled,
-    false
-  );
-
-  await f.remove("removable");
-
-  assert.equal(fs.existsSync(directory), false);
-  assert.equal(f.ctx.removableValue, undefined);
-  const overrides = JSON.parse(
-    fs.readFileSync(path.join(f.directory, "data/plugin-overrides.json"))
-  );
-  assert.equal(Object.hasOwn(overrides.plugins, "removable"), false);
-  assert.equal(
-    f.inventory().some((plugin) => plugin.id === "removable"),
-    false
-  );
+  assert.equal(f.ctx.managedValue, true);
+  await assert.rejects(f.remove("managed"), /Source plugins cannot be removed/);
+  assert.equal(fs.existsSync(directory), true);
+  assert.equal(f.ctx.managedValue, true);
 });
 
 test("panel: built-in sources stay protected and external workspaces are not discovered", async (t) => {
@@ -359,29 +336,6 @@ test("code replacement cannot be hidden by a settings update or a disable/enable
   await f.enabled("versioned", false);
   assert.equal((await f.enabled("versioned", true)).result.application, "restart-required");
   assert.equal(f.ctx.get("versionedValue"), undefined);
-});
-
-test("user installation precedence applies only to the same market owner", (t) => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "elements-plugin-discovery-"));
-  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
-  const { discoverPluginsFromRoots } = load("common/src/plugin_manifest.ts");
-  const builtin = path.join(directory, "plugins");
-  const data = path.join(directory, "data/plugins");
-  for (const root of [builtin, data]) {
-    fs.mkdirSync(path.join(root, "sample"), { recursive: true });
-    fs.writeFileSync(path.join(root, "sample/plugin.json"), '{"id":"sample"}');
-  }
-  const roots = [{ directory: builtin }, { directory: data, overrideManaged: true }];
-  fs.writeFileSync(path.join(data, "sample/.market-install.json"), '{"pluginId":"market-one"}');
-  assert.equal(
-    discoverPluginsFromRoots(roots, { entryFields: [] })[0].directory,
-    path.join(builtin, "sample")
-  );
-  fs.writeFileSync(path.join(builtin, "sample/.market-install.json"), '{"pluginId":"market-one"}');
-  assert.equal(
-    discoverPluginsFromRoots(roots, { entryFields: [] })[0].directory,
-    path.join(data, "sample")
-  );
 });
 
 test("settings forms validate server-side before the plugin writes and report restart-only settings", async (t) => {

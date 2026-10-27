@@ -55,11 +55,9 @@ function installPluginResolution(packageRoot, workRoot) {
   const hostURL = pathToFileURL(path.join(packageRoot, "app.js")).href;
   const hostRequire = createRequire(hostURL);
   const resolveShared = createSharedResolver(packageRoot);
-  const roots = [
-    path.join(workRoot, "data", "plugins"),
-    path.join(workRoot, "plugins"),
-    path.join(workRoot, "market_plugins")
-  ];
+  // Development checkouts load their source plugins from <side>/plugins; a
+  // published runtime loads npm plugins only and has no source root.
+  const roots = process.env.EPANEL_PACKAGE_ROOT ? [] : [path.join(workRoot, "plugins")];
   return registerHooks({
     resolve(specifier, context, nextResolve) {
       if (

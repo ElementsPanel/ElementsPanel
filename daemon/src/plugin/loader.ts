@@ -1,13 +1,9 @@
 import { Logger, type ForkScope } from "cordis";
-import fs from "fs-extra";
 import {
-  packagePath,
   packagePluginRoots,
-  isPackagedRuntime,
   isPackagePlugin,
   pluginDirectoryRevision,
   applyPluginOverrides,
-  removePluginOverride,
   writePluginOverride,
   validatePluginCompatibility,
   validatePluginSettings,
@@ -41,17 +37,6 @@ const settle = trackPluginDisposal(ctx);
 const unloading = new Set<string>();
 const codeRevisions = new Map<string, string>();
 
-const BUILT_IN_PLUGINS_DIRECTORY = () => packagePath("plugins");
-function isDevelopmentCheckout() {
-  return !isPackagedRuntime() && fs.existsSync(path.resolve(process.cwd(), "src", "plugin"));
-}
-
-/**
- * Plugins installed from the plugin market, kept apart from the built-in tree and
- * git-ignored. Development installations use data/plugins; production
- * installations use the regular plugins root. Both roots remain readable.
- */
-const MARKET_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "market_plugins");
 const ENTRY_FIELDS = ["daemon", "backend", "main", "entry"];
 const ENTRY_CANDIDATES = [
   "src/index.js",
@@ -62,7 +47,6 @@ const ENTRY_CANDIDATES = [
   "src/daemon.mjs"
 ];
 const FOUNDATION_PLUGIN_IDS = new Set(["i18n", "storage", "runtime"]);
-const NON_REMOVABLE_PLUGIN_IDS = new Set([...FOUNDATION_PLUGIN_IDS, "config", "server"]);
 
 /** A daemon plugin module, as its backend entry exports it. */
 export interface DaemonPluginModule {
@@ -85,14 +69,15 @@ export interface DaemonPluginEntry {
 const loaded: DaemonPluginEntry[] = [];
 
 function discoverDaemonPlugins(options: DiscoverPluginsOptions) {
-  const roots = [
-    ...packagePluginRoots("daemon"),
-    { directory: path.resolve(process.cwd(), "data", "plugins"), overrideManaged: true },
-    { directory: MARKET_PLUGINS_DIRECTORY() }
-  ];
-  if (isPackagedRuntime()) roots.push({ directory: path.resolve(process.cwd(), "plugins") });
+  // Only npm packages are plugins now: the published runtime resolves its own
+  // dependencies, and a development checkout resolves the source packages that
+  // the side package ships. Legacy data/plugins and market_plugins directories
+  // are deliberately not read any more.
   return applyPluginOverrides(
-    discoverPluginsFromRoots(roots, { ...options, includeDisabled: true })
+    discoverPluginsFromRoots(packagePluginRoots("daemon"), {
+      ...options,
+      includeDisabled: true
+    })
   ).filter((plugin) => options.includeDisabled || plugin.manifest.enabled !== false);
 }
 
@@ -341,18 +326,12 @@ export interface DaemonPluginRecord {
  * purpose: the inventory describes what is installed, not what compiled.
  */
 export function getDaemonPluginInventory(): DaemonPluginRecord[] {
-  const builtInRoot = path.resolve(BUILT_IN_PLUGINS_DIRECTORY());
   return discoverDaemonPlugins({
     entryFields: [],
     includeDisabled: true,
     onWarning: (message, error) => logger.warn(message, error)
   }).map((plugin) => {
     const running = loaded.find((item) => item.manifest.id === plugin.manifest.id);
-    const directory = path.resolve(plugin.directory);
-    const inRoot = (root: string) =>
-      directory === root || directory.startsWith(`${root}${path.sep}`);
-    const protectedDevelopmentSource =
-      isPackagePlugin(directory) || (isDevelopmentCheckout() && inRoot(builtInRoot));
     return {
       id: plugin.manifest.id,
       name: typeof plugin.manifest.name === "string" ? plugin.manifest.name : undefined,
@@ -368,7 +347,7 @@ export function getDaemonPluginInventory(): DaemonPluginRecord[] {
         running?.error?.message ||
         running?.fork?.runtime.error?.message ||
         running?.fork?.error?.message,
-      removable: !protectedDevelopmentSource && !NON_REMOVABLE_PLUGIN_IDS.has(plugin.manifest.id)
+      removable: false
     };
   });
 }
@@ -401,33 +380,17 @@ export function setDaemonPluginEnabled(id: string, enabled: boolean): Promise<Da
   });
 }
 
-/** Remove an installed daemon plugin package. Source workspaces are never removable here. */
+/**
+ * Plugins are npm dependencies now; the plugin manager does not delete files.
+ * An npm plugin is removed with npm, and a development source plugin cannot be
+ * removed from the running checkout at all.
+ */
 export function removeDaemonPlugin(id: string): Promise<void> {
   return change(async () => {
     const plugin = findPlugin(id);
-    if (NON_REMOVABLE_PLUGIN_IDS.has(id)) throw new Error(`The plugin "${id}" cannot be removed.`);
-
-    const directory = path.resolve(plugin.directory);
-    if (isPackagePlugin(directory))
+    if (isPackagePlugin(plugin.directory))
       throw new Error("Npm plugins cannot be removed here; manage them with npm.");
-    const builtInRoot = path.resolve(BUILT_IN_PLUGINS_DIRECTORY());
-    const dataRoot = path.resolve(process.cwd(), "data", "plugins");
-    const marketRoot = path.resolve(MARKET_PLUGINS_DIRECTORY());
-    const inRoot = (root: string) =>
-      directory === root || directory.startsWith(`${root}${path.sep}`);
-    if (isDevelopmentCheckout() && inRoot(builtInRoot))
-      throw new Error("Source plugins cannot be removed.");
-    if (
-      !inRoot(builtInRoot) &&
-      !inRoot(dataRoot) &&
-      !inRoot(marketRoot) &&
-      !inRoot(path.resolve(process.cwd(), "plugins"))
-    )
-      throw new Error("Plugin source is not removable.");
-
-    await removeRunning(id);
-    fs.removeSync(directory);
-    removePluginOverride(id);
+    throw new Error("Source plugins cannot be removed.");
   });
 }
 

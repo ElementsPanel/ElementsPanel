@@ -8,7 +8,7 @@
   "TXT_CODE_PLUGIN_DELETE": "刪除外掛",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM": "外掛檔案與已儲存的設定將會永久刪除。",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "確定刪除 {name}？",
-  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "原始碼外掛與基礎外掛無法在此處刪除。",
+  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "外掛以 npm 相依形式安裝，請使用 npm 解除安裝。",
   "TXT_CODE_PLUGIN_DELETED": "外掛已刪除",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "儲存設定",
   "TXT_CODE_PLUGIN_SAVE_REMINDER": "記得儲存設定！",

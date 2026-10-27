@@ -8,7 +8,7 @@
   "TXT_CODE_PLUGIN_DELETE": "删除插件",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM": "插件文件和已保存的配置将被永久删除。",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "确定删除 {name}？",
-  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "源码插件和基础插件不能在此处删除。",
+  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "插件以 npm 依赖形式安装，请使用 npm 卸载。",
   "TXT_CODE_PLUGIN_DELETED": "插件已删除",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "保存配置",
   "TXT_CODE_PLUGIN_SAVE_REMINDER": "记得保存配置！",

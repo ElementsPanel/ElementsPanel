@@ -442,7 +442,7 @@ test("CJS and ESM plugins use host dependencies while retaining private dependen
   const f = temporary(t);
   const host = path.join(f.root, "host");
   const work = path.join(f.root, "work");
-  const plugin = path.join(work, "data/plugins/sample");
+  const plugin = path.join(work, "plugins/sample");
   write(path.join(host, "package.json"), {
     dependencies: { cordis: "1", "host-only": "1", "private-dep": "1" }
   });
@@ -485,7 +485,7 @@ test("CJS and ESM plugins use host dependencies while retaining private dependen
 test("shared transitive modules follow the host Cordis graph instead of a hoisted incompatible version", (t) => {
   const f = temporary(t);
   const host = path.join(f.root, "host");
-  const plugin = path.join(f.root, "work/data/plugins/sample");
+  const plugin = path.join(f.root, "work/plugins/sample");
   write(path.join(host, "package.json"), { dependencies: { cordis: "1" } });
   write(path.join(host, "node_modules/cordis/index.js"), "module.exports = {};");
   write(
@@ -508,7 +508,7 @@ test("shared transitive modules follow the host Cordis graph instead of a hoiste
 test("ESM plugins share the actual CJS host Context and Service constructors", async (t) => {
   const f = temporary(t);
   const host = path.join(f.root, "host");
-  const plugin = path.join(f.root, "work/data/plugins/sample");
+  const plugin = path.join(f.root, "work/plugins/sample");
   write(path.join(host, "package.json"), { dependencies: { cordis: "3.18.1" } });
   fs.mkdirSync(path.join(host, "node_modules"));
   fs.symlinkSync(

@@ -29,17 +29,6 @@ export * from "./plugin_overrides";
 export * from "./plugin_lifecycle";
 export * from "./plugin_revision";
 export * from "./runtime_paths";
-export {
-  MARKET_INSTALL_MARKER,
-  MAX_PLUGIN_ICON_BYTES,
-  PLUGIN_ICON_FILE,
-  PLUGIN_PACKAGE_EXTENSIONS,
-  PluginPackageError,
-  pluginPackageDirectory,
-  writePluginPackage,
-  removePluginPackage
-} from "./plugin_package";
-export type { PluginInstallation, PluginPackageFile } from "./plugin_package";
 
 export {
   discoverPlugins,

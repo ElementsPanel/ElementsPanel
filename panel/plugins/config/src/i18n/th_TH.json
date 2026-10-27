@@ -8,7 +8,7 @@
   "TXT_CODE_PLUGIN_DELETE": "ลบ",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM": "ไฟล์ปลั๊กอินและการตั้งค่าที่บันทึกไว้จะถูกลบอย่างถาวร",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "ลบ {name} หรือไม่?",
-  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "ไม่สามารถลบปลั๊กอินซอร์สและปลั๊กอินที่จำเป็นได้ที่นี่",
+  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Plugins are installed as npm dependencies; remove them with npm.",
   "TXT_CODE_PLUGIN_DELETED": "ลบปลั๊กอินแล้ว",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "บันทึกการตั้งค่า",
   "TXT_CODE_PLUGIN_SAVE_REMINDER": "อย่าลืมบันทึกการตั้งค่า!",

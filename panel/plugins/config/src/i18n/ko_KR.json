@@ -8,7 +8,7 @@
   "TXT_CODE_PLUGIN_DELETE": "삭제",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM": "플러그인 파일과 저장된 설정이 영구적으로 삭제됩니다.",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "{name} 플러그인을 삭제할까요?",
-  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "소스 및 필수 플러그인은 여기서 삭제할 수 없습니다.",
+  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Plugins are installed as npm dependencies; remove them with npm.",
   "TXT_CODE_PLUGIN_DELETED": "플러그인을 삭제했습니다",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "설정 저장",
   "TXT_CODE_PLUGIN_SAVE_REMINDER": "설정을 저장하는 것을 잊지 마세요!",

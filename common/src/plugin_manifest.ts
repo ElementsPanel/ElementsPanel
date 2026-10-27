@@ -110,8 +110,6 @@ export interface DiscoverPluginsOptions {
 /** A plugin directory to scan, optionally with a public folder name override. */
 export interface PluginDiscoveryRoot {
   directory: string;
-  /** A persistent installation may supersede its own legacy market directory. */
-  overrideManaged?: boolean;
   /** Stable public asset name for npm plugins whose manifest lives below a side directory. */
   folder?: string;
 }
@@ -232,20 +230,6 @@ export function discoverPluginsFromRoots(
     for (const plugin of plugins) {
       if (!plugin) continue;
       if (seenIds.has(plugin.manifest.id)) {
-        const index = discovered.findIndex((item) => item.manifest.id === plugin.manifest.id);
-        const owner = (directory: string) => {
-          try {
-            return JSON.parse(fs.readFileSync(path.join(directory, ".market-install.json"), "utf8"))
-              .pluginId;
-          } catch {
-            return undefined;
-          }
-        };
-        const previousOwner = owner(discovered[index].directory);
-        if (root.overrideManaged && previousOwner && previousOwner === owner(plugin.directory)) {
-          discovered[index] = plugin;
-          continue;
-        }
         options.onWarning?.(`Ignoring duplicate plugin id: ${plugin.manifest.id}`);
         continue;
       }

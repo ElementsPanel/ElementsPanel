@@ -2,14 +2,11 @@ import fs from "fs-extra";
 import path from "path";
 import { pathToFileURL } from "url";
 import {
-  packagePath,
   packagePluginRoots,
-  isPackagedRuntime,
   isPackagePlugin,
   pluginDirectoryRevision,
   createFrontendPluginMetadata,
   applyPluginOverrides,
-  removePluginOverride,
   writePluginOverride,
   validatePluginCompatibility,
   validatePluginSettings,
@@ -43,14 +40,6 @@ const settle = trackPluginDisposal(ctx);
 const unloading = new Set<string>();
 const codeRevisions = new Map<string, string>();
 
-const BUILT_IN_PLUGINS_DIRECTORY = () => packagePath("plugins");
-/**
- * Plugins installed from the plugin market. They live apart from the built-in
- * tree so an installation never adds files to the repository: `market_plugins/`
- * is git-ignored. Development installations use data/plugins; production
- * installations use the regular plugins root. Both roots remain readable.
- */
-const MARKET_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "market_plugins");
 const ENTRY_FIELDS = ["panel", "backend", "main", "entry"];
 const ENTRY_CANDIDATES = [
   "src/index.js",
@@ -62,11 +51,6 @@ const ENTRY_CANDIDATES = [
 ];
 const FOUNDATION_PLUGIN_IDS = new Set(["i18n", "storage", "runtime"]);
 const ESSENTIAL_PLUGIN_IDS = new Set(["i18n", "storage", "runtime", "console"]);
-const NON_REMOVABLE_PLUGIN_IDS = new Set([...ESSENTIAL_PLUGIN_IDS, "config", "server"]);
-
-function isDevelopmentCheckout() {
-  return !isPackagedRuntime() && fs.existsSync(path.resolve(process.cwd(), "src", "app"));
-}
 
 /** A panel plugin module, as its backend entry exports it. */
 export interface PanelPluginModule {
@@ -112,16 +96,15 @@ function warnFrontendManifest(message: string, error?: unknown) {
 }
 
 function discoverPanelPlugins(options: DiscoverPluginsOptions) {
-  // Built-in first: the shared discovery keeps the first root's plugin when two
-  // roots declare the same id, so a market plugin cannot shadow one of ours.
-  const roots = [
-    ...packagePluginRoots("panel"),
-    { directory: path.resolve(process.cwd(), "data", "plugins"), overrideManaged: true },
-    { directory: MARKET_PLUGINS_DIRECTORY() }
-  ];
-  if (isPackagedRuntime()) roots.push({ directory: path.resolve(process.cwd(), "plugins") });
+  // Only npm packages are plugins now: the published runtime resolves its own
+  // dependencies, and a development checkout resolves the source packages that
+  // the side package ships. Legacy data/plugins and market_plugins directories
+  // are deliberately not read any more.
   return applyPluginOverrides(
-    discoverPluginsFromRoots(roots, { ...options, includeDisabled: true })
+    discoverPluginsFromRoots(packagePluginRoots("panel"), {
+      ...options,
+      includeDisabled: true
+    })
   ).filter((plugin) => options.includeDisabled || plugin.manifest.enabled !== false);
 }
 
@@ -411,7 +394,7 @@ export interface PanelPluginRecord {
   running: boolean;
   /** Why the backend half is not running, when it should be. */
   error?: string;
-  /** False for source workspaces in development and foundational plugins. */
+  /** Plugins are npm dependencies now, so the plugin manager never removes one. */
   removable: boolean;
 }
 
@@ -429,12 +412,6 @@ export function getPanelPluginInventory(): PanelPluginRecord[] {
     onWarning: (message, error) => logger.warn(message, error)
   }).map((plugin) => {
     const running = loaded.find((item) => item.manifest.id === plugin.manifest.id);
-    const directory = path.resolve(plugin.directory);
-    const inRoot = (root: string) =>
-      directory === root || directory.startsWith(`${root}${path.sep}`);
-    const protectedDevelopmentSource =
-      isPackagePlugin(directory) ||
-      (isDevelopmentCheckout() && inRoot(path.resolve(BUILT_IN_PLUGINS_DIRECTORY())));
     const has = (fields: string[]) =>
       fields.some((field) => typeof plugin.manifest[field] === "string");
     return {
@@ -447,7 +424,7 @@ export function getPanelPluginInventory(): PanelPluginRecord[] {
       sides: { backend: has(ENTRY_FIELDS), frontend: has(FRONTEND_FIELDS) },
       running: pluginState(plugin, running) === "active",
       state: pluginState(plugin, running),
-      removable: !protectedDevelopmentSource && !NON_REMOVABLE_PLUGIN_IDS.has(plugin.manifest.id),
+      removable: false,
       error:
         running?.error?.message ||
         running?.fork?.runtime.error?.message ||
@@ -484,31 +461,17 @@ export function setPanelPluginEnabled(id: string, enabled: boolean): Promise<Pan
   });
 }
 
-/** Remove an installed panel plugin package. Source workspaces are never removable here. */
+/**
+ * Plugins are npm dependencies now; the plugin manager does not delete files.
+ * An npm plugin is removed with npm, and a development source plugin cannot be
+ * removed from the running checkout at all.
+ */
 export function removePanelPlugin(id: string): Promise<void> {
   return change(async () => {
     const plugin = findPlugin(id);
-    if (NON_REMOVABLE_PLUGIN_IDS.has(id)) throw new Error(`The plugin "${id}" cannot be removed.`);
-    const directory = path.resolve(plugin.directory);
-    if (isPackagePlugin(directory))
+    if (isPackagePlugin(plugin.directory))
       throw new Error("Npm plugins cannot be removed here; manage them with npm.");
-    const sourceRoot = path.resolve(BUILT_IN_PLUGINS_DIRECTORY());
-    const inRoot = (root: string) =>
-      directory === root || directory.startsWith(`${root}${path.sep}`);
-    if (isDevelopmentCheckout() && inRoot(sourceRoot))
-      throw new Error("Source plugins cannot be removed.");
-    if (
-      !inRoot(sourceRoot) &&
-      !inRoot(path.resolve(process.cwd(), "plugins")) &&
-      !inRoot(path.resolve(process.cwd(), "data", "plugins")) &&
-      !inRoot(path.resolve(MARKET_PLUGINS_DIRECTORY()))
-    ) {
-      throw new Error("Plugin source is not removable.");
-    }
-
-    await removeRunning(id);
-    fs.removeSync(directory);
-    removePluginOverride(id);
+    throw new Error("Source plugins cannot be removed.");
   });
 }
 

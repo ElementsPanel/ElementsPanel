@@ -8,7 +8,7 @@
   "TXT_CODE_PLUGIN_DELETE": "Kaldır",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM": "Eklenti dosyaları ve kaydedilmiş yapılandırması kalıcı olarak kaldırılacak.",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "{name} kaldırılsın mı?",
-  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Kaynak ve temel eklentiler buradan kaldırılamaz.",
+  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Plugins are installed as npm dependencies; remove them with npm.",
   "TXT_CODE_PLUGIN_DELETED": "Eklenti kaldırıldı",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "Ayarları kaydet",
   "TXT_CODE_PLUGIN_SAVE_REMINDER": "Ayarları kaydetmeyi unutmayın!",
