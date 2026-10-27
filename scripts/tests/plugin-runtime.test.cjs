@@ -15,7 +15,8 @@ const commonNames = [
   "plugin_contract",
   "plugin_overrides",
   "plugin_lifecycle",
-  "plugin_revision"
+  "plugin_revision",
+  "runtime_paths"
 ];
 const load = createLoader({
   compiler: ts,
@@ -65,6 +66,36 @@ function fixture(t, side = "panel") {
   };
 }
 for (const side of ["panel", "daemon"]) {
+  test(`${side}: npm built-ins stay immutable while user plugins and overrides live outside the package`, async (t) => {
+    const f = fixture(t, side);
+    const previousRoot = process.env.EPANEL_PACKAGE_ROOT;
+    const packageRoot = path.join(f.directory, "node_modules", "@elementspanel", side);
+    process.env.EPANEL_PACKAGE_ROOT = packageRoot;
+    t.after(() => {
+      if (previousRoot === undefined) delete process.env.EPANEL_PACKAGE_ROOT;
+      else process.env.EPANEL_PACKAGE_ROOT = previousRoot;
+    });
+    const builtin = path.join(packageRoot, "plugins", "bundled");
+    fs.mkdirSync(builtin, { recursive: true });
+    fs.writeFileSync(path.join(builtin, "plugin.json"), '{"id":"bundled","backend":"index.cjs"}');
+    fs.writeFileSync(path.join(builtin, "index.cjs"), 'exports.apply = ctx => ctx.set("bundledValue", true);');
+    const user = f.write("custom", 'exports.apply = ctx => ctx.set("customValue", true);');
+    const userRoot = path.join(f.directory, "data", "plugins");
+    fs.mkdirSync(userRoot, { recursive: true });
+    fs.renameSync(user, path.join(userRoot, "custom"));
+    await f.start();
+    assert.equal(f.ctx.bundledValue, true);
+    assert.equal(f.ctx.customValue, true);
+    assert.equal(f.inventory().find((plugin) => plugin.id === "bundled").removable, false);
+    await f.enabled("bundled", false);
+    assert.equal(JSON.parse(fs.readFileSync(path.join(f.directory, "data/plugin-overrides.json"))).plugins.bundled.enabled, false);
+    assert.equal(JSON.parse(fs.readFileSync(path.join(builtin, "plugin.json"))).enabled, undefined);
+    await assert.rejects(f.remove("bundled"), /Bundled plugins cannot be removed/);
+    await f.remove("custom");
+    assert.equal(fs.existsSync(path.join(userRoot, "custom")), false);
+    assert.equal(fs.existsSync(path.join(packageRoot, "data")), false);
+  });
+
   test(`${side}: external plugins resolve host dependencies after plugin-local dependencies`, async (t) => {
     const previousNodeEnv = process.env.NODE_ENV;
     const previousNodePath = process.env.NODE_PATH;

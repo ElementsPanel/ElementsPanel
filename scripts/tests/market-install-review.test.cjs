@@ -12,7 +12,7 @@ const serviceFile = "panel/plugins/market/src/backend/service/plugin_market.ts";
 const load = createLoader({
   compiler: ts,
   resolve(id, { filename, localRequire, load }) {
-    if (id === "mcsmanager-common") return load("common/src/plugin_package.ts");
+    if (id === "mcsmanager-common") return { ...load("common/src/plugin_package.ts"), ...load("common/src/runtime_paths.ts") };
     if (id === "./plugin_manifest") return load("common/src/plugin_manifest.ts");
     const target = path.resolve(path.dirname(filename), id) + ".ts";
     return id.startsWith(".") && fs.existsSync(target) ? load(target) : localRequire(id);

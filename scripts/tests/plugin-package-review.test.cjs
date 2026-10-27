@@ -180,7 +180,7 @@ test("daemon validates every package file before writing and reports ownership f
     replies = [];
   const service = load(source);
   load("daemon/plugins/config/src/backend/index.ts", {
-    "mcsmanager-common": service,
+    "mcsmanager-common": { ...service, ...load("common/src/runtime_paths.ts") },
     "../i18n": { localeMessages: {} },
     "./settings": { SettingsFormService: class {} }
   }).apply({

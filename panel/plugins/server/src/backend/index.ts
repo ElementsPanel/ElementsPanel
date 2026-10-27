@@ -5,8 +5,9 @@ import https from "https";
 import Koa from "koa";
 import koaBody, { HttpMethodEnum } from "koa-body";
 import koaStatic from "koa-static";
+import mount from "koa-mount";
 import session from "koa-session";
-import { removeTrail } from "mcsmanager-common";
+import { packagePath, removeTrail } from "mcsmanager-common";
 import open from "open";
 import os from "os";
 import path from "path";
@@ -137,7 +138,8 @@ export function apply(ctx: PanelPluginContext) {
 
   app.use(pluginAssets(ctx));
 
-  app.use(koaStatic(path.join(process.cwd(), "public"), { maxAge: STATIC_MAX_AGE }));
+  app.use(mount("/upload_files", koaStatic(path.resolve("public", "upload_files"), { maxAge: STATIC_MAX_AGE })));
+  app.use(koaStatic(packagePath("public"), { maxAge: STATIC_MAX_AGE }));
 
   // Generic administrative proxy used by remote integrations. It is transport
   // plumbing and belongs to the server plugin's HTTP surface.
@@ -310,7 +312,9 @@ export function apply(ctx: PanelPluginContext) {
   // container is already started, so reloading this plugin re-binds cleanly.
   ctx.on("ready", () => {
     const port = config.httpPort;
-    httpServer?.listen(port, config.httpIp);
+    httpServer?.listen(port, config.httpIp, () => {
+      if (process.connected) process.send?.({ type: "elementspanel:ready" }, () => {});
+    });
     ctx.logger.info("==================================");
     ctx.logger.info($t("TXT_CODE_app.panelStarted"));
     let appHost = $t("TXT_CODE_app.host", { port });

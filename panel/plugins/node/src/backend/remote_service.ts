@@ -105,7 +105,7 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
   async initConnectLocalhost(key?: string) {
     const ip = "localhost";
     const localKeyFilePath = path.normalize(
-      path.join(process.cwd(), "../daemon/data/Config/global.json")
+      process.env.EPANEL_LOCAL_DAEMON_CONFIG || path.join(process.cwd(), "../daemon/data/Config/global.json")
     );
     logger().info($t("TXT_CODE_systemRemoteService.loadDaemonTitle", { localKeyFilePath }));
     if (fs.existsSync(localKeyFilePath)) {
@@ -115,7 +115,7 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
       );
       const localKey = localDaemonConfig.key;
       const localPort = localDaemonConfig.port;
-      return await this.registerRemoteService({ apiKey: localKey, port: localPort, ip });
+      return await this.registerRemoteService({ apiKey: localKey, port: localPort, ip, prefix: localDaemonConfig.prefix || "" });
     } else if (key) {
       const port = 24444;
       return await this.registerRemoteService({ apiKey: key, port, ip });

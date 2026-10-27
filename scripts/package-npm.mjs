@@ -1,0 +1,234 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import sharedDependencies from "./runtime/shared-dependencies.cjs";
+import { copyTree } from "./npm-assets.mjs";
+import { packagePanelPlugins } from "./package-panel-plugins.mjs";
+import { packageDaemonPlugins } from "./package-daemon-plugins.mjs";
+
+const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const readJson = async (filename) => JSON.parse(await fs.readFile(filename, "utf8"));
+const exists = async (filename) =>
+  fs.lstat(filename).then(
+    () => true,
+    (error) => {
+      if (error.code === "ENOENT") return false;
+      throw error;
+    }
+  );
+
+export function runtimeManifest(side, source) {
+  const metadata = {};
+  for (const key of [
+    "version",
+    "description",
+    "homepage",
+    "author",
+    "contributors",
+    "license",
+    "repository",
+    "daemonVersion"
+  ]) {
+    if (source[key] !== undefined) metadata[key] = source[key];
+  }
+  metadata.name = `@elementspanel/${side}`;
+  metadata.bin = { [side === "panel" ? "epanel" : "epanel-daemon"]: `bin/${side}.cjs` };
+  metadata.files = [
+    "app.js",
+    "app.js.map",
+    "bin/",
+    "runtime/",
+    "plugins/",
+    side === "panel" ? "public/" : "lib/",
+    "README.md",
+    "LICENSE"
+  ];
+  metadata.engines = { node: ">=22.15.0" };
+  metadata.publishConfig = { access: "public" };
+  metadata.dependencies = { ...source.dependencies };
+  for (const [name, version] of Object.entries(metadata.dependencies)) {
+    if (/^(?:file:|link:|workspace:)/.test(version))
+      throw new Error(`Runtime dependency ${name} is not publishable: ${version}`);
+  }
+  return metadata;
+}
+
+async function verifyPlugin(directory) {
+  const manifest = await readJson(path.join(directory, "plugin.json"));
+  for (const key of ["backend", "panel", "daemon", "frontend", "main", "entry"]) {
+    const entry = manifest[key];
+    if (typeof entry !== "string") continue;
+    const resolved = path.resolve(directory, entry);
+    const relative = path.relative(directory, resolved);
+    if (
+      relative === ".." ||
+      relative.startsWith(`..${path.sep}`) ||
+      path.isAbsolute(relative) ||
+      /\.[cm]?tsx?$/.test(entry)
+    ) {
+      throw new Error(`Invalid published plugin entry: ${resolved}`);
+    }
+    if (!(await fs.stat(resolved)).isFile())
+      throw new Error(`Missing compiled plugin entry: ${resolved}`);
+  }
+  return manifest;
+}
+
+async function packageRuntime(side, sourceRoot, outputRoot, pluginOutput) {
+  const source = path.join(sourceRoot, side, "production");
+  const output = path.join(outputRoot, side);
+  const metadata = runtimeManifest(
+    side,
+    await readJson(path.join(repository, side, "package.json"))
+  );
+  const resolveShared = sharedDependencies.createSharedResolver(path.join(repository, side));
+  // Webpack leaves these imports external. Declare them directly, with the
+  // versions from the same graph used to build the host, so npm need not hoist them.
+  for (const name of sharedDependencies.sharedModules) {
+    metadata.dependencies[name] = (await readJson(resolveShared(`${name}/package.json`))).version;
+  }
+  await fs.mkdir(output, { recursive: true });
+  copyTree(path.join(source, "app.js"), path.join(output, "app.js"));
+  if (await exists(path.join(source, "app.js.map")))
+    copyTree(path.join(source, "app.js.map"), path.join(output, "app.js.map"));
+  copyTree(path.join(repository, "scripts/runtime"), path.join(output, "runtime"));
+  await fs.mkdir(path.join(output, "bin"));
+  await fs.writeFile(
+    path.join(output, `bin/${side}.cjs`),
+    `#!/usr/bin/env node\nrequire('../runtime/cli.cjs').run('${side}', require('node:path').resolve(__dirname, '..'));\n`,
+    { mode: 0o755 }
+  );
+
+  // Use the repository's built-in inventory and the workspace's compiled files.
+  // Installed market plugins never enter the staging directory.
+  const pluginRoot = path.join(repository, side, "plugins");
+  const pluginNames = [];
+  for (const item of await fs.readdir(pluginRoot, { withFileTypes: true })) {
+    if (item.isDirectory() && (await exists(path.join(pluginRoot, item.name, "plugin.json"))))
+      pluginNames.push(item.name);
+  }
+  const packagePlugins = side === "panel" ? packagePanelPlugins : packageDaemonPlugins;
+  packagePlugins({
+    sourceRoot: path.join(sourceRoot, side, "plugins"),
+    buildRoot: path.join(sourceRoot, "frontend/dist/plugins"),
+    outputRoot: pluginOutput,
+    pluginNames
+  });
+  for (const pluginName of pluginNames) {
+    const pluginDirectory = path.join(pluginOutput, pluginName);
+    const manifest = await verifyPlugin(pluginDirectory);
+    const expected = await readJson(path.join(pluginRoot, pluginName, "plugin.json"));
+    if (manifest.id !== expected.id)
+      throw new Error(`Unexpected plugin identity: ${pluginDirectory}`);
+    for (const field of ["backend", "frontend"]) {
+      if (typeof expected[field] === "string" && typeof manifest[field] !== "string") {
+        throw new Error(`Missing compiled ${field} for plugin ${manifest.id}`);
+      }
+    }
+    copyTree(pluginDirectory, path.join(output, "plugins", pluginName));
+  }
+  if (side === "panel") {
+    const frontend = path.join(sourceRoot, "frontend/dist");
+    await fs.stat(path.join(frontend, "index.html"));
+    await fs.mkdir(path.join(output, "public"));
+    for (const item of await fs.readdir(frontend)) {
+      if (["plugins", "upload_files"].includes(item)) continue;
+      copyTree(path.join(frontend, item), path.join(output, "public", item));
+    }
+  } else {
+    // Include the tools and their licenses explicitly. SteamCMD/FRP downloads
+    // and temporary files from a running daemon are never published.
+    const urls = (await fs.readFile(path.join(repository, "lib-urls.txt"), "utf8"))
+      .split(/\r?\n/)
+      .filter(Boolean);
+    await fs.mkdir(path.join(output, "lib"));
+    for (const url of urls) {
+      const name = path.basename(new URL(url).pathname);
+      const target = path.join(output, "lib", name);
+      copyTree(path.join(sourceRoot, "daemon/lib", name), target);
+      if (!name.endsWith(".txt")) await fs.chmod(target, 0o755);
+    }
+  }
+  await fs.writeFile(path.join(output, "package.json"), `${JSON.stringify(metadata, null, 2)}\n`);
+  copyTree(path.join(repository, "LICENSE"), path.join(output, "LICENSE"));
+  await fs.writeFile(
+    path.join(output, "README.md"),
+    `# ${
+      metadata.name
+    }\n\nRequires Node.js 22.15 or newer.\n\nCreate an installation using \`npm init elementspanel@latest my-panel\`, enter the directory and run \`npm start\`. Select the ${side} template to install only this service.\n\nFor an existing npm project, install this package and run \`npx ${
+      side === "panel" ? "epanel" : "epanel-daemon"
+    } start\`. Runtime data is stored in \`./${side}\`, separate from the package. Use \`--cwd\` to select the project directory or \`--${side}-dir\` to reuse an existing runtime directory.\n\n${
+      side === "panel"
+        ? "Install @elementspanel/daemon in the project and pass --with-daemon to start a local node with the panel.\n\n"
+        : "The package includes PTY and archive tools; Java, Docker and game runtimes remain separate runtime requirements.\n\n"
+    }Stop the service and back up runtime data before upgrading. Configuration, logs, uploads and installed plugins are not stored in node_modules.\n`
+  );
+  return metadata;
+}
+
+export async function packageNpm({
+  sourceRoot = repository,
+  outputRoot = path.join(repository, "npm-packages")
+} = {}) {
+  sourceRoot = path.resolve(sourceRoot);
+  outputRoot = path.resolve(outputRoot);
+  if (await exists(outputRoot))
+    throw new Error(`Output already exists; choose a new --out directory: ${outputRoot}`);
+  await fs.mkdir(path.dirname(outputRoot), { recursive: true });
+  const temporary = await fs.mkdtemp(path.join(path.dirname(outputRoot), ".elementspanel-npm-"));
+  try {
+    const packages = path.join(temporary, "packages");
+    const panel = await packageRuntime(
+      "panel",
+      sourceRoot,
+      packages,
+      path.join(temporary, "panel-plugins")
+    );
+    const daemon = await packageRuntime(
+      "daemon",
+      sourceRoot,
+      packages,
+      path.join(temporary, "daemon-plugins")
+    );
+    const createSource = path.join(repository, "packages/create-elementspanel");
+    const createOutput = path.join(packages, "create-elementspanel");
+    await fs.mkdir(createOutput);
+    const create = await readJson(path.join(createSource, "package.json"));
+    create.runtimeVersions = { panel: panel.version, daemon: daemon.version };
+    for (const filename of ["bin.cjs", "index.cjs", "README.md"])
+      copyTree(path.join(createSource, filename), path.join(createOutput, filename));
+    await fs.chmod(path.join(createOutput, "bin.cjs"), 0o755);
+    copyTree(path.join(repository, "LICENSE"), path.join(createOutput, "LICENSE"));
+    await fs.writeFile(
+      path.join(createOutput, "package.json"),
+      `${JSON.stringify(create, null, 2)}\n`
+    );
+    await fs.rename(packages, outputRoot);
+    return { panel, daemon, create };
+  } finally {
+    await fs.rm(temporary, { recursive: true, force: true });
+  }
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try {
+    const options = {};
+    for (let index = 2; index < process.argv.length; index++) {
+      const argument = process.argv[index];
+      if (!["--source", "--out"].includes(argument) || !process.argv[index + 1])
+        throw new Error(
+          "Usage: node scripts/package-npm.mjs [--source workspace-directory] [--out npm-packages]"
+        );
+      options[argument === "--source" ? "sourceRoot" : "outputRoot"] = process.argv[++index];
+    }
+    await packageNpm(options);
+    console.log(
+      `npm packages prepared in ${path.resolve(
+        options.outputRoot || path.join(repository, "npm-packages")
+      )}`
+    );
+  } catch (error) {
+    console.error(error.message);
+    process.exitCode = 1;
+  }
+}

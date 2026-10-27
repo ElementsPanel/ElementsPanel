@@ -324,7 +324,7 @@ test("daemon runtime answers capabilities and overview across monitor unload and
   t.after(() => ctx.stop());
   const config = { language: "en_us", allocatablePortRange: [1000, 2000], port: 23333 };
   const runtime = load("daemon/plugins/runtime/src/backend/index.ts", {
-    "mcsmanager-common": { systemInfo },
+    "mcsmanager-common": { systemInfo, ensureExecutable() {} },
     "./service/log": { setupLogging() {} },
     "./lifecycle": { setupProcessLifecycle() {} },
     "./entity/config": { globalConfiguration: { configure() {}, load() {}, store() {}, config } },

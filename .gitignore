@@ -14,6 +14,8 @@ lib/
 production/
 .DS_Store
 production-code/
+/npm-packages/
+/.elementspanel-npm-*/
 /external/
 # Compiled plugin backends (built from plugins/*/src/backend/index.ts)
 panel/plugins/*/backend/

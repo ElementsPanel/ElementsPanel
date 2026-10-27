@@ -3,6 +3,8 @@ import { createHash, randomBytes } from "crypto";
 import axios from "axios";
 import fs from "fs-extra";
 import {
+  isPackagedRuntime,
+  packagePath,
   MARKET_INSTALL_MARKER as MARKER_FILE,
   PLUGIN_ICON_FILE,
   PLUGIN_PACKAGE_EXTENSIONS,
@@ -86,17 +88,17 @@ function projectRoot() {
  * `process.env.NODE_ENV` is no use here: webpack bakes `"production"` into every
  * plugin bundle — `webpack.plugins.config.js` builds in production mode, and a
  * plugin's `backend/index.cjs` is what runs even while the dev servers are up.
- * The source tree is the signal that survives: a built deployment is only
- * `production-code/web` and `production-code/daemon`, with no `panel/src`.
+ * The source tree is the signal that survives: published npm packages contain
+ * compiled entries and resources, with no `panel/src`.
  */
 export function isDevelopment(): boolean {
-  return fs.existsSync(path.join(projectRoot(), "panel", "src", "app"));
+  return !isPackagedRuntime() && fs.existsSync(path.join(projectRoot(), "panel", "src", "app"));
 }
 
-/** Keep development isolated; production installs directly into web/daemon plugins. */
+/** npm installations keep user plugins outside the immutable package directory. */
 export function installRoot(side: PluginSide): string {
   const directory = side === "panel" ? process.cwd() : path.join(projectRoot(), side);
-  return isDevelopment()
+  return isPackagedRuntime() || isDevelopment()
     ? path.join(directory, "data", "plugins")
     : path.join(directory, "plugins");
 }
@@ -407,7 +409,7 @@ export async function writePlugin(
   info: MarketInstallInfo,
   files: readonly { relative: string; content: Buffer }[]
 ): Promise<string> {
-  return writePluginPackage(installRoot(side), info, files, pluginRoots());
+  return writePluginPackage(installRoot(side), info, files, [packagePath("plugins"), ...pluginRoots()]);
 }
 
 /** What a daemon needs to write the same half on its own machine. */

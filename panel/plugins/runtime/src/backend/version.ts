@@ -1,5 +1,5 @@
 import * as fs from "fs-extra";
-import { GlobalVariable } from "mcsmanager-common";
+import { GlobalVariable, packagePath } from "mcsmanager-common";
 import path from "path";
 import { logger } from "./service/log";
 
@@ -9,7 +9,7 @@ interface IPackageInfo {
   daemonVersion: string;
   description: string;
 }
-const PACKAGE_JSON = "package.json";
+const PACKAGE_JSON = packagePath("package.json");
 const VERSION_LOG_TEXT_NAME = "current-version.txt";
 
 let currentVersion = "";

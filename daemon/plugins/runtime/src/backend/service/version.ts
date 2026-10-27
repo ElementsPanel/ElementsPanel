@@ -1,9 +1,9 @@
 import { $t } from "../i18n";
 import * as fs from "fs-extra";
-import { GlobalVariable } from "mcsmanager-common";
+import { GlobalVariable, packagePath } from "mcsmanager-common";
 import logger from "./log";
 
-const PACKAGE_JSON = "package.json";
+const PACKAGE_JSON = packagePath("package.json");
 
 export function initVersionManager() {
   try {

@@ -1,6 +1,8 @@
 import fs from "fs";
 import path from "path";
 import {
+  isPackagedRuntime,
+  packagePath,
   MAX_PLUGIN_ICON_BYTES,
   PLUGIN_API_VERSION,
   PLUGIN_ICON_FILE,
@@ -70,12 +72,12 @@ function normalizePluginGroups(input: unknown): PluginGroup[] {
 }
 
 function isDevelopmentCheckout() {
-  return fs.existsSync(path.resolve(process.cwd(), "src", "plugin"));
+  return !isPackagedRuntime() && fs.existsSync(path.resolve(process.cwd(), "src", "plugin"));
 }
 
-/** Development stays isolated; production installs directly into daemon/plugins. */
+/** npm packages and source checkouts both keep installations in user data. */
 const MARKET_PLUGINS_DIRECTORY = () =>
-  isDevelopmentCheckout()
+  isPackagedRuntime() || isDevelopmentCheckout()
     ? path.resolve(process.cwd(), "data", "plugins")
     : path.resolve(process.cwd(), "plugins");
 
@@ -226,6 +228,7 @@ export function apply(ctx: DaemonPluginContext) {
           content: Buffer.from(file.content, "base64")
         })),
         [
+          packagePath("plugins"),
           MARKET_PLUGINS_DIRECTORY(),
           path.resolve(process.cwd(), "plugins"),
           path.resolve(process.cwd(), "market_plugins")

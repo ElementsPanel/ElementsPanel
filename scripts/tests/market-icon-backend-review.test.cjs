@@ -62,7 +62,7 @@ function iconFixture(t, body = png()) {
     panelRequire
   );
   const service = load("panel/plugins/market/src/backend/service/plugin_market.ts", {
-    "mcsmanager-common": common
+    "mcsmanager-common": { ...common, ...load("common/src/runtime_paths.ts") }
   });
   const plugin = load("panel/plugins/market/src/backend/index.ts", {
     axios,
@@ -176,7 +176,7 @@ function daemonFixture(t) {
   const plugin = load(
     "daemon/plugins/config/src/backend/index.ts",
     {
-      "mcsmanager-common": common,
+      "mcsmanager-common": { ...common, ...load("common/src/runtime_paths.ts", {}, daemonTs, daemonRequire) },
       "../i18n": { localeMessages: {} },
       "./settings": { SettingsFormService: class {} }
     },

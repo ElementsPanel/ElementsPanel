@@ -1,6 +1,7 @@
 import type { DaemonPluginContext } from "../../../../src/plugin";
 import os from "os";
 import path from "path";
+import { bundledToolPath } from "mcsmanager-common";
 
 let context: DaemonPluginContext | undefined;
 
@@ -78,6 +79,7 @@ export const globalConfiguration = {
 };
 
 function pathFor(name: string) {
+  if (name === "pty") return bundledToolPath(name);
   const platform = os.platform();
   const arch = os.arch();
   const suffix = platform === "win32" ? ".exe" : "";

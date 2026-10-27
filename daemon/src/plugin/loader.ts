@@ -1,6 +1,9 @@
 import { Logger, type ForkScope } from "cordis";
 import fs from "fs-extra";
 import {
+  packagePath,
+  isPackagedRuntime,
+  isPackagePlugin,
   pluginDirectoryRevision,
   applyPluginOverrides,
   removePluginOverride,
@@ -38,9 +41,9 @@ const settle = trackPluginDisposal(ctx);
 const unloading = new Set<string>();
 const codeRevisions = new Map<string, string>();
 
-const BUILT_IN_PLUGINS_DIRECTORY = () => path.resolve(process.cwd(), "plugins");
+const BUILT_IN_PLUGINS_DIRECTORY = () => packagePath("plugins");
 function isDevelopmentCheckout() {
-  return fs.existsSync(path.resolve(process.cwd(), "src", "plugin"));
+  return !isPackagedRuntime() && fs.existsSync(path.resolve(process.cwd(), "src", "plugin"));
 }
 
 /**
@@ -87,6 +90,7 @@ function discoverDaemonPlugins(options: DiscoverPluginsOptions) {
     { directory: path.resolve(process.cwd(), "data", "plugins"), overrideManaged: true },
     { directory: MARKET_PLUGINS_DIRECTORY() }
   ];
+  if (isPackagedRuntime()) roots.push({ directory: path.resolve(process.cwd(), "plugins") });
   if (process.env.NODE_ENV === "development") {
     roots.push(...discoverExternalPluginRoots(path.resolve(process.cwd(), ".."), "daemon"));
   }
@@ -382,9 +386,10 @@ export function getDaemonPluginInventory(): DaemonPluginRecord[] {
     const inRoot = (root: string) =>
       directory === root || directory.startsWith(`${root}${path.sep}`);
     const protectedDevelopmentSource =
-      isDevelopmentCheckout() &&
-      (inRoot(builtInRoot) ||
-        externalRoots.some((root) => inRoot(path.resolve(root.directory))));
+      isPackagePlugin(directory) ||
+      (isDevelopmentCheckout() &&
+        (inRoot(builtInRoot) ||
+          externalRoots.some((root) => inRoot(path.resolve(root.directory)))));
     return {
       id: plugin.manifest.id,
       name: typeof plugin.manifest.name === "string" ? plugin.manifest.name : undefined,
@@ -441,6 +446,7 @@ export function removeDaemonPlugin(id: string): Promise<void> {
       throw new Error(`The plugin "${id}" cannot be removed.`);
 
     const directory = path.resolve(plugin.directory);
+    if (isPackagePlugin(directory)) throw new Error("Bundled plugins cannot be removed; disable the plugin instead.");
     const builtInRoot = path.resolve(BUILT_IN_PLUGINS_DIRECTORY());
     const dataRoot = path.resolve(process.cwd(), "data", "plugins");
     const marketRoot = path.resolve(MARKET_PLUGINS_DIRECTORY());
@@ -455,7 +461,7 @@ export function removeDaemonPlugin(id: string): Promise<void> {
       (inRoot(builtInRoot) || externalRoots.some((root) => inRoot(path.resolve(root.directory))))
     )
       throw new Error("Source and custom workspace plugins cannot be removed.");
-    if (!inRoot(builtInRoot) && !inRoot(dataRoot) && !inRoot(marketRoot))
+    if (!inRoot(builtInRoot) && !inRoot(dataRoot) && !inRoot(marketRoot) && !inRoot(path.resolve(process.cwd(), "plugins")))
       throw new Error("Plugin source is not removable.");
 
     await removeRunning(id);

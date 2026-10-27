@@ -1,0 +1,26 @@
+{
+  "name": "create-elementspanel",
+  "version": "1.0.0",
+  "description": "Create an ElementsPanel installation",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ElementsPanel/ElementsPanel",
+    "directory": "packages/create-elementspanel"
+  },
+  "bin": {
+    "create-elementspanel": "bin.cjs"
+  },
+  "files": [
+    "bin.cjs",
+    "index.cjs",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22.15.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

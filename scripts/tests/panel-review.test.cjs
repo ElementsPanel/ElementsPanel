@@ -523,7 +523,7 @@ test("market paths stay under the running panel directory and cannot overwrite b
     fs.rmSync(directory, { recursive: true, force: true });
   });
   const market = load("panel/plugins/market/src/backend/service/plugin_market.ts", {
-    "mcsmanager-common": load("common/src/plugin_package.ts")
+    "mcsmanager-common": { ...load("common/src/plugin_package.ts"), ...load("common/src/runtime_paths.ts") }
   });
   assert.equal(market.installRoot("panel"), path.join(directory, "web", "plugins"));
   assert.equal(market.installRoot("daemon"), path.join(directory, "daemon", "plugins"));

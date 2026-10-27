@@ -1,6 +1,6 @@
 import { exec } from "child_process";
 import { existsSync } from "fs";
-import fs from "fs/promises";
+import { ensureExecutable } from "mcsmanager-common";
 import path from "path";
 import { promisify } from "util";
 import { SEVEN_ZIP_PATH } from "../const";
@@ -72,7 +72,7 @@ export async function check7zipStatus(): Promise<boolean> {
     if (isChecked7zip) return true;
     if (!existsSync(SEVEN_ZIP_PATH)) return false;
     try {
-      await fs.chmod(SEVEN_ZIP_PATH, 0o755);
+      ensureExecutable(SEVEN_ZIP_PATH);
     } catch (chmodError: any) {
       logger.warn($t("TXT_CODE_9ade0fb8", { message: chmodError.message }));
     }

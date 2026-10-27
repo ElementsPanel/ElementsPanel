@@ -237,7 +237,9 @@ export function apply(ctx: DaemonPluginContext) {
   // Bound on `ready`, so the daemon does not accept a request before the plugin
   // router, protocol handlers and every dependent plugin are in place.
   ctx.on("ready", () => {
-    httpServer.listen(config.port, config.ip);
+    httpServer.listen(config.port, config.ip, () => {
+      if (process.connected) process.send?.({ type: "elementspanel:ready" }, () => {});
+    });
 
     ctx.logger.info("----------------------------");
     ctx.logger.info($t("TXT_CODE_app.started"));

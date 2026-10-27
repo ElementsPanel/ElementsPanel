@@ -1,6 +1,7 @@
 import { setupLogging } from "./service/log";
 import { setupProcessLifecycle } from "./lifecycle";
 import fs from "fs-extra";
+import { ensureExecutable } from "mcsmanager-common";
 import {
   GOLANG_ZIP_PATH,
   LOCAL_PRESET_LANG_PATH,
@@ -151,8 +152,8 @@ export async function apply(ctx: DaemonPluginContext) {
   });
 
   try {
-    fs.chmodSync(GOLANG_ZIP_PATH, 0o755);
-    fs.chmodSync(PTY_PATH, 0o755);
+    ensureExecutable(GOLANG_ZIP_PATH);
+    ensureExecutable(PTY_PATH);
   } catch (error: any) {
     ctx.logger.error(error?.message);
     ctx.logger.error(ctx.i18n.$t("TXT_CODE_a8b245fa"));
