@@ -1,0 +1,65 @@
+name: Build and test ElementsPanel
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and test (Node.js ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22.x, 24.x]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            common/package-lock.json
+            daemon/package-lock.json
+            panel/package-lock.json
+            frontend/package-lock.json
+      - name: Install dependencies
+        run: |
+          npm ci --ignore-scripts --no-fund --no-audit
+          npm ci --prefix common --no-fund --no-audit
+          npm ci --prefix daemon --no-fund --no-audit
+          npm ci --prefix panel --no-fund --no-audit
+          npm ci --prefix frontend --no-fund --no-audit
+      - name: Run tests
+        run: npm test
+      - name: Check types
+        run: npm run type-check
+      - name: Include native tools
+        run: wget --input-file=lib-urls.txt --directory-prefix=daemon/lib/ --tries=3 --timeout=60
+      - name: Build npm packages
+        run: npm run build:npm
+      - name: Create npm archives
+        run: |
+          npm pack ./npm-packages/daemon --ignore-scripts --pack-destination npm-packages
+          npm pack ./npm-packages/panel --ignore-scripts --pack-destination npm-packages
+          npm pack ./npm-packages/create-elementspanel --ignore-scripts --pack-destination npm-packages
+      - name: Upload npm archives
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-packages-node-${{ matrix.node-version }}
+          path: npm-packages/*.tgz
+          if-no-files-found: error

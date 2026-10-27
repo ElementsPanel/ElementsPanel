@@ -41,19 +41,24 @@ npx epanel start --with-daemon --panel-dir /opt/elementspanel/web --daemon-dir /
 
 ## npm 发布
 
-发布 GitHub Release 后，`npm-publish.yml` 会自动检出该 Release 的 tag，安装锁定的依赖、运行测试和类型检查、构建并发布三个 npm 包，顺序为 daemon、panel、初始化器。正式 Release 发布到 `latest`，勾选预发布的 Release 发布到 `next`；仅推送 Git tag 不会触发发布。也可在 Actions 中手动运行，指定 tag/commit 和 npm 标签。
+`npm run build:npm` 依次编译 common、daemon、panel 和 frontend，直接生成 `npm-packages/` 下的三个发布目录。构建前需安装各目录的依赖，并将 `lib-urls.txt` 列出的原生工具和许可证下载到 `daemon/lib/`。`npm run package:npm` 仅收集已有的 `panel/production`、`daemon/production`、内置插件编译结果和 `frontend/dist`，不执行构建或安装。输出目录已存在时可使用 `npm run build:npm -- --out <新目录>`，或 `npm run package:npm -- --out <新目录>`。
 
-首次发布前需要配置：
+`webpack.yml` 在推送到 `main`、向 `main` 提交 PR 或手动触发时，使用 Node.js 22 和 24 分别安装锁定的依赖、运行测试和类型检查、下载原生工具并构建 npm 包。三个 `.tgz` 会保存为 Actions 的 `npm-packages-node-22.x` 和 `npm-packages-node-24.x` artifact。CI 仅用于编译与测试，不发布 npm，也不需要配置 npm 发布凭据。
 
-1. 确保 npm 账号可使用 `create-elementspanel` 包名及 `@elementspanel` scope。
-2. 在 GitHub 的 `npm` environment 或仓库 Actions secrets 中设置有发布权限的 `NPM_TOKEN`，用于创建并首次发布这三个包。
-3. 包创建后，可为三个包分别配置 npm Trusted Publishing：GitHub owner 为 `ElementsPanel`，repository 为 `ElementsPanel`，workflow 为 `npm-publish.yml`，environment 为 `npm`。配置完成后移除 `NPM_TOKEN`，后续发布使用 OIDC。工作流使用 Node.js 24，并附带 provenance。
+发布 npm 包由维护者手动操作。确认 npm 账号可使用 `create-elementspanel` 包名及 `@elementspanel` scope 后，在本地构建完成的仓库目录中登录 npm，按 daemon、panel、初始化器的顺序发布：
 
-发布版本分别来自 `daemon/package.json`、`panel/package.json` 和 `packages/create-elementspanel/package.json`，工作流不会根据 tag 自动改写版本。发布前需提交三个包尚未发布的新版本号；npm 不允许覆盖已有版本。预发布请使用 `1.1.0-beta.1` 这样的版本号，转正式版时使用新的正式版本号。初始化器会固定本次发布的双端版本。
+```sh
+npm login
+npm publish ./npm-packages/daemon --access public
+npm publish ./npm-packages/panel --access public
+npm publish ./npm-packages/create-elementspanel --access public
+```
 
-`npm run build:npm` 依次编译 common、daemon、panel 和 frontend，直接生成 `npm-packages/` 下的三个发布目录。构建前需安装各目录的依赖，并将 `lib-urls.txt` 列出的原生工具和许可证下载到 `daemon/lib/`；发布 workflow 会自动完成这些准备。`npm run package:npm` 仅收集已有的 `panel/production`、`daemon/production`、内置插件编译结果和 `frontend/dist`，不执行构建或安装。输出目录已存在时可使用 `npm run build:npm -- --out <新目录>`，或 `npm run package:npm -- --out <新目录>`。
+也可下载某个 Node.js 版本对应的 Actions artifact，解压后按相同顺序对三个 `.tgz` 执行 `npm publish <文件名> --access public`。
 
-发布目录包含编译产物、内置插件、前端资源、CLI 和许可证，并排除运行数据、上传文件、`node_modules` 及本地 `file:../common` 依赖。工作流将三个 `.tgz` 保存为 Actions 的 `npm-packages` artifact，并向 npm 发布这些归档。旧的 `production-code` 构建、Linux／Windows 发行包和 Docker 镜像发布流程已移除。
+发布版本分别来自 `daemon/package.json`、`panel/package.json` 和 `packages/create-elementspanel/package.json`，构建不会根据 Git tag 自动改写版本。发布前需提交三个包尚未发布的新版本号；npm 不允许覆盖已有版本。预发布请使用 `1.1.0-beta.1` 这样的版本号，并在三条发布命令中添加 `--tag next`；正式版默认发布到 `latest`。初始化器会固定本次发布的双端版本。
+
+发布目录包含编译产物、内置插件、前端资源、CLI 和许可证，并排除运行数据、上传文件、`node_modules` 及本地 `file:../common` 依赖。旧的 `production-code` 构建、Linux／Windows 发行包和 Docker 镜像发布流程已移除。
 
 本地可用 `npm run init:project -- /tmp/my-panel --no-install --yes` 检查项目初始化，无需构建或启动服务。
 
