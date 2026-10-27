@@ -15,6 +15,12 @@ const load = createLoader({
   resolve(id, { filename, localRequire, load, overrides }) {
     if (id.endsWith(".vue")) return { name: path.basename(id) };
     if (id === "vue") return vue;
+    // Resolve the workspace package from source: CI does not build common/dist
+    // before running the tests, and the published entry point would be missing.
+    if (id === "mcsmanager-common") {
+      commonSource ??= load("common/src/index.ts");
+      return commonSource;
+    }
     if (id.startsWith(".")) {
       const base = path.resolve(path.dirname(filename), id);
       for (const candidate of [base + ".ts", path.join(base, "index.ts")])
@@ -23,6 +29,7 @@ const load = createLoader({
     return localRequire(id);
   }
 });
+let commonSource;
 
 function translations(Service) {
   return class extends Service {

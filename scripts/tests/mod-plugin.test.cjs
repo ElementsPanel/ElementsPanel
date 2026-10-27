@@ -396,8 +396,14 @@ test("tracked mod downloads expose instance-scoped progress and retain completio
   finish();
   downloads.task = null;
   downloads.downloadingCount = 0;
-  await settle();
-  const complete = await status();
+  // Wait for the install promise and its completion handler to settle inside the
+  // test; leaving them pending would let work outlive the test.
+  let complete;
+  for (let index = 0; index < 100; index++) {
+    complete = await status();
+    if (complete.state === "completed") break;
+    await settle();
+  }
   assert.equal(complete.state, "completed");
   assert.equal(complete.downloadedBytes, 10);
   assert.doesNotMatch(JSON.stringify(complete), /https:|absolute|error/);
