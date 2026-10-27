@@ -26,7 +26,9 @@ function npmPlugins(packageRoot) {
   const files = [path.join(packageRoot, "package.json")];
   const projectFile = projectManifestFile(packageRoot);
   if (projectFile) files.push(projectFile);
-  const key = files.map(fileStamp).join("|");
+  // Paths are part of the key: two fixtures created within the same millisecond
+  // must not share a cached plugin list.
+  const key = files.map((file) => `${file}:${fileStamp(file)}`).join("|");
   if (key !== npmPluginSnapshot.key) {
     npmPluginSnapshot = { key, records: resolveNpmPlugins(packageRoot) };
   }

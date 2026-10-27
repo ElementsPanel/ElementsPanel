@@ -80,7 +80,12 @@ export function currentPackageRoot(): string {
 export function currentProjectRoot(packageRoot = currentPackageRoot()): string {
   // The npm worker sets EPANEL_PROJECT_ROOT to the installation directory. In a
   // development checkout the runtime package sits directly under the project.
-  return path.resolve(process.env.EPANEL_PROJECT_ROOT || path.resolve(packageRoot, ".."));
+  if (process.env.EPANEL_PROJECT_ROOT) return path.resolve(process.env.EPANEL_PROJECT_ROOT);
+  const scope = path.resolve(packageRoot, "..");
+  const nodeModules = path.dirname(scope);
+  if (path.basename(nodeModules) === "node_modules" && path.basename(scope).startsWith("@"))
+    return path.dirname(nodeModules);
+  return scope;
 }
 
 export function npmPluginRoots(options: { packageRoot?: string; projectRoot?: string } = {}): NpmPluginRoots {

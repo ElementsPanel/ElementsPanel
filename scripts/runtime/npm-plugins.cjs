@@ -23,7 +23,17 @@ function within(root, filename) {
 }
 
 function projectRoot(packageRoot) {
-  return path.resolve(process.env.EPANEL_PROJECT_ROOT || path.resolve(packageRoot, ".."));
+  if (process.env.EPANEL_PROJECT_ROOT) return path.resolve(process.env.EPANEL_PROJECT_ROOT);
+  const parent = path.resolve(packageRoot, "..");
+  // An installed runtime sits at <project>/node_modules/@scope/<side>; the
+  // project itself is three levels above the package. A development checkout
+  // sits directly under the project instead.
+  const scope = parent;
+  const nodeModules = path.dirname(scope);
+  if (path.basename(nodeModules) === "node_modules" && path.basename(scope).startsWith("@")) {
+    return path.dirname(nodeModules);
+  }
+  return parent;
 }
 
 function projectManifestFile(packageRoot) {
@@ -62,7 +72,10 @@ function resolveNpmPlugins(packageRoot, side) {
 
   const hostDependencies = dependenciesOf(host);
   const projectDependencies = dependenciesOf(project);
-  const hostRequire = createRequire(path.join(packageRoot, "package.json"));
+  const roots = [packageRoot];
+  const parentRoot = projectRoot(packageRoot);
+  if (path.resolve(parentRoot) !== path.resolve(packageRoot)) roots.push(parentRoot);
+  const requireAt = (root) => createRequire(path.join(root, "package.json"));
   const folders = new Set();
   const records = [];
 
@@ -77,11 +90,18 @@ function resolveNpmPlugins(packageRoot, side) {
       throw new Error(`Invalid npm plugin dependency: ${id}.`);
 
     let manifestPath;
-    try {
-      manifestPath = hostRequire.resolve(`${name}/package.json`);
-    } catch (error) {
+    let failure;
+    for (const root of roots) {
+      try {
+        manifestPath = requireAt(root).resolve(`${name}/package.json`);
+        break;
+      } catch (error) {
+        failure = error;
+      }
+    }
+    if (!manifestPath) {
       throw new Error(`Missing npm plugin ${name}. Run npm install in the project directory.`, {
-        cause: error
+        cause: failure
       });
     }
     const metadata = readJson(manifestPath);

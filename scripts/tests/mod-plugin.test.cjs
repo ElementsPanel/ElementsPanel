@@ -407,6 +407,10 @@ test("tracked mod downloads expose instance-scoped progress and retain completio
   assert.equal(complete.state, "completed");
   assert.equal(complete.downloadedBytes, 10);
   assert.doesNotMatch(JSON.stringify(complete), /https:|absolute|error/);
+  // The fixture also stops in its after hook; stopping here keeps the task's
+  // trailing microtasks inside this test instead of after it has ended.
+  await settle();
+  await ctx.stop();
 });
 
 test("tracked mod downloads protect existing files and busy transfers without cancelling them", async (t) => {
