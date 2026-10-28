@@ -67,7 +67,7 @@ export interface MarketPluginDetail {
 }
 
 function remoteInstallRoot(): string {
-  return path.join(process.cwd(), "data", "market-installs");
+  return path.join(process.cwd(), "data", "MarketInstalls");
 }
 
 function remoteInstallFile(pluginId: string): string {

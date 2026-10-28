@@ -322,7 +322,7 @@ test("panel runtime keeps overview and audit services alive when monitor is remo
   const entries = await request("/api/overview/instance_operation_logs");
   assert.equal(entries.length, 1);
   assert.equal(entries[0].type, "instance_crash");
-  assert.ok(disk.has("operation_logs/global.jsonl"));
+  assert.ok(disk.has("OperationLogs/global.jsonl"));
 });
 
 test("daemon runtime answers capabilities and overview across monitor unload and reload", async (t) => {

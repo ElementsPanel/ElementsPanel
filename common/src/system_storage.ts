@@ -4,7 +4,7 @@ import fs from "fs-extra";
 
 export default class StorageSubsystem {
   public static readonly DATA_PATH = path.resolve(process.cwd(), "data");
-  public static readonly INDEX_PATH = path.join(StorageSubsystem.DATA_PATH, "index");
+  public static readonly INDEX_PATH = path.join(StorageSubsystem.DATA_PATH, "Index");
 
   private resolvePath(name: string) {
     if (

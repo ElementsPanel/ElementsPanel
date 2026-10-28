@@ -12,7 +12,7 @@ type CleanPayload<T extends keyof OperationLoggerItemPayload> = Omit<
 
 export class OperationLogger {
   private static readonly MAX_BUFFER_SIZE = 200;
-  #storage = new JsonlStorage("operation_logs");
+  #storage = new JsonlStorage("OperationLogs");
   #buffer = new Map<string, OperationLoggerItem>();
   #bufferSize: number;
   #flushTimer: NodeJS.Timeout | null = null;

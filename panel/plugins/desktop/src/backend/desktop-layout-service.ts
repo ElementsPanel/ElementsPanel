@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
 
-const DESKTOP_LAYOUT_DIR = "desktop_layouts";
+const DESKTOP_LAYOUT_DIR = "DesktopLayouts";
 
 type Logger = PanelPluginContext["logger"];
 
