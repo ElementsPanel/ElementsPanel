@@ -176,11 +176,7 @@ function workspaceReadme(id, sides) {
   return [
     `# epanel-plugin-${id}`,
     "",
-    "Third-party ElementsPanel plugin workspace.",
-    "",
     "## Development",
-    "",
-    "Run these commands from the initialized project root:",
     "",
     "```sh",
     "npm install",
@@ -188,11 +184,11 @@ function workspaceReadme(id, sides) {
     "npm start",
     "```",
     "",
-    `Source code lives in ${sides.map((side) => `${side}/src`).join(" and ")}. The build output is written to the corresponding backend/ and frontend/ directories and is the only form loaded by the packaged runtime.`,
+    `Edit source under ${sides.map((side) => `${side}/src`).join(" and ")}. Build output is written to the corresponding backend/ and frontend/ directories. Enable the plugin in the panel's plugin configuration after building.`,
     "",
     "## Publish",
     "",
-    `Update the version in this package's package.json, then run npm run pub -- ${id}. The command builds the workspace and publishes it as an npm package.`,
+    `Update this package's version, then run npm run pub -- ${id}.`,
     ""
   ].join("\n");
 }
@@ -361,7 +357,7 @@ async function publishCommand(projectRoot, args) {
 }
 
 function help() {
-  console.log(`Usage: epanel-workspace <setup|build|publish> [name] [options]\n\n  setup <name> [--panel|--daemon|--both] [--no-install]\n  build [name ...]\n  publish [name ...]\n\nWorkspaces are created below external/ in an initialized ElementsPanel project.`);
+  console.log(`Usage: epanel-workspace <setup|build|publish> [name] [options]\n\n  setup <name> [--panel|--daemon|--both] [--no-install]\n  build [name ...]\n  publish [name ...]`);
 }
 
 async function main(argv = process.argv.slice(2)) {

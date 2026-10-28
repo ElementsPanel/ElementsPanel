@@ -112,6 +112,11 @@ export interface PluginDiscoveryRoot {
   directory: string;
   /** Stable public asset name for npm plugins whose manifest lives below a side directory. */
   folder?: string;
+  /**
+   * Root-level enablement policy. Runtime packages use false to keep project
+   * plugins dormant until the user enables them from plugin configuration.
+   */
+  defaultEnabled?: boolean;
 }
 
 const MANIFEST_FILES = ["plugin.json", "manifest.json", "package.json"];
@@ -212,7 +217,8 @@ export function discoverPlugins(root: string, options: DiscoverPluginsOptions): 
  * Discovers plugins from several roots while keeping the first root's plugin
  * when ids collide. The built-in root is intentionally passed first by the
  * panel and daemon loaders, so an installed market plugin cannot shadow a
- * built-in npm dependency.
+ * built-in npm dependency. A root can also force an installed project plugin
+ * into the disabled state; the user-owned override layer may enable it later.
  */
 export function discoverPluginsFromRoots(
   roots: readonly PluginDiscoveryRoot[],
@@ -229,12 +235,19 @@ export function discoverPluginsFromRoots(
       : discoverPlugins(root.directory, options);
     for (const plugin of plugins) {
       if (!plugin) continue;
+      const manifest =
+        root.defaultEnabled === false ? { ...plugin.manifest, enabled: false } : plugin.manifest;
+      if (manifest.enabled === false && !options.includeDisabled) continue;
       if (seenIds.has(plugin.manifest.id)) {
         options.onWarning?.(`Ignoring duplicate plugin id: ${plugin.manifest.id}`);
         continue;
       }
       seenIds.add(plugin.manifest.id);
-      discovered.push(root.folder ? { ...plugin, folder: root.folder } : plugin);
+      discovered.push({
+        ...plugin,
+        manifest,
+        ...(root.folder ? { folder: root.folder } : {})
+      });
     }
   }
   return sortPlugins(discovered);

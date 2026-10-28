@@ -26,11 +26,20 @@ function npmPluginRoots(side?: "panel" | "daemon"): PluginDiscoveryRoot[] {
   if (!fs.existsSync(path.join(packagePath(), "package.json"))) return [];
   if (!isPackagedRuntime() && !fs.existsSync(resolver)) return [];
   const { resolveNpmPlugins } = runtimeRequire(resolver);
-  return resolveNpmPlugins(packagePath(), side, { skipInvalid: true });
+  return resolveNpmPlugins(packagePath(), side, { skipInvalid: true }).map((record: any) => ({
+    directory: record.directory,
+    ...(record.folder ? { folder: record.folder } : {}),
+    // Built-in packages are part of the runtime's default configuration. A
+    // project dependency is installed but remains dormant until the user
+    // enables it through the plugin configuration service.
+    defaultEnabled: record.defaultEnabled !== false
+  }));
 }
 
 export function packagePluginRoots(side: "panel" | "daemon"): PluginDiscoveryRoot[] {
-  const roots: PluginDiscoveryRoot[] = isPackagedRuntime() ? [] : [{ directory: packagePath("plugins") }];
+  const roots: PluginDiscoveryRoot[] = isPackagedRuntime()
+    ? []
+    : [{ directory: packagePath("plugins"), defaultEnabled: true }];
   // Project-installed npm plugins load in development too: they are dependencies
   // of the development project, not of the published runtime package.
   roots.push(...npmPluginRoots(side));

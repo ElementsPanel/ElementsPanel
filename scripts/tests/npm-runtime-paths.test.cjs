@@ -118,6 +118,10 @@ test("project-level npm plugins are resolved alongside bundled plugins", (t) => 
 
   const bundled = installNpmPlugin(packageRoot, "panel", "runtime");
   const project = installNpmPlugin(work, "panel", "custom");
+  const customManifestFile = path.join(project.directory, "plugin.json");
+  const customManifest = JSON.parse(fs.readFileSync(customManifestFile, "utf8"));
+  customManifest.enabled = true;
+  fs.writeFileSync(customManifestFile, JSON.stringify(customManifest));
   const { resolveNpmPlugins } = require("../runtime/npm-plugins.cjs");
   const records = resolveNpmPlugins(packageRoot, "panel");
   assert.deepEqual(
@@ -128,6 +132,10 @@ test("project-level npm plugins are resolved alongside bundled plugins", (t) => 
     records.find((record) => record.id === "custom").packageRoot,
     project.packageRoot
   );
+  assert.equal(records.find((record) => record.id === "runtime").source, "bundled");
+  assert.equal(records.find((record) => record.id === "custom").source, "project");
+  assert.equal(records.find((record) => record.id === "runtime").defaultEnabled, true);
+  assert.equal(records.find((record) => record.id === "custom").defaultEnabled, false);
 
   const { listNpmPlugins } = load("common/src/plugin_npm.ts");
   const listed = listNpmPlugins("panel", { packageRoot, projectRoot: work });
@@ -143,6 +151,17 @@ test("project-level npm plugins are resolved alongside bundled plugins", (t) => 
     bundled.directory,
     records.find((record) => record.id === "runtime").directory
   );
+
+  const { discoverPluginsFromRoots } = load("common/src/plugin_manifest.ts");
+  const roots = load("common/src/runtime_paths.ts").packagePluginRoots("panel");
+  assert.equal(roots.find((root) => root.directory === project.directory).defaultEnabled, false);
+  const discovered = discoverPluginsFromRoots(roots, {
+    entryFields: ["panel", "backend"],
+    entryCandidates: [],
+    includeDisabled: true
+  });
+  assert.equal(discovered.find((plugin) => plugin.manifest.id === "runtime").manifest.enabled, undefined);
+  assert.equal(discovered.find((plugin) => plugin.manifest.id === "custom").manifest.enabled, false);
 });
 
 test("missing optional npm plugins do not abort runtime discovery", (t) => {

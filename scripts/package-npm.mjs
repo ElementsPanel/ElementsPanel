@@ -160,9 +160,7 @@ async function packageBuiltinPlugins(sourceRoot, outputRoot, stagingRoot) {
     copyTree(path.join(repository, "LICENSE"), path.join(directory, "LICENSE"));
     await fs.writeFile(
       path.join(directory, "README.md"),
-      `# ${plugin.name}\n\n${plugin.description}\n\nBuilt-in ElementsPanel plugin for ${sides.join(
-        " and "
-      )}. Installed automatically as a runtime dependency. Plugin metadata and compiled assets are kept in the corresponding side directory. Configuration is stored in the installation's data/plugin-overrides.json, outside this package.\n\nPublish plugin packages before @elementspanel/panel and @elementspanel/daemon. The host supplies shared runtime dependencies and the browser SDK.\n`
+      `# ${plugin.name}\n\n${plugin.description}\n\nAvailable for: ${sides.join(" and ")}.\n`
     );
     result.push(metadata);
   }
@@ -218,15 +216,11 @@ async function packageRuntime(side, sourceRoot, outputRoot, plugins) {
   copyTree(path.join(repository, "LICENSE"), path.join(output, "LICENSE"));
   await fs.writeFile(
     path.join(output, "README.md"),
-    `# ${
-      metadata.name
-    }\n\nRequires Node.js 22.15 or newer.\n\nCreate an installation using \`npm init elementspanel@latest my-panel\`, enter the directory and run \`npm start\`. Select the ${side} template to install only this service.\n\nFor an existing npm project, install this package and run \`npx ${
-      side === "panel" ? "epanel" : "epanel-daemon"
-    } start\`. Runtime data is stored in \`./${side}\`, separate from the package. Use \`--cwd\` to select the project directory or \`--${side}-dir\` to reuse an existing runtime directory.\n\n${
+    `# ${metadata.name}\n\nRequires Node.js 22.15+.\n\nInitialize a project with \`npm init elementspanel@latest my-panel\`, then run \`npm start\`. For an existing npm project, run \`npx ${side === "panel" ? "epanel" : "epanel-daemon"} start\`. Runtime data is stored in \`./${side}\`. Use \`--cwd\` or \`--${side}-dir\` to select another location.\n\n${
       side === "panel"
-        ? "Install @elementspanel/daemon in the project and pass --with-daemon to start a local node with the panel.\n\n"
-        : "PTY and archive tools are downloaded to ./daemon/data/lib on the first start; Java, Docker and game runtimes remain separate runtime requirements.\n\n"
-    }Stop the service and back up runtime data before upgrading. Configuration, logs, uploads and installed plugins are not stored in node_modules.\n`
+        ? "Install @elementspanel/daemon and use --with-daemon to start a local daemon."
+        : "PTY and archive tools are downloaded to ./daemon/data/lib on first start."
+    }\n`
   );
   return metadata;
 }

@@ -56,9 +56,12 @@ function dependenciesOf(manifest) {
 
 /**
  * Resolve declared plugins through the host's dependency graph, including nested
- * installs and project-level dependencies installed by the plugin market. Runtime
- * startup passes skipInvalid so an optional package being removed does not stop
- * the host; the caller separately validates the small set of core plugins.
+ * installs and project-level dependencies installed by the plugin market. The
+ * resolver also returns whether the mapping belongs to the built-in or project
+ * installation layer, so project plugins can remain dormant until enabled.
+ * Runtime startup passes skipInvalid so an optional package being removed does
+ * not stop the host; the caller separately validates the small set of core
+ * plugins.
  */
 function resolveNpmPlugins(packageRoot, side, options = {}) {
   const skipInvalid = options.skipInvalid === true;
@@ -159,6 +162,8 @@ function resolveNpmPlugins(packageRoot, side, options = {}) {
       id,
       name,
       version: metadata.version,
+      source: mapping.source,
+      defaultEnabled: mapping.source !== "project",
       packageRoot: pluginRoot,
       directory,
       folder: definition.folder,
