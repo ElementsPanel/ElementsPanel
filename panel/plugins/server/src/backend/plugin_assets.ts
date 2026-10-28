@@ -67,7 +67,7 @@ export function pluginAssets(ctx: PanelPluginContext): Koa.Middleware {
       requestCtx.status = 404;
       return;
     }
-    // Resolve the directory from discovery, including data/plugins and legacy installations.
+    // Resolve the directory from the npm package discovery result.
     return koaMount(
       `/plugins/${folder}${revision ? `@${revision}` : ""}/frontend`,
       koaStatic(plugin.frontendDirectory, { maxAge: revision ? STATIC_MAX_AGE : 0 })

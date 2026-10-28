@@ -38,6 +38,19 @@ test("npm resources and binary paths are independent of the user's data director
   assert.equal(paths.isPackagePlugin(path.join(packageRoot, "plugins-other/plugin")), false);
   assert.equal(paths.isPackagePlugin(path.join(work, "data/plugins/custom")), false);
   delete process.env.EPANEL_PACKAGE_ROOT;
+  const legacyPlugins = path.join(work, "data", "plugins");
+  for (const side of ["panel", "daemon"]) {
+    assert.equal(
+      paths
+        .packagePluginRoots(side)
+        .some(
+          (root) =>
+            root.directory === legacyPlugins || root.directory.startsWith(`${legacyPlugins}${path.sep}`)
+        ),
+      false,
+      `${side} must not discover data/plugins`
+    );
+  }
   assert.equal(paths.packagePath("plugins"), path.join(work, "plugins"));
 });
 

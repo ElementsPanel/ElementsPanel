@@ -18,6 +18,7 @@ async function loadHostConfig() {
   );
   const filename = path.join(root, "frontend/vite.config.ts");
   const mod = new Module(filename, module);
+  const discoveryRoots = [];
   const overrides = {
     "@vitejs/plugin-vue": () => ({}),
     "@vitejs/plugin-vue-jsx": () => ({}),
@@ -27,13 +28,15 @@ async function loadHostConfig() {
     "./plugin-sdk.config.mjs": { pluginSdkModules },
     "./plugin-dependencies.config.mjs": { frontendDependencyFallback },
     "../common/src/plugin_manifest": {
-      discoverPluginsFromRoots: () =>
-        ["console", "runtime", "user", "file"].map((id) => ({
+      discoverPluginsFromRoots: (roots) => {
+        discoveryRoots.push(roots.map((root) => root.directory));
+        return ["console", "runtime", "user", "file"].map((id) => ({
           manifest: { id },
           directory: `/virtual/plugins/${id}`,
           folder: id,
           entry: `/virtual/plugins/${id}/src/frontend.ts`
-        })),
+        }));
+      },
       createFrontendPluginMetadata: (manifest) => ({ id: manifest.id })
     },
     "../common/src/plugin_overrides": { applyPluginOverrides: (value) => value },
@@ -56,8 +59,18 @@ async function loadHostConfig() {
     ).outputText,
     filename
   );
-  return { config: mod.exports.default, pluginSdkModules };
+  return { config: mod.exports.default, pluginSdkModules, discoveryRoots };
 }
+
+test("frontend discovery does not load panel plugins from runtime data directories", async () => {
+  const { config, discoveryRoots } = await loadHostConfig();
+  const plugin = config.plugins.find((item) => item.name === "elements-panel-plugins");
+  plugin.configResolved({ command: "serve" });
+  const directories = discoveryRoots.flat();
+  assert.ok(directories.length > 0);
+  assert.ok(directories.every((directory) => !directory.includes("panel/data/plugins")));
+  assert.ok(directories.every((directory) => !directory.includes("panel/market_plugins")));
+});
 
 test("host SDK maps all compiler externals before module scripts, with prefix-relative URLs", async () => {
   const { config, pluginSdkModules } = await loadHostConfig();

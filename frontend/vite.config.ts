@@ -24,11 +24,6 @@ const PANEL_PLUGIN_BUILD_ENTRY_PREFIX = "panel-plugin-build-entry:";
 const RESOLVED_PANEL_PLUGIN_BUILD_ENTRY_PREFIX = `\0${PANEL_PLUGIN_BUILD_ENTRY_PREFIX}`;
 const PROJECT_DIRECTORY = fileURLToPath(new URL("..", import.meta.url));
 const PANEL_PLUGINS_DIRECTORY = fileURLToPath(new URL("../panel/plugins", import.meta.url));
-// Plugins installed from the market: git-ignored, so they must be discovered the
-// same way as the built-in ones or an installed plugin would never load.
-const MARKET_PANEL_PLUGINS_DIRECTORY = fileURLToPath(
-  new URL("../panel/market_plugins", import.meta.url)
-);
 // Resolve the installed package's exports from the frontend workspace. Vuetify
 // releases use both .mjs and .js entry points, so hard-coding an extension fails
 // after a compatible dependency update.
@@ -70,17 +65,13 @@ function relocateCssUrls(source: string | Uint8Array, originalFile: string, relo
   });
 }
 
-function discoverPanelPlugins(includeInstalled = false): DiscoveredPanelPlugin[] {
+function discoverPanelPlugins(applyOverrides = false): DiscoveredPanelPlugin[] {
   // Discovery is shared with the panel and daemon backends, so the four places
   // that read `plugin.json` cannot drift apart. Only the entry field and the
-  // build-time extras are specific to this side.
-  const roots = [{ directory: PANEL_PLUGINS_DIRECTORY, overrideManaged: false }];
-  if (includeInstalled) {
-    roots.push(
-      { directory: path.join(PROJECT_DIRECTORY, "panel/data/plugins"), overrideManaged: true },
-      { directory: MARKET_PANEL_PLUGINS_DIRECTORY, overrideManaged: false }
-    );
-  }
+  // build-time extras are specific to this side. User-installed panel plugins
+  // are npm dependencies; the data/plugins and market_plugins directories are
+  // intentionally not part of frontend discovery.
+  const roots = [{ directory: PANEL_PLUGINS_DIRECTORY }];
   const discovered = discoverPluginsFromRoots(roots, {
     includeDisabled: true,
     entryFields: ["frontend", "ui"],
@@ -95,14 +86,14 @@ function discoverPanelPlugins(includeInstalled = false): DiscoveredPanelPlugin[]
     onWarning: (message, error) => console.warn(message, error)
   });
   return (
-    includeInstalled
+    applyOverrides
       ? applyPluginOverrides(
           discovered,
           path.join(PROJECT_DIRECTORY, "panel/data/plugin-overrides.json")
         )
       : discovered
   )
-    .filter((plugin) => plugin.entry && (!includeInstalled || plugin.manifest.enabled !== false))
+    .filter((plugin) => plugin.entry && (!applyOverrides || plugin.manifest.enabled !== false))
     .map((plugin) => ({
       metadata: createFrontendPluginMetadata(plugin.manifest) as unknown as Record<string, unknown>,
       directory: plugin.directory,
@@ -120,9 +111,7 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
     const target = path.resolve(file).toLowerCase();
     return [
       PANEL_PLUGINS_DIRECTORY,
-      MARKET_PANEL_PLUGINS_DIRECTORY,
-      path.join(PROJECT_DIRECTORY, "panel/data/plugin-overrides.json"),
-      path.join(PROJECT_DIRECTORY, "panel/data/plugins")
+      path.join(PROJECT_DIRECTORY, "panel/data/plugin-overrides.json")
     ].some((directory) => {
       const root = path.resolve(directory).toLowerCase();
       return target === root || target.startsWith(`${root}${path.sep}`);
@@ -178,9 +167,7 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
     configureServer(server: any) {
       server.watcher.add([
         PANEL_PLUGINS_DIRECTORY,
-        MARKET_PANEL_PLUGINS_DIRECTORY,
-        path.join(PROJECT_DIRECTORY, "panel/data/plugin-overrides.json"),
-        path.join(PROJECT_DIRECTORY, "panel/data/plugins")
+        path.join(PROJECT_DIRECTORY, "panel/data/plugin-overrides.json")
       ]);
       const reload = (file: string) => {
         if (!isPluginFile(file)) return;
