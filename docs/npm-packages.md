@@ -26,7 +26,7 @@ npm start
 
 工作区默认创建 panel 插件；`npm run setup -- example --both` 同时创建 daemon 端。源码位于工作区的 `panel/src/` 或 `daemon/src/`，构建结果写入对应的 `backend/` 和 `frontend/` 目录，并通过项目的 npm 依赖映射加载。修改插件版本后，运行 `npm run pub -- example` 构建并发布 npm 包。
 
-安装根目录、common、panel、daemon、frontend 的依赖，将 `lib-urls.txt` 中的工具和许可证下载到 `daemon/lib/` 后，运行 `npm run build:npm` 生成 `npm-packages/`。已有编译结果时，`npm run package:npm` 只收集和校验产物。输出目录必须尚不存在，也可追加 `-- --out <新目录>`。
+安装根目录、common、panel、daemon、frontend 的依赖，将 `lib-urls.txt` 中的工具和许可证下载到 `daemon/lib/` 后，运行 `npm run build:npm` 生成 `npm-packages/`。已有编译结果时，`npm run package:npm` 只收集和校验产物；目标输出目录存在时会在新产物准备完成后静默替换，也可追加 `-- --out <新目录>`。
 
 输出包含两个运行包、初始化器，以及每个内置插件的独立目录。版本分别沿用运行包和 `plugin.json` 中的版本号；一个插件的双端版本必须一致。编译测试 workflow 会打包所有目录并保存 `.tgz` artifact，npm 发布由维护者手动执行。
 

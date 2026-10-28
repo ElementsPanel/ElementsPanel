@@ -244,8 +244,6 @@ export async function packageNpm({
 } = {}) {
   sourceRoot = path.resolve(sourceRoot);
   outputRoot = path.resolve(outputRoot);
-  if (await exists(outputRoot))
-    throw new Error(`Output already exists; choose a new --out directory: ${outputRoot}`);
   await fs.mkdir(path.dirname(outputRoot), { recursive: true });
   const temporary = await fs.mkdtemp(path.join(path.dirname(outputRoot), ".elementspanel-npm-"));
   try {
@@ -271,6 +269,7 @@ export async function packageNpm({
       path.join(createOutput, "package.json"),
       `${JSON.stringify(create, null, 2)}\n`
     );
+    await fs.rm(outputRoot, { recursive: true, force: true });
     await fs.rename(packages, outputRoot);
     return { panel, daemon, create, plugins };
   } finally {

@@ -168,7 +168,10 @@ test("workspace packaging includes runnable entry points and excludes user data 
     if (!filename.endsWith(".txt"))
       assert.ok(fs.statSync(path.join(f.outputRoot, "daemon/lib", filename)).mode & 0o111);
   }
-  await assert.rejects(packageNpm(f), /Output already exists/);
+  fs.writeFileSync(path.join(f.outputRoot, "stale-output.txt"), "replace me");
+  await packageNpm(f);
+  assert.equal(fs.existsSync(path.join(f.outputRoot, "stale-output.txt")), false);
+  assert.ok(fs.existsSync(path.join(f.outputRoot, "panel/package.json")));
 });
 
 test("separate npm plugin packages resolve from hoisted and nested installations", async (t) => {
