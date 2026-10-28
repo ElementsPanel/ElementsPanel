@@ -1,11 +1,19 @@
 # npm 包
 
-需要 Node.js 22.15 或更新版本。安装入口包为 `@elementspanel/init`，命令名仍为 `init-elementspanel`；两个运行包为 `@elementspanel/panel` 和 `@elementspanel/daemon`：
+需要 Node.js 22.15 或更新版本。直接运行 `@elementspanel/init` 即可启动安装向导；也保留 `init-elementspanel` 命令。两个运行包为 `@elementspanel/panel` 和 `@elementspanel/daemon`：
 
 ```sh
-npx @elementspanel/init@latest my-panel
-cd my-panel
-npm start
+npx @elementspanel/init@latest
+```
+
+向导首先询问语言，支持 English 和中文；后续问题、校验错误和完成提示使用所选语言，并为所选服务写入对应的语言配置。随后询问安装目录、安装 panel 与 daemon 两端或其中一端、所选服务的监听端口，以及是否立即安装依赖。中文系统默认选择中文，其他系统默认选择 English。默认目录为 `my-panel`，默认安装两端，panel 默认端口为 `23333`，daemon 默认端口为 `24444`。端口必须为 `1` 至 `65535` 的整数；安装两端时，两个端口不能相同。中文确认提示也支持输入“是”或“否”。
+
+端口在安装依赖前写入所选服务的 `panel/data/SystemConfig/config.json` 和 `daemon/data/Config/global.json`，其他配置由服务首次启动时补齐。目标目录必须为空或不存在，也可以输入 `.` 使用当前空目录。完成后会输出 `cd` 和 `npm start` 命令；使用当前目录时省略 `cd`，选择暂不安装依赖时还会提示先运行 `npm install`。
+
+自动化安装可以用 `--language en` 或 `--language zh` 指定语言，并通过参数跳过交互：
+
+```sh
+npx @elementspanel/init@latest my-panel --language zh --template full --panel-port 23333 --daemon-port 24444 --no-install --yes
 ```
 
 内置插件按功能发布为 `@elementspanel/epanel-plugin-*`。例如，`epanel-plugin-instance` 包同时包含 panel 和 daemon 两端；`epanel-plugin-console` 只包含 panel 端。运行包在 `dependencies` 中固定对应插件版本，初始化器安装运行包时会自动安装这些依赖。

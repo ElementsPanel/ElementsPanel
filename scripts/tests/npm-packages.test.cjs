@@ -164,6 +164,13 @@ test("workspace packaging includes runnable entry points and excludes user data 
     fs.readFileSync(path.join(f.outputRoot, "init-elementspanel/package.json"))
   );
   assert.equal(create.name, "@elementspanel/init");
+  assert.equal(create.bin.init, "bin.cjs");
+  const chineseHelp = execFileSync(
+    process.execPath,
+    [path.join(f.outputRoot, "init-elementspanel/bin.cjs"), "--language", "zh", "--help"],
+    { encoding: "utf8" }
+  );
+  assert.match(chineseHelp, /用法：npx @elementspanel\/init@latest/);
   assert.ok(fs.existsSync(path.join(f.outputRoot, "init-elementspanel/workspace.cjs")));
   assert.deepEqual(create.runtimeVersions, {
     panel: result.panel.version,
@@ -287,8 +294,8 @@ test("npm pack includes runtime and built-in plugin artifacts without sources or
           (file) => file.path === (name === "init-elementspanel" ? "bin.cjs" : `bin/${name}.cjs`)
         )
       );
-    if (name === "init-elementspanel")
-      assert.ok(archive.files.some((file) => file.path === "workspace.cjs"));
+      if (name === "init-elementspanel")
+        assert.ok(archive.files.some((file) => file.path === "workspace.cjs"));
     }
     assert.ok(
       archive.files.every(

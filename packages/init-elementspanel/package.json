@@ -9,12 +9,14 @@
     "directory": "packages/init-elementspanel"
   },
   "bin": {
+    "init": "bin.cjs",
     "init-elementspanel": "bin.cjs",
     "epanel-workspace": "workspace.cjs"
   },
   "files": [
     "bin.cjs",
     "index.cjs",
+    "i18n.cjs",
     "workspace.cjs",
     "LICENSE"
   ],

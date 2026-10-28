@@ -31,10 +31,11 @@ function temporary(t) {
   return { root, processes };
 }
 
-function execute(fixture, filename, args = [], cwd = fixture.root) {
+function execute(fixture, filename, args = [], cwd = fixture.root, env = process.env) {
   let output = "";
   const child = spawn(process.execPath, [filename, ...args], {
     cwd,
+    env,
     stdio: ["pipe", "pipe", "pipe"]
   });
   const timeout = setTimeout(() => child.kill("SIGKILL"), 15_000);
@@ -78,6 +79,17 @@ for (const mode of ["full", "panel", "daemon"]) {
         const manifest = JSON.parse(fs.readFileSync(path.join(target, "package.json")));
         assert.equal(manifest.private, true);
         assert.ok(manifest.scripts.start);
+        if (mode !== "daemon")
+          assert.equal(
+            JSON.parse(fs.readFileSync(path.join(target, "panel/data/SystemConfig/config.json")))
+              .httpPort,
+            23333
+          );
+        if (mode !== "panel")
+          assert.equal(
+            JSON.parse(fs.readFileSync(path.join(target, "daemon/data/Config/global.json"))).port,
+            24444
+          );
       }
     });
     assert.equal(installed, directory);
@@ -144,8 +156,256 @@ test("initializer retains a complete project after install failure and supports 
   ]);
   const result = await output.closed;
   assert.equal(result.code, 0, result.output);
-  assert.match(result.output, /npm install, then npm start/);
+  assert.match(result.output, /\n  cd /);
+  assert.match(result.output, /\n  npm install\n  npm start/);
   assert.equal(fs.existsSync(path.join(f.root, "offline/node_modules")), false);
+});
+
+function wizard(answers) {
+  const remaining = [...answers];
+  const questions = [];
+  return {
+    questions,
+    async question(message) {
+      questions.push(message);
+      assert.ok(remaining.length, `Unexpected question: ${message}`);
+      return remaining.shift();
+    }
+  };
+}
+
+for (const [mode, choice] of [
+  ["full", "1"],
+  ["panel", "2"],
+  ["daemon", "3"]
+]) {
+  test(`initializer wizard writes the chosen ${mode} ports before optionally installing dependencies`, async (t) => {
+    const f = temporary(t);
+    const directory = path.join(f.root, mode);
+    const prompt = wizard([
+      "1",
+      directory,
+      choice,
+      ...(mode !== "daemon" ? ["30001"] : []),
+      ...(mode !== "panel" ? ["30002"] : []),
+      mode === "full" ? "n" : "y"
+    ]);
+    const options = await initializer.promptOptions(initializer.parseArgs([]), prompt);
+    let installed = false;
+    await initializer.initialize({
+      ...options,
+      installer: async (target) => {
+        installed = true;
+        assert.equal(target, directory);
+        for (const side of ["panel", "daemon"]) {
+          if (mode !== "full" && mode !== side) continue;
+          const config = JSON.parse(
+            fs.readFileSync(
+              path.join(
+                target,
+                side,
+                side === "panel" ? "data/SystemConfig/config.json" : "data/Config/global.json"
+              )
+            )
+          );
+          assert.equal(
+            side === "panel" ? config.httpPort : config.port,
+            side === "panel" ? 30001 : 30002
+          );
+          assert.equal(config.language, "en_us");
+        }
+      }
+    });
+    assert.equal(options.language, "en");
+    assert.match(prompt.questions[0], /English.*中文/);
+    assert.equal(options.mode, mode);
+    assert.equal(installed, mode !== "full");
+    for (const side of ["panel", "daemon"]) {
+      const selected = mode === "full" || mode === side;
+      assert.equal(
+        prompt.questions.some((question) => question.startsWith(`${side} listening port`)),
+        selected
+      );
+      assert.equal(fs.existsSync(path.join(directory, side)), selected);
+      if (selected) {
+        const config = JSON.parse(
+          fs.readFileSync(
+            path.join(
+              directory,
+              side,
+              side === "panel" ? "data/SystemConfig/config.json" : "data/Config/global.json"
+            )
+          )
+        );
+        assert.equal(
+          side === "panel" ? config.httpPort : config.port,
+          side === "panel" ? 30001 : 30002
+        );
+      }
+    }
+  });
+}
+
+test("initializer wizard retries invalid directories, choices, ports and installation answers", async (t) => {
+  const f = temporary(t);
+  const existing = path.join(f.root, "existing");
+  const directory = path.join(f.root, "chosen");
+  write(path.join(existing, "keep.txt"), "keep");
+  const errors = t.mock.method(console, "error", () => {});
+  const prompt = wizard([
+    "invalid-language",
+    "eng",
+    existing,
+    directory,
+    "invalid",
+    "constructor",
+    "__proto__",
+    "1",
+    "not-a-port",
+    "65536",
+    "30001",
+    "30001",
+    "30002",
+    "maybe",
+    "no"
+  ]);
+  const options = await initializer.promptOptions(initializer.parseArgs([]), prompt);
+  assert.equal(options.language, "en");
+  assert.equal(options.directory, directory);
+  assert.equal(options.panelPort, 30001);
+  assert.equal(options.daemonPort, 30002);
+  assert.equal(options.install, false);
+  assert.equal(fs.existsSync(directory), false);
+  assert.equal(fs.readFileSync(path.join(existing, "keep.txt"), "utf8"), "keep");
+  assert.equal(errors.mock.callCount(), 9);
+});
+
+test("initializer wizard translates Chinese prompts, errors and completion and saves the selected language", async (t) => {
+  const f = temporary(t);
+  const existing = path.join(f.root, "existing");
+  const directory = path.join(f.root, "中文向导");
+  write(path.join(existing, "keep.txt"), "keep");
+  const errors = t.mock.method(console, "error", () => {});
+  const prompt = wizard([
+    "2",
+    existing,
+    directory,
+    "0",
+    "1",
+    "bad-port",
+    "31001",
+    "31001",
+    "31002",
+    "maybe",
+    "否"
+  ]);
+  const options = await initializer.promptOptions(initializer.parseArgs([]), prompt);
+  assert.equal(options.language, "zh");
+  assert.equal(options.install, false);
+  assert.match(prompt.questions[0], /English.*中文/);
+  assert.match(prompt.questions[1], /安装目录/);
+  assert.ok(prompt.questions.some((question) => question.startsWith("安装内容")));
+  assert.ok(prompt.questions.some((question) => question.startsWith("panel 监听端口")));
+  assert.ok(prompt.questions.some((question) => question.startsWith("daemon 监听端口")));
+  assert.ok(prompt.questions.some((question) => question.startsWith("是否立即安装依赖")));
+  assert.equal(errors.mock.callCount(), 5);
+  for (const [index, pattern] of [/安装目录非空/, /请选择/, /整数/, /不能相同/, /请输入/].entries())
+    assert.match(errors.mock.calls[index].arguments[0], pattern);
+  await initializer.initialize(options);
+  for (const side of ["panel", "daemon"]) {
+    const configFile = path.join(
+      directory,
+      side,
+      side === "panel" ? "data/SystemConfig/config.json" : "data/Config/global.json"
+    );
+    assert.equal(JSON.parse(fs.readFileSync(configFile)).language, "zh_cn");
+  }
+  const result = await execute(f, path.join(repository, "packages/init-elementspanel/bin.cjs"), [
+    "中文 CLI",
+    "--language",
+    "zh",
+    "--template",
+    "daemon",
+    "--yes",
+    "--no-install"
+  ]).closed;
+  assert.equal(result.code, 0, result.output);
+  assert.match(result.output, /已创建 ElementsPanel/);
+  assert.match(result.output, /下一步：/);
+  assert.match(result.output, /\n  npm install\n  npm start/);
+  assert.equal(
+    JSON.parse(fs.readFileSync(path.join(f.root, "中文 CLI/daemon/data/Config/global.json")))
+      .language,
+    "zh_cn"
+  );
+  const invalid = await execute(f, path.join(repository, "packages/init-elementspanel/bin.cjs"), [
+    "--panel-port",
+    "invalid",
+    "--language",
+    "zh"
+  ]).closed;
+  assert.equal(invalid.code, 1, invalid.output);
+  assert.match(invalid.output, /监听端口必须是/);
+});
+
+test("initializer rejects invalid or conflicting ports before creating the project", async (t) => {
+  const f = temporary(t);
+  for (const port of ["0", "65536", "1.5", "1e3", "abc"]) {
+    assert.throws(() => initializer.parseArgs(["--panel-port", port]), /between 1 and 65535/);
+    assert.throws(() => initializer.parseArgs(["--daemon-port", port]), /between 1 and 65535/);
+  }
+  const directory = path.join(f.root, "conflicting");
+  assert.throws(() => initializer.parseArgs(["--language", "de"]), /--language must be/);
+  await assert.rejects(
+    initializer.initialize({ directory, language: "de", install: false }),
+    /--language must be/
+  );
+  await assert.rejects(
+    initializer.initialize({
+      directory,
+      panelPort: 23333,
+      daemonPort: 23333,
+      install: false
+    }),
+    /must be different/
+  );
+  assert.equal(fs.existsSync(directory), false);
+});
+
+test("initializer CLI supports custom ports and omits cd when initializing the current directory", async (t) => {
+  const f = temporary(t);
+  const result = await execute(
+    f,
+    path.join(repository, "packages/init-elementspanel/bin.cjs"),
+    [
+      ".",
+      "--yes",
+      "--no-install",
+      "--template",
+      "full",
+      "--panel-port",
+      "1",
+      "--daemon-port",
+      "65535"
+    ],
+    f.root,
+    { ...process.env, LC_ALL: "zh_CN.UTF-8" }
+  ).closed;
+  assert.equal(result.code, 0, result.output);
+  assert.doesNotMatch(result.output, /\n  cd /);
+  assert.match(result.output, /\n  npm install\n  npm start/);
+  assert.equal(
+    JSON.parse(fs.readFileSync(path.join(f.root, "panel/data/SystemConfig/config.json"))).httpPort,
+    1
+  );
+  assert.equal(
+    JSON.parse(fs.readFileSync(path.join(f.root, "panel/data/SystemConfig/config.json"))).language,
+    "zh_cn"
+  );
+  assert.equal(
+    JSON.parse(fs.readFileSync(path.join(f.root, "daemon/data/Config/global.json"))).port,
+    65535
+  );
 });
 
 function runtimeFixture(t, behavior = {}) {
@@ -324,7 +584,9 @@ test("single-side modes use their own data and support existing runtime director
         const filename =
           name === "file_zip" && process.platform === "darwin" && process.arch === "x64"
             ? "file_zip_darwin_amd64"
-            : `${name}_${process.platform}_${process.arch}${process.platform === "win32" ? ".exe" : ""}`;
+            : `${name}_${process.platform}_${process.arch}${
+                process.platform === "win32" ? ".exe" : ""
+              }`;
         write(path.join(runtime, "lib", filename), "fixture tool");
       }
     }

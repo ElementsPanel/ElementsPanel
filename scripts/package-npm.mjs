@@ -33,14 +33,7 @@ export function runtimeManifest(side, source) {
   }
   metadata.name = `@elementspanel/${side}`;
   metadata.bin = { [side === "panel" ? "epanel" : "epanel-daemon"]: `bin/${side}.cjs` };
-  metadata.files = [
-    "app.js",
-    "app.js.map",
-    "bin/",
-    "runtime/",
-    "README.md",
-    "LICENSE"
-  ];
+  metadata.files = ["app.js", "app.js.map", "bin/", "runtime/", "README.md", "LICENSE"];
   if (side === "daemon") metadata.files.splice(4, 0, "licenses/");
   if (side === "panel") metadata.files.splice(4, 0, "public/");
   metadata.engines = { node: ">=22.15.0" };
@@ -210,13 +203,20 @@ async function packageRuntime(side, sourceRoot, outputRoot, plugins) {
     const licenses = ["7z-extra-license.txt", "7z-unix-license.txt"];
     await fs.mkdir(path.join(output, "licenses"));
     for (const name of licenses)
-      copyTree(path.join(repository, "scripts/licenses", name), path.join(output, "licenses", name));
+      copyTree(
+        path.join(repository, "scripts/licenses", name),
+        path.join(output, "licenses", name)
+      );
   }
   await fs.writeFile(path.join(output, "package.json"), `${JSON.stringify(metadata, null, 2)}\n`);
   copyTree(path.join(repository, "LICENSE"), path.join(output, "LICENSE"));
   await fs.writeFile(
     path.join(output, "README.md"),
-    `# ${metadata.name}\n\nRequires Node.js 22.15+.\n\nInitialize a project with \`npx @elementspanel/init@latest my-panel\`, then run \`npm start\`. For an existing npm project, run \`npx ${side === "panel" ? "epanel" : "epanel-daemon"} start\`. Runtime data is stored in \`./${side}\`. Use \`--cwd\` or \`--${side}-dir\` to select another location.\n\n${
+    `# ${
+      metadata.name
+    }\n\nRequires Node.js 22.15+.\n\nInitialize a project with \`npx @elementspanel/init@latest my-panel\`, then run \`npm start\`. For an existing npm project, run \`npx ${
+      side === "panel" ? "epanel" : "epanel-daemon"
+    } start\`. Runtime data is stored in \`./${side}\`. Use \`--cwd\` or \`--${side}-dir\` to select another location.\n\n${
       side === "panel"
         ? "Install @elementspanel/daemon and use --with-daemon to start a local daemon."
         : "PTY and archive tools are downloaded to ./daemon/lib on first start."
@@ -247,7 +247,7 @@ export async function packageNpm({
     await fs.mkdir(createOutput);
     const create = await readJson(path.join(createSource, "package.json"));
     create.runtimeVersions = { panel: panel.version, daemon: daemon.version };
-    for (const filename of ["bin.cjs", "index.cjs", "workspace.cjs"])
+    for (const filename of ["bin.cjs", "index.cjs", "i18n.cjs", "workspace.cjs"])
       copyTree(path.join(createSource, filename), path.join(createOutput, filename));
     await fs.chmod(path.join(createOutput, "bin.cjs"), 0o755);
     await fs.chmod(path.join(createOutput, "workspace.cjs"), 0o755);
