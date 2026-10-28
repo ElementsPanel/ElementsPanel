@@ -178,7 +178,7 @@ function runtimeFixture(t, behavior = {}) {
       write(
         path.join(
           project,
-          side === "daemon" ? "daemon/data/lib" : "panel/data/lib",
+          side === "daemon" ? "daemon/lib" : "panel/lib",
           `${name}_${process.platform}_${process.arch}${process.platform === "win32" ? ".exe" : ""}`
         ),
         "fixture tool"
@@ -325,7 +325,7 @@ test("single-side modes use their own data and support existing runtime director
           name === "file_zip" && process.platform === "darwin" && process.arch === "x64"
             ? "file_zip_darwin_amd64"
             : `${name}_${process.platform}_${process.arch}${process.platform === "win32" ? ".exe" : ""}`;
-        write(path.join(runtime, "data/lib", filename), "fixture tool");
+        write(path.join(runtime, "lib", filename), "fixture tool");
       }
     }
     const command = execute(f, path.join(f.packages[side], "bin.cjs"), [

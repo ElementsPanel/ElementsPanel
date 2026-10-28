@@ -62,9 +62,9 @@ export function bundledToolPath(name: string): string {
   const suffix = platform === "win32" ? ".exe" : "";
   const filename = `${name}_${platform}_${arch}${suffix}`;
   // Published daemon packages download native tools into the installation's
-  // writable data directory on first start. Development checkouts retain the
-  // repository-local lib directory.
-  const root = isPackagedRuntime() ? path.resolve(process.cwd(), "data", "lib") : packagePath("lib");
+  // writable lib directory on first start. Development checkouts use the same
+  // repository-local sibling of data and logs.
+  const root = isPackagedRuntime() ? path.resolve(process.cwd(), "lib") : packagePath("lib");
   const primary = path.join(root, filename);
   // Zip-Tools names its Intel macOS binary "amd64", while Node reports "x64".
   if (!fs.existsSync(primary) && name === "file_zip" && platform === "darwin" && arch === "x64") {

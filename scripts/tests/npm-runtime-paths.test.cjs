@@ -31,7 +31,7 @@ test("npm resources and binary paths are independent of the user's data director
   const { default: Storage } = load("common/src/system_storage.ts");
   assert.equal(Storage.DATA_PATH, path.join(work, "data"));
   assert.equal(paths.packagePath("public"), path.join(packageRoot, "public"));
-  assert.ok(paths.bundledToolPath("pty").startsWith(path.join(work, "data", "lib") + path.sep));
+  assert.ok(paths.bundledToolPath("pty").startsWith(path.join(work, "lib") + path.sep));
   assert.equal(paths.isPackagePlugin(plugin.directory), true);
   assert.equal(paths.packagePluginRoots("panel")[0].directory, plugin.directory);
   assert.equal(paths.isPackagePlugin(path.join(packageRoot, "plugins/runtime")), false);
@@ -182,8 +182,8 @@ test("missing optional npm plugins do not abort runtime discovery", (t) => {
 
 test("archive executable permissions and the macOS amd64 alias work without modifying package assets", (t) => {
   const f = fixture(t);
-  fs.mkdirSync(path.join(f.work, "data", "lib"), { recursive: true });
-  const executable = path.join(f.work, "data", "lib", "file_zip_darwin_amd64");
+  fs.mkdirSync(path.join(f.work, "lib"), { recursive: true });
+  const executable = path.join(f.work, "lib", "file_zip_darwin_amd64");
   fs.writeFileSync(executable, "fixture", { mode: 0o555 });
   const paths = load("common/src/runtime_paths.ts", {
     "node:os": { platform: () => "darwin", arch: () => "x64" }
@@ -193,7 +193,7 @@ test("archive executable permissions and the macOS amd64 alias work without modi
   assert.equal(fs.statSync(executable).mode & 0o777, 0o555);
 });
 
-test("daemon tools download once into the installation data directory", async (t) => {
+test("daemon tools download once into the installation lib directory", async (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "elements-daemon-tools-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const downloads = [];
@@ -210,7 +210,7 @@ test("daemon tools download once into the installation data directory", async (t
     downloads.map((item) => path.basename(item.target)).sort(),
     ["7z_linux_x64", "file_zip_linux_x64", "pty_linux_x64"]
   );
-  assert.ok(downloads.every((item) => item.target.startsWith(path.join(root, "data", "lib"))));
+  assert.ok(downloads.every((item) => item.target.startsWith(path.join(root, "lib"))));
   await ensureRuntimeTools(root, {
     platform: "linux",
     arch: "x64",

@@ -31,7 +31,7 @@ function toolSpec(name, platform = process.platform, arch = process.arch) {
 
 function toolPath(directory, name, platform = process.platform, arch = process.arch) {
   const spec = toolSpec(name, platform, arch);
-  return spec ? path.join(directory, "data", "lib", spec.filename) : undefined;
+  return spec ? path.join(directory, "lib", spec.filename) : undefined;
 }
 
 function downloadFile(url, target, redirects = 0) {
@@ -90,7 +90,7 @@ function usable(filename) {
 }
 
 async function ensureRuntimeTools(directory, options = {}) {
-  const targetDirectory = path.join(directory, "data", "lib");
+  const targetDirectory = path.join(directory, "lib");
   fs.mkdirSync(targetDirectory, { recursive: true });
   const download = options.download || downloadFile;
   for (const name of requiredTools) {

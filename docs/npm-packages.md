@@ -26,7 +26,7 @@ npm start
 
 默认创建 panel 插件；使用 `npm run setup -- example --both` 创建双端插件。构建后在插件配置中启用，发布使用 `npm run pub -- example`。
 
-安装根目录、common、panel、daemon、frontend 的依赖后，运行 `npm run build:npm` 生成 `npm-packages/`。daemon npm 包不携带平台二进制库；初始化项目首次启动 daemon 时，会将当前平台需要的工具下载到 `daemon/data/lib/`。已有编译结果时，`npm run package:npm` 只收集和校验产物；目标输出目录存在时会在新产物准备完成后静默替换，也可追加 `-- --out <新目录>`。
+安装根目录、common、panel、daemon、frontend 的依赖后，运行 `npm run build:npm` 生成 `npm-packages/`。daemon npm 包不携带平台二进制库；初始化项目首次启动 daemon 时，会将当前平台需要的工具下载到 `daemon/lib/`，与 `data/` 和 `logs/` 同级。已有编译结果时，`npm run package:npm` 只收集和校验产物；目标输出目录存在时会在新产物准备完成后静默替换，也可追加 `-- --out <新目录>`。
 
 输出包含两个运行包、初始化器，以及每个内置插件的独立目录。版本分别沿用运行包和 `plugin.json` 中的版本号；一个插件的双端版本必须一致。编译测试 workflow 会打包所有目录并保存 `.tgz` artifact，npm 发布由维护者手动执行。
 
