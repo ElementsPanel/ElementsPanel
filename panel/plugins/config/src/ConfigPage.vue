@@ -128,6 +128,15 @@ const nodeLabel = (node: NodeSummary) =>
     node.available ? "" : ` (${t("TXT_CODE_PLUGIN_NODE_OFFLINE")})`
   }`;
 
+const PLUGIN_NAME_PREFIX = "epanel-plugin-";
+/** Show plugin package names without the ePanel package prefix. */
+const pluginLabel = (id?: string) => {
+  if (!id) return "";
+  const slash = id.indexOf("/");
+  const name = id.startsWith("@") && slash >= 0 ? id.slice(slash + 1) : id;
+  return name.startsWith(PLUGIN_NAME_PREFIX) ? name.slice(PLUGIN_NAME_PREFIX.length) : id;
+};
+
 const nodeItems = computed(() =>
   nodes.value.map((node) => ({ title: nodeLabel(node), value: node.uuid }))
 );
@@ -1021,7 +1030,7 @@ const confirmAction = async () => {
               draggable="true"
               :active="plugin.id === currentId"
               :class="{ 'plugin-config-item-off': !plugin.enabled }"
-              :title="plugin.id"
+              :title="pluginLabel(plugin.id)"
               @click="selectPlugin(plugin.id)"
               @dragstart="startPluginDrag(plugin.id, $event)"
               @dragend="endPluginDrag"
@@ -1057,7 +1066,7 @@ const confirmAction = async () => {
             :aria-expanded="sidebarOpen"
             @click="sidebarOpen = true"
           />
-          <h2>{{ selectedPlugin?.id || t("TXT_CODE_PLUGIN_CONFIG") }}</h2>
+          <h2>{{ pluginLabel(selectedPlugin?.id) || t("TXT_CODE_PLUGIN_CONFIG") }}</h2>
         </div>
         <div v-if="selectedPlugin" class="plugin-config-meta">
           <VChip
@@ -1236,7 +1245,7 @@ const confirmAction = async () => {
             actionCandidate?.action === 'remove'
               ? 'TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE'
               : 'TXT_CODE_PLUGIN_DISABLE_CONFIRM_TITLE',
-            { name: actionCandidate?.plugin.id || '' }
+            { name: pluginLabel(actionCandidate?.plugin.id) }
           )
         "
         class="plugin-config-confirm-card"
