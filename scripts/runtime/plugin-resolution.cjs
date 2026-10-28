@@ -60,50 +60,59 @@ function installPluginResolution(packageRoot, workRoot) {
   // Development checkouts load their source plugins from <side>/plugins; a
   // published runtime loads npm plugins only and has no source root.
   const roots = process.env.EPANEL_PACKAGE_ROOT ? [] : [path.join(workRoot, "plugins")];
+  // Node 24 routes require.resolve() calls made by this hook back through the
+  // hook itself. Without this guard, resolving plugin metadata recurses forever.
+  let resolving = false;
   return registerHooks({
     resolve(specifier, context, nextResolve) {
       if (
         isBuiltin(specifier) ||
         /^(?:[./\\]|[a-zA-Z][\w+.-]*:)/.test(specifier) ||
-        !context.parentURL?.startsWith("file:")
+        !context.parentURL?.startsWith("file:") ||
+        resolving
       ) {
         return nextResolve(specifier, context);
       }
-      const parent = fileURLToPath(context.parentURL);
-      const plugins = npmPlugins(packageRoot);
-      const npmPlugin = plugins.find((plugin) => within(plugin.packageRoot, parent));
-      const root = roots.find((directory) => within(directory, parent));
-      if (!npmPlugin && !root) return nextResolve(specifier, context);
-      const plugin =
-        npmPlugin?.packageRoot || path.join(root, path.relative(root, parent).split(path.sep)[0]);
-      const name = specifier.startsWith("@")
-        ? specifier.split("/").slice(0, 2).join("/")
-        : specifier.split("/")[0];
-      // Explicit CJS filenames keep ESM plugins on the same Context/Service
-      // classes as the CJS host, instead of selecting the second "import" build.
-      if (shared.has(name)) return resolveFile(resolveShared(specifier), context, nextResolve);
-
-      let resolved;
-      let failure;
+      resolving = true;
       try {
-        resolved = nextResolve(specifier, context);
-      } catch (error) {
-        if (!["MODULE_NOT_FOUND", "ERR_MODULE_NOT_FOUND"].includes(error.code)) throw error;
-        failure = error;
-      }
-      // A plugin's private dependencies take precedence over ordinary host dependencies.
-      if (
-        resolved?.url.startsWith("file:") &&
-        (within(plugin, fileURLToPath(resolved.url)) || npmPlugin?.dependencies.includes(name))
-      )
+        const parent = fileURLToPath(context.parentURL);
+        const plugins = npmPlugins(packageRoot);
+        const npmPlugin = plugins.find((plugin) => within(plugin.packageRoot, parent));
+        const root = roots.find((directory) => within(directory, parent));
+        if (!npmPlugin && !root) return nextResolve(specifier, context);
+        const plugin =
+          npmPlugin?.packageRoot || path.join(root, path.relative(root, parent).split(path.sep)[0]);
+        const name = specifier.startsWith("@")
+          ? specifier.split("/").slice(0, 2).join("/")
+          : specifier.split("/")[0];
+        // Explicit CJS filenames keep ESM plugins on the same Context/Service
+        // classes as the CJS host, instead of selecting the second "import" build.
+        if (shared.has(name)) return resolveFile(resolveShared(specifier), context, nextResolve);
+
+        let resolved;
+        let failure;
+        try {
+          resolved = nextResolve(specifier, context);
+        } catch (error) {
+          if (!["MODULE_NOT_FOUND", "ERR_MODULE_NOT_FOUND"].includes(error.code)) throw error;
+          failure = error;
+        }
+        // A plugin's private dependencies take precedence over ordinary host dependencies.
+        if (
+          resolved?.url.startsWith("file:") &&
+          (within(plugin, fileURLToPath(resolved.url)) || npmPlugin?.dependencies.includes(name))
+        )
+          return resolved;
+        if (hostPackages.has(name)) {
+          if (context.conditions.includes("import"))
+            return nextResolve(specifier, { ...context, parentURL: hostURL });
+          return resolveFile(hostRequire.resolve(specifier), context, nextResolve);
+        }
+        if (failure) throw failure;
         return resolved;
-      if (hostPackages.has(name)) {
-        if (context.conditions.includes("import"))
-          return nextResolve(specifier, { ...context, parentURL: hostURL });
-        return resolveFile(hostRequire.resolve(specifier), context, nextResolve);
+      } finally {
+        resolving = false;
       }
-      if (failure) throw failure;
-      return resolved;
     }
   });
 }
