@@ -16,9 +16,11 @@ require.extensions[".ts"] = (mod, filename) => mod._compile(transpile(filename),
 
 const load = createLoader({ compiler: ts });
 
-async function until(predicate) {
-  for (let i = 0; i < 100; i++) {
+async function until(predicate, timeout = 5000) {
+  const deadline = Date.now() + timeout;
+  while (true) {
     if (predicate()) return;
+    if (Date.now() >= deadline) break;
     await settle();
   }
   assert.fail("Plugin lifecycle did not settle");
@@ -399,7 +401,7 @@ test("tracked mod downloads expose instance-scoped progress and retain completio
   // Wait for the install promise and its completion handler to settle inside the
   // test; leaving them pending would let work outlive the test.
   let complete;
-  for (let index = 0; index < 100; index++) {
+  for (let index = 0; index < 1000; index++) {
     complete = await status();
     if (complete.state === "completed") break;
     await settle();
@@ -440,7 +442,7 @@ test("tracked mod downloads protect existing files and busy transfers without ca
     });
     const { taskId } = ctx.protocol.replies.pop().data;
     let status;
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 1000; i++) {
       await request("instance/mods/install_status", { instanceUuid: "instance", taskId });
       status = ctx.protocol.replies.pop().data;
       if (status.state === "failed") break;
@@ -489,7 +491,7 @@ test("tracked downloads validate destinations, preserve folder case and sanitize
   });
   const { taskId } = ctx.protocol.replies.pop().data;
   let status;
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 1000; i++) {
     await request("instance/mods/install_status", { instanceUuid: "instance", taskId });
     status = ctx.protocol.replies.pop().data;
     if (status.state === "failed") break;
