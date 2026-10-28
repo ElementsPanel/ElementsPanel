@@ -16,6 +16,7 @@
     "all": "concurrently -n Daemon,Frontend,Panel -c cyan,magenta,green -p name \"npm run dev --prefix daemon\" \"npm run dev --prefix frontend\" \"npm run dev --prefix panel\"",
     "build:npm": "npm run build --prefix common && npm run build --prefix daemon && npm run build --prefix panel && npm run build-only --prefix frontend && node scripts/package-npm.mjs",
     "package:npm": "node scripts/package-npm.mjs",
+    "publish:npm": "node scripts/publish-npm.mjs",
     "init:project": "node packages/init-elementspanel/bin.cjs",
     "i18n": "i18next-scanner --config i18-scanner.config.js && node scripts/check-i18n.mjs",
     "sort-lang-keys": "node scripts/sort-lang-key.mjs",

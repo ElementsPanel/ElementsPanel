@@ -34,12 +34,11 @@ npm start
 
 ```sh
 npm login
-for package_directory in ./npm-packages/epanel-plugin-*/; do
-  npm publish "$package_directory" --access public
-done
-npm publish ./npm-packages/daemon --access public
-npm publish ./npm-packages/panel --access public
-npm publish ./npm-packages/init-elementspanel --access public
+npm run publish:npm
 ```
+
+`publish:npm` 只发布已有的 `npm-packages/`，不会构建项目；发布前先运行 `npm run package:npm` 收集最新编译产物。它会先检查包名和版本，按插件、运行包、初始化器的顺序发布。需要预览时运行 `npm run publish:npm -- --dry-run`。
+
+发布中途失败后，运行 `npm run publish:npm -- --skip-existing` 可以跳过 registry 中已能查询到的同版本包，继续发布剩余包。追加 `--dry-run` 可预览剩余包，此时会查询 registry，但不会要求登录或上传。`--skip-existing` 不能与 `--skip-version-check` 同时使用；查询失败或发布出错时仍会停止。若 npm 提示版本已 staged，但 `npm view <包名>@<版本> version` 暂时查不到，需等待 npm 完成处理后再继续。
 
 也可以下载 CI 的 artifact，按同样顺序发布其中的 `.tgz`。预发布使用预发布版本号，并在发布命令中添加 `--tag next`。更新 npm 插件后重启对应服务；内置依赖由 npm 管理，面板中的开关和配置写入用户目录。
