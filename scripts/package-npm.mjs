@@ -262,7 +262,7 @@ export async function packageNpm({
     await fs.mkdir(createOutput);
     const create = await readJson(path.join(createSource, "package.json"));
     create.runtimeVersions = { panel: panel.version, daemon: daemon.version };
-    for (const filename of ["bin.cjs", "index.cjs", "workspace.cjs", "README.md"])
+    for (const filename of ["bin.cjs", "index.cjs", "workspace.cjs"])
       copyTree(path.join(createSource, filename), path.join(createOutput, filename));
     await fs.chmod(path.join(createOutput, "bin.cjs"), 0o755);
     await fs.chmod(path.join(createOutput, "workspace.cjs"), 0o755);

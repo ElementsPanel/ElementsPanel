@@ -16,7 +16,6 @@
     "bin.cjs",
     "index.cjs",
     "workspace.cjs",
-    "README.md",
     "LICENSE"
   ],
   "dependencies": {
