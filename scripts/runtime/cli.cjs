@@ -70,7 +70,7 @@ function validateRuntime(packageRoot, side) {
     if (!fs.existsSync(path.join(packageRoot, item)))
       throw new Error(`Incomplete ${side} package: missing ${item}.`);
   }
-  const plugins = resolveNpmPlugins(packageRoot, side);
+  const plugins = resolveNpmPlugins(packageRoot, side, { skipInvalid: true });
   for (const id of [
     "i18n",
     "storage",

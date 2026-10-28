@@ -371,7 +371,7 @@ test("CLI reports missing built-in npm dependencies before starting either worke
     f.project
   ]).closed;
   assert.equal(result.code, 1, result.output);
-  assert.match(result.output, /Missing npm plugin @elementspanel\/epanel-plugin-console/);
+  assert.match(result.output, /Incomplete panel installation: missing npm plugin console/);
   assert.equal(f.events().length, 0);
 });
 

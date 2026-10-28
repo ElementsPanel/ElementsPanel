@@ -26,7 +26,7 @@ function npmPluginRoots(side?: "panel" | "daemon"): PluginDiscoveryRoot[] {
   if (!fs.existsSync(path.join(packagePath(), "package.json"))) return [];
   if (!isPackagedRuntime() && !fs.existsSync(resolver)) return [];
   const { resolveNpmPlugins } = runtimeRequire(resolver);
-  return resolveNpmPlugins(packagePath(), side);
+  return resolveNpmPlugins(packagePath(), side, { skipInvalid: true });
 }
 
 export function packagePluginRoots(side: "panel" | "daemon"): PluginDiscoveryRoot[] {

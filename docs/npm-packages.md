@@ -12,7 +12,7 @@ npm start
 
 每个插件包的 `package.json` 使用 `elementspanel.id` 声明插件 ID，`elementspanel.panel`／`elementspanel.daemon` 声明对应目录和公共资源目录名。插件代码、样式和 `plugin.json` 位于包内的 `panel/` 或 `daemon/`；用户配置仍存放在安装目录的 `data/plugin-overrides.json`。插件包通过可选 peer dependencies 声明匹配的主程序版本，单独安装 panel 或 daemon 时不会拉入另一端。
 
-主程序从自己的 npm 依赖中解析插件，支持依赖提升和嵌套安装。浏览器资源仍通过 `/plugins/` 提供。插件依赖的 Cordis 与宿主共享实例；主程序提供其他运行时依赖和浏览器 SDK。主程序包中不再复制内置插件目录。
+主程序从自己的 npm 依赖中解析插件，支持依赖提升和嵌套安装。浏览器资源仍通过 `/plugins/` 提供。插件依赖的 Cordis 与宿主共享实例；主程序提供其他运行时依赖和浏览器 SDK。主程序包中不再复制内置插件目录。启动时缺失的非核心插件会被跳过，只有运行所需的核心插件缺失才会阻止启动。
 
 仓库中的内置插件源码继续位于 `panel/plugins/` 和 `daemon/plugins/`。第三方插件工作区只在初始化后的项目中创建，位于 `external/*`，由项目自己的 npm workspace 脚本构建和发布；仓库源码不扫描第三方工作区。
 

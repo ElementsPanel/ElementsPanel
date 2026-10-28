@@ -145,6 +145,22 @@ test("project-level npm plugins are resolved alongside bundled plugins", (t) => 
   );
 });
 
+test("missing optional npm plugins do not abort runtime discovery", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "elements-npm-optional-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const host = path.join(root, "host");
+  const runtime = installNpmPlugin(host, "panel", "runtime");
+  const manifestFile = path.join(host, "package.json");
+  const manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8"));
+  manifest.dependencies["epanel-plugin-optional"] = "1.0.0";
+  manifest.elementspanel.plugins.optional = "epanel-plugin-optional";
+  fs.writeFileSync(manifestFile, JSON.stringify(manifest));
+  const { resolveNpmPlugins } = require("../runtime/npm-plugins.cjs");
+  const records = resolveNpmPlugins(host, "panel", { skipInvalid: true });
+  assert.deepEqual(records.map((record) => record.id), ["runtime"]);
+  assert.equal(records[0].directory, runtime.directory);
+});
+
 test("archive executable permissions and the macOS amd64 alias work without modifying package assets", (t) => {
   const f = fixture(t);
   fs.mkdirSync(path.join(f.packageRoot, "lib"));

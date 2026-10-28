@@ -30,7 +30,10 @@ function npmPlugins(packageRoot) {
   // must not share a cached plugin list.
   const key = files.map((file) => `${file}:${fileStamp(file)}`).join("|");
   if (key !== npmPluginSnapshot.key) {
-    npmPluginSnapshot = { key, records: resolveNpmPlugins(packageRoot) };
+    npmPluginSnapshot = {
+      key,
+      records: resolveNpmPlugins(packageRoot, undefined, { skipInvalid: true })
+    };
   }
   return npmPluginSnapshot.records;
 }

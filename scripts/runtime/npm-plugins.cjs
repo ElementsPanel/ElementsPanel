@@ -56,9 +56,12 @@ function dependenciesOf(manifest) {
 
 /**
  * Resolve declared plugins through the host's dependency graph, including nested
- * installs and project-level dependencies installed by the plugin market.
+ * installs and project-level dependencies installed by the plugin market. Runtime
+ * startup passes skipInvalid so an optional package being removed does not stop
+ * the host; the caller separately validates the small set of core plugins.
  */
-function resolveNpmPlugins(packageRoot, side) {
+function resolveNpmPlugins(packageRoot, side, options = {}) {
+  const skipInvalid = options.skipInvalid === true;
   const host = readJson(path.join(packageRoot, "package.json"));
   const projectFile = projectManifestFile(packageRoot);
   const project = projectFile ? readOptional(projectFile) : null;
@@ -86,8 +89,10 @@ function resolveNpmPlugins(packageRoot, side) {
       typeof name !== "string" ||
       !validName.test(name) ||
       (hostDependencies[name] === undefined && projectDependencies[name] === undefined)
-    )
+    ) {
+      if (skipInvalid) continue;
       throw new Error(`Invalid npm plugin dependency: ${id}.`);
+    }
 
     let manifestPath;
     let failure;
@@ -100,16 +105,23 @@ function resolveNpmPlugins(packageRoot, side) {
       }
     }
     if (!manifestPath) {
+      if (skipInvalid) continue;
       throw new Error(`Missing npm plugin ${name}. Run npm install in the project directory.`, {
         cause: failure
       });
     }
-    const metadata = readJson(manifestPath);
+    let metadata;
+    try {
+      metadata = readJson(manifestPath);
+    } catch (error) {
+      if (skipInvalid) continue;
+      throw error;
+    }
     const definition = metadata.elementspanel?.[selectedSide];
     // A project dependency may only ship one side; the other side simply does
     // not see it. A built-in plugin declared by the runtime must carry this side.
     if (!definition) {
-      if (mapping.source === "project") continue;
+      if (mapping.source === "project" || skipInvalid) continue;
       throw new Error(`Invalid ${selectedSide} entry in npm plugin ${name}.`);
     }
     const pluginRoot = path.dirname(manifestPath);
@@ -118,16 +130,30 @@ function resolveNpmPlugins(packageRoot, side) {
       typeof definition.folder !== "string" ||
       !validId.test(definition.folder) ||
       path.isAbsolute(definition.directory)
-    )
+    ) {
+      if (skipInvalid) continue;
       throw new Error(`Npm plugin entry escapes its package: ${name}.`);
+    }
     const directory = path.resolve(pluginRoot, definition.directory);
-    if (directory === pluginRoot || !within(pluginRoot, directory))
+    if (directory === pluginRoot || !within(pluginRoot, directory)) {
+      if (skipInvalid) continue;
       throw new Error(`Npm plugin entry escapes its package: ${name}.`);
-    const manifest = readJson(path.join(directory, "plugin.json"));
-    if (manifest.id !== id || manifest.version !== metadata.version)
+    }
+    let manifest;
+    try {
+      manifest = readJson(path.join(directory, "plugin.json"));
+    } catch (error) {
+      if (skipInvalid) continue;
+      throw error;
+    }
+    if (manifest.id !== id || manifest.version !== metadata.version) {
+      if (skipInvalid) continue;
       throw new Error(`Npm plugin identity or version does not match its manifest: ${name}.`);
-    if (folders.has(definition.folder))
+    }
+    if (folders.has(definition.folder)) {
+      if (skipInvalid) continue;
       throw new Error(`Duplicate npm plugin asset directory: ${definition.folder}.`);
+    }
     folders.add(definition.folder);
     records.push({
       id,
