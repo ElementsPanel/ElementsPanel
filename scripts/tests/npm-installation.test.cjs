@@ -7,7 +7,7 @@ const { createRequire } = require("node:module");
 const { pathToFileURL } = require("node:url");
 const { test } = require("node:test");
 const { installNpmPlugin } = require("./npm-fixtures.cjs");
-const initializer = require("../../packages/create-elementspanel/index.cjs");
+const initializer = require("../../packages/init-elementspanel/index.cjs");
 const { installPluginResolution } = require("../runtime/plugin-resolution.cjs");
 const { resolveNpmPlugins } = require("../runtime/npm-plugins.cjs");
 const { parseArgs, planWorkers } = require("../runtime/cli.cjs");
@@ -135,7 +135,7 @@ test("initializer retains a complete project after install failure and supports 
     ]
   );
   assert.ok(fs.existsSync(path.join(project, "daemon")));
-  const output = execute(f, path.join(repository, "packages/create-elementspanel/bin.cjs"), [
+  const output = execute(f, path.join(repository, "packages/init-elementspanel/bin.cjs"), [
     "offline",
     "--no-install",
     "--yes",

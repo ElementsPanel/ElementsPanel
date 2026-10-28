@@ -216,7 +216,7 @@ async function packageRuntime(side, sourceRoot, outputRoot, plugins) {
   copyTree(path.join(repository, "LICENSE"), path.join(output, "LICENSE"));
   await fs.writeFile(
     path.join(output, "README.md"),
-    `# ${metadata.name}\n\nRequires Node.js 22.15+.\n\nInitialize a project with \`npm init elementspanel@latest my-panel\`, then run \`npm start\`. For an existing npm project, run \`npx ${side === "panel" ? "epanel" : "epanel-daemon"} start\`. Runtime data is stored in \`./${side}\`. Use \`--cwd\` or \`--${side}-dir\` to select another location.\n\n${
+    `# ${metadata.name}\n\nRequires Node.js 22.15+.\n\nInitialize a project with \`npx init-elementspanel@latest my-panel\`, then run \`npm start\`. For an existing npm project, run \`npx ${side === "panel" ? "epanel" : "epanel-daemon"} start\`. Runtime data is stored in \`./${side}\`. Use \`--cwd\` or \`--${side}-dir\` to select another location.\n\n${
       side === "panel"
         ? "Install @elementspanel/daemon and use --with-daemon to start a local daemon."
         : "PTY and archive tools are downloaded to ./daemon/data/lib on first start."
@@ -242,8 +242,8 @@ export async function packageNpm({
     );
     const panel = await packageRuntime("panel", sourceRoot, packages, plugins);
     const daemon = await packageRuntime("daemon", sourceRoot, packages, plugins);
-    const createSource = path.join(repository, "packages/create-elementspanel");
-    const createOutput = path.join(packages, "create-elementspanel");
+    const createSource = path.join(repository, "packages/init-elementspanel");
+    const createOutput = path.join(packages, "init-elementspanel");
     await fs.mkdir(createOutput);
     const create = await readJson(path.join(createSource, "package.json"));
     create.runtimeVersions = { panel: panel.version, daemon: daemon.version };

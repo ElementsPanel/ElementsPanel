@@ -152,7 +152,7 @@ async function run(argv = process.argv.slice(2)) {
     const options = parseArgs(argv);
     if (options.help) {
       console.log(
-        `Usage: npm init elementspanel@latest [directory] [-- --template full|panel|daemon]\n\n  --yes, -y      Use defaults (my-panel, full installation)\n  --no-install   Generate the project without installing dependencies\n\nUse . as the directory to initialize the current empty folder.\n`
+        `Usage: npx init-elementspanel@latest [directory] [-- --template full|panel|daemon]\n\n  --yes, -y      Use defaults (my-panel, full installation)\n  --no-install   Generate the project without installing dependencies\n\nUse . as the directory to initialize the current empty folder.\n`
       );
       return;
     }

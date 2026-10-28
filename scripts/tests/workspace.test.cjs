@@ -3,8 +3,8 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { test } = require("node:test");
-const { initialize } = require("../../packages/create-elementspanel/index.cjs");
-const { setupWorkspace } = require("../../packages/create-elementspanel/workspace.cjs");
+const { initialize } = require("../../packages/init-elementspanel/index.cjs");
+const { setupWorkspace } = require("../../packages/init-elementspanel/workspace.cjs");
 
 test("initialized projects create npm plugin workspaces outside the runtime source tree", async (t) => {
   const project = fs.mkdtempSync(path.join(os.tmpdir(), "elementspanel-workspace-"));

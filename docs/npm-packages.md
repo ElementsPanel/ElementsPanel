@@ -1,9 +1,9 @@
 # npm 包
 
-需要 Node.js 22.15 或更新版本。安装入口为 `create-elementspanel`，两个运行包为 `@elementspanel/panel` 和 `@elementspanel/daemon`：
+需要 Node.js 22.15 或更新版本。安装入口为 `init-elementspanel`，两个运行包为 `@elementspanel/panel` 和 `@elementspanel/daemon`：
 
 ```sh
-npm init elementspanel@latest my-panel
+npx init-elementspanel@latest my-panel
 cd my-panel
 npm start
 ```
@@ -39,7 +39,7 @@ for package_directory in ./npm-packages/epanel-plugin-*/; do
 done
 npm publish ./npm-packages/daemon --access public
 npm publish ./npm-packages/panel --access public
-npm publish ./npm-packages/create-elementspanel --access public
+npm publish ./npm-packages/init-elementspanel --access public
 ```
 
 也可以下载 CI 的 artifact，按同样顺序发布其中的 `.tgz`。预发布使用预发布版本号，并在发布命令中添加 `--tag next`。更新 npm 插件后重启对应服务；内置依赖由 npm 管理，面板中的开关和配置写入用户目录。
