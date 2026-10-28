@@ -4,16 +4,51 @@ const { test } = require("node:test");
 const { pipeWorkerOutput, workerEnvironment } = require("../runtime/cli.cjs");
 
 test("worker output receives a side prefix across split stdout chunks", () => {
+  const originalForceColor = process.env.FORCE_COLOR;
+  const originalNoColor = process.env.NO_COLOR;
+  delete process.env.FORCE_COLOR;
+  delete process.env.NO_COLOR;
   const source = new PassThrough();
   const output = [];
   const target = { write: (value) => output.push(value) };
-  const flush = pipeWorkerOutput(source, target, "daemon");
+  try {
+    const flush = pipeWorkerOutput(source, target, "daemon");
 
-  source.write("first line\nsecond");
-  source.end(" line\nlast line");
-  flush();
+    source.write("first line\nsecond");
+    source.end(" line\nlast line");
+    flush();
 
-  assert.equal(output.join(""), "[daemon] first line\n[daemon] second line\n[daemon] last line\n");
+    assert.equal(output.join(""), "[daemon] first line\n[daemon] second line\n[daemon] last line\n");
+  } finally {
+    if (originalForceColor === undefined) delete process.env.FORCE_COLOR;
+    else process.env.FORCE_COLOR = originalForceColor;
+    if (originalNoColor === undefined) delete process.env.NO_COLOR;
+    else process.env.NO_COLOR = originalNoColor;
+  }
+});
+
+test("worker prefixes use cyan for daemon and green for panel on terminals", () => {
+  const originalForceColor = process.env.FORCE_COLOR;
+  const originalNoColor = process.env.NO_COLOR;
+  delete process.env.FORCE_COLOR;
+  delete process.env.NO_COLOR;
+  try {
+    const render = (side) => {
+      const source = new PassThrough();
+      const output = [];
+      const flush = pipeWorkerOutput(source, { isTTY: true, write: (value) => output.push(value) }, side);
+      source.end("line\n");
+      flush();
+      return output.join("");
+    };
+    assert.equal(render("daemon"), "\u001b[36m[daemon]\u001b[39m line\n");
+    assert.equal(render("panel"), "\u001b[32m[panel]\u001b[39m line\n");
+  } finally {
+    if (originalForceColor === undefined) delete process.env.FORCE_COLOR;
+    else process.env.FORCE_COLOR = originalForceColor;
+    if (originalNoColor === undefined) delete process.env.NO_COLOR;
+    else process.env.NO_COLOR = originalNoColor;
+  }
 });
 
 test("worker environments preserve explicit color settings and propagate terminal colors", () => {

@@ -67,10 +67,20 @@ function workerEnvironment(plan, worker) {
   return environment;
 }
 
+function workerPrefix(side, target) {
+  const color = side === "daemon" ? "\u001b[36m" : "\u001b[32m";
+  const forceColor = process.env.FORCE_COLOR;
+  const colored =
+    process.env.NO_COLOR === undefined &&
+    (target.isTTY ||
+      (forceColor !== undefined && forceColor !== "0" && forceColor !== "false"));
+  return colored ? `${color}[${side}]\u001b[39m ` : `[${side}] `;
+}
+
 /** Prefix worker output without breaking lines split across child-process chunks. */
 function pipeWorkerOutput(stream, target, side) {
   let pending = "";
-  const prefix = `[${side}] `;
+  const prefix = workerPrefix(side, target);
   const write = (chunk) => {
     pending += chunk.toString();
     const lines = pending.split("\n");
@@ -193,7 +203,8 @@ async function startWorkers(plan, options = {}) {
       fs.mkdirSync(worker.directory, { recursive: true });
       if (worker.side === "daemon") {
         await ensureRuntimeTools(worker.directory, {
-          onDownload: (spec) => console.log(`[daemon] Downloading ${spec.filename}...`)
+          onDownload: (spec) =>
+            console.log(`${workerPrefix("daemon", process.stdout)}Downloading ${spec.filename}...`)
         });
       }
       const environment = workerEnvironment(plan, worker);
