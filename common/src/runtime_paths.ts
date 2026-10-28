@@ -52,10 +52,14 @@ export function bundledToolPath(name: string): string {
   const arch = os.arch();
   const suffix = platform === "win32" ? ".exe" : "";
   const filename = `${name}_${platform}_${arch}${suffix}`;
-  const primary = packagePath("lib", filename);
+  // Published daemon packages download native tools into the installation's
+  // writable data directory on first start. Development checkouts retain the
+  // repository-local lib directory.
+  const root = isPackagedRuntime() ? path.resolve(process.cwd(), "data", "lib") : packagePath("lib");
+  const primary = path.join(root, filename);
   // Zip-Tools names its Intel macOS binary "amd64", while Node reports "x64".
   if (!fs.existsSync(primary) && name === "file_zip" && platform === "darwin" && arch === "x64") {
-    const alternate = packagePath("lib", "file_zip_darwin_amd64");
+    const alternate = path.join(root, "file_zip_darwin_amd64");
     if (fs.existsSync(alternate)) return alternate;
   }
   return primary;

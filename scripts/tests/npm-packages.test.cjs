@@ -100,6 +100,10 @@ test("workspace packaging includes runnable entry points and excludes user data 
     assert.ok(fs.existsSync(path.join(root, "runtime/worker.cjs")));
     assert.ok(fs.existsSync(path.join(root, Object.values(manifest.bin)[0])));
     assert.ok(fs.existsSync(path.join(root, "LICENSE")));
+    if (side === "daemon") {
+      assert.ok(fs.existsSync(path.join(root, "licenses/7z-extra-license.txt")));
+      assert.ok(fs.existsSync(path.join(root, "licenses/7z-unix-license.txt")));
+    }
     for (const excluded of [
       "data",
       "logs",
@@ -107,7 +111,7 @@ test("workspace packaging includes runnable entry points and excludes user data 
       "plugins",
       "public/upload_files",
       "public/plugins",
-      "lib/tmp_steamcmd.zip"
+      "lib"
     ]) {
       assert.equal(fs.existsSync(path.join(root, excluded)), false, excluded);
     }
@@ -164,10 +168,7 @@ test("workspace packaging includes runnable entry points and excludes user data 
     panel: result.panel.version,
     daemon: result.daemon.version
   });
-  for (const filename of fs.readdirSync(path.join(f.outputRoot, "daemon/lib"))) {
-    if (!filename.endsWith(".txt"))
-      assert.ok(fs.statSync(path.join(f.outputRoot, "daemon/lib", filename)).mode & 0o111);
-  }
+  assert.equal(fs.existsSync(path.join(f.outputRoot, "daemon/lib")), false);
   fs.writeFileSync(path.join(f.outputRoot, "stale-output.txt"), "replace me");
   await packageNpm(f);
   assert.equal(fs.existsSync(path.join(f.outputRoot, "stale-output.txt")), false);

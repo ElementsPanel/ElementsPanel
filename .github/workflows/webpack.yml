@@ -48,8 +48,6 @@ jobs:
         run: npm test
       - name: Check types
         run: npm run type-check
-      - name: Include native tools
-        run: wget --input-file=lib-urls.txt --directory-prefix=daemon/lib/ --tries=3 --timeout=60
       - name: Build npm packages
         run: npm run build:npm
       - name: Create npm archives

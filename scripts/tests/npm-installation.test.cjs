@@ -177,8 +177,8 @@ function runtimeFixture(t, behavior = {}) {
     for (const name of ["pty", "file_zip", "7z"])
       write(
         path.join(
-          root,
-          "lib",
+          project,
+          side === "daemon" ? "daemon/data/lib" : "panel/data/lib",
           `${name}_${process.platform}_${process.arch}${process.platform === "win32" ? ".exe" : ""}`
         ),
         "fixture tool"
@@ -319,6 +319,15 @@ test("single-side modes use their own data and support existing runtime director
   for (const side of ["panel", "daemon"]) {
     const f = runtimeFixture(t);
     const runtime = path.join(f.root, "old installation", side === "panel" ? "web" : "daemon");
+    if (side === "daemon") {
+      for (const name of ["pty", "file_zip", "7z"]) {
+        const filename =
+          name === "file_zip" && process.platform === "darwin" && process.arch === "x64"
+            ? "file_zip_darwin_amd64"
+            : `${name}_${process.platform}_${process.arch}${process.platform === "win32" ? ".exe" : ""}`;
+        write(path.join(runtime, "data/lib", filename), "fixture tool");
+      }
+    }
     const command = execute(f, path.join(f.packages[side], "bin.cjs"), [
       "start",
       "--cwd",

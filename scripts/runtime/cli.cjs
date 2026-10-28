@@ -2,6 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { createRequire, registerHooks } = require("node:module");
 const { resolveNpmPlugins } = require("./npm-plugins.cjs");
+const { ensureRuntimeTools } = require("./daemon-tools.cjs");
 const { fork } = require("node:child_process");
 
 function parseArgs(argv, side) {
@@ -105,23 +106,6 @@ function validateRuntime(packageRoot, side) {
   if (side === "panel" && !fs.existsSync(path.join(packageRoot, "public/index.html"))) {
     throw new Error("Incomplete panel package: missing public/index.html.");
   }
-  if (side === "daemon") {
-    const suffix = process.platform === "win32" ? ".exe" : "";
-    for (const name of ["file_zip", "pty", "7z"]) {
-      const filename = `${name}_${process.platform}_${process.arch}${suffix}`;
-      const alternate =
-        name === "file_zip" && process.platform === "darwin" && process.arch === "x64"
-          ? "file_zip_darwin_amd64"
-          : filename;
-      if (
-        ![filename, alternate].some((file) => fs.existsSync(path.join(packageRoot, "lib", file)))
-      ) {
-        throw new Error(
-          `The daemon package has no ${name} tool for ${process.platform}/${process.arch}.`
-        );
-      }
-    }
-  }
 }
 
 function planWorkers(side, packageRoot, options) {
@@ -207,6 +191,11 @@ async function startWorkers(plan, options = {}) {
     for (const worker of plan.workers) {
       if (stopping) break;
       fs.mkdirSync(worker.directory, { recursive: true });
+      if (worker.side === "daemon") {
+        await ensureRuntimeTools(worker.directory, {
+          onDownload: (spec) => console.log(`[daemon] Downloading ${spec.filename}...`)
+        });
+      }
       const environment = workerEnvironment(plan, worker);
       const child = fork(
         path.join(worker.packageRoot, "runtime/worker.cjs"),

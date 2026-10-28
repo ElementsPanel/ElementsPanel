@@ -38,10 +38,11 @@ export function runtimeManifest(side, source) {
     "app.js.map",
     "bin/",
     "runtime/",
-    side === "panel" ? "public/" : "lib/",
     "README.md",
     "LICENSE"
   ];
+  if (side === "daemon") metadata.files.splice(4, 0, "licenses/");
+  if (side === "panel") metadata.files.splice(4, 0, "public/");
   metadata.engines = { node: ">=22.15.0" };
   metadata.publishConfig = { access: "public" };
   metadata.dependencies = { ...source.dependencies };
@@ -208,18 +209,10 @@ async function packageRuntime(side, sourceRoot, outputRoot, plugins) {
       copyTree(path.join(frontend, item), path.join(output, "public", item));
     }
   } else {
-    // Include the tools and their licenses explicitly. SteamCMD/FRP downloads
-    // and temporary files from a running daemon are never published.
-    const urls = (await fs.readFile(path.join(repository, "lib-urls.txt"), "utf8"))
-      .split(/\r?\n/)
-      .filter(Boolean);
-    await fs.mkdir(path.join(output, "lib"));
-    for (const url of urls) {
-      const name = path.basename(new URL(url).pathname);
-      const target = path.join(output, "lib", name);
-      copyTree(path.join(sourceRoot, "daemon/lib", name), target);
-      if (!name.endsWith(".txt")) await fs.chmod(target, 0o755);
-    }
+    const licenses = ["7z-extra-license.txt", "7z-unix-license.txt"];
+    await fs.mkdir(path.join(output, "licenses"));
+    for (const name of licenses)
+      copyTree(path.join(repository, "scripts/licenses", name), path.join(output, "licenses", name));
   }
   await fs.writeFile(path.join(output, "package.json"), `${JSON.stringify(metadata, null, 2)}\n`);
   copyTree(path.join(repository, "LICENSE"), path.join(output, "LICENSE"));
@@ -232,7 +225,7 @@ async function packageRuntime(side, sourceRoot, outputRoot, plugins) {
     } start\`. Runtime data is stored in \`./${side}\`, separate from the package. Use \`--cwd\` to select the project directory or \`--${side}-dir\` to reuse an existing runtime directory.\n\n${
       side === "panel"
         ? "Install @elementspanel/daemon in the project and pass --with-daemon to start a local node with the panel.\n\n"
-        : "The package includes PTY and archive tools; Java, Docker and game runtimes remain separate runtime requirements.\n\n"
+        : "PTY and archive tools are downloaded to ./daemon/data/lib on the first start; Java, Docker and game runtimes remain separate runtime requirements.\n\n"
     }Stop the service and back up runtime data before upgrading. Configuration, logs, uploads and installed plugins are not stored in node_modules.\n`
   );
   return metadata;
