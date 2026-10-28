@@ -173,24 +173,7 @@ function runtimePeerVersion(projectManifest, side) {
 }
 
 function workspaceReadme(id, sides) {
-  return [
-    `# epanel-plugin-${id}`,
-    "",
-    "## Development",
-    "",
-    "```sh",
-    "npm install",
-    `npm run build -- ${id}`,
-    "npm start",
-    "```",
-    "",
-    `Edit source under ${sides.map((side) => `${side}/src`).join(" and ")}. Build output is written to the corresponding backend/ and frontend/ directories. Enable the plugin in the panel's plugin configuration after building.`,
-    "",
-    "## Publish",
-    "",
-    `Update this package's version, then run npm run pub -- ${id}.`,
-    ""
-  ].join("\n");
+  return `# epanel-plugin-${id}\n`;
 }
 
 async function setupWorkspace(projectRoot, args) {

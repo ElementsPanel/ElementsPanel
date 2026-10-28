@@ -135,7 +135,7 @@ async function initialize({
   );
   await fs.writeFile(
     path.join(destination, "README.md"),
-    `# ElementsPanel\n\nRun \`npm start\`. Runtime data is stored in \`panel/\` and/or \`daemon/\`.\n\n## Plugin workspace\n\nCreate a workspace with \`npm run setup -- example\`, build it with \`npm run build -- example\`, then enable it in the panel's plugin configuration. Publish it with \`npm run pub -- example\`.\n`,
+    "# ElementsPanel\n",
     { flag: "wx" }
   );
   for (const side of ["panel", "daemon"]) {
