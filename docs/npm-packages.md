@@ -1,9 +1,9 @@
 # npm 包
 
-需要 Node.js 22.15 或更新版本。安装入口为 `init-elementspanel`，两个运行包为 `@elementspanel/panel` 和 `@elementspanel/daemon`：
+需要 Node.js 22.15 或更新版本。安装入口包为 `@elementspanel/init`，命令名仍为 `init-elementspanel`；两个运行包为 `@elementspanel/panel` 和 `@elementspanel/daemon`：
 
 ```sh
-npx init-elementspanel@latest my-panel
+npx @elementspanel/init@latest my-panel
 cd my-panel
 npm start
 ```

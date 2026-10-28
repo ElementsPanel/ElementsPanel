@@ -216,7 +216,7 @@ async function packageRuntime(side, sourceRoot, outputRoot, plugins) {
   copyTree(path.join(repository, "LICENSE"), path.join(output, "LICENSE"));
   await fs.writeFile(
     path.join(output, "README.md"),
-    `# ${metadata.name}\n\nRequires Node.js 22.15+.\n\nInitialize a project with \`npx init-elementspanel@latest my-panel\`, then run \`npm start\`. For an existing npm project, run \`npx ${side === "panel" ? "epanel" : "epanel-daemon"} start\`. Runtime data is stored in \`./${side}\`. Use \`--cwd\` or \`--${side}-dir\` to select another location.\n\n${
+    `# ${metadata.name}\n\nRequires Node.js 22.15+.\n\nInitialize a project with \`npx @elementspanel/init@latest my-panel\`, then run \`npm start\`. For an existing npm project, run \`npx ${side === "panel" ? "epanel" : "epanel-daemon"} start\`. Runtime data is stored in \`./${side}\`. Use \`--cwd\` or \`--${side}-dir\` to select another location.\n\n${
       side === "panel"
         ? "Install @elementspanel/daemon and use --with-daemon to start a local daemon."
         : "PTY and archive tools are downloaded to ./daemon/lib on first start."

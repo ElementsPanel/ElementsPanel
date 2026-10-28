@@ -1,5 +1,5 @@
 {
-  "name": "init-elementspanel",
+  "name": "@elementspanel/init",
   "version": "1.0.0",
   "description": "Create an ElementsPanel installation",
   "license": "Apache-2.0",

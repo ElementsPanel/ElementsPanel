@@ -163,6 +163,7 @@ test("workspace packaging includes runnable entry points and excludes user data 
   const create = JSON.parse(
     fs.readFileSync(path.join(f.outputRoot, "init-elementspanel/package.json"))
   );
+  assert.equal(create.name, "@elementspanel/init");
   assert.ok(fs.existsSync(path.join(f.outputRoot, "init-elementspanel/workspace.cjs")));
   assert.deepEqual(create.runtimeVersions, {
     panel: result.panel.version,
