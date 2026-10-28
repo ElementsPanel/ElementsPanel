@@ -45,6 +45,27 @@ function runtimeDirectory(project, override, side) {
   return path.resolve(project, override || side);
 }
 
+function workerEnvironment(plan, worker) {
+  const environment = { ...process.env, EPANEL_PROJECT_ROOT: plan.project };
+  delete environment.EPANEL_PACKAGE_ROOT;
+  delete environment.EPANEL_LOCAL_DAEMON_CONFIG;
+  if (worker.side === "panel" && plan.localDaemonConfig)
+    environment.EPANEL_LOCAL_DAEMON_CONFIG = plan.localDaemonConfig;
+
+  // fork() pipes worker output so the parent can add a side prefix. That makes
+  // supports-color think stdout is not a terminal, even when npm start is
+  // running in one. Preserve explicit color settings and otherwise propagate
+  // the parent's terminal capability to the worker.
+  if (
+    environment.FORCE_COLOR === undefined &&
+    environment.NO_COLOR === undefined &&
+    (process.stdout.isTTY || process.stderr.isTTY)
+  ) {
+    environment.FORCE_COLOR = "3";
+  }
+  return environment;
+}
+
 /** Prefix worker output without breaking lines split across child-process chunks. */
 function pipeWorkerOutput(stream, target, side) {
   let pending = "";
@@ -186,11 +207,7 @@ async function startWorkers(plan, options = {}) {
     for (const worker of plan.workers) {
       if (stopping) break;
       fs.mkdirSync(worker.directory, { recursive: true });
-      const environment = { ...process.env, EPANEL_PROJECT_ROOT: plan.project };
-      delete environment.EPANEL_PACKAGE_ROOT;
-      delete environment.EPANEL_LOCAL_DAEMON_CONFIG;
-      if (worker.side === "panel" && plan.localDaemonConfig)
-        environment.EPANEL_LOCAL_DAEMON_CONFIG = plan.localDaemonConfig;
+      const environment = workerEnvironment(plan, worker);
       const child = fork(
         path.join(worker.packageRoot, "runtime/worker.cjs"),
         options.open && worker.side === "panel" ? ["--open"] : [],
@@ -278,4 +295,11 @@ async function run(side, packageRoot, argv = process.argv.slice(2)) {
   }
 }
 
-module.exports = { parseArgs, planWorkers, startWorkers, pipeWorkerOutput, run };
+module.exports = {
+  parseArgs,
+  planWorkers,
+  startWorkers,
+  pipeWorkerOutput,
+  workerEnvironment,
+  run
+};
