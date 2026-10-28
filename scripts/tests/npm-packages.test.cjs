@@ -159,6 +159,7 @@ test("workspace packaging includes runnable entry points and excludes user data 
   const create = JSON.parse(
     fs.readFileSync(path.join(f.outputRoot, "create-elementspanel/package.json"))
   );
+  assert.ok(fs.existsSync(path.join(f.outputRoot, "create-elementspanel/workspace.cjs")));
   assert.deepEqual(create.runtimeVersions, {
     panel: result.panel.version,
     daemon: result.daemon.version
@@ -281,6 +282,8 @@ test("npm pack includes runtime and built-in plugin artifacts without sources or
           (file) => file.path === (name === "create-elementspanel" ? "bin.cjs" : `bin/${name}.cjs`)
         )
       );
+    if (name === "create-elementspanel")
+      assert.ok(archive.files.some((file) => file.path === "workspace.cjs"));
     }
     assert.ok(
       archive.files.every(

@@ -14,7 +14,17 @@ npm start
 
 主程序从自己的 npm 依赖中解析插件，支持依赖提升和嵌套安装。浏览器资源仍通过 `/plugins/` 提供。插件依赖的 Cordis 与宿主共享实例；主程序提供其他运行时依赖和浏览器 SDK。主程序包中不再复制内置插件目录。
 
-仓库中的内置插件源码继续位于 `panel/plugins/` 和 `daemon/plugins/`。仓库不再提供第三方 `external/` 工作区的创建、扫描、编译和发布工具。已安装的插件仍由运行时加载。
+仓库中的内置插件源码继续位于 `panel/plugins/` 和 `daemon/plugins/`。第三方插件工作区只在初始化后的项目中创建，位于 `external/*`，由项目自己的 npm workspace 脚本构建和发布；仓库源码不扫描第三方工作区。
+
+初始化后的项目可以这样创建和构建第三方插件：
+
+```sh
+npm run setup -- example
+npm run build -- example
+npm start
+```
+
+工作区默认创建 panel 插件；`npm run setup -- example --both` 同时创建 daemon 端。源码位于工作区的 `panel/src/` 或 `daemon/src/`，构建结果写入对应的 `backend/` 和 `frontend/` 目录，并通过项目的 npm 依赖映射加载。修改插件版本后，运行 `npm run pub -- example` 构建并发布 npm 包。
 
 安装根目录、common、panel、daemon、frontend 的依赖，将 `lib-urls.txt` 中的工具和许可证下载到 `daemon/lib/` 后，运行 `npm run build:npm` 生成 `npm-packages/`。已有编译结果时，`npm run package:npm` 只收集和校验产物。输出目录必须尚不存在，也可追加 `-- --out <新目录>`。
 

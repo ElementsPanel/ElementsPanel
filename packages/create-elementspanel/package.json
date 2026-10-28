@@ -9,14 +9,23 @@
     "directory": "packages/create-elementspanel"
   },
   "bin": {
-    "create-elementspanel": "bin.cjs"
+    "create-elementspanel": "bin.cjs",
+    "epanel-workspace": "workspace.cjs"
   },
   "files": [
     "bin.cjs",
     "index.cjs",
+    "workspace.cjs",
     "README.md",
     "LICENSE"
   ],
+  "dependencies": {
+    "@vitejs/plugin-vue": "^4.2.0",
+    "@vitejs/plugin-vue-jsx": "^3.1.0",
+    "esbuild": "^0.18.20",
+    "vite": "^4.5.14",
+    "vue": "^3.5.42"
+  },
   "engines": {
     "node": ">=22.15.0"
   },

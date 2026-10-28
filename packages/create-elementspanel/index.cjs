@@ -55,9 +55,16 @@ function projectManifest(
         .replace(/[^a-z0-9._-]+/g, "-")
         .replace(/^[._-]+/, "") || "elementspanel-instance",
     private: true,
-    scripts,
+    workspaces: ["external/*"],
+    scripts: {
+      ...scripts,
+      setup: "epanel-workspace setup",
+      build: "epanel-workspace build",
+      pub: "epanel-workspace publish"
+    },
     engines: metadata.engines,
-    dependencies
+    dependencies,
+    devDependencies: { [metadata.name]: metadata.version }
   };
 }
 
@@ -123,12 +130,12 @@ async function initialize({
   );
   await fs.writeFile(
     path.join(destination, ".gitignore"),
-    "node_modules/\npanel/\ndaemon/\n*.log\n",
+    "node_modules/\npanel/\ndaemon/\nexternal/*/panel/backend/\nexternal/*/panel/frontend/\nexternal/*/daemon/backend/\nexternal/*/daemon/frontend/\n*.log\n",
     { flag: "wx" }
   );
   await fs.writeFile(
     path.join(destination, "README.md"),
-    `# ElementsPanel\n\nRun \`npm start\` in this directory. Press Ctrl+C to shut down normally.\n\nMode: ${mode}. Panel default: http://localhost:23333. Daemon default port: 24444.\n\nConfiguration, uploads, logs and instances are stored in \`panel/\` and/or \`daemon/\`. Back up these directories before upgrades. Stop the service, install the desired compatible runtime package versions, then run \`npm start\` again. Keep \`package-lock.json\` to reproduce the dependency versions.\n`,
+    `# ElementsPanel\n\nRun \`npm start\` in this directory. Press Ctrl+C to shut down normally.\n\nMode: ${mode}. Panel default: http://localhost:23333. Daemon default port: 24444.\n\nConfiguration, uploads, logs and instances are stored in \`panel/\` and/or \`daemon/\`. Back up these directories before upgrades. Stop the service, install the desired compatible runtime package versions, then run \`npm start\` again. Keep \`package-lock.json\` to reproduce the dependency versions.\n\n## Third-party plugin workspace\n\nUse \`npm run setup -- example\` to create a plugin under \`external/example/\`. Edit its source, run \`npm run build\`, and restart the packaged panel to load the compiled npm workspace package. Publish a built plugin with \`npm run pub -- example\`.\n`,
     { flag: "wx" }
   );
   for (const side of ["panel", "daemon"]) {
