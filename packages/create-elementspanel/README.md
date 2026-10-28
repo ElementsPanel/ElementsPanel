@@ -16,6 +16,8 @@ The destination must be empty (an existing `.git` directory is allowed). Initial
 
 Runtime code lives in `node_modules`; configuration, instances, plugins, logs and uploads live in the project's `panel` and `daemon` directories. Stop the service and back up these directories before upgrading packages.
 
+When a full installation starts both services, each worker log line is prefixed with `[daemon]` or `[panel]`.
+
 ## Third-party plugin workspace
 
 The initialized project includes an `external/*` npm workspace. Create a panel plugin with:

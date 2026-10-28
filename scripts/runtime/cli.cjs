@@ -45,6 +45,26 @@ function runtimeDirectory(project, override, side) {
   return path.resolve(project, override || side);
 }
 
+/** Prefix worker output without breaking lines split across child-process chunks. */
+function pipeWorkerOutput(stream, target, side) {
+  let pending = "";
+  const prefix = `[${side}] `;
+  const write = (chunk) => {
+    pending += chunk.toString();
+    const lines = pending.split("\n");
+    pending = lines.pop() || "";
+    for (const line of lines) target.write(`${prefix}${line.replace(/\r$/, "")}\n`);
+  };
+  const flush = () => {
+    if (!pending) return;
+    target.write(`${prefix}${pending.replace(/\r$/, "")}\n`);
+    pending = "";
+  };
+  stream.on("data", write);
+  stream.once("end", flush);
+  return flush;
+}
+
 function validateRuntime(packageRoot, side) {
   for (const item of ["app.js", "runtime/worker.cjs"]) {
     if (!fs.existsSync(path.join(packageRoot, item)))
@@ -178,9 +198,13 @@ async function startWorkers(plan, options = {}) {
           cwd: worker.directory,
           env: environment,
           execArgv: ["--enable-source-maps"],
-          stdio: ["ignore", "inherit", "inherit", "ipc"]
+          stdio: ["ignore", "pipe", "pipe", "ipc"]
         }
       );
+      const flushOutput = [
+        pipeWorkerOutput(child.stdout, process.stdout, worker.side),
+        pipeWorkerOutput(child.stderr, process.stderr, worker.side)
+      ];
       children.add(child);
       let rejectReady;
       child.on("error", (error) => {
@@ -189,6 +213,7 @@ async function startWorkers(plan, options = {}) {
         stop(1);
       });
       child.once("close", (code, signal) => {
+        flushOutput.forEach((flush) => flush());
         children.delete(child);
         const starting = Boolean(rejectReady);
         const error = new Error(`${worker.side} exited before becoming ready (${signal || code}).`);
@@ -253,4 +278,4 @@ async function run(side, packageRoot, argv = process.argv.slice(2)) {
   }
 }
 
-module.exports = { parseArgs, planWorkers, startWorkers, run };
+module.exports = { parseArgs, planWorkers, startWorkers, pipeWorkerOutput, run };
