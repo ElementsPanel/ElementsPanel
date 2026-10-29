@@ -2,7 +2,7 @@
   "name": "@elementspanel/epanel-plugin-server",
   "version": "1.0.1",
   "displayName": "Web Server",
-  "description": "Owns the daemon's network layer: the Koa application, its base middleware, the HTTP/HTTPS listener and the Socket.io server the panel connects to. Provides ctx.koa and ctx.websocket.",
+  "description": "Daemon HTTP/HTTPS and Socket.io server.",
   "elementspanel": {
     "id": "server",
     "dual": true,

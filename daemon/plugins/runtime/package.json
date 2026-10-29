@@ -2,7 +2,7 @@
   "name": "@elementspanel/epanel-plugin-runtime",
   "version": "1.0.1",
   "displayName": "Daemon Runtime",
-  "description": "Initializes daemon configuration and exposes shared runtime services to plugins.",
+  "description": "Daemon initialization and shared runtime services.",
   "elementspanel": {
     "id": "runtime",
     "dual": true,

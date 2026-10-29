@@ -2,7 +2,7 @@
   "name": "@elementspanel/epanel-plugin-mod-manager",
   "version": "1.0.1",
   "displayName": "Mod Manager",
-  "description": "Provides Minecraft mod and plugin discovery, installation and management in normal and Desktop modes.",
+  "description": "Minecraft mod and plugin management.",
   "elementspanel": {
     "id": "mod-manager",
     "dual": true,

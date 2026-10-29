@@ -1,7 +1,7 @@
 {
   "name": "@elementspanel/epanel-plugin-config",
   "version": "1.0.1",
-  "description": "Provides a central configuration page for loaded panel plugins.",
+  "description": "Panel plugin configuration.",
   "elementspanel": {
     "id": "config",
     "dual": true,

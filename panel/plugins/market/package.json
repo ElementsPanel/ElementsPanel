@@ -1,7 +1,7 @@
 {
   "name": "@elementspanel/epanel-plugin-market",
   "version": "1.0.1",
-  "description": "Provides the ElementsPanel plugin market: browsing, installation, updates and removal.",
+  "description": "Plugin browsing, installation and management.",
   "elementspanel": {
     "id": "market",
     "priority": 175,

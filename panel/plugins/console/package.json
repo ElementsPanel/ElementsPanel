@@ -2,7 +2,7 @@
   "name": "@elementspanel/epanel-plugin-console",
   "version": "1.0.1",
   "displayName": "Console",
-  "description": "Provides the panel's base Web UI shell, shared frontend implementation, routes, layout cards and global styles.",
+  "description": "Panel web interface and layouts.",
   "elementspanel": {
     "id": "console",
     "priority": -9000,

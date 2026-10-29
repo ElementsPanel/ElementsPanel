@@ -2,7 +2,7 @@
   "name": "@elementspanel/epanel-plugin-runtime",
   "version": "1.0.1",
   "displayName": "Panel Runtime",
-  "description": "Initializes panel configuration and frontend startup state, and exposes shared runtime services to plugins.",
+  "description": "Panel initialization and shared runtime services.",
   "elementspanel": {
     "id": "runtime",
     "dual": true,

@@ -2,7 +2,7 @@
   "name": "@elementspanel/epanel-plugin-storage",
   "version": "1.0.1",
   "displayName": "Storage",
-  "description": "Provides the daemon's local entity storage.",
+  "description": "Local entity storage.",
   "elementspanel": {
     "id": "storage",
     "dual": true,

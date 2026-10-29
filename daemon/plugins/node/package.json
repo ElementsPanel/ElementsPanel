@@ -2,7 +2,7 @@
   "name": "@elementspanel/epanel-plugin-node",
   "version": "1.0.1",
   "displayName": "Node Configuration",
-  "description": "Owns direct-connection address mappings and synchronizes the panel language.",
+  "description": "Connection address mapping and language synchronization.",
   "elementspanel": {
     "id": "node",
     "dual": true,

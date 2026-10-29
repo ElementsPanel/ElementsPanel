@@ -2,7 +2,7 @@
   "name": "@elementspanel/epanel-plugin-monitor",
   "version": "1.0.1",
   "displayName": "Data Monitoring",
-  "description": "Samples this daemon's CPU and memory usage and reports the history to the panel.",
+  "description": "Daemon CPU and memory monitoring.",
   "elementspanel": {
     "id": "monitor",
     "dual": true,

@@ -1,7 +1,7 @@
 {
   "name": "@elementspanel/epanel-plugin-user",
   "version": "1.0.1",
-  "description": "Owns panel authentication: login, multi-user management, permissions and SSO. Removing this plugin leaves the panel open with no login.",
+  "description": "Login, user management, permissions and SSO.",
   "elementspanel": {
     "id": "user",
     "priority": 50,

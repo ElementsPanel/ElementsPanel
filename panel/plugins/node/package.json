@@ -1,7 +1,7 @@
 {
   "name": "@elementspanel/epanel-plugin-node",
   "version": "1.0.1",
-  "description": "Owns the remote-node subsystem the panel reaches its daemons through, plus the node management pages, image management, layout cards, the Desktop node manager and the node management API.",
+  "description": "Remote node and image management.",
   "elementspanel": {
     "id": "node",
     "dual": true,

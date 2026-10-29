@@ -1,7 +1,7 @@
 {
   "name": "@elementspanel/epanel-plugin-monitor",
   "version": "1.0.1",
-  "description": "Provides the data monitoring page: panel and host status, CPU/request charts, node status tiles and the operation log.",
+  "description": "System monitoring and operation logs.",
   "elementspanel": {
     "id": "monitor",
     "dual": true,

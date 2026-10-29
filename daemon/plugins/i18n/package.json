@@ -2,7 +2,7 @@
   "name": "@elementspanel/epanel-plugin-i18n",
   "version": "1.0.1",
   "displayName": "Internationalization",
-  "description": "Provides the daemon's base translations and scoped translation registration for other plugins.",
+  "description": "Daemon translations and plugin localization.",
   "elementspanel": {
     "id": "i18n",
     "dual": true,

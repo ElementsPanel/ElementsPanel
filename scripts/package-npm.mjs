@@ -202,7 +202,7 @@ async function packageBuiltinPlugins(sourceRoot, outputRoot, stagingRoot) {
     copyTree(path.join(repository, "LICENSE"), path.join(directory, "LICENSE"));
     await fs.writeFile(
       path.join(directory, "README.md"),
-      `# ${plugin.name}\n\n${plugin.description}\n\nAvailable for: ${sides.join(" and ")}.\n`
+      `# epanel-plugin-${plugin.id}\n`
     );
     result.push(metadata);
   }

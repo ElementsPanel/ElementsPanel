@@ -2,7 +2,7 @@
   "name": "@elementspanel/epanel-plugin-terminal",
   "version": "1.0.1",
   "displayName": "Terminal",
-  "description": "Owns the daemon terminal stream protocol and stream authentication.",
+  "description": "Authenticated instance terminal streams.",
   "elementspanel": {
     "id": "terminal",
     "dual": true,

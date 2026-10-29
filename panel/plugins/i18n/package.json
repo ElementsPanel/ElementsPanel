@@ -2,7 +2,7 @@
   "name": "@elementspanel/epanel-plugin-i18n",
   "version": "1.0.1",
   "displayName": "Internationalization",
-  "description": "Provides the panel's base translations, frontend vue-i18n instance and scoped translation registration for other plugins.",
+  "description": "Panel translations and plugin localization.",
   "elementspanel": {
     "id": "i18n",
     "dual": true,
