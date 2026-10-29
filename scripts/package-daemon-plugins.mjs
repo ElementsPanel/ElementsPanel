@@ -1,11 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import { copyTree } from "./npm-assets.mjs";
+import { readPluginMetadata, writePluginMetadata } from "./plugin-metadata.mjs";
 
 // Stage compiled built-in plugins for the daemon npm package. Source directories
 // and plugins installed into a development workspace are never published.
 
-const metadataFiles = ["plugin.json", "manifest.json", "package.json"];
 const entryFields = ["daemon", "backend", "main", "entry"];
 const entryCandidates = [
   "backend/index.cjs",
@@ -16,18 +16,6 @@ const entryCandidates = [
   "src/daemon.cjs",
   "src/daemon.mjs"
 ];
-
-function readMetadata(directory) {
-  for (const file of metadataFiles) {
-    const filePath = path.join(directory, file);
-    if (!fs.existsSync(filePath)) continue;
-    if (!fs.lstatSync(filePath).isFile())
-      throw new Error(`Plugin metadata must be a regular file: ${filePath}`);
-    const value = JSON.parse(fs.readFileSync(filePath, "utf8"));
-    if (value && typeof value === "object" && !Array.isArray(value)) return value;
-  }
-  return null;
-}
 
 function resolveEntry(directory, metadata) {
   const configured = entryFields
@@ -65,8 +53,7 @@ export function packageDaemonPlugins({ sourceRoot, outputRoot, pluginNames }) {
 
   for (const pluginName of pluginNames) {
     const sourceDirectory = path.join(sourceRoot, pluginName);
-    const metadata = readMetadata(sourceDirectory);
-    if (!metadata) throw new Error(`Missing plugin metadata: ${sourceDirectory}`);
+    const { manifest: metadata, packageMetadata } = readPluginMetadata(sourceDirectory);
 
     const entry = resolveEntry(sourceDirectory, metadata);
     if (!entry) {
@@ -85,10 +72,6 @@ export function packageDaemonPlugins({ sourceRoot, outputRoot, pluginNames }) {
     for (const field of entryFields) delete packagedMetadata[field];
     packagedMetadata.backend = path.posix.join("backend", path.basename(entry));
 
-    fs.writeFileSync(
-      path.join(outputDirectory, "plugin.json"),
-      `${JSON.stringify(packagedMetadata, null, 2)}\n`,
-      "utf8"
-    );
+    writePluginMetadata(outputDirectory, packagedMetadata, packageMetadata);
   }
 }

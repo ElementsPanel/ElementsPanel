@@ -1,0 +1,12 @@
+{
+  "name": "@elementspanel/epanel-plugin-monitor",
+  "version": "1.0.0",
+  "description": "Provides the data monitoring page: panel and host status, CPU/request charts, node status tiles and the operation log.",
+  "elementspanel": {
+    "priority": 15,
+    "frontendInject": [
+      "console",
+      "i18n"
+    ]
+  }
+}

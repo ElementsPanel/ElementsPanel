@@ -1,9 +1,6 @@
 {
   "id": "i18n",
-  "name": "Internationalization",
   "version": "1.0.0",
   "dual": true,
-  "description": "Provides the daemon's base translations and scoped translation registration for other plugins.",
-  "priority": -10000,
   "backend": "backend/index.cjs"
 }

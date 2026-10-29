@@ -142,10 +142,9 @@ function sideManifest(id, version, side, dual) {
   return {
     id,
     version,
-    description: `ElementsPanel ${id} plugin`,
     ...(dual ? { dual: true } : {}),
     ...(side === "panel"
-      ? { backend: "backend/index.cjs", frontend: "frontend/index.js", frontendInject: ["console", "i18n"] }
+      ? { backend: "backend/index.cjs", frontend: "frontend/index.js" }
       : { backend: "backend/index.cjs" })
   };
 }
@@ -173,7 +172,7 @@ function runtimePeerVersion(projectManifest, side) {
 }
 
 function workspaceReadme(id, sides) {
-  return `# epanel-plugin-${id}\n`;
+  return `# epanel-plugin-${id}\n\nPlugin metadata belongs in package.json: description, displayName, author and keywords describe the package. Runtime metadata belongs in elementspanel.<side>, including priority, frontendInject and elements.\n\nEach side's plugin.json contains only id, version, optional dual and execution entries. Generated CSS paths are saved in package.json under elementspanel.panel.styles.\n\nAvailable for: ${sides.join(" and ")}.\n`;
 }
 
 async function setupWorkspace(projectRoot, args) {
@@ -206,7 +205,7 @@ async function setupWorkspace(projectRoot, args) {
     elementspanel: {
       id: options.id,
       ...(options.sides.includes("panel")
-        ? { panel: { directory: "panel", folder: options.id } }
+        ? { panel: { directory: "panel", folder: options.id, frontendInject: ["console", "i18n"] } }
         : {}),
       ...(options.sides.includes("daemon")
         ? { daemon: { directory: "daemon", folder: options.id } }
@@ -273,8 +272,18 @@ async function buildWorkspace(entry) {
           ])
         : undefined;
     const pluginFile = path.join(sideRoot, "plugin.json");
-    const plugin = readJson(pluginFile);
-    plugin.version = packageManifest.version;
+    const previous = readJson(pluginFile);
+    const definition = packageManifest.elementspanel[side];
+    // Keep existing workspaces usable while moving their old metadata out of
+    // plugin.json. Explicit package metadata takes precedence.
+    for (const [key, value] of Object.entries(previous)) {
+      if (["id", "version", "dual", "backend", "frontend", "panel", "daemon", "main", "entry", "ui"].includes(key))
+        continue;
+      const field = key === "name" ? "displayName" : key;
+      if (definition[field] === undefined && packageManifest[field] === undefined && packageManifest.elementspanel[field] === undefined)
+        definition[field] = value;
+    }
+    const plugin = sideManifest(packageManifest.elementspanel.id, packageManifest.version, side, sides.length === 2);
     if (!backend) throw new Error(`Missing backend source for ${packageManifest.name}/${side}.`);
     if (side === "panel" && !frontend)
       throw new Error(`Missing frontend source for ${packageManifest.name}/panel.`);
@@ -317,9 +326,10 @@ async function buildWorkspace(entry) {
       });
       plugin.frontend = "frontend/index.js";
       const styles = compiledStyles(frontendOutput);
-      if (styles.length) plugin.styles = styles;
-      else delete plugin.styles;
+      if (styles.length) definition.styles = styles;
+      else delete definition.styles;
     }
+    writeJson(path.join(entry.root, "package.json"), packageManifest);
     writeJson(pluginFile, plugin);
   }
   console.log(`Built ${packageManifest.name}@${packageManifest.version}`);

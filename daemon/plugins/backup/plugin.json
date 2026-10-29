@@ -1,9 +1,6 @@
 {
   "id": "backup",
-  "name": "Instance Backup",
   "version": "1.0.0",
   "dual": true,
-  "description": "Provides instance backup and restore operations.",
-  "priority": 100,
   "backend": "backend/index.cjs"
 }

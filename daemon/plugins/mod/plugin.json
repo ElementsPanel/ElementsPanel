@@ -1,9 +1,6 @@
 {
   "id": "mod-manager",
-  "name": "Mod Manager",
   "version": "1.0.0",
   "dual": true,
-  "description": "Provides instance mod and plugin metadata, installation, configuration discovery and file operations.",
-  "priority": 100,
   "backend": "backend/index.cjs"
 }

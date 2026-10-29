@@ -1,0 +1,9 @@
+{
+  "name": "@elementspanel/epanel-plugin-node",
+  "version": "1.0.0",
+  "displayName": "Node Configuration",
+  "description": "Owns direct-connection address mappings and synchronizes the panel language.",
+  "elementspanel": {
+    "priority": 200
+  }
+}

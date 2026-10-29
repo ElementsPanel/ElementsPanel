@@ -120,8 +120,50 @@ export interface PluginDiscoveryRoot {
 }
 
 const MANIFEST_FILES = ["plugin.json", "manifest.json", "package.json"];
+const ENTRY_FIELDS = ["backend", "frontend", "panel", "daemon", "main", "entry", "ui"];
 
-/** Reads the manifest of one plugin directory, or null if it has none. */
+function objectValue(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+/**
+ * Source plugins keep package.json beside plugin.json. Published npm plugins
+ * keep it at the package root, with runtime metadata under elementspanel.<side>.
+ * Stop at the first package boundary so a host's metadata cannot reach a plugin.
+ */
+function readPackageMetadata(directory: string, id: string): Record<string, unknown> {
+  const pluginDirectory = path.resolve(directory);
+  let current = pluginDirectory;
+  while (true) {
+    const filename = path.join(current, "package.json");
+    if (fs.existsSync(filename)) {
+      const { elementspanel, ...metadata } = objectValue(
+        JSON.parse(fs.readFileSync(filename, "utf8"))
+      );
+      const { id: packageId, panel, daemon, ...shared } = objectValue(elementspanel);
+      const definition = [panel, daemon]
+        .map(objectValue)
+        .find(
+          (side) =>
+            typeof side.directory === "string" &&
+            path.resolve(current, side.directory) === pluginDirectory
+        );
+      if (current !== pluginDirectory && (packageId !== id || !definition)) return {};
+      const { directory: _directory, folder: _folder, ...sideMetadata } = definition ?? {};
+      const result = { ...metadata, ...shared, ...sideMetadata };
+      // npm's main/entry fields do not define a side's execution entry.
+      for (const field of ["dual", ...ENTRY_FIELDS]) delete result[field];
+      return result;
+    }
+    const parent = path.dirname(current);
+    if (parent === current) return {};
+    current = parent;
+  }
+}
+
+/** Merges package metadata with a plugin's identity and entries. Legacy manifests still load. */
 export function readPluginManifest(
   directory: string,
   onWarning?: (message: string, error?: unknown) => void,
@@ -135,7 +177,17 @@ export function readPluginManifest(
       if (!value || typeof value !== "object" || Array.isArray(value)) return null;
       const id = typeof value.id === "string" ? value.id : fallbackId;
       if (!id.trim()) return null;
-      return { ...value, id: id.trim() } as PluginManifest;
+      const manifest: Record<string, unknown> = {
+        ...value,
+        ...readPackageMetadata(directory, id.trim()),
+        id: id.trim()
+      };
+      // Identity and execution paths always belong to plugin.json. Package
+      // metadata wins for descriptions, priority, configuration and dependencies.
+      for (const field of ["version", "dual", ...ENTRY_FIELDS]) {
+        if (value[field] !== undefined) manifest[field] = value[field];
+      }
+      return manifest as PluginManifest;
     } catch (error) {
       onWarning?.(`Failed to read plugin manifest: ${filePath}`, error);
       return null;

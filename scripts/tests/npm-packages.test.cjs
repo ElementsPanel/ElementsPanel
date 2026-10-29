@@ -5,6 +5,8 @@ const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 const { pathToFileURL } = require("node:url");
 const { test } = require("node:test");
+const { createLoader } = require("./helpers.cjs");
+const { readPluginManifest } = createLoader()("common/src/plugin_manifest.ts");
 const repository = path.resolve(__dirname, "../..");
 const packaging = import(pathToFileURL(path.join(repository, "scripts/package-npm.mjs")).href);
 
@@ -32,6 +34,9 @@ function fixture(t) {
       const sourceManifest = path.join(repository, side, "plugins", item.name, "plugin.json");
       if (!item.isDirectory() || !fs.existsSync(sourceManifest)) continue;
       const original = JSON.parse(fs.readFileSync(sourceManifest));
+      const packageMetadata = JSON.parse(
+        fs.readFileSync(path.join(path.dirname(sourceManifest), "package.json"))
+      );
       const manifest = { ...original };
       if (original.backend) {
         write(
@@ -60,6 +65,7 @@ function fixture(t) {
         });
       }
       write(path.join(root, "plugins", item.name, "plugin.json"), manifest);
+      write(path.join(root, "plugins", item.name, "package.json"), packageMetadata);
     }
   }
   write(path.join(frontendRoot, "plugins/manifest.json"), frontendManifest);
@@ -126,6 +132,21 @@ test("workspace packaging includes runnable entry points and excludes user data 
       const pluginManifest = JSON.parse(fs.readFileSync(path.join(pluginRoot, "plugin.json")));
       assert.equal(pluginManifest.id, id);
       assert.equal(pluginManifest.version, metadata.version);
+      assert.ok(
+        Object.keys(pluginManifest).every((field) =>
+          ["id", "version", "dual", "backend", "frontend"].includes(field)
+        )
+      );
+      assert.equal(fs.existsSync(path.join(pluginRoot, "package.json")), false);
+      const folder = metadata.elementspanel[side].folder;
+      const sourceMetadata = JSON.parse(
+        fs.readFileSync(path.join(repository, side, "plugins", folder, "package.json"))
+      );
+      const discovered = readPluginManifest(pluginRoot);
+      assert.equal(discovered.description, sourceMetadata.description);
+      assert.equal(discovered.priority, sourceMetadata.elementspanel.priority);
+      for (const field of ["frontendInject", "frontendImmediate", "frontendRequired"])
+        assert.deepEqual(discovered[field], sourceMetadata.elementspanel[field]);
       if (pluginManifest.backend) {
         assert.ok(fs.existsSync(path.join(pluginRoot, pluginManifest.backend)));
         assert.doesNotMatch(
@@ -137,9 +158,11 @@ test("workspace packaging includes runnable entry points and excludes user data 
       assert.equal(fs.existsSync(path.join(pluginRoot, "src")), false);
       if (pluginManifest.frontend) {
         assert.equal(pluginManifest.frontend, "frontend/index.js");
-        assert.deepEqual(pluginManifest.styles, ["frontend/assets/style.css"]);
+        const styles = metadata.elementspanel[side].styles;
+        assert.deepEqual(styles, ["frontend/assets/style.css"]);
+        assert.deepEqual(discovered.styles, styles);
         assert.ok(fs.existsSync(path.join(pluginRoot, pluginManifest.frontend)));
-        assert.ok(fs.existsSync(path.join(pluginRoot, pluginManifest.styles[0])));
+        assert.ok(fs.existsSync(path.join(pluginRoot, styles[0])));
       }
     }
     const help = execFileSync(
@@ -172,6 +195,29 @@ test("workspace packaging includes runnable entry points and excludes user data 
   );
   assert.match(chineseHelp, /用法：npx @elementspanel\/init@latest/);
   assert.ok(fs.existsSync(path.join(f.outputRoot, "init-elementspanel/workspace.cjs")));
+  const initializer = require(path.join(f.outputRoot, "init-elementspanel/index.cjs"));
+  const workspace = require(path.join(f.outputRoot, "init-elementspanel/workspace.cjs"));
+  const project = path.join(f.directory, "initialized-project");
+  await initializer.initialize({ directory: project, mode: "full", install: false });
+  await workspace.setupWorkspace(project, ["example", "--both", "--no-install"]);
+  const generatedRoot = path.join(project, "external/example");
+  const generated = JSON.parse(fs.readFileSync(path.join(generatedRoot, "package.json")));
+  assert.equal(generated.description, "ElementsPanel example plugin");
+  assert.deepEqual(generated.elementspanel.panel.frontendInject, ["console", "i18n"]);
+  for (const side of ["panel", "daemon"]) {
+    const sideManifest = JSON.parse(fs.readFileSync(path.join(generatedRoot, side, "plugin.json")));
+    assert.deepEqual(
+      Object.keys(sideManifest).sort(),
+      (side === "panel"
+        ? ["id", "version", "dual", "backend", "frontend"]
+        : ["id", "version", "dual", "backend"]
+      ).sort()
+    );
+    assert.equal(
+      readPluginManifest(path.join(generatedRoot, side)).description,
+      generated.description
+    );
+  }
   assert.deepEqual(create.runtimeVersions, {
     panel: result.panel.version,
     daemon: result.daemon.version

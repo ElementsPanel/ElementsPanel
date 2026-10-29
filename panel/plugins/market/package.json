@@ -1,0 +1,12 @@
+{
+  "name": "@elementspanel/epanel-plugin-market",
+  "version": "1.0.0",
+  "description": "Provides the ElementsPanel plugin market: browsing, installation, updates and removal.",
+  "elementspanel": {
+    "priority": 175,
+    "frontendInject": [
+      "console",
+      "i18n"
+    ]
+  }
+}

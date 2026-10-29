@@ -1,0 +1,12 @@
+{
+  "name": "@elementspanel/epanel-plugin-desktop",
+  "version": "1.0.0",
+  "description": "Provides the immersive desktop interface and per-user desktop layout storage.",
+  "elementspanel": {
+    "priority": 100,
+    "frontendInject": [
+      "console",
+      "i18n"
+    ]
+  }
+}

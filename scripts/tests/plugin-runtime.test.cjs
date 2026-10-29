@@ -47,7 +47,11 @@ function fixture(t, side = "panel") {
     fs.writeFileSync(path.join(target, "index.cjs"), source);
     fs.writeFileSync(
       path.join(target, "plugin.json"),
-      JSON.stringify({ id, backend: "index.cjs", ...extra })
+      JSON.stringify({ id, backend: "index.cjs" })
+    );
+    fs.writeFileSync(
+      path.join(target, "package.json"),
+      JSON.stringify({ name: `epanel-plugin-${id}`, elementspanel: extra })
     );
     return target;
   };

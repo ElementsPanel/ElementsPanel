@@ -89,6 +89,7 @@ async function packageBuiltinPlugins(sourceRoot, outputRoot, stagingRoot) {
     for (const folder of pluginNames) {
       const directory = path.join(pluginOutput, folder);
       const manifest = await verifyPlugin(directory);
+      const packageMetadata = await readJson(path.join(directory, "package.json"));
       const expected = await readJson(path.join(pluginRoot, folder, "plugin.json"));
       if (manifest.id !== expected.id || manifest.version !== expected.version)
         throw new Error(`Unexpected plugin identity or version: ${directory}`);
@@ -104,8 +105,8 @@ async function packageBuiltinPlugins(sourceRoot, outputRoot, stagingRoot) {
           id: manifest.id,
           name: `@elementspanel/epanel-plugin-${manifest.id}`,
           version: manifest.version,
-          description:
-            manifest.description || manifest.name || `ElementsPanel ${manifest.id} plugin`,
+          metadata: packageMetadata,
+          description: packageMetadata.description || `ElementsPanel ${manifest.id} plugin`,
           sides: {}
         };
         plugins.set(manifest.id, plugin);
@@ -113,7 +114,7 @@ async function packageBuiltinPlugins(sourceRoot, outputRoot, stagingRoot) {
       if (plugin.version !== manifest.version)
         throw new Error(`Both sides of npm plugin ${manifest.id} must have the same version.`);
       if (plugin.sides[side]) throw new Error(`Duplicate ${side} plugin id: ${manifest.id}`);
-      plugin.sides[side] = { directory, folder };
+      plugin.sides[side] = { directory, folder, metadata: packageMetadata };
     }
   }
   const result = [];
@@ -132,16 +133,49 @@ async function packageBuiltinPlugins(sourceRoot, outputRoot, stagingRoot) {
       publishConfig: { access: "public" },
       files: [...sides.map((side) => `${side}/`), "README.md", "LICENSE"],
       exports: { "./package.json": "./package.json" },
-      elementspanel: { id: plugin.id },
+      elementspanel: {
+        ...Object.fromEntries(
+          ["category", "changelog"]
+            .filter((field) => plugin.metadata.elementspanel[field] !== undefined)
+            .map((field) => [field, plugin.metadata.elementspanel[field]])
+        ),
+        id: plugin.id
+      },
       // Plugin bundles use the host's shared runtime imports. Optional peers
       // let a dual plugin be installed on a machine running only one side.
       peerDependencies: {},
       peerDependenciesMeta: {}
     };
+    for (const field of [
+      "description",
+      "displayName",
+      "homepage",
+      "author",
+      "contributors",
+      "license",
+      "repository",
+      "keywords",
+      "changelog"
+    ]) {
+      if (plugin.metadata[field] !== undefined) metadata[field] = plugin.metadata[field];
+    }
     for (const side of sides) {
       const source = plugin.sides[side];
       copyTree(source.directory, path.join(directory, side));
-      metadata.elementspanel[side] = { directory: side, folder: source.folder };
+      // One package.json describes the npm package and both halves. The side
+      // plugin.json files contain only identity, dual status and entry points.
+      await fs.unlink(path.join(directory, side, "package.json"));
+      metadata.elementspanel[side] = {
+        ...source.metadata.elementspanel,
+        ...(source.metadata.displayName === undefined
+          ? {}
+          : { displayName: source.metadata.displayName }),
+        ...(source.metadata.description === undefined
+          ? {}
+          : { description: source.metadata.description }),
+        directory: side,
+        folder: source.folder
+      };
       metadata.exports[`./${side}/plugin.json`] = `./${side}/plugin.json`;
       metadata.peerDependencies[`@elementspanel/${side}`] = hosts[side].version;
       metadata.peerDependenciesMeta[`@elementspanel/${side}`] = { optional: true };

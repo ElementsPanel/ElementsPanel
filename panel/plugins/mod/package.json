@@ -1,0 +1,15 @@
+{
+  "name": "@elementspanel/epanel-plugin-mod-manager",
+  "version": "1.0.0",
+  "displayName": "Mod Manager",
+  "description": "Provides Minecraft mod and plugin discovery, installation and management in normal and Desktop modes.",
+  "elementspanel": {
+    "priority": 150,
+    "frontendInject": [
+      "console",
+      "i18n",
+      "instance",
+      "file"
+    ]
+  }
+}

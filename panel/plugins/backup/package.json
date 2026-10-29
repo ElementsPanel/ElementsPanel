@@ -1,0 +1,13 @@
+{
+  "name": "@elementspanel/epanel-plugin-backup",
+  "version": "1.0.0",
+  "description": "Provides instance backup management in normal and Desktop modes.",
+  "elementspanel": {
+    "priority": 150,
+    "frontendInject": [
+      "console",
+      "i18n",
+      "instance"
+    ]
+  }
+}

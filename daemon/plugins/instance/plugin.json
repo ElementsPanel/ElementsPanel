@@ -1,9 +1,6 @@
 {
   "id": "instance",
-  "name": "Application Instances",
   "version": "1.0.0",
   "dual": true,
-  "description": "Owns application instances, Java runtime management, Minecraft installation and status, shared installation tasks, commands, Docker process management, scheduling and instance protocols.",
-  "priority": 40,
   "backend": "backend/index.cjs"
 }
