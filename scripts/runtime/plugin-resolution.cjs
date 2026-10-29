@@ -50,8 +50,9 @@ function npmPlugins(packageRoot) {
 }
 
 function resolveFile(filename, context, nextResolve) {
+  // Node.js versions expose hook conditions as either an array or a Set.
   return nextResolve(
-    context.conditions.includes("require") ? filename : pathToFileURL(filename).href,
+    Array.from(context.conditions).includes("require") ? filename : pathToFileURL(filename).href,
     context
   );
 }
@@ -118,7 +119,7 @@ function installPluginResolution(packageRoot, workRoot) {
         )
           return resolved;
         if (hostPackages.has(name)) {
-          if (context.conditions.includes("import"))
+          if (Array.from(context.conditions).includes("import"))
             return nextResolve(specifier, { ...context, parentURL: hostURL });
           return resolveFile(hostRequire.resolve(specifier), context, nextResolve);
         }
