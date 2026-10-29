@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-mod-manager",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "Mod Manager",
   "description": "Provides instance mod and plugin metadata, installation, configuration discovery and file operations.",
   "elementspanel": {

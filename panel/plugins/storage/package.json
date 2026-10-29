@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-storage",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "Storage",
   "description": "Provides the panel's file- and Redis-backed entity storage.",
   "elementspanel": {

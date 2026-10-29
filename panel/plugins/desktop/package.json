@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-desktop",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Provides the immersive desktop interface and per-user desktop layout storage.",
   "elementspanel": {
     "priority": 100,

@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-auth",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "Authentication",
   "description": "Owns the daemon's identity check: the top-level middleware that gates every protocol event, the key verification the panel authenticates with, and the panel IP whitelist. Removing this plugin leaves the daemon answering to anyone who connects.",
   "elementspanel": {

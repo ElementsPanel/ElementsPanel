@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-backup",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "Instance Backup",
   "description": "Provides instance backup and restore operations.",
   "elementspanel": {

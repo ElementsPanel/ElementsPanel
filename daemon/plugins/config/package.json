@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-config",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "Plugin Management",
   "description": "Exposes this daemon's plugin inventory and enable switch over the protocol, so the panel's plugin manager can administer it remotely.",
   "elementspanel": {
