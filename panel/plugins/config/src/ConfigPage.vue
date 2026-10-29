@@ -1148,15 +1148,6 @@ const confirmAction = async () => {
         <div class="plugin-config-heading">
           <span>{{ t("TXT_CODE_PLUGIN_LIST") }}</span>
           <VBtn
-            icon="mdi-download"
-            size="x-small"
-            variant="text"
-            :title="t('TXT_CODE_PLUGIN_NPM_INSTALL')"
-            :aria-label="t('TXT_CODE_PLUGIN_NPM_INSTALL')"
-            :disabled="actionBusy || (scope === 'node' && !selectedNodeId)"
-            @click="openInstall()"
-          />
-          <VBtn
             icon="mdi-plus"
             size="x-small"
             variant="text"
