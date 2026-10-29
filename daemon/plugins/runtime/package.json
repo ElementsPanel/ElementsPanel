@@ -4,6 +4,8 @@
   "displayName": "Daemon Runtime",
   "description": "Initializes daemon configuration and exposes shared runtime services to plugins.",
   "elementspanel": {
+    "id": "runtime",
+    "dual": true,
     "priority": -9000
   }
 }

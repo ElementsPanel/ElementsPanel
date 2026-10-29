@@ -4,6 +4,7 @@
   "displayName": "Console",
   "description": "Provides the panel's base Web UI shell, shared frontend implementation, routes, layout cards and global styles.",
   "elementspanel": {
+    "id": "console",
     "priority": -9000,
     "frontendInject": [
       "runtime",

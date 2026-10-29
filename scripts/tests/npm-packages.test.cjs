@@ -130,11 +130,12 @@ test("workspace packaging includes runnable entry points and excludes user data 
       assert.equal(metadata.peerDependenciesMeta[manifest.name].optional, true);
       const pluginRoot = path.join(f.outputRoot, name.split("/")[1], side);
       const pluginManifest = JSON.parse(fs.readFileSync(path.join(pluginRoot, "plugin.json")));
-      assert.equal(pluginManifest.id, id);
-      assert.equal(pluginManifest.version, metadata.version);
+      assert.equal(pluginManifest.id, undefined);
+      assert.equal(pluginManifest.version, undefined);
+      assert.equal(pluginManifest.dual, undefined);
       assert.ok(
         Object.keys(pluginManifest).every((field) =>
-          ["id", "version", "dual", "backend", "frontend"].includes(field)
+          ["backend", "frontend"].includes(field)
         )
       );
       assert.equal(fs.existsSync(path.join(pluginRoot, "package.json")), false);
@@ -143,6 +144,12 @@ test("workspace packaging includes runnable entry points and excludes user data 
         fs.readFileSync(path.join(repository, side, "plugins", folder, "package.json"))
       );
       const discovered = readPluginManifest(pluginRoot);
+      assert.equal(discovered.id, id);
+      assert.equal(discovered.version, metadata.version);
+      assert.equal(discovered.dual, sourceMetadata.elementspanel.dual);
+      assert.equal(metadata.elementspanel[side].id, undefined);
+      assert.equal(metadata.elementspanel[side].version, undefined);
+      assert.equal(metadata.elementspanel[side].dual, undefined);
       assert.equal(discovered.description, sourceMetadata.description);
       assert.equal(discovered.priority, sourceMetadata.elementspanel.priority);
       for (const field of ["frontendInject", "frontendImmediate", "frontendRequired"])
@@ -203,14 +210,20 @@ test("workspace packaging includes runnable entry points and excludes user data 
   const generatedRoot = path.join(project, "external/example");
   const generated = JSON.parse(fs.readFileSync(path.join(generatedRoot, "package.json")));
   assert.equal(generated.description, "ElementsPanel example plugin");
+  assert.equal(generated.elementspanel.id, "example");
+  assert.equal(generated.elementspanel.dual, true);
+  assert.equal(generated.version, "0.1.0");
+  assert.ok(generated.scripts.build.startsWith('node -e "'));
+  assert.doesNotMatch(generated.scripts.build, /epanel-workspace|scripts\/build/);
+  assert.equal(generated.scripts.prepack, "npm run build");
   assert.deepEqual(generated.elementspanel.panel.frontendInject, ["console", "i18n"]);
   for (const side of ["panel", "daemon"]) {
     const sideManifest = JSON.parse(fs.readFileSync(path.join(generatedRoot, side, "plugin.json")));
     assert.deepEqual(
       Object.keys(sideManifest).sort(),
       (side === "panel"
-        ? ["id", "version", "dual", "backend", "frontend"]
-        : ["id", "version", "dual", "backend"]
+        ? ["backend", "frontend"]
+        : ["backend"]
       ).sort()
     );
     assert.equal(

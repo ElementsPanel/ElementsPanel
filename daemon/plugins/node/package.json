@@ -4,6 +4,8 @@
   "displayName": "Node Configuration",
   "description": "Owns direct-connection address mappings and synchronizes the panel language.",
   "elementspanel": {
+    "id": "node",
+    "dual": true,
     "priority": 200
   }
 }

@@ -4,6 +4,8 @@
   "displayName": "Web Server",
   "description": "Owns the daemon's network layer: the Koa application, its base middleware, the HTTP/HTTPS listener and the Socket.io server the panel connects to. Provides ctx.koa and ctx.websocket.",
   "elementspanel": {
+    "id": "server",
+    "dual": true,
     "priority": 10
   }
 }

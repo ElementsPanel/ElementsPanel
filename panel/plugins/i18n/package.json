@@ -4,6 +4,8 @@
   "displayName": "Internationalization",
   "description": "Provides the panel's base translations, frontend vue-i18n instance and scoped translation registration for other plugins.",
   "elementspanel": {
+    "id": "i18n",
+    "dual": true,
     "priority": -10000,
     "frontendInject": [
       "runtime"

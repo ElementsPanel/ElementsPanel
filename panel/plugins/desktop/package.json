@@ -3,6 +3,7 @@
   "version": "1.0.1",
   "description": "Provides the immersive desktop interface and per-user desktop layout storage.",
   "elementspanel": {
+    "id": "desktop",
     "priority": 100,
     "frontendInject": [
       "console",

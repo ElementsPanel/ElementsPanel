@@ -4,6 +4,8 @@
   "displayName": "Panel Runtime",
   "description": "Initializes panel configuration and frontend startup state, and exposes shared runtime services to plugins.",
   "elementspanel": {
+    "id": "runtime",
+    "dual": true,
     "priority": -9000,
     "frontendInject": [],
     "frontendImmediate": true,

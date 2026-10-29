@@ -4,6 +4,8 @@
   "displayName": "Application Instances",
   "description": "Owns application instances, Java runtime management, Minecraft installation and status, shared installation tasks, commands, Docker process management, scheduling and instance protocols.",
   "elementspanel": {
+    "id": "instance",
+    "dual": true,
     "priority": 40
   }
 }

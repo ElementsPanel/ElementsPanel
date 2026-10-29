@@ -659,6 +659,11 @@ test("npm plugin discovery rejects mismatched identities and paths outside the i
   const metadata = JSON.parse(fs.readFileSync(filename));
   assert.equal(resolveNpmPlugins(host)[0].directory, plugin.directory);
   write(filename, { ...metadata, version: "2.0.0" });
+  assert.equal(resolveNpmPlugins(host)[0].version, "2.0.0");
+  write(filename, {
+    ...metadata,
+    elementspanel: { ...metadata.elementspanel, id: "different-id" }
+  });
   assert.throws(() => resolveNpmPlugins(host), /identity or version/);
   write(filename, {
     ...metadata,

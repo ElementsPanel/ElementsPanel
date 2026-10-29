@@ -4,6 +4,8 @@
   "displayName": "Data Monitoring",
   "description": "Samples this daemon's CPU and memory usage and reports the history to the panel.",
   "elementspanel": {
+    "id": "monitor",
+    "dual": true,
     "priority": 30
   }
 }

@@ -3,6 +3,8 @@
   "version": "1.0.1",
   "description": "Owns application instance management, creation, console routes, Java runtime management, Minecraft status and panel-to-daemon instance APIs.",
   "elementspanel": {
+    "id": "instance",
+    "dual": true,
     "priority": 40,
     "frontendInject": [
       "console",

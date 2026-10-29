@@ -3,6 +3,8 @@
   "version": "1.0.1",
   "description": "Provides the data monitoring page: panel and host status, CPU/request charts, node status tiles and the operation log.",
   "elementspanel": {
+    "id": "monitor",
+    "dual": true,
     "priority": 15,
     "frontendInject": [
       "console",

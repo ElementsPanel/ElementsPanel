@@ -4,6 +4,8 @@
   "displayName": "Mod Manager",
   "description": "Provides instance mod and plugin metadata, installation, configuration discovery and file operations.",
   "elementspanel": {
+    "id": "mod-manager",
+    "dual": true,
     "priority": 100
   }
 }

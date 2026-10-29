@@ -4,6 +4,8 @@
   "displayName": "Mod Manager",
   "description": "Provides Minecraft mod and plugin discovery, installation and management in normal and Desktop modes.",
   "elementspanel": {
+    "id": "mod-manager",
+    "dual": true,
     "priority": 150,
     "frontendInject": [
       "console",

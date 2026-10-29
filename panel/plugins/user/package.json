@@ -3,6 +3,7 @@
   "version": "1.0.1",
   "description": "Owns panel authentication: login, multi-user management, permissions and SSO. Removing this plugin leaves the panel open with no login.",
   "elementspanel": {
+    "id": "user",
     "priority": 50,
     "frontendInject": [
       "console",

@@ -32,8 +32,6 @@ function installNpmPlugin(hostRoot, side, id, options = {}) {
     }
   });
   write(path.join(directory, "plugin.json"), {
-    id,
-    version,
     backend: "backend/index.cjs",
     ...(options.frontend ? { frontend: "frontend/index.js" } : {})
   });

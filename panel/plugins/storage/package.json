@@ -4,6 +4,8 @@
   "displayName": "Storage",
   "description": "Provides the panel's file- and Redis-backed entity storage.",
   "elementspanel": {
+    "id": "storage",
+    "dual": true,
     "priority": -9500
   }
 }

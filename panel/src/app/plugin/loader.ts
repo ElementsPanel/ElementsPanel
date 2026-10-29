@@ -202,7 +202,7 @@ async function installPlugin(plugin: DiscoveredPlugin): Promise<LoadedPanelPlugi
     let applied: unknown;
     let thrown: unknown;
     // The manifest id is the plugin's name, so `ctx.name` — which is what
-    // appears in its log lines — always matches `plugin.json`.
+    // appears in its log lines — always matches the package metadata.
     record.fork = ctx.plugin(
       {
         ...module,

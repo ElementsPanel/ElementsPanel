@@ -4,6 +4,8 @@
   "displayName": "Instance Backup",
   "description": "Provides instance backup and restore operations.",
   "elementspanel": {
+    "id": "backup",
+    "dual": true,
     "priority": 100
   }
 }

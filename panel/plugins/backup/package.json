@@ -3,6 +3,8 @@
   "version": "1.0.1",
   "description": "Provides instance backup management in normal and Desktop modes.",
   "elementspanel": {
+    "id": "backup",
+    "dual": true,
     "priority": 150,
     "frontendInject": [
       "console",

@@ -1,6 +1,4 @@
 {
-  "id": "user",
-  "version": "1.0.1",
   "backend": "backend/index.cjs",
   "frontend": "src/frontend.ts"
 }

@@ -18,7 +18,7 @@ npx @elementspanel/init@latest my-panel --language zh --template full --panel-po
 
 内置插件按功能发布为 `@elementspanel/epanel-plugin-*`。例如，`epanel-plugin-instance` 包同时包含 panel 和 daemon 两端；`epanel-plugin-console` 只包含 panel 端。运行包在 `dependencies` 中固定对应插件版本，初始化器安装运行包时会自动安装这些依赖。
 
-插件的名称、简介、作者、分类等元数据统一写在 `package.json`：npm 标准字段使用 `name`、`version`、`description`、`author`、`keywords` 等，展示名称使用 `displayName`，分类使用 `elementspanel.category`。各端的 `plugin.json` 只保留 `id`、`version`、可选的 `dual` 和执行入口（`backend`、`frontend` 等）。
+插件的标识、版本、名称、简介、作者、分类等元数据统一写在 `package.json`：npm 标准字段使用 `name`、`version`、`description`、`author`、`keywords` 等，展示名称使用 `displayName`，插件 ID 使用 `elementspanel.id`，双端标识使用 `elementspanel.dual`，分类使用 `elementspanel.category`。各端的 `plugin.json` 只定义执行入口（`backend`、`frontend` 等）。
 
 源码插件在各自目录内的 `package.json.elementspanel` 中声明加载顺序 `priority`、前端依赖 `frontendInject`、启动标识 `frontendImmediate` / `frontendRequired`、兼容性 `elements` 和默认配置等。发布为 npm 包后，根 `package.json.elementspanel.id` 声明插件 ID，`elementspanel.panel` / `elementspanel.daemon` 声明各端的 `directory`、`folder` 与这些端专属元数据；生成的 CSS 路径记录在 `elementspanel.panel.styles`。双端插件可以在各端声明中保留各自的简介和展示名称，市场使用包级元数据。
 
@@ -36,15 +36,17 @@ npx @elementspanel/init@latest my-panel --language zh --template full --panel-po
 
 ```sh
 npm run setup -- example
-npm run build -- example
+npm run build --workspace epanel-plugin-example
 npm start
 ```
 
-默认创建 panel 插件；使用 `npm run setup -- example --both` 创建双端插件。生成的 `external/example/package.json` 是元数据的统一来源，两端的 `plugin.json` 只保存标识和入口；构建时同步版本号、入口与包内 CSS 路径。构建后在插件配置中启用，发布使用 `npm run pub -- example`。
+默认创建 panel 插件；使用 `npm run setup -- example --both` 创建双端插件。生成的 `external/example/package.json` 是全部元数据的统一来源，两端的 `plugin.json` 只保存入口；构建时更新入口与包内 CSS 路径，版本号始终读取根 `package.json.version`。构建后在插件配置中启用，发布使用 `npm run pub -- example`。
+
+完整构建逻辑直接写在插件自身 `package.json.scripts.build` 中，构建工具声明在插件的 `devDependencies`，无需外置构建脚本。可在插件目录执行 `npm run build`，或在项目根目录使用上述 workspace 命令。`npm run build -- example` 仅转发到该插件的 npm 脚本；`prepack` 在发布前执行包内构建。
 
 安装根目录、common、panel、daemon、frontend 的依赖后，运行 `npm run build:npm` 生成 `npm-packages/`。daemon npm 包不携带平台二进制库；初始化项目首次启动 daemon 时，会将当前平台需要的工具下载到 `daemon/lib/`，与 `data/` 和 `logs/` 同级。已有编译结果时，`npm run package:npm` 只收集和校验产物；目标输出目录存在时会在新产物准备完成后静默替换，也可追加 `-- --out <新目录>`。
 
-输出包含两个运行包、初始化器，以及每个内置插件的独立目录。版本分别沿用运行包和 `plugin.json` 中的版本号；一个插件的双端版本必须一致。编译测试 workflow 会打包所有目录并保存 `.tgz` artifact，npm 发布由维护者手动执行。
+输出包含两个运行包、初始化器，以及每个内置插件的独立目录。版本分别沿用运行包和插件 `package.json` 中的版本号；一个插件的双端包名和版本必须一致。编译测试 workflow 会打包所有目录并保存 `.tgz` artifact，npm 发布由维护者手动执行。
 
 发布前确认账号拥有包名及 `@elementspanel` scope 的权限，并使用尚未发布过的版本号。先发布所有插件包，再发布运行包和初始化器：
 

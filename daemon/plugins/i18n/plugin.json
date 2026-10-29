@@ -1,6 +1,3 @@
 {
-  "id": "i18n",
-  "version": "1.0.1",
-  "dual": true,
   "backend": "backend/index.cjs"
 }

@@ -4,6 +4,8 @@
   "displayName": "Storage",
   "description": "Provides the daemon's local entity storage.",
   "elementspanel": {
+    "id": "storage",
+    "dual": true,
     "priority": -9500
   }
 }

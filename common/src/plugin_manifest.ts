@@ -140,7 +140,7 @@ function objectValue(value: unknown): Record<string, unknown> {
  * keep it at the package root, with runtime metadata under elementspanel.<side>.
  * Stop at the first package boundary so a host's metadata cannot reach a plugin.
  */
-function readPackageMetadata(directory: string, id: string): Record<string, unknown> {
+function readPackageMetadata(directory: string): Record<string, unknown> {
   const pluginDirectory = path.resolve(directory);
   let current = pluginDirectory;
   while (true) {
@@ -157,11 +157,17 @@ function readPackageMetadata(directory: string, id: string): Record<string, unkn
             typeof side.directory === "string" &&
             path.resolve(current, side.directory) === pluginDirectory
         );
-      if (current !== pluginDirectory && (packageId !== id || !definition)) return {};
+      if (current !== pluginDirectory && (typeof packageId !== "string" || !definition)) return {};
       const { directory: _directory, folder: _folder, ...sideMetadata } = definition ?? {};
-      const result = { ...metadata, ...shared, ...sideMetadata };
+      const result: Record<string, unknown> = {
+        ...metadata,
+        ...shared,
+        ...sideMetadata,
+        ...(packageId === undefined ? {} : { id: packageId })
+      };
+      if (metadata.version !== undefined) result.version = metadata.version;
       // npm's main/entry fields do not define a side's execution entry.
-      for (const field of ["dual", ...ENTRY_FIELDS]) delete result[field];
+      for (const field of ENTRY_FIELDS) delete result[field];
       return result;
     }
     const parent = path.dirname(current);
@@ -170,7 +176,7 @@ function readPackageMetadata(directory: string, id: string): Record<string, unkn
   }
 }
 
-/** Merges package metadata with a plugin's identity and entries. Legacy manifests still load. */
+/** Combines execution entries with package metadata. Legacy manifests still load. */
 export function readPluginManifest(
   directory: string,
   onWarning?: (message: string, error?: unknown) => void,
@@ -182,16 +188,22 @@ export function readPluginManifest(
     try {
       const value = JSON.parse(fs.readFileSync(filePath, "utf8")) as Record<string, unknown> | null;
       if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-      const id = typeof value.id === "string" ? value.id : fallbackId;
+      const packageMetadata = readPackageMetadata(directory);
+      const id =
+        typeof packageMetadata.id === "string"
+          ? packageMetadata.id
+          : typeof value.id === "string"
+          ? value.id
+          : fallbackId;
       if (!id.trim()) return null;
       const manifest: Record<string, unknown> = {
         ...value,
-        ...readPackageMetadata(directory, id.trim()),
+        ...packageMetadata,
         id: id.trim()
       };
-      // Identity and execution paths always belong to plugin.json. Package
-      // metadata wins for descriptions, priority, configuration and dependencies.
-      for (const field of ["version", "dual", ...ENTRY_FIELDS]) {
+      // Only execution paths come from plugin.json; package.json owns identity,
+      // version, dual status and all other metadata.
+      for (const field of ENTRY_FIELDS) {
         if (value[field] !== undefined) manifest[field] = value[field];
       }
       return manifest as PluginManifest;

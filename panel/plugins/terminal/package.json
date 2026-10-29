@@ -3,6 +3,8 @@
   "version": "1.0.1",
   "description": "Provides the instance terminal, command history and terminal stream client.",
   "elementspanel": {
+    "id": "terminal",
+    "dual": true,
     "priority": 90,
     "frontendInject": [
       "console",

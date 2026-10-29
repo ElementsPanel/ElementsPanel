@@ -4,6 +4,8 @@
   "displayName": "Terminal",
   "description": "Owns the daemon terminal stream protocol and stream authentication.",
   "elementspanel": {
+    "id": "terminal",
+    "dual": true,
     "priority": 110
   }
 }

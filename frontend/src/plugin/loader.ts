@@ -416,7 +416,7 @@ async function install(
       let applied: unknown;
       let thrown: unknown;
       // The manifest id is the plugin's name, so `ctx.name` — which is what
-      // appears in its log lines — always matches `plugin.json`.
+      // appears in its log lines — always matches the package metadata.
       plugin.fork = ctx.plugin(
         {
           ...module,

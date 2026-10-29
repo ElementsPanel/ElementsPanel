@@ -1,10 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const manifestFields = [
-  "id",
-  "version",
-  "dual",
+export const pluginEntryFields = [
   "backend",
   "frontend",
   "panel",
@@ -14,6 +11,7 @@ const manifestFields = [
   "ui"
 ];
 const packageFields = [
+  "version",
   "displayName",
   "description",
   "author",
@@ -35,7 +33,7 @@ function readJson(filename) {
   return value;
 }
 
-/** Stage metadata separately from identity/entries, including legacy source manifests. */
+/** Move metadata into package.json and stage entry-only manifests, including legacy sources. */
 export function readPluginMetadata(directory) {
   const packageMetadata = readJson(path.join(directory, "package.json")) ?? {};
   const original =
@@ -43,13 +41,12 @@ export function readPluginMetadata(directory) {
     readJson(path.join(directory, "manifest.json")) ??
     packageMetadata;
   if (!Object.keys(original).length) throw new Error(`Missing plugin metadata: ${directory}`);
-  if (packageMetadata.version && original.version && packageMetadata.version !== original.version)
-    throw new Error(`Plugin package and manifest versions differ: ${directory}`);
+  const id = packageMetadata.elementspanel?.id ?? original.id ?? path.basename(directory);
   const manifest = {};
   const metadata = {};
   const elementspanel = {};
   for (const [key, value] of Object.entries(original)) {
-    if (manifestFields.includes(key)) manifest[key] = value;
+    if (pluginEntryFields.includes(key)) manifest[key] = value;
     else if (packageFields.includes(key)) metadata[key] = value;
     else if (key === "name" && original !== packageMetadata) metadata.displayName = value;
     else if (original !== packageMetadata) elementspanel[key] = value;
@@ -57,18 +54,20 @@ export function readPluginMetadata(directory) {
   return {
     manifest,
     packageMetadata: {
-      name: `@elementspanel/epanel-plugin-${manifest.id ?? path.basename(directory)}`,
+      name: `@elementspanel/epanel-plugin-${id}`,
       ...metadata,
       ...packageMetadata,
-      ...(manifest.version === undefined ? {} : { version: manifest.version }),
-      elementspanel: { ...elementspanel, ...packageMetadata.elementspanel }
+      elementspanel: { ...elementspanel, ...packageMetadata.elementspanel, id }
     }
   };
 }
 
 export function writePluginMetadata(directory, manifest, packageMetadata) {
   for (const [filename, value] of [
-    ["plugin.json", manifest],
+    [
+      "plugin.json",
+      Object.fromEntries(Object.entries(manifest).filter(([key]) => pluginEntryFields.includes(key)))
+    ],
     ["package.json", packageMetadata]
   ]) {
     fs.writeFileSync(path.join(directory, filename), `${JSON.stringify(value, null, 2)}\n`, "utf8");

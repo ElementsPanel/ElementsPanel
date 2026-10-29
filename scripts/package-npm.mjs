@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharedDependencies from "./runtime/shared-dependencies.cjs";
+import { pluginEntryFields } from "./plugin-metadata.mjs";
 import { copyTree } from "./npm-assets.mjs";
 import { packagePanelPlugins } from "./package-panel-plugins.mjs";
 import { packageDaemonPlugins } from "./package-daemon-plugins.mjs";
@@ -48,9 +49,18 @@ export function runtimeManifest(side, source) {
 
 async function verifyPlugin(directory) {
   const manifest = await readJson(path.join(directory, "plugin.json"));
-  for (const key of ["backend", "panel", "daemon", "frontend", "main", "entry"]) {
+  if (
+    !manifest ||
+    typeof manifest !== "object" ||
+    Array.isArray(manifest) ||
+    Object.keys(manifest).some((key) => !pluginEntryFields.includes(key))
+  )
+    throw new Error(`Plugin manifest must contain only execution entries: ${directory}`);
+  for (const key of pluginEntryFields) {
     const entry = manifest[key];
-    if (typeof entry !== "string") continue;
+    if (entry === undefined) continue;
+    if (typeof entry !== "string" || !entry.trim())
+      throw new Error(`Invalid published plugin entry: ${directory}/${key}`);
     const resolved = path.resolve(directory, entry);
     const relative = path.relative(directory, resolved);
     if (
@@ -91,29 +101,32 @@ async function packageBuiltinPlugins(sourceRoot, outputRoot, stagingRoot) {
       const manifest = await verifyPlugin(directory);
       const packageMetadata = await readJson(path.join(directory, "package.json"));
       const expected = await readJson(path.join(pluginRoot, folder, "plugin.json"));
-      if (manifest.id !== expected.id || manifest.version !== expected.version)
+      const expectedPackage = await readJson(path.join(pluginRoot, folder, "package.json"));
+      const id = packageMetadata.elementspanel.id;
+      const version = packageMetadata.version;
+      if (id !== expectedPackage.elementspanel.id || version !== expectedPackage.version)
         throw new Error(`Unexpected plugin identity or version: ${directory}`);
-      if (!/^[a-z][a-z0-9_-]{1,63}$/.test(manifest.id) || typeof manifest.version !== "string")
+      if (!/^[a-z][a-z0-9_-]{1,63}$/.test(id) || typeof version !== "string")
         throw new Error(`Invalid npm plugin metadata: ${directory}`);
       for (const field of ["backend", "frontend"]) {
         if (typeof expected[field] === "string" && typeof manifest[field] !== "string")
-          throw new Error(`Missing compiled ${field} for plugin ${manifest.id}`);
+          throw new Error(`Missing compiled ${field} for plugin ${id}`);
       }
-      let plugin = plugins.get(manifest.id);
+      let plugin = plugins.get(id);
       if (!plugin) {
         plugin = {
-          id: manifest.id,
-          name: `@elementspanel/epanel-plugin-${manifest.id}`,
-          version: manifest.version,
+          id,
+          name: packageMetadata.name,
+          version,
           metadata: packageMetadata,
-          description: packageMetadata.description || `ElementsPanel ${manifest.id} plugin`,
+          description: packageMetadata.description || `ElementsPanel ${id} plugin`,
           sides: {}
         };
-        plugins.set(manifest.id, plugin);
+        plugins.set(id, plugin);
       }
-      if (plugin.version !== manifest.version)
-        throw new Error(`Both sides of npm plugin ${manifest.id} must have the same version.`);
-      if (plugin.sides[side]) throw new Error(`Duplicate ${side} plugin id: ${manifest.id}`);
+      if (plugin.version !== version || plugin.name !== packageMetadata.name)
+        throw new Error(`Both sides of npm plugin ${id} must have the same package name and version.`);
+      if (plugin.sides[side]) throw new Error(`Duplicate ${side} plugin id: ${id}`);
       plugin.sides[side] = { directory, folder, metadata: packageMetadata };
     }
   }
@@ -139,7 +152,8 @@ async function packageBuiltinPlugins(sourceRoot, outputRoot, stagingRoot) {
             .filter((field) => plugin.metadata.elementspanel[field] !== undefined)
             .map((field) => [field, plugin.metadata.elementspanel[field]])
         ),
-        id: plugin.id
+        id: plugin.id,
+        ...(sides.length === 2 ? { dual: true } : {})
       },
       // Plugin bundles use the host's shared runtime imports. Optional peers
       // let a dual plugin be installed on a machine running only one side.
@@ -163,10 +177,11 @@ async function packageBuiltinPlugins(sourceRoot, outputRoot, stagingRoot) {
       const source = plugin.sides[side];
       copyTree(source.directory, path.join(directory, side));
       // One package.json describes the npm package and both halves. The side
-      // plugin.json files contain only identity, dual status and entry points.
+      // plugin.json files contain only execution entry points.
       await fs.unlink(path.join(directory, side, "package.json"));
+      const { id: _id, dual: _dual, ...sideMetadata } = source.metadata.elementspanel;
       metadata.elementspanel[side] = {
-        ...source.metadata.elementspanel,
+        ...sideMetadata,
         ...(source.metadata.displayName === undefined
           ? {}
           : { displayName: source.metadata.displayName }),

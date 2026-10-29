@@ -4,6 +4,8 @@
   "displayName": "Internationalization",
   "description": "Provides the daemon's base translations and scoped translation registration for other plugins.",
   "elementspanel": {
+    "id": "i18n",
+    "dual": true,
     "priority": -10000
   }
 }

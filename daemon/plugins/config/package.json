@@ -4,6 +4,8 @@
   "displayName": "Plugin Management",
   "description": "Exposes this daemon's plugin inventory and enable switch over the protocol, so the panel's plugin manager can administer it remotely.",
   "elementspanel": {
+    "id": "config",
+    "dual": true,
     "priority": 10000
   }
 }

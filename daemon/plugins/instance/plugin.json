@@ -1,6 +1,3 @@
 {
-  "id": "instance",
-  "version": "1.0.1",
-  "dual": true,
   "backend": "backend/index.cjs"
 }

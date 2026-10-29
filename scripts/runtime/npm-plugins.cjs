@@ -165,16 +165,23 @@ function resolveNpmPlugins(packageRoot, side, options = {}) {
       if (skipInvalid) continue;
       throw new Error(`Npm plugin entry escapes its package: ${name}.`);
     }
-    let manifest;
+    let entries;
     try {
-      manifest = readJson(path.join(directory, "plugin.json"));
+      entries = readJson(path.join(directory, "plugin.json"));
     } catch (error) {
       if (skipInvalid) continue;
       throw error;
     }
-    if (manifest.id !== id || manifest.version !== metadata.version) {
+    if (
+      metadata.elementspanel?.id !== id ||
+      typeof metadata.version !== "string" ||
+      !metadata.version.trim() ||
+      !entries ||
+      typeof entries !== "object" ||
+      Array.isArray(entries)
+    ) {
       if (skipInvalid) continue;
-      throw new Error(`Npm plugin identity or version does not match its manifest: ${name}.`);
+      throw new Error(`Invalid npm plugin identity or version in package.json: ${name}.`);
     }
     if (folders.has(definition.folder)) {
       if (skipInvalid) continue;
