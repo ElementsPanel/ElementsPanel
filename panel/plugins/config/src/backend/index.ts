@@ -142,11 +142,13 @@ export function apply(ctx: PanelPluginContext) {
     String(ctx.identity.of(requestCtx).uuid || "anonymous");
 
   router.get("/groups", requireAdmin, async (requestCtx) => {
-    const stored = (await ctx.storage.getStorage().load(
-      PLUGIN_GROUPS_CATEGORY,
-      StoredPluginGroups,
-      groupsStorageId(requestCtx)
-    )) as StoredPluginGroups | null;
+    const stored = (await ctx.storage
+      .getStorage()
+      .load(
+        PLUGIN_GROUPS_CATEGORY,
+        StoredPluginGroups,
+        groupsStorageId(requestCtx)
+      )) as StoredPluginGroups | null;
     requestCtx.body = stored?.groups ?? [];
   });
 
@@ -181,6 +183,19 @@ export function apply(ctx: PanelPluginContext) {
     async (requestCtx: Koa.ParameterizedContext) => {
       await ctx.plugins.remove(String(requestCtx.request.query.id));
       requestCtx.body = { removed: true };
+    }
+  );
+
+  router.post(
+    "/npm/install",
+    requireAdmin,
+    ctx.middleware.validator({ body: { name: String } }),
+    async (requestCtx: Koa.ParameterizedContext) => {
+      const payload = requestCtx.request.body as { name: string; version?: string };
+      requestCtx.body = await ctx.plugins.install({
+        name: payload.name.trim(),
+        version: payload.version?.trim() || undefined
+      });
     }
   );
 
@@ -233,11 +248,8 @@ export function apply(ctx: PanelPluginContext) {
         // protocol error that the response protocol turns into this envelope.
         const record = await new RemoteRequest(node).request("plugin/enabled", { id, enabled });
 
-        // A daemon binds its protocol events onto each socket as that socket
-        // connects (`service/router.ts`), so a handler that has just appeared —
-        // or just gone — is invisible to the connection we are holding. The node
-        // is reconnected here, which is the only thing that makes the change
-        // actually reachable; the daemon has already answered by now.
+        // Older daemons bind routes per socket; reconnect after their reply
+        // so newly enabled handlers remain available there too.
         node.refreshReconnect();
 
         requestCtx.body = record;
@@ -251,14 +263,33 @@ export function apply(ctx: PanelPluginContext) {
       async (requestCtx: Koa.ParameterizedContext) => {
         const node = nodeOf(requestCtx);
         // Removing unloads the plugin's scope before the files go, which can
-        // outlast the default request window; the market uninstall waits 30s too.
+        // outlast the default request window.
         await new RemoteRequest(node).request(
           "plugin/remove",
           { id: String(requestCtx.request.query.id) },
-          30000
+          10 * 60 * 1000
         );
         node.refreshReconnect();
         requestCtx.body = { removed: true };
+      }
+    );
+
+    nodeRouter.post(
+      "/npm/install",
+      requireAdmin,
+      ctx.middleware.validator({ query: { daemonId: String }, body: { name: String } }),
+      async (requestCtx: Koa.ParameterizedContext) => {
+        const node = nodeOf(requestCtx);
+        const payload = requestCtx.request.body as { name: string; version?: string };
+        requestCtx.body = await new RemoteRequest(node).request(
+          "plugin/npm/install",
+          {
+            name: payload.name.trim(),
+            version: payload.version?.trim() || undefined
+          },
+          10 * 60 * 1000
+        );
+        node.refreshReconnect();
       }
     );
 
@@ -281,19 +312,19 @@ export function apply(ctx: PanelPluginContext) {
       ctx.middleware.validator({ query: { daemonId: String, id: String } }),
       async (requestCtx: Koa.ParameterizedContext) => {
         const request = new RemoteRequest(nodeOf(requestCtx));
-        requestCtx.body = await request.request(
-          "plugin/config/write",
-          {
-            id: String(requestCtx.request.query.id),
-            values: (requestCtx.request.body ?? {}) as Record<string, unknown>
-          }
-        );
+        requestCtx.body = await request.request("plugin/config/write", {
+          id: String(requestCtx.request.query.id),
+          values: (requestCtx.request.body ?? {}) as Record<string, unknown>
+        });
         // Refresh node-owned connection metadata before subsequent file/terminal requests.
         // A refresh failure must not turn a successfully saved setting into an error.
         try {
           await request.request("info/overview");
         } catch (error) {
-          ctx.logger.warn("Failed to refresh node information after saving plugin settings:", error);
+          ctx.logger.warn(
+            "Failed to refresh node information after saving plugin settings:",
+            error
+          );
         }
       }
     );

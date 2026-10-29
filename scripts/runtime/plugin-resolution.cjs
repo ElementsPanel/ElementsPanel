@@ -12,26 +12,37 @@ const shared = new Set(sharedModules);
  * running. Caching the npm plugin list by the project manifest's mtime lets a
  * freshly installed package be resolved without restarting the process.
  */
-let npmPluginSnapshot = { key: "", records: [] };
+let npmPluginSnapshot = { key: "", records: [], expires: 0 };
 
 function fileStamp(filename) {
   try {
-    return String(fs.statSync(filename).mtimeMs);
+    const stat = fs.statSync(filename);
+    return `${stat.size}:${stat.mtimeMs}:${stat.ctimeMs}`;
   } catch {
     return "-";
   }
 }
 
 function npmPlugins(packageRoot) {
-  const files = [path.join(packageRoot, "package.json")];
+  const files = [];
   const projectFile = projectManifestFile(packageRoot);
-  if (projectFile) files.push(projectFile);
+  for (const root of [packageRoot, ...(projectFile ? [path.dirname(projectFile)] : [])]) {
+    for (const filename of [
+      "package.json",
+      "package-lock.json",
+      "npm-shrinkwrap.json",
+      "node_modules/.package-lock.json",
+      "node_modules"
+    ])
+      files.push(path.join(root, filename));
+  }
   // Paths are part of the key: two fixtures created within the same millisecond
   // must not share a cached plugin list.
   const key = files.map((file) => `${file}:${fileStamp(file)}`).join("|");
-  if (key !== npmPluginSnapshot.key) {
+  if (key !== npmPluginSnapshot.key || Date.now() >= npmPluginSnapshot.expires) {
     npmPluginSnapshot = {
       key,
+      expires: Date.now() + 2000,
       records: resolveNpmPlugins(packageRoot, undefined, { skipInvalid: true })
     };
   }

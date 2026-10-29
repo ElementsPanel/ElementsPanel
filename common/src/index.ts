@@ -28,6 +28,8 @@ export * from "./plugin_contract";
 export * from "./plugin_overrides";
 export * from "./plugin_lifecycle";
 export * from "./plugin_revision";
+export * from "./plugin_modules";
+export * from "./plugin_watch";
 export * from "./runtime_paths";
 
 export {
@@ -52,6 +54,8 @@ export {
   installNpmPlugin,
   listNpmPlugins,
   npmPluginRoots,
+  npmPluginOperationPending,
+  isEssentialNpmPlugin,
   uninstallNpmPlugin
 } from "./plugin_npm";
 export type {

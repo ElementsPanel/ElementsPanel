@@ -38,6 +38,8 @@ import {
   pluginSettings,
   removePlugin,
   removeNodePlugin,
+  installPlugin,
+  installNodePlugin,
   setNodePluginEnabled,
   setPluginEnabled,
   updateNodePluginSettings,
@@ -89,7 +91,9 @@ const navigationProps = computed(() =>
     ? {
         class: "plugin-config-navigation",
         modelValue: sidebarOpen.value,
-        "onUpdate:modelValue": (value: boolean) => { sidebarOpen.value = value; },
+        "onUpdate:modelValue": (value: boolean) => {
+          sidebarOpen.value = value;
+        },
         absolute: true,
         temporary: true,
         floating: true,
@@ -113,6 +117,12 @@ const preferredPluginId = ref(String(route.query.plugin ?? ""));
 
 const loading = ref(true);
 const pending = ref<string>("");
+const installDialogOpen = ref(false);
+const installName = ref("");
+const installVersion = ref("");
+const installing = ref(false);
+const installScope = ref<Scope>("panel");
+const installNodeId = ref("");
 const plugins = ref<PluginRecord[]>([]);
 const selectedId = ref("");
 
@@ -387,6 +397,9 @@ watch(
 const schemaLoading = ref(false);
 let schemaRequest = 0;
 let nodePluginsRequest = 0;
+let pluginsRequest = 0;
+let inventoryTimer: ReturnType<typeof setInterval> | undefined;
+let refreshingInventory = false;
 let disposed = false;
 const savingSettings = ref(false);
 const lastResult = ref<PluginChangeResult | null>(null);
@@ -411,8 +424,12 @@ const recordResult = (result?: PluginChangeResult | boolean) => {
 };
 const deletingPlugin = ref(false);
 const actionCandidate = ref<PluginActionCandidate | null>(null);
-const actionSubmitting = computed(() => Boolean(pending.value || deletingPlugin.value));
-const actionBusy = computed(() => actionSubmitting.value || Boolean(actionCandidate.value));
+const actionSubmitting = computed(() =>
+  Boolean(pending.value || deletingPlugin.value || installing.value)
+);
+const actionBusy = computed(
+  () => actionSubmitting.value || Boolean(actionCandidate.value) || installDialogOpen.value
+);
 const actionConfirmOpen = computed({
   get: () => actionCandidate.value?.step === "confirm",
   set: (open: boolean) => {
@@ -449,11 +466,14 @@ const loadSchema = async () => {
   try {
     if (scope.value === "panel") {
       const { execute } = pluginSettings();
-      const res = await execute({ params: { id } });
+      const res = await execute({ params: { id }, forceRequest: true });
       if (request === schemaRequest) schema.value = res.value ?? null;
     } else {
       const { execute } = nodePluginSettings();
-      const res = await execute({ params: { daemonId: selectedNodeId.value, id } });
+      const res = await execute({
+        params: { daemonId: selectedNodeId.value, id },
+        forceRequest: true
+      });
       if (request === schemaRequest) schema.value = res.value ?? null;
     }
   } catch (error: any) {
@@ -526,16 +546,22 @@ const saveSettings = async () => {
   }
 };
 
-const load = async () => {
-  loading.value = true;
+const load = async (quiet = false) => {
+  if (disposed) return;
+  const request = ++pluginsRequest;
+  if (!quiet) loading.value = true;
   try {
-    const { execute } = pluginList();
-    const res = await execute();
-    plugins.value = res.value ?? [];
+    const res = await pluginList().execute({ forceRequest: true });
+    if (
+      !disposed &&
+      request === pluginsRequest &&
+      JSON.stringify(plugins.value) !== JSON.stringify(res.value ?? [])
+    )
+      plugins.value = res.value ?? [];
   } catch (error: any) {
-    notifyError(error);
+    if (!quiet && !disposed) notifyError(error);
   } finally {
-    loading.value = false;
+    if (!quiet && request === pluginsRequest) loading.value = false;
   }
 };
 
@@ -562,21 +588,78 @@ const loadNodes = async () => {
   }
 };
 
-const loadNodePlugins = async () => {
+const loadNodePlugins = async (quiet = false) => {
   if (disposed) return;
   const request = ++nodePluginsRequest;
-  nodePlugins.value = [];
+  if (!quiet) nodePlugins.value = [];
   if (!selectedNodeId.value) return;
-  loading.value = true;
+  if (!quiet) loading.value = true;
   nodeError.value = "";
   try {
     const { execute } = nodePluginList();
-    const res = await execute({ params: { daemonId: selectedNodeId.value } });
-    if (request === nodePluginsRequest) nodePlugins.value = res.value ?? [];
+    const res = await execute({ params: { daemonId: selectedNodeId.value }, forceRequest: true });
+    if (
+      !disposed &&
+      request === nodePluginsRequest &&
+      JSON.stringify(nodePlugins.value) !== JSON.stringify(res.value ?? [])
+    )
+      nodePlugins.value = res.value ?? [];
   } catch (error: any) {
     if (request === nodePluginsRequest) nodeError.value = error?.message ?? String(error);
   } finally {
-    if (request === nodePluginsRequest) loading.value = false;
+    if (!quiet && request === nodePluginsRequest) loading.value = false;
+  }
+};
+
+const openInstall = (plugin?: PluginRecord | NodePluginRecord) => {
+  if (disposed || actionBusy.value || savingSettings.value) return;
+  installName.value = plugin?.packageName || "";
+  installVersion.value = "";
+  installScope.value = scope.value;
+  installNodeId.value = selectedNodeId.value;
+  installDialogOpen.value = true;
+};
+
+const installDependency = async () => {
+  if (installing.value || !installName.value.trim()) return;
+  installing.value = true;
+  try {
+    const data = {
+      name: installName.value.trim(),
+      version: installVersion.value.trim() || undefined
+    };
+    const response =
+      installScope.value === "panel"
+        ? await installPlugin().execute({ data, timeout: 11 * 60 * 1000 })
+        : await installNodePlugin().execute({
+            params: { daemonId: installNodeId.value },
+            data,
+            timeout: 11 * 60 * 1000
+          });
+    if (disposed) return;
+    recordResult(response.value?.result);
+    installDialogOpen.value = false;
+    if (installScope.value === "panel") {
+      await ctx.plugins
+        .refresh()
+        .catch((error) => console.error("Failed to refresh plugins:", error));
+      await load();
+      if (response.value?.id && plugins.value.some((plugin) => plugin.id === response.value!.id))
+        selectedId.value = response.value.id;
+    } else if (scope.value === "node" && selectedNodeId.value === installNodeId.value) {
+      await reloadNodePluginsAfterToggle();
+      if (
+        response.value?.id &&
+        nodePlugins.value.some((plugin) => plugin.id === response.value!.id)
+      )
+        nodeSelectedId.value = response.value.id;
+    }
+    if (response.value?.result?.application === "applied")
+      notify(t("TXT_CODE_PLUGIN_NPM_INSTALLED"), "success");
+  } catch (error) {
+    notifyError(error);
+  } finally {
+    installing.value = false;
   }
 };
 
@@ -594,12 +677,33 @@ const reloadNodePluginsAfterToggle = async () => {
   }
 };
 
+const refreshInventory = async () => {
+  if (
+    disposed ||
+    refreshingInventory ||
+    loading.value ||
+    actionSubmitting.value ||
+    savingSettings.value
+  )
+    return;
+  refreshingInventory = true;
+  try {
+    if (scope.value === "panel") await load(true);
+    else await loadNodePlugins(true);
+  } finally {
+    refreshingInventory = false;
+  }
+};
+
 onMounted(() => {
   load();
-  window.addEventListener("elementspanel:plugins-changed", load);
+  window.addEventListener("elementspanel:plugins-changed", refreshInventory);
+  inventoryTimer = setInterval(refreshInventory, 4000);
 });
 onUnmounted(() => {
-  window.removeEventListener("elementspanel:plugins-changed", load);
+  window.removeEventListener("elementspanel:plugins-changed", refreshInventory);
+  clearInterval(inventoryTimer);
+  pluginsRequest++;
   disposed = true;
   schemaRequest++;
   nodePluginsRequest++;
@@ -638,7 +742,11 @@ watch(scope, (value) => {
 watch(selectedNodeId, () => loadNodePlugins());
 
 watch(
-  () => [props.scope ?? route.query.scope, props.daemonId ?? route.query.daemonId, route.query.plugin],
+  () => [
+    props.scope ?? route.query.scope,
+    props.daemonId ?? route.query.daemonId,
+    route.query.plugin
+  ],
   ([targetScope, daemonId, pluginId]) => {
     if (typeof pluginId === "string") preferredPluginId.value = pluginId;
     if (targetScope !== "node") {
@@ -670,6 +778,17 @@ watch(nodePlugins, (value) => {
       value.find((item) => item.id === preferredPluginId.value)?.id || value[0]?.id || "";
   }
 });
+
+watch(
+  () => [
+    selectedPlugin.value?.version,
+    selectedPlugin.value?.enabled,
+    selectedPlugin.value?.hasSettings
+  ],
+  () => {
+    if (!settingsDirty.value && !savingSettings.value) void loadSchema();
+  }
+);
 
 // Whatever is selected, its form comes from the backend that declared it.
 watch(
@@ -725,7 +844,8 @@ const checkNodePlugins = async (candidate: PluginActionCandidate) => {
     const results = await Promise.allSettled(
       list.map(async (node) => {
         if (!node.available) throw new Error(t("TXT_CODE_PLUGIN_NODE_OFFLINE"));
-        const inventory = (await nodePluginList().execute({ params: { daemonId: node.uuid } })).value;
+        const inventory = (await nodePluginList().execute({ params: { daemonId: node.uuid } }))
+          .value;
         if (!Array.isArray(inventory)) throw new Error(t("TXT_CODE_PLUGIN_NODE_LIST_FAILED"));
         return inventory.find((plugin) => plugin.id === candidate.plugin.id);
       })
@@ -778,8 +898,13 @@ const syncNodePlugins = async (candidate: PluginActionCandidate) => {
   for (const { node, plugin } of targets) {
     try {
       if (candidate.action === "remove") {
-        await removeNodePlugin().execute({ params: { daemonId: node.uuid, id: plugin.id } });
-        candidate.nodeTargets = candidate.nodeTargets.filter((target) => target.node.uuid !== node.uuid);
+        await removeNodePlugin().execute({
+          params: { daemonId: node.uuid, id: plugin.id },
+          timeout: 11 * 60 * 1000
+        });
+        candidate.nodeTargets = candidate.nodeTargets.filter(
+          (target) => target.node.uuid !== node.uuid
+        );
       } else {
         const result = (
           await setNodePluginEnabled().execute({
@@ -811,11 +936,7 @@ const syncNodePlugins = async (candidate: PluginActionCandidate) => {
   return failures.length === 0;
 };
 
-const apply = async (
-  plugin: PluginRecord,
-  enabled: boolean,
-  candidate?: PluginActionCandidate
-) => {
+const apply = async (plugin: PluginRecord, enabled: boolean, candidate?: PluginActionCandidate) => {
   pending.value = plugin.id;
   try {
     const nodesSucceeded = candidate ? await syncNodePlugins(candidate) : true;
@@ -895,8 +1016,7 @@ const confirmDisable = async () => {
     actionSubmitting.value
   )
     return;
-  if (candidate.scope === "panel")
-    await apply(candidate.plugin as PluginRecord, false, candidate);
+  if (candidate.scope === "panel") await apply(candidate.plugin as PluginRecord, false, candidate);
   else await applyNode(candidate.plugin as NodePluginRecord, false, candidate.nodeId);
   actionCandidate.value = null;
 };
@@ -917,13 +1037,16 @@ const confirmRemove = async () => {
     if (candidate.scope === "panel") {
       nodesSucceeded = await syncNodePlugins(candidate);
       const { execute } = removePlugin();
-      await execute({ params: { id: candidate.plugin.id } });
-      await ctx.plugins.refresh();
+      await execute({ params: { id: candidate.plugin.id }, timeout: 11 * 60 * 1000 });
+      await ctx.plugins
+        .refresh()
+        .catch((error) => console.error("Failed to refresh plugins:", error));
       await load();
     } else {
       const { execute } = removeNodePlugin();
       await execute({
-        params: { daemonId: candidate.nodeId, id: candidate.plugin.id }
+        params: { daemonId: candidate.nodeId, id: candidate.plugin.id },
+        timeout: 11 * 60 * 1000
       });
       await reloadNodePluginsAfterToggle();
     }
@@ -956,6 +1079,38 @@ const confirmAction = async () => {
 
 <template>
   <VLayout class="plugin-config-page" @keydown.esc="sidebarOpen = false">
+    <VDialog v-model="installDialogOpen" max-width="480" :persistent="installing">
+      <VCard :title="t('TXT_CODE_PLUGIN_NPM_INSTALL')">
+        <VCardText>
+          <VTextField
+            v-model="installName"
+            :label="t('TXT_CODE_PLUGIN_NPM_PACKAGE')"
+            placeholder="epanel-plugin-example"
+            :disabled="installing"
+          />
+          <VTextField
+            v-model="installVersion"
+            :label="t('TXT_CODE_PLUGIN_NPM_VERSION')"
+            placeholder="latest"
+            :disabled="installing"
+            hide-details
+          />
+        </VCardText>
+        <VCardActions>
+          <VSpacer />
+          <VBtn :disabled="installing" @click="installDialogOpen = false">{{
+            t("TXT_CODE_PLUGIN_CANCEL")
+          }}</VBtn>
+          <VBtn
+            color="primary"
+            :loading="installing"
+            :disabled="!installName.trim()"
+            @click="installDependency"
+            >{{ t("TXT_CODE_PLUGIN_NPM_INSTALL") }}</VBtn
+          >
+        </VCardActions>
+      </VCard>
+    </VDialog>
     <VProgressLinear v-if="loading" class="plugin-config-loading" color="primary" indeterminate />
 
     <component :is="isPhone ? VNavigationDrawer : 'aside'" v-bind="navigationProps">
@@ -970,16 +1125,19 @@ const confirmAction = async () => {
             @click="sidebarOpen = false"
           />
         </div>
-        <VBtnToggle v-model="scope" class="plugin-config-scope" mandatory>
+        <VBtnToggle v-model="scope" class="plugin-config-scope" :disabled="installing" mandatory>
           <VBtn value="panel" size="small" variant="text">{{
             t("TXT_CODE_PLUGIN_SCOPE_PANEL")
           }}</VBtn>
-          <VBtn value="node" size="small" variant="text">{{ t("TXT_CODE_PLUGIN_SCOPE_NODE") }}</VBtn>
+          <VBtn value="node" size="small" variant="text">{{
+            t("TXT_CODE_PLUGIN_SCOPE_NODE")
+          }}</VBtn>
         </VBtnToggle>
 
         <VSelect
           v-if="scope === 'node'"
           v-model="selectedNodeId"
+          :disabled="installing"
           class="plugin-config-node-select"
           :items="nodeItems"
           :loading="loading"
@@ -989,6 +1147,15 @@ const confirmAction = async () => {
 
         <div class="plugin-config-heading">
           <span>{{ t("TXT_CODE_PLUGIN_LIST") }}</span>
+          <VBtn
+            icon="mdi-download"
+            size="x-small"
+            variant="text"
+            :title="t('TXT_CODE_PLUGIN_NPM_INSTALL')"
+            :aria-label="t('TXT_CODE_PLUGIN_NPM_INSTALL')"
+            :disabled="actionBusy || (scope === 'node' && !selectedNodeId)"
+            @click="openInstall()"
+          />
           <VBtn
             icon="mdi-plus"
             size="x-small"
@@ -1050,7 +1217,6 @@ const confirmAction = async () => {
             {{ t("TXT_CODE_NO_DATA") }}
           </div>
         </VList>
-
       </div>
     </component>
 
@@ -1083,9 +1249,20 @@ const confirmAction = async () => {
             {{ t("TXT_CODE_VERSION") }} {{ selectedPlugin.version }}
           </span>
           <div class="plugin-config-actions">
+            <VBtn
+              v-if="selectedPlugin.packageName && selectedPlugin.removable"
+              icon="mdi-update"
+              variant="text"
+              :disabled="actionBusy"
+              :title="t('TXT_CODE_PLUGIN_NPM_INSTALL')"
+              :aria-label="t('TXT_CODE_PLUGIN_NPM_INSTALL')"
+              @click="openInstall(selectedPlugin)"
+            />
             <VTooltip
               v-model="toggleTooltipOpen"
-              :text="t(selectedPlugin.enabled ? 'TXT_CODE_PLUGIN_DISABLE' : 'TXT_CODE_PLUGIN_ENABLE')"
+              :text="
+                t(selectedPlugin.enabled ? 'TXT_CODE_PLUGIN_DISABLE' : 'TXT_CODE_PLUGIN_ENABLE')
+              "
               location="top"
             >
               <template #activator="{ props: tooltipProps }">
@@ -1234,7 +1411,9 @@ const confirmAction = async () => {
             {{ t("TXT_CODE_PLUGIN_NO_CONFIG") }}
           </div>
         </template>
-        <div v-else-if="!nodeError" class="plugin-config-no-config">{{ t("TXT_CODE_NO_DATA") }}</div>
+        <div v-else-if="!nodeError" class="plugin-config-no-config">
+          {{ t("TXT_CODE_NO_DATA") }}
+        </div>
       </div>
     </div>
 
@@ -1310,8 +1489,7 @@ const confirmAction = async () => {
             :value="target.node.uuid"
             :label="nodeLabel(target.node)"
             :disabled="
-              actionSubmitting ||
-              (actionCandidate.action === 'remove' && !target.plugin.removable)
+              actionSubmitting || (actionCandidate.action === 'remove' && !target.plugin.removable)
             "
             :messages="
               actionCandidate.action === 'remove' && !target.plugin.removable

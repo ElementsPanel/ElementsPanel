@@ -42,9 +42,10 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
       }
     ])
   );
-  const state = { sides, version, request: async () => ({ removed: true }), panelReloads: 0 };
+  const state = { sides, version, request: async () => ({ removed: true }), panelReloads: 0, protected: false };
 
   const common = {
+    isEssentialNpmPlugin: (id) => ["i18n", "storage", "runtime", "server", "console", "config"].includes(id),
     async installNpmPlugin(options) {
       installs.push(options);
       local.set(options.pluginId, {
@@ -133,7 +134,12 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
     },
     settingsForm: { declare() {} },
     plugins: {
-      inventory: () => [],
+      inventory: () => [...local.values()].map((record) => ({ id: record.pluginId, removable: !state.protected, state: "active" })),
+      install: (options) => common.installNpmPlugin({ ...options, side: "panel" }),
+      remove: (id) => {
+        if (state.protected) throw new service.PluginMarketError("BUNDLED");
+        return common.uninstallNpmPlugin(id);
+      },
       reload: async () => {
         state.panelReloads++;
       }
@@ -275,7 +281,7 @@ test("failed node installs leave no remote record and unselected nodes stay inst
   );
 });
 
-test("upgrading a release requires a restart while adding a node does not", async (t) => {
+test("upgrading a release and adding a node both take effect dynamically", async (t) => {
   const env = await fixture(t, { sides: ["panel", "daemon"] });
   const first = await env.install({ daemonIds: ["node-1"] });
   assert.equal(first.installedVersion, "1.0.0");
@@ -284,7 +290,7 @@ test("upgrading a release requires a restart while adding a node does not", asyn
   env.state.version = "2.0.0";
   const upgrade = await env.install({ daemonIds: ["node-1"] });
   assert.equal(upgrade.installedVersion, "2.0.0");
-  assert.equal(upgrade.restartRequired, true);
+  assert.equal(upgrade.restartRequired, false);
 
   const additional = await env.install({ daemonIds: ["node-2"] });
   assert.equal(additional.installedVersion, "2.0.0");
@@ -306,15 +312,11 @@ test("reload failures require a restart and only changed nodes are reloaded", as
   );
 });
 
-test("built-in plugins cannot be installed or removed through the market", async (t) => {
+test("core plugins cannot be installed or removed through the market", async (t) => {
   const env = await fixture(t);
-  env.common.installNpmPlugin = async () => {
-    throw new Error("BUNDLED:market");
-  };
+  await env.install();
+  env.state.protected = true;
   await assert.rejects(env.install(), { message: "TXT_CODE_PLUGIN_MARKET_BUNDLED" });
-  env.common.uninstallNpmPlugin = async () => {
-    throw new Error("BUNDLED:market");
-  };
   await assert.rejects(env.uninstall(), { message: "TXT_CODE_PLUGIN_MARKET_BUNDLED" });
 });
 
@@ -322,10 +324,11 @@ test("same-plugin operations stay serialized across installs and a queued uninst
   const env = await fixture(t);
   const entered = deferred();
   const release = deferred();
-  env.service.installPanelPlugin = async () => {
+  const install = env.common.installNpmPlugin;
+  env.common.installNpmPlugin = async (options) => {
     entered.resolve();
     await release.promise;
-    return {};
+    return install(options);
   };
   const first = env.install();
   await entered.promise;

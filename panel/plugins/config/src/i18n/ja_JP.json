@@ -6,9 +6,9 @@
   "TXT_CODE_PLUGIN_CONFIG": "プラグイン設定",
   "TXT_CODE_PLUGIN_CANCEL": "キャンセル",
   "TXT_CODE_PLUGIN_DELETE": "削除",
-  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "プラグインファイルと保存済みの設定が完全に削除されます。",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "npm 依存パッケージをアンインストールします。保存済みの設定は保持されます。",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "{name} を削除しますか？",
-  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Plugins are installed as npm dependencies; remove them with npm.",
+  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "コアプラグインと開発用ソースプラグインはここではアンインストールできません。",
   "TXT_CODE_PLUGIN_DELETED": "プラグインを削除しました",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "設定を保存",
   "TXT_CODE_PLUGIN_SAVE_REMINDER": "設定の保存をお忘れなく！",
@@ -45,5 +45,9 @@
   "TXT_CODE_PLUGIN_RESTART_REQUIRED": "変更を適用するにはサービスを再起動してください。",
   "TXT_CODE_PLUGIN_SAVED_PENDING": "保存しました。プラグインの依存関係を待機しています。",
   "TXT_CODE_PLUGIN_FRONTEND_FAILED": "ブラウザープラグインの読み込みに失敗しました",
-  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "更新されたブラウザーランタイムを読み込むにはページを再読み込みしてください。"
+  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "更新されたブラウザーランタイムを読み込むにはページを再読み込みしてください。",
+  "TXT_CODE_PLUGIN_NPM_INSTALL": "プラグインのインストール / 更新",
+  "TXT_CODE_PLUGIN_NPM_PACKAGE": "npm パッケージ名",
+  "TXT_CODE_PLUGIN_NPM_VERSION": "バージョンまたはタグ（既定: latest）",
+  "TXT_CODE_PLUGIN_NPM_INSTALLED": "プラグインをインストールして同期しました"
 }

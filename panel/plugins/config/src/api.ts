@@ -7,6 +7,7 @@ import { useDefineApi } from "@/stores/useDefineApi";
 
 /** One installed plugin, as the panel reports it. */
 export interface PluginRecord {
+  packageName?: string;
   id: string;
   version?: string;
   description?: string;
@@ -112,6 +113,16 @@ export const removePlugin = useDefineApi<{ params: { id: string } }, void>({
   method: "DELETE"
 });
 
+export const installPlugin = useDefineApi<
+  { data: { name: string; version?: string } },
+  PluginRecord
+>({ url: "/api/plugins/npm/install", method: "POST" });
+
+export const installNodePlugin = useDefineApi<
+  { params: { daemonId: string }; data: { name: string; version?: string } },
+  NodePluginRecord
+>({ url: "/api/plugins/node/npm/install", method: "POST" });
+
 /** One panel plugin's declared form and values, or `null` when it declared none. */
 export const pluginSettings = useDefineApi<{ params: { id: string } }, SettingsSchema | null>({
   url: "/api/plugins/settings",
@@ -154,6 +165,7 @@ export interface NodeSummary {
 
 /** One plugin installed on a daemon, as that daemon reports it. */
 export interface NodePluginRecord {
+  packageName?: string;
   id: string;
   name?: string;
   version?: string;
@@ -197,10 +209,7 @@ export const setNodePluginEnabled = useDefineApi<
 });
 
 /** Unloads and removes one daemon plugin package on the selected node. */
-export const removeNodePlugin = useDefineApi<
-  { params: { daemonId: string; id: string } },
-  void
->({
+export const removeNodePlugin = useDefineApi<{ params: { daemonId: string; id: string } }, void>({
   url: "/api/plugins/node",
   method: "DELETE"
 });
@@ -223,10 +232,7 @@ export const updateNodePluginSettings = useDefineApi<
 });
 
 /** Daemon-side plugin groups, persisted by the selected daemon. */
-export const nodePluginGroupList = useDefineApi<
-  { params: { daemonId: string } },
-  PluginGroup[]
->({
+export const nodePluginGroupList = useDefineApi<{ params: { daemonId: string } }, PluginGroup[]>({
   url: "/api/plugins/node/groups",
   method: "GET"
 });

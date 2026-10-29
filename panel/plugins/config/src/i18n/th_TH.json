@@ -6,9 +6,9 @@
   "TXT_CODE_PLUGIN_CONFIG": "การกำหนดค่าปลั๊กอิน",
   "TXT_CODE_PLUGIN_CANCEL": "ยกเลิก",
   "TXT_CODE_PLUGIN_DELETE": "ลบ",
-  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "ไฟล์ปลั๊กอินและการตั้งค่าที่บันทึกไว้จะถูกลบอย่างถาวร",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "จะถอนการติดตั้งแพ็กเกจ npm โดยเก็บการตั้งค่าที่บันทึกไว้",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "ลบ {name} หรือไม่?",
-  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Plugins are installed as npm dependencies; remove them with npm.",
+  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "ไม่สามารถถอนการติดตั้งปลั๊กอินหลักและปลั๊กอินซอร์สโค้ดที่นี่ได้",
   "TXT_CODE_PLUGIN_DELETED": "ลบปลั๊กอินแล้ว",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "บันทึกการตั้งค่า",
   "TXT_CODE_PLUGIN_SAVE_REMINDER": "อย่าลืมบันทึกการตั้งค่า!",
@@ -45,5 +45,9 @@
   "TXT_CODE_PLUGIN_RESTART_REQUIRED": "รีสตาร์ทบริการเพื่อใช้การเปลี่ยนแปลงนี้",
   "TXT_CODE_PLUGIN_SAVED_PENDING": "บันทึกแล้ว กำลังรอส่วนที่ปลั๊กอินต้องพึ่งพา",
   "TXT_CODE_PLUGIN_FRONTEND_FAILED": "ปลั๊กอินเบราว์เซอร์ล้มเหลว",
-  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "รีเฟรชหน้าเพื่อโหลดรันไทม์เบราว์เซอร์ที่อัปเดต"
+  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "รีเฟรชหน้าเพื่อโหลดรันไทม์เบราว์เซอร์ที่อัปเดต",
+  "TXT_CODE_PLUGIN_NPM_INSTALL": "ติดตั้ง / อัปเดตปลั๊กอิน",
+  "TXT_CODE_PLUGIN_NPM_PACKAGE": "ชื่อแพ็กเกจ npm",
+  "TXT_CODE_PLUGIN_NPM_VERSION": "เวอร์ชันหรือแท็ก (ค่าเริ่มต้น latest)",
+  "TXT_CODE_PLUGIN_NPM_INSTALLED": "ติดตั้งและซิงค์ปลั๊กอินแล้ว"
 }

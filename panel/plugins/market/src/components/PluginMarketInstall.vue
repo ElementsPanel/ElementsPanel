@@ -2,6 +2,7 @@
 import { t } from "@/lang/i18n";
 import { getValidatorErrorMsg } from "@/tools/validator";
 import { message } from "@/tools/vuetifyToast";
+import { ctx } from "@/plugin/context";
 import { computed, onScopeDispose, ref, watch } from "vue";
 import {
   VAlert,
@@ -166,6 +167,8 @@ async function runInstall(plugin: MarketPlugin, daemonIds: string[]) {
   try {
     const { execute } = installMarketPlugin();
     const response = await execute({
+      // Nodes are processed independently; allow each selected npm operation its full window.
+      timeout: (daemonIds.length + 1) * 11 * 60 * 1000,
       data: {
         pluginId: plugin.id,
         name: plugin.name,
@@ -175,6 +178,11 @@ async function runInstall(plugin: MarketPlugin, daemonIds: string[]) {
     });
     if (disposed) return;
     if (!response.value) throw new Error(t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE"));
+    // npm has already committed the operation; asset refresh failures are
+    // reported by the frontend loader and must not turn it into an npm error.
+    await ctx.plugins
+      .refresh()
+      .catch((error) => console.error("Failed to refresh plugins:", error));
     emit("installed", plugin.id, response.value.installedVersion);
     const failed = response.value.failedNodes;
     if (failed.length) {
@@ -239,10 +247,16 @@ async function runUninstall(plugin: MarketPlugin, daemonIds: string[]) {
   try {
     const { execute } = uninstallMarketPlugin();
     const response = await execute({
+      timeout: (daemonIds.length + 1) * 11 * 60 * 1000,
       params: { pluginId: plugin.id, daemonIds: daemonIds.join(",") }
     });
     if (disposed) return;
     if (!response.value) throw new Error(t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE"));
+    // npm has already committed the operation; asset refresh failures are
+    // reported by the frontend loader and must not turn it into an npm error.
+    await ctx.plugins
+      .refresh()
+      .catch((error) => console.error("Failed to refresh plugins:", error));
     emit("installed", plugin.id, response.value.installedVersion);
     const failed = response.value.failedNodes;
     if (failed.length) {

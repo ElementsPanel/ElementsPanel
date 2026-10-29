@@ -14,6 +14,15 @@ const readOptional = (filename) => {
 const validId = /^[a-z][a-z0-9_-]{1,63}$/;
 const validName = /^(?:@[a-z0-9_.-]+\/)?epanel-plugin-[a-z0-9_.-]+$/;
 
+function packageManifest(root, name) {
+  const localRequire = createRequire(path.join(root, "package.json"));
+  const filename = (localRequire.resolve.paths(name) || [])
+    .map((directory) => path.join(directory, name, "package.json"))
+    .find((candidate) => fs.existsSync(candidate));
+  if (!filename) throw new Error(`Missing npm package: ${name}`);
+  return fs.realpathSync(filename);
+}
+
 function within(root, filename) {
   const relative = path.relative(root, filename);
   return (
@@ -73,15 +82,29 @@ function resolveNpmPlugins(packageRoot, side, options = {}) {
   // Project mappings are read first so the host's built-in plugins win an id
   // collision: a market package must not shadow a plugin that ships with the runtime.
   const configured = new Map();
-  for (const [id, name] of Object.entries(mappingOf(project))) configured.set(id, { name, source: "project" });
-  for (const [id, name] of Object.entries(mappingOf(host))) configured.set(id, { name, source: "bundled" });
+  for (const [id, name] of Object.entries(mappingOf(project)))
+    configured.set(id, { name, source: "project" });
+  for (const name of Object.keys(dependenciesOf(project))) {
+    if (!validName.test(name) || [...configured.values()].some((item) => item.name === name))
+      continue;
+    try {
+      const metadata = readJson(packageManifest(projectRoot(packageRoot), name));
+      const id = metadata.elementspanel?.id;
+      if (validId.test(id) && !configured.has(id))
+        configured.set(id, { name, source: "project", automatic: true });
+    } catch {
+      /* Ignore incomplete npm installations until the next scan. */
+    }
+  }
+  for (const [id, name] of Object.entries(mappingOf(host))) {
+    if (dependenciesOf(host)[name] !== undefined) configured.set(id, { name, source: "bundled" });
+  }
 
   const hostDependencies = dependenciesOf(host);
   const projectDependencies = dependenciesOf(project);
   const roots = [packageRoot];
   const parentRoot = projectRoot(packageRoot);
   if (path.resolve(parentRoot) !== path.resolve(packageRoot)) roots.push(parentRoot);
-  const requireAt = (root) => createRequire(path.join(root, "package.json"));
   const folders = new Set();
   const records = [];
 
@@ -99,9 +122,9 @@ function resolveNpmPlugins(packageRoot, side, options = {}) {
 
     let manifestPath;
     let failure;
-    for (const root of roots) {
+    for (const root of mapping.source === "project" ? [...roots].reverse() : roots) {
       try {
-        manifestPath = requireAt(root).resolve(`${name}/package.json`);
+        manifestPath = packageManifest(root, name);
         break;
       } catch (error) {
         failure = error;
@@ -163,7 +186,7 @@ function resolveNpmPlugins(packageRoot, side, options = {}) {
       name,
       version: metadata.version,
       source: mapping.source,
-      defaultEnabled: mapping.source !== "project",
+      defaultEnabled: mapping.automatic === true || mapping.source !== "project",
       packageRoot: pluginRoot,
       directory,
       folder: definition.folder,

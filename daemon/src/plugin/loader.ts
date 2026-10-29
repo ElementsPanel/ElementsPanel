@@ -1,10 +1,17 @@
 import { Logger, type ForkScope } from "cordis";
 import {
   packagePluginRoots,
-  isPackagePlugin,
-  pluginDirectoryRevision,
+  installNpmPlugin,
+  uninstallNpmPlugin,
+  isEssentialNpmPlugin,
+  forgetPluginModules,
+  loadPluginModule,
+  pluginBackendRevision,
+  resolvePluginEntry,
+  watchNpmPlugins,
   applyPluginOverrides,
   writePluginOverride,
+  readPluginOverrides,
   validatePluginCompatibility,
   validatePluginSettings,
   createPluginQueue,
@@ -18,7 +25,6 @@ import {
   type PluginManifest
 } from "mcsmanager-common";
 import path from "path";
-import { pathToFileURL } from "url";
 import { ctx, type DaemonPluginContext, type DaemonSettingsSchema } from "./context";
 
 /**
@@ -36,6 +42,7 @@ const change = createPluginQueue();
 const settle = trackPluginDisposal(ctx);
 const unloading = new Set<string>();
 const codeRevisions = new Map<string, string>();
+let watching = false;
 
 const ENTRY_FIELDS = ["daemon", "backend", "main", "entry"];
 const ENTRY_CANDIDATES = [
@@ -47,6 +54,7 @@ const ENTRY_CANDIDATES = [
   "src/daemon.mjs"
 ];
 const FOUNDATION_PLUGIN_IDS = new Set(["i18n", "storage", "runtime"]);
+const RESTART_PLUGIN_IDS = new Set([...FOUNDATION_PLUGIN_IDS, "server", "config"]);
 
 /** A daemon plugin module, as its backend entry exports it. */
 export interface DaemonPluginModule {
@@ -56,6 +64,7 @@ export interface DaemonPluginModule {
 }
 
 export interface DaemonPluginEntry {
+  packageRoot?: string;
   manifest: PluginManifest;
   directory: string;
   folder: string;
@@ -91,6 +100,7 @@ function ensureDaemonPluginService() {
     },
     inventory: getDaemonPluginInventory,
     setEnabled: setDaemonPluginEnabled,
+    install: installDaemonNpmPlugin,
     remove: removeDaemonPlugin,
     configure: configureDaemonPlugin,
     configuration: (id: string): DaemonSettingsSchema => {
@@ -124,49 +134,38 @@ function toModule(value: any, id: string): DaemonPluginModule | undefined {
   return undefined;
 }
 
-async function loadModule(entry: string): Promise<unknown> {
-  try {
-    // eval keeps webpack from trying to bundle files supplied at runtime.
-    const runtimeRequire = eval("require") as NodeRequire;
-    return runtimeRequire(entry);
-  } catch (error: any) {
-    if (error?.code !== "ERR_REQUIRE_ESM") throw error;
-    const dynamicImport = new Function("specifier", "return import(specifier)") as (
-      specifier: string
-    ) => Promise<unknown>;
-    return dynamicImport(pathToFileURL(entry).href);
-  }
-}
-
-/**
- * Drops a plugin's entry module from the require cache, so the next `require()`
- * of it runs the file that is on disk rather than the copy an earlier run left
- * behind.
- */
-function forgetCachedModule(entry?: string) {
-  if (!entry) return;
-  // eval keeps webpack from trying to bundle files supplied at runtime.
-  const runtimeRequire = eval("require") as NodeRequire;
-  delete runtimeRequire.cache[entry];
+function forgetCachedModule(entry?: string, directory?: string) {
+  if (directory || entry) forgetPluginModules(directory || path.dirname(entry!));
 }
 
 /** Requires one plugin's entry module and hands it to cordis. */
 async function installPlugin(plugin: DiscoveredPlugin): Promise<DaemonPluginEntry> {
-  const record: DaemonPluginEntry = { ...plugin };
+  const record: DaemonPluginEntry = { ...plugin, backendRevision: "" };
   if (!plugin.entry) {
     logger.warn(`Daemon plugin "${plugin.manifest.id}" has no entry module.`);
     return record;
   }
   try {
-    record.backendRevision = pluginDirectoryRevision(path.dirname(plugin.entry));
+    record.backendRevision = backendRevision(plugin);
     validatePluginCompatibility(plugin.manifest.elements);
     const previousRevision = codeRevisions.get(plugin.manifest.id);
-    if (previousRevision && previousRevision !== record.backendRevision) {
+    if (
+      RESTART_PLUGIN_IDS.has(plugin.manifest.id) &&
+      previousRevision &&
+      previousRevision !== record.backendRevision
+    ) {
       record.restartRequired = true;
       return record;
     }
     codeRevisions.set(plugin.manifest.id, record.backendRevision!);
-    const module = toModule(await loadModule(plugin.entry), plugin.manifest.id);
+    const module = toModule(
+      await loadPluginModule(
+        plugin.entry,
+        plugin.packageRoot || plugin.directory,
+        record.backendRevision!
+      ),
+      plugin.manifest.id
+    );
     if (!module) throw new Error(`Plugin "${plugin.manifest.id}" must export apply().`);
     // Plugins are applied one at a time, in `priority` order, and an `async
     // apply()` is awaited before the next plugin starts, so a plugin can rely
@@ -221,47 +220,78 @@ export async function loadDaemonPlugins(): Promise<readonly DaemonPluginEntry[]>
     loaded.push(await installPlugin(plugin));
   }
   sortPlugins(loaded);
+  if (!watching) {
+    watching = true;
+    watchNpmPlugins(ctx, "daemon", reloadDaemonPlugins);
+  }
   return loaded;
 }
 
-/**
- * Re-scans the plugin directories and reconciles them with what is running: a
- * plugin that has appeared since startup is installed, and one whose directory
- * is gone — or whose manifest now says `enabled: false` — is disposed.
- *
- * This is safe for newly installed, removed and disabled packaged plugins in a
- * production process. It deliberately does not replace code that has already
- * run: `installPlugin()` compares backend revisions and leaves a changed plugin
- * in `restart-required` state instead. A caller must reconnect afterwards so
- * protocol handlers from a new plugin are bound to a fresh socket.
- */
-export async function reloadDaemonPlugins(): Promise<readonly DaemonPluginEntry[]> {
+/** Reconcile npm installation changes after all effects from the previous revision are disposed. */
+export function reloadDaemonPlugins(): Promise<readonly DaemonPluginEntry[]> {
+  return change(reconcilePlugins);
+}
+
+function backendEntry(plugin: DiscoveredPlugin) {
+  return resolvePluginEntry(plugin.directory, plugin.manifest, {
+    entryFields: ENTRY_FIELDS,
+    entryCandidates: ENTRY_CANDIDATES
+  });
+}
+
+function backendRevision(plugin: DiscoveredPlugin) {
+  const entry = backendEntry(plugin);
+  return entry ? pluginBackendRevision(entry, plugin.packageRoot || plugin.directory) : "";
+}
+
+async function reconcilePlugins() {
+  ensureDaemonPluginService();
+  const discovered = discoverDaemonPlugins({
+    entryFields: ENTRY_FIELDS,
+    entryCandidates: ENTRY_CANDIDATES,
+    onWarning: (message, error) => logger.warn(message, error)
+  });
+  const next = new Map(discovered.map((plugin) => [plugin.manifest.id, plugin]));
+  for (const running of [...loaded].reverse()) {
+    const plugin = next.get(running.manifest.id);
+    const changed =
+      plugin &&
+      (running.entry !== backendEntry(plugin) ||
+        running.manifest.version !== plugin.manifest.version ||
+        running.backendRevision !== backendRevision(plugin) ||
+        JSON.stringify(running.manifest.config) !== JSON.stringify(plugin.manifest.config));
+    if ((!plugin || changed) && !RESTART_PLUGIN_IDS.has(running.manifest.id)) {
+      await removeRunning(running.manifest.id);
+      forgetCachedModule(running.entry, running.packageRoot || running.directory);
+    }
+  }
+  for (const plugin of discovered) {
+    if (loaded.some((record) => record.manifest.id === plugin.manifest.id)) continue;
+    forgetCachedModule(plugin.entry, plugin.packageRoot || plugin.directory);
+    loaded.push(await installPlugin(plugin));
+  }
+  sortPlugins(loaded);
+  await settle();
+  return loaded;
+}
+
+/** Install or update an npm dependency, retaining the user's enablement on upgrades. */
+export function installDaemonNpmPlugin(options: {
+  name: string;
+  version?: string;
+  pluginId?: string;
+}) {
   return change(async () => {
-    ensureDaemonPluginService();
-    const discovered = discoverDaemonPlugins({
-      entryFields: ENTRY_FIELDS,
-      entryCandidates: ENTRY_CANDIDATES,
-      onWarning: (message, error) => logger.warn(message, error)
-    });
-
-    const installed = new Set(discovered.map((plugin) => plugin.manifest.id));
-    for (let index = loaded.length - 1; index >= 0; index--) {
-      const record = loaded[index];
-      if (installed.has(record.manifest.id)) continue;
-      await removeRunning(record.manifest.id);
-      logger.info(`Daemon plugin unloaded: ${record.manifest.id}`);
-    }
-
-    for (const plugin of discovered) {
-      if (loaded.some((record) => record.manifest.id === plugin.manifest.id)) continue;
-      // A plugin installed, uninstalled and installed again would otherwise be
-      // served the module its first run left behind.
-      forgetCachedModule(plugin.entry);
-      loaded.push(await installPlugin(plugin));
-    }
-    sortPlugins(loaded);
-    await settle();
-    return loaded;
+    const before = new Map(getDaemonPluginInventory().map((plugin) => [plugin.id, plugin]));
+    const record = await installNpmPlugin({ ...options, side: "daemon" });
+    const previous = before.get(record.pluginId);
+    const preference = readPluginOverrides().plugins[record.pluginId]?.enabled;
+    // A dual package can already be visible here after the other side installed
+    // it. Explicitly installing this side enables it unless the user disabled it.
+    if (!previous || (!previous.enabled && preference === undefined))
+      writePluginOverride(record.pluginId, { enabled: true });
+    await reconcilePlugins();
+    return changedRecord(record.pluginId);
   });
 }
 
@@ -302,6 +332,7 @@ export interface DaemonPluginRecord {
   state: PluginState;
   result?: PluginChangeResult;
   id: string;
+  packageName?: string;
   name?: string;
   version?: string;
   description?: string;
@@ -334,6 +365,7 @@ export function getDaemonPluginInventory(): DaemonPluginRecord[] {
     const running = loaded.find((item) => item.manifest.id === plugin.manifest.id);
     return {
       id: plugin.manifest.id,
+      packageName: plugin.packageName,
       name: typeof plugin.manifest.name === "string" ? plugin.manifest.name : undefined,
       version: plugin.manifest.version,
       description: plugin.manifest.description,
@@ -347,7 +379,7 @@ export function getDaemonPluginInventory(): DaemonPluginRecord[] {
         running?.error?.message ||
         running?.fork?.runtime.error?.message ||
         running?.fork?.error?.message,
-      removable: false
+      removable: !!plugin.packageRoot && !isEssentialNpmPlugin(plugin.manifest.id)
     };
   });
 }
@@ -366,7 +398,7 @@ export function setDaemonPluginEnabled(id: string, enabled: boolean): Promise<Da
       if (!enabled || existing?.error || existing?.fork?.runtime.status === 3)
         await removeRunning(id);
       if (enabled && !loaded.some((item) => item.manifest.id === id)) {
-        forgetCachedModule(plugin.entry);
+        forgetCachedModule(plugin.entry, plugin.packageRoot || plugin.directory);
         loaded.push(
           await installPlugin({ ...plugin, manifest: { ...plugin.manifest, enabled: true } })
         );
@@ -380,17 +412,23 @@ export function setDaemonPluginEnabled(id: string, enabled: boolean): Promise<Da
   });
 }
 
-/**
- * Plugins are npm dependencies now; the plugin manager does not delete files.
- * An npm plugin is removed with npm, and a development source plugin cannot be
- * removed from the running checkout at all.
- */
+/** Dispose the running scope before npm removes the dependency that owns its files. */
 export function removeDaemonPlugin(id: string): Promise<void> {
   return change(async () => {
     const plugin = findPlugin(id);
-    if (isPackagePlugin(plugin.directory))
-      throw new Error("Npm plugins cannot be removed here; manage them with npm.");
-    throw new Error("Source plugins cannot be removed.");
+    if (!plugin.packageRoot) throw new Error("Source plugins cannot be removed.");
+    if (isEssentialNpmPlugin(id))
+      throw new Error(`The essential plugin "${id}" cannot be uninstalled.`);
+    await removeRunning(id);
+    forgetCachedModule(plugin.entry, plugin.packageRoot);
+    try {
+      await uninstallNpmPlugin(id);
+    } catch (error) {
+      await reconcilePlugins();
+      throw error;
+    }
+    codeRevisions.delete(id);
+    await reconcilePlugins();
   });
 }
 
@@ -425,7 +463,9 @@ function pluginState(plugin: DiscoveredPlugin, running?: DaemonPluginEntry): Plu
   if (!running || running.restartRequired) return "restart-required";
   if (!running.entry) return "active";
   if (
-    running.backendRevision !== pluginDirectoryRevision(path.dirname(running.entry)) ||
+    running.entry !== backendEntry(plugin) ||
+    running.manifest.version !== plugin.manifest.version ||
+    running.backendRevision !== backendRevision(plugin) ||
     JSON.stringify(running.manifest.config) !== JSON.stringify(plugin.manifest.config)
   )
     return "restart-required";
@@ -462,16 +502,14 @@ export function configureDaemonPlugin(
     validatePluginCompatibility(plugin.manifest.elements);
     const running = loaded.find((item) => item.manifest.id === id);
     const replaced =
-      plugin.entry &&
-      codeRevisions.has(id) &&
-      codeRevisions.get(id) !== pluginDirectoryRevision(path.dirname(plugin.entry));
+      plugin.entry && codeRevisions.has(id) && codeRevisions.get(id) !== backendRevision(plugin);
     if (!replaced && typeof running?.fork?.runtime.schema === "function")
       running.fork.runtime.schema(config);
     if (Array.isArray(plugin.manifest.configFields))
       validatePluginSettings(plugin.manifest.configFields, config);
     writePluginOverride(id, { config });
     // Core network/storage configuration is applied on restart; never tear down the reply path.
-    if (replaced || FOUNDATION_PLUGIN_IDS.has(id) || ["server", "config"].includes(id)) {
+    if (RESTART_PLUGIN_IDS.has(id)) {
       return {
         ...getDaemonPluginInventory().find((item) => item.id === id)!,
         result: { saved: true, application: "restart-required" }
@@ -480,6 +518,7 @@ export function configureDaemonPlugin(
     let failure: string | undefined;
     try {
       await removeRunning(id);
+      forgetCachedModule(plugin.entry, plugin.packageRoot || plugin.directory);
       if (plugin.manifest.enabled !== false) {
         loaded.push(await installPlugin({ ...plugin, manifest: { ...plugin.manifest, config } }));
         sortPlugins(loaded);

@@ -22,7 +22,11 @@ npx @elementspanel/init@latest my-panel --language zh --template full --panel-po
 
 源码插件在各自目录内的 `package.json.elementspanel` 中声明加载顺序 `priority`、前端依赖 `frontendInject`、启动标识 `frontendImmediate` / `frontendRequired`、兼容性 `elements` 和默认配置等。发布为 npm 包后，根 `package.json.elementspanel.id` 声明插件 ID，`elementspanel.panel` / `elementspanel.daemon` 声明各端的 `directory`、`folder` 与这些端专属元数据；生成的 CSS 路径记录在 `elementspanel.panel.styles`。双端插件可以在各端声明中保留各自的简介和展示名称，市场使用包级元数据。
 
-安装记录写入项目 `package.json` 的 `elementspanel.plugins`，项目级插件默认停用；用户启用状态和配置存放在 `data/plugin-overrides.json`。插件包通过 peer dependencies 声明兼容的运行包版本。
+插件市场和插件管理均通过 npm 安装、更新和卸载插件依赖。插件管理支持直接输入 `epanel-plugin-*` 包名（包括作用域包名）以及版本号或 tag，留空使用 `latest`，并可选择面板或守护节点。新装插件自动启用，更新保留原有启用状态；卸载保留用户配置。
+
+安装记录写入依赖所属 `package.json` 的 `elementspanel.plugins`；用户启用状态和配置存放在各端的 `data/plugin-overrides.json`。外部执行 `npm install epanel-plugin-example` 新增的依赖也会被自动发现并启用；已有显式映射的插件沿用原有默认状态。插件包通过 peer dependencies 声明兼容的运行包版本。
+
+运行期间会监测 npm 清单和锁文件，依赖变更稳定后卸载旧插件作用域、等待清理完成，再加载新版后端；浏览器同步更新前端资源和插件列表。`i18n`、`storage`、`runtime`、`server`、`console`、`config` 等核心插件不能在页面中卸载或替换；在命令行更新这些插件后仍需重启对应服务。源码插件不能通过 npm 管理入口卸载。
 
 主程序从 npm 依赖中解析插件，支持依赖提升和嵌套安装。主程序包不复制内置插件目录；缺失的非核心插件会被跳过，核心插件缺失才会阻止启动。
 
@@ -53,4 +57,4 @@ npm run publish:npm
 
 发布中途失败后，运行 `npm run publish:npm -- --skip-existing` 可以跳过 registry 中已能查询到的同版本包，继续发布剩余包。追加 `--dry-run` 可预览剩余包，此时会查询 registry，但不会要求登录或上传。`--skip-existing` 不能与 `--skip-version-check` 同时使用；查询失败或发布出错时仍会停止。若 npm 提示版本已 staged，但 `npm view <包名>@<版本> version` 暂时查不到，需等待 npm 完成处理后再继续。
 
-也可以下载 CI 的 artifact，按同样顺序发布其中的 `.tgz`。预发布使用预发布版本号，并在发布命令中添加 `--tag next`。更新 npm 插件后重启对应服务；内置依赖由 npm 管理，面板中的开关和配置写入用户目录。
+也可以下载 CI 的 artifact，按同样顺序发布其中的 `.tgz`。预发布使用预发布版本号，并在发布命令中添加 `--tag next`。非核心 npm 插件更新后动态生效，核心服务更新后重启对应服务；面板中的开关和配置写入用户目录。

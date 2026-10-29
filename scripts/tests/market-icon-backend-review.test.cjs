@@ -77,7 +77,7 @@ function daemonFixture(t) {
   const validId = /^[a-z][a-z0-9_-]{1,63}$/;
   const common = {
     installNpmPlugin: async options => {
-      if (!validId.test(options.pluginId)) throw new Error(`Invalid plugin id: ${options.pluginId}`);
+      if (!options.name) throw new Error("Invalid npm plugin package.");
       installs.push(options);
       return { pluginId: options.pluginId, version: options.version, sides: ["daemon"] };
     },
@@ -95,6 +95,10 @@ function daemonFixture(t) {
   plugin.apply({
     i18n: { define() {}, $t: key => key },
     plugin() {},
+    plugins: {
+      install: (options) => common.installNpmPlugin({ ...options, side: "daemon" }),
+      remove: (id) => common.uninstallNpmPlugin(id)
+    },
     get: () => ({}),
     protocol: {
       on: (event, handler) => handlers.set(event, handler),
@@ -132,14 +136,14 @@ test("the daemon installs a plugin through npm on its own installation", async (
 
   fixture.installs.length = 0;
   await fixture.handlers.get("plugin/npm/install")({}, { name: "", pluginId: "", version: "" });
-  assert.match(fixture.replies.pop().error.message, /Invalid plugin id/);
+  assert.match(fixture.replies.pop().error.message, /Invalid npm plugin package/);
   assert.equal(fixture.installs.length, 0);
 });
 
 test("the daemon removes a plugin npm dependency by plugin id", async (t) => {
   const fixture = daemonFixture(t);
   await fixture.handlers.get("plugin/npm/uninstall")({}, { pluginId: "sample" });
-  assert.deepEqual(fixture.replies.pop().data, { removed: { pluginId: "sample" }, pluginId: "sample" });
+  assert.deepEqual(fixture.replies.pop().data, { removed: true, pluginId: "sample" });
   assert.deepEqual(fixture.uninstalls, ["sample"]);
 
   await fixture.handlers.get("plugin/npm/uninstall")({}, { pluginId: "" });

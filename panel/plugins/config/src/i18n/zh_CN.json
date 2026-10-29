@@ -6,9 +6,9 @@
   "TXT_CODE_PLUGIN_CONFIG": "插件配置",
   "TXT_CODE_PLUGIN_CANCEL": "取消",
   "TXT_CODE_PLUGIN_DELETE": "删除插件",
-  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "插件文件和已保存的配置将被永久删除。",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "将卸载此插件的 npm 依赖，保留已保存的配置。",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "确定删除 {name}？",
-  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "插件以 npm 依赖形式安装，请使用 npm 卸载。",
+  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "核心插件和开发环境的源码插件无法在此卸载。",
   "TXT_CODE_PLUGIN_DELETED": "插件已删除",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "保存配置",
   "TXT_CODE_PLUGIN_SAVE_REMINDER": "记得保存配置！",
@@ -45,5 +45,9 @@
   "TXT_CODE_PLUGIN_RESTART_REQUIRED": "需要重启服务才能应用此更改。",
   "TXT_CODE_PLUGIN_SAVED_PENDING": "已保存，正在等待插件依赖。",
   "TXT_CODE_PLUGIN_FRONTEND_FAILED": "浏览器插件加载失败",
-  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "需要刷新页面才能加载更新后的浏览器运行时。"
+  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "需要刷新页面才能加载更新后的浏览器运行时。",
+  "TXT_CODE_PLUGIN_NPM_INSTALL": "安装 / 更新插件",
+  "TXT_CODE_PLUGIN_NPM_PACKAGE": "npm 包名",
+  "TXT_CODE_PLUGIN_NPM_VERSION": "版本号或标签（默认 latest）",
+  "TXT_CODE_PLUGIN_NPM_INSTALLED": "插件已安装并同步"
 }

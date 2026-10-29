@@ -77,6 +77,10 @@ export function createFrontendPluginMetadata(
 }
 
 export interface DiscoveredPlugin {
+  /** npm package boundary, absent for development source plugins. */
+  packageRoot?: string;
+  packageName?: string;
+  npmSource?: "bundled" | "project";
   manifest: PluginManifest;
   /** Absolute path of the plugin directory. */
   directory: string;
@@ -109,6 +113,9 @@ export interface DiscoverPluginsOptions {
 
 /** A plugin directory to scan, optionally with a public folder name override. */
 export interface PluginDiscoveryRoot {
+  packageRoot?: string;
+  packageName?: string;
+  npmSource?: "bundled" | "project";
   directory: string;
   /** Stable public asset name for npm plugins whose manifest lives below a side directory. */
   folder?: string;
@@ -298,6 +305,13 @@ export function discoverPluginsFromRoots(
       discovered.push({
         ...plugin,
         manifest,
+        ...(root.packageRoot
+          ? {
+              packageRoot: root.packageRoot,
+              packageName: root.packageName,
+              npmSource: root.npmSource
+            }
+          : {}),
         ...(root.folder ? { folder: root.folder } : {})
       });
     }

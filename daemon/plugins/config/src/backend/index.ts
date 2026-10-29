@@ -1,8 +1,4 @@
-import {
-  installNpmPlugin,
-  PLUGIN_API_VERSION,
-  uninstallNpmPlugin
-} from "mcsmanager-common";
+import { PLUGIN_API_VERSION } from "mcsmanager-common";
 import type { DaemonPluginContext } from "../../../../src/plugin";
 import { localeMessages } from "../i18n";
 import { SettingsFormService } from "./settings";
@@ -144,11 +140,10 @@ export function apply(ctx: DaemonPluginContext) {
         pluginId?: unknown;
         version?: unknown;
       };
-      const record = await installNpmPlugin({
+      const record = await ctx.plugins.install({
         name: String(payload.name ?? ""),
-        pluginId: String(payload.pluginId ?? ""),
-        version: String(payload.version ?? ""),
-        side: "daemon"
+        pluginId: payload.pluginId ? String(payload.pluginId) : undefined,
+        version: payload.version ? String(payload.version) : undefined
       });
       ctx.protocol.response(routerCtx, record);
     } catch (error: any) {
@@ -159,16 +154,15 @@ export function apply(ctx: DaemonPluginContext) {
   ctx.protocol.on("plugin/npm/uninstall", async (routerCtx, data) => {
     try {
       const pluginId = String((data as { pluginId?: unknown })?.pluginId ?? "");
-      const removed = await uninstallNpmPlugin(pluginId);
-      ctx.protocol.response(routerCtx, { removed, pluginId });
+      await ctx.plugins.remove(pluginId);
+      ctx.protocol.response(routerCtx, { removed: true, pluginId });
     } catch (error: any) {
       ctx.protocol.responseError(routerCtx, error);
     }
   });
 
-  // Re-scan the plugin directories for a plugin that arrived while the daemon
-  // was running. The panel reconnects after this response so protocol handlers
-  // from a newly loaded plugin are bound to a fresh socket.
+  // Reconcile dependencies and make their current handlers available on
+  // existing authenticated sockets.
   ctx.protocol.on("plugin/reload", async (routerCtx) => {
     try {
       await ctx.plugins.reload();

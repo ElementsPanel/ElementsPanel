@@ -353,6 +353,11 @@ export interface PanelPluginsService {
    * its routes, middleware, timers and services go with it.
    */
   setEnabled(id: string, enabled: boolean): Promise<PanelPluginRecord>;
+  install(options: {
+    name: string;
+    version?: string;
+    pluginId?: string;
+  }): Promise<PanelPluginRecord>;
   /** Unloads and removes an installed panel plugin package. */
   remove(id: string): Promise<void>;
   configure(id: string, config: Record<string, unknown>): Promise<PanelPluginRecord>;
@@ -360,7 +365,7 @@ export interface PanelPluginsService {
   runExclusive<T>(operation: () => Promise<T>): Promise<T>;
   /**
    * Re-scans the plugin directories: a plugin that has appeared since startup is
-   * installed, one that is gone or disabled is disposed. Development only.
+   * installed, updated, removed and disabled plugins are reconciled in place.
    */
   reload(): Promise<readonly LoadedPanelPlugin[]>;
 }

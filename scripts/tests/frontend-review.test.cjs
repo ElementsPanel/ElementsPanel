@@ -523,7 +523,9 @@ function pluginActionFixture(t, inventories = {}, nodeOverrides = {}) {
     setPluginEnabled: async () => ({ result: { application: "applied" } }),
     setNodePluginEnabled: async () => ({ result: { application: "applied" } }),
     removePlugin: async () => ({}),
-    removeNodePlugin: async () => ({})
+    removeNodePlugin: async () => ({}),
+    installPlugin: async () => ({ id: "sample", result: { application: "applied" } }),
+    installNodePlugin: async () => ({ id: "sample", result: { application: "applied" } })
   };
   const api = Object.fromEntries(Object.keys(handlers).map((name) => [name, () => ({
     execute: async (config) => {
@@ -555,6 +557,41 @@ function pluginActionFixture(t, inventories = {}, nodeOverrides = {}) {
     writes: () => calls.filter(({ name }) => /^(set|remove)/.test(name))
   };
 }
+
+test("plugin management installs npm dependencies on the captured panel or node", async (t) => {
+  for (const scope of ["panel", "node"]) await t.test(scope, async (t) => {
+    const f = pluginActionFixture(t, { original: [] });
+    f.state.scope.value = scope;
+    f.state.selectedNodeId.value = "original";
+    f.state.openInstall();
+    f.state.installName.value = " @scope/epanel-plugin-sample ";
+    f.state.installVersion.value = " next ";
+    const gate = deferred();
+    const name = scope === "panel" ? "installPlugin" : "installNodePlugin";
+    f.handlers[name] = () => gate.promise;
+    const operation = f.state.installDependency();
+    await settle();
+    f.state.openInstall({ packageName: "epanel-plugin-other" });
+    assert.equal(f.state.installName.value, " @scope/epanel-plugin-sample ");
+    f.state.selectedNodeId.value = "different";
+    gate.resolve({ id: "sample", result: { application: "applied" } });
+    await operation;
+    const install = f.calls.find((call) => call.name === name);
+    assert.deepEqual(install.config, {
+      ...(scope === "node" ? { params: { daemonId: "original" } } : {}),
+      data: { name: "@scope/epanel-plugin-sample", version: "next" },
+      timeout: 11 * 60 * 1000
+    });
+    assert.equal(f.state.installDialogOpen.value, false);
+    assert.ok(f.notices.some((notice) => notice.color === "success"));
+    if (scope === "panel") {
+      assert.ok(f.calls.some((call) => call.name === "refresh"));
+      assert.equal(f.state.selectedId.value, "sample");
+    } else {
+      assert.equal(f.calls.some((call) => call.name === "nodePluginList"), false);
+    }
+  });
+});
 
 test("confirming panel plugin actions opens a separate node picker with all matching nodes selected", async (t) => {
   for (const action of ["disable", "remove"]) await t.test(action, async (t) => {
@@ -604,8 +641,8 @@ test("confirming panel plugin actions opens a separate node picker with all matc
       { name: "setNodePluginEnabled", config: { params: { daemonId: "one" }, data: { id: "sample", enabled: false } } },
       { name: "setPluginEnabled", config: { data: { id: "sample", enabled: false } } }
     ] : [
-      { name: "removeNodePlugin", config: { params: { daemonId: "one", id: "sample" } } },
-      { name: "removePlugin", config: { params: { id: "sample" } } }
+      { name: "removeNodePlugin", config: { params: { daemonId: "one", id: "sample" }, timeout: 11 * 60 * 1000 } },
+      { name: "removePlugin", config: { params: { id: "sample" }, timeout: 11 * 60 * 1000 } }
     ]);
     assert.equal(state.actionConfirmOpen.value, false);
     assert.equal(state.nodePickerOpen.value, false);

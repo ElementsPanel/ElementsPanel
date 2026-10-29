@@ -420,6 +420,11 @@ export interface DaemonPluginsService {
    * its protocol handlers, tasks, timers and services go with it.
    */
   setEnabled(id: string, enabled: boolean): Promise<DaemonPluginRecord>;
+  install(options: {
+    name: string;
+    version?: string;
+    pluginId?: string;
+  }): Promise<DaemonPluginRecord>;
   /** Unloads and removes an installed daemon plugin package. */
   remove(id: string): Promise<void>;
   configure(id: string, config: Record<string, unknown>): Promise<DaemonPluginRecord>;
@@ -427,7 +432,7 @@ export interface DaemonPluginsService {
   runExclusive<T>(operation: () => Promise<T>): Promise<T>;
   /**
    * Re-scans the plugin directories: a plugin that has appeared since startup is
-   * installed, one that is gone or disabled is disposed. Development only.
+   * installed, updated, removed and disabled plugins are reconciled in place.
    */
   reload(): Promise<readonly DaemonPluginEntry[]>;
 }

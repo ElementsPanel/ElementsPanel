@@ -5,7 +5,12 @@ const path = require("node:path");
 const { test } = require("node:test");
 const { createLoader } = require("./helpers.cjs");
 const { installNpmPlugin } = require("./npm-fixtures.cjs");
-const load = createLoader();
+const load = createLoader({
+  resolve(id, { filename, localRequire, load }) {
+    const target = path.resolve(path.dirname(filename), id) + ".ts";
+    return id.startsWith(".") && fs.existsSync(target) ? load(target) : localRequire(id);
+  }
+});
 
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "elements-npm-paths-"));

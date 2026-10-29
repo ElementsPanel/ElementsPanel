@@ -140,27 +140,36 @@ function navigation(socket: Socket, logger: ProtocolLogger) {
   // Authentication marks this session; `broadcast()` uses it to reach only
   // sockets the panel has authorised with the daemon key.
   socket.data.session = session;
-  for (const handler of routerApp.middlewares) {
-    socket.use((packet, next) => {
-      const protocol = packet[1] as IPacket;
-      if (!protocol) {
-        logger.info(`session ${socket.id} request data protocol format is incorrect`);
-        return;
+  // Consult the current registry for every packet. Plugin scopes can replace
+  // routes and middleware while this authenticated connection stays open.
+  socket.use((packet, next) => {
+    const protocol = packet[1] as IPacket;
+    if (!protocol) {
+      logger.info(`session ${socket.id} request data protocol format is incorrect`);
+      return;
+    }
+    const routerCtx = new RouterContext(protocol.uuid, socket, session);
+    const middlewares = [...routerApp.middlewares];
+    const dispatch = (index: number): void => {
+      const handler = middlewares[index];
+      if (!handler) {
+        routerApp.emitRouter(
+          packet[0],
+          new RouterContext(protocolUuid(protocol), socket, session, packet[0]),
+          protocol.data
+        );
+        return next();
       }
-      const routerCtx = new RouterContext(protocol.uuid, socket, session);
-      handler(packet[0], routerCtx, protocol.data, next);
-    });
-  }
-  for (const event of routerApp.eventNames()) {
-    socket.on(event as string, (packet: IPacket) => {
-      if (!packet) {
-        logger.info(`session ${socket.id} request data protocol format is incorrect`);
-        return;
+      try {
+        Promise.resolve(
+          handler(packet[0], routerCtx, protocol.data, () => dispatch(index + 1))
+        ).catch(next);
+      } catch (error) {
+        next(error as Error);
       }
-      const routerCtx = new RouterContext(protocolUuid(packet), socket, session, event.toString());
-      routerApp.emitRouter(event as string, routerCtx, packet.data);
-    });
-  }
+    };
+    dispatch(0);
+  });
   routerApp.emitRouter("connection", new RouterContext(null, socket, session), null);
 }
 

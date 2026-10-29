@@ -1,13 +1,20 @@
 import fs from "fs-extra";
 import path from "path";
-import { pathToFileURL } from "url";
 import {
   packagePluginRoots,
-  isPackagePlugin,
+  installNpmPlugin,
+  uninstallNpmPlugin,
+  isEssentialNpmPlugin,
+  forgetPluginModules,
+  loadPluginModule,
+  pluginBackendRevision,
+  resolvePluginEntry,
+  watchNpmPlugins,
   pluginDirectoryRevision,
   createFrontendPluginMetadata,
   applyPluginOverrides,
   writePluginOverride,
+  readPluginOverrides,
   validatePluginCompatibility,
   validatePluginSettings,
   createPluginQueue,
@@ -39,6 +46,7 @@ const change = createPluginQueue();
 const settle = trackPluginDisposal(ctx);
 const unloading = new Set<string>();
 const codeRevisions = new Map<string, string>();
+let watching = false;
 
 const ENTRY_FIELDS = ["panel", "backend", "main", "entry"];
 const ENTRY_CANDIDATES = [
@@ -51,6 +59,7 @@ const ENTRY_CANDIDATES = [
 ];
 const FOUNDATION_PLUGIN_IDS = new Set(["i18n", "storage", "runtime"]);
 const ESSENTIAL_PLUGIN_IDS = new Set(["i18n", "storage", "runtime", "console"]);
+const RESTART_PLUGIN_IDS = new Set([...ESSENTIAL_PLUGIN_IDS, "server", "config"]);
 
 /** A panel plugin module, as its backend entry exports it. */
 export interface PanelPluginModule {
@@ -60,6 +69,7 @@ export interface PanelPluginModule {
 }
 
 export interface LoadedPanelPlugin {
+  packageRoot?: string;
   manifest: PluginManifest;
   directory: string;
   folder: string;
@@ -119,6 +129,7 @@ function ensurePanelPluginService() {
     frontendManifest: getPanelFrontendManifest,
     inventory: getPanelPluginInventory,
     setEnabled: setPanelPluginEnabled,
+    install: installPanelNpmPlugin,
     remove: removePanelPlugin,
     configure: configurePanelPlugin,
     configuration: (id: string): PanelSettingsSchema => {
@@ -152,46 +163,35 @@ function toModule(value: any, id: string): PanelPluginModule | undefined {
   return undefined;
 }
 
-async function loadModule(entry: string): Promise<unknown> {
-  try {
-    // eval keeps webpack from trying to bundle files supplied at runtime.
-    const runtimeRequire = eval("require") as NodeRequire;
-    return runtimeRequire(entry);
-  } catch (error: any) {
-    if (error?.code !== "ERR_REQUIRE_ESM") throw error;
-    const dynamicImport = new Function("specifier", "return import(specifier)") as (
-      specifier: string
-    ) => Promise<unknown>;
-    return dynamicImport(pathToFileURL(entry).href);
-  }
-}
-
-/**
- * Drops a plugin's entry module from the require cache, so the next `require()`
- * of it runs the file that is on disk rather than the copy an earlier run left
- * behind.
- */
-function forgetCachedModule(entry?: string) {
-  if (!entry) return;
-  // eval keeps webpack from trying to bundle files supplied at runtime.
-  const runtimeRequire = eval("require") as NodeRequire;
-  delete runtimeRequire.cache[entry];
+function forgetCachedModule(entry?: string, directory?: string) {
+  if (directory || entry) forgetPluginModules(directory || path.dirname(entry!));
 }
 
 /** Requires one plugin's backend entry and hands it to cordis. */
 async function installPlugin(plugin: DiscoveredPlugin): Promise<LoadedPanelPlugin> {
-  const record: LoadedPanelPlugin = { ...plugin };
+  const record: LoadedPanelPlugin = { ...plugin, backendRevision: "" };
   if (!plugin.entry) return record;
   try {
-    record.backendRevision = pluginDirectoryRevision(path.dirname(plugin.entry));
+    record.backendRevision = backendRevision(plugin);
     validatePluginCompatibility(plugin.manifest.elements);
     const previousRevision = codeRevisions.get(plugin.manifest.id);
-    if (previousRevision && previousRevision !== record.backendRevision) {
+    if (
+      RESTART_PLUGIN_IDS.has(plugin.manifest.id) &&
+      previousRevision &&
+      previousRevision !== record.backendRevision
+    ) {
       record.restartRequired = true;
       return record;
     }
     codeRevisions.set(plugin.manifest.id, record.backendRevision!);
-    const module = toModule(await loadModule(plugin.entry), plugin.manifest.id);
+    const module = toModule(
+      await loadPluginModule(
+        plugin.entry,
+        plugin.packageRoot || plugin.directory,
+        record.backendRevision!
+      ),
+      plugin.manifest.id
+    );
     if (!module) throw new Error(`Plugin "${plugin.manifest.id}" must export apply().`);
     // Plugins are applied one at a time, in `priority` order, and an async
     // `apply()` is awaited before the next plugin starts.
@@ -246,49 +246,78 @@ export async function loadPanelPlugins(): Promise<readonly LoadedPanelPlugin[]> 
     loaded.push(await installPlugin(plugin));
   }
   sortPlugins(loaded);
+  if (!watching) {
+    watching = true;
+    watchNpmPlugins(ctx, "panel", reloadPanelPlugins);
+  }
   return loaded;
 }
 
-/**
- * Re-scans the plugin directories and reconciles them with what is running: a
- * plugin that has appeared since startup is installed, and one whose directory
- * is gone — or whose manifest now says `enabled: false` — is disposed.
- *
- * This is safe for newly installed, removed and disabled packaged plugins in a
- * production process. It deliberately does not replace code that has already
- * run: `installPlugin()` compares backend revisions and leaves a changed plugin
- * in `restart-required` state instead.
- *
- * The browser half needs nothing here: Vite watches source checkouts, while a
- * production browser receives the changed frontend manifest over plugin SSE.
- */
-export async function reloadPanelPlugins(): Promise<readonly LoadedPanelPlugin[]> {
+/** Reconcile npm installation changes after all effects from the previous revision are disposed. */
+export function reloadPanelPlugins(): Promise<readonly LoadedPanelPlugin[]> {
+  return change(reconcilePlugins);
+}
+
+function backendEntry(plugin: DiscoveredPlugin) {
+  return resolvePluginEntry(plugin.directory, plugin.manifest, {
+    entryFields: ENTRY_FIELDS,
+    entryCandidates: ENTRY_CANDIDATES
+  });
+}
+
+function backendRevision(plugin: DiscoveredPlugin) {
+  const entry = backendEntry(plugin);
+  return entry ? pluginBackendRevision(entry, plugin.packageRoot || plugin.directory) : "";
+}
+
+async function reconcilePlugins() {
+  ensurePanelPluginService();
+  const discovered = discoverPanelPlugins({
+    entryFields: ENTRY_FIELDS,
+    entryCandidates: ENTRY_CANDIDATES,
+    onWarning: (message, error) => logger.warn(message, error)
+  });
+  const next = new Map(discovered.map((plugin) => [plugin.manifest.id, plugin]));
+  for (const running of [...loaded].reverse()) {
+    const plugin = next.get(running.manifest.id);
+    const changed =
+      plugin &&
+      (running.entry !== backendEntry(plugin) ||
+        running.manifest.version !== plugin.manifest.version ||
+        running.backendRevision !== backendRevision(plugin) ||
+        JSON.stringify(running.manifest.config) !== JSON.stringify(plugin.manifest.config));
+    if ((!plugin || changed) && !RESTART_PLUGIN_IDS.has(running.manifest.id)) {
+      await removeRunning(running.manifest.id);
+      forgetCachedModule(running.entry, running.packageRoot || running.directory);
+    }
+  }
+  for (const plugin of discovered) {
+    if (loaded.some((record) => record.manifest.id === plugin.manifest.id)) continue;
+    forgetCachedModule(plugin.entry, plugin.packageRoot || plugin.directory);
+    loaded.push(await installPlugin(plugin));
+  }
+  sortPlugins(loaded);
+  await settle();
+  return loaded;
+}
+
+/** Install or update an npm dependency, retaining the user's enablement on upgrades. */
+export function installPanelNpmPlugin(options: {
+  name: string;
+  version?: string;
+  pluginId?: string;
+}) {
   return change(async () => {
-    ensurePanelPluginService();
-    const discovered = discoverPanelPlugins({
-      entryFields: ENTRY_FIELDS,
-      entryCandidates: ENTRY_CANDIDATES,
-      onWarning: (message, error) => logger.warn(message, error)
-    });
-
-    const installed = new Set(discovered.map((plugin) => plugin.manifest.id));
-    for (let index = loaded.length - 1; index >= 0; index--) {
-      const record = loaded[index];
-      if (installed.has(record.manifest.id)) continue;
-      await removeRunning(record.manifest.id);
-      logger.info(`Panel plugin unloaded: ${record.manifest.id}`);
-    }
-
-    for (const plugin of discovered) {
-      if (loaded.some((record) => record.manifest.id === plugin.manifest.id)) continue;
-      // A plugin installed, uninstalled and installed again would otherwise be
-      // served the module its first run left behind.
-      forgetCachedModule(plugin.entry);
-      loaded.push(await installPlugin(plugin));
-    }
-    sortPlugins(loaded);
-    await settle();
-    return loaded;
+    const before = new Map(getPanelPluginInventory().map((plugin) => [plugin.id, plugin]));
+    const record = await installNpmPlugin({ ...options, side: "panel" });
+    const previous = before.get(record.pluginId);
+    const preference = readPluginOverrides().plugins[record.pluginId]?.enabled;
+    // A dual package can already be visible here after the other side installed
+    // it. Explicitly installing this side enables it unless the user disabled it.
+    if (!previous || (!previous.enabled && preference === undefined))
+      writePluginOverride(record.pluginId, { enabled: true });
+    await reconcilePlugins();
+    return changedRecord(record.pluginId);
   });
 }
 
@@ -381,6 +410,7 @@ export interface PanelPluginRecord {
   state: PluginState;
   result?: PluginChangeResult;
   id: string;
+  packageName?: string;
   version?: string;
   description?: string;
   priority?: number;
@@ -394,7 +424,7 @@ export interface PanelPluginRecord {
   running: boolean;
   /** Why the backend half is not running, when it should be. */
   error?: string;
-  /** Plugins are npm dependencies now, so the plugin manager never removes one. */
+  /** Whether this npm dependency can be uninstalled from the running host. */
   removable: boolean;
 }
 
@@ -416,6 +446,7 @@ export function getPanelPluginInventory(): PanelPluginRecord[] {
       fields.some((field) => typeof plugin.manifest[field] === "string");
     return {
       id: plugin.manifest.id,
+      packageName: plugin.packageName,
       version: plugin.manifest.version,
       description: plugin.manifest.description,
       priority: plugin.manifest.priority,
@@ -424,7 +455,7 @@ export function getPanelPluginInventory(): PanelPluginRecord[] {
       sides: { backend: has(ENTRY_FIELDS), frontend: has(FRONTEND_FIELDS) },
       running: pluginState(plugin, running) === "active",
       state: pluginState(plugin, running),
-      removable: false,
+      removable: !!plugin.packageRoot && !isEssentialNpmPlugin(plugin.manifest.id),
       error:
         running?.error?.message ||
         running?.fork?.runtime.error?.message ||
@@ -447,7 +478,7 @@ export function setPanelPluginEnabled(id: string, enabled: boolean): Promise<Pan
       if (!enabled || existing?.error || existing?.fork?.runtime.status === 3)
         await removeRunning(id);
       if (enabled && !loaded.some((item) => item.manifest.id === id)) {
-        forgetCachedModule(plugin.entry);
+        forgetCachedModule(plugin.entry, plugin.packageRoot || plugin.directory);
         loaded.push(
           await installPlugin({ ...plugin, manifest: { ...plugin.manifest, enabled: true } })
         );
@@ -461,17 +492,23 @@ export function setPanelPluginEnabled(id: string, enabled: boolean): Promise<Pan
   });
 }
 
-/**
- * Plugins are npm dependencies now; the plugin manager does not delete files.
- * An npm plugin is removed with npm, and a development source plugin cannot be
- * removed from the running checkout at all.
- */
+/** Dispose the running scope before npm removes the dependency that owns its files. */
 export function removePanelPlugin(id: string): Promise<void> {
   return change(async () => {
     const plugin = findPlugin(id);
-    if (isPackagePlugin(plugin.directory))
-      throw new Error("Npm plugins cannot be removed here; manage them with npm.");
-    throw new Error("Source plugins cannot be removed.");
+    if (!plugin.packageRoot) throw new Error("Source plugins cannot be removed.");
+    if (isEssentialNpmPlugin(id))
+      throw new Error(`The essential plugin "${id}" cannot be uninstalled.`);
+    await removeRunning(id);
+    forgetCachedModule(plugin.entry, plugin.packageRoot);
+    try {
+      await uninstallNpmPlugin(id);
+    } catch (error) {
+      await reconcilePlugins();
+      throw error;
+    }
+    codeRevisions.delete(id);
+    await reconcilePlugins();
   });
 }
 
@@ -506,7 +543,9 @@ function pluginState(plugin: DiscoveredPlugin, running?: LoadedPanelPlugin): Plu
   if (!running || running.restartRequired) return "restart-required";
   if (!running.entry) return "active";
   if (
-    running.backendRevision !== pluginDirectoryRevision(path.dirname(running.entry)) ||
+    running.entry !== backendEntry(plugin) ||
+    running.manifest.version !== plugin.manifest.version ||
+    running.backendRevision !== backendRevision(plugin) ||
     JSON.stringify(running.manifest.config) !== JSON.stringify(plugin.manifest.config)
   )
     return "restart-required";
@@ -543,16 +582,14 @@ export function configurePanelPlugin(
     validatePluginCompatibility(plugin.manifest.elements);
     const running = loaded.find((item) => item.manifest.id === id);
     const replaced =
-      plugin.entry &&
-      codeRevisions.has(id) &&
-      codeRevisions.get(id) !== pluginDirectoryRevision(path.dirname(plugin.entry));
+      plugin.entry && codeRevisions.has(id) && codeRevisions.get(id) !== backendRevision(plugin);
     if (!replaced && typeof running?.fork?.runtime.schema === "function")
       running.fork.runtime.schema(config);
     if (Array.isArray(plugin.manifest.configFields))
       validatePluginSettings(plugin.manifest.configFields, config);
     writePluginOverride(id, { config });
     // Core network/storage configuration is applied on restart; never tear down the reply path.
-    if (replaced || ESSENTIAL_PLUGIN_IDS.has(id) || ["server", "config"].includes(id)) {
+    if (RESTART_PLUGIN_IDS.has(id)) {
       return {
         ...getPanelPluginInventory().find((item) => item.id === id)!,
         result: { saved: true, application: "restart-required" }
@@ -561,6 +598,7 @@ export function configurePanelPlugin(
     let failure: string | undefined;
     try {
       await removeRunning(id);
+      forgetCachedModule(plugin.entry, plugin.packageRoot || plugin.directory);
       if (plugin.manifest.enabled !== false) {
         loaded.push(await installPlugin({ ...plugin, manifest: { ...plugin.manifest, config } }));
         sortPlugins(loaded);

@@ -2,12 +2,7 @@ import { createHash, randomBytes } from "crypto";
 import path from "path";
 import axios from "axios";
 import fs from "fs-extra";
-import {
-  installNpmPlugin,
-  listNpmPlugins,
-  uninstallNpmPlugin,
-  type NpmPluginRecord
-} from "mcsmanager-common";
+import { listNpmPlugins, isEssentialNpmPlugin, type NpmPluginRecord } from "mcsmanager-common";
 
 export type MarketErrorReason =
   | "NOT_FOUND"
@@ -47,7 +42,7 @@ export interface InstalledMarketPlugin extends MarketInstallInfo {
   sides: PluginSide[];
   directories: string[];
   daemonIds: string[];
-  /** Bundled plugins ship inside the runtime package and cannot be removed here. */
+  /** Whether the dependency belongs to the runtime or the installation project. */
   source: "bundled" | "project";
   removable: boolean;
 }
@@ -161,7 +156,7 @@ function localRecord(record: NpmPluginRecord): InstalledMarketPlugin {
     directories: [record.directory],
     daemonIds: [],
     source: record.source,
-    removable: record.source === "project"
+    removable: !isEssentialNpmPlugin(record.pluginId)
   };
 }
 
@@ -210,7 +205,9 @@ export function listInstalled(): InstalledMarketPlugin[] {
 
 function sidesOf(value: unknown): PluginSide[] {
   if (!Array.isArray(value)) return [];
-  return [...new Set(value.filter((item): item is PluginSide => item === "panel" || item === "daemon"))];
+  return [
+    ...new Set(value.filter((item): item is PluginSide => item === "panel" || item === "daemon"))
+  ];
 }
 
 /**
@@ -232,8 +229,7 @@ export async function fetchMarketPluginDetail(
     (version && Array.isArray(detail.versions)
       ? detail.versions.find((item: { version?: unknown }) => item?.version === version)
       : detail.selectedVersion) ?? detail.latestVersion;
-  if (!selected || typeof selected.version !== "string")
-    throw new PluginMarketError("NOT_FOUND");
+  if (!selected || typeof selected.version !== "string") throw new PluginMarketError("NOT_FOUND");
   if (selected.status && selected.status !== "approved") throw new PluginMarketError("NOT_FOUND");
   const name = typeof detail.name === "string" ? detail.name : "";
   if (!name) throw new PluginMarketError("BAD_PATH");
@@ -246,29 +242,4 @@ export async function fetchMarketPluginDetail(
       sides: sidesOf(selected.sides).length ? sidesOf(selected.sides) : sidesOf(detail.sides)
     }
   };
-}
-
-/** Adds one npm package to this installation's dependencies. */
-export async function installPanelPlugin(detail: MarketPluginDetail): Promise<NpmPluginRecord> {
-  try {
-    return await installNpmPlugin({
-      name: detail.name,
-      pluginId: detail.id,
-      version: detail.selectedVersion.version,
-      side: "panel"
-    });
-  } catch (error: any) {
-    if (String(error?.message).startsWith("BUNDLED:")) throw new PluginMarketError("BUNDLED");
-    throw error;
-  }
-}
-
-/** Removes one project-installed npm plugin from this installation. */
-export async function uninstallPanelPlugin(pluginId: string): Promise<NpmPluginRecord | null> {
-  try {
-    return await uninstallNpmPlugin(pluginId);
-  } catch (error: any) {
-    if (String(error?.message).startsWith("BUNDLED:")) throw new PluginMarketError("BUNDLED");
-    throw error;
-  }
 }

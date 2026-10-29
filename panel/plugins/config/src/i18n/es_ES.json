@@ -6,9 +6,9 @@
   "TXT_CODE_PLUGIN_CONFIG": "Configuracion de plugins",
   "TXT_CODE_PLUGIN_CANCEL": "Cancelar",
   "TXT_CODE_PLUGIN_DELETE": "Eliminar",
-  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "Los archivos del complemento y su configuración guardada se eliminarán permanentemente.",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "Se desinstalará la dependencia npm. Se conservará la configuración guardada.",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "¿Eliminar {name}?",
-  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Plugins are installed as npm dependencies; remove them with npm.",
+  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Los complementos principales y de código fuente no se pueden desinstalar aquí.",
   "TXT_CODE_PLUGIN_DELETED": "Complemento eliminado",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "Guardar configuración",
   "TXT_CODE_PLUGIN_SAVE_REMINDER": "¡Recuerda guardar la configuración!",
@@ -45,5 +45,9 @@
   "TXT_CODE_PLUGIN_RESTART_REQUIRED": "Reinicia el servicio para aplicar el cambio.",
   "TXT_CODE_PLUGIN_SAVED_PENDING": "Guardado; esperando dependencias del complemento.",
   "TXT_CODE_PLUGIN_FRONTEND_FAILED": "Error del complemento del navegador",
-  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "Recarga la página para cargar el entorno actualizado del navegador."
+  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "Recarga la página para cargar el entorno actualizado del navegador.",
+  "TXT_CODE_PLUGIN_NPM_INSTALL": "Instalar / actualizar complemento",
+  "TXT_CODE_PLUGIN_NPM_PACKAGE": "Nombre del paquete npm",
+  "TXT_CODE_PLUGIN_NPM_VERSION": "Versión o etiqueta (latest por defecto)",
+  "TXT_CODE_PLUGIN_NPM_INSTALLED": "Complemento instalado y sincronizado"
 }

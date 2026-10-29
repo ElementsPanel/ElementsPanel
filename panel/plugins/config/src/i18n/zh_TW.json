@@ -6,9 +6,9 @@
   "TXT_CODE_PLUGIN_CONFIG": "插件設定",
   "TXT_CODE_PLUGIN_CANCEL": "取消",
   "TXT_CODE_PLUGIN_DELETE": "刪除外掛",
-  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "外掛檔案與已儲存的設定將會永久刪除。",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "將解除安裝此外掛的 npm 相依套件，保留已儲存的設定。",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "確定刪除 {name}？",
-  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "外掛以 npm 相依形式安裝，請使用 npm 解除安裝。",
+  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "核心外掛與開發環境的原始碼外掛無法在此解除安裝。",
   "TXT_CODE_PLUGIN_DELETED": "外掛已刪除",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "儲存設定",
   "TXT_CODE_PLUGIN_SAVE_REMINDER": "記得儲存設定！",
@@ -45,5 +45,9 @@
   "TXT_CODE_PLUGIN_RESTART_REQUIRED": "需要重新啟動服務才能套用此變更。",
   "TXT_CODE_PLUGIN_SAVED_PENDING": "已儲存，正在等待外掛依賴。",
   "TXT_CODE_PLUGIN_FRONTEND_FAILED": "瀏覽器外掛載入失敗",
-  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "需要重新整理頁面才能載入更新後的瀏覽器執行階段。"
+  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "需要重新整理頁面才能載入更新後的瀏覽器執行階段。",
+  "TXT_CODE_PLUGIN_NPM_INSTALL": "安裝 / 更新外掛",
+  "TXT_CODE_PLUGIN_NPM_PACKAGE": "npm 套件名稱",
+  "TXT_CODE_PLUGIN_NPM_VERSION": "版本或標籤（預設 latest）",
+  "TXT_CODE_PLUGIN_NPM_INSTALLED": "外掛已安裝並同步"
 }

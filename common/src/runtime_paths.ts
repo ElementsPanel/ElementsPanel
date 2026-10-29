@@ -28,6 +28,9 @@ function npmPluginRoots(side?: "panel" | "daemon"): PluginDiscoveryRoot[] {
   const { resolveNpmPlugins } = runtimeRequire(resolver);
   return resolveNpmPlugins(packagePath(), side, { skipInvalid: true }).map((record: any) => ({
     directory: record.directory,
+    packageRoot: record.packageRoot,
+    packageName: record.name,
+    npmSource: record.source,
     ...(record.folder ? { folder: record.folder } : {}),
     // Built-in packages are part of the runtime's default configuration. A
     // project dependency is installed but remains dormant until the user

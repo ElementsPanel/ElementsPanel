@@ -228,6 +228,7 @@ function installFixture(overrides = {}) {
   });
   const component = load("panel/plugins/market/src/components/PluginMarketInstall.vue", {
     vue,
+    "@/plugin/context": { ctx: { plugins: { refresh: async () => {} } } },
     "../version": load("panel/plugins/market/src/version.ts"),
     "vuetify/components": {},
     "@/lang/i18n": { t: (key) => key },
@@ -323,7 +324,7 @@ test("node confirmation installs the captured version and reports partial failur
     assert.equal(calls.filter((call) => call.name === "install").length, 0);
     props.version = version("2.0.0");
     state.confirmNodes();
-    await vue.nextTick();
+    await new Promise(setImmediate);
     const install = calls.find((call) => call.name === "install");
     assert.equal(install.args.data.version, "1.0.0");
     assert.deepEqual(install.args.data.daemonIds, ["node-1"]);
@@ -352,7 +353,7 @@ test("partial uninstall preserves the installed release and never reports comple
   try {
     await state.requestUninstall({ id: "one", installedVersion: "1.0.0" });
     state.confirmNodes();
-    await vue.nextTick();
+    await new Promise(setImmediate);
     assert.ok(events.some((event) => event[0] === "installed" && event[2] === "1.0.0"));
     assert.deepEqual(errors, ["TXT_CODE_PLUGIN_MARKET_NODE_FAILED"]);
     assert.deepEqual(successes, []);
@@ -406,7 +407,7 @@ test("cancelling the node picker does not install, and uninstall uses persisted 
     );
     assert.equal(calls.filter((call) => call.name === "installed").length, 1);
     state.confirmNodes();
-    await vue.nextTick();
+    await new Promise(setImmediate);
     assert.deepEqual(calls.find((call) => call.name === "uninstall").args.params, {
       pluginId: "one",
       daemonIds: "node-1"

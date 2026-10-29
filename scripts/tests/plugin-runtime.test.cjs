@@ -16,7 +16,10 @@ const commonNames = [
   "plugin_overrides",
   "plugin_lifecycle",
   "plugin_revision",
-  "runtime_paths"
+  "runtime_paths",
+  "plugin_modules",
+  "plugin_watch",
+  "plugin_npm"
 ];
 const load = createLoader({
   compiler: ts,
@@ -45,13 +48,14 @@ function fixture(t, side = "panel") {
     const target = path.join(directory, "plugins", id);
     fs.mkdirSync(target, { recursive: true });
     fs.writeFileSync(path.join(target, "index.cjs"), source);
+    const { frontend, ...metadata } = extra;
     fs.writeFileSync(
       path.join(target, "plugin.json"),
-      JSON.stringify({ id, backend: "index.cjs" })
+      JSON.stringify({ id, backend: "index.cjs", ...(frontend ? { frontend } : {}) })
     );
     fs.writeFileSync(
       path.join(target, "package.json"),
-      JSON.stringify({ name: `epanel-plugin-${id}`, elementspanel: extra })
+      JSON.stringify({ name: `epanel-plugin-${id}`, elementspanel: metadata })
     );
     return target;
   };
@@ -79,31 +83,31 @@ for (const side of ["panel", "daemon"]) {
       if (previousRoot === undefined) delete process.env.EPANEL_PACKAGE_ROOT;
       else process.env.EPANEL_PACKAGE_ROOT = previousRoot;
     });
-    const { directory: builtin } = installNpmPlugin(packageRoot, side, "bundled", {
+    const { directory: builtin } = installNpmPlugin(packageRoot, side, "config", {
       source: 'exports.apply = ctx => ctx.set("bundledValue", true);',
       frontend: side === "panel" ? "export const fixture = true;" : undefined
     });
     await f.start();
     assert.equal(f.ctx.bundledValue, true);
-    assert.equal(f.inventory().find((plugin) => plugin.id === "bundled").removable, false);
+    assert.equal(f.inventory().find((plugin) => plugin.id === "config").removable, false);
     if (side === "panel") {
       const [entry] = f.loader.getPanelFrontendManifest();
-      assert.equal(entry.assetDirectory, "bundled");
+      assert.equal(entry.assetDirectory, "config");
       assert.equal(entry.frontendDirectory, path.join(builtin, "frontend"));
-      assert.match(entry.entry, /^\.\/bundled@[a-f0-9]{24}\/frontend\/index.js$/);
+      assert.match(entry.entry, /^\.\/config@[a-f0-9]{24}\/frontend\/index.js$/);
     }
-    await f.enabled("bundled", false);
+    await f.enabled("config", false);
     assert.equal(
       JSON.parse(fs.readFileSync(path.join(f.directory, "data/plugin-overrides.json"))).plugins
-        .bundled.enabled,
+        .config.enabled,
       false
     );
     assert.equal(JSON.parse(fs.readFileSync(path.join(builtin, "plugin.json"))).enabled, undefined);
-    await assert.rejects(f.remove("bundled"), /Npm plugins cannot be removed/);
+    await assert.rejects(f.remove("config"), /essential plugin/);
     assert.equal(fs.existsSync(path.join(packageRoot, "data")), false);
   });
 
-  test(`${side}: production reload activates new packages without replacing running code`, async (t) => {
+  test(`${side}: production reload activates new packages and replaces running code`, async (t) => {
     const previousNodeEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = "production";
     t.after(() => {
@@ -125,11 +129,8 @@ for (const side of ["panel", "daemon"]) {
       'exports.apply=ctx=>ctx.set("originalValue",2);'
     );
     await f.reload();
-    assert.equal(f.ctx.originalValue, 1);
-    assert.equal(
-      f.inventory().find((plugin) => plugin.id === "original").state,
-      "restart-required"
-    );
+    assert.equal(f.ctx.originalValue, 2);
+    assert.equal(f.inventory().find((plugin) => plugin.id === "original").state, "active");
 
     fs.rmSync(added, { recursive: true, force: true });
     await f.reload();
@@ -324,7 +325,7 @@ test("a revision changes when a nested module changes, and public assets never r
   dispose();
 });
 
-test("code replacement cannot be hidden by a settings update or a disable/enable cycle", async (t) => {
+test("settings changes and enable cycles apply the updated backend revision", async (t) => {
   const f = fixture(t);
   const directory = f.write("versioned", 'exports.apply=ctx=>ctx.set("versionedValue",1);');
   await f.start();
@@ -332,15 +333,40 @@ test("code replacement cannot be hidden by a settings update or a disable/enable
     path.join(directory, "index.cjs"),
     'exports.apply=ctx=>ctx.set("versionedValue",2);'
   );
-  assert.equal(
-    (await f.configure("versioned", { option: true })).result.application,
-    "restart-required"
-  );
-  assert.equal(f.ctx.get("versionedValue"), 1);
+  assert.equal((await f.configure("versioned", { option: true })).result.application, "applied");
+  assert.equal(f.ctx.get("versionedValue"), 2);
   await f.enabled("versioned", false);
-  assert.equal((await f.enabled("versioned", true)).result.application, "restart-required");
-  assert.equal(f.ctx.get("versionedValue"), undefined);
+  assert.equal((await f.enabled("versioned", true)).result.application, "applied");
+  assert.equal(f.ctx.get("versionedValue"), 2);
 });
+
+for (const side of ["panel", "daemon"]) {
+  test(`${side}: replacing a nested backend waits for async cleanup`, async (t) => {
+    const f = fixture(t, side);
+    let release;
+    const control = {
+      events: [],
+      gate: new Promise((resolve) => {
+        release = resolve;
+      })
+    };
+    f.ctx.set("control", control);
+    const directory = f.write(
+      "nested",
+      'exports.inject=["control"]; exports.apply=ctx=>{const c=ctx.control; c.events.push(require("./helper.cjs")); ctx.effect(()=>async()=>{c.events.push("stop"); await c.gate; c.events.push("stopped")});};'
+    );
+    fs.writeFileSync(path.join(directory, "helper.cjs"), 'module.exports="old";');
+    await f.start();
+    fs.writeFileSync(path.join(directory, "helper.cjs"), 'module.exports="new";');
+    const pending = f.reload();
+    await new Promise(setImmediate);
+    assert.deepEqual(control.events, ["old", "stop"]);
+    release();
+    await pending;
+    assert.deepEqual(control.events, ["old", "stop", "stopped", "new"]);
+    assert.equal(f.inventory().find((plugin) => plugin.id === "nested").state, "active");
+  });
+}
 
 test("settings forms validate server-side before the plugin writes and report restart-only settings", async (t) => {
   const f = fixture(t);

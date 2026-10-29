@@ -6,9 +6,9 @@
   "TXT_CODE_PLUGIN_CONFIG": "플러그인 설정",
   "TXT_CODE_PLUGIN_CANCEL": "취소",
   "TXT_CODE_PLUGIN_DELETE": "삭제",
-  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "플러그인 파일과 저장된 설정이 영구적으로 삭제됩니다.",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "npm 의존성을 제거합니다. 저장된 설정은 유지됩니다.",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "{name} 플러그인을 삭제할까요?",
-  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Plugins are installed as npm dependencies; remove them with npm.",
+  "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "핵심 플러그인과 개발용 소스 플러그인은 여기서 제거할 수 없습니다.",
   "TXT_CODE_PLUGIN_DELETED": "플러그인을 삭제했습니다",
   "TXT_CODE_PLUGIN_SAVE_SETTINGS": "설정 저장",
   "TXT_CODE_PLUGIN_SAVE_REMINDER": "설정을 저장하는 것을 잊지 마세요!",
@@ -45,5 +45,9 @@
   "TXT_CODE_PLUGIN_RESTART_REQUIRED": "변경 사항을 적용하려면 서비스를 다시 시작하세요.",
   "TXT_CODE_PLUGIN_SAVED_PENDING": "저장되었습니다. 플러그인 종속성을 기다리는 중입니다.",
   "TXT_CODE_PLUGIN_FRONTEND_FAILED": "브라우저 플러그인 로드 실패",
-  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "업데이트된 브라우저 런타임을 로드하려면 페이지를 새로 고치세요."
+  "TXT_CODE_PLUGIN_REFRESH_REQUIRED": "업데이트된 브라우저 런타임을 로드하려면 페이지를 새로 고치세요.",
+  "TXT_CODE_PLUGIN_NPM_INSTALL": "플러그인 설치 / 업데이트",
+  "TXT_CODE_PLUGIN_NPM_PACKAGE": "npm 패키지 이름",
+  "TXT_CODE_PLUGIN_NPM_VERSION": "버전 또는 태그 (기본값: latest)",
+  "TXT_CODE_PLUGIN_NPM_INSTALLED": "플러그인이 설치되고 동기화되었습니다"
 }

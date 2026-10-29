@@ -5,12 +5,10 @@ import { localeMessages } from "../i18n";
 import {
   fetchMarketPluginDetail,
   forgetRemoteInstall,
-  installPanelPlugin,
   listInstalled,
   PluginMarketError,
   readRemoteInstalls,
   recordRemoteInstall,
-  uninstallPanelPlugin,
   type MarketInstallInfo,
   type PluginSide,
   type RemoteMarketInstall
@@ -313,11 +311,10 @@ export async function apply(ctx: PanelPluginContext) {
   /**
    * Asks the daemons the user picked to re-scan their plugin directories.
    *
-   * A daemon binds its protocol handlers onto each socket as that socket
-   * connects, so the node is reconnected afterwards: without that, a handler
-   * that has just appeared stays invisible to the connection the panel holds.
+   * Current daemons dispatch through their live registry. Reconnecting also
+   * keeps this panel compatible with older daemons that bind routes per socket.
    */
-  async function reloadNodes(daemonIds: readonly string[]): Promise<boolean> {
+  async function reloadNodes(daemonIds: readonly string[], pluginId?: string): Promise<boolean> {
     let reloaded = true;
     for (const daemonId of daemonIds) {
       const node = ctx.remote.services.getInstance(daemonId);
@@ -326,7 +323,12 @@ export async function apply(ctx: PanelPluginContext) {
         continue;
       }
       try {
-        await new ctx.remote.Request(node).request("plugin/reload");
+        const inventory = await new ctx.remote.Request(node).request("plugin/reload");
+        if (
+          Array.isArray(inventory) &&
+          inventory.some((plugin) => plugin.id === pluginId && plugin.state === "restart-required")
+        )
+          reloaded = false;
         node.refreshReconnect();
       } catch (error) {
         // A daemon that cannot reload — an older one, or one that is not a
@@ -343,18 +345,23 @@ export async function apply(ctx: PanelPluginContext) {
    *
    * Both halves re-scan after the dependency is installed: the panel scans its
    * own npm plugins, and the selected daemons scan theirs before reconnecting.
-   * Loaders accept new npm plugins in production, but retain an already running
-   * backend revision; replacing that revision still requires restart.
+   * Loaders dispose the previous revision before activating its replacement.
    */
   async function hotReload(
     sides: PluginSide[],
-    daemonIds: readonly string[] = []
+    daemonIds: readonly string[] = [],
+    pluginId?: string
   ): Promise<boolean> {
     if (!sides.length) return true;
     try {
       if (sides.includes("panel")) await ctx.plugins.reload();
-      if (sides.includes("daemon")) return await reloadNodes(daemonIds);
-      return true;
+      const panelReady =
+        !sides.includes("panel") ||
+        !ctx.plugins
+          .inventory()
+          .some((plugin) => plugin.id === pluginId && plugin.state === "restart-required");
+      if (sides.includes("daemon")) return (await reloadNodes(daemonIds, pluginId)) && panelReady;
+      return panelReady;
     } catch (error) {
       ctx.logger.warn(`Failed to reload plugins after a market install: ${error}`);
       return false;
@@ -447,8 +454,7 @@ export async function apply(ctx: PanelPluginContext) {
 
   // Installing adds a dependency to this installation's package.json and sends the
   // same npm install to the nodes the user picked. Both sides are asked to re-scan
-  // after the dependency arrives. Existing backend revisions are not replaced
-  // in-process.
+  // after the dependency arrives and replace the running plugin revision.
   router.post(
     "/plugin/install",
     requireAdmin,
@@ -473,20 +479,20 @@ export async function apply(ctx: PanelPluginContext) {
             version: detail.selectedVersion.version,
             installedAt: Date.now()
           };
-          const previous = listInstalled().find((item) => item.pluginId === info.pluginId);
-          // A source or bundled plugin that ships with the runtime already owns the
-          // id; installing the npm package would be shadowed by it.
+          // Core services and source plugins cannot be replaced while running.
           if (
             sides.includes("panel") &&
-            previous?.source !== "project" &&
-            ctx.plugins.inventory().some((item) => item.id === info.pluginId)
+            ctx.plugins.inventory().some((item) => item.id === info.pluginId && !item.removable)
           )
             throw new PluginMarketError("BUNDLED");
-          const replacedVersion = Boolean(previous && previous.version !== info.version);
 
           const changedSides: PluginSide[] = [];
           if (sides.includes("panel")) {
-            await installPanelPlugin(detail);
+            await ctx.plugins.install({
+              name: detail.name,
+              pluginId: detail.id,
+              version: detail.selectedVersion.version
+            });
             changedSides.push("panel");
           }
           const { failedNodes, changedNodes } =
@@ -494,12 +500,10 @@ export async function apply(ctx: PanelPluginContext) {
               ? await installOnNodes(daemonIds, info)
               : { failedNodes: [], changedNodes: [] };
           if (changedNodes.length) changedSides.push("daemon");
-          const reloaded = await hotReload(changedSides, changedNodes);
+          const reloaded = await hotReload(changedSides, changedNodes, info.pluginId);
 
           return {
-            restartRequired:
-              ((changedSides.includes("panel") || changedNodes.length > 0) && replacedVersion) ||
-              !reloaded,
+            restartRequired: !reloaded,
             installedVersion: listInstalled().find((item) => item.pluginId === info.pluginId)
               ?.version,
             failedNodes
@@ -524,7 +528,9 @@ export async function apply(ctx: PanelPluginContext) {
           const installations = readRemoteInstalls(pluginId).filter((item) =>
             selectedNodes.has(item.daemonId)
           );
-          const removed = await uninstallPanelPlugin(pluginId);
+          const local = ctx.plugins.inventory().find((plugin) => plugin.id === pluginId);
+          if (local) await ctx.plugins.remove(pluginId);
+          const removed = Boolean(local);
           const { failedNodes, changedNodes } = await removeFromNodes(installations);
           const sides: PluginSide[] = removed ? ["panel"] : [];
           if (changedNodes.length) sides.push("daemon");
@@ -533,7 +539,7 @@ export async function apply(ctx: PanelPluginContext) {
             removed: !remaining,
             installedVersion: remaining?.version,
             failedNodes,
-            restartRequired: !(await hotReload(sides, changedNodes))
+            restartRequired: !(await hotReload(sides, changedNodes, pluginId))
           };
         });
       } catch (error) {
@@ -544,7 +550,12 @@ export async function apply(ctx: PanelPluginContext) {
 
   ctx.settingsForm.declare({
     fields: () => [
-      { key: "pluginMarketAddr", type: "string", title: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_ADDR"), description: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_ADDR_DESC") },
+      {
+        key: "pluginMarketAddr",
+        type: "string",
+        title: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_ADDR"),
+        description: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_ADDR_DESC")
+      },
       { type: "link", title: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET"), route: "/market/plugins" }
     ],
     read: () => ({ ...marketSettings() }),
