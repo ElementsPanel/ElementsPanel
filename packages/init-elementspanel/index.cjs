@@ -1,10 +1,10 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const { spawn } = require("node:child_process");
-const { createInterface } = require("node:readline/promises");
 const { registerHooks } = require("node:module");
 const metadata = require("./package.json");
 const { createTranslator, normalizeLanguage } = require("./i18n.cjs");
+const { selectMenu, textPrompt } = require("./select.cjs");
 
 const modes = ["full", "panel", "daemon"];
 const defaultPorts = { panel: 23333, daemon: 24444 };
@@ -118,26 +118,30 @@ function validatePorts(mode, panelPort, daemonPort, language) {
   return ports;
 }
 
+function modeChoices(t) {
+  return [
+    { value: "full", label: t("modeFull") },
+    { value: "panel", label: t("modePanel") },
+    { value: "daemon", label: t("modeDaemon") }
+  ];
+}
+
 async function promptOptions(options, prompt) {
-  const defaultLanguage = detectSystemLanguage().startsWith("zh") ? "zh" : "en";
-  while (!options.language) {
-    const t = createTranslator(defaultLanguage);
-    const answer = await prompt.question(
-      t("languagePrompt", {
-        defaultChoice: defaultLanguage === "zh" ? "2" : "1"
-      })
-    );
-    options.language = normalizeLanguage(answer.trim() || defaultLanguage);
-    if (!options.language) console.error(t("languageChoiceInvalid"));
-  }
+  const useMenu = typeof prompt.select === "function";
+  options.language = options.language ?? (detectSystemLanguage().startsWith("zh") ? "zh" : "en");
   const t = createTranslator(options.language);
   if (options.directory !== undefined)
     await validateDestination(options.directory, options.language);
   while (options.directory === undefined) {
-    const answer = (await prompt.question(t("directoryPrompt"))).trim();
+    const input = useMenu
+      ? await prompt.text({ title: t("directoryTitle"), placeholder: "my-panel" })
+      : undefined;
+    const answer = (input ? input.value : await prompt.question(t("directoryPrompt"))).trim();
     try {
       options.directory = await validateDestination(answer || "my-panel", options.language);
+      input?.mark("done", options.directory);
     } catch (error) {
+      input?.mark("error", answer || "my-panel");
       console.error(error.message);
     }
   }
@@ -149,6 +153,15 @@ async function promptOptions(options, prompt) {
     panel: "panel",
     daemon: "daemon"
   };
+  if (useMenu && !options.mode) {
+    const t = createTranslator(options.language);
+    options.mode = await prompt.select({
+      title: t("modeTitle"),
+      options: modeChoices(t),
+      hint: t("selectHint"),
+      defaultIndex: 0
+    });
+  }
   while (!options.mode) {
     const answer = (await prompt.question(t("modePrompt"))).trim().toLowerCase() || "1";
     options.mode = Object.hasOwn(choices, answer) ? choices[answer] : undefined;
@@ -158,8 +171,16 @@ async function promptOptions(options, prompt) {
     if (options.mode !== "full" && options.mode !== side) continue;
     const key = `${side}Port`;
     while (options[key] === undefined) {
+      const input = useMenu
+        ? await prompt.text({
+            title: t("portTitle", { side, port: defaultPorts[side] }),
+            placeholder: String(defaultPorts[side])
+          })
+        : undefined;
       const answer = (
-        await prompt.question(t("portPrompt", { side, port: defaultPorts[side] }))
+        input
+          ? input.value
+          : await prompt.question(t("portPrompt", { side, port: defaultPorts[side] }))
       ).trim();
       try {
         const port = parsePort(answer || defaultPorts[side], side, options.language);
@@ -167,12 +188,26 @@ async function promptOptions(options, prompt) {
         if (options.mode === "full" && port === options[`${otherSide}Port`])
           throw new Error(t("portsConflict"));
         options[key] = port;
+        input?.mark("done", String(port));
       } catch (error) {
+        input?.mark("error", answer || String(defaultPorts[side]));
         console.error(error.message);
       }
     }
   }
   validatePorts(options.mode, options.panelPort, options.daemonPort, options.language);
+  if (useMenu && options.install === undefined) {
+    const t = createTranslator(options.language);
+    options.install = await prompt.select({
+      title: t("installTitle"),
+      options: [
+        { value: true, label: t("installYes") },
+        { value: false, label: t("installNo") }
+      ],
+      hint: t("selectHint"),
+      defaultIndex: 0
+    });
+  }
   while (options.install === undefined) {
     const answer = (await prompt.question(t("installPrompt"))).trim().toLowerCase();
     if (["", "y", "yes", "是"].includes(answer)) options.install = true;
@@ -322,6 +357,14 @@ function printNextSteps(result, installed, language) {
   console.log("  npm start");
 }
 
+function createInteractivePrompt() {
+  return {
+    select: (config) => selectMenu(config),
+    text: (config) => textPrompt(config),
+    close() {}
+  };
+}
+
 async function run(argv = process.argv.slice(2)) {
   let prompt;
   try {
@@ -334,9 +377,8 @@ async function run(argv = process.argv.slice(2)) {
     if (typeof registerHooks !== "function") throw new Error(t("nodeVersion"));
     const interactive = process.stdin.isTTY && process.stdout.isTTY && !options.yes;
     if (interactive) {
-      prompt = createInterface({ input: process.stdin, output: process.stdout });
+      prompt = createInteractivePrompt();
       await promptOptions(options, prompt);
-      prompt.close();
       prompt = undefined;
     }
     const result = await initialize({

@@ -17,6 +17,7 @@
     "bin.cjs",
     "index.cjs",
     "i18n.cjs",
+    "select.cjs",
     "workspace.cjs",
     "LICENSE"
   ],

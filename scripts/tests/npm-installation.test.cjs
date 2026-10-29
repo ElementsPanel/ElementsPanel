@@ -183,14 +183,16 @@ for (const [mode, choice] of [
     const f = temporary(t);
     const directory = path.join(f.root, mode);
     const prompt = wizard([
-      "1",
       directory,
       choice,
       ...(mode !== "daemon" ? ["30001"] : []),
       ...(mode !== "panel" ? ["30002"] : []),
       mode === "full" ? "n" : "y"
     ]);
-    const options = await initializer.promptOptions(initializer.parseArgs([]), prompt);
+    const options = await initializer.promptOptions(
+      initializer.parseArgs(["--language", "en"]),
+      prompt
+    );
     let installed = false;
     await initializer.initialize({
       ...options,
@@ -217,7 +219,6 @@ for (const [mode, choice] of [
       }
     });
     assert.equal(options.language, "en");
-    assert.match(prompt.questions[0], /English.*中文/);
     assert.equal(options.mode, mode);
     assert.equal(installed, mode !== "full");
     for (const side of ["panel", "daemon"]) {
@@ -253,8 +254,6 @@ test("initializer wizard retries invalid directories, choices, ports and install
   write(path.join(existing, "keep.txt"), "keep");
   const errors = t.mock.method(console, "error", () => {});
   const prompt = wizard([
-    "invalid-language",
-    "eng",
     existing,
     directory,
     "invalid",
@@ -269,7 +268,10 @@ test("initializer wizard retries invalid directories, choices, ports and install
     "maybe",
     "no"
   ]);
-  const options = await initializer.promptOptions(initializer.parseArgs([]), prompt);
+  const options = await initializer.promptOptions(
+    initializer.parseArgs(["--language", "en"]),
+    prompt
+  );
   assert.equal(options.language, "en");
   assert.equal(options.directory, directory);
   assert.equal(options.panelPort, 30001);
@@ -277,17 +279,21 @@ test("initializer wizard retries invalid directories, choices, ports and install
   assert.equal(options.install, false);
   assert.equal(fs.existsSync(directory), false);
   assert.equal(fs.readFileSync(path.join(existing, "keep.txt"), "utf8"), "keep");
-  assert.equal(errors.mock.callCount(), 9);
+  assert.equal(errors.mock.callCount(), 8);
 });
 
-test("initializer wizard translates Chinese prompts, errors and completion and saves the selected language", async (t) => {
+test("initializer wizard follows the system locale and translates Chinese prompts, errors and completion", async (t) => {
   const f = temporary(t);
   const existing = path.join(f.root, "existing");
   const directory = path.join(f.root, "中文向导");
   write(path.join(existing, "keep.txt"), "keep");
+  const previousLCAll = process.env.LC_ALL;
+  process.env.LC_ALL = "zh_CN.UTF-8";
+  t.after(() => {
+    process.env.LC_ALL = previousLCAll;
+  });
   const errors = t.mock.method(console, "error", () => {});
   const prompt = wizard([
-    "2",
     existing,
     directory,
     "0",
@@ -302,8 +308,7 @@ test("initializer wizard translates Chinese prompts, errors and completion and s
   const options = await initializer.promptOptions(initializer.parseArgs([]), prompt);
   assert.equal(options.language, "zh");
   assert.equal(options.install, false);
-  assert.match(prompt.questions[0], /English.*中文/);
-  assert.match(prompt.questions[1], /安装目录/);
+  assert.match(prompt.questions[0], /安装目录/);
   assert.ok(prompt.questions.some((question) => question.startsWith("安装内容")));
   assert.ok(prompt.questions.some((question) => question.startsWith("panel 监听端口")));
   assert.ok(prompt.questions.some((question) => question.startsWith("daemon 监听端口")));
