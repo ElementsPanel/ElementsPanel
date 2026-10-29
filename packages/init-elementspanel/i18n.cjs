@@ -27,8 +27,8 @@ const messages = {
     modeUnknown: "Unknown installation mode: {mode}",
     installFailed:
       "npm install failed ({status}). The project is intact; run npm install in {directory} to retry.",
-    created: "Created ElementsPanel in {directory}",
-    nextSteps: "Next steps:",
+    created: "Panel initialized successfully in {directory}",
+    nextSteps: "To start, run:",
     nodeVersion: "ElementsPanel requires Node.js 22.15 or newer.",
     help: "Usage: npx @elementspanel/init@latest [directory] [options]\n\nRun without options to choose the directory, services, ports and dependency installation interactively. The language follows the system locale.\n\n  --language <en|zh>    Use English or Chinese\n  --template <mode>     Install full, panel or daemon (default: full)\n  --panel-port <port>   Panel listening port (default: {panelPort})\n  --daemon-port <port>  Daemon listening port (default: {daemonPort})\n  --install            Install dependencies immediately\n  --no-install         Generate the project without installing dependencies\n  --yes, -y            Use defaults for unspecified options\n\nUse . as the directory to initialize the current empty folder.\n"
   },
@@ -60,8 +60,8 @@ const messages = {
     modeUnknown: "未知安装模式：{mode}",
     installFailed:
       "npm install 失败（{status}）。项目已保留，请进入 {directory} 后重新运行 npm install。",
-    created: "已创建 ElementsPanel：{directory}",
-    nextSteps: "下一步：",
+    created: "已成功初始化面板：{directory}",
+    nextSteps: "如需启动，请执行：",
     nodeVersion: "ElementsPanel 需要 Node.js 22.15 或更新版本。",
     help: "用法：npx @elementspanel/init@latest [目录] [参数]\n\n不指定参数时，通过向导选择安装目录、服务、监听端口和是否立即安装依赖，语言跟随系统环境。\n\n  --language <en|zh>    使用 English 或中文\n  --template <模式>    安装 full、panel 或 daemon（默认：full）\n  --panel-port <端口>  panel 监听端口（默认：{panelPort}）\n  --daemon-port <端口> daemon 监听端口（默认：{daemonPort}）\n  --install            立即安装依赖\n  --no-install         仅生成项目，不安装依赖\n  --yes, -y            未指定的选项使用默认值\n\n目录输入 . 可在当前空目录中初始化。\n"
   }

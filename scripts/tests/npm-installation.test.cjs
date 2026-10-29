@@ -335,8 +335,8 @@ test("initializer wizard follows the system locale and translates Chinese prompt
     "--no-install"
   ]).closed;
   assert.equal(result.code, 0, result.output);
-  assert.match(result.output, /已创建 ElementsPanel/);
-  assert.match(result.output, /下一步：/);
+  assert.match(result.output, /已成功初始化面板/);
+  assert.match(result.output, /如需启动，请执行：/);
   assert.match(result.output, /\n  npm install\n  npm start/);
   assert.equal(
     JSON.parse(fs.readFileSync(path.join(f.root, "中文 CLI/daemon/data/Config/global.json")))
