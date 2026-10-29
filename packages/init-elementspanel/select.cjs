@@ -29,7 +29,7 @@ async function selectMenu({ title, options, hint = "", defaultIndex = 0 }) {
 
     function render() {
       const frame = [
-        `${paint("◆ ", CYAN)}${title}`,
+        `${paint("■ ", CYAN)}${title}`,
         ...options.map((option, position) =>
           position === index
             ? `${paint("❯ ", CYAN)}${paint(option.label, CYAN)}`
@@ -93,7 +93,7 @@ function textPrompt({ title, placeholder = "" }) {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
-      prompt: `${paint("◆ ", CYAN)}${title} ${paint("›", DIM)} `
+      prompt: `${paint("■ ", CYAN)}${title} ${paint("›", DIM)} `
     });
     rl.prompt();
     if (placeholder) {
