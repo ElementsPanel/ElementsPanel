@@ -54,7 +54,7 @@
   "TXT_CODE_DESKTOP_USERS_PASSWORD_REQUIRED": "Password is required for new users",
   "TXT_CODE_DESKTOP_USERS_SEARCH": "Search users...",
   "TXT_CODE_DESKTOP_USERS_USERNAME_REQUIRED": "Username is required",
-  "TXT_CODE_FIRST_STARTUP_NOTICE": "The panel has started for the first time. The default username and password have been printed in the console. You can also find them in the installation script.",
+  "TXT_CODE_FIRST_STARTUP_NOTICE": "The panel has started for the first time. The default username and password have been printed in the console.",
   "TXT_CODE_SSO_AUTHORIZE_URL": "Authorize URL",
   "TXT_CODE_SSO_AUTHORIZE_URL_DESC": "OAuth 2.0 authorization endpoint. Users will be redirected here to log in.",
   "TXT_CODE_SSO_AUTO_REDIRECT": "Auto Redirect to SSO Login",

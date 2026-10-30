@@ -54,7 +54,7 @@
   "TXT_CODE_DESKTOP_USERS_PASSWORD_REQUIRED": "新用戶必须設置密碼",
   "TXT_CODE_DESKTOP_USERS_SEARCH": "搜索用戶...",
   "TXT_CODE_DESKTOP_USERS_USERNAME_REQUIRED": "用戶名不能为空",
-  "TXT_CODE_FIRST_STARTUP_NOTICE": "面板首次啟動，已在主控台內印出預設帳號密碼，你也可以在安裝指令碼內找到預設帳號密碼",
+  "TXT_CODE_FIRST_STARTUP_NOTICE": "面板首次啟動，已在主控台內印出預設帳號密碼",
   "TXT_CODE_SSO_AUTHORIZE_URL": "Authorize URL",
   "TXT_CODE_SSO_AUTHORIZE_URL_DESC": "OAuth 2.0 授權端點地址，使用者將被重定向到此地址進行登入授權。",
   "TXT_CODE_SSO_AUTO_REDIRECT": "自動跳轉至 SSO 登入",

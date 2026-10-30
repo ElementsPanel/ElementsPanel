@@ -54,7 +54,7 @@
   "TXT_CODE_DESKTOP_USERS_PASSWORD_REQUIRED": "Yeni kullanıcılar için parola gereklidir",
   "TXT_CODE_DESKTOP_USERS_SEARCH": "Kullanıcı ara...",
   "TXT_CODE_DESKTOP_USERS_USERNAME_REQUIRED": "Kullanıcı adı gereklidir",
-  "TXT_CODE_FIRST_STARTUP_NOTICE": "Panel ilk kez başlatıldı. Varsayılan kullanıcı adı ve parola konsola yazdırıldı. Bunları kurulum betiğinde de bulabilirsiniz.",
+  "TXT_CODE_FIRST_STARTUP_NOTICE": "Panel ilk kez başlatıldı. Varsayılan kullanıcı adı ve parola konsola yazdırıldı.",
   "TXT_CODE_SSO_AUTHORIZE_URL": "Authorize URL",
   "TXT_CODE_SSO_AUTHORIZE_URL_DESC": "OAuth 2.0 authorization endpoint. Users will be redirected here to log in.",
   "TXT_CODE_SSO_AUTO_REDIRECT": "Auto Redirect to SSO Login",

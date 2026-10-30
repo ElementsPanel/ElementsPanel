@@ -54,7 +54,7 @@
   "TXT_CODE_DESKTOP_USERS_PASSWORD_REQUIRED": "新規ユーザーにはパスワードが必要です",
   "TXT_CODE_DESKTOP_USERS_SEARCH": "ユーザーを検索...",
   "TXT_CODE_DESKTOP_USERS_USERNAME_REQUIRED": "ユーザー名は必須です",
-  "TXT_CODE_FIRST_STARTUP_NOTICE": "パネルが初めて起動しました。デフォルトのユーザー名とパスワードはコンソールに出力されています。インストールスクリプトでも確認できます。",
+  "TXT_CODE_FIRST_STARTUP_NOTICE": "パネルが初めて起動しました。デフォルトのユーザー名とパスワードはコンソールに出力されています。",
   "TXT_CODE_SSO_AUTHORIZE_URL": "Authorize URL",
   "TXT_CODE_SSO_AUTHORIZE_URL_DESC": "OAuth 2.0 認可エンドポイント。ユーザーはここにリダイレクトされてログインします。",
   "TXT_CODE_SSO_AUTO_REDIRECT": "Auto Redirect to SSO Login",
