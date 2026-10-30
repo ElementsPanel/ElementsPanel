@@ -17,7 +17,7 @@ import {
 } from "../common/src/plugin_manifest";
 import { applyPluginOverrides } from "../common/src/plugin_overrides";
 // @ts-ignore Shared source layout is also consumed by the backend build tools.
-import { sourcePlugins } from "../../scripts/workspace-layout.cjs";
+import { sourcePlugins, developmentDirectory } from "../../scripts/workspace-layout.cjs";
 
 const PANEL_PLUGINS_MODULE_ID = "virtual:panel-plugins";
 const RESOLVED_PANEL_PLUGINS_MODULE_ID = `\0${PANEL_PLUGINS_MODULE_ID}`;
@@ -26,6 +26,10 @@ const PANEL_PLUGIN_BUILD_ENTRY_PREFIX = "panel-plugin-build-entry:";
 const RESOLVED_PANEL_PLUGIN_BUILD_ENTRY_PREFIX = `\0${PANEL_PLUGIN_BUILD_ENTRY_PREFIX}`;
 const PROJECT_DIRECTORY = fileURLToPath(new URL("../..", import.meta.url));
 const PANEL_PLUGINS_DIRECTORY = fileURLToPath(new URL("../../plugins", import.meta.url));
+const PANEL_PLUGIN_OVERRIDES_FILE = path.join(
+  developmentDirectory("panel", PROJECT_DIRECTORY),
+  "data/plugin-overrides.json"
+);
 // Resolve the installed package's exports from the frontend workspace. Vuetify
 // releases use both .mjs and .js entry points, so hard-coding an extension fails
 // after a compatible dependency update.
@@ -93,12 +97,7 @@ function discoverPanelPlugins(applyOverrides = false): DiscoveredPanelPlugin[] {
     onWarning: (message, error) => console.warn(message, error)
   });
   return (
-    applyOverrides
-      ? applyPluginOverrides(
-          discovered,
-          path.join(PROJECT_DIRECTORY, "panel/data/plugin-overrides.json")
-        )
-      : discovered
+    applyOverrides ? applyPluginOverrides(discovered, PANEL_PLUGIN_OVERRIDES_FILE) : discovered
   )
     .filter((plugin) => plugin.entry && (!applyOverrides || plugin.manifest.enabled !== false))
     .map((plugin) => ({
@@ -116,10 +115,7 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
   const sdkEntries = new Map<string, string>();
   const isPluginFile = (file: string) => {
     const target = path.resolve(file).toLowerCase();
-    return [
-      PANEL_PLUGINS_DIRECTORY,
-      path.join(PROJECT_DIRECTORY, "panel/data/plugin-overrides.json")
-    ].some((directory) => {
+    return [PANEL_PLUGINS_DIRECTORY, PANEL_PLUGIN_OVERRIDES_FILE].some((directory) => {
       const root = path.resolve(directory).toLowerCase();
       return target === root || target.startsWith(`${root}${path.sep}`);
     });
@@ -172,10 +168,7 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
       }
     },
     configureServer(server: any) {
-      server.watcher.add([
-        PANEL_PLUGINS_DIRECTORY,
-        path.join(PROJECT_DIRECTORY, "panel/data/plugin-overrides.json")
-      ]);
+      server.watcher.add([PANEL_PLUGINS_DIRECTORY, PANEL_PLUGIN_OVERRIDES_FILE]);
       const reload = (file: string) => {
         if (!isPluginFile(file)) return;
         const module = server.moduleGraph.getModuleById(RESOLVED_PANEL_PLUGINS_MODULE_ID);

@@ -7,7 +7,12 @@ const { pathToFileURL } = require("node:url");
 const { test } = require("node:test");
 const { createLoader, from } = require("./helpers.cjs");
 const { write } = require("./npm-fixtures.cjs");
-const { repository, sourcePlugins, coreDirectory } = require("../workspace-layout.cjs");
+const {
+  repository,
+  sourcePlugins,
+  coreDirectory,
+  developmentDirectory
+} = require("../workspace-layout.cjs");
 const { installPluginResolution } = require("../runtime/plugin-resolution.cjs");
 
 const { readPluginManifest } = createLoader()("core/common/src/plugin_manifest.ts");
@@ -60,7 +65,9 @@ test("development discovers declared sides independently of its runtime data dir
     elementspanel: { id: "sample", panel: { directory: "panel", folder: "stable-folder" } }
   });
   write(path.join(root, "plugins/sample/panel/plugin.json"), {});
-  write(path.join(root, "panel/data/plugins/ignored/plugin.json"), { id: "ignored" });
+  write(path.join(developmentDirectory("panel", root), "data/plugins/ignored/plugin.json"), {
+    id: "ignored"
+  });
   const previous = { ...process.env };
   delete process.env.EPANEL_PACKAGE_ROOT;
   delete process.env.EPANEL_PROJECT_ROOT;
@@ -91,7 +98,7 @@ test("development discovers declared sides independently of its runtime data dir
 });
 
 for (const side of ["panel", "daemon"]) {
-  test(`${side} source startup keeps existing runtime data separate from core code`, () => {
+  test(`${side} source startup stores runtime data under the repository data directory`, () => {
     const events = [];
     const process = {
       argv: ["node", "start-source.cjs", side],
@@ -105,7 +112,8 @@ for (const side of ["panel", "daemon"]) {
         if (id === "node:fs")
           return { mkdirSync: (directory) => events.push(["mkdir", directory]) };
         if (id === "node:path") return path;
-        if (id === "./workspace-layout.cjs") return { repository, coreDirectory };
+        if (id === "./workspace-layout.cjs")
+          return { repository, coreDirectory, developmentDirectory };
         if (id === "./runtime/plugin-resolution.cjs")
           return {
             installPluginResolution: (...args) => events.push(["resolution", ...args])
@@ -116,9 +124,9 @@ for (const side of ["panel", "daemon"]) {
     assert.equal(process.env.EPANEL_SOURCE_ROOT, host);
     assert.equal(process.env.EPANEL_PROJECT_ROOT, repository);
     assert.deepEqual(events, [
-      ["mkdir", path.join(repository, side)],
-      ["cwd", path.join(repository, side)],
-      ["resolution", host, path.join(repository, side)],
+      ["mkdir", path.join(repository, "data", side)],
+      ["cwd", path.join(repository, "data", side)],
+      ["resolution", host, path.join(repository, "data", side)],
       ["entry", path.join(host, "production/app.js")]
     ]);
   });
@@ -170,7 +178,7 @@ test("CJS and ESM sources outside core use host dependencies and retain plugin-p
     path.join(plugin, "panel/index.mjs"),
     'import cordis from "cordis"; import host from "host-only"; import local from "private-dep"; export default [cordis, host, local];'
   );
-  const hook = installPluginResolution(host, path.join(root, "panel"));
+  const hook = installPluginResolution(host, developmentDirectory("panel", root));
   t.after(() => hook.deregister());
   const expected = ["shared framework", "host dependency", "private dependency"];
   assert.deepEqual(require(path.join(plugin, "panel/index.cjs")), expected);

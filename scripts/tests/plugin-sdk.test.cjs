@@ -19,6 +19,7 @@ async function loadHostConfig() {
   const filename = path.join(root, "core/frontend/vite.config.ts");
   const mod = new Module(filename, module);
   const discoveryRoots = [];
+  const overrideFiles = [];
   const overrides = {
     "@vitejs/plugin-vue": () => ({}),
     "@vitejs/plugin-vue-jsx": () => ({}),
@@ -39,7 +40,12 @@ async function loadHostConfig() {
       },
       createFrontendPluginMetadata: (manifest) => ({ id: manifest.id })
     },
-    "../common/src/plugin_overrides": { applyPluginOverrides: (value) => value },
+    "../common/src/plugin_overrides": {
+      applyPluginOverrides: (value, filename) => {
+        overrideFiles.push(filename);
+        return value;
+      }
+    },
     "node:module": { createRequire: () => ({ resolve: (name) => `/virtual/${name}` }) }
   };
   mod.require = (id) => (Object.hasOwn(overrides, id) ? overrides[id] : Module.createRequire(filename)(id));
@@ -59,17 +65,18 @@ async function loadHostConfig() {
     ).outputText,
     filename
   );
-  return { config: mod.exports.default, pluginSdkModules, discoveryRoots };
+  return { config: mod.exports.default, pluginSdkModules, discoveryRoots, overrideFiles };
 }
 
 test("frontend discovery does not load panel plugins from runtime data directories", async () => {
-  const { config, discoveryRoots } = await loadHostConfig();
+  const { config, discoveryRoots, overrideFiles } = await loadHostConfig();
   const plugin = config.plugins.find((item) => item.name === "elements-panel-plugins");
   plugin.configResolved({ command: "serve" });
   const directories = discoveryRoots.flat();
   assert.ok(directories.length > 0);
   assert.ok(directories.every((directory) => !directory.includes("panel/data/plugins")));
   assert.ok(directories.every((directory) => !directory.includes("panel/market_plugins")));
+  assert.deepEqual(overrideFiles, [path.join(root, "data/panel/data/plugin-overrides.json")]);
 });
 
 test("host SDK maps all compiler externals before module scripts, with prefix-relative URLs", async () => {

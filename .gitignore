@@ -7,6 +7,7 @@ yarn-error.log*
 lerna-debug.log*
 core/panel/public/
 *.code-workspace
+# Development and runtime data, including /data/panel/ and /data/daemon/
 data/
 dist/
 out/

@@ -32,7 +32,7 @@ npx @elementspanel/init@latest my-panel --language zh --template full --panel-po
 
 核心源码位于 `core/panel/`、`core/daemon/`、`core/frontend/` 和 `core/common/`。内置插件按功能归档到 `plugins/<id>/`，每个插件只有一份根 `package.json`；`elementspanel.panel` 和 `elementspanel.daemon` 分别声明各端的目录、加载顺序与兼容性，端目录中的 `plugin.json` 只保留执行入口。单端插件只包含相应端的目录，双端插件共用包名与版本。
 
-源码开发命令仍从项目根目录执行，依赖安装、类型检查和构建命令会进入 `core/` 中的对应目录。开发启动器将代码位置与工作目录分开：配置、日志、上传文件和节点工具继续使用根目录下的 `panel/`、`daemon/` 运行目录，无需迁移已有数据。源码目录重组不改变已发布 npm 包的目录布局、命令或用户数据位置。第三方插件工作区仍在初始化后的项目 `external/*` 中创建。
+源码开发命令仍从项目根目录执行，依赖安装、类型检查和构建命令会进入 `core/` 中的对应目录。开发启动器将代码位置与工作目录分开：panel 使用项目根目录下的 `data/panel/`，daemon 使用 `data/daemon/`，配置、日志、上传文件和节点工具均存放在各自运行目录内。例如，面板配置位于 `data/panel/data/`，节点工具位于 `data/daemon/lib/`。整个 `data/` 目录由 Git 忽略。从旧开发目录迁移时，先停止服务，再将原先根目录下的 `panel/`、`daemon/` 整体移入 `data/`，并同步更新配置中指向旧目录的绝对路径。已发布 npm 包的目录布局、命令和用户数据位置保持不变。第三方插件工作区仍在初始化后的项目 `external/*` 中创建。
 
 初始化后的项目可以这样创建和构建第三方插件：
 

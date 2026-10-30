@@ -3,6 +3,7 @@ const path = require("node:path");
 
 const repository = path.resolve(__dirname, "..");
 const coreDirectory = (side, root = repository) => path.join(root, "core", side);
+const developmentDirectory = (side, root = repository) => path.join(root, "data", side);
 
 /** Source packages use the same per-side metadata as their published npm packages. */
 function sourcePlugins(side, root = repository) {
@@ -43,4 +44,4 @@ function sourcePlugins(side, root = repository) {
   return plugins.sort((a, b) => a.id.localeCompare(b.id));
 }
 
-module.exports = { repository, coreDirectory, sourcePlugins };
+module.exports = { repository, coreDirectory, developmentDirectory, sourcePlugins };
