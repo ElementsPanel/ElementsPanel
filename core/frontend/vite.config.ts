@@ -5,7 +5,6 @@ import { createRequire } from "node:module";
 import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
 import { visualizer } from "rollup-plugin-visualizer";
-import Components from "unplugin-vue-components/vite";
 // @ts-ignore Shared frontend module identities for the host and built-in plugins.
 import { pluginSdkModules } from "./plugin-sdk.config.mjs";
 // @ts-ignore Built-in plugin sources resolve browser dependencies from the frontend package.
@@ -425,7 +424,6 @@ export default defineConfig({
     frontendDependencyFallback(fileURLToPath(new URL(".", import.meta.url))),
     vue(),
     vueJsx(),
-    Components(),
     visualizer({ emitFile: true, filename: "stats.html" })
   ],
   resolve: {
@@ -455,5 +453,5 @@ export default defineConfig({
       )
     }
   },
-  base: "."
+  base: "./"
 });

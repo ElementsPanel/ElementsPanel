@@ -75,6 +75,11 @@ module.exports = {
     // One cordis instance, shared with every plugin bundle. See the module.
     cordisExternals,
     nodeExternals({
+      // Match the host's published dependencies instead of its node_modules layout.
+      modulesFromFile: {
+        fileName: path.join(__dirname, "package.json"),
+        include: ["dependencies"]
+      },
       allowlist: ["mcsmanager-common", isEsmPackage]
     })
   ],

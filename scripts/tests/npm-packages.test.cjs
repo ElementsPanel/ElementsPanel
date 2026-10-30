@@ -5,7 +5,7 @@ const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 const { pathToFileURL } = require("node:url");
 const { test } = require("node:test");
-const { createLoader } = require("./helpers.cjs");
+const { createLoader, from } = require("./helpers.cjs");
 const { sourcePlugins, coreDirectory } = require("../workspace-layout.cjs");
 const { readPluginManifest } = createLoader()("core/common/src/plugin_manifest.ts");
 const repository = path.resolve(__dirname, "../..");
@@ -81,6 +81,52 @@ function fixture(t) {
   write(path.join(sourceRoot, "daemon/lib/tmp_steamcmd.zip"), "private download");
   return { directory, sourceRoot, outputRoot: path.join(directory, "packages") };
 }
+
+test("backend bundles only externalize dependencies declared by the published runtime", async () => {
+  const { runtimeManifest } = await packaging;
+  const shared = Object.keys(require("../webpack-cordis-externals.cjs"));
+  for (const side of ["panel", "daemon"]) {
+    const host = coreDirectory(side);
+    const source = JSON.parse(fs.readFileSync(path.join(host, "package.json")));
+    const manifest = runtimeManifest(side, source);
+    const allowed = new Set([...Object.keys(manifest.dependencies), ...shared]);
+    const lock = JSON.parse(fs.readFileSync(path.join(host, "package-lock.json")));
+    const requests = [
+      "mcsmanager-common",
+      "axios/unsafe/helpers/buildURL.js",
+      ...Object.keys(lock.packages)
+        .filter((name) => /^node_modules\/(?:@[^/]+\/)?[^/]+$/.test(name))
+        .map((name) => name.slice("node_modules/".length))
+    ];
+    for (const filename of ["webpack.config.js", "webpack.plugins.config.js"]) {
+      const previous = process.cwd();
+      let config;
+      try {
+        process.chdir(host);
+        config = from(side)(path.join(host, filename));
+      } finally {
+        process.chdir(previous);
+      }
+      for (const request of requests) {
+        let external;
+        for (const rule of config.externals) {
+          external =
+            typeof rule === "function"
+              ? await new Promise((resolve, reject) =>
+                  rule({ context: host, request }, (error, result) =>
+                    error ? reject(error) : resolve(result)
+                  )
+                )
+              : rule[request];
+          if (external) break;
+        }
+        if (!external) continue;
+        const name = request.split("/").slice(0, request.startsWith("@") ? 2 : 1).join("/");
+        assert.ok(allowed.has(name), `${side}/${filename} leaves undeclared import ${request}`);
+      }
+    }
+  }
+});
 
 test("workspace packaging includes runnable entry points and excludes user data and local dependencies", async (t) => {
   const f = fixture(t);

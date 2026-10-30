@@ -33,6 +33,12 @@ module.exports = {
     // One cordis instance, shared with every plugin bundle. See the module.
     cordisExternals,
     nodeExternals({
+      // Only published runtime dependencies may remain external. Hoisted
+      // transitive dependencies are not available from standalone plugin packages.
+      modulesFromFile: {
+        fileName: path.join(__dirname, "package.json"),
+        include: ["dependencies"]
+      },
       allowlist: ["mcsmanager-common"]
     })
   ],
