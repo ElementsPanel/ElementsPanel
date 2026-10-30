@@ -52,6 +52,7 @@ async function backendFixture(get) {
   const pass = () => async (_ctx, next) => next();
   const plugin = load("plugins/market/panel/src/backend/index.ts", {
     axios,
+    "mcsmanager-common": {},
     "./plugin_icon": {
       MAX_PLUGIN_ICON_BYTES: 1024 * 1024,
       encodePluginIcon: () => "data:image/png;base64,review"

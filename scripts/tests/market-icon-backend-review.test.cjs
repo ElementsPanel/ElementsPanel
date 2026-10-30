@@ -32,6 +32,7 @@ async function panelFixture(t) {
   });
   const plugin = panelLoad("plugins/market/panel/src/backend/index.ts", {
     axios: { get: async (...args) => networkCalls.push(args) },
+    "mcsmanager-common": common,
     "../i18n": { localeMessages: {} },
     "./service/plugin_market": service,
     "./service/market_settings": {
