@@ -49,7 +49,7 @@ async function panelFixture(t) {
     koa: {
       router: () =>
         Object.fromEntries(
-          ["get", "post", "put", "delete"].map(method => [
+          ["get", "post", "put", "delete"].map((method) => [
             method,
             (url, ...handlers) => routes.set(`${method} ${url}`, handlers)
           ])
@@ -74,14 +74,16 @@ function daemonFixture(t) {
   const replies = [];
   const installs = [];
   const uninstalls = [];
+  const overrides = [];
   const validId = /^[a-z][a-z0-9_-]{1,63}$/;
   const common = {
-    installNpmPlugin: async options => {
+    writePluginOverride: (id, patch) => overrides.push({ id, patch }),
+    installNpmPlugin: async (options) => {
       if (!options.name) throw new Error("Invalid npm plugin package.");
       installs.push(options);
       return { pluginId: options.pluginId, version: options.version, sides: ["daemon"] };
     },
-    uninstallNpmPlugin: async pluginId => {
+    uninstallNpmPlugin: async (pluginId) => {
       if (!validId.test(pluginId)) throw new Error(`Invalid plugin id: ${pluginId}`);
       uninstalls.push(pluginId);
       return { pluginId };
@@ -93,9 +95,10 @@ function daemonFixture(t) {
     "./settings": { SettingsFormService: class {} }
   });
   plugin.apply({
-    i18n: { define() {}, $t: key => key },
+    i18n: { define() {}, $t: (key) => key },
     plugin() {},
     plugins: {
+      runExclusive: (operation) => operation(),
       install: (options) => common.installNpmPlugin({ ...options, side: "daemon" }),
       remove: (id) => common.uninstallNpmPlugin(id)
     },
@@ -106,7 +109,7 @@ function daemonFixture(t) {
       responseError: (_ctx, error) => replies.push({ error })
     }
   });
-  return { directory, handlers, replies, installs, uninstalls };
+  return { directory, handlers, replies, installs, uninstalls, overrides };
 }
 
 test("the panel icon endpoint answers the default icon without calling the market", async (t) => {
@@ -119,11 +122,14 @@ test("the panel icon endpoint answers the default icon without calling the marke
 
 test("the daemon installs a plugin through npm on its own installation", async (t) => {
   const fixture = daemonFixture(t);
-  await fixture.handlers.get("plugin/npm/install")({}, {
-    name: "epanel-plugin-sample",
-    pluginId: "sample",
-    version: "2.0.0"
-  });
+  await fixture.handlers.get("plugin/npm/install")(
+    {},
+    {
+      name: "epanel-plugin-sample",
+      pluginId: "sample",
+      version: "2.0.0"
+    }
+  );
   assert.equal(fixture.replies.pop().error, undefined);
   assert.deepEqual(fixture.installs, [
     {
@@ -145,6 +151,14 @@ test("the daemon removes a plugin npm dependency by plugin id", async (t) => {
   await fixture.handlers.get("plugin/npm/uninstall")({}, { pluginId: "sample" });
   assert.deepEqual(fixture.replies.pop().data, { removed: true, pluginId: "sample" });
   assert.deepEqual(fixture.uninstalls, ["sample"]);
+  assert.deepEqual(fixture.overrides, []);
+
+  await fixture.handlers.get("plugin/npm/uninstall")(
+    {},
+    { pluginId: "sample", removeConfig: true }
+  );
+  assert.equal(fixture.replies.pop().error, undefined);
+  assert.deepEqual(fixture.overrides, [{ id: "sample", patch: { config: {} } }]);
 
   await fixture.handlers.get("plugin/npm/uninstall")({}, { pluginId: "" });
   assert.match(fixture.replies.pop().error.message, /Invalid plugin id/);

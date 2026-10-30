@@ -1,8 +1,15 @@
 import { createHash, randomBytes } from "crypto";
 import path from "path";
+import { createRequire } from "module";
 import axios from "axios";
 import fs from "fs-extra";
-import { listNpmPlugins, isEssentialNpmPlugin, type NpmPluginRecord } from "mcsmanager-common";
+import {
+  listNpmPlugins,
+  isEssentialNpmPlugin,
+  npmPluginRoots,
+  validatePluginCompatibility,
+  type NpmPluginRecord
+} from "mcsmanager-common";
 
 export type MarketErrorReason =
   | "NOT_FOUND"
@@ -39,6 +46,9 @@ export interface MarketInstallInfo {
 }
 
 export interface InstalledMarketPlugin extends MarketInstallInfo {
+  state?: string;
+  panelVersion?: string;
+  daemonVersions: Record<string, string>;
   sides: PluginSide[];
   directories: string[];
   daemonIds: string[];
@@ -148,6 +158,8 @@ export async function forgetRemoteInstall(installation: RemoteMarketInstall) {
 
 function localRecord(record: NpmPluginRecord): InstalledMarketPlugin {
   return {
+    panelVersion: record.sides.includes("panel") ? record.version : undefined,
+    daemonVersions: {},
     pluginId: record.pluginId,
     name: record.name,
     version: record.version,
@@ -185,6 +197,7 @@ export function listInstalled(): InstalledMarketPlugin[] {
         let installed = found.get(info.pluginId);
         if (!installed) {
           installed = {
+            daemonVersions: {},
             ...info,
             sides: ["daemon"],
             directories: [],
@@ -196,6 +209,7 @@ export function listInstalled(): InstalledMarketPlugin[] {
         }
         if (!installed.sides.includes("daemon")) installed.sides.push("daemon");
         if (!installed.daemonIds.includes(info.daemonId)) installed.daemonIds.push(info.daemonId);
+        installed.daemonVersions[info.daemonId] = info.version;
       }
     }
   }
@@ -208,6 +222,66 @@ function sidesOf(value: unknown): PluginSide[] {
   return [
     ...new Set(value.filter((item): item is PluginSide => item === "panel" || item === "daemon"))
   ];
+}
+
+/** Read package versions without executing dependency code or using require's cache. */
+export function panelDependencyVersions(detail: {
+  name: string;
+  versions?: Array<{
+    dependencies?: Record<string, string>;
+    peerDependencies?: Record<string, string>;
+  }>;
+}): Record<string, string> {
+  const result: Record<string, string> = Object.create(null);
+  result.node = process.versions.node;
+  const names = new Set<string>();
+  for (const version of detail.versions ?? []) {
+    for (const name of [
+      ...Object.keys(version.dependencies ?? {}),
+      ...Object.keys(version.peerDependencies ?? {})
+    ])
+      names.add(name);
+  }
+  if (!names.size) return result;
+  const roots = npmPluginRoots();
+  const plugin = listNpmPlugins(undefined, { skipInvalid: true }).find(
+    (item) => item.name === detail.name
+  );
+  const searchRoots = [
+    ...new Set(
+      [plugin?.packageRoot, roots.projectRoot, roots.packageRoot].filter((root): root is string =>
+        Boolean(root)
+      )
+    )
+  ];
+  for (const root of searchRoots) {
+    try {
+      const host = fs.readJsonSync(path.join(root, "package.json"));
+      if (typeof host.name === "string" && typeof host.version === "string")
+        result[host.name] = host.version;
+    } catch {
+      /* A dependency may be moving during npm work. */
+    }
+  }
+  for (const name of names) {
+    if (!/^(?:@[a-z0-9][a-z0-9_.-]*\/)?[a-z0-9][a-z0-9_.-]*$/.test(name)) continue;
+    result[name] ||= "";
+    for (const root of searchRoots) {
+      const requireFromRoot = createRequire(path.join(root, "package.json"));
+      for (const directory of requireFromRoot.resolve.paths(name) ?? []) {
+        try {
+          const metadata = fs.readJsonSync(path.join(directory, name, "package.json"));
+          if (typeof metadata.version !== "string") continue;
+          result[name] = metadata.version;
+          break;
+        } catch {
+          /* Not installed at this resolution path. */
+        }
+      }
+      if (result[name]) break;
+    }
+  }
+  return result;
 }
 
 /**
@@ -230,7 +304,15 @@ export async function fetchMarketPluginDetail(
       ? detail.versions.find((item: { version?: unknown }) => item?.version === version)
       : detail.selectedVersion) ?? detail.latestVersion;
   if (!selected || typeof selected.version !== "string") throw new PluginMarketError("NOT_FOUND");
+  if (version && selected.version !== version) throw new PluginMarketError("NOT_FOUND");
   if (selected.status && selected.status !== "approved") throw new PluginMarketError("NOT_FOUND");
+  for (const contract of Object.values(selected.compatibility ?? {})) {
+    try {
+      validatePluginCompatibility(contract);
+    } catch {
+      throw new PluginMarketError("INCOMPATIBLE");
+    }
+  }
   const name = typeof detail.name === "string" ? detail.name : "";
   if (!name) throw new PluginMarketError("BAD_PATH");
   return {

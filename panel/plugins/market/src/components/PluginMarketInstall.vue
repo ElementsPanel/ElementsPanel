@@ -1,9 +1,8 @@
 <script setup lang="ts">
+import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { ctx } from "@/plugin/context";
 import { t } from "@/lang/i18n";
 import { getValidatorErrorMsg } from "@/tools/validator";
-import { message } from "@/tools/vuetifyToast";
-import { ctx } from "@/plugin/context";
-import { computed, onScopeDispose, ref, watch } from "vue";
 import {
   VAlert,
   VBtn,
@@ -12,374 +11,420 @@ import {
   VCardText,
   VCheckbox,
   VDialog,
-  VSpacer
+  VProgressLinear,
+  VSelect,
+  VSpacer,
+  VTable
 } from "vuetify/components";
 import {
-  installMarketPlugin,
+  pluginMarketDetail,
   pluginMarketInstalled,
-  pluginMarketNodes,
-  pluginMarketPackage,
-  uninstallMarketPlugin,
-  type MarketNode,
+  type InstalledPlugin,
   type MarketPlugin,
+  type MarketPluginDetail,
   type MarketPluginVersion
 } from "../api";
-import { isNewerVersion } from "../version";
+import {
+  applyingChanges,
+  bulkMode,
+  discardMarketChange,
+  installedChange,
+  queuedChanges
+} from "../operations";
+import PluginMarketOperations from "./PluginMarketOperations.vue";
+import PluginMarketSideBadge from "./PluginMarketSideBadge.vue";
 
 const props = defineProps<{
   plugin: MarketPlugin;
   version?: MarketPluginVersion;
-  /**
-   * Only offer the install action. A release row installs that one release and has
-   * nothing to say about uninstalling, which belongs to the plugin as a whole.
-   */
   installOnly?: boolean;
   disabled?: boolean;
+  embedded?: boolean;
 }>();
 const emit = defineEmits<{
   installed: [pluginId: string, version: string | undefined];
   busy: [value: boolean];
 }>();
-const pendingId = ref("");
-const canInstall = computed(() => Boolean(props.version && !props.plugin.installedVersion));
-const canUpdate = computed(() =>
-  Boolean(
-    !props.installOnly &&
-      props.version &&
-      props.plugin.installedVersion &&
-      isNewerVersion(props.version.version, props.plugin.installedVersion)
-  )
-);
-const incompatible = computed(() =>
-  Object.values(props.version?.compatibility || {}).some(
-    (contract) =>
-      contract && (contract.api !== 1 || (contract.sdk !== undefined && contract.sdk !== 1))
-  )
-);
-let disposed = false;
+const shown = ref(false);
+const loading = ref(false);
+const busy = ref(false);
+const error = ref("");
+const detail = ref<MarketPluginDetail>();
+const installations = ref<InstalledPlugin[]>([]);
+const installedLoaded = ref(false);
+const selectedVersion = ref("");
+const configTarget = ref("panel");
+let requestId = 0;
+let installedRequestId = 0;
 
-const uninstallTarget = ref<MarketPlugin | null>(null);
-const uninstallShown = computed({
-  get: () => uninstallTarget.value !== null,
-  set: (value: boolean) => {
-    if (!value) uninstallTarget.value = null;
-  }
+const installed = computed(() =>
+  installations.value.find((item) => item.pluginId === props.plugin.id)
+);
+const plugin = computed<MarketPlugin>(() => ({
+  ...props.plugin,
+  ...detail.value,
+  installedVersion: installedLoaded.value
+    ? installed.value?.version
+    : props.plugin.installedVersion,
+  installedState: installedLoaded.value ? installed.value?.state : props.plugin.installedState,
+  installedRemovable: installedLoaded.value
+    ? installed.value?.removable
+    : props.plugin.installedRemovable
+}));
+const queued = computed(() =>
+  queuedChanges.value.find((item) => item.plugin.id === props.plugin.id)
+);
+const actionText = computed(() =>
+  queued.value
+    ? queued.value.kind === "uninstall"
+      ? "TXT_CODE_PLUGIN_MARKET_WAIT_REMOVE"
+      : plugin.value.installedVersion
+      ? "TXT_CODE_PLUGIN_MARKET_WAIT_UPDATE"
+      : "TXT_CODE_PLUGIN_MARKET_WAIT_INSTALL"
+    : plugin.value.installedVersion
+    ? "TXT_CODE_PLUGIN_MARKET_MODIFY"
+    : "TXT_CODE_PLUGIN_MARKET_ADD"
+);
+const versions = computed(() => detail.value?.versions ?? (props.version ? [props.version] : []));
+const version = computed(() =>
+  versions.value.find((item) => item.version === selectedVersion.value)
+);
+const versionItems = computed(() => {
+  const items = versions.value.map((item) => ({
+    title:
+      item.version +
+      (item.version === plugin.value.installedVersion
+        ? ` (${t("TXT_CODE_PLUGIN_MARKET_CURRENT")})`
+        : ""),
+    value: item.version
+  }));
+  const current = plugin.value.installedVersion;
+  if (current && !items.some((item) => item.value === current))
+    items.unshift({ title: `${current} (${t("TXT_CODE_PLUGIN_MARKET_CURRENT")})`, value: current });
+  return items;
+});
+const configTargets = computed(() => {
+  const record = installed.value;
+  if (!record) return [];
+  return [
+    ...(record.panelVersion || !record.daemonIds.length
+      ? [{ title: t("TXT_CODE_PLUGIN_MARKET_SIDE_PANEL"), value: "panel" }]
+      : []),
+    ...record.daemonIds.map((id) => ({
+      title: `${t("TXT_CODE_PLUGIN_MARKET_SIDE_DAEMON")} · ${id}`,
+      value: id
+    }))
+  ];
+});
+const majorWarning = computed(() => {
+  const current = plugin.value.installedVersion?.split(/[.+-]/);
+  const target = version.value?.version.split(/[.+-]/);
+  return (
+    current &&
+    target &&
+    (current[0] !== target[0] || (current[0] === "0" && current[1] !== target[1]))
+  );
+});
+const requirements = computed(() => {
+  const selected = version.value;
+  if (!selected) return [];
+  return [
+    ...Object.entries(selected.dependencies ?? {}).map(([name, range]) => ({
+      name,
+      range,
+      kind: "npm"
+    })),
+    ...Object.entries(selected.peerDependencies ?? {}).map(([name, range]) => ({
+      name,
+      range,
+      kind: selected.peerDependenciesMeta?.[name]?.optional
+        ? t("TXT_CODE_PLUGIN_MARKET_OPTIONAL")
+        : "peer"
+    })),
+    ...Object.entries(selected.engines ?? {}).map(([name, range]) => ({
+      name,
+      range,
+      kind: t("TXT_CODE_PLUGIN_MARKET_RUNTIME")
+    })),
+    ...Object.entries(selected.compatibility ?? {}).flatMap(([side, contract]) =>
+      contract
+        ? [
+            {
+              name: `${side} API`,
+              range: String(contract.api),
+              kind: t("TXT_CODE_PLUGIN_MARKET_HOST_CURRENT", { version: 1 })
+            },
+            ...(contract.sdk === undefined
+              ? []
+              : [
+                  {
+                    name: `${side} SDK`,
+                    range: String(contract.sdk),
+                    kind: t("TXT_CODE_PLUGIN_MARKET_HOST_CURRENT", { version: 1 })
+                  }
+                ])
+          ]
+        : []
+    ),
+    ...(selected.frontendDependencies ?? []).map((name) => ({
+      name,
+      range: "—",
+      kind: installations.value.some(
+        (item) => item.pluginId === name && item.panelVersion && item.state === "active"
+      )
+        ? t("TXT_CODE_PLUGIN_MARKET_INSTALLED")
+        : t("TXT_CODE_PLUGIN_MARKET_FRONTEND_DEPENDENCY")
+    }))
+  ];
 });
 
-// The node picker: which daemons a package's daemon half goes to. It is only
-// asked for when there is a daemon half and a node to send it to, and every node
-// is selected to begin with — the package's own author published both halves
-// together, so both halves are the default.
-const nodes = ref<MarketNode[]>([]);
-const nodeSelection = ref<string[]>([]);
-const nodeRequired = ref(false);
-const nodeMode = ref<"install" | "uninstall">("install");
-const nodeTarget = ref<MarketPlugin | null>(null);
-const nodeShown = computed({
-  get: () => nodeTarget.value !== null,
-  set: (value: boolean) => {
-    if (!value) nodeTarget.value = null;
+async function readInstalled() {
+  const request = ++installedRequestId;
+  const response = await pluginMarketInstalled().execute();
+  if (request !== installedRequestId || !shown.value) return;
+  installations.value = response.value ?? [];
+  installedLoaded.value = true;
+  if (!configTargets.value.some((item) => item.value === configTarget.value))
+    configTarget.value = configTargets.value[0]?.value ?? "panel";
+}
+
+function dependencyVersion(name: string) {
+  if (/^(panel|daemon) (API|SDK)$/.test(name)) return "1";
+  return (
+    detail.value?.dependencyVersions?.[name] ||
+    installations.value.find((item) => item.pluginId === name)?.panelVersion ||
+    "—"
+  );
+}
+
+async function open() {
+  if (props.disabled || applyingChanges.value) return;
+  shown.value = true;
+  loading.value = true;
+  error.value = "";
+  installedLoaded.value = false;
+  installations.value = [];
+  detail.value = undefined;
+  selectedVersion.value =
+    queued.value?.version ||
+    (props.installOnly ? props.version?.version : props.plugin.installedVersion) ||
+    props.version?.version ||
+    props.plugin.latestVersion?.version ||
+    "";
+  const request = ++requestId;
+  const results = await Promise.allSettled([
+    pluginMarketDetail().execute({ params: { pluginId: props.plugin.id } }),
+    readInstalled()
+  ]);
+  if (request !== requestId || !shown.value) return;
+  const result = results[0];
+  if (result.status === "fulfilled" && result.value.value) {
+    detail.value = result.value.value;
+    if (!selectedVersion.value) selectedVersion.value = detail.value.selectedVersion.version;
+  } else {
+    error.value =
+      result.status === "rejected"
+        ? getValidatorErrorMsg(result.reason)
+        : t("TXT_CODE_PLUGIN_MARKET_NOT_FOUND");
   }
-});
-
-function nodeLabel(node: MarketNode) {
-  const address = node.port ? `${node.ip}:${node.port}` : node.ip;
-  const offline = node.available ? "" : ` · ${t("TXT_CODE_PLUGIN_MARKET_NODE_OFFLINE")}`;
-  return `${node.remarks || node.ip}（${address}）${offline}`;
+  if (results[1].status === "rejected") error.value ||= getValidatorErrorMsg(results[1].reason);
+  loading.value = false;
 }
 
-function nodeNames(daemonIds: readonly string[]) {
-  return daemonIds.map((daemonId) => {
-    const node = nodes.value.find((item) => item.daemonId === daemonId);
-    return node ? node.remarks || node.ip : daemonId;
-  });
+function installedUpdated(pluginId: string, currentVersion: string | undefined) {
+  installedLoaded.value = false;
+  if (detail.value) detail.value.installedVersion = currentVersion;
+  emit("installed", pluginId, currentVersion);
+  shown.value = false;
 }
 
-async function fetchNodes() {
-  const { execute } = pluginMarketNodes();
-  return (await execute()).value ?? [];
-}
-
-async function packageSides(plugin: MarketPlugin) {
-  const { execute } = pluginMarketPackage();
-  const response = await execute({
-    params: { pluginId: plugin.id, version: plugin.latestVersion?.version }
-  });
-  return response.value?.sides ?? [];
-}
-
-/**
- * Offers the node picker, or goes straight ahead when the question has no
- * answers: a package with no daemon half, or no daemon to send one to.
- */
-function openNodePicker(
-  plugin: MarketPlugin,
-  mode: "install" | "uninstall",
-  list: MarketNode[],
-  required: boolean
-) {
-  nodes.value = list;
-  nodeSelection.value = list.map((node) => node.daemonId);
-  nodeMode.value = mode;
-  nodeRequired.value = required;
-  nodeTarget.value = plugin;
-}
-
-function confirmNodes() {
-  const plugin = nodeTarget.value;
-  if (!plugin || disposed || pendingId.value) return;
-  const daemonIds = [...nodeSelection.value];
-  if (nodeRequired.value && !daemonIds.length) return;
-  pendingId.value = plugin.id;
-  nodeTarget.value = null;
-  if (nodeMode.value === "install") void runInstall(plugin, daemonIds);
-  else void runUninstall(plugin, daemonIds);
-}
-
-/**
- * Installing: the panel half always lands here, and the daemon half goes to
- * whichever nodes the user picked. A package with no daemon half needs no
- * answer, and neither does one with no node to send it to.
- */
-async function install() {
-  if (disposed || props.disabled || incompatible.value || busy.value || !props.version) return;
-  if (!canInstall.value && !canUpdate.value) return;
-  const plugin = { ...props.plugin, latestVersion: props.version };
-  pendingId.value = plugin.id;
-  try {
-    const sides = await packageSides(plugin);
-    if (disposed) return;
-    const needsNode = sides.includes("daemon") && !sides.includes("panel");
-    const list = sides.includes("daemon") ? await fetchNodes() : [];
-    if (disposed) return;
-    if (list.length) return openNodePicker(plugin, "install", list, needsNode);
-    if (needsNode) return message.error(t("TXT_CODE_2de92a5d"));
-    await runInstall(plugin, []);
-  } catch (error) {
-    if (!disposed) message.error(getValidatorErrorMsg(error));
-  } finally {
-    pendingId.value = "";
-  }
-}
-
-async function runInstall(plugin: MarketPlugin, daemonIds: string[]) {
-  pendingId.value = plugin.id;
-  try {
-    const { execute } = installMarketPlugin();
-    const response = await execute({
-      // Nodes are processed independently; allow each selected npm operation its full window.
-      timeout: (daemonIds.length + 1) * 11 * 60 * 1000,
-      data: {
-        pluginId: plugin.id,
-        name: plugin.name,
-        version: plugin.latestVersion?.version,
-        daemonIds
-      }
-    });
-    if (disposed) return;
-    if (!response.value) throw new Error(t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE"));
-    // npm has already committed the operation; asset refresh failures are
-    // reported by the frontend loader and must not turn it into an npm error.
-    await ctx.plugins
-      .refresh()
-      .catch((error) => console.error("Failed to refresh plugins:", error));
-    emit("installed", plugin.id, response.value.installedVersion);
-    const failed = response.value.failedNodes;
-    if (failed.length) {
-      message.error(
-        t("TXT_CODE_PLUGIN_MARKET_NODE_FAILED", { nodes: nodeNames(failed).join("、") })
-      );
-    } else {
-      message.success(t("TXT_CODE_PLUGIN_MARKET_INSTALLED"));
-    }
-    if (response.value.restartRequired) {
-      message.warning(t("TXT_CODE_PLUGIN_MARKET_RESTART_REQUIRED"));
-    }
-  } catch (error) {
-    if (!disposed) message.error(getValidatorErrorMsg(error));
-  } finally {
-    pendingId.value = "";
-  }
-}
-
-async function requestUninstall(plugin = uninstallTarget.value) {
+function configure() {
+  const router = ctx.get("vue")?.router;
+  if (!router) return;
+  const node = configTarget.value !== "panel";
+  const query = {
+    scope: node ? "node" : "panel",
+    plugin: props.plugin.id,
+    ...(node ? { daemonId: configTarget.value } : {})
+  };
   if (
-    !plugin ||
-    disposed ||
-    pendingId.value ||
-    nodeTarget.value ||
-    (props.disabled && !uninstallTarget.value)
-  )
+    props.embedded &&
+    ctx.get("desktop")?.open({
+      id: `plugin-config-${props.plugin.id}-${configTarget.value}`,
+      view: "plugin-config",
+      props: {
+        scope: query.scope,
+        daemonId: node ? configTarget.value : undefined,
+        pluginId: props.plugin.id
+      }
+    })
+  ) {
+    shown.value = false;
     return;
-  pendingId.value = plugin.id;
-  uninstallTarget.value = null;
-  try {
-    // Uninstall must still work when the marketplace is offline or a release
-    // has been removed. Read the persisted installation, including node retries.
-    const { execute } = pluginMarketInstalled();
-    const installed = (await execute()).value?.find((item) => item.pluginId === plugin.id);
-    if (disposed) return;
-    if (installed?.daemonIds.length) {
-      const availableNodes = await fetchNodes();
-      if (disposed) return;
-      const list = installed.daemonIds.map(
-        (daemonId) =>
-          availableNodes.find((node) => node.daemonId === daemonId) ?? {
-            daemonId,
-            remarks: "",
-            ip: daemonId,
-            port: 0,
-            available: false
-          }
-      );
-      return openNodePicker(plugin, "uninstall", list, !installed.sides.includes("panel"));
-    }
-    await runUninstall(plugin, []);
-  } catch (error) {
-    if (!disposed) message.error(getValidatorErrorMsg(error));
-  } finally {
-    pendingId.value = "";
   }
+  shown.value = false;
+  void router.push({ path: "/plugins/config", query });
 }
 
-async function runUninstall(plugin: MarketPlugin, daemonIds: string[]) {
-  pendingId.value = plugin.id;
-  try {
-    const { execute } = uninstallMarketPlugin();
-    const response = await execute({
-      timeout: (daemonIds.length + 1) * 11 * 60 * 1000,
-      params: { pluginId: plugin.id, daemonIds: daemonIds.join(",") }
-    });
-    if (disposed) return;
-    if (!response.value) throw new Error(t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE"));
-    // npm has already committed the operation; asset refresh failures are
-    // reported by the frontend loader and must not turn it into an npm error.
-    await ctx.plugins
-      .refresh()
-      .catch((error) => console.error("Failed to refresh plugins:", error));
-    emit("installed", plugin.id, response.value.installedVersion);
-    const failed = response.value.failedNodes;
-    if (failed.length) {
-      message.error(
-        t("TXT_CODE_PLUGIN_MARKET_NODE_FAILED", { nodes: nodeNames(failed).join("、") })
-      );
-    } else if (response.value.removed) {
-      message.success(t("TXT_CODE_PLUGIN_MARKET_UNINSTALLED"));
-    } else {
-      message.warning(t("TXT_CODE_PLUGIN_MARKET_UNINSTALL_REMAINING"));
-    }
-    if (response.value.restartRequired) {
-      message.warning(t("TXT_CODE_PLUGIN_MARKET_RESTART_REQUIRED"));
-    }
-  } catch (error) {
-    if (!disposed) message.error(getValidatorErrorMsg(error));
-  } finally {
-    pendingId.value = "";
+watch(shown, (value) => {
+  if (!value) {
+    requestId++;
+    installedRequestId++;
+    installedLoaded.value = false;
   }
-}
-
-const busy = computed(() => Boolean(pendingId.value || nodeTarget.value || uninstallTarget.value));
-watch(busy, (value) => emit("busy", value), { flush: "sync" });
-onScopeDispose(() => {
-  disposed = true;
-  if (busy.value) emit("busy", false);
+});
+watch(
+  () => props.plugin.installedVersion,
+  () => {
+    if (!shown.value) installedLoaded.value = false;
+  }
+);
+watch(installedChange, (change) => {
+  if (shown.value && change?.pluginId === props.plugin.id)
+    void readInstalled().catch((cause) => (error.value = getValidatorErrorMsg(cause)));
+});
+onBeforeUnmount(() => {
+  requestId++;
+  installedRequestId++;
 });
 </script>
 
 <template>
-  <VAlert
-    v-if="incompatible"
-    type="warning"
-    variant="tonal"
-    :text="t('TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE')"
-  />
-  <div>
-    <div class="d-flex flex-wrap ga-2">
-      <VBtn
-        v-if="canInstall"
-        color="primary"
-        prepend-icon="mdi-download"
-        :loading="Boolean(pendingId)"
-        :disabled="busy || disabled || incompatible"
-        @click="install"
-      >
-        {{ t("TXT_CODE_PLUGIN_MARKET_INSTALL") }}
-      </VBtn>
-      <VBtn
-        v-if="plugin.installedVersion && !installOnly && plugin.installedRemovable !== false"
-        color="error"
-        variant="text"
-        :disabled="busy || disabled"
-        @click="uninstallTarget = { ...plugin }"
-      >
-        {{ t("TXT_CODE_PLUGIN_MARKET_UNINSTALL") }}
-      </VBtn>
-      <VBtn
-        v-if="canUpdate"
-        color="primary"
-        prepend-icon="mdi-update"
-        :loading="Boolean(pendingId)"
-        :disabled="busy || disabled || incompatible"
-        @click="install"
-      >
-        {{ t("TXT_CODE_40ca4f2") }}
-      </VBtn>
-    </div>
-    <VDialog v-model="uninstallShown" max-width="420">
-      <VCard :title="t('TXT_CODE_PLUGIN_MARKET_UNINSTALL')">
-        <VCardText>
-          {{
-            t("TXT_CODE_PLUGIN_MARKET_CONFIRM_UNINSTALL", {
-              name: uninstallTarget?.displayName ?? ""
-            })
-          }}
-        </VCardText>
-        <VCardActions>
-          <VSpacer />
-          <VBtn variant="text" @click="uninstallTarget = null">
-            {{ t("TXT_CODE_PLUGIN_MARKET_CANCEL") }}
-          </VBtn>
-          <VBtn color="error" @click="requestUninstall()">
-            {{ t("TXT_CODE_PLUGIN_MARKET_UNINSTALL") }}
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
-
-    <VDialog v-model="nodeShown" max-width="480">
-      <VCard :title="t('TXT_CODE_PLUGIN_MARKET_SELECT_NODES')">
-        <VCardText>
-          <div class="mb-2">
-            {{
-              nodeMode === "install"
-                ? t("TXT_CODE_PLUGIN_MARKET_SELECT_NODES_INSTALL")
-                : t("TXT_CODE_PLUGIN_MARKET_SELECT_NODES_UNINSTALL")
-            }}
+  <VBtn
+    :color="
+      queued
+        ? queued.kind === 'uninstall'
+          ? 'error'
+          : 'warning'
+        : plugin.installedVersion
+        ? 'success'
+        : 'primary'
+    "
+    :prepend-icon="plugin.installedVersion ? 'mdi-pencil-outline' : 'mdi-plus'"
+    :disabled="disabled || applyingChanges"
+    @click.stop.prevent="open"
+    @keydown.stop
+    >{{ t(actionText) }}</VBtn
+  >
+  <VDialog v-model="shown" max-width="780" :persistent="busy || applyingChanges" scrollable>
+    <VCard :title="t('TXT_CODE_PLUGIN_MARKET_MANAGE', { name: plugin.displayName })">
+      <VProgressLinear v-if="loading" indeterminate />
+      <VCardText>
+        <div class="text-body-2 text-medium-emphasis mb-4">{{ plugin.name }}</div>
+        <VAlert v-if="error" type="error" variant="tonal" :text="error" class="mb-4" />
+        <VAlert
+          v-if="plugin.installedVersion && plugin.installedRemovable === false"
+          type="info"
+          variant="tonal"
+          :text="t('TXT_CODE_PLUGIN_MARKET_PROTECTED')"
+          class="mb-4"
+        />
+        <div v-if="plugin.installedVersion" class="mb-4">
+          {{ t("TXT_CODE_PLUGIN_MARKET_INSTALLED_VERSION", { version: plugin.installedVersion }) }}
+        </div>
+        <VSelect
+          v-model="selectedVersion"
+          :items="versionItems"
+          :label="t('TXT_CODE_PLUGIN_MARKET_TARGET_VERSION')"
+          :disabled="loading || busy || applyingChanges"
+          hide-details
+          class="mb-4"
+        />
+        <PluginMarketSideBadge :sides="version?.sides ?? plugin.sides" />
+        <VAlert
+          v-if="version?.deprecated"
+          type="warning"
+          variant="tonal"
+          :text="t('TXT_CODE_PLUGIN_MARKET_DEPRECATED', { reason: version.deprecated })"
+          class="my-4"
+        />
+        <VAlert
+          v-if="majorWarning"
+          type="warning"
+          variant="tonal"
+          :text="t('TXT_CODE_PLUGIN_MARKET_MAJOR_WARNING')"
+          class="my-4"
+        />
+        <VTable v-if="requirements.length" density="compact" class="my-4">
+          <thead>
+            <tr>
+              <th>{{ t("TXT_CODE_PLUGIN_MARKET_DEPENDENCY") }}</th>
+              <th>{{ t("TXT_CODE_PLUGIN_MARKET_VERSION_RANGE") }}</th>
+              <th>{{ t("TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT") }}</th>
+              <th>{{ t("TXT_CODE_PLUGIN_MARKET_DEPENDENCY_TYPE") }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, index) in requirements" :key="index">
+              <td>{{ item.name }}</td>
+              <td>{{ item.range }}</td>
+              <td>
+                {{ dependencyVersion(item.name) }}
+              </td>
+              <td>{{ item.kind }}</td>
+            </tr>
+          </tbody>
+        </VTable>
+        <p class="text-caption text-medium-emphasis my-3">
+          {{ t("TXT_CODE_PLUGIN_MARKET_NPM_DEPENDENCIES") }}
+        </p>
+        <VSelect
+          v-if="configTargets.length > 1"
+          v-model="configTarget"
+          :items="configTargets"
+          :label="t('TXT_CODE_PLUGIN_MARKET_CONFIG_TARGET')"
+          :disabled="busy"
+          hide-details
+          class="mb-4"
+        />
+        <div v-if="installed?.daemonIds.length" class="text-caption text-medium-emphasis mb-4">
+          <div v-for="daemonId in installed.daemonIds" :key="daemonId">
+            {{ daemonId }} · {{ installed.daemonVersions?.[daemonId] ?? installed.version }}
           </div>
-          <VCheckbox
-            v-for="node in nodes"
-            :key="node.daemonId"
-            v-model="nodeSelection"
-            :value="node.daemonId"
-            :label="nodeLabel(node)"
-            density="compact"
-            hide-details
-          />
-        </VCardText>
-        <VCardActions>
-          <VSpacer />
-          <VBtn variant="text" @click="nodeTarget = null">
-            {{ t("TXT_CODE_PLUGIN_MARKET_CANCEL") }}
-          </VBtn>
-          <VBtn
-            color="primary"
-            :disabled="nodeRequired && !nodeSelection.length"
-            @click="confirmNodes"
-          >
-            {{ t("TXT_CODE_PLUGIN_MARKET_CONFIRM") }}
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VDialog>
-  </div>
+        </div>
+        <VCheckbox
+          v-model="bulkMode"
+          :disabled="busy || applyingChanges"
+          :label="t('TXT_CODE_PLUGIN_MARKET_BULK_MODE')"
+          :hint="t('TXT_CODE_PLUGIN_MARKET_BULK_HINT')"
+          persistent-hint
+        />
+      </VCardText>
+      <VCardActions class="flex-wrap ga-2">
+        <VBtn variant="text" :disabled="busy || applyingChanges" @click="shown = false">{{
+          t("TXT_CODE_PLUGIN_MARKET_CANCEL")
+        }}</VBtn>
+        <VBtn
+          v-if="queued"
+          variant="text"
+          :disabled="busy || applyingChanges"
+          @click="discardMarketChange(plugin.id)"
+          >{{ t("TXT_CODE_PLUGIN_MARKET_DISCARD") }}</VBtn
+        >
+        <VSpacer />
+        <VBtn
+          v-if="configTargets.length"
+          color="primary"
+          variant="text"
+          :disabled="busy || applyingChanges"
+          @click="configure"
+          >{{ t("TXT_CODE_PLUGIN_MARKET_CONFIGURE") }}</VBtn
+        >
+        <PluginMarketOperations
+          :plugin="plugin"
+          :version="version"
+          :disabled="disabled || loading || applyingChanges"
+          allow-version-change
+          @installed="installedUpdated"
+          @staged="shown = false"
+          @busy="
+            (value) => {
+              busy = value;
+              emit('busy', value);
+            }
+          "
+        />
+      </VCardActions>
+    </VCard>
+  </VDialog>
 </template>

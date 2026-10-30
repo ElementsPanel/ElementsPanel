@@ -2,6 +2,7 @@ import { PLUGIN_API_VERSION } from "mcsmanager-common";
 import type { DaemonPluginContext } from "../../../../src/plugin";
 import { localeMessages } from "../i18n";
 import { SettingsFormService } from "./settings";
+import { writePluginOverride } from "mcsmanager-common";
 
 // Daemon side of the plugin manager. The daemon core owns the mechanism —
 // `ctx.plugins` lists what is installed and persists the enable switch — and
@@ -155,6 +156,9 @@ export function apply(ctx: DaemonPluginContext) {
     try {
       const pluginId = String((data as { pluginId?: unknown })?.pluginId ?? "");
       await ctx.plugins.remove(pluginId);
+      if ((data as { removeConfig?: unknown })?.removeConfig === true) {
+        await ctx.plugins.runExclusive(async () => writePluginOverride(pluginId, { config: {} }));
+      }
       ctx.protocol.response(routerCtx, { removed: true, pluginId });
     } catch (error: any) {
       ctx.protocol.responseError(routerCtx, error);

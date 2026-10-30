@@ -26,6 +26,12 @@ function version(number) {
   };
 }
 
+const operationState = load("panel/plugins/market/src/operations.ts", {
+  vue,
+  "@/plugin/context": { ctx: { plugins: { refresh: async () => {} } } },
+  "./api": {}
+});
+
 async function backendFixture(get) {
   const routes = new Map();
   const calls = [];
@@ -58,6 +64,7 @@ async function backendFixture(get) {
     },
     "./service/plugin_market": {
       PluginMarketError: class extends Error {},
+      panelDependencyVersions: () => ({}),
       listInstalled: () => [{ pluginId: "plugin/one", version: "1.0.0" }]
     }
   });
@@ -145,7 +152,10 @@ test("list items without an id are skipped rather than collapsed into one plugin
   const { request } = await backendFixture(async (_url, options) => ({
     data:
       options.params.page === 1
-        ? { items: [{ name: "no id" }, { id: "" }, { id: "real" }, { pluginId: "wrong field" }], total: 2 }
+        ? {
+            items: [{ name: "no id" }, { id: "" }, { id: "real" }, { pluginId: "wrong field" }],
+            total: 2
+          }
         : { items: [{ id: "second" }], total: 2 }
   }));
   const { body } = await request({}, 10, "get /plugin/list");
@@ -226,10 +236,13 @@ function installFixture(overrides = {}) {
       return { value: response };
     }
   });
-  const component = load("panel/plugins/market/src/components/PluginMarketInstall.vue", {
+  operationState.bulkMode.value = false;
+  operationState.queuedChanges.value = [];
+  const component = load("panel/plugins/market/src/components/PluginMarketOperations.vue", {
     vue,
     "@/plugin/context": { ctx: { plugins: { refresh: async () => {} } } },
     "../version": load("panel/plugins/market/src/version.ts"),
+    "../operations": operationState,
     "vuetify/components": {},
     "@/lang/i18n": { t: (key) => key },
     "@/tools/validator": { getValidatorErrorMsg: (err) => err.message },
@@ -290,10 +303,11 @@ test("market updates require a greater version, including numeric and prerelease
     ["v1.2.0", "1.2", false],
     ["invalid", "1.0.0", false],
     ["1.0.0", "invalid", false]
-  ]) assert.equal(isNewerVersion(candidate, installed), expected, `${candidate} > ${installed}`);
+  ])
+    assert.equal(isNewerVersion(candidate, installed), expected, `${candidate} > ${installed}`);
 });
 
-test("installed plugins offer updates only for newer releases and cannot reinstall or downgrade", async () => {
+test("direct install actions require newer releases unless management explicitly selects a version", async () => {
   const { props, state, calls, scope } = installFixture();
   try {
     assert.equal(state.canInstall.value, false);
@@ -312,6 +326,47 @@ test("installed plugins offer updates only for newer releases and cannot reinsta
     assert.equal(state.canInstall.value, true);
     assert.equal(state.canUpdate.value, false);
   } finally {
+    scope.stop();
+  }
+});
+
+test("the management dialog explicitly permits selecting an older version but protects bundled plugins", async () => {
+  const { props, state, calls, scope } = installFixture();
+  try {
+    props.allowVersionChange = true;
+    props.plugin.installedVersion = "2.0.0";
+    assert.equal(
+      state.canUpdate.value,
+      true,
+      "an explicitly selected older release may be installed"
+    );
+    props.plugin.installedRemovable = false;
+    assert.equal(state.canUpdate.value, false);
+    await state.install();
+    assert.equal(calls.length, 0, "protected source/core packages must never start npm work");
+  } finally {
+    scope.stop();
+  }
+});
+
+test("bulk node confirmation stages the pinned version and nodes without starting npm", async () => {
+  const { state, calls, events, scope } = installFixture();
+  try {
+    operationState.bulkMode.value = true;
+    await state.install();
+    state.confirmNodes();
+    await new Promise(setImmediate);
+    assert.equal(
+      calls.some((call) => call.name === "install"),
+      false
+    );
+    assert.equal(operationState.queuedChanges.value[0].version, "1.0.0");
+    assert.deepEqual(operationState.queuedChanges.value[0].daemonIds, ["node-1"]);
+    assert.ok(events.some(([event]) => event === "staged"));
+    assert.equal(operationState.activeOperations.value, 0);
+  } finally {
+    operationState.bulkMode.value = false;
+    operationState.queuedChanges.value = [];
     scope.stop();
   }
 });
@@ -468,8 +523,260 @@ const sharedViewOverrides = {
   // Icon networking is independent of the catalogue/operation state tested here.
   "../hooks/usePluginIcons": { usePluginIcons: () => ({ icons: vue.ref({}), load() {} }) },
   // The list and the detail both show a plugin's sides through this chip.
-  "./PluginMarketSideBadge.vue": {}
+  "./PluginMarketSideBadge.vue": {},
+  "./PluginMarketInstall.vue": {},
+  "./PluginMarketChanges.vue": {},
+  "../operations": operationState
 };
+
+test("opening Add/Modify only loads management data, and version changes keep release requirements", async () => {
+  const current = {
+    ...version("2.0.0"),
+    dependencies: { lib: "^2" },
+    deprecated: "Use a newer release"
+  };
+  const older = { ...version("1.0.0"), dependencies: { lib: "^1" } };
+  const component = load("panel/plugins/market/src/components/PluginMarketInstall.vue", {
+    ...sharedViewOverrides,
+    "@/plugin/context": { ctx: { get() {} } },
+    "./PluginMarketOperations.vue": {},
+    "../api": {
+      pluginMarketDetail: () => ({
+        execute: async () => ({
+          value: {
+            id: "one",
+            name: "epanel-plugin-one",
+            selectedVersion: current,
+            versions: [current, older]
+          }
+        })
+      }),
+      pluginMarketInstalled: () => ({
+        execute: async () => ({
+          value: [
+            {
+              pluginId: "one",
+              version: "2.0.0",
+              panelVersion: "2.0.0",
+              daemonIds: [],
+              removable: true
+            }
+          ]
+        })
+      })
+    }
+  }).default;
+  const props = vue.reactive({
+    plugin: { id: "one", name: "epanel-plugin-one", installedVersion: "2.0.0" }
+  });
+  const { state, app } = setupFixture(component, props);
+  try {
+    assert.equal(state.actionText.value, "TXT_CODE_PLUGIN_MARKET_MODIFY");
+    await state.open();
+    assert.equal(state.shown.value, true);
+    assert.equal(state.version.value.version, "2.0.0");
+    state.selectedVersion.value = "1.0.0";
+    assert.equal(state.version.value.dependencies.lib, "^1");
+    assert.equal(state.majorWarning.value, true);
+    assert.deepEqual(state.configTargets.value, [
+      { title: "TXT_CODE_PLUGIN_MARKET_SIDE_PANEL", value: "panel" }
+    ]);
+    state.installedUpdated("one", undefined);
+    props.plugin.installedVersion = undefined;
+    assert.equal(state.actionText.value, "TXT_CODE_PLUGIN_MARKET_ADD");
+  } finally {
+    app.unmount();
+  }
+});
+
+test("a delisted plugin keeps its local uninstall/configuration state when the market is offline", async () => {
+  const component = load("panel/plugins/market/src/components/PluginMarketInstall.vue", {
+    ...sharedViewOverrides,
+    "@/plugin/context": { ctx: { get() {} } },
+    "./PluginMarketOperations.vue": {},
+    "../api": {
+      pluginMarketDetail: () => ({
+        execute: async () => {
+          throw new Error("offline");
+        }
+      }),
+      pluginMarketInstalled: () => ({
+        execute: async () => ({
+          value: [
+            {
+              pluginId: "one",
+              version: "1.0.0",
+              daemonIds: ["node-1"],
+              daemonVersions: { "node-1": "1.0.0" },
+              removable: true
+            }
+          ]
+        })
+      })
+    }
+  }).default;
+  const { state, app } = setupFixture(
+    component,
+    vue.reactive({ plugin: { id: "one", installedVersion: "1.0.0" } })
+  );
+  try {
+    await state.open();
+    assert.equal(state.error.value, "offline");
+    assert.equal(state.plugin.value.installedVersion, "1.0.0");
+    assert.equal(state.configTargets.value[0].value, "node-1");
+  } finally {
+    app.unmount();
+  }
+});
+
+test("the rendered action opens the dialog without card navigation and changes from Add to Modify after installation", async () => {
+  const slots = vue.defineComponent({
+    setup(_props, { slots }) {
+      return () => vue.h("div", slots.default?.());
+    }
+  });
+  const Button = vue.defineComponent({
+    props: { color: String },
+    emits: ["click"],
+    setup(_props, { slots }) {
+      return () => vue.h("button", slots.default?.());
+    }
+  });
+  const Dialog = vue.defineComponent({
+    props: { modelValue: Boolean },
+    setup(props, { slots }) {
+      return () => (props.modelValue ? vue.h("div", slots.default?.()) : null);
+    }
+  });
+  const Operations = vue.defineComponent({
+    props: { plugin: Object, version: Object },
+    emits: ["installed", "busy"],
+    render: () => vue.h("div")
+  });
+  const components = Object.fromEntries(
+    [
+      "VCard",
+      "VCardActions",
+      "VCardText",
+      "VCheckbox",
+      "VProgressLinear",
+      "VSelect",
+      "VSpacer",
+      "VTable",
+      "VAlert"
+    ].map((name) => [name, slots])
+  );
+  const plugin = vue.reactive({
+    id: "one",
+    name: "one",
+    displayName: "One",
+    latestVersion: version("1.0.0")
+  });
+  const Install = load(
+    "panel/plugins/market/src/components/PluginMarketInstall.vue",
+    {
+      ...sharedViewOverrides,
+      "vuetify/components": { ...components, VBtn: Button, VDialog: Dialog },
+      "@/plugin/context": { ctx: { get() {} } },
+      "./PluginMarketSideBadge.vue": slots,
+      "./PluginMarketOperations.vue": Operations,
+      "../api": {
+        pluginMarketDetail: () => ({
+          execute: async () => ({
+            value: {
+              ...plugin,
+              selectedVersion: plugin.latestVersion,
+              versions: [plugin.latestVersion]
+            }
+          })
+        }),
+        pluginMarketInstalled: () => ({ execute: async () => ({ value: [] }) })
+      }
+    },
+    true
+  ).default;
+  const app = renderer.createApp({
+    setup: () => () =>
+      vue.h(Install, { plugin, onInstalled: (_id, version) => (plugin.installedVersion = version) })
+  });
+  app.mount({ children: [] });
+  function find(type, node = app._instance.subTree) {
+    if (!node || typeof node !== "object") return [];
+    const matches = node.type === type ? [node.component] : [];
+    return [
+      ...matches,
+      ...(node.component
+        ? find(type, node.component.subTree)
+        : Array.isArray(node.children)
+        ? node.children.flatMap((child) => find(type, child))
+        : [])
+    ];
+  }
+  try {
+    let prevented = false,
+      stopped = false;
+    assert.equal(find(Button)[0].props.color, "primary");
+    find(Button)[0].emit("click", {
+      preventDefault: () => { prevented = true; },
+      stopPropagation: () => { stopped = true; }
+    });
+    await new Promise(setImmediate);
+    assert.equal(prevented && stopped, true);
+    assert.equal(find(Dialog)[0].props.modelValue, true);
+    find(Operations)[0].emit("installed", "one", "1.0.0");
+    await vue.nextTick();
+    assert.equal(find(Dialog)[0].props.modelValue, false);
+    assert.equal(find(Button)[0].props.color, "success");
+    assert.equal(find(Button)[0].subTree.children[0].children, "TXT_CODE_PLUGIN_MARKET_MODIFY");
+  } finally {
+    app.unmount();
+  }
+});
+
+test("batch application keeps failed nodes and failed operations, then retries them independently", async () => {
+  const calls = [];
+  let fail = true;
+  const api = (kind) => () => ({
+    execute: async (args) => {
+      calls.push({ kind, args });
+      if (kind === "uninstall" && fail) throw new Error("offline");
+      return {
+        value: {
+          installedVersion: kind === "install" ? "2.0.0" : undefined,
+          failedNodes: fail ? ["node-2"] : [],
+          restartRequired: false
+        }
+      };
+    }
+  });
+  const operations = load("panel/plugins/market/src/operations.ts", {
+    vue,
+    "@/plugin/context": { ctx: { plugins: { refresh: async () => {} } } },
+    "./api": { installMarketPlugin: api("install"), uninstallMarketPlugin: api("uninstall") }
+  });
+  operations.queueMarketChange({
+    plugin: { id: "one", name: "one" },
+    kind: "install",
+    version: "2.0.0",
+    daemonIds: ["node-1", "node-2"]
+  });
+  operations.queueMarketChange({
+    plugin: { id: "two", name: "two" },
+    kind: "uninstall",
+    daemonIds: [],
+    removeConfig: true
+  });
+  const results = await operations.applyMarketChanges();
+  assert.equal(results.length, 2);
+  assert.ok(results[1].error);
+  assert.deepEqual(operations.queuedChanges.value[0].daemonIds, ["node-2"]);
+  assert.equal(operations.queuedChanges.value.length, 2);
+  fail = false;
+  await operations.applyMarketChanges();
+  assert.equal(operations.queuedChanges.value.length, 0);
+  assert.deepEqual(calls[2].args.data.daemonIds, ["node-2"]);
+  assert.equal(calls[3].args.params.removeConfig, true);
+});
 
 test("desktop cards support keyboard selection and preserve search when installed badges change", async () => {
   const component = load("panel/plugins/market/src/components/PluginMarketList.vue", {
@@ -685,10 +992,17 @@ test("detail locks every release action and its tabs while a plugin operation is
     render: () => vue.h("div")
   });
   const components = Object.fromEntries(
-    ["VAlert", "VBtn", "VChip", "VContainer", "VIcon", "VProgressLinear", "VTab"].map((name) => [
-      name,
-      slots
-    ])
+    [
+      "VAlert",
+      "VBtn",
+      "VChip",
+      "VContainer",
+      "VIcon",
+      "VProgressLinear",
+      "VTab",
+      "VAvatar",
+      "VImg"
+    ].map((name) => [name, slots])
   );
   const Detail = load(
     "panel/plugins/market/src/components/PluginMarketDetail.vue",
@@ -698,6 +1012,7 @@ test("detail locks every release action and its tabs while a plugin operation is
       "@/tools/safe": { markdownToHTML: (text) => text },
       "vuetify/components": { ...components, VTabs: Tabs },
       "./PluginMarketInstall.vue": Install,
+      "./PluginMarketChanges.vue": slots,
       "./PluginMarketSideBadge.vue": slots,
       "../api": {
         pluginMarketDetail: () => ({
@@ -732,7 +1047,11 @@ test("detail locks every release action and its tabs while a plugin operation is
     await vue.nextTick();
     const installs = findComponents(Install);
     assert.equal(installs.length, 3);
-    assert.equal(installs[0].props.version.version, "3.0.0", "header actions target the latest release");
+    assert.equal(
+      installs[0].props.version.version,
+      "3.0.0",
+      "header actions target the latest release"
+    );
     installs[1].emit("busy", true);
     await vue.nextTick();
     assert.equal(
@@ -753,11 +1072,19 @@ test("detail locks every release action and its tabs while a plugin operation is
     );
     installs[0].emit("installed", "one", "3.0.0");
     await vue.nextTick();
-    assert.equal(findComponents(Install).length, 1, "installed plugins have no historical install buttons");
+    assert.equal(
+      findComponents(Install).length,
+      1,
+      "installed plugins have no historical install buttons"
+    );
     assert.equal(installs[0].props.plugin.installedVersion, "3.0.0");
     installs[0].emit("installed", "one", undefined);
     await vue.nextTick();
-    assert.equal(findComponents(Install).length, 3, "uninstall restores release installation choices");
+    assert.equal(
+      findComponents(Install).length,
+      3,
+      "uninstall restores release installation choices"
+    );
   } finally {
     app.unmount();
   }

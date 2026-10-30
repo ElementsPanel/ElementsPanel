@@ -1,11 +1,13 @@
 import axios from "axios";
 import type Koa from "koa";
+import { writePluginOverride } from "mcsmanager-common";
 import type { PanelPluginContext } from "../../../../src/app/plugin";
 import { localeMessages } from "../i18n";
 import {
   fetchMarketPluginDetail,
   forgetRemoteInstall,
   listInstalled,
+  panelDependencyVersions,
   PluginMarketError,
   readRemoteInstalls,
   recordRemoteInstall,
@@ -56,6 +58,35 @@ async function withPluginLock<T>(pluginId: string, operation: () => Promise<T>):
 export async function apply(ctx: PanelPluginContext) {
   ctx.i18n.define(localeMessages);
   await initMarketSettings(ctx);
+
+  // Source and disabled plugins count as installed too. The loader decides
+  // whether a package can be changed; npm records alone cannot protect sources.
+  function installedPlugins() {
+    const records = listInstalled();
+    for (const plugin of ctx.plugins?.inventory() ?? []) {
+      const installed = records.find((item) => item.pluginId === plugin.id);
+      if (installed) {
+        installed.removable = installed.removable && plugin.removable;
+        installed.state = plugin.state;
+      } else {
+        records.push({
+          pluginId: plugin.id,
+          name: plugin.packageName ?? plugin.id,
+          version: plugin.version ?? "",
+          panelVersion: plugin.version,
+          state: plugin.state,
+          daemonVersions: {},
+          installedAt: 0,
+          sides: ["panel"],
+          directories: [],
+          daemonIds: [],
+          source: "bundled",
+          removable: plugin.removable
+        });
+      }
+    }
+    return records;
+  }
 
   const { permission, validator } = ctx.middleware;
   const requireAdmin = permission({ level: ctx.roles.ADMIN });
@@ -167,12 +198,13 @@ export async function apply(ctx: PanelPluginContext) {
       }
     }
 
-    const installed = new Map(listInstalled().map((item) => [item.pluginId, item]));
+    const installed = new Map(installedPlugins().map((item) => [item.pluginId, item]));
     return items.map((item) => {
       const local = installed.get(String(item.id));
       return {
         ...item,
         installedVersion: local?.version,
+        installedState: local?.state,
         installedDaemonIds: local?.daemonIds ?? [],
         installedRemovable: local?.removable ?? true
       };
@@ -281,7 +313,10 @@ export async function apply(ctx: PanelPluginContext) {
   }
 
   /** Failed or unselected uninstalls stay recorded until a later successful retry. */
-  async function removeFromNodes(installations: readonly RemoteMarketInstall[]) {
+  async function removeFromNodes(
+    installations: readonly RemoteMarketInstall[],
+    removeConfig = false
+  ) {
     const failedNodes = new Set<string>();
     const changedNodes = new Set<string>();
     for (const installation of installations) {
@@ -294,7 +329,7 @@ export async function apply(ctx: PanelPluginContext) {
       try {
         await new ctx.remote.Request(node).request(
           "plugin/npm/uninstall",
-          { name, pluginId },
+          { name, pluginId, ...(removeConfig ? { removeConfig: true } : {}) },
           10 * 60 * 1000
         );
       } catch (error) {
@@ -377,7 +412,7 @@ export async function apply(ctx: PanelPluginContext) {
   });
 
   router.get("/plugin/installed", requireAdmin, async (requestCtx) => {
-    requestCtx.body = listInstalled();
+    requestCtx.body = installedPlugins();
   });
 
   router.get(
@@ -400,11 +435,13 @@ export async function apply(ctx: PanelPluginContext) {
         if (!selectedVersion || (selectedVersion.status && selectedVersion.status !== "approved")) {
           throw new PluginMarketError("NOT_FOUND");
         }
-        const installed = listInstalled().find((item) => item.pluginId === pluginId);
+        const installed = installedPlugins().find((item) => item.pluginId === pluginId);
         requestCtx.body = {
           ...detail,
           selectedVersion,
+          dependencyVersions: panelDependencyVersions(detail),
           installedVersion: installed?.version,
+          installedState: installed?.state,
           installedDaemonIds: installed?.daemonIds ?? [],
           installedRemovable: installed?.removable ?? true
         };
@@ -504,7 +541,7 @@ export async function apply(ctx: PanelPluginContext) {
 
           return {
             restartRequired: !reloaded,
-            installedVersion: listInstalled().find((item) => item.pluginId === info.pluginId)
+            installedVersion: installedPlugins().find((item) => item.pluginId === info.pluginId)
               ?.version,
             failedNodes
           };
@@ -522,6 +559,7 @@ export async function apply(ctx: PanelPluginContext) {
     async (requestCtx: Koa.ParameterizedContext) => {
       const pluginId = String(requestCtx.request.query.pluginId);
       const daemonIds = requestedNodes(requestCtx.request.query.daemonIds);
+      const removeConfig = requestCtx.request.query.removeConfig === "true";
       try {
         requestCtx.body = await withPluginLock(pluginId, async () => {
           const selectedNodes = new Set(daemonIds);
@@ -530,11 +568,16 @@ export async function apply(ctx: PanelPluginContext) {
           );
           const local = ctx.plugins.inventory().find((plugin) => plugin.id === pluginId);
           if (local) await ctx.plugins.remove(pluginId);
+          if (local && removeConfig) {
+            await ctx.plugins.runExclusive(async () =>
+              writePluginOverride(pluginId, { config: {} })
+            );
+          }
           const removed = Boolean(local);
-          const { failedNodes, changedNodes } = await removeFromNodes(installations);
+          const { failedNodes, changedNodes } = await removeFromNodes(installations, removeConfig);
           const sides: PluginSide[] = removed ? ["panel"] : [];
           if (changedNodes.length) sides.push("daemon");
-          const remaining = listInstalled().find((item) => item.pluginId === pluginId);
+          const remaining = installedPlugins().find((item) => item.pluginId === pluginId);
           return {
             removed: !remaining,
             installedVersion: remaining?.version,

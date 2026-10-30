@@ -20,6 +20,8 @@ import { pluginMarketDetail, type MarketPluginDetail } from "../api";
 import { usePluginIcons } from "../hooks/usePluginIcons";
 import PluginMarketInstall from "./PluginMarketInstall.vue";
 import PluginMarketSideBadge from "./PluginMarketSideBadge.vue";
+import PluginMarketChanges from "./PluginMarketChanges.vue";
+import { installedChange } from "../operations";
 
 const props = defineProps<{ pluginId: string; embedded?: boolean }>();
 const emit = defineEmits<{
@@ -98,6 +100,9 @@ function updateInstalled(pluginId: string, version: string | undefined) {
   if (plugin.value?.id === pluginId) plugin.value.installedVersion = version;
   emit("installed", pluginId, version);
 }
+watch(installedChange, (change) => {
+  if (change) updateInstalled(change.pluginId, change.version);
+});
 
 watch(() => props.pluginId, refresh, { immediate: true });
 // A marketplace entry always opens on its readme; only the user's next
@@ -116,6 +121,7 @@ onBeforeUnmount(() => requestId++);
     <VContainer fluid class="plugin-detail-container">
       <PageToolbar :title="t('TXT_CODE_PLUGIN_MARKET_DETAIL')" icon="mdi-puzzle-outline">
         <template #actions>
+          <PluginMarketChanges />
           <VBtn variant="text" prepend-icon="mdi-arrow-left" :disabled="busy" @click="emit('back')">
             {{ t("TXT_CODE_PLUGIN_MARKET_BACK") }}
           </VBtn>
@@ -131,7 +137,13 @@ onBeforeUnmount(() => requestId++);
       <template v-if="plugin">
         <header class="plugin-detail-header">
           <div class="plugin-detail-heading">
-            <VAvatar class="plugin-detail-icon" size="64" rounded="12px" color="surface" variant="flat">
+            <VAvatar
+              class="plugin-detail-icon"
+              size="64"
+              rounded="12px"
+              color="surface"
+              variant="flat"
+            >
               <VImg
                 v-if="plugin.hasIcon && icon"
                 :src="icon"
@@ -172,6 +184,7 @@ onBeforeUnmount(() => requestId++);
             <PluginMarketInstall
               :key="plugin.id"
               :plugin="plugin"
+              :embedded="embedded"
               :version="plugin.latestVersion || plugin.selectedVersion"
               :disabled="busy || loading"
               @installed="updateInstalled"
@@ -230,6 +243,7 @@ onBeforeUnmount(() => requestId++);
                   <PluginMarketInstall
                     v-if="!plugin.installedVersion"
                     :plugin="plugin"
+                    :embedded="embedded"
                     :version="item"
                     :disabled="busy || loading"
                     install-only

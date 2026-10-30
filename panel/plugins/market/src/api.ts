@@ -15,6 +15,7 @@ export interface MarketPlugin {
   latestVersion?: MarketPluginVersion;
   /** The version installed on this panel or its nodes, if any. */
   installedVersion?: string;
+  installedState?: string;
   /** Nodes with a recorded installation of this plugin. */
   installedDaemonIds?: string[];
   /**
@@ -40,6 +41,12 @@ export interface MarketPlugin {
 export type PluginSide = "panel" | "daemon";
 
 export interface MarketPluginVersion {
+  dependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+  peerDependenciesMeta?: Record<string, { optional?: boolean }>;
+  engines?: Record<string, string>;
+  deprecated?: string;
+  frontendDependencies?: string[];
   compatibility?: Partial<Record<PluginSide, { api: number; sdk?: number }>>;
   id: string;
   version: string;
@@ -53,6 +60,8 @@ export interface MarketPluginVersion {
 }
 
 export interface MarketPluginDetail extends MarketPlugin {
+  /** Versions resolvable from this panel, not from its remote daemons. */
+  dependencyVersions?: Record<string, string>;
   description: string;
   /** 包里的 README.md 原文，市场没给或包里没有时为空。 */
   readme?: string;
@@ -64,6 +73,9 @@ export interface MarketPluginDetail extends MarketPlugin {
 
 /** One plugin installed from the market on the panel or its nodes. */
 export interface InstalledPlugin {
+  state?: string;
+  panelVersion?: string;
+  daemonVersions?: Record<string, string>;
   pluginId: string;
   name: string;
   version: string;
@@ -148,7 +160,7 @@ export const installMarketPlugin = useDefineApi<
 });
 
 export const uninstallMarketPlugin = useDefineApi<
-  { params: { pluginId: string; daemonIds?: string } },
+  { params: { pluginId: string; daemonIds?: string; removeConfig?: boolean } },
   { removed: boolean; restartRequired: boolean; failedNodes: string[]; installedVersion?: string }
 >({
   url: "/api/market/plugin/uninstall",

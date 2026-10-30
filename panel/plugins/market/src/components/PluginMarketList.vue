@@ -17,11 +17,15 @@ import {
   VImg,
   VProgressLinear,
   VRow,
+  VSpacer,
   VTextField
 } from "vuetify/components";
 import { pluginMarketList, type MarketPlugin } from "../api";
 import { usePluginIcons } from "../hooks/usePluginIcons";
 import PluginMarketSideBadge from "./PluginMarketSideBadge.vue";
+import PluginMarketInstall from "./PluginMarketInstall.vue";
+import PluginMarketChanges from "./PluginMarketChanges.vue";
+import { installedChange } from "../operations";
 
 const props = defineProps<{ embedded?: boolean }>();
 const emit = defineEmits<{ select: [pluginId: string] }>();
@@ -79,6 +83,7 @@ function selectPlugin(plugin: MarketPlugin) {
 }
 
 function onCardKeydown(event: KeyboardEvent, plugin: MarketPlugin) {
+  if (event.target !== event.currentTarget) return;
   if (!props.embedded || !["Enter", " "].includes(event.key)) return;
   event.preventDefault();
   selectPlugin(plugin);
@@ -90,6 +95,9 @@ function updateInstalled(pluginId: string, version: string | undefined) {
 }
 
 defineExpose({ updateInstalled });
+watch(installedChange, (change) => {
+  if (change) updateInstalled(change.pluginId, change.version);
+});
 onMounted(refresh);
 onBeforeUnmount(() => requestId++);
 </script>
@@ -110,6 +118,7 @@ onBeforeUnmount(() => requestId++);
           />
         </template>
         <template #actions>
+          <PluginMarketChanges />
           <VBtn variant="text" :loading="loading" @click="refresh">
             {{ t("TXT_CODE_PLUGIN_MARKET_REFRESH") }}
           </VBtn>
@@ -144,7 +153,13 @@ onBeforeUnmount(() => requestId++);
             <VCardText class="plugin-market-card-content">
               <div class="plugin-market-card-head">
                 <!-- Keep the generic icon out while a declared custom icon is loading. -->
-                <VAvatar class="plugin-market-icon" size="52" rounded="12px" color="surface" variant="flat">
+                <VAvatar
+                  class="plugin-market-icon"
+                  size="52"
+                  rounded="12px"
+                  color="surface"
+                  variant="flat"
+                >
                   <VImg
                     v-if="plugin.hasIcon && icons[plugin.id]"
                     :src="icons[plugin.id]"
@@ -179,6 +194,13 @@ onBeforeUnmount(() => requestId++);
               <VChip v-if="plugin.installedVersion" size="small" color="success" variant="tonal">
                 {{ t("TXT_CODE_PLUGIN_MARKET_INSTALLED") }}
               </VChip>
+              <VSpacer />
+              <PluginMarketInstall
+                :plugin="plugin"
+                :version="plugin.latestVersion"
+                :embedded="embedded"
+                @installed="updateInstalled"
+              />
             </VCardActions>
           </VCard>
         </VCol>
@@ -262,6 +284,8 @@ onBeforeUnmount(() => requestId++);
 }
 
 .plugin-market-card-actions {
+  flex-wrap: wrap;
+  gap: 8px;
   align-items: center;
   padding-top: 8px;
 }

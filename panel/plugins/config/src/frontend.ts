@@ -38,6 +38,20 @@ export function apply(ctx: PanelFrontendPluginContext) {
   });
 
   ctx.desktop.view({
+    id: "plugin-config",
+    title: () => t("TXT_CODE_PLUGIN_CONFIG"),
+    icon: "mdi-cog-outline",
+    component: ConfigPage,
+    initialWidth: 980,
+    initialHeight: 580,
+    condition: () => useAppStateStore().isAdmin.value,
+    accepts: (props) =>
+      (props.scope === "panel" ||
+        (props.scope === "node" && typeof props.daemonId === "string" && !!props.daemonId)) &&
+      typeof props.pluginId === "string"
+  });
+
+  ctx.desktop.view({
     id: "node-plugin-config",
     title: () => t("TXT_CODE_PLUGIN_CONFIG"),
     icon: "mdi-cog-outline",

@@ -42,10 +42,26 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
       }
     ])
   );
-  const state = { sides, version, request: async () => ({ removed: true }), panelReloads: 0, protected: false };
+  const state = {
+    sides,
+    version,
+    request: async () => ({ removed: true }),
+    panelReloads: 0,
+    protected: false,
+    inventoryExtra: [],
+    compatibility: undefined
+  };
 
   const common = {
-    isEssentialNpmPlugin: (id) => ["i18n", "storage", "runtime", "server", "console", "config"].includes(id),
+    validatePluginCompatibility: (value) => {
+      if (value && (value.api !== 1 || (value.sdk !== undefined && value.sdk !== 1)))
+        throw new Error("Unsupported API/SDK");
+    },
+    writePluginOverride(id, patch) {
+      state.lastOverride = { id, patch };
+    },
+    isEssentialNpmPlugin: (id) =>
+      ["i18n", "storage", "runtime", "server", "console", "config"].includes(id),
     async installNpmPlugin(options) {
       installs.push(options);
       local.set(options.pluginId, {
@@ -88,6 +104,7 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
         description: "Sample",
         sides: state.sides,
         selectedVersion: {
+          compatibility: state.compatibility,
           id: `epanel-plugin-sample@${state.version}`,
           version: state.version,
           status: "approved",
@@ -95,6 +112,7 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
         },
         versions: [
           {
+            compatibility: state.compatibility,
             id: `epanel-plugin-sample@${state.version}`,
             version: state.version,
             status: "approved",
@@ -109,6 +127,7 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
   const service = load(serviceFile, { axios, "mcsmanager-common": common });
   const plugin = load("panel/plugins/market/src/backend/index.ts", {
     axios,
+    "mcsmanager-common": common,
     "../i18n": { localeMessages: {} },
     "./service/plugin_market": service,
     "./service/market_settings": {
@@ -134,7 +153,15 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
     },
     settingsForm: { declare() {} },
     plugins: {
-      inventory: () => [...local.values()].map((record) => ({ id: record.pluginId, removable: !state.protected, state: "active" })),
+      runExclusive: (operation) => operation(),
+      inventory: () =>
+        [...local.values()]
+          .map((record) => ({
+            id: record.pluginId,
+            removable: !state.protected,
+            state: "active"
+          }))
+          .concat(state.inventoryExtra),
       install: (options) => common.installNpmPlugin({ ...options, side: "panel" }),
       remove: (id) => {
         if (state.protected) throw new service.PluginMarketError("BUNDLED");
@@ -185,8 +212,12 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
         daemonIds: [],
         ...values
       }),
-    uninstall: (daemonIds = "", pluginId = "sample") =>
-      request("delete", "/plugin/uninstall", { pluginId, daemonIds }),
+    uninstall: (daemonIds = "", pluginId = "sample", removeConfig = false) =>
+      request("delete", "/plugin/uninstall", {
+        pluginId,
+        daemonIds,
+        removeConfig: String(removeConfig)
+      }),
     installed: () => request("get", "/plugin/installed"),
     list: () => request("get", "/plugin/list"),
     detail: () => request("get", "/plugin/detail", { pluginId: "sample" }),
@@ -276,7 +307,9 @@ test("failed node installs leave no remote record and unselected nodes stay inst
   });
   assert.deepEqual((await env.installed())[0].daemonIds, ["node-3"]);
   assert.equal(
-    env.rpcCalls.some((call) => call.event === "plugin/npm/uninstall" && call.daemonId === "node-3"),
+    env.rpcCalls.some(
+      (call) => call.event === "plugin/npm/uninstall" && call.daemonId === "node-3"
+    ),
     true
   );
 });
@@ -335,7 +368,10 @@ test("same-plugin operations stay serialized across installs and a queued uninst
   const second = env.install();
   const removal = env.uninstall();
   await new Promise(setImmediate);
-  assert.equal(env.networkCalls.filter((call) => call.url.endsWith("/api/plugins/sample")).length, 1);
+  assert.equal(
+    env.networkCalls.filter((call) => call.url.endsWith("/api/plugins/sample")).length,
+    1
+  );
   release.resolve();
   await Promise.all([first, second, removal]);
 });
@@ -343,4 +379,90 @@ test("same-plugin operations stay serialized across installs and a queued uninst
 test("the icon endpoint answers the default icon without calling the market", async (t) => {
   const env = await fixture(t);
   assert.deepEqual(await env.icon(), { dataUrl: null });
+});
+
+test("unsupported release contracts are rejected before npm or node operations begin", async (t) => {
+  const env = await fixture(t);
+  env.state.compatibility = { panel: { api: 2 } };
+  await assert.rejects(env.install(), {
+    status: 409,
+    message: "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE"
+  });
+  assert.equal(env.installs.length, 0);
+  assert.equal(env.rpcCalls.length, 0);
+});
+
+test("uninstall keeps configuration by default and clears overrides only when requested", async (t) => {
+  const env = await fixture(t, { sides: ["panel", "daemon"] });
+  await env.install({ daemonIds: ["node-1"] });
+  await env.uninstall("node-1");
+  assert.equal(env.state.lastOverride, undefined);
+  await env.install({ daemonIds: ["node-1"] });
+  await env.uninstall("node-1", "sample", true);
+  assert.deepEqual(env.state.lastOverride, { id: "sample", patch: { config: {} } });
+  assert.ok(
+    env.rpcCalls.some(
+      (call) => call.event === "plugin/npm/uninstall" && call.payload.removeConfig === true
+    )
+  );
+});
+
+test("installation records preserve different daemon versions instead of collapsing them", async (t) => {
+  const env = await fixture(t, { sides: ["daemon"] });
+  await env.install({ daemonIds: ["node-1"] });
+  env.state.version = "2.0.0";
+  await env.install({ daemonIds: ["node-2"] });
+  assert.deepEqual((await env.installed())[0].daemonVersions, {
+    "node-1": "1.0.0",
+    "node-2": "2.0.0"
+  });
+});
+
+test("disabled source plugins are listed as installed and remain protected", async (t) => {
+  const env = await fixture(t);
+  env.state.inventoryExtra.push({
+    id: "sample",
+    version: "1.0.0",
+    removable: false,
+    state: "disabled"
+  });
+  const listed = (await env.list())[0];
+  assert.equal(listed.installedVersion, "1.0.0");
+  assert.equal(listed.installedRemovable, false);
+  assert.equal(listed.installedState, "disabled");
+  assert.equal((await env.installed())[0].panelVersion, "1.0.0");
+});
+
+test("dependency versions are read from package metadata without executing a dependency", async (t) => {
+  const env = await fixture(t);
+  env.common.npmPluginRoots = () => ({
+    packageRoot: env.panelDirectory,
+    projectRoot: env.panelDirectory
+  });
+  fs.writeFileSync(
+    path.join(env.panelDirectory, "package.json"),
+    JSON.stringify({ name: "@elementspanel/panel", version: "1.0.0" })
+  );
+  const dependency = path.join(env.panelDirectory, "node_modules", "example-lib");
+  fs.mkdirSync(dependency, { recursive: true });
+  fs.writeFileSync(
+    path.join(dependency, "package.json"),
+    JSON.stringify({ name: "example-lib", version: "2.3.0", main: "index.js" })
+  );
+  fs.writeFileSync(
+    path.join(dependency, "index.js"),
+    'throw new Error("dependency must not execute")'
+  );
+  const versions = env.service.panelDependencyVersions({
+    name: "epanel-plugin-sample",
+    versions: [
+      {
+        dependencies: { "example-lib": "^2", "missing-lib": "*" },
+        peerDependencies: { "@elementspanel/panel": "^1" }
+      }
+    ]
+  });
+  assert.equal(versions["example-lib"], "2.3.0");
+  assert.equal(versions["@elementspanel/panel"], "1.0.0");
+  assert.equal(versions["missing-lib"], "");
 });

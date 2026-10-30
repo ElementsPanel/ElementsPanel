@@ -83,7 +83,7 @@ interface PluginActionCandidate {
   nodeCheckError: string;
 }
 
-const props = defineProps<{ scope?: Scope; daemonId?: string }>();
+const props = defineProps<{ scope?: Scope; daemonId?: string; pluginId?: string }>();
 const { isPhone } = useScreen();
 const sidebarOpen = ref(false);
 const navigationProps = computed(() =>
@@ -113,7 +113,7 @@ const scope = ref<Scope>("panel");
 const route = useRoute();
 const router = useRouter();
 /** The plugin named by the URL, used once its list has actually arrived. */
-const preferredPluginId = ref(String(route.query.plugin ?? ""));
+const preferredPluginId = ref(String(props.pluginId ?? route.query.plugin ?? ""));
 
 const loading = ref(true);
 const pending = ref<string>("");
@@ -745,7 +745,7 @@ watch(
   () => [
     props.scope ?? route.query.scope,
     props.daemonId ?? route.query.daemonId,
-    route.query.plugin
+    props.pluginId ?? route.query.plugin
   ],
   ([targetScope, daemonId, pluginId]) => {
     if (typeof pluginId === "string") preferredPluginId.value = pluginId;
