@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-auth",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "displayName": "Authentication",
   "description": "Daemon authentication and panel IP whitelist.",
   "elementspanel": {

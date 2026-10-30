@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-backup",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Instance backup management.",
   "elementspanel": {
     "id": "backup",

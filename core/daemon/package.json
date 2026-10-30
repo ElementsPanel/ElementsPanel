@@ -1,6 +1,6 @@
 {
   "name": "elements-daemon",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ElementsPanel daemon/node — a fork of the MCSManager project, provides remote process management, scheduled tasks, I/O stream control and more",
   "scripts": {
     "type-check": "tsc --noEmit --project tsconfig.json",
