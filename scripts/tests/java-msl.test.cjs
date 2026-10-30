@@ -44,12 +44,12 @@ function directory(t) {
   });
   return cwd;
 }
-const javaCommands = load("common/src/java.ts");
-const { JavaInfo } = load("daemon/plugins/instance/src/backend/java/java_info.ts");
+const javaCommands = load("core/common/src/java.ts");
+const { JavaInfo } = load("plugins/instance/daemon/src/backend/java/java_info.ts");
 
 function sourceFixture(platform = "linux", arch = "x64", respond) {
   const requests = [];
-  const { MslJavaSource } = load("daemon/plugins/instance/src/backend/java/msl_java.ts", {
+  const { MslJavaSource } = load("plugins/instance/daemon/src/backend/java/msl_java.ts", {
     axios: {
       get: async (url, options) => {
         requests.push({ url, options });
@@ -164,7 +164,7 @@ function installerFixture(t, payload, overrides = {}) {
     modes = [];
   const controller = new AbortController();
   const stream = overrides.stream || Readable.from([payload]);
-  const installer = load("daemon/plugins/instance/src/backend/java/java_install.ts", {
+  const installer = load("plugins/instance/daemon/src/backend/java/java_install.ts", {
     "fs-extra": {
       ...fse,
       chmod: async (file, mode) => {
@@ -273,9 +273,9 @@ function managerFixture(t, options = {}) {
   const cwd = directory(t),
     installs = [],
     sources = [];
-  const realInstaller = load("daemon/plugins/instance/src/backend/java/java_install.ts");
-  const { JavaManager } = load("daemon/plugins/instance/src/backend/java/java_manager.ts", {
-    "../../../../../../common/src/java": javaCommands,
+  const realInstaller = load("plugins/instance/daemon/src/backend/java/java_install.ts");
+  const { JavaManager } = load("plugins/instance/daemon/src/backend/java/java_manager.ts", {
+    "../../../../../../core/common/src/java": javaCommands,
     "./java_info": { JavaInfo },
     "./msl_java": {
       MslJavaSource: class {
@@ -456,13 +456,13 @@ test("Java HTTP routes allow admin setup before instance creation and retain ins
       (name, ...handlers) => routes.set(`${method}:${name}`, handlers)
     ])
   );
-  const { registerJavaManagerRoutes } = load("panel/plugins/instance/src/backend/routers/java_router.ts");
+  const { registerJavaManagerRoutes } = load("plugins/instance/panel/src/backend/routers/java_router.ts");
   registerJavaManagerRoutes({
     koa: { router: () => router },
     roles: { USER: 1, ADMIN: 10 },
     i18n: { $t: translate },
     middleware: {
-      validator: load("panel/plugins/runtime/src/backend/middleware/validator.ts").default,
+      validator: load("plugins/runtime/panel/src/backend/middleware/validator.ts").default,
       permission:
         ({ level }) =>
         async (ctx, next) => {
@@ -537,8 +537,8 @@ test("Java protocol replies once to downloads and preserves quotes when binding 
       return '"/java/bin/java"';
     }
   };
-  const { registerJavaManagerRoutes } = load("daemon/plugins/instance/src/backend/java/java_router.ts", {
-    "../../../../../../common/src/java": javaCommands,
+  const { registerJavaManagerRoutes } = load("plugins/instance/daemon/src/backend/java/java_router.ts", {
+    "../../../../../../core/common/src/java": javaCommands,
     "./java_info": { JavaInfo }
   });
   registerJavaManagerRoutes(
@@ -590,7 +590,7 @@ function setupFixture(t, options = {}) {
   const installed = [{ info: { fullname: "external", downloading: false }, usingInstances: [] }];
   const fixture = mountScript(
     t,
-    "panel/plugins/instance/src/java/components/JavaSetup.vue",
+    "plugins/instance/panel/src/java/components/JavaSetup.vue",
     { daemonId: "node", onValid: (value) => validEvents.push(value) },
     {
       "@/lang/i18n": { t: translate },
@@ -690,7 +690,7 @@ test("changing a Java catalog node discards stale versions and aborts its reques
     gates = [deferred(), deferred()];
   const f = mountScript(
     t,
-    "panel/plugins/instance/src/java/components/JavaVersionSelect.vue",
+    "plugins/instance/panel/src/java/components/JavaVersionSelect.vue",
     { daemonId: "old" },
     {
       "@/lang/i18n": { t: translate },
@@ -721,7 +721,7 @@ test("Java list refresh after a download cannot reuse an older in-flight respons
     gates = [deferred(), deferred(), deferred()];
   const active = vue.ref(true);
   const daemonId = vue.ref("first");
-  const { useJavaList } = load("panel/plugins/instance/src/java/hooks/useJavaList.ts", {
+  const { useJavaList } = load("plugins/instance/panel/src/java/hooks/useJavaList.ts", {
     vue,
     "../api": {
       getJavaList: () => ({
@@ -781,7 +781,7 @@ test("unloading instance during Java initialization prevents late service and ro
   const ready = deferred();
   const disposers = [];
   let manager;
-  const { registerJavaManager } = load("daemon/plugins/instance/src/backend/java/index.ts", {
+  const { registerJavaManager } = load("plugins/instance/daemon/src/backend/java/index.ts", {
     "./java_manager": { JavaManager: class {
       ready = ready.promise;
       constructor() { manager = this; }

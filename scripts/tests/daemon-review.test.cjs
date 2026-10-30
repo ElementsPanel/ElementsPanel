@@ -22,7 +22,7 @@ function directory(t) {
 function authFixture(key) {
   const events = new Map();
   const replies = [];
-  const plugin = load("daemon/plugins/auth/src/backend/index.ts", {
+  const plugin = load("plugins/auth/daemon/src/backend/index.ts", {
     "../i18n": { localeMessages: {} }
   });
   plugin.apply({
@@ -61,7 +61,7 @@ test("daemon authentication compares real UTF-8 bytes and rejects empty/non-stri
 
 test("passports reject expired, future and revoked credentials at lookup time", (t) => {
   const { missionPassport: passports } = load(
-    "daemon/plugins/runtime/src/backend/service/mission_passport.ts"
+    "plugins/runtime/daemon/src/backend/service/mission_passport.ts"
   );
   t.after(() => passports.dispose());
   const mission = {
@@ -94,7 +94,7 @@ function writerFixture(t, overrides = {}) {
     }
     async unzip() {}
   }
-  const Writer = load("daemon/plugins/file/src/backend/file_writer.ts", {
+  const Writer = load("plugins/file/daemon/src/backend/file_writer.ts", {
     "./system_file": FileManager,
     "./runtime": { logger: () => logger },
     "./upload_manager": { delete: (id) => deleted.push(id) },
@@ -202,9 +202,9 @@ test("failed upload initialization closes descriptors and releases its lock", as
 });
 
 function downloadsFixture(t, axios) {
-  const manager = load("daemon/plugins/runtime/src/backend/service/download_manager.ts", {
+  const manager = load("plugins/runtime/daemon/src/backend/service/download_manager.ts", {
     axios,
-    "./public_download": load("daemon/plugins/runtime/src/backend/service/public_download.ts"),
+    "./public_download": load("plugins/runtime/daemon/src/backend/service/public_download.ts"),
     "../entity/config": { globalConfiguration: { config: { uploadSpeedRate: 0 } } },
     "../common/network": { getCommonHeaders: () => ({}) }
   }).default;
@@ -337,8 +337,8 @@ test("file paths reject sibling-prefix traversal and outside junctions", (t) => 
   fs.mkdirSync(rootDir);
   fs.mkdirSync(outside);
   fs.symlinkSync(outside, path.join(rootDir, "linked"), "junction");
-  const filepath = load("daemon/plugins/file/src/backend/filepath.ts");
-  const FileManager = load("daemon/plugins/file/src/backend/system_file.ts", {
+  const filepath = load("plugins/file/daemon/src/backend/filepath.ts");
+  const FileManager = load("plugins/file/daemon/src/backend/system_file.ts", {
     "mcsmanager-common": { ProcessWrapper: class {} },
     "./filepath": filepath,
     "./runtime": { $t: (key) => key, settings: () => ({ config: {} }) }
@@ -362,12 +362,12 @@ test("mod operations validate final paths instead of following outside directory
   fs.writeFileSync(path.join(outside, "example.jar"), "keep");
   for (const name of ["mods", "config"])
     fs.symlinkSync(outside, path.join(rootDir, name), "junction");
-  const FileManager = load("daemon/plugins/file/src/backend/system_file.ts", {
+  const FileManager = load("plugins/file/daemon/src/backend/system_file.ts", {
     "mcsmanager-common": { ProcessWrapper: class {} },
-    "./filepath": load("daemon/plugins/file/src/backend/filepath.ts"),
+    "./filepath": load("plugins/file/daemon/src/backend/filepath.ts"),
     "./runtime": { $t: (key) => key, settings: () => ({ config: {} }) }
   }).default;
-  const { ModService } = load("daemon/plugins/mod/src/backend/mod_service.ts");
+  const { ModService } = load("plugins/mod-manager/daemon/src/backend/mod_service.ts");
   const service = new ModService({
     effect() {},
     transfer: { downloads: {} },
@@ -381,7 +381,7 @@ test("mod operations validate final paths instead of following outside directory
 });
 
 function taskCore() {
-  return load("daemon/plugins/instance/src/backend/service/async_task_core.ts", {
+  return load("plugins/instance/daemon/src/backend/service/async_task_core.ts", {
     "../runtime": { logger }
   });
 }
@@ -416,7 +416,7 @@ test("async tasks surface startup failure, clean up once and release wait listen
 
 test("instance lifecycle waits for asynchronous start before stopping resources", async () => {
   const { LifeCycleTaskManager } = load(
-    "daemon/plugins/instance/src/backend/entity/instance/life_cycle.ts",
+    "plugins/instance/daemon/src/backend/entity/instance/life_cycle.ts",
     {
       "../../service/log": logger
     }
@@ -477,7 +477,7 @@ function scheduleFixture(t) {
     return job;
   };
   const scheduler = load(
-    "daemon/plugins/instance/src/backend/service/system_instance_control.ts",
+    "plugins/instance/daemon/src/backend/service/system_instance_control.ts",
     {
       "node-schedule": {
         scheduleJob: (time, callback) => (time.includes("invalid") ? null : createJob(callback))
@@ -600,7 +600,7 @@ test("schedules persist remaining counts and stop delayed actions after deletion
 test("failed multipart uploads always remove temporary files", async () => {
   const routes = new Map();
   const cleaned = [];
-  const { registerHttpRoutes } = load("daemon/plugins/file/src/backend/http_router.ts", {
+  const { registerHttpRoutes } = load("plugins/file/daemon/src/backend/http_router.ts", {
     "./file_writer": class {},
     "./system_file": class {},
     "./filepath": { clearUploadFiles: (files) => cleaned.push(files) },
@@ -640,7 +640,7 @@ test("ZIP restore refuses an existing junction that points outside its destinati
   fs.mkdirSync(outside);
   fs.symlinkSync(outside, path.join(destination, "linked"), "junction");
   let closed = false;
-  const { decompressWithProgress } = load("daemon/plugins/runtime/src/backend/common/compress.ts", {
+  const { decompressWithProgress } = load("plugins/runtime/daemon/src/backend/common/compress.ts", {
     "mcsmanager-common": { ProcessWrapper: class {} },
     "../const": {},
     "../i18n": { $t: (key) => key },
@@ -680,7 +680,7 @@ test("backup quota failures preserve the actual running instance state", async (
     println() {},
     print() {}
   };
-  load("daemon/plugins/backup/src/backend/index.ts", { "../i18n": { localeMessages: {} } }).apply({
+  load("plugins/backup/daemon/src/backend/index.ts", { "../i18n": { localeMessages: {} } }).apply({
     i18n: { define() {}, $t: (key) => key },
     logger,
     settings: { config: { instanceBackupPath: backups, instanceBackupMaxSize: 0.000000001 } },
@@ -711,7 +711,7 @@ test("instance deletion awaits filesystem success and preserves retryable instan
   fs.writeFileSync(path.join(instanceDir, "world.dat"), "world");
   let failRemove = true;
   const deleted = [];
-  const subsystem = load("daemon/plugins/instance/src/backend/service/system_instance.ts", {
+  const subsystem = load("plugins/instance/daemon/src/backend/service/system_instance.ts", {
     "fs-extra": {
       ...fse,
       remove: async (target) => {
@@ -766,9 +766,9 @@ test("Java inventory survives one corrupt metadata record", async (t) => {
     path.join(cwd, "msl_17/java_info.json"),
     JSON.stringify({ name: "msl", version: "17" })
   );
-  const { JavaManager } = load("daemon/plugins/instance/src/backend/java/java_manager.ts", {
-    "../../../../../../common/src/java": { javaExecutableCommand() {} },
-    "./java_info": load("daemon/plugins/instance/src/backend/java/java_info.ts"),
+  const { JavaManager } = load("plugins/instance/daemon/src/backend/java/java_manager.ts", {
+    "../../../../../../core/common/src/java": { javaExecutableCommand() {} },
+    "./java_info": load("plugins/instance/daemon/src/backend/java/java_info.ts"),
     "./java_install": {},
     "./msl_java": {
       MslJavaSource: class {

@@ -21,7 +21,7 @@ const load = createLoader({
 });
 
 test("browser metadata redacts backend config and preserves explicit graph metadata", () => {
-  const { createFrontendPluginMetadata } = load("common/src/plugin_manifest.ts");
+  const { createFrontendPluginMetadata } = load("core/common/src/plugin_manifest.ts");
   const metadata = createFrontendPluginMetadata({
     id: "example",
     config: { password: "backend-secret" },
@@ -38,7 +38,7 @@ test("browser metadata redacts backend config and preserves explicit graph metad
 });
 
 test("frontend plugin graph is stable, detects missing dependencies and cycles", () => {
-  const { resolvePluginDependencyOrder } = load("common/src/plugin_contract.ts");
+  const { resolvePluginDependencyOrder } = load("core/common/src/plugin_contract.ts");
   const resolve = (items) =>
     resolvePluginDependencyOrder(items, {
       id: (item) => item.id,
@@ -75,7 +75,7 @@ test("frontend plugin graph is stable, detects missing dependencies and cycles",
 
 test("typed slots order entries, reject duplicate ids, honor conditions and dispose by scope", async (t) => {
   const { Context } = frontendRequire("cordis");
-  const { SlotsService } = load("panel/plugins/console/src/plugin/slots.ts", {
+  const { SlotsService } = load("plugins/console/panel/src/plugin/slots.ts", {
     cordis: frontendRequire("cordis"),
     vue: frontendRequire("vue")
   });
@@ -138,7 +138,7 @@ test("typed slots order entries, reject duplicate ids, honor conditions and disp
 
 test("header action descriptors register without a component for the shell to render", async (t) => {
   const { Context } = frontendRequire("cordis");
-  const { SlotsService } = load("panel/plugins/console/src/plugin/slots.ts", {
+  const { SlotsService } = load("plugins/console/panel/src/plugin/slots.ts", {
     cordis: frontendRequire("cordis"),
     vue: frontendRequire("vue")
   });
@@ -188,7 +188,7 @@ test("API client sends bearer authentication without adding a query token", asyn
   axios.defaults = { headers: { common: {} } };
   axios.interceptors = { request: { use: (callback) => (requestInterceptor = callback) } };
   const { apiService, setAuthToken } = load(
-    "panel/plugins/console/src/services/apiService.ts",
+    "plugins/console/panel/src/services/apiService.ts",
     {
       axios: { __esModule: true, default: axios },
       lodash: { __esModule: true, default: { cloneDeep: (value) => value } },
@@ -203,7 +203,7 @@ test("API client sends bearer authentication without adding a query token", asyn
 });
 
 test("permission middleware accepts bearer tokens and retains legacy query compatibility", async () => {
-  const permission = load("panel/plugins/user/src/backend/middleware/permission.ts", {
+  const permission = load("plugins/user/panel/src/backend/middleware/permission.ts", {
     "../runtime": {
       $t: (value) => value,
       globalVariable: () => ({ get: () => 0, set() {} })

@@ -11,7 +11,7 @@ const load = createLoader({ compiler: ts, host: "frontend" });
 function fixture(t, execute) {
   const requests = [];
   const scope = vue.effectScope();
-  const { usePluginIcons } = load("panel/plugins/market/src/hooks/usePluginIcons.ts", {
+  const { usePluginIcons } = load("plugins/market/panel/src/hooks/usePluginIcons.ts", {
     "../api": {
       pluginMarketIcon: () => ({
         execute: (config) => {

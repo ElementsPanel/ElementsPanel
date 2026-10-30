@@ -26,7 +26,7 @@ function version(number) {
   };
 }
 
-const operationState = load("panel/plugins/market/src/operations.ts", {
+const operationState = load("plugins/market/panel/src/operations.ts", {
   vue,
   "@/plugin/context": { ctx: { plugins: { refresh: async () => {} } } },
   "./api": {}
@@ -50,7 +50,7 @@ async function backendFixture(get) {
     isAxiosError: () => false
   };
   const pass = () => async (_ctx, next) => next();
-  const plugin = load("panel/plugins/market/src/backend/index.ts", {
+  const plugin = load("plugins/market/panel/src/backend/index.ts", {
     axios,
     "./plugin_icon": {
       MAX_PLUGIN_ICON_BYTES: 1024 * 1024,
@@ -79,7 +79,7 @@ async function backendFixture(get) {
     logger: { warn: (message) => warnings.push(message) },
     roles: { USER: 1, ADMIN: 10 },
     middleware: {
-      validator: load("panel/plugins/runtime/src/backend/middleware/validator.ts").default,
+      validator: load("plugins/runtime/panel/src/backend/middleware/validator.ts").default,
       permission:
         ({ level }) =>
         async (ctx, next) => {
@@ -238,10 +238,10 @@ function installFixture(overrides = {}) {
   });
   operationState.bulkMode.value = false;
   operationState.queuedChanges.value = [];
-  const component = load("panel/plugins/market/src/components/PluginMarketOperations.vue", {
+  const component = load("plugins/market/panel/src/components/PluginMarketOperations.vue", {
     vue,
     "@/plugin/context": { ctx: { plugins: { refresh: async () => {} } } },
-    "../version": load("panel/plugins/market/src/version.ts"),
+    "../version": load("plugins/market/panel/src/version.ts"),
     "../operations": operationState,
     "vuetify/components": {},
     "@/lang/i18n": { t: (key) => key },
@@ -286,7 +286,7 @@ function installFixture(overrides = {}) {
 }
 
 test("market updates require a greater version, including numeric and prerelease ordering", () => {
-  const { isNewerVersion } = load("panel/plugins/market/src/version.ts");
+  const { isNewerVersion } = load("plugins/market/panel/src/version.ts");
   for (const [candidate, installed, expected] of [
     ["1.10.0", "1.9.0", true],
     ["2.0.0", "1.99.99", true],
@@ -536,7 +536,7 @@ test("opening Add/Modify only loads management data, and version changes keep re
     deprecated: "Use a newer release"
   };
   const older = { ...version("1.0.0"), dependencies: { lib: "^1" } };
-  const component = load("panel/plugins/market/src/components/PluginMarketInstall.vue", {
+  const component = load("plugins/market/panel/src/components/PluginMarketInstall.vue", {
     ...sharedViewOverrides,
     "@/plugin/context": { ctx: { get() {} } },
     "./PluginMarketOperations.vue": {},
@@ -590,7 +590,7 @@ test("opening Add/Modify only loads management data, and version changes keep re
 });
 
 test("a delisted plugin keeps its local uninstall/configuration state when the market is offline", async () => {
-  const component = load("panel/plugins/market/src/components/PluginMarketInstall.vue", {
+  const component = load("plugins/market/panel/src/components/PluginMarketInstall.vue", {
     ...sharedViewOverrides,
     "@/plugin/context": { ctx: { get() {} } },
     "./PluginMarketOperations.vue": {},
@@ -673,7 +673,7 @@ test("the rendered action opens the dialog without card navigation and changes f
     latestVersion: version("1.0.0")
   });
   const Install = load(
-    "panel/plugins/market/src/components/PluginMarketInstall.vue",
+    "plugins/market/panel/src/components/PluginMarketInstall.vue",
     {
       ...sharedViewOverrides,
       "vuetify/components": { ...components, VBtn: Button, VDialog: Dialog },
@@ -749,7 +749,7 @@ test("batch application keeps failed nodes and failed operations, then retries t
       };
     }
   });
-  const operations = load("panel/plugins/market/src/operations.ts", {
+  const operations = load("plugins/market/panel/src/operations.ts", {
     vue,
     "@/plugin/context": { ctx: { plugins: { refresh: async () => {} } } },
     "./api": { installMarketPlugin: api("install"), uninstallMarketPlugin: api("uninstall") }
@@ -779,7 +779,7 @@ test("batch application keeps failed nodes and failed operations, then retries t
 });
 
 test("desktop cards support keyboard selection and preserve search when installed badges change", async () => {
-  const component = load("panel/plugins/market/src/components/PluginMarketList.vue", {
+  const component = load("plugins/market/panel/src/components/PluginMarketList.vue", {
     ...sharedViewOverrides,
     "../api": {
       pluginMarketList: () => ({
@@ -825,7 +825,7 @@ test("desktop cards support keyboard selection and preserve search when installe
 
 test("an empty catalogue reads as empty, and only a failed refresh as unreachable", async () => {
   let fail = true;
-  const component = load("panel/plugins/market/src/components/PluginMarketList.vue", {
+  const component = load("plugins/market/panel/src/components/PluginMarketList.vue", {
     ...sharedViewOverrides,
     "../api": {
       pluginMarketList: () => ({
@@ -851,7 +851,7 @@ test("an empty catalogue reads as empty, and only a failed refresh as unreachabl
 
 test("market lists ignore older refreshes and responses after unmount", async () => {
   const requests = [];
-  const component = load("panel/plugins/market/src/components/PluginMarketList.vue", {
+  const component = load("plugins/market/panel/src/components/PluginMarketList.vue", {
     ...sharedViewOverrides,
     "../api": {
       pluginMarketList: () => ({
@@ -891,7 +891,7 @@ test("desktop browsing keeps the list mounted and wires detail installation and 
     render: () => vue.h("div")
   });
   const Desktop = load(
-    "panel/plugins/market/src/desktop/DesktopPluginMarket.vue",
+    "plugins/market/panel/src/desktop/DesktopPluginMarket.vue",
     {
       vue,
       "../components/PluginMarketList.vue": List,
@@ -927,7 +927,7 @@ test("desktop browsing keeps the list mounted and wires detail installation and 
 
 test("shared detail follows the plugin only, and ignores an answer that arrived late", async () => {
   const requests = [];
-  const component = load("panel/plugins/market/src/components/PluginMarketDetail.vue", {
+  const component = load("plugins/market/panel/src/components/PluginMarketDetail.vue", {
     ...sharedViewOverrides,
     "@/tools/safe": { markdownToHTML: (text) => text },
     "./PluginMarketInstall.vue": {},
@@ -1005,7 +1005,7 @@ test("detail locks every release action and its tabs while a plugin operation is
     ].map((name) => [name, slots])
   );
   const Detail = load(
-    "panel/plugins/market/src/components/PluginMarketDetail.vue",
+    "plugins/market/panel/src/components/PluginMarketDetail.vue",
     {
       ...sharedViewOverrides,
       "@/components/PageToolbar.vue": slots,

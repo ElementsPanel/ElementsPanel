@@ -1,0 +1,30 @@
+{
+  "name": "@elementspanel/epanel-plugin-mod-manager",
+  "version": "1.0.1",
+  "displayName": "Mod Manager",
+  "description": "Minecraft mod and plugin management.",
+  "elementspanel": {
+    "id": "mod-manager",
+    "dual": true,
+    "panel": {
+      "priority": 150,
+      "frontendInject": [
+        "console",
+        "i18n",
+        "instance",
+        "file"
+      ],
+      "directory": "panel",
+      "folder": "mod",
+      "displayName": "Mod Manager",
+      "description": "Minecraft mod and plugin management."
+    },
+    "daemon": {
+      "priority": 100,
+      "directory": "daemon",
+      "folder": "mod",
+      "displayName": "Mod Manager",
+      "description": "Instance mod and plugin management."
+    }
+  }
+}

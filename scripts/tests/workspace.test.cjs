@@ -7,7 +7,7 @@ const { test } = require("node:test");
 const { initialize } = require("../../packages/init-elementspanel/index.cjs");
 const { setupWorkspace, buildCommand, publishCommand } = require("../../packages/init-elementspanel/workspace.cjs");
 const { createLoader } = require("./helpers.cjs");
-const { readPluginManifest } = createLoader()("common/src/plugin_manifest.ts");
+const { readPluginManifest } = createLoader()("core/common/src/plugin_manifest.ts");
 
 test("initialized projects create npm plugin workspaces outside the runtime source tree", async (t) => {
   const project = fs.mkdtempSync(path.join(os.tmpdir(), "elementspanel-workspace-"));

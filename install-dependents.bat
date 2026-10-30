@@ -3,8 +3,9 @@
 call npm install
 call npm run preview-build
 
+call npm install --prefix core/daemon
+if not exist daemon mkdir daemon
 cd daemon
-call npm install
 echo Installing lib dependencies...
 if exist lib ( goto lib-install ) else ( mkdir lib && goto lib-install )
 
@@ -18,7 +19,7 @@ curl -L -o .\lib\pty_win32_x64.exe https://github.com/MCSManager/PTY/releases/do
 goto cont
 
 :cont
-cd ../panel
+cd ../core/panel
 call npm install
 cd ../frontend
 call npm install

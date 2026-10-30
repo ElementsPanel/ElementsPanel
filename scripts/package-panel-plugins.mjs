@@ -57,7 +57,13 @@ function removeSourceMaps(directory) {
   }
 }
 
-export function packagePanelPlugins({ sourceRoot, buildRoot, outputRoot, pluginNames }) {
+export function packagePanelPlugins({
+  sourceRoot,
+  buildRoot,
+  outputRoot,
+  pluginNames,
+  pluginDirectories = {}
+}) {
   fs.mkdirSync(outputRoot, { recursive: true });
 
   const frontendManifestPath = path.join(buildRoot, "manifest.json");
@@ -66,7 +72,7 @@ export function packagePanelPlugins({ sourceRoot, buildRoot, outputRoot, pluginN
     : [];
 
   for (const pluginName of pluginNames) {
-    const sourceDirectory = path.join(sourceRoot, pluginName);
+    const sourceDirectory = pluginDirectories[pluginName] || path.join(sourceRoot, pluginName);
     const { manifest: metadata, packageMetadata } = readPluginMetadata(sourceDirectory);
 
     const outputDirectory = path.join(outputRoot, pluginName);

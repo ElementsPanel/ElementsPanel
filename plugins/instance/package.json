@@ -1,0 +1,26 @@
+{
+  "name": "@elementspanel/epanel-plugin-instance",
+  "version": "1.0.1",
+  "description": "Application instance and Java runtime management.",
+  "elementspanel": {
+    "id": "instance",
+    "dual": true,
+    "panel": {
+      "priority": 40,
+      "frontendInject": [
+        "console",
+        "i18n"
+      ],
+      "directory": "panel",
+      "folder": "instance",
+      "description": "Application instance and Java runtime management."
+    },
+    "daemon": {
+      "priority": 40,
+      "directory": "daemon",
+      "folder": "instance",
+      "displayName": "Application Instances",
+      "description": "Instance processes, runtimes, installation and scheduling."
+    }
+  }
+}

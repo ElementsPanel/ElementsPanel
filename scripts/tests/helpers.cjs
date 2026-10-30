@@ -3,7 +3,8 @@ const path = require("node:path");
 const Module = require("node:module");
 
 const root = path.resolve(__dirname, "../..");
-const from = (workspace) => Module.createRequire(path.join(root, workspace, "package.json"));
+const from = (workspace) =>
+  Module.createRequire(path.join(root, "core", workspace, "package.json"));
 const ts = from("panel")("typescript");
 
 // Run source in memory, replacing only the dependencies a test owns.
@@ -22,7 +23,28 @@ function createLoader({ host, resolve, globals = false, transform, compiler = ts
   const hostRequire = host ? from(host) : null;
   return function load(relative, overrides = {}, input) {
     const filename = path.resolve(root, relative);
-    const localRequire = Module.createRequire(filename);
+    const nativeRequire = Module.createRequire(filename);
+    const side = filename.match(/[/\\]plugins[/\\][^/\\]+[/\\](panel|daemon)[/\\]/)?.[1];
+    const workspace =
+      side === "daemon"
+        ? "daemon"
+        : side === "panel"
+        ? filename.includes(`${path.sep}backend${path.sep}`)
+          ? "panel"
+          : "frontend"
+        : filename.match(/[/\\]core[/\\](panel|daemon|frontend|common)[/\\]/)?.[1];
+    const fallback = workspace ? from(workspace) : null;
+    const localRequire = Object.assign((id) => {
+      if (!id.startsWith(".") && fallback) {
+        try {
+          return nativeRequire(id);
+        } catch (error) {
+          if (error.code !== "MODULE_NOT_FOUND") throw error;
+        }
+        return fallback(id);
+      }
+      return nativeRequire(id);
+    }, nativeRequire);
     const mod = new Module(filename, module);
     mod.filename = filename;
     mod.paths = Module._nodeModulePaths(path.dirname(filename));

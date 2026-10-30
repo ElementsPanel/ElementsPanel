@@ -27,13 +27,13 @@ function fixture(t) {
     else process.env.EPANEL_PACKAGE_ROOT = previous.packageRoot;
     fs.rmSync(root, { recursive: true, force: true });
   });
-  return { root, work, packageRoot, paths: load("common/src/runtime_paths.ts") };
+  return { root, work, packageRoot, paths: load("core/common/src/runtime_paths.ts") };
 }
 
 test("npm resources and binary paths are independent of the user's data directory", (t) => {
   const { packageRoot, work, paths } = fixture(t);
   const plugin = installNpmPlugin(packageRoot, "panel", "runtime");
-  const { default: Storage } = load("common/src/system_storage.ts");
+  const { default: Storage } = load("core/common/src/system_storage.ts");
   assert.equal(Storage.DATA_PATH, path.join(work, "data"));
   assert.equal(paths.packagePath("public"), path.join(packageRoot, "public"));
   assert.ok(paths.bundledToolPath("pty").startsWith(path.join(work, "lib") + path.sep));
@@ -80,8 +80,8 @@ for (const side of ["panel", "daemon"]) {
     };
     const version = load(
       side === "panel"
-        ? "panel/plugins/runtime/src/backend/version.ts"
-        : "daemon/plugins/runtime/src/backend/service/version.ts",
+        ? "plugins/runtime/panel/src/backend/version.ts"
+        : "plugins/runtime/daemon/src/backend/service/version.ts",
       {
         "mcsmanager-common": { GlobalVariable, ...f.paths },
         "./service/log": { logger },
@@ -142,7 +142,7 @@ test("project-level npm plugins are resolved alongside bundled plugins", (t) => 
   assert.equal(records.find((record) => record.id === "runtime").defaultEnabled, true);
   assert.equal(records.find((record) => record.id === "custom").defaultEnabled, false);
 
-  const { listNpmPlugins } = load("common/src/plugin_npm.ts");
+  const { listNpmPlugins } = load("core/common/src/plugin_npm.ts");
   const listed = listNpmPlugins("panel", { packageRoot, projectRoot: work });
   assert.deepEqual(
     listed.map((record) => [record.pluginId, record.source]).sort(),
@@ -157,8 +157,8 @@ test("project-level npm plugins are resolved alongside bundled plugins", (t) => 
     records.find((record) => record.id === "runtime").directory
   );
 
-  const { discoverPluginsFromRoots } = load("common/src/plugin_manifest.ts");
-  const roots = load("common/src/runtime_paths.ts").packagePluginRoots("panel");
+  const { discoverPluginsFromRoots } = load("core/common/src/plugin_manifest.ts");
+  const roots = load("core/common/src/runtime_paths.ts").packagePluginRoots("panel");
   assert.equal(roots.find((root) => root.directory === project.directory).defaultEnabled, false);
   const discovered = discoverPluginsFromRoots(roots, {
     entryFields: ["panel", "backend"],
@@ -190,7 +190,7 @@ test("archive executable permissions and the macOS amd64 alias work without modi
   fs.mkdirSync(path.join(f.work, "lib"), { recursive: true });
   const executable = path.join(f.work, "lib", "file_zip_darwin_amd64");
   fs.writeFileSync(executable, "fixture", { mode: 0o555 });
-  const paths = load("common/src/runtime_paths.ts", {
+  const paths = load("core/common/src/runtime_paths.ts", {
     "node:os": { platform: () => "darwin", arch: () => "x64" }
   });
   assert.equal(paths.bundledToolPath("file_zip"), executable);

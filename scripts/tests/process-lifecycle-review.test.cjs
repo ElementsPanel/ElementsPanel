@@ -11,7 +11,7 @@ const { test } = require("node:test");
 const daemonRequire = from("daemon");
 const ts = daemonRequire("typescript");
 const logger = { info() {}, warn() {}, error() {} };
-const base = "daemon/plugins/instance/src/backend/";
+const base = "plugins/instance/daemon/src/backend/";
 
 const load = createLoader({ compiler: ts, globals: true, resolve: (id) => daemonRequire(id) });
 

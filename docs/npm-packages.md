@@ -30,7 +30,9 @@ npx @elementspanel/init@latest my-panel --language zh --template full --panel-po
 
 主程序从 npm 依赖中解析插件，支持依赖提升和嵌套安装。主程序包不复制内置插件目录；缺失的非核心插件会被跳过，核心插件缺失才会阻止启动。
 
-内置插件源码位于 `panel/plugins/` 和 `daemon/plugins/`。第三方插件工作区只在初始化后的项目 `external/*` 中创建。
+核心源码位于 `core/panel/`、`core/daemon/`、`core/frontend/` 和 `core/common/`。内置插件按功能归档到 `plugins/<id>/`，每个插件只有一份根 `package.json`；`elementspanel.panel` 和 `elementspanel.daemon` 分别声明各端的目录、加载顺序与兼容性，端目录中的 `plugin.json` 只保留执行入口。单端插件只包含相应端的目录，双端插件共用包名与版本。
+
+源码开发命令仍从项目根目录执行，依赖安装、类型检查和构建命令会进入 `core/` 中的对应目录。开发启动器将代码位置与工作目录分开：配置、日志、上传文件和节点工具继续使用根目录下的 `panel/`、`daemon/` 运行目录，无需迁移已有数据。源码目录重组不改变已发布 npm 包的目录布局、命令或用户数据位置。第三方插件工作区仍在初始化后的项目 `external/*` 中创建。
 
 初始化后的项目可以这样创建和构建第三方插件：
 
@@ -44,7 +46,7 @@ npm start
 
 完整构建逻辑直接写在插件自身 `package.json.scripts.build` 中，构建工具声明在插件的 `devDependencies`，无需外置构建脚本。可在插件目录执行 `npm run build`，或在项目根目录使用上述 workspace 命令。`npm run build -- example` 仅转发到该插件的 npm 脚本；`prepack` 在发布前执行包内构建。
 
-安装根目录、common、panel、daemon、frontend 的依赖后，运行 `npm run build:npm` 生成 `npm-packages/`。daemon npm 包不携带平台二进制库；初始化项目首次启动 daemon 时，会将当前平台需要的工具下载到 `daemon/lib/`，与 `data/` 和 `logs/` 同级。已有编译结果时，`npm run package:npm` 只收集和校验产物；目标输出目录存在时会在新产物准备完成后静默替换，也可追加 `-- --out <新目录>`。
+安装根目录与 `core/common`、`core/panel`、`core/daemon`、`core/frontend` 的依赖后，运行 `npm run build:npm` 生成 `npm-packages/`。daemon npm 包不携带平台二进制库；初始化项目首次启动 daemon 时，会将当前平台需要的工具下载到 `daemon/lib/`，与 `data/` 和 `logs/` 同级。已有编译结果时，`npm run package:npm` 只收集和校验产物；目标输出目录存在时会在新产物准备完成后静默替换，也可追加 `-- --out <新目录>`。
 
 输出包含两个运行包、初始化器，以及每个内置插件的独立目录。版本分别沿用运行包和插件 `package.json` 中的版本号；一个插件的双端包名和版本必须一致。编译测试 workflow 会打包所有目录并保存 `.tgz` artifact，npm 发布由维护者手动执行。
 

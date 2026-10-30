@@ -1,0 +1,26 @@
+{
+  "name": "@elementspanel/epanel-plugin-config",
+  "version": "1.0.1",
+  "description": "Panel plugin configuration.",
+  "elementspanel": {
+    "id": "config",
+    "dual": true,
+    "panel": {
+      "priority": 10000,
+      "frontendInject": [
+        "console",
+        "i18n"
+      ],
+      "directory": "panel",
+      "folder": "config",
+      "description": "Panel plugin configuration."
+    },
+    "daemon": {
+      "priority": 10000,
+      "directory": "daemon",
+      "folder": "config",
+      "displayName": "Plugin Management",
+      "description": "Remote daemon plugin management."
+    }
+  }
+}

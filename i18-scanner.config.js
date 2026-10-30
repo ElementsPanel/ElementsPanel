@@ -18,17 +18,16 @@ function createConfig(root = __dirname) {
 
   function namespaceForFile(filename) {
     const relative = path.relative(root, filename).replaceAll(path.sep, "/");
-    const side = relative.startsWith("daemon/") ? "daemon" : "panel";
-    const plugin = relative.match(/^(panel|daemon)\/plugins\/([^/]+)\/src\//);
-    const scoped = plugin && `${side}/plugins/${plugin[2]}/src/i18n`;
-    return namespaces.has(scoped) ? scoped : `${side}/plugins/i18n/src/languages`;
+    const side = /^(?:core\/daemon\/|plugins\/[^/]+\/daemon\/)/.test(relative) ? "daemon" : "panel";
+    const plugin = relative.match(/^plugins\/([^/]+)\/(panel|daemon)\/src\//);
+    const scoped = plugin && `plugins/${plugin[1]}/${side}/src/i18n`;
+    return namespaces.has(scoped) ? scoped : `plugins/i18n/${side}/src/languages`;
   }
 
   return {
     input: [
-      "./panel/{src,plugins}/**/*.{ts,vue}",
-      "./daemon/{src,plugins}/**/*.{ts,vue}",
-      "./frontend/src/**/*.{ts,vue}",
+      "./core/{panel,daemon,frontend}/src/**/*.{ts,vue}",
+      "./plugins/*/{panel,daemon}/src/**/*.{ts,vue}",
       "!**/node_modules/**",
       "!**/production/**",
       "!**/dist/**"
@@ -42,7 +41,7 @@ function createConfig(root = __dirname) {
       lngs: LANGUAGES,
       ns: catalogues,
       defaultLng: "zh_CN",
-      defaultNs: "panel/plugins/i18n/src/languages",
+      defaultNs: "plugins/i18n/panel/src/languages",
       resource: { loadPath: resourcePath, savePath: resourcePath, jsonIndent: 2, lineEnding: "\n" },
       removeUnusedKeys: false,
       nsSeparator: false,

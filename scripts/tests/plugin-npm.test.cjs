@@ -93,7 +93,7 @@ function npmFixture(t, side = "panel") {
     return child;
   };
   const load = loader({ child_process: { spawn } });
-  return { ...f, calls, state, ...load("common/src/plugin_npm.ts") };
+  return { ...f, calls, state, ...load("core/common/src/plugin_npm.ts") };
 }
 
 test("npm installs pin the resolved dependency; uninstall removes it and preserves unrelated data", async (t) => {
@@ -217,7 +217,7 @@ test("externally installed npm dependencies are discovered without a manual mapp
   const { resolveNpmPlugins } = require("../runtime/npm-plugins.cjs");
   const runtime = resolveNpmPlugins(f.host, "panel");
   assert.equal(runtime[0].defaultEnabled, true);
-  const common = loader()("common/src/plugin_npm.ts");
+  const common = loader()("core/common/src/plugin_npm.ts");
   assert.equal(
     common.listNpmPlugins("panel", { packageRoot: f.host, projectRoot: f.root })[0].name,
     plugin.name
@@ -234,12 +234,12 @@ test("setup workspace symlinks resolve to their real package boundary", async (t
   const [record] = resolveNpmPlugins(f.host, "panel");
   assert.equal(record.packageRoot, realRoot);
   const load = loader();
-  const common = load("common/src/plugin_npm.ts");
+  const common = load("core/common/src/plugin_npm.ts");
   assert.equal(
     common.listNpmPlugins("panel", { packageRoot: f.host, projectRoot: f.root })[0].packageRoot,
     realRoot
   );
-  const modules = load("common/src/plugin_modules.ts");
+  const modules = load("core/common/src/plugin_modules.ts");
   const entry = path.join(record.directory, "backend/index.cjs");
   write(entry, "exports.value=1;");
   assert.equal((await modules.loadPluginModule(entry, record.packageRoot, "one")).value, 1);
@@ -260,7 +260,7 @@ test("npm watcher waits for stable manifests and skips an in-progress dependency
       npmPluginOperationPending: () => busy
     }
   });
-  load("common/src/plugin_watch.ts").watchNpmPlugins(
+  load("core/common/src/plugin_watch.ts").watchNpmPlugins(
     {
       setInterval(fn) {
         poll = fn;
@@ -331,7 +331,7 @@ for (const format of ["cjs", "mjs"]) {
         ? `import helper from "./helper.${format}"; import dependency from "private-one"; export const value=helper+dependency;`
         : `exports.value=require("./helper.${format}")+require("private-one");`
     );
-    const modules = loader()("common/src/plugin_modules.ts");
+    const modules = loader()("core/common/src/plugin_modules.ts");
     const revision = modules.pluginBackendRevision(entry, plugin);
     assert.equal((await modules.loadPluginModule(entry, plugin, revision)).value, 11);
     write(path.join(plugin, "backend", `helper.${format}`), valueSource(2));
@@ -390,12 +390,12 @@ for (const side of ["panel", "daemon"]) {
         "runtime_paths",
         "plugin_modules",
         "plugin_watch"
-      ].map((name) => loadCommon(`common/src/${name}.ts`)),
+      ].map((name) => loadCommon(`core/common/src/${name}.ts`)),
       f
     );
     const load = loader({ "mcsmanager-common": common });
     const plugin = load(
-      side === "panel" ? "panel/src/app/plugin/loader.ts" : "daemon/src/plugin/loader.ts",
+      side === "panel" ? "core/panel/src/app/plugin/loader.ts" : "core/daemon/src/plugin/loader.ts",
       { "./context": { ctx } }
     );
     await plugin[side === "panel" ? "loadPanelPlugins" : "loadDaemonPlugins"]();

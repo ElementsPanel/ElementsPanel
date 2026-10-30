@@ -56,18 +56,18 @@ function frontendFixture(t, { user = true, failStatus = false } = {}) {
     setLoadingTitle() {},
     setAppLoadingError() {}
   };
-  const runtime = load("panel/plugins/runtime/src/frontend.ts", {
+  const runtime = load("plugins/runtime/panel/src/frontend.ts", {
     "@console/stores/useAppStateStore": { useAppStateStore: () => store },
     "@console/tools/dom": loading
   });
-  const i18n = load("panel/plugins/i18n/src/frontend.ts", {
+  const i18n = load("plugins/i18n/panel/src/frontend.ts", {
     "@/lang/i18n": { LANGUAGE_KEY: "test-language", toStandardLang: (value) => value || "en_us" },
     "./messages": { baseLocaleMessages: { en_us: {}, zh_cn: {} } }
   });
-  const services = load("panel/plugins/console/src/plugin/services.ts", {
+  const services = load("plugins/console/panel/src/plugin/services.ts", {
     "@console/config/router": { router }
   });
-  const slots = load("panel/plugins/console/src/plugin/slots.ts", {
+  const slots = load("plugins/console/panel/src/plugin/slots.ts", {
     cordis: frontendRequire("cordis"),
     vue
   });
@@ -84,7 +84,7 @@ function frontendFixture(t, { user = true, failStatus = false } = {}) {
     }
     reconnect() {}
   }
-  const bootstrap = load("panel/plugins/console/src/bootstrap.ts", {
+  const bootstrap = load("plugins/console/panel/src/bootstrap.ts", {
     "@/lang/i18n": { getI18nInstance: () => ctx.i18n.instance },
     "./config/router": { router },
     "./stores/useAppStateStore": { useAppStateStore: () => store },
@@ -94,7 +94,7 @@ function frontendFixture(t, { user = true, failStatus = false } = {}) {
     "./plugin/slots": slots,
     "./services/connectionService": { ConnectionService: TestConnectionService }
   });
-  const session = load("panel/plugins/user/src/session.ts", {
+  const session = load("plugins/user/panel/src/session.ts", {
     "@/lang/i18n": { t: (key) => key },
     "@/stores/useAppStateStore": { useAppStateStore: () => store }
   });
@@ -138,11 +138,11 @@ function frontendFixture(t, { user = true, failStatus = false } = {}) {
       assetDirectory: id,
       load: async () => plugin
     }));
-  const loader = load("frontend/src/plugin/loader.ts", {
+  const loader = load("core/frontend/src/plugin/loader.ts", {
     "./context": { ctx },
     "virtual:panel-plugins": { panelPluginModules: sources }
   });
-  const install = load("frontend/src/plugin/install.ts", {
+  const install = load("core/frontend/src/plugin/install.ts", {
     "./context": { ctx },
     "./loader": loader
   });
@@ -194,7 +194,7 @@ test("feature-owned configuration migrations retain data and are idempotent", ()
     ]
   ]) {
     const { migrateConfig } = load(
-      `${side}/plugins/${plugin}/src/backend/service/version_adapter.ts`
+      `plugins/${plugin}/${side}/src/backend/service/version_adapter.ts`
     );
     let stored = JSON.stringify(input);
     let writes = 0;
@@ -248,11 +248,11 @@ for (const side of ["panel", "daemon"]) {
     const exited = new Promise((resolve) => {
       fakeProcess.exit = resolve;
     });
-    const { setupLogging } = load(`${side}/plugins/runtime/src/backend/service/log.ts`, {
+    const { setupLogging } = load(`plugins/runtime/${side}/src/backend/service/log.ts`, {
       "fs-extra": fakeFs
     });
     const { setupProcessLifecycle } = load(
-      `${side}/plugins/runtime/src/backend/lifecycle.ts`,
+      `plugins/runtime/${side}/src/backend/lifecycle.ts`,
       {},
       { process: fakeProcess }
     );

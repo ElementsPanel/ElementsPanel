@@ -26,11 +26,11 @@ async function panelFixture(t) {
     installNpmPlugin: async () => ({}),
     uninstallNpmPlugin: async () => null
   };
-  const service = panelLoad("panel/plugins/market/src/backend/service/plugin_market.ts", {
+  const service = panelLoad("plugins/market/panel/src/backend/service/plugin_market.ts", {
     axios: { get: async (...args) => networkCalls.push(args) },
     "mcsmanager-common": common
   });
-  const plugin = panelLoad("panel/plugins/market/src/backend/index.ts", {
+  const plugin = panelLoad("plugins/market/panel/src/backend/index.ts", {
     axios: { get: async (...args) => networkCalls.push(args) },
     "../i18n": { localeMessages: {} },
     "./service/plugin_market": service,
@@ -89,7 +89,7 @@ function daemonFixture(t) {
       return { pluginId };
     }
   };
-  const plugin = daemonLoad("daemon/plugins/config/src/backend/index.ts", {
+  const plugin = daemonLoad("plugins/config/daemon/src/backend/index.ts", {
     "mcsmanager-common": common,
     "../i18n": { localeMessages: {} },
     "./settings": { SettingsFormService: class {} }

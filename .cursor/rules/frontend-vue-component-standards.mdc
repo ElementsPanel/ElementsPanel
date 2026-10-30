@@ -1,6 +1,6 @@
 ---
 description: Frontend (Vue 3) development conventions
-globs: frontend/src/**/*.vue
+globs: plugins/*/panel/src/**/*.vue, core/frontend/src/**/*.vue
 alwaysApply: false
 ---
 

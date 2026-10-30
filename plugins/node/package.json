@@ -1,0 +1,27 @@
+{
+  "name": "@elementspanel/epanel-plugin-node",
+  "version": "1.0.1",
+  "description": "Remote node and image management.",
+  "elementspanel": {
+    "id": "node",
+    "dual": true,
+    "panel": {
+      "priority": 20,
+      "frontendInject": [
+        "console",
+        "i18n",
+        "instance"
+      ],
+      "directory": "panel",
+      "folder": "node",
+      "description": "Remote node and image management."
+    },
+    "daemon": {
+      "priority": 200,
+      "directory": "daemon",
+      "folder": "node",
+      "displayName": "Node Configuration",
+      "description": "Connection address mapping and language synchronization."
+    }
+  }
+}

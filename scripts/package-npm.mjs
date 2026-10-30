@@ -2,7 +2,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharedDependencies from "./runtime/shared-dependencies.cjs";
-import { pluginEntryFields } from "./plugin-metadata.mjs";
+import { pluginEntryFields, readPluginMetadata } from "./plugin-metadata.mjs";
+import layout from "./workspace-layout.cjs";
 import { copyTree } from "./npm-assets.mjs";
 import { packagePanelPlugins } from "./package-panel-plugins.mjs";
 import { packageDaemonPlugins } from "./package-daemon-plugins.mjs";
@@ -81,27 +82,31 @@ async function packageBuiltinPlugins(sourceRoot, outputRoot, stagingRoot) {
   const plugins = new Map();
   const hosts = {};
   for (const side of ["panel", "daemon"]) {
-    hosts[side] = await readJson(path.join(repository, side, "package.json"));
-    const pluginRoot = path.join(repository, side, "plugins");
-    const pluginNames = [];
-    for (const item of await fs.readdir(pluginRoot, { withFileTypes: true })) {
-      if (item.isDirectory() && (await exists(path.join(pluginRoot, item.name, "plugin.json"))))
-        pluginNames.push(item.name);
-    }
+    hosts[side] = await readJson(path.join(layout.coreDirectory(side), "package.json"));
+    const sources = layout.sourcePlugins(side);
+    const pluginNames = sources.map((plugin) => plugin.folder);
+    const pluginDirectories = Object.fromEntries(
+      sources.map((plugin) => [
+        plugin.folder,
+        path.join(sourceRoot, path.relative(repository, plugin.directory))
+      ])
+    );
     const pluginOutput = path.join(stagingRoot, side);
     const packagePlugins = side === "panel" ? packagePanelPlugins : packageDaemonPlugins;
     packagePlugins({
-      sourceRoot: path.join(sourceRoot, side, "plugins"),
-      buildRoot: path.join(sourceRoot, "frontend/dist/plugins"),
+      buildRoot: path.join(sourceRoot, "core/frontend/dist/plugins"),
       outputRoot: pluginOutput,
-      pluginNames
+      pluginNames,
+      pluginDirectories
     });
     for (const folder of pluginNames) {
       const directory = path.join(pluginOutput, folder);
       const manifest = await verifyPlugin(directory);
       const packageMetadata = await readJson(path.join(directory, "package.json"));
-      const expected = await readJson(path.join(pluginRoot, folder, "plugin.json"));
-      const expectedPackage = await readJson(path.join(pluginRoot, folder, "package.json"));
+      const source = sources.find((plugin) => plugin.folder === folder);
+      const { manifest: expected, packageMetadata: expectedPackage } = readPluginMetadata(
+        source.directory
+      );
       const id = packageMetadata.elementspanel.id;
       const version = packageMetadata.version;
       if (id !== expectedPackage.elementspanel.id || version !== expectedPackage.version)
@@ -125,7 +130,9 @@ async function packageBuiltinPlugins(sourceRoot, outputRoot, stagingRoot) {
         plugins.set(id, plugin);
       }
       if (plugin.version !== version || plugin.name !== packageMetadata.name)
-        throw new Error(`Both sides of npm plugin ${id} must have the same package name and version.`);
+        throw new Error(
+          `Both sides of npm plugin ${id} must have the same package name and version.`
+        );
       if (plugin.sides[side]) throw new Error(`Duplicate ${side} plugin id: ${id}`);
       plugin.sides[side] = { directory, folder, metadata: packageMetadata };
     }
@@ -200,21 +207,18 @@ async function packageBuiltinPlugins(sourceRoot, outputRoot, stagingRoot) {
       `${JSON.stringify(metadata, null, 2)}\n`
     );
     copyTree(path.join(repository, "LICENSE"), path.join(directory, "LICENSE"));
-    await fs.writeFile(
-      path.join(directory, "README.md"),
-      `# epanel-plugin-${plugin.id}\n`
-    );
+    await fs.writeFile(path.join(directory, "README.md"), `# epanel-plugin-${plugin.id}\n`);
     result.push(metadata);
   }
   return result;
 }
 
 async function packageRuntime(side, sourceRoot, outputRoot, plugins) {
-  const source = path.join(sourceRoot, side, "production");
+  const source = path.join(layout.coreDirectory(side, sourceRoot), "production");
   const output = path.join(outputRoot, side);
   const metadata = runtimeManifest(
     side,
-    await readJson(path.join(repository, side, "package.json"))
+    await readJson(path.join(layout.coreDirectory(side), "package.json"))
   );
   metadata.elementspanel = { side, plugins: {} };
   for (const plugin of plugins) {
@@ -222,7 +226,7 @@ async function packageRuntime(side, sourceRoot, outputRoot, plugins) {
     metadata.dependencies[plugin.name] = plugin.version;
     metadata.elementspanel.plugins[plugin.elementspanel.id] = plugin.name;
   }
-  const resolveShared = sharedDependencies.createSharedResolver(path.join(repository, side));
+  const resolveShared = sharedDependencies.createSharedResolver(layout.coreDirectory(side));
   // Webpack leaves these imports external. Declare them directly, with the
   // versions from the same graph used to build the host, so npm need not hoist them.
   for (const name of sharedDependencies.sharedModules) {
@@ -241,7 +245,7 @@ async function packageRuntime(side, sourceRoot, outputRoot, plugins) {
   );
 
   if (side === "panel") {
-    const frontend = path.join(sourceRoot, "frontend/dist");
+    const frontend = path.join(sourceRoot, "core/frontend/dist");
     await fs.stat(path.join(frontend, "index.html"));
     await fs.mkdir(path.join(output, "public"));
     for (const item of await fs.readdir(frontend)) {

@@ -1,0 +1,27 @@
+{
+  "name": "@elementspanel/epanel-plugin-backup",
+  "version": "1.0.1",
+  "description": "Instance backup management.",
+  "elementspanel": {
+    "id": "backup",
+    "dual": true,
+    "panel": {
+      "priority": 150,
+      "frontendInject": [
+        "console",
+        "i18n",
+        "instance"
+      ],
+      "directory": "panel",
+      "folder": "backup",
+      "description": "Instance backup management."
+    },
+    "daemon": {
+      "priority": 100,
+      "directory": "daemon",
+      "folder": "backup",
+      "displayName": "Instance Backup",
+      "description": "Instance backup and restore."
+    }
+  }
+}

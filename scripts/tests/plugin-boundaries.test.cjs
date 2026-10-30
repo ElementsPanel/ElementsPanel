@@ -15,10 +15,10 @@ const load = createLoader({
   resolve(id, { filename, localRequire, load, overrides }) {
     if (id.endsWith(".vue")) return { name: path.basename(id) };
     if (id === "vue") return vue;
-    // Resolve the workspace package from source: CI does not build common/dist
+    // Resolve the workspace package from source: CI does not build core/common/dist
     // before running the tests, and the published entry point would be missing.
     if (id === "mcsmanager-common") {
-      commonSource ??= load("common/src/index.ts");
+      commonSource ??= load("core/common/src/index.ts");
       return commonSource;
     }
     if (id.startsWith(".")) {
@@ -71,7 +71,7 @@ function protocolService(Service) {
 const systemInfo = () => ({ totalmem: 1024, freemem: 512, cpuUsage: 0.2, memUsage: 0.5 });
 
 test("account profiles retain authentication fields without instance enrichment, including provider failure/replacement", async () => {
-  const { getUserProfile } = load("panel/plugins/user/src/backend/service/user_profile.ts");
+  const { getUserProfile } = load("plugins/user/panel/src/backend/service/user_profile.ts");
   const references = [
     { instanceUuid: "one", daemonId: "node" },
     { instanceUuid: "two", daemonId: "other" }
@@ -122,7 +122,7 @@ test("backend account routes and the guard survive instance provider removal", a
   const ctx = new Context();
   t.after(() => ctx.stop());
   const app = new (panelRequire("koa"))();
-  ctx.plugin(load("panel/plugins/server/src/backend/koa.ts").KoaService, app);
+  ctx.plugin(load("plugins/server/panel/src/backend/koa.ts").KoaService, app);
   ctx.plugin(translations(Service));
   const pass = () => async (_request, next) => next();
   const account = {
@@ -147,7 +147,7 @@ test("backend account routes and the guard survive instance provider removal", a
       scope = value;
     }
   };
-  const general = load("panel/plugins/user/src/backend/routers/general_user_router.ts", {
+  const general = load("plugins/user/panel/src/backend/routers/general_user_router.ts", {
     "../runtime": runtime,
     "mcsmanager-common": { toBoolean: (value) => value === "true" },
     "../middleware/permission": pass,
@@ -160,7 +160,7 @@ test("backend account routes and the guard survive instance provider removal", a
     "../service/user_service": {}
   });
   const emptyRouter = () => new (panelRequire("@koa/router"))();
-  const plugin = load("panel/plugins/user/src/backend/index.ts", {
+  const plugin = load("plugins/user/panel/src/backend/index.ts", {
     "./runtime": runtime,
     "./service/version_adapter": { migrateConfig() {} },
     "./service/auth_settings": { initAuthSettings: async () => {} },
@@ -219,7 +219,7 @@ test("panel instance permission errors translate without undeclared service warn
   const warnings = [];
   ctx.on("internal/warning", (error) => warnings.push(error.message));
   const app = new (panelRequire("koa"))();
-  ctx.plugin(load("panel/plugins/server/src/backend/koa.ts").KoaService, app);
+  ctx.plugin(load("plugins/server/panel/src/backend/koa.ts").KoaService, app);
   ctx.plugin(translations(Service));
   const pass = () => async (_request, next) => next();
   ctx.set("roles", { USER: 1, ADMIN: 10 });
@@ -232,8 +232,8 @@ test("panel instance permission errors translate without undeclared service warn
   });
   ctx.set("operations", {});
   ctx.set("remote", {});
-  const runtime = load("panel/plugins/instance/src/backend/runtime.ts");
-  ctx.plugin(load("panel/plugins/instance/src/backend/index.ts", {
+  const runtime = load("plugins/instance/panel/src/backend/runtime.ts");
+  ctx.plugin(load("plugins/instance/panel/src/backend/index.ts", {
     "./runtime": runtime,
     "../runtime": runtime
   }));
@@ -271,7 +271,7 @@ test("panel runtime keeps overview and audit services alive when monitor is remo
       }
     }
   };
-  const runtime = load("panel/plugins/runtime/src/backend/index.ts", {
+  const runtime = load("plugins/runtime/panel/src/backend/index.ts", {
     "mcsmanager-common": common,
     "./service/log": { setupLogging() {} },
     "./lifecycle": { setupProcessLifecycle() {} },
@@ -281,15 +281,15 @@ test("panel runtime keeps overview and audit services alive when monitor is remo
   ctx.plugin(translations(Service));
   ctx.set("storage", {});
   const app = new (panelRequire("koa"))();
-  ctx.plugin(load("panel/plugins/server/src/backend/koa.ts").KoaService, app);
+  ctx.plugin(load("plugins/server/panel/src/backend/koa.ts").KoaService, app);
   ctx.plugin(runtime);
   ctx.plugin({
     inject: ["koa", "middleware", "roles", "identity", "operations"],
-    apply: load("panel/plugins/instance/src/backend/routers/operation_log_router.ts")
+    apply: load("plugins/instance/panel/src/backend/routers/operation_log_router.ts")
       .registerOperationLogRoutes
   });
   const monitor = ctx.plugin(
-    load("panel/plugins/monitor/src/backend/index.ts", { "mcsmanager-common": common })
+    load("plugins/monitor/panel/src/backend/index.ts", { "mcsmanager-common": common })
   );
   await ctx.start();
   const dispatch = panelRequire("koa-compose")(app.middleware);
@@ -330,7 +330,7 @@ test("daemon runtime answers capabilities and overview across monitor unload and
   const ctx = new Context();
   t.after(() => ctx.stop());
   const config = { language: "en_us", allocatablePortRange: [1000, 2000], port: 23333 };
-  const runtime = load("daemon/plugins/runtime/src/backend/index.ts", {
+  const runtime = load("plugins/runtime/daemon/src/backend/index.ts", {
     "mcsmanager-common": { systemInfo, ensureExecutable() {} },
     "./service/log": { setupLogging() {} },
     "./lifecycle": { setupProcessLifecycle() {} },
@@ -358,7 +358,7 @@ test("daemon runtime answers capabilities and overview across monitor unload and
       scope.overview.provide(() => ({ instance: { total: 2, running: 1 } }));
     }
   });
-  const monitorPlugin = load("daemon/plugins/monitor/src/backend/index.ts", {
+  const monitorPlugin = load("plugins/monitor/daemon/src/backend/index.ts", {
     "mcsmanager-common": { systemInfo }
   });
   const monitor = ctx.plugin(monitorPlugin);
@@ -404,7 +404,7 @@ test("node settings cannot write other plugins' configuration; the backup declar
     archive: {},
     features: { add() {} }
   };
-  load("daemon/plugins/node/src/backend/index.ts", {
+  load("plugins/node/daemon/src/backend/index.ts", {
     "./settings": { registerSettings() {} }
   }).apply(ctx);
   await handlers.get("info/setting")(
@@ -422,7 +422,7 @@ test("node settings cannot write other plugins' configuration; the backup declar
   assert.equal(config.instanceBackupFormat, "zip");
   assert.equal(config.instanceBackupCompressionLevel, 6);
   assert.equal(config.instanceBackupMaxSize, 5);
-  load("daemon/plugins/backup/src/backend/index.ts").apply(ctx);
+  load("plugins/backup/daemon/src/backend/index.ts").apply(ctx);
   declaration.write({
     instanceBackupPath: "backups",
     instanceBackupFormat: "7z",
@@ -468,7 +468,7 @@ function frontendFixture(t) {
       }
     }
   );
-  const services = load("panel/plugins/console/src/plugin/services.ts", {
+  const services = load("plugins/console/panel/src/plugin/services.ts", {
     cordis: { ...frontendRequire("cordis") },
     "@console/config/router": {}
   });
@@ -495,10 +495,10 @@ function frontendFixture(t) {
     "@/tools/vuetifyModal": { Modal: { confirm() {} } },
     "@/tools/vuetifyToast": { message: { success() {} } },
     "@/config/router": { ROLE: { ADMIN: 10, USER: 1 } },
-    "@/hooks/useInstance": load("common/src/instance_contract.ts"),
+    "@/hooks/useInstance": load("core/common/src/instance_contract.ts"),
     "@/hooks/useInstanceActionAvailability": load(
-      "panel/plugins/console/src/hooks/useInstanceActionAvailability.ts",
-      { "@/hooks/useInstance": load("common/src/instance_contract.ts") }
+      "plugins/console/panel/src/hooks/useInstanceActionAvailability.ts",
+      { "@/hooks/useInstance": load("core/common/src/instance_contract.ts") }
     ),
     "@/plugin/context": pluginContext,
     "./api": {},
@@ -515,7 +515,7 @@ function frontendFixture(t) {
 
 test("user frontend retains login and account routes while optional instance grants follow dependencies", async (t) => {
   const { ctx, routes, overrides } = frontendFixture(t);
-  ctx.plugin(load("panel/plugins/user/src/frontend.ts", overrides));
+  ctx.plugin(load("plugins/user/panel/src/frontend.ts", overrides));
   await ctx.start();
   const user = ctx.user;
   for (const route of ["/login", "/sso/bind", "/users", "/customer"]) assert.ok(routes.has(route));
@@ -574,7 +574,7 @@ test("desktop user CRUD loads without resource providers and a late assignment r
     resourceRequests++;
     return resources();
   };
-  const fixture = setupSfc("panel/plugins/user/src/desktop/DesktopUsers.vue", {
+  const fixture = setupSfc("plugins/user/panel/src/desktop/DesktopUsers.vue", {
     "@/lang/i18n": { t: (key) => key },
     "@/plugin/context": {
       usePluginService: (name) => (name === "instance" ? instance.value : node.value)
@@ -631,7 +631,7 @@ test("desktop shell opens/restores contributed windows and survives provider rem
     removeEventListener() {}
   };
   const desktopPlugin = ctx.plugin(
-    load("panel/plugins/desktop/src/frontend.ts", {
+    load("plugins/desktop/panel/src/frontend.ts", {
       ...overrides,
       "./theme.scss?inline": "",
       "vuetify/components": {}
@@ -643,16 +643,16 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   assert.ok(ctx.desktop.confirmation);
   assert.equal(ctx.desktop.open({ id: "missing", view: "instance-console" }), false);
   ctx.plugin((scope) => scope.set("node", {}));
-  const instancePlugin = load("panel/plugins/instance/src/frontend.ts", overrides);
+  const instancePlugin = load("plugins/instance/panel/src/frontend.ts", overrides);
   const instance = ctx.plugin(instancePlugin);
   const terminal = ctx.plugin((scope) => scope.set("terminal", {}));
-  const config = ctx.plugin(load("panel/plugins/config/src/frontend.ts", overrides));
+  const config = ctx.plugin(load("plugins/config/panel/src/frontend.ts", overrides));
   await tick();
   assert.ok(ctx.actions.instances.some((action) => action.id === "java-manager"));
   assert.ok(ctx.actions.instances.some((action) => action.id === "mcstats"));
   assert.ok(ctx.java.setupComponent);
   let savedLayout = { windows: [], shortcuts: [] };
-  const shell = setupSfc("panel/plugins/desktop/src/Desktop.vue", {
+  const shell = setupSfc("plugins/desktop/panel/src/Desktop.vue", {
     ...overrides,
     "./api": {
       getDesktopLayoutConfig: () => ({ execute: async () => ({ value: savedLayout }) }),
@@ -752,7 +752,7 @@ test("desktop shell opens/restores contributed windows and survives provider rem
 
 test("instance hook compatibility resolves current providers and never retains the unloaded implementation", () => {
   const provider = vue.shallowRef();
-  const facade = load("panel/plugins/console/src/hooks/instanceService.ts", {
+  const facade = load("plugins/console/panel/src/hooks/instanceService.ts", {
     "@/plugin/context": { usePluginService: () => provider.value }
   });
   const call = facade.instanceHook("useInstanceInfo");
@@ -794,8 +794,8 @@ function daemonSettingsFixture(plugin, initialConfig = {}) {
       responseError: (_request, error) => { throw error; }
     }
   };
-  load(`daemon/plugins/${plugin}/src/backend/settings.ts`).registerSettings(ctx);
-  const { validatePluginSettings } = load("common/src/plugin_contract.ts");
+  load(`plugins/${plugin}/daemon/src/backend/settings.ts`).registerSettings(ctx);
+  const { validatePluginSettings } = load("core/common/src/plugin_contract.ts");
   return {
     config, saved, handlers,
     read: () => declaration.read(),
@@ -883,8 +883,8 @@ test("daemon settings declarations keep their plugin ownership and leave when th
   ctx.plugin(translations(Service));
   ctx.set("settings", { config: { outputBufferSize: 256 }, save() {} });
   ctx.set("plugins", { runExclusive: (operation) => operation(), configuration: (id) => ({ id, fields: [], values: {} }) });
-  const { SettingsFormService } = load("daemon/plugins/config/src/backend/settings.ts", {
-    "mcsmanager-common": load("common/src/plugin_contract.ts")
+  const { SettingsFormService } = load("plugins/config/daemon/src/backend/settings.ts", {
+    "mcsmanager-common": load("core/common/src/plugin_contract.ts")
   });
   ctx.plugin({
     name: "config",
@@ -896,7 +896,7 @@ test("daemon settings declarations keep their plugin ownership and leave when th
   const plugin = ctx.plugin({
     name: "terminal",
     inject: ["settings", "i18n"],
-    apply: load("daemon/plugins/terminal/src/backend/settings.ts").registerSettings
+    apply: load("plugins/terminal/daemon/src/backend/settings.ts").registerSettings
   });
   await ctx.start();
   assert.deepEqual(ctx.settingsForm.declared(), ["terminal"]);
@@ -910,8 +910,8 @@ test("daemon settings declarations keep their plugin ownership and leave when th
 });
 
 test("daemon storage preserves migrated and cleared mappings across reloads", () => {
-  const { Config } = load("daemon/plugins/runtime/src/backend/entity/config.ts");
-  const { default: Storage } = load("common/src/system_storage.ts");
+  const { Config } = load("plugins/runtime/daemon/src/backend/entity/config.ts");
+  const { default: Storage } = load("core/common/src/system_storage.ts");
   const storage = new Storage();
   let saved;
   storage.writeFile = (_name, content) => { saved = content; };

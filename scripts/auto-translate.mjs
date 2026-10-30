@@ -107,8 +107,8 @@ async function translateText(chatAiSession, textList = [], targetLanguage = "") 
 async function checkAndFillMissingKeys() {
   const apiKey = await getApiKey();
   const languagesPaths = [
-    path.join(import.meta.dirname, "../panel/plugins/i18n/src/languages"),
-    path.join(import.meta.dirname, "../daemon/plugins/i18n/src/languages")
+    path.join(import.meta.dirname, "../plugins/i18n/panel/src/languages"),
+    path.join(import.meta.dirname, "../plugins/i18n/daemon/src/languages")
   ];
 
   for (const languagesPath of languagesPaths) {

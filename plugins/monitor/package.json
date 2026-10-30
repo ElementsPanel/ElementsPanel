@@ -1,0 +1,26 @@
+{
+  "name": "@elementspanel/epanel-plugin-monitor",
+  "version": "1.0.1",
+  "description": "System monitoring and operation logs.",
+  "elementspanel": {
+    "id": "monitor",
+    "dual": true,
+    "panel": {
+      "priority": 15,
+      "frontendInject": [
+        "console",
+        "i18n"
+      ],
+      "directory": "panel",
+      "folder": "monitor",
+      "description": "System monitoring and operation logs."
+    },
+    "daemon": {
+      "priority": 30,
+      "directory": "daemon",
+      "folder": "monitor",
+      "displayName": "Data Monitoring",
+      "description": "Daemon CPU and memory monitoring."
+    }
+  }
+}

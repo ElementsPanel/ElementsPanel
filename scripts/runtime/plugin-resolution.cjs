@@ -72,9 +72,15 @@ function installPluginResolution(packageRoot, workRoot) {
   const hostURL = pathToFileURL(path.join(packageRoot, "app.js")).href;
   const hostRequire = createRequire(hostURL);
   const resolveShared = createSharedResolver(packageRoot);
-  // Development checkouts load their source plugins from <side>/plugins; a
+  // Development checkouts load unified source packages from <project>/plugins; a
   // published runtime loads npm plugins only and has no source root.
-  const roots = process.env.EPANEL_PACKAGE_ROOT ? [] : [path.join(workRoot, "plugins")];
+  const roots = process.env.EPANEL_PACKAGE_ROOT
+    ? []
+    : [
+        path.basename(path.dirname(packageRoot)) === "core"
+          ? path.resolve(packageRoot, "../../plugins")
+          : path.join(workRoot, "plugins")
+      ];
   // Node 24 routes require.resolve() calls made by this hook back through the
   // hook itself. Without this guard, resolving plugin metadata recurses forever.
   let resolving = false;

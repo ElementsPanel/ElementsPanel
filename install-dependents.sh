@@ -2,8 +2,9 @@
 npm install
 npm run preview-build
 
+npm install --prefix core/daemon
+mkdir -p daemon
 cd daemon
-npm install
 echo "Installing lib dependencies..."
 if [ ! -d lib ]; then
   mkdir lib
@@ -17,7 +18,7 @@ echo "Downloading pty_linux_x64..."
 curl -L -o ./lib/pty_linux_x64 https://github.com/MCSManager/PTY/releases/download/latest/pty_linux_x64
 chmod +x ./lib/file_zip_linux_x64 ./lib/7z_linux_x64 ./lib/pty_linux_x64
 
-cd ../panel
+cd ../core/panel
 npm install
 cd ../frontend
 npm install

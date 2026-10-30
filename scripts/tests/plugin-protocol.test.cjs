@@ -5,8 +5,8 @@ const { createLoader, from, settle } = require("./helpers.cjs");
 test("existing daemon sockets use live plugin routes and middleware after updates", async (t) => {
   const { Context } = from("daemon")("cordis");
   const load = createLoader({ host: "daemon" });
-  const RouterContext = load("daemon/plugins/server/src/backend/context.ts").default;
-  const { ProtocolService, navigation } = load("daemon/plugins/server/src/backend/protocol.ts", {
+  const RouterContext = load("plugins/server/daemon/src/backend/context.ts").default;
+  const { ProtocolService, navigation } = load("plugins/server/daemon/src/backend/protocol.ts", {
     "./context": { default: RouterContext, __esModule: true }
   });
   const ctx = new Context();

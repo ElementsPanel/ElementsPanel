@@ -20,7 +20,7 @@ function storageFixture(t, overrides) {
     assert.ok(path.basename(directory).startsWith("elements-storage-review-"));
     fs.rmSync(directory, { recursive: true, force: true });
   });
-  const { default: Storage } = load("common/src/system_storage.ts", overrides);
+  const { default: Storage } = load("core/common/src/system_storage.ts", overrides);
   Storage.DATA_PATH = path.join(directory, "data");
   return { directory, storage: new Storage() };
 }
@@ -101,7 +101,7 @@ test("a failed atomic replacement preserves the prior settings and cleans its te
 });
 
 test("pagination rejects zero, negative and non-finite sizes and handles typed search values", () => {
-  const { QueryMapWrapper, LocalFileSource } = load("common/src/query_wrapper.ts");
+  const { QueryMapWrapper, LocalFileSource } = load("core/common/src/query_wrapper.ts");
   const data = [
     { name: "Alice", value: null },
     { name: "Bob", value: false },
@@ -132,7 +132,7 @@ test("pagination rejects zero, negative and non-finite sizes and handles typed s
 });
 
 test("process wrapper rejects a missing executable without an unhandled child error", async () => {
-  const { ProcessWrapper } = load("common/src/process_tools.ts");
+  const { ProcessWrapper } = load("core/common/src/process_tools.ts");
   const wrapper = new ProcessWrapper(
     path.join(os.tmpdir(), "elements-nonexistent-executable"),
     [],
@@ -145,7 +145,7 @@ test("process wrapper rejects a missing executable without an unhandled child er
 });
 
 test("process wrapper drains split UTF-8 output and records successful and failed exit codes", async () => {
-  const { ProcessWrapper } = load("common/src/process_tools.ts");
+  const { ProcessWrapper } = load("core/common/src/process_tools.ts");
   const wrapper = new ProcessWrapper(
     process.execPath,
     [
@@ -190,7 +190,7 @@ test("a process timeout kills its child once and invalid PIDs never reach an ope
     setImmediate(() => child.emit("close", null));
     return true;
   };
-  const { ProcessWrapper, killProcess } = load("common/src/process_tools.ts", {
+  const { ProcessWrapper, killProcess } = load("core/common/src/process_tools.ts", {
     child_process: {
       spawn: () => {
         setImmediate(() => child.emit("spawn"));
@@ -218,7 +218,7 @@ function pingFixture() {
   };
   let expire;
   const { default: Ping } = load(
-    "common/src/mcping.ts",
+    "core/common/src/mcping.ts",
     { net: { connect: () => socket } },
     {
       setTimeout: (callback) => {
@@ -270,7 +270,7 @@ test("Minecraft malformed, partial and timed-out responses reject and close thei
 });
 
 test("instance stream subscriptions are idempotent and disconnect releases all instance references", () => {
-  const { default: Streams } = load("common/src/instance_stream.ts");
+  const { default: Streams } = load("core/common/src/instance_stream.ts");
   const streams = new Streams();
   const socket = Object.assign(new EventEmitter(), { id: "client", connected: true });
   let received = 0;
@@ -304,7 +304,7 @@ test("storage rejects directory links that escape the configured data root", (t)
 
 test("POSIX termination addresses the requested game PID rather than its PTY helper", () => {
   const killed = [];
-  const { killProcess } = load("common/src/process_tools.ts", {
+  const { killProcess } = load("core/common/src/process_tools.ts", {
     os: { platform: () => "linux" },
     process: {
       kill: (pid, signal) => {
@@ -325,7 +325,7 @@ test("POSIX termination addresses the requested game PID rather than its PTY hel
 
 test("operation histories flush before reads and retain buffered entries after a failed save", async (t) => {
   const { storage } = storageFixture(t);
-  const { JsonlStorage } = load("panel/plugins/runtime/src/backend/service/jsonl_storage.ts", {
+  const { JsonlStorage } = load("plugins/runtime/panel/src/backend/service/jsonl_storage.ts", {
     "mcsmanager-common": {
       StorageSubsystem: class {
         constructor() {
@@ -335,7 +335,7 @@ test("operation histories flush before reads and retain buffered entries after a
     }
   });
   const { OperationLogger } = load(
-    "panel/plugins/runtime/src/backend/service/operation_logger.ts",
+    "plugins/runtime/panel/src/backend/service/operation_logger.ts",
     {
       "./jsonl_storage": { JsonlStorage }
     }

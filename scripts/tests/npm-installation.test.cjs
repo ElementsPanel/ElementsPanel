@@ -793,7 +793,7 @@ test("ESM plugins share the actual CJS host Context and Service constructors", a
   write(path.join(host, "package.json"), { dependencies: { cordis: "3.18.1" } });
   fs.mkdirSync(path.join(host, "node_modules"));
   fs.symlinkSync(
-    path.join(repository, "panel/node_modules/cordis"),
+    path.join(repository, "core/panel/node_modules/cordis"),
     path.join(host, "node_modules/cordis"),
     "junction"
   );

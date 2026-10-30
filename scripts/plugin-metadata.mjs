@@ -1,15 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export const pluginEntryFields = [
-  "backend",
-  "frontend",
-  "panel",
-  "daemon",
-  "main",
-  "entry",
-  "ui"
-];
+export const pluginEntryFields = ["backend", "frontend", "panel", "daemon", "main", "entry", "ui"];
 const packageFields = [
   "version",
   "displayName",
@@ -35,7 +27,29 @@ function readJson(filename) {
 
 /** Move metadata into package.json and stage entry-only manifests, including legacy sources. */
 export function readPluginMetadata(directory) {
-  const packageMetadata = readJson(path.join(directory, "package.json")) ?? {};
+  let packageMetadata = readJson(path.join(directory, "package.json"));
+  if (!packageMetadata) {
+    const parent = path.dirname(directory);
+    const rootMetadata = readJson(path.join(parent, "package.json"));
+    const { panel, daemon, ...shared } = rootMetadata?.elementspanel ?? {};
+    const definition = [panel, daemon].find(
+      (side) => side && path.resolve(parent, side.directory) === path.resolve(directory)
+    );
+    if (definition) {
+      const { directory: _directory, folder: _folder, ...sideMetadata } = definition;
+      packageMetadata = {
+        ...rootMetadata,
+        ...(sideMetadata.description === undefined
+          ? {}
+          : { description: sideMetadata.description }),
+        ...(sideMetadata.displayName === undefined
+          ? {}
+          : { displayName: sideMetadata.displayName }),
+        elementspanel: { ...shared, ...sideMetadata }
+      };
+    }
+  }
+  packageMetadata ??= {};
   const original =
     readJson(path.join(directory, "plugin.json")) ??
     readJson(path.join(directory, "manifest.json")) ??
@@ -66,7 +80,9 @@ export function writePluginMetadata(directory, manifest, packageMetadata) {
   for (const [filename, value] of [
     [
       "plugin.json",
-      Object.fromEntries(Object.entries(manifest).filter(([key]) => pluginEntryFields.includes(key)))
+      Object.fromEntries(
+        Object.entries(manifest).filter(([key]) => pluginEntryFields.includes(key))
+      )
     ],
     ["package.json", packageMetadata]
   ]) {

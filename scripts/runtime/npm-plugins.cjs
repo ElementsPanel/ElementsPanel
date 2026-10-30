@@ -34,9 +34,10 @@ function within(root, filename) {
 function projectRoot(packageRoot) {
   if (process.env.EPANEL_PROJECT_ROOT) return path.resolve(process.env.EPANEL_PROJECT_ROOT);
   const parent = path.resolve(packageRoot, "..");
+  if (path.basename(parent) === "core") return path.dirname(parent);
   // An installed runtime sits at <project>/node_modules/@scope/<side>; the
   // project itself is three levels above the package. A development checkout
-  // sits directly under the project instead.
+  // sits below core/ and is handled above.
   const scope = parent;
   const nodeModules = path.dirname(scope);
   if (path.basename(nodeModules) === "node_modules" && path.basename(scope).startsWith("@")) {

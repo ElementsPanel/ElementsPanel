@@ -16,7 +16,7 @@ const ts = frontendRequire("typescript");
 
 const { parse, compileScript, compileStyle } = frontendRequire("@vue/compiler-sfc");
 const sass = frontendRequire("sass");
-const filename = path.join(root, "panel/plugins/desktop/src/widgets/desktop/DesktopWindow.vue");
+const filename = path.join(root, "plugins/desktop/panel/src/widgets/desktop/DesktopWindow.vue");
 const { descriptor } = parse(fs.readFileSync(filename, "utf8"), { filename });
 const script = compileScript(descriptor, { id: "desktop-window-test", inlineTemplate: true });
 const mod = new Module(filename, module);
@@ -40,7 +40,7 @@ function loadSfc(relative, overrides = {}) {
   return component.exports.default;
 }
 
-const DesktopDialog = loadSfc("panel/plugins/console/src/components/DesktopDialog.vue", {
+const DesktopDialog = loadSfc("plugins/console/panel/src/components/DesktopDialog.vue", {
   "@/plugin/context": { ctx: { desktop: { window: DesktopWindow } } }
 });
 
@@ -107,7 +107,7 @@ test("node plugin configuration buttons open desktop windows for the clicked nod
     { uuid: "two", remarks: "", ip: "two.example", port: 24444, available: false }
   ];
   const operation = () => ({ execute: async () => {}, isLoading: vue.ref(false) });
-  const Manager = loadSfc("panel/plugins/node/src/desktop/DesktopNodeManager.vue", {
+  const Manager = loadSfc("plugins/node/panel/src/desktop/DesktopNodeManager.vue", {
     "@/lang/i18n": { t: (key) => key },
     "@/plugin/context": { usePluginService: () => service },
     "@/hooks/useOverviewInfo": { useOverviewInfo: () => ({ state: vue.ref() }) },
@@ -147,7 +147,7 @@ test("node plugin configuration buttons open desktop windows for the clicked nod
 });
 
 const translations = { t: (key) => key };
-const DesktopConfirmation = loadSfc("panel/plugins/desktop/src/widgets/desktop/DesktopConfirmDialog.vue", {
+const DesktopConfirmation = loadSfc("plugins/desktop/panel/src/widgets/desktop/DesktopConfirmDialog.vue", {
   "@/lang/i18n": translations,
   "./DesktopWindow.vue": { default: DesktopWindow }
 });
@@ -230,7 +230,7 @@ function animationFixture(t) {
 }
 
 function dialogFixture(t, shellStyleLast) {
-  const proxyFilename = path.join(root, "panel/plugins/instance/src/desktop/DesktopWindow.vue");
+  const proxyFilename = path.join(root, "plugins/instance/panel/src/desktop/DesktopWindow.vue");
   const { descriptor: proxyDescriptor } = parse(fs.readFileSync(proxyFilename, "utf8"), { filename: proxyFilename });
   const proxyScript = compileScript(proxyDescriptor, { id: "instance-window-test", inlineTemplate: true });
   const proxyModule = new Module(proxyFilename, module);
@@ -244,7 +244,7 @@ function dialogFixture(t, shellStyleLast) {
   InstanceWindow.__scopeId = "data-v-instance-window-test";
 
   const ownerScopeId = "data-v-instance-manager-test";
-  const ownerFilename = path.join(root, "panel/plugins/instance/src/desktop/DesktopInstanceManager.vue");
+  const ownerFilename = path.join(root, "plugins/instance/panel/src/desktop/DesktopInstanceManager.vue");
   const { descriptor: ownerDescriptor } = parse(fs.readFileSync(ownerFilename, "utf8"), { filename: ownerFilename });
   const styles = [
     { descriptor: ownerDescriptor, scopeId: ownerScopeId },
@@ -399,7 +399,7 @@ function fileManagerDialogFixture(t) {
   manager.dialog.value.cancel = () => { events.cancelled++; manager.dialog.value.show = false; };
   manager.deleteDialog.value.resolve = (confirmed) => { events.deleted.push(confirmed); manager.deleteDialog.value.show = false; };
 
-  const fileManagerFilename = path.join(root, "panel/plugins/file/src/desktop/DesktopFileManager.vue");
+  const fileManagerFilename = path.join(root, "plugins/file/panel/src/desktop/DesktopFileManager.vue");
   const { descriptor: fileManagerDescriptor } = parse(fs.readFileSync(fileManagerFilename, "utf8"), { filename: fileManagerFilename });
   const fileManagerScript = compileScript(fileManagerDescriptor, { id: "file-manager-dialog-test", inlineTemplate: true });
   const fileManagerModule = new Module(fileManagerFilename, module);
@@ -747,7 +747,7 @@ test("the shared task action opens its sidebar and keeps task filters and cancel
         });
     }
   };
-  const Sidebar = loadSfc("panel/plugins/console/src/components/BackgroundTasksSidebar.vue", overrides);
+  const Sidebar = loadSfc("plugins/console/panel/src/components/BackgroundTasksSidebar.vue", overrides);
   const target = document.createElement("div");
   document.body.appendChild(target);
   const app = vue.createApp({ render: () => vue.h(Vuetify.components.VLayout, {}, {
@@ -814,13 +814,13 @@ function instanceSettingsFixture(t, { admin = true, allowChangeCmd = true, proce
       writes.push({ ...JSON.parse(JSON.stringify(request)), api });
     }
   });
-  const commonFilename = path.join(root, "panel/plugins/console/src/tools/common.ts");
+  const commonFilename = path.join(root, "plugins/console/panel/src/tools/common.ts");
   const common = new Module(commonFilename, module);
   common.require = frontendRequire;
   common._compile(ts.transpileModule(fs.readFileSync(commonFilename, "utf8"), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
   }).outputText, commonFilename);
-  const Settings = loadSfc("panel/plugins/instance/src/desktop/DesktopInstanceSettings.vue", {
+  const Settings = loadSfc("plugins/instance/panel/src/desktop/DesktopInstanceSettings.vue", {
     dayjs: { default: frontendRequire("dayjs") },
     "@/lang/i18n": translations,
     "@/hooks/useInstance": { INSTANCE_TYPE_TRANSLATION: { "minecraft/java": "Minecraft Java" } },
@@ -1085,7 +1085,7 @@ test("the shell supplies layout to the native task drawer and closing it preserv
     reset() { store.open.value = false; store.tasks.value = []; },
     cancel: async () => {}, clear: async () => {}
   };
-  const Sidebar = loadSfc("panel/plugins/console/src/components/BackgroundTasksSidebar.vue", {
+  const Sidebar = loadSfc("plugins/console/panel/src/components/BackgroundTasksSidebar.vue", {
     "@/lang/i18n": translations,
     "@/stores/useAppStateStore": {
       useAppStateStore: () => ({ state: vue.reactive({ userInfo: { uuid: "alice" } }), isLogged: vue.ref(true) })
@@ -1094,7 +1094,7 @@ test("the shell supplies layout to the native task drawer and closing it preserv
   });
   const route = vue.shallowRef({ path: "/instances", fullPath: "/instances", meta: {} });
   const empty = { render: () => null };
-  const Shell = loadSfc("panel/plugins/console/src/ConsoleApp.vue", {
+  const Shell = loadSfc("plugins/console/panel/src/ConsoleApp.vue", {
     "@/hooks/useScreen": { useScreen: () => ({ isPhone: vue.ref(false) }) },
     "@/stores/useAppConfigStore": {
       useAppConfigStore: () => ({
@@ -1166,14 +1166,14 @@ test("closing a background task desktop window preserves the shared task stream 
     cancel: async () => {}, clear: async () => {}
   };
   const activeCount = vue.computed(() => store.tasks.value.filter(task => task.state === "running").length);
-  const Sidebar = loadSfc("panel/plugins/console/src/components/BackgroundTasksSidebar.vue", {
+  const Sidebar = loadSfc("plugins/console/panel/src/components/BackgroundTasksSidebar.vue", {
     "@/lang/i18n": translations,
     "@/stores/useAppStateStore": {
       useAppStateStore: () => ({ state: vue.reactive({ userInfo: { uuid: "alice" } }), isLogged: vue.ref(true) })
     },
     "@/stores/useBackgroundTasks": { useBackgroundTasks: () => store }
   });
-  const DesktopTasks = loadSfc("panel/plugins/console/src/components/DesktopBackgroundTasks.vue", {
+  const DesktopTasks = loadSfc("plugins/console/panel/src/components/DesktopBackgroundTasks.vue", {
     "./BackgroundTasksSidebar.vue": { default: Sidebar }
   });
   const closed = vue.ref(false);
@@ -1396,7 +1396,7 @@ test("the standalone desktop login window centers using its actual size and stay
       : getRect.call(this);
   };
   t.after(() => { HTMLElement.prototype.getBoundingClientRect = getRect; });
-  const Login = loadSfc("panel/plugins/user/src/desktop/DesktopLoginWindow.vue", {
+  const Login = loadSfc("plugins/user/panel/src/desktop/DesktopLoginWindow.vue", {
     "@/config/router": { router: { push() {} } },
     "@/lang/i18n": translations,
     "@/services/apis": { loginUser: () => ({ execute: async () => ({}) }) },

@@ -1,0 +1,26 @@
+{
+  "name": "@elementspanel/epanel-plugin-file",
+  "version": "1.0.1",
+  "description": "Instance file management, editing and transfers.",
+  "elementspanel": {
+    "id": "file",
+    "dual": true,
+    "panel": {
+      "priority": 120,
+      "frontendInject": [
+        "console",
+        "i18n"
+      ],
+      "directory": "panel",
+      "folder": "file",
+      "description": "Instance file management, editing and transfers."
+    },
+    "daemon": {
+      "priority": 30,
+      "directory": "daemon",
+      "folder": "file",
+      "displayName": "File Manager",
+      "description": "Instance file access, uploads and downloads."
+    }
+  }
+}

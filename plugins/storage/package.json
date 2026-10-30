@@ -1,0 +1,24 @@
+{
+  "name": "@elementspanel/epanel-plugin-storage",
+  "version": "1.0.1",
+  "displayName": "Storage",
+  "description": "File and Redis entity storage.",
+  "elementspanel": {
+    "id": "storage",
+    "dual": true,
+    "panel": {
+      "priority": -9500,
+      "directory": "panel",
+      "folder": "storage",
+      "displayName": "Storage",
+      "description": "File and Redis entity storage."
+    },
+    "daemon": {
+      "priority": -9500,
+      "directory": "daemon",
+      "folder": "storage",
+      "displayName": "Storage",
+      "description": "Local entity storage."
+    }
+  }
+}

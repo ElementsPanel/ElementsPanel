@@ -1,0 +1,18 @@
+{
+  "name": "@elementspanel/epanel-plugin-desktop",
+  "version": "1.0.1",
+  "description": "Desktop interface and personal layouts.",
+  "elementspanel": {
+    "id": "desktop",
+    "panel": {
+      "priority": 100,
+      "frontendInject": [
+        "console",
+        "i18n"
+      ],
+      "directory": "panel",
+      "folder": "desktop",
+      "description": "Desktop interface and personal layouts."
+    }
+  }
+}

@@ -14,9 +14,9 @@ const { createConfig } = require("../../i18-scanner.config.js");
 const root = path.resolve(__dirname, "../..");
 const frontendRequire = from("frontend");
 const ts = frontendRequire("typescript");
-const globalPanel = "panel/plugins/i18n/src/languages";
-const globalDaemon = "daemon/plugins/i18n/src/languages";
-const feature = "panel/plugins/feature/src/i18n";
+const globalPanel = "plugins/i18n/panel/src/languages";
+const globalDaemon = "plugins/i18n/daemon/src/languages";
+const feature = "plugins/feature/panel/src/i18n";
 
 function workspace(t) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "elements-i18n-"));
@@ -47,16 +47,16 @@ test("scanner keeps panel, daemon and plugin catalogues separate and adds each t
   const directory = workspace(t);
   const config = createConfig(directory);
   const parser = new Parser(config.options);
-  const panelFile = path.join(directory, "panel/plugins/shared/src/component.vue");
+  const panelFile = path.join(directory, "plugins/shared/panel/src/component.vue");
   fs.mkdirSync(path.dirname(panelFile), { recursive: true });
   fs.writeFileSync(
     panelFile,
     'const untouched = "Panel text"; t("Panel text"); $t (\'Panel text\'); t("Quote \\"here\\""); t(`Hello ${name}`);'
   );
-  const daemonFile = path.join(directory, "daemon/src/index.ts");
+  const daemonFile = path.join(directory, "core/daemon/src/index.ts");
   fs.mkdirSync(path.dirname(daemonFile), { recursive: true });
   fs.writeFileSync(daemonFile, '$t("Daemon text");');
-  const featureFile = path.join(directory, "panel/plugins/feature/src/component.vue");
+  const featureFile = path.join(directory, "plugins/feature/panel/src/component.vue");
   fs.writeFileSync(featureFile, 't("Feature text");');
   for (const filename of [panelFile, daemonFile, featureFile]) {
     await invoke(config.transform, { parser }, { path: filename }, "utf8");
@@ -150,10 +150,10 @@ test("frontend resolves regional locales and stores only supported selections", 
   const stored = new Map();
   let reloads = 0;
   const browser = { navigator: { language: "zh-CN" }, location: { reload: () => reloads++ } };
-  const facade = load("panel/plugins/i18n/src/lang/i18n.ts", { "@/plugin/context": { ctx } });
+  const facade = load("plugins/i18n/panel/src/lang/i18n.ts", { "@/plugin/context": { ctx } });
   assert.equal(facade.toStandardLang(" ZH-Hant-HK "), "zh_hant_hk");
   const plugin = load(
-    "panel/plugins/i18n/src/frontend.ts",
+    "plugins/i18n/panel/src/frontend.ts",
     {
       "@/lang/i18n": facade,
       "./messages": { baseLocaleMessages: { en_us: {}, zh_tw: {} } }

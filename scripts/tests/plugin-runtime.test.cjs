@@ -25,7 +25,7 @@ const load = createLoader({
   compiler: ts,
   resolve(id, { filename, localRequire, load }) {
     if (id === "mcsmanager-common")
-      return Object.assign({}, ...commonNames.map((name) => load(`common/src/${name}.ts`)));
+      return Object.assign({}, ...commonNames.map((name) => load(`core/common/src/${name}.ts`)));
     const target = path.resolve(path.dirname(filename), id) + ".ts";
     return id.startsWith(".") && fs.existsSync(target) ? load(target) : localRequire(id);
   }
@@ -36,7 +36,7 @@ function fixture(t, side = "panel") {
   process.chdir(directory);
   const ctx = new Context();
   const loader = load(
-    side === "panel" ? "panel/src/app/plugin/loader.ts" : "daemon/src/plugin/loader.ts",
+    side === "panel" ? "core/panel/src/app/plugin/loader.ts" : "core/daemon/src/plugin/loader.ts",
     { "./context": { ctx } }
   );
   t.after(async () => {
@@ -281,7 +281,7 @@ test("a revision changes when a nested module changes, and public assets never r
   fs.mkdirSync(path.join(directory, "chunks"));
   fs.writeFileSync(path.join(directory, "index.js"), 'export * from "./chunks/a.js"');
   fs.writeFileSync(path.join(directory, "chunks/a.js"), "export const a=1");
-  const { pluginDirectoryRevision } = load("common/src/plugin_revision.ts");
+  const { pluginDirectoryRevision } = load("core/common/src/plugin_revision.ts");
   const first = pluginDirectoryRevision(directory);
   assert.equal(pluginDirectoryRevision(directory), first);
   fs.writeFileSync(path.join(directory, "chunks/a.js"), "export const a=2");
@@ -291,7 +291,7 @@ test("a revision changes when a nested module changes, and public assets never r
     { metadata: { id: "test" }, assetDirectory: "test", frontendDirectory: directory, revision }
   ];
   let poll, dispose;
-  const serve = load("panel/plugins/server/src/backend/plugin_assets.ts", {
+  const serve = load("plugins/server/panel/src/backend/plugin_assets.ts", {
     "koa-static": (root) => async (request) => {
       request.body = root;
     },
@@ -371,7 +371,7 @@ for (const side of ["panel", "daemon"]) {
 test("settings forms validate server-side before the plugin writes and report restart-only settings", async (t) => {
   const f = fixture(t);
   await f.start();
-  const { SettingsFormService } = load("panel/plugins/config/src/backend/settings.ts");
+  const { SettingsFormService } = load("plugins/config/panel/src/backend/settings.ts");
   f.ctx.plugin(SettingsFormService);
   let writes = 0;
   f.ctx.plugin({

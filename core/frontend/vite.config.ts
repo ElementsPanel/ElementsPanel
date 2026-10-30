@@ -1,0 +1,466 @@
+import { fileURLToPath, URL } from "node:url";
+import path from "node:path";
+import { createRequire } from "node:module";
+
+import vue from "@vitejs/plugin-vue";
+import vueJsx from "@vitejs/plugin-vue-jsx";
+import { visualizer } from "rollup-plugin-visualizer";
+import Components from "unplugin-vue-components/vite";
+// @ts-ignore Shared frontend module identities for the host and built-in plugins.
+import { pluginSdkModules } from "./plugin-sdk.config.mjs";
+// @ts-ignore Built-in plugin sources resolve browser dependencies from the frontend package.
+import { frontendDependencyFallback } from "./plugin-dependencies.config.mjs";
+import { defineConfig, normalizePath, type Plugin } from "vite";
+import {
+  discoverPluginsFromRoots,
+  createFrontendPluginMetadata
+} from "../common/src/plugin_manifest";
+import { applyPluginOverrides } from "../common/src/plugin_overrides";
+// @ts-ignore Shared source layout is also consumed by the backend build tools.
+import { sourcePlugins } from "../../scripts/workspace-layout.cjs";
+
+const PANEL_PLUGINS_MODULE_ID = "virtual:panel-plugins";
+const RESOLVED_PANEL_PLUGINS_MODULE_ID = `\0${PANEL_PLUGINS_MODULE_ID}`;
+const PANEL_PLUGIN_ENTRY_PREFIX = "panel-plugin-entry:";
+const PANEL_PLUGIN_BUILD_ENTRY_PREFIX = "panel-plugin-build-entry:";
+const RESOLVED_PANEL_PLUGIN_BUILD_ENTRY_PREFIX = `\0${PANEL_PLUGIN_BUILD_ENTRY_PREFIX}`;
+const PROJECT_DIRECTORY = fileURLToPath(new URL("../..", import.meta.url));
+const PANEL_PLUGINS_DIRECTORY = fileURLToPath(new URL("../../plugins", import.meta.url));
+// Resolve the installed package's exports from the frontend workspace. Vuetify
+// releases use both .mjs and .js entry points, so hard-coding an extension fails
+// after a compatible dependency update.
+const frontendRequire = createRequire(import.meta.url);
+const VUETIFY_FRAMEWORK_PATH = frontendRequire.resolve("vuetify");
+const VUETIFY_STYLES_PATH = frontendRequire.resolve("vuetify/styles");
+const VUETIFY_COMPONENTS_PATH = frontendRequire.resolve("vuetify/components");
+const VUETIFY_MDI_PATH = frontendRequire.resolve("vuetify/iconsets/mdi");
+const MDI_FONT_CSS_PATH = frontendRequire.resolve("@mdi/font/css/materialdesignicons.css");
+interface DiscoveredPanelPlugin {
+  metadata: Record<string, unknown>;
+  directory: string;
+  folder: string;
+  entry: string;
+  buildEntryId: string;
+}
+
+/**
+ * Vite writes CSS URLs relative to the CSS asset's original output directory.
+ * Plugin packaging relocates that CSS under `plugins/<id>/frontend/assets`, so
+ * every relative URL has to be rebased or fonts/images will be requested from
+ * the plugin directory instead of their emitted location.
+ */
+function relocateCssUrls(source: string | Uint8Array, originalFile: string, relocatedFile: string) {
+  const css = typeof source === "string" ? source : new TextDecoder().decode(source);
+  const originalDirectory = path.posix.dirname(normalizePath(originalFile));
+  const relocatedDirectory = path.posix.dirname(normalizePath(relocatedFile));
+  return css.replace(/url\(\s*(["']?)([^"')]+)\1\s*\)/g, (match, quote: string, value: string) => {
+    const reference = value.trim();
+    if (!reference || /^(?:[a-z][a-z\d+.-]*:|\/\/|\/|#)/i.test(reference)) return match;
+    const parts = reference.match(/^([^?#]*)([?#].*)?$/);
+    const pathname = parts?.[1];
+    if (!pathname) return match;
+    const suffix = parts?.[2] || "";
+    const emittedFile = path.posix.normalize(path.posix.join(originalDirectory, pathname));
+    let rebased = path.posix.relative(relocatedDirectory, emittedFile);
+    if (!rebased.startsWith(".")) rebased = `./${rebased}`;
+    return `url(${quote}${rebased}${suffix}${quote})`;
+  });
+}
+
+function discoverPanelPlugins(applyOverrides = false): DiscoveredPanelPlugin[] {
+  // Discovery is shared with the panel and daemon backends, so the four places
+  // that read `plugin.json` cannot drift apart. Only the entry field and the
+  // build-time extras are specific to this side. User-installed panel plugins
+  // are npm dependencies; the data/plugins and market_plugins directories are
+  // intentionally not part of frontend discovery.
+  const roots = sourcePlugins("panel", PROJECT_DIRECTORY).map(
+    (plugin: { directory: string; folder: string }) => ({
+      directory: plugin.directory,
+      folder: plugin.folder
+    })
+  );
+  const discovered = discoverPluginsFromRoots(roots, {
+    includeDisabled: true,
+    entryFields: ["frontend", "ui"],
+    entryCandidates: [
+      "src/frontend.ts",
+      "src/frontend.tsx",
+      "src/frontend.js",
+      "src/frontend.jsx",
+      "src/index.ts",
+      "src/index.tsx"
+    ],
+    onWarning: (message, error) => console.warn(message, error)
+  });
+  return (
+    applyOverrides
+      ? applyPluginOverrides(
+          discovered,
+          path.join(PROJECT_DIRECTORY, "panel/data/plugin-overrides.json")
+        )
+      : discovered
+  )
+    .filter((plugin) => plugin.entry && (!applyOverrides || plugin.manifest.enabled !== false))
+    .map((plugin) => ({
+      metadata: createFrontendPluginMetadata(plugin.manifest) as unknown as Record<string, unknown>,
+      directory: plugin.directory,
+      folder: plugin.folder,
+      entry: plugin.entry!,
+      buildEntryId: `${RESOLVED_PANEL_PLUGIN_BUILD_ENTRY_PREFIX}${plugin.folder}`
+    }));
+}
+
+function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
+  let plugins = initialPlugins;
+  let isBuild = false;
+  const sdkEntries = new Map<string, string>();
+  const isPluginFile = (file: string) => {
+    const target = path.resolve(file).toLowerCase();
+    return [
+      PANEL_PLUGINS_DIRECTORY,
+      path.join(PROJECT_DIRECTORY, "panel/data/plugin-overrides.json")
+    ].some((directory) => {
+      const root = path.resolve(directory).toLowerCase();
+      return target === root || target.startsWith(`${root}${path.sep}`);
+    });
+  };
+
+  return {
+    name: "elements-panel-plugins",
+    enforce: "post" as const,
+    configResolved(config: any) {
+      isBuild = config.command === "build";
+      if (!isBuild) plugins = discoverPanelPlugins(true);
+    },
+    buildStart() {
+      if (!isBuild) return;
+      for (const specifier of pluginSdkModules as string[]) {
+        sdkEntries.set(
+          specifier,
+          this.emitFile({
+            type: "chunk",
+            id: `elements-sdk:${specifier}`,
+            preserveSignature: "strict"
+          })
+        );
+      }
+      plugins = discoverPanelPlugins(false);
+      panelPluginBuildEntries = plugins;
+      // Production loads plugins from the manifest instead of the virtual
+      // module. Emit each entry explicitly so tree-shaking cannot remove its
+      // standalone chunk when the DEV branch is eliminated.
+      for (const plugin of plugins) {
+        this.emitFile({
+          type: "chunk",
+          id: `${PANEL_PLUGIN_BUILD_ENTRY_PREFIX}${plugin.folder}`,
+          name: `panel-plugin-${sanitizePluginFolder(plugin.folder)}`,
+          preserveSignature: "exports-only"
+        });
+      }
+    },
+    resolveId(id: string) {
+      if (id.startsWith("elements-sdk:")) return `\0${id}`;
+      if (id === PANEL_PLUGINS_MODULE_ID) return RESOLVED_PANEL_PLUGINS_MODULE_ID;
+      if (id.startsWith(PANEL_PLUGIN_ENTRY_PREFIX)) {
+        const index = Number(id.slice(PANEL_PLUGIN_ENTRY_PREFIX.length));
+        return plugins[index]?.entry;
+      }
+      if (id.startsWith(PANEL_PLUGIN_BUILD_ENTRY_PREFIX)) {
+        return `${RESOLVED_PANEL_PLUGIN_BUILD_ENTRY_PREFIX}${id.slice(
+          PANEL_PLUGIN_BUILD_ENTRY_PREFIX.length
+        )}`;
+      }
+    },
+    configureServer(server: any) {
+      server.watcher.add([
+        PANEL_PLUGINS_DIRECTORY,
+        path.join(PROJECT_DIRECTORY, "panel/data/plugin-overrides.json")
+      ]);
+      const reload = (file: string) => {
+        if (!isPluginFile(file)) return;
+        const module = server.moduleGraph.getModuleById(RESOLVED_PANEL_PLUGINS_MODULE_ID);
+        if (module) server.moduleGraph.invalidateModule(module);
+        server.ws.send({ type: "full-reload" });
+      };
+      server.watcher.on("add", reload);
+      server.watcher.on("change", reload);
+      server.watcher.on("unlink", reload);
+    },
+    load(id: string) {
+      if (id.startsWith("\0elements-sdk:")) {
+        const specifier = id.slice("\0elements-sdk:".length);
+        const target =
+          specifier === "@elements-panel/sdk"
+            ? normalizePath(fileURLToPath(new URL("./src/plugin/sdk.ts", import.meta.url)))
+            : specifier;
+        return `export * from ${JSON.stringify(target)};`;
+      }
+      if (id.startsWith(RESOLVED_PANEL_PLUGIN_BUILD_ENTRY_PREFIX)) {
+        const folder = id.slice(RESOLVED_PANEL_PLUGIN_BUILD_ENTRY_PREFIX.length);
+        const plugin = plugins.find((candidate) => candidate.folder === folder);
+        if (!plugin) return;
+        // A plugin exports `apply` and optionally `inject`, both named, so the
+        // chunk only re-exports; requiring a default export would break it.
+        return `export * from ${JSON.stringify(normalizePath(plugin.entry))};`;
+      }
+      if (id !== RESOLVED_PANEL_PLUGINS_MODULE_ID) return;
+      if (isBuild) return "export const panelPluginModules = [];";
+      plugins = discoverPanelPlugins(true);
+      const entries = plugins.map(
+        (plugin, index) =>
+          `{ metadata: ${JSON.stringify(plugin.metadata)}, directory: ${JSON.stringify(
+            String(plugin.metadata.id)
+          )}, assetDirectory: ${JSON.stringify(plugin.folder)}, load: () => import(${JSON.stringify(
+            `${PANEL_PLUGIN_ENTRY_PREFIX}${index}`
+          )}) }`
+      );
+      return `export const panelPluginModules = [${entries.join(",")}];`;
+    },
+    generateBundle(_outputOptions: any, bundle: Record<string, any>) {
+      const imports = Object.fromEntries(
+        [...sdkEntries].map(([id, ref]) => [id, `./${this.getFileName(ref)}`])
+      );
+      const importMap = `<script type="importmap">${JSON.stringify({ imports }).replace(
+        /</g,
+        "\\u003c"
+      )}</script>`;
+      for (const asset of Object.values(bundle)) {
+        if (asset.type === "asset" && asset.fileName.endsWith(".html"))
+          asset.source = String(asset.source).replace("<head>", `<head>\n${importMap}`);
+      }
+      const outputChunks = Object.values(bundle).filter(
+        (item: any) => item.type === "chunk"
+      ) as any[];
+      const pluginChunks = plugins.map((plugin) => {
+        const pluginRoot = `${normalizePath(plugin.directory)}/`;
+        const entryChunk = outputChunks.find(
+          (item) =>
+            item.name === `panel-plugin-${sanitizePluginFolder(plugin.folder)}` ||
+            normalizePath(item.facadeModuleId || "") === normalizePath(plugin.buildEntryId) ||
+            normalizePath(item.facadeModuleId || "") === normalizePath(plugin.entry)
+        );
+        const chunks = outputChunks.filter(
+          (item) =>
+            item === entryChunk ||
+            item.moduleIds?.some((moduleId: string) =>
+              normalizePath(moduleId).startsWith(pluginRoot)
+            )
+        );
+        return { plugin, entryChunk, chunks };
+      });
+      const pluginChunkSet = new Set(pluginChunks.flatMap(({ chunks }) => chunks));
+      const cssOwners = new Map<string, Set<any>>();
+      for (const item of Object.values(bundle) as any[]) {
+        if (item.type !== "chunk") continue;
+        for (const cssFile of item.viteMetadata?.importedCss || []) {
+          const owners = cssOwners.get(cssFile) || new Set<any>();
+          owners.add(item);
+          cssOwners.set(cssFile, owners);
+        }
+      }
+      const removableCss = new Set<string>();
+      const manifest = pluginChunks
+        .map(({ plugin, entryChunk, chunks }) => {
+          if (!entryChunk) return null;
+          const cssFiles = [
+            ...new Set<string>(
+              chunks.flatMap((chunk) => [
+                ...((chunk.viteMetadata?.importedCss || new Set<string>()) as Set<string>)
+              ])
+            )
+          ];
+          const styles = cssFiles.flatMap((cssFile, index) => {
+            const asset = bundle[cssFile] as any;
+            if (asset?.type !== "asset") return [];
+            const target = `plugins/${sanitizePluginFolder(
+              plugin.folder
+            )}/frontend/assets/style-${index}-${path.posix.basename(cssFile)}`;
+            bundle[target] = {
+              ...asset,
+              fileName: target,
+              source: relocateCssUrls(asset.source, cssFile, target)
+            };
+            for (const chunk of chunks) {
+              const importedCss = chunk.viteMetadata?.importedCss as Set<string> | undefined;
+              if (!importedCss?.delete(cssFile)) continue;
+              importedCss.add(target);
+            }
+            const owners = cssOwners.get(cssFile);
+            if (owners && [...owners].every((owner) => pluginChunkSet.has(owner))) {
+              removableCss.add(cssFile);
+            }
+            return [
+              `./${path.posix.relative(
+                path.posix.dirname("plugins/manifest.json"),
+                normalizePath(target)
+              )}`
+            ];
+          });
+          return {
+            metadata: plugin.metadata,
+            directory: String(plugin.metadata.id),
+            assetDirectory: plugin.folder,
+            entry: `./${path.posix.relative(
+              path.posix.dirname("plugins/manifest.json"),
+              normalizePath(entryChunk.fileName)
+            )}`,
+            styles
+          };
+        })
+        .filter(Boolean);
+      for (const cssFile of removableCss) delete bundle[cssFile];
+
+      this.emitFile({
+        type: "asset",
+        fileName: "plugins/manifest.json",
+        source: JSON.stringify(manifest, null, 2)
+      });
+    }
+  };
+}
+
+let panelPluginBuildEntries = discoverPanelPlugins(false);
+const sanitizePluginFolder = (folder: string) => folder.replace(/[^a-zA-Z0-9_-]/g, "_");
+
+function findPanelPluginEntry(chunkInfo: { facadeModuleId: string | null; name: string }) {
+  const facade = normalizePath(chunkInfo.facadeModuleId || "");
+  return panelPluginBuildEntries.find(
+    (candidate) =>
+      facade === normalizePath(candidate.entry) ||
+      facade === normalizePath(candidate.buildEntryId) ||
+      chunkInfo.name === `panel-plugin-${sanitizePluginFolder(candidate.folder)}`
+  );
+}
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  build: {
+    sourcemap: true,
+    chunkSizeWarningLimit: 1024,
+    rollupOptions: {
+      output: {
+        entryFileNames: (chunkInfo) => {
+          const plugin = findPanelPluginEntry(chunkInfo);
+          if (plugin) {
+            return `plugins/${sanitizePluginFolder(plugin.folder)}/frontend/frontend-[hash].js`;
+          }
+          return "assets/[name]-[hash].js";
+        },
+        chunkFileNames: (chunkInfo) => {
+          // Only plugin entries are revision-scoped. Assigning shared chunks
+          // by moduleIds exposes e.g. router.js at both console@rev/... (local
+          // import) and console/... (cross-plugin import). Browsers then create
+          // separate router/store/API instances. Keep helpers in host assets
+          // so every entry resolves them to the same URL, regardless of revision.
+          const plugin = findPanelPluginEntry(chunkInfo);
+          if (plugin) {
+            return `plugins/${sanitizePluginFolder(plugin.folder)}/frontend/[name]-[hash].js`;
+          }
+          return "assets/[name]-[hash].js";
+        },
+        assetFileNames: (assetInfo) => {
+          const originalFiles = Array.isArray((assetInfo as any).originalFileNames)
+            ? (assetInfo as any).originalFileNames
+            : [];
+          const plugin = panelPluginBuildEntries.find((candidate) => {
+            const pluginRoot = `${normalizePath(candidate.directory)}/`;
+            return originalFiles.some((fileName: string) =>
+              normalizePath(fileName).startsWith(pluginRoot)
+            );
+          });
+          if (plugin) {
+            return `plugins/${sanitizePluginFolder(
+              plugin.folder
+            )}/frontend/assets/[name]-[hash][extname]`;
+          }
+          return "assets/[name]-[hash][extname]";
+        },
+        manualChunks(path) {
+          if (
+            path.includes("node_modules/chart.js") ||
+            path.includes("node_modules/@kurkle/color")
+          ) {
+            return "chartjs";
+          }
+          if (path.includes("node_modules/lodash")) {
+            return "lodash";
+          }
+          if (path.includes("node_modules/vue") || path.includes("node_modules/@vue")) {
+            return "vue";
+          }
+          if (path.includes("node_modules/@xterm")) {
+            return "xterm";
+          }
+          if (path.includes("node_modules/@codemirror")) {
+            return "codemirror";
+          }
+          if (path.includes("node_modules/monaco")) {
+            return "monaco";
+          }
+          if (path.includes("node_modules/htmlparser2")) {
+            return "htmlparser2";
+          }
+        }
+      }
+    }
+  },
+  server: {
+    host: true,
+    allowedHosts: true,
+    fs: {
+      allow: [fileURLToPath(new URL("../..", import.meta.url))]
+    },
+    proxy: {
+      "/api": {
+        target: "http://localhost:23333",
+        changeOrigin: true,
+        ws: true
+      },
+      "/upload_files": {
+        target: "http://localhost:23333",
+        changeOrigin: true
+      },
+      "/socket.io": {
+        target: "ws://localhost:23333",
+        ws: true
+      }
+    }
+  },
+
+  plugins: [
+    panelPlugins(panelPluginBuildEntries),
+    frontendDependencyFallback(fileURLToPath(new URL(".", import.meta.url))),
+    vue(),
+    vueJsx(),
+    Components(),
+    visualizer({ emitFile: true, filename: "stats.html" })
+  ],
+  resolve: {
+    dedupe: pluginSdkModules,
+    alias: {
+      "@elements-panel/sdk": fileURLToPath(new URL("./src/plugin/sdk.ts", import.meta.url)),
+      // Plugin files live outside the frontend package. Resolve Vuetify from
+      // this workspace while keeping its public import names in plugin source.
+      "vuetify/styles": VUETIFY_STYLES_PATH,
+      "vuetify/components": VUETIFY_COMPONENTS_PATH,
+      "vuetify/iconsets/mdi": VUETIFY_MDI_PATH,
+      // Keep this after the more specific Vuetify entries above: Vite aliases
+      // also match subpaths of a bare package name.
+      vuetify: VUETIFY_FRAMEWORK_PATH,
+      "@mdi/font/css/materialdesignicons.css": MDI_FONT_CSS_PATH,
+      // The frontend entry only hosts the plugin runtime. Browser UI and shared
+      // implementation modules are owned by their foundational plugins.
+      "@/plugin": fileURLToPath(new URL("./src/plugin", import.meta.url)),
+      "@/lang": fileURLToPath(new URL("../../plugins/i18n/panel/src/lang", import.meta.url)),
+      "@": fileURLToPath(new URL("../../plugins/console/panel/src", import.meta.url)),
+      "@console": fileURLToPath(new URL("../../plugins/console/panel/src", import.meta.url)),
+      "@instance": fileURLToPath(new URL("../../plugins/instance/panel/src", import.meta.url)),
+      // Console cards are compiled from the panel plugin directory, while
+      // browser-only packages are installed in the frontend workspace.
+      "wavesurfer.js": fileURLToPath(
+        new URL("./node_modules/wavesurfer.js/dist/wavesurfer.esm.js", import.meta.url)
+      )
+    }
+  },
+  base: "."
+});

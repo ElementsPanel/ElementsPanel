@@ -1,0 +1,27 @@
+{
+  "name": "@elementspanel/epanel-plugin-terminal",
+  "version": "1.0.1",
+  "description": "Instance terminal and command history.",
+  "elementspanel": {
+    "id": "terminal",
+    "dual": true,
+    "panel": {
+      "priority": 90,
+      "frontendInject": [
+        "console",
+        "i18n",
+        "instance"
+      ],
+      "directory": "panel",
+      "folder": "terminal",
+      "description": "Instance terminal and command history."
+    },
+    "daemon": {
+      "priority": 110,
+      "directory": "daemon",
+      "folder": "terminal",
+      "displayName": "Terminal",
+      "description": "Authenticated instance terminal streams."
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@elementspanel/epanel-plugin-server",
+  "version": "1.0.1",
+  "description": "Panel HTTP/HTTPS server and static assets.",
+  "elementspanel": {
+    "id": "server",
+    "dual": true,
+    "panel": {
+      "priority": 10,
+      "directory": "panel",
+      "folder": "server",
+      "description": "Panel HTTP/HTTPS server and static assets."
+    },
+    "daemon": {
+      "priority": 10,
+      "directory": "daemon",
+      "folder": "server",
+      "displayName": "Web Server",
+      "description": "Daemon HTTP/HTTPS and Socket.io server."
+    }
+  }
+}

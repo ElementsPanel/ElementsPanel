@@ -10,8 +10,8 @@
  * `require` condition, so a plain `require()` resolves them. Listing them here
  * keeps them external ahead of that allowlist.
  *
- * Shared by `panel/webpack{,.plugins}.config.js` and
- * `daemon/webpack{,.plugins}.config.js` so the four configs cannot drift.
+ * Shared by `core/panel/webpack{,.plugins}.config.js` and
+ * `core/daemon/webpack{,.plugins}.config.js` so the four configs cannot drift.
  */
 module.exports = {
   cordis: "commonjs2 cordis",

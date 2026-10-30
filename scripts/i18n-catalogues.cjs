@@ -18,11 +18,12 @@ const LANGUAGES = [
 
 function findCatalogues(root) {
   const catalogues = [];
-  for (const side of ["panel", "daemon"]) {
-    const pluginsDir = path.join(root, side, "plugins");
-    for (const plugin of fs.readdirSync(pluginsDir, { withFileTypes: true })) {
-      if (!plugin.isDirectory()) continue;
-      const directory = `${side}/plugins/${plugin.name}/src/${
+  const pluginsDir = path.join(root, "plugins");
+  if (!fs.existsSync(pluginsDir)) return catalogues;
+  for (const plugin of fs.readdirSync(pluginsDir, { withFileTypes: true })) {
+    if (!plugin.isDirectory()) continue;
+    for (const side of ["panel", "daemon"]) {
+      const directory = `plugins/${plugin.name}/${side}/src/${
         plugin.name === "i18n" ? "languages" : "i18n"
       }`;
       if (fs.existsSync(path.join(root, directory))) catalogues.push(directory);
@@ -94,7 +95,7 @@ function validateCatalogues(root, { checkReferences = true } = {}) {
     }
     const english = readCatalogue(path.join(root, directory, "en_US.json"));
     const expectedKeys = Object.keys(english).sort();
-    const side = directory.split("/")[0];
+    const side = directory.split("/")[2];
     for (const key of expectedKeys) available[side].add(key);
     for (const language of LANGUAGES) {
       const filename = path.join(root, directory, `${language}.json`);
@@ -115,15 +116,11 @@ function validateCatalogues(root, { checkReferences = true } = {}) {
     }
   }
   if (checkReferences) {
-    for (const directory of [
-      "panel/src",
-      "panel/plugins",
-      "daemon/src",
-      "daemon/plugins",
-      "frontend/src"
-    ]) {
-      const side = directory.startsWith("daemon/") ? "daemon" : "panel";
+    for (const directory of ["core/panel/src", "core/daemon/src", "core/frontend/src", "plugins"]) {
       for (const filename of sourceFiles(root, directory)) {
+        const side = /^(?:core\/daemon\/|plugins\/[^/]+\/daemon\/)/.test(filename)
+          ? "daemon"
+          : "panel";
         const content = fs.readFileSync(path.join(root, filename), "utf8");
         const calls = /(?:\bt|\$t|\btranslate)\s*\(\s*["'](TXT_CODE_[^"']+)["']/g;
         for (const match of content.matchAll(calls)) {

@@ -83,7 +83,7 @@ function fixture(t) {
     });
   }
   const loader = load(
-    "frontend/src/plugin/loader.ts",
+    "core/frontend/src/plugin/loader.ts",
     {
       "./context": { ctx },
       "virtual:panel-plugins": { panelPluginModules: [] }

@@ -91,7 +91,7 @@ test("mounted dialogs settle cancellation and share a repeated open until cleanu
     return timers.length;
   });
   t.mock.method(global, "clearTimeout", () => {});
-  const { useMountComponent } = load("panel/plugins/console/src/hooks/useMountComponent.ts", {
+  const { useMountComponent } = load("plugins/console/panel/src/hooks/useMountComponent.ts", {
     vue: {
       createApp: (_component, props) => {
         const host = {
@@ -131,7 +131,7 @@ test("mounted dialogs settle cancellation and share a repeated open until cleanu
 test("promise dialogs cancel, submit, and unmount exactly once", async (t) => {
   const life = lifecycle();
   t.after(life.dispose);
-  const { useDialog } = load("panel/plugins/console/src/hooks/useDialog.ts", { vue: life.vue });
+  const { useDialog } = load("plugins/console/panel/src/hooks/useDialog.ts", { vue: life.vue });
   const values = [];
   let destroyed = 0;
   const dialog = life.run(() =>
@@ -164,7 +164,7 @@ function selectorFixture(
   const requests = [],
     errors = [];
   const fixture = setupSfc(
-    "panel/plugins/instance/src/components/SelectInstances.vue",
+    "plugins/instance/panel/src/components/SelectInstances.vue",
     {
       "@/hooks/useScreen": { useScreen: () => ({ isPhone: vue.ref(false) }) },
       "@/services/apis": {
@@ -245,7 +245,7 @@ test("node picker refresh updates the empty state and uses manual polling", asyn
   const refreshLoading = vue.ref(false);
   let options;
   const fixture = setupSfc(
-    "panel/plugins/instance/src/components/NodeSelectDialog.vue",
+    "plugins/instance/panel/src/components/NodeSelectDialog.vue",
     {
       "@/hooks/useDialog": { useDialog: () => ({ isVisible: vue.ref(true) }) },
       "@/hooks/useRemoteNode": {
@@ -284,7 +284,7 @@ function editorFixture(t) {
   const requests = [],
     errors = [];
   const fixture = setupSfc(
-    "panel/plugins/file/src/normal/FileEditor.vue",
+    "plugins/file/panel/src/normal/FileEditor.vue",
     {
       "@/components/Editor.vue": {},
       "@/hooks/useScreen": { useScreen: () => ({ isPhone: vue.ref(false) }) },
@@ -385,7 +385,7 @@ test("Docker option cancellation preserves values while confirming an empty list
     "useDockerCapabilityEditDialog",
     "useDockerDeviceEditDialog"
   ];
-  const helpers = load("panel/plugins/console/src/components/fc/index.ts", {
+  const helpers = load("plugins/console/panel/src/components/fc/index.ts", {
     "@/hooks/useMountComponent": { useMountComponent: () => ({ mount: async () => result }) },
     "@/plugin/context": { usePluginService: () => ({ components: {} }) },
     "@/components/fc/KvOptionsDialog.vue": {},
@@ -393,7 +393,7 @@ test("Docker option cancellation preserves values while confirming an empty list
     "./TaskLoadingDialog.vue": {}
   });
   const fixture = setupSfc(
-    "panel/plugins/instance/src/widgets/instance/dialogs/InstanceDetail.vue",
+    "plugins/instance/panel/src/widgets/instance/dialogs/InstanceDetail.vue",
     {
       "@/components/fc": helpers,
       "@/components/AppDialog.vue": {},
@@ -435,7 +435,7 @@ test("Docker option cancellation preserves values while confirming an empty list
 
 function fileManagerFixture(t, api = {}) {
   const life = lifecycle();
-  const { useFileManager } = load("panel/plugins/file/src/hooks/useFileManager.ts", {
+  const { useFileManager } = load("plugins/file/panel/src/hooks/useFileManager.ts", {
     vue: life.vue,
     "@vueuse/core": { useLocalStorage: (_key, value) => vue.ref(value) },
     "@/components/fc": {},
@@ -533,7 +533,7 @@ test("desktop overwrite dialogs settle dismissal, replacement, and window close"
   const { manager } = fileManagerFixture(t);
   const polls = [];
   const fixture = setupSfc(
-    "panel/plugins/file/src/desktop/DesktopFileManager.vue",
+    "plugins/file/panel/src/desktop/DesktopFileManager.vue",
     {
       "../hooks/useFileManager": { useFileManager: () => manager },
       "@/plugin/context": { usePluginService: () => undefined },

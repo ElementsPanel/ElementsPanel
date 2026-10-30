@@ -22,10 +22,10 @@
     "totp"
   ],
   "i18n-ally.localesPaths": [
-    "languages",
-    "frontend/src/lang",
-    "daemon/src/i18n",
-    "panel/src/app/i18n"
+    "plugins/i18n/panel/src/languages",
+    "plugins/i18n/daemon/src/languages",
+    "plugins/*/panel/src/i18n",
+    "plugins/*/daemon/src/i18n"
   ],
   "i18n-ally.keystyle": "flat",
   "i18n-ally.enabledFrameworks": [

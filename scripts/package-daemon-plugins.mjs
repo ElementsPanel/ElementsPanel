@@ -48,11 +48,16 @@ function removeSourceMaps(directory) {
   }
 }
 
-export function packageDaemonPlugins({ sourceRoot, outputRoot, pluginNames }) {
+export function packageDaemonPlugins({
+  sourceRoot,
+  outputRoot,
+  pluginNames,
+  pluginDirectories = {}
+}) {
   fs.mkdirSync(outputRoot, { recursive: true });
 
   for (const pluginName of pluginNames) {
-    const sourceDirectory = path.join(sourceRoot, pluginName);
+    const sourceDirectory = pluginDirectories[pluginName] || path.join(sourceRoot, pluginName);
     const { manifest: metadata, packageMetadata } = readPluginMetadata(sourceDirectory);
 
     const entry = resolveEntry(sourceDirectory, metadata);

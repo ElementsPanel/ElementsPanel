@@ -11,12 +11,12 @@ const ts = frontendRequire("typescript");
 
 async function loadHostConfig() {
   const { pluginSdkModules } = await import(
-    pathToFileURL(path.join(root, "frontend/plugin-sdk.config.mjs"))
+    pathToFileURL(path.join(root, "core/frontend/plugin-sdk.config.mjs"))
   );
   const { frontendDependencyFallback } = await import(
-    pathToFileURL(path.join(root, "frontend/plugin-dependencies.config.mjs"))
+    pathToFileURL(path.join(root, "core/frontend/plugin-dependencies.config.mjs"))
   );
-  const filename = path.join(root, "frontend/vite.config.ts");
+  const filename = path.join(root, "core/frontend/vite.config.ts");
   const mod = new Module(filename, module);
   const discoveryRoots = [];
   const overrides = {
@@ -42,7 +42,7 @@ async function loadHostConfig() {
     "../common/src/plugin_overrides": { applyPluginOverrides: (value) => value },
     "node:module": { createRequire: () => ({ resolve: (name) => `/virtual/${name}` }) }
   };
-  mod.require = (id) => (Object.hasOwn(overrides, id) ? overrides[id] : require(id));
+  mod.require = (id) => (Object.hasOwn(overrides, id) ? overrides[id] : Module.createRequire(filename)(id));
   mod._compile(
     ts.transpileModule(
       fs
@@ -233,11 +233,11 @@ test("production URL identities share login state, registered routes and API aut
   const vueRouter = frontendRequire("vue-router");
   const vueUse = frontendRequire("@vueuse/core");
   const sources = {
-    router: "panel/plugins/console/src/config/router.ts",
-    store: "panel/plugins/console/src/stores/useAppStateStore.ts",
-    api: "panel/plugins/console/src/services/apiService.ts",
-    console: "panel/plugins/console/src/frontend.ts",
-    user: "panel/plugins/user/src/widgets/LoginCard.vue"
+    router: "plugins/console/panel/src/config/router.ts",
+    store: "plugins/console/panel/src/stores/useAppStateStore.ts",
+    api: "plugins/console/panel/src/services/apiService.ts",
+    console: "plugins/console/panel/src/frontend.ts",
+    user: "plugins/user/panel/src/widgets/LoginCard.vue"
   };
   const files = Object.fromEntries(
     Object.entries(sources).map(([id, source]) => [

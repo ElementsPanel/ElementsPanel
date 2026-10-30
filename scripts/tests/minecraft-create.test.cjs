@@ -37,16 +37,16 @@ function directory(t) {
   return cwd;
 }
 
-const instanceContract = load("common/src/instance_contract.ts");
-const catalog = load("panel/plugins/instance/src/minecraft.ts", {
-  "../../../../common/src/instance_contract": instanceContract
+const instanceContract = load("core/common/src/instance_contract.ts");
+const catalog = load("plugins/instance/panel/src/minecraft.ts", {
+  "../../../../core/common/src/instance_contract": instanceContract
 });
-const javaCommands = load("common/src/java.ts");
-const install = load("daemon/plugins/instance/src/backend/minecraft_install.ts", {
-  "../../../../../common/src/java": javaCommands
+const javaCommands = load("core/common/src/java.ts");
+const install = load("plugins/instance/daemon/src/backend/minecraft_install.ts", {
+  "../../../../../core/common/src/java": javaCommands
 });
 const { AsyncTask, TaskCenter } = load(
-  "daemon/plugins/instance/src/backend/service/async_task_core.ts",
+  "plugins/instance/daemon/src/backend/service/async_task_core.ts",
   {
     "../runtime": { logger }
   }
@@ -63,7 +63,7 @@ function mirrorFixture(override) {
       sha256: "a".repeat(64)
     }
   };
-  const { MslMirrorsService } = load("panel/plugins/instance/src/backend/service/msl_mirrors.ts", {
+  const { MslMirrorsService } = load("plugins/instance/panel/src/backend/service/msl_mirrors.ts", {
     "../../minecraft": catalog,
     "../runtime": { $t: translate },
     axios: {
@@ -94,7 +94,7 @@ test("server downloads are grouped by edition and proxy category while keeping i
 });
 
 test("category menus expose seven categories and configuration editors retain subtype files", () => {
-  const hooks = load("panel/plugins/instance/src/hooks/useInstance.ts", {
+  const hooks = load("plugins/instance/panel/src/hooks/useInstance.ts", {
     "@elements-panel/sdk": instanceContract,
     "@/config/const": {},
     "@/lang/i18n": { t: translate },
@@ -120,14 +120,14 @@ test("category menus expose seven categories and configuration editors retain su
 
 test("merged Bedrock instances retain Java management for Nukkit and managed Java commands", () => {
   let action;
-  const availability = load("panel/plugins/console/src/hooks/useInstanceActionAvailability.ts", {
+  const availability = load("plugins/console/panel/src/hooks/useInstanceActionAvailability.ts", {
     "@/hooks/useInstance": instanceContract
   });
-  const plugin = load("panel/plugins/instance/src/java/index.ts", {
+  const plugin = load("plugins/instance/panel/src/java/index.ts", {
     "@/lang/i18n": { t: translate },
     "@/hooks/useInstance": instanceContract,
     "@/hooks/useInstanceActionAvailability": availability,
-    "../../../../../common/src/java": javaCommands,
+    "../../../../../core/common/src/java": javaCommands,
     "@/stores/useAppStateStore": { useAppStateStore: () => ({ state: { settings: { allowJavaManager: true } }, isAdmin: vue.ref(false) }) },
     "./desktop/DesktopJavaManager.vue": {},
     "./normal/JavaManager.vue": {},
@@ -202,7 +202,7 @@ test("Minecraft API requires an administrator and resolves downloads on the pane
     $t: translate,
     roles: () => ({ ADMIN: 10 }),
     middleware: () => ({
-      validator: load("panel/plugins/runtime/src/backend/middleware/validator.ts").default,
+      validator: load("plugins/runtime/panel/src/backend/middleware/validator.ts").default,
       permission:
         ({ level }) =>
         async (ctx, next) => {
@@ -227,7 +227,7 @@ test("Minecraft API requires an administrator and resolves downloads on the pane
     })
   };
   const { createMinecraftRouter } = load(
-    "panel/plugins/instance/src/backend/routers/minecraft_router.ts",
+    "plugins/instance/panel/src/backend/routers/minecraft_router.ts",
     {
       "../runtime": runtime,
       "../service/msl_mirrors": {
@@ -341,7 +341,7 @@ function downloadFixture(t, handlers = {}) {
     ])
   );
   const { useMinecraftDownload } = load(
-    "panel/plugins/instance/src/hooks/useMinecraftDownload.ts",
+    "plugins/instance/panel/src/hooks/useMinecraftDownload.ts",
     {
       vue,
       "@/lang/i18n": { t: translate },
@@ -417,8 +417,8 @@ function taskFixture(t, options = {}) {
   const bytes = Buffer.from("test download; never executed");
   const chmods = [];
   const fse = from("daemon")("fs-extra");
-  const fixtureInstall = load("daemon/plugins/instance/src/backend/minecraft_install.ts", {
-    "../../../../../common/src/java": javaCommands,
+  const fixtureInstall = load("plugins/instance/daemon/src/backend/minecraft_install.ts", {
+    "../../../../../core/common/src/java": javaCommands,
     "fs-extra": {
       ...fse,
       chmod: async (file, mode) => {
@@ -494,7 +494,7 @@ function taskFixture(t, options = {}) {
     }
   };
   const { createInstanceInstallTaskClass } = load(
-    "daemon/plugins/instance/src/backend/install_task.ts",
+    "plugins/instance/daemon/src/backend/install_task.ts",
     {
       axios: async (config) => {
         downloads.push(config);
@@ -504,7 +504,7 @@ function taskFixture(t, options = {}) {
     }
   );
   ctx.instances.InstallTask = createInstanceInstallTaskClass(ctx, ctx.instances);
-  const minecraftPlugin = load("daemon/plugins/instance/src/backend/minecraft_task.ts", {
+  const minecraftPlugin = load("plugins/instance/daemon/src/backend/minecraft_task.ts", {
     "./minecraft_install": {
       ...fixtureInstall,
       validateMinecraftInstall: (selection, url, translate) =>
@@ -678,7 +678,7 @@ test("early NeoForge and Windows installations use the argument file actually in
 test("instance registers Minecraft as a separate admin task and validates before creating an instance", () => {
   const registrations = new Map();
   const created = [];
-  const { apply } = load("daemon/plugins/instance/src/backend/minecraft_task.ts", {
+  const { apply } = load("plugins/instance/daemon/src/backend/minecraft_task.ts", {
     "./minecraft_install": install
   });
   apply({
@@ -775,7 +775,7 @@ test("instance owns Java and Minecraft status before restoration and survives un
   }
   ctx.plugin(Translations);
   const { FeaturesService, OverviewService } = load(
-    "daemon/plugins/runtime/src/backend/registries.ts"
+    "plugins/runtime/daemon/src/backend/registries.ts"
   );
   ctx.plugin(FeaturesService);
   ctx.plugin(OverviewService);
@@ -783,20 +783,20 @@ test("instance owns Java and Minecraft status before restoration and survives un
   ctx.set("storage", {});
   ctx.set("transfer", {});
   ctx.set("files", { getFileManager: f.ctx.instances.fileManager });
-  const registries = load("daemon/plugins/instance/src/backend/registries.ts", {
+  const registries = load("plugins/instance/daemon/src/backend/registries.ts", {
     "./service/async_task_core": { AsyncTask, TaskCenter }
   });
-  const instancePlugin = load("daemon/plugins/instance/src/backend/index.ts", {
+  const instancePlugin = load("plugins/instance/daemon/src/backend/index.ts", {
     "./tools/steam_cmd": { initSteamCmd() {} },
     "./service/version_adapter": { migrateConfig() {} },
-    "./settings": load("daemon/plugins/instance/src/backend/settings.ts"),
+    "./settings": load("plugins/instance/daemon/src/backend/settings.ts"),
     "./runtime": { setPluginContext() {} },
     "./service/router": { routerApp: { dispose() {} } },
     "./registries": registries,
-    "../i18n": load("daemon/plugins/instance/src/i18n/index.ts"),
+    "../i18n": load("plugins/instance/daemon/src/i18n/index.ts"),
     "./install_task": { createInstanceInstallTaskClass: f.createInstanceInstallTaskClass },
     "./minecraft_task": f.minecraftPlugin,
-    "./java": load("daemon/plugins/instance/src/backend/java/index.ts", {
+    "./java": load("plugins/instance/daemon/src/backend/java/index.ts", {
       "./java_manager": { JavaManager: class {
         ready = javaReady.promise;
         constructor() { javaManager = this; }
@@ -804,12 +804,12 @@ test("instance owns Java and Minecraft status before restoration and survives un
         getJava(id) { return id === "msl_21" ? runtime : undefined; }
         dispose() { this.disposed = true; }
       } },
-      "./java_router": load("daemon/plugins/instance/src/backend/java/java_router.ts", {
-        "../../../../../../common/src/java": javaCommands,
-        "./java_info": load("daemon/plugins/instance/src/backend/java/java_info.ts")
+      "./java_router": load("plugins/instance/daemon/src/backend/java/java_router.ts", {
+        "../../../../../../core/common/src/java": javaCommands,
+        "./java_info": load("plugins/instance/daemon/src/backend/java/java_info.ts")
       })
     }),
-    "./mcstats": load("daemon/plugins/instance/src/backend/mcstats.ts", {
+    "./mcstats": load("plugins/instance/daemon/src/backend/mcstats.ts", {
       "mcsmanager-common": {
         MCServerStatus: class {
           async getStatus() {
@@ -1027,7 +1027,7 @@ test("a missing Java executable fails the update task without an unhandled proce
   child.stdout = new PassThrough();
   child.stderr = new PassThrough();
   const { InstanceUpdateAction } = load(
-    "daemon/plugins/instance/src/backend/service/instance_update_action.ts",
+    "plugins/instance/daemon/src/backend/service/instance_update_action.ts",
     {
       child_process: {
         spawn: () => {
@@ -1040,8 +1040,8 @@ test("a missing Java executable fails the update task without an unhandled proce
         commandStringToArray: () => ["java", "-jar", "server-installer.jar"]
       },
       "../i18n": { $t: translate },
-      "../service/async_task_service": { AsyncTask },
-      "../service/log": logger,
+      "./async_task_service": { AsyncTask },
+      "./log": logger,
       "./docker_process_service": { SetupDockerContainer: class {} }
     }
   );
@@ -1087,7 +1087,7 @@ test("instance creation requires type, then method, then node; changing type cle
   });
   const state = mountScript(
     t,
-    "panel/plugins/instance/src/views/CreateInstance.vue",
+    "plugins/instance/panel/src/views/CreateInstance.vue",
     {},
     {
       "@/config/router": { router: { push() {} } },
@@ -1154,7 +1154,7 @@ function formFixture(t, createMethod = "DOWNLOAD", javaSetup) {
     uploads = [],
     errors = [],
     successes = [];
-  const constants = load("panel/plugins/console/src/types/const.ts", {
+  const constants = load("plugins/console/panel/src/types/const.ts", {
     "@/lang/i18n": { t: translate }
   });
   const cfg = vue.ref();
@@ -1184,7 +1184,7 @@ function formFixture(t, createMethod = "DOWNLOAD", javaSetup) {
   };
   const state = mountScript(
     t,
-    "panel/plugins/instance/src/widgets/setupApp/CreateInstanceForm.vue",
+    "plugins/instance/panel/src/widgets/setupApp/CreateInstanceForm.vue",
     { createMethod, daemonId: "node", instanceType: "minecraft/java", isDesktop: true },
     {
       "@/hooks/useInstance": instanceTypes,
@@ -1214,7 +1214,7 @@ function formFixture(t, createMethod = "DOWNLOAD", javaSetup) {
             ? { setupComponent: {} }
             : undefined
       },
-      "../../../../../../common/src/java": javaCommands,
+      "../../../../../../core/common/src/java": javaCommands,
       "@/tools/protocol": { parseForwardAddress: (url) => url },
       "@/tools/validator": { reportErrorMsg: (error) => errors.push(error) },
       "@/types/const": constants,

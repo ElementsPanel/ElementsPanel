@@ -14,9 +14,9 @@ const { JSDOM } = frontendRequire("jsdom");
 // Load the real settings and store code in memory without building or serving the app.
 const load = createLoader({ compiler: ts });
 
-const { default: SystemConfig } = load("panel/plugins/runtime/src/backend/entity/setting.ts");
+const { default: SystemConfig } = load("plugins/runtime/panel/src/backend/entity/setting.ts");
 const i18n = { t: (key) => key, getCurrentLang: () => "en_us", setLanguage() {} };
-const constants = load("panel/plugins/console/src/types/const.ts", { "@/lang/i18n": i18n });
+const constants = load("plugins/console/panel/src/types/const.ts", { "@/lang/i18n": i18n });
 const { AppTheme } = constants;
 
 function backendFixture(initial = {}, legacyLayout, save = () => {}) {
@@ -24,7 +24,7 @@ function backendFixture(initial = {}, legacyLayout, save = () => {}) {
   const routes = new Map();
   let schema;
   const router = { get: (route, handler) => routes.set(route, handler), post() {} };
-  const plugin = load("panel/plugins/console/src/backend/index.ts", {
+  const plugin = load("plugins/console/panel/src/backend/index.ts", {
     "fs-extra": {
       existsSync: () => legacyLayout !== undefined,
       readFileSync: () => JSON.stringify(legacyLayout)
@@ -66,7 +66,7 @@ async function storeFixture(t, readAppearance) {
   });
   const preferredDark = vue.ref(false);
   const mounted = [];
-  const { useAppConfigStore } = load("panel/plugins/console/src/stores/useAppConfigStore.ts", {
+  const { useAppConfigStore } = load("plugins/console/panel/src/stores/useAppConfigStore.ts", {
     "@/assets/logo.svg": "builtin-dark.svg",
     "@/assets/logo_b.svg": "builtin-light.svg",
     "@/lang/i18n": i18n,
@@ -88,7 +88,7 @@ async function storeFixture(t, readAppearance) {
 }
 
 test("console settings expose two uploadable logos and preserve independent values after restart", async (t) => {
-  const { default: Storage } = load("common/src/system_storage.ts", {
+  const { default: Storage } = load("core/common/src/system_storage.ts", {
     "fs-extra": panelRequire("fs-extra")
   });
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "elements-appearance-"));

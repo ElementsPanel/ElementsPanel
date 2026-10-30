@@ -14,7 +14,7 @@ require.extensions[".ts"] = (mod, filename) => mod._compile(transpile(filename),
 
 const load = createLoader({ compiler: ts });
 
-const validator = load("panel/plugins/runtime/src/backend/middleware/validator.ts").default;
+const validator = load("plugins/runtime/panel/src/backend/middleware/validator.ts").default;
 const role = { USER: 1, ADMIN: 10, GUEST: 0, BAN: -1 };
 const logger = { info() {}, warn() {}, error() {} };
 const pass = () => async (_ctx, next) => next();
@@ -35,7 +35,7 @@ function userFixture() {
       })
     })
   };
-  const module = load("panel/plugins/user/src/backend/service/user_service.ts", {
+  const module = load("plugins/user/panel/src/backend/service/user_service.ts", {
     "../runtime": runtime,
     "mcsmanager-common": {},
     md5: (password) => `hash:${password}`
@@ -90,7 +90,7 @@ test("validator rejects structured scalars and non-finite numbers without catchi
 });
 
 test("HTTP protocol preserves error status and valid false results", async () => {
-  const { protocol } = load("panel/plugins/server/src/backend/protocol.ts");
+  const { protocol } = load("plugins/server/panel/src/backend/protocol.ts");
   const middleware = protocol({ settings: { config: {} }, globals: { get: () => "test" } });
   for (const status of [400, 403, 413, 503]) {
     const ctx = { query: {}, path: "/api/example", response: { set() {} }, status: 200 };
@@ -169,7 +169,7 @@ test("concurrent grant cleanup cannot resurrect another deleted instance", async
 test("2FA cannot be disabled with an invalid code or overwritten by requesting another QR", async () => {
   const fixture = userFixture();
   fixture.user.open2FA = true;
-  const passport = load("panel/plugins/user/src/backend/service/passport_service.ts", {
+  const passport = load("plugins/user/panel/src/backend/service/passport_service.ts", {
     "../runtime": fixture.runtime,
     "./user_service": { default: fixture.users, __esModule: true },
     "./auth_settings": { authSettings: () => ({}) }
@@ -184,7 +184,7 @@ test("2FA cannot be disabled with an invalid code or overwritten by requesting a
   assert.equal(fixture.writes.length, 0);
   let confirmed = false;
   const { default: createRouter } = load(
-    "panel/plugins/user/src/backend/routers/general_user_router.ts",
+    "plugins/user/panel/src/backend/routers/general_user_router.ts",
     {
       "../runtime": {
         ...fixture.runtime,
@@ -217,7 +217,7 @@ test("2FA cannot be disabled with an invalid code or overwritten by requesting a
 test("missing login code returns NEED_2FA instead of submitting the literal undefined", async () => {
   class TwoFactorError extends Error {}
   let submittedCode;
-  const { default: createRouter } = load("panel/plugins/user/src/backend/routers/login_router.ts", {
+  const { default: createRouter } = load("plugins/user/panel/src/backend/routers/login_router.ts", {
     "../runtime": {
       core: () => ({ middleware: { validator } }),
       operationLogger: () => logger,
@@ -252,7 +252,7 @@ test("mod writes authorize the body target even when the query names an owned in
     get() {},
     post() {}
   };
-  const { registerModManagerRoutes } = load("panel/plugins/mod/src/backend/router.ts", {
+  const { registerModManagerRoutes } = load("plugins/mod-manager/panel/src/backend/router.ts", {
     "./url": {}
   });
   registerModManagerRoutes(
@@ -292,7 +292,7 @@ test("mod writes authorize the body target even when the query names an owned in
 });
 
 test("per-ID mutex stays registered until queued requests finish", async () => {
-  const { execWithMutexId, mutexIdMap } = load("panel/plugins/runtime/src/backend/utils/sync.ts");
+  const { execWithMutexId, mutexIdMap } = load("plugins/runtime/panel/src/backend/utils/sync.ts");
   const order = [];
   let releaseFirst;
   let releaseSecond;
@@ -325,7 +325,7 @@ test("per-ID mutex stays registered until queued requests finish", async () => {
 
 test("memory cache returns values and honors expiry before periodic cleanup", (t) => {
   const { SingletonMemoryRedis, singletonMemoryRedis } = load(
-    "panel/plugins/runtime/src/backend/service/mini_redis.ts"
+    "plugins/runtime/panel/src/backend/service/mini_redis.ts"
   );
   singletonMemoryRedis.dispose();
   const cache = new SingletonMemoryRedis();
@@ -346,7 +346,7 @@ test("memory cache returns values and honors expiry before periodic cleanup", (t
 });
 
 test("node RPC rejects null errors and disconnects and cleans the socket that accepted the request", async () => {
-  const { default: RemoteRequest } = load("panel/plugins/node/src/backend/remote_command.ts", {
+  const { default: RemoteRequest } = load("plugins/node/panel/src/backend/remote_command.ts", {
     "./remote_entity": { default: { STATUS_OK: 200 }, __esModule: true },
     "./runtime": { $t: (key) => key }
   });
@@ -393,7 +393,7 @@ test("failed auth settings validation preserves the live config and existing SSO
   let saved = false;
   let unbound = false;
   const { applyAuthSettings } = load(
-    "panel/plugins/user/src/backend/routers/auth_settings_router.ts",
+    "plugins/user/panel/src/backend/routers/auth_settings_router.ts",
     {
       "../runtime": {},
       "../middleware/permission": {},
@@ -430,7 +430,7 @@ test("configured Redis failure never silently switches account persistence to lo
   let client;
   let fileWrites = 0;
   let disposed;
-  const storagePlugin = load("panel/plugins/storage/src/backend/index.ts", {
+  const storagePlugin = load("plugins/storage/panel/src/backend/index.ts", {
     "mcsmanager-common": {
       StorageSubsystem: class {
         store() {
@@ -480,7 +480,7 @@ test("configured Redis failure never silently switches account persistence to lo
 
 test("batch instance forwarding awaits daemon completion, deduplicates IDs and surfaces failure", async () => {
   const { multiOperationForwarding } = load(
-    "panel/plugins/instance/src/backend/service/instance_service.ts",
+    "plugins/instance/panel/src/backend/service/instance_service.ts",
     {
       "mcsmanager-common": {},
       "../runtime": {}
@@ -514,9 +514,9 @@ test("batch instance forwarding awaits daemon completion, deduplicates IDs and s
 });
 
 test("enabled user plugin failure denies requests/uploads until its guard returns; explicit removal stays supported", async (t) => {
-  const cache = load("panel/plugins/runtime/src/backend/service/mini_redis.ts");
+  const cache = load("plugins/runtime/panel/src/backend/service/mini_redis.ts");
   t.after(() => cache.singletonMemoryRedis.dispose());
-  const { apply } = load("panel/plugins/runtime/src/backend/index.ts", {
+  const { apply } = load("plugins/runtime/panel/src/backend/index.ts", {
     "./service/log": { setupLogging() {} },
     "./lifecycle": { setupProcessLifecycle() {} },
     "mcsmanager-common": { GlobalVariable: {} },
@@ -541,7 +541,7 @@ test("enabled user plugin failure denies requests/uploads until its guard return
   };
   await apply(ctx);
   const permission = registry.get("middleware").permission({ level: 10 });
-  const { preCheck } = load("panel/plugins/server/src/backend/precheck.ts");
+  const { preCheck } = load("plugins/server/panel/src/backend/precheck.ts");
   const uploadCheck = preCheck(ctx);
   const request = () => ({
     request: { headers: { "content-type": "multipart/form-data" } },
@@ -587,11 +587,11 @@ test("enabled user plugin failure denies requests/uploads until its guard return
 });
 
 test("node overview imports legacy mappings and refreshes the addresses used by file and terminal access", async () => {
-  const { default: RemoteRequest } = load("panel/plugins/node/src/backend/remote_command.ts", {
+  const { default: RemoteRequest } = load("plugins/node/panel/src/backend/remote_command.ts", {
     "./remote_entity": { default: { STATUS_OK: 200 }, __esModule: true },
     "./runtime": { $t: (key) => key }
   });
-  const { RemoteServiceConfig } = load("panel/plugins/node/src/backend/remote_config.ts", {
+  const { RemoteServiceConfig } = load("plugins/node/panel/src/backend/remote_config.ts", {
     "mcsmanager-common": { removeTrail: (value) => value }
   });
   const config = new RemoteServiceConfig();

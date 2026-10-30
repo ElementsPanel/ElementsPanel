@@ -7,7 +7,7 @@ const panelRequire = from("panel");
 const ts = panelRequire("typescript");
 
 const load = createLoader({ compiler: ts, resolve: (id) => panelRequire(id) });
-const { BackgroundTasks } = load("daemon/plugins/runtime/src/backend/service/background_tasks.ts");
+const { BackgroundTasks } = load("plugins/runtime/daemon/src/backend/service/background_tasks.ts");
 
 const input = (owner = "alice") => ({
   _taskOwner: owner,
@@ -102,8 +102,8 @@ test("protocol errors recorded without throwing do not turn into successful task
   assert.equal(tasks.list("alice").length, 1);
 });
 
-const taskTickets = load("panel/plugins/node/src/backend/task_ticket.ts");
-const panelTasks = load("panel/plugins/node/src/backend/background_tasks.ts", {
+const taskTickets = load("plugins/node/panel/src/backend/task_ticket.ts");
+const panelTasks = load("plugins/node/panel/src/backend/background_tasks.ts", {
   "./task_ticket": taskTickets
 });
 function panelFixture() {
@@ -245,7 +245,7 @@ test("remote requests attach the authenticated user instead of caller-supplied t
     );
     return true;
   };
-  const { default: Request } = load("panel/plugins/node/src/backend/remote_command.ts", {
+  const { default: Request } = load("plugins/node/panel/src/backend/remote_command.ts", {
     "./background_tasks": panelTasks,
     "./runtime": {
       $t: (key) => key,
@@ -274,7 +274,7 @@ test("pushed snapshots replace one daemon and reset clears the stream", async ()
   const vue = frontendRequire("vue");
   const state = vue.reactive({ userInfo: { uuid: "alice" } });
   let streamOptions;
-  const { useBackgroundTasks } = load("panel/plugins/console/src/stores/useBackgroundTasks.ts", {
+  const { useBackgroundTasks } = load("plugins/console/panel/src/stores/useBackgroundTasks.ts", {
     vue,
     "@vueuse/core": frontendRequire("@vueuse/core"),
     "@/hooks/useTaskStream": {
@@ -340,7 +340,7 @@ test("the browser discards stale task responses when the active account changes"
     bob = deferred();
   let nextResponse = alice;
   let requestCount = 0;
-  const { useBackgroundTasks } = load("panel/plugins/console/src/stores/useBackgroundTasks.ts", {
+  const { useBackgroundTasks } = load("plugins/console/panel/src/stores/useBackgroundTasks.ts", {
     vue,
     "@vueuse/core": frontendRequire("@vueuse/core"),
     "@/hooks/useTaskStream": {

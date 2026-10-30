@@ -1,0 +1,16 @@
+{
+  "watch": [
+    "src",
+    "../../plugins/*/panel/src",
+    "../../plugins/*/package.json",
+    "../../plugins/*/panel/plugin.json",
+    "../common/src"
+  ],
+  "ext": "ts,js,cjs,mjs,json",
+  "ignore": ["src/**/*.spec.ts", "src/**/*.test.ts", "node_modules/**/*", "production/**/*"],
+  "exec": "npm run build && node --enable-source-maps ../../scripts/start-source.cjs panel",
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "delay": "1000"
+}

@@ -5,7 +5,7 @@ const { test } = require("node:test");
 
 const daemonRequire = from("daemon");
 const ts = daemonRequire("typescript");
-const directory = "daemon/plugins/runtime/src/backend/service/";
+const directory = "plugins/runtime/daemon/src/backend/service/";
 
 const load = createLoader({ compiler: ts, resolve: (id) => daemonRequire(id) });
 

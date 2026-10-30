@@ -5,7 +5,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
-panel/public/
+core/panel/public/
 *.code-workspace
 data/
 dist/
@@ -17,9 +17,9 @@ production-code/
 /npm-packages/
 /.elementspanel-npm-*/
 /external/
-# Compiled plugin backends (built from plugins/*/src/backend/index.ts)
-panel/plugins/*/backend/
-daemon/plugins/*/backend/
+# Compiled plugin backends
+plugins/*/panel/backend/
+plugins/*/daemon/backend/
 # Plugins installed from the plugin market (never part of the repository)
 market_plugins/
 panel/market_plugins/
@@ -138,3 +138,10 @@ src/public/1.png
 */.idea/*
 
 .turbo
+
+/panel/
+/daemon/
+
+# Generated artifacts left by older source layouts
+core/panel/plugins/
+core/daemon/plugins/

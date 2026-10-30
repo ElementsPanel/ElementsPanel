@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Project structure
 
-The codebase is split into: `web backend (panel/*.*)`, `daemon/node (daemon/*.*)`, and `web frontend (frontend/*.*)`.
+The codebase is split into: `web backend (core/panel/*.*)`, `daemon/node (core/daemon/*.*)`, and `web frontend (core/frontend/*.*)`.
 
 - **Daemon**: instance processes, containers, files, and terminal management.
 - **Web backend**: user management, node connections, auth, and API.
@@ -13,11 +13,10 @@ The codebase is split into: `web backend (panel/*.*)`, `daemon/node (daemon/*.*)
 
 # Plugins
 
-Most features live in plugins, not in the core: `panel/plugins/*`,
-`daemon/plugins/*`. The plugin system is cordis — a plugin exports `apply(ctx)`
+Most features live in plugins, not in the core: `plugins/<id>/panel/` and
+`plugins/<id>/daemon/`. The plugin system is cordis — a plugin exports `apply(ctx)`
 and optional `inject`, and everything it registers is undone when it unloads, so
-a plugin never writes cleanup code. Read `panel/plugins/README.md` before working
-on a plugin, and `daemon/plugins/README.md` for the node side. A plugin must only
+a plugin never writes cleanup code. Read `docs/npm-packages.md` for the unified source and npm package layouts. A plugin must only
 `import type` from the core and from cordis, never at runtime.
 
 # Code requirements
@@ -30,7 +29,7 @@ on a plugin, and `daemon/plugins/README.md` for the node side. A plugin must onl
 # i18n conventions
 
 - **Frontend**: use `t()` from `@/lang/i18n` for all translatable text.
-- **Backend**: use `$t()` (e.g. from `daemon/src/i18n/index.ts`) for all user-facing text and error messages.
+- **Backend**: use `$t()` (e.g. from `plugins/i18n/daemon/src/backend/index.ts`) for all user-facing text and error messages.
 - Store source strings as accurate, short, correct English in `languages/en_us.json`; other locales are added separately.
 
 ## i18n parameterized strings

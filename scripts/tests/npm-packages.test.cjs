@@ -6,7 +6,8 @@ const { execFileSync } = require("node:child_process");
 const { pathToFileURL } = require("node:url");
 const { test } = require("node:test");
 const { createLoader } = require("./helpers.cjs");
-const { readPluginManifest } = createLoader()("common/src/plugin_manifest.ts");
+const { sourcePlugins, coreDirectory } = require("../workspace-layout.cjs");
+const { readPluginManifest } = createLoader()("core/common/src/plugin_manifest.ts");
 const repository = path.resolve(__dirname, "../..");
 const packaging = import(pathToFileURL(path.join(repository, "scripts/package-npm.mjs")).href);
 
@@ -19,34 +20,31 @@ function fixture(t) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "elements-npm-packages-"));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   const sourceRoot = path.join(directory, "workspace");
-  const frontendRoot = path.join(sourceRoot, "frontend/dist");
+  const frontendRoot = path.join(sourceRoot, "core/frontend/dist");
   const frontendManifest = [];
   for (const side of ["panel", "daemon"]) {
-    const root = path.join(sourceRoot, side);
+    const root = coreDirectory(side, sourceRoot);
     write(path.join(root, "production/app.js"), "// Precompiled fixture, no project build\n");
     write(path.join(root, "data/secret.json"), "private data");
     write(path.join(root, "logs/current.log"), "private log");
     write(path.join(root, "node_modules/do-not-bundle/index.js"), "private dependency tree");
     write(path.join(root, "plugins/market-only/plugin.json"), { id: "market-only" });
-    for (const item of fs.readdirSync(path.join(repository, side, "plugins"), {
-      withFileTypes: true
-    })) {
-      const sourceManifest = path.join(repository, side, "plugins", item.name, "plugin.json");
-      if (!item.isDirectory() || !fs.existsSync(sourceManifest)) continue;
+    for (const plugin of sourcePlugins(side)) {
+      const item = { name: plugin.folder };
+      const sourceManifest = path.join(plugin.directory, "plugin.json");
       const original = JSON.parse(fs.readFileSync(sourceManifest));
-      const packageMetadata = JSON.parse(
-        fs.readFileSync(path.join(path.dirname(sourceManifest), "package.json"))
-      );
+      const pluginRoot = path.join(sourceRoot, "plugins", plugin.id, side);
+      write(path.join(path.dirname(pluginRoot), "package.json"), plugin.metadata);
       const manifest = { ...original };
       if (original.backend) {
         write(
-          path.join(root, "plugins", item.name, manifest.backend),
+          path.join(pluginRoot, manifest.backend),
           "exports.apply = () => {};\n//# sourceMappingURL=index.cjs.map\n"
         );
-        write(path.join(root, "plugins", item.name, `${manifest.backend}.map`), "{}");
+        write(path.join(pluginRoot, `${manifest.backend}.map`), "{}");
       }
       write(
-        path.join(root, "plugins", item.name, "src/private.ts"),
+        path.join(pluginRoot, "src/private.ts"),
         "// Source stays in the workspace"
       );
       if (original.frontend) {
@@ -64,8 +62,7 @@ function fixture(t) {
           styles: [`./${style}`]
         });
       }
-      write(path.join(root, "plugins", item.name, "plugin.json"), manifest);
-      write(path.join(root, "plugins", item.name, "package.json"), packageMetadata);
+      write(path.join(pluginRoot, "plugin.json"), manifest);
     }
   }
   write(path.join(frontendRoot, "plugins/manifest.json"), frontendManifest);
@@ -95,7 +92,7 @@ test("workspace packaging includes runnable entry points and excludes user data 
     assert.equal(manifest.name, `@elementspanel/${side}`);
     assert.equal(
       manifest.version,
-      JSON.parse(fs.readFileSync(path.join(repository, side, "package.json"))).version
+      JSON.parse(fs.readFileSync(path.join(coreDirectory(side), "package.json"))).version
     );
     assert.equal(manifest.optionalDependencies, undefined);
     assert.equal(manifest.devDependencies, undefined);
@@ -140,9 +137,9 @@ test("workspace packaging includes runnable entry points and excludes user data 
       );
       assert.equal(fs.existsSync(path.join(pluginRoot, "package.json")), false);
       const folder = metadata.elementspanel[side].folder;
-      const sourceMetadata = JSON.parse(
-        fs.readFileSync(path.join(repository, side, "plugins", folder, "package.json"))
-      );
+      const sourcePlugin = sourcePlugins(side).find((plugin) => plugin.id === id);
+      const sourceMetadata = sourcePlugin.metadata;
+      const definition = sourceMetadata.elementspanel[side];
       const discovered = readPluginManifest(pluginRoot);
       assert.equal(discovered.id, id);
       assert.equal(discovered.version, metadata.version);
@@ -150,10 +147,10 @@ test("workspace packaging includes runnable entry points and excludes user data 
       assert.equal(metadata.elementspanel[side].id, undefined);
       assert.equal(metadata.elementspanel[side].version, undefined);
       assert.equal(metadata.elementspanel[side].dual, undefined);
-      assert.equal(discovered.description, sourceMetadata.description);
-      assert.equal(discovered.priority, sourceMetadata.elementspanel.priority);
+      assert.equal(discovered.description, definition.description ?? sourceMetadata.description);
+      assert.equal(discovered.priority, definition.priority);
       for (const field of ["frontendInject", "frontendImmediate", "frontendRequired"])
-        assert.deepEqual(discovered[field], sourceMetadata.elementspanel[field]);
+        assert.deepEqual(discovered[field], definition[field]);
       if (pluginManifest.backend) {
         assert.ok(fs.existsSync(path.join(pluginRoot, pluginManifest.backend)));
         assert.doesNotMatch(
@@ -185,10 +182,10 @@ test("workspace packaging includes runnable entry points and excludes user data 
   assert.equal(mod.elementspanel.panel.folder, "mod");
   assert.equal(mod.elementspanel.daemon.folder, "mod");
   assert.ok(fs.existsSync(path.join(f.outputRoot, "panel/public/assets/shared.js")));
-  assert.ok(fs.existsSync(path.join(f.sourceRoot, "panel/production/app.js")));
-  assert.ok(fs.existsSync(path.join(f.sourceRoot, "panel/plugins/console/backend/index.cjs.map")));
+  assert.ok(fs.existsSync(path.join(f.sourceRoot, "core/panel/production/app.js")));
+  assert.ok(fs.existsSync(path.join(f.sourceRoot, "plugins/console/panel/backend/index.cjs.map")));
   assert.ok(
-    fs.existsSync(path.join(f.sourceRoot, "frontend/dist/plugins/console/frontend/index.js.map"))
+    fs.existsSync(path.join(f.sourceRoot, "core/frontend/dist/plugins/console/frontend/index.js.map"))
   );
   const create = JSON.parse(
     fs.readFileSync(path.join(f.outputRoot, "init-elementspanel/package.json"))
@@ -274,14 +271,14 @@ test("separate npm plugin packages resolve from hoisted and nested installations
 test("incomplete builds and symlink assets cannot produce a publishable directory", async (t) => {
   const f = fixture(t);
   const { packageNpm } = await packaging;
-  const entry = path.join(f.sourceRoot, "panel/plugins/console/backend/index.cjs");
+  const entry = path.join(f.sourceRoot, "plugins/console/panel/backend/index.cjs");
   fs.unlinkSync(entry);
   await assert.rejects(packageNpm(f), /ENOENT|entry/);
   assert.equal(fs.existsSync(f.outputRoot), false);
   write(entry, "exports.apply=()=>{};");
   const secret = path.join(f.directory, "secret.json");
   write(secret, "must not be published");
-  fs.symlinkSync(secret, path.join(f.sourceRoot, "frontend/dist/leak.json"));
+  fs.symlinkSync(secret, path.join(f.sourceRoot, "core/frontend/dist/leak.json"));
   await assert.rejects(packageNpm(f), /symlinks/);
   assert.equal(fs.existsSync(f.outputRoot), false);
   assert.equal(fs.readFileSync(secret, "utf8"), "must not be published");
@@ -290,19 +287,19 @@ test("incomplete builds and symlink assets cannot produce a publishable director
 test("missing frontend assets or daemon plugin builds fail before producing packages", async (t) => {
   const f = fixture(t);
   const { packageNpm } = await packaging;
-  const frontendEntry = path.join(f.sourceRoot, "frontend/dist/plugins/console/frontend/index.js");
+  const frontendEntry = path.join(f.sourceRoot, "core/frontend/dist/plugins/console/frontend/index.js");
   fs.unlinkSync(frontendEntry);
   await assert.rejects(packageNpm(f), /Missing compiled frontend/);
   assert.equal(fs.existsSync(f.outputRoot), false);
   write(frontendEntry, "export default {};\n");
 
-  const style = path.join(f.sourceRoot, "frontend/dist/plugins/console/frontend/assets/style.css");
+  const style = path.join(f.sourceRoot, "core/frontend/dist/plugins/console/frontend/assets/style.css");
   fs.unlinkSync(style);
   await assert.rejects(packageNpm(f), /Missing compiled style/);
   assert.equal(fs.existsSync(f.outputRoot), false);
   write(style, ".fixture {}\n");
 
-  fs.unlinkSync(path.join(f.sourceRoot, "daemon/plugins/runtime/backend/index.cjs"));
+  fs.unlinkSync(path.join(f.sourceRoot, "plugins/runtime/daemon/backend/index.cjs"));
   await assert.rejects(packageNpm(f), /Missing compiled entry for daemon plugin runtime/);
   assert.equal(fs.existsSync(f.outputRoot), false);
 });
@@ -313,7 +310,7 @@ test("staging a plugin rejects symlinks before stripping source maps", async (t)
   const original = "private data\n//# sourceMappingURL=private.map\n";
   const secret = path.join(f.directory, "private.js");
   write(secret, original);
-  fs.symlinkSync(secret, path.join(f.sourceRoot, "panel/plugins/console/backend/linked.js"));
+  fs.symlinkSync(secret, path.join(f.sourceRoot, "plugins/console/panel/backend/linked.js"));
   await assert.rejects(packageNpm(f), /symlinks/);
   assert.equal(fs.existsSync(f.outputRoot), false);
   assert.equal(fs.readFileSync(secret, "utf8"), original);

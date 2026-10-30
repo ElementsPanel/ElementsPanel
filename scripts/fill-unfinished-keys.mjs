@@ -3,8 +3,8 @@ import path from "path";
 
 // Keep both runtime plugins' global catalogues complete and in sync.
 const LANGUAGES_DIRS = [
-  path.join(import.meta.dirname, "../panel/plugins/i18n/src/languages"),
-  path.join(import.meta.dirname, "../daemon/plugins/i18n/src/languages")
+  path.join(import.meta.dirname, "../plugins/i18n/panel/src/languages"),
+  path.join(import.meta.dirname, "../plugins/i18n/daemon/src/languages")
 ];
 
 async function fillMissingKeys(languagesDir) {

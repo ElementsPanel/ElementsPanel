@@ -39,7 +39,7 @@ function apiFixture(handler = async () => ({ ok: true })) {
   return {
     requests,
     errors,
-    ...load("panel/plugins/console/src/services/apiService.ts", {
+    ...load("plugins/console/panel/src/services/apiService.ts", {
       axios,
       "@/tools/validator": { reportErrorMsg: (error) => errors.push(error) }
     })
@@ -97,7 +97,7 @@ test("force requests retain error alerts and independently abortable reads are n
 test("API hook isolates per-call configuration/results and preserves the newest request state", async () => {
   const requests = [];
   const pending = [];
-  const hook = load("panel/plugins/console/src/hooks/useApi.ts", {
+  const hook = load("plugins/console/panel/src/hooks/useApi.ts", {
     "@/services/apiService": {
       apiService: {
         subscribe(config) {
@@ -109,7 +109,7 @@ test("API hook isolates per-call configuration/results and preserves the newest 
       }
     }
   });
-  const { useDefineApi } = load("panel/plugins/console/src/stores/useDefineApi.ts", {
+  const { useDefineApi } = load("plugins/console/panel/src/stores/useDefineApi.ts", {
     "@/hooks/useApi": hook
   });
   const request = useDefineApi({ url: "/base", method: "GET" })();
@@ -133,7 +133,7 @@ test("polling waits for completion and never restarts after unmount during a req
   });
   t.mock.method(global, "clearTimeout", () => {});
   const pending = deferred();
-  const { usePolling } = load("panel/plugins/console/src/hooks/usePolling.ts", {
+  const { usePolling } = load("plugins/console/panel/src/hooks/usePolling.ts", {
     vue: {
       onMounted: (callback) => {
         mounted = callback;
@@ -154,7 +154,7 @@ test("polling waits for completion and never restarts after unmount during a req
 
 test("overview derives used memory consistently and leaves the API response untouched", async () => {
   const state = vue.ref();
-  const { useOverviewInfo } = load("panel/plugins/console/src/hooks/useOverviewInfo.ts", {
+  const { useOverviewInfo } = load("plugins/console/panel/src/hooks/useOverviewInfo.ts", {
     "@/services/apis": { overviewInfo: () => ({ state, execute: async () => state }) },
     "./usePolling": { usePolling() {} }
   });
@@ -179,7 +179,7 @@ test("overview derives used memory consistently and leaves the API response unto
 
 test("socket probes release sockets and listeners on failure and cancellation", async () => {
   const sockets = [];
-  const { testSocketConnection } = load("panel/plugins/console/src/hooks/useSocketIo.ts", {
+  const { testSocketConnection } = load("plugins/console/panel/src/hooks/useSocketIo.ts", {
     "@/tools/protocol": { parseForwardAddress: (value) => value },
     "@/tools/string": { removeTrail: (value) => value },
     "socket.io-client": {
@@ -209,7 +209,7 @@ test("socket probes release sockets and listeners on failure and cancellation", 
 function uploadFixture(initialize, upload = async () => true) {
   const errors = [];
   const requests = [];
-  const { default: service } = load("panel/plugins/file/src/services/uploadService.ts", {
+  const { default: service } = load("plugins/file/panel/src/services/uploadService.ts", {
     "@/lang/i18n": i18n,
     "@/tools/validator": { reportErrorMsg: (value) => errors.push(value) },
     "@/tools/vuetifyToast": { message: { success() {}, error: (value) => errors.push(value) } },
@@ -299,7 +299,7 @@ test("upload pause/resume ignores the aborted worker and reports active chunk pr
 function fileManagerFixture(api = {}, savedTabs = {}) {
   const errors = [];
   const scope = vue.effectScope();
-  const { useFileManager } = load("panel/plugins/file/src/hooks/useFileManager.ts", {
+  const { useFileManager } = load("plugins/file/panel/src/hooks/useFileManager.ts", {
     vue: { ...vue, onMounted() {}, onUnmounted() {} },
     "@vueuse/core": { useLocalStorage: () => vue.ref(savedTabs) },
     "@/components/fc": {},
@@ -431,7 +431,7 @@ test("download links encode reserved filename characters and do not turn them in
 test("schedule edits forward an atomic replacement and propagate a failed save", async () => {
   const calls = [];
   const failure = new Error("schedule rejected");
-  const { useSchedule } = load("panel/plugins/instance/src/hooks/useSchedule.ts", {
+  const { useSchedule } = load("plugins/instance/panel/src/hooks/useSchedule.ts", {
     "@/lang/i18n": i18n,
     "@/tools/validator": {},
     "@/tools/vuetifyToast": {},
@@ -458,7 +458,7 @@ test("schedule edits forward an atomic replacement and propagate a failed save",
 test("switching node/plugin configuration cannot display or save a stale schema", async () => {
   const requests = [];
   const saved = [];
-  const state = setupSfc("panel/plugins/config/src/ConfigPage.vue", {
+  const state = setupSfc("plugins/config/panel/src/ConfigPage.vue", {
     "vue-router": {
       useRoute: () => ({ query: {} }),
       // ConfigPage reads the router to rewrite the URL and guards the route on
@@ -533,7 +533,7 @@ function pluginActionFixture(t, inventories = {}, nodeOverrides = {}) {
       return { value: await handlers[name](config) };
     }
   })]));
-  const state = setupSfc("panel/plugins/config/src/ConfigPage.vue", {
+  const state = setupSfc("plugins/config/panel/src/ConfigPage.vue", {
     "vue-router": {
       useRoute: () => ({ path: "/desktop", query: {} }),
       useRouter: () => ({}),
@@ -815,7 +815,7 @@ test("plugin configuration opens its save tooltip for unsaved edits and preserve
       stored = JSON.parse(JSON.stringify(config.data));
       return { value: { saved: true, application: "applied" } };
     };
-    const state = effect.run(() => setupSfc("panel/plugins/config/src/ConfigPage.vue", {
+    const state = effect.run(() => setupSfc("plugins/config/panel/src/ConfigPage.vue", {
       vue: { ...vue, onMounted() {}, onUnmounted() {} },
       "@/hooks/useScreen": { useScreen: () => ({ isPhone }) },
       "vue-router": {
@@ -938,7 +938,7 @@ test("desktop plugin configuration loads each window's node without changing the
   const createPage = (props) => {
     const scope = vue.effectScope();
     t.after(() => scope.stop());
-    return scope.run(() => setupSfc("panel/plugins/config/src/ConfigPage.vue", {
+    return scope.run(() => setupSfc("plugins/config/panel/src/ConfigPage.vue", {
       vue: { ...vue, onMounted() {}, onUnmounted() {} },
       "vue-router": {
         useRoute: () => route,
@@ -981,7 +981,7 @@ test("Vuetify key/value form keeps invalid data out of its result callback", asy
   const emitted = [];
   let destroyed = false;
   const state = setupSfc(
-    "panel/plugins/console/src/components/fc/KvOptionsDialog.vue",
+    "plugins/console/panel/src/components/fc/KvOptionsDialog.vue",
     {
       "../../tools/validator": { emptyValueValidator() {}, reportValidatorError() {} }
     },
@@ -1005,7 +1005,7 @@ test("Vuetify key/value form keeps invalid data out of its result callback", asy
 
 test("user search rejects an older response and fixes pagination after deleting the last row", async () => {
   const requests = [];
-  const state = setupSfc("panel/plugins/user/src/widgets/UserList.vue", {
+  const state = setupSfc("plugins/user/panel/src/widgets/UserList.vue", {
     "@/plugin/context": { usePluginService: () => undefined },
     "@/components/AppDialog.vue": {},
     "@/components/PageToolbar.vue": {},
@@ -1047,7 +1047,7 @@ test("login keeps its loading state until the final route settles", async () => 
   const navigation = deferred();
   const navigations = [];
   const reports = [];
-  const state = setupSfc("panel/plugins/user/src/widgets/LoginCard.vue", {
+  const state = setupSfc("plugins/user/panel/src/widgets/LoginCard.vue", {
     "@/config/router": {
       router: {
         currentRoute: { value: { query: {} } },
@@ -1092,7 +1092,7 @@ test("terminal setup is shared and an unmounted terminal cannot create a late so
   let dispose,
     sockets = 0,
     calls = 0;
-  const { useTerminal } = load("panel/plugins/terminal/src/hooks/useTerminal.ts", {
+  const { useTerminal } = load("plugins/terminal/panel/src/hooks/useTerminal.ts", {
     vue: {
       ...vue,
       onMounted() {},
@@ -1136,11 +1136,11 @@ test("terminal setup is shared and an unmounted terminal cannot create a late so
 });
 
 test("partial instance deletion surfaces the failed UUID and does not emit success", async () => {
-  const deletion = load("panel/plugins/instance/src/tools/deletion.ts", { "@/lang/i18n": i18n });
+  const deletion = load("plugins/instance/panel/src/tools/deletion.ts", { "@/lang/i18n": i18n });
   const emitted = [];
   const errors = [];
   const state = setupSfc(
-    "panel/plugins/instance/src/widgets/instance/dialogs/DeleteInstanceDialog.vue",
+    "plugins/instance/panel/src/widgets/instance/dialogs/DeleteInstanceDialog.vue",
     {
       "@/components/AppDialog.vue": {},
       "@/services/apis/instance": {
@@ -1180,7 +1180,7 @@ test("desktop node refresh ignores stale results, validates ports and reports fa
       if (name === "delete" || name === "connect") throw new Error(`${name} failed`);
     }
   });
-  const state = setupSfc("panel/plugins/node/src/desktop/DesktopNodeManager.vue", {
+  const state = setupSfc("plugins/node/panel/src/desktop/DesktopNodeManager.vue", {
     "@/plugin/context": { usePluginService: () => undefined },
     "@/hooks/useOverviewInfo": { useOverviewInfo: () => ({ state: vue.ref() }) },
     "@/hooks/useSocketIo": {
@@ -1232,7 +1232,7 @@ test("desktop node refresh ignores stale results, validates ports and reports fa
 for (const layout of ["normal", "desktop"]) {
   test(`${layout} mod downloads keep the selected file's MCIM fallback for queued and immediate downloads`, async () => {
     const requests = [];
-    const { useModSearch } = load(`panel/plugins/mod/src/${layout}/mod-manager/useModSearch.ts`, {
+    const { useModSearch } = load(`plugins/mod-manager/panel/src/${layout}/mod-manager/useModSearch.ts`, {
       "@/lang/i18n": i18n,
       "@vueuse/core": { useLocalStorage: (_key, value) => vue.ref(value) },
       "@/tools/vuetifyToast": { message: { success() {}, error(error) { assert.fail(error); } } },
@@ -1274,7 +1274,7 @@ for (const layout of ["normal", "desktop"]) {
 
 test("editing node connection details preserves plugin settings and a blank API key", async () => {
   const writes = [];
-  const state = setupSfc("panel/plugins/node/src/normal/node/NodeDetailDialog.vue", {
+  const state = setupSfc("plugins/node/panel/src/normal/node/NodeDetailDialog.vue", {
     "../../hooks/useRemoteNode": {
       useRemoteNode: () => ({
         updateNode: async (uuid, data) => writes.push({ uuid, data }),

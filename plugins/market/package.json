@@ -1,0 +1,18 @@
+{
+  "name": "@elementspanel/epanel-plugin-market",
+  "version": "1.0.1",
+  "description": "Plugin browsing, installation and management.",
+  "elementspanel": {
+    "id": "market",
+    "panel": {
+      "priority": 175,
+      "frontendInject": [
+        "console",
+        "i18n"
+      ],
+      "directory": "panel",
+      "folder": "market",
+      "description": "Plugin browsing, installation and management."
+    }
+  }
+}

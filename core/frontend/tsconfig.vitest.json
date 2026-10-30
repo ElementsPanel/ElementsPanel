@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.app.json",
+  "exclude": ["../../plugins/*/panel/src/backend/**"],
+  "compilerOptions": {
+    "composite": true,
+    "types": ["node", "jsdom"]
+  }
+}

@@ -54,7 +54,7 @@ test("plugin management npm routes require an administrator and use the plugin l
     },
     inject: (_names, callback) => callback(ctx)
   };
-  load("panel/plugins/config/src/backend/index.ts", {
+  load("plugins/config/panel/src/backend/index.ts", {
     "../i18n": { localeMessages: {} },
     "./settings": { SettingsFormService: class {} }
   }).apply(ctx);

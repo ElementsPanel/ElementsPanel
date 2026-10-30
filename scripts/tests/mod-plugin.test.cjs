@@ -12,7 +12,12 @@ const ts = panelRequire("typescript");
 // Execute TypeScript in memory. This suite neither builds the project nor opens
 // a listener; external requests are replaced at their service boundary.
 
-require.extensions[".ts"] = (mod, filename) => mod._compile(transpile(filename), filename);
+require.extensions[".ts"] = (mod, filename) => {
+  const side = filename.includes(`${path.sep}daemon${path.sep}`) ? "daemon" : "panel";
+  const host = path.resolve(__dirname, "../../core", side);
+  mod.paths.push(...require("node:module")._nodeModulePaths(host));
+  mod._compile(transpile(filename), filename);
+};
 
 const load = createLoader({ compiler: ts });
 
@@ -56,7 +61,7 @@ async function panelFixture(t, options = {}) {
   t.after(() => ctx.stop());
   const Koa = panelRequire("koa");
   const app = new Koa();
-  const { KoaService } = load("panel/plugins/server/src/backend/koa.ts");
+  const { KoaService } = load("plugins/server/panel/src/backend/koa.ts");
   ctx.plugin(KoaService, app);
   ctx.plugin(registrar(Service, "i18n"));
   const policy = { canFileManager: true, allowed: true };
@@ -74,7 +79,7 @@ async function panelFixture(t, options = {}) {
         if (requestCtx.role < level) requestCtx.status = 403;
         else await next();
       },
-    validator: load("panel/plugins/runtime/src/backend/middleware/validator.ts").default,
+    validator: load("plugins/runtime/panel/src/backend/middleware/validator.ts").default,
     speedLimit: pass,
     requestConcurrencyLimiter: pass
   });
@@ -92,7 +97,7 @@ async function panelFixture(t, options = {}) {
     }
   };
   const network = [];
-  const { ModManagerService } = load("panel/plugins/mod/src/backend/mod_manager.ts", {
+  const { ModManagerService } = load("plugins/mod-manager/panel/src/backend/mod_manager.ts", {
     axios:
       options.axios ||
       (async (config) => {
@@ -100,7 +105,7 @@ async function panelFixture(t, options = {}) {
         return { data: [{ project_type: "minecraft", version: "1.21.1" }] };
       })
   });
-  const plugin = load("panel/plugins/mod/src/backend/index.ts", {
+  const plugin = load("plugins/mod-manager/panel/src/backend/index.ts", {
     "./mod_manager": { ModManagerService }
   });
   // Optional services the plugin resolves lazily; set before start so the
@@ -201,7 +206,7 @@ test("Spigot version filenames are safe for batch downloads and match their fall
     { name: "插件😀".repeat(100), versions: ["最新版😀".repeat(100)] }
   ];
   for (const resource of cases) {
-    const { ModManagerService } = load("panel/plugins/mod/src/backend/mod_manager.ts", {
+    const { ModManagerService } = load("plugins/mod-manager/panel/src/backend/mod_manager.ts", {
       axios: async ({ url }) => ({
         data: url.endsWith("/versions")
           ? resource.versions.map((name, id) => ({ name, id }))
@@ -270,7 +275,7 @@ async function daemonFixture(t, downloads = { task: null, downloadingCount: 0, s
     }
   }
   ctx.plugin(Protocol);
-  ctx.plugin(load("daemon/plugins/runtime/src/backend/registries.ts").FeaturesService);
+  ctx.plugin(load("plugins/runtime/daemon/src/backend/registries.ts").FeaturesService);
   ctx.set("instances", { subsystem: { exists: (uuid) => uuid === "instance" } });
   ctx.set("transfer", { downloads });
   const directory = temporaryDirectory(t);
@@ -284,7 +289,7 @@ async function daemonFixture(t, downloads = { task: null, downloadingCount: 0, s
     uploads: { getUploads: () => new Map() }
   };
   const filesFork = ctx.plugin((scoped) => scoped.set("files", files));
-  const plugin = load("daemon/plugins/mod/src/backend/index.ts");
+  const plugin = load("plugins/mod-manager/daemon/src/backend/index.ts");
   const fork = ctx.plugin({ ...plugin, name: "mod-manager" });
   await ctx.start();
   const request = (event, data) => ctx.protocol.handlers.get(event)({}, data);
@@ -511,13 +516,13 @@ test("frontend registration and feature gating follow the mod and file plugin li
   for (const name of ["console", "desktop", "instance"]) ctx.set(name, {});
   const user = { state: { settings: { canFileManager: true } }, isAdmin: { value: false } };
   const component = {};
-  const availability = load("panel/plugins/console/src/hooks/useInstanceActionAvailability.ts", {
+  const availability = load("plugins/console/panel/src/hooks/useInstanceActionAvailability.ts", {
     "@/hooks/useInstance": {
       TYPE_MINECRAFT_JAVA: "minecraft/java",
       TYPE_MINECRAFT_BEDROCK: "minecraft/bedrock"
     }
   });
-  const plugin = load("panel/plugins/mod/src/frontend.ts", {
+  const plugin = load("plugins/mod-manager/panel/src/frontend.ts", {
     "@/lang/i18n": { t: (key) => key },
     "@/hooks/useInstanceActionAvailability": availability,
     "@/stores/useAppStateStore": { useAppStateStore: () => user },
@@ -553,7 +558,7 @@ test("frontend registration and feature gating follow the mod and file plugin li
 });
 
 test("legacy mod windows restore under the action ID without losing layout or opening duplicates", () => {
-  const { migrateLegacyInstanceWindow } = load("panel/plugins/desktop/src/legacyWindows.ts");
+  const { migrateLegacyInstanceWindow } = load("plugins/desktop/panel/src/legacyWindows.ts");
   const saved = {
     id: "mod-manager-instance",
     content: "mod-manager",
@@ -575,7 +580,7 @@ test("legacy mod windows restore under the action ID without losing layout or op
 function mirrorManager(respond, preference) {
   const requests = [];
   let dispose;
-  const { ModManagerService } = load("panel/plugins/mod/src/backend/mod_manager.ts", {
+  const { ModManagerService } = load("plugins/mod-manager/panel/src/backend/mod_manager.ts", {
     axios: async (config) => {
       requests.push(config);
       return await respond(config, requests.length);
@@ -725,7 +730,7 @@ test("official source preference requests official APIs first and falls back to 
 });
 
 test("MCIM file mapping preserves encoded paths and excludes lookalike hosts, credentials and custom ports", () => {
-  const { withMirrorDownload } = load("panel/plugins/mod/src/backend/mcim.ts");
+  const { withMirrorDownload } = load("plugins/mod-manager/panel/src/backend/mcim.ts");
   const original = { url: "https://cdn.modrinth.com/data/a/versions/b/file%20name.jar?token=example", filename: "file name.jar", hashes: { sha1: "hash" } };
   const mirrored = withMirrorDownload(original, "official");
   assert.equal(mirrored.fallbackUrl, "https://mod.mcimirror.top/data/a/versions/b/file%20name.jar?token=example");
@@ -739,7 +744,7 @@ test("MCIM file mapping preserves encoded paths and excludes lookalike hosts, cr
 });
 
 test("download URLs put the preferred source first and keep the other one as fallback", () => {
-  const { withMirrorDownload } = load("panel/plugins/mod/src/backend/mcim.ts");
+  const { withMirrorDownload } = load("plugins/mod-manager/panel/src/backend/mcim.ts");
   const file = { url: "https://cdn.modrinth.com/data/a/versions/b/mod.jar", filename: "mod.jar", primary: true };
   const mirrorFirst = withMirrorDownload(file, "mirror");
   assert.equal(mirrorFirst.url, "https://mod.mcimirror.top/data/a/versions/b/mod.jar");
@@ -756,7 +761,7 @@ test("download URLs put the preferred source first and keep the other one as fal
 });
 
 test("a client URL pair is re-ordered by the current preference before it reaches the daemon", async (t) => {
-  const { preferDownload } = load("panel/plugins/mod/src/backend/mcim.ts");
+  const { preferDownload } = load("plugins/mod-manager/panel/src/backend/mcim.ts");
   const officialUrl = "https://cdn.modrinth.com/data/a/versions/b/mod.jar";
   const mirrorUrl = "https://mod.mcimirror.top/data/a/versions/b/mod.jar";
   // Stale pairs are ordered either way, whichever side the client listed first.

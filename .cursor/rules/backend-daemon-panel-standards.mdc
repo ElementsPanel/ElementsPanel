@@ -1,12 +1,12 @@
 ---
 description: Backend development conventions
-globs: daemon/src/**/*.ts, panel/src/**/*.ts,
+globs: core/daemon/src/**/*.ts, core/panel/src/**/*.ts, plugins/*/{panel,daemon}/src/backend/**/*.ts
 alwaysApply: false
 ---
 
 # Backend directory structure
 
-Folder names under `daemon/src/*` and `panel/src/app/*` define the layers: route, middleware, service, instance, etc.
+Folder names under `plugins/<id>/daemon/src/backend/*` and `plugins/<id>/panel/src/backend/*` define the layers: route, middleware, service, instance, etc.
 
 # Logging and exceptions
 

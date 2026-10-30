@@ -39,7 +39,7 @@ function fixture(t, chartModule) {
         .map((name) => [name, {}])
     ])
   };
-  const hooks = load("panel/plugins/console/src/hooks/useOverviewChart.ts", imports);
+  const hooks = load("plugins/console/panel/src/hooks/useOverviewChart.ts", imports);
   const dispose = () => {
     if (disposed) return;
     disposed = true;
@@ -106,10 +106,10 @@ test("monitoring charts map request and instance histories independently and ret
     totalInstance: 3,
     chart: { request: [{ value: 2, runningInstance: 1 }, { value: 0, runningInstance: 3 }] }
   });
-  const overviewHook = load("panel/plugins/monitor/src/hooks/useOverviewChart.ts", {
+  const overviewHook = load("plugins/monitor/panel/src/hooks/useOverviewChart.ts", {
     "@/hooks/useOverviewChart": f.hooks
   });
-  const page = f.setupSfc("panel/plugins/monitor/src/normal/OverviewPage.vue", {
+  const page = f.setupSfc("plugins/monitor/panel/src/normal/OverviewPage.vue", {
     "@/hooks/useOverviewInfo": { useOverviewInfo: () => ({ state }) },
     "../hooks/useOperationLog": { useOperationLog: () => ({ fetchData() {}, formattedLogs: vue.ref([]) }) },
     "../hooks/useOverviewChart": overviewHook

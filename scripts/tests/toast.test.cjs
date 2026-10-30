@@ -22,7 +22,7 @@ function fixture(t) {
   const vuetify = Vuetify.createVuetify({
     defaults: { VSnackbarQueue: { transition: { css: false } } }
   });
-  const filename = path.join(root, "panel/plugins/console/src/tools/vuetifyToast.ts");
+  const filename = path.join(root, "plugins/console/panel/src/tools/vuetifyToast.ts");
   const mod = new Module(filename, module);
   const imports = {
     vue,

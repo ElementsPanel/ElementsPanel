@@ -1,0 +1,41 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": [
+    "env.d.ts",
+    "src/**/*",
+    "src/**/*.vue",
+    "../../plugins/*/panel/**/*.ts",
+    "../../plugins/*/panel/**/*.vue",
+    "../../plugins/*/panel/**/*.json",
+    "ant.d.ts",
+    "components.d.ts",
+    "../common/global.d.ts"
+  ],
+  "exclude": ["src/**/__tests__/*", "../../plugins/*/panel/src/backend/**"],
+  "compilerOptions": {
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@elements-panel/sdk": ["./src/plugin/sdk.ts"],
+      "@/plugin": ["./src/plugin/index.ts"],
+      "@/plugin/*": ["./src/plugin/*"],
+      "@/lang/*": ["../../plugins/i18n/panel/src/lang/*"],
+      "@/*": ["../../plugins/console/panel/src/*"],
+      "@console/*": ["../../plugins/console/panel/src/*"],
+      "@instance/*": ["../../plugins/instance/panel/src/*"],
+      "vuetify/components": [
+        "./node_modules/vuetify/lib/components/index.d.ts",
+        "./node_modules/vuetify/lib/components/index.d.mts"
+      ],
+      "vuetify/iconsets/mdi": [
+        "./node_modules/vuetify/lib/iconsets/mdi.d.ts",
+        "./node_modules/vuetify/lib/iconsets/mdi.d.mts"
+      ],
+      "lodash": ["./node_modules/@types/lodash/index.d.ts"],
+      "*": ["./node_modules/@types/*", "./node_modules/*"]
+    },
+    "moduleResolution": "node",
+    "types": ["node"],
+    "typeRoots": ["./node_modules/@types"]
+  }
+}

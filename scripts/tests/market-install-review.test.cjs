@@ -7,7 +7,7 @@ const { test } = require("node:test");
 
 const panelRequire = from("panel");
 const ts = panelRequire("typescript");
-const serviceFile = "panel/plugins/market/src/backend/service/plugin_market.ts";
+const serviceFile = "plugins/market/panel/src/backend/service/plugin_market.ts";
 
 const load = createLoader({ compiler: ts });
 
@@ -125,7 +125,7 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
   };
 
   const service = load(serviceFile, { axios, "mcsmanager-common": common });
-  const plugin = load("panel/plugins/market/src/backend/index.ts", {
+  const plugin = load("plugins/market/panel/src/backend/index.ts", {
     axios,
     "mcsmanager-common": common,
     "../i18n": { localeMessages: {} },

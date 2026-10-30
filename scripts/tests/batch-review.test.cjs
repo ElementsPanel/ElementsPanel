@@ -8,7 +8,7 @@ const load = createLoader({ compiler: ts });
 
 test("batch forwarding waits for other nodes after one fails", async () => {
   const { multiOperationForwarding } = load(
-    "panel/plugins/instance/src/backend/service/instance_service.ts",
+    "plugins/instance/panel/src/backend/service/instance_service.ts",
     {
       "mcsmanager-common": {},
       "../runtime": {}
@@ -65,12 +65,12 @@ test("panel batch routes account for every instance when talking to an older dae
   };
   const logged = [],
     calls = [];
-  const service = load("panel/plugins/instance/src/backend/service/instance_service.ts", {
+  const service = load("plugins/instance/panel/src/backend/service/instance_service.ts", {
     "mcsmanager-common": {},
     "../runtime": runtime
   });
   const { createInstanceAdminRouter } = load(
-    "panel/plugins/instance/src/backend/routers/instance_admin_router.ts",
+    "plugins/instance/panel/src/backend/routers/instance_admin_router.ts",
     {
       "../runtime": runtime,
       "../service/instance_service": service
@@ -120,7 +120,7 @@ test("daemon batch operations reply once, include all failures and never hang fo
       }
     ]
   ]);
-  load("daemon/plugins/instance/src/backend/routers/Instance_router.ts", {
+  load("plugins/instance/daemon/src/backend/routers/Instance_router.ts", {
     "../entity/instance/instance": {},
     "../i18n": { $t: (key) => key },
     "../service/log": { warn() {} },
