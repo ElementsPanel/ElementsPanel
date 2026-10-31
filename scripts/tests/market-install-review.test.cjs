@@ -93,7 +93,10 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
       if (url.endsWith("/api/plugins")) {
         return {
           data: {
-            items: [{ id: "sample", name: "epanel-plugin-sample", sides: state.sides }],
+            items: [{
+              id: "sample", name: "epanel-plugin-sample", sides: state.sides,
+              latestVersion: { version: state.version, status: "approved", sides: state.sides, compatibility: state.compatibility }
+            }],
             total: 1
           }
         };
@@ -129,6 +132,7 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
     axios,
     "mcsmanager-common": common,
     "../i18n": { localeMessages: {} },
+    "../version": load("plugins/market/panel/src/version.ts"),
     "./service/plugin_market": service,
     "./service/market_settings": {
       initMarketSettings: async () => {},
@@ -159,6 +163,7 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
           .map((record) => ({
             id: record.pluginId,
             packageName: record.name,
+            version: record.version,
             removable: !state.protected,
             state: "active"
           }))
@@ -220,11 +225,72 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
         removeConfig: String(removeConfig)
       }),
     installed: () => request("get", "/plugin/installed"),
+    updates: () => request("get", "/plugin/updates"),
+    update: (values = {}) => request("post", "/plugin/update", {
+      pluginId: "sample", version: state.version, panel: true, daemonIds: [], ...values
+    }),
     list: () => request("get", "/plugin/list"),
     detail: () => request("get", "/plugin/detail", { pluginId: "sample" }),
     icon: () => request("get", "/plugin/icon")
   };
 }
+
+test("market updates compare live versions on each side and leave unchecked nodes visible", async (t) => {
+  const env = await fixture(t, { sides: ["panel", "daemon"], version: "2.0.0" });
+  await env.common.installNpmPlugin({ name: "epanel-plugin-sample", pluginId: "sample", version: "3.0.0" });
+  env.nodes.get("node-3").available = false;
+  env.state.request = async ({ event, daemonId }) => event === "plugin/list"
+    ? [{ id: "sample", packageName: "epanel-plugin-sample", version: daemonId === "node-1" ? "1.0.0" : "2.0.0" }]
+    : {};
+  const updates = await env.updates();
+  assert.equal(updates.plugins.length, 1);
+  assert.equal(updates.plugins[0].version, "2.0.0");
+  assert.deepEqual(updates.plugins[0].targets, [{ daemonId: "node-1", label: "node-1", currentVersion: "1.0.0" }]);
+  assert.deepEqual(updates.uncheckedNodes, [{ daemonId: "node-3", label: "node-3" }]);
+  env.state.compatibility = { panel: { api: 2 } };
+  assert.deepEqual((await env.updates()).plugins, [], "incompatible releases are never offered");
+  env.state.compatibility = undefined;
+  env.state.inventoryExtra = [{ id: "source", version: "1.0.0" }];
+  env.local.clear();
+  env.state.request = async () => [{ id: "sample", version: "1.0.0" }];
+  assert.deepEqual((await env.updates()).plugins, [], "source installations cannot be updated through npm");
+});
+
+test("a market update never downgrades or installs missing halves and rechecks node inventory", async (t) => {
+  const env = await fixture(t, { sides: ["panel", "daemon"], version: "2.0.0" });
+  await env.common.installNpmPlugin({ name: "epanel-plugin-sample", pluginId: "sample", version: "3.0.0" });
+  env.installs.length = 0;
+  env.state.request = async ({ event, daemonId }) => event === "plugin/list"
+    ? daemonId === "node-1" ? [{ id: "sample", packageName: "epanel-plugin-sample", version: "1.0.0" }]
+      : daemonId === "node-2" ? [] : [{ id: "sample", packageName: "epanel-plugin-sample", version: "2.1.0" }]
+    : {};
+  const result = await env.update({ daemonIds: ["node-1", "node-2", "node-3"] });
+  assert.deepEqual(result.updatedTargets, [{ daemonId: "node-1", label: "node-1", currentVersion: "1.0.0" }]);
+  assert.deepEqual(result.failedTargets, []);
+  assert.deepEqual(env.installs, [], "the newer panel version is preserved");
+  assert.deepEqual(env.rpcCalls.filter((call) => call.event === "plugin/npm/install").map((call) => call.daemonId), ["node-1"]);
+  assert.equal(env.local.get("sample").version, "3.0.0");
+  assert.equal(result.restartRequired, false);
+});
+
+test("market updates continue after a node fails and allow a node-only retry", async (t) => {
+  const env = await fixture(t, { sides: ["panel", "daemon"], version: "2.0.0" });
+  await env.common.installNpmPlugin({ name: "epanel-plugin-sample", pluginId: "sample", version: "1.0.0" });
+  env.installs.length = 0;
+  env.state.request = async ({ event, daemonId }) => {
+    if (event === "plugin/list") return [{ id: "sample", packageName: "epanel-plugin-sample", version: "1.0.0" }];
+    if (event === "plugin/npm/install" && daemonId === "node-1") throw new Error("npm failed");
+    return {};
+  };
+  const result = await env.update({ daemonIds: ["node-1", "node-2"] });
+  assert.deepEqual(result.failedTargets.map((target) => target.daemonId), ["node-1"]);
+  assert.deepEqual(result.updatedTargets.map((target) => target.daemonId ?? "panel"), ["node-2", "panel"]);
+  assert.equal(env.installs.length, 1);
+  env.state.version = "3.0.0";
+  await env.update({ panel: false, daemonIds: ["node-2"] });
+  assert.equal(env.installs.length, 1, "a node-only update must not change the panel");
+  assert.equal(env.local.get("sample").version, "2.0.0");
+});
 
 test("panel installation uses the market package name and records the npm dependency", async (t) => {
   const env = await fixture(t);
@@ -362,6 +428,22 @@ test("a daemon's deferred npm reload does not send another RPC through its closi
   const result = await env.install({ daemonIds: ["node-1"] });
   assert.equal(result.restartRequired, false);
   assert.deepEqual(env.rpcCalls.map((call) => call.event), ["plugin/npm/install"]);
+  env.rpcCalls.length = 0;
+  env.state.version = "2.0.0";
+  env.state.request = async ({ event }) => event === "plugin/list"
+    ? [{ id: "sample", packageName: "epanel-plugin-sample", version: "1.0.0" }]
+    : { result: { saved: true, application: "pending" } };
+  const update = await env.update({ panel: false, daemonIds: ["node-1"] });
+  assert.equal(update.restartRequired, false);
+  assert.deepEqual(env.rpcCalls.map((call) => call.event), ["plugin/list", "plugin/npm/install"]);
+  let checks = 0;
+  env.state.request = async ({ event }) => {
+    if (event !== "plugin/list") return {};
+    if (++checks === 1) throw new Error("reconnecting after a foundation update");
+    return [{ id: "sample", packageName: "epanel-plugin-sample", version: "1.0.0" }];
+  };
+  assert.deepEqual((await env.update({ panel: false, daemonIds: ["node-1"] })).failedTargets, []);
+  assert.equal(checks, 2, "a temporary reconnect must not skip the next plugin update");
 });
 
 test("same-plugin operations stay serialized across installs and a queued uninstall", async (t) => {

@@ -84,5 +84,14 @@
   "TXT_CODE_PLUGIN_MARKET_DEPLOY_NODES": "Развернуть на узлах",
   "TXT_CODE_PLUGIN_MARKET_REPAIR": "Восстановить",
   "TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT": "Версия на этой панели",
-  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "Этот плагин управляется хостом. Нельзя изменить его версию или удалить через рынок."
+  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "Этот плагин управляется хостом. Нельзя изменить его версию или удалить через рынок.",
+  "TXT_CODE_PLUGIN_MARKET_BROWSE": "Обзор",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_ALL": "Обновить всё",
+  "TXT_CODE_PLUGIN_MARKET_UPDATED": "Плагины на выбранных узлах обновлены.",
+  "TXT_CODE_PLUGIN_MARKET_UNCHECKED_NODES": "Не удалось проверить обновления на узлах: {nodes}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATES_QUEUE_HINT": "Сначала примените или отмените отложенные изменения.",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "Обновление {name} ({completed}/{total})",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "Не удалось обновить на: {targets}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "Цели и текущие версии",
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "Все проверенные плагины обновлены до последней версии."
 }

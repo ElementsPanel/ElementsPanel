@@ -12,7 +12,7 @@ import {
   VContainer,
   VIcon,
   VImg,
-  VProgressLinear,
+  VProgressCircular,
   VTab,
   VTabs
 } from "vuetify/components";
@@ -131,7 +131,9 @@ onBeforeUnmount(() => requestId++);
         </template>
       </PageToolbar>
 
-      <VProgressLinear v-if="loading" indeterminate class="mb-4" />
+      <div v-if="loading && !plugin" class="plugin-detail-loading">
+        <VProgressCircular indeterminate color="primary" :size="40" :width="3" />
+      </div>
       <VAlert v-if="error" type="error" :text="error" class="mb-4" />
 
       <template v-if="plugin">
@@ -194,7 +196,7 @@ onBeforeUnmount(() => requestId++);
         </header>
 
         <div class="plugin-detail-tabs">
-          <VTabs v-model="activeTab" color="primary" :disabled="busy">
+          <VTabs v-model="activeTab" color="primary" density="compact" :disabled="busy">
             <VTab value="readme">{{ t("TXT_CODE_PLUGIN_MARKET_README") }}</VTab>
             <VTab value="versions">{{ t("TXT_CODE_PLUGIN_MARKET_VERSIONS") }}</VTab>
             <VTab value="updates">{{ t("TXT_CODE_PLUGIN_MARKET_UPDATES") }}</VTab>
@@ -340,6 +342,13 @@ onBeforeUnmount(() => requestId++);
   max-width: var(--app-max-width);
   margin: 0 auto;
   padding: 20px 24px 32px;
+}
+
+.plugin-detail-loading {
+  min-height: 38vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 // A marketplace entry reads like its store page: a logo, the name, the author,

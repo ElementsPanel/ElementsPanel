@@ -84,5 +84,14 @@
   "TXT_CODE_PLUGIN_MARKET_DEPLOY_NODES": "Déployer sur les nœuds",
   "TXT_CODE_PLUGIN_MARKET_REPAIR": "Réparer",
   "TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT": "Version sur ce panneau",
-  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "Ce plugin est géré par l’hôte. Sa version ne peut pas être modifiée ou désinstallée depuis le marché."
+  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "Ce plugin est géré par l’hôte. Sa version ne peut pas être modifiée ou désinstallée depuis le marché.",
+  "TXT_CODE_PLUGIN_MARKET_BROWSE": "Parcourir",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_ALL": "Tout mettre à jour",
+  "TXT_CODE_PLUGIN_MARKET_UPDATED": "Les plugins des cibles sélectionnées ont été mis à jour.",
+  "TXT_CODE_PLUGIN_MARKET_UNCHECKED_NODES": "Impossible de rechercher les mises à jour sur ces nœuds : {nodes}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATES_QUEUE_HINT": "Appliquez ou abandonnez d’abord les modifications en attente.",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "Mise à jour de {name} ({completed}/{total})",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "Échec de la mise à jour sur : {targets}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "Cibles et versions actuelles",
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "Tous les plugins vérifiés sont à jour."
 }

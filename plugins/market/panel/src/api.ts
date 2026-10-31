@@ -1,4 +1,5 @@
 import { useDefineApi } from "@/stores/useDefineApi";
+import type { PluginUpdateResult, PluginUpdates } from "./updates";
 
 // ---- Plugin market -------------------------------------------------------
 // Distinct from the catalogue above: these are panel and daemon plugins, not
@@ -121,6 +122,19 @@ export const pluginMarketDetail = useDefineApi<
 export const pluginMarketInstalled = useDefineApi<unknown, InstalledPlugin[]>({
   url: "/api/market/plugin/installed",
   method: "GET"
+});
+
+export const pluginMarketUpdates = useDefineApi<unknown, PluginUpdates>({
+  url: "/api/market/plugin/updates",
+  method: "GET"
+});
+
+export const updateMarketPlugin = useDefineApi<
+  { data: { pluginId: string; version: string; panel: boolean; daemonIds: string[] } },
+  PluginUpdateResult
+>({
+  url: "/api/market/plugin/update",
+  method: "POST"
 });
 
 /** One daemon a plugin with a daemon half can be installed on. */

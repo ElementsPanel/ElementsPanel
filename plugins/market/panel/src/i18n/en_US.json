@@ -84,5 +84,14 @@
   "TXT_CODE_PLUGIN_MARKET_DEPLOY_NODES": "Deploy to nodes",
   "TXT_CODE_PLUGIN_MARKET_REPAIR": "Repair",
   "TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT": "Version on this panel",
-  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "This plugin is managed by the host. Its version cannot be changed or uninstalled in the market."
+  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "This plugin is managed by the host. Its version cannot be changed or uninstalled in the market.",
+  "TXT_CODE_PLUGIN_MARKET_BROWSE": "Browse",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_ALL": "Update all",
+  "TXT_CODE_PLUGIN_MARKET_UPDATED": "Plugins on the selected targets have been updated.",
+  "TXT_CODE_PLUGIN_MARKET_UNCHECKED_NODES": "Could not check these nodes for updates: {nodes}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATES_QUEUE_HINT": "Apply or discard staged changes first.",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "Updating {name} ({completed}/{total})",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "Update failed on: {targets}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "Targets and current versions",
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "All checked plugins are up to date."
 }

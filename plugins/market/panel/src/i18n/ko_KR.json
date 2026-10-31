@@ -84,5 +84,14 @@
   "TXT_CODE_PLUGIN_MARKET_DEPLOY_NODES": "노드에 배포",
   "TXT_CODE_PLUGIN_MARKET_REPAIR": "복구",
   "TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT": "이 패널의 버전",
-  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "이 플러그인은 호스트가 관리하므로 마켓에서 버전을 변경하거나 제거할 수 없습니다."
+  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "이 플러그인은 호스트가 관리하므로 마켓에서 버전을 변경하거나 제거할 수 없습니다.",
+  "TXT_CODE_PLUGIN_MARKET_BROWSE": "둘러보기",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_ALL": "모두 업데이트",
+  "TXT_CODE_PLUGIN_MARKET_UPDATED": "선택한 대상의 플러그인이 업데이트되었습니다.",
+  "TXT_CODE_PLUGIN_MARKET_UNCHECKED_NODES": "다음 노드의 업데이트를 확인하지 못했습니다: {nodes}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATES_QUEUE_HINT": "먼저 대기 중인 변경 사항을 적용하거나 취소하세요.",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "{name} 업데이트 중 ({completed}/{total})",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "다음 대상에서 업데이트 실패: {targets}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "대상 및 현재 버전",
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "확인한 모든 플러그인이 최신 버전입니다."
 }

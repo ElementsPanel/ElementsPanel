@@ -84,5 +84,14 @@
   "TXT_CODE_PLUGIN_MARKET_DEPLOY_NODES": "Implantar nos nós",
   "TXT_CODE_PLUGIN_MARKET_REPAIR": "Reparar",
   "TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT": "Versão neste painel",
-  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "Este plugin é gerenciado pelo host. Sua versão não pode ser alterada nem desinstalada pelo mercado."
+  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "Este plugin é gerenciado pelo host. Sua versão não pode ser alterada nem desinstalada pelo mercado.",
+  "TXT_CODE_PLUGIN_MARKET_BROWSE": "Explorar",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_ALL": "Atualizar todos",
+  "TXT_CODE_PLUGIN_MARKET_UPDATED": "Os plugins dos destinos selecionados foram atualizados.",
+  "TXT_CODE_PLUGIN_MARKET_UNCHECKED_NODES": "Não foi possível verificar atualizações nestes nós: {nodes}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATES_QUEUE_HINT": "Aplique ou descarte primeiro as alterações pendentes.",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "Atualizando {name} ({completed}/{total})",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "Falha na atualização em: {targets}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "Destinos e versões atuais",
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "Todos os plugins verificados estão atualizados."
 }

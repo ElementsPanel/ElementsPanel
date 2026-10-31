@@ -1,8 +1,15 @@
 import axios from "axios";
 import type Koa from "koa";
-import { writePluginOverride } from "mcsmanager-common";
+import { validatePluginCompatibility, writePluginOverride } from "mcsmanager-common";
 import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 import { localeMessages } from "../i18n";
+import { isNewerVersion } from "../version";
+import type {
+  PluginUpdate,
+  PluginUpdateResult,
+  PluginUpdates,
+  PluginUpdateTarget
+} from "../updates";
 import {
   fetchMarketPluginDetail,
   forgetRemoteInstall,
@@ -151,7 +158,7 @@ export async function apply(ctx: PanelPluginContext) {
    * did not fit on it. Reading many pages is what the budget above bounds — one
    * request must not be able to occupy a connection for as long as the pages allow.
    */
-  async function fetchMarketPlugins(addr: string) {
+  async function fetchMarketPlugins(addr: string): Promise<Array<Record<string, unknown>>> {
     const items: Array<Record<string, unknown>> = [];
     const seen = new Set<string>();
     const deadline = Date.now() + MARKET_LIST_BUDGET_MS;
@@ -284,6 +291,239 @@ export async function apply(ctx: PanelPluginContext) {
       )
     ];
   }
+
+  async function nodeInventories(
+    daemonIds = listNodes().map((node) => node.daemonId),
+    waitForReconnect = false
+  ) {
+    return Promise.all(
+      daemonIds.map(async (daemonId) => {
+        const deadline = Date.now() + (waitForReconnect ? 10000 : 0);
+        while (true) {
+          const node = ctx.remote.services.getInstance(daemonId);
+          const label = node?.config.remarks || node?.config.ip || daemonId;
+          try {
+            if (!node?.available) throw new Error("Node unavailable");
+            const inventory: unknown = await new ctx.remote.Request(node).request(
+              "plugin/list",
+              undefined,
+              10000
+            );
+            if (!Array.isArray(inventory)) throw new Error("Plugin inventory unavailable");
+            return {
+              daemonId,
+              label,
+              plugins: inventory as Array<{ id: string; packageName?: string; version?: string }>
+            };
+          } catch {
+            // An earlier foundation update may be replacing the daemon's socket.
+            if (!node || Date.now() >= deadline) return { daemonId, label, plugins: null };
+            await new Promise((resolve) => setTimeout(resolve, 500));
+          }
+        }
+      })
+    );
+  }
+
+  function updateTarget(
+    inventory: readonly { id: string; packageName?: string; version?: string }[],
+    pluginId: string,
+    name: string,
+    version: string,
+    label: string,
+    daemonId?: string
+  ): PluginUpdateTarget | undefined {
+    const installed = inventory.find((plugin) => plugin?.id === pluginId);
+    if (
+      installed?.packageName !== name ||
+      typeof installed.version !== "string" ||
+      !isNewerVersion(version, installed.version)
+    )
+      return;
+    return { ...(daemonId ? { daemonId } : {}), label, currentVersion: installed.version };
+  }
+
+  router.get("/plugin/updates", requireAdmin, async (requestCtx) => {
+    try {
+      const [market, inventories] = await Promise.all([
+        fetchMarketPlugins(marketSettings().pluginMarketAddr),
+        nodeInventories()
+      ]);
+      const panel = ctx.plugins.inventory();
+      const plugins: PluginUpdate[] = [];
+      for (const item of market) {
+        const release = item.latestVersion as
+          | {
+              version?: string;
+              status?: string;
+              sides?: PluginSide[];
+              compatibility?: Record<string, { api: number; sdk?: number }>;
+            }
+          | undefined;
+        if (
+          typeof release?.version !== "string" ||
+          (release.status && release.status !== "approved")
+        )
+          continue;
+        try {
+          for (const contract of Object.values(release.compatibility ?? {}))
+            validatePluginCompatibility(contract);
+        } catch {
+          continue;
+        }
+        const pluginId = String(item.id);
+        const name = String(item.name ?? "");
+        const declaredSides = release.sides?.length ? release.sides : item.sides;
+        const sides = Array.isArray(declaredSides) ? declaredSides : [];
+        const targets: PluginUpdateTarget[] = [];
+        if (sides?.includes("panel")) {
+          const target = updateTarget(panel, pluginId, name, release.version, "");
+          if (target) targets.push(target);
+        }
+        if (sides?.includes("daemon")) {
+          for (const node of inventories) {
+            const target =
+              node.plugins &&
+              updateTarget(
+                node.plugins,
+                pluginId,
+                name,
+                release.version,
+                node.label,
+                node.daemonId
+              );
+            if (target) targets.push(target);
+          }
+        }
+        if (targets.length)
+          plugins.push({
+            pluginId,
+            name,
+            displayName: String(item.displayName || item.name || item.id),
+            version: release.version,
+            targets
+          });
+      }
+      const result: PluginUpdates = {
+        plugins,
+        uncheckedNodes: inventories
+          .filter((node) => !node.plugins)
+          .map(({ daemonId, label }) => ({ daemonId, label }))
+      };
+      requestCtx.body = result;
+    } catch (error) {
+      reportPluginMarketError(error);
+    }
+  });
+
+  router.post(
+    "/plugin/update",
+    requireAdmin,
+    validator({ body: { pluginId: String, version: String, panel: Boolean, daemonIds: Array } }),
+    async (requestCtx: Koa.ParameterizedContext) => {
+      const body = requestCtx.request.body as {
+        pluginId: string;
+        version: string;
+        panel: boolean;
+        daemonIds: string[];
+      };
+      try {
+        requestCtx.body = await withPluginLock(
+          body.pluginId,
+          async (): Promise<PluginUpdateResult> => {
+            const detail = await fetchMarketPluginDetail(
+              marketSettings().pluginMarketAddr,
+              body.pluginId,
+              body.version
+            );
+            const info = {
+              pluginId: detail.id,
+              name: detail.name,
+              version: detail.selectedVersion.version,
+              installedAt: Date.now()
+            };
+            const sides = detail.selectedVersion.sides;
+            const updatedTargets: PluginUpdateTarget[] = [];
+            const failedTargets: PluginUpdateTarget[] = [];
+            const inventories = sides.includes("daemon")
+              ? await nodeInventories(requestedNodes(body.daemonIds), true)
+              : [];
+            const targets: PluginUpdateTarget[] = [];
+            for (const node of inventories) {
+              if (!node.plugins) {
+                failedTargets.push({
+                  daemonId: node.daemonId,
+                  label: node.label,
+                  currentVersion: ""
+                });
+                continue;
+              }
+              const target = updateTarget(
+                node.plugins,
+                detail.id,
+                detail.name,
+                info.version,
+                node.label,
+                node.daemonId
+              );
+              if (target) targets.push(target);
+            }
+            const { failedNodes, changedNodes, pendingNodes } = await installOnNodes(
+              targets.map((target) => target.daemonId!),
+              info
+            );
+            for (const target of targets)
+              (failedNodes.includes(target.daemonId!) ? failedTargets : updatedTargets).push(
+                target
+              );
+
+            // Recheck each side separately: updating a lagging daemon must never
+            // install a missing panel half or downgrade a panel that is ahead.
+            if (body.panel && sides.includes("panel")) {
+              const target = updateTarget(
+                ctx.plugins.inventory(),
+                detail.id,
+                detail.name,
+                info.version,
+                ""
+              );
+              if (target) {
+                try {
+                  await ctx.plugins.install({
+                    name: info.name,
+                    pluginId: info.pluginId,
+                    version: info.version
+                  });
+                  updatedTargets.push(target);
+                } catch (error) {
+                  ctx.logger.warn(`Failed to update panel plugin ${detail.id}: ${error}`);
+                  failedTargets.push(target);
+                }
+              }
+            }
+            const changedSides: PluginSide[] = [];
+            if (changedNodes.length) changedSides.push("daemon");
+            if (updatedTargets.some((target) => !target.daemonId)) changedSides.push("panel");
+            const ready = await hotReload(
+              changedSides,
+              changedNodes.filter((id) => !pendingNodes.includes(id)),
+              detail.id
+            );
+            return {
+              pluginId: detail.id,
+              installedVersion: installedPlugins().find((plugin) => plugin.pluginId === detail.id)
+                ?.version,
+              updatedTargets,
+              failedTargets,
+              restartRequired: !ready
+            };
+          }
+        );
+      } catch (error) {
+        reportPluginMarketError(error, "NPM_FAILED");
+      }
+    }
+  );
 
   /** Installs the package on each selected node, one npm dependency per node. */
   async function installOnNodes(

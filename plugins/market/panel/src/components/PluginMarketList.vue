@@ -15,9 +15,11 @@ import {
   VContainer,
   VIcon,
   VImg,
-  VProgressLinear,
+  VProgressCircular,
   VRow,
   VSpacer,
+  VTab,
+  VTabs,
   VTextField
 } from "vuetify/components";
 import { pluginMarketList, type MarketPlugin } from "../api";
@@ -25,7 +27,8 @@ import { usePluginIcons } from "../hooks/usePluginIcons";
 import PluginMarketSideBadge from "./PluginMarketSideBadge.vue";
 import PluginMarketInstall from "./PluginMarketInstall.vue";
 import PluginMarketChanges from "./PluginMarketChanges.vue";
-import { installedChange } from "../operations";
+import PluginMarketUpdates from "./PluginMarketUpdates.vue";
+import { activeOperations, applyingChanges, installedChange } from "../operations";
 
 const props = defineProps<{ embedded?: boolean }>();
 const emit = defineEmits<{ select: [pluginId: string] }>();
@@ -34,6 +37,9 @@ const loading = ref(false);
 const failed = ref(false);
 const plugins = ref<MarketPlugin[]>([]);
 const keyword = ref<string | null>("");
+const activeTab = ref<"browse" | "updates">("browse");
+const updateView = ref<InstanceType<typeof PluginMarketUpdates>>();
+const updatesLoading = ref(false);
 const { icons, load } = usePluginIcons();
 let requestId = 0;
 
@@ -78,6 +84,11 @@ async function refresh() {
   }
 }
 
+function refreshActive() {
+  if (activeTab.value === "updates") void updateView.value?.refresh();
+  else void refresh();
+}
+
 function selectPlugin(plugin: MarketPlugin) {
   if (props.embedded) emit("select", plugin.id);
 }
@@ -119,100 +130,132 @@ onBeforeUnmount(() => requestId++);
         </template>
         <template #actions>
           <PluginMarketChanges />
-          <VBtn variant="text" :loading="loading" @click="refresh">
+          <VBtn
+            variant="text"
+            :loading="activeTab === 'updates' ? updatesLoading : loading"
+            :disabled="applyingChanges"
+            @click="refreshActive"
+          >
             {{ t("TXT_CODE_PLUGIN_MARKET_REFRESH") }}
           </VBtn>
         </template>
       </PageToolbar>
 
-      <VProgressLinear v-if="loading && !plugins.length" indeterminate class="mb-4" />
+      <VTabs
+        v-model="activeTab"
+        align-tabs="start"
+        color="primary"
+        density="compact"
+        class="plugin-market-tabs"
+        :disabled="applyingChanges || Boolean(activeOperations)"
+      >
+        <VTab value="browse">{{ t("TXT_CODE_PLUGIN_MARKET_BROWSE") }}</VTab>
+        <VTab value="updates">{{ t("TXT_CODE_PLUGIN_MARKET_UPDATES") }}</VTab>
+      </VTabs>
 
-      <div v-if="!loading && !plugins.length" class="plugin-market-empty" role="status">
-        <VIcon
-          :icon="failed ? 'mdi-lan-disconnect' : 'mdi-puzzle-outline'"
-          size="48"
-          class="plugin-market-empty-icon"
-        />
-        <div class="plugin-market-empty-title">
-          {{ failed ? t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE") : t("TXT_CODE_PLUGIN_MARKET_EMPTY") }}
+      <PluginMarketUpdates
+        v-if="activeTab === 'updates'"
+        ref="updateView"
+        :keyword="keyword"
+        @loading="updatesLoading = $event"
+      />
+
+      <div v-show="activeTab === 'browse'">
+        <div v-if="loading && !plugins.length" class="plugin-market-loading">
+          <VProgressCircular indeterminate color="primary" :size="40" :width="3" />
         </div>
-      </div>
 
-      <VRow v-else-if="visiblePlugins.length" class="plugin-market-grid">
-        <VCol v-for="plugin in visiblePlugins" :key="plugin.id" cols="12" md="6" lg="4">
-          <VCard
-            class="plugin-market-card h-100"
-            elevation="0"
-            :to="embedded ? undefined : `/market/plugins/${encodeURIComponent(plugin.id)}`"
-            :role="embedded ? 'button' : undefined"
-            :tabindex="embedded ? 0 : undefined"
-            link
-            @click="selectPlugin(plugin)"
-            @keydown="onCardKeydown($event, plugin)"
-          >
-            <VCardText class="plugin-market-card-content">
-              <div class="plugin-market-card-head">
-                <!-- Keep the generic icon out while a declared custom icon is loading. -->
-                <VAvatar
-                  class="plugin-market-icon"
-                  size="52"
-                  rounded="12px"
-                  color="surface"
-                  variant="flat"
-                >
-                  <VImg
-                    v-if="plugin.hasIcon && icons[plugin.id]"
-                    :src="icons[plugin.id]"
-                    alt=""
-                    cover
-                    transition="fade-transition"
-                    class="plugin-market-icon-image"
-                    @error="delete icons[plugin.id]"
-                  />
-                  <VIcon v-else-if="!plugin.hasIcon" icon="mdi-puzzle-outline" size="28" />
-                </VAvatar>
-                <div class="plugin-market-card-heading">
-                  <div class="text-h6">
-                    {{ plugin.displayName }}
-                  </div>
-                  <div class="text-caption text-medium-emphasis">
-                    {{ plugin.author?.displayName ?? "" }}
-                    <span v-if="plugin.category">· {{ plugin.category }}</span>
+        <div v-else-if="!plugins.length" class="plugin-market-empty" role="status">
+          <VIcon
+            :icon="failed ? 'mdi-lan-disconnect' : 'mdi-puzzle-outline'"
+            size="48"
+            class="plugin-market-empty-icon"
+          />
+          <div class="plugin-market-empty-title">
+            {{
+              failed ? t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE") : t("TXT_CODE_PLUGIN_MARKET_EMPTY")
+            }}
+          </div>
+        </div>
+
+        <VRow v-else-if="visiblePlugins.length" class="plugin-market-grid">
+          <VCol v-for="plugin in visiblePlugins" :key="plugin.id" cols="12" md="6" lg="4">
+            <VCard
+              class="plugin-market-card h-100"
+              elevation="0"
+              :to="embedded ? undefined : `/market/plugins/${encodeURIComponent(plugin.id)}`"
+              :role="embedded ? 'button' : undefined"
+              :tabindex="embedded ? 0 : undefined"
+              link
+              @click="selectPlugin(plugin)"
+              @keydown="onCardKeydown($event, plugin)"
+            >
+              <VCardText class="plugin-market-card-content">
+                <div class="plugin-market-card-head">
+                  <!-- Keep the generic icon out while a declared custom icon is loading. -->
+                  <VAvatar
+                    class="plugin-market-icon"
+                    size="52"
+                    rounded="12px"
+                    color="surface"
+                    variant="flat"
+                  >
+                    <VImg
+                      v-if="plugin.hasIcon && icons[plugin.id]"
+                      :src="icons[plugin.id]"
+                      alt=""
+                      cover
+                      transition="fade-transition"
+                      class="plugin-market-icon-image"
+                      @error="delete icons[plugin.id]"
+                    />
+                    <VIcon v-else-if="!plugin.hasIcon" icon="mdi-puzzle-outline" size="28" />
+                  </VAvatar>
+                  <div class="plugin-market-card-heading">
+                    <div class="text-h6">
+                      {{ plugin.displayName }}
+                    </div>
+                    <div class="text-caption text-medium-emphasis">
+                      {{ plugin.author?.displayName ?? "" }}
+                      <span v-if="plugin.category">· {{ plugin.category }}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div class="plugin-market-card-summary text-body-2 mt-2">
-                {{ plugin.summary || t("TXT_CODE_PLUGIN_MARKET_NO_SUMMARY") }}
-              </div>
-            </VCardText>
+                <div class="plugin-market-card-summary text-body-2 mt-2">
+                  {{ plugin.summary || t("TXT_CODE_PLUGIN_MARKET_NO_SUMMARY") }}
+                </div>
+              </VCardText>
 
-            <VCardActions class="plugin-market-card-actions">
-              <VChip v-if="plugin.latestVersion" size="small" variant="tonal">
-                {{ t("TXT_CODE_PLUGIN_MARKET_VERSION", { version: plugin.latestVersion.version }) }}
-              </VChip>
-              <PluginMarketSideBadge :sides="plugin.sides" />
-              <VChip v-if="plugin.installedVersion" size="small" color="success" variant="tonal">
-                {{ t("TXT_CODE_PLUGIN_MARKET_INSTALLED") }}
-              </VChip>
-              <VSpacer />
-              <PluginMarketInstall
-                :plugin="plugin"
-                :version="plugin.latestVersion"
-                :embedded="embedded"
-                @installed="updateInstalled"
-              />
-            </VCardActions>
-          </VCard>
-        </VCol>
-      </VRow>
+              <VCardActions class="plugin-market-card-actions">
+                <VChip v-if="plugin.latestVersion" size="small" variant="tonal">
+                  {{
+                    t("TXT_CODE_PLUGIN_MARKET_VERSION", { version: plugin.latestVersion.version })
+                  }}
+                </VChip>
+                <PluginMarketSideBadge :sides="plugin.sides" />
+                <VChip v-if="plugin.installedVersion" size="small" color="success" variant="tonal">
+                  {{ t("TXT_CODE_PLUGIN_MARKET_INSTALLED") }}
+                </VChip>
+                <VSpacer />
+                <PluginMarketInstall
+                  :plugin="plugin"
+                  :version="plugin.latestVersion"
+                  :embedded="embedded"
+                  @installed="updateInstalled"
+                />
+              </VCardActions>
+            </VCard>
+          </VCol>
+        </VRow>
 
-      <div
-        v-else-if="!loading"
-        class="plugin-market-empty plugin-market-empty--filtered"
-        role="status"
-      >
-        <VIcon icon="mdi-magnify" size="42" class="plugin-market-empty-icon" />
-        <div class="plugin-market-empty-title">{{ t("TXT_CODE_NO_DATA") }}</div>
+        <div
+          v-else-if="!loading"
+          class="plugin-market-empty plugin-market-empty--filtered"
+          role="status"
+        >
+          <VIcon icon="mdi-magnify" size="42" class="plugin-market-empty-icon" />
+          <div class="plugin-market-empty-title">{{ t("TXT_CODE_NO_DATA") }}</div>
+        </div>
       </div>
     </VContainer>
   </main>
@@ -236,6 +279,19 @@ onBeforeUnmount(() => requestId++);
   margin: 0 auto;
   box-sizing: border-box;
   padding: 20px 24px 32px;
+}
+
+.plugin-market-tabs {
+  width: 100%;
+  flex-shrink: 0;
+  margin-bottom: 28px;
+}
+
+.plugin-market-loading {
+  min-height: 38vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 // A card is a column: the description takes the space that is left, so the

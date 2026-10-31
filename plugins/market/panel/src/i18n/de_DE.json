@@ -84,5 +84,14 @@
   "TXT_CODE_PLUGIN_MARKET_DEPLOY_NODES": "Auf Knoten bereitstellen",
   "TXT_CODE_PLUGIN_MARKET_REPAIR": "Reparieren",
   "TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT": "Version auf diesem Panel",
-  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "Dieses Plugin wird vom Host verwaltet. Version und Installation können hier nicht geändert werden."
+  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "Dieses Plugin wird vom Host verwaltet. Version und Installation können hier nicht geändert werden.",
+  "TXT_CODE_PLUGIN_MARKET_BROWSE": "Entdecken",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_ALL": "Alle aktualisieren",
+  "TXT_CODE_PLUGIN_MARKET_UPDATED": "Die Plugins auf den ausgewählten Zielen wurden aktualisiert.",
+  "TXT_CODE_PLUGIN_MARKET_UNCHECKED_NODES": "Diese Knoten konnten nicht auf Updates geprüft werden: {nodes}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATES_QUEUE_HINT": "Übernehmen oder verwerfen Sie zuerst die vorgemerkten Änderungen.",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "{name} wird aktualisiert ({completed}/{total})",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "Aktualisierung fehlgeschlagen auf: {targets}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "Ziele und aktuelle Versionen",
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "Alle geprüften Plugins sind auf dem neuesten Stand."
 }

@@ -1,6 +1,12 @@
 import { ref, shallowRef } from "vue";
 import { ctx } from "@/plugin/context";
-import { installMarketPlugin, uninstallMarketPlugin, type MarketPlugin } from "./api";
+import {
+  installMarketPlugin,
+  uninstallMarketPlugin,
+  updateMarketPlugin,
+  type MarketPlugin
+} from "./api";
+import type { PluginUpdate, PluginUpdateResult } from "./updates";
 
 export interface MarketChange {
   plugin: MarketPlugin;
@@ -16,6 +22,65 @@ export const queuedChanges = ref<MarketChange[]>([]);
 export const applyingChanges = ref(false);
 export const activeOperations = ref(0);
 export const installedChange = shallowRef<{ pluginId: string; version?: string }>();
+export const updatingPlugins = ref(false);
+export const updateProgress = ref({ completed: 0, total: 0, name: "" });
+export const updateResults = shallowRef<
+  Array<{
+    update: PluginUpdate;
+    result?: PluginUpdateResult;
+    error?: unknown;
+  }>
+>([]);
+
+/** Updates keep running when the market window is closed. Each plugin settles independently. */
+export async function updateMarketPlugins(updates: readonly PluginUpdate[]) {
+  if (
+    applyingChanges.value ||
+    activeOperations.value ||
+    queuedChanges.value.length ||
+    !updates.length
+  )
+    return [];
+  applyingChanges.value = true;
+  updatingPlugins.value = true;
+  updateResults.value = [];
+  const pending = updates.map((update) => ({
+    ...update,
+    targets: update.targets.map((target) => ({ ...target }))
+  }));
+  updateProgress.value = { completed: 0, total: pending.length, name: "" };
+  try {
+    for (const update of pending) {
+      updateProgress.value.name = update.displayName;
+      try {
+        const response = await updateMarketPlugin().execute({
+          timeout: (update.targets.length + 1) * 11 * 60 * 1000,
+          data: {
+            pluginId: update.pluginId,
+            version: update.version,
+            panel: update.targets.some((target) => !target.daemonId),
+            daemonIds: update.targets.flatMap((target) =>
+              target.daemonId ? [target.daemonId] : []
+            )
+          }
+        });
+        if (!response.value) throw new Error("Empty plugin update response");
+        updateResults.value = [...updateResults.value, { update, result: response.value }];
+        notifyInstalled(update.pluginId, response.value.installedVersion);
+      } catch (error) {
+        updateResults.value = [...updateResults.value, { update, error }];
+      }
+      updateProgress.value.completed++;
+    }
+    await ctx.plugins
+      .refresh()
+      .catch((error) => console.error("Failed to refresh plugins:", error));
+    return updateResults.value;
+  } finally {
+    applyingChanges.value = false;
+    updatingPlugins.value = false;
+  }
+}
 
 export function notifyInstalled(pluginId: string, version?: string) {
   installedChange.value = { pluginId, version };

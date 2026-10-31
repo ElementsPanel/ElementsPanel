@@ -84,5 +84,14 @@
   "TXT_CODE_PLUGIN_MARKET_DEPLOY_NODES": "ติดตั้งบนโหนด",
   "TXT_CODE_PLUGIN_MARKET_REPAIR": "ซ่อมแซม",
   "TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT": "เวอร์ชันบนแผงควบคุมนี้",
-  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "โฮสต์เป็นผู้จัดการปลั๊กอินนี้ จึงไม่สามารถเปลี่ยนเวอร์ชันหรือถอนการติดตั้งผ่านตลาดได้"
+  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "โฮสต์เป็นผู้จัดการปลั๊กอินนี้ จึงไม่สามารถเปลี่ยนเวอร์ชันหรือถอนการติดตั้งผ่านตลาดได้",
+  "TXT_CODE_PLUGIN_MARKET_BROWSE": "เรียกดู",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_ALL": "อัปเดตทั้งหมด",
+  "TXT_CODE_PLUGIN_MARKET_UPDATED": "อัปเดตปลั๊กอินบนเป้าหมายที่เลือกแล้ว",
+  "TXT_CODE_PLUGIN_MARKET_UNCHECKED_NODES": "ไม่สามารถตรวจสอบการอัปเดตของโหนดเหล่านี้ได้: {nodes}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATES_QUEUE_HINT": "โปรดใช้หรือยกเลิกการเปลี่ยนแปลงที่รอดำเนินการก่อน",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "กำลังอัปเดต {name} ({completed}/{total})",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "อัปเดตไม่สำเร็จบนเป้าหมาย: {targets}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "เป้าหมายและเวอร์ชันปัจจุบัน",
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "ปลั๊กอินที่ตรวจสอบทั้งหมดเป็นเวอร์ชันล่าสุดแล้ว"
 }

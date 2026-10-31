@@ -84,5 +84,14 @@
   "TXT_CODE_PLUGIN_MARKET_DEPLOY_NODES": "Desplegar en nodos",
   "TXT_CODE_PLUGIN_MARKET_REPAIR": "Reparar",
   "TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT": "Versión en este panel",
-  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "El servidor gestiona este complemento. No se puede cambiar su versión ni desinstalarlo desde el mercado."
+  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "El servidor gestiona este complemento. No se puede cambiar su versión ni desinstalarlo desde el mercado.",
+  "TXT_CODE_PLUGIN_MARKET_BROWSE": "Explorar",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_ALL": "Actualizar todo",
+  "TXT_CODE_PLUGIN_MARKET_UPDATED": "Se han actualizado los complementos de los destinos seleccionados.",
+  "TXT_CODE_PLUGIN_MARKET_UNCHECKED_NODES": "No se pudieron buscar actualizaciones en estos nodos: {nodes}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATES_QUEUE_HINT": "Aplica o descarta primero los cambios pendientes.",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "Actualizando {name} ({completed}/{total})",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "La actualización falló en: {targets}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "Destinos y versiones actuales",
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "Todos los complementos comprobados están actualizados."
 }

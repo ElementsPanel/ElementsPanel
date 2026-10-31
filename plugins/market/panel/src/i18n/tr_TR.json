@@ -84,5 +84,14 @@
   "TXT_CODE_PLUGIN_MARKET_DEPLOY_NODES": "Düğümlere dağıt",
   "TXT_CODE_PLUGIN_MARKET_REPAIR": "Onar",
   "TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT": "Bu paneldeki sürüm",
-  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "Bu eklenti sunucu tarafından yönetilir. Marketten sürümü değiştirilemez veya kaldırılamaz."
+  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "Bu eklenti sunucu tarafından yönetilir. Marketten sürümü değiştirilemez veya kaldırılamaz.",
+  "TXT_CODE_PLUGIN_MARKET_BROWSE": "Göz at",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_ALL": "Tümünü güncelle",
+  "TXT_CODE_PLUGIN_MARKET_UPDATED": "Seçilen hedeflerdeki eklentiler güncellendi.",
+  "TXT_CODE_PLUGIN_MARKET_UNCHECKED_NODES": "Şu düğümlerde güncellemeler denetlenemedi: {nodes}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATES_QUEUE_HINT": "Önce bekleyen değişiklikleri uygulayın veya iptal edin.",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "{name} güncelleniyor ({completed}/{total})",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "Şu hedeflerde güncelleme başarısız oldu: {targets}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "Hedefler ve mevcut sürümler",
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "Denetlenen tüm eklentiler güncel."
 }

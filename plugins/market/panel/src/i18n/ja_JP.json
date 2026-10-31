@@ -84,5 +84,14 @@
   "TXT_CODE_PLUGIN_MARKET_DEPLOY_NODES": "ノードに配布",
   "TXT_CODE_PLUGIN_MARKET_REPAIR": "修復",
   "TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT": "このパネルのバージョン",
-  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "このプラグインはホストが管理しているため、マーケットではバージョン変更や削除はできません。"
+  "TXT_CODE_PLUGIN_MARKET_PROTECTED": "このプラグインはホストが管理しているため、マーケットではバージョン変更や削除はできません。",
+  "TXT_CODE_PLUGIN_MARKET_BROWSE": "閲覧",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_ALL": "すべて更新",
+  "TXT_CODE_PLUGIN_MARKET_UPDATED": "選択した対象のプラグインを更新しました。",
+  "TXT_CODE_PLUGIN_MARKET_UNCHECKED_NODES": "次のノードの更新を確認できませんでした：{nodes}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATES_QUEUE_HINT": "保留中の変更を先に適用または破棄してください。",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "{name} を更新中（{completed}/{total}）",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "次の対象の更新に失敗しました：{targets}",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "更新対象と現在のバージョン",
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "確認済みのプラグインはすべて最新です。"
 }
