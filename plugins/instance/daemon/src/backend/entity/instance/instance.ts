@@ -113,6 +113,10 @@ export default class Instance extends EventEmitter {
   private outputBuffer: CircularBuffer<string>;
   private stopping?: Promise<void>;
   private resourceCleanup?: Promise<void>;
+  private dispatcher?: InstanceCommand;
+  private reloading = false;
+  private restartPending = false;
+  private shuttingDown = false;
 
   // Track whether the current stop was initiated by a user action (stop/kill command)
   private userRequestedStop = false;
@@ -151,20 +155,20 @@ export default class Instance extends EventEmitter {
       if (!this.isStoppedOrBusy())
         throw new Error($t("TXT_CODE_instanceConf.cantModifyInstanceType"));
       configureEntityParams(this.config, cfg, "type", String);
-      this.forceExec(new FunctionDispatcher());
+      this.forceExec(this.dispatcher ?? new FunctionDispatcher());
     }
 
     if (cfg?.enableRcon != null && cfg?.enableRcon !== this.config.enableRcon) {
       if (!this.isStoppedOrBusy()) throw new Error($t("TXT_CODE_bdfa3457"));
       configureEntityParams(this.config, cfg, "enableRcon", Boolean);
-      this.forceExec(new FunctionDispatcher());
+      this.forceExec(this.dispatcher ?? new FunctionDispatcher());
     }
 
     if (cfg?.processType && cfg?.processType !== this.config.processType) {
       if (!this.isStoppedOrBusy())
         throw new Error($t("TXT_CODE_instanceConf.cantModifyProcessType"));
       configureEntityParams(this.config, cfg, "processType", String);
-      this.forceExec(new FunctionDispatcher());
+      this.forceExec(this.dispatcher ?? new FunctionDispatcher());
     }
 
     // If the terminal type is changed, the default command must be reset
@@ -174,7 +178,7 @@ export default class Instance extends EventEmitter {
     ) {
       if (!this.isStoppedOrBusy()) throw new Error($t("TXT_CODE_instanceConf.cantModifyPtyModel"));
       configureEntityParams(this.config.terminalOption, cfg.terminalOption, "pty", Boolean);
-      this.forceExec(new FunctionDispatcher());
+      this.forceExec(this.dispatcher ?? new FunctionDispatcher());
     }
 
     // Only allow some configuration items to be modified when the server is stopped
@@ -372,11 +376,20 @@ export default class Instance extends EventEmitter {
     });
     this.process = process;
     this.instanceStatus = Instance.STATUS_RUNNING;
+    if (this.shuttingDown) {
+      this.userRequestedStop = true;
+      void Promise.resolve()
+        .then(() => process.kill("SIGKILL"))
+        .catch((error) => logger.error(`Instance ${this.instanceUuid} failed to stop:`, error));
+      return;
+    }
     this.emit("open", this);
 
     // start all lifecycle tasks
-    void this.lifeCycleTaskManager.execLifeCycleTask(1);
-    this.startOutputLoop();
+    if (!this.reloading) {
+      void this.lifeCycleTaskManager.execLifeCycleTask(1);
+      this.startOutputLoop();
+    }
   }
 
   // If the instance performs any operation exception, it must throw an exception through this function
@@ -416,30 +429,71 @@ export default class Instance extends EventEmitter {
 
       // Release this stop before a restarted process can emit its own exit.
       this.stopping = undefined;
-      if (shouldRestart) {
-        const maxAutoRestartCount = this.config.eventTask.autoRestartMaxTimes;
-        if (maxAutoRestartCount === -1 || this.autoRestartCount < maxAutoRestartCount) {
-          this.execPreset("start")
-            .then(() => {
-              this.autoRestartCount++;
-              this.println($t("TXT_CODE_instanceConf.info"), $t("TXT_CODE_instanceConf.autoRestart"));
-              this.emit("autoRestarted", { count: this.autoRestartCount });
-            })
-            .catch((err) => {
-              this.println(
-                $t("TXT_CODE_instanceConf.error"),
-                $t("TXT_CODE_instanceConf.autoRestartErr", { err })
-              );
-            });
-        } else {
-          this.println($t("TXT_CODE_instanceConf.error"), $t("TXT_CODE_894b8e52"));
-        }
+      if (shouldRestart && !this.shuttingDown) {
+        if (this.reloading) this.restartPending = true;
+        else this.restartAfterCrash();
       }
     }).finally(() => {
       if (this.stopping === operation) this.stopping = undefined;
     });
     this.stopping = operation;
     return operation;
+  }
+
+  private restartAfterCrash() {
+    if (this.shuttingDown) return;
+    const maxAutoRestartCount = this.config.eventTask.autoRestartMaxTimes;
+    if (maxAutoRestartCount !== -1 && this.autoRestartCount >= maxAutoRestartCount) {
+      this.println($t("TXT_CODE_instanceConf.error"), $t("TXT_CODE_894b8e52"));
+      return;
+    }
+    void this.execPreset("start")
+      .then(() => {
+        this.autoRestartCount++;
+        this.println($t("TXT_CODE_instanceConf.info"), $t("TXT_CODE_instanceConf.autoRestart"));
+        this.emit("autoRestarted", { count: this.autoRestartCount });
+      })
+      .catch((err) => {
+        this.println(
+          $t("TXT_CODE_instanceConf.error"),
+          $t("TXT_CODE_instanceConf.autoRestartErr", { err })
+        );
+      });
+  }
+
+  /** Keep the process and its pipe readers alive while plugin services change. */
+  async suspendForReload() {
+    this.stopOutputLoop();
+    this.reloading = true;
+    this.watchers.clear();
+    await this.lifeCycleTaskManager.clearLifeCycleTask();
+  }
+
+  async resumeAfterReload(dispatcher: InstanceCommand) {
+    if (this.shuttingDown) return;
+    await this.stopping;
+    if (this.shuttingDown) return;
+    this.dispatcher = dispatcher;
+    await this.forceExec(dispatcher);
+    if (this.shuttingDown) return;
+    this.reloading = false;
+    this.flushOutputBuffer();
+    if (this.status() === Instance.STATUS_RUNNING) {
+      await this.lifeCycleTaskManager.execLifeCycleTask(1);
+      if (!this.shuttingDown && this.status() === Instance.STATUS_RUNNING) {
+        this.startOutputLoop(false);
+      }
+    } else if (this.status() === Instance.STATUS_STOP && this.restartPending) {
+      this.restartPending = false;
+      this.restartAfterCrash();
+    }
+  }
+
+  beginShutdown() {
+    this.restartPending = false;
+    this.reloading = false;
+    this.shuttingDown = true;
+    this.ignoreEventTaskOnce();
   }
 
   ignoreEventTaskOnce() {
@@ -457,12 +511,13 @@ export default class Instance extends EventEmitter {
   // custom output method, formatting
   println(level: string, text: string) {
     const str = `[${level}] ${text}\n`;
-    this.emit("data", str);
+    this.print(str);
   }
 
   // custom output method
   print(data: any) {
-    this.emit("data", data);
+    if (this.reloading) this.pushOutput(String(data));
+    else this.emit("data", data);
   }
 
   // Release resources (mainly release process-related resources)
@@ -619,6 +674,7 @@ export default class Instance extends EventEmitter {
   }
 
   private flushOutputBuffer(shouldClear = false) {
+    if (this.reloading) return;
     const { items, wasDeleted } = this.outputBuffer.getCache();
     if (!items.length) return;
     if (wasDeleted) items.unshift(getIgnoreText());
@@ -626,10 +682,12 @@ export default class Instance extends EventEmitter {
     this.emit("data", items.join(""));
   }
 
-  private startOutputLoop() {
-    this.outputBuffer = new CircularBuffer<string>(
-      globalConfiguration.config.outputBufferSize || 256
-    );
+  private startOutputLoop(resetBuffer = true) {
+    if (this.outputLoopTask) return;
+    if (resetBuffer)
+      this.outputBuffer = new CircularBuffer<string>(
+        globalConfiguration.config.outputBufferSize || 256
+      );
     this.outputLoopTask = setInterval(() => {
       this.flushOutputBuffer();
     }, 50);

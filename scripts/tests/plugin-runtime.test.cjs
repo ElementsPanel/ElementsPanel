@@ -106,6 +106,14 @@ for (const side of ["panel", "daemon"]) {
               id === "server"
                 ? `
               ctx.on("plugins/reloading",()=>ctx.root.networkEvents.push("pause"));
+              ${
+                side === "daemon"
+                  ? `ctx.on("plugins/reloaded",()=>{
+                if(!ctx.root.get("consumerValue")) throw new Error("resuming before consumers");
+                ctx.root.networkEvents.push("resume");
+              });`
+                  : ""
+              }
               ctx.on("ready",()=>{
                 if(!ctx.root.get("consumerValue")) throw new Error("listener started before consumers");
                 ctx.root.networkEvents.push("listen");
@@ -177,7 +185,9 @@ for (const side of ["panel", "daemon"]) {
     assert.equal(f.inventory().filter((plugin) => plugin.state === "active").length, ids.length);
     assert.deepEqual(networkEvents, [
       "listen",
-      ...Array.from({ length: 7 }, () => ["pause", "listen"]).flat()
+      ...Array.from({ length: 7 }, () =>
+        side === "daemon" ? ["pause", "resume", "listen"] : ["pause", "listen"]
+      ).flat()
     ]);
   });
 

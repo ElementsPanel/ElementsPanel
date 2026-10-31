@@ -10,7 +10,7 @@ async function killContainer(containerInfo: ContainerInfo) {
   container.remove().catch(() => {});
 }
 
-export default async function takeoverContainer() {
+export default async function takeoverContainer(isActive = () => true) {
   const docker = new DefaultDocker();
   const containers = new Map<string, ContainerInfo>();
   (await docker.listContainers()).forEach((containerInfo) => {
@@ -25,10 +25,11 @@ export default async function takeoverContainer() {
   });
 
   for (const item of containers) {
+    if (!isActive()) return;
     const [uuid, container] = item;
     const instance = InstanceSubsystem.getInstance(uuid);
     try {
-      if (instance && instance.config.processType == "docker") {
+      if (instance && !instance.process && instance.config.processType == "docker") {
         await instance.forceExec(new DockerTakeoverCommand(container));
       }
     } catch (e) {

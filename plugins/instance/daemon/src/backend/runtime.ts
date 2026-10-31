@@ -2,20 +2,63 @@ import type { DaemonPluginContext } from "../../../../../core/daemon/src/plugin"
 import os from "os";
 import path from "path";
 import { bundledToolPath } from "mcsmanager-common";
+import type Instance from "./entity/instance/instance";
 
-let context: DaemonPluginContext | undefined;
+interface InstanceRuntimeState {
+  context: DaemonPluginContext;
+  settings: DaemonPluginContext["settings"];
+  storage: DaemonPluginContext["storage"];
+  stopping: boolean;
+  handover?: {
+    instances: readonly Instance[];
+    shutdown(): Promise<void>;
+    release(): void;
+  };
+}
+
+const INSTANCE_RUNTIME = Symbol.for("elementspanel.daemon.instance-runtime");
+let runtime: InstanceRuntimeState | undefined;
 
 export function setPluginContext(value: DaemonPluginContext) {
-  context = value;
+  // Retained process callbacks can come from an evicted module. Give every
+  // generation the same bridge, owned by this daemon rather than the module.
+  const host = value.root as DaemonPluginContext & {
+    [INSTANCE_RUNTIME]?: InstanceRuntimeState;
+  };
+  runtime = host[INSTANCE_RUNTIME];
+  if (!runtime) {
+    const state: InstanceRuntimeState = {
+      context: value,
+      settings: value.settings,
+      storage: value.storage,
+      stopping: false
+    };
+    host[INSTANCE_RUNTIME] = runtime = state;
+    host.on("dispose", async () => {
+      state.stopping = true;
+      // A replacement may fail before it can claim the retained processes.
+      // The daemon still owns them and must stop them during real shutdown.
+      await state.handover?.shutdown();
+      state.handover = undefined;
+    });
+  }
+  if (runtime.stopping) throw new Error("The daemon is shutting down.");
+  runtime.context = value;
+  runtime.settings = value.settings;
+  runtime.storage = value.storage;
+  return runtime;
 }
 
 export function core(): DaemonPluginContext {
-  if (!context) throw new Error("The instance plugin has not been initialized yet.");
-  return context;
+  if (!runtime) throw new Error("The instance plugin has not been initialized yet.");
+  return runtime.context;
 }
 
 function required<T>(name: string): T {
-  const value = core().get(name);
+  const value =
+    core().get(name) ??
+    // Process exit and shutdown can happen between foundation generations.
+    (name === "settings" ? runtime?.settings : name === "storage" ? runtime?.storage : undefined);
   if (value === undefined) throw new Error(`Daemon service is unavailable: ${name}`);
   return value as T;
 }

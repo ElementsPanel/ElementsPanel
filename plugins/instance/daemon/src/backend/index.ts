@@ -29,7 +29,18 @@ export function apply(ctx: DaemonPluginContext) {
   ctx.plugin(LifecycleService);
   ctx.plugin(PresetsService);
   ctx.plugin(SchedulesService);
-  setPluginContext(ctx);
+  const runtime = setPluginContext(ctx);
+  let preserving = false;
+  let subsystem: typeof import("./service/system_instance").default | undefined;
+  let disposeSchedules: (() => void) | undefined;
+  ctx.on("plugins/reloading", async () => {
+    const inventory = ctx.get("plugins")?.inventory();
+    preserving = inventory?.some((plugin) => plugin.id === "instance" && plugin.enabled) ?? true;
+    if (preserving) {
+      disposeSchedules?.();
+      await subsystem?.suspendForReload();
+    }
+  });
   migrateConfig(ctx);
   void initSteamCmd(ctx);
 
@@ -49,6 +60,58 @@ export function apply(ctx: DaemonPluginContext) {
     const { commandStringToArray } = require("./entity/commands/base/command_parser") as typeof import("./entity/commands/base/command_parser");
     const { default: FunctionDispatcher } = require("./entity/commands/dispatcher") as typeof import("./entity/commands/dispatcher");
     const { DockerManager } = require("./service/docker_service") as typeof import("./service/docker_service");
+    const { default: InstanceControlSubsystem } = require("./service/system_instance_control") as typeof import("./service/system_instance_control");
+
+    subsystem = InstanceSubsystem;
+    disposeSchedules = () => InstanceControlSubsystem.dispose();
+    const previous = runtime.handover;
+    let recovering = Boolean(previous);
+    let disposeInstanceEvents: (() => void | Promise<void>) | undefined;
+    let shuttingDown: Promise<void> | undefined;
+    const config = instanceCtx.settings.config;
+    const shutdown = () =>
+      (shuttingDown ??= (async () => {
+        for (const instance of InstanceSubsystem.instances.values()) instance.beginShutdown();
+        try {
+          if (config.enableSoftShutdown) {
+            await InstanceSubsystem.softExit(
+              Boolean(config.softShutdownSkipDocker),
+              Number(config.softShutdownWaitSeconds) || 10
+            );
+          } else {
+            await InstanceSubsystem.exit(true);
+          }
+        } catch (error) {
+          instanceCtx.logger.error("Failed to stop application instances:", error);
+        }
+      })());
+    const retain = () => {
+      runtime.handover = {
+        instances: [...InstanceSubsystem.instances.values()],
+        shutdown,
+        release: () => InstanceSubsystem.releaseAfterReload()
+      };
+    };
+    // Own the processes before any asynchronous initialization. A failed Java
+    // manager or replacement must leave them available for another attempt.
+    if (previous) {
+      InstanceControlSubsystem.dispose();
+      InstanceSubsystem.adoptInstances(previous.instances);
+      retain();
+      previous.release();
+    }
+    instanceCtx.on("dispose", async () => {
+      await disposeInstanceEvents?.();
+      InstanceControlSubsystem.dispose();
+      routerApp.dispose();
+      if ((preserving || recovering) && !runtime.stopping && ctx.root.scope.isActive) {
+        await InstanceSubsystem.suspendForReload();
+        retain();
+      } else {
+        await shutdown();
+      }
+      InstanceSubsystem.detachListeners();
+    });
 
     const services = {
       subsystem: InstanceSubsystem,
@@ -92,13 +155,10 @@ export function apply(ctx: DaemonPluginContext) {
     const { registerInstanceEvents } = require("./routers/instance_event_router") as typeof import("./routers/instance_event_router");
     require("./routers/schedule_router");
     require("./routers/environment_router");
-    const disposeInstanceEvents = registerInstanceEvents();
-    const { default: InstanceControlSubsystem } = require("./service/system_instance_control") as typeof import("./service/system_instance_control");
-
-    instanceCtx.on("dispose", () => routerApp.dispose());
+    disposeInstanceEvents = registerInstanceEvents();
 
     try {
-      InstanceSubsystem.loadInstances();
+      if (!previous) InstanceSubsystem.loadInstances();
       instanceCtx.logger.info(`Loaded ${InstanceSubsystem.getInstances().length} application instances.`);
     } catch (error) {
       instanceCtx.logger.error("Failed to load application instances:", error);
@@ -124,22 +184,22 @@ export function apply(ctx: DaemonPluginContext) {
       };
     });
 
-    instanceCtx.on("dispose", async () => {
-      disposeInstanceEvents();
-      InstanceControlSubsystem.dispose();
-      try {
-        const config = instanceCtx.settings.config;
-        if (config.enableSoftShutdown) {
-          await InstanceSubsystem.softExit(
-            Boolean(config.softShutdownSkipDocker),
-            Number(config.softShutdownWaitSeconds) || 10
-          );
-        } else {
-          await InstanceSubsystem.exit(true);
-        }
-      } catch (error) {
-        instanceCtx.logger.error("Failed to stop application instances:", error);
-      }
-    });
+    if (previous) {
+      let resuming: Promise<void> | undefined;
+      const resume = () =>
+        (resuming ??= (async () => {
+          if (runtime.stopping || !instanceCtx.scope.isActive || !ctx.root.scope.isActive) return;
+          await InstanceSubsystem.resumeAfterReload();
+          if (runtime.stopping || !instanceCtx.scope.isActive || !ctx.root.scope.isActive) return;
+          InstanceControlSubsystem.loadSchedules();
+          recovering = false;
+          runtime.handover = undefined;
+        })());
+      // Rebuild commands after other plugins have registered their presets and
+      // lifecycle tasks, and before the replacement server starts listening.
+      instanceCtx.on("plugins/reloaded", resume);
+      // Also allow recovery by enabling/retrying only the instance plugin.
+      instanceCtx.on("ready", resume);
+    }
   });
 }

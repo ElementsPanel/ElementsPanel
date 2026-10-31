@@ -304,6 +304,7 @@ async function reconcilePlugins() {
     }
     sortPlugins(loaded);
     await settle();
+    if (reloadAll) await ctx.parallel("plugins/reloaded");
     return loaded;
   } finally {
     if (started) await ctx.start();

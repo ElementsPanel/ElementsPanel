@@ -25,6 +25,9 @@ class InstanceSubsystem extends EventEmitter {
   public readonly instances = new Map<string, Instance>();
   public readonly instanceStream = new InstanceStreamListener<Socket>();
   private instanceDataDir = "";
+  private startupCancelled = false;
+  private takeover?: Promise<void>;
+  private readonly instanceListeners = new Map<Instance, () => void>();
 
   constructor() {
     super();
@@ -46,6 +49,7 @@ class InstanceSubsystem extends EventEmitter {
   private async autoStart() {
     await sleep(1000 * 5);
     for (const instance of this.instances.values()) {
+      if (this.startupCancelled) return;
       if (instance.config.eventTask.autoStart && instance.status() == Instance.STATUS_STOP) {
         instance
           .execPreset("start")
@@ -73,6 +77,7 @@ class InstanceSubsystem extends EventEmitter {
 
   // init all instances from local files
   loadInstances() {
+    this.startupCancelled = false;
     const instanceConfigs = StorageSubsystem.list("InstanceConfig");
     instanceConfigs.forEach((uuid: string) => {
       if (uuid === this.GLOBAL_INSTANCE_UUID) return;
@@ -139,15 +144,14 @@ class InstanceSubsystem extends EventEmitter {
       this.GLOBAL_INSTANCE_UUID
     );
 
-    takeoverContainer()
-      .catch((error) => {
-        const reason = error.message || error;
-        if (typeof reason == "string" && reason.includes("connect ENOENT")) {
-          return;
-        }
-        logger.error(`${$t("TXT_CODE_8d4c8f7e")}: ${reason}`);
-      })
-      .finally(() => this.autoStart());
+    this.takeover = takeoverContainer(() => !this.startupCancelled).catch((error) => {
+      const reason = error.message || error;
+      if (typeof reason == "string" && reason.includes("connect ENOENT")) {
+        return;
+      }
+      logger.error(`${$t("TXT_CODE_8d4c8f7e")}: ${reason}`);
+    });
+    void this.takeover.then(() => this.autoStart());
   }
 
   createInstance(cfg: any, persistence = true, uuid?: string) {
@@ -175,18 +179,18 @@ class InstanceSubsystem extends EventEmitter {
     }
     this.instances.set(instance.instanceUuid, instance);
     // Dynamically monitor the newly added instance output stream and pass it to its own event stream
-    instance.on("data", (...arr) => {
+    const onData = (...arr: any[]) => {
       this.emit("data", instance.instanceUuid, ...arr);
-    });
-    instance.on("exit", (exitData: { code: number; isCrash: boolean }) => {
+    };
+    const onExit = (exitData: { code: number; isCrash: boolean }) => {
       this.emit("exit", {
         instanceUuid: instance.instanceUuid,
         instanceName: instance.config.nickname,
         exitCode: exitData.code,
         isCrash: exitData.isCrash
       });
-    });
-    instance.on("open", (...arr) => {
+    };
+    const onOpen = (...arr: any[]) => {
       this.emit(
         "open",
         {
@@ -195,8 +199,8 @@ class InstanceSubsystem extends EventEmitter {
         },
         ...arr
       );
-    });
-    instance.on("failure", (...arr) => {
+    };
+    const onFailure = (...arr: any[]) => {
       this.emit(
         "failure",
         {
@@ -205,14 +209,54 @@ class InstanceSubsystem extends EventEmitter {
         },
         ...arr
       );
-    });
-    instance.on("autoRestarted", (data: { count: number }) => {
+    };
+    const onAutoRestarted = (data: { count: number }) => {
       this.emit("autoRestarted", {
         instanceUuid: instance.instanceUuid,
         instanceName: instance.config.nickname,
         restartCount: data.count
       });
+    };
+    instance.on("data", onData);
+    instance.on("exit", onExit);
+    instance.on("open", onOpen);
+    instance.on("failure", onFailure);
+    instance.on("autoRestarted", onAutoRestarted);
+    this.instanceListeners.set(instance, () => {
+      instance.off("data", onData);
+      instance.off("exit", onExit);
+      instance.off("open", onOpen);
+      instance.off("failure", onFailure);
+      instance.off("autoRestarted", onAutoRestarted);
     });
+  }
+
+  async suspendForReload() {
+    this.startupCancelled = true;
+    await Promise.all([...this.instances.values()].map((instance) => instance.suspendForReload()));
+    await this.takeover;
+  }
+
+  /** Transfer the existing owners, including ordinary child/PTY/Docker handles. */
+  adoptInstances(instances: readonly Instance[]) {
+    this.startupCancelled = true;
+    for (const instance of instances) this.addInstance(instance);
+  }
+
+  async resumeAfterReload() {
+    for (const instance of this.instances.values()) {
+      await instance.resumeAfterReload(new FunctionDispatcher());
+    }
+  }
+
+  detachListeners() {
+    for (const dispose of this.instanceListeners.values()) dispose();
+    this.instanceListeners.clear();
+  }
+
+  releaseAfterReload() {
+    this.detachListeners();
+    this.instances.clear();
   }
 
   async removeInstance(instanceUuid: string, deleteFile: boolean) {
@@ -231,6 +275,8 @@ class InstanceSubsystem extends EventEmitter {
         InstanceControl.deleteInstanceAllTask(instanceUuid);
         StorageSubsystem.delete("InstanceConfig", instanceUuid);
         await instance.destroy();
+        this.instanceListeners.get(instance)?.();
+        this.instanceListeners.delete(instance);
         this.instances.delete(instanceUuid);
         return true;
       } finally {
@@ -274,8 +320,13 @@ class InstanceSubsystem extends EventEmitter {
   }
 
   async exitInstance(instance: Instance, force = true) {
-    if (!this.isGlobalInstance(instance))
-      StorageSubsystem.store("InstanceConfig", instance.instanceUuid, instance.config);
+    if (!this.isGlobalInstance(instance)) {
+      try {
+        StorageSubsystem.store("InstanceConfig", instance.instanceUuid, instance.config);
+      } catch (error) {
+        logger.error(`Failed to save instance ${instance.instanceUuid} before shutdown:`, error);
+      }
+    }
     if (instance.status() === Instance.STATUS_BUSY) {
       logger.info(`Killing ${instance.config.nickname} (${instance.instanceUuid})...`);
       await instance.execPreset("kill");

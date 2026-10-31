@@ -442,6 +442,8 @@ export interface DaemonPluginsService {
 declare module "cordis" {
   interface Events {
     "plugins/reloading"(): void | Promise<void>;
+    /** The replacement graph is ready; restore retained owners before listeners open. */
+    "plugins/reloaded"(): void | Promise<void>;
   }
   interface Context {
     // Shared services supplied by foundation plugins before feature plugins load.

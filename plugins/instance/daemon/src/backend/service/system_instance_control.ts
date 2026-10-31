@@ -88,6 +88,11 @@ class InstanceControlSubsystem {
   public readonly taskJobMap = new Map<string, schedule.Job>();
 
   constructor() {
+    this.loadSchedules();
+  }
+
+  public loadSchedules() {
+    if (this.taskMap.size) return;
     // Initialize all persistent data and load into memory one by one
     StorageSubsystem.list("TaskConfig").forEach((uuid: string) => {
       try {

@@ -4,28 +4,38 @@ import fs from "fs-extra";
 import RouterContext from "../entity/ctx";
 import * as protocol from "../service/protocol";
 import InstanceSubsystem from "../service/system_instance";
+import logger from "../service/log";
 
 const MAX_LOG_SIZE = 512;
 
-const buffer = new Map<string, string>();
-
 export function registerInstanceEvents() {
-  const flushTimer = setInterval(() => {
+  const buffer = new Map<string, string>();
+  const pending = new Map<string, Promise<void>>();
+  const flush = async () => {
     buffer.forEach((buf, instanceUuid) => {
       if (!buf || !instanceUuid) return;
-      const logFilePath = path.join(InstanceSubsystem.LOG_DIR, `${instanceUuid}.log`);
-      if (!fs.existsSync(InstanceSubsystem.LOG_DIR)) fs.mkdirsSync(InstanceSubsystem.LOG_DIR);
-      try {
-        const fileInfo = fs.statSync(logFilePath);
-        if (fileInfo && fileInfo.size > 1024 * MAX_LOG_SIZE) fs.removeSync(logFilePath);
-      } catch (err: any) {
-        // A concurrently removed log file can be recreated on the next flush.
-      }
-      fs.writeFile(logFilePath, buf, { encoding: "utf-8", flag: "a" }, () => {
-        buffer.set(instanceUuid, "");
-      });
+      buffer.delete(instanceUuid);
+      const work = (pending.get(instanceUuid) ?? Promise.resolve())
+        .then(async () => {
+          const logFilePath = path.join(InstanceSubsystem.LOG_DIR, `${instanceUuid}.log`);
+          await fs.ensureDir(InstanceSubsystem.LOG_DIR);
+          try {
+            const fileInfo = await fs.stat(logFilePath);
+            if (fileInfo.size > 1024 * MAX_LOG_SIZE) await fs.remove(logFilePath);
+          } catch (err: any) {
+            if (err.code !== "ENOENT") throw err;
+          }
+          await fs.writeFile(logFilePath, buf, { encoding: "utf-8", flag: "a" });
+        })
+        .catch((error) => logger.error(`Failed to write instance ${instanceUuid} output:`, error))
+        .finally(() => {
+          if (pending.get(instanceUuid) === work) pending.delete(instanceUuid);
+        });
+      pending.set(instanceUuid, work);
     });
-  }, 500);
+    await Promise.all(pending.values());
+  };
+  const flushTimer = setInterval(() => void flush(), 500);
 
   const outputLog = (instanceUuid: string, text: string) => {
     const buf = (buffer.get(instanceUuid) ?? "") + text;
@@ -92,13 +102,14 @@ export function registerInstanceEvents() {
   };
   InstanceSubsystem.on("autoRestarted", onAutoRestarted);
 
-  return () => {
+  return async () => {
     clearInterval(flushTimer);
     InstanceSubsystem.off("data", onData);
     InstanceSubsystem.off("exit", onExit);
     InstanceSubsystem.off("open", onOpen);
     InstanceSubsystem.off("failure", onFailure);
     InstanceSubsystem.off("autoRestarted", onAutoRestarted);
+    await flush();
     buffer.clear();
   };
 }

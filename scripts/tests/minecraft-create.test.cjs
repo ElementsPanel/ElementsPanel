@@ -739,6 +739,8 @@ test("instance owns Java and Minecraft status before restoration and survives un
     isStoppedOrBusy: () => true
   };
   const subsystem = Object.assign(new EventEmitter(), f.ctx.instances.subsystem, {
+    instances: new Map(),
+    detachListeners() {},
     loadInstances() {
       assert.equal(ctx.javaManager, javaManager);
       assert.ok(ctx.presets.entries().has("refreshPlayers"));
@@ -790,7 +792,7 @@ test("instance owns Java and Minecraft status before restoration and survives un
     "./tools/steam_cmd": { initSteamCmd() {} },
     "./service/version_adapter": { migrateConfig() {} },
     "./settings": load("plugins/instance/daemon/src/backend/settings.ts"),
-    "./runtime": { setPluginContext() {} },
+    "./runtime": { setPluginContext: (context) => ({ context, stopping: false }) },
     "./service/router": { routerApp: { dispose() {} } },
     "./registries": registries,
     "../i18n": load("plugins/instance/daemon/src/i18n/index.ts"),
