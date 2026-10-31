@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-file",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Instance file management, editing and transfers.",
   "elementspanel": {
     "id": "file",

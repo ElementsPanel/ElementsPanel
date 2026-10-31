@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-console",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "displayName": "Console",
   "description": "Panel web interface and layouts.",
   "elementspanel": {

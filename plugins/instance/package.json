@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-instance",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Application instance and Java runtime management.",
   "elementspanel": {
     "id": "instance",

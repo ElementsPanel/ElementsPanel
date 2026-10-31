@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-config",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Panel plugin configuration.",
   "elementspanel": {
     "id": "config",

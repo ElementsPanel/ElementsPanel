@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-node",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Remote node and image management.",
   "elementspanel": {
     "id": "node",
