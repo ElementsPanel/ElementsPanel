@@ -1241,7 +1241,7 @@ const confirmAction = async () => {
           </span>
           <div class="plugin-config-actions">
             <VBtn
-              v-if="selectedPlugin.packageName && selectedPlugin.removable"
+              v-if="selectedPlugin.packageName"
               icon="mdi-update"
               variant="text"
               :disabled="actionBusy"

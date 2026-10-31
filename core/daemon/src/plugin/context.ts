@@ -424,6 +424,8 @@ export interface DaemonPluginsService {
     name: string;
     version?: string;
     pluginId?: string;
+    /** Keep the reply connection alive until the caller has sent its response. */
+    reloadAfter?: Promise<void>;
   }): Promise<DaemonPluginRecord>;
   /** Unloads and removes an installed daemon plugin package. */
   remove(id: string): Promise<void>;
@@ -438,6 +440,9 @@ export interface DaemonPluginsService {
 }
 
 declare module "cordis" {
+  interface Events {
+    "plugins/reloading"(): void | Promise<void>;
+  }
   interface Context {
     // Shared services supplied by foundation plugins before feature plugins load.
     settings: DaemonSettingsService;

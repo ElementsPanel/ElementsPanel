@@ -54,6 +54,7 @@ function npmFixture(t, side = "panel") {
         if (action === "install") {
           const delimiter = spec.lastIndexOf("@");
           const name = spec.slice(0, delimiter);
+          const pluginId = name.split("epanel-plugin-")[1];
           const version =
             spec.slice(delimiter + 1) === "latest" ? "1.0.0" : spec.slice(delimiter + 1);
           const target = path.join(options.cwd, "node_modules", name);
@@ -61,16 +62,16 @@ function npmFixture(t, side = "panel") {
             name,
             version,
             elementspanel: {
-              id: "sample",
+              id: pluginId,
               [side]: {
                 directory: side,
-                folder: "sample",
+                folder: pluginId,
                 elements: { api: state.invalid && version === "2.0.0" ? 2 : 1 }
               }
             }
           });
           write(path.join(target, side, "plugin.json"), {
-            id: "sample",
+            id: pluginId,
             version,
             backend: "backend/index.cjs"
           });
@@ -155,23 +156,24 @@ test("an incompatible npm upgrade rolls the installed package, manifest and lock
   );
 });
 
-test("npm protects core packages and serializes operations from different callers", async (t) => {
+test("npm updates core packages, protects uninstall and serializes operations from different callers", async (t) => {
   const f = npmFixture(t);
   writePlugin(f.host, "panel", "config");
-  await assert.rejects(
-    f.installNpmPlugin({
-      name: "@elementspanel/epanel-plugin-config",
-      side: "panel",
-      packageRoot: f.host,
-      projectRoot: f.root
-    }),
-    /essential/
-  );
+  const updated = await f.installNpmPlugin({
+    name: "@elementspanel/epanel-plugin-config",
+    version: "2.0.0",
+    side: "panel",
+    packageRoot: f.host,
+    projectRoot: f.root
+  });
+  assert.equal(updated.version, "2.0.0");
+  assert.equal(updated.source, "bundled");
+  assert.equal(f.calls[0].options.cwd, f.host);
   await assert.rejects(
     f.uninstallNpmPlugin("config", { packageRoot: f.host, projectRoot: f.root }),
     /essential/
   );
-  assert.equal(f.calls.length, 0);
+  f.calls.length = 0;
   const gate = deferred();
   f.state.gate = gate.promise;
   const options = {
@@ -443,5 +445,45 @@ for (const side of ["panel", "daemon"]) {
         .config.keep,
       "setting"
     );
+    const server = writePlugin(f.host, side, "server", {
+      source: 'exports.apply=ctx=>ctx.set("npmVersion","1.0.0");'
+    });
+    await ctx.plugins.reload();
+    assert.equal(ctx.npmVersion, "1.0.0");
+    const replied = deferred();
+    const npmReady = deferred();
+    if (side === "daemon") f.state.gate = npmReady.promise;
+    const priorCalls = f.calls.length;
+    const installation = ctx.plugins.install({
+      name: server.name,
+      version: "2.0.0",
+      ...(side === "daemon" ? { reloadAfter: replied.promise } : {})
+    });
+    let queuedReload;
+    if (side === "daemon") {
+      while (f.calls.length === priorCalls) await settle();
+      // Simulate a reload request that arrived before npm finished, so its
+      // queue position precedes the post-install reload.
+      queuedReload = ctx.plugins.reload();
+      npmReady.resolve();
+    }
+    const coreUpdate = await installation;
+    f.state.gate = undefined;
+    if (side === "daemon") {
+      assert.equal(coreUpdate.result.application, "pending");
+      assert.equal(ctx.npmVersion, "1.0.0", "the reply transport stays on the old revision");
+      await settle();
+      assert.equal(ctx.npmVersion, "1.0.0");
+      replied.resolve();
+      await queuedReload;
+    } else {
+      assert.equal(coreUpdate.result.application, "applied");
+    }
+    assert.equal(ctx.npmVersion, "2.0.0");
+    assert.equal(ctx.plugins.inventory().find((record) => record.id === "server").state, "active");
+    await assert.rejects(ctx.plugins.remove("server"), /essential/);
+    const downgraded = await ctx.plugins.install({ name: server.name, version: "1.0.0" });
+    assert.equal(downgraded.result.application, "applied");
+    assert.equal(ctx.npmVersion, "1.0.0");
   });
 }

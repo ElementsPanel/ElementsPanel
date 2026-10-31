@@ -204,17 +204,20 @@ async function loadStyles(source: PluginSource) {
  * Removes stylesheets the plugin injected itself, which the core cannot track:
  * `<style>` elements it tagged, and any `<link>` matching one of its hrefs.
  */
-function removePluginStyles(source: PluginSource) {
+function removePluginStyles(source: PluginSource, preserve?: Set<Element>) {
   document
     .querySelectorAll<HTMLStyleElement>(
       `style[data-panel-plugin=${JSON.stringify(source.metadata.id)}]`
     )
-    .forEach((style) => style.remove());
+    .forEach((style) => {
+      if (!preserve?.has(style)) style.remove();
+    });
   for (const href of source.styles || []) {
     const normalizedHref = new URL(href, document.baseURI).href;
     document.querySelectorAll<HTMLLinkElement>("link[rel='stylesheet']").forEach((link) => {
       try {
-        if (new URL(link.href, document.baseURI).href === normalizedHref) link.remove();
+        if (!preserve?.has(link) && new URL(link.href, document.baseURI).href === normalizedHref)
+          link.remove();
       } catch {
         // Ignore malformed third-party stylesheet URLs.
       }
@@ -462,8 +465,8 @@ function isCurrentRoute(plugin: InternalPlugin) {
   );
 }
 
-async function unloadPluginInternal(id: string) {
-  if (ESSENTIAL_PLUGIN_IDS.has(id)) {
+async function unloadPluginInternal(id: string, replacing = false, preserveStyles?: Set<Element>) {
+  if (ESSENTIAL_PLUGIN_IDS.has(id) && !replacing) {
     throw new Error(`The essential frontend plugin "${id}" cannot be unloaded.`);
   }
   const plugin = plugins.find((candidate) => candidate.metadata.id === id);
@@ -473,7 +476,7 @@ async function unloadPluginInternal(id: string) {
   // Leave the plugin's page before its routes go, or the router lands on
   // nothing.
   const vue = ctx.get("vue");
-  if (vue && isCurrentRoute(plugin)) await vue.router.replace("/404");
+  if (!replacing && vue && isCurrentRoute(plugin)) await vue.router.replace("/404");
   plugin.fork?.dispose();
   try {
     await settle();
@@ -482,7 +485,7 @@ async function unloadPluginInternal(id: string) {
     throw error;
   }
   plugin.removeStyles?.();
-  removePluginStyles(plugin.source);
+  removePluginStyles(plugin.source, preserveStyles);
   const index = plugins.indexOf(plugin);
   if (index >= 0) plugins.splice(index, 1);
   notifyPluginDiagnostics();
@@ -502,7 +505,8 @@ async function loadPluginInternal(id: string) {
 
 async function reloadPluginInternal(id: string) {
   if (ESSENTIAL_PLUGIN_IDS.has(id)) {
-    throw new Error(`The essential frontend plugin "${id}" cannot be reloaded.`);
+    await refreshPluginsInternal(undefined, true);
+    return plugins.find((plugin) => plugin.metadata.id === id);
   }
   await unloadPluginInternal(id);
   if (!import.meta.env.DEV) {
@@ -518,11 +522,82 @@ async function reloadPluginInternal(id: string) {
 }
 
 /** Re-reads what is installed and loads or unloads to match. */
-async function refreshPluginsInternal(discovered?: PluginSource[]) {
+async function refreshPluginsInternal(discovered?: PluginSource[], forceFoundations = false) {
   discovered ??= await discoverSources();
   const next = new Map(discovered.map((source) => [source.metadata.id, source]));
   sources.clear();
   next.forEach((source, id) => sources.set(id, source));
+  const changedSource = (source: PluginSource, current: InternalPlugin) =>
+    source.revision !== current.source.revision ||
+    JSON.stringify(source.metadata) !== JSON.stringify(current.metadata);
+  const reloadFoundations =
+    forceFoundations ||
+    discovered.some((source) => {
+      const current = plugins.find((plugin) => plugin.metadata.id === source.metadata.id);
+      return (
+        current &&
+        ESSENTIAL_PLUGIN_IDS.has(source.metadata.id) &&
+        !source.metadata.restartRequired &&
+        (changedSource(source, current) || pluginError(current))
+      );
+    });
+  if (reloadFoundations) {
+    const graph = resolveSourceGraph(discovered);
+    for (const id of ESSENTIAL_PLUGIN_IDS) {
+      const source = next.get(id);
+      if (!source || graph.issues.has(id) || source.metadata.restartRequired)
+        throw new Error(`Panel frontend foundation is unavailable for reload: ${id}`);
+    }
+    // Download before unloading the shell so a failed foundation download
+    // leaves the current application usable. Keep the new stylesheet nodes
+    // while removing links owned by the previous generation.
+    const previousStyles = new Set(document.querySelectorAll("style, link[rel='stylesheet']"));
+    const ordered = [
+      ...[...ESSENTIAL_PLUGIN_IDS].map((id) => next.get(id)!),
+      ...graph.ordered.filter((source) => !ESSENTIAL_PLUGIN_IDS.has(source.metadata.id))
+    ];
+    const prepared = await Promise.all(ordered.map((source) => preparePlugin(source)));
+    const failedFoundation = prepared.find(
+      (result, index) => "error" in result && ESSENTIAL_PLUGIN_IDS.has(ordered[index].metadata.id)
+    );
+    if (failedFoundation && "error" in failedFoundation) {
+      for (const result of prepared) if ("module" in result) result.removeStyles?.();
+      throw failedFoundation.error;
+    }
+    const preserveStyles = new Set(
+      [...document.querySelectorAll("style, link[rel='stylesheet']")].filter(
+        (element) => !previousStyles.has(element)
+      )
+    );
+    const location = ctx.get("vue")?.router.currentRoute.value.fullPath;
+    // Hold ready hooks until the replacement shell is mounted. Cordis otherwise
+    // runs them immediately because this container has already been started.
+    const started = ctx.lifecycle.isActive;
+    ctx.lifecycle.isActive = false;
+    try {
+      for (const plugin of [...plugins].reverse())
+        await unloadPluginInternal(plugin.metadata.id, true, preserveStyles);
+      for (const [index, source] of ordered.entries()) {
+        await install(source, undefined, undefined, prepared[index]);
+        await settle();
+      }
+      for (const [id, issue] of graph.issues) {
+        const source = next.get(id);
+        if (source) recordGraphFailure(source, new Error(issue.message));
+      }
+      auditFrontendPlugins();
+      // The console mounts after feature routes and the restored session exist,
+      // just as on initial startup. Keep the user's page across the remount.
+      await ctx.parallel("plugins/loaded");
+      const router = ctx.get("vue")?.router;
+      if (location && router) await router.replace(location);
+      await settle();
+      notifyPluginDiagnostics();
+      return discovered.map((source) => source.metadata);
+    } finally {
+      if (started) await ctx.start();
+    }
+  }
   for (const plugin of [...plugins].reverse()) {
     if (ESSENTIAL_PLUGIN_IDS.has(plugin.metadata.id)) continue;
     if (!next.has(plugin.metadata.id)) await unloadPluginInternal(plugin.metadata.id);
@@ -541,8 +616,7 @@ async function refreshPluginsInternal(discovered?: PluginSource[]) {
     if (current) current.restartRequired = Boolean(source.metadata.restartRequired);
     const changed =
       current &&
-      (source.revision !== current.source.revision ||
-        JSON.stringify(source.metadata) !== JSON.stringify(current.metadata) ||
+      (changedSource(source, current) ||
         Boolean(source.metadata.restartRequired) !==
           Boolean(current.source.metadata.restartRequired));
     if (current && (changed || source.metadata.restartRequired)) {

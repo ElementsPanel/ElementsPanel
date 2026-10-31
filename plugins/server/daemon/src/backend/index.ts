@@ -107,6 +107,14 @@ export function apply(ctx: DaemonPluginContext) {
   );
 
   const app = new Koa();
+  let reloading = false;
+  app.use(async (requestCtx, next) => {
+    if (reloading) {
+      requestCtx.status = 503;
+      return;
+    }
+    await next();
+  });
 
   // Listen for Koa errors
   app.on("error", () => {
@@ -223,6 +231,18 @@ export function apply(ctx: DaemonPluginContext) {
   // Handed over before anything listens; this plugin attaches its connection
   // handler before the first client can arrive.
   ctx.set("websocket", { io });
+  let closing: Promise<void> | undefined;
+  const closeTransport = () =>
+    (closing ??= (async () => {
+      await io.close();
+      // Disposal can also follow a startup failure before listen() ever ran.
+      if (httpServer.listening) httpServer.close();
+    })());
+
+  ctx.on("plugins/reloading", () => {
+    reloading = true;
+    return closeTransport();
+  });
 
   io.on("connection", (socket) => {
     addGlobalSocket(socket);
@@ -256,11 +276,9 @@ export function apply(ctx: DaemonPluginContext) {
 
   // The daemon used to leak both until the process exited; they now close with
   // the plugin, and so on shutdown.
-  ctx.on("dispose", () => {
-    io.close();
-    // `dispose` can run after a failed `ready` hook, before the listener ever
-    // started. Node throws ERR_SERVER_NOT_RUNNING in that case, which would
-    // mask the original startup error and make plugin unload non-idempotent.
-    if (httpServer.listening) httpServer.close();
+  ctx.on("dispose", async () => {
+    // Wait for Socket.IO's adapters to close and release the listening socket
+    // before a new revision tries to bind the same port.
+    await closeTransport();
   });
 }

@@ -212,9 +212,9 @@ function recordFromPackage(
 /**
  * Every npm plugin the runtime can load for a side, built-in and project-installed.
  *
- * Built-in mappings win over a project mapping for the same id: a third-party
- * package must not shadow a plugin that ships with the runtime. A project package
- * that does not describe the requested side is skipped instead of failing, which
+ * Built-in package names win over a project mapping for the same id. An explicit
+ * project dependency on that same package selects the user's installed version.
+ * A project package that does not describe the requested side is skipped instead of failing, which
  * is what lets a two-sided project share one dependency list between sides.
  */
 export function listNpmPlugins(
@@ -249,7 +249,10 @@ export function listNpmPlugins(
   for (const [pluginId, name] of Object.entries(hostMappings)) {
     if (!PLUGIN_ID.test(pluginId) || typeof name !== "string" || !PACKAGE_NAME.test(name)) continue;
     if (dependenciesOf(host)[name] === undefined) continue;
-    mappings.set(pluginId, { name, source: "bundled" });
+    mappings.set(pluginId, {
+      name,
+      source: dependenciesOf(project)[name] === undefined ? "bundled" : "project"
+    });
   }
 
   const hostDependencies = dependenciesOf(host);
@@ -443,9 +446,10 @@ export async function installNpmPlugin(options: InstallNpmPluginOptions): Promis
     const hostId = Object.entries(mappingsOf(host)).find(
       ([, value]) => value === name && dependenciesOf(host)[name] !== undefined
     )?.[0];
-    const targetRoot = hostId ? packageRoot : projectRoot;
-    if (hostId && isEssentialNpmPlugin(hostId))
-      throw new Error(`The essential plugin "${hostId}" cannot be replaced while running.`);
+    const targetRoot =
+      hostId && dependenciesOf(readProjectManifest(projectRoot))[name] === undefined
+        ? packageRoot
+        : projectRoot;
     if (
       options.pluginId &&
       mappingsOf(host)[options.pluginId] &&
@@ -501,7 +505,7 @@ export async function installNpmPlugin(options: InstallNpmPluginOptions): Promis
       const record = recordFromPackage(
         pluginId,
         name,
-        hostId ? "bundled" : "project",
+        targetRoot === packageRoot ? "bundled" : "project",
         entry.root,
         entry.metadata,
         side
@@ -598,7 +602,9 @@ export async function uninstallNpmPlugin(
     const host = readJson(path.join(packageRoot, "package.json"));
     const bundledName = mappingsOf(host)[pluginId];
     const targetRoot =
-      typeof bundledName === "string" && dependenciesOf(host)[bundledName] !== undefined
+      typeof bundledName === "string" &&
+      dependenciesOf(host)[bundledName] !== undefined &&
+      dependenciesOf(readProjectManifest(projectRoot))[bundledName] === undefined
         ? packageRoot
         : projectRoot;
     const manifest = readProjectManifest(targetRoot);

@@ -371,6 +371,9 @@ export interface PanelPluginsService {
 }
 
 declare module "cordis" {
+  interface Events {
+    "plugins/reloading"(): void | Promise<void>;
+  }
   interface Context {
     // Shared services supplied by foundation plugins before feature plugins load.
     settings: PanelSettingsService;

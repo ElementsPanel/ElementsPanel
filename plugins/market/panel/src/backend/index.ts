@@ -67,6 +67,7 @@ export async function apply(ctx: PanelPluginContext) {
       const installed = records.find((item) => item.pluginId === plugin.id);
       if (installed) {
         installed.removable = installed.removable && plugin.removable;
+        installed.updatable = Boolean(plugin.packageName);
         installed.state = plugin.state;
       } else {
         records.push({
@@ -81,6 +82,7 @@ export async function apply(ctx: PanelPluginContext) {
           directories: [],
           daemonIds: [],
           source: "bundled",
+          updatable: Boolean(plugin.packageName),
           removable: plugin.removable
         });
       }
@@ -206,7 +208,8 @@ export async function apply(ctx: PanelPluginContext) {
         installedVersion: local?.version,
         installedState: local?.state,
         installedDaemonIds: local?.daemonIds ?? [],
-        installedRemovable: local?.removable ?? true
+        installedRemovable: local?.removable ?? true,
+        installedUpdatable: local?.updatable ?? true
       };
     });
   }
@@ -286,9 +289,10 @@ export async function apply(ctx: PanelPluginContext) {
   async function installOnNodes(
     daemonIds: readonly string[],
     info: MarketInstallInfo
-  ): Promise<{ failedNodes: string[]; changedNodes: string[] }> {
+  ): Promise<{ failedNodes: string[]; changedNodes: string[]; pendingNodes: string[] }> {
     const failedNodes: string[] = [];
     const changedNodes: string[] = [];
+    const pendingNodes: string[] = [];
     for (const daemonId of daemonIds) {
       const node = ctx.remote.services.getInstance(daemonId);
       if (!node || !node.available) {
@@ -296,11 +300,12 @@ export async function apply(ctx: PanelPluginContext) {
         continue;
       }
       try {
-        await new ctx.remote.Request(node).request(
+        const result = await new ctx.remote.Request(node).request(
           "plugin/npm/install",
           { name: info.name, pluginId: info.pluginId, version: info.version },
           10 * 60 * 1000
         );
+        if (result?.result?.application === "pending") pendingNodes.push(daemonId);
       } catch (error) {
         ctx.logger.warn(`Failed to install a plugin on daemon ${daemonId}: ${error}`);
         failedNodes.push(daemonId);
@@ -309,7 +314,7 @@ export async function apply(ctx: PanelPluginContext) {
       await recordRemoteInstall(info, daemonId);
       changedNodes.push(daemonId);
     }
-    return { failedNodes, changedNodes };
+    return { failedNodes, changedNodes, pendingNodes };
   }
 
   /** Failed or unselected uninstalls stay recorded until a later successful retry. */
@@ -443,7 +448,8 @@ export async function apply(ctx: PanelPluginContext) {
           installedVersion: installed?.version,
           installedState: installed?.state,
           installedDaemonIds: installed?.daemonIds ?? [],
-          installedRemovable: installed?.removable ?? true
+          installedRemovable: installed?.removable ?? true,
+          installedUpdatable: installed?.updatable ?? true
         };
       } catch (error) {
         reportPluginMarketError(error);
@@ -516,14 +522,22 @@ export async function apply(ctx: PanelPluginContext) {
             version: detail.selectedVersion.version,
             installedAt: Date.now()
           };
-          // Core services and source plugins cannot be replaced while running.
+          // npm versions can replace foundation packages; source plugins have
+          // no npm dependency for the market to update.
           if (
             sides.includes("panel") &&
-            ctx.plugins.inventory().some((item) => item.id === info.pluginId && !item.removable)
+            ctx.plugins.inventory().some((item) => item.id === info.pluginId && !item.packageName)
           )
             throw new PluginMarketError("BUNDLED");
 
           const changedSides: PluginSide[] = [];
+          // Finish node requests while the panel's existing connections are
+          // still available: its own foundation reload recreates those too.
+          const { failedNodes, changedNodes, pendingNodes } =
+            sides.includes("daemon") && daemonIds.length
+              ? await installOnNodes(daemonIds, info)
+              : { failedNodes: [], changedNodes: [], pendingNodes: [] };
+          if (changedNodes.length) changedSides.push("daemon");
           if (sides.includes("panel")) {
             await ctx.plugins.install({
               name: detail.name,
@@ -532,12 +546,13 @@ export async function apply(ctx: PanelPluginContext) {
             });
             changedSides.push("panel");
           }
-          const { failedNodes, changedNodes } =
-            sides.includes("daemon") && daemonIds.length
-              ? await installOnNodes(daemonIds, info)
-              : { failedNodes: [], changedNodes: [] };
-          if (changedNodes.length) changedSides.push("daemon");
-          const reloaded = await hotReload(changedSides, changedNodes, info.pluginId);
+          // A current daemon queues its reload after sending the install reply.
+          // Do not issue a second RPC over the connection it is about to replace.
+          const reloaded = await hotReload(
+            changedSides,
+            changedNodes.filter((id) => !pendingNodes.includes(id)),
+            info.pluginId
+          );
 
           return {
             restartRequired: !reloaded,

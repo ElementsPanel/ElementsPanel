@@ -80,8 +80,8 @@ function resolveNpmPlugins(packageRoot, side, options = {}) {
   const project = projectFile ? readOptional(projectFile) : null;
   const selectedSide = side || host.elementspanel?.side;
 
-  // Project mappings are read first so the host's built-in plugins win an id
-  // collision: a market package must not shadow a plugin that ships with the runtime.
+  // Keep the host's package identity, while allowing npm install in the project
+  // to select another version of that same package (even with nested installs).
   const configured = new Map();
   for (const [id, name] of Object.entries(mappingOf(project)))
     configured.set(id, { name, source: "project" });
@@ -98,7 +98,12 @@ function resolveNpmPlugins(packageRoot, side, options = {}) {
     }
   }
   for (const [id, name] of Object.entries(mappingOf(host))) {
-    if (dependenciesOf(host)[name] !== undefined) configured.set(id, { name, source: "bundled" });
+    if (dependenciesOf(host)[name] !== undefined)
+      configured.set(id, {
+        name,
+        source: dependenciesOf(project)[name] === undefined ? "bundled" : "project",
+        automatic: true
+      });
   }
 
   const hostDependencies = dependenciesOf(host);

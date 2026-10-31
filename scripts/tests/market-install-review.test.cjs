@@ -158,6 +158,7 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
         [...local.values()]
           .map((record) => ({
             id: record.pluginId,
+            packageName: record.name,
             removable: !state.protected,
             state: "active"
           }))
@@ -345,12 +346,22 @@ test("reload failures require a restart and only changed nodes are reloaded", as
   );
 });
 
-test("core plugins cannot be installed or removed through the market", async (t) => {
+test("npm updates are independent of uninstall protection; source plugins stay protected", async (t) => {
   const env = await fixture(t);
   await env.install();
   env.state.protected = true;
-  await assert.rejects(env.install(), { message: "TXT_CODE_PLUGIN_MARKET_BUNDLED" });
+  await env.install();
   await assert.rejects(env.uninstall(), { message: "TXT_CODE_PLUGIN_MARKET_BUNDLED" });
+  env.state.inventoryExtra.push({ id: "sample", removable: false });
+  await assert.rejects(env.install(), { message: "TXT_CODE_PLUGIN_MARKET_BUNDLED" });
+});
+
+test("a daemon's deferred npm reload does not send another RPC through its closing transport", async (t) => {
+  const env = await fixture(t, { sides: ["daemon"] });
+  env.state.request = async () => ({ result: { saved: true, application: "pending" } });
+  const result = await env.install({ daemonIds: ["node-1"] });
+  assert.equal(result.restartRequired, false);
+  assert.deepEqual(env.rpcCalls.map((call) => call.event), ["plugin/npm/install"]);
 });
 
 test("same-plugin operations stay serialized across installs and a queued uninstall", async (t) => {

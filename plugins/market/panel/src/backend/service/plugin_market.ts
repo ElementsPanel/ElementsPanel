@@ -55,6 +55,7 @@ export interface InstalledMarketPlugin extends MarketInstallInfo {
   /** Whether the dependency belongs to the runtime or the installation project. */
   source: "bundled" | "project";
   removable: boolean;
+  updatable?: boolean;
 }
 
 export interface RemoteMarketInstall extends MarketInstallInfo {
@@ -168,6 +169,7 @@ function localRecord(record: NpmPluginRecord): InstalledMarketPlugin {
     directories: [record.directory],
     daemonIds: [],
     source: record.source,
+    updatable: true,
     removable: !isEssentialNpmPlugin(record.pluginId)
   };
 }
@@ -203,6 +205,7 @@ export function listInstalled(): InstalledMarketPlugin[] {
             directories: [],
             daemonIds: [],
             source: "project",
+            updatable: true,
             removable: true
           };
           found.set(info.pluginId, installed);

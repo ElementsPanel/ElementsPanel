@@ -331,7 +331,7 @@ test("direct install actions require newer releases unless management explicitly
   }
 });
 
-test("the management dialog explicitly permits selecting an older version but protects bundled plugins", async () => {
+test("the management dialog permits older core versions while protecting source plugins", async () => {
   const { props, state, calls, scope } = installFixture();
   try {
     props.allowVersionChange = true;
@@ -342,9 +342,11 @@ test("the management dialog explicitly permits selecting an older version but pr
       "an explicitly selected older release may be installed"
     );
     props.plugin.installedRemovable = false;
+    assert.equal(state.canUpdate.value, true, "uninstall protection still permits npm updates");
+    props.plugin.installedUpdatable = false;
     assert.equal(state.canUpdate.value, false);
     await state.install();
-    assert.equal(calls.length, 0, "protected source/core packages must never start npm work");
+    assert.equal(calls.length, 0, "source packages must never start npm work");
   } finally {
     scope.stop();
   }

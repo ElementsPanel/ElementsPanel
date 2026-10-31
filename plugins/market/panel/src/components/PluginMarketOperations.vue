@@ -56,7 +56,7 @@ const canUpdate = computed(() =>
     !props.installOnly &&
       props.version &&
       props.plugin.installedVersion &&
-      props.plugin.installedRemovable !== false &&
+      props.plugin.installedUpdatable !== false &&
       (props.allowVersionChange
         ? props.version.version !== props.plugin.installedVersion ||
           props.plugin.installedState === "failed"
@@ -166,7 +166,7 @@ async function install(toNodes = false) {
   )
     return;
   if (!canInstall.value && !canUpdate.value && !toNodes) return;
-  if (props.plugin.installedVersion && props.plugin.installedRemovable === false) return;
+  if (props.plugin.installedVersion && props.plugin.installedUpdatable === false) return;
   const plugin = { ...props.plugin, latestVersion: props.version };
   pendingId.value = plugin.id;
   try {
@@ -383,7 +383,7 @@ onScopeDispose(() => {
           allowVersionChange &&
           plugin.installedVersion &&
           version?.sides?.includes('daemon') &&
-          plugin.installedRemovable !== false
+          plugin.installedUpdatable !== false
         "
         variant="text"
         :disabled="busy || disabled || applyingChanges || incompatible"

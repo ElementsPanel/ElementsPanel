@@ -33,6 +33,10 @@ import { pluginAssets } from "./plugin_assets";
 // this plugin's own `inject` list.
 
 const STATIC_MAX_AGE = 10 * 24 * 60 * 60;
+const SESSION_STATE = Symbol.for("elementspanel.panel.session");
+const processState = globalThis as typeof globalThis & {
+  [SESSION_STATE]?: { keys: string[]; key: string };
+};
 
 /** The fields this plugin owns in the panel configuration. */
 const SETTING_KEYS = [
@@ -59,6 +63,14 @@ export function apply(ctx: PanelPluginContext) {
     proxy: config.reverseProxyMode || false,
     proxyIpHeader: config.reverseProxyHeader || "X-Real-IP"
   });
+  let reloading = false;
+  app.use(async (requestCtx, next) => {
+    if (reloading) {
+      requestCtx.status = 503;
+      return;
+    }
+    await next();
+  });
 
   // Listen for Koa errors
   app.on("error", () => {
@@ -68,11 +80,13 @@ export function apply(ctx: PanelPluginContext) {
     // some applications
   });
 
-  app.keys = [v4()];
+  // Keep signed sessions valid when another revision recreates the listener.
+  const sessionState = (processState[SESSION_STATE] ??= { keys: [v4()], key: v4() });
+  app.keys = sessionState.keys;
   app.use(
     session(
       {
-        key: v4(),
+        key: sessionState.key,
         maxAge: 86400000,
         overwrite: true,
         httpOnly: true,
@@ -138,7 +152,12 @@ export function apply(ctx: PanelPluginContext) {
 
   app.use(pluginAssets(ctx));
 
-  app.use(mount("/upload_files", koaStatic(path.resolve("public", "upload_files"), { maxAge: STATIC_MAX_AGE })));
+  app.use(
+    mount(
+      "/upload_files",
+      koaStatic(path.resolve("public", "upload_files"), { maxAge: STATIC_MAX_AGE })
+    )
+  );
   app.use(koaStatic(packagePath("public"), { maxAge: STATIC_MAX_AGE }));
 
   // Generic administrative proxy used by remote integrations. It is transport
@@ -301,6 +320,22 @@ export function apply(ctx: PanelPluginContext) {
   });
   ctx.set("websocket", { io: websocket });
 
+  let closing: Promise<void> | undefined;
+  const closeTransport = () =>
+    (closing ??= (async () => {
+      // Socket.IO releases the listener after its adapters finish closing.
+      // Existing HTTP replies may finish after it stops accepting connections.
+      await websocket?.close();
+      if (httpServer?.listening) httpServer.close();
+    })());
+
+  // Stop accepting requests before authentication and feature routes unload.
+  // An install request already in progress can still send its final HTTP reply.
+  ctx.on("plugins/reloading", () => {
+    reloading = true;
+    return closeTransport();
+  });
+
   httpServer.on("error", (err) => {
     ctx.logger.error($t("TXT_CODE_app.httpSetupError"));
     ctx.logger.error(err);
@@ -331,12 +366,9 @@ export function apply(ctx: PanelPluginContext) {
 
   // The core used to leak the listener until the process exited; it now closes
   // with the plugin, and so on shutdown.
-  ctx.on("dispose", () => {
-    // Closing Socket.IO first lets it release every connection; a failed
-    // `ready` hook can dispose this scope before a listener exists.
-    websocket?.close();
+  ctx.on("dispose", async () => {
+    await closeTransport();
     websocket = undefined;
-    if (httpServer?.listening) httpServer.close();
     httpServer = undefined;
   });
 }

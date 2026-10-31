@@ -317,3 +317,40 @@ test("foundation failure removes preload links without evaluating remaining modu
   assert.deepEqual(f.imports, ["runtime"]);
   assert.equal(document.querySelectorAll("link").length, 0);
 });
+
+test("foundation refresh replaces scopes and retains freshly prepared styles for unchanged URLs", async (t) => {
+  const f = fixture(t);
+  await f.start();
+  await f.ctx.start();
+  const previous = f.loader.getLoadedPlugins().map((plugin) => plugin.fork);
+  const oldStyles = [...f.styles.values()];
+  const runtime = f.manifest.find((entry) => entry.metadata.id === "runtime");
+  runtime.revision = "two";
+  runtime.entry = "./runtime@two/frontend/index.js";
+  runtime.styles = ["./runtime@two/frontend/style.css"];
+  f.modules.set("runtime", { apply: (ctx) => ctx.set("startup", { version: "two" }) });
+  await f.loader.refreshPlugins();
+  assert.equal(f.ctx.startup.version, "two");
+  assert.ok(previous.every((fork) => fork.uid === null));
+  assert.ok(oldStyles.every((style) => !style.isConnected));
+  assert.ok([...f.styles.values()].every((style) => style.isConnected));
+  assert.equal(document.querySelectorAll("link[rel='stylesheet']").length, 3);
+  assert.ok(f.loader.getPluginDiagnostics().every((plugin) => plugin.state === "active"));
+  await f.loader.reloadPlugin("runtime");
+  assert.equal(f.ctx.startup.version, "two");
+});
+
+test("a failed foundation download leaves the running browser graph and its styles intact", async (t) => {
+  const f = fixture(t);
+  await f.start();
+  const previous = [...f.loader.getLoadedPlugins()];
+  const styles = [...f.styles.values()];
+  f.manifest.find((entry) => entry.metadata.id === "runtime").revision = "broken";
+  f.modules.set("runtime", () => {
+    throw new Error("download failed");
+  });
+  await assert.rejects(f.loader.refreshPlugins(), /download failed/);
+  assert.deepEqual([...f.loader.getLoadedPlugins()], previous);
+  assert.ok(styles.every((style) => style.isConnected));
+  assert.equal(document.querySelectorAll("link[rel='stylesheet']").length, 3);
+});

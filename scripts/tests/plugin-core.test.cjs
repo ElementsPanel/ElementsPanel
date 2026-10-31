@@ -301,10 +301,11 @@ test("browser synchronization replaces changed plugin revisions and serializes c
   assert.equal(ctx.get("generation"), undefined);
 });
 
-test("browser rejects incompatible packages and keeps foundational plugins alive on revision changes", async (t) => {
+test("browser rejects incompatible packages and remounts changed foundations on the current route", async (t) => {
   const fixture = frontendFixture(t, { user: false });
   await fixture.start();
-  const { loader, sources } = fixture;
+  const { ctx, loader, sources, router } = fixture;
+  await router.push("/feature");
   const foundation = loader.getLoadedPlugins().find((item) => item.metadata.id === "console");
   const index = sources.findIndex((source) => source.metadata.id === "console");
   sources[index] = { ...sources[index], revision: "changed" };
@@ -324,11 +325,16 @@ test("browser rejects incompatible packages and keeps foundational plugins alive
     loader.getLoadedPlugins().find((item) => item.metadata.id === "future").error.message,
     /Unsupported/
   );
-  assert.equal(
+  assert.notEqual(
     loader.getLoadedPlugins().find((item) => item.metadata.id === "console"),
     foundation
   );
-  assert.equal(foundation.reloadRequired, true);
+  assert.equal(foundation.fork.uid, null);
+  assert.equal(loader.getLoadedPlugins().find((item) => item.metadata.id === "console").state, "active");
+  assert.equal(router.currentRoute.value.path, "/feature");
+  assert.equal(ctx.routes.ownerOf("/feature"), "feature");
+  assert.ok(document.querySelector("#plugin-console"));
+  await assert.rejects(loader.unloadPlugin("console"), /cannot be unloaded/);
 });
 
 test("a plugin deferred until backend restart loads when the same artifact becomes ready", async (t) => {

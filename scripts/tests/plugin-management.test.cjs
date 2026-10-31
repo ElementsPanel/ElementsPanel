@@ -1,6 +1,7 @@
 const assert = require("node:assert/strict");
 const { test } = require("node:test");
-const { createLoader, from } = require("./helpers.cjs");
+const { createLoader, from, settle } = require("./helpers.cjs");
+const { EventEmitter } = require("node:events");
 
 test("plugin management npm routes require an administrator and use the plugin lifecycle service", async () => {
   const load = createLoader({ host: "panel" });
@@ -91,4 +92,62 @@ test("plugin management npm routes require an administrator and use the plugin l
   assert.deepEqual(calls.shift(), { reconnect: true });
   await request("delete", "/api/plugins/", 10, undefined, { id: "sample" });
   assert.deepEqual(calls.pop(), { remove: "sample" });
+});
+
+test("daemon npm replies drain before the foundation reload is released", async () => {
+  const load = createLoader({ host: "daemon" });
+  const handlers = new Map();
+  const connection = Object.assign(new EventEmitter(), { readyState: "open" });
+  const packets = [];
+  let released = false;
+  let buffered = true;
+  load("plugins/config/daemon/src/backend/index.ts", {
+    "mcsmanager-common": { PLUGIN_API_VERSION: 1 },
+    "../i18n": { localeMessages: {} },
+    "./settings": { SettingsFormService: class {} }
+  }).apply({
+    i18n: { define() {} },
+    plugin() {},
+    get: () => ({}),
+    plugins: {
+      async install({ reloadAfter }) {
+        reloadAfter.then(() => {
+          released = true;
+        });
+        return { id: "server", result: { saved: true, application: "pending" } };
+      }
+    },
+    protocol: {
+      on: (event, handler) => handlers.set(event, handler),
+      response: (_ctx, record) => {
+        packets.push(record);
+        if (!buffered) connection.emit("drain");
+      },
+      responseError: (_ctx, error) => {
+        throw error;
+      }
+    }
+  });
+  await handlers.get("plugin/npm/install")(
+    { socket: { conn: connection } },
+    { name: "epanel-plugin-server" }
+  );
+  assert.equal(packets[0].result.application, "pending");
+  await settle();
+  assert.equal(released, false);
+  connection.emit("drain");
+  await settle();
+  assert.equal(released, true);
+  assert.equal(connection.listenerCount("drain"), 0);
+  assert.equal(connection.listenerCount("close"), 0);
+  buffered = false;
+  released = false;
+  await handlers.get("plugin/npm/install")(
+    { socket: { conn: connection } },
+    { name: "epanel-plugin-server" }
+  );
+  await settle();
+  assert.equal(released, true, "an immediately flushed reply releases the reload without waiting");
+  assert.equal(connection.listenerCount("drain"), 0);
+  assert.equal(connection.listenerCount("close"), 0);
 });

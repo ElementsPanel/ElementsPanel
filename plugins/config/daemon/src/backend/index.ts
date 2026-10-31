@@ -135,6 +135,12 @@ export function apply(ctx: DaemonPluginContext) {
   // installation project. npm runs on the machine that will load the plugin, so
   // the panel only names the package and the version.
   ctx.protocol.on("plugin/npm/install", async (routerCtx, data) => {
+    const protocol = ctx.protocol;
+    let resume!: () => void;
+    const reloadAfter = new Promise<void>((resolve) => {
+      resume = resolve;
+    });
+    let respond: () => void;
     try {
       const payload = (data ?? {}) as {
         name?: unknown;
@@ -144,11 +150,38 @@ export function apply(ctx: DaemonPluginContext) {
       const record = await ctx.plugins.install({
         name: String(payload.name ?? ""),
         pluginId: payload.pluginId ? String(payload.pluginId) : undefined,
-        version: payload.version ? String(payload.version) : undefined
+        version: payload.version ? String(payload.version) : undefined,
+        reloadAfter
       });
-      ctx.protocol.response(routerCtx, record);
+      respond = () => protocol.response(routerCtx, record);
     } catch (error: any) {
-      ctx.protocol.responseError(routerCtx, error);
+      respond = () => protocol.responseError(routerCtx, error);
+    }
+    const connection = routerCtx.socket?.conn;
+    let flushed = false;
+    const onDrain = () => {
+      flushed = true;
+    };
+    connection?.once("drain", onDrain);
+    try {
+      respond();
+    } finally {
+      // A polling transport may be between HTTP requests. Wait until Engine.IO
+      // hands the buffered reply to its transport before replacing the socket.
+      connection?.off("drain", onDrain);
+      if (connection?.readyState === "open" && !flushed) {
+        const release = () => {
+          clearTimeout(timeout);
+          connection.off("drain", release);
+          connection.off("close", release);
+          setImmediate(resume);
+        };
+        const timeout = setTimeout(release, 10000);
+        connection.once("drain", release);
+        connection.once("close", release);
+      } else {
+        setImmediate(resume);
+      }
     }
   });
 

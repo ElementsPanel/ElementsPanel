@@ -69,7 +69,10 @@ const plugin = computed<MarketPlugin>(() => ({
   installedState: installedLoaded.value ? installed.value?.state : props.plugin.installedState,
   installedRemovable: installedLoaded.value
     ? installed.value?.removable
-    : props.plugin.installedRemovable
+    : props.plugin.installedRemovable,
+  installedUpdatable: installedLoaded.value
+    ? installed.value?.updatable
+    : props.plugin.installedUpdatable
 }));
 const queued = computed(() =>
   queuedChanges.value.find((item) => item.plugin.id === props.plugin.id)

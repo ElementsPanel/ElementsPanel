@@ -169,6 +169,38 @@ test("project-level npm plugins are resolved alongside bundled plugins", (t) => 
   assert.equal(discovered.find((plugin) => plugin.manifest.id === "custom").manifest.enabled, false);
 });
 
+for (const side of ["panel", "daemon"]) {
+  test(`${side}: project npm versions override nested copies of the same foundation package`, (t) => {
+    const f = fixture(t);
+    const previousProject = process.env.EPANEL_PROJECT_ROOT;
+    process.env.EPANEL_PROJECT_ROOT = f.work;
+    t.after(() => {
+      if (previousProject === undefined) delete process.env.EPANEL_PROJECT_ROOT;
+      else process.env.EPANEL_PROJECT_ROOT = previousProject;
+    });
+    const bundled = installNpmPlugin(f.packageRoot, side, "runtime");
+    const project = installNpmPlugin(f.work, side, "runtime", { version: "2.0.0" });
+    const filename = path.join(f.work, "package.json");
+    const manifest = JSON.parse(fs.readFileSync(filename));
+    // npm install alone is enough; a third-party mapping cannot change which
+    // package owns the built-in id.
+    manifest.elementspanel.plugins.runtime = "epanel-plugin-imposter";
+    fs.writeFileSync(filename, JSON.stringify(manifest));
+    const { resolveNpmPlugins } = require("../runtime/npm-plugins.cjs");
+    const [resolved] = resolveNpmPlugins(f.packageRoot, side);
+    assert.equal(resolved.name, bundled.name);
+    assert.equal(resolved.packageRoot, project.packageRoot);
+    assert.equal(resolved.version, "2.0.0");
+    assert.equal(resolved.source, "project");
+    assert.equal(resolved.defaultEnabled, true);
+    const { listNpmPlugins } = load("core/common/src/plugin_npm.ts");
+    const [listed] = listNpmPlugins(side, { packageRoot: f.packageRoot, projectRoot: f.work });
+    assert.equal(listed.packageRoot, project.packageRoot);
+    assert.equal(listed.version, resolved.version);
+    assert.equal(listed.source, resolved.source);
+  });
+}
+
 test("missing optional npm plugins do not abort runtime discovery", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "elements-npm-optional-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
