@@ -12,7 +12,7 @@ import type { DockerNetworkModes, InstanceDetail } from "@/types";
 import { defaultDockerConfig, TERMINAL_CODE } from "@/types/const";
 import dayjs from "dayjs";
 import { cloneDeep } from "lodash";
-import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import {
   VAlert, VBtn, VCheckbox, VCombobox, VForm, VIcon, VProgressCircular,
   VRadio, VRadioGroup, VSelect, VSwitch, VTextarea, VTextField
@@ -34,6 +34,7 @@ const { isAdmin, state } = useAppStateStore();
 const draft = ref<InstanceDetail["config"]>();
 const original = ref<InstanceDetail["config"]>();
 const activeTab = ref<Tab>("basic");
+const formRef = ref<InstanceType<typeof VForm>>();
 const isLoading = ref(false);
 const isSaving = ref(false);
 const loadError = ref("");
@@ -59,6 +60,20 @@ const tabs = computed<Array<{ id: Tab; title: string }>>(() => {
 const updateCommandHint = t("TXT_CODE_fa487a47");
 const updateCommandPlaceholder = t("TXT_CODE_61ca492b") +
   '"C:/SteamCMD/steamcmd.exe" +login anonymous +force_install_dir "{mcsm_workspace}" "+app_update 380870 validate" +quit';
+const requiredRule = (message: string) => (value: unknown) =>
+  !!String(value ?? "").trim() || t(message);
+const commandRules = [
+  requiredRule("TXT_CODE_f50cfe2"),
+  (value: unknown) => !String(value ?? "").includes("\n") || t("TXT_CODE_bbbda29")
+];
+const endTimeRule = (value: unknown) =>
+  !String(value ?? "").trim() || dayjs(String(value)).isValid() || t("TXT_CODE_9911ac11");
+const gpuCountRule = (value: unknown) =>
+  (Number.isInteger(Number(value)) && Number(value) >= 1) || t("TXT_CODE_gpu_count");
+const fieldTabs: Record<string, Tab> = {
+  nickname: "basic", startCommand: "basic", endTime: "basic",
+  image: "docker", networkMode: "docker", cwd: "advanced", gpuCount: "resources"
+};
 
 watch(tabs, (items) => {
   if (!items.some((item) => item.id === activeTab.value)) activeTab.value = "basic";
@@ -76,6 +91,7 @@ const applyConfig = (config: InstanceDetail["config"]) => {
   gpuDevicesText.value = draft.value.docker.gpuDeviceIds?.join(",") || "";
   gpuMode.value = draft.value.docker.gpuDeviceIds?.length
     ? "devices" : Number(draft.value.docker.gpuCount) > 0 ? "count" : "all";
+  void nextTick(() => formRef.value?.resetValidation());
 };
 const load = async () => {
   if (isSaving.value) return;
@@ -100,29 +116,26 @@ const load = async () => {
 const save = async () => {
   if (!draft.value || !canEdit.value || isSaving.value || isLoading.value || listOpen.value) return;
   const version = generation;
+  isSaving.value = true;
   try {
+    const validation = await formRef.value?.validate();
+    if (version !== generation || !canEdit.value) return;
+    if (!validation?.valid) {
+      activeTab.value = fieldTabs[String(validation?.errors[0]?.id)] || activeTab.value;
+      return;
+    }
     const config = cloneDeep(draft.value);
-    if (!config.startCommand?.trim()) throw new Error(t("TXT_CODE_9911ac11"));
-    if (config.startCommand.includes("\n")) throw new Error(t("TXT_CODE_bbbda29"));
     if (isAdmin.value) {
-      if (!config.nickname?.trim()) throw new Error(t("TXT_CODE_68a504b3"));
-      if (!config.cwd?.trim()) throw new Error(t("TXT_CODE_71c948a9"));
-      if (isDockerMode.value && !config.docker.image?.trim()) throw new Error(t("TXT_CODE_be6484f7"));
-      if (isDockerMode.value && !config.docker.networkMode?.trim()) throw new Error(t("TXT_CODE_b52cb76c"));
       const date = endTimeText.value.trim() ? dayjs(endTimeText.value) : undefined;
-      if (date && !date.isValid()) throw new Error(t("TXT_CODE_9911ac11"));
       config.endTime = date?.valueOf() || 0;
       config.docker.networkAliases = aliasesText.value.split(",").map((value) => value.trim()).filter(Boolean);
       config.docker.gpuDeviceIds = gpuMode.value === "devices"
         ? gpuDevicesText.value.split(",").map((value) => value.trim()).filter(Boolean) : [];
       if (!config.docker.gpuEnabled || gpuMode.value === "all") config.docker.gpuCount = -1;
       else if (gpuMode.value === "devices") config.docker.gpuCount = 0;
-      else if (!Number.isInteger(Number(config.docker.gpuCount)) || Number(config.docker.gpuCount) < 1)
-        throw new Error(t("TXT_CODE_gpu_count"));
       else config.docker.gpuCount = Number(config.docker.gpuCount);
       if (!config.docker.gpuEnabled) config.docker.gpuDeviceIds = [];
     }
-    isSaving.value = true;
     const request = { params: { uuid: props.instanceId, daemonId: props.daemonId }, data: config };
     if (isAdmin.value) await updateAll(request);
     else await updateLimited(request);
@@ -290,15 +303,16 @@ onBeforeUnmount(() => { generation++; });
       <VAlert v-if="loadError" type="error" variant="tonal" class="mb-4" :text="loadError" />
       <div v-if="isLoading && !draft" class="dis__empty"><VProgressCircular indeterminate color="primary" /></div>
       <VAlert v-else-if="draft && !canEdit" type="warning" variant="tonal" :text="t('TXT_CODE_permission.forbidden')" />
-      <VForm v-else-if="draft" :disabled="isSaving || isLoading" class="dis__form" @submit.prevent="save">
+      <VForm v-else-if="draft" ref="formRef" :disabled="isSaving || isLoading" validate-on="input lazy" class="dis__form" @submit.prevent="save">
         <section v-show="activeTab === 'basic'" class="dis__grid">
-          <VTextField v-model="draft.nickname" :label="t('TXT_CODE_f70badb9')" :disabled="!isAdmin || isGlobalTerminal || isSaving" />
+          <VTextField v-model="draft.nickname" name="nickname" :rules="isAdmin && !isGlobalTerminal ? [requiredRule('TXT_CODE_68a504b3')] : []"
+            :label="t('TXT_CODE_f70badb9')" :disabled="!isAdmin || isGlobalTerminal || isSaving" />
           <VSelect v-model="draft.type" :items="typeItems" :label="t('TXT_CODE_2f291d8b')" :disabled="!isAdmin || isGlobalTerminal || isSaving" />
-          <VTextField v-model="endTimeText" :label="t('TXT_CODE_fa920c0')" placeholder="YYYY-MM-DD HH:mm:ss"
+          <VTextField v-model="endTimeText" name="endTime" :rules="isAdmin && !isGlobalTerminal ? [endTimeRule] : []" :label="t('TXT_CODE_fa920c0')" placeholder="YYYY-MM-DD HH:mm:ss"
             :disabled="!isAdmin || isGlobalTerminal || isSaving" />
           <VSelect v-model="draft.fileCode" :items="TERMINAL_CODE" :label="t('TXT_CODE_f041de90')" />
           <p v-if="!isAdmin" class="dis__hint dis__wide">{{ t("TXT_CODE_66f38b2e") }}</p>
-          <VTextarea v-model="draft.startCommand" class="dis__wide" :label="t('TXT_CODE_d12fa808')" rows="4"
+          <VTextarea v-model="draft.startCommand" name="startCommand" :rules="commandRules" class="dis__wide" :label="t('TXT_CODE_d12fa808')" rows="4"
             :placeholder="isDockerMode ? t('TXT_CODE_98e7c829') : t('TXT_CODE_f50cfe2')" />
           <VTextField v-if="isAdmin" v-model="draft.stopCommand" class="dis__wide" :label="t('TXT_CODE_11cfe3a1')" :placeholder="t('TXT_CODE_83053cd5')" />
           <template v-else>
@@ -313,7 +327,7 @@ onBeforeUnmount(() => { generation++; });
           <VSwitch v-model="draft.processType" class="dis__wide" true-value="docker" false-value="general"
             color="primary" :label="t('TXT_CODE_61a8296e')" />
           <template v-if="isDockerMode">
-            <VCombobox v-model="draft.docker.image" :items="images" :return-object="false" :loading="imagesLoading"
+            <VCombobox v-model="draft.docker.image" name="image" :rules="[requiredRule('TXT_CODE_be6484f7')]" :items="images" :return-object="false" :loading="imagesLoading"
               class="dis__wide" :label="t('TXT_CODE_44b585c7')" @focus="loadImages" />
             <VSwitch v-model="draft.docker.changeWorkdir" color="primary" :label="t('TXT_CODE_5484094a')" />
             <VTextField v-model="draft.docker.workingDir" :label="t('TXT_CODE_81979d0f')" :placeholder="t('TXT_CODE_2082f659')" />
@@ -324,7 +338,7 @@ onBeforeUnmount(() => { generation++; });
               </VBtn>
             </div>
             <VTextField v-model.number="draft.basePort" type="number" min="0" max="65535" :label="t('TXT_CODE_15f5fb07')" />
-            <VCombobox v-model="draft.docker.networkMode" :items="networkModes.map((mode) => mode.Name)"
+            <VCombobox v-model="draft.docker.networkMode" name="networkMode" :rules="[requiredRule('TXT_CODE_b52cb76c')]" :items="networkModes.map((mode) => mode.Name)"
               :return-object="false" :loading="networkLoading" :label="t('TXT_CODE_efcef926')" @focus="loadNetworks" />
             <VTextField v-model="aliasesText" :label="t('TXT_CODE_10194e6a')" />
             <VTextField v-model="draft.docker.containerName" :label="t('TXT_CODE_c3a3b6b1')" />
@@ -332,7 +346,7 @@ onBeforeUnmount(() => { generation++; });
           </template>
         </section>
         <section v-if="isAdmin" v-show="activeTab === 'advanced'" class="dis__grid">
-          <VTextField v-model="draft.cwd" class="dis__wide" :label="t('TXT_CODE_ee67e1a3')" />
+          <VTextField v-model="draft.cwd" name="cwd" :rules="[requiredRule('TXT_CODE_71c948a9')]" class="dis__wide" :label="t('TXT_CODE_ee67e1a3')" />
           <VTextField v-model="draft.updateCommand" class="dis__wide" :label="t('TXT_CODE_bb0b9711')"
             :hint="updateCommandHint" :placeholder="updateCommandPlaceholder" persistent-hint :disabled="isGlobalTerminal || isSaving" />
           <VCombobox v-model="draft.docker.updateCommandImage" :items="images" :return-object="false"
@@ -357,7 +371,7 @@ onBeforeUnmount(() => { generation++; });
               <VRadio value="count" :label="t('TXT_CODE_gpu_alloc_count')" />
               <VRadio value="devices" :label="t('TXT_CODE_gpu_alloc_device_ids')" />
             </VRadioGroup>
-            <VTextField v-if="gpuMode === 'count'" v-model.number="draft.docker.gpuCount" type="number" min="1" max="128" :label="t('TXT_CODE_gpu_count')" />
+            <VTextField v-if="gpuMode === 'count'" v-model.number="draft.docker.gpuCount" name="gpuCount" :rules="[gpuCountRule]" type="number" min="1" max="128" :label="t('TXT_CODE_gpu_count')" />
             <VTextField v-if="gpuMode === 'devices'" v-model="gpuDevicesText" class="dis__wide" :label="t('TXT_CODE_gpu_device_ids')" />
           </template>
         </section>

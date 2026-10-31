@@ -17,6 +17,8 @@ const props = defineProps<{
   isAllowEmpty?: boolean;
   isAllowText?: string;
   imageSelectMethod?: "SELECT" | "EDIT";
+  id?: string;
+  rules?: Array<(value: unknown) => boolean | string>;
 }>();
 
 const emit = defineEmits<{
@@ -89,10 +91,10 @@ const selectImage = (image: unknown) => {
 
 <template>
   <template v-if="imageSelectMethod === 'SELECT'">
-    <VSelect :model-value="modelValue" :items="dockerImages" item-title="label" item-value="value" :placeholder="t('TXT_CODE_3bb646e4')" :loading="loading" hide-details @focus="loadImages" @update:model-value="(v) => { emit('update:modelValue', v); selectImage(v); }" />
+    <VSelect :model-value="modelValue" :id="id" :rules="rules" :items="dockerImages" item-title="label" item-value="value" :placeholder="t('TXT_CODE_3bb646e4')" :loading="loading" hide-details="auto" @focus="loadImages" @update:model-value="(v) => { emit('update:modelValue', v); selectImage(v); }" />
   </template>
 
   <template v-else>
-    <VTextField :model-value="modelValue" :placeholder="t('TXT_CODE_d7638d7b')" variant="solo-filled" hide-details @update:model-value="(v) => emit('update:modelValue', v)" />
+    <VTextField :model-value="modelValue" :id="id" :rules="rules" :placeholder="t('TXT_CODE_d7638d7b')" variant="solo-filled" hide-details="auto" @update:model-value="(v) => emit('update:modelValue', v)" />
   </template>
 </template>

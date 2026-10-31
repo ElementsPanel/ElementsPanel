@@ -22,7 +22,7 @@ import { defaultQuickStartPackages, SEARCH_ALL_KEY, TERMINAL_CODE } from "@/type
 import { message } from "@/tools/vuetifyToast";
 import dayjs, { type Dayjs } from "dayjs";
 import _ from "lodash";
-import { computed, ref, unref } from "vue";
+import { computed, nextTick, ref, unref, useId } from "vue";
 import { GLOBAL_INSTANCE_NAME } from "@/config/const";
 import { dayjsToTimestamp, timestampToDayjs } from "@/tools/time";
 import {
@@ -95,7 +95,19 @@ const title = computed(() =>
 );
 const { isPhone } = useScreen();
 
-const formRef = ref<any>();
+const formRef = ref<InstanceType<typeof VForm>>();
+const formId = useId();
+const requiredRule = (message: string) => (value: unknown) =>
+  !!String(value ?? "").trim() || t(message);
+const commandRules = [
+  requiredRule("TXT_CODE_f50cfe2"),
+  (value: unknown) => !String(value ?? "").includes("\n") || t("TXT_CODE_bbbda29")
+];
+const fieldTabs: Record<string, TabSettings> = {
+  nickname: TabSettings.Basic, startCommand: TabSettings.Basic,
+  [`${formId}-image`]: TabSettings.Docker, [`${formId}-networkMode`]: TabSettings.Docker,
+  cwd: TabSettings.Advanced
+};
 const formData = ref<CombinedFormData>({
   instance: {},
   template: _.cloneDeep(defaultQuickStartPackages)
@@ -208,6 +220,8 @@ const openDialog = async ({ item, i }: { item?: QuickStartPackages; i?: number }
   }
   initFormDetail();
   open.value = true;
+  await nextTick();
+  formRef.value?.resetValidation();
 };
 
 const endTimeText = computed({
@@ -219,7 +233,10 @@ const endTimeText = computed({
 
 const validateForm = async () => {
   const result = await formRef.value?.validate();
-  if (result && !result.valid) throw new Error(t("TXT_CODE_9911ac11"));
+  if (!result?.valid) {
+    activeKey.value = fieldTabs[String(result?.errors[0]?.id)] ?? activeKey.value;
+    return false;
+  }
   if (isTemplateMode.value) {
     const template = formData.value.template;
     if (!template.title?.trim()) throw new Error(t("TXT_CODE_6b5509c7"));
@@ -233,15 +250,8 @@ const validateForm = async () => {
     if (!template.runtime?.trim()) throw new Error(t("TXT_CODE_8717ed9d"));
     if (!template.hardware?.trim()) throw new Error(t("TXT_CODE_f7909939"));
     if (!template.setupInfo?.type) throw new Error(t("TXT_CODE_9f4eaa41"));
-  } else if (formData.value.instance.config) {
-    const config = formData.value.instance.config;
-    if (!config.nickname?.trim()) throw new Error(t("TXT_CODE_68a504b3"));
-    if (!config.startCommand?.trim()) throw new Error(t("TXT_CODE_9911ac11"));
-    if (config.startCommand.includes("\n")) throw new Error(t("TXT_CODE_bbbda29"));
-    if (!config.cwd?.trim()) throw new Error(t("TXT_CODE_71c948a9"));
-    if (isDockerMode.value && !config.docker.image?.trim()) throw new Error(t("TXT_CODE_be6484f7"));
-    if (isDockerMode.value && !config.docker.networkMode?.trim()) throw new Error(t("TXT_CODE_b52cb76c"));
   }
+  return true;
 };
 
 const encodeFormData = () => {
@@ -268,7 +278,7 @@ const encodeFormData = () => {
 
 const submit = async () => {
   try {
-    await validateForm();
+    if (!await validateForm()) return;
     if (isTemplateMode.value) {
       emit("save-template", _.cloneDeep(formData.value.template), templateIndex.value);
       open.value = false;
@@ -338,7 +348,7 @@ defineExpose({ openDialog });
 <template>
   <AppDialog v-model:open="open" :title="title" :max-width="isPhone ? '100%' : '1200px'" :mask-closable="false" :confirm-loading="isLoading" :ok-text="t('TXT_CODE_abfe9512')" @ok="submit">
     <div v-if="!formData.instance.config" class="text-medium-emphasis">{{ t("TXT_CODE_2dae1294") }}</div>
-    <VForm v-else ref="formRef" @submit.prevent="submit">
+    <VForm v-else ref="formRef" validate-on="input lazy" @submit.prevent="submit">
       <VTabs v-model="activeKey" color="primary" show-arrows>
         <VTab v-if="isTemplateMode" :value="TabSettings.Template">{{ t("TXT_CODE_d9c63fdd") }}</VTab>
         <VTab :value="TabSettings.Basic">{{ t("TXT_CODE_cc7b54b9") }}</VTab>
@@ -377,20 +387,20 @@ defineExpose({ openDialog });
           </VRow>
         </VTabsWindowItem>
 
-        <VTabsWindowItem :value="TabSettings.Basic">
+        <VTabsWindowItem :value="TabSettings.Basic" eager>
           <VRow>
-            <VCol v-if="!isTemplateMode" cols="12" lg="4"><VTextField v-model="formData.instance.config.nickname" :label="t('TXT_CODE_f70badb9')" :disabled="isGlobalTerminal" variant="solo-filled" /></VCol>
+            <VCol v-if="!isTemplateMode" cols="12" lg="4"><VTextField v-model="formData.instance.config.nickname" name="nickname" :rules="isGlobalTerminal ? [] : [requiredRule('TXT_CODE_68a504b3')]" :label="t('TXT_CODE_f70badb9')" :disabled="isGlobalTerminal" variant="solo-filled" /></VCol>
             <VCol v-if="!isTemplateMode" cols="12" lg="4"><VSelect v-model="formData.instance.config.type" :items="Object.entries(INSTANCE_TYPE_TRANSLATION).map(([value, title]) => ({ value, title }))" :label="t('TXT_CODE_2f291d8b')" :disabled="isGlobalTerminal" /></VCol>
             <VCol v-if="!isTemplateMode" cols="12" lg="4"><VTextField v-model="endTimeText" :label="t('TXT_CODE_fa920c0')" placeholder="YYYY-MM-DD HH:mm:ss" :disabled="isGlobalTerminal" variant="solo-filled" /></VCol>
-            <VCol cols="12"><VTextarea v-model="formData.instance.config.startCommand" :label="t('TXT_CODE_d12fa808')" :placeholder="isDockerMode ? t('TXT_CODE_98e7c829') : t('TXT_CODE_f50cfe2')" rows="4" variant="solo-filled" /></VCol>
+            <VCol cols="12"><VTextarea v-model="formData.instance.config.startCommand" name="startCommand" :rules="isTemplateMode ? [] : commandRules" :label="t('TXT_CODE_d12fa808')" :placeholder="isDockerMode ? t('TXT_CODE_98e7c829') : t('TXT_CODE_f50cfe2')" rows="4" variant="solo-filled" /></VCol>
             <VCol cols="12"><VTextField v-model="formData.instance.config.stopCommand" :label="t('TXT_CODE_11cfe3a1')" :placeholder="t('TXT_CODE_83053cd5')" variant="solo-filled" /></VCol>
           </VRow>
         </VTabsWindowItem>
 
-        <VTabsWindowItem v-if="!isGlobalTerminal" :value="TabSettings.Docker">
+        <VTabsWindowItem v-if="!isGlobalTerminal" :value="TabSettings.Docker" eager>
           <VRow>
             <VCol cols="12" lg="4"><VSwitch v-model="formData.instance.config.processType" :true-value="'docker'" :false-value="'general'" :label="t('TXT_CODE_61a8296e')" :disabled="isGlobalTerminal" color="primary" /></VCol>
-            <VCol v-if="isDockerMode" cols="12" lg="8"><DockerImageSelect :model-value="formData.instance.config?.docker?.image ?? ''" :image-select-method="formData.instance.imageSelectMethod ?? 'SELECT'" :daemon-id="daemonId ?? ''" @update:model-value="setDockerImage" @update:image-select-method="(v) => (formData.instance.imageSelectMethod = v)" /></VCol>
+            <VCol v-if="isDockerMode" cols="12" lg="8"><DockerImageSelect :id="`${formId}-image`" :rules="isTemplateMode ? [] : [requiredRule('TXT_CODE_be6484f7')]" :model-value="formData.instance.config?.docker?.image ?? ''" :image-select-method="formData.instance.imageSelectMethod ?? 'SELECT'" :daemon-id="daemonId ?? ''" @update:model-value="setDockerImage" @update:image-select-method="(v) => (formData.instance.imageSelectMethod = v)" /></VCol>
             <template v-if="isDockerMode">
               <VCol cols="12" lg="4"><VSwitch v-model="formData.instance.config.docker.changeWorkdir" :label="t('TXT_CODE_5484094a')" color="primary" /></VCol>
               <VCol cols="12" lg="8"><VTextField v-model="formData.instance.config.docker.workingDir" :label="t('TXT_CODE_81979d0f')" :placeholder="t('TXT_CODE_2082f659')" variant="solo-filled" /></VCol>
@@ -399,7 +409,7 @@ defineExpose({ openDialog });
                 { key: 'label', label: 'TXT_CODE_g1c43s2h' }, { key: 'capability', label: 'TXT_CODE_bbbd4133' }, { key: 'device', label: 'TXT_CODE_b3a60c78' }
               ]" :key="item.key" cols="12" sm="6" lg="4"><VBtn variant="tonal" block @click="handleEditDockerConfig(item.key as any)">{{ t(item.label) }}: {{ t('TXT_CODE_ad207008') }}</VBtn></VCol>
               <VCol v-if="!isTemplateMode" cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.basePort" type="number" min="0" max="65535" :label="t('TXT_CODE_15f5fb07')" variant="solo-filled" /></VCol>
-              <VCol cols="12" sm="6" lg="4"><VSelect v-model="formData.instance.config.docker.networkMode" :items="networkModes" item-title="Name" item-value="Name" :label="t('TXT_CODE_efcef926')" @focus="loadNetworkModes" /></VCol>
+              <VCol cols="12" sm="6" lg="4"><VSelect v-model="formData.instance.config.docker.networkMode" :id="`${formId}-networkMode`" :rules="isTemplateMode ? [] : [requiredRule('TXT_CODE_b52cb76c')]" :items="networkModes" item-title="Name" item-value="Name" :label="t('TXT_CODE_efcef926')" @focus="loadNetworkModes" /></VCol>
               <VCol cols="12" sm="6" lg="4"><VTextField v-model="formData.instance.networkAliasesText" :label="t('TXT_CODE_10194e6a')" variant="solo-filled" /></VCol>
               <VCol cols="12" sm="6" lg="4"><VTextField v-model="formData.instance.config.docker.containerName" :label="t('TXT_CODE_c3a3b6b1')" variant="solo-filled" /></VCol>
               <VCol cols="12" sm="6" lg="4"><VSwitch v-model="formData.instance.config.docker.privileged" :label="t('TXT_CODE_dc47d2aa')" color="primary" /></VCol>
@@ -407,9 +417,9 @@ defineExpose({ openDialog });
           </VRow>
         </VTabsWindowItem>
 
-        <VTabsWindowItem :value="TabSettings.Advanced">
+        <VTabsWindowItem :value="TabSettings.Advanced" eager>
           <VRow>
-            <VCol v-if="!isTemplateMode" cols="12"><VTextField v-model="formData.instance.config.cwd" :label="t('TXT_CODE_ee67e1a3')" variant="solo-filled" /></VCol>
+            <VCol v-if="!isTemplateMode" cols="12"><VTextField v-model="formData.instance.config.cwd" name="cwd" :rules="[requiredRule('TXT_CODE_71c948a9')]" :label="t('TXT_CODE_ee67e1a3')" variant="solo-filled" /></VCol>
             <VCol cols="12"><VTextField v-model="formData.instance.config.updateCommand" :label="t('TXT_CODE_bb0b9711')" :placeholder="UPDATE_CMD_TEMPLATE" :hint="UPDATE_CMD_DESCRIPTION" persistent-hint :disabled="isGlobalTerminal" variant="solo-filled" /></VCol>
             <VCol cols="12" lg="6"><DockerImageSelect :is-allow-empty="true" :is-allow-text="t('TXT_CODE_8aca7994')" :model-value="formData.instance.config?.docker?.updateCommandImage ?? ''" :image-select-method="formData.instance.imageSelectMethod ?? 'SELECT'" :daemon-id="daemonId ?? ''" @update:model-value="setUpdateDockerImage" @update:image-select-method="(v) => (formData.instance.imageSelectMethod = v)" /></VCol>
             <VCol cols="12" lg="3"><VSelect v-model="formData.instance.config.fileCode" :items="TERMINAL_CODE" :label="t('TXT_CODE_f041de90')" /></VCol>

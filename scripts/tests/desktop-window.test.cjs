@@ -1,4 +1,4 @@
-const { from, createBrowser } = require("./helpers.cjs");
+const { from, createBrowser, settle } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -876,7 +876,10 @@ function instanceSettingsFixture(t, { admin = true, allowChangeCmd = true, proce
   };
   return {
     target, writes, errors, notices, reads, metadata, closed, account, info, field, setField,
-    save: () => target.querySelector(".dis__header .dis-btn--primary").click(),
+    save: async () => {
+      target.querySelector(".dis__header .dis-btn--primary").click();
+      await settle();
+    },
     reload: () => [...target.querySelectorAll(".dis__header button")].find((button) => button.textContent.includes("TXT_CODE_b76d94e0")).click(),
     setFailSave: (value) => { failSave = value; },
     setFailLoad: (value) => { failLoad = value; }
@@ -897,18 +900,26 @@ for (const admin of [true, false]) {
     assert.equal(page.querySelector(".dis__body .dis__header"), null);
     assert.equal(page.querySelectorAll(".dis__tabs button").length, admin ? 4 : 1);
     assert.deepEqual(f.reads[0].params, { uuid: "instance-one", daemonId: "node-one" });
+    assert.equal(page.querySelector(".v-input--error"), null);
+    f.setField("TXT_CODE_d12fa808", "  ");
+    await f.save();
+    assert.ok(f.field("TXT_CODE_d12fa808").closest(".v-input--error"));
+    assert.ok(page.textContent.includes("TXT_CODE_f50cfe2"));
+    assert.deepEqual(f.errors, [], "missing fields use inline errors instead of a toast");
+    assert.deepEqual(f.writes, []);
     f.setField("TXT_CODE_d12fa808", "java -Xmx2G -jar server.jar");
     await flush();
+    assert.equal(f.field("TXT_CODE_d12fa808").closest(".v-input--error"), null);
     assert.equal(f.info.value.config.startCommand, "java -jar server.jar");
     f.setFailSave(true);
-    f.save();
+    await f.save();
     await flush();
     assert.equal(f.closed.value, false);
     assert.equal(f.writes.length, 0);
     assert.ok(f.errors.includes("Save failed"));
     assert.equal(f.field("TXT_CODE_d12fa808").value, "java -Xmx2G -jar server.jar");
     f.setFailSave(false);
-    f.save();
+    await f.save();
     await flush();
     assert.equal(f.closed.value, false, "saving keeps the desktop editor open");
     assert.equal(f.writes[0].api, admin ? "admin" : "limited");
@@ -918,6 +929,34 @@ for (const admin of [true, false]) {
     assert.deepEqual(f.notices.at(-1), ["TXT_CODE_d3de39b4", "success"]);
   });
 }
+
+test("independent instance settings mark missing fields across unvisited tabs and select the first invalid tab", async (t) => {
+  const f = instanceSettingsFixture(t);
+  await flush();
+  const missing = ["TXT_CODE_f70badb9", "TXT_CODE_44b585c7", "TXT_CODE_efcef926", "TXT_CODE_ee67e1a3"];
+  for (const key of missing) f.setField(key, "");
+  await flush();
+  await f.save();
+  for (const key of missing) assert.ok(f.field(key).closest(".v-input--error"), key);
+  assert.deepEqual(f.errors, []);
+  assert.deepEqual(f.writes, []);
+  const activeTab = () => f.target.querySelector(".dis-tab--active").textContent;
+  assert.ok(activeTab().includes("TXT_CODE_cc7b54b9"));
+  f.setField("TXT_CODE_f70badb9", "Example");
+  await flush();
+  await f.save();
+  assert.ok(activeTab().includes("TXT_CODE_afb12200"));
+  f.setField("TXT_CODE_44b585c7", "java:21");
+  f.setField("TXT_CODE_efcef926", "bridge");
+  await flush();
+  await f.save();
+  assert.ok(activeTab().includes("TXT_CODE_31a1d824"));
+  f.setField("TXT_CODE_ee67e1a3", "/srv/server");
+  await flush();
+  await f.save();
+  assert.equal(f.writes.length, 1);
+  assert.equal(f.target.querySelector(".v-input--error"), null);
+});
 
 test("independent instance settings discard edits on close and enforce limited-user permissions", async (t) => {
   const f = instanceSettingsFixture(t, { admin: false });
@@ -965,7 +1004,7 @@ test("independent instance settings serialize expiration, aliases, resource limi
   f.target.querySelector('input[type="radio"][value="devices"]').click();
   await flush();
   f.setField("TXT_CODE_gpu_device_ids", "GPU-one, GPU-two , ");
-  f.save();
+  await f.save();
   await flush();
   const data = f.writes[0].data;
   assert.equal(data.endTime, frontendRequire("dayjs")("2030-01-02 03:04:05").valueOf());
@@ -1013,7 +1052,7 @@ test("independent Docker desktop editors round-trip lists and cancel without cha
   assert.equal(editor.querySelector("textarea").value, "a=b");
   settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_a0451c97").click();
   await flush();
-  f.save();
+  await f.save();
   await flush();
   for (const [, key] of kinds) assert.deepEqual(f.writes[0].data.docker[key], before[key]);
   assert.deepEqual(f.writes[0].data.docker.capDrop, before.capDrop);
@@ -1046,7 +1085,7 @@ test("independent Docker port allocation pairs tokens and confirming an empty en
   await flush();
   settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_d507abff").click();
   await flush();
-  f.save();
+  await f.save();
   await flush();
   assert.deepEqual(f.writes[0].data.docker.env, []);
   assert.deepEqual(f.writes[0].data.docker.ports, ["{mcsm_port1}:25565/tcp", "{mcsm_port2}:{mcsm_port2}/tcp"]);
