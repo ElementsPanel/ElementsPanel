@@ -1,13 +1,15 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
-const { spawn } = require("node:child_process");
+const { spawn, execFile } = require("node:child_process");
 const { registerHooks } = require("node:module");
+const { promisify } = require("node:util");
 const metadata = require("./package.json");
 const { createTranslator, normalizeLanguage } = require("./i18n.cjs");
 const { selectMenu, textPrompt } = require("./select.cjs");
 
 const modes = ["full", "panel", "daemon"];
 const defaultPorts = { panel: 23333, daemon: 24444 };
+const execFileAsync = promisify(execFile);
 
 function parsePort(value, side, language) {
   const t = createTranslator(language);
@@ -217,12 +219,7 @@ async function promptOptions(options, prompt) {
   return options;
 }
 
-function projectManifest(
-  directory,
-  mode,
-  versions = metadata.runtimeVersions || { panel: metadata.version, daemon: metadata.version },
-  language
-) {
+function projectManifest(directory, mode, versions, language) {
   const t = createTranslator(language);
   if (!modes.includes(mode)) throw new Error(t("modeUnknown", { mode }));
   const dependencies = {};
@@ -261,19 +258,40 @@ function projectManifest(
   };
 }
 
+function npmCommand(args) {
+  const npmCLI = process.env.npm_execpath;
+  return npmCLI && /npm(?:-cli)?\.(?:c?js|mjs)$/.test(npmCLI)
+    ? { executable: process.execPath, args: [npmCLI, ...args] }
+    : process.platform === "win32"
+    ? { executable: process.env.ComSpec || "cmd.exe", args: ["/d", "/s", "/c", "npm", ...args] }
+    : { executable: "npm", args };
+}
+
+async function latestRuntimeVersion(side, language) {
+  const name = `@elementspanel/${side}`;
+  const command = npmCommand(["view", `${name}@latest`, "version", "--json", "--prefer-online"]);
+  try {
+    const { stdout } = await execFileAsync(command.executable, command.args, {
+      encoding: "utf8",
+      timeout: 30_000,
+      windowsHide: true
+    });
+    const version = JSON.parse(stdout);
+    if (
+      typeof version !== "string" ||
+      !/^\d+\.\d+\.\d+(?:-[\da-z.-]+)?(?:\+[\da-z.-]+)?$/i.test(version)
+    )
+      throw new Error("npm returned an invalid version.");
+    return version;
+  } catch (cause) {
+    throw new Error(createTranslator(language)("versionLookupFailed", { name }), { cause });
+  }
+}
+
 function installDependencies(directory, language) {
   const t = createTranslator(language);
   return new Promise((resolve, reject) => {
-    const npmCLI = process.env.npm_execpath;
-    const command =
-      npmCLI && /npm(?:-cli)?\.(?:c?js|mjs)$/.test(npmCLI)
-        ? { executable: process.execPath, args: [npmCLI, "install", "--no-fund", "--no-audit"] }
-        : process.platform === "win32"
-        ? {
-            executable: process.env.ComSpec || "cmd.exe",
-            args: ["/d", "/s", "/c", "npm install --no-fund --no-audit"]
-          }
-        : { executable: "npm", args: ["install", "--no-fund", "--no-audit"] };
+    const command = npmCommand(["install", "--no-fund", "--no-audit"]);
     const child = spawn(command.executable, command.args, {
       cwd: directory,
       stdio: "inherit",
@@ -301,10 +319,21 @@ async function initialize({
   const selectedLanguage = language === undefined ? undefined : normalizeLanguage(language);
   if (language !== undefined && !selectedLanguage)
     throw new Error(createTranslator()("languageInvalid"));
+  if (!modes.includes(mode))
+    throw new Error(createTranslator(selectedLanguage)("modeUnknown", { mode }));
   const serviceLanguage =
     selectedLanguage === undefined ? undefined : selectedLanguage === "zh" ? "zh_cn" : "en_us";
   const ports = validatePorts(mode, panelPort, daemonPort, selectedLanguage);
   const destination = await validateDestination(directory, selectedLanguage);
+  if (versions === undefined) {
+    versions = Object.fromEntries(
+      await Promise.all(
+        ["panel", "daemon"]
+          .filter((side) => mode === "full" || mode === side)
+          .map(async (side) => [side, await latestRuntimeVersion(side, selectedLanguage)])
+      )
+    );
+  }
   const manifest = projectManifest(destination, mode, versions, selectedLanguage);
   await fs.mkdir(destination, { recursive: true });
   await fs.writeFile(

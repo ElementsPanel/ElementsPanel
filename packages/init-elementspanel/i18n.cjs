@@ -25,6 +25,8 @@ const messages = {
     directoryTitle: "Installation directory",
     portTitle: "{side} listening port",
     modeUnknown: "Unknown installation mode: {mode}",
+    versionLookupFailed:
+      "Could not query the latest version of {name} from npm. Check your registry and network connection and try again.",
     installFailed:
       "npm install failed ({status}). The project is intact; run npm install in {directory} to retry.",
     created: "Panel initialized successfully in {directory}",
@@ -58,6 +60,7 @@ const messages = {
     directoryTitle: "安装目录",
     portTitle: "{side} 监听端口",
     modeUnknown: "未知安装模式：{mode}",
+    versionLookupFailed: "无法从 npm 查询 {name} 的最新版本，请检查 registry 配置和网络连接后重试。",
     installFailed:
       "npm install 失败（{status}）。项目已保留，请进入 {directory} 后重新运行 npm install。",
     created: "已成功初始化面板：{directory}",

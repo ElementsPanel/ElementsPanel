@@ -6,6 +6,7 @@ const { execFileSync } = require("node:child_process");
 const { pathToFileURL } = require("node:url");
 const { test } = require("node:test");
 const { createLoader, from } = require("./helpers.cjs");
+const { mockNpmView } = require("./npm-fixtures.cjs");
 const { sourcePlugins, coreDirectory } = require("../workspace-layout.cjs");
 const { readPluginManifest } = createLoader()("core/common/src/plugin_manifest.ts");
 const repository = path.resolve(__dirname, "../..");
@@ -130,6 +131,7 @@ test("backend bundles only externalize dependencies declared by the published ru
 
 test("workspace packaging includes runnable entry points and excludes user data and local dependencies", async (t) => {
   const f = fixture(t);
+  const npm = mockNpmView(t);
   const { packageNpm } = await packaging;
   const result = await packageNpm(f);
   for (const side of ["panel", "daemon"]) {
@@ -248,7 +250,15 @@ test("workspace packaging includes runnable entry points and excludes user data 
   const initializer = require(path.join(f.outputRoot, "init-elementspanel/index.cjs"));
   const workspace = require(path.join(f.outputRoot, "init-elementspanel/workspace.cjs"));
   const project = path.join(f.directory, "initialized-project");
-  await initializer.initialize({ directory: project, mode: "full", install: false });
+  const initialized = await initializer.initialize({
+    directory: project,
+    mode: "full",
+    install: false
+  });
+  assert.deepEqual(initialized.manifest.dependencies, {
+    "@elementspanel/panel": npm.versions.panel,
+    "@elementspanel/daemon": npm.versions.daemon
+  });
   await workspace.setupWorkspace(project, ["example", "--both", "--no-install"]);
   const generatedRoot = path.join(project, "external/example");
   const generated = JSON.parse(fs.readFileSync(path.join(generatedRoot, "package.json")));
@@ -274,10 +284,6 @@ test("workspace packaging includes runnable entry points and excludes user data 
       generated.description
     );
   }
-  assert.deepEqual(create.runtimeVersions, {
-    panel: result.panel.version,
-    daemon: result.daemon.version
-  });
   assert.equal(fs.existsSync(path.join(f.outputRoot, "daemon/lib")), false);
   fs.writeFileSync(path.join(f.outputRoot, "stale-output.txt"), "replace me");
   await packageNpm(f);

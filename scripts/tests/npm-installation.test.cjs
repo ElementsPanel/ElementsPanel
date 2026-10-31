@@ -6,7 +6,7 @@ const { spawn } = require("node:child_process");
 const { createRequire } = require("node:module");
 const { pathToFileURL } = require("node:url");
 const { test } = require("node:test");
-const { installNpmPlugin } = require("./npm-fixtures.cjs");
+const { installNpmPlugin, mockNpmView } = require("./npm-fixtures.cjs");
 const initializer = require("../../packages/init-elementspanel/index.cjs");
 const { installPluginResolution } = require("../runtime/plugin-resolution.cjs");
 const { resolveNpmPlugins } = require("../runtime/npm-plugins.cjs");
@@ -69,11 +69,11 @@ for (const mode of ["full", "panel", "daemon"]) {
     const f = temporary(t);
     const directory = path.join(f.root, "My Panel");
     let installed;
-    const versions = { panel: "1.2.3", daemon: "2.3.4" };
+    const npm = mockNpmView(t);
+    const versions = npm.versions;
     const result = await initializer.initialize({
       directory,
       mode,
-      versions,
       installer: async (target) => {
         installed = target;
         const manifest = JSON.parse(fs.readFileSync(path.join(target, "package.json")));
@@ -112,6 +112,27 @@ for (const mode of ["full", "panel", "daemon"]) {
         ? "epanel start"
         : "epanel-daemon start"
     );
+    const queries = npm.queries();
+    assert.deepEqual(
+      queries.map((args) => args[1]).sort(),
+      ["panel", "daemon"]
+        .filter((side) => mode === "full" || mode === side)
+        .map((side) => `@elementspanel/${side}@latest`).sort()
+    );
+    for (const args of queries)
+      assert.deepEqual([args[0], ...args.slice(2)], ["view", "version", "--json", "--prefer-online"]);
+    const pinned = await initializer.initialize({
+      directory: path.join(f.root, "pinned"),
+      mode,
+      versions: { panel: "3.4.5", daemon: "4.5.6" },
+      install: false
+    });
+    for (const side of ["panel", "daemon"].filter((side) => mode === "full" || mode === side))
+      assert.equal(
+        pinned.manifest.dependencies[`@elementspanel/${side}`],
+        side === "panel" ? "3.4.5" : "4.5.6"
+      );
+    assert.deepEqual(npm.queries(), queries);
   });
 }
 
@@ -129,8 +150,9 @@ test("initializer preserves existing projects and rejects symlink destinations",
   );
 });
 
-test("initializer retains a complete project after install failure and supports offline generation", async (t) => {
+test("initializer retains resolved versions after install failure and can skip dependency installation", async (t) => {
   const f = temporary(t);
+  const npm = mockNpmView(t);
   const project = path.join(f.root, "retry");
   await assert.rejects(
     initializer.initialize({
@@ -141,11 +163,10 @@ test("initializer retains a complete project after install failure and supports 
     }),
     /network unavailable/
   );
-  assert.ok(
-    JSON.parse(fs.readFileSync(path.join(project, "package.json"))).dependencies[
-      "@elementspanel/panel"
-    ]
-  );
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(project, "package.json"))).dependencies, {
+    "@elementspanel/panel": npm.versions.panel,
+    "@elementspanel/daemon": npm.versions.daemon
+  });
   assert.ok(fs.existsSync(path.join(project, "daemon")));
   const output = execute(f, path.join(repository, "packages/init-elementspanel/bin.cjs"), [
     "offline",
@@ -158,7 +179,33 @@ test("initializer retains a complete project after install failure and supports 
   assert.equal(result.code, 0, result.output);
   assert.match(result.output, /\n  cd /);
   assert.match(result.output, /\n  npm install\n  npm start/);
+  assert.deepEqual(
+    JSON.parse(fs.readFileSync(path.join(f.root, "offline/package.json"))).dependencies,
+    { "@elementspanel/daemon": npm.versions.daemon }
+  );
   assert.equal(fs.existsSync(path.join(f.root, "offline/node_modules")), false);
+});
+
+test("initializer rejects failed and invalid npm version queries before writing a project", async (t) => {
+  const f = temporary(t);
+  for (const [name, versions] of [["unavailable", {}], ["invalid", { panel: "latest" }]]) {
+    await t.test(name, async (t) => {
+      mockNpmView(t, versions);
+      const directory = path.join(f.root, name);
+      let installed = false;
+      await assert.rejects(
+        initializer.initialize({
+          directory,
+          mode: "panel",
+          language: "zh",
+          installer: async () => { installed = true; }
+        }),
+        /无法从 npm 查询 @elementspanel\/panel 的最新版本/
+      );
+      assert.equal(fs.existsSync(directory), false);
+      assert.equal(installed, false);
+    });
+  }
 });
 
 function wizard(answers) {
@@ -181,6 +228,7 @@ for (const [mode, choice] of [
 ]) {
   test(`initializer wizard writes the chosen ${mode} ports before optionally installing dependencies`, async (t) => {
     const f = temporary(t);
+    mockNpmView(t);
     const directory = path.join(f.root, mode);
     const prompt = wizard([
       directory,
@@ -284,6 +332,7 @@ test("initializer wizard retries invalid directories, choices, ports and install
 
 test("initializer wizard follows the system locale and translates Chinese prompts, errors and completion", async (t) => {
   const f = temporary(t);
+  mockNpmView(t);
   const existing = path.join(f.root, "existing");
   const directory = path.join(f.root, "中文向导");
   write(path.join(existing, "keep.txt"), "keep");
@@ -379,6 +428,7 @@ test("initializer rejects invalid or conflicting ports before creating the proje
 
 test("initializer CLI supports custom ports and omits cd when initializing the current directory", async (t) => {
   const f = temporary(t);
+  mockNpmView(t);
   const result = await execute(
     f,
     path.join(repository, "packages/init-elementspanel/bin.cjs"),

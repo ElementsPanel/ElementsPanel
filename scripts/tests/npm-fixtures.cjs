@@ -1,4 +1,5 @@
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 
 function write(filename, value) {
@@ -43,4 +44,33 @@ function installNpmPlugin(hostRoot, side, id, options = {}) {
   return { directory, packageRoot, name };
 }
 
-module.exports = { installNpmPlugin, write };
+function mockNpmView(t, versions = { panel: "1.2.3", daemon: "2.3.4" }) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "elements-npm-view-"));
+  const npmCLI = path.join(root, "npm-cli.cjs");
+  const log = path.join(root, "queries.jsonl");
+  const previousNpmCLI = process.env.npm_execpath;
+  write(npmCLI, `
+const fs = require("node:fs");
+const args = process.argv.slice(2);
+fs.appendFileSync(${JSON.stringify(log)}, JSON.stringify(args) + "\\n");
+const side = args[1]?.match(/^@elementspanel\\/(panel|daemon)@latest$/)?.[1];
+const versions = ${JSON.stringify(versions)};
+if (args[0] !== "view" || args[2] !== "version" || !Object.hasOwn(versions, side))
+  throw new Error("Registry unavailable or unexpected npm command.");
+console.log(JSON.stringify(versions[side]));
+`);
+  process.env.npm_execpath = npmCLI;
+  t.after(() => {
+    if (previousNpmCLI === undefined) delete process.env.npm_execpath;
+    else process.env.npm_execpath = previousNpmCLI;
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+  return {
+    versions,
+    queries: () => fs.existsSync(log)
+      ? fs.readFileSync(log, "utf8").trim().split("\n").map((line) => JSON.parse(line))
+      : []
+  };
+}
+
+module.exports = { installNpmPlugin, mockNpmView, write };

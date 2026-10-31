@@ -7,9 +7,11 @@ const { test } = require("node:test");
 const { initialize } = require("../../packages/init-elementspanel/index.cjs");
 const { setupWorkspace, buildCommand, publishCommand } = require("../../packages/init-elementspanel/workspace.cjs");
 const { createLoader } = require("./helpers.cjs");
+const { mockNpmView } = require("./npm-fixtures.cjs");
 const { readPluginManifest } = createLoader()("core/common/src/plugin_manifest.ts");
 
 test("initialized projects create npm plugin workspaces outside the runtime source tree", async (t) => {
+  const npm = mockNpmView(t);
   const project = fs.mkdtempSync(path.join(os.tmpdir(), "elementspanel-workspace-"));
   t.after(() => fs.rmSync(project, { recursive: true, force: true }));
 
@@ -23,14 +25,10 @@ test("initialized projects create npm plugin workspaces outside the runtime sour
   assert.deepEqual(root.workspaces, ["external/*"]);
   assert.equal(root.dependencies["epanel-plugin-example"], "file:external/example");
   assert.equal(root.elementspanel.plugins.example, "epanel-plugin-example");
-  assert.equal(
-    plugin.peerDependencies["@elementspanel/panel"],
-    root.dependencies["@elementspanel/panel"]
-  );
-  assert.equal(
-    plugin.peerDependencies["@elementspanel/daemon"],
-    root.dependencies["@elementspanel/daemon"]
-  );
+  for (const side of ["panel", "daemon"]) {
+    assert.equal(root.dependencies[`@elementspanel/${side}`], npm.versions[side]);
+    assert.equal(plugin.peerDependencies[`@elementspanel/${side}`], npm.versions[side]);
+  }
   assert.equal(plugin.elementspanel.panel.directory, "panel");
   assert.equal(plugin.elementspanel.daemon.directory, "daemon");
   assert.equal(plugin.elementspanel.id, "example");
@@ -78,7 +76,12 @@ test("plugin packages own their build commands and workspace commands only invok
     else process.env.npm_execpath = previousNpmCLI;
     fs.rmSync(project, { recursive: true, force: true });
   });
-  await initialize({ directory: project, mode: "full", install: false });
+  await initialize({
+    directory: project,
+    mode: "full",
+    versions: { panel: "1.2.3", daemon: "2.3.4" },
+    install: false
+  });
   const entry = await setupWorkspace(project, ["@example/owned", "--daemon", "--no-install"]);
   assert.match(fs.readFileSync(path.join(entry.root, "README.md"), "utf8"), /--workspace @example\/epanel-plugin-owned/);
   assert.deepEqual(Object.keys(entry.manifest.devDependencies), ["esbuild"]);

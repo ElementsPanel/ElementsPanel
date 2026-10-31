@@ -299,7 +299,6 @@ export async function packageNpm({
     const createOutput = path.join(packages, "init-elementspanel");
     await fs.mkdir(createOutput);
     const create = await readJson(path.join(createSource, "package.json"));
-    create.runtimeVersions = { panel: panel.version, daemon: daemon.version };
     for (const filename of ["bin.cjs", "index.cjs", "i18n.cjs", "select.cjs", "workspace.cjs"])
       copyTree(path.join(createSource, filename), path.join(createOutput, filename));
     await fs.chmod(path.join(createOutput, "bin.cjs"), 0o755);
