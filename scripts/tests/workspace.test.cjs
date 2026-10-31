@@ -27,7 +27,7 @@ test("initialized projects create npm plugin workspaces outside the runtime sour
   assert.equal(root.elementspanel.plugins.example, "epanel-plugin-example");
   for (const side of ["panel", "daemon"]) {
     assert.equal(root.dependencies[`@elementspanel/${side}`], npm.versions[side]);
-    assert.equal(plugin.peerDependencies[`@elementspanel/${side}`], npm.versions[side]);
+    assert.equal(plugin.peerDependencies[`@elementspanel/${side}`], `^${npm.versions[side]}`);
   }
   assert.equal(plugin.elementspanel.panel.directory, "panel");
   assert.equal(plugin.elementspanel.daemon.directory, "daemon");
@@ -79,10 +79,11 @@ test("plugin packages own their build commands and workspace commands only invok
   await initialize({
     directory: project,
     mode: "full",
-    versions: { panel: "1.2.3", daemon: "2.3.4" },
+    versions: { panel: "1.2.3", daemon: "^2.3.4" },
     install: false
   });
   const entry = await setupWorkspace(project, ["@example/owned", "--daemon", "--no-install"]);
+  assert.equal(entry.manifest.peerDependencies["@elementspanel/daemon"], "^2.3.4");
   assert.match(fs.readFileSync(path.join(entry.root, "README.md"), "utf8"), /--workspace @example\/epanel-plugin-owned/);
   assert.deepEqual(Object.keys(entry.manifest.devDependencies), ["esbuild"]);
   const buildScript = entry.manifest.scripts.build;

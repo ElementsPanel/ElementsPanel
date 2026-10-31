@@ -166,8 +166,11 @@ function scaffoldSource(side, id) {
 
 function runtimePeerVersion(projectManifest, side) {
   const dependency = projectManifest.dependencies?.[`@elementspanel/${side}`];
-  if (typeof dependency === "string" && dependency.trim()) return dependency;
-  return "*";
+  if (typeof dependency !== "string" || !dependency.trim()) return "*";
+  const version = dependency.trim();
+  return /^\d+\.\d+\.\d+(?:-[\da-z.-]+)?(?:\+[\da-z.-]+)?$/i.test(version)
+    ? `^${version}`
+    : version;
 }
 
 function buildDependencies(sides) {

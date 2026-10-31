@@ -171,7 +171,7 @@ test("workspace packaging includes runnable entry points and excludes user data 
       const metadata = result.plugins.find((plugin) => plugin.name === name);
       assert.ok(metadata, `Missing npm package for ${id}`);
       assert.equal(manifest.dependencies[name], metadata.version);
-      assert.equal(metadata.peerDependencies[manifest.name], manifest.version);
+      assert.equal(metadata.peerDependencies[manifest.name], `^${manifest.version}`);
       assert.equal(metadata.peerDependenciesMeta[manifest.name].optional, true);
       const pluginRoot = path.join(f.outputRoot, name.split("/")[1], side);
       const pluginManifest = JSON.parse(fs.readFileSync(path.join(pluginRoot, "plugin.json")));

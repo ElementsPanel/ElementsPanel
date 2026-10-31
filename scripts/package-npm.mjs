@@ -199,7 +199,7 @@ async function packageBuiltinPlugins(sourceRoot, outputRoot, stagingRoot) {
         folder: source.folder
       };
       metadata.exports[`./${side}/plugin.json`] = `./${side}/plugin.json`;
-      metadata.peerDependencies[`@elementspanel/${side}`] = hosts[side].version;
+      metadata.peerDependencies[`@elementspanel/${side}`] = `^${hosts[side].version}`;
       metadata.peerDependenciesMeta[`@elementspanel/${side}`] = { optional: true };
     }
     await fs.writeFile(
