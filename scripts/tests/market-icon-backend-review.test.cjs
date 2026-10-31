@@ -132,14 +132,16 @@ test("the daemon installs a plugin through npm on its own installation", async (
     }
   );
   assert.equal(fixture.replies.pop().error, undefined);
-  assert.deepEqual(fixture.installs, [
-    {
-      name: "epanel-plugin-sample",
-      pluginId: "sample",
-      version: "2.0.0",
-      side: "daemon"
-    }
-  ]);
+  assert.equal(fixture.installs.length, 1);
+  const { reloadAfter, ...install } = fixture.installs[0];
+  assert.ok(reloadAfter instanceof Promise);
+  assert.deepEqual(install, {
+    name: "epanel-plugin-sample",
+    pluginId: "sample",
+    version: "2.0.0",
+    side: "daemon"
+  });
+  await reloadAfter;
 
   fixture.installs.length = 0;
   await fixture.handlers.get("plugin/npm/install")({}, { name: "", pluginId: "", version: "" });
