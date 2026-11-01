@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "Выберите панель и узлы",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "Выберите панель и узлы для установки «{name}».",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UNINSTALL": "Выберите панель и узлы для удаления «{name}».",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UPDATE": "Выберите панель и узлы, плагины которых нужно обновить.",
+  "TXT_CODE_PLUGIN_MARKET_UNSUPPORTED_TARGET": "Эта версия плагина не поддерживает данный тип хоста.",
   "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "Текущая панель",
   "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "Не удалось получить список плагинов выбранного узла.",
   "TXT_CODE_PLUGIN_MARKET": "Маркет плагинов",

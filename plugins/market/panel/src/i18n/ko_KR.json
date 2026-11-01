@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "패널 및 노드 선택",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "\"{name}\"을(를) 설치할 패널과 노드를 선택하세요.",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UNINSTALL": "\"{name}\"을(를) 제거할 패널과 노드를 선택하세요.",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UPDATE": "플러그인을 일괄 업데이트할 패널과 노드를 선택하세요.",
+  "TXT_CODE_PLUGIN_MARKET_UNSUPPORTED_TARGET": "이 플러그인 버전은 이 호스트 유형을 지원하지 않습니다.",
   "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "현재 패널",
   "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "선택한 노드의 플러그인 목록을 가져올 수 없습니다.",
   "TXT_CODE_PLUGIN_MARKET": "플러그인 마켓",

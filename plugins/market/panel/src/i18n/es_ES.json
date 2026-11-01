@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "Seleccionar panel y nodos",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "Selecciona el panel y los nodos donde instalar «{name}».",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UNINSTALL": "Selecciona el panel y los nodos donde desinstalar «{name}».",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UPDATE": "Selecciona el panel y los nodos cuyos plugins quieres actualizar.",
+  "TXT_CODE_PLUGIN_MARKET_UNSUPPORTED_TARGET": "Esta versión del plugin no admite este tipo de host.",
   "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "Panel actual",
   "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "No se pudo leer la lista de plugins del nodo seleccionado.",
   "TXT_CODE_PLUGIN_MARKET": "Mercado de plugins",

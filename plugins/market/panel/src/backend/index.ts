@@ -793,6 +793,43 @@ export async function apply(ctx: PanelPluginContext) {
     requestCtx.body = listNodes();
   });
 
+  router.get(
+    "/plugin/targets",
+    requireAdmin,
+    validator({ query: { pluginId: String } }),
+    async (requestCtx: Koa.ParameterizedContext) => {
+      const pluginId = String(requestCtx.query.pluginId);
+      const nodes = listNodes();
+      const inventories = await nodeInventories(nodes.map((node) => node.daemonId));
+      const panel = (await targetInstallations("")).find((item) => item.pluginId === pluginId);
+      requestCtx.body = [
+        {
+          daemonId: "",
+          remarks: "",
+          ip: "",
+          port: 0,
+          available: true,
+          installed: Boolean(panel),
+          installedVersion: panel?.version,
+          removable: panel?.removable ?? true,
+          updatable: panel?.updatable ?? true
+        },
+        ...nodes.map((node, index) => {
+          const inventory = inventories[index].plugins;
+          const installed = inventory?.find((item) => item?.id === pluginId);
+          return {
+            ...node,
+            available: inventory !== null,
+            installed: Boolean(installed),
+            installedVersion: installed?.version,
+            removable: installed ? installed.removable === true : true,
+            updatable: installed ? Boolean(installed.packageName) : true
+          };
+        })
+      ];
+    }
+  );
+
   /**
    * 插件图标。npm 索引不托管图标，页面统一回退到默认拼图图标；保留这个路由是为了让
    * 浏览器侧不必区分旧版与新版市场。
@@ -922,14 +959,21 @@ export async function apply(ctx: PanelPluginContext) {
           const installations = readRemoteInstalls(pluginId).filter((item) =>
             selectedNodes.has(item.daemonId)
           );
+          const unavailableNodes: string[] = [];
           // Include packages installed directly on a selected daemon, outside the market.
-          if (!removePanel) {
+          if (requestCtx.request.query.panel !== undefined) {
             for (const daemonId of daemonIds) {
               if (installations.some((item) => item.daemonId === daemonId)) continue;
-              const installed = (await targetInstallations(daemonId)).find(
-                (item) => item.pluginId === pluginId
-              );
-              if (installed) installations.push({ ...installed, daemonId });
+              try {
+                const installed = (await targetInstallations(daemonId)).find(
+                  (item) => item.pluginId === pluginId
+                );
+                if (installed) installations.push({ ...installed, daemonId });
+              } catch (error) {
+                if (!(error instanceof PluginMarketError) || error.reason !== "NODE_UNAVAILABLE")
+                  throw error;
+                unavailableNodes.push(daemonId);
+              }
             }
           }
           const local =
@@ -942,6 +986,7 @@ export async function apply(ctx: PanelPluginContext) {
           }
           const removed = Boolean(local);
           const { failedNodes, changedNodes } = await removeFromNodes(installations, removeConfig);
+          failedNodes.push(...unavailableNodes);
           const sides: PluginSide[] = removed ? ["panel"] : [];
           if (changedNodes.length) sides.push("daemon");
           const remaining = installedPlugins().find((item) => item.pluginId === pluginId);

@@ -156,6 +156,22 @@ export const pluginMarketNodes = useDefineApi<unknown, MarketNode[]>({
   method: "GET"
 });
 
+/** Live installation information for the panel and every configured daemon. */
+export interface MarketPluginTarget extends MarketNode {
+  installed: boolean;
+  installedVersion?: string;
+  removable: boolean;
+  updatable: boolean;
+}
+
+export const pluginMarketTargets = useDefineApi<
+  { params: { pluginId: string } },
+  MarketPluginTarget[]
+>({
+  url: "/api/market/plugin/targets",
+  method: "GET"
+});
+
 export const pluginMarketPackage = useDefineApi<
   { params: { pluginId: string; version?: string } },
   { name: string; version: string; sides: string[] }

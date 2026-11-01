@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "Select panel and nodes",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "Select the panel and nodes on which to install \"{name}\".",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UNINSTALL": "Select the panel and nodes from which to uninstall \"{name}\".",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UPDATE": "Select the panel and nodes whose plugins you want to update.",
+  "TXT_CODE_PLUGIN_MARKET_UNSUPPORTED_TARGET": "This plugin version does not support this host type.",
   "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "Current panel",
   "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "Could not read the selected node's plugin list.",
   "TXT_CODE_PLUGIN_MARKET": "Plugin market",

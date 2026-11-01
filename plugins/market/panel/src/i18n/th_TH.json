@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "เลือกแผงควบคุมและโหนด",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "เลือกแผงควบคุมและโหนดที่จะติดตั้ง \"{name}\"",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UNINSTALL": "เลือกแผงควบคุมและโหนดที่จะถอนการติดตั้ง \"{name}\"",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UPDATE": "เลือกแผงควบคุมและโหนดที่ต้องการอัปเดตปลั๊กอินทั้งหมด",
+  "TXT_CODE_PLUGIN_MARKET_UNSUPPORTED_TARGET": "ปลั๊กอินเวอร์ชันนี้ไม่รองรับโฮสต์ประเภทนี้",
   "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "แผงควบคุมปัจจุบัน",
   "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "ไม่สามารถอ่านรายการปลั๊กอินของโหนดที่เลือกได้",
   "TXT_CODE_PLUGIN_MARKET": "ตลาดปลั๊กอิน",

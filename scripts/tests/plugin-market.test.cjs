@@ -31,6 +31,9 @@ const operationState = load("plugins/market/panel/src/operations.ts", {
   "@/plugin/context": { ctx: { plugins: { refresh: async () => {} } } },
   "./api": {}
 });
+const targetHelpers = load("plugins/market/panel/src/targets.ts", {
+  "@/lang/i18n": { t: (key) => key }
+});
 
 async function backendFixture(get) {
   const routes = new Map();
@@ -246,6 +249,8 @@ function installFixture(overrides = {}) {
   operationState.queuedChanges.value = [];
   const component = load("plugins/market/panel/src/components/PluginMarketOperations.vue", {
     vue,
+    "./PluginMarketTargetsDialog.vue": {},
+    "../targets": targetHelpers,
     "@/plugin/context": { ctx: { plugins: { refresh: async () => {} } } },
     "../version": load("plugins/market/panel/src/version.ts"),
     "../operations": operationState,
@@ -261,16 +266,10 @@ function installFixture(overrides = {}) {
     },
     "../api": {
       pluginMarketPackage: api("package", { sides: ["panel", "daemon"] }),
-      pluginMarketInstalled: api("installed", [
-        {
-          pluginId: "one",
-          name: "one",
-          version: "1.0.0",
-          sides: ["panel", "daemon"],
-          daemonIds: ["node-1"]
-        }
+      pluginMarketTargets: api("targets", [
+        { daemonId: "", ip: "", available: true, installed: true, installedVersion: "0.9.0", removable: true, updatable: true },
+        { daemonId: "node-1", ip: "localhost", available: true, installed: true, installedVersion: "0.9.0", removable: true, updatable: true }
       ]),
-      pluginMarketNodes: api("nodes", [{ daemonId: "node-1", ip: "localhost", available: true }]),
       installMarketPlugin: api("install", {
         restartRequired: true,
         failedNodes: ["node-1"],
@@ -357,19 +356,21 @@ test("the management dialog permits older core versions while protecting source 
   }
 });
 
-test("bulk node confirmation stages the pinned version and nodes without starting npm", async () => {
+test("bulk target confirmation stages the pinned version separately for the panel and nodes", async () => {
   const { state, calls, events, scope } = installFixture();
   try {
     operationState.bulkMode.value = true;
     await state.install();
-    state.confirmNodes();
+    await state.confirmTargets();
     await new Promise(setImmediate);
     assert.equal(
       calls.some((call) => call.name === "install"),
       false
     );
     assert.equal(operationState.queuedChanges.value[0].version, "1.0.0");
-    assert.deepEqual(operationState.queuedChanges.value[0].daemonIds, ["node-1"]);
+    assert.deepEqual(operationState.queuedChanges.value.map((change) => [change.plugin.targetDaemonId, change.daemonIds]), [
+      ["", []], ["node-1", ["node-1"]]
+    ]);
     assert.ok(events.some(([event]) => event === "staged"));
     assert.equal(operationState.activeOperations.value, 0);
   } finally {
@@ -386,7 +387,7 @@ test("node confirmation installs the captured version and reports partial failur
     assert.equal(calls[0].args.params.version, "1.0.0");
     assert.equal(calls.filter((call) => call.name === "install").length, 0);
     props.version = version("2.0.0");
-    state.confirmNodes();
+    await state.confirmTargets();
     await new Promise(setImmediate);
     const install = calls.find((call) => call.name === "install");
     assert.equal(install.args.data.version, "1.0.0");
@@ -415,7 +416,7 @@ test("partial uninstall preserves the installed release and never reports comple
   });
   try {
     await state.requestUninstall({ id: "one", installedVersion: "1.0.0" });
-    state.confirmNodes();
+    await state.confirmTargets();
     await new Promise(setImmediate);
     assert.ok(events.some((event) => event[0] === "installed" && event[2] === "1.0.0"));
     assert.deepEqual(errors, ["TXT_CODE_PLUGIN_MARKET_NODE_FAILED"]);
@@ -455,11 +456,11 @@ test("disabled installs do not start and disposing during preparation cannot sta
   ]);
 });
 
-test("cancelling the node picker does not install, and uninstall uses persisted node records", async () => {
+test("cancelling the shared picker does not install, and uninstall reads live targets without the market", async () => {
   const { props, state, calls, scope } = installFixture();
   try {
     await state.install();
-    state.nodeShown.value = false;
+    state.targetsShown.value = false;
     assert.equal(calls.filter((call) => call.name === "install").length, 0);
     props.version = version("2.0.0");
     await state.requestUninstall({ ...props.plugin });
@@ -468,12 +469,13 @@ test("cancelling the node picker does not install, and uninstall uses persisted 
       1,
       "uninstall must not depend on a release still being available from the market"
     );
-    assert.equal(calls.filter((call) => call.name === "installed").length, 1);
-    state.confirmNodes();
+    assert.equal(calls.filter((call) => call.name === "targets").length, 2);
+    await state.confirmTargets();
     await new Promise(setImmediate);
     assert.deepEqual(calls.find((call) => call.name === "uninstall").args.params, {
       pluginId: "one",
-      daemonIds: "node-1"
+      daemonIds: "node-1",
+      panel: true
     });
   } finally {
     scope.stop();
@@ -851,7 +853,7 @@ test("market target changes preserve the routed page, search and active tab whil
   const NodeItem = control({ title: String, disabled: Boolean, active: Boolean }, ["click"]);
   const components = Object.fromEntries([
     "VAlert", "VAvatar", "VCard", "VCardActions", "VCardText", "VChip", "VCol", "VContainer",
-    "VIcon", "VImg", "VList", "VListItem", "VMenu", "VProgressCircular", "VProgressLinear", "VRow", "VSpacer", "VTab", "VTable"
+    "VCheckbox", "VDialog", "VIcon", "VImg", "VList", "VListItem", "VMenu", "VProgressCircular", "VProgressLinear", "VRow", "VSpacer", "VTab", "VTable"
   ].map((name) => [name, slots]));
   Object.assign(components, { VTabs: Tabs, VBtn: Button, VTextField: Search, VListItem: NodeItem });
   const calls = [];
@@ -879,23 +881,27 @@ test("market target changes preserve the routed page, search and active tab whil
     "vuetify/components": components,
     "@/components/PageToolbar.vue": Toolbar,
     "../operations": operations,
+    "../targets": targetHelpers,
     "../api": {
       pluginMarketNodes: () => ({ execute: async () => ({ value: [
         { daemonId: "one", ip: "10.0.0.1", remarks: "Node One", available: true },
         { daemonId: "two", ip: "10.0.0.2", remarks: "Node Two", available: false }
       ] }) }),
       pluginMarketList: () => ({ execute: async () => ({ value: [] }) }),
-      pluginMarketUpdates: () => ({ execute: async ({ params }) => {
+      pluginMarketUpdates: () => ({ execute: async ({ params } = {}) => {
         reads++;
         return { value: { plugins: plans
           .map((plan) => ({ ...plan, targets: plan.targets.filter((target) =>
-            target.daemonId === (params.daemonId || undefined) && !calls.some((call) =>
+            (params?.daemonId === undefined || target.daemonId === (params.daemonId || undefined)) && !calls.some((call) =>
               call.pluginId === plan.pluginId && (target.daemonId ? call.daemonIds.includes(target.daemonId) : call.panel))) }))
           .filter((plan) => plan.targets.length), uncheckedNodes: [] } };
       } })
     }
   };
-  const Updates = load("plugins/market/panel/src/components/PluginMarketUpdates.vue", overrides, true).default;
+  const TargetDialog = load("plugins/market/panel/src/components/PluginMarketTargetsDialog.vue", overrides, true).default;
+  const Updates = load("plugins/market/panel/src/components/PluginMarketUpdates.vue", {
+    ...overrides, "./PluginMarketTargetsDialog.vue": TargetDialog
+  }, true).default;
   const List = load("plugins/market/panel/src/components/PluginMarketList.vue", {
     ...overrides, "./PluginMarketUpdates.vue": Updates, "./PluginMarketChanges.vue": slots
   }, true).default;
@@ -946,7 +952,7 @@ test("market target changes preserve the routed page, search and active tab whil
     await vue.nextTick();
     const view = find(Updates)[0];
     const buttons = find(Button, view.subTree);
-    assert.equal(buttons.length, 1, "the filtered update table keeps only its row action");
+    assert.equal(buttons.length, 3, "the filtered update table keeps its row action and the shared dialog's two actions");
     const updateAll = updateAllButton();
     const actions = updateAll.subTree.el.parent;
     const nodeSelector = find(Button).find((button) => button.vnode.props.class === "plugin-market-node-selector");
@@ -955,16 +961,33 @@ test("market target changes preserve the routed page, search and active tab whil
     assert.equal(updateAll.props.disabled, false);
     updateAll.emit("click");
     await new Promise(setImmediate);
-    assert.deepEqual(calls, [{ pluginId: "sample", version: "2.0.0", panel: true, daemonIds: [] }]);
-    assert.equal(reads, 2, "the update list is checked again after the operation");
-    assert.equal(updateAllButton().props.disabled, true);
+    assert.deepEqual(calls, [], "opening update-all never starts npm before target confirmation");
+    let picker = find(TargetDialog)[0];
+    assert.equal(picker.props.modelValue, true);
+    assert.deepEqual(picker.props.targets.map((target) => target.daemonId), ["", "one", "two"]);
+    assert.deepEqual(picker.props.selection, [""]);
+    assert.equal(picker.props.targets[2].disabled, true);
+    assert.equal(operations.activeOperations.value, 1);
+    picker.emit("update:modelValue", false);
+    await vue.nextTick();
+    assert.equal(operations.activeOperations.value, 0, "cancelling releases the market controls");
+    updateAllButton().emit("click");
+    await new Promise(setImmediate);
+    picker = find(TargetDialog)[0];
+    picker.emit("update:selection", ["one"]);
+    await vue.nextTick();
+    picker.emit("confirm", ["one"]);
+    await new Promise(setImmediate);
+    assert.deepEqual(calls, [{ pluginId: "sample", version: "2.0.0", panel: false, daemonIds: ["one"] }], "the picker can update another host without changing the current page target");
+    assert.equal(reads, 4, "each target dialog checks all hosts and completion refreshes the current host");
+    assert.equal(updateAllButton().props.disabled, false);
     const nodes = find(NodeItem);
     assert.equal(nodes.length, 3, "the selector offers this panel and both daemon nodes");
     assert.equal(nodes[0].props.active, true);
     assert.equal(nodes[2].props.disabled, true, "offline nodes use the instance selector's disabled style");
     nodes[1].emit("click");
     await new Promise(setImmediate);
-    assert.equal(reads, 3);
+    assert.equal(reads, 5);
     assert.equal(router.currentRoute.value.fullPath, "/market/plugins", "target changes do not navigate");
     assert.equal(find(Page)[0], page, "the route view is not remounted");
     assert.equal(find(List)[0], list);
@@ -978,7 +1001,12 @@ test("market target changes preserve the routed page, search and active tab whil
     assert.equal(find(NodeItem)[1].props.active, true);
     updateAllButton().emit("click");
     await new Promise(setImmediate);
-    assert.deepEqual(calls[1], { pluginId: "sample", version: "2.0.0", panel: false, daemonIds: ["one"] });
+    picker = find(TargetDialog)[0];
+    assert.deepEqual(picker.props.selection, [], "an up-to-date current host is not preselected");
+    assert.equal(picker.props.targets[1].disabled, true);
+    picker.emit("confirm", ["", "one", "two"]);
+    await new Promise(setImmediate);
+    assert.deepEqual(calls[1], { pluginId: "sample", version: "2.0.0", panel: true, daemonIds: [] }, "confirmation ignores offline and up-to-date targets");
     find(NodeItem)[0].emit("click");
     await new Promise(setImmediate);
     assert.equal(find(Page)[0], page, "returning to the panel also preserves the page");
@@ -986,9 +1014,15 @@ test("market target changes preserve the routed page, search and active tab whil
     assert.equal(find(Search)[0].props.modelValue, "sample");
     assert.equal(find(Updates)[0], view);
     assert.equal(view.props.daemonId, "");
+    updateAllButton().emit("click");
+    await new Promise(setImmediate);
+    assert.equal(find(TargetDialog)[0].props.modelValue, true);
+    assert.equal(operations.activeOperations.value, 1);
   } finally {
     app.unmount();
   }
+  assert.equal(operations.activeOperations.value, 0, "unmounting dismisses a pending picker without retaining the lock");
+  assert.equal(calls.length, 2);
 });
 
 test("desktop cards support keyboard selection and preserve search when installed badges change", async () => {
@@ -1077,18 +1111,28 @@ test("switching market nodes clears old installation state and ignores late resp
   }
 });
 
-test("scoped market actions install and uninstall only the current panel or daemon", async () => {
+test("scoped installs and uninstalls share the picker with the current target selected by default", async () => {
   for (const daemonId of ["", "node-1"]) {
     const f = installFixture();
     try {
       f.props.plugin.targetDaemonId = daemonId;
       await f.state.install();
+      assert.equal(f.calls.some((call) => call.name === "install"), false);
+      assert.equal(f.state.targetsShown.value, true);
+      assert.deepEqual(f.state.targets.value.map((target) => target.daemonId), ["", "node-1"]);
+      assert.deepEqual(f.state.selection.value, [daemonId]);
+      await f.state.confirmTargets();
       assert.deepEqual(f.calls.find((call) => call.name === "install").args.data, {
         pluginId: "one", name: "one", version: "1.0.0",
         panel: !daemonId, daemonIds: daemonId ? [daemonId] : []
       });
-      assert.equal(f.state.nodeShown.value, false, "the current target replaces the multi-node picker");
+      assert.equal(f.state.targetsShown.value, false);
       await f.state.requestUninstall({ ...f.props.plugin });
+      assert.equal(f.calls.some((call) => call.name === "uninstall"), false);
+      assert.equal(f.state.targetsShown.value, true);
+      assert.equal(f.state.mode.value, "uninstall");
+      assert.deepEqual(f.state.selection.value, [daemonId]);
+      await f.state.confirmTargets();
       assert.deepEqual(f.calls.find((call) => call.name === "uninstall").args.params, {
         pluginId: "one", panel: !daemonId, daemonIds: daemonId
       });
@@ -1096,6 +1140,48 @@ test("scoped market actions install and uninstall only the current panel or daem
     } finally {
       f.scope.stop();
     }
+  }
+});
+
+test("target confirmation honors cross-host choices and keeps unsupported or protected hosts visible", async () => {
+  const f = installFixture({
+    pluginMarketPackage: () => ({ execute: async () => ({ value: { sides: ["daemon"] } }) }),
+    pluginMarketTargets: () => ({ execute: async () => ({ value: [
+      { daemonId: "", available: true, installed: true, installedVersion: "0.9.0", removable: true, updatable: true },
+      { daemonId: "node-1", available: true, installed: false, removable: true, updatable: true },
+      { daemonId: "source", available: true, installed: true, removable: false, updatable: false },
+      { daemonId: "offline", available: false, installed: true, removable: true, updatable: true }
+    ] }) }),
+    installMarketPlugin: () => ({ execute: async ({ data }) => {
+      f.calls.push({ name: "install", data });
+      return { value: { installedVersion: data.version, failedNodes: [], restartRequired: false } };
+    } })
+  });
+  try {
+    f.props.plugin.targetDaemonId = "";
+    await f.state.install();
+    assert.deepEqual(f.state.targets.value.map((target) => [target.daemonId, target.disabled]), [
+      ["", true], ["node-1", false], ["source", true], ["offline", true]
+    ]);
+    assert.deepEqual(f.state.selection.value, []);
+    await f.state.confirmTargets([]);
+    assert.equal(f.state.targetsShown.value, true, "empty selection cannot confirm");
+    await f.state.confirmTargets(["", "node-1", "source", "offline", "unknown"]);
+    assert.deepEqual(f.calls.find((call) => call.name === "install").data, {
+      pluginId: "one", name: "one", version: "1.0.0", panel: false, daemonIds: ["node-1"]
+    });
+    assert.equal(f.events.some(([event]) => event === "installed"), false, "another host's installation cannot change the originating panel badge");
+    await f.state.requestUninstall();
+    assert.deepEqual(f.state.targets.value.map((target) => [target.daemonId, target.disabled]), [
+      ["", false], ["node-1", true], ["source", true], ["offline", true]
+    ]);
+    f.state.removeConfig.value = true;
+    await f.state.confirmTargets([""]);
+    assert.deepEqual(f.calls.find((call) => call.name === "uninstall").args.params, {
+      pluginId: "one", panel: true, daemonIds: "", removeConfig: true
+    });
+  } finally {
+    f.scope.stop();
   }
 });
 

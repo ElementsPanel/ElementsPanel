@@ -321,6 +321,51 @@ test("node management can uninstall packages installed outside the market withou
   assert.equal(env.local.get("sample").version, "1.0.0");
 });
 
+test("shared market targets include the panel and every node with live removal eligibility", async (t) => {
+  const env = await fixture(t, { sides: ["panel", "daemon"] });
+  await env.common.installNpmPlugin({ name: "epanel-plugin-sample", pluginId: "sample", version: "1.0.0" });
+  env.nodes.get("node-3").available = false;
+  let nodeInstalled = true;
+  env.state.request = async ({ event, daemonId }) => {
+    if (event === "plugin/list") return daemonId === "node-1"
+      ? nodeInstalled ? [{ id: "sample", packageName: "epanel-plugin-sample", version: "2.0.0", removable: true }] : []
+      : [{ id: "sample", version: "3.0.0", removable: false }];
+    if (event === "plugin/npm/uninstall") nodeInstalled = false;
+    return {};
+  };
+  const targets = await env.request("get", "/plugin/targets", { pluginId: "sample" });
+  assert.deepEqual(targets.map((target) => target.daemonId), ["", "node-1", "node-2", "node-3"]);
+  assert.equal(targets[0].installedVersion, "1.0.0");
+  assert.equal(targets[1].installedVersion, "2.0.0");
+  assert.equal(targets[1].removable, true);
+  assert.equal(targets[2].updatable, false);
+  assert.equal(targets[2].removable, false);
+  assert.equal(targets[3].available, false, "an offline node remains visible");
+  assert.equal(env.networkCalls.length, 0, "target discovery and removal do not depend on the market");
+  const result = await env.request("delete", "/plugin/uninstall", {
+    pluginId: "sample", panel: "true", daemonIds: "node-1", removeConfig: "true"
+  });
+  assert.deepEqual(result.failedNodes, []);
+  assert.equal(env.local.has("sample"), false);
+  assert.equal(nodeInstalled, false, "mixed removal includes direct daemon installations without market records");
+  assert.deepEqual(env.rpcCalls.filter((call) => call.event === "plugin/npm/uninstall"), [{
+    daemonId: "node-1", event: "plugin/npm/uninstall",
+    payload: { pluginId: "sample", name: "epanel-plugin-sample", removeConfig: true }
+  }]);
+  assert.deepEqual(env.state.lastOverride, { id: "sample", patch: { config: {} } });
+});
+
+test("mixed removals report a daemon lost after selection while completing the panel removal", async (t) => {
+  const env = await fixture(t, { sides: ["panel", "daemon"] });
+  await env.common.installNpmPlugin({ name: "epanel-plugin-sample", pluginId: "sample", version: "1.0.0" });
+  env.nodes.get("node-1").available = false;
+  const result = await env.request("delete", "/plugin/uninstall", {
+    pluginId: "sample", panel: "true", daemonIds: "node-1"
+  });
+  assert.deepEqual(result.failedNodes, ["node-1"]);
+  assert.equal(env.local.has("sample"), false);
+});
+
 test("market updates compare live versions on each side and leave unchecked nodes visible", async (t) => {
   const env = await fixture(t, { sides: ["panel", "daemon"], version: "2.0.0" });
   await env.common.installNpmPlugin({ name: "epanel-plugin-sample", pluginId: "sample", version: "3.0.0" });

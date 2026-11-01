@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "パネルとノードを選択",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "「{name}」をインストールするパネルとノードを選択してください。",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UNINSTALL": "「{name}」をアンインストールするパネルとノードを選択してください。",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UPDATE": "プラグインを一括更新するパネルとノードを選択してください。",
+  "TXT_CODE_PLUGIN_MARKET_UNSUPPORTED_TARGET": "このプラグインのバージョンは、このホストの種類に対応していません。",
   "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "現在のパネル",
   "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "選択したノードのプラグイン一覧を取得できませんでした。",
   "TXT_CODE_PLUGIN_MARKET": "プラグインマーケット",

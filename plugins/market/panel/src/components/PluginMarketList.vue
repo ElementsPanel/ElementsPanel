@@ -223,7 +223,7 @@ onBeforeUnmount(() => {
             color="primary"
             prepend-icon="mdi-update"
             :disabled="!updateView?.canUpdate"
-            :loading="updatingPlugins"
+            :loading="updatingPlugins || updateView?.preparingTargets"
             @click="updateView?.updateAll()"
           >
             {{ t("TXT_CODE_PLUGIN_MARKET_UPDATE_ALL") }}

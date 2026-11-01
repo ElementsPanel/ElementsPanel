@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "Panel und Knoten auswählen",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "Wähle das Panel und die Knoten für die Installation von „{name}“ aus.",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UNINSTALL": "Wähle das Panel und die Knoten für die Deinstallation von „{name}“ aus.",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UPDATE": "Wähle das Panel und die Knoten aus, deren Plugins aktualisiert werden sollen.",
+  "TXT_CODE_PLUGIN_MARKET_UNSUPPORTED_TARGET": "Diese Plugin-Version unterstützt diesen Host-Typ nicht.",
   "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "Aktuelles Panel",
   "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "Die Plugin-Liste des ausgewählten Knotens konnte nicht geladen werden.",
   "TXT_CODE_PLUGIN_MARKET": "Plugin-Markt",

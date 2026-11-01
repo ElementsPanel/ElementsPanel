@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "Panel ve düğümleri seçin",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "\"{name}\" eklentisinin kurulacağı panel ve düğümleri seçin.",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UNINSTALL": "\"{name}\" eklentisinin kaldırılacağı panel ve düğümleri seçin.",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UPDATE": "Eklentileri güncellenecek panel ve düğümleri seçin.",
+  "TXT_CODE_PLUGIN_MARKET_UNSUPPORTED_TARGET": "Bu eklenti sürümü bu sunucu türünü desteklemiyor.",
   "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "Geçerli panel",
   "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "Seçilen düğümün eklenti listesi okunamadı.",
   "TXT_CODE_PLUGIN_MARKET": "Eklenti marketi",

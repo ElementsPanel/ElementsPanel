@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "Selecionar painel e nós",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "Selecione o painel e os nós nos quais instalar \"{name}\".",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UNINSTALL": "Selecione o painel e os nós dos quais desinstalar \"{name}\".",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UPDATE": "Selecione o painel e os nós cujos plugins deseja atualizar.",
+  "TXT_CODE_PLUGIN_MARKET_UNSUPPORTED_TARGET": "Esta versão do plugin não oferece suporte a este tipo de host.",
   "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "Painel atual",
   "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "Não foi possível ler a lista de plugins do nó selecionado.",
   "TXT_CODE_PLUGIN_MARKET": "Mercado de plugins",

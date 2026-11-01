@@ -11,8 +11,10 @@ import {
   VProgressLinear,
   VTable
 } from "vuetify/components";
-import { pluginMarketUpdates } from "../api";
-import type { PluginUpdates, PluginUpdateTarget } from "../updates";
+import { pluginMarketNodes, pluginMarketUpdates } from "../api";
+import type { PluginUpdate, PluginUpdates, PluginUpdateTarget } from "../updates";
+import { defaultMarketTargets, type MarketTargetOption } from "../targets";
+import PluginMarketTargetsDialog from "./PluginMarketTargetsDialog.vue";
 import {
   activeOperations,
   applyingChanges,
@@ -29,6 +31,11 @@ const emit = defineEmits<{ loading: [value: boolean] }>();
 const loading = ref(false);
 const error = ref("");
 const updates = ref<PluginUpdates>();
+const targetsShown = ref(false);
+const preparingTargets = ref(false);
+const targets = ref<MarketTargetOption[]>([]);
+const selection = ref<string[]>([]);
+const pendingUpdates = ref<PluginUpdate[]>([]);
 let requestId = 0;
 let disposed = false;
 const visibleUpdates = computed(() => {
@@ -46,7 +53,7 @@ const blocked = computed(
     Boolean(queuedChanges.value.length)
 );
 const updateCount = computed(() => visibleUpdates.value.length);
-const canUpdate = computed(() => !blocked.value && updateCount.value > 0);
+const canUpdate = computed(() => !blocked.value);
 const failures = computed(() =>
   updateResults.value.filter((item) => item.error || item.result?.failedTargets.length)
 );
@@ -72,8 +79,7 @@ async function refresh() {
   }
 }
 
-async function updateAll(plugins = visibleUpdates.value) {
-  if (blocked.value) return;
+async function runUpdates(plugins: PluginUpdate[]) {
   const results = await updateMarketPlugins(plugins);
   if (!results.length) return;
   if (results.some((item) => item.result?.restartRequired))
@@ -82,6 +88,76 @@ async function updateAll(plugins = visibleUpdates.value) {
     message.success(t("TXT_CODE_PLUGIN_MARKET_UPDATED"));
 }
 
+async function updateAll() {
+  if (disposed || blocked.value) return;
+  const query = (props.keyword ?? "").trim().toLowerCase();
+  preparingTargets.value = true;
+  try {
+    const [available, response] = await Promise.all([
+      pluginMarketNodes().execute({ forceRequest: true }),
+      pluginMarketUpdates().execute({ forceRequest: true, timeout: 60000 })
+    ]);
+    if (disposed) return;
+    if (!available.value || !response.value)
+      throw new Error(t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE"));
+    pendingUpdates.value = response.value.plugins.filter(
+      (plugin) =>
+        !query ||
+        [plugin.displayName, plugin.name].some((name) => name.toLowerCase().includes(query))
+    );
+    const unchecked = new Set(response.value.uncheckedNodes.map((node) => node.daemonId));
+    targets.value = [
+      { daemonId: "", remarks: "", ip: "", port: 0, available: true },
+      ...available.value
+    ].map((node) => {
+      const unavailable = !node.available || unchecked.has(node.daemonId);
+      const hasUpdates = pendingUpdates.value.some((plugin) =>
+        plugin.targets.some((target) => (target.daemonId ?? "") === node.daemonId)
+      );
+      return {
+        ...node,
+        disabled: unavailable || !hasUpdates,
+        hint: unavailable
+          ? t("TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE")
+          : !hasUpdates
+          ? t("TXT_CODE_PLUGIN_MARKET_UP_TO_DATE")
+          : ""
+      };
+    });
+    selection.value = defaultMarketTargets(targets.value, props.daemonId);
+    targetsShown.value = true;
+  } catch (cause) {
+    if (!disposed) message.error(getValidatorErrorMsg(cause));
+  } finally {
+    preparingTargets.value = false;
+  }
+}
+
+async function confirmTargets(selected = selection.value) {
+  if (disposed || !targetsShown.value || preparingTargets.value || applyingChanges.value) return;
+  const chosen = new Set(
+    targets.value
+      .filter((target) => !target.disabled && selected.includes(target.daemonId))
+      .map((target) => target.daemonId)
+  );
+  const plans = pendingUpdates.value
+    .map((plugin) => ({
+      ...plugin,
+      targets: plugin.targets.filter((target) => chosen.has(target.daemonId ?? ""))
+    }))
+    .filter((plugin) => plugin.targets.length);
+  if (!plans.length) return;
+  // Release this dialog's reservation before the shared update executor acquires it.
+  targetsShown.value = false;
+  await runUpdates(plans);
+}
+
+async function updateOne(plugin: PluginUpdate) {
+  if (!disposed && !blocked.value) await runUpdates([plugin]);
+}
+
+const selectingTargets = computed(() => preparingTargets.value || targetsShown.value);
+watch(selectingTargets, (value) => (activeOperations.value += value ? 1 : -1), { flush: "sync" });
 watch(loading, (value) => emit("loading", value), { flush: "sync" });
 watch(installedChange, () => {
   if (!applyingChanges.value) void refresh();
@@ -100,8 +176,9 @@ onMounted(refresh);
 onBeforeUnmount(() => {
   disposed = true;
   requestId++;
+  if (selectingTargets.value) activeOperations.value--;
 });
-defineExpose({ refresh, updateAll, updateCount, canUpdate });
+defineExpose({ refresh, updateAll, updateCount, canUpdate, preparingTargets });
 </script>
 
 <template>
@@ -184,7 +261,7 @@ defineExpose({ refresh, updateAll, updateCount, canUpdate });
           </td>
           <td>{{ t("TXT_CODE_PLUGIN_MARKET_VERSION", { version: plugin.version }) }}</td>
           <td class="text-end">
-            <VBtn variant="text" color="primary" :disabled="blocked" @click="updateAll([plugin])">
+            <VBtn variant="text" color="primary" :disabled="blocked" @click="updateOne(plugin)">
               {{ t("TXT_CODE_PLUGIN_MARKET_UPDATES") }}
             </VBtn>
           </td>
@@ -199,6 +276,13 @@ defineExpose({ refresh, updateAll, updateCount, canUpdate });
       <VIcon icon="mdi-check-circle-outline" size="48" class="mb-3" />
       <div>{{ t(keyword?.trim() ? "TXT_CODE_NO_DATA" : "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE") }}</div>
     </div>
+    <PluginMarketTargetsDialog
+      v-model="targetsShown"
+      v-model:selection="selection"
+      :targets="targets"
+      mode="update"
+      @confirm="confirmTargets"
+    />
   </section>
 </template>
 

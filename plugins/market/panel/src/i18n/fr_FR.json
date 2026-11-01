@@ -1,4 +1,9 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "Choisir le panneau et les nœuds",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "Choisissez le panneau et les nœuds sur lesquels installer « {name} ».",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UNINSTALL": "Choisissez le panneau et les nœuds desquels désinstaller « {name} ».",
+  "TXT_CODE_PLUGIN_MARKET_TARGETS_UPDATE": "Choisissez le panneau et les nœuds dont les plugins doivent être mis à jour.",
+  "TXT_CODE_PLUGIN_MARKET_UNSUPPORTED_TARGET": "Cette version du plugin ne prend pas en charge ce type d’hôte.",
   "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "Panneau actuel",
   "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "Impossible de lire la liste des plugins du nœud sélectionné.",
   "TXT_CODE_PLUGIN_MARKET": "Marché de plugins",
