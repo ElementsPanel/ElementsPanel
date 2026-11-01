@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-mod-manager",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "displayName": "Mod Manager",
   "description": "Minecraft mod and plugin management.",
   "elementspanel": {
