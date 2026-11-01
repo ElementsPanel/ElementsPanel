@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "Aktuelles Panel",
+  "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "Die Plugin-Liste des ausgewählten Knotens konnte nicht geladen werden.",
   "TXT_CODE_PLUGIN_MARKET": "Plugin-Markt",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "Markt-Adresse",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "Adresse der Plugin-Markt-Website, von dort kommt die Plugin-Liste",

@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "目前面板",
+  "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "無法讀取所選節點的外掛清單",
   "TXT_CODE_PLUGIN_MARKET": "插件市場",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "插件市場位址",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "插件市場網站的位址，插件清單從這裡取得",

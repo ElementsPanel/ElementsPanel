@@ -5,6 +5,7 @@ import PluginMarketList from "../components/PluginMarketList.vue";
 
 const pluginList = ref<InstanceType<typeof PluginMarketList>>();
 const selectedPluginId = ref("");
+const selectedDaemonId = ref("");
 
 function openPlugin(pluginId: string) {
   selectedPluginId.value = pluginId;
@@ -21,10 +22,18 @@ function updateInstalled(pluginId: string, version: string | undefined) {
 
 <template>
   <div class="desktop-plugin-market">
-    <PluginMarketList v-show="!selectedPluginId" ref="pluginList" embedded @select="openPlugin" />
+    <PluginMarketList
+      v-show="!selectedPluginId"
+      ref="pluginList"
+      embedded
+      :daemon-id="selectedDaemonId"
+      @select="openPlugin"
+      @target-change="selectedDaemonId = $event"
+    />
     <PluginMarketDetail
       v-if="selectedPluginId"
       :plugin-id="selectedPluginId"
+      :daemon-id="selectedDaemonId"
       embedded
       @back="backToList"
       @installed="updateInstalled"

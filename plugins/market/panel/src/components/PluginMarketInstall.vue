@@ -75,7 +75,11 @@ const plugin = computed<MarketPlugin>(() => ({
     : props.plugin.installedUpdatable
 }));
 const queued = computed(() =>
-  queuedChanges.value.find((item) => item.plugin.id === props.plugin.id)
+  queuedChanges.value.find(
+    (item) =>
+      item.plugin.id === props.plugin.id &&
+      item.plugin.targetDaemonId === props.plugin.targetDaemonId
+  )
 );
 const actionText = computed(() =>
   queued.value
@@ -183,7 +187,10 @@ const requirements = computed(() => {
 
 async function readInstalled() {
   const request = ++installedRequestId;
-  const response = await pluginMarketInstalled().execute();
+  const response = await pluginMarketInstalled().execute({
+    params: { daemonId: props.plugin.targetDaemonId },
+    forceRequest: true
+  });
   if (request !== installedRequestId || !shown.value) return;
   installations.value = response.value ?? [];
   installedLoaded.value = true;
@@ -195,7 +202,7 @@ function dependencyVersion(name: string) {
   if (/^(panel|daemon) (API|SDK)$/.test(name)) return "1";
   return (
     detail.value?.dependencyVersions?.[name] ||
-    installations.value.find((item) => item.pluginId === name)?.panelVersion ||
+    installations.value.find((item) => item.pluginId === name || item.name === name)?.version ||
     "—"
   );
 }
@@ -216,7 +223,9 @@ async function open() {
     "";
   const request = ++requestId;
   const results = await Promise.allSettled([
-    pluginMarketDetail().execute({ params: { pluginId: props.plugin.id } }),
+    pluginMarketDetail().execute({
+      params: { pluginId: props.plugin.id, daemonId: props.plugin.targetDaemonId }
+    }),
     readInstalled()
   ]);
   if (request !== requestId || !shown.value) return;
@@ -353,7 +362,7 @@ onBeforeUnmount(() => {
             <tr>
               <th>{{ t("TXT_CODE_PLUGIN_MARKET_DEPENDENCY") }}</th>
               <th>{{ t("TXT_CODE_PLUGIN_MARKET_VERSION_RANGE") }}</th>
-              <th>{{ t("TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT") }}</th>
+              <th>{{ t("TXT_CODE_PLUGIN_MARKET_CURRENT_VERSION") }}</th>
               <th>{{ t("TXT_CODE_PLUGIN_MARKET_DEPENDENCY_TYPE") }}</th>
             </tr>
           </thead>
@@ -401,7 +410,7 @@ onBeforeUnmount(() => {
           v-if="queued"
           variant="text"
           :disabled="busy || applyingChanges"
-          @click="discardMarketChange(plugin.id)"
+          @click="discardMarketChange(plugin.id, plugin.targetDaemonId)"
           >{{ t("TXT_CODE_PLUGIN_MARKET_DISCARD") }}</VBtn
         >
         <VSpacer />

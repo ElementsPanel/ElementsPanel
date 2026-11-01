@@ -7,6 +7,8 @@ import type { PluginUpdateResult, PluginUpdates } from "./updates";
 
 /** One plugin as the market lists it, with the version installed here, if any. */
 export interface MarketPlugin {
+  /** Empty for this panel; omitted for an unscoped catalogue response. */
+  targetDaemonId?: string;
   id: string;
   name: string;
   displayName: string;
@@ -90,7 +92,7 @@ export interface InstalledPlugin {
   updatable?: boolean;
 }
 
-export const pluginMarketList = useDefineApi<unknown, MarketPlugin[]>({
+export const pluginMarketList = useDefineApi<{ params?: { daemonId?: string } }, MarketPlugin[]>({
   url: "/api/market/plugin/list",
   method: "GET"
 });
@@ -112,19 +114,22 @@ export const pluginMarketIcon = useDefineApi<
 });
 
 export const pluginMarketDetail = useDefineApi<
-  { params: { pluginId: string; version?: string } },
+  { params: { pluginId: string; version?: string; daemonId?: string } },
   MarketPluginDetail
 >({
   url: "/api/market/plugin/detail",
   method: "GET"
 });
 
-export const pluginMarketInstalled = useDefineApi<unknown, InstalledPlugin[]>({
+export const pluginMarketInstalled = useDefineApi<
+  { params?: { daemonId?: string } },
+  InstalledPlugin[]
+>({
   url: "/api/market/plugin/installed",
   method: "GET"
 });
 
-export const pluginMarketUpdates = useDefineApi<unknown, PluginUpdates>({
+export const pluginMarketUpdates = useDefineApi<{ params?: { daemonId?: string } }, PluginUpdates>({
   url: "/api/market/plugin/updates",
   method: "GET"
 });
@@ -167,6 +172,8 @@ export const installMarketPlugin = useDefineApi<
       version?: string;
       /** The nodes to send the daemon half to. Empty installs the panel half only. */
       daemonIds?: string[];
+      /** Whether to change this panel. Defaults to the package's declared sides. */
+      panel?: boolean;
     };
   },
   { restartRequired: boolean; failedNodes: string[]; installedVersion?: string }
@@ -176,7 +183,7 @@ export const installMarketPlugin = useDefineApi<
 });
 
 export const uninstallMarketPlugin = useDefineApi<
-  { params: { pluginId: string; daemonIds?: string; removeConfig?: boolean } },
+  { params: { pluginId: string; daemonIds?: string; removeConfig?: boolean; panel?: boolean } },
   { removed: boolean; restartRequired: boolean; failedNodes: string[]; installedVersion?: string }
 >({
   url: "/api/market/plugin/uninstall",

@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "現在のパネル",
+  "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "選択したノードのプラグイン一覧を取得できませんでした。",
   "TXT_CODE_PLUGIN_MARKET": "プラグインマーケット",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "マーケットのアドレス",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "プラグイン一覧の取得元となるマーケットサイトのアドレス",

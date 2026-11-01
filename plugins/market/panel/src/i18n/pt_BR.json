@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "Painel atual",
+  "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "Não foi possível ler a lista de plugins do nó selecionado.",
   "TXT_CODE_PLUGIN_MARKET": "Mercado de plugins",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "Endereço do mercado",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "Endereço do site do mercado, de onde vem a lista de plugins",

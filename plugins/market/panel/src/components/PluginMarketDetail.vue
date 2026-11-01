@@ -23,7 +23,7 @@ import PluginMarketSideBadge from "./PluginMarketSideBadge.vue";
 import PluginMarketChanges from "./PluginMarketChanges.vue";
 import { installedChange } from "../operations";
 
-const props = defineProps<{ pluginId: string; embedded?: boolean }>();
+const props = defineProps<{ pluginId: string; embedded?: boolean; daemonId?: string }>();
 const emit = defineEmits<{
   back: [];
   installed: [pluginId: string, version: string | undefined];
@@ -36,6 +36,7 @@ const activeTab = ref<"readme" | "versions" | "updates">("readme");
 let requestId = 0;
 // Keep every action for this plugin disabled until the active action settles.
 let running = 0;
+let refreshPending = false;
 
 const { icons, load } = usePluginIcons();
 const icon = computed(() => (plugin.value ? icons.value[plugin.value.id] : undefined));
@@ -79,7 +80,13 @@ async function refresh() {
   busy.value = false;
   try {
     const { execute } = pluginMarketDetail();
-    const response = await execute({ params: { pluginId: props.pluginId } });
+    const response = await execute({
+      params: {
+        pluginId: props.pluginId,
+        ...(props.daemonId !== undefined ? { daemonId: props.daemonId } : {})
+      },
+      forceRequest: true
+    });
     if (currentRequest !== requestId) return;
     if (!response.value) throw new Error(t("TXT_CODE_PLUGIN_MARKET_NOT_FOUND"));
     plugin.value = response.value;
@@ -101,10 +108,29 @@ function updateInstalled(pluginId: string, version: string | undefined) {
   emit("installed", pluginId, version);
 }
 watch(installedChange, (change) => {
-  if (change) updateInstalled(change.pluginId, change.version);
+  if (!change || change.pluginId !== props.pluginId) return;
+  if (props.daemonId === undefined) updateInstalled(change.pluginId, change.version);
+  else if (change.daemonId === undefined || change.daemonId === props.daemonId) {
+    if (busy.value) refreshPending = true;
+    else void refresh();
+  }
+});
+watch(busy, (value) => {
+  if (!value && refreshPending) {
+    refreshPending = false;
+    void refresh();
+  }
 });
 
-watch(() => props.pluginId, refresh, { immediate: true });
+watch(
+  () => [props.pluginId, props.daemonId],
+  () => {
+    plugin.value = undefined;
+    refreshPending = false;
+    void refresh();
+  },
+  { immediate: true }
+);
 // A marketplace entry always opens on its readme; only the user's next
 // click moves the tab.
 watch(

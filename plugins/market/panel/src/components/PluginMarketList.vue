@@ -2,6 +2,7 @@
 import PageToolbar from "@/components/PageToolbar.vue";
 import { t } from "@/lang/i18n";
 import { getValidatorErrorMsg } from "@/tools/validator";
+import { computeNodeName } from "@/tools/nodes";
 import { message } from "@/tools/vuetifyToast";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
@@ -15,6 +16,9 @@ import {
   VContainer,
   VIcon,
   VImg,
+  VList,
+  VListItem,
+  VMenu,
   VProgressCircular,
   VRow,
   VSpacer,
@@ -22,19 +26,37 @@ import {
   VTabs,
   VTextField
 } from "vuetify/components";
-import { pluginMarketList, type MarketPlugin } from "../api";
+import { pluginMarketList, pluginMarketNodes, type MarketNode, type MarketPlugin } from "../api";
 import { usePluginIcons } from "../hooks/usePluginIcons";
 import PluginMarketSideBadge from "./PluginMarketSideBadge.vue";
 import PluginMarketInstall from "./PluginMarketInstall.vue";
 import PluginMarketChanges from "./PluginMarketChanges.vue";
 import PluginMarketUpdates from "./PluginMarketUpdates.vue";
-import { activeOperations, applyingChanges, installedChange } from "../operations";
+import { activeOperations, applyingChanges, installedChange, updatingPlugins } from "../operations";
 
-const props = defineProps<{ embedded?: boolean }>();
-const emit = defineEmits<{ select: [pluginId: string] }>();
+const props = defineProps<{ embedded?: boolean; daemonId?: string }>();
+const emit = defineEmits<{ select: [pluginId: string]; "target-change": [daemonId: string] }>();
+const selectedDaemonId = ref(props.daemonId ?? "");
+const nodes = ref<MarketNode[]>([]);
+const nodesLoading = ref(false);
+const currentNode = computed(() =>
+  nodes.value.find((node) => node.daemonId === selectedDaemonId.value)
+);
+const targetLabel = computed(() =>
+  selectedDaemonId.value
+    ? currentNode.value
+      ? computeNodeName(
+          currentNode.value.ip,
+          currentNode.value.available,
+          currentNode.value.remarks
+        )
+      : selectedDaemonId.value
+    : t("TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL")
+);
 const loading = ref(false);
 // Whether the last refresh failed: an empty list then means "unreachable", not "no plugins".
 const failed = ref(false);
+const failureMessage = ref("");
 const plugins = ref<MarketPlugin[]>([]);
 const keyword = ref<string | null>("");
 const activeTab = ref<"browse" | "updates">("browse");
@@ -42,6 +64,7 @@ const updateView = ref<InstanceType<typeof PluginMarketUpdates>>();
 const updatesLoading = ref(false);
 const { icons, load } = usePluginIcons();
 let requestId = 0;
+let nodesRequestId = 0;
 
 const visiblePlugins = computed(() => {
   const q = (keyword.value ?? "").trim().toLowerCase();
@@ -69,25 +92,58 @@ async function refresh() {
   loading.value = true;
   try {
     const { execute } = pluginMarketList();
-    const response = await execute();
+    const daemonId = selectedDaemonId.value;
+    const response = await execute({ params: { daemonId }, forceRequest: true, timeout: 60000 });
     if (request === requestId) {
-      plugins.value = response.value ?? [];
+      plugins.value = (response.value ?? []).map((plugin) => ({
+        ...plugin,
+        targetDaemonId: daemonId
+      }));
       failed.value = false;
+      failureMessage.value = "";
     }
   } catch (error) {
     if (request === requestId) {
       failed.value = true;
-      message.error(getValidatorErrorMsg(error));
+      failureMessage.value = getValidatorErrorMsg(error);
+      message.error(failureMessage.value);
     }
   } finally {
     if (request === requestId) loading.value = false;
   }
 }
 
+async function refreshNodes() {
+  const request = ++nodesRequestId;
+  nodesLoading.value = true;
+  try {
+    const response = await pluginMarketNodes().execute({ forceRequest: true });
+    if (request === nodesRequestId) nodes.value = response.value ?? [];
+  } catch (error) {
+    if (request === nodesRequestId) message.error(getValidatorErrorMsg(error));
+  } finally {
+    if (request === nodesRequestId) nodesLoading.value = false;
+  }
+}
+
 function refreshActive() {
+  void refreshNodes();
   if (activeTab.value === "updates") void updateView.value?.refresh();
   else void refresh();
 }
+
+watch(
+  () => props.daemonId,
+  (daemonId) => {
+    if (daemonId !== undefined) selectedDaemonId.value = daemonId;
+  }
+);
+watch(selectedDaemonId, (daemonId) => {
+  plugins.value = [];
+  failed.value = false;
+  emit("target-change", daemonId);
+  void refresh();
+});
 
 function selectPlugin(plugin: MarketPlugin) {
   if (props.embedded) emit("select", plugin.id);
@@ -107,10 +163,17 @@ function updateInstalled(pluginId: string, version: string | undefined) {
 
 defineExpose({ updateInstalled });
 watch(installedChange, (change) => {
-  if (change) updateInstalled(change.pluginId, change.version);
+  if (change && (change.daemonId === undefined || change.daemonId === selectedDaemonId.value))
+    void refresh();
 });
-onMounted(refresh);
-onBeforeUnmount(() => requestId++);
+onMounted(() => {
+  void refresh();
+  void refreshNodes();
+});
+onBeforeUnmount(() => {
+  requestId++;
+  nodesRequestId++;
+});
 </script>
 
 <template>
@@ -141,22 +204,72 @@ onBeforeUnmount(() => requestId++);
         </template>
       </PageToolbar>
 
-      <VTabs
-        v-model="activeTab"
-        align-tabs="start"
-        color="primary"
-        density="compact"
-        class="plugin-market-tabs"
-        :disabled="applyingChanges || Boolean(activeOperations)"
-      >
-        <VTab value="browse">{{ t("TXT_CODE_PLUGIN_MARKET_BROWSE") }}</VTab>
-        <VTab value="updates">{{ t("TXT_CODE_PLUGIN_MARKET_UPDATES") }}</VTab>
-      </VTabs>
+      <div class="plugin-market-navigation">
+        <VTabs
+          v-model="activeTab"
+          align-tabs="start"
+          color="primary"
+          density="compact"
+          class="plugin-market-tabs"
+          :disabled="applyingChanges || Boolean(activeOperations)"
+        >
+          <VTab value="browse">{{ t("TXT_CODE_PLUGIN_MARKET_BROWSE") }}</VTab>
+          <VTab value="updates">{{ t("TXT_CODE_PLUGIN_MARKET_UPDATES") }}</VTab>
+        </VTabs>
+        <div class="plugin-market-navigation-actions">
+          <VBtn
+            v-if="activeTab === 'updates'"
+            class="plugin-market-update-all"
+            color="primary"
+            prepend-icon="mdi-update"
+            :disabled="!updateView?.canUpdate"
+            :loading="updatingPlugins"
+            @click="updateView?.updateAll()"
+          >
+            {{ t("TXT_CODE_PLUGIN_MARKET_UPDATE_ALL") }}
+            <span v-if="updateView?.updateCount"> ({{ updateView.updateCount }})</span>
+          </VBtn>
+          <VMenu location="bottom end">
+            <template #activator="{ props: menuProps }">
+              <VBtn
+                v-bind="menuProps"
+                class="plugin-market-node-selector"
+                variant="tonal"
+                prepend-icon="mdi-server-outline"
+                :loading="nodesLoading"
+                :disabled="applyingChanges || Boolean(activeOperations)"
+                :aria-label="t('TXT_CODE_PLUGIN_MARKET_SELECT_NODES')"
+              >
+                <span class="node-name">{{ targetLabel }}</span>
+                <VIcon icon="mdi-chevron-down" end />
+              </VBtn>
+            </template>
+            <VList density="comfortable">
+              <VListItem
+                :active="!selectedDaemonId"
+                :title="t('TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL')"
+                prepend-icon="mdi-monitor-dashboard"
+                @click="selectedDaemonId = ''"
+              />
+              <VListItem
+                v-for="node in nodes"
+                :key="node.daemonId"
+                :active="selectedDaemonId === node.daemonId"
+                :disabled="!node.available"
+                :title="computeNodeName(node.ip, node.available, node.remarks)"
+                :prepend-icon="node.available ? 'mdi-database-outline' : 'mdi-server-off-outline'"
+                @click="selectedDaemonId = node.daemonId"
+              />
+            </VList>
+          </VMenu>
+        </div>
+      </div>
 
       <PluginMarketUpdates
         v-if="activeTab === 'updates'"
         ref="updateView"
         :keyword="keyword"
+        :daemon-id="selectedDaemonId"
         @loading="updatesLoading = $event"
       />
 
@@ -173,7 +286,9 @@ onBeforeUnmount(() => requestId++);
           />
           <div class="plugin-market-empty-title">
             {{
-              failed ? t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE") : t("TXT_CODE_PLUGIN_MARKET_EMPTY")
+              failed
+                ? failureMessage || t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE")
+                : t("TXT_CODE_PLUGIN_MARKET_EMPTY")
             }}
           </div>
         </div>
@@ -183,7 +298,14 @@ onBeforeUnmount(() => requestId++);
             <VCard
               class="plugin-market-card h-100"
               elevation="0"
-              :to="embedded ? undefined : `/market/plugins/${encodeURIComponent(plugin.id)}`"
+              :to="
+                embedded
+                  ? undefined
+                  : {
+                      path: `/market/plugins/${encodeURIComponent(plugin.id)}`,
+                      query: { daemonId: selectedDaemonId }
+                    }
+              "
               :role="embedded ? 'button' : undefined"
               :tabindex="embedded ? 0 : undefined"
               link
@@ -281,10 +403,38 @@ onBeforeUnmount(() => requestId++);
   padding: 20px 24px 32px;
 }
 
-.plugin-market-tabs {
-  width: 100%;
+.plugin-market-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   flex-shrink: 0;
   margin-bottom: 28px;
+}
+
+.plugin-market-tabs {
+  flex: 1;
+  min-width: 0;
+}
+
+.plugin-market-node-selector {
+  flex-shrink: 0;
+}
+
+.plugin-market-navigation-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.node-name {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .plugin-market-loading {
@@ -374,6 +524,11 @@ onBeforeUnmount(() => requestId++);
 }
 
 @media (max-width: 992px) {
+  .plugin-market-navigation {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
   .plugin-market-container {
     padding: 16px 12px 28px;
   }

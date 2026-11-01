@@ -24,7 +24,7 @@ import {
   updatingPlugins
 } from "../operations";
 
-const props = defineProps<{ keyword?: string | null }>();
+const props = defineProps<{ keyword?: string | null; daemonId?: string }>();
 const emit = defineEmits<{ loading: [value: boolean] }>();
 const loading = ref(false);
 const error = ref("");
@@ -45,6 +45,8 @@ const blocked = computed(
     Boolean(activeOperations.value) ||
     Boolean(queuedChanges.value.length)
 );
+const updateCount = computed(() => visibleUpdates.value.length);
+const canUpdate = computed(() => !blocked.value && updateCount.value > 0);
 const failures = computed(() =>
   updateResults.value.filter((item) => item.error || item.result?.failedTargets.length)
 );
@@ -57,7 +59,11 @@ async function refresh() {
   loading.value = true;
   error.value = "";
   try {
-    const response = await pluginMarketUpdates().execute({ forceRequest: true, timeout: 60000 });
+    const response = await pluginMarketUpdates().execute({
+      params: { daemonId: props.daemonId },
+      forceRequest: true,
+      timeout: 60000
+    });
     if (request === requestId) updates.value = response.value;
   } catch (cause) {
     if (request === requestId) error.value = getValidatorErrorMsg(cause);
@@ -83,28 +89,23 @@ watch(installedChange, () => {
 watch(applyingChanges, (value, previous) => {
   if (!value && previous) void refresh();
 });
+watch(
+  () => props.daemonId,
+  () => {
+    updates.value = undefined;
+    void refresh();
+  }
+);
 onMounted(refresh);
 onBeforeUnmount(() => {
   disposed = true;
   requestId++;
 });
-defineExpose({ refresh });
+defineExpose({ refresh, updateAll, updateCount, canUpdate });
 </script>
 
 <template>
   <section class="plugin-updates">
-    <div class="plugin-updates-actions mb-4">
-      <VBtn
-        color="primary"
-        prepend-icon="mdi-update"
-        :disabled="blocked || !visibleUpdates.length"
-        :loading="updatingPlugins"
-        @click="updateAll()"
-      >
-        {{ t("TXT_CODE_PLUGIN_MARKET_UPDATE_ALL") }}
-        <span v-if="visibleUpdates.length"> ({{ visibleUpdates.length }})</span>
-      </VBtn>
-    </div>
     <VAlert v-if="error" type="error" variant="tonal" :text="error" class="mb-4" />
     <VAlert
       v-if="updates?.uncheckedNodes.length"
@@ -202,10 +203,6 @@ defineExpose({ refresh });
 </template>
 
 <style scoped>
-.plugin-updates-actions {
-  display: flex;
-  justify-content: flex-start;
-}
 .plugin-updates-table td {
   padding-block: 16px !important;
 }

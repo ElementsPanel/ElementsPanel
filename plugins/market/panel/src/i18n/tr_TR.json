@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "Geçerli panel",
+  "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "Seçilen düğümün eklenti listesi okunamadı.",
   "TXT_CODE_PLUGIN_MARKET": "Eklenti marketi",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "Market adresi",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "Eklenti listesinin geldiği market sitesinin adresi",

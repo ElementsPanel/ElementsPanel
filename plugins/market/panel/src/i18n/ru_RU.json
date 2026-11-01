@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "Текущая панель",
+  "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "Не удалось получить список плагинов выбранного узла.",
   "TXT_CODE_PLUGIN_MARKET": "Маркет плагинов",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "Адрес маркета",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "Адрес сайта маркета плагинов, откуда берётся список",

@@ -19,6 +19,7 @@ import {
   readRemoteInstalls,
   recordRemoteInstall,
   type MarketInstallInfo,
+  type InstalledMarketPlugin,
   type PluginSide,
   type RemoteMarketInstall
 } from "./service/plugin_market";
@@ -172,7 +173,10 @@ export async function apply(ctx: PanelPluginContext) {
    * did not fit on it. Reading many pages is what the budget above bounds — one
    * request must not be able to occupy a connection for as long as the pages allow.
    */
-  async function fetchMarketPlugins(addr: string): Promise<Array<Record<string, unknown>>> {
+  async function fetchMarketPlugins(
+    addr: string,
+    daemonId?: string
+  ): Promise<Array<Record<string, unknown>>> {
     const items: Array<Record<string, unknown>> = [];
     const seen = new Set<string>();
     const deadline = Date.now() + MARKET_LIST_BUDGET_MS;
@@ -221,18 +225,28 @@ export async function apply(ctx: PanelPluginContext) {
       }
     }
 
-    const installed = new Map(installedPlugins().map((item) => [item.pluginId, item]));
-    return items.map((item) => {
-      const local = installed.get(String(item.id));
-      return {
-        ...item,
-        installedVersion: local?.version,
-        installedState: local?.state,
-        installedDaemonIds: local?.daemonIds ?? [],
-        installedRemovable: local?.removable ?? true,
-        installedUpdatable: local?.updatable ?? true
-      };
-    });
+    const installed = new Map(
+      (await targetInstallations(daemonId)).map((item) => [item.pluginId, item])
+    );
+    return items
+      .filter((item) => {
+        if (daemonId === undefined) return true;
+        const release = item.latestVersion as { sides?: string[] } | undefined;
+        const sides = release?.sides?.length ? release.sides : item.sides;
+        return Array.isArray(sides) && sides.includes(daemonId ? "daemon" : "panel");
+      })
+      .map((item) => {
+        const local = installed.get(String(item.id));
+        return {
+          ...item,
+          ...(daemonId !== undefined ? { targetDaemonId: daemonId } : {}),
+          installedVersion: local?.version,
+          installedState: local?.state,
+          installedDaemonIds: local?.daemonIds ?? [],
+          installedRemovable: local?.removable ?? true,
+          installedUpdatable: local?.updatable ?? true
+        };
+      });
   }
 
   function reportPluginMarketError(
@@ -259,6 +273,7 @@ export async function apply(ctx: PanelPluginContext) {
       BAD_CHECKSUM: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_BAD_CHECKSUM"),
       INCOMPATIBLE: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE"),
       NO_NODES: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_SELECT_NODES"),
+      NODE_UNAVAILABLE: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE"),
       BUNDLED: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_BUNDLED"),
       NPM_FAILED: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_NPM_FAILED")
     };
@@ -270,6 +285,7 @@ export async function apply(ctx: PanelPluginContext) {
       BAD_CHECKSUM: 400,
       INCOMPATIBLE: 409,
       NO_NODES: 400,
+      NODE_UNAVAILABLE: 503,
       BUNDLED: 409,
       NPM_FAILED: 502
     };
@@ -327,7 +343,13 @@ export async function apply(ctx: PanelPluginContext) {
             return {
               daemonId,
               label,
-              plugins: inventory as Array<{ id: string; packageName?: string; version?: string }>
+              plugins: inventory as Array<{
+                id: string;
+                packageName?: string;
+                version?: string;
+                state?: string;
+                removable?: boolean;
+              }>
             };
           } catch {
             // An earlier foundation update may be replacing the daemon's socket.
@@ -337,6 +359,42 @@ export async function apply(ctx: PanelPluginContext) {
         }
       })
     );
+  }
+
+  async function targetInstallations(daemonId?: string): Promise<InstalledMarketPlugin[]> {
+    if (daemonId === undefined) return installedPlugins();
+    if (!daemonId)
+      return installedPlugins()
+        .filter((plugin) => plugin.panelVersion !== undefined || plugin.sides.includes("panel"))
+        .map((plugin) => ({
+          ...plugin,
+          version: plugin.panelVersion ?? plugin.version,
+          sides: ["panel"],
+          daemonIds: [],
+          daemonVersions: {}
+        }));
+    const [node] = await nodeInventories([daemonId]);
+    if (!node.plugins) throw new PluginMarketError("NODE_UNAVAILABLE");
+    return node.plugins
+      .filter((plugin) => typeof plugin?.id === "string")
+      .map((plugin) => ({
+        pluginId: plugin.id,
+        name: plugin.packageName ?? plugin.id,
+        version: plugin.version ?? "",
+        state: plugin.state,
+        installedAt: 0,
+        daemonVersions: { [daemonId]: plugin.version ?? "" },
+        sides: ["daemon"],
+        daemonIds: [daemonId],
+        directories: [],
+        source: plugin.packageName ? "project" : "bundled",
+        removable: plugin.removable === true,
+        updatable: Boolean(plugin.packageName)
+      }));
+  }
+
+  function selectedDaemon(requestCtx: Koa.ParameterizedContext): string | undefined {
+    return typeof requestCtx.query.daemonId === "string" ? requestCtx.query.daemonId : undefined;
   }
 
   function updateTarget(
@@ -359,9 +417,10 @@ export async function apply(ctx: PanelPluginContext) {
 
   router.get("/plugin/updates", requireAdmin, async (requestCtx) => {
     try {
+      const daemonId = selectedDaemon(requestCtx);
       const [market, inventories] = await Promise.all([
         fetchMarketPlugins(marketSettings().pluginMarketAddr),
-        nodeInventories()
+        nodeInventories(daemonId === undefined ? undefined : daemonId ? [daemonId] : [])
       ]);
       const panel = ctx.plugins.inventory();
       const plugins: PluginUpdate[] = [];
@@ -390,7 +449,7 @@ export async function apply(ctx: PanelPluginContext) {
         const declaredSides = release.sides?.length ? release.sides : item.sides;
         const sides = Array.isArray(declaredSides) ? declaredSides : [];
         const targets: PluginUpdateTarget[] = [];
-        if (sides?.includes("panel")) {
+        if (sides?.includes("panel") && !daemonId) {
           const target = updateTarget(panel, pluginId, name, release.version, "");
           if (target) targets.push(target);
         }
@@ -664,14 +723,21 @@ export async function apply(ctx: PanelPluginContext) {
 
   router.get("/plugin/list", requireAdmin, async (requestCtx) => {
     try {
-      requestCtx.body = await fetchMarketPlugins(marketSettings().pluginMarketAddr);
+      requestCtx.body = await fetchMarketPlugins(
+        marketSettings().pluginMarketAddr,
+        selectedDaemon(requestCtx)
+      );
     } catch (error) {
       reportPluginMarketError(error);
     }
   });
 
   router.get("/plugin/installed", requireAdmin, async (requestCtx) => {
-    requestCtx.body = installedPlugins();
+    try {
+      requestCtx.body = await targetInstallations(selectedDaemon(requestCtx));
+    } catch (error) {
+      reportPluginMarketError(error);
+    }
   });
 
   router.get(
@@ -681,6 +747,7 @@ export async function apply(ctx: PanelPluginContext) {
     async (requestCtx: Koa.ParameterizedContext) => {
       try {
         const pluginId = String(requestCtx.query.pluginId);
+        const daemonId = selectedDaemon(requestCtx);
         const version = requestCtx.query.version ? String(requestCtx.query.version) : undefined;
         const response = await axios.get(
           `${marketSettings().pluginMarketAddr}/api/plugins/${encodeURIComponent(pluginId)}`,
@@ -694,11 +761,21 @@ export async function apply(ctx: PanelPluginContext) {
         if (!selectedVersion || (selectedVersion.status && selectedVersion.status !== "approved")) {
           throw new PluginMarketError("NOT_FOUND");
         }
-        const installed = installedPlugins().find((item) => item.pluginId === pluginId);
+        const supportsTarget = (release: { sides?: string[] }) => {
+          if (daemonId === undefined) return true;
+          const sides = release.sides?.length ? release.sides : detail.sides;
+          return Array.isArray(sides) && sides.includes(daemonId ? "daemon" : "panel");
+        };
+        if (!supportsTarget(selectedVersion)) throw new PluginMarketError("INCOMPATIBLE");
+        const installed = (await targetInstallations(daemonId)).find(
+          (item) => item.pluginId === pluginId
+        );
         requestCtx.body = {
           ...detail,
+          versions: detail.versions?.filter(supportsTarget),
+          ...(daemonId !== undefined ? { targetDaemonId: daemonId } : {}),
           selectedVersion,
-          dependencyVersions: panelDependencyVersions(detail),
+          dependencyVersions: daemonId ? {} : panelDependencyVersions(detail),
           installedVersion: installed?.version,
           installedState: installed?.state,
           installedDaemonIds: installed?.daemonIds ?? [],
@@ -769,7 +846,8 @@ export async function apply(ctx: PanelPluginContext) {
           );
           const daemonIds = requestedNodes(body.daemonIds);
           const sides = detail.selectedVersion.sides;
-          if (!sides.includes("panel") && !daemonIds.length)
+          const installPanel = body.panel !== false && sides.includes("panel");
+          if (!installPanel && (!sides.includes("daemon") || !daemonIds.length))
             throw new PluginMarketError("NO_NODES");
           const info: MarketInstallInfo = {
             pluginId: detail.id,
@@ -780,7 +858,7 @@ export async function apply(ctx: PanelPluginContext) {
           // npm versions can replace foundation packages; source plugins have
           // no npm dependency for the market to update.
           if (
-            sides.includes("panel") &&
+            installPanel &&
             ctx.plugins.inventory().some((item) => item.id === info.pluginId && !item.packageName)
           )
             throw new PluginMarketError("BUNDLED");
@@ -793,7 +871,7 @@ export async function apply(ctx: PanelPluginContext) {
               ? await installOnNodes(daemonIds, info)
               : { failedNodes: [], changedNodes: [], pendingNodes: [] };
           if (changedNodes.length) changedSides.push("daemon");
-          if (sides.includes("panel")) {
+          if (installPanel) {
             await ctx.plugins.install({
               name: detail.name,
               pluginId: detail.id,
@@ -812,8 +890,14 @@ export async function apply(ctx: PanelPluginContext) {
 
           return {
             restartRequired: !reloaded,
-            installedVersion: installedPlugins().find((item) => item.pluginId === info.pluginId)
-              ?.version,
+            installedVersion:
+              body.panel === false
+                ? readRemoteInstalls(info.pluginId).find((item) =>
+                    daemonIds.includes(item.daemonId)
+                  )?.version
+                : body.panel === true
+                ? installedPlugins().find((item) => item.pluginId === info.pluginId)?.panelVersion
+                : installedPlugins().find((item) => item.pluginId === info.pluginId)?.version,
             failedNodes
           };
         });
@@ -831,13 +915,25 @@ export async function apply(ctx: PanelPluginContext) {
       const pluginId = String(requestCtx.request.query.pluginId);
       const daemonIds = requestedNodes(requestCtx.request.query.daemonIds);
       const removeConfig = requestCtx.request.query.removeConfig === "true";
+      const removePanel = requestCtx.request.query.panel !== "false";
       try {
         requestCtx.body = await withPluginLock(pluginId, async () => {
           const selectedNodes = new Set(daemonIds);
           const installations = readRemoteInstalls(pluginId).filter((item) =>
             selectedNodes.has(item.daemonId)
           );
-          const local = ctx.plugins.inventory().find((plugin) => plugin.id === pluginId);
+          // Include packages installed directly on a selected daemon, outside the market.
+          if (!removePanel) {
+            for (const daemonId of daemonIds) {
+              if (installations.some((item) => item.daemonId === daemonId)) continue;
+              const installed = (await targetInstallations(daemonId)).find(
+                (item) => item.pluginId === pluginId
+              );
+              if (installed) installations.push({ ...installed, daemonId });
+            }
+          }
+          const local =
+            removePanel && ctx.plugins.inventory().find((plugin) => plugin.id === pluginId);
           if (local) await ctx.plugins.remove(pluginId);
           if (local && removeConfig) {
             await ctx.plugins.runExclusive(async () =>
@@ -849,9 +945,14 @@ export async function apply(ctx: PanelPluginContext) {
           const sides: PluginSide[] = removed ? ["panel"] : [];
           if (changedNodes.length) sides.push("daemon");
           const remaining = installedPlugins().find((item) => item.pluginId === pluginId);
+          const targetedVersion = !removePanel
+            ? installations.find((item) => failedNodes.includes(item.daemonId))?.version
+            : requestCtx.request.query.panel === "true"
+            ? remaining?.panelVersion
+            : remaining?.version;
           return {
-            removed: !remaining,
-            installedVersion: remaining?.version,
+            removed: requestCtx.request.query.panel !== undefined ? !targetedVersion : !remaining,
+            installedVersion: targetedVersion,
             failedNodes,
             restartRequired: !(await hotReload(sides, changedNodes, pluginId))
           };

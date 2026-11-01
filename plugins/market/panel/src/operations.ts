@@ -21,7 +21,11 @@ export const bulkMode = ref(false);
 export const queuedChanges = ref<MarketChange[]>([]);
 export const applyingChanges = ref(false);
 export const activeOperations = ref(0);
-export const installedChange = shallowRef<{ pluginId: string; version?: string }>();
+export const installedChange = shallowRef<{
+  pluginId: string;
+  version?: string;
+  daemonId?: string;
+}>();
 export const updatingPlugins = ref(false);
 export const updateProgress = ref({ completed: 0, total: 0, name: "" });
 export const updateResults = shallowRef<
@@ -82,20 +86,28 @@ export async function updateMarketPlugins(updates: readonly PluginUpdate[]) {
   }
 }
 
-export function notifyInstalled(pluginId: string, version?: string) {
-  installedChange.value = { pluginId, version };
+export function notifyInstalled(pluginId: string, version?: string, daemonId?: string) {
+  installedChange.value = { pluginId, version, ...(daemonId !== undefined ? { daemonId } : {}) };
+}
+
+export function marketChangeKey(plugin: MarketPlugin) {
+  return JSON.stringify([plugin.id, plugin.targetDaemonId ?? null]);
 }
 
 export function queueMarketChange(change: MarketChange) {
   queuedChanges.value = [
-    ...queuedChanges.value.filter((item) => item.plugin.id !== change.plugin.id),
+    ...queuedChanges.value.filter(
+      (item) => marketChangeKey(item.plugin) !== marketChangeKey(change.plugin)
+    ),
     { ...change, plugin: { ...change.plugin }, daemonIds: [...change.daemonIds] }
   ];
 }
 
-export function discardMarketChange(pluginId: string) {
+export function discardMarketChange(pluginId: string, daemonId?: string) {
   if (applyingChanges.value) return;
-  queuedChanges.value = queuedChanges.value.filter((item) => item.plugin.id !== pluginId);
+  queuedChanges.value = queuedChanges.value.filter(
+    (item) => item.plugin.id !== pluginId || item.plugin.targetDaemonId !== daemonId
+  );
 }
 
 /** Commit independently. Failed operations and failed nodes remain available to retry. */
@@ -119,7 +131,10 @@ export async function applyMarketChanges() {
                   pluginId: change.plugin.id,
                   name: change.plugin.name,
                   version: change.version,
-                  daemonIds: change.daemonIds
+                  daemonIds: change.daemonIds,
+                  ...(change.plugin.targetDaemonId !== undefined
+                    ? { panel: !change.plugin.targetDaemonId }
+                    : {})
                 }
               })
             : await uninstallMarketPlugin().execute({
@@ -127,14 +142,17 @@ export async function applyMarketChanges() {
                 params: {
                   pluginId: change.plugin.id,
                   daemonIds: change.daemonIds.join(","),
+                  ...(change.plugin.targetDaemonId !== undefined
+                    ? { panel: !change.plugin.targetDaemonId }
+                    : {}),
                   ...(change.removeConfig ? { removeConfig: true } : {})
                 }
               });
         if (!response.value) throw new Error("Empty plugin operation response");
         const { failedNodes, installedVersion, restartRequired } = response.value;
-        notifyInstalled(change.plugin.id, installedVersion);
+        notifyInstalled(change.plugin.id, installedVersion, change.plugin.targetDaemonId);
         queuedChanges.value = queuedChanges.value.flatMap((item) =>
-          item.plugin.id !== change.plugin.id
+          marketChangeKey(item.plugin) !== marketChangeKey(change.plugin)
             ? [item]
             : failedNodes.length
             ? [{ ...change, daemonIds: failedNodes }]

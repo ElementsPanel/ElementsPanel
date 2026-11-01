@@ -19,6 +19,7 @@ export type MarketErrorReason =
   | "BAD_CHECKSUM"
   | "INCOMPATIBLE"
   | "NO_NODES"
+  | "NODE_UNAVAILABLE"
   | "BUNDLED";
 
 export class PluginMarketError extends Error {

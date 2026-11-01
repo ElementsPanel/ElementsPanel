@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "แผงควบคุมปัจจุบัน",
+  "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "ไม่สามารถอ่านรายการปลั๊กอินของโหนดที่เลือกได้",
   "TXT_CODE_PLUGIN_MARKET": "ตลาดปลั๊กอิน",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "ที่อยู่ตลาด",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "ที่อยู่ของเว็บตลาดปลั๊กอิน ซึ่งเป็นแหล่งที่มาของรายการปลั๊กอิน",

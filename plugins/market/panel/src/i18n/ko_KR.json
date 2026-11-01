@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "현재 패널",
+  "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "선택한 노드의 플러그인 목록을 가져올 수 없습니다.",
   "TXT_CODE_PLUGIN_MARKET": "플러그인 마켓",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "마켓 주소",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "플러그인 목록을 가져오는 마켓 사이트 주소",

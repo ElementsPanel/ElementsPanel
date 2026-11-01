@@ -203,6 +203,7 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
   }
 
   return {
+    request,
     directory,
     panelDirectory,
     state,
@@ -227,16 +228,98 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
         daemonIds,
         removeConfig: String(removeConfig)
       }),
-    installed: () => request("get", "/plugin/installed"),
-    updates: () => request("get", "/plugin/updates"),
+    installed: (query = {}) => request("get", "/plugin/installed", query),
+    updates: (query = {}) => request("get", "/plugin/updates", query),
     update: (values = {}) => request("post", "/plugin/update", {
       pluginId: "sample", version: state.version, panel: true, daemonIds: [], ...values
     }),
-    list: () => request("get", "/plugin/list"),
-    detail: () => request("get", "/plugin/detail", { pluginId: "sample" }),
+    list: (query = {}) => request("get", "/plugin/list", query),
+    detail: (query = {}) => request("get", "/plugin/detail", { pluginId: "sample", ...query }),
     icon: () => request("get", "/plugin/icon")
   };
 }
+
+test("market views show only the selected host's supported plugins and live installation state", async (t) => {
+  const env = await fixture(t, { sides: ["panel", "daemon"], version: "4.0.0" });
+  await env.common.installNpmPlugin({ name: "epanel-plugin-sample", pluginId: "sample", version: "1.0.0" });
+  await env.service.recordRemoteInstall({ pluginId: "sample", name: "epanel-plugin-sample", version: "0.5.0", installedAt: 1 }, "node-1");
+  env.state.request = async ({ event, daemonId }) => event === "plugin/list"
+    ? daemonId === "node-1"
+      ? [{ id: "sample", packageName: "epanel-plugin-sample", version: "2.0.0", state: "disabled", removable: true }]
+      : []
+    : {};
+  assert.equal((await env.list({ daemonId: "" }))[0].installedVersion, "1.0.0");
+  const node = (await env.list({ daemonId: "node-1" }))[0];
+  assert.equal(node.installedVersion, "2.0.0", "live inventory takes precedence over an old market record");
+  assert.equal(node.installedState, "disabled");
+  assert.equal(node.installedRemovable, true);
+  assert.equal(node.targetDaemonId, "node-1");
+  assert.equal((await env.detail({ daemonId: "node-1" })).installedVersion, "2.0.0");
+  assert.equal((await env.list({ daemonId: "node-2" }))[0].installedVersion, undefined);
+  assert.deepEqual((await env.installed({ daemonId: "node-1" }))[0].daemonIds, ["node-1"]);
+  for (const sides of [["panel"], ["daemon"], ["panel", "daemon"]]) {
+    env.state.sides = sides;
+    assert.equal((await env.list({ daemonId: "" })).length, Number(sides.includes("panel")));
+    assert.equal((await env.list({ daemonId: "node-1" })).length, Number(sides.includes("daemon")));
+  }
+  env.nodes.get("node-1").available = false;
+  await assert.rejects(env.list({ daemonId: "node-1" }), {
+    status: 503, message: "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE"
+  });
+});
+
+test("scoped installs, uninstalls and update checks leave every other host untouched", async (t) => {
+  const env = await fixture(t, { sides: ["panel", "daemon"], version: "2.0.0" });
+  await env.common.installNpmPlugin({ name: "epanel-plugin-sample", pluginId: "sample", version: "1.0.0" });
+  env.installs.length = 0;
+  env.state.request = async ({ event }) => event === "plugin/list"
+    ? [{ id: "sample", packageName: "epanel-plugin-sample", version: "1.5.0", removable: true }]
+    : {};
+  assert.deepEqual((await env.updates({ daemonId: "" })).plugins[0].targets, [{ label: "", currentVersion: "1.0.0" }]);
+  assert.deepEqual((await env.updates({ daemonId: "node-1" })).plugins[0].targets, [
+    { daemonId: "node-1", label: "node-1", currentVersion: "1.5.0" }
+  ]);
+  env.state.protected = true;
+  assert.equal((await env.install({ panel: false, daemonIds: ["node-1"] })).installedVersion, "2.0.0");
+  assert.deepEqual(env.installs, [], "a daemon operation does not install the panel half of a dual-sided package");
+  assert.equal(env.local.get("sample").version, "1.0.0");
+  assert.equal(env.state.panelReloads, 0);
+  assert.deepEqual(env.rpcCalls.filter((call) => call.event === "plugin/npm/install").map((call) => call.daemonId), ["node-1"]);
+  const result = await env.request("delete", "/plugin/uninstall", { pluginId: "sample", daemonIds: "node-1", panel: "false" });
+  assert.equal(result.removed, true);
+  assert.equal(result.installedVersion, undefined);
+  assert.deepEqual(env.uninstalls, []);
+  assert.equal(env.local.get("sample").version, "1.0.0");
+  assert.deepEqual(env.rpcCalls.filter((call) => call.event === "plugin/npm/uninstall").map((call) => call.daemonId), ["node-1"]);
+  env.state.protected = false;
+  env.rpcCalls.length = 0;
+  await env.service.recordRemoteInstall({ pluginId: "sample", name: "epanel-plugin-sample", version: "1.5.0", installedAt: 1 }, "node-2");
+  assert.equal((await env.install({ panel: true })).installedVersion, "2.0.0");
+  assert.equal(env.rpcCalls.length, 0, "a panel install never contacts a daemon");
+  const panelRemoval = await env.request("delete", "/plugin/uninstall", { pluginId: "sample", panel: "true" });
+  assert.equal(panelRemoval.removed, true);
+  assert.equal(panelRemoval.installedVersion, undefined);
+  assert.equal(env.service.readRemoteInstalls("sample")[0].daemonId, "node-2");
+  assert.equal(env.rpcCalls.length, 0, "removing the panel half preserves every daemon installation");
+});
+
+test("node management can uninstall packages installed outside the market without removing the panel", async (t) => {
+  const env = await fixture(t, { sides: ["panel", "daemon"] });
+  await env.common.installNpmPlugin({ name: "epanel-plugin-sample", pluginId: "sample", version: "1.0.0" });
+  let installed = true;
+  env.state.request = async ({ event }) => {
+    if (event === "plugin/list") return installed
+      ? [{ id: "sample", packageName: "epanel-plugin-sample", version: "3.0.0", removable: true }]
+      : [];
+    if (event === "plugin/npm/uninstall") installed = false;
+    return {};
+  };
+  assert.equal((await env.installed({ daemonId: "node-2" }))[0].version, "3.0.0");
+  const result = await env.request("delete", "/plugin/uninstall", { pluginId: "sample", daemonIds: "node-2", panel: "false" });
+  assert.equal(result.removed, true);
+  assert.deepEqual(await env.installed({ daemonId: "node-2" }), []);
+  assert.equal(env.local.get("sample").version, "1.0.0");
+});
 
 test("market updates compare live versions on each side and leave unchecked nodes visible", async (t) => {
   const env = await fixture(t, { sides: ["panel", "daemon"], version: "2.0.0" });

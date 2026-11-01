@@ -9,6 +9,7 @@ import {
   applyingChanges,
   applyMarketChanges,
   discardMarketChange,
+  marketChangeKey,
   queuedChanges
 } from "../operations";
 
@@ -56,7 +57,7 @@ async function apply() {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="change in queuedChanges" :key="change.plugin.id">
+            <tr v-for="change in queuedChanges" :key="marketChangeKey(change.plugin)">
               <td>{{ change.plugin.displayName }}</td>
               <td>
                 {{ change.plugin.installedVersion || t("TXT_CODE_PLUGIN_MARKET_NOT_INSTALLED") }}
@@ -71,13 +72,20 @@ async function apply() {
                   {{ t("TXT_CODE_PLUGIN_MARKET_REMOVE_CONFIG") }}
                 </div>
               </td>
-              <td>{{ change.daemonIds.join(", ") || "—" }}</td>
+              <td>
+                {{
+                  change.daemonIds.join(", ") ||
+                  (change.plugin.targetDaemonId === ""
+                    ? t("TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL")
+                    : "—")
+                }}
+              </td>
               <td>
                 <VBtn
                   variant="text"
                   size="small"
                   :disabled="applyingChanges"
-                  @click="discardMarketChange(change.plugin.id)"
+                  @click="discardMarketChange(change.plugin.id, change.plugin.targetDaemonId)"
                   >{{ t("TXT_CODE_PLUGIN_MARKET_DISCARD") }}</VBtn
                 >
               </td>

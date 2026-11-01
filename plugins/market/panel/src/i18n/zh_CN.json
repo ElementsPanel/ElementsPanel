@@ -1,4 +1,6 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_CURRENT_PANEL": "当前面板",
+  "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE": "无法读取所选节点的插件列表",
   "TXT_CODE_PLUGIN_MARKET": "插件市场",
   "TXT_CODE_PLUGIN_MARKET_ADDR": "插件市场地址",
   "TXT_CODE_PLUGIN_MARKET_ADDR_DESC": "插件市场网站的地址，插件列表从这里获取",

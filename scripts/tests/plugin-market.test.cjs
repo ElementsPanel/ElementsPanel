@@ -527,6 +527,9 @@ const sharedViewOverrides = {
   "@/components/PageToolbar.vue": {},
   "@/lang/i18n": { t: (key) => key, getCurrentLang: () => "en_us" },
   "@/tools/validator": { getValidatorErrorMsg: (err) => err.message },
+  "@/tools/nodes": load("plugins/console/panel/src/tools/nodes.ts", {
+    "@/lang/i18n": { t: (key) => key }
+  }),
   "@/tools/vuetifyToast": { message: { error() {} } },
   // Icon networking is independent of the catalogue/operation state tested here.
   "../hooks/usePluginIcons": { usePluginIcons: () => ({ icons: vue.ref({}), load() {} }) },
@@ -828,10 +831,10 @@ test("one-click updates keep per-target versions, isolate failures and never exe
   assert.equal(operations.updatingPlugins.value, false);
 });
 
-test("market update tabs follow the header and one click updates the visible targets", async () => {
+test("market target changes preserve the routed page, search and active tab while refreshing its content", async () => {
   const slots = vue.defineComponent({
     setup(_props, { slots }) {
-      return () => vue.h("div", Object.values(slots).flatMap((slot) => slot?.()));
+      return () => vue.h("div", Object.values(slots).flatMap((slot) => slot?.({ props: {} })));
     }
   });
   const control = (props, emits) => vue.defineComponent({
@@ -845,11 +848,12 @@ test("market update tabs follow the header and one click updates the visible tar
   });
   const Button = control({ disabled: Boolean, loading: Boolean }, ["click"]);
   const Search = control({ modelValue: String }, ["update:modelValue"]);
+  const NodeItem = control({ title: String, disabled: Boolean, active: Boolean }, ["click"]);
   const components = Object.fromEntries([
     "VAlert", "VAvatar", "VCard", "VCardActions", "VCardText", "VChip", "VCol", "VContainer",
-    "VIcon", "VImg", "VProgressCircular", "VProgressLinear", "VRow", "VSpacer", "VTab", "VTable"
+    "VIcon", "VImg", "VList", "VListItem", "VMenu", "VProgressCircular", "VProgressLinear", "VRow", "VSpacer", "VTab", "VTable"
   ].map((name) => [name, slots]));
-  Object.assign(components, { VTabs: Tabs, VBtn: Button, VTextField: Search });
+  Object.assign(components, { VTabs: Tabs, VBtn: Button, VTextField: Search, VListItem: NodeItem });
   const calls = [];
   let reads = 0;
   const plans = [
@@ -876,10 +880,18 @@ test("market update tabs follow the header and one click updates the visible tar
     "@/components/PageToolbar.vue": Toolbar,
     "../operations": operations,
     "../api": {
+      pluginMarketNodes: () => ({ execute: async () => ({ value: [
+        { daemonId: "one", ip: "10.0.0.1", remarks: "Node One", available: true },
+        { daemonId: "two", ip: "10.0.0.2", remarks: "Node Two", available: false }
+      ] }) }),
       pluginMarketList: () => ({ execute: async () => ({ value: [] }) }),
-      pluginMarketUpdates: () => ({ execute: async () => {
+      pluginMarketUpdates: () => ({ execute: async ({ params }) => {
         reads++;
-        return { value: { plugins: plans.filter((plan) => !calls.some((call) => call.pluginId === plan.pluginId)), uncheckedNodes: [] } };
+        return { value: { plugins: plans
+          .map((plan) => ({ ...plan, targets: plan.targets.filter((target) =>
+            target.daemonId === (params.daemonId || undefined) && !calls.some((call) =>
+              call.pluginId === plan.pluginId && (target.daemonId ? call.daemonIds.includes(target.daemonId) : call.panel))) }))
+          .filter((plan) => plan.targets.length), uncheckedNodes: [] } };
       } })
     }
   };
@@ -887,7 +899,24 @@ test("market update tabs follow the header and one click updates the visible tar
   const List = load("plugins/market/panel/src/components/PluginMarketList.vue", {
     ...overrides, "./PluginMarketUpdates.vue": Updates, "./PluginMarketChanges.vue": slots
   }, true).default;
-  const app = renderer.createApp(List);
+  const vueRouter = frontendRequire("vue-router");
+  const Page = load("plugins/market/panel/src/normal/PluginMarket.vue", {
+    vue,
+    "vue-router": vueRouter,
+    "../components/PluginMarketList.vue": List
+  }, true).default;
+  const router = vueRouter.createRouter({
+    history: vueRouter.createMemoryHistory(),
+    routes: [{ path: "/market/plugins", component: Page }]
+  });
+  await router.push("/market/plugins");
+  await router.isReady();
+  const app = renderer.createApp({
+    setup: () => () => vue.h(vueRouter.RouterView, null, {
+      default: ({ Component, route }) => Component ? vue.h(Component, { key: route.fullPath }) : null
+    })
+  });
+  app.use(router);
   app.mount({ children: [] });
   const find = (type, node = app._instance.subTree) => {
     if (!node || typeof node !== "object") return [];
@@ -895,14 +924,21 @@ test("market update tabs follow the header and one click updates the visible tar
     if (node.component) return [...found, ...find(type, node.component.subTree)];
     return Array.isArray(node.children) ? [...found, ...node.children.flatMap((child) => find(type, child))] : found;
   };
+  const updateAllButton = () => find(Button).find((button) => button.vnode.props.class === "plugin-market-update-all");
   try {
     await new Promise(setImmediate);
     assert.equal(reads, 0, "updates are only checked when their tab opens");
+    assert.equal(updateAllButton(), undefined, "browse has no update-all action");
+    const page = find(Page)[0];
+    const list = find(List)[0];
+    const search = find(Search)[0];
+    const header = find(Toolbar)[0];
     const tabs = find(Tabs)[0];
-    const container = tabs.subTree.el.parent;
+    const navigation = tabs.subTree.el.parent;
+    const container = navigation.parent;
     const toolbar = container.children.indexOf(find(Toolbar)[0].subTree.el);
     assert.ok(toolbar >= 0);
-    assert.equal(container.children[toolbar + 1], tabs.subTree.el, "tabs occupy a row directly below the header");
+    assert.equal(container.children[toolbar + 1], navigation, "tabs and the node selector occupy the row directly below the header");
     tabs.emit("update:modelValue", "updates");
     await new Promise(setImmediate);
     assert.equal(reads, 1);
@@ -910,12 +946,46 @@ test("market update tabs follow the header and one click updates the visible tar
     await vue.nextTick();
     const view = find(Updates)[0];
     const buttons = find(Button, view.subTree);
-    assert.equal(buttons.length, 2, "the search filters the updates table and its row actions");
-    buttons[0].emit("click");
+    assert.equal(buttons.length, 1, "the filtered update table keeps only its row action");
+    const updateAll = updateAllButton();
+    const actions = updateAll.subTree.el.parent;
+    const nodeSelector = find(Button).find((button) => button.vnode.props.class === "plugin-market-node-selector");
+    assert.equal(actions.parent, navigation, "update all shares the navigation row with the node selector");
+    assert.ok(actions.children.indexOf(updateAll.subTree.el) < actions.children.indexOf(nodeSelector.subTree.el.parent), "update all appears to the left of the node selector");
+    assert.equal(updateAll.props.disabled, false);
+    updateAll.emit("click");
     await new Promise(setImmediate);
-    assert.deepEqual(calls, [{ pluginId: "sample", version: "2.0.0", panel: true, daemonIds: ["one"] }]);
+    assert.deepEqual(calls, [{ pluginId: "sample", version: "2.0.0", panel: true, daemonIds: [] }]);
     assert.equal(reads, 2, "the update list is checked again after the operation");
-    assert.equal(find(Button, view.subTree)[0].props.disabled, true);
+    assert.equal(updateAllButton().props.disabled, true);
+    const nodes = find(NodeItem);
+    assert.equal(nodes.length, 3, "the selector offers this panel and both daemon nodes");
+    assert.equal(nodes[0].props.active, true);
+    assert.equal(nodes[2].props.disabled, true, "offline nodes use the instance selector's disabled style");
+    nodes[1].emit("click");
+    await new Promise(setImmediate);
+    assert.equal(reads, 3);
+    assert.equal(router.currentRoute.value.fullPath, "/market/plugins", "target changes do not navigate");
+    assert.equal(find(Page)[0], page, "the route view is not remounted");
+    assert.equal(find(List)[0], list);
+    assert.equal(find(Toolbar)[0], header);
+    assert.equal(find(Search)[0], search);
+    assert.equal(search.props.modelValue, "sample");
+    assert.equal(find(Tabs)[0], tabs);
+    assert.equal(tabs.props.modelValue, "updates");
+    assert.equal(find(Updates)[0], view, "the current update view refreshes in place");
+    assert.equal(view.props.daemonId, "one");
+    assert.equal(find(NodeItem)[1].props.active, true);
+    updateAllButton().emit("click");
+    await new Promise(setImmediate);
+    assert.deepEqual(calls[1], { pluginId: "sample", version: "2.0.0", panel: false, daemonIds: ["one"] });
+    find(NodeItem)[0].emit("click");
+    await new Promise(setImmediate);
+    assert.equal(find(Page)[0], page, "returning to the panel also preserves the page");
+    assert.equal(find(Tabs)[0].props.modelValue, "updates");
+    assert.equal(find(Search)[0].props.modelValue, "sample");
+    assert.equal(find(Updates)[0], view);
+    assert.equal(view.props.daemonId, "");
   } finally {
     app.unmount();
   }
@@ -925,6 +995,7 @@ test("desktop cards support keyboard selection and preserve search when installe
   const component = load("plugins/market/panel/src/components/PluginMarketList.vue", {
     ...sharedViewOverrides,
     "../api": {
+      pluginMarketNodes: () => ({ execute: async () => ({ value: [] }) }),
       pluginMarketList: () => ({
         execute: async () => ({
           value: [
@@ -966,11 +1037,98 @@ test("desktop cards support keyboard selection and preserve search when installe
   }
 });
 
+test("switching market nodes clears old installation state and ignores late responses", async () => {
+  const requests = [];
+  const component = load("plugins/market/panel/src/components/PluginMarketList.vue", {
+    ...sharedViewOverrides,
+    "../api": {
+      pluginMarketNodes: () => ({ execute: async () => ({ value: [
+        { daemonId: "one", ip: "10.0.0.1", remarks: "One", available: true },
+        { daemonId: "two", ip: "10.0.0.2", remarks: "Two", available: true }
+      ] }) }),
+      pluginMarketList: () => ({ execute: (config) => new Promise((resolve) => requests.push({ config, resolve })) })
+    }
+  }).default;
+  const { state, events, app } = setupFixture(component, vue.reactive({ embedded: true }));
+  try {
+    assert.equal(requests[0].config.params.daemonId, "");
+    requests[0].resolve({ value: [{ id: "sample", installedVersion: "1.0.0" }] });
+    await new Promise(setImmediate);
+    state.keyword.value = "sample";
+    state.selectedDaemonId.value = "one";
+    await vue.nextTick();
+    assert.deepEqual(state.plugins.value, []);
+    assert.equal(requests[1].config.params.daemonId, "one");
+    state.selectedDaemonId.value = "two";
+    await vue.nextTick();
+    requests[2].resolve({ value: [{ id: "sample", installedVersion: "3.0.0" }] });
+    await new Promise(setImmediate);
+    requests[1].resolve({ value: [{ id: "sample", installedVersion: "2.0.0" }] });
+    await new Promise(setImmediate);
+    assert.equal(state.plugins.value[0].installedVersion, "3.0.0");
+    assert.equal(state.plugins.value[0].targetDaemonId, "two");
+    assert.equal(state.keyword.value, "sample");
+    assert.deepEqual(events, [["target-change", "one"], ["target-change", "two"]]);
+    operationState.notifyInstalled("sample", "4.0.0", "one");
+    await vue.nextTick();
+    assert.equal(requests.length, 3, "another node's operation cannot change the current badge");
+  } finally {
+    app.unmount();
+  }
+});
+
+test("scoped market actions install and uninstall only the current panel or daemon", async () => {
+  for (const daemonId of ["", "node-1"]) {
+    const f = installFixture();
+    try {
+      f.props.plugin.targetDaemonId = daemonId;
+      await f.state.install();
+      assert.deepEqual(f.calls.find((call) => call.name === "install").args.data, {
+        pluginId: "one", name: "one", version: "1.0.0",
+        panel: !daemonId, daemonIds: daemonId ? [daemonId] : []
+      });
+      assert.equal(f.state.nodeShown.value, false, "the current target replaces the multi-node picker");
+      await f.state.requestUninstall({ ...f.props.plugin });
+      assert.deepEqual(f.calls.find((call) => call.name === "uninstall").args.params, {
+        pluginId: "one", panel: !daemonId, daemonIds: daemonId
+      });
+      assert.equal(operationState.installedChange.value.daemonId, daemonId);
+    } finally {
+      f.scope.stop();
+    }
+  }
+});
+
+test("bulk changes keep separate operations for the same plugin on different nodes", async () => {
+  const calls = [];
+  const operations = load("plugins/market/panel/src/operations.ts", {
+    vue,
+    "@/plugin/context": { ctx: { plugins: { refresh: async () => {} } } },
+    "./api": { installMarketPlugin: () => ({ execute: async ({ data }) => {
+      calls.push(data);
+      return { value: { failedNodes: [], installedVersion: data.version, restartRequired: false } };
+    } }) }
+  });
+  for (const targetDaemonId of ["", "one", "two"]) {
+    operations.queueMarketChange({ plugin: { id: "sample", name: "sample", targetDaemonId },
+      kind: "install", version: "2.0.0", daemonIds: targetDaemonId ? [targetDaemonId] : [] });
+  }
+  assert.equal(operations.queuedChanges.value.length, 3);
+  operations.discardMarketChange("sample", "one");
+  await operations.applyMarketChanges();
+  assert.deepEqual(calls, [
+    { pluginId: "sample", name: "sample", version: "2.0.0", panel: true, daemonIds: [] },
+    { pluginId: "sample", name: "sample", version: "2.0.0", panel: false, daemonIds: ["two"] }
+  ]);
+  assert.deepEqual(operations.queuedChanges.value, []);
+});
+
 test("an empty catalogue reads as empty, and only a failed refresh as unreachable", async () => {
   let fail = true;
   const component = load("plugins/market/panel/src/components/PluginMarketList.vue", {
     ...sharedViewOverrides,
     "../api": {
+      pluginMarketNodes: () => ({ execute: async () => ({ value: [] }) }),
       pluginMarketList: () => ({
         execute: async () => {
           if (fail) throw new Error("offline");
@@ -997,6 +1155,7 @@ test("market lists ignore older refreshes and responses after unmount", async ()
   const component = load("plugins/market/panel/src/components/PluginMarketList.vue", {
     ...sharedViewOverrides,
     "../api": {
+      pluginMarketNodes: () => ({ execute: async () => ({ value: [] }) }),
       pluginMarketList: () => ({
         execute: () => new Promise((resolve) => requests.push(resolve))
       })
@@ -1021,15 +1180,15 @@ test("desktop browsing keeps the list mounted and wires detail installation and 
   // Typed props, like the real components: a bare `embedded` attribute only
   // becomes `true` when the prop is declared Boolean.
   const List = vue.defineComponent({
-    props: { embedded: Boolean },
-    emits: ["select"],
+    props: { embedded: Boolean, daemonId: String },
+    emits: ["select", "target-change"],
     setup(_props, { expose }) {
       expose({ updateInstalled: (...args) => installed.push(args) });
       return () => vue.h("div");
     }
   });
   const Detail = vue.defineComponent({
-    props: { pluginId: String, embedded: Boolean },
+    props: { pluginId: String, embedded: Boolean, daemonId: String },
     emits: ["back", "installed"],
     render: () => vue.h("div")
   });
@@ -1049,17 +1208,20 @@ test("desktop browsing keeps the list mounted and wires detail installation and 
   try {
     const list = findChild(List);
     assert.equal(list.props.embedded, true);
+    list.emit("target-change", "node-2");
     list.emit("select", "one");
     await vue.nextTick();
     const detail = findChild(Detail);
     assert.equal(detail.props.pluginId, "one");
     assert.equal(detail.props.embedded, true);
+    assert.equal(detail.props.daemonId, "node-2");
     detail.emit("installed", "one", "1.0.0");
     assert.deepEqual(installed, [["one", "1.0.0"]]);
     detail.emit("back");
     await vue.nextTick();
     assert.equal(findChild(Detail), undefined);
     assert.equal(findChild(List), list, "search and scroll state survive returning to the list");
+    assert.equal(list.props.daemonId, "node-2", "returning to the list preserves the selected node");
     list.emit("select", "two");
     await vue.nextTick();
     assert.equal(findChild(Detail).props.pluginId, "two");
@@ -1068,7 +1230,7 @@ test("desktop browsing keeps the list mounted and wires detail installation and 
   }
 });
 
-test("shared detail follows the plugin only, and ignores an answer that arrived late", async () => {
+test("shared detail follows its plugin and node, ignores stale answers and refreshes after an operation settles", async () => {
   const requests = [];
   const component = load("plugins/market/panel/src/components/PluginMarketDetail.vue", {
     ...sharedViewOverrides,
@@ -1085,11 +1247,12 @@ test("shared detail follows the plugin only, and ignores an answer that arrived 
   assert.equal("version" in component.props, false, "no version prop");
   assert.equal(component.emits.includes("select-version"), false, "no version selection event");
 
-  const props = vue.reactive({ pluginId: "one", embedded: true });
+  const props = vue.reactive({ pluginId: "one", embedded: true, daemonId: "node-1" });
   const { state, app } = setupFixture(component, props);
   try {
     assert.equal(requests[0].args.params.pluginId, "one");
     assert.equal(requests[0].args.params.version, undefined);
+    assert.equal(requests[0].args.params.daemonId, "node-1");
 
     props.pluginId = "two";
     await vue.nextTick();
@@ -1101,10 +1264,30 @@ test("shared detail follows the plugin only, and ignores an answer that arrived 
     await vue.nextTick();
     assert.equal(state.plugin.value.id, "two");
 
+    props.daemonId = "node-2";
+    await vue.nextTick();
+    assert.equal(state.plugin.value, undefined);
+    assert.equal(requests[2].args.params.daemonId, "node-2");
+    requests[2].resolve({ value: { id: "two", installedVersion: "4.0.0", selectedVersion: version("4.0.0") } });
+    await vue.nextTick();
+    operationState.notifyInstalled("two", "9.0.0", "node-1");
+    await vue.nextTick();
+    assert.equal(requests.length, 3, "another node's install does not replace this node's version");
+    state.trackBusy(true);
+    operationState.notifyInstalled("two", "5.0.0", "node-2");
+    await vue.nextTick();
+    assert.equal(requests.length, 3, "refresh waits for the active operation to settle");
+    state.trackBusy(false);
+    await vue.nextTick();
+    assert.equal(requests[3].args.params.daemonId, "node-2");
+    requests[3].resolve({ value: { id: "two", installedVersion: "5.0.0", selectedVersion: version("5.0.0") } });
+    await vue.nextTick();
+    assert.equal(state.plugin.value.installedVersion, "5.0.0");
+
     props.pluginId = "three";
     await vue.nextTick();
     app.unmount();
-    requests[2].resolve({ value: { id: "three", selectedVersion: version("3.0.0") } });
+    requests[4].resolve({ value: { id: "three", selectedVersion: version("3.0.0") } });
     await vue.nextTick();
     assert.equal(state.plugin.value, undefined);
   } finally {

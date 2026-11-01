@@ -172,6 +172,12 @@ async function install(toNodes = false) {
   try {
     const sides = await packageSides(plugin);
     if (disposed) return;
+    if (plugin.targetDaemonId !== undefined) {
+      const side = plugin.targetDaemonId ? "daemon" : "panel";
+      if (!sides.includes(side)) return message.error(t("TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE"));
+      await runInstall(plugin, plugin.targetDaemonId ? [plugin.targetDaemonId] : []);
+      return;
+    }
     const needsNode = sides.includes("daemon") && !sides.includes("panel");
     const list = sides.includes("daemon") ? await fetchNodes() : [];
     if (disposed) return;
@@ -207,7 +213,8 @@ async function runInstall(plugin: MarketPlugin, daemonIds: string[]) {
         pluginId: plugin.id,
         name: plugin.name,
         version: plugin.latestVersion?.version,
-        daemonIds
+        daemonIds,
+        ...(plugin.targetDaemonId !== undefined ? { panel: !plugin.targetDaemonId } : {})
       }
     });
     if (disposed) return;
@@ -217,9 +224,13 @@ async function runInstall(plugin: MarketPlugin, daemonIds: string[]) {
     await ctx.plugins
       .refresh()
       .catch((error) => console.error("Failed to refresh plugins:", error));
-    emit("installed", plugin.id, response.value.installedVersion);
-    notifyInstalled(plugin.id, response.value.installedVersion);
     const failed = response.value.failedNodes;
+    const installedVersion =
+      plugin.targetDaemonId && failed.includes(plugin.targetDaemonId)
+        ? plugin.installedVersion
+        : response.value.installedVersion;
+    emit("installed", plugin.id, installedVersion);
+    notifyInstalled(plugin.id, installedVersion, plugin.targetDaemonId);
     if (failed.length) {
       message.error(
         t("TXT_CODE_PLUGIN_MARKET_NODE_FAILED", { nodes: nodeNames(failed).join("、") })
@@ -249,6 +260,10 @@ async function requestUninstall(plugin = uninstallTarget.value) {
   pendingId.value = plugin.id;
   uninstallTarget.value = null;
   try {
+    if (plugin.targetDaemonId !== undefined) {
+      await runUninstall(plugin, plugin.targetDaemonId ? [plugin.targetDaemonId] : []);
+      return;
+    }
     // Uninstall must still work when the marketplace is offline or a release
     // has been removed. Read the persisted installation, including node retries.
     const { execute } = pluginMarketInstalled();
@@ -292,6 +307,7 @@ async function runUninstall(plugin: MarketPlugin, daemonIds: string[]) {
       params: {
         pluginId: plugin.id,
         daemonIds: daemonIds.join(","),
+        ...(plugin.targetDaemonId !== undefined ? { panel: !plugin.targetDaemonId } : {}),
         ...(removeConfig.value ? { removeConfig: true } : {})
       }
     });
@@ -302,9 +318,13 @@ async function runUninstall(plugin: MarketPlugin, daemonIds: string[]) {
     await ctx.plugins
       .refresh()
       .catch((error) => console.error("Failed to refresh plugins:", error));
-    emit("installed", plugin.id, response.value.installedVersion);
-    notifyInstalled(plugin.id, response.value.installedVersion);
     const failed = response.value.failedNodes;
+    const installedVersion =
+      plugin.targetDaemonId && failed.includes(plugin.targetDaemonId)
+        ? plugin.installedVersion
+        : response.value.installedVersion;
+    emit("installed", plugin.id, installedVersion);
+    notifyInstalled(plugin.id, installedVersion, plugin.targetDaemonId);
     if (failed.length) {
       message.error(
         t("TXT_CODE_PLUGIN_MARKET_NODE_FAILED", { nodes: nodeNames(failed).join("、") })
@@ -381,6 +401,7 @@ onScopeDispose(() => {
       <VBtn
         v-if="
           allowVersionChange &&
+          plugin.targetDaemonId === undefined &&
           plugin.installedVersion &&
           version?.sides?.includes('daemon') &&
           plugin.installedUpdatable !== false
