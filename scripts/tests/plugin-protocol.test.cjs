@@ -77,14 +77,21 @@ test("existing daemon sockets use live plugin routes and middleware after update
 });
 
 for (const side of ["panel", "daemon"]) {
-  test(`${side}: server reload waits for transport cleanup and rejects new requests while draining`, async (t) => {
+  test(`${side}: server restart waits for transport cleanup and rejects new requests while draining`, async (t) => {
     const load = createLoader({ host: side });
-    const sessionKey = Symbol.for("elementspanel.panel.session");
-    const previousSession = globalThis[sessionKey];
-    t.after(() => {
-      if (previousSession === undefined) delete globalThis[sessionKey];
-      else globalThis[sessionKey] = previousSession;
-    });
+    if (side === "panel") {
+      for (const [key, value] of Object.entries({
+        EPANEL_SESSION_SECRET: "protocol-test-session-secret",
+        EPANEL_SESSION_COOKIE: "protocol-test-session-cookie"
+      })) {
+        const previousValue = process.env[key];
+        process.env[key] = value;
+        t.after(() => {
+          if (previousValue === undefined) delete process.env[key];
+          else process.env[key] = previousValue;
+        });
+      }
+    }
     const gate = deferred();
     const sessions = [];
     const apps = [];
@@ -165,7 +172,7 @@ for (const side of ["panel", "daemon"]) {
     assert.equal(listener.listening, true);
     let finished = false;
     const closing = hooks
-      .get("plugins/reloading")()
+      .get("process/restarting")()
       .then(() => {
         finished = true;
       });
@@ -181,7 +188,7 @@ for (const side of ["panel", "daemon"]) {
     assert.equal(closes, 1, "drain and disposal share one idempotent close operation");
     if (side === "panel") {
       load(filename, overrides).apply(ctx);
-      assert.deepEqual(sessions[1], sessions[0], "signed sessions survive replacing the module");
+      assert.deepEqual(sessions[1], sessions[0], "signed sessions retain the launcher's restart configuration");
       await hooks.get("dispose")();
     }
   });
