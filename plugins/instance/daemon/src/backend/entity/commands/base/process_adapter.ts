@@ -1,7 +1,66 @@
-import type { ChildProcess } from "child_process";
+import type { ChildProcess, SpawnOptionsWithoutStdio, spawn } from "child_process";
 import { EventEmitter } from "events";
 import { killProcess } from "mcsmanager-common";
 import type { IInstanceProcess } from "../../instance/interface";
+import type Instance from "../../instance/instance";
+
+interface ManagedChild extends ChildProcess {
+  setMetadata?(metadata: Record<string, unknown>): void;
+  release?(): void;
+}
+
+export interface InstanceProcessSnapshot {
+  id: string;
+  pid: number;
+  exitCode: number | null;
+  signalCode: NodeJS.Signals | null;
+  metadata: {
+    pid?: number;
+    pipeName?: string;
+    startTimestamp: number;
+    startCount: number;
+    autoRestartCount: number;
+    userRequestedStop?: boolean;
+  };
+}
+
+const INSTANCE_HOST = Symbol.for("elementspanel.instance-process-host");
+export function instanceProcessHost() {
+  return (
+    globalThis as typeof globalThis & {
+      [INSTANCE_HOST]?: {
+        spawn(
+          id: string,
+          file: string,
+          args: string[],
+          options: SpawnOptionsWithoutStdio,
+          metadata: Record<string, unknown>
+        ): ManagedChild;
+        list(): Promise<InstanceProcessSnapshot[]>;
+        connect(snapshot: InstanceProcessSnapshot): ManagedChild;
+      };
+    }
+  )[INSTANCE_HOST];
+}
+
+export function spawnInstanceProcess(
+  instance: Instance,
+  fallback: typeof spawn,
+  file: string,
+  args: string[],
+  options: SpawnOptionsWithoutStdio,
+  metadata: Record<string, unknown> = {}
+): ManagedChild {
+  const host = instanceProcessHost();
+  return host
+    ? host.spawn(instance.instanceUuid, file, args, options, {
+        startTimestamp: instance.startTimestamp,
+        startCount: instance.startCount,
+        autoRestartCount: instance.autoRestartCount,
+        ...metadata
+      })
+    : fallback(file, args, options);
+}
 
 /** spawn() reports failures asynchronously, including a missing executable. */
 export function waitForSpawn(process: ChildProcess): Promise<void> {
@@ -43,7 +102,9 @@ export class ChildProcessAdapter extends EventEmitter implements IInstanceProces
   ) {
     super();
     this.pid = child.pid;
-    child.once("close", () => { this.closed = true; });
+    child.once("close", () => {
+      this.closed = true;
+    });
     // close follows the final stdout/stderr data; exit can arrive before it.
     child.on("close", this.onExit);
     child.on("error", this.onError);
@@ -67,6 +128,10 @@ export class ChildProcessAdapter extends EventEmitter implements IInstanceProces
 
   public kill(signal?: NodeJS.Signals) {
     if (this.pid) return killProcess(this.pid, this.child, signal);
+  }
+
+  public snapshot(metadata: Record<string, unknown>) {
+    (this.child as ManagedChild).setMetadata?.(metadata);
   }
 
   public destroy(): void | Promise<void> {
@@ -101,6 +166,7 @@ export class ChildProcessAdapter extends EventEmitter implements IInstanceProces
       this.child.stdin?.destroy();
       this.child.stdout?.destroy();
       this.child.stderr?.destroy();
+      (this.child as ManagedChild).release?.();
     }
   }
 }

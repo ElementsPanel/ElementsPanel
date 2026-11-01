@@ -342,6 +342,10 @@ export interface PanelOperationLogger {
 
 /** What is installed and what is loaded, plus the switch that decides. */
 export interface PanelPluginsService {
+  readonly restartPending?: boolean;
+  waitForDisposal(): Promise<void>;
+  /** Keep in-flight market operations alive when a shared npm dependency changes. */
+  deferRestartUntil(response: Promise<void>): void;
   readonly loaded: readonly LoadedPanelPlugin[];
   /** The manifest the browser fetches to discover frontend entries. */
   frontendManifest(): PanelFrontendPluginEntry[];
@@ -357,6 +361,8 @@ export interface PanelPluginsService {
     name: string;
     version?: string;
     pluginId?: string;
+    /** Delay a required process restart until the HTTP response is flushed. */
+    reloadAfter?: Promise<void>;
   }): Promise<PanelPluginRecord>;
   /** Unloads and removes an installed panel plugin package. */
   remove(id: string): Promise<void>;
@@ -372,6 +378,7 @@ export interface PanelPluginsService {
 
 declare module "cordis" {
   interface Events {
+    "process/restarting"(): void | Promise<void>;
     "plugins/reloading"(): void | Promise<void>;
   }
   interface Context {

@@ -9,6 +9,7 @@ interface InstanceRuntimeState {
   settings: DaemonPluginContext["settings"];
   storage: DaemonPluginContext["storage"];
   stopping: boolean;
+  restarting: boolean;
   handover?: {
     instances: readonly Instance[];
     shutdown(): Promise<void>;
@@ -31,14 +32,18 @@ export function setPluginContext(value: DaemonPluginContext) {
       context: value,
       settings: value.settings,
       storage: value.storage,
-      stopping: false
+      stopping: false,
+      restarting: false
     };
     host[INSTANCE_RUNTIME] = runtime = state;
+    host.on("process/restarting", () => {
+      state.restarting = true;
+    });
     host.on("dispose", async () => {
       state.stopping = true;
       // A replacement may fail before it can claim the retained processes.
       // The daemon still owns them and must stop them during real shutdown.
-      await state.handover?.shutdown();
+      if (!state.restarting) await state.handover?.shutdown();
       state.handover = undefined;
     });
   }

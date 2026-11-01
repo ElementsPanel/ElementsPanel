@@ -101,6 +101,20 @@ export async function apply(ctx: PanelPluginContext) {
   const requireAdmin = permission({ level: ctx.roles.ADMIN });
   const router = ctx.koa.router("/api/market");
 
+  function responseFinished(requestCtx: Koa.ParameterizedContext): Promise<void> {
+    const response = requestCtx.res;
+    if (!response || response.writableFinished || response.destroyed) return Promise.resolve();
+    return new Promise((resolve) => {
+      const release = () => {
+        response.off("finish", release);
+        response.off("close", release);
+        resolve();
+      };
+      response.once("finish", release);
+      response.once("close", release);
+    });
+  }
+
   /**
    * The plugin market's address, as the settings form accepts it. Every market call
    * is built from it, so it is checked here rather than failing one request at a
@@ -421,6 +435,7 @@ export async function apply(ctx: PanelPluginContext) {
     requireAdmin,
     validator({ body: { pluginId: String, version: String, panel: Boolean, daemonIds: Array } }),
     async (requestCtx: Koa.ParameterizedContext) => {
+      ctx.plugins.deferRestartUntil?.(responseFinished(requestCtx));
       const body = requestCtx.request.body as {
         pluginId: string;
         version: string;
@@ -492,7 +507,8 @@ export async function apply(ctx: PanelPluginContext) {
                   await ctx.plugins.install({
                     name: info.name,
                     pluginId: info.pluginId,
-                    version: info.version
+                    version: info.version,
+                    reloadAfter: responseFinished(requestCtx)
                   });
                   updatedTargets.push(target);
                 } catch (error) {
@@ -621,11 +637,8 @@ export async function apply(ctx: PanelPluginContext) {
   }
 
   /**
-   * Makes a freshly installed package take effect without a restart.
-   *
-   * Both halves re-scan after the dependency is installed: the panel scans its
-   * own npm plugins, and the selected daemons scan theirs before reconnecting.
-   * Loaders dispose the previous revision before activating its replacement.
+   * Reconcile ordinary plugins in place. Core changes are applied by the
+   * loader's scheduled process restart, after this request has been answered.
    */
   async function hotReload(
     sides: PluginSide[],
@@ -637,6 +650,7 @@ export async function apply(ctx: PanelPluginContext) {
       if (sides.includes("panel")) await ctx.plugins.reload();
       const panelReady =
         !sides.includes("panel") ||
+        ctx.plugins.restartPending ||
         !ctx.plugins
           .inventory()
           .some((plugin) => plugin.id === pluginId && plugin.state === "restart-required");
@@ -744,6 +758,7 @@ export async function apply(ctx: PanelPluginContext) {
     ctx.middleware.speedLimit(3),
     ctx.middleware.validator({ body: { pluginId: String, name: String } }),
     async (requestCtx: Koa.ParameterizedContext) => {
+      ctx.plugins.deferRestartUntil?.(responseFinished(requestCtx));
       const body = (requestCtx.request.body ?? {}) as Record<string, unknown>;
       try {
         requestCtx.body = await withPluginLock(String(body.pluginId), async () => {
@@ -782,7 +797,8 @@ export async function apply(ctx: PanelPluginContext) {
             await ctx.plugins.install({
               name: detail.name,
               pluginId: detail.id,
-              version: detail.selectedVersion.version
+              version: detail.selectedVersion.version,
+              reloadAfter: responseFinished(requestCtx)
             });
             changedSides.push("panel");
           }

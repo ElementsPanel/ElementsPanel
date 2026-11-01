@@ -33,10 +33,6 @@ import { pluginAssets } from "./plugin_assets";
 // this plugin's own `inject` list.
 
 const STATIC_MAX_AGE = 10 * 24 * 60 * 60;
-const SESSION_STATE = Symbol.for("elementspanel.panel.session");
-const processState = globalThis as typeof globalThis & {
-  [SESSION_STATE]?: { keys: string[]; key: string };
-};
 
 /** The fields this plugin owns in the panel configuration. */
 const SETTING_KEYS = [
@@ -80,13 +76,12 @@ export function apply(ctx: PanelPluginContext) {
     // some applications
   });
 
-  // Keep signed sessions valid when another revision recreates the listener.
-  const sessionState = (processState[SESSION_STATE] ??= { keys: [v4()], key: v4() });
-  app.keys = sessionState.keys;
+  // The launcher keeps these stable across worker restarts.
+  app.keys = [process.env.EPANEL_SESSION_SECRET || v4()];
   app.use(
     session(
       {
-        key: sessionState.key,
+        key: process.env.EPANEL_SESSION_COOKIE || v4(),
         maxAge: 86400000,
         overwrite: true,
         httpOnly: true,
@@ -331,7 +326,7 @@ export function apply(ctx: PanelPluginContext) {
 
   // Stop accepting requests before authentication and feature routes unload.
   // An install request already in progress can still send its final HTTP reply.
-  ctx.on("plugins/reloading", () => {
+  ctx.on("process/restarting", () => {
     reloading = true;
     return closeTransport();
   });
@@ -343,8 +338,7 @@ export function apply(ctx: PanelPluginContext) {
   });
 
   // Bound on `ready`, not here: the panel must not accept a request before every
-  // plugin has registered its routes. Cordis runs the hook immediately when the
-  // container is already started, so reloading this plugin re-binds cleanly.
+  // plugin has registered its routes.
   ctx.on("ready", () => {
     const port = config.httpPort;
     httpServer?.listen(port, config.httpIp, () => {

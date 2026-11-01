@@ -1,5 +1,6 @@
 const path = require("node:path");
 const { installPluginResolution } = require("./plugin-resolution.cjs");
+const { installInstanceProcessClient } = require("./instance-client.cjs");
 
 // This file is copied to <package>/runtime. Resolve assets from the real package,
 // independently of the directory in which npm start was invoked.
@@ -22,4 +23,5 @@ process.on("message", (message) => {
 process.on("disconnect", stop);
 
 installPluginResolution(packageRoot, process.cwd());
+installInstanceProcessClient();
 require(path.join(packageRoot, "app.js"));

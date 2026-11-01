@@ -731,7 +731,8 @@ test("instance deletion awaits filesystem success and preserves retryable instan
     "../utils/sleep": {},
     "./log": logger,
     "./system_instance_control": { deleteInstanceAllTask() {} },
-    "./takeover_container": {}
+    "./takeover_container": {},
+    "./takeover_processes": {}
   }).default;
   let status = 0;
   let destroyed = false;

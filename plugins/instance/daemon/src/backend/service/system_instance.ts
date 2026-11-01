@@ -15,6 +15,7 @@ import { sleep } from "../utils/sleep";
 import logger from "./log";
 import InstanceControl from "./system_instance_control";
 import takeoverContainer from "./takeover_container";
+import takeoverProcesses from "./takeover_processes";
 
 class InstanceSubsystem extends EventEmitter {
   public readonly GLOBAL_INSTANCE = "__MCSM_GLOBAL_INSTANCE__";
@@ -144,14 +145,23 @@ class InstanceSubsystem extends EventEmitter {
       this.GLOBAL_INSTANCE_UUID
     );
 
-    this.takeover = takeoverContainer(() => !this.startupCancelled).catch((error) => {
-      const reason = error.message || error;
-      if (typeof reason == "string" && reason.includes("connect ENOENT")) {
-        return;
+    this.takeover = (async () => {
+      await takeoverProcesses(() => !this.startupCancelled);
+      try {
+        await takeoverContainer(() => !this.startupCancelled);
+      } catch (error: any) {
+        const reason = error.message || error;
+        if (typeof reason == "string" && reason.includes("connect ENOENT")) return;
+        logger.error(`${$t("TXT_CODE_8d4c8f7e")}: ${reason}`);
       }
-      logger.error(`${$t("TXT_CODE_8d4c8f7e")}: ${reason}`);
-    });
-    void this.takeover.then(() => this.autoStart());
+    })();
+    void this.takeover
+      .then(() => {
+        // A worker replacement must also preserve intentionally stopped
+        // instances, even when their next full launcher startup is automatic.
+        if (process.env.EPANEL_RESTARTED !== "1") return this.autoStart();
+      })
+      .catch((error) => logger.error(error));
   }
 
   createInstance(cfg: any, persistence = true, uuid?: string) {
@@ -235,6 +245,24 @@ class InstanceSubsystem extends EventEmitter {
     this.startupCancelled = true;
     await Promise.all([...this.instances.values()].map((instance) => instance.suspendForReload()));
     await this.takeover;
+  }
+
+  async waitForTakeover() {
+    await this.takeover;
+  }
+
+  async prepareForRestart() {
+    await this.suspendForReload();
+    for (const instance of this.instances.values()) {
+      StorageSubsystem.store("InstanceConfig", instance.instanceUuid, instance.config);
+      instance.process?.snapshot?.({
+        pid: Number(instance.process.pid),
+        startTimestamp: instance.startTimestamp,
+        startCount: instance.startCount,
+        autoRestartCount: instance.autoRestartCount,
+        userRequestedStop: instance.getUserRequestedStop()
+      });
+    }
   }
 
   /** Transfer the existing owners, including ordinary child/PTY/Docker handles. */

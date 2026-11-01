@@ -388,6 +388,7 @@ for (const side of ["panel", "daemon"]) {
         "plugin_contract",
         "plugin_overrides",
         "plugin_lifecycle",
+        "process_restart",
         "plugin_revision",
         "runtime_paths",
         "plugin_modules",
@@ -470,20 +471,23 @@ for (const side of ["panel", "daemon"]) {
     const coreUpdate = await installation;
     f.state.gate = undefined;
     if (side === "daemon") {
-      assert.equal(coreUpdate.result.application, "pending");
+      assert.equal(coreUpdate.result.application, "restart-required");
       assert.equal(ctx.npmVersion, "1.0.0", "the reply transport stays on the old revision");
       await settle();
       assert.equal(ctx.npmVersion, "1.0.0");
       replied.resolve();
       await queuedReload;
     } else {
-      assert.equal(coreUpdate.result.application, "applied");
+      assert.equal(coreUpdate.result.application, "restart-required");
     }
-    assert.equal(ctx.npmVersion, "2.0.0");
-    assert.equal(ctx.plugins.inventory().find((record) => record.id === "server").state, "active");
+    assert.equal(ctx.npmVersion, "1.0.0");
+    assert.equal(
+      ctx.plugins.inventory().find((record) => record.id === "server").state,
+      "restart-required"
+    );
     await assert.rejects(ctx.plugins.remove("server"), /essential/);
     const downgraded = await ctx.plugins.install({ name: server.name, version: "1.0.0" });
-    assert.equal(downgraded.result.application, "applied");
+    assert.equal(downgraded.result.application, "restart-required");
     assert.equal(ctx.npmVersion, "1.0.0");
   });
 }

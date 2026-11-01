@@ -108,6 +108,7 @@ export default class Instance extends EventEmitter {
   public watchers: Map<string, IWatcherInfo> = new Map();
 
   public process?: IInstanceProcess;
+  public starting?: Promise<void>;
 
   private outputLoopTask?: NodeJS.Timeout;
   private outputBuffer: CircularBuffer<string>;
@@ -358,9 +359,29 @@ export default class Instance extends EventEmitter {
 
   // function that must be executed after the instance starts
   // Trigger the open event and bind the data and exit events, etc.
-  started(process: IInstanceProcess) {
-    this.startTimestamp = this.config.lastDatetime = Date.now();
-    this.userRequestedStop = false;
+  started(
+    process: IInstanceProcess,
+    previous?: {
+      startTimestamp: number;
+      startCount: number;
+      autoRestartCount: number;
+      userRequestedStop?: boolean;
+    }
+  ) {
+    this.startTimestamp = this.config.lastDatetime = previous?.startTimestamp || Date.now();
+    if (previous) {
+      this.startCount = previous.startCount;
+      this.autoRestartCount = previous.autoRestartCount;
+    }
+    this.userRequestedStop = previous?.userRequestedStop ?? false;
+    if (this.userRequestedStop) this.ignoreEventTaskOnce();
+    process.snapshot?.({
+      pid: Number(process.pid),
+      startTimestamp: this.startTimestamp,
+      startCount: this.startCount,
+      autoRestartCount: this.autoRestartCount,
+      userRequestedStop: this.userRequestedStop
+    });
     const outputCode = this.config.terminalOption.pty ? "utf-8" : this.config.oe;
     process.on("data", (text: any) => {
       this.pushOutput(iconv.decode(text, outputCode));
@@ -466,6 +487,7 @@ export default class Instance extends EventEmitter {
     this.stopOutputLoop();
     this.reloading = true;
     this.watchers.clear();
+    await this.starting?.catch(() => {});
     await this.lifeCycleTaskManager.clearLifeCycleTask();
   }
 
@@ -502,6 +524,7 @@ export default class Instance extends EventEmitter {
 
   setUserRequestedStop(value: boolean) {
     this.userRequestedStop = value;
+    this.process?.snapshot?.({ userRequestedStop: value });
   }
 
   getUserRequestedStop() {

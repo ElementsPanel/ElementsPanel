@@ -6,4 +6,5 @@ export interface IInstanceProcess extends EventEmitter {
   kill: (signal?: any) => any;
   destroy: () => void | Promise<void>;
   write: (data?: any) => any;
+  snapshot?: (metadata: Record<string, unknown>) => void;
 }

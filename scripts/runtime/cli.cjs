@@ -4,6 +4,8 @@ const { createRequire, registerHooks } = require("node:module");
 const { resolveNpmPlugins } = require("./npm-plugins.cjs");
 const { ensureRuntimeTools } = require("./daemon-tools.cjs");
 const { fork } = require("node:child_process");
+const { InstanceProcessHost } = require("./instance-host.cjs");
+const { randomUUID } = require("node:crypto");
 
 function parseArgs(argv, side) {
   const options = { command: "start", withDaemon: false, open: false };
@@ -47,7 +49,11 @@ function runtimeDirectory(project, override, side) {
 }
 
 function workerEnvironment(plan, worker) {
-  const environment = { ...process.env, EPANEL_PROJECT_ROOT: plan.project };
+  const environment = {
+    ...process.env,
+    EPANEL_PROJECT_ROOT: plan.project,
+    EPANEL_SUPERVISED: "1"
+  };
   delete environment.EPANEL_PACKAGE_ROOT;
   delete environment.EPANEL_LOCAL_DAEMON_CONFIG;
   if (worker.side === "panel" && plan.localDaemonConfig)
@@ -72,8 +78,7 @@ function workerPrefix(side, target) {
   const forceColor = process.env.FORCE_COLOR;
   const colored =
     process.env.NO_COLOR === undefined &&
-    (target.isTTY ||
-      (forceColor !== undefined && forceColor !== "0" && forceColor !== "false"));
+    (target.isTTY || (forceColor !== undefined && forceColor !== "0" && forceColor !== "false"));
   return colored ? `${color}[${side}]\u001b[39m ` : `[${side}] `;
 }
 
@@ -158,6 +163,8 @@ async function startWorkers(plan, options = {}) {
   const startupTimeout = options.startupTimeout ?? 120_000;
   const shutdownTimeout = options.shutdownTimeout ?? 90_000;
   const children = new Set();
+  const instanceHosts = new Map();
+  const workerEnvironments = new Map();
   let stopping = false;
   let exitCode = 0;
   let forceTimer;
@@ -171,6 +178,7 @@ async function startWorkers(plan, options = {}) {
     done(exitCode);
   };
   const forceStop = () => {
+    for (const host of instanceHosts.values()) host.stop();
     for (const child of children) child.kill("SIGKILL");
   };
   const stop = (code = 0) => {
@@ -197,71 +205,108 @@ async function startWorkers(plan, options = {}) {
   process.stdin.on("data", onInput);
   process.stdin.resume();
 
+  const startWorker = (worker, restarted = false) => {
+    const host = instanceHosts.get(worker);
+    let environment = workerEnvironments.get(worker);
+    if (!environment) {
+      environment = workerEnvironment(plan, worker);
+      if (worker.side === "panel") {
+        environment.EPANEL_SESSION_SECRET = randomUUID();
+        environment.EPANEL_SESSION_COOKIE = randomUUID();
+      }
+      workerEnvironments.set(worker, environment);
+    }
+    const child = fork(
+      path.join(worker.packageRoot, "runtime/worker.cjs"),
+      options.open && worker.side === "panel" ? ["--open"] : [],
+      {
+        cwd: worker.directory,
+        env: { ...environment, EPANEL_RESTARTED: restarted ? "1" : "0" },
+        execArgv: ["--enable-source-maps"],
+        stdio: ["ignore", "pipe", "pipe", "ipc"],
+        serialization: "advanced"
+      }
+    );
+    const flushOutput = [
+      pipeWorkerOutput(child.stdout, process.stdout, worker.side),
+      pipeWorkerOutput(child.stderr, process.stderr, worker.side)
+    ];
+    children.add(child);
+    let rejectReady;
+    let restarting = false;
+    let restartTimer;
+    child.on("message", (message) => {
+      host?.handle(child, message);
+      if (stopping) return;
+      if (message?.type === "elementspanel:prepare-restart") {
+        host?.detach(child, true);
+        restartTimer ??= setTimeout(() => {
+          console.error(`${worker.side} timed out while preparing to restart.`);
+          stop(1);
+        }, shutdownTimeout);
+      } else if (message?.type === "elementspanel:restart") {
+        restarting = true;
+      }
+    });
+    child.on("error", (error) => {
+      if (!stopping) console.error(error.message);
+      rejectReady?.(error);
+      stop(1);
+    });
+    child.once("close", (code, signal) => {
+      clearTimeout(restartTimer);
+      flushOutput.forEach((flush) => flush());
+      children.delete(child);
+      host?.detach(child);
+      const starting = Boolean(rejectReady);
+      const error = new Error(`${worker.side} exited before becoming ready (${signal || code}).`);
+      if (starting && !stopping) console.error(error.message);
+      rejectReady?.(error);
+      if (!stopping && restarting && !starting && code === 0) {
+        console.log(`${workerPrefix(worker.side, process.stdout)}Restarting...`);
+        void startWorker(worker, true).catch((error) => {
+          console.error(error.message);
+          stop(1);
+        });
+      } else if (!stopping) stop(starting || code !== 0 ? 1 : 0);
+      finish();
+    });
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(
+        () =>
+          settle(
+            new Error(
+              `${worker.side} did not become ready within ${startupTimeout / 1000} seconds.`
+            )
+          ),
+        startupTimeout
+      );
+      const onMessage = (message) => {
+        if (message?.type === "elementspanel:ready") settle();
+      };
+      const settle = (error) => {
+        clearTimeout(timer);
+        child.off("message", onMessage);
+        rejectReady = undefined;
+        if (error) reject(error);
+        else resolve();
+      };
+      rejectReady = settle;
+      child.on("message", onMessage);
+    });
+  };
   try {
     for (const worker of plan.workers) {
       if (stopping) break;
       fs.mkdirSync(worker.directory, { recursive: true });
       if (worker.side === "daemon") {
+        instanceHosts.set(worker, new InstanceProcessHost());
         await ensureRuntimeTools(worker.directory, {
           onDownload: (spec) =>
             console.log(`${workerPrefix("daemon", process.stdout)}Downloading ${spec.filename}...`)
         });
       }
-      const environment = workerEnvironment(plan, worker);
-      const child = fork(
-        path.join(worker.packageRoot, "runtime/worker.cjs"),
-        options.open && worker.side === "panel" ? ["--open"] : [],
-        {
-          cwd: worker.directory,
-          env: environment,
-          execArgv: ["--enable-source-maps"],
-          stdio: ["ignore", "pipe", "pipe", "ipc"]
-        }
-      );
-      const flushOutput = [
-        pipeWorkerOutput(child.stdout, process.stdout, worker.side),
-        pipeWorkerOutput(child.stderr, process.stderr, worker.side)
-      ];
-      children.add(child);
-      let rejectReady;
-      child.on("error", (error) => {
-        if (!stopping) console.error(error.message);
-        rejectReady?.(error);
-        stop(1);
-      });
-      child.once("close", (code, signal) => {
-        flushOutput.forEach((flush) => flush());
-        children.delete(child);
-        const starting = Boolean(rejectReady);
-        const error = new Error(`${worker.side} exited before becoming ready (${signal || code}).`);
-        if (starting && !stopping) console.error(error.message);
-        rejectReady?.(error);
-        if (!stopping) stop(starting || code !== 0 ? 1 : 0);
-        finish();
-      });
-      await new Promise((resolve, reject) => {
-        const timer = setTimeout(
-          () =>
-            settle(
-              new Error(
-                `${worker.side} did not become ready within ${startupTimeout / 1000} seconds.`
-              )
-            ),
-          startupTimeout
-        );
-        const onMessage = (message) => {
-          if (message?.type === "elementspanel:ready") settle();
-        };
-        const settle = (error) => {
-          clearTimeout(timer);
-          child.off("message", onMessage);
-          rejectReady = undefined;
-          if (error) reject(error);
-          else resolve();
-        };
-        rejectReady = settle;
-        child.on("message", onMessage);
-      });
+      await startWorker(worker);
     }
   } catch (error) {
     if (!stopping) {
@@ -272,6 +317,7 @@ async function startWorkers(plan, options = {}) {
   try {
     return await finished;
   } finally {
+    for (const host of instanceHosts.values()) host.stop();
     clearTimeout(forceTimer);
     process.off("SIGINT", onSignal);
     process.off("SIGTERM", onSignal);

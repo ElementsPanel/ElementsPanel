@@ -27,6 +27,7 @@ export { arrayUnique } from "./array";
 export * from "./plugin_contract";
 export * from "./plugin_overrides";
 export * from "./plugin_lifecycle";
+export * from "./process_restart";
 export * from "./plugin_revision";
 export * from "./plugin_modules";
 export * from "./plugin_watch";

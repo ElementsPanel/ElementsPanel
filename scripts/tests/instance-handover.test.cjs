@@ -665,3 +665,73 @@ test("a real child keeps its PID and stdin/stdout while foundation services are 
   assert.equal(process.exitCode, null);
   assert.equal(process.signalCode, null);
 });
+
+test("process restart waits for pending starts and persists live owners without stopping them", async (t) => {
+  const f = await fixture(t);
+  const instance = f.create();
+  const process = child();
+  const starting = deferred();
+  instance.starting = starting.promise;
+  let prepared = false;
+  const preparing = f.ctx.parallel("process/restarting").then(() => { prepared = true; });
+  await settle();
+  assert.equal(prepared, false);
+  instance.started(f.adapter(process));
+  instance.startCount = 4;
+  instance.autoRestartCount = 2;
+  const metadata = [];
+  process.setMetadata = value => metadata.push(value);
+  starting.resolve();
+  await preparing;
+  assert.equal(process.kills, 0);
+  assert.equal(f.records.get("InstanceConfig/running").nickname, "running");
+  assert.equal(metadata.at(-1).startCount, 4);
+  assert.equal(metadata.at(-1).autoRestartCount, 2);
+  assert.equal(instance.outputLoopTask, undefined);
+  await f.ctx.stop();
+  await f.cleanup();
+  assert.equal(process.kills, 0, "worker disposal must leave the instance alive");
+  process.exitCode = 0;
+  process.emit("close", 0);
+  await until(() => instance.status() === 0);
+});
+
+test("takeover restores process state and reports an exit buffered during a worker restart", async (t) => {
+  const f = await fixture(t);
+  const instance = f.create();
+  const process = child();
+  const original = {
+    startTimestamp: Date.now() - 100000,
+    startCount: 4,
+    autoRestartCount: 2,
+    userRequestedStop: true
+  };
+  instance.config.eventTask.autoRestart = true;
+  const key = Symbol.for("elementspanel.instance-process-host");
+  const previous = globalThis[key];
+  let released = false;
+  process.release = () => { released = true; };
+  globalThis[key] = {
+    list: async () => [{ id: "running", pid: process.pid, metadata: original }],
+    connect: () => process
+  };
+  t.after(() => {
+    if (previous === undefined) delete globalThis[key];
+    else globalThis[key] = previous;
+  });
+  const { default: takeover } = f.current.source(base + "service/takeover_processes.ts");
+  await takeover();
+  assert.equal(instance.status(), 3);
+  assert.equal(instance.process.pid, process.pid);
+  assert.equal(instance.startTimestamp, original.startTimestamp);
+  assert.equal(instance.startCount, 4);
+  assert.equal(instance.autoRestartCount, 2);
+  const exited = new Promise(resolve => instance.once("exit", resolve));
+  process.stdout.write("last output before exit\n");
+  process.exitCode = 0;
+  process.emit("close", 0);
+  assert.deepEqual(await exited, { code: 0, isCrash: false });
+  assert.equal(released, true);
+  assert.equal(process.kills, 0);
+  assert.equal(f.events.some(event => event.startsWith("launch:")), false);
+});

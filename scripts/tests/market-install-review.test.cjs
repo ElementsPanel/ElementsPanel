@@ -168,7 +168,10 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
             state: "active"
           }))
           .concat(state.inventoryExtra),
-      install: (options) => common.installNpmPlugin({ ...options, side: "panel" }),
+      install: ({ reloadAfter, ...options }) => {
+        state.reloadAfter = reloadAfter;
+        return common.installNpmPlugin({ ...options, side: "panel" });
+      },
       remove: (id) => {
         if (state.protected) throw new service.PluginMarketError("BUNDLED");
         return common.uninstallNpmPlugin(id);

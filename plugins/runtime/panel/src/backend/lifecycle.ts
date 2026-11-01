@@ -10,8 +10,10 @@ export function setupProcessLifecycle(ctx: PanelPluginContext) {
     stopping = true;
     const translate = ctx.get("i18n")?.$t;
     logger.warn(`${signal} close process signal detected.`);
+    const plugins = ctx.get("plugins");
     try {
       await ctx.stop();
+      await plugins?.waitForDisposal();
       logger.warn(translate?.("TXT_CODE_cea5dba1") ?? "Panel has been stopped.");
       logger.warn(translate?.("TXT_CODE_b0aa2db9") ?? "Goodbye.");
       process.exit(0);

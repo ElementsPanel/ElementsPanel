@@ -411,6 +411,8 @@ export interface DaemonFilesService {
 
 /** What is installed, what is running, and the switch that decides. */
 export interface DaemonPluginsService {
+  readonly restartPending?: boolean;
+  waitForDisposal(): Promise<void>;
   readonly loaded: readonly DaemonPluginEntry[];
   /** Every installed plugin, disabled ones included. */
   inventory(): DaemonPluginRecord[];
@@ -441,6 +443,8 @@ export interface DaemonPluginsService {
 
 declare module "cordis" {
   interface Events {
+    "process/starting"(): void | Promise<void>;
+    "process/restarting"(): void | Promise<void>;
     "plugins/reloading"(): void | Promise<void>;
     /** The replacement graph is ready; restore retained owners before listeners open. */
     "plugins/reloaded"(): void | Promise<void>;

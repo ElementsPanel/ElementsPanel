@@ -239,7 +239,7 @@ export function apply(ctx: DaemonPluginContext) {
       if (httpServer.listening) httpServer.close();
     })());
 
-  ctx.on("plugins/reloading", () => {
+  ctx.on("process/restarting", () => {
     reloading = true;
     return closeTransport();
   });

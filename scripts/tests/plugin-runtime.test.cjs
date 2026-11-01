@@ -15,6 +15,7 @@ const commonNames = [
   "plugin_contract",
   "plugin_overrides",
   "plugin_lifecycle",
+  "process_restart",
   "plugin_revision",
   "runtime_paths",
   "plugin_modules",
@@ -74,7 +75,7 @@ function fixture(t, side = "panel") {
   };
 }
 for (const side of ["panel", "daemon"]) {
-  test(`${side}: foundation version changes dispose the graph before activating fresh services`, async (t) => {
+  test(`${side}: core updates retain the running graph until a process restart`, async (t) => {
     const f = fixture(t, side);
     const previousRoot = process.env.EPANEL_PACKAGE_ROOT;
     const packageRoot = path.join(f.directory, "node_modules", "@elementspanel", side);
@@ -83,112 +84,35 @@ for (const side of ["panel", "daemon"]) {
       if (previousRoot === undefined) delete process.env.EPANEL_PACKAGE_ROOT;
       else process.env.EPANEL_PACKAGE_ROOT = previousRoot;
     });
-    const ids = ["i18n", "storage", "runtime", "server", "console", "config", "consumer"];
     const events = (f.ctx.testEvents = []);
-    const networkEvents = (f.ctx.networkEvents = []);
-    const cleanupStarted = deferred();
-    const cleanup = deferred();
-    f.ctx.cleanup = async (id) => {
-      if (id === "runtime") {
-        cleanupStarted.resolve();
-        await cleanup.promise;
-      }
-    };
-    const write = (id, version = "1.0.0") => {
-      const index = ids.indexOf(id);
-      const dependency = index > 0 ? `${ids[index - 1]}Value` : undefined;
-      const result = installNpmPlugin(packageRoot, side, id, {
+    const write = (id, version = "1.0.0") =>
+      installNpmPlugin(packageRoot, side, id, {
         version,
-        source: `
-          exports.inject=${JSON.stringify(dependency ? [dependency] : [])};
-          exports.apply=(ctx,config)=>{
-            ${
-              id === "server"
-                ? `
-              ctx.on("plugins/reloading",()=>ctx.root.networkEvents.push("pause"));
-              ${
-                side === "daemon"
-                  ? `ctx.on("plugins/reloaded",()=>{
-                if(!ctx.root.get("consumerValue")) throw new Error("resuming before consumers");
-                ctx.root.networkEvents.push("resume");
-              });`
-                  : ""
-              }
-              ctx.on("ready",()=>{
-                if(!ctx.root.get("consumerValue")) throw new Error("listener started before consumers");
-                ctx.root.networkEvents.push("listen");
-              });
-            `
-                : ""
-            }
-            ctx.root.testEvents.push("apply:${id}:${version}");
-            ctx.set("${id}Value",{version:${JSON.stringify(version)},config,dependency:${
-              dependency ? `ctx.${dependency}` : "null"
-            }});
-            ctx.on("dispose",async()=>{
-              await ctx.root.cleanup("${id}");
-              ctx.root.testEvents.push("dispose:${id}");
-            });
-          };
-        `
+        source: `exports.apply=ctx=>{
+        ctx.set("${id}Value",${JSON.stringify(version)});
+        ctx.on("dispose",()=>ctx.root.testEvents.push("dispose:${id}"));
+      };`
       });
-      const filename = path.join(result.packageRoot, "package.json");
-      const metadata = JSON.parse(fs.readFileSync(filename));
-      metadata.elementspanel[side].priority = index;
-      fs.writeFileSync(filename, JSON.stringify(metadata));
-    };
+    const ids = ["i18n", "storage", "runtime", "server", "console", "config"];
     ids.forEach((id) => write(id));
-    installNpmPlugin(packageRoot, side, "sleeping", {
-      source: 'exports.apply=()=>{throw new Error("disabled plugin was activated");};'
-    });
-    const overrides = path.join(f.directory, "data/plugin-overrides.json");
-    fs.mkdirSync(path.dirname(overrides), { recursive: true });
-    const preferences = JSON.stringify({
-      version: 1,
-      plugins: { sleeping: { enabled: false }, consumer: { config: { saved: "keep" } } }
-    });
-    fs.writeFileSync(overrides, preferences);
     await f.start();
     await f.ctx.start();
-    events.length = 0;
-    write("runtime", "2.0.0");
-    const updating = f.reload();
-    await cleanupStarted.promise;
-    await settle();
-    assert.equal(
-      events.some((event) => event.startsWith("apply:")),
-      false
-    );
-    cleanup.resolve();
-    await updating;
-    assert.deepEqual(
-      events.slice(0, ids.length),
-      [...ids].reverse().map((id) => `dispose:${id}`)
-    );
-    assert.deepEqual(
-      events.slice(ids.length),
-      ids.map((id) => `apply:${id}:${id === "runtime" ? "2.0.0" : "1.0.0"}`)
-    );
-    for (const id of ["i18n", "storage", "server", "console", "config"]) {
+    const scopes = f.loader[
+      side === "panel" ? "getLoadedPanelPlugins" : "getLoadedDaemonPlugins"
+    ]().map((plugin) => plugin.fork);
+    for (const id of ids) {
       write(id, "2.0.0");
       await f.reload();
-      assert.equal(f.ctx.get(`${id}Value`).version, "2.0.0");
-      assert.equal(f.inventory().find((plugin) => plugin.id === id).state, "active");
+      assert.equal(f.ctx.get(`${id}Value`), "1.0.0");
+      assert.equal(f.inventory().find((plugin) => plugin.id === id).state, "restart-required");
+      assert.deepEqual(events, [], "an update must not dispose the reply transport in place");
     }
-    write("server", "1.0.0");
-    await f.reload();
-    assert.equal(f.ctx.serverValue.version, "1.0.0", "downgrades execute the requested code too");
-    assert.deepEqual(f.ctx.consumerValue.config, { saved: "keep" });
-    assert.equal(f.ctx.consumerValue.dependency, f.ctx.configValue);
-    assert.equal(f.inventory().find((plugin) => plugin.id === "sleeping").state, "disabled");
-    assert.equal(fs.readFileSync(overrides, "utf8"), preferences);
-    assert.equal(f.inventory().filter((plugin) => plugin.state === "active").length, ids.length);
-    assert.deepEqual(networkEvents, [
-      "listen",
-      ...Array.from({ length: 7 }, () =>
-        side === "daemon" ? ["pause", "resume", "listen"] : ["pause", "listen"]
-      ).flat()
-    ]);
+    assert.deepEqual(
+      f.loader[side === "panel" ? "getLoadedPanelPlugins" : "getLoadedDaemonPlugins"]().map(
+        (plugin) => plugin.fork
+      ),
+      scopes
+    );
   });
 
   test(`${side}: npm built-ins stay immutable while overrides live outside the package`, async (t) => {

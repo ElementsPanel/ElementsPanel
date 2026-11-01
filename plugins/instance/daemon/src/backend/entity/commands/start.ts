@@ -24,6 +24,17 @@ export default abstract class AbsStartCommand extends InstanceCommand {
     // Claim the state before the first await so two starts cannot both proceed.
     instance.setLock(true);
     instance.status(Instance.STATUS_STARTING);
+    const starting = this.start(instance);
+    instance.starting = starting;
+    try {
+      return await starting;
+    } finally {
+      instance.starting = undefined;
+      instance.setLock(false);
+    }
+  }
+
+  private async start(instance: Instance) {
     try {
       if (!fs.existsSync(instance.absoluteCwdPath())) {
         await fs.mkdirs(instance.absoluteCwdPath());
@@ -59,13 +70,10 @@ export default abstract class AbsStartCommand extends InstanceCommand {
         );
         if (result?.isFull) {
           throw new StartupError(
-            $t(
-              "TXT_CODE_e5938389",
-              {
-                storageLimit: result?.storageLimit,
-                storageUsage: result?.storageUsage
-              }
-            )
+            $t("TXT_CODE_e5938389", {
+              storageLimit: result?.storageLimit,
+              storageUsage: result?.storageUsage
+            })
           );
         } else {
           instance.println(
@@ -86,8 +94,6 @@ export default abstract class AbsStartCommand extends InstanceCommand {
       instance.status(Instance.STATUS_STOP);
       instance.startTimestamp = 0;
       instance.failure(error);
-    } finally {
-      instance.setLock(false);
     }
   }
 

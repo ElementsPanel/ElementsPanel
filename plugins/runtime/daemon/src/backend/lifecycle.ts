@@ -13,8 +13,10 @@ export function setupProcessLifecycle(ctx: DaemonPluginContext) {
     }
     stopping = true;
     logger.warn(translate?.("TXT_CODE_4ffdc91d", { signal }) ?? signal);
+    const plugins = ctx.get("plugins");
     try {
       await ctx.stop();
+      await plugins?.waitForDisposal();
       logger.info(translate?.("TXT_CODE_dff680b7") ?? "Shutdown complete.");
       process.exit(0);
     } catch (error) {

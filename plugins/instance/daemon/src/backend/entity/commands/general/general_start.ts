@@ -5,7 +5,7 @@ import logger from "../../../service/log";
 import { getRunAsUserParams } from "../../../tools/system_user";
 import Instance from "../../instance/instance";
 import { commandStringToArray } from "../base/command_parser";
-import { ChildProcessAdapter, waitForSpawn } from "../base/process_adapter";
+import { ChildProcessAdapter, spawnInstanceProcess, waitForSpawn } from "../base/process_adapter";
 import AbsStartCommand from "../start";
 
 // Error exception at startup
@@ -52,21 +52,20 @@ export default class GeneralStartCommand extends AbsStartCommand {
     }
 
     // create child process
-    const subProcess = spawn(commandExeFile, commandParameters, {
+    const subProcess = spawnInstanceProcess(instance, spawn, commandExeFile, commandParameters, {
       ...runAsConfig,
       cwd: instance.absoluteCwdPath(),
       stdio: "pipe",
       windowsHide: true,
       env: instance.generateEnv(),
-      // Do not detach the child process;
-      // otherwise, an abnormal exit of the parent process may cause the child process to continue running,
-      // leading to an abnormal instance state.
       detached: false
     });
 
     const processAdapter = new ChildProcessAdapter(subProcess);
     try {
       await waitForSpawn(subProcess);
+      processAdapter.pid = subProcess.pid;
+      subProcess.setMetadata?.({ pid: subProcess.pid });
       instance.started(processAdapter);
     } catch (error) {
       await processAdapter.destroy();

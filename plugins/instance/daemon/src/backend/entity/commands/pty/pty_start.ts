@@ -10,7 +10,7 @@ import logger from "../../../service/log";
 import { getRunAsUserParams } from "../../../tools/system_user";
 import Instance from "../../instance/instance";
 import { commandStringToArray } from "../base/command_parser";
-import { ChildProcessAdapter, waitForSpawn } from "../base/process_adapter";
+import { ChildProcessAdapter, spawnInstanceProcess, waitForSpawn } from "../base/process_adapter";
 import FunctionDispatcher from "../dispatcher";
 import GeneralStartCommand from "../general/general_start";
 import AbsStartCommand from "../start";
@@ -58,7 +58,8 @@ export class GoPtyProcessAdapter extends ChildProcessAdapter {
   private async initNamedPipe() {
     if (this.disposed) return;
     try {
-      const flags = os.platform() === "win32" ? "w" : fs.constants.O_WRONLY | fs.constants.O_NONBLOCK;
+      const flags =
+        os.platform() === "win32" ? "w" : fs.constants.O_WRONLY | fs.constants.O_NONBLOCK;
       const fd = await fs.open(this.pipeName, flags);
       if (this.disposed) {
         await fs.close(fd);
@@ -238,25 +239,30 @@ export default class PtyStartCommand extends AbsStartCommand {
     instance.println("INFO", "> " + commandList.join(" "));
 
     // create pty child process
-    const subProcess = spawn(PTY_PATH, ptyParameter, {
-      ...runAsConfig,
-      cwd: path.dirname(PTY_PATH),
-      stdio: "pipe",
-      windowsHide: true,
-      env: instance.generateEnv(),
-      // Do not detach the child process;
-      // otherwise, an abnormal exit of the parent process may cause the child process to continue running,
-      // leading to an abnormal instance state.
-      detached: false
-    });
+    const subProcess = spawnInstanceProcess(
+      instance,
+      spawn,
+      PTY_PATH,
+      ptyParameter,
+      {
+        ...runAsConfig,
+        cwd: path.dirname(PTY_PATH),
+        stdio: "pipe",
+        windowsHide: true,
+        env: instance.generateEnv(),
+        detached: false
+      },
+      { pipeName }
+    );
 
     const processAdapter = new GoPtyProcessAdapter(subProcess, subProcess.pid, pipeName);
     try {
       const [, config] = await Promise.all([
         waitForSpawn(subProcess),
-        this.readPtySubProcessConfig(subProcess)
+        this.readPtySubProcessConfig(subProcess as ChildProcessWithoutNullStreams)
       ]);
       processAdapter.pid = config.pid;
+      subProcess.setMetadata?.({ pid: config.pid });
       if (subProcess.exitCode !== null || subProcess.signalCode !== null)
         throw new StartupError($t("TXT_CODE_pty_start.instanceStartErr"));
       instance.started(processAdapter);

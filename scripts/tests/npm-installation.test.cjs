@@ -578,6 +578,238 @@ test("full startup waits for the daemon and shuts down both relocated workers th
   assert.equal(fs.existsSync(path.join(f.packages.panel, "data")), false);
 });
 
+test("daemon process restarts retain real instance PIDs, pipes, output and counters", async (t) => {
+  const f = runtimeFixture(t);
+  const log = path.join(f.root, "events.jsonl");
+  const trigger = path.join(f.root, "restart");
+  const release = path.join(f.root, "reply-flushed");
+  const program = path.join(f.root, "instance.cjs");
+  write(
+    program,
+    String.raw`
+    process.stdin.setEncoding('utf8');
+    process.stdin.on('data', data => process.stdout.write('echo:' + data));
+    setInterval(() => {}, 1000);
+  `
+  );
+  write(
+    path.join(f.packages.daemon, "app.js"),
+    String.raw`
+    const fs = require('node:fs');
+    const { once } = require('node:events');
+    const { createLoader } = require(${JSON.stringify(
+      path.join(repository, "scripts/tests/helpers.cjs")
+    )});
+    const { requestProcessRestart } = createLoader()('core/common/src/process_restart.ts');
+    const host = globalThis[Symbol.for('elementspanel.instance-process-host')];
+    const report = (type, data = {}) => fs.appendFileSync(${JSON.stringify(log)},
+      JSON.stringify({ type, side: 'daemon', pid: process.pid, ...data }) + '\n');
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+    async function main() {
+      const snapshots = await host.list();
+      const previous = snapshots.find(item => item.id === 'running');
+      const child = previous ? host.connect(previous) : host.spawn('running', process.execPath,
+        [${JSON.stringify(program)}], { cwd: process.cwd(), env: process.env }, {
+          startTimestamp: 123456, startCount: 4, autoRestartCount: 2
+        });
+      child.stdout.on('data', data => report('output', { text: data.toString() }));
+      child.on('error', error => { console.error(error); process.exit(1); });
+      if (!previous) await once(child, 'spawn');
+      report('claimed', { instancePid: child.pid, metadata: child.metadata,
+        restarted: process.env.EPANEL_RESTARTED === '1' });
+      child.stdin.write('online\n');
+      process.on('SIGTERM', () => { report('stop'); process.exit(0); });
+      process.send({ type: 'elementspanel:ready' });
+      const ctx = { logger: console,
+        async parallel(event) {
+          report(event);
+          child.stdin.write('during-restart\n');
+          await delay(100);
+        },
+        async stop() { clearInterval(poll); report('disposed'); }
+      };
+      ctx.root = ctx;
+      const poll = setInterval(() => {
+        if (!fs.existsSync(${JSON.stringify(trigger)})) return;
+        fs.unlinkSync(${JSON.stringify(trigger)});
+        const ready = async () => {
+          while (!fs.existsSync(${JSON.stringify(release)})) await delay(10);
+        };
+        requestProcessRestart(ctx, async () => report('cleanup-finished'), ready);
+        requestProcessRestart(ctx, async () => report('duplicate-restart'), ready);
+      }, 20);
+    }
+    main().catch(error => { console.error(error); process.exit(1); });
+  `
+  );
+  const command = execute(f, path.join(f.packages.panel, "bin.cjs"), [
+    "start",
+    "--with-daemon",
+    "--cwd",
+    f.project
+  ]);
+  const claims = () => f.events().filter((event) => event.type === "claimed");
+  await until(() => claims().length === 1);
+  const original = claims()[0];
+  write(trigger, "restart");
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  assert.equal(claims().length, 1, "the installation reply must finish before restart");
+  assert.equal(
+    f.events().some((event) => event.type === "process/restarting"),
+    false
+  );
+  write(release, "flushed");
+  await until(() => claims().length === 2);
+  assert.notEqual(claims()[1].pid, original.pid, "the daemon worker must really exit");
+  assert.equal(claims()[1].instancePid, original.instancePid);
+  assert.deepEqual(claims()[1].metadata, original.metadata);
+  assert.equal(original.restarted, false);
+  assert.equal(claims()[1].restarted, true);
+  await until(() =>
+    f
+      .events()
+      .some(
+        (event) =>
+          event.pid === claims()[1].pid &&
+          event.type === "output" &&
+          event.text.includes("during-restart")
+      )
+  );
+  write(trigger, "restart-again");
+  await until(() => claims().length === 3);
+  assert.equal(claims()[2].instancePid, original.instancePid);
+  assert.equal(new Set(claims().map((event) => event.pid)).size, 3);
+  assert.equal(f.events().filter((event) => event.type === "cleanup-finished").length, 2);
+  assert.equal(
+    f.events().some((event) => event.type === "duplicate-restart"),
+    false
+  );
+  command.child.kill("SIGTERM");
+  const result = await command.closed;
+  assert.equal(result.code, 0, result.output);
+  await until(() => {
+    try {
+      process.kill(original.instancePid, 0);
+      return false;
+    } catch (error) {
+      return error.code === "ESRCH";
+    }
+  });
+  assert.equal(
+    f.events().filter((event) => event.type === "start" && event.side === "panel").length,
+    1
+  );
+});
+
+test("updating the server plugin replaces the panel process while the local daemon keeps running", async (t) => {
+  const f = runtimeFixture(t);
+  const log = path.join(f.root, "events.jsonl");
+  const trigger = path.join(f.root, "restart-panel");
+  write(
+    path.join(f.packages.panel, "app.js"),
+    String.raw`
+    const fs = require('node:fs');
+    const path = require('node:path');
+    const { createHash } = require('node:crypto');
+    const { createLoader, from } = require(${JSON.stringify(
+      path.join(repository, "scripts/tests/helpers.cjs")
+    )});
+    const load = createLoader({
+      resolve(id, { filename, load, localRequire }) {
+        if (id === 'mcsmanager-common') return Object.assign({}, ...[
+          'plugin_manifest', 'plugin_contract', 'plugin_overrides', 'plugin_lifecycle',
+          'plugin_revision', 'runtime_paths', 'plugin_modules', 'plugin_watch', 'plugin_npm',
+          'process_restart'
+        ].map(name => load('core/common/src/' + name + '.ts')));
+        const target = path.resolve(path.dirname(filename), id) + '.ts';
+        return id.startsWith('.') && fs.existsSync(target) ? load(target) : localRequire(id);
+      }
+    });
+    const { Context } = from('panel')('cordis');
+    const ctx = new Context();
+    const loader = load('core/panel/src/app/plugin/loader.ts', { './context': { ctx } });
+    const report = type => fs.appendFileSync(${JSON.stringify(log)}, JSON.stringify({
+      type, side: 'panel', pid: process.pid,
+      session: createHash('sha256').update(process.env.EPANEL_SESSION_SECRET).digest('hex')
+    }) + '\n');
+    process.on('SIGTERM', async () => {
+      report('stop'); await ctx.stop(); await ctx.plugins.waitForDisposal(); process.exit(0);
+    });
+    async function main() {
+      await loader.loadPanelPlugins();
+      await ctx.start();
+      report('start');
+      ctx.setInterval(() => {
+        if (!fs.existsSync(${JSON.stringify(trigger)})) return;
+        fs.unlinkSync(${JSON.stringify(trigger)});
+        void ctx.plugins.reload().catch(error => { console.error(error); process.exit(1); });
+      }, 20);
+      process.send({ type: 'elementspanel:ready' });
+    }
+    main().catch(error => { console.error(error); process.exit(1); });
+  `
+  );
+  const command = execute(f, path.join(f.packages.panel, "bin.cjs"), [
+    "start",
+    "--with-daemon",
+    "--cwd",
+    f.project
+  ]);
+  const starts = () =>
+    f.events().filter((event) => event.type === "start" && event.side === "panel");
+  await until(() => starts().length === 1);
+  write(path.join(f.packages.panel,
+    "node_modules/@elementspanel/epanel-plugin-server/panel/backend/index.cjs"),
+    "exports.apply = ctx => ctx.set('newServerRevision', true);");
+  write(trigger, "restart");
+  await until(() => starts().length === 2);
+  assert.notEqual(starts()[0].pid, starts()[1].pid);
+  assert.equal(starts()[0].session, starts()[1].session);
+  assert.equal(
+    f.events().filter((event) => event.type === "start" && event.side === "daemon").length,
+    1
+  );
+  assert.equal(
+    f.events().some((event) => event.type === "stop" && event.side === "daemon"),
+    false
+  );
+  command.child.kill("SIGTERM");
+  const result = await command.closed;
+  assert.equal(result.code, 0, result.output);
+});
+
+test("hosted processes deliver their final large output before the exit event", async (t) => {
+  const f = runtimeFixture(t);
+  const log = path.join(f.root, "events.jsonl");
+  const size = 2 * 1024 * 1024;
+  write(path.join(f.packages.daemon, "app.js"), String.raw`
+    const fs = require('node:fs');
+    const host = globalThis[Symbol.for('elementspanel.instance-process-host')];
+    const child = host.spawn('burst', process.execPath,
+      ['-e', ${JSON.stringify(`process.stdout.end(Buffer.alloc(${size}, 120))`)}],
+      { cwd: process.cwd(), env: process.env }, {});
+    let bytes = 0;
+    child.stdout.on('data', data => { bytes += data.length; });
+    child.on('error', error => { console.error(error); process.exit(1); });
+    child.once('close', code => {
+      fs.appendFileSync(${JSON.stringify(log)}, JSON.stringify({ type: 'completed', bytes, code }) + '\n');
+      child.release();
+    });
+    process.on('SIGTERM', () => process.exit(0));
+    process.send({ type: 'elementspanel:ready' });
+  `);
+  const command = execute(f, path.join(f.packages.daemon, "bin.cjs"), [
+    "start", "--cwd", f.project
+  ]);
+  await until(() => f.events().some(event => event.type === "completed"));
+  const completed = f.events().find(event => event.type === "completed");
+  assert.equal(completed.code, 0);
+  assert.equal(completed.bytes, size);
+  command.child.kill("SIGTERM");
+  const result = await command.closed;
+  assert.equal(result.code, 0, result.output);
+});
+
 test("a daemon startup failure does not start the panel and returns a nonzero status", async (t) => {
   const f = runtimeFixture(t, { daemon: "fail" });
   const result = await execute(f, path.join(f.packages.panel, "bin.cjs"), [

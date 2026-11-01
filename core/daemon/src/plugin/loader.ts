@@ -16,6 +16,8 @@ import {
   validatePluginSettings,
   createPluginQueue,
   trackPluginDisposal,
+  requestProcessRestart,
+  isProcessRestartPending,
   type PluginState,
   type PluginChangeResult,
   discoverPluginsFromRoots,
@@ -96,6 +98,9 @@ function ensureDaemonPluginService() {
   if (ctx.get("plugins")) return;
   ctx.provide("plugins", undefined, true);
   ctx.set("plugins", {
+    get restartPending() {
+      return isProcessRestartPending(ctx);
+    },
     get loaded() {
       return getLoadedDaemonPlugins();
     },
@@ -115,6 +120,7 @@ function ensureDaemonPluginService() {
       };
     },
     runExclusive: change,
+    waitForDisposal: settle,
     reload: reloadDaemonPlugins
   });
 }
@@ -237,9 +243,6 @@ function backendRevision(plugin: DiscoveredPlugin) {
 }
 
 async function reconcilePlugins() {
-  // Even an explicit reload queued during npm installation must wait for its
-  // response, just like the reload scheduled by the installation itself.
-  await Promise.all(reloadGates);
   ensureDaemonPluginService();
   const discovered = discoverDaemonPlugins({
     entryFields: ENTRY_FIELDS,
@@ -251,64 +254,61 @@ async function reconcilePlugins() {
     running.entry !== backendEntry(plugin) ||
     running.manifest.version !== plugin.manifest.version ||
     running.backendRevision !== backendRevision(plugin);
-  // Foundation services own state used throughout the graph. Dispose consumers
-  // before providers, then recreate every module before publishing new services.
-  // This also prevents Cordis from restarting consumers during async cleanup.
-  const reloadAll = loaded.some((running) => {
+  // Core code runs only in a fresh process. Keep the current graph and its
+  // reply transport alive until the installation response has been delivered.
+  const requiresRestart = loaded.filter((running) => {
     const plugin = next.get(running.manifest.id);
-    return plugin && isEssentialNpmPlugin(running.manifest.id) && codeChanged(running, plugin);
+    return (
+      plugin &&
+      codeChanged(running, plugin) &&
+      (isEssentialNpmPlugin(running.manifest.id) ||
+        running.manifest.restartRequired === true ||
+        plugin.manifest.restartRequired === true)
+    );
   });
-  if (reloadAll) {
+  if (requiresRestart.length) {
     for (const running of loaded) {
       if (isEssentialNpmPlugin(running.manifest.id) && !next.has(running.manifest.id))
-        throw new Error(`Missing essential plugin during reload: ${running.manifest.id}`);
+        throw new Error(`Missing essential plugin during restart: ${running.manifest.id}`);
     }
     for (const plugin of discovered) {
       if (!isEssentialNpmPlugin(plugin.manifest.id)) continue;
       validatePluginCompatibility(plugin.manifest.elements);
       if (!plugin.entry) throw new Error(`Missing essential plugin entry: ${plugin.manifest.id}`);
     }
-  }
-  // Publish listeners only after every route and authentication plugin is back.
-  const started = reloadAll && ctx.lifecycle.isActive;
-  if (reloadAll) ctx.lifecycle.isActive = false;
-  try {
-    if (reloadAll) await ctx.parallel("plugins/reloading");
-    const removed: (typeof loaded)[number][] = [];
-    for (const running of [...loaded].reverse()) {
-      const plugin = next.get(running.manifest.id);
-      const changed =
-        plugin &&
-        (codeChanged(running, plugin) ||
-          JSON.stringify(running.manifest.config) !== JSON.stringify(plugin.manifest.config));
-      if (
-        reloadAll ||
-        ((!plugin || changed) && !RESTART_CONFIG_PLUGIN_IDS.has(running.manifest.id))
-      ) {
-        await removeRunning(running.manifest.id);
-        removed.push(running);
-      }
-    }
-    for (const running of removed)
-      forgetCachedModule(running.entry, running.packageRoot || running.directory);
-    // Evict the whole batch before importing anything: dependencies may be shared
-    // by several plugins, including the i18next instance used by the foundations.
-    const pending = discovered.filter(
-      (plugin) => !loaded.some((record) => record.manifest.id === plugin.manifest.id)
-    );
-    for (const plugin of pending)
-      forgetCachedModule(plugin.entry, plugin.packageRoot || plugin.directory);
-    for (const plugin of pending) {
-      loaded.push(await installPlugin(plugin));
-      await settle();
-    }
-    sortPlugins(loaded);
-    await settle();
-    if (reloadAll) await ctx.parallel("plugins/reloaded");
+    for (const running of requiresRestart) running.restartRequired = true;
+    requestProcessRestart(ctx, settle, async () => {
+      while (reloadGates.size) await Promise.all([...reloadGates]);
+      await change(async () => {});
+    });
     return loaded;
-  } finally {
-    if (started) await ctx.start();
   }
+  const removed: (typeof loaded)[number][] = [];
+  for (const running of [...loaded].reverse()) {
+    const plugin = next.get(running.manifest.id);
+    const changed =
+      plugin &&
+      (codeChanged(running, plugin) ||
+        JSON.stringify(running.manifest.config) !== JSON.stringify(plugin.manifest.config));
+    if ((!plugin || changed) && !RESTART_CONFIG_PLUGIN_IDS.has(running.manifest.id)) {
+      await removeRunning(running.manifest.id);
+      removed.push(running);
+    }
+  }
+  for (const running of removed)
+    forgetCachedModule(running.entry, running.packageRoot || running.directory);
+  const pending = discovered.filter(
+    (plugin) => !loaded.some((record) => record.manifest.id === plugin.manifest.id)
+  );
+  for (const plugin of pending)
+    forgetCachedModule(plugin.entry, plugin.packageRoot || plugin.directory);
+  for (const plugin of pending) {
+    loaded.push(await installPlugin(plugin));
+    await settle();
+  }
+  sortPlugins(loaded);
+  await settle();
+  return loaded;
 }
 
 /** Install or update an npm dependency, retaining the user's enablement on upgrades. */
@@ -319,6 +319,11 @@ export function installDaemonNpmPlugin(options: {
   reloadAfter?: Promise<void>;
 }) {
   return change(async () => {
+    if (options.reloadAfter) {
+      const gate = options.reloadAfter;
+      reloadGates.add(gate);
+      void gate.finally(() => reloadGates.delete(gate)).catch(() => {});
+    }
     const before = new Map(getDaemonPluginInventory().map((plugin) => [plugin.id, plugin]));
     const record = await installNpmPlugin({ ...options, side: "daemon" });
     const previous = before.get(record.pluginId);
@@ -327,23 +332,10 @@ export function installDaemonNpmPlugin(options: {
     // it. Explicitly installing this side enables it unless the user disabled it.
     if (!previous || (!previous.enabled && preference === undefined))
       writePluginOverride(record.pluginId, { enabled: true });
-    if (options.reloadAfter && isEssentialNpmPlugin(record.pluginId)) {
-      const gate = options.reloadAfter;
-      reloadGates.add(gate);
-      // Reserve the next queue slot now so the npm watcher cannot tear down
-      // the transport before the install response leaves the daemon.
-      void change(async () => {
-        await gate;
-        await reconcilePlugins();
-      }).catch((error) => logger.error("Failed to reload installed npm plugins", error));
-      void gate.finally(() => reloadGates.delete(gate)).catch(() => {});
-      return {
-        ...changedRecord(record.pluginId),
-        result: { saved: true, application: "pending" as const }
-      };
-    }
     await reconcilePlugins();
-    return changedRecord(record.pluginId);
+    const result = changedRecord(record.pluginId);
+    if (isProcessRestartPending(ctx)) result.result = { saved: true, application: "pending" };
+    return result;
   });
 }
 

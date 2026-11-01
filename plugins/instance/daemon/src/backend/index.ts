@@ -33,6 +33,16 @@ export function apply(ctx: DaemonPluginContext) {
   let preserving = false;
   let subsystem: typeof import("./service/system_instance").default | undefined;
   let disposeSchedules: (() => void) | undefined;
+  let initializing: Promise<void> | undefined;
+  ctx.on("process/starting", async () => {
+    if (!initializing) throw new Error("Instance services failed to initialize.");
+    await initializing;
+    await subsystem?.waitForTakeover();
+  });
+  ctx.on("process/restarting", async () => {
+    disposeSchedules?.();
+    await subsystem?.prepareForRestart();
+  });
   ctx.on("plugins/reloading", async () => {
     const inventory = ctx.get("plugins")?.inventory();
     preserving = inventory?.some((plugin) => plugin.id === "instance" && plugin.enabled) ?? true;
@@ -48,19 +58,33 @@ export function apply(ctx: DaemonPluginContext) {
   // are available on the next turn rather than synchronously in this function.
   // Restoring instances before that point makes the legacy dispatcher read
   // missing `presets` and `instanceLifecycle` services and emit warnings.
-  ctx.inject(["tasks", "instanceLifecycle", "presets", "schedules"], async (instanceCtx) => {
+  ctx.inject(["tasks", "instanceLifecycle", "presets", "schedules"], (instanceCtx) => {
+    initializing = initialize(instanceCtx);
+    return initializing;
+  });
+
+  async function initialize(instanceCtx: DaemonPluginContext) {
     // The modules are required only after the context has been set and the
     // instance registries are ready. Keeping these synchronous requires keeps
     // webpack's output self-contained and avoids a second copy of the context.
-    const { default: InstanceSubsystem } = require("./service/system_instance") as typeof import("./service/system_instance");
-    const { default: Instance } = require("./entity/instance/instance") as typeof import("./entity/instance/instance");
-    const { default: Config } = require("./entity/instance/Instance_config") as typeof import("./entity/instance/Instance_config");
-    const { default: InstanceCommand } = require("./entity/commands/base/command") as typeof import("./entity/commands/base/command");
-    const { InstanceUpdateAction } = require("./service/instance_update_action") as typeof import("./service/instance_update_action");
-    const { commandStringToArray } = require("./entity/commands/base/command_parser") as typeof import("./entity/commands/base/command_parser");
-    const { default: FunctionDispatcher } = require("./entity/commands/dispatcher") as typeof import("./entity/commands/dispatcher");
-    const { DockerManager } = require("./service/docker_service") as typeof import("./service/docker_service");
-    const { default: InstanceControlSubsystem } = require("./service/system_instance_control") as typeof import("./service/system_instance_control");
+    const { default: InstanceSubsystem } =
+      require("./service/system_instance") as typeof import("./service/system_instance");
+    const { default: Instance } =
+      require("./entity/instance/instance") as typeof import("./entity/instance/instance");
+    const { default: Config } =
+      require("./entity/instance/Instance_config") as typeof import("./entity/instance/Instance_config");
+    const { default: InstanceCommand } =
+      require("./entity/commands/base/command") as typeof import("./entity/commands/base/command");
+    const { InstanceUpdateAction } =
+      require("./service/instance_update_action") as typeof import("./service/instance_update_action");
+    const { commandStringToArray } =
+      require("./entity/commands/base/command_parser") as typeof import("./entity/commands/base/command_parser");
+    const { default: FunctionDispatcher } =
+      require("./entity/commands/dispatcher") as typeof import("./entity/commands/dispatcher");
+    const { DockerManager } =
+      require("./service/docker_service") as typeof import("./service/docker_service");
+    const { default: InstanceControlSubsystem } =
+      require("./service/system_instance_control") as typeof import("./service/system_instance_control");
 
     subsystem = InstanceSubsystem;
     disposeSchedules = () => InstanceControlSubsystem.dispose();
@@ -104,7 +128,11 @@ export function apply(ctx: DaemonPluginContext) {
       await disposeInstanceEvents?.();
       InstanceControlSubsystem.dispose();
       routerApp.dispose();
-      if ((preserving || recovering) && !runtime.stopping && ctx.root.scope.isActive) {
+      if (runtime.restarting) {
+        // The launcher owns general/PTY processes; Docker is reattached at
+        // startup. Disposing adapters here would terminate those live owners.
+        await InstanceSubsystem.prepareForRestart();
+      } else if ((preserving || recovering) && !runtime.stopping && ctx.root.scope.isActive) {
         await InstanceSubsystem.suspendForReload();
         retain();
       } else {
@@ -152,14 +180,17 @@ export function apply(ctx: DaemonPluginContext) {
     void FunctionDispatcher;
 
     require("./routers/Instance_router");
-    const { registerInstanceEvents } = require("./routers/instance_event_router") as typeof import("./routers/instance_event_router");
+    const { registerInstanceEvents } =
+      require("./routers/instance_event_router") as typeof import("./routers/instance_event_router");
     require("./routers/schedule_router");
     require("./routers/environment_router");
     disposeInstanceEvents = registerInstanceEvents();
 
     try {
       if (!previous) InstanceSubsystem.loadInstances();
-      instanceCtx.logger.info(`Loaded ${InstanceSubsystem.getInstances().length} application instances.`);
+      instanceCtx.logger.info(
+        `Loaded ${InstanceSubsystem.getInstances().length} application instances.`
+      );
     } catch (error) {
       instanceCtx.logger.error("Failed to load application instances:", error);
       throw error;
@@ -201,5 +232,5 @@ export function apply(ctx: DaemonPluginContext) {
       // Also allow recovery by enabling/retrying only the instance plugin.
       instanceCtx.on("ready", resume);
     }
-  });
+  }
 }

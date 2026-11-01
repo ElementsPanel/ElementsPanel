@@ -6,6 +6,8 @@ async function main() {
   await loadDaemonFoundationPlugin("storage");
   await loadDaemonFoundationPlugin("runtime");
   await loadDaemonPlugins();
+  await ctx.events.flush();
+  await ctx.parallel("process/starting");
   await ctx.start();
 }
 
