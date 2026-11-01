@@ -1,6 +1,32 @@
 import fs from "node:fs";
 import path from "node:path";
 
+/** Host-relative resources referenced by a compiled plugin, including preloads and CSS URLs. */
+export function frontendAssetReferences(directory) {
+  const assets = new Set();
+  const visit = (root) => {
+    if (!fs.existsSync(root)) return;
+    for (const item of fs.readdirSync(root, { withFileTypes: true })) {
+      const filename = path.join(root, item.name);
+      if (item.isDirectory()) visit(filename);
+      else if (/\.(?:js|mjs|css)$/.test(item.name)) {
+        const source = fs.readFileSync(filename, "utf8");
+        const parent = path.posix.dirname(
+          path.relative(directory, filename).split(path.sep).join("/")
+        );
+        for (const match of source.matchAll(/(?:\.\.\/)+assets\/[^"'`\s)\]?#]+/g)) {
+          const target = path.posix.normalize(
+            path.posix.join("plugins/plugin/frontend", parent, match[0])
+          );
+          if (target.startsWith("assets/")) assets.add(target);
+        }
+      }
+    }
+  };
+  visit(directory);
+  return [...assets].sort();
+}
+
 // Use the same checks while staging plugins and copying final package assets.
 // In particular, never follow links while stripping a staged plugin's source maps.
 export function copyTree(source, target) {

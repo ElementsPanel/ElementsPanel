@@ -220,8 +220,11 @@ test("workspace packaging includes runnable entry points and excludes user data 
     for (const [id, name] of Object.entries(manifest.elementspanel.plugins)) {
       const metadata = result.plugins.find((plugin) => plugin.name === name);
       assert.ok(metadata, `Missing npm package for ${id}`);
-      assert.equal(manifest.dependencies[name], metadata.version);
-      assert.equal(metadata.peerDependencies[manifest.name], `^${manifest.version}`);
+      assert.equal(manifest.dependencies[name], undefined);
+      assert.equal(
+        metadata.peerDependencies[manifest.name],
+        `^${manifest.version.split(".")[0]}.0.0`
+      );
       assert.equal(metadata.peerDependenciesMeta[manifest.name].optional, true);
       const pluginRoot = path.join(f.outputRoot, name.split("/")[1], side);
       const pluginManifest = JSON.parse(fs.readFileSync(path.join(pluginRoot, "plugin.json")));
@@ -351,9 +354,17 @@ test("separate npm plugin packages resolve from hoisted and nested installations
     fs.cpSync(path.join(f.outputRoot, side), host, { recursive: true });
     const selected = result.plugins.filter((plugin) => plugin.elementspanel[side]);
     for (const [index, plugin] of selected.entries()) {
-      const target = path.join(index % 2 ? host : project, "node_modules", plugin.name);
+      const target = path.join(
+        index % 2 ? path.join(project, side) : project,
+        "node_modules",
+        plugin.name
+      );
       fs.cpSync(path.join(f.outputRoot, plugin.name.split("/")[1]), target, { recursive: true });
     }
+    write(path.join(project, side, "package.json"), {
+      private: true,
+      dependencies: Object.fromEntries(selected.map((plugin) => [plugin.name, plugin.version]))
+    });
     const { resolveNpmPlugins } = require(path.join(host, "runtime/npm-plugins.cjs"));
     const roots = resolveNpmPlugins(host, side);
     assert.deepEqual(
@@ -368,6 +379,50 @@ test("separate npm plugin packages resolve from hoisted and nested installations
     const { planWorkers } = require(path.join(host, "runtime/cli.cjs"));
     assert.equal(planWorkers(side, host, { cwd: project }).workers.length, 1);
   }
+});
+
+test("panel and plugin metadata describe matching host assets without including local plugin resources", async (t) => {
+  const f = fixture(t);
+  const frontend = path.join(f.sourceRoot, "core/frontend/dist");
+  const plugin = path.join(frontend, "plugins/console/frontend");
+  write(
+    path.join(plugin, "index.js"),
+    'import "../../../assets/shared.js"; import "./assets/local.js";'
+  );
+  write(
+    path.join(plugin, "chunks/extra.mjs"),
+    'export const image = "../../../../assets/images/picture.svg?v=1#icon";'
+  );
+  write(
+    path.join(plugin, "assets/style.css"),
+    '.font { src: url("../../../../assets/font.woff2?v=1"); background: url("../assets/local.svg"); }'
+  );
+  write(path.join(plugin, "assets/local.js"), 'export default "local";');
+  write(path.join(plugin, "assets/local.svg"), "<svg/>");
+  write(path.join(frontend, "assets/images/picture.svg"), "<svg/>");
+  write(path.join(frontend, "assets/font.woff2"), "fixture font");
+  write(path.join(frontend, "assets/shared.js.map"), "{}");
+  const { packageNpm } = await packaging;
+  const result = await packageNpm(f);
+  const metadata = result.plugins.find((item) => item.elementspanel.id === "console");
+  const panel = JSON.parse(fs.readFileSync(path.join(f.outputRoot, "panel/package.json")));
+  const expected = ["assets/font.woff2", "assets/images/picture.svg", "assets/shared.js"];
+  assert.deepEqual(metadata.elementspanel.panel.frontendAssets, expected);
+  assert.deepEqual(panel.elementspanel.frontendAssets, expected);
+});
+
+test("packaging rejects plugin references to missing host chunks", async (t) => {
+  const f = fixture(t);
+  write(
+    path.join(f.sourceRoot, "core/frontend/dist/plugins/console/frontend/index.js"),
+    'import "../../../assets/i18n-old.js";'
+  );
+  const { packageNpm } = await packaging;
+  await assert.rejects(
+    packageNpm(f),
+    /Missing panel frontend assets.*epanel-plugin-console.*i18n-old\.js/
+  );
+  assert.equal(fs.existsSync(f.outputRoot), false);
 });
 
 test("incomplete builds and symlink assets cannot produce a publishable directory", async (t) => {

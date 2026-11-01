@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import sharedDependencies from "./runtime/shared-dependencies.cjs";
 import { pluginEntryFields, readPluginMetadata } from "./plugin-metadata.mjs";
 import layout from "./workspace-layout.cjs";
-import { copyTree } from "./npm-assets.mjs";
+import { copyTree, frontendAssetReferences } from "./npm-assets.mjs";
 import { packagePanelPlugins } from "./package-panel-plugins.mjs";
 import { packageDaemonPlugins } from "./package-daemon-plugins.mjs";
 
@@ -198,8 +198,14 @@ async function packageBuiltinPlugins(sourceRoot, outputRoot, stagingRoot) {
         directory: side,
         folder: source.folder
       };
+      if (side === "panel")
+        metadata.elementspanel.panel.frontendAssets = frontendAssetReferences(
+          path.join(directory, "panel/frontend")
+        );
       metadata.exports[`./${side}/plugin.json`] = `./${side}/plugin.json`;
-      metadata.peerDependencies[`@elementspanel/${side}`] = `^${hosts[side].version}`;
+      metadata.peerDependencies[`@elementspanel/${side}`] = `^${
+        hosts[side].version.split(".")[0]
+      }.0.0`;
       metadata.peerDependenciesMeta[`@elementspanel/${side}`] = { optional: true };
     }
     await fs.writeFile(
@@ -223,7 +229,6 @@ async function packageRuntime(side, sourceRoot, outputRoot, plugins) {
   metadata.elementspanel = { side, plugins: {} };
   for (const plugin of plugins) {
     if (!plugin.elementspanel[side]) continue;
-    metadata.dependencies[plugin.name] = plugin.version;
     metadata.elementspanel.plugins[plugin.elementspanel.id] = plugin.name;
   }
   const resolveShared = sharedDependencies.createSharedResolver(layout.coreDirectory(side));
@@ -251,6 +256,27 @@ async function packageRuntime(side, sourceRoot, outputRoot, plugins) {
     for (const item of await fs.readdir(frontend)) {
       if (["plugins", "upload_files"].includes(item)) continue;
       copyTree(path.join(frontend, item), path.join(output, "public", item));
+    }
+    const assets = path.join(output, "public/assets");
+    metadata.elementspanel.frontendAssets = (
+      await fs.readdir(assets, { recursive: true, withFileTypes: true })
+    )
+      .filter((file) => file.isFile() && !file.name.endsWith(".map"))
+      .map(
+        (file) =>
+          `assets/${path
+            .relative(assets, path.join(file.parentPath, file.name))
+            .split(path.sep)
+            .join("/")}`
+      )
+      .sort();
+    const available = new Set(metadata.elementspanel.frontendAssets);
+    for (const plugin of plugins) {
+      const missing = plugin.elementspanel.panel?.frontendAssets.filter(
+        (file) => !available.has(file)
+      );
+      if (missing?.length)
+        throw new Error(`Missing panel frontend assets for ${plugin.name}: ${missing.join(", ")}`);
     }
   } else {
     const licenses = ["7z-extra-license.txt", "7z-unix-license.txt"];

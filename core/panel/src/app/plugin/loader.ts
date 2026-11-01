@@ -550,7 +550,7 @@ export function removePanelPlugin(id: string): Promise<void> {
     await removeRunning(id);
     forgetCachedModule(plugin.entry, plugin.packageRoot);
     try {
-      await uninstallNpmPlugin(id);
+      await uninstallNpmPlugin(id, { side: "panel" });
     } catch (error) {
       await reconcilePlugins();
       throw error;

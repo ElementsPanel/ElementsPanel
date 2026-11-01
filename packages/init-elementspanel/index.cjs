@@ -32,12 +32,14 @@ function parseArgs(argv) {
     daemonPort: undefined,
     install: undefined,
     yes: false,
+    updatePlugins: false,
     help: false
   };
   for (let index = 0; index < argv.length; index++) {
     const argument = argv[index];
     if (["--help", "-h"].includes(argument)) options.help = true;
     else if (["--yes", "-y"].includes(argument)) options.yes = true;
+    else if (argument === "--update-plugins") options.updatePlugins = true;
     else if (argument === "--language") {
       options.language = normalizeLanguage(argv[++index]);
       if (!options.language) throw new Error(t("languageInvalid"));
@@ -248,6 +250,8 @@ function projectManifest(directory, mode, versions, language) {
     workspaces: ["external/*"],
     scripts: {
       ...scripts,
+      "update:plugins": "init --update-plugins",
+      postinstall: "epanel-workspace install",
       setup: "epanel-workspace setup",
       build: "epanel-workspace build",
       pub: "epanel-workspace publish"
@@ -267,25 +271,98 @@ function npmCommand(args) {
     : { executable: "npm", args };
 }
 
-async function latestRuntimeVersion(side, language) {
-  const name = `@elementspanel/${side}`;
-  const command = npmCommand(["view", `${name}@latest`, "version", "--json", "--prefer-online"]);
+async function packageMetadata(name, version, language) {
+  const command = npmCommand(["view", `${name}@${version}`, "--json", "--prefer-online"]);
   try {
     const { stdout } = await execFileAsync(command.executable, command.args, {
       encoding: "utf8",
       timeout: 30_000,
       windowsHide: true
     });
-    const version = JSON.parse(stdout);
+    const result = JSON.parse(stdout);
+    const version = result?.version;
     if (
       typeof version !== "string" ||
       !/^\d+\.\d+\.\d+(?:-[\da-z.-]+)?(?:\+[\da-z.-]+)?$/i.test(version)
     )
       throw new Error("npm returned an invalid version.");
-    return version;
+    return result;
   } catch (cause) {
     throw new Error(createTranslator(language)("versionLookupFailed", { name }), { cause });
   }
+}
+
+async function resolveBuiltinPlugins(mode, versions, language) {
+  const selected = ["panel", "daemon"].filter((side) => mode === "full" || mode === side);
+  const runtimes = Object.fromEntries(
+    await Promise.all(
+      selected.map(async (side) => [
+        side,
+        await packageMetadata(`@elementspanel/${side}`, versions?.[side] || "latest", language)
+      ])
+    )
+  );
+  const names = new Set();
+  for (const runtime of Object.values(runtimes)) {
+    const plugins = runtime.elementspanel?.plugins;
+    if (!plugins || typeof plugins !== "object" || Array.isArray(plugins))
+      throw new Error("Missing built-in plugin catalogue in runtime metadata.");
+    for (const [id, name] of Object.entries(plugins)) {
+      if (
+        !/^[a-z][a-z0-9_-]{1,63}$/.test(id) ||
+        typeof name !== "string" ||
+        !/^@elementspanel\/epanel-plugin-[a-z0-9_-]+$/.test(name)
+      )
+        throw new Error("Invalid built-in plugin identity in runtime metadata.");
+      names.add(name);
+    }
+  }
+  const packages = new Map(
+    await Promise.all(
+      [...names].map(async (name) => [name, await packageMetadata(name, "latest", language)])
+    )
+  );
+  const builtinPlugins = {};
+  for (const side of selected) {
+    builtinPlugins[side] = {};
+    const runtime = runtimes[side];
+    for (const [id, name] of Object.entries(runtime.elementspanel.plugins)) {
+      const plugin = packages.get(name);
+      if (plugin.elementspanel?.id !== id || !plugin.elementspanel[side])
+        throw new Error(`Invalid ${side} metadata in ${name}.`);
+      if (side === "panel") {
+        const expected = plugin.elementspanel.panel.frontendAssets;
+        const available = runtime.elementspanel.frontendAssets;
+        if (
+          !Array.isArray(expected) ||
+          !Array.isArray(available) ||
+          expected.some((file) => typeof file !== "string" || !available.includes(file))
+        )
+          throw new Error(createTranslator(language)("pluginAssetsMismatch", { name }));
+      }
+      builtinPlugins[side][id] = { name, version: plugin.version };
+    }
+  }
+  return {
+    versions: Object.fromEntries(selected.map((side) => [side, runtimes[side].version])),
+    builtinPlugins
+  };
+}
+
+function serviceManifest(side, plugins, original = {}) {
+  const dependencies = { ...original.dependencies };
+  const mappings = { ...original.elementspanel?.plugins };
+  for (const [id, { name, version }] of Object.entries(plugins || {})) {
+    dependencies[name] = version;
+    mappings[id] = name;
+  }
+  return {
+    ...original,
+    name: original.name || `elementspanel-project-${side}`,
+    private: true,
+    dependencies,
+    elementspanel: { ...original.elementspanel, side, plugins: mappings }
+  };
 }
 
 function installDependencies(directory, language) {
@@ -314,6 +391,7 @@ async function initialize({
   daemonPort,
   install = true,
   versions,
+  builtinPlugins,
   installer = installDependencies
 }) {
   const selectedLanguage = language === undefined ? undefined : normalizeLanguage(language);
@@ -325,14 +403,8 @@ async function initialize({
     selectedLanguage === undefined ? undefined : selectedLanguage === "zh" ? "zh_cn" : "en_us";
   const ports = validatePorts(mode, panelPort, daemonPort, selectedLanguage);
   const destination = await validateDestination(directory, selectedLanguage);
-  if (versions === undefined) {
-    versions = Object.fromEntries(
-      await Promise.all(
-        ["panel", "daemon"]
-          .filter((side) => mode === "full" || mode === side)
-          .map(async (side) => [side, await latestRuntimeVersion(side, selectedLanguage)])
-      )
-    );
+  if (builtinPlugins === undefined || versions === undefined) {
+    ({ versions, builtinPlugins } = await resolveBuiltinPlugins(mode, versions, selectedLanguage));
   }
   const manifest = projectManifest(destination, mode, versions, selectedLanguage);
   await fs.mkdir(destination, { recursive: true });
@@ -343,12 +415,18 @@ async function initialize({
   );
   await fs.writeFile(
     path.join(destination, ".gitignore"),
-    "node_modules/\npanel/\ndaemon/\nexternal/*/panel/backend/\nexternal/*/panel/frontend/\nexternal/*/daemon/backend/\nexternal/*/daemon/frontend/\n*.log\n",
+    "node_modules/\npanel/*\n!panel/package.json\n!panel/package-lock.json\ndaemon/*\n!daemon/package.json\n!daemon/package-lock.json\nexternal/*/panel/backend/\nexternal/*/panel/frontend/\nexternal/*/daemon/backend/\nexternal/*/daemon/frontend/\n*.log\n",
     { flag: "wx" }
   );
   await fs.writeFile(path.join(destination, "README.md"), "# ElementsPanel\n", { flag: "wx" });
   for (const side of ["panel", "daemon"]) {
     if (mode !== "full" && mode !== side) continue;
+    await fs.mkdir(path.join(destination, side), { recursive: true });
+    await fs.writeFile(
+      path.join(destination, side, "package.json"),
+      `${JSON.stringify(serviceManifest(side, builtinPlugins[side]), null, 2)}\n`,
+      { flag: "wx" }
+    );
     const configFile = path.join(
       destination,
       side,
@@ -369,6 +447,53 @@ async function initialize({
   return { directory: destination, manifest };
 }
 
+async function updateBuiltinPlugins({
+  directory,
+  mode,
+  language,
+  install = true,
+  installer = installDependencies
+}) {
+  if (mode !== undefined && !modes.includes(mode))
+    throw new Error(createTranslator(language)("modeUnknown", { mode }));
+  const destination = path.resolve(directory);
+  const manifest = JSON.parse(await fs.readFile(path.join(destination, "package.json"), "utf8"));
+  const sides = ["panel", "daemon"].filter(
+    (side) =>
+      (!mode || mode === "full" || mode === side) &&
+      manifest.dependencies?.[`@elementspanel/${side}`]
+  );
+  if (!sides.length) throw new Error("No selected ElementsPanel runtime in this project.");
+  const originals = Object.fromEntries(
+    await Promise.all(
+      sides.map(async (side) => [
+        side,
+        JSON.parse(await fs.readFile(path.join(destination, side, "package.json"), "utf8"))
+      ])
+    )
+  );
+  const versions = Object.fromEntries(
+    sides.map((side) => [side, manifest.dependencies[`@elementspanel/${side}`]])
+  );
+  const resolved = await resolveBuiltinPlugins(
+    sides.length === 2 ? "full" : sides[0],
+    versions,
+    language
+  );
+  for (const side of sides) {
+    await fs.writeFile(
+      path.join(destination, side, "package.json"),
+      `${JSON.stringify(
+        serviceManifest(side, resolved.builtinPlugins[side], originals[side]),
+        null,
+        2
+      )}\n`
+    );
+  }
+  if (install) await installer(destination, language);
+  return { directory: destination, manifest, updated: true };
+}
+
 function quoteDirectory(directory) {
   if (process.platform === "win32") return `"${directory}"`;
   return /^[a-zA-Z0-9_./:-]+$/.test(directory)
@@ -378,7 +503,7 @@ function quoteDirectory(directory) {
 
 function printNextSteps(result, installed, language) {
   const t = createTranslator(language);
-  console.log(`\n${t("created", { directory: result.directory })}`);
+  console.log(`\n${t(result.updated ? "updated" : "created", { directory: result.directory })}`);
   console.log(`\n${t("nextSteps")}`);
   if (result.directory !== path.resolve(process.cwd()))
     console.log(`  cd ${quoteDirectory(result.directory)}`);
@@ -405,16 +530,21 @@ async function run(argv = process.argv.slice(2)) {
     }
     if (typeof registerHooks !== "function") throw new Error(t("nodeVersion"));
     const interactive = process.stdin.isTTY && process.stdout.isTTY && !options.yes;
-    if (interactive) {
+    if (interactive && !options.updatePlugins) {
       prompt = createInteractivePrompt();
       await promptOptions(options, prompt);
       prompt = undefined;
     }
-    const result = await initialize({
-      ...options,
-      directory: options.directory || "my-panel",
-      mode: options.mode || "full"
-    });
+    const result = options.updatePlugins
+      ? await updateBuiltinPlugins({
+          ...options,
+          directory: options.directory || "."
+        })
+      : await initialize({
+          ...options,
+          directory: options.directory || "my-panel",
+          mode: options.mode || "full"
+        });
     printNextSteps(result, options.install !== false, options.language);
   } catch (error) {
     console.error(error.message);
@@ -424,4 +554,11 @@ async function run(argv = process.argv.slice(2)) {
   }
 }
 
-module.exports = { parseArgs, promptOptions, projectManifest, initialize, run };
+module.exports = {
+  parseArgs,
+  promptOptions,
+  projectManifest,
+  initialize,
+  updateBuiltinPlugins,
+  run
+};

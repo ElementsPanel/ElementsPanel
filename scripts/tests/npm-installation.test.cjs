@@ -104,6 +104,20 @@ for (const mode of ["full", "panel", "daemon"]) {
     );
     assert.equal(fs.existsSync(path.join(directory, "panel")), mode !== "daemon");
     assert.equal(fs.existsSync(path.join(directory, "daemon")), mode !== "panel");
+    assert.equal(result.manifest.scripts.postinstall, "epanel-workspace install");
+    assert.equal(result.manifest.scripts["update:plugins"], "init --update-plugins");
+    assert.equal(dependencies["@elementspanel/epanel-plugin-i18n"], undefined);
+    const ignore = fs.readFileSync(path.join(directory, ".gitignore"), "utf8");
+    for (const side of ["panel", "daemon"].filter((side) => mode === "full" || mode === side)) {
+      const service = JSON.parse(fs.readFileSync(path.join(directory, side, "package.json")));
+      assert.equal(service.private, true);
+      assert.equal(service.dependencies["@elementspanel/epanel-plugin-i18n"], npm.pluginVersion);
+      assert.deepEqual(service.elementspanel, {
+        side,
+        plugins: { i18n: "@elementspanel/epanel-plugin-i18n" }
+      });
+      assert.ok(ignore.includes(`!${side}/package.json\n!${side}/package-lock.json\n`));
+    }
     assert.equal(
       result.manifest.scripts.start,
       mode === "full"
@@ -113,18 +127,23 @@ for (const mode of ["full", "panel", "daemon"]) {
         : "epanel-daemon start"
     );
     const queries = npm.queries();
+    assert.equal(queries.filter((args) => args[1].includes("epanel-plugin-i18n@latest")).length, 1);
     assert.deepEqual(
-      queries.map((args) => args[1]).sort(),
+      queries
+        .filter((args) => !args[1].includes("epanel-plugin-"))
+        .map((args) => args[1])
+        .sort(),
       ["panel", "daemon"]
         .filter((side) => mode === "full" || mode === side)
         .map((side) => `@elementspanel/${side}@latest`).sort()
     );
     for (const args of queries)
-      assert.deepEqual([args[0], ...args.slice(2)], ["view", "version", "--json", "--prefer-online"]);
+      assert.deepEqual([args[0], ...args.slice(2)], ["view", "--json", "--prefer-online"]);
     const pinned = await initializer.initialize({
       directory: path.join(f.root, "pinned"),
       mode,
       versions: { panel: "3.4.5", daemon: "4.5.6" },
+      builtinPlugins: {},
       install: false
     });
     for (const side of ["panel", "daemon"].filter((side) => mode === "full" || mode === side))
@@ -135,6 +154,201 @@ for (const mode of ["full", "panel", "daemon"]) {
     assert.deepEqual(npm.queries(), queries);
   });
 }
+
+test("updating built-in plugins only changes side manifests and preserves custom dependencies and data", async (t) => {
+  const f = temporary(t);
+  const npm = mockNpmView(t);
+  const directory = path.join(f.root, "project");
+  const name = "@elementspanel/epanel-plugin-i18n";
+  await initializer.initialize({
+    directory,
+    mode: "full",
+    install: false,
+    versions: { panel: "1.0.1", daemon: "1.0.2" },
+    builtinPlugins: {
+      panel: { i18n: { name, version: "0.1.0" } },
+      daemon: { i18n: { name, version: "0.2.0" } }
+    }
+  });
+  const rootFile = path.join(directory, "package.json");
+  const rootBefore = fs.readFileSync(rootFile, "utf8");
+  const data = new Map();
+  for (const side of ["panel", "daemon"]) {
+    const filename = path.join(directory, side, "package.json");
+    const manifest = JSON.parse(fs.readFileSync(filename));
+    manifest.dependencies["epanel-plugin-custom"] = "file:../external/custom";
+    manifest.elementspanel.plugins.custom = "epanel-plugin-custom";
+    manifest.description = "Keep this field";
+    write(filename, manifest);
+    const config = path.join(
+      directory,
+      side,
+      side === "panel" ? "data/SystemConfig/config.json" : "data/Config/global.json"
+    );
+    data.set(config, fs.readFileSync(config, "utf8"));
+    const extra = path.join(directory, side, "data/custom.txt");
+    write(extra, `${side} user data`);
+    data.set(extra, fs.readFileSync(extra, "utf8"));
+  }
+  let installed;
+  const result = await initializer.updateBuiltinPlugins({
+    directory,
+    installer: async (target) => {
+      installed = target;
+      for (const side of ["panel", "daemon"]) {
+        const manifest = JSON.parse(fs.readFileSync(path.join(target, side, "package.json")));
+        assert.equal(manifest.dependencies[name], npm.pluginVersion);
+        assert.equal(manifest.dependencies["epanel-plugin-custom"], "file:../external/custom");
+        assert.equal(manifest.elementspanel.plugins.custom, "epanel-plugin-custom");
+        assert.equal(manifest.description, "Keep this field");
+      }
+    }
+  });
+  assert.equal(result.updated, true);
+  assert.equal(installed, directory);
+  assert.equal(fs.readFileSync(rootFile, "utf8"), rootBefore);
+  for (const [filename, before] of data) assert.equal(fs.readFileSync(filename, "utf8"), before);
+  assert.deepEqual(
+    npm
+      .queries()
+      .map((args) => args[1])
+      .sort(),
+    ["@elementspanel/panel@1.0.1", "@elementspanel/daemon@1.0.2", `${name}@latest`].sort()
+  );
+});
+
+test("the update CLI selects one side and can leave installation for later", async (t) => {
+  const f = temporary(t);
+  const npm = mockNpmView(t);
+  const directory = path.join(f.root, "project");
+  const name = "@elementspanel/epanel-plugin-i18n";
+  await initializer.initialize({
+    directory,
+    mode: "full",
+    install: false,
+    versions: { panel: "1.0.1", daemon: "1.0.2" },
+    builtinPlugins: {
+      panel: { i18n: { name, version: "0.1.0" } },
+      daemon: { i18n: { name, version: "0.2.0" } }
+    }
+  });
+  const daemonFile = path.join(directory, "daemon/package.json");
+  const before = fs.readFileSync(daemonFile, "utf8");
+  const result = await execute(
+    f,
+    path.join(repository, "packages/init-elementspanel/bin.cjs"),
+    ["--update-plugins", "--template", "panel", "--no-install", "--language", "zh"],
+    directory
+  ).closed;
+  assert.equal(result.code, 0, result.output);
+  assert.match(result.output, /已更新/);
+  assert.match(result.output, /\n  npm install\n  npm start/);
+  assert.equal(
+    JSON.parse(fs.readFileSync(path.join(directory, "panel/package.json"))).dependencies[name],
+    npm.pluginVersion
+  );
+  assert.equal(fs.readFileSync(daemonFile, "utf8"), before);
+  assert.equal(fs.existsSync(path.join(directory, "node_modules")), false);
+  assert.deepEqual(
+    npm
+      .queries()
+      .map((args) => args[1])
+      .sort(),
+    ["@elementspanel/panel@1.0.1", `${name}@latest`].sort()
+  );
+});
+
+test("registry failures and incompatible plugin builds leave manifests untouched", async (t) => {
+  const name = "@elementspanel/epanel-plugin-i18n";
+  const plugin = {
+    version: "9.8.7",
+    elementspanel: {
+      id: "i18n",
+      panel: { frontendAssets: [] },
+      daemon: {}
+    }
+  };
+  for (const [label, packageName, metadata, expected] of [
+    ["plugin query fails", name, null, /Could not query/],
+    [
+      "plugin id changes",
+      name,
+      { ...plugin, elementspanel: { ...plugin.elementspanel, id: "renamed" } },
+      /Invalid panel metadata/
+    ],
+    [
+      "panel assets differ",
+      name,
+      {
+        ...plugin,
+        elementspanel: {
+          ...plugin.elementspanel,
+          panel: { frontendAssets: ["assets/i18n-old.js"] }
+        }
+      },
+      /frontend assets missing/
+    ],
+    [
+      "old asset metadata is absent",
+      name,
+      { ...plugin, elementspanel: { ...plugin.elementspanel, panel: {} } },
+      /frontend assets missing/
+    ],
+    [
+      "daemon metadata is absent",
+      name,
+      { ...plugin, elementspanel: { id: "i18n", panel: { frontendAssets: [] } } },
+      /Invalid daemon metadata/
+    ],
+    [
+      "old runtime catalogue is absent",
+      "@elementspanel/panel",
+      { version: "1.0.1", dependencies: { [name]: "0.1.0" } },
+      /Missing built-in plugin catalogue/
+    ]
+  ]) {
+    await t.test(label, async (t) => {
+      const f = temporary(t);
+      const npm = mockNpmView(t);
+      npm.metadata(packageName, metadata);
+      const directory = path.join(f.root, "existing");
+      await initializer.initialize({
+        directory,
+        install: false,
+        versions: { panel: "1.0.1", daemon: "1.0.2" },
+        builtinPlugins: {
+          panel: { i18n: { name, version: "0.1.0" } },
+          daemon: { i18n: { name, version: "0.2.0" } }
+        }
+      });
+      const files = ["package.json", "panel/package.json", "daemon/package.json"].map((file) =>
+        path.join(directory, file)
+      );
+      const before = files.map((file) => fs.readFileSync(file, "utf8"));
+      let installed = false;
+      await assert.rejects(
+        initializer.updateBuiltinPlugins({
+          directory,
+          installer: async () => {
+            installed = true;
+          }
+        }),
+        expected
+      );
+      assert.deepEqual(
+        files.map((file) => fs.readFileSync(file, "utf8")),
+        before
+      );
+      assert.equal(installed, false);
+      const newProject = path.join(f.root, "new-project");
+      await assert.rejects(
+        initializer.initialize({ directory: newProject, install: false }),
+        expected
+      );
+      assert.equal(fs.existsSync(newProject), false);
+    });
+  }
+});
 
 test("initializer preserves existing projects and rejects symlink destinations", async (t) => {
   const f = temporary(t);
@@ -487,7 +701,7 @@ function runtimeFixture(t, behavior = {}) {
       "server",
       ...(side === "panel" ? ["console"] : [])
     ])
-      installNpmPlugin(root, side, plugin);
+      installNpmPlugin(root, side, plugin, { projectRoot: project });
     write(path.join(root, "public/index.html"), "fixture");
     for (const name of ["pty", "file_zip", "7z"])
       write(
@@ -758,9 +972,13 @@ test("updating the server plugin replaces the panel process while the local daem
   const starts = () =>
     f.events().filter((event) => event.type === "start" && event.side === "panel");
   await until(() => starts().length === 1);
-  write(path.join(f.packages.panel,
-    "node_modules/@elementspanel/epanel-plugin-server/panel/backend/index.cjs"),
-    "exports.apply = ctx => ctx.set('newServerRevision', true);");
+  write(
+    path.join(
+      f.project,
+      "panel/node_modules/@elementspanel/epanel-plugin-server/panel/backend/index.cjs"
+    ),
+    "exports.apply = ctx => ctx.set('newServerRevision', true);"
+  );
   write(trigger, "restart");
   await until(() => starts().length === 2);
   assert.notEqual(starts()[0].pid, starts()[1].pid);
@@ -865,7 +1083,9 @@ test("startup timeout cancels a worker gracefully", async (t) => {
 test("single-side modes use their own data and support existing runtime directories", async (t) => {
   for (const side of ["panel", "daemon"]) {
     const f = runtimeFixture(t);
-    const runtime = path.join(f.root, "old installation", side === "panel" ? "web" : "daemon");
+    const runtime = path.join(f.root, "custom installation", side === "panel" ? "web" : "daemon");
+    fs.mkdirSync(path.dirname(runtime), { recursive: true });
+    fs.renameSync(path.join(f.project, side), runtime);
     if (side === "daemon") {
       for (const name of ["pty", "file_zip", "7z"]) {
         const filename =
@@ -919,7 +1139,7 @@ test("CLI rejects missing companion packages and shared data directories before 
 test("CLI reports missing built-in npm dependencies before starting either worker", async (t) => {
   const f = runtimeFixture(t);
   fs.renameSync(
-    path.join(f.packages.panel, "node_modules/@elementspanel/epanel-plugin-console"),
+    path.join(f.project, "panel/node_modules/@elementspanel/epanel-plugin-console"),
     path.join(f.root, "removed-console")
   );
   const result = await execute(f, path.join(f.packages.panel, "bin.cjs"), [
@@ -1007,7 +1227,8 @@ test("CJS and ESM plugins use host dependencies while retaining private dependen
   const work = path.join(f.root, "work");
   const plugin = path.join(work, "plugins/sample");
   write(path.join(host, "package.json"), {
-    dependencies: { cordis: "1", "host-only": "1", "private-dep": "1" }
+    dependencies: { cordis: "1", "host-only": "1", "private-dep": "1" },
+    elementspanel: { side: "panel", plugins: {} }
   });
   for (const [root, name, value] of [
     [host, "cordis", "host cordis"],
@@ -1049,7 +1270,10 @@ test("shared transitive modules follow the host Cordis graph instead of a hoiste
   const f = temporary(t);
   const host = path.join(f.root, "host");
   const plugin = path.join(f.root, "work/plugins/sample");
-  write(path.join(host, "package.json"), { dependencies: { cordis: "1" } });
+  write(path.join(host, "package.json"), {
+    dependencies: { cordis: "1" },
+    elementspanel: { side: "panel", plugins: {} }
+  });
   write(path.join(host, "node_modules/cordis/index.js"), "module.exports = {};");
   write(
     path.join(host, "node_modules/cordis/node_modules/@cordisjs/core/index.js"),
@@ -1072,7 +1296,10 @@ test("ESM plugins share the actual CJS host Context and Service constructors", a
   const f = temporary(t);
   const host = path.join(f.root, "host");
   const plugin = path.join(f.root, "work/plugins/sample");
-  write(path.join(host, "package.json"), { dependencies: { cordis: "3.18.1" } });
+  write(path.join(host, "package.json"), {
+    dependencies: { cordis: "3.18.1" },
+    elementspanel: { side: "panel", plugins: {} }
+  });
   fs.mkdirSync(path.join(host, "node_modules"));
   fs.symlinkSync(
     path.join(repository, "core/panel/node_modules/cordis"),

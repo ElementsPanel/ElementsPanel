@@ -18,10 +18,10 @@ export function watchNpmPlugins(
   changed?: () => void
 ) {
   const stamp = () => {
-    const { packageRoot, projectRoot } = npmPluginRoots();
+    const { packageRoot, dependencyRoot } = npmPluginRoots({ side });
     if (!fs.existsSync(path.join(packageRoot, "package.json"))) return "";
     const files: string[] = [];
-    for (const root of [packageRoot, projectRoot])
+    for (const root of [packageRoot, dependencyRoot])
       for (const name of [
         "package.json",
         "package-lock.json",
@@ -49,7 +49,7 @@ export function watchNpmPlugins(
   let candidate = applied;
   let busy = false;
   ctx.setInterval(() => {
-    if (busy || npmPluginOperationPending()) return;
+    if (busy || npmPluginOperationPending(side)) return;
     try {
       const next = stamp();
       if (next === applied) {

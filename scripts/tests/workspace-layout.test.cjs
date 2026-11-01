@@ -123,6 +123,7 @@ for (const side of ["panel", "daemon"]) {
     });
     assert.equal(process.env.EPANEL_SOURCE_ROOT, host);
     assert.equal(process.env.EPANEL_PROJECT_ROOT, repository);
+    assert.equal(process.env.EPANEL_RUNTIME_ROOT, path.join(repository, "data", side));
     assert.deepEqual(events, [
       ["mkdir", path.join(repository, "data", side)],
       ["cwd", path.join(repository, "data", side)],

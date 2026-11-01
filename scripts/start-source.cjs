@@ -11,6 +11,7 @@ const workRoot = developmentDirectory(side);
 fs.mkdirSync(workRoot, { recursive: true });
 process.env.EPANEL_SOURCE_ROOT = packageRoot;
 process.env.EPANEL_PROJECT_ROOT = repository;
+process.env.EPANEL_RUNTIME_ROOT = workRoot;
 process.chdir(workRoot);
 installPluginResolution(packageRoot, workRoot);
 require(path.join(packageRoot, "production/app.js"));

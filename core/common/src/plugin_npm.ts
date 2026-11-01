@@ -4,18 +4,19 @@ import path from "path";
 import { createRequire } from "module";
 import { discoverPlugins, readPluginManifest, resolvePluginEntry } from "./plugin_manifest";
 import { validatePluginCompatibility } from "./plugin_contract";
+// @ts-ignore Shared by the source runtime and the published npm launcher.
+import * as npmPlugins from "../../../scripts/runtime/npm-plugins.cjs";
 
 /**
  * npm dependency management for plugins.
  *
- * A plugin installed from the market is a normal dependency of the installation
- * project: it is written into the project's `package.json`, installed by npm and
- * then resolved by the runtime like any other npm plugin. The market only indexes
- * npm packages; it never hosts the package files.
+ * Built-in and market plugins are dependencies of the installation's panel or
+ * daemon directory. Each side owns its package.json, lockfile and npm operations.
+ * The market only indexes npm packages; it never hosts the package files.
  *
  * `elementspanel.plugins` maps a plugin id to the npm package name, which is what
- * the runtime resolver reads. A project plugin lives next to the built-in plugins
- * of the runtime package and is loaded through the same path.
+ * the runtime resolver reads. The runtime package lists built-in identities but
+ * does not pin or install their versions.
  */
 
 export type NpmPluginSide = "panel" | "daemon";
@@ -31,7 +32,7 @@ export interface NpmPluginRecord {
   /** The asset folder name the plug-in declares (unique per side). */
   folder: string;
   packageRoot: string;
-  /** The manifest that owns this dependency: runtime package or installation project. */
+  /** Whether the runtime identifies this package as a built-in plugin. */
   source: "bundled" | "project";
 }
 
@@ -47,6 +48,7 @@ export interface InstallNpmPluginOptions {
 export interface NpmPluginRoots {
   packageRoot: string;
   projectRoot: string;
+  dependencyRoot: string;
 }
 
 const PLUGIN_ID = /^[a-z][a-z0-9_-]{1,63}$/;
@@ -94,12 +96,24 @@ export function currentProjectRoot(packageRoot = currentPackageRoot()): string {
 }
 
 export function npmPluginRoots(
-  options: { packageRoot?: string; projectRoot?: string } = {}
+  options: { packageRoot?: string; projectRoot?: string; side?: NpmPluginSide } = {}
 ): NpmPluginRoots {
   const packageRoot = path.resolve(options.packageRoot ?? currentPackageRoot());
+  const projectRoot = path.resolve(options.projectRoot ?? currentProjectRoot(packageRoot));
+  const host = readJson(path.join(packageRoot, "package.json"));
+  const side =
+    options.side ||
+    stringValue(objectValue(host?.elementspanel)?.side) ||
+    path.basename(packageRoot);
   return {
     packageRoot,
-    projectRoot: path.resolve(options.projectRoot ?? currentProjectRoot(packageRoot))
+    projectRoot,
+    dependencyRoot: path.dirname(
+      npmPlugins.projectManifestFile(packageRoot, side, {
+        projectRoot,
+        runtimeDirectory: process.env.EPANEL_RUNTIME_ROOT
+      })
+    )
   };
 }
 
@@ -147,14 +161,10 @@ function readPackageEntry(
 ): { root: string; metadata: Record<string, unknown> } {
   // Read package boundaries directly: Node caches require.resolve() paths even
   // after npm moves an installation between nested and hoisted node_modules.
-  let manifestPath: string | undefined;
-  for (const root of [packageRoot, currentProjectRoot(packageRoot)]) {
-    const localRequire = createRequire(path.join(root, "package.json"));
-    manifestPath = (localRequire.resolve.paths(name) || [])
-      .map((directory) => path.join(directory, name, "package.json"))
-      .find((filename) => fs.existsSync(filename));
-    if (manifestPath) break;
-  }
+  const localRequire = createRequire(path.join(packageRoot, "package.json"));
+  let manifestPath = (localRequire.resolve.paths(name) || [])
+    .map((directory) => path.join(directory, name, "package.json"))
+    .find((filename) => fs.existsSync(filename));
   if (!manifestPath) throw new Error(`Missing npm plugin package: ${name}.`);
   manifestPath = fs.realpathSync(manifestPath);
   const metadata = readJson(manifestPath);
@@ -212,89 +222,34 @@ function recordFromPackage(
 /**
  * Every npm plugin the runtime can load for a side, built-in and project-installed.
  *
- * Built-in package names win over a project mapping for the same id. An explicit
- * project dependency on that same package selects the user's installed version.
- * A project package that does not describe the requested side is skipped instead of failing, which
- * is what lets a two-sided project share one dependency list between sides.
+ * Built-in package names reserve their plugin ids. The side manifest selects
+ * the installed versions; a package without that side is skipped.
  */
 export function listNpmPlugins(
   side?: NpmPluginSide,
   options: { packageRoot?: string; projectRoot?: string; skipInvalid?: boolean } = {}
 ): NpmPluginRecord[] {
-  const { packageRoot, projectRoot } = npmPluginRoots(options);
-  const host = readJson(path.join(packageRoot, "package.json"));
-  if (!host) throw new Error(`Missing runtime package metadata: ${packageRoot}`);
-  const project =
-    path.resolve(projectRoot) === path.resolve(packageRoot)
-      ? null
-      : readProjectManifest(projectRoot);
-
-  const hostMappings = mappingsOf(host);
-  const projectMappings = { ...mappingsOf(project) };
-  for (const name of Object.keys(dependenciesOf(project))) {
-    if (!PACKAGE_NAME.test(name) || Object.values(projectMappings).includes(name)) continue;
-    try {
-      const entry = readPackageEntry(projectRoot, name);
-      const id = stringValue(objectValue(entry.metadata.elementspanel)?.id);
-      if (PLUGIN_ID.test(id) && projectMappings[id] === undefined) projectMappings[id] = name;
-    } catch {
-      /* npm may still be writing the package. */
-    }
-  }
-  const mappings = new Map<string, { name: string; source: NpmPluginRecord["source"] }>();
-  for (const [pluginId, name] of Object.entries(projectMappings)) {
-    if (!PLUGIN_ID.test(pluginId) || typeof name !== "string" || !PACKAGE_NAME.test(name)) continue;
-    mappings.set(pluginId, { name, source: "project" });
-  }
-  for (const [pluginId, name] of Object.entries(hostMappings)) {
-    if (!PLUGIN_ID.test(pluginId) || typeof name !== "string" || !PACKAGE_NAME.test(name)) continue;
-    if (dependenciesOf(host)[name] === undefined) continue;
-    mappings.set(pluginId, {
-      name,
-      source: dependenciesOf(project)[name] === undefined ? "bundled" : "project"
-    });
-  }
-
-  const hostDependencies = dependenciesOf(host);
-  const projectDependencies = dependenciesOf(project);
-  const folders = new Set<string>();
+  const { packageRoot, projectRoot, dependencyRoot } = npmPluginRoots({ ...options, side });
   const records: NpmPluginRecord[] = [];
-  for (const [pluginId, mapping] of mappings) {
-    const declared = hostDependencies[mapping.name] ?? projectDependencies[mapping.name];
-    if (declared === undefined) {
-      if (options.skipInvalid) continue;
-      throw new Error(
-        `Missing npm plugin dependency: ${mapping.name}. Run npm install in the project directory.`
-      );
-    }
-    let entry: { root: string; metadata: Record<string, unknown> };
-    try {
-      entry = readPackageEntry(
-        mapping.source === "project" ? projectRoot : packageRoot,
-        mapping.name
-      );
-    } catch (error) {
-      if (options.skipInvalid) continue;
-      throw error;
-    }
+  for (const item of npmPlugins.resolveNpmPlugins(packageRoot, side, {
+    projectRoot,
+    runtimeDirectory: dependencyRoot,
+    skipInvalid: options.skipInvalid
+  })) {
+    const metadata = readJson(path.join(item.packageRoot, "package.json"));
+    if (!metadata) continue;
     const record = recordFromPackage(
-      pluginId,
-      mapping.name,
-      mapping.source,
-      entry.root,
-      entry.metadata,
+      item.id,
+      item.name,
+      item.source,
+      item.packageRoot,
+      metadata,
       side
     );
     if (!record) {
-      if (options.skipInvalid || mapping.source === "project") continue;
-      throw new Error(`Invalid ${side ?? "plugin"} entry in npm plugin ${mapping.name}.`);
-    }
-    const folder = record.folder;
-    if (folders.has(folder)) {
       if (options.skipInvalid) continue;
-      throw new Error(`Duplicate npm plugin asset directory: ${folder}.`);
+      throw new Error(`Invalid ${side ?? "plugin"} entry in npm plugin ${item.name}.`);
     }
-    folders.add(folder);
     records.push(record);
   }
   return records;
@@ -397,12 +352,9 @@ async function acquireProjectLock(projectRoot: string) {
   }
 }
 
-export function npmPluginOperationPending(): boolean {
-  const { packageRoot, projectRoot } = npmPluginRoots();
-  return (
-    operations.size > 0 ||
-    [packageRoot, projectRoot].some((root) => fs.existsSync(path.join(root, LOCK_NAME)))
-  );
+export function npmPluginOperationPending(side?: NpmPluginSide): boolean {
+  const { dependencyRoot } = npmPluginRoots({ side });
+  return operations.size > 0 || fs.existsSync(path.join(dependencyRoot, LOCK_NAME));
 }
 
 function withProjectLock<T>(projectRoot: string, operation: () => Promise<T>): Promise<T> {
@@ -439,21 +391,15 @@ export async function installNpmPlugin(options: InstallNpmPluginOptions): Promis
   if (options.pluginId && !PLUGIN_ID.test(options.pluginId))
     throw new Error(`Invalid plugin id: ${options.pluginId}`);
   if (!VERSION.test(version)) throw new Error(`Invalid plugin version: ${version}`);
-  const { packageRoot, projectRoot } = npmPluginRoots(options);
-  return withProjectLock(projectRoot, async () => {
+  const { packageRoot, projectRoot, dependencyRoot } = npmPluginRoots(options);
+  return withProjectLock(dependencyRoot, async () => {
     const host = readJson(path.join(packageRoot, "package.json"));
     if (!host) throw new Error(`Missing runtime package metadata: ${packageRoot}`);
-    const hostId = Object.entries(mappingsOf(host)).find(
-      ([, value]) => value === name && dependenciesOf(host)[name] !== undefined
-    )?.[0];
-    const targetRoot =
-      hostId && dependenciesOf(readProjectManifest(projectRoot))[name] === undefined
-        ? packageRoot
-        : projectRoot;
+    const hostId = Object.entries(mappingsOf(host)).find(([, value]) => value === name)?.[0];
+    const targetRoot = dependencyRoot;
     if (
       options.pluginId &&
       mappingsOf(host)[options.pluginId] &&
-      dependenciesOf(host)[String(mappingsOf(host)[options.pluginId])] !== undefined &&
       mappingsOf(host)[options.pluginId] !== name
     )
       throw new Error(`BUNDLED:${options.pluginId}`);
@@ -483,7 +429,8 @@ export async function installNpmPlugin(options: InstallNpmPluginOptions): Promis
           "--save-exact",
           "--no-fund",
           "--no-audit",
-          "--ignore-scripts"
+          "--ignore-scripts",
+          "--workspaces=false"
         ],
         targetRoot
       );
@@ -491,11 +438,7 @@ export async function installNpmPlugin(options: InstallNpmPluginOptions): Promis
       const pluginId =
         options.pluginId || stringValue(objectValue(entry.metadata.elementspanel)?.id);
       if (!PLUGIN_ID.test(pluginId)) throw new Error(`Invalid plugin id in ${name}.`);
-      if (
-        mappingsOf(host)[pluginId] &&
-        dependenciesOf(host)[String(mappingsOf(host)[pluginId])] !== undefined &&
-        mappingsOf(host)[pluginId] !== name
-      )
+      if (mappingsOf(host)[pluginId] && mappingsOf(host)[pluginId] !== name)
         throw new Error(`Plugin id ${pluginId} belongs to a bundled dependency.`);
       if (hostId && pluginId !== hostId)
         throw new Error(`The package ${name} changed its plugin id from ${hostId} to ${pluginId}.`);
@@ -505,13 +448,27 @@ export async function installNpmPlugin(options: InstallNpmPluginOptions): Promis
       const record = recordFromPackage(
         pluginId,
         name,
-        targetRoot === packageRoot ? "bundled" : "project",
+        hostId ? "bundled" : "project",
         entry.root,
         entry.metadata,
         side
       );
       if (!record)
         throw new Error(`The package ${name} does not provide a ${side} plugin named ${pluginId}.`);
+      if (side === "panel") {
+        const expected = objectValue(objectValue(entry.metadata.elementspanel)?.panel)
+          ?.frontendAssets;
+        const available = objectValue(host.elementspanel)?.frontendAssets;
+        if (
+          (hostId || expected !== undefined) &&
+          (!Array.isArray(expected) ||
+            !Array.isArray(available) ||
+            expected.some((file) => typeof file !== "string" || !available.includes(file)))
+        )
+          throw new Error(
+            `Frontend assets in ${name} do not match this panel. Update the panel or install a matching plugin version.`
+          );
+      }
       if (/^[0-9]/.test(version) && record.version !== version)
         throw new Error(`The installed package ${name} is ${record.version}, expected ${version}.`);
       if (
@@ -563,7 +520,8 @@ export async function installNpmPlugin(options: InstallNpmPluginOptions): Promis
                 "--save",
                 "--no-fund",
                 "--no-audit",
-                "--ignore-scripts"
+                "--ignore-scripts",
+                "--workspaces=false"
               ]
             : [
                 "--prefix",
@@ -572,7 +530,8 @@ export async function installNpmPlugin(options: InstallNpmPluginOptions): Promis
                 name,
                 "--no-fund",
                 "--no-audit",
-                "--ignore-scripts"
+                "--ignore-scripts",
+                "--workspaces=false"
               ],
           targetRoot
         );
@@ -592,33 +551,37 @@ export async function installNpmPlugin(options: InstallNpmPluginOptions): Promis
 /** Remove the dependency from the manifest that owns it, preserving user configuration. */
 export async function uninstallNpmPlugin(
   pluginId: string,
-  options: { packageRoot?: string; projectRoot?: string } = {}
+  options: { packageRoot?: string; projectRoot?: string; side?: NpmPluginSide } = {}
 ): Promise<NpmPluginRecord | null> {
   if (!PLUGIN_ID.test(pluginId)) throw new Error(`Invalid plugin id: ${pluginId}`);
   if (isEssentialNpmPlugin(pluginId))
     throw new Error(`The essential plugin "${pluginId}" cannot be uninstalled.`);
-  const { packageRoot, projectRoot } = npmPluginRoots(options);
-  return withProjectLock(projectRoot, async () => {
-    const host = readJson(path.join(packageRoot, "package.json"));
-    const bundledName = mappingsOf(host)[pluginId];
-    const targetRoot =
-      typeof bundledName === "string" &&
-      dependenciesOf(host)[bundledName] !== undefined &&
-      dependenciesOf(readProjectManifest(projectRoot))[bundledName] === undefined
-        ? packageRoot
-        : projectRoot;
+  const { packageRoot, projectRoot, dependencyRoot } = npmPluginRoots(options);
+  return withProjectLock(dependencyRoot, async () => {
+    const targetRoot = dependencyRoot;
     const manifest = readProjectManifest(targetRoot);
     const name =
       mappingsOf(manifest)[pluginId] ??
-      listNpmPlugins(undefined, { packageRoot, projectRoot, skipInvalid: true }).find(
+      listNpmPlugins(options.side, { packageRoot, projectRoot, skipInvalid: true }).find(
         (item) => item.pluginId === pluginId
       )?.name;
     if (typeof name !== "string" || !PACKAGE_NAME.test(name)) return null;
-    const record = listNpmPlugins(undefined, { packageRoot, projectRoot, skipInvalid: true }).find(
-      (item) => item.pluginId === pluginId
-    );
+    const record = listNpmPlugins(options.side, {
+      packageRoot,
+      projectRoot,
+      skipInvalid: true
+    }).find((item) => item.pluginId === pluginId);
     await runNpm(
-      ["--prefix", targetRoot, "uninstall", name, "--no-fund", "--no-audit", "--ignore-scripts"],
+      [
+        "--prefix",
+        targetRoot,
+        "uninstall",
+        name,
+        "--no-fund",
+        "--no-audit",
+        "--ignore-scripts",
+        "--workspaces=false"
+      ],
       targetRoot
     );
     const updated = readProjectManifest(targetRoot);

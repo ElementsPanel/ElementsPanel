@@ -661,13 +661,14 @@ test("dependency versions are read from package metadata without executing a dep
   const env = await fixture(t);
   env.common.npmPluginRoots = () => ({
     packageRoot: env.panelDirectory,
-    projectRoot: env.panelDirectory
+    projectRoot: env.panelDirectory,
+    dependencyRoot: path.join(env.panelDirectory, "panel")
   });
   fs.writeFileSync(
     path.join(env.panelDirectory, "package.json"),
     JSON.stringify({ name: "@elementspanel/panel", version: "1.0.0" })
   );
-  const dependency = path.join(env.panelDirectory, "node_modules", "example-lib");
+  const dependency = path.join(env.panelDirectory, "panel/node_modules", "example-lib");
   fs.mkdirSync(dependency, { recursive: true });
   fs.writeFileSync(
     path.join(dependency, "package.json"),

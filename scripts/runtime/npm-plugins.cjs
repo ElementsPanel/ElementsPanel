@@ -46,12 +46,17 @@ function projectRoot(packageRoot) {
   return parent;
 }
 
-function projectManifestFile(packageRoot) {
-  const root = projectRoot(packageRoot);
-  const filename = path.join(root, "package.json");
-  return path.resolve(filename) === path.resolve(path.join(packageRoot, "package.json"))
-    ? null
-    : filename;
+function projectManifestFile(packageRoot, side, options = {}) {
+  const selectedSide =
+    side ||
+    readJson(path.join(packageRoot, "package.json")).elementspanel?.side ||
+    path.basename(packageRoot);
+  if (!["panel", "daemon"].includes(selectedSide)) throw new Error("Missing runtime side.");
+  const directory =
+    options.runtimeDirectory ||
+    (!options.projectRoot && process.env.EPANEL_RUNTIME_ROOT) ||
+    path.join(options.projectRoot || projectRoot(packageRoot), selectedSide);
+  return path.join(path.resolve(directory), "package.json");
 }
 
 function mappingOf(manifest) {
@@ -65,10 +70,9 @@ function dependenciesOf(manifest) {
 }
 
 /**
- * Resolve declared plugins through the host's dependency graph, including nested
- * installs and project-level dependencies installed by the plugin market. The
- * resolver also returns whether the mapping belongs to the built-in or project
- * installation layer, so project plugins can remain dormant until enabled.
+ * Resolve plugins declared in the side's package.json, including hoisted npm
+ * installations. The host catalogue reserves built-in ids without owning their
+ * versions. Other explicitly mapped plugins remain dormant until enabled.
  * Runtime startup passes skipInvalid so an optional package being removed does
  * not stop the host; the caller separately validates the small set of core
  * plugins.
@@ -76,12 +80,12 @@ function dependenciesOf(manifest) {
 function resolveNpmPlugins(packageRoot, side, options = {}) {
   const skipInvalid = options.skipInvalid === true;
   const host = readJson(path.join(packageRoot, "package.json"));
-  const projectFile = projectManifestFile(packageRoot);
-  const project = projectFile ? readOptional(projectFile) : null;
-  const selectedSide = side || host.elementspanel?.side;
+  const selectedSide = side || host.elementspanel?.side || path.basename(packageRoot);
+  const projectFile = projectManifestFile(packageRoot, selectedSide, options);
+  const project = readOptional(projectFile);
+  const dependencyRoot = path.dirname(projectFile);
 
-  // Keep the host's package identity, while allowing npm install in the project
-  // to select another version of that same package (even with nested installs).
+  // The side manifest owns every dependency; the host only reserves identities.
   const configured = new Map();
   for (const [id, name] of Object.entries(mappingOf(project)))
     configured.set(id, { name, source: "project" });
@@ -89,7 +93,7 @@ function resolveNpmPlugins(packageRoot, side, options = {}) {
     if (!validName.test(name) || [...configured.values()].some((item) => item.name === name))
       continue;
     try {
-      const metadata = readJson(packageManifest(projectRoot(packageRoot), name));
+      const metadata = readJson(packageManifest(dependencyRoot, name));
       const id = metadata.elementspanel?.id;
       if (validId.test(id) && !configured.has(id))
         configured.set(id, { name, source: "project", automatic: true });
@@ -98,19 +102,19 @@ function resolveNpmPlugins(packageRoot, side, options = {}) {
     }
   }
   for (const [id, name] of Object.entries(mappingOf(host))) {
-    if (dependenciesOf(host)[name] !== undefined)
+    if (dependenciesOf(project)[name] !== undefined)
       configured.set(id, {
         name,
-        source: dependenciesOf(project)[name] === undefined ? "bundled" : "project",
+        source: "bundled",
         automatic: true
       });
+    else if (configured.has(id)) {
+      if (!skipInvalid) throw new Error(`Plugin id ${id} belongs to built-in package ${name}.`);
+      configured.delete(id);
+    }
   }
 
-  const hostDependencies = dependenciesOf(host);
   const projectDependencies = dependenciesOf(project);
-  const roots = [packageRoot];
-  const parentRoot = projectRoot(packageRoot);
-  if (path.resolve(parentRoot) !== path.resolve(packageRoot)) roots.push(parentRoot);
   const folders = new Set();
   const records = [];
 
@@ -120,7 +124,7 @@ function resolveNpmPlugins(packageRoot, side, options = {}) {
       !validId.test(id) ||
       typeof name !== "string" ||
       !validName.test(name) ||
-      (hostDependencies[name] === undefined && projectDependencies[name] === undefined)
+      projectDependencies[name] === undefined
     ) {
       if (skipInvalid) continue;
       throw new Error(`Invalid npm plugin dependency: ${id}.`);
@@ -128,17 +132,14 @@ function resolveNpmPlugins(packageRoot, side, options = {}) {
 
     let manifestPath;
     let failure;
-    for (const root of mapping.source === "project" ? [...roots].reverse() : roots) {
-      try {
-        manifestPath = packageManifest(root, name);
-        break;
-      } catch (error) {
-        failure = error;
-      }
+    try {
+      manifestPath = packageManifest(dependencyRoot, name);
+    } catch (error) {
+      failure = error;
     }
     if (!manifestPath) {
       if (skipInvalid) continue;
-      throw new Error(`Missing npm plugin ${name}. Run npm install in the project directory.`, {
+      throw new Error(`Missing npm plugin ${name}. Run npm install in ${dependencyRoot}.`, {
         cause: failure
       });
     }

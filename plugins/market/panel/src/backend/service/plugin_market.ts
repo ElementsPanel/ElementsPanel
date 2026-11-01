@@ -247,14 +247,14 @@ export function panelDependencyVersions(detail: {
       names.add(name);
   }
   if (!names.size) return result;
-  const roots = npmPluginRoots();
-  const plugin = listNpmPlugins(undefined, { skipInvalid: true }).find(
+  const roots = npmPluginRoots({ side: "panel" });
+  const plugin = listNpmPlugins("panel", { skipInvalid: true }).find(
     (item) => item.name === detail.name
   );
   const searchRoots = [
     ...new Set(
-      [plugin?.packageRoot, roots.projectRoot, roots.packageRoot].filter((root): root is string =>
-        Boolean(root)
+      [plugin?.packageRoot, roots.dependencyRoot, roots.packageRoot].filter(
+        (root): root is string => Boolean(root)
       )
     )
   ];

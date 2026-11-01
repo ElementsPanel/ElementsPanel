@@ -52,6 +52,7 @@ function workerEnvironment(plan, worker) {
   const environment = {
     ...process.env,
     EPANEL_PROJECT_ROOT: plan.project,
+    EPANEL_RUNTIME_ROOT: worker.directory,
     EPANEL_SUPERVISED: "1"
   };
   delete environment.EPANEL_PACKAGE_ROOT;
@@ -102,12 +103,16 @@ function pipeWorkerOutput(stream, target, side) {
   return flush;
 }
 
-function validateRuntime(packageRoot, side) {
+function validateRuntime(packageRoot, side, project, directory) {
   for (const item of ["app.js", "runtime/worker.cjs"]) {
     if (!fs.existsSync(path.join(packageRoot, item)))
       throw new Error(`Incomplete ${side} package: missing ${item}.`);
   }
-  const plugins = resolveNpmPlugins(packageRoot, side, { skipInvalid: true });
+  const plugins = resolveNpmPlugins(packageRoot, side, {
+    skipInvalid: true,
+    projectRoot: project,
+    runtimeDirectory: directory
+  });
   for (const id of [
     "i18n",
     "storage",
@@ -147,7 +152,8 @@ function planWorkers(side, packageRoot, options) {
     packageRoot,
     directory: side === "panel" ? panelDirectory : daemonDirectory
   });
-  for (const worker of workers) validateRuntime(worker.packageRoot, worker.side);
+  for (const worker of workers)
+    validateRuntime(worker.packageRoot, worker.side, project, worker.directory);
   return {
     workers,
     project,

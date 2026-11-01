@@ -110,17 +110,25 @@ function updateProjectManifest(projectRoot, entry) {
   const workspaces = Array.isArray(manifest.workspaces) ? [...manifest.workspaces] : [];
   if (!workspaces.includes("external/*")) workspaces.push("external/*");
   manifest.workspaces = workspaces;
-  manifest.dependencies = { ...(manifest.dependencies || {}) };
-  manifest.dependencies[entry.manifest.name] = `file:external/${entry.directory}`;
-  const elementspanel = manifest.elementspanel && typeof manifest.elementspanel === "object"
-    ? { ...manifest.elementspanel }
-    : {};
-  const plugins = elementspanel.plugins && typeof elementspanel.plugins === "object"
-    ? { ...elementspanel.plugins }
-    : {};
-  plugins[entry.manifest.elementspanel.id] = entry.manifest.name;
-  manifest.elementspanel = { ...elementspanel, plugins };
   writeJson(filename, manifest);
+  for (const side of ["panel", "daemon"]) {
+    if (!entry.manifest.elementspanel[side]) continue;
+    const sideFile = path.join(projectRoot, side, "package.json");
+    if (!fs.existsSync(sideFile)) continue;
+    const service = readJson(sideFile);
+    service.dependencies = {
+      ...service.dependencies,
+      [entry.manifest.name]: `file:../external/${entry.directory}`
+    };
+    service.elementspanel = {
+      ...service.elementspanel,
+      plugins: {
+        ...service.elementspanel?.plugins,
+        [entry.manifest.elementspanel.id]: entry.manifest.name
+      }
+    };
+    writeJson(sideFile, service);
+  }
 }
 
 function runNpm(args, cwd) {
@@ -240,7 +248,10 @@ async function setupWorkspace(projectRoot, args) {
   fs.writeFileSync(path.join(workspaceRoot, "README.md"), workspaceReadme(options.id, options.sides, options.name));
   const entry = { root: workspaceRoot, directory, manifest: packageManifest };
   updateProjectManifest(projectRoot, entry);
-  if (options.install) await runNpm(["install", "--no-fund", "--no-audit", "--ignore-scripts"], projectRoot);
+  if (options.install) {
+    await runNpm(["install", "--no-fund", "--no-audit", "--ignore-scripts"], projectRoot);
+    await installCommand(projectRoot, ["--ignore-scripts"]);
+  }
   console.log(`Created plugin workspace in ${workspaceRoot}`);
   return entry;
 }
@@ -358,13 +369,25 @@ async function publishCommand(projectRoot, args) {
 }
 
 function help() {
-  console.log(`Usage: epanel-workspace <setup|build|publish> [name] [options]\n\n  setup <name> [--panel|--daemon|--both] [--no-install]\n  build [name ...]\n  publish [name ...]`);
+  console.log(
+    `Usage: epanel-workspace <install|setup|build|publish> [name] [options]\n\n  install [--ignore-scripts]\n  setup <name> [--panel|--daemon|--both] [--no-install]\n  build [name ...]\n  publish [name ...]`
+  );
+}
+
+async function installCommand(projectRoot, args = []) {
+  if (args.some((arg) => arg !== "--ignore-scripts")) throw new Error("Unknown install option.");
+  for (const side of ["panel", "daemon"]) {
+    const directory = path.join(projectRoot, side);
+    if (!fs.existsSync(path.join(directory, "package.json"))) continue;
+    await runNpm(["install", "--no-fund", "--no-audit", "--workspaces=false", ...args], directory);
+  }
 }
 
 async function main(argv = process.argv.slice(2)) {
   const command = argv.shift();
   if (!command || ["--help", "-h"].includes(command)) return help();
   const projectRoot = findProjectRoot();
+  if (command === "install") return installCommand(projectRoot, argv);
   if (command === "setup") return setupWorkspace(projectRoot, argv);
   if (command === "build") return buildCommand(projectRoot, argv);
   if (["publish", "pub"].includes(command)) return publishCommand(projectRoot, argv);
@@ -378,4 +401,11 @@ if (require.main === module) {
   });
 }
 
-module.exports = { findProjectRoot, setupWorkspace, buildWorkspace, buildCommand, publishCommand };
+module.exports = {
+  findProjectRoot,
+  setupWorkspace,
+  buildWorkspace,
+  buildCommand,
+  publishCommand,
+  installCommand
+};

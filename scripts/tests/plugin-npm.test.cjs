@@ -27,10 +27,16 @@ function fixture(t, side = "panel") {
   });
   write(path.join(host, "package.json"), {
     name: `@elementspanel/${side}`,
-    elementspanel: { side, plugins: {} }
+    elementspanel: { side, plugins: {}, ...(side === "panel" ? { frontendAssets: [] } : {}) }
   });
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  return { root, host };
+  const dependencyRoot = path.join(root, side);
+  write(path.join(dependencyRoot, "package.json"), {
+    private: true,
+    dependencies: {},
+    elementspanel: { side, plugins: {} }
+  });
+  return { root, host, dependencyRoot };
 }
 
 function npmFixture(t, side = "panel") {
@@ -66,6 +72,7 @@ function npmFixture(t, side = "panel") {
               [side]: {
                 directory: side,
                 folder: pluginId,
+                ...(side === "panel" ? { frontendAssets: state.frontendAssets || [] } : {}),
                 elements: { api: state.invalid && version === "2.0.0" ? 2 : 1 }
               }
             }
@@ -110,22 +117,22 @@ test("npm installs pin the resolved dependency; uninstall removes it and preserv
   const installed = await f.installNpmPlugin(options);
   assert.equal(installed.pluginId, "sample");
   assert.equal(installed.version, "1.0.0");
-  let manifest = JSON.parse(fs.readFileSync(path.join(f.root, "package.json")));
+  let manifest = JSON.parse(fs.readFileSync(path.join(f.dependencyRoot, "package.json")));
   assert.equal(manifest.dependencies[options.name], "1.0.0");
   assert.equal(manifest.elementspanel.plugins.sample, options.name);
-  assert.equal(f.calls[0].options.cwd, f.root);
+  assert.equal(f.calls[0].options.cwd, f.dependencyRoot);
   assert.ok(f.calls[0].args.includes("--ignore-scripts"));
   assert.ok(f.calls[0].args.includes("--save-exact"));
   await f.uninstallNpmPlugin("sample", options);
-  manifest = JSON.parse(fs.readFileSync(path.join(f.root, "package.json")));
+  manifest = JSON.parse(fs.readFileSync(path.join(f.dependencyRoot, "package.json")));
   assert.equal(manifest.dependencies[options.name], undefined);
   assert.equal(manifest.elementspanel.plugins.sample, undefined);
-  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(f.root, "package-lock.json"))), {
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(f.dependencyRoot, "package-lock.json"))), {
     action: "uninstall",
     spec: options.name
   });
   assert.equal(JSON.parse(fs.readFileSync(config)).plugins.sample.config.token, "keep");
-  assert.equal(fs.existsSync(path.join(f.root, ".elementspanel-npm.lock")), false);
+  assert.equal(fs.existsSync(path.join(f.dependencyRoot, ".elementspanel-npm.lock")), false);
 });
 
 test("an incompatible npm upgrade rolls the installed package, manifest and lockfile back", async (t) => {
@@ -137,7 +144,9 @@ test("an incompatible npm upgrade rolls the installed package, manifest and lock
     projectRoot: f.root
   };
   await f.installNpmPlugin(options);
-  const files = ["package.json", "package-lock.json"].map((name) => path.join(f.root, name));
+  const files = ["package.json", "package-lock.json"].map((name) =>
+    path.join(f.dependencyRoot, name)
+  );
   const before = files.map((filename) => fs.readFileSync(filename, "utf8"));
   f.state.invalid = true;
   await assert.rejects(f.installNpmPlugin({ ...options, version: "2.0.0" }), /Unsupported/);
@@ -146,13 +155,103 @@ test("an incompatible npm upgrade rolls the installed package, manifest and lock
     before
   );
   assert.equal(
-    JSON.parse(fs.readFileSync(path.join(f.root, "node_modules/epanel-plugin-sample/package.json")))
-      .version,
+    JSON.parse(
+      fs.readFileSync(path.join(f.dependencyRoot, "node_modules/epanel-plugin-sample/package.json"))
+    ).version,
     "1.0.0"
   );
   assert.deepEqual(
     f.calls.map((call) => call.spec),
     ["epanel-plugin-sample@latest", "epanel-plugin-sample@2.0.0", "epanel-plugin-sample@1.0.0"]
+  );
+});
+
+test("npm rejects frontend builds that reference missing panel assets and restores the previous version", async (t) => {
+  const f = npmFixture(t);
+  const plugin = writePlugin(f.host, "panel", "sample");
+  const files = [path.join(f.host, "package.json"), path.join(f.dependencyRoot, "package.json")];
+  const before = files.map((file) => fs.readFileSync(file, "utf8"));
+  f.state.frontendAssets = ["assets/i18n-old.js"];
+  await assert.rejects(
+    f.installNpmPlugin({
+      name: plugin.name,
+      version: "2.0.0",
+      side: "panel",
+      packageRoot: f.host,
+      projectRoot: f.root
+    }),
+    /Frontend assets.*do not match/
+  );
+  assert.deepEqual(
+    files.map((file) => fs.readFileSync(file, "utf8")),
+    before
+  );
+  assert.equal(
+    JSON.parse(fs.readFileSync(path.join(plugin.packageRoot, "package.json"))).version,
+    "1.0.0"
+  );
+  assert.ok(
+    f.calls.every(
+      (call) => call.options.cwd === f.dependencyRoot && call.args.includes("--workspaces=false")
+    )
+  );
+});
+
+test("each side resolves its own version of the same built-in package", (t) => {
+  const f = fixture(t);
+  const daemonHost = path.join(f.root, "node_modules/@elementspanel/daemon");
+  const panel = writePlugin(f.host, "panel", "sample", { version: "1.0.0" });
+  const daemon = writePlugin(daemonHost, "daemon", "sample", { version: "2.0.0" });
+  const { resolveNpmPlugins } = require("../runtime/npm-plugins.cjs");
+  const [panelRecord] = resolveNpmPlugins(f.host, "panel");
+  const [daemonRecord] = resolveNpmPlugins(daemonHost, "daemon");
+  assert.equal(panelRecord.version, "1.0.0");
+  assert.equal(panelRecord.packageRoot, panel.packageRoot);
+  assert.equal(daemonRecord.version, "2.0.0");
+  assert.equal(daemonRecord.packageRoot, daemon.packageRoot);
+  const common = loader()("core/common/src/plugin_npm.ts");
+  assert.equal(
+    common.listNpmPlugins("panel", { packageRoot: f.host, projectRoot: f.root })[0].version,
+    "1.0.0"
+  );
+  assert.equal(
+    common.listNpmPlugins("daemon", { packageRoot: daemonHost, projectRoot: f.root })[0].version,
+    "2.0.0"
+  );
+});
+
+test("only side manifests declare plugins; root and host dependency declarations are ignored", (t) => {
+  const f = fixture(t);
+  const rootOnly = writePlugin(f.root, "panel", "rootonly");
+  const hostOnly = writePlugin(f.host, "panel", "hostonly");
+  for (const [root, plugin] of [
+    [f.root, rootOnly],
+    [f.host, hostOnly]
+  ]) {
+    const filename = path.join(root, "package.json");
+    const manifest = JSON.parse(fs.readFileSync(filename));
+    manifest.dependencies = { [plugin.name]: "1.0.0" };
+    write(filename, manifest);
+  }
+  write(path.join(f.dependencyRoot, "package.json"), { private: true, dependencies: {} });
+  const { resolveNpmPlugins } = require("../runtime/npm-plugins.cjs");
+  assert.deepEqual(resolveNpmPlugins(f.host, "panel"), []);
+  const common = loader()("core/common/src/plugin_npm.ts");
+  assert.deepEqual(
+    common.listNpmPlugins("panel", { packageRoot: f.host, projectRoot: f.root }),
+    []
+  );
+  // Removing a built-in dependency must not let another package take its id.
+  write(path.join(f.dependencyRoot, "package.json"), {
+    dependencies: { [rootOnly.name]: "1.0.0" },
+    elementspanel: { plugins: { hostonly: rootOnly.name } }
+  });
+  assert.throws(() => resolveNpmPlugins(f.host, "panel"), /belongs to built-in package/);
+  assert.equal(
+    resolveNpmPlugins(f.host, "panel", { skipInvalid: true }).some(
+      (record) => record.id === "hostonly"
+    ),
+    false
   );
 });
 
@@ -168,7 +267,7 @@ test("npm updates core packages, protects uninstall and serializes operations fr
   });
   assert.equal(updated.version, "2.0.0");
   assert.equal(updated.source, "bundled");
-  assert.equal(f.calls[0].options.cwd, f.host);
+  assert.equal(f.calls[0].options.cwd, f.dependencyRoot);
   await assert.rejects(
     f.uninstallNpmPlugin("config", { packageRoot: f.host, projectRoot: f.root }),
     /essential/
@@ -198,24 +297,28 @@ test("npm updates core packages, protects uninstall and serializes operations fr
 test("optional bundled npm plugins are uninstalled from their owning manifest", async (t) => {
   const f = npmFixture(t);
   const plugin = writePlugin(f.host, "panel", "sample");
+  const hostBefore = fs.readFileSync(path.join(f.host, "package.json"), "utf8");
   const removed = await f.uninstallNpmPlugin("sample", {
     packageRoot: f.host,
     projectRoot: f.root
   });
   assert.equal(removed.name, plugin.name);
-  assert.equal(f.calls[0].options.cwd, f.host);
+  assert.equal(f.calls[0].options.cwd, f.dependencyRoot);
   assert.equal(
-    JSON.parse(fs.readFileSync(path.join(f.host, "package.json"))).dependencies[plugin.name],
+    JSON.parse(fs.readFileSync(path.join(f.dependencyRoot, "package.json"))).dependencies[
+      plugin.name
+    ],
     undefined
   );
+  assert.equal(fs.readFileSync(path.join(f.host, "package.json"), "utf8"), hostBefore);
 });
 
 test("externally installed npm dependencies are discovered without a manual mapping", (t) => {
   const f = fixture(t);
   const plugin = writePlugin(f.root, "panel", "sample");
-  const manifest = JSON.parse(fs.readFileSync(path.join(f.root, "package.json")));
+  const manifest = JSON.parse(fs.readFileSync(path.join(f.dependencyRoot, "package.json")));
   delete manifest.elementspanel.plugins.sample;
-  write(path.join(f.root, "package.json"), manifest);
+  write(path.join(f.dependencyRoot, "package.json"), manifest);
   const { resolveNpmPlugins } = require("../runtime/npm-plugins.cjs");
   const runtime = resolveNpmPlugins(f.host, "panel");
   assert.equal(runtime[0].defaultEnabled, true);
@@ -257,7 +360,11 @@ test("npm watcher waits for stable manifests and skips an in-progress dependency
     busy = false;
   const load = loader({
     "./plugin_npm": {
-      npmPluginRoots: () => ({ packageRoot: f.host, projectRoot: f.root }),
+      npmPluginRoots: () => ({
+        packageRoot: f.host,
+        projectRoot: f.root,
+        dependencyRoot: f.dependencyRoot
+      }),
       listNpmPlugins: () => [],
       npmPluginOperationPending: () => busy
     }
@@ -278,10 +385,10 @@ test("npm watcher waits for stable manifests and skips an in-progress dependency
       reloads++;
     }
   );
-  write(path.join(f.root, "package-lock.json"), { version: 1 });
+  write(path.join(f.dependencyRoot, "package-lock.json"), { version: 1 });
   poll();
   assert.equal(reloads, 0);
-  write(path.join(f.root, "package-lock.json"), { version: 200 });
+  write(path.join(f.dependencyRoot, "package-lock.json"), { version: 200 });
   poll();
   assert.equal(reloads, 0);
   busy = true;
@@ -359,7 +466,7 @@ for (const side of ["panel", "daemon"]) {
       project: process.env.EPANEL_PROJECT_ROOT
     };
     const work = path.join(f.root, side);
-    fs.mkdirSync(work);
+    fs.mkdirSync(work, { recursive: true });
     process.chdir(work);
     process.env.EPANEL_PACKAGE_ROOT = f.host;
     process.env.EPANEL_PROJECT_ROOT = f.root;

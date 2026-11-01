@@ -5,7 +5,12 @@ const path = require("node:path");
 const vm = require("node:vm");
 const { test } = require("node:test");
 const { initialize } = require("../../packages/init-elementspanel/index.cjs");
-const { setupWorkspace, buildCommand, publishCommand } = require("../../packages/init-elementspanel/workspace.cjs");
+const {
+  setupWorkspace,
+  buildCommand,
+  publishCommand,
+  installCommand
+} = require("../../packages/init-elementspanel/workspace.cjs");
 const { createLoader } = require("./helpers.cjs");
 const { mockNpmView } = require("./npm-fixtures.cjs");
 const { readPluginManifest } = createLoader()("core/common/src/plugin_manifest.ts");
@@ -23,8 +28,12 @@ test("initialized projects create npm plugin workspaces outside the runtime sour
     fs.readFileSync(path.join(project, "external/example/package.json"), "utf8")
   );
   assert.deepEqual(root.workspaces, ["external/*"]);
-  assert.equal(root.dependencies["epanel-plugin-example"], "file:external/example");
-  assert.equal(root.elementspanel.plugins.example, "epanel-plugin-example");
+  assert.equal(root.dependencies["epanel-plugin-example"], undefined);
+  for (const side of ["panel", "daemon"]) {
+    const service = JSON.parse(fs.readFileSync(path.join(project, side, "package.json")));
+    assert.equal(service.dependencies["epanel-plugin-example"], "file:../external/example");
+    assert.equal(service.elementspanel.plugins.example, "epanel-plugin-example");
+  }
   for (const side of ["panel", "daemon"]) {
     assert.equal(root.dependencies[`@elementspanel/${side}`], npm.versions[side]);
     assert.equal(plugin.peerDependencies[`@elementspanel/${side}`], `^${npm.versions[side]}`);
@@ -68,6 +77,53 @@ test("initialized projects create npm plugin workspaces outside the runtime sour
     assert.equal(readPluginManifest(path.join(project, "external/example", side)).version, "0.2.0");
 });
 
+test("project installation installs each side in its own npm directory", async (t) => {
+  const project = fs.mkdtempSync(path.join(os.tmpdir(), "elementspanel-side-install-"));
+  const previousNpmCLI = process.env.npm_execpath;
+  t.after(() => {
+    if (previousNpmCLI === undefined) delete process.env.npm_execpath;
+    else process.env.npm_execpath = previousNpmCLI;
+    fs.rmSync(project, { recursive: true, force: true });
+  });
+  await initialize({
+    directory: project,
+    mode: "full",
+    install: false,
+    versions: { panel: "1.0.0", daemon: "1.0.0" },
+    builtinPlugins: {}
+  });
+  const log = path.join(project, "npm-calls.jsonl");
+  const npmCLI = path.join(project, "npm-cli.cjs");
+  fs.writeFileSync(
+    npmCLI,
+    `require("node:fs").appendFileSync(${JSON.stringify(log)}, JSON.stringify({ cwd: process.cwd(), args: process.argv.slice(2) }) + "\\n");`
+  );
+  process.env.npm_execpath = npmCLI;
+  await installCommand(project);
+  fs.rmSync(path.join(project, "daemon"), { recursive: true });
+  await setupWorkspace(project, ["shared", "--both", "--no-install"]);
+  assert.equal(fs.existsSync(path.join(project, "daemon")), false);
+  assert.equal(
+    JSON.parse(fs.readFileSync(path.join(project, "panel/package.json"))).dependencies["epanel-plugin-shared"],
+    "file:../external/shared"
+  );
+  await installCommand(project, ["--ignore-scripts"]);
+  const args = ["install", "--no-fund", "--no-audit", "--workspaces=false"];
+  assert.deepEqual(
+    fs
+      .readFileSync(log, "utf8")
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line)),
+    [
+      { cwd: path.join(project, "panel"), args },
+      { cwd: path.join(project, "daemon"), args },
+      { cwd: path.join(project, "panel"), args: [...args, "--ignore-scripts"] }
+    ]
+  );
+  await assert.rejects(installCommand(project, ["--unknown"]), /Unknown install option/);
+});
+
 test("plugin packages own their build commands and workspace commands only invoke npm", async (t) => {
   const project = fs.mkdtempSync(path.join(os.tmpdir(), "elements workspace 构建-"));
   const previousNpmCLI = process.env.npm_execpath;
@@ -80,6 +136,7 @@ test("plugin packages own their build commands and workspace commands only invok
     directory: project,
     mode: "full",
     versions: { panel: "1.2.3", daemon: "^2.3.4" },
+    builtinPlugins: {},
     install: false
   });
   const entry = await setupWorkspace(project, ["@example/owned", "--daemon", "--no-install"]);
@@ -90,7 +147,8 @@ test("plugin packages own their build commands and workspace commands only invok
   const compileCalls = [];
   const simulatedProcess = { cwd: () => entry.root };
   await vm.runInNewContext(buildScript.slice(9, -1), {
-    require: id => id === "esbuild" ? { build: async options => compileCalls.push(options) } : require(id),
+    require: (id) =>
+      id === "esbuild" ? { build: async (options) => compileCalls.push(options) } : require(id),
     process: simulatedProcess,
     console: { log() {}, error(error) { throw error; } }
   });
@@ -104,7 +162,9 @@ test("plugin packages own their build commands and workspace commands only invok
   const npmCLI = path.join(project, "npm-cli.cjs");
   fs.writeFileSync(
     npmCLI,
-    `require("node:fs").appendFileSync(${JSON.stringify(log)}, JSON.stringify({ cwd: process.cwd(), args: process.argv.slice(2) }) + "\\n");`
+    `require("node:fs").appendFileSync(${JSON.stringify(
+      log
+    )}, JSON.stringify({ cwd: process.cwd(), args: process.argv.slice(2) }) + "\\n");`
   );
   process.env.npm_execpath = npmCLI;
   await buildCommand(project, ["owned"]);
@@ -121,7 +181,11 @@ test("plugin packages own their build commands and workspace commands only invok
   assert.equal(updated.scripts.build, buildScript);
   assert.deepEqual(Object.keys(updated.devDependencies), ["esbuild"]);
   assert.deepEqual(
-    fs.readFileSync(log, "utf8").trim().split("\n").map(line => JSON.parse(line)),
+    fs
+      .readFileSync(log, "utf8")
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line)),
     [
       { cwd: entry.root, args: ["run", "build"] },
       { cwd: entry.root, args: ["publish", "--access", "public"] },

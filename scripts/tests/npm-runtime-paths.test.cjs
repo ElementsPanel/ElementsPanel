@@ -14,17 +14,24 @@ const load = createLoader({
 
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "elements-npm-paths-"));
-  const previous = { cwd: process.cwd(), packageRoot: process.env.EPANEL_PACKAGE_ROOT };
+  const previous = {
+    cwd: process.cwd(),
+    packageRoot: process.env.EPANEL_PACKAGE_ROOT,
+    projectRoot: process.env.EPANEL_PROJECT_ROOT
+  };
   const work = path.join(root, "work");
   const packageRoot = path.join(root, "package");
   fs.mkdirSync(work);
   fs.mkdirSync(packageRoot);
   process.chdir(work);
   process.env.EPANEL_PACKAGE_ROOT = packageRoot;
+  process.env.EPANEL_PROJECT_ROOT = work;
   t.after(() => {
     process.chdir(previous.cwd);
     if (previous.packageRoot === undefined) delete process.env.EPANEL_PACKAGE_ROOT;
     else process.env.EPANEL_PACKAGE_ROOT = previous.packageRoot;
+    if (previous.projectRoot === undefined) delete process.env.EPANEL_PROJECT_ROOT;
+    else process.env.EPANEL_PROJECT_ROOT = previous.projectRoot;
     fs.rmSync(root, { recursive: true, force: true });
   });
   return { root, work, packageRoot, paths: load("core/common/src/runtime_paths.ts") };
@@ -170,17 +177,11 @@ test("project-level npm plugins are resolved alongside bundled plugins", (t) => 
 });
 
 for (const side of ["panel", "daemon"]) {
-  test(`${side}: project npm versions override nested copies of the same foundation package`, (t) => {
+  test(`${side}: side npm versions retain the runtime's built-in identity`, (t) => {
     const f = fixture(t);
-    const previousProject = process.env.EPANEL_PROJECT_ROOT;
-    process.env.EPANEL_PROJECT_ROOT = f.work;
-    t.after(() => {
-      if (previousProject === undefined) delete process.env.EPANEL_PROJECT_ROOT;
-      else process.env.EPANEL_PROJECT_ROOT = previousProject;
-    });
     const bundled = installNpmPlugin(f.packageRoot, side, "runtime");
     const project = installNpmPlugin(f.work, side, "runtime", { version: "2.0.0" });
-    const filename = path.join(f.work, "package.json");
+    const filename = path.join(f.work, side, "package.json");
     const manifest = JSON.parse(fs.readFileSync(filename));
     // npm install alone is enough; a third-party mapping cannot change which
     // package owns the built-in id.
@@ -191,7 +192,7 @@ for (const side of ["panel", "daemon"]) {
     assert.equal(resolved.name, bundled.name);
     assert.equal(resolved.packageRoot, project.packageRoot);
     assert.equal(resolved.version, "2.0.0");
-    assert.equal(resolved.source, "project");
+    assert.equal(resolved.source, "bundled");
     assert.equal(resolved.defaultEnabled, true);
     const { listNpmPlugins } = load("core/common/src/plugin_npm.ts");
     const [listed] = listNpmPlugins(side, { packageRoot: f.packageRoot, projectRoot: f.work });
@@ -206,7 +207,7 @@ test("missing optional npm plugins do not abort runtime discovery", (t) => {
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const host = path.join(root, "host");
   const runtime = installNpmPlugin(host, "panel", "runtime");
-  const manifestFile = path.join(host, "package.json");
+  const manifestFile = path.join(root, "panel/package.json");
   const manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8"));
   manifest.dependencies["epanel-plugin-optional"] = "1.0.0";
   manifest.elementspanel.plugins.optional = "epanel-plugin-optional";

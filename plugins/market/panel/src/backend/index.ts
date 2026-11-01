@@ -863,7 +863,7 @@ export async function apply(ctx: PanelPluginContext) {
     }
   );
 
-  // Installing adds a dependency to this installation's package.json and sends the
+  // Installing adds a dependency to panel/package.json and sends the
   // same npm install to the nodes the user picked. Both sides are asked to re-scan
   // after the dependency arrives and replace the running plugin revision.
   router.post(
