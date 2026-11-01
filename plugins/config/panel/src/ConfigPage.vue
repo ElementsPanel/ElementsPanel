@@ -38,8 +38,6 @@ import {
   pluginSettings,
   removePlugin,
   removeNodePlugin,
-  installPlugin,
-  installNodePlugin,
   setNodePluginEnabled,
   setPluginEnabled,
   updateNodePluginSettings,
@@ -117,12 +115,6 @@ const preferredPluginId = ref(String(props.pluginId ?? route.query.plugin ?? "")
 
 const loading = ref(true);
 const pending = ref<string>("");
-const installDialogOpen = ref(false);
-const installName = ref("");
-const installVersion = ref("");
-const installing = ref(false);
-const installScope = ref<Scope>("panel");
-const installNodeId = ref("");
 const plugins = ref<PluginRecord[]>([]);
 const selectedId = ref("");
 
@@ -424,12 +416,8 @@ const recordResult = (result?: PluginChangeResult | boolean) => {
 };
 const deletingPlugin = ref(false);
 const actionCandidate = ref<PluginActionCandidate | null>(null);
-const actionSubmitting = computed(() =>
-  Boolean(pending.value || deletingPlugin.value || installing.value)
-);
-const actionBusy = computed(
-  () => actionSubmitting.value || Boolean(actionCandidate.value) || installDialogOpen.value
-);
+const actionSubmitting = computed(() => Boolean(pending.value || deletingPlugin.value));
+const actionBusy = computed(() => actionSubmitting.value || Boolean(actionCandidate.value));
 const actionConfirmOpen = computed({
   get: () => actionCandidate.value?.step === "confirm",
   set: (open: boolean) => {
@@ -608,58 +596,6 @@ const loadNodePlugins = async (quiet = false) => {
     if (request === nodePluginsRequest) nodeError.value = error?.message ?? String(error);
   } finally {
     if (!quiet && request === nodePluginsRequest) loading.value = false;
-  }
-};
-
-const openInstall = (plugin?: PluginRecord | NodePluginRecord) => {
-  if (disposed || actionBusy.value || savingSettings.value) return;
-  installName.value = plugin?.packageName || "";
-  installVersion.value = "";
-  installScope.value = scope.value;
-  installNodeId.value = selectedNodeId.value;
-  installDialogOpen.value = true;
-};
-
-const installDependency = async () => {
-  if (installing.value || !installName.value.trim()) return;
-  installing.value = true;
-  try {
-    const data = {
-      name: installName.value.trim(),
-      version: installVersion.value.trim() || undefined
-    };
-    const response =
-      installScope.value === "panel"
-        ? await installPlugin().execute({ data, timeout: 11 * 60 * 1000 })
-        : await installNodePlugin().execute({
-            params: { daemonId: installNodeId.value },
-            data,
-            timeout: 11 * 60 * 1000
-          });
-    if (disposed) return;
-    recordResult(response.value?.result);
-    installDialogOpen.value = false;
-    if (installScope.value === "panel") {
-      await ctx.plugins
-        .refresh()
-        .catch((error) => console.error("Failed to refresh plugins:", error));
-      await load();
-      if (response.value?.id && plugins.value.some((plugin) => plugin.id === response.value!.id))
-        selectedId.value = response.value.id;
-    } else if (scope.value === "node" && selectedNodeId.value === installNodeId.value) {
-      await reloadNodePluginsAfterToggle();
-      if (
-        response.value?.id &&
-        nodePlugins.value.some((plugin) => plugin.id === response.value!.id)
-      )
-        nodeSelectedId.value = response.value.id;
-    }
-    if (response.value?.result?.application === "applied")
-      notify(t("TXT_CODE_PLUGIN_NPM_INSTALLED"), "success");
-  } catch (error) {
-    notifyError(error);
-  } finally {
-    installing.value = false;
   }
 };
 
@@ -1079,38 +1015,6 @@ const confirmAction = async () => {
 
 <template>
   <VLayout class="plugin-config-page" @keydown.esc="sidebarOpen = false">
-    <VDialog v-model="installDialogOpen" max-width="480" :persistent="installing">
-      <VCard :title="t('TXT_CODE_PLUGIN_NPM_INSTALL')">
-        <VCardText>
-          <VTextField
-            v-model="installName"
-            :label="t('TXT_CODE_PLUGIN_NPM_PACKAGE')"
-            placeholder="epanel-plugin-example"
-            :disabled="installing"
-          />
-          <VTextField
-            v-model="installVersion"
-            :label="t('TXT_CODE_PLUGIN_NPM_VERSION')"
-            placeholder="latest"
-            :disabled="installing"
-            hide-details
-          />
-        </VCardText>
-        <VCardActions>
-          <VSpacer />
-          <VBtn :disabled="installing" @click="installDialogOpen = false">{{
-            t("TXT_CODE_PLUGIN_CANCEL")
-          }}</VBtn>
-          <VBtn
-            color="primary"
-            :loading="installing"
-            :disabled="!installName.trim()"
-            @click="installDependency"
-            >{{ t("TXT_CODE_PLUGIN_NPM_INSTALL") }}</VBtn
-          >
-        </VCardActions>
-      </VCard>
-    </VDialog>
     <VProgressLinear v-if="loading" class="plugin-config-loading" color="primary" indeterminate />
 
     <component :is="isPhone ? VNavigationDrawer : 'aside'" v-bind="navigationProps">
@@ -1125,7 +1029,7 @@ const confirmAction = async () => {
             @click="sidebarOpen = false"
           />
         </div>
-        <VBtnToggle v-model="scope" class="plugin-config-scope" :disabled="installing" mandatory>
+        <VBtnToggle v-model="scope" class="plugin-config-scope" mandatory>
           <VBtn value="panel" size="small" variant="text">{{
             t("TXT_CODE_PLUGIN_SCOPE_PANEL")
           }}</VBtn>
@@ -1137,7 +1041,6 @@ const confirmAction = async () => {
         <VSelect
           v-if="scope === 'node'"
           v-model="selectedNodeId"
-          :disabled="installing"
           class="plugin-config-node-select"
           :items="nodeItems"
           :loading="loading"
@@ -1240,15 +1143,6 @@ const confirmAction = async () => {
             {{ t("TXT_CODE_VERSION") }} {{ selectedPlugin.version }}
           </span>
           <div class="plugin-config-actions">
-            <VBtn
-              v-if="selectedPlugin.packageName"
-              icon="mdi-update"
-              variant="text"
-              :disabled="actionBusy"
-              :title="t('TXT_CODE_PLUGIN_NPM_INSTALL')"
-              :aria-label="t('TXT_CODE_PLUGIN_NPM_INSTALL')"
-              @click="openInstall(selectedPlugin)"
-            />
             <VTooltip
               v-model="toggleTooltipOpen"
               :text="
