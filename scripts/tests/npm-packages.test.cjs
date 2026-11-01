@@ -11,6 +11,56 @@ const { sourcePlugins, coreDirectory } = require("../workspace-layout.cjs");
 const { readPluginManifest } = createLoader()("core/common/src/plugin_manifest.ts");
 const repository = path.resolve(__dirname, "../..");
 const packaging = import(pathToFileURL(path.join(repository, "scripts/package-npm.mjs")).href);
+const publishing = import(pathToFileURL(path.join(repository, "scripts/publish-npm.mjs")).href);
+
+test("publication cannot skip changed versions and mix frontend builds", async () => {
+  const { selectPackagesForPublication } = await publishing;
+  const packages = ["i18n", "console", "panel"].map((id) => ({
+    name: id === "panel" ? "@elementspanel/panel" : `@elementspanel/epanel-plugin-${id}`,
+    directory: path.join("/fixture", id),
+    version: "1.0.3"
+  }));
+  const options = { skipExisting: true, registry: "https://registry.example" };
+  const calls = [];
+  let sameBuild = false;
+  const npm = (args) => {
+    calls.push(args);
+    if (args[0] === "view") {
+      assert.deepEqual(args.slice(2), ["dist", "--json", "--registry", options.registry]);
+      if (args[1].startsWith("@elementspanel/panel@"))
+        return { status: 1, stderr: "E404 No match found" };
+      return { status: 0, stdout: JSON.stringify({ integrity: "sha512-published" }) };
+    }
+    assert.equal(args[0], "pack");
+    assert.deepEqual(args.slice(2), ["--dry-run", "--json", "--ignore-scripts"]);
+    return {
+      status: 0,
+      stdout: JSON.stringify([{ integrity: sameBuild ? "sha512-published" : "sha512-rebuilt" }])
+    };
+  };
+  assert.throws(
+    () => selectPackagesForPublication(packages, options, npm),
+    /epanel-plugin-i18n@1\.0\.3 already exists with different contents/
+  );
+  assert.deepEqual(
+    calls.map((args) => args[0]),
+    ["view", "pack"]
+  );
+  sameBuild = true;
+  assert.deepEqual(selectPackagesForPublication(packages, options, npm), [packages[2]]);
+  assert.throws(
+    () => selectPackagesForPublication(packages, { ...options, skipExisting: false }, npm),
+    /already exists in the registry/
+  );
+  assert.throws(
+    () =>
+      selectPackagesForPublication(packages, options, () => ({
+        status: 1,
+        stderr: "E401 Unauthorized"
+      })),
+    /Could not verify/
+  );
+});
 
 function write(filename, value) {
   fs.mkdirSync(path.dirname(filename), { recursive: true });
