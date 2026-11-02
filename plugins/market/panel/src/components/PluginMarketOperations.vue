@@ -106,7 +106,7 @@ async function prepareTargets(
     if (!target.available) reason = "TXT_CODE_PLUGIN_MARKET_NODE_UNAVAILABLE";
     else if (operation === "uninstall") {
       if (!target.installed) reason = "TXT_CODE_PLUGIN_MARKET_NOT_INSTALLED";
-      else if (!target.removable) reason = "TXT_CODE_PLUGIN_MARKET_PROTECTED";
+      else if (!target.removable) reason = "TXT_CODE_PLUGIN_MARKET_UNINSTALL_PROTECTED";
     } else if (!sides?.includes(target.daemonId ? "daemon" : "panel"))
       reason = "TXT_CODE_PLUGIN_MARKET_UNSUPPORTED_TARGET";
     else if (target.installed && !target.updatable) reason = "TXT_CODE_PLUGIN_MARKET_PROTECTED";

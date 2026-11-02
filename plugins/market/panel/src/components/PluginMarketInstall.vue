@@ -328,7 +328,13 @@ onBeforeUnmount(() => {
           v-if="plugin.installedVersion && plugin.installedRemovable === false"
           type="info"
           variant="tonal"
-          :text="t('TXT_CODE_PLUGIN_MARKET_PROTECTED')"
+          :text="
+            t(
+              plugin.installedUpdatable === false
+                ? 'TXT_CODE_PLUGIN_MARKET_PROTECTED'
+                : 'TXT_CODE_PLUGIN_MARKET_UNINSTALL_PROTECTED'
+            )
+          "
           class="mb-4"
         />
         <div v-if="plugin.installedVersion" class="mb-4">

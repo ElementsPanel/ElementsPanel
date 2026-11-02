@@ -92,6 +92,7 @@
   "TXT_CODE_PLUGIN_MARKET_REPAIR": "복구",
   "TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT": "이 패널의 버전",
   "TXT_CODE_PLUGIN_MARKET_PROTECTED": "이 플러그인은 호스트가 관리하므로 마켓에서 버전을 변경하거나 제거할 수 없습니다.",
+  "TXT_CODE_PLUGIN_MARKET_UNINSTALL_PROTECTED": "이 플러그인은 호스트가 관리하므로 마켓에서 제거할 수 없습니다.",
   "TXT_CODE_PLUGIN_MARKET_BROWSE": "둘러보기",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_ALL": "모두 업데이트",
   "TXT_CODE_PLUGIN_MARKET_UPDATED": "선택한 대상의 플러그인이 업데이트되었습니다.",

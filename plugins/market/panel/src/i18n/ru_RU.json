@@ -92,6 +92,7 @@
   "TXT_CODE_PLUGIN_MARKET_REPAIR": "Восстановить",
   "TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT": "Версия на этой панели",
   "TXT_CODE_PLUGIN_MARKET_PROTECTED": "Этот плагин управляется хостом. Нельзя изменить его версию или удалить через рынок.",
+  "TXT_CODE_PLUGIN_MARKET_UNINSTALL_PROTECTED": "Этот плагин управляется хостом и не может быть удалён через рынок.",
   "TXT_CODE_PLUGIN_MARKET_BROWSE": "Обзор",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_ALL": "Обновить всё",
   "TXT_CODE_PLUGIN_MARKET_UPDATED": "Плагины на выбранных узлах обновлены.",

@@ -92,6 +92,7 @@
   "TXT_CODE_PLUGIN_MARKET_REPAIR": "Onar",
   "TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT": "Bu paneldeki sürüm",
   "TXT_CODE_PLUGIN_MARKET_PROTECTED": "Bu eklenti sunucu tarafından yönetilir. Marketten sürümü değiştirilemez veya kaldırılamaz.",
+  "TXT_CODE_PLUGIN_MARKET_UNINSTALL_PROTECTED": "Bu eklenti sunucu tarafından yönetilir ve marketten kaldırılamaz.",
   "TXT_CODE_PLUGIN_MARKET_BROWSE": "Göz at",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_ALL": "Tümünü güncelle",
   "TXT_CODE_PLUGIN_MARKET_UPDATED": "Seçilen hedeflerdeki eklentiler güncellendi.",

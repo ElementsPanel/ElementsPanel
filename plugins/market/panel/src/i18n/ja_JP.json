@@ -92,6 +92,7 @@
   "TXT_CODE_PLUGIN_MARKET_REPAIR": "修復",
   "TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT": "このパネルのバージョン",
   "TXT_CODE_PLUGIN_MARKET_PROTECTED": "このプラグインはホストが管理しているため、マーケットではバージョン変更や削除はできません。",
+  "TXT_CODE_PLUGIN_MARKET_UNINSTALL_PROTECTED": "このプラグインはホストが管理しているため、マーケットでは削除できません。",
   "TXT_CODE_PLUGIN_MARKET_BROWSE": "閲覧",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_ALL": "すべて更新",
   "TXT_CODE_PLUGIN_MARKET_UPDATED": "選択した対象のプラグインを更新しました。",

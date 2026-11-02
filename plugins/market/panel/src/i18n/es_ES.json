@@ -92,6 +92,7 @@
   "TXT_CODE_PLUGIN_MARKET_REPAIR": "Reparar",
   "TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT": "Versión en este panel",
   "TXT_CODE_PLUGIN_MARKET_PROTECTED": "El servidor gestiona este complemento. No se puede cambiar su versión ni desinstalarlo desde el mercado.",
+  "TXT_CODE_PLUGIN_MARKET_UNINSTALL_PROTECTED": "El servidor gestiona este complemento y no se puede desinstalar desde el mercado.",
   "TXT_CODE_PLUGIN_MARKET_BROWSE": "Explorar",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_ALL": "Actualizar todo",
   "TXT_CODE_PLUGIN_MARKET_UPDATED": "Se han actualizado los complementos de los destinos seleccionados.",

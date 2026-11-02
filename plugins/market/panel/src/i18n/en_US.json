@@ -92,6 +92,7 @@
   "TXT_CODE_PLUGIN_MARKET_REPAIR": "Repair",
   "TXT_CODE_PLUGIN_MARKET_PANEL_CURRENT": "Version on this panel",
   "TXT_CODE_PLUGIN_MARKET_PROTECTED": "This plugin is managed by the host. Its version cannot be changed or uninstalled in the market.",
+  "TXT_CODE_PLUGIN_MARKET_UNINSTALL_PROTECTED": "This plugin is managed by the host and cannot be uninstalled in the market.",
   "TXT_CODE_PLUGIN_MARKET_BROWSE": "Browse",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_ALL": "Update all",
   "TXT_CODE_PLUGIN_MARKET_UPDATED": "Plugins on the selected targets have been updated.",
