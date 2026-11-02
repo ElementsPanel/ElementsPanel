@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-server",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Panel HTTP/HTTPS server and static assets.",
   "elementspanel": {
     "id": "server",
