@@ -1,7 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-runtime",
   "version": "1.0.5",
-  "displayName": "Panel Runtime",
   "description": "Panel initialization and shared runtime services.",
   "elementspanel": {
     "id": "runtime",
@@ -13,14 +12,12 @@
       "frontendRequired": true,
       "directory": "panel",
       "folder": "runtime",
-      "displayName": "Panel Runtime",
       "description": "Panel initialization and shared runtime services."
     },
     "daemon": {
       "priority": -9000,
       "directory": "daemon",
       "folder": "runtime",
-      "displayName": "Daemon Runtime",
       "description": "Daemon initialization and shared runtime services."
     }
   }

@@ -20,7 +20,6 @@
       "priority": 110,
       "directory": "daemon",
       "folder": "terminal",
-      "displayName": "Terminal",
       "description": "Authenticated instance terminal streams."
     }
   }

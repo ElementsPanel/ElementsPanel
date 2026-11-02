@@ -15,7 +15,6 @@
       "priority": 10,
       "directory": "daemon",
       "folder": "server",
-      "displayName": "Web Server",
       "description": "Daemon HTTP/HTTPS and Socket.io server."
     }
   }

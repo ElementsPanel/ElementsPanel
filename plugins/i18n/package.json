@@ -1,7 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-i18n",
   "version": "1.0.4",
-  "displayName": "Internationalization",
   "description": "Panel translations and plugin localization.",
   "elementspanel": {
     "id": "i18n",
@@ -15,14 +14,12 @@
       "frontendRequired": true,
       "directory": "panel",
       "folder": "i18n",
-      "displayName": "Internationalization",
       "description": "Panel translations and plugin localization."
     },
     "daemon": {
       "priority": -10000,
       "directory": "daemon",
       "folder": "i18n",
-      "displayName": "Internationalization",
       "description": "Daemon translations and plugin localization."
     }
   }

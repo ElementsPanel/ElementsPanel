@@ -19,7 +19,6 @@
       "priority": 10000,
       "directory": "daemon",
       "folder": "config",
-      "displayName": "Plugin Management",
       "description": "Remote daemon plugin management."
     }
   }

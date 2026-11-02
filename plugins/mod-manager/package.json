@@ -1,7 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-mod-manager",
   "version": "1.0.4",
-  "displayName": "Mod Manager",
   "description": "Minecraft mod and plugin management.",
   "elementspanel": {
     "id": "mod-manager",
@@ -16,14 +15,12 @@
       ],
       "directory": "panel",
       "folder": "mod",
-      "displayName": "Mod Manager",
       "description": "Minecraft mod and plugin management."
     },
     "daemon": {
       "priority": 100,
       "directory": "daemon",
       "folder": "mod",
-      "displayName": "Mod Manager",
       "description": "Instance mod and plugin management."
     }
   }

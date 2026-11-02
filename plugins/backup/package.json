@@ -20,7 +20,6 @@
       "priority": 100,
       "directory": "daemon",
       "folder": "backup",
-      "displayName": "Instance Backup",
       "description": "Instance backup and restore."
     }
   }

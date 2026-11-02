@@ -19,7 +19,6 @@
       "priority": 30,
       "directory": "daemon",
       "folder": "file",
-      "displayName": "File Manager",
       "description": "Instance file access, uploads and downloads."
     }
   }

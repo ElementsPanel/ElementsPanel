@@ -19,7 +19,6 @@
       "priority": 40,
       "directory": "daemon",
       "folder": "instance",
-      "displayName": "Application Instances",
       "description": "Instance processes, runtimes, installation and scheduling."
     }
   }

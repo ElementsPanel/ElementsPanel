@@ -19,7 +19,6 @@
       "priority": 30,
       "directory": "daemon",
       "folder": "monitor",
-      "displayName": "Data Monitoring",
       "description": "Daemon CPU and memory monitoring."
     }
   }
