@@ -81,6 +81,8 @@ export interface DiscoveredPlugin {
   packageRoot?: string;
   packageName?: string;
   npmSource?: "bundled" | "project";
+  /** Source workspace selected by the packaged runtime's dev command. */
+  development?: boolean;
   manifest: PluginManifest;
   /** Absolute path of the plugin directory. */
   directory: string;
@@ -116,6 +118,7 @@ export interface PluginDiscoveryRoot {
   packageRoot?: string;
   packageName?: string;
   npmSource?: "bundled" | "project";
+  developmentEntries?: { backend?: string; frontend?: string };
   directory: string;
   /** Stable public asset name for npm plugins whose manifest lives below a side directory. */
   folder?: string;
@@ -240,11 +243,17 @@ export function resolvePluginEntry(
 function discoverPluginDirectory(
   directory: string,
   options: DiscoverPluginsOptions,
-  folder = path.basename(directory)
+  folder = path.basename(directory),
+  developmentEntries?: PluginDiscoveryRoot["developmentEntries"]
 ): DiscoveredPlugin | null {
   // Npm packages expose a side directory; its name is not the public plugin id.
-  const manifest = readPluginManifest(directory, options.onWarning, folder);
+  let manifest = readPluginManifest(directory, options.onWarning, folder);
   if (!manifest) return null;
+  if (developmentEntries) {
+    manifest = { ...manifest };
+    for (const field of ENTRY_FIELDS) delete manifest[field];
+    Object.assign(manifest, developmentEntries);
+  }
   if (manifest.enabled === false && !options.includeDisabled) return null;
 
   const entry = resolvePluginEntry(directory, manifest, options);
@@ -302,7 +311,7 @@ export function discoverPluginsFromRoots(
       fs.existsSync(path.join(root.directory, file))
     );
     const plugins = isDirectPlugin
-      ? [discoverPluginDirectory(root.directory, options, root.folder)]
+      ? [discoverPluginDirectory(root.directory, options, root.folder, root.developmentEntries)]
       : discoverPlugins(root.directory, options);
     for (const plugin of plugins) {
       if (!plugin) continue;
@@ -317,6 +326,7 @@ export function discoverPluginsFromRoots(
       discovered.push({
         ...plugin,
         manifest,
+        ...(root.developmentEntries ? { development: true } : {}),
         ...(root.packageRoot
           ? {
               packageRoot: root.packageRoot,

@@ -27,6 +27,9 @@ export function protocol(ctx: PanelPluginContext) {
       requestCtx.body = error;
     }
 
+    // Development asset middleware writes its response directly through Node.
+    if (requestCtx.respond === false) return;
+
     if (ctx.settings.config.crossDomain) {
       requestCtx.response.set("Access-Control-Allow-Origin", "*");
       requestCtx.response.set("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS");

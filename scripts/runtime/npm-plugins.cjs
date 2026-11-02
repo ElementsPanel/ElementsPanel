@@ -84,6 +84,14 @@ function resolveNpmPlugins(packageRoot, side, options = {}) {
   const projectFile = projectManifestFile(packageRoot, selectedSide, options);
   const project = readOptional(projectFile);
   const dependencyRoot = path.dirname(projectFile);
+  const development = options.development ?? process.env.EPANEL_DEV === "1";
+  const workspaces = development
+    ? require("./workspace-plugins.cjs").resolveWorkspacePlugins(
+        options.projectRoot || projectRoot(packageRoot),
+        selectedSide,
+        mappingOf(host)
+      )
+    : [];
 
   // The side manifest owns every dependency; the host only reserves identities.
   const configured = new Map();
@@ -113,6 +121,8 @@ function resolveNpmPlugins(packageRoot, side, options = {}) {
       configured.delete(id);
     }
   }
+  for (const workspace of workspaces)
+    configured.set(workspace.id, { name: workspace.name, source: "project" });
 
   const projectDependencies = dependenciesOf(project);
   const folders = new Set();
@@ -120,6 +130,16 @@ function resolveNpmPlugins(packageRoot, side, options = {}) {
 
   for (const [id, mapping] of configured) {
     const name = mapping.name;
+    const workspace = workspaces.find((record) => record.id === id);
+    if (workspace) {
+      if (folders.has(workspace.folder)) {
+        if (skipInvalid) continue;
+        throw new Error(`Duplicate npm plugin asset directory: ${workspace.folder}.`);
+      }
+      folders.add(workspace.folder);
+      records.push(workspace);
+      continue;
+    }
     if (
       !validId.test(id) ||
       typeof name !== "string" ||

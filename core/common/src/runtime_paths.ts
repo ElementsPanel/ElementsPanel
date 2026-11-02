@@ -2,12 +2,25 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { PluginDiscoveryRoot } from "./plugin_manifest";
+import type { IncomingMessage, Server, ServerResponse } from "node:http";
 // @ts-ignore Shared source layout is also consumed by the Node build tools.
 import { sourcePlugins } from "../../../scripts/workspace-layout.cjs";
 
 /** Set by the npm worker before any application module is loaded. */
 export function isPackagedRuntime(): boolean {
   return Boolean(process.env.EPANEL_PACKAGE_ROOT);
+}
+
+/** Installed by the optional workspace toolkit before the compiled host loads. */
+export function developmentRuntime():
+  | {
+      frontendEntry(entry: string, revision: string): string;
+      attach(server: Server, prefix: string): Promise<() => Promise<void>>;
+      middleware(req: IncomingMessage, res: ServerResponse, next: (error?: Error) => void): void;
+    }
+  | undefined {
+  if (process.env.EPANEL_DEV !== "1") return undefined;
+  return (globalThis as any)[Symbol.for("elementspanel.development")];
 }
 
 /** Code and bundled assets belong to the package; cwd always belongs to the user. */
@@ -36,6 +49,7 @@ function npmPluginRoots(side?: "panel" | "daemon"): PluginDiscoveryRoot[] {
     packageRoot: record.packageRoot,
     packageName: record.name,
     npmSource: record.source,
+    ...(record.developmentEntries ? { developmentEntries: record.developmentEntries } : {}),
     ...(record.folder ? { folder: record.folder } : {}),
     // Built-in packages are part of the runtime's default configuration. A
     // project dependency is installed but remains dormant until the user

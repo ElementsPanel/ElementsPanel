@@ -1,5 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
+import { packagePluginRoots } from "./runtime_paths";
+import { pluginDirectoryRevision } from "./plugin_revision";
 import {
   npmPluginRoots,
   listNpmPlugins,
@@ -34,7 +36,7 @@ export function watchNpmPlugins(
         path.join(plugin.packageRoot, "package.json"),
         path.join(plugin.directory, "plugin.json")
       );
-    return JSON.stringify(
+    return JSON.stringify([
       files.map((filename) => {
         try {
           const stat = fs.statSync(filename);
@@ -42,8 +44,16 @@ export function watchNpmPlugins(
         } catch {
           return [filename, null];
         }
-      })
-    );
+      }),
+      ...(process.env.EPANEL_DEV === "1"
+        ? packagePluginRoots(side)
+            .filter((root) => root.developmentEntries)
+            .map((root) => [
+              root.directory,
+              pluginDirectoryRevision(path.join(root.directory, "src"))
+            ])
+        : [])
+    ]);
   };
   let applied = stamp();
   let candidate = applied;

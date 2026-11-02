@@ -22,7 +22,7 @@ function parseArgs(argv, side) {
       options[argument.slice(2)] = value;
     } else throw new Error(`Unknown option: ${argument}`);
   }
-  if (!["start", "help", "version"].includes(options.command))
+  if (!["start", "dev", "help", "version"].includes(options.command))
     throw new Error(`Unknown command: ${options.command}`);
   if (side === "daemon" && (options.withDaemon || options.open || options["panel-dir"])) {
     throw new Error("--with-daemon, --open and --panel-dir belong to the panel command.");
@@ -31,7 +31,10 @@ function parseArgs(argv, side) {
 }
 
 function help(side) {
-  return `Usage: ${side === "panel" ? "epanel" : "epanel-daemon"} start [options]
+  return `Usage: ${side === "panel" ? "epanel" : "epanel-daemon"} <start|dev> [options]
+
+  start                    Load compiled npm plugins
+  dev                      Load external plugin workspace sources
 
   --cwd <directory>         Project directory (default: current directory)
   --${side}-dir <directory>  Existing runtime directory (default: ./${side})
@@ -53,6 +56,7 @@ function workerEnvironment(plan, worker) {
     ...process.env,
     EPANEL_PROJECT_ROOT: plan.project,
     EPANEL_RUNTIME_ROOT: worker.directory,
+    EPANEL_DEV: plan.development ? "1" : "0",
     EPANEL_SUPERVISED: "1"
   };
   delete environment.EPANEL_PACKAGE_ROOT;
@@ -110,6 +114,7 @@ function validateRuntime(packageRoot, side, project, directory) {
   }
   const plugins = resolveNpmPlugins(packageRoot, side, {
     skipInvalid: true,
+    development: false,
     projectRoot: project,
     runtimeDirectory: directory
   });
@@ -157,6 +162,7 @@ function planWorkers(side, packageRoot, options) {
   return {
     workers,
     project,
+    development: options.command === "dev",
     localDaemonConfig: options.withDaemon
       ? path.join(daemonDirectory, "data/Config/global.json")
       : undefined

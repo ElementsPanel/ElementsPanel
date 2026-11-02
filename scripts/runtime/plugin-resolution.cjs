@@ -73,9 +73,11 @@ function installPluginResolution(packageRoot, workRoot) {
   const hostRequire = createRequire(hostURL);
   const resolveShared = createSharedResolver(packageRoot);
   // Development checkouts load unified source packages from <project>/plugins; a
-  // published runtime loads npm plugins only and has no source root.
+  // published dev runtime also loads the project's external workspaces.
   const roots = process.env.EPANEL_PACKAGE_ROOT
-    ? []
+    ? process.env.EPANEL_DEV === "1"
+      ? [path.join(process.env.EPANEL_PROJECT_ROOT, "external")]
+      : []
     : [
         path.basename(path.dirname(packageRoot)) === "core"
           ? path.resolve(packageRoot, "../../plugins")

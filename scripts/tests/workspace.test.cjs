@@ -93,6 +93,12 @@ test("project installation installs each side in its own npm directory", async (
     builtinPlugins: {}
   });
   const log = path.join(project, "npm-calls.jsonl");
+  const projectFile = path.join(project, "package.json");
+  const projectManifest = JSON.parse(fs.readFileSync(projectFile));
+  delete projectManifest.scripts.dev;
+  delete projectManifest.scripts["dev:panel"];
+  projectManifest.scripts["dev:daemon"] = "custom-daemon-dev";
+  fs.writeFileSync(projectFile, JSON.stringify(projectManifest));
   const npmCLI = path.join(project, "npm-cli.cjs");
   fs.writeFileSync(
     npmCLI,
@@ -100,6 +106,11 @@ test("project installation installs each side in its own npm directory", async (
   );
   process.env.npm_execpath = npmCLI;
   await installCommand(project);
+  const updated = JSON.parse(fs.readFileSync(projectFile));
+  assert.equal(updated.scripts.dev, "epanel dev --with-daemon");
+  assert.equal(updated.scripts["dev:panel"], "epanel dev");
+  assert.equal(updated.scripts["dev:daemon"], "custom-daemon-dev");
+  assert.equal(fs.readFileSync(path.join(project, "README.md"), "utf8"), "# ElementsPanel\n");
   fs.rmSync(path.join(project, "daemon"), { recursive: true });
   await setupWorkspace(project, ["shared", "--both", "--no-install"]);
   assert.equal(fs.existsSync(path.join(project, "daemon")), false);

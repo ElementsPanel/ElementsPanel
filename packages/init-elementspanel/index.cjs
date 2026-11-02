@@ -221,6 +221,18 @@ async function promptOptions(options, prompt) {
   return options;
 }
 
+function developmentScripts(mode) {
+  return {
+    dev:
+      mode === "full"
+        ? "epanel dev --with-daemon"
+        : mode === "panel"
+        ? "epanel dev"
+        : "epanel-daemon dev",
+    ...(mode === "full" ? { "dev:panel": "epanel dev", "dev:daemon": "epanel-daemon dev" } : {})
+  };
+}
+
 function projectManifest(directory, mode, versions, language) {
   const t = createTranslator(language);
   if (!modes.includes(mode)) throw new Error(t("modeUnknown", { mode }));
@@ -233,7 +245,8 @@ function projectManifest(directory, mode, versions, language) {
         ? "epanel start --with-daemon"
         : mode === "panel"
         ? "epanel start"
-        : "epanel-daemon start"
+        : "epanel-daemon start",
+    ...developmentScripts(mode)
   };
   if (mode === "full") {
     scripts["start:panel"] = "epanel start";
@@ -558,6 +571,7 @@ module.exports = {
   parseArgs,
   promptOptions,
   projectManifest,
+  developmentScripts,
   initialize,
   updateBuiltinPlugins,
   run

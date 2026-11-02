@@ -199,6 +199,7 @@ test("workspace packaging includes runnable entry points and excludes user data 
       assert.ok(manifest.dependencies[name], `Missing shared runtime dependency: ${name}`);
     assert.ok(!JSON.stringify(manifest).includes("file:../common"));
     assert.ok(fs.existsSync(path.join(root, "runtime/worker.cjs")));
+    assert.ok(fs.existsSync(path.join(root, "runtime/workspace-plugins.cjs")));
     assert.ok(fs.existsSync(path.join(root, Object.values(manifest.bin)[0])));
     assert.ok(fs.existsSync(path.join(root, "LICENSE")));
     if (side === "daemon") {
@@ -300,6 +301,8 @@ test("workspace packaging includes runnable entry points and excludes user data 
   );
   assert.match(chineseHelp, /用法：npx @elementspanel\/init@latest/);
   assert.ok(fs.existsSync(path.join(f.outputRoot, "init-elementspanel/workspace.cjs")));
+  assert.ok(fs.existsSync(path.join(f.outputRoot, "init-elementspanel/development.cjs")));
+  assert.ok(create.files.includes("development.cjs"));
   const initializer = require(path.join(f.outputRoot, "init-elementspanel/index.cjs"));
   const workspace = require(path.join(f.outputRoot, "init-elementspanel/workspace.cjs"));
   const project = path.join(f.directory, "initialized-project");

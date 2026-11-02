@@ -2,6 +2,7 @@ import fs from "fs-extra";
 import path from "path";
 import {
   packagePluginRoots,
+  developmentRuntime,
   installNpmPlugin,
   uninstallNpmPlugin,
   isEssentialNpmPlugin,
@@ -412,6 +413,20 @@ export function getPanelFrontendManifest(): PanelFrontendPluginEntry[] {
     entryFields: ["frontend", "ui"],
     onWarning: warnFrontendManifest
   })) {
+    const development = plugin.development && developmentRuntime();
+    if (development && plugin.entry) {
+      const revision = pluginDirectoryRevision(path.join(plugin.directory, "src"));
+      entries.push({
+        metadata: createFrontendPluginMetadata(plugin.manifest),
+        directory: plugin.manifest.id,
+        assetDirectory: plugin.folder,
+        entry: development.frontendEntry(plugin.entry, revision),
+        revision,
+        frontendDirectory: path.join(plugin.directory, "src"),
+        styles: []
+      });
+      continue;
+    }
     // A packaged plugin serves its frontend from `<plugin>/frontend`, and only
     // from there: the manifest must never point the browser at plugin sources.
     if (!plugin.entry || !/^[a-zA-Z0-9_-]+$/.test(plugin.folder)) continue;

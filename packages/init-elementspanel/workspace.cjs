@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { spawn } = require("node:child_process");
 const initializerMetadata = require("./package.json");
+const { developmentScripts } = require("./index.cjs");
 
 const PLUGIN_ID = /^[a-z][a-z0-9_-]{1,63}$/;
 const PACKAGE_NAME = /^(?:@[a-z0-9_.-]+\/)?epanel-plugin-[a-z0-9_.-]+$/;
@@ -376,6 +377,21 @@ function help() {
 
 async function installCommand(projectRoot, args = []) {
   if (args.some((arg) => arg !== "--ignore-scripts")) throw new Error("Unknown install option.");
+  const filename = path.join(projectRoot, "package.json");
+  const manifest = readJson(filename);
+  const panel = Boolean(manifest.dependencies?.["@elementspanel/panel"]);
+  const daemon = Boolean(manifest.dependencies?.["@elementspanel/daemon"]);
+  if (panel || daemon) {
+    const defaults = developmentScripts(panel && daemon ? "full" : panel ? "panel" : "daemon");
+    let changed = false;
+    manifest.scripts ??= {};
+    for (const [name, command] of Object.entries(defaults)) {
+      if (Object.hasOwn(manifest.scripts, name)) continue;
+      manifest.scripts[name] = command;
+      changed = true;
+    }
+    if (changed) writeJson(filename, manifest);
+  }
   for (const side of ["panel", "daemon"]) {
     const directory = path.join(projectRoot, side);
     if (!fs.existsSync(path.join(directory, "package.json"))) continue;

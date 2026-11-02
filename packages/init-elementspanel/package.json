@@ -16,6 +16,7 @@
   "files": [
     "bin.cjs",
     "index.cjs",
+    "development.cjs",
     "i18n.cjs",
     "select.cjs",
     "workspace.cjs",

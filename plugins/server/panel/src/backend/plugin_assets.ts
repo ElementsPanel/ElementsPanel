@@ -3,6 +3,7 @@ import { createHash } from "crypto";
 import type Koa from "koa";
 import koaMount from "koa-mount";
 import koaStatic from "koa-static";
+import { developmentRuntime } from "mcsmanager-common";
 import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 
 const STATIC_MAX_AGE = 10 * 24 * 60 * 60;
@@ -32,6 +33,30 @@ export function pluginAssets(ctx: PanelPluginContext): Koa.Middleware {
     streams.clear();
   });
   return async (requestCtx, next) => {
+    if (process.env.EPANEL_DEV === "1" && requestCtx.path.startsWith("/plugins/__dev/")) {
+      const development = developmentRuntime();
+      if (!development) return next();
+      const handled = await new Promise<boolean>((resolve, reject) => {
+        const cleanup = () => {
+          requestCtx.res.off("finish", finish);
+          requestCtx.res.off("close", finish);
+        };
+        const finish = () => {
+          cleanup();
+          resolve(true);
+        };
+        requestCtx.res.once("finish", finish);
+        requestCtx.res.once("close", finish);
+        development.middleware(requestCtx.req, requestCtx.res, (error) => {
+          cleanup();
+          if (error) reject(error);
+          else resolve(false);
+        });
+      });
+      if (handled) requestCtx.respond = false;
+      else await next();
+      return;
+    }
     if (requestCtx.method !== "GET" && requestCtx.method !== "HEAD") return next();
     if (requestCtx.path === "/plugins/manifest.json") {
       requestCtx.set("Cache-Control", "no-store");

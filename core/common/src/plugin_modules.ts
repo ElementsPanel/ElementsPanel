@@ -49,7 +49,16 @@ function dependencyRoots(directory: string) {
 
 /** Include transitive dependency versions so npm updates replace the affected graph. */
 export function pluginBackendRevision(entry: string, directory: string): string {
-  const hash = createHash("sha256").update(pluginDirectoryRevision(path.dirname(entry)));
+  const developmentSource =
+    process.env.EPANEL_DEV === "1" &&
+    within(directory, entry) &&
+    path.relative(directory, entry).split(path.sep).includes("src");
+  let revisionRoot = path.dirname(entry);
+  if (developmentSource) {
+    while (path.basename(revisionRoot) !== "src" && revisionRoot !== directory)
+      revisionRoot = path.dirname(revisionRoot);
+  }
+  const hash = createHash("sha256").update(pluginDirectoryRevision(revisionRoot));
   for (const root of [directory, ...dependencyRoots(directory)]) {
     const filename = path.join(root, "package.json");
     if (fs.existsSync(filename)) hash.update(root).update(fs.readFileSync(filename));
@@ -98,8 +107,8 @@ export function forgetPluginModules(directory: string) {
 }
 
 function isEsm(entry: string) {
-  if (entry.endsWith(".mjs")) return true;
-  if (entry.endsWith(".cjs")) return false;
+  if (/\.m(?:j|t)s$/.test(entry)) return true;
+  if (/\.c(?:j|t)s$/.test(entry)) return false;
   let directory = path.dirname(entry);
   while (true) {
     const filename = path.join(directory, "package.json");

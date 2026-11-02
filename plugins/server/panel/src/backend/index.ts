@@ -7,7 +7,7 @@ import koaBody, { HttpMethodEnum } from "koa-body";
 import koaStatic from "koa-static";
 import mount from "koa-mount";
 import session from "koa-session";
-import { packagePath, removeTrail } from "mcsmanager-common";
+import { packagePath, removeTrail, developmentRuntime } from "mcsmanager-common";
 import open from "open";
 import os from "os";
 import path from "path";
@@ -316,8 +316,10 @@ export function apply(ctx: PanelPluginContext) {
   ctx.set("websocket", { io: websocket });
 
   let closing: Promise<void> | undefined;
+  let closeDevelopment: (() => Promise<void>) | undefined;
   const closeTransport = () =>
     (closing ??= (async () => {
+      await closeDevelopment?.();
       // Socket.IO releases the listener after its adapters finish closing.
       // Existing HTTP replies may finish after it stops accepting connections.
       await websocket?.close();
@@ -339,7 +341,9 @@ export function apply(ctx: PanelPluginContext) {
 
   // Bound on `ready`, not here: the panel must not accept a request before every
   // plugin has registered its routes.
-  ctx.on("ready", () => {
+  ctx.on("ready", async () => {
+    if (process.env.EPANEL_DEV === "1")
+      closeDevelopment = await developmentRuntime()?.attach(httpServer!, config.prefix);
     const port = config.httpPort;
     httpServer?.listen(port, config.httpIp, () => {
       if (process.connected) process.send?.({ type: "elementspanel:ready" }, () => {});
