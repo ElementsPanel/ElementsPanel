@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-market",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Plugin browsing, installation and management.",
   "elementspanel": {
     "id": "market",
