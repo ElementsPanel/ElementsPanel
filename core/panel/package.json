@@ -1,6 +1,6 @@
 {
   "name": "elements-panel",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "daemonVersion": "1.0.4",
   "description": "ElementsPanel backend API — a fork of the MCSManager project, connects and controls all Daemon nodes and provides API services for the frontend",
   "scripts": {
