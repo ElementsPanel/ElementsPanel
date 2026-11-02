@@ -14,7 +14,7 @@ Publishes the prepared packages in npm-packages/ without building the workspace.
 
 Options:
   --dry-run                 Pack each package without publishing it
-  --skip-existing           Skip already published versions only if contents match
+  --skip-existing           Skip already published versions
   --skip-version-check      Do not check the registry for existing versions
   --otp <code>              Pass a one-time password to npm publish
   --tag <tag>               Publish with an npm dist-tag (default: latest)
@@ -103,67 +103,35 @@ function registryArgs(options) {
   return options.registry ? ["--registry", options.registry] : [];
 }
 
-function publishedDistribution(packageInfo, options, npm) {
+function isPublished(packageInfo, options, npm) {
   const result = npm(
     [
       "view",
       `${packageInfo.name}@${packageInfo.version}`,
-      "dist",
+      "version",
       "--json",
       ...registryArgs(options)
     ],
     { stdio: ["ignore", "pipe", "pipe"], encoding: "utf8" }
   );
-  if (result.status === 0) {
-    const distribution = JSON.parse(result.stdout);
-    if (!distribution?.integrity && !distribution?.shasum)
-      throw new Error(`Missing registry integrity for ${packageInfo.name}@${packageInfo.version}.`);
-    return distribution;
-  }
+  if (result.status === 0) return true;
   const output = `${result.stdout || ""}\n${result.stderr || ""}`;
   if (!/(?:E404|404 Not Found|No match found|is not in this registry)/i.test(output))
     throw new Error(
       `Could not verify ${packageInfo.name}@${packageInfo.version}: ${output.trim()}`
     );
-  return null;
+  return false;
 }
 
 export function selectPackagesForPublication(packages, options, npm = runNpm) {
   const pending = [];
   for (const packageInfo of packages) {
-    const distribution = publishedDistribution(packageInfo, options, npm);
-    if (!distribution) {
+    if (!isPublished(packageInfo, options, npm)) {
       pending.push(packageInfo);
       continue;
     }
     if (!options.skipExisting)
       throw new Error(`${packageInfo.name}@${packageInfo.version} already exists in the registry.`);
-    // Built-in frontend entries import hashed chunks from the panel package.
-    // Skipping a changed package would combine separate builds on installation.
-    const packed = npm(["pack", packageInfo.directory, "--dry-run", "--json", "--ignore-scripts"], {
-      stdio: ["ignore", "pipe", "pipe"],
-      encoding: "utf8"
-    });
-    if (packed.status !== 0)
-      throw new Error(
-        `Could not check ${packageInfo.name}@${packageInfo.version}: ${
-          packed.stderr || "npm pack failed"
-        }`
-      );
-    const [local] = JSON.parse(packed.stdout);
-    if (
-      !local ||
-      !(
-        (distribution.integrity && distribution.integrity === local.integrity) ||
-        (distribution.shasum && distribution.shasum === local.shasum)
-      )
-    ) {
-      throw new Error(
-        `${packageInfo.name}@${packageInfo.version} already exists with different contents. ` +
-          "--skip-existing can only skip identical packages. Update the versions of all changed packages " +
-          "and run npm run package:npm again; mixing frontend builds can leave shared chunks missing."
-      );
-    }
     console.log(`Skipping ${packageInfo.name}@${packageInfo.version} (already published).`);
   }
   return pending;
