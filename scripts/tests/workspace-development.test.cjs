@@ -293,13 +293,39 @@ test("frontend uses same-port middleware and host module bridges without startin
   const hostBridge = config.plugins[0].resolveId("vue");
   assert.equal(hostBridge.external, true);
   const response = {
-    setHeader() {},
+    statusCode: 404,
+    headers: new Map(),
+    setHeader(name, value) {
+      this.headers.set(name, value);
+    },
+    writeHead(statusCode) {
+      this.statusCode = statusCode;
+    },
     end(source) {
       this.body = source;
+      this.sentStatus = this.statusCode;
     }
   };
-  runtime.middleware({ url: "/plugins/__dev/@id/" + hostBridge.id }, response, assert.ifError);
-  assert.equal(response.body, 'export * from "vue";\n');
+  for (const specifier of ["vue", "pinia", "@vueuse/core", "@elements-panel/sdk"]) {
+    const bridge = config.plugins[0].resolveId(specifier);
+    response.statusCode = 404; // Koa initializes the raw response to not found.
+    runtime.middleware(
+      { url: "/plugins/__dev/@id/" + bridge.id + "?v=revision" },
+      response,
+      assert.ifError
+    );
+    assert.equal(response.sentStatus, 200, specifier);
+    assert.equal(response.body, `export * from ${JSON.stringify(specifier)};\n`);
+    assert.equal(response.headers.get("Content-Type"), "text/javascript");
+    assert.equal(response.headers.get("Cache-Control"), "no-store");
+  }
+  runtime.middleware(
+    { url: "/plugins/__dev/@id/epanel-host:unknown" },
+    response,
+    assert.ifError
+  );
+  assert.equal(response.sentStatus, 404);
+  assert.equal(response.body, undefined);
   assert.match(
     config.plugins[1].transform("export const apply = () => {};", entry),
     /\/panel\/plugins\/__dev\/@vite\/client/
@@ -323,9 +349,11 @@ test("frontend uses same-port middleware and host module bridges without startin
   assert.match(frontend.entry, /^\.\/__dev\/example\/panel\/src\/frontend\.ts\?v=/);
   assert.deepEqual(frontend.styles, []);
   const raw = new EventEmitter();
+  raw.statusCode = 404;
   raw.setHeader = () => {};
   raw.end = (source) => {
     raw.body = source;
+    raw.sentStatus = raw.statusCode;
     raw.emit("finish");
   };
   const request = {
@@ -352,6 +380,7 @@ test("frontend uses same-port middleware and host module bridges without startin
     assets(request, () => assert.fail("development route fell through"))
   );
   assert.equal(raw.body, 'export * from "vue";\n');
+  assert.equal(raw.sentStatus, 200);
   assert.equal(request.respond, false);
   assert.equal(raw.listenerCount("finish"), 0);
   assert.equal(raw.listenerCount("close"), 0);

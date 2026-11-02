@@ -210,6 +210,8 @@ async function installDevelopmentRuntime({ packageRoot }) {
           res.end();
           return;
         }
+        // Koa initializes raw responses to 404; successful modules must reset it.
+        res.statusCode = 200;
         res.setHeader("Content-Type", "text/javascript");
         res.setHeader("Cache-Control", "no-store");
         res.end(`export * from ${JSON.stringify(specifier)};\n`);
