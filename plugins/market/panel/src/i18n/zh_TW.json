@@ -101,5 +101,7 @@
   "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "正在更新 {name}（{completed}/{total}）",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "以下目標更新失敗：{targets}",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "更新目標及目前版本",
-  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "已檢查的插件均為最新版本"
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "已檢查的元件均為最新版本",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_COMPONENT": "元件",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_CHECK_FAILED": "部分更新檢查失敗，請稍後重試。"
 }

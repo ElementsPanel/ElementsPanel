@@ -56,6 +56,9 @@ export {
   listNpmPlugins,
   npmPluginRoots,
   npmPluginOperationPending,
+  npmRuntimePackage,
+  latestNpmRuntimeVersion,
+  updateNpmRuntime,
   isEssentialNpmPlugin,
   uninstallNpmPlugin
 } from "./plugin_npm";
@@ -63,6 +66,9 @@ export type {
   InstallNpmPluginOptions,
   NpmPluginRecord,
   NpmPluginRoots,
+  NpmRuntimeRecord,
+  NpmRuntimeUpdate,
+  NpmRuntimeUpdateService,
   NpmPluginSide
 } from "./plugin_npm";
 

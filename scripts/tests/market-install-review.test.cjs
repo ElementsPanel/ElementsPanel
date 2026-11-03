@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { test } = require("node:test");
+const { EventEmitter } = require("node:events");
 
 const panelRequire = from("panel");
 const ts = panelRequire("typescript");
@@ -90,6 +91,7 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
     isAxiosError: () => false,
     async get(url, options) {
       networkCalls.push({ url, options });
+      if (state.marketUnavailable) throw new Error("Market unavailable");
       if (url.endsWith("/api/plugins")) {
         return {
           data: {
@@ -157,6 +159,18 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
     },
     settingsForm: { declare() {} },
     plugins: {
+      runtime: {
+        get installed() { return state.panelRuntime; },
+        async check() {
+          if (state.runtimeCheckError) throw new Error("Registry unavailable");
+          return state.panelRuntime ?? null;
+        },
+        async update(options) {
+          state.runtimeUpdate = options;
+          state.panelRuntime = { ...state.panelRuntime, version: options.version };
+          return { ...state.panelRuntime, restartRequired: false };
+        }
+      },
       runExclusive: (operation) => operation(),
       inventory: () =>
         [...local.values()]
@@ -195,9 +209,9 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
     }
   });
 
-  async function request(method, url, values = {}) {
+  async function request(method, url, values = {}, res) {
     const query = method === "post" ? {} : values;
-    const ctx = { query, request: { query, body: method === "post" ? values : undefined } };
+    const ctx = { query, res, request: { query, body: method === "post" ? values : undefined } };
     await panelRequire("koa-compose")(routes.get(`${method} ${url}`))(ctx);
     return ctx.body;
   }
@@ -385,6 +399,80 @@ test("market updates compare live versions on each side and leave unchecked node
   env.local.clear();
   env.state.request = async () => [{ id: "sample", version: "1.0.0" }];
   assert.deepEqual((await env.updates()).plugins, [], "source installations cannot be updated through npm");
+});
+
+test("runtime updates share the market list while retaining host scopes and registry versions", async (t) => {
+  const env = await fixture(t);
+  env.state.panelRuntime = { name: "@elementspanel/panel", side: "panel", version: "1.0.0", latestVersion: "2.0.0" };
+  env.nodes.get("node-3").available = false;
+  env.state.request = async ({ event, daemonId }) => {
+    if (event === "plugin/list") return [];
+    if (event === "plugin/capabilities") return { runtimeUpdates: true };
+    if (event === "runtime/check") return { name: "@elementspanel/daemon", side: "daemon", version: "1.0.0", latestVersion: daemonId === "node-1" ? "2.0.0" : "3.0.0" };
+  };
+  const all = await env.updates();
+  assert.equal(all.plugins.length, 3);
+  assert.equal(new Set(all.plugins.map((item) => item.pluginId)).size, 3);
+  assert.deepEqual(all.plugins.find((item) => item.runtime === "panel").targets, [{ label: "", currentVersion: "1.0.0" }]);
+  assert.deepEqual(all.uncheckedNodes, [{ daemonId: "node-3", label: "node-3" }]);
+  assert.deepEqual((await env.updates({ daemonId: "" })).plugins.map((item) => item.runtime), ["panel"]);
+  const nodeOnly = await env.updates({ daemonId: "node-2" });
+  assert.equal(nodeOnly.plugins.length, 1);
+  assert.equal(nodeOnly.plugins[0].version, "3.0.0");
+  assert.deepEqual(nodeOnly.plugins[0].targets, [{ daemonId: "node-2", label: "node-2", currentVersion: "1.0.0" }]);
+});
+
+test("a failed catalogue or registry check preserves the other updates without claiming everything is current", async (t) => {
+  const env = await fixture(t, { version: "2.0.0" });
+  env.state.panelRuntime = { name: "@elementspanel/panel", side: "panel", version: "1.0.0", latestVersion: "2.0.0" };
+  env.state.marketUnavailable = true;
+  let result = await env.updates({ daemonId: "" });
+  assert.equal(result.checkFailed, true);
+  assert.equal(result.plugins[0].runtime, "panel");
+  env.state.marketUnavailable = false;
+  env.state.runtimeCheckError = true;
+  await env.common.installNpmPlugin({ name: "epanel-plugin-sample", pluginId: "sample", version: "1.0.0" });
+  result = await env.updates({ daemonId: "" });
+  assert.equal(result.checkFailed, true);
+  assert.deepEqual(result.plugins.map((item) => item.pluginId), ["sample"]);
+});
+
+test("panel runtime updates defer restart until the HTTP reply and ignore stale versions", async (t) => {
+  const env = await fixture(t);
+  env.state.panelRuntime = { name: "@elementspanel/panel", side: "panel", version: "1.0.0" };
+  const res = new EventEmitter();
+  const result = await env.request("post", "/runtime/update", { side: "panel", version: "2.0.0", daemonIds: [] }, res);
+  assert.equal(result.installedVersion, "2.0.0");
+  assert.equal(result.restartRequired, false);
+  assert.deepEqual(result.updatedTargets, [{ label: "", currentVersion: "1.0.0" }]);
+  let released = false;
+  env.state.runtimeUpdate.reloadAfter.then(() => { released = true; });
+  await Promise.resolve();
+  assert.equal(released, false);
+  res.emit("finish");
+  await Promise.resolve();
+  assert.equal(released, true);
+  env.state.runtimeUpdate = undefined;
+  const stale = await env.request("post", "/runtime/update", { side: "panel", version: "1.0.0", daemonIds: [] });
+  assert.deepEqual(stale.updatedTargets, []);
+  assert.equal(env.state.runtimeUpdate, undefined);
+});
+
+test("daemon runtime updates recheck versions, isolate failures and only change selected nodes", async (t) => {
+  const env = await fixture(t);
+  env.state.request = async ({ event, daemonId }) => {
+    if (event === "plugin/capabilities") return { runtimeUpdates: true, runtime: { name: "@elementspanel/daemon", side: "daemon", version: daemonId === "node-3" ? "3.0.0" : "1.0.0" } };
+    if (event === "runtime/update") {
+      if (daemonId === "node-1") throw new Error("npm failed");
+      return { name: "@elementspanel/daemon", version: "2.0.0", restartRequired: false };
+    }
+  };
+  const result = await env.request("post", "/runtime/update", { side: "daemon", version: "2.0.0", daemonIds: ["node-1", "node-2", "node-2", "node-3", "missing"] });
+  assert.deepEqual(result.updatedTargets.map((item) => item.daemonId), ["node-2"]);
+  assert.deepEqual(result.failedTargets.map((item) => item.daemonId), ["node-1", "missing"]);
+  assert.equal(result.restartRequired, false);
+  assert.deepEqual(env.rpcCalls.filter((call) => call.event === "runtime/update").map((call) => call.daemonId), ["node-1", "node-2"]);
+  assert.equal(env.state.runtimeUpdate, undefined);
 });
 
 test("a market update never downgrades or installs missing halves and rechecks node inventory", async (t) => {

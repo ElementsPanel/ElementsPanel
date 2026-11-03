@@ -12,6 +12,10 @@ export function isProcessRestartPending(ctx: RestartContext): boolean {
   return ctx.root[RESTART]?.pending === true;
 }
 
+export function canRestartProcess(): boolean {
+  return process.env.EPANEL_SUPERVISED === "1" && Boolean(process.connected && process.send);
+}
+
 /** The CLI retains instance processes and starts a fresh worker after this one exits. */
 export function requestProcessRestart(
   ctx: RestartContext,
@@ -19,7 +23,7 @@ export function requestProcessRestart(
   ready: () => Promise<unknown> = async () => {}
 ): boolean {
   if (isProcessRestartPending(ctx)) return true;
-  if (process.env.EPANEL_SUPERVISED !== "1" || !process.connected || !process.send) return false;
+  if (!canRestartProcess()) return false;
   const state: NonNullable<RestartContext[typeof RESTART]> = { pending: true };
   ctx.root[RESTART] = state;
   const retainProcesses = () =>

@@ -101,5 +101,7 @@
   "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "กำลังอัปเดต {name} ({completed}/{total})",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "อัปเดตไม่สำเร็จบนเป้าหมาย: {targets}",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "เป้าหมายและเวอร์ชันปัจจุบัน",
-  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "ปลั๊กอินที่ตรวจสอบทั้งหมดเป็นเวอร์ชันล่าสุดแล้ว"
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "คอมโพเนนต์ที่ตรวจสอบทั้งหมดเป็นเวอร์ชันล่าสุดแล้ว",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_COMPONENT": "คอมโพเนนต์",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_CHECK_FAILED": "ไม่สามารถตรวจสอบการอัปเดตบางรายการได้ โปรดลองอีกครั้งในภายหลัง"
 }

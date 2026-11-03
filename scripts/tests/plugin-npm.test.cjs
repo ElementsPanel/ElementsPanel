@@ -55,6 +55,12 @@ function npmFixture(t, side = "panel") {
     setImmediate(async () => {
       try {
         if (state.gate) await state.gate;
+        if (args[0] === "view") {
+          child.stderr.emit("data", Buffer.from("npm warning on stderr\n"));
+          child.stdout.emit("data", Buffer.from(JSON.stringify(state.latest || "2.0.0")));
+          child.emit("close", 0);
+          return;
+        }
         const filename = path.join(options.cwd, "package.json");
         const metadata = JSON.parse(fs.readFileSync(filename));
         if (action === "install") {
@@ -62,8 +68,23 @@ function npmFixture(t, side = "panel") {
           const name = spec.slice(0, delimiter);
           const pluginId = name.split("epanel-plugin-")[1];
           const version =
-            spec.slice(delimiter + 1) === "latest" ? "1.0.0" : spec.slice(delimiter + 1);
+            spec.slice(delimiter + 1) === "latest" ? state.latest || "1.0.0" : spec.slice(delimiter + 1);
           const target = path.join(options.cwd, "node_modules", name);
+          if (name === `@elementspanel/${side}`) {
+            const previous = JSON.parse(fs.readFileSync(path.join(target, "package.json")));
+            write(path.join(target, "package.json"), {
+              ...previous,
+              version,
+              elementspanel: {
+                ...previous.elementspanel,
+                side: state.invalid && version === "2.0.0" ? "invalid" : side,
+                ...(state.runtimeAssets ? { frontendAssets: state.runtimeAssets[version] } : {})
+              }
+            });
+            write(path.join(target, "app.js"), "// precompiled runtime fixture");
+            write(path.join(target, "runtime/worker.cjs"), "// precompiled worker fixture");
+            if (side === "panel") write(path.join(target, "public/index.html"), "fixture");
+          } else {
           write(path.join(target, "package.json"), {
             name,
             version,
@@ -72,8 +93,8 @@ function npmFixture(t, side = "panel") {
               [side]: {
                 directory: side,
                 folder: pluginId,
-                ...(side === "panel" ? { frontendAssets: state.frontendAssets || [] } : {}),
-                elements: { api: state.invalid && version === "2.0.0" ? 2 : 1 }
+                ...(side === "panel" ? { frontendAssets: state.pluginAssets?.[version] || state.frontendAssets || [] } : {}),
+                elements: { api: (state.invalid || state.invalidPlugin === pluginId) && version === "2.0.0" ? 2 : 1 }
               }
             }
           });
@@ -86,6 +107,7 @@ function npmFixture(t, side = "panel") {
             path.join(target, side, "backend/index.cjs"),
             `exports.apply=ctx=>ctx.set("npmVersion",${JSON.stringify(version)});`
           );
+          }
           metadata.dependencies = { ...metadata.dependencies, [name]: version };
         } else {
           delete metadata.dependencies[spec];
@@ -103,6 +125,89 @@ function npmFixture(t, side = "panel") {
   const load = loader({ child_process: { spawn } });
   return { ...f, calls, state, ...load("core/common/src/plugin_npm.ts") };
 }
+
+for (const side of ["panel", "daemon"]) {
+  test(`${side}: runtime updates pin the project dependency and roll back a rejected package`, async (t) => {
+    const f = npmFixture(t, side);
+    const name = `@elementspanel/${side}`;
+    write(path.join(f.root, "package.json"), { private: true, dependencies: { [name]: "1.0.0", unrelated: "3.0.0" } });
+    for (const id of ["i18n", "storage", "runtime", "server", ...(side === "panel" ? ["console"] : [])])
+      writePlugin(f.host, side, id, { projectRoot: f.root });
+    const options = { side, packageRoot: f.host, projectRoot: f.root };
+    assert.equal(f.npmRuntimePackage(side, options).version, "1.0.0");
+    const installed = await f.updateNpmRuntime({ ...options, version: "1.5.0" });
+    assert.equal(installed.version, "1.5.0");
+    assert.equal(f.calls[0].options.cwd, f.root, "the runtime is updated in the root project");
+    assert.ok(f.calls[0].args.includes("--ignore-scripts"));
+    assert.ok(f.calls[0].args.includes("--save-exact"));
+    const manifest = JSON.parse(fs.readFileSync(path.join(f.root, "package.json")));
+    assert.equal(manifest.dependencies[name], "1.5.0");
+    assert.equal(manifest.dependencies.unrelated, "3.0.0");
+    const files = [f.root, f.dependencyRoot].flatMap((root) => ["package.json", "package-lock.json"].map((file) => path.join(root, file)));
+    const contents = () => files.map((file) => fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null);
+    const before = contents();
+    f.state.invalid = true;
+    await assert.rejects(f.updateNpmRuntime({ ...options, version: "2.0.0" }), /does not match/);
+    assert.deepEqual(contents(), before);
+    assert.equal(f.npmRuntimePackage(side, options).version, "1.5.0");
+    assert.deepEqual(f.calls.map((call) => call.spec), [`${name}@1.5.0`, `${name}@2.0.0`, `${name}@1.5.0`]);
+    await assert.rejects(f.updateNpmRuntime({ ...options, version: "latest;echo bad" }), /Invalid runtime version/);
+    assert.equal(f.calls.length, 3);
+    assert.equal(fs.existsSync(path.join(f.root, ".elementspanel-npm.lock")), false);
+    write(path.join(f.root, "package.json"), { private: true });
+    assert.equal(f.npmRuntimePackage(side, options), undefined, "source or unmanaged runtimes cannot be replaced");
+  });
+}
+
+test("panel updates bring built-in frontend plugins whose shared assets changed", async (t) => {
+  const f = npmFixture(t);
+  write(path.join(f.root, "package.json"), { private: true, dependencies: { "@elementspanel/panel": "1.0.0" } });
+  for (const id of ["i18n", "storage", "runtime", "server", "console"])
+    writePlugin(f.host, "panel", id, { projectRoot: f.root });
+  const original = path.join(f.dependencyRoot, "node_modules/@elementspanel/epanel-plugin-console/package.json");
+  const consoleMetadata = JSON.parse(fs.readFileSync(original));
+  consoleMetadata.elementspanel.panel.frontendAssets = ["assets/old.js"];
+  write(original, consoleMetadata);
+  f.state.runtimeAssets = { "1.0.0": ["assets/old.js"], "2.0.0": ["assets/new.js"] };
+  f.state.frontendAssets = ["assets/new.js"];
+  f.state.latest = "2.0.0";
+  const options = { side: "panel", version: "2.0.0", packageRoot: f.host, projectRoot: f.root };
+  const result = await f.updateNpmRuntime(options);
+  assert.equal(result.version, "2.0.0");
+  assert.equal(JSON.parse(fs.readFileSync(original)).version, "2.0.0");
+  assert.deepEqual(f.calls.map((call) => call.spec), ["@elementspanel/panel@2.0.0", "@elementspanel/epanel-plugin-console@latest"]);
+});
+
+test("a failed frontend plugin update rolls back the runtime, earlier plugins and both manifests", async (t) => {
+  const f = npmFixture(t);
+  write(path.join(f.root, "package.json"), { private: true, dependencies: { "@elementspanel/panel": "1.0.0" } });
+  for (const id of ["i18n", "storage", "runtime", "server", "console"])
+    writePlugin(f.host, "panel", id, { projectRoot: f.root });
+  for (const id of ["server", "console"]) {
+    const filename = path.join(f.dependencyRoot, `node_modules/@elementspanel/epanel-plugin-${id}/package.json`);
+    const metadata = JSON.parse(fs.readFileSync(filename));
+    metadata.elementspanel.panel.frontendAssets = ["assets/old.js"];
+    write(filename, metadata);
+  }
+  f.state.runtimeAssets = { "1.0.0": ["assets/old.js"], "2.0.0": ["assets/new.js"] };
+  f.state.pluginAssets = f.state.runtimeAssets;
+  f.state.latest = "2.0.0";
+  f.state.invalidPlugin = "console";
+  const manifests = [f.root, f.dependencyRoot].map((root) => path.join(root, "package.json"));
+  const before = manifests.map((file) => fs.readFileSync(file, "utf8"));
+  await assert.rejects(f.updateNpmRuntime({ side: "panel", version: "2.0.0", packageRoot: f.host, projectRoot: f.root }), /Unsupported/);
+  assert.deepEqual(manifests.map((file) => fs.readFileSync(file, "utf8")), before);
+  assert.equal(f.npmRuntimePackage("panel", { packageRoot: f.host, projectRoot: f.root }).version, "1.0.0");
+  for (const id of ["server", "console"])
+    assert.equal(JSON.parse(fs.readFileSync(path.join(f.dependencyRoot, `node_modules/@elementspanel/epanel-plugin-${id}/package.json`))).version, "1.0.0");
+});
+
+test("runtime release checks read JSON stdout independently from npm warnings", async (t) => {
+  const f = npmFixture(t);
+  assert.equal(await f.latestNpmRuntimeVersion("panel"), "2.0.0");
+  assert.deepEqual(f.calls[0].args.slice(0, 4), ["view", "@elementspanel/panel@latest", "version", "--json"]);
+  assert.ok(f.calls[0].args.includes("--fetch-retries=0"));
+});
 
 test("npm installs pin the resolved dependency; uninstall removes it and preserves unrelated data", async (t) => {
   const f = npmFixture(t);

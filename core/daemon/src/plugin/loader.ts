@@ -2,6 +2,10 @@ import { Logger, type ForkScope } from "cordis";
 import {
   packagePluginRoots,
   installNpmPlugin,
+  npmRuntimePackage,
+  latestNpmRuntimeVersion,
+  updateNpmRuntime,
+  canRestartProcess,
   uninstallNpmPlugin,
   isEssentialNpmPlugin,
   forgetPluginModules,
@@ -96,8 +100,26 @@ function discoverDaemonPlugins(options: DiscoverPluginsOptions) {
 /** Exposes the loader's own registry without pulling it into a plugin bundle. */
 function ensureDaemonPluginService() {
   if (ctx.get("plugins")) return;
+  const runtime = npmRuntimePackage("daemon");
   ctx.provide("plugins", undefined, true);
   ctx.set("plugins", {
+    runtime: {
+      get installed() {
+        return runtime ? npmRuntimePackage("daemon") ?? null : null;
+      },
+      async check() {
+        if (!runtime || !canRestartProcess()) return null;
+        return { ...runtime, latestVersion: await latestNpmRuntimeVersion("daemon") };
+      },
+      update: (options) =>
+        change(async () => {
+          if (!runtime || !canRestartProcess())
+            throw new Error("Daemon updates require an npm installation managed by the launcher.");
+          if (options.reloadAfter) deferRestartUntil(options.reloadAfter);
+          const record = await updateNpmRuntime({ side: "daemon", version: options.version });
+          return { ...record, restartRequired: !restartDaemonProcess() };
+        })
+    },
     get restartPending() {
       return isProcessRestartPending(ctx);
     },
@@ -122,6 +144,18 @@ function ensureDaemonPluginService() {
     runExclusive: change,
     waitForDisposal: settle,
     reload: reloadDaemonPlugins
+  });
+}
+
+function deferRestartUntil(gate: Promise<void>) {
+  reloadGates.add(gate);
+  void gate.finally(() => reloadGates.delete(gate)).catch(() => {});
+}
+
+function restartDaemonProcess() {
+  return requestProcessRestart(ctx, settle, async () => {
+    while (reloadGates.size) await Promise.all([...reloadGates]);
+    await change(async () => {});
   });
 }
 
@@ -277,10 +311,7 @@ async function reconcilePlugins() {
       if (!plugin.entry) throw new Error(`Missing essential plugin entry: ${plugin.manifest.id}`);
     }
     for (const running of requiresRestart) running.restartRequired = true;
-    requestProcessRestart(ctx, settle, async () => {
-      while (reloadGates.size) await Promise.all([...reloadGates]);
-      await change(async () => {});
-    });
+    restartDaemonProcess();
     return loaded;
   }
   const removed: (typeof loaded)[number][] = [];
@@ -321,8 +352,7 @@ export function installDaemonNpmPlugin(options: {
   return change(async () => {
     if (options.reloadAfter) {
       const gate = options.reloadAfter;
-      reloadGates.add(gate);
-      void gate.finally(() => reloadGates.delete(gate)).catch(() => {});
+      deferRestartUntil(gate);
     }
     const before = new Map(getDaemonPluginInventory().map((plugin) => [plugin.id, plugin]));
     const record = await installNpmPlugin({ ...options, side: "daemon" });

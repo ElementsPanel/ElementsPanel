@@ -1,4 +1,4 @@
-import type { PluginChangeResult } from "mcsmanager-common";
+import type { NpmRuntimeUpdateService, PluginChangeResult } from "mcsmanager-common";
 import type Router from "@koa/router";
 import { Context } from "cordis";
 import type i18next from "i18next";
@@ -342,6 +342,7 @@ export interface PanelOperationLogger {
 
 /** What is installed and what is loaded, plus the switch that decides. */
 export interface PanelPluginsService {
+  readonly runtime?: NpmRuntimeUpdateService;
   readonly restartPending?: boolean;
   waitForDisposal(): Promise<void>;
   /** Keep in-flight market operations alive when a shared npm dependency changes. */

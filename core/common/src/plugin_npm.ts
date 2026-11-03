@@ -51,6 +51,25 @@ export interface NpmPluginRoots {
   dependencyRoot: string;
 }
 
+export interface NpmRuntimeRecord {
+  name: string;
+  side: NpmPluginSide;
+  version: string;
+}
+
+export interface NpmRuntimeUpdate extends NpmRuntimeRecord {
+  latestVersion: string;
+}
+
+export interface NpmRuntimeUpdateService {
+  readonly installed: NpmRuntimeRecord | null;
+  check(): Promise<NpmRuntimeUpdate | null>;
+  update(options: {
+    version: string;
+    reloadAfter?: Promise<void>;
+  }): Promise<NpmRuntimeRecord & { restartRequired: boolean }>;
+}
+
 const PLUGIN_ID = /^[a-z][a-z0-9_-]{1,63}$/;
 const PACKAGE_NAME = /^(?:@[a-z0-9_.-]+\/)?epanel-plugin-[a-z0-9_.-]+$/;
 const VERSION = /^[a-zA-Z0-9][a-zA-Z0-9._+-]{0,63}$/;
@@ -255,7 +274,7 @@ export function listNpmPlugins(
   return records;
 }
 
-function runNpm(args: string[], cwd: string): Promise<string> {
+function runNpm(args: string[], cwd: string, timeout = 10 * 60 * 1000): Promise<string> {
   return new Promise((resolve, reject) => {
     const npmCLI = process.env.npm_execpath;
     const invocation =
@@ -281,21 +300,21 @@ function runNpm(args: string[], cwd: string): Promise<string> {
       env: { ...process.env, npm_config_update_notifier: "false" }
     });
     let output = "";
-    const append = (data: Buffer) => {
+    let errors = "";
+    child.stdout?.on("data", (data: Buffer) => {
       output += data.toString();
       if (output.length > 16000) output = output.slice(-16000);
-    };
-    child.stdout?.on("data", append);
-    child.stderr?.on("data", append);
+    });
+    child.stderr?.on("data", (data: Buffer) => {
+      errors += data.toString();
+      if (errors.length > 16000) errors = errors.slice(-16000);
+    });
     const action =
       args.find((argument) => argument === "install" || argument === "uninstall") || "operation";
-    const timer = setTimeout(
-      () => {
-        child.kill("SIGKILL");
-        reject(new Error(`npm ${action} timed out.`));
-      },
-      10 * 60 * 1000
-    );
+    const timer = setTimeout(() => {
+      child.kill("SIGKILL");
+      reject(new Error(`npm ${action} timed out.`));
+    }, timeout);
     timer.unref?.();
     child.once("error", (error) => {
       clearTimeout(timer);
@@ -304,7 +323,7 @@ function runNpm(args: string[], cwd: string): Promise<string> {
     child.once("close", (code) => {
       clearTimeout(timer);
       if (code === 0) return resolve(output);
-      reject(new Error(`npm ${action} failed (${code}): ${output.trim()}`));
+      reject(new Error(`npm ${action} failed (${code}): ${output.trim()} ${errors.trim()}`));
     });
   });
 }
@@ -315,6 +334,7 @@ const shared = globalThis as typeof globalThis & {
 };
 const operations = (shared[operationsKey] ??= new Map<string, Promise<unknown>>());
 const LOCK_NAME = ".elementspanel-npm.lock";
+const RUNTIME_VERSION = /^\d+\.\d+\.\d+(?:-[\da-zA-Z.-]+)?(?:\+[\da-zA-Z.-]+)?$/;
 
 async function acquireProjectLock(projectRoot: string) {
   await fs.ensureDir(projectRoot);
@@ -353,8 +373,11 @@ async function acquireProjectLock(projectRoot: string) {
 }
 
 export function npmPluginOperationPending(side?: NpmPluginSide): boolean {
-  const { dependencyRoot } = npmPluginRoots({ side });
-  return operations.size > 0 || fs.existsSync(path.join(dependencyRoot, LOCK_NAME));
+  const { dependencyRoot, projectRoot } = npmPluginRoots({ side });
+  return (
+    operations.size > 0 ||
+    [dependencyRoot, projectRoot].some((root) => fs.existsSync(path.join(root, LOCK_NAME)))
+  );
 }
 
 function withProjectLock<T>(projectRoot: string, operation: () => Promise<T>): Promise<T> {
@@ -381,6 +404,180 @@ function withProjectLock<T>(projectRoot: string, operation: () => Promise<T>): P
 /** Core services keep the connection and management interface available. */
 export function isEssentialNpmPlugin(pluginId: string) {
   return ["i18n", "storage", "runtime", "server", "console", "config"].includes(pluginId);
+}
+
+/** Only a runtime owned by this installation project can be updated in place. */
+export function npmRuntimePackage(
+  side: NpmPluginSide,
+  options: { packageRoot?: string; projectRoot?: string } = {}
+): NpmRuntimeRecord | undefined {
+  const { packageRoot, projectRoot } = npmPluginRoots({ ...options, side });
+  const name = `@elementspanel/${side}`;
+  const host = readJson(path.join(packageRoot, "package.json"));
+  if (
+    host?.name !== name ||
+    objectValue(host.elementspanel)?.side !== side ||
+    typeof host.version !== "string" ||
+    !dependenciesOf(readProjectManifest(projectRoot))[name]
+  )
+    return;
+  try {
+    if (readPackageEntry(projectRoot, name).root !== fs.realpathSync(packageRoot)) return;
+  } catch {
+    return;
+  }
+  return { name, side, version: host.version };
+}
+
+/** Use npm's configured registry, including installation-specific mirrors. */
+export async function latestNpmRuntimeVersion(side: NpmPluginSide): Promise<string> {
+  if (side !== "panel" && side !== "daemon") throw new Error("Invalid runtime side.");
+  const version: unknown = JSON.parse(
+    await runNpm(
+      [
+        "view",
+        `@elementspanel/${side}@latest`,
+        "version",
+        "--json",
+        "--loglevel=error",
+        "--fetch-retries=0",
+        "--fetch-timeout=15000"
+      ],
+      currentProjectRoot(),
+      20000
+    )
+  );
+  if (typeof version !== "string" || !RUNTIME_VERSION.test(version))
+    throw new Error(`Invalid ${side} release version.`);
+  return version;
+}
+
+/** Runtime dependencies belong to the project root, separate from side plugins. */
+export async function updateNpmRuntime(options: {
+  side: NpmPluginSide;
+  version: string;
+  packageRoot?: string;
+  projectRoot?: string;
+}): Promise<NpmRuntimeRecord> {
+  const { side, version } = options;
+  if (side !== "panel" && side !== "daemon") throw new Error("Invalid runtime side.");
+  if (!RUNTIME_VERSION.test(version)) throw new Error(`Invalid runtime version: ${version}`);
+  const { projectRoot, dependencyRoot } = npmPluginRoots(options);
+  return withProjectLock(projectRoot, async () => {
+    const previous = npmRuntimePackage(side, options);
+    if (!previous) throw new Error(`The ${side} runtime is not an installed project dependency.`);
+    const previousPlugins = listNpmPlugins(side, { ...options, skipInvalid: true });
+    const changedPlugins: NpmPluginRecord[] = [];
+    const backups = new Map<string, Buffer | null>();
+    for (const root of [projectRoot, dependencyRoot])
+      for (const filename of ["package.json", "package-lock.json", "npm-shrinkwrap.json"]) {
+        const target = path.join(root, filename);
+        backups.set(target, fs.existsSync(target) ? fs.readFileSync(target) : null);
+      }
+    const install = (targetVersion: string) =>
+      runNpm(
+        [
+          "--prefix",
+          projectRoot,
+          "install",
+          `${previous.name}@${targetVersion}`,
+          "--save",
+          "--save-exact",
+          "--no-fund",
+          "--no-audit",
+          "--ignore-scripts",
+          "--workspaces=false"
+        ],
+        projectRoot
+      );
+    try {
+      await install(version);
+      const entry = readPackageEntry(projectRoot, previous.name);
+      if (
+        entry.metadata.name !== previous.name ||
+        entry.metadata.version !== version ||
+        objectValue(entry.metadata.elementspanel)?.side !== side
+      )
+        throw new Error(`The installed ${side} package does not match the requested release.`);
+      for (const filename of [
+        "app.js",
+        "runtime/worker.cjs",
+        ...(side === "panel" ? ["public/index.html"] : [])
+      ]) {
+        if (!fs.statSync(path.join(entry.root, filename)).isFile())
+          throw new Error(`Incomplete ${side} runtime: missing ${filename}.`);
+      }
+      // Keep the runtime's identity and every essential installed plugin valid
+      // before handing the installation back to the supervising launcher.
+      const runtimePlugins = npmPlugins.resolveNpmPlugins(entry.root, side, {
+        projectRoot,
+        runtimeDirectory: dependencyRoot,
+        development: false
+      }) as Array<{ id: string; name: string; packageRoot: string }>;
+      for (const id of [
+        "i18n",
+        "storage",
+        "runtime",
+        "server",
+        ...(side === "panel" ? ["console"] : [])
+      ]) {
+        if (!runtimePlugins.some((plugin) => plugin.id === id))
+          throw new Error(`Incomplete ${side} installation: missing npm plugin ${id}.`);
+      }
+      if (side === "panel") {
+        const available = objectValue(entry.metadata.elementspanel)?.frontendAssets;
+        for (const plugin of runtimePlugins) {
+          const metadata = readJson(path.join(plugin.packageRoot, "package.json"));
+          const expected = objectValue(objectValue(metadata?.elementspanel)?.panel)?.frontendAssets;
+          const mismatched =
+            expected !== undefined &&
+            (!Array.isArray(expected) ||
+              !Array.isArray(available) ||
+              expected.some((file) => typeof file !== "string" || !available.includes(file)));
+          if (!mismatched) continue;
+          const original = previousPlugins.find((record) => record.name === plugin.name);
+          if (!original || mappingsOf(entry.metadata)[plugin.id] !== plugin.name)
+            throw new Error(
+              `Frontend assets in plugin ${plugin.id} do not match the updated panel.`
+            );
+          // Built-in frontend plugins import shared assets from the panel. Bring
+          // only those whose imports changed along with the runtime update.
+          await installNpmPlugin({
+            name: plugin.name,
+            pluginId: plugin.id,
+            version: "latest",
+            side,
+            packageRoot: entry.root,
+            projectRoot
+          });
+          changedPlugins.push(original);
+        }
+      }
+      return { name: previous.name, side, version };
+    } catch (error) {
+      try {
+        await install(previous.version);
+        const packageRoot = readPackageEntry(projectRoot, previous.name).root;
+        for (const plugin of changedPlugins.reverse())
+          await installNpmPlugin({
+            name: plugin.name,
+            pluginId: plugin.pluginId,
+            version: plugin.version,
+            side,
+            packageRoot,
+            projectRoot
+          });
+      } catch (rollback) {
+        throw new Error(`${String(error)}; npm rollback failed: ${String(rollback)}`);
+      } finally {
+        for (const [filename, content] of backups) {
+          if (content === null) await fs.remove(filename);
+          else await fs.writeFile(filename, content);
+        }
+      }
+      throw error;
+    }
+  });
 }
 
 /** npm changes dependencies and lockfiles; only append our plugin mapping afterwards. */

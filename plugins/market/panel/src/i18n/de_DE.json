@@ -101,5 +101,7 @@
   "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "{name} wird aktualisiert ({completed}/{total})",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "Aktualisierung fehlgeschlagen auf: {targets}",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "Ziele und aktuelle Versionen",
-  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "Alle geprüften Plugins sind auf dem neuesten Stand."
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "Alle geprüften Komponenten sind auf dem neuesten Stand",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_COMPONENT": "Komponente",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_CHECK_FAILED": "Einige Updates konnten nicht geprüft werden. Bitte versuchen Sie es später erneut."
 }

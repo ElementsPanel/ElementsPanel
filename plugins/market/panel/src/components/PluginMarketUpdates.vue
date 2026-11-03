@@ -179,6 +179,13 @@ defineExpose({ refresh, updateAll, updateCount, canUpdate, preparingTargets });
   <section class="plugin-updates">
     <VAlert v-if="error" type="error" variant="tonal" :text="error" class="mb-4" />
     <VAlert
+      v-if="updates?.checkFailed"
+      type="warning"
+      variant="tonal"
+      :text="t('TXT_CODE_PLUGIN_MARKET_UPDATE_CHECK_FAILED')"
+      class="mb-4"
+    />
+    <VAlert
       v-if="updates?.uncheckedNodes.length"
       type="warning"
       variant="tonal"
@@ -235,7 +242,7 @@ defineExpose({ refresh, updateAll, updateCount, canUpdate, preparingTargets });
     <VTable v-if="visibleUpdates.length" class="plugin-updates-table">
       <thead>
         <tr>
-          <th>{{ t("TXT_CODE_PLUGIN_MARKET_PLUGIN_ID") }}</th>
+          <th>{{ t("TXT_CODE_PLUGIN_MARKET_UPDATE_COMPONENT") }}</th>
           <th>{{ t("TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS") }}</th>
           <th>{{ t("TXT_CODE_PLUGIN_MARKET_TARGET_VERSION") }}</th>
           <th />
@@ -263,7 +270,7 @@ defineExpose({ refresh, updateAll, updateCount, canUpdate, preparingTargets });
       </tbody>
     </VTable>
     <Empty
-      v-else-if="!loading && !error && !updatingPlugins"
+      v-else-if="!loading && !error && !updates?.checkFailed && !updatingPlugins"
       icon="mdi-check-circle-outline"
       :title="t(keyword?.trim() ? 'TXT_CODE_NO_DATA' : 'TXT_CODE_PLUGIN_MARKET_UP_TO_DATE')"
       :description="keyword?.trim() ? undefined : t('TXT_CODE_NO_DATA')"

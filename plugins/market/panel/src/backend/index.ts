@@ -1,6 +1,11 @@
 import axios from "axios";
 import type Koa from "koa";
-import { validatePluginCompatibility, writePluginOverride } from "mcsmanager-common";
+import {
+  validatePluginCompatibility,
+  writePluginOverride,
+  type NpmRuntimeRecord,
+  type NpmRuntimeUpdate
+} from "mcsmanager-common";
 import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 import { localeMessages } from "../i18n";
 import { isNewerVersion } from "../version";
@@ -415,12 +420,103 @@ export async function apply(ctx: PanelPluginContext) {
     return { ...(daemonId ? { daemonId } : {}), label, currentVersion: installed.version };
   }
 
+  async function daemonRuntimeInfo(daemonId: string, waitForReconnect = false) {
+    const deadline = Date.now() + (waitForReconnect ? 10000 : 0);
+    while (true) {
+      const node = ctx.remote.services.getInstance(daemonId);
+      try {
+        if (!node?.available) throw new PluginMarketError("NODE_UNAVAILABLE");
+        const request = new ctx.remote.Request(node);
+        const capabilities = await request.request("plugin/capabilities", undefined, 10000);
+        if (capabilities?.restarting) throw new PluginMarketError("NODE_UNAVAILABLE");
+        return { request, capabilities };
+      } catch (error) {
+        if (!node || Date.now() >= deadline) throw error;
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    }
+  }
+
+  async function runtimeUpdates(daemonId?: string) {
+    const plugins: PluginUpdate[] = [];
+    let checkFailed = false;
+    const add = (runtime: NpmRuntimeUpdate | null, label: string, daemonId?: string) => {
+      if (
+        !runtime ||
+        runtime.side !== (daemonId ? "daemon" : "panel") ||
+        runtime.name !== `@elementspanel/${runtime.side}` ||
+        typeof runtime.version !== "string" ||
+        typeof runtime.latestVersion !== "string" ||
+        !isNewerVersion(runtime.latestVersion, runtime.version)
+      )
+        return;
+      // Nodes may use different registries, so keep differing release versions separate.
+      let update = plugins.find(
+        (plugin) => plugin.name === runtime.name && plugin.version === runtime.latestVersion
+      );
+      if (!update) {
+        update = {
+          pluginId: `${runtime.name}@${runtime.latestVersion}`,
+          name: runtime.name,
+          displayName: runtime.side === "panel" ? "ElementsPanel Panel" : "ElementsPanel Daemon",
+          runtime: runtime.side,
+          version: runtime.latestVersion,
+          targets: []
+        };
+        plugins.push(update);
+      }
+      update.targets.push({
+        ...(daemonId ? { daemonId } : {}),
+        label,
+        currentVersion: runtime.version
+      });
+    };
+    const nodes =
+      daemonId === undefined
+        ? listNodes()
+        : daemonId
+        ? listNodes().filter((node) => node.daemonId === daemonId)
+        : [];
+    await Promise.all([
+      (async () => {
+        if (daemonId) return;
+        try {
+          add((await ctx.plugins.runtime?.check()) ?? null, "");
+        } catch (error) {
+          checkFailed = true;
+          ctx.logger.warn(`Failed to check panel runtime updates: ${error}`);
+        }
+      })(),
+      ...nodes.map(async ({ daemonId, available }) => {
+        if (!available) return;
+        const node = ctx.remote.services.getInstance(daemonId);
+        if (!node) return;
+        const label = node.config.remarks || node.config.ip || daemonId;
+        try {
+          const { request, capabilities } = await daemonRuntimeInfo(daemonId);
+          if (capabilities?.runtimeUpdates !== true) return;
+          add(await request.request("runtime/check", undefined, 25000), label, daemonId);
+        } catch (error) {
+          checkFailed = true;
+          ctx.logger.warn(`Failed to check daemon ${daemonId} runtime updates: ${error}`);
+        }
+      })
+    ]);
+    return { plugins, checkFailed };
+  }
+
   router.get("/plugin/updates", requireAdmin, async (requestCtx) => {
     try {
       const daemonId = selectedDaemon(requestCtx);
-      const [market, inventories] = await Promise.all([
-        fetchMarketPlugins(marketSettings().pluginMarketAddr),
-        nodeInventories(daemonId === undefined ? undefined : daemonId ? [daemonId] : [])
+      let marketCheckFailed = false;
+      const [market, inventories, runtimes] = await Promise.all([
+        fetchMarketPlugins(marketSettings().pluginMarketAddr).catch((error) => {
+          marketCheckFailed = true;
+          ctx.logger.warn(`Failed to check plugin updates: ${error}`);
+          return [];
+        }),
+        nodeInventories(daemonId === undefined ? undefined : daemonId ? [daemonId] : []),
+        runtimeUpdates(daemonId)
       ]);
       const panel = ctx.plugins.inventory();
       const plugins: PluginUpdate[] = [];
@@ -478,7 +574,8 @@ export async function apply(ctx: PanelPluginContext) {
           });
       }
       const result: PluginUpdates = {
-        plugins,
+        plugins: [...runtimes.plugins, ...plugins],
+        ...(marketCheckFailed || runtimes.checkFailed ? { checkFailed: true } : {}),
         uncheckedNodes: inventories
           .filter((node) => !node.plugins)
           .map(({ daemonId, label }) => ({ daemonId, label }))
@@ -488,6 +585,88 @@ export async function apply(ctx: PanelPluginContext) {
       reportPluginMarketError(error);
     }
   });
+
+  router.post(
+    "/runtime/update",
+    requireAdmin,
+    validator({ body: { side: String, version: String, daemonIds: Array } }),
+    async (requestCtx: Koa.ParameterizedContext) => {
+      ctx.plugins.deferRestartUntil?.(responseFinished(requestCtx));
+      const body = requestCtx.request.body as {
+        side: PluginSide;
+        version: string;
+        daemonIds: string[];
+      };
+      if (body.side !== "panel" && body.side !== "daemon") {
+        requestCtx.status = 400;
+        return;
+      }
+      try {
+        requestCtx.body = await withPluginLock(`@elementspanel/${body.side}`, async () => {
+          const result: PluginUpdateResult = {
+            pluginId: `@elementspanel/${body.side}@${body.version}`,
+            updatedTargets: [],
+            failedTargets: [],
+            restartRequired: false
+          };
+          if (body.side === "panel") {
+            const runtime = ctx.plugins.runtime?.installed;
+            if (!runtime) throw new PluginMarketError("BUNDLED");
+            if (!isNewerVersion(body.version, runtime.version)) return result;
+            const target = { label: "", currentVersion: runtime.version };
+            try {
+              const installed = await ctx.plugins.runtime!.update({
+                version: body.version,
+                reloadAfter: responseFinished(requestCtx)
+              });
+              result.installedVersion = installed.version;
+              result.restartRequired = installed.restartRequired;
+              result.updatedTargets.push(target);
+            } catch (error) {
+              ctx.logger.warn(`Failed to update panel runtime: ${error}`);
+              result.failedTargets.push(target);
+            }
+          } else {
+            for (const daemonId of requestedNodes(body.daemonIds)) {
+              const node = ctx.remote.services.getInstance(daemonId);
+              const target: PluginUpdateTarget = {
+                daemonId,
+                label: node?.config.remarks || node?.config.ip || daemonId,
+                currentVersion: ""
+              };
+              try {
+                const { request, capabilities } = await daemonRuntimeInfo(daemonId, true);
+                const runtime = capabilities?.runtime as NpmRuntimeRecord | null;
+                if (
+                  capabilities?.runtimeUpdates !== true ||
+                  runtime?.name !== "@elementspanel/daemon" ||
+                  typeof runtime.version !== "string"
+                )
+                  throw new PluginMarketError("BUNDLED");
+                target.currentVersion = runtime.version;
+                if (!isNewerVersion(body.version, runtime.version)) continue;
+                const installed = await request.request(
+                  "runtime/update",
+                  { version: body.version },
+                  11 * 60 * 1000
+                );
+                if (installed?.name !== runtime.name || installed.version !== body.version)
+                  throw new Error("Unexpected daemon runtime update response.");
+                result.restartRequired ||= installed.restartRequired === true;
+                result.updatedTargets.push(target);
+              } catch (error) {
+                ctx.logger.warn(`Failed to update daemon ${daemonId} runtime: ${error}`);
+                result.failedTargets.push(target);
+              }
+            }
+          }
+          return result;
+        });
+      } catch (error) {
+        reportPluginMarketError(error);
+      }
+    }
+  );
 
   router.post(
     "/plugin/update",

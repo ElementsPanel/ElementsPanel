@@ -14,14 +14,18 @@ export function pluginAssets(ctx: PanelPluginContext): Koa.Middleware {
   const streams = new Set<PassThrough>();
   const publicManifest = () =>
     ctx.plugins.frontendManifest().map(({ frontendDirectory, ...entry }) => entry);
+  const panelVersion = () => ctx.globals?.get("version", "Unknown") ?? "Unknown";
   const graphRevision = () =>
-    createHash("sha256").update(JSON.stringify(publicManifest())).digest("hex");
+    createHash("sha256")
+      .update(JSON.stringify([panelVersion(), publicManifest()]))
+      .digest("hex");
+  const graphFrame = (revision: string) =>
+    `data: ${JSON.stringify({ revision, version: panelVersion() })}\n\n`;
   let lastRevision = "";
   ctx.setInterval(() => {
     try {
       const revision = graphRevision();
-      const frame =
-        revision === lastRevision ? ": heartbeat\n\n" : `data: ${JSON.stringify({ revision })}\n\n`;
+      const frame = revision === lastRevision ? ": heartbeat\n\n" : graphFrame(revision);
       lastRevision = revision;
       for (const stream of streams) if (!stream.write(frame)) stream.destroy();
     } catch (error) {
@@ -79,7 +83,7 @@ export function pluginAssets(ctx: PanelPluginContext): Koa.Middleware {
         streams.delete(stream);
         requestCtx.res.off("close", close);
       });
-      stream.write(`data: ${JSON.stringify({ revision: graphRevision() })}\n\n`);
+      stream.write(graphFrame(graphRevision()));
       requestCtx.body = stream;
       return;
     }

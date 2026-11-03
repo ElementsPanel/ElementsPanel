@@ -792,6 +792,98 @@ test("full startup waits for the daemon and shuts down both relocated workers th
   assert.equal(fs.existsSync(path.join(f.packages.panel, "data")), false);
 });
 
+for (const side of ["panel", "daemon"]) {
+  test(`${side}: runtime updates wait for the reply and restart from the newly resolved package`, async (t) => {
+    const f = runtimeFixture(t);
+    const trigger = path.join(f.root, "update-runtime");
+    const release = path.join(f.root, "update-reply-flushed");
+    const name = `@elementspanel/${side}`;
+    const installed = path.join(f.project, "node_modules", name);
+    if (!fs.existsSync(installed)) fs.symlinkSync(f.packages[side], installed, "junction");
+    write(path.join(f.project, "package.json"), { private: true, dependencies: { [name]: "1.0.0" } });
+    const npmCLI = path.join(f.root, "npm-cli.cjs");
+    const replacement = path.join(f.root, "updated package", side);
+    write(npmCLI, `
+      const fs = require('node:fs');
+      const path = require('node:path');
+      const args = process.argv.slice(2);
+      const spec = args[args.indexOf('install') + 1];
+      if (spec !== ${JSON.stringify(name + "@2.0.0")}) throw new Error('Unexpected npm operation');
+      fs.mkdirSync(path.dirname(${JSON.stringify(replacement)}), { recursive: true });
+      fs.cpSync(fs.realpathSync(${JSON.stringify(installed)}), ${JSON.stringify(replacement)}, { recursive: true });
+      const file = path.join(${JSON.stringify(replacement)}, 'package.json');
+      const metadata = JSON.parse(fs.readFileSync(file));
+      metadata.version = '2.0.0';
+      fs.writeFileSync(file, JSON.stringify(metadata));
+      fs.unlinkSync(${JSON.stringify(installed)});
+      fs.symlinkSync(${JSON.stringify(replacement)}, ${JSON.stringify(installed)}, 'junction');
+      const manifestFile = path.join(process.cwd(), 'package.json');
+      const manifest = JSON.parse(fs.readFileSync(manifestFile));
+      manifest.dependencies[${JSON.stringify(name)}] = '2.0.0';
+      fs.writeFileSync(manifestFile, JSON.stringify(manifest));
+    `);
+    write(path.join(f.packages[side], "app.js"), String.raw`
+      const fs = require('node:fs');
+      const path = require('node:path');
+      const { createLoader, from } = require(${JSON.stringify(path.join(repository, "scripts/tests/helpers.cjs"))});
+      const load = createLoader({
+        resolve(id, { filename, load, localRequire }) {
+          if (id === 'mcsmanager-common') return Object.assign({}, ...[
+            'plugin_manifest', 'plugin_contract', 'plugin_overrides', 'plugin_lifecycle',
+            'plugin_revision', 'runtime_paths', 'plugin_modules', 'plugin_watch', 'plugin_npm', 'process_restart'
+          ].map(name => load('core/common/src/' + name + '.ts')));
+          const target = path.resolve(path.dirname(filename), id) + '.ts';
+          return id.startsWith('.') && fs.existsSync(target) ? load(target) : localRequire(id);
+        }
+      });
+      const { Context } = from(${JSON.stringify(side)})('cordis');
+      const ctx = new Context();
+      const loader = load(${JSON.stringify(side === "panel" ? "core/panel/src/app/plugin/loader.ts" : "core/daemon/src/plugin/loader.ts")}, { './context': { ctx } });
+      const report = type => fs.appendFileSync(${JSON.stringify(path.join(f.root, "events.jsonl"))}, JSON.stringify({
+        type, side: ${JSON.stringify(side)}, pid: process.pid,
+        version: JSON.parse(fs.readFileSync(path.join(process.env.EPANEL_PACKAGE_ROOT, 'package.json'))).version,
+        packageRoot: process.env.EPANEL_PACKAGE_ROOT, restarted: process.env.EPANEL_RESTARTED === '1'
+      }) + '\n');
+      process.on('SIGTERM', async () => { await ctx.stop(); await ctx.plugins.waitForDisposal(); process.exit(0); });
+      async function main() {
+        await loader[${JSON.stringify(side === "panel" ? "loadPanelPlugins" : "loadDaemonPlugins")} ]();
+        await ctx.start();
+        report('runtime-start');
+        ctx.setInterval(() => {
+          if (!fs.existsSync(${JSON.stringify(trigger)})) return;
+          fs.unlinkSync(${JSON.stringify(trigger)});
+          const reloadAfter = new Promise(resolve => {
+            const timer = setInterval(() => {
+              if (fs.existsSync(${JSON.stringify(release)})) { clearInterval(timer); resolve(); }
+            }, 20);
+          });
+          void ctx.plugins.runtime.update({ version: '2.0.0', reloadAfter }).then(record => {
+            if (record.version !== '2.0.0' || record.restartRequired) throw new Error('Runtime update was not scheduled');
+            report('runtime-installed');
+          }).catch(error => { console.error(error); process.exit(1); });
+        }, 20);
+        process.send({ type: 'elementspanel:ready' });
+      }
+      main().catch(error => { console.error(error); process.exit(1); });
+    `);
+    const command = execute(f, path.join(f.packages[side], "bin.cjs"), ["start", "--cwd", f.project], f.root, { ...process.env, npm_execpath: npmCLI });
+    const starts = () => f.events().filter((event) => event.type === "runtime-start");
+    await until(() => starts().length === 1);
+    write(trigger, "update");
+    await until(() => f.events().some((event) => event.type === "runtime-installed"));
+    assert.equal(starts().length, 1, "the old process stays alive while the reply is pending");
+    write(release, "flushed");
+    await until(() => starts().length === 2);
+    assert.equal(starts()[1].version, "2.0.0");
+    assert.equal(starts()[1].packageRoot, replacement);
+    assert.equal(starts()[1].restarted, true);
+    assert.notEqual(starts()[1].pid, starts()[0].pid);
+    command.child.kill("SIGTERM");
+    const result = await command.closed;
+    assert.equal(result.code, 0, result.output);
+  });
+}
+
 test("daemon process restarts retain real instance PIDs, pipes, output and counters", async (t) => {
   const f = runtimeFixture(t);
   const log = path.join(f.root, "events.jsonl");

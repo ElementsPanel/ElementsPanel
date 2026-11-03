@@ -332,12 +332,14 @@ test("a revision changes when a nested module changes, and public assets never r
     { metadata: { id: "test" }, assetDirectory: "test", frontendDirectory: directory, revision }
   ];
   let poll, dispose;
+  let version = "1.0.0";
   const serve = load("plugins/server/panel/src/backend/plugin_assets.ts", {
     "koa-static": (root) => async (request) => {
       request.body = root;
     },
     "koa-mount": (prefix, middleware) => middleware
   }).pluginAssets({
+    globals: { get: () => version },
     plugins: { frontendManifest: () => entries },
     setInterval(fn) {
       poll = fn;
@@ -360,6 +362,12 @@ test("a revision changes when a nested module changes, and public assets never r
   const events = request("/plugins/events");
   await serve(events, () => {});
   const initial = events.body.read().toString();
+  assert.equal(JSON.parse(initial.slice(6)).version, "1.0.0");
+  version = "2.0.0";
+  poll();
+  const updated = events.body.read().toString();
+  assert.equal(JSON.parse(updated.slice(6)).version, "2.0.0");
+  assert.notEqual(JSON.parse(updated.slice(6)).revision, JSON.parse(initial.slice(6)).revision);
   entries.length = 0;
   poll();
   assert.notEqual(events.body.read().toString(), initial);

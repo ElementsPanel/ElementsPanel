@@ -4,6 +4,10 @@ import {
   packagePluginRoots,
   developmentRuntime,
   installNpmPlugin,
+  npmRuntimePackage,
+  latestNpmRuntimeVersion,
+  updateNpmRuntime,
+  canRestartProcess,
   uninstallNpmPlugin,
   isEssentialNpmPlugin,
   forgetPluginModules,
@@ -125,8 +129,26 @@ function discoverPanelPlugins(options: DiscoverPluginsOptions) {
 /** Exposes the loader's own registry without pulling it into a plugin bundle. */
 function ensurePanelPluginService() {
   if (ctx.get("plugins")) return;
+  const runtime = npmRuntimePackage("panel");
   ctx.provide("plugins", undefined, true);
   ctx.set("plugins", {
+    runtime: {
+      get installed() {
+        return runtime ? npmRuntimePackage("panel") ?? null : null;
+      },
+      async check() {
+        if (!runtime || !canRestartProcess()) return null;
+        return { ...runtime, latestVersion: await latestNpmRuntimeVersion("panel") };
+      },
+      update: (options) =>
+        change(async () => {
+          if (!runtime || !canRestartProcess())
+            throw new Error("Panel updates require an npm installation managed by the launcher.");
+          if (options.reloadAfter) deferRestartUntil(options.reloadAfter);
+          const record = await updateNpmRuntime({ side: "panel", version: options.version });
+          return { ...record, restartRequired: !restartPanelProcess() };
+        })
+    },
     get restartPending() {
       return isProcessRestartPending(ctx);
     },
@@ -159,6 +181,13 @@ function ensurePanelPluginService() {
 function deferRestartUntil(gate: Promise<void>) {
   reloadGates.add(gate);
   void gate.finally(() => reloadGates.delete(gate)).catch(() => {});
+}
+
+function restartPanelProcess() {
+  return requestProcessRestart(ctx, settle, async () => {
+    while (reloadGates.size) await Promise.all([...reloadGates]);
+    await change(async () => {});
+  });
 }
 
 /**
@@ -310,10 +339,7 @@ async function reconcilePlugins() {
       if (!plugin.entry) throw new Error(`Missing essential plugin entry: ${plugin.manifest.id}`);
     }
     for (const running of requiresRestart) running.restartRequired = true;
-    requestProcessRestart(ctx, settle, async () => {
-      while (reloadGates.size) await Promise.all([...reloadGates]);
-      await change(async () => {});
-    });
+    restartPanelProcess();
     return loaded;
   }
   const removed: (typeof loaded)[number][] = [];

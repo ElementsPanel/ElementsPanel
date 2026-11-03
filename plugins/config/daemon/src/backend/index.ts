@@ -95,7 +95,20 @@ export function apply(ctx: DaemonPluginContext) {
   });
 
   ctx.protocol.on("plugin/capabilities", (routerCtx) => {
-    ctx.protocol.response(routerCtx, { api: PLUGIN_API_VERSION });
+    ctx.protocol.response(routerCtx, {
+      api: PLUGIN_API_VERSION,
+      restarting: ctx.plugins.restartPending === true,
+      runtimeUpdates: Boolean(ctx.plugins.runtime),
+      runtime: ctx.plugins.runtime?.installed ?? null
+    });
+  });
+
+  ctx.protocol.on("runtime/check", async (routerCtx) => {
+    try {
+      ctx.protocol.response(routerCtx, (await ctx.plugins.runtime?.check()) ?? null);
+    } catch (error: any) {
+      ctx.protocol.responseError(routerCtx, error);
+    }
   });
 
   ctx.protocol.on("plugin/list", (routerCtx) => {
@@ -134,7 +147,11 @@ export function apply(ctx: DaemonPluginContext) {
   // A plugin installed from the market is an npm dependency of the daemon's
   // installation project. npm runs on the machine that will load the plugin, so
   // the panel only names the package and the version.
-  ctx.protocol.on("plugin/npm/install", async (routerCtx, data) => {
+  async function installPackage(
+    routerCtx: Parameters<typeof ctx.protocol.response>[0],
+    data: unknown,
+    runtime = false
+  ) {
     const protocol = ctx.protocol;
     let resume!: () => void;
     const reloadAfter = new Promise<void>((resolve) => {
@@ -147,12 +164,17 @@ export function apply(ctx: DaemonPluginContext) {
         pluginId?: unknown;
         version?: unknown;
       };
-      const record = await ctx.plugins.install({
-        name: String(payload.name ?? ""),
-        pluginId: payload.pluginId ? String(payload.pluginId) : undefined,
-        version: payload.version ? String(payload.version) : undefined,
-        reloadAfter
-      });
+      const record = runtime
+        ? await ctx.plugins.runtime!.update({
+            version: String(payload.version ?? ""),
+            reloadAfter
+          })
+        : await ctx.plugins.install({
+            name: String(payload.name ?? ""),
+            pluginId: payload.pluginId ? String(payload.pluginId) : undefined,
+            version: payload.version ? String(payload.version) : undefined,
+            reloadAfter
+          });
       respond = () => protocol.response(routerCtx, record);
     } catch (error: any) {
       respond = () => protocol.responseError(routerCtx, error);
@@ -183,7 +205,10 @@ export function apply(ctx: DaemonPluginContext) {
         setImmediate(resume);
       }
     }
-  });
+  }
+
+  ctx.protocol.on("plugin/npm/install", (routerCtx, data) => installPackage(routerCtx, data));
+  ctx.protocol.on("runtime/update", (routerCtx, data) => installPackage(routerCtx, data, true));
 
   ctx.protocol.on("plugin/npm/uninstall", async (routerCtx, data) => {
     try {

@@ -709,6 +709,7 @@ export function watchPluginChanges(): () => void {
   if (import.meta.env.DEV || typeof EventSource === "undefined") return () => {};
   const events = new EventSource(new URL("plugins/events", document.baseURI).href);
   let revision = "";
+  let version = "";
   let stopped = false;
   let retry: ReturnType<typeof setTimeout> | undefined;
   const synchronize = () => {
@@ -720,10 +721,24 @@ export function watchPluginChanges(): () => void {
   };
   events.onmessage = (event) => {
     let next: string;
+    let nextVersion: string | undefined;
     try {
-      next = JSON.parse(event.data).revision;
+      const payload = JSON.parse(event.data);
+      next = payload.revision;
+      nextVersion = payload.version;
     } catch {
       return;
+    }
+    if (stopped) return;
+    if (typeof nextVersion === "string" && nextVersion && nextVersion !== "Unknown") {
+      if (version && version !== nextVersion) {
+        stopped = true;
+        if (retry) clearTimeout(retry);
+        events.close();
+        window.location.reload();
+        return;
+      }
+      version = nextVersion;
     }
     if (typeof next !== "string" || next === revision || stopped) return;
     revision = next;

@@ -101,5 +101,7 @@
   "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "{name} güncelleniyor ({completed}/{total})",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "Şu hedeflerde güncelleme başarısız oldu: {targets}",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "Hedefler ve mevcut sürümler",
-  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "Denetlenen tüm eklentiler güncel."
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "Denetlenen tüm bileşenler güncel",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_COMPONENT": "Bileşen",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_CHECK_FAILED": "Bazı güncellemeler denetlenemedi. Lütfen daha sonra tekrar deneyin."
 }

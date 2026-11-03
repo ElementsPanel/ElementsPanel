@@ -101,5 +101,7 @@
   "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "{name} を更新中（{completed}/{total}）",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "次の対象の更新に失敗しました：{targets}",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "更新対象と現在のバージョン",
-  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "確認済みのプラグインはすべて最新です。"
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "確認済みのコンポーネントはすべて最新です",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_COMPONENT": "コンポーネント",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_CHECK_FAILED": "一部の更新を確認できませんでした。後でもう一度お試しください。"
 }

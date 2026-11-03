@@ -1,4 +1,4 @@
-import type { PluginChangeResult } from "mcsmanager-common";
+import type { NpmRuntimeUpdateService, PluginChangeResult } from "mcsmanager-common";
 import { Context } from "cordis";
 import type Koa from "koa";
 import type Router from "@koa/router";
@@ -411,6 +411,7 @@ export interface DaemonFilesService {
 
 /** What is installed, what is running, and the switch that decides. */
 export interface DaemonPluginsService {
+  readonly runtime?: NpmRuntimeUpdateService;
   readonly restartPending?: boolean;
   waitForDisposal(): Promise<void>;
   readonly loaded: readonly DaemonPluginEntry[];

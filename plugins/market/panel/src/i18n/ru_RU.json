@@ -101,5 +101,7 @@
   "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "Обновление {name} ({completed}/{total})",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "Не удалось обновить на: {targets}",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "Цели и текущие версии",
-  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "Все проверенные плагины обновлены до последней версии."
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "Все проверенные компоненты обновлены",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_COMPONENT": "Компонент",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_CHECK_FAILED": "Не удалось проверить некоторые обновления. Повторите попытку позже."
 }

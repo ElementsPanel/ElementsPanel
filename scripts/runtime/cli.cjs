@@ -217,7 +217,23 @@ async function startWorkers(plan, options = {}) {
   process.stdin.on("data", onInput);
   process.stdin.resume();
 
-  const startWorker = (worker, restarted = false) => {
+  const startWorker = async (worker, restarted = false) => {
+    if (restarted) {
+      const name = `@elementspanel/${worker.side}`;
+      const manifest = JSON.parse(fs.readFileSync(path.join(plan.project, "package.json"), "utf8"));
+      if (manifest.dependencies?.[name]) {
+        const projectRequire = createRequire(path.join(plan.project, "package.json"));
+        // npm can move the runtime between nested and hoisted node_modules.
+        // Inspect paths afresh instead of reusing Node's cached resolution.
+        const filename = projectRequire.resolve
+          .paths(name)
+          .map((directory) => path.join(directory, name, "package.json"))
+          .find((filename) => fs.existsSync(filename));
+        if (!filename) throw new Error(`Missing updated runtime package: ${name}.`);
+        worker.packageRoot = path.dirname(fs.realpathSync(filename));
+        validateRuntime(worker.packageRoot, worker.side, plan.project, worker.directory);
+      }
+    }
     const host = instanceHosts.get(worker);
     let environment = workerEnvironments.get(worker);
     if (!environment) {

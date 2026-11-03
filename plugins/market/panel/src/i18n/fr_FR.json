@@ -101,5 +101,7 @@
   "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "Mise à jour de {name} ({completed}/{total})",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "Échec de la mise à jour sur : {targets}",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "Cibles et versions actuelles",
-  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "Tous les plugins vérifiés sont à jour."
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "Tous les composants vérifiés sont à jour",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_COMPONENT": "Composant",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_CHECK_FAILED": "Certaines mises à jour n’ont pas pu être vérifiées. Veuillez réessayer plus tard."
 }

@@ -201,6 +201,8 @@ test("detail API requires admin and a plugin id before contacting the market", a
   assert.equal((await request({}, 1, "get /plugin/updates")).status, 403);
   assert.equal((await request({}, 1, "post /plugin/update")).status, 403);
   assert.equal((await request({}, 10, "post /plugin/update")).status, 400);
+  assert.equal((await request({}, 1, "post /runtime/update")).status, 403);
+  assert.equal((await request({}, 10, "post /runtime/update")).status, 400);
   assert.equal(calls.length, 0);
 });
 
@@ -836,6 +838,30 @@ test("one-click updates keep per-target versions, isolate failures and never exe
   assert.equal(operations.updateProgress.value.completed, 2);
   assert.equal(operations.applyingChanges.value, false);
   assert.equal(operations.updatingPlugins.value, false);
+});
+
+test("mixed update batches finish plugins and daemons before replacing the panel runtime", async () => {
+  const calls = [];
+  const api = (kind) => () => ({ execute: async ({ data }) => {
+    calls.push({ kind, data });
+    return { value: { pluginId: data.pluginId || data.side, updatedTargets: [], failedTargets: [], restartRequired: false } };
+  } });
+  const operations = load("plugins/market/panel/src/operations.ts", {
+    vue,
+    "@/plugin/context": { ctx: { plugins: { refresh: async () => {} } } },
+    "./api": { updateMarketPlugin: api("plugin"), updateMarketRuntime: api("runtime") }
+  });
+  const target = { label: "", currentVersion: "1.0.0" };
+  await operations.updateMarketPlugins([
+    { pluginId: "@elementspanel/panel", runtime: "panel", version: "2.0.0", targets: [target] },
+    { pluginId: "@elementspanel/daemon", runtime: "daemon", version: "3.0.0", targets: [{ ...target, daemonId: "node-1" }] },
+    { pluginId: "sample", version: "4.0.0", targets: [target] }
+  ]);
+  assert.deepEqual(calls, [
+    { kind: "plugin", data: { pluginId: "sample", version: "4.0.0", panel: true, daemonIds: [] } },
+    { kind: "runtime", data: { side: "daemon", version: "3.0.0", daemonIds: ["node-1"] } },
+    { kind: "runtime", data: { side: "panel", version: "2.0.0", daemonIds: [] } }
+  ]);
 });
 
 test("market target changes preserve the routed page, search and active tab while refreshing its content", async () => {

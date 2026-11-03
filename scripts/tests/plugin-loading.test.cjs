@@ -23,7 +23,7 @@ const load = createLoader({
   }
 });
 
-function fixture(t) {
+function fixture(t, globals = {}) {
   const ctx = new Context();
   const manifest = [];
   const modules = new Map();
@@ -89,6 +89,7 @@ function fixture(t) {
       "virtual:panel-plugins": { panelPluginModules: [] }
     },
     {
+      ...globals,
       fetch: async (url, options) => {
         requests.push({ url, options });
         return { ok: true, json: async () => manifest };
@@ -117,6 +118,30 @@ function fixture(t) {
     start: loader.bootstrapPanelFrontendPlugins
   };
 }
+
+test("a changed panel runtime version reloads the browser after the event stream reconnects", async (t) => {
+  let events;
+  let reloads = 0;
+  const f = fixture(t, {
+    EventSource: class {
+      constructor() { events = this; }
+      close() { this.closed = true; }
+    },
+    window: { location: { reload() { reloads++; } }, dispatchEvent() {} }
+  });
+  await f.start();
+  const stop = f.loader.watchPluginChanges();
+  events.onmessage({ data: JSON.stringify({ revision: "one", version: "1.0.0" }) });
+  await settle();
+  events.onmessage({ data: JSON.stringify({ revision: "one", version: "1.0.0" }) });
+  assert.equal(reloads, 0, "the same process version does not reload the browser");
+  events.onmessage({ data: JSON.stringify({ revision: "two", version: "2.0.0" }) });
+  assert.equal(reloads, 1);
+  stop();
+  events.onmessage({ data: JSON.stringify({ revision: "three", version: "3.0.0" }) });
+  assert.equal(reloads, 1, "a disposed subscriber cannot reload the browser");
+  assert.equal(events.closed, true);
+});
 
 test("startup discovers once and preloads all assets while foundation initialization waits", async (t) => {
   const f = fixture(t);

@@ -101,5 +101,7 @@
   "TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS": "Actualizando {name} ({completed}/{total})",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_FAILED": "La actualización falló en: {targets}",
   "TXT_CODE_PLUGIN_MARKET_UPDATE_TARGETS": "Destinos y versiones actuales",
-  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "Todos los complementos comprobados están actualizados."
+  "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE": "Todos los componentes comprobados están actualizados",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_COMPONENT": "Componente",
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_CHECK_FAILED": "No se pudieron comprobar algunas actualizaciones. Inténtalo de nuevo más tarde."
 }

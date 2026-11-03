@@ -142,6 +142,14 @@ export const updateMarketPlugin = useDefineApi<
   method: "POST"
 });
 
+export const updateMarketRuntime = useDefineApi<
+  { data: { side: PluginSide; version: string; daemonIds: string[] } },
+  PluginUpdateResult
+>({
+  url: "/api/market/runtime/update",
+  method: "POST"
+});
+
 /** One daemon a plugin with a daemon half can be installed on. */
 export interface MarketNode {
   daemonId: string;

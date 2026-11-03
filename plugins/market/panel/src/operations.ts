@@ -4,6 +4,7 @@ import {
   installMarketPlugin,
   uninstallMarketPlugin,
   updateMarketPlugin,
+  updateMarketRuntime,
   type MarketPlugin
 } from "./api";
 import type { PluginUpdate, PluginUpdateResult } from "./updates";
@@ -48,26 +49,39 @@ export async function updateMarketPlugins(updates: readonly PluginUpdate[]) {
   applyingChanges.value = true;
   updatingPlugins.value = true;
   updateResults.value = [];
-  const pending = updates.map((update) => ({
-    ...update,
-    targets: update.targets.map((target) => ({ ...target }))
-  }));
+  const pending = updates
+    .map((update) => ({
+      ...update,
+      targets: update.targets.map((target) => ({ ...target }))
+    }))
+    .sort(
+      (a, b) =>
+        (a.runtime === "panel" ? 2 : a.runtime ? 1 : 0) -
+        (b.runtime === "panel" ? 2 : b.runtime ? 1 : 0)
+    );
   updateProgress.value = { completed: 0, total: pending.length, name: "" };
   try {
     for (const update of pending) {
       updateProgress.value.name = update.displayName;
       try {
-        const response = await updateMarketPlugin().execute({
-          timeout: (update.targets.length + 1) * 11 * 60 * 1000,
-          data: {
-            pluginId: update.pluginId,
-            version: update.version,
-            panel: update.targets.some((target) => !target.daemonId),
-            daemonIds: update.targets.flatMap((target) =>
-              target.daemonId ? [target.daemonId] : []
-            )
-          }
-        });
+        const timeout = (update.targets.length + 1) * 11 * 60 * 1000;
+        const daemonIds = update.targets.flatMap((target) =>
+          target.daemonId ? [target.daemonId] : []
+        );
+        const response = update.runtime
+          ? await updateMarketRuntime().execute({
+              timeout,
+              data: { side: update.runtime, version: update.version, daemonIds }
+            })
+          : await updateMarketPlugin().execute({
+              timeout,
+              data: {
+                pluginId: update.pluginId,
+                version: update.version,
+                panel: update.targets.some((target) => !target.daemonId),
+                daemonIds
+              }
+            });
         if (!response.value) throw new Error("Empty plugin update response");
         updateResults.value = [...updateResults.value, { update, result: response.value }];
         notifyInstalled(update.pluginId, response.value.installedVersion);

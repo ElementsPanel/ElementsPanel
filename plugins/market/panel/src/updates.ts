@@ -6,6 +6,8 @@ export interface PluginUpdateTarget {
 }
 
 export interface PluginUpdate {
+  /** Runtime packages use the same target selection and progress as plugins. */
+  runtime?: "panel" | "daemon";
   pluginId: string;
   name: string;
   displayName: string;
@@ -15,6 +17,7 @@ export interface PluginUpdate {
 
 export interface PluginUpdates {
   plugins: PluginUpdate[];
+  checkFailed?: boolean;
   uncheckedNodes: Array<{ daemonId: string; label: string }>;
 }
 

@@ -94,7 +94,8 @@ test("plugin management npm routes require an administrator and use the plugin l
   assert.deepEqual(calls.pop(), { remove: "sample" });
 });
 
-test("daemon npm replies drain before the foundation reload is released", async () => {
+for (const event of ["plugin/npm/install", "runtime/update"]) {
+test(`${event}: daemon replies drain before the process restart is released`, async () => {
   const load = createLoader({ host: "daemon" });
   const handlers = new Map();
   const connection = Object.assign(new EventEmitter(), { readyState: "open" });
@@ -110,6 +111,12 @@ test("daemon npm replies drain before the foundation reload is released", async 
     plugin() {},
     get: () => ({}),
     plugins: {
+      runtime: {
+        async update({ reloadAfter }) {
+          reloadAfter.then(() => { released = true; });
+          return { name: "@elementspanel/daemon", version: "2.0.0", result: { application: "pending" } };
+        }
+      },
       async install({ reloadAfter }) {
         reloadAfter.then(() => {
           released = true;
@@ -128,7 +135,7 @@ test("daemon npm replies drain before the foundation reload is released", async 
       }
     }
   });
-  await handlers.get("plugin/npm/install")(
+  await handlers.get(event)(
     { socket: { conn: connection } },
     { name: "epanel-plugin-server" }
   );
@@ -142,7 +149,7 @@ test("daemon npm replies drain before the foundation reload is released", async 
   assert.equal(connection.listenerCount("close"), 0);
   buffered = false;
   released = false;
-  await handlers.get("plugin/npm/install")(
+  await handlers.get(event)(
     { socket: { conn: connection } },
     { name: "epanel-plugin-server" }
   );
@@ -151,3 +158,4 @@ test("daemon npm replies drain before the foundation reload is released", async 
   assert.equal(connection.listenerCount("drain"), 0);
   assert.equal(connection.listenerCount("close"), 0);
 });
+}
