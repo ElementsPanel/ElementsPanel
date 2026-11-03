@@ -1,4 +1,9 @@
-import type { NpmRuntimeUpdateService, PluginChangeResult } from "mcsmanager-common";
+import type {
+  NpmRuntimeUpdateService,
+  NpmUpdateBatchOptions,
+  NpmUpdateBatchResult,
+  PluginChangeResult
+} from "mcsmanager-common";
 import { Context } from "cordis";
 import type Koa from "koa";
 import type Router from "@koa/router";
@@ -430,6 +435,8 @@ export interface DaemonPluginsService {
     /** Keep the reply connection alive until the caller has sent its response. */
     reloadAfter?: Promise<void>;
   }): Promise<DaemonPluginRecord>;
+  /** Install every package without reloading, then restart the entire daemon once. */
+  updateBatch(options: NpmUpdateBatchOptions): Promise<NpmUpdateBatchResult>;
   /** Unloads and removes an installed daemon plugin package. */
   remove(id: string): Promise<void>;
   configure(id: string, config: Record<string, unknown>): Promise<DaemonPluginRecord>;

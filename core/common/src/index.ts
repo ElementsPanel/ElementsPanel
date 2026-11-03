@@ -69,6 +69,10 @@ export type {
   NpmRuntimeRecord,
   NpmRuntimeUpdate,
   NpmRuntimeUpdateService,
+  NpmPackageUpdate,
+  NpmPackageUpdateResult,
+  NpmUpdateBatchOptions,
+  NpmUpdateBatchResult,
   NpmPluginSide
 } from "./plugin_npm";
 

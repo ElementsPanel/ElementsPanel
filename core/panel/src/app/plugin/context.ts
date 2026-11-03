@@ -1,4 +1,9 @@
-import type { NpmRuntimeUpdateService, PluginChangeResult } from "mcsmanager-common";
+import type {
+  NpmRuntimeUpdateService,
+  NpmUpdateBatchOptions,
+  NpmUpdateBatchResult,
+  PluginChangeResult
+} from "mcsmanager-common";
 import type Router from "@koa/router";
 import { Context } from "cordis";
 import type i18next from "i18next";
@@ -365,6 +370,8 @@ export interface PanelPluginsService {
     /** Delay a required process restart until the HTTP response is flushed. */
     reloadAfter?: Promise<void>;
   }): Promise<PanelPluginRecord>;
+  /** Install every package without reloading, then restart the entire panel once. */
+  updateBatch(options: NpmUpdateBatchOptions): Promise<NpmUpdateBatchResult>;
   /** Unloads and removes an installed panel plugin package. */
   remove(id: string): Promise<void>;
   configure(id: string, config: Record<string, unknown>): Promise<PanelPluginRecord>;

@@ -31,14 +31,19 @@ const load = createLoader({
     return id.startsWith(".") && fs.existsSync(target) ? load(target) : localRequire(id);
   }
 });
-function fixture(t, side = "panel") {
+function fixture(t, side = "panel", commonOverrides) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "elements-plugin-runtime-"));
   const previous = process.cwd();
   process.chdir(directory);
   const ctx = new Context();
   const loader = load(
     side === "panel" ? "core/panel/src/app/plugin/loader.ts" : "core/daemon/src/plugin/loader.ts",
-    { "./context": { ctx } }
+    {
+      "./context": { ctx },
+      ...(commonOverrides ? { "mcsmanager-common": Object.assign(
+        {}, ...commonNames.map((name) => load(`core/common/src/${name}.ts`)), commonOverrides
+      ) } : {})
+    }
   );
   t.after(async () => {
     await ctx.stop();
@@ -75,6 +80,124 @@ function fixture(t, side = "panel") {
   };
 }
 for (const side of ["panel", "daemon"]) {
+  test(`${side}: mixed npm batches retain all running plugins and restart once after the reply`, async (t) => {
+    const calls = [];
+    const npmStarted = deferred();
+    const npmContinue = deferred();
+    const replied = deferred();
+    let restartReady;
+    let f;
+    const source = (id, version) => `exports.apply=ctx=>{
+      ctx.set("${id}Value",${JSON.stringify(version)});
+      ctx.on("dispose",()=>ctx.root.testEvents.push("dispose:${id}"));
+    };`;
+    const write = (id, version = "1.0.0") => installNpmPlugin(packageRoot, side, id, {
+      version, source: source(id, version)
+    });
+    f = fixture(t, side, {
+      canRestartProcess: () => true,
+      requestProcessRestart: (_ctx, _settle, ready) => {
+        calls.push("restart");
+        restartReady = ready;
+        return true;
+      },
+      async installNpmPlugin(update) {
+        calls.push(update.pluginId);
+        if (update.pluginId === "sample") {
+          npmStarted.resolve();
+          await npmContinue.promise;
+        }
+        if (update.pluginId === "broken") throw new Error("npm failed");
+        return { ...write(update.pluginId, update.version), pluginId: update.pluginId, version: update.version };
+      },
+      async updateNpmRuntime(update) {
+        calls.push("runtime");
+        assert.deepEqual(f.ctx.testEvents, []);
+        assert.equal(f.ctx.sampleValue, "1.0.0");
+        return { name: `@elementspanel/${side}`, side, version: update.version };
+      }
+    });
+    const previousRoot = process.env.EPANEL_PACKAGE_ROOT;
+    const packageRoot = path.join(f.directory, "node_modules", "@elementspanel", side);
+    process.env.EPANEL_PACKAGE_ROOT = packageRoot;
+    t.after(() => {
+      if (previousRoot === undefined) delete process.env.EPANEL_PACKAGE_ROOT;
+      else process.env.EPANEL_PACKAGE_ROOT = previousRoot;
+    });
+    f.ctx.testEvents = [];
+    ["sample", "broken", "server"].forEach((id) => write(id));
+    await f.start();
+    await f.ctx.start();
+    const work = f.ctx.plugins.updateBatch({
+      reloadAfter: replied.promise,
+      updates: [
+        { name: `@elementspanel/${side}`, version: "2.0.0", runtime: true },
+        ...["sample", "broken", "server"].map((pluginId) => ({
+          pluginId, name: `@elementspanel/epanel-plugin-${pluginId}`, version: "2.0.0"
+        }))
+      ]
+    });
+    await npmStarted.promise;
+    const watcherReload = f.reload();
+    assert.equal(f.ctx.sampleValue, "1.0.0");
+    npmContinue.resolve();
+    const result = await work;
+    await watcherReload;
+    assert.deepEqual(calls, ["sample", "broken", "server", "runtime", "restart"]);
+    assert.equal(result.results.filter((record) => record.error).length, 1);
+    assert.match(result.results.find((record) => record.pluginId === "broken").error, /npm failed/);
+    assert.equal(result.restartRequired, false);
+    assert.equal(f.ctx.sampleValue, "1.0.0");
+    assert.equal(f.ctx.serverValue, "1.0.0");
+    assert.deepEqual(f.ctx.testEvents, [], "neither npm installs nor the queued watcher reload dispose running plugins");
+    assert.equal(f.inventory().find((plugin) => plugin.id === "sample").version, "2.0.0");
+    let ready = false;
+    const restarting = restartReady().then(() => { ready = true; });
+    await settle();
+    assert.equal(ready, false);
+    replied.resolve();
+    await restarting;
+    assert.equal(ready, true);
+  });
+
+  test(`${side}: failed batches do not restart and unsupervised updates require one manual restart`, async (t) => {
+    let fail = true;
+    let restarts = 0;
+    const write = (version) => installNpmPlugin(packageRoot, side, "sample", {
+      version, source: `exports.apply=ctx=>ctx.set("sampleValue",${JSON.stringify(version)});`
+    });
+    const f = fixture(t, side, {
+      async installNpmPlugin(update) {
+        if (fail) throw new Error("npm failed");
+        return { ...write(update.version), pluginId: "sample", version: update.version };
+      },
+      requestProcessRestart: () => { restarts++; return false; }
+    });
+    const previousRoot = process.env.EPANEL_PACKAGE_ROOT;
+    const packageRoot = path.join(f.directory, "node_modules", "@elementspanel", side);
+    process.env.EPANEL_PACKAGE_ROOT = packageRoot;
+    t.after(() => {
+      if (previousRoot === undefined) delete process.env.EPANEL_PACKAGE_ROOT;
+      else process.env.EPANEL_PACKAGE_ROOT = previousRoot;
+    });
+    write("1.0.0");
+    await f.start();
+    const updates = [{ pluginId: "sample", name: "@elementspanel/epanel-plugin-sample", version: "2.0.0" }];
+    const failed = await f.ctx.plugins.updateBatch({ updates });
+    assert.ok(failed.results[0].error);
+    assert.equal(failed.restartRequired, false);
+    assert.equal(restarts, 0);
+    write("1.1.0");
+    await f.reload();
+    assert.equal(f.ctx.sampleValue, "1.1.0", "failed batches preserve ordinary reload behavior");
+    fail = false;
+    const installed = await f.ctx.plugins.updateBatch({ updates });
+    assert.equal(installed.restartRequired, true);
+    assert.equal(restarts, 1);
+    await f.reload();
+    assert.equal(f.ctx.sampleValue, "1.1.0", "updated code waits for a full manual restart");
+  });
+
   test(`${side}: core updates retain the running graph until a process restart`, async (t) => {
     const f = fixture(t, side);
     const previousRoot = process.env.EPANEL_PACKAGE_ROOT;

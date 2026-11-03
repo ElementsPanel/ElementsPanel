@@ -28,3 +28,15 @@ export interface PluginUpdateResult {
   failedTargets: PluginUpdateTarget[];
   restartRequired: boolean;
 }
+
+export interface PluginUpdateRequest {
+  pluginId: string;
+  version: string;
+  runtime?: "panel" | "daemon";
+  panel: boolean;
+  daemonIds: string[];
+}
+
+export interface PluginUpdateBatchResult {
+  results: Array<{ pluginId: string; result?: PluginUpdateResult; error?: string }>;
+}

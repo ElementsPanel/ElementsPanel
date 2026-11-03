@@ -26,6 +26,8 @@ import {
   trackPluginDisposal,
   requestProcessRestart,
   isProcessRestartPending,
+  type NpmUpdateBatchOptions,
+  type NpmUpdateBatchResult,
   type PluginState,
   type PluginChangeResult,
   discoverPluginsFromRoots,
@@ -55,6 +57,8 @@ const unloading = new Set<string>();
 const codeRevisions = new Map<string, string>();
 const reloadGates = new Set<Promise<void>>();
 let watching = false;
+// Batch updates keep the entire running graph until the next process starts.
+let restartOnly = false;
 
 const ENTRY_FIELDS = ["panel", "backend", "main", "entry"];
 const ENTRY_CANDIDATES = [
@@ -159,6 +163,7 @@ function ensurePanelPluginService() {
     inventory: getPanelPluginInventory,
     setEnabled: setPanelPluginEnabled,
     install: installPanelNpmPlugin,
+    updateBatch: updatePanelNpmBatch,
     remove: removePanelPlugin,
     configure: configurePanelPlugin,
     configuration: (id: string): PanelSettingsSchema => {
@@ -305,6 +310,7 @@ function backendRevision(plugin: DiscoveredPlugin) {
 }
 
 async function reconcilePlugins() {
+  if (restartOnly) return loaded;
   ensurePanelPluginService();
   const discovered = discoverPanelPlugins({
     entryFields: ENTRY_FIELDS,
@@ -393,6 +399,52 @@ export function installPanelNpmPlugin(options: {
     const result = changedRecord(record.pluginId);
     if (isProcessRestartPending(ctx)) result.result = { saved: true, application: "pending" };
     return result;
+  });
+}
+
+/** Finish all npm changes before requesting one full process restart. */
+export function updatePanelNpmBatch(options: NpmUpdateBatchOptions): Promise<NpmUpdateBatchResult> {
+  return change(async () => {
+    if (options.reloadAfter) deferRestartUntil(options.reloadAfter);
+    const results: NpmUpdateBatchResult["results"] = [];
+    let changed = false;
+    const updates = [...options.updates].sort((a, b) => Number(!!a.runtime) - Number(!!b.runtime));
+    for (const update of updates) {
+      try {
+        let version: string;
+        if (update.runtime) {
+          if (update.name !== "@elementspanel/panel" || !canRestartProcess())
+            throw new Error("Runtime updates require an npm installation managed by the launcher.");
+          version = (await updateNpmRuntime({ side: "panel", version: update.version })).version;
+        } else {
+          const previous = getPanelPluginInventory().find(
+            (plugin) => plugin.id === update.pluginId
+          );
+          if (!previous || previous.packageName !== update.name)
+            throw new Error("The plugin is not installed as the requested npm package.");
+          const record = await installNpmPlugin({
+            name: update.name,
+            pluginId: update.pluginId,
+            version: update.version,
+            side: "panel"
+          });
+          restartOnly = changed = true;
+          const preference = readPluginOverrides().plugins[record.pluginId]?.enabled;
+          if (!previous.enabled && preference === undefined)
+            writePluginOverride(record.pluginId, { enabled: true });
+          version = record.version;
+        }
+        restartOnly = changed = true;
+        results.push({ ...update, version });
+      } catch (error) {
+        logger.warn(`Failed to update npm package ${update.name}:`, error);
+        results.push({ ...update, error: String(error) });
+      }
+    }
+    return {
+      results,
+      restartRequired: changed && !restartPanelProcess()
+    };
   });
 }
 

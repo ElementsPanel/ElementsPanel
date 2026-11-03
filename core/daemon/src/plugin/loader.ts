@@ -22,6 +22,8 @@ import {
   trackPluginDisposal,
   requestProcessRestart,
   isProcessRestartPending,
+  type NpmUpdateBatchOptions,
+  type NpmUpdateBatchResult,
   type PluginState,
   type PluginChangeResult,
   discoverPluginsFromRoots,
@@ -49,6 +51,8 @@ const settle = trackPluginDisposal(ctx);
 const unloading = new Set<string>();
 const codeRevisions = new Map<string, string>();
 let watching = false;
+// Batch updates keep the entire running graph until the next process starts.
+let restartOnly = false;
 const reloadGates = new Set<Promise<void>>();
 
 const ENTRY_FIELDS = ["daemon", "backend", "main", "entry"];
@@ -129,6 +133,7 @@ function ensureDaemonPluginService() {
     inventory: getDaemonPluginInventory,
     setEnabled: setDaemonPluginEnabled,
     install: installDaemonNpmPlugin,
+    updateBatch: updateDaemonNpmBatch,
     remove: removeDaemonPlugin,
     configure: configureDaemonPlugin,
     configuration: (id: string): DaemonSettingsSchema => {
@@ -277,6 +282,7 @@ function backendRevision(plugin: DiscoveredPlugin) {
 }
 
 async function reconcilePlugins() {
+  if (restartOnly) return loaded;
   ensureDaemonPluginService();
   const discovered = discoverDaemonPlugins({
     entryFields: ENTRY_FIELDS,
@@ -366,6 +372,54 @@ export function installDaemonNpmPlugin(options: {
     const result = changedRecord(record.pluginId);
     if (isProcessRestartPending(ctx)) result.result = { saved: true, application: "pending" };
     return result;
+  });
+}
+
+/** Finish all npm changes before requesting one full process restart. */
+export function updateDaemonNpmBatch(
+  options: NpmUpdateBatchOptions
+): Promise<NpmUpdateBatchResult> {
+  return change(async () => {
+    if (options.reloadAfter) deferRestartUntil(options.reloadAfter);
+    const results: NpmUpdateBatchResult["results"] = [];
+    let changed = false;
+    const updates = [...options.updates].sort((a, b) => Number(!!a.runtime) - Number(!!b.runtime));
+    for (const update of updates) {
+      try {
+        let version: string;
+        if (update.runtime) {
+          if (update.name !== "@elementspanel/daemon" || !canRestartProcess())
+            throw new Error("Runtime updates require an npm installation managed by the launcher.");
+          version = (await updateNpmRuntime({ side: "daemon", version: update.version })).version;
+        } else {
+          const previous = getDaemonPluginInventory().find(
+            (plugin) => plugin.id === update.pluginId
+          );
+          if (!previous || previous.packageName !== update.name)
+            throw new Error("The plugin is not installed as the requested npm package.");
+          const record = await installNpmPlugin({
+            name: update.name,
+            pluginId: update.pluginId,
+            version: update.version,
+            side: "daemon"
+          });
+          restartOnly = changed = true;
+          const preference = readPluginOverrides().plugins[record.pluginId]?.enabled;
+          if (!previous.enabled && preference === undefined)
+            writePluginOverride(record.pluginId, { enabled: true });
+          version = record.version;
+        }
+        restartOnly = changed = true;
+        results.push({ ...update, version });
+      } catch (error) {
+        logger.warn(`Failed to update npm package ${update.name}:`, error);
+        results.push({ ...update, error: String(error) });
+      }
+    }
+    return {
+      results,
+      restartRequired: changed && !restartDaemonProcess()
+    };
   });
 }
 

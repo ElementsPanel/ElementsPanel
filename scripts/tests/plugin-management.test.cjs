@@ -94,7 +94,7 @@ test("plugin management npm routes require an administrator and use the plugin l
   assert.deepEqual(calls.pop(), { remove: "sample" });
 });
 
-for (const event of ["plugin/npm/install", "runtime/update"]) {
+for (const event of ["plugin/npm/install", "runtime/update", "plugin/npm/update-batch"]) {
 test(`${event}: daemon replies drain before the process restart is released`, async () => {
   const load = createLoader({ host: "daemon" });
   const handlers = new Map();
@@ -111,6 +111,10 @@ test(`${event}: daemon replies drain before the process restart is released`, as
     plugin() {},
     get: () => ({}),
     plugins: {
+      async updateBatch({ reloadAfter }) {
+        reloadAfter.then(() => { released = true; });
+        return { results: [], result: { application: "pending" }, restartRequired: false };
+      },
       runtime: {
         async update({ reloadAfter }) {
           reloadAfter.then(() => { released = true; });
@@ -137,7 +141,7 @@ test(`${event}: daemon replies drain before the process restart is released`, as
   });
   await handlers.get(event)(
     { socket: { conn: connection } },
-    { name: "epanel-plugin-server" }
+    { name: "epanel-plugin-server", updates: [{ name: "epanel-plugin-server", pluginId: "server", version: "2.0.0" }] }
   );
   assert.equal(packets[0].result.application, "pending");
   await settle();
@@ -151,7 +155,7 @@ test(`${event}: daemon replies drain before the process restart is released`, as
   released = false;
   await handlers.get(event)(
     { socket: { conn: connection } },
-    { name: "epanel-plugin-server" }
+    { name: "epanel-plugin-server", updates: [{ name: "epanel-plugin-server", pluginId: "server", version: "2.0.0" }] }
   );
   await settle();
   assert.equal(released, true, "an immediately flushed reply releases the reload without waiting");

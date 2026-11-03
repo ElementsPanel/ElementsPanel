@@ -208,6 +208,7 @@ defineExpose({ refresh, updateAll, updateCount, canUpdate, preparingTargets });
         {{ t("TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS", updateProgress) }}
       </div>
       <VProgressLinear
+        indeterminate
         :model-value="
           updateProgress.total ? (updateProgress.completed / updateProgress.total) * 100 : 0
         "

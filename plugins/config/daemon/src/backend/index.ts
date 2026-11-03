@@ -1,4 +1,4 @@
-import { PLUGIN_API_VERSION } from "mcsmanager-common";
+import { PLUGIN_API_VERSION, type NpmPackageUpdate } from "mcsmanager-common";
 import type { DaemonPluginContext } from "../../../../../core/daemon/src/plugin";
 import { localeMessages } from "../i18n";
 import { SettingsFormService } from "./settings";
@@ -98,6 +98,7 @@ export function apply(ctx: DaemonPluginContext) {
     ctx.protocol.response(routerCtx, {
       api: PLUGIN_API_VERSION,
       restarting: ctx.plugins.restartPending === true,
+      batchUpdates: typeof ctx.plugins.updateBatch === "function",
       runtimeUpdates: Boolean(ctx.plugins.runtime),
       runtime: ctx.plugins.runtime?.installed ?? null
     });
@@ -150,7 +151,7 @@ export function apply(ctx: DaemonPluginContext) {
   async function installPackage(
     routerCtx: Parameters<typeof ctx.protocol.response>[0],
     data: unknown,
-    runtime = false
+    mode: "plugin" | "runtime" | "batch" = "plugin"
   ) {
     const protocol = ctx.protocol;
     let resume!: () => void;
@@ -163,18 +164,36 @@ export function apply(ctx: DaemonPluginContext) {
         name?: unknown;
         pluginId?: unknown;
         version?: unknown;
+        updates?: NpmPackageUpdate[];
       };
-      const record = runtime
-        ? await ctx.plugins.runtime!.update({
-            version: String(payload.version ?? ""),
-            reloadAfter
-          })
-        : await ctx.plugins.install({
-            name: String(payload.name ?? ""),
-            pluginId: payload.pluginId ? String(payload.pluginId) : undefined,
-            version: payload.version ? String(payload.version) : undefined,
-            reloadAfter
-          });
+      if (
+        mode === "batch" &&
+        (!Array.isArray(payload.updates) ||
+          payload.updates.length > 2000 ||
+          payload.updates.some(
+            (update) =>
+              !update ||
+              typeof update.name !== "string" ||
+              typeof update.version !== "string" ||
+              (update.runtime !== undefined && typeof update.runtime !== "boolean") ||
+              (!update.runtime && typeof update.pluginId !== "string")
+          ))
+      )
+        throw new Error("Invalid npm update batch.");
+      const record =
+        mode === "batch"
+          ? await ctx.plugins.updateBatch({ updates: payload.updates!, reloadAfter })
+          : mode === "runtime"
+          ? await ctx.plugins.runtime!.update({
+              version: String(payload.version ?? ""),
+              reloadAfter
+            })
+          : await ctx.plugins.install({
+              name: String(payload.name ?? ""),
+              pluginId: payload.pluginId ? String(payload.pluginId) : undefined,
+              version: payload.version ? String(payload.version) : undefined,
+              reloadAfter
+            });
       respond = () => protocol.response(routerCtx, record);
     } catch (error: any) {
       respond = () => protocol.responseError(routerCtx, error);
@@ -208,7 +227,12 @@ export function apply(ctx: DaemonPluginContext) {
   }
 
   ctx.protocol.on("plugin/npm/install", (routerCtx, data) => installPackage(routerCtx, data));
-  ctx.protocol.on("runtime/update", (routerCtx, data) => installPackage(routerCtx, data, true));
+  ctx.protocol.on("runtime/update", (routerCtx, data) =>
+    installPackage(routerCtx, data, "runtime")
+  );
+  ctx.protocol.on("plugin/npm/update-batch", (routerCtx, data) =>
+    installPackage(routerCtx, data, "batch")
+  );
 
   ctx.protocol.on("plugin/npm/uninstall", async (routerCtx, data) => {
     try {

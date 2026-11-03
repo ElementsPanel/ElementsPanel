@@ -125,7 +125,7 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
           }
         ]
       };
-      return { data: detail };
+      return { data: state.details?.[decodeURIComponent(url.split("/").pop())] ?? detail };
     }
   };
 
@@ -159,6 +159,18 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
     },
     settingsForm: { declare() {} },
     plugins: {
+      deferRestartUntil: (gate) => { state.restartGate = gate; },
+      async updateBatch(options) {
+        state.panelBatch = options;
+        if (state.batchResult) return state.batchResult(options);
+        const results = [];
+        for (const update of options.updates) {
+          if (update.runtime) state.panelRuntime = { ...state.panelRuntime, version: update.version };
+          else await common.installNpmPlugin({ ...update, side: "panel" });
+          results.push(update);
+        }
+        return { results, restartRequired: false };
+      },
       runtime: {
         get installed() { return state.panelRuntime; },
         async check() {
@@ -473,6 +485,98 @@ test("daemon runtime updates recheck versions, isolate failures and only change 
   assert.equal(result.restartRequired, false);
   assert.deepEqual(env.rpcCalls.filter((call) => call.event === "runtime/update").map((call) => call.daemonId), ["node-1", "node-2"]);
   assert.equal(env.state.runtimeUpdate, undefined);
+});
+
+test("one-click batches send every selected package once per host and keep the panel reply alive", async (t) => {
+  const env = await fixture(t, { sides: ["panel", "daemon"], version: "2.0.0" });
+  await env.common.installNpmPlugin({ name: "epanel-plugin-sample", pluginId: "sample", version: "1.0.0" });
+  env.state.panelRuntime = { name: "@elementspanel/panel", side: "panel", version: "1.0.0" };
+  env.state.request = async ({ event, daemonId, payload }) => {
+    if (event === "plugin/list") return [{ id: "sample", packageName: "epanel-plugin-sample", version: daemonId === "node-3" ? "3.0.0" : "1.0.0" }];
+    if (event === "plugin/capabilities") return {
+      batchUpdates: true,
+      runtime: { name: "@elementspanel/daemon", side: "daemon", version: daemonId === "node-3" ? "3.0.0" : "1.0.0" }
+    };
+    assert.equal(event, "plugin/npm/update-batch", "the batch never uses per-package installation or reload RPCs");
+    assert.equal(env.state.panelBatch, undefined, "the panel runs after daemon requests finish");
+    return { results: payload.updates.map((update) => ({
+      ...update,
+      ...(daemonId === "node-1" && !update.runtime ? { error: "npm failed" } : {})
+    })), restartRequired: daemonId === "node-2" };
+  };
+  const updates = [
+    { pluginId: "sample", version: "2.0.0", panel: true, daemonIds: ["node-1", "node-2", "node-2", "node-3"] },
+    { pluginId: "@elementspanel/daemon@2.0.0", runtime: "daemon", version: "2.0.0", panel: false, daemonIds: ["node-1", "node-2", "node-3"] },
+    { pluginId: "@elementspanel/panel@2.0.0", runtime: "panel", version: "2.0.0", panel: true, daemonIds: [] }
+  ];
+  const res = new EventEmitter();
+  const batch = await env.request("post", "/plugin/update-batch", { updates }, res);
+  assert.equal(batch.results.length, 3);
+  assert.deepEqual(env.rpcCalls.filter((call) => call.event === "plugin/npm/update-batch").map((call) => call.daemonId), ["node-1", "node-2"]);
+  const daemonPackages = env.rpcCalls.find((call) => call.event === "plugin/npm/update-batch").payload.updates;
+  assert.deepEqual(daemonPackages, [
+    { pluginId: "sample", name: "epanel-plugin-sample", version: "2.0.0" },
+    { name: "@elementspanel/daemon", version: "2.0.0", runtime: true }
+  ]);
+  assert.deepEqual(env.state.panelBatch.updates, [
+    daemonPackages[0], { name: "@elementspanel/panel", version: "2.0.0", runtime: true }
+  ]);
+  assert.equal(env.state.panelReloads, 0);
+  assert.deepEqual(batch.results[0].result.updatedTargets.map((target) => target.daemonId || "panel"), ["node-2", "panel"]);
+  assert.deepEqual(batch.results[0].result.failedTargets.map((target) => target.daemonId), ["node-1"]);
+  assert.equal(batch.results[0].result.restartRequired, true);
+  let released = false;
+  env.state.panelBatch.reloadAfter.then(() => { released = true; });
+  await Promise.resolve();
+  assert.equal(released, false);
+  res.emit("finish");
+  await env.state.panelBatch.reloadAfter;
+  assert.equal(released, true);
+});
+
+test("one-click batches isolate failures and finish after the browser disconnects", async (t) => {
+  const env = await fixture(t, { sides: ["panel", "daemon"], version: "2.0.0" });
+  await env.common.installNpmPlugin({ name: "epanel-plugin-sample", pluginId: "sample", version: "1.0.0" });
+  env.state.panelRuntime = { name: "@elementspanel/panel", side: "panel", version: "1.0.0" };
+  env.state.details = { broken: { id: "broken" } };
+  env.state.request = async ({ event, daemonId, payload }) => {
+    if (event === "plugin/list") return [{ id: "sample", packageName: "epanel-plugin-sample", version: "1.0.0" }];
+    if (event === "plugin/capabilities") return { batchUpdates: daemonId !== "node-2" };
+    assert.equal(event, "plugin/npm/update-batch");
+    if (daemonId === "node-1") throw new Error("Node disconnected");
+    return { results: payload.updates, restartRequired: false };
+  };
+  const started = deferred();
+  const finish = deferred();
+  env.state.batchResult = async ({ updates }) => {
+    started.resolve();
+    await finish.promise;
+    return {
+      results: updates.map((update) => ({ ...update, ...(!update.runtime ? { error: "npm failed" } : {}) })),
+      restartRequired: false
+    };
+  };
+  const res = new EventEmitter();
+  const work = env.request("post", "/plugin/update-batch", { updates: [
+    { pluginId: "broken", version: "2.0.0", panel: true, daemonIds: [] },
+    { pluginId: "sample", version: "2.0.0", panel: true, daemonIds: ["node-1", "node-2", "node-3"] },
+    { pluginId: "@elementspanel/panel@2.0.0", runtime: "panel", version: "2.0.0", panel: true, daemonIds: [] }
+  ] }, res);
+  await started.promise;
+  let released = false;
+  env.state.restartGate.then(() => { released = true; });
+  res.emit("close");
+  await Promise.resolve();
+  assert.equal(released, false, "a closed HTTP response cannot release an unfinished batch");
+  finish.resolve();
+  const batch = await work;
+  await env.state.restartGate;
+  assert.equal(released, true);
+  assert.ok(batch.results[0].error);
+  assert.deepEqual(batch.results[1].result.updatedTargets.map((target) => target.daemonId), ["node-3"]);
+  assert.deepEqual(batch.results[1].result.failedTargets.map((target) => target.daemonId || "panel"), ["node-1", "node-2", "panel"]);
+  assert.equal(batch.results[2].result.updatedTargets.length, 1);
+  assert.equal(env.state.panelReloads, 0);
 });
 
 test("a market update never downgrades or installs missing halves and rechecks node inventory", async (t) => {

@@ -70,6 +70,29 @@ export interface NpmRuntimeUpdateService {
   }): Promise<NpmRuntimeRecord & { restartRequired: boolean }>;
 }
 
+/** One package in a market update batch; runtime packages are installed last. */
+export interface NpmPackageUpdate {
+  name: string;
+  version: string;
+  pluginId?: string;
+  runtime?: boolean;
+}
+
+export interface NpmPackageUpdateResult extends NpmPackageUpdate {
+  error?: string;
+}
+
+export interface NpmUpdateBatchOptions {
+  updates: NpmPackageUpdate[];
+  /** Keep the running graph alive until the caller has delivered the whole batch result. */
+  reloadAfter?: Promise<void>;
+}
+
+export interface NpmUpdateBatchResult {
+  results: NpmPackageUpdateResult[];
+  restartRequired: boolean;
+}
+
 const PLUGIN_ID = /^[a-z][a-z0-9_-]{1,63}$/;
 const PACKAGE_NAME = /^(?:@[a-z0-9_.-]+\/)?epanel-plugin-[a-z0-9_.-]+$/;
 const VERSION = /^[a-zA-Z0-9][a-zA-Z0-9._+-]{0,63}$/;

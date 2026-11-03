@@ -1,5 +1,10 @@
 import { useDefineApi } from "@/stores/useDefineApi";
-import type { PluginUpdateResult, PluginUpdates } from "./updates";
+import type {
+  PluginUpdateBatchResult,
+  PluginUpdateRequest,
+  PluginUpdateResult,
+  PluginUpdates
+} from "./updates";
 
 // ---- Plugin market -------------------------------------------------------
 // Distinct from the catalogue above: these are panel and daemon plugins, not
@@ -147,6 +152,14 @@ export const updateMarketRuntime = useDefineApi<
   PluginUpdateResult
 >({
   url: "/api/market/runtime/update",
+  method: "POST"
+});
+
+export const updateMarketBatch = useDefineApi<
+  { data: { updates: PluginUpdateRequest[] } },
+  PluginUpdateBatchResult
+>({
+  url: "/api/market/plugin/update-batch",
   method: "POST"
 });
 

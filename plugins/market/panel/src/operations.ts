@@ -3,8 +3,7 @@ import { ctx } from "@/plugin/context";
 import {
   installMarketPlugin,
   uninstallMarketPlugin,
-  updateMarketPlugin,
-  updateMarketRuntime,
+  updateMarketBatch,
   type MarketPlugin
 } from "./api";
 import type { PluginUpdate, PluginUpdateResult } from "./updates";
@@ -37,7 +36,7 @@ export const updateResults = shallowRef<
   }>
 >([]);
 
-/** Updates keep running when the market window is closed. Each plugin settles independently. */
+/** The backend owns the entire batch, including its final process restarts. */
 export async function updateMarketPlugins(updates: readonly PluginUpdate[]) {
   if (
     applyingChanges.value ||
@@ -59,40 +58,42 @@ export async function updateMarketPlugins(updates: readonly PluginUpdate[]) {
         (a.runtime === "panel" ? 2 : a.runtime ? 1 : 0) -
         (b.runtime === "panel" ? 2 : b.runtime ? 1 : 0)
     );
-  updateProgress.value = { completed: 0, total: pending.length, name: "" };
+  updateProgress.value = {
+    completed: 0,
+    total: pending.length,
+    name: pending.map((update) => update.displayName).join("、")
+  };
   try {
-    for (const update of pending) {
-      updateProgress.value.name = update.displayName;
-      try {
-        const timeout = (update.targets.length + 1) * 11 * 60 * 1000;
-        const daemonIds = update.targets.flatMap((target) =>
-          target.daemonId ? [target.daemonId] : []
-        );
-        const response = update.runtime
-          ? await updateMarketRuntime().execute({
-              timeout,
-              data: { side: update.runtime, version: update.version, daemonIds }
-            })
-          : await updateMarketPlugin().execute({
-              timeout,
-              data: {
-                pluginId: update.pluginId,
-                version: update.version,
-                panel: update.targets.some((target) => !target.daemonId),
-                daemonIds
-              }
-            });
-        if (!response.value) throw new Error("Empty plugin update response");
-        updateResults.value = [...updateResults.value, { update, result: response.value }];
-        notifyInstalled(update.pluginId, response.value.installedVersion);
-      } catch (error) {
-        updateResults.value = [...updateResults.value, { update, error }];
+    const response = await updateMarketBatch().execute({
+      timeout:
+        pending.reduce((total, update) => total + update.targets.length + 1, 0) * 11 * 60 * 1000,
+      data: {
+        updates: pending.map((update) => ({
+          pluginId: update.pluginId,
+          version: update.version,
+          ...(update.runtime ? { runtime: update.runtime } : {}),
+          panel: update.targets.some((target) => !target.daemonId),
+          daemonIds: update.targets.flatMap((target) => (target.daemonId ? [target.daemonId] : []))
+        }))
       }
-      updateProgress.value.completed++;
-    }
+    });
+    const batch = response.value;
+    if (!batch || batch.results.length !== pending.length)
+      throw new Error("Incomplete plugin update batch response");
+    updateResults.value = pending.map((update, index) => {
+      const item = batch.results[index];
+      if (item.error || !item.result)
+        return { update, error: new Error(item.error || "Empty plugin update response") };
+      notifyInstalled(update.pluginId, item.result.installedVersion);
+      return { update, result: item.result };
+    });
+    updateProgress.value.completed = pending.length;
     await ctx.plugins
       .refresh()
       .catch((error) => console.error("Failed to refresh plugins:", error));
+    return updateResults.value;
+  } catch (error) {
+    updateResults.value = pending.map((update) => ({ update, error }));
     return updateResults.value;
   } finally {
     applyingChanges.value = false;

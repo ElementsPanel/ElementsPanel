@@ -203,6 +203,8 @@ test("detail API requires admin and a plugin id before contacting the market", a
   assert.equal((await request({}, 10, "post /plugin/update")).status, 400);
   assert.equal((await request({}, 1, "post /runtime/update")).status, 403);
   assert.equal((await request({}, 10, "post /runtime/update")).status, 400);
+  assert.equal((await request({}, 1, "post /plugin/update-batch")).status, 403);
+  assert.equal((await request({}, 10, "post /plugin/update-batch")).status, 400);
   assert.equal(calls.length, 0);
 });
 
@@ -806,13 +808,14 @@ test("one-click updates keep per-target versions, isolate failures and never exe
     vue,
     "@/plugin/context": { ctx: { plugins: { refresh: async () => { refreshes++; } } } },
     "./api": {
-      updateMarketPlugin: () => ({ execute: async (request) => {
+      updateMarketBatch: () => ({ execute: async (request) => {
         calls.push(request.data);
-        if (request.data.pluginId === "broken") throw new Error("offline");
-        return { value: {
-          pluginId: request.data.pluginId, installedVersion: "2.0.0",
-          failedTargets: [], updatedTargets: [], restartRequired: false
-        } };
+        return { value: { results: request.data.updates.map((update) =>
+          update.pluginId === "broken" ? { pluginId: update.pluginId, error: "offline" } : {
+            pluginId: update.pluginId,
+            result: { pluginId: update.pluginId, installedVersion: "2.0.0",
+              failedTargets: [], updatedTargets: [], restartRequired: false }
+          }) } };
       } })
     }
   });
@@ -830,26 +833,29 @@ test("one-click updates keep per-target versions, isolate failures and never exe
   assert.equal(results.length, 2);
   assert.equal(results[0].error.message, "offline");
   assert.equal(results[1].result.pluginId, "sample");
-  assert.deepEqual(calls, [
+  assert.deepEqual(calls, [{ updates: [
     { pluginId: "broken", version: "2.0.0", panel: true, daemonIds: [] },
     { pluginId: "sample", version: "2.0.0", panel: false, daemonIds: ["node-1"] }
-  ]);
+  ] }], "all selected packages are sent to the backend in a single request");
   assert.equal(refreshes, 1);
   assert.equal(operations.updateProgress.value.completed, 2);
   assert.equal(operations.applyingChanges.value, false);
   assert.equal(operations.updatingPlugins.value, false);
 });
 
-test("mixed update batches finish plugins and daemons before replacing the panel runtime", async () => {
+test("mixed update batches submit plugins and both runtimes together", async () => {
   const calls = [];
-  const api = (kind) => () => ({ execute: async ({ data }) => {
-    calls.push({ kind, data });
-    return { value: { pluginId: data.pluginId || data.side, updatedTargets: [], failedTargets: [], restartRequired: false } };
+  const api = () => ({ execute: async ({ data }) => {
+    calls.push(data);
+    return { value: { results: data.updates.map((update) => ({
+      pluginId: update.pluginId,
+      result: { pluginId: update.pluginId, updatedTargets: [], failedTargets: [], restartRequired: false }
+    })) } };
   } });
   const operations = load("plugins/market/panel/src/operations.ts", {
     vue,
     "@/plugin/context": { ctx: { plugins: { refresh: async () => {} } } },
-    "./api": { updateMarketPlugin: api("plugin"), updateMarketRuntime: api("runtime") }
+    "./api": { updateMarketBatch: api }
   });
   const target = { label: "", currentVersion: "1.0.0" };
   await operations.updateMarketPlugins([
@@ -857,11 +863,11 @@ test("mixed update batches finish plugins and daemons before replacing the panel
     { pluginId: "@elementspanel/daemon", runtime: "daemon", version: "3.0.0", targets: [{ ...target, daemonId: "node-1" }] },
     { pluginId: "sample", version: "4.0.0", targets: [target] }
   ]);
-  assert.deepEqual(calls, [
-    { kind: "plugin", data: { pluginId: "sample", version: "4.0.0", panel: true, daemonIds: [] } },
-    { kind: "runtime", data: { side: "daemon", version: "3.0.0", daemonIds: ["node-1"] } },
-    { kind: "runtime", data: { side: "panel", version: "2.0.0", daemonIds: [] } }
-  ]);
+  assert.deepEqual(calls, [{ updates: [
+    { pluginId: "sample", version: "4.0.0", panel: true, daemonIds: [] },
+    { pluginId: "@elementspanel/daemon", runtime: "daemon", version: "3.0.0", panel: false, daemonIds: ["node-1"] },
+    { pluginId: "@elementspanel/panel", runtime: "panel", version: "2.0.0", panel: true, daemonIds: [] }
+  ] }]);
 });
 
 test("market target changes preserve the routed page, search and active tab while refreshing its content", async () => {
@@ -900,10 +906,13 @@ test("market target changes preserve the routed page, search and active tab whil
   const operations = load("plugins/market/panel/src/operations.ts", {
     vue,
     "@/plugin/context": { ctx: { plugins: { refresh: async () => {} } } },
-    "./api": { updateMarketPlugin: () => ({ execute: async ({ data }) => {
-      calls.push(data);
-      return { value: { pluginId: data.pluginId, installedVersion: data.version,
-        failedTargets: [], updatedTargets: [], restartRequired: false } };
+    "./api": { updateMarketBatch: () => ({ execute: async ({ data }) => {
+      calls.push(...data.updates);
+      return { value: { results: data.updates.map((update) => ({
+        pluginId: update.pluginId,
+        result: { pluginId: update.pluginId, installedVersion: update.version,
+          failedTargets: [], updatedTargets: [], restartRequired: false }
+      })) } };
     } }) }
   });
   const overrides = {
