@@ -1140,6 +1140,7 @@ test("the shell supplies layout to the native task drawer and closing it preserv
   const empty = { render: () => null };
   const Shell = loadSfc("plugins/console/panel/src/ConsoleApp.vue", {
     "@/hooks/useScreen": { useScreen: () => ({ isPhone: vue.ref(false) }) },
+    "@/stores/useAppStateStore": { useAppStateStore: () => ({ isAdmin: vue.ref(true) }) },
     "@/stores/useAppConfigStore": {
       useAppConfigStore: () => ({
         hasBgImage: vue.ref(false), isDarkTheme: vue.ref(false), isSidebarOpen: vue.ref(false),

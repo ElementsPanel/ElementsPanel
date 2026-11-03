@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useScreen } from "@/hooks/useScreen";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
+import { useAppStateStore } from "@/stores/useAppStateStore";
 
 import { ctx } from "@/plugin/context";
 import { closeAppLoading, setLoadingTitle } from "@/tools/dom";
@@ -22,6 +23,7 @@ const {
   isSidebarOpen,
   useSidebarLayout
 } = useAppConfigStore();
+const { isAdmin } = useAppStateStore();
 const { isPhone } = useScreen();
 const route = useRoute();
 
@@ -30,6 +32,9 @@ const OVERLAY_COMPONENTS = computed(() => ctx.slots.entries("shell.overlay", {})
 
 const isLoginPage = computed(() => route.path === "/login");
 const isImmersivePage = computed(() => route.meta.immersive === true);
+const showSidebar = computed(
+  () => isAdmin.value && useSidebarLayout.value && !isLoginPage.value && !isImmersivePage.value
+);
 const vuetifyTheme = computed(() => (isDarkTheme.value ? "dark" : "light"));
 
 // VThemeProvider covers the main tree, while dynamically mounted dialogs use
@@ -56,11 +61,11 @@ onMounted(async () => {
         <div
           class="app-shell-content"
           :class="{
-            'app-shell-content--sidebar': useSidebarLayout && !isLoginPage && !isImmersivePage
+            'app-shell-content--sidebar': showSidebar
           }"
         >
           <div
-            v-if="useSidebarLayout && !isLoginPage && !isImmersivePage"
+            v-if="showSidebar"
             id="app-sidebar"
             class="app-sidebar-shell"
             :class="{ 'app-sidebar-shell--collapsed': !isSidebarOpen }"
@@ -70,7 +75,7 @@ onMounted(async () => {
           <main
             class="main-content"
             :class="{
-              'app-layout-sidebar-only': useSidebarLayout && !isLoginPage && !isImmersivePage
+              'app-layout-sidebar-only': showSidebar
             }"
           >
             <div class="app-main-body">
@@ -91,7 +96,7 @@ onMounted(async () => {
         />
       </VLayout>
 
-      <AppBottomNav v-if="isPhone && !useSidebarLayout && !isLoginPage && !isImmersivePage" />
+      <AppBottomNav v-if="isAdmin && isPhone && !useSidebarLayout && !isLoginPage && !isImmersivePage" />
 
       <InputDialogProvider />
     </AppConfigProvider>

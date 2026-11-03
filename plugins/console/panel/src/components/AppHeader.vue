@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useScreen } from "@/hooks/useScreen";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
+import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useUiStore } from "@/stores/useUiStore";
 import { useEventListener } from "@vueuse/core";
 import {
@@ -19,6 +20,7 @@ import ActionRipple from "./ActionRipple.vue";
 
 const { uiState } = useUiStore();
 const { isSidebarOpen, logoImage, toggleSidebar, useSidebarLayout } = useAppConfigStore();
+const { isAdmin } = useAppStateStore();
 
 const { isPhone } = useScreen();
 const leadingSlots = computed(() =>
@@ -51,9 +53,13 @@ const openPhoneMenu = (b = false) => {
   uiState.showPhoneMenu = b;
 };
 
-watch(isPhone, (phone) => {
-  if (!phone) openPhoneMenu(false);
-});
+watch(
+  [isPhone, isAdmin],
+  ([phone, admin]) => {
+    if (!phone || !admin) openPhoneMenu(false);
+  },
+  { immediate: true }
+);
 
 useEventListener("keydown", (event) => {
   if (event.key === "Escape" && uiState.showPhoneMenu) openPhoneMenu(false);
@@ -73,10 +79,10 @@ useEventListener("keydown", (event) => {
     <div class="app-header-content">
       <div
         class="header-leading"
-        :class="{ 'header-leading--sidebar-open': isSidebarOpen }"
+        :class="{ 'header-leading--sidebar-open': isAdmin && isSidebarOpen }"
       >
         <VBtn
-          v-if="useSidebarLayout"
+          v-if="isAdmin && useSidebarLayout"
           class="sidebar-toggle-button"
           icon
           variant="text"
@@ -152,6 +158,7 @@ useEventListener("keydown", (event) => {
     <div class="phone-toolbar-content">
       <div class="phone-toolbar-side phone-toolbar-side-start">
         <VBtn
+          v-if="isAdmin"
           icon
           variant="text"
           aria-label="MENU"
@@ -206,7 +213,7 @@ useEventListener("keydown", (event) => {
   </VToolbar>
 
   <VNavigationDrawer
-    v-if="isPhone"
+    v-if="isPhone && isAdmin"
     id="app-phone-sidebar"
     v-model="uiState.showPhoneMenu"
     class="phone-menu-drawer"
