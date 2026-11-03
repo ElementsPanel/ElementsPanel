@@ -298,7 +298,7 @@ onMounted(fetchData);
                 :title="t('TXT_CODE_9337bed1')"
                 compact
               />
-              <VList v-else lines="two" density="comfortable">
+              <VList v-else lines="two" density="comfortable" class="app-responsive-list">
                 <template v-for="(node, index) in remoteNodes" :key="node.uuid">
                   <VListItem>
                     <template #prepend>

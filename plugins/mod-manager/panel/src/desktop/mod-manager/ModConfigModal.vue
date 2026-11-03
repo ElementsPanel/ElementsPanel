@@ -31,7 +31,7 @@ const emit = defineEmits(["update:visible", "edit"]);
       :z-index="10001"
       @close="emit('update:visible', false)"
     >
-      <VList v-if="!configLoading" rounded="xl">
+      <VList v-if="!configLoading" rounded="xl" class="app-responsive-list">
         <VListItem v-for="item in configFiles" :key="item.path || item.name" :title="item.name" :subtitle="item.path">
           <template #prepend><VIcon icon="mdi-file-document-outline" /></template>
           <template #append><VBtn variant="text" @click="emit('edit', item)">{{ t("TXT_CODE_EDIT") }}</VBtn></template>
@@ -43,7 +43,7 @@ const emit = defineEmits(["update:visible", "edit"]);
   </template>
   <AppDialog v-else :visible="visible" @update:visible="val => emit('update:visible', val)"
     :title="t('TXT_CODE_CONFIG') + ': ' + currentMod?.name" :footer="null">
-    <VList v-if="!configLoading" rounded="xl">
+    <VList v-if="!configLoading" rounded="xl" class="app-responsive-list">
       <VListItem v-for="item in configFiles" :key="item.path || item.name" :title="item.name" :subtitle="item.path">
         <template #prepend><VIcon icon="mdi-file-document-outline" /></template>
         <template #append><VBtn variant="text" @click="emit('edit', item)">{{ t("TXT_CODE_EDIT") }}</VBtn></template>

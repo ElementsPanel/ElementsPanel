@@ -163,9 +163,12 @@ const rawEntry = (item: unknown) =>
 
 .archive-preview :deep(.v-table) {
   width: 100% !important;
-  min-width: 890px !important;
   background: transparent;
   color: var(--text-color);
+}
+
+.archive-preview :deep(.v-table__wrapper > table) {
+  min-width: 890px;
 }
 
 .archive-preview :deep(.v-data-table__th) {

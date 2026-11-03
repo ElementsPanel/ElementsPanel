@@ -333,7 +333,7 @@ defineExpose({ open });
                 <div v-if="listLoading && backupList.length === 0" class="backup-loading">
                     <VProgressCircular indeterminate color="primary" size="32" width="3" />
                 </div>
-                <VList v-else-if="backupList.length > 0" class="backup-list">
+                <VList v-else-if="backupList.length > 0" class="backup-list app-responsive-list">
                     <VListItem v-for="item in backupList" :key="item.name" class="backup-item" rounded="xl">
                         <template #prepend>
                             <VIcon icon="mdi-cloud-check-outline" class="backup-item-icon" />
@@ -458,14 +458,7 @@ defineExpose({ open });
 }
 
 @media (max-width: 720px) {
-    .backup-item :deep(.v-list-item__append) {
-        align-self: stretch;
-        margin-inline-start: 0;
-        padding-top: 8px;
-    }
-
     .backup-item-actions {
-        justify-content: flex-end;
         flex-wrap: wrap;
     }
 

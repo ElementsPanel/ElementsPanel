@@ -108,7 +108,7 @@ const handleOpenDetailDialog = async () => {
                 v-model="operationForm.current"
                 :length="Math.max(1, Math.ceil(operationForm.total / operationForm.pageSize))"
                 density="compact"
-                :total-visible="isPhone ? 3 : 5"
+                :total-visible="isPhone ? 1 : 5"
               />
               <VSelect
                 v-model="operationForm.pageSize"

@@ -284,7 +284,7 @@ onUnmounted(disposeRequests);
               :model-value="operationForm.currentPage"
               :length="instances?.maxPage || 1"
               density="compact"
-              total-visible="5"
+              :total-visible="isPhone ? 1 : 5"
               @update:model-value="handlePageChange"
             />
           </div>
@@ -370,11 +370,19 @@ onUnmounted(disposeRequests);
 
 .select-instances-pagination {
   min-width: 0;
+  flex-wrap: wrap;
   gap: 8px;
+}
+
+.select-instances-pagination > .v-pagination {
+  min-width: 0;
+  max-width: 100%;
+  flex: 1 1 0;
 }
 
 .page-size-select {
   width: 90px;
+  flex: 0 0 90px;
 }
 
 .select-instances-table {

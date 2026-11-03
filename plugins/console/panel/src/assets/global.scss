@@ -174,8 +174,33 @@ body::-webkit-scrollbar-track {
 
 // Inset the scrollable viewport so header and row separators keep their
 // spacing from card edges even when the table scrolls horizontally.
+.v-table {
+  min-width: 0;
+}
+
 .v-table > .v-table__wrapper {
   margin-inline: var(--app-list-inset);
+  min-width: 0;
+  overscroll-behavior-x: contain;
+}
+
+// Keep column labels readable; the wrapper owns horizontal scrolling when
+// their combined width exceeds the card or dialog.
+.v-table > .v-table__wrapper > table > thead > tr > th {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+// Empty messages stay centered in the visible viewport of wide tables.
+.v-data-table > .v-table__wrapper {
+  container-type: inline-size;
+}
+
+.v-data-table-rows-no-data > td > .app-empty {
+  position: sticky;
+  inset-inline-start: 16px;
+  width: calc(100cqw - 32px);
 }
 
 // The pagination divider is rendered outside the table's scrollable wrapper.
@@ -191,6 +216,106 @@ body::-webkit-scrollbar-track {
 // keep Vuetify's tight rows.
 .v-data-table:not(.v-table--density-compact) tbody > tr > td {
   padding-block: 10px;
+}
+
+.v-pagination__list {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 992px) {
+  .v-table > .v-table__wrapper > table > tbody > tr:not(.v-data-table__tr--mobile) > td:not([colspan]):not(.v-data-table__td--select-row):not(.v-data-table__td--expanded-row):not(:has(> .v-avatar)) {
+    min-width: 6rem;
+    max-width: 28rem;
+    overflow-wrap: anywhere;
+  }
+
+  // Editable rows need enough room for the actual controls as well as labels.
+  .v-table > .v-table__wrapper > table > tbody :is(.v-text-field, .v-textarea) {
+    min-width: 10rem;
+  }
+
+  .v-table > .v-table__wrapper > table > tbody .v-checkbox {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .v-data-table-footer {
+    justify-content: center;
+    gap: 8px 12px;
+    padding: 12px var(--app-list-inset);
+  }
+
+  .v-data-table-footer__items-per-page {
+    max-width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    > span {
+      padding-inline-end: 0;
+    }
+
+    > .v-select {
+      flex: 0 0 90px;
+    }
+  }
+
+  .v-data-table-footer__info {
+    min-width: 0;
+    padding: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .v-data-table-footer__pagination {
+    max-width: 100%;
+    margin-inline-start: 0;
+  }
+
+  .v-pagination {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  // Content lists opt in so navigation and popup menus retain their layout.
+  .app-responsive-list > .v-list-item {
+    --v-list-prepend-gap: 12px;
+    grid-template-areas: "prepend content" ". append";
+    grid-template-columns: max-content minmax(0, 1fr);
+    row-gap: 8px;
+    padding-block: 12px;
+
+    > .v-list-item__content {
+      min-width: 0;
+    }
+
+    .v-list-item-title,
+    .v-list-item-subtitle {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .v-list-item-subtitle {
+      display: block;
+      -webkit-line-clamp: unset;
+    }
+
+    > .v-list-item__append {
+      min-width: 0;
+      max-width: 100%;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 0;
+
+      > .v-list-item__spacer {
+        display: none;
+      }
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .v-data-table-footer__items-per-page {
+    flex-basis: 100%;
+  }
 }
 
 .global-action-float-enter-active,

@@ -52,5 +52,9 @@ const emitPageChange = (page: number, itemsPerPage: number) => emit("change", { 
   text-overflow: ellipsis;
   white-space: normal;
 }
-.local-mod-actions { display: flex; justify-content: center; gap: 4px; }
+.local-mod-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+
+@media (max-width: 992px) {
+  .local-mod-name { min-width: 12rem; }
+}
 </style>

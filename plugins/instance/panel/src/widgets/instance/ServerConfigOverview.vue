@@ -99,7 +99,7 @@ onMounted(async () => {
           <CardPanel style="height: 100%">
           <template #body>
             <VProgressLinear v-if="isLoading" indeterminate color="primary" class="mb-2" />
-            <VList v-if="realFiles && realFiles.length > 0" lines="three">
+            <VList v-if="realFiles && realFiles.length > 0" lines="three" class="app-responsive-list">
               <VListItem v-for="item in InstanceConfigsList.filter((entry) => entry.check)" :key="item.path">
                 <template #prepend><VIcon icon="mdi-file-document-outline" /></template>
                 <VListItemTitle>

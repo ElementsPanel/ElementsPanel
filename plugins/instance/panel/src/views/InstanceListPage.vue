@@ -6,6 +6,7 @@ import Empty from "@/components/Empty.vue";
 import { router } from "@/config/router";
 import { verifyEULA } from "@/hooks/useInstance";
 import { useInstanceTagSearch, useInstanceTagTips } from "@/hooks/useInstanceTag";
+import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
 import { remoteInstances, remoteNodeList } from "@/services/apis";
 import {
@@ -60,6 +61,7 @@ const operationForm = ref({ instanceName: "", currentPage: 1, pageSize: 20, stat
 const currentRemoteNode = ref<NodeStatus>();
 const multipleMode = ref(false);
 const selectedInstance = ref<InstanceMoreDetail[]>([]);
+const { isPhone } = useScreen();
 
 const { execute: getNodes, state: nodes, isLoading: nodesLoading } = remoteNodeList();
 const { execute: getInstances, state: instances, isLoading: instancesLoading } = remoteInstances();
@@ -406,7 +408,7 @@ onMounted(async () => {
         </VCol>
         <VCol cols="12" md="5" class="pagination-wrap">
           <VPagination v-if="instances" v-model="operationForm.currentPage" :length="instances.maxPage || 1"
-            total-visible="6" density="comfortable" @update:model-value="() => initInstancesData()" />
+            :total-visible="isPhone ? 1 : 6" density="comfortable" @update:model-value="() => initInstancesData()" />
           <VSelect v-if="instances" v-model="operationForm.pageSize" :items="[10, 20, 50, 100]" hide-details
             class="page-size-select" @update:model-value="() => initInstancesData(true)">
             <template #no-data><Empty :icon="false" compact /></template>
@@ -590,6 +592,12 @@ onMounted(async () => {
   gap: 8px;
 }
 
+.pagination-wrap > .v-pagination {
+  min-width: 0;
+  max-width: 100%;
+  flex: 1 1 0;
+}
+
 .node-name {
   max-width: 160px;
   overflow: hidden;
@@ -604,6 +612,7 @@ onMounted(async () => {
 
 .page-size-select {
   width: 90px;
+  flex: 0 0 90px;
 }
 
 .tag-row {
