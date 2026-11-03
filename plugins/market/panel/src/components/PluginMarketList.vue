@@ -352,9 +352,6 @@ onBeforeUnmount(() => {
                   }}
                 </VChip>
                 <PluginMarketSideBadge :sides="plugin.sides" />
-                <VChip v-if="plugin.installedVersion" size="small" color="success" variant="tonal">
-                  {{ t("TXT_CODE_PLUGIN_MARKET_INSTALLED") }}
-                </VChip>
                 <VSpacer />
                 <PluginMarketInstall
                   :plugin="plugin"

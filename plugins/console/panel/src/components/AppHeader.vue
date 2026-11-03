@@ -285,11 +285,12 @@ useEventListener("keydown", (event) => {
 }
 
 .phone-toolbar-side-end {
+  gap: 4px;
   justify-content: flex-end;
 }
 
 .phone-nav-button {
-  margin: 0 2px;
+  margin: 0;
   color: var(--app-header-text-color) !important;
 }
 
@@ -306,7 +307,9 @@ useEventListener("keydown", (event) => {
   z-index: 20;
   display: flex;
   flex: 0 0 64px;
-  width: 100%;
+  align-self: center;
+  width: 100vw;
+  max-width: none;
   height: 64px;
   min-height: 64px;
   align-items: center;
@@ -336,6 +339,7 @@ useEventListener("keydown", (event) => {
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
+  padding-inline: 12px;
 
   .btns {
     display: flex;
@@ -351,7 +355,6 @@ useEventListener("keydown", (event) => {
   height: 64px;
   align-items: center;
   box-sizing: border-box;
-  padding-left: 12px;
   transition:
     width 0.2s ease,
     flex-basis 0.2s ease;
@@ -384,8 +387,8 @@ useEventListener("keydown", (event) => {
 
 .header-actions {
   flex: 1 1 auto;
+  gap: 4px;
   justify-content: flex-end;
-  padding: 0 24px;
 }
 
 .nav-button {
@@ -400,7 +403,7 @@ useEventListener("keydown", (event) => {
 }
 
 .right-nav-button {
-  margin: 0 2px;
+  margin: 0;
   padding: 8px;
 }
 
@@ -415,19 +418,5 @@ useEventListener("keydown", (event) => {
 .pro-mode-order-container {
   @extend .nav-button;
   @extend .nav-button-success;
-}
-
-@media (max-width: 1470px) {
-  .header-actions {
-    padding-right: 25px;
-    padding-left: 25px;
-  }
-}
-
-@media (max-width: 992px) {
-  .header-actions {
-    padding-right: 8px;
-    padding-left: 8px;
-  }
 }
 </style>
