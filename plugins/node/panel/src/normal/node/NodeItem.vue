@@ -75,7 +75,8 @@ const { toPage } = useAppRouters();
 const detailList = (node: ComputedNodeInfo) => [
   {
     title: t("TXT_CODE_f52079a0"),
-    value: `${node.ip}:${node.port}`
+    value: `${node.ip}:${node.port}`,
+    fullWidth: true
   },
   {
     title: t("TXT_CODE_7c0b7608"),
@@ -214,9 +215,9 @@ onMounted(() => {
   <div style="height: 100%" class="container">
     <VCard style="height: 100%" rounded="xl" flat class="node-card">
       <VCardTitle class="node-card-title">
-        <div class="flex-center">
-          <span :class="{ 'color-danger': !remoteNode?.available }">
-            <VIcon icon="mdi-server" size="20" class="mr-2" />
+        <div class="node-card-heading" :class="{ 'color-danger': !remoteNode?.available }">
+          <VIcon icon="mdi-server" size="20" class="node-card-icon" />
+          <span class="node-card-name" :title="remoteNode?.remarks || remoteNode?.ip">
             {{ remoteNode?.remarks || remoteNode?.ip }}
           </span>
         </div>
@@ -243,11 +244,11 @@ onMounted(() => {
           <VCol
             v-for="detail in detailList(remoteNode)"
             :key="detail.title + detail.value"
-            cols="6"
+            :cols="detail.fullWidth ? 12 : 6"
             sm="3"
           >
             <div class="node-detail">
-              <div :title="detail.onlyCopy ? detail.value : ''">
+              <div class="node-detail-label" :title="detail.onlyCopy ? detail.value : ''">
                 {{ detail.title }}
               </div>
 
@@ -262,7 +263,7 @@ onMounted(() => {
                   @click="copyValue(detail.value)"
                 />
               </div>
-              <div v-else style="font-size: 13px">
+              <div v-else class="node-detail-value">
                 <VMenu
                   v-if="detail.compatibility && !detail.danger"
                   v-model="compatMenuOpen"
@@ -408,7 +409,7 @@ onMounted(() => {
           </VCol>
         </VRow>
         <NodeSimpleChart
-          class="mt-8"
+          class="node-card-chart"
           :cpu-usage="remoteNode.cpuInfo ?? ''"
           :mem-usage="remoteNode.memText ?? ''"
           :cpu-data="remoteNode.cpuChartData ?? []"
@@ -436,11 +437,31 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 14px 14px 14px 24px;
   color: var(--text-color);
 }
 
+.node-card-heading {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.node-card-icon {
+  flex-shrink: 0;
+}
+
+.node-card-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .node-card-actions {
+  flex-shrink: 0;
   min-height: auto;
   padding: 0;
   gap: 2px;
@@ -452,8 +473,22 @@ onMounted(() => {
 }
 
 .node-detail {
+  min-width: 0;
   min-height: 44px;
   color: var(--text-color);
+}
+
+.node-detail-label,
+.node-detail-value {
+  overflow-wrap: anywhere;
+}
+
+.node-detail-value {
+  font-size: 13px;
+}
+
+.node-card-chart {
+  margin-top: 32px;
 }
 
 .node-copy-btn {
@@ -471,12 +506,18 @@ onMounted(() => {
 .node-compat-toggle {
   display: inline-flex;
   align-items: center;
+  max-width: 100%;
   gap: 4px;
   cursor: pointer;
   user-select: none;
 }
 
+.node-compat-toggle > span {
+  min-width: 0;
+}
+
 .node-compat-chevron {
+  flex-shrink: 0;
   opacity: 0.7;
 }
 
@@ -485,9 +526,10 @@ onMounted(() => {
   border-radius: 12px;
   background: var(--background-color-white);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
-  min-width: 420px;
-  max-width: 92vw;
-  max-height: 340px;
+  box-sizing: border-box;
+  width: 420px;
+  max-width: calc(100vw - 24px);
+  max-height: min(340px, calc(100dvh - 24px));
   overflow-y: auto;
   font-size: 12px;
   color: var(--text-color);
@@ -540,6 +582,64 @@ onMounted(() => {
     transition: all 0.4s;
     text-align: center;
     width: 100% !important;
+  }
+
+  .node-card-title {
+    padding: 16px 16px 8px;
+  }
+
+  .node-card-content {
+    padding: 16px;
+  }
+
+  .node-card-chart {
+    margin-top: 24px;
+  }
+}
+
+@media (max-width: 599px) {
+  .node-card-title {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .node-card-heading {
+    align-items: flex-start;
+  }
+
+  .node-card-icon {
+    margin-top: 4px;
+  }
+
+  .node-card-name {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .node-card-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
+
+    :deep(.v-btn) {
+      min-width: 44px;
+      min-height: 44px;
+    }
+  }
+
+  .node-compat-panel {
+    padding: 12px;
+  }
+
+  .node-compat-row {
+    gap: 6px;
+    align-items: start;
+  }
+
+  .node-compat-row > span {
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 }
 

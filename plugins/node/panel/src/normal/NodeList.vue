@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Empty from "@/components/Empty.vue";
 import PageToolbar from "@/components/PageToolbar.vue";
+import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";
 import { ref } from "vue";
@@ -13,6 +14,7 @@ import NodeItem from "./node/NodeItem.vue";
 defineProps<{ card?: unknown }>();
 
 const nodeDetailDialog = ref<InstanceType<typeof NodeDetailDialog>>();
+const { isPhone } = useScreen();
 
 const {
   response,
@@ -106,7 +108,7 @@ const handleOpenDetailDialog = async () => {
                 v-model="operationForm.current"
                 :length="Math.max(1, Math.ceil(operationForm.total / operationForm.pageSize))"
                 density="compact"
-                total-visible="5"
+                :total-visible="isPhone ? 3 : 5"
               />
               <VSelect
                 v-model="operationForm.pageSize"
@@ -152,6 +154,7 @@ const handleOpenDetailDialog = async () => {
 }
 .node-search-field {
   flex: 1;
+  min-width: 0;
 }
 .node-list-row {
   width: 100%;
@@ -184,8 +187,13 @@ const handleOpenDetailDialog = async () => {
   .desc {
     flex-direction: column;
     .pagination {
+      flex-wrap: wrap;
       margin-top: 10px;
     }
+  }
+
+  .page-size-select {
+    flex: 0 0 96px;
   }
 }
 </style>

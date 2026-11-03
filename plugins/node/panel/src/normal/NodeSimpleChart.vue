@@ -49,17 +49,26 @@ useSimpleChart(chartMemCanvas, () => props.memData);
     height: 78px;
     width: 100%;
     margin-top: 16px;
+
+    canvas {
+      display: block;
+      max-width: 100%;
+    }
   }
   .usage-header {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
+    gap: 4px 8px;
   }
   .usage-title {
     opacity: 1;
     font-size: 13px;
   }
   .usage-info {
+    min-width: 0;
+    overflow-wrap: anywhere;
     opacity: 0.9;
     font-size: 12px;
     color: var(--color-gray-7);
