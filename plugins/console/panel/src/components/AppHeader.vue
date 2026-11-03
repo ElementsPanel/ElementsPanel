@@ -79,7 +79,10 @@ useEventListener("keydown", (event) => {
     <div class="app-header-content">
       <div
         class="header-leading"
-        :class="{ 'header-leading--sidebar-open': isAdmin && isSidebarOpen }"
+        :class="{
+          'header-leading--sidebar-open': isAdmin && isSidebarOpen,
+          'header-leading--user': !isAdmin
+        }"
       >
         <VBtn
           v-if="isAdmin && useSidebarLayout"
@@ -363,6 +366,10 @@ useEventListener("keydown", (event) => {
 .header-leading--sidebar-open {
   flex-basis: 240px;
   width: 240px;
+}
+
+.header-leading--user {
+  padding-left: 12px;
 }
 
 .sidebar-toggle-button {
