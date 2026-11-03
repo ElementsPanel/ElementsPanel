@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { t } from "@/lang/i18n";
 import type { TableColumn } from "@/types/table";
 import _ from "lodash";
@@ -212,9 +213,12 @@ onMounted(() => {
         </VBtn>
       </div>
       <VDataTable :headers="columns.map((column) => ({ title: column.title, key: String(column.dataIndex), align: 'center' as const, sortable: false }))" :items="dataSource" :items-per-page="-1" hide-default-footer density="comfortable">
+        <template #no-data><Empty icon="mdi-format-list-bulleted" compact /></template>
         <template #item="{ item, index }"><tr><td v-for="column in columns" :key="String(column.dataIndex)">
           <template v-if="column.dataIndex === 'host' || column.dataIndex === 'container'"><div class="d-flex align-center ga-2"><VTextField :model-value="getRecord(item)[String(column.dataIndex)]" type="number" min="1" max="65535" :placeholder="(column as any).placeholder" :disabled="getRecord(item)[column.dataIndex === 'host' ? 'autoAssignHostPort' : 'autoAssignContainerPort']" hide-details="auto" @update:model-value="(value) => (getRecord(item)[String(column.dataIndex)] = value)" /><VCheckbox :model-value="getRecord(item)[column.dataIndex === 'host' ? 'autoAssignHostPort' : 'autoAssignContainerPort']" :label="t('TXT_CODE_6f1129fb')" hide-details @update:model-value="() => handleAutoAssignChange(getRecord(item), column.dataIndex as 'host' | 'container')" /></div></template>
-          <VSelect v-else-if="column.dataIndex === 'protocol'" :model-value="getRecord(item).protocol" :items="[{ title: 'TCP', value: 'tcp' }, { title: 'UDP', value: 'udp' }]" hide-details @update:model-value="(value) => (getRecord(item).protocol = value)" />
+          <VSelect v-else-if="column.dataIndex === 'protocol'" :model-value="getRecord(item).protocol" :items="[{ title: 'TCP', value: 'tcp' }, { title: 'UDP', value: 'udp' }]" hide-details @update:model-value="(value) => (getRecord(item).protocol = value)">
+            <template #no-data><Empty :icon="false" compact /></template>
+          </VSelect>
           <VBtn v-else icon variant="text" color="error" size="small" @click="operation('del', index)"><VIcon icon="mdi-minus-circle-outline" /></VBtn>
         </td></tr></template>
       </VDataTable>

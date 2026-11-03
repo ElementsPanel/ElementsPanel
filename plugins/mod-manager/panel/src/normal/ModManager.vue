@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import PageToolbar from "@/components/PageToolbar.vue";
 import CardPanel from "@/components/CardPanel.vue";
 import { useInstanceInfo } from "@/hooks/useInstance";
@@ -487,11 +488,21 @@ onMounted(async () => {
                     <div>
                       <VRow density="compact" class="search-form mt-2">
                         <VCol cols="12" :md="4"><VTextField v-model="searchFilters.query" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" prepend-inner-icon="mdi-magnify" density="compact" hide-details @keyup.enter="onSearch" /></VCol>
-                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.source" :items="[{ title: t('TXT_CODE_9693b0e1'), value: 'all' }, { title: 'Modrinth', value: 'modrinth' }, { title: 'CurseForge', value: 'curseforge' }, { title: 'SpigotMC', value: 'spigotmc' }]" density="compact" hide-details /></VCol>
-                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.version" :items="[{ title: t('TXT_CODE_2af87548'), value: '' }, ...mcVersions.map((v) => ({ title: v, value: v }))]" :placeholder="t('TXT_CODE_743b4fe7')" clearable density="compact" hide-details /></VCol>
-                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.type" :items="[{ title: t('TXT_CODE_cc4db8f0'), value: 'all' }, { title: t('TXT_CODE_MOD'), value: 'mod' }, { title: t('TXT_CODE_PLUGIN'), value: 'plugin' }]" density="compact" hide-details /></VCol>
-                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.environment" :items="[{ title: t('TXT_CODE_74e77b4c'), value: 'all' }, { title: t('TXT_CODE_SERVER'), value: 'server' }, { title: t('TXT_CODE_CLIENT'), value: 'client' }]" density="compact" hide-details /></VCol>
-                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.loader" :items="loaderOptions.flatMap((group) => group.options)" item-title="label" item-value="value" :placeholder="t('TXT_CODE_SELECT_LOADER')" clearable density="compact" hide-details /></VCol>
+                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.source" :items="[{ title: t('TXT_CODE_9693b0e1'), value: 'all' }, { title: 'Modrinth', value: 'modrinth' }, { title: 'CurseForge', value: 'curseforge' }, { title: 'SpigotMC', value: 'spigotmc' }]" density="compact" hide-details>
+                          <template #no-data><Empty :icon="false" compact /></template>
+                        </VSelect></VCol>
+                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.version" :items="[{ title: t('TXT_CODE_2af87548'), value: '' }, ...mcVersions.map((v) => ({ title: v, value: v }))]" :placeholder="t('TXT_CODE_743b4fe7')" clearable density="compact" hide-details>
+                          <template #no-data><Empty :icon="false" compact /></template>
+                        </VSelect></VCol>
+                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.type" :items="[{ title: t('TXT_CODE_cc4db8f0'), value: 'all' }, { title: t('TXT_CODE_MOD'), value: 'mod' }, { title: t('TXT_CODE_PLUGIN'), value: 'plugin' }]" density="compact" hide-details>
+                          <template #no-data><Empty :icon="false" compact /></template>
+                        </VSelect></VCol>
+                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.environment" :items="[{ title: t('TXT_CODE_74e77b4c'), value: 'all' }, { title: t('TXT_CODE_SERVER'), value: 'server' }, { title: t('TXT_CODE_CLIENT'), value: 'client' }]" density="compact" hide-details>
+                          <template #no-data><Empty :icon="false" compact /></template>
+                        </VSelect></VCol>
+                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.loader" :items="loaderOptions.flatMap((group) => group.options)" item-title="label" item-value="value" :placeholder="t('TXT_CODE_SELECT_LOADER')" clearable density="compact" hide-details>
+                          <template #no-data><Empty :icon="false" compact /></template>
+                        </VSelect></VCol>
                       </VRow>
                       <div class="d-flex ga-2 justify-end mt-2">
                         <VBtn color="primary" :loading="searchLoading" @click="onSearch"><VIcon start icon="mdi-magnify" />{{ t("TXT_CODE_SEARCH") }}</VBtn>
@@ -569,5 +580,4 @@ onMounted(async () => {
 .search-form :deep(.v-field__input) {
   text-align: left !important;
 }
-
 </style>

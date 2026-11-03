@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { t } from "@/lang/i18n";
 import { VIcon } from "vuetify/components";
@@ -205,9 +206,12 @@ const memColor = computed(() => {
                     <span class="ov-panel__title">{{ t("TXT_CODE_b4a9d04a") }} ({{ remoteNodes.length }})</span>
                 </div>
                 <div class="ov-panel__body ov-panel__body--nodes">
-                    <div v-if="remoteNodes.length === 0" class="ov-empty">
-                        {{ t("TXT_CODE_9337bed1") }}
-                    </div>
+                    <Empty
+                      v-if="remoteNodes.length === 0"
+                      icon="mdi-server-network-outline"
+                      :title="t('TXT_CODE_9337bed1')"
+                      compact
+                    />
                     <div v-for="node in remoteNodes" :key="node.uuid" class="ov-node-item">
                         <div class="ov-node-item__status">
                             <span v-if="node.available" class="ov-node-status-dot ov-node-status-dot--online"
@@ -466,13 +470,6 @@ const memColor = computed(() => {
     &--offline {
         background: var(--desktop-window-text-muted);
     }
-}
-
-.ov-empty {
-    font-size: 12px;
-    color: var(--desktop-window-text-muted);
-    text-align: center;
-    padding: 20px 0;
 }
 
 .desktop-overview::-webkit-scrollbar {

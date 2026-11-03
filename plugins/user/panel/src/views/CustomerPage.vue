@@ -29,7 +29,7 @@ const statusTypes = [
           <UserInstanceList :title="t('TXT_CODE_d655beec')" />
         </VCol>
       </VRow>
-      <Empty v-else :description="t('TXT_CODE_NO_DATA')" />
+      <Empty v-else />
     </VContainer>
   </main>
 </template>

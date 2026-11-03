@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { GLOBAL_INSTANCE_NAME } from "@/config/const";
 import {
   INSTANCE_TYPE_TRANSLATION,
@@ -382,7 +383,7 @@ onUnmounted(() => {
                   :is-stopped="isDisplayStopped"
                 />
               </div>
-              <span v-else class="console-state-empty">{{ t("TXT_CODE_NO_DATA") }}</span>
+              <Empty v-else :icon="false" compact class="console-state-empty" />
             </VCardText>
           </VCard>
         </VCol>
@@ -407,7 +408,7 @@ onUnmounted(() => {
                   {{ command }}
                 </VChip>
               </div>
-              <span v-else class="console-state-empty">{{ t("TXT_CODE_NO_DATA") }}</span>
+              <Empty v-else :icon="false" compact class="console-state-empty" />
             </VCardText>
           </VCard>
         </VCol>
@@ -725,8 +726,7 @@ onUnmounted(() => {
   flex: 0 0 150px;
 }
 .console-state-empty {
-  color: var(--color-gray-6);
-  font-size: 13px;
+  padding: 0;
 }
 .command-history-title {
   display: flex;

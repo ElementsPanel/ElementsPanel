@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { t } from "@/lang/i18n";
 import { imageList } from "@/services/apis/envImage";
@@ -91,7 +92,9 @@ const selectImage = (image: unknown) => {
 
 <template>
   <template v-if="imageSelectMethod === 'SELECT'">
-    <VSelect :model-value="modelValue" :id="id" :rules="rules" :items="dockerImages" item-title="label" item-value="value" :placeholder="t('TXT_CODE_3bb646e4')" :loading="loading" hide-details="auto" @focus="loadImages" @update:model-value="(v) => { emit('update:modelValue', v); selectImage(v); }" />
+    <VSelect :model-value="modelValue" :id="id" :rules="rules" :items="dockerImages" item-title="label" item-value="value" :placeholder="t('TXT_CODE_3bb646e4')" :loading="loading" hide-details="auto" @focus="loadImages" @update:model-value="(v) => { emit('update:modelValue', v); selectImage(v); }">
+      <template #no-data><Empty :icon="false" compact /></template>
+    </VSelect>
   </template>
 
   <template v-else>

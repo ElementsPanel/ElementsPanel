@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { t } from "@/lang/i18n";
 import { convertFileSize } from "@/tools/fileSize";
 import type { ArchiveEntry } from "@/types/fileManager";
@@ -119,6 +120,7 @@ const rawEntry = (item: unknown) =>
         density="compact"
         class="archive-preview-table"
       >
+        <template #no-data><Empty icon="mdi-archive-outline" compact /></template>
         <template #item.name="{ item }"><div class="archive-preview__name" :style="{ paddingLeft: `${rawEntry(item).depth * 18}px` }"><VIcon :icon="getMdiIconName(rawEntry(item))" size="16" /><span :title="rawEntry(item).name">{{ rawEntry(item).name }}</span></div></template>
         <template #item.type="{ item }">{{ rawEntry(item).type === 0 ? t("TXT_CODE_e5f949c") : t("TXT_CODE_d4cf1cb8") }}</template>
         <template #item.size="{ item }">{{ rawEntry(item).type === 0 ? "--" : convertFileSize(String(rawEntry(item).size)) }}</template>

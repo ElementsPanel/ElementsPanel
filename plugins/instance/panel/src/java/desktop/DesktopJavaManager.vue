@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import DesktopDialog from "@/components/DesktopDialog.vue";
 import { t } from "@/lang/i18n";
 import { addJava, deleteJava, downloadJava, usingJava } from "../api";
@@ -218,6 +219,7 @@ onUnmounted(() => {
 
             <VAlert v-if="listError" type="error" variant="tonal" class="mt-3">{{ listError }}</VAlert>
             <VDataTable :loading="listLoading" class="djava-table mt-3" :headers="headers" :items="javaList || []" :items-per-page="15">
+              <template #no-data><Empty icon="mdi-language-java" /></template>
                 <template #item.fullname="{ item }">{{ item.info.fullname || "-" }}</template>
                 <template #item.installTime="{ item }">{{ item.info.installTime ? t(parseTimestamp(item.info.installTime)) : "-" }}</template>
                 <template #item.status="{ item }">
@@ -379,5 +381,4 @@ onUnmounted(() => {
         }
     }
 }
-
 </style>

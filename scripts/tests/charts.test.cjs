@@ -55,6 +55,7 @@ function fixture(t, chartModule) {
       return scope.run(() => load(relative, {
         vue: lifecycle,
         "vuetify/components": {},
+        "@/components/Empty.vue": {},
         "@/lang/i18n": { t: (key) => key },
         ...overrides
       }, compileSfc(relative)).default.setup({}, { expose() {} }));

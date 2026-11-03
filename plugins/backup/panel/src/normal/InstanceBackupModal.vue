@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { t } from "@/lang/i18n";
 import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService } from "@/plugin/context";
@@ -362,10 +363,13 @@ defineExpose({ open });
                         </template>
                     </VListItem>
                 </VList>
-                <div v-else class="empty-backup">
-                    <VIcon icon="mdi-cloud-outline" class="empty-icon" />
-                    <p>{{ t("TXT_CODE_INSTANCE_BACKUP_INTRO") }}</p>
-                </div>
+                <Empty
+                  v-else
+                  icon="mdi-cloud-outline"
+                  :title="t('TXT_CODE_NO_DATA')"
+                  :description="t('TXT_CODE_INSTANCE_BACKUP_INTRO')"
+                  compact
+                />
             </div>
             <div class="backup-footer">
                 <VBtn variant="text" @click="close">
@@ -444,21 +448,6 @@ defineExpose({ open });
     min-height: 220px;
     align-items: center;
     justify-content: center;
-}
-
-.empty-backup {
-    text-align: center;
-    padding: 40px 20px;
-
-    .empty-icon {
-        font-size: 64px;
-        color: var(--color-gray-5);
-        margin-bottom: 16px;
-    }
-
-    p {
-        color: var(--color-gray-7);
-    }
 }
 
 .backup-footer {

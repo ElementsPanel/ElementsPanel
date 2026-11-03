@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import AppDialog from "@/components/AppDialog.vue";
 import PageToolbar from "@/components/PageToolbar.vue";
 import { t } from "@/lang/i18n";
@@ -273,7 +274,9 @@ onMounted(async () => {
               hide-details
               class="role-select"
               @update:model-value="search"
-            />
+            >
+              <template #no-data><Empty :icon="false" compact /></template>
+            </VSelect>
             <VTextField
               v-model.trim="operationForm.name"
               :placeholder="t('TXT_CODE_2471b9c')"
@@ -329,6 +332,7 @@ onMounted(async () => {
           class="user-table"
           @update:options="handleTableOptions"
         >
+          <template #no-data><Empty icon="mdi-account-outline" /></template>
           <template #item.permission="{ item }">{{
             PERMISSION_MAP[rawUser(item).permission] || rawUser(item).permission
           }}</template>
@@ -388,7 +392,9 @@ onMounted(async () => {
           persistent-hint
           :rules="[requiredRule]"
           class="mb-4"
-        /><VTextField
+        >
+          <template #no-data><Empty :icon="false" compact /></template>
+        </VSelect><VTextField
           v-model="formData.userName"
           :label="t('TXT_CODE_eb9fcdad')"
           :hint="t('TXT_CODE_1987587b')"

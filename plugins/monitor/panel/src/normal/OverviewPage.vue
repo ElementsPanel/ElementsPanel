@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { useOverviewInfo } from "@/hooks/useOverviewInfo";
 import { t } from "@/lang/i18n";
 import { computed, onMounted, ref } from "vue";
@@ -263,7 +264,12 @@ onMounted(fetchData);
               {{ t("TXT_CODE_f6a33629") }}
             </VCardTitle>
             <VCardText class="log-card-body">
-              <div v-if="formattedLogs.length === 0" class="monitor-empty">{{ t("TXT_CODE_54469e02") }}</div>
+              <Empty
+                v-if="formattedLogs.length === 0"
+                icon="mdi-file-document-outline"
+                :title="t('TXT_CODE_54469e02')"
+                compact
+              />
               <VTimeline v-else density="compact" side="end" truncate-line="both" class="monitor-timeline">
                 <VTimelineItem
                   v-for="item in formattedLogs"
@@ -286,7 +292,12 @@ onMounted(fetchData);
               {{ t("TXT_CODE_b4a9d04a") }} ({{ remoteNodes.length }})
             </VCardTitle>
             <VCardText class="pa-0">
-              <div v-if="remoteNodes.length === 0" class="monitor-empty">{{ t("TXT_CODE_9337bed1") }}</div>
+              <Empty
+                v-if="remoteNodes.length === 0"
+                icon="mdi-server-network-outline"
+                :title="t('TXT_CODE_9337bed1')"
+                compact
+              />
               <VList v-else lines="two" density="comfortable">
                 <template v-for="(node, index) in remoteNodes" :key="node.uuid">
                   <VListItem>
@@ -464,12 +475,6 @@ onMounted(fetchData);
   color: var(--color-gray-7);
   font-family: "Consolas", "Monaco", monospace;
   font-size: 11px;
-}
-
-.monitor-empty {
-  padding: 44px 20px;
-  color: var(--color-gray-7);
-  text-align: center;
 }
 
 .node-card .v-list {

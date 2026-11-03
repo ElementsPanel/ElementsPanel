@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { INSTANCE_TYPE_TRANSLATION, TYPE_MINECRAFT_BUNGEECORD } from "@/hooks/useInstance";
 import { QUICKSTART_METHOD } from "@/hooks/widgets/quickStartFlow";
 import { t } from "@/lang/i18n";
@@ -366,7 +367,9 @@ async function createInstance() {
           density="compact"
           hide-details="auto"
           @update:model-value="changeInstanceType"
-        />
+        >
+          <template #no-data><Empty :icon="false" compact /></template>
+        </VSelect>
       </VCol>
     </VRow>
     <MinecraftServerDownload

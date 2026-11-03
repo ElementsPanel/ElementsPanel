@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import PageToolbar from "@/components/PageToolbar.vue";
+import Empty from "@/components/Empty.vue";
 import { t } from "@/lang/i18n";
 import { getValidatorErrorMsg } from "@/tools/validator";
 import { computeNodeName } from "@/tools/nodes";
@@ -278,20 +279,16 @@ onBeforeUnmount(() => {
           <VProgressCircular indeterminate color="primary" :size="40" :width="3" />
         </div>
 
-        <div v-else-if="!plugins.length" class="plugin-market-empty" role="status">
-          <VIcon
-            :icon="failed ? 'mdi-lan-disconnect' : 'mdi-puzzle-outline'"
-            size="48"
-            class="plugin-market-empty-icon"
-          />
-          <div class="plugin-market-empty-title">
-            {{
-              failed
-                ? failureMessage || t("TXT_CODE_PLUGIN_MARKET_UNREACHABLE")
-                : t("TXT_CODE_PLUGIN_MARKET_EMPTY")
-            }}
-          </div>
-        </div>
+        <Empty
+          v-else-if="!plugins.length"
+          :icon="failed ? 'mdi-lan-disconnect' : 'mdi-puzzle-outline'"
+          :title="
+            failed
+              ? failureMessage || t('TXT_CODE_PLUGIN_MARKET_UNREACHABLE')
+              : t('TXT_CODE_PLUGIN_MARKET_EMPTY')
+          "
+          :description="t('TXT_CODE_NO_DATA')"
+        />
 
         <VRow v-else-if="visiblePlugins.length" class="plugin-market-grid">
           <VCol v-for="plugin in visiblePlugins" :key="plugin.id" cols="12" md="6" lg="4">
@@ -370,14 +367,7 @@ onBeforeUnmount(() => {
           </VCol>
         </VRow>
 
-        <div
-          v-else-if="!loading"
-          class="plugin-market-empty plugin-market-empty--filtered"
-          role="status"
-        >
-          <VIcon icon="mdi-magnify" size="42" class="plugin-market-empty-icon" />
-          <div class="plugin-market-empty-title">{{ t("TXT_CODE_NO_DATA") }}</div>
-        </div>
+        <Empty v-else-if="!loading" icon="mdi-magnify" :title="t('TXT_CODE_NO_DATA')" />
       </div>
     </VContainer>
   </main>
@@ -494,33 +484,6 @@ onBeforeUnmount(() => {
   gap: 8px;
   align-items: center;
   padding-top: 8px;
-}
-
-.plugin-market-empty {
-  min-height: 38vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 48px 24px;
-  text-align: center;
-  color: var(--color-gray-7);
-}
-
-.plugin-market-empty-icon {
-  margin-bottom: 8px;
-  color: var(--color-gray-6);
-}
-
-.plugin-market-empty-title {
-  color: var(--color-gray-8);
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.plugin-market-empty--filtered {
-  min-height: 28vh;
 }
 
 @media (max-width: 992px) {

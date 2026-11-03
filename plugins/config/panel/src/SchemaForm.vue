@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 /* eslint-disable vue/no-mutating-props */
 import { t } from "@/lang/i18n";
 import type { FrontendFileManagerService } from "@/plugin";
@@ -326,7 +327,9 @@ const open = (field: SettingField) => {
           item-value="value"
           hide-details
           @update:model-value="set(field, $event)"
-        />
+        >
+          <template #no-data><Empty :icon="false" compact /></template>
+        </VSelect>
         <VSelect
           v-else-if="field.type === 'select'"
           :model-value="values[field.key!]"
@@ -336,7 +339,9 @@ const open = (field: SettingField) => {
           item-value="value"
           hide-details
           @update:model-value="set(field, $event)"
-        />
+        >
+          <template #no-data><Empty :icon="false" compact /></template>
+        </VSelect>
       </div>
     </template>
   </component>

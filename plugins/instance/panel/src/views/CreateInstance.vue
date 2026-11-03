@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { router } from "@/config/router";
 import { t } from "@/lang/i18n";
 import { useOverviewInfo, type ComputedNodeInfo } from "@/hooks/useOverviewInfo";
@@ -188,7 +189,9 @@ const handleCreated = (instanceUuid: string) => {
                     variant="solo"
                     hide-details
                     @update:model-value="changeInstanceType"
-                  />
+                  >
+                    <template #no-data><Empty :icon="false" compact /></template>
+                  </VAutocomplete>
                   <div class="step-actions">
                     <VBtn color="primary" :disabled="!instanceType" @click="goNext"
                       >{{ t("TXT_CODE_5e9022f8") }}<VIcon icon="mdi-arrow-right" end
@@ -248,18 +251,18 @@ const handleCreated = (instanceUuid: string) => {
                     <p>{{ t("TXT_CODE_ad24269a") }}</p>
                   </div>
                   <VProgressLinear v-if="nodesLoading" indeterminate color="primary" rounded="xl" />
-                  <VAlert
+                  <Empty
                     v-else-if="availableNodes.length === 0"
-                    type="warning"
-                    variant="tonal"
+                    icon="mdi-server-network-outline"
+                    :title="t('TXT_CODE_f4110b65')"
+                    compact
                   >
-                    <div class="node-empty-content">
-                      <span>{{ t("TXT_CODE_f4110b65") }}</span>
+                    <template #actions>
                       <VBtn color="primary" variant="text" @click="goToNodePage">{{
                         t("TXT_CODE_4fe5dce5")
                       }}</VBtn>
-                    </div>
-                  </VAlert>
+                    </template>
+                  </Empty>
                   <VRow v-else>
                     <VCol v-for="node in availableNodes" :key="node.uuid" cols="12" md="6">
                       <VCard
@@ -510,13 +513,6 @@ const handleCreated = (instanceUuid: string) => {
   margin-top: 14px;
   color: var(--desktop-window-text-secondary, rgba(var(--v-theme-on-surface), 0.68));
   font-size: 12px;
-}
-
-.node-empty-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
 }
 
 .step-actions {

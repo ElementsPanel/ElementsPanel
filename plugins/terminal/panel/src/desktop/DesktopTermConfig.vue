@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { useInstanceInfo } from "@/hooks/useInstance";
 import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
@@ -75,7 +76,9 @@ watch(instanceInfo, (val) => {
           <div class="dterm-field">
             <div class="dterm-field__title">{{ t("TXT_CODE_b91a94f9") }}</div>
             <div class="dterm-field__hint">{{ t("TXT_CODE_5b2daea0") }}<br />{{ t("TXT_CODE_b94f13ce") }}</div>
-            <VSelect v-model="options.config.crlf" :items="[{ title: t('TXT_CODE_365aabd4'), value: 1 }, { title: t('TXT_CODE_20cec54'), value: 2 }]" :placeholder="t('TXT_CODE_3bb646e4')" variant="solo" density="compact" hide-details />
+            <VSelect v-model="options.config.crlf" :items="[{ title: t('TXT_CODE_365aabd4'), value: 1 }, { title: t('TXT_CODE_20cec54'), value: 2 }]" :placeholder="t('TXT_CODE_3bb646e4')" variant="solo" density="compact" hide-details>
+              <template #no-data><Empty :icon="false" compact /></template>
+            </VSelect>
           </div>
         </VCol>
         <VCol cols="12" md="6">
@@ -87,8 +90,12 @@ watch(instanceInfo, (val) => {
           <div class="dterm-field">
             <div class="dterm-field__title">{{ t("TXT_CODE_449d1581") }}</div>
             <div class="dterm-field__hint">{{ t("TXT_CODE_d16d82ab") }}</div>
-            <VSelect v-model="options.config.ie" :items="TERMINAL_CODE" :placeholder="t('TXT_CODE_bd2559f3')" variant="solo" density="compact" hide-details class="mb-3" />
-            <VSelect v-model="options.config.oe" :items="TERMINAL_CODE" :placeholder="t('TXT_CODE_6e96b2a9')" variant="solo" density="compact" hide-details />
+            <VSelect v-model="options.config.ie" :items="TERMINAL_CODE" :placeholder="t('TXT_CODE_bd2559f3')" variant="solo" density="compact" hide-details class="mb-3">
+              <template #no-data><Empty :icon="false" compact /></template>
+            </VSelect>
+            <VSelect v-model="options.config.oe" :items="TERMINAL_CODE" :placeholder="t('TXT_CODE_6e96b2a9')" variant="solo" density="compact" hide-details>
+              <template #no-data><Empty :icon="false" compact /></template>
+            </VSelect>
           </div>
         </VCol>
       </VRow>

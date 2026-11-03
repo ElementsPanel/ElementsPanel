@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { computed, toRef, watch } from "vue";
 import { VAlert, VAutocomplete, VBtn, VCol, VRow } from "vuetify/components";
 import { t } from "@/lang/i18n";
@@ -46,7 +47,9 @@ watch(selection, (value) => emit("update:modelValue", value), { immediate: true,
           density="compact"
           hide-details="auto"
           @update:model-value="selectServer($event || '')"
-        />
+        >
+          <template #no-data><Empty :icon="false" compact /></template>
+        </VAutocomplete>
       </VCol>
       <VCol cols="12" md="4">
         <VAutocomplete
@@ -61,7 +64,9 @@ watch(selection, (value) => emit("update:modelValue", value), { immediate: true,
           density="compact"
           hide-details="auto"
           @update:model-value="selectVersion($event || '')"
-        />
+        >
+          <template #no-data><Empty :icon="false" compact /></template>
+        </VAutocomplete>
       </VCol>
       <VCol cols="12" md="4">
         <VAutocomplete
@@ -73,7 +78,9 @@ watch(selection, (value) => emit("update:modelValue", value), { immediate: true,
           variant="solo"
           density="compact"
           hide-details="auto"
-        />
+        >
+          <template #no-data><Empty :icon="false" compact /></template>
+        </VAutocomplete>
       </VCol>
     </VRow>
     <p v-if="description" class="text-medium-emphasis mt-3">{{ description }}</p>

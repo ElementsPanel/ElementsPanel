@@ -1064,7 +1064,7 @@ function mountScript(t, filename, props, overrides) {
   const components = new Proxy({}, { get: (_target, name) => name });
   const component = load(
     filename,
-    { vue, "vuetify/components": components, ...overrides },
+    { vue, "vuetify/components": components, "@/components/Empty.vue": {}, ...overrides },
     script
   ).default;
   return mountSetup(t, component, props).state;

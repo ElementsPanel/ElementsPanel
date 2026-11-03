@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { GLOBAL_INSTANCE_UUID } from "@/config/const";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import type { ComputedNodeInfo } from "@/hooks/useOverviewInfo";
@@ -356,9 +357,12 @@ onMounted(() => {
                           </span>
                         </div>
                       </template>
-                      <div v-else class="node-compat-note">
-                        {{ t("TXT_CODE_NODE_COMPAT_NO_DATA") }}
-                      </div>
+                      <Empty
+                        v-else
+                        :icon="false"
+                        :title="t('TXT_CODE_NODE_COMPAT_NO_DATA')"
+                        compact
+                      />
                     </div>
                   </div>
                 </VMenu>

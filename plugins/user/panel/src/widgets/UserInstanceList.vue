@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import CardPanel from "@/components/CardPanel.vue";
 import { t } from "@/lang/i18n";
 import { onMounted } from "vue";
@@ -83,6 +84,7 @@ onMounted(() => {
     <template #title>{{ title || t("TXT_CODE_d655beec") }}</template>
     <template #body>
       <VDataTable :headers="columns.map((column) => ({ title: column.title, key: column.key, value: column.dataIndex || column.key, sortable: false }))" :items="state?.instances || []" :items-per-page="-1" hide-default-footer density="comfortable">
+        <template #no-data><Empty icon="mdi-view-grid-outline" /></template>
         <template #item.status="{ item }"><VChip size="small" variant="tonal" :color="item.status === INSTANCE_STATUS_CODE.RUNNING ? 'success' : item.status === INSTANCE_STATUS_CODE.BUSY ? 'warning' : 'secondary'">{{ INSTANCE_STATUS[item.status as INSTANCE_STATUS_CODE] || item.status }}</VChip></template>
         <template #item.lastDatetime="{ item }">{{ parseTimestamp(item.config?.lastDatetime) }}</template>
         <template #item.endTime="{ item }">{{ parseTimestamp(item.config?.endTime) || t("TXT_CODE_abc080d") }}</template>

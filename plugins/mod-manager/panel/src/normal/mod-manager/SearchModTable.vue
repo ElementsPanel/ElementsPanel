@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { useI18n } from "vue-i18n";
 import { computed } from "vue";
 import { VAvatar, VBtn, VChip, VDataTable, VIcon, VImg, VProgressCircular } from "vuetify/components";
@@ -33,7 +34,7 @@ const emitPageChange = (page: number, itemsPerPage: number) => emit("change", { 
 <template>
   <VDataTable class="search-mod-table" :headers="headers" :items="dataSource" item-value="id" :loading="loading" :items-length="pagination?.total || dataSource.length" :items-per-page="pagination?.pageSize || 10" :page="pagination?.current || 1" density="comfortable" @update:page="(page) => emitPageChange(page, pagination?.pageSize || 10)" @update:items-per-page="(size) => emitPageChange(pagination?.current || 1, size)">
     <template #loading><VProgressCircular indeterminate size="24" width="2" /></template>
-    <template #no-data><div class="search-mod-empty"><VIcon icon="mdi-magnify" size="42" /><span>{{ t("TXT_CODE_SEARCH_TIP") }}</span></div></template>
+    <template #no-data><Empty icon="mdi-magnify" :title="t('TXT_CODE_SEARCH_TIP')" /></template>
     <template #item.icon="{ item }"><VAvatar size="40" rounded="lg" color="surface-variant"><VImg v-if="item.icon_url" :src="item.icon_url" /><span v-else>{{ (item.title || "?").charAt(0).toUpperCase() }}</span></VAvatar></template>
     <template #item.name="{ item }"><div class="search-mod-name" :title="item.title"><strong>{{ item.title }}</strong><small>{{ item.description }}</small></div></template>
     <template #item.version="{ item }"><div class="search-mod-version"><code>{{ item.version_number || t("TXT_CODE_UNKNOWN_VERSION") }}</code><small>{{ formatDate(item.updated) }}</small></div></template>
@@ -44,7 +45,6 @@ const emitPageChange = (page: number, itemsPerPage: number) => emit("change", { 
 </template>
 
 <style scoped>
-.search-mod-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 48px 0; opacity: 0.5; }
 .search-mod-name, .search-mod-version { display: flex; flex-direction: column; min-width: 0; text-align: left; }
 .search-mod-name strong, .search-mod-version code, .search-mod-version small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .search-mod-name small { opacity: 0.6; font-size: 11px; }

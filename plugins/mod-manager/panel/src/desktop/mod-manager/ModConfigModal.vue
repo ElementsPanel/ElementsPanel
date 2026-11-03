@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import DesktopDialog from "@/components/DesktopDialog.vue";
 import { t } from "@/lang/i18n";
 import AppDialog from "@/components/AppDialog.vue";
@@ -35,7 +36,7 @@ const emit = defineEmits(["update:visible", "edit"]);
           <template #prepend><VIcon icon="mdi-file-document-outline" /></template>
           <template #append><VBtn variant="text" @click="emit('edit', item)">{{ t("TXT_CODE_EDIT") }}</VBtn></template>
         </VListItem>
-        <VListItem v-if="!configFiles.length" :title="t('TXT_CODE_NO_DATA')" />
+        <Empty v-if="!configFiles.length" icon="mdi-file-document-outline" compact />
       </VList>
       <div v-else class="desktop-modal-loading"><VIcon icon="mdi-loading" /></div>
     </DesktopDialog>
@@ -47,7 +48,7 @@ const emit = defineEmits(["update:visible", "edit"]);
         <template #prepend><VIcon icon="mdi-file-document-outline" /></template>
         <template #append><VBtn variant="text" @click="emit('edit', item)">{{ t("TXT_CODE_EDIT") }}</VBtn></template>
       </VListItem>
-      <VListItem v-if="!configFiles.length" :title="t('TXT_CODE_NO_DATA')" />
+      <Empty v-if="!configFiles.length" icon="mdi-file-document-outline" compact />
     </VList>
     <div v-else class="desktop-modal-loading"><VIcon icon="mdi-loading" /></div>
   </AppDialog>

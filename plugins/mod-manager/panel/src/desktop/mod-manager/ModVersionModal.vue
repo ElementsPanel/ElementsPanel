@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import DesktopDialog from "@/components/DesktopDialog.vue";
 import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
@@ -161,6 +162,7 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
       <p class="mb-8 desktop-modal-hint"><VIcon icon="mdi-alert-outline" /> {{ $t("TXT_CODE_6111bc9e") }}</p>
       <VDataTable class="mod-version-table" :headers="desktopHeaders" :items="sortedVersions" item-value="id"
         :loading="versionsLoading" density="comfortable">
+        <template #no-data><Empty icon="mdi-puzzle-outline" compact /></template>
         <template #loading><VProgressCircular indeterminate size="24" width="2" /></template>
         <template #item.name="{ item }"><strong>{{ item.name }}</strong></template>
         <template #item.version_number="{ item }">{{ item.version_number }}</template>
@@ -184,6 +186,7 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
     <p class="mb-8 desktop-modal-hint"><VIcon icon="mdi-alert-outline" /> {{ $t("TXT_CODE_6111bc9e") }}</p>
     <VDataTable :headers="desktopHeaders" :items="sortedVersions" item-value="id" :loading="versionsLoading"
       :items-per-page="isPhone ? 5 : 10" density="comfortable">
+      <template #no-data><Empty icon="mdi-puzzle-outline" compact /></template>
       <template #item.name="{ item }"><strong>{{ item.name }}</strong></template>
       <template #item.game_versions="{ item }">
         <VChip v-for="v in item.game_versions?.slice(0, 3)" :key="v" size="small" variant="tonal"

@@ -18,6 +18,7 @@ function setupSfc(filename, overrides = {}, props = {}) {
     {
       vue: { ...vue, onMounted() {}, onUnmounted() {}, watch() {} },
       "@/lang/i18n": i18n,
+      "@/components/Empty.vue": {},
       "@/components/DesktopDialog.vue": {},
       "@/hooks/useScreen": { useScreen: () => ({ isPhone: vue.ref(false) }) },
       "vuetify/components": {},

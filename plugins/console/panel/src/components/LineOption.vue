@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { t } from "@/lang/i18n";
 import { computed, onMounted, ref } from "vue";
 import { VBtn, VCard, VCardText, VCol, VIcon, VRow, VSelect, VTextField } from "vuetify/components";
@@ -71,7 +72,9 @@ onMounted(() => {
               <div v-if="$slots.optionInput"><slot name="optionInput"></slot></div>
               <div v-else class="line-option-control">
                 <VTextField v-if="type == CONTROL.INPUT" v-model="computedValue" variant="solo" density="compact" hide-details />
-                <VSelect v-else v-model="computedValue" :items="[{ title: t('TXT_CODE_addfcb6b'), value: true }, { title: t('TXT_CODE_1e9c479e'), value: false }]" variant="solo" density="compact" hide-details />
+                <VSelect v-else v-model="computedValue" :items="[{ title: t('TXT_CODE_addfcb6b'), value: true }, { title: t('TXT_CODE_1e9c479e'), value: false }]" variant="solo" density="compact" hide-details>
+                  <template #no-data><Empty :icon="false" compact /></template>
+                </VSelect>
                 <VBtn v-if="type == CONTROL.SELECT" icon variant="text" size="small" rounded="xl" @click="forceType"><VIcon icon="mdi-pencil-outline" /></VBtn>
               </div>
             </VCol>

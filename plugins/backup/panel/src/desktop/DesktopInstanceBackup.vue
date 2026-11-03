@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { t } from "@/lang/i18n";
 import type { FrontendFileManagerService } from "@/plugin";
 import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
@@ -329,10 +330,12 @@ onUnmounted(() => {
                         </div>
                     </div>
                 </div>
-                <div v-else-if="!listLoading" class="ds-backup-intro">
-                    <VIcon icon="mdi-cloud-download-outline" class="intro-icon"  />
-                    <p>{{ t("TXT_CODE_INSTANCE_BACKUP_INTRO") }}</p>
-                </div>
+                <Empty
+                  v-else-if="!listLoading"
+                  icon="mdi-cloud-outline"
+                  :description="t('TXT_CODE_INSTANCE_BACKUP_INTRO')"
+                  compact
+                />
                 <div v-else class="list-loading">
                     <VIcon icon="mdi-loading"  />
                 </div>
@@ -547,36 +550,6 @@ onUnmounted(() => {
         justify-content: center;
         font-size: 24px;
         color: var(--color-blue-5);
-    }
-}
-
-.ds-backup-intro {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-
-    .intro-icon {
-        font-size: 64px;
-        color: var(--desktop-window-text-muted);
-        margin-bottom: 20px;
-        opacity: 0.5;
-    }
-
-    h3 {
-        font-size: 18px;
-        font-weight: 600;
-        margin-bottom: 12px;
-        color: var(--desktop-window-text);
-    }
-
-    p {
-        font-size: 14px;
-        color: var(--desktop-window-text-secondary);
-        line-height: 1.6;
-        margin: 0;
     }
 }
 </style>

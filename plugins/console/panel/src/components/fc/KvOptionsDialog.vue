@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { t } from "@/lang/i18n";
 import type { MountComponent } from "../../types";
 import _ from "lodash";
@@ -123,6 +124,7 @@ const operation = (type: "add" | "del", index = 0) => {
       </div>
       <VForm ref="formInstance">
         <VDataTable :headers="tableHeaders" :items="dataSource" :items-per-page="-1" hide-default-footer density="comfortable">
+          <template #no-data><Empty icon="mdi-format-list-bulleted" compact /></template>
           <template #item="{ item, index }">
             <tr>
               <td v-for="column in columns" :key="getColumnKey(column)" :class="`text-${column.align || 'center'}`">

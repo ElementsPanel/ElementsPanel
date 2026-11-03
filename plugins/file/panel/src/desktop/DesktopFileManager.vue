@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import DesktopDialog from "@/components/DesktopDialog.vue";
 import FileManagerTabs from "../components/FileManagerTabs.vue";
 import { useFileManager } from "../hooks/useFileManager";
@@ -785,7 +786,9 @@ onUnmounted(() => {
             <FileManagerTabs :active-tab="activeTab" :tabs="currentTabs" @select="handleChangeTab" @close="onEditTabs($event, 'remove')" @add="onEditTabs('', 'add')" />
             <template v-if="currentTabs.length">
             <div class="dfm-nav">
-                <VSelect v-if="isShowDiskList" v-model="currentDisk" :items="[{ title: t('TXT_CODE_28124988'), value: '/' }, ...(fileStatus?.disks || []).map((disk: string) => ({ title: disk, value: disk }))]" width="125" variant="solo" density="compact" hide-details @update:model-value="toDisk" />
+                <VSelect v-if="isShowDiskList" v-model="currentDisk" :items="[{ title: t('TXT_CODE_28124988'), value: '/' }, ...(fileStatus?.disks || []).map((disk: string) => ({ title: disk, value: disk }))]" width="125" variant="solo" density="compact" hide-details @update:model-value="toDisk">
+                  <template #no-data><Empty :icon="false" compact /></template>
+                </VSelect>
                 <div class="dfm-breadcrumbs"><VBtn v-for="(item, index) in breadcrumbs" :key="item.path" variant="text" size="small" @click="handleChangeDir(item.path)">{{ item.name }}<span v-if="index < breadcrumbs.length - 1" class="dfm-breadcrumb-separator">&gt;</span></VBtn></div>
             </div>
 
@@ -797,7 +800,12 @@ onUnmounted(() => {
                 <template #item.size="{ item }">{{ item.size ? convertFileSize(String(item.size)) : "--" }}</template>
                 <template #item.time="{ item }">{{ item.time ? dayjs(item.time).format("YYYY-MM-DD HH:mm:ss") : "--" }}</template>
                 <template #item.mode="{ item }">{{ item.mode ?? "--" }}</template>
-                <template #no-data><div class="dfm-empty"><VIcon icon="mdi-folder-open-outline" size="42" /><span>{{ t("TXT_CODE_DESKTOP_FM_NO_FILES") }}</span></div></template>
+                <template #no-data>
+                  <Empty
+                    icon="mdi-folder-open-outline"
+                    :title="t('TXT_CODE_DESKTOP_FM_NO_FILES')"
+                  />
+                </template>
             </VDataTableServer>
             <div v-if="dragSelectVisible" class="dfm-drag-select-rect" :style="{ left: dragSelectRect.x + 'px', top: dragSelectRect.y + 'px', width: dragSelectRect.w + 'px', height: dragSelectRect.h + 'px' }"></div>
             </div>
@@ -915,7 +923,6 @@ onUnmounted(() => {
     color: var(--desktop-window-text);
     font-size: 13px;
     overflow: hidden;
-
 }
 
 .dfm-toolbar {
@@ -1154,7 +1161,7 @@ onUnmounted(() => {
 .dfm-menu-list { display: flex; flex-direction: column; gap: 2px; padding: 8px !important; }
 .dfm-menu-list .v-btn { justify-content: flex-start; }
 .dfm-file-name { display: inline-flex; align-items: center; gap: 8px; }
-.dfm-empty, .dfm-loading-dialog { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 32px; opacity: 0.65; }
+.dfm-loading-dialog { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 32px; opacity: 0.65; }
 .dfm-dialog-label { margin: 12px 0 4px; font-weight: 600; }
 .dfm-permission { margin: 10px 0; }
 </style>

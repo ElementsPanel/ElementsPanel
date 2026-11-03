@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { useSchedule } from "@/hooks/useSchedule";
 import { ctx } from "@/plugin/context";
 import { t } from "@/lang/i18n";
@@ -231,7 +232,9 @@ defineExpose({
           :items="scheduleTypeItems"
           :placeholder="t('TXT_CODE_3bb646e4')"
           hide-details
-        />
+        >
+          <template #no-data><Empty :icon="false" compact /></template>
+        </VSelect>
       </div>
 
       <template v-if="newTask.type === ScheduleCreateType.INTERVAL">
@@ -319,7 +322,9 @@ defineExpose({
               :placeholder="t('TXT_CODE_3bb646e4')"
               hide-details
               @update:model-value="action.payload = ''"
-            />
+            >
+              <template #no-data><Empty :icon="false" compact /></template>
+            </VSelect>
           </VCol>
           <VCol cols="12" md="7">
             <VTextField

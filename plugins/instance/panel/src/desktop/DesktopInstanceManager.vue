@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import DesktopDialog from "@/components/DesktopDialog.vue";
 import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
 import { getInstanceDeleteError } from "../tools/deletion";
@@ -545,12 +546,16 @@ onUnmounted(() => {
                 <div class="dim-select">
                     <VSelect v-model="selectedNodeId" :label="t('TXT_CODE_e076d90b')" :items="nodeSelectItems"
                         variant="solo" density="compact" hide-details class="dim-select__input"
-                        :disabled="nodeSelectItems.length === 0" />
+                        :disabled="nodeSelectItems.length === 0">
+                      <template #no-data><Empty :icon="false" compact /></template>
+                    </VSelect>
                 </div>
 
                 <div class="dim-select">
                     <VSelect v-model="statusFilter" :items="statusSelectItems" variant="solo" density="compact"
-                        hide-details class="dim-select__input" />
+                        hide-details class="dim-select__input">
+                      <template #no-data><Empty :icon="false" compact /></template>
+                    </VSelect>
                 </div>
             </div>
 
@@ -628,17 +633,17 @@ onUnmounted(() => {
         </div>
 
         <div class="dim-list" :class="{ 'dim-list--loading': loading }">
-            <div v-if="loading && instances.length === 0" class="dim-empty">
+            <div v-if="loading && instances.length === 0" class="dim-loading">
                 <VProgressCircular indeterminate size="28" width="3" class="mb-2" />
                 <p>{{ t("TXT_CODE_DESKTOP_IM_LOADING") }}</p>
             </div>
 
-            <div v-else-if="filteredInstances.length === 0" class="dim-empty">
-                <span class="dim-empty__icon">
-                    <VIcon icon="mdi-inbox-outline"  />
-                </span>
-                <p>{{ t("TXT_CODE_DESKTOP_IM_NO_INSTANCES") }}</p>
-            </div>
+            <Empty
+              v-else-if="filteredInstances.length === 0"
+              icon="mdi-view-grid-outline"
+              :title="t('TXT_CODE_DESKTOP_IM_NO_INSTANCES')"
+              :description="t('TXT_CODE_NO_DATA')"
+            />
 
             <div v-for="instance in filteredInstances" :key="instance.instanceUuid" class="dim-instance"
                 :class="{ 'dim-instance--operating': isOperating(instance.instanceUuid), 'dim-instance--selected': findInstance(instance) }"
@@ -1046,18 +1051,13 @@ onUnmounted(() => {
     }
 }
 
-.dim-empty {
+.dim-loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 48px 16px;
     color: var(--desktop-window-text-muted);
-
-    &__icon {
-        font-size: 36px;
-        margin-bottom: 12px;
-    }
 
     p {
         margin: 8px 0 0;
@@ -1387,5 +1387,4 @@ onUnmounted(() => {
     line-height: 1.6;
     word-break: break-all;
 }
-
 </style>

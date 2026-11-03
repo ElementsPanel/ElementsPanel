@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { t } from "@/lang/i18n";
 import dayjs from "dayjs";
 import {
-  VIcon,
   VProgressCircular,
   VTimeline,
   VTimelineItem
@@ -25,10 +25,12 @@ withDefaults(
       <VProgressCircular indeterminate size="20" width="2" />
       <span>{{ t("TXT_CODE_73102f2b") }}</span>
     </div>
-    <div v-else-if="logs.length === 0" class="empty-state">
-      <VIcon icon="mdi-file-document-outline" class="empty-icon" />
-      <div class="empty-text">{{ t("TXT_CODE_54469e02") }}</div>
-    </div>
+    <Empty
+      v-else-if="logs.length === 0"
+      icon="mdi-file-document-outline"
+      :title="t('TXT_CODE_54469e02')"
+      compact
+    />
     <div v-else class="log-timeline">
       <VTimeline density="compact" side="end" truncate-line="both">
         <VTimelineItem
@@ -72,28 +74,6 @@ withDefaults(
   color: var(--text-color);
   font-size: 14px;
   opacity: 0.65;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 20px;
-  text-align: center;
-}
-
-.empty-icon {
-  margin-bottom: 16px;
-  font-size: 48px;
-  color: var(--color-gray-5);
-  opacity: 0.5;
-}
-
-.empty-text {
-  font-size: 15px;
-  color: var(--text-color);
-  opacity: 0.55;
 }
 
 .log-timeline {

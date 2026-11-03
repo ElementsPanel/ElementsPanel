@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import AppDialog from "@/components/AppDialog.vue";
 import { useAddJavaDialog, useDownloadJavaDialog } from "../dialogs";
 import { t } from "@/lang/i18n";
@@ -159,6 +160,7 @@ defineExpose({ open: openDialog, openDialog });
       :items-per-page="15"
       class="java-table"
     >
+      <template #no-data><Empty icon="mdi-language-java" /></template>
       <template #item.fullname="{ item }">{{ item.info.fullname }}</template>
       <template #item.installTime="{ item }">{{
         t(parseTimestamp(item.info.installTime))

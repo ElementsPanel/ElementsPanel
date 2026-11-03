@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import PageToolbar from "@/components/PageToolbar.vue";
 import { t } from "@/lang/i18n";
 import { reportErrorMsg } from "@/tools/validator";
 import { ref } from "vue";
-import { VBtn, VCol, VContainer, VIcon, VPagination, VRow, VSelect, VTextField } from "vuetify/components";
+import { VBtn, VCol, VContainer, VPagination, VRow, VSelect, VTextField } from "vuetify/components";
 import { useRemoteNode } from "../hooks/useRemoteNode";
 import NodeDetailDialog from "./node/NodeDetailDialog.vue";
 import NodeItem from "./node/NodeItem.vue";
@@ -53,7 +54,9 @@ const handleOpenDetailDialog = async () => {
               ]"
               class="status-select"
               hide-details
-            />
+            >
+              <template #no-data><Empty :icon="false" compact /></template>
+            </VSelect>
             <VTextField
               v-model.trim="operationForm.name"
               :placeholder="t('TXT_CODE_461d1a01')"
@@ -83,11 +86,12 @@ const handleOpenDetailDialog = async () => {
         </template>
       </PageToolbar>
 
-      <div v-if="response && !remotes.length && !refreshLoading" class="node-empty" role="status">
-        <VIcon icon="mdi-server-network-outline" size="48" class="node-empty-icon" />
-        <div class="node-empty-title">{{ t("TXT_CODE_NODE_LIST_EMPTY") }}</div>
-        <div class="node-empty-text">{{ t("TXT_CODE_NO_DATA") }}</div>
-      </div>
+      <Empty
+        v-if="response && !remotes.length && !refreshLoading"
+        icon="mdi-server-network-outline"
+        :title="t('TXT_CODE_NODE_LIST_EMPTY')"
+        :description="t('TXT_CODE_NO_DATA')"
+      />
 
       <VRow v-else-if="remotes.length || refreshLoading" density="comfortable" class="node-list-row">
         <VCol cols="12">
@@ -109,7 +113,9 @@ const handleOpenDetailDialog = async () => {
                 :items="[8, 16, 24, 48]"
                 class="page-size-select"
                 hide-details
-              />
+              >
+                <template #no-data><Empty :icon="false" compact /></template>
+              </VSelect>
             </div>
           </div>
         </VCol>
@@ -151,32 +157,6 @@ const handleOpenDetailDialog = async () => {
   width: 100%;
   height: 100%;
   margin: 0;
-}
-.node-empty {
-  min-height: 38vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 48px 24px;
-  text-align: center;
-  color: var(--color-gray-7);
-}
-.node-empty-icon {
-  margin-bottom: 8px;
-  color: var(--color-gray-6);
-}
-.node-empty-title {
-  color: var(--color-gray-8);
-  font-size: 1rem;
-  font-weight: 600;
-}
-.node-empty-text {
-  max-width: 460px;
-  color: var(--color-gray-7);
-  font-size: 0.875rem;
-  line-height: 1.5;
 }
 .desc-text {
   color: var(--color-gray-7);

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { t } from "@/lang/i18n";
 import { remoteNodeList } from "@/services/apis";
 import { computeNodeName } from "@/tools/nodes";
@@ -63,9 +64,12 @@ const openConsole = (node: NodeStatus) => {
             <div v-if="isLoading" class="dts-loading">
                 {{ t("TXT_CODE_b197be11") }}
             </div>
-            <div v-else-if="!filteredNodes.length" class="dts-empty">
-                {{ t("TXT_CODE_5415f009") || 'No nodes found' }}
-            </div>
+            <Empty
+              v-else-if="!filteredNodes.length"
+              icon="mdi-server-network-outline"
+              :title="t('TXT_CODE_5415f009')"
+              :description="t('TXT_CODE_NO_DATA')"
+            />
             <div v-else class="dts-grid">
                 <div v-for="node in filteredNodes" :key="node.uuid" class="dts-card"
                     :class="{ 'dts-card--disabled': !node.available }" @click="openConsole(node)">
@@ -231,8 +235,7 @@ const openConsole = (node: NodeStatus) => {
     }
 }
 
-.dts-loading,
-.dts-empty {
+.dts-loading {
     height: 100%;
     display: flex;
     align-items: center;

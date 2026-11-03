@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import PageToolbar from "@/components/PageToolbar.vue";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { useSchedule } from "@/hooks/useSchedule";
@@ -191,7 +192,8 @@ onMounted(async () => {
 
       <VCard class="schedule-card" rounded="xl" flat>
         <VDataTable :headers="headers" :items="scheduleRows" :items-per-page="15" :loading="scheduleListLoading"
-          :loading-text="t('TXT_CODE_b197be11')" :no-data-text="t('TXT_CODE_NO_DATA')" class="schedule-table">
+          :loading-text="t('TXT_CODE_b197be11')" class="schedule-table">
+          <template #no-data><Empty icon="mdi-clock-outline" /></template>
           <template #item.count="{ item }">
             {{ Number(rawSchedule(item).count) > 0 ? rawSchedule(item).count : t("TXT_CODE_a92df201") }}
           </template>

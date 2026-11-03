@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { useDialog } from "@/hooks/useDialog";
 import type { ComputedNodeInfo } from "@/hooks/useOverviewInfo";
 import { useRemoteNode } from "@/hooks/useRemoteNode";
@@ -38,7 +39,7 @@ const isNodeSupported = (node: ComputedNodeInfo): boolean => {
   if (!props.targetPlatforms || props.targetPlatforms.length === 0) {
     return true;
   }
-  
+
   if (!node.dockerPlatforms || node.dockerPlatforms.length === 0) {
     return false;
   }
@@ -80,22 +81,19 @@ defineExpose({
         {{ t("TXT_CODE_ad24269a") }}
       </p>
       <div class="node-grid">
-        <div v-if="availableNodes.length === 0">
-          <div class="justify-center" flex-center>
-            <div>
-              <div class="mb-2">
-                <p style="opacity: 0.8">
-                  {{ t("TXT_CODE_f4110b65") }}
-                </p>
-              </div>
-              <div>
-                <VBtn color="primary" :loading="refreshLoading" @click="refreshNodes">
-                  {{ t("TXT_CODE_4fe5dce5") }}
-                </VBtn>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Empty
+          v-if="availableNodes.length === 0"
+          icon="mdi-server-network-outline"
+          :title="t('TXT_CODE_f4110b65')"
+          class="node-select-empty"
+          compact
+        >
+          <template #actions>
+            <VBtn color="primary" :loading="refreshLoading" @click="refreshNodes">
+              {{ t("TXT_CODE_4fe5dce5") }}
+            </VBtn>
+          </template>
+        </Empty>
         <div
           v-for="item in sortedNodes"
           v-else
@@ -152,6 +150,10 @@ defineExpose({
 <style lang="scss" scoped>
 .node-select-description {
   margin-bottom: 16px;
+}
+
+.node-select-empty {
+  grid-column: 1 / -1;
 }
 
 .node-select-container {

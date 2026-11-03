@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { t } from "@/lang/i18n";
 import { useAppStateStore } from "@/stores/useAppStateStore";
@@ -208,10 +209,12 @@ if (props.desktop) {
           class="mb-3"
           >{{ t("TXT_CODE_TASKS_LOAD_ERROR") }}</VAlert
         >
-        <div v-if="!visibleTasks.length && !loading" class="task-empty">
-          <VIcon icon="mdi-clipboard-check-outline" size="48" class="mb-3" />
-          <div>{{ t("TXT_CODE_TASKS_EMPTY") }}</div>
-        </div>
+        <Empty
+          v-if="!visibleTasks.length && !loading"
+          icon="mdi-clipboard-check-outline"
+          :title="t('TXT_CODE_TASKS_EMPTY')"
+          compact
+        />
         <VCard
           v-for="task in visibleTasks"
           :key="`${task.daemonId}:${task.id}`"
@@ -303,14 +306,6 @@ if (props.desktop) {
 }
 .task-history-toggle {
   flex: 0 1 auto;
-}
-.task-empty {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  padding: clamp(20px, 7dvh, 72px) 4px 24px;
-  text-align: center;
-  opacity: 0.6;
 }
 .task-item {
   background-color: rgba(var(--v-theme-primary), 0.05);

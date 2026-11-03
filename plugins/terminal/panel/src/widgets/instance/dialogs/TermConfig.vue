@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { ref, computed } from "vue";
 import { t } from "@/lang/i18n";
 import type { InstanceDetail } from "@/types";
@@ -105,7 +106,9 @@ defineExpose({
               :placeholder="t('TXT_CODE_3bb646e4')"
               class="term-config-control"
               hide-details
-            />
+            >
+              <template #no-data><Empty :icon="false" compact /></template>
+            </VSelect>
           </div>
         </VCol>
 
@@ -129,13 +132,17 @@ defineExpose({
                 :items="TERMINAL_CODE"
                 :placeholder="t('TXT_CODE_bd2559f3')"
                 hide-details
-              />
+              >
+                <template #no-data><Empty :icon="false" compact /></template>
+              </VSelect>
               <VSelect
                 v-model="options.config.oe"
                 :items="TERMINAL_CODE"
                 :placeholder="t('TXT_CODE_6e96b2a9')"
                 hide-details
-              />
+              >
+                <template #no-data><Empty :icon="false" compact /></template>
+              </VSelect>
             </div>
           </div>
         </VCol>

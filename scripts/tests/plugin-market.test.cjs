@@ -526,6 +526,11 @@ function setupFixture(component, props) {
 const sharedViewOverrides = {
   vue,
   "vuetify/components": {},
+  "@/components/Empty.vue": load("plugins/console/panel/src/components/Empty.vue", {
+    vue,
+    "@/lang/i18n": { t: (key) => key },
+    "vuetify/components": { VIcon: "span" }
+  }, true).default,
   "@/components/PageToolbar.vue": {},
   "@/lang/i18n": { t: (key) => key, getCurrentLang: () => "en_us" },
   "@/tools/validator": { getValidatorErrorMsg: (err) => err.message },

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { ctx } from "@/plugin/context";
 import { t } from "@/lang/i18n";
@@ -347,7 +348,9 @@ onBeforeUnmount(() => {
           :disabled="loading || busy || applyingChanges"
           hide-details
           class="mb-4"
-        />
+        >
+          <template #no-data><Empty :icon="false" compact /></template>
+        </VSelect>
         <PluginMarketSideBadge :sides="version?.sides ?? plugin.sides" />
         <VAlert
           v-if="version?.deprecated"
@@ -394,7 +397,9 @@ onBeforeUnmount(() => {
           :disabled="busy"
           hide-details
           class="mb-4"
-        />
+        >
+          <template #no-data><Empty :icon="false" compact /></template>
+        </VSelect>
         <div v-if="installed?.daemonIds.length" class="text-caption text-medium-emphasis mb-4">
           <div v-for="daemonId in installed.daemonIds" :key="daemonId">
             {{ daemonId }} · {{ installed.daemonVersions?.[daemonId] ?? installed.version }}

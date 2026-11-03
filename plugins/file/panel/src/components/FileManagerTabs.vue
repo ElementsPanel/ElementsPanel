@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { t } from "@/lang/i18n";
-import { VBtn, VIcon, VTab, VTabs } from "vuetify/components";
+import { VBtn, VTab, VTabs } from "vuetify/components";
 
 defineProps<{
   activeTab: string;
@@ -23,11 +24,17 @@ const emit = defineEmits<{
     </VTabs>
     <VBtn icon="mdi-plus" size="small" variant="text" :aria-label="t('TXT_CODE_1644b775')" @click="emit('add')" />
   </div>
-  <div v-if="!tabs.length" class="file-tabs-empty" role="status">
-    <VIcon icon="mdi-folder-open-outline" size="48" />
-    <p>{{ t("TXT_CODE_FILE_NO_OPEN_FOLDERS") }}</p>
-    <VBtn variant="tonal" prepend-icon="mdi-plus" @click="emit('add')">{{ t("TXT_CODE_1644b775") }}</VBtn>
-  </div>
+  <Empty
+    v-if="!tabs.length"
+    icon="mdi-folder-open-outline"
+    :title="t('TXT_CODE_FILE_NO_OPEN_FOLDERS')"
+  >
+    <template #actions>
+      <VBtn variant="tonal" prepend-icon="mdi-plus" @click="emit('add')">{{
+        t("TXT_CODE_1644b775")
+      }}</VBtn>
+    </template>
+  </Empty>
 </template>
 
 <style scoped>
@@ -69,17 +76,6 @@ const emit = defineEmits<{
   opacity: 1;
   pointer-events: auto;
 }
-.file-tabs-empty {
-  display: flex;
-  flex: 1;
-  min-height: 240px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  color: var(--text-color);
-}
-.file-tabs-empty p { margin: 0; }
 @media (hover: none) {
   .file-folder-tab .file-tab-label { transform: translateX(-12px); }
   .file-folder-tab .file-tab-close { opacity: 1; pointer-events: auto; }

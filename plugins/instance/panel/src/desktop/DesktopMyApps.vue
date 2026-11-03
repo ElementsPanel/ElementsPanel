@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { t } from "@/lang/i18n";
 import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
 import { userInfoApiAdvanced } from "@/services/apis/index";
@@ -225,7 +226,9 @@ onUnmounted(() => {
         <div class="ma-toolbar">
             <div class="ma-toolbar__left">
                 <VSelect v-model="statusFilter" :items="statusSelectItems" variant="solo" density="compact"
-                    hide-details class="ma-select__input" />
+                    hide-details class="ma-select__input">
+                  <template #no-data><Empty :icon="false" compact /></template>
+                </VSelect>
             </div>
 
             <div class="ma-toolbar__right">
@@ -256,17 +259,17 @@ onUnmounted(() => {
         </div>
 
         <div class="ma-list" :class="{ 'ma-list--loading': loading }">
-            <div v-if="loading && instances.length === 0" class="ma-empty">
+            <div v-if="loading && instances.length === 0" class="ma-loading">
                 <VProgressCircular indeterminate size="28" width="3" class="mb-2" />
                 <p>{{ t("TXT_CODE_DESKTOP_IM_LOADING") }}</p>
             </div>
 
-            <div v-else-if="filteredInstances.length === 0" class="ma-empty">
-                <span class="ma-empty__icon">
-                    <VIcon icon="mdi-inbox-outline"  />
-                </span>
-                <p>{{ t("TXT_CODE_DESKTOP_IM_NO_INSTANCES") }}</p>
-            </div>
+            <Empty
+              v-else-if="filteredInstances.length === 0"
+              icon="mdi-view-grid-outline"
+              :title="t('TXT_CODE_DESKTOP_IM_NO_INSTANCES')"
+              :description="t('TXT_CODE_NO_DATA')"
+            />
 
             <div v-for="instance in filteredInstances" :key="instance.instanceUuid" class="ma-instance"
                 :class="{ 'ma-instance--operating': isOperating(instance.instanceUuid) }"
@@ -479,18 +482,13 @@ onUnmounted(() => {
     }
 }
 
-.ma-empty {
+.ma-loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 48px 16px;
     color: var(--desktop-window-text-muted);
-
-    &__icon {
-        font-size: 36px;
-        margin-bottom: 12px;
-    }
 
     p {
         margin: 8px 0 0;

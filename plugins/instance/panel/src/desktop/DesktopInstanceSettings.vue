@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import DesktopDialog from "@/components/DesktopDialog.vue";
 import { GLOBAL_INSTANCE_NAME } from "@/config/const";
 import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
@@ -307,10 +308,14 @@ onBeforeUnmount(() => { generation++; });
         <section v-show="activeTab === 'basic'" class="dis__grid">
           <VTextField v-model="draft.nickname" name="nickname" :rules="isAdmin && !isGlobalTerminal ? [requiredRule('TXT_CODE_68a504b3')] : []"
             :label="t('TXT_CODE_f70badb9')" :disabled="!isAdmin || isGlobalTerminal || isSaving" />
-          <VSelect v-model="draft.type" :items="typeItems" :label="t('TXT_CODE_2f291d8b')" :disabled="!isAdmin || isGlobalTerminal || isSaving" />
+          <VSelect v-model="draft.type" :items="typeItems" :label="t('TXT_CODE_2f291d8b')" :disabled="!isAdmin || isGlobalTerminal || isSaving">
+            <template #no-data><Empty :icon="false" compact /></template>
+          </VSelect>
           <VTextField v-model="endTimeText" name="endTime" :rules="isAdmin && !isGlobalTerminal ? [endTimeRule] : []" :label="t('TXT_CODE_fa920c0')" placeholder="YYYY-MM-DD HH:mm:ss"
             :disabled="!isAdmin || isGlobalTerminal || isSaving" />
-          <VSelect v-model="draft.fileCode" :items="TERMINAL_CODE" :label="t('TXT_CODE_f041de90')" />
+          <VSelect v-model="draft.fileCode" :items="TERMINAL_CODE" :label="t('TXT_CODE_f041de90')">
+            <template #no-data><Empty :icon="false" compact /></template>
+          </VSelect>
           <p v-if="!isAdmin" class="dis__hint dis__wide">{{ t("TXT_CODE_66f38b2e") }}</p>
           <VTextarea v-model="draft.startCommand" name="startCommand" :rules="commandRules" class="dis__wide" :label="t('TXT_CODE_d12fa808')" rows="4"
             :placeholder="isDockerMode ? t('TXT_CODE_98e7c829') : t('TXT_CODE_f50cfe2')" />
@@ -328,7 +333,9 @@ onBeforeUnmount(() => { generation++; });
             color="primary" :label="t('TXT_CODE_61a8296e')" />
           <template v-if="isDockerMode">
             <VCombobox v-model="draft.docker.image" name="image" :rules="[requiredRule('TXT_CODE_be6484f7')]" :items="images" :return-object="false" :loading="imagesLoading"
-              class="dis__wide" :label="t('TXT_CODE_44b585c7')" @focus="loadImages" />
+              class="dis__wide" :label="t('TXT_CODE_44b585c7')" @focus="loadImages">
+              <template #no-data><Empty :icon="false" compact /></template>
+            </VCombobox>
             <VSwitch v-model="draft.docker.changeWorkdir" color="primary" :label="t('TXT_CODE_5484094a')" />
             <VTextField v-model="draft.docker.workingDir" :label="t('TXT_CODE_81979d0f')" :placeholder="t('TXT_CODE_2082f659')" />
             <div class="dis__list-buttons dis__wide">
@@ -339,7 +346,9 @@ onBeforeUnmount(() => { generation++; });
             </div>
             <VTextField v-model.number="draft.basePort" type="number" min="0" max="65535" :label="t('TXT_CODE_15f5fb07')" />
             <VCombobox v-model="draft.docker.networkMode" name="networkMode" :rules="[requiredRule('TXT_CODE_b52cb76c')]" :items="networkModes.map((mode) => mode.Name)"
-              :return-object="false" :loading="networkLoading" :label="t('TXT_CODE_efcef926')" @focus="loadNetworks" />
+              :return-object="false" :loading="networkLoading" :label="t('TXT_CODE_efcef926')" @focus="loadNetworks">
+              <template #no-data><Empty :icon="false" compact /></template>
+            </VCombobox>
             <VTextField v-model="aliasesText" :label="t('TXT_CODE_10194e6a')" />
             <VTextField v-model="draft.docker.containerName" :label="t('TXT_CODE_c3a3b6b1')" />
             <VSwitch v-model="draft.docker.privileged" color="primary" :label="t('TXT_CODE_dc47d2aa')" />
@@ -350,7 +359,9 @@ onBeforeUnmount(() => { generation++; });
           <VTextField v-model="draft.updateCommand" class="dis__wide" :label="t('TXT_CODE_bb0b9711')"
             :hint="updateCommandHint" :placeholder="updateCommandPlaceholder" persistent-hint :disabled="isGlobalTerminal || isSaving" />
           <VCombobox v-model="draft.docker.updateCommandImage" :items="images" :return-object="false"
-            :loading="imagesLoading" :label="t('TXT_CODE_8aca7994')" @focus="loadImages" />
+            :loading="imagesLoading" :label="t('TXT_CODE_8aca7994')" @focus="loadImages">
+            <template #no-data><Empty :icon="false" compact /></template>
+          </VCombobox>
           <VTextField v-model="draft.runAs" :label="t('TXT_CODE_fffaeb17')" :disabled="isGlobalTerminal || isSaving" />
         </section>
         <section v-if="isAdmin && !isGlobalTerminal" v-show="activeTab === 'resources'" class="dis__grid">
@@ -386,11 +397,13 @@ onBeforeUnmount(() => { generation++; });
         </VBtn>
       </div>
       <VAlert v-if="listError" type="error" variant="tonal" class="mb-4" :text="listError" />
-      <div v-if="!listRows.length" class="dis__hint">{{ t("TXT_CODE_NO_DATA") }}</div>
+      <Empty v-if="!listRows.length" icon="mdi-format-list-bulleted" compact />
       <div v-for="(item, index) in listRows" :key="item.id" class="dis-list-editor__row"
         :style="{ '--dis-list-columns': listFields.length }">
         <div v-for="field in listFields" :key="field.key">
-          <VSelect v-if="field.options" v-model="item[field.key]" :items="field.options" :label="t(field.label)" hide-details />
+          <VSelect v-if="field.options" v-model="item[field.key]" :items="field.options" :label="t(field.label)" hide-details>
+            <template #no-data><Empty :icon="false" compact /></template>
+          </VSelect>
           <VTextarea v-else-if="field.key === 'second' && (listKind === 'env' || listKind === 'labels')"
             v-model="item[field.key]" :label="t(field.label)" rows="1" auto-grow hide-details />
           <VTextField v-else v-model="item[field.key]" :label="t(field.label)" hide-details

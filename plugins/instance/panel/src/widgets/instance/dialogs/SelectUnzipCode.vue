@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { ref } from "vue";
 import { t } from "@/lang/i18n";
 import { message } from "@/tools/vuetifyToast";
@@ -41,6 +42,8 @@ defineExpose({
       { title: t('TXT_CODE_91bb6101'), value: 'utf-8' },
       { title: t('TXT_CODE_4d6b06f0'), value: 'gbk' },
       { title: t('TXT_CODE_c4dfdb26'), value: 'big5' }
-    ]" :placeholder="t('TXT_CODE_3bb646e4')" hide-details />
+    ]" :placeholder="t('TXT_CODE_3bb646e4')" hide-details>
+      <template #no-data><Empty :icon="false" compact /></template>
+    </VSelect>
   </AppDialog>
 </template>

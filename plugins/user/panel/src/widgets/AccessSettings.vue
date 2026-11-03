@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import PageToolbar from "@/components/PageToolbar.vue";
 import type { UserInstance } from "@/types/user";
 import { computed, onMounted, ref } from "vue";
@@ -92,6 +93,7 @@ onMounted(refreshTableData);
     </PageToolbar>
     <VCard rounded="xl" flat class="user-access-card">
       <VDataTable :headers="headers" :items="dataSource" item-value="instanceUuid" :items-per-page="-1">
+        <template #no-data><Empty icon="mdi-view-grid-outline" compact /></template>
         <template #item.remarks="{ item }">{{ item.hostIp }}<template v-if="item.remarks"> ({{ item.remarks }})</template></template>
         <template #item.endTime="{ item }">{{ Number(item.endTime) === 0 ? t("TXT_CODE_8dfd8b17") : !isNaN(Number(item.endTime)) ? dayjs(Number(item.endTime)).format("YYYY-MM-DD HH:mm:ss") : item.endTime }}</template>
         <template #item.status="{ item }">{{ INSTANCE_STATUS[item.status as keyof typeof INSTANCE_STATUS] || item.status }}</template>

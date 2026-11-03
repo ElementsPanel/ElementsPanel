@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import ActionButton from "@/components/ActionButton.vue";
 import CardPanel from "@/components/CardPanel.vue";
 import PageToolbar from "@/components/PageToolbar.vue";
@@ -80,9 +81,12 @@ const handleNext = (key: string) => {
                 {{ formData.title }}
               </h3>
               <div style="max-height: 400px; overflow-x: hidden">
-                <p v-if="formData.actions?.length === 0">
-                  {{ formData.emptyActionsText }}
-                </p>
+                <Empty
+                  v-if="formData.actions?.length === 0"
+                  :title="formData.emptyActionsText"
+                  icon="mdi-server-network-outline"
+                  compact
+                />
                 <VRow density="compact">
                   <fade-up-animation>
                     <action-button

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
 import AppDialog from "@/components/AppDialog.vue";
@@ -145,6 +146,7 @@ const headers = computed(() => columns.value.map((column) => ({ title: column.ti
         {{ $t("TXT_CODE_6111bc9e") }}
     </div>
     <VDataTable :loading="versionsLoading" :headers="headers" :items="sortedVersions" item-value="id" :items-per-page="10" density="comfortable">
+      <template #no-data><Empty icon="mdi-puzzle-outline" compact /></template>
       <template #loading><VProgressCircular indeterminate size="24" width="2" /></template>
       <template #item.game_versions="{ item }"><VChip v-for="v in item.game_versions?.slice(0, 3)" :key="v" size="small" variant="tonal" :color="v === searchFilters?.version ? 'primary' : undefined">{{ v }}</VChip></template>
       <template #item.loaders="{ item }"><VChip v-for="l in item.loaders" :key="l" size="small" variant="tonal" :color="l.toLowerCase() === searchFilters?.loader?.toLowerCase() ? 'success' : 'warning'">{{ l }}</VChip></template>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { ref, computed, onMounted, h } from "vue";
 import { t } from "@/lang/i18n";
 import { notification } from "@/tools/vuetifyToast";
@@ -209,6 +210,7 @@ onMounted(async () => {
                 {{ t("TXT_CODE_ba82dddb") }}
             </p>
             <VDataTable :headers="imageColumns.map((column) => ({ title: column.title, key: column.key || column.dataIndex, value: column.dataIndex || column.key, sortable: false }))" :items="imageDataSource || []" :loading="imageListLoading" :items-per-page="10" density="comfortable">
+              <template #no-data><Empty icon="mdi-docker" compact /></template>
               <template #item.Id="{ item }"><code class="text-truncate">{{ item.Id }}</code></template>
               <template #item.RepoTags="{ item }">{{ item.RepoTags?.[0] || '&lt;none&gt;' }}</template>
               <template #item.Size="{ item }">{{ parseInt((item.Size / 1024 / 1024).toString()) }} MB</template>
@@ -228,6 +230,7 @@ onMounted(async () => {
                 {{ t("TXT_CODE_b34efc1") }}
             </p>
             <VDataTable :headers="containerColumns.map((column) => ({ title: column.title, key: column.key || column.dataIndex, value: column.dataIndex || column.key, sortable: false }))" :items="containerDataSource || []" :loading="containerListLoading" :items-per-page="10" density="comfortable">
+              <template #no-data><Empty icon="mdi-docker" compact /></template>
               <template #item.Id="{ item }"><code>{{ item.Id }}</code></template>
               <template #item.action="{ item }"><VBtn variant="text" size="small" @click="showDetail(item)">{{ t("TXT_CODE_f1b166e7") }}</VBtn></template>
             </VDataTable>

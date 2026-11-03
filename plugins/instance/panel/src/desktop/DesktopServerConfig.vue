@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import InstanceConfigEditor from "../components/InstanceConfigEditor.vue";
 import { getInstanceConfigByType, type InstanceConfigs } from "@/hooks/useInstance";
 import { t } from "@/lang/i18n";
@@ -157,11 +158,12 @@ onMounted(async () => {
 
         <div class="dsc__body">
             <div v-if="!selectedFile" class="dsc-list">
-                <div v-if="configFiles.length === 0 && !isLoading" class="dsc-empty">
-                    <VIcon icon="mdi-file-alert-outline" class="dsc-empty__icon"  />
-                    <p class="dsc-empty__text">{{ t("TXT_CODE_37a4c14a") }}</p>
-                    <p class="dsc-empty__hint">{{ t("TXT_CODE_4c0fda9") }}</p>
-                </div>
+                <Empty
+                  v-if="configFiles.length === 0 && !isLoading"
+                  icon="mdi-file-alert-outline"
+                  :title="t('TXT_CODE_37a4c14a')"
+                  :description="t('TXT_CODE_4c0fda9')"
+                />
                 <div v-else class="dsc-list__items">
                     <div v-for="file in configFiles" :key="file.path" class="dsc-file-item" @click="selectFile(file)">
                         <div class="dsc-file-item__info">
@@ -180,8 +182,8 @@ onMounted(async () => {
                     <InstanceConfigEditor :key="selectedFile.path + Date.now()" :config="configFileState"
                         :config-name="selectedFile.redirect" is-desktop />
                 </div>
-                <div v-else class="dsc-empty">
-                    <p class="dsc-empty__text">{{ t("TXT_CODE_b197be11") }}</p>
+                <div v-else class="dsc-loading">
+                    <p>{{ t("TXT_CODE_b197be11") }}</p>
                 </div>
             </div>
         </div>
@@ -332,7 +334,7 @@ onMounted(async () => {
     }
 }
 
-.dsc-empty {
+.dsc-loading {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -341,21 +343,10 @@ onMounted(async () => {
     gap: 12px;
     color: var(--desktop-window-text-muted);
 
-    &__icon {
-        font-size: 48px;
-        opacity: 0.4;
-    }
-
-    &__text {
+    p {
         font-size: 16px;
         font-weight: 500;
         margin: 0;
-    }
-
-    &__hint {
-        font-size: 12px;
-        margin: 0;
-        opacity: 0.6;
     }
 }
 </style>

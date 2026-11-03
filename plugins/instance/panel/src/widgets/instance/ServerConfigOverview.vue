@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import CardPanel from "@/components/CardPanel.vue";
 import PageToolbar from "@/components/PageToolbar.vue";
 import { useAppRouters } from "@/hooks/useAppRouters";
@@ -121,7 +122,12 @@ onMounted(async () => {
                 </template>
               </VListItem>
             </VList>
-            <div v-else class="empty-config-state"><VIcon icon="mdi-file-alert-outline" size="32" /><p>{{ t("TXT_CODE_37a4c14a") }}</p><p class="text-body-medium text-medium-emphasis">{{ t("TXT_CODE_4c0fda9") }}</p></div>
+            <Empty
+              v-else
+              icon="mdi-file-alert-outline"
+              :title="t('TXT_CODE_37a4c14a')"
+              :description="t('TXT_CODE_4c0fda9')"
+            />
           </template>
         </CardPanel>
       </VCol>

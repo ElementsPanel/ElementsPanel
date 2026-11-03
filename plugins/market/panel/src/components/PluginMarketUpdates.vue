@@ -1,16 +1,10 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { t } from "@/lang/i18n";
+import Empty from "@/components/Empty.vue";
 import { getValidatorErrorMsg } from "@/tools/validator";
 import { message } from "@/tools/vuetifyToast";
-import {
-  VAlert,
-  VBtn,
-  VIcon,
-  VProgressCircular,
-  VProgressLinear,
-  VTable
-} from "vuetify/components";
+import { VAlert, VBtn, VProgressCircular, VProgressLinear, VTable } from "vuetify/components";
 import { pluginMarketNodes, pluginMarketUpdates } from "../api";
 import type { PluginUpdate, PluginUpdates, PluginUpdateTarget } from "../updates";
 import { defaultMarketTargets, type MarketTargetOption } from "../targets";
@@ -268,14 +262,12 @@ defineExpose({ refresh, updateAll, updateCount, canUpdate, preparingTargets });
         </tr>
       </tbody>
     </VTable>
-    <div
+    <Empty
       v-else-if="!loading && !error && !updatingPlugins"
-      class="plugin-market-empty"
-      role="status"
-    >
-      <VIcon icon="mdi-check-circle-outline" size="48" class="mb-3" />
-      <div>{{ t(keyword?.trim() ? "TXT_CODE_NO_DATA" : "TXT_CODE_PLUGIN_MARKET_UP_TO_DATE") }}</div>
-    </div>
+      icon="mdi-check-circle-outline"
+      :title="t(keyword?.trim() ? 'TXT_CODE_NO_DATA' : 'TXT_CODE_PLUGIN_MARKET_UP_TO_DATE')"
+      :description="keyword?.trim() ? undefined : t('TXT_CODE_NO_DATA')"
+    />
     <PluginMarketTargetsDialog
       v-model="targetsShown"
       v-model:selection="selection"
@@ -295,10 +287,5 @@ defineExpose({ refresh, updateAll, updateCount, canUpdate, preparingTargets });
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.plugin-market-empty {
-  padding: 64px 24px;
-  text-align: center;
-  color: var(--text-color);
 }
 </style>

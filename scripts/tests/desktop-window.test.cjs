@@ -33,6 +33,7 @@ function loadSfc(relative, overrides = {}) {
   const component = new Module(filename, module);
   component.require = (id) => Object.hasOwn(overrides, id) ? overrides[id]
     : id === "@/components/DesktopDialog.vue" ? { default: DesktopDialog }
+    : id === "@/components/Empty.vue" ? { default: Empty }
     : id === "vuetify/components" ? Vuetify.components : frontendRequire(id);
   component._compile(ts.transpileModule(script.content, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
@@ -40,6 +41,9 @@ function loadSfc(relative, overrides = {}) {
   return component.exports.default;
 }
 
+const Empty = loadSfc("plugins/console/panel/src/components/Empty.vue", {
+  "@/lang/i18n": { t: (key) => key }
+});
 const DesktopDialog = loadSfc("plugins/console/panel/src/components/DesktopDialog.vue", {
   "@/plugin/context": { ctx: { desktop: { window: DesktopWindow } } }
 });
@@ -404,6 +408,7 @@ function fileManagerDialogFixture(t) {
   const fileManagerScript = compileScript(fileManagerDescriptor, { id: "file-manager-dialog-test", inlineTemplate: true });
   const fileManagerModule = new Module(fileManagerFilename, module);
   const overrides = {
+    "@/components/Empty.vue": { default: Empty },
     "@/components/DesktopDialog.vue": { default: DesktopDialog },
     "../hooks/useFileManager": { useFileManager: () => manager },
     "@/hooks/usePolling": { usePolling() {} },

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import DesktopDialog from "@/components/DesktopDialog.vue";
 import { useSchedule } from "@/hooks/useSchedule";
 import { t } from "@/lang/i18n";
@@ -227,9 +228,10 @@ onMounted(async () => {
 
         <div class="dschedule-body">
             <div class="dschedule-list" :class="{ 'dschedule-list--loading': scheduleListLoading }">
-                <div v-if="scheduleList.length === 0 && !scheduleListLoading" class="dschedule-empty">
-                    {{ t("TXT_CODE_NO_DATA") }}
-                </div>
+                <Empty
+                  v-if="scheduleList.length === 0 && !scheduleListLoading"
+                  icon="mdi-clock-outline"
+                />
                 <div v-for="item in scheduleList" :key="item.name" class="dschedule-item">
                     <div class="dschedule-item__info">
                         <div class="dschedule-item__name">{{ item.name }}</div>
@@ -284,7 +286,9 @@ onMounted(async () => {
 
         <label class="ds-form-label">{{ t('TXT_CODE_a62c99d1') }}</label>
         <VSelect v-model="formTask.type" :items="scheduleTypeItems" variant="solo" density="compact" hide-details
-            :placeholder="t('TXT_CODE_3bb646e4')" />
+            :placeholder="t('TXT_CODE_3bb646e4')">
+          <template #no-data><Empty :icon="false" compact /></template>
+        </VSelect>
 
         <template v-if="formTask.type === ScheduleCreateType.INTERVAL">
             <label class="ds-form-label">{{ t('TXT_CODE_3554dac0') }}</label>
@@ -329,7 +333,9 @@ onMounted(async () => {
             </div>
             <div v-for="(action, index) in formTask.actions" :key="index" class="ds-action-row">
                     <VSelect v-model="action.type" :items="actionTypeItems" variant="solo" density="compact" hide-details
-                        @update:model-value="action.payload = ''" />
+                        @update:model-value="action.payload = ''">
+                      <template #no-data><Empty :icon="false" compact /></template>
+                    </VSelect>
                     <VTextField v-model="action.payload" variant="solo" density="compact" hide-details
                         :placeholder="getInputPlaceholder(action) || t('TXT_CODE_6cbb84a9')"
                         :disabled="!getInputPlaceholder(action)" />
@@ -455,13 +461,6 @@ onMounted(async () => {
     display: flex;
     flex-wrap: wrap;
     gap: 8px 16px;
-}
-
-.dschedule-empty {
-    text-align: center;
-    padding: 40px 16px;
-    color: var(--desktop-window-text-muted);
-    font-size: 13px;
 }
 
 .dschedule-item {

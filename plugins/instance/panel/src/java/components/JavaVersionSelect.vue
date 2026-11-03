@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { computed, onUnmounted, ref, watch } from "vue";
 import { VAlert, VAutocomplete, VBtn } from "vuetify/components";
 import { t } from "@/lang/i18n";
@@ -68,7 +69,9 @@ onUnmounted(() => {
       density="compact"
       hide-details="auto"
       @update:model-value="emit('update:modelValue', $event || '')"
-    />
+    >
+      <template #no-data><Empty :icon="false" compact /></template>
+    </VAutocomplete>
     <VAlert v-if="error" type="error" variant="tonal" class="mt-3">
       {{ error }}
       <template #append>

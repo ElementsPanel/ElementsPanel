@@ -2,6 +2,7 @@
 import { getInstanceDeleteError } from "../tools/deletion";
 import { openInstanceTagsEditor } from "@/components/fc/index";
 import PageToolbar from "@/components/PageToolbar.vue";
+import Empty from "@/components/Empty.vue";
 import { router } from "@/config/router";
 import { verifyEULA } from "@/hooks/useInstance";
 import { useInstanceTagSearch, useInstanceTagTips } from "@/hooks/useInstanceTag";
@@ -42,7 +43,6 @@ import {
   VContainer,
   VDialog,
   VDivider,
-  VEmptyState,
   VIcon,
   VList,
   VListItem,
@@ -328,7 +328,9 @@ onMounted(async () => {
             <VSelect v-model="operationForm.status" :items="[
               { title: t('TXT_CODE_c48f6f64'), value: '' },
               ...Object.entries(INSTANCE_STATUS).map(([value, title]) => ({ title, value }))
-            ]" hide-details @update:model-value="handleQueryInstance" />
+            ]" hide-details @update:model-value="handleQueryInstance">
+              <template #no-data><Empty :icon="false" compact /></template>
+            </VSelect>
             <VTextField v-model="operationForm.instanceName" :placeholder="t('TXT_CODE_ce132192')"
               prepend-inner-icon="mdi-magnify" hide-details density="comfortable" @keyup.enter="handleQueryInstance"
               @update:model-value="handleQueryInstance" />
@@ -406,7 +408,9 @@ onMounted(async () => {
           <VPagination v-if="instances" v-model="operationForm.currentPage" :length="instances.maxPage || 1"
             total-visible="6" density="comfortable" @update:model-value="() => initInstancesData()" />
           <VSelect v-if="instances" v-model="operationForm.pageSize" :items="[10, 20, 50, 100]" hide-details
-            class="page-size-select" @update:model-value="() => initInstancesData(true)" />
+            class="page-size-select" @update:model-value="() => initInstancesData(true)">
+            <template #no-data><Empty :icon="false" compact /></template>
+          </VSelect>
         </VCol>
       </VRow>
 
@@ -512,11 +516,12 @@ onMounted(async () => {
           </VCard>
         </VCol>
       </VRow>
-      <div v-else class="instance-empty" role="status">
-        <VIcon icon="mdi-view-grid-outline" size="48" class="instance-empty-icon" />
-        <div class="instance-empty-title">{{ t("TXT_CODE_5415f009") }}</div>
-        <div class="instance-empty-text">{{ t("TXT_CODE_NO_DATA") }}</div>
-      </div>
+      <Empty
+        v-else
+        icon="mdi-view-grid-outline"
+        :title="t('TXT_CODE_5415f009')"
+        :description="t('TXT_CODE_NO_DATA')"
+      />
     </VContainer>
     <VDialog v-model="deleteDialogOpen" class="app-dialog" max-width="480px">
       <VCard rounded="xl" :title="t('TXT_CODE_2a3b0c17')">
@@ -613,36 +618,6 @@ onMounted(async () => {
   min-height: 360px;
   align-items: center;
   justify-content: center;
-}
-
-.instance-empty {
-  min-height: 38vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 48px 24px;
-  text-align: center;
-  color: var(--color-gray-7);
-}
-
-.instance-empty-icon {
-  margin-bottom: 8px;
-  color: var(--color-gray-6);
-}
-
-.instance-empty-title {
-  color: var(--color-gray-8);
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.instance-empty-text {
-  max-width: 460px;
-  color: var(--color-gray-7);
-  font-size: 0.875rem;
-  line-height: 1.5;
 }
 
 .instance-grid>.v-col {

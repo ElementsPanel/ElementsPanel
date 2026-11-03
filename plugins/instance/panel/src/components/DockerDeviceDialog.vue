@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { t } from "@/lang/i18n";
 import _ from "lodash";
 import { computed, onMounted, ref } from "vue";
@@ -113,6 +114,7 @@ onMounted(() => {
         </VBtn>
       </div>
       <VDataTable :headers="columns.map((column) => ({ title: column.title, key: String(column.dataIndex), align: 'center' as const, sortable: false }))" :items="dataSource" :items-per-page="-1" hide-default-footer density="comfortable">
+        <template #no-data><Empty icon="mdi-format-list-bulleted" compact /></template>
         <template #item="{ item, index }"><tr><td v-for="column in columns" :key="String(column.dataIndex)">
           <VBtn v-if="column.dataIndex === 'operation'" icon variant="text" color="error" size="small" @click="operation('del', index)"><VIcon icon="mdi-minus-circle-outline" /></VBtn>
           <VTextField v-else :model-value="getRecord(item)[String(column.dataIndex)]" :placeholder="(column as any).placeholder" hide-details="auto" @update:model-value="(value) => (getRecord(item)[String(column.dataIndex)] = value)" />

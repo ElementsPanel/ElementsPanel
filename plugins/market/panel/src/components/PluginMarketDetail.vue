@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import PageToolbar from "@/components/PageToolbar.vue";
 import { getCurrentLang, t } from "@/lang/i18n";
 import { markdownToHTML } from "@/tools/safe";
@@ -237,9 +238,12 @@ onBeforeUnmount(() => requestId++);
                 class="global-markdown-html plugin-detail-markdown"
                 v-html="readme"
               />
-              <p v-else class="plugin-detail-empty">
-                {{ t("TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION") }}
-              </p>
+              <Empty
+                v-else
+                icon="mdi-file-document-outline"
+                :title="t('TXT_CODE_PLUGIN_MARKET_NO_DESCRIPTION')"
+                compact
+              />
             </template>
 
             <template v-else-if="activeTab === 'versions'">
@@ -301,9 +305,12 @@ onBeforeUnmount(() => requestId++);
                   class="global-markdown-html plugin-detail-markdown"
                   v-html="entry.html"
                 />
-                <p v-else class="plugin-detail-empty">
-                  {{ t("TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG") }}
-                </p>
+                <Empty
+                  v-else
+                  icon="mdi-text-box-outline"
+                  :title="t('TXT_CODE_PLUGIN_MARKET_NO_CHANGELOG')"
+                  compact
+                />
               </article>
             </template>
           </section>
@@ -571,11 +578,6 @@ onBeforeUnmount(() => requestId++);
 
 .plugin-detail-update-date {
   font-size: 12px;
-  color: rgba(var(--v-theme-on-surface), 0.6);
-}
-
-.plugin-detail-empty {
-  margin: 0;
   color: rgba(var(--v-theme-on-surface), 0.6);
 }
 

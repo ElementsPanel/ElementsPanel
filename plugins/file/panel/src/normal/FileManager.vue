@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import FileManagerTabs from "../components/FileManagerTabs.vue";
 import ArchivePreview from "../components/ArchivePreview.vue";
 import UploadTaskProgress from "../components/UploadTaskProgress.vue";
@@ -434,7 +435,9 @@ onUnmounted(() => {
 
           <template v-if="currentTabs.length">
           <div class="path-row">
-            <VSelect v-if="isShowDiskList" v-model="currentDisk" :items="['/', ...(fileStatus?.disks || [])]" class="disk-select" hide-details @update:model-value="toDisk" />
+            <VSelect v-if="isShowDiskList" v-model="currentDisk" :items="['/', ...(fileStatus?.disks || [])]" class="disk-select" hide-details @update:model-value="toDisk">
+              <template #no-data><Empty :icon="false" compact /></template>
+            </VSelect>
             <div class="file-breadcrumbs">
               <template v-for="(item, index) in breadcrumbs" :key="item.path">
                 <VBtn variant="text" size="small" class="file-breadcrumbs-item" @click="handleChangeDir(item.path)">{{ item.name }}</VBtn>
@@ -461,6 +464,7 @@ onUnmounted(() => {
             @update:model-value="handleSelectedKeys"
             @update:options="handleTableOptions"
           >
+            <template #no-data><Empty icon="mdi-folder-open-outline" /></template>
             <template #item.name="{ item }">
               <VBtn variant="text" class="file-name" @click="handleClickFile(rawFile(item))"><VIcon :icon="getMdiIconName(rawFile(item))" size="18" class="mr-2" />{{ rawFile(item).name }}</VBtn>
             </template>

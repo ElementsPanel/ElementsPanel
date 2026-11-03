@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { useI18n } from "vue-i18n";
 import { computed } from "vue";
 import { VAvatar, VBtn, VChip, VDataTable, VIcon, VImg, VProgressCircular } from "vuetify/components";
@@ -27,6 +28,7 @@ const emitPageChange = (page: number, itemsPerPage: number) => emit("change", { 
 
 <template>
   <VDataTable class="local-mod-table" :headers="headers" :items="dataSource" item-value="file" :loading="loading" :items-per-page="pagination?.pageSize || 10" :page="pagination?.current || 1" density="comfortable" @update:page="(page) => emitPageChange(page, pagination?.pageSize || 10)" @update:items-per-page="(size) => emitPageChange(pagination?.current || 1, size)">
+    <template #no-data><Empty icon="mdi-puzzle-outline" /></template>
     <template #loading><VProgressCircular indeterminate size="24" width="2" /></template>
     <template #item.icon="{ item }"><VAvatar size="36" rounded="lg" color="surface-variant"><VImg v-if="item.extraInfo?.project?.icon_url" :src="item.extraInfo.project.icon_url" /><span v-else>{{ (item.name || item.file || "?").charAt(0).toUpperCase() }}</span></VAvatar></template>
     <template #item.name="{ item }"><div class="local-mod-name" :title="item.name || item.file"><strong>{{ item.name || item.file }}</strong><small v-if="item.extraInfo?.project?.description">{{ item.extraInfo.project.description }}</small><small v-else-if="item.name && item.file !== item.name">{{ item.file }}</small></div></template>

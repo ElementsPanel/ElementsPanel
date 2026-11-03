@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import DesktopDialog from "@/components/DesktopDialog.vue";
 import { t } from "@/lang/i18n";
 import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
@@ -420,7 +421,12 @@ const getInstanceStatusLabel = (status: number): string => {
             <template #item.twoFactor="{ item }"><VIcon :icon="item.open2FA ? 'mdi-check-circle-outline' : 'mdi-close-circle-outline'" :class="item.open2FA ? 'du-badge-icon--yes' : 'du-badge-icon--no'" /></template>
             <template #item.sso="{ item }"><VIcon :icon="item.ssoBound ? 'mdi-check-circle-outline' : 'mdi-close-circle-outline'" :class="item.ssoBound ? 'du-badge-icon--yes' : 'du-badge-icon--no'" /></template>
             <template #item.actions="{ item }"><div class="du-action-btns"><VBtn v-if="canAssignInstances" icon variant="text" class="du-action-btn" :title="t('TXT_CODE_9393b484')" @click="openAssignDialog(item)"><VIcon icon="mdi-link-variant" /></VBtn><VBtn icon variant="text" class="du-action-btn" :title="t('TXT_CODE_79f9a172')" @click="openEditDialog(item)"><VIcon icon="mdi-pencil-outline" /></VBtn><VBtn icon variant="text" color="error" class="du-action-btn" :title="t('TXT_CODE_DESKTOP_USERS_DELETE')" @click="confirmDelete(item)"><VIcon icon="mdi-delete-outline" /></VBtn></div></template>
-            <template #no-data><div class="du-empty">{{ t("TXT_CODE_DESKTOP_USERS_NO_RESULTS") }}</div></template>
+            <template #no-data>
+              <Empty
+                icon="mdi-account-search-outline"
+                :title="t('TXT_CODE_DESKTOP_USERS_NO_RESULTS')"
+              />
+            </template>
         </VDataTable>
 
         <div v-if="total > pageSize" class="du-pagination">
@@ -508,9 +514,12 @@ const getInstanceStatusLabel = (status: number): string => {
                       <span class="du-assign-count">{{ assignedInstances.length }}</span>
                   </div>
                   <div class="du-assign-panel__body">
-                      <div v-if="assignedInstances.length === 0" class="du-assign-empty">
-                          {{ t("TXT_CODE_DESKTOP_USERS_NO_ASSIGNED") }}
-                      </div>
+                      <Empty
+                        v-if="assignedInstances.length === 0"
+                        icon="mdi-view-grid-outline"
+                        :title="t('TXT_CODE_DESKTOP_USERS_NO_ASSIGNED')"
+                        compact
+                      />
                       <div v-for="inst in assignedInstances" :key="inst.instanceUuid"
                           class="du-assign-item">
                           <div class="du-assign-item__info">
@@ -534,7 +543,9 @@ const getInstanceStatusLabel = (status: number): string => {
                       <div class="du-assign-node-select">
                           <VSelect v-if="nodes?.length" v-model="currentRemoteNodeId" :items="assignNodeItems"
                               class="du-assign-select" variant="solo" density="compact" hide-details
-                              @update:model-value="handleAssignNodeChange" />
+                              @update:model-value="handleAssignNodeChange">
+                            <template #no-data><Empty :icon="false" compact /></template>
+                          </VSelect>
                       </div>
                       <div class="du-assign-search">
                           <VTextField v-model="assignForm.instanceName" class="du-assign-search__input" variant="solo" density="compact" hide-details
@@ -543,12 +554,15 @@ const getInstanceStatusLabel = (status: number): string => {
                       </div>
                   </div>
                   <div class="du-assign-panel__body">
-                      <div v-if="instancesLoading" class="du-assign-empty">
+                      <div v-if="instancesLoading" class="du-assign-loading">
                           {{ t("TXT_CODE_b197be11") }}
                       </div>
-                      <div v-else-if="!instances?.data?.length" class="du-assign-empty">
-                          {{ t("TXT_CODE_DESKTOP_IM_NO_INSTANCES") }}
-                      </div>
+                      <Empty
+                        v-else-if="!instances?.data?.length"
+                        icon="mdi-view-grid-outline"
+                        :title="t('TXT_CODE_DESKTOP_IM_NO_INSTANCES')"
+                        compact
+                      />
                       <div v-for="inst in instances?.data || []" :key="inst.instanceUuid"
                           class="du-assign-item"
                           :class="{ 'du-assign-item--selected': isInstanceAssigned(inst.instanceUuid) }">
@@ -740,11 +754,6 @@ const getInstanceStatusLabel = (status: number): string => {
         }
     }
 
-    &__empty {
-        text-align: center;
-        padding: 40px 12px;
-    }
-
     &__col--name {
         min-width: 140px;
     }
@@ -883,12 +892,6 @@ const getInstanceStatusLabel = (status: number): string => {
 
 .du-page-info {
     font-size: 12px;
-    color: var(--desktop-window-text-muted);
-}
-
-.du-loading,
-.du-empty {
-    font-size: 13px;
     color: var(--desktop-window-text-muted);
 }
 
@@ -1051,7 +1054,7 @@ const getInstanceStatusLabel = (status: number): string => {
     font-weight: 600;
 }
 
-.du-assign-empty {
+.du-assign-loading {
     text-align: center;
     padding: 24px 12px;
     font-size: 13px;

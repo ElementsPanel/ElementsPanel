@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { computed, onUnmounted, ref, watch } from "vue";
 import { VAlert, VBtn, VProgressLinear, VSelect, VTextField } from "vuetify/components";
 import { t } from "@/lang/i18n";
@@ -138,7 +139,9 @@ defineExpose({ prepare });
       density="compact"
       hide-details="auto"
       class="mb-3"
-    />
+    >
+      <template #no-data><Empty :icon="false" compact /></template>
+    </VSelect>
     <VTextField
       v-if="mode === 'system'"
       v-model="customPath"
@@ -161,11 +164,14 @@ defineExpose({ prepare });
         :label="t('TXT_CODE_javaMsl.installed')"
         :loading="loading"
         :disabled="disabled || preparing"
-        :no-data-text="t('TXT_CODE_javaMsl.noInstalled')"
         variant="solo"
         density="compact"
         hide-details="auto"
-      />
+      >
+        <template #no-data>
+          <Empty :icon="false" :title="t('TXT_CODE_javaMsl.noInstalled')" compact />
+        </template>
+      </VSelect>
       <VAlert v-if="error" type="error" variant="tonal" class="mt-3">{{
         error
       }}</VAlert>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { t } from "@/lang/i18n";
 import { useScreen } from "@/hooks/useScreen";
 import { ctx } from "@/plugin/context";
@@ -1046,7 +1047,9 @@ const confirmAction = async () => {
           :loading="loading"
           :placeholder="t('TXT_CODE_PLUGIN_NODE_SELECT')"
           hide-details
-        />
+        >
+          <template #no-data><Empty :icon="false" compact /></template>
+        </VSelect>
 
         <div class="plugin-config-heading">
           <span>{{ t("TXT_CODE_PLUGIN_LIST") }}</span>
@@ -1107,9 +1110,7 @@ const confirmAction = async () => {
               </template>
             </VListItem>
           </template>
-          <div v-if="!currentList.length" class="plugin-config-empty">
-            {{ t("TXT_CODE_NO_DATA") }}
-          </div>
+          <Empty v-if="!currentList.length" icon="mdi-puzzle-outline" compact />
         </VList>
       </div>
     </component>
@@ -1292,13 +1293,9 @@ const confirmAction = async () => {
           <div v-else-if="schema && schema.fields.length" class="plugin-config-form">
             <SchemaForm :fields="schema.fields" :values="schema.values" @save="saveSettings" />
           </div>
-          <div v-else class="plugin-config-no-config">
-            {{ t("TXT_CODE_PLUGIN_NO_CONFIG") }}
-          </div>
+          <Empty v-else icon="mdi-cog-outline" :title="t('TXT_CODE_PLUGIN_NO_CONFIG')" />
         </template>
-        <div v-else-if="!nodeError" class="plugin-config-no-config">
-          {{ t("TXT_CODE_NO_DATA") }}
-        </div>
+        <Empty v-else-if="!nodeError" icon="mdi-puzzle-outline" />
       </div>
     </div>
 
@@ -1694,15 +1691,6 @@ const confirmAction = async () => {
 
 .plugin-config-item-dot-off {
   background: var(--color-gray-6);
-}
-
-.plugin-config-empty,
-.plugin-config-no-config {
-  padding: 28px 12px;
-  color: var(--text-color);
-  font-size: 13px;
-  opacity: 0.62;
-  text-align: center;
 }
 
 .plugin-config-content {

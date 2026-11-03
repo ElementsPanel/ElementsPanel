@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Empty from "@/components/Empty.vue";
 import { useScreen } from "@/hooks/useScreen";
 import { t } from "@/lang/i18n";
 import { remoteInstances, remoteNodeList } from "@/services/apis";
@@ -250,7 +251,9 @@ onUnmounted(disposeRequests);
               density="comfortable"
               class="status-select"
               @update:model-value="handleQueryInstance"
-            />
+            >
+              <template #no-data><Empty :icon="false" compact /></template>
+            </VSelect>
             <VTextField
               v-model.trim="operationForm.instanceName"
               :placeholder="t('TXT_CODE_ce132192')"
@@ -274,7 +277,9 @@ onUnmounted(disposeRequests);
               hide-details
               class="page-size-select"
               @update:model-value="handlePageSizeChange"
-            />
+            >
+              <template #no-data><Empty :icon="false" compact /></template>
+            </VSelect>
             <VPagination
               :model-value="operationForm.currentPage"
               :length="instances?.maxPage || 1"
@@ -294,6 +299,7 @@ onUnmounted(disposeRequests);
           item-value="instanceUuid"
           class="select-instances-table"
         >
+          <template #no-data><Empty icon="mdi-view-grid-outline" compact /></template>
           <template #item.safe="{ item }">
             <VChip v-if="rowItem(item)?.config?.processType === 'docker'" size="small" color="success" variant="tonal">
               {{ t("TXT_CODE_a3f13157") }}
