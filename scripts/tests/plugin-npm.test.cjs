@@ -44,18 +44,19 @@ function npmFixture(t, side = "panel") {
   const calls = [];
   const state = { invalid: false, gate: undefined };
   const spawn = (command, args, options) => {
+    const npmArgs = command === process.execPath ? args.slice(1) : args;
     const child = new EventEmitter();
     child.stdout = new EventEmitter();
     child.stderr = new EventEmitter();
     child.kill = () => {};
-    const index = args.findIndex((arg) => arg === "install" || arg === "uninstall");
-    const action = args[index];
-    const spec = args[index + 1];
-    calls.push({ command, args, options, action, spec });
+    const index = npmArgs.findIndex((arg) => arg === "install" || arg === "uninstall");
+    const action = npmArgs[index];
+    const spec = npmArgs[index + 1];
+    calls.push({ command, args, npmArgs, options, action, spec });
     setImmediate(async () => {
       try {
         if (state.gate) await state.gate;
-        if (args[0] === "view") {
+        if (npmArgs[0] === "view") {
           child.stderr.emit("data", Buffer.from("npm warning on stderr\n"));
           child.stdout.emit("data", Buffer.from(JSON.stringify(state.latest || "2.0.0")));
           child.emit("close", 0);
@@ -203,10 +204,24 @@ test("a failed frontend plugin update rolls back the runtime, earlier plugins an
 });
 
 test("runtime release checks read JSON stdout independently from npm warnings", async (t) => {
-  const f = npmFixture(t);
-  assert.equal(await f.latestNpmRuntimeVersion("panel"), "2.0.0");
-  assert.deepEqual(f.calls[0].args.slice(0, 4), ["view", "@elementspanel/panel@latest", "version", "--json"]);
-  assert.ok(f.calls[0].args.includes("--fetch-retries=0"));
+  const previous = process.env.npm_execpath;
+  t.after(() => {
+    if (previous === undefined) delete process.env.npm_execpath;
+    else process.env.npm_execpath = previous;
+  });
+  for (const npmCLI of [undefined, path.join(os.tmpdir(), "elements npm fixture", "npm-cli.cjs")]) {
+    await t.test(npmCLI ? "via the npm CLI" : "direct npm invocation", async (t) => {
+      if (npmCLI) process.env.npm_execpath = npmCLI;
+      else delete process.env.npm_execpath;
+      const f = npmFixture(t);
+      assert.equal(await f.latestNpmRuntimeVersion("panel"), "2.0.0");
+      const call = f.calls[0];
+      assert.deepEqual(call.npmArgs.slice(0, 4), ["view", "@elementspanel/panel@latest", "version", "--json"]);
+      assert.ok(call.npmArgs.includes("--fetch-retries=0"));
+      assert.equal(call.command, npmCLI ? process.execPath : "npm");
+      if (npmCLI) assert.equal(call.args[0], npmCLI);
+    });
+  }
 });
 
 test("npm installs pin the resolved dependency; uninstall removes it and preserves unrelated data", async (t) => {
