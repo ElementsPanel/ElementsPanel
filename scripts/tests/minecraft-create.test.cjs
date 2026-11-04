@@ -717,7 +717,7 @@ test("instance registers Minecraft as a separate admin task and validates before
   assert.equal(created[0][4].fileName, "server.jar");
 });
 
-test("instance owns Java and Minecraft status before restoration and survives unrelated plugin changes", async (t) => {
+test("instance owns Java before restoration, leaves status to external plugins and survives unrelated plugin changes", async (t) => {
   const daemonRequire = from("daemon");
   const { Context, Service } = daemonRequire("cordis");
   let downloadGate;
@@ -743,8 +743,8 @@ test("instance owns Java and Minecraft status before restoration and survives un
     detachListeners() {},
     loadInstances() {
       assert.equal(ctx.javaManager, javaManager);
-      assert.ok(ctx.presets.entries().has("refreshPlayers"));
-      assert.equal(ctx.instanceLifecycle.entries().length, 1);
+      assert.equal(ctx.presets.entries().has("refreshPlayers"), false);
+      assert.equal(ctx.instanceLifecycle.entries().length, 0);
       restored = true;
     },
     getInstance: (id) => id === statusInstance.instanceUuid ? statusInstance : undefined,
@@ -811,16 +811,6 @@ test("instance owns Java and Minecraft status before restoration and survives un
         "./java_info": load("plugins/instance/daemon/src/backend/java/java_info.ts")
       })
     }),
-    "./mcstats": load("plugins/instance/daemon/src/backend/mcstats.ts", {
-      "mcsmanager-common": {
-        MCServerStatus: class {
-          async getStatus() {
-            return { online: true, current_players: "3", max_players: "20", version: "1.21", latency: "12" };
-          }
-        },
-        toNumber: Number
-      }
-    }),
     "./service/system_instance": { default: subsystem },
     "./entity/instance/instance": { default: f.ctx.instances.Instance },
     "./entity/instance/Instance_config": { default: f.ctx.instances.Config },
@@ -844,9 +834,10 @@ test("instance owns Java and Minecraft status before restoration and survives un
   await starting;
   await until(() => ctx.tasks?.get("minecraft_install"));
   assert.equal(restored, true);
-  for (const feature of ["javaManager", "javaManagerMsl", "mcstats"]) {
+  for (const feature of ["javaManager", "javaManagerMsl"]) {
     assert.equal(ctx.features.has(feature), true);
   }
+  assert.equal(ctx.features.has("mcstats"), false);
   const listRequest = {};
   handlers.get("java_manager/list")(listRequest);
   assert.deepEqual(listRequest.body, [runtime]);
@@ -855,11 +846,6 @@ test("instance owns Java and Minecraft status before restoration and survives un
   assert.deepEqual(runtime.usingInstances, ["restored"]);
   subsystem.emit("exit", { instanceUuid: "restored" });
   assert.deepEqual(runtime.usingInstances, []);
-  const statusCommand = ctx.presets.entries().get("refreshPlayers")();
-  await statusCommand.exec(statusInstance);
-  assert.deepEqual(statusInstance.info, {
-    mcPingOnline: true, currentPlayers: 3, maxPlayers: 20, version: "1.21", latency: 12
-  });
   const minecraft = ctx.tasks.get("minecraft_install");
   const parameters = {
     newInstanceName: "Independent Minecraft",
@@ -869,7 +855,7 @@ test("instance owns Java and Minecraft status before restoration and survives un
   };
   assert.equal(ctx.features.has("minecraftInstall"), true);
   assert.equal(ctx.javaManager, javaManager);
-  assert.ok(ctx.presets.entries().has("refreshPlayers"));
+  assert.equal(ctx.presets.entries().has("refreshPlayers"), false);
   assert.equal(ctx.tasks.get("test_install"), undefined);
   assert.equal(ctx.presets.entries().has("test-preset"), false);
   const first = minecraft.create(undefined, parameters);
@@ -932,7 +918,7 @@ test("instance owns Java and Minecraft status before restoration and survives un
   assert.equal(subsystem.listenerCount("open"), 0);
   assert.equal(subsystem.listenerCount("exit"), 0);
   assert.equal(subsystem.listenerCount("failure"), 0);
-  assert.ok(statusInstance.resets > 0);
+  assert.equal(statusInstance.resets, 0);
   assert.equal(ctx.instances, undefined);
   assert.equal(ctx.tasks, undefined);
   assert.equal(ctx.i18n.$t("TXT_CODE_minecraft.hashMismatch"), "TXT_CODE_minecraft.hashMismatch");

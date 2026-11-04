@@ -148,12 +148,6 @@ async function fixture(t, { sleep = async () => {} } = {}) {
             return true;
           }
         },
-        "mcstats.ts": {
-          registerMinecraftStatus(scope) {
-            scope.presets.register("refreshPlayers", () => ({ exec: async () => version }));
-            scope.instanceLifecycle.register(() => new (sampleTask("extension"))());
-          }
-        },
         "routers/Instance_router.ts": {},
         "routers/schedule_router.ts": {},
         "routers/environment_router.ts": {},
@@ -209,7 +203,19 @@ async function fixture(t, { sleep = async () => {} } = {}) {
       }
       return exports;
     }
-    const scope = ctx.plugin(source(base + "index.ts"));
+    const instancePlugin = source(base + "index.ts");
+    const scope = ctx.plugin({
+      ...instancePlugin,
+      apply(scope) {
+        instancePlugin.apply(scope);
+        // Exercise generic external contributions without relying on a
+        // Minecraft-specific preset owned by the instance plugin.
+        scope.inject(["presets", "instanceLifecycle"], (extension) => {
+          extension.presets.register("test-handover", () => ({ exec: async () => version }));
+          extension.instanceLifecycle.register(() => new (sampleTask("extension"))());
+        });
+      }
+    });
     await cleanup();
     current = { scope, source, version };
     return current;
@@ -313,7 +319,7 @@ test("foundation replacements retain live owners, output, counters and commands 
     assert.equal(instance.listenerCount("exit"), 1);
     assert.equal(adapter.listenerCount("exit"), 1);
     assert.equal(process.stdout.listenerCount("data"), 1);
-    assert.equal(await instance.execPreset("refreshPlayers"), f.current.version);
+    assert.equal(await instance.execPreset("test-handover"), f.current.version);
   }
   stopped.parameters({ terminalOption: { pty: true } }, false);
   assert.equal(

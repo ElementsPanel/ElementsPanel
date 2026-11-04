@@ -209,66 +209,6 @@ test("a process timeout kills its child once and invalid PIDs never reach an ope
   assert.equal(wrapper.process, undefined);
 });
 
-function pingFixture() {
-  const socket = new EventEmitter();
-  socket.write = () => {};
-  socket.destroy = () => {
-    socket.destroyed = true;
-    socket.emit("close");
-  };
-  let expire;
-  const { default: Ping } = load(
-    "core/common/src/mcping.ts",
-    { net: { connect: () => socket } },
-    {
-      setTimeout: (callback) => {
-        expire = callback;
-        return 1;
-      },
-      clearTimeout() {}
-    }
-  );
-  return { socket, ping: new Ping(25565, "localhost"), expire: () => expire() };
-}
-
-test("Minecraft status decodes fragmented UTF-16 responses and shares in-flight requests", async () => {
-  const { ping, socket } = pingFixture();
-  const text = "§1\0" + "127\0" + "1.21\0" + "你好 世界\0" + "2\0" + "20";
-  const payload = Buffer.from(text, "utf16le").swap16();
-  const header = Buffer.alloc(3);
-  header[0] = 0xff;
-  header.writeUInt16BE(payload.length / 2, 1);
-  const packet = Buffer.concat([header, payload]);
-  const pending = ping.getStatus();
-  assert.equal(ping.getStatus(), pending);
-  for (let i = 0; i < packet.length; i += 3) socket.emit("data", packet.subarray(i, i + 3));
-  const response = await pending;
-  assert.equal(response.motd, "你好 世界");
-  assert.equal(response.version, "1.21");
-  assert.equal(response.current_players, 2);
-  assert.equal(response.max_players, 20);
-  assert.equal(response.online, true);
-  assert.equal(socket.destroyed, true);
-  assert.equal(ping.client, undefined);
-});
-
-test("Minecraft malformed, partial and timed-out responses reject and close their sockets", async () => {
-  for (const scenario of ["invalid", "partial", "timeout"]) {
-    const f = pingFixture();
-    const pending = f.ping.getStatus();
-    const rejection = assert.rejects(pending, /Invalid|Incomplete|timed out/);
-    if (scenario === "invalid") f.socket.emit("data", Buffer.from([0, 0, 0]));
-    if (scenario === "partial") {
-      f.socket.emit("data", Buffer.from([0xff, 0, 20]));
-      f.socket.emit("close");
-    }
-    if (scenario === "timeout") f.expire();
-    await rejection;
-    assert.equal(f.socket.destroyed, true);
-    assert.equal(f.ping.status.online, false);
-  }
-});
-
 test("instance stream subscriptions are idempotent and disconnect releases all instance references", () => {
   const { default: Streams } = load("core/common/src/instance_stream.ts");
   const streams = new Streams();

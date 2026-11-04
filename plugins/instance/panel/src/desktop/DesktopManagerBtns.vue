@@ -10,7 +10,6 @@ import { useAppStateStore } from "@/stores/useAppStateStore";
 import { computed, ref, watch } from "vue";
 import { arrayFilter } from "@/tools/array";
 import EventConfig from "../widgets/instance/dialogs/EventConfig.vue";
-import PingConfig from "../widgets/instance/dialogs/PingConfig.vue";
 import RconSettings from "../widgets/instance/dialogs/RconSettings.vue";
 import { VIcon } from "vuetify/components";
 
@@ -39,7 +38,6 @@ const { state: overviewState } = useOverviewInfo();
 
 const rconSettingsDialog = ref<InstanceType<typeof RconSettings>>();
 const eventConfigDialog = ref<InstanceType<typeof EventConfig>>();
-const pingConfigDialog = ref<InstanceType<typeof PingConfig>>();
 
 const { instanceInfo, execute, isGlobalTerminal } = useInstanceInfo({
   instanceId: props.instanceId,
@@ -172,14 +170,6 @@ watch(instanceInfo, (cfg, oldCfg) => {
 
   <EventConfig
     ref="eventConfigDialog"
-    :instance-info="instanceInfo"
-    :instance-id="props.instanceId"
-    :daemon-id="props.daemonId"
-    @update="refreshInstanceInfo"
-  />
-
-  <PingConfig
-    ref="pingConfigDialog"
     :instance-info="instanceInfo"
     :instance-id="props.instanceId"
     :daemon-id="props.daemonId"

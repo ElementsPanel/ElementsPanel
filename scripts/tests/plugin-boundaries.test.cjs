@@ -649,7 +649,7 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   const config = ctx.plugin(load("plugins/config/panel/src/frontend.ts", overrides));
   await tick();
   assert.ok(ctx.actions.instances.some((action) => action.id === "java-manager"));
-  assert.ok(ctx.actions.instances.some((action) => action.id === "mcstats"));
+  assert.equal(ctx.actions.instances.some((action) => action.id === "mcstats"), false);
   assert.ok(ctx.java.setupComponent);
   let savedLayout = { windows: [], shortcuts: [] };
   const shell = setupSfc("plugins/desktop/panel/src/Desktop.vue", {

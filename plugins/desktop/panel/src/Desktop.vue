@@ -47,7 +47,6 @@ const DESKTOP_ICON_MAP: Record<string, string> = {
     "operation-log": "mdi-file-document-outline",
     backup: "mdi-cloud-outline",
     "java-manager": "mdi-hammer-wrench",
-    mcstats: "mdi-account-group-outline",
     "terminal-config": "mdi-code-tags",
     "file-manager": "mdi-folder-open-outline"
 };

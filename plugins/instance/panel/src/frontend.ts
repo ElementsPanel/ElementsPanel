@@ -29,7 +29,6 @@ import InstanceDetail from "./widgets/instance/dialogs/InstanceDetail.vue";
 import { openInstanceConsole, registerDesktop } from "./desktop";
 import { localeMessages } from "./i18n";
 import { registerJavaManager } from "./java";
-import { registerMinecraftStatus } from "./mcstats";
 
 export const inject = ["console", "i18n", "routes", "ui", "actions", "desktop"];
 
@@ -60,7 +59,6 @@ export function apply(ctx: PanelFrontendPluginContext) {
       TagsDialog
     }
   });
-  registerMinecraftStatus(ctx);
   registerJavaManager(ctx);
   registerDesktop(ctx);
 

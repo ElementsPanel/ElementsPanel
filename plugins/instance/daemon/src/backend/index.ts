@@ -9,7 +9,6 @@ import { createInstanceInstallTaskClass } from "./install_task";
 import * as minecraftInstall from "./minecraft_task";
 import { registerSettings } from "./settings";
 import { registerJavaManager } from "./java";
-import { registerMinecraftStatus } from "./mcstats";
 
 export const inject = {
   i18n: { required: true },
@@ -170,10 +169,9 @@ export function apply(ctx: DaemonPluginContext) {
       InstallTask: createInstanceInstallTaskClass(instanceCtx, services)
     };
     instanceCtx.set("instances", instanceServices);
-    // Restored instances must see their Java runtimes and status presets from
-    // their first lifecycle dispatch, including automatic startup and takeover.
+    // Restored instances must see their Java runtimes from their first
+    // lifecycle dispatch, including automatic startup and takeover.
     if (!(await registerJavaManager(instanceCtx, instanceServices))) return;
-    registerMinecraftStatus(instanceCtx, instanceServices);
     instanceCtx.plugin(minecraftInstall);
 
     // The dispatcher is the instance plugin's built-in preset/lifecycle bridge.
