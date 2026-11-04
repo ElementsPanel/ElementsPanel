@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-user",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Login, user management, permissions and SSO.",
   "elementspanel": {
     "id": "user",
