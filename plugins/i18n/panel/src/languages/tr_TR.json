@@ -2240,7 +2240,7 @@
   "TXT_CODE_minecraft.upload": "Kendi sunucunuzu yükleyin",
   "TXT_CODE_minecraft.uploadHint": "Kendi sunucunuzu kullanmak için bir JAR dosyası veya ZIP arşivi yükleyin.",
   "TXT_CODE_minecraft.download": "Panel üzerinden indir",
-  "TXT_CODE_minecraft.downloadHint": "MSL aynalarından sunucuyu, oyun sürümünü ve derlemeyi seçin. Düğüm sunucuyu indirip yapılandırır.",
+  "TXT_CODE_minecraft.downloadHint": "Aynalardan sunucuyu, oyun sürümünü ve derlemeyi seçin. Düğüm sunucuyu indirip yapılandırır.",
   "TXT_CODE_minecraft.server": "Sunucu yazılımı",
   "TXT_CODE_minecraft.version": "Oyun sürümü",
   "TXT_CODE_minecraft.build": "Derleme",

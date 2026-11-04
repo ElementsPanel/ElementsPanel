@@ -2240,7 +2240,7 @@
   "TXT_CODE_minecraft.upload": "서버 직접 업로드",
   "TXT_CODE_minecraft.uploadHint": "JAR 파일 또는 ZIP 압축 파일을 업로드하여 자신의 서버를 사용합니다.",
   "TXT_CODE_minecraft.download": "패널에서 다운로드",
-  "TXT_CODE_minecraft.downloadHint": "MSL 미러에서 서버, 게임 버전, 빌드를 선택하면 노드가 다운로드하고 설정합니다.",
+  "TXT_CODE_minecraft.downloadHint": "미러에서 서버, 게임 버전, 빌드를 선택하면 노드가 다운로드하고 설정합니다.",
   "TXT_CODE_minecraft.server": "서버 소프트웨어",
   "TXT_CODE_minecraft.version": "게임 버전",
   "TXT_CODE_minecraft.build": "빌드",

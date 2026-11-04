@@ -2240,7 +2240,7 @@
   "TXT_CODE_minecraft.upload": "Upload your server",
   "TXT_CODE_minecraft.uploadHint": "Upload a JAR file or ZIP archive to use your own server.",
   "TXT_CODE_minecraft.download": "Download with the panel",
-  "TXT_CODE_minecraft.downloadHint": "Choose a server, game version and build from MSL mirrors. The node downloads and configures it.",
+  "TXT_CODE_minecraft.downloadHint": "Choose a server, game version and build from mirrors. The node downloads and configures it.",
   "TXT_CODE_minecraft.server": "Server software",
   "TXT_CODE_minecraft.version": "Game version",
   "TXT_CODE_minecraft.build": "Build",

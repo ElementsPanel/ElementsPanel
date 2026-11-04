@@ -2240,7 +2240,7 @@
   "TXT_CODE_minecraft.upload": "自行上传服务端",
   "TXT_CODE_minecraft.uploadHint": "上传 JAR 文件或 ZIP 压缩包，使用自己的服务端。",
   "TXT_CODE_minecraft.download": "由面板下载",
-  "TXT_CODE_minecraft.downloadHint": "从 MSL 镜像源选择服务端、游戏版本和构建号，由节点下载并配置。",
+  "TXT_CODE_minecraft.downloadHint": "从镜像源选择服务端、游戏版本和构建号，由节点下载并配置。",
   "TXT_CODE_minecraft.server": "服务端",
   "TXT_CODE_minecraft.version": "游戏版本",
   "TXT_CODE_minecraft.build": "构建号",

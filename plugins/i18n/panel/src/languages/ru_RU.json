@@ -2240,7 +2240,7 @@
   "TXT_CODE_minecraft.upload": "Загрузить свой сервер",
   "TXT_CODE_minecraft.uploadHint": "Загрузите файл JAR или архив ZIP, чтобы использовать свой сервер.",
   "TXT_CODE_minecraft.download": "Скачать через панель",
-  "TXT_CODE_minecraft.downloadHint": "Выберите сервер, версию игры и сборку на зеркалах MSL. Узел скачает и настроит сервер.",
+  "TXT_CODE_minecraft.downloadHint": "Выберите сервер, версию игры и сборку на зеркалах. Узел скачает и настроит сервер.",
   "TXT_CODE_minecraft.server": "Серверное ПО",
   "TXT_CODE_minecraft.version": "Версия игры",
   "TXT_CODE_minecraft.build": "Сборка",

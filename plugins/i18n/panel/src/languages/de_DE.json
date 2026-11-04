@@ -2240,7 +2240,7 @@
   "TXT_CODE_minecraft.upload": "Eigenen Server hochladen",
   "TXT_CODE_minecraft.uploadHint": "Eine JAR-Datei oder ein ZIP-Archiv für den eigenen Server hochladen.",
   "TXT_CODE_minecraft.download": "Über das Panel herunterladen",
-  "TXT_CODE_minecraft.downloadHint": "Server, Spielversion und Build aus den MSL-Spiegelservern auswählen. Der Knoten lädt den Server herunter und konfiguriert ihn.",
+  "TXT_CODE_minecraft.downloadHint": "Server, Spielversion und Build aus den Spiegelservern auswählen. Der Knoten lädt den Server herunter und konfiguriert ihn.",
   "TXT_CODE_minecraft.server": "Serversoftware",
   "TXT_CODE_minecraft.version": "Spielversion",
   "TXT_CODE_minecraft.build": "Build",

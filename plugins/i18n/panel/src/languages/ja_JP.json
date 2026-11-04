@@ -2240,7 +2240,7 @@
   "TXT_CODE_minecraft.upload": "サーバーを自分でアップロード",
   "TXT_CODE_minecraft.uploadHint": "JAR ファイルまたは ZIP アーカイブをアップロードして、自分のサーバーを使用します。",
   "TXT_CODE_minecraft.download": "パネルでダウンロード",
-  "TXT_CODE_minecraft.downloadHint": "MSL ミラーからサーバー、ゲームバージョン、ビルドを選択すると、ノードがダウンロードして設定します。",
+  "TXT_CODE_minecraft.downloadHint": "ミラーからサーバー、ゲームバージョン、ビルドを選択すると、ノードがダウンロードして設定します。",
   "TXT_CODE_minecraft.server": "サーバーソフトウェア",
   "TXT_CODE_minecraft.version": "ゲームバージョン",
   "TXT_CODE_minecraft.build": "ビルド",

@@ -2240,7 +2240,7 @@
   "TXT_CODE_minecraft.upload": "Subir tu servidor",
   "TXT_CODE_minecraft.uploadHint": "Sube un archivo JAR o ZIP para utilizar tu propio servidor.",
   "TXT_CODE_minecraft.download": "Descargar desde el panel",
-  "TXT_CODE_minecraft.downloadHint": "Elige un servidor, una versión del juego y una compilación de los espejos de MSL. El nodo lo descargará y configurará.",
+  "TXT_CODE_minecraft.downloadHint": "Elige un servidor, una versión del juego y una compilación de los espejos. El nodo lo descargará y configurará.",
   "TXT_CODE_minecraft.server": "Software del servidor",
   "TXT_CODE_minecraft.version": "Versión del juego",
   "TXT_CODE_minecraft.build": "Compilación",

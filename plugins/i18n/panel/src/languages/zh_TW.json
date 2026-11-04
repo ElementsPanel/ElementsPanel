@@ -2240,7 +2240,7 @@
   "TXT_CODE_minecraft.upload": "自行上傳伺服器",
   "TXT_CODE_minecraft.uploadHint": "上傳 JAR 檔案或 ZIP 壓縮檔，使用自己的伺服器。",
   "TXT_CODE_minecraft.download": "由面板下載",
-  "TXT_CODE_minecraft.downloadHint": "從 MSL 鏡像來源選擇伺服器、遊戲版本和組建編號，由節點下載並設定。",
+  "TXT_CODE_minecraft.downloadHint": "從鏡像來源選擇伺服器、遊戲版本和組建編號，由節點下載並設定。",
   "TXT_CODE_minecraft.server": "伺服器",
   "TXT_CODE_minecraft.version": "遊戲版本",
   "TXT_CODE_minecraft.build": "組建編號",

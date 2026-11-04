@@ -2240,7 +2240,7 @@
   "TXT_CODE_minecraft.upload": "Importer votre serveur",
   "TXT_CODE_minecraft.uploadHint": "Importez un fichier JAR ou une archive ZIP pour utiliser votre propre serveur.",
   "TXT_CODE_minecraft.download": "Télécharger via le panneau",
-  "TXT_CODE_minecraft.downloadHint": "Choisissez un serveur, une version du jeu et une compilation sur les miroirs MSL. Le nœud les télécharge et les configure.",
+  "TXT_CODE_minecraft.downloadHint": "Choisissez un serveur, une version du jeu et une compilation sur les miroirs. Le nœud les télécharge et les configure.",
   "TXT_CODE_minecraft.server": "Logiciel serveur",
   "TXT_CODE_minecraft.version": "Version du jeu",
   "TXT_CODE_minecraft.build": "Compilation",
