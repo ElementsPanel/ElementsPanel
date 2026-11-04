@@ -5,7 +5,6 @@ import { t } from "@/lang/i18n";
 import { logInstanceAutoRestart, logInstanceCrash } from "@/services/apis/operationLog";
 import { getRandomId } from "@/tools/randId";
 import { message } from "@/tools/vuetifyToast";
-import { Terminal } from "@xterm/xterm";
 import { onMounted, ref } from "vue";
 import {
   VBtn,
@@ -16,7 +15,7 @@ import {
 } from "vuetify/components";
 import { getInstanceOutputLog } from "../api";
 import { useCommandHistory } from "../hooks/useCommandHistory";
-import { encodeConsoleColor, type UseTerminalHook } from "../hooks/useTerminal";
+import type { UseTerminalHook } from "../hooks/useTerminal";
 
 // Module-level dedup: prevent duplicate crash/restart logs across multiple TerminalCore instances
 let lastCrashLogTime = 0;
@@ -48,6 +47,7 @@ const {
   execute: setUpTerminal,
   initTerminalWindow,
   sendCommand,
+  writeOutputHistory,
   clearTerminal
 } = props.useTerminalHook;
 
@@ -58,8 +58,6 @@ const terminalDomId = `terminal-window-${getRandomId()}`;
 
 const socketError = ref<Error>();
 const { isXhrPollError, xhrPollErrorReason } = useXhrPollError(socketError);
-
-let term: Terminal | undefined;
 
 let inputRef = ref<HTMLElement | null>(null);
 
@@ -135,11 +133,7 @@ events.once("detail", async () => {
     });
 
     if (value) {
-      if (state.value?.config?.terminalOption?.haveColor) {
-        term?.write(encodeConsoleColor(value));
-      } else {
-        term?.write(value);
-      }
+      writeOutputHistory(value);
     }
   } catch (error: any) {}
 });
@@ -158,7 +152,7 @@ onMounted(async () => {
         daemonId
       });
     }
-    term = await initTerminal();
+    await initTerminal();
   } catch (error: any) {
     console.error(error);
     throw error;

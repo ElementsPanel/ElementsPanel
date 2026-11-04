@@ -370,6 +370,24 @@ export function useTerminal() {
     terminal.value?.clear();
   };
 
+  const writeOutputHistory = (text: string) => {
+    const term = terminal.value;
+    if (!term || disposed) return;
+    const output = state.value?.config?.terminalOption?.haveColor ? encodeConsoleColor(text) : text;
+    let previousDisableStdin = term.options.disableStdin;
+
+    // History can contain terminal queries. Queue the boundary so earlier live
+    // output keeps its replies, then suppress replies until history is parsed.
+    term.write("", () => {
+      if (disposed) return;
+      previousDisableStdin = term.options.disableStdin;
+      term.options.disableStdin = true;
+    });
+    term.write(output, () => {
+      if (!disposed) term.options.disableStdin = previousDisableStdin;
+    });
+  };
+
   events.on("stdout", (v: StdoutData) => {
     if (state.value?.config?.terminalOption?.haveColor) {
       terminal.value?.write(encodeConsoleColor(v.text));
@@ -429,6 +447,7 @@ export function useTerminal() {
     execute,
     initTerminalWindow,
     sendCommand,
+    writeOutputHistory,
     clearTerminal
   };
 }
