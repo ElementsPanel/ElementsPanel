@@ -437,7 +437,8 @@ async function createInstance() {
       v-if="createMethod === QUICKSTART_METHOD.EXIST"
       v-model="formData.cwd"
       :label="t('TXT_CODE_20d110b3')"
-      :rules="[requiredRule]"
+      :hint="t('TXT_CODE_877eea45')"
+      persistent-hint
       variant="solo"
       density="compact"
       hide-details="auto"
