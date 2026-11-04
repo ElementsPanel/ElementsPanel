@@ -298,6 +298,11 @@ export function listNpmPlugins(
 }
 
 function runNpm(args: string[], cwd: string, timeout = 10 * 60 * 1000): Promise<string> {
+  const action =
+    args.find((argument) => argument === "install" || argument === "uninstall") || "operation";
+  // Workers run with NODE_ENV=production. Keep npm from pruning development
+  // dependencies such as @elementspanel/init during updates and rollbacks.
+  if (action !== "operation") args = [...args, "--include=dev"];
   return new Promise((resolve, reject) => {
     const npmCLI = process.env.npm_execpath;
     const invocation =
@@ -332,8 +337,6 @@ function runNpm(args: string[], cwd: string, timeout = 10 * 60 * 1000): Promise<
       errors += data.toString();
       if (errors.length > 16000) errors = errors.slice(-16000);
     });
-    const action =
-      args.find((argument) => argument === "install" || argument === "uninstall") || "operation";
     const timer = setTimeout(() => {
       child.kill("SIGKILL");
       reject(new Error(`npm ${action} timed out.`));
