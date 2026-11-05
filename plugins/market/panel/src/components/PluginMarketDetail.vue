@@ -223,7 +223,7 @@ onBeforeUnmount(() => requestId++);
         </header>
 
         <div class="plugin-detail-tabs">
-          <VTabs v-model="activeTab" color="primary" density="compact" :disabled="busy">
+          <VTabs v-model="activeTab" color="primary" :disabled="busy">
             <VTab value="readme">{{ t("TXT_CODE_PLUGIN_MARKET_README") }}</VTab>
             <VTab value="versions">{{ t("TXT_CODE_PLUGIN_MARKET_VERSIONS") }}</VTab>
             <VTab value="updates">{{ t("TXT_CODE_PLUGIN_MARKET_UPDATES") }}</VTab>

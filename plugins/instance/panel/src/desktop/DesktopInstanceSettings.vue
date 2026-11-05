@@ -296,7 +296,7 @@ onBeforeUnmount(() => { generation++; });
       </div>
     </header>
     <nav v-if="draft && canEdit" class="dis__tabs" :aria-label="t('TXT_CODE_4f34fc28')">
-      <VBtn v-for="tab in tabs" :key="tab.id" variant="text" size="small" class="dis-tab"
+      <VBtn v-for="tab in tabs" :key="tab.id" variant="text" class="dis-tab"
         :class="{ 'dis-tab--active': activeTab === tab.id }" :aria-pressed="activeTab === tab.id"
         @click="activeTab = tab.id">{{ tab.title }}</VBtn>
     </nav>

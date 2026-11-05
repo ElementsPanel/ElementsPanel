@@ -586,8 +586,16 @@ body::-webkit-scrollbar-track {
 }
 
 .v-btn.v-tab>.v-btn__overlay,
-.v-btn.v-tab>.v-btn__underlay {
+.v-btn.v-tab>.v-btn__underlay,
+.v-btn.v-tab>.v-ripple__container {
   border-radius: inherit;
+}
+
+// Clip the animated ripple to the button's rounded border without clipping
+// the selected-tab slider as it moves between buttons.
+.v-btn.v-tab>.v-ripple__container {
+  overflow: hidden;
+  clip-path: border-box;
 }
 
 // Draw a shorter, heavier indicator inside the native slider so the visible

@@ -674,11 +674,6 @@ onMounted(async () => {
     :deep(.v-slide-group) {
         margin-bottom: 0;
     }
-
-    :deep(.v-tab) {
-        font-size: 12px;
-        padding: 6px 12px;
-    }
 }
 
 .dmm-table-wrapper {
