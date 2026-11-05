@@ -639,12 +639,22 @@ onUnmounted(() => {
 }
 
 .dim-perf {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 6px;
     padding: 0 12px;
-    border-right: 0;
     margin-right: 5px;
+
+    // Paint this group separator independently of the desktop's hidden borders.
+    &::after {
+        content: "";
+        position: absolute;
+        inset-block: 2px;
+        inset-inline-end: 0;
+        width: 1px;
+        background-color: var(--desktop-window-text-muted);
+    }
 }
 
 .dim-perf__item {
