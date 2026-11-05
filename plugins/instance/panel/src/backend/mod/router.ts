@@ -1,4 +1,4 @@
-import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
+import type { PanelPluginContext } from "../../../../../../core/panel/src/app/plugin";
 import type { ModManagerService } from "./mod_manager";
 import { preferDownload } from "./mcim";
 import { checkSafeUrl } from "./url";

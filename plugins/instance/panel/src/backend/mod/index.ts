@@ -1,13 +1,9 @@
-import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
-import { localeMessages } from "../i18n";
+import type { PanelPluginContext } from "../../../../../../core/panel/src/app/plugin";
 import { ModManagerService } from "./mod_manager";
 import { registerModManagerRoutes } from "./router";
 import { isModSourcePreference, loadSourcePreference, saveSourcePreference } from "./settings";
 
-export const inject = ["koa", "i18n", "remote", "middleware", "roles", "identity"];
-
-export function apply(ctx: PanelPluginContext) {
-  ctx.i18n.define(localeMessages);
+export function registerModManager(ctx: PanelPluginContext) {
   const manager = new ModManagerService(ctx);
   registerModManagerRoutes(ctx, manager);
 

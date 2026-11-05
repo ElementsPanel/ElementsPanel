@@ -1196,7 +1196,7 @@ test("desktop node refresh ignores stale results, validates ports and reports fa
 for (const layout of ["normal", "desktop"]) {
   test(`${layout} mod downloads keep the selected file's MCIM fallback for queued and immediate downloads`, async () => {
     const requests = [];
-    const { useModSearch } = load(`plugins/mod-manager/panel/src/${layout}/mod-manager/useModSearch.ts`, {
+    const { useModSearch } = load(`plugins/instance/panel/src/mod/${layout}/mod-manager/useModSearch.ts`, {
       "@/lang/i18n": i18n,
       "@vueuse/core": { useLocalStorage: (_key, value) => vue.ref(value) },
       "@/tools/vuetifyToast": { message: { success() {}, error(error) { assert.fail(error); } } },

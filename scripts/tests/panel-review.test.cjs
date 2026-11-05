@@ -252,7 +252,7 @@ test("mod writes authorize the body target even when the query names an owned in
     get() {},
     post() {}
   };
-  const { registerModManagerRoutes } = load("plugins/mod-manager/panel/src/backend/router.ts", {
+  const { registerModManagerRoutes } = load("plugins/instance/panel/src/backend/mod/router.ts", {
     "./url": {}
   });
   registerModManagerRoutes(

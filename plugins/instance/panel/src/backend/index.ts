@@ -10,6 +10,7 @@ import { getInstanceDetails } from "./service/instance_service";
 import { setPluginContext, middleware, remote, roles } from "./runtime";
 import { localeMessages } from "../i18n";
 import { registerJavaManagerRoutes } from "./routers/java_router";
+import { registerModManager } from "./mod";
 
 export const inject = [
   "koa",
@@ -35,6 +36,7 @@ export function apply(ctx: PanelPluginContext) {
   });
   registerOperationLogRoutes(ctx);
   registerJavaManagerRoutes(ctx);
+  registerModManager(ctx);
 
   const api = ctx.koa.router("/api");
   const operateRouter = createInstanceOperateRouter();

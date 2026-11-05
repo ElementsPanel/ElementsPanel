@@ -1,4 +1,4 @@
-import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
+import type { PanelPluginContext } from "../../../../../../core/panel/src/app/plugin";
 import type { ModSourcePreference } from "./mcim";
 
 /**

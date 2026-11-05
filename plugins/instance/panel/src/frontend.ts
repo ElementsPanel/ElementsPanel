@@ -29,6 +29,8 @@ import InstanceDetail from "./widgets/instance/dialogs/InstanceDetail.vue";
 import { openInstanceConsole, registerDesktop } from "./desktop";
 import { localeMessages } from "./i18n";
 import { registerJavaManager } from "./java";
+import { registerModManager } from "./mod";
+import * as modApi from "./mod/api";
 
 export const inject = ["console", "i18n", "routes", "ui", "actions", "desktop"];
 
@@ -36,6 +38,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
   ctx.set("instance", {
     api,
+    modApi,
     openConsole: (instance, daemonId) => openInstanceConsole(ctx, instance, daemonId),
     hooks: {
       ...instanceHooks,
@@ -60,6 +63,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
     }
   });
   registerJavaManager(ctx);
+  registerModManager(ctx);
   registerDesktop(ctx);
 
   ctx.routes.add({

@@ -433,11 +433,6 @@ export interface FrontendTerminalService {
   readonly encodeConsoleColor: (text: string) => string;
 }
 
-/** Minecraft mod and plugin APIs. Provided by `plugins/mod`. */
-export interface FrontendModManagerService {
-  readonly api: typeof import("../../../../plugins/mod-manager/panel/src/api");
-}
-
 /** Java environment selector supplied by `plugins/instance`. */
 export interface FrontendJavaService {
   readonly setupComponent: Component;
@@ -446,6 +441,7 @@ export interface FrontendJavaService {
 /** Application instance pages, APIs, hooks and dialogs. Provided by `plugins/instance`. */
 export interface FrontendInstanceService {
   readonly api: Record<string, (...args: any[]) => any>;
+  readonly modApi: typeof import("../../../../plugins/instance/panel/src/mod/api");
   openConsole(instance: unknown, daemonId: string): boolean;
   readonly hooks: typeof import("../../../../plugins/instance/panel/src/hooks/useInstance") &
     typeof import("../../../../plugins/instance/panel/src/hooks/useInstanceTag") &
@@ -523,7 +519,6 @@ declare module "cordis" {
     market: FrontendMarketService;
     node: FrontendNodeService;
     instance: FrontendInstanceService;
-    mod: FrontendModManagerService;
     java: FrontendJavaService;
     file: FrontendFileManagerService;
     terminal: FrontendTerminalService;

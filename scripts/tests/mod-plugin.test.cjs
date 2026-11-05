@@ -65,7 +65,8 @@ async function panelFixture(t, options = {}) {
   ctx.plugin(KoaService, app);
   ctx.plugin(registrar(Service, "i18n"));
   const policy = { canFileManager: true, allowed: true };
-  ctx.set("roles", { USER: 1 });
+  ctx.set("roles", { USER: 1, ADMIN: 10 });
+  ctx.set("operations", {});
   ctx.set("identity", {
     accessPolicy: policy,
     of: (requestCtx) => ({ elevated: requestCtx.role === 10 }),
@@ -97,7 +98,7 @@ async function panelFixture(t, options = {}) {
     }
   };
   const network = [];
-  const { ModManagerService } = load("plugins/mod-manager/panel/src/backend/mod_manager.ts", {
+  const { ModManagerService } = load("plugins/instance/panel/src/backend/mod/mod_manager.ts", {
     axios:
       options.axios ||
       (async (config) => {
@@ -105,14 +106,26 @@ async function panelFixture(t, options = {}) {
         return { data: [{ project_type: "minecraft", version: "1.21.1" }] };
       })
   });
-  const plugin = load("plugins/mod-manager/panel/src/backend/index.ts", {
+  const mod = load("plugins/instance/panel/src/backend/mod/index.ts", {
     "./mod_manager": { ModManagerService }
+  });
+  const emptyRouter = () => new (panelRequire("@koa/router"))();
+  const plugin = load("plugins/instance/panel/src/backend/index.ts", {
+    "./mod": mod,
+    "./routers/environment_router": { createEnvironmentRouter: emptyRouter },
+    "./routers/instance_admin_router": { createInstanceAdminRouter: emptyRouter },
+    "./routers/instance_operate_router": { createInstanceOperateRouter: emptyRouter },
+    "./routers/schedule_router": { createScheduleRouter: emptyRouter },
+    "./routers/minecraft_router": { createMinecraftRouter: emptyRouter },
+    "./routers/operation_log_router": { registerOperationLogRoutes() {} },
+    "./routers/java_router": { registerJavaManagerRoutes() {} },
+    "./service/instance_service": { getInstanceDetails() {} }
   });
   // Optional services the plugin resolves lazily; set before start so the
   // injects fire deterministically.
   if (options.storage) ctx.set("storage", options.storage);
   if (options.settingsForm) ctx.set("settingsForm", options.settingsForm);
-  const fork = ctx.plugin({ ...plugin, name: "mod-manager" });
+  const fork = ctx.plugin({ ...plugin, name: "instance" });
   await ctx.start();
   const dispatch = panelRequire("koa-compose")(app.middleware);
   const request = async (url, requestOptions = {}) => {
@@ -206,7 +219,7 @@ test("Spigot version filenames are safe for batch downloads and match their fall
     { name: "插件😀".repeat(100), versions: ["最新版😀".repeat(100)] }
   ];
   for (const resource of cases) {
-    const { ModManagerService } = load("plugins/mod-manager/panel/src/backend/mod_manager.ts", {
+    const { ModManagerService } = load("plugins/instance/panel/src/backend/mod/mod_manager.ts", {
       axios: async ({ url }) => ({
         data: url.endsWith("/versions")
           ? resource.versions.map((name, id) => ({ name, id }))
@@ -289,8 +302,12 @@ async function daemonFixture(t, downloads = { task: null, downloadingCount: 0, s
     uploads: { getUploads: () => new Map() }
   };
   const filesFork = ctx.plugin((scoped) => scoped.set("files", files));
-  const plugin = load("plugins/mod-manager/daemon/src/backend/index.ts");
-  const fork = ctx.plugin({ ...plugin, name: "mod-manager" });
+  const { registerModManager } = load("plugins/instance/daemon/src/backend/mod/index.ts");
+  const fork = ctx.plugin({
+    name: "instance",
+    inject: ["instances", "protocol", "files", "transfer", "features"],
+    apply: (scope) => registerModManager(scope, scope.instances)
+  });
   await ctx.start();
   const request = (event, data) => ctx.protocol.handlers.get(event)({}, data);
   return { ctx, fork, filesFork, directory, request };
@@ -508,12 +525,12 @@ test("tracked downloads validate destinations, preserve folder case and sanitize
   assert.doesNotMatch(JSON.stringify(status), /PRIVATE|internal|absolute/);
 });
 
-test("frontend registration and feature gating follow the mod and file plugin lifetimes", async (t) => {
+test("instance owns mod APIs while mod views follow the file service lifetime", async (t) => {
   const { Context, Service } = panelRequire("cordis");
   const ctx = new Context();
   t.after(() => ctx.stop());
   for (const name of ["i18n", "routes", "ui", "actions"]) ctx.plugin(registrar(Service, name));
-  for (const name of ["console", "desktop", "instance"]) ctx.set(name, {});
+  for (const name of ["console", "desktop"]) ctx.set(name, {});
   const user = { state: { settings: { canFileManager: true } }, isAdmin: { value: false } };
   const component = {};
   const availability = load("plugins/console/panel/src/hooks/useInstanceActionAvailability.ts", {
@@ -522,20 +539,48 @@ test("frontend registration and feature gating follow the mod and file plugin li
       TYPE_MINECRAFT_BEDROCK: "minecraft/bedrock"
     }
   });
-  const plugin = load("plugins/mod-manager/panel/src/frontend.ts", {
+  const overrides = {
     "@/lang/i18n": { t: (key) => key },
     "@/hooks/useInstanceActionAvailability": availability,
     "@/stores/useAppStateStore": { useAppStateStore: () => user },
-    "./api": { modListApi() {} },
     "./desktop/DesktopModManager.vue": component,
     "./normal/ModManager.vue": component,
     "./normal/ModManagerAction.vue": component
+  };
+  const mod = load("plugins/instance/panel/src/mod/index.ts", overrides);
+  const frontendLoad = createLoader({
+    resolve(id, { localRequire }) {
+      return id.endsWith(".vue") ? component : localRequire(id);
+    }
   });
-  ctx.plugin({ ...plugin, name: "mod-manager" });
+  const modApi = { modListApi: () => "instance mods" };
+  const plugin = frontendLoad("plugins/instance/panel/src/frontend.ts", {
+    ...overrides,
+    "@/config/router": { ROLE: { USER: 1, ADMIN: 10 } },
+    "./api": {},
+    "./mod": mod,
+    "./mod/api": modApi,
+    "./java": { registerJavaManager() {} },
+    "./desktop": { registerDesktop() {} },
+    "./hooks/quickStartFlow": {},
+    "./hooks/useInstance": {},
+    "./hooks/useInstanceTag": {},
+    "./hooks/useSchedule": {},
+    "./hooks/useServerConfig": {},
+    "./hooks/useGenerateStartCmd": {}
+  });
+  const instance = ctx.plugin({ ...plugin, name: "instance" });
   await ctx.start();
+  assert.equal(ctx.instance.modApi.modListApi, modApi.modListApi);
   assert.equal(ctx.get("mod-manager"), undefined);
+  assert.equal(ctx.routes.items.size, 7);
+  assert.equal(ctx.actions.items.size, 0);
+  const facade = load("plugins/console/panel/src/services/apis/modManager.ts", {
+    "@/plugin/context": { usePluginService: (name) => ctx.get(name) }
+  });
+  assert.equal(facade.modListApi(), "instance mods");
   const fileFork = ctx.plugin((scoped) => scoped.set("file", {}));
-  await until(() => ctx.get("mod-manager"));
+  await until(() => ctx.actions.items.size === 1);
   const action = [...ctx.actions.items][0];
   const state = {
     instanceId: "instance",
@@ -551,10 +596,21 @@ test("frontend registration and feature gating follow the mod and file plugin li
   assert.equal(action.condition(state), false);
   user.isAdmin.value = true;
   assert.equal(action.condition(state), true);
-  assert.equal([...ctx.routes.items][0].path, "/instances/terminal/mods");
+  assert.ok([...ctx.routes.items].some((route) => route.path === "/instances/terminal/mods"));
   fileFork.dispose();
-  await until(() => ctx.get("mod-manager") === undefined);
+  await until(() => ctx.actions.items.size === 0);
+  assert.equal(ctx.routes.items.size, 7);
+  assert.equal(ctx.i18n.items.size, 1);
+  assert.equal(ctx.instance.modApi.modListApi, modApi.modListApi);
+  assert.equal(facade.modListApi(), "instance mods");
+  const restoredFile = ctx.plugin((scoped) => scoped.set("file", {}));
+  await until(() => ctx.actions.items.size === 1);
+  await instance.dispose();
+  await until(() => ctx.instance === undefined);
   for (const name of ["i18n", "routes", "ui", "actions"]) assert.equal(ctx.get(name).items.size, 0);
+  assert.ok(ctx.file);
+  assert.throws(() => facade.modListApi(), /"instance" is not loaded/);
+  await restoredFile.dispose();
 });
 
 test("legacy mod windows restore under the action ID without losing layout or opening duplicates", () => {
@@ -580,7 +636,7 @@ test("legacy mod windows restore under the action ID without losing layout or op
 function mirrorManager(respond, preference) {
   const requests = [];
   let dispose;
-  const { ModManagerService } = load("plugins/mod-manager/panel/src/backend/mod_manager.ts", {
+  const { ModManagerService } = load("plugins/instance/panel/src/backend/mod/mod_manager.ts", {
     axios: async (config) => {
       requests.push(config);
       return await respond(config, requests.length);
@@ -730,7 +786,7 @@ test("official source preference requests official APIs first and falls back to 
 });
 
 test("MCIM file mapping preserves encoded paths and excludes lookalike hosts, credentials and custom ports", () => {
-  const { withMirrorDownload } = load("plugins/mod-manager/panel/src/backend/mcim.ts");
+  const { withMirrorDownload } = load("plugins/instance/panel/src/backend/mod/mcim.ts");
   const original = { url: "https://cdn.modrinth.com/data/a/versions/b/file%20name.jar?token=example", filename: "file name.jar", hashes: { sha1: "hash" } };
   const mirrored = withMirrorDownload(original, "official");
   assert.equal(mirrored.fallbackUrl, "https://mod.mcimirror.top/data/a/versions/b/file%20name.jar?token=example");
@@ -744,7 +800,7 @@ test("MCIM file mapping preserves encoded paths and excludes lookalike hosts, cr
 });
 
 test("download URLs put the preferred source first and keep the other one as fallback", () => {
-  const { withMirrorDownload } = load("plugins/mod-manager/panel/src/backend/mcim.ts");
+  const { withMirrorDownload } = load("plugins/instance/panel/src/backend/mod/mcim.ts");
   const file = { url: "https://cdn.modrinth.com/data/a/versions/b/mod.jar", filename: "mod.jar", primary: true };
   const mirrorFirst = withMirrorDownload(file, "mirror");
   assert.equal(mirrorFirst.url, "https://mod.mcimirror.top/data/a/versions/b/mod.jar");
@@ -761,7 +817,7 @@ test("download URLs put the preferred source first and keep the other one as fal
 });
 
 test("a client URL pair is re-ordered by the current preference before it reaches the daemon", async (t) => {
-  const { preferDownload } = load("plugins/mod-manager/panel/src/backend/mcim.ts");
+  const { preferDownload } = load("plugins/instance/panel/src/backend/mod/mcim.ts");
   const officialUrl = "https://cdn.modrinth.com/data/a/versions/b/mod.jar";
   const mirrorUrl = "https://mod.mcimirror.top/data/a/versions/b/mod.jar";
   // Stale pairs are ordered either way, whichever side the client listed first.

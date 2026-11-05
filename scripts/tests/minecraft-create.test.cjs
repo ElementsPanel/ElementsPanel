@@ -798,6 +798,9 @@ test("instance owns Java before restoration, leaves status to external plugins a
     "../i18n": load("plugins/instance/daemon/src/i18n/index.ts"),
     "./install_task": { createInstanceInstallTaskClass: f.createInstanceInstallTaskClass },
     "./minecraft_task": f.minecraftPlugin,
+    "./mod": load("plugins/instance/daemon/src/backend/mod/index.ts", {
+      "./mod_service": load("plugins/instance/daemon/src/backend/mod/mod_service.ts")
+    }),
     "./java": load("plugins/instance/daemon/src/backend/java/index.ts", {
       "./java_manager": { JavaManager: class {
         ready = javaReady.promise;
@@ -833,6 +836,9 @@ test("instance owns Java before restoration, leaves status to external plugins a
   javaReady.resolve();
   await starting;
   await until(() => ctx.tasks?.get("minecraft_install"));
+  assert.equal(ctx.features.has("modManager"), true);
+  assert.equal(ctx.features.has("modInstallTasks"), true);
+  assert.equal(handlers.has("instance/mods/list"), true);
   assert.equal(restored, true);
   for (const feature of ["javaManager", "javaManagerMsl"]) {
     assert.equal(ctx.features.has(feature), true);
@@ -909,7 +915,7 @@ test("instance owns Java before restoration, leaves status to external plugins a
 
   await instanceScope.dispose();
   assert.equal(ctx.features.has("minecraftInstall"), false);
-  for (const feature of ["javaManager", "javaManagerMsl", "mcstats"]) {
+  for (const feature of ["javaManager", "javaManagerMsl", "modManager", "modInstallTasks", "mcstats"]) {
     assert.equal(ctx.features.has(feature), false);
   }
   assert.equal(ctx.javaManager, undefined);

@@ -228,6 +228,7 @@ test("panel instance permission errors translate without undeclared service warn
     permission: pass,
     validator: pass,
     speedLimit: pass,
+    requestConcurrencyLimiter: pass,
     instanceAccess: pass()
   });
   ctx.set("operations", {});
@@ -502,6 +503,7 @@ function frontendFixture(t) {
     ),
     "@/plugin/context": pluginContext,
     "./api": {},
+    "./mod/api": {},
     "./session": { restoreSession() {} },
     "./hooks/quickStartFlow": {},
     "./hooks/useInstance": {},

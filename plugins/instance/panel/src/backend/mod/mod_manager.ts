@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
+import type { PanelPluginContext } from "../../../../../../core/panel/src/app/plugin";
 import {
   apiBase,
   curseforgeKeyHeaders,

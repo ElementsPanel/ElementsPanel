@@ -4,7 +4,7 @@ import StreamZip from "node-stream-zip";
 import path from "path";
 import toml from "smol-toml";
 import yaml from "yaml";
-import type { DaemonPluginContext } from "../../../../../core/daemon/src/plugin";
+import type { DaemonPluginContext } from "../../../../../../core/daemon/src/plugin";
 
 export interface ModInfo {
   name: string;

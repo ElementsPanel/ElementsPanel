@@ -6,9 +6,7 @@ import {
   isScopedInstance
 } from "@/hooks/useInstanceActionAvailability";
 import { useAppStateStore } from "@/stores/useAppStateStore";
-import * as api from "./api";
 import DesktopModManager from "./desktop/DesktopModManager.vue";
-import { localeMessages } from "./i18n";
 import ModManager from "./normal/ModManager.vue";
 import ModManagerAction from "./normal/ModManagerAction.vue";
 
@@ -19,11 +17,11 @@ const isModManagerAvailable = (context: PanelFrontendInstanceActionContext) => {
   return state.settings.canFileManager || isAdmin.value;
 };
 
-export const inject = ["console", "i18n", "ui", "routes", "actions", "desktop", "instance", "file"];
+export function registerModManager(ctx: PanelFrontendPluginContext) {
+  ctx.inject(["file"], (scope) => registerViews(scope));
+}
 
-export function apply(ctx: PanelFrontendPluginContext) {
-  ctx.i18n.define(localeMessages);
-  ctx.set("mod-manager", { api });
+function registerViews(ctx: PanelFrontendPluginContext) {
   ctx.routes.add({
     path: "/instances/terminal/mods",
     name: t("TXT_CODE_MOD_MANAGER"),

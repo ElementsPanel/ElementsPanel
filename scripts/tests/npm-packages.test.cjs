@@ -265,11 +265,12 @@ test("workspace packaging includes runnable entry points and excludes user data 
     );
     assert.match(help, /Usage:/);
   }
-  assert.equal(result.plugins.length, 17);
+  assert.equal(result.plugins.length, 16);
   assert.ok(result.plugins.every((plugin) => /^@elementspanel\/epanel-plugin-/.test(plugin.name)));
-  const mod = result.plugins.find((plugin) => plugin.elementspanel.id === "mod-manager");
-  assert.equal(mod.elementspanel.panel.folder, "mod");
-  assert.equal(mod.elementspanel.daemon.folder, "mod");
+  const instance = result.plugins.find((plugin) => plugin.elementspanel.id === "instance");
+  assert.equal(instance.elementspanel.panel.folder, "instance");
+  assert.equal(instance.elementspanel.daemon.folder, "instance");
+  assert.equal(result.plugins.some((plugin) => plugin.elementspanel.id === "mod-manager"), false);
   assert.ok(fs.existsSync(path.join(f.outputRoot, "panel/public/assets/shared.js")));
   assert.ok(fs.existsSync(path.join(f.sourceRoot, "core/panel/production/app.js")));
   assert.ok(fs.existsSync(path.join(f.sourceRoot, "plugins/console/panel/backend/index.cjs.map")));
@@ -364,7 +365,8 @@ test("separate npm plugin packages resolve from hoisted and nested installations
     assert.ok(
       roots.every((plugin) => fs.existsSync(path.join(plugin.directory, "backend/index.cjs")))
     );
-    assert.equal(roots.find((plugin) => plugin.id === "mod-manager").folder, "mod");
+    assert.equal(roots.find((plugin) => plugin.id === "instance").folder, "instance");
+    assert.equal(roots.some((plugin) => plugin.id === "mod-manager"), false);
     assert.equal(fs.existsSync(path.join(host, "plugins")), false);
     const { planWorkers } = require(path.join(host, "runtime/cli.cjs"));
     assert.equal(planWorkers(side, host, { cwd: project }).workers.length, 1);

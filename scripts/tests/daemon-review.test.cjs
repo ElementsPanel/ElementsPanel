@@ -367,7 +367,7 @@ test("mod operations validate final paths instead of following outside directory
     "./filepath": load("plugins/file/daemon/src/backend/filepath.ts"),
     "./runtime": { $t: (key) => key, settings: () => ({ config: {} }) }
   }).default;
-  const { ModService } = load("plugins/mod-manager/daemon/src/backend/mod_service.ts");
+  const { ModService } = load("plugins/instance/daemon/src/backend/mod/mod_service.ts");
   const service = new ModService({
     effect() {},
     transfer: { downloads: {} },

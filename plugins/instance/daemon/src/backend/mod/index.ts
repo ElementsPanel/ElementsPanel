@@ -1,20 +1,20 @@
-import type { DaemonPluginContext } from "../../../../../core/daemon/src/plugin";
+import type { DaemonPluginContext } from "../../../../../../core/daemon/src/plugin";
 import { ModService } from "./mod_service";
 
-export const inject = ["instances", "protocol", "files", "transfer", "features"];
-
-export function apply(ctx: DaemonPluginContext) {
+export function registerModManager(
+  ctx: DaemonPluginContext,
+  instances: DaemonPluginContext["instances"]
+) {
   const modService = new ModService(ctx);
   const downloads = ctx.transfer.downloads;
   ctx.features.add("modManager");
   ctx.features.add("modInstallTasks");
 
-  // Validate at this boundary as well as in the instance plugin's middleware.
-  // These routes must never depend on another plugin's registration order.
+  // Validate before dispatch, including requests outside the instance router.
   const on = (event: string, handler: Parameters<DaemonPluginContext["protocol"]["on"]>[1]) => {
     ctx.protocol.on(event, (routerCtx, data) => {
       const instanceUuid = data?.instanceUuid;
-      if (!ctx.instances.subsystem.exists(instanceUuid)) {
+      if (!instances.subsystem.exists(instanceUuid)) {
         return ctx.protocol.error(routerCtx, event, {
           instanceUuid,
           err: `The operation failed, the instance ${instanceUuid} does not exist.`

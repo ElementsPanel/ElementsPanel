@@ -1,7 +1,7 @@
 {
   "name": "@elementspanel/epanel-plugin-instance",
   "version": "1.0.14",
-  "description": "Application instance and Java runtime management.",
+  "description": "Application instances, Java runtimes and Minecraft mod management.",
   "elementspanel": {
     "id": "instance",
     "dual": true,
@@ -13,13 +13,13 @@
       ],
       "directory": "panel",
       "folder": "instance",
-      "description": "Application instance and Java runtime management."
+      "description": "Application instances, Java runtimes and Minecraft mod management."
     },
     "daemon": {
       "priority": 40,
       "directory": "daemon",
       "folder": "instance",
-      "description": "Instance processes, runtimes, installation and scheduling."
+      "description": "Instance processes, runtimes, installation, scheduling and mod management."
     }
   }
 }
