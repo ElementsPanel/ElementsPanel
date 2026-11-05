@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-monitor",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "System monitoring and operation logs.",
   "elementspanel": {
     "id": "monitor",
