@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_NOTICE": "一键更新具有一些不稳定性，可能需要你手动重启面板服务，在进行更新时，面板连接会短暂断开。",
   "TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES": "正在更新依赖...",
   "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "选择面板和节点",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "选择要安装「{name}」的面板和节点。",

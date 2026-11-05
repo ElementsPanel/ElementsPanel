@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_NOTICE": "一括更新は動作が不安定になる場合があり、パネルのサービスを手動で再起動する必要が生じることがあります。更新中はパネルとの接続が一時的に切断されます。",
   "TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES": "依存関係を更新中...",
   "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "パネルとノードを選択",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "「{name}」をインストールするパネルとノードを選択してください。",

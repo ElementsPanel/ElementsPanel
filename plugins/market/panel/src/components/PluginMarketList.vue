@@ -228,7 +228,6 @@ onBeforeUnmount(() => {
             @click="updateView?.updateAll()"
           >
             {{ t("TXT_CODE_PLUGIN_MARKET_UPDATE_ALL") }}
-            <span v-if="updateView?.updateCount"> ({{ updateView.updateCount }})</span>
           </VBtn>
           <VMenu location="bottom end">
             <template #activator="{ props: menuProps }">

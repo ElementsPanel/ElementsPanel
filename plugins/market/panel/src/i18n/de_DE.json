@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_NOTICE": "Die Funktion „Alle aktualisieren“ kann instabil sein. Möglicherweise musst du den Panel-Dienst manuell neu starten. Während der Aktualisierung wird die Verbindung zum Panel kurzzeitig unterbrochen.",
   "TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES": "Abhängigkeiten werden aktualisiert...",
   "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "Panel und Knoten auswählen",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "Wähle das Panel und die Knoten für die Installation von „{name}“ aus.",

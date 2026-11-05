@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_NOTICE": "La función Actualizar todo puede ser inestable. Es posible que tengas que reiniciar manualmente el servicio del panel. La conexión con el panel se interrumpirá brevemente durante la actualización.",
   "TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES": "Actualizando dependencias...",
   "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "Seleccionar panel y nodos",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "Selecciona el panel y los nodos donde instalar «{name}».",

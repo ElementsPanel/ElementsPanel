@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_NOTICE": "A função Atualizar todos pode apresentar instabilidade. Pode ser necessário reiniciar manualmente o serviço do painel. A conexão com o painel será interrompida brevemente durante a atualização.",
   "TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES": "Atualizando dependências...",
   "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "Selecionar painel e nós",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "Selecione o painel e os nós nos quais instalar \"{name}\".",

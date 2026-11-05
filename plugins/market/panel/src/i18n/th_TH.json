@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_NOTICE": "ฟังก์ชันอัปเดตทั้งหมดอาจทำงานไม่เสถียร และคุณอาจต้องเริ่มบริการแผงควบคุมใหม่ด้วยตนเอง การเชื่อมต่อกับแผงควบคุมจะขาดหายไปชั่วครู่ระหว่างการอัปเดต",
   "TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES": "กำลังอัปเดตแพ็กเกจที่พึ่งพา...",
   "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "เลือกแผงควบคุมและโหนด",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "เลือกแผงควบคุมและโหนดที่จะติดตั้ง \"{name}\"",

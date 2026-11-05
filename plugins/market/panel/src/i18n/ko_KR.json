@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_NOTICE": "모두 업데이트 기능은 불안정할 수 있으며, 패널 서비스를 수동으로 다시 시작해야 할 수 있습니다. 업데이트 중에는 패널 연결이 잠시 끊어집니다.",
   "TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES": "의존성 업데이트 중...",
   "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "패널 및 노드 선택",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "\"{name}\"을(를) 설치할 패널과 노드를 선택하세요.",

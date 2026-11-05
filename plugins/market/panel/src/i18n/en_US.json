@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_NOTICE": "The Update all feature may be unstable. You may need to restart the panel service manually. The connection to the panel will briefly disconnect during the update.",
   "TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES": "Updating dependencies...",
   "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "Select panel and nodes",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "Select the panel and nodes on which to install \"{name}\".",

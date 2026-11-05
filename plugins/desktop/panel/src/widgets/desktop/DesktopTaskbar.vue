@@ -245,19 +245,19 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
                 <VBtn class="start-menu__function-btn" icon variant="text" :title="username"
                     @click="handleOpenUserInfo">
                     <component :is="userAvatar" v-if="isComponentIcon(userAvatar)" />
-                    <VIcon v-else-if="isMdiIcon(userAvatar)" :icon="userAvatar" />
-                    <VIcon v-else icon="mdi-account-outline" />
+                    <VIcon v-else-if="isMdiIcon(userAvatar)" :icon="userAvatar" size="small" />
+                    <VIcon v-else icon="mdi-account-outline" size="small" />
                 </VBtn>
                 <div class="start-menu__sidebar-spacer"></div>
                 <VBtn class="start-menu__function-btn" icon variant="text"
                     :aria-label="themeTitle" :title="themeTitle" @click="cycleTheme">
-                    <VIcon :icon="themeIcon" />
+                    <VIcon :icon="themeIcon" size="small" />
                 </VBtn>
                 <VMenu location="top end">
                     <template #activator="{ props: menuProps }">
                         <VBtn v-bind="menuProps" class="start-menu__function-btn" icon variant="text"
                             aria-label="Account">
-                            <VIcon icon="mdi-logout" />
+                            <VIcon icon="mdi-logout" size="small" />
                         </VBtn>
                     </template>
                     <VList>

@@ -408,7 +408,7 @@ onMounted(async () => {
         </VCol>
         <VCol cols="12" md="5" class="pagination-wrap">
           <VPagination v-if="instances" v-model="operationForm.currentPage" :length="instances.maxPage || 1"
-            :total-visible="isPhone ? 1 : 6" density="comfortable" @update:model-value="() => initInstancesData()" />
+            :total-visible="isPhone ? 1 : 5" density="compact" @update:model-value="() => initInstancesData()" />
           <VSelect v-if="instances" v-model="operationForm.pageSize" :items="[10, 20, 50, 100]" hide-details
             class="page-size-select" @update:model-value="() => initInstancesData(true)">
             <template #no-data><Empty :icon="false" compact /></template>
@@ -595,7 +595,6 @@ onMounted(async () => {
 .pagination-wrap > .v-pagination {
   min-width: 0;
   max-width: 100%;
-  flex: 1 1 0;
 }
 
 .node-name {
@@ -611,8 +610,8 @@ onMounted(async () => {
 }
 
 .page-size-select {
-  width: 90px;
-  flex: 0 0 90px;
+  width: 96px;
+  flex: 0 0 96px;
 }
 
 .tag-row {

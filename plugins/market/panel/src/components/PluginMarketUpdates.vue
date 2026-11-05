@@ -4,7 +4,17 @@ import { t } from "@/lang/i18n";
 import Empty from "@/components/Empty.vue";
 import { getValidatorErrorMsg } from "@/tools/validator";
 import { message } from "@/tools/vuetifyToast";
-import { VAlert, VBtn, VProgressCircular, VTable } from "vuetify/components";
+import {
+  VAlert,
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardText,
+  VDialog,
+  VProgressCircular,
+  VSpacer,
+  VTable
+} from "vuetify/components";
 import { pluginMarketNodes, pluginMarketUpdates } from "../api";
 import type { PluginUpdate, PluginUpdates, PluginUpdateTarget } from "../updates";
 import { defaultMarketTargets, type MarketTargetOption } from "../targets";
@@ -24,6 +34,7 @@ const emit = defineEmits<{ loading: [value: boolean] }>();
 const loading = ref(false);
 const error = ref("");
 const updates = ref<PluginUpdates>();
+const updateNoticeShown = ref(false);
 const targetsShown = ref(false);
 const preparingTargets = ref(false);
 const targets = ref<MarketTargetOption[]>([]);
@@ -45,7 +56,6 @@ const blocked = computed(
     Boolean(activeOperations.value) ||
     Boolean(queuedChanges.value.length)
 );
-const updateCount = computed(() => visibleUpdates.value.length);
 const canUpdate = computed(() => !blocked.value);
 const failures = computed(() =>
   updateResults.value.filter((item) => item.error || item.result?.failedTargets.length)
@@ -81,10 +91,16 @@ async function runUpdates(plugins: PluginUpdate[]) {
     message.success(t("TXT_CODE_PLUGIN_MARKET_UPDATED"));
 }
 
-async function updateAll() {
+function updateAll() {
   if (disposed || blocked.value) return;
+  updateNoticeShown.value = true;
+}
+
+async function confirmUpdateNotice() {
+  if (disposed || !updateNoticeShown.value || preparingTargets.value || applyingChanges.value) return;
   const query = (props.keyword ?? "").trim().toLowerCase();
   preparingTargets.value = true;
+  updateNoticeShown.value = false;
   try {
     const [available, response] = await Promise.all([
       pluginMarketNodes().execute({ forceRequest: true }),
@@ -149,7 +165,9 @@ async function updateOne(plugin: PluginUpdate) {
   if (!disposed && !blocked.value) await runUpdates([plugin]);
 }
 
-const selectingTargets = computed(() => preparingTargets.value || targetsShown.value);
+const selectingTargets = computed(
+  () => updateNoticeShown.value || preparingTargets.value || targetsShown.value
+);
 watch(selectingTargets, (value) => (activeOperations.value += value ? 1 : -1), { flush: "sync" });
 watch(loading, (value) => emit("loading", value), { flush: "sync" });
 watch(installedChange, () => {
@@ -171,7 +189,7 @@ onBeforeUnmount(() => {
   requestId++;
   if (selectingTargets.value) activeOperations.value--;
 });
-defineExpose({ refresh, updateAll, updateCount, canUpdate, preparingTargets });
+defineExpose({ refresh, updateAll, canUpdate, preparingTargets });
 </script>
 
 <template>
@@ -263,6 +281,24 @@ defineExpose({ refresh, updateAll, updateCount, canUpdate, preparingTargets });
       :title="t(keyword?.trim() ? 'TXT_CODE_NO_DATA' : 'TXT_CODE_PLUGIN_MARKET_UP_TO_DATE')"
       :description="keyword?.trim() ? undefined : t('TXT_CODE_NO_DATA')"
     />
+    <VDialog
+      v-model="updateNoticeShown"
+      :aria-label="t('TXT_CODE_PLUGIN_MARKET_UPDATE_ALL')"
+      max-width="520"
+    >
+      <VCard :title="t('TXT_CODE_PLUGIN_MARKET_UPDATE_ALL')">
+        <VCardText>{{ t("TXT_CODE_PLUGIN_MARKET_UPDATE_NOTICE") }}</VCardText>
+        <VCardActions>
+          <VSpacer />
+          <VBtn variant="text" @click="updateNoticeShown = false">
+            {{ t("TXT_CODE_PLUGIN_MARKET_CANCEL") }}
+          </VBtn>
+          <VBtn color="primary" @click="confirmUpdateNotice">
+            {{ t("TXT_CODE_PLUGIN_MARKET_CONFIRM") }}
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
     <PluginMarketTargetsDialog
       v-model="targetsShown"
       v-model:selection="selection"

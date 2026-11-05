@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_UPDATE_NOTICE": "Функция «Обновить всё» может работать нестабильно. Возможно, потребуется вручную перезапустить службу панели. Во время обновления соединение с панелью ненадолго прервётся.",
   "TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES": "Обновление зависимостей...",
   "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "Выберите панель и узлы",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "Выберите панель и узлы для установки «{name}».",

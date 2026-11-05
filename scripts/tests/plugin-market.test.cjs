@@ -886,13 +886,14 @@ test("market target changes preserve the routed page, search and active tab whil
     }
   });
   const Button = control({ disabled: Boolean, loading: Boolean }, ["click"]);
+  const Dialog = control({ modelValue: Boolean }, ["update:modelValue"]);
   const Search = control({ modelValue: String }, ["update:modelValue"]);
   const NodeItem = control({ title: String, disabled: Boolean, active: Boolean }, ["click"]);
   const components = Object.fromEntries([
     "VAlert", "VAvatar", "VCard", "VCardActions", "VCardText", "VChip", "VCol", "VContainer",
     "VCheckbox", "VDialog", "VIcon", "VImg", "VList", "VListItem", "VMenu", "VProgressCircular", "VProgressLinear", "VRow", "VSpacer", "VTab", "VTable"
   ].map((name) => [name, slots]));
-  Object.assign(components, { VTabs: Tabs, VBtn: Button, VTextField: Search, VListItem: NodeItem });
+  Object.assign(components, { VTabs: Tabs, VBtn: Button, VDialog: Dialog, VTextField: Search, VListItem: NodeItem });
   const calls = [];
   let reads = 0;
   const plans = [
@@ -971,6 +972,15 @@ test("market target changes preserve the routed page, search and active tab whil
     return Array.isArray(node.children) ? [...found, ...node.children.flatMap((child) => find(type, child))] : found;
   };
   const updateAllButton = () => find(Button).find((button) => button.vnode.props.class === "plugin-market-update-all");
+  const updateNotice = () => find(Dialog).find((dialog) =>
+    dialog.vnode.props["aria-label"] === "TXT_CODE_PLUGIN_MARKET_UPDATE_ALL"
+  );
+  const acceptUpdateNotice = async () => {
+    assert.equal(updateNotice().props.modelValue, true);
+    find(Button, updateNotice().subTree).find((button) => button.vnode.props.color === "primary").emit("click");
+    await new Promise(setImmediate);
+    assert.equal(updateNotice().props.modelValue, false);
+  };
   try {
     await new Promise(setImmediate);
     assert.equal(reads, 0, "updates are only checked when their tab opens");
@@ -992,7 +1002,7 @@ test("market target changes preserve the routed page, search and active tab whil
     await vue.nextTick();
     const view = find(Updates)[0];
     const buttons = find(Button, view.subTree);
-    assert.equal(buttons.length, 3, "the filtered update table keeps its row action and the shared dialog's two actions");
+    assert.equal(buttons.length, 5, "the update row, notice and target picker keep their actions");
     const updateAll = updateAllButton();
     const actions = updateAll.subTree.el.parent;
     const nodeSelector = find(Button).find((button) => button.vnode.props.class === "plugin-market-node-selector");
@@ -1001,6 +1011,18 @@ test("market target changes preserve the routed page, search and active tab whil
     assert.equal(updateAll.props.disabled, false);
     updateAll.emit("click");
     await new Promise(setImmediate);
+    assert.equal(updateNotice().props.modelValue, true, "update-all first explains the restart and disconnection risks");
+    assert.equal(find(TargetDialog)[0].props.modelValue, false, "target selection waits for acknowledgement");
+    assert.equal(reads, 1, "opening the notice does not start checking update targets");
+    assert.deepEqual(calls, []);
+    assert.equal(operations.activeOperations.value, 1);
+    find(Button, updateNotice().subTree).find((button) => button.vnode.props.color !== "primary").emit("click");
+    await vue.nextTick();
+    assert.equal(updateNotice().props.modelValue, false);
+    assert.equal(operations.activeOperations.value, 0, "cancelling the notice releases the market controls");
+    updateAllButton().emit("click");
+    await vue.nextTick();
+    await acceptUpdateNotice();
     assert.deepEqual(calls, [], "opening update-all never starts npm before target confirmation");
     let picker = find(TargetDialog)[0];
     assert.equal(picker.props.modelValue, true);
@@ -1013,6 +1035,7 @@ test("market target changes preserve the routed page, search and active tab whil
     assert.equal(operations.activeOperations.value, 0, "cancelling releases the market controls");
     updateAllButton().emit("click");
     await new Promise(setImmediate);
+    await acceptUpdateNotice();
     picker = find(TargetDialog)[0];
     picker.emit("update:selection", ["one"]);
     await vue.nextTick();
@@ -1041,6 +1064,7 @@ test("market target changes preserve the routed page, search and active tab whil
     assert.equal(find(NodeItem)[1].props.active, true);
     updateAllButton().emit("click");
     await new Promise(setImmediate);
+    await acceptUpdateNotice();
     picker = find(TargetDialog)[0];
     assert.deepEqual(picker.props.selection, [], "an up-to-date current host is not preselected");
     assert.equal(picker.props.targets[1].disabled, true);
@@ -1056,12 +1080,13 @@ test("market target changes preserve the routed page, search and active tab whil
     assert.equal(view.props.daemonId, "");
     updateAllButton().emit("click");
     await new Promise(setImmediate);
-    assert.equal(find(TargetDialog)[0].props.modelValue, true);
+    assert.equal(updateNotice().props.modelValue, true);
+    assert.equal(find(TargetDialog)[0].props.modelValue, false);
     assert.equal(operations.activeOperations.value, 1);
   } finally {
     app.unmount();
   }
-  assert.equal(operations.activeOperations.value, 0, "unmounting dismisses a pending picker without retaining the lock");
+  assert.equal(operations.activeOperations.value, 0, "unmounting dismisses the pending notice without retaining the lock");
   assert.equal(calls.length, 2);
 });
 
