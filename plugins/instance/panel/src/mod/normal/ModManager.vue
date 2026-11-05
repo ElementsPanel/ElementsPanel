@@ -556,8 +556,15 @@ onMounted(async () => {
   }
 }
 
-.containerWrapper {
+.containerWrapper.card-panel {
   overflow: hidden;
+  background: transparent !important;
+  backdrop-filter: none !important;
+}
+
+.containerWrapper :deep(.local-mod-table),
+.containerWrapper :deep(.search-mod-table) {
+  background: transparent;
 }
 
 .mod-manager-tabs {

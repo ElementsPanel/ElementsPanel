@@ -1429,8 +1429,7 @@ export async function apply(ctx: PanelPluginContext) {
         type: "string",
         title: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_ADDR"),
         description: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET_ADDR_DESC")
-      },
-      { type: "link", title: ctx.i18n.$t("TXT_CODE_PLUGIN_MARKET"), route: "/market/plugins" }
+      }
     ],
     read: () => ({ ...marketSettings() }),
     write: writeMarketSettings
