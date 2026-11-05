@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-terminal",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Instance terminal and command history.",
   "elementspanel": {
     "id": "terminal",
