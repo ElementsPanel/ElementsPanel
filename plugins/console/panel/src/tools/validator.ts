@@ -1,4 +1,4 @@
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { message } from "@/tools/vuetifyToast";
 
 export async function emptyValueValidator(value: string | number | null | undefined) {

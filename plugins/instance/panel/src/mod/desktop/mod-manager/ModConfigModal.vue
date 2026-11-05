@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import DesktopDialog from "@/components/DesktopDialog.vue";
-import { t } from "@/lang/i18n";
-import AppDialog from "@/components/AppDialog.vue";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import DesktopDialog from "@elementspanel/epanel-plugin-console/components/DesktopDialog";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
 
 import { VBtn, VIcon, VList, VListItem, VProgressCircular } from "vuetify/components";
 

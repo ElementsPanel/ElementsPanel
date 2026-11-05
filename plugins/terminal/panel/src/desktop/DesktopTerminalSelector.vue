@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { t } from "@/lang/i18n";
-import { remoteNodeList } from "@/services/apis";
-import { computeNodeName } from "@/tools/nodes";
-import type { NodeStatus } from "@/types";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { remoteNodeList } from "@elementspanel/epanel-plugin-console/services/apis";
+import { computeNodeName } from "@elementspanel/epanel-plugin-console/tools/nodes";
+import type { NodeStatus } from "@elementspanel/epanel-plugin-console/types";
 import { computed, onMounted, ref } from "vue";
 import { VIcon, VTextField } from "vuetify/components";
 

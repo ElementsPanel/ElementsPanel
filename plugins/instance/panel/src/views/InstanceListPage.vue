@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { getInstanceDeleteError } from "../tools/deletion";
-import { openInstanceTagsEditor } from "@/components/fc/index";
-import PageToolbar from "@/components/PageToolbar.vue";
-import Empty from "@/components/Empty.vue";
-import { router } from "@/config/router";
-import { verifyEULA } from "@/hooks/useInstance";
-import { useInstanceTagSearch, useInstanceTagTips } from "@/hooks/useInstanceTag";
-import { useScreen } from "@/hooks/useScreen";
-import { t } from "@/lang/i18n";
-import { remoteInstances, remoteNodeList } from "@/services/apis";
+import { openInstanceTagsEditor } from "@elementspanel/epanel-plugin-console/components/fc";
+import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { router } from "@elementspanel/epanel-plugin-console/config/router";
+import { verifyEULA } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import { useInstanceTagSearch, useInstanceTagTips } from "@elementspanel/epanel-plugin-console/hooks/useInstanceTag";
+import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { remoteInstances, remoteNodeList } from "@elementspanel/epanel-plugin-console/services/apis";
 import {
   batchDelete,
   batchKill,
@@ -20,15 +20,15 @@ import {
   restartInstance,
   stopInstance,
   updateInstance
-} from "@/services/apis/instance";
-import { formatMemoryUsage } from "@/tools/memory";
-import { computeNodeName } from "@/tools/nodes";
-import { parseTimestamp } from "@/tools/time";
-import { reportErrorMsg } from "@/tools/validator";
-import type { InstanceDetail, NodeStatus } from "@/types";
-import { INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@/types/const";
-import { notification } from "@/tools/vuetifyToast";
-import { Modal } from "@/tools/vuetifyModal";
+} from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { formatMemoryUsage } from "@elementspanel/epanel-plugin-console/tools/memory";
+import { computeNodeName } from "@elementspanel/epanel-plugin-console/tools/nodes";
+import { parseTimestamp } from "@elementspanel/epanel-plugin-console/tools/time";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import type { InstanceDetail, NodeStatus } from "@elementspanel/epanel-plugin-console/types";
+import { INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types/const";
+import { notification } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
 import { throttle } from "lodash";
 import prettyBytes from "pretty-bytes";
 import { computed, onMounted, ref } from "vue";

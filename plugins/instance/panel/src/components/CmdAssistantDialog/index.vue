@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import ActionButton from "@/components/ActionButton.vue";
-import { t } from "@/lang/i18n";
-import { QUICKSTART_ACTION_TYPE } from "@/hooks/widgets/quickStartFlow";
-import FadeUpAnimation from "@/components/FadeUpAnimation.vue";
-import { useStartCmdBuilder } from "@/hooks/useGenerateStartCmd";
-import { reportErrorMsg } from "@/tools/validator";
+import ActionButton from "@elementspanel/epanel-plugin-console/components/ActionButton";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { QUICKSTART_ACTION_TYPE } from "@elementspanel/epanel-plugin-console/hooks/widgets/quickStartFlow";
+import FadeUpAnimation from "@elementspanel/epanel-plugin-console/components/FadeUpAnimation";
+import { useStartCmdBuilder } from "@elementspanel/epanel-plugin-console/hooks/useGenerateStartCmd";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import {
   TYPE_MINECRAFT_BEDROCK,
   TYPE_MINECRAFT_JAVA,
   TYPE_STEAM_SERVER_UNIVERSAL,
   TYPE_UNIVERSAL
-} from "@/hooks/useInstance";
+} from "@elementspanel/epanel-plugin-console/hooks/useInstance";
 import AnyAppFormComponent from "./AnyAppForm.vue";
 import MinecraftJavaForm from "./MinecraftJavaForm.vue";
 import type { Component } from "vue";

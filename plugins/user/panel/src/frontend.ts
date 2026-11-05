@@ -1,10 +1,10 @@
 import { restoreSession } from "./session";
-import { t } from "@/lang/i18n";
-import type { PanelFrontendPluginContext } from "@/plugin";
-import { useAppStateStore } from "@/stores/useAppStateStore";
-import { useAppToolsStore } from "@/stores/useAppToolsStore";
-import { message } from "@/tools/vuetifyToast";
-import { Modal } from "@/tools/vuetifyModal";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
+import { useAppToolsStore } from "@elementspanel/epanel-plugin-console/stores/useAppToolsStore";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
 import * as userApi from "./api";
 import MyselfInfoDialog from "./components/MyselfInfoDialog.vue";
 import DesktopLoginWindow from "./desktop/DesktopLoginWindow.vue";

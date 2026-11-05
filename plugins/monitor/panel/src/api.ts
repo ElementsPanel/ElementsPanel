@@ -1,5 +1,5 @@
-import { useDefineApi } from "@/stores/useDefineApi";
-import type { OperationLoggerItem } from "@/types/operationLog";
+import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDefineApi";
+import type { OperationLoggerItem } from "@elementspanel/epanel-plugin-console/types/operationLog";
 
 /** The panel-wide operation log shown by the monitoring page. */
 export const getOperationLog = useDefineApi<

@@ -1,4 +1,4 @@
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { getAppearance } from "./apis/appearance";
 
 /** Applies the configured page title before the shell renders. */

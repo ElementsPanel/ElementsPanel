@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useDialog } from "@/hooks/useDialog";
-import { t } from "@/lang/i18n";
+import { useDialog } from "@elementspanel/epanel-plugin-console/hooks/useDialog";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { VBtn, VCard, VCardText, VDialog } from "vuetify/components";
 
 interface Props {

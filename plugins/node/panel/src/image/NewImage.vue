@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { t } from "@/lang/i18n";
-import { reportErrorMsg } from "@/tools/validator";
-import CardPanel from "@/components/CardPanel.vue";
-import PageToolbar from "@/components/PageToolbar.vue";
-import { useAppRouters } from "@/hooks/useAppRouters";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import CardPanel from "@elementspanel/epanel-plugin-console/components/CardPanel";
+import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
+import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
 import { useRoute } from "vue-router";
 import {
   defaultDockerfile,
@@ -14,8 +14,8 @@ import {
   jdk8DockerfileCN,
   ubuntu22Dockerfile,
   ubuntu22DockerfileCN
-} from "@/types/const";
-import { getCurrentLang } from "@/lang/i18n";
+} from "@elementspanel/epanel-plugin-console/types/const";
+import { getCurrentLang } from "@elementspanel/epanel-plugin-i18n";
 import DockerFileForm from "./DockerFileForm.vue";
 import BuildProgress from "./BuildProgress.vue";
 import { VBtn, VCard, VCardText, VCol, VContainer, VDialog, VRow } from "vuetify/components";

@@ -19,7 +19,7 @@ import type {
   PanelFrontendScheduleAction,
   PanelFrontendTerminalAction,
   PanelFrontendTerminalActionContext
-} from "@/plugin/context";
+} from "@elements-panel/sdk";
 
 /**
  * The console plugin's UI registration services.

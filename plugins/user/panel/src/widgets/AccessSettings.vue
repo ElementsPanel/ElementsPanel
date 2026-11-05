@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import PageToolbar from "@/components/PageToolbar.vue";
-import type { UserInstance } from "@/types/user";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
+import type { UserInstance } from "@elementspanel/epanel-plugin-console/types/user";
 import { computed, onMounted, ref } from "vue";
-import { t } from "@/lang/i18n";
-import { useScreen } from "@/hooks/useScreen";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
 import { useRoute } from "vue-router";
-import { userInfoApiAdvanced, updateUserInstance } from "@/services/apis";
-import { useSelectInstances } from "@/components/fc";
-import { message } from "@/tools/vuetifyToast";
-import { reportErrorMsg } from "@/tools/validator";
-import { INSTANCE_STATUS } from "@/types/const";
+import { userInfoApiAdvanced, updateUserInstance } from "@elementspanel/epanel-plugin-console/services/apis";
+import { useSelectInstances } from "@elementspanel/epanel-plugin-console/components/fc";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import { INSTANCE_STATUS } from "@elementspanel/epanel-plugin-console/types/const";
 import dayjs from "dayjs";
-import WarningDialog from "@/components/fc/WarningDialog.vue";
-import { useMountComponent } from "@/hooks/useMountComponent";
+import WarningDialog from "@elementspanel/epanel-plugin-console/components/fc/WarningDialog";
+import { useMountComponent } from "@elementspanel/epanel-plugin-console/hooks/useMountComponent";
 import { VBtn, VCard, VCardActions, VCardText, VDataTable, VDialog, VSpacer } from "vuetify/components";
 
 const props = defineProps<{ uuid?: string }>();

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useLocalStorage } from "@vueuse/core";
 import prettyBytes, { type Options as PrettyOptions } from "pretty-bytes";
 import { computed } from "vue";

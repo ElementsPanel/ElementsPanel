@@ -1,4 +1,4 @@
-import { usePluginService } from "@/plugin/context";
+import { usePluginService } from "@elements-panel/sdk";
 import type { Ref } from "vue";
 import type { NodeStatus } from "@/types";
 

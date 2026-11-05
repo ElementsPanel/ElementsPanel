@@ -1,6 +1,6 @@
 import type { I18n } from "vue-i18n";
-import { ctx } from "@/plugin/context";
-import type { FrontendI18nService, PanelLanguageOption } from "@/plugin";
+import { ctx } from "@elements-panel/sdk";
+import type { FrontendI18nService, PanelLanguageOption } from "@elements-panel/sdk";
 
 export const LANGUAGE_KEY = "LANGUAGE";
 

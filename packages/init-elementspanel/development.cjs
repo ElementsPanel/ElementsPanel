@@ -13,6 +13,9 @@ const SHARED_FRONTEND_MODULES = new Set([
   "cosmokit",
   "@vueuse/core",
   "@vueuse/shared",
+  "vuetify",
+  "vuetify/components",
+  "vuetify/iconsets/mdi",
   "@elements-panel/sdk"
 ]);
 const EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"];
@@ -99,7 +102,7 @@ function sharedFrontendModules() {
     name: "elementspanel-workspace-host-modules",
     enforce: "pre",
     resolveId(specifier) {
-      if (SHARED_FRONTEND_MODULES.has(specifier))
+      if (SHARED_FRONTEND_MODULES.has(specifier) || specifier.startsWith("@elementspanel/epanel-plugin-"))
         return { id: HOST_MODULE + encodeURIComponent(specifier), external: true };
       if (specifier.startsWith(HOST_MODULE)) return specifier;
     },
@@ -205,7 +208,7 @@ async function installDevelopmentRuntime({ packageRoot }) {
       const bridge = `${base}@id/${HOST_MODULE}`;
       if (pathname.startsWith(bridge)) {
         const specifier = decodeURIComponent(pathname.slice(bridge.length));
-        if (!SHARED_FRONTEND_MODULES.has(specifier)) {
+        if (!SHARED_FRONTEND_MODULES.has(specifier) && !specifier.startsWith("@elementspanel/epanel-plugin-")) {
           res.writeHead(404);
           res.end();
           return;

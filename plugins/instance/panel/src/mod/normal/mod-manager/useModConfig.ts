@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import { getModConfigFilesApi } from "../../api";
-import { message } from "@/tools/vuetifyToast";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 
 export function useModConfig(instanceId: string, daemonId: string, FileEditorDialog: any) {
   const showConfigModal = ref(false);

@@ -1,6 +1,6 @@
 import type { PluginChangeResult, PluginState } from "../../../../core/common/src/plugin_contract";
 export type { PluginChangeResult };
-import { useDefineApi } from "@/stores/useDefineApi";
+import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDefineApi";
 
 // Every HTTP call the plugin manager page makes. The container owns the
 // mechanism; this plugin's backend only exposes it.

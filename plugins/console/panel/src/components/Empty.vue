@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { VIcon } from "vuetify/components";
 
 withDefaults(

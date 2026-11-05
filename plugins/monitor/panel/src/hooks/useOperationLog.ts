@@ -1,5 +1,5 @@
-import { t } from "@/lang/i18n";
-import type { OperationLoggerItem } from "@/types/operationLog";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import type { OperationLoggerItem } from "@elementspanel/epanel-plugin-console/types/operationLog";
 import { computed, ref } from "vue";
 import { getOperationLog } from "../api";
 

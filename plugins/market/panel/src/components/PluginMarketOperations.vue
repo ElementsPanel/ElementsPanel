@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { t } from "@/lang/i18n";
-import { getValidatorErrorMsg } from "@/tools/validator";
-import { message } from "@/tools/vuetifyToast";
-import { ctx } from "@/plugin/context";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { getValidatorErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { ctx } from "@elements-panel/sdk";
 import { computed, onScopeDispose, ref, watch } from "vue";
 import { VAlert, VBtn, VCheckbox } from "vuetify/components";
 import {

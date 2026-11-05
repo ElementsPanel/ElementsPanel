@@ -1,4 +1,4 @@
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 export const filterFileName = (fileName: string, onlyExtname = false) => {
   const i = fileName.lastIndexOf(".");
   const suffix = fileName.substring(i + 1).toUpperCase();

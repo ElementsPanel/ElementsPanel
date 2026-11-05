@@ -1,6 +1,6 @@
-import type { PanelFrontendPluginContext } from "@/plugin";
-import { t } from "@/lang/i18n";
-import { useAppStateStore } from "@/stores/useAppStateStore";
+import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
 import NodeList from "./normal/NodeList.vue";
 import ImageManager from "./image/index.vue";
 import NewImage from "./image/NewImage.vue";

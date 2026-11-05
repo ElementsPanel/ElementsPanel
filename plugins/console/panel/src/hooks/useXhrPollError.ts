@@ -1,4 +1,4 @@
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { computed, type Ref } from "vue";
 
 export function useXhrPollError(error: Ref<Error | undefined>) {

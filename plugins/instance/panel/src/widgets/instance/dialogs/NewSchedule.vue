@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { useSchedule } from "@/hooks/useSchedule";
-import { ctx } from "@/plugin/context";
-import { t } from "@/lang/i18n";
-import { reportErrorMsg } from "@/tools/validator";
-import type { Schedule, ScheduleAction, ScheduleTaskForm } from "@/types";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { useSchedule } from "@elementspanel/epanel-plugin-console/hooks/useSchedule";
+import { ctx } from "@elements-panel/sdk";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import type { Schedule, ScheduleAction, ScheduleTaskForm } from "@elementspanel/epanel-plugin-console/types";
 import {
   ScheduleActionType,
   ScheduleActionTypeEnum,
   ScheduleCreateType,
   ScheduleType
-} from "@/types/const";
-import { notification } from "@/tools/vuetifyToast";
+} from "@elementspanel/epanel-plugin-console/types/const";
+import { notification } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import dayjs from "dayjs";
 import _ from "lodash";
 import { computed, reactive, ref, watch } from "vue";
-import AppDialog from "@/components/AppDialog.vue";
+import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
 import {
   VBtn,
   VCheckbox,

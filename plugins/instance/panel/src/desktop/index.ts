@@ -1,7 +1,7 @@
 import { defineComponent, h, type Component } from "vue";
-import type { PanelFrontendPluginContext } from "@/plugin";
-import { t } from "@/lang/i18n";
-import { useAppStateStore } from "@/stores/useAppStateStore";
+import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
 import CreateInstancePage from "../views/CreateInstance.vue";
 import DesktopInstanceManager from "./DesktopInstanceManager.vue";
 import DesktopMyApps from "./DesktopMyApps.vue";

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import PageToolbar from "@/components/PageToolbar.vue";
-import { getCurrentLang, t } from "@/lang/i18n";
-import { markdownToHTML } from "@/tools/safe";
-import { getValidatorErrorMsg } from "@/tools/validator";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
+import { getCurrentLang, t } from "@elementspanel/epanel-plugin-i18n";
+import { markdownToHTML } from "@elementspanel/epanel-plugin-console/tools/safe";
+import { getValidatorErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import {
   VAlert,

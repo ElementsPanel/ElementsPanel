@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import {
   useDockerCapabilityEditDialog,
   useDockerDeviceEditDialog,
@@ -7,25 +7,25 @@ import {
   useDockerLabelEditDialog,
   usePortEditDialog,
   useVolumeEditDialog
-} from "@/components/fc";
-import AppDialog from "@/components/AppDialog.vue";
-import type { FrontendFileManagerService } from "@/plugin";
-import { usePluginService } from "@/plugin/context";
-import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
-import { useScreen } from "@/hooks/useScreen";
-import { isCN, t } from "@/lang/i18n";
-import { getNetworkModeList } from "@/services/apis/envImage";
-import { updateAnyInstanceConfig } from "@/services/apis/instance";
-import { dockerPortsArray } from "@/tools/common";
-import { reportErrorMsg } from "@/tools/validator";
-import type { DockerNetworkModes, FilterOption, InstanceDetail, QuickStartPackages } from "@/types";
-import { defaultQuickStartPackages, SEARCH_ALL_KEY, TERMINAL_CODE } from "@/types/const";
-import { message } from "@/tools/vuetifyToast";
+} from "@elementspanel/epanel-plugin-console/components/fc";
+import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
+import type { FrontendFileManagerService } from "@elements-panel/sdk";
+import { usePluginService } from "@elements-panel/sdk";
+import { INSTANCE_TYPE_TRANSLATION } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
+import { isCN, t } from "@elementspanel/epanel-plugin-i18n";
+import { getNetworkModeList } from "@elementspanel/epanel-plugin-console/services/apis/envImage";
+import { updateAnyInstanceConfig } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { dockerPortsArray } from "@elementspanel/epanel-plugin-console/tools/common";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import type { DockerNetworkModes, FilterOption, InstanceDetail, QuickStartPackages } from "@elementspanel/epanel-plugin-console/types";
+import { defaultQuickStartPackages, SEARCH_ALL_KEY, TERMINAL_CODE } from "@elementspanel/epanel-plugin-console/types/const";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import dayjs, { type Dayjs } from "dayjs";
 import _ from "lodash";
 import { computed, nextTick, ref, unref, useId } from "vue";
-import { GLOBAL_INSTANCE_NAME } from "@/config/const";
-import { dayjsToTimestamp, timestampToDayjs } from "@/tools/time";
+import { GLOBAL_INSTANCE_NAME } from "@elementspanel/epanel-plugin-console/config/const";
+import { dayjsToTimestamp, timestampToDayjs } from "@elementspanel/epanel-plugin-console/tools/time";
 import {
   VBtn,
   VCombobox,

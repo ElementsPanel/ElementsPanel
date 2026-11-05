@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import DesktopDialog from "@/components/DesktopDialog.vue";
-import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import DesktopDialog from "@elementspanel/epanel-plugin-console/components/DesktopDialog";
+import { usePluginService, type FrontendDesktopService } from "@elements-panel/sdk";
 import { getInstanceDeleteError } from "../tools/deletion";
-import { useInstanceTagSearch, useInstanceTagTips } from "@/hooks/useInstanceTag";
-import { t } from "@/lang/i18n";
-import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
-import { remoteInstances, remoteNodeList } from "@/services/apis";
+import { useInstanceTagSearch, useInstanceTagTips } from "@elementspanel/epanel-plugin-console/hooks/useInstanceTag";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { INSTANCE_TYPE_TRANSLATION } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import { remoteInstances, remoteNodeList } from "@elementspanel/epanel-plugin-console/services/apis";
 import {
     batchDelete,
     batchKill,
@@ -18,10 +18,10 @@ import {
     restartInstance,
     stopInstance,
     updateInstanceConfig
-} from "@/services/apis/instance";
-import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
-import type { InstanceDetail, NodeStatus } from "@/types";
-import { INSTANCE_STATUS_CODE } from "@/types/const";
+} from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { notifyDesktop, notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
+import type { InstanceDetail, NodeStatus } from "@elementspanel/epanel-plugin-console/types";
+import { INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types/const";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { VBtn, VChip, VIcon, VList, VListItem, VMenu, VProgressCircular, VSelect, VTextField } from "vuetify/components";
 

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { TagInfo } from "@/components/interface";
+import type { TagInfo } from "@elementspanel/epanel-plugin-console/components/interface";
 import { VChip, VIcon } from "vuetify/components";
 
 defineProps<{

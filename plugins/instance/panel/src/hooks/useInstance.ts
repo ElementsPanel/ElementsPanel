@@ -1,11 +1,11 @@
-import { GLOBAL_INSTANCE_NAME } from "@/config/const";
-import { t } from "@/lang/i18n";
-import { getConfigFile, getInstanceInfo, updateConfigFile } from "@/services/apis/instance";
-import type { InstanceDetail, MapData } from "@/types";
-import { INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@/types/const";
-import { message } from "@/tools/vuetifyToast";
-import { Modal } from "@/tools/vuetifyModal";
-import { usePolling } from "@/hooks/usePolling";
+import { GLOBAL_INSTANCE_NAME } from "@elementspanel/epanel-plugin-console/config/const";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { getConfigFile, getInstanceInfo, updateConfigFile } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import type { InstanceDetail, MapData } from "@elementspanel/epanel-plugin-console/types";
+import { INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types/const";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
+import { usePolling } from "@elementspanel/epanel-plugin-console/hooks/usePolling";
 import { computed, h, ref, type Ref } from "vue";
 
 import {

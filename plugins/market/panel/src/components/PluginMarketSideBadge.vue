@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { computed } from "vue";
 import { VChip } from "vuetify/components";
 import type { PluginSide } from "../api";

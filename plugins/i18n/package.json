@@ -14,7 +14,10 @@
       "frontendRequired": true,
       "directory": "panel",
       "folder": "i18n",
-      "description": "Panel translations and plugin localization."
+      "description": "Panel translations and plugin localization.",
+      "frontendExports": {
+        ".": "src/public/index.ts"
+      }
     },
     "daemon": {
       "priority": -10000,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAppConfigStore } from "@/stores/useAppConfigStore";
+import { useAppConfigStore } from "@elementspanel/epanel-plugin-console/stores/useAppConfigStore";
 import { VIcon } from "vuetify/components";
 import { computed, type Component } from "vue";
 

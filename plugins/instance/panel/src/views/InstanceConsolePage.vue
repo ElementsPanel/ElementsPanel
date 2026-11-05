@@ -1,34 +1,34 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { GLOBAL_INSTANCE_NAME } from "@/config/const";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { GLOBAL_INSTANCE_NAME } from "@elementspanel/epanel-plugin-console/config/const";
 import {
   INSTANCE_TYPE_TRANSLATION,
   TYPE_STEAM_SERVER_UNIVERSAL,
   verifyEULA
-} from "@/hooks/useInstance";
-import { useOverviewInfo } from "@/hooks/useOverviewInfo";
-import { useServerConfig } from "@/hooks/useServerConfig";
-import { t } from "@/lang/i18n";
+} from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import { useOverviewInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
+import { useServerConfig } from "@elementspanel/epanel-plugin-console/hooks/useServerConfig";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import {
   ctx,
   usePluginService,
   type FrontendTerminalService,
   type PanelFrontendInstanceActionContext
-} from "@/plugin/context";
+} from "@elements-panel/sdk";
 import {
   killInstance,
   openInstance,
   restartInstance,
   stopInstance,
   updateInstance
-} from "@/services/apis/instance";
-import { useAppStateStore } from "@/stores/useAppStateStore";
-import { sleep } from "@/tools/common";
-import { toCopy } from "@/tools/copy";
-import { parseTimestamp } from "@/tools/time";
-import { reportErrorMsg } from "@/tools/validator";
-import { Modal } from "@/tools/vuetifyModal";
-import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@/types/const";
+} from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
+import { sleep } from "@elementspanel/epanel-plugin-console/tools/common";
+import { toCopy } from "@elementspanel/epanel-plugin-console/tools/copy";
+import { parseTimestamp } from "@elementspanel/epanel-plugin-console/tools/time";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
+import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types/const";
 import { computed, onUnmounted, ref, watch, type ComponentPublicInstance } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {

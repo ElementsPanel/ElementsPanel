@@ -1,12 +1,12 @@
-import { t } from "@/lang/i18n";
-import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } from "@/plugin";
-import { hasNodeFeature, isScopedInstance } from "@/hooks/useInstanceActionAvailability";
-import { useAppStateStore } from "@/stores/useAppStateStore";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } from "@elements-panel/sdk";
+import { hasNodeFeature, isScopedInstance } from "@elementspanel/epanel-plugin-console/hooks/useInstanceActionAvailability";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
 import {
   TYPE_MINECRAFT_JAVA,
   TYPE_MINECRAFT_BEDROCK,
   TYPE_MINECRAFT_BUNGEECORD
-} from "@/hooks/useInstance";
+} from "@elementspanel/epanel-plugin-console/hooks/useInstance";
 import { isJavaCommand } from "../../../../../core/common/src/java";
 import DesktopJavaManager from "./desktop/DesktopJavaManager.vue";
 import JavaManager from "./normal/JavaManager.vue";

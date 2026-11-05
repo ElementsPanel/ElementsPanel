@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { useDialog } from "@/hooks/useDialog";
-import type { ComputedNodeInfo } from "@/hooks/useOverviewInfo";
-import { useRemoteNode } from "@/hooks/useRemoteNode";
-import { t } from "@/lang/i18n";
-import { reportErrorMsg } from "@/tools/validator";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { useDialog } from "@elementspanel/epanel-plugin-console/hooks/useDialog";
+import type { ComputedNodeInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
+import { useRemoteNode } from "@elementspanel/epanel-plugin-console/hooks/useRemoteNode";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { computed, onMounted, onUnmounted } from "vue";
 import { VBtn, VCard, VCardActions, VCardText, VChip, VDialog, VIcon, VSpacer } from "vuetify/components";
 

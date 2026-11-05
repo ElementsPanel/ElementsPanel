@@ -1,5 +1,5 @@
 import { computed, onScopeDispose, ref, watch, type Ref } from "vue";
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import type { MinecraftServerSelection } from "../../../../../core/common/src/minecraft";
 import { minecraftBuilds, minecraftServers, minecraftVersions } from "../api";
 import { defaultMinecraftServer, minecraftServersForType } from "../minecraft";

@@ -31,6 +31,8 @@ export interface FrontendPluginMetadata {
   description?: string;
   priority?: number;
   elements?: unknown;
+  frontendApi?: number;
+  frontendImports?: string[];
   /** Plugin ids that must be activated before this browser entry. */
   frontendInject?: string[];
   /** Loads in the foundation/prefetch tier. */
@@ -64,6 +66,8 @@ export function createFrontendPluginMetadata(
     ...(manifest.description === undefined ? {} : { description: manifest.description }),
     ...(manifest.priority === undefined ? {} : { priority: manifest.priority }),
     ...(manifest.elements === undefined ? {} : { elements: manifest.elements }),
+    ...(manifest.frontendApi === undefined ? {} : { frontendApi: Number(manifest.frontendApi) }),
+    ...(manifest.frontendImports === undefined ? {} : { frontendImports: stringArray(manifest.frontendImports) || [] }),
     ...(frontendInject === undefined ? {} : { frontendInject }),
     ...(manifest.frontendImmediate === undefined
       ? {}

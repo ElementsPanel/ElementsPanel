@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { computed, ref } from "vue";
-import { updateInstanceConfig } from "@/services/apis/instance";
-import { arrayUnique } from "@/tools/array";
+import { updateInstanceConfig } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { arrayUnique } from "@elementspanel/epanel-plugin-console/tools/array";
 import { createGlobalState } from "@vueuse/core";
 
 export function useInstanceTags(

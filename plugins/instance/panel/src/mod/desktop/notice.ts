@@ -1,4 +1,4 @@
-import { notification } from "@/tools/vuetifyToast";
+import { notification } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 
 // Desktop presentation uses the shell's notification API without importing the
 // optional desktop plugin. The plugin's dialogs resolve ctx.desktop.window.

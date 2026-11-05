@@ -1,4 +1,4 @@
-import { LANGUAGE_KEY, toStandardLang } from "@/lang/i18n";
+import { LANGUAGE_KEY, toStandardLang } from "@elementspanel/epanel-plugin-i18n";
 import { setAuthToken } from "@/services/apiService";
 import { panelStatus } from "@/services/apis";
 import { isUserPluginLoaded, userInfoApi } from "@/services/apis/user";

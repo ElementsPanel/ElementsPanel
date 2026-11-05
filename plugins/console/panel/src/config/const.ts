@@ -1,4 +1,4 @@
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 
 export const GLOBAL_INSTANCE_NAME = "__MCSM_GLOBAL_INSTANCE__";
 

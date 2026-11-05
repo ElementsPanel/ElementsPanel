@@ -44,6 +44,8 @@ export interface PanelFrontendPluginMetadata {
   frontendInject?: string[];
   frontendImmediate?: boolean;
   frontendRequired?: boolean;
+  frontendApi?: number;
+  frontendImports?: string[];
   config?: unknown;
   restartRequired?: boolean;
   [key: string]: unknown;
@@ -62,6 +64,7 @@ interface PluginSource {
   entry?: string;
   revision?: string;
   styles?: string[];
+  exports?: Record<string, string>;
   load: (cacheKey?: string) => Promise<Record<string, unknown>>;
 }
 
@@ -90,6 +93,38 @@ interface InternalPlugin extends LoadedPanelFrontendPlugin {
 
 const plugins = shallowReactive<InternalPlugin[]>([]);
 const sources = new Map<string, PluginSource>();
+let publicModules: Record<string, string> | undefined;
+let pageReloadRequested = false;
+
+function moduleMap(discovered: readonly PluginSource[]) {
+  const entries = discovered.flatMap((source) => Object.entries(source.exports || {}));
+  return Object.fromEntries(entries.sort(([a], [b]) => a.localeCompare(b)));
+}
+
+/** Install before even modulepreloading a plugin; native ESM must see one module identity. */
+function installPublicModules(discovered: readonly PluginSource[]) {
+  if (import.meta.env.DEV) return;
+  publicModules = moduleMap(discovered);
+  if (!Object.keys(publicModules).length) return;
+  const map = document.createElement("script");
+  map.type = "importmap";
+  map.textContent = JSON.stringify({ imports: publicModules });
+  document.head.appendChild(map);
+}
+
+function publicModulesChanged(discovered: readonly PluginSource[]) {
+  if (import.meta.env.DEV || publicModules === undefined ||
+      JSON.stringify(publicModules) === JSON.stringify(moduleMap(discovered))) return false;
+  // Import maps cannot replace an already evaluated module. Reload the document
+  // instead of mixing old router/store instances with new plugin entry points.
+  for (const plugin of plugins) plugin.reloadRequired = true;
+  if (!discovered.some((source) => source.metadata.restartRequired) && !pageReloadRequested) {
+    pageReloadRequested = true;
+    window.location.reload();
+  }
+  notifyPluginDiagnostics();
+  return true;
+}
 
 function compareSources(a: PluginSource, b: PluginSource) {
   return (
@@ -246,6 +281,18 @@ async function fetchProductionSources(): Promise<PluginSource[]> {
     const entry = typeof (item as any).entry === "string" ? (item as any).entry : "";
     if (!metadata || metadata.enabled === false || !entry) continue;
     const entryUrl = toUrl(entry);
+    const exports: Record<string, string> = {};
+    const modulePrefix = `@elementspanel/epanel-plugin-${metadata.id}`;
+    for (const [specifier, file] of Object.entries(item.exports || {})) {
+      if (typeof file !== "string" ||
+          (specifier !== modulePrefix && !specifier.startsWith(`${modulePrefix}/`)))
+        throw new Error(`Invalid public module in plugin ${metadata.id}: ${specifier}`);
+      const url = new URL(toUrl(file));
+      const directory = new URL("./", entryUrl);
+      if (url.origin !== directory.origin || !url.pathname.startsWith(directory.pathname))
+        throw new Error(`Public module escapes plugin ${metadata.id}: ${specifier}`);
+      exports[specifier] = url.href;
+    }
     result.push({
       metadata,
       directory:
@@ -255,6 +302,7 @@ async function fetchProductionSources(): Promise<PluginSource[]> {
           ? (item as any).assetDirectory
           : metadata.id,
       entry: entryUrl,
+      exports,
       revision: typeof item.revision === "string" ? item.revision : String(metadata.version || ""),
       styles: Array.isArray((item as any).styles)
         ? (item as any).styles
@@ -292,6 +340,23 @@ function resolveSourceGraph(discovered: readonly PluginSource[]) {
   });
 }
 
+function validateFrontendModules(source: PluginSource, visited = new Set<string>()) {
+  if (visited.has(source.metadata.id)) return;
+  visited.add(source.metadata.id);
+  if (source.metadata.frontendApi !== undefined && source.metadata.frontendApi !== 1)
+    throw new Error(`Unsupported frontend module API in ${source.metadata.id}.`);
+  if (source.metadata.restartRequired)
+    throw new Error(`The plugin backend requires a restart before ${source.metadata.id} can load.`);
+  for (const specifier of source.metadata.frontendImports || []) {
+    const match = specifier.match(/^@elementspanel\/epanel-plugin-([a-z0-9_-]+)(?:\/|$)/);
+    if (!match) continue;
+    const provider = sources.get(match[1]);
+    if (!provider?.exports?.[specifier] || provider.metadata.frontendApi !== source.metadata.frontendApi)
+      throw new Error(`Missing public frontend module in ${source.metadata.id}: ${specifier}`);
+    validateFrontendModules(provider, visited);
+  }
+}
+
 /** Fetch production assets during foundation startup without evaluating plugin code. */
 function preloadPluginAssets(discovered: readonly PluginSource[]) {
   const links: HTMLLinkElement[] = [];
@@ -299,6 +364,7 @@ function preloadPluginAssets(discovered: readonly PluginSource[]) {
     for (const source of resolveSourceGraph(discovered).ordered) {
       try {
         validatePluginCompatibility(source.metadata.elements);
+        validateFrontendModules(source);
       } catch {
         continue;
       }
@@ -327,8 +393,7 @@ async function preparePlugin(source: PluginSource, cacheKey?: string): Promise<P
   let removeStyles: (() => void) | undefined;
   try {
     validatePluginCompatibility(source.metadata.elements);
-    if (source.metadata.restartRequired)
-      throw new Error("The plugin backend requires a restart before this version can load.");
+    validateFrontendModules(source);
     const [styles, entry] = await Promise.allSettled([
       import.meta.env.DEV ? Promise.resolve(undefined) : loadStyles(source),
       Promise.resolve().then(() => source.load(cacheKey))
@@ -504,13 +569,15 @@ async function loadPluginInternal(id: string) {
 }
 
 async function reloadPluginInternal(id: string) {
+  const discovered = import.meta.env.DEV ? undefined : await discoverSources();
+  if (discovered && publicModulesChanged(discovered))
+    return plugins.find((plugin) => plugin.metadata.id === id);
   if (ESSENTIAL_PLUGIN_IDS.has(id)) {
-    await refreshPluginsInternal(undefined, true);
+    await refreshPluginsInternal(discovered, true);
     return plugins.find((plugin) => plugin.metadata.id === id);
   }
   await unloadPluginInternal(id);
-  if (!import.meta.env.DEV) {
-    const discovered = await discoverSources();
+  if (discovered) {
     sources.clear();
     discovered.forEach((source) => sources.set(source.metadata.id, source));
   }
@@ -524,6 +591,7 @@ async function reloadPluginInternal(id: string) {
 /** Re-reads what is installed and loads or unloads to match. */
 async function refreshPluginsInternal(discovered?: PluginSource[], forceFoundations = false) {
   discovered ??= await discoverSources();
+  if (publicModulesChanged(discovered)) return discovered.map((source) => source.metadata);
   const next = new Map(discovered.map((source) => [source.metadata.id, source]));
   sources.clear();
   next.forEach((source, id) => sources.set(id, source));
@@ -641,6 +709,7 @@ async function refreshPluginsInternal(discovered?: PluginSource[], forceFoundati
 /** Discover once, prefetch assets, then activate foundations before the remaining batch. */
 export async function bootstrapPanelFrontendPlugins() {
   const discovered = await discoverSources();
+  installPublicModules(discovered);
   sources.clear();
   discovered.forEach((source) => sources.set(source.metadata.id, source));
   const removePreloads = preloadPluginAssets(discovered);

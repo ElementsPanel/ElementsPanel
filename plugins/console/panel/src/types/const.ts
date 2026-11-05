@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import type { QuickStartPackages } from ".";
 
 export enum AppTheme {

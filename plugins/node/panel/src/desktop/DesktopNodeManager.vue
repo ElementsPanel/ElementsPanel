@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import DesktopDialog from "@/components/DesktopDialog.vue";
-import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
-import { useOverviewInfo } from "@/hooks/useOverviewInfo";
-import { testSocketConnection, SocketStatus } from "@/hooks/useSocketIo";
-import { usePolling } from "@/hooks/usePolling";
-import { t } from "@/lang/i18n";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import DesktopDialog from "@elementspanel/epanel-plugin-console/components/DesktopDialog";
+import { usePluginService, type FrontendDesktopService } from "@elements-panel/sdk";
+import { useOverviewInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
+import { testSocketConnection, SocketStatus } from "@elementspanel/epanel-plugin-console/hooks/useSocketIo";
+import { usePolling } from "@elementspanel/epanel-plugin-console/hooks/usePolling";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { addNode, connectNode, deleteNode, editNode, remoteNodeList } from "../api";
-import { getValidatorErrorMsg, reportErrorMsg } from "@/tools/validator";
-import type { NodeStatus } from "@/types";
+import { getValidatorErrorMsg, reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import type { NodeStatus } from "@elementspanel/epanel-plugin-console/types";
 import { computed, onUnmounted, reactive, ref } from "vue";
 import { VBtn, VDataTable, VIcon, VTextField, VTooltip } from "vuetify/components";
 

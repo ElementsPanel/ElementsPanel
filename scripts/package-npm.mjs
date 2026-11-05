@@ -7,6 +7,7 @@ import layout from "./workspace-layout.cjs";
 import { copyTree, frontendAssetReferences } from "./npm-assets.mjs";
 import { packagePanelPlugins } from "./package-panel-plugins.mjs";
 import { packageDaemonPlugins } from "./package-daemon-plugins.mjs";
+import frontendCompatibility from "../packages/init-elementspanel/frontend-modules.cjs";
 
 const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const readJson = async (filename) => JSON.parse(await fs.readFile(filename, "utf8"));
@@ -202,6 +203,9 @@ async function packageBuiltinPlugins(sourceRoot, outputRoot, stagingRoot) {
         metadata.elementspanel.panel.frontendAssets = frontendAssetReferences(
           path.join(directory, "panel/frontend")
         );
+      if (side === "panel" && metadata.elementspanel.panel.frontendApi === 1 &&
+          metadata.elementspanel.panel.frontendAssets.length)
+        throw new Error(`Isolated plugin ${plugin.name} references host frontend chunks.`);
       metadata.exports[`./${side}/plugin.json`] = `./${side}/plugin.json`;
       metadata.peerDependencies[`@elementspanel/${side}`] = `^${
         hosts[side].version.split(".")[0]
@@ -251,6 +255,15 @@ async function packageRuntime(side, sourceRoot, outputRoot, plugins) {
 
   if (side === "panel") {
     const frontend = path.join(sourceRoot, "core/frontend/dist");
+    const contractFile = path.join(frontend, "frontend-runtime.json");
+    if (await exists(contractFile)) {
+      const contract = await readJson(contractFile);
+      if (contract.frontendApi !== 1 || !Array.isArray(contract.frontendModules) ||
+          contract.frontendModules.some((id) => typeof id !== "string"))
+        throw new Error("Invalid compiled frontend runtime contract.");
+      metadata.elementspanel.frontendApi = contract.frontendApi;
+      metadata.elementspanel.frontendModules = contract.frontendModules;
+    }
     await fs.stat(path.join(frontend, "index.html"));
     await fs.mkdir(path.join(output, "public"));
     for (const item of await fs.readdir(frontend)) {
@@ -272,6 +285,13 @@ async function packageRuntime(side, sourceRoot, outputRoot, plugins) {
       .sort();
     const available = new Set(metadata.elementspanel.frontendAssets);
     for (const plugin of plugins) {
+      if (!plugin.elementspanel.panel) continue;
+      const incompatible = frontendCompatibility.frontendCompatibilityError(metadata, plugin, {
+        requireMetadata: true,
+        resolvePlugin: (name) => plugins.find((item) => item.name === name)
+      });
+      if (plugin.elementspanel.panel.frontendApi !== undefined && incompatible)
+        throw new Error(`Incompatible frontend API for ${plugin.name}: ${incompatible}`);
       const missing = plugin.elementspanel.panel?.frontendAssets.filter(
         (file) => !available.has(file)
       );
@@ -328,6 +348,7 @@ export async function packageNpm({
     for (const filename of [
       "bin.cjs",
       "index.cjs",
+      "frontend-modules.cjs",
       "development.cjs",
       "i18n.cjs",
       "select.cjs",

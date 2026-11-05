@@ -1,4 +1,4 @@
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 
 export function computeNodeName(ip: string, available: boolean, remark?: string) {
   if (!ip) return t("TXT_CODE_aa373641");

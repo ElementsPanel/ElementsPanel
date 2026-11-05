@@ -16,6 +16,7 @@
   "files": [
     "bin.cjs",
     "index.cjs",
+    "frontend-modules.cjs",
     "development.cjs",
     "i18n.cjs",
     "select.cjs",

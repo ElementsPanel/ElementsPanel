@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { useInstanceInfo } from "@/hooks/useInstance";
-import { useScreen } from "@/hooks/useScreen";
-import { t } from "@/lang/i18n";
-import { updateInstanceConfig } from "@/services/apis/instance";
-import { TERMINAL_CODE } from "@/types/const";
-import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { useInstanceInfo } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { updateInstanceConfig } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { TERMINAL_CODE } from "@elementspanel/epanel-plugin-console/types/const";
+import { notifyDesktop, notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { computed, ref, watch } from "vue";
 import { VBtn, VCol, VIcon, VProgressCircular, VRow, VSelect, VSwitch, VTextField } from "vuetify/components";
 

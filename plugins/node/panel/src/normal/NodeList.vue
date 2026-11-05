@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import PageToolbar from "@/components/PageToolbar.vue";
-import { useScreen } from "@/hooks/useScreen";
-import { t } from "@/lang/i18n";
-import { reportErrorMsg } from "@/tools/validator";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
+import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { ref } from "vue";
 import { VBtn, VCol, VContainer, VPagination, VRow, VSelect, VTextField } from "vuetify/components";
 import { useRemoteNode } from "../hooks/useRemoteNode";

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import CardPanel from "@/components/CardPanel.vue";
-import { router } from "@/config/router";
-import { t } from "@/lang/i18n";
-import { ssoBindCurrent, ssoBindLogin, userInfoApi } from "@/services/apis";
-import { useAppStateStore } from "@/stores/useAppStateStore";
-import { sleep } from "@/tools/common";
-import { reportErrorMsg } from "@/tools/validator";
-import { message } from "@/tools/vuetifyToast";
+import CardPanel from "@elementspanel/epanel-plugin-console/components/CardPanel";
+import { router } from "@elementspanel/epanel-plugin-console/config/router";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { ssoBindCurrent, ssoBindLogin, userInfoApi } from "@elementspanel/epanel-plugin-console/services/apis";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
+import { sleep } from "@elementspanel/epanel-plugin-console/tools/common";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { onMounted, reactive, ref } from "vue";
 import { VAlert, VBtn, VIcon, VProgressCircular, VTextField } from "vuetify/components";
 

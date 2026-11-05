@@ -1,4 +1,4 @@
-import { useLineChart, type LineChartData } from "@/hooks/useOverviewChart";
+import { useLineChart, type LineChartData } from "@elementspanel/epanel-plugin-console/hooks/useOverviewChart";
 import type { Ref } from "vue";
 
 export function useOverviewChart(

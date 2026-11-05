@@ -1,4 +1,4 @@
-const { from, createBrowser, settle } = require("./helpers.cjs");
+const { from, createBrowser, settle, frontendTestImport } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -31,10 +31,13 @@ function loadSfc(relative, overrides = {}) {
   const { descriptor } = parse(fs.readFileSync(filename, "utf8"), { filename });
   const script = compileScript(descriptor, { id: "confirmation-test", inlineTemplate: true });
   const component = new Module(filename, module);
-  component.require = (id) => Object.hasOwn(overrides, id) ? overrides[id]
+  component.require = (request) => {
+    const id = frontendTestImport(request, overrides);
+    return Object.hasOwn(overrides, id) ? overrides[id]
     : id === "@/components/DesktopDialog.vue" ? { default: DesktopDialog }
     : id === "@/components/Empty.vue" ? { default: Empty }
     : id === "vuetify/components" ? Vuetify.components : frontendRequire(id);
+  };
   component._compile(ts.transpileModule(script.content, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
   }).outputText, filename);
@@ -238,7 +241,7 @@ function dialogFixture(t, shellStyleLast) {
   const { descriptor: proxyDescriptor } = parse(fs.readFileSync(proxyFilename, "utf8"), { filename: proxyFilename });
   const proxyScript = compileScript(proxyDescriptor, { id: "instance-window-test", inlineTemplate: true });
   const proxyModule = new Module(proxyFilename, module);
-  proxyModule.require = (id) => id === "@/plugin/context"
+  proxyModule.require = (id) => frontendTestImport(id) === "@/plugin/context"
     ? { usePluginService: () => ({ window: DesktopWindow }) }
     : frontendRequire(id);
   proxyModule._compile(ts.transpileModule(proxyScript.content, {
@@ -421,8 +424,11 @@ function fileManagerDialogFixture(t) {
     "@/tools/fileSize": {},
     "@/tools/desktopNotice": { notifyDesktopError() {} }
   };
-  fileManagerModule.require = (id) => Object.hasOwn(overrides, id) ? overrides[id]
+  fileManagerModule.require = (request) => {
+    const id = frontendTestImport(request, overrides);
+    return Object.hasOwn(overrides, id) ? overrides[id]
     : id === "vuetify/components" ? Vuetify.components : frontendRequire(id);
+  };
   fileManagerModule._compile(ts.transpileModule(fileManagerScript.content, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
   }).outputText, fileManagerFilename);

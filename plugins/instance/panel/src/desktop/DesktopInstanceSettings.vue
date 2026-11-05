@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import DesktopDialog from "@/components/DesktopDialog.vue";
-import { GLOBAL_INSTANCE_NAME } from "@/config/const";
-import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
-import { t } from "@/lang/i18n";
-import { getNetworkModeList, imageList } from "@/services/apis/envImage";
-import { getInstanceInfo, updateAnyInstanceConfig, updateInstanceConfig } from "@/services/apis/instance";
-import { useAppStateStore } from "@/stores/useAppStateStore";
-import { dockerPortsArray } from "@/tools/common";
-import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
-import type { DockerNetworkModes, InstanceDetail } from "@/types";
-import { defaultDockerConfig, TERMINAL_CODE } from "@/types/const";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import DesktopDialog from "@elementspanel/epanel-plugin-console/components/DesktopDialog";
+import { GLOBAL_INSTANCE_NAME } from "@elementspanel/epanel-plugin-console/config/const";
+import { INSTANCE_TYPE_TRANSLATION } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { getNetworkModeList, imageList } from "@elementspanel/epanel-plugin-console/services/apis/envImage";
+import { getInstanceInfo, updateAnyInstanceConfig, updateInstanceConfig } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
+import { dockerPortsArray } from "@elementspanel/epanel-plugin-console/tools/common";
+import { notifyDesktop, notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
+import type { DockerNetworkModes, InstanceDetail } from "@elementspanel/epanel-plugin-console/types";
+import { defaultDockerConfig, TERMINAL_CODE } from "@elementspanel/epanel-plugin-console/types/const";
 import dayjs from "dayjs";
 import { cloneDeep } from "lodash";
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import AppDialog from "@/components/AppDialog.vue";
-import PageToolbar from "@/components/PageToolbar.vue";
-import { t } from "@/lang/i18n";
-import { usePluginService } from "@/plugin/context";
-import { message } from "@/tools/vuetifyToast";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
+import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { usePluginService } from "@elements-panel/sdk";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import {
   VBtn,
@@ -18,8 +18,8 @@ import {
   VSelect,
   VTextField
 } from "vuetify/components";
-import { useAppRouters } from "@/hooks/useAppRouters";
-import { useScreen } from "@/hooks/useScreen";
+import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
+import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
 import { throttle } from "lodash";
 import {
   addUser as addUserApi,
@@ -27,11 +27,11 @@ import {
   editUserInfo,
   getUserInfo,
   ssoUnbind as ssoUnbindApi
-} from "@/services/apis";
+} from "@elementspanel/epanel-plugin-console/services/apis";
 import { ssoConfig } from "../api";
-import type { BaseUserInfo, EditUserInfo } from "@/types/user";
-import { PASSWORD_REGEX, reportErrorMsg } from "@/tools/validator";
-import { PERMISSION_MAP } from "@/config/const";
+import type { BaseUserInfo, EditUserInfo } from "@elementspanel/epanel-plugin-console/types/user";
+import { PASSWORD_REGEX, reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import { PERMISSION_MAP } from "@elementspanel/epanel-plugin-console/config/const";
 
 interface UserPageData {
   total: number;

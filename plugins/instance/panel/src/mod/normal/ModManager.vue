@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import PageToolbar from "@/components/PageToolbar.vue";
-import CardPanel from "@/components/CardPanel.vue";
-import { useInstanceInfo } from "@/hooks/useInstance";
-import { useScreen } from "@/hooks/useScreen";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
+import CardPanel from "@elementspanel/epanel-plugin-console/components/CardPanel";
+import { useInstanceInfo } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
 import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
-import type { FrontendFileManagerService } from "@/plugin";
-import { usePluginService } from "@/plugin/context";
+import type { FrontendFileManagerService } from "@elements-panel/sdk";
+import { usePluginService } from "@elements-panel/sdk";
 import { VAlert, VBadge, VBtn, VCol, VIcon, VRow, VSelect, VTab, VTabs, VTextField, VWindow, VWindowItem } from "vuetify/components";
 import LocalModTable from "./mod-manager/LocalModTable.vue";
 import ModConfigModal from "./mod-manager/ModConfigModal.vue";
 import ModVersionModal from "./mod-manager/ModVersionModal.vue";
 import SearchModTable from "./mod-manager/SearchModTable.vue";
 
-import { Modal } from "@/tools/vuetifyModal";
-import { message } from "@/tools/vuetifyToast";
+import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { useDeferredTasks } from "./mod-manager/useDeferredTasks";
 import { useLocalMods } from "./mod-manager/useLocalMods";
 import { useModConfig } from "./mod-manager/useModConfig";

@@ -1,10 +1,10 @@
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import {
   uploadFile as uploadFileApi,
   uploadFilePiece as uploadFilePieceApi
 } from "../api";
-import { reportErrorMsg } from "@/tools/validator";
-import { message } from "@/tools/vuetifyToast";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { ref, type Ref } from "vue";
 import { v4 } from "uuid";
 

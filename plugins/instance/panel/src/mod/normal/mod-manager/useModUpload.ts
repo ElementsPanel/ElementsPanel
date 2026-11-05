@@ -1,9 +1,9 @@
 import { ref, watch, type Ref } from "vue";
-import { t } from "@/lang/i18n";
-import { message } from "@/tools/vuetifyToast";
-import { Modal } from "@/tools/vuetifyModal";
-import type { FrontendFileManagerService } from "@/plugin";
-import { usePluginService } from "@/plugin/context";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
+import type { FrontendFileManagerService } from "@elements-panel/sdk";
+import { usePluginService } from "@elements-panel/sdk";
 
 export function useModUpload(
   instanceId: string,

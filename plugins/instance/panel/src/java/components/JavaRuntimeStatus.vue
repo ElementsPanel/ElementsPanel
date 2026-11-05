@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { VChip } from "vuetify/components";
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import type { JavaRuntime } from "../types";
 defineProps<{ runtime: JavaRuntime }>();
 </script>

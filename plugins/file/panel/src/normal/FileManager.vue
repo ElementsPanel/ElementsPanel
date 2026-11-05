@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import FileManagerTabs from "../components/FileManagerTabs.vue";
 import ArchivePreview from "../components/ArchivePreview.vue";
 import UploadTaskProgress from "../components/UploadTaskProgress.vue";
 import { useDownloadFileDialog } from "../dialogs";
 import { useFileManager } from "../hooks/useFileManager";
-import { useScreen } from "@/hooks/useScreen";
-import { t } from "@/lang/i18n";
+import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import uploadService from "../services/uploadService";
 import { filterFileName, getFileExtName, isCompressFile } from "../tools/fileManager";
-import { convertFileSize } from "@/tools/fileSize";
-import type { DataType } from "@/types/fileManager";
+import { convertFileSize } from "@elementspanel/epanel-plugin-console/tools/fileSize";
+import type { DataType } from "@elementspanel/epanel-plugin-console/types/fileManager";
 import dayjs from "dayjs";
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { useRoute } from "vue-router";

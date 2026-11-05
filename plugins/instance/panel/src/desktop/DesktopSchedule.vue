@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import DesktopDialog from "@/components/DesktopDialog.vue";
-import { useSchedule } from "@/hooks/useSchedule";
-import { t } from "@/lang/i18n";
-import { padZero } from "@/tools/common";
-import { ctx } from "@/plugin/context";
-import type { Schedule, ScheduleAction, ScheduleTaskForm } from "@/types";
-import { ScheduleActionType, ScheduleCreateType, ScheduleType } from "@/types/const";
-import { notifyDesktop } from "@/tools/desktopNotice";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import DesktopDialog from "@elementspanel/epanel-plugin-console/components/DesktopDialog";
+import { useSchedule } from "@elementspanel/epanel-plugin-console/hooks/useSchedule";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { padZero } from "@elementspanel/epanel-plugin-console/tools/common";
+import { ctx } from "@elements-panel/sdk";
+import type { Schedule, ScheduleAction, ScheduleTaskForm } from "@elementspanel/epanel-plugin-console/types";
+import { ScheduleActionType, ScheduleCreateType, ScheduleType } from "@elementspanel/epanel-plugin-console/types/const";
+import { notifyDesktop } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import dayjs from "dayjs";
 import _ from "lodash";
 import { computed, onMounted, reactive, ref } from "vue";

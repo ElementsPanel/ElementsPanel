@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { RouterMetaInfo } from "@/config/router";
 import { useAppRouters } from "@/hooks/useAppRouters";
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { computed } from "vue";
 import { useRoute } from "vue-router";

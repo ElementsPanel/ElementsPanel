@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import CardPanel from "@/components/CardPanel.vue";
-import { t } from "@/lang/i18n";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import CardPanel from "@elementspanel/epanel-plugin-console/components/CardPanel";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { onMounted } from "vue";
-import { userInfoApi } from "@/services/apis/index";
+import { userInfoApi } from "@elementspanel/epanel-plugin-console/services/apis";
 import { useRouter } from "vue-router";
-import { INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@/types/const";
-import { parseTimestamp } from "@/tools/time";
+import { INSTANCE_STATUS, INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types/const";
+import { parseTimestamp } from "@elementspanel/epanel-plugin-console/tools/time";
 import { VBtn, VChip, VDataTable } from "vuetify/components";
 
 withDefaults(

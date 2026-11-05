@@ -1,7 +1,7 @@
-import { router } from "@/config/router";
-import { t } from "@/lang/i18n";
-import { remoteNodeList } from "@/services/apis";
-import { arrayFilter } from "@/tools/array";
+import { router } from "@elementspanel/epanel-plugin-console/config/router";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { remoteNodeList } from "@elementspanel/epanel-plugin-console/services/apis";
+import { arrayFilter } from "@elementspanel/epanel-plugin-console/tools/array";
 import { computed, reactive, ref } from "vue";
 
 import { QUICKSTART_ACTION_TYPE, QUICKSTART_METHOD } from "@elements-panel/sdk";

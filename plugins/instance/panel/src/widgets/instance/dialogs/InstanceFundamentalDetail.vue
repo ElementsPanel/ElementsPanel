@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import AppDialog from "@/components/AppDialog.vue";
-import { useScreen } from "@/hooks/useScreen";
-import { t } from "@/lang/i18n";
-import { updateInstanceConfig } from "@/services/apis/instance";
-import { reportErrorMsg } from "@/tools/validator";
-import type { InstanceDetail } from "@/types";
-import { TERMINAL_CODE } from "@/types/const";
-import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
+import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { updateInstanceConfig } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import type { InstanceDetail } from "@elementspanel/epanel-plugin-console/types";
+import { TERMINAL_CODE } from "@elementspanel/epanel-plugin-console/types/const";
+import { INSTANCE_TYPE_TRANSLATION } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
 import dayjs, { type Dayjs } from "dayjs";
 import _ from "lodash";
 import { computed, nextTick, ref, unref } from "vue";
 import { VBtn, VCol, VForm, VRow, VSelect, VTextField, VTextarea } from "vuetify/components";
-import { message } from "@/tools/vuetifyToast";
-import { dayjsToTimestamp, timestampToDayjs } from "@/tools/time";
-import { useDockerEnvEditDialog } from "@/components/fc";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { dayjsToTimestamp, timestampToDayjs } from "@elementspanel/epanel-plugin-console/tools/time";
+import { useDockerEnvEditDialog } from "@elementspanel/epanel-plugin-console/components/fc";
 
 interface FormDetail extends InstanceDetail { dayjsEndTime?: Dayjs; }
 const props = defineProps<{ instanceInfo?: InstanceDetail; instanceId?: string; daemonId?: string }>();

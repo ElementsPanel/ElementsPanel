@@ -1,5 +1,5 @@
-import { useDefineApi } from "@/stores/useDefineApi";
-import type { RemoteMappingEntry } from "@/tools/protocol";
+import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDefineApi";
+import type { RemoteMappingEntry } from "@elementspanel/epanel-plugin-console/tools/protocol";
 
 export interface MissionPassportResponse {
   addr: string;

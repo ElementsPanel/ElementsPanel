@@ -1,11 +1,11 @@
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import {
   deleteModApi,
   getModBatchInfoApi,
   modListApi,
   toggleModApi
 } from "../../api";
-import { message } from "@/tools/vuetifyToast";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { computed, onUnmounted, reactive, ref, watch } from "vue";
 
 export function useLocalMods(

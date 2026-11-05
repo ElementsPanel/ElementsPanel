@@ -100,6 +100,7 @@ export interface PanelFrontendPluginEntry {
   assetDirectory: string;
   entry: string;
   styles: string[];
+  exports?: Record<string, string>;
   revision: string;
   /** Filesystem location; stripped from HTTP responses. */
   frontendDirectory: string;
@@ -526,6 +527,16 @@ export function getPanelFrontendManifest(): PanelFrontendPluginEntry[] {
           .filter(inFrontendDirectory)
           .map(toUrl)
       : [];
+    const exports: Record<string, string> = {};
+    for (const [name, entry] of Object.entries(plugin.manifest.frontendExports || {})) {
+      if (typeof entry !== "string" ||
+          (name !== "." && !/^[a-zA-Z0-9_-]+(?:\/[a-zA-Z0-9_-]+)*$/.test(name))) continue;
+      const target = path.resolve(plugin.directory, entry);
+      if (!inFrontendDirectory(target) || !fs.statSync(target).isFile()) continue;
+      const specifier = `@elementspanel/epanel-plugin-${plugin.manifest.id}` +
+        (name === "." ? "" : `/${name}`);
+      exports[specifier] = toUrl(target);
+    }
     entries.push({
       // Backend configuration may contain credentials. Browser config is explicit.
       metadata: createFrontendPluginMetadata(plugin.manifest, {
@@ -540,6 +551,7 @@ export function getPanelFrontendManifest(): PanelFrontendPluginEntry[] {
       entry: toUrl(plugin.entry),
       revision,
       frontendDirectory,
+      exports,
       styles
     });
   }

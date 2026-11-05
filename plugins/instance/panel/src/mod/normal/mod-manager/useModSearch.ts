@@ -1,4 +1,4 @@
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import {
   deleteModApi,
   downloadModApi,
@@ -7,8 +7,8 @@ import {
   searchModsApi
 } from "../../api";
 import { useLocalStorage } from "@vueuse/core";
-import { message } from "@/tools/vuetifyToast";
-import { Modal } from "@/tools/vuetifyModal";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
 import { VBtn } from "vuetify/components";
 import { computed, createVNode, ref, type Ref } from "vue";
 

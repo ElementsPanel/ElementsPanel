@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { computed, toRef, watch } from "vue";
 import { VAlert, VAutocomplete, VBtn, VCol, VRow } from "vuetify/components";
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import type { MinecraftServerSelection } from "../../../../../../core/common/src/minecraft";
 import { useMinecraftDownload } from "../../hooks/useMinecraftDownload";
 import { MINECRAFT_SERVERS } from "../../minecraft";

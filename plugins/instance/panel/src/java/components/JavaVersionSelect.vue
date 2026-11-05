@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { computed, onUnmounted, ref, watch } from "vue";
 import { VAlert, VAutocomplete, VBtn } from "vuetify/components";
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { getJavaCatalog } from "../api";
 import mslLogo from "../assets/msl-logo.png";
 

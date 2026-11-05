@@ -7,7 +7,7 @@ import type {
   PanelFrontendSlotName,
   PanelFrontendSlotProps,
   PanelFrontendSlotRegistration
-} from "@/plugin/context";
+} from "@elements-panel/sdk";
 
 interface StoredSlotEntry<K extends PanelFrontendSlotName = PanelFrontendSlotName>
   extends PanelFrontendSlotEntry<K> {

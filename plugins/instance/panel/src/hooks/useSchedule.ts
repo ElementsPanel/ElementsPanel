@@ -1,8 +1,8 @@
-import { t } from "@/lang/i18n";
-import { scheduleCreate, scheduleDelete, scheduleList } from "@/services/apis/instance";
-import { reportErrorMsg } from "@/tools/validator";
-import type { ScheduleTaskForm } from "@/types";
-import { message, notification } from "@/tools/vuetifyToast";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { scheduleCreate, scheduleDelete, scheduleList } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import type { ScheduleTaskForm } from "@elementspanel/epanel-plugin-console/types";
+import { message, notification } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import dayjs from "dayjs";
 
 export function useSchedule(instanceId: string, daemonId: string) {

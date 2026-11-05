@@ -1,5 +1,5 @@
 import { ref, shallowRef } from "vue";
-import { ctx } from "@/plugin/context";
+import { ctx } from "@elements-panel/sdk";
 import {
   installMarketPlugin,
   uninstallMarketPlugin,

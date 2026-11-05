@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import connectErrorImage from "@/assets/daemon_connection_error.png";
-import { useXhrPollError } from "@/hooks/useXhrPollError";
-import { t } from "@/lang/i18n";
-import { logInstanceAutoRestart, logInstanceCrash } from "@/services/apis/operationLog";
-import { getRandomId } from "@/tools/randId";
-import { message } from "@/tools/vuetifyToast";
+import connectErrorImage from "@elementspanel/epanel-plugin-console/assets/daemon_connection_error";
+import { useXhrPollError } from "@elementspanel/epanel-plugin-console/hooks/useXhrPollError";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { logInstanceAutoRestart, logInstanceCrash } from "@elementspanel/epanel-plugin-console/services/apis/operationLog";
+import { getRandomId } from "@elementspanel/epanel-plugin-console/tools/randId";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { onMounted, ref } from "vue";
 import {
   VBtn,

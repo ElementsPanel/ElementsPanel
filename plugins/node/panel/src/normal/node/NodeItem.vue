@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { GLOBAL_INSTANCE_UUID } from "@/config/const";
-import { useAppRouters } from "@/hooks/useAppRouters";
-import type { ComputedNodeInfo } from "@/hooks/useOverviewInfo";
-import { SocketStatus, useSocketIoClient } from "@/hooks/useSocketIo";
-import { t } from "@/lang/i18n";
-import { arrayFilter } from "@/tools/array";
-import { reportErrorMsg } from "@/tools/validator";
-import { message } from "@/tools/vuetifyToast";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { GLOBAL_INSTANCE_UUID } from "@elementspanel/epanel-plugin-console/config/const";
+import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
+import type { ComputedNodeInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
+import { SocketStatus, useSocketIoClient } from "@elementspanel/epanel-plugin-console/hooks/useSocketIo";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { arrayFilter } from "@elementspanel/epanel-plugin-console/tools/array";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { computed, onMounted, ref } from "vue";
 import {
   VBtn,

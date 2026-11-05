@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { VBtn, VCard, VCardActions, VCardText, VCheckbox, VDialog, VSpacer } from "vuetify/components";
 
 interface Props {

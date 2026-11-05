@@ -1,6 +1,6 @@
-import { t } from "@/lang/i18n";
-import type { PanelFrontendPluginContext } from "@/plugin";
-import { useAppStateStore } from "@/stores/useAppStateStore";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
 import DesktopPage from "./Desktop.vue";
 import DesktopWindow from "./widgets/desktop/DesktopWindow.vue";
 import DesktopConfirmDialog from "./widgets/desktop/DesktopConfirmDialog.vue";

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, reactive, nextTick } from "vue";
-import { t } from "@/lang/i18n";
-import { useInstanceTags, useInstanceTagTips } from "@/hooks/useInstanceTag";
-import { reportErrorMsg } from "@/tools/validator";
-import { message } from "@/tools/vuetifyToast";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { useInstanceTags, useInstanceTagTips } from "@elementspanel/epanel-plugin-console/hooks/useInstanceTag";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import {
   VBtn,
   VCard,

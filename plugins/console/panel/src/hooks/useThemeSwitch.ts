@@ -1,4 +1,4 @@
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { AppTheme } from "@/types/const";
 import { computed } from "vue";

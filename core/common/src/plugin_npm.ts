@@ -6,6 +6,8 @@ import { discoverPlugins, readPluginManifest, resolvePluginEntry } from "./plugi
 import { validatePluginCompatibility } from "./plugin_contract";
 // @ts-ignore Shared by the source runtime and the published npm launcher.
 import * as npmPlugins from "../../../scripts/runtime/npm-plugins.cjs";
+// @ts-ignore The initializer and runtime validate the same frontend module contract.
+import { frontendCompatibilityError } from "../../../packages/init-elementspanel/frontend-modules.cjs";
 
 /**
  * npm dependency management for plugins.
@@ -297,6 +299,24 @@ export function listNpmPlugins(
   return records;
 }
 
+/** Check both consumers and providers against the versions actually selected by this side. */
+function validateFrontendModuleSet(
+  host: Record<string, unknown>,
+  plugins: Array<{ name: string; packageRoot: string }>
+) {
+  const packages = new Map(
+    plugins.map((plugin) => [plugin.name, readJson(path.join(plugin.packageRoot, "package.json"))])
+  );
+  for (const [name, metadata] of packages) {
+    // Legacy consumers retain their host-asset checks at their own install/update step.
+    if (objectValue(objectValue(metadata?.elementspanel)?.panel)?.frontendApi === undefined) continue;
+    const incompatible = frontendCompatibilityError(host, metadata, {
+      resolvePlugin: (provider: string) => packages.get(provider)
+    });
+    if (incompatible) throw new Error(`Incompatible frontend modules in ${name}: ${incompatible}`);
+  }
+}
+
 function runNpm(args: string[], cwd: string, timeout = 10 * 60 * 1000): Promise<string> {
   const action =
     args.find((argument) => argument === "install" || argument === "uninstall") || "operation";
@@ -551,33 +571,30 @@ export async function updateNpmRuntime(options: {
           throw new Error(`Incomplete ${side} installation: missing npm plugin ${id}.`);
       }
       if (side === "panel") {
-        const available = objectValue(entry.metadata.elementspanel)?.frontendAssets;
         for (const plugin of runtimePlugins) {
           const metadata = readJson(path.join(plugin.packageRoot, "package.json"));
-          const expected = objectValue(objectValue(metadata?.elementspanel)?.panel)?.frontendAssets;
-          const mismatched =
-            expected !== undefined &&
-            (!Array.isArray(expected) ||
-              !Array.isArray(available) ||
-              expected.some((file) => typeof file !== "string" || !available.includes(file)));
+          const mismatched = frontendCompatibilityError(entry.metadata, metadata);
           if (!mismatched) continue;
           const original = previousPlugins.find((record) => record.name === plugin.name);
           if (!original || mappingsOf(entry.metadata)[plugin.id] !== plugin.name)
             throw new Error(
               `Frontend assets in plugin ${plugin.id} do not match the updated panel.`
             );
-          // Built-in frontend plugins import shared assets from the panel. Bring
-          // only those whose imports changed along with the runtime update.
-          await installNpmPlugin({
+          // Isolated plugins survive unrelated host rebuilds. Only an actual
+          // module API change (or a legacy hashed import) needs a plugin update.
+          await installNpmPluginInternal({
             name: plugin.name,
             pluginId: plugin.id,
             version: "latest",
             side,
             packageRoot: entry.root,
             projectRoot
-          });
+          }, false);
           changedPlugins.push(original);
         }
+        validateFrontendModuleSet(entry.metadata, listNpmPlugins("panel", {
+          packageRoot: entry.root, projectRoot
+        }));
       }
       return { name: previous.name, side, version };
     } catch (error) {
@@ -585,14 +602,14 @@ export async function updateNpmRuntime(options: {
         await install(previous.version);
         const packageRoot = readPackageEntry(projectRoot, previous.name).root;
         for (const plugin of changedPlugins.reverse())
-          await installNpmPlugin({
+          await installNpmPluginInternal({
             name: plugin.name,
             pluginId: plugin.pluginId,
             version: plugin.version,
             side,
             packageRoot,
             projectRoot
-          });
+          }, false);
       } catch (rollback) {
         throw new Error(`${String(error)}; npm rollback failed: ${String(rollback)}`);
       } finally {
@@ -608,6 +625,15 @@ export async function updateNpmRuntime(options: {
 
 /** npm changes dependencies and lockfiles; only append our plugin mapping afterwards. */
 export async function installNpmPlugin(options: InstallNpmPluginOptions): Promise<NpmPluginRecord> {
+  return installNpmPluginInternal(options);
+}
+
+// A runtime transaction validates the complete set after replacing legacy packages,
+// and must also be able to restore that set without rejecting intermediate versions.
+async function installNpmPluginInternal(
+  options: InstallNpmPluginOptions,
+  checkModuleSet = true
+): Promise<NpmPluginRecord> {
   const { name, side } = options;
   const version = options.version || "latest";
   if (!PACKAGE_NAME.test(name)) throw new Error(`Invalid npm plugin package: ${name}`);
@@ -679,17 +705,12 @@ export async function installNpmPlugin(options: InstallNpmPluginOptions): Promis
       if (!record)
         throw new Error(`The package ${name} does not provide a ${side} plugin named ${pluginId}.`);
       if (side === "panel") {
-        const expected = objectValue(objectValue(entry.metadata.elementspanel)?.panel)
-          ?.frontendAssets;
-        const available = objectValue(host.elementspanel)?.frontendAssets;
-        if (
-          (hostId || expected !== undefined) &&
-          (!Array.isArray(expected) ||
-            !Array.isArray(available) ||
-            expected.some((file) => typeof file !== "string" || !available.includes(file)))
-        )
+        const incompatible = frontendCompatibilityError(host, entry.metadata, {
+          requireMetadata: Boolean(hostId)
+        });
+        if (incompatible)
           throw new Error(
-            `Frontend assets in ${name} do not match this panel. Update the panel or install a matching plugin version.`
+            `Frontend assets or module API in ${name} do not match this panel. ${incompatible}`
           );
       }
       if (/^[0-9]/.test(version) && record.version !== version)
@@ -723,6 +744,8 @@ export async function installNpmPlugin(options: InstallNpmPluginOptions): Promis
         throw new Error(
           `Plugin asset directory ${record.folder} is already used by ${collision.name}.`
         );
+      if (side === "panel" && checkModuleSet)
+        validateFrontendModuleSet(host, [...others.filter((plugin) => plugin.name !== name), record]);
       const updated = readProjectManifest(targetRoot);
       updated.dependencies = { ...dependenciesOf(updated), [name]: record.version };
       updated.elementspanel = {
@@ -794,6 +817,13 @@ export async function uninstallNpmPlugin(
       projectRoot,
       skipInvalid: true
     }).find((item) => item.pluginId === pluginId);
+    const host = readJson(path.join(packageRoot, "package.json"));
+    if ((options.side || objectValue(host?.elementspanel)?.side) === "panel")
+      validateFrontendModuleSet(
+        host!,
+        listNpmPlugins("panel", { packageRoot, projectRoot, skipInvalid: true })
+          .filter((plugin) => plugin.name !== name)
+      );
     await runNpm(
       [
         "--prefix",

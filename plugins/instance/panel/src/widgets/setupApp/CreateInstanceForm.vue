@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { INSTANCE_TYPE_TRANSLATION, TYPE_MINECRAFT_BUNGEECORD } from "@/hooks/useInstance";
-import { QUICKSTART_METHOD } from "@/hooks/widgets/quickStartFlow";
-import { t } from "@/lang/i18n";
-import { createInstance as createInstanceApi, uploadAddress } from "@/services/apis/instance";
-import type { FrontendFileManagerService, FrontendJavaService } from "@/plugin";
-import { usePluginService } from "@/plugin/context";
-import { parseForwardAddress } from "@/tools/protocol";
-import { reportErrorMsg } from "@/tools/validator";
-import { defaultInstanceInfo } from "@/types/const";
-import { message } from "@/tools/vuetifyToast";
-import { Modal } from "@/tools/vuetifyModal";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { INSTANCE_TYPE_TRANSLATION, TYPE_MINECRAFT_BUNGEECORD } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import { QUICKSTART_METHOD } from "@elementspanel/epanel-plugin-console/hooks/widgets/quickStartFlow";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { createInstance as createInstanceApi, uploadAddress } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import type { FrontendFileManagerService, FrontendJavaService } from "@elements-panel/sdk";
+import { usePluginService } from "@elements-panel/sdk";
+import { parseForwardAddress } from "@elementspanel/epanel-plugin-console/tools/protocol";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import { defaultInstanceInfo } from "@elementspanel/epanel-plugin-console/types/const";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
 import { cloneDeep } from "lodash";
 import { computed, onUnmounted, reactive, ref, watch } from "vue";
 import type { MinecraftServerSelection } from "../../../../../../core/common/src/minecraft";

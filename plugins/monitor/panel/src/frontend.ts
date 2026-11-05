@@ -1,7 +1,7 @@
-import { isScopedInstance } from "@/hooks/useInstanceActionAvailability";
-import { t } from "@/lang/i18n";
-import type { PanelFrontendPluginContext } from "@/plugin";
-import { useAppStateStore } from "@/stores/useAppStateStore";
+import { isScopedInstance } from "@elementspanel/epanel-plugin-console/hooks/useInstanceActionAvailability";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
 import DesktopOverview from "./desktop/DesktopOverview.vue";
 import DesktopInstanceOperationLog from "./desktop/InstanceOperationLog.vue";
 import InstanceLogHost from "./InstanceLogHost.vue";

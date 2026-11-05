@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
-import CopyButton from "@/components/CopyButton.vue";
-import { PERMISSION_MAP } from "@/config/const";
-import { t } from "@/lang/i18n";
-import { bind2FA, confirm2FA, setUserApiKey, updatePassword } from "@/services/apis/user";
-import { useAppStateStore } from "@/stores/useAppStateStore";
+import { usePluginService, type FrontendDesktopService } from "@elements-panel/sdk";
+import CopyButton from "@elementspanel/epanel-plugin-console/components/CopyButton";
+import { PERMISSION_MAP } from "@elementspanel/epanel-plugin-console/config/const";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { bind2FA, confirm2FA, setUserApiKey, updatePassword } from "@elementspanel/epanel-plugin-console/services/apis/user";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
 import { computed, reactive, ref } from "vue";
-import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
+import { notifyDesktop, notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { VBtn, VTextField } from "vuetify/components";
 
 const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);

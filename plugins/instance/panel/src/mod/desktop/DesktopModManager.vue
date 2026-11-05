@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
-import { useInstanceInfo } from "@/hooks/useInstance";
-import { t } from "@/lang/i18n";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { usePluginService, type FrontendDesktopService } from "@elements-panel/sdk";
+import { useInstanceInfo } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { notifyDesktop } from "./notice";
 import { computed, onMounted, ref, watch } from "vue";
 import LocalModTable from "../normal/mod-manager/LocalModTable.vue";

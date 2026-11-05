@@ -8,5 +8,8 @@ export const pluginSdkModules = [
   "cosmokit",
   "@vueuse/core",
   "@vueuse/shared",
+  "vuetify",
+  "vuetify/components",
+  "vuetify/iconsets/mdi",
   "@elements-panel/sdk"
 ];

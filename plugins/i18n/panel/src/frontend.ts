@@ -2,7 +2,7 @@ import type {
   FrontendI18nService,
   PanelFrontendPluginContext,
   PanelLanguageOption
-} from "@/plugin";
+} from "@elements-panel/sdk";
 import { LANGUAGE_KEY, toStandardLang } from "@/lang/i18n";
 import { remove } from "cosmokit";
 import { Service, type Context } from "cordis";

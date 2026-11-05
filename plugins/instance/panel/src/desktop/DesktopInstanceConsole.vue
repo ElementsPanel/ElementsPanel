@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { INSTANCE_TYPE_TRANSLATION, verifyEULA } from "@/hooks/useInstance";
-import { useOverviewInfo } from "@/hooks/useOverviewInfo";
-import { t } from "@/lang/i18n";
-import { ctx, usePluginService, type FrontendDesktopService, type FrontendTerminalService } from "@/plugin/context";
+import { INSTANCE_TYPE_TRANSLATION, verifyEULA } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import { useOverviewInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { ctx, usePluginService, type FrontendDesktopService, type FrontendTerminalService } from "@elements-panel/sdk";
 import {
     killInstance,
     openInstance,
     restartInstance,
     stopInstance,
     updateInstance
-} from "@/services/apis/instance";
-import { sleep } from "@/tools/common";
-import { notifyDesktopError } from "@/tools/desktopNotice";
-import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS } from "@/types/const";
+} from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { sleep } from "@elementspanel/epanel-plugin-console/tools/common";
+import { notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
+import { INSTANCE_CRASH_TIMEOUT, INSTANCE_STATUS } from "@elementspanel/epanel-plugin-console/types/const";
 import { computed, onUnmounted, ref } from "vue";
-import { GLOBAL_INSTANCE_NAME } from "@/config/const";
-import { arrayFilter } from "@/tools/array";
+import { GLOBAL_INSTANCE_NAME } from "@elementspanel/epanel-plugin-console/config/const";
+import { arrayFilter } from "@elementspanel/epanel-plugin-console/tools/array";
 import DesktopManagerBtns from "./DesktopManagerBtns.vue";
 import { VBtn, VCard, VCardActions, VCardText, VDialog, VIcon } from "vuetify/components";
 

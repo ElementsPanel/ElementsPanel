@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
+import { usePluginService, type FrontendDesktopService } from "@elements-panel/sdk";
 
 defineOptions({ inheritAttrs: false });
 const shell = computed(() => usePluginService<FrontendDesktopService>("desktop")?.window);

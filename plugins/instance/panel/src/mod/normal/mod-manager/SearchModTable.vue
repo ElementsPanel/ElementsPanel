@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { useI18n } from "vue-i18n";
 import { computed } from "vue";
 import { VAvatar, VBtn, VChip, VDataTable, VIcon, VImg, VProgressCircular } from "vuetify/components";

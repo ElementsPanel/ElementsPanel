@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import Editor from "@/components/Editor.vue";
-import { useScreen } from "@/hooks/useScreen";
-import { t } from "@/lang/i18n";
+import Editor from "@elementspanel/epanel-plugin-console/components/Editor";
+import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { fileContent } from "../api";
-import { reportErrorMsg } from "@/tools/validator";
-import { message } from "@/tools/vuetifyToast";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { onUnmounted, ref } from "vue";
 import {
   VBtn,

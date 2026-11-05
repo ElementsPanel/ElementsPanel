@@ -1,4 +1,4 @@
-import { usePluginService } from "@/plugin/context";
+import { usePluginService } from "@elements-panel/sdk";
 import type { ComputedNodeInfo, ComputedOverviewResponse } from "./useOverviewInfo";
 import type { ComputedRef, Ref } from "vue";
 

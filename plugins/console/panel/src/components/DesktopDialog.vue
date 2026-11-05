@@ -3,7 +3,7 @@ let dialogSequence = 0;
 </script>
 
 <script setup lang="ts">
-import { ctx } from "@/plugin/context";
+import { ctx } from "@elements-panel/sdk";
 import { computed, onMounted, onUnmounted, ref, useSlots, type Component } from "vue";
 
 defineOptions({ inheritAttrs: false });

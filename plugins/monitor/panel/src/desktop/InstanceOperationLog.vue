@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { getInstanceOperationLog } from "../api";
 import { formatOperationLogItem, type FormattedOperationLog } from "../hooks/useOperationLog";
-import { t } from "@/lang/i18n";
-import { notifyDesktop } from "@/tools/desktopNotice";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { notifyDesktop } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { onMounted, ref } from "vue";
 import InstanceOperationLogContent from "../normal/InstanceOperationLogContent.vue";
 

@@ -9,8 +9,8 @@ import "@/initLib";
 
 import { ROLE } from "@/config/router";
 import { initAppearance } from "@/services/appearance";
-import { t } from "@/lang/i18n";
-import type { PanelFrontendPluginContext } from "@/plugin";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
 import type { LoginUserInfo } from "@/types/user";
 import Page404 from "./widgets/Page404.vue";
 import ConsoleApp from "./ConsoleApp.vue";

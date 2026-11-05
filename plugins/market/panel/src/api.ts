@@ -1,4 +1,4 @@
-import { useDefineApi } from "@/stores/useDefineApi";
+import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDefineApi";
 import type {
   PluginUpdateBatchResult,
   PluginUpdateRequest,

@@ -1,6 +1,6 @@
-import type { PanelFrontendPluginContext } from "@/plugin";
-import { useAppStateStore } from "@console/stores/useAppStateStore";
-import { setAppLoadingError, setLoadingTitle } from "@console/tools/dom";
+import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
+import { setAppLoadingError, setLoadingTitle } from "@elementspanel/epanel-plugin-console/tools/dom";
 
 function errorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);

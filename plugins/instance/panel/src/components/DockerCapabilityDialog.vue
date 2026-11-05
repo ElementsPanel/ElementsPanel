@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { t } from "@/lang/i18n";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import _ from "lodash";
 import { computed, onMounted, ref } from "vue";
 import { VBtn, VCard, VCardActions, VCardText, VDataTable, VDialog, VIcon, VSelect, VSpacer, VTextField } from "vuetify/components";
-import { emptyValueValidator, reportValidatorError } from "@/tools/validator";
+import { emptyValueValidator, reportValidatorError } from "@elementspanel/epanel-plugin-console/tools/validator";
 
 type CapabilityOperation = "add" | "drop";
 interface DockerCapabilitiesItem {

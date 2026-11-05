@@ -1,4 +1,4 @@
-import { useMountComponent } from "@/hooks/useMountComponent";
+import { useMountComponent } from "@elementspanel/epanel-plugin-console/hooks/useMountComponent";
 import AddJavaDialog from "./components/AddJavaDialog.vue";
 import DownloadJavaDialog from "./components/DownloadJavaDialog.vue";
 import type { AddJavaConfigItem, DownloadJavaConfigItem } from "./types";

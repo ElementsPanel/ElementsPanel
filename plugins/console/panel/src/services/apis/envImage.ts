@@ -1,5 +1,5 @@
-import { usePluginService } from "@/plugin/context";
-import type * as InstanceApi from "@instance/api";
+import { usePluginService } from "@elements-panel/sdk";
+import type * as InstanceApi from "@elementspanel/epanel-plugin-instance/api";
 
 type EnvironmentApi = Pick<
   typeof InstanceApi,

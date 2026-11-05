@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { router } from "@/config/router";
-import { t } from "@/lang/i18n";
-import { useOverviewInfo, type ComputedNodeInfo } from "@/hooks/useOverviewInfo";
-import { QUICKSTART_METHOD } from "@/hooks/widgets/quickStartFlow";
-import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { router } from "@elementspanel/epanel-plugin-console/config/router";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { useOverviewInfo, type ComputedNodeInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
+import { QUICKSTART_METHOD } from "@elementspanel/epanel-plugin-console/hooks/widgets/quickStartFlow";
+import { INSTANCE_TYPE_TRANSLATION } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
 import CreateInstanceForm from "../widgets/setupApp/CreateInstanceForm.vue";
 import { computed, ref, watchEffect } from "vue";
 import {

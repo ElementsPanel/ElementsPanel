@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { nextTick, onMounted, ref } from "vue";
 import { useIframeEventListener, type IframeBoxEmits, type IframeBoxProps } from "./config";

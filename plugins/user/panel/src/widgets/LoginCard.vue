@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { router } from "@/config/router";
-import { t } from "@/lang/i18n";
-import { ctx } from "@/plugin/context";
-import { loginPageInfo, loginUser, ssoConfig, type SsoPublicConfig } from "@/services/apis";
-import { useAppStateStore } from "@/stores/useAppStateStore";
-import { markdownToHTML } from "@/tools/safe";
-import { reportErrorMsg } from "@/tools/validator";
-import { message } from "@/tools/vuetifyToast";
-import { Modal } from "@/tools/vuetifyModal";
+import { router } from "@elementspanel/epanel-plugin-console/config/router";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { ctx } from "@elements-panel/sdk";
+import { loginPageInfo, loginUser, ssoConfig, type SsoPublicConfig } from "@elementspanel/epanel-plugin-console/services/apis";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
+import { markdownToHTML } from "@elementspanel/epanel-plugin-console/tools/safe";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
 import { computed, onMounted, reactive, ref } from "vue";
 import {
   VAlert,

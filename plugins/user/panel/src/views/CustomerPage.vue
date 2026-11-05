@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import PageToolbar from "@/components/PageToolbar.vue";
-import Empty from "@/components/Empty.vue";
-import { usePluginService } from "@/plugin/context";
+import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { usePluginService } from "@elements-panel/sdk";
 import { computed } from "vue";
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { VCol, VContainer, VRow } from "vuetify/components";
 import UserInstanceList from "../widgets/UserInstanceList.vue";
 import UserStatusBlock from "../widgets/UserStatusBlock.vue";

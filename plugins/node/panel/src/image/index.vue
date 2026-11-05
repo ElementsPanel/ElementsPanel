@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { ref, computed, onMounted, h } from "vue";
-import { t } from "@/lang/i18n";
-import { notification } from "@/tools/vuetifyToast";
-import { Modal } from "@/tools/vuetifyModal";
-import CardPanel from "@/components/CardPanel.vue";
-import PageToolbar from "@/components/PageToolbar.vue";
-import { arrayFilter } from "@/tools/array";
-import { imageList, containerList } from "@/services/apis/envImage";
-import type { ImageInfo, ContainerInfo } from "@/types";
-import { useAppRouters } from "@/hooks/useAppRouters";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { notification } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
+import CardPanel from "@elementspanel/epanel-plugin-console/components/CardPanel";
+import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
+import { arrayFilter } from "@elementspanel/epanel-plugin-console/tools/array";
+import { imageList, containerList } from "@elementspanel/epanel-plugin-console/services/apis/envImage";
+import type { ImageInfo, ContainerInfo } from "@elementspanel/epanel-plugin-console/types";
+import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
 import { useRoute } from "vue-router";
-import { reportErrorMsg } from "@/tools/validator";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { VBtn, VCol, VContainer, VDataTable, VRow } from "vuetify/components";
 
 const { toPage } = useAppRouters();

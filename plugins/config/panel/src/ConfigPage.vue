@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { t } from "@/lang/i18n";
-import { useScreen } from "@/hooks/useScreen";
-import { ctx } from "@/plugin/context";
-import { getValidatorErrorMsg } from "@/tools/validator";
-import { message } from "@/tools/vuetifyToast";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
+import { ctx } from "@elements-panel/sdk";
+import { getValidatorErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import {

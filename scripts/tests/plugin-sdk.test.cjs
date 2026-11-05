@@ -27,6 +27,7 @@ async function loadHostConfig() {
     "unplugin-vue-components/vite": () => ({}),
     vite: { defineConfig: (value) => value, normalizePath: (value) => value.replaceAll("\\", "/") },
     "./plugin-sdk.config.mjs": { pluginSdkModules },
+    "./plugin-build.config.mjs": { frontendAliases: () => ({}), publicFrontendImports: () => ({}) },
     "./plugin-dependencies.config.mjs": { frontendDependencyFallback },
     "../common/src/plugin_manifest": {
       discoverPluginsFromRoots: (roots) => {
@@ -82,18 +83,6 @@ test("frontend discovery does not load panel plugins from runtime data directori
 test("host SDK maps all compiler externals before module scripts, with prefix-relative URLs", async () => {
   const { config, pluginSdkModules } = await loadHostConfig();
   const plugin = config.plugins.find((item) => item.name === "elements-panel-plugins");
-  const chunkFileNames = config.build.rollupOptions.output.chunkFileNames;
-  assert.match(
-    chunkFileNames({
-      name: "panel-plugin-file",
-      facadeModuleId: "\0panel-plugin-build-entry:file",
-      moduleIds: [
-        "/virtual/plugins/console/src/shared.ts",
-        "/virtual/plugins/file/src/frontend.ts"
-      ]
-    }),
-    /^plugins\/file\/frontend\//
-  );
   const emitted = [];
   const context = {
     emitFile(file) {
@@ -113,37 +102,15 @@ test("host SDK maps all compiler externals before module scripts, with prefix-re
       fileName: "index.html",
       source: '<html><head><script type="module" src="./main.js"></script></head></html>'
     },
-    "plugins/console/frontend/frontend-test.js": {
-      type: "chunk",
-      fileName: "plugins/console/frontend/frontend-test.js",
-      name: "panel-plugin-console",
-      facadeModuleId: "\0panel-plugin-build-entry:console",
-      moduleIds: ["/virtual/plugins/console/src/frontend.ts"],
-      viteMetadata: { importedCss: new Set() }
-    },
-    "assets/console-shared-test.js": {
-      type: "chunk",
-      fileName: "assets/console-shared-test.js",
-      ...sharedChunk("initLib.ts"),
-      viteMetadata: { importedCss: new Set(["assets/material-icons.css"]) }
-    },
-    "assets/material-icons.css": {
-      type: "asset",
-      fileName: "assets/material-icons.css",
-      source:
-        '@font-face{src:url(./materialdesignicons-webfont.woff2?v=7.4.47) format("woff2")}'
-    },
-    "assets/materialdesignicons-webfont.woff2": {
-      type: "asset",
-      fileName: "assets/materialdesignicons-webfont.woff2",
-      source: new Uint8Array()
-    }
+    "assets/framework.css": { type: "asset", fileName: "assets/framework.css", source: ".v-card {}" }
   };
   plugin.generateBundle.call(context, {}, bundle);
   const html = bundle["index.html"].source;
   const imports = JSON.parse(html.match(/<script type="importmap">(.*?)<\/script>/)[1]).imports;
   assert.deepEqual(Object.keys(imports), pluginSdkModules);
   assert.ok(html.indexOf('type="importmap"') < html.indexOf('type="module"'));
+  assert.ok(html.includes('<link rel="stylesheet" href="./assets/framework.css">'),
+    "CSS of import-map entries must be loaded even when outside the HTML entry graph");
   for (const id of pluginSdkModules) {
     const chunk = emitted.find((file) => file.id === `elements-sdk:${id}`);
     assert.equal(chunk.preserveSignature, "strict");
@@ -157,85 +124,57 @@ test("host SDK maps all compiler externals before module scripts, with prefix-re
     if (id === "vue" || id === "cordis")
       assert.equal(bridge, `export * from ${JSON.stringify(id)};`);
   }
-  const relocatedCss = Object.values(bundle).find(
-    (asset) =>
-      asset.type === "asset" &&
-      asset.fileName.startsWith("plugins/console/frontend/assets/style-")
-  );
-  assert.match(
-    relocatedCss.source,
-    /url\(\.\.\/\.\.\/\.\.\/\.\.\/assets\/materialdesignicons-webfont\.woff2\?v=7\.4\.47\)/
-  );
-  const manifest = JSON.parse(emitted.find((file) => file.fileName === "plugins/manifest.json").source);
-  assert.deepEqual(manifest[0].styles, ["./console/frontend/assets/style-0-material-icons.css"]);
+  assert.equal(emitted.filter(file => file.type === "chunk").length, pluginSdkModules.length,
+    "the host must not emit plugin entries");
+  assert.deepEqual(JSON.parse(emitted.find(file => file.fileName === "frontend-runtime.json").source),
+    { frontendApi: 1, frontendModules: pluginSdkModules });
+  assert.equal(plugin.load("\0virtual:panel-plugins"), "export const panelPluginModules = [];");
 });
 
-function entryChunk(folder) {
-  return {
-    name: `panel-plugin-${folder}`,
-    facadeModuleId: `\0panel-plugin-build-entry:${folder}`,
-    moduleIds: [`/virtual/plugins/${folder}/src/frontend.ts`]
-  };
-}
-
-function sharedChunk(source) {
-  return {
-    name: path.posix.basename(source, ".ts"),
-    facadeModuleId: `/virtual/plugins/console/src/${source}`,
-    moduleIds: [`/virtual/plugins/console/src/${source}`]
-  };
-}
-
-function emittedFile(namer, chunk) {
-  return namer(chunk).replace("[name]", chunk.name).replace("[hash]", "test-hash");
-}
-
-function importUrl(importerFile, importedFile, importerUrl) {
-  return new URL(
-    `./${path.posix.relative(path.posix.dirname(importerFile), importedFile)}`,
-    importerUrl
-  ).href;
-}
-
-test("versioned plugin entries resolve shared host chunks to one URL at any deployment prefix", async () => {
-  const { config } = await loadHostConfig();
-  const output = config.build.rollupOptions.output;
-  for (const source of [
-    "config/router.ts",
-    "stores/useAppStateStore.ts",
-    "services/apiService.ts",
-    "stores/useDefineApi.ts",
-    "plugin/services.ts"
-  ]) {
-    const shared = emittedFile(output.chunkFileNames, sharedChunk(source));
-    assert.match(shared, /^assets\//, `${source} must not inherit a plugin revision`);
-    for (const prefix of ["/", "/panel/prefix/"]) {
-      const urls = new Set();
-      for (const folder of ["console", "runtime", "user", "file"]) {
-        const chunk = entryChunk(folder);
-        for (const namer of [output.entryFileNames, output.chunkFileNames]) {
-          const entry = emittedFile(namer, chunk);
-          assert.ok(entry.startsWith(`plugins/${folder}/frontend/`));
-          // Only actual entries stay plugin-local, including virtual facades
-          // whose generated name differs from the declared entry name.
-          assert.ok(namer({ ...chunk, name: "generated-entry" }).startsWith(`plugins/${folder}/`));
-          for (const revision of ["revision-a", "revision-b"]) {
-            const url = new URL(
-              entry.replace(`plugins/${folder}/`, `plugins/${folder}@${revision}/`),
-              `https://panel.test${prefix}`
-            );
-            urls.add(importUrl(entry, shared, url));
-          }
-        }
-      }
-      assert.deepEqual([...urls], [`https://panel.test${prefix}${shared}`]);
-    }
+test("independent plugin configs externalize only public interfaces and own all emitted files", async () => {
+  const { builtinPluginConfig, publicFrontendImports, publicFrontendModules } = await import(
+    pathToFileURL(path.join(root, "core/frontend/plugin-build.config.mjs"))
+  );
+  const { sourcePlugins } = require("../workspace-layout.cjs");
+  const plugins = sourcePlugins("panel");
+  const user = builtinPluginConfig(plugins.find(plugin => plugin.id === "user"), "/fixture/plugins");
+  const consoleConfig = builtinPluginConfig(plugins.find(plugin => plugin.id === "console"), "/fixture/plugins");
+  const modules = publicFrontendModules();
+  const request = "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
+  const foreign = publicFrontendImports("user", modules);
+  assert.deepEqual(foreign.resolveId(request), { id: request, external: true });
+  assert.equal(publicFrontendImports("console", modules).resolveId(request), modules.get(request).filename);
+  assert.throws(() => foreign.load(path.join(root, "plugins/console/panel/src/stores/useAppStateStore.ts")), /private source/);
+  assert.throws(() => foreign.resolveId("@elementspanel/epanel-plugin-console/private"), /Unknown public/);
+  assert.throws(() => foreign.load(path.join(root, "core/frontend/src/plugin/context.ts")), /private host source/);
+  const hostImports = publicFrontendImports(undefined, modules);
+  hostImports.configResolved({ command: "build" });
+  assert.throws(() => hostImports.resolveId(request), /before discovery/);
+  for (const specifier of ["vue", "pinia", "vuetify/components", "@elements-panel/sdk"]) {
+    assert.equal(user.build.rollupOptions.external(specifier), true);
   }
+  assert.throws(() => user.build.rollupOptions.external("vue/unmapped-subpath"), /Unmapped shared/);
+  assert.equal(user.build.rollupOptions.external("vuetify/styles"), false);
+  assert.deepEqual(Object.keys(user.build.rollupOptions.input), ["index"]);
+  assert.equal(consoleConfig.build.rollupOptions.input["exports/stores/useAppStateStore"], modules.get(request).filename);
+  assert.equal(user.build.outDir, "/fixture/plugins/user");
+  assert.equal(user.build.rollupOptions.output.chunkFileNames, "frontend/chunks/[name]-[hash].js");
+  assert.equal(user.build.rollupOptions.output.assetFileNames, "frontend/assets/[name]-[hash][extname]");
+  const emitted = [];
+  user.plugins.find(plugin => plugin.name === "elements-plugin-build-manifest").generateBundle.call(
+    { emitFile: file => emitted.push(file) }, {}, {
+      "frontend/index.js": { type: "chunk", imports: ["vue", request, "frontend/chunks/local.js"], dynamicImports: [] },
+      "frontend/chunks/local.js": { type: "chunk", imports: [], dynamicImports: [] },
+      "frontend/assets/style.css": { type: "asset" }
+    }
+  );
+  const manifest = JSON.parse(emitted[0].source);
+  assert.deepEqual(manifest.imports, [request, "vue"]);
+  assert.deepEqual(manifest.styles, ["frontend/assets/style.css"]);
+  assert.equal(manifest.frontendApi, 1);
 });
 
 test("production URL identities share login state, registered routes and API authorization", async () => {
-  const { config } = await loadHostConfig();
-  const output = config.build.rollupOptions.output;
   const vue = frontendRequire("vue");
   const vueRouter = frontendRequire("vue-router");
   const vueUse = frontendRequire("@vueuse/core");
@@ -246,14 +185,11 @@ test("production URL identities share login state, registered routes and API aut
     console: "plugins/console/panel/src/frontend.ts",
     user: "plugins/user/panel/src/widgets/LoginCard.vue"
   };
-  const files = Object.fromEntries(
-    Object.entries(sources).map(([id, source]) => [
-      id,
-      ["console", "user"].includes(id)
-        ? emittedFile(output.entryFileNames, entryChunk(id))
-        : emittedFile(output.chunkFileNames, sharedChunk(source.split("/src/")[1]))
-    ])
-  );
+  const files = {
+    router: "frontend/chunks/router.js", store: "frontend/chunks/store.js", api: "frontend/chunks/api.js",
+    console: "frontend/index.js", user: "frontend/index.js"
+  };
+  const moduleUrl = id => `https://panel.test/prefix/plugins/${id === "user" ? "user" : "console"}@revision-${id === "user" ? "user" : "console"}/${files[id]}`;
   const aliases = {
     "@/config/router": "router",
     "@/stores/useAppStateStore": "store",
@@ -282,8 +218,8 @@ test("production URL identities share login state, registered routes and API aut
     "vue-router": { ...vueRouter, createWebHashHistory: vueRouter.createMemoryHistory },
     "@vueuse/core": { ...vueUse, useLocalStorage: (_key, value) => vue.ref(value) },
     axios,
-    "@/lang/i18n": { t: (key) => key, LANGUAGE_KEY: "language", toStandardLang: () => "en_us" },
-    "@/plugin/context": { ctx: { menus: { loginActions: [] } } },
+    "@elementspanel/epanel-plugin-i18n": { t: (key) => key, LANGUAGE_KEY: "language", toStandardLang: () => "en_us" },
+    "@elements-panel/sdk": { ctx: { menus: { loginActions: [] } } },
     "@/services/TopProgressBar": { topProgressBar: { start() {}, done() {} } },
     "@/services/apis/user": {
       isUserPluginLoaded: () => true,
@@ -323,9 +259,8 @@ test("production URL identities share login state, registered routes and API aut
     "./components/BackgroundTasksSidebar.vue": component,
     "./components/DesktopBackgroundTasks.vue": component
   };
-  // Evaluate real sources in memory, caching by browser URL, not disk path.
-  // Relative imports are derived from the actual output naming callbacks;
-  // the old layout therefore creates separate router/store/API instances.
+  // Public facade imports and the owner's relative imports reach the same
+  // revision-scoped private chunk. Cache by browser URL, not filesystem path.
   const modules = new Map();
   function loadAt(id, url) {
     if (modules.has(url)) return modules.get(url).exports;
@@ -338,8 +273,10 @@ test("production URL identities share login state, registered routes and API aut
     const mod = new Module(filename, module);
     modules.set(url, mod);
     mod.require = (specifier) => {
-      const target = aliases[specifier];
-      if (target) return loadAt(target, importUrl(files[id], files[target], url));
+      const local = specifier.replace("@elementspanel/epanel-plugin-console/", "@/");
+      const target = aliases[local];
+      if (target) return loadAt(target, moduleUrl(target));
+      if (Object.hasOwn(overrides, local)) return overrides[local];
       if (Object.hasOwn(overrides, specifier)) return overrides[specifier];
       if (specifier.endsWith(".scss")) return {};
       return frontendRequire(specifier);
@@ -358,13 +295,8 @@ test("production URL identities share login state, registered routes and API aut
     );
     return mod.exports;
   }
-  function fromPlugin(folder, target) {
-    const entry = emittedFile(output.entryFileNames, entryChunk(folder));
-    const url = new URL(
-      entry.replace(`plugins/${folder}/`, `plugins/${folder}@revision-${folder}/`),
-      "https://panel.test/prefix/"
-    );
-    return loadAt(target, importUrl(entry, files[target], url));
+  function fromPlugin(_folder, target) {
+    return loadAt(target, moduleUrl(target));
   }
 
   const runtimeStore = fromPlugin("runtime", "store").useAppStateStore();

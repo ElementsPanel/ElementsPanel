@@ -1,4 +1,4 @@
-import { usePluginService } from "@/plugin/context";
+import { usePluginService } from "@elements-panel/sdk";
 import type { BaseUserInfo, EditUserInfo, LoginUserInfo, UserInstance } from "@/types/user";
 import type { Ref } from "vue";
 

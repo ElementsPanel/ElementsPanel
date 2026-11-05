@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import AppDialog from "@/components/AppDialog.vue";
-import { t } from "@/lang/i18n";
+import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import type { AddJavaConfigItem } from "../types";
 import { ref } from "vue";
 import { VForm, VTextField } from "vuetify/components";

@@ -344,13 +344,11 @@ async function resolveBuiltinPlugins(mode, versions, language) {
       if (plugin.elementspanel?.id !== id || !plugin.elementspanel[side])
         throw new Error(`Invalid ${side} metadata in ${name}.`);
       if (side === "panel") {
-        const expected = plugin.elementspanel.panel.frontendAssets;
-        const available = runtime.elementspanel.frontendAssets;
-        if (
-          !Array.isArray(expected) ||
-          !Array.isArray(available) ||
-          expected.some((file) => typeof file !== "string" || !available.includes(file))
-        )
+        const { frontendCompatibilityError } = require("./frontend-modules.cjs");
+        if (frontendCompatibilityError(runtime, plugin, {
+          requireMetadata: true,
+          resolvePlugin: (name) => packages.get(name)
+        }))
           throw new Error(createTranslator(language)("pluginAssetsMismatch", { name }));
       }
       builtinPlugins[side][id] = { name, version: plugin.version };

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onUnmounted, ref } from "vue";
-import { t } from "@/lang/i18n";
-import { message } from "@/tools/vuetifyToast";
-import { uploadFile } from "@/services/apis/upload";
-import { reportErrorMsg } from "@/tools/validator";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { uploadFile } from "@elementspanel/epanel-plugin-console/services/apis/upload";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import {
   VBtn,
   VCard,

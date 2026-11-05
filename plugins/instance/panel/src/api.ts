@@ -1,6 +1,6 @@
-import { useDefineApi } from "@/stores/useDefineApi";
+import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDefineApi";
 import type { MinecraftServerSelection } from "../../../../core/common/src/minecraft";
-import type { RemoteMappingEntry } from "@/tools/protocol";
+import type { RemoteMappingEntry } from "@elementspanel/epanel-plugin-console/tools/protocol";
 import type {
   ContainerInfo,
   DockerNetworkModes,
@@ -9,7 +9,7 @@ import type {
   JsonData,
   NewScheduleTask,
   Schedule
-} from "@/types";
+} from "@elementspanel/epanel-plugin-console/types";
 
 export const remoteInstances = useDefineApi<
   {

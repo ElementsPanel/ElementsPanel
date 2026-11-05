@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import ActionButton from "@/components/ActionButton.vue";
-import CardPanel from "@/components/CardPanel.vue";
-import PageToolbar from "@/components/PageToolbar.vue";
-import Loading from "@/components/Loading.vue";
-import { useScreen } from "@/hooks/useScreen";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import ActionButton from "@elementspanel/epanel-plugin-console/components/ActionButton";
+import CardPanel from "@elementspanel/epanel-plugin-console/components/CardPanel";
+import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
+import Loading from "@elementspanel/epanel-plugin-console/components/Loading";
+import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
 import {
   QUICKSTART_ACTION_TYPE,
   QUICKSTART_METHOD,
   useQuickStartFlow
-} from "@/hooks/widgets/quickStartFlow";
-import { t } from "@/lang/i18n";
+} from "@elementspanel/epanel-plugin-console/hooks/widgets/quickStartFlow";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import CreateInstanceForm from "./CreateInstanceForm.vue";
 import { useRoute } from "vue-router";
-import FadeUpAnimation from "@/components/FadeUpAnimation.vue";
+import FadeUpAnimation from "@elementspanel/epanel-plugin-console/components/FadeUpAnimation";
 import { VCol, VContainer, VIcon, VRow } from "vuetify/components";
 const { isPhone } = useScreen();
 const route = useRoute();

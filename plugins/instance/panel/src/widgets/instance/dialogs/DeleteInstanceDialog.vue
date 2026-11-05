@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { t } from "@/lang/i18n";
-import AppDialog from "@/components/AppDialog.vue";
-import { batchDelete } from "@/services/apis/instance";
-import { reportErrorMsg } from "@/tools/validator";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
+import { batchDelete } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { getInstanceDeleteError } from "../../../tools/deletion";
 import { VCheckbox } from "vuetify/components";
 const props = defineProps<{ emitResult: (ok: boolean) => void; destroyComponent: () => void; instanceId: string; daemonId: string }>();

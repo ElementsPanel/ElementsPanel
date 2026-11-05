@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { ref } from "vue";
-import { useSimpleChart } from "@/hooks/useOverviewChart";
+import { useSimpleChart } from "@elementspanel/epanel-plugin-console/hooks/useOverviewChart";
 import { VCol, VRow } from "vuetify/components";
 
 const props = defineProps<{

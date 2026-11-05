@@ -258,6 +258,45 @@ test("the update CLI selects one side and can leave installation for later", asy
   );
 });
 
+test("isolated plugin installation is independent of host asset hashes and checks public interfaces", async (t) => {
+  const f = temporary(t);
+  const npm = mockNpmView(t);
+  const i18n = "@elementspanel/epanel-plugin-i18n";
+  const consoleName = "@elementspanel/epanel-plugin-console";
+  const host = {
+    version: "1.0.0",
+    elementspanel: {
+      plugins: { i18n, console: consoleName }, frontendApi: 1,
+      frontendModules: ["vue", "@elements-panel/sdk"], frontendAssets: ["assets/new-host-hash.js"]
+    }
+  };
+  npm.metadata("@elementspanel/panel", host);
+  npm.metadata(i18n, {
+    version: "1.0.7", elementspanel: { id: "i18n", panel: {
+      frontendApi: 1, frontendImports: ["vue", "@elements-panel/sdk"],
+      frontendExports: { ".": "frontend/exports/index.js" }
+    } }
+  });
+  npm.metadata(consoleName, {
+    version: "1.0.10", elementspanel: { id: "console", panel: {
+      frontendApi: 1, frontendImports: [i18n]
+    } }
+  });
+  const result = await initializer.initialize({ directory: path.join(f.root, "first"), mode: "panel", install: false });
+  assert.equal(result.manifest.dependencies["@elementspanel/panel"], "1.0.0");
+  host.version = "1.0.1";
+  host.elementspanel.frontendAssets = ["assets/unrelated-hash.js"];
+  npm.metadata("@elementspanel/panel", host);
+  await initializer.initialize({ directory: path.join(f.root, "second"), mode: "panel", install: false });
+  host.elementspanel.frontendModules = [];
+  npm.metadata("@elementspanel/panel", host);
+  await assert.rejects(
+    initializer.initialize({ directory: path.join(f.root, "missing-api"), mode: "panel", install: false }),
+    /frontend modules or legacy assets unavailable/
+  );
+  assert.equal(fs.existsSync(path.join(f.root, "missing-api")), false);
+});
+
 test("registry failures and incompatible plugin builds leave manifests untouched", async (t) => {
   const name = "@elementspanel/epanel-plugin-i18n";
   const plugin = {
@@ -286,13 +325,13 @@ test("registry failures and incompatible plugin builds leave manifests untouched
           panel: { frontendAssets: ["assets/i18n-old.js"] }
         }
       },
-      /frontend assets missing/
+      /frontend modules or legacy assets unavailable/
     ],
     [
       "old asset metadata is absent",
       name,
       { ...plugin, elementspanel: { ...plugin.elementspanel, panel: {} } },
-      /frontend assets missing/
+      /frontend modules or legacy assets unavailable/
     ],
     [
       "daemon metadata is absent",

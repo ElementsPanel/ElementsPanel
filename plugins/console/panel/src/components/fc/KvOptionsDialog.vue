@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Empty from "@/components/Empty.vue";
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import type { MountComponent } from "../../types";
 import _ from "lodash";
 import { computed, ref } from "vue";

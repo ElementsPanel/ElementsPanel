@@ -313,18 +313,37 @@ async function buildPluginPackage() {
       const vuePlugin = require('@vitejs/plugin-vue');
       const vueJsxPlugin = require('@vitejs/plugin-vue-jsx');
       const frontendOutput = path.join(directory, 'frontend');
-      const shared = ['vue', 'vue-router', 'pinia', 'vue-i18n', 'cordis', 'cosmokit', '@vueuse/core', '@vueuse/shared', '@elements-panel/sdk'];
+      const shared = ['vue', 'vue-router', 'pinia', 'vue-i18n', 'cordis', 'cosmokit', '@vueuse/core', '@vueuse/shared', 'vuetify', 'vuetify/components', 'vuetify/iconsets/mdi', '@elements-panel/sdk'];
+      const imports = new Set();
       await build({
-        configFile: false, root: directory, plugins: [vuePlugin(), vueJsxPlugin()],
+        configFile: false, root: directory, base: './', publicDir: false,
+        plugins: [vuePlugin(), vueJsxPlugin(), {
+          name: 'elementspanel-public-imports',
+          generateBundle(_options, bundle) {
+            for (const output of Object.values(bundle)) {
+              if (output.type !== 'chunk') continue;
+              for (const id of [...output.imports, ...output.dynamicImports]) {
+                if (!Object.hasOwn(bundle, id)) imports.add(id);
+              }
+            }
+          }
+        }],
         build: {
           outDir: frontendOutput, emptyOutDir: true, sourcemap: false,
           rollupOptions: {
             input: frontend, preserveEntrySignatures: 'strict',
-            external: id => shared.some(name => id === name || id.startsWith(name + '/')),
+            external: id => {
+              if (shared.includes(id) || id.startsWith('@elementspanel/epanel-plugin-')) return true;
+              if (id !== 'vuetify/styles' && shared.some(name => id.startsWith(name + '/')))
+                throw new Error('Unmapped shared frontend module: ' + id);
+              return false;
+            },
             output: { format: 'es', entryFileNames: 'index.js', chunkFileNames: '[name]-[hash].js', assetFileNames: 'assets/[name]-[hash][extname]' }
           }
         }
       });
+      definition.frontendApi = 1;
+      definition.frontendImports = [...imports].sort();
       manifest.frontend = 'frontend/index.js';
       const styles = compiledStyles(frontendOutput);
       if (styles.length) definition.styles = styles;

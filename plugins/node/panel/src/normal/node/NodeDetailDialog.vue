@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import type { ComputedNodeInfo } from "@/hooks/useOverviewInfo";
-import { t } from "@/lang/i18n";
-import { getValidatorErrorMsg, isLocalNetworkIP, reportErrorMsg } from "@/tools/validator";
-import { message } from "@/tools/vuetifyToast";
-import { Modal } from "@/tools/vuetifyModal";
+import type { ComputedNodeInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { getValidatorErrorMsg, isLocalNetworkIP, reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
 import _ from "lodash";
 import { reactive, ref } from "vue";
 import {

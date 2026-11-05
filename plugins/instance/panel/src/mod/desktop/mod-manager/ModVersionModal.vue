@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import DesktopDialog from "@/components/DesktopDialog.vue";
-import { useScreen } from "@/hooks/useScreen";
-import { t } from "@/lang/i18n";
-import AppDialog from "@/components/AppDialog.vue";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import DesktopDialog from "@elementspanel/epanel-plugin-console/components/DesktopDialog";
+import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
 import { computed, onUnmounted, ref, watch } from "vue";
 import { VBtn, VChip, VDataTable, VIcon, VProgressCircular } from "vuetify/components";
 

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import DesktopDialog from "@/components/DesktopDialog.vue";
-import { t } from "@/lang/i18n";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import DesktopDialog from "@elementspanel/epanel-plugin-console/components/DesktopDialog";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { addJava, deleteJava, downloadJava, usingJava } from "../api";
-import { parseTimestamp } from "@/tools/time";
+import { parseTimestamp } from "@elementspanel/epanel-plugin-console/tools/time";
 import type { AddJavaConfigItem, DownloadJavaConfigItem, JavaInfo } from "../types";
-import { notifyDesktop } from "@/tools/desktopNotice";
+import { notifyDesktop } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { computed, onUnmounted, ref } from "vue";
 import { VAlert, VBtn, VDataTable, VIcon, VTextField } from "vuetify/components";
 

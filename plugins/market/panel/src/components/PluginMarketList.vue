@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import PageToolbar from "@/components/PageToolbar.vue";
-import Empty from "@/components/Empty.vue";
-import { t } from "@/lang/i18n";
-import { getValidatorErrorMsg } from "@/tools/validator";
-import { computeNodeName } from "@/tools/nodes";
-import { message } from "@/tools/vuetifyToast";
+import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { getValidatorErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import { computeNodeName } from "@elementspanel/epanel-plugin-console/tools/nodes";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
   VAvatar,

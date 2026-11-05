@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref } from "vue";
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { VCol, VForm, VRow, VTextField } from "vuetify/components";
 
 interface FormDataType {

@@ -1,7 +1,7 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
-import type { PanelFrontendPluginContext } from "@/plugin";
-import { getI18nInstance } from "@/lang/i18n";
+import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
+import { getI18nInstance } from "@elementspanel/epanel-plugin-i18n";
 import { router } from "./config/router";
 import { useAppStateStore } from "./stores/useAppStateStore";
 import { setLoadingTitle } from "./tools/dom";

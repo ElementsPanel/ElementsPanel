@@ -1,6 +1,6 @@
-import { ROLE } from "@/config/router";
-import { t } from "@/lang/i18n";
-import type { PanelFrontendPluginContext } from "@/plugin";
+import { ROLE } from "@elementspanel/epanel-plugin-console/config/router";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
 import * as api from "./api";
 import CmdAssistantDialog from "./components/CmdAssistantDialog/index.vue";
 import DockerCapabilityDialog from "./components/DockerCapabilityDialog.vue";

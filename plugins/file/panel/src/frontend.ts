@@ -1,7 +1,7 @@
-import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } from "@/plugin";
-import { isScopedInstance } from "@/hooks/useInstanceActionAvailability";
-import { t } from "@/lang/i18n";
-import { useAppStateStore } from "@/stores/useAppStateStore";
+import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } from "@elements-panel/sdk";
+import { isScopedInstance } from "@elementspanel/epanel-plugin-console/hooks/useInstanceActionAvailability";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
 import * as fileManagerApi from "./api";
 import { useDownloadFileDialog, useImageViewerDialog, useUploadFileDialog } from "./dialogs";
 import DesktopFileEditor from "./desktop/DesktopFileEditor.vue";

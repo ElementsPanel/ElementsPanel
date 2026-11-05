@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Empty from "@/components/Empty.vue";
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { computed, onMounted, ref } from "vue";
 import { VBtn, VCard, VCardText, VCol, VIcon, VRow, VSelect, VTextField } from "vuetify/components";
 

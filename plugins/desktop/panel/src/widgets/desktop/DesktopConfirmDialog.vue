@@ -4,10 +4,10 @@ let confirmationZIndex = 20000;
 </script>
 
 <script setup lang="ts">
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { computed, nextTick, ref, useSlots, watch } from "vue";
 import { VBtn, VIcon } from "vuetify/components";
-import DesktopDialog from "@/components/DesktopDialog.vue";
+import DesktopDialog from "@elementspanel/epanel-plugin-console/components/DesktopDialog";
 
 defineOptions({ inheritAttrs: false });
 

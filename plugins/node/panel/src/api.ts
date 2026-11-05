@@ -1,5 +1,5 @@
-import { useDefineApi } from "@/stores/useDefineApi";
-import type { NodeStatus } from "@/types";
+import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDefineApi";
+import type { NodeStatus } from "@elementspanel/epanel-plugin-console/types";
 
 export const remoteNodeList = useDefineApi<any, NodeStatus[]>({
   url: "/api/service/remote_services_list"

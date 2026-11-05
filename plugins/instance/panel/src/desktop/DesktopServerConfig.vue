@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import InstanceConfigEditor from "../components/InstanceConfigEditor.vue";
-import { getInstanceConfigByType, type InstanceConfigs } from "@/hooks/useInstance";
-import { t } from "@/lang/i18n";
-import { getConfigFile, getConfigFileList, updateConfigFile } from "@/services/apis/instance";
-import { toUnicode } from "@/tools/common";
-import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
+import { getInstanceConfigByType, type InstanceConfigs } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { getConfigFile, getConfigFileList, updateConfigFile } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { toUnicode } from "@elementspanel/epanel-plugin-console/tools/common";
+import { notifyDesktop, notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { onMounted, ref } from "vue";
 import { VBtn, VIcon } from "vuetify/components";
 

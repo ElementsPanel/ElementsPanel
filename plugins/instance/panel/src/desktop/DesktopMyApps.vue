@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { t } from "@/lang/i18n";
-import { INSTANCE_TYPE_TRANSLATION } from "@/hooks/useInstance";
-import { userInfoApiAdvanced } from "@/services/apis/index";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { INSTANCE_TYPE_TRANSLATION } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import { userInfoApiAdvanced } from "@elementspanel/epanel-plugin-console/services/apis";
 import {
     killInstance,
     openInstance,
     restartInstance,
     stopInstance
-} from "@/services/apis/instance";
-import { INSTANCE_STATUS_CODE } from "@/types/const";
-import type { UserInstance } from "@/types/user";
+} from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types/const";
+import type { UserInstance } from "@elementspanel/epanel-plugin-console/types/user";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { VBtn, VIcon, VProgressCircular, VSelect, VTextField } from "vuetify/components";
 

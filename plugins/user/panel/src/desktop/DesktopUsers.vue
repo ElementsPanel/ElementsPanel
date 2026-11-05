@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import DesktopDialog from "@/components/DesktopDialog.vue";
-import { t } from "@/lang/i18n";
-import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
-import { addUser as addUserApi, deleteUser as deleteUserApi, editUserInfo as editUserInfoApi, getUserInfo as getUserInfoApi, remoteInstances, remoteNodeList, updateUserInstance, userInfoApiAdvanced } from "@/services/apis";
-import { computeNodeName } from "@/tools/nodes";
-import type { NodeStatus } from "@/types";
-import { INSTANCE_STATUS } from "@/types/const";
-import type { BaseUserInfo, EditUserInfo, UserInstance } from "@/types/user";
-import { notifyDesktop } from "@/tools/desktopNotice";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import DesktopDialog from "@elementspanel/epanel-plugin-console/components/DesktopDialog";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { usePluginService, type FrontendDesktopService } from "@elements-panel/sdk";
+import { addUser as addUserApi, deleteUser as deleteUserApi, editUserInfo as editUserInfoApi, getUserInfo as getUserInfoApi, remoteInstances, remoteNodeList, updateUserInstance, userInfoApiAdvanced } from "@elementspanel/epanel-plugin-console/services/apis";
+import { computeNodeName } from "@elementspanel/epanel-plugin-console/tools/nodes";
+import type { NodeStatus } from "@elementspanel/epanel-plugin-console/types";
+import { INSTANCE_STATUS } from "@elementspanel/epanel-plugin-console/types/const";
+import type { BaseUserInfo, EditUserInfo, UserInstance } from "@elementspanel/epanel-plugin-console/types/user";
+import { notifyDesktop } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { computed, onMounted, onUnmounted, reactive, ref, shallowRef, watch } from "vue";
 import { VBtn, VChip, VDataTable, VIcon, VRadio, VRadioGroup, VSelect, VTextField } from "vuetify/components";
 

@@ -7,7 +7,7 @@ export {
   TYPE_HYTALE,
   TYPE_TERRARIA
 } from "@elements-panel/sdk";
-export type { InstanceMoreDetail, InstanceConfigs } from "@instance/hooks/useInstance";
+export type { InstanceMoreDetail, InstanceConfigs } from "@elementspanel/epanel-plugin-instance/hooks/useInstance";
 import { instanceData, instanceHook } from "./instanceService";
 
 export const useInstanceMoreDetail = instanceHook("useInstanceMoreDetail");

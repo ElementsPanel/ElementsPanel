@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import {
   VBtn,
   VCard,

@@ -497,6 +497,22 @@ test("a revision changes when a nested module changes, and public assets never r
   dispose();
 });
 
+test("public frontend exports use the provider revision and stay inside its frontend directory", async (t) => {
+  const f = fixture(t);
+  const directory = f.write("public-api", "exports.apply=()=>{};", {
+    frontend: "frontend/index.js", frontendApi: 1,
+    frontendExports: { session: "frontend/session.js", escape: "index.cjs" }
+  });
+  fs.mkdirSync(path.join(directory, "frontend"));
+  fs.writeFileSync(path.join(directory, "frontend/index.js"), "export function apply() {};");
+  fs.writeFileSync(path.join(directory, "frontend/session.js"), "export const session = {};");
+  const entry = f.loader.getPanelFrontendManifest().find(item => item.metadata.id === "public-api");
+  assert.equal(entry.metadata.frontendApi, 1);
+  assert.deepEqual(entry.exports, {
+    "@elementspanel/epanel-plugin-public-api/session": `./public-api@${entry.revision}/frontend/session.js`
+  });
+});
+
 test("settings changes and enable cycles apply the updated backend revision", async (t) => {
   const f = fixture(t);
   const directory = f.write("versioned", 'exports.apply=ctx=>ctx.set("versionedValue",1);');

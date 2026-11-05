@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { ref } from "vue";
-import { t } from "@/lang/i18n";
-import { message } from "@/tools/vuetifyToast";
-import { reportErrorMsg } from "@/tools/validator";
-import AppDialog from "@/components/AppDialog.vue";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
 import { VSelect } from "vuetify/components";
 
 const emit = defineEmits(["selectCode"]);

@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from "vue";
-import { t } from "@/lang/i18n";
-import { getConfigFile, updateConfigFile } from "@/services/apis/instance";
-import { message } from "@/tools/vuetifyToast";
-import { useAppRouters } from "@/hooks/useAppRouters";
-import { toUnicode } from "@/tools/common";
-import Loading from "@/components/Loading.vue";
-import PageToolbar from "@/components/PageToolbar.vue";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { getConfigFile, updateConfigFile } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
+import { toUnicode } from "@elementspanel/epanel-plugin-console/tools/common";
+import Loading from "@elementspanel/epanel-plugin-console/components/Loading";
+import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
 import configComponent from "../../components/InstanceConfigEditor.vue";
-import type { FrontendFileManagerService } from "@/plugin";
-import { usePluginService } from "@/plugin/context";
-import { useKeyboardEvents } from "@/hooks/useKeyboardEvents";
-import { reportErrorMsg } from "@/tools/validator";
+import type { FrontendFileManagerService } from "@elements-panel/sdk";
+import { usePluginService } from "@elements-panel/sdk";
+import { useKeyboardEvents } from "@elementspanel/epanel-plugin-console/hooks/useKeyboardEvents";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { useRoute } from "vue-router";
 import { VAlert, VBtn, VCol, VContainer, VRow } from "vuetify/components";
 

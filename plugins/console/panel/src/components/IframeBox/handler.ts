@@ -1,5 +1,5 @@
-import { usePluginService } from "@/plugin/context";
-import type { FrontendMarketService } from "@/plugin";
+import { usePluginService } from "@elements-panel/sdk";
+import type { FrontendMarketService } from "@elements-panel/sdk";
 import { openIframeModal } from "../IframeModal/useIframeModal";
 
 export type IframeRouterHandler<T = any> = (

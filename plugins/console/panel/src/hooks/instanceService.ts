@@ -1,4 +1,4 @@
-import { usePluginService, type FrontendInstanceService } from "@/plugin/context";
+import { usePluginService, type FrontendInstanceService } from "@elements-panel/sdk";
 
 export type InstanceHooks = FrontendInstanceService["hooks"];
 

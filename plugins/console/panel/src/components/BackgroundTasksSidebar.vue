@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Empty from "@/components/Empty.vue";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useBackgroundTasks, type BackgroundTask } from "@/stores/useBackgroundTasks";
 import {

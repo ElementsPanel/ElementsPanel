@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
-import { ctx } from "@/plugin/context";
-import { t } from "@/lang/i18n";
-import { getValidatorErrorMsg } from "@/tools/validator";
+import { ctx } from "@elements-panel/sdk";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { getValidatorErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import {
   VAlert,
   VBtn,

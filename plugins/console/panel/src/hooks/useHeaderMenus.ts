@@ -1,5 +1,5 @@
 import { router, type RouterMetaInfo } from "@/config/router";
-import { ctx } from "@/plugin/context";
+import { ctx } from "@elements-panel/sdk";
 import { useAppRouters } from "@/hooks/useAppRouters";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useUiStore } from "@/stores/useUiStore";

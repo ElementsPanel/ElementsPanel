@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { t } from "@/lang/i18n";
-import { reportValidatorError } from "@/tools/validator";
-import type { DownloadFileConfigItem } from "@/types/fileManager";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { reportValidatorError } from "@elementspanel/epanel-plugin-console/tools/validator";
+import type { DownloadFileConfigItem } from "@elementspanel/epanel-plugin-console/types/fileManager";
 import { ref, watch } from "vue";
 import {
   VBtn,

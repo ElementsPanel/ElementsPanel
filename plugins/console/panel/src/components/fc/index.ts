@@ -1,9 +1,9 @@
 import { useMountComponent } from "@/hooks/useMountComponent";
-import { usePluginService, type FrontendInstanceService } from "@/plugin/context";
+import { usePluginService, type FrontendInstanceService } from "@elements-panel/sdk";
 import type { UserInstance } from "@/types/user";
 
 import KvOptionsDialogVue from "@/components/fc/KvOptionsDialog.vue";
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import TaskLoadingDialog from "./TaskLoadingDialog.vue";
 
 // The file manager's own dialogs — upload, download-from-URL and the image

@@ -7,6 +7,36 @@ const from = (workspace) =>
   Module.createRequire(path.join(root, "core", workspace, "package.json"));
 const ts = from("panel")("typescript");
 
+const publicSourceAliases = new Map();
+/** Resolve the declared public facade in source-only tests, retaining existing service mocks. */
+function frontendTestImport(id, overrides = {}) {
+  if (Object.hasOwn(overrides, id)) return id;
+  if (!publicSourceAliases.has(id)) {
+    const aliases = [];
+    if (id === "@elements-panel/sdk") aliases.push("@/plugin/context", "@/plugin");
+    const match = id.match(/^@elementspanel\/epanel-plugin-([^/]+)(?:\/(.+))?$/);
+    if (match) {
+      const directory = path.join(root, "plugins", match[1]);
+      const metadata = JSON.parse(fs.readFileSync(path.join(directory, "package.json"), "utf8"));
+      const entry = metadata.elementspanel.panel.frontendExports?.[match[2] || "."];
+      if (entry) {
+        const facade = path.join(directory, "panel", entry);
+        const request = fs.readFileSync(facade, "utf8").match(/from\s+"([^"]+)"/)?.[1];
+        const target = path.resolve(path.dirname(facade), request);
+        const relative = path.relative(path.join(directory, "panel/src"), target).split(path.sep).join("/");
+        const short = relative.replace(/\/index$/, "");
+        for (const alias of match[1] === "console" ? ["@/", "@console/"]
+          : match[1] === "i18n" ? ["@/"] : [`@${match[1]}/`]) {
+          aliases.push(alias + short, alias + relative);
+        }
+      }
+    }
+    publicSourceAliases.set(id, aliases);
+  }
+  const aliases = publicSourceAliases.get(id);
+  return aliases.find((alias) => Object.hasOwn(overrides, alias)) || aliases[0] || id;
+}
+
 // Run source in memory, replacing only the dependencies a test owns.
 function transpile(filename, source = fs.readFileSync(filename, "utf8"), compiler = ts) {
   return compiler.transpileModule(source, {
@@ -50,6 +80,7 @@ function createLoader({ host, resolve, globals = false, transform, compiler = ts
     mod.paths = Module._nodeModulePaths(path.dirname(filename));
     mod.environment = globals ? input ?? {} : {};
     mod.require = (id) => {
+      id = frontendTestImport(id, overrides);
       if (Object.hasOwn(overrides, id)) return overrides[id];
       if (resolve) return resolve(id, { filename, localRequire, load, overrides });
       return hostRequire && !id.startsWith(".") ? hostRequire(id) : localRequire(id);
@@ -152,6 +183,7 @@ function mountSetup(t, component, props = {}) {
 }
 
 module.exports = {
+  frontendTestImport,
   root,
   from,
   transpile,

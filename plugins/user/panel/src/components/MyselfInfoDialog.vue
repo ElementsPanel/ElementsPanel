@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { PERMISSION_MAP } from "@/config/const";
-import { t } from "@/lang/i18n";
-import { confirm2FA, setUserApiKey, updatePassword } from "@/services/apis/user";
-import { useAppStateStore } from "@/stores/useAppStateStore";
-import { useAppToolsStore } from "@/stores/useAppToolsStore";
-import { toCopy } from "@/tools/copy";
-import { reportErrorMsg } from "@/tools/validator";
-import { message } from "@/tools/vuetifyToast";
+import { PERMISSION_MAP } from "@elementspanel/epanel-plugin-console/config/const";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { confirm2FA, setUserApiKey, updatePassword } from "@elementspanel/epanel-plugin-console/services/apis/user";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
+import { useAppToolsStore } from "@elementspanel/epanel-plugin-console/stores/useAppToolsStore";
+import { toCopy } from "@elementspanel/epanel-plugin-console/tools/copy";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { reactive, ref } from "vue";
 import {
   VBtn,

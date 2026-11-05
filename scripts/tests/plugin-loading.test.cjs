@@ -119,6 +119,62 @@ function fixture(t, globals = {}) {
   };
 }
 
+test("public imports are mapped before any plugin loads and provider updates reload the document", async (t) => {
+  let reloads = 0;
+  const f = fixture(t, { window: { location: { reload: () => reloads++ }, dispatchEvent() {} } });
+  const provider = f.manifest.find(entry => entry.metadata.id === "console");
+  const specifier = "@elementspanel/epanel-plugin-console/stores/session";
+  provider.exports = { [specifier]: "./console@one/frontend/exports/session.js" };
+  const runtime = f.modules.get("runtime");
+  f.modules.set("runtime", () => {
+    const map = JSON.parse(document.querySelector('script[type="importmap"]').textContent);
+    assert.equal(map.imports[specifier], "http://localhost/plugins/console@one/frontend/exports/session.js");
+    return runtime;
+  });
+  await f.start();
+  await f.loader.refreshPlugins();
+  assert.equal(reloads, 0);
+  const imports = [...f.imports];
+  provider.revision = "two";
+  provider.entry = "./console@two/frontend/index.js";
+  provider.exports[specifier] = "./console@two/frontend/exports/session.js";
+  await f.loader.refreshPlugins();
+  assert.equal(reloads, 1);
+  assert.deepEqual(f.imports, imports, "new providers must not evaluate against an old import map");
+  await f.loader.refreshPlugins();
+  assert.equal(reloads, 1);
+});
+
+test("a public module cannot overwrite a host module or point outside its plugin", async (t) => {
+  for (const exports of [
+    { vue: "./console@one/frontend/vue.js" },
+    { "@elementspanel/epanel-plugin-console/public": "./user@one/frontend/index.js" }
+  ]) {
+    await t.test(JSON.stringify(exports), async (t) => {
+      const f = fixture(t);
+      f.manifest.find(entry => entry.metadata.id === "console").exports = exports;
+      await assert.rejects(f.start(), /Invalid public module|Public module escapes/);
+      assert.deepEqual(f.imports, []);
+    });
+  }
+});
+
+test("public module consumers do not execute against missing or restart-pending providers", async (t) => {
+  const f = fixture(t);
+  const specifier = "@elementspanel/epanel-plugin-instance/api";
+  const consumer = f.add("sample", { metadata: { frontendApi: 1, frontendImports: [specifier] } });
+  const provider = f.add("instance", { metadata: { frontendApi: 1, restartRequired: true } });
+  provider.exports = { [specifier]: "./instance@one/frontend/exports/api.js" };
+  await f.start();
+  assert.ok(!f.imports.includes("sample"));
+  assert.match(f.loader.getLoadedPlugins().find(plugin => plugin.metadata.id === "sample").error.message, /requires a restart/);
+  provider.metadata.restartRequired = false;
+  consumer.metadata.frontendImports = [`${specifier}/missing`];
+  await f.loader.reloadPlugin("sample");
+  assert.ok(!f.imports.includes("sample"));
+  assert.match(f.loader.getLoadedPlugins().find(plugin => plugin.metadata.id === "sample").error.message, /Missing public frontend module/);
+});
+
 test("a changed panel runtime version reloads the browser after the event stream reconnects", async (t) => {
   let events;
   let reloads = 0;

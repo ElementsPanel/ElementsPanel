@@ -1,5 +1,5 @@
-import { t } from "@/lang/i18n";
-import { useAppStateStore } from "@/stores/useAppStateStore";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
 
 export async function restoreSession() {
   try {

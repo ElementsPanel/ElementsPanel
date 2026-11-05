@@ -13,8 +13,8 @@ import {
   VTooltip
 } from "vuetify/components";
 import { computed, watch } from "vue";
-import { ctx } from "@/plugin/context";
-import type { PanelFrontendHeaderAction } from "@/plugin/context";
+import { ctx } from "@elements-panel/sdk";
+import type { PanelFrontendHeaderAction } from "@elements-panel/sdk";
 import AppSidebarMenu from "./AppSidebarMenu.vue";
 import ActionRipple from "./ActionRipple.vue";
 

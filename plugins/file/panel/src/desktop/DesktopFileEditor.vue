@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import Editor from "@/components/Editor.vue";
-import { useKeyboardEvents } from "@/hooks/useKeyboardEvents";
-import { t } from "@/lang/i18n";
+import Editor from "@elementspanel/epanel-plugin-console/components/Editor";
+import { useKeyboardEvents } from "@elementspanel/epanel-plugin-console/hooks/useKeyboardEvents";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { fileContent } from "../api";
-import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
+import { notifyDesktop, notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { onMounted, ref } from "vue";
 import { VBtn, VIcon, VSkeletonLoader } from "vuetify/components";
 

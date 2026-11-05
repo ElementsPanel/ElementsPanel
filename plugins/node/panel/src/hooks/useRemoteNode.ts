@@ -1,4 +1,4 @@
-import { useOverviewInfo, type ComputedNodeInfo } from "@/hooks/useOverviewInfo";
+import { useOverviewInfo, type ComputedNodeInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
 import { computed, ref, watch } from "vue";
 import {
   addNode as addNodeApi,

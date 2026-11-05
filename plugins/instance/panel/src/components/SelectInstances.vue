@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { useScreen } from "@/hooks/useScreen";
-import { t } from "@/lang/i18n";
-import { remoteInstances, remoteNodeList } from "@/services/apis";
-import { computeNodeName } from "@/tools/nodes";
-import { reportErrorMsg } from "@/tools/validator";
-import type { InstanceDetail, NodeStatus } from "@/types";
-import { INSTANCE_STATUS } from "@/types/const";
-import type { UserInstance } from "@/types/user";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { remoteInstances, remoteNodeList } from "@elementspanel/epanel-plugin-console/services/apis";
+import { computeNodeName } from "@elementspanel/epanel-plugin-console/tools/nodes";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import type { InstanceDetail, NodeStatus } from "@elementspanel/epanel-plugin-console/types";
+import { INSTANCE_STATUS } from "@elementspanel/epanel-plugin-console/types/const";
+import type { UserInstance } from "@elementspanel/epanel-plugin-console/types/user";
 import _, { throttle } from "lodash";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import {

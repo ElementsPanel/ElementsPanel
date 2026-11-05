@@ -3,7 +3,7 @@ import { useScreen } from "@/hooks/useScreen";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 
-import { ctx } from "@/plugin/context";
+import { ctx } from "@elements-panel/sdk";
 import { closeAppLoading, setLoadingTitle } from "@/tools/dom";
 import { computed, onMounted, watch } from "vue";
 import { RouterView, useRoute } from "vue-router";

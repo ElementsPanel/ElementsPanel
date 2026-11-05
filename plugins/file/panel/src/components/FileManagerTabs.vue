@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { t } from "@/lang/i18n";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { VBtn, VTab, VTabs } from "vuetify/components";
 
 defineProps<{

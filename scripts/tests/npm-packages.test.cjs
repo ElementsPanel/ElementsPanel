@@ -417,6 +417,46 @@ test("packaging rejects plugin references to missing host chunks", async (t) => 
   assert.equal(fs.existsSync(f.outputRoot), false);
 });
 
+test("isolated plugin packages carry public entries and private assets independently of host hashes", async (t) => {
+  const f = fixture(t);
+  const frontend = path.join(f.sourceRoot, "core/frontend/dist");
+  const manifestFile = path.join(frontend, "plugins/manifest.json");
+  const manifest = JSON.parse(fs.readFileSync(manifestFile));
+  const consoleEntry = manifest.find(entry => entry.assetDirectory === "console");
+  const publicName = "@elementspanel/epanel-plugin-console/session";
+  consoleEntry.frontendApi = 1;
+  consoleEntry.imports = ["vue"];
+  consoleEntry.exports = { [publicName]: "./console/frontend/exports/session.js" };
+  write(path.join(frontend, "plugins/console/frontend/exports/session.js"),
+    'export { session } from "../chunks/state.js";');
+  write(path.join(frontend, "plugins/console/frontend/chunks/state.js"),
+    'import { reactive } from "vue"; export const session = reactive({ token: null });');
+  write(manifestFile, manifest);
+  write(path.join(frontend, "frontend-runtime.json"), { frontendApi: 1, frontendModules: ["vue"] });
+  const { packageNpm } = await packaging;
+  const result = await packageNpm(f);
+  const plugin = result.plugins.find(item => item.elementspanel.id === "console");
+  assert.deepEqual(plugin.elementspanel.panel.frontendAssets, []);
+  assert.deepEqual(plugin.elementspanel.panel.frontendImports, ["vue"]);
+  assert.deepEqual(plugin.elementspanel.panel.frontendExports, { session: "frontend/exports/session.js" });
+  assert.ok(fs.existsSync(path.join(f.outputRoot, "epanel-plugin-console/panel/frontend/chunks/state.js")));
+  assert.equal(JSON.stringify(plugin).includes("src/public"), false);
+  assert.equal(result.panel.elementspanel.frontendApi, 1);
+  assert.deepEqual(result.panel.elementspanel.frontendModules, ["vue"]);
+  const packagedRoot = path.join(f.outputRoot, "epanel-plugin-console");
+  const snapshot = () => fs.readdirSync(packagedRoot, { recursive: true }).sort()
+    .filter(file => fs.statSync(path.join(packagedRoot, file)).isFile())
+    .map(file => [file, fs.readFileSync(path.join(packagedRoot, file), "utf8")]);
+  const before = snapshot();
+  write(path.join(frontend, "assets/shared.js"), "// Unrelated host rebuild with different contents");
+  write(path.join(frontend, "assets/new-host-hash.js"), "// Another host chunk");
+  await packageNpm(f);
+  assert.deepEqual(snapshot(), before, "a host rebuild must leave the independent plugin package byte-identical");
+  fs.unlinkSync(path.join(frontend, "frontend-runtime.json"));
+  await assert.rejects(packageNpm(f), /Unsupported frontend module API/,
+    "stale host build artifacts must not be labelled with the new source API");
+});
+
 test("incomplete builds and symlink assets cannot produce a publishable directory", async (t) => {
   const f = fixture(t);
   const { packageNpm } = await packaging;

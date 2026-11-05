@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { router } from "@/config/router";
-import { t } from "@/lang/i18n";
-import { loginUser } from "@/services/apis";
-import { useAppConfigStore } from "@/stores/useAppConfigStore";
-import { useAppStateStore } from "@/stores/useAppStateStore";
-import { sleep } from "@/tools/common";
-import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
+import { router } from "@elementspanel/epanel-plugin-console/config/router";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { loginUser } from "@elementspanel/epanel-plugin-console/services/apis";
+import { useAppConfigStore } from "@elementspanel/epanel-plugin-console/stores/useAppConfigStore";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
+import { sleep } from "@elementspanel/epanel-plugin-console/tools/common";
+import { notifyDesktop, notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import { desktopIconDarkUrl, desktopIconUrl } from "../assets";
 import { VBtn, VIcon, VTextField } from "vuetify/components";

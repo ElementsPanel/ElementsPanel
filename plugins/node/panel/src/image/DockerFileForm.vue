@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { reactive, onMounted } from "vue";
-import { t } from "@/lang/i18n";
-import { notification } from "@/tools/vuetifyToast";
-import { Modal } from "@/tools/vuetifyModal";
-import { imageList } from "@/services/apis/envImage";
-import { reportErrorMsg } from "@/tools/validator";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { notification } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
+import { imageList } from "@elementspanel/epanel-plugin-console/services/apis/envImage";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VTextField, VTextarea } from "vuetify/components";
 
 const props = defineProps<{

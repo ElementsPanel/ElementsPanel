@@ -1,4 +1,4 @@
-import type { PanelFrontendInstanceActionContext } from "@/plugin";
+import type { PanelFrontendInstanceActionContext } from "@elements-panel/sdk";
 import { TYPE_MINECRAFT_BEDROCK, TYPE_MINECRAFT_JAVA } from "@/hooks/useInstance";
 
 /**

@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import PageToolbar from "@/components/PageToolbar.vue";
-import { useAppRouters } from "@/hooks/useAppRouters";
-import { useSchedule } from "@/hooks/useSchedule";
-import { t as $t, t } from "@/lang/i18n";
-import { ctx } from "@/plugin/context";
-import { padZero } from "@/tools/common";
-import { ScheduleActionType, ScheduleCreateType, ScheduleType } from "@/types/const";
-import type { Schedule } from "@/types/index";
-import { message } from "@/tools/vuetifyToast";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
+import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
+import { useSchedule } from "@elementspanel/epanel-plugin-console/hooks/useSchedule";
+import { t as $t, t } from "@elementspanel/epanel-plugin-i18n";
+import { ctx } from "@elements-panel/sdk";
+import { padZero } from "@elementspanel/epanel-plugin-console/tools/common";
+import { ScheduleActionType, ScheduleCreateType, ScheduleType } from "@elementspanel/epanel-plugin-console/types/const";
+import type { Schedule } from "@elementspanel/epanel-plugin-console/types";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import {

@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import logo from "@/assets/logo.svg";
 import logoB from "@/assets/logo_b.svg";
-import { getCurrentLang, setLanguage } from "@/lang/i18n";
+import { getCurrentLang, setLanguage } from "@elementspanel/epanel-plugin-i18n";
 import { AppTheme, THEME_AUTO_MIGRATED_KEY, THEME_KEY } from "@/types/const";
 import { createGlobalState, useBreakpoints, useLocalStorage, usePreferredDark } from "@vueuse/core";
 import { getAppearance, type PanelAppearance } from "@/services/apis/appearance";

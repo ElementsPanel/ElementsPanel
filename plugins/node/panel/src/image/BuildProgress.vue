@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { t } from "@/lang/i18n";
-import { useScreen } from "@/hooks/useScreen";
-import { reportErrorMsg } from "@/tools/validator";
-import { buildProgress } from "@/services/apis/envImage";
-import Loading from "@/components/Loading.vue";
-import CardPanel from "@/components/CardPanel.vue";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import { buildProgress } from "@elementspanel/epanel-plugin-console/services/apis/envImage";
+import Loading from "@elementspanel/epanel-plugin-console/components/Loading";
+import CardPanel from "@elementspanel/epanel-plugin-console/components/CardPanel";
 import { VBtn, VCard, VCardActions, VCardText, VCol, VDialog, VProgressLinear, VRow } from "vuetify/components";
 const props = defineProps<{
   daemonId: string;

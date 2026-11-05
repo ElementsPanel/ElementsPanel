@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import CardPanel from "@/components/CardPanel.vue";
-import PageToolbar from "@/components/PageToolbar.vue";
-import { useAppRouters } from "@/hooks/useAppRouters";
-import { getInstanceConfigByType, type InstanceConfigs } from "@/hooks/useInstance";
-import { t } from "@/lang/i18n";
-import { getConfigFileList } from "@/services/apis/instance";
-import { reportErrorMsg } from "@/tools/validator";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import CardPanel from "@elementspanel/epanel-plugin-console/components/CardPanel";
+import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
+import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
+import { getInstanceConfigByType, type InstanceConfigs } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { getConfigFileList } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { VBtn, VChip, VCol, VContainer, VIcon, VList, VListItem, VListItemSubtitle, VListItemTitle, VProgressLinear, VRow } from "vuetify/components";

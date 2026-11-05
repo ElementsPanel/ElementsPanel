@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { useAppRouters } from "@/hooks/useAppRouters";
-import { TYPE_STEAM_SERVER_UNIVERSAL, useInstanceInfo } from "@/hooks/useInstance";
-import { useOverviewInfo } from "@/hooks/useOverviewInfo";
-import { useServerConfig } from "@/hooks/useServerConfig";
-import { t } from "@/lang/i18n";
-import { ctx } from "@/plugin/context";
-import type { PanelFrontendInstanceActionContext } from "@/plugin";
-import { useAppStateStore } from "@/stores/useAppStateStore";
+import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
+import { TYPE_STEAM_SERVER_UNIVERSAL, useInstanceInfo } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import { useOverviewInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
+import { useServerConfig } from "@elementspanel/epanel-plugin-console/hooks/useServerConfig";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { ctx } from "@elements-panel/sdk";
+import type { PanelFrontendInstanceActionContext } from "@elements-panel/sdk";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
 import { computed, ref, watch } from "vue";
-import { arrayFilter } from "@/tools/array";
+import { arrayFilter } from "@elementspanel/epanel-plugin-console/tools/array";
 import EventConfig from "../widgets/instance/dialogs/EventConfig.vue";
 import RconSettings from "../widgets/instance/dialogs/RconSettings.vue";
 import { VIcon } from "vuetify/components";

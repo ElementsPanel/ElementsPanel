@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useFileManager } from "../hooks/useFileManager";
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { onMounted, ref } from "vue";
 import { VBtn, VIcon, VImg, VProgressCircular } from "vuetify/components";
 

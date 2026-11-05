@@ -11,18 +11,35 @@
     "components.d.ts",
     "../common/global.d.ts"
   ],
-  "exclude": ["src/**/__tests__/*", "../../plugins/*/panel/src/backend/**"],
+  "exclude": [
+    "src/**/__tests__/*",
+    "../../plugins/*/panel/src/backend/**"
+  ],
   "compilerOptions": {
     "composite": true,
     "baseUrl": ".",
     "paths": {
-      "@elements-panel/sdk": ["./src/plugin/sdk.ts"],
-      "@/plugin": ["./src/plugin/index.ts"],
-      "@/plugin/*": ["./src/plugin/*"],
-      "@/lang/*": ["../../plugins/i18n/panel/src/lang/*"],
-      "@/*": ["../../plugins/console/panel/src/*"],
-      "@console/*": ["../../plugins/console/panel/src/*"],
-      "@instance/*": ["../../plugins/instance/panel/src/*"],
+      "@elements-panel/sdk": [
+        "./src/plugin/sdk.ts"
+      ],
+      "@/plugin": [
+        "./src/plugin/index.ts"
+      ],
+      "@/plugin/*": [
+        "./src/plugin/*"
+      ],
+      "@/lang/*": [
+        "../../plugins/i18n/panel/src/lang/*"
+      ],
+      "@/*": [
+        "../../plugins/console/panel/src/*"
+      ],
+      "@console/*": [
+        "../../plugins/console/panel/src/*"
+      ],
+      "@instance/*": [
+        "../../plugins/instance/panel/src/*"
+      ],
       "vuetify/components": [
         "./node_modules/vuetify/lib/components/index.d.ts",
         "./node_modules/vuetify/lib/components/index.d.mts"
@@ -31,11 +48,32 @@
         "./node_modules/vuetify/lib/iconsets/mdi.d.ts",
         "./node_modules/vuetify/lib/iconsets/mdi.d.mts"
       ],
-      "lodash": ["./node_modules/@types/lodash/index.d.ts"],
-      "*": ["./node_modules/@types/*", "./node_modules/*"]
+      "lodash": [
+        "./node_modules/@types/lodash/index.d.ts"
+      ],
+      "*": [
+        "./node_modules/@types/*",
+        "./node_modules/*"
+      ],
+      "@elementspanel/epanel-plugin-console/*": [
+        "../../plugins/console/panel/src/public/*"
+      ],
+      "@elementspanel/epanel-plugin-i18n": [
+        "../../plugins/i18n/panel/src/public/index.ts"
+      ],
+      "@elementspanel/epanel-plugin-i18n/*": [
+        "../../plugins/i18n/panel/src/public/*"
+      ],
+      "@elementspanel/epanel-plugin-instance/*": [
+        "../../plugins/instance/panel/src/public/*"
+      ]
     },
     "moduleResolution": "node",
-    "types": ["node"],
-    "typeRoots": ["./node_modules/@types"]
+    "types": [
+      "node"
+    ],
+    "typeRoots": [
+      "./node_modules/@types"
+    ]
   }
 }

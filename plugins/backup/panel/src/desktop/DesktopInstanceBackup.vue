@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { t } from "@/lang/i18n";
-import type { FrontendFileManagerService } from "@/plugin";
-import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import type { FrontendFileManagerService } from "@elements-panel/sdk";
+import { usePluginService, type FrontendDesktopService } from "@elements-panel/sdk";
 import {
     createAsyncTask,
     queryAsyncTask
-} from "@/services/apis/instance";
-import { notifyDesktop } from "@/tools/desktopNotice";
+} from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { notifyDesktop } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { deleteBackup, getBackupList, restoreBackup } from "../api";
 import { VBtn, VIcon, VProgressCircular } from "vuetify/components";

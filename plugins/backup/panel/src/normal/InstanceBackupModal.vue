@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { t } from "@/lang/i18n";
-import type { FrontendFileManagerService } from "@/plugin";
-import { usePluginService } from "@/plugin/context";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import type { FrontendFileManagerService } from "@elements-panel/sdk";
+import { usePluginService } from "@elements-panel/sdk";
 import {
     createAsyncTask,
     queryAsyncTask
-} from "@/services/apis/instance";
-import { message } from "@/tools/vuetifyToast";
-import { Modal } from "@/tools/vuetifyModal";
+} from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
 import { computed, onUnmounted, ref } from "vue";
-import AppDialog from "@/components/AppDialog.vue";
+import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
 import {
     VBtn,
     VIcon,

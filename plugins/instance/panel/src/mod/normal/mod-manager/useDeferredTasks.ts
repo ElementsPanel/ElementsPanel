@@ -1,7 +1,7 @@
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { deleteModApi, downloadModApi, toggleModApi } from "../../api";
 import { useLocalStorage } from "@vueuse/core";
-import { message } from "@/tools/vuetifyToast";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { ref } from "vue";
 
 export interface DeferredTask {

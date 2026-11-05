@@ -1,4 +1,4 @@
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import type { InstanceDeleteResult } from "../api";
 
 export function getInstanceDeleteError(result: InstanceDeleteResult | undefined) {

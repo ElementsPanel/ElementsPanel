@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { getDesktopLayoutConfig, setDesktopLayoutConfig } from "./api";
-import { useAppConfigStore } from "@/stores/useAppConfigStore";
+import { useAppConfigStore } from "@elementspanel/epanel-plugin-console/stores/useAppConfigStore";
 import {
     ctx,
     usePluginService,
     type PanelFrontendDesktopApp,
     type PanelFrontendInstanceAction,
     type PanelFrontendDesktopWindowRequest
-} from "@/plugin/context";
-import type { FrontendFileManagerService, FrontendUserService } from "@/plugin";
-import { logoutUser } from "@/services/apis/index";
-import { useAppStateStore } from "@/stores/useAppStateStore";
-import { getAppearance } from "@/services/apis/appearance";
+} from "@elements-panel/sdk";
+import type { FrontendFileManagerService, FrontendUserService } from "@elements-panel/sdk";
+import { logoutUser } from "@elementspanel/epanel-plugin-console/services/apis";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
+import { getAppearance } from "@elementspanel/epanel-plugin-console/services/apis/appearance";
 import DesktopContextMenu from "./widgets/desktop/DesktopContextMenu.vue";
 import type { ContextMenuItem } from "./widgets/desktop/DesktopContextMenu.vue";
 import DesktopIcon from "./widgets/desktop/DesktopIcon.vue";

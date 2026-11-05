@@ -4,7 +4,7 @@ import type {
   FrontendConnectionService,
   FrontendConnectionState,
   FrontendConnectionStatus
-} from "@/plugin/context";
+} from "@elements-panel/sdk";
 import {
   apiService,
   setApiConnectionReporter,

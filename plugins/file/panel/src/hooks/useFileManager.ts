@@ -1,7 +1,7 @@
 import { useImageViewerDialog } from "../dialogs";
 import OverwriteFilesPopUpContent from "../components/OverwriteFilesPopUpContent.vue";
 
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import {
   addFolder as addFolderApi,
   changePermission as changePermissionApi,
@@ -19,10 +19,10 @@ import {
   uploadAddress
 } from "../api";
 import uploadService from "../services/uploadService";
-import { number2permission, permission2number } from "@/tools/permission";
-import { mapDaemonAddress, parseForwardAddress, type RemoteMappingEntry } from "@/tools/protocol";
-import { removeTrail } from "@/tools/string";
-import { reportErrorMsg } from "@/tools/validator";
+import { number2permission, permission2number } from "@elementspanel/epanel-plugin-console/tools/permission";
+import { mapDaemonAddress, parseForwardAddress, type RemoteMappingEntry } from "@elementspanel/epanel-plugin-console/tools/protocol";
+import { removeTrail } from "@elementspanel/epanel-plugin-console/tools/string";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import type {
   ArchiveEntry,
   Breadcrumb,
@@ -31,10 +31,10 @@ import type {
   FileStatus,
   OperationForm,
   Permission
-} from "@/types/fileManager";
+} from "@elementspanel/epanel-plugin-console/types/fileManager";
 import { useLocalStorage } from "@vueuse/core";
-import { message } from "@/tools/vuetifyToast";
-import { Modal } from "@/tools/vuetifyModal";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
 import { v4 } from "uuid";
 import { computed, createVNode, onMounted, onUnmounted, reactive, ref, watch, type VNodeRef } from "vue";
 

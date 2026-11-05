@@ -1,11 +1,11 @@
-import { GLOBAL_INSTANCE_NAME } from "@/config/const";
+import { GLOBAL_INSTANCE_NAME } from "@elementspanel/epanel-plugin-console/config/const";
 import { useCommandHistory } from "./useCommandHistory";
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { setUpTerminalStreamChannel } from "../api";
-import { useAppConfigStore } from "@/stores/useAppConfigStore";
-import { mapDaemonAddress, parseForwardAddress } from "@/tools/protocol";
-import type { InstanceDetail } from "@/types";
-import { INSTANCE_STATUS_CODE } from "@/types/const";
+import { useAppConfigStore } from "@elementspanel/epanel-plugin-console/stores/useAppConfigStore";
+import { mapDaemonAddress, parseForwardAddress } from "@elementspanel/epanel-plugin-console/tools/protocol";
+import type { InstanceDetail } from "@elementspanel/epanel-plugin-console/types";
+import { INSTANCE_STATUS_CODE } from "@elementspanel/epanel-plugin-console/types/const";
 import type { DefaultEventsMap } from "@socket.io/component-emitter";
 import { CanvasAddon } from "@xterm/addon-canvas";
 import { FitAddon } from "@xterm/addon-fit";
@@ -14,7 +14,7 @@ import { Terminal } from "@xterm/xterm";
 import EventEmitter from "eventemitter3";
 import type { Socket } from "socket.io-client";
 import { computed, onMounted, onUnmounted, ref, shallowRef, unref } from "vue";
-import { makeSocketIo } from "@/hooks/useSocketIo";
+import { makeSocketIo } from "@elementspanel/epanel-plugin-console/hooks/useSocketIo";
 
 export const TERM_COLOR = {
   TERM_RESET: "\x1B[0m",

@@ -1,6 +1,6 @@
-import { hasNodeFeature, isScopedInstance } from "@/hooks/useInstanceActionAvailability";
-import { t } from "@/lang/i18n";
-import type { PanelFrontendPluginContext } from "@/plugin";
+import { hasNodeFeature, isScopedInstance } from "@elementspanel/epanel-plugin-console/hooks/useInstanceActionAvailability";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
 import DesktopInstanceBackup from "./desktop/DesktopInstanceBackup.vue";
 import { localeMessages } from "./i18n";
 import InstanceBackupModal from "./normal/InstanceBackupModal.vue";

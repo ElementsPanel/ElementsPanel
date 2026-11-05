@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { t } from "@/lang/i18n";
-import type { InstanceDetail } from "@/types";
-import { updateInstanceConfig } from "@/services/apis/instance";
-import { message } from "@/tools/vuetifyToast";
-import { reportErrorMsg } from "@/tools/validator";
-import AppDialog from "@/components/AppDialog.vue";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import type { InstanceDetail } from "@elementspanel/epanel-plugin-console/types";
+import { updateInstanceConfig } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
+import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
 import {
   VForm,
   VSwitch,

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { t } from "@/lang/i18n";
-import { convertFileSize } from "@/tools/fileSize";
-import type { ArchiveEntry } from "@/types/fileManager";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { convertFileSize } from "@elementspanel/epanel-plugin-console/tools/fileSize";
+import type { ArchiveEntry } from "@elementspanel/epanel-plugin-console/types/fileManager";
 import dayjs from "dayjs";
 import { computed } from "vue";
 import { VDataTable, VIcon } from "vuetify/components";

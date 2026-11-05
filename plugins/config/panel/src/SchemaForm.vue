@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 /* eslint-disable vue/no-mutating-props */
-import { t } from "@/lang/i18n";
-import type { FrontendFileManagerService } from "@/plugin";
-import { usePluginService } from "@/plugin/context";
-import { router } from "@/config/router";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import type { FrontendFileManagerService } from "@elements-panel/sdk";
+import { usePluginService } from "@elements-panel/sdk";
+import { router } from "@elementspanel/epanel-plugin-console/config/router";
 import { computed, reactive, ref, watch } from "vue";
 import {
   VBtn,

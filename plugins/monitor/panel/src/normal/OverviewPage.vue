@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { useOverviewInfo } from "@/hooks/useOverviewInfo";
-import { t } from "@/lang/i18n";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { useOverviewInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { computed, onMounted, ref } from "vue";
 import {
   VAlert,

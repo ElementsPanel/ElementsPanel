@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import CardPanel from "@/components/CardPanel.vue";
+import CardPanel from "@elementspanel/epanel-plugin-console/components/CardPanel";
 
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { computed, onMounted } from "vue";
 
-import { userInfoApi } from "@/services/apis/index";
+import { userInfoApi } from "@elementspanel/epanel-plugin-console/services/apis";
 
 const props = defineProps<{
   type: string;

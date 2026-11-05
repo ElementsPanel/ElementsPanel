@@ -1,11 +1,11 @@
-import { t } from "@/lang/i18n";
-import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } from "@/plugin";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import type { PanelFrontendInstanceActionContext, PanelFrontendPluginContext } from "@elements-panel/sdk";
 import {
   hasNodeFeature,
   isMinecraftInstance,
   isScopedInstance
-} from "@/hooks/useInstanceActionAvailability";
-import { useAppStateStore } from "@/stores/useAppStateStore";
+} from "@elementspanel/epanel-plugin-console/hooks/useInstanceActionAvailability";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
 import DesktopModManager from "./desktop/DesktopModManager.vue";
 import ModManager from "./normal/ModManager.vue";
 import ModManagerAction from "./normal/ModManagerAction.vue";

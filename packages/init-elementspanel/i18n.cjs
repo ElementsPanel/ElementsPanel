@@ -28,7 +28,7 @@ const messages = {
     versionLookupFailed:
       "Could not query the latest version of {name} from npm. Check your registry and network connection and try again.",
     pluginAssetsMismatch:
-      "The latest {name} references frontend assets missing from this panel. Publish matching plugin artifacts or update the panel before retrying.",
+      "The latest {name} requires frontend modules or legacy assets unavailable in this panel. Update the panel or install a compatible plugin version.",
     updated: "Built-in plugin versions updated in {directory}",
     installFailed:
       "npm install failed ({status}). The project is intact; run npm install in {directory} to retry.",
@@ -66,7 +66,7 @@ const messages = {
     versionLookupFailed:
       "无法从 npm 查询 {name} 的最新版本，请检查 registry 配置和网络连接后重试。",
     pluginAssetsMismatch:
-      "最新版 {name} 引用的前端资源与当前面板不匹配，请发布配套插件产物或更新面板后重试。",
+      "最新版 {name} 所需的前端模块接口或旧版资源在当前面板中不可用，请更新面板或安装兼容的插件版本。",
     updated: "已更新 {directory} 中的内置插件版本",
     installFailed:
       "npm install 失败（{status}）。项目已保留，请进入 {directory} 后重新运行 npm install。",

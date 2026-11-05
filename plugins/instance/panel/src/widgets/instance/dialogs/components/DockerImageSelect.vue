@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import { useAppRouters } from "@/hooks/useAppRouters";
-import { t } from "@/lang/i18n";
-import { imageList } from "@/services/apis/envImage";
-import { arrayFilter } from "@/tools/array";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { imageList } from "@elementspanel/epanel-plugin-console/services/apis/envImage";
+import { arrayFilter } from "@elementspanel/epanel-plugin-console/tools/array";
 import { ref, watch } from "vue";
 import { VSelect, VTextField } from "vuetify/components";
 

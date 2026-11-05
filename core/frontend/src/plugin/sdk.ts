@@ -1,6 +1,5 @@
 /** Stable browser entry for independently compiled plugins (SDK major 1). */
-export { ctx, serviceRevision, usePluginService } from "./context";
-export type { PanelFrontendPluginContext, PanelFrontendPluginModule } from "./index";
+export * from "./index";
 export type {
   FrontendActionsService,
   FrontendConnectionService,

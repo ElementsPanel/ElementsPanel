@@ -13,7 +13,11 @@
       ],
       "directory": "panel",
       "folder": "instance",
-      "description": "Application instances, Java runtimes and Minecraft mod management."
+      "description": "Application instances, Java runtimes and Minecraft mod management.",
+      "frontendExports": {
+        "api": "src/public/api.ts",
+        "hooks/useInstance": "src/public/hooks/useInstance.ts"
+      }
     },
     "daemon": {
       "priority": 40,

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { t } from "@/lang/i18n";
-import { dockerPortsArray } from "@/tools/common";
-import AppDialog from "@/components/AppDialog.vue";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { dockerPortsArray } from "@elementspanel/epanel-plugin-console/tools/common";
+import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
 import { VChip, VCol, VRow } from "vuetify/components";
 const props = defineProps<{
   dockerInfo?: IGlobalInstanceDockerConfig;

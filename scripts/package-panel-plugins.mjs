@@ -110,16 +110,13 @@ export function packagePanelPlugins({
     const packagedEntry = entryParts.join("/");
     const validBuiltEntry =
       entryOwner &&
+      entryOwner === pluginName &&
       packagedEntry &&
       builtEntry.startsWith(`${resolvedBuildRoot}${path.sep}`) &&
       fs.existsSync(builtEntry) &&
       fs.statSync(builtEntry).isFile();
     if (validBuiltEntry) {
-      // Normally the entry owner equals the plugin folder. Copying the actual
-      // owner as a fallback also keeps packages valid when a bundler factors an
-      // entry into another plugin-owned directory.
-      copyDirectory(path.join(buildRoot, entryOwner), outputDirectory);
-      if (entryOwner !== pluginName) copyDirectory(builtPluginDirectory, outputDirectory);
+      copyDirectory(path.join(builtPluginDirectory, "frontend"), path.join(outputDirectory, "frontend"));
       packagedMetadata.frontend = packagedEntry;
       delete packagedMetadata.ui;
       packageMetadata.elementspanel.styles = packageFrontendStyles(
@@ -128,10 +125,31 @@ export function packagePanelPlugins({
         buildRoot,
         outputRoot
       );
+      // Public module paths always belong to this npm package; source paths
+      // from package.json must never be copied into production metadata.
+      const exports = {};
+      for (const [specifier, filename] of Object.entries(manifestEntry.exports || {})) {
+        const prefix = `${packageMetadata.name}/`;
+        if (specifier !== packageMetadata.name && !specifier.startsWith(prefix))
+          throw new Error(`Invalid public frontend module owner: ${specifier}`);
+        const relative = toPosix(filename);
+        const resolved = path.resolve(buildRoot, relative);
+        if (!resolved.startsWith(`${path.resolve(builtPluginDirectory, "frontend")}${path.sep}`) ||
+            !fs.statSync(resolved).isFile())
+          throw new Error(`Invalid public frontend module file: ${filename}`);
+        const key = specifier === packageMetadata.name ? "." : specifier.slice(prefix.length);
+        exports[key] = relative.slice(`${pluginName}/`.length);
+      }
+      packageMetadata.elementspanel.frontendExports = exports;
+      if (manifestEntry.frontendApi !== undefined) {
+        packageMetadata.elementspanel.frontendApi = manifestEntry.frontendApi;
+        packageMetadata.elementspanel.frontendImports = manifestEntry.imports || [];
+      }
     } else {
       delete packagedMetadata.frontend;
       delete packagedMetadata.ui;
       delete packageMetadata.elementspanel.styles;
+      delete packageMetadata.elementspanel.frontendExports;
     }
 
     removeSourceMaps(outputDirectory);

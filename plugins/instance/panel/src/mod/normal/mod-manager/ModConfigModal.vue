@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { t } from "@/lang/i18n";
-import AppDialog from "@/components/AppDialog.vue";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
 import { VBtn, VIcon, VList, VListItem, VListItemSubtitle, VListItemTitle, VProgressLinear } from "vuetify/components";
 
 defineProps<{

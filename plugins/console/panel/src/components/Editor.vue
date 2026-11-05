@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { usePluginService } from "@/plugin/context";
-import type { FrontendFileManagerService } from "@/plugin";
+import { usePluginService } from "@elements-panel/sdk";
+import type { FrontendFileManagerService } from "@elements-panel/sdk";
 import { getRandomId } from "@/tools/randId";
 import { css } from "@codemirror/lang-css";
 import { html } from "@codemirror/lang-html";

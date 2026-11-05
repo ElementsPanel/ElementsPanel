@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { useInstanceInfo } from "@/hooks/useInstance";
-import { t } from "@/lang/i18n";
-import { updateInstanceConfig } from "@/services/apis/instance";
-import type { InstanceDetail } from "@/types";
+import { useInstanceInfo } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { updateInstanceConfig } from "@elementspanel/epanel-plugin-console/services/apis/instance";
+import type { InstanceDetail } from "@elementspanel/epanel-plugin-console/types";
 import { ref, watch } from "vue";
-import { notifyDesktop, notifyDesktopError } from "@/tools/desktopNotice";
+import { notifyDesktop, notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { VBtn, VSwitch, VTextField } from "vuetify/components";
 
 const props = defineProps<{

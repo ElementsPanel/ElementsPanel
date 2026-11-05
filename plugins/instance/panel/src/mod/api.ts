@@ -1,4 +1,4 @@
-import { useDefineApi } from "@/stores/useDefineApi";
+import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDefineApi";
 
 export const getMcVersionsApi = useDefineApi<{}, string[]>({
   method: "GET",

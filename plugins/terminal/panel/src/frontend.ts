@@ -1,6 +1,6 @@
-import type { PanelFrontendPluginContext } from "@/plugin";
-import { isScopedInstance } from "@/hooks/useInstanceActionAvailability";
-import { t } from "@/lang/i18n";
+import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
+import { isScopedInstance } from "@elementspanel/epanel-plugin-console/hooks/useInstanceActionAvailability";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import * as terminalApi from "./api";
 import TerminalCore from "./components/TerminalCore.vue";
 import TerminalTags from "./components/TerminalTags.vue";
@@ -12,7 +12,7 @@ import DesktopTermConfig from "./desktop/DesktopTermConfig.vue";
 import { localeMessages } from "./i18n";
 import DesktopTerminalSelector from "./desktop/DesktopTerminalSelector.vue";
 import { defineComponent, h } from "vue";
-import { useAppStateStore } from "@/stores/useAppStateStore";
+import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
 
 export const inject = ["console", "ui", "actions", "i18n", "instance"];
 

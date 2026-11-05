@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAppRouters } from "@/hooks/useAppRouters";
+import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
 
 const props = defineProps<{
   instanceUuid: string;

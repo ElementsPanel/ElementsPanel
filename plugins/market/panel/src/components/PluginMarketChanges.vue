@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { t } from "@/lang/i18n";
-import { getValidatorErrorMsg } from "@/tools/validator";
-import { message } from "@/tools/vuetifyToast";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { getValidatorErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { VBtn, VCard, VCardActions, VCardText, VDialog, VSpacer, VTable } from "vuetify/components";
 import {
   activeOperations,

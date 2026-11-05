@@ -1,4 +1,4 @@
-import { getConfigFileList } from "@/services/apis/instance";
+import { getConfigFileList } from "@elementspanel/epanel-plugin-console/services/apis/instance";
 import { ref } from "vue";
 import { getInstanceConfigByType, type InstanceConfigs } from "./useInstance";
 

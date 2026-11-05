@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import AppDialog from "@/components/AppDialog.vue";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
 import { useAddJavaDialog, useDownloadJavaDialog } from "../dialogs";
-import { t } from "@/lang/i18n";
-import { updateInstanceConfig } from "@/services/apis/instance";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { updateInstanceConfig } from "@elementspanel/epanel-plugin-console/services/apis/instance";
 import { addJava, deleteJava, downloadJava, usingJava } from "../api";
-import { parseTimestamp } from "@/tools/time";
+import { parseTimestamp } from "@elementspanel/epanel-plugin-console/tools/time";
 import type { JavaInfo } from "../types";
-import { message } from "@/tools/vuetifyToast";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { computed, ref } from "vue";
 import { VAlert, VBtn, VDataTable } from "vuetify/components";
 import { useJavaList } from "../hooks/useJavaList";

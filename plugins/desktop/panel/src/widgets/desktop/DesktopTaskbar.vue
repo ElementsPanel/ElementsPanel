@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { router } from "@/config/router";
-import { t } from "@/lang/i18n";
-import { useAppConfigStore } from "@/stores/useAppConfigStore";
-import { useThemeSwitch } from "@/hooks/useThemeSwitch";
-import ActionRipple from "@/components/ActionRipple.vue";
-import { ctx } from "@/plugin/context";
-import type { PanelFrontendHeaderAction } from "@/plugin/context";
+import { router } from "@elementspanel/epanel-plugin-console/config/router";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { useAppConfigStore } from "@elementspanel/epanel-plugin-console/stores/useAppConfigStore";
+import { useThemeSwitch } from "@elementspanel/epanel-plugin-console/hooks/useThemeSwitch";
+import ActionRipple from "@elementspanel/epanel-plugin-console/components/ActionRipple";
+import { ctx } from "@elements-panel/sdk";
+import type { PanelFrontendHeaderAction } from "@elements-panel/sdk";
 import { desktopIconDarkUrl, desktopIconUrl } from "../../assets";
 import { VBadge, VBtn, VIcon, VList, VListItem, VMenu } from "vuetify/components";
 import { computed, onBeforeUnmount, ref, type Component } from "vue";

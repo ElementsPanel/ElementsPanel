@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { computed, unref, type Ref } from "vue";
 import { VCheckbox } from "vuetify/components";
 

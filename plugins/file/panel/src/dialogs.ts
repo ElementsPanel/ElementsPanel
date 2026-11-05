@@ -1,5 +1,5 @@
-import { useMountComponent } from "@/hooks/useMountComponent";
-import type { DownloadFileConfigItem } from "@/types/fileManager";
+import { useMountComponent } from "@elementspanel/epanel-plugin-console/hooks/useMountComponent";
+import type { DownloadFileConfigItem } from "@elementspanel/epanel-plugin-console/types/fileManager";
 import DownloadFileDialogVue from "./components/DownloadFileDialog.vue";
 import UploadFileDialogVue from "./components/UploadFileDialog.vue";
 import ImageViewerDialog from "./normal/ImageViewer.vue";

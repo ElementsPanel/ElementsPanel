@@ -1,4 +1,4 @@
-import { t } from "@/lang/i18n";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import type { MarketNode } from "./api";
 
 export interface MarketTargetOption extends MarketNode {

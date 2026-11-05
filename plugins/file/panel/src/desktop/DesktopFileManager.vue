@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import Empty from "@/components/Empty.vue";
-import DesktopDialog from "@/components/DesktopDialog.vue";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import DesktopDialog from "@elementspanel/epanel-plugin-console/components/DesktopDialog";
 import FileManagerTabs from "../components/FileManagerTabs.vue";
 import { useFileManager } from "../hooks/useFileManager";
-import { usePolling } from "@/hooks/usePolling";
+import { usePolling } from "@elementspanel/epanel-plugin-console/hooks/usePolling";
 import ArchivePreview from "../components/ArchivePreview.vue";
-import { t } from "@/lang/i18n";
-import { usePluginService, type FrontendDesktopService } from "@/plugin/context";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { usePluginService, type FrontendDesktopService } from "@elements-panel/sdk";
 import uploadService from "../services/uploadService";
 import { filterFileName, getFileExtName, isCompressFile } from "../tools/fileManager";
-import { convertFileSize } from "@/tools/fileSize";
-import type { DataType } from "@/types/fileManager";
+import { convertFileSize } from "@elementspanel/epanel-plugin-console/tools/fileSize";
+import type { DataType } from "@elementspanel/epanel-plugin-console/types/fileManager";
 import dayjs from "dayjs";
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
-import { notifyDesktopError } from "@/tools/desktopNotice";
+import { notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { VAlert, VBtn, VCard, VCardText, VCheckbox, VDataTableServer, VIcon, VList, VListItem, VMenu, VProgressCircular, VProgressLinear, VRadio, VRadioGroup, VSelect, VSpacer, VTextField } from "vuetify/components";
 
 /**

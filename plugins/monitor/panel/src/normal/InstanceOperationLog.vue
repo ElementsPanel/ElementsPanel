@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { t } from "@/lang/i18n";
-import { ctx } from "@/plugin/context";
-import { message } from "@/tools/vuetifyToast";
+import { t } from "@elementspanel/epanel-plugin-i18n";
+import { ctx } from "@elements-panel/sdk";
+import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { computed, onMounted, ref } from "vue";
-import AppDialog from "@/components/AppDialog.vue";
-import DesktopDialog from "@/components/DesktopDialog.vue";
+import AppDialog from "@elementspanel/epanel-plugin-console/components/AppDialog";
+import DesktopDialog from "@elementspanel/epanel-plugin-console/components/DesktopDialog";
 import { VBtn } from "vuetify/components";
 import { getInstanceOperationLog } from "../api";
 import { formatOperationLogItem, type FormattedOperationLog } from "../hooks/useOperationLog";
