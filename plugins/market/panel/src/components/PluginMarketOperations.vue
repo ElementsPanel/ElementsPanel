@@ -20,6 +20,7 @@ import {
   activeOperations,
   applyingChanges,
   bulkMode,
+  changingDependencies,
   notifyInstalled,
   queueMarketChange
 } from "../operations";
@@ -215,6 +216,7 @@ async function runInstall(plugin: MarketPlugin, selected: string[]) {
     return;
   }
   pendingId.value = plugin.id;
+  changingDependencies.value++;
   try {
     const { execute } = installMarketPlugin();
     const response = await execute({
@@ -250,6 +252,7 @@ async function runInstall(plugin: MarketPlugin, selected: string[]) {
   } catch (error) {
     if (!disposed) message.error(getValidatorErrorMsg(error));
   } finally {
+    changingDependencies.value--;
     pendingId.value = "";
   }
 }
@@ -283,6 +286,7 @@ async function runUninstall(plugin: MarketPlugin, selected: string[]) {
     return;
   }
   pendingId.value = plugin.id;
+  changingDependencies.value++;
   try {
     const { execute } = uninstallMarketPlugin();
     const response = await execute({
@@ -318,6 +322,7 @@ async function runUninstall(plugin: MarketPlugin, selected: string[]) {
   } catch (error) {
     if (!disposed) message.error(getValidatorErrorMsg(error));
   } finally {
+    changingDependencies.value--;
     pendingId.value = "";
   }
 }

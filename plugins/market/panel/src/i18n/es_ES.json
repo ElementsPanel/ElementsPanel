@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES": "Actualizando dependencias...",
   "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "Seleccionar panel y nodos",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "Selecciona el panel y los nodos donde instalar «{name}».",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_UNINSTALL": "Selecciona el panel y los nodos donde desinstalar «{name}».",

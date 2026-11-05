@@ -4,7 +4,7 @@ import { t } from "@/lang/i18n";
 import Empty from "@/components/Empty.vue";
 import { getValidatorErrorMsg } from "@/tools/validator";
 import { message } from "@/tools/vuetifyToast";
-import { VAlert, VBtn, VProgressCircular, VProgressLinear, VTable } from "vuetify/components";
+import { VAlert, VBtn, VProgressCircular, VTable } from "vuetify/components";
 import { pluginMarketNodes, pluginMarketUpdates } from "../api";
 import type { PluginUpdate, PluginUpdates, PluginUpdateTarget } from "../updates";
 import { defaultMarketTargets, type MarketTargetOption } from "../targets";
@@ -15,7 +15,6 @@ import {
   installedChange,
   queuedChanges,
   updateMarketPlugins,
-  updateProgress,
   updateResults,
   updatingPlugins
 } from "../operations";
@@ -203,19 +202,7 @@ defineExpose({ refresh, updateAll, updateCount, canUpdate, preparingTargets });
       class="mb-4"
       :text="t('TXT_CODE_PLUGIN_MARKET_UPDATES_QUEUE_HINT')"
     />
-    <template v-if="updatingPlugins">
-      <div class="text-body-2 mb-2" role="status">
-        {{ t("TXT_CODE_PLUGIN_MARKET_UPDATE_PROGRESS", updateProgress) }}
-      </div>
-      <VProgressLinear
-        indeterminate
-        :model-value="
-          updateProgress.total ? (updateProgress.completed / updateProgress.total) * 100 : 0
-        "
-        class="mb-4"
-      />
-    </template>
-    <div v-else-if="loading && !updates" class="plugin-market-loading">
+    <div v-if="loading && !updates && !updatingPlugins" class="plugin-market-loading">
       <VProgressCircular indeterminate color="primary" :size="40" :width="3" />
     </div>
     <VAlert

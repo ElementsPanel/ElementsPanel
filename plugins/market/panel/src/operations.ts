@@ -21,6 +21,8 @@ export const bulkMode = ref(false);
 export const queuedChanges = ref<MarketChange[]>([]);
 export const applyingChanges = ref(false);
 export const activeOperations = ref(0);
+// Unlike target selection, dependency writes must block the whole panel until they settle.
+export const changingDependencies = ref(0);
 export const installedChange = shallowRef<{
   pluginId: string;
   version?: string;

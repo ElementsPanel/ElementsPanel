@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES": "의존성 업데이트 중...",
   "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "패널 및 노드 선택",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "\"{name}\"을(를) 설치할 패널과 노드를 선택하세요.",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_UNINSTALL": "\"{name}\"을(를) 제거할 패널과 노드를 선택하세요.",

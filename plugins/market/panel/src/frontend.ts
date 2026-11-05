@@ -1,16 +1,20 @@
 import { t } from "@/lang/i18n";
 import type { PanelFrontendPluginContext } from "@/plugin";
 import { useAppStateStore } from "@/stores/useAppStateStore";
+import PluginMarketLoadingDialog from "./components/PluginMarketLoadingDialog.vue";
 import DesktopPluginMarket from "./desktop/DesktopPluginMarket.vue";
 import PluginMarket from "./normal/PluginMarket.vue";
 import PluginMarketDetail from "./normal/PluginMarketDetail.vue";
 import { localeMessages } from "./i18n";
 
 const ROLE_ADMIN = 10;
-export const inject = ["console", "i18n", "routes", "desktop"];
+export const inject = ["console", "i18n", "routes", "desktop", "slots"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
+  ctx.slots.register("shell.overlay", PluginMarketLoadingDialog, {
+    id: "market:dependency-loading"
+  });
   ctx.routes.add({
     path: "/market/plugins",
     name: t("TXT_CODE_PLUGIN_MARKET"),

@@ -33,7 +33,7 @@ import PluginMarketSideBadge from "./PluginMarketSideBadge.vue";
 import PluginMarketInstall from "./PluginMarketInstall.vue";
 import PluginMarketChanges from "./PluginMarketChanges.vue";
 import PluginMarketUpdates from "./PluginMarketUpdates.vue";
-import { activeOperations, applyingChanges, installedChange, updatingPlugins } from "../operations";
+import { activeOperations, applyingChanges, installedChange } from "../operations";
 
 const props = defineProps<{ embedded?: boolean; daemonId?: string }>();
 const emit = defineEmits<{ select: [pluginId: string]; "target-change": [daemonId: string] }>();
@@ -224,7 +224,7 @@ onBeforeUnmount(() => {
             color="primary"
             prepend-icon="mdi-update"
             :disabled="!updateView?.canUpdate"
-            :loading="updatingPlugins || updateView?.preparingTargets"
+            :loading="updateView?.preparingTargets"
             @click="updateView?.updateAll()"
           >
             {{ t("TXT_CODE_PLUGIN_MARKET_UPDATE_ALL") }}

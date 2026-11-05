@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES": "Atualizando dependências...",
   "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "Selecionar painel e nós",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "Selecione o painel e os nós nos quais instalar \"{name}\".",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_UNINSTALL": "Selecione o painel e os nós dos quais desinstalar \"{name}\".",

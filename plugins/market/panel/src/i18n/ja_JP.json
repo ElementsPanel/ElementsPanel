@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES": "依存関係を更新中...",
   "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "パネルとノードを選択",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "「{name}」をインストールするパネルとノードを選択してください。",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_UNINSTALL": "「{name}」をアンインストールするパネルとノードを選択してください。",

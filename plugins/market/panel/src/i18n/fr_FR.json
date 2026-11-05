@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES": "Mise à jour des dépendances...",
   "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "Choisir le panneau et les nœuds",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "Choisissez le panneau et les nœuds sur lesquels installer « {name} ».",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_UNINSTALL": "Choisissez le panneau et les nœuds desquels désinstaller « {name} ».",

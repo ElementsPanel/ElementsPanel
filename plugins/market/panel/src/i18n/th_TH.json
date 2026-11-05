@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES": "กำลังอัปเดตแพ็กเกจที่พึ่งพา...",
   "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "เลือกแผงควบคุมและโหนด",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "เลือกแผงควบคุมและโหนดที่จะติดตั้ง \"{name}\"",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_UNINSTALL": "เลือกแผงควบคุมและโหนดที่จะถอนการติดตั้ง \"{name}\"",

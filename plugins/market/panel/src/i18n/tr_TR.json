@@ -1,4 +1,5 @@
 {
+  "TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES": "Bağımlılıklar güncelleniyor...",
   "TXT_CODE_PLUGIN_MARKET_SELECT_TARGETS": "Panel ve düğümleri seçin",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_INSTALL": "\"{name}\" eklentisinin kurulacağı panel ve düğümleri seçin.",
   "TXT_CODE_PLUGIN_MARKET_TARGETS_UNINSTALL": "\"{name}\" eklentisinin kaldırılacağı panel ve düğümleri seçin.",
