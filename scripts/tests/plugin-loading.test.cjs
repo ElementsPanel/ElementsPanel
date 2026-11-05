@@ -2,6 +2,8 @@ const { from, createBrowser, createLoader, deferred, settle } = require("./helpe
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const vm = require("node:vm");
+const { renderFrontendBootstrap } = require("../../core/frontend/plugin-bootstrap.mjs");
 const { test, after } = require("node:test");
 
 const frontendRequire = from("frontend");
@@ -34,6 +36,7 @@ function fixture(t, globals = {}) {
   const heldStyles = new Set();
   const failedStyles = new Set();
   const applications = [];
+  const browser = globals.window || window;
   const idOf = (href) => new URL(href).pathname.split("/")[2].split("@")[0];
   const appendChild = document.head.appendChild.bind(document.head);
   const previousAppendChild = document.head.appendChild;
@@ -46,13 +49,14 @@ function fixture(t, globals = {}) {
         queueMicrotask(() => {
           node.dispatchEvent(new dom.window.Event(failedStyles.has(id) ? "error" : "load"));
         });
-    } else preloads.push(node);
+    } else if (node.tagName === "LINK") preloads.push(node);
     return result;
   };
   t.after(async () => {
     await ctx.stop();
     document.head.appendChild = previousAppendChild;
     document.head.replaceChildren();
+    delete browser.ElementsPanelBootstrap;
   });
 
   const add = (id, { metadata = {}, module, revision = "one" } = {}) => {
@@ -82,6 +86,10 @@ function fixture(t, globals = {}) {
       }
     });
   }
+  const fetchManifest = async (url, options) => {
+    requests.push({ url, options });
+    return { ok: true, status: 200, json: async () => structuredClone(manifest) };
+  };
   const loader = load(
     "core/frontend/src/plugin/loader.ts",
     {
@@ -90,10 +98,7 @@ function fixture(t, globals = {}) {
     },
     {
       ...globals,
-      fetch: async (url, options) => {
-        requests.push({ url, options });
-        return { ok: true, json: async () => manifest };
-      },
+      fetch: fetchManifest,
       loadPluginModule: async (url) => {
         const id = idOf(url);
         imports.push(id);
@@ -115,7 +120,17 @@ function fixture(t, globals = {}) {
     failedStyles,
     applications,
     add,
-    start: loader.bootstrapPanelFrontendPlugins
+    start: async () => {
+      const source = renderFrontendBootstrap("", { vue: "./assets/vue.js" }).trim().slice(8, -9);
+      const previous = browser.setAppLoadingError;
+      browser.setAppLoadingError = error => { throw new Error(error); };
+      try {
+        await vm.runInNewContext(source, { document, window: browser, fetch: fetchManifest, URL, console: { error() {} } });
+      } finally {
+        browser.setAppLoadingError = previous;
+      }
+      return loader.bootstrapPanelFrontendPlugins();
+    }
   };
 }
 
@@ -132,6 +147,8 @@ test("public imports are mapped before any plugin loads and provider updates rel
     return runtime;
   });
   await f.start();
+  assert.equal(document.querySelectorAll('script[type="importmap"]').length, 1);
+  assert.equal(f.requests.length, 1, "the loader must reuse the map's manifest snapshot");
   await f.loader.refreshPlugins();
   assert.equal(reloads, 0);
   const imports = [...f.imports];

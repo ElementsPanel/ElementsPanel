@@ -1,4 +1,4 @@
-const { from } = require("./helpers.cjs");
+const { from, deferred } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -28,6 +28,7 @@ async function loadHostConfig() {
     vite: { defineConfig: (value) => value, normalizePath: (value) => value.replaceAll("\\", "/") },
     "./plugin-sdk.config.mjs": { pluginSdkModules },
     "./plugin-build.config.mjs": { frontendAliases: () => ({}), publicFrontendImports: () => ({}) },
+    "./plugin-bootstrap.mjs": require("../../core/frontend/plugin-bootstrap.mjs"),
     "./plugin-dependencies.config.mjs": { frontendDependencyFallback },
     "../common/src/plugin_manifest": {
       discoverPluginsFromRoots: (roots) => {
@@ -80,7 +81,7 @@ test("frontend discovery does not load panel plugins from runtime data directori
   assert.deepEqual(overrideFiles, [path.join(root, "data/panel/data/plugin-overrides.json")]);
 });
 
-test("host SDK maps all compiler externals before module scripts, with prefix-relative URLs", async () => {
+test("one complete import map precedes host modules and preloads, including public plugin imports", async (t) => {
   const { config, pluginSdkModules } = await loadHostConfig();
   const plugin = config.plugins.find((item) => item.name === "elements-panel-plugins");
   const emitted = [];
@@ -100,15 +101,46 @@ test("host SDK maps all compiler externals before module scripts, with prefix-re
     "index.html": {
       type: "asset",
       fileName: "index.html",
-      source: '<html><head><script type="module" src="./main.js"></script></head></html>'
+      source: '<html><head><link rel="modulepreload" crossorigin href="./chunk.js"><script type="module" crossorigin src="./main.js"></script></head><body></body></html>'
     },
     "assets/framework.css": { type: "asset", fileName: "assets/framework.css", source: ".v-card {}" }
   };
   plugin.generateBundle.call(context, {}, bundle);
   const html = bundle["index.html"].source;
-  const imports = JSON.parse(html.match(/<script type="importmap">(.*?)<\/script>/)[1]).imports;
-  assert.deepEqual(Object.keys(imports), pluginSdkModules);
-  assert.ok(html.indexOf('type="importmap"') < html.indexOf('type="module"'));
+  const { JSDOM } = frontendRequire("jsdom");
+  const dom = new JSDOM(html, { url: "https://panel.test/prefix/", runScripts: "outside-only" });
+  t.after(() => dom.window.close());
+  const document = dom.window.document;
+  const response = deferred();
+  const specifier = "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
+  const manifest = [{ metadata: { id: "console", version: "1.0.11" },
+    entry: "./console@revision/frontend/index.js",
+    exports: { [specifier]: "./console@revision/frontend/exports/stores/useAppStateStore.js" } }];
+  dom.window.fetch = (url, options) => {
+    assert.equal(url, "https://panel.test/prefix/plugins/manifest.json");
+    assert.equal(options.cache, "no-store");
+    return response.promise;
+  };
+  let maps = 0;
+  const append = document.head.appendChild.bind(document.head);
+  document.head.appendChild = node => {
+    if (node.type === "importmap") {
+      assert.equal(++maps, 1, "browsers that only support one map must receive every mapping at once");
+      assert.equal(document.querySelectorAll('script[type="module"], link[rel="modulepreload"]').length, 0);
+    }
+    return append(node);
+  };
+  const starting = dom.window.eval(document.querySelector('script:not([type])').textContent);
+  assert.equal(document.querySelectorAll('script[type="module"], link[rel="modulepreload"], script[type="importmap"]').length, 0);
+  response.resolve({ ok: true, status: 200, json: async () => ({ data: manifest }) });
+  await starting;
+  const imports = JSON.parse(document.querySelector('script[type="importmap"]').textContent).imports;
+  assert.deepEqual(Object.keys(imports), [...pluginSdkModules, specifier]);
+  assert.equal(imports[specifier], "https://panel.test/prefix/plugins/console@revision/frontend/exports/stores/useAppStateStore.js");
+  assert.equal(maps, 1);
+  assert.equal(document.querySelector('script[type="module"]').src, "https://panel.test/prefix/main.js");
+  assert.equal(document.querySelector('link[rel="modulepreload"]').href, "https://panel.test/prefix/chunk.js");
+  assert.deepEqual(dom.window.ElementsPanelBootstrap.manifest, { data: manifest });
   assert.ok(html.includes('<link rel="stylesheet" href="./assets/framework.css">'),
     "CSS of import-map entries must be loaded even when outside the HTML entry graph");
   for (const id of pluginSdkModules) {
@@ -129,6 +161,24 @@ test("host SDK maps all compiler externals before module scripts, with prefix-re
   assert.deepEqual(JSON.parse(emitted.find(file => file.fileName === "frontend-runtime.json").source),
     { frontendApi: 1, frontendModules: pluginSdkModules });
   assert.equal(plugin.load("\0virtual:panel-plugins"), "export const panelPluginModules = [];");
+});
+
+test("failed discovery cannot release module scripts with an incomplete import map", async (t) => {
+  const { renderFrontendBootstrap } = require("../../core/frontend/plugin-bootstrap.mjs");
+  const { JSDOM } = frontendRequire("jsdom");
+  for (const invalid of [false, true]) await t.test(invalid ? "invalid public export" : "HTTP failure", async (t) => {
+    const html = renderFrontendBootstrap('<html><head><script type="module" src="./main.js"></script></head><body></body></html>', { vue: "./vue.js" });
+    const dom = new JSDOM(html, { url: "https://panel.test/", runScripts: "outside-only" });
+    t.after(() => dom.window.close());
+    const errors = [];
+    dom.window.console.error = () => {};
+    dom.window.setAppLoadingError = error => errors.push(error);
+    dom.window.fetch = async () => ({ ok: invalid, status: invalid ? 200 : 503,
+      json: async () => [{ metadata: { id: "console" }, entry: "./console/frontend/index.js", exports: { vue: "./console/frontend/vue.js" } }] });
+    await dom.window.eval(dom.window.document.querySelector('script:not([type])').textContent);
+    assert.match(errors[0], invalid ? /Invalid public module/ : /HTTP 503/);
+    assert.equal(dom.window.document.querySelectorAll('script[type="module"], script[type="importmap"]').length, 0);
+  });
 });
 
 test("independent plugin configs externalize only public interfaces and own all emitted files", async () => {

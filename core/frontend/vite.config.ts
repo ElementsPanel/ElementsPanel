@@ -11,6 +11,8 @@ import { frontendDependencyFallback } from "./plugin-dependencies.config.mjs";
 import { defineConfig, normalizePath, type Plugin } from "vite";
 // @ts-ignore Shared configuration for isolated plugin builds and source development.
 import { frontendAliases, publicFrontendImports } from "./plugin-build.config.mjs";
+// @ts-ignore Classic bootstrap installs a single import map before any ESM starts.
+import { renderFrontendBootstrap } from "./plugin-bootstrap.mjs";
 import {
   discoverPluginsFromRoots,
   createFrontendPluginMetadata
@@ -150,10 +152,6 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
       const imports = Object.fromEntries(
         [...sdkEntries].map(([id, ref]) => [id, `./${this.getFileName(ref)}`])
       );
-      const importMap = `<script type="importmap">${JSON.stringify({ imports }).replace(
-        /</g,
-        "\\u003c"
-      )}</script>`;
       // Import-map entries are emitted outside the HTML entry graph. Vite does
       // not attach their extracted CSS to a bare browser import, so the host
       // must load shared framework styles (including Vuetify components) here.
@@ -167,7 +165,7 @@ function panelPlugins(initialPlugins = discoverPanelPlugins()): Plugin {
           .filter((style) => !html.includes(`href="./${style.fileName}"`))
           .map((style) => `<link rel="stylesheet" href="./${style.fileName}">`)
           .join("\n");
-        asset.source = html.replace("<head>", `<head>\n${importMap}\n${links}`);
+        asset.source = renderFrontendBootstrap(html.replace("<head>", `<head>\n${links}`), imports);
       }
       this.emitFile({
         type: "asset",

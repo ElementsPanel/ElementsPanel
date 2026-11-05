@@ -13,6 +13,14 @@ import {
   type PanelFrontendPluginDiagnostic
 } from "./context";
 import { panelPluginModules } from "virtual:panel-plugins";
+// @ts-ignore Shared with the classic bootstrap embedded in the production HTML.
+import { parseFrontendManifest } from "../../plugin-bootstrap.mjs";
+
+declare global {
+  interface Window {
+    ElementsPanelBootstrap?: { manifest?: unknown; imports: Record<string, string> };
+  }
+}
 
 const FOUNDATION_SERVICES: Record<string, string> = {
   runtime: "startup",
@@ -101,15 +109,13 @@ function moduleMap(discovered: readonly PluginSource[]) {
   return Object.fromEntries(entries.sort(([a], [b]) => a.localeCompare(b)));
 }
 
-/** Install before even modulepreloading a plugin; native ESM must see one module identity. */
+/** The classic page bootstrap installed the only import map before loading the host. */
 function installPublicModules(discovered: readonly PluginSource[]) {
   if (import.meta.env.DEV) return;
   publicModules = moduleMap(discovered);
-  if (!Object.keys(publicModules).length) return;
-  const map = document.createElement("script");
-  map.type = "importmap";
-  map.textContent = JSON.stringify({ imports: publicModules });
-  document.head.appendChild(map);
+  const initial = window.ElementsPanelBootstrap?.imports;
+  if (Object.entries(publicModules).some(([name, url]) => initial?.[name] !== url))
+    throw new Error("The page bootstrap did not map the installed frontend modules. Reload the page.");
 }
 
 function publicModulesChanged(discovered: readonly PluginSource[]) {
@@ -261,62 +267,29 @@ function removePluginStyles(source: PluginSource, preserve?: Set<Element>) {
 }
 
 async function fetchProductionSources(): Promise<PluginSource[]> {
-  const manifestUrl = new URL("plugins/manifest.json", document.baseURI);
-  const response = await fetch(manifestUrl.href, { cache: "no-store" });
-  if (!response.ok) {
-    if (response.status === 404) return [];
-    throw new Error(`Failed to load panel plugin manifest: HTTP ${response.status}`);
-  }
-  const body = await response.json();
-  // Older panel builds may still pass the manifest through the standard API
-  // envelope. Accept both the raw array and `{ data: [...] }` forms.
-  const manifest = Array.isArray(body) ? body : body?.data;
-  if (!Array.isArray(manifest)) throw new Error("Invalid panel plugin manifest.");
-
-  const toUrl = (value: string) => new URL(value, manifestUrl).href;
-  const result: PluginSource[] = [];
-  for (const item of manifest) {
-    if (!item || typeof item !== "object" || Array.isArray(item)) continue;
-    const metadata = normalizeMetadata((item as any).metadata || item);
-    const entry = typeof (item as any).entry === "string" ? (item as any).entry : "";
-    if (!metadata || metadata.enabled === false || !entry) continue;
-    const entryUrl = toUrl(entry);
-    const exports: Record<string, string> = {};
-    const modulePrefix = `@elementspanel/epanel-plugin-${metadata.id}`;
-    for (const [specifier, file] of Object.entries(item.exports || {})) {
-      if (typeof file !== "string" ||
-          (specifier !== modulePrefix && !specifier.startsWith(`${modulePrefix}/`)))
-        throw new Error(`Invalid public module in plugin ${metadata.id}: ${specifier}`);
-      const url = new URL(toUrl(file));
-      const directory = new URL("./", entryUrl);
-      if (url.origin !== directory.origin || !url.pathname.startsWith(directory.pathname))
-        throw new Error(`Public module escapes plugin ${metadata.id}: ${specifier}`);
-      exports[specifier] = url.href;
+  const bootstrap = window.ElementsPanelBootstrap;
+  let body: unknown;
+  if (bootstrap && Object.prototype.hasOwnProperty.call(bootstrap, "manifest")) {
+    body = bootstrap.manifest;
+    delete bootstrap.manifest;
+  } else {
+    const manifestUrl = new URL("plugins/manifest.json", document.baseURI);
+    const response = await fetch(manifestUrl.href, { cache: "no-store" });
+    if (!response.ok) {
+      if (response.status === 404) return [];
+      throw new Error(`Failed to load panel plugin manifest: HTTP ${response.status}`);
     }
-    result.push({
-      metadata,
-      directory:
-        typeof (item as any).directory === "string" ? (item as any).directory : metadata.id,
-      assetDirectory:
-        typeof (item as any).assetDirectory === "string"
-          ? (item as any).assetDirectory
-          : metadata.id,
-      entry: entryUrl,
-      exports,
-      revision: typeof item.revision === "string" ? item.revision : String(metadata.version || ""),
-      styles: Array.isArray((item as any).styles)
-        ? (item as any).styles
-            .filter((style: unknown): style is string => typeof style === "string")
-            .map(toUrl)
-        : [],
-      load: async (cacheKey) => {
-        const url = new URL(entryUrl);
-        if (cacheKey) url.searchParams.set("panel_plugin_reload", cacheKey);
-        return import(/* @vite-ignore */ url.href) as Promise<Record<string, unknown>>;
-      }
-    });
+    body = await response.json();
   }
-  return result;
+  const parsed = parseFrontendManifest(body, document.baseURI) as Omit<PluginSource, "load">[];
+  return parsed.map((source) => ({
+    ...source,
+    load: async (cacheKey) => {
+      const url = new URL(source.entry!);
+      if (cacheKey) url.searchParams.set("panel_plugin_reload", cacheKey);
+      return import(/* @vite-ignore */ url.href) as Promise<Record<string, unknown>>;
+    }
+  }));
 }
 
 async function discoverSources() {
