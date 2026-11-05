@@ -164,7 +164,7 @@ onMounted(async () => {
   <!-- Terminal Page View -->
   <div class="console-wrapper">
     <div v-if="!isConnect" class="terminal-loading">
-      <VProgressCircular indeterminate color="white" size="64" />
+      <VProgressCircular indeterminate />
     </div>
     <div class="terminal-button-group position-absolute-right position-absolute-top">
       <ul>

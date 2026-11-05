@@ -18,6 +18,7 @@ import {
   VCol,
   VIcon,
   VMenu,
+  VProgressCircular,
   VRow,
   VTooltip
 } from "vuetify/components";
@@ -394,7 +395,7 @@ onMounted(() => {
                   <span>{{ detail.warnText }}</span>
                 </VTooltip>
                 <span v-else-if="detail.loading">
-                  <VIcon icon="mdi-loading" class="mdi-spin" size="18" />
+                  <VProgressCircular indeterminate />
                 </span>
                 <span v-else-if="detail.success">
                   <span class="color-success">

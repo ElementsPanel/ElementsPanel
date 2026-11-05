@@ -260,7 +260,7 @@ onUnmounted(() => {
 
         <div class="ma-list" :class="{ 'ma-list--loading': loading }">
             <div v-if="loading && instances.length === 0" class="ma-loading">
-                <VProgressCircular indeterminate size="28" width="3" class="mb-2" />
+                <VProgressCircular indeterminate class="mb-2" />
                 <p>{{ t("TXT_CODE_DESKTOP_IM_LOADING") }}</p>
             </div>
 
@@ -488,9 +488,9 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     padding: 48px 16px;
-    color: var(--desktop-window-text-muted);
 
     p {
+        color: var(--desktop-window-text-muted);
         margin: 8px 0 0;
         font-size: 13px;
     }

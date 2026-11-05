@@ -331,7 +331,7 @@ defineExpose({ open });
                     />
                 </div>
                 <div v-if="listLoading && backupList.length === 0" class="backup-loading">
-                    <VProgressCircular indeterminate color="primary" size="32" width="3" />
+                    <VProgressCircular indeterminate />
                 </div>
                 <VList v-else-if="backupList.length > 0" class="backup-list app-responsive-list">
                     <VListItem v-for="item in backupList" :key="item.name" class="backup-item" rounded="xl">

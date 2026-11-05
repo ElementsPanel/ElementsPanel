@@ -99,7 +99,7 @@ watch(instanceInfo, (val) => {
           </div>
         </VCol>
       </VRow>
-      <div v-else class="dterm-config__loading"><VProgressCircular indeterminate size="22" width="2" />{{ t("TXT_CODE_b197be11") }}</div>
+      <div v-else class="dterm-config__loading"><VProgressCircular indeterminate />{{ t("TXT_CODE_b197be11") }}</div>
     </div>
     <div class="dterm-config__footer">
       <VBtn class="dterm-btn dterm-btn--primary" variant="text" :loading="isLoading" @click="submit">

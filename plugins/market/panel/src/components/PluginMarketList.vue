@@ -276,7 +276,7 @@ onBeforeUnmount(() => {
 
       <div v-show="activeTab === 'browse'">
         <div v-if="loading && !plugins.length" class="plugin-market-loading">
-          <VProgressCircular indeterminate color="primary" :size="40" :width="3" />
+          <VProgressCircular indeterminate />
         </div>
 
         <Empty

@@ -203,7 +203,7 @@ defineExpose({ refresh, updateAll, updateCount, canUpdate, preparingTargets });
       :text="t('TXT_CODE_PLUGIN_MARKET_UPDATES_QUEUE_HINT')"
     />
     <div v-if="loading && !updates && !updatingPlugins" class="plugin-market-loading">
-      <VProgressCircular indeterminate color="primary" :size="40" :width="3" />
+      <VProgressCircular indeterminate />
     </div>
     <VAlert
       v-for="item in failures"

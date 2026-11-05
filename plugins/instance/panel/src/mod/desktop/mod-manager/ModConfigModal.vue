@@ -4,7 +4,7 @@ import DesktopDialog from "@/components/DesktopDialog.vue";
 import { t } from "@/lang/i18n";
 import AppDialog from "@/components/AppDialog.vue";
 
-import { VBtn, VIcon, VList, VListItem } from "vuetify/components";
+import { VBtn, VIcon, VList, VListItem, VProgressCircular } from "vuetify/components";
 
 const SettingOutlined = "mdi-cog-outline";
 
@@ -38,7 +38,7 @@ const emit = defineEmits(["update:visible", "edit"]);
         </VListItem>
         <Empty v-if="!configFiles.length" icon="mdi-file-document-outline" compact />
       </VList>
-      <div v-else class="desktop-modal-loading"><VIcon icon="mdi-loading" /></div>
+      <div v-else class="desktop-modal-loading"><VProgressCircular indeterminate /></div>
     </DesktopDialog>
   </template>
   <AppDialog v-else :visible="visible" @update:visible="val => emit('update:visible', val)"
@@ -50,6 +50,6 @@ const emit = defineEmits(["update:visible", "edit"]);
       </VListItem>
       <Empty v-if="!configFiles.length" icon="mdi-file-document-outline" compact />
     </VList>
-    <div v-else class="desktop-modal-loading"><VIcon icon="mdi-loading" /></div>
+    <div v-else class="desktop-modal-loading"><VProgressCircular indeterminate /></div>
   </AppDialog>
 </template>

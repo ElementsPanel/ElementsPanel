@@ -8,7 +8,7 @@ import { sleep } from "@/tools/common";
 import { reportErrorMsg } from "@/tools/validator";
 import { message } from "@/tools/vuetifyToast";
 import { onMounted, reactive, ref } from "vue";
-import { VAlert, VBtn, VIcon, VTextField } from "vuetify/components";
+import { VAlert, VBtn, VIcon, VProgressCircular, VTextField } from "vuetify/components";
 
 const { updateUserInfo, isAdmin } = useAppStateStore();
 const { execute: bindExecute } = ssoBindLogin();
@@ -176,7 +176,7 @@ const handleBind = async () => {
 
         <div v-show="step === 1" class="sso-bind-body flex-center">
           <div style="text-align: center">
-            <VIcon icon="mdi-loading" size="62" class="loading-icon" />
+            <VProgressCircular indeterminate />
           </div>
         </div>
 

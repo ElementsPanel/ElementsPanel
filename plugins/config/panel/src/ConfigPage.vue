@@ -1288,7 +1288,7 @@ const confirmAction = async () => {
             t("TXT_CODE_9277af78")
           }}</VBtn>
           <div v-if="schemaLoading" class="plugin-config-schema-loading">
-            <VProgressCircular color="primary" indeterminate size="28" />
+            <VProgressCircular indeterminate />
           </div>
           <div v-else-if="schema && schema.fields.length" class="plugin-config-form">
             <SchemaForm :fields="schema.fields" :values="schema.values" @save="saveSettings" />

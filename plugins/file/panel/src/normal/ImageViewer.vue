@@ -51,7 +51,7 @@ onMounted(async () => {
     <VCard rounded="xl" :title="t('TXT_CODE_eee2a47f')">
       <VCardText>
         <div class="image-view">
-          <VProgressCircular v-if="!imgLink" indeterminate color="primary" />
+          <VProgressCircular v-if="!imgLink" indeterminate />
           <VImg v-else :src="imgLink" :alt="props.fileName" max-height="65vh" contain />
         </div>
         <div class="image-name">{{ props.fileName }}</div>

@@ -31,7 +31,7 @@ defineExpose({
           <div>
             <h3>
               <div class="flex flex-center mb-20">
-                <VProgressCircular indeterminate :size="60" />
+                <VProgressCircular indeterminate />
               </div>
               <div class="flex flex-center" style="gap: 10px">
                 {{ props.text }}

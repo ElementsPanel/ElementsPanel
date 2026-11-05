@@ -159,7 +159,7 @@ onBeforeUnmount(() => requestId++);
       </PageToolbar>
 
       <div v-if="loading && !plugin" class="plugin-detail-loading">
-        <VProgressCircular indeterminate color="primary" :size="40" :width="3" />
+        <VProgressCircular indeterminate />
       </div>
       <VAlert v-if="error" type="error" :text="error" class="mb-4" />
 

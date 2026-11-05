@@ -44,7 +44,7 @@ onMounted(async () => {
 <template>
     <div class="desktop-image-viewer">
         <div class="image-view">
-            <VProgressCircular v-if="!imgLink" indeterminate size="32" width="3" />
+            <VProgressCircular v-if="!imgLink" indeterminate />
             <VImg v-else class="image-preview" :src="imgLink" :alt="props.fileName" contain />
         </div>
         <div class="image-footer">

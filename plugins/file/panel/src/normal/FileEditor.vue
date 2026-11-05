@@ -157,7 +157,7 @@ defineExpose({
       <VCardText class="file-editor-content">
         <Editor v-if="openEditor" :key="editorKey" v-model:text="editorText" :filename="fileName"
           :height="fullScreen ? '100%' : '60vh'" />
-        <div v-else class="file-editor-loading"><VProgressCircular indeterminate color="primary" /></div>
+        <div v-else class="file-editor-loading"><VProgressCircular indeterminate /></div>
       </VCardText>
       <VCardActions>
         <VSpacer />

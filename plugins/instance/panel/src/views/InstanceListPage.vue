@@ -427,7 +427,7 @@ onMounted(async () => {
       </div>
 
       <div v-if="isLoading" class="state-container">
-        <VProgressCircular indeterminate color="primary" size="48" />
+        <VProgressCircular indeterminate />
       </div>
       <VRow v-else-if="instancesMoreInfo.length" class="instance-grid" density="comfortable">
         <VCol v-for="item in instancesMoreInfo" :key="item.instanceUuid" cols="12" sm="6" lg="4" xl="3">

@@ -302,7 +302,7 @@ onBeforeUnmount(() => { generation++; });
     </nav>
     <div class="dis__body">
       <VAlert v-if="loadError" type="error" variant="tonal" class="mb-4" :text="loadError" />
-      <div v-if="isLoading && !draft" class="dis__empty"><VProgressCircular indeterminate color="primary" /></div>
+      <div v-if="isLoading && !draft" class="dis__empty"><VProgressCircular indeterminate /></div>
       <VAlert v-else-if="draft && !canEdit" type="warning" variant="tonal" :text="t('TXT_CODE_permission.forbidden')" />
       <VForm v-else-if="draft" ref="formRef" :disabled="isSaving || isLoading" validate-on="input lazy" class="dis__form" @submit.prevent="save">
         <section v-show="activeTab === 'basic'" class="dis__grid">

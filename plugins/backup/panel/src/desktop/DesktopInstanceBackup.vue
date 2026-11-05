@@ -10,7 +10,7 @@ import {
 import { notifyDesktop } from "@/tools/desktopNotice";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { deleteBackup, getBackupList, restoreBackup } from "../api";
-import { VBtn, VIcon } from "vuetify/components";
+import { VBtn, VIcon, VProgressCircular } from "vuetify/components";
 
 const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
 
@@ -337,7 +337,7 @@ onUnmounted(() => {
                   compact
                 />
                 <div v-else class="list-loading">
-                    <VIcon icon="mdi-loading"  />
+                    <VProgressCircular indeterminate />
                 </div>
             </div>
         </div>
@@ -548,8 +548,6 @@ onUnmounted(() => {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 24px;
-        color: var(--color-blue-5);
     }
 }
 </style>

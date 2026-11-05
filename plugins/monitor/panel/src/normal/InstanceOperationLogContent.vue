@@ -22,7 +22,7 @@ withDefaults(
 <template>
   <div class="instance-log" :class="{ 'instance-log--desktop': desktop }">
     <div v-if="loading" class="log-loading">
-      <VProgressCircular indeterminate size="20" width="2" />
+      <VProgressCircular indeterminate />
       <span>{{ t("TXT_CODE_73102f2b") }}</span>
     </div>
     <Empty
@@ -71,9 +71,12 @@ withDefaults(
   justify-content: center;
   gap: 8px;
   padding: 48px 0;
-  color: var(--text-color);
-  font-size: 14px;
-  opacity: 0.65;
+
+  span {
+    color: var(--text-color);
+    font-size: 14px;
+    opacity: 0.65;
+  }
 }
 
 .log-timeline {
