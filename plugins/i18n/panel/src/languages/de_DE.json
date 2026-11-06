@@ -2240,7 +2240,7 @@
   "TXT_CODE_minecraft.nodeUnsupported": "Dieser Knoten unterstützt keine Minecraft-Downloads. Aktualisieren Sie den Knoten und aktivieren Sie das Instanz-Plugin.",
   "TXT_CODE_minecraft.invalidFile": "Eine nicht leere JAR-Datei oder ein ZIP-Archiv auswählen.",
   "TXT_CODE_minecraft.commandHint": "Leer lassen, um einen Startbefehl für den ausgewählten Server zu erzeugen.",
-  "TXT_CODE_minecraft.confirmDownload": "Eine Instanz wird erstellt und der Server auf den Knoten heruntergeladen. Forge/NeoForge wird automatisch installiert und benötigt kompatibles Java auf dem Knoten. Der Fortschritt wird in der Instanzkonsole angezeigt. Fortfahren?",
+  "TXT_CODE_minecraft.confirmDownload": "Eine Instanz wird erstellt und der Server auf den Knoten heruntergeladen. Fortfahren?",
   "TXT_CODE_minecraft.create": "Herunterladen und Instanz erstellen",
   "TXT_CODE_minecraft.openConsole": "Instanzkonsole öffnen",
   "TXT_CODE_DESKTOP_IM_PREV": "Zurück",

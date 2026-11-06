@@ -2240,7 +2240,7 @@
   "TXT_CODE_minecraft.nodeUnsupported": "此節點不支援 Minecraft 下載安裝，請更新節點並啟用實例外掛。",
   "TXT_CODE_minecraft.invalidFile": "請選擇非空的 JAR 檔案或 ZIP 壓縮檔。",
   "TXT_CODE_minecraft.commandHint": "留空時，面板會根據伺服器自動產生啟動指令。",
-  "TXT_CODE_minecraft.confirmDownload": "將建立實例並在節點上下載伺服器。Forge/NeoForge 會自動安裝，節點需有相容的 Java。可在實例主控台查看進度，是否繼續？",
+  "TXT_CODE_minecraft.confirmDownload": "將建立實例並在節點上下載伺服器，是否繼續？",
   "TXT_CODE_minecraft.create": "下載並建立實例",
   "TXT_CODE_minecraft.openConsole": "開啟實例主控台",
   "TXT_CODE_DESKTOP_IM_PREV": "上一頁",

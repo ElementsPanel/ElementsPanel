@@ -2240,7 +2240,7 @@
   "TXT_CODE_minecraft.nodeUnsupported": "Bu düğüm Minecraft indirmelerini desteklemiyor. Düğümü güncelleyin ve örnek eklentisini etkinleştirin.",
   "TXT_CODE_minecraft.invalidFile": "Boş olmayan bir JAR dosyası veya ZIP arşivi seçin.",
   "TXT_CODE_minecraft.commandHint": "Seçilen sunucu için başlatma komutunun otomatik oluşturulması için boş bırakın.",
-  "TXT_CODE_minecraft.confirmDownload": "Bir örnek oluşturulacak ve sunucu düğüme indirilecek. Forge/NeoForge otomatik kurulur ve düğümde uyumlu Java gerektirir. İlerlemeyi örnek konsolundan izleyebilirsiniz. Devam edilsin mi?",
+  "TXT_CODE_minecraft.confirmDownload": "Bir örnek oluşturulacak ve sunucu düğüme indirilecek. Devam edilsin mi?",
   "TXT_CODE_minecraft.create": "İndir ve örnek oluştur",
   "TXT_CODE_minecraft.openConsole": "Örnek konsolunu aç",
   "TXT_CODE_DESKTOP_IM_PREV": "Önceki sayfa",
