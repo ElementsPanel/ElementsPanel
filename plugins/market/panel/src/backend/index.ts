@@ -180,6 +180,8 @@ export async function apply(ctx: PanelPluginContext) {
   const MARKET_PAGE_TIMEOUT_MS = 15000;
   const MARKET_LIST_BUDGET_MS = 40000;
   const MAX_MARKET_PAGE_BYTES = 8 * 1024 * 1024;
+  const MAX_MARKET_ICON_BYTES = 2 * 1024 * 1024;
+  const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
   /**
    * Plugins are listed publicly by the market, so this needs no token.
@@ -1245,11 +1247,34 @@ export async function apply(ctx: PanelPluginContext) {
   );
 
   /**
-   * 插件图标。npm 索引不托管图标，页面统一回退到默认拼图图标；保留这个路由是为了让
-   * 浏览器侧不必区分旧版与新版市场。
+   * 插件图标。市场地址只有后端知道，所以这里代为读取并转成 data URL。
+   * 没有图标、市场不可用或内容不是 PNG 时都答 null，页面回退到默认拼图图标。
    */
   router.get("/plugin/icon", requireAdmin, async (requestCtx) => {
-    requestCtx.body = { dataUrl: null };
+    const pluginId = typeof requestCtx.query.pluginId === "string" ? requestCtx.query.pluginId : "";
+    let dataUrl: string | null = null;
+    if (pluginId) {
+      try {
+        const response = await axios.get<ArrayBuffer>(
+          `${marketSettings().pluginMarketAddr}/api/plugins/${encodeURIComponent(pluginId)}/icon`,
+          {
+            responseType: "arraybuffer",
+            timeout: 15000,
+            maxContentLength: MAX_MARKET_ICON_BYTES,
+            maxBodyLength: MAX_MARKET_ICON_BYTES
+          }
+        );
+        const icon = Buffer.from(response.data);
+        if (icon.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE)) {
+          dataUrl = `data:image/png;base64,${icon.toString("base64")}`;
+        }
+      } catch (error) {
+        if (!axios.isAxiosError(error) || error.response?.status !== 404) {
+          ctx.logger.warn(`Failed to read the icon of plugin ${pluginId}: ${error}`);
+        }
+      }
+    }
+    requestCtx.body = { dataUrl };
   });
 
   // What the page needs before it can ask the user anything: a package with a

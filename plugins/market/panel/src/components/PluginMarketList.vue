@@ -83,7 +83,7 @@ const visiblePlugins = computed(() => {
 watch(
   visiblePlugins,
   (list) => {
-    for (const plugin of list) void load(plugin.id, plugin.hasIcon, plugin.latestVersion?.version);
+    for (const plugin of list) void load(plugin.id, Boolean(plugin.iconUrl), plugin.latestVersion?.version);
   },
   { immediate: true }
 );
@@ -319,7 +319,7 @@ onBeforeUnmount(() => {
                     variant="flat"
                   >
                     <VImg
-                      v-if="plugin.hasIcon && icons[plugin.id]"
+                      v-if="icons[plugin.id]"
                       :src="icons[plugin.id]"
                       alt=""
                       cover
@@ -327,7 +327,7 @@ onBeforeUnmount(() => {
                       class="plugin-market-icon-image"
                       @error="delete icons[plugin.id]"
                     />
-                    <VIcon v-else-if="!plugin.hasIcon" icon="mdi-puzzle-outline" size="28" />
+                    <VIcon v-else icon="mdi-puzzle-outline" size="28" />
                   </VAvatar>
                   <div class="plugin-market-card-heading">
                     <div class="text-h6">

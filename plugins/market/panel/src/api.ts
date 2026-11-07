@@ -39,11 +39,11 @@ export interface MarketPlugin {
    */
   sides?: PluginSide[];
   /**
-   * Whether the latest release's package carries an `icon.png`. Optional for the
-   * same reason as `sides`: an older market source does not send it, and the page
-   * then falls back to the default icon.
+   * Market path of the package's `icon.png`, or null when it has none. Optional for
+   * the same reason as `sides`: an older market source does not send it, and the
+   * page then falls back to the default icon.
    */
-  hasIcon?: boolean;
+  iconUrl?: string | null;
 }
 
 /** Which half of a package carries a plugin: its first path segment. */
@@ -107,8 +107,8 @@ export const pluginMarketList = useDefineApi<{ params?: { daemonId?: string } },
  * address is a backend setting, so the browser cannot fetch it directly. The
  * route answers with a data URL rather than the image itself, because the panel's
  * request layer only reads JSON; it answers `dataUrl: null` when the package
- * carries no icon, which the page treats as "keep the default icon". Pass the
- * displayed release's version so a newer publication cannot change its icon.
+ * carries no icon, which the page treats as "keep the default icon". The market
+ * serves the latest release's icon; the version only keys the page's cache.
  */
 export const pluginMarketIcon = useDefineApi<
   { params: { pluginId: string; version?: string } },

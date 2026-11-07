@@ -91,7 +91,7 @@ async function refresh() {
     if (currentRequest !== requestId) return;
     if (!response.value) throw new Error(t("TXT_CODE_PLUGIN_MARKET_NOT_FOUND"));
     plugin.value = response.value;
-    void load(response.value.id, response.value.hasIcon, response.value.selectedVersion.version);
+    void load(response.value.id, Boolean(response.value.iconUrl), response.value.selectedVersion.version);
   } catch (err) {
     if (currentRequest === requestId) error.value = getValidatorErrorMsg(err);
   } finally {
@@ -174,7 +174,7 @@ onBeforeUnmount(() => requestId++);
               variant="flat"
             >
               <VImg
-                v-if="plugin.hasIcon && icon"
+                v-if="icon"
                 :src="icon"
                 alt=""
                 cover
@@ -182,7 +182,7 @@ onBeforeUnmount(() => requestId++);
                 class="plugin-detail-icon-image"
                 @error="delete icons[plugin.id]"
               />
-              <VIcon v-else-if="!plugin.hasIcon" icon="mdi-puzzle-outline" size="34" />
+              <VIcon v-else icon="mdi-puzzle-outline" size="34" />
             </VAvatar>
             <div class="plugin-detail-heading-text">
               <h1 class="plugin-detail-title">{{ plugin.displayName }}</h1>

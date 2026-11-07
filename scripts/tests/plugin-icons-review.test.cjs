@@ -60,7 +60,7 @@ test("a newer release aborts the old request and cannot be overwritten by a late
   assert.equal(requests[1].config.params.version, "2.0.0");
 });
 
-test("removing hasIcon clears a previous image and avoids a request for legacy records", async (t) => {
+test("removing iconUrl clears a previous image and avoids a request for legacy records", async (t) => {
   const { state, requests } = fixture(t);
   const loaded = state.load("plugin-a", true, "1.0.0");
   requests[0].resolve({ value: { dataUrl: "data:image/png;base64,old" } });

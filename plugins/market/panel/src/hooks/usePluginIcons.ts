@@ -10,7 +10,7 @@ interface IconRequest {
 
 /**
  * Cache each plugin's current release icon within this component's scope.
- * Failed or missing images stay retryable; older markets without `hasIcon`
+ * Failed or missing images stay retryable; older markets without `iconUrl`
  * retain the default icon and make no image request.
  */
 export function usePluginIcons() {
