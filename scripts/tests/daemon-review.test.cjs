@@ -728,6 +728,7 @@ test("instance deletion awaits filesystem success and preserves retryable instan
     "../entity/instance/instance": { STATUS_STOP: 0, STATUS_BUSY: -1 },
     "../entity/instance/Instance_config": class {},
     "../i18n": { $t: (key) => key },
+    "../runtime": {},
     "../utils/sleep": {},
     "./log": logger,
     "./system_instance_control": { deleteInstanceAllTask() {} },
