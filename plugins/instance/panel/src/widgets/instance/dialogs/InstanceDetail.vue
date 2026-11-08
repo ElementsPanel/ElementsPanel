@@ -101,7 +101,7 @@ const formId = useId();
 const requiredRule = (message: string) => (value: unknown) =>
   !!String(value ?? "").trim() || t(message);
 const commandRules = [
-  requiredRule("TXT_CODE_f50cfe2"),
+  (value: unknown) => isDockerMode.value || requiredRule("TXT_CODE_f50cfe2")(value),
   (value: unknown) => !String(value ?? "").includes("\n") || t("TXT_CODE_bbbda29")
 ];
 const fieldTabs: Record<string, TabSettings> = {

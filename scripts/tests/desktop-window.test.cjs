@@ -914,8 +914,22 @@ for (const admin of [true, false]) {
     assert.equal(page.querySelector(".v-input--error"), null);
     f.setField("TXT_CODE_d12fa808", "  ");
     await f.save();
+    assert.equal(f.field("TXT_CODE_d12fa808").closest(".v-input--error"), null);
+    assert.equal(f.writes[0].data.startCommand, "  ", "Docker can use the image's default command");
+    f.writes.length = 0;
+    if (admin) {
+      f.field("TXT_CODE_61a8296e").click();
+      await flush();
+      await f.save();
+      assert.ok(f.field("TXT_CODE_d12fa808").closest(".v-input--error"));
+      assert.deepEqual(f.writes, [], "disabling Docker requires a start command");
+      f.field("TXT_CODE_61a8296e").click();
+      await flush();
+    }
+    f.setField("TXT_CODE_d12fa808", "java -jar server.jar\necho ready");
+    await f.save();
     assert.ok(f.field("TXT_CODE_d12fa808").closest(".v-input--error"));
-    assert.ok(page.textContent.includes("TXT_CODE_f50cfe2"));
+    assert.ok(page.textContent.includes("TXT_CODE_bbbda29"));
     assert.deepEqual(f.errors, [], "missing fields use inline errors instead of a toast");
     assert.deepEqual(f.writes, []);
     f.setField("TXT_CODE_d12fa808", "java -Xmx2G -jar server.jar");

@@ -25,7 +25,6 @@ const isPhone = computed(() => screen.isPhone.value);
 const open = ref(false);
 const formRef = ref<InstanceType<typeof VForm>>();
 const commandRules = [
-  (value: unknown) => !!String(value ?? "").trim() || t("TXT_CODE_f50cfe2"),
   (value: unknown) => !String(value ?? "").includes("\n") || t("TXT_CODE_bbbda29")
 ];
 const { execute, isLoading } = updateInstanceConfig();
