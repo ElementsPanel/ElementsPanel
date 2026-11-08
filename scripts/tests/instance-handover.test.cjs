@@ -48,13 +48,21 @@ async function until(check) {
   }
 }
 
-async function fixture(t, { sleep = async () => {} } = {}) {
+async function fixture(t, { sleep = async () => {}, configs = [] } = {}) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "elements-handover-"));
   const ctx = new Context();
   const cleanup = commonLoad("core/common/src/plugin_lifecycle.ts").trackPluginDisposal(ctx);
   const events = [];
   const saved = [];
   const records = new Map();
+  for (const { uuid, config } of configs) {
+    records.set(`InstanceConfig/${uuid}`, {
+      nickname: uuid,
+      cwd: directory,
+      terminalOption: { pty: false },
+      ...config
+    });
+  }
   let generation = 0;
   let foundations;
   let current;
@@ -276,6 +284,61 @@ async function fixture(t, { sleep = async () => {} } = {}) {
     }
   };
 }
+
+test("full daemon restarts take over running auto-start instances and preserve stopped ones", async (t) => {
+  const previousRestarted = process.env.EPANEL_RESTARTED;
+  const hostKey = Symbol.for("elementspanel.instance-process-host");
+  const previousHost = globalThis[hostKey];
+  const running = child();
+  const metadata = { startTimestamp: 123456, startCount: 4, autoRestartCount: 2 };
+  process.env.EPANEL_RESTARTED = "1";
+  globalThis[hostKey] = {
+    list: async () => [{ id: "running", pid: running.pid, metadata }],
+    connect: () => running
+  };
+  t.after(() => {
+    if (previousRestarted === undefined) delete process.env.EPANEL_RESTARTED;
+    else process.env.EPANEL_RESTARTED = previousRestarted;
+    if (previousHost === undefined) delete globalThis[hostKey];
+    else globalThis[hostKey] = previousHost;
+  });
+  const f = await fixture(t, {
+    configs: ["running", "stopped"].map((uuid) => ({
+      uuid,
+      config: { eventTask: { autoStart: true } }
+    }))
+  });
+  await f.ctx.parallel("process/starting");
+  await settle();
+  const subsystem = f.ctx.instances.subsystem;
+  const adopted = subsystem.getInstance("running");
+  assert.equal(adopted.status(), 3);
+  assert.equal(adopted.process.pid, running.pid);
+  assert.equal(adopted.startCount, metadata.startCount);
+  assert.equal(adopted.startTimestamp, metadata.startTimestamp);
+  assert.equal(subsystem.getInstance("stopped").status(), 0);
+  assert.equal(running.kills, 0);
+  assert.equal(f.events.some((event) => event.startsWith("launch:")), false);
+});
+
+test("a pending process restart cancels auto-start commands already waiting for boot delay", async (t) => {
+  const entered = deferred();
+  const delay = deferred();
+  const f = await fixture(t, {
+    configs: [{ uuid: "stopped", config: { eventTask: { autoStart: true } } }],
+    sleep: async (ms) => {
+      if (ms !== 5000) return;
+      entered.resolve();
+      await delay.promise;
+    }
+  });
+  await entered.promise;
+  f.ctx.plugins.restartPending = true;
+  delay.resolve();
+  await settle();
+  assert.equal(f.ctx.instances.subsystem.getInstance("stopped").status(), 0);
+  assert.equal(f.events.some((event) => event.startsWith("launch:")), false);
+});
 
 test("foundation replacements retain live owners, output, counters and commands across module generations", async (t) => {
   const f = await fixture(t);

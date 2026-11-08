@@ -68,7 +68,7 @@ export async function updateMarketPlugins(updates: readonly PluginUpdate[]) {
   try {
     const response = await updateMarketBatch().execute({
       timeout:
-        pending.reduce((total, update) => total + update.targets.length + 1, 0) * 11 * 60 * 1000,
+        pending.reduce((total, update) => total + update.targets.length + 1, 0) * 16 * 60 * 1000,
       data: {
         updates: pending.map((update) => ({
           pluginId: update.pluginId,

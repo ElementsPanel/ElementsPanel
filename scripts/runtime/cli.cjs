@@ -174,6 +174,7 @@ async function startWorkers(plan, options = {}) {
   if (!plan.workers.length) throw new Error("No runtime was selected.");
   const startupTimeout = options.startupTimeout ?? 120_000;
   const shutdownTimeout = options.shutdownTimeout ?? 90_000;
+  const restartTimeout = options.restartTimeout ?? 5 * 60 * 1000;
   const children = new Set();
   const instanceHosts = new Map();
   const workerEnvironments = new Map();
@@ -271,7 +272,7 @@ async function startWorkers(plan, options = {}) {
         restartTimer ??= setTimeout(() => {
           console.error(`${worker.side} timed out while preparing to restart.`);
           stop(1);
-        }, shutdownTimeout);
+        }, restartTimeout);
       } else if (message?.type === "elementspanel:restart") {
         restarting = true;
       }
@@ -300,14 +301,15 @@ async function startWorkers(plan, options = {}) {
       finish();
     });
     return new Promise((resolve, reject) => {
+      const readyTimeout = restarted ? restartTimeout : startupTimeout;
       const timer = setTimeout(
         () =>
           settle(
             new Error(
-              `${worker.side} did not become ready within ${startupTimeout / 1000} seconds.`
+              `${worker.side} did not become ready within ${readyTimeout / 1000} seconds.`
             )
           ),
-        startupTimeout
+        readyTimeout
       );
       const onMessage = (message) => {
         if (message?.type === "elementspanel:ready") settle();

@@ -11,6 +11,7 @@ import { globalConfiguration } from "../entity/config";
 import Instance from "../entity/instance/instance";
 import InstanceConfig from "../entity/instance/Instance_config";
 import { $t } from "../i18n";
+import { core } from "../runtime";
 import { sleep } from "../utils/sleep";
 import logger from "./log";
 import InstanceControl from "./system_instance_control";
@@ -48,9 +49,10 @@ class InstanceSubsystem extends EventEmitter {
 
   // start automatically at boot
   private async autoStart() {
+    if (!this.canAutoStart()) return;
     await sleep(1000 * 5);
     for (const instance of this.instances.values()) {
-      if (this.startupCancelled) return;
+      if (!this.canAutoStart()) return;
       if (instance.config.eventTask.autoStart && instance.status() == Instance.STATUS_STOP) {
         instance
           .execPreset("start")
@@ -74,6 +76,17 @@ class InstanceSubsystem extends EventEmitter {
         await sleep(1000 * 5);
       }
     }
+  }
+
+  private canAutoStart() {
+    const ctx = core();
+    return (
+      !this.startupCancelled &&
+      process.env.EPANEL_RESTARTED !== "1" &&
+      ctx.scope.isActive &&
+      ctx.root.scope.isActive &&
+      !ctx.get("plugins")?.restartPending
+    );
   }
 
   // init all instances from local files
@@ -157,9 +170,9 @@ class InstanceSubsystem extends EventEmitter {
     })();
     void this.takeover
       .then(() => {
-        // A worker replacement must also preserve intentionally stopped
-        // instances, even when their next full launcher startup is automatic.
-        if (process.env.EPANEL_RESTARTED !== "1") return this.autoStart();
+        // Only a fresh node startup runs auto-start commands. Worker replacements
+        // and pending restarts only take over the processes that already exist.
+        return this.autoStart();
       })
       .catch((error) => logger.error(error));
   }

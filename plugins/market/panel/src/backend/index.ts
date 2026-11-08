@@ -56,6 +56,8 @@ export const inject = [
 // Install and uninstall must share a queue: a second request cannot rewrite the
 // project manifest while the first request is still using it.
 const pluginOperations = new Map<string, Promise<void>>();
+// Foundation updates replace the worker and restore instances before the node reconnects.
+const NODE_RESTART_TIMEOUT_MS = 5 * 60 * 1000;
 
 async function withPluginLock<T>(pluginId: string, operation: () => Promise<T>): Promise<T> {
   const previous = pluginOperations.get(pluginId) ?? Promise.resolve();
@@ -346,7 +348,7 @@ export async function apply(ctx: PanelPluginContext) {
   ) {
     return Promise.all(
       daemonIds.map(async (daemonId) => {
-        const deadline = Date.now() + (waitForReconnect ? 10000 : 0);
+        const deadline = Date.now() + (waitForReconnect ? NODE_RESTART_TIMEOUT_MS : 0);
         while (true) {
           const node = ctx.remote.services.getInstance(daemonId);
           const label = node?.config.remarks || node?.config.ip || daemonId;
@@ -434,7 +436,7 @@ export async function apply(ctx: PanelPluginContext) {
   }
 
   async function daemonRuntimeInfo(daemonId: string, waitForReconnect = false) {
-    const deadline = Date.now() + (waitForReconnect ? 10000 : 0);
+    const deadline = Date.now() + (waitForReconnect ? NODE_RESTART_TIMEOUT_MS : 0);
     while (true) {
       const node = ctx.remote.services.getInstance(daemonId);
       try {
