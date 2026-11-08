@@ -1,6 +1,6 @@
 {
   "name": "@elementspanel/epanel-plugin-instance",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "Application instances, Java runtimes and Minecraft mod management.",
   "elementspanel": {
     "id": "instance",
