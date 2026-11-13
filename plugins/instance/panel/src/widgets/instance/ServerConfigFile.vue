@@ -4,7 +4,6 @@ import { t } from "@elementspanel/epanel-plugin-i18n";
 import { getConfigFile, updateConfigFile } from "@elementspanel/epanel-plugin-console/services/apis/instance";
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
-import { toUnicode } from "@elementspanel/epanel-plugin-console/tools/common";
 import Loading from "@elementspanel/epanel-plugin-console/components/Loading";
 import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
 import configComponent from "../../components/InstanceConfigEditor.vue";
@@ -63,14 +62,6 @@ const {
 } = updateConfigFile();
 const save = async () => {
   const config_ = { ...configFile.value };
-  if (configPath == "server.properties" && type && type.startsWith("minecraft/java")) {
-    for (const key in configFile) {
-      const value = config_[key];
-      if (value && typeof value == "string") {
-        config_[key] = toUnicode(value);
-      }
-    }
-  }
   try {
     await execUpdateConfigFile({
       params: {

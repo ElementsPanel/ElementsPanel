@@ -4,7 +4,6 @@ import InstanceConfigEditor from "../components/InstanceConfigEditor.vue";
 import { getInstanceConfigByType, type InstanceConfigs } from "@elementspanel/epanel-plugin-console/hooks/useInstance";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { getConfigFile, getConfigFileList, updateConfigFile } from "@elementspanel/epanel-plugin-console/services/apis/instance";
-import { toUnicode } from "@elementspanel/epanel-plugin-console/tools/common";
 import { notifyDesktop, notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { onMounted, ref } from "vue";
 import { VBtn, VIcon } from "vuetify/components";
@@ -99,14 +98,6 @@ const saveFile = async () => {
     isSaving.value = true;
     try {
         const config = { ...configFileState.value };
-        if (selectedFile.value.path === "server.properties" && props.type?.startsWith("minecraft/java")) {
-            for (const key in config) {
-                const value = config[key];
-                if (value && typeof value === "string") {
-                    config[key] = toUnicode(value);
-                }
-            }
-        }
 
         await execUpdateConfigFile({
             params: {
