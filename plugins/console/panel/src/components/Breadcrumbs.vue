@@ -5,7 +5,7 @@ import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { computed } from "vue";
 import { useRoute } from "vue-router";
-import { VBreadcrumbs } from "vuetify/components";
+import { VBreadcrumbs, VIcon } from "vuetify/components";
 
 export interface BreadcrumbItem {
   title: string;
@@ -57,8 +57,11 @@ const items = computed<BreadcrumbItem[]>(() => {
       class="breadcrumbs-list"
       density="comfortable"
       :items="items"
-      divider=">"
-    />
+    >
+      <template #divider>
+        <VIcon icon="mdi-chevron-right" size="16" />
+      </template>
+    </VBreadcrumbs>
   </div>
 </template>
 
@@ -82,8 +85,19 @@ const items = computed<BreadcrumbItem[]>(() => {
     font-size: inherit;
   }
 
+  :deep(.v-breadcrumbs-item--link) {
+    transition: opacity 0.2s ease;
+  }
+
+  :deep(.v-breadcrumbs-item--link:hover) {
+    opacity: 0.5;
+    text-decoration: none;
+  }
+
   :deep(.v-breadcrumbs-divider) {
-    padding: 0 6px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 4px;
     color: var(--color-gray-7);
   }
 }
