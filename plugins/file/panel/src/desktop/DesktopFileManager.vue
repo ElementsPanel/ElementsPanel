@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
-import DesktopDialog from "@elementspanel/epanel-plugin-console/components/DesktopDialog";
-import FileManagerTabs from "../components/FileManagerTabs.vue";
-import { useFileManager } from "../hooks/useFileManager";
-import { usePolling } from "@elementspanel/epanel-plugin-console/hooks/usePolling";
-import ArchivePreview from "../components/ArchivePreview.vue";
-import { t } from "@elementspanel/epanel-plugin-i18n";
 import { usePluginService, type FrontendDesktopService } from "@elements-panel/sdk";
-import uploadService from "../services/uploadService";
-import { filterFileName, getFileExtName, isCompressFile } from "../tools/fileManager";
+import DesktopDialog from "@elementspanel/epanel-plugin-console/components/DesktopDialog";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import { usePolling } from "@elementspanel/epanel-plugin-console/hooks/usePolling";
+import { notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { convertFileSize } from "@elementspanel/epanel-plugin-console/tools/fileSize";
 import type { DataType } from "@elementspanel/epanel-plugin-console/types/fileManager";
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import dayjs from "dayjs";
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
-import { notifyDesktopError } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
-import { VAlert, VBtn, VCard, VCardText, VCheckbox, VDataTableServer, VIcon, VList, VListItem, VMenu, VProgressCircular, VProgressLinear, VRadio, VRadioGroup, VSelect, VSpacer, VTextField } from "vuetify/components";
+import { VBtn, VCard, VCardText, VCheckbox, VDataTableServer, VIcon, VList, VListItem, VMenu, VProgressCircular, VProgressLinear, VRadio, VRadioGroup, VSelect, VSpacer, VTextField } from "vuetify/components";
+import ArchivePreview from "../components/ArchivePreview.vue";
+import FileManagerTabs from "../components/FileManagerTabs.vue";
+import { useFileManager } from "../hooks/useFileManager";
+import uploadService from "../services/uploadService";
+import { filterFileName, getFileExtName, isCompressFile } from "../tools/fileManager";
 
 /**
  * The shell Desktop mode mounts a component inside. `plugins/desktop` supplies it
@@ -780,8 +780,10 @@ onUnmounted(() => {
                     <VCard rounded="xl"><VCardText class="dfm-menu-list"><VBtn :disabled="!currentTabs.length" variant="text" block @click="touchFile(true)"><VIcon icon="mdi-folder-plus-outline" />{{ t("TXT_CODE_cfc657db") }}</VBtn><VBtn :disabled="!currentTabs.length" variant="text" block @click="touchFile()"><VIcon icon="mdi-file-plus-outline" />{{ t("TXT_CODE_1e0b63b6") }}</VBtn></VCardText></VCard>
                 </VMenu>
             </div>
-            <VProgressLinear v-if="uploadData.current" :model-value="progress" color="primary" height="4" rounded="xl" />
-            <div v-if="uploadData.current" class="dfm-upload-progress__info"><span>{{ `${uploadData.currentFile} ${uploadInstanceTag}`.trim() }}</span><span>({{ uploadData.files[0] }}/{{ uploadData.files[1] }})</span><VBtn icon variant="text" size="small" @click="uploadData.suspending ? uploadService.unsuspend() : uploadService.suspend()"><VIcon :icon="uploadData.suspending ? 'mdi-play' : 'mdi-pause'" /></VBtn><VBtn icon variant="text" size="small" @click="uploadService.stop()"><VIcon icon="mdi-close" /></VBtn></div>
+            <div v-if="uploadData.current" class="dfm-upload-progress">
+                <VProgressLinear :model-value="progress" color="primary" height="4" rounded="xl" />
+                <div class="dfm-upload-progress__info"><span>{{ `${uploadData.currentFile} ${uploadInstanceTag}`.trim() }}</span><span>({{ uploadData.files[0] }}/{{ uploadData.files[1] }})</span><VBtn icon variant="text" size="small" @click="uploadData.suspending ? uploadService.unsuspend() : uploadService.suspend()"><VIcon :icon="uploadData.suspending ? 'mdi-play' : 'mdi-pause'" /></VBtn><VBtn icon variant="text" size="small" @click="uploadService.stop()"><VIcon icon="mdi-close" /></VBtn></div>
+            </div>
             <div class="dfm-body" :style="{ opacity: opacity ? 0.4 : undefined }" @dragover.prevent="handleDragover" @dragleave.prevent="handleDragleave" @drop.prevent="handleDrop">
             <FileManagerTabs :active-tab="activeTab" :tabs="currentTabs" @select="handleChangeTab" @close="onEditTabs($event, 'remove')" @add="onEditTabs('', 'add')" />
             <template v-if="currentTabs.length">
