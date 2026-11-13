@@ -123,7 +123,27 @@ export function apply(ctx: PanelFrontendPluginContext) {
     path: "/instances/terminal/serverConfig/fileEdit",
     name: t("TXT_CODE_78019c60"),
     component: InstanceServerConfigFile,
-    meta: { permission: ROLE.USER }
+    meta: {
+      permission: ROLE.USER,
+      breadcrumbs: [
+        {
+          name: t("TXT_CODE_e21473bc"),
+          path: "/instances",
+          mainMenu: true,
+          permission: ROLE.ADMIN
+        },
+        {
+          name: t("TXT_CODE_524e3036"),
+          path: "/instances/terminal",
+          permission: ROLE.USER
+        },
+        {
+          name: t("TXT_CODE_d07742fe"),
+          path: "/instances/terminal/serverConfig",
+          permission: ROLE.USER
+        }
+      ]
+    }
   });
 
   ctx.routes.add({
