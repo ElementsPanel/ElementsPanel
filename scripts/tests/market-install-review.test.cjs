@@ -159,6 +159,7 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
     },
     settingsForm: { declare() {} },
     plugins: {
+      get restartPending() { return state.restartPending === true; },
       deferRestartUntil: (gate) => { state.restartGate = gate; },
       async updateBatch(options) {
         state.panelBatch = options;
@@ -169,7 +170,7 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
           else await common.installNpmPlugin({ ...update, side: "panel" });
           results.push(update);
         }
-        return { results, restartRequired: false };
+        return { results, restartRequired: state.manualRestart === true };
       },
       runtime: {
         get installed() { return state.panelRuntime; },
@@ -223,7 +224,11 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
 
   async function request(method, url, values = {}, res) {
     const query = method === "post" ? {} : values;
-    const ctx = { query, res, request: { query, body: method === "post" ? values : undefined } };
+    const ctx = {
+      query, res,
+      set: (name, value) => { state.responseHeaders = { [name]: value }; },
+      request: { query, body: method === "post" ? values : undefined }
+    };
     await panelRequire("koa-compose")(routes.get(`${method} ${url}`))(ctx);
     return ctx.body;
   }
@@ -452,10 +457,19 @@ test("a failed catalogue or registry check preserves the other updates without c
 test("panel runtime updates defer restart until the HTTP reply and ignore stale versions", async (t) => {
   const env = await fixture(t);
   env.state.panelRuntime = { name: "@elementspanel/panel", side: "panel", version: "1.0.0" };
+  const status = await env.request("get", "/plugin/restart-status");
+  assert.equal(status.restarting, false);
+  assert.equal(typeof status.processId, "string");
+  assert.deepEqual(env.state.responseHeaders, { "Cache-Control": "no-store" });
+  env.state.restartPending = true;
   const res = new EventEmitter();
   const result = await env.request("post", "/runtime/update", { side: "panel", version: "2.0.0", daemonIds: [] }, res);
   assert.equal(result.installedVersion, "2.0.0");
   assert.equal(result.restartRequired, false);
+  assert.deepEqual(result.panelRestart, { processId: status.processId });
+  assert.deepEqual(await env.request("get", "/plugin/restart-status"), {
+    processId: status.processId, restarting: true
+  });
   assert.deepEqual(result.updatedTargets, [{ label: "", currentVersion: "1.0.0" }]);
   let released = false;
   env.state.runtimeUpdate.reloadAfter.then(() => { released = true; });
@@ -491,6 +505,7 @@ test("one-click batches send every selected package once per host and keep the p
   const env = await fixture(t, { sides: ["panel", "daemon"], version: "2.0.0" });
   await env.common.installNpmPlugin({ name: "epanel-plugin-sample", pluginId: "sample", version: "1.0.0" });
   env.state.panelRuntime = { name: "@elementspanel/panel", side: "panel", version: "1.0.0" };
+  env.state.manualRestart = true;
   env.state.request = async ({ event, daemonId, payload }) => {
     if (event === "plugin/list") return [{ id: "sample", packageName: "epanel-plugin-sample", version: daemonId === "node-3" ? "3.0.0" : "1.0.0" }];
     if (event === "plugin/capabilities") return {
@@ -511,6 +526,9 @@ test("one-click batches send every selected package once per host and keep the p
   ];
   const res = new EventEmitter();
   const batch = await env.request("post", "/plugin/update-batch", { updates }, res);
+  const status = await env.request("get", "/plugin/restart-status");
+  assert.equal(status.restarting, false, "an unmanaged panel requires a manual restart");
+  assert.deepEqual(batch.panelRestart, { processId: status.processId });
   assert.equal(batch.results.length, 3);
   assert.deepEqual(env.rpcCalls.filter((call) => call.event === "plugin/npm/update-batch").map((call) => call.daemonId), ["node-1", "node-2"]);
   const daemonPackages = env.rpcCalls.find((call) => call.event === "plugin/npm/update-batch").payload.updates;

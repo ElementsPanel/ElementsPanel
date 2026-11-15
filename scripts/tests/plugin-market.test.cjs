@@ -1,4 +1,4 @@
-const { from, createLoader, compileSfc } = require("./helpers.cjs");
+const { from, createLoader, compileSfc, deferred } = require("./helpers.cjs");
 const assert = require("node:assert/strict");
 const { test } = require("node:test");
 
@@ -841,6 +841,76 @@ test("one-click updates keep per-target versions, isolate failures and never exe
   assert.equal(operations.updateProgress.value.completed, 2);
   assert.equal(operations.applyingChanges.value, false);
   assert.equal(operations.updatingPlugins.value, false);
+});
+
+test("one-click updates stay busy through disconnects until a new panel worker responds", async () => {
+  const restarted = deferred();
+  const confirming = deferred();
+  const calls = [];
+  const delays = [];
+  let probes = 0;
+  let refreshes = 0;
+  const marketApi = createLoader({ compiler: ts, globals: true })(
+    "plugins/market/panel/src/api.ts",
+    {
+      vue,
+      "@/stores/useDefineApi": {
+        useDefineApi: (base) => () => ({
+          isLoading: vue.ref(false),
+          isReady: vue.ref(true),
+          state: vue.ref(),
+          execute: async (config) => {
+            calls.push({ ...base, ...config });
+            if (base.method === "POST") return { value: {
+              panelRestart: { processId: "old" },
+              results: config.data.updates.map((update) => ({
+                pluginId: update.pluginId,
+                result: { pluginId: update.pluginId, installedVersion: update.version,
+                  failedTargets: [], updatedTargets: [], restartRequired: false }
+              }))
+            } };
+            probes++;
+            assert.equal(config.forceRequest, true);
+            assert.equal(config.errorAlert, false);
+            if (probes === 1) return { value: { processId: "old", restarting: false } };
+            if (probes === 2) throw new Error("Connection refused");
+            if (probes === 3) return { value: { processId: "new", restarting: true } };
+            confirming.resolve();
+            return restarted.promise;
+          }
+        })
+      }
+    },
+    { setTimeout: (callback, delay) => { delays.push(delay); return setImmediate(callback); } }
+  );
+  const batchApi = marketApi.updateMarketBatch();
+  const operations = load("plugins/market/panel/src/operations.ts", {
+    vue,
+    "@/plugin/context": { ctx: { plugins: { refresh: async () => { refreshes++; } } } },
+    "./api": { ...marketApi, updateMarketBatch: () => batchApi }
+  });
+  const work = operations.updateMarketPlugins([{
+    pluginId: "sample", displayName: "Sample", version: "2.0.0",
+    targets: [{ label: "", currentVersion: "1.0.0" }]
+  }]);
+  await confirming.promise;
+  assert.equal(batchApi.isLoading.value, true);
+  assert.equal(batchApi.isReady.value, false);
+  assert.equal(operations.applyingChanges.value, true);
+  assert.equal(operations.updatingPlugins.value, true);
+  assert.equal(operations.updateProgress.value.completed, 0);
+  assert.equal(refreshes, 0);
+  assert.deepEqual(delays, [1000, 1000, 1000]);
+  assert.equal(calls.filter((call) => call.method === "POST").length, 1);
+
+  restarted.resolve({ value: { processId: "new", restarting: false } });
+  const results = await work;
+  assert.equal(results[0].result.installedVersion, "2.0.0");
+  assert.equal(operations.applyingChanges.value, false);
+  assert.equal(operations.updatingPlugins.value, false);
+  assert.equal(batchApi.isLoading.value, false);
+  assert.equal(batchApi.isReady.value, true);
+  assert.equal(refreshes, 1);
 });
 
 test("mixed update batches submit plugins and both runtimes together", async () => {

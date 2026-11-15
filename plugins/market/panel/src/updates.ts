@@ -1,3 +1,13 @@
+export interface PanelRestartStatus {
+  processId: string;
+  restarting: boolean;
+}
+
+export interface PanelRestartResponse {
+  /** The worker that must be replaced before this operation is complete. */
+  panelRestart?: { processId: string };
+}
+
 export interface PluginUpdateTarget {
   /** Omitted for the panel itself. */
   daemonId?: string;
@@ -37,6 +47,6 @@ export interface PluginUpdateRequest {
   daemonIds: string[];
 }
 
-export interface PluginUpdateBatchResult {
+export interface PluginUpdateBatchResult extends PanelRestartResponse {
   results: Array<{ pluginId: string; result?: PluginUpdateResult; error?: string }>;
 }

@@ -1,10 +1,62 @@
 import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDefineApi";
+import { computed, ref } from "vue";
 import type {
+  PanelRestartResponse,
+  PanelRestartStatus,
   PluginUpdateBatchResult,
   PluginUpdateRequest,
   PluginUpdateResult,
   PluginUpdates
 } from "./updates";
+
+const panelRestartStatus = useDefineApi<unknown, PanelRestartStatus>({
+  url: "/api/market/plugin/restart-status",
+  method: "GET"
+});
+
+async function waitForPanelRestart(processId: string) {
+  for (;;) {
+    try {
+      const response = await panelRestartStatus().execute({
+        forceRequest: true,
+        errorAlert: false,
+        timeout: 10000
+      });
+      const status = response.value;
+      if (status?.processId && status.processId !== processId && status.restarting === false) return;
+    } catch (error) {
+      const status = (error as { response?: { status?: number } })?.response?.status;
+      if (status === 401 || status === 403) throw error;
+      // The transport can disappear during restart, including a manual recovery.
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+}
+
+/** Keep callers busy through installation and the replacement worker's first response. */
+function useDefineMarketMutation<P, T>(baseConfig: Parameters<typeof useDefineApi>[0]) {
+  const defineApi = useDefineApi<P, T & PanelRestartResponse>(baseConfig);
+  return () => {
+    const api = defineApi();
+    const requests = ref(0);
+    return {
+      ...api,
+      isLoading: computed(() => requests.value > 0),
+      isReady: computed(() => api.isReady.value && requests.value === 0),
+      execute: async (...args: Parameters<typeof api.execute>) => {
+        requests.value++;
+        try {
+          const response = await api.execute(...args);
+          if (response.value?.panelRestart)
+            await waitForPanelRestart(response.value.panelRestart.processId);
+          return response;
+        } finally {
+          requests.value--;
+        }
+      }
+    };
+  };
+}
 
 // ---- Plugin market -------------------------------------------------------
 // Distinct from the catalogue above: these are panel and daemon plugins, not
@@ -139,7 +191,7 @@ export const pluginMarketUpdates = useDefineApi<{ params?: { daemonId?: string }
   method: "GET"
 });
 
-export const updateMarketPlugin = useDefineApi<
+export const updateMarketPlugin = useDefineMarketMutation<
   { data: { pluginId: string; version: string; panel: boolean; daemonIds: string[] } },
   PluginUpdateResult
 >({
@@ -147,7 +199,7 @@ export const updateMarketPlugin = useDefineApi<
   method: "POST"
 });
 
-export const updateMarketRuntime = useDefineApi<
+export const updateMarketRuntime = useDefineMarketMutation<
   { data: { side: PluginSide; version: string; daemonIds: string[] } },
   PluginUpdateResult
 >({
@@ -155,7 +207,7 @@ export const updateMarketRuntime = useDefineApi<
   method: "POST"
 });
 
-export const updateMarketBatch = useDefineApi<
+export const updateMarketBatch = useDefineMarketMutation<
   { data: { updates: PluginUpdateRequest[] } },
   PluginUpdateBatchResult
 >({
@@ -201,7 +253,7 @@ export const pluginMarketPackage = useDefineApi<
   method: "GET"
 });
 
-export const installMarketPlugin = useDefineApi<
+export const installMarketPlugin = useDefineMarketMutation<
   {
     data: {
       pluginId: string;
@@ -219,7 +271,7 @@ export const installMarketPlugin = useDefineApi<
   method: "POST"
 });
 
-export const uninstallMarketPlugin = useDefineApi<
+export const uninstallMarketPlugin = useDefineMarketMutation<
   { params: { pluginId: string; daemonIds?: string; removeConfig?: boolean; panel?: boolean } },
   { removed: boolean; restartRequired: boolean; failedNodes: string[]; installedVersion?: string }
 >({

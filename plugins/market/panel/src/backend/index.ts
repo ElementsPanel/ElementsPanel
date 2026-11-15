@@ -1,5 +1,6 @@
 import axios from "axios";
 import type Koa from "koa";
+import { performance } from "perf_hooks";
 import {
   validatePluginCompatibility,
   writePluginOverride,
@@ -58,6 +59,8 @@ export const inject = [
 const pluginOperations = new Map<string, Promise<void>>();
 // Foundation updates replace the worker and restore instances before the node reconnects.
 const NODE_RESTART_TIMEOUT_MS = 5 * 60 * 1000;
+// Stable across plugin reloads, distinct for each panel worker.
+const PANEL_PROCESS_ID = `${process.pid}:${performance.timeOrigin}`;
 
 async function withPluginLock<T>(pluginId: string, operation: () => Promise<T>): Promise<T> {
   const previous = pluginOperations.get(pluginId) ?? Promise.resolve();
@@ -119,6 +122,34 @@ export async function apply(ctx: PanelPluginContext) {
   const { permission, validator } = ctx.middleware;
   const requireAdmin = permission({ level: ctx.roles.ADMIN });
   const router = ctx.koa.router("/api/market");
+
+  router.get("/plugin/restart-status", requireAdmin, (requestCtx: Koa.ParameterizedContext) => {
+    requestCtx.set("Cache-Control", "no-store");
+    requestCtx.body = {
+      processId: PANEL_PROCESS_ID,
+      restarting: Boolean(ctx.plugins.restartPending)
+    };
+  });
+
+  async function reportPanelRestart(requestCtx: Koa.ParameterizedContext, next: Koa.Next) {
+    await next();
+    const body = requestCtx.request.body as { pluginId?: string; panel?: boolean } | undefined;
+    const pluginId = body?.pluginId ?? requestCtx.query.pluginId;
+    const panelNeedsRestart =
+      ctx.plugins?.restartPending ||
+      (typeof pluginId === "string" &&
+        body?.panel !== false &&
+        requestCtx.query.panel !== "false" &&
+        ctx.plugins?.inventory().some((plugin) =>
+          plugin.id === pluginId && plugin.state === "restart-required"
+        ));
+    if (panelNeedsRestart && requestCtx.body && typeof requestCtx.body === "object") {
+      requestCtx.body = {
+        ...requestCtx.body,
+        panelRestart: { processId: PANEL_PROCESS_ID }
+      };
+    }
+  }
 
   function responseFinished(requestCtx: Koa.ParameterizedContext): Promise<void> {
     const response = requestCtx.res;
@@ -752,6 +783,8 @@ export async function apply(ctx: PanelPluginContext) {
             continue;
           }
           result.updatedTargets.push(plan.target);
+          if (!daemonId && installed.restartRequired)
+            response.panelRestart = { processId: PANEL_PROCESS_ID };
           result.installedVersion = record.version;
           result.restartRequired ||= installed.restartRequired;
           if (daemonId && !plan.update.runtime) {
@@ -784,6 +817,7 @@ export async function apply(ctx: PanelPluginContext) {
   router.post(
     "/plugin/update-batch",
     requireAdmin,
+    reportPanelRestart,
     validator({ body: { updates: Array } }),
     async (requestCtx: Koa.ParameterizedContext) => {
       const { updates } = requestCtx.request.body as { updates: PluginUpdateRequest[] };
@@ -828,6 +862,7 @@ export async function apply(ctx: PanelPluginContext) {
   router.post(
     "/runtime/update",
     requireAdmin,
+    reportPanelRestart,
     validator({ body: { side: String, version: String, daemonIds: Array } }),
     async (requestCtx: Koa.ParameterizedContext) => {
       ctx.plugins.deferRestartUntil?.(responseFinished(requestCtx));
@@ -910,6 +945,7 @@ export async function apply(ctx: PanelPluginContext) {
   router.post(
     "/plugin/update",
     requireAdmin,
+    reportPanelRestart,
     validator({ body: { pluginId: String, version: String, panel: Boolean, daemonIds: Array } }),
     async (requestCtx: Koa.ParameterizedContext) => {
       ctx.plugins.deferRestartUntil?.(responseFinished(requestCtx));
@@ -1310,6 +1346,7 @@ export async function apply(ctx: PanelPluginContext) {
   router.post(
     "/plugin/install",
     requireAdmin,
+    reportPanelRestart,
     ctx.middleware.speedLimit(3),
     ctx.middleware.validator({ body: { pluginId: String, name: String } }),
     async (requestCtx: Koa.ParameterizedContext) => {
@@ -1388,6 +1425,7 @@ export async function apply(ctx: PanelPluginContext) {
   router.delete(
     "/plugin/uninstall",
     requireAdmin,
+    reportPanelRestart,
     ctx.middleware.validator({ query: { pluginId: String } }),
     async (requestCtx: Koa.ParameterizedContext) => {
       const pluginId = String(requestCtx.request.query.pluginId);
