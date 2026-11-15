@@ -69,7 +69,8 @@ export function apply(ctx: PanelFrontendPluginContext) {
       taskbar: false,
       click: async () => {
         Modal.confirm({
-          title: t("TXT_CODE_9654b91c"),
+          title: t("TXT_CODE_2c69ab15"),
+          content: t("TXT_CODE_9654b91c"),
           async onOk() {
             await userApi.logoutUser().execute();
             message.success(t("TXT_CODE_11673d8c"));
