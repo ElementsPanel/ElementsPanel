@@ -5,7 +5,6 @@ import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useAppStateStore } from "@/stores/useAppStateStore";
 import { useBackgroundTasks, type BackgroundTask } from "@/stores/useBackgroundTasks";
 import {
-  VAlert,
   VBtn,
   VCard,
   VCheckbox,
@@ -201,16 +200,23 @@ if (props.desktop) {
         >
       </div>
       <div class="task-list" aria-live="polite" aria-relevant="additions removals">
-        <VAlert
-          v-if="error"
-          type="warning"
-          variant="tonal"
-          density="compact"
-          class="mb-3"
-          >{{ t("TXT_CODE_TASKS_LOAD_ERROR") }}</VAlert
-        >
         <Empty
-          v-if="!visibleTasks.length && !loading"
+          v-if="error"
+          icon="mdi-alert-circle-outline"
+          :title="t('TXT_CODE_TASKS_LOAD_ERROR')"
+          compact
+        >
+          <template #actions>
+            <VBtn
+              variant="tonal"
+              prepend-icon="mdi-refresh"
+              :loading="loading"
+              @click="refresh()"
+            >{{ t("TXT_CODE_9277af78") }}</VBtn>
+          </template>
+        </Empty>
+        <Empty
+          v-else-if="!visibleTasks.length && !loading"
           icon="mdi-clipboard-check-outline"
           :title="t('TXT_CODE_TASKS_EMPTY')"
           compact

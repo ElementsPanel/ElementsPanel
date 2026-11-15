@@ -7,7 +7,7 @@ import { parseTimestamp } from "@elementspanel/epanel-plugin-console/tools/time"
 import type { AddJavaConfigItem, DownloadJavaConfigItem, JavaInfo } from "../types";
 import { notifyDesktop } from "@elementspanel/epanel-plugin-console/tools/desktopNotice";
 import { computed, onUnmounted, ref } from "vue";
-import { VAlert, VBtn, VDataTable, VIcon, VTextField } from "vuetify/components";
+import { VBtn, VDataTable, VIcon, VTextField } from "vuetify/components";
 
 import { useJavaList } from "../hooks/useJavaList";
 import JavaVersionSelect from "../components/JavaVersionSelect.vue";
@@ -217,8 +217,23 @@ onUnmounted(() => {
                 </VBtn>
             </div>
 
-            <VAlert v-if="listError" type="error" variant="tonal" class="mt-3">{{ listError }}</VAlert>
-            <VDataTable :loading="listLoading" class="djava-table mt-3" :headers="headers" :items="javaList || []" :items-per-page="15">
+            <Empty
+                v-if="listError"
+                icon="mdi-alert-circle-outline"
+                :title="t('TXT_CODE_ef8f8e29')"
+                :description="listError"
+                :compact="!!javaList.length"
+            >
+                <template #actions>
+                    <VBtn
+                        variant="tonal"
+                        prepend-icon="mdi-refresh"
+                        :loading="listLoading"
+                        @click="refreshJavaList()"
+                    >{{ t("TXT_CODE_9277af78") }}</VBtn>
+                </template>
+            </Empty>
+            <VDataTable v-if="!listError || javaList.length" :loading="listLoading" class="djava-table mt-3" :headers="headers" :items="javaList || []" :items-per-page="15">
               <template #no-data><Empty icon="mdi-language-java" /></template>
                 <template #item.fullname="{ item }">{{ item.info.fullname || "-" }}</template>
                 <template #item.installTime="{ item }">{{ item.info.installTime ? t(parseTimestamp(item.info.installTime)) : "-" }}</template>

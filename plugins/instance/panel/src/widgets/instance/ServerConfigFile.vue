@@ -5,6 +5,7 @@ import { getConfigFile, updateConfigFile } from "@elementspanel/epanel-plugin-co
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { useAppRouters } from "@elementspanel/epanel-plugin-console/hooks/useAppRouters";
 import Loading from "@elementspanel/epanel-plugin-console/components/Loading";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import PageToolbar from "@elementspanel/epanel-plugin-console/components/PageToolbar";
 import configComponent from "../../components/InstanceConfigEditor.vue";
 import type { FrontendFileManagerService } from "@elements-panel/sdk";
@@ -12,7 +13,7 @@ import { usePluginService } from "@elements-panel/sdk";
 import { useKeyboardEvents } from "@elementspanel/epanel-plugin-console/hooks/useKeyboardEvents";
 import { reportErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { useRoute } from "vue-router";
-import { VAlert, VBtn, VCol, VContainer, VRow } from "vuetify/components";
+import { VBtn, VCol, VContainer, VRow } from "vuetify/components";
 
 const route = useRoute();
 const instanceId = String(route.query.instanceId ?? "");
@@ -39,6 +40,7 @@ const {
   isReady
 } = getConfigFile();
 const render = async () => {
+  isFailure.value = false;
   try {
     await reqConfigFile({
       params: {
@@ -138,21 +140,31 @@ onMounted(async () => {
       </PageToolbar>
 
       <VRow density="compact" class="server-config-row">
+        <VCol v-if="isFailure" cols="12">
+          <Empty
+            icon="mdi-file-alert-outline"
+            :title="t('TXT_CODE_f859eac')"
+            :description="t('TXT_CODE_b8814f15')"
+          >
+            <template #actions>
+              <VBtn
+                variant="tonal"
+                prepend-icon="mdi-refresh"
+                :loading="getConfigFileLoading"
+                @click="render"
+              >{{ t("TXT_CODE_9277af78") }}</VBtn>
+              <VBtn variant="text" @click="toConfigOverview">{{ t("TXT_CODE_537cd5ad") }}</VBtn>
+            </template>
+          </Empty>
+        </VCol>
         <configComponent
-          v-if="configName && isReady"
+          v-else-if="configName && isReady"
           :config="configFile"
           :config-name="configName"
         />
 
         <VCol v-else cols="12">
-          <Loading v-if="!isFailure" />
-        </VCol>
-        <VCol v-if="isFailure" cols="12">
-          <VAlert type="error" variant="tonal" :title="t('TXT_CODE_f859eac')" :text="t('TXT_CODE_b8814f15')">
-            <template #append><VBtn color="primary" @click="toConfigOverview">
-                {{ t("TXT_CODE_537cd5ad") }}
-              </VBtn></template>
-          </VAlert>
+          <Loading />
         </VCol>
       </VRow>
     </VContainer>

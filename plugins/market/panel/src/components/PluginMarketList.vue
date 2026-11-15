@@ -283,11 +283,21 @@ onBeforeUnmount(() => {
           :icon="failed ? 'mdi-lan-disconnect' : 'mdi-puzzle-outline'"
           :title="
             failed
-              ? failureMessage || t('TXT_CODE_PLUGIN_MARKET_UNREACHABLE')
+              ? t('TXT_CODE_PLUGIN_MARKET_UNREACHABLE')
               : t('TXT_CODE_PLUGIN_MARKET_EMPTY')
           "
-          :description="t('TXT_CODE_NO_DATA')"
-        />
+          :description="failed ? failureMessage : t('TXT_CODE_NO_DATA')"
+        >
+          <template v-if="failed" #actions>
+            <VBtn
+              variant="tonal"
+              prepend-icon="mdi-refresh"
+              :loading="loading"
+              :disabled="applyingChanges"
+              @click="refresh"
+            >{{ t("TXT_CODE_9277af78") }}</VBtn>
+          </template>
+        </Empty>
 
         <VRow v-else-if="visiblePlugins.length" class="plugin-market-grid">
           <VCol v-for="plugin in visiblePlugins" :key="plugin.id" cols="12" md="6" lg="4">

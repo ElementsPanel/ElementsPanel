@@ -9,7 +9,7 @@ import { parseTimestamp } from "@elementspanel/epanel-plugin-console/tools/time"
 import type { JavaInfo } from "../types";
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { computed, ref } from "vue";
-import { VAlert, VBtn, VDataTable } from "vuetify/components";
+import { VBtn, VDataTable } from "vuetify/components";
 import { useJavaList } from "../hooks/useJavaList";
 import JavaRuntimeStatus from "../components/JavaRuntimeStatus.vue";
 
@@ -152,8 +152,24 @@ defineExpose({ open: openDialog, openDialog });
         t("TXT_CODE_b76d94e0")
       }}</VBtn>
     </div>
-    <VAlert v-if="listError" type="error" variant="tonal" class="mb-3">{{ listError }}</VAlert>
+    <Empty
+      v-if="listError"
+      icon="mdi-alert-circle-outline"
+      :title="t('TXT_CODE_ef8f8e29')"
+      :description="listError"
+      :compact="!!javaList.length"
+    >
+      <template #actions>
+        <VBtn
+          variant="tonal"
+          prepend-icon="mdi-refresh"
+          :loading="listLoading"
+          @click="refreshJavaList()"
+        >{{ t("TXT_CODE_9277af78") }}</VBtn>
+      </template>
+    </Empty>
     <VDataTable
+      v-if="!listError || javaList.length"
       :headers="headers"
       :items="javaList"
       :loading="listLoading"

@@ -20,7 +20,9 @@ withDefaults(
   <div class="app-empty" :class="{ 'app-empty--compact': compact }" role="status">
     <VIcon v-if="icon" :icon="icon" size="48" class="app-empty-icon" />
     <div class="app-empty-title">{{ title || t("TXT_CODE_NO_DATA") }}</div>
-    <div v-if="description" class="app-empty-text">{{ description }}</div>
+    <div v-if="description || $slots.description" class="app-empty-text">
+      <slot name="description">{{ description }}</slot>
+    </div>
     <div v-if="$slots.actions" class="app-empty-actions">
       <slot name="actions" />
     </div>

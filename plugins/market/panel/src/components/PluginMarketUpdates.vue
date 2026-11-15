@@ -194,14 +194,23 @@ defineExpose({ refresh, updateAll, canUpdate, preparingTargets });
 
 <template>
   <section class="plugin-updates">
-    <VAlert v-if="error" type="error" variant="tonal" :text="error" class="mb-4" />
-    <VAlert
-      v-if="updates?.checkFailed"
-      type="warning"
-      variant="tonal"
-      :text="t('TXT_CODE_PLUGIN_MARKET_UPDATE_CHECK_FAILED')"
-      class="mb-4"
-    />
+    <Empty
+      v-if="error || updates?.checkFailed"
+      icon="mdi-alert-circle-outline"
+      :title="t('TXT_CODE_PLUGIN_MARKET_UPDATE_CHECK_FAILED')"
+      :description="error || undefined"
+      :compact="!!visibleUpdates.length"
+    >
+      <template #actions>
+        <VBtn
+          variant="tonal"
+          prepend-icon="mdi-refresh"
+          :loading="loading"
+          :disabled="blocked || updatingPlugins"
+          @click="refresh"
+        >{{ t("TXT_CODE_9277af78") }}</VBtn>
+      </template>
+    </Empty>
     <VAlert
       v-if="updates?.uncheckedNodes.length"
       type="warning"

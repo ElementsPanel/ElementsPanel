@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import connectErrorImage from "@elementspanel/epanel-plugin-console/assets/daemon_connection_error";
+import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { useXhrPollError } from "@elementspanel/epanel-plugin-console/hooks/useXhrPollError";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { logInstanceAutoRestart, logInstanceCrash } from "@elementspanel/epanel-plugin-console/services/apis/operationLog";
@@ -126,6 +126,10 @@ events.on("error", (error: Error) => {
   socketError.value = error;
 });
 
+events.on("connect", () => {
+  socketError.value = undefined;
+});
+
 events.once("detail", async () => {
   try {
     const { value } = await getInstanceOutputLog().execute({
@@ -163,10 +167,10 @@ onMounted(async () => {
 <template>
   <!-- Terminal Page View -->
   <div class="console-wrapper">
-    <div v-if="!isConnect" class="terminal-loading">
+    <div v-if="!isConnect && !socketError" class="terminal-loading">
       <VProgressCircular indeterminate />
     </div>
-    <div class="terminal-button-group position-absolute-right position-absolute-top">
+    <div v-show="!socketError" class="terminal-button-group position-absolute-right position-absolute-top">
       <ul>
         <li>
           <VTooltip location="top">
@@ -221,100 +225,89 @@ onMounted(async () => {
       />
     </div>
 
-    <!-- Error Dialog -->
-    <div v-if="socketError" class="error-card">
-      <div class="error-card-container">
-        <h3>{{ $t("TXT_CODE_6929b0b2") }}</h3>
-        <p>
-          {{ $t("TXT_CODE_812a629e") + socketAddress }}
-        </p>
-        <div>
-          <img :src="connectErrorImage" style="width: 100%; height: 110px" />
-        </div>
-        <h3>{{ $t("TXT_CODE_9c95b60f") }}</h3>
-        <div>
-          <pre style="font-size: 12px"><code>{{ socketError?.message||"" }}</code></pre>
-
-          <div v-if="isXhrPollError" style="font-size: 12px">
-            <span> {{ xhrPollErrorReason }}</span>
-          </div>
-        </div>
-        <div v-if="isXhrPollError">
-          <div class="flex" style="gap: 8px; font-size: 12px">
-            <span>
-              <strong>{{ $t("TXT_CODE_d4c8fb3b") }}</strong>
-            </span>
-            <a
-              href="https://docs.mcsmanager.com/ops/proxy_https.html"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {{ $t("TXT_CODE_9b3ce825") }}
-            </a>
-            <span>|</span>
-            <a
-              href="https://docs.mcsmanager.com/ops/mcsm_network.html"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {{ $t("TXT_CODE_10cc2794") }}
-            </a>
-          </div>
-        </div>
-        <h3>{{ $t("TXT_CODE_f1c96d8a") }}</h3>
-        <div>
-          <ul>
-            <li>
-              {{ $t("TXT_CODE_ceba9262") }}
-            </li>
-            <li>
-              {{ $t("TXT_CODE_84099e5") }}
-            </li>
-            <li>
-              {{ $t("TXT_CODE_86ff658a") }}
-            </li>
-          </ul>
-          <div class="flex flex-center">
-            <VBtn variant="text" color="primary" @click="refreshPage">
-              {{ $t("TXT_CODE_f8b28901") }}
-            </VBtn>
-          </div>
-        </div>
-      </div>
+    <div v-if="socketError" class="terminal-error">
+      <Empty icon="mdi-lan-disconnect" :title="t('TXT_CODE_6929b0b2')" compact>
+        <template #description>
+          <p>{{ t("TXT_CODE_812a629e") + socketAddress }}</p>
+          <p class="terminal-error-message">
+            <strong>{{ t("TXT_CODE_9c95b60f") }}</strong>
+            {{ socketError.message }}
+          </p>
+          <p v-if="isXhrPollError">{{ xhrPollErrorReason }}</p>
+          <details class="terminal-error-details">
+            <summary>{{ t("TXT_CODE_f1c96d8a") }}</summary>
+            <div v-if="isXhrPollError" class="terminal-error-links">
+              <strong>{{ t("TXT_CODE_d4c8fb3b") }}</strong>
+              <a
+                href="https://docs.mcsmanager.com/ops/proxy_https.html"
+                target="_blank"
+                rel="noopener noreferrer"
+              >{{ t("TXT_CODE_9b3ce825") }}</a>
+              <a
+                href="https://docs.mcsmanager.com/ops/mcsm_network.html"
+                target="_blank"
+                rel="noopener noreferrer"
+              >{{ t("TXT_CODE_10cc2794") }}</a>
+            </div>
+            <ul>
+              <li>{{ t("TXT_CODE_ceba9262") }}</li>
+              <li>{{ t("TXT_CODE_84099e5") }}</li>
+              <li>{{ t("TXT_CODE_86ff658a") }}</li>
+            </ul>
+          </details>
+        </template>
+        <template #actions>
+          <VBtn variant="tonal" prepend-icon="mdi-refresh" @click="refreshPage">{{
+            t("TXT_CODE_f8b28901")
+          }}</VBtn>
+        </template>
+      </Empty>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-.error-card {
+.terminal-error {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  top: 0;
+  inset: 0;
   z-index: 10;
-  border-radius: 20px;
+  overflow: auto;
+  border-radius: 12px;
+  background: var(--color-gray-1);
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  .error-card-container {
-    overflow: hidden;
-    max-width: 440px;
-    border: 1px solid var(--color-gray-6) !important;
-    background-color: var(--color-gray-1);
-    border-radius: 4px;
-    padding: 12px;
-    box-shadow: 0px 0px 2px var(--color-gray-7);
-  }
-
-  @media (max-width: 992px) {
-    .error-card-container {
-      max-width: 90vw !important;
-    }
+  :deep(.app-empty) {
+    min-height: 100%;
   }
 }
+
+.terminal-error-message {
+  margin: 8px 0;
+  white-space: pre-wrap;
+}
+
+.terminal-error-details {
+  margin-top: 16px;
+  text-align: start;
+
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  ul {
+    margin-top: 12px;
+    padding-inline-start: 20px;
+  }
+}
+
+.terminal-error-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 .console-wrapper {
   position: relative;
 

@@ -1229,14 +1229,23 @@ const confirmAction = async () => {
       </div>
 
       <div class="plugin-config-body">
-        <VAlert
+        <Empty
           v-if="scope === 'node' && nodeError"
-          class="plugin-config-alert"
-          type="warning"
-          variant="tonal"
+          icon="mdi-alert-circle-outline"
           :title="t('TXT_CODE_PLUGIN_NODE_LIST_FAILED')"
-          :text="nodeError"
-        />
+          :description="nodeError"
+          :compact="!!selectedPlugin"
+        >
+          <template #actions>
+            <VBtn
+              variant="tonal"
+              prepend-icon="mdi-refresh"
+              :loading="loading"
+              :disabled="actionBusy"
+              @click="selectedNodeId ? loadNodePlugins() : loadNodes()"
+            >{{ t("TXT_CODE_9277af78") }}</VBtn>
+          </template>
+        </Empty>
         <template v-if="selectedPlugin">
           <VAlert
             v-if="!selectedPlugin.enabled"

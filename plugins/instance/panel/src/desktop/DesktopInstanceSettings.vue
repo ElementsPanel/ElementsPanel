@@ -301,7 +301,23 @@ onBeforeUnmount(() => { generation++; });
         @click="activeTab = tab.id">{{ tab.title }}</VBtn>
     </nav>
     <div class="dis__body">
-      <VAlert v-if="loadError" type="error" variant="tonal" class="mb-4" :text="loadError" />
+      <Empty
+        v-if="loadError"
+        icon="mdi-alert-circle-outline"
+        :title="t('TXT_CODE_ef8f8e29')"
+        :description="loadError"
+        :compact="!!draft"
+      >
+        <template #actions>
+          <VBtn
+            variant="tonal"
+            prepend-icon="mdi-refresh"
+            :loading="isLoading"
+            :disabled="isSaving"
+            @click="load"
+          >{{ t("TXT_CODE_9277af78") }}</VBtn>
+        </template>
+      </Empty>
       <div v-if="isLoading && !draft" class="dis__empty"><VProgressCircular indeterminate /></div>
       <VAlert v-else-if="draft && !canEdit" type="warning" variant="tonal" :text="t('TXT_CODE_permission.forbidden')" />
       <VForm v-else-if="draft" ref="formRef" :disabled="isSaving || isLoading" validate-on="input lazy" class="dis__form" @submit.prevent="save">

@@ -6,7 +6,6 @@ import { markdownToHTML } from "@elementspanel/epanel-plugin-console/tools/safe"
 import { getValidatorErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import {
-  VAlert,
   VAvatar,
   VBtn,
   VChip,
@@ -161,7 +160,23 @@ onBeforeUnmount(() => requestId++);
       <div v-if="loading && !plugin" class="plugin-detail-loading">
         <VProgressCircular indeterminate />
       </div>
-      <VAlert v-if="error" type="error" :text="error" class="mb-4" />
+      <Empty
+        v-if="error"
+        icon="mdi-alert-circle-outline"
+        :title="t('TXT_CODE_ef8f8e29')"
+        :description="error"
+        :compact="!!plugin"
+      >
+        <template #actions>
+          <VBtn
+            variant="tonal"
+            prepend-icon="mdi-refresh"
+            :loading="loading"
+            :disabled="busy"
+            @click="refresh"
+          >{{ t("TXT_CODE_9277af78") }}</VBtn>
+        </template>
+      </Empty>
 
       <template v-if="plugin">
         <header class="plugin-detail-header">
