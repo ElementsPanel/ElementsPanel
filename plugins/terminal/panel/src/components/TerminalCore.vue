@@ -9,6 +9,8 @@ import { onMounted, ref } from "vue";
 import {
   VBtn,
   VChip,
+  VExpansionPanel,
+  VExpansionPanels,
   VProgressCircular,
   VTextField,
   VTooltip
@@ -234,27 +236,30 @@ onMounted(async () => {
             {{ socketError.message }}
           </p>
           <p v-if="isXhrPollError">{{ xhrPollErrorReason }}</p>
-          <details class="terminal-error-details">
-            <summary>{{ t("TXT_CODE_f1c96d8a") }}</summary>
-            <div v-if="isXhrPollError" class="terminal-error-links">
-              <strong>{{ t("TXT_CODE_d4c8fb3b") }}</strong>
-              <a
-                href="https://docs.mcsmanager.com/ops/proxy_https.html"
-                target="_blank"
-                rel="noopener noreferrer"
-              >{{ t("TXT_CODE_9b3ce825") }}</a>
-              <a
-                href="https://docs.mcsmanager.com/ops/mcsm_network.html"
-                target="_blank"
-                rel="noopener noreferrer"
-              >{{ t("TXT_CODE_10cc2794") }}</a>
-            </div>
-            <ul>
-              <li>{{ t("TXT_CODE_ceba9262") }}</li>
-              <li>{{ t("TXT_CODE_84099e5") }}</li>
-              <li>{{ t("TXT_CODE_86ff658a") }}</li>
-            </ul>
-          </details>
+          <VExpansionPanels class="terminal-error-details" variant="accordion" flat>
+            <VExpansionPanel :title="t('TXT_CODE_f1c96d8a')" bg-color="transparent">
+              <template #text>
+                <div v-if="isXhrPollError" class="terminal-error-links">
+                  <strong>{{ t("TXT_CODE_d4c8fb3b") }}</strong>
+                  <a
+                    href="https://docs.mcsmanager.com/ops/proxy_https.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >{{ t("TXT_CODE_9b3ce825") }}</a>
+                  <a
+                    href="https://docs.mcsmanager.com/ops/mcsm_network.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >{{ t("TXT_CODE_10cc2794") }}</a>
+                </div>
+                <ul>
+                  <li>{{ t("TXT_CODE_ceba9262") }}</li>
+                  <li>{{ t("TXT_CODE_84099e5") }}</li>
+                  <li>{{ t("TXT_CODE_86ff658a") }}</li>
+                </ul>
+              </template>
+            </VExpansionPanel>
+          </VExpansionPanels>
         </template>
         <template #actions>
           <VBtn variant="tonal" prepend-icon="mdi-refresh" @click="refreshPage">{{
@@ -289,8 +294,7 @@ onMounted(async () => {
   margin-top: 16px;
   text-align: start;
 
-  summary {
-    cursor: pointer;
+  :deep(.v-expansion-panel-title) {
     font-weight: 600;
   }
 
