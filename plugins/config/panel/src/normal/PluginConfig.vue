@@ -94,18 +94,10 @@ const selectedNodeLabel = computed(
 
 .plugin-config-toolbar {
   flex: 0 0 auto;
-}
-
-.plugin-config-toolbar :deep(.page-toolbar-title) {
-  flex: 1;
-  width: auto;
-  max-width: none;
+  min-height: 56px;
 }
 
 .plugin-config-toolbar :deep(.page-toolbar-actions) {
-  flex: 0 0 auto;
-  width: auto;
-  max-width: none;
   justify-content: flex-end;
 }
 
@@ -156,14 +148,6 @@ const selectedNodeLabel = computed(
 @media (max-width: 992px) {
   .plugin-config-container {
     padding: 16px 12px 28px;
-  }
-
-  .plugin-config-toolbar :deep(.page-toolbar-title) {
-    flex-basis: 100%;
-  }
-
-  .plugin-config-toolbar :deep(.page-toolbar-actions) {
-    flex: 1 1 100%;
   }
 
   .plugin-config-node-name {
