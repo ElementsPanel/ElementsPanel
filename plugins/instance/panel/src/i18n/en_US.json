@@ -123,5 +123,9 @@
   "TXT_CODE_VERSION_SELECT": "Version Selection",
   "TXT_CODE_YESTERDAY": "Yesterday",
   "TXT_CODE_c564f5bf": "All Loaders",
-  "TXT_CODE_cc4db8f0": "All Types"
+  "TXT_CODE_cc4db8f0": "All Types",
+  "TXT_CODE_MOD_SETTING_requestTimeoutMs": "Mod request timeout (ms)",
+  "TXT_CODE_MOD_SETTING_requestTimeoutMs_DESC": "Timeout per Mod metadata request, in milliseconds. Applies to subsequent requests.",
+  "TXT_CODE_MOD_SETTING_requestRetries": "Mod request retries",
+  "TXT_CODE_MOD_SETTING_requestRetries_DESC": "Retries after transient network failures. 0 disables retries."
 }

@@ -479,6 +479,7 @@ function scheduleFixture(t) {
   const scheduler = load(
     "plugins/instance/daemon/src/backend/service/system_instance_control.ts",
     {
+      "../instance_settings": load("plugins/instance/daemon/src/backend/instance_settings.ts", { "./entity/config": { globalConfiguration: { config: {} } } }),
       "node-schedule": {
         scheduleJob: (time, callback) => (time.includes("invalid") ? null : createJob(callback))
       },
@@ -712,6 +713,7 @@ test("instance deletion awaits filesystem success and preserves retryable instan
   let failRemove = true;
   const deleted = [];
   const subsystem = load("plugins/instance/daemon/src/backend/service/system_instance.ts", {
+    "../instance_settings": load("plugins/instance/daemon/src/backend/instance_settings.ts", { "./entity/config": { globalConfiguration: { config: {} } } }),
     "fs-extra": {
       ...fse,
       remove: async (target) => {

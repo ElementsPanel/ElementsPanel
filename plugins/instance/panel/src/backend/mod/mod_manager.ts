@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { PanelPluginContext } from "../../../../../../core/panel/src/app/plugin";
+import { ModManagerSettings, normalizeModManagerSettings } from "./settings";
 import {
   apiBase,
   curseforgeKeyHeaders,
@@ -29,6 +30,7 @@ export interface ModrinthVersion {
 
 export class ModManagerService {
   private preference: ModSourcePreference;
+  private requestSettings = new ModManagerSettings();
   private readonly MAX_CACHE_SIZE = 1000;
   private cache = new Map<string, any>();
   private mcVersionsCache: string[] = [];
@@ -66,6 +68,15 @@ export class ModManagerService {
    */
   public setSourcePreference(preference: ModSourcePreference) {
     this.preference = preference;
+  }
+
+  public get settings(): ModManagerSettings {
+    return { ...this.requestSettings, sourcePreference: this.preference };
+  }
+
+  public setSettings(settings: ModManagerSettings) {
+    this.requestSettings = normalizeModManagerSettings(settings);
+    this.preference = this.requestSettings.sourcePreference;
   }
 
   private get baseUrl() {
@@ -198,7 +209,11 @@ export class ModManagerService {
     }
   }
 
-  private async requestWithRetry(config: any, retries = 2): Promise<any> {
+  private async requestWithRetry(
+    config: any,
+    retries = this.requestSettings.requestRetries,
+    fallbackUsed = false
+  ): Promise<any> {
     try {
       return await axios({
         ...config,
@@ -207,7 +222,7 @@ export class ModManagerService {
           ...curseforgeKeyHeaders(config.url),
           "User-Agent": "ElementsPanel"
         },
-        timeout: config.timeout || 5000,
+        timeout: this.requestSettings.requestTimeoutMs,
         signal: this.controller.signal
       });
     } catch (err: any) {
@@ -217,6 +232,7 @@ export class ModManagerService {
       // mirror while it catches up, or leave searches empty during an outage.
       const shouldFallback =
         fallback &&
+        !fallbackUsed &&
         (!err.response || [403, 404, 408, 429, 500, 502, 503, 504].includes(err.response.status));
       if ([`${this.baseUrl}/search`, `${this.curseforgeUrl}/mods/search`].includes(config.url)) {
         const source = config.url === `${this.baseUrl}/search` ? "Modrinth" : "CurseForge";
@@ -238,7 +254,8 @@ export class ModManagerService {
             ...config,
             url: fallback.url
           },
-          retries
+          retries,
+          true
         );
       }
       const isNetworkError =
@@ -251,7 +268,7 @@ export class ModManagerService {
 
       if (retries > 0 && (isNetworkError || isRetryableStatus)) {
         await this.ctx.sleep(1500);
-        return await this.requestWithRetry(config, retries - 1);
+        return await this.requestWithRetry(config, retries - 1, fallbackUsed);
       }
       throw err;
     }
@@ -662,8 +679,7 @@ export class ModManagerService {
         params,
         headers: {
           Accept: "application/json"
-        },
-        timeout: 10000
+        }
       });
 
       if (!res.data || !res.data.data || !Array.isArray(res.data.data)) {
@@ -883,8 +899,7 @@ export class ModManagerService {
                 try {
                   const vRes = await this.requestWithRetry({
                     method: "GET",
-                    url: `https://api.spiget.org/v2/resources/${item.id}/versions/${item.version.id}`,
-                    timeout: 4000
+                    url: `https://api.spiget.org/v2/resources/${item.id}/versions/${item.version.id}`
                   });
                   if (vRes.data?.name) {
                     versionNamesMap[item.version.id] = vRes.data.name;

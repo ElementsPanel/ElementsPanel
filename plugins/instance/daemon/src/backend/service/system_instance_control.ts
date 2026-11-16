@@ -7,6 +7,7 @@ import { fileSubsystem } from "./file_access";
 import logger from "./log";
 import { ctx as daemon } from "../plugin/context";
 import InstanceSubsystem from "./system_instance";
+import { instanceSetting } from "../instance_settings";
 
 export enum ScheduleActionTypeEnum {
   Delay = "delay",
@@ -125,19 +126,30 @@ class InstanceControlSubsystem {
     if (replaceName != null && !previous) {
       throw new Error($t("TXT_CODE_system_instance_control.crateTaskErr", { name: replaceName }));
     }
-    if (!previous && registeredTasks.length >= 8)
-      throw new Error($t("TXT_CODE_system_instance_control.execLimit"));
+    const maxTasks = instanceSetting("instanceScheduleMaxTasks");
+    if (needStore && !previous && registeredTasks.length >= maxTasks)
+      throw new Error($t("TXT_CODE_INSTANCE_SCHEDULE_TASK_LIMIT", { limit: maxTasks }));
     if (registeredTasks.some((entry) => entry !== previous && entry.config.name === task.name))
       throw new Error($t("TXT_CODE_system_instance_control.existRepeatTask"));
     if (!fileSubsystem().FileManager.checkFileName(task.name))
       throw new Error($t("TXT_CODE_system_instance_control.illegalName"));
+    if (
+      needStore &&
+      Array.isArray(task.actions) &&
+      task.actions.length > instanceSetting("instanceScheduleMaxActions")
+    ) {
+      throw new Error(
+        $t("TXT_CODE_INSTANCE_SCHEDULE_ACTION_LIMIT", {
+          limit: instanceSetting("instanceScheduleMaxActions")
+        })
+      );
+    }
     if (
       !Object.values(ScheduleTypeEnum).includes(task.type) ||
       !Number.isSafeInteger(task.count) ||
       (task.count !== -1 && task.count <= 0) ||
       !Array.isArray(task.actions) ||
       task.actions.length === 0 ||
-      task.actions.length > 10 ||
       task.actions.some(
         (action) =>
           !action ||

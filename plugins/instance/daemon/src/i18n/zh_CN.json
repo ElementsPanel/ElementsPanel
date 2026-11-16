@@ -78,5 +78,22 @@
   "TXT_CODE_minecraft.invalidDownload": "Minecraft 下载参数无效。",
   "TXT_CODE_minecraft.missingFiles": "未找到安装后的服务端启动文件，请检查下载包和安装日志。",
   "TXT_CODE_minecraft.platformMismatch": "基岩版服务端与节点不兼容，请选择与节点 Windows/Linux 系统一致的版本，并使用 x64 节点。",
-  "TXT_CODE_quick_install.unzipError": "解压文件失败"
+  "TXT_CODE_quick_install.unzipError": "解压文件失败",
+  "TXT_CODE_INSTANCE_SETTING_instanceAutoRestartResetSeconds": "稳定运行后重置重启次数（秒）",
+  "TXT_CODE_INSTANCE_SETTING_instanceAutoRestartResetSeconds_DESC": "连续运行达到该时长后清零自动重启次数，0 表示关闭，下次实例启动生效。",
+  "TXT_CODE_INSTANCE_SETTING_instanceLogMaxSizeKB": "实例日志保存上限（KB）",
+  "TXT_CODE_INSTANCE_SETTING_instanceLogMaxSizeKB_DESC": "超过上限时保留最近输出，0 表示停止保存日志，已有日志保留。",
+  "TXT_CODE_INSTANCE_SETTING_instanceDiskCheckIntervalSeconds": "磁盘空间检查间隔（秒）",
+  "TXT_CODE_INSTANCE_SETTING_instanceDiskCheckIntervalSeconds_DESC": "扫描实例目录大小的间隔，下一个扫描周期生效。",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopTimeoutSeconds": "实例停止超时（秒）",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopTimeoutSeconds_DESC": "执行停止命令后等待进程退出的时长，下次停止生效。",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxTasks": "每个实例的定时任务上限",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxTasks_DESC": "限制新增任务数量，调低上限后已有任务继续运行。",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxActions": "每个定时任务的动作上限",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxActions_DESC": "创建或编辑任务时允许的动作数量，已有任务继续运行。",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopForceKill": "停止超时后强制结束",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopForceKill_DESC": "停止超时后强制终止进程，默认关闭，下次停止生效。",
+  "TXT_CODE_INSTANCE_SCHEDULE_TASK_LIMIT": "每个实例最多允许 {{limit}} 个定时任务。",
+  "TXT_CODE_INSTANCE_SCHEDULE_ACTION_LIMIT": "每个定时任务最多允许 {{limit}} 个动作。",
+  "TXT_CODE_INSTANCE_STOP_FORCE_KILL": "停止已超时，正在强制终止进程。"
 }

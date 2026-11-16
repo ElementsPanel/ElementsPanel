@@ -123,5 +123,9 @@
   "TXT_CODE_VERSION_SELECT": "Version Selection",
   "TXT_CODE_YESTERDAY": "Ayer",
   "TXT_CODE_c564f5bf": "Todos los cargadores",
-  "TXT_CODE_cc4db8f0": "Todos los tipos"
+  "TXT_CODE_cc4db8f0": "Todos los tipos",
+  "TXT_CODE_MOD_SETTING_requestTimeoutMs": "Tiempo de espera de solicitudes Mod (ms)",
+  "TXT_CODE_MOD_SETTING_requestTimeoutMs_DESC": "Tiempo máximo por solicitud de metadatos Mod en milisegundos. Se aplica a las solicitudes siguientes.",
+  "TXT_CODE_MOD_SETTING_requestRetries": "Reintentos de solicitudes Mod",
+  "TXT_CODE_MOD_SETTING_requestRetries_DESC": "Reintentos tras fallos temporales de red. 0 desactiva los reintentos."
 }

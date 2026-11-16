@@ -348,6 +348,7 @@ function instanceFixture() {
   const saved = [];
   const logs = [];
   const { default: Instance } = load(base + "entity/instance/instance.ts", {
+    "../../instance_settings": load(base + "instance_settings.ts", { "./entity/config": { globalConfiguration: { config: {} } } }),
     "mcsmanager-common": {},
     "../../common/string_cache": { CircularBuffer: class {
       getCache() { return { items: [], wasDeleted: false }; }
@@ -417,6 +418,7 @@ test("rejected destruction is handled and intentional stops do not report quick-
 test("new schedules reject unknown actions but restore optional plugin actions from storage", () => {
   const jobs = [];
   const scheduler = load(base + "service/system_instance_control.ts", {
+    "../instance_settings": load(base + "instance_settings.ts", { "./entity/config": { globalConfiguration: { config: {} } } }),
     "node-schedule": {},
     "../common/system_storage": { list: () => [], store() {}, delete() {} },
     "../entity/instance/instance": {},

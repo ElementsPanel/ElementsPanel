@@ -48,7 +48,7 @@ async function until(check) {
   }
 }
 
-async function fixture(t, { sleep = async () => {}, configs = [] } = {}) {
+async function fixture(t, { sleep = async () => {}, configs = [], settings = {} } = {}) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "elements-handover-"));
   const ctx = new Context();
   const cleanup = commonLoad("core/common/src/plugin_lifecycle.ts").trackPluginDisposal(ctx);
@@ -78,7 +78,8 @@ async function fixture(t, { sleep = async () => {}, configs = [] } = {}) {
           allocatablePortRange: [10000, 20000],
           currentAllocatablePort: 10000,
           portAssignInterval: 1,
-          port: 24444
+          port: 24444,
+          ...settings
         },
         save() {}
       });
@@ -442,6 +443,52 @@ test("a process that exits during handover is cleaned up and restarts only after
   assert.equal(f.events.filter((event) => event === "launch:running").length, 1);
   assert.equal(instance.autoRestartCount, 1);
   assert.equal(process.kills, 0);
+});
+
+test("stable operation resets restart counters and preserves elapsed time across reload", async (t) => {
+  const f = await fixture(t, { settings: { instanceAutoRestartResetSeconds: 10 } });
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 100000 });
+  const instance = f.create();
+  instance.autoRestartCount = 3;
+  instance.started(f.adapter(child()));
+  t.mock.timers.tick(9999);
+  assert.equal(instance.autoRestartCount, 3);
+  await f.pause();
+  t.mock.timers.tick(1);
+  assert.equal(instance.autoRestartCount, 3);
+  await f.resume();
+  assert.equal(instance.autoRestartCount, 0);
+
+  const stopping = f.create("stopping");
+  stopping.autoRestartCount = 4;
+  stopping.started(f.adapter(child()));
+  stopping.status(1);
+  t.mock.timers.tick(10000);
+  assert.equal(stopping.autoRestartCount, 4);
+  await instance.stopped();
+  await stopping.stopped();
+});
+
+test("stop timeout uses the configured duration and force termination is optional", async (t) => {
+  const f = await fixture(t, { settings: { instanceStopTimeoutSeconds: 3 } });
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 100000 });
+  const instance = f.create();
+  const process = child();
+  await instance.forceExec(new (f.current.source(base + "entity/commands/dispatcher.ts").default)());
+  instance.config.stopCommand = "stop";
+  instance.started(f.adapter(process));
+  await instance.execPreset("stop");
+  t.mock.timers.tick(2999);
+  assert.equal(instance.status(), 1);
+  t.mock.timers.tick(1);
+  assert.equal(instance.status(), 3);
+  assert.equal(process.kills, 0);
+
+  f.ctx.settings.config.instanceStopForceKill = true;
+  await instance.execPreset("stop");
+  t.mock.timers.tick(3000);
+  await until(() => instance.status() === 0);
+  assert.equal(process.kills, 1);
 });
 
 test("failed replacements retain processes for retry and shutdown also cleans up an unclaimed handover", async (t) => {

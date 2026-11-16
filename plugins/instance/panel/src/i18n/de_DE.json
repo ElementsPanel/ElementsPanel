@@ -123,5 +123,9 @@
   "TXT_CODE_VERSION_SELECT": "Versionsauswahl",
   "TXT_CODE_YESTERDAY": "Gestern",
   "TXT_CODE_c564f5bf": "Alle Lader",
-  "TXT_CODE_cc4db8f0": "Alle Typen"
+  "TXT_CODE_cc4db8f0": "Alle Typen",
+  "TXT_CODE_MOD_SETTING_requestTimeoutMs": "Mod-Anfragezeitlimit (ms)",
+  "TXT_CODE_MOD_SETTING_requestTimeoutMs_DESC": "Zeitlimit pro Mod-Metadatenanfrage in Millisekunden. Gilt für folgende Anfragen.",
+  "TXT_CODE_MOD_SETTING_requestRetries": "Wiederholungen von Mod-Anfragen",
+  "TXT_CODE_MOD_SETTING_requestRetries_DESC": "Wiederholungen bei vorübergehenden Netzwerkfehlern. 0 deaktiviert Wiederholungen."
 }

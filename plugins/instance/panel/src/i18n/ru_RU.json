@@ -123,5 +123,9 @@
   "TXT_CODE_VERSION_SELECT": "Version Selection",
   "TXT_CODE_YESTERDAY": "Вчера",
   "TXT_CODE_c564f5bf": "Все загрузчики",
-  "TXT_CODE_cc4db8f0": "Все типы"
+  "TXT_CODE_cc4db8f0": "Все типы",
+  "TXT_CODE_MOD_SETTING_requestTimeoutMs": "Тайм-аут запросов Mod (мс)",
+  "TXT_CODE_MOD_SETTING_requestTimeoutMs_DESC": "Тайм-аут каждого запроса метаданных Mod в миллисекундах. Применяется к следующим запросам.",
+  "TXT_CODE_MOD_SETTING_requestRetries": "Повторные попытки запросов Mod",
+  "TXT_CODE_MOD_SETTING_requestRetries_DESC": "Повторные попытки при временных сетевых ошибках. 0 отключает повторы."
 }

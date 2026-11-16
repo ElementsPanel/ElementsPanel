@@ -654,6 +654,19 @@ function mirrorManager(respond, preference) {
   return { manager, requests, dispose: () => dispose() };
 }
 
+test("Mod request limits bound retries even when both sources fail", async () => {
+  for (const retries of [0, 2]) {
+    const f = mirrorManager(() => { throw { code: "ECONNRESET" }; });
+    f.manager.setSettings({ sourcePreference: "mirror", requestTimeoutMs: 12000, requestRetries: retries });
+    await f.manager.searchProjects("unavailable", 0, 10, { source: "modrinth" });
+    assert.equal(f.requests.length, retries + 2);
+    assert.ok(f.requests.every(request => request.timeout === 12000));
+    assert.equal(new URL(f.requests[0].url).hostname, "mod.mcimirror.top");
+    assert.ok(f.requests.slice(1).every(request => new URL(request.url).hostname === "api.modrinth.com"));
+    f.dispose();
+  }
+});
+
 test("Modrinth search, metadata, version lists and hash lookup use MCIM with ElementsPanel UA", async () => {
   const responses = {
     "/tag/game_version": [{ version: "1.21.1", version_type: "release" }],
@@ -901,10 +914,14 @@ test("the download route applies the live preference to stale version lists", as
 
 test("the stored source preference loads at startup and the settings form switches it live", async (t) => {
   const stored = new Map();
+  let failStore = false;
   const storage = {
     getStorage: () => ({
       load: async (category, _classz, uuid) => stored.get(`${category}:${uuid}`) ?? null,
-      store: async (category, uuid, object) => void stored.set(`${category}:${uuid}`, object)
+      store: async (category, uuid, object) => {
+        if (failStore) throw new Error("disk full");
+        stored.set(`${category}:${uuid}`, object);
+      }
     })
   };
   let declaration;
@@ -932,9 +949,9 @@ test("the stored source preference loads at startup and the settings form switch
   first.ctx.plugin((scoped) => scoped.set("remote", first.remote));
   await until(() => declaration);
 
-  // The form is one select with both options, titled from the plugin catalogue.
+  // Source selection and network limits share the plugin settings form.
   const fields = declaration.fields();
-  assert.equal(fields.length, 1);
+  assert.equal(fields.length, 3);
   assert.equal(fields[0].key, "sourcePreference");
   assert.equal(fields[0].type, "select");
   assert.equal(fields[0].title, "TXT_CODE_MOD_SOURCE_PREFERENCE");
@@ -945,23 +962,37 @@ test("the stored source preference loads at startup and the settings form switch
   ]);
 
   // Nothing stored yet: the mirror is the default.
-  assert.deepEqual(await declaration.read(), { sourcePreference: "mirror" });
+  const defaults = { requestTimeoutMs: 5000, requestRetries: 2 };
+  assert.deepEqual(await declaration.read(), { sourcePreference: "mirror", ...defaults });
   assert.equal(await searchOrigin(first), "https://mod.mcimirror.top");
 
   // Writing persists the choice and switches the running service without a restart.
   await declaration.write({ sourcePreference: "official" });
   assert.deepEqual(warnings, [], "loading and saving settings use declared services");
-  assert.deepEqual(stored.get("ModManagerSettings:config"), { sourcePreference: "official" });
-  assert.deepEqual(await declaration.read(), { sourcePreference: "official" });
+  assert.deepEqual(stored.get("ModManagerSettings:config"), { sourcePreference: "official", ...defaults });
+  assert.deepEqual(await declaration.read(), { sourcePreference: "official", ...defaults });
   assert.equal(await searchOrigin(first), "https://api.modrinth.com");
 
   // A value outside the declared options is refused instead of persisted.
   await assert.rejects(declaration.write({ sourcePreference: "bogus" }));
-  assert.deepEqual(stored.get("ModManagerSettings:config"), { sourcePreference: "official" });
+  assert.deepEqual(stored.get("ModManagerSettings:config"), { sourcePreference: "official", ...defaults });
+  await declaration.write({ requestTimeoutMs: 15000, requestRetries: 0 });
+  await searchOrigin(first);
+  assert.equal(requests.at(-1).timeout, 15000);
+  assert.equal((await declaration.read()).requestRetries, 0);
+  failStore = true;
+  await assert.rejects(declaration.write({ requestTimeoutMs: 6000 }), /disk full/);
+  assert.equal((await declaration.read()).requestTimeoutMs, 15000);
+  failStore = false;
+  for (const values of [{ requestTimeoutMs: 0 }, { requestRetries: 6 }, { requestRetries: null }]) {
+    await assert.rejects(declaration.write(values));
+  }
 
   // A fresh plugin instance starts on the stored preference.
+  const previousDeclaration = declaration;
   const second = await panelFixture(t, { storage, settingsForm, axios });
   second.ctx.plugin((scoped) => scoped.set("remote", second.remote));
-  await until(() => declaration.read().sourcePreference === "official");
+  await until(() => declaration !== previousDeclaration && declaration.read().sourcePreference === "official");
   assert.equal(await searchOrigin(second), "https://api.modrinth.com");
+  assert.equal(requests.at(-1).timeout, 15000);
 });

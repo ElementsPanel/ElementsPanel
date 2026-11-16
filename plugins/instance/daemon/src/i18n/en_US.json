@@ -78,5 +78,22 @@
   "TXT_CODE_minecraft.invalidDownload": "Invalid Minecraft download parameters.",
   "TXT_CODE_minecraft.missingFiles": "Installed server startup files were not found. Check the downloaded package and installation log.",
   "TXT_CODE_minecraft.platformMismatch": "The Bedrock server is incompatible with this node. Select a version matching the node’s Windows/Linux OS and use an x64 node.",
-  "TXT_CODE_quick_install.unzipError": "Unzip Failed"
+  "TXT_CODE_quick_install.unzipError": "Unzip Failed",
+  "TXT_CODE_INSTANCE_SETTING_instanceAutoRestartResetSeconds": "Restart count reset (seconds)",
+  "TXT_CODE_INSTANCE_SETTING_instanceAutoRestartResetSeconds_DESC": "Reset the count after continuous operation for this duration. 0 disables; applies on next start.",
+  "TXT_CODE_INSTANCE_SETTING_instanceLogMaxSizeKB": "Saved instance log limit (KB)",
+  "TXT_CODE_INSTANCE_SETTING_instanceLogMaxSizeKB_DESC": "Keep the latest output within this limit. 0 stops logging and leaves existing logs.",
+  "TXT_CODE_INSTANCE_SETTING_instanceDiskCheckIntervalSeconds": "Disk check interval (seconds)",
+  "TXT_CODE_INSTANCE_SETTING_instanceDiskCheckIntervalSeconds_DESC": "Time between directory-size scans. Applies to the next scan cycle.",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopTimeoutSeconds": "Stop timeout (seconds)",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopTimeoutSeconds_DESC": "Wait for the process to exit after a stop command. Applies to the next stop.",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxTasks": "Maximum scheduled tasks per instance",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxTasks_DESC": "Limit new tasks. Existing tasks continue after lowering the limit.",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxActions": "Maximum actions per scheduled task",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxActions_DESC": "Limit actions when creating or editing a task. Existing tasks continue.",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopForceKill": "Force termination on stop timeout",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopForceKill_DESC": "Force-kill the process when stopping times out. Disabled by default; applies to the next stop.",
+  "TXT_CODE_INSTANCE_SCHEDULE_TASK_LIMIT": "At most {{limit}} scheduled tasks are allowed per instance.",
+  "TXT_CODE_INSTANCE_SCHEDULE_ACTION_LIMIT": "At most {{limit}} actions are allowed per scheduled task.",
+  "TXT_CODE_INSTANCE_STOP_FORCE_KILL": "Stopping timed out; forcibly terminating the process."
 }

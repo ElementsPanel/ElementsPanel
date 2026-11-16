@@ -54,6 +54,15 @@ class Config {
   public softShutdownSkipDocker = true;
   public softShutdownWaitSeconds = 30;
 
+  // Instance plugin defaults. Existing instance-specific event switches remain authoritative.
+  public instanceAutoRestartResetSeconds = 0;
+  public instanceLogMaxSizeKB = 512;
+  public instanceDiskCheckIntervalSeconds = 45;
+  public instanceStopTimeoutSeconds = 600;
+  public instanceStopForceKill = false;
+  public instanceScheduleMaxTasks = 8;
+  public instanceScheduleMaxActions = 10;
+
   public whiteListPanelIp = false;
   public whiteListPanelIps = ["127.0.0.1", "::1"];
 

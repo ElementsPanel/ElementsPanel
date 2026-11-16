@@ -78,5 +78,22 @@
   "TXT_CODE_minecraft.invalidDownload": "Parámetros de descarga de Minecraft no válidos.",
   "TXT_CODE_minecraft.missingFiles": "No se encontraron los archivos de inicio del servidor instalado. Revisa el paquete descargado y el registro de instalación.",
   "TXT_CODE_minecraft.platformMismatch": "El servidor Bedrock no es compatible con este nodo. Selecciona una versión que coincida con Windows/Linux del nodo y utiliza un nodo x64.",
-  "TXT_CODE_quick_install.unzipError": "No se pudo descomprimir el archivo"
+  "TXT_CODE_quick_install.unzipError": "No se pudo descomprimir el archivo",
+  "TXT_CODE_INSTANCE_SETTING_instanceAutoRestartResetSeconds": "Restablecer contador de reinicios (segundos)",
+  "TXT_CODE_INSTANCE_SETTING_instanceAutoRestartResetSeconds_DESC": "Restablece el contador tras este tiempo de ejecución continua. 0 lo desactiva; se aplica al próximo inicio.",
+  "TXT_CODE_INSTANCE_SETTING_instanceLogMaxSizeKB": "Límite de registros de instancia (KB)",
+  "TXT_CODE_INSTANCE_SETTING_instanceLogMaxSizeKB_DESC": "Conserva la salida más reciente hasta este límite. 0 deja de guardar; los registros existentes se conservan.",
+  "TXT_CODE_INSTANCE_SETTING_instanceDiskCheckIntervalSeconds": "Intervalo de comprobación de disco (segundos)",
+  "TXT_CODE_INSTANCE_SETTING_instanceDiskCheckIntervalSeconds_DESC": "Tiempo entre exploraciones del tamaño del directorio. Se aplica al siguiente ciclo.",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopTimeoutSeconds": "Tiempo de espera al detener (segundos)",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopTimeoutSeconds_DESC": "Espera a que termine el proceso tras el comando de parada. Se aplica a la próxima parada.",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxTasks": "Máximo de tareas programadas por instancia",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxTasks_DESC": "Limita las tareas nuevas. Las existentes siguen funcionando al reducir el límite.",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxActions": "Máximo de acciones por tarea programada",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxActions_DESC": "Limita las acciones al crear o editar tareas. Las existentes siguen funcionando.",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopForceKill": "Forzar cierre al agotar el tiempo de parada",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopForceKill_DESC": "Termina el proceso si la parada supera el tiempo límite. Desactivado por defecto; se aplica a la próxima parada.",
+  "TXT_CODE_INSTANCE_SCHEDULE_TASK_LIMIT": "Se permiten como máximo {{limit}} tareas programadas por instancia.",
+  "TXT_CODE_INSTANCE_SCHEDULE_ACTION_LIMIT": "Se permiten como máximo {{limit}} acciones por tarea programada.",
+  "TXT_CODE_INSTANCE_STOP_FORCE_KILL": "Se agotó el tiempo de parada; terminando el proceso a la fuerza."
 }

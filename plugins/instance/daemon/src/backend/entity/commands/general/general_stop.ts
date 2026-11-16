@@ -1,6 +1,8 @@
 import { $t } from "../../../i18n";
 import Instance from "../../instance/instance";
 import InstanceCommand from "../base/command";
+import { globalConfiguration } from "../../config";
+import { instanceSetting } from "../../../instance_settings";
 
 export default class GeneralStopCommand extends InstanceCommand {
   constructor() {
@@ -12,6 +14,8 @@ export default class GeneralStopCommand extends InstanceCommand {
     const stopCommand = instance.config.stopCommand;
     if (instance.status() === Instance.STATUS_STOP || !instance.process)
       return instance.failure(new Error($t("TXT_CODE_general_stop.notRunning")));
+    const process = instance.process;
+    const cacheStartCount = instance.startCount;
 
     instance.status(Instance.STATUS_STOPPING);
     instance.ignoreEventTaskOnce();
@@ -24,18 +28,31 @@ export default class GeneralStopCommand extends InstanceCommand {
     instance.print("\n");
     instance.println("INFO", $t("TXT_CODE_pty_stop.execCmd", { stopCommand: `\n${stopCommand}` }));
 
-    const cacheStartCount = instance.startCount;
+    if (instance.status() !== Instance.STATUS_STOPPING || instance.process !== process)
+      return instance;
+    const forceKill = globalConfiguration.config.instanceStopForceKill === true;
 
-    // If the instance is still in the stopped state after 10 minutes, restore the state
-    setTimeout(() => {
+    instance.scheduleStopTimeout(instanceSetting("instanceStopTimeoutSeconds"), () => {
       if (
         instance.status() === Instance.STATUS_STOPPING &&
-        instance.startCount === cacheStartCount
+        instance.startCount === cacheStartCount &&
+        instance.process === process
       ) {
         instance.println("ERROR", $t("TXT_CODE_general_stop.stopErr"));
-        instance.status(Instance.STATUS_RUNNING);
+        if (forceKill) {
+          instance.println("WARNING", $t("TXT_CODE_INSTANCE_STOP_FORCE_KILL"));
+          void Promise.resolve()
+            .then(() => process.kill("SIGKILL"))
+            .catch((error) => {
+              instance.println("ERROR", String(error));
+              if (instance.startCount === cacheStartCount && instance.process === process)
+                instance.status(Instance.STATUS_RUNNING);
+            });
+        } else {
+          instance.status(Instance.STATUS_RUNNING);
+        }
       }
-    }, 1000 * 60 * 10);
+    });
 
     return instance;
   }

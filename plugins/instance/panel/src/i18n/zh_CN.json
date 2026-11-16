@@ -123,5 +123,9 @@
   "TXT_CODE_VERSION_SELECT": "版本选择",
   "TXT_CODE_YESTERDAY": "昨天",
   "TXT_CODE_c564f5bf": "所有加载器",
-  "TXT_CODE_cc4db8f0": "所有类型"
+  "TXT_CODE_cc4db8f0": "所有类型",
+  "TXT_CODE_MOD_SETTING_requestTimeoutMs": "Mod 请求超时（毫秒）",
+  "TXT_CODE_MOD_SETTING_requestTimeoutMs_DESC": "每次 Mod 元数据请求的超时时长，保存后对后续请求生效。",
+  "TXT_CODE_MOD_SETTING_requestRetries": "Mod 请求重试次数",
+  "TXT_CODE_MOD_SETTING_requestRetries_DESC": "临时网络故障后的重试次数，0 表示不重试。"
 }

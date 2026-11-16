@@ -78,5 +78,22 @@
   "TXT_CODE_minecraft.invalidDownload": "Geçersiz Minecraft indirme parametreleri.",
   "TXT_CODE_minecraft.missingFiles": "Kurulan sunucunun başlatma dosyaları bulunamadı. İndirilen paketi ve kurulum günlüğünü kontrol edin.",
   "TXT_CODE_minecraft.platformMismatch": "Bedrock sunucusu bu düğümle uyumlu değil. Düğümün Windows/Linux sistemine uygun bir sürüm seçin ve x64 düğüm kullanın.",
-  "TXT_CODE_quick_install.unzipError": "Unzip Başarısız"
+  "TXT_CODE_quick_install.unzipError": "Unzip Başarısız",
+  "TXT_CODE_INSTANCE_SETTING_instanceAutoRestartResetSeconds": "Yeniden başlatma sayacını sıfırlama (saniye)",
+  "TXT_CODE_INSTANCE_SETTING_instanceAutoRestartResetSeconds_DESC": "Bu süre boyunca kesintisiz çalışınca sayacı sıfırlar. 0 devre dışı bırakır; sonraki başlangıçta uygulanır.",
+  "TXT_CODE_INSTANCE_SETTING_instanceLogMaxSizeKB": "Örnek günlük sınırı (KB)",
+  "TXT_CODE_INSTANCE_SETTING_instanceLogMaxSizeKB_DESC": "Sınır içinde en son çıktıyı saklar. 0 kaydı durdurur ve mevcut günlükleri korur.",
+  "TXT_CODE_INSTANCE_SETTING_instanceDiskCheckIntervalSeconds": "Disk kontrol aralığı (saniye)",
+  "TXT_CODE_INSTANCE_SETTING_instanceDiskCheckIntervalSeconds_DESC": "Dizin boyutu taramaları arasındaki süre. Sonraki tarama döngüsünde uygulanır.",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopTimeoutSeconds": "Durdurma zaman aşımı (saniye)",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopTimeoutSeconds_DESC": "Durdurma komutundan sonra işlemin bitmesini bekler. Sonraki durdurmada uygulanır.",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxTasks": "Örnek başına en fazla zamanlanmış görev",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxTasks_DESC": "Yeni görevleri sınırlar. Sınır düşürülse de mevcut görevler devam eder.",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxActions": "Zamanlanmış görev başına en fazla eylem",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxActions_DESC": "Görev oluştururken veya düzenlerken eylemleri sınırlar. Mevcut görevler devam eder.",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopForceKill": "Durdurma zaman aşımında zorla sonlandır",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopForceKill_DESC": "Durdurma zaman aşımına uğrarsa işlemi zorla sonlandırır. Varsayılan olarak kapalıdır; sonraki durdurmada uygulanır.",
+  "TXT_CODE_INSTANCE_SCHEDULE_TASK_LIMIT": "Örnek başına en fazla {{limit}} zamanlanmış göreve izin verilir.",
+  "TXT_CODE_INSTANCE_SCHEDULE_ACTION_LIMIT": "Zamanlanmış görev başına en fazla {{limit}} eyleme izin verilir.",
+  "TXT_CODE_INSTANCE_STOP_FORCE_KILL": "Durdurma zaman aşımına uğradı; işlem zorla sonlandırılıyor."
 }

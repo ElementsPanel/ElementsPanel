@@ -123,5 +123,9 @@
   "TXT_CODE_VERSION_SELECT": "Version Selection",
   "TXT_CODE_YESTERDAY": "เมื่อวาน",
   "TXT_CODE_c564f5bf": "ตัวโหลดทั้งหมด",
-  "TXT_CODE_cc4db8f0": "ทุกประเภท"
+  "TXT_CODE_cc4db8f0": "ทุกประเภท",
+  "TXT_CODE_MOD_SETTING_requestTimeoutMs": "เวลารอคำขอ Mod (มิลลิวินาที)",
+  "TXT_CODE_MOD_SETTING_requestTimeoutMs_DESC": "เวลารอสูงสุดต่อคำขอข้อมูล Mod หน่วยมิลลิวินาที มีผลกับคำขอถัดไป",
+  "TXT_CODE_MOD_SETTING_requestRetries": "จำนวนลองคำขอ Mod ใหม่",
+  "TXT_CODE_MOD_SETTING_requestRetries_DESC": "จำนวนลองใหม่หลังเครือข่ายขัดข้องชั่วคราว 0 คือไม่ลองใหม่"
 }

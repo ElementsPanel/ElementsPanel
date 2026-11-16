@@ -78,5 +78,22 @@
   "TXT_CODE_minecraft.invalidDownload": "Paramètres de téléchargement Minecraft invalides.",
   "TXT_CODE_minecraft.missingFiles": "Les fichiers de démarrage du serveur installé sont introuvables. Vérifiez le paquet téléchargé et le journal d’installation.",
   "TXT_CODE_minecraft.platformMismatch": "Le serveur Bedrock est incompatible avec ce nœud. Choisissez une version correspondant à Windows/Linux et utilisez un nœud x64.",
-  "TXT_CODE_quick_install.unzipError": "Échec de la décompression de l'archive"
+  "TXT_CODE_quick_install.unzipError": "Échec de la décompression de l'archive",
+  "TXT_CODE_INSTANCE_SETTING_instanceAutoRestartResetSeconds": "Réinitialisation du compteur de redémarrages (secondes)",
+  "TXT_CODE_INSTANCE_SETTING_instanceAutoRestartResetSeconds_DESC": "Réinitialise le compteur après cette durée de fonctionnement continu. 0 désactive ; s’applique au prochain démarrage.",
+  "TXT_CODE_INSTANCE_SETTING_instanceLogMaxSizeKB": "Limite des journaux d’instance (Ko)",
+  "TXT_CODE_INSTANCE_SETTING_instanceLogMaxSizeKB_DESC": "Conserve les sorties les plus récentes dans cette limite. 0 arrête l’enregistrement et conserve les journaux existants.",
+  "TXT_CODE_INSTANCE_SETTING_instanceDiskCheckIntervalSeconds": "Intervalle de contrôle du disque (secondes)",
+  "TXT_CODE_INSTANCE_SETTING_instanceDiskCheckIntervalSeconds_DESC": "Délai entre les analyses de taille du répertoire. S’applique au prochain cycle.",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopTimeoutSeconds": "Délai d’arrêt (secondes)",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopTimeoutSeconds_DESC": "Attente de la fin du processus après la commande d’arrêt. S’applique au prochain arrêt.",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxTasks": "Maximum de tâches planifiées par instance",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxTasks_DESC": "Limite les nouvelles tâches. Les tâches existantes continuent si la limite diminue.",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxActions": "Maximum d’actions par tâche planifiée",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxActions_DESC": "Limite les actions lors de la création ou modification. Les tâches existantes continuent.",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopForceKill": "Forcer la fermeture après expiration du délai",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopForceKill_DESC": "Termine le processus si l’arrêt dépasse le délai. Désactivé par défaut ; s’applique au prochain arrêt.",
+  "TXT_CODE_INSTANCE_SCHEDULE_TASK_LIMIT": "Au maximum {{limit}} tâches planifiées sont autorisées par instance.",
+  "TXT_CODE_INSTANCE_SCHEDULE_ACTION_LIMIT": "Au maximum {{limit}} actions sont autorisées par tâche planifiée.",
+  "TXT_CODE_INSTANCE_STOP_FORCE_KILL": "Délai d’arrêt dépassé ; fermeture forcée du processus."
 }

@@ -78,5 +78,22 @@
   "TXT_CODE_minecraft.invalidDownload": "Недопустимые параметры скачивания Minecraft.",
   "TXT_CODE_minecraft.missingFiles": "Файлы запуска установленного сервера не найдены. Проверьте скачанный пакет и журнал установки.",
   "TXT_CODE_minecraft.platformMismatch": "Сервер Bedrock несовместим с этим узлом. Выберите версию для Windows/Linux узла и используйте узел x64.",
-  "TXT_CODE_quick_install.unzipError": "Распаковка не удалась"
+  "TXT_CODE_quick_install.unzipError": "Распаковка не удалась",
+  "TXT_CODE_INSTANCE_SETTING_instanceAutoRestartResetSeconds": "Сброс счётчика перезапусков (секунды)",
+  "TXT_CODE_INSTANCE_SETTING_instanceAutoRestartResetSeconds_DESC": "Сбрасывает счётчик после непрерывной работы в течение этого времени. 0 отключает; применяется при следующем запуске.",
+  "TXT_CODE_INSTANCE_SETTING_instanceLogMaxSizeKB": "Лимит журналов экземпляра (КБ)",
+  "TXT_CODE_INSTANCE_SETTING_instanceLogMaxSizeKB_DESC": "Сохраняет последние сообщения в пределах лимита. 0 прекращает запись, сохраняя существующие журналы.",
+  "TXT_CODE_INSTANCE_SETTING_instanceDiskCheckIntervalSeconds": "Интервал проверки диска (секунды)",
+  "TXT_CODE_INSTANCE_SETTING_instanceDiskCheckIntervalSeconds_DESC": "Время между проверками размера каталога. Применяется в следующем цикле.",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopTimeoutSeconds": "Время ожидания остановки (секунды)",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopTimeoutSeconds_DESC": "Ожидание выхода процесса после команды остановки. Применяется при следующей остановке.",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxTasks": "Максимум задач на экземпляр",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxTasks_DESC": "Ограничивает новые задачи. Существующие продолжают работать после уменьшения лимита.",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxActions": "Максимум действий в задаче",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxActions_DESC": "Ограничивает действия при создании или изменении задачи. Существующие задачи продолжают работать.",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopForceKill": "Принудительное завершение по тайм-ауту",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopForceKill_DESC": "Принудительно завершает процесс при превышении времени остановки. По умолчанию отключено; применяется при следующей остановке.",
+  "TXT_CODE_INSTANCE_SCHEDULE_TASK_LIMIT": "На экземпляр разрешено не более {{limit}} запланированных задач.",
+  "TXT_CODE_INSTANCE_SCHEDULE_ACTION_LIMIT": "В задаче разрешено не более {{limit}} действий.",
+  "TXT_CODE_INSTANCE_STOP_FORCE_KILL": "Время остановки истекло; принудительное завершение процесса."
 }

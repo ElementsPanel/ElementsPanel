@@ -5,8 +5,8 @@ import RouterContext from "../entity/ctx";
 import * as protocol from "../service/protocol";
 import InstanceSubsystem from "../service/system_instance";
 import logger from "../service/log";
-
-const MAX_LOG_SIZE = 512;
+import { instanceSetting } from "../instance_settings";
+import { appendInstanceLog, logTail } from "../service/instance_log";
 
 export function registerInstanceEvents() {
   const buffer = new Map<string, string>();
@@ -17,15 +17,11 @@ export function registerInstanceEvents() {
       buffer.delete(instanceUuid);
       const work = (pending.get(instanceUuid) ?? Promise.resolve())
         .then(async () => {
+          const maxBytes = instanceSetting("instanceLogMaxSizeKB") * 1024;
+          if (!maxBytes) return;
           const logFilePath = path.join(InstanceSubsystem.LOG_DIR, `${instanceUuid}.log`);
           await fs.ensureDir(InstanceSubsystem.LOG_DIR);
-          try {
-            const fileInfo = await fs.stat(logFilePath);
-            if (fileInfo.size > 1024 * MAX_LOG_SIZE) await fs.remove(logFilePath);
-          } catch (err: any) {
-            if (err.code !== "ENOENT") throw err;
-          }
-          await fs.writeFile(logFilePath, buf, { encoding: "utf-8", flag: "a" });
+          await appendInstanceLog(logFilePath, buf, maxBytes);
         })
         .catch((error) => logger.error(`Failed to write instance ${instanceUuid} output:`, error))
         .finally(() => {
@@ -38,9 +34,13 @@ export function registerInstanceEvents() {
   const flushTimer = setInterval(() => void flush(), 500);
 
   const outputLog = (instanceUuid: string, text: string) => {
+    const maxBytes = instanceSetting("instanceLogMaxSizeKB") * 1024;
+    if (!maxBytes) {
+      buffer.delete(instanceUuid);
+      return;
+    }
     const buf = (buffer.get(instanceUuid) ?? "") + text;
-    if (buf.length > 1024 * 1024) buffer.set(instanceUuid, "");
-    buffer.set(instanceUuid, buf);
+    buffer.set(instanceUuid, logTail(Buffer.from(buf, "utf8"), Math.min(maxBytes, 1024 * 1024)).toString("utf8"));
   };
 
   // Instance output stream event. The buffer controls disk write frequency.

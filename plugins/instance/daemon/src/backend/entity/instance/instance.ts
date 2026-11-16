@@ -9,6 +9,7 @@ import { STEAM_CMD_PATH } from "../../const";
 import { $t } from "../../i18n";
 import { javaManagerSubsystem } from "../../service/java_access";
 import logger from "../../service/log";
+import { instanceSetting } from "../../instance_settings";
 import InstanceCommand from "../commands/base/command";
 import { commandStringToArray } from "../commands/base/command_parser";
 import FunctionDispatcher, { IPresetCommand } from "../commands/dispatcher";
@@ -118,6 +119,8 @@ export default class Instance extends EventEmitter {
   private reloading = false;
   private restartPending = false;
   private shuttingDown = false;
+  private restartResetTask?: NodeJS.Timeout;
+  private stopTimeoutTask?: NodeJS.Timeout;
 
   // Track whether the current stop was initiated by a user action (stop/kill command)
   private userRequestedStop = false;
@@ -353,7 +356,12 @@ export default class Instance extends EventEmitter {
 
   // set instance state or get state
   status(v?: number) {
-    if (v != null) this.instanceStatus = v;
+    if (v != null) {
+      this.instanceStatus = v;
+      if (v === Instance.STATUS_STARTING) this.restartPending = false;
+      if (v !== Instance.STATUS_RUNNING) this.clearRestartReset();
+      else this.scheduleRestartReset();
+    }
     return this.instanceStatus;
   }
 
@@ -368,6 +376,7 @@ export default class Instance extends EventEmitter {
       userRequestedStop?: boolean;
     }
   ) {
+    this.restartPending = false;
     this.startTimestamp = this.config.lastDatetime = previous?.startTimestamp || Date.now();
     if (previous) {
       this.startCount = previous.startCount;
@@ -405,6 +414,7 @@ export default class Instance extends EventEmitter {
       return;
     }
     this.emit("open", this);
+    this.scheduleRestartReset();
 
     // start all lifecycle tasks
     if (!this.reloading) {
@@ -429,6 +439,8 @@ export default class Instance extends EventEmitter {
     const stoppedQuickly = this.startTimestamp > 0 && Date.now() - this.startTimestamp < 2000;
     const isCrash = !this.userRequestedStop;
     const shouldRestart = !this.config.eventTask.ignore && this.config.eventTask.autoRestart;
+    this.clearRestartReset();
+    this.clearStopTimeout();
     this.instanceStatus = Instance.STATUS_STOPPING;
     this.userRequestedStop = false;
     this.config.eventTask.ignore = false;
@@ -471,6 +483,7 @@ export default class Instance extends EventEmitter {
     void this.execPreset("start")
       .then(() => {
         this.autoRestartCount++;
+        this.process?.snapshot?.({ autoRestartCount: this.autoRestartCount });
         this.println($t("TXT_CODE_instanceConf.info"), $t("TXT_CODE_instanceConf.autoRestart"));
         this.emit("autoRestarted", { count: this.autoRestartCount });
       })
@@ -482,10 +495,46 @@ export default class Instance extends EventEmitter {
       });
   }
 
+  private clearRestartReset() {
+    if (this.restartResetTask) clearTimeout(this.restartResetTask);
+    this.restartResetTask = undefined;
+  }
+
+  private scheduleRestartReset() {
+    this.clearRestartReset();
+    const seconds = instanceSetting("instanceAutoRestartResetSeconds");
+    if (!seconds || this.shuttingDown || this.reloading) return;
+    const startCount = this.startCount;
+    const reset = () => {
+      this.restartResetTask = undefined;
+      if (this.status() !== Instance.STATUS_RUNNING || this.startCount !== startCount) return;
+      this.autoRestartCount = 0;
+      this.process?.snapshot?.({ autoRestartCount: 0 });
+    };
+    const remaining = this.startTimestamp + seconds * 1000 - Date.now();
+    if (remaining <= 0) reset();
+    else this.restartResetTask = setTimeout(reset, remaining);
+  }
+
+  private clearStopTimeout() {
+    if (this.stopTimeoutTask) clearTimeout(this.stopTimeoutTask);
+    this.stopTimeoutTask = undefined;
+  }
+
+  scheduleStopTimeout(seconds: number, callback: () => void) {
+    this.clearStopTimeout();
+    if (this.shuttingDown) return;
+    this.stopTimeoutTask = setTimeout(() => {
+      this.stopTimeoutTask = undefined;
+      callback();
+    }, seconds * 1000);
+  }
+
   /** Keep the process and its pipe readers alive while plugin services change. */
   async suspendForReload() {
     this.stopOutputLoop();
     this.reloading = true;
+    this.clearRestartReset();
     this.watchers.clear();
     await this.starting?.catch(() => {});
     await this.lifeCycleTaskManager.clearLifeCycleTask();
@@ -501,6 +550,7 @@ export default class Instance extends EventEmitter {
     this.reloading = false;
     this.flushOutputBuffer();
     if (this.status() === Instance.STATUS_RUNNING) {
+      this.scheduleRestartReset();
       await this.lifeCycleTaskManager.execLifeCycleTask(1);
       if (!this.shuttingDown && this.status() === Instance.STATUS_RUNNING) {
         this.startOutputLoop(false);
@@ -512,6 +562,8 @@ export default class Instance extends EventEmitter {
   }
 
   beginShutdown() {
+    this.clearRestartReset();
+    this.clearStopTimeout();
     this.restartPending = false;
     this.reloading = false;
     this.shuttingDown = true;
@@ -523,6 +575,7 @@ export default class Instance extends EventEmitter {
   }
 
   setUserRequestedStop(value: boolean) {
+    if (value) this.restartPending = false;
     this.userRequestedStop = value;
     this.process?.snapshot?.({ userRequestedStop: value });
   }
@@ -575,6 +628,9 @@ export default class Instance extends EventEmitter {
 
   // destroy this instance
   async destroy() {
+    this.restartPending = false;
+    this.clearRestartReset();
+    this.clearStopTimeout();
     this.ignoreEventTaskOnce();
     this.stopOutputLoop();
     await this.lifeCycleTaskManager.clearLifeCycleTask();

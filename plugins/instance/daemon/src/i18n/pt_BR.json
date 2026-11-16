@@ -78,5 +78,22 @@
   "TXT_CODE_minecraft.invalidDownload": "Parâmetros de download do Minecraft inválidos.",
   "TXT_CODE_minecraft.missingFiles": "Os arquivos de inicialização do servidor instalado não foram encontrados. Verifique o pacote baixado e o registro da instalação.",
   "TXT_CODE_minecraft.platformMismatch": "O servidor Bedrock é incompatível com este nó. Selecione uma versão correspondente ao Windows/Linux do nó e use um nó x64.",
-  "TXT_CODE_quick_install.unzipError": "Falha na descompactação"
+  "TXT_CODE_quick_install.unzipError": "Falha na descompactação",
+  "TXT_CODE_INSTANCE_SETTING_instanceAutoRestartResetSeconds": "Redefinir contador de reinícios (segundos)",
+  "TXT_CODE_INSTANCE_SETTING_instanceAutoRestartResetSeconds_DESC": "Redefine o contador após este período de execução contínua. 0 desativa; aplica-se ao próximo início.",
+  "TXT_CODE_INSTANCE_SETTING_instanceLogMaxSizeKB": "Limite dos logs da instância (KB)",
+  "TXT_CODE_INSTANCE_SETTING_instanceLogMaxSizeKB_DESC": "Mantém a saída mais recente dentro do limite. 0 interrompe a gravação e mantém os logs existentes.",
+  "TXT_CODE_INSTANCE_SETTING_instanceDiskCheckIntervalSeconds": "Intervalo de verificação do disco (segundos)",
+  "TXT_CODE_INSTANCE_SETTING_instanceDiskCheckIntervalSeconds_DESC": "Tempo entre verificações do tamanho do diretório. Aplica-se ao próximo ciclo.",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopTimeoutSeconds": "Tempo limite de parada (segundos)",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopTimeoutSeconds_DESC": "Espera o processo encerrar após o comando de parada. Aplica-se à próxima parada.",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxTasks": "Máximo de tarefas agendadas por instância",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxTasks_DESC": "Limita novas tarefas. As existentes continuam após reduzir o limite.",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxActions": "Máximo de ações por tarefa agendada",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxActions_DESC": "Limita ações ao criar ou editar tarefas. As tarefas existentes continuam.",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopForceKill": "Forçar encerramento após o tempo limite",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopForceKill_DESC": "Encerra o processo à força se a parada exceder o tempo limite. Desativado por padrão; aplica-se à próxima parada.",
+  "TXT_CODE_INSTANCE_SCHEDULE_TASK_LIMIT": "São permitidas no máximo {{limit}} tarefas agendadas por instância.",
+  "TXT_CODE_INSTANCE_SCHEDULE_ACTION_LIMIT": "São permitidas no máximo {{limit}} ações por tarefa agendada.",
+  "TXT_CODE_INSTANCE_STOP_FORCE_KILL": "Tempo limite de parada excedido; encerrando o processo à força."
 }

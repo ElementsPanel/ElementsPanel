@@ -1,50 +1,74 @@
 import type { PanelPluginContext } from "../../../../../../core/panel/src/app/plugin";
 import { ModManagerService } from "./mod_manager";
 import { registerModManagerRoutes } from "./router";
-import { isModSourcePreference, loadSourcePreference, saveSourcePreference } from "./settings";
+import {
+  isModSourcePreference,
+  loadModManagerSettings,
+  saveModManagerSettings,
+  MOD_REQUEST_LIMITS
+} from "./settings";
 
 export function registerModManager(ctx: PanelPluginContext) {
   const manager = new ModManagerService(ctx);
   registerModManagerRoutes(ctx, manager);
 
-  // The stored preference arrives with `storage`, which is foundational, so the
-  // service runs with the saved choice from the first request onwards.
+  // Load before publishing the form, so a late startup read cannot overwrite a saved change.
   ctx.inject(["storage"], async (scope) => {
     try {
-      manager.setSourcePreference(await loadSourcePreference(scope));
+      manager.setSettings(await loadModManagerSettings(scope));
     } catch (err) {
-      scope.logger.warn("Failed to load the mod source preference:", err);
+      scope.logger.warn("Failed to load the mod manager settings:", err);
     }
-  });
-
-  // The form belongs to the config plugin, which loads long after this one, so
-  // it is declared when that service appears rather than held as a dependency.
-  // Without it the preference simply stays at its current value.
-  ctx.inject(["settingsForm", "storage"], (scope) => {
-    const $t = scope.i18n.$t;
-    scope.settingsForm.declare({
-      fields: () => [
-        {
-          key: "sourcePreference",
-          type: "select",
-          title: $t("TXT_CODE_MOD_SOURCE_PREFERENCE"),
-          description: $t("TXT_CODE_MOD_SOURCE_PREFERENCE_DESC"),
-          options: [
-            { value: "mirror", label: $t("TXT_CODE_MOD_SOURCE_MIRROR") },
-            { value: "official", label: $t("TXT_CODE_MOD_SOURCE_OFFICIAL") }
-          ]
+    scope.inject(["settingsForm"], (settingsScope) => {
+      const $t = settingsScope.i18n.$t;
+      settingsScope.settingsForm.declare({
+        fields: () => [
+          {
+            key: "sourcePreference",
+            type: "select",
+            title: $t("TXT_CODE_MOD_SOURCE_PREFERENCE"),
+            description: $t("TXT_CODE_MOD_SOURCE_PREFERENCE_DESC"),
+            options: [
+              { value: "mirror", label: $t("TXT_CODE_MOD_SOURCE_MIRROR") },
+              { value: "official", label: $t("TXT_CODE_MOD_SOURCE_OFFICIAL") }
+            ]
+          },
+          ...Object.entries(MOD_REQUEST_LIMITS).map(([key, range]) => ({
+            key,
+            type: "number" as const,
+            title: $t(`TXT_CODE_MOD_SETTING_${key}`),
+            description: $t(`TXT_CODE_MOD_SETTING_${key}_DESC`),
+            min: range.min,
+            max: range.max
+          }))
+        ],
+        read: () => ({ ...manager.settings }),
+        write: async (values) => {
+          if (
+            values.sourcePreference !== undefined &&
+            !isModSourcePreference(values.sourcePreference)
+          )
+            throw new Error("Invalid mod source preference.");
+          for (const [key, range] of Object.entries(MOD_REQUEST_LIMITS)) {
+            const value = values[key];
+            if (
+              value !== undefined &&
+              (!Number.isInteger(value) || Number(value) < range.min || Number(value) > range.max)
+            )
+              throw new Error($t(`TXT_CODE_MOD_SETTING_${key}_DESC`));
+          }
+          const next = { ...manager.settings };
+          if (values.sourcePreference !== undefined)
+            next.sourcePreference = values.sourcePreference as typeof next.sourcePreference;
+          for (const key of Object.keys(MOD_REQUEST_LIMITS) as Array<
+            keyof typeof MOD_REQUEST_LIMITS
+          >) {
+            if (values[key] !== undefined) next[key] = Number(values[key]);
+          }
+          await saveModManagerSettings(scope, next);
+          manager.setSettings(next);
         }
-      ],
-      read: () => ({ sourcePreference: manager.sourcePreference }),
-      write: async (values) => {
-        // The form layer validates against the declared options first; this
-        // guard only keeps a direct call from persisting a network-affecting
-        // value the service could not interpret.
-        const preference = values.sourcePreference;
-        if (!isModSourcePreference(preference)) throw new Error("Invalid mod source preference.");
-        await saveSourcePreference(scope, preference);
-        manager.setSourcePreference(preference);
-      }
+      });
     });
   });
 }

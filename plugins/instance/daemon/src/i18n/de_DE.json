@@ -78,5 +78,22 @@
   "TXT_CODE_minecraft.invalidDownload": "Ungültige Minecraft-Downloadparameter.",
   "TXT_CODE_minecraft.missingFiles": "Die Startdateien des installierten Servers wurden nicht gefunden. Das heruntergeladene Paket und das Installationsprotokoll prüfen.",
   "TXT_CODE_minecraft.platformMismatch": "Der Bedrock-Server ist mit diesem Knoten nicht kompatibel. Eine Version passend zu Windows/Linux auswählen und einen x64-Knoten verwenden.",
-  "TXT_CODE_quick_install.unzipError": "Das Dekomprimieren des Archivs ist fehlgeschlagen"
+  "TXT_CODE_quick_install.unzipError": "Das Dekomprimieren des Archivs ist fehlgeschlagen",
+  "TXT_CODE_INSTANCE_SETTING_instanceAutoRestartResetSeconds": "Neustartzähler zurücksetzen (Sekunden)",
+  "TXT_CODE_INSTANCE_SETTING_instanceAutoRestartResetSeconds_DESC": "Zähler nach dieser ununterbrochenen Laufzeit zurücksetzen. 0 deaktiviert; gilt beim nächsten Instanzstart.",
+  "TXT_CODE_INSTANCE_SETTING_instanceLogMaxSizeKB": "Limit gespeicherter Instanzlogs (KB)",
+  "TXT_CODE_INSTANCE_SETTING_instanceLogMaxSizeKB_DESC": "Die neuesten Ausgaben bis zu diesem Limit behalten. 0 beendet das Speichern; vorhandene Logs bleiben erhalten.",
+  "TXT_CODE_INSTANCE_SETTING_instanceDiskCheckIntervalSeconds": "Intervall der Speicherprüfung (Sekunden)",
+  "TXT_CODE_INSTANCE_SETTING_instanceDiskCheckIntervalSeconds_DESC": "Abstand zwischen Prüfungen der Verzeichnisgröße. Gilt ab dem nächsten Prüfzyklus.",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopTimeoutSeconds": "Zeitlimit beim Stoppen (Sekunden)",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopTimeoutSeconds_DESC": "Nach dem Stoppbefehl auf das Prozessende warten. Gilt beim nächsten Stopp.",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxTasks": "Maximale geplante Aufgaben pro Instanz",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxTasks_DESC": "Neue Aufgaben begrenzen. Vorhandene Aufgaben laufen auch nach einer Senkung weiter.",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxActions": "Maximale Aktionen pro geplanter Aufgabe",
+  "TXT_CODE_INSTANCE_SETTING_instanceScheduleMaxActions_DESC": "Aktionen beim Erstellen oder Bearbeiten begrenzen. Vorhandene Aufgaben laufen weiter.",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopForceKill": "Bei Stopp-Zeitüberschreitung erzwingen",
+  "TXT_CODE_INSTANCE_SETTING_instanceStopForceKill_DESC": "Den Prozess bei Überschreitung des Stopp-Zeitlimits beenden. Standardmäßig deaktiviert; gilt beim nächsten Stopp.",
+  "TXT_CODE_INSTANCE_SCHEDULE_TASK_LIMIT": "Pro Instanz sind höchstens {{limit}} geplante Aufgaben erlaubt.",
+  "TXT_CODE_INSTANCE_SCHEDULE_ACTION_LIMIT": "Pro geplanter Aufgabe sind höchstens {{limit}} Aktionen erlaubt.",
+  "TXT_CODE_INSTANCE_STOP_FORCE_KILL": "Stopp-Zeitlimit überschritten; Prozess wird erzwungen beendet."
 }
