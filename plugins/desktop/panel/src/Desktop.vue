@@ -11,6 +11,7 @@ import {
 } from "@elements-panel/sdk";
 import type { FrontendFileManagerService, FrontendUserService } from "@elements-panel/sdk";
 import { logoutUser } from "@elementspanel/epanel-plugin-console/services/apis";
+import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
 import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
 import { getAppearance } from "@elementspanel/epanel-plugin-console/services/apis/appearance";
 import DesktopContextMenu from "./widgets/desktop/DesktopContextMenu.vue";
@@ -73,7 +74,6 @@ const desktopFileEditorWindow = computed(() => fileManager.value?.DesktopFileEdi
 const desktopImageViewerWindow = computed(() => fileManager.value?.DesktopImageViewer);
 const { isDarkTheme } = useAppConfigStore();
 
-//閳光偓閳光偓閳光偓 Wallpaper 閳光偓閳光偓閳光偓
 const backgroundImageUrl = ref<string>("");
 
 const wallpaperStyle = computed<CSSProperties>(() => {
@@ -107,7 +107,6 @@ onMounted(async () => {
     }
 });
 
-//閳光偓閳光偓閳光偓 Login 閳光偓閳光偓閳光偓
 const showLoginOverlay = ref(authEnabled.value && !isLogged.value);
 
 const handleLoginSuccess = () => {
@@ -122,7 +121,6 @@ watch(isLogged, (logged) => {
     }
 });
 
-//閳光偓閳光偓閳光偓 Desktop Icons 閳光偓閳光偓閳光偓
 interface DesktopApp {
     id: string;
     label: string;
@@ -192,7 +190,6 @@ const selectIcon = (id: string) => {
     selectedIconId.value = id;
 };
 
-//閳光偓閳光偓閳光偓 Icon Positions 閳光偓閳光偓閳光偓
 const iconPositions = reactive<Map<string, { x: number; y: number }>>(new Map());
 const desktopIconsRef = ref<HTMLElement | null>(null);
 
@@ -255,7 +252,6 @@ function findEmptyCell(col: number, row: number, excludeId: string): { col: numb
     return { col, row };
 }
 
-//閳光偓閳光偓閳光偓 Drag State 閳光偓閳光偓閳光偓
 const DRAG_THRESHOLD = 5;
 
 const isDragging = ref(false);
@@ -384,7 +380,6 @@ const handleTaskbarAppDrop = (appId: string, clientX: number, clientY: number) =
     addDesktopShortcutAt(appId, clientX - (rect?.left || 0), clientY - (rect?.top || 0));
 };
 
-//閳光偓閳光偓閳光偓 Window Management 閳光偓閳光偓閳光偓
 interface WindowState {
     id: string;
     title: string;
@@ -411,7 +406,6 @@ const windows = reactive<Map<string, WindowState>>(new Map());
 let nextZIndex = 100;
 let windowOffset = 0;
 
-// 閳光偓閳光偓閳光偓 Layout Persistence 閳光偓閳光偓閳光偓
 const { execute: executeGetLayout } = getDesktopLayoutConfig();
 const { execute: executeSaveLayout } = setDesktopLayoutConfig();
 
@@ -854,7 +848,6 @@ const toggleWindow = (id: string) => {
     }
 };
 
-// 閳光偓閳光偓閳光偓 Window events 閳光偓閳光偓閳光偓
 const handleWindowMoved = (id: string, newX: number, newY: number) => {
     const win = windows.get(id);
     if (win) {
@@ -924,7 +917,6 @@ const handleReorderWindows = (newOrder: string[]) => {
     saveDesktopLayout();
 };
 
-// 閳光偓閳光偓閳光偓 Route 閳光偓閳光偓閳光偓
 const navigateToRoute = (appId: string) => {
     const app = availableDesktopApps.value.find((a) => a.id === appId);
     if (app?.route) {
@@ -932,7 +924,6 @@ const navigateToRoute = (appId: string) => {
     }
 };
 
-// 閳光偓閳光偓閳光偓 Context Menu 閳光偓閳光偓閳光偓
 const ctxMenu = reactive({
     visible: false,
     x: 0,
@@ -1074,10 +1065,15 @@ const onDesktopClick = () => {
     ctxMenu.visible = false;
 };
 
-// 閳光偓閳光偓閳光偓 Exit 閳光偓閳光偓閳光偓
-const exitDesktop = async () => {
-    if (authEnabled.value) await logoutUser().execute();
-    window.location.reload();
+const exitDesktop = () => {
+    Modal.confirm({
+        title: t("TXT_CODE_2c69ab15"),
+        content: t("TXT_CODE_9654b91c"),
+        async onOk() {
+            if (authEnabled.value) await logoutUser().execute();
+            window.location.reload();
+        }
+    });
 };
 
 const username = computed(() => appState.userInfo?.userName || "User");

@@ -14,6 +14,7 @@ import {
   VDialog,
   VForm,
   VSelect,
+  VSwitch,
   VTextField,
   VTextarea
 } from "vuetify/components";
@@ -35,11 +36,6 @@ const props = defineProps<{
 // value for it.
 // eslint-disable-next-line no-unused-vars
 const emit = defineEmits<{ (event: "save"): void }>();
-
-const allYesNo = [
-  { label: t("TXT_CODE_52c8a730"), value: true },
-  { label: t("TXT_CODE_718c9310"), value: false }
-];
 
 /**
  * A field is hidden unless every condition holds. A condition is either a field
@@ -318,18 +314,14 @@ const open = (field: SettingField) => {
           hide-details
           @update:model-value="setNumber(field, $event)"
         />
-        <VSelect
+        <VSwitch
           v-else-if="field.type === 'boolean'"
           :model-value="Boolean(values[field.key!])"
-          class="setting-control setting-control-small"
-          :items="allYesNo"
-          item-title="label"
-          item-value="value"
+          :aria-label="field.title"
+          density="compact"
           hide-details
           @update:model-value="set(field, $event)"
-        >
-          <template #no-data><Empty :icon="false" compact /></template>
-        </VSelect>
+        />
         <VSelect
           v-else-if="field.type === 'select'"
           :model-value="values[field.key!]"
