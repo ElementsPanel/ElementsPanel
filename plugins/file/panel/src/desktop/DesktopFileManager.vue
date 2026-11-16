@@ -16,11 +16,7 @@ import { useFileManager } from "../hooks/useFileManager";
 import uploadService from "../services/uploadService";
 import { filterFileName, getFileExtName, isCompressFile } from "../tools/fileManager";
 
-/**
- * The shell Desktop mode mounts a component inside. `plugins/desktop` supplies it
- * through the core-owned registry, so this plugin never reaches into another
- * plugin's source tree for it.
- */
+/** Resolve the desktop window through its service instead of importing another plugin's source. */
 const ConfirmDialog = computed(() => usePluginService<FrontendDesktopService>("desktop")?.confirmation);
 
 const desktopVuetifyMode = true;

@@ -23,7 +23,6 @@ import { useModConfig } from "./mod-manager/useModConfig";
 import { useModSearch } from "./mod-manager/useModSearch";
 import { useModUpload } from "./mod-manager/useModUpload";
 
-// Tab key constants
 const TAB_KEY_MODS = "TAB_KEY_MODS";
 const TAB_KEY_PLUGINS = "TAB_KEY_PLUGINS";
 const TAB_KEY_DOWNLOAD = "TAB_KEY_DOWNLOAD";
@@ -57,8 +56,6 @@ const isRunning = computed(() => {
   return s === 2 || s === 3;
 });
 
-// Remove debug logs
-// watch([isWindows, isRunning], ([win, run]) => { ... });
 
 const checkAndConfirm = async (
   type: string,
@@ -135,7 +132,7 @@ watch(
   () => isInstanceRunning.value,
   (running) => {
     if (!running) {
-      // When the server stops, refresh the list immediately to get the latest status (file locks are released)
+      // Refresh when the server stops so files released by the process become available.
       loadMods();
     }
   }
@@ -269,12 +266,10 @@ const filterBySearch = (list: any[]) => {
 };
 
 const filteredMods = computed(() => {
-  // Backend already filters by folder, just apply local search
   return filterBySearch(mods.value);
 });
 
 const filteredPlugins = computed(() => {
-  // Backend already filters by folder, just apply local search
   return filterBySearch(mods.value);
 });
 
@@ -383,10 +378,9 @@ const handleTableChange = (pagination: any) => {
   }
 };
 
-// Handle tab change event
 const handleTabChange = (newKey: unknown) => {
   const key = String(newKey);
-  tablePagination.current = 1; // Reset to first page on tab change
+  tablePagination.current = 1;
   if (key === TAB_KEY_MODS || key === TAB_KEY_PLUGINS) {
     loadMods(key === TAB_KEY_MODS ? "mods" : "plugins");
   }

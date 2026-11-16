@@ -3,17 +3,8 @@ import type { BaseUserInfo, EditUserInfo, LoginUserInfo, UserInstance } from "@/
 import type { Ref } from "vue";
 
 /**
- * Facade over the account API, which is owned by the "user" panel plugin.
- *
- * The console implementation and other plugins keep importing these names from
- * `@/services/apis`; the real definitions are registered by the plugin as the
- * `user.api` service and resolved at call time, so unloading the plugin takes
- * the API with it. Without the plugin the panel runs unauthenticated and
- * nothing should be calling these — guard with `isUserPluginLoaded()` or with
- * `useAppStateStore().authEnabled`.
- *
- * Imports `@/plugin/context` rather than `@/plugin` on purpose: the barrel pulls
- * the whole card and route registry into the app entry graph.
+ * Resolve the user.api service at call time for compatibility imports.
+ * Guard calls with isUserPluginLoaded() or authEnabled when the user plugin is optional.
  */
 
 export interface ApiCall<P, T> {

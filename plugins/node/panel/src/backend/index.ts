@@ -8,14 +8,7 @@ import { registerBackgroundTaskRoutes } from "./background_tasks";
 import { disposeTaskTickets, sweepTaskTickets, verifyTaskTicket } from "./task_ticket";
 import { setTaskStreamSink, visibleTasks } from "./task_stream";
 
-// Panel side of the node plugin. It owns the remote-node subsystem itself — the
-// daemon connections, their stored configuration and the request helper — and
-// every HTTP route the node management UI talks to.
-//
-// The subsystem is handed to everyone else as `ctx.remote`, which is why this is
-// the one plugin the panel cannot reach a daemon without: the core resolves it
-// through the shared plugin context, and consumers inject it. It
-// therefore loads early, ahead of the plugins that do.
+// Provide daemon connections, stored node configuration and request forwarding through ctx.remote.
 
 interface RemoteServiceLike {
   uuid: string;
@@ -45,20 +38,14 @@ function describeNode(remoteService: RemoteServiceLike) {
 export const inject = ["koa", "i18n", "storage", "settings", "middleware", "roles", "operations", "identity", "websocket"];
 
 export async function apply(ctx: PanelPluginContext) {
-  // Before anything else: the subsystem's modules read the logger, the storage,
-  // the panel configuration and `$t` through this handle, and every string they
-  // translate — the connection, authentication and timeout messages — belongs to
-  // this plugin, so the catalogue has to be registered before the first log line.
+  // Register translations and set the context before the subsystem logs or reads services.
   setPluginContext(ctx);
   ctx.i18n.define(localeMessages);
 
-  // Loads every stored node and starts connecting. Awaited, so `ctx.remote` is
-  // never handed over half-initialised.
+  // Finish loading stored nodes before exposing the remote service.
   await remoteServices.initialize();
 
-  // `ctx.set()` from inside a plugin belongs to that plugin: the subsystem — and
-  // with it the panel's ability to reach any daemon — leaves when this plugin
-  // unloads. The core reads it through `remoteSubsystem()`, which says so.
+  // Scope the remote service to this plugin so unloading removes daemon access.
   const remote = {
     services: remoteServices,
     Request: RemoteRequest,
@@ -69,9 +56,7 @@ export async function apply(ctx: PanelPluginContext) {
   // rather than declaring a dependency on the service it is creating.
   registerBackgroundTaskRoutes(ctx, remote);
 
-  // The task stream shares the panel's Socket.IO transport. Its tickets are
-  // issued by an authenticated HTTP route and swept here; the interval belongs
-  // to this plugin's scope.
+  // Issue task-stream tickets over authenticated HTTP and sweep them with a scoped timer.
   ctx.setInterval(() => sweepTaskTickets(), 60_000);
   ctx.on("dispose", () => disposeTaskTickets());
 
@@ -105,9 +90,7 @@ export async function apply(ctx: PanelPluginContext) {
   ctx.effect(() => () => setTaskStreamSink(undefined));
 
   ctx.effect(() => () => {
-    // Sockets are not cordis effects, so closing them is this plugin's job.
-    // `close()` rather than `disconnect()`: this runs while the scope is being
-    // disposed, when there is no `ctx.logger` left to announce it with.
+    // Close sockets without logging after the plugin's logger scope is disposed.
     for (const service of remoteServices.services.values()) service.close();
     remoteServices.services.clear();
   });
@@ -127,7 +110,6 @@ export async function apply(ctx: PanelPluginContext) {
     ctx.body = result;
   });
 
-  // Get remote server system information
   router.get("/remote_services_system", requireAdmin, async (ctx) => {
     const result = [];
     for (const iterator of remoteServices.services.entries()) {
@@ -143,7 +125,6 @@ export async function apply(ctx: PanelPluginContext) {
     ctx.body = result;
   });
 
-  // Get remote server instance information (browse too large)
   router.get("/remote_services", requireAdmin, async (ctx) => {
     const result = [];
     for (const iterator of remoteServices.services.entries()) {
@@ -152,22 +133,18 @@ export async function apply(ctx: PanelPluginContext) {
       try {
         instancesInfo = await new RemoteRequest(remoteService).request("instance/overview");
       } catch (err) {
-        // ignore request errors
       }
-      // send remote command if connection is available
       result.push({ ...describeNode(remoteService), instances: instancesInfo });
     }
     ctx.body = result;
   });
 
-  // add remote service
   router.post(
     "/remote_service",
     requireAdmin,
     validator({ body: { apiKey: String, port: Number, ip: String } }),
     async (ctx: Koa.ParameterizedContext) => {
       const parameter = ctx.request.body;
-      // do asynchronous registration
       const instance = await remoteServices.registerRemoteService({
         apiKey: parameter.apiKey,
         port: parameter.port,
@@ -186,7 +163,6 @@ export async function apply(ctx: PanelPluginContext) {
     }
   );
 
-  // Modify remote service parameters
   router.put(
     "/remote_service",
     requireAdmin,
@@ -214,7 +190,6 @@ export async function apply(ctx: PanelPluginContext) {
     }
   );
 
-  // delete remote service
   router.delete(
     "/remote_service",
     requireAdmin,
@@ -232,7 +207,6 @@ export async function apply(ctx: PanelPluginContext) {
     }
   );
 
-  // connect to remote instance
   router.get(
     "/link_remote_service",
     requireAdmin,

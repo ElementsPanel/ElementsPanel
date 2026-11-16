@@ -6,13 +6,10 @@ import { RemoteServiceConfig } from "./remote_config";
 import RemoteService from "./remote_entity";
 import { $t, core, logger, storage } from "./runtime";
 
-// The RemoteServiceSubsystem will be one of the most important systems
-// main function is to store remote services everywhere
-// Scan local services, unified management, remote calls and proxies, etc.
+// Manage stored daemon connections and request forwarding.
 class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
   async initialize() {
-    // If it is the first startup, it will automatically try to connect to "LocalHost",
-    // otherwise it will automatically read from the configuration file and connect to all remote services.
+    // Load stored nodes, or discover localhost on the first startup.
     for (const uuid of await storage().getStorage().list("RemoteServiceConfig")) {
       const config = (await storage()
         .getStorage()
@@ -22,7 +19,6 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
       newService.connect();
     }
 
-    // If there is no daemon process, check whether there is a daemon process locally
     if (this.services.size === 0) {
       await this.initConnectLocalhost("");
     }
@@ -34,12 +30,6 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
     core().setInterval(() => this.connectionStatusCheckTask(), 1000 * 60);
   }
 
-  // Register a NEW remote service to system and connect it.
-  // Like: this.registerRemoteService({
-  // ip: "127.0.0.1",
-  // apiKey: "test_key",
-  // port: 24444
-  // });
   async registerRemoteService(config: IRemoteService) {
     const instance = await this.newInstance(config);
     if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
@@ -47,7 +37,6 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
     return instance;
   }
 
-  // Delete the specified remote service based on UUID
   async deleteRemoteService(uuid: string) {
     if (this.getInstance(uuid)) {
       await storage().getStorage().delete("RemoteServiceConfig", uuid);
@@ -56,8 +45,6 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
     }
   }
 
-  // According to the IRemoteService, New a RemoteService object
-  // Used to initialize objects.
   async newInstance(config: IRemoteService) {
     const instance = new RemoteService(
       config.uuid || this.randdomUuid(),
@@ -73,7 +60,6 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
     return instance;
   }
 
-  // Edit the configuration file of the instance
   async edit(uuid: string, config: IRemoteService) {
     const instance = this.getInstance(uuid);
     if (!instance) throw new Error("Instance does not exist");
@@ -98,10 +84,7 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
     instance.config = next;
   }
 
-  // Scannce localhost service
-  // First use, need to scan the local host
-  // Note: Every time you execute "initConnectLocalhost",
-  // it will be managed by the subsystem (regardless of whether the target exists).
+  // Register localhost on first use, even if its daemon is not reachable yet.
   async initConnectLocalhost(key?: string) {
     const ip = "localhost";
     const localKeyFilePath = path.normalize(
@@ -122,9 +105,7 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
     }
     logger().warn($t("TXT_CODE_systemRemoteService.error"));
 
-    // After 5 seconds, determine whether the daemon has been connected until a
-    // daemon is connected. `ctx.setTimeout` is cancelled when the plugin
-    // unloads, so a panel without this plugin stops retrying.
+    // Retry localhost discovery every five seconds until connected. The scoped timer stops on unload.
     core().setTimeout(() => {
       if (this.services.size === 0) return this.initConnectLocalhost();
     }, 5 * 1000);
@@ -140,7 +121,6 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
     return { available, total };
   }
 
-  // Periodic connection status check
   connectionStatusCheckTask() {
     this.services?.forEach((v) => {
       if (v && v.available === false) {

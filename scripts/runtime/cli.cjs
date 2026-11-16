@@ -64,10 +64,7 @@ function workerEnvironment(plan, worker) {
   if (worker.side === "panel" && plan.localDaemonConfig)
     environment.EPANEL_LOCAL_DAEMON_CONFIG = plan.localDaemonConfig;
 
-  // fork() pipes worker output so the parent can add a side prefix. That makes
-  // supports-color think stdout is not a terminal, even when npm start is
-  // running in one. Preserve explicit color settings and otherwise propagate
-  // the parent's terminal capability to the worker.
+  // Propagate explicit color settings or the parent's terminal capability because piped worker output disables color detection.
   if (
     environment.FORCE_COLOR === undefined &&
     environment.NO_COLOR === undefined &&

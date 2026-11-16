@@ -19,7 +19,7 @@ export default async function takeoverContainer(isActive = () => true) {
       return;
     }
     if (containers.has(label)) {
-      return; // Skip if already exists
+      return;
     }
     containers.set(label, containerInfo);
   });

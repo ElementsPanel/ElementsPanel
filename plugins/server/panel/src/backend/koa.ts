@@ -6,20 +6,9 @@ import type Koa from "koa";
 import type { PanelKoaService } from "../../../../../core/panel/src/app/plugin";
 
 /**
- * Plugin-owned Koa wiring.
- *
- * `app.use()` cannot be undone, so this plugin mounts two permanent middlewares
- * onto its own application — one for plugin middleware, one for plugin routers —
- * and this service adds to the lists behind them. That is what makes a plugin's
- * routes disappear when it unloads: each plugin gets its own `Router` instead of
- * sharing a mutable one.
- *
- * Middleware runs before routers. Every router is contributed by a feature
- * plugin and removed with that plugin's scope.
- *
- * The service is registered from inside `apply()`, so it belongs to this
- * plugin's scope: unloading the server takes `ctx.koa` with it, and every plugin
- * that injected it is disposed in turn.
+ * Mount permanent dispatchers over mutable middleware and router lists.
+ * Scope each registration to its caller so unloading a plugin removes its handlers. Middleware
+ * runs before routers.
  */
 export class KoaService extends Service implements PanelKoaService {
   private readonly middlewares: Koa.Middleware[] = [];

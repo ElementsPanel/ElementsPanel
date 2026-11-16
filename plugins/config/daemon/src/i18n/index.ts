@@ -11,10 +11,7 @@ import trTR from "./tr_TR.json";
 import zhCN from "./zh_CN.json";
 import zhTW from "./zh_TW.json";
 
-// The refusals this plugin's protocol handlers throw. The panel surfaces them
-// verbatim on its plugin manager page, so they are translated here rather than
-// in the panel: this daemon knows which of its own plugins may not be switched
-// off remotely, and it answers in the language it was told to speak.
+// Translate protocol errors on the daemon before the panel displays them.
 export const localeMessages = {
   de_de: deDE,
   en_us: enUS,

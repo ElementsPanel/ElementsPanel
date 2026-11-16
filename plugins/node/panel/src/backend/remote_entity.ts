@@ -28,7 +28,6 @@ export default class RemoteService {
 
   public connect(connectOpts?: Partial<SocketOptions & ManagerOptions>) {
     if (connectOpts) this.config.connectOpts = connectOpts;
-    // Start the formal connection to the remote Socket program
     let addr = `ws://${this.config.ip}:${this.config.port}`;
     if (this.config.ip.indexOf("wss://") === 0 || this.config.ip.indexOf("ws://") === 0) {
       addr = `${this.config.ip}:${this.config.port}`;
@@ -45,7 +44,6 @@ export default class RemoteService {
       this.disconnect();
     }
 
-    // prevent duplicate registration of events
     if (this.socket && this.socket.hasListeners("connect")) {
       logger().info(`${$t("TXT_CODE_daemonInfo.replaceConnect")}:${daemonInfo}`);
       return this.refreshReconnect();
@@ -57,7 +55,6 @@ export default class RemoteService {
       path: removeTrail(this.config.prefix, "/") + "/socket.io"
     });
 
-    // register built-in events
     this.socket.on("connect", async () => {
       logger().info($t("TXT_CODE_daemonInfo.connect", { v: daemonInfo }));
       await this.onConnect();
@@ -88,9 +85,7 @@ export default class RemoteService {
     });
   }
 
-  // This function is used to verify the identity. It only needs to be verified once.
-  // This function will be executed automatically after the connection event is triggered.
-  // Generally, there is no need to execute it manually.
+  // Authenticate once after each socket connection.
   public async auth(key?: string) {
     if (key) this.config.apiKey = key;
     const daemonInfo = this.getDaemonInfo();
@@ -146,17 +141,11 @@ export default class RemoteService {
   }
 
   private async onConnect() {
-    // this.available = true; Note: Connected is not auth;
+    // A connected socket is not available until it has authenticated.
     return await this.auth(this.config.apiKey);
   }
 
-  /**
-   * Tears the socket down without logging.
-   *
-   * The plugin's disposer closes every node on shutdown, and by then its cordis
-   * scope — and with it `ctx.logger` — is already gone, so the quiet half is
-   * separated from the announced one.
-   */
+  /** Close sockets without logging because disposal has already removed the logger scope. */
   close() {
     for (const cancel of this.pendingRequests) cancel();
     this.pendingRequests.clear();

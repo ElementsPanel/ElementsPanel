@@ -1,4 +1,3 @@
-// global configuration initialization
 
 import SystemConfig from "./entity/setting";
 import type { PanelStorageService } from "../../../../../core/panel/src/app/plugin/context";
@@ -72,7 +71,6 @@ function detectSystemLanguage(): string {
   return "en_us";
 }
 
-// System persistence configuration table
 export async function initSystemConfig(storage: PanelStorageService) {
   systemConfig = await storage.getStorage().load("SystemConfig", SystemConfig, "config");
   if (!systemConfig) {

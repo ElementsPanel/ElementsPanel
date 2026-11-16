@@ -10,8 +10,6 @@ export default function createLoginRouter() {
   const validator = core().middleware.validator;
   const router = new Router({ prefix: "/auth" });
 
-  // [Public Permission]
-  // login route
   router.post(
     "/login",
     permission({ token: false, level: null }),
@@ -49,8 +47,6 @@ export default function createLoginRouter() {
     }
   );
 
-  // [Public Permission]
-  // exit route
   router.get(
     "/logout",
     permission({ token: false, level: null, speedLimit: false }),
@@ -60,8 +56,6 @@ export default function createLoginRouter() {
     }
   );
 
-  // [Public Permission]
-  // Display the text of the login interface
   router.all(
     "/login_info",
     permission({ token: false, level: null, speedLimit: false }),

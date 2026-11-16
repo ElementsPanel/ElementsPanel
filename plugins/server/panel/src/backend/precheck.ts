@@ -8,12 +8,8 @@ function isUploadRequest(requestCtx: Context) {
 }
 
 /**
- * Prevent users from performing unrestricted file uploads using koa-body,
- * occupying machine disk space. Who may upload is the guard's call.
- *
- * The guard arrives with `plugins/user` and can leave again, so it is resolved
- * per request. No guard installed means the panel is unguarded, which is the
- * same answer the core's own accessor gives: every request is served.
+ * Resolve the live guard before koa-body writes uploads.
+ * An absent guard permits requests according to the panel's unguarded policy.
  */
 export function preCheck(ctx: PanelPluginContext) {
   return async function preCheckMiddleware(requestCtx: Context, next: () => Promise<void>) {

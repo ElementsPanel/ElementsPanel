@@ -237,7 +237,6 @@ const executeDelete = async () => {
         deletingUser.value = null;
         fetchUsers();
     } catch {
-        // ignore
     } finally {
         saving.value = false;
     }
@@ -321,7 +320,6 @@ const loadRemoteInstances = async () => {
             }
         });
     } catch {
-        // ignore
     }
 };
 

@@ -188,15 +188,11 @@ export class ModService {
     pageSize: number = 50,
     folder?: string
   ): Promise<ModListResult> {
-    // Enforce max page size of 50
     pageSize = Number.isSafeInteger(pageSize) && pageSize > 0 ? Math.min(pageSize, 50) : 10;
     page = Number.isSafeInteger(page) && page > 0 ? page : 1;
 
     const fileManager = this.ctx.files.getFileManager(instanceUuid);
 
-    // if (!FileManager.checkFileName(folder ?? "")) {
-    //   throw new Error("Invalid folder name");
-    // }
 
     const result: ModInfo[] = [];
     const folders: string[] = [];
@@ -275,24 +271,20 @@ export class ModService {
     await scanDir("Mods", "mod");
     await scanDir("Plugins", "plugin");
 
-    // Limit concurrency to 10
     const limit = 10;
     for (let i = 0; i < tasks.length; i += limit) {
       const batch = tasks.slice(i, i + limit);
       await Promise.all(batch.map((task) => task()));
     }
 
-    // Remove duplicates
     const uniqueResult = result.filter(
       (v, i, a) => a.findIndex((t) => t.file === v.file && t.folder === v.folder) === i
     );
 
-    // Filter by folder if specified
     const filteredResult = folder
       ? uniqueResult.filter((m) => m.folder === folder.toLowerCase())
       : uniqueResult;
 
-    // Sort by name for consistent pagination
     filteredResult.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 
     const total = filteredResult.length;
@@ -537,7 +529,7 @@ export class ModService {
     if (modId) searchTerms.add(modId.toLowerCase());
     if (fileName) {
       let nameOnly = fileName.replace(/\.jar(\.disabled)?$/i, "");
-      // Try to remove version info (e.g., -1.18.2 or _1.18.2)
+      // Strip common game-version suffixes when matching configuration directories.
       nameOnly = nameOnly.replace(/[-_]v?\d+\.\d+.*$/i, "");
       searchTerms.add(nameOnly.toLowerCase());
       const parts = nameOnly.split(/[-_]/);
@@ -588,7 +580,6 @@ export class ModService {
       // Try direct match first
       let pluginConfigDir = fileManager.toAbsolutePath(path.join("plugins", modId));
       if (!(await fs.pathExists(pluginConfigDir)) && fileName) {
-        // Try matching by search terms in plugins directory
         const pluginsDir = fileManager.toAbsolutePath("plugins");
         if (await fs.pathExists(pluginsDir)) {
           const dirs = await fs.readdir(pluginsDir);

@@ -54,7 +54,7 @@ interface IWatcherInfo {
 }
 
 const TERM_TEXT_YELLOW = "\x1B[0;33;1m";
-const TERM_TEXT_GOLD = "\x1B[0;33m"; // Gold §6
+const TERM_TEXT_GOLD = "\x1B[0;33m";
 const TERM_RESET = "\x1B[0m";
 function getIgnoreText() {
   return [
@@ -125,17 +125,15 @@ export default class Instance extends EventEmitter {
   // Track whether the current stop was initiated by a user action (stop/kill command)
   private userRequestedStop = false;
 
-  // When initializing an instance, the instance must be initialized through uuid and configuration class, otherwise the instance will be unavailable
+  // Construct instances with a UUID and configuration before using them.
   constructor(instanceUuid: string, config: InstanceConfig) {
     super();
 
     if (!instanceUuid || !config) throw new Error($t("TXT_CODE_instanceConf.initInstanceErr"));
 
-    // Basic information
     this.instanceStatus = Instance.STATUS_STOP;
     this.instanceUuid = instanceUuid;
 
-    // Action lock
     this.lock = false;
 
     this.config = config;
@@ -152,7 +150,6 @@ export default class Instance extends EventEmitter {
     return [Instance.STATUS_STOP, Instance.STATUS_BUSY].includes(this.status());
   }
 
-  // Pass in instance configuration, loosely and dynamically set configuration items for instance parameters
   parameters(cfg: any, persistence = true) {
     // If the instance type changes, default commands and lifecycle events must be reset
     if (cfg?.type && cfg?.type != this.config.type) {
@@ -323,8 +320,7 @@ export default class Instance extends EventEmitter {
     const extendDockerCfg = newDockerCfg as any;
 
     if (!extendDockerCfg?.isResetDockerCfg) {
-      // Delete some environment configurations specific to a certain image
-      // to avoid the newly generated configurations from having an adverse impact on new images.
+      // Clear image-specific settings before generating defaults for a new image.
       delete newDockerCfg.image;
       delete newDockerCfg.env;
       delete newDockerCfg.ports;
@@ -332,7 +328,6 @@ export default class Instance extends EventEmitter {
       delete newDockerCfg.changeWorkdir;
       delete newDockerCfg.containerName;
 
-      // Reset some configurations
       this.config.updateCommand = "";
       this.config.startCommand = "";
       this.config.stopCommand = "^C";
@@ -349,12 +344,10 @@ export default class Instance extends EventEmitter {
     this.lock = bool;
   }
 
-  // force the command to execute
   async forceExec(command: InstanceCommand) {
     return await command.exec(this);
   }
 
-  // set instance state or get state
   status(v?: number) {
     if (v != null) {
       this.instanceStatus = v;
@@ -365,8 +358,6 @@ export default class Instance extends EventEmitter {
     return this.instanceStatus;
   }
 
-  // function that must be executed after the instance starts
-  // Trigger the open event and bind the data and exit events, etc.
   started(
     process: IInstanceProcess,
     previous?: {
@@ -416,23 +407,18 @@ export default class Instance extends EventEmitter {
     this.emit("open", this);
     this.scheduleRestartReset();
 
-    // start all lifecycle tasks
     if (!this.reloading) {
       void this.lifeCycleTaskManager.execLifeCycleTask(1);
       this.startOutputLoop();
     }
   }
 
-  // If the instance performs any operation exception, it must throw an exception through this function
-  // trigger failure event
   failure(error: Error) {
     this.emit("failure", error);
     this.println("ERROR", error.message ?? String(error));
     throw error;
   }
 
-  // function that must be executed after the instance has been closed
-  // trigger exit event
   stopped(code = 0): Promise<void> {
     if (this.stopping) return this.stopping;
     if (this.instanceStatus === Instance.STATUS_STOP && !this.process) return Promise.resolve();
@@ -584,19 +570,16 @@ export default class Instance extends EventEmitter {
     return this.userRequestedStop;
   }
 
-  // custom output method, formatting
   println(level: string, text: string) {
     const str = `[${level}] ${text}\n`;
     this.print(str);
   }
 
-  // custom output method
   print(data: any) {
     if (this.reloading) this.pushOutput(String(data));
     else this.emit("data", data);
   }
 
-  // Release resources (mainly release process-related resources)
   releaseResources(): Promise<void> {
     if (this.resourceCleanup) return this.resourceCleanup;
     const process = this.process;
@@ -626,7 +609,6 @@ export default class Instance extends EventEmitter {
     };
   }
 
-  // destroy this instance
   async destroy() {
     this.restartPending = false;
     this.clearRestartReset();
@@ -653,7 +635,6 @@ export default class Instance extends EventEmitter {
     return path.normalize(path.join(process.cwd(), this.config.cwd));
   }
 
-  // execute the preset command action
   async execPreset(action: IPresetCommand, p?: any) {
     if (this.presetCommandManager) {
       return await this.presetCommandManager.execPreset(action, p);

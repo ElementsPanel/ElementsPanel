@@ -35,8 +35,6 @@ export function mapDaemonAddress(remoteMappings: RemoteMappingEntry[]) {
 }
 
 export function parseForwardAddress(addr: string, require: "http" | "ws") {
-  // save its protocol header
-  //ws://127.0.0.1:25565
   let protocol = `${window.location.protocol}//`;
   const addrProtocolString = addr.toLocaleLowerCase();
   if (require === "http") {
@@ -56,10 +54,8 @@ export function parseForwardAddress(addr: string, require: "http" | "ws") {
     else protocol = "ws://";
   }
 
-  // remove potentially redundant headers
   addr = deleteWebsocketHeader(deleteHttpHeader(addr));
 
-  // port and ip are separated
   let daemonPort = null;
   let onlyAddr = null;
   if (addr.split(":").length === 2) {
@@ -76,7 +72,6 @@ export function parseForwardAddress(addr: string, require: "http" | "ws") {
     path = addr.slice(addr.indexOf("/"));
   }
 
-  // Reassemble the address based on the separated port and ip
   const checkAddr = onlyAddr.toLocaleLowerCase();
   if (checkAddr.indexOf("localhost") === 0 || checkAddr.indexOf("127.0.0.") === 0) {
     addr = `${protocol}${window.location.hostname}${daemonPort ? `:${daemonPort}` : ""}${

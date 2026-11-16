@@ -4,14 +4,8 @@ import { localeMessages } from "../i18n";
 import { SettingsFormService } from "./settings";
 import { writePluginOverride } from "mcsmanager-common";
 
-// Daemon side of the plugin manager. The daemon core owns the mechanism —
-// `ctx.plugins` lists what is installed and persists the enable switch — and
-// this plugin only exposes it over the protocol, because the panel's plugin
-// manager page is what drives it.
-//
-// Every event is reachable only over an authenticated top-level session: the
-// daemon's auth middleware rejects every event other than "auth" and "stream"
-// until the panel has presented the daemon key.
+// Expose daemon plugin management over the protocol.
+// The daemon auth middleware requires an authenticated panel session for these events.
 
 /** Turning this plugin off would remove the events the request came in over. */
 const SELF = "config";
@@ -68,21 +62,15 @@ export function apply(ctx: DaemonPluginContext) {
   const settingsForm = ctx.get("settingsForm");
   if (!settingsForm) throw new Error("Daemon settings form service is unavailable.");
 
-  // The panel's node page compares daemon plugins against its own inventory, so
-  // the id/version pairs ride along on the overview payload it already polls.
-  // `dual` marks a two-sided plugin: if its panel half is absent there, the node
-  // page reports the plugin as missing rather than daemon-only by design.
-  // Best-effort: hosts without an overview service (tests, minimal daemons)
-  // keep loading this plugin without the extra payload.
+  // Include plugin versions and dual-side requirements in the overview for compatibility checks.
+  // Hosts without an overview service can still load this plugin.
   ctx.overview?.provide(() => ({
     plugins: ctx.plugins
       .inventory()
       .map((record) => ({ id: record.id, version: record.version, dual: record.dual }))
   }));
 
-  // Unloads and deletes one installed plugin package. What may be removed —
-  // essential plugins, development sources — is the loader's own decision; its
-  // refusal arrives as a protocol error the panel's page reports.
+  // The loader enforces removal restrictions and returns protocol errors.
   ctx.protocol.on("plugin/remove", async (routerCtx, data) => {
     try {
       const id = String((data as { id?: unknown })?.id ?? "");
@@ -118,7 +106,6 @@ export function apply(ctx: DaemonPluginContext) {
       routerCtx,
       ctx.plugins.inventory().map((record) => ({
         ...record,
-        // So the panel can say "no configurable options" without a round trip.
         hasSettings: declared.has(record.id)
       }))
     );
@@ -145,9 +132,7 @@ export function apply(ctx: DaemonPluginContext) {
     }
   });
 
-  // A plugin installed from the market is an npm dependency of the daemon's
-  // installation project. npm runs on the machine that will load the plugin, so
-  // the panel only names the package and the version.
+  // Install the selected npm dependency in the daemon's installation project.
   async function installPackage(
     routerCtx: Parameters<typeof ctx.protocol.response>[0],
     data: unknown,
@@ -258,9 +243,7 @@ export function apply(ctx: DaemonPluginContext) {
     }
   });
 
-  // The configuration of one of this daemon's plugins, described by the plugin
-  // itself. The panel renders the description; nothing about the form lives
-  // there, which is the only way a daemon plugin can have a settings page at all.
+  // Expose backend-declared settings for the panel's generic form.
   ctx.protocol.on("plugin/config", async (routerCtx, data) => {
     try {
       const id = String((data as { id?: unknown })?.id ?? "");

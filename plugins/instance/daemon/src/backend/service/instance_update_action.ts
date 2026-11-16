@@ -59,14 +59,11 @@ export class InstanceUpdateAction extends AsyncTask {
       throw new Error($t("TXT_CODE_general_update.cmdFormatErr"));
     }
 
-    // start the update command
     const process = spawn(commandExeFile, commandParameters, {
       cwd: this.instance.absoluteCwdPath(),
       stdio: "pipe",
       windowsHide: true
     });
-    // spawn() reports a missing executable asynchronously. Always handle that
-    // event so an unavailable Java runtime fails the install task, not the daemon.
     process.once("error", (error) => { void this.error(error); });
 
     // process & pid

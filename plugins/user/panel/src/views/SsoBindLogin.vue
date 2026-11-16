@@ -33,7 +33,6 @@ onMounted(async () => {
       loggedInUserName.value = info.value.userName;
     }
   } catch {
-    // Not logged in
   }
 });
 
@@ -105,7 +104,6 @@ const handleBind = async () => {
             {{ t("TXT_CODE_SSO_BIND_DESC") }}
           </p>
 
-          <!-- Already logged in: show quick bind option -->
           <div v-if="loggedInUserName && !showLoginForm">
             <VAlert type="info" variant="tonal" class="mb-5">
               <template #text>
@@ -125,7 +123,6 @@ const handleBind = async () => {
             </div>
           </div>
 
-          <!-- Login form for binding to a different account -->
           <div v-else>
             <div v-if="loggedInUserName" class="mb-16">
               <VBtn variant="text" class="px-0" @click="showLoginForm = false">

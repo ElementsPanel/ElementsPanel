@@ -10,7 +10,6 @@ export function createScheduleRouter() {
   const remoteRequest = (service: any) => new (remote().Request)(service);
   const remoteSubsystem = () => remote().services;
 
-// Routing permission verification middleware
 router.use(async (ctx, next) => {
   const instanceUuid = String(ctx.query.uuid);
   const daemonId = String(ctx.query.daemonId);
@@ -22,8 +21,6 @@ router.use(async (ctx, next) => {
   }
 });
 
-// [Low-level Permission]
-// Get the list of scheduled tasks
 router.get(
   "/",
   permission({ level: ROLE.USER }),
@@ -45,8 +42,6 @@ router.get(
   }
 );
 
-// [Low-level Permission]
-// create a scheduled task
 router.post(
   "/",
   permission({ level: ROLE.USER }),
@@ -60,7 +55,6 @@ router.post(
       const instanceUuid = String(ctx.query.uuid);
       const task = ctx.request.body;
 
-      // Scheduled task name needs file name format check
       const name = String(task.name);
       FILENAME_BLACKLIST.forEach((ch) => {
         if (name.includes(ch)) throw new Error($t("TXT_CODE_router.schedule.invalidName"));
@@ -92,8 +86,6 @@ router.post(
   }
 );
 
-// [Low-level Permission]
-// delete scheduled task
 router.delete(
   "/",
   permission({ level: ROLE.USER }),

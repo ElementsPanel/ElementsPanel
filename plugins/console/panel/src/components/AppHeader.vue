@@ -149,7 +149,6 @@ useEventListener("keydown", (event) => {
     </div>
   </VToolbar>
 
-  <!-- Menus for phone -->
   <VToolbar
     v-if="isPhone"
     tag="header"

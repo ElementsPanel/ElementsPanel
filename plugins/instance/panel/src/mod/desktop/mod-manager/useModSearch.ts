@@ -210,7 +210,6 @@ export function useModSearch(
     const fallbackFile = version.files.find((f: any) => f.url !== file.url);
     const fallbackUrl = file.fallbackUrl || fallbackFile?.url;
 
-    // 1. Automatic detection logic
     let detectedType = version.project_type || selectedMod.value?.project_type || "mod";
 
     const pluginLoaders = [
@@ -237,7 +236,6 @@ export function useModSearch(
 
     if (hasMods && hasPlugins) {
       if (isDesktop) {
-        // Desktop mode: use reactive DesktopWindow dialog
         try {
           finalType = await new Promise<"mod" | "plugin">((resolve, reject) => {
             saveLocationDialog.value = {
@@ -248,10 +246,9 @@ export function useModSearch(
             };
           });
         } catch (e) {
-          return; // User cancelled
+          return;
         }
       } else {
-        // Mobile/web mode: use Modal.confirm
         try {
           finalType = await new Promise((resolve, reject) => {
             const modal = Modal.confirm({
@@ -299,7 +296,7 @@ export function useModSearch(
             });
           });
         } catch (e) {
-          return; // User cancelled
+          return;
         }
       }
     } else if (hasPlugins && !hasMods) {
@@ -372,8 +369,6 @@ export function useModSearch(
       }
     };
 
-    // Note: checkAndConfirm logic is handled in ModManager.vue
-    // We pass immediateFn back or handle it via a callback
     return { type: "download", name: file.filename, data: downloadData, immediateFn };
   };
 
@@ -398,7 +393,6 @@ export function useModSearch(
     sortedVersions,
     showVersions,
     onDownload,
-    // Desktop mode: save location dialog state
     saveLocationDialog
   };
 }

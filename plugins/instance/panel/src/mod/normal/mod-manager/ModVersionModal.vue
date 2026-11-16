@@ -19,27 +19,24 @@ const emit = defineEmits(["update:visible", "download"]);
 
 const { isPhone } = useScreen();
 
-// Track the version ID being downloaded
 const downloadingVersionId = ref<string | number | null>(null);
 let downloadTimeout: ReturnType<typeof setTimeout> | null = null;
 
-// Handle download button click
 const handleDownload = (record: any) => {
   if (isInstalled(record) || downloadingVersionId.value === record.id) return;
   downloadingVersionId.value = record.id;
 
-  // Set timeout to clear loading state (as a fallback to prevent loading from persisting if download fails)
+  // Clear pending download state if no installation update arrives within 60 seconds.
   if (downloadTimeout) clearTimeout(downloadTimeout);
   downloadTimeout = setTimeout(() => {
     if (downloadingVersionId.value === record.id) {
       downloadingVersionId.value = null;
     }
-  }, 60000); // 60 second timeout
+  }, 60000);
 
   emit("download", record);
 };
 
-// Helper function to clear loading state
 const clearDownloadingState = () => {
   if (downloadTimeout) {
     clearTimeout(downloadTimeout);
@@ -50,7 +47,6 @@ const clearDownloadingState = () => {
 
 onUnmounted(clearDownloadingState);
 
-// Watch mods changes, clear loading state when version is installed
 watch(
   () => props.mods,
   () => {
@@ -67,7 +63,6 @@ watch(
   { deep: true }
 );
 
-// Watch modal close, clear loading state
 watch(
   () => props.visible,
   (newVal) => {

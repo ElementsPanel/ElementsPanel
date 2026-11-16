@@ -22,15 +22,9 @@ import type {
 } from "@elements-panel/sdk";
 
 /**
- * The console plugin's UI registration services.
- *
- * Every method that accepts a registration wraps it in `this.ctx.effect()`, so
- * the registration belongs to the plugin that made the call and is undone when
- * that plugin unloads. The underlying stores stay `shallowReactive` so Vue
- * re-renders on every such change.
- *
- * A cordis `Context` is itself a `Proxy`; the Vue app, pinia and router are
- * stored `markRaw` so Vue never tries to make one reactive.
+ * Scope UI registrations to the calling plugin so unloading removes them.
+ * Keep stores shallowReactive and framework instances markRaw to avoid proxying Cordis
+ * contexts.
  */
 
 export class VueService extends Service implements FrontendVueService {

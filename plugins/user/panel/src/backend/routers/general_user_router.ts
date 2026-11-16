@@ -21,8 +21,6 @@ export default function createGeneralUserRouter() {
   const validator = core().middleware.validator;
   const router = new Router({ prefix: "/auth" });
 
-  // [Low-level Permission]
-  // add token return
   router.get(
     "/token",
     permission({ level: ROLE().USER, token: false, speedLimit: false }),
@@ -36,15 +34,11 @@ export default function createGeneralUserRouter() {
     }
   );
 
-  // [Low-level Permission]
-  // get user data
   router.get(
     "/",
     permission({ level: ROLE().USER, token: false, speedLimit: false }),
     async (ctx) => {
-      // Default permission to get me
       let uuid = getUserUuid(ctx);
-      // The front end can choose to require advanced data
       const advanced = ctx.query.advanced;
 
       // Admin permissions can be obtained from anyone
@@ -59,8 +53,6 @@ export default function createGeneralUserRouter() {
     }
   );
 
-  // [Low-level Permission]
-  // Modify personal user information
   router.put(
     "/update",
     permission({ level: ROLE().USER }),
@@ -77,8 +69,6 @@ export default function createGeneralUserRouter() {
     }
   );
 
-  // [Low-level Permission]
-  // API generation and shutdown
   router.put(
     "/api",
     permission({ level: ROLE().USER }),
@@ -91,8 +81,6 @@ export default function createGeneralUserRouter() {
     }
   );
 
-  // [Low-level Permission]
-  // 2FA
   router.post("/bind2fa", permission({ level: 1 }), async (ctx: Koa.ParameterizedContext) => {
     const userUuid = getUserUuid(ctx);
     if (userUuid) {
@@ -101,8 +89,6 @@ export default function createGeneralUserRouter() {
     }
   });
 
-  // [Low-level Permission]
-  // 2FA
   router.post(
     "/confirm2fa",
     permission({ level: 1 }),
@@ -120,7 +106,6 @@ export default function createGeneralUserRouter() {
     }
   );
 
-  // [Public Permission]
   router.get(
     "/query_username",
     permission({ token: false, level: null }),

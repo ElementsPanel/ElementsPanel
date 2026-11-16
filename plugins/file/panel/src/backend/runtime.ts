@@ -1,13 +1,6 @@
 import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 
-/**
- * This plugin's private handle on its cordis context.
- *
- * The panel core is bundled into `app.js`, so a plugin cannot import its
- * singletons. The route handlers below already own the name `ctx` — Koa's — so
- * the plugin context is reached through these accessors rather than threaded in
- * as a second parameter that would have to be renamed everywhere.
- */
+/** Access shared services through the plugin context without bundling host singletons. */
 let context: PanelPluginContext | undefined;
 
 export function setPluginContext(value: PanelPluginContext) {

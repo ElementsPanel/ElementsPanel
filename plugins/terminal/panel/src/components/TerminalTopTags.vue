@@ -251,7 +251,6 @@ const cards = computed<PerfCardItem[]>(() => {
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ---- CPU normal (blue) ---- */
 .perf-card--cpu-normal {
   .perf-card__icon {
     background: transparent;
@@ -267,7 +266,6 @@ const cards = computed<PerfCardItem[]>(() => {
   }
 }
 
-/* ---- CPU warning (gold) ---- */
 .perf-card--cpu-warning {
   .perf-card__icon {
     background: transparent;
@@ -284,7 +282,6 @@ const cards = computed<PerfCardItem[]>(() => {
   }
 }
 
-/* ---- CPU error (red) ---- */
 .perf-card--cpu-error {
   .perf-card__icon {
     background: transparent;
@@ -302,7 +299,6 @@ const cards = computed<PerfCardItem[]>(() => {
   }
 }
 
-/* ---- Memory (purple) ---- */
 .perf-card--memory {
   .perf-card__icon {
     background: transparent;
@@ -318,7 +314,6 @@ const cards = computed<PerfCardItem[]>(() => {
   }
 }
 
-/* ---- Disk (cyan) ---- */
 .perf-card--disk {
   .perf-card__icon {
     background: transparent;
@@ -334,7 +329,6 @@ const cards = computed<PerfCardItem[]>(() => {
   }
 }
 
-/* ---- Network (green) ---- */
 .perf-card--network {
   cursor: pointer;
 

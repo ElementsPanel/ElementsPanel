@@ -294,7 +294,6 @@ onMounted(async () => {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  // backdrop-filter: saturate(120%) blur(12px);
   background-color: var(--login-panel-bg);
   color: var(--text-color);
 

@@ -4,14 +4,8 @@ import { $t, fileTasks, instances, logger, protocol, settings, transfer } from "
 import uploadManager from "./upload_manager";
 import { checkSafeUrl } from "./url";
 
-/**
- * Every `file/*` protocol event, plus the middleware that gates them.
- *
- * Registered from `apply()`, so all of it — the middleware included — leaves with
- * the plugin. The middleware runs after `plugins/auth`'s, which loads first.
- */
+/** Register file protocol handlers and their access middleware in the plugin scope, after auth. */
 export function registerFileEvents() {
-  // Some routers operate router authentication middleware
   protocol().use((event, ctx, data, next) => {
     if (event.startsWith("file/")) {
       const instanceUuid = data.instanceUuid;
@@ -38,7 +32,6 @@ export function registerFileEvents() {
     next();
   });
 
-  // List the files in the specified instance working directory
   protocol().on("file/list", async (ctx, data) => {
     try {
       const fileManager = getFileManager(data.instanceUuid);
@@ -51,7 +44,6 @@ export function registerFileEvents() {
     }
   });
 
-  // Preview archive contents without extracting the archive
   protocol().on("file/preview", async (ctx, data) => {
     const maxFileTask = settings().config.maxFileTask;
     const instance = instances().subsystem.getInstance(data.instanceUuid);
@@ -83,7 +75,6 @@ export function registerFileEvents() {
     }
   });
 
-  // File chmod (only Linux)
   protocol().on("file/chmod", async (ctx, data) => {
     try {
       const fileManager = getFileManager(data.instanceUuid);
@@ -142,7 +133,6 @@ export function registerFileEvents() {
     }
   });
 
-  // Query the status of the file management system
   protocol().on("file/status", async (ctx, data) => {
     try {
       const instance = instances().subsystem.getInstance(data.instanceUuid);
@@ -174,7 +164,6 @@ export function registerFileEvents() {
     }
   });
 
-  // Create a new file
   protocol().on("file/create-text", async (ctx, data) => {
     try {
       if (
@@ -215,7 +204,6 @@ export function registerFileEvents() {
     }
   });
 
-  // Create a directory
   protocol().on("file/mkdir", (ctx, data) => {
     try {
       const target = data.target;
@@ -227,7 +215,6 @@ export function registerFileEvents() {
     }
   });
 
-  // download a file from url
   protocol().on("file/download_from_url", async (ctx, data) => {
     try {
       const url = data.url;
@@ -244,7 +231,6 @@ export function registerFileEvents() {
       if (!fileManager.checkPath(fileName)) throw new Error("Access denied: Invalid destination");
       const targetPath = fileManager.toAbsolutePath(fileName);
 
-      // Start download in background
       const fallbackUrl = data.fallbackUrl;
 
       const maxDownloadFromUrlFileCount = settings().config.maxDownloadFromUrlFileCount;
@@ -277,7 +263,6 @@ export function registerFileEvents() {
     }
   });
 
-  // stop download from url
   protocol().on("file/download_stop", (ctx, data) => {
     try {
       const fileManager = getFileManager(data.instanceUuid);
@@ -291,7 +276,6 @@ export function registerFileEvents() {
     }
   });
 
-  // copy the file
   protocol().on("file/copy", async (ctx, data) => {
     try {
       // [["a.txt","b.txt"],["cxz","zzz"]]
@@ -306,7 +290,6 @@ export function registerFileEvents() {
     }
   });
 
-  // move the file
   protocol().on("file/move", async (ctx, data) => {
     try {
       // [["a.txt","b.txt"],["cxz","zzz"]]
@@ -321,7 +304,6 @@ export function registerFileEvents() {
     }
   });
 
-  // Delete Files
   protocol().on("file/delete", async (ctx, data) => {
     try {
       const targets = data.targets;
@@ -333,7 +315,6 @@ export function registerFileEvents() {
           uploadManager.delete(uploadTask.id);
           await uploadTask.writer.stop();
         } else {
-          // async delete
           await fileManager.delete(target);
         }
       }
@@ -343,7 +324,6 @@ export function registerFileEvents() {
     }
   });
 
-  // edit file
   protocol().on("file/edit", async (ctx, data) => {
     try {
       const target = data.target;
@@ -356,7 +336,6 @@ export function registerFileEvents() {
     }
   });
 
-  // compress/decompress the file
   protocol().on("file/compress", async (ctx, data) => {
     const maxFileTask = settings().config.maxFileTask;
     try {
@@ -376,7 +355,6 @@ export function registerFileEvents() {
         );
       }
 
-      // Statistics of the number of tasks in a single instance file and the number of tasks in the entire daemon process
       function fileTaskStart() {
         if (instance) {
           instance.info.fileLock++;
@@ -391,7 +369,6 @@ export function registerFileEvents() {
         }
       }
 
-      // start decompressing or compressing the file
       fileTaskStart();
       try {
         if (type === 1) {

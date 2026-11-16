@@ -11,10 +11,7 @@ import trTR from "./tr_TR.json";
 import zhCN from "./zh_CN.json";
 import zhTW from "./zh_TW.json";
 
-// Strings for the node management pages and for the remote-node subsystem the
-// backend owns — the connection, authentication and request-timeout messages.
-// The frontend hands this to the panel as `localeMessages`; the backend
-// registers the same catalogue with the panel's i18next instance.
+// Share node UI and connection translations between the frontend and backend.
 export const localeMessages = {
   de_de: deDE,
   en_us: enUS,

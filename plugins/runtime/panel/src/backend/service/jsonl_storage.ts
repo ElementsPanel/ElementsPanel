@@ -23,10 +23,7 @@ export class JsonlStorage {
     ) {
       throw new Error(`Invalid path: ${logicalPath}`);
     }
-    // Storage paths are logical, not filesystem paths: `StorageSubsystem` resolves
-    // them against its data directory itself, and a backslash is what this method
-    // rejects above. Joining with the platform separator would emit one on Windows —
-    // the same file, but a different key for anything that stores the path itself.
+    // Use forward slashes for logical storage paths so Windows does not produce different storage keys.
     return path.posix.join(this.directory, `${logicalPath}.jsonl`);
   }
 

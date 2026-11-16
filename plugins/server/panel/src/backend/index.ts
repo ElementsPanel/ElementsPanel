@@ -20,17 +20,8 @@ import { preCheck } from "./precheck";
 import { protocol } from "./protocol";
 import { pluginAssets } from "./plugin_assets";
 
-// The panel's web server.
-//
-// Everything about serving HTTP lives here: the Koa application, the base
-// middleware stack, the static assets and the listener itself. Feature plugins
-// register their routes through `ctx.koa`, so replacing this plugin replaces the
-// panel's entire HTTP transport.
-//
-// `ctx.koa` is provided from inside `apply()`, which makes it this plugin's:
-// unloading the server takes the Koa service with it, and every plugin that
-// injected it is disposed in turn. That is also why `"koa"` must never appear in
-// this plugin's own `inject` list.
+// Own the panel HTTP stack, listener and plugin-scoped Koa service.
+// Provide koa here; declaring it as an injected dependency would prevent startup.
 
 const STATIC_MAX_AGE = 10 * 24 * 60 * 60;
 
@@ -68,12 +59,8 @@ export function apply(ctx: PanelPluginContext) {
     await next();
   });
 
-  // Listen for Koa errors
   app.on("error", () => {
-    // Block all Koa framework level events
-    // When Koa is attacked by a short connection flood, it is easy for error
-    // messages to swipe the screen, which may indirectly affect the operation of
-    // some applications
+    // Suppress noisy Koa framework errors during connection floods.
   });
 
   // The launcher keeps these stable across worker restarts.
@@ -115,8 +102,7 @@ export function apply(ctx: PanelPluginContext) {
   // available before multipart parsing writes any temporary files.
   app.use(protocol(ctx));
 
-  // Ahead of koa-body, which is the whole point of it: an upload the caller may
-  // not make must be rejected before the body parser writes it to disk.
+  // Reject unauthorized uploads before the body parser writes temporary files.
   app.use(preCheck(ctx));
 
   app.use(
@@ -140,9 +126,7 @@ export function apply(ctx: PanelPluginContext) {
     })
   );
 
-  // Everything past this point belongs to the plugins: `KoaService` mounts the
-  // two composed stacks a plugin adds middleware and routers to, which is why it
-  // has to come before the static handlers and before feature plugin routers.
+  // Mount plugin dispatchers before static handlers and feature routes.
   ctx.plugin(KoaService, app);
 
   app.use(pluginAssets(ctx));
@@ -155,8 +139,7 @@ export function apply(ctx: PanelPluginContext) {
   );
   app.use(koaStatic(packagePath("public"), { maxAge: STATIC_MAX_AGE }));
 
-  // Generic administrative proxy used by remote integrations. It is transport
-  // plumbing and belongs to the server plugin's HTTP surface.
+  // Provide the administrative proxy for remote integrations.
   ctx.inject(["koa"], (koaCtx) => {
     const proxyRouter = koaCtx.koa.router("/api/auth");
     proxyRouter.all(
@@ -178,13 +161,7 @@ export function apply(ctx: PanelPluginContext) {
     );
   });
 
-  // Described, not drawn: the panel's plugin manager renders this declaration
-  // with the same generic form it uses for a daemon plugin's configuration, so
-  // this plugin ships no browser half at all.
-  //
-  // Nothing is rebound live — the listener, the proxy mode and the path prefix
-  // are all fixed when this plugin starts — so the port's description says that a
-  // change takes effect on the next restart, as it always has.
+  // Listener, proxy and path settings take effect after restart.
   ctx.inject(["settingsForm"], (settingsCtx) =>
     settingsCtx.settingsForm.declare({
       restartRequired: true,
@@ -255,16 +232,13 @@ export function apply(ctx: PanelPluginContext) {
         return values;
       },
       write: (values) => {
-        // Checked before anything is written: a rejected request must not leave
-        // the running configuration holding a port the panel cannot bind.
+        // Validate before changing live configuration.
         const port = values.httpPort == null ? config.httpPort : Number(values.httpPort);
         if (!Number.isInteger(port) || port <= 0 || port > 65535) {
           throw new Error($t("TXT_CODE_e4d6cc20"));
         }
 
-        // Empty is meaningful for the string fields — no listen address, no path
-        // prefix, no certificate — so they are assigned whenever they are present
-        // rather than validated as required.
+        // Accept explicit empty strings to clear addresses, prefixes and certificates.
         config.httpPort = port;
         if (values.httpIp != null) config.httpIp = String(values.httpIp);
         if (values.prefix != null) config.prefix = String(values.prefix);
@@ -283,9 +257,7 @@ export function apply(ctx: PanelPluginContext) {
     })
   );
 
-  // Created here rather than on `ready`: feature plugins register their
-  // Socket.IO handlers during `apply()`, so the transport must already exist
-  // when they run. Only `listen()` waits for the rest of the panel.
+  // Create Socket.IO before feature apply() hooks register handlers; defer listening until ready.
   let httpServer: http.Server | https.Server | undefined;
   let websocket: SocketIOServer | undefined;
 
@@ -300,8 +272,7 @@ export function apply(ctx: PanelPluginContext) {
       httpServer = http.createServer(app.callback());
     }
   } catch (error) {
-    // A panel that cannot build its listener is of no use to anyone, and
-    // failing quietly here would leave it running and unreachable.
+    // Fail startup if the listener cannot be created.
     ctx.logger.error($t("TXT_CODE_app.httpSetupError"));
     ctx.logger.error(error);
     return process.exit(1);
@@ -362,8 +333,7 @@ export function apply(ctx: PanelPluginContext) {
     }
   });
 
-  // The core used to leak the listener until the process exited; it now closes
-  // with the plugin, and so on shutdown.
+  // Close the listener when the server plugin unloads.
   ctx.on("dispose", async () => {
     await closeTransport();
     websocket = undefined;

@@ -17,16 +17,8 @@ import uploadService, { UploadFiles } from "./services/uploadService";
 import { filterFileName, getFileExtName, getFileIcon, isCompressFile } from "./tools/fileManager";
 import { localeMessages } from "./i18n";
 
-// The file manager, browser side. It owns the instance file card and its Desktop
-// window, the file editor, the image viewer, the upload queue and the three
-// dialogs the panel mounts on demand.
-//
-// Everything another plugin or the console implementation needs of it is published as
-// `ctx.set("file", ...)`: the upload dialog the settings page opens for a
-// logo, the file editor the mod manager and the backup plugin open, the
-// extension helpers the code editor uses. Those callers resolve it with
-// `usePluginService` and degrade when it is absent, which is what makes this
-// plugin removable.
+// Publish file views, dialogs, uploads and editor helpers through the file service.
+// Consumers resolve the optional service and handle its absence.
 
 const ROLE_USER = 1;
 const ROLE_ADMIN = 10;

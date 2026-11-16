@@ -19,7 +19,6 @@ interface IPtySubProcessCfg {
   pid: number;
 }
 
-// Error exception at startup
 class StartupError extends Error {
   constructor(msg: string) {
     super(msg);
@@ -30,7 +29,6 @@ const GO_PTY_MSG_TYPE = {
   RESIZE: 0x04
 };
 
-// process adapter
 export class GoPtyProcessAdapter extends ChildProcessAdapter {
   private pipeClient?: Writable;
   private pipeTimer?: NodeJS.Timeout;
@@ -167,7 +165,6 @@ export default class PtyStartCommand extends AbsStartCommand {
     if (!path.isAbsolute(path.normalize(instance.absoluteCwdPath())))
       throw new StartupError($t("TXT_CODE_pty_start.mustAbsolutePath"));
 
-    // PTY mode correctness check
     logger.info($t("TXT_CODE_pty_start.startPty", { source: "" }));
     let checkPtyEnv = true;
 
@@ -184,14 +181,12 @@ export default class PtyStartCommand extends AbsStartCommand {
       return;
     }
 
-    // command parsing
     let commandList: string[] = [];
     const tmpStarCmd = await instance.parseTextParams(instance.config.startCommand);
     if (os.platform() === "win32") {
       // windows: cmd.exe /c {{startCommand}}
       commandList = [tmpStarCmd];
     } else {
-      // other
       commandList = commandStringToArray(tmpStarCmd);
     }
 
@@ -208,7 +203,6 @@ export default class PtyStartCommand extends AbsStartCommand {
 
     const runAsConfig = await getRunAsUserParams(instance);
 
-    // Prepare PTY parameters
     const ptyParameter = [
       "-size",
       `${instance.config.terminalOption.ptyWindowCol},${instance.config.terminalOption.ptyWindowRow}`,
@@ -238,7 +232,6 @@ export default class PtyStartCommand extends AbsStartCommand {
 
     instance.println("INFO", "> " + commandList.join(" "));
 
-    // create pty child process
     const subProcess = spawnInstanceProcess(
       instance,
       spawn,

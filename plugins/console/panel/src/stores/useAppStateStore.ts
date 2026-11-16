@@ -12,11 +12,7 @@ interface AppStateInfo extends PanelStatus {
   userInfo: LoginUserInfo | null;
 }
 
-/**
- * Identity used when the "user" plugin is absent. Authentication then lives
- * nowhere, the backend treats every request as an administrator, and the
- * frontend has to agree so the router lets the user in without a login page.
- */
+/** Use an anonymous administrator identity when the user plugin is absent, matching backend policy. */
 const ANONYMOUS_ADMIN = {
   uuid: "",
   userName: "",

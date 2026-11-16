@@ -24,29 +24,24 @@ export async function downloadSteam(url: string): Promise<string> {
 
   return new Promise(async (resolve, reject) => {
     try {
-      // Ensure target directory exists
       const targetDir = path.dirname(tmpPath);
       if (!fs.existsSync(targetDir)) {
         fs.mkdirsSync(targetDir);
       }
 
-      // Remove existing file if it exists
       if (fs.existsSync(tmpPath)) {
         fs.removeSync(tmpPath);
       }
 
-      // Download file
       const response = await axios<Readable>({
         url: url,
         responseType: "stream",
-        timeout: 1000 * 60 * 10, // 10 minutes timeout
+        timeout: 1000 * 60 * 10,
         headers: getCommonHeaders(url)
       });
 
-      // Create write stream
       const writeStream = fs.createWriteStream(path.normalize(tmpPath));
 
-      // Use pipeline to handle streams
       pipeline(response.data, writeStream, async (err) => {
         if (err) {
           fs.remove(tmpPath, () => {});

@@ -69,7 +69,6 @@ const loadImages = async () => {
       }
     }
   } catch {
-    // ignore
   } finally {
     loading.value = false;
   }

@@ -5,6 +5,5 @@ export default class NullCommand extends InstanceCommand {
     super("NullCommand");
   }
   async exec() {
-    // Do nothing.....
   }
 }

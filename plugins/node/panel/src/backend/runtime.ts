@@ -1,16 +1,8 @@
 import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 
 /**
- * This plugin's private handle on its cordis context.
- *
- * The panel core is bundled into `app.js`, so a plugin cannot import its
- * singletons: doing so would compile a second copy of the storage subsystem, the
- * system config and the i18n instance. The only channel is the context
- * `apply()` receives, and the remote-node subsystem below is four modules deep —
- * a `RemoteService` logs from inside a socket callback, far from `apply()`.
- *
- * A plugin with only a handful of such call sites should pass `ctx` as an
- * argument instead; see `plugins/market`.
+ * Access shared services through the plugin context. Runtime imports of host singletons would
+ * create duplicate instances.
  */
 let context: PanelPluginContext | undefined;
 
@@ -25,13 +17,7 @@ export function core(): PanelPluginContext {
 
 type PluginLogger = PanelPluginContext["logger"];
 
-/**
- * `ctx.logger` is bound to the plugin's own cordis scope, so it is gone the
- * moment that scope is disposed — and this plugin's disposer runs *then*, closing
- * every daemon socket, which is a code path that logs. Shutting the panel down
- * must not fail on a log line, and there is nothing left to log with, so it goes
- * nowhere instead.
- */
+/** Use a quiet logger after scope disposal so socket cleanup cannot fail while logging. */
 const SILENT = {
   info() {},
   warn() {},

@@ -17,11 +17,7 @@ withDefaults(defineProps<{ collapsed?: boolean }>(), { collapsed: false });
 const route = useRoute();
 const { sidebarItems, handleToPage } = useHeaderMenus();
 
-/**
- * Only the most specific entry counts as active. `/market/plugins` is a menu item
- * of its own, and a plain prefix test would light it up together with `/market`
- * — which also decides which icon is drawn filled.
- */
+/** Activate only the most specific matching route so parent menus do not also appear selected. */
 const activePath = computed(() => {
   let exact = "";
   let longest = "";
@@ -106,9 +102,7 @@ const getMdiIcon = (icon: unknown, fallback?: string): string => {
 const getRouteIcon = (entry: SidebarRouteEntry): string =>
   routePathIcons[entry.path] || getMdiIcon(entry.icon);
 
-// Default (inactive) sidebar icons use the linear/outline style; the active
-// item swaps to its filled counterpart. Only verified outline/filled pairs are
-// listed here — icons without an outline variant keep the same glyph.
+// Swap verified outline/filled icon pairs for the active item; leave other glyphs unchanged.
 const filledIconMap: Record<string, string> = {
   "mdi-cog-outline": "mdi-cog",
   "mdi-view-grid-outline": "mdi-view-grid",

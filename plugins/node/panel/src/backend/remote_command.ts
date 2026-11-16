@@ -23,7 +23,6 @@ export default class RemoteRequest {
     if (!this.rService || !this.rService.socket) throw new Error($t("TXT_CODE_ca8072bd"));
   }
 
-  // request to remote daemon
   public async request<T = any>(
     event: string,
     data?: any,
@@ -79,7 +78,6 @@ export default class RemoteRequest {
       socket.on(event, fn);
       socket.on("disconnect", disconnected);
       service.pendingRequests.add(disconnected);
-      // send command
       try {
         socket.emit(event, protocolData);
       } catch (error) {

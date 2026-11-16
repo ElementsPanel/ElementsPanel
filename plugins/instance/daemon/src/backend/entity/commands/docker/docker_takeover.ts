@@ -16,7 +16,6 @@ export default class DockerTakeoverCommand extends AbsStartCommand {
   }
 
   protected async createProcess(instance: Instance) {
-    // Docker docks to the process adapter
     const processAdapter = new DockerProcessAdapter(new SetupDockerContainer(instance));
     try {
       const docker = new DefaultDocker();

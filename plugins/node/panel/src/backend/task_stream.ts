@@ -1,9 +1,6 @@
 /**
- * The bridge between daemon task pushes and the panel's browser sockets.
- *
- * `RemoteService` publishes daemon snapshots here, and the node plugin installs
- * one sink that owns the Socket.IO forwarding. Keeping the sink in a tiny module
- * avoids a dependency cycle between the remote entities and the plugin entry.
+ * Forward daemon task snapshots to browser sockets through one sink.
+ * A separate module avoids a cycle between remote entities and the plugin entry.
  */
 
 export interface TaskStreamTask {

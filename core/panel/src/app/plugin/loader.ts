@@ -40,14 +40,9 @@ import { Logger, type ForkScope } from "cordis";
 import { ctx, type PanelPluginContext, type PanelSettingsSchema } from "./context";
 
 /**
- * Turns the plugin directories into cordis plugins.
- *
- * Discovery is shared with the daemon and the frontend build
- * (`mcsmanager-common`); everything past it is cordis: each plugin module is
- * handed to `ctx.plugin()`, which resolves its `inject` list, calls `apply()`
- * with a scope of its own, and undoes every effect that scope registered when it
- * is disposed. A plugin that throws is isolated by cordis and reported through
- * `ctx.logger`, so the panel keeps running.
+ * Discover plugins through the shared manifest layer, then let Cordis manage dependencies and
+ * scoped effects.
+ * Isolate plugin failures so the host can keep running.
  */
 
 const logger = new Logger("plugin");
@@ -119,10 +114,7 @@ function warnFrontendManifest(message: string, error?: unknown) {
 }
 
 function discoverPanelPlugins(options: DiscoverPluginsOptions) {
-  // Only npm packages are plugins now: the published runtime resolves its own
-  // dependencies, and a development checkout resolves the source packages that
-  // the side package ships. Legacy data/plugins and market_plugins directories
-  // are deliberately not read any more.
+  // Resolve npm dependencies and development workspace packages; ignore legacy plugin directories.
   return applyPluginOverrides(
     discoverPluginsFromRoots(packagePluginRoots("panel"), {
       ...options,
@@ -233,16 +225,11 @@ async function installPlugin(plugin: DiscoveredPlugin): Promise<LoadedPanelPlugi
       plugin.manifest.id
     );
     if (!module) throw new Error(`Plugin "${plugin.manifest.id}" must export apply().`);
-    // Plugins are applied one at a time, in `priority` order, and an async
-    // `apply()` is awaited before the next plugin starts.
-    //
-    // cordis catches a synchronous throw from `apply()` and cancels the scope
-    // itself, so the wrapper keeps a copy of it: without that, a plugin that
-    // failed on its first line would still be reported as loaded.
+    // Apply plugins in priority order and await asynchronous setup.
+    // Capture synchronous errors before Cordis disposes the scope so failed plugins are reported correctly.
     let applied: unknown;
     let thrown: unknown;
-    // The manifest id is the plugin's name, so `ctx.name` — which is what
-    // appears in its log lines — always matches the package metadata.
+    // Use the manifest id for the plugin scope and log name.
     record.fork = ctx.plugin(
       {
         ...module,
@@ -262,9 +249,7 @@ async function installPlugin(plugin: DiscoveredPlugin): Promise<LoadedPanelPlugi
     await applied;
     logger.info(`Panel plugin loaded: ${plugin.manifest.id}`);
   } catch (error: any) {
-    // Failure is atomic: whatever the plugin managed to register before it threw
-    // goes with its scope, so a half-loaded plugin never stays behind — a plugin
-    // that had already claimed the request guard, in particular.
+    // Dispose partial registrations when plugin startup fails.
     record.error = error instanceof Error ? error : new Error(String(error));
     record.fork?.dispose();
     record.fork = undefined;
@@ -583,9 +568,8 @@ export interface PanelPluginRecord {
 const FRONTEND_FIELDS = ["frontend", "ui"];
 
 /**
- * Every installed plugin, disabled ones included — a disabled plugin still has
- * to be listed for the switch to turn it back on. Entry resolution is skipped on
- * purpose: the inventory describes what is installed, not what compiled.
+ * List disabled plugins so they can be enabled again. Skip entry resolution because inventory
+ * describes installed packages.
  */
 export function getPanelPluginInventory(): PanelPluginRecord[] {
   return discoverPanelPlugins({

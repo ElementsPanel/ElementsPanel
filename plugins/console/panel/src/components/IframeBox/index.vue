@@ -1,4 +1,3 @@
-<!-- IframeBox 组件 -->
 <template>
   <div class="iframe-box" :style="{ width: width, height: height }">
     <iframe
@@ -50,13 +49,11 @@ const { isDarkTheme } = useAppConfigStore();
 
 useIframeEventListener(iframeRef);
 
-// 处理iframe加载完成
 const handleLoad = () => {
   error.value = null;
   emit("load");
 };
 
-// 处理iframe加载错误
 const handleError = (err: any) => {
   console.error("IframeBox error", err);
   error.value = err?.message || "";
@@ -67,7 +64,6 @@ const generateIframeAddr = () => {
   return `${props.src}?theme=${isDarkTheme.value ? "dark" : "light"}&t=${Date.now()}`;
 };
 
-// 重新加载iframe
 const reload = () => {
   error.value = null;
   iframeSrc.value = "";

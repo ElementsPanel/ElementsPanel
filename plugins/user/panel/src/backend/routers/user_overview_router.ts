@@ -7,7 +7,6 @@ import userSystem from "../service/user_service";
 export default function createUserOverviewRouter() {
   const router = new Router({ prefix: "/auth" });
 
-  // [Top-level Permission]
   router.put("/", permission({ level: ROLE().ADMIN }), async (ctx: Koa.ParameterizedContext) => {
     const { uuid, config } = ctx.request.body;
     const { passWord } = config;
@@ -26,7 +25,6 @@ export default function createUserOverviewRouter() {
     }
   });
 
-  // [Top-level Permission]
   router.get(
     "/overview",
     permission({ level: ROLE().ADMIN }),

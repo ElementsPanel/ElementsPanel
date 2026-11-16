@@ -1,10 +1,6 @@
 import type { PluginSide } from "./api";
 
-/**
- * What a plugin's sides are called in the market. Both halves make a dual-sided
- * plugin; one half is named after itself. Nothing is said when the market did
- * not report any side — showing a badge would then be a guess.
- */
+/** Label only declared plugin sides; missing metadata must not imply a side. */
 export function sideBadgeKey(sides: readonly PluginSide[] | undefined): string | undefined {
   const hasPanel = sides?.includes("panel") ?? false;
   const hasDaemon = sides?.includes("daemon") ?? false;

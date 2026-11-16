@@ -8,22 +8,16 @@ import FileManager from "./system_file";
 import uploadManager from "./upload_manager";
 
 /**
- * The upload and download HTTP routes.
- *
- * Both are authorized by a passport the panel registered over the protocol first
- * — the server plugin issues those (`passport/register`) — and the upload routes
- * sit behind the runtime plugin's upload middleware, which the web server mounts ahead of
- * the body parser.
+ * Authorize HTTP transfers with protocol-issued passports. Upload middleware runs before the
+ * body parser.
  */
 export function registerHttpRoutes() {
   const router = core().koa.router();
 
-  // File download route
   router.get("/download/:key/:fileName", async (ctx) => {
     const key = ctx.params.key;
     const paramsFileName = ctx.params.fileName;
     try {
-      // Get the task from the task center
       const mission = transfer().passports.getMission(key, "download");
       if (!mission) throw new Error((ctx.body = "Access denied: No task found"));
       const instance = instances().subsystem.getInstance(mission.parameter.instanceUuid);

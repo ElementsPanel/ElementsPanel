@@ -31,8 +31,7 @@ export default class GeneralSendCommand extends InstanceCommand {
   async exec(instance: Instance, buf?: any): Promise<any> {
     if (isExitCommand(instance, buf)) return;
 
-    // The server shutdown command needs to send a command, but before the server shutdown command is executed, the status will be set to the shutdown state.
-    // So here the command can only be executed by whether the process exists or not
+    // Check for a live process so the shutdown command can still be sent after the state changes to stopping.
     if (instance?.process) {
       instance.process.write(encode(buf, instance.config.ie));
       instance.process.write(instance.getCrlfValue());

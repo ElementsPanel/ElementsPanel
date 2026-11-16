@@ -1,22 +1,7 @@
 /**
- * What a daemon plugin's backend imports.
- *
- * Import only types from this host module: a runtime import can bundle a second
- * host context. Shared services arrive through the `ctx` passed to `apply()`.
- * Cordis itself is externalized in host and plugin bundles, so importing its
- * Service or Logger at runtime uses the same installed framework instance.
- *
- * ```ts
- * import type { DaemonPluginContext } from "../../../../../core/daemon/src/plugin";
- *
- * export const inject = ["protocol", "instances"];
- *
- * export function apply(ctx: DaemonPluginContext) {
- *   ctx.protocol.on("example/ping", (routerCtx) => {
- *     ctx.protocol.response(routerCtx, true);
- *   });
- * }
- * ```
+ * Import host contracts as types to avoid bundling a second context.
+ * Resolve shared services through apply(ctx). Cordis runtime imports share the host's
+ * externalized instance.
  */
 export type {
   DaemonArchiveService,

@@ -12,16 +12,8 @@ import { localeMessages } from "../i18n";
 import { KoaService } from "./koa";
 import { addGlobalSocket, delGlobalSocket, navigation, ProtocolService } from "./protocol";
 
-// The daemon's network layer.
-//
-// Everything the daemon is reachable over lives here: the Koa application and
-// its base middleware, the HTTP/HTTPS listener, the protocol handlers and
-// the Socket.io server the panel actually talks to. Replacing this plugin
-// replaces the daemon's transport and its protocol entry point.
-//
-// `ctx.koa` and `ctx.websocket` are set from inside `apply()`, which makes them
-// this plugin's: they leave when it unloads. That is also why neither may appear
-// in this plugin's own `inject` list.
+// Own the daemon HTTP and Socket.IO transports.
+// Provide koa and websocket here; do not declare them as injected dependencies.
 
 export const inject = ["i18n", "settings", "middleware"];
 
@@ -31,10 +23,7 @@ export function apply(ctx: DaemonPluginContext) {
   const config = ctx.settings.config;
   const $t = ctx.i18n.$t;
 
-  // Described, not drawn: a daemon plugin has no browser half, so the panel's
-  // plugin manager renders this declaration with the same generic form it uses
-  // for its own plugins. Nothing here is rebound live — the listener is fixed
-  // when this plugin starts — so the port's description says to restart.
+  // Declare daemon settings for the panel form; listener changes require restart.
   ctx.inject(["settingsForm"], (settingsCtx) =>
     settingsCtx.settingsForm.declare({
       restartRequired: true,
@@ -89,8 +78,7 @@ export function apply(ctx: DaemonPluginContext) {
         sslKeyPath: config.sslKeyPath
       }),
       write: (values) => {
-        // Checked before anything is written: a rejected request must not leave the
-        // running configuration holding a port the daemon cannot bind.
+        // Validate before changing live configuration.
         const port = values.port == null ? config.port : Number(values.port);
         if (!Number.isInteger(port) || port <= 0 || port > 65535) {
           throw new Error($t("TXT_CODE_DSERVER_PORT_TIP"));
@@ -116,18 +104,11 @@ export function apply(ctx: DaemonPluginContext) {
     await next();
   });
 
-  // Listen for Koa errors
   app.on("error", () => {
-    // Block all Koa framework error
-    // When Koa is attacked by a short connection flood, it is easy for error
-    // messages to swipe the screen, which may indirectly affect the operation of
-    // some applications
+    // Suppress noisy Koa framework errors during connection floods.
   });
 
-  // Both ahead of koa-body: the rate limit has to wrap the request stream before
-  // anything reads it, and an unauthorized upload has to be rejected before the
-  // body parser writes it to disk. The runtime foundation owns the upload
-  // subsystem they consult and hands the middleware over as a service.
+  // Apply upload authorization and rate limits before the body parser reads or writes files.
   app.use(ctx.middleware.uploadSpeedLimit);
   app.use(ctx.middleware.uploadFileCheck);
 
@@ -145,10 +126,9 @@ export function apply(ctx: DaemonPluginContext) {
     })
   );
 
-  // Load Koa top-level middleware
   app.use(async (requestCtx, next) => {
     await next();
-    // Because all HTTP requests can only be used by creating a task passport on the panel side, cross-domain requests are allowed, and security can also be guaranteed
+    // Allow cross-origin transfers because each request requires a panel-issued passport.
     requestCtx.response.set("Access-Control-Allow-Origin", "*");
     requestCtx.response.set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
     requestCtx.response.set(
@@ -176,8 +156,7 @@ export function apply(ctx: DaemonPluginContext) {
     });
   }
 
-  // Everything past this point belongs to plugins: `KoaService` mounts the two
-  // composed stacks for middleware and routers.
+  // Mount plugin middleware and router dispatchers after the base stack.
   ctx.plugin(KoaService, app);
   ctx.plugin(ProtocolService);
 
@@ -201,8 +180,7 @@ export function apply(ctx: DaemonPluginContext) {
       httpServer = http.createServer(app.callback());
     }
   } catch (error) {
-    // A daemon that cannot build its listener is of no use to anyone, and
-    // failing quietly would leave it running and unreachable.
+    // Fail startup if the listener cannot be created.
     ctx.logger.error($t("TXT_CODE_app.httpSetupError"));
     ctx.logger.error(error);
     return process.exit(1);
@@ -214,7 +192,6 @@ export function apply(ctx: DaemonPluginContext) {
     process.exit(1);
   });
 
-  // Initialize Websocket service to HTTP service
   const io = new Server(httpServer, {
     serveClient: false,
     pingInterval: 1000 * 20,
@@ -274,8 +251,7 @@ export function apply(ctx: DaemonPluginContext) {
     console.log("");
   });
 
-  // The daemon used to leak both until the process exited; they now close with
-  // the plugin, and so on shutdown.
+  // Close both transports when the server plugin unloads.
   ctx.on("dispose", async () => {
     // Wait for Socket.IO's adapters to close and release the listening socket
     // before a new revision tries to bind the same port.

@@ -20,11 +20,7 @@ import {
 } from "vuetify/components";
 import type { SettingField } from "./api";
 
-// The one form that renders every plugin's configuration. It knows nothing about
-// any particular plugin: the fields arrive from the backend that declared them,
-// with their labels already translated, which is what lets the same component
-// render a daemon plugin's settings 鈥?the browser holds no copy of a daemon
-// plugin at all.
+// Render backend-declared fields with translated labels for panel and daemon plugins.
 
 const props = defineProps<{
   fields: SettingField[];
@@ -32,15 +28,10 @@ const props = defineProps<{
   nested?: boolean;
 }>();
 
-// The event parameter is part of the emit type only; Vue supplies no runtime
-// value for it.
 // eslint-disable-next-line no-unused-vars
 const emit = defineEmits<{ (event: "save"): void }>();
 
-/**
- * A field is hidden unless every condition holds. A condition is either a field
- * name 鈥?true when that field is truthy 鈥?or `"name=value"`.
- */
+/** Show a field only when every condition matches: a truthy field name or "name=value". */
 const visible = (field: SettingField, values = props.values) => {
   const conditions = field.visibleWhen;
   if (!conditions) return true;

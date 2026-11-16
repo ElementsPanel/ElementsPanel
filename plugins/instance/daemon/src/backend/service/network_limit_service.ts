@@ -181,7 +181,6 @@ export class NetworkLimitService {
         });
       }
     } catch {
-      // ignore
     }
     for (const iface of tryPaths) {
       const procPath = `/proc/${pid}/root/sys/class/net/${iface}/iflink`;
@@ -232,7 +231,6 @@ export class NetworkLimitService {
         const veth = (stdout || "").trim();
         return veth || null;
       } catch {
-        // ignore
       }
     }
     return null;

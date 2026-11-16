@@ -185,9 +185,7 @@ class InstanceSubsystem extends EventEmitter {
       cfg.cwd = path.normalize(`${this.instanceDataDir}/${instance.instanceUuid}`);
     }
     if (!fs.existsSync(cfg.cwd)) fs.mkdirsSync(cfg.cwd);
-    // Set the default input and output encoding
     cfg.ie = cfg.oe = cfg.fileCode = "utf8";
-    // Build and initialize the type from the parameters
 
     instance.parameters(cfg, persistence);
     instance.forceExec(new FunctionDispatcher());
@@ -201,7 +199,6 @@ class InstanceSubsystem extends EventEmitter {
       throw new Error(`The application instance ${instance.instanceUuid} already exists.`);
     }
     this.instances.set(instance.instanceUuid, instance);
-    // Dynamically monitor the newly added instance output stream and pass it to its own event stream
     const onData = (...arr: any[]) => {
       this.emit("data", instance.instanceUuid, ...arr);
     };

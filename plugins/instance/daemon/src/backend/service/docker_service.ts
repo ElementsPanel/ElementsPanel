@@ -109,9 +109,7 @@ export class DockerManager {
     const publish = () => DockerManager.builderDetails.set(dockerImageName, tracker.snapshot());
     publish();
     try {
-      // Set the current image creation progress
       DockerManager.setBuilderProgress(dockerImageName, 1);
-      // Issue the create image command
       const stream = await this.docker.buildImage(
         {
           context: dockerFileDir,
@@ -119,7 +117,6 @@ export class DockerManager {
         },
         { t: dockerImageName }
       );
-      // wait for creation to complete
       await new Promise((resolve, reject) => {
         this.docker.modem.followProgress(
           Readable.from(stream),
@@ -127,12 +124,10 @@ export class DockerManager {
           (event) => { tracker.update(event); publish(); }
         );
       });
-      // Set the current image creation progress
       tracker.finish();
       publish();
       DockerManager.setBuilderProgress(dockerImageName, 2);
     } catch (error: any) {
-      // Set the current image creation progress
       tracker.finish(error ?? new Error("Docker build failed"));
       publish();
       DockerManager.setBuilderProgress(dockerImageName, -1);
@@ -151,11 +146,9 @@ export class DockerManager {
       const info = await this.docker.info();
       const platforms: string[] = [];
 
-      // get native platform from system info
       const osType = info.OSType?.toLowerCase() || "linux";
       const arch = info.Architecture || os.arch();
 
-      // map Docker architecture to platform format
       const archMap: Record<string, string> = {
         x86_64: "amd64",
         amd64: "amd64",
@@ -178,7 +171,6 @@ export class DockerManager {
 
       return platforms;
     } catch (error: any) {
-      // fallback: determine platform from Node.js os module
       const osType = os.platform() === "win32" ? "windows" : "linux";
       const nodeArch = os.arch();
       const archMap: Record<string, string> = {
@@ -200,10 +192,8 @@ export class DockerManager {
    */
   async getImagePlatforms(imageName: string): Promise<string[]> {
     try {
-      // try to get manifest from registry using Docker Registry HTTP API V2
       return await this.getImagePlatformsFromRegistry(imageName);
     } catch (error: any) {
-      // if we can't determine platforms, return empty array
       return [];
     }
   }
@@ -255,7 +245,6 @@ export class DockerManager {
         tag = lastTag;
       }
 
-      // normalize registry URL
       const registryUrl = registry.includes("://") ? registry : `https://${registry}`;
       const url = new URL(registryUrl);
       const protocol = url.protocol === "https:" ? https : http;
@@ -287,7 +276,6 @@ export class DockerManager {
               const manifest = JSON.parse(data);
               const platforms: string[] = [];
 
-              // check if it's a manifest list (multi-platform)
               if (manifest.manifests && Array.isArray(manifest.manifests)) {
                 for (const m of manifest.manifests) {
                   if (m.platform) {
@@ -295,8 +283,6 @@ export class DockerManager {
                   }
                 }
               } else if (manifest.config || manifest.layers) {
-                // single platform manifest
-                // Try to get platform from config if available
                 if (manifest.config?.digest) {
                   // for single platform, we'd need to fetch the config blob
                   // for now, return empty and let the caller handle it

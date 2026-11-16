@@ -2909,8 +2909,6 @@ export const configData: {
       attributeAdvancedTooltipDebugInfo: t("TXT_CODE_94d885d1")
     }
   },
-  //   "mcdr/permission.yml": {},
-  //   "mcdr/config.yml": {},
   "tshock/config.json": {
     desc: t("TXT_CODE_68821d80"),
     config: {

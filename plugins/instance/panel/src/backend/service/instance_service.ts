@@ -43,15 +43,12 @@ export interface IAdvancedInstanceInfo {
   info?: Record<string, any>;
 }
 
-// Multi-forward operation method
 export async function multiOperationForwarding(
   instances: unknown,
   callback: (daemonId: string, instanceUuids: string[]) => Promise<void>
 ) {
   if (!Array.isArray(instances)) throw new Error("Instances must be an array");
-  // classification table
   const map = new Map<string, string[]>();
-  // Classify remote hosts and instance IDs based on information
   for (const instanceInfo of instances) {
     if (
       !instanceInfo ||
@@ -69,7 +66,6 @@ export async function multiOperationForwarding(
       map.set(daemonId, [instanceUuid]);
     }
   }
-  // Pack and forward the classified data separately
   const failures = await Promise.all(
     Array.from(map, async ([daemonId, instanceUuids]) => {
       try {
@@ -110,7 +106,6 @@ export async function getInstanceDetails(
       });
       continue;
     }
-    // Note: UUID can be integrated here to save the returned traffic, and this optimization will not be done for the time being
     try {
       let instancesInfo = await new (remote().Request)(remoteService).request(
         "instance/section",
@@ -137,7 +132,6 @@ export async function getInstanceDetails(
         info: instancesInfo.info || {}
       });
     } catch (error) {
-      // ignore error
       continue;
     }
   }

@@ -4,15 +4,8 @@ import type SystemConfig from "../../../../runtime/panel/src/backend/entity/sett
 import { localeMessages } from "../i18n";
 import { SettingsFormService } from "./settings";
 
-// Panel side of the plugin manager page. The container owns the mechanism —
-// `ctx.plugins` lists what is installed and persists the enable switch — and this
-// plugin only exposes it over HTTP, because it owns the page that drives it.
-//
-// The same page administers each connected node's plugins. That half is a thin
-// proxy onto the daemon-side `config` plugin: the daemon decides what it will
-// switch off, and this plugin only carries the question there and the answer
-// back. It lives inside `ctx.inject(["remote"], ...)` so that a panel without
-// `plugins/node` still manages its own plugins.
+// Expose panel plugin management over HTTP.
+// Proxy node operations through an optional remote service so panel management works without the node plugin.
 
 /** Turning this plugin off would remove the page the request came from. */
 const SELF = "config";
@@ -81,9 +74,7 @@ export function apply(ctx: PanelPluginContext) {
   const router = ctx.koa.router("/api/plugins");
   const requireAdmin = ctx.middleware.permission({ level: ctx.roles.ADMIN });
 
-  // Remaining system settings are administered by this configuration plugin.
-  // Plugin-owned settings are declared by their own backend and handled by the
-  // generic routes below, so the core no longer mounts a settings router.
+  // System settings live here; plugin settings use the generic routes below.
   const settingsRouter = ctx.koa.router("/api/overview");
   settingsRouter.get("/setting", requireAdmin, async (requestCtx) => {
     requestCtx.body = ctx.settings.config;
@@ -106,19 +97,14 @@ export function apply(ctx: PanelPluginContext) {
     requestCtx.body = "OK";
   });
 
-  // Everything installed, disabled plugins included: the page needs to list one
-  // to be able to enable it again.
   router.get("/", requireAdmin, async (requestCtx) => {
     const declared = new Set(settingsForm.declared());
     requestCtx.body = ctx.plugins.inventory().map((record) => ({
       ...record,
-      // So the page can say "no configurable options" without a round trip.
       hasSettings: declared.has(record.id)
     }));
   });
 
-  // One plugin's form and its current values, as its own backend describes them.
-  // `null` when it declared nothing.
   router.get("/settings", requireAdmin, async (requestCtx) => {
     requestCtx.body = await settingsForm.read(String(requestCtx.request.query.id ?? ""));
   });
@@ -199,9 +185,7 @@ export function apply(ctx: PanelPluginContext) {
     }
   );
 
-  // The node half. `remote` is resolved here rather than injected at the top, so
-  // removing `plugins/node` takes the node routes away and leaves the rest of the
-  // page working.
+  // Scope node routes to the remote service so panel routes survive its removal.
   ctx.inject(["remote"], (scoped) => {
     const nodeRouter = scoped.koa.router("/api/plugins/node");
     const RemoteRequest = scoped.remote.Request;
@@ -213,8 +197,6 @@ export function apply(ctx: PanelPluginContext) {
       return node;
     };
 
-    // Which nodes there are to administer. Unavailable ones are listed too, so
-    // the page can say why it cannot reach one instead of hiding it.
     nodeRouter.get("/list", requireAdmin, async (requestCtx) => {
       requestCtx.body = Array.from(scoped.remote.services.services.entries()).map(
         ([uuid, node]) => ({
@@ -227,7 +209,6 @@ export function apply(ctx: PanelPluginContext) {
       );
     });
 
-    // Straight through to the daemon's own inventory.
     nodeRouter.get("/plugins", requireAdmin, async (requestCtx) => {
       requestCtx.body = await new RemoteRequest(nodeOf(requestCtx)).request("plugin/list");
     });
@@ -243,9 +224,7 @@ export function apply(ctx: PanelPluginContext) {
         const node = nodeOf(requestCtx);
         const id = String(requestCtx.request.body.id);
         const enabled = Boolean(requestCtx.request.body.enabled);
-        // No id list is checked here: which of its plugins a daemon refuses to
-        // switch off is the daemon's own business, and its refusal arrives as a
-        // protocol error that the response protocol turns into this envelope.
+        // Let the daemon enforce its protected-plugin rules and propagate its errors.
         const record = await new RemoteRequest(node).request("plugin/enabled", { id, enabled });
 
         // Older daemons bind routes per socket; reconnect after their reply
@@ -293,8 +272,7 @@ export function apply(ctx: PanelPluginContext) {
       }
     );
 
-    // A daemon plugin's configuration, described by the plugin itself and
-    // rendered by the same generic form. Nothing about the form lives here.
+    // Forward the daemon's declared settings schema and values.
     nodeRouter.get(
       "/settings",
       requireAdmin,

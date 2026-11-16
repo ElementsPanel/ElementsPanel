@@ -102,7 +102,6 @@ export class ModManagerService {
     }
 
     try {
-      // Try Modrinth first
       const res = await this.requestWithRetry({
         method: "GET",
         url: `${this.baseUrl}/tag/game_version`
@@ -135,7 +134,6 @@ export class ModManagerService {
     }
 
     try {
-      // Try Mojang official manifest as fallback
       const res = await this.requestWithRetry({
         method: "GET",
         url: "https://launchermeta.mojang.com/mc/game/version_manifest.json"
@@ -164,7 +162,6 @@ export class ModManagerService {
       this.ctx.logger.warn("Failed to fetch MC versions from Mojang!", err?.message);
     }
 
-    // Fallback to a reasonable list if all APIs fail
     return [
       "1.21",
       "1.20.6",
@@ -183,14 +180,12 @@ export class ModManagerService {
     if (this.cache.has(hash)) return this.cache.get(hash);
 
     try {
-      // 1. Get version by hash
       const versionRes = await this.requestWithRetry({
         method: "GET",
         url: `${this.baseUrl}/version_file/${hash}?algorithm=sha1`
       });
       const versionData = versionRes.data;
 
-      // 2. Get project by project_id
       const projectRes = await this.requestWithRetry({
         method: "GET",
         url: `${this.baseUrl}/project/${versionData.project_id}`
@@ -345,15 +340,12 @@ export class ModManagerService {
 
   private cleanCurseForgeVersionName(vn: string, projectName?: string): string {
     if (!vn) return "Unknown";
-    // Remove file extensions
     vn = vn.replace(/\.(jar|zip)(\.disabled)?$/i, "");
 
-    // Remove common prefixes like "v" or "version-"
     vn = vn.replace(/^(v|version)[-_\s.]+/i, "");
 
     if (projectName) {
-      // Normalize project name: remove spaces, special chars, and common suffixes
-      // Also handle special characters like "!" in "ALBOE!"
+      // Normalize project names before stripping them from version labels.
       const normalizedProjectName = projectName
         .toLowerCase()
         .replace(/[^a-z0-9]/g, "")
@@ -362,7 +354,6 @@ export class ModManagerService {
       const cleanVn = vn.toLowerCase().replace(/[^a-z0-9]/g, "");
 
       if (normalizedProjectName.length > 0 && cleanVn.startsWith(normalizedProjectName)) {
-        // Find how many characters to skip in the original string
         let skip = 0;
         let matched = 0;
         while (skip < vn.length && matched < normalizedProjectName.length) {
@@ -373,28 +364,21 @@ export class ModManagerService {
           skip++;
         }
         const stripped = vn.substring(skip).replace(/^[-_\s.]+/, "");
-        // Only return stripped if it's not empty and looks like a version
         if (stripped.length >= 1) vn = stripped;
       }
     }
 
-    // Final cleanup: if it's just a bunch of numbers and dots/dashes, it's probably fine
-    // Handle cases like "1.21.1-1.0.0" -> "1.0.0" if the first part is a game version
+    // Strip a leading game version when followed by a separate release version.
     const gameVersionMatch = vn.match(/^(\d+\.\d+(\.\d+)?)[-_\s]+(.+)$/);
     if (gameVersionMatch) {
       const potentialVersion = gameVersionMatch[3];
-      // If the remaining part starts with a number, it's likely the actual version
       if (/^\d+/.test(potentialVersion)) {
         vn = potentialVersion;
       }
     }
 
-    // If the result is still the same as the original (minus extension),
-    // and it's very long/ugly, try a more aggressive approach
     if (vn.includes("-") || vn.includes("_")) {
       const parts = vn.split(/[-_\s]+/);
-      // If the last part looks like a version number (e.g., 0.0.8), maybe just use that?
-      // But that's risky. Let's stick to the current logic but ensure it's robust.
     }
 
     return vn;
@@ -428,7 +412,6 @@ export class ModManagerService {
       return await this.searchSpigotMC(query, offset, limit, filters);
     }
 
-    // Search all sources
     try {
       let N = 3;
       let spigotPromise: Promise<any>;
@@ -510,7 +493,6 @@ export class ModManagerService {
         }
       }
 
-      // Handle loaders (Forge, Fabric, etc.) - use categories facet
       if (filters?.loader && filters.loader !== "all") {
         const loaderMap: Record<string, string> = {
           forge: "Forge",
@@ -529,7 +511,6 @@ export class ModManagerService {
         facets.push([`categories:${loaderName}`]);
       }
 
-      // Handle environment (server/client)
       if (filters?.environment && filters.environment !== "all") {
         if (filters.environment.toLowerCase() === "server") {
           facets.push(["server_side:required", "server_side:optional"]);
@@ -573,7 +554,6 @@ export class ModManagerService {
         }
       }
 
-      // Map Modrinth results to a unified format
       const mappedHits = hits.map((hit: any) => {
         // If user explicitly searched for plugins, force the type to plugin
         // Otherwise, try to detect if it's a plugin based on categories
@@ -751,7 +731,6 @@ export class ModManagerService {
 
       const items = res.data || [];
 
-      // Add project_type to each version so the frontend knows where to save it
       const projectRes = await this.requestWithRetry({
         method: "GET",
         url: `${this.baseUrl}/project/${projectId}`
@@ -770,7 +749,6 @@ export class ModManagerService {
 
   public async getCurseForgeVersions(projectId: string) {
     try {
-      // Fetch mod info to get the name for cleaning version names
       let projectName = "";
       let modData: any = null;
       try {
@@ -859,8 +837,7 @@ export class ModManagerService {
       return { hits: [], total_hits: 0 };
     }
     try {
-      // Spiget API search endpoint returns 404 if no results are found
-      // We should handle this gracefully
+      // Spiget returns 404 for an empty search; treat it as no results.
       const trimmedQuery = query?.trim() || " ";
       const url = `https://api.spiget.org/v2/search/resources/${encodeURIComponent(trimmedQuery)}`;
 
@@ -888,11 +865,7 @@ export class ModManagerService {
 
       if (versionIds.length > 0) {
         try {
-          // Spiget doesn't support batch version lookup easily, but we can try to get the latest version name
-          // for each resource if it's not in the search result.
-          // Actually, let's try to fetch the resource details which might have the version name.
-          // Or just use the version ID as a fallback but try to find a better way.
-          // For now, let's try to fetch the version name for each one in parallel (limited)
+          // Fetch names for up to 20 resources in parallel because Spiget has no batch version lookup.
           await Promise.all(
             data.slice(0, 20).map(async (item: any) => {
               if (item.version?.id) {

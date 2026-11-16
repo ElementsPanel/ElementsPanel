@@ -130,15 +130,6 @@ const toOpenInstance = async () => {
                         ...(isDockerMode.value ? [`${t("TXT_CODE_44b585c7")}: ${instanceInfo.value?.config.docker.image || ""}`] : [])
                     ]
                 };
-                /*
-                    title: t("TXT_CODE_ac405b50"),
-                    content: h("div", [
-                        h("p", t("TXT_CODE_3409258a")),
-                        h("p", `${t("TXT_CODE_973414e1")}闁?{instanceInfo.value?.config.startCommand || ""}`),
-                        isDockerMode.value &&
-                        h("p", `${t("TXT_CODE_44b585c7")}闁?{instanceInfo.value?.config.docker.image || ""}`)
-                    ])
-                }); */
             }
         }, INSTANCE_CRASH_TIMEOUT);
     } catch (error: any) {

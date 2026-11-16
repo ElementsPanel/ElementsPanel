@@ -24,7 +24,6 @@ type ExposedPorts = {
   [key: string]: {};
 };
 
-// Error exception at startup
 export class StartupDockerProcessError extends Error {
   constructor(msg: string) {
     super(msg);
@@ -56,8 +55,7 @@ export class SetupDockerContainer extends AsyncTask {
     if (!fs.existsSync(this.instance.absoluteCwdPath())) {
       await fs.mkdirs(instance.absoluteCwdPath());
     }
-    // Because some accounts inside the container may be different from the account running MCSManager,
-    // not setting permissions to 777 may cause failure to install any files properly.
+    // Container users may differ from the daemon user; allow them to write installed files.
     fs.chmod(this.instance.absoluteCwdPath(), 0o777).catch(() => {
       logger.error(
         `Failed to chmod the instance directory to 777: ${this.instance.absoluteCwdPath()}`
@@ -70,7 +68,6 @@ export class SetupDockerContainer extends AsyncTask {
       throw error;
     }
 
-    // Command text parsing
     let commandList: string[];
     if (instance.config?.startCommand?.trim() || customCommand?.trim()) {
       const tmpCmd = customCommand ?? instance.config.startCommand;
@@ -121,12 +118,10 @@ export class SetupDockerContainer extends AsyncTask {
       extraBinds.push({ hostPath, containerPath });
     }
 
-    // memory limit
     let maxMemory: number | undefined = undefined;
     if (typeof dockerConfig.memory === "number" && dockerConfig.memory > 0)
       maxMemory = dockerConfig.memory * 1024 * 1024;
 
-    // CPU usage calculation
     let cpuQuota: number | undefined = undefined;
     let cpuPeriod: number | undefined = undefined;
     if (typeof dockerConfig.cpuUsage === "number" && dockerConfig.cpuUsage > 0) {
@@ -134,7 +129,6 @@ export class SetupDockerContainer extends AsyncTask {
       cpuPeriod = 1000 * 1000;
     }
 
-    // Check the number of CPU cores
     let cpusetCpus: string | undefined = undefined;
     if (dockerConfig.cpusetCpus) {
       const arr = dockerConfig.cpusetCpus.split(",");
@@ -144,7 +138,6 @@ export class SetupDockerContainer extends AsyncTask {
       cpusetCpus = dockerConfig.cpusetCpus;
     }
 
-    // memory swap and swappiness
     let memorySwap: number | undefined = undefined;
     let memorySwappiness: number | undefined = undefined;
     if (typeof dockerConfig.memorySwap === "number" && maxMemory)
@@ -157,7 +150,6 @@ export class SetupDockerContainer extends AsyncTask {
     )
       memorySwappiness = dockerConfig.memorySwappiness;
 
-    // container name check
     let containerName = dockerConfig.containerName || `MCSM-${instance.instanceUuid.slice(0, 6)}`;
     if (containerName && (containerName.length > 64 || containerName.length < 2)) {
       throw new Error($t("TXT_CODE_instance.invalidContainerName", { v: containerName }));
@@ -165,7 +157,6 @@ export class SetupDockerContainer extends AsyncTask {
 
     const workingDir = dockerConfig.workingDir || undefined;
 
-    // capabilities
     const capAdd = dockerConfig.capAdd || [];
     const capDrop = dockerConfig.capDrop || [];
 
@@ -190,7 +181,6 @@ export class SetupDockerContainer extends AsyncTask {
 
     const privileged = dockerConfig.privileged || false;
 
-    // GPU DeviceRequests
     let gpuDeviceRequests: any[] | undefined = undefined;
     if (dockerConfig.gpuEnabled) {
       const gpuCount = dockerConfig.gpuCount ?? -1;
@@ -331,7 +321,6 @@ export class SetupDockerContainer extends AsyncTask {
       instance.info.allocatedPorts = [];
     }
 
-    // Start Docker container creation and running
     const docker = new DefaultDocker();
 
     let entrypoint: string | string[] | undefined = commandList.length ? commandList[0] : undefined;
@@ -351,7 +340,6 @@ export class SetupDockerContainer extends AsyncTask {
     logger.info(`Docker Version: ${dockerVersion}`);
     logger.info("----------------");
 
-    // Check if network rate limiting is enabled
     const networkLimitService = NetworkLimitService.getInstance();
     if (dockerConfig.uploadSpeedLimit || dockerConfig.downloadSpeedLimit) {
       try {
@@ -371,7 +359,7 @@ export class SetupDockerContainer extends AsyncTask {
       AttachStdin: true,
       AttachStdout: true,
       AttachStderr: true,
-      Tty: true, // force PTY mode
+      Tty: true,
       WorkingDir: dockerConfig.changeWorkdir ? workingDir : undefined,
       OpenStdin: true,
       StdinOnce: false,
@@ -420,7 +408,6 @@ export class SetupDockerContainer extends AsyncTask {
 
     await this.container.start();
 
-    // Apply bandwidth limits if configured
     if (dockerConfig && (dockerConfig.uploadSpeedLimit || dockerConfig.downloadSpeedLimit)) {
       try {
         await networkLimitService.setBandwidthLimit(this.container.id, {
@@ -441,7 +428,6 @@ export class SetupDockerContainer extends AsyncTask {
       }
     }
 
-    // Listen to events
     this.container.wait(() => this.stop());
   }
 
@@ -492,7 +478,6 @@ export class SetupDockerContainer extends AsyncTask {
   public toObject() {}
 }
 
-// SubProcess adapter for Instance
 export class DockerProcessAdapter extends EventEmitter implements IInstanceProcess {
   pid?: number | string;
 

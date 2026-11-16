@@ -4,10 +4,7 @@ import DownloadFileDialogVue from "./components/DownloadFileDialog.vue";
 import UploadFileDialogVue from "./components/UploadFileDialog.vue";
 import ImageViewerDialog from "./normal/ImageViewer.vue";
 
-// The three dialogs the file manager mounts on demand. They used to live in the
-// core's `components/fc` barrel, but `useFileManager` calls the image viewer and
-// the viewer is this plugin's, so the barrel would have had to import a plugin
-// component. They belong here, with everything else they touch.
+// File-manager dialogs are owned and mounted by this plugin.
 
 export async function useDownloadFileDialog() {
   return (

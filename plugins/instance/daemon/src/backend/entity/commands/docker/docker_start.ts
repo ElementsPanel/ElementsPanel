@@ -18,7 +18,6 @@ export default class DockerStartCommand extends AbsStartCommand {
     if (!instance.hasCwdPath()) throw new StartupDockerProcessError($t("TXT_CODE_a6424dcc"));
     if (!fs.existsSync(instance.absoluteCwdPath())) fs.mkdirpSync(instance.absoluteCwdPath());
 
-    // Docker docks to the process adapter
     const processAdapter = new DockerProcessAdapter(new SetupDockerContainer(instance));
     await processAdapter.start({
       isTty: instance.config.terminalOption.pty,

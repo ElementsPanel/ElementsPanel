@@ -77,21 +77,16 @@ export function login(
 ): string {
   const keys = statsKeys();
   const GlobalVariable = globalVariable();
-  // record the number of login requests
   GlobalVariable.set(keys.LOGIN_COUNT, GlobalVariable.get(keys.LOGIN_COUNT, 0) + 1);
   const ip = getLoginIp(ctx);
-  // check user information
   try {
     const totpDriftToleranceSteps = authSettings().totpDriftToleranceSteps || 0;
     userSystem.checkUser({ userName, passWord }, twoFACode, totpDriftToleranceSteps);
-    // The number of errors to reset this IP after successful login
     const ipMap = GlobalVariable.get(keys.LOGIN_FAILED_KEY);
     if (ipMap) delete ipMap[ip || ""];
 
-    // Session Session state changes to logged in
     return loginSuccess(ctx, userName);
   } catch (err) {
-    // record the number of login failures
     GlobalVariable.set(
       keys.LOGIN_FAILED_COUNT_KEY,
       GlobalVariable.get(keys.LOGIN_FAILED_COUNT_KEY, 0) + 1
@@ -169,12 +164,10 @@ export async function register(
   permission: number
 ) {
   let f = true;
-  // Check for duplicate usernames.
   userSystem.objects.forEach((user) => {
     if (user && user.userName == userName) f = false;
   });
   if (f) {
-    // Next. UUID and other data will be automatically generated.
     const { uuid } = await userSystem.create({
       userName,
       passWord,
@@ -250,11 +243,9 @@ export function checkBanIp(ctx: Koa.ParameterizedContext) {
 
   if (ipMap[ip] > 10 && authSettings().loginCheckIp === true) {
     if (ipMap[ip] != 999) {
-      // record the number of bans
       GlobalVariable.set(keys.BAN_IP_COUNT, GlobalVariable.get(keys.BAN_IP_COUNT, 0) + 1);
       setTimeout(() => {
         delete ipMap[ip];
-        // delete the number of bans
         GlobalVariable.set(keys.BAN_IP_COUNT, GlobalVariable.get(keys.BAN_IP_COUNT, 1) - 1);
       }, 1000 * 60 * 10);
     }

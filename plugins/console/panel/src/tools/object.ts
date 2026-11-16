@@ -26,7 +26,6 @@ export function deepTraverseObject<T = any>(
       delete obj[key];
       continue;
     }
-    // Only recurse into objects and arrays
     if (obj[key] && typeof obj[key] === "object") {
       deepTraverseObject(obj[key], filter, visited, deep + 1);
     }

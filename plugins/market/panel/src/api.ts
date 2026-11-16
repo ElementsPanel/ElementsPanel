@@ -58,9 +58,7 @@ function useDefineMarketMutation<P, T>(baseConfig: Parameters<typeof useDefineAp
   };
 }
 
-// ---- Plugin market -------------------------------------------------------
-// Distinct from the catalogue above: these are panel and daemon plugins, not
-// instance templates.
+// Plugin packages use a separate catalogue from instance templates.
 
 /** One plugin as the market lists it, with the version installed here, if any. */
 export interface MarketPlugin {
@@ -90,11 +88,7 @@ export interface MarketPlugin {
    * because a market source that predates the field simply does not send it.
    */
   sides?: PluginSide[];
-  /**
-   * Market path of the package's `icon.png`, or null when it has none. Optional for
-   * the same reason as `sides`: an older market source does not send it, and the
-   * page then falls back to the default icon.
-   */
+  /** Market path to icon.png. Older markets may omit it; null or absent values use the default icon. */
   iconUrl?: string | null;
 }
 
@@ -124,7 +118,7 @@ export interface MarketPluginDetail extends MarketPlugin {
   /** Versions resolvable from this panel, not from its remote daemons. */
   dependencyVersions?: Record<string, string>;
   description: string;
-  /** 包里的 README.md 原文，市场没给或包里没有时为空。 */
+  /** Raw package README.md, or empty when unavailable. */
   readme?: string;
   versions: MarketPluginVersion[];
   selectedVersion: MarketPluginVersion;
@@ -155,12 +149,8 @@ export const pluginMarketList = useDefineApi<{ params?: { daemonId?: string } },
 });
 
 /**
- * The plugin's icon, proxied to the market by the panel backend: the market's
- * address is a backend setting, so the browser cannot fetch it directly. The
- * route answers with a data URL rather than the image itself, because the panel's
- * request layer only reads JSON; it answers `dataUrl: null` when the package
- * carries no icon, which the page treats as "keep the default icon". The market
- * serves the latest release's icon; the version only keys the page's cache.
+ * Fetch the icon through the backend and return a JSON data URL, or null for the default icon.
+ * The market serves the latest icon; the requested version only keys the frontend cache.
  */
 export const pluginMarketIcon = useDefineApi<
   { params: { pluginId: string; version?: string } },

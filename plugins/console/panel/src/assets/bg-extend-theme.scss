@@ -63,7 +63,6 @@
   }
 }
 
-// PC
 .app-light-extend-theme {
   --level-0-bg-color: #ffffffd0;
   --level-1-bg-color: #ffffffae;
@@ -76,7 +75,6 @@
   @extend .extend-light-css;
 }
 
-// PC
 .app-dark-extend-theme {
   --level-0-bg-color: #000000b4;
   --level-1-bg-color: #000000a9;
@@ -88,7 +86,6 @@
   @extend .extend-dark-css;
 }
 
-// Phone
 @media (max-width: 992px) {
   .app-dark-extend-theme {
     --level-0-bg-color: #000000f2;

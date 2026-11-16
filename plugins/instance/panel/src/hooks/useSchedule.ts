@@ -76,7 +76,7 @@ export function useSchedule(instanceId: string, daemonId: string) {
   };
 
   const parseTaskTime = (time: string) => {
-    const regex = /(\d+) (\d+) (\d+) (\d+) (\d+) \*/; // 匹配 time 格式
+    const regex = /(\d+) (\d+) (\d+) (\d+) (\d+) \*/;
     const match = time.match(regex);
     let objTime = dayjs();
     if (match) {

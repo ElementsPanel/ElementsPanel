@@ -16,9 +16,7 @@ export const inject = ["console", "i18n", "routes", "ui", "desktop", "instance"]
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
 
-  // The node API and the remote-node hook. `services/apis/node.ts` and
-  // `hooks/useRemoteNode.ts` resolve these at call time, so the panel degrades
-  // instead of breaking when this plugin is not installed.
+  // Resolve node APIs and hooks at call time so consumers handle an absent node plugin.
   ctx.set("node", { api: nodeApi, useRemoteNode });
 
   const nodeBreadcrumb = {

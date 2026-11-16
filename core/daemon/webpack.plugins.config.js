@@ -48,11 +48,8 @@ module.exports = {
     moduleIds: "named"
   },
   externalsPresets: { node: true },
-  // Everything the daemon already depends on at runtime stays a require(), so
-  // the plugin shares the daemon's module instances instead of bundling copies.
-  // `mcsmanager-common` is the exception: it is a local `file:../common`
-  // dependency that is not installed into the production bundle, so it has to
-  // be compiled in — the same allowlist the main config uses.
+  // Externalize published host dependencies to share their instances.
+  // Bundle the local mcsmanager-common dependency because production does not install it separately.
   externals: [
     // One cordis instance, shared with every plugin bundle. See the module.
     cordisExternals,

@@ -16,7 +16,6 @@ import { IInstanceDetail } from "../service/interfaces";
 import { ctx as daemon } from "../plugin/context";
 import { ROLE } from "../service/protocol";
 
-// Some instances operate router authentication middleware
 routerApp.use((event, ctx, data, next) => {
   if (event === "instance/new" && data) return next();
   if (event === "instance/overview") return next();
@@ -37,14 +36,12 @@ routerApp.use((event, ctx, data, next) => {
   next();
 });
 
-// Get the list of instances of this daemon (query)
 routerApp.on("instance/select", (ctx, data) => {
   const page = toNumber(data.page) ?? 1;
   const pageSize = toNumber(data.pageSize) ?? 1;
   const condition = data.condition;
   const targetTag = data.condition.tag;
   const overview: IInstanceDetail[] = [];
-  // keyword condition query
   const queryWrapper = InstanceSubsystem.getQueryMapWrapper();
   const allTags: string[] = [];
 
@@ -70,16 +67,14 @@ routerApp.on("instance/select", (ctx, data) => {
     }
     return true;
   });
-  // sort first by status， then by nickname
+  // Sort by status, then nickname.
   result.sort((a, b) => {
     if (a.status() !== b.status()) {
       return b.status() - a.status();
     }
     return a.config.nickname >= b.config.nickname ? 1 : -1;
   });
-  // paging function
   const pageResult = queryWrapper.page<Instance>(result, page, pageSize);
-  // filter unwanted data
   pageResult.data.forEach((instance) => {
     overview.push({
       instanceUuid: instance.instanceUuid,
@@ -100,7 +95,6 @@ routerApp.on("instance/select", (ctx, data) => {
   });
 });
 
-// Get an overview of this daemon instance
 routerApp.on("instance/overview", (ctx) => {
   const overview: IInstanceDetail[] = [];
   InstanceSubsystem.getInstances().forEach((instance) => {
@@ -117,7 +111,6 @@ routerApp.on("instance/overview", (ctx) => {
   protocol.msg(ctx, "instance/overview", overview);
 });
 
-// Get an overview of some instances of this daemon
 routerApp.on("instance/section", (ctx, data) => {
   const instanceUuids = data.instanceUuids as string[];
   const overview: IInstanceDetail[] = [];
@@ -138,7 +131,6 @@ routerApp.on("instance/section", (ctx, data) => {
   protocol.msg(ctx, "instance/section", overview);
 });
 
-// View details of a single instance
 routerApp.on("instance/detail", async (ctx, data) => {
   try {
     const instanceUuid = data.instanceUuid;
@@ -165,7 +157,6 @@ routerApp.on("instance/detail", async (ctx, data) => {
   }
 });
 
-// create a new application instance
 routerApp.on("instance/new", (ctx, data) => {
   const config = data;
   try {
@@ -180,7 +171,6 @@ routerApp.on("instance/new", (ctx, data) => {
   }
 });
 
-// update instance data
 routerApp.on("instance/update", (ctx, data) => {
   const instanceUuid = data.instanceUuid;
   const config = data.config;
@@ -192,12 +182,10 @@ routerApp.on("instance/update", (ctx, data) => {
   }
 });
 
-// Request to forward all IO data of an instance
 routerApp.on("instance/forward", (ctx, data) => {
   const targetInstanceUuid = data.instanceUuid;
   const isforward: boolean = data.forward;
   try {
-    // InstanceSubsystem.getInstance(targetInstanceUuid);
     if (isforward) {
       logger.info(
         $t("TXT_CODE_Instance_router.requestIO", {
@@ -274,7 +262,6 @@ for (const [operation, command] of [
   });
 }
 
-// Send a command to the application instance
 routerApp.on("instance/command", async (ctx, data) => {
   const disableResponse = data.disableResponse;
   const instanceUuid = data.instanceUuid;
@@ -290,7 +277,6 @@ routerApp.on("instance/command", async (ctx, data) => {
   }
 });
 
-// delete instance
 routerApp.on("instance/delete", async (ctx, data) => {
   const instanceUuids = data.instanceUuids;
   const deleteFile = data.deleteFile;
@@ -317,7 +303,6 @@ routerApp.on("instance/delete", async (ctx, data) => {
   });
 });
 
-// Delete only an instance's working directory while retaining its configuration.
 routerApp.on("instance/delete-directory", async (ctx, data) => {
   const instanceUuid = data.instanceUuid;
   try {
@@ -346,7 +331,6 @@ routerApp.on("instance/delete-directory", async (ctx, data) => {
   }
 });
 
-// perform complex asynchronous tasks
 routerApp.on("instance/asynchronous", (ctx, data) => {
   const instanceUuid = data.instanceUuid;
   const taskName = data.taskName;
@@ -362,7 +346,6 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
     })
   );
 
-  // Install instance via preset package
   if (taskName === "install_instance" && instance) {
     const pending = instance.execPreset("install", parameter);
     daemon.backgroundTasks?.follow(pending);
@@ -380,7 +363,6 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
       });
   }
 
-  // Instance software update via Command
   if (taskName === "update" && instance) {
     const pending = instance.execPreset("update", parameter);
     daemon.backgroundTasks?.follow(pending);
@@ -398,9 +380,7 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
       });
   }
 
-  // Plugin-supplied tasks. The dispatcher knows nothing about what any of them
-  // do — the registration carries the role it needs and whether it operates on
-  // an existing instance.
+  // Plugin task declarations specify caller roles and whether an existing instance is required.
   const registeredTask = daemon.tasks.get(taskName);
   if (registeredTask) {
     if (registeredTask.requiredRole != null && role < registeredTask.requiredRole) {
@@ -431,13 +411,11 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
   protocol.response(ctx, true);
 });
 
-// Terminate the execution of complex asynchronous tasks
 routerApp.on("instance/stop_asynchronous", (ctx, data) => {
   const instanceUuid = data.instanceUuid;
   const { taskId } = data.parameter;
   const instance = InstanceSubsystem.getInstance(instanceUuid);
 
-  // Multi-instance async task
   if (taskId && typeof taskId === "string") {
     const task = TaskCenter.getTask(taskId);
     if (!task) throw new Error(`Async Task ID: ${taskId} does not exist`);
@@ -445,7 +423,6 @@ routerApp.on("instance/stop_asynchronous", (ctx, data) => {
     return protocol.response(ctx, true);
   }
 
-  // Singleton async task
   const task = instance?.asynchronousTask;
   if (task && task.stop) {
     task
@@ -463,7 +440,6 @@ routerApp.on("instance/stop_asynchronous", (ctx, data) => {
   protocol.response(ctx, true);
 });
 
-// Query async task status
 routerApp.on("instance/query_asynchronous", (ctx, data) => {
   const taskId = data.parameter.taskId as string | undefined;
   const taskName = data.taskName as string;
@@ -512,7 +488,6 @@ routerApp.on("instance/process_config/list", (ctx, data) => {
   }
 });
 
-// Get or update the content of the instance specified file
 routerApp.on("instance/process_config/file", (ctx, data) => {
   const instanceUuid = data.instanceUuid;
   const fileName = data.fileName;

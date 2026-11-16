@@ -32,7 +32,7 @@ export function useDeferredTasks(
     deferredTasks.value.push(task);
     message.success(t("TXT_CODE_MOD_DEFERRED_TASK_ADDED"));
 
-    // Sync to backend immediately so that even if the browser is closed, the backend knows there are tasks to execute
+    // Persist deferred tasks immediately so they survive the browser closing.
     try {
       if (task.type === "download") {
         const { execute } = downloadModApi();

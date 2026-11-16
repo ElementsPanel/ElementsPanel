@@ -124,9 +124,7 @@
   border-color: transparent !important;
 }
 
-/* Timeline dots share the "divider" class name with the connecting line, but
-   they are content markers rather than chrome separators.  Keep them so the
-   log timeline matches normal mode. */
+/* Keep timeline dots even though they share the divider class with separator lines. */
 .desktop-window [class*="divider"]:not(.v-timeline-divider__dot):not(.v-timeline-divider__inner-dot),
 .desktop-window [class*="separator"],
 .desktop-window hr {
@@ -136,9 +134,7 @@
   box-shadow: none !important;
 }
 
-/* Desktop mode is a surface-first workspace: no table rules, card outlines,
-   input underlines, or pseudo-element separators are allowed to leak through
-   from feature styles. */
+/* Hide separators and outlines inherited from feature styles. */
 .desktop-container table,
 .desktop-container th,
 .desktop-container td,
@@ -152,8 +148,7 @@
   box-shadow: none !important;
 }
 
-/* Remove literal pipe separators used by a few legacy desktop rows while
-   preserving breadcrumb chevrons, which are navigation affordances. */
+/* Hide legacy pipe separators while preserving breadcrumb navigation. */
 .desktop-container .separator {
   display: none !important;
 }
@@ -195,24 +190,22 @@
   box-shadow: none !important;
 }
 
-/* Give the editable field a distinct surface in both themes, including in
-   teleported dialogs. Leave input wrappers unpainted so labels, hints and
-   validation messages remain on the surrounding window surface. */
+/*
+ * Paint editable fields, including teleported dialogs, without painting labels or validation
+ * messages.
+ */
 .desktop-mode-active .v-field {
   background: rgb(var(--v-theme-surface-variant)) !important;
 }
 
-/* Legacy control classes can paint the Vuetify root as well as its field.
-   Clear those outer surfaces so only the rounded field has a background. */
+/* Clear legacy outer backgrounds so only the rounded field is painted. */
 .desktop-mode-active .v-input,
 .desktop-mode-active .v-input__control {
   background: transparent !important;
   box-shadow: none !important;
 }
 
-/* Vuetify's rounded utilities live in cascade layers. Discard local pixel
-   overrides for controls so their configured Vuetify defaults determine the
-   radius, including in windows and dialogs teleported outside the desktop. */
+/* Let Vuetify cascade layers control rounding instead of local pixel overrides. */
 :is(.desktop-mode-active, .desktop-container, .desktop-window, .desktop-dialog, .desktop-login-window)
   :is(.v-btn, .v-field) {
   border-radius: revert-layer !important;

@@ -1,6 +1,4 @@
-// @Entity
-// Authentication settings and ordinary-user capability switches belong to the
-// "user" plugin and live in its own store.
+// Authentication settings and ordinary-user capabilities are stored by the user plugin.
 export default class SystemConfig {
   // HTTP service port, IP and path prefix
   httpPort: number = 23333;

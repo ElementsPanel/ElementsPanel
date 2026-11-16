@@ -11,9 +11,7 @@ import trTR from "./tr_TR.json";
 import zhCN from "./zh_CN.json";
 import zhTW from "./zh_TW.json";
 
-// Strings for the web server's settings form. The startup banner keys
-// (`TXT_CODE_app.*`) stay in the foundational `plugins/i18n` catalogue, because the
-// daemon prints the same lines.
+// Translate server settings here; shared startup banners remain in the i18n plugin.
 export const localeMessages = {
   de_de: deDE,
   en_us: enUS,

@@ -8,7 +8,6 @@ import * as protocol from "../service/protocol";
 import { routerApp } from "../service/router";
 import { ctx as daemon } from "../plugin/context";
 
-// Get the image list of this system
 routerApp.on("environment/images", async (ctx, data) => {
   try {
     const docker = new DockerManager().getDocker();
@@ -19,7 +18,6 @@ routerApp.on("environment/images", async (ctx, data) => {
   }
 });
 
-// Get the list of containers in this system
 routerApp.on("environment/containers", async (ctx, data) => {
   try {
     const docker = new DockerManager().getDocker();
@@ -30,7 +28,6 @@ routerApp.on("environment/containers", async (ctx, data) => {
   }
 });
 
-// Get the network list of this system
 routerApp.on("environment/networkModes", async (ctx, data) => {
   try {
     const docker = new DockerManager().getDocker();
@@ -41,18 +38,15 @@ routerApp.on("environment/networkModes", async (ctx, data) => {
   }
 });
 
-// create image
 routerApp.on("environment/new_image", async (ctx, data) => {
   try {
     const dockerFileText = data.dockerFile;
     const name = data.name;
     const tag = data.tag;
-    // Initialize the image file directory and Dockerfile
     const uuid = v4();
     const dockerFileDir = path.normalize(path.join(process.cwd(), "tmp", uuid));
     if (!fs.existsSync(dockerFileDir)) fs.mkdirsSync(dockerFileDir);
 
-    // write to DockerFile
     const dockerFilepath = path.normalize(path.join(dockerFileDir, "Dockerfile"));
     await fs.writeFile(dockerFilepath, dockerFileText, { encoding: "utf-8" });
 
@@ -64,10 +58,8 @@ routerApp.on("environment/new_image", async (ctx, data) => {
       })
     );
 
-    // pre-response
     protocol.response(ctx, true);
 
-    // start creating
     const dockerImageName = `${name}:${tag}`;
     try {
       await new DockerManager().startBuildImage(dockerFileDir, dockerImageName);
@@ -83,7 +75,6 @@ routerApp.on("environment/new_image", async (ctx, data) => {
   }
 });
 
-// delete image
 routerApp.on("environment/del_image", async (ctx, data) => {
   try {
     const imageId = data.imageId;
@@ -101,7 +92,6 @@ routerApp.on("environment/del_image", async (ctx, data) => {
   }
 });
 
-// Get the progress of all mirroring tasks
 routerApp.on("environment/progress", async (ctx, request) => {
   try {
     const data: any = {};
@@ -116,7 +106,6 @@ routerApp.on("environment/progress", async (ctx, request) => {
   }
 });
 
-// get supported platforms for a Docker image
 routerApp.on("environment/image_platforms", async (ctx, data) => {
   try {
     const imageName = data.imageName;

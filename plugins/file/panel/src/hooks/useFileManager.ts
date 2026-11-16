@@ -141,7 +141,6 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
 
   normalizeTabs(currentTabKey);
 
-  // clear old tabs
   onMounted(() => {
     const oneDayInMs = 1000 * 60 * 60 * 24;
     const now = Date.now();
@@ -218,7 +217,6 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     breadcrumbs.length = 0;
 
     if (breadcrumbPaths[0] !== "/") {
-      // win
       currentDisk.value = breadcrumbPaths[0];
       breadcrumbPaths[0] = "/";
       breadcrumbPaths.forEach((p) => {
@@ -905,7 +903,6 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
   const handleTableChange = (e: { current: number; pageSize: number }) => {
     selectedRowKeys.value = [];
     selectionData.value = [];
-    // operationForm.value.name = "";
     operationForm.value.current = e.current;
     operationForm.value.pageSize = e.pageSize;
     getFileList();

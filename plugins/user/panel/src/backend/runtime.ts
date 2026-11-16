@@ -1,17 +1,8 @@
 import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 
 /**
- * This plugin's private handle on its cordis context.
- *
- * The panel core is bundled into `app.js`, so a plugin cannot import its
- * singletons: doing so would compile a second copy of the storage subsystem, the
- * system config and the i18n instance. The only channel is the context
- * `apply()` receives, and this plugin has fourteen modules that need something
- * from it — threading a parameter through all of them would say nothing the
- * accessors below do not.
- *
- * A plugin with only a handful of such call sites should pass `ctx` as an
- * argument instead; see `plugins/market`.
+ * Access shared services through the plugin context. Runtime imports of host singletons would
+ * create duplicate instances.
  */
 let context: PanelPluginContext | undefined;
 

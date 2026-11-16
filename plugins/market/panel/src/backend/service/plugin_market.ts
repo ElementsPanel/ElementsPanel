@@ -28,13 +28,7 @@ export class PluginMarketError extends Error {
   }
 }
 
-// Plugin installation through the market.
-//
-// The market no longer serves package files: it indexes npm packages named
-// `epanel-plugin-*`. Installing one means adding an npm dependency to the
-// installation project, which the runtime resolves like any other npm plugin.
-// Updates are ordinary npm dependency updates, and the market only names the
-// package and the version.
+// Install and update market-indexed epanel-plugin-* npm dependencies in the installation project.
 
 export type PluginSide = "panel" | "daemon";
 
@@ -289,9 +283,8 @@ export function panelDependencyVersions(detail: {
 }
 
 /**
- * Reads the release the page is about to install. The market's catalogue is the
- * authority for the npm package name, so an install cannot be redirected to a
- * different package than the one that was listed.
+ * Resolve the release through the market catalogue to verify the npm package name before
+ * installation.
  */
 export async function fetchMarketPluginDetail(
   addr: string,

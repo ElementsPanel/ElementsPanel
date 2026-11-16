@@ -2,14 +2,13 @@ import Instance from "./instance";
 import logger from "../../service/log";
 
 export interface ILifeCycleTask {
-  name: string; // task name
+  name: string;
   status: number; // Running status, the default is 0, the task manager will automatically change
   start: (instance: Instance) => Promise<void>;
   stop: (instance: Instance) => Promise<void>;
 }
 
 export class LifeCycleTaskManager {
-  // list of life cycle tasks
   public readonly lifeCycleTask: ILifeCycleTask[] = [];
   private readonly pending = new WeakMap<
     ILifeCycleTask,

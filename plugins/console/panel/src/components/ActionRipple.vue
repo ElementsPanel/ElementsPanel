@@ -2,17 +2,8 @@
 import { ref, watch } from "vue";
 
 /**
- * Draws the shell's one-shot ripple in the page layer, not inside the toolbar.
- *
- * The anchor is an absolutely positioned child of the button wrapper, so its
- * rect is the button's rect. The circles themselves are teleported to `body`;
- * a fixed position there is never clipped by the header, drawer or taskbar.
- *
- * `inline` renders the circles inside the button wrapper instead: the desktop
- * taskbar lives in a stacking context (`.desktop-container`, z-index 100) that
- * paints over any body-level ripple, while nothing in the taskbar chain clips
- * overflow. Staying local keeps the ripple above the taskbar and windows, yet
- * still under the start menu, context menu and dialogs.
+ * Teleport page ripples to body to avoid clipping by shell containers.
+ * Render inline for the desktop taskbar so its stacking context does not cover the ripple.
  */
 const props = defineProps<{
   /** A changing value starts a new ripple; `0`/`undefined` render nothing. */

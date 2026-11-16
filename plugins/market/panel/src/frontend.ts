@@ -23,8 +23,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
       mainMenu: true,
       permission: ROLE_ADMIN,
       icon: "mdi-puzzle-outline"
-      // No `breadcrumbs`: this is a market of its own, not a page of the
-      // application market, so the trail reads 管理面板 > 插件市场.
+      // Use the plugin market's own breadcrumb trail.
     }
   });
 

@@ -98,9 +98,7 @@ export async function apply(ctx: PanelPluginContext) {
 
   ctx.plugin(I18nService);
 
-  // The foundation is loaded before the core installs `settingsForm`, so this
-  // small child plugin waits for those services while keeping the declaration
-  // owned by the i18n plugin itself.
+  // Wait for settings services while attributing the declaration to this plugin.
   ctx.plugin({
     name: "i18n",
     inject: ["i18n", "settings", "settingsForm"],
@@ -123,9 +121,7 @@ export async function apply(ctx: PanelPluginContext) {
           await i18next.changeLanguage(language);
           await settingsCtx.settings.save();
 
-          // A panel language change historically propagated to connected
-          // daemons. The daemon-side i18n plugin now decides whether to accept
-          // that update through its follow-panel-language setting.
+          // Connected daemons accept panel language updates according to their follow-panel-language setting.
           const remote = settingsCtx.get("remote");
           remote?.services.changeDaemonLanguage(language);
         }

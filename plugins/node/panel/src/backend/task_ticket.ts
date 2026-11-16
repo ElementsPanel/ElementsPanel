@@ -1,13 +1,8 @@
 import { randomBytes } from "crypto";
 
 /**
- * Short-lived tickets for the browser's task stream.
- *
- * The panel's HTTP authentication is a bearer token paired with a koa-session
- * cookie, which a Socket.IO handshake cannot read. An authenticated request
- * exchanges its identity for one of these tickets, and the socket middleware
- * accepts it for the next few minutes. Tickets stay in memory and are never
- * logged.
+ * Exchange HTTP-authenticated identities for short-lived Socket.IO tickets.
+ * Keep tickets in memory because the socket handshake cannot use the HTTP bearer-token flow.
  */
 
 export interface TaskTicketIdentity {

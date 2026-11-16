@@ -23,10 +23,8 @@ export function readAuthSettings() {
 }
 
 /**
- * Applies and persists a settings patch. Both the route below and the plugin's
- * declared configuration form go through here, so the validation — the SSO URL
- * checks, the "keep the stored secret" rule and the unbinding of SSO users when
- * an identity-critical field changes — has exactly one home.
+ * Share settings validation between the HTTP route and declared form.
+ * Preserve omitted secrets and unbind SSO accounts when identity-critical fields change.
  */
 export async function applyAuthSettings(values: Record<string, unknown>) {
   const config = values as Partial<AuthSettings>;
@@ -168,7 +166,6 @@ export async function applyAuthSettings(values: Record<string, unknown>) {
 export default function createAuthSettingsRouter() {
   const router = new Router({ prefix: "/auth" });
 
-  // [Top-level Permission] Read the authentication settings.
   router.get(
     "/settings",
     permission({ level: ROLE().ADMIN }),
@@ -178,7 +175,6 @@ export default function createAuthSettingsRouter() {
     }
   );
 
-  // [Top-level Permission] Update the authentication settings.
   router.put(
     "/settings",
     permission({ level: ROLE().ADMIN }),

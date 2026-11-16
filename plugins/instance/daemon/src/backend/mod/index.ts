@@ -27,7 +27,7 @@ export function registerModManager(
   on("instance/mods/list", async (routerCtx, data) => {
     const instanceUuid = data.instanceUuid;
     const page = Number(data.page) || 1;
-    const pageSize = Math.min(Number(data.pageSize) || 50, 50); // Max 50
+    const pageSize = Math.min(Number(data.pageSize) || 50, 50);
     const folder = data.folder ? String(data.folder) : undefined;
     try {
       const mods = await modService.listMods(instanceUuid, page, pageSize, folder);
@@ -93,7 +93,6 @@ export function registerModManager(
   on("instance/mods/install", async (routerCtx, data) => {
     const { instanceUuid, url, fileName, type, fallbackUrl } = data;
     try {
-      // async
       void modService
         .installMod(instanceUuid, url, fileName, type, {
           fallbackUrl

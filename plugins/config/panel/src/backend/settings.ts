@@ -7,11 +7,7 @@ import type {
   PanelSettingsSchema
 } from "../../../../../core/panel/src/app/plugin";
 
-/**
- * The configuration registry belongs to the config plugin. A declaration is
- * scoped to the plugin that made it, so unloading that plugin removes its form
- * without leaving stale entries in the settings page.
- */
+/** Scope each settings declaration to its plugin so unloading removes the form. */
 export class SettingsFormService extends Service implements PanelSettingsFormService {
   private readonly declarations: Array<{ id: string; declaration: PanelSettingsDeclaration }> = [];
 

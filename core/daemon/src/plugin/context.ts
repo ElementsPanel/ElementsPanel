@@ -34,18 +34,8 @@ import type { DaemonPluginEntry, DaemonPluginRecord } from "./loader";
 import type { InstanceInstallTaskClass } from "../../../../plugins/instance/daemon/src/backend/install_task";
 
 /**
- * The daemon's cordis container, and the complete list of what a plugin can see.
- *
- * Every capability is a service on the context; every registration a plugin
- * makes is an effect owned by that plugin's scope, so unloading a plugin undoes
- * its contributions and no plugin ever writes cleanup code. `ctx.logger` and the
- * timer helpers (`ctx.setTimeout`, `ctx.setInterval`, `ctx.sleep`,
- * `ctx.throttle`, `ctx.debounce`) come with cordis itself.
- *
- * The declarations below are the API documentation: only `import type` here, so
- * this module stays a leaf that core code can import without a cycle. The
- * runtime values are provided by the foundation plugins (`storage`, `i18n`,
- * and `runtime`).
+ * Plugin service contracts. Cordis owns registered effects, loggers and timers.
+ * Use type-only contract imports to avoid cycles. Foundation plugins provide shared services.
  */
 export const ctx = new Context();
 
@@ -86,13 +76,7 @@ export interface DaemonSettingOption {
   label: string;
 }
 
-/**
- * One row of a plugin's configuration form, described rather than drawn.
- *
- * Labels are plain strings, already translated: the panel renders this form, and
- * the browser has no copy of a daemon plugin's catalogue. Whoever declares the
- * field resolves it, in whatever language the panel last pushed to this daemon.
- */
+/** Backend-declared settings fields with labels translated in the daemon's current language. */
 export interface DaemonSettingField {
   /** The key in `read()`'s result and `write()`'s argument. Absent for `link`. */
   key?: string;
@@ -125,13 +109,7 @@ export interface DaemonSettingField {
   required?: boolean;
 }
 
-/**
- * A plugin's configuration, as its backend declares it.
- *
- * `fields` is a function so that it is resolved per request: a plugin's titles
- * come from its own catalogue, and the daemon's language changes when the panel
- * pushes a new one.
- */
+/** Resolve fields per request so their translated labels follow the active language. */
 export interface DaemonSettingsDeclaration {
   /** Changes to this form require a process restart. */
   restartRequired?: boolean;
@@ -147,13 +125,7 @@ export interface DaemonSettingsSchema {
   values: Record<string, unknown>;
 }
 
-/**
- * The register of plugin configuration forms.
- *
- * A daemon plugin has no browser half at all, so it cannot ship a component for
- * its settings. It describes them here instead, and the panel's plugin manager
- * renders the description with the same generic form it uses for its own plugins.
- */
+/** Register daemon settings for the panel's generic form. */
 export interface DaemonSettingsFormService {
   /** Declares the calling plugin's form. An effect: it leaves with the plugin. */
   declare(declaration: DaemonSettingsDeclaration): () => void;
@@ -183,35 +155,20 @@ export interface DaemonKoaService {
   router(prefix?: string): Router;
 }
 
-/**
- * The Socket.io server the panel connects to. Provided by `plugins/server`; the
- * `plugins/server` also owns connection navigation and protocol dispatch, and a
- * plugin that needs to reach every connected client directly can use the socket.
- */
+/** Socket.IO transport provided by the server plugin for connected panel clients. */
 export interface DaemonWebsocketService {
   readonly io: SocketIOServer;
 }
 
-/**
- * The base Koa middleware the web server mounts ahead of the body parser.
- *
- * Both consult the upload subsystem — the passports that authorize an upload and
- * the configured rate limit — and are exposed by the runtime foundation for the
- * server plugin to mount.
- */
+/** Runtime upload authorization and rate-limit middleware, mounted before the body parser. */
 export interface DaemonMiddlewareService {
   readonly uploadFileCheck: Koa.Middleware;
   readonly uploadSpeedLimit: Koa.Middleware;
 }
 
 /**
- * The Socket.io protocol the panel talks to this daemon over.
- *
- * `on()` and `use()` are scoped to the calling plugin, but note that the server
- * snapshots the handler list per connection: a handler
- * registered after a client connected is invisible to that client's socket.
- * Plugins load before the server starts listening, so this only limits
- * hot-reloading a plugin on a running daemon.
+ * Socket.IO request protocol. Handler and middleware registrations are scoped to their calling
+ * plugin.
  */
 export interface DaemonProtocolService {
   on(event: string, handler: (ctx: RouterContext, data: any) => void): () => void;
@@ -338,13 +295,8 @@ export interface DaemonArchiveService {
 }
 
 /**
- * The plumbing a file transfer needs from the runtime foundation: the passports that authorize
- * one, the URL downloader instance management shares with it, the rate-limited
- * file sender and the temp-file cleanup.
- *
- * These stay in the runtime foundation because other features use them too —
- * `plugins/auth` issues passports, `plugins/terminal` checks stream passports, and the Java
- * manager and mod service download by URL.
+ * Shared runtime services for transfer passports, URL downloads, rate-limited sending and
+ * temporary-file cleanup.
  */
 export interface DaemonTransferService {
   readonly passports: typeof missionPassport;
@@ -390,15 +342,7 @@ export interface DaemonUploadTask {
   readonly writer: { stop(): void };
 }
 
-/**
- * The daemon's file primitives.
- *
- * **Provided by `plugins/file`.** The core declares only the shape its own
- * few callers need — instance creation, the Java manager, SteamCMD, the mod
- * service — and consumers resolve it through their plugin context, so
- * removing that plugin removes the daemon's ability to touch instance files
- * rather than breaking the build.
- */
+/** File primitives provided by the file plugin for instance management and installers. */
 export interface DaemonFilesService {
   readonly FileManager: {
     new (topPath?: string, fileCode?: string): DaemonFileManager;
@@ -480,10 +424,7 @@ declare module "cordis" {
 
     // Provided by `plugins/server`, the daemon's network layer. Without it the
     // daemon listens on nothing, so `inject` them rather than assuming.
-    /**
-     * The file primitives. Provided by `plugins/file`, which owns the
-     * whole file subsystem — instance files are unreachable without it.
-     */
+    /** File primitives provided by the file plugin. */
     files: DaemonFilesService;
     koa: DaemonKoaService;
     websocket: DaemonWebsocketService;

@@ -1,4 +1,3 @@
-<!-- IframeModal Dialog Component -->
 <template>
   <AppDialog v-model:visible="visible" width="80%" :footer="null" class="iframe-modal" @cancel="handleCancel">
     <div class="iframe-modal-content">
@@ -20,17 +19,14 @@ const props = defineProps<IframeModalProps>();
 
 const visible = ref(false);
 
-// Handle modal close
 const handleCancel = () => {
   visible.value = false;
 };
 
-// Show modal after component mount
 onMounted(() => {
   visible.value = true;
 });
 
-// Expose methods for external use
 defineExpose({
   close: handleCancel
 });

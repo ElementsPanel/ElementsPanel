@@ -63,11 +63,7 @@ function formatSize(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-/**
- * Reloading keeps the plugin on screen: the name, the header action and the tabs
- * all show it, so emptying the view would flash the whole page. Only a different
- * plugin clears it.
- */
+/** Keep the current plugin visible during refresh; clear it only when selecting another plugin. */
 async function refresh() {
   if (busy.value && plugin.value?.id === props.pluginId) return;
   const currentRequest = ++requestId;
@@ -131,8 +127,6 @@ watch(
   },
   { immediate: true }
 );
-// A marketplace entry always opens on its readme; only the user's next
-// click moves the tab.
 watch(
   () => props.pluginId,
   () => {
@@ -380,7 +374,6 @@ onBeforeUnmount(() => requestId++);
   min-width: 0;
   overflow-wrap: anywhere;
 
-  // The page header keeps room before the store-style header block below it.
   :deep(.page-toolbar) {
     margin-bottom: 56px;
   }
@@ -399,8 +392,6 @@ onBeforeUnmount(() => requestId++);
   justify-content: center;
 }
 
-// A marketplace entry reads like its store page: a logo, the name, the author,
-// and the install action held out to the right of the title.
 .plugin-detail-header {
   display: flex;
   flex-wrap: wrap;
@@ -609,8 +600,7 @@ onBeforeUnmount(() => requestId++);
   }
 }
 
-// Normal mode is laid out against the viewport; Desktop mode answers to its
-// window instead, so it is left out here and handled by the container query.
+// Normal mode follows the viewport; desktop mode uses the window container query.
 @media (max-width: 992px) {
   .plugin-detail:not(.plugin-detail--embedded) {
     .plugin-detail-container {
@@ -633,8 +623,7 @@ onBeforeUnmount(() => requestId++);
   }
 }
 
-// Desktop mode hands the page a window that is narrower than the screen, so the
-// layout follows the window it was given rather than the viewport.
+// Use the desktop window width rather than the viewport width.
 .plugin-detail--embedded {
   height: 100%;
   min-height: 0;

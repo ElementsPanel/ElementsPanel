@@ -86,7 +86,6 @@ export async function check7zipStatus(): Promise<boolean> {
     }
     return false;
   } catch (error: any) {
-    // ignore error
     return false;
   }
 }

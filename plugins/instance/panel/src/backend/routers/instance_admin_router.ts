@@ -14,8 +14,6 @@ export function createInstanceAdminRouter() {
   const remoteRequest = (service: any) => new (remote().Request)(service);
   const remoteSubsystem = () => remote().services;
 
-  // [Low-level Permission]
-  // Get the details of an instance
   router.get(
     "/",
     permission({ level: ROLE.USER }),
@@ -37,8 +35,6 @@ export function createInstanceAdminRouter() {
     }
   );
 
-  // [Top-level Permission]
-  // create instance
   router.post(
     "/",
     permission({ level: ROLE.ADMIN }),
@@ -64,8 +60,6 @@ export function createInstanceAdminRouter() {
     }
   );
 
-  // [Top-level Permission]
-  // upload the file when creating the instance
   router.post(
     "/upload",
     permission({ level: ROLE.ADMIN }),
@@ -73,7 +67,6 @@ export function createInstanceAdminRouter() {
     async (ctx) => {
       try {
         const daemonId = String(ctx.query.daemonId);
-        // const uploadDir = String(ctx.query.upload_dir);
         const config = ctx.request.body;
         const remoteService = remoteSubsystem().getInstance(daemonId);
         if (!remoteService) throw new Error($t("TXT_CODE_dd559000") + ` Daemon ID: ${daemonId}`);
@@ -87,7 +80,6 @@ export function createInstanceAdminRouter() {
           operator_name: guard().identify(ctx).userName,
           instance_name: result.nickname
         });
-        // Send a cross-end file upload task to the daemon
         const addr = remoteService.config.fullAddr;
         const remoteMappings = remoteService.config.getConvertedRemoteMappings();
         const password = timeUuid();
@@ -111,8 +103,6 @@ export function createInstanceAdminRouter() {
     }
   );
 
-  // [Top-level Permission]
-  // Update instance information (manage users)
   router.put(
     "/",
     permission({ level: ROLE.ADMIN }),
@@ -141,8 +131,6 @@ export function createInstanceAdminRouter() {
     }
   );
 
-  // [Top-level Permission]
-  // delete instance
   router.delete(
     "/",
     permission({ level: ROLE.ADMIN }),
@@ -231,8 +219,6 @@ export function createInstanceAdminRouter() {
     });
   }
 
-  // [Top-level Permission]
-  // forward request
   router.all(
     "/forward",
     permission({ level: ROLE.ADMIN }),

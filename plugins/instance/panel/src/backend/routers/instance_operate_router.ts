@@ -19,11 +19,8 @@ export function createInstanceOperateRouter() {
 
   const router = new Router({ prefix: "/protected_instance" });
 
-// Routing permission verification middleware
 router.use(instanceAccess);
 
-// [Low-level Permission]
-// Enable instance routing
 router.all(
   "/open",
   permission({ level: ROLE.USER }),
@@ -54,8 +51,6 @@ router.all(
   }
 );
 
-// [Low-level Permission]
-// The instance closes the route
 router.all(
   "/stop",
   permission({ level: ROLE.USER }),
@@ -82,9 +77,7 @@ router.all(
   }
 );
 
-// [Low-level Permission]
-// Send the command route to the instance
-// At this stage, WS cross-panel command transfer has been implemented, and this interface is reserved as an API interface
+// Keep the HTTP command endpoint available for API clients alongside the WebSocket transport.
 router.all(
   "/command",
   permission({ level: ROLE.USER }),
@@ -106,8 +99,6 @@ router.all(
   }
 );
 
-// [Low-level Permission]
-// restart the instance
 router.all(
   "/restart",
   permission({ level: ROLE.USER }),
@@ -134,8 +125,6 @@ router.all(
   }
 );
 
-// [Low-level Permission]
-// terminate the instance
 router.all(
   "/kill",
   permission({ level: ROLE.USER }),
@@ -162,8 +151,6 @@ router.all(
   }
 );
 
-// [Low-level Permission]
-// start asynchronous task
 router.post(
   "/asynchronous",
   speedLimit(3),
@@ -179,7 +166,6 @@ router.post(
       const taskName = String(ctx.query.task_name).toLowerCase().trim();
       const parameter = ctx.request.body;
 
-      // some asynchronous tasks are only allowed for administrators
       const needTopPermissionTask = ["quick_install", "minecraft_install"];
       if (
         needTopPermissionTask.includes(taskName) &&
@@ -202,8 +188,6 @@ router.post(
   }
 );
 
-// [Low-level Permission]
-// stop an asynchronous task
 router.all(
   "/stop_asynchronous",
   permission({ level: ROLE.USER }),
@@ -228,8 +212,6 @@ router.all(
   }
 );
 
-// [Low-level Permission]
-// query asynchronous task status
 router.all(
   "/query_asynchronous",
   permission({ level: ROLE.USER, speedLimit: false }),
@@ -262,8 +244,6 @@ router.all(
   }
 );
 
-// [Low-level Permission]
-// Get the instance configuration file list based on the file list
 router.post(
   "/process_config/list",
   permission({ level: ROLE.USER }),
@@ -288,8 +268,6 @@ router.post(
   }
 );
 
-// [Low-level Permission]
-// Get the content of the specified configuration file
 router.get(
   "/process_config/file",
   permission({ level: ROLE.USER }),
@@ -317,8 +295,6 @@ router.get(
   }
 );
 
-// [Low-level Permission]
-// Update the content of the specified configuration file
 router.put(
   "/process_config/file",
   permission({ level: ROLE.USER }),
@@ -347,8 +323,6 @@ router.put(
   }
 );
 
-// [Low-level Permission]
-// Update instance low-privilege configuration data (normal user)
 router.put(
   "/instance_update",
   speedLimit(3),
@@ -359,8 +333,7 @@ router.put(
   }),
   async (ctx) => {
     try {
-      // Here is the low-privileged user configuration setting interface,
-      // in order to prevent data injection, a layer of filtering must be performed
+      // Filter ordinary-user configuration updates to prevent writes to privileged fields.
       const daemonId = toText(ctx.query.daemonId);
       const instanceUuid = toText(ctx.query.uuid);
       const config = ctx.request.body;
@@ -379,27 +352,23 @@ router.put(
         instanceTags = instanceTags!.sort((a, b) => (a > b ? 1 : -1));
       }
 
-      // Steam Rcon configuration
       const rconIp = toText(config.rconIp);
       const rconPort = toNumber(config.rconPort);
       const rconPassword = toText(config.rconPassword);
       const enableRcon = toBoolean(config.enableRcon);
 
-      // Ping protocol configuration
       const pingConfig = {
         ip: toText(config.pingConfig?.ip),
         port: toNumber(config.pingConfig?.port),
         type: config.pingConfig?.type
       };
 
-      // event task configuration
       const eventTask = {
         autoStart: toBoolean(config.eventTask?.autoStart),
         autoRestart: toBoolean(config.eventTask?.autoRestart),
         autoRestartMaxTimes: toNumber(config.eventTask?.autoRestartMaxTimes)
       };
 
-      // web terminal settings
       const terminalOption = {
         haveColor: toBoolean(config.terminalOption?.haveColor),
         pty: toBoolean(config.terminalOption?.pty),
@@ -407,7 +376,6 @@ router.put(
         ptyWindowRow: toNumber(config.terminalOption?.ptyWindowRow)
       };
 
-      // extra service
       const extraServiceConfig = {
         openFrpTunnelId: toText(config.extraServiceConfig?.openFrpTunnelId),
         openFrpToken: toText(config.extraServiceConfig?.openFrpToken)

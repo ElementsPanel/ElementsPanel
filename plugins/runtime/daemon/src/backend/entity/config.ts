@@ -8,7 +8,6 @@ function builderPassword() {
   return b + c;
 }
 
-// @Entity
 class Config {
   public version = 2;
   public ip = "";
@@ -35,21 +34,16 @@ class Config {
   public currentAllocatablePort = 10010;
   public portAssignInterval = 5;
 
-  // default: Unlimited, if set 40 => (40 packets * 64KB)/s => 2.5MB/s
+  // Upload rate in 64 KB packets per second; 0 is unlimited.
   public uploadSpeedRate = 0;
-  // default: Unlimited, if set 32 => (32 packets * 64KB)/s => 2MB/s
+  // Download rate in 64 KB packets per second; 0 is unlimited.
   public downloadSpeedRate = 0;
-  // default: 1, if set 0 => Unlimited
+  // Download concurrency; 0 is unlimited.
   public maxDownloadFromUrlFileCount = 1;
 
-  // Output buffer size (number of chunks) for instance terminal output.
-  // Each chunk is up to 256 characters, flushed every 50ms.
-  // Increasing this value allows more output per flush cycle,
-  // but may increase memory usage under high output load.
-  // default: 256 (~64KB per flush), range: 16-4096
+  // Terminal buffer chunk limit, 16-4096. Each chunk holds up to 256 characters; flush every 50 ms.
   public outputBufferSize = 256;
 
-  // Daemon shutdown behavior
   public enableSoftShutdown = true;
   public softShutdownSkipDocker = true;
   public softShutdownWaitSeconds = 30;
@@ -71,7 +65,6 @@ class Config {
   sslKeyPath = "";
 }
 
-// daemon configuration class
 class GlobalConfiguration {
   public config = new Config();
   private static readonly ID = "global";

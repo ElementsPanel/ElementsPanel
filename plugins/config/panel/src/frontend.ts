@@ -5,10 +5,7 @@ import ConfigPage from "./ConfigPage.vue";
 import { localeMessages } from "./i18n";
 import PluginConfig from "./normal/PluginConfig.vue";
 
-// The plugin manager page. It renders each plugin's configuration from the
-// description that plugin's backend declared, so plugin-specific settings never
-// touch the panel's own Settings page — and a daemon plugin, which has no browser
-// half at all, gets a form here too.
+// Render each plugin's backend-declared settings, including daemon-only plugins.
 
 const ROLE_ADMIN = 10;
 

@@ -11,9 +11,7 @@ import trTR from "./tr_TR.json";
 import zhCN from "./zh_CN.json";
 import zhTW from "./zh_TW.json";
 
-// Labels for the monitoring page: the status tiles, the panel/host figures and
-// the chart titles. The backend registers the same catalogue so the plugin's own
-// strings resolve there too.
+// Share monitoring labels and chart translations between the frontend and backend.
 export const localeMessages = {
   de_de: deDE,
   en_us: enUS,

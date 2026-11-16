@@ -132,10 +132,8 @@ export default class FileManager {
   async list(page: 0, pageSize = 40, searchFileName?: string) {
     if (pageSize > 100 || pageSize <= 0 || page < 0) throw new Error("Beyond the value limit");
 
-    // Use withFileTypes option to get file type directly, reducing stat calls
     const dirents = await fs.readdir(this.toAbsolutePath(), { withFileTypes: true });
 
-    // Filter search results and create basic file info with type
     let filteredItems = dirents
       .filter(
         (dirent) =>
@@ -180,7 +178,6 @@ export default class FileManager {
       }
     });
 
-    // Execute all stat operations concurrently
     const resultList = await Promise.all(statPromises);
 
     return {
@@ -222,7 +219,6 @@ export default class FileManager {
   }
 
   async newFile(fileName: string) {
-    // if (!FileManager.checkFileName(fileName)) throw new Error(ERROR_MSG_01());
     if (!this.checkPath(fileName)) throw new Error(ERROR_MSG_01());
     const target = this.toAbsolutePath(fileName);
     await fs.createFile(target);

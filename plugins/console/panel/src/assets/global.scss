@@ -1,11 +1,7 @@
 @import "./xterm.scss";
 
-// `--background-color` only exists on the theme class that initAppTheme() puts on
-// <body>, so until that happens (and on <html>, which never carries the class)
-// the canvas falls back to the UA default — white. Letting the UA follow the
-// system keeps that window dark on a dark desktop instead of flashing light.
-// The theme classes narrow this to the theme actually in use, which also makes
-// native widgets and scrollbars match.
+// Follow the system color scheme until the theme class is applied, avoiding a white startup flash.
+// Theme classes then control native widgets and scrollbars.
 html {
   color-scheme: light dark;
 }
@@ -34,10 +30,7 @@ html {
   scrollbar-gutter: auto;
 }
 
-// The page shell owns scrolling; its native scrollbar is rendered flush with
-// the viewport edge and appears as a persistent vertical rule on Windows.
-// Keep scrollbars available inside feature panels, but remove only the shell
-// scrollbar from the viewport edge.
+// Hide the page shell scrollbar at the viewport edge while preserving feature-panel scrollbars.
 #app-mount-point,
 .main-content.app-layout-sidebar-only {
   scrollbar-width: none;
@@ -64,9 +57,7 @@ html {
   box-shadow: none !important;
 }
 
-// The browser may promote html/body to the scrolling root even while the
-// application shell is mounted below it. Keep that root scrollbar invisible
-// as well so no one-pixel rule can remain at the viewport edge.
+// Hide the root scrollbar when the browser promotes html or body to the scrolling element.
 html,
 body {
   scrollbar-width: none;
@@ -115,7 +106,6 @@ body::-webkit-scrollbar-track {
   display: none;
 }
 
-// Use one flat field treatment for every Vuetify input and select.
 .v-field {
   // Fields need their own surface: light cards are also white, and the flat
   // treatment removes the outline and shadow that would separate them.
@@ -124,9 +114,7 @@ body::-webkit-scrollbar-track {
   box-shadow: none !important;
 }
 
-// Vuetify splits a field's visible text between the native input, the select
-// selection wrapper, and the floating label. Keep all of them tied to the
-// application theme so light mode never inherits a white-on-white value.
+// Apply theme text colors to native inputs, select values and floating labels.
 .v-field,
 .v-field__input,
 .v-field__input input,
@@ -146,9 +134,7 @@ body::-webkit-scrollbar-track {
   opacity: 0.55 !important;
 }
 
-// Text/plain buttons inherit their parent color when no explicit Vuetify
-// color is supplied. Bind those neutral actions to the active theme while
-// leaving `primary`, `error`, and other explicitly colored buttons intact.
+// Theme neutral buttons without overriding explicit semantic colors.
 .v-btn--variant-text:not([class*="text-"]):not([class*="bg-"]),
 .v-btn--variant-plain:not([class*="text-"]):not([class*="bg-"]),
 .v-btn--variant-tonal:not([class*="text-"]):not([class*="bg-"]),
@@ -166,8 +152,6 @@ body::-webkit-scrollbar-track {
   background-color: var(--background-color) !important;
 }
 
-// Card surfaces across the app follow Vuetify's `rounded="xl"` scale so panels
-// and the cards nested inside them share one corner radius.
 .global-card-container-shadow {
   border-radius: var(--app-dialog-radius);
 }
@@ -210,10 +194,7 @@ body::-webkit-scrollbar-track {
   max-width: calc(100% - var(--app-list-inset) * 2);
 }
 
-// One vertical padding for every data table row, so list items share the
-// same rhythm across plugins instead of each table redefining it. Tables
-// that explicitly opt into `density="compact"` (e.g. the archive preview)
-// keep Vuetify's tight rows.
+// Use consistent row padding while preserving Vuetify compact density.
 .v-data-table:not(.v-table--density-compact) tbody > tr > td {
   padding-block: 10px;
 }
@@ -436,7 +417,6 @@ body::-webkit-scrollbar-track {
   }
 }
 
-// For markdown
 .global-markdown-html {
   img {
     border: 0;
@@ -499,11 +479,7 @@ body::-webkit-scrollbar-track {
   border-radius: var(--app-dialog-radius) !important;
 }
 
-// No centered dialog may touch the screen's left/right edges. The cap is
-// viewport-relative, so it only binds when a dialog's own inline width would
-// overflow the screen; explicit dialog widths (460px, 620px, ...) are never
-// affected. Fullscreen dialogs and bottom sheets are exempt because they
-// intentionally span the full viewport.
+// Keep centered dialogs inside viewport margins without constraining fullscreen dialogs or bottom sheets.
 .v-dialog:not(.v-dialog--fullscreen):not(.v-bottom-sheet)>.v-overlay__content>.v-card,
 .v-dialog:not(.v-dialog--fullscreen):not(.v-bottom-sheet)>.v-overlay__content>.v-sheet,
 .v-dialog:not(.v-dialog--fullscreen):not(.v-bottom-sheet)>.v-overlay__content>form>.v-card {
@@ -541,7 +517,6 @@ body::-webkit-scrollbar-track {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
 }
 
-// Custom Top Progress Bar
 #top-progress-bar {
   pointer-events: none;
   position: fixed;
@@ -559,7 +534,6 @@ body::-webkit-scrollbar-track {
   opacity: 1;
 }
 
-// Scrollbar
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -576,10 +550,7 @@ body::-webkit-scrollbar-track {
   background: transparent;
 }
 
-// Vuetify keeps the native slider element for its selected-tab animation.
-// VTab inherits VBtn's overflow clipping, which cuts the slider off while it
-// travels through the neighboring tab. Let the indicator cross that boundary
-// and keep it above adjacent tab content during the transition.
+// Allow the native tab slider to cross button boundaries above adjacent content.
 .v-btn.v-tab {
   overflow: visible !important;
 }

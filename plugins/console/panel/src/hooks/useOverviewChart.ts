@@ -81,13 +81,7 @@ export function useLineChart(
         plugins: {
           legend: { display: false },
           tooltip: {
-            // Restore the pre-Chart.js hover card: a compact translucent panel
-            // with no border, showing only the plotted value — the percentage on
-            // usage charts. The axis label is redundant with the axis itself,
-            // so the title row is dropped.
-            // Always anchor the card above the hovered point (the bottom edge
-            // aligns with it) instead of letting Chart.js flip it below when the
-            // point sits in the upper half of the plot.
+            // Show only the plotted value and anchor the tooltip above the hovered point.
             yAlign: "bottom",
             displayColors: false,
             backgroundColor: "rgba(20, 24, 35, 0.85)",

@@ -369,7 +369,6 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     .terminal-container {
-      // min-width: 1200px;
       height: 100%;
     }
 

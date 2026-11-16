@@ -22,9 +22,7 @@ import userSystem from "./service/user_service";
 import { core } from "./runtime";
 import { getUserProfile } from "./service/user_profile";
 
-// The complete authorization policy for the panel. The core holds none of it:
-// it only asks whichever guard is installed, and serves everything when there
-// is none.
+// Provide the panel authorization policy; the core delegates to the installed guard.
 
 const GUEST = 0;
 

@@ -55,7 +55,6 @@ export function registerInstanceEvents() {
   };
   InstanceSubsystem.on("data", onData);
 
-  // Instance exit event.
   const onExit = (obj: any) => {
     const eventName = obj.isCrash ? "instance/crashed" : "instance/stopped";
     InstanceSubsystem.forEachForward(obj.instanceUuid, (socket) => {
@@ -68,7 +67,6 @@ export function registerInstanceEvents() {
   };
   InstanceSubsystem.on("exit", onExit);
 
-  // Instance start event.
   const onOpen = (obj: any) => {
     InstanceSubsystem.forEachForward(obj.instanceUuid, (socket) => {
       protocol.msg(new RouterContext(null, socket), "instance/opened", {
@@ -79,7 +77,6 @@ export function registerInstanceEvents() {
   };
   InstanceSubsystem.on("open", onOpen);
 
-  // Instance failure event (usually startup or operation failure).
   const onFailure = (obj: any) => {
     InstanceSubsystem.forEachForward(obj.instanceUuid, (socket) => {
       protocol.msg(new RouterContext(null, socket), "instance/failure", {
@@ -90,7 +87,6 @@ export function registerInstanceEvents() {
   };
   InstanceSubsystem.on("failure", onFailure);
 
-  // Instance auto-restart event (triggered after a crash).
   const onAutoRestarted = (obj: any) => {
     InstanceSubsystem.forEachForward(obj.instanceUuid, (socket) => {
       protocol.msg(new RouterContext(null, socket), "instance/auto_restarted", {

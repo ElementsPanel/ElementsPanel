@@ -28,10 +28,7 @@ import {
 const props = defineProps<{
   plugin: MarketPlugin;
   version?: MarketPluginVersion;
-  /**
-   * Only offer the install action. A release row installs that one release and has
-   * nothing to say about uninstalling, which belongs to the plugin as a whole.
-   */
+  /** Release rows only install that release; uninstalling belongs to the plugin-level actions. */
   installOnly?: boolean;
   allowVersionChange?: boolean;
   disabled?: boolean;

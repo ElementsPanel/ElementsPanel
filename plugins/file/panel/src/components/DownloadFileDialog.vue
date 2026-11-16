@@ -13,9 +13,7 @@ import {
   VTextField
 } from "vuetify/components";
 
-// The two callbacks `useMountComponent` injects, spelled out rather than taken
-// from the core `MountComponent<T>`: the SFC compiler resolves `defineProps`
-// types itself, and it cannot follow the `@/` alias from a plugin directory.
+// Declare mount callbacks locally because the SFC compiler cannot resolve the host's aliased props type.
 interface Props {
   destroyComponent(delay?: number): void;
   emitResult(data?: any): void;

@@ -9,7 +9,6 @@ export default function createManageUserRouter() {
   const validator = core().middleware.validator;
   const router = new Router({ prefix: "/auth" });
 
-  // Add user
   router.post(
     "/",
     permission({ level: ROLE().ADMIN }),
@@ -31,7 +30,6 @@ export default function createManageUserRouter() {
     }
   );
 
-  // Delete user
   router.del("/", permission({ level: ROLE().ADMIN }), async (ctx: Koa.ParameterizedContext) => {
     const uuids = ctx.request.body;
     try {
@@ -54,13 +52,11 @@ export default function createManageUserRouter() {
     }
   });
 
-  // User search function
   router.get(
     "/search",
     permission({ level: ROLE().ADMIN }),
     validator({ query: { page: Number, page_size: Number } }),
     async (ctx: Koa.ParameterizedContext) => {
-      // Fix parameter parsing - check if parameters exist before converting
       const userName = ctx.query.userName ? String(ctx.query.userName) : "";
       const role = ctx.query.role ? String(ctx.query.role) : "";
       const page = Math.max(1, Number(ctx.query.page) || 1);
@@ -70,7 +66,6 @@ export default function createManageUserRouter() {
       if (userName && userName !== "undefined") condition["userName"] = `%${userName}%`;
       if (role && role !== "undefined" && role !== "null") condition["permission"] = Number(role);
       let resultPage = userSystem.getQueryWrapper().selectPage(condition, page, pageSize);
-      // make a copy, delete redundant
       resultPage = JSON.parse(JSON.stringify(resultPage));
       resultPage.data.forEach((v) => {
         v.passWord = "";

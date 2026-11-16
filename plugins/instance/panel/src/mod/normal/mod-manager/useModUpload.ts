@@ -11,9 +11,7 @@ export function useModUpload(
   activeKey: Ref<string>,
   loadMods: () => void
 ) {
-  // Uploading a mod is uploading a file, and both the queue and the picker
-  // belong to `plugins/file`. Without it the drop zone and the upload
-  // button do nothing rather than throwing.
+  // Resolve the optional file plugin's upload queue and picker; leave uploads unavailable when it is absent.
   const fileManager = usePluginService<FrontendFileManagerService>("file");
   const uploadService = fileManager?.uploadService;
   const selectedFiles = fileManager?.useFileManager(instanceId, daemonId)?.selectedFiles;
@@ -42,8 +40,7 @@ export function useModUpload(
     const files = (e.target as HTMLInputElement).files;
     if (!files || files.length === 0) return;
 
-    // Filter out directories (size 0 and no extension is a common heuristic, but not perfect)
-    // Better: check if file has size or use a more robust check if available
+    // Reject zero-byte entries; this heuristic also excludes empty files.
     const validFiles = Array.from(files).filter(f => f.size > 0);
     if (validFiles.length === 0) {
       return message.warning(t("TXT_CODE_MOD_UPLOAD_NO_FOLDER"));

@@ -7,7 +7,6 @@ import crypto from "crypto";
 const corePrefix = () => core().settings.config?.prefix || "";
 const corePort = () => core().settings.config?.httpPort || 23333;
 
-// ─── OIDC Cache ───
 
 let cachedConfig: oidc.Configuration | null = null;
 let cachedIssuer = "";
@@ -51,7 +50,6 @@ export async function verifyIssuer(issuer: string, clientId: string, clientSecre
   }
 }
 
-// ─── Crypto helpers ───
 
 export function generateState(): string {
   return crypto.randomBytes(32).toString("hex");
@@ -69,7 +67,6 @@ export function generateCodeChallenge(verifier: string): string {
   return crypto.createHash("sha256").update(verifier).digest("base64url");
 }
 
-// ─── Build Authorization URL (OIDC + OAuth 2.0) ───
 
 export async function buildAuthorizationUrl(
   state: string,
@@ -94,7 +91,6 @@ export async function buildAuthorizationUrl(
     return url.href;
   }
 
-  // OIDC mode
   const config = await getOIDCConfig();
   const scopes = authSettings().ssoScopes?.trim() || "openid profile";
   const url = oidc.buildAuthorizationUrl(config, {
@@ -108,7 +104,6 @@ export async function buildAuthorizationUrl(
   return url.href;
 }
 
-// ─── OIDC Callback Handler ───
 
 export async function handleOIDCCallback(
   callbackUrl: URL,
@@ -136,7 +131,6 @@ export async function handleOIDCCallback(
   };
 }
 
-// ─── OAuth 2.0 Callback Handler ───
 
 async function oauth2TokenExchange(
   code: string,
@@ -221,7 +215,6 @@ export async function handleOAuth2Callback(
   return { sub, claims: userinfo };
 }
 
-// ─── Shared Utilities ───
 
 export function getCallbackUrl(ctx?: Koa.ParameterizedContext): string {
   if (authSettings().ssoCallbackUrl) return authSettings().ssoCallbackUrl;

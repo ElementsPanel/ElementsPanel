@@ -54,13 +54,8 @@ import {
 } from "./api";
 import SchemaForm from "./SchemaForm.vue";
 
-// The panel reports installed plugins after applying the user override layer; a
-// disabled plugin has to stay listed for the enable button to turn it back on.
-//
-// The form beside the list is not a component any plugin shipped: a plugin
-// describes its configuration on its backend, and this page renders that
-// description. That is the only reason a daemon plugin can have a settings form
-// at all 鈥?the browser holds no copy of a daemon plugin.
+// Keep disabled plugins listed so they can be enabled again.
+// Render backend-declared settings for both panel and daemon plugins.
 
 type Scope = "panel" | "node";
 type PluginAction = "disable" | "remove";
@@ -117,7 +112,6 @@ watch(isPhone, (phone) => {
 const scope = ref<Scope>("panel");
 const route = useRoute();
 const router = useRouter();
-/** The plugin named by the URL, used once its list has actually arrived. */
 const preferredPluginId = ref(String(props.pluginId ?? route.query.plugin ?? ""));
 
 const loading = ref(true);
@@ -129,7 +123,6 @@ const nodes = ref<NodeSummary[]>([]);
 const selectedNodeId = ref("");
 const nodePlugins = ref<NodePluginRecord[]>([]);
 const nodeSelectedId = ref("");
-/** Why the node scope has nothing to show, when it has nothing to show. */
 const nodeError = ref("");
 
 const nodeLabel = (node: NodeSummary) =>
@@ -308,9 +301,7 @@ const startPluginDrag = (pluginId: string, event?: DragEvent) => {
   event.dataTransfer.setData("text/plain", pluginId);
   event.dataTransfer.effectAllowed = "move";
 
-  // Vuetify list items contain overlays and nested layout elements. Chromium
-  // may use that whole rendered tree as the native drag image, which produces
-  // a distorted preview. Use a small, plain element instead.
+  // Use a plain drag preview to avoid Chromium capturing Vuetify overlays.
   clearDragPreview();
   dragPreview = document.createElement("span");
   dragPreview.textContent = pluginId;
@@ -361,7 +352,6 @@ const selectedPlugin = computed(() =>
   currentList.value.find((item) => item.id === currentId.value)
 );
 
-/** The selected plugin's declared form, or null when it declared none. */
 const schema = ref<SettingsSchema | null>(null);
 const savedSettings = ref("");
 const settingsDirty = computed(
@@ -561,10 +551,7 @@ const load = async (quiet = false) => {
   }
 };
 
-/**
- * The node routes exist only while `plugins/node` does, so a failure here is the
- * expected answer on a panel without it rather than something to shout about.
- */
+/** Node routes are unavailable when the node plugin is absent. */
 const loadNodes = async () => {
   loading.value = true;
   nodeError.value = "";
@@ -607,11 +594,7 @@ const loadNodePlugins = async (quiet = false) => {
   }
 };
 
-/**
- * Toggling a plugin reconnects the node, because that is what makes a daemon
- * rebind its protocol events. The list is therefore re-read with a few retries:
- * the first attempt often lands while the socket is still coming back up.
- */
+/** Re-read with retries while the node reconnects after a plugin toggle. */
 const reloadNodePluginsAfterToggle = async () => {
   for (let attempt = 0; attempt < 4; attempt++) {
     if (disposed) return;
@@ -653,14 +636,7 @@ onUnmounted(() => {
   nodePluginsRequest++;
 });
 
-/**
- * Leaving must not drag this page's parameters into the next one. The shared
- * `toPage()` helper copies the current query along, and `scope`, `daemonId` and
- * `plugin` describe a plugin tab, not the page being opened — an instance page
- * would otherwise inherit a daemon it was never opened for. Only the values this
- * page contributed are dropped, so a link that asks for a key by another value
- * still gets it.
- */
+/** Remove this page's query parameters before navigating. Preserve values supplied by the target link. */
 onBeforeRouteLeave((to) => {
   if (to.path === "/plugins/config") return true;
   const query = { ...to.query };
@@ -734,7 +710,6 @@ watch(
   }
 );
 
-// Whatever is selected, its form comes from the backend that declared it.
 watch(
   [scope, currentId, selectedNodeId],
   () => {
@@ -748,14 +723,8 @@ watch(
 );
 
 /**
- * The address bar follows the open plugin, so a tab can be copied out of it and
- * reopened: `/plugins/config?scope=panel&plugin=<id>`, or with `daemonId` added
- * when the plugin belongs to a daemon.
- *
- * The rewrite deliberately skips the router. A router navigation runs the global
- * guard, which starts the top progress bar and leaves it on screen for a second
- * on every selection. A desktop window hosts this page inside the desktop route,
- * where the address bar belongs to the desktop, so nothing is written there.
+ * Update shareable plugin URLs without triggering the router guard and progress bar.
+ * Desktop windows leave the desktop route's address unchanged.
  */
 let lastSyncedPath = "";
 const syncRoute = () => {
@@ -886,9 +855,7 @@ const apply = async (plugin: PluginRecord, enabled: boolean, candidate?: PluginA
     const nodesSucceeded = candidate ? await syncNodePlugins(candidate) : true;
     const { execute } = setPluginEnabled();
     recordResult((await execute({ data: { id: plugin.id, enabled } })).value?.result);
-    // The panel has already applied the change to its own half. The browser
-    // reconciles itself against the manifest, which now reflects the switch, so
-    // the plugin's routes, cards and menus appear or disappear with it.
+    // Reconcile frontend contributions against the updated plugin manifest.
     await ctx.plugins.refresh();
     await load();
     if (nodesSucceeded && (!lastResult.value || lastResult.value.application === "applied"))
@@ -901,10 +868,7 @@ const apply = async (plugin: PluginRecord, enabled: boolean, candidate?: PluginA
   }
 };
 
-/**
- * The daemon applies the switch itself and answers with the updated record, so
- * there is nothing for the browser to reconcile 鈥?only the list to re-read.
- */
+/** The daemon applies the switch; the browser only refreshes its inventory. */
 const applyNode = async (
   plugin: NodePluginRecord,
   enabled: boolean,
@@ -931,10 +895,7 @@ const applyNode = async (
   }
 };
 
-/**
- * Enabling is immediate; disabling asks first, because it removes whatever the
- * plugin contributed 鈥?including, for some plugins, authentication itself.
- */
+/** Confirm disabling because it can remove services such as authentication. */
 const toggle = (plugin: PluginRecord | NodePluginRecord, enabled: boolean) => {
   if (actionBusy.value) return;
   const targetScope = scope.value;

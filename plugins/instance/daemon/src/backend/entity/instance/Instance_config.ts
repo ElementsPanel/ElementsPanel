@@ -6,7 +6,6 @@ interface IActionCommand {
   command: string;
 }
 
-// @Entity
 export default class InstanceConfig implements IGlobalInstanceConfig {
   public nickname = "Undefined";
   public startCommand = "";
@@ -36,10 +35,8 @@ export default class InstanceConfig implements IGlobalInstanceConfig {
   public rconPort = 0;
   public rconIp = "";
 
-  // custom command list
   public actionCommandList: IActionCommand[] = [];
 
-  // terminal option
   public terminalOption = {
     haveColor: false,
     pty: true,
@@ -47,7 +44,6 @@ export default class InstanceConfig implements IGlobalInstanceConfig {
     ptyWindowRow: 40
   };
 
-  // Event task
   public eventTask = {
     autoStart: false,
     autoRestart: false,
@@ -55,12 +51,10 @@ export default class InstanceConfig implements IGlobalInstanceConfig {
     ignore: false
   };
 
-  // java
   public java: IInstanceJavaConfig = {
     id: ""
   };
 
-  // Extend
   public docker: IGlobalInstanceDockerConfig = {
     updateCommandImage: "",
     containerName: "",

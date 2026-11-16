@@ -15,7 +15,6 @@ export type FormattedOperationLog = OperationLoggerItem & {
 
 type OperationRenderer = {
   [K in OperationLoggerItem["type"]]: (
-    // This variable is actually used internally. Fix the plugin's false positive error.
     // eslint-disable-next-line no-unused-vars
     item: Extract<OperationLoggerItem, { type: K }>
   ) => TextRenderResult;

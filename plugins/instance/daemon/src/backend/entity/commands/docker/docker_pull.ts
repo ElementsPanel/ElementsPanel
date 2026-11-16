@@ -21,9 +21,7 @@ export async function checkImage(name: string) {
     const info = await image.inspect();
     return info.Size > 0 ? true : false;
   } catch (error: any) {
-    // Image doesn't exist locally or Docker daemon error
     if (error?.statusCode === 404) {
-      // Image not found - this is expected if image hasn't been pulled yet
       return false;
     }
     logger.debug(`Failed to check image ${name}:`, error?.message || error);
@@ -45,7 +43,7 @@ export default class DockerPullCommand extends InstanceCommand {
 
   private async awaitImageDone(instance: Instance, name: string) {
     let count = 0;
-    const maxAttempts = 20 * 30; // 20 minutes total (30 attempts * 3 seconds)
+    const maxAttempts = 20 * 30; // 600 checks, three seconds apart.
 
     while (true) {
       count++;
@@ -86,7 +84,6 @@ export default class DockerPullCommand extends InstanceCommand {
 
     const cachedStartCount = instance.startCount;
 
-    // If the image exists, there is no need to pull again.
     if (await checkImage(imageName)) {
       logger.info(`Image ${imageName} already exists locally, skipping pull`);
       instance.println("CONTAINER", $t("TXT_CODE_docker_pull_image_exists", { imageName }));
@@ -105,7 +102,6 @@ export default class DockerPullCommand extends InstanceCommand {
       let streamError: Error | null = null;
       let hasError = false;
 
-      // wait for the stream to complete and handle errors
       await new Promise<void>((resolve, reject) => {
         stream.on("data", (data: Buffer | string) => {
           try {
@@ -117,7 +113,6 @@ export default class DockerPullCommand extends InstanceCommand {
               try {
                 const jsonData = JSON.parse(line);
 
-                // progress information
                 if (jsonData.status) {
                   const progress = jsonData.progress
                     ? `${jsonData.status} ${jsonData.progress}`
@@ -133,13 +128,11 @@ export default class DockerPullCommand extends InstanceCommand {
 
                   logger.error(`Docker pull stream error: ${errorMsg}`, errorDetail);
 
-                  // handle specific error types
                   if (
                     errorMsg.includes("no matching manifest") ||
                     errorMsg.includes("manifest unknown") ||
                     errorDetail?.includes("no matching manifest")
                   ) {
-                    // extract platform information if available
                     const platformMatch =
                       errorMsg.match(/linux\/(\w+)/) || errorDetail?.match(/linux\/(\w+)/);
                     const platform = platformMatch
@@ -230,7 +223,6 @@ export default class DockerPullCommand extends InstanceCommand {
       const errMsg = err?.message || err?.toString() || String(err);
       let errorMessage: string;
 
-      // common docker pull errors
       if (
         errMsg.includes("404") ||
         errMsg.includes("not found") ||
@@ -270,7 +262,6 @@ export default class DockerPullCommand extends InstanceCommand {
         errMsg.includes("os/arch") ||
         errMsg.includes("manifest unknown")
       ) {
-        // extract platform info if available
         const platformMatch = errMsg.match(/linux\/(\w+)/);
         const platform = platformMatch
           ? platformMatch[0]
@@ -279,7 +270,6 @@ export default class DockerPullCommand extends InstanceCommand {
         logger.error(`Docker pull failed - platform mismatch: ${imageName}`, errMsg);
         instance.println("ERROR", errorMessage);
       } else {
-        // generic error with original message
         errorMessage = $t("TXT_CODE_docker_pull_generic_error_fallback", { errMsg });
         logger.error(`Docker pull failed for ${imageName}:`, err);
         instance.println("ERROR", errorMessage);

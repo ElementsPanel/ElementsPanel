@@ -10,7 +10,6 @@ class SandboxBridge {
 
   private _callbacks = new Map<string, Function[]>();
 
-  // API
   public $axios = axios;
   public $realWindow = window;
   public $theme: string;
@@ -42,7 +41,6 @@ class SandboxBridge {
 
   public $destroySandbox() {
     this.$emit("onUnmounted");
-    // this._callbacks.clear();
   }
 
   public $mountSandbox() {

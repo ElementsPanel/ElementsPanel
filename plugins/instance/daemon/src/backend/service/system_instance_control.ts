@@ -29,7 +29,6 @@ interface IScheduleAction {
   payload: string;
 }
 
-// Scheduled task configuration item interface
 interface IScheduleTask {
   instanceUuid: string;
   name: string;
@@ -41,13 +40,10 @@ interface IScheduleTask {
   type: number;
 }
 
-// Scheduled task timer/periodic task interface
 interface IScheduleJob {
   cancel: Function;
 }
 
-// @Entity
-// Schedule task configuration data entity class
 class TaskConfig implements IScheduleTask {
   instanceUuid = "";
   name = "";
@@ -74,7 +70,6 @@ class IntervalJob implements IScheduleJob {
   }
 }
 
-// Scheduled task instance class
 class Task {
   public running = false;
   public cancelled = false;
@@ -94,11 +89,9 @@ class InstanceControlSubsystem {
 
   public loadSchedules() {
     if (this.taskMap.size) return;
-    // Initialize all persistent data and load into memory one by one
     StorageSubsystem.list("TaskConfig").forEach((uuid: string) => {
       try {
         const config = StorageSubsystem.load("TaskConfig", TaskConfig, uuid) as TaskConfig;
-        // load old task config
         if (config.action) {
           config.actions[config.actions.length] = {
             type: config.action,
@@ -192,18 +185,14 @@ class InstanceControlSubsystem {
       }
     };
 
-    // min interval check
     if (task.type === ScheduleTypeEnum.Interval) {
-      // Unit: seconds
       const internalTime = Number(task.time);
       if (!Number.isFinite(internalTime) || internalTime < 3 || internalTime * 1000 > 2147483647) {
         throw new Error($t("TXT_CODE_ec96e2bf"));
       }
 
-      // task.type=1: Time interval scheduled task, implemented with built-in timer
       newTask.job = new IntervalJob(() => void run(), internalTime);
     } else {
-      // Expression validity check: 8 19 14 * * 1,2,3,4
       const timeArray = task.time.trim().split(/\s+/);
       if (timeArray[0] === "*") {
         throw new Error($t("TXT_CODE_6b77cd52"));
@@ -267,7 +256,6 @@ class InstanceControlSubsystem {
       const instanceUuid = task.instanceUuid;
       const instance = InstanceSubsystem.getInstance(instanceUuid);
 
-      // If the instance has been deleted, it needs to be automatically destroyed
       if (!instance || !instance?.config) {
         return this.deleteScheduleTask(task.instanceUuid, task.name);
       }

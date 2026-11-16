@@ -177,10 +177,10 @@ const handleDrop = (e: DragEvent) => {
     for (const file of files) {
       name += file.name + ", ";
     }
-    name = name.slice(0, -2); // trailing comma
+    name = name.slice(0, -2);
   }
   if (name.length > 30) {
-    name = name.slice(0, 27) + "..."; // cut if too long
+    name = name.slice(0, 27) + "...";
   }
   if (files.length > 1) {
     name += ` (${files.length})`;

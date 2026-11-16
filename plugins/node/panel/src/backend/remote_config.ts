@@ -2,13 +2,7 @@ import { removeTrail } from "mcsmanager-common";
 import type { ManagerOptions, SocketOptions } from "socket.io-client";
 import type { RemoteMappingEntry } from "../../../../../core/panel/src/app/plugin/packets";
 
-// @Entity
-//
-// The stored configuration of one daemon node. It moved out of the core's
-// `entity_interface.ts` with the rest of the subsystem: the core only ever reads
-// it through the `PanelRemoteNodeConfig` shape it declares, and this class is
-// what the storage subsystem instantiates under the `RemoteServiceConfig`
-// category — the category name is a string, so existing data still loads.
+// Keep the RemoteServiceConfig storage category unchanged so existing node records still load.
 export class RemoteServiceConfig {
   public ip = "";
   public port = 24444;
@@ -28,13 +22,8 @@ export class RemoteServiceConfig {
   };
 
   /**
-   * To keep the remote mapping inside response consistent with other parts,
-   * a simple conversion needs to be made.
-   *
-   * This is intentionally a method instead of a getter member, as the
-   * conversion involves list operation.
-   *
-   * @returns converted remote mappings
+   * Convert stored mappings to the response shape. Use a method because conversion processes
+   * the list.
    */
   public getConvertedRemoteMappings() {
     return this.remoteMappings.map((remote) => ({

@@ -10,12 +10,7 @@ function hasDaemonVersionUpdate(panelVersion: string, daemonVersion?: string) {
   return panelMajor !== daemonMajor || panelMinor !== daemonMinor;
 }
 
-/**
- * Compares one daemon's plugin inventory against the panel's. Plugins present on
- * both sides must carry the same version; plugins on a single side only are
- * informational unless the present half declares `dual` — then the absent other
- * half is a fault ("missing panel/daemon side").
- */
+/** Compare versions on shared sides. A missing side is an error only for a plugin declared dual. */
 function buildCompatibility(
   panelVersion: string,
   requiredDaemonVersion: string,

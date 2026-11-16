@@ -97,8 +97,7 @@ export async function apply(ctx: DaemonPluginContext) {
 
   ctx.plugin(I18nService);
 
-  // The foundation is loaded before the daemon installs its settings services;
-  // wait for them while keeping the declaration attributed to this plugin.
+  // Wait for settings services while attributing the declaration to this plugin.
   ctx.plugin({
     name: "i18n",
     inject: ["i18n", "settings", "settingsForm"],

@@ -15,7 +15,6 @@ export default class GeneralRestartCommand extends InstanceCommand {
       try {
         await instance.execPreset("stop");
       } catch (error) {
-        // ignore error
       }
       const startCount = instance.startCount;
       // Check the instance status every second,

@@ -35,12 +35,8 @@ import {
 } from "./service/plugin_market";
 import { initMarketSettings, marketSettings, saveMarketSettings } from "./service/market_settings";
 
-// Built-in plugin market. Application templates are owned by the external
-// epanel-plugin-mcsm-market plugin.
-//
-// The market indexes npm packages named `epanel-plugin-*`. Installing or
-// updating a plugin adds an npm dependency to the installation project; the
-// market service itself never hosts package files.
+// Install and update epanel-plugin-* npm dependencies.
+// Application templates belong to the external epanel-plugin-mcsm-market plugin.
 
 export const inject = [
   "koa",
@@ -165,11 +161,7 @@ export async function apply(ctx: PanelPluginContext) {
     });
   }
 
-  /**
-   * The plugin market's address, as the settings form accepts it. Every market call
-   * is built from it, so it is checked here rather than failing one request at a
-   * time; an empty value simply means no market is configured.
-   */
+  /** Validate the market base URL once when saving settings. Empty disables the market. */
   function normalizePluginMarketAddr(value: unknown): string {
     const raw = String(value).trim().replace(/\/+$/, "");
     if (!raw) return "";
@@ -202,7 +194,6 @@ export async function apply(ctx: PanelPluginContext) {
     await saveMarketSettings(ctx);
   }
 
-  // ---- Plugin market -----------------------------------------------------
   // Install npm plugins into the panel and daemon installation projects.
 
   /** The largest page the market serves; it answers 12 plugins per page by default. */
@@ -217,12 +208,8 @@ export async function apply(ctx: PanelPluginContext) {
   const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
   /**
-   * Plugins are listed publicly by the market, so this needs no token.
-   *
-   * The market pages its list, and the page searches and filters what this returns,
-   * so every page is read: stopping at the first one would hide every plugin that
-   * did not fit on it. Reading many pages is what the budget above bounds — one
-   * request must not be able to occupy a connection for as long as the pages allow.
+   * Read all public catalogue pages within the request budget so client-side filters see every
+   * plugin.
    */
   async function fetchMarketPlugins(
     addr: string,
@@ -248,8 +235,7 @@ export async function apply(ctx: PanelPluginContext) {
         listed = response.data?.items ?? [];
         total = response.data?.total;
       } catch (error) {
-        // A page that fails says nothing about the pages already read: answering
-        // with what the market did give beats turning the whole list into an error.
+        // Return the pages already loaded if a later page fails.
         if (!items.length) throw error;
         ctx.logger.warn(`Failed to read page ${page} of the plugin market list: ${error}`);
         break;
@@ -257,8 +243,7 @@ export async function apply(ctx: PanelPluginContext) {
 
       let added = 0;
       for (const item of listed) {
-        // An item without an id cannot be installed, opened or told apart from
-        // another, so it is not a plugin this panel can offer.
+        // Ignore entries without an installable, unique id.
         const id = typeof item.id === "string" ? item.id.trim() : "";
         if (!id || seen.has(id)) continue;
         seen.add(id);
@@ -266,8 +251,7 @@ export async function apply(ctx: PanelPluginContext) {
         added++;
       }
 
-      // Nothing new on this page: either the market has run out of plugins, or it
-      // ignores `page` and is answering with the same ones.
+      // Stop when no new ids appear, including markets that ignore pagination.
       if (!added || items.length >= MAX_MARKET_PLUGINS) break;
       if (typeof total !== "number" || items.length >= total) break;
       if (Date.now() >= deadline) {
@@ -1288,8 +1272,8 @@ export async function apply(ctx: PanelPluginContext) {
   );
 
   /**
-   * 插件图标。市场地址只有后端知道，所以这里代为读取并转成 data URL。
-   * 没有图标、市场不可用或内容不是 PNG 时都答 null，页面回退到默认拼图图标。
+   * Proxy market icons as data URLs. Return null for missing icons, unavailable markets or
+   * non-PNG data.
    */
   router.get("/plugin/icon", requireAdmin, async (requestCtx) => {
     const pluginId = typeof requestCtx.query.pluginId === "string" ? requestCtx.query.pluginId : "";
@@ -1318,8 +1302,7 @@ export async function apply(ctx: PanelPluginContext) {
     requestCtx.body = { dataUrl };
   });
 
-  // What the page needs before it can ask the user anything: a package with a
-  // daemon half has to be installed on the nodes the user picks.
+  // List target nodes before installing a package with a daemon entry.
   router.get(
     "/plugin/package",
     requireAdmin,
@@ -1343,9 +1326,7 @@ export async function apply(ctx: PanelPluginContext) {
     }
   );
 
-  // Installing adds a dependency to panel/package.json and sends the
-  // same npm install to the nodes the user picked. Both sides are asked to re-scan
-  // after the dependency arrives and replace the running plugin revision.
+  // Install the npm dependency on the selected hosts, then reload their plugin revisions.
   router.post(
     "/plugin/install",
     requireAdmin,

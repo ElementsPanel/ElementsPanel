@@ -50,5 +50,4 @@ export class SingletonMemoryRedis {
   }
 }
 
-// singleton
 export const singletonMemoryRedis = new SingletonMemoryRedis();

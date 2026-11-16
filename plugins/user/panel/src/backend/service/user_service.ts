@@ -68,12 +68,10 @@ class UserSubsystem {
     if (!config.userName || this.existUserName(config.userName))
       throw new Error($t("TXT_CODE_router.user.existsUserName"));
     const newUuid = v4().replace(/-/gim, "");
-    // Initialize necessary user data
     const instance = new User();
     instance.uuid = newUuid;
     instance.userName = config.userName;
     instance.registerTime = new Date().toLocaleString();
-    // add to the user system
     this.setInstance(newUuid, instance);
     try {
       await this.edit(instance.uuid, config);
@@ -84,7 +82,6 @@ class UserSubsystem {
     }
   }
 
-  // Update user detail
   async edit(uuid: string, config: any) {
     return this.mutationLock.runExclusive(() => this.update(uuid, config));
   }

@@ -54,19 +54,14 @@ export function apply(ctx: DaemonPluginContext) {
   migrateConfig(ctx);
   void initSteamCmd(ctx);
 
-  // The registry services above are created as child plugins, so their values
-  // are available on the next turn rather than synchronously in this function.
-  // Restoring instances before that point makes the legacy dispatcher read
-  // missing `presets` and `instanceLifecycle` services and emit warnings.
+  // Wait for child registry services before restoring instances or invoking the dispatcher.
   ctx.inject(["tasks", "instanceLifecycle", "presets", "schedules"], (instanceCtx) => {
     initializing = initialize(instanceCtx);
     return initializing;
   });
 
   async function initialize(instanceCtx: DaemonPluginContext) {
-    // The modules are required only after the context has been set and the
-    // instance registries are ready. Keeping these synchronous requires keeps
-    // webpack's output self-contained and avoids a second copy of the context.
+    // Require modules after setting the context and registries to keep one shared context in the bundle.
     const { default: InstanceSubsystem } =
       require("./service/system_instance") as typeof import("./service/system_instance");
     const { default: Instance } =
@@ -176,7 +171,6 @@ export function apply(ctx: DaemonPluginContext) {
     registerModManager(instanceCtx, instanceServices);
     instanceCtx.plugin(minecraftInstall);
 
-    // The dispatcher is the instance plugin's built-in preset/lifecycle bridge.
     void FunctionDispatcher;
 
     require("./routers/Instance_router");

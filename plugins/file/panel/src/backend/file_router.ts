@@ -14,12 +14,7 @@ function timeUuid() {
   return v4().replace(/-/gim, "") + new Date().getTime();
 }
 
-/**
- * Every route the file manager UI talks to, all under `/api/files`.
- *
- * Registered from `apply()`, so the whole surface — the gate included — leaves
- * with the plugin.
- */
+/** Scope /api/files routes and their access gate to this plugin. */
 export function registerFileRoutes() {
   const router = koa().router("/api/files");
   const permission = middleware().permission;

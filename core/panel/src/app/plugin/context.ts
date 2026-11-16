@@ -26,18 +26,8 @@ import type { systemConfig } from "../../../../../plugins/runtime/panel/src/back
 import type { LoadedPanelPlugin, PanelFrontendPluginEntry, PanelPluginRecord } from "./loader";
 
 /**
- * The panel's cordis container, and the complete list of what a plugin can see.
- *
- * Every capability is a service on the context; every registration a plugin
- * makes is an effect owned by that plugin's scope, so unloading a plugin undoes
- * its contributions and no plugin ever writes cleanup code. `ctx.logger` and the
- * timer helpers (`ctx.setTimeout`, `ctx.setInterval`, `ctx.sleep`,
- * `ctx.throttle`, `ctx.debounce`) come with cordis itself.
- *
- * The declarations below are the API documentation: only `import type` here, so
- * this module stays a leaf that core code can import without a cycle. The
- * runtime values are provided by the foundation plugins (`storage`, `i18n`,
- * and `runtime`).
+ * Plugin service contracts. Cordis owns registered effects, loggers and timers.
+ * Use type-only contract imports to avoid cycles. Foundation plugins provide shared services.
  */
 export const ctx = new Context();
 
@@ -57,13 +47,7 @@ export interface PanelSettingOption {
   label: string;
 }
 
-/**
- * One row of a plugin's configuration form, described rather than drawn.
- *
- * Labels are plain strings, already translated: the daemon's plugins are
- * rendered by this same form, and the browser has no copy of a daemon plugin's
- * catalogue. Whoever declares the field resolves it.
- */
+/** Backend-declared settings fields with translated labels, shared by panel and daemon forms. */
 export interface PanelSettingField {
   /** The key in `read()`'s result and `write()`'s argument. Absent for `link`. */
   key?: string;
@@ -99,12 +83,7 @@ export interface PanelSettingField {
   required?: boolean;
 }
 
-/**
- * A plugin's configuration, as its backend declares it.
- *
- * `fields` is a function so that it is resolved per request: a plugin's titles
- * come from its own catalogue, and the panel's language can change while it runs.
- */
+/** Resolve fields per request so their translated labels follow the active language. */
 export interface PanelSettingsDeclaration {
   /** Changes to this form require a process restart. */
   restartRequired?: boolean;
@@ -142,13 +121,7 @@ export interface PanelStorageService {
   writeFile(name: string, data: string): void;
 }
 
-/**
- * The register of plugin configuration forms.
- *
- * A plugin describes its settings here instead of shipping a component for them,
- * which is what lets one generic form render a panel plugin's configuration and a
- * daemon plugin's alike — the browser has no copy of a daemon plugin at all.
- */
+/** Register backend-declared settings for the generic panel and daemon form. */
 export interface PanelSettingsFormService {
   /** Declares the calling plugin's form. An effect: it leaves with the plugin. */
   declare(declaration: PanelSettingsDeclaration): () => void;
@@ -173,12 +146,8 @@ export interface PanelI18nService {
 }
 
 /**
- * The panel's Koa application. `use()` and `router()` are scoped to the calling
- * plugin: both are removed when it unloads, which is why the web server mounts
- * one composed stack for each of them when it starts rather than calling
- * `app.use()` per registration.
- *
- * Provided by `plugins/server`, which owns the application itself.
+ * Koa service provided by the server plugin. Middleware and routers are scoped to their
+ * registering plugins.
  */
 export interface PanelKoaService {
   readonly app: Koa;
@@ -258,14 +227,7 @@ export interface PanelRemoteRequest {
   request<T = any>(event: string, data?: any, timeout?: number, force?: boolean): Promise<T>;
 }
 
-/**
- * The daemon nodes: the subsystem that tracks them and the request helper.
- *
- * **Provided by `plugins/node`.** The core declares only the shape it needs and
- * exposes it through this contract, so removing that
- * plugin removes the panel's ability to reach a daemon rather than breaking the
- * build.
- */
+/** Node connections and request forwarding provided by the node plugin. */
 export interface PanelRemoteService {
   readonly services: PanelRemoteSubsystem;
   readonly Request: new (service?: PanelRemoteNode) => PanelRemoteRequest;
@@ -411,18 +373,11 @@ declare module "cordis" {
     plugins: PanelPluginsService;
 
     // Provided by plugins. Resolve optional services with `get()` or declare an `inject` dependency.
-    /**
-     * The Koa application every route in the panel is mounted on. Provided by
-     * `plugins/server`, the web server — without it the panel listens on
-     * nothing, so almost every plugin injects it.
-     */
+    /** Koa application provided by the server plugin. Declare an injection before using it. */
     koa: PanelKoaService;
     /** Browser-facing Socket.IO transport, provided by `plugins/server`. */
     websocket: PanelWebsocketService;
-    /**
-     * The daemon nodes. Provided by `plugins/node`, which owns the subsystem —
-     * the panel reaches no daemon without it.
-     */
+    /** Daemon access provided by the node plugin. */
     remote: PanelRemoteService;
     /** Request authorization for the whole panel. Provided by `plugins/user`. */
     guard: RequestGuard;

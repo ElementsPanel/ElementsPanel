@@ -16,10 +16,7 @@ import { setPluginContext } from "./runtime";
 import { initAuthSettings } from "./service/auth_settings";
 import userSystem from "./service/user_service";
 
-// Authentication for the whole panel: accounts, sessions, SSO and the
-// authorization policy every core route is checked against. The core holds none
-// of it — it asks `ctx.guard`, and serves every request while nothing provides
-// one.
+// Provide accounts, sessions, SSO and request authorization through the guard service.
 
 export const inject = [
   "koa",
@@ -38,20 +35,16 @@ export async function apply(ctx: PanelPluginContext) {
   setPluginContext(ctx);
   migrateConfig(ctx);
 
-  // Before anything that logs or throws: this plugin's strings live here, not
-  // in the panel catalogue.
+  // Register authentication translations before logging or throwing.
   ctx.i18n.define(localeMessages);
 
   await initAuthSettings();
   await userSystem.initialize();
 
-  // From here on the whole panel is guarded. Unloading this plugin removes the
-  // service, and with it the policy, which is the documented behaviour.
+  // Removing this plugin removes the panel's authorization policy.
   ctx.set("guard", createRequestGuard());
 
-  // Authentication status is part of the user contract and is available before
-  // any account page is rendered. Keeping it here removes the last auth route
-  // from the panel core while preserving `/api/auth/status`.
+  // Expose authentication status before account pages render.
   const statusRouter = ctx.koa.router("/api/auth");
   statusRouter.all(
     "/status",
@@ -70,10 +63,7 @@ export async function apply(ctx: PanelPluginContext) {
     }
   );
 
-  // Nested under a single /api router, in the same order the core used to mount
-  // them: several of these share the "/auth/" path and only differ by method,
-  // so a flat registration would let one router's allowedMethods() answer 405
-  // before the next router got a chance to match.
+  // Nest auth routers under one /api router so allowedMethods() cannot return 405 before a later match.
   const apiRouter = ctx.koa.router("/api");
   for (const router of [
     createManageUserRouter(),
@@ -86,11 +76,7 @@ export async function apply(ctx: PanelPluginContext) {
     apiRouter.use(router.routes()).use(router.allowedMethods());
   }
 
-  // Described, not drawn. The login notice, the IP check, the 2FA tolerance and
-  // the whole SSO block used to be a Vue form this plugin shipped; they are now a
-  // declaration the plugin manager renders with the same generic form it uses for
-  // a daemon plugin's configuration. `write` is the route's own handler, so the
-  // SSO validation has one home rather than a copy in the browser.
+  // Declare settings for the generic plugin form and reuse the route handler's validation.
   const $t = ctx.i18n.$t;
   const yesNo = () => [
     { value: true, label: $t("TXT_CODE_52c8a730") },
@@ -250,7 +236,6 @@ export async function apply(ctx: PanelPluginContext) {
         visibleWhen: "ssoEnabled"
       }
     ],
-    // Every field is read, validated and persisted by this plugin.
     read: readAuthSettings,
     write: applyAuthSettings
   });

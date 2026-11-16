@@ -11,10 +11,7 @@ import trTR from "./tr_TR.json";
 import zhCN from "./zh_CN.json";
 import zhTW from "./zh_TW.json";
 
-// The titles and descriptions of the fields this plugin declares as its
-// configuration form. The panel renders that description, and the browser holds
-// no copy of a daemon plugin's catalogue, so the strings are resolved here — in
-// whichever language the panel last pushed to this daemon.
+// Translate daemon settings labels before the panel renders the form.
 export const localeMessages = {
   de_de: deDE,
   en_us: enUS,

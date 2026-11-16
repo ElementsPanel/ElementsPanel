@@ -45,7 +45,7 @@ export class UploadFiles {
       onStart: new Set(),
       onEnd: new Set()
     };
-    this.init(tempId, url, password, options); // async
+    this.init(tempId, url, password, options);
   }
 
   async init(tempId: string, url: string, password: string, options: UploadOptions) {
@@ -242,7 +242,7 @@ class UploadTask {
     this.onProgress(0);
 
     if (!isStopping && this.retries < 3) {
-      this.start(); // async
+      this.start();
     } else {
       uploadService.update();
       console.error(
@@ -385,7 +385,7 @@ class UploadService {
         tasks++;
         if (uploadTask.status != "pending") continue;
         uploadTask.retries = 0;
-        uploadTask.start(); // async
+        uploadTask.start();
       }
       if (reachTaskEnd && currentFile.prepared && tasks == 0) {
         const currentFile = this.files.get(this.current)!;

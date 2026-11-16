@@ -18,7 +18,6 @@ const props = defineProps<Props>();
 
 const { isVisible, openDialog, cancel, submit } = useDialog<ComputedNodeInfo>(props);
 
-// 获取可用节点
 const { response, refresh: refreshOverviewInfo, refreshLoading } = useRemoteNode({ poll: false });
 
 const availableNodes = computed(() => response.value?.remote?.filter((node) => node.available) || []);
@@ -34,7 +33,6 @@ const refreshNodes = async () => {
   }
 };
 
-// check node is supported target platforms
 const isNodeSupported = (node: ComputedNodeInfo): boolean => {
   if (!props.targetPlatforms || props.targetPlatforms.length === 0) {
     return true;
@@ -46,7 +44,6 @@ const isNodeSupported = (node: ComputedNodeInfo): boolean => {
   return node.dockerPlatforms?.some((platform) => props.targetPlatforms?.includes(platform));
 };
 
-// sorted nodes list: supported nodes first, unsupported nodes last
 const sortedNodes = computed(() => {
   const nodes = [...availableNodes.value];
   return nodes.sort((a, b) => {

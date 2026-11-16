@@ -52,7 +52,7 @@ export function createInstanceInstallTaskClass(
       eta: 0 // estimated time remaining in seconds
     };
 
-    private lastProgressOutput = 0; // Throttle progress output
+    private lastProgressOutput = 0;
     private isInitInstance = false;
     protected cancelled = false;
     private finished = false;
@@ -101,7 +101,6 @@ export function createInstanceInstallTaskClass(
       }
       this.filePath = path.normalize(path.join(this.instance.absoluteCwdPath(), downloadFileName));
 
-      // Initialize download progress
       this.downloadProgress = {
         percentage: 0,
         downloadedBytes: 0,
@@ -126,7 +125,6 @@ export function createInstanceInstallTaskClass(
         return;
       }
 
-      // Get total file size
       const contentLength = response.headers["content-length"];
       const totalBytes =
         typeof contentLength === "string" || typeof contentLength === "number"
@@ -140,19 +138,16 @@ export function createInstanceInstallTaskClass(
       let lastDownloadedBytes = 0;
       const hash = this.downloadOptions.sha256 ? createHash("sha256") : undefined;
 
-      // listen download progress
       response.data.on("data", (chunk: Buffer) => {
         hash?.update(chunk);
         this.downloadProgress.downloadedBytes += chunk.length;
 
-        // Calculate download speed (update every second)
         const currentTime = Date.now();
         if (currentTime - lastProgressUpdate >= 1000) {
           const timeDiff = (currentTime - lastProgressUpdate) / 1000;
           const bytesDiff = this.downloadProgress.downloadedBytes - lastDownloadedBytes;
           this.downloadProgress.speed = bytesDiff / timeDiff;
 
-          // Calculate remaining time
           if (this.downloadProgress.speed > 0 && this.downloadProgress.totalBytes > 0) {
             const remainingBytes =
               this.downloadProgress.totalBytes - this.downloadProgress.downloadedBytes;
@@ -163,7 +158,6 @@ export function createInstanceInstallTaskClass(
           lastDownloadedBytes = this.downloadProgress.downloadedBytes;
         }
 
-        // Calculate download percentage
         if (this.downloadProgress.totalBytes > 0) {
           this.downloadProgress.percentage = Math.round(
             (this.downloadProgress.downloadedBytes / this.downloadProgress.totalBytes) * 100
@@ -183,7 +177,6 @@ export function createInstanceInstallTaskClass(
         }
       });
 
-      // await download
       await new Promise<boolean>((resolve, reject) => {
         // Open the file only once the response is available so pipeline owns
         // its error events, including disk/permission errors during open.

@@ -34,28 +34,22 @@ export function reportErrorMsg(error: any = {}) {
 export const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[\x00-\x7F]{9,36}$/;
 
 export function isLocalNetworkIP(ip: string): boolean {
-  // Return false if empty string or invalid format
   if (!ip || typeof ip !== "string") {
     return false;
   }
 
-  // Trim leading and trailing whitespace
   ip = ip.trim();
 
-  // IPv4 address format check
   const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
   if (ipv4Regex.test(ip)) {
     const parts = ip.split(".").map(Number);
 
-    // Check if valid IPv4 address (each part should be in 0-255 range)
     if (parts.some((part) => part < 0 || part > 255)) {
       return false;
     }
 
     const [first, second, third, fourth] = parts;
 
-    // Private network address ranges
-    // 10.0.0.0/8 (Class A)
     if (first === 10) {
       return true;
     }
@@ -97,9 +91,7 @@ export function isLocalNetworkIP(ip: string): boolean {
     }
   }
 
-  // IPv6 address check
   if (ip.includes(":")) {
-    // Local loopback address
     if (ip === "::1") {
       return true;
     }
@@ -135,7 +127,6 @@ export function isLocalNetworkIP(ip: string): boolean {
       return true;
     }
 
-    // Unspecified address
     if (ip === "::" || ip === "0:0:0:0:0:0:0:0") {
       return true;
     }

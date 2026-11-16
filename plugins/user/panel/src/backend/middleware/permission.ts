@@ -63,20 +63,17 @@ function getRequestToken(ctx: Koa.ParameterizedContext): string | undefined {
   return typeof ctx.query.token === "string" ? ctx.query.token : undefined;
 }
 
-// Basic user permission middleware
 export default function permission(parameter: GuardedRoute): Koa.Middleware {
   return async (ctx: Koa.ParameterizedContext, next: Koa.Next) => {
     if (
       (parameter.speedLimit == null || parameter.speedLimit === true) &&
       Number(parameter.level) < 10
     ) {
-      // Request speed check
       if (!requestSpeedLimit(ctx)) {
         return tooFast(ctx);
       }
     }
 
-    // If it is an API request, perform API-level permission judgment
     const key = ctx.request?.header["x-request-api-key"] || ctx.query.apikey;
     if (key) {
       const apiKey = getApiKey(ctx);
@@ -91,7 +88,6 @@ export default function permission(parameter: GuardedRoute): Koa.Middleware {
       }
     }
 
-    // If the route requires Token verification, it will be verified, the default is automatic verification
     if (parameter.token !== false) {
       if (!isAjax(ctx)) return ajaxError(ctx);
       const requestToken = getRequestToken(ctx);
@@ -101,29 +97,23 @@ export default function permission(parameter: GuardedRoute): Koa.Middleware {
       }
     }
 
-    // If the permission attribute is a number, the permission determination is automatically executed
     if (!isNaN(parseInt(String(parameter.level)))) {
-      // The most basic authentication decision
       if (ctx.session?.["login"] === true && ctx.session["uuid"] && ctx.session["userName"]) {
         const user = userSystem.getInstance(ctx.session["uuid"]);
 
-        // ban check
         if (user && user.permission < 0) {
           logout(ctx);
           return verificationFailed(ctx);
         }
 
-        // Judgment of permissions for ordinary users and administrative users
         if (user && user.permission >= Number(parameter.level)) {
           return await next();
         }
       }
-      // END: to verificationFailed()
     } else {
       return await next();
     }
 
-    // record the number of unauthorized access
     const GlobalVariable = globalVariable();
     const key2 = ILLEGAL_ACCESS_KEY;
     GlobalVariable.set(key2, GlobalVariable.get(key2, 0) + 1);

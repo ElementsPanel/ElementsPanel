@@ -2,8 +2,6 @@ import type { PluginChangeResult, PluginState } from "../../../../core/common/sr
 export type { PluginChangeResult };
 import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDefineApi";
 
-// Every HTTP call the plugin manager page makes. The container owns the
-// mechanism; this plugin's backend only exposes it.
 
 /** One installed plugin, as the panel reports it. */
 export interface PluginRecord {
@@ -28,9 +26,7 @@ export interface PluginRecord {
   removable: boolean;
 }
 
-// A plugin describes its configuration on its backend rather than shipping a
-// component for it, so the page renders every form — panel and node alike — from
-// the same description.
+// Panel and daemon forms share the same backend-declared schema.
 
 /** What a declared setting renders as. `link` reads and writes nothing. */
 export type SettingFieldType =
@@ -151,8 +147,7 @@ export const updatePluginGroupList = useDefineApi<
   method: "PUT"
 });
 
-// The node half of the page. These calls exist only while `plugins/node` is
-// installed, because they go through the panel's daemon connections.
+// Node requests require the node plugin's remote connection service.
 
 /** One connected node, as the page lists it for selection. */
 export interface NodeSummary {

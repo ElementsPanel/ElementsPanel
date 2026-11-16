@@ -11,8 +11,7 @@ export function apply(ctx: DaemonPluginContext) {
   const history = new SystemUsageHistory(ctx);
   ctx.overview.provide(() => ({ cpuMemChart: history.getArray() }));
 
-  // The host report is monitoring output, not logger infrastructure. Keeping
-  // its timer in this plugin means disabling monitor also stops the report.
+  // Scope host-report timers to this plugin so disabling monitoring stops reporting.
   const systemLogger = new Logger("sysinfo");
   ctx.setInterval(() => {
     const info = systemInfo();

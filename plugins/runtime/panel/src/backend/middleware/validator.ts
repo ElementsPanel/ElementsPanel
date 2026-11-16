@@ -1,6 +1,5 @@
 import Koa from "koa";
 
-// Type check
 function check(target: any, parameter: any) {
   if (target && typeof target === "object" && !Array.isArray(target)) {
     for (const key of Object.keys(parameter)) {
@@ -73,7 +72,6 @@ interface IParam {
   body?: any;
 }
 
-// Entry function
 export default function (parameter: IParam) {
   return async (ctx: Koa.ParameterizedContext, next: Koa.Next) => {
     try {

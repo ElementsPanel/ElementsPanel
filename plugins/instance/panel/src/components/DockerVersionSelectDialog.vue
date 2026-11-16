@@ -80,6 +80,5 @@ defineExpose({
 }
 
 .docker-card {
-  // border-color: var(--color-primary, #1677ff);
 }
 </style>

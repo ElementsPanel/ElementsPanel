@@ -198,7 +198,6 @@ export function useModSearch(
     const fallbackFile = version.files.find((f: any) => f.url !== file.url);
     const fallbackUrl = file.fallbackUrl || fallbackFile?.url;
 
-    // 1. Automatic detection logic
     let detectedType = version.project_type || selectedMod.value?.project_type || "mod";
 
     const pluginLoaders = [
@@ -271,7 +270,7 @@ export function useModSearch(
           });
         });
       } catch (e) {
-        return; // User cancelled
+        return;
       }
     } else if (hasPlugins && !hasMods) {
       finalType = "plugin";
@@ -341,8 +340,6 @@ export function useModSearch(
       }
     };
 
-    // Note: checkAndConfirm logic is handled in ModManager.vue
-    // We pass immediateFn back or handle it via a callback
     return { type: "download", name: file.filename, data: downloadData, immediateFn };
   };
 

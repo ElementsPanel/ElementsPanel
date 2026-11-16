@@ -3,12 +3,8 @@ import type Koa from "koa";
 import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 
 /**
- * The panel's response protocol: every API answer leaves as
- * `{ status, data, time }`, and a thrown `Error` becomes that envelope too.
- *
- * It wraps everything downstream, so it is part of the base stack rather than a
- * `ctx.koa.use()` registration — a plugin middleware added before it would
- * otherwise escape the envelope.
+ * Wrap downstream API responses and errors in { status, data, time }.
+ * Install in the base stack so plugin middleware errors use the same envelope.
  */
 export function protocol(ctx: PanelPluginContext) {
   return async function protocolMiddleware(
@@ -19,8 +15,6 @@ export function protocol(ctx: PanelPluginContext) {
     if (requestCtx.query?.remote_uuid) requestCtx.query.daemonId = requestCtx.query.remote_uuid;
     if (requestCtx.query?.daemon_id) requestCtx.query.daemonId = requestCtx.query.daemon_id;
 
-    // Pass the next middleware, any errors and return data will be processed
-    // according to the response protocol
     try {
       await next();
     } catch (error: any) {
@@ -49,7 +43,6 @@ export function protocol(ctx: PanelPluginContext) {
       return;
     }
 
-    // Serialize and display when sending Error class
     if (requestCtx.body instanceof Error) {
       const error = requestCtx.body as Error & { status?: number; statusCode?: number };
       const status = error.status ?? error.statusCode ?? requestCtx.status;
@@ -63,7 +56,6 @@ export function protocol(ctx: PanelPluginContext) {
       return;
     }
 
-    // release all data streams
     if (requestCtx.body instanceof Stream || Buffer.isBuffer(requestCtx.body)) {
       return;
     }
@@ -72,7 +64,6 @@ export function protocol(ctx: PanelPluginContext) {
         requestCtx.status === 204 || requestCtx.status === 205) return;
     requestCtx.type = "application/json";
 
-    // 404 error code
     if (requestCtx.status == 404) {
       requestCtx.status = 404;
       requestCtx.body = JSON.stringify({
@@ -83,7 +74,6 @@ export function protocol(ctx: PanelPluginContext) {
       return;
     }
 
-    // When the response text is a string, use normal formatting
     if (typeof requestCtx.body == "string") {
       const status = requestCtx.status;
       const data = requestCtx.body;
@@ -95,7 +85,6 @@ export function protocol(ctx: PanelPluginContext) {
       return;
     }
 
-    // When the return result is empty, display processing failed
     if (requestCtx.body === null || requestCtx.body === undefined) {
       requestCtx.status = 500;
       requestCtx.body = JSON.stringify({
@@ -106,7 +95,6 @@ export function protocol(ctx: PanelPluginContext) {
       return;
     }
 
-    // normal data
     if (requestCtx.status == 200) {
       requestCtx.body = JSON.stringify({
         status: requestCtx.status,

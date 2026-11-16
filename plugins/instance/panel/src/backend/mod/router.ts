@@ -14,21 +14,18 @@ export function registerModManagerRoutes(
   const remoteRequest = (daemonId: string) =>
     new ctx.remote.Request(ctx.remote.services.getInstance(daemonId));
 
-  // Permission check middleware
   router.use(async (requestCtx, next) => {
     // Authorize the same parameters that the route forwards to the daemon.
     const parameters = requestCtx.method === "GET" ? requestCtx.query : requestCtx.request.body;
     const instanceUuid = parameters?.uuid;
     const daemonId = parameters?.daemonId;
 
-    // Check global file manager setting
     if (!ctx.identity.accessPolicy.canFileManager && !ctx.identity.of(requestCtx).elevated) {
       requestCtx.status = 403;
       requestCtx.body = new Error($t("TXT_CODE_router.file.off"));
       return;
     }
 
-    // Check instance access
     if (instanceUuid && daemonId) {
       if (ctx.identity.canAccessInstance(requestCtx, String(daemonId), String(instanceUuid))) {
         await next();
@@ -178,14 +175,12 @@ export function registerModManagerRoutes(
         // so the current setting decides which of the two URLs is tried first.
         const download = preferDownload(url, fallbackUrl, modManagerService.sourcePreference);
 
-        // Validate URL to prevent SSRF attacks
         if (!checkSafeUrl(download.url)) {
           requestCtx.status = 400;
           requestCtx.body = new Error("Invalid or unsafe URL");
           return;
         }
 
-        // Validate fallbackUrl if provided
         if (download.fallbackUrl && !checkSafeUrl(download.fallbackUrl)) {
           requestCtx.status = 400;
           requestCtx.body = new Error("Invalid or unsafe fallback URL");

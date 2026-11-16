@@ -9,7 +9,6 @@ dayjs.extend(duration);
 
 const { getCurrentLanguage } = useAppConfigStore();
 
-// init language with lib
 if (getCurrentLanguage().toLowerCase() === "zh_cn") {
   dayjs.locale("zh-cn");
 } else {

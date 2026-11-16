@@ -46,7 +46,6 @@ defineProps<{
   }
 
   &:hover {
-    // background-color: var(--color-gray-5);
     background-color: rgba(168, 168, 168, 0.208);
   }
 }

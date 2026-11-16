@@ -79,7 +79,6 @@ const visiblePlugins = computed(() => {
   );
 });
 
-// Load the filtered catalogue's declared icons for the release shown on each card.
 watch(
   visiblePlugins,
   (list) => {
@@ -380,8 +379,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style lang="scss" scoped>
-// Same shell as the application market page: identical container width, gutters
-// and mobile breakpoint, so the two markets line up.
 .plugin-market {
   width: 100%;
   min-height: 100%;
@@ -440,9 +437,7 @@ onBeforeUnmount(() => {
   justify-content: center;
 }
 
-// A card is a column: the description takes the space that is left, so the
-// version chips stay on the last line of every card
-// instead of following the text up and down.
+// Let descriptions fill remaining space so version chips align at the bottom of each card.
 .plugin-market-card {
   display: flex;
   flex-direction: column;
@@ -453,7 +448,6 @@ onBeforeUnmount(() => {
   flex: 1 0 auto;
 }
 
-// 图标与标题排在一行：图标是插件在市场里的门面，标题紧跟着它。
 .plugin-market-card-head {
   display: flex;
   align-items: center;

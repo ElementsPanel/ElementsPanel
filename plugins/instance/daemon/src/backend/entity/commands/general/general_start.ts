@@ -8,7 +8,6 @@ import { commandStringToArray } from "../base/command_parser";
 import { ChildProcessAdapter, spawnInstanceProcess, waitForSpawn } from "../base/process_adapter";
 import AbsStartCommand from "../start";
 
-// Error exception at startup
 class StartupError extends Error {
   constructor(msg: string) {
     super(msg);
@@ -28,7 +27,6 @@ export default class GeneralStartCommand extends AbsStartCommand {
       throw new StartupError($t("TXT_CODE_general_start.instanceConfigErr"));
     if (!fs.existsSync(instance.absoluteCwdPath())) fs.mkdirpSync(instance.absoluteCwdPath());
 
-    // command parsing
     const tmpStartCmd = await instance.parseTextParams(instance.config.startCommand);
     const commandList = commandStringToArray(tmpStartCmd);
     const commandExeFile = commandList[0];
@@ -51,7 +49,6 @@ export default class GeneralStartCommand extends AbsStartCommand {
       instance.println("INFO", $t("TXT_CODE_ba09da46", { name: runAsConfig.runAsName }));
     }
 
-    // create child process
     const subProcess = spawnInstanceProcess(instance, spawn, commandExeFile, commandParameters, {
       ...runAsConfig,
       cwd: instance.absoluteCwdPath(),

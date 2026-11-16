@@ -7,9 +7,7 @@ interface IMission {
   isDeleted?: boolean;
 }
 
-// Task passport manager
 class MissionPassport {
-  // temporary task passport list
   public readonly missions = new Map<string, IMission>();
   private cleanupTimer?: NodeJS.Timeout;
 
@@ -30,7 +28,6 @@ class MissionPassport {
     this.missions.clear();
   }
 
-  // register task passport
   public registerMission(password: string, mission: IMission) {
     this.startCleanup();
     if (this.missions.has(password))
@@ -38,7 +35,6 @@ class MissionPassport {
     this.missions.set(password, mission);
   }
 
-  // Get the task based on the passport and task name
   public getMission(password: string, missionName: string) {
     const m = this.missions.get(password);
     if (!m) return null;

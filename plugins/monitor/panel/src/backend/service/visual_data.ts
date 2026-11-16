@@ -15,14 +15,7 @@ export interface RequestSample {
   runningInstance: number;
 }
 
-/**
- * The two rolling histories the monitoring page charts: the panel host's CPU and
- * memory usage, and how many API requests arrived per sampling window alongside
- * the instance counts at that moment.
- *
- * Both used to be a panel core singleton. They exist only to be drawn, so they
- * belong to this plugin — a panel without it collects nothing.
- */
+/** Keep rolling histories of host usage, API request rates and instance counts for monitoring charts. */
 export class VisualDataHistory {
   private readonly systemSamples: SystemSample[] = new Array(HISTORY_SIZE).fill({ cpu: 0, mem: 0 });
   private readonly requestSamples: RequestSample[] = new Array(HISTORY_SIZE).fill({
@@ -34,8 +27,7 @@ export class VisualDataHistory {
   private requestCount = 0;
 
   constructor(private readonly ctx: PanelPluginContext) {
-    // cordis owns the timers: they are effects of this plugin’s scope, so they
-    // stop when the plugin unloads and there is nothing to tear down by hand.
+    // Cordis cancels these scoped timers when the plugin unloads.
     ctx.setInterval(() => this.sampleSystem(), SAMPLE_INTERVAL_MS);
     ctx.setInterval(() => void this.sampleRequests(), SAMPLE_INTERVAL_MS);
   }

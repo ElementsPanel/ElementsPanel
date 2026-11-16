@@ -280,7 +280,6 @@ const handleMenuItemClick = (path: string) => {
   transition: none;
 }
 
-// ---- Menu Panel ----
 
 .fab-menu-panel {
   position: fixed;
@@ -347,7 +346,6 @@ const handleMenuItemClick = (path: string) => {
   transform: scale(0.88);
 }
 
-// ---- Floating Ball ----
 
 .fab-ball {
   width: 56px;
@@ -404,7 +402,6 @@ const handleMenuItemClick = (path: string) => {
   color: var(--color-gray-10);
 }
 
-// ---- Transitions ----
 
 .fab-backdrop-enter-active,
 .fab-backdrop-leave-active {

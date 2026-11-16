@@ -37,9 +37,7 @@ const PictureOutlined = "mdi-image-outline";
 const TeamOutlined = "mdi-account-group-outline";
 const UserOutlined = "mdi-account-outline";
 
-// Desktop surfaces render icons through Vuetify's MDI set. Feature plugins
-// still expose legacy component icons for the normal panel, so map known
-// desktop app/action ids at this boundary.
+// Map legacy component icons to MDI glyphs at the desktop shell boundary.
 const DESKTOP_ICON_MAP: Record<string, string> = {
     overview: "mdi-view-dashboard-outline",
     config: "mdi-cog-outline",
@@ -58,17 +56,14 @@ const getDesktopIcon = (id: string, icon?: Component | string): string | Compone
 const router = useRouter();
 const { state: appState, isAdmin, isLogged, authEnabled } = useAppStateStore();
 
-// Login, account and user-management windows are owned by the "user" plugin.
-// Without it the panel has no authentication, so they simply do not exist.
+// Only offer account windows when the user plugin is available.
 const user = computed(() => usePluginService<FrontendUserService>("user"));
 const desktopLoginWindow = computed(() => user.value?.desktopLoginWindow);
 const desktopUsersWindow = computed(() => user.value?.desktopUsers);
 const desktopUserInfoWindow = computed(() => user.value?.desktopUserInfo);
 const desktopStartMenuAvatar = computed(() => user.value?.desktopStartMenuAvatar);
 
-// The file manager, its editor and the image viewer are owned by the
-// "file" plugin. Without it those windows have nothing to render, and the
-// menu entries that open them are hidden the same way the account ones are.
+// Only offer file windows when the file plugin is available.
 const fileManager = computed(() => usePluginService<FrontendFileManagerService>("file"));
 const desktopFileEditorWindow = computed(() => fileManager.value?.DesktopFileEditor);
 const desktopImageViewerWindow = computed(() => fileManager.value?.DesktopImageViewer);
@@ -103,7 +98,6 @@ onMounted(async () => {
             backgroundImageUrl.value = appearance.backgroundImage;
         }
     } catch (e) {
-        // Silently ignore
     }
 });
 
@@ -450,7 +444,6 @@ const saveDesktopLayout = () => {
                 }
             });
         } catch (e) {
-            // Silently ignore
         }
     }, 500);
 };
@@ -626,11 +619,9 @@ const loadDesktopLayout = async () => {
         desktopShortcutIds.clear();
         shortcutsLoaded.value = true;
         layoutLoaded = true;
-        // Silently ignore
     }
 };
 
-// Load layout on mount
 onMounted(async () => {
     if (isLogged.value) {
         await loadDesktopLayout();
@@ -1093,13 +1084,11 @@ const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof 
                         :y="iconPositions.get(app.id)?.y ?? getDefaultPositionForApp(app.id).y" @select="selectIcon"
                         @open="openWindow" @dragstart="handleIconDragStart" @contextmenu="onIconContextMenu" />
 
-                    <!-- Drop indicator -->
                     <div v-if="isDragging && dropValid" class="drop-indicator"
                         :style="{ left: dropX + 'px', top: dropY + 'px' }">
                         <div class="drop-indicator__highlight"></div>
                     </div>
 
-                    <!-- Ghost -->
                     <div v-if="isDragging && droppingIconId" class="drag-ghost"
                         :style="{ left: ghostX + 'px', top: ghostY + 'px' }">
                         <template v-for="app in desktopApps" :key="app.id">
@@ -1200,7 +1189,6 @@ const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof 
     overflow: hidden;
 }
 
-/* Drag Ghost */
 .drag-ghost {
     position: absolute;
     z-index: 9999;
@@ -1246,7 +1234,6 @@ const isMdiIcon = (icon: Component | string): icon is `mdi-${string}` => typeof 
     white-space: nowrap;
 }
 
-/* Drop Indicator */
 .drop-indicator {
     position: absolute;
     z-index: 9998;

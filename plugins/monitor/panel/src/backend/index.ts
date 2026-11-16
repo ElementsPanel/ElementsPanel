@@ -56,7 +56,6 @@ export function apply(ctx: PanelPluginContext) {
 
   ctx.overview.provide(() => ({ chart: history.toChart() }));
 
-  // The panel-wide operation log the monitoring page lists.
   const router = ctx.koa.router("/api/monitor");
   router.get(
     "/operation_logs",
