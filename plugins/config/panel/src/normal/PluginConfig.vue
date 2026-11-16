@@ -94,7 +94,6 @@ const selectedNodeLabel = computed(
 
 .plugin-config-toolbar {
   flex: 0 0 auto;
-  min-height: 56px;
 }
 
 .plugin-config-toolbar :deep(.page-toolbar-actions) {

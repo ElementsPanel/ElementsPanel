@@ -110,7 +110,7 @@ onMounted(refreshTableData);
 </template>
 
 <style scoped lang="scss">
-.user-access-page { width: 100%; max-width: var(--app-max-width); margin: 0 auto; padding: 16px 24px 32px; box-sizing: border-box; }
+.user-access-page { width: 100%; max-width: var(--app-max-width); margin: 0 auto; padding: 20px 24px 32px; box-sizing: border-box; }
 .user-access-card { overflow: hidden; }
-@media (max-width: 992px) { .user-access-page { padding: 12px 12px 28px; } }
+@media (max-width: 992px) { .user-access-page { padding: 16px 12px 28px; } }
 </style>

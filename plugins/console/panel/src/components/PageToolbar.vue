@@ -30,6 +30,8 @@ withDefaults(
 <style lang="scss" scoped>
 .page-toolbar {
   width: 100%;
+  min-height: 56px;
+  align-content: flex-start;
   margin-bottom: 20px;
 }
 
@@ -39,6 +41,8 @@ withDefaults(
 
 .page-toolbar-title {
   display: flex;
+  min-height: 56px;
+  align-self: flex-start;
   align-items: center;
   gap: 10px;
   color: var(--text-color);
@@ -89,6 +93,14 @@ withDefaults(
   .page-toolbar-search,
   .page-toolbar-actions {
     justify-content: flex-start;
+  }
+}
+
+// Below Vuetify's md breakpoint, the title occupies its own row.
+@media (max-width: 839px) {
+  .page-toolbar,
+  .page-toolbar-title {
+    min-height: 0;
   }
 }
 </style>
