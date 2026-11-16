@@ -3,6 +3,7 @@ import type { PanelFrontendPluginContext } from "@elements-panel/sdk";
 import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
 import ConfigPage from "./ConfigPage.vue";
 import { localeMessages } from "./i18n";
+import PluginConfig from "./normal/PluginConfig.vue";
 
 // The plugin manager page. It renders each plugin's configuration from the
 // description that plugin's backend declared, so plugin-specific settings never
@@ -19,7 +20,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.routes.add({
     path: "/plugins/config",
     name: t("TXT_CODE_PLUGIN_CONFIG"),
-    component: ConfigPage,
+    component: PluginConfig,
     meta: {
       permission: ROLE_ADMIN,
       mainMenu: true,

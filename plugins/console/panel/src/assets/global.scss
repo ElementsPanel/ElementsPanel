@@ -383,8 +383,7 @@ body::-webkit-scrollbar-track {
   scrollbar-gutter: auto;
 
   .breadcrumbs,
-  .main-layout-container,
-  .plugin-config-page {
+  .main-layout-container {
     margin: 0 auto;
     width: calc(100% - 48px) !important;
     max-width: var(--app-max-width) !important;

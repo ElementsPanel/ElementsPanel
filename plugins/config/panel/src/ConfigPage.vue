@@ -82,7 +82,13 @@ interface PluginActionCandidate {
   nodeCheckError: string;
 }
 
-const props = defineProps<{ scope?: Scope; daemonId?: string; pluginId?: string }>();
+const props = defineProps<{
+  scope?: Scope;
+  daemonId?: string;
+  pluginId?: string;
+  hideScopeSwitch?: boolean;
+  hideNodeSelect?: boolean;
+}>();
 const { isPhone } = useScreen();
 const sidebarOpen = ref(false);
 const navigationProps = computed(() =>
@@ -143,6 +149,7 @@ const pluginLabel = (id?: string) => {
 const nodeItems = computed(() =>
   nodes.value.map((node) => ({ title: nodeLabel(node), value: node.uuid }))
 );
+defineExpose({ scope, selectedNodeId, nodeItems, loading });
 
 const currentList = computed<Array<PluginRecord | NodePluginRecord>>(() =>
   scope.value === "panel" ? plugins.value : nodePlugins.value
@@ -1030,7 +1037,12 @@ const confirmAction = async () => {
             @click="sidebarOpen = false"
           />
         </div>
-        <VBtnToggle v-model="scope" class="plugin-config-scope" mandatory>
+        <VBtnToggle
+          v-if="!props.hideScopeSwitch"
+          v-model="scope"
+          class="plugin-config-scope"
+          mandatory
+        >
           <VBtn value="panel" size="small" variant="text">{{
             t("TXT_CODE_PLUGIN_SCOPE_PANEL")
           }}</VBtn>
@@ -1040,7 +1052,7 @@ const confirmAction = async () => {
         </VBtnToggle>
 
         <VSelect
-          v-if="scope === 'node'"
+          v-if="scope === 'node' && !props.hideNodeSelect"
           v-model="selectedNodeId"
           class="plugin-config-node-select"
           :items="nodeItems"
