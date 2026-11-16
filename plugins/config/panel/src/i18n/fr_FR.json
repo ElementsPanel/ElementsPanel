@@ -6,7 +6,7 @@
   "TXT_CODE_PLUGIN_CONFIG": "Configuration des plugins",
   "TXT_CODE_PLUGIN_CANCEL": "Annuler",
   "TXT_CODE_PLUGIN_DELETE": "Supprimer",
-  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "Désinstalle le plugin et conserve sa configuration.",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "Le plugin sera désinstallé et les fichiers de configuration seront conservés.",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "Supprimer {name} ?",
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Les plugins essentiels et ceux du code source ne peuvent pas être désinstallés ici.",
   "TXT_CODE_PLUGIN_DELETED": "Plugin supprimé",

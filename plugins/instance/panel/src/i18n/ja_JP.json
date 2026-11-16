@@ -125,7 +125,7 @@
   "TXT_CODE_c564f5bf": "全ローダー",
   "TXT_CODE_cc4db8f0": "全タイプ",
   "TXT_CODE_MOD_SETTING_requestTimeoutMs": "Mod リクエストのタイムアウト（ミリ秒）",
-  "TXT_CODE_MOD_SETTING_requestTimeoutMs_DESC": "Mod メタデータの各リクエストの制限時間。以降のリクエストに適用されます。",
+  "TXT_CODE_MOD_SETTING_requestTimeoutMs_DESC": "Mod メタデータの各リクエストの制限時間。",
   "TXT_CODE_MOD_SETTING_requestRetries": "Mod リクエストの再試行回数",
   "TXT_CODE_MOD_SETTING_requestRetries_DESC": "一時的なネットワーク障害後の再試行回数。0 は再試行なしです。",
   "TXT_CODE_MOD_SAVE_LOCATION_TITLE": "保存先"

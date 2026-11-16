@@ -125,7 +125,7 @@
   "TXT_CODE_c564f5bf": "Tous les chargeurs",
   "TXT_CODE_cc4db8f0": "Tous les types",
   "TXT_CODE_MOD_SETTING_requestTimeoutMs": "Délai des requêtes Mod (ms)",
-  "TXT_CODE_MOD_SETTING_requestTimeoutMs_DESC": "Délai par requête de métadonnées Mod en millisecondes. S’applique aux requêtes suivantes.",
+  "TXT_CODE_MOD_SETTING_requestTimeoutMs_DESC": "Délai par requête de métadonnées Mod en millisecondes.",
   "TXT_CODE_MOD_SETTING_requestRetries": "Nouvelles tentatives des requêtes Mod",
   "TXT_CODE_MOD_SETTING_requestRetries_DESC": "Tentatives après des erreurs réseau temporaires. 0 désactive les nouvelles tentatives.",
   "TXT_CODE_MOD_SAVE_LOCATION_TITLE": "Emplacement de sauvegarde"

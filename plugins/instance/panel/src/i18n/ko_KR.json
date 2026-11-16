@@ -125,7 +125,7 @@
   "TXT_CODE_c564f5bf": "모든 로더",
   "TXT_CODE_cc4db8f0": "모든 유형",
   "TXT_CODE_MOD_SETTING_requestTimeoutMs": "Mod 요청 제한 시간(ms)",
-  "TXT_CODE_MOD_SETTING_requestTimeoutMs_DESC": "각 Mod 메타데이터 요청의 제한 시간(밀리초)입니다. 이후 요청에 적용됩니다.",
+  "TXT_CODE_MOD_SETTING_requestTimeoutMs_DESC": "각 Mod 메타데이터 요청의 제한 시간(밀리초)입니다.",
   "TXT_CODE_MOD_SETTING_requestRetries": "Mod 요청 재시도 횟수",
   "TXT_CODE_MOD_SETTING_requestRetries_DESC": "일시적인 네트워크 오류 후 재시도 횟수입니다. 0은 재시도하지 않습니다.",
   "TXT_CODE_MOD_SAVE_LOCATION_TITLE": "저장 위치"

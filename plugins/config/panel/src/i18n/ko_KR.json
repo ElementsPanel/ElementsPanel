@@ -6,7 +6,7 @@
   "TXT_CODE_PLUGIN_CONFIG": "플러그인 설정",
   "TXT_CODE_PLUGIN_CANCEL": "취소",
   "TXT_CODE_PLUGIN_DELETE": "삭제",
-  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "플러그인을 제거하고 설정은 유지합니다.",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "플러그인이 제거되며 설정 파일은 유지됩니다.",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "{name} 플러그인을 삭제할까요?",
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "핵심 플러그인과 개발용 소스 플러그인은 여기서 제거할 수 없습니다.",
   "TXT_CODE_PLUGIN_DELETED": "플러그인을 삭제했습니다",

@@ -6,7 +6,7 @@
   "TXT_CODE_PLUGIN_CONFIG": "Настройка плагинов",
   "TXT_CODE_PLUGIN_CANCEL": "Отмена",
   "TXT_CODE_PLUGIN_DELETE": "Удалить",
-  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "Удалить плагин, сохранив конфигурацию.",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "Плагин будет удалён. Файлы конфигурации будут сохранены.",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "Удалить {name}?",
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Основные плагины и плагины из исходного кода нельзя удалить здесь.",
   "TXT_CODE_PLUGIN_DELETED": "Плагин удалён",

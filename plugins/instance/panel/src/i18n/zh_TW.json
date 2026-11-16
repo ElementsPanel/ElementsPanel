@@ -125,7 +125,7 @@
   "TXT_CODE_c564f5bf": "所有載入器",
   "TXT_CODE_cc4db8f0": "所有類型",
   "TXT_CODE_MOD_SETTING_requestTimeoutMs": "Mod 請求逾時（毫秒）",
-  "TXT_CODE_MOD_SETTING_requestTimeoutMs_DESC": "每次 Mod 中繼資料請求的逾時時間，儲存後對後續請求生效。",
+  "TXT_CODE_MOD_SETTING_requestTimeoutMs_DESC": "每次 Mod 中繼資料請求的逾時時間。",
   "TXT_CODE_MOD_SETTING_requestRetries": "Mod 請求重試次數",
   "TXT_CODE_MOD_SETTING_requestRetries_DESC": "暫時網路故障後的重試次數，0 表示不重試。",
   "TXT_CODE_MOD_SAVE_LOCATION_TITLE": "儲存位置"

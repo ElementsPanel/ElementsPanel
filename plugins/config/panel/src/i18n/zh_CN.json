@@ -6,7 +6,7 @@
   "TXT_CODE_PLUGIN_CONFIG": "插件配置",
   "TXT_CODE_PLUGIN_CANCEL": "取消",
   "TXT_CODE_PLUGIN_DELETE": "删除插件",
-  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "卸载插件，保留配置。",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "插件将会被卸载，配置文件会保留。",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "确定删除 {name}？",
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "核心插件和开发环境的源码插件无法在此卸载。",
   "TXT_CODE_PLUGIN_DELETED": "插件已删除",

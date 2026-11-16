@@ -125,7 +125,7 @@
   "TXT_CODE_c564f5bf": "Todos os Loaders",
   "TXT_CODE_cc4db8f0": "Todos os Tipos",
   "TXT_CODE_MOD_SETTING_requestTimeoutMs": "Tempo limite de solicitações Mod (ms)",
-  "TXT_CODE_MOD_SETTING_requestTimeoutMs_DESC": "Tempo limite por solicitação de metadados Mod em milissegundos. Aplica-se às próximas solicitações.",
+  "TXT_CODE_MOD_SETTING_requestTimeoutMs_DESC": "Tempo limite por solicitação de metadados Mod em milissegundos.",
   "TXT_CODE_MOD_SETTING_requestRetries": "Tentativas adicionais de solicitações Mod",
   "TXT_CODE_MOD_SETTING_requestRetries_DESC": "Novas tentativas após falhas temporárias de rede. 0 desativa novas tentativas.",
   "TXT_CODE_MOD_SAVE_LOCATION_TITLE": "Local de salvamento"
