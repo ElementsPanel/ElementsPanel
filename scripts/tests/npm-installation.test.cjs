@@ -923,6 +923,78 @@ for (const side of ["panel", "daemon"]) {
   });
 }
 
+test("stalled panel cleanup restarts only the panel after the reply and allows slow plugin startup", async (t) => {
+  const f = runtimeFixture(t);
+  const trigger = path.join(f.root, "restart-panel");
+  const release = path.join(f.root, "reply-flushed");
+  const log = path.join(f.root, "events.jsonl");
+  write(path.join(f.packages.panel, "app.js"), `
+    const fs = require('node:fs');
+    const { createLoader, from } = require(${JSON.stringify(path.join(repository, "scripts/tests/helpers.cjs"))});
+    const load = createLoader();
+    const { requestProcessRestart } = load('core/common/src/process_restart.ts');
+    const { trackPluginDisposal } = load('core/common/src/plugin_lifecycle.ts');
+    const { Context } = from('panel')('cordis');
+    const ctx = new Context();
+    const settle = trackPluginDisposal(ctx);
+    const report = type => fs.appendFileSync(${JSON.stringify(log)}, JSON.stringify({
+      type, side: 'panel', pid: process.pid, session: process.env.EPANEL_SESSION_COOKIE
+    }) + '\\n');
+    // One unresponsive disposer among many must not block the next generation.
+    for (let index = 0; index < 50; index++) ctx.plugin(scope => {
+      scope.on('dispose', () => index === 0 ? new Promise(() => {}) : Promise.resolve());
+    });
+    ctx.on('process/restarting', () => report('cleanup'));
+    process.on('SIGTERM', () => { report('stop'); process.exit(0); });
+    report('start');
+    void ctx.start().then(() => setTimeout(() => {
+      report('ready'); process.send({ type: 'elementspanel:ready' });
+    }, process.env.EPANEL_RESTARTED === '1' ? 350 : 10));
+    ctx.setInterval(() => {
+      if (!fs.existsSync(${JSON.stringify(trigger)})) return;
+      fs.unlinkSync(${JSON.stringify(trigger)});
+      report('updating');
+      requestProcessRestart(ctx, settle, () => new Promise(resolve => {
+        const timer = setInterval(() => {
+          if (!fs.existsSync(${JSON.stringify(release)})) return;
+          fs.unlinkSync(${JSON.stringify(release)});
+          clearInterval(timer); resolve();
+        }, 10);
+      }));
+    }, 20);
+  `);
+  const driver = path.join(f.root, "restart-driver.cjs");
+  write(driver, `
+    const { startWorkers } = require(${JSON.stringify(path.join(repository, "scripts/runtime/cli.cjs"))});
+    startWorkers(${JSON.stringify({
+      project: f.project,
+      workers: ["daemon", "panel"].map(side => ({
+        side, packageRoot: f.packages[side], directory: path.join(f.project, side)
+      }))
+    })}, { startupTimeout: 2000, restartTimeout: 2000, restartShutdownTimeout: 150 })
+      .then(code => process.exitCode = code);
+  `);
+  const command = execute(f, driver);
+  const starts = () => f.events().filter(event => event.side === "panel" && event.type === "start");
+  await until(() => f.events().some(event => event.side === "panel" && event.type === "ready"));
+  for (let generation = 1; generation <= 2; generation++) {
+    write(trigger, "update");
+    await until(() => f.events().filter(event => event.type === "updating").length === generation);
+    await new Promise(resolve => setTimeout(resolve, 250));
+    assert.equal(starts().length, generation, "the restart deadline starts only after the reply gate");
+    assert.equal(f.events().filter(event => event.type === "cleanup").length, generation - 1);
+    write(release, "reply");
+    await until(() => f.events().filter(event => event.side === "panel" && event.type === "ready").length === generation + 1);
+    assert.notEqual(starts()[generation - 1].pid, starts()[generation].pid);
+    assert.equal(starts()[0].session, starts()[generation].session);
+  }
+  assert.equal(f.events().filter(event => event.side === "daemon" && event.type === "start").length, 1);
+  assert.equal(f.events().some(event => event.side === "daemon" && event.type === "stop"), false);
+  command.child.kill("SIGTERM");
+  const result = await command.closed;
+  assert.equal(result.code, 0, result.output);
+});
+
 test("daemon process restarts retain real instance PIDs, pipes, output and counters", async (t) => {
   const f = runtimeFixture(t);
   const log = path.join(f.root, "events.jsonl");

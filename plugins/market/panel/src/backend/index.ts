@@ -658,6 +658,9 @@ export async function apply(ctx: PanelPluginContext) {
       updates.reduce<string[]>((ids, update) => ids.concat(update.daemonIds), [])
     );
     const inventories = await nodeInventories(daemonIds, true);
+    const panelInventory = updates.some((update) => update.panel && !update.runtime)
+      ? ctx.plugins.inventory()
+      : [];
     const runtimeInfo = new Map<string, ReturnType<typeof daemonRuntimeInfo>>();
     const nodeInfo = (daemonId: string) => {
       if (!runtimeInfo.has(daemonId)) runtimeInfo.set(daemonId, daemonRuntimeInfo(daemonId, true));
@@ -713,7 +716,7 @@ export async function apply(ctx: PanelPluginContext) {
         };
         if (update.panel && detail.selectedVersion.sides.includes("panel")) {
           const target = updateTarget(
-            ctx.plugins.inventory(),
+            panelInventory,
             detail.id,
             detail.name,
             pkg.version,

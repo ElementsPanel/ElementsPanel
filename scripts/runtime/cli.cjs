@@ -175,6 +175,7 @@ async function startWorkers(plan, options = {}) {
   const startupTimeout = options.startupTimeout ?? 120_000;
   const shutdownTimeout = options.shutdownTimeout ?? 90_000;
   const restartTimeout = options.restartTimeout ?? 5 * 60 * 1000;
+  const restartShutdownTimeout = options.restartShutdownTimeout ?? 30_000;
   const children = new Set();
   const instanceHosts = new Map();
   const workerEnvironments = new Map();
@@ -263,16 +264,26 @@ async function startWorkers(plan, options = {}) {
     children.add(child);
     let rejectReady;
     let restarting = false;
+    let forcedRestart = false;
     let restartTimer;
     child.on("message", (message) => {
       host?.handle(child, message);
       if (stopping) return;
       if (message?.type === "elementspanel:prepare-restart") {
         host?.detach(child, true);
+        // The worker sends this only after npm and the HTTP reply have finished.
+        // A stalled panel disposer can be abandoned without stopping the daemon.
+        const cleanupTimeout = worker.side === "panel" ? restartShutdownTimeout : restartTimeout;
         restartTimer ??= setTimeout(() => {
+          if (worker.side === "panel" && !rejectReady) {
+            console.warn(`panel plugin cleanup timed out after ${cleanupTimeout / 1000} seconds; restarting the panel worker.`);
+            forcedRestart = restarting = true;
+            child.kill("SIGKILL");
+            return;
+          }
           console.error(`${worker.side} timed out while preparing to restart.`);
           stop(1);
-        }, restartTimeout);
+        }, cleanupTimeout);
       } else if (message?.type === "elementspanel:restart") {
         restarting = true;
       }
@@ -291,7 +302,7 @@ async function startWorkers(plan, options = {}) {
       const error = new Error(`${worker.side} exited before becoming ready (${signal || code}).`);
       if (starting && !stopping) console.error(error.message);
       rejectReady?.(error);
-      if (!stopping && restarting && !starting && code === 0) {
+      if (!stopping && restarting && !starting && (code === 0 || forcedRestart)) {
         console.log(`${workerPrefix(worker.side, process.stdout)}Restarting...`);
         void startWorker(worker, true).catch((error) => {
           console.error(error.message);

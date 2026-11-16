@@ -410,6 +410,7 @@ export function updatePanelNpmBatch(options: NpmUpdateBatchOptions): Promise<Npm
     const results: NpmUpdateBatchResult["results"] = [];
     let changed = false;
     const updates = [...options.updates].sort((a, b) => Number(!!a.runtime) - Number(!!b.runtime));
+    const inventory = new Map(getPanelPluginInventory().map((plugin) => [plugin.id, plugin]));
     for (const update of updates) {
       try {
         let version: string;
@@ -418,9 +419,7 @@ export function updatePanelNpmBatch(options: NpmUpdateBatchOptions): Promise<Npm
             throw new Error("Runtime updates require an npm installation managed by the launcher.");
           version = (await updateNpmRuntime({ side: "panel", version: update.version })).version;
         } else {
-          const previous = getPanelPluginInventory().find(
-            (plugin) => plugin.id === update.pluginId
-          );
+          const previous = inventory.get(update.pluginId!);
           if (!previous || previous.packageName !== update.name)
             throw new Error("The plugin is not installed as the requested npm package.");
           const record = await installNpmPlugin({
@@ -595,6 +594,7 @@ export function getPanelPluginInventory(): PanelPluginRecord[] {
     onWarning: (message, error) => logger.warn(message, error)
   }).map((plugin) => {
     const running = loaded.find((item) => item.manifest.id === plugin.manifest.id);
+    const state = pluginState(plugin, running);
     const has = (fields: string[]) =>
       fields.some((field) => typeof plugin.manifest[field] === "string");
     return {
@@ -606,8 +606,8 @@ export function getPanelPluginInventory(): PanelPluginRecord[] {
       enabled: plugin.manifest.enabled !== false,
       dual: plugin.manifest.dual === true,
       sides: { backend: has(ENTRY_FIELDS), frontend: has(FRONTEND_FIELDS) },
-      running: pluginState(plugin, running) === "active",
-      state: pluginState(plugin, running),
+      running: state === "active",
+      state,
       removable: !!plugin.packageRoot && !isEssentialNpmPlugin(plugin.manifest.id),
       error:
         running?.error?.message ||
