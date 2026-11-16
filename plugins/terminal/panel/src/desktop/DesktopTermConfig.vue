@@ -66,16 +66,16 @@ watch(instanceInfo, (val) => {
       <VRow v-if="options" :density="isPhone ? 'compact' : 'default'">
         <VCol cols="12" md="6">
           <div class="dterm-field dterm-field--switch">
-            <div><div class="dterm-field__title">{{ t("TXT_CODE_ef650d57") }}</div><div class="dterm-field__hint">{{ t("TXT_CODE_feeea328") }}<br />{{ t("TXT_CODE_d6e7f572") }}</div></div>
+            <div><div class="dterm-field__title">{{ t("TXT_CODE_ef650d57") }}</div><div class="dterm-field__hint">{{ t("TXT_CODE_feeea328") }}</div></div>
             <VSwitch v-model="options.config.terminalOption.pty" color="primary" hide-details />
           </div>
           <div class="dterm-field dterm-field--switch">
-            <div><div class="dterm-field__title">{{ t("TXT_CODE_e1a3b150") }}</div><div class="dterm-field__hint">{{ t("TXT_CODE_6a515e35") }}<br />{{ t("TXT_CODE_1295831e") }}</div></div>
+            <div><div class="dterm-field__title">{{ t("TXT_CODE_e1a3b150") }}</div><div class="dterm-field__hint">{{ t("TXT_CODE_6a515e35") }}</div></div>
             <VSwitch v-model="options.config.terminalOption.haveColor" color="primary" hide-details />
           </div>
           <div class="dterm-field">
             <div class="dterm-field__title">{{ t("TXT_CODE_b91a94f9") }}</div>
-            <div class="dterm-field__hint">{{ t("TXT_CODE_5b2daea0") }}<br />{{ t("TXT_CODE_b94f13ce") }}</div>
+            <div class="dterm-field__hint">{{ t("TXT_CODE_b94f13ce") }}</div>
             <VSelect v-model="options.config.crlf" :items="[{ title: t('TXT_CODE_365aabd4'), value: 1 }, { title: t('TXT_CODE_20cec54'), value: 2 }]" :placeholder="t('TXT_CODE_3bb646e4')" variant="solo" density="compact" hide-details>
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect>

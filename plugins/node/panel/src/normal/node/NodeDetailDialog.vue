@@ -118,7 +118,7 @@ defineExpose({ openDialog });
           <VTextField
             v-model="dialog.data.ip"
             :label="t('TXT_CODE_93f9b02a')"
-            :hint="`${t('TXT_CODE_be7a689a')} ${t('TXT_CODE_c82a51b0')}`"
+            :hint="t('TXT_CODE_be7a689a')"
             :rules="[requiredRule]"
             persistent-hint
             required

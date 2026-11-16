@@ -225,7 +225,7 @@ defineExpose({ open: openDialog, openDialog });
     ok-color="error"
     :ok-text="t('TXT_CODE_ecbd7449')"
     @ok="handleDeleteJava"
-    ><div>{{ t("TXT_CODE_35631d1d") }}</div></AppDialog
+    ><p>{{ deleteCandidate?.fullname }}</p><div>{{ t("TXT_CODE_35631d1d") }}</div></AppDialog
   >
 </template>
 

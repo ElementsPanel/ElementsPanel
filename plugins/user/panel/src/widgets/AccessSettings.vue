@@ -97,11 +97,14 @@ onMounted(refreshTableData);
         <template #item.remarks="{ item }">{{ item.hostIp }}<template v-if="item.remarks"> ({{ item.remarks }})</template></template>
         <template #item.endTime="{ item }">{{ Number(item.endTime) === 0 ? t("TXT_CODE_8dfd8b17") : !isNaN(Number(item.endTime)) ? dayjs(Number(item.endTime)).format("YYYY-MM-DD HH:mm:ss") : item.endTime }}</template>
         <template #item.status="{ item }">{{ INSTANCE_STATUS[item.status as keyof typeof INSTANCE_STATUS] || item.status }}</template>
-        <template #item.operation="{ item }"><VBtn color="error" variant="tonal" size="small" @click="deleteDialog = { open: true, item }">{{ t("TXT_CODE_ecbd7449") }}</VBtn></template>
+        <template #item.operation="{ item }"><VBtn color="error" variant="tonal" size="small" @click="deleteDialog = { open: true, item }">{{ t("TXT_CODE_USER_UNASSIGN_INSTANCE") }}</VBtn></template>
       </VDataTable>
     </VCard>
     <VDialog v-model="deleteDialog.open" class="app-dialog" max-width="460" scrollable>
-      <VCard :title="t('TXT_CODE_71155575')" rounded="xl"><VCardText>{{ t("TXT_CODE_71155575") }}</VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="deleteDialog.open = false">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="error" @click="handleDelete">{{ t("TXT_CODE_ecbd7449") }}</VBtn></VCardActions></VCard>
+      <VCard :title="t('TXT_CODE_USER_UNASSIGN_INSTANCE')" rounded="xl">
+        <VCardText>{{ t("TXT_CODE_USER_UNASSIGN_INSTANCE_DESC", { name: deleteDialog.item?.nickname || deleteDialog.item?.instanceUuid || "" }) }}</VCardText>
+        <VCardActions><VSpacer /><VBtn variant="text" @click="deleteDialog.open = false">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="error" @click="handleDelete">{{ t("TXT_CODE_USER_UNASSIGN_INSTANCE") }}</VBtn></VCardActions>
+      </VCard>
     </VDialog>
   </main>
 </template>

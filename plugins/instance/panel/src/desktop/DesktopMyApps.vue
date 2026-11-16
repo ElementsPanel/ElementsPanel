@@ -237,7 +237,7 @@ onUnmounted(() => {
                     prepend-inner-icon="mdi-magnify" />
 
                 <VBtn class="ma-btn ma-btn--icon" icon variant="text" :loading="loading"
-                    aria-label="Refresh" @click="fetchInstances()">
+                    :aria-label="t('TXT_CODE_b76d94e0')" @click="fetchInstances()">
                     <VIcon icon="mdi-refresh" />
                 </VBtn>
             </div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useHeaderMenus } from "@/hooks/useHeaderMenus";
 import { useElementSize, useLocalStorage, useTimeoutFn, useWindowSize } from "@vueuse/core";
 import { computed, ref, watch } from "vue";
@@ -226,7 +227,7 @@ const handleMenuItemClick = (path: string) => {
 
     <button
       type="button"
-      aria-label="Toggle navigation menu"
+      :aria-label="t('TXT_CODE_UI_MENU')"
       aria-controls="app-floating-navigation"
       :aria-expanded="isExpanded"
       class="fab-ball"

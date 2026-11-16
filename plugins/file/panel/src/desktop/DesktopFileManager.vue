@@ -897,7 +897,7 @@ onUnmounted(() => {
 
         <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="uploadConfirmDialog.show"
             :id="getDesktopDialogProps('upload-confirm', 400, 220).id" :height="220"
-            :title="t('TXT_CODE_52bc24ec')" :message="`${t('TXT_CODE_52bc24ec')} ${uploadConfirmDialog.name}?`"
+            :title="t('TXT_CODE_52bc24ec')" :message="uploadConfirmDialog.name" :ok-text="t('TXT_CODE_ae09d79d')"
             @cancel="handleUploadConfirmCancel" @confirm="handleUploadConfirmOk" />
 
         <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="overwriteDialog.show"

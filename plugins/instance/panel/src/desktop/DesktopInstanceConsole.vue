@@ -69,13 +69,15 @@ const activeDialog = ref<DialogPanel>("none");
 const errorDialog = ref({ show: false, lines: [] as string[] });
 const confirmDialog = ref(false);
 const pendingAction = ref<(() => Promise<void>) | null>(null);
+const pendingActionTitle = ref("");
 
-const requestAction = (item: { noConfirm?: boolean; click: () => unknown }) => {
+const requestAction = (item: { title: string; noConfirm?: boolean; click: () => unknown }) => {
     if (item.noConfirm) {
         void item.click();
         return;
     }
     pendingAction.value = async () => { await item.click(); };
+    pendingActionTitle.value = item.title;
     confirmDialog.value = true;
 };
 
@@ -474,8 +476,9 @@ onUnmounted(() => {
             </VCard>
         </VDialog>
 
-        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="confirmDialog" :title="t('TXT_CODE_276756b2')"
-            :message="t('TXT_CODE_276756b2')" @cancel="pendingAction = null" @confirm="confirmPendingAction" />
+        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="confirmDialog" :title="pendingActionTitle"
+            :message="instanceInfo?.config.nickname || instanceId" :ok-text="pendingActionTitle"
+            @cancel="pendingAction = null" @confirm="confirmPendingAction" />
     </div>
 </template>
 

@@ -490,7 +490,7 @@ onMounted(async () => {
         <input ref="fileInput" type="file" multiple style="display: none" accept=".jar,.zip" @change="onFileChange" />
 
         <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="saveLocationDialog.show" id="mod-save-location-dialog" :width="440" :height="220"
-            :title="t('TXT_CODE_MOD_SELECT_SAVE_DIR')" :message="t('TXT_CODE_MOD_SELECT_SAVE_DIR')"
+            :title="t('TXT_CODE_MOD_SAVE_LOCATION_TITLE')" :message="t('TXT_CODE_MOD_SELECT_SAVE_DIR')"
             :actions="[
                 { id: 'mod', text: t('TXT_CODE_MOD'), icon: 'mdi-folder-outline', highlighted: saveLocationDialog.detectedType === 'mod' },
                 { id: 'plugin', text: t('TXT_CODE_PLUGIN'), icon: 'mdi-folder-outline', highlighted: saveLocationDialog.detectedType === 'plugin' }

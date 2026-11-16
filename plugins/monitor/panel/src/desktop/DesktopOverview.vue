@@ -120,7 +120,7 @@ const memColor = computed(() => {
                 </div>
                 <div class="ov-stat-card__body">
                     <div class="ov-stat-card__value">{{ panelMem }}%</div>
-                    <div class="ov-stat-card__label">RAM</div>
+                    <div class="ov-stat-card__label">{{ t("TXT_CODE_593ee330") }}</div>
                 </div>
                 <div class="ov-stat-card__bar">
                     <div class="ov-stat-card__bar-fill" :style="{ width: panelMem + '%', background: memColor }"></div>
@@ -215,8 +215,8 @@ const memColor = computed(() => {
                     <div v-for="node in remoteNodes" :key="node.uuid" class="ov-node-item">
                         <div class="ov-node-item__status">
                             <span v-if="node.available" class="ov-node-status-dot ov-node-status-dot--online"
-                                title="Online"></span>
-                            <span v-else class="ov-node-status-dot ov-node-status-dot--offline" title="Offline"></span>
+                                :title="t('TXT_CODE_823bfe63')"></span>
+                            <span v-else class="ov-node-status-dot ov-node-status-dot--offline" :title="t('TXT_CODE_66ce073e')"></span>
                         </div>
                         <div class="ov-node-item__info">
                             <div class="ov-node-item__name">{{ node.remarks || node.ip }}</div>
@@ -231,7 +231,7 @@ const memColor = computed(() => {
                             <span class="ov-node-item__stat" :title="'CPU'">
                                 <VIcon icon="mdi-arrow-up" /> {{ (node.system.cpuUsage * 100).toFixed(0) }}%
                             </span>
-                            <span class="ov-node-item__stat" :title="'RAM'">
+                            <span class="ov-node-item__stat" :title="t('TXT_CODE_593ee330')">
                                 <VIcon icon="mdi-arrow-down" /> {{ (node.system.memUsage * 100).toFixed(0) }}%
                             </span>
                         </div>

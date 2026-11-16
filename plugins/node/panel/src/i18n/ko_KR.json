@@ -11,7 +11,7 @@
   "TXT_CODE_DESKTOP_NODES_EDIT": "노드 편집",
   "TXT_CODE_DESKTOP_NODES_IP": "IP 주소",
   "TXT_CODE_DESKTOP_NODES_IP_REQUIRED": "IP 주소는 필수입니다",
-  "TXT_CODE_DESKTOP_NODES_SEARCH": "노드 검색...",
+  "TXT_CODE_DESKTOP_NODES_SEARCH": "노드 검색…",
   "TXT_CODE_NODE_LIST_EMPTY": "사용 가능한 노드가 없습니다",
   "TXT_CODE_DESKTOP_NODES_SOCKET": "직접 연결",
   "TXT_CODE_b7d38e78": "데몬를 사용할 수 없습니다! \n노드 목록에서 데몬 상태를 확인하려면 관리자에게 문의하세요!",

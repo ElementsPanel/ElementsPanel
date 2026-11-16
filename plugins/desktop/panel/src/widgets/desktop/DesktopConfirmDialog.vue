@@ -97,7 +97,7 @@ const afterLeave = () => {
 
 <template>
   <DesktopDialog :model-value="modelValue" :id="windowId" ref="dialogElement"
-    :title="title || t('TXT_CODE_d507abff')" icon="mdi-alert-circle-outline"
+    :title="title || t('TXT_CODE_276756b2')" icon="mdi-alert-circle-outline"
     :width="width || 400" :height="height" :z-index="currentZIndex"
     :closable="closable && !busy" :keyboard="keyboard" :padded="false" :scrollable="false"
     class="desktop-confirm" @focus="focusWindow" @close="cancel" @after-leave="afterLeave">

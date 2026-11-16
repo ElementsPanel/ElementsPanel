@@ -141,7 +141,7 @@ const disable2FACode = async () => {
             <div v-else class="two-fa-setup">
               <p>1. {{ t("TXT_CODE_cc561947") }}<br />2. {{ t("TXT_CODE_fffce4a8") }}<br />3. {{ t("TXT_CODE_af2a6972")
                 }}</p>
-              <VImg :src="formState.qrcode" width="180" height="180" class="qrcode" />
+              <VImg :src="formState.qrcode" :alt="t('TXT_CODE_UI_2FA_QR_CODE')" width="180" height="180" class="qrcode" />
               <VTextField v-model="formState.TOTPCode" :placeholder="t('TXT_CODE_7ac8b1d3')" />
               <div class="profile-actions">
                 <VBtn color="primary" :loading="setUserApiKeyLoading" @click="confirm2FACode">{{ t("TXT_CODE_b0a18c20")
@@ -152,7 +152,7 @@ const disable2FACode = async () => {
           </section>
 
           <section class="profile-section">
-            <h3>APIKEY</h3>
+            <h3>{{ t("TXT_CODE_UI_API_KEY") }}</h3>
             <p class="text-medium-emphasis">{{ t("TXT_CODE_b2dbf778") }}</p>
             <div class="api-key-display">
               <VChip v-if="state.userInfo?.apiKey" class="api-key-chip" variant="tonal">{{ state.userInfo.apiKey }}
@@ -178,7 +178,7 @@ const disable2FACode = async () => {
   </VDialog>
 
   <VDialog v-model="disableApiKeyDialog" class="app-dialog" max-width="460" scrollable>
-    <VCard :title="t('TXT_CODE_718c9310')" rounded="xl">
+    <VCard :title="t('TXT_CODE_USER_DISABLE_API_KEY')" rounded="xl">
       <VCardText>{{ t("TXT_CODE_6819de18") }}</VCardText>
       <VCardActions>
         <VSpacer />

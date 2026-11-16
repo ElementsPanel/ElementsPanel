@@ -596,7 +596,7 @@ onUnmounted(() => {
                     prepend-inner-icon="mdi-magnify" />
 
                 <VBtn class="dim-btn dim-btn--icon" icon variant="text" :loading="loading"
-                    aria-label="Refresh" @click="fetchInstances()">
+                    :aria-label="t('TXT_CODE_b76d94e0')" @click="fetchInstances()">
                     <VIcon icon="mdi-refresh" />
                 </VBtn>
 
@@ -737,9 +737,6 @@ onUnmounted(() => {
           <p class="dim-dialog__desc dim-dialog__desc--left">{{ t("TXT_CODE_f84ae54f") }}</p>
           <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
               {{ t("TXT_CODE_2c1337d") }}
-          </p>
-          <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
-              {{ t("TXT_CODE_e26d53d5") }}
           </p>
           <div class="dim-tag-editor">
               <span v-for="tag in tagDialog.tags" :key="tag" class="dim-tag-editor__tag">

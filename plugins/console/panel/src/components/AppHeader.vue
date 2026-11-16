@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useScreen } from "@/hooks/useScreen";
 import { useAppConfigStore } from "@/stores/useAppConfigStore";
 import { useAppStateStore } from "@/stores/useAppStateStore";
@@ -89,7 +90,7 @@ useEventListener("keydown", (event) => {
           class="sidebar-toggle-button"
           icon
           variant="text"
-          aria-label="MENU"
+          :aria-label="t('TXT_CODE_UI_MENU')"
           aria-controls="app-sidebar"
           :aria-expanded="isSidebarOpen"
           @click="toggleSidebar"
@@ -164,8 +165,8 @@ useEventListener("keydown", (event) => {
           v-if="isAdmin"
           icon
           variant="text"
-          aria-label="MENU"
-          title="MENU"
+          :aria-label="t('TXT_CODE_UI_MENU')"
+          :title="t('TXT_CODE_UI_MENU')"
           aria-controls="app-phone-sidebar"
           :aria-expanded="uiState.showPhoneMenu"
           @click="openPhoneMenu(true)"

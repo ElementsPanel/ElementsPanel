@@ -101,7 +101,7 @@ const disable2FACode = async () => {
 <template>
     <div class="desktop-user-info">
         <div class="info-section">
-            <h3 class="section-title">{{ t('TXT_CODE_9bb2f08b') }}</h3>
+            <h3 class="section-title">{{ t('TXT_CODE_UI_ACCOUNT') }}</h3>
             <div class="info-grid">
                 <div class="info-item">
                     <span class="info-label">{{ t('TXT_CODE_eb9fcdad') }}</span>
@@ -162,7 +162,7 @@ const disable2FACode = async () => {
                     3. {{ t("TXT_CODE_af2a6972") }}<br />
                 </p>
                 <div class="qrcode-container">
-                    <img :src="formState.qrcode" alt="2FA QR Code" />
+                    <img :src="formState.qrcode" :alt="t('TXT_CODE_UI_2FA_QR_CODE')" />
                 </div>
                 <div class="two-fa-form">
                     <VTextField v-model="formState.TOTPCode" variant="solo" hide-details :placeholder="t('TXT_CODE_7ac8b1d3')" />
@@ -175,7 +175,7 @@ const disable2FACode = async () => {
         </div>
 
         <div class="info-section">
-            <h3 class="section-title">APIKEY</h3>
+            <h3 class="section-title">{{ t("TXT_CODE_UI_API_KEY") }}</h3>
             <p class="api-key-desc">{{ t("TXT_CODE_b2dbf778") }}</p>
 
             <div v-if="state.userInfo?.apiKey" class="api-key-display">
@@ -196,7 +196,7 @@ const disable2FACode = async () => {
             </div>
         </div>
 
-        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="revokeApiKeyDialog" :title="t('TXT_CODE_6819de18')"
+        <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="revokeApiKeyDialog" :title="t('TXT_CODE_USER_DISABLE_API_KEY')"
             :message="t('TXT_CODE_6819de18')" danger :ok-text="t('TXT_CODE_718c9310')" :cancel-text="t('TXT_CODE_3b1cc020')"
             @confirm="revokeApiKeyDialog = false; handleGenerateApiKey(false)" />
     </div>

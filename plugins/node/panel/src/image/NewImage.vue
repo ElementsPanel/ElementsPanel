@@ -111,13 +111,6 @@ onMounted(async () => {});
         <CardPanel style="height: 100%">
           <template #body>
             <div>
-                <h5 class="text-title-large mb-2">{{ t("TXT_CODE_d76ccb4f") }}</h5>
-                <p class="text-body-medium text-medium-emphasis">
-                  {{ t("TXT_CODE_528753e7") }}
-                </p>
-                <h5 class="text-title-large mb-2">
-                  {{ t("TXT_CODE_2ea7af21") }}
-                </h5>
                 <p class="text-body-medium text-medium-emphasis">
                   {{ t("TXT_CODE_ba1eb3b5") }}
                 </p>

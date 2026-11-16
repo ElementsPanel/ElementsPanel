@@ -78,8 +78,6 @@ defineExpose({
         <div class="event-config-title">{{ t("TXT_CODE_a64da7c4") }}</div>
         <div class="event-config-description">
           {{ t("TXT_CODE_619faab6") }}
-          <br />
-          {{ t("TXT_CODE_3eb58633") }}
         </div>
         <VSwitch
           v-model="options.config.eventTask.autoRestart"

@@ -18,7 +18,6 @@ defineExpose({ openDialog });
 </script>
 <template>
   <AppDialog v-model:open="open" :title="t('TXT_CODE_282b0721')" :confirm-loading="isLoading" :ok-text="t('TXT_CODE_abfe9512')" compact @ok="submit">
-    <p class="text-medium-emphasis">{{ t("TXT_CODE_32d87bf1") }}</p>
     <div class="field-block"><div class="field-title">{{ t("TXT_CODE_179d7be4") }}</div><div class="field-help">{{ t("TXT_CODE_a8839b35") }}</div><VSwitch v-model="formData.enableRcon" color="primary" hide-details /></div>
     <div class="field-block"><div class="field-title">{{ t("TXT_CODE_d629fa48") }}</div><div class="field-help">{{ t("TXT_CODE_8e2be926") }}</div><VTextField v-model="formData.rconIp" :placeholder="t('TXT_CODE_47129a5b')" variant="solo-filled" hide-details /></div>
     <div class="field-block"><div class="field-title">{{ t("TXT_CODE_890aa44c") }}</div><div class="field-help">{{ t("TXT_CODE_a4748cb0") }}</div><VTextField v-model="formData.rconPort" :placeholder="t('TXT_CODE_e2dc0156')" variant="solo-filled" hide-details /></div>

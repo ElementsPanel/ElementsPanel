@@ -414,7 +414,7 @@ onMounted(async () => {
         /><VTextField
           v-if="!isAddMode && formData.apiKey"
           v-model="formData.apiKey"
-          label="APIKEY"
+          :label="t('TXT_CODE_UI_API_KEY')"
           readonly
           class="mb-4"
         />

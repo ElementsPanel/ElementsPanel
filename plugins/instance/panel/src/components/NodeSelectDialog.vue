@@ -77,9 +77,6 @@ defineExpose({
     <VCard :title="t('TXT_CODE_7e267ba')">
       <VCardText>
     <div class="node-select-container">
-      <p class="node-select-description text-body-medium text-medium-emphasis">
-        {{ t("TXT_CODE_ad24269a") }}
-      </p>
       <div class="node-grid">
         <Empty
           v-if="availableNodes.length === 0"
@@ -130,7 +127,7 @@ defineExpose({
                 <template v-if="props.targetPlatforms && props.targetPlatforms.length > 0 && !isNodeSupported(item)">
                   <VIcon icon="mdi-alert-circle-outline" class="mr-1" />
                 </template>
-                Docker platforms: {{ item?.dockerPlatforms?.join(",") || "--" }}
+                {{ t("TXT_CODE_UI_DOCKER_PLATFORMS") }}: {{ item?.dockerPlatforms?.join(", ") || "--" }}
               </span>
               <span>{{ t("TXT_CODE_c7d0002e") }}: {{ item.ip }}:{{ item.port }}</span>
             </div>
@@ -148,10 +145,6 @@ defineExpose({
 </template>
 
 <style lang="scss" scoped>
-.node-select-description {
-  margin-bottom: 16px;
-}
-
 .node-select-empty {
   grid-column: 1 / -1;
 }

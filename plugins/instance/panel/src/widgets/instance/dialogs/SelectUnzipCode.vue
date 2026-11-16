@@ -34,9 +34,7 @@ defineExpose({
 <template>
   <AppDialog v-model:open="open" :title="t('TXT_CODE_2dc23f7a')" :mask-closable="false" :ok-text="t('TXT_CODE_abfe9512')" compact @ok="submit">
     <p class="text-medium-emphasis">
-      {{ t("TXT_CODE_b278707d") }}<br />
-      {{ t("TXT_CODE_48044fc2") }}<br />
-      {{ t("TXT_CODE_76a82338") }}
+      {{ t("TXT_CODE_b278707d") }}
     </p>
     <VSelect v-model="zipCode" :items="[
       { title: t('TXT_CODE_91bb6101'), value: 'utf-8' },

@@ -63,8 +63,6 @@ watch(instanceInfo, (val) => {
                     <h3>{{ t("TXT_CODE_a64da7c4") }}</h3>
                     <p class="devent-form__hint">
                             {{ t("TXT_CODE_619faab6") }}
-                            <br />
-                            {{ t("TXT_CODE_3eb58633") }}
                     </p>
                     <VSwitch v-model="options.config.eventTask.autoRestart" color="primary" hide-details density="compact" />
                 </section>

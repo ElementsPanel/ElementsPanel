@@ -1,10 +1,10 @@
 {
-  "TXT_CODE_233624ad": "Web access port, please enter a numerical value. The default port is 23333.",
-  "TXT_CODE_2b85af6d": "If you are accessing the panel through a reverse proxy, please enable this option. The panel will retrieve your real IP address from a specific request header.",
-  "TXT_CODE_328191e": "Maybe useful in a multi-IP environment.  If there's only one IP available on the host, please leave it empty.",
+  "TXT_CODE_233624ad": "Enter an integer port number. Default: 23333.",
+  "TXT_CODE_2b85af6d": "Enable when using a reverse proxy to read the client’s real IP.",
+  "TXT_CODE_328191e": "Enter its IP address to bind to a specific network interface.",
   "TXT_CODE_405cd346": "Cross-Origin Request API Interface",
   "TXT_CODE_514e064a": "Panel Binding IP",
-  "TXT_CODE_6655c905": "HTTP responses will include 'access-control-allow-origin: *,' which may reduce security but allow further development.",
+  "TXT_CODE_6655c905": "Allows cross-origin requests from any origin (Access-Control-Allow-Origin: *). This may reduce security.",
   "TXT_CODE_66aeac82": "Reverse Proxy Request Header",
   "TXT_CODE_7f0017d2": "Panel Port",
   "TXT_CODE_SERVER_PREFIX": "Path Prefix",
@@ -17,5 +17,5 @@
   "TXT_CODE_SERVER_SSL_PEM_TIP": "Path to the certificate file, absolute or relative to the panel directory.",
   "TXT_CODE_SERVER_SSL_TIP": "Serve the panel over HTTPS using the certificate below. Both files are required.",
   "TXT_CODE_f0789d81": "Reverse Proxy Mode",
-  "TXT_CODE_fd8bc51f": "When reverse proxy mode is enabled, the panel will retrieve the user's real IP address from this request header."
+  "TXT_CODE_fd8bc51f": "Name of the request header containing the client’s real IP."
 }

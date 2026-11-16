@@ -705,7 +705,7 @@ test("file manager URL downloads and upload overwrite confirmations run in deskt
   await flush();
   const upload = f.findWindow("TXT_CODE_52bc24ec");
   assert.ok(upload.textContent.includes("existing.txt"));
-  [...upload.querySelectorAll(".desktop-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_d507abff")).click();
+  [...upload.querySelectorAll(".desktop-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_ae09d79d")).click();
   await flush();
   assert.equal(f.events.uploads.length, 1);
   const overwrite = f.findWindow("TXT_CODE_99ca8563");

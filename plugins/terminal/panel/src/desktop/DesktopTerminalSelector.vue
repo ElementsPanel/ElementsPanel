@@ -81,8 +81,8 @@ const openConsole = (node: NodeStatus) => {
                         <div class="dts-card__status">
                             <VIcon icon="mdi-check-circle-outline" v-if="node.available" class="status-icon status-icon--yes"  />
                             <VIcon icon="mdi-close-circle-outline" v-else class="status-icon status-icon--no"  />
-                            {{ node.available ? (t("TXT_CODE_823bfe63") || 'Online') :
-                                (t("TXT_CODE_66ce073e") || 'Offline') }}
+                            {{ node.available ? t("TXT_CODE_823bfe63") :
+                                t("TXT_CODE_66ce073e") }}
                         </div>
                     </div>
                 </div>

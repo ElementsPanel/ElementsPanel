@@ -20,6 +20,7 @@ async function fixture(t, { preservePosition = false } = {}) {
   const visited = [];
   const panelHeight = vue.ref(188);
   const Navigation = load("plugins/console/panel/src/components/AppBottomNav.vue", {
+    "@/lang/i18n": { t: (key) => key },
     "@/hooks/useHeaderMenus": {
       useHeaderMenus: () => ({
         menus: vue.ref([

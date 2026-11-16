@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from "@elementspanel/epanel-plugin-i18n";
 import dayjs from "dayjs";
 import { onUnmounted } from "vue";
 import { onMounted } from "vue";
@@ -63,7 +64,7 @@ onUnmounted(() => {
       <div class="flex-center mt-12 date">
         <div>
           <div class="flex-center">
-            <span>Timestamp: {{ st }}</span>
+            <span>{{ t("TXT_CODE_UI_TIMESTAMP") }}: {{ st }}</span>
           </div>
           <div class="flex-center">
             {{ date }}

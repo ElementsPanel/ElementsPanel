@@ -288,7 +288,6 @@ defineExpose({ refresh, updateAll, canUpdate, preparingTargets });
       v-else-if="!loading && !error && !updates?.checkFailed && !updatingPlugins"
       icon="mdi-check-circle-outline"
       :title="t(keyword?.trim() ? 'TXT_CODE_NO_DATA' : 'TXT_CODE_PLUGIN_MARKET_UP_TO_DATE')"
-      :description="keyword?.trim() ? undefined : t('TXT_CODE_NO_DATA')"
     />
     <VDialog
       v-model="updateNoticeShown"

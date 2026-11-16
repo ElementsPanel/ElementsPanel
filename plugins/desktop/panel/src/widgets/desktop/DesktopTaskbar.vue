@@ -183,9 +183,9 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
 <template>
     <div class="desktop-taskbar">
         <VBtn class="taskbar__start" :class="{ 'taskbar__start--active': startMenuOpen }" icon variant="text"
-            aria-label="Start" @click="toggleStartMenu">
+            :aria-label="t('TXT_CODE_UI_START_MENU')" @click="toggleStartMenu">
             <span class="taskbar__start-icon">
-                <img :src="isDarkTheme ? desktopIconUrl : desktopIconDarkUrl" alt="Start" />
+                <img :src="isDarkTheme ? desktopIconUrl : desktopIconDarkUrl" alt="" />
             </span>
         </VBtn>
 
@@ -256,7 +256,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
                 <VMenu location="top end">
                     <template #activator="{ props: menuProps }">
                         <VBtn v-bind="menuProps" class="start-menu__function-btn" icon variant="text"
-                            aria-label="Account">
+                            :aria-label="t('TXT_CODE_UI_ACCOUNT')">
                             <VIcon icon="mdi-logout" size="small" />
                         </VBtn>
                     </template>

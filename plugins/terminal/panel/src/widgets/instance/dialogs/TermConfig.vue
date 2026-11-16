@@ -79,7 +79,7 @@ defineExpose({
           <div class="term-config-section">
             <div class="term-config-title">{{ t("TXT_CODE_ef650d57") }}</div>
             <div class="term-config-description">
-              {{ t("TXT_CODE_feeea328") }}<br />{{ t("TXT_CODE_d6e7f572") }}
+              {{ t("TXT_CODE_feeea328") }}
             </div>
             <VSwitch v-model="options.config.terminalOption.pty" color="primary" hide-details />
           </div>
@@ -87,7 +87,7 @@ defineExpose({
           <div class="term-config-section">
             <div class="term-config-title">{{ t("TXT_CODE_e1a3b150") }}</div>
             <div class="term-config-description">
-              {{ t("TXT_CODE_6a515e35") }}<br />{{ t("TXT_CODE_1295831e") }}
+              {{ t("TXT_CODE_6a515e35") }}
             </div>
             <VSwitch v-model="options.config.terminalOption.haveColor" color="primary" hide-details />
           </div>
@@ -95,7 +95,7 @@ defineExpose({
           <div class="term-config-section">
             <div class="term-config-title">{{ t("TXT_CODE_b91a94f9") }}</div>
             <div class="term-config-description">
-              {{ t("TXT_CODE_5b2daea0") }}<br />{{ t("TXT_CODE_b94f13ce") }}
+              {{ t("TXT_CODE_b94f13ce") }}
             </div>
             <VSelect
               v-model="options.config.crlf"

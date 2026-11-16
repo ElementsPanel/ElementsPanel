@@ -97,7 +97,6 @@ defineExpose({ openDialog });
 
         <section class="tags-dialog__section">
           <p class="tags-dialog__label">{{ t("TXT_CODE_2c1337d") }}</p>
-          <p class="tags-dialog__hint">{{ t("TXT_CODE_e26d53d5") }}</p>
           <div class="tag-container">
             <VChip
               v-for="tag in instanceTags"

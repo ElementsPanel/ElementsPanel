@@ -248,7 +248,6 @@ const handleCreated = (instanceUuid: string) => {
                 <div class="step-content">
                   <div class="step-heading">
                     <h2>{{ t("TXT_CODE_7e267ba") }}</h2>
-                    <p>{{ t("TXT_CODE_ad24269a") }}</p>
                   </div>
                   <VProgressLinear v-if="nodesLoading" indeterminate color="primary" rounded="xl" />
                   <Empty

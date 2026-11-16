@@ -29,7 +29,6 @@ const parsedConfig = computed(() => jsonToMap(props.config));
   <template v-if="isDesktop">
     <VCol cols="12">
       <div class="config-editor-section">
-        <h3 class="config-editor-title">{{ data ? t("TXT_CODE_958fd70c") : t("TXT_CODE_2ce953da") }}</h3>
         <p class="config-editor-description">{{ data ? data.desc : t("TXT_CODE_75e5af9b") }}</p>
       </div>
     </VCol>
@@ -51,9 +50,6 @@ const parsedConfig = computed(() => jsonToMap(props.config));
   <VCol cols="12">
     <CardPanel style="height: 100%" class="config-editor-panel">
       <template #body>
-          <h5 class="text-title-large mb-2">
-            {{ data ? t("TXT_CODE_958fd70c") : t("TXT_CODE_2ce953da") }}
-          </h5>
           <p v-if="data">
             {{ data?.desc }}
           </p>
@@ -93,6 +89,5 @@ const parsedConfig = computed(() => jsonToMap(props.config));
   margin: 0;
 }
 
-.config-editor-title { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
 .config-editor-description { margin: 0; color: var(--desktop-window-text-secondary, rgba(0, 0, 0, 0.6)); line-height: 1.5; }
 </style>

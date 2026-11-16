@@ -28,9 +28,6 @@ defineExpose({
   <VDialog v-model="isVisible" max-width="860" persistent>
     <VCard :title="t('TXT_CODE_docker_version_select_title')">
       <VCardText>
-    <p class="desc text-body-medium text-medium-emphasis">
-      {{ t("TXT_CODE_docker_version_select_desc") }}
-    </p>
     <div class="cards">
       <VCard :title="t('TXT_CODE_docker_version_select_docker_title')" prepend-icon="mdi-docker"
         class="choose-card docker-card" hoverable @click="selectDockerVersion">
@@ -62,10 +59,6 @@ defineExpose({
 </template>
 
 <style lang="scss" scoped>
-.desc {
-  margin-bottom: 16px;
-}
-
 .cards {
   display: flex;
   align-items: stretch;
