@@ -1,11 +1,13 @@
 import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDefineApi";
 import type { RemoteMappingEntry } from "@elementspanel/epanel-plugin-console/tools/protocol";
+import type { TerminalSettings } from "../../shared/settings";
 
 export interface MissionPassportResponse {
   addr: string;
   password: string;
   prefix: string;
   remoteMappings: RemoteMappingEntry[];
+  terminalSettings?: TerminalSettings;
 }
 
 export const setUpTerminalStreamChannel = useDefineApi<

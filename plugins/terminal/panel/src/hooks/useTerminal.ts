@@ -15,6 +15,7 @@ import EventEmitter from "eventemitter3";
 import type { Socket } from "socket.io-client";
 import { computed, onMounted, onUnmounted, ref, shallowRef, unref } from "vue";
 import { makeSocketIo } from "@elementspanel/epanel-plugin-console/hooks/useSocketIo";
+import { TerminalSettings, normalizeTerminalSettings } from "../../../shared/settings";
 
 export const TERM_COLOR = {
   TERM_RESET: "\x1B[0m",
@@ -71,6 +72,7 @@ export function useTerminal() {
   let pendingConnection: Promise<Socket<DefaultEventsMap, DefaultEventsMap>> | undefined;
   const connectionController = new AbortController();
   let terminalElement: HTMLElement | undefined;
+  let settings = new TerminalSettings();
 
   const isGlobalTerminal = computed(() => {
     return state.value?.config.nickname === GLOBAL_INSTANCE_NAME;
@@ -111,6 +113,7 @@ export function useTerminal() {
     if (disposed) throw new Error("Terminal has been disposed");
     const remoteInfo = unref(res.value);
     if (!remoteInfo) throw new Error(t("TXT_CODE_181f2f08"));
+    settings = normalizeTerminalSettings(remoteInfo.terminalSettings);
 
     let addr = remoteInfo.addr,
       prefix = remoteInfo.prefix;
@@ -271,7 +274,9 @@ export function useTerminal() {
       disableStdin: false,
       cursorStyle: "underline",
       cursorBlink: true,
-      fontSize: 14,
+      fontFamily: settings.fontFamily,
+      fontSize: settings.fontSize,
+      scrollback: settings.scrollback,
       theme: {
         background
       },
@@ -330,8 +335,7 @@ export function useTerminal() {
       refreshWindowSize(term.cols - 1, term.rows - 1);
     }, 2000);
 
-    let lastCtrlCTime = 0;
-    const ctrlCTimeThreshold = 500;
+    let lastCtrlCTime: number | undefined;
 
     function sendInput(data: string) {
       socket?.emit("stream/write", {
@@ -348,15 +352,15 @@ export function useTerminal() {
         return;
       }
 
-      if (data !== "\x03") {
-        lastCtrlCTime = 0;
+      if (!settings.ctrlCProtection || data !== "\x03") {
+        lastCtrlCTime = undefined;
         return sendInput(data);
       }
       const now = Date.now();
-      if (now - lastCtrlCTime < ctrlCTimeThreshold) {
+      if (lastCtrlCTime !== undefined && now - lastCtrlCTime <= settings.ctrlCIntervalMs) {
         term.write("\r\n" + t("TXT_CODE_3725b37b") + "\r\n");
         sendInput(data);
-        lastCtrlCTime = 0;
+        lastCtrlCTime = undefined;
       } else {
         lastCtrlCTime = now;
         term.write("\r\n" + t("TXT_CODE_3fd222b0"));

@@ -1,11 +1,12 @@
 import { v4 } from "uuid";
 import { $t, koa, middleware, remote, roles } from "./runtime";
+import type { TerminalSettings } from "../../../shared/settings";
 
 function timeUuid() {
   return v4().replace(/-/g, "") + Date.now();
 }
 
-export function registerTerminalRoutes() {
+export function registerTerminalRoutes(getSettings: () => TerminalSettings) {
   const router = koa().router("/api/protected_instance");
   const permission = middleware().permission;
   const validator = middleware().validator;
@@ -33,7 +34,8 @@ export function registerTerminalRoutes() {
           password,
           addr: remoteService.config.addr,
           prefix: remoteService.config.prefix,
-          remoteMappings: remoteService.config.getConvertedRemoteMappings()
+          remoteMappings: remoteService.config.getConvertedRemoteMappings(),
+          terminalSettings: getSettings()
         };
       } catch (err) {
         ctx.body = err;
@@ -49,18 +51,30 @@ export function registerTerminalRoutes() {
       try {
         const daemonId = String(ctx.query.daemonId);
         const instanceUuid = String(ctx.query.uuid);
-        const remoteService = remote().services.getInstance(daemonId);
-        let result = await new (remote().Request)(remoteService).request("instance/outputlog", {
-          instanceUuid
-        });
-        if (ctx.query.size) {
-          let sizeStr = ctx.query.size;
-          if (sizeStr instanceof Array) sizeStr = sizeStr[0];
-          let size = parseInt(String(sizeStr));
-          if (String(sizeStr).toLowerCase().endsWith("kb")) size *= 1024;
-          if (result.length > size) result = result.slice(-size);
+        let size = getSettings().historyLimitKB * 1024;
+        if (ctx.query.size !== undefined) {
+          const requested = Array.isArray(ctx.query.size) ? ctx.query.size[0] : ctx.query.size;
+          const match = /^(\d+)(kb)?$/i.exec(String(requested));
+          if (!match || !Number.isSafeInteger(Number(match[1]))) {
+            ctx.status = 400;
+            return;
+          }
+          size = Math.min(size, Number(match[1]) * (match[2] ? 1024 : 1));
         }
-        ctx.body = result;
+        if (size === 0) {
+          ctx.body = "";
+          return;
+        }
+        const remoteService = remote().services.getInstance(daemonId);
+        const result = await new (remote().Request)(remoteService).request("instance/outputlog", {
+          instanceUuid,
+          size
+        });
+        // Older daemons may ignore `size`; still enforce the configured byte limit.
+        const buffer = Buffer.from(result, "utf8");
+        let start = Math.max(0, buffer.length - size);
+        while (start < buffer.length && (buffer[start] & 0xc0) === 0x80) start++;
+        ctx.body = buffer.subarray(start).toString("utf8");
       } catch (err) {
         ctx.body = err;
       }

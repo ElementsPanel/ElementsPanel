@@ -14,5 +14,18 @@
   "TXT_CODE_bd2559f3": "コンソール入力エンコーディング",
   "TXT_CODE_6e96b2a9": "コンソール出力のエンコーディング",
   "TXT_CODE_365aabd4": "改行記号",
-  "TXT_CODE_20cec54": "キャリッジリターン、ラインフィード記号"
+  "TXT_CODE_20cec54": "キャリッジリターン、ラインフィード記号",
+  "TXT_CODE_TERMINAL_HISTORY_LIMIT": "履歴ログの表示上限（KB）",
+  "TXT_CODE_TERMINAL_HISTORY_LIMIT_DESC": "ターミナルを開いたときに表示する最新ログの最大サイズです。0 にすると履歴表示を無効にします。保存後に開くターミナルに適用されます。",
+  "TXT_CODE_TERMINAL_SCROLLBACK": "ターミナルのスクロールバック行数",
+  "TXT_CODE_TERMINAL_SCROLLBACK_DESC": "上にスクロールして確認できる履歴の行数です。0 にすると履歴を保持しません。保存後に開くターミナルに適用されます。",
+  "TXT_CODE_TERMINAL_FONT_FAMILY": "ターミナルのフォント",
+  "TXT_CODE_TERMINAL_FONT_FAMILY_DESC": "ローカルにインストールされた等幅フォントを使用し、代替フォントはカンマで区切ります。保存後に開くターミナルに適用されます。",
+  "TXT_CODE_TERMINAL_FONT_SIZE": "ターミナルの文字サイズ（px）",
+  "TXT_CODE_TERMINAL_FONT_SIZE_DESC": "ターミナルの文字サイズをピクセルで指定します。保存後に開くターミナルに適用されます。",
+  "TXT_CODE_TERMINAL_CTRL_C_PROTECTION": "Ctrl+C 保護",
+  "TXT_CODE_TERMINAL_CTRL_C_PROTECTION_DESC": "有効にすると、指定した間隔内に Ctrl+C を2回押すと送信されます。無効の場合は1回で送信されます。保存後に開くターミナルに適用されます。",
+  "TXT_CODE_TERMINAL_CTRL_C_INTERVAL": "Ctrl+C 確認間隔（ミリ秒）",
+  "TXT_CODE_TERMINAL_CTRL_C_INTERVAL_DESC": "Ctrl+C を2回押す間隔の上限をミリ秒で指定します。保存後に開くターミナルに適用されます。",
+  "TXT_CODE_TERMINAL_INVALID_SETTINGS": "ターミナル設定が無効です。数値の範囲とフォント名を確認してください。"
 }

@@ -1057,6 +1057,7 @@ test("terminal setup is shared and an unmounted terminal cannot create a late so
     sockets = 0,
     calls = 0;
   const { useTerminal } = load("plugins/terminal/panel/src/hooks/useTerminal.ts", {
+    "../../../shared/settings": load("plugins/terminal/shared/settings.ts"),
     vue: {
       ...vue,
       onMounted() {},

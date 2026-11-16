@@ -2,6 +2,7 @@ import fs from "fs-extra";
 import path from "path";
 import type RouterContext from "../../../../server/daemon/src/backend/context";
 import type { DaemonPluginContext } from "../../../../../core/daemon/src/plugin";
+import { readOutputLogTail } from "./output_log";
 
 const LOGIN_FROM_STREAM = "STREAM";
 
@@ -101,7 +102,7 @@ export function registerTerminalEvents(ctx: DaemonPluginContext) {
     try {
       const filePath = path.join(instances.LOG_DIR, `${instanceUuid}.log`);
       if (fs.existsSync(filePath)) {
-        const text = await fs.readFile(filePath, { encoding: "utf-8" });
+        const text = await readOutputLogTail(filePath, data.size);
         return protocol.response(routerCtx, text);
       }
       protocol.responseError(routerCtx, new Error($t("TXT_CODE_Instance_router.terminalLogNotExist")), {

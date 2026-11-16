@@ -14,5 +14,18 @@
   "TXT_CODE_bd2559f3": "Terminal Input Encoding",
   "TXT_CODE_6e96b2a9": "Terminal Output Encoding",
   "TXT_CODE_365aabd4": "Line Feed",
-  "TXT_CODE_20cec54": "Carriage Return and Line Feed"
+  "TXT_CODE_20cec54": "Carriage Return and Line Feed",
+  "TXT_CODE_TERMINAL_HISTORY_LIMIT": "History replay limit (KB)",
+  "TXT_CODE_TERMINAL_HISTORY_LIMIT_DESC": "Maximum size of recent logs shown when opening a terminal. Set to 0 to disable history replay. Applies to newly opened terminals.",
+  "TXT_CODE_TERMINAL_SCROLLBACK": "Terminal scrollback lines",
+  "TXT_CODE_TERMINAL_SCROLLBACK_DESC": "Number of history lines available by scrolling up. Set to 0 to disable scrollback. Applies to newly opened terminals.",
+  "TXT_CODE_TERMINAL_FONT_FAMILY": "Terminal font family",
+  "TXT_CODE_TERMINAL_FONT_FAMILY_DESC": "Use locally installed monospace fonts, with fallback fonts separated by commas. Applies to newly opened terminals.",
+  "TXT_CODE_TERMINAL_FONT_SIZE": "Terminal font size (px)",
+  "TXT_CODE_TERMINAL_FONT_SIZE_DESC": "Terminal text size in pixels. Applies to newly opened terminals.",
+  "TXT_CODE_TERMINAL_CTRL_C_PROTECTION": "Ctrl+C protection",
+  "TXT_CODE_TERMINAL_CTRL_C_PROTECTION_DESC": "When enabled, press Ctrl+C twice within the configured interval to send it. When disabled, one press sends it. Applies to newly opened terminals.",
+  "TXT_CODE_TERMINAL_CTRL_C_INTERVAL": "Ctrl+C confirmation interval (ms)",
+  "TXT_CODE_TERMINAL_CTRL_C_INTERVAL_DESC": "Maximum time between two Ctrl+C presses, in milliseconds. Applies to newly opened terminals.",
+  "TXT_CODE_TERMINAL_INVALID_SETTINGS": "Invalid terminal settings. Check the numeric ranges and font family."
 }
