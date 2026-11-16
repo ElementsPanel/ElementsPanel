@@ -324,7 +324,7 @@ onMounted(async () => {
 <template>
   <main class="instance-list-page">
     <VContainer fluid class="instance-list-container">
-      <PageToolbar :title="t('TXT_CODE_e21473bc')" icon="mdi-view-grid-outline">
+      <PageToolbar :title="t('TXT_CODE_INSTANCE_LIST_TITLE')" icon="mdi-view-grid-outline">
         <template #search>
           <div class="instance-search-row">
             <VSelect v-model="operationForm.status" :items="[
