@@ -158,10 +158,6 @@ const selectedNodeLabel = computed(
     padding: 0;
   }
 
-  .plugin-config-container :deep(.plugin-config-navigation) {
-    max-height: calc(100dvh - 200px);
-  }
-
   .plugin-config-container :deep(.plugin-config-sidebar) {
     height: 100%;
     padding: 16px;

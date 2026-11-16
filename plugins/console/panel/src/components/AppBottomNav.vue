@@ -4,7 +4,7 @@ import { useHeaderMenus } from "@/hooks/useHeaderMenus";
 import { useElementSize, useLocalStorage, useTimeoutFn, useWindowSize } from "@vueuse/core";
 import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { VIcon } from "vuetify/components";
+import { VBtn, VIcon } from "vuetify/components";
 
 const route = useRoute();
 const { menus, handleToPage } = useHeaderMenus();
@@ -161,19 +161,47 @@ const onPointerEnd = (event: PointerEvent) => {
 };
 
 const routePathIcons: Record<string, string> = {
-  "/instances": "mdi-view-grid",
+  "/instances": "mdi-view-grid-outline",
   "/users": "mdi-account-group-outline",
   "/customer": "mdi-account-outline",
-  "/login": "mdi-login"
+  "/login": "mdi-login",
+  "/plugins/config": "mdi-cog-outline",
+  "/overview": "mdi-view-dashboard-outline",
+  "/node": "mdi-sitemap-outline",
+  "/market": "mdi-storefront-outline",
+  "/market/plugins": "mdi-puzzle-outline"
 };
 
-const getRouteIcon = (item: (typeof menus.value)[number]): string =>
-  (item.meta.icon as string) ?? routePathIcons[item.path] ?? "mdi-menu";
+const filledIconMap: Record<string, string> = {
+  "mdi-view-grid-outline": "mdi-view-grid",
+  "mdi-account-group-outline": "mdi-account-group",
+  "mdi-account-outline": "mdi-account",
+  "mdi-cog-outline": "mdi-cog",
+  "mdi-view-dashboard-outline": "mdi-view-dashboard",
+  "mdi-sitemap-outline": "mdi-sitemap",
+  "mdi-storefront-outline": "mdi-storefront",
+  "mdi-puzzle-outline": "mdi-puzzle",
+  "mdi-cloud-outline": "mdi-cloud"
+};
 
-const isActive = (path: string): boolean => {
-  if (route.path === path) return true;
-  if (path === "/") return false;
-  return route.path.startsWith(path + "/");
+const activePath = computed(() => {
+  let active = "";
+  for (const item of menus.value) {
+    if (item.path === "/") continue;
+    if (route.path === item.path || route.path.startsWith(`${item.path}/`)) {
+      if (item.path.length > active.length) active = item.path;
+    }
+  }
+  return active;
+});
+
+const isActive = (path: string): boolean => activePath.value === path;
+
+const getRouteIcon = (item: (typeof menus.value)[number]): string => {
+  const icon = routePathIcons[item.path] ??
+    (typeof item.meta.icon === "string" ? item.meta.icon : "mdi-menu");
+  const outline = Object.keys(filledIconMap).find((key) => filledIconMap[key] === icon) ?? icon;
+  return isActive(item.path) ? filledIconMap[outline] ?? outline : outline;
 };
 
 const toggleMenu = (event: MouseEvent) => {
@@ -210,18 +238,20 @@ const handleMenuItemClick = (path: string) => {
         class="fab-menu-panel"
         :style="panelStyle"
       >
-        <button
+        <VBtn
           v-for="item in menus"
           :key="item.path"
-          type="button"
           class="fab-menu-item"
-          :class="{ 'fab-menu-item--active': isActive(item.path) }"
+          :icon="getRouteIcon(item)"
+          :size="52"
+          :active="isActive(item.path)"
+          :color="isActive(item.path) ? 'primary' : undefined"
+          :aria-label="String(item.name ?? '')"
+          :aria-current="isActive(item.path) ? 'page' : undefined"
+          :title="String(item.name ?? '')"
+          variant="text"
           @click="handleMenuItemClick(item.path)"
-        >
-          <span class="fab-menu-icon-wrap">
-            <VIcon :icon="getRouteIcon(item)" class="fab-menu-icon" />
-          </span>
-        </button>
+        />
       </div>
     </Transition>
 
@@ -300,50 +330,8 @@ const handleMenuItemClick = (path: string) => {
     0 2px 8px var(--card-shadow-color);
 }
 
-.fab-menu-item {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.fab-menu-icon-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  transition: all 0.2s ease;
-
-  .fab-menu-icon {
-    font-size: 20px;
-    color: var(--color-gray-7);
-    transition: all 0.2s ease;
-  }
-}
-
-.fab-menu-item--active .fab-menu-icon-wrap {
-  background: var(--bottom-nav-background-color-hover);
-
-  .fab-menu-icon {
-    font-size: 22px;
-    color: var(--color-gray-13);
-  }
-}
-
-.fab-menu-item:not(.fab-menu-item--active):hover .fab-menu-icon-wrap {
-  background: var(--bottom-nav-background-color-hover);
-  opacity: 0.7;
-}
-
-.fab-menu-item:active .fab-menu-icon-wrap {
-  transform: scale(0.88);
+.fab-menu-item :deep(.v-icon) {
+  font-size: 22px;
 }
 
 

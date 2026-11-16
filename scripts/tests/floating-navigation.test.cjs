@@ -39,6 +39,10 @@ async function fixture(t, { preservePosition = false } = {}) {
     },
     "vue-router": { useRoute: () => ({ path: "/instances" }) },
     "vuetify/components": {
+      VBtn: vue.defineComponent({
+        props: ["icon", "size", "active", "color", "variant"],
+        render() { return vue.h("button", this.$attrs); }
+      }),
       VIcon: vue.defineComponent({ render: () => vue.h("i") })
     }
   }).default;

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { VBtn, VTab, VTabs } from "vuetify/components";
+import { VBtn, VIcon, VTab, VTabs } from "vuetify/components";
 
 defineProps<{
   activeTab: string;
@@ -19,7 +19,18 @@ const emit = defineEmits<{
     <VTabs :model-value="activeTab" density="compact" show-arrows @update:model-value="typeof $event === 'string' && emit('select', $event)">
       <VTab v-for="tab in tabs" :key="tab.key" :value="tab.key" class="file-folder-tab">
         <span class="file-tab-label">{{ tab.name }}</span>
-        <VBtn icon="mdi-close" size="x-small" variant="text" class="file-tab-close" :aria-label="`${t('TXT_CODE_b1dedda3')} ${tab.name}`" @click.stop="emit('close', tab.key)" @keydown.enter.stop @keydown.space.stop />
+        <VBtn
+          icon
+          :size="24"
+          variant="text"
+          class="file-tab-close"
+          :aria-label="`${t('TXT_CODE_b1dedda3')} ${tab.name}`"
+          @click.stop="emit('close', tab.key)"
+          @keydown.enter.stop
+          @keydown.space.stop
+        >
+          <VIcon icon="mdi-close" :size="16" />
+        </VBtn>
       </VTab>
     </VTabs>
     <VBtn icon="mdi-plus" size="small" variant="text" :aria-label="t('TXT_CODE_1644b775')" @click="emit('add')" />
@@ -58,7 +69,7 @@ const emit = defineEmits<{
 }
 .file-tab-close {
   position: absolute;
-  inset-inline-end: 4px;
+  inset-inline-end: 12px;
   top: 50%;
   transform: translateY(-50%);
   opacity: 0;
@@ -68,7 +79,7 @@ const emit = defineEmits<{
 .file-folder-tab:hover .file-tab-label,
 .file-folder-tab:focus-visible .file-tab-label,
 .file-folder-tab:has(.file-tab-close:focus-visible) .file-tab-label {
-  transform: translateX(-12px);
+  transform: translateX(-16px);
 }
 .file-folder-tab:hover .file-tab-close,
 .file-folder-tab:focus-visible .file-tab-close,
@@ -77,7 +88,7 @@ const emit = defineEmits<{
   pointer-events: auto;
 }
 @media (hover: none) {
-  .file-folder-tab .file-tab-label { transform: translateX(-12px); }
+  .file-folder-tab .file-tab-label { transform: translateX(-16px); }
   .file-folder-tab .file-tab-close { opacity: 1; pointer-events: auto; }
 }
 </style>

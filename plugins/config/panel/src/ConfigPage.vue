@@ -17,7 +17,6 @@ import {
   VCheckbox,
   VChip,
   VDialog,
-  VLayout,
   VList,
   VListItem,
   VListSubheader,
@@ -89,12 +88,13 @@ const sidebarOpen = ref(false);
 const navigationProps = computed(() =>
   isPhone.value
     ? {
-        class: "plugin-config-navigation",
+        class: "plugin-config-navigation plugin-config-navigation-mobile",
         modelValue: sidebarOpen.value,
         "onUpdate:modelValue": (value: boolean) => {
           sidebarOpen.value = value;
         },
-        absolute: true,
+        color: "surface",
+        location: "left",
         temporary: true,
         floating: true,
         disableResizeWatcher: true,
@@ -983,110 +983,116 @@ const confirmAction = async () => {
 </script>
 
 <template>
-  <VLayout class="plugin-config-page" @keydown.esc="sidebarOpen = false">
+  <div class="plugin-config-page" @keydown.esc="sidebarOpen = false">
     <VProgressLinear v-if="loading" class="plugin-config-loading" color="primary" indeterminate />
 
-    <component :is="isPhone ? VNavigationDrawer : 'aside'" v-bind="navigationProps">
-      <div class="plugin-config-sidebar">
-        <div v-if="isPhone" class="plugin-config-sidebar-title">
-          <span>{{ t("TXT_CODE_PLUGIN_CONFIG") }}</span>
-          <VBtn
-            icon="mdi-close"
-            size="small"
-            variant="text"
-            :aria-label="t('TXT_CODE_b1dedda3')"
-            @click="sidebarOpen = false"
-          />
-        </div>
-        <VBtnToggle
-          v-if="!props.hideScopeSwitch"
-          v-model="scope"
-          class="plugin-config-scope"
-          mandatory
-        >
-          <VBtn value="panel" size="small" variant="text">{{
-            t("TXT_CODE_PLUGIN_SCOPE_PANEL")
-          }}</VBtn>
-          <VBtn value="node" size="small" variant="text">{{
-            t("TXT_CODE_PLUGIN_SCOPE_NODE")
-          }}</VBtn>
-        </VBtnToggle>
+    <Teleport to="body" :disabled="!isPhone">
+      <component
+        :is="isPhone ? VNavigationDrawer : 'aside'"
+        v-bind="navigationProps"
+        @keydown.esc="sidebarOpen = false"
+      >
+        <div class="plugin-config-sidebar">
+          <div v-if="isPhone" class="plugin-config-sidebar-title">
+            <span>{{ t("TXT_CODE_PLUGIN_CONFIG") }}</span>
+            <VBtn
+              icon="mdi-close"
+              size="small"
+              variant="text"
+              :aria-label="t('TXT_CODE_b1dedda3')"
+              @click="sidebarOpen = false"
+            />
+          </div>
+          <VBtnToggle
+            v-if="!props.hideScopeSwitch"
+            v-model="scope"
+            class="plugin-config-scope"
+            mandatory
+          >
+            <VBtn value="panel" size="small" variant="text">{{
+              t("TXT_CODE_PLUGIN_SCOPE_PANEL")
+            }}</VBtn>
+            <VBtn value="node" size="small" variant="text">{{
+              t("TXT_CODE_PLUGIN_SCOPE_NODE")
+            }}</VBtn>
+          </VBtnToggle>
 
-        <VSelect
-          v-if="scope === 'node' && !props.hideNodeSelect"
-          v-model="selectedNodeId"
-          class="plugin-config-node-select"
-          :items="nodeItems"
-          :loading="loading"
-          :placeholder="t('TXT_CODE_PLUGIN_NODE_SELECT')"
-          hide-details
-        >
-          <template #no-data><Empty :icon="false" compact /></template>
-        </VSelect>
+          <VSelect
+            v-if="scope === 'node' && !props.hideNodeSelect"
+            v-model="selectedNodeId"
+            class="plugin-config-node-select"
+            :items="nodeItems"
+            :loading="loading"
+            :placeholder="t('TXT_CODE_PLUGIN_NODE_SELECT')"
+            hide-details
+          >
+            <template #no-data><Empty :icon="false" compact /></template>
+          </VSelect>
 
-        <div class="plugin-config-heading">
-          <span>{{ t("TXT_CODE_PLUGIN_LIST") }}</span>
-          <VBtn
-            icon="mdi-plus"
-            size="x-small"
-            variant="text"
-            :aria-label="t('TXT_CODE_PLUGIN_GROUP_ADD')"
-            @click="openCreateGroup"
-          />
+          <div class="plugin-config-heading">
+            <span>{{ t("TXT_CODE_PLUGIN_LIST") }}</span>
+            <VBtn
+              icon="mdi-plus"
+              size="x-small"
+              variant="text"
+              :aria-label="t('TXT_CODE_PLUGIN_GROUP_ADD')"
+              @click="openCreateGroup"
+            />
+          </div>
+          <VList class="plugin-config-list" density="compact">
+            <template v-for="group in pluginGroups" :key="group.id">
+              <VListSubheader
+                class="plugin-config-group-heading"
+                :class="{ 'plugin-config-group-heading-over': dragOverGroupId === group.id }"
+                @dragover.prevent="dragOverGroupId = group.id"
+                @dragleave="dragOverGroupId = ''"
+                @drop.prevent="dropPlugin(group.id)"
+              >
+                <span>{{ group.name }}</span>
+                <span v-if="!group.unassigned" class="plugin-config-group-actions">
+                  <VBtn
+                    icon="mdi-pencil-outline"
+                    size="x-small"
+                    variant="text"
+                    :aria-label="t('TXT_CODE_PLUGIN_GROUP_RENAME')"
+                    @click.stop="openRenameGroup(group)"
+                  />
+                  <VBtn
+                    icon="mdi-delete-outline"
+                    size="x-small"
+                    variant="text"
+                    :aria-label="t('TXT_CODE_PLUGIN_GROUP_DELETE')"
+                    @click.stop="requestRemoveGroup(group)"
+                  />
+                </span>
+              </VListSubheader>
+              <VListItem
+                v-for="plugin in group.plugins"
+                :key="plugin.id"
+                draggable="true"
+                :active="plugin.id === currentId"
+                :class="{ 'plugin-config-item-off': !plugin.enabled }"
+                :title="pluginLabel(plugin.id)"
+                @click="selectPlugin(plugin.id)"
+                @dragstart="startPluginDrag(plugin.id, $event)"
+                @dragend="endPluginDrag"
+              >
+                <template #append>
+                  <span
+                    class="plugin-config-item-dot"
+                    :class="{
+                      'plugin-config-item-dot-off':
+                        !plugin.enabled || (plugin.state && plugin.state !== 'active')
+                    }"
+                  ></span>
+                </template>
+              </VListItem>
+            </template>
+            <Empty v-if="!currentList.length" icon="mdi-puzzle-outline" compact />
+          </VList>
         </div>
-        <VList class="plugin-config-list" density="compact">
-          <template v-for="group in pluginGroups" :key="group.id">
-            <VListSubheader
-              class="plugin-config-group-heading"
-              :class="{ 'plugin-config-group-heading-over': dragOverGroupId === group.id }"
-              @dragover.prevent="dragOverGroupId = group.id"
-              @dragleave="dragOverGroupId = ''"
-              @drop.prevent="dropPlugin(group.id)"
-            >
-              <span>{{ group.name }}</span>
-              <span v-if="!group.unassigned" class="plugin-config-group-actions">
-                <VBtn
-                  icon="mdi-pencil-outline"
-                  size="x-small"
-                  variant="text"
-                  :aria-label="t('TXT_CODE_PLUGIN_GROUP_RENAME')"
-                  @click.stop="openRenameGroup(group)"
-                />
-                <VBtn
-                  icon="mdi-delete-outline"
-                  size="x-small"
-                  variant="text"
-                  :aria-label="t('TXT_CODE_PLUGIN_GROUP_DELETE')"
-                  @click.stop="requestRemoveGroup(group)"
-                />
-              </span>
-            </VListSubheader>
-            <VListItem
-              v-for="plugin in group.plugins"
-              :key="plugin.id"
-              draggable="true"
-              :active="plugin.id === currentId"
-              :class="{ 'plugin-config-item-off': !plugin.enabled }"
-              :title="pluginLabel(plugin.id)"
-              @click="selectPlugin(plugin.id)"
-              @dragstart="startPluginDrag(plugin.id, $event)"
-              @dragend="endPluginDrag"
-            >
-              <template #append>
-                <span
-                  class="plugin-config-item-dot"
-                  :class="{
-                    'plugin-config-item-dot-off':
-                      !plugin.enabled || (plugin.state && plugin.state !== 'active')
-                  }"
-                ></span>
-              </template>
-            </VListItem>
-          </template>
-          <Empty v-if="!currentList.length" icon="mdi-puzzle-outline" compact />
-        </VList>
-      </div>
-    </component>
+      </component>
+    </Teleport>
 
     <div class="plugin-config-content">
       <div v-if="selectedPlugin || isPhone" class="plugin-config-title-row">
@@ -1425,7 +1431,7 @@ const confirmAction = async () => {
         </VCardActions>
       </VCard>
     </VDialog>
-  </VLayout>
+  </div>
 </template>
 
 <style lang="scss" scoped>
@@ -1461,6 +1467,14 @@ const confirmAction = async () => {
 
 .plugin-config-navigation :deep(.v-navigation-drawer__content) {
   overflow: hidden;
+}
+
+.plugin-config-navigation-mobile {
+  max-width: calc(100vw - 48px);
+}
+
+.plugin-config-navigation-mobile + :deep(.v-navigation-drawer__scrim) {
+  position: fixed;
 }
 
 .plugin-config-sidebar {
