@@ -791,7 +791,11 @@ test("instance owns Java before restoration, leaves status to external plugins a
   const instancePlugin = load("plugins/instance/daemon/src/backend/index.ts", {
     "./tools/steam_cmd": { initSteamCmd() {} },
     "./service/version_adapter": { migrateConfig() {} },
-    "./settings": load("plugins/instance/daemon/src/backend/settings.ts"),
+    "./settings": load("plugins/instance/daemon/src/backend/settings.ts", {
+      "./instance_settings": load("plugins/instance/daemon/src/backend/instance_settings.ts", {
+        "./entity/config": { globalConfiguration: { config: ctx.settings.config } }
+      })
+    }),
     "./runtime": { setPluginContext: (context) => ({ context, stopping: false }) },
     "./service/router": { routerApp: { dispose() {} } },
     "./registries": registries,

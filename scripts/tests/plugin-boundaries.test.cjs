@@ -796,7 +796,12 @@ function daemonSettingsFixture(plugin, initialConfig = {}) {
       responseError: (_request, error) => { throw error; }
     }
   };
-  load(`plugins/${plugin}/daemon/src/backend/settings.ts`).registerSettings(ctx);
+  const overrides = plugin === "instance" ? {
+    "./instance_settings": load("plugins/instance/daemon/src/backend/instance_settings.ts", {
+      "./entity/config": { globalConfiguration: { config } }
+    })
+  } : {};
+  load(`plugins/${plugin}/daemon/src/backend/settings.ts`, overrides).registerSettings(ctx);
   const { validatePluginSettings } = load("core/common/src/plugin_contract.ts");
   return {
     config, saved, handlers,
