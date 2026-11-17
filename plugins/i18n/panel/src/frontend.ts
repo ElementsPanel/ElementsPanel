@@ -19,7 +19,7 @@ const SUPPORTED_LANGUAGES: PanelLanguageOption[] = [
   { label: "Deutsch", value: "de_de" },
   { label: "Français", value: "fr_fr" },
   { label: "Português Brasileiro", value: "pt_br" },
-  { label: "Thai", value: "th_th" },
+  { label: "ภาษาไทย", value: "th_th" },
   { label: "Español", value: "es_es" },
   { label: "한국어", value: "ko_kr" },
   { label: "Türkçe", value: "tr_tr" }

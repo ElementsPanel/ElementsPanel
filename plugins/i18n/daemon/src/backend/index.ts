@@ -8,17 +8,17 @@ const NAMESPACE = "translation";
 
 const SUPPORTED_LANGUAGES = [
   { value: "en_us", label: "English" },
-  { value: "zh_cn", label: "Simplified Chinese" },
-  { value: "zh_tw", label: "Traditional Chinese" },
-  { value: "ja_jp", label: "Japanese" },
-  { value: "ru_ru", label: "Russian" },
+  { value: "zh_cn", label: "简体中文" },
+  { value: "zh_tw", label: "繁體中文" },
+  { value: "ja_jp", label: "日本語" },
+  { value: "ru_ru", label: "Русский" },
   { value: "de_de", label: "Deutsch" },
-  { value: "fr_fr", label: "French" },
-  { value: "pt_br", label: "Brazilian Portuguese" },
-  { value: "th_th", label: "Thai" },
-  { value: "es_es", label: "Spanish" },
-  { value: "ko_kr", label: "Korean" },
-  { value: "tr_tr", label: "Turkish" }
+  { value: "fr_fr", label: "Français" },
+  { value: "pt_br", label: "Português Brasileiro" },
+  { value: "th_th", label: "ภาษาไทย" },
+  { value: "es_es", label: "Español" },
+  { value: "ko_kr", label: "한국어" },
+  { value: "tr_tr", label: "Türkçe" }
 ] as const;
 
 const SUPPORTED_LANGUAGE_VALUES = new Set<string>(SUPPORTED_LANGUAGES.map((item) => item.value));
