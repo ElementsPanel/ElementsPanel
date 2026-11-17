@@ -1,5 +1,6 @@
 import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDefineApi";
 import { computed, ref } from "vue";
+import { ctx } from "@elements-panel/sdk";
 import type {
   PanelRestartResponse,
   PanelRestartStatus,
@@ -23,7 +24,13 @@ async function waitForPanelRestart(processId: string) {
         timeout: 10000
       });
       const status = response.value;
-      if (status?.processId && status.processId !== processId && status.restarting === false) return;
+      if (
+        status?.processId &&
+        status.processId !== processId &&
+        status.restarting === false &&
+        status.ready === true
+      )
+        return;
     } catch (error) {
       const status = (error as { response?: { status?: number } })?.response?.status;
       if (status === 401 || status === 403) throw error;
@@ -33,7 +40,7 @@ async function waitForPanelRestart(processId: string) {
   }
 }
 
-/** Keep callers busy through installation and the replacement worker's first response. */
+/** Keep the shell busy until the replacement worker can serve a fresh page. */
 function useDefineMarketMutation<P, T>(baseConfig: Parameters<typeof useDefineApi>[0]) {
   const defineApi = useDefineApi<P, T & PanelRestartResponse>(baseConfig);
   return () => {
@@ -45,12 +52,22 @@ function useDefineMarketMutation<P, T>(baseConfig: Parameters<typeof useDefineAp
       isReady: computed(() => api.isReady.value && requests.value === 0),
       execute: async (...args: Parameters<typeof api.execute>) => {
         requests.value++;
+        let release!: () => void;
+        const finished = new Promise<void>((resolve) => {
+          release = resolve;
+        });
         try {
+          ctx.plugins.deferRefreshUntil?.(finished);
           const response = await api.execute(...args);
-          if (response.value?.panelRestart)
+          if (response.value?.panelRestart) {
             await waitForPanelRestart(response.value.panelRestart.processId);
+            window.location.reload();
+            // Keep the dialog and refresh gate until the document unloads.
+            await new Promise<never>(() => {});
+          }
           return response;
         } finally {
+          release();
           requests.value--;
         }
       }

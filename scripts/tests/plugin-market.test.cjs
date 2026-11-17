@@ -844,17 +844,25 @@ test("one-click updates keep per-target versions, isolate failures and never exe
   assert.equal(operations.updatingPlugins.value, false);
 });
 
-test("one-click updates stay busy through disconnects until a new panel worker responds", async () => {
+test("one-click updates retain the loading dialog until a ready replacement worker reloads the page", async () => {
   const restarted = deferred();
   const confirming = deferred();
+  const reloaded = deferred();
   const calls = [];
   const delays = [];
   let probes = 0;
   let refreshes = 0;
+  let gateReleased = false;
+  let reloads = 0;
+  const ctx = { plugins: {
+    refresh: async () => { refreshes++; },
+    deferRefreshUntil: (gate) => { gate.then(() => { gateReleased = true; }); }
+  } };
   const marketApi = createLoader({ compiler: ts, globals: true })(
     "plugins/market/panel/src/api.ts",
     {
       vue,
+      "@elements-panel/sdk": { ctx },
       "@/stores/useDefineApi": {
         useDefineApi: (base) => () => ({
           isLoading: vue.ref(false),
@@ -876,18 +884,22 @@ test("one-click updates stay busy through disconnects until a new panel worker r
             if (probes === 1) return { value: { processId: "old", restarting: false } };
             if (probes === 2) throw new Error("Connection refused");
             if (probes === 3) return { value: { processId: "new", restarting: true } };
+            if (probes === 4) return { value: { processId: "new", restarting: false, ready: false } };
             confirming.resolve();
             return restarted.promise;
           }
         })
       }
     },
-    { setTimeout: (callback, delay) => { delays.push(delay); return setImmediate(callback); } }
+    {
+      setTimeout: (callback, delay) => { delays.push(delay); return setImmediate(callback); },
+      window: { location: { reload() { reloads++; reloaded.resolve(); } } }
+    }
   );
   const batchApi = marketApi.updateMarketBatch();
   const operations = load("plugins/market/panel/src/operations.ts", {
     vue,
-    "@/plugin/context": { ctx: { plugins: { refresh: async () => { refreshes++; } } } },
+    "@/plugin/context": { ctx },
     "./api": { ...marketApi, updateMarketBatch: () => batchApi }
   });
   const work = operations.updateMarketPlugins([{
@@ -901,17 +913,23 @@ test("one-click updates stay busy through disconnects until a new panel worker r
   assert.equal(operations.updatingPlugins.value, true);
   assert.equal(operations.updateProgress.value.completed, 0);
   assert.equal(refreshes, 0);
-  assert.deepEqual(delays, [1000, 1000, 1000]);
+  assert.deepEqual(delays, [1000, 1000, 1000, 1000]);
   assert.equal(calls.filter((call) => call.method === "POST").length, 1);
+  assert.equal(reloads, 0);
+  assert.equal(gateReleased, false);
 
-  restarted.resolve({ value: { processId: "new", restarting: false } });
-  const results = await work;
-  assert.equal(results[0].result.installedVersion, "2.0.0");
-  assert.equal(operations.applyingChanges.value, false);
-  assert.equal(operations.updatingPlugins.value, false);
-  assert.equal(batchApi.isLoading.value, false);
-  assert.equal(batchApi.isReady.value, true);
-  assert.equal(refreshes, 1);
+  let finished = false;
+  work.then(() => { finished = true; });
+  restarted.resolve({ value: { processId: "new", restarting: false, ready: true } });
+  await reloaded.promise;
+  assert.equal(reloads, 1);
+  assert.equal(finished, false);
+  assert.equal(gateReleased, false);
+  assert.equal(operations.applyingChanges.value, true);
+  assert.equal(operations.updatingPlugins.value, true);
+  assert.equal(batchApi.isLoading.value, true);
+  assert.equal(batchApi.isReady.value, false);
+  assert.equal(refreshes, 0);
 });
 
 test("mixed update batches submit plugins and both runtimes together", async () => {

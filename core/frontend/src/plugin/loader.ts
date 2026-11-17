@@ -30,6 +30,17 @@ const FOUNDATION_SERVICES: Record<string, string> = {
 const ESSENTIAL_PLUGIN_IDS = new Set(Object.keys(FOUNDATION_SERVICES));
 const change = createPluginQueue();
 const settle = trackPluginDisposal(ctx);
+const refreshGates = new Set<Promise<void>>();
+
+/** Keep the current shell alive while dependency changes and restarts settle. */
+export function deferPluginRefreshUntil(gate: Promise<void>) {
+  refreshGates.add(gate);
+  void gate.finally(() => refreshGates.delete(gate)).catch(() => {});
+}
+
+async function waitForPluginRefresh() {
+  while (refreshGates.size) await Promise.allSettled([...refreshGates]);
+}
 
 /**
  * Fetches plugin code and hands it to cordis.
@@ -563,7 +574,9 @@ async function reloadPluginInternal(id: string) {
 
 /** Re-reads what is installed and loads or unloads to match. */
 async function refreshPluginsInternal(discovered?: PluginSource[], forceFoundations = false) {
+  await waitForPluginRefresh();
   discovered ??= await discoverSources();
+  await waitForPluginRefresh();
   if (publicModulesChanged(discovered)) return discovered.map((source) => source.metadata);
   const next = new Map(discovered.map((source) => [source.metadata.id, source]));
   sources.clear();
@@ -761,7 +774,7 @@ export function watchPluginChanges(): () => void {
       retry = setTimeout(synchronize, 2000);
     });
   };
-  events.onmessage = (event) => {
+  const receive = (event: MessageEvent) => {
     let next: string;
     let nextVersion: string | undefined;
     try {
@@ -786,6 +799,10 @@ export function watchPluginChanges(): () => void {
     revision = next;
     if (retry) clearTimeout(retry);
     synchronize();
+  };
+  events.onmessage = (event) => {
+    if (refreshGates.size) void waitForPluginRefresh().then(() => receive(event));
+    else receive(event);
   };
   return () => {
     stopped = true;

@@ -32,10 +32,13 @@ export function pluginAssets(ctx: PanelPluginContext): Koa.Middleware {
       ctx.logger.warn("Failed to refresh plugin graph", error);
     }
   }, 2000);
-  ctx.effect(() => () => {
+  const closeStreams = () => {
     for (const stream of streams) stream.end();
     streams.clear();
-  });
+  };
+  // Release long-lived HTTP replies before the server waits for transport cleanup.
+  ctx.on("process/restarting", closeStreams);
+  ctx.effect(() => closeStreams);
   return async (requestCtx, next) => {
     if (process.env.EPANEL_DEV === "1" && requestCtx.path.startsWith("/plugins/__dev/")) {
       const development = developmentRuntime();

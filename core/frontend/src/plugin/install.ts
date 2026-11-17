@@ -1,6 +1,7 @@
 import { ctx } from "./context";
 import {
   bootstrapPanelFrontendPlugins,
+  deferPluginRefreshUntil,
   auditFrontendPlugins,
   getPluginDiagnostics,
   getLoadedPlugins,
@@ -18,6 +19,7 @@ declare global {
       unload: typeof unloadPlugin;
       reload: typeof reloadPlugin;
       refresh: typeof refreshPlugins;
+      deferRefreshUntil: typeof deferPluginRefreshUntil;
       loaded: typeof getLoadedPlugins;
       diagnostics: typeof getPluginDiagnostics;
       audit: typeof auditFrontendPlugins;
@@ -38,6 +40,7 @@ export async function setupPanelFrontendPlugins() {
     unload: unloadPlugin,
     reload: reloadPlugin,
     refresh: refreshPlugins,
+    deferRefreshUntil: deferPluginRefreshUntil,
     audit: auditFrontendPlugins
   });
 
@@ -49,6 +52,7 @@ export async function setupPanelFrontendPlugins() {
     unload: unloadPlugin,
     reload: reloadPlugin,
     refresh: refreshPlugins,
+    deferRefreshUntil: deferPluginRefreshUntil,
     loaded: getLoadedPlugins,
     diagnostics: getPluginDiagnostics,
     audit: auditFrontendPlugins

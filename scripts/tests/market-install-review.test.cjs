@@ -160,6 +160,7 @@ async function fixture(t, { sides = ["panel"], version = "1.0.0" } = {}) {
     settingsForm: { declare() {} },
     plugins: {
       get restartPending() { return state.restartPending === true; },
+      frontendManifest: () => state.frontendManifest ?? [],
       deferRestartUntil: (gate) => { state.restartGate = gate; },
       async updateBatch(options) {
         state.panelBatch = options;
@@ -468,7 +469,7 @@ test("panel runtime updates defer restart until the HTTP reply and ignore stale 
   assert.equal(result.restartRequired, false);
   assert.deepEqual(result.panelRestart, { processId: status.processId });
   assert.deepEqual(await env.request("get", "/plugin/restart-status"), {
-    processId: status.processId, restarting: true
+    processId: status.processId, restarting: true, ready: false
   });
   assert.deepEqual(result.updatedTargets, [{ label: "", currentVersion: "1.0.0" }]);
   let released = false;
@@ -482,6 +483,29 @@ test("panel runtime updates defer restart until the HTTP reply and ignore stale 
   const stale = await env.request("post", "/runtime/update", { side: "panel", version: "1.0.0", daemonIds: [] });
   assert.deepEqual(stale.updatedTargets, []);
   assert.equal(env.state.runtimeUpdate, undefined);
+});
+
+test("restart readiness requires active foundations and complete frontend entries", async (t) => {
+  const env = await fixture(t);
+  env.state.frontendManifest = ["runtime", "i18n", "console"].map((id) => ({
+    metadata: { id, frontendRequired: true }, entry: `./${id}/frontend/index.js`
+  }));
+  env.state.inventoryExtra = ["runtime", "i18n", "console"].map((id) => ({ id, state: "active" }));
+  const status = () => env.request("get", "/plugin/restart-status");
+  assert.equal((await status()).ready, true);
+  env.state.frontendManifest[0].metadata.restartRequired = true;
+  assert.equal((await status()).ready, false);
+  env.state.frontendManifest[0].metadata.restartRequired = false;
+  env.state.inventoryExtra[1].state = "loading";
+  assert.equal((await status()).ready, false);
+  env.state.inventoryExtra[1].state = "active";
+  env.state.frontendManifest[2].entry = "";
+  assert.equal((await status()).ready, false);
+  env.state.frontendManifest[2].entry = "./console/frontend/index.js";
+  env.state.frontendManifest.push({ metadata: { id: "required", frontendRequired: true }, entry: "./required/frontend/index.js" });
+  assert.equal((await status()).ready, false);
+  env.state.inventoryExtra.push({ id: "required", state: "active" });
+  assert.equal((await status()).ready, true);
 });
 
 test("daemon runtime updates recheck versions, isolate failures and only change selected nodes", async (t) => {

@@ -328,6 +328,8 @@ export interface FrontendPluginsService {
   reload(id: string): Promise<LoadedPanelFrontendPlugin>;
   /** Re-reads the installed plugins and loads or unloads to match. */
   refresh(): Promise<readonly PanelFrontendPluginMetadata[]>;
+  /** Delay refreshes and server notifications until dependency changes settle. */
+  deferRefreshUntil(gate: Promise<void>): void;
   /** Throws only when an entry declared `frontendRequired` is not active. */
   audit(): void;
 }

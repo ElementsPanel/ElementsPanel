@@ -454,7 +454,7 @@ test("a revision changes when a nested module changes, and public assets never r
   const entries = [
     { metadata: { id: "test" }, assetDirectory: "test", frontendDirectory: directory, revision }
   ];
-  let poll, dispose;
+  let poll, dispose, restarting;
   let version = "1.0.0";
   const serve = load("plugins/server/panel/src/backend/plugin_assets.ts", {
     "koa-static": (root) => async (request) => {
@@ -469,6 +469,10 @@ test("a revision changes when a nested module changes, and public assets never r
     },
     effect(fn) {
       dispose = fn();
+    },
+    on(event, callback) {
+      assert.equal(event, "process/restarting");
+      restarting = callback;
     },
     logger: { warn() {} }
   });
@@ -494,6 +498,8 @@ test("a revision changes when a nested module changes, and public assets never r
   entries.length = 0;
   poll();
   assert.notEqual(events.body.read().toString(), initial);
+  restarting();
+  assert.equal(events.body.writableEnded, true, "the notification response ends before transport shutdown");
   dispose();
 });
 

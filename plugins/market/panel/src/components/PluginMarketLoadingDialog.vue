@@ -12,18 +12,15 @@ import { applyingChanges, changingDependencies } from "../operations";
     persistent
     no-click-animation
   >
-    <VCard>
+    <VCard :title="t('TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES')">
       <VCardText class="d-flex flex-column align-center ga-4 pa-6">
         <VProgressLinear
           indeterminate
           color="primary"
           :height="6"
           rounded
-          aria-hidden="true"
+          :aria-label="t('TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES')"
         />
-        <div class="text-body-2 text-center" role="status">
-          {{ t("TXT_CODE_PLUGIN_MARKET_UPDATING_DEPENDENCIES") }}
-        </div>
       </VCardText>
     </VCard>
   </VDialog>

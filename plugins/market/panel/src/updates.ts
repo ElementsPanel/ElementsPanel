@@ -1,6 +1,7 @@
 export interface PanelRestartStatus {
   processId: string;
   restarting: boolean;
+  ready: boolean;
 }
 
 export interface PanelRestartResponse {

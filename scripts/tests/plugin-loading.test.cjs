@@ -216,6 +216,35 @@ test("a changed panel runtime version reloads the browser after the event stream
   assert.equal(events.closed, true);
 });
 
+test("dependency operations defer plugin synchronization and runtime reload notifications", async (t) => {
+  let events;
+  let reloads = 0;
+  const f = fixture(t, {
+    EventSource: class {
+      constructor() { events = this; }
+      close() { this.closed = true; }
+    },
+    window: { location: { reload() { reloads++; } }, dispatchEvent() {} }
+  });
+  await f.start();
+  const stop = f.loader.watchPluginChanges();
+  t.after(stop);
+  events.onmessage({ data: JSON.stringify({ revision: "one", version: "1.0.0" }) });
+  await settle();
+  const gate = deferred();
+  f.loader.deferPluginRefreshUntil(gate.promise);
+  const requests = f.requests.length;
+  const refresh = f.loader.refreshPlugins();
+  events.onmessage({ data: JSON.stringify({ revision: "two", version: "2.0.0" }) });
+  await settle();
+  assert.equal(f.requests.length, requests, "the running shell does not discover partially installed modules");
+  assert.equal(reloads, 0);
+  gate.resolve();
+  await refresh;
+  await settle();
+  assert.equal(reloads, 1);
+});
+
 test("startup discovers once and preloads all assets while foundation initialization waits", async (t) => {
   const f = fixture(t);
   const startup = deferred();
