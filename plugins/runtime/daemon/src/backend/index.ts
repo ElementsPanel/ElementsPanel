@@ -1,14 +1,8 @@
-import { setupLogging } from "./service/log";
-import { setupProcessLifecycle } from "./lifecycle";
 import fs from "fs-extra";
+import i18next from "i18next";
+import type { Context as KoaContext } from "koa";
 import { ensureExecutable } from "mcsmanager-common";
-import {
-  GOLANG_ZIP_PATH,
-  LOCAL_PRESET_LANG_PATH,
-  PTY_PATH,
-  SEVEN_ZIP_PATH,
-  ZIP_TIMEOUT_SECONDS
-} from "./const";
+import type { DaemonPluginContext } from "../../../../../core/daemon/src/plugin";
 import {
   compress,
   decompress,
@@ -16,19 +10,25 @@ import {
   listArchiveEntries
 } from "./common/compress";
 import { GitignoreMatcher } from "./common/gitignore_matcher";
+import {
+  GOLANG_ZIP_PATH,
+  LOCAL_PRESET_LANG_PATH,
+  PTY_PATH,
+  SEVEN_ZIP_PATH,
+  ZIP_TIMEOUT_SECONDS
+} from "./const";
 import { globalConfiguration } from "./entity/config";
-import type { DaemonPluginContext } from "../../../../../core/daemon/src/plugin";
+import { setupProcessLifecycle } from "./lifecycle";
+import { registerOverview } from "./overview";
+import { FeaturesService, OverviewService } from "./registries";
+import { BackgroundTasks } from "./service/background_tasks";
 import { checkDependencies } from "./service/dependencies";
 import downloadManager from "./service/download_manager";
+import { setupLogging } from "./service/log";
 import { missionPassport } from "./service/mission_passport";
 import { check7zipStatus } from "./service/seven_zip_service";
 import { getVersion, initVersionManager } from "./service/version";
-import i18next from "i18next";
 import { proxyIncomingMessage, sendFile } from "./utils/speed_limit";
-import type { Context as KoaContext } from "koa";
-import { FeaturesService, OverviewService } from "./registries";
-import { registerOverview } from "./overview";
-import { BackgroundTasks } from "./service/background_tasks";
 
 function isMultipart(requestCtx: KoaContext) {
   return String(requestCtx.request?.headers?.["content-type"] ?? "")
@@ -102,7 +102,7 @@ export async function apply(ctx: DaemonPluginContext) {
       if (!language) return;
       ctx.logger.warn(ctx.i18n.$t("TXT_CODE_COMMON_NODE_LANGUAGE_HAS_BEEN_CHANGED"), language);
       void i18next.changeLanguage(language);
-      fs.remove(LOCAL_PRESET_LANG_PATH, () => {});
+      fs.remove(LOCAL_PRESET_LANG_PATH, () => { });
       config.language = language;
     }
   });
@@ -156,10 +156,12 @@ export async function apply(ctx: DaemonPluginContext) {
 
   const version = getVersion();
   console.log(`
- _____ _                   _       _____             _
-|   __| |___ _____ ___ ___| |_ ___|  _  |___ ___ ___| |
-|   __| | -_|     | -_|   |  _|_ -|   __| .'|   | -_| |
-|_____|_|___|_|_|_|___|_|_|_| |___|__|  |__,|_|_|___|_|
+  ▄▄▄▄▄▄▄ ▄▄                                       ▄▄▄▄▄▄                 ▄▄ 
+ █▀██▀▀▀   ██                            █▄       █▀██▀▀▀█▄                ██
+   ██      ██       ▄              ▄    ▄██▄        ██▄▄▄█▀    ▄           ██
+   ████    ██ ▄█▀█▄ ███▄███▄ ▄█▀█▄ ████▄ ██ ▄██▀█   ██▀▀▀▄▀▀█▄ ████▄ ▄█▀█▄ ██
+   ██      ██ ██▄█▀ ██ ██ ██ ██▄█▀ ██ ██ ██ ▀███▄ ▄ ██   ▄█▀██ ██ ██ ██▄█▀ ██
+   ▀█████ ▄██▄▀█▄▄▄▄██ ██ ▀█▄▀█▄▄▄▄██ ▀█▄███▄▄██▀ ▀██▀  ▄▀█▄██▄██ ▀█▄▀█▄▄▄▄██
 
  + Copyright ${new Date().getFullYear()} ElementsPanel
  + Based on MCSManager

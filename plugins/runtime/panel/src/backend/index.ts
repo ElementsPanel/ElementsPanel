@@ -1,11 +1,6 @@
-import { setupLogging } from "./service/log";
-import { setupProcessLifecycle } from "./lifecycle";
 import type Koa from "koa";
 import { GlobalVariable } from "mcsmanager-common";
-import { ROLE } from "./roles";
-import validator from "./middleware/validator";
-import { singletonMemoryRedis } from "./service/mini_redis";
-import { execWithMutexId } from "./utils/sync";
+import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 import type {
   AuthStats,
   GuardedRoute,
@@ -13,12 +8,17 @@ import type {
   RequestIdentity,
   UserAccessPolicy
 } from "../../../../../core/panel/src/app/plugin/guard";
-import { initSystemConfig, saveSystemConfig, systemConfig } from "./setting";
-import { getVersion, initVersionManager } from "./version";
-import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
+import { setupProcessLifecycle } from "./lifecycle";
+import validator from "./middleware/validator";
+import { registerOverview } from "./overview";
+import { ROLE } from "./roles";
+import { setupLogging } from "./service/log";
+import { singletonMemoryRedis } from "./service/mini_redis";
 import { OperationLogger } from "./service/operation_logger";
 import { OverviewService } from "./service/overview";
-import { registerOverview } from "./overview";
+import { initSystemConfig, saveSystemConfig, systemConfig } from "./setting";
+import { execWithMutexId } from "./utils/sync";
+import { getVersion, initVersionManager } from "./version";
 
 const ANONYMOUS: RequestIdentity = {
   uuid: "",
@@ -181,10 +181,12 @@ export async function apply(ctx: PanelPluginContext) {
   );
   const version = getVersion();
   console.log(`
- _____ _                   _       _____             _
-|   __| |___ _____ ___ ___| |_ ___|  _  |___ ___ ___| |
-|   __| | -_|     | -_|   |  _|_ -|   __| .'|   | -_| |
-|_____|_|___|_|_|_|___|_|_|_| |___|__|  |__,|_|_|___|_|
+  ▄▄▄▄▄▄▄ ▄▄                                       ▄▄▄▄▄▄                 ▄▄ 
+ █▀██▀▀▀   ██                            █▄       █▀██▀▀▀█▄                ██
+   ██      ██       ▄              ▄    ▄██▄        ██▄▄▄█▀    ▄           ██
+   ████    ██ ▄█▀█▄ ███▄███▄ ▄█▀█▄ ████▄ ██ ▄██▀█   ██▀▀▀▄▀▀█▄ ████▄ ▄█▀█▄ ██
+   ██      ██ ██▄█▀ ██ ██ ██ ██▄█▀ ██ ██ ██ ▀███▄ ▄ ██   ▄█▀██ ██ ██ ██▄█▀ ██
+   ▀█████ ▄██▄▀█▄▄▄▄██ ██ ▀█▄▀█▄▄▄▄██ ▀█▄███▄▄██▀ ▀██▀  ▄▀█▄██▄██ ▀█▄▀█▄▄▄▄██
 
  + Copyright ${new Date().getFullYear()} ElementsPanel
  + Based on MCSManager
