@@ -315,10 +315,10 @@ const reconnectNode = async (node: NodeStatus) => {
         <VTextField
           v-model="searchQuery"
           class="dn-search__input"
-          :placeholder="t('TXT_CODE_DESKTOP_NODES_SEARCH')"
+          :label="t('TXT_CODE_DESKTOP_NODES_SEARCH')"
           prepend-inner-icon="mdi-magnify"
-          variant="solo"
-          density="compact"
+          variant="solo-filled"
+          density="comfortable"
           hide-details
           clearable
           autocomplete="off"
@@ -555,37 +555,11 @@ const reconnectNode = async (node: NodeStatus) => {
 
 .dn-search {
   flex: 1;
-  position: relative;
+  min-width: 0;
   max-width: 320px;
-
-  &__icon {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--desktop-window-text-muted);
-    font-size: 14px;
-    pointer-events: none;
-  }
 
   &__input {
     width: 100%;
-    padding: 7px 10px 7px 30px;
-    background: var(--desktop-window-titlebar-bg);
-    border: 1px solid var(--desktop-window-border);
-    border-radius: 6px;
-    color: var(--desktop-window-text);
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-
-    &::placeholder {
-      color: var(--desktop-window-text-muted);
-    }
-
-    &:focus {
-      border-color: var(--desktop-window-border);
-    }
   }
 }
 

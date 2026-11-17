@@ -1065,7 +1065,7 @@ test("market target changes preserve the routed page, search and active tab whil
     const container = navigation.parent;
     const toolbar = container.children.indexOf(find(Toolbar)[0].subTree.el);
     assert.ok(toolbar >= 0);
-    assert.equal(container.children[toolbar + 1], navigation, "tabs and the node selector occupy the row directly below the header");
+    assert.equal(container.children[toolbar + 1], navigation, "tabs occupy the row directly below the header");
     tabs.emit("update:modelValue", "updates");
     await new Promise(setImmediate);
     assert.equal(reads, 1);
@@ -1077,8 +1077,8 @@ test("market target changes preserve the routed page, search and active tab whil
     const updateAll = updateAllButton();
     const actions = updateAll.subTree.el.parent;
     const nodeSelector = find(Button).find((button) => button.vnode.props.class === "plugin-market-node-selector");
-    assert.equal(actions.parent, navigation, "update all shares the navigation row with the node selector");
-    assert.ok(actions.children.indexOf(updateAll.subTree.el) < actions.children.indexOf(nodeSelector.subTree.el.parent), "update all appears to the left of the node selector");
+    assert.equal(actions, header.subTree.el, "update all occupies the header actions");
+    assert.ok(actions.children.indexOf(nodeSelector.subTree.el.parent) < actions.children.indexOf(updateAll.subTree.el), "update all appears to the right of the node selector");
     assert.equal(updateAll.props.disabled, false);
     updateAll.emit("click");
     await new Promise(setImmediate);

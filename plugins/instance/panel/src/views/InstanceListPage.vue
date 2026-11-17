@@ -330,12 +330,20 @@ onMounted(async () => {
             <VSelect v-model="operationForm.status" :items="[
               { title: t('TXT_CODE_COMMON_ALL'), value: '' },
               ...Object.entries(INSTANCE_STATUS).map(([value, title]) => ({ title, value }))
-            ]" hide-details @update:model-value="handleQueryInstance">
+            ]" hide-details density="comfortable" variant="solo-filled" @update:model-value="handleQueryInstance">
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect>
-            <VTextField v-model="operationForm.instanceName" :placeholder="t('TXT_CODE_COMMON_SEARCH_BY_INSTANCE_NAME')"
-              prepend-inner-icon="mdi-magnify" hide-details density="comfortable" @keyup.enter="handleQueryInstance"
-              @update:model-value="handleQueryInstance" />
+            <VTextField
+              v-model="operationForm.instanceName"
+              :label="t('TXT_CODE_COMMON_SEARCH_BY_INSTANCE_NAME')"
+              prepend-inner-icon="mdi-magnify"
+              hide-details
+              clearable
+              density="comfortable"
+              variant="solo-filled"
+              @keyup.enter="handleQueryInstance"
+              @update:model-value="operationForm.instanceName = $event ?? ''; handleQueryInstance()"
+            />
           </div>
         </template>
         <template #actions>

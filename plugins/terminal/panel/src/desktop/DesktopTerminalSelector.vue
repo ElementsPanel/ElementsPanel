@@ -53,9 +53,9 @@ const openConsole = (node: NodeStatus) => {
         <div class="dts-toolbar">
             <div class="dts-search">
                 <div class="dts-search-input-wrap">
-                    <VTextField v-model="searchQuery" class="dts-search-input" variant="solo" density="compact"
+                    <VTextField v-model="searchQuery" class="dts-search-input" variant="solo-filled" density="comfortable"
                         hide-details clearable prepend-inner-icon="mdi-magnify"
-                        :placeholder="t('TXT_CODE_COMMON_SEARCH_BY_DAEMON_NAME') || 'Search nodes...'" />
+                        :label="t('TXT_CODE_COMMON_SEARCH_BY_DAEMON_NAME')" />
                 </div>
             </div>
         </div>
@@ -119,37 +119,11 @@ const openConsole = (node: NodeStatus) => {
 
 .dts-search-input-wrap {
     flex: 1;
-    position: relative;
-}
-
-.dts-search-icon {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--desktop-window-text-muted);
-    font-size: 14px;
-    pointer-events: none;
+    min-width: 0;
 }
 
 .dts-search-input {
     width: 100%;
-    padding: 7px 10px 7px 30px;
-    background: var(--desktop-window-titlebar-bg);
-    border: 1px solid var(--desktop-window-border);
-    border-radius: 6px;
-    color: var(--desktop-window-text);
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-
-    &::placeholder {
-        color: var(--desktop-window-text-muted);
-    }
-
-    &:focus {
-        border-color: var(--desktop-window-border);
-    }
 }
 
 .dts-list-wrap {

@@ -391,9 +391,16 @@ onMounted(async () => {
   <div class="container">
     <PageToolbar :title="t('TXT_CODE_MOD_MANAGER')" icon="mdi-package-variant-closed">
       <template #search>
-        <div v-if="activeKey === TAB_KEY_MODS || activeKey === TAB_KEY_PLUGINS" class="search-input">
-          <VTextField v-model="headerSearchQuery" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" clearable density="compact" append-inner-icon="mdi-magnify" :style="isPhone ? 'width: 180px' : 'width: 300px'" hide-details />
-        </div>
+        <VTextField
+          v-if="activeKey === TAB_KEY_MODS || activeKey === TAB_KEY_PLUGINS"
+          v-model="headerSearchQuery"
+          :label="t('TXT_CODE_SEARCH_PLACEHOLDER')"
+          prepend-inner-icon="mdi-magnify"
+          hide-details
+          clearable
+          density="comfortable"
+          variant="solo-filled"
+        />
       </template>
       <template #actions>
         <VBtn v-if="activeKey === TAB_KEY_MODS || activeKey === TAB_KEY_PLUGINS" variant="tonal" @click="onUploadClick">

@@ -377,8 +377,8 @@ onMounted(async () => {
         <div v-if="activeKey === TAB_KEY_MODS || activeKey === TAB_KEY_PLUGINS" class="dmm-header">
             <div class="dmm-header__right">
                 <div class="dmm-search">
-                    <VTextField v-model="headerSearchQuery" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')"
-                        variant="solo" density="compact" hide-details clearable prepend-inner-icon="mdi-magnify" width="200" />
+                    <VTextField v-model="headerSearchQuery" :label="t('TXT_CODE_SEARCH_PLACEHOLDER')"
+                        variant="solo-filled" density="comfortable" hide-details clearable prepend-inner-icon="mdi-magnify" width="200" />
                 </div>
                 <VBtn class="dmm-btn dmm-btn--sm" variant="text" @click="onUploadClick" :title="t('TXT_CODE_COMMON_UPLOAD')">
                     <VIcon icon="mdi-upload-outline"  /> {{ t("TXT_CODE_COMMON_UPLOAD") }}
@@ -598,20 +598,7 @@ onMounted(async () => {
 }
 
 .dmm-search {
-    :deep(.v-field) {
-        background: var(--desktop-window-titlebar-bg);
-        border-color: var(--desktop-window-border);
-        color: var(--desktop-window-text);
-        font-size: 12px;
-
-        &::placeholder {
-            color: var(--desktop-window-text-muted);
-        }
-    }
-
-    :deep(.v-field__append-inner) {
-        color: var(--desktop-window-text-muted);
-    }
+    min-width: 0;
 }
 
 .dmm-body {

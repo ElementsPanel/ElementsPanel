@@ -225,16 +225,16 @@ onUnmounted(() => {
     <div class="ma">
         <div class="ma-toolbar">
             <div class="ma-toolbar__left">
-                <VSelect v-model="statusFilter" :items="statusSelectItems" variant="solo" density="compact"
+                <VSelect v-model="statusFilter" :items="statusSelectItems" variant="solo-filled" density="comfortable"
                     hide-details class="ma-select__input">
                   <template #no-data><Empty :icon="false" compact /></template>
                 </VSelect>
             </div>
 
             <div class="ma-toolbar__right">
-                <VTextField v-model="searchText" class="ma-search__input" density="compact" variant="solo"
-                    hide-details clearable :placeholder="t('TXT_CODE_DESKTOP_IM_SEARCH')"
-                    prepend-inner-icon="mdi-magnify" />
+                <VTextField v-model="searchText" class="ma-search__input" density="comfortable" variant="solo-filled"
+                    hide-details clearable :label="t('TXT_CODE_DESKTOP_IM_SEARCH')"
+                    prepend-inner-icon="mdi-magnify" @update:model-value="searchText = $event ?? ''" />
 
                 <VBtn class="ma-btn ma-btn--icon" icon variant="text" :loading="loading"
                     :aria-label="t('TXT_CODE_COMMON_REFRESH')" @click="fetchInstances()">
@@ -370,11 +370,6 @@ onUnmounted(() => {
     &__input {
         min-width: 180px;
         max-width: 220px;
-
-        :deep(.v-field) {
-            background: var(--desktop-window-titlebar-bg);
-            box-shadow: none;
-        }
     }
 }
 
@@ -383,12 +378,7 @@ onUnmounted(() => {
 
     &__input {
         width: 180px;
-        transition: all 0.2s;
-
-        :deep(.v-field) {
-            background: var(--desktop-window-titlebar-bg);
-            box-shadow: none;
-        }
+        min-width: 0;
     }
 }
 

@@ -212,42 +212,6 @@ onBeforeUnmount(() => {
           />
         </template>
         <template #actions>
-          <PluginMarketChanges />
-          <VBtn
-            variant="text"
-            :loading="activeTab === 'updates' ? updatesLoading : loading"
-            :disabled="applyingChanges"
-            @click="refreshActive"
-          >
-            {{ t("TXT_CODE_PLUGIN_MARKET_REFRESH") }}
-          </VBtn>
-        </template>
-      </PageToolbar>
-
-      <div class="plugin-market-navigation">
-        <VTabs
-          v-model="activeTab"
-          align-tabs="start"
-          color="primary"
-          density="compact"
-          class="plugin-market-tabs"
-          :disabled="applyingChanges || Boolean(activeOperations)"
-        >
-          <VTab value="browse">{{ t("TXT_CODE_PLUGIN_MARKET_BROWSE") }}</VTab>
-          <VTab value="updates">{{ t("TXT_CODE_PLUGIN_MARKET_UPDATES") }}</VTab>
-        </VTabs>
-        <div class="plugin-market-navigation-actions">
-          <VBtn
-            v-if="activeTab === 'updates'"
-            class="plugin-market-update-all"
-            color="primary"
-            prepend-icon="mdi-update"
-            :disabled="!updateView?.canUpdate"
-            :loading="updateView?.preparingTargets"
-            @click="updateView?.updateAll()"
-          >
-            {{ t("TXT_CODE_PLUGIN_MARKET_UPDATE_ALL") }}
-          </VBtn>
           <VMenu location="bottom end">
             <template #activator="{ props: menuProps }">
               <VBtn
@@ -281,19 +245,44 @@ onBeforeUnmount(() => {
               />
             </VList>
           </VMenu>
-        </div>
-      </div>
+          <PluginMarketChanges v-if="activeTab === 'browse'" />
+          <VBtn
+            v-else
+            class="plugin-market-update-all"
+            color="primary"
+            :disabled="!updateView?.canUpdate"
+            :loading="updateView?.preparingTargets"
+            @click="updateView?.updateAll()"
+          >
+            {{ t("TXT_CODE_PLUGIN_MARKET_UPDATE_ALL") }}
+          </VBtn>
+          <VBtn
+            variant="text"
+            :loading="activeTab === 'updates' ? updatesLoading : loading"
+            :disabled="applyingChanges"
+            @click="refreshActive"
+          >
+            {{ t("TXT_CODE_PLUGIN_MARKET_REFRESH") }}
+          </VBtn>
+        </template>
+      </PageToolbar>
 
-      <PluginMarketUpdates
-        v-if="activeTab === 'updates'"
-        ref="updateView"
-        :keyword="keyword"
-        :daemon-id="selectedDaemonId"
-        @loading="updatesLoading = $event"
-      />
-
-      <div v-show="activeTab === 'browse'">
-        <div v-if="visiblePlugins.length" class="plugin-market-pagination">
+      <div class="plugin-market-navigation">
+        <VTabs
+          v-model="activeTab"
+          align-tabs="start"
+          color="primary"
+          density="compact"
+          class="plugin-market-tabs"
+          :disabled="applyingChanges || Boolean(activeOperations)"
+        >
+          <VTab value="browse">{{ t("TXT_CODE_PLUGIN_MARKET_BROWSE") }}</VTab>
+          <VTab value="updates">{{ t("TXT_CODE_PLUGIN_MARKET_UPDATES") }}</VTab>
+        </VTabs>
+        <div
+          v-if="activeTab === 'browse' && visiblePlugins.length"
+          class="plugin-market-pagination"
+        >
           <VPagination
             v-model="currentPage"
             :length="totalPages"
@@ -309,7 +298,17 @@ onBeforeUnmount(() => {
             <template #no-data><Empty :icon="false" compact /></template>
           </VSelect>
         </div>
+      </div>
 
+      <PluginMarketUpdates
+        v-if="activeTab === 'updates'"
+        ref="updateView"
+        :keyword="keyword"
+        :daemon-id="selectedDaemonId"
+        @loading="updatesLoading = $event"
+      />
+
+      <div v-show="activeTab === 'browse'">
         <div v-if="loading && !plugins.length" class="plugin-market-loading">
           <VProgressCircular indeterminate />
         </div>
@@ -450,15 +449,6 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
 }
 
-.plugin-market-navigation-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-left: auto;
-}
-
 .node-name {
   max-width: 160px;
   overflow: hidden;
@@ -472,7 +462,6 @@ onBeforeUnmount(() => {
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 20px;
 }
 
 .plugin-market-pagination > .v-pagination {

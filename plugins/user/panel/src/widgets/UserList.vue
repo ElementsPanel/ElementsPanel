@@ -271,6 +271,8 @@ onMounted(async () => {
             <VSelect
               v-model="currentRole"
               :items="roleItems"
+              density="comfortable"
+              variant="solo-filled"
               hide-details
               class="role-select"
               @update:model-value="search"
@@ -279,9 +281,10 @@ onMounted(async () => {
             </VSelect>
             <VTextField
               v-model.trim="operationForm.name"
-              :placeholder="t('TXT_CODE_COMMON_SEARCH_BY_USERNAME')"
+              :label="t('TXT_CODE_COMMON_SEARCH_BY_USERNAME')"
               prepend-inner-icon="mdi-magnify"
               density="comfortable"
+              variant="solo-filled"
               hide-details
               clearable
               @update:model-value="search"

@@ -763,7 +763,17 @@ onUnmounted(() => {
     <template v-if="desktopVuetifyMode">
         <div ref="dfmRootRef" class="dfm dfm-vuetify" :class="{ 'dfm-vuetify--dragging': opacity }" @dragover.prevent="handleDragover" @dragleave.prevent="handleDragleave" @drop.prevent="handleDrop">
             <div class="dfm-toolbar">
-                <VTextField :disabled="!currentTabs.length" v-model="operationForm.name" :placeholder="t('TXT_CODE_COMMON_SEARCH_BY_FILE_NAME')" prepend-inner-icon="mdi-magnify" variant="solo" density="compact" hide-details clearable @update:model-value="handleSearchChange()" />
+                <VTextField
+                    :disabled="!currentTabs.length"
+                    v-model="operationForm.name"
+                    :label="t('TXT_CODE_COMMON_SEARCH_BY_FILE_NAME')"
+                    prepend-inner-icon="mdi-magnify"
+                    variant="solo-filled"
+                    density="comfortable"
+                    hide-details
+                    clearable
+                    @update:model-value="operationForm.name = $event ?? ''; handleSearchChange()"
+                />
                 <VSpacer />
                 <VBtn :disabled="!currentTabs.length" variant="text" @click="downloadFromURLFile"><VIcon icon="mdi-cloud-download-outline" />{{ t("TXT_CODE_COMMON_REMOTE_DOWNLOAD") }}</VBtn>
                 <VBtn :disabled="!currentTabs.length" variant="text" @click="desktopFileInput?.click()"><VIcon icon="mdi-upload-outline" />{{ t("TXT_CODE_FILE_UPLOAD") }}</VBtn>

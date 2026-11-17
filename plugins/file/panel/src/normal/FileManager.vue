@@ -389,7 +389,18 @@ onUnmounted(() => {
           <span>{{ pageTitle }}</span>
         </VCol>
         <VCol cols="12" lg="4" class="file-manager-search">
-          <VTextField :disabled="!currentTabs.length" v-model.trim.lazy="operationForm.name" :placeholder="t('TXT_CODE_COMMON_SEARCH_BY_FILE_NAME')" prepend-inner-icon="mdi-magnify" hide-details @change="handleSearchChange" />
+          <VTextField
+            :disabled="!currentTabs.length"
+            v-model.trim.lazy="operationForm.name"
+            :label="t('TXT_CODE_COMMON_SEARCH_BY_FILE_NAME')"
+            prepend-inner-icon="mdi-magnify"
+            hide-details
+            clearable
+            density="comfortable"
+            variant="solo-filled"
+            @change="handleSearchChange"
+            @click:clear="operationForm.name = ''; handleSearchChange()"
+          />
         </VCol>
         <VCol cols="12" lg="5" class="file-manager-actions">
           <span class="selected-count" :class="{ 'selected-count-empty': !selectedRowKeys.length }">

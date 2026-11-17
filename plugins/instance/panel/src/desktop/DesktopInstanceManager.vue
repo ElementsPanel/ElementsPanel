@@ -545,14 +545,14 @@ onUnmounted(() => {
             <div class="dim-toolbar__left">
                 <div class="dim-select">
                     <VSelect v-model="selectedNodeId" :label="t('TXT_CODE_COMMON_DAEMONS')" :items="nodeSelectItems"
-                        variant="solo" density="compact" hide-details class="dim-select__input"
+                        variant="solo-filled" density="comfortable" hide-details class="dim-select__input"
                         :disabled="nodeSelectItems.length === 0">
                       <template #no-data><Empty :icon="false" compact /></template>
                     </VSelect>
                 </div>
 
                 <div class="dim-select">
-                    <VSelect v-model="statusFilter" :items="statusSelectItems" variant="solo" density="compact"
+                    <VSelect v-model="statusFilter" :items="statusSelectItems" variant="solo-filled" density="comfortable"
                         hide-details class="dim-select__input">
                       <template #no-data><Empty :icon="false" compact /></template>
                     </VSelect>
@@ -591,9 +591,9 @@ onUnmounted(() => {
                     </VBtn>
                 </div>
 
-                <VTextField v-model="searchText" class="dim-search__input" density="compact" variant="solo"
-                    hide-details clearable :placeholder="t('TXT_CODE_DESKTOP_IM_SEARCH')"
-                    prepend-inner-icon="mdi-magnify" />
+                <VTextField v-model="searchText" class="dim-search__input" density="comfortable" variant="solo-filled"
+                    hide-details clearable :label="t('TXT_CODE_DESKTOP_IM_SEARCH')"
+                    prepend-inner-icon="mdi-magnify" @update:model-value="searchText = $event ?? ''" />
 
                 <VBtn class="dim-btn dim-btn--icon" icon variant="text" :loading="loading"
                     :aria-label="t('TXT_CODE_COMMON_REFRESH')" @click="fetchInstances()">
@@ -827,59 +827,13 @@ onUnmounted(() => {
     }
 
     &__input {
-        border: 1px solid var(--desktop-window-border);
-        border-radius: 6px;
-        color: var(--desktop-window-text);
-        padding: 6px 10px;
-        font-size: 12px;
-        outline: none;
-        cursor: pointer;
         max-width: 200px;
-
-        &:focus {
-            border-color: rgba(22, 119, 255, 0.5);
-        }
-
-        option {
-            background: var(--desktop-window-bg);
-            color: var(--desktop-window-text);
-        }
     }
 }
 
-.dim-search {
-    position: relative;
-
-    &__input {
-        border: 1px solid var(--desktop-window-border);
-        border-radius: 6px;
-        color: var(--desktop-window-text);
-        padding: 6px 10px 6px 28px;
-        font-size: 12px;
-        outline: none;
-        width: 180px;
-        transition: all 0.2s;
-
-        &::placeholder {
-            color: var(--desktop-window-text-muted);
-        }
-
-        &:focus {
-            border-color: rgba(22, 119, 255, 0.5);
-            width: 220px;
-        }
-    }
-
-    &__icon {
-        position: absolute;
-        left: 8px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 12px;
-        pointer-events: none;
-        display: flex;
-        align-items: center;
-    }
+.dim-search__input {
+    width: 180px;
+    min-width: 0;
 }
 
 .dim-btn {

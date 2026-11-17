@@ -54,17 +54,23 @@ const handleOpenDetailDialog = async () => {
                 { title: t('TXT_CODE_COMMON_OFFLINE'), value: false }
               ]"
               class="status-select"
+              density="comfortable"
+              variant="solo-filled"
               hide-details
             >
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect>
             <VTextField
               v-model.trim="operationForm.name"
-              :placeholder="t('TXT_CODE_COMMON_SEARCH_BY_DAEMON_NAME')"
+              :label="t('TXT_CODE_COMMON_SEARCH_BY_DAEMON_NAME')"
               class="node-search-field"
               density="comfortable"
+              variant="solo-filled"
               hide-details
+              clearable
               prepend-inner-icon="mdi-magnify"
+              @update:model-value="operationForm.name = $event ?? ''"
+              @click:clear="operationForm.current = 1"
               @change="operationForm.current = 1"
             />
           </div>
