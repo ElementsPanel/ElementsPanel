@@ -80,6 +80,7 @@ const cancel = () => {
     <VCard :title="t('TXT_CODE_FILE_UPLOAD')" rounded="xl">
       <VCardText class="upload-container">
         <VFileInput
+          class="flex-grow-0"
           :disabled="uploading"
           :label="t('TXT_CODE_COMMON_CHOOSE_FILE')"
           accept="*/*"

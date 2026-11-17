@@ -262,7 +262,8 @@ const open = (field: SettingField) => {
           <VBtn
             v-if="fileManager"
             type="button"
-            variant="outlined"
+            variant="tonal"
+            height="auto"
             :loading="field.key ? uploading.has(field.key) : false"
             @click="upload(field)"
           >
@@ -473,7 +474,7 @@ const open = (field: SettingField) => {
 .setting-file-input {
   display: flex;
   max-width: 520px;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 8px;
 }
 

@@ -122,19 +122,24 @@ onMounted(async () => {});
       <VCol
         v-for="i in imageList"
         :key="i.title + i.description + i.type"
-        :span="24"
+        cols="12"
         :lg="6"
         :md="8"
         :sm="12"
       >
-        <CardPanel class="images-card" @click="selectType(i.type)">
-          <template #title>{{ i.title }}</template>
-          <template #body>
-            <span>
-              {{ i.description }}
-            </span>
-          </template>
-        </CardPanel>
+        <VBtn
+          block
+          color="primary"
+          variant="tonal"
+          height="100%"
+          class="images-button text-none"
+          @click="selectType(i.type)"
+        >
+          <span class="d-flex flex-column ga-2 w-100">
+            <span class="text-body-large font-weight-bold">{{ i.title }}</span>
+            <span class="text-body-medium text-medium-emphasis">{{ i.description }}</span>
+          </span>
+        </VBtn>
       </VCol>
       </VRow>
     </VContainer>
@@ -181,12 +186,16 @@ onMounted(async () => {});
   }
 }
 
-.images-card {
-  cursor: pointer;
+.images-button {
+  padding: 16px;
+  letter-spacing: normal;
+  text-align: left;
 
-  &:hover {
-    border: 1px solid var(--color-gray-8);
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.16);
+  :deep(.v-btn__content) {
+    width: 100%;
+    justify-content: flex-start;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 }
 
