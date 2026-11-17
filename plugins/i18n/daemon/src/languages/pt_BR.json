@@ -201,5 +201,11 @@
   "TXT_CODE_system_instance_control.execLimit": "Não é possível continuar criando tarefas agendadas pois o limite foi alcançado.",
   "TXT_CODE_system_instance_control.existRepeatTask": "Uma tarefa duplicada já existe.",
   "TXT_CODE_system_instance_control.illegalName": "Nome de tarefa ilegal. Apenas underscores, números, letras e alguns caracteres de idioma local são suportados.",
-  "TXT_CODE_version.versionDetectErr": "Falha na verificação da versão"
+  "TXT_CODE_version.versionDetectErr": "Falha na verificação da versão",
+  "TXT_CODE_CONSOLE_BACKGROUND_MODE": "Tipo de fundo",
+  "TXT_CODE_CONSOLE_BACKGROUND_THEME": "Fundo do tema",
+  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE": "Imagem de fundo",
+  "TXT_CODE_CONSOLE_BACKGROUND_SOLID": "Cor sólida",
+  "TXT_CODE_CONSOLE_BACKGROUND_COLOR": "Cor de fundo",
+  "TXT_CODE_CONSOLE_BACKGROUND_INVALID": "Selecione um tipo de fundo e uma cor HEX válidos."
 }

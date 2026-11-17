@@ -14,7 +14,7 @@ import type { FrontendFileManagerService, FrontendUserService } from "@elements-
 import { logoutUser } from "@elementspanel/epanel-plugin-console/services/apis";
 import { Modal } from "@elementspanel/epanel-plugin-console/tools/vuetifyModal";
 import { useAppStateStore } from "@elementspanel/epanel-plugin-console/stores/useAppStateStore";
-import { getAppearance } from "@elementspanel/epanel-plugin-console/services/apis/appearance";
+import { getAppearance, type PanelAppearance } from "@elementspanel/epanel-plugin-console/services/apis/appearance";
 import DesktopContextMenu from "./widgets/desktop/DesktopContextMenu.vue";
 import type { ContextMenuItem } from "./widgets/desktop/DesktopContextMenu.vue";
 import DesktopIcon from "./widgets/desktop/DesktopIcon.vue";
@@ -71,12 +71,16 @@ const desktopImageViewerWindow = computed(() => fileManager.value?.DesktopImageV
 const { isDarkTheme } = useAppConfigStore();
 
 const backgroundImageUrl = ref<string>("");
+const websiteAppearance = ref<PanelAppearance>();
 const desktopSettings = ref(new DesktopSettings());
 
 const wallpaperStyle = computed<CSSProperties>(() => {
     const settings = desktopSettings.value;
     if (settings.wallpaperMode === "color") {
         return { backgroundColor: settings.wallpaperColor };
+    }
+    if (settings.wallpaperMode === "website" && websiteAppearance.value?.backgroundMode === "color") {
+        return { backgroundColor: websiteAppearance.value.backgroundColor || "#232429" };
     }
     const image = settings.wallpaperMode === "image" ? settings.wallpaperImage : backgroundImageUrl.value;
     if (!image) {
@@ -108,7 +112,9 @@ const loadWallpaper = async () => {
         desktopSettings.value = normalizeDesktopSettings(settingsResult.value.value);
     }
     if (appearanceResult.status === "fulfilled") {
-        backgroundImageUrl.value = appearanceResult.value.value?.backgroundImage || "";
+        const appearance = appearanceResult.value.value;
+        websiteAppearance.value = appearance;
+        backgroundImageUrl.value = appearance?.backgroundMode === "theme" ? "" : appearance?.backgroundImage || "";
     }
 };
 

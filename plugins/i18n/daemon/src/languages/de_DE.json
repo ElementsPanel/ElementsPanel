@@ -201,5 +201,11 @@
   "TXT_CODE_system_instance_control.execLimit": "Die Erstellung geplanter Aufgaben kann nicht fortgesetzt werden, um die Obergrenze zu erreichen",
   "TXT_CODE_system_instance_control.existRepeatTask": "Es sind bereits doppelte Aufgaben vorhanden",
   "TXT_CODE_system_instance_control.illegalName": "Falscher Projektname, unterstützt nur Unterstriche, Zahlen, Buchstaben und einige lokale Sprachen",
-  "TXT_CODE_version.versionDetectErr": "Die Versionsprüfung ist fehlgeschlagen"
+  "TXT_CODE_version.versionDetectErr": "Die Versionsprüfung ist fehlgeschlagen",
+  "TXT_CODE_CONSOLE_BACKGROUND_MODE": "Hintergrundtyp",
+  "TXT_CODE_CONSOLE_BACKGROUND_THEME": "Design-Hintergrund",
+  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE": "Hintergrundbild",
+  "TXT_CODE_CONSOLE_BACKGROUND_SOLID": "Einfarbiger Hintergrund",
+  "TXT_CODE_CONSOLE_BACKGROUND_COLOR": "Hintergrundfarbe",
+  "TXT_CODE_CONSOLE_BACKGROUND_INVALID": "Wähle einen gültigen Hintergrundtyp und eine HEX-Farbe."
 }

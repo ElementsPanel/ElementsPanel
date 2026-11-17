@@ -201,5 +201,11 @@
   "TXT_CODE_system_instance_control.execLimit": "Невозможно продолжить создание запланированных задач, так как достигнут лимит.",
   "TXT_CODE_system_instance_control.existRepeatTask": "Такая задача уже существует.",
   "TXT_CODE_system_instance_control.illegalName": "Некорректное имя задачи. Допустимы только подчеркивания, цифры, буквы и некоторые локальные языковые символы.",
-  "TXT_CODE_version.versionDetectErr": "Ошибка проверки версии"
+  "TXT_CODE_version.versionDetectErr": "Ошибка проверки версии",
+  "TXT_CODE_CONSOLE_BACKGROUND_MODE": "Тип фона",
+  "TXT_CODE_CONSOLE_BACKGROUND_THEME": "Фон темы",
+  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE": "Фоновое изображение",
+  "TXT_CODE_CONSOLE_BACKGROUND_SOLID": "Однотонный фон",
+  "TXT_CODE_CONSOLE_BACKGROUND_COLOR": "Цвет фона",
+  "TXT_CODE_CONSOLE_BACKGROUND_INVALID": "Выберите допустимый тип фона и цвет HEX."
 }

@@ -201,5 +201,11 @@
   "TXT_CODE_system_instance_control.execLimit": "상한값에 도달하기 위해 예약된 작업을 계속 생성할 수 없습니다.",
   "TXT_CODE_system_instance_control.existRepeatTask": "중복된 할 일이 이미 존재합니다.",
   "TXT_CODE_system_instance_control.illegalName": "프로젝트 이름이 잘못되었습니다. 밑줄, 숫자, 문자 및 일부 현지 언어만 지원됩니다.",
-  "TXT_CODE_version.versionDetectErr": "버전 확인 실패"
+  "TXT_CODE_version.versionDetectErr": "버전 확인 실패",
+  "TXT_CODE_CONSOLE_BACKGROUND_MODE": "배경 유형",
+  "TXT_CODE_CONSOLE_BACKGROUND_THEME": "테마 배경",
+  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE": "배경 이미지",
+  "TXT_CODE_CONSOLE_BACKGROUND_SOLID": "단색 배경",
+  "TXT_CODE_CONSOLE_BACKGROUND_COLOR": "배경 색상",
+  "TXT_CODE_CONSOLE_BACKGROUND_INVALID": "유효한 배경 유형과 HEX 색상을 선택하세요."
 }

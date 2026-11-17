@@ -2282,5 +2282,11 @@
   "TXT_CODE_UI_START_MENU": "Меню «Пуск»",
   "TXT_CODE_UI_TIMESTAMP": "Метка времени",
   "TXT_CODE_UI_DOCKER_PLATFORMS": "Платформы Docker",
-  "TXT_CODE_UI_2FA_QR_CODE": "QR-код для 2FA"
+  "TXT_CODE_UI_2FA_QR_CODE": "QR-код для 2FA",
+  "TXT_CODE_CONSOLE_BACKGROUND_MODE": "Тип фона",
+  "TXT_CODE_CONSOLE_BACKGROUND_THEME": "Фон темы",
+  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE": "Фоновое изображение",
+  "TXT_CODE_CONSOLE_BACKGROUND_SOLID": "Однотонный фон",
+  "TXT_CODE_CONSOLE_BACKGROUND_COLOR": "Цвет фона",
+  "TXT_CODE_CONSOLE_BACKGROUND_INVALID": "Выберите допустимый тип фона и цвет HEX."
 }

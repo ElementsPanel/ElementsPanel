@@ -2282,5 +2282,11 @@
   "TXT_CODE_UI_START_MENU": "Başlat menüsü",
   "TXT_CODE_UI_TIMESTAMP": "Zaman damgası",
   "TXT_CODE_UI_DOCKER_PLATFORMS": "Docker platformları",
-  "TXT_CODE_UI_2FA_QR_CODE": "2FA QR kodu"
+  "TXT_CODE_UI_2FA_QR_CODE": "2FA QR kodu",
+  "TXT_CODE_CONSOLE_BACKGROUND_MODE": "Arka plan türü",
+  "TXT_CODE_CONSOLE_BACKGROUND_THEME": "Tema arka planı",
+  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE": "Arka plan resmi",
+  "TXT_CODE_CONSOLE_BACKGROUND_SOLID": "Düz renk",
+  "TXT_CODE_CONSOLE_BACKGROUND_COLOR": "Arka plan rengi",
+  "TXT_CODE_CONSOLE_BACKGROUND_INVALID": "Geçerli bir arka plan türü ve HEX rengi seçin."
 }

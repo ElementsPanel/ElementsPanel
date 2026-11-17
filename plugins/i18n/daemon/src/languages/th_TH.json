@@ -201,5 +201,11 @@
   "TXT_CODE_system_instance_control.execLimit": "ไม่สามารถสร้างงานตามกำหนดเวลาต่อไปได้เนื่องจากถึงขีดจำกัดแล้ว",
   "TXT_CODE_system_instance_control.existRepeatTask": "มีงานที่ซ้ำกันอยู่แล้ว",
   "TXT_CODE_system_instance_control.illegalName": "ชื่องานไม่ถูกต้อง รองรับเฉพาะขีดล่าง ตัวเลข ตัวอักษร และอักขระภาษาท้องถิ่นบางตัวเท่านั้น",
-  "TXT_CODE_version.versionDetectErr": "การตรวจสอบเวอร์ชันล้มเหลว"
+  "TXT_CODE_version.versionDetectErr": "การตรวจสอบเวอร์ชันล้มเหลว",
+  "TXT_CODE_CONSOLE_BACKGROUND_MODE": "ประเภทพื้นหลัง",
+  "TXT_CODE_CONSOLE_BACKGROUND_THEME": "พื้นหลังตามธีม",
+  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE": "ภาพพื้นหลัง",
+  "TXT_CODE_CONSOLE_BACKGROUND_SOLID": "พื้นหลังสีเดียว",
+  "TXT_CODE_CONSOLE_BACKGROUND_COLOR": "สีพื้นหลัง",
+  "TXT_CODE_CONSOLE_BACKGROUND_INVALID": "เลือกประเภทพื้นหลังและสี HEX ที่ถูกต้อง"
 }

@@ -201,5 +201,11 @@
   "TXT_CODE_system_instance_control.execLimit": "No se puede continuar creando tareas programadas para alcanzar el límite superior",
   "TXT_CODE_system_instance_control.existRepeatTask": "Ya existen tareas duplicadas",
   "TXT_CODE_system_instance_control.illegalName": "Nombre de proyecto incorrecto, solo admite guiones bajos, números, letras y algunos idiomas locales",
-  "TXT_CODE_version.versionDetectErr": "Error en la verificación de versión"
+  "TXT_CODE_version.versionDetectErr": "Error en la verificación de versión",
+  "TXT_CODE_CONSOLE_BACKGROUND_MODE": "Tipo de fondo",
+  "TXT_CODE_CONSOLE_BACKGROUND_THEME": "Fondo del tema",
+  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE": "Imagen de fondo",
+  "TXT_CODE_CONSOLE_BACKGROUND_SOLID": "Color sólido",
+  "TXT_CODE_CONSOLE_BACKGROUND_COLOR": "Color de fondo",
+  "TXT_CODE_CONSOLE_BACKGROUND_INVALID": "Selecciona un tipo de fondo y un color HEX válidos."
 }

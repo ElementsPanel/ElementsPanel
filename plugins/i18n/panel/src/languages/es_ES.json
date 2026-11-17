@@ -2282,5 +2282,11 @@
   "TXT_CODE_UI_START_MENU": "Menú de inicio",
   "TXT_CODE_UI_TIMESTAMP": "Marca de tiempo",
   "TXT_CODE_UI_DOCKER_PLATFORMS": "Plataformas Docker",
-  "TXT_CODE_UI_2FA_QR_CODE": "Código QR de 2FA"
+  "TXT_CODE_UI_2FA_QR_CODE": "Código QR de 2FA",
+  "TXT_CODE_CONSOLE_BACKGROUND_MODE": "Tipo de fondo",
+  "TXT_CODE_CONSOLE_BACKGROUND_THEME": "Fondo del tema",
+  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE": "Imagen de fondo",
+  "TXT_CODE_CONSOLE_BACKGROUND_SOLID": "Color sólido",
+  "TXT_CODE_CONSOLE_BACKGROUND_COLOR": "Color de fondo",
+  "TXT_CODE_CONSOLE_BACKGROUND_INVALID": "Selecciona un tipo de fondo y un color HEX válidos."
 }

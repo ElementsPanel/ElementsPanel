@@ -72,6 +72,7 @@ const vue = from("frontend")("vue");
 function desktopFixture(t, settings) {
   const dark = vue.ref(false);
   let currentSettings = settings;
+  let currentAppearance = { backgroundImage: "/website wallpaper.png" };
   let failSettings = false;
   let failAppearance = false;
   let reads = 0;
@@ -90,7 +91,7 @@ function desktopFixture(t, settings) {
     "@elementspanel/epanel-plugin-console/services/apis/appearance": { getAppearance: () => ({
       execute: async () => {
         if (failAppearance) throw new Error("appearance unavailable");
-        return { value: { backgroundImage: "/website wallpaper.png" } };
+        return { value: currentAppearance };
       }
     }) },
     "./api": {
@@ -112,6 +113,11 @@ function desktopFixture(t, settings) {
   };
   return {
     state, dark, refresh, reads: () => reads,
+    refreshWebsite: async (appearance) => {
+      currentAppearance = appearance;
+      window.dispatchEvent(new CustomEvent("elementspanel:plugin-settings-changed", { detail: { id: "console" } }));
+      await settle();
+    },
     failSettings: () => { failSettings = true; }, failAppearance: () => { failAppearance = true; }
   };
 }
@@ -136,6 +142,24 @@ test("desktop wallpaper follows the website, updates after saves and respects th
   window.dispatchEvent(new CustomEvent("elementspanel:plugin-settings-changed", { detail: { id: "terminal" } }));
   await settle();
   assert.equal(f.reads(), reads);
+});
+
+test("desktop website wallpapers follow console colors while custom wallpapers remain independent", async (t) => {
+  const f = desktopFixture(t);
+  await settle();
+  await f.refreshWebsite({ backgroundMode: "color", backgroundColor: "#123456", backgroundImage: "/old.png" });
+  assert.deepEqual(f.state.wallpaperStyle, { backgroundColor: "#123456" });
+  f.dark.value = true;
+  assert.deepEqual(f.state.wallpaperStyle, { backgroundColor: "#123456" });
+  await f.refreshWebsite({ backgroundMode: "theme", backgroundImage: "/old.png" });
+  assert.match(f.state.wallpaperStyle.backgroundColor, /#232429/);
+  await f.refreshWebsite({ backgroundMode: "color", backgroundColor: "#abcdef" });
+  await f.refresh({ wallpaperMode: "image", wallpaperImage: "/custom.png" });
+  assert.match(f.state.wallpaperStyle.backgroundImage, /custom\.png/);
+  await f.refresh({ wallpaperMode: "color", wallpaperColor: "#111111" });
+  assert.deepEqual(f.state.wallpaperStyle, { backgroundColor: "#111111" });
+  await f.refresh({ wallpaperMode: "website" });
+  assert.deepEqual(f.state.wallpaperStyle, { backgroundColor: "#abcdef" });
 });
 
 test("custom wallpapers work without site appearance and legacy panels retain their website background", async (t) => {

@@ -51,4 +51,7 @@ export default class SystemConfig {
   logoImageLight: string | undefined = undefined;
   logoImageDark: string | undefined = undefined;
   backgroundImage = "";
+  // Older image settings infer their mode until it is explicitly saved.
+  backgroundMode: "theme" | "image" | "color" | undefined = undefined;
+  backgroundColor = "#232429";
 }
