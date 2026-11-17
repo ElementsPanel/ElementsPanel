@@ -7,6 +7,7 @@ test("plugin management npm routes require an administrator and use the plugin l
   const load = createLoader({ host: "panel" });
   const routes = new Map();
   const calls = [];
+  let failRemoval = false;
   const node = {
     refreshReconnect() {
       calls.push({ reconnect: true });
@@ -42,7 +43,9 @@ test("plugin management npm routes require an administrator and use the plugin l
       },
       remove: async (id) => {
         calls.push({ remove: id });
-      }
+        if (failRemoval) throw new Error("removal failed");
+      },
+      runExclusive: (operation) => operation()
     },
     remote: {
       services: { getInstance: () => node },
@@ -56,6 +59,9 @@ test("plugin management npm routes require an administrator and use the plugin l
     inject: (_names, callback) => callback(ctx)
   };
   load("plugins/config/panel/src/backend/index.ts", {
+    "mcsmanager-common": {
+      writePluginOverride: (id, patch) => calls.push({ clearConfig: id, patch })
+    },
     "../i18n": { localeMessages: {} },
     "./settings": { SettingsFormService: class {} }
   }).apply(ctx);
@@ -92,6 +98,62 @@ test("plugin management npm routes require an administrator and use the plugin l
   assert.deepEqual(calls.shift(), { reconnect: true });
   await request("delete", "/api/plugins/", 10, undefined, { id: "sample" });
   assert.deepEqual(calls.pop(), { remove: "sample" });
+  for (const removeConfig of [undefined, "false", "true"]) {
+    await request("delete", "/api/plugins/", 10, undefined, { id: "sample", removeConfig });
+    assert.deepEqual(calls.splice(0), [
+      { remove: "sample" },
+      ...(removeConfig === "true" ? [{ clearConfig: "sample", patch: { config: {} } }] : [])
+    ]);
+    await request("delete", "/api/plugins/node/", 10, undefined, { daemonId: "node", id: "sample", removeConfig });
+    assert.deepEqual(calls.splice(0), [
+      { event: "plugin/remove", payload: { id: "sample", ...(removeConfig === "true" ? { removeConfig: true } : {}) }, timeout: 10 * 60 * 1000 },
+      { reconnect: true }
+    ]);
+  }
+  failRemoval = true;
+  await assert.rejects(request("delete", "/api/plugins/", 10, undefined, { id: "sample", removeConfig: "true" }), /removal failed/);
+  assert.deepEqual(calls, [{ remove: "sample" }], "a failed uninstall must keep its configuration");
+});
+
+test("daemon removal clears config only after a successful explicitly selected uninstall", async () => {
+  const handlers = new Map();
+  const calls = [];
+  let failRemoval = false;
+  createLoader({ host: "daemon" })("plugins/config/daemon/src/backend/index.ts", {
+    "mcsmanager-common": {
+      PLUGIN_API_VERSION: 1,
+      writePluginOverride: (id, patch) => calls.push({ clearConfig: id, patch })
+    },
+    "../i18n": { localeMessages: {} },
+    "./settings": { SettingsFormService: class {} }
+  }).apply({
+    i18n: { define() {}, $t: (key) => key },
+    plugin() {},
+    get: () => ({}),
+    plugins: {
+      remove: async (id) => {
+        calls.push({ remove: id });
+        if (failRemoval) throw new Error("removal failed");
+      },
+      runExclusive: (operation) => operation()
+    },
+    protocol: {
+      on: (event, handler) => handlers.set(event, handler),
+      response: () => calls.push({ response: true }),
+      responseError: (_ctx, error) => calls.push({ error: error.message })
+    }
+  });
+  for (const removeConfig of [undefined, false, "true", true]) {
+    await handlers.get("plugin/remove")({}, { id: "sample", removeConfig });
+    assert.deepEqual(calls.splice(0), [
+      { remove: "sample" },
+      ...(removeConfig === true ? [{ clearConfig: "sample", patch: { config: {} } }] : []),
+      { response: true }
+    ]);
+  }
+  failRemoval = true;
+  await handlers.get("plugin/remove")({}, { id: "sample", removeConfig: true });
+  assert.deepEqual(calls, [{ remove: "sample" }, { error: "removal failed" }]);
 });
 
 for (const event of ["plugin/npm/install", "runtime/update", "plugin/npm/update-batch"]) {

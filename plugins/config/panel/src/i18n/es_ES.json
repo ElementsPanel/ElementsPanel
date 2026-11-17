@@ -6,7 +6,7 @@
   "TXT_CODE_PLUGIN_CONFIG": "Configuracion de plugins",
   "TXT_CODE_PLUGIN_CANCEL": "Cancelar",
   "TXT_CODE_PLUGIN_DELETE": "Eliminar",
-  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "El plugin se desinstalará y se conservarán los archivos de configuración.",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "El complemento se desinstalará.",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "¿Eliminar {name}?",
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Los complementos principales y de código fuente no se pueden desinstalar aquí.",
   "TXT_CODE_PLUGIN_DELETED": "Complemento eliminado",
@@ -49,5 +49,6 @@
   "TXT_CODE_PLUGIN_NPM_INSTALL": "Instalar / actualizar complemento",
   "TXT_CODE_PLUGIN_NPM_PACKAGE": "Nombre del paquete npm",
   "TXT_CODE_PLUGIN_NPM_VERSION": "Versión o etiqueta (latest por defecto)",
-  "TXT_CODE_PLUGIN_NPM_INSTALLED": "Complemento instalado y sincronizado"
+  "TXT_CODE_PLUGIN_NPM_INSTALLED": "Complemento instalado y sincronizado",
+  "TXT_CODE_PLUGIN_REMOVE_CONFIG": "Borrar también los ajustes del usuario de este complemento"
 }

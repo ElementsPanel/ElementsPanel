@@ -93,7 +93,7 @@ export const setPluginEnabled = useDefineApi<
   method: "PUT"
 });
 
-export const removePlugin = useDefineApi<{ params: { id: string } }, void>({
+export const removePlugin = useDefineApi<{ params: { id: string; removeConfig?: boolean } }, void>({
   url: "/api/plugins",
   method: "DELETE"
 });
@@ -183,7 +183,10 @@ export const setNodePluginEnabled = useDefineApi<
   method: "PUT"
 });
 
-export const removeNodePlugin = useDefineApi<{ params: { daemonId: string; id: string } }, void>({
+export const removeNodePlugin = useDefineApi<
+  { params: { daemonId: string; id: string; removeConfig?: boolean } },
+  void
+>({
   url: "/api/plugins/node",
   method: "DELETE"
 });

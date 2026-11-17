@@ -6,7 +6,7 @@
   "TXT_CODE_PLUGIN_CONFIG": "Настройка плагинов",
   "TXT_CODE_PLUGIN_CANCEL": "Отмена",
   "TXT_CODE_PLUGIN_DELETE": "Удалить",
-  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "Плагин будет удалён. Файлы конфигурации будут сохранены.",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "Плагин будет удалён.",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "Удалить {name}?",
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Основные плагины и плагины из исходного кода нельзя удалить здесь.",
   "TXT_CODE_PLUGIN_DELETED": "Плагин удалён",
@@ -49,5 +49,6 @@
   "TXT_CODE_PLUGIN_NPM_INSTALL": "Установить / обновить плагин",
   "TXT_CODE_PLUGIN_NPM_PACKAGE": "Имя пакета npm",
   "TXT_CODE_PLUGIN_NPM_VERSION": "Версия или тег (по умолчанию latest)",
-  "TXT_CODE_PLUGIN_NPM_INSTALLED": "Плагин установлен и синхронизирован"
+  "TXT_CODE_PLUGIN_NPM_INSTALLED": "Плагин установлен и синхронизирован",
+  "TXT_CODE_PLUGIN_REMOVE_CONFIG": "Также очистить пользовательские настройки плагина"
 }

@@ -509,7 +509,7 @@ test("switching node/plugin configuration cannot display or save a stale schema"
   });
 });
 
-function pluginActionFixture(t, inventories = {}, nodeOverrides = {}) {
+function pluginActionFixture(t, inventories = {}, nodeOverrides = {}, pluginMarket) {
   t.mock.method(console, "error", () => {});
   const plugin = { id: "sample", enabled: true, running: true, removable: true };
   const panelPlugins = [plugin, { id: "node", enabled: true, running: true, removable: true }];
@@ -539,7 +539,7 @@ function pluginActionFixture(t, inventories = {}, nodeOverrides = {}) {
       onBeforeRouteLeave() {}
     },
     "@/lang/i18n": { t: (key, params) => params ? `${key}: ${Object.values(params).join(", ")}` : key },
-    "@/plugin/context": { ctx: { plugins: {
+    "@/plugin/context": { usePluginService: () => pluginMarket, ctx: { plugins: {
       loaded: [], refresh: async () => calls.push({ name: "refresh" })
     } } },
     "@/tools/validator": { getValidatorErrorMsg: (error) => error.message },
@@ -611,6 +611,61 @@ test("confirming panel plugin actions opens a separate node picker with all matc
     assert.equal(state.actionConfirmOpen.value, false);
     assert.equal(state.nodePickerOpen.value, false);
   });
+});
+
+test("plugin removals forward the config choice and share market dependency loading", async (t) => {
+  for (const scope of ["panel", "node"]) for (const removeConfig of [false, true]) {
+    await t.test(`${scope}, clear config: ${removeConfig}`, async (t) => {
+      const operations = load("plugins/market/panel/src/operations.ts", {
+        vue, "./api": {}, "@/plugin/context": { ctx: {} }
+      });
+      const record = { id: "sample", enabled: true, removable: true };
+      const f = pluginActionFixture(t, { one: [record], two: [record] }, {}, operations);
+      f.state.scope.value = scope;
+      f.state.selectedNodeId.value = "one";
+      f.state.requestAction(f.plugin, "remove");
+      assert.equal(f.state.actionCandidate.value.removeConfig, false);
+      f.state.actionCandidate.value.removeConfig = removeConfig;
+      if (scope === "panel") {
+        await f.state.confirmAction();
+        f.state.actionCandidate.value.selectedNodeIds = ["one"];
+      }
+      assert.equal(operations.changingDependencies.value, 0, "target selection does not open loading");
+      const wait = deferred();
+      f.handlers.removeNodePlugin = () => wait.promise;
+      const removal = f.state.confirmAction();
+      await settle();
+      assert.equal(operations.changingDependencies.value, 1);
+      assert.equal(operations.activeOperations.value, 1);
+      wait.resolve({});
+      await removal;
+      assert.deepEqual(f.writes().map(({ name, config }) => [name, config.params]), [
+        ["removeNodePlugin", { daemonId: "one", id: "sample", ...(removeConfig ? { removeConfig: true } : {}) }],
+        ...(scope === "panel" ? [["removePlugin", { id: "sample", ...(removeConfig ? { removeConfig: true } : {}) }]] : [])
+      ]);
+      assert.equal(operations.changingDependencies.value, 0);
+      assert.equal(operations.activeOperations.value, 0);
+      assert.equal(f.state.actionCandidate.value, null);
+    });
+  }
+});
+
+test("failed removals close dependency loading and keep the config choice for retry", async (t) => {
+  const operations = load("plugins/market/panel/src/operations.ts", {
+    vue, "./api": {}, "@/plugin/context": { ctx: {} }
+  });
+  const f = pluginActionFixture(t, {}, {}, operations);
+  f.handlers.removePlugin = async () => { throw new Error("removal failed"); };
+  f.state.requestAction(f.plugin, "remove");
+  f.state.actionCandidate.value.removeConfig = true;
+  await f.state.confirmAction();
+  assert.equal(operations.changingDependencies.value, 0);
+  assert.equal(operations.activeOperations.value, 0);
+  assert.equal(f.state.actionCandidate.value.removeConfig, true);
+  assert.equal(f.state.deletingPlugin.value, false);
+  f.state.actionConfirmOpen.value = false;
+  f.state.requestAction(f.plugin, "remove");
+  assert.equal(f.state.actionCandidate.value.removeConfig, false);
 });
 
 test("users can deselect every node to apply a plugin action only to the panel", async (t) => {

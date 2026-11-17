@@ -6,12 +6,14 @@ import DesktopPluginMarket from "./desktop/DesktopPluginMarket.vue";
 import PluginMarket from "./normal/PluginMarket.vue";
 import PluginMarketDetail from "./normal/PluginMarketDetail.vue";
 import { localeMessages } from "./i18n";
+import { beginDependencyChange } from "./operations";
 
 const ROLE_ADMIN = 10;
 export const inject = ["console", "i18n", "routes", "desktop", "slots"];
 
 export function apply(ctx: PanelFrontendPluginContext) {
   ctx.i18n.define(localeMessages);
+  ctx.set("pluginMarket", { beginDependencyChange });
   ctx.slots.register("shell.overlay", PluginMarketLoadingDialog, {
     id: "market:dependency-loading"
   });

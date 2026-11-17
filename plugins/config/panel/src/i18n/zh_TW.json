@@ -6,7 +6,7 @@
   "TXT_CODE_PLUGIN_CONFIG": "插件設定",
   "TXT_CODE_PLUGIN_CANCEL": "取消",
   "TXT_CODE_PLUGIN_DELETE": "刪除外掛",
-  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "外掛將會解除安裝，設定檔會保留。",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "外掛將會被解除安裝。",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "確定刪除 {name}？",
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "核心外掛與開發環境的原始碼外掛無法在此解除安裝。",
   "TXT_CODE_PLUGIN_DELETED": "外掛已刪除",
@@ -49,5 +49,6 @@
   "TXT_CODE_PLUGIN_NPM_INSTALL": "安裝 / 更新外掛",
   "TXT_CODE_PLUGIN_NPM_PACKAGE": "npm 套件名稱",
   "TXT_CODE_PLUGIN_NPM_VERSION": "版本或標籤（預設 latest）",
-  "TXT_CODE_PLUGIN_NPM_INSTALLED": "外掛已安裝並同步"
+  "TXT_CODE_PLUGIN_NPM_INSTALLED": "外掛已安裝並同步",
+  "TXT_CODE_PLUGIN_REMOVE_CONFIG": "同時清除使用者覆寫的外掛設定"
 }

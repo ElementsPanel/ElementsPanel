@@ -6,7 +6,7 @@
   "TXT_CODE_PLUGIN_CONFIG": "插件配置",
   "TXT_CODE_PLUGIN_CANCEL": "取消",
   "TXT_CODE_PLUGIN_DELETE": "删除插件",
-  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "插件将会被卸载，配置文件会保留。",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "插件将会被卸载。",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "确定删除 {name}？",
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "核心插件和开发环境的源码插件无法在此卸载。",
   "TXT_CODE_PLUGIN_DELETED": "插件已删除",
@@ -49,5 +49,6 @@
   "TXT_CODE_PLUGIN_NPM_INSTALL": "安装 / 更新插件",
   "TXT_CODE_PLUGIN_NPM_PACKAGE": "npm 包名",
   "TXT_CODE_PLUGIN_NPM_VERSION": "版本号或标签（默认 latest）",
-  "TXT_CODE_PLUGIN_NPM_INSTALLED": "插件已安装并同步"
+  "TXT_CODE_PLUGIN_NPM_INSTALLED": "插件已安装并同步",
+  "TXT_CODE_PLUGIN_REMOVE_CONFIG": "同时清除用户覆盖的插件配置"
 }

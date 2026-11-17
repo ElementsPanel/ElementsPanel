@@ -488,6 +488,11 @@ export interface FrontendMarketService {
   useMarketPackages(options?: Record<string, unknown>): unknown;
 }
 
+/** Dependency update feedback supplied by `plugins/market`. */
+export interface FrontendPluginMarketService {
+  beginDependencyChange(): () => void;
+}
+
 /** Node management. Provided by `plugins/node`. */
 export interface FrontendNodeService {
   readonly api: NodePluginApi;
@@ -519,6 +524,7 @@ declare module "cordis" {
     // degradation, or `inject` them from a plugin that cannot work without one.
     user: FrontendUserService;
     market: FrontendMarketService;
+    pluginMarket: FrontendPluginMarketService;
     node: FrontendNodeService;
     instance: FrontendInstanceService;
     java: FrontendJavaService;

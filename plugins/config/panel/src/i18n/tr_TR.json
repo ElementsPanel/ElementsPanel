@@ -6,7 +6,7 @@
   "TXT_CODE_PLUGIN_CONFIG": "Eklenti Yapilandirmasi",
   "TXT_CODE_PLUGIN_CANCEL": "Iptal",
   "TXT_CODE_PLUGIN_DELETE": "Kaldır",
-  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "Eklenti kaldırılacak, yapılandırma dosyaları korunacaktır.",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "Eklenti kaldırılacak.",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "{name} kaldırılsın mı?",
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Temel eklentiler ve kaynak kod eklentileri buradan kaldırılamaz.",
   "TXT_CODE_PLUGIN_DELETED": "Eklenti kaldırıldı",
@@ -49,5 +49,6 @@
   "TXT_CODE_PLUGIN_NPM_INSTALL": "Eklenti yükle / güncelle",
   "TXT_CODE_PLUGIN_NPM_PACKAGE": "npm paket adı",
   "TXT_CODE_PLUGIN_NPM_VERSION": "Sürüm veya etiket (varsayılan: latest)",
-  "TXT_CODE_PLUGIN_NPM_INSTALLED": "Eklenti yüklendi ve eşitlendi"
+  "TXT_CODE_PLUGIN_NPM_INSTALLED": "Eklenti yüklendi ve eşitlendi",
+  "TXT_CODE_PLUGIN_REMOVE_CONFIG": "Bu eklentinin kullanıcı ayarlarını da temizle"
 }

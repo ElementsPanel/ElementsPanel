@@ -6,7 +6,7 @@
   "TXT_CODE_PLUGIN_CONFIG": "プラグイン設定",
   "TXT_CODE_PLUGIN_CANCEL": "キャンセル",
   "TXT_CODE_PLUGIN_DELETE": "削除",
-  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "プラグインはアンインストールされます。設定ファイルは保持されます。",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "プラグインはアンインストールされます。",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "{name} を削除しますか？",
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "コアプラグインと開発用ソースプラグインはここではアンインストールできません。",
   "TXT_CODE_PLUGIN_DELETED": "プラグインを削除しました",
@@ -49,5 +49,6 @@
   "TXT_CODE_PLUGIN_NPM_INSTALL": "プラグインのインストール / 更新",
   "TXT_CODE_PLUGIN_NPM_PACKAGE": "npm パッケージ名",
   "TXT_CODE_PLUGIN_NPM_VERSION": "バージョンまたはタグ（既定: latest）",
-  "TXT_CODE_PLUGIN_NPM_INSTALLED": "プラグインをインストールして同期しました"
+  "TXT_CODE_PLUGIN_NPM_INSTALLED": "プラグインをインストールして同期しました",
+  "TXT_CODE_PLUGIN_REMOVE_CONFIG": "このプラグインのユーザー設定も消去する"
 }

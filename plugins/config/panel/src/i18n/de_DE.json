@@ -6,7 +6,7 @@
   "TXT_CODE_PLUGIN_CONFIG": "Plugin-Konfiguration",
   "TXT_CODE_PLUGIN_CANCEL": "Abbrechen",
   "TXT_CODE_PLUGIN_DELETE": "Entfernen",
-  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "Das Plugin wird deinstalliert. Die Konfigurationsdateien bleiben erhalten.",
+  "TXT_CODE_PLUGIN_DELETE_CONFIRM": "Das Plugin wird deinstalliert.",
   "TXT_CODE_PLUGIN_DELETE_CONFIRM_TITLE": "{name} entfernen?",
   "TXT_CODE_PLUGIN_DELETE_UNAVAILABLE": "Kernplugins und Quellcode-Plugins können hier nicht deinstalliert werden.",
   "TXT_CODE_PLUGIN_DELETED": "Plugin entfernt",
@@ -49,5 +49,6 @@
   "TXT_CODE_PLUGIN_NPM_INSTALL": "Plugin installieren / aktualisieren",
   "TXT_CODE_PLUGIN_NPM_PACKAGE": "npm-Paketname",
   "TXT_CODE_PLUGIN_NPM_VERSION": "Version oder Tag (Standard: latest)",
-  "TXT_CODE_PLUGIN_NPM_INSTALLED": "Plugin installiert und synchronisiert"
+  "TXT_CODE_PLUGIN_NPM_INSTALLED": "Plugin installiert und synchronisiert",
+  "TXT_CODE_PLUGIN_REMOVE_CONFIG": "Benutzerkonfiguration dieses Plugins ebenfalls zurücksetzen"
 }

@@ -1,4 +1,5 @@
 import type Koa from "koa";
+import { writePluginOverride } from "mcsmanager-common";
 import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 import type SystemConfig from "../../../../runtime/panel/src/backend/entity/setting";
 import { localeMessages } from "../i18n";
@@ -159,7 +160,11 @@ export function apply(ctx: PanelPluginContext) {
     requireAdmin,
     ctx.middleware.validator({ query: { id: String } }),
     async (requestCtx: Koa.ParameterizedContext) => {
-      await ctx.plugins.remove(String(requestCtx.request.query.id));
+      const id = String(requestCtx.request.query.id);
+      await ctx.plugins.remove(id);
+      if (requestCtx.request.query.removeConfig === "true") {
+        await ctx.plugins.runExclusive(async () => writePluginOverride(id, { config: {} }));
+      }
       requestCtx.body = { removed: true };
     }
   );
@@ -233,7 +238,10 @@ export function apply(ctx: PanelPluginContext) {
         // Unloading can exceed the default request timeout.
         await new RemoteRequest(node).request(
           "plugin/remove",
-          { id: String(requestCtx.request.query.id) },
+          {
+            id: String(requestCtx.request.query.id),
+            ...(requestCtx.request.query.removeConfig === "true" ? { removeConfig: true } : {})
+          },
           10 * 60 * 1000
         );
         node.refreshReconnect();

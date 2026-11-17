@@ -2,7 +2,7 @@
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
-import { ctx } from "@elements-panel/sdk";
+import { ctx, usePluginService, type FrontendPluginMarketService } from "@elements-panel/sdk";
 import { getValidatorErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
@@ -71,6 +71,7 @@ interface PluginActionCandidate {
   nodeTargets: NodePluginTarget[];
   selectedNodeIds: string[];
   nodeCheckError: string;
+  removeConfig: boolean;
 }
 
 const props = defineProps<{
@@ -791,7 +792,8 @@ const requestAction = (plugin: PluginRecord | NodePluginRecord, action: PluginAc
     checkingNodes: false,
     nodeTargets: [],
     selectedNodeIds: [],
-    nodeCheckError: ""
+    nodeCheckError: "",
+    removeConfig: false
   };
 };
 
@@ -807,7 +809,11 @@ const syncNodePlugins = async (candidate: PluginActionCandidate) => {
     try {
       if (candidate.action === "remove") {
         await removeNodePlugin().execute({
-          params: { daemonId: node.uuid, id: plugin.id },
+          params: {
+            daemonId: node.uuid,
+            id: plugin.id,
+            ...(candidate.removeConfig ? { removeConfig: true } : {})
+          },
           timeout: 11 * 60 * 1000
         });
         candidate.nodeTargets = candidate.nodeTargets.filter(
@@ -928,13 +934,22 @@ const confirmRemove = async () => {
     actionSubmitting.value
   )
     return;
+  const finishDependencyChange = usePluginService<FrontendPluginMarketService>(
+    "pluginMarket"
+  )?.beginDependencyChange();
   deletingPlugin.value = true;
   try {
     let nodesSucceeded = true;
     if (candidate.scope === "panel") {
       nodesSucceeded = await syncNodePlugins(candidate);
       const { execute } = removePlugin();
-      await execute({ params: { id: candidate.plugin.id }, timeout: 11 * 60 * 1000 });
+      await execute({
+        params: {
+          id: candidate.plugin.id,
+          ...(candidate.removeConfig ? { removeConfig: true } : {})
+        },
+        timeout: 11 * 60 * 1000
+      });
       await ctx.plugins
         .refresh()
         .catch((error) => console.error("Failed to refresh plugins:", error));
@@ -942,7 +957,11 @@ const confirmRemove = async () => {
     } else {
       const { execute } = removeNodePlugin();
       await execute({
-        params: { daemonId: candidate.nodeId, id: candidate.plugin.id },
+        params: {
+          daemonId: candidate.nodeId,
+          id: candidate.plugin.id,
+          ...(candidate.removeConfig ? { removeConfig: true } : {})
+        },
         timeout: 11 * 60 * 1000
       });
       await reloadNodePluginsAfterToggle();
@@ -953,6 +972,7 @@ const confirmRemove = async () => {
     notifyError(error);
   } finally {
     deletingPlugin.value = false;
+    finishDependencyChange?.();
   }
 };
 
@@ -1300,6 +1320,15 @@ const confirmAction = async () => {
                 : "TXT_CODE_PLUGIN_DISABLE_CONFIRM"
             )
           }}
+          <VCheckbox
+            v-if="actionCandidate?.action === 'remove'"
+            v-model="actionCandidate.removeConfig"
+            :label="t('TXT_CODE_PLUGIN_REMOVE_CONFIG')"
+            :disabled="actionSubmitting || actionCandidate.checkingNodes"
+            density="compact"
+            hide-details
+            class="mt-3"
+          />
         </VCardText>
         <VCardActions>
           <VSpacer />

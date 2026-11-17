@@ -69,6 +69,9 @@ export function apply(ctx: DaemonPluginContext) {
       const id = String((data as { id?: unknown })?.id ?? "");
       if (!id) throw new Error(ctx.i18n.$t("TXT_CODE_DAEMON_PLUGIN_ID_REQUIRED"));
       await ctx.plugins.remove(id);
+      if ((data as { removeConfig?: unknown })?.removeConfig === true) {
+        await ctx.plugins.runExclusive(async () => writePluginOverride(id, { config: {} }));
+      }
       ctx.protocol.response(routerCtx, { removed: true });
     } catch (error: any) {
       ctx.protocol.responseError(routerCtx, error);

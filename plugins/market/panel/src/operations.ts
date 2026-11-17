@@ -23,6 +23,19 @@ export const applyingChanges = ref(false);
 export const activeOperations = ref(0);
 // Unlike target selection, dependency writes must block the whole panel until they settle.
 export const changingDependencies = ref(0);
+
+export function beginDependencyChange() {
+  changingDependencies.value++;
+  activeOperations.value++;
+  let finished = false;
+  return () => {
+    if (finished) return;
+    finished = true;
+    changingDependencies.value--;
+    activeOperations.value--;
+  };
+}
+
 export const installedChange = shallowRef<{
   pluginId: string;
   version?: string;
