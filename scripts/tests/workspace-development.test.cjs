@@ -371,6 +371,9 @@ test("frontend uses same-port middleware and host module bridges without startin
   }).pluginAssets({
     plugins: { frontendManifest: () => [] },
     setInterval() {},
+    on(event) {
+      assert.equal(event, "process/restarting");
+    },
     effect(fn) {
       fn();
     }
