@@ -80,9 +80,33 @@ const selectedNodeLabel = computed(
 </template>
 
 <style lang="scss" scoped>
+:global(.app-shell-content:has(.plugin-config-container)),
+:global(.main-content:has(.plugin-config-container)) {
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+}
+
+:global(.main-content:has(.plugin-config-container)),
+:global(.app-main-body:has(> .plugin-config-container)) {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+:global(.app-main-body:has(> .plugin-config-container)) {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+:global(.app-main-body:has(> .plugin-config-container) > .breadcrumbs) {
+  flex: 0 0 auto;
+}
+
 .plugin-config-container {
   display: flex;
   flex-direction: column;
+  flex: 1 1 0;
   width: 100%;
   min-width: 0;
   min-height: 0;
@@ -90,6 +114,7 @@ const selectedNodeLabel = computed(
   margin: 0 auto;
   padding: 20px 24px 32px;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .plugin-config-toolbar {
@@ -116,11 +141,8 @@ const selectedNodeLabel = computed(
 }
 
 .plugin-config-container :deep(.plugin-config-page) {
-  flex: 0 0 auto;
-  align-items: flex-start;
-  height: auto;
-  max-height: none;
-  overflow: visible;
+  flex: 1 1 0;
+  height: 100%;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -129,22 +151,19 @@ const selectedNodeLabel = computed(
 }
 
 .plugin-config-container :deep(.plugin-config-sidebar) {
-  height: auto;
   padding: 0 16px 0 0;
   background: transparent;
 }
 
 .plugin-config-container :deep(.plugin-config-content) {
   padding: 0 0 0 24px;
-  overflow: visible;
-}
-
-.plugin-config-container :deep(.plugin-config-body) {
-  flex: 0 0 auto;
-  overflow: visible;
 }
 
 @media (max-width: 992px) {
+  :global(.global-app-container:has(.plugin-config-container)) {
+    margin-bottom: 0;
+  }
+
   .plugin-config-container {
     padding: 16px 12px 28px;
   }

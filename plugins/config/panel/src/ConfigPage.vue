@@ -1577,6 +1577,7 @@ const confirmAction = async () => {
   width: 100%;
   box-sizing: border-box;
   overflow-y: auto;
+  overscroll-behavior: contain;
   scrollbar-gutter: auto;
   background: transparent;
   padding: 0 10px 4px;
