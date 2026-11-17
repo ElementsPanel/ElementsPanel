@@ -1166,12 +1166,12 @@ onUnmounted(() => {
     border-radius: 6px;
     font-size: 14px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background-color 0.2s;
     background: var(--desktop-window-titlebar-bg);
     line-height: 1;
 
     &:hover:not(:disabled) {
-        transform: scale(1.1);
+        background: var(--desktop-window-control-hover);
     }
 
     &:disabled {
@@ -1181,42 +1181,22 @@ onUnmounted(() => {
 
     &--start {
         color: #52c41a;
-
-        &:hover:not(:disabled) {
-            background: rgba(82, 196, 26, 0.2);
-        }
     }
 
     &--stop {
         color: #faad14;
-
-        &:hover:not(:disabled) {
-            background: rgba(250, 173, 20, 0.2);
-        }
     }
 
     &--restart {
         color: #1677ff;
-
-        &:hover:not(:disabled) {
-            background: rgba(22, 119, 255, 0.2);
-        }
     }
 
     &--kill {
         color: #ff4d4f;
-
-        &:hover:not(:disabled) {
-            background: rgba(255, 77, 79, 0.2);
-        }
     }
 
     &--tag {
         color: #722ed1;
-
-        &:hover:not(:disabled) {
-            background: rgba(114, 46, 209, 0.2);
-        }
     }
 }
 
