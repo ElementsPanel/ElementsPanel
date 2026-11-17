@@ -4,6 +4,7 @@ import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { getValidatorErrorMsg } from "@elementspanel/epanel-plugin-console/tools/validator";
 import { computeNodeName } from "@elementspanel/epanel-plugin-console/tools/nodes";
+import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
 import { message } from "@elementspanel/epanel-plugin-console/tools/vuetifyToast";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
@@ -20,8 +21,10 @@ import {
   VList,
   VListItem,
   VMenu,
+  VPagination,
   VProgressCircular,
   VRow,
+  VSelect,
   VSpacer,
   VTab,
   VTabs,
@@ -60,6 +63,9 @@ const failed = ref(false);
 const failureMessage = ref("");
 const plugins = ref<MarketPlugin[]>([]);
 const keyword = ref<string | null>("");
+const currentPage = ref(1);
+const pageSize = ref(20);
+const { isPhone } = useScreen();
 const activeTab = ref<"browse" | "updates">("browse");
 const updateView = ref<InstanceType<typeof PluginMarketUpdates>>();
 const updatesLoading = ref(false);
@@ -79,8 +85,21 @@ const visiblePlugins = computed(() => {
   );
 });
 
+const totalPages = computed(() => Math.max(1, Math.ceil(visiblePlugins.value.length / pageSize.value)));
+const pagedPlugins = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  return visiblePlugins.value.slice(start, start + pageSize.value);
+});
+
+watch([keyword, pageSize], () => {
+  currentPage.value = 1;
+});
+watch(totalPages, (pages) => {
+  currentPage.value = Math.min(currentPage.value, pages);
+});
+
 watch(
-  visiblePlugins,
+  pagedPlugins,
   (list) => {
     for (const plugin of list) void load(plugin.id, Boolean(plugin.iconUrl), plugin.latestVersion?.version);
   },
@@ -139,6 +158,7 @@ watch(
   }
 );
 watch(selectedDaemonId, (daemonId) => {
+  currentPage.value = 1;
   plugins.value = [];
   failed.value = false;
   emit("target-change", daemonId);
@@ -273,6 +293,23 @@ onBeforeUnmount(() => {
       />
 
       <div v-show="activeTab === 'browse'">
+        <div v-if="visiblePlugins.length" class="plugin-market-pagination">
+          <VPagination
+            v-model="currentPage"
+            :length="totalPages"
+            :total-visible="isPhone ? 1 : 5"
+            density="compact"
+          />
+          <VSelect
+            v-model="pageSize"
+            :items="[10, 20, 50, 100]"
+            hide-details
+            class="plugin-market-page-size"
+          >
+            <template #no-data><Empty :icon="false" compact /></template>
+          </VSelect>
+        </div>
+
         <div v-if="loading && !plugins.length" class="plugin-market-loading">
           <VProgressCircular indeterminate />
         </div>
@@ -299,7 +336,7 @@ onBeforeUnmount(() => {
         </Empty>
 
         <VRow v-else-if="visiblePlugins.length" class="plugin-market-grid">
-          <VCol v-for="plugin in visiblePlugins" :key="plugin.id" cols="12" md="6" lg="4">
+          <VCol v-for="plugin in pagedPlugins" :key="plugin.id" cols="12" md="6" lg="4">
             <VCard
               class="plugin-market-card h-100"
               elevation="0"
@@ -429,6 +466,25 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
+.plugin-market-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.plugin-market-pagination > .v-pagination {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.plugin-market-page-size {
+  width: 96px;
+  flex: 0 0 96px;
+}
+
 .plugin-market-loading {
   min-height: 38vh;
   display: flex;
@@ -486,6 +542,10 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 992px) {
+  .plugin-market-pagination {
+    justify-content: flex-start;
+  }
+
   .plugin-market-navigation {
     flex-wrap: wrap;
     gap: 8px;

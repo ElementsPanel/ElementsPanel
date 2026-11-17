@@ -536,6 +536,7 @@ const sharedViewOverrides = {
     "vuetify/components": { VIcon: "span" }
   }, true).default,
   "@/components/PageToolbar.vue": {},
+  "@/hooks/useScreen": { useScreen: () => ({ isPhone: vue.ref(false) }) },
   "@/lang/i18n": { t: (key) => key, getCurrentLang: () => "en_us" },
   "@/tools/validator": { getValidatorErrorMsg: (err) => err.message },
   "@/tools/nodes": load("plugins/console/panel/src/tools/nodes.ts", {
