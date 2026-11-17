@@ -87,7 +87,7 @@ async function storeFixture(t, readAppearance) {
   return { store, preferredDark };
 }
 
-test("console appearance persists independent logos and solid backgrounds after restart", async (t) => {
+test("console appearance persists independent logos and background images after restart", async (t) => {
   const { default: Storage } = load("core/common/src/system_storage.ts", {
     "fs-extra": panelRequire("fs-extra")
   });
@@ -99,81 +99,19 @@ test("console appearance persists independent logos and solid backgrounds after 
   const logoFields = backend.schema.fields().filter((field) => field.key.startsWith("logoImage"));
   assert.deepEqual(logoFields.map((field) => field.key), ["logoImageLight", "logoImageDark"]);
   assert.ok(logoFields.every((field) => field.fileUpload));
-  const fields = backend.schema.fields();
-  assert.deepEqual(fields.find((field) => field.key === "backgroundMode").options.map((item) => item.value),
-    ["theme", "image", "color"]);
-  const colorField = fields.find((field) => field.key === "backgroundColor");
-  assert.equal(colorField.type, "color");
-  assert.equal(colorField.visibleWhen, "backgroundMode=color");
-  assert.equal(fields.find((field) => field.key === "backgroundImage").visibleWhen, "backgroundMode=image");
+  assert.deepEqual(backend.schema.fields().map((field) => field.key),
+    ["pageTitle", "logoImageLight", "logoImageDark", "backgroundImage"]);
 
   await backend.schema.write({
     logoImageLight: "/light.png", logoImageDark: "/dark.png",
-    backgroundMode: "color", backgroundColor: "#abcdef"
+    backgroundImage: "/background.png"
   });
   const restarted = backendFixture(storage.load("SystemConfig", SystemConfig, "config"));
   const appearance = await restarted.readPublic();
   assert.equal(appearance.logoImageLight, "/light.png");
   assert.equal(appearance.logoImageDark, "/dark.png");
-  assert.equal(appearance.backgroundMode, "color");
-  assert.equal(appearance.backgroundColor, "#abcdef");
+  assert.equal(appearance.backgroundImage, "/background.png");
   assert.deepEqual(appearance, restarted.schema.read());
-});
-
-test("background modes preserve legacy images and reject invalid values before changing settings", async () => {
-  assert.equal(backendFixture().schema.read().backgroundMode, "theme");
-  const backend = backendFixture({ backgroundImage: "/legacy-background.png" });
-  assert.equal(backend.schema.read().backgroundMode, "image");
-  const migrated = backendFixture({}, [{ page: "__settings__", theme: { backgroundImage: "/layout.png" } }]);
-  assert.equal(migrated.schema.read().backgroundMode, "image");
-  await backend.schema.write({ backgroundImage: null });
-  assert.equal(backend.schema.read().backgroundMode, "theme");
-  await backend.schema.write({ backgroundMode: "color", backgroundColor: "#abc" });
-  const saved = { ...backend.config };
-  for (const invalid of [
-    { backgroundMode: "invalid" }, { backgroundMode: null },
-    { backgroundColor: "red" }, { backgroundColor: "#12345" }, { backgroundColor: null }
-  ]) {
-    assert.throws(() => backend.schema.write({ pageTitle: "Invalid change", ...invalid }), /BACKGROUND_INVALID/);
-    assert.deepEqual({ ...backend.config }, saved);
-  }
-  const unchanged = backendFixture(saved, [{ page: "__settings__", theme: { backgroundImage: "/old.png" } }]);
-  assert.equal(unchanged.schema.read().backgroundMode, "color");
-  assert.equal(unchanged.schema.read().backgroundImage, "");
-});
-
-test("console switches between image, solid and theme backgrounds without leaving stale styles", async (t) => {
-  const backend = backendFixture({ backgroundImage: "/background.png" });
-  const { store } = await storeFixture(t, backend.readPublic);
-  await store.initAppTheme();
-  assert.equal(store.hasBgImage.value, true);
-  assert.ok(document.body.classList.contains("app-light-extend-theme"));
-
-  await backend.schema.write({ backgroundMode: "color", backgroundColor: "#12AbEf" });
-  await store.initAppTheme();
-  assert.equal(document.body.style.backgroundColor, "rgb(18, 171, 239)");
-  assert.equal(document.body.style.backgroundImage, "");
-  assert.equal(document.body.style.backgroundSize, "");
-  assert.equal(store.hasBgImage.value, false);
-  assert.ok(!document.body.classList.contains("app-light-extend-theme"));
-  store.setTheme(AppTheme.DARK);
-  await store.initAppTheme();
-  assert.equal(document.body.style.backgroundColor, "rgb(18, 171, 239)");
-  assert.ok(document.body.classList.contains("app-dark-theme"));
-
-  await backend.schema.write({ backgroundMode: "image" });
-  await store.initAppTheme();
-  assert.equal(document.body.style.backgroundColor, "");
-  assert.equal(store.hasBgImage.value, true);
-  assert.ok(document.body.classList.contains("app-dark-extend-theme"));
-  assert.equal(backend.schema.read().backgroundImage, "/background.png");
-
-  await backend.schema.write({ backgroundMode: "theme" });
-  await store.initAppTheme();
-  assert.equal(document.body.style.backgroundColor, "");
-  assert.equal(document.body.style.backgroundImage, "");
-  assert.equal(store.hasBgImage.value, false);
-  assert.ok(!document.body.classList.contains("app-dark-extend-theme"));
 });
 
 test("old single logos remain available while cleared themes stop inheriting them", async () => {

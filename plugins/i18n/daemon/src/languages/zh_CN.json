@@ -201,11 +201,5 @@
   "TXT_CODE_system_instance_control.execLimit": "无法继续创建计划任务，以达到上限",
   "TXT_CODE_system_instance_control.existRepeatTask": "已存在重复的任务",
   "TXT_CODE_system_instance_control.illegalName": "非法的计划名，仅支持下划线，数字，字母和部分本地语言",
-  "TXT_CODE_version.versionDetectErr": "版本检查失败",
-  "TXT_CODE_CONSOLE_BACKGROUND_MODE": "背景类型",
-  "TXT_CODE_CONSOLE_BACKGROUND_THEME": "主题背景",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE": "背景图片",
-  "TXT_CODE_CONSOLE_BACKGROUND_SOLID": "纯色背景",
-  "TXT_CODE_CONSOLE_BACKGROUND_COLOR": "背景颜色",
-  "TXT_CODE_CONSOLE_BACKGROUND_INVALID": "请选择有效的背景类型与 HEX 颜色。"
+  "TXT_CODE_version.versionDetectErr": "版本检查失败"
 }

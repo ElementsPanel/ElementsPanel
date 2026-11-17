@@ -2282,11 +2282,5 @@
   "TXT_CODE_UI_START_MENU": "Start menu",
   "TXT_CODE_UI_TIMESTAMP": "Timestamp",
   "TXT_CODE_UI_DOCKER_PLATFORMS": "Docker platforms",
-  "TXT_CODE_UI_2FA_QR_CODE": "2FA QR code",
-  "TXT_CODE_CONSOLE_BACKGROUND_MODE": "Background type",
-  "TXT_CODE_CONSOLE_BACKGROUND_THEME": "Theme background",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE": "Background image",
-  "TXT_CODE_CONSOLE_BACKGROUND_SOLID": "Solid color",
-  "TXT_CODE_CONSOLE_BACKGROUND_COLOR": "Background color",
-  "TXT_CODE_CONSOLE_BACKGROUND_INVALID": "Select a valid background type and HEX color."
+  "TXT_CODE_UI_2FA_QR_CODE": "2FA QR code"
 }

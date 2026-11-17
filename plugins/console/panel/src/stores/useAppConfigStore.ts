@@ -67,7 +67,6 @@ export const useAppConfigStore = createGlobalState(() => {
   const clearBackgroundImage = () => {
     const body = document.querySelector("body");
     if (!body) return;
-    body.style.removeProperty("background-color");
     body.style.removeProperty("background-image");
     body.style.removeProperty("background-size");
     body.style.removeProperty("background-position");
@@ -77,8 +76,10 @@ export const useAppConfigStore = createGlobalState(() => {
   };
 
   const setBackgroundImage = (url: string) => {
-    clearBackgroundImage();
-    if (!url) return;
+    if (!url) {
+      clearBackgroundImage();
+      return;
+    }
     const body = document.querySelector("body");
     if (body) {
       body.style.backgroundSize = "cover";
@@ -95,15 +96,6 @@ export const useAppConfigStore = createGlobalState(() => {
       }
 
       hasBgImage.value = true;
-    }
-  };
-
-  const setBackground = (appearance?: PanelAppearance) => {
-    if (appearance?.backgroundMode === "color") {
-      clearBackgroundImage();
-      document.body.style.backgroundColor = appearance.backgroundColor || "#232429";
-    } else {
-      setBackgroundImage(appearance?.backgroundMode === "theme" ? "" : appearance?.backgroundImage || "");
     }
   };
 
@@ -136,7 +128,7 @@ export const useAppConfigStore = createGlobalState(() => {
 
     const { value: appearance } = await getAppearance().execute();
     setLogoImages(appearance);
-    setBackground(appearance);
+    setBackgroundImage(appearance?.backgroundImage || "");
   };
 
   const setTheme = (t: AppTheme) => {

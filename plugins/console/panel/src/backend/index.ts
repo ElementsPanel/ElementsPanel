@@ -17,8 +17,6 @@ type AppearanceValues = {
   logoImageLight?: unknown;
   logoImageDark?: unknown;
   backgroundImage?: unknown;
-  backgroundMode?: unknown;
-  backgroundColor?: unknown;
 };
 
 type AppearanceConfig = {
@@ -27,8 +25,6 @@ type AppearanceConfig = {
   logoImageLight?: string;
   logoImageDark?: string;
   backgroundImage?: string;
-  backgroundMode?: "theme" | "image" | "color";
-  backgroundColor?: string;
 };
 
 function readAppearance(config: AppearanceConfig) {
@@ -37,35 +33,16 @@ function readAppearance(config: AppearanceConfig) {
     logoImage: config.logoImage || "",
     logoImageLight: config.logoImageLight ?? config.logoImage ?? "",
     logoImageDark: config.logoImageDark ?? config.logoImage ?? "",
-    backgroundImage: config.backgroundImage || "",
-    backgroundMode: config.backgroundMode ?? (config.backgroundImage ? "image" : "theme"),
-    backgroundColor: config.backgroundColor || "#232429"
+    backgroundImage: config.backgroundImage || ""
   };
 }
 
-function writeAppearance(
-  values: AppearanceValues,
-  config: AppearanceConfig,
-  save: () => Promise<void>,
-  invalidBackgroundMessage: string
-) {
+function writeAppearance(values: AppearanceValues, config: AppearanceConfig, save: () => Promise<void>) {
   // `null` is sent by the clearable Vuetify input when an image is removed.
   // Only an omitted field should fall back to the persisted value; treating
   // null as missing writes the old image straight back.
   const valueOrCurrent = (value: unknown, currentValue: unknown) =>
     value === undefined ? currentValue : value;
-  const backgroundImage = String(valueOrCurrent(values.backgroundImage, config.backgroundImage) ?? "");
-  const backgroundMode = valueOrCurrent(
-    values.backgroundMode,
-    config.backgroundMode ?? (backgroundImage ? "image" : "theme")
-  );
-  const backgroundColor = valueOrCurrent(values.backgroundColor, config.backgroundColor || "#232429");
-  if (
-    (backgroundMode !== "theme" && backgroundMode !== "image" && backgroundMode !== "color") ||
-    typeof backgroundColor !== "string" ||
-    !/^#(?:[\da-f]{3}|[\da-f]{6})$/i.test(backgroundColor)
-  )
-    throw new Error(invalidBackgroundMessage);
   config.pageTitle =
     String(valueOrCurrent(values.pageTitle, config.pageTitle ?? DEFAULT_PAGE_TITLE)).trim() ||
     DEFAULT_PAGE_TITLE;
@@ -76,9 +53,9 @@ function writeAppearance(
   if (values.logoImageDark !== undefined) {
     config.logoImageDark = String(values.logoImageDark ?? "");
   }
-  config.backgroundImage = backgroundImage;
-  config.backgroundMode = backgroundMode;
-  config.backgroundColor = backgroundColor;
+  config.backgroundImage = String(
+    valueOrCurrent(values.backgroundImage, config.backgroundImage) ?? ""
+  );
   return save();
 }
 
@@ -93,8 +70,7 @@ async function migrateLegacyAppearance(config: AppearanceConfig, save: () => Pro
     config.logoImage ||
     config.logoImageLight !== undefined ||
     config.logoImageDark !== undefined ||
-    config.backgroundImage ||
-    config.backgroundMode !== undefined;
+    config.backgroundImage;
   if (customized) return;
   try {
     if (!fs.existsSync(LEGACY_LAYOUT_FILE)) return;
@@ -158,37 +134,15 @@ export function apply(ctx: PanelPluginContext) {
         fileUpload: true
       },
       {
-        key: "backgroundMode",
-        type: "select",
-        title: $t("TXT_CODE_CONSOLE_BACKGROUND_MODE"),
-        options: [
-          { value: "theme", label: $t("TXT_CODE_CONSOLE_BACKGROUND_THEME") },
-          { value: "image", label: $t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE") },
-          { value: "color", label: $t("TXT_CODE_CONSOLE_BACKGROUND_SOLID") }
-        ]
-      },
-      {
         key: "backgroundImage",
         type: "string",
         title: $t("TXT_CODE_8ae0dc90"),
         description: `${$t("TXT_CODE_434786c9")} ${$t("TXT_CODE_cf95364f")}`,
-        fileUpload: true,
-        visibleWhen: "backgroundMode=image"
-      },
-      {
-        key: "backgroundColor",
-        type: "color",
-        title: $t("TXT_CODE_CONSOLE_BACKGROUND_COLOR"),
-        visibleWhen: "backgroundMode=color"
+        fileUpload: true
       }
     ],
     read: () => readAppearance(settings.config),
-    write: (values) => writeAppearance(
-      values,
-      settings.config,
-      () => settings.save(),
-      $t("TXT_CODE_CONSOLE_BACKGROUND_INVALID")
-    )
+    write: (values) => writeAppearance(values, settings.config, () => settings.save())
   }));
 
   const router = ctx.koa.router("/api/overview");

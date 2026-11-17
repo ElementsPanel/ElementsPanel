@@ -37,7 +37,8 @@ test("desktop wallpaper settings persist, clear images and reject invalid or fai
     "../i18n": { localeMessages: {} }
   });
   await apply(ctx);
-  assert.equal(form.fields().find(field => field.key === "wallpaperColor").type, "color");
+  assert.deepEqual(form.fields().map(field => field.key), ["wallpaperMode", "wallpaperImage"]);
+  assert.deepEqual(form.fields()[0].options.map(item => item.value), ["website", "image"]);
   const route = router.stack.find(entry => entry.path === "/desktop_settings");
   assert.equal(route.stack.length, 1, "wallpaper must be readable on the desktop login screen");
   const request = {};
@@ -46,7 +47,7 @@ test("desktop wallpaper settings persist, clear images and reject invalid or fai
     return request.body;
   };
   assert.deepEqual(await current(), {
-    wallpaperMode: "website", wallpaperImage: "", wallpaperColor: "#232429"
+    wallpaperMode: "website", wallpaperImage: ""
   });
   await form.write({ wallpaperMode: "image", wallpaperImage: "/wallpaper.png" });
   assert.equal((await current()).wallpaperImage, "/wallpaper.png");
@@ -54,14 +55,14 @@ test("desktop wallpaper settings persist, clear images and reject invalid or fai
   assert.equal(form.read().wallpaperImage, "/wallpaper.png");
   await form.write({ wallpaperImage: null });
   assert.equal((await current()).wallpaperImage, "");
-  await form.write({ wallpaperMode: "color", wallpaperColor: "#abc" });
+  await form.write({ wallpaperMode: "website" });
   const saved = await current();
   for (const invalid of [
-    { wallpaperMode: "unknown" }, { wallpaperColor: "red" }, { wallpaperImage: 1 }
+    { wallpaperMode: "unknown" }, { wallpaperMode: "color" }, { wallpaperImage: 1 }
   ]) await assert.rejects(form.write(invalid), /WALLPAPER_INVALID/);
   assert.deepEqual(await current(), saved);
   fail = true;
-  await assert.rejects(form.write({ wallpaperColor: "#123456" }), /disk full/);
+  await assert.rejects(form.write({ wallpaperImage: "/new.png" }), /disk full/);
   assert.deepEqual(await current(), saved);
 });
 
@@ -72,7 +73,6 @@ const vue = from("frontend")("vue");
 function desktopFixture(t, settings) {
   const dark = vue.ref(false);
   let currentSettings = settings;
-  let currentAppearance = { backgroundImage: "/website wallpaper.png" };
   let failSettings = false;
   let failAppearance = false;
   let reads = 0;
@@ -91,7 +91,7 @@ function desktopFixture(t, settings) {
     "@elementspanel/epanel-plugin-console/services/apis/appearance": { getAppearance: () => ({
       execute: async () => {
         if (failAppearance) throw new Error("appearance unavailable");
-        return { value: currentAppearance };
+        return { value: { backgroundImage: "/website wallpaper.png" } };
       }
     }) },
     "./api": {
@@ -113,11 +113,6 @@ function desktopFixture(t, settings) {
   };
   return {
     state, dark, refresh, reads: () => reads,
-    refreshWebsite: async (appearance) => {
-      currentAppearance = appearance;
-      window.dispatchEvent(new CustomEvent("elementspanel:plugin-settings-changed", { detail: { id: "console" } }));
-      await settle();
-    },
     failSettings: () => { failSettings = true; }, failAppearance: () => { failAppearance = true; }
   };
 }
@@ -132,8 +127,6 @@ test("desktop wallpaper follows the website, updates after saves and respects th
   await f.refresh({ wallpaperMode: "image", wallpaperImage: "/custom (wallpaper).png" });
   assert.match(f.state.wallpaperStyle.backgroundImage, /custom \(wallpaper\)\.png/);
   assert.match(f.state.wallpaperStyle.backgroundImage, /rgba\(0,0,0,0\.65\)/);
-  await f.refresh({ wallpaperMode: "color", wallpaperColor: "#abcdef" });
-  assert.deepEqual(f.state.wallpaperStyle, { backgroundColor: "#abcdef" });
   await f.refresh({ wallpaperMode: "image", wallpaperImage: "" });
   assert.match(f.state.wallpaperStyle.backgroundColor, /#232429/);
   f.dark.value = false;
@@ -142,24 +135,6 @@ test("desktop wallpaper follows the website, updates after saves and respects th
   window.dispatchEvent(new CustomEvent("elementspanel:plugin-settings-changed", { detail: { id: "terminal" } }));
   await settle();
   assert.equal(f.reads(), reads);
-});
-
-test("desktop website wallpapers follow console colors while custom wallpapers remain independent", async (t) => {
-  const f = desktopFixture(t);
-  await settle();
-  await f.refreshWebsite({ backgroundMode: "color", backgroundColor: "#123456", backgroundImage: "/old.png" });
-  assert.deepEqual(f.state.wallpaperStyle, { backgroundColor: "#123456" });
-  f.dark.value = true;
-  assert.deepEqual(f.state.wallpaperStyle, { backgroundColor: "#123456" });
-  await f.refreshWebsite({ backgroundMode: "theme", backgroundImage: "/old.png" });
-  assert.match(f.state.wallpaperStyle.backgroundColor, /#232429/);
-  await f.refreshWebsite({ backgroundMode: "color", backgroundColor: "#abcdef" });
-  await f.refresh({ wallpaperMode: "image", wallpaperImage: "/custom.png" });
-  assert.match(f.state.wallpaperStyle.backgroundImage, /custom\.png/);
-  await f.refresh({ wallpaperMode: "color", wallpaperColor: "#111111" });
-  assert.deepEqual(f.state.wallpaperStyle, { backgroundColor: "#111111" });
-  await f.refresh({ wallpaperMode: "website" });
-  assert.deepEqual(f.state.wallpaperStyle, { backgroundColor: "#abcdef" });
 });
 
 test("custom wallpapers work without site appearance and legacy panels retain their website background", async (t) => {

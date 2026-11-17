@@ -201,11 +201,5 @@
   "TXT_CODE_system_instance_control.execLimit": "Sınıra ulaşıldığı için zamanlanmış görevler oluşturmaya devam edilemiyor.",
   "TXT_CODE_system_instance_control.existRepeatTask": "Yinelenen bir görev zaten var.",
   "TXT_CODE_system_instance_control.illegalName": "Yasadışı görev adı. Yalnızca alt çizgiler, sayılar, harfler ve bazı yerel dil karakterleri desteklenir.",
-  "TXT_CODE_version.versionDetectErr": "Sürüm Kontrolü Başarısız",
-  "TXT_CODE_CONSOLE_BACKGROUND_MODE": "Arka plan türü",
-  "TXT_CODE_CONSOLE_BACKGROUND_THEME": "Tema arka planı",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE": "Arka plan resmi",
-  "TXT_CODE_CONSOLE_BACKGROUND_SOLID": "Düz renk",
-  "TXT_CODE_CONSOLE_BACKGROUND_COLOR": "Arka plan rengi",
-  "TXT_CODE_CONSOLE_BACKGROUND_INVALID": "Geçerli bir arka plan türü ve HEX rengi seçin."
+  "TXT_CODE_version.versionDetectErr": "Sürüm Kontrolü Başarısız"
 }

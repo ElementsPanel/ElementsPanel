@@ -6,8 +6,6 @@ export interface PanelAppearance {
   logoImageLight?: string;
   logoImageDark?: string;
   backgroundImage: string;
-  backgroundMode?: "theme" | "image" | "color";
-  backgroundColor?: string;
 }
 
 /** Public: the shell reads it before authentication is restored. */

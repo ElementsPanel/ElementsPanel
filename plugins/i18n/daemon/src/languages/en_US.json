@@ -201,11 +201,5 @@
   "TXT_CODE_system_instance_control.execLimit": "Cannot continue creating scheduled tasks as the limit has been reached.",
   "TXT_CODE_system_instance_control.existRepeatTask": "A duplicate task already exists.",
   "TXT_CODE_system_instance_control.illegalName": "Illegal task name. Only underscores, numbers, letters, and some local language characters are supported. It's safest to stick to alphanumeric characters.",
-  "TXT_CODE_version.versionDetectErr": "Version Check Failed",
-  "TXT_CODE_CONSOLE_BACKGROUND_MODE": "Background type",
-  "TXT_CODE_CONSOLE_BACKGROUND_THEME": "Theme background",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE": "Background image",
-  "TXT_CODE_CONSOLE_BACKGROUND_SOLID": "Solid color",
-  "TXT_CODE_CONSOLE_BACKGROUND_COLOR": "Background color",
-  "TXT_CODE_CONSOLE_BACKGROUND_INVALID": "Select a valid background type and HEX color."
+  "TXT_CODE_version.versionDetectErr": "Version Check Failed"
 }

@@ -18,8 +18,7 @@ export async function registerDesktopSettings(ctx: PanelPluginContext) {
           title: $t("TXT_CODE_DESKTOP_WALLPAPER_MODE"),
           options: [
             { value: "website", label: $t("TXT_CODE_DESKTOP_WALLPAPER_WEBSITE") },
-            { value: "image", label: $t("TXT_CODE_DESKTOP_WALLPAPER_CUSTOM") },
-            { value: "color", label: $t("TXT_CODE_DESKTOP_WALLPAPER_SOLID") }
+            { value: "image", label: $t("TXT_CODE_DESKTOP_WALLPAPER_CUSTOM") }
           ]
         },
         {
@@ -29,14 +28,6 @@ export async function registerDesktopSettings(ctx: PanelPluginContext) {
           description: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC"),
           fileUpload: true,
           visibleWhen: "wallpaperMode=image"
-        },
-        {
-          key: "wallpaperColor",
-          type: "color",
-          title: $t("TXT_CODE_DESKTOP_WALLPAPER_COLOR"),
-          description: $t("TXT_CODE_DESKTOP_WALLPAPER_COLOR_DESC"),
-          placeholder: "#232429",
-          visibleWhen: "wallpaperMode=color"
         }
       ],
       read: () => ({ ...settings }),

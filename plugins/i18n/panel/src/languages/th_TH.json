@@ -2282,11 +2282,5 @@
   "TXT_CODE_UI_START_MENU": "เมนูเริ่ม",
   "TXT_CODE_UI_TIMESTAMP": "เวลาประทับ",
   "TXT_CODE_UI_DOCKER_PLATFORMS": "แพลตฟอร์ม Docker",
-  "TXT_CODE_UI_2FA_QR_CODE": "คิวอาร์โค้ด 2FA",
-  "TXT_CODE_CONSOLE_BACKGROUND_MODE": "ประเภทพื้นหลัง",
-  "TXT_CODE_CONSOLE_BACKGROUND_THEME": "พื้นหลังตามธีม",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE": "ภาพพื้นหลัง",
-  "TXT_CODE_CONSOLE_BACKGROUND_SOLID": "พื้นหลังสีเดียว",
-  "TXT_CODE_CONSOLE_BACKGROUND_COLOR": "สีพื้นหลัง",
-  "TXT_CODE_CONSOLE_BACKGROUND_INVALID": "เลือกประเภทพื้นหลังและสี HEX ที่ถูกต้อง"
+  "TXT_CODE_UI_2FA_QR_CODE": "คิวอาร์โค้ด 2FA"
 }

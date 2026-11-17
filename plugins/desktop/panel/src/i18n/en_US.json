@@ -6,13 +6,10 @@
   "TXT_CODE_DESKTOP_MODE": "Desktop Mode",
   "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Remove from Desktop",
   "TXT_CODE_DESKTOP_RESTORE": "Restore",
-  "TXT_CODE_DESKTOP_WALLPAPER_COLOR": "Background color",
-  "TXT_CODE_DESKTOP_WALLPAPER_COLOR_DESC": "Enter a hexadecimal color, such as #232429.",
   "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "Custom image",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "Wallpaper image",
   "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "Upload an image or enter its URL. Leave empty to use the theme background.",
   "TXT_CODE_DESKTOP_WALLPAPER_INVALID": "Invalid desktop wallpaper settings",
   "TXT_CODE_DESKTOP_WALLPAPER_MODE": "Desktop wallpaper",
-  "TXT_CODE_DESKTOP_WALLPAPER_SOLID": "Solid color",
   "TXT_CODE_DESKTOP_WALLPAPER_WEBSITE": "Follow website background"
 }

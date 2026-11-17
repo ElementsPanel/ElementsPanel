@@ -201,11 +201,5 @@
   "TXT_CODE_system_instance_control.execLimit": "上限に達するため、スケジュールされたタスクの作成を続行できません",
   "TXT_CODE_system_instance_control.existRepeatTask": "重複したタスクがすでに存在します",
   "TXT_CODE_system_instance_control.illegalName": "プロジェクト名が間違っています。アンダースコア、数字、文字、および一部の現地言語のみをサポートしています",
-  "TXT_CODE_version.versionDetectErr": "バージョンチェックに失敗しました",
-  "TXT_CODE_CONSOLE_BACKGROUND_MODE": "背景の種類",
-  "TXT_CODE_CONSOLE_BACKGROUND_THEME": "テーマの背景",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE": "背景画像",
-  "TXT_CODE_CONSOLE_BACKGROUND_SOLID": "単色の背景",
-  "TXT_CODE_CONSOLE_BACKGROUND_COLOR": "背景色",
-  "TXT_CODE_CONSOLE_BACKGROUND_INVALID": "有効な背景の種類と HEX カラーを選択してください。"
+  "TXT_CODE_version.versionDetectErr": "バージョンチェックに失敗しました"
 }

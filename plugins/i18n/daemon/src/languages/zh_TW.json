@@ -201,11 +201,5 @@
   "TXT_CODE_system_instance_control.execLimit": "無法繼續建立排程任務，以達到上限",
   "TXT_CODE_system_instance_control.existRepeatTask": "已存在重複的任務",
   "TXT_CODE_system_instance_control.illegalName": "錯誤的計畫名，只支援底線，數字，字母和部分本地語言",
-  "TXT_CODE_version.versionDetectErr": "版本檢查失敗",
-  "TXT_CODE_CONSOLE_BACKGROUND_MODE": "背景類型",
-  "TXT_CODE_CONSOLE_BACKGROUND_THEME": "主題背景",
-  "TXT_CODE_CONSOLE_BACKGROUND_IMAGE": "背景圖片",
-  "TXT_CODE_CONSOLE_BACKGROUND_SOLID": "純色背景",
-  "TXT_CODE_CONSOLE_BACKGROUND_COLOR": "背景顏色",
-  "TXT_CODE_CONSOLE_BACKGROUND_INVALID": "請選擇有效的背景類型與 HEX 顏色。"
+  "TXT_CODE_version.versionDetectErr": "版本檢查失敗"
 }
