@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { getDesktopLayoutConfig, setDesktopLayoutConfig } from "./api";
+import { getDesktopLayoutConfig, getDesktopSettings, setDesktopLayoutConfig } from "./api";
+import { DesktopSettings, normalizeDesktopSettings } from "./settings";
 import { useAppConfigStore } from "@elementspanel/epanel-plugin-console/stores/useAppConfigStore";
 import {
     ctx,
@@ -70,35 +71,59 @@ const desktopImageViewerWindow = computed(() => fileManager.value?.DesktopImageV
 const { isDarkTheme } = useAppConfigStore();
 
 const backgroundImageUrl = ref<string>("");
+const desktopSettings = ref(new DesktopSettings());
 
 const wallpaperStyle = computed<CSSProperties>(() => {
-    if (!backgroundImageUrl.value) {
+    const settings = desktopSettings.value;
+    if (settings.wallpaperMode === "color") {
+        return { backgroundColor: settings.wallpaperColor };
+    }
+    const image = settings.wallpaperMode === "image" ? settings.wallpaperImage : backgroundImageUrl.value;
+    if (!image) {
         // The fallback only applies before the plugin's theme.scss is injected;
         // keep it on the same side as the active theme so it cannot flash light.
         const fallback = isDarkTheme.value ? "#232429" : "#f5f5f5";
         return { backgroundColor: `var(--desktop-bg-color, ${fallback})` };
     }
-    // A bare color is not a valid background-image layer: it invalidates the whole
-    // declaration and the wallpaper disappears. Use a flat gradient instead.
     const overlay = isDarkTheme.value
         ? "rgba(0,0,0,0.65)"
         : "rgba(255,255,255,0.2)";
     return {
-        backgroundImage: `linear-gradient(${overlay}, ${overlay}), url(${backgroundImageUrl.value})`,
+        backgroundImage: `linear-gradient(${overlay}, ${overlay}), url(${JSON.stringify(image)})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat"
     };
 });
 
-onMounted(async () => {
-    try {
-        const { value: appearance } = await getAppearance().execute();
-        if (appearance?.backgroundImage) {
-            backgroundImageUrl.value = appearance.backgroundImage;
-        }
-    } catch (e) {
+let wallpaperRequest = 0;
+const loadWallpaper = async () => {
+    const request = ++wallpaperRequest;
+    const [settingsResult, appearanceResult] = await Promise.allSettled([
+        getDesktopSettings().execute(),
+        getAppearance().execute()
+    ]);
+    if (request !== wallpaperRequest) return;
+    if (settingsResult.status === "fulfilled") {
+        desktopSettings.value = normalizeDesktopSettings(settingsResult.value.value);
     }
+    if (appearanceResult.status === "fulfilled") {
+        backgroundImageUrl.value = appearanceResult.value.value?.backgroundImage || "";
+    }
+};
+
+const onPluginSettingsChanged = (event: Event) => {
+    const id = (event as CustomEvent<{ id: string }>).detail?.id;
+    if (id === "desktop" || id === "console") void loadWallpaper();
+};
+
+onMounted(() => {
+    window.addEventListener("elementspanel:plugin-settings-changed", onPluginSettingsChanged);
+    void loadWallpaper();
+});
+onUnmounted(() => {
+    wallpaperRequest++;
+    window.removeEventListener("elementspanel:plugin-settings-changed", onPluginSettingsChanged);
 });
 
 const showLoginOverlay = ref(authEnabled.value && !isLogged.value);

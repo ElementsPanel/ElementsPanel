@@ -5,5 +5,14 @@
   "TXT_CODE_DESKTOP_MINIMIZE": "Minimizar",
   "TXT_CODE_DESKTOP_MODE": "Modo desktop",
   "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Remover da área de trabalho",
-  "TXT_CODE_DESKTOP_RESTORE": "Restaurar"
+  "TXT_CODE_DESKTOP_RESTORE": "Restaurar",
+  "TXT_CODE_DESKTOP_WALLPAPER_COLOR": "Cor de fundo",
+  "TXT_CODE_DESKTOP_WALLPAPER_COLOR_DESC": "Insira uma cor hexadecimal, como #232429.",
+  "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "Imagem personalizada",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "Imagem de fundo",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "Envie uma imagem ou insira sua URL. Deixe vazio para usar o fundo do tema.",
+  "TXT_CODE_DESKTOP_WALLPAPER_INVALID": "Configurações de papel de parede inválidas",
+  "TXT_CODE_DESKTOP_WALLPAPER_MODE": "Papel de parede da área de trabalho",
+  "TXT_CODE_DESKTOP_WALLPAPER_SOLID": "Cor sólida",
+  "TXT_CODE_DESKTOP_WALLPAPER_WEBSITE": "Usar o fundo do site"
 }

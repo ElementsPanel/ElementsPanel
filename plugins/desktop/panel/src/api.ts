@@ -1,4 +1,10 @@
 import { useDefineApi } from "@elementspanel/epanel-plugin-console/stores/useDefineApi";
+import type { DesktopSettings } from "./settings";
+
+export const getDesktopSettings = useDefineApi<unknown, DesktopSettings>({
+  url: "/api/overview/desktop_settings",
+  method: "GET"
+});
 
 export const getDesktopLayoutConfig = useDefineApi<any, any>({
   url: "/api/overview/desktop_layout",

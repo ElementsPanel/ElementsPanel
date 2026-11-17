@@ -1,0 +1,59 @@
+import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
+import { DesktopSettings, normalizeDesktopSettings } from "../settings";
+
+const CATEGORY = "DesktopSettings";
+const UUID = "config";
+
+export async function registerDesktopSettings(ctx: PanelPluginContext) {
+  const storage = ctx.storage.getStorage();
+  let settings = normalizeDesktopSettings(await storage.load(CATEGORY, DesktopSettings, UUID));
+
+  ctx.inject(["settingsForm"], (scope) => {
+    const $t = scope.i18n.$t;
+    scope.settingsForm.declare({
+      fields: () => [
+        {
+          key: "wallpaperMode",
+          type: "select",
+          title: $t("TXT_CODE_DESKTOP_WALLPAPER_MODE"),
+          options: [
+            { value: "website", label: $t("TXT_CODE_DESKTOP_WALLPAPER_WEBSITE") },
+            { value: "image", label: $t("TXT_CODE_DESKTOP_WALLPAPER_CUSTOM") },
+            { value: "color", label: $t("TXT_CODE_DESKTOP_WALLPAPER_SOLID") }
+          ]
+        },
+        {
+          key: "wallpaperImage",
+          type: "string",
+          title: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE"),
+          description: $t("TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC"),
+          fileUpload: true,
+          visibleWhen: "wallpaperMode=image"
+        },
+        {
+          key: "wallpaperColor",
+          type: "string",
+          title: $t("TXT_CODE_DESKTOP_WALLPAPER_COLOR"),
+          description: $t("TXT_CODE_DESKTOP_WALLPAPER_COLOR_DESC"),
+          placeholder: "#232429",
+          visibleWhen: "wallpaperMode=color"
+        }
+      ],
+      read: () => ({ ...settings }),
+      write: async (values) => {
+        const candidate = { ...settings, ...values };
+        if (candidate.wallpaperImage === null) candidate.wallpaperImage = "";
+        const next = normalizeDesktopSettings(candidate);
+        if (
+          (Object.keys(next) as Array<keyof DesktopSettings>).some(
+            (key) => next[key] !== candidate[key]
+          )
+        )
+          throw new Error($t("TXT_CODE_DESKTOP_WALLPAPER_INVALID"));
+        await storage.store(CATEGORY, UUID, next);
+        settings = next;
+      }
+    });
+  });
+  return () => ({ ...settings });
+}

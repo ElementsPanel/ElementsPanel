@@ -5,5 +5,14 @@
   "TXT_CODE_DESKTOP_MINIMIZE": "Réduire",
   "TXT_CODE_DESKTOP_MODE": "Mode bureau",
   "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Supprimer du bureau",
-  "TXT_CODE_DESKTOP_RESTORE": "Restaurer"
+  "TXT_CODE_DESKTOP_RESTORE": "Restaurer",
+  "TXT_CODE_DESKTOP_WALLPAPER_COLOR": "Couleur de fond",
+  "TXT_CODE_DESKTOP_WALLPAPER_COLOR_DESC": "Saisissez une couleur hexadécimale, par exemple #232429.",
+  "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "Image personnalisée",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "Image de fond",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "Importez une image ou saisissez son URL. Laissez vide pour utiliser le fond du thème.",
+  "TXT_CODE_DESKTOP_WALLPAPER_INVALID": "Paramètres du fond d’écran du bureau invalides",
+  "TXT_CODE_DESKTOP_WALLPAPER_MODE": "Fond d’écran du bureau",
+  "TXT_CODE_DESKTOP_WALLPAPER_SOLID": "Couleur unie",
+  "TXT_CODE_DESKTOP_WALLPAPER_WEBSITE": "Utiliser le fond du site"
 }

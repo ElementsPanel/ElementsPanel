@@ -5,5 +5,14 @@
   "TXT_CODE_DESKTOP_MINIMIZE": "Свернуть",
   "TXT_CODE_DESKTOP_MODE": "Режим рабочего стола",
   "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Удалить с рабочего стола",
-  "TXT_CODE_DESKTOP_RESTORE": "Восстановить"
+  "TXT_CODE_DESKTOP_RESTORE": "Восстановить",
+  "TXT_CODE_DESKTOP_WALLPAPER_COLOR": "Цвет фона",
+  "TXT_CODE_DESKTOP_WALLPAPER_COLOR_DESC": "Введите шестнадцатеричный цвет, например #232429.",
+  "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "Своя картинка",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "Изображение обоев",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "Загрузите изображение или введите его URL. Оставьте пустым, чтобы использовать фон темы.",
+  "TXT_CODE_DESKTOP_WALLPAPER_INVALID": "Недопустимые настройки обоев рабочего стола",
+  "TXT_CODE_DESKTOP_WALLPAPER_MODE": "Обои рабочего стола",
+  "TXT_CODE_DESKTOP_WALLPAPER_SOLID": "Сплошной цвет",
+  "TXT_CODE_DESKTOP_WALLPAPER_WEBSITE": "Использовать фон сайта"
 }

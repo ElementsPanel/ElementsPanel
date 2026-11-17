@@ -626,6 +626,8 @@ test("desktop user CRUD loads without resource providers and a late assignment r
 test("desktop shell opens/restores contributed windows and survives provider removal", async (t) => {
   const { ctx, routes, overrides, state: app } = frontendFixture(t);
   const originalDocument = global.document;
+  const originalWindow = global.window;
+  global.window = { removeEventListener() {} };
   global.document = {
     createElement: () => ({ dataset: {}, remove() {} }),
     head: { appendChild() {} },
@@ -668,6 +670,7 @@ test("desktop shell opens/restores contributed windows and survives provider rem
   t.after(() => {
     shell.dispose();
     global.document = originalDocument;
+    global.window = originalWindow;
   });
   const { windows } = shell.state;
   assert.equal(ctx.desktop.open({ id: "bad", view: "instance-console" }), false);

@@ -1,15 +1,21 @@
 import type Koa from "koa";
 import type { PanelPluginContext } from "../../../../../core/panel/src/app/plugin";
 import { getDesktopLayout, setDesktopLayout } from "./desktop-layout-service";
+import { registerDesktopSettings } from "./settings";
+import { localeMessages } from "../i18n";
 
-// Panel side of Desktop mode: it persists one window layout per user.
+export const inject = ["koa", "middleware", "roles", "i18n", "storage"];
 
-export const inject = ["koa", "middleware", "roles"];
-
-export function apply(ctx: PanelPluginContext) {
+export async function apply(ctx: PanelPluginContext) {
+  ctx.i18n.define(localeMessages);
+  const getSettings = await registerDesktopSettings(ctx);
   const router = ctx.koa.router("/api/overview");
   const requireUser = ctx.middleware.permission({ level: ctx.roles.USER });
   const logger = ctx.logger;
+
+  router.get("/desktop_settings", (requestCtx: Koa.ParameterizedContext) => {
+    requestCtx.body = getSettings();
+  });
 
   router.get("/desktop_layout", requireUser, async (ctx: Koa.ParameterizedContext) => {
     const userUuid = ctx.session?.uuid;

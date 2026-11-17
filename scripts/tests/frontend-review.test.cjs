@@ -757,6 +757,17 @@ test("panels without node management and actions in the node scope do not scan o
 
 test("plugin configuration opens its save tooltip for unsaved edits and preserves edits across saves", async (t) => {
   for (const targetScope of ["panel", "node"]) await t.test(targetScope, async (t) => {
+    const originalWindow = global.window;
+    const originalCustomEvent = global.CustomEvent;
+    const settingsEvents = [];
+    global.window = { dispatchEvent: event => { settingsEvents.push(event.detail.id); return true; } };
+    global.CustomEvent = class {
+      constructor(type, { detail }) { this.type = type; this.detail = detail; }
+    };
+    t.after(() => {
+      global.window = originalWindow;
+      global.CustomEvent = originalCustomEvent;
+    });
     const effect = vue.effectScope();
     const isPhone = vue.ref(false);
     t.after(() => effect.stop());
@@ -854,11 +865,13 @@ test("plugin configuration opens its save tooltip for unsaved edits and preserve
     failSave = true;
     await state.saveSettings();
     assert.deepEqual(errors, ["save failed"]);
+    assert.deepEqual(settingsEvents, []);
     assert.equal(state.settingsDirty.value, true, "a failed save must retain the unsaved state");
     assert.equal(state.saveTooltipOpen.value, true);
     failSave = false;
     await state.saveSettings();
     await vue.nextTick();
+    assert.deepEqual(settingsEvents, targetScope === "panel" ? ["settings"] : []);
     assert.equal(state.settingsDirty.value, false);
     assert.equal(state.saveTooltipOpen.value, false, "saving must close the reminder");
 

@@ -508,6 +508,11 @@ const saveSettings = async () => {
         ).value
       );
     }
+    if (targetScope === "panel" && (!lastResult.value || lastResult.value.application === "applied")) {
+      window.dispatchEvent(new CustomEvent("elementspanel:plugin-settings-changed", {
+        detail: { id: targetId }
+      }));
+    }
     if (!lastResult.value || lastResult.value.application === "applied")
       notify(t("TXT_CODE_d3de39b4"), "success");
     const editedDuringSave = JSON.stringify(targetSchema.values) !== submittedSettings;

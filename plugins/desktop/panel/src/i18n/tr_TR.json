@@ -5,5 +5,14 @@
   "TXT_CODE_DESKTOP_MINIMIZE": "Küçült",
   "TXT_CODE_DESKTOP_MODE": "Masaüstü modu",
   "TXT_CODE_DESKTOP_REMOVE_SHORTCUT": "Masaüstünden kaldır",
-  "TXT_CODE_DESKTOP_RESTORE": "Geri yükle"
+  "TXT_CODE_DESKTOP_RESTORE": "Geri yükle",
+  "TXT_CODE_DESKTOP_WALLPAPER_COLOR": "Arka plan rengi",
+  "TXT_CODE_DESKTOP_WALLPAPER_COLOR_DESC": "#232429 gibi onaltılık bir renk girin.",
+  "TXT_CODE_DESKTOP_WALLPAPER_CUSTOM": "Özel görüntü",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE": "Duvar kâğıdı görüntüsü",
+  "TXT_CODE_DESKTOP_WALLPAPER_IMAGE_DESC": "Bir görüntü yükleyin veya URL'sini girin. Tema arka planını kullanmak için boş bırakın.",
+  "TXT_CODE_DESKTOP_WALLPAPER_INVALID": "Geçersiz masaüstü duvar kâğıdı ayarları",
+  "TXT_CODE_DESKTOP_WALLPAPER_MODE": "Masaüstü duvar kâğıdı",
+  "TXT_CODE_DESKTOP_WALLPAPER_SOLID": "Düz renk",
+  "TXT_CODE_DESKTOP_WALLPAPER_WEBSITE": "Web sitesi arka planını kullan"
 }
