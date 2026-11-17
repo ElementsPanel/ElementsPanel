@@ -1,12 +1,12 @@
 {
-  "TXT_CODE_233624ad": "Eine ganzzahlige Portnummer eingeben. Standard: 23333.",
-  "TXT_CODE_2b85af6d": "Bei Verwendung eines Reverse-Proxys aktivieren, um die echte Client-IP zu lesen.",
-  "TXT_CODE_328191e": "Zum Binden an eine bestimmte Netzwerkschnittstelle deren IP-Adresse eingeben.",
-  "TXT_CODE_405cd346": "API-Schnittstelle für domänenübergreifende Anfragen",
-  "TXT_CODE_514e064a": "Panel-Bindungs-IP",
-  "TXT_CODE_6655c905": "Erlaubt ursprungsübergreifende Anfragen aus beliebigen Quellen (Access-Control-Allow-Origin: *). Dies kann die Sicherheit verringern.",
-  "TXT_CODE_66aeac82": "Reverse-Proxy-Request-Header",
-  "TXT_CODE_7f0017d2": "Anschluss für Panel-Anschluss",
+  "TXT_CODE_COMMON_ENTER_AN_INTEGER_PORT_NUMBER_DEFAULT_23333": "Eine ganzzahlige Portnummer eingeben. Standard: 23333.",
+  "TXT_CODE_COMMON_ENABLE_WHEN_USING_A_REVERSE_PROXY_TO_READ_THE_CLIENTS_REAL_IP": "Bei Verwendung eines Reverse-Proxys aktivieren, um die echte Client-IP zu lesen.",
+  "TXT_CODE_COMMON_ENTER_ITS_IP_ADDRESS_TO_BIND_TO_A_SPECIFIC_NETWORK_INTERFACE": "Zum Binden an eine bestimmte Netzwerkschnittstelle deren IP-Adresse eingeben.",
+  "TXT_CODE_COMMON_CROSS_ORIGIN_REQUEST_API_INTERFACE": "API-Schnittstelle für domänenübergreifende Anfragen",
+  "TXT_CODE_COMMON_PANEL_BINDING_IP": "Panel-Bindungs-IP",
+  "TXT_CODE_SERVER_CROSS_ORIGIN_SECURITY_HINT": "Erlaubt ursprungsübergreifende Anfragen aus beliebigen Quellen (Access-Control-Allow-Origin: *). Dies kann die Sicherheit verringern.",
+  "TXT_CODE_COMMON_REVERSE_PROXY_REQUEST_HEADER": "Reverse-Proxy-Request-Header",
+  "TXT_CODE_COMMON_PANEL_PORT": "Anschluss für Panel-Anschluss",
   "TXT_CODE_SERVER_PREFIX": "Pfadpräfix",
   "TXT_CODE_SERVER_PREFIX_TIP": "Betreibt das Panel unter einem Unterpfad, zum Beispiel /panel. Leer lassen, um es im Stammverzeichnis bereitzustellen.",
   "TXT_CODE_SERVER_RESTART_TIP": "Diese Einstellungen werden beim Start des Webservers angewendet. Starten Sie das Panel neu, damit eine Änderung wirksam wird.",
@@ -16,6 +16,6 @@
   "TXT_CODE_SERVER_SSL_PEM": "Zertifikatsdatei (.pem)",
   "TXT_CODE_SERVER_SSL_PEM_TIP": "Pfad zur Zertifikatsdatei, absolut oder relativ zum Panel-Verzeichnis.",
   "TXT_CODE_SERVER_SSL_TIP": "Stellt das Panel über HTTPS mit dem untenstehenden Zertifikat bereit. Beide Dateien sind erforderlich.",
-  "TXT_CODE_f0789d81": "Reverse-Proxy-Modus",
-  "TXT_CODE_fd8bc51f": "Name des Anfrage-Headers mit der echten Client-IP."
+  "TXT_CODE_COMMON_REVERSE_PROXY_MODE": "Reverse-Proxy-Modus",
+  "TXT_CODE_COMMON_NAME_OF_THE_REQUEST_HEADER_CONTAINING_THE_CLIENTS_REAL_IP": "Name des Anfrage-Headers mit der echten Client-IP."
 }

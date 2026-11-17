@@ -97,7 +97,7 @@ const afterLeave = () => {
 
 <template>
   <DesktopDialog :model-value="modelValue" :id="windowId" ref="dialogElement"
-    :title="title || t('TXT_CODE_276756b2')" icon="mdi-alert-circle-outline"
+    :title="title || t('TXT_CODE_COMMON_CONFIRM_ACTION')" icon="mdi-alert-circle-outline"
     :width="width || 400" :height="height" :z-index="currentZIndex"
     :closable="closable && !busy" :keyboard="keyboard" :padded="false" :scrollable="false"
     class="desktop-confirm" @focus="focusWindow" @close="cancel" @after-leave="afterLeave">
@@ -109,7 +109,7 @@ const afterLeave = () => {
     <template v-if="showFooter" #footer>
       <slot name="footer">
         <VBtn v-if="showCancel" class="desktop-confirm__button desktop-confirm__cancel" variant="text"
-          :disabled="busy" @click="cancel">{{ cancelText ?? t("TXT_CODE_a0451c97") }}</VBtn>
+          :disabled="busy" @click="cancel">{{ cancelText ?? t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
         <template v-if="actions">
           <VBtn v-for="action in actions" :key="action.id" class="desktop-confirm__button"
             :class="{ 'desktop-confirm__button--primary': !action.danger, 'desktop-confirm__button--danger': action.danger,
@@ -120,7 +120,7 @@ const afterLeave = () => {
         <VBtn v-else v-bind="okButtonProps" class="desktop-confirm__button"
           :class="danger ? 'desktop-confirm__button--danger' : 'desktop-confirm__button--primary'"
           variant="text" :loading="busy" :disabled="disabled || !!okButtonProps?.disabled"
-          @click="confirm">{{ okText ?? t("TXT_CODE_d507abff") }}</VBtn>
+          @click="confirm">{{ okText ?? t("TXT_CODE_COMMON_CONFIRM") }}</VBtn>
       </slot>
     </template>
   </DesktopDialog>

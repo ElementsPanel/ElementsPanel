@@ -18,5 +18,5 @@
   "TXT_CODE_INSTANCE_BACKUP_STOPPING": "กำลังหยุดอินสแตนซ์...",
   "TXT_CODE_INSTANCE_BACKUP_STOP_TIMEOUT": "หยุดอินสแตนซ์หมดเวลา ยกเลิกการสำรองข้อมูลแล้ว",
   "TXT_CODE_INSTANCE_BACKUP_SUCCESS": "สำรองข้อมูลอินสแตนซ์สำเร็จ! ไฟล์: {{name}}",
-  "TXT_CODE_instanceConf.instanceBusy": "อินสแตนซ์ปัจจุบันกำลังยุ่งและไม่สามารถดำเนินการใดๆ ได้"
+  "TXT_CODE_INSTANCE_CONF_INSTANCE_BUSY": "อินสแตนซ์ปัจจุบันกำลังยุ่งและไม่สามารถดำเนินการใดๆ ได้"
 }

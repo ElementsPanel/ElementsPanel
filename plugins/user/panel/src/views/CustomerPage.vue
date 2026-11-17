@@ -20,13 +20,13 @@ const statusTypes = [
 <template>
   <main class="customer-page">
     <VContainer fluid class="customer-page-container">
-      <PageToolbar :title="t('TXT_CODE_ec299306')" icon="mdi-account-outline" />
+      <PageToolbar :title="t('TXT_CODE_COMMON_MY_APPLICATION')" icon="mdi-account-outline" />
       <VRow v-if="instanceAvailable" density="compact" class="customer-page-row">
         <VCol v-for="type in statusTypes" :key="type" cols="12" sm="6" lg="3">
           <UserStatusBlock :type="type" />
         </VCol>
         <VCol cols="12">
-          <UserInstanceList :title="t('TXT_CODE_d655beec')" />
+          <UserInstanceList :title="t('TXT_CODE_COMMON_INSTANCE_LIST')" />
         </VCol>
       </VRow>
       <Empty v-else />

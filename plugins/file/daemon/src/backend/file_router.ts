@@ -13,7 +13,7 @@ export function registerFileEvents() {
       if (!instance) {
         return protocol().error(ctx, event, {
           instanceUuid: instanceUuid,
-          err: $t("TXT_CODE_file_router.instanceNotExist", { instanceUuid: instanceUuid })
+          err: $t("TXT_CODE_FILE_ROUTER_INSTANCE_NOT_EXIST", { instanceUuid: instanceUuid })
         });
       }
 
@@ -25,7 +25,7 @@ export function registerFileEvents() {
       ) {
         return protocol().error(ctx, event, {
           instanceUuid: instanceUuid,
-          err: $t("TXT_CODE_bbedcf29")
+          err: $t("TXT_CODE_INSTANCE_STATE_BLOCKS_FILE_EDITS")
         });
       }
     }
@@ -49,10 +49,10 @@ export function registerFileEvents() {
     const instance = instances().subsystem.getInstance(data.instanceUuid);
     let taskStarted = false;
     try {
-      if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+      if (!instance) throw new Error($t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
       if (instance.info.fileLock >= maxFileTask) {
         throw new Error(
-          $t("TXT_CODE_file_router.unzipLimit", {
+          $t("TXT_CODE_FILE_ROUTER_UNZIP_LIMIT", {
             maxFileTask,
             fileLock: instance.info.fileLock
           })
@@ -136,7 +136,7 @@ export function registerFileEvents() {
   protocol().on("file/status", async (ctx, data) => {
     try {
       const instance = instances().subsystem.getInstance(data.instanceUuid);
-      if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+      if (!instance) throw new Error($t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
 
       const downloads = transfer().downloads;
       const downloadTasks = [];
@@ -221,7 +221,7 @@ export function registerFileEvents() {
       const fileName = data.fileName;
 
       if (!checkSafeUrl(url) || (data.fallbackUrl && !checkSafeUrl(data.fallbackUrl))) {
-        protocol().responseError(ctx, $t("TXT_CODE_3fe1b194"), {
+        protocol().responseError(ctx, $t("TXT_CODE_COMMON_THIS_URL_IS_INSECURE_PLEASE_ENTER_A_URL_WITH_A_DOMAIN_NAME_THAT_IS_EXPOSED_ON"), {
           disablePrint: true
         });
         return;
@@ -241,7 +241,7 @@ export function registerFileEvents() {
       ) {
         protocol().responseError(
           ctx,
-          $t("TXT_CODE_821a742e", {
+          $t("TXT_CODE_COMMON_ONLY_HAVE_CONCURRENT_DOWNLOAD_TASKS", {
             count: data.ifIdle === true ? 1 : maxDownloadFromUrlFileCount
           }),
           {
@@ -345,10 +345,10 @@ export function registerFileEvents() {
       const code = data.code;
       const fileManager = getFileManager(data.instanceUuid);
       const instance = instances().subsystem.getInstance(data.instanceUuid);
-      if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+      if (!instance) throw new Error($t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
       if (instance.info.fileLock >= maxFileTask) {
         throw new Error(
-          $t("TXT_CODE_file_router.unzipLimit", {
+          $t("TXT_CODE_FILE_ROUTER_UNZIP_LIMIT", {
             maxFileTask: maxFileTask,
             fileLock: instance.info.fileLock
           })

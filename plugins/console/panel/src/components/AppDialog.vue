@@ -152,10 +152,10 @@ const afterLeave = () => {
       <VCardActions v-if="showFooter" class="app-dialog-actions">
         <slot name="footer">
           <VBtn v-if="props.showCancel" variant="text" @click="close">
-            {{ props.cancelText ?? t("TXT_CODE_a0451c97") }}
+            {{ props.cancelText ?? t("TXT_CODE_COMMON_CANCEL") }}
           </VBtn>
           <VBtn v-bind="okButtonAttrs" :loading="props.confirmLoading" @click="confirm">
-            {{ props.okText ?? t("TXT_CODE_d507abff") }}
+            {{ props.okText ?? t("TXT_CODE_COMMON_CONFIRM") }}
           </VBtn>
         </slot>
       </VCardActions>

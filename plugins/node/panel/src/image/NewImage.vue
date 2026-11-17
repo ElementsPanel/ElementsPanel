@@ -27,23 +27,23 @@ const buildProgressDialog = ref<InstanceType<typeof BuildProgress>>();
 const dockerFileDrawer = ref(false);
 const imageList = [
   {
-    title: t("TXT_CODE_b09eff8f"),
-    description: t("TXT_CODE_d7c5823e"),
+    title: t("TXT_CODE_COMMON_CREATE_OPEN_JDK_8_ENVIRONMENT_IMAGE"),
+    description: t("TXT_CODE_COMMON_BUILT_IN_JAVA_8_RUNTIME_ENVIRONMENT_IDEAL_FOR_MINECRAFT_SERVER_1_7_1_16"),
     type: 1
   },
   {
-    title: t("TXT_CODE_9b9b745c"),
-    description: t("TXT_CODE_7d1a9487"),
+    title: t("TXT_CODE_COMMON_CREATE_OPEN_JDK_17_ENVIRONMENT_IMAGE"),
+    description: t("TXT_CODE_COMMON_BUILT_IN_JAVA_17_RUNTIME_ENVIRONMENT_IDEAL_FOR_MINECRAFT_SERVERS_1_18_AND_LATER"),
     type: 2
   },
   {
-    title: t("TXT_CODE_495027e1"),
-    description: t("TXT_CODE_41d79430"),
+    title: t("TXT_CODE_COMMON_CREATE_UBUNTU_22_04_ENVIRONMENT_IMAGE"),
+    description: t("TXT_CODE_COMMON_IDEAL_FOR_MINECRAFT_BEDROCK_EDITION_SERVER_OR_OTHER_LINUX_PROGRAMS"),
     type: 3
   },
   {
-    title: t("TXT_CODE_123bcd09"),
-    description: t("TXT_CODE_3d14442a"),
+    title: t("TXT_CODE_COMMON_CREATE_CUSTOM_ENVIRONMENT_IMAGE_USING_DOCKER_FILE"),
+    description: t("TXT_CODE_COMMON_CREATE_ENVIRONMENT_IMAGE_USING_DOCKER_FILE_IT_IS_RECOMMENDED_ONLY_FOR_EXPERIENCED_USER"),
     type: 4
   }
 ];
@@ -75,7 +75,7 @@ const selectType = (type: number) => {
       version.value = "latest";
       break;
     default:
-      return reportErrorMsg(t("TXT_CODE_fb1ff943"));
+      return reportErrorMsg(t("TXT_CODE_COMMON_UNKNOWN_ENVIRONMENT"));
   }
   dockerFileDrawer.value = true;
 };
@@ -95,13 +95,13 @@ onMounted(async () => {});
 <template>
   <main class="node-image-page">
     <VContainer fluid class="node-image-page-container">
-      <PageToolbar :title="t('TXT_CODE_3d09f0ac')" icon="mdi-image-plus">
+      <PageToolbar :title="t('TXT_CODE_COMMON_CREATE_IMAGE')" icon="mdi-image-plus">
         <template #actions>
           <VBtn variant="tonal" @click="toImageListPage">
-            {{ t("TXT_CODE_3a818e91") }}
+            {{ t("TXT_CODE_COMMON_BACK_TO_IMAGE_LIST") }}
           </VBtn>
           <VBtn color="primary" @click="buildProgressDialog?.openDialog()">
-            {{ t("TXT_CODE_5544ec22") }}
+            {{ t("TXT_CODE_COMMON_VIEW_BUILD_PROGRESS") }}
           </VBtn>
         </template>
       </PageToolbar>
@@ -112,7 +112,7 @@ onMounted(async () => {});
           <template #body>
             <div>
                 <p class="text-body-medium text-medium-emphasis">
-                  {{ t("TXT_CODE_ba1eb3b5") }}
+                  {{ t("TXT_CODE_COMMON_IMAGES_PROVIDE_SEPARATE_RUNTIME_ENVIRONMENTS_SELECT_A_TEMPLATE_THEN_EDIT_ITS_DOCKERFILE") }}
                 </p>
             </div>
           </template>

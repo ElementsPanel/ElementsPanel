@@ -122,7 +122,7 @@ const save = async (closeAfterSave: boolean) => {
       data: { target: path.value, text }
     });
     if (request !== session || signal.aborted) return;
-    message.success(t(closeAfterSave ? "TXT_CODE_a7907771" : "TXT_CODE_8f47d95"));
+    message.success(t(closeAfterSave ? "TXT_CODE_COMMON_SAVED" : "TXT_CODE_COMMON_SAVED_VIA_SHORTCUT_KEYS"));
     emit("save");
     if (closeAfterSave) closeDialog(text);
   } catch (error) {
@@ -148,7 +148,7 @@ defineExpose({
 <template>
   <VDialog v-model="open" class="file-editor-dialog app-dialog" :class="{ 'file-editor-dialog--full': fullScreen }"
     :max-width="fullScreen ? undefined : '1600px'" :fullscreen="fullScreen" persistent scrollable>
-    <VCard :title="t('TXT_CODE_1f61e5a3')" :subtitle="fileName" rounded="xl" class="file-editor-card">
+    <VCard :title="t('TXT_CODE_COMMON_EDIT_SOURCE_FILE')" :subtitle="fileName" rounded="xl" class="file-editor-card">
       <template v-if="!isPhone" #append>
         <VBtn icon size="small" variant="text" :aria-label="fileName" @click="fullScreen = !fullScreen">
           <VIcon :icon="fullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" />
@@ -161,9 +161,9 @@ defineExpose({
       </VCardText>
       <VCardActions>
         <VSpacer />
-        <VBtn variant="text" :disabled="isSaving" @click="cancel">{{ t("TXT_CODE_3b1cc020") }}</VBtn>
+        <VBtn variant="text" :disabled="isSaving" @click="cancel">{{ t("TXT_CODE_COMMON_DISCARD") }}</VBtn>
         <VBtn color="primary" :disabled="!openEditor || isLoading" :loading="isSaving" @click="submit">
-          {{ t("TXT_CODE_abfe9512") }}
+          {{ t("TXT_CODE_COMMON_SAVE") }}
         </VBtn>
       </VCardActions>
     </VCard>

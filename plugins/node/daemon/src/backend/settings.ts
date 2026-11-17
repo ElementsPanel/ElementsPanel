@@ -34,25 +34,25 @@ export function registerSettings(ctx: DaemonPluginContext) {
         {
           key: "remoteMappings",
           type: "list",
-          title: $t("TXT_CODE_bbe23ee7"),
-          description: $t("TXT_CODE_497568db"),
-          addLabel: $t("TXT_CODE_8d8fbbf4"),
+          title: $t("TXT_CODE_COMMON_NODE_DIRECT_CONNECTION_ADDRESS_MAPPINGS"),
+          description: $t("TXT_CODE_NODE_DIRECT_CONNECTION_HINT"),
+          addLabel: $t("TXT_CODE_COMMON_ADD_A_MAPPING"),
           listEditor: "dialog",
           itemTitleKey: "fromIp",
           maxItems: 100,
           fields: (["from", "to"] as const).flatMap((side): DaemonSettingField[] => {
-            const title = $t(side === "from" ? "TXT_CODE_2ee6fd18" : "TXT_CODE_6f27624c");
+            const title = $t(side === "from" ? "TXT_CODE_COMMON_WHEN_ACCESSING_PANEL_FROM" : "TXT_CODE_COMMON_ACCESS_DAEMON_FROM");
             return [
               {
                 key: `${side}Ip`,
                 type: "string",
-                title: `${title} · ${$t("TXT_CODE_54312194")}`,
+                title: `${title} · ${$t("TXT_CODE_COMMON_ADDRESS_AND_PORT")}`,
                 required: true
               },
               {
                 key: `${side}Port`,
                 type: "number",
-                title: `${title} · ${$t("TXT_CODE_f49149d0")}`,
+                title: `${title} · ${$t("TXT_CODE_COMMON_PORT")}`,
                 min: 1,
                 max: 65535,
                 required: true
@@ -60,7 +60,7 @@ export function registerSettings(ctx: DaemonPluginContext) {
               {
                 key: `${side}Prefix`,
                 type: "string",
-                title: `${title} · ${$t("TXT_CODE_941d83b8")}`
+                title: `${title} · ${$t("TXT_CODE_NODE_HTTP_PATH_PREFIX")}`
               }
             ];
           })

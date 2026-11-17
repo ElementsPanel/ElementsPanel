@@ -20,7 +20,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.set("node", { api: nodeApi, useRemoteNode });
 
   const nodeBreadcrumb = {
-    name: t("TXT_CODE_e076d90b"),
+    name: t("TXT_CODE_COMMON_DAEMONS"),
     path: "/node",
     mainMenu: true,
     permission: ADMIN_PERMISSION
@@ -28,7 +28,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.routes.add({
     path: "/node",
-    name: t("TXT_CODE_e076d90b"),
+    name: t("TXT_CODE_COMMON_DAEMONS"),
     component: NodeList,
     meta: {
       permission: ADMIN_PERMISSION,
@@ -39,7 +39,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.routes.add({
     path: "/node/image",
-    name: t("TXT_CODE_e6c30866"),
+    name: t("TXT_CODE_COMMON_MANAGE_IMAGES"),
     component: ImageManager,
     meta: {
       permission: ADMIN_PERMISSION,
@@ -50,7 +50,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.routes.add({
     path: "/node/image/new",
-    name: t("TXT_CODE_3d09f0ac"),
+    name: t("TXT_CODE_COMMON_CREATE_IMAGE"),
     component: NewImage,
     meta: {
       permission: ADMIN_PERMISSION,
@@ -58,7 +58,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
       breadcrumbs: [
         nodeBreadcrumb,
         {
-          name: t("TXT_CODE_e6c30866"),
+          name: t("TXT_CODE_COMMON_MANAGE_IMAGES"),
           path: "/node/image",
           permission: ADMIN_PERMISSION
         }
@@ -68,7 +68,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.desktop.app({
     id: "nodes",
-    label: () => t("TXT_CODE_e076d90b"),
+    label: () => t("TXT_CODE_COMMON_DAEMONS"),
     icon: "mdi-sitemap-outline",
     color: "#fa8c16",
     route: "/node",

@@ -65,9 +65,9 @@ const tryConnectNode = async (uuid: string, showMsg = true) => {
         uuid: uuid
       }
     });
-    if (showMsg) message.success(t("TXT_CODE_7f0c746d"));
+    if (showMsg) message.success(t("TXT_CODE_COMMON_OPERATION_SUCCESSFUL"));
   } catch (error: any) {
-    reportErrorMsg(t("TXT_CODE_6a365d01"));
+    reportErrorMsg(t("TXT_CODE_COMMON_OPERATION_FAILED"));
   }
 };
 
@@ -75,37 +75,37 @@ const { toPage } = useAppRouters();
 
 const detailList = (node: ComputedNodeInfo) => [
   {
-    title: t("TXT_CODE_f52079a0"),
+    title: t("TXT_CODE_COMMON_CONNECTION_ADDRESS"),
     value: `${node.ip}:${node.port}`,
     fullWidth: true
   },
   {
-    title: t("TXT_CODE_7c0b7608"),
-    value: node.available ? t("TXT_CODE_823bfe63") : t("TXT_CODE_66ce073e"),
+    title: t("TXT_CODE_COMMON_NODE_STATUS"),
+    value: node.available ? t("TXT_CODE_COMMON_ONLINE") : t("TXT_CODE_COMMON_OFFLINE"),
     warn: node.available === false,
     success: node.available === true,
     danger: node.available === false,
-    warnText: t("TXT_CODE_1c2efd38")
+    warnText: t("TXT_CODE_NODE_CONNECTION_TROUBLESHOOTING_HINT")
   },
   {
-    title: t("TXT_CODE_930d2524"),
+    title: t("TXT_CODE_COMMON_FRONTEND_CONNECTION"),
     value:
       socketStatus.value === SocketStatus.Connected
-        ? t("TXT_CODE_e039b9b5")
-        : t("TXT_CODE_23a3bd72"),
+        ? t("TXT_CODE_COMMON_NORMAL")
+        : t("TXT_CODE_COMMON_ABNORMAL"),
     warn: socketStatus.value === SocketStatus.Error,
     success: socketStatus.value === SocketStatus.Connected,
     loading: socketStatus.value === SocketStatus.Connecting,
     danger: socketStatus.value === SocketStatus.Error,
-    warnText: t("TXT_CODE_6b4a27dd")
+    warnText: t("TXT_CODE_COMMON_THE_WEB_FRONT_END_CANNOT_ESTABLISH_A_WEB_SOCKET_CONNECTION_WITH_THE_NODE_PLEASE_CHECK_THE")
   },
   {
-    title: t("TXT_CODE_3d602459"),
+    title: t("TXT_CODE_COMMON_INSTANCES_STATUS"),
     value: node.instanceStatus
   },
 
   {
-    title: t("TXT_CODE_3d0885c0"),
+    title: t("TXT_CODE_COMMON_PLATFORM"),
     value: node.platformText
   },
   {
@@ -124,7 +124,7 @@ const detailList = (node: ComputedNodeInfo) => [
       node.available === true &&
       node.compatibility != null &&
       node.compatibility.ok === false,
-    warnText: t("TXT_CODE_e520908a"),
+    warnText: t("TXT_CODE_COMMON_THE_NODE_S_PLUGINS_OR_VERSION_DO_NOT_MATCH_THE_PANEL_WHICH_MAY_CAUSE_FUNCTIONAL_ISSUES"),
     danger: node.brand !== "ElementsPanel",
     compatibility: true
   },
@@ -138,7 +138,7 @@ const detailList = (node: ComputedNodeInfo) => [
 const nodeOperations = computed(() =>
   arrayFilter([
     {
-      title: t("TXT_CODE_ae533703"),
+      title: t("TXT_CODE_COMMON_FILE_MANAGEMENT"),
       icon: "mdi-folder-open-outline",
       click: (item: ComputedNodeInfo) => {
         const daemonId = item.uuid;
@@ -154,7 +154,7 @@ const nodeOperations = computed(() =>
       condition: () => remoteNode.value!.available
     },
     {
-      title: t("TXT_CODE_524e3036"),
+      title: t("TXT_CODE_COMMON_TERMINAL"),
       icon: "mdi-console-line",
       click: (item: ComputedNodeInfo) => {
         const daemonId = item.uuid;
@@ -170,7 +170,7 @@ const nodeOperations = computed(() =>
       condition: () => remoteNode.value!.available
     },
     {
-      title: t("TXT_CODE_e6c30866"),
+      title: t("TXT_CODE_COMMON_MANAGE_IMAGES"),
       icon: "mdi-image-outline",
       click: (item: ComputedNodeInfo) => {
         const daemonId = item.uuid;
@@ -184,7 +184,7 @@ const nodeOperations = computed(() =>
       condition: () => remoteNode.value!.available
     },
     {
-      title: t("TXT_CODE_f8b28901"),
+      title: t("TXT_CODE_COMMON_RECONNECT"),
       icon: "mdi-refresh",
       click: async (node: ComputedNodeInfo) => {
         await tryConnectNode(node.uuid);
@@ -192,7 +192,7 @@ const nodeOperations = computed(() =>
       condition: () => !remoteNode.value!.available
     },
     {
-      title: t("TXT_CODE_b5c7b82d"),
+      title: t("TXT_CODE_COMMON_SETTINGS"),
       icon: "mdi-cog-outline",
       click: (node: ComputedNodeInfo) => {
         nodeDetailDialog.value?.openDialog(node, node.uuid);
@@ -204,7 +204,7 @@ const nodeOperations = computed(() =>
 const copyValue = async (value: unknown) => {
   if (value == null) return;
   await navigator.clipboard?.writeText(String(value));
-  message.success(t("TXT_CODE_7f0c746d"));
+  message.success(t("TXT_CODE_COMMON_OPERATION_SUCCESSFUL"));
 };
 
 onMounted(() => {

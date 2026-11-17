@@ -19,7 +19,7 @@ export default abstract class AbsStartCommand extends InstanceCommand {
 
   async exec(instance: Instance) {
     if (instance.status() !== Instance.STATUS_STOP)
-      return instance.failure(new StartupError($t("TXT_CODE_start.instanceNotDown")));
+      return instance.failure(new StartupError($t("TXT_CODE_START_INSTANCE_NOT_DOWN")));
 
     // Claim the state before the first await so two starts cannot both proceed.
     instance.setLock(true);
@@ -47,19 +47,19 @@ export default abstract class AbsStartCommand extends InstanceCommand {
         const endTime = instance.config.endTime;
         if (endTime) {
           if (endTime <= instance.startTimestamp) {
-            throw new Error($t("TXT_CODE_start.instanceMaturity"));
+            throw new Error($t("TXT_CODE_START_INSTANCE_MATURITY"));
           }
         }
       }
 
-      instance.println("INFO", $t("TXT_CODE_start.startInstance"));
+      instance.println("INFO", $t("TXT_CODE_START_START_INSTANCE"));
 
       // prevent the dead-loop from starting
       await this.sleep();
 
       // check the disk space
       if (instance.config.docker?.maxSpace && instance.config.docker.maxSpace > 0) {
-        instance.println("INFO", $t("TXT_CODE_2d7b8a91"));
+        instance.println("INFO", $t("TXT_CODE_COMMON_CALCULATING_USED_STORAGE_SPACE_PLEASE_WAIT_PATIENTLY"));
         const result = await disk_limit_service.checkDiskNow(
           {
             instance,
@@ -70,7 +70,7 @@ export default abstract class AbsStartCommand extends InstanceCommand {
         );
         if (result?.isFull) {
           throw new StartupError(
-            $t("TXT_CODE_e5938389", {
+            $t("TXT_CODE_COMMON_UNABLE_TO_START_INSUFFICIENT_STORAGE_SPACE_YOUR_STORAGE_QUOTA_IS_GB_CURRENTLY_USED_GB", {
               storageLimit: result?.storageLimit,
               storageUsage: result?.storageUsage
             })
@@ -78,7 +78,7 @@ export default abstract class AbsStartCommand extends InstanceCommand {
         } else {
           instance.println(
             "INFO",
-            $t("TXT_CODE_85e29331", {
+            $t("TXT_CODE_COMMON_STORAGE_SPACE_IS_SUFFICIENT_CURRENTLY_USED_GB_GB", {
               storageUsage: result?.storageUsage,
               storageLimit: result?.storageLimit
             })

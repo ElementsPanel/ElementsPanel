@@ -13,7 +13,7 @@ export class MslMirrorsService {
 
   private segment(value: unknown): string {
     if (typeof value !== "string" || !/^[a-zA-Z0-9][a-zA-Z0-9._+-]{0,127}$/.test(value)) {
-      throw new Error(this.translate("TXT_CODE_minecraft.invalidSelection"));
+      throw new Error(this.translate("TXT_CODE_MINECRAFT_INVALID_SELECTION"));
     }
     return encodeURIComponent(value);
   }
@@ -46,7 +46,7 @@ export class MslMirrorsService {
       return result;
     } catch (error: any) {
       throw new Error(
-        `${this.translate("TXT_CODE_minecraft.sourceError")} ${
+        `${this.translate("TXT_CODE_MINECRAFT_SOURCE_ERROR")} ${
           error.response?.data?.message || error.message
         }`
       );
@@ -55,7 +55,7 @@ export class MslMirrorsService {
 
   private strings(data: unknown): string[] {
     if (!Array.isArray(data) || data.some((value) => typeof value !== "string")) {
-      throw new Error(this.translate("TXT_CODE_minecraft.sourceError"));
+      throw new Error(this.translate("TXT_CODE_MINECRAFT_SOURCE_ERROR"));
     }
     return [...new Set(data)].filter((value) => /^[a-zA-Z0-9][a-zA-Z0-9._+-]{0,127}$/.test(value));
   }
@@ -67,7 +67,7 @@ export class MslMirrorsService {
   async versions(server: string) {
     const encoded = this.segment(server);
     if (!(await this.servers()).includes(server))
-      throw new Error(this.translate("TXT_CODE_minecraft.invalidSelection"));
+      throw new Error(this.translate("TXT_CODE_MINECRAFT_INVALID_SELECTION"));
     return this.request(`/mirrors/${encoded}`, (data) => ({
       versions: this.strings(data?.versions),
       description: typeof data?.description === "string" ? data.description : ""
@@ -78,7 +78,7 @@ export class MslMirrorsService {
     const encodedServer = this.segment(server);
     const encodedVersion = this.segment(version);
     if (!(await this.versions(server)).versions.includes(version))
-      throw new Error(this.translate("TXT_CODE_minecraft.invalidSelection"));
+      throw new Error(this.translate("TXT_CODE_MINECRAFT_INVALID_SELECTION"));
     return this.request(`/mirrors/${encodedServer}/${encodedVersion}`, (data) =>
       this.strings(data)
     );
@@ -93,13 +93,13 @@ export class MslMirrorsService {
       !minecraftServersForType(await this.servers(), instanceType).includes(server) ||
       !(await this.builds(server, version)).includes(build)
     ) {
-      throw new Error(this.translate("TXT_CODE_minecraft.invalidSelection"));
+      throw new Error(this.translate("TXT_CODE_MINECRAFT_INVALID_SELECTION"));
     }
     const result = await this.request(
       `/download/server/${encodedServer}/${encodedVersion}?build=${encodedBuild}`,
       (data): { url: string; sha256?: string } => {
         if (typeof data?.url !== "string")
-          throw new Error(this.translate("TXT_CODE_minecraft.sourceError"));
+          throw new Error(this.translate("TXT_CODE_MINECRAFT_SOURCE_ERROR"));
         const url = new URL(data.url);
         if (
           url.protocol !== "https:" ||
@@ -108,7 +108,7 @@ export class MslMirrorsService {
           (data.sha256 != null &&
             (typeof data.sha256 !== "string" || !/^[a-f0-9]{64}$/i.test(data.sha256)))
         ) {
-          throw new Error(this.translate("TXT_CODE_minecraft.sourceError"));
+          throw new Error(this.translate("TXT_CODE_MINECRAFT_SOURCE_ERROR"));
         }
         return { url: data.url, sha256: data.sha256 };
       },

@@ -248,7 +248,7 @@ test("panel instance permission errors translate without undeclared service warn
   };
   await panelRequire("koa-compose")(app.middleware)(request, async () => {});
   assert.equal(request.status, 403);
-  assert.equal(request.body, "TXT_CODE_permission.forbiddenInstance");
+  assert.equal(request.body, "TXT_CODE_PERMISSION_FORBIDDEN_INSTANCE");
   assert.deepEqual(warnings, []);
 });
 

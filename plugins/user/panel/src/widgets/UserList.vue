@@ -56,7 +56,7 @@ const permissionItems = computed(() =>
   Object.entries(PERMISSION_MAP).map(([value, title]) => ({ title, value: Number(value) }))
 );
 const roleItems = computed(() => [
-  { title: t("TXT_CODE_c48f6f64"), value: "" },
+  { title: t("TXT_CODE_COMMON_ALL"), value: "" },
   ...permissionItems.value.map((item) => ({ title: item.title, value: String(item.value) }))
 ]);
 
@@ -104,7 +104,7 @@ const handleTableOptions = (options: { page: number; itemsPerPage: number }) => 
 const deleteUsers = async (userList: string[]) => {
   try {
     await deleteUserApi().execute({ data: userList });
-    message.success(t("TXT_CODE_28190dbc"));
+    message.success(t("TXT_CODE_COMMON_DELETE_SUCCESS"));
     selectedUsers.value = [];
     await fetchData();
   } catch (error: any) {
@@ -112,7 +112,7 @@ const deleteUsers = async (userList: string[]) => {
   }
 };
 const handleBatchDelete = () => {
-  if (!selectedUsers.value.length) return message.warn(t("TXT_CODE_d78ad17a"));
+  if (!selectedUsers.value.length) return message.warn(t("TXT_CODE_COMMON_PLEASE_SELECT_THE_USER_S_TO_BE_DELETED"));
   deleteUsers(selectedUsers.value);
 };
 const handleToUserResources = (user: BaseUserInfo) =>
@@ -141,8 +141,8 @@ const confirmAction = async () => {
 const openDeleteConfirm = (user: BaseUserInfo) => {
   confirmDialog.value = {
     open: true,
-    title: t("TXT_CODE_ecbd7449"),
-    text: t("TXT_CODE_e99ab99a", { userName: user.userName } as any),
+    title: t("TXT_CODE_COMMON_DELETE"),
+    text: t("TXT_CODE_COMMON_ARE_YOU_SURE_YOU_WANT_TO_DELETE_THE_USER", { userName: user.userName } as any),
     action: () => deleteUsers([user.uuid])
   };
 };
@@ -177,28 +177,28 @@ const formDataOrigin: EditUserInfo = {
 };
 const formData = ref<EditUserInfo>({ ...formDataOrigin });
 const requiredRule = (value: unknown) =>
-  Boolean(String(value ?? "").trim()) || t("TXT_CODE_2695488c");
+  Boolean(String(value ?? "").trim()) || t("TXT_CODE_COMMON_PLEASE_ENTER_A_USERNAME");
 const userNameRule = (value: unknown) => {
   const text = String(value ?? "");
-  return !text || (text.length >= 3 && text.length <= 20) || t("TXT_CODE_3f477ec");
+  return !text || (text.length >= 3 && text.length <= 20) || t("TXT_CODE_COMMON_LENGTH_MUST_BE_3_TO_20_CHARACTERS");
 };
 const passwordRule = (value: unknown) => {
   const text = String(value ?? "");
   return (
     (!isAddMode.value && !text) ||
     (text.length >= 9 && text.length <= 36 && PASSWORD_REGEX.test(text)) ||
-    t("TXT_CODE_6032f5a3")
+    t("TXT_CODE_COMMON_9_TO_36_CHARACTERS_MUST_INCLUDE_UPPERCASE_LOWERCASE_LETTERS_AND_NUMBERS")
   );
 };
 const handleAddUser = () => {
   isAddMode.value = true;
-  userDialogTitle.value = t("TXT_CODE_e83ffa03");
+  userDialogTitle.value = t("TXT_CODE_COMMON_NEW_USER");
   formData.value = { ...formDataOrigin };
   userDialogOpen.value = true;
 };
 const handleEditUser = (user: BaseUserInfo) => {
   isAddMode.value = false;
-  userDialogTitle.value = t("TXT_CODE_79f9a172");
+  userDialogTitle.value = t("TXT_CODE_COMMON_EDIT_USER");
   formData.value = { ...user };
   userDialogOpen.value = true;
 };
@@ -216,10 +216,10 @@ const submitUser = async () => {
           permission: formData.value.permission
         }
       });
-      message.success(t("TXT_CODE_c855fc29"));
+      message.success(t("TXT_CODE_COMMON_NEW_USER_ADDED"));
     } else {
       await editUserInfo().execute({ data: { config: formData.value, uuid: formData.value.uuid } });
-      message.success(t("TXT_CODE_27efac3b"));
+      message.success(t("TXT_CODE_COMMON_EDIT_SUCCESSFUL"));
     }
     userDialogOpen.value = false;
     await fetchData();
@@ -233,17 +233,17 @@ const submitUser = async () => {
 const headers = computed(() => {
   const result: any[] = [
     ...(!isPhone.value ? [{ title: "UUID", key: "uuid", sortable: false }] : []),
-    { title: t("TXT_CODE_eb9fcdad"), key: "userName" },
-    { title: t("TXT_CODE_511aea70"), key: "permission" },
+    { title: t("TXT_CODE_USER_USERNAME"), key: "userName" },
+    { title: t("TXT_CODE_FILE_PERMISSIONS"), key: "permission" },
     ...(!isPhone.value
       ? [
-          { title: t("TXT_CODE_d7ee9ba"), key: "loginTime" },
-          { title: t("TXT_CODE_c5c56801"), key: "registerTime" }
+          { title: t("TXT_CODE_COMMON_LAST_LOGIN"), key: "loginTime" },
+          { title: t("TXT_CODE_COMMON_REGISTRATION_TIME"), key: "registerTime" }
         ]
       : [])
   ];
   if (ssoEnabled.value) result.push({ title: t("TXT_CODE_SSO_BOUND_STATUS"), key: "ssoBound" });
-  result.push({ title: t("TXT_CODE_fe731dfc"), key: "actions", sortable: false, align: "end" });
+  result.push({ title: t("TXT_CODE_COMMON_ACTIONS"), key: "actions", sortable: false, align: "end" });
   return result;
 });
 const rawUser = (item: BaseUserInfo | { raw: BaseUserInfo }) =>
@@ -263,7 +263,7 @@ onMounted(async () => {
   <main class="user-page">
     <div class="user-page-container">
       <PageToolbar
-        :title="`${t('TXT_CODE_1deaa2dd')} (${total})`"
+        :title="`${t('TXT_CODE_COMMON_USERS')} (${total})`"
         icon="mdi-account-group-outline"
       >
         <template #search>
@@ -279,7 +279,7 @@ onMounted(async () => {
             </VSelect>
             <VTextField
               v-model.trim="operationForm.name"
-              :placeholder="t('TXT_CODE_2471b9c')"
+              :placeholder="t('TXT_CODE_COMMON_SEARCH_BY_USERNAME')"
               prepend-inner-icon="mdi-magnify"
               density="comfortable"
               hide-details
@@ -294,22 +294,22 @@ onMounted(async () => {
             prepend-icon="mdi-refresh"
             :loading="getUserInfoLoading"
             @click="reload"
-            >{{ t("TXT_CODE_b76d94e0") }}</VBtn
+            >{{ t("TXT_CODE_COMMON_REFRESH") }}</VBtn
           >
           <VMenu location="bottom end">
             <template #activator="{ props: menuProps }"
               ><VBtn v-bind="menuProps" color="primary" append-icon="mdi-chevron-down">{{
-                t("TXT_CODE_f7084f84")
+                t("TXT_CODE_COMMON_USER_OPERATION")
               }}</VBtn></template
             >
             <VList>
               <VListItem
-                :title="t('TXT_CODE_e83ffa03')"
+                :title="t('TXT_CODE_COMMON_NEW_USER')"
                 prepend-icon="mdi-account-plus-outline"
                 @click="handleAddUser"
               />
               <VListItem
-                :title="t('TXT_CODE_ecbd7449')"
+                :title="t('TXT_CODE_COMMON_DELETE')"
                 prepend-icon="mdi-delete-outline"
                 @click="handleBatchDelete"
               />
@@ -354,22 +354,22 @@ onMounted(async () => {
                   size="small"
                   variant="text"
                   append-icon="mdi-chevron-down"
-                  >{{ t("TXT_CODE_fe731dfc") }}</VBtn
+                  >{{ t("TXT_CODE_COMMON_ACTIONS") }}</VBtn
                 ></template
               ><VList
                 ><VListItem
-                  :title="t('TXT_CODE_236f70aa')"
+                  :title="t('TXT_CODE_COMMON_CONFIGURATION')"
                   prepend-icon="mdi-pencil-outline"
                   @click="handleEditUser(rawUser(item))" /><VListItem
                   v-if="canAssignInstances"
-                  :title="t('TXT_CODE_4d934e3a')"
+                  :title="t('TXT_CODE_COMMON_RESOURCE_ASSIGNMENT')"
                   prepend-icon="mdi-shield-account-outline"
                   @click="handleToUserResources(rawUser(item))" /><VListItem
                   v-if="ssoEnabled && rawUser(item).ssoBound"
                   :title="t('TXT_CODE_SSO_UNBIND')"
                   prepend-icon="mdi-link-off"
                   @click="openSsoConfirm(rawUser(item))" /><VListItem
-                  :title="t('TXT_CODE_ecbd7449')"
+                  :title="t('TXT_CODE_COMMON_DELETE')"
                   prepend-icon="mdi-delete-outline"
                   @click="openDeleteConfirm(rawUser(item))" /></VList></VMenu
           ></template>
@@ -380,15 +380,15 @@ onMounted(async () => {
       v-model:open="userDialogOpen"
       :title="userDialogTitle"
       :confirm-loading="userDialogLoading"
-      :ok-text="t('TXT_CODE_d507abff')"
+      :ok-text="t('TXT_CODE_COMMON_CONFIRM')"
       @ok="submitUser"
     >
       <VForm ref="formRef" @submit.prevent="submitUser"
         ><VSelect
           v-model="formData.permission"
           :items="permissionItems"
-          :label="t('TXT_CODE_511aea70')"
-          :hint="t('TXT_CODE_21b8b71a')"
+          :label="t('TXT_CODE_FILE_PERMISSIONS')"
+          :hint="t('TXT_CODE_USER_PERMISSION_LEVEL_HINT')"
           persistent-hint
           :rules="[requiredRule]"
           class="mb-4"
@@ -396,19 +396,19 @@ onMounted(async () => {
           <template #no-data><Empty :icon="false" compact /></template>
         </VSelect><VTextField
           v-model="formData.userName"
-          :label="t('TXT_CODE_eb9fcdad')"
-          :hint="t('TXT_CODE_1987587b')"
+          :label="t('TXT_CODE_USER_USERNAME')"
+          :hint="t('TXT_CODE_COMMON_REQUIRED_3_TO_12_CHARACTERS_SUPPORTS_ANY_LANGUAGE')"
           persistent-hint
-          :placeholder="t('TXT_CODE_4ea93630')"
+          :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
           :rules="[requiredRule, userNameRule]"
           class="mb-4"
         /><VTextField
           v-model="formData.passWord"
           type="password"
-          :label="t('TXT_CODE_551b0348')"
-          :hint="isAddMode ? t('TXT_CODE_1f2062c7') : t('TXT_CODE_af1f921d')"
+          :label="t('TXT_CODE_COMMON_PASSWORD')"
+          :hint="isAddMode ? t('TXT_CODE_COMMON_REQUIRED_9_TO_36_CHARACTERS_MUST_INCLUDE_UPPERCASE_AND_LOWERCASE_LETTERS_AND_NUMBERS') : t('TXT_CODE_COMMON_LEAVE_BLANK_TO_KEEP_THE_PASSWORD_RESETTING_IT_ALSO_RESETS_2_FA')"
           persistent-hint
-          :placeholder="t('TXT_CODE_4ea93630')"
+          :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
           :rules="[passwordRule]"
           class="mb-4"
         /><VTextField
@@ -419,13 +419,13 @@ onMounted(async () => {
           class="mb-4"
         />
         <div v-else-if="!isAddMode" class="text-medium-emphasis mb-4">
-          {{ t("TXT_CODE_6c274bdc") }}
+          {{ t("TXT_CODE_COMMON_THIS_USER_HAS_NOT_ENABLED_AN_API_KEY") }}
         </div>
         <div v-if="isAddMode" class="text-medium-emphasis">
-          {{ t("TXT_CODE_9e9d3767") }}<br /><a
+          {{ t("TXT_CODE_USER_COMMERCIAL_DOCKER_ISOLATION_HINT") }}<br /><a
             href="https://docs.mcsmanager.com/"
             target="_blank"
-            >{{ t("TXT_CODE_b01f8383") }}</a
+            >{{ t("TXT_CODE_COMMON_LEARN_MORE") }}</a
           >
         </div></VForm
       >
@@ -435,7 +435,7 @@ onMounted(async () => {
       :title="confirmDialog.title"
       compact
       ok-color="error"
-      :ok-text="t('TXT_CODE_ecbd7449')"
+      :ok-text="t('TXT_CODE_COMMON_DELETE')"
       @ok="confirmAction"
       ><div>{{ confirmDialog.text }}</div></AppDialog
     >

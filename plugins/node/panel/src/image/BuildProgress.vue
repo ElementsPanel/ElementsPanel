@@ -21,9 +21,9 @@ const openDialog = async () => {
 
 const progressList = ref<{ name: string; status: number }[]>([]);
 const statusType: { [propsName: string]: string } = {
-  "-1": t("TXT_CODE_20ce2aae"),
-  "1": t("TXT_CODE_978da1c1"),
-  "2": t("TXT_CODE_47e182a5")
+  "-1": t("TXT_CODE_COMMON_BUILD_FAILED"),
+  "1": t("TXT_CODE_COMMON_BUILDING"),
+  "2": t("TXT_CODE_COMMON_BUILD_COMPLETE")
 };
 
 const { execute, state, isLoading } = buildProgress();
@@ -56,7 +56,7 @@ defineExpose({
 
 <template>
   <VDialog v-model="open" max-width="900" persistent>
-    <VCard :title="t('TXT_CODE_4bbd3fde')">
+    <VCard :title="t('TXT_CODE_COMMON_BUILD_PROGRESS')">
       <VCardText>
     <VRow v-if="!isLoading" density="compact">
       <VCol v-for="i in progressList" :key="i.name + i.status" cols="12" lg="6" md="8" sm="12">
@@ -76,7 +76,7 @@ defineExpose({
       </VCol>
     </VRow>
       </VCardText>
-      <VCardActions><VBtn :loading="isLoading" variant="tonal" @click="getProgress">{{ t("TXT_CODE_b76d94e0") }}</VBtn><VBtn color="primary" @click="open = false">{{ t("TXT_CODE_b1dedda3") }}</VBtn></VCardActions>
+      <VCardActions><VBtn :loading="isLoading" variant="tonal" @click="getProgress">{{ t("TXT_CODE_COMMON_REFRESH") }}</VBtn><VBtn color="primary" @click="open = false">{{ t("TXT_CODE_COMMON_STOP") }}</VBtn></VCardActions>
     </VCard>
   </VDialog>
 </template>

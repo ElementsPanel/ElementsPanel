@@ -28,13 +28,13 @@ export {
 } from "@elements-panel/sdk";
 
 export const INSTANCE_TYPE_TRANSLATION: MapData<string> = {
-  [TYPE_UNIVERSAL]: t("TXT_CODE_a92a4aa1"),
-  [TYPE_MINECRAFT_JAVA]: t("TXT_CODE_97f779b3"),
-  [TYPE_MINECRAFT_BEDROCK]: t("TXT_CODE_7f1aef9f"),
-  [TYPE_MINECRAFT_BUNGEECORD]: t("TXT_CODE_ba86f4a"),
-  [TYPE_STEAM_SERVER_UNIVERSAL]: t("TXT_CODE_3d7fbe30"),
-  [TYPE_HYTALE]: t("TXT_CODE_2025658e"),
-  [TYPE_TERRARIA]: t("TXT_CODE_f25df30a")
+  [TYPE_UNIVERSAL]: t("TXT_CODE_COMMON_GENERAL_CONSOLE_APPLICATION"),
+  [TYPE_MINECRAFT_JAVA]: t("TXT_CODE_COMMON_JAVA_EDITION_SERVER"),
+  [TYPE_MINECRAFT_BEDROCK]: t("TXT_CODE_COMMON_BEDROCK_EDITION_SERVER"),
+  [TYPE_MINECRAFT_BUNGEECORD]: t("TXT_CODE_COMMON_MC_BUNGEE_PROXY_SERVER"),
+  [TYPE_STEAM_SERVER_UNIVERSAL]: t("TXT_CODE_INSTANCE_TYPE_STEAM_GAME_SERVER"),
+  [TYPE_HYTALE]: t("TXT_CODE_COMMON_HYTALE_SERVER"),
+  [TYPE_TERRARIA]: t("TXT_CODE_INSTANCE_TYPE_TERRARIA_SERVER")
 };
 
 interface Params {
@@ -87,11 +87,11 @@ export function useInstanceInfo(params: Params) {
 
   const instanceTypeText = computed(() => {
     return (
-      INSTANCE_TYPE_TRANSLATION[String(finalState?.value?.config.type)] || t("TXT_CODE_da7a0328")
+      INSTANCE_TYPE_TRANSLATION[String(finalState?.value?.config.type)] || t("TXT_CODE_COMMON_UNKNOWN_TYPE")
     );
   });
   const statusText = computed(
-    () => INSTANCE_STATUS[finalState.value?.status ?? -1] || t("TXT_CODE_c8333afa")
+    () => INSTANCE_STATUS[finalState.value?.status ?? -1] || t("TXT_CODE_COMMON_UNKNOWN_STATUS")
   );
 
   if (instanceId && daemonId) {
@@ -139,17 +139,17 @@ export function getInstanceConfigByType(type: string) {
 
 export const INSTANCE_CONFIGS: InstanceConfigs[] = [
   {
-    fileName: t("TXT_CODE_9b36d5a2"),
+    fileName: t("TXT_CODE_COMMON_GENERAL_SERVER_PROPERTIES"),
     path: "server.properties",
     redirect: "common/server.properties",
     type: "properties",
-    info: t("TXT_CODE_12e3afa9"),
+    info: t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_OVERVIEW"),
     category: [TYPE_MINECRAFT_JAVA]
   },
   {
-    fileName: t("TXT_CODE_90f684dc"),
+    fileName: t("TXT_CODE_COMMON_GENERAL_EULA_TXT"),
     type: "properties",
-    info: t("TXT_CODE_ab4cc2dc"),
+    info: t("TXT_CODE_GAME_CONFIG_MINECRAFT_EULA_OVERVIEW"),
     path: "eula.txt",
     redirect: "common/eula.txt",
     category: [TYPE_MINECRAFT_JAVA]
@@ -159,7 +159,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     path: "spigot.yml",
     redirect: "bukkit/spigot.yml",
     type: "yml",
-    info: t("TXT_CODE_509d7d9a"),
+    info: t("TXT_CODE_GAME_CONFIG_SPIGOT_OVERVIEW"),
     category: [TYPE_MINECRAFT_JAVA]
   },
   {
@@ -167,13 +167,13 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     path: "bukkit.yml",
     redirect: "bukkit/bukkit.yml",
     type: "yml",
-    info: t("TXT_CODE_d03c3e0e"),
+    info: t("TXT_CODE_COMMON_THE_ORIGINAL_BUKKIT_CONFIGURATION"),
     category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: "[Bungeecord] config.yml",
     type: "yml",
-    info: t("TXT_CODE_e9dcbfe4"),
+    info: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_OVERVIEW"),
     path: "config.yml",
     redirect: "bungeecord/config.yml",
     category: [TYPE_MINECRAFT_BUNGEECORD]
@@ -181,7 +181,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
   {
     fileName: "[Velocity] velocity.toml",
     type: "toml",
-    info: t("TXT_CODE_751f9bc1"),
+    info: t("TXT_CODE_GAME_CONFIG_VELOCITY_DESCRIPTION"),
     path: "velocity.toml",
     redirect: "velocity/velocity.toml",
     category: [TYPE_MINECRAFT_BUNGEECORD]
@@ -191,7 +191,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     path: "server.properties",
     redirect: "bds/server.properties",
     type: "properties",
-    info: t("TXT_CODE_3a3f9a57"),
+    info: t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_OVERVIEW"),
     category: [TYPE_MINECRAFT_BEDROCK]
   },
   {
@@ -199,13 +199,13 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
     path: "mohist.yml",
     redirect: "mohist-config/mohist.yml",
     type: "yml",
-    info: t("TXT_CODE_6eead111"),
+    info: t("TXT_CODE_COMMON_MOHIST_YML_SERVER_CONFIGURATION_FILE"),
     category: [TYPE_MINECRAFT_JAVA]
   },
   {
     fileName: "[Paper] paper.yml",
     type: "yml",
-    info: t("TXT_CODE_f3fc17f3"),
+    info: t("TXT_CODE_GAME_CONFIG_PAPER_OVERVIEW"),
     path: "paper.yml",
     redirect: "paper/paper.yml",
     category: [TYPE_MINECRAFT_JAVA]
@@ -213,7 +213,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
   {
     fileName: "[Paper] paper-global.yml",
     type: "yml",
-    info: t("TXT_CODE_2931127f"),
+    info: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_DESCRIPTION"),
     path: "config/paper-global.yml",
     redirect: "paper/paper-global.yml",
     category: [TYPE_MINECRAFT_JAVA]
@@ -221,7 +221,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
   {
     fileName: "[Paper] paper-world-defaults.yml",
     type: "yml",
-    info: t("TXT_CODE_4880ef77"),
+    info: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_OVERVIEW"),
     path: "config/paper-world-defaults.yml",
     redirect: "paper/paper-world-defaults.yml",
     category: [TYPE_MINECRAFT_JAVA]
@@ -229,7 +229,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
   {
     fileName: "[Purpur] pupur.yml",
     type: "yml",
-    info: t("TXT_CODE_98e50717"),
+    info: t("TXT_CODE_GAME_CONFIG_PURPUR_OVERVIEW"),
     path: "purpur.yml",
     redirect: "purpur/purpur.yml",
     category: [TYPE_MINECRAFT_JAVA]
@@ -237,7 +237,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
   {
     fileName: "[Pufferfish] pufferfish.yml",
     type: "yml",
-    info: t("TXT_CODE_9213f8e3"),
+    info: t("TXT_CODE_COMMON_CONFIGURATION_FILE_FOR_PUFFERFISH_IT_ALLOWS_FOR_FURTHER_CONFIGURATION_OF_A_PAPER_SERVER"),
     path: "pufferfish.yml",
     redirect: "pufferfish/pufferfish.yml",
     category: [TYPE_MINECRAFT_JAVA]
@@ -245,7 +245,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
   {
     fileName: "[Geyser] config.yml",
     type: "yml",
-    info: t("TXT_CODE_1d39feca"),
+    info: t("TXT_CODE_GAME_CONFIG_GEYSER_DESCRIPTION"),
     path: "config.yml",
     redirect: "geyser/config.yml",
     category: [TYPE_MINECRAFT_BUNGEECORD]
@@ -253,7 +253,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
   {
     fileName: "[MCDR] config.yml",
     type: "yml",
-    info: t("TXT_CODE_25699fea"),
+    info: t("TXT_CODE_COMMON_MCD_REFORGED_SERVER_CONTROL_TOOL_CONFIGURATION_FILE"),
     path: "config.yml",
     redirect: "mcdr/config.yml",
     category: [TYPE_MINECRAFT_JAVA]
@@ -261,7 +261,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
   {
     fileName: "[MCDR] permission.yml",
     type: "yml",
-    info: t("TXT_CODE_5207688f"),
+    info: t("TXT_CODE_COMMON_MCD_REFORGED_SERVER_CONTROL_TOOL_PERMISSION_CONFIGURATION_FILE"),
     path: "permission.yml",
     redirect: "mcdr/permission.yml",
     category: [TYPE_MINECRAFT_JAVA]
@@ -269,7 +269,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
   {
     fileName: "[Tshock] config.json",
     type: "json",
-    info: t("TXT_CODE_1cd8f9d2"),
+    info: t("TXT_CODE_COMMON_TSHOCK_CONFIGURATION_FILE"),
     path: "tshock/config.json",
     redirect: "tshock/config.json",
     category: [TYPE_TERRARIA]
@@ -277,7 +277,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
   {
     fileName: "[Forge] fml.toml",
     type: "toml",
-    info: t("TXT_CODE_7e6a82d8"),
+    info: t("TXT_CODE_COMMON_CONFIGURATION_FILE_OF_A_FORGE_SERVER"),
     path: "config/fml.toml",
     redirect: "forge/fml.toml",
     category: [TYPE_MINECRAFT_JAVA]
@@ -285,7 +285,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
   {
     fileName: "[NeoForge] neoforge-server.toml",
     type: "toml",
-    info: t("TXT_CODE_5b6f3691"),
+    info: t("TXT_CODE_COMMON_SERVER_CONFIGURATION_FILE_OF_A_NEO_FORGE_SERVER"),
     path: "config/neoforge-server.toml",
     redirect: "neoforge/neoforge-server.toml",
     category: [TYPE_MINECRAFT_JAVA]
@@ -293,7 +293,7 @@ export const INSTANCE_CONFIGS: InstanceConfigs[] = [
   {
     fileName: "[NeoForge] neoforge-common.toml",
     type: "toml",
-    info: t("TXT_CODE_1efc7c5f"),
+    info: t("TXT_CODE_COMMON_COMMON_CONFIGURATION_FILE_OF_A_NEO_FORGE_SERVER"),
     path: "config/neoforge-common.toml",
     redirect: "neoforge/neoforge-common.toml",
     category: [TYPE_MINECRAFT_JAVA]
@@ -340,9 +340,9 @@ export async function verifyEULA(instanceId: string, daemonId: string) {
   if (data?.value?.eula === false) {
     return new Promise((resolve) =>
       Modal.confirm({
-        title: t("TXT_CODE_617ce69c"),
+        title: t("TXT_CODE_COMMON_WARN"),
         content: h("div", {
-          innerHTML: t("TXT_CODE_e0a944a1", [
+          innerHTML: t("TXT_CODE_COMMON_YOU_HAVE_NOT_AGREED_TO_THE_YOU_NEED_TO_AGREE_TO_THIS_AGREEMENT_TO_START_THIS", [
             '<a href="https://www.minecraft.net/eula" target="_blank">Minecraft EULA</a>'
           ])
         }),
@@ -356,11 +356,11 @@ export async function verifyEULA(instanceId: string, daemonId: string) {
             },
             data: { eula: true }
           });
-          message.success(t("TXT_CODE_525e6e18"));
+          message.success(t("TXT_CODE_COMMON_EULA_HAS_BEEN_ACCEPTED_SUCCESSFULLY_STARTING_INSTANCE"));
           resolve(true);
         },
         onCancel: () => resolve(false),
-        okText: t("TXT_CODE_e456aed"),
+        okText: t("TXT_CODE_COMMON_ACCEPT"),
         maskClosable: false
       })
     );

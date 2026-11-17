@@ -1,10 +1,10 @@
 {
-  "TXT_CODE_bbe23ee7": "การแมปที่อยู่การเชื่อมต่อตรงของโหนด",
-  "TXT_CODE_497568db": "กำหนดค่าโหนดเมื่อผู้ใช้เข้าถึงแผงควบคุมจากจุดปลายทางต่าง ๆ มีประโยชน์เมื่อโหนดอยู่หลังพร็อกซี่ย้อนกลับ",
-  "TXT_CODE_8d8fbbf4": "เพิ่มการแมป",
-  "TXT_CODE_2ee6fd18": "เมื่อเข้าถึงแผงควบคุมจาก",
-  "TXT_CODE_6f27624c": "เข้าถึงดีมอนจาก",
-  "TXT_CODE_54312194": "ที่อยู่และพอร์ต",
-  "TXT_CODE_f49149d0": "พอร์ต",
-  "TXT_CODE_941d83b8": "คำนำหน้าพาธ"
+  "TXT_CODE_COMMON_NODE_DIRECT_CONNECTION_ADDRESS_MAPPINGS": "การแมปที่อยู่การเชื่อมต่อตรงของโหนด",
+  "TXT_CODE_NODE_DIRECT_CONNECTION_HINT": "กำหนดค่าโหนดเมื่อผู้ใช้เข้าถึงแผงควบคุมจากจุดปลายทางต่าง ๆ มีประโยชน์เมื่อโหนดอยู่หลังพร็อกซี่ย้อนกลับ",
+  "TXT_CODE_COMMON_ADD_A_MAPPING": "เพิ่มการแมป",
+  "TXT_CODE_COMMON_WHEN_ACCESSING_PANEL_FROM": "เมื่อเข้าถึงแผงควบคุมจาก",
+  "TXT_CODE_COMMON_ACCESS_DAEMON_FROM": "เข้าถึงดีมอนจาก",
+  "TXT_CODE_COMMON_ADDRESS_AND_PORT": "ที่อยู่และพอร์ต",
+  "TXT_CODE_COMMON_PORT": "พอร์ต",
+  "TXT_CODE_NODE_HTTP_PATH_PREFIX": "คำนำหน้าพาธ"
 }

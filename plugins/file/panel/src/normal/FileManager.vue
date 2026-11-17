@@ -43,7 +43,7 @@ import FileEditor from "./FileEditor.vue";
 const route = useRoute();
 const instanceId = String(route.query.instanceId ?? "");
 const daemonId = String(route.query.daemonId ?? "");
-const pageTitle = computed(() => t("TXT_CODE_ae533703"));
+const pageTitle = computed(() => t("TXT_CODE_COMMON_FILE_MANAGEMENT"));
 
 const { isPhone } = useScreen();
 
@@ -102,15 +102,15 @@ const isShowDiskList = computed(
 
 const tableHeaders = computed(() => {
   const headers: { title: string; key: string; sortable: boolean }[] = [
-    { title: t("TXT_CODE_94c193de"), key: "name", sortable: false },
-    { title: t("TXT_CODE_67d68dd1"), key: "type", sortable: false },
-    { title: t("TXT_CODE_94bb113a"), key: "size", sortable: false },
-    { title: t("TXT_CODE_d3b29478"), key: "time", sortable: false }
+    { title: t("TXT_CODE_FILE_NAME"), key: "name", sortable: false },
+    { title: t("TXT_CODE_FILE_TYPE"), key: "type", sortable: false },
+    { title: t("TXT_CODE_COMMON_SIZE"), key: "size", sortable: false },
+    { title: t("TXT_CODE_COMMON_LAST_MODIFY"), key: "time", sortable: false }
   ];
   if (!isPhone.value && fileStatus.value?.platform !== "win32") {
-    headers.push({ title: t("TXT_CODE_511aea70"), key: "mode", sortable: false });
+    headers.push({ title: t("TXT_CODE_FILE_PERMISSIONS"), key: "mode", sortable: false });
   }
-  if (!isMultiple.value) headers.push({ title: t("TXT_CODE_fe731dfc"), key: "actions", sortable: false });
+  if (!isMultiple.value) headers.push({ title: t("TXT_CODE_COMMON_ACTIONS"), key: "actions", sortable: false });
   return headers;
 });
 
@@ -128,7 +128,7 @@ const uploadInstanceTag = computed(() => {
     uploadData.value.instanceInfo.instanceId != instanceId ||
     uploadData.value.instanceInfo.daemonId != daemonId
   ) {
-    return `(${t("TXT_CODE_59c0c994")})`;
+    return `(${t("TXT_CODE_COMMON_UPLOADING_TO_OTHER_INSTANCES")})`;
   }
   return "";
 });
@@ -240,60 +240,60 @@ const menuList = (record: DataType): FileMenuAction[] =>
       condition: () => !isMultiple.value && record.type === 1 && isCompressFile(record.name)
     },
     {
-      label: t("TXT_CODE_a64f3007"),
+      label: t("TXT_CODE_COMMON_UNZIP"),
       key: "unzip",
       icon: "mdi-archive-arrow-down-outline",
       onClick: () => unzipFile(record.name),
       condition: () => record.type === 1 && isCompressFile(record.name)
     },
     {
-      label: t("TXT_CODE_ad207008"),
+      label: t("TXT_CODE_COMMON_EDIT"),
       key: "edit",
       icon: "mdi-pencil-outline",
       onClick: () => editFile(record.name),
       condition: () => !isMultiple.value && record.type === 1
     },
     {
-      label: t("TXT_CODE_65b21404"),
+      label: t("TXT_CODE_COMMON_DOWNLOAD"),
       key: "download",
       icon: "mdi-download-outline",
       onClick: () => downloadFile(record.name),
       condition: () => !isMultiple.value && record.type === 1
     },
     {
-      label: t("TXT_CODE_46c4169b"),
+      label: t("TXT_CODE_COMMON_CUT"),
       key: "cut",
       icon: "mdi-content-cut",
       onClick: () => setClipBoard("move")
     },
     {
-      label: t("TXT_CODE_13ae6a93"),
+      label: t("TXT_CODE_COMMON_COPY"),
       key: "copy",
       icon: "mdi-content-copy",
       onClick: () => setClipBoard("copy")
     },
     {
-      label: t("TXT_CODE_c83551f5"),
+      label: t("TXT_CODE_COMMON_RENAME"),
       key: "rename",
       icon: "mdi-form-textbox",
       onClick: () => resetName(record.name),
       condition: () => !isMultiple.value
     },
     {
-      label: t("TXT_CODE_16853efe"),
+      label: t("TXT_CODE_COMMON_CHANGE_PERMISSIONS"),
       key: "changePermission",
       icon: "mdi-key-outline",
       onClick: () => changePermission(record.name, record.mode),
       condition: () => fileStatus.value?.platform !== "win32"
     },
     {
-      label: t("TXT_CODE_88122886"),
+      label: t("TXT_CODE_COMMON_COMPRESS"),
       key: "zip",
       icon: "mdi-archive-arrow-up-outline",
       onClick: () => zipFile()
     },
     {
-      label: t("TXT_CODE_ecbd7449"),
+      label: t("TXT_CODE_COMMON_DELETE"),
       key: "delete",
       icon: "mdi-delete-outline",
       color: "error",
@@ -303,11 +303,11 @@ const menuList = (record: DataType): FileMenuAction[] =>
 
 const rowMenuItems = (record: DataType) => menuList(record);
 const actionMenuItems = computed<FileMenuAction[]>(() => [
-  { label: t("TXT_CODE_46c4169b"), key: "cut", icon: "mdi-content-cut", onClick: () => setClipBoard("move") },
-  { label: t("TXT_CODE_13ae6a93"), key: "copy", icon: "mdi-content-copy", onClick: () => setClipBoard("copy") },
-  { label: t("TXT_CODE_16853efe"), key: "changePermission", icon: "mdi-key-outline", onClick: () => changePermission("", 0), condition: () => fileStatus.value?.platform !== "win32" },
-  { label: t("TXT_CODE_88122886"), key: "zip", icon: "mdi-archive-arrow-up-outline", onClick: () => zipFile() },
-  { label: t("TXT_CODE_ecbd7449"), key: "delete", icon: "mdi-delete-outline", color: "error", onClick: () => deleteFile() }
+  { label: t("TXT_CODE_COMMON_CUT"), key: "cut", icon: "mdi-content-cut", onClick: () => setClipBoard("move") },
+  { label: t("TXT_CODE_COMMON_COPY"), key: "copy", icon: "mdi-content-copy", onClick: () => setClipBoard("copy") },
+  { label: t("TXT_CODE_COMMON_CHANGE_PERMISSIONS"), key: "changePermission", icon: "mdi-key-outline", onClick: () => changePermission("", 0), condition: () => fileStatus.value?.platform !== "win32" },
+  { label: t("TXT_CODE_COMMON_COMPRESS"), key: "zip", icon: "mdi-archive-arrow-up-outline", onClick: () => zipFile() },
+  { label: t("TXT_CODE_COMMON_DELETE"), key: "delete", icon: "mdi-delete-outline", color: "error", onClick: () => deleteFile() }
 ].filter((item) => !item.condition || item.condition()));
 const runMenuAction = (item: FileMenuAction, record: DataType) => {
   oneSelected(record.name, record);
@@ -389,28 +389,28 @@ onUnmounted(() => {
           <span>{{ pageTitle }}</span>
         </VCol>
         <VCol cols="12" lg="4" class="file-manager-search">
-          <VTextField :disabled="!currentTabs.length" v-model.trim.lazy="operationForm.name" :placeholder="t('TXT_CODE_7cad42a5')" prepend-inner-icon="mdi-magnify" hide-details @change="handleSearchChange" />
+          <VTextField :disabled="!currentTabs.length" v-model.trim.lazy="operationForm.name" :placeholder="t('TXT_CODE_COMMON_SEARCH_BY_FILE_NAME')" prepend-inner-icon="mdi-magnify" hide-details @change="handleSearchChange" />
         </VCol>
         <VCol cols="12" lg="5" class="file-manager-actions">
           <span class="selected-count" :class="{ 'selected-count-empty': !selectedRowKeys.length }">
-            {{ `${t("TXT_CODE_7b2c5414")} ${String(selectedRowKeys.length)} ${t("TXT_CODE_5cd3b4bd")}` }}
+            {{ `${t("TXT_CODE_COMMON_SELECT")} ${String(selectedRowKeys.length)} ${t("TXT_CODE_COMMON_ITEMS")}` }}
           </span>
-          <VBtn :disabled="!currentTabs.length" variant="text" prepend-icon="mdi-link-variant" @click="downloadFromURLFile">{{ t("TXT_CODE_5b364aef") }}</VBtn>
+          <VBtn :disabled="!currentTabs.length" variant="text" prepend-icon="mdi-link-variant" @click="downloadFromURLFile">{{ t("TXT_CODE_COMMON_REMOTE_DOWNLOAD") }}</VBtn>
           <VFileInput :disabled="!currentTabs.length" v-model="fileList" class="file-upload-input" multiple hide-details hide-input accept="*/*" @update:model-value="onFileSelect" />
-          <VBtn :disabled="!currentTabs.length" variant="text" prepend-icon="mdi-upload" @click="openFilePicker">{{ t("TXT_CODE_e00c858c") }}</VBtn>
-          <VBtn :disabled="!currentTabs.length" v-if="clipboard?.value?.length" color="primary" variant="text" @click="paste">{{ t("TXT_CODE_f0260e51") }}</VBtn>
-          <VBtn :disabled="!currentTabs.length" v-else variant="text" prepend-icon="mdi-refresh" @click="reloadList">{{ t("TXT_CODE_a53573af") }}</VBtn>
+          <VBtn :disabled="!currentTabs.length" variant="text" prepend-icon="mdi-upload" @click="openFilePicker">{{ t("TXT_CODE_FILE_UPLOAD") }}</VBtn>
+          <VBtn :disabled="!currentTabs.length" v-if="clipboard?.value?.length" color="primary" variant="text" @click="paste">{{ t("TXT_CODE_COMMON_PASTE_FILES") }}</VBtn>
+          <VBtn :disabled="!currentTabs.length" v-else variant="text" prepend-icon="mdi-refresh" @click="reloadList">{{ t("TXT_CODE_FILE_LIST_REFRESH") }}</VBtn>
           <VMenu :disabled="!currentTabs.length" location="bottom end">
             <template #activator="{ props: menuProps }">
-              <VBtn :disabled="!currentTabs.length" v-bind="menuProps" color="primary" append-icon="mdi-chevron-down">{{ isMultiple ? t("TXT_CODE_5cb656b9") : t("TXT_CODE_b147fabc") }}</VBtn>
+              <VBtn :disabled="!currentTabs.length" v-bind="menuProps" color="primary" append-icon="mdi-chevron-down">{{ isMultiple ? t("TXT_CODE_COMMON_BATCH_OPERATION") : t("TXT_CODE_COMMON_NEW") }}</VBtn>
             </template>
             <VList>
               <template v-if="isMultiple">
                 <VListItem v-for="item in actionMenuItems" :key="item.key" :title="item.label" :prepend-icon="item.icon" :base-color="item.color" @click="item.onClick" />
               </template>
               <template v-else>
-                <VListItem :title="t('TXT_CODE_1e0b63b6')" prepend-icon="mdi-file-plus-outline" @click="touchFile()" />
-                <VListItem :title="t('TXT_CODE_cfc657db')" prepend-icon="mdi-folder-plus-outline" @click="touchFile(true)" />
+                <VListItem :title="t('TXT_CODE_COMMON_BLANK_FILE')" prepend-icon="mdi-file-plus-outline" @click="touchFile()" />
+                <VListItem :title="t('TXT_CODE_COMMON_DIRECTORY')" prepend-icon="mdi-folder-plus-outline" @click="touchFile(true)" />
               </template>
             </VList>
           </VMenu>
@@ -468,13 +468,13 @@ onUnmounted(() => {
             <template #item.name="{ item }">
               <VBtn variant="text" class="file-name" @click="handleClickFile(rawFile(item))"><VIcon :icon="getMdiIconName(rawFile(item))" size="18" class="mr-2" />{{ rawFile(item).name }}</VBtn>
             </template>
-            <template #item.type="{ item }">{{ rawFile(item).type === 0 ? t("TXT_CODE_e5f949c") : filterFileName(rawFile(item).name) }}</template>
+            <template #item.type="{ item }">{{ rawFile(item).type === 0 ? t("TXT_CODE_FILE_FOLDER") : filterFileName(rawFile(item).name) }}</template>
             <template #item.size="{ item }">{{ rawFile(item).type === 0 || !rawFile(item).size ? "--" : convertFileSize(String(rawFile(item).size)) }}</template>
             <template #item.time="{ item }">{{ rawFile(item).type === 0 ? "--" : dayjs(rawFile(item).time).format("YYYY-MM-DD HH:mm:ss") }}</template>
             <template #item.mode="{ item }">{{ rawFile(item).mode || "--" }}</template>
             <template #item.actions="{ item }">
               <VMenu location="bottom end">
-                <template #activator="{ props: menuProps }"><VBtn v-bind="menuProps" size="small" variant="text" append-icon="mdi-chevron-down">{{ t("TXT_CODE_fe731dfc") }}</VBtn></template>
+                <template #activator="{ props: menuProps }"><VBtn v-bind="menuProps" size="small" variant="text" append-icon="mdi-chevron-down">{{ t("TXT_CODE_COMMON_ACTIONS") }}</VBtn></template>
                 <VList><VListItem v-for="action in rowMenuItems(rawFile(item))" :key="action.key" :title="action.label" :prepend-icon="action.icon" :base-color="action.color" @click="runMenuAction(action, rawFile(item))" /></VList>
               </VMenu>
             </template>
@@ -488,20 +488,20 @@ onUnmounted(() => {
       <VList v-if="contextMenu.record" min-width="190"><VListItem v-for="action in rowMenuItems(contextMenu.record)" :key="action.key" :title="action.label" :prepend-icon="action.icon" :base-color="action.color" @click="runMenuAction(action, contextMenu.record!)" /></VList>
     </VMenu>
 
-    <VDialog v-model="dropConfirm.open" class="app-dialog" max-width="460" persistent><VCard :title="t('TXT_CODE_52bc24ec')" rounded="xl"><VCardText>{{ dropConfirm.name }}</VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="dropConfirm.open = false">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="primary" @click="confirmDrop">{{ t("TXT_CODE_ae09d79d") }}</VBtn></VCardActions></VCard></VDialog>
+    <VDialog v-model="dropConfirm.open" class="app-dialog" max-width="460" persistent><VCard :title="t('TXT_CODE_COMMON_CONFIRM_UPLOAD')" rounded="xl"><VCardText>{{ dropConfirm.name }}</VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="dropConfirm.open = false">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn><VBtn color="primary" @click="confirmDrop">{{ t("TXT_CODE_COMMON_UPLOAD") }}</VBtn></VCardActions></VCard></VDialog>
 
     <VDialog v-model="dialog.show" class="app-dialog" :max-width="dialogMaxWidth" scrollable>
       <VCard :title="dialog.title" rounded="xl"><VCardText>
         <p v-if="dialog.info">{{ dialog.info }}</p>
-        <VTextField v-if="dialog.mode === ''" v-model="dialog.value" :placeholder="t('TXT_CODE_4ea93630')" autofocus />
-        <div v-if="dialog.mode === 'zip'" class="dialog-stack"><VTextField v-model="dialog.value" :placeholder="t('TXT_CODE_366bad15')" suffix=".zip" /><div>{{ t("TXT_CODE_92ebdc7f") }}</div></div>
-        <div v-if="dialog.mode === 'unzip'" class="dialog-stack"><strong>{{ t("TXT_CODE_a6453188") }}</strong><VRadioGroup v-model="dialog.unzipmode" inline><VRadio value="0" :label="t('TXT_CODE_7907c99')" /><VRadio value="1" :label="t('TXT_CODE_329fb904')" /></VRadioGroup><VTextField v-if="dialog.unzipmode === '1'" v-model="dialog.value" :placeholder="t('TXT_CODE_377e5535')" /><strong>{{ t("TXT_CODE_2841f4a") }}</strong><div class="dialog-help">{{ t("TXT_CODE_b278707d") }}</div><VRadioGroup v-model="dialog.code" inline><VRadio value="utf-8" label="UTF-8" /><VRadio value="gbk" label="GBK" /><VRadio value="big5" label="BIG5" /></VRadioGroup></div>
-        <div v-if="dialog.mode === 'permission'" class="permission-grid"><div v-for="item in permission.item" :key="item.role"><strong>{{ item.key }}</strong><VCheckbox v-model="permission.data[item.role]" value="4" :label="t('TXT_CODE_798f592e')" hide-details /><VCheckbox v-model="permission.data[item.role]" value="2" :label="t('TXT_CODE_46c4e9ac')" hide-details /><VCheckbox v-model="permission.data[item.role]" value="1" :label="t('TXT_CODE_e97669d8')" hide-details /></div><VCheckbox v-model="permission.deep" :label="t('TXT_CODE_74fd665e')" hide-details /></div>
-      </VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="dialog.cancel()">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="primary" :loading="dialog.loading" @click="dialog.ok()">{{ t("TXT_CODE_d507abff") }}</VBtn></VCardActions></VCard>
+        <VTextField v-if="dialog.mode === ''" v-model="dialog.value" :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')" autofocus />
+        <div v-if="dialog.mode === 'zip'" class="dialog-stack"><VTextField v-model="dialog.value" :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_THE_NAME_FOR_THE_ARCHIVE')" suffix=".zip" /><div>{{ t("TXT_CODE_COMMON_ZIP_FILES_USE_UTF_8_SELECT_UTF_8_WHEN_EXTRACTING_THEM") }}</div></div>
+        <div v-if="dialog.mode === 'unzip'" class="dialog-stack"><strong>{{ t("TXT_CODE_COMMON_PLEASE_SELECT_THE_DECOMPRESSION_MODE") }}</strong><VRadioGroup v-model="dialog.unzipmode" inline><VRadio value="0" :label="t('TXT_CODE_COMMON_TO_THE_CURRENT_DIR')" /><VRadio value="1" :label="t('TXT_CODE_COMMON_TO_A_NEW_DIR')" /></VRadioGroup><VTextField v-if="dialog.unzipmode === '1'" v-model="dialog.value" :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_THE_DIRECTORY_NAME')" /><strong>{{ t("TXT_CODE_COMMON_PLEASE_SELECT_THE_FORMAT_OF_THE_COMPRESSED_FILE") }}</strong><div class="dialog-help">{{ t("TXT_CODE_COMMON_FOR_GARBLED_FILENAMES_TRY_GBK_FOR_MAINLAND_CHINA_BIG5_FOR_TAIWAN_OR_HONG_KONG_AND_UTF") }}</div><VRadioGroup v-model="dialog.code" inline><VRadio value="utf-8" label="UTF-8" /><VRadio value="gbk" label="GBK" /><VRadio value="big5" label="BIG5" /></VRadioGroup></div>
+        <div v-if="dialog.mode === 'permission'" class="permission-grid"><div v-for="item in permission.item" :key="item.role"><strong>{{ item.key }}</strong><VCheckbox v-model="permission.data[item.role]" value="4" :label="t('TXT_CODE_COMMON_READ')" hide-details /><VCheckbox v-model="permission.data[item.role]" value="2" :label="t('TXT_CODE_COMMON_WRITE')" hide-details /><VCheckbox v-model="permission.data[item.role]" value="1" :label="t('TXT_CODE_COMMON_EXECUTE')" hide-details /></div><VCheckbox v-model="permission.deep" :label="t('TXT_CODE_COMMON_APPLY_TO_SUBDIRECTORIES')" hide-details /></div>
+      </VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="dialog.cancel()">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn><VBtn color="primary" :loading="dialog.loading" @click="dialog.ok()">{{ t("TXT_CODE_COMMON_CONFIRM") }}</VBtn></VCardActions></VCard>
     </VDialog>
 
-    <VDialog v-model="archivePreview.show" class="app-dialog" max-width="1100" scrollable @after-leave="closeArchivePreview"><VCard :title="`${t('TXT_CODE_ARCHIVE_PREVIEW')}: ${archivePreview.title}`" rounded="xl"><VCardText><ArchivePreview :entries="archivePreview.entries" :loading="archivePreview.loading" /></VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="closeArchivePreview">{{ t("TXT_CODE_a0451c97") }}</VBtn></VCardActions></VCard></VDialog>
-    <VDialog v-model="deleteDialog.show" class="app-dialog" max-width="460" persistent><VCard :title="t('TXT_CODE_71155575')" rounded="xl"><VCardText class="text-error">{{ t("TXT_CODE_6a10302d") }}</VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="deleteDialog.resolve && deleteDialog.resolve(false)">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="error" :loading="deleteDialog.loading" @click="deleteDialog.resolve && deleteDialog.resolve(true)">{{ t("TXT_CODE_d507abff") }}</VBtn></VCardActions></VCard></VDialog>
+    <VDialog v-model="archivePreview.show" class="app-dialog" max-width="1100" scrollable @after-leave="closeArchivePreview"><VCard :title="`${t('TXT_CODE_ARCHIVE_PREVIEW')}: ${archivePreview.title}`" rounded="xl"><VCardText><ArchivePreview :entries="archivePreview.entries" :loading="archivePreview.loading" /></VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="closeArchivePreview">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn></VCardActions></VCard></VDialog>
+    <VDialog v-model="deleteDialog.show" class="app-dialog" max-width="460" persistent><VCard :title="t('TXT_CODE_COMMON_CONFIRM_DELETION')" rounded="xl"><VCardText class="text-error">{{ t("TXT_CODE_COMMON_THIS_ACTION_CANNOT_BE_UNDONE") }}</VCardText><VCardActions><VSpacer /><VBtn variant="text" @click="deleteDialog.resolve && deleteDialog.resolve(false)">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn><VBtn color="error" :loading="deleteDialog.loading" @click="deleteDialog.resolve && deleteDialog.resolve(true)">{{ t("TXT_CODE_COMMON_CONFIRM") }}</VBtn></VCardActions></VCard></VDialog>
     <FileEditor v-if="daemonId && instanceId" ref="FileEditorDialog" :daemon-id="daemonId" :instance-id="instanceId" @save="getFileList" />
   </main>
 </template>

@@ -34,15 +34,15 @@ export function apply(ctx: PanelFrontendPluginContext) {
       onOpenConsole: (instance: unknown, daemonId: string) => scope.instance.openConsole(instance, daemonId)
     }));
     const condition = () => useAppStateStore().isAdmin.value;
-    scope.desktop.view({ id: "terminal", component: selector, title: () => t("TXT_CODE_524e3036"),
+    scope.desktop.view({ id: "terminal", component: selector, title: () => t("TXT_CODE_COMMON_TERMINAL"),
       icon: "mdi-code-tags", initialWidth: 980, initialHeight: 580, condition });
     scope.desktop.app({ id: "terminal", view: "terminal", component: selector,
-      label: () => t("TXT_CODE_524e3036"), icon: "mdi-code-tags", color: "#434343", condition });
+      label: () => t("TXT_CODE_COMMON_TERMINAL"), icon: "mdi-code-tags", color: "#434343", condition });
   });
 
   ctx.actions.instance({
     id: "terminal-config",
-    title: () => t("TXT_CODE_d23631cb"),
+    title: () => t("TXT_CODE_COMMON_TERMINAL_SETTINGS"),
     icon: "mdi-code-tags",
     mdiIcon: "mdi-code-tags",
     normalComponent: TermConfig,

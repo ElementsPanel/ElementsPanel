@@ -22,12 +22,12 @@ defineProps<{ runtime: JavaRuntime }>();
     >
       {{
         runtime.info.error
-          ? t("TXT_CODE_javaMsl.failed")
+          ? t("TXT_CODE_JAVA_MSL_FAILED")
           : runtime.info.downloading
-          ? t("TXT_CODE_d919f7c7")
+          ? t("TXT_CODE_JAVA_RUNTIME_DOWNLOADING")
           : runtime.usingInstances.length
-          ? t("TXT_CODE_bdb620b9")
-          : t("TXT_CODE_15f2e564")
+          ? t("TXT_CODE_COMMON_RUNNING")
+          : t("TXT_CODE_INSTANCE_NOT_RUNNING")
       }}
       <span v-if="runtime.info.downloading && runtime.info.progress != null" class="ms-1"
         >{{ runtime.info.progress }}%</span

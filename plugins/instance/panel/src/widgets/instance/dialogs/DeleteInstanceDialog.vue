@@ -34,9 +34,9 @@ const confirmDelete = async () => { confirmOpen.value = false; await submit(true
 const onCancel = () => { isOpen.value = false; props.emitResult(false); props.destroyComponent(); };
 </script>
 <template>
-  <AppDialog v-model:open="isOpen" :title="t('TXT_CODE_a0e19f38')" :confirm-loading="loading" :ok-text="deleteFiles ? t('TXT_CODE_584d786d') : t('TXT_CODE_a0e19f38')" :ok-color="deleteFiles ? 'error' : undefined" @ok="onDelete" @cancel="onCancel">
-    <p>{{ t("TXT_CODE_1981470a") }}</p>
-    <VCheckbox v-model="deleteFiles" :label="t('TXT_CODE_7542201a')" hide-details />
+  <AppDialog v-model:open="isOpen" :title="t('TXT_CODE_COMMON_DELETE_INSTANCE')" :confirm-loading="loading" :ok-text="deleteFiles ? t('TXT_CODE_COMMON_DELETE_INSTANCE_AND_RELATED_FILES') : t('TXT_CODE_COMMON_DELETE_INSTANCE')" :ok-color="deleteFiles ? 'error' : undefined" @ok="onDelete" @cancel="onCancel">
+    <p>{{ t("TXT_CODE_COMMON_IF_YOU_CHOOSE_TO_DELETE_THE_INSTANCE_RELATED_FILES_AT_THE_SAME_TIME_THE_ENTIRE_DIRECTORY") }}</p>
+    <VCheckbox v-model="deleteFiles" :label="t('TXT_CODE_COMMON_DELETE_INSTANCE_RELATED_FILES_SIMULTANEOUSLY')" hide-details />
   </AppDialog>
-  <AppDialog v-model:open="confirmOpen" :title="t('TXT_CODE_584d786d')" compact ok-color="error" :ok-text="t('TXT_CODE_10088738')" @ok="confirmDelete"><div>{{ t('TXT_CODE_90508729') }}</div></AppDialog>
+  <AppDialog v-model:open="confirmOpen" :title="t('TXT_CODE_COMMON_DELETE_INSTANCE_AND_RELATED_FILES')" compact ok-color="error" :ok-text="t('TXT_CODE_INSTANCE_DELETE_CONFIRM')" @ok="confirmDelete"><div>{{ t('TXT_CODE_INSTANCE_DELETE_DIRECTORY_DIALOG_WARNING') }}</div></AppDialog>
 </template>

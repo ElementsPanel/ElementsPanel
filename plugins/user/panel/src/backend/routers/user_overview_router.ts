@@ -11,7 +11,7 @@ export default function createUserOverviewRouter() {
     const { uuid, config } = ctx.request.body;
     const { passWord } = config;
     if (passWord && !userSystem.validatePassword(passWord))
-      throw new Error($t("TXT_CODE_router.user.passwordCheck"));
+      throw new Error($t("TXT_CODE_ROUTER_USER_PASSWORD_CHECK"));
     try {
       // If the administrator resets the user's password, 2FA is automatically turned off.
       if (passWord) {

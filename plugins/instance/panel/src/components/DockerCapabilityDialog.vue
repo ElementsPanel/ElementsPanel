@@ -34,19 +34,19 @@ const columns = computed(() => [
   {
     align: "center" as const,
     dataIndex: "label",
-    title: t("TXT_CODE_d51db65a"),
-    placeholder: t("TXT_CODE_9227a967")
+    title: t("TXT_CODE_COMMON_CAPABILITY_NAME"),
+    placeholder: t("TXT_CODE_COMMON_ENTER_CAPABILITY_NAME_E_G_NET_ADMIN")
   },
   {
     align: "center" as const,
     dataIndex: "value",
-    title: t("TXT_CODE_adea33ce")
+    title: t("TXT_CODE_COMMON_OPERATION_TYPE")
   },
   {
     align: "center" as const,
     key: "operation",
     dataIndex: "operation",
-    title: t("TXT_CODE_fe731dfc")
+    title: t("TXT_CODE_COMMON_ACTIONS")
   }
 ]);
 
@@ -65,7 +65,7 @@ const cancel = async () => {
 };
 
 const submit = async () => {
-  if (dataSource.value.some((item) => !String(item.label || "").trim())) return reportValidatorError(new Error(t("TXT_CODE_9227a967")));
+  if (dataSource.value.some((item) => !String(item.label || "").trim())) return reportValidatorError(new Error(t("TXT_CODE_COMMON_ENTER_CAPABILITY_NAME_E_G_NET_ADMIN")));
 
   const result: DockerCapabilitiesItem[] = dataSource.value.map((item) => ({
     label: item.label,
@@ -89,7 +89,7 @@ onMounted(() => {
 
 <template>
   <VDialog v-model="open" max-width="1300" persistent>
-    <VCard :title="t('TXT_CODE_bbbd4133')">
+    <VCard :title="t('TXT_CODE_COMMON_CAPABILITIES')">
       <VCardText class="dialog-overflow-container">
       <div v-if="props.subTitle" class="text-body-medium text-medium-emphasis mb-4">
         <!-- eslint-disable-next-line vue/no-v-html -->
@@ -97,7 +97,7 @@ onMounted(() => {
       </div>
       <div class="d-flex justify-end mb-5">
         <VBtn variant="tonal" @click="operation('add')"><VIcon start icon="mdi-plus-circle-outline" />
-          {{ t("TXT_CODE_dfc17a0c") }}
+          {{ t("TXT_CODE_COMMON_ADD_CONFIGURATION") }}
         </VBtn>
       </div>
       <VDataTable :headers="columns.map((column) => ({ title: column.title, key: String(column.dataIndex), align: 'center' as const, sortable: false }))" :items="dataSource" :items-per-page="-1" hide-default-footer density="comfortable">
@@ -105,13 +105,13 @@ onMounted(() => {
         <template #item="{ item, index }"><tr><td v-for="column in columns" :key="String(column.dataIndex)">
           <VBtn v-if="column.dataIndex === 'operation'" icon variant="text" color="error" size="small" @click="operation('del', index)"><VIcon icon="mdi-minus-circle-outline" /></VBtn>
           <VTextField v-else-if="column.dataIndex === 'label'" :model-value="getRecord(item).label" :placeholder="(column as any).placeholder" hide-details="auto" @update:model-value="(value) => (getRecord(item).label = value)" />
-          <VSelect v-else v-model="getRecord(item).value" :items="[{ title: t('TXT_CODE_a1d885c1'), value: 'add' }, { title: t('TXT_CODE_fac5dc49'), value: 'drop' }]" hide-details>
+          <VSelect v-else v-model="getRecord(item).value" :items="[{ title: t('TXT_CODE_COMMON_ADD'), value: 'add' }, { title: t('TXT_CODE_COMMON_DROP'), value: 'drop' }]" hide-details>
             <template #no-data><Empty :icon="false" compact /></template>
           </VSelect>
         </td></tr></template>
       </VDataTable>
       </VCardText>
-      <VCardActions><VSpacer /><VBtn variant="text" @click="cancel">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="primary" @click="submit">{{ t("TXT_CODE_d507abff") }}</VBtn></VCardActions>
+      <VCardActions><VSpacer /><VBtn variant="text" @click="cancel">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn><VBtn color="primary" @click="submit">{{ t("TXT_CODE_COMMON_CONFIRM") }}</VBtn></VCardActions>
     </VCard>
   </VDialog>
 </template>

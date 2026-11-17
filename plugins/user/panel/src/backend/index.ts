@@ -79,8 +79,8 @@ export async function apply(ctx: PanelPluginContext) {
   // Declare settings for the generic plugin form and reuse the route handler's validation.
   const $t = ctx.i18n.$t;
   const yesNo = () => [
-    { value: true, label: $t("TXT_CODE_52c8a730") },
-    { value: false, label: $t("TXT_CODE_718c9310") }
+    { value: true, label: $t("TXT_CODE_COMMON_ENABLE") },
+    { value: false, label: $t("TXT_CODE_COMMON_DISABLE") }
   ];
 
   ctx.settingsForm.declare({
@@ -88,22 +88,22 @@ export async function apply(ctx: PanelPluginContext) {
       {
         key: "loginInfo",
         type: "text",
-        title: $t("TXT_CODE_b5b33dd4"),
-        description: $t("TXT_CODE_c26e5fb7")
+        title: $t("TXT_CODE_COMMON_CUSTOM_TEXT_ON_THE_LOGIN_PAGE"),
+        description: $t("TXT_CODE_COMMON_SUPPORT_MARKDOWN_FORMAT")
       },
       {
         key: "loginCheckIp",
         type: "boolean",
-        title: $t("TXT_CODE_1d67c9c6"),
-        description: $t("TXT_CODE_745fc959")
+        title: $t("TXT_CODE_COMMON_LIMIT_LOGIN_ATTEMPTS_FROM_THE_SAME_IP"),
+        description: $t("TXT_CODE_USER_PASSWORD_BRUTE_FORCE_PROTECTION_HINT")
       },
       {
         key: "totpDriftToleranceSteps",
         type: "select",
-        title: $t("TXT_CODE_b026be33"),
-        description: $t("TXT_CODE_a77b1a21"),
+        title: $t("TXT_CODE_COMMON_TWO_FACTOR_AUTHENTICATION_TOTP_TIME_DRIFT_TOLERANCE"),
+        description: $t("TXT_CODE_USER_TOTP_CLOCK_TOLERANCE_HINT"),
         options: [
-          { value: 0, label: $t("TXT_CODE_718c9310") },
+          { value: 0, label: $t("TXT_CODE_COMMON_DISABLE") },
           { value: 1, label: "30 s" },
           { value: 2, label: "60 s" }
         ]
@@ -111,14 +111,14 @@ export async function apply(ctx: PanelPluginContext) {
       {
         key: "allowChangeCmd",
         type: "boolean",
-        title: $t("TXT_CODE_a583cae4"),
-        description: $t("TXT_CODE_bfbdf579")
+        title: $t("TXT_CODE_COMMON_ALLOW_NORMAL_USERS_TO_EDIT_INSTANCE_ADVANCED_CONFIGURATION"),
+        description: $t("TXT_CODE_USER_DOCKER_CONFIG_EDIT_PERMISSION_HINT")
       },
       {
         key: "canFileManager",
         type: "boolean",
-        title: $t("TXT_CODE_adab942e"),
-        description: `${$t("TXT_CODE_ceb783a9")} ${$t("TXT_CODE_e5b7522d")}`
+        title: $t("TXT_CODE_COMMON_FILE_MANAGEMENT_FOR_USERS"),
+        description: `${$t("TXT_CODE_COMMON_FILE_MANAGEMENT_IS_A_RESOURCE_INTENSIVE_AND_LESS_CONTROLLABLE_FUNCTION")} ${$t("TXT_CODE_COMMON_IF_YOUR_REGULAR_USERS_DO_NOT_NEED_FILE_MANAGEMENT_YOU_CAN_DISABLE_THEIR_ACCESS_TO_THIS")}`
       },
       {
         key: "allowJavaManager",

@@ -1,12 +1,12 @@
 {
-  "TXT_CODE_233624ad": "整数のポート番号を入力してください。既定値は 23333 です。",
-  "TXT_CODE_2b85af6d": "リバースプロキシ使用時に有効にすると、クライアントの実際の IP を取得します。",
-  "TXT_CODE_328191e": "特定のネットワークインターフェースにバインドする場合は、その IP アドレスを入力してください。",
-  "TXT_CODE_405cd346": "クロスドメインリクエストAPIインターフェース",
-  "TXT_CODE_514e064a": "パネルバインディングIP",
-  "TXT_CODE_6655c905": "すべてのオリジンからのリクエストを許可します（Access-Control-Allow-Origin: *）。安全性が低下する可能性があります。",
-  "TXT_CODE_66aeac82": "リバースプロキシのリクエストヘッダー",
-  "TXT_CODE_7f0017d2": "パネルのポート",
+  "TXT_CODE_COMMON_ENTER_AN_INTEGER_PORT_NUMBER_DEFAULT_23333": "整数のポート番号を入力してください。既定値は 23333 です。",
+  "TXT_CODE_COMMON_ENABLE_WHEN_USING_A_REVERSE_PROXY_TO_READ_THE_CLIENTS_REAL_IP": "リバースプロキシ使用時に有効にすると、クライアントの実際の IP を取得します。",
+  "TXT_CODE_COMMON_ENTER_ITS_IP_ADDRESS_TO_BIND_TO_A_SPECIFIC_NETWORK_INTERFACE": "特定のネットワークインターフェースにバインドする場合は、その IP アドレスを入力してください。",
+  "TXT_CODE_COMMON_CROSS_ORIGIN_REQUEST_API_INTERFACE": "クロスドメインリクエストAPIインターフェース",
+  "TXT_CODE_COMMON_PANEL_BINDING_IP": "パネルバインディングIP",
+  "TXT_CODE_SERVER_CROSS_ORIGIN_SECURITY_HINT": "すべてのオリジンからのリクエストを許可します（Access-Control-Allow-Origin: *）。安全性が低下する可能性があります。",
+  "TXT_CODE_COMMON_REVERSE_PROXY_REQUEST_HEADER": "リバースプロキシのリクエストヘッダー",
+  "TXT_CODE_COMMON_PANEL_PORT": "パネルのポート",
   "TXT_CODE_SERVER_PREFIX": "パスプレフィックス",
   "TXT_CODE_SERVER_PREFIX_TIP": "パネルをサブパス（例: /panel）で公開します。空欄の場合はルートで公開します。",
   "TXT_CODE_SERVER_RESTART_TIP": "これらの設定は Web サーバーの起動時に適用されます。変更を反映するにはパネルを再起動してください。",
@@ -16,6 +16,6 @@
   "TXT_CODE_SERVER_SSL_PEM": "証明書ファイル (.pem)",
   "TXT_CODE_SERVER_SSL_PEM_TIP": "証明書ファイルのパス。絶対パス、またはパネルディレクトリからの相対パスを指定します。",
   "TXT_CODE_SERVER_SSL_TIP": "以下の証明書を使用して HTTPS でパネルを公開します。両方のファイルが必要です。",
-  "TXT_CODE_f0789d81": "リバースプロキシモード",
-  "TXT_CODE_fd8bc51f": "クライアントの実際の IP を含むリクエストヘッダー名です。"
+  "TXT_CODE_COMMON_REVERSE_PROXY_MODE": "リバースプロキシモード",
+  "TXT_CODE_COMMON_NAME_OF_THE_REQUEST_HEADER_CONTAINING_THE_CLIENTS_REAL_IP": "クライアントの実際の IP を含むリクエストヘッダー名です。"
 }

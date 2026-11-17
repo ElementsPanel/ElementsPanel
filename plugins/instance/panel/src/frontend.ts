@@ -68,27 +68,27 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.routes.add({
     path: "/quickstart",
-    name: t("TXT_CODE_2799a1dd"),
+    name: t("TXT_CODE_COMMON_QUICK_START"),
     component: QuickStartFlow,
     meta: { permission: ROLE.ADMIN, mainMenu: false }
   });
 
   ctx.routes.add({
     path: "/instances",
-    name: t("TXT_CODE_e21473bc"),
+    name: t("TXT_CODE_COMMON_INSTANCES"),
     component: InstanceListPage,
     meta: { mainMenu: true, permission: ROLE.ADMIN }
   });
 
   ctx.routes.add({
     path: "/instances/terminal",
-    name: t("TXT_CODE_524e3036"),
+    name: t("TXT_CODE_COMMON_TERMINAL"),
     component: InstanceConsolePage,
     meta: {
       permission: ROLE.USER,
       breadcrumbs: [
         {
-          name: t("TXT_CODE_e21473bc"),
+          name: t("TXT_CODE_COMMON_INSTANCES"),
           path: "/instances",
           mainMenu: true,
           permission: ROLE.ADMIN
@@ -99,19 +99,19 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.routes.add({
     path: "/instances/terminal/serverConfig",
-    name: t("TXT_CODE_d07742fe"),
+    name: t("TXT_CODE_COMMON_CONFIGURATION_FILES"),
     component: InstanceServerConfigOverview,
     meta: {
       permission: ROLE.USER,
       breadcrumbs: [
         {
-          name: t("TXT_CODE_e21473bc"),
+          name: t("TXT_CODE_COMMON_INSTANCES"),
           path: "/instances",
           mainMenu: true,
           permission: ROLE.ADMIN
         },
         {
-          name: t("TXT_CODE_524e3036"),
+          name: t("TXT_CODE_COMMON_TERMINAL"),
           path: "/instances/terminal",
           permission: ROLE.USER
         }
@@ -121,24 +121,24 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.routes.add({
     path: "/instances/terminal/serverConfig/fileEdit",
-    name: t("TXT_CODE_78019c60"),
+    name: t("TXT_CODE_COMMON_CONFIG_EDITOR"),
     component: InstanceServerConfigFile,
     meta: {
       permission: ROLE.USER,
       breadcrumbs: [
         {
-          name: t("TXT_CODE_e21473bc"),
+          name: t("TXT_CODE_COMMON_INSTANCES"),
           path: "/instances",
           mainMenu: true,
           permission: ROLE.ADMIN
         },
         {
-          name: t("TXT_CODE_524e3036"),
+          name: t("TXT_CODE_COMMON_TERMINAL"),
           path: "/instances/terminal",
           permission: ROLE.USER
         },
         {
-          name: t("TXT_CODE_d07742fe"),
+          name: t("TXT_CODE_COMMON_CONFIGURATION_FILES"),
           path: "/instances/terminal/serverConfig",
           permission: ROLE.USER
         }
@@ -148,19 +148,19 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.routes.add({
     path: "/instances/schedule",
-    name: t("TXT_CODE_b7d026f8"),
+    name: t("TXT_CODE_COMMON_SCHEDULED_TASKS"),
     component: Schedule,
     meta: {
       permission: ROLE.USER,
       breadcrumbs: [
         {
-          name: t("TXT_CODE_e21473bc"),
+          name: t("TXT_CODE_COMMON_INSTANCES"),
           path: "/instances",
           mainMenu: true,
           permission: ROLE.ADMIN
         },
         {
-          name: t("TXT_CODE_524e3036"),
+          name: t("TXT_CODE_COMMON_TERMINAL"),
           path: "/instances/terminal",
           permission: ROLE.USER
         }
@@ -170,14 +170,14 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.routes.add({
     path: "/instances/create",
-    name: t("TXT_CODE_5a74975b"),
+    name: t("TXT_CODE_COMMON_CREATE_INSTANCE"),
     component: CreateInstancePage,
     meta: {
       permission: ROLE.ADMIN,
       mainMenu: false,
       breadcrumbs: [
         {
-          name: t("TXT_CODE_e21473bc"),
+          name: t("TXT_CODE_COMMON_INSTANCES"),
           path: "/instances",
           mainMenu: true,
           permission: ROLE.ADMIN

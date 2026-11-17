@@ -38,13 +38,13 @@ const deleteDialogOpen = ref(false);
 const deleteCandidate = ref<JavaInfo>();
 const { isLoading } = updateInstanceConfig();
 const javaDescription = computed(() =>
-  t("TXT_CODE_e1c637bb").replace("<mcsm_java>", "{mcsm_java}")
+  t("TXT_CODE_COMMON_AFTER_COMPLETING_THE_CONFIGURATION_THE_JAVA_COMMAND_WILL_BE_REPLACED_WITH").replace("<mcsm_java>", "{mcsm_java}")
 );
 
 const refreshJavaList = async (out = false) => {
   try {
     await refresh(true);
-    if (out) message.success(t("TXT_CODE_fbde647e"));
+    if (out) message.success(t("TXT_CODE_COMMON_REFRESHED"));
   } catch (err: any) {
     message.error(err.message);
   }
@@ -69,7 +69,7 @@ const startDownload = async (version: string) => {
       params: { daemonId: props.daemonId ?? "", instanceId: resolvedInstanceId.value },
       data: { name: "msl", version }
     });
-    message.success(t("TXT_CODE_5e7a4c02"));
+    message.success(t("TXT_CODE_JAVA_DOWNLOAD_STARTED"));
     await refreshJavaList();
   } catch (err: any) {
     message.error(err.message);
@@ -83,7 +83,7 @@ const handleAddJava = async () => {
       params: { daemonId: props.daemonId ?? "" },
       data: { name: data.name, path: data.path }
     });
-    message.success(t("TXT_CODE_10f0f8d"));
+    message.success(t("TXT_CODE_JAVA_RUNTIME_ADD_SUCCESS"));
     await refreshJavaList();
   } catch (err: any) {
     message.error(err.message);
@@ -109,7 +109,7 @@ const handleUsingJava = async (info: JavaInfo) => {
       data: { id: info.fullname }
     });
     if (props.instanceInfo) props.instanceInfo.config.java.id = info.fullname;
-    message.success(t("TXT_CODE_d3de39b4"));
+    message.success(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"));
     await refreshJavaList();
   } catch (err: any) {
     message.error(err.message);
@@ -120,10 +120,10 @@ const confirmDelete = (info: JavaInfo) => {
   deleteDialogOpen.value = true;
 };
 const headers = [
-  { title: t("TXT_CODE_151d2bb7"), key: "fullname" },
-  { title: t("TXT_CODE_a2e79565"), key: "installTime" },
-  { title: t("TXT_CODE_759fb403"), key: "status" },
-  { title: t("TXT_CODE_fe731dfc"), key: "actions", sortable: false, align: "end" }
+  { title: t("TXT_CODE_COMMON_ENVIRONMENT_NAME"), key: "fullname" },
+  { title: t("TXT_CODE_COMMON_INSTALLATION_TIME"), key: "installTime" },
+  { title: t("TXT_CODE_COMMON_STATUS"), key: "status" },
+  { title: t("TXT_CODE_COMMON_ACTIONS"), key: "actions", sortable: false, align: "end" }
 ] as any;
 defineExpose({ open: openDialog, openDialog });
 </script>
@@ -131,31 +131,31 @@ defineExpose({ open: openDialog, openDialog });
 <template>
   <AppDialog
     v-model:open="open"
-    :title="t('TXT_CODE_3fee13ed')"
+    :title="t('TXT_CODE_COMMON_JAVA_MANAGER')"
     :max-width="1000"
     :confirm-loading="isLoading"
     :show-cancel="false"
-    :ok-text="t('TXT_CODE_31e92ef3')"
+    :ok-text="t('TXT_CODE_JAVA_RUNTIME_SETUP_DONE')"
     @ok="close"
   >
     <div class="text-medium-emphasis mb-4">
-      {{ t("TXT_CODE_ebf01bcc") }}<br />{{ javaDescription }}
+      {{ t("TXT_CODE_COMMON_SELECT_JAVA_FOR_THE_INSTANCE_DOCKER_INSTANCES_USE_THE_IMAGE_S_RUNTIME") }}<br />{{ javaDescription }}
     </div>
     <div class="java-actions">
       <VBtn variant="text" prepend-icon="mdi-plus" @click="handleAddJava">{{
-        t("TXT_CODE_8900e7ee")
+        t("TXT_CODE_COMMON_ADD_INSTALLED_JAVA")
       }}</VBtn>
       <VBtn variant="text" prepend-icon="mdi-download" @click="handleDownloadJava">{{
-        t("TXT_CODE_9c48100e")
+        t("TXT_CODE_COMMON_DOWNLOAD_OTHER_JAVA")
       }}</VBtn>
       <VBtn variant="text" prepend-icon="mdi-refresh" @click="refreshJavaList(true)">{{
-        t("TXT_CODE_b76d94e0")
+        t("TXT_CODE_COMMON_REFRESH")
       }}</VBtn>
     </div>
     <Empty
       v-if="listError"
       icon="mdi-alert-circle-outline"
-      :title="t('TXT_CODE_ef8f8e29')"
+      :title="t('TXT_CODE_COMMON_PAGE_FAILED_TO_LOAD_PLEASE_TRY_AGAIN_LATER')"
       :description="listError"
       :compact="!!javaList.length"
     >
@@ -165,7 +165,7 @@ defineExpose({ open: openDialog, openDialog });
           prepend-icon="mdi-refresh"
           :loading="listLoading"
           @click="refreshJavaList()"
-        >{{ t("TXT_CODE_9277af78") }}</VBtn>
+        >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
       </template>
     </Empty>
     <VDataTable
@@ -179,7 +179,7 @@ defineExpose({ open: openDialog, openDialog });
       <template #no-data><Empty icon="mdi-language-java" /></template>
       <template #item.fullname="{ item }">{{ item.info.fullname }}</template>
       <template #item.installTime="{ item }">{{
-        t(parseTimestamp(item.info.installTime))
+        parseTimestamp(item.info.installTime)
       }}</template>
       <template #item.status="{ item }"><JavaRuntimeStatus :runtime="item" /></template>
       <template #item.actions="{ item }">
@@ -189,7 +189,7 @@ defineExpose({ open: openDialog, openDialog });
             size="small"
             variant="text"
             @click="startDownload(item.info.fullname.slice(4))"
-            >{{ t("TXT_CODE_9277af78") }}</VBtn
+            >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn
           >
           <VBtn
             size="small"
@@ -202,8 +202,8 @@ defineExpose({ open: openDialog, openDialog });
             @click="handleUsingJava(item.info)"
             >{{
               item.info.fullname === props.instanceInfo?.config.java.id
-                ? t("TXT_CODE_979520ef")
-                : t("TXT_CODE_f0dcc8bf")
+                ? t("TXT_CODE_COMMON_IN_USE")
+                : t("TXT_CODE_COMMON_USE")
             }}</VBtn
           ><VBtn
             size="small"
@@ -212,7 +212,7 @@ defineExpose({ open: openDialog, openDialog });
             prepend-icon="mdi-delete-outline"
             :disabled="item.info.downloading"
             @click="confirmDelete(item.info)"
-            >{{ t("TXT_CODE_ecbd7449") }}</VBtn
+            >{{ t("TXT_CODE_COMMON_DELETE") }}</VBtn
           >
         </div>
       </template>
@@ -220,12 +220,12 @@ defineExpose({ open: openDialog, openDialog });
   </AppDialog>
   <AppDialog
     v-model:open="deleteDialogOpen"
-    :title="t('TXT_CODE_f4f86ba8')"
+    :title="t('TXT_CODE_COMMON_DELETE_JAVA_RUNTIME')"
     compact
     ok-color="error"
-    :ok-text="t('TXT_CODE_ecbd7449')"
+    :ok-text="t('TXT_CODE_COMMON_DELETE')"
     @ok="handleDeleteJava"
-    ><p>{{ deleteCandidate?.fullname }}</p><div>{{ t("TXT_CODE_35631d1d") }}</div></AppDialog
+    ><p>{{ deleteCandidate?.fullname }}</p><div>{{ t("TXT_CODE_COMMON_EXTERNALLY_ADDED_JAVA_IS_REMOVED_FROM_THE_LIST_ITS_FILES_ARE_KEPT") }}</div></AppDialog
   >
 </template>
 

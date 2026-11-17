@@ -1,12 +1,12 @@
 {
-  "TXT_CODE_233624ad": "Introduce un puerto entero. Predeterminado: 23333.",
-  "TXT_CODE_2b85af6d": "Actívalo al usar un proxy inverso para obtener la IP real del cliente.",
-  "TXT_CODE_328191e": "Introduce su dirección IP para vincular una interfaz de red específica.",
-  "TXT_CODE_405cd346": "Interfaz API de solicitud entre dominios",
-  "TXT_CODE_514e064a": "IP de unión del panel",
-  "TXT_CODE_6655c905": "Permite solicitudes de cualquier origen (Access-Control-Allow-Origin: *). Puede reducir la seguridad.",
-  "TXT_CODE_66aeac82": "Cabecera de solicitud del proxy inverso",
-  "TXT_CODE_7f0017d2": "Puerto de conexión del panel",
+  "TXT_CODE_COMMON_ENTER_AN_INTEGER_PORT_NUMBER_DEFAULT_23333": "Introduce un puerto entero. Predeterminado: 23333.",
+  "TXT_CODE_COMMON_ENABLE_WHEN_USING_A_REVERSE_PROXY_TO_READ_THE_CLIENTS_REAL_IP": "Actívalo al usar un proxy inverso para obtener la IP real del cliente.",
+  "TXT_CODE_COMMON_ENTER_ITS_IP_ADDRESS_TO_BIND_TO_A_SPECIFIC_NETWORK_INTERFACE": "Introduce su dirección IP para vincular una interfaz de red específica.",
+  "TXT_CODE_COMMON_CROSS_ORIGIN_REQUEST_API_INTERFACE": "Interfaz API de solicitud entre dominios",
+  "TXT_CODE_COMMON_PANEL_BINDING_IP": "IP de unión del panel",
+  "TXT_CODE_SERVER_CROSS_ORIGIN_SECURITY_HINT": "Permite solicitudes de cualquier origen (Access-Control-Allow-Origin: *). Puede reducir la seguridad.",
+  "TXT_CODE_COMMON_REVERSE_PROXY_REQUEST_HEADER": "Cabecera de solicitud del proxy inverso",
+  "TXT_CODE_COMMON_PANEL_PORT": "Puerto de conexión del panel",
   "TXT_CODE_SERVER_PREFIX": "Prefijo de ruta",
   "TXT_CODE_SERVER_PREFIX_TIP": "Sirve el panel bajo una subruta, por ejemplo /panel. Déjelo vacío para servirlo desde la raíz.",
   "TXT_CODE_SERVER_RESTART_TIP": "Estos ajustes se aplican al iniciar el servidor web. Reinicie el panel para que un cambio surta efecto.",
@@ -16,6 +16,6 @@
   "TXT_CODE_SERVER_SSL_PEM": "Archivo de certificado (.pem)",
   "TXT_CODE_SERVER_SSL_PEM_TIP": "Ruta al archivo de certificado, absoluta o relativa al directorio del panel.",
   "TXT_CODE_SERVER_SSL_TIP": "Sirve el panel por HTTPS usando el certificado de abajo. Ambos archivos son obligatorios.",
-  "TXT_CODE_f0789d81": "Modo proxy inverso",
-  "TXT_CODE_fd8bc51f": "Nombre de la cabecera que contiene la IP real del cliente."
+  "TXT_CODE_COMMON_REVERSE_PROXY_MODE": "Modo proxy inverso",
+  "TXT_CODE_COMMON_NAME_OF_THE_REQUEST_HEADER_CONTAINING_THE_CLIENTS_REAL_IP": "Nombre de la cabecera que contiene la IP real del cliente."
 }

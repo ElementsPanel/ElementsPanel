@@ -57,7 +57,7 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Complemento de panel y daemon",
   "TXT_CODE_PLUGIN_MARKET_UPDATES": "Novedades",
   "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "Este plugin es incompatible con la versión actual del panel. Actualiza ElementsPanel.",
-  "TXT_CODE_2de92a5d": "¡Seleccione un nodo antes de instalar!",
+  "TXT_CODE_COMMON_PLEASE_SELECT_A_NODE_BEFORE_INSTALLING": "¡Seleccione un nodo antes de instalar!",
   "TXT_CODE_PLUGIN_MARKET_BUNDLED": "This plugin is bundled with the panel and cannot be uninstalled here.",
   "TXT_CODE_PLUGIN_MARKET_NPM_FAILED": "npm install failed. Check the network, registry and package name, then retry.",
   "TXT_CODE_PLUGIN_MARKET_ADD": "Añadir",

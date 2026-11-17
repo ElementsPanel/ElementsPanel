@@ -73,14 +73,14 @@ const selectedItems = ref<UserInstance[]>(
 );
 
 const statusItems = computed(() => [
-  { title: t("TXT_CODE_c48f6f64"), value: "" },
+  { title: t("TXT_CODE_COMMON_ALL"), value: "" },
   ...Object.entries(INSTANCE_STATUS).map(([value, title]) => ({ title, value }))
 ]);
 
 const tableHeaders = computed(() => [
-  { title: t("TXT_CODE_f70badb9"), key: "nickname", sortable: false },
-  { title: t("TXT_CODE_5def0cbe"), key: "safe", sortable: false },
-  { title: t("TXT_CODE_fe731dfc"), key: "operation", sortable: false, align: "end" as const }
+  { title: t("TXT_CODE_COMMON_INSTANCE_NAME"), key: "nickname", sortable: false },
+  { title: t("TXT_CODE_COMMON_SAFETY"), key: "safe", sortable: false },
+  { title: t("TXT_CODE_COMMON_ACTIONS"), key: "operation", sortable: false, align: "end" as const }
 ]);
 
 const rowItem = (item: UserInstance | { raw?: UserInstance }): UserInstance =>
@@ -109,7 +109,7 @@ const initNodes = async () => {
   currentRemoteNode.value = nodes.value.find((node) => node.uuid === storedUuid && node.available)
     ?? nodes.value.find((node) => node.available);
   if (currentRemoteNode.value) return true;
-  reportErrorMsg(t("TXT_CODE_e3d96a26"));
+  reportErrorMsg(t("TXT_CODE_COMMON_THE_PANEL_COULD_NOT_CONNECT_TO_ANY_REMOTE_DAEMONS_PLEASE_GO_TO_THE_DAEMONS_FIRST_TO"));
   return false;
 };
 
@@ -141,7 +141,7 @@ const initInstancesData = async () => {
     });
     if (!closed && request === latestRequest) instances.value = response.value;
   } catch {
-    if (!closed && request === latestRequest) reportErrorMsg(t("TXT_CODE_e109c091"));
+    if (!closed && request === latestRequest) reportErrorMsg(t("TXT_CODE_COMMON_ABNORMAL_ACCESS_TO_REMOTE_NODE"));
   } finally {
     if (request === latestRequest) isLoading.value = false;
   }
@@ -218,9 +218,9 @@ onUnmounted(disposeRequests);
 
 <template>
   <VDialog v-model="open" class="app-dialog select-instances-dialog" max-width="980" scrollable persistent>
-    <VCard :title="t('TXT_CODE_8145d25a')" rounded="xl">
+    <VCard :title="t('TXT_CODE_COMMON_SELECT_INSTANCE')" rounded="xl">
       <VCardText class="select-instances-content">
-        <p class="text-medium-emphasis select-instances-help">{{ t("TXT_CODE_50697989") }}</p>
+        <p class="text-medium-emphasis select-instances-help">{{ t("TXT_CODE_COMMON_SELECT_A_NODE_THEN_SEARCH_FOR_INSTANCES_TO_ASSIGN_TO_THIS_USER") }}</p>
 
         <div class="select-instances-toolbar">
           <VMenu location="bottom start">
@@ -239,7 +239,7 @@ onUnmounted(disposeRequests);
                 :title="computeNodeName(item.ip, item.available, item.remarks)"
                 @click="handleChangeNode(item)"
               />
-              <VListItem prepend-icon="mdi-server-network-outline" :title="t('TXT_CODE_28e53fed')" />
+              <VListItem prepend-icon="mdi-server-network-outline" :title="t('TXT_CODE_COMMON_MANAGE_REMOTE_DAEMON')" />
             </VList>
           </VMenu>
 
@@ -256,7 +256,7 @@ onUnmounted(disposeRequests);
             </VSelect>
             <VTextField
               v-model.trim="operationForm.instanceName"
-              :placeholder="t('TXT_CODE_ce132192')"
+              :placeholder="t('TXT_CODE_COMMON_SEARCH_BY_INSTANCE_NAME')"
               prepend-inner-icon="mdi-magnify"
               hide-details
               density="comfortable"
@@ -268,7 +268,7 @@ onUnmounted(disposeRequests);
         </div>
 
         <div class="select-instances-summary">
-          <span>{{ t("TXT_CODE_379fa48a") }} {{ selectedItems.length }} {{ t("TXT_CODE_5cd3b4bd") }}</span>
+          <span>{{ t("TXT_CODE_COMMON_SELECTED") }} {{ selectedItems.length }} {{ t("TXT_CODE_COMMON_ITEMS") }}</span>
           <div class="select-instances-pagination">
             <VSelect
               :model-value="operationForm.pageSize"
@@ -302,25 +302,25 @@ onUnmounted(disposeRequests);
           <template #no-data><Empty icon="mdi-view-grid-outline" compact /></template>
           <template #item.safe="{ item }">
             <VChip v-if="rowItem(item)?.config?.processType === 'docker'" size="small" color="success" variant="tonal">
-              {{ t("TXT_CODE_a3f13157") }}
+              {{ t("TXT_CODE_COMMON_CONTAINER_PROTECTION") }}
             </VChip>
-            <VChip v-else size="small" color="error" variant="tonal">{{ t("TXT_CODE_201bc643") }}</VChip>
+            <VChip v-else size="small" color="error" variant="tonal">{{ t("TXT_CODE_COMMON_NO_PROTECTION") }}</VChip>
           </template>
           <template #item.operation="{ item }">
             <VBtn v-if="findItem(rowItem(item))" color="error" variant="tonal" size="small" @click.stop="removeItem(rowItem(item))">
-              {{ t("TXT_CODE_65fcbd09") }}
+              {{ t("TXT_CODE_INSTANCE_SELECTION_REMOVE") }}
             </VBtn>
             <VBtn v-else variant="tonal" size="small" @click.stop="selectItem(rowItem(item))">
-              {{ t("TXT_CODE_7b2c5414") }}
+              {{ t("TXT_CODE_COMMON_SELECT") }}
             </VBtn>
           </template>
         </VDataTable>
       </VCardText>
       <VCardActions>
-        <VBtn v-if="selectedItems.length > 0" variant="text" @click="clearAll">{{ t("TXT_CODE_d258ec31") }}</VBtn>
+        <VBtn v-if="selectedItems.length > 0" variant="text" @click="clearAll">{{ t("TXT_CODE_COMMON_CLEAR_ALL_SELECTED") }}</VBtn>
         <VSpacer />
-        <VBtn variant="text" @click="cancel">{{ t("TXT_CODE_a0451c97") }}</VBtn>
-        <VBtn color="primary" @click="submit">{{ t("TXT_CODE_abfe9512") }}</VBtn>
+        <VBtn variant="text" @click="cancel">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
+        <VBtn color="primary" @click="submit">{{ t("TXT_CODE_COMMON_SAVE") }}</VBtn>
       </VCardActions>
     </VCard>
   </VDialog>

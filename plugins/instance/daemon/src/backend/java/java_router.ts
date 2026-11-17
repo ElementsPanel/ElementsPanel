@@ -26,7 +26,7 @@ export function registerJavaManagerRoutes(
 
   protocol.on("java_manager/add", async (routerCtx, data) => {
     try {
-      if (!ctx.files.FileManager.checkFileName(data.name)) throw new Error(t("TXT_CODE_b623b66f"));
+      if (!ctx.files.FileManager.checkFileName(data.name)) throw new Error(t("TXT_CODE_COMMON_THE_NAME_CONTAINS_INVALID_CHARACTERS_PLEASE_MODIFY_THE_NAME"));
       const info = new JavaInfo(data.name, Date.now());
       info.path = path.normalize(data.path);
       javaManager.addJava(info);
@@ -40,7 +40,7 @@ export function registerJavaManagerRoutes(
     try {
       // Accept the former source name for clients upgraded independently of nodes.
       if (data.name && !["msl", "zulu"].includes(data.name))
-        throw new Error(t("TXT_CODE_javaMsl.invalidVersion"));
+        throw new Error(t("TXT_CODE_JAVA_MSL_INVALID_VERSION"));
       const runtime = await javaManager.startInstall(data.version);
       protocol.response(routerCtx, runtime);
     } catch (error: any) {
@@ -51,7 +51,7 @@ export function registerJavaManagerRoutes(
   protocol.on("java_manager/using", async (routerCtx, data) => {
     try {
       const instance = instances.getInstance(data.instanceId);
-      if (!instance) throw new Error(t("TXT_CODE_ef6b54fb"));
+      if (!instance) throw new Error(t("TXT_CODE_COMMON_INSTANCE_NOT_FOUND"));
       await javaManager.getJavaRuntimeCommand(data.id);
       instance.parameters({
         java: { id: data.id },

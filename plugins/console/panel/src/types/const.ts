@@ -40,11 +40,11 @@ export enum INSTANCE_STATUS_CODE {
 }
 
 export const INSTANCE_STATUS: Record<INSTANCE_STATUS_CODE, string> = {
-  [INSTANCE_STATUS_CODE.BUSY]: t("TXT_CODE_342a04a9"),
-  [INSTANCE_STATUS_CODE.STOPPED]: t("TXT_CODE_15f2e564"),
-  [INSTANCE_STATUS_CODE.STOPPING]: t("TXT_CODE_a409b8a9"),
-  [INSTANCE_STATUS_CODE.STARTING]: t("TXT_CODE_175b570d"),
-  [INSTANCE_STATUS_CODE.RUNNING]: t("TXT_CODE_bdb620b9")
+  [INSTANCE_STATUS_CODE.BUSY]: t("TXT_CODE_COMMON_UNDER_MAINTENANCE"),
+  [INSTANCE_STATUS_CODE.STOPPED]: t("TXT_CODE_INSTANCE_NOT_RUNNING"),
+  [INSTANCE_STATUS_CODE.STOPPING]: t("TXT_CODE_COMMON_STOPPING"),
+  [INSTANCE_STATUS_CODE.STARTING]: t("TXT_CODE_COMMON_STARTING"),
+  [INSTANCE_STATUS_CODE.RUNNING]: t("TXT_CODE_COMMON_RUNNING")
 };
 
 export const INSTANCE_CRASH_TIMEOUT = 2000;
@@ -114,18 +114,18 @@ export const ScheduleTypeEnum = {
 };
 
 export const ScheduleActionType = {
-  [ScheduleActionTypeEnum.Delay]: t("TXT_CODE_735baf9f"),
-  [ScheduleActionTypeEnum.Command]: t("TXT_CODE_b7cab91d"),
-  [ScheduleActionTypeEnum.Stop]: t("TXT_CODE_148d6467"),
-  [ScheduleActionTypeEnum.Start]: t("TXT_CODE_8c7318b3"),
-  [ScheduleActionTypeEnum.Restart]: t("TXT_CODE_77cc12da"),
-  [ScheduleActionTypeEnum.Kill]: t("TXT_CODE_1c36c8f2")
+  [ScheduleActionTypeEnum.Delay]: t("TXT_CODE_COMMON_DELAY"),
+  [ScheduleActionTypeEnum.Command]: t("TXT_CODE_COMMON_SEND_COMMAND"),
+  [ScheduleActionTypeEnum.Stop]: t("TXT_CODE_COMMON_STOP_INSTANCE"),
+  [ScheduleActionTypeEnum.Start]: t("TXT_CODE_COMMON_START_INSTANCE"),
+  [ScheduleActionTypeEnum.Restart]: t("TXT_CODE_COMMON_RESTART_INSTANCE"),
+  [ScheduleActionTypeEnum.Kill]: t("TXT_CODE_COMMON_TERMINATE_INSTANCE")
 };
 
 export const ScheduleType = {
-  [ScheduleTypeEnum.Interval]: t("TXT_CODE_ba497a8b"),
-  [ScheduleTypeEnum.Cycle]: t("TXT_CODE_f17af923"),
-  [ScheduleTypeEnum.Specify]: t("TXT_CODE_c4f90da6")
+  [ScheduleTypeEnum.Interval]: t("TXT_CODE_COMMON_INTERVAL_BASED_TASK"),
+  [ScheduleTypeEnum.Cycle]: t("TXT_CODE_COMMON_PERIODIC_TASK"),
+  [ScheduleTypeEnum.Specify]: t("TXT_CODE_COMMON_SPECIFIC_TIME_TASK")
 };
 
 export enum ScheduleCreateType {

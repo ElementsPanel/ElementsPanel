@@ -24,7 +24,7 @@ const emit = defineEmits<{
           :size="24"
           variant="text"
           class="file-tab-close"
-          :aria-label="`${t('TXT_CODE_b1dedda3')} ${tab.name}`"
+          :aria-label="`${t('TXT_CODE_COMMON_STOP')} ${tab.name}`"
           @click.stop="emit('close', tab.key)"
           @keydown.enter.stop
           @keydown.space.stop
@@ -33,7 +33,7 @@ const emit = defineEmits<{
         </VBtn>
       </VTab>
     </VTabs>
-    <VBtn icon="mdi-plus" size="small" variant="text" :aria-label="t('TXT_CODE_1644b775')" @click="emit('add')" />
+    <VBtn icon="mdi-plus" size="small" variant="text" :aria-label="t('TXT_CODE_COMMON_NEW_TASK')" @click="emit('add')" />
   </div>
   <Empty
     v-if="!tabs.length"
@@ -42,7 +42,7 @@ const emit = defineEmits<{
   >
     <template #actions>
       <VBtn variant="tonal" prepend-icon="mdi-plus" @click="emit('add')">{{
-        t("TXT_CODE_1644b775")
+        t("TXT_CODE_COMMON_NEW_TASK")
       }}</VBtn>
     </template>
   </Empty>

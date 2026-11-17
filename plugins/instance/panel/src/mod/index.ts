@@ -30,13 +30,13 @@ function registerViews(ctx: PanelFrontendPluginContext) {
       permission: 1,
       breadcrumbs: [
         {
-          name: t("TXT_CODE_e21473bc"),
+          name: t("TXT_CODE_COMMON_INSTANCES"),
           path: "/instances",
           mainMenu: true,
           permission: 10
         },
         {
-          name: t("TXT_CODE_524e3036"),
+          name: t("TXT_CODE_COMMON_TERMINAL"),
           path: "/instances/terminal",
           permission: 1
         }

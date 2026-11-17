@@ -21,9 +21,9 @@ export function registerHttpRoutes() {
       const mission = transfer().passports.getMission(key, "download");
       if (!mission) throw new Error((ctx.body = "Access denied: No task found"));
       const instance = instances().subsystem.getInstance(mission.parameter.instanceUuid);
-      if (!instance) throw new Error($t("TXT_CODE_http_router.instanceNotExist"));
+      if (!instance) throw new Error($t("TXT_CODE_HTTP_ROUTER_INSTANCE_NOT_EXIST"));
       if (!FileManager.checkFileName(paramsFileName))
-        throw new Error($t("TXT_CODE_http_router.fileNameNotSpec"));
+        throw new Error($t("TXT_CODE_HTTP_ROUTER_FILE_NAME_NOT_SPEC"));
 
       const cwd = instance.absoluteCwdPath();
       const fileRelativePath = mission.parameter.fileName;
@@ -37,7 +37,7 @@ export function registerHttpRoutes() {
       await transfer().sendFile(ctx, fileAbsPath);
     } catch (error: any) {
       if (!ctx.res.headersSent) {
-        ctx.body = $t("TXT_CODE_http_router.downloadErr", { error: error.message });
+        ctx.body = $t("TXT_CODE_HTTP_ROUTER_DOWNLOAD_ERR", { error: error.message });
         ctx.status = 500;
       }
     } finally {

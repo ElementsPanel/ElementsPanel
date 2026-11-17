@@ -294,7 +294,7 @@ onBeforeUnmount(() => {
               :loading="loading"
               :disabled="applyingChanges"
               @click="refresh"
-            >{{ t("TXT_CODE_9277af78") }}</VBtn>
+            >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
           </template>
         </Empty>
 

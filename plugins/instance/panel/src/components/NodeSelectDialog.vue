@@ -56,7 +56,7 @@ const sortedNodes = computed(() => {
 
 const selectNode = (node: ComputedNodeInfo) => {
   if (!node.available) {
-    reportErrorMsg(t("TXT_CODE_4ec4f7bb"));
+    reportErrorMsg(t("TXT_CODE_NODE_SELECTION_REQUIRED"));
     return;
   }
   submit(node);
@@ -71,20 +71,20 @@ defineExpose({
 
 <template>
   <VDialog v-model="isVisible" max-width="840" persistent>
-    <VCard :title="t('TXT_CODE_7e267ba')">
+    <VCard :title="t('TXT_CODE_COMMON_SELECT_NODE')">
       <VCardText>
     <div class="node-select-container">
       <div class="node-grid">
         <Empty
           v-if="availableNodes.length === 0"
           icon="mdi-server-network-outline"
-          :title="t('TXT_CODE_f4110b65')"
+          :title="t('TXT_CODE_INSTANCE_NO_AVAILABLE_NODES_HINT')"
           class="node-select-empty"
           compact
         >
           <template #actions>
             <VBtn color="primary" :loading="refreshLoading" @click="refreshNodes">
-              {{ t("TXT_CODE_4fe5dce5") }}
+              {{ t("TXT_CODE_COMMON_GO_TO_THE_NODE_PAGE") }}
             </VBtn>
           </template>
         </Empty>
@@ -102,20 +102,20 @@ defineExpose({
             <div class="node-header">
               <span class="node-name">{{ item.remarks || `${item.ip}:${item.port}` }}</span>
               <div class="node-tags">
-                <VChip v-if="item.available" color="success" size="small" variant="tonal">{{ t("TXT_CODE_b078a763") }}</VChip>
-                <VChip v-else color="error" size="small" variant="tonal">{{ t("TXT_CODE_6cbb84a9") }}</VChip>
+                <VChip v-if="item.available" color="success" size="small" variant="tonal">{{ t("TXT_CODE_COMMON_AVAILABLE") }}</VChip>
+                <VChip v-else color="error" size="small" variant="tonal">{{ t("TXT_CODE_COMMON_UNAVAILABLE") }}</VChip>
                 <VChip
                   v-if="props.targetPlatforms && props.targetPlatforms.length > 0 && !isNodeSupported(item)"
                   color="warning" size="small" variant="tonal"
                 >
                   <VIcon start icon="mdi-alert-circle-outline" />
-                  {{ t("TXT_CODE_node_platform_unsupported") }}
+                  {{ t("TXT_CODE_NODE_PLATFORM_UNSUPPORTED") }}
                 </VChip>
               </div>
             </div>
             <div class="node-details">
               <span>ID: {{ item.uuid }}</span>
-              <span>{{ t("TXT_CODE_3d0885c0") }}: {{ item?.platformText }}</span>
+              <span>{{ t("TXT_CODE_COMMON_PLATFORM") }}: {{ item?.platformText }}</span>
               <span
                 :class="{
                   'node-warning-text': props.targetPlatforms && props.targetPlatforms.length > 0 && !isNodeSupported(item)
@@ -126,7 +126,7 @@ defineExpose({
                 </template>
                 {{ t("TXT_CODE_UI_DOCKER_PLATFORMS") }}: {{ item?.dockerPlatforms?.join(", ") || "--" }}
               </span>
-              <span>{{ t("TXT_CODE_c7d0002e") }}: {{ item.ip }}:{{ item.port }}</span>
+              <span>{{ t("TXT_CODE_COMMON_IP") }}: {{ item.ip }}:{{ item.port }}</span>
             </div>
           </div>
         </div>
@@ -135,7 +135,7 @@ defineExpose({
       </VCardText>
       <VCardActions>
         <VSpacer />
-        <VBtn variant="text" @click="cancel">{{ t("TXT_CODE_a7e9d4e") }}</VBtn>
+        <VBtn variant="text" @click="cancel">{{ t("TXT_CODE_COMMON_CLOSE") }}</VBtn>
       </VCardActions>
     </VCard>
   </VDialog>

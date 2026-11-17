@@ -60,7 +60,7 @@ class DiskLimitService {
       instance.execPreset("stop");
       await sleep(1000 * 10);
       if (instance.status() !== Instance.STATUS_STOP && startCount === instance.startCount) {
-        instance.println("ERROR", $t("TXT_CODE_8418e7fe"));
+        instance.println("ERROR", $t("TXT_CODE_COMMON_INSTANCE_SHUTDOWN_TIMEOUT_DUE_TO_INSUFFICIENT_STORAGE_SPACE_FORCE_STOPPING"));
         instance
           .execPreset("kill")
           .then(() => {})
@@ -100,12 +100,12 @@ class DiskLimitService {
         for (let i = 0; i < 3; i++) {
           instance.println(
             "WARNING",
-            $t("TXT_CODE_f94734d8", {
+            $t("TXT_CODE_COMMON_INSUFFICIENT_STORAGE_SPACE_YOUR_STORAGE_QUOTA_IS_GB_CURRENTLY_USED_GB", {
               storageLimit: convertBytesToGB(storageLimit),
               storageUsage: convertBytesToGB(storageUsage)
             })
           );
-          instance.println("WARNING", $t("TXT_CODE_d448d98d"));
+          instance.println("WARNING", $t("TXT_CODE_STORAGE_QUOTA_EXCEEDED_HINT"));
           await sleep(200);
         }
         this.#stopInstance(instance);

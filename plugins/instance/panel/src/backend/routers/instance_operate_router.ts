@@ -343,11 +343,11 @@ router.put(
       if (config.tag instanceof Array && guard().identify(ctx).elevated) {
         instanceTags = (config.tag as any[]).map((tag: any) => {
           const tmp = String(tag).trim();
-          if (tmp.length > 20) throw new Error($t("TXT_CODE_1556989"));
+          if (tmp.length > 20) throw new Error($t("TXT_CODE_COMMON_THE_LABEL_CONTENT_IS_TOO_LONG_PLEASE_REDUCE_THE_NUMBER_OF_CHARACTERS"));
           return tmp;
         });
         if (instanceTags.length > 6) {
-          throw new Error($t("TXT_CODE_dc9fb6ce"));
+          throw new Error($t("TXT_CODE_COMMON_SAVING_FAILED_A_SINGLE_INSTANCE_ONLY_SUPPORTS_UP_TO_6_TAGS"));
         }
         instanceTags = instanceTags!.sort((a, b) => (a > b ? 1 : -1));
       }

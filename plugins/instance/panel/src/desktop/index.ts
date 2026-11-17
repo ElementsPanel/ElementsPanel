@@ -59,7 +59,7 @@ export function registerDesktop(ctx: PanelFrontendPluginContext) {
   ctx.desktop.view({
     id: "server-config",
     component: DesktopServerConfig,
-    title: () => t("TXT_CODE_d07742fe"),
+    title: () => t("TXT_CODE_COMMON_CONFIGURATION_FILES"),
     icon: "mdi-tune-variant",
     initialWidth: 900,
     initialHeight: 600,
@@ -68,7 +68,7 @@ export function registerDesktop(ctx: PanelFrontendPluginContext) {
   ctx.desktop.view({
     id: "schedule",
     component: DesktopSchedule,
-    title: () => t("TXT_CODE_b7d026f8"),
+    title: () => t("TXT_CODE_COMMON_SCHEDULED_TASKS"),
     icon: "mdi-clock-outline",
     initialWidth: 700,
     initialHeight: 500,
@@ -77,7 +77,7 @@ export function registerDesktop(ctx: PanelFrontendPluginContext) {
   ctx.desktop.view({
     id: "instance-settings",
     component: DesktopInstanceSettings,
-    title: () => t("TXT_CODE_4f34fc28"),
+    title: () => t("TXT_CODE_DESKTOP_INSTANCE_SETTINGS_TITLE"),
     icon: "mdi-view-grid-plus-outline",
     initialWidth: 1000,
     initialHeight: 700,
@@ -86,7 +86,7 @@ export function registerDesktop(ctx: PanelFrontendPluginContext) {
   ctx.desktop.view({
     id: "event-config",
     component: DesktopEventConfig,
-    title: () => t("TXT_CODE_10150756"),
+    title: () => t("TXT_CODE_COMMON_AUTOMATIC_STARTUP_AND_RESTART"),
     icon: "mdi-view-dashboard-outline",
     initialWidth: 500,
     initialHeight: 450,
@@ -101,7 +101,7 @@ export function registerDesktop(ctx: PanelFrontendPluginContext) {
     scope.desktop.view({
       id: "instances",
       component: manager,
-      title: () => t("TXT_CODE_e21473bc"),
+      title: () => t("TXT_CODE_COMMON_INSTANCES"),
       icon: "mdi-view-grid-outline",
       initialWidth: 980,
       initialHeight: 580,
@@ -111,7 +111,7 @@ export function registerDesktop(ctx: PanelFrontendPluginContext) {
       id: "instances",
       view: "instances",
       component: manager,
-      label: () => t("TXT_CODE_e21473bc"),
+      label: () => t("TXT_CODE_COMMON_INSTANCES"),
       icon: "mdi-view-grid-outline",
       route: "/instances",
       condition: () => isAdmin.value,
@@ -153,7 +153,7 @@ export function registerDesktop(ctx: PanelFrontendPluginContext) {
   ctx.inject(["terminal"], (scope) => {
     scope.desktop.view({
       id: "instance-console",
-      title: () => t("TXT_CODE_524e3036"),
+      title: () => t("TXT_CODE_COMMON_TERMINAL"),
       icon: "mdi-code-tags",
       initialWidth: 1000,
       initialHeight: 650,

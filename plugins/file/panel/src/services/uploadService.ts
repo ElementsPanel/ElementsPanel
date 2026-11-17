@@ -63,7 +63,7 @@ export class UploadFiles {
       });
 
       if (!uploadCfg.value?.id) {
-        throw new Error(t("TXT_CODE_62051fcc"));
+        throw new Error(t("TXT_CODE_COMMON_UPLOAD_FAILED"));
       }
       const id = uploadCfg.value?.id;
       this.id = id;
@@ -222,13 +222,13 @@ class UploadTask {
     if (!isStopping) {
       this.retries += 1;
       message.error(
-        t("TXT_CODE_6adffa20") +
+        t("TXT_CODE_COMMON_FAILED_TO_UPLOAD_FILE_SLICE") +
           (this.retries < 3
-            ? t("TXT_CODE_31145b04", {
+            ? t("TXT_CODE_COMMON_RETRYING", {
                 retries: this.retries + 1,
                 maxRetries: 3
               })
-            : t("TXT_CODE_3f828072"))
+            : t("TXT_CODE_COMMON_REACHING_MAXIMUM_NUMBER_OF_RETRIES"))
       );
     }
     const msg = error.response?.data || error.message;
@@ -395,9 +395,9 @@ class UploadService {
         }
         this.files.delete(this.current);
         if (removeFile) {
-          message.error(t("TXT_CODE_c3adc044") + ": " + currentFile.file.name);
+          message.error(t("TXT_CODE_COMMON_UPLOAD_TASK_DOES_NOT_EXIST") + ": " + currentFile.file.name);
         } else {
-          message.success(currentFile.file.name + " " + t("TXT_CODE_773f36a0"));
+          message.success(currentFile.file.name + " " + t("TXT_CODE_COMMON_UPLOAD_SUCCESSFUL"));
         }
         while (this.files.size > 0) {
           const current = this.files.keys().next().value ?? "";

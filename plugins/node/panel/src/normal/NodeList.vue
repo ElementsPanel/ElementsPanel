@@ -44,15 +44,15 @@ const handleOpenDetailDialog = async () => {
 <template>
   <main class="node-page">
     <VContainer fluid class="node-page-container">
-      <PageToolbar :title="t('TXT_CODE_20509fa0')" icon="mdi-server-network-outline">
+      <PageToolbar :title="t('TXT_CODE_COMMON_NODES')" icon="mdi-server-network-outline">
         <template #search>
           <div class="node-search-row">
             <VSelect
               v-model="currentStatus"
               :items="[
-                { title: t('TXT_CODE_c48f6f64'), value: 'all' },
-                { title: t('TXT_CODE_823bfe63'), value: true },
-                { title: t('TXT_CODE_66ce073e'), value: false }
+                { title: t('TXT_CODE_COMMON_ALL'), value: 'all' },
+                { title: t('TXT_CODE_COMMON_ONLINE'), value: true },
+                { title: t('TXT_CODE_COMMON_OFFLINE'), value: false }
               ]"
               class="status-select"
               hide-details
@@ -61,7 +61,7 @@ const handleOpenDetailDialog = async () => {
             </VSelect>
             <VTextField
               v-model.trim="operationForm.name"
-              :placeholder="t('TXT_CODE_461d1a01')"
+              :placeholder="t('TXT_CODE_COMMON_SEARCH_BY_DAEMON_NAME')"
               class="node-search-field"
               density="comfortable"
               hide-details
@@ -77,13 +77,13 @@ const handleOpenDetailDialog = async () => {
             variant="text"
             @click="refresh"
           >
-            {{ t("TXT_CODE_b76d94e0") }}
+            {{ t("TXT_CODE_COMMON_REFRESH") }}
           </VBtn>
           <VBtn color="primary" @click="handleOpenDetailDialog">
-            {{ t("TXT_CODE_15a381d5") }}
+            {{ t("TXT_CODE_COMMON_NEW_DAEMON") }}
           </VBtn>
           <VBtn href="https://docs.mcsmanager.com/" target="_blank" variant="text">
-            {{ t("TXT_CODE_3a302f23") }}
+            {{ t("TXT_CODE_COMMON_MANUAL") }}
           </VBtn>
         </template>
       </PageToolbar>
@@ -99,9 +99,9 @@ const handleOpenDetailDialog = async () => {
         <VCol cols="12">
           <div class="desc">
             <div class="desc-text">
-              {{ t("TXT_CODE_f9a92e38") }}
+              {{ t("TXT_CODE_COMMON_THE_BROWSER_NEEDS_A_CONNECTION_TO_THE_NODE_FOR_THE_CONSOLE_AND_FILE_TRANSFERS") }}
               <br />
-              {{ t("TXT_CODE_a65c65c2") }}
+              {{ t("TXT_CODE_COMMON_IF_THE_BROWSER_CANNOT_REACH_THIS_ADDRESS_CONFIGURE_A_NODE_DIRECT_CONNECTION_MAPPING") }}
             </div>
             <div class="pagination">
               <VPagination

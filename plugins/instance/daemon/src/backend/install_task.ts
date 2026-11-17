@@ -167,7 +167,7 @@ export function createInstanceInstallTaskClass(
         const now = Date.now();
         const PROGRESS_THROTTLE_MS = 1000;
         if (now - this.lastProgressOutput >= PROGRESS_THROTTLE_MS) {
-          const downloadText = $t("TXT_CODE_b135e9bd");
+          const downloadText = $t("TXT_CODE_INSTALL_TASK_DOWNLOADING");
           const speed = `${(this.downloadProgress.speed / 1024 / 1024).toFixed(2)} MB/s`;
           this.instance.println(
             "INFO",
@@ -228,14 +228,14 @@ export function createInstanceInstallTaskClass(
 
     async onStart() {
       this.instance.print("\n");
-      this.instance.println("INFO", $t("TXT_CODE_e166bc2f"));
+      this.instance.println("INFO", $t("TXT_CODE_COMMON_THE_INSTALLATION_TASK_IS_STARTING"));
 
       const fileManager = getFileManager(this.instance.instanceUuid);
       try {
         this.instance.status(Instance.STATUS_BUSY);
         if (this.isInitInstance) {
           if (this.instance.asynchronousTask) {
-            throw new Error($t("TXT_CODE_5b0e93b5"));
+            throw new Error($t("TXT_CODE_INSTANCE_INSTALL_TASK_BUSY_HINT"));
           }
           this.instance.asynchronousTask = this;
         }
@@ -244,16 +244,16 @@ export function createInstanceInstallTaskClass(
           await this.download();
           if (this.cancelled) return;
           if (this.extName === ".zip") {
-            this.instance.println("INFO", $t("TXT_CODE_e4a926bf"));
+            this.instance.println("INFO", $t("TXT_CODE_COMMON_UNCOMPRESSING_FILES"));
             const isOk = await fileManager.unzip(this.TMP_ZIP_NAME, ".", "UTF-8");
             if (!isOk) {
-              throw new Error($t("TXT_CODE_quick_install.unzipError"));
+              throw new Error($t("TXT_CODE_QUICK_INSTALL_UNZIP_ERROR"));
             }
           }
         }
         if (this.cancelled) return;
 
-        this.instance.println("INFO", $t("TXT_CODE_9df98e2"));
+        this.instance.println("INFO", $t("TXT_CODE_COMMON_BUILDING_CONFIGURATION"));
         const config = await this.installationConfig();
         if (this.cancelled) return;
         logger.info(
@@ -262,27 +262,27 @@ export function createInstanceInstallTaskClass(
           "Source:",
           this.downloadOptions.sourceLabel || this.targetLink
         );
-        logger.info($t("TXT_CODE_ac225d07") + JSON.stringify(config));
+        logger.info($t("TXT_CODE_COMMON_BUILD_INSTANCE_PARAMETERS") + JSON.stringify(config));
 
         this.instance.resetConfigWithoutDocker();
         this.instance.parameters(config, true);
         await this.install();
         if (this.cancelled) return;
 
-        this.instance.println("INFO", $t("TXT_CODE_4eccdde8"));
+        this.instance.println("INFO", $t("TXT_CODE_COMMON_CONFIGURATION_BUILT_SUCCESSFULLY"));
 
         if (this.instance?.config?.updateCommand) {
           try {
-            this.instance.println("INFO", $t("TXT_CODE_e577c77c"));
+            this.instance.println("INFO", $t("TXT_CODE_COMMON_UPDATING_THE_INSTANCE"));
             await this.runUpdate();
             if (this.cancelled) return;
-            this.instance.println("INFO", $t("TXT_CODE_9b4985d3"));
-            this.instance.println("INFO", $t("TXT_CODE_1562f6cf"));
+            this.instance.println("INFO", $t("TXT_CODE_COMMON_INSTANCE_UPDATED_SUCCESSFULLY"));
+            this.instance.println("INFO", $t("TXT_CODE_COMMON_ALL_INSTALLATION_OPERATIONS_HAVE_BEEN_COMPLETED_PLEASE_TRY_TO_START_THE_INSTANCE"));
           } catch (error: any) {
             this.updateFailed(error);
           }
         } else {
-          this.instance.println("INFO", $t("TXT_CODE_1562f6cf"));
+          this.instance.println("INFO", $t("TXT_CODE_COMMON_ALL_INSTALLATION_OPERATIONS_HAVE_BEEN_COMPLETED_PLEASE_TRY_TO_START_THE_INSTANCE"));
         }
 
         this.finished = true;

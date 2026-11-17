@@ -77,13 +77,13 @@ const openDialog = (task?: Schedule) => {
 };
 
 const weeks = [
-  { label: t("TXT_CODE_fcbdcb34"), value: 1 },
-  { label: t("TXT_CODE_c73de59d"), value: 2 },
-  { label: t("TXT_CODE_85617390"), value: 3 },
-  { label: t("TXT_CODE_c9b31f8e"), value: 4 },
-  { label: t("TXT_CODE_d4517dcb"), value: 5 },
-  { label: t("TXT_CODE_d248b5c8"), value: 6 },
-  { label: t("TXT_CODE_a621f370"), value: 7 }
+  { label: t("TXT_CODE_COMMON_MONDAY"), value: 1 },
+  { label: t("TXT_CODE_COMMON_TUESDAY"), value: 2 },
+  { label: t("TXT_CODE_COMMON_WEDNESDAY"), value: 3 },
+  { label: t("TXT_CODE_COMMON_THURSDAY"), value: 4 },
+  { label: t("TXT_CODE_COMMON_FRIDAY"), value: 5 },
+  { label: t("TXT_CODE_COMMON_SATURDAY"), value: 6 },
+  { label: t("TXT_CODE_COMMON_SUNDAY"), value: 7 }
 ];
 
 const defaultAction: ScheduleAction = {
@@ -160,10 +160,10 @@ const create = {
 
 const getInputPlaceholder = (action: ScheduleAction) => {
   if (action.type === ScheduleActionTypeEnum.Delay) {
-    return t("TXT_CODE_bb760145");
+    return t("TXT_CODE_COMMON_PLEASE_ENTER_A_TIME_IN_MILLISECONDS_FYI_1000MS_1S");
   }
   if (action.type === ScheduleActionTypeEnum.Command) {
-    return t("TXT_CODE_8ff89011");
+    return t("TXT_CODE_COMMON_PLEASE_ENTER_THE_COMMAND_TO_SEND_TO_THE_INSTANCE_TO_SHUT_IT_DOWN_EXAMPLE_MESSAGES_INCLUDE");
   }
   const pluginAction = ctx.actions.schedules.find((item) => item.type === action.type);
   if (!pluginAction?.inputPlaceholder) return;
@@ -179,7 +179,7 @@ const submit = async () => {
     if (createState.value) {
       emit("getScheduleList");
       notification.success({
-        message: editMode.value ? t("TXT_CODE_d3de39b4") : t("TXT_CODE_d28c05df")
+        message: editMode.value ? t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL") : t("TXT_CODE_COMMON_CREATE_SUCCESS")
       });
       newTask = reactive(_.cloneDeep(defaultTask));
       emit("update:modelValue", false);
@@ -197,7 +197,7 @@ const addEmptyAction = () => {
 
 const delAction = (index: number) => {
   if (newTask.actions.length === 1) {
-    return reportErrorMsg(t("TXT_CODE_a749763b"));
+    return reportErrorMsg(t("TXT_CODE_COMMON_ACTIONS_CANNOT_BE_EMPTY"));
   }
   newTask.actions.splice(index, 1);
 };
@@ -211,26 +211,26 @@ defineExpose({
   <AppDialog
     v-model:open="dialogOpen"
     class="schedule-dialog"
-    :title="editMode ? t('TXT_CODE_1548649e') : t('TXT_CODE_3502273d')"
+    :title="editMode ? t('TXT_CODE_COMMON_EDIT_SCHEDULED_TASKS') : t('TXT_CODE_COMMON_ADD_SCHEDULED_TASK')"
     :confirm-loading="isLoading"
     :destroy-on-close="true"
-    :ok-text="t('TXT_CODE_abfe9512')"
+    :ok-text="t('TXT_CODE_COMMON_SAVE')"
     max-width="660px"
     @ok="submit"
   >
     <VForm class="schedule-form" @submit.prevent="submit">
       <div class="schedule-field">
-        <div class="schedule-field-title">{{ t("TXT_CODE_b290a4b0") }}</div>
-        <div class="schedule-field-description">{{ t("TXT_CODE_b72d638d") }}</div>
+        <div class="schedule-field-title">{{ t("TXT_CODE_SCHEDULE_NEW_TASK_NAME") }}</div>
+        <div class="schedule-field-description">{{ t("TXT_CODE_COMMON_REQUIRED_AND_MUST_BE_UNIQUE") }}</div>
         <VTextField v-model="newTask.name" :disabled="editMode" hide-details />
       </div>
 
       <div class="schedule-field">
-        <div class="schedule-field-title">{{ t("TXT_CODE_a62c99d1") }}</div>
+        <div class="schedule-field-title">{{ t("TXT_CODE_COMMON_TASK_TYPE") }}</div>
         <VSelect
           v-model="newTask.type"
           :items="scheduleTypeItems"
-          :placeholder="t('TXT_CODE_3bb646e4')"
+          :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT')"
           hide-details
         >
           <template #no-data><Empty :icon="false" compact /></template>
@@ -239,26 +239,26 @@ defineExpose({
 
       <template v-if="newTask.type === ScheduleCreateType.INTERVAL">
         <div class="schedule-field">
-          <div class="schedule-field-title">{{ t("TXT_CODE_3554dac0") }}</div>
-          <div class="schedule-field-description">{{ t("TXT_CODE_f17889f4") }}</div>
+          <div class="schedule-field-title">{{ t("TXT_CODE_COMMON_TRIGGER_TIME") }}</div>
+          <div class="schedule-field-description">{{ t("TXT_CODE_COMMON_WILL_EXECUTE_AT_REGULAR_OR_SPECIFIC_INTERVALS") }}</div>
           <VRow density="compact">
             <VCol cols="12" md="4">
-              <VTextField v-model="newTask.cycle[2]" type="number" :label="t('TXT_CODE_4e2c7f64')" hide-details />
+              <VTextField v-model="newTask.cycle[2]" type="number" :label="t('TXT_CODE_TIME_HOUR_UNIT')" hide-details />
             </VCol>
             <VCol cols="12" md="4">
-              <VTextField v-model="newTask.cycle[1]" type="number" :label="t('TXT_CODE_a7e9ff0f')" hide-details />
+              <VTextField v-model="newTask.cycle[1]" type="number" :label="t('TXT_CODE_TIME_MINUTE_UNIT')" hide-details />
             </VCol>
             <VCol cols="12" md="4">
-              <VTextField v-model="newTask.cycle[0]" type="number" :label="t('TXT_CODE_acabc771')" hide-details />
+              <VTextField v-model="newTask.cycle[0]" type="number" :label="t('TXT_CODE_COMMON_SEC')" hide-details />
             </VCol>
           </VRow>
         </div>
         <div class="schedule-field">
-          <div class="schedule-field-title">{{ t("TXT_CODE_d9cfab1b") }}</div>
+          <div class="schedule-field-title">{{ t("TXT_CODE_COMMON_EXECUTION_COUNT") }}</div>
           <VTextField
             v-model.number="newTask.count"
             type="number"
-            :placeholder="t('TXT_CODE_a59981f4')"
+            :placeholder="t('TXT_CODE_COMMON_LEAVE_BLANK_FOR_UNLIMITED')"
             hide-details
           />
         </div>
@@ -266,16 +266,16 @@ defineExpose({
 
       <template v-if="newTask.type === ScheduleCreateType.CYCLE">
         <div class="schedule-field">
-          <div class="schedule-field-title">{{ t("TXT_CODE_3554dac0") }}</div>
+          <div class="schedule-field-title">{{ t("TXT_CODE_COMMON_TRIGGER_TIME") }}</div>
           <VTextField
             v-model="cycleTimeValue"
             type="time"
-            :placeholder="t('TXT_CODE_38591f72')"
+            :placeholder="t('TXT_CODE_COMMON_SPECIFIC_TIME')"
             hide-details
           />
         </div>
         <div class="schedule-field">
-          <div class="schedule-field-title">{{ t("TXT_CODE_fcbdcb34") }}</div>
+          <div class="schedule-field-title">{{ t("TXT_CODE_COMMON_MONDAY") }}</div>
           <div class="schedule-weekdays">
             <VCheckbox
               v-for="week in weeks"
@@ -289,29 +289,29 @@ defineExpose({
           </div>
         </div>
         <div class="schedule-field">
-          <div class="schedule-field-title">{{ t("TXT_CODE_d9cfab1b") }}</div>
+          <div class="schedule-field-title">{{ t("TXT_CODE_COMMON_EXECUTION_COUNT") }}</div>
           <VTextField
             v-model.number="newTask.count"
             type="number"
-            :placeholder="t('TXT_CODE_a59981f4')"
+            :placeholder="t('TXT_CODE_COMMON_LEAVE_BLANK_FOR_UNLIMITED')"
             hide-details
           />
         </div>
       </template>
 
       <div v-if="newTask.type === ScheduleCreateType.SPECIFY" class="schedule-field">
-        <div class="schedule-field-title">{{ t("TXT_CODE_f3fe5c8e") }}</div>
+        <div class="schedule-field-title">{{ t("TXT_CODE_COMMON_PLEASE_SELECT_A_DATE_AND_TIME") }}</div>
         <VTextField v-model="specifyDateTimeValue" type="datetime-local" hide-details />
       </div>
 
       <div class="schedule-field schedule-actions-field">
         <div class="schedule-actions-heading">
           <div>
-            <div class="schedule-field-title">{{ t("TXT_CODE_61811ac") }}</div>
-            <div class="schedule-field-description">{{ t("TXT_CODE_81297804") }}</div>
+            <div class="schedule-field-title">{{ t("TXT_CODE_COMMON_TASK_PAYLOAD") }}</div>
+            <div class="schedule-field-description">{{ t("TXT_CODE_COMMON_FOR_EXAMPLE_COMMANDS_FILENAMES_OR_OTHER_PARAMETERS_ETC") }}</div>
           </div>
           <VBtn prepend-icon="mdi-plus-circle-outline" variant="text" @click="addEmptyAction">
-            {{ t("TXT_CODE_dfc17a0c") }}
+            {{ t("TXT_CODE_COMMON_ADD_CONFIGURATION") }}
           </VBtn>
         </div>
         <VRow v-for="(action, index) in newTask.actions" :key="index" density="compact" class="schedule-action-row">
@@ -319,7 +319,7 @@ defineExpose({
             <VSelect
               v-model="action.type"
               :items="scheduleActionItems"
-              :placeholder="t('TXT_CODE_3bb646e4')"
+              :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT')"
               hide-details
               @update:model-value="action.payload = ''"
             >

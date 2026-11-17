@@ -12,7 +12,7 @@ export function validateMinecraftInstall(
   platform: NodeJS.Platform = process.platform,
   arch = process.arch
 ): MinecraftInstallOptions {
-  const invalid = () => new Error($t("TXT_CODE_minecraft.invalidDownload"));
+  const invalid = () => new Error($t("TXT_CODE_MINECRAFT_INVALID_DOWNLOAD"));
   if (
     !options ||
     !["jar", "forge", "neoforge", "bedrock"].includes(options.kind) ||
@@ -42,7 +42,7 @@ export function validateMinecraftInstall(
       targetPlatform !== platform ||
       arch !== "x64"
     ) {
-      throw new Error($t("TXT_CODE_minecraft.platformMismatch"));
+      throw new Error($t("TXT_CODE_MINECRAFT_PLATFORM_MISMATCH"));
     }
   }
   return { ...options, javaPath: options.javaPath?.trim() || "java" };
@@ -64,7 +64,7 @@ export async function minecraftStartCommand(
   $t: Translate,
   platform: NodeJS.Platform = process.platform
 ) {
-  const missingFiles = () => new Error($t("TXT_CODE_minecraft.missingFiles"));
+  const missingFiles = () => new Error($t("TXT_CODE_MINECRAFT_MISSING_FILES"));
   if (options.kind === "bedrock") {
     const executable = platform === "win32" ? "bedrock_server.exe" : "bedrock_server";
     if (!(await fs.pathExists(path.join(cwd, executable)))) throw missingFiles();

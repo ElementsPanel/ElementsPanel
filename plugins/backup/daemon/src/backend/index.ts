@@ -164,7 +164,7 @@ export function apply(ctx: DaemonPluginContext) {
       this.ownsBusyState = false;
       try {
         if (this.instance.status() === Instance.STATUS_BUSY) {
-          throw new Error(t("TXT_CODE_instanceConf.instanceBusy"));
+          throw new Error(t("TXT_CODE_INSTANCE_CONF_INSTANCE_BUSY"));
         }
         const budget = getBackupBudget(await listBackupFiles(this.instance.instanceUuid));
         if (budget.exceeded) {
@@ -306,7 +306,7 @@ export function apply(ctx: DaemonPluginContext) {
         };
 
         if (backupFormat === "7z") {
-          if (!(await check7zipStatus())) throw new Error(t("TXT_CODE_a0ede210"));
+          if (!(await check7zipStatus())) throw new Error(t("TXT_CODE_COMMON_7ZIP_PROGRAM_NOT_FOUND"));
           const absoluteTargetArchivePath = path.resolve(targetArchivePath);
           const listFilePath = path.join(
             os.tmpdir(),
@@ -342,7 +342,7 @@ export function apply(ctx: DaemonPluginContext) {
                   child.kill();
                   if (!settled) {
                     settled = true;
-                    reject(new Error(t("TXT_CODE_1d1ec400")));
+                    reject(new Error(t("TXT_CODE_COMMON_DECOMPRESSION_TIMED_OUT")));
                   }
                 }, zipTimeoutSeconds * 1000);
                 const consume = (chunk: Buffer, isStderr: boolean) => {
@@ -387,7 +387,7 @@ export function apply(ctx: DaemonPluginContext) {
             const output = `${result.stdout}\n${result.stderr}`;
             const archiveStat = await fs.stat(absoluteTargetArchivePath).catch(() => null);
             if (!archiveStat?.isFile() || archiveStat.size === 0) {
-              throw new Error(output.trim() || t("TXT_CODE_11ecd5a9"));
+              throw new Error(output.trim() || t("TXT_CODE_COMMON_UNKNOWN_ERROR"));
             }
             printProgress(100);
           } catch (error) {
@@ -471,7 +471,7 @@ export function apply(ctx: DaemonPluginContext) {
   const createBackupTask = (instance: InstanceEntity) => new InstanceBackupTask(instance);
   const getBackupPath = (instanceUuid: string, backupName: unknown) => {
     if (typeof backupName !== "string" || !backupName || path.basename(backupName) !== backupName) {
-      throw new Error(t("TXT_CODE_Instance_router.accessFileErr"));
+      throw new Error(t("TXT_CODE_INSTANCE_FILE_ACCESS_DENIED"));
     }
     const backupRoot = path.resolve(
       ctx.settings.config.instanceBackupPath || path.join(process.cwd(), "data/backups")
@@ -485,7 +485,7 @@ export function apply(ctx: DaemonPluginContext) {
       relativePath.startsWith(".." + path.sep) ||
       path.isAbsolute(relativePath)
     ) {
-      throw new Error(t("TXT_CODE_Instance_router.accessFileErr"));
+      throw new Error(t("TXT_CODE_INSTANCE_FILE_ACCESS_DENIED"));
     }
     return archivePath;
   };
@@ -527,7 +527,7 @@ export function apply(ctx: DaemonPluginContext) {
   ctx.protocol.on("instance/backup/list", async (routerCtx, data) => {
     try {
       const instanceUuid = data.instanceUuid;
-      if (!instances.getInstance(instanceUuid)) throw new Error(t("TXT_CODE_3bfb9e04"));
+      if (!instances.getInstance(instanceUuid)) throw new Error(t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
       const backups = await listBackupFiles(instanceUuid);
       protocol.response(
         routerCtx,
@@ -540,7 +540,7 @@ export function apply(ctx: DaemonPluginContext) {
 
   ctx.protocol.on("instance/backup/delete", async (routerCtx, data) => {
     try {
-      if (!instances.getInstance(data.instanceUuid)) throw new Error(t("TXT_CODE_3bfb9e04"));
+      if (!instances.getInstance(data.instanceUuid)) throw new Error(t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
       const filePath = getBackupPath(data.instanceUuid, data.backupName);
       if (fs.existsSync(filePath)) await fs.remove(filePath);
       protocol.response(routerCtx, true);
@@ -552,10 +552,10 @@ export function apply(ctx: DaemonPluginContext) {
   ctx.protocol.on("instance/backup/restore", async (routerCtx, data) => {
     try {
       const instance = instances.getInstance(data.instanceUuid);
-      if (!instance) throw new Error(t("TXT_CODE_3bfb9e04"));
+      if (!instance) throw new Error(t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
       if (instance.status() !== Instance.STATUS_STOP) {
         if (instance.status() === Instance.STATUS_BUSY) {
-          throw new Error(t("TXT_CODE_instanceConf.instanceBusy"));
+          throw new Error(t("TXT_CODE_INSTANCE_CONF_INSTANCE_BUSY"));
         }
         if (
           instance.status() === Instance.STATUS_RUNNING ||
@@ -575,7 +575,7 @@ export function apply(ctx: DaemonPluginContext) {
         if (!stopSuccess) throw new Error(t("TXT_CODE_INSTANCE_BACKUP_STOP_TIMEOUT"));
       }
       const archivePath = getBackupPath(data.instanceUuid, data.backupName);
-      if (!fs.existsSync(archivePath)) throw new Error(t("TXT_CODE_Instance_router.accessFileErr"));
+      if (!fs.existsSync(archivePath)) throw new Error(t("TXT_CODE_INSTANCE_FILE_ACCESS_DENIED"));
       instance.status(Instance.STATUS_BUSY);
       instance.println("INFO", t("TXT_CODE_INSTANCE_BACKUP_RESTORING"));
       const tasks = ctx.get("backgroundTasks");

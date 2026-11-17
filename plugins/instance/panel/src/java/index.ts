@@ -33,7 +33,7 @@ export function registerJavaManager(ctx: PanelFrontendPluginContext) {
   ctx.set("java", { setupComponent: JavaSetup });
   ctx.actions.instance({
     id: "java-manager",
-    title: () => t("TXT_CODE_3fee13ed"),
+    title: () => t("TXT_CODE_COMMON_JAVA_MANAGER"),
     icon: "mdi-language-java",
     mdiIcon: "mdi-language-java",
     normalComponent: JavaManager,

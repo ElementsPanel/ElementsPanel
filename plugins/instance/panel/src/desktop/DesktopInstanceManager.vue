@@ -50,15 +50,15 @@ const pageSize = 20;
 const operatingIds = ref<Set<string>>(new Set());
 
 const nodeSelectItems = computed(() => nodes.value.map((node) => ({
-    title: `${node.remarks || node.ip}:${node.port}${node.available ? "" : ` (${t("TXT_CODE_66ce073e")})`}`,
+    title: `${node.remarks || node.ip}:${node.port}${node.available ? "" : ` (${t("TXT_CODE_COMMON_OFFLINE")})`}`,
     value: node.uuid
 })));
 const statusSelectItems = computed(() => [
     { title: t("TXT_CODE_DESKTOP_IM_ALL_STATUS"), value: "all" },
-    { title: t("TXT_CODE_bdb620b9"), value: String(INSTANCE_STATUS_CODE.RUNNING) },
-    { title: t("TXT_CODE_4ef6b040"), value: String(INSTANCE_STATUS_CODE.STOPPED) },
-    { title: t("TXT_CODE_175b570d"), value: String(INSTANCE_STATUS_CODE.STARTING) },
-    { title: t("TXT_CODE_a409b8a9"), value: String(INSTANCE_STATUS_CODE.STOPPING) }
+    { title: t("TXT_CODE_COMMON_RUNNING"), value: String(INSTANCE_STATUS_CODE.RUNNING) },
+    { title: t("TXT_CODE_COMMON_STOPPED"), value: String(INSTANCE_STATUS_CODE.STOPPED) },
+    { title: t("TXT_CODE_COMMON_STARTING"), value: String(INSTANCE_STATUS_CODE.STARTING) },
+    { title: t("TXT_CODE_COMMON_STOPPING"), value: String(INSTANCE_STATUS_CODE.STOPPING) }
 ]);
 
 const multipleMode = ref(false);
@@ -171,7 +171,7 @@ const saveInstanceTags = async () => {
             }
         });
         tagDialog.value.show = false;
-        notifyDesktop(t("TXT_CODE_a7907771"), "success");
+        notifyDesktop(t("TXT_CODE_COMMON_SAVED"), "success");
         await fetchInstances(true);
     } catch (err: any) {
         console.error(err);
@@ -214,11 +214,11 @@ const instanceCounts = computed(() => {
 
 const getStatusText = (status: INSTANCE_STATUS_CODE): string => {
     const map: Record<INSTANCE_STATUS_CODE, string> = {
-        [INSTANCE_STATUS_CODE.BUSY]: t("TXT_CODE_342a04a9"),
-        [INSTANCE_STATUS_CODE.STOPPED]: t("TXT_CODE_4ef6b040"),
-        [INSTANCE_STATUS_CODE.STOPPING]: t("TXT_CODE_a409b8a9"),
-        [INSTANCE_STATUS_CODE.STARTING]: t("TXT_CODE_175b570d"),
-        [INSTANCE_STATUS_CODE.RUNNING]: t("TXT_CODE_bdb620b9")
+        [INSTANCE_STATUS_CODE.BUSY]: t("TXT_CODE_COMMON_UNDER_MAINTENANCE"),
+        [INSTANCE_STATUS_CODE.STOPPED]: t("TXT_CODE_COMMON_STOPPED"),
+        [INSTANCE_STATUS_CODE.STOPPING]: t("TXT_CODE_COMMON_STOPPING"),
+        [INSTANCE_STATUS_CODE.STARTING]: t("TXT_CODE_COMMON_STARTING"),
+        [INSTANCE_STATUS_CODE.RUNNING]: t("TXT_CODE_COMMON_RUNNING")
     };
     return map[status] || t("TXT_CODE_DESKTOP_IM_UNKNOWN");
 };
@@ -391,46 +391,46 @@ const exitMultipleMode = () => {
 
 const instanceOperations = [
     {
-        title: t("TXT_CODE_57245e94"),
+        title: t("TXT_CODE_COMMON_START"),
         icon: PlayCircleOutlined,
         click: () => batchOperation("start")
     },
     {
-        title: t("TXT_CODE_b1dedda3"),
+        title: t("TXT_CODE_COMMON_STOP"),
         icon: PauseCircleOutlined,
         click: () => batchOperation("stop")
     },
     {
-        title: t("TXT_CODE_47dcfa5"),
+        title: t("TXT_CODE_COMMON_RESTART"),
         icon: RedoOutlined,
         click: () => batchOperation("restart")
     },
     {
-        title: t("TXT_CODE_7b67813a"),
+        title: t("TXT_CODE_COMMON_TERMINATE"),
         icon: CloseOutlined,
         click: () => {
             batchOperation("kill");
         }
     },
     {
-        title: t("TXT_CODE_ecbd7449"),
+        title: t("TXT_CODE_COMMON_DELETE"),
         icon: DeleteOutlined,
         click: () => batchDeleteInstance(false)
     },
     {
-        title: t("TXT_CODE_9ef27367"),
+        title: t("TXT_CODE_COMMON_PERMANENTLY_DELETE"),
         icon: WarningOutlined,
         click: () => batchDeleteInstance(true)
     }
 ];
 
 const batchOperation = async (actName: "start" | "stop" | "kill" | "restart") => {
-    if (selectedInstance.value.length === 0) return notifyDesktopError(t("TXT_CODE_a0a77be5"));
+    if (selectedInstance.value.length === 0) return notifyDesktopError(t("TXT_CODE_COMMON_CANNOT_EXECUTE_PLEASE_SELECT_AT_LEAST_ONE_INSTANCE"));
     const operationMap = {
-        start: async () => exec(batchStart().execute, t("TXT_CODE_2b5fd76e")),
-        stop: async () => exec(batchStop().execute, t("TXT_CODE_4822a21")),
-        kill: async () => exec(batchKill().execute, t("TXT_CODE_effefaab")),
-        restart: async () => exec(batchRestart().execute, t("TXT_CODE_effefaab"))
+        start: async () => exec(batchStart().execute, t("TXT_CODE_COMMON_SENT_START_COMMAND")),
+        stop: async () => exec(batchStop().execute, t("TXT_CODE_COMMON_SENT_STOP_COMMAND")),
+        kill: async () => exec(batchKill().execute, t("TXT_CODE_COMMON_SENT_TERMINATE_COMMAND")),
+        restart: async () => exec(batchRestart().execute, t("TXT_CODE_COMMON_SENT_TERMINATE_COMMAND"))
     };
 
     const exec = async (fn: Function, msg: string) => {
@@ -442,7 +442,7 @@ const batchOperation = async (actName: "start" | "stop" | "kill" | "restart") =>
                 }))
             });
             if (state.value) {
-                notifyDesktop({ message: msg, description: t("TXT_CODE_1514d08f") }, "success");
+                notifyDesktop({ message: msg, description: t("TXT_CODE_INSTANCE_COMMANDS_SENT_HINT") }, "success");
                 exitMultipleMode();
                 await fetchInstances(true);
             }
@@ -456,7 +456,7 @@ const batchOperation = async (actName: "start" | "stop" | "kill" | "restart") =>
 };
 
 const batchDeleteInstance = async (deleteFile: boolean) => {
-    if (selectedInstance.value.length === 0) return notifyDesktopError(t("TXT_CODE_a0a77be5"));
+    if (selectedInstance.value.length === 0) return notifyDesktopError(t("TXT_CODE_COMMON_CANNOT_EXECUTE_PLEASE_SELECT_AT_LEAST_ONE_INSTANCE"));
     const uuids: string[] = [];
     const paths: string[] = [];
     for (const i of selectedInstance.value) {
@@ -492,7 +492,7 @@ const handleDeleteConfirm = async () => {
             exitMultipleMode();
             const error = getInstanceDeleteError(state.value);
             if (error) notifyDesktopError(error);
-            else notifyDesktop({ message: t("TXT_CODE_c3c06801"), description: t("TXT_CODE_50075e02") }, "success");
+            else notifyDesktop({ message: t("TXT_CODE_COMMON_BULK_DELETION_SUCCESSFUL"), description: t("TXT_CODE_COMMON_THIS_MAY_TAKE_A_WHILE_AS_FILE_DELETION_TAKES_TIME") }, "success");
             await fetchInstances(true);
         }
     } catch (err: any) {
@@ -544,7 +544,7 @@ onUnmounted(() => {
         <div class="dim-toolbar">
             <div class="dim-toolbar__left">
                 <div class="dim-select">
-                    <VSelect v-model="selectedNodeId" :label="t('TXT_CODE_e076d90b')" :items="nodeSelectItems"
+                    <VSelect v-model="selectedNodeId" :label="t('TXT_CODE_COMMON_DAEMONS')" :items="nodeSelectItems"
                         variant="solo" density="compact" hide-details class="dim-select__input"
                         :disabled="nodeSelectItems.length === 0">
                       <template #no-data><Empty :icon="false" compact /></template>
@@ -562,16 +562,16 @@ onUnmounted(() => {
             <div class="dim-toolbar__right">
                 <div v-if="multipleMode" class="dim-batch-actions">
                     <VBtn class="dim-btn" variant="text" @click="exitMultipleMode">
-                        {{ t("TXT_CODE_5366af54") }}
+                        {{ t("TXT_CODE_COMMON_EXIT_BATCH_OPERATION") }}
                     </VBtn>
                     <VBtn class="dim-btn" variant="text" @click="selectAllInstances">
-                        {{ filteredInstances.length === selectedInstance.length ? t("TXT_CODE_df87c46d") :
-                            t("TXT_CODE_f466d7a") }}
+                        {{ filteredInstances.length === selectedInstance.length ? t("TXT_CODE_COMMON_DESELECT_ALL") :
+                            t("TXT_CODE_COMMON_SELECT_ALL") }}
                     </VBtn>
                     <VMenu location="bottom end">
                         <template #activator="{ props: menuProps }">
                             <VBtn v-bind="menuProps" class="dim-btn dim-btn--primary" variant="text">
-                            {{ t("TXT_CODE_8fd8bfd3") }}
+                            {{ t("TXT_CODE_COMMON_SELECTED_ITEMS") }}
                             <VIcon icon="mdi-chevron-down"  />
                             </VBtn>
                         </template>
@@ -587,7 +587,7 @@ onUnmounted(() => {
                 </div>
                 <div v-else class="dim-batch-actions">
                     <VBtn class="dim-btn" variant="text" @click="multipleMode = true">
-                        {{ t("TXT_CODE_5cb656b9") }}
+                        {{ t("TXT_CODE_COMMON_BATCH_OPERATION") }}
                     </VBtn>
                 </div>
 
@@ -596,7 +596,7 @@ onUnmounted(() => {
                     prepend-inner-icon="mdi-magnify" />
 
                 <VBtn class="dim-btn dim-btn--icon" icon variant="text" :loading="loading"
-                    :aria-label="t('TXT_CODE_b76d94e0')" @click="fetchInstances()">
+                    :aria-label="t('TXT_CODE_COMMON_REFRESH')" @click="fetchInstances()">
                     <VIcon icon="mdi-refresh" />
                 </VBtn>
 
@@ -613,17 +613,17 @@ onUnmounted(() => {
             </div>
             <div class="dim-stats__item">
                 <span class="dim-stats__dot dim-stats__dot--running"></span>
-                <span>{{ t("TXT_CODE_bdb620b9") }}: {{ instanceCounts.running }}</span>
+                <span>{{ t("TXT_CODE_COMMON_RUNNING") }}: {{ instanceCounts.running }}</span>
             </div>
             <div class="dim-stats__item">
                 <span class="dim-stats__dot dim-stats__dot--stopped"></span>
-                <span>{{ t("TXT_CODE_4ef6b040") }}: {{ instanceCounts.stopped }}</span>
+                <span>{{ t("TXT_CODE_COMMON_STOPPED") }}: {{ instanceCounts.stopped }}</span>
             </div>
         </div>
 
         <div v-if="tagTips && tagTips.length > 0" class="dim-tags">
             <VChip v-if="selectedTags.length > 0" color="error" size="small" class="dim-tag" @click="clearTags">
-                {{ t("TXT_CODE_7333c7f7") }}
+                {{ t("TXT_CODE_COMMON_CLEAR") }}
             </VChip>
             <VChip v-for="item in tagTips" :key="item" size="small" class="dim-tag"
                 :class="{ 'dim-tag--active': isTagSelected(item) }"
@@ -661,9 +661,9 @@ onUnmounted(() => {
                     </div>
                     <div class="dim-instance__meta">
                         <span class="dim-instance__expire"
-                            :title="instance.config.endTime ? new Date(instance.config.endTime).toLocaleString() : t('TXT_CODE_abc080d')">
+                            :title="instance.config.endTime ? new Date(instance.config.endTime).toLocaleString() : t('TXT_CODE_INSTANCE_EXPIRY_INDEFINITE')">
                             {{ instance.config.endTime ? new Date(instance.config.endTime).toLocaleString() :
-                                t('TXT_CODE_abc080d') }}
+                                t('TXT_CODE_INSTANCE_EXPIRY_INDEFINITE') }}
                         </span>
                         <span v-if="instance.config.type" class="dim-instance__type">
                             {{ INSTANCE_TYPE_TRANSLATION[instance.config.type] }}
@@ -681,23 +681,23 @@ onUnmounted(() => {
                 </div>
 
                 <div class="dim-instance__actions">
-                    <VBtn icon variant="text" class="dim-action dim-action--tag" :title="t('TXT_CODE_78e88c3f')"
+                    <VBtn icon variant="text" class="dim-action dim-action--tag" :title="t('TXT_CODE_COMMON_TAG_GROUPING')"
                         @click.stop="openTagDialog(instance)">
                         <VIcon icon="mdi-tag-multiple-outline"  />
                     </VBtn>
                     <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.STOPPED" icon variant="text" class="dim-action dim-action--start"
-                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_57245e94')"
+                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_COMMON_START')"
                         @click.stop="handleStart(instance.instanceUuid)">
                         <VIcon icon="mdi-play"  />
                     </VBtn>
                     <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING"
                         icon variant="text"
                         class="dim-action dim-action--restart" :disabled="isOperating(instance.instanceUuid)"
-                        :title="t('TXT_CODE_47dcfa5')" @click.stop="handleRestart(instance.instanceUuid)">
+                        :title="t('TXT_CODE_COMMON_RESTART')" @click.stop="handleRestart(instance.instanceUuid)">
                         <VIcon icon="mdi-refresh"  />
                     </VBtn>
                     <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" icon variant="text" class="dim-action dim-action--stop"
-                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_b1dedda3')"
+                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_COMMON_STOP')"
                         @click.stop="handleStop(instance.instanceUuid)">
                         <VIcon icon="mdi-stop"  />
                     </VBtn>
@@ -705,7 +705,7 @@ onUnmounted(() => {
                         instance.status === INSTANCE_STATUS_CODE.RUNNING ||
                         instance.status === INSTANCE_STATUS_CODE.STOPPING
                     " icon variant="text" class="dim-action dim-action--kill" :disabled="isOperating(instance.instanceUuid)"
-                        :title="t('TXT_CODE_7b67813a')" @click.stop="handleKill(instance.instanceUuid)">
+                        :title="t('TXT_CODE_COMMON_TERMINATE')" @click.stop="handleKill(instance.instanceUuid)">
                         <VIcon icon="mdi-close-circle-outline"  />
                     </VBtn>
                 </div>
@@ -719,14 +719,14 @@ onUnmounted(() => {
             <span class="dim-pagination__info">{{ currentPage }} / {{ totalPages }}</span>
             <VBtn class="dim-btn dim-btn--sm" variant="text" :disabled="currentPage >= totalPages"
                 @click="currentPage++; fetchInstances()">
-                {{ t("TXT_CODE_5e9022f8") }}
+                {{ t("TXT_CODE_COMMON_NEXT") }}
                 <VIcon icon="mdi-chevron-right"  />
             </VBtn>
         </div>
 
         <DesktopDialog
           id="instance-manager-tag-dialog"
-          :title="t('TXT_CODE_a2544278')"
+          :title="t('TXT_CODE_COMMON_INSTANCE_TAG')"
           :icon="TagsOutlined"
           :model-value="tagDialog.show"
           :width="440"
@@ -734,9 +734,9 @@ onUnmounted(() => {
           :z-index="10007"
           @close="closeTagDialog"
         >
-          <p class="dim-dialog__desc dim-dialog__desc--left">{{ t("TXT_CODE_f84ae54f") }}</p>
+          <p class="dim-dialog__desc dim-dialog__desc--left">{{ t("TXT_CODE_COMMON_TAGS_GROUP_INSTANCES_FOR_FILTERING") }}</p>
           <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
-              {{ t("TXT_CODE_2c1337d") }}
+              {{ t("TXT_CODE_COMMON_TAG_LIST_OF_THIS_INSTANCE") }}
           </p>
           <div class="dim-tag-editor">
               <span v-for="tag in tagDialog.tags" :key="tag" class="dim-tag-editor__tag">
@@ -747,15 +747,15 @@ onUnmounted(() => {
                   density="compact" variant="solo" hide-details class="dim-tag-editor__input"
                   @blur="confirmNewTag" @keyup.enter="confirmNewTag" />
               <VBtn v-else class="dim-tag-editor__add" variant="text" @click="showNewTagInput">
-                  <VIcon icon="mdi-plus"  /> {{ t("TXT_CODE_3dd66d98") }}
+                  <VIcon icon="mdi-plus"  /> {{ t("TXT_CODE_COMMON_NEW_TAG") }}
               </VBtn>
           </div>
           <template v-if="tagSuggestions.length > 0">
               <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--strong">
-                  {{ t("TXT_CODE_67d1ea21") }}
+                  {{ t("TXT_CODE_COMMON_SOME_OPTIONAL_TAGS") }}
               </p>
               <p class="dim-dialog__desc dim-dialog__desc--left dim-dialog__desc--muted">
-                  {{ t("TXT_CODE_3ecee271") }}
+                  {{ t("TXT_CODE_COMMON_SUGGESTIONS_COME_FROM_THE_CURRENT_INSTANCE_LIST_UP_TO_30_ARE_SHOWN") }}
               </p>
               <div class="dim-tag-editor">
                   <span v-for="tag in tagSuggestions" :key="tag"
@@ -768,22 +768,22 @@ onUnmounted(() => {
           <template #footer>
             <VBtn class="dim-btn dim-btn--default" variant="text" :disabled="tagDialog.saving"
                 @click="closeTagDialog">
-                {{ t("TXT_CODE_a0451c97") }}
+                {{ t("TXT_CODE_COMMON_CANCEL") }}
             </VBtn>
             <VBtn class="dim-btn dim-btn--primary" variant="text" :disabled="tagDialog.saving"
                 @click="saveInstanceTags">
                 <VIcon icon="mdi-loading" v-if="tagDialog.saving"  />
-                {{ t("TXT_CODE_d507abff") }}
+                {{ t("TXT_CODE_COMMON_CONFIRM") }}
             </VBtn>
           </template>
         </DesktopDialog>
 
         <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="deleteDialog.show" id="instance-manager-delete-dialog" :height="300"
-            :title="deleteDialog.deleteFile ? t('TXT_CODE_9ef27367') : t('TXT_CODE_ecbd7449')"
+            :title="deleteDialog.deleteFile ? t('TXT_CODE_COMMON_PERMANENTLY_DELETE') : t('TXT_CODE_COMMON_DELETE')"
             danger :loading="deleteDialog.loading" @cancel="handleDeleteCancel" @confirm="handleDeleteConfirm">
-            <p>{{ deleteDialog.deleteFile ? t("TXT_CODE_18d2f8ae") : t("TXT_CODE_ac01315a") }}</p>
+            <p>{{ deleteDialog.deleteFile ? t("TXT_CODE_INSTANCE_DELETE_DIRECTORY_WARNING") : t("TXT_CODE_COMMON_REMOVES_INSTANCE_RECORDS_AND_KEEPS_THE_FILES") }}</p>
             <p v-if="deleteDialog.paths.length === 1" class="dim-dialog__path">
-                {{ t("TXT_CODE_91d70059") }}<br />{{ deleteDialog.paths.join() }}
+                {{ t("TXT_CODE_COMMON_INSTANCE_DIRECTORY") }}<br />{{ deleteDialog.paths.join() }}
             </p>
         </component>
     </div>

@@ -26,7 +26,7 @@ import NewSchedule from "./dialogs/NewSchedule.vue";
 const route = useRoute();
 const instanceId = String(route.query.instanceId ?? "");
 const daemonId = String(route.query.daemonId ?? "");
-const pageTitle = computed(() => t("TXT_CODE_b7d026f8"));
+const pageTitle = computed(() => t("TXT_CODE_COMMON_SCHEDULED_TASKS"));
 const { toPage } = useAppRouters();
 const scheduleDialogOpen = ref(false);
 const scheduleDialogTask = ref<Schedule>();
@@ -51,13 +51,13 @@ const timeRender = (text: string, schedule: Schedule) => {
       const h = padZero(Math.floor(time / 3600).toString());
       const m = padZero(Math.floor((time % 3600) / 60).toString());
       const s = padZero((time % 60).toString());
-      return `${$t("TXT_CODE_ec6d29f4")} ${h} ${$t("TXT_CODE_e3db239d")} ${m} ${$t(
-        "TXT_CODE_3b1bb444"
-      )} ${s} ${$t("TXT_CODE_acabc771")}`;
+      return `${$t("TXT_CODE_COMMON_EVERY")} ${h} ${$t("TXT_CODE_TIME_HOURS")} ${m} ${$t(
+        "TXT_CODE_TIME_MINUTES"
+      )} ${s} ${$t("TXT_CODE_COMMON_SEC")}`;
     },
     [ScheduleCreateType.CYCLE]: (time: string) => {
       const [s, m, h, , , w] = time.split(" ");
-      return `${t("TXT_CODE_76750199")} ${w} / ${padZero(h)}:${padZero(m)}:${padZero(s)}`;
+      return `${t("TXT_CODE_COMMON_EVERY_WEEK")} ${w} / ${padZero(h)}:${padZero(m)}:${padZero(s)}`;
     },
     [ScheduleCreateType.SPECIFY]: (time: string) => {
       const [s, m, h, dd, mm] = time.split(" ");
@@ -72,41 +72,41 @@ const timeRender = (text: string, schedule: Schedule) => {
 const headers = [
   {
     align: "center",
-    title: t("TXT_CODE_2d542e4c"),
+    title: t("TXT_CODE_SCHEDULE_TASK_NAME"),
     key: "name"
   },
   {
     align: "center",
-    title: t("TXT_CODE_1544562"),
+    title: t("TXT_CODE_COMMON_PAYLOAD"),
     key: "payload"
   },
   {
     align: "center",
-    title: t("TXT_CODE_485e2d41"),
+    title: t("TXT_CODE_COMMON_REMAINING_COUNT"),
     key: "count",
     sortable: false
   },
   {
     align: "center",
-    title: t("TXT_CODE_82fbc5ad"),
+    title: t("TXT_CODE_COMMON_ACTION"),
     key: "action",
     sortable: false
   },
   {
     align: "center",
-    title: t("TXT_CODE_67d68dd1"),
+    title: t("TXT_CODE_FILE_TYPE"),
     key: "type",
     sortable: false
   },
   {
     align: "center",
-    title: t("TXT_CODE_3554dac0"),
+    title: t("TXT_CODE_COMMON_TRIGGER_TIME"),
     key: "time",
     sortable: false
   },
   {
     align: "center",
-    title: t("TXT_CODE_fe731dfc"),
+    title: t("TXT_CODE_COMMON_ACTIONS"),
     key: "actions",
     sortable: false
   }
@@ -133,7 +133,7 @@ const deleteLoading = ref(false);
 
 const refresh = async () => {
   await getScheduleList();
-  message.success(t("TXT_CODE_fbde647e"));
+  message.success(t("TXT_CODE_COMMON_REFRESHED"));
 };
 
 const openDeleteDialog = (schedule: Schedule) => {
@@ -179,23 +179,23 @@ onMounted(async () => {
       <PageToolbar :title="pageTitle" icon="mdi-clock-outline">
         <template #actions>
           <VBtn variant="text" prepend-icon="mdi-console-line" @click="toConsole">
-            {{ t("TXT_CODE_c14b2ea3") }}
+            {{ t("TXT_CODE_COMMON_GO_BACK") }}
           </VBtn>
           <VBtn variant="text" prepend-icon="mdi-refresh" @click="refresh">
-            {{ t("TXT_CODE_b76d94e0") }}
+            {{ t("TXT_CODE_COMMON_REFRESH") }}
           </VBtn>
           <VBtn color="primary" prepend-icon="mdi-plus" @click="openScheduleDialog()">
-            {{ t("TXT_CODE_1644b775") }}
+            {{ t("TXT_CODE_COMMON_NEW_TASK") }}
           </VBtn>
         </template>
       </PageToolbar>
 
       <VCard class="schedule-card" rounded="xl" flat>
         <VDataTable :headers="headers" :items="scheduleRows" :items-per-page="15" :loading="scheduleListLoading"
-          :loading-text="t('TXT_CODE_b197be11')" class="schedule-table">
+          :loading-text="t('TXT_CODE_COMMON_LOADING_DATA')" class="schedule-table">
           <template #no-data><Empty icon="mdi-clock-outline" /></template>
           <template #item.count="{ item }">
-            {{ Number(rawSchedule(item).count) > 0 ? rawSchedule(item).count : t("TXT_CODE_a92df201") }}
+            {{ Number(rawSchedule(item).count) > 0 ? rawSchedule(item).count : t("TXT_CODE_SCHEDULE_REPEAT_FOREVER") }}
           </template>
           <template #item.action="{ item }">
             {{ scheduleActionTypes[rawSchedule(item).action] ?? (rawSchedule(item).action || "--") }}
@@ -210,11 +210,11 @@ onMounted(async () => {
             <div class="schedule-row-actions">
               <VBtn size="small" variant="text" prepend-icon="mdi-pencil-outline"
                 @click.stop="openScheduleDialog(rawSchedule(item))">
-                {{ t("TXT_CODE_ad207008") }}
+                {{ t("TXT_CODE_COMMON_EDIT") }}
               </VBtn>
               <VBtn size="small" color="error" variant="text" prepend-icon="mdi-delete-outline"
                 @click="openDeleteDialog(rawSchedule(item))">
-                {{ t("TXT_CODE_ecbd7449") }}
+                {{ t("TXT_CODE_COMMON_DELETE") }}
               </VBtn>
             </div>
           </template>
@@ -222,17 +222,17 @@ onMounted(async () => {
       </VCard>
     </VContainer>
     <VDialog v-model="deleteDialogOpen" class="app-dialog" max-width="460px">
-      <VCard rounded="xl" :title="t('TXT_CODE_6ff0668f')">
+      <VCard rounded="xl" :title="t('TXT_CODE_COMMON_ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_SCHEDULED_TASK')">
         <VCardText>
           {{ deleteCandidate?.name || "" }}
         </VCardText>
         <VCardActions>
           <VSpacer />
           <VBtn variant="text" :disabled="deleteLoading" @click="deleteDialogOpen = false">
-            {{ t("TXT_CODE_a0451c97") }}
+            {{ t("TXT_CODE_COMMON_CANCEL") }}
           </VBtn>
           <VBtn color="error" :loading="deleteLoading" @click="confirmDelete">
-            {{ t("TXT_CODE_ecbd7449") }}
+            {{ t("TXT_CODE_COMMON_DELETE") }}
           </VBtn>
         </VCardActions>
       </VCard>

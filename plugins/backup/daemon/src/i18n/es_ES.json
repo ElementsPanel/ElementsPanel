@@ -18,5 +18,5 @@
   "TXT_CODE_INSTANCE_BACKUP_STOPPING": "Deteniendo la instancia...",
   "TXT_CODE_INSTANCE_BACKUP_STOP_TIMEOUT": "Se agotó el tiempo al detener la instancia; se canceló la copia.",
   "TXT_CODE_INSTANCE_BACKUP_SUCCESS": "¡Copia de la instancia creada! Archivo: {{name}}",
-  "TXT_CODE_instanceConf.instanceBusy": "La instancia se encuentra actualmente en un estado ocupado y no puede realizar ninguna acción."
+  "TXT_CODE_INSTANCE_CONF_INSTANCE_BUSY": "La instancia se encuentra actualmente en un estado ocupado y no puede realizar ninguna acción."
 }

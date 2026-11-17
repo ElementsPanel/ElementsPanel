@@ -8,6 +8,20 @@ import {
   MOD_REQUEST_LIMITS
 } from "./settings";
 
+const MOD_SETTING_MESSAGES: Record<
+  keyof typeof MOD_REQUEST_LIMITS,
+  { title: string; description: string }
+> = {
+  requestTimeoutMs: {
+    title: "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS",
+    description: "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS_DESC"
+  },
+  requestRetries: {
+    title: "TXT_CODE_MOD_SETTING_REQUEST_RETRIES",
+    description: "TXT_CODE_MOD_SETTING_REQUEST_RETRIES_DESC"
+  }
+};
+
 export function registerModManager(ctx: PanelPluginContext) {
   const manager = new ModManagerService(ctx);
   registerModManagerRoutes(ctx, manager);
@@ -36,8 +50,10 @@ export function registerModManager(ctx: PanelPluginContext) {
           ...Object.entries(MOD_REQUEST_LIMITS).map(([key, range]) => ({
             key,
             type: "number" as const,
-            title: $t(`TXT_CODE_MOD_SETTING_${key}`),
-            description: $t(`TXT_CODE_MOD_SETTING_${key}_DESC`),
+            title: $t(MOD_SETTING_MESSAGES[key as keyof typeof MOD_REQUEST_LIMITS].title),
+            description: $t(
+              MOD_SETTING_MESSAGES[key as keyof typeof MOD_REQUEST_LIMITS].description
+            ),
             min: range.min,
             max: range.max
           }))
@@ -55,7 +71,9 @@ export function registerModManager(ctx: PanelPluginContext) {
               value !== undefined &&
               (!Number.isInteger(value) || Number(value) < range.min || Number(value) > range.max)
             )
-              throw new Error($t(`TXT_CODE_MOD_SETTING_${key}_DESC`));
+              throw new Error(
+                $t(MOD_SETTING_MESSAGES[key as keyof typeof MOD_REQUEST_LIMITS].description)
+              );
           }
           const next = { ...manager.settings };
           if (values.sourcePreference !== undefined)

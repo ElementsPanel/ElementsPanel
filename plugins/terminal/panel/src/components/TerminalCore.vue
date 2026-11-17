@@ -82,15 +82,15 @@ const initTerminal = async () => {
     const term = initTerminalWindow(dom);
     return term;
   }
-  throw new Error(t("TXT_CODE_42bcfe0c"));
+  throw new Error(t("TXT_CODE_COMMON_TERMINAL_INITIALIZATION_FAILED_PLEASE_REFRESH_THE_WEB_PAGE_AND_TRY_AGAIN"));
 };
 
 events.on("opened", () => {
-  message.success(t("TXT_CODE_e13abbb1"));
+  message.success(t("TXT_CODE_COMMON_INSTANCE_RUNNING"));
 });
 
 events.on("stopped", () => {
-  message.success(t("TXT_CODE_efb6d377"));
+  message.success(t("TXT_CODE_COMMON_INSTANCE_STOPPED"));
 });
 
 events.on("crashed", (data: { exitCode: number }) => {
@@ -183,11 +183,11 @@ onMounted(async () => {
                 variant="text"
                 size="small"
                 color="white"
-                :aria-label="t('TXT_CODE_b1e2e1b4')"
+                :aria-label="t('TXT_CODE_COMMON_CLEAR_TERMINAL_OUTPUT')"
                 @click="clearTerminal()"
               />
             </template>
-            <span>{{ t("TXT_CODE_b1e2e1b4") }}</span>
+            <span>{{ t("TXT_CODE_COMMON_CLEAR_TERMINAL_OUTPUT") }}</span>
           </VTooltip>
         </li>
       </ul>
@@ -215,7 +215,7 @@ onMounted(async () => {
       <VTextField
         ref="inputRef"
         v-model="commandInputValue"
-        :placeholder="t('TXT_CODE_555e2c1b')"
+        :placeholder="t('TXT_CODE_COMMON_ENTER_COMMAND_AND_PRESS_ENTER_TO_SEND_USE_ARROW_KEYS_TO_NAVIGATE_HISTORICAL_COMMANDS')"
         prepend-inner-icon="mdi-code-tags"
         variant="outlined"
         density="comfortable"
@@ -228,34 +228,34 @@ onMounted(async () => {
     </div>
 
     <div v-if="socketError" class="terminal-error">
-      <Empty icon="mdi-lan-disconnect" :title="t('TXT_CODE_6929b0b2')" compact>
+      <Empty icon="mdi-lan-disconnect" :title="t('TXT_CODE_COMMON_UNABLE_TO_CONNECT_TO_REMOTE_DAEMON')" compact>
         <template #description>
-          <p>{{ t("TXT_CODE_812a629e") + socketAddress }}</p>
+          <p>{{ t("TXT_CODE_COMMON_BROWSER_UNABLE_TO_CONNECT_TO_ADDRESS") + socketAddress }}</p>
           <p class="terminal-error-message">
-            <strong>{{ t("TXT_CODE_9c95b60f") }}</strong>
+            <strong>{{ t("TXT_CODE_COMMON_ERROR_INFORMATION") }}</strong>
             {{ socketError.message }}
           </p>
           <p v-if="isXhrPollError">{{ xhrPollErrorReason }}</p>
           <VExpansionPanels class="terminal-error-details" variant="accordion" flat>
-            <VExpansionPanel :title="t('TXT_CODE_f1c96d8a')" bg-color="transparent">
+            <VExpansionPanel :title="t('TXT_CODE_COMMON_SOLUTION')" bg-color="transparent">
               <template #text>
                 <div v-if="isXhrPollError" class="terminal-error-links">
-                  <strong>{{ t("TXT_CODE_d4c8fb3b") }}</strong>
+                  <strong>{{ t("TXT_CODE_COMMON_RELATED_DOCUMENTS") }}</strong>
                   <a
                     href="https://docs.mcsmanager.com/ops/proxy_https.html"
                     target="_blank"
                     rel="noopener noreferrer"
-                  >{{ t("TXT_CODE_9b3ce825") }}</a>
+                  >{{ t("TXT_CODE_COMMON_REVERSE_PROXY_DESCRIPTION") }}</a>
                   <a
                     href="https://docs.mcsmanager.com/ops/mcsm_network.html"
                     target="_blank"
                     rel="noopener noreferrer"
-                  >{{ t("TXT_CODE_10cc2794") }}</a>
+                  >{{ t("TXT_CODE_COMMON_NETWORK_ARCHITECTURE_DESCRIPTION") }}</a>
                 </div>
                 <ul>
-                  <li>{{ t("TXT_CODE_ceba9262") }}</li>
-                  <li>{{ t("TXT_CODE_84099e5") }}</li>
-                  <li>{{ t("TXT_CODE_86ff658a") }}</li>
+                  <li>{{ t("TXT_CODE_COMMON_IF_YOU_ARE_A_REGULAR_USER_PLEASE_CONTACT_THE_PANEL_ADMINISTRATOR") }}</li>
+                  <li>{{ t("TXT_CODE_COMMON_CHECK_THAT_THE_BROWSER_CAN_REACH_THE_NODE_ADDRESS_AND_ITS_PORT_IS_OPEN") }}</li>
+                  <li>{{ t("TXT_CODE_SERVER_SSL_REVERSE_PROXY_WEBSOCKET_HINT") }}</li>
                 </ul>
               </template>
             </VExpansionPanel>
@@ -263,7 +263,7 @@ onMounted(async () => {
         </template>
         <template #actions>
           <VBtn variant="tonal" prepend-icon="mdi-refresh" @click="refreshPage">{{
-            t("TXT_CODE_f8b28901")
+            t("TXT_CODE_COMMON_RECONNECT")
           }}</VBtn>
         </template>
       </Empty>

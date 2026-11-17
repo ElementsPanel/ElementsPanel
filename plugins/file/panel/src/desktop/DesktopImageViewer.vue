@@ -51,7 +51,7 @@ onMounted(async () => {
             <div class="image-name">{{ props.fileName }}</div>
             <VBtn color="primary" variant="text" size="small" :loading="downloadBtnLoading" @click="onDownload">
                 <VIcon icon="mdi-download-outline" />
-                {{ t("TXT_CODE_65b21404") }}
+                {{ t("TXT_CODE_COMMON_DOWNLOAD") }}
             </VBtn>
         </div>
     </div>

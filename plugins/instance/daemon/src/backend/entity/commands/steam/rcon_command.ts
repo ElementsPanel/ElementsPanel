@@ -14,14 +14,14 @@ async function sendRconCommand(instance: Instance, command: string) {
   });
   await rconServer.authenticate(instance.config.rconPassword);
   if (!rconServer.isAuthenticated()) {
-    throw new Error($t("TXT_CODE_1b1b2934"));
+    throw new Error($t("TXT_CODE_RCON_PASSWORD_INCORRECT"));
   }
   return new Promise((resolve, reject) => {
     let hasResult = false;
     setTimeout(() => {
       if (!hasResult) {
         rconServer.disconnect().catch(() => {});
-        instance.print(`[RCON] ${$t("TXT_CODE_386f2d66")}\n`);
+        instance.print(`[RCON] ${$t("TXT_CODE_COMMON_COMMAND_DELIVERED_BUT_NO_RESPONSE_RECEIVED_PLEASE_CHECK_IN_GAME")}\n`);
         resolve("");
       }
     }, 1000 * 10);

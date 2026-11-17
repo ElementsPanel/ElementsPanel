@@ -28,13 +28,13 @@ const dataSource = ref<DownloadFileConfigItem>({
 });
 
 const submit = async () => {
-  if (!dataSource.value.url) return reportValidatorError(t("TXT_CODE_b5095a15"));
-  if (!dataSource.value.fileName) return reportValidatorError(t("TXT_CODE_de1b06cd"));
+  if (!dataSource.value.url) return reportValidatorError(t("TXT_CODE_COMMON_URL_REQUIRED"));
+  if (!dataSource.value.fileName) return reportValidatorError(t("TXT_CODE_COMMON_FILE_NAME_REQUIRED"));
   try {
     const url = new URL(dataSource.value.url);
     if (!["http:", "https:"].includes(url.protocol)) throw new Error("Unsupported protocol");
   } catch (_) {
-    return reportValidatorError(t("TXT_CODE_a4a960b9"));
+    return reportValidatorError(t("TXT_CODE_COMMON_INVALID_URL"));
   }
   close(dataSource.value);
 };
@@ -72,16 +72,16 @@ watch(
 
 <template>
   <VDialog v-model="open" class="app-dialog" max-width="440" persistent scrollable>
-    <VCard :title="t('TXT_CODE_f27b68b3')" rounded="xl">
+    <VCard :title="t('TXT_CODE_COMMON_REMOTE_DOWNLOAD_RESOURCES')" rounded="xl">
       <VCardText class="dialog-form">
-        <div class="dialog-help">{{ t("TXT_CODE_3fd7fe73") }}</div>
-        <VTextField v-model="dataSource.url" :label="t('TXT_CODE_ab8dd5a0')" :placeholder="t('TXT_CODE_4ea93630')" hide-details="auto" />
-        <VTextField v-model="dataSource.fileName" :label="t('TXT_CODE_2eace3d5')" :placeholder="t('TXT_CODE_4ea93630')" hide-details="auto" />
+        <div class="dialog-help">{{ t("TXT_CODE_COMMON_THE_URL_MUST_BE_REACHABLE_FROM_THE_NODE_DOWNLOAD_SPEED_MAY_BE_LIMITED") }}</div>
+        <VTextField v-model="dataSource.url" :label="t('TXT_CODE_COMMON_FILE_URL_ADDRESS')" :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')" hide-details="auto" />
+        <VTextField v-model="dataSource.fileName" :label="t('TXT_CODE_COMMON_FILE_NAME')" :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')" hide-details="auto" />
       </VCardText>
       <VCardActions>
         <VSpacer />
-        <VBtn variant="text" @click="cancel">{{ t("TXT_CODE_a0451c97") }}</VBtn>
-        <VBtn color="primary" @click="submit">{{ t("TXT_CODE_d507abff") }}</VBtn>
+        <VBtn variant="text" @click="cancel">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
+        <VBtn color="primary" @click="submit">{{ t("TXT_CODE_COMMON_CONFIRM") }}</VBtn>
       </VCardActions>
     </VCard>
   </VDialog>

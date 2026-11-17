@@ -181,7 +181,7 @@ const openExternal = (mod: any) => {
     };
     const url = baseUrlMap[source];
     if (!url) {
-        notifyDesktop(t("TXT_CODE_8d2a42a2"), "error");
+        notifyDesktop(t("TXT_CODE_COMMON_THIS_MODULE_OR_PLUGIN_DOES_NOT_CURRENTLY_SUPPORT_EXPANDING_DETAILS"), "error");
     } else {
         window.open(url, "_blank");
     }
@@ -380,8 +380,8 @@ onMounted(async () => {
                     <VTextField v-model="headerSearchQuery" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')"
                         variant="solo" density="compact" hide-details clearable prepend-inner-icon="mdi-magnify" width="200" />
                 </div>
-                <VBtn class="dmm-btn dmm-btn--sm" variant="text" @click="onUploadClick" :title="t('TXT_CODE_ae09d79d')">
-                    <VIcon icon="mdi-upload-outline"  /> {{ t("TXT_CODE_ae09d79d") }}
+                <VBtn class="dmm-btn dmm-btn--sm" variant="text" @click="onUploadClick" :title="t('TXT_CODE_COMMON_UPLOAD')">
+                    <VIcon icon="mdi-upload-outline"  /> {{ t("TXT_CODE_COMMON_UPLOAD") }}
                 </VBtn>
                 <VBtn class="dmm-btn dmm-btn--sm dmm-btn--primary" variant="text" :disabled="loading" @click="() => loadMods()"
                     :title="t('TXT_CODE_REFRESH')">
@@ -416,7 +416,7 @@ onMounted(async () => {
                         <VBadge v-if="!loading && activeKey === TAB_KEY_PLUGINS" :content="filteredPlugins.length" inline color="grey" />
                         <VIcon icon="mdi-loading" v-if="loading || loadingExtra" size="small" />
                     </VTab>
-                    <VTab :value="TAB_KEY_DOWNLOAD">{{ t('TXT_CODE_25bf0004') }}</VTab>
+                    <VTab :value="TAB_KEY_DOWNLOAD">{{ t('TXT_CODE_COMMON_DOWNLOAD_MODULES_PLUGINS') }}</VTab>
                 </VTabs>
                 <VWindow v-model="activeKey" class="dmm-window" :touch="false">
                     <VWindowItem v-if="hasModsFolder" :value="TAB_KEY_MODS">
@@ -440,16 +440,16 @@ onMounted(async () => {
                             <div class="dmm-search-form">
                                 <div class="dmm-search-grid">
                                     <VTextField v-model="searchFilters.query" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" variant="solo" density="compact" hide-details @keyup.enter="onSearch" />
-                                    <VSelect v-model="searchFilters.source" :items="[{title:t('TXT_CODE_9693b0e1'),value:'all'},{title:'Modrinth',value:'modrinth'},{title:'CurseForge',value:'curseforge'},{title:'SpigotMC',value:'spigotmc'}]" variant="solo" density="compact" hide-details>
+                                    <VSelect v-model="searchFilters.source" :items="[{title:t('TXT_CODE_COMMON_ALL_PLATFORMS'),value:'all'},{title:'Modrinth',value:'modrinth'},{title:'CurseForge',value:'curseforge'},{title:'SpigotMC',value:'spigotmc'}]" variant="solo" density="compact" hide-details>
                                       <template #no-data><Empty :icon="false" compact /></template>
                                     </VSelect>
-                                    <VSelect v-model="searchFilters.version" :items="[{title:t('TXT_CODE_2af87548'),value:''}, ...mcVersions.map(v=>({title:v,value:v}))]" clearable :placeholder="t('TXT_CODE_743b4fe7')" variant="solo" density="compact" hide-details>
+                                    <VSelect v-model="searchFilters.version" :items="[{title:t('TXT_CODE_COMMON_ALL_VERSIONS'),value:''}, ...mcVersions.map(v=>({title:v,value:v}))]" clearable :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT_CONTENT')" variant="solo" density="compact" hide-details>
                                       <template #no-data><Empty :icon="false" compact /></template>
                                     </VSelect>
-                                    <VSelect v-model="searchFilters.type" :items="[{title:t('TXT_CODE_cc4db8f0'),value:'all'},{title:t('TXT_CODE_MOD'),value:'mod'},{title:t('TXT_CODE_PLUGIN'),value:'plugin'}]" variant="solo" density="compact" hide-details>
+                                    <VSelect v-model="searchFilters.type" :items="[{title:t('TXT_CODE_MOD_ALL_TYPES'),value:'all'},{title:t('TXT_CODE_MOD'),value:'mod'},{title:t('TXT_CODE_PLUGIN'),value:'plugin'}]" variant="solo" density="compact" hide-details>
                                       <template #no-data><Empty :icon="false" compact /></template>
                                     </VSelect>
-                                    <VSelect v-model="searchFilters.environment" :items="[{title:t('TXT_CODE_74e77b4c'),value:'all'},{title:t('TXT_CODE_SERVER'),value:'server'},{title:t('TXT_CODE_CLIENT'),value:'client'}]" variant="solo" density="compact" hide-details>
+                                    <VSelect v-model="searchFilters.environment" :items="[{title:t('TXT_CODE_COMMON_CLIENT_SERVER'),value:'all'},{title:t('TXT_CODE_SERVER'),value:'server'},{title:t('TXT_CODE_CLIENT'),value:'client'}]" variant="solo" density="compact" hide-details>
                                       <template #no-data><Empty :icon="false" compact /></template>
                                     </VSelect>
                                     <VSelect v-model="searchFilters.loader" :items="loaderOptions.flatMap((group) => group.options)" item-title="label" item-value="value" clearable :placeholder="t('TXT_CODE_SELECT_LOADER')" variant="solo" density="compact" hide-details>
@@ -461,7 +461,7 @@ onMounted(async () => {
                                         <VIcon icon="mdi-magnify" />
                                         {{ t("TXT_CODE_SEARCH") }}
                                     </VBtn>
-                                    <VBtn size="small" variant="text" @click="resetSearch">{{ t("TXT_CODE_880fedf7") }}</VBtn>
+                                    <VBtn size="small" variant="text" @click="resetSearch">{{ t("TXT_CODE_COMMON_RESET_FILTER_CONDITIONS") }}</VBtn>
                                 </div>
                             </div>
                             <SearchModTable :loading="searchLoading" :data-source="searchResults" :is-desktop="true"

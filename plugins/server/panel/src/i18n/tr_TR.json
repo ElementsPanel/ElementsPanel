@@ -1,12 +1,12 @@
 {
-  "TXT_CODE_233624ad": "Tam sayı bağlantı noktası girin. Varsayılan: 23333.",
-  "TXT_CODE_2b85af6d": "Ters vekil kullanırken istemcinin gerçek IP adresini okumak için etkinleştirin.",
-  "TXT_CODE_328191e": "Belirli bir ağ arayüzüne bağlamak için IP adresini girin.",
-  "TXT_CODE_405cd346": "Cross-Origin Request API Interface",
-  "TXT_CODE_514e064a": "Panel Bağlayıcı IP",
-  "TXT_CODE_6655c905": "Tüm kaynaklardan gelen isteklere izin verir (Access-Control-Allow-Origin: *). Güvenliği azaltabilir.",
-  "TXT_CODE_66aeac82": "Ters proxy istek başlığı",
-  "TXT_CODE_7f0017d2": "Panel Bağlantı Noktası",
+  "TXT_CODE_COMMON_ENTER_AN_INTEGER_PORT_NUMBER_DEFAULT_23333": "Tam sayı bağlantı noktası girin. Varsayılan: 23333.",
+  "TXT_CODE_COMMON_ENABLE_WHEN_USING_A_REVERSE_PROXY_TO_READ_THE_CLIENTS_REAL_IP": "Ters vekil kullanırken istemcinin gerçek IP adresini okumak için etkinleştirin.",
+  "TXT_CODE_COMMON_ENTER_ITS_IP_ADDRESS_TO_BIND_TO_A_SPECIFIC_NETWORK_INTERFACE": "Belirli bir ağ arayüzüne bağlamak için IP adresini girin.",
+  "TXT_CODE_COMMON_CROSS_ORIGIN_REQUEST_API_INTERFACE": "Cross-Origin Request API Interface",
+  "TXT_CODE_COMMON_PANEL_BINDING_IP": "Panel Bağlayıcı IP",
+  "TXT_CODE_SERVER_CROSS_ORIGIN_SECURITY_HINT": "Tüm kaynaklardan gelen isteklere izin verir (Access-Control-Allow-Origin: *). Güvenliği azaltabilir.",
+  "TXT_CODE_COMMON_REVERSE_PROXY_REQUEST_HEADER": "Ters proxy istek başlığı",
+  "TXT_CODE_COMMON_PANEL_PORT": "Panel Bağlantı Noktası",
   "TXT_CODE_SERVER_PREFIX": "Yol Ön Eki",
   "TXT_CODE_SERVER_PREFIX_TIP": "Paneli bir alt yolda sunar, örneğin /panel. Kök dizinden sunmak için boş bırakın.",
   "TXT_CODE_SERVER_RESTART_TIP": "Bu ayarlar web sunucusu başlatılırken uygulanır. Bir değişikliğin etkili olması için paneli yeniden başlatın.",
@@ -16,6 +16,6 @@
   "TXT_CODE_SERVER_SSL_PEM": "Sertifika dosyası (.pem)",
   "TXT_CODE_SERVER_SSL_PEM_TIP": "Sertifika dosyasının yolu; mutlak ya da panel dizinine göre göreli olabilir.",
   "TXT_CODE_SERVER_SSL_TIP": "Paneli aşağıdaki sertifikayı kullanarak HTTPS üzerinden sunar. Her iki dosya da gereklidir.",
-  "TXT_CODE_f0789d81": "Ters Proxy Modu",
-  "TXT_CODE_fd8bc51f": "İstemcinin gerçek IP adresini içeren istek başlığının adı."
+  "TXT_CODE_COMMON_REVERSE_PROXY_MODE": "Ters Proxy Modu",
+  "TXT_CODE_COMMON_NAME_OF_THE_REQUEST_HEADER_CONTAINING_THE_CLIENTS_REAL_IP": "İstemcinin gerçek IP adresini içeren istek başlığının adı."
 }

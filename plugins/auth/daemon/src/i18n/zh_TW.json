@@ -1,5 +1,5 @@
 {
-  "TXT_CODE_auth_router.access": "會話 {{id}}({{address}}) 驗證身分成功",
-  "TXT_CODE_auth_router.disconnect": "會話 {{id}}({{address}}) 因長時間未驗證身分而中斷連線",
-  "TXT_CODE_auth_router.notAccess": "會話 {{id}}({{address}}) 試圖無權限存取 {{event}} 現已封鎖."
+  "TXT_CODE_AUTH_ROUTER_ACCESS": "會話 {{id}}({{address}}) 驗證身分成功",
+  "TXT_CODE_AUTH_ROUTER_DISCONNECT": "會話 {{id}}({{address}}) 因長時間未驗證身分而中斷連線",
+  "TXT_CODE_AUTH_ROUTER_NOT_ACCESS": "會話 {{id}}({{address}}) 試圖無權限存取 {{event}} 現已封鎖."
 }

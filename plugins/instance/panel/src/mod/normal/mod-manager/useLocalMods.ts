@@ -155,7 +155,7 @@ export function useLocalMods(
         await execute({
           data: toggleData
         });
-        message.success(t("TXT_CODE_7f0c746d"));
+        message.success(t("TXT_CODE_COMMON_OPERATION_SUCCESSFUL"));
         if (record.enabled) {
           record.file = record.file + ".disabled";
           record.enabled = false;
@@ -184,7 +184,7 @@ export function useLocalMods(
         await execute({
           data: deleteData
         });
-        message.success(t("TXT_CODE_7f0c746d"));
+        message.success(t("TXT_CODE_COMMON_OPERATION_SUCCESSFUL"));
         mods.value = mods.value.filter((m) => m.file !== record.file);
       } catch (err: any) {
         message.error(err.message);

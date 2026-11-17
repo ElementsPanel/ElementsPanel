@@ -58,7 +58,7 @@ class InstanceSubsystem extends EventEmitter {
           .execPreset("start")
           .then(() => {
             logger.info(
-              $t("TXT_CODE_system_instance.autoStart", {
+              $t("TXT_CODE_SYSTEM_INSTANCE_AUTO_START", {
                 name: instance.config.nickname,
                 uuid: instance.instanceUuid
               })
@@ -66,7 +66,7 @@ class InstanceSubsystem extends EventEmitter {
           })
           .catch((reason) => {
             logger.error(
-              $t("TXT_CODE_system_instance.autoStartErr", {
+              $t("TXT_CODE_SYSTEM_INSTANCE_AUTO_START_ERR", {
                 name: instance.config.nickname,
                 uuid: instance.instanceUuid,
                 reason: reason
@@ -109,9 +109,9 @@ class InstanceSubsystem extends EventEmitter {
         this.addInstance(instance);
       } catch (error: any) {
         logger.error(
-          $t("TXT_CODE_system_instance.readInstanceFailed", { uuid: uuid, error: error.message })
+          $t("TXT_CODE_SYSTEM_INSTANCE_READ_INSTANCE_FAILED", { uuid: uuid, error: error.message })
         );
-        logger.error($t("TXT_CODE_system_instance.checkConf", { uuid: uuid }));
+        logger.error($t("TXT_CODE_SYSTEM_INSTANCE_CHECK_CONF", { uuid: uuid }));
       }
     });
 
@@ -165,7 +165,7 @@ class InstanceSubsystem extends EventEmitter {
       } catch (error: any) {
         const reason = error.message || error;
         if (typeof reason == "string" && reason.includes("connect ENOENT")) return;
-        logger.error(`${$t("TXT_CODE_8d4c8f7e")}: ${reason}`);
+        logger.error(`${$t("TXT_CODE_INSTANCE_TAKEOVER_FAILED")}: ${reason}`);
       }
     })();
     void this.takeover
@@ -194,7 +194,7 @@ class InstanceSubsystem extends EventEmitter {
   }
 
   addInstance(instance: Instance) {
-    if (instance.instanceUuid == null) throw new Error($t("TXT_CODE_system_instance.uuidEmpty"));
+    if (instance.instanceUuid == null) throw new Error($t("TXT_CODE_SYSTEM_INSTANCE_UUID_EMPTY"));
     if (this.instances.has(instance.instanceUuid)) {
       throw new Error(`The application instance ${instance.instanceUuid} already exists.`);
     }
@@ -302,10 +302,10 @@ class InstanceSubsystem extends EventEmitter {
     if (instance) {
       if (instanceUuid === this.GLOBAL_INSTANCE_UUID)
         throw new Error("Cannot delete the global terminal instance");
-      if (instance.status() !== Instance.STATUS_STOP) throw new Error($t("TXT_CODE_fb547313"));
+      if (instance.status() !== Instance.STATUS_STOP) throw new Error($t("TXT_CODE_COMMON_PLEASE_MAKE_SURE_THE_INSTANCE_IS_STOPPED_BEFORE_DELETING_IT"));
       const directory = path.resolve(instance.absoluteCwdPath());
       if (deleteFile && directory === path.parse(directory).root) {
-        throw new Error($t("TXT_CODE_Instance_router.accessFileErr"));
+        throw new Error($t("TXT_CODE_INSTANCE_FILE_ACCESS_DENIED"));
       }
       instance.status(Instance.STATUS_BUSY);
       try {
@@ -321,7 +321,7 @@ class InstanceSubsystem extends EventEmitter {
         if (this.instances.has(instanceUuid)) instance.status(Instance.STATUS_STOP);
       }
     }
-    throw new Error($t("TXT_CODE_3bfb9e04"));
+    throw new Error($t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
   }
 
   forward(targetInstanceUuid: string, socket: Socket) {
@@ -333,7 +333,7 @@ class InstanceSubsystem extends EventEmitter {
   stopForward(targetInstanceUuid: string, socket: Socket) {
     try {
       const instance = this.getInstance(targetInstanceUuid);
-      if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+      if (!instance) throw new Error($t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
       instance.watchers.delete(socket.id);
       this.instanceStream.cannelForward(socket, targetInstanceUuid);
     } catch (err) {}
@@ -400,7 +400,7 @@ class InstanceSubsystem extends EventEmitter {
             count++;
             if (checkCount > 10) {
               logger.info(
-                $t("TXT_CODE_eadac3c2", {
+                $t("TXT_CODE_COMMON_INSTANCE_SHUTDOWN_TIMED_OUT_FORCING_SHUTDOWN", {
                   instance: instance.config.nickname
                 })
               );
@@ -409,11 +409,11 @@ class InstanceSubsystem extends EventEmitter {
           }
         }
         if (count === 0) {
-          logger.info($t("TXT_CODE_187bb567"));
+          logger.info($t("TXT_CODE_COMMON_ALL_INSTANCES_HAVE_BEEN_SHUT_DOWN_EXITING_PROGRAM"));
           clearInterval(checkTask);
           resolve();
         } else {
-          logger.info($t("TXT_CODE_6f23ce93", { count }));
+          logger.info($t("TXT_CODE_COMMON_INSTANCE_REMAINING_TO_BE_SHUT_DOWN_WAITING", { count }));
         }
       }, 1000);
     });
@@ -449,7 +449,7 @@ class InstanceSubsystem extends EventEmitter {
             count++;
             if (checkCount > waitSeconds) {
               logger.info(
-                $t("TXT_CODE_eadac3c2", {
+                $t("TXT_CODE_COMMON_INSTANCE_SHUTDOWN_TIMED_OUT_FORCING_SHUTDOWN", {
                   instance: instance.config.nickname
                 })
               );
@@ -459,11 +459,11 @@ class InstanceSubsystem extends EventEmitter {
           }
         }
         if (count === 0) {
-          logger.info($t("TXT_CODE_187bb567"));
+          logger.info($t("TXT_CODE_COMMON_ALL_INSTANCES_HAVE_BEEN_SHUT_DOWN_EXITING_PROGRAM"));
           clearInterval(checkTask);
           resolve();
         } else {
-          logger.info($t("TXT_CODE_6f23ce93", { count }));
+          logger.info($t("TXT_CODE_COMMON_INSTANCE_REMAINING_TO_BE_SHUT_DOWN_WAITING", { count }));
         }
       }, 1000);
     });

@@ -47,7 +47,7 @@ export default class DockerPullCommand extends InstanceCommand {
 
     while (true) {
       count++;
-      instance.println("CONTAINER", $t("TXT_CODE_977cb449"));
+      instance.println("CONTAINER", $t("TXT_CODE_COMMON_WAITING_FOR_DOWNLOAD"));
 
       if (await checkImage(name)) {
         logger.info(`Image ${name} successfully pulled and verified`);
@@ -55,7 +55,7 @@ export default class DockerPullCommand extends InstanceCommand {
       }
 
       if (count >= maxAttempts) {
-        const errorMsg = $t("TXT_CODE_4cc91afe");
+        const errorMsg = $t("TXT_CODE_DOCKER_IMAGE_DOWNLOAD_TIMEOUT");
         logger.error(
           `Timeout waiting for image ${name} to be available after ${maxAttempts} attempts`
         );
@@ -64,7 +64,7 @@ export default class DockerPullCommand extends InstanceCommand {
       }
 
       if (this.stopFlag) {
-        const errorMsg = $t("TXT_CODE_361a79c6");
+        const errorMsg = $t("TXT_CODE_COMMON_IMAGE_DOWNLOAD_TERMINATED");
         logger.warn(`Image pull for ${name} was stopped by user`);
         instance.println("ERROR", errorMsg);
         throw new Error(errorMsg);
@@ -77,7 +77,7 @@ export default class DockerPullCommand extends InstanceCommand {
   async exec(instance: Instance) {
     const imageName = this.imageName || instance.config.docker.image;
     if (!imageName) {
-      const errorMsg = $t("TXT_CODE_17be5f70");
+      const errorMsg = $t("TXT_CODE_COMMON_IMAGE_NAME_CANNOT_BE_EMPTY");
       logger.error(`Docker pull failed: ${errorMsg}`);
       throw new Error(errorMsg);
     }
@@ -86,13 +86,13 @@ export default class DockerPullCommand extends InstanceCommand {
 
     if (await checkImage(imageName)) {
       logger.info(`Image ${imageName} already exists locally, skipping pull`);
-      instance.println("CONTAINER", $t("TXT_CODE_docker_pull_image_exists", { imageName }));
+      instance.println("CONTAINER", $t("TXT_CODE_DOCKER_PULL_IMAGE_EXISTS", { imageName }));
       return;
     }
 
     try {
       const docker = new DefaultDocker();
-      instance.println("CONTAINER", $t("TXT_CODE_2fa46b8c") + imageName);
+      instance.println("CONTAINER", $t("TXT_CODE_COMMON_DOWNLOADING_IMAGE_FILE_IMAGE_NAME") + imageName);
       instance.asynchronousTask = this;
 
       logger.info(`Starting Docker pull for image: ${imageName}`);
@@ -137,10 +137,10 @@ export default class DockerPullCommand extends InstanceCommand {
                       errorMsg.match(/linux\/(\w+)/) || errorDetail?.match(/linux\/(\w+)/);
                     const platform = platformMatch
                       ? platformMatch[0]
-                      : $t("TXT_CODE_docker_pull_requested_platform");
+                      : $t("TXT_CODE_DOCKER_PULL_REQUESTED_PLATFORM");
 
                     streamError = new Error(
-                      $t("TXT_CODE_docker_pull_platform_mismatch", { platform, imageName })
+                      $t("TXT_CODE_DOCKER_PULL_PLATFORM_MISMATCH", { platform, imageName })
                     );
                   } else if (
                     errorMsg.includes("404") ||
@@ -148,25 +148,25 @@ export default class DockerPullCommand extends InstanceCommand {
                     errorMsg.includes("repository does not exist")
                   ) {
                     streamError = new Error(
-                      $t("TXT_CODE_docker_pull_image_not_found", { imageName })
+                      $t("TXT_CODE_DOCKER_PULL_IMAGE_NOT_FOUND", { imageName })
                     );
                   } else if (
                     errorMsg.includes("401") ||
                     errorMsg.includes("unauthorized") ||
                     errorMsg.includes("authentication required")
                   ) {
-                    streamError = new Error($t("TXT_CODE_docker_pull_auth_failed", { imageName }));
+                    streamError = new Error($t("TXT_CODE_DOCKER_PULL_AUTH_FAILED", { imageName }));
                   } else if (errorMsg.includes("403") || errorMsg.includes("forbidden")) {
                     streamError = new Error(
-                      $t("TXT_CODE_docker_pull_access_forbidden", { imageName })
+                      $t("TXT_CODE_DOCKER_PULL_ACCESS_FORBIDDEN", { imageName })
                     );
                   } else {
                     const errorText = errorDetail
-                      ? $t("TXT_CODE_docker_pull_generic_error_with_detail", {
+                      ? $t("TXT_CODE_DOCKER_PULL_GENERIC_ERROR_WITH_DETAIL", {
                           errorMsg,
                           errorDetail
                         })
-                      : $t("TXT_CODE_docker_pull_generic_error", { errorMsg });
+                      : $t("TXT_CODE_DOCKER_PULL_GENERIC_ERROR", { errorMsg });
                     streamError = new Error(errorText);
                   }
                 }
@@ -210,7 +210,7 @@ export default class DockerPullCommand extends InstanceCommand {
         logger.warn(`Instance ${instance.instanceUuid} start count changed during pull, aborting`);
         return;
       }
-      instance.println("CONTAINER", $t("TXT_CODE_c68b0bef"));
+      instance.println("CONTAINER", $t("TXT_CODE_COMMON_IMAGE_DOWNLOADED"));
       logger.info(`Successfully pulled Docker image: ${imageName}`);
     } catch (err: any) {
       if (cachedStartCount !== instance.startCount) {
@@ -228,7 +228,7 @@ export default class DockerPullCommand extends InstanceCommand {
         errMsg.includes("not found") ||
         errMsg.includes("repository does not exist")
       ) {
-        errorMessage = $t("TXT_CODE_docker_pull_image_not_found", { imageName });
+        errorMessage = $t("TXT_CODE_DOCKER_PULL_IMAGE_NOT_FOUND", { imageName });
         logger.error(`Docker pull failed - image not found: ${imageName}`);
         instance.println("ERROR", errorMessage);
       } else if (
@@ -236,11 +236,11 @@ export default class DockerPullCommand extends InstanceCommand {
         errMsg.includes("unauthorized") ||
         errMsg.includes("authentication required")
       ) {
-        errorMessage = $t("TXT_CODE_docker_pull_auth_failed", { imageName });
+        errorMessage = $t("TXT_CODE_DOCKER_PULL_AUTH_FAILED", { imageName });
         logger.error(`Docker pull failed - authentication error: ${imageName}`);
         instance.println("ERROR", errorMessage);
       } else if (errMsg.includes("403") || errMsg.includes("forbidden")) {
-        errorMessage = $t("TXT_CODE_docker_pull_access_forbidden", { imageName });
+        errorMessage = $t("TXT_CODE_DOCKER_PULL_ACCESS_FORBIDDEN", { imageName });
         logger.error(`Docker pull failed - access forbidden: ${imageName}`);
         instance.println("ERROR", errorMessage);
       } else if (
@@ -248,11 +248,11 @@ export default class DockerPullCommand extends InstanceCommand {
         errMsg.includes("ECONNREFUSED") ||
         errMsg.includes("ENOTFOUND")
       ) {
-        errorMessage = $t("TXT_CODE_docker_pull_network_error", { imageName });
+        errorMessage = $t("TXT_CODE_DOCKER_PULL_NETWORK_ERROR", { imageName });
         logger.error(`Docker pull failed - network error: ${imageName}`, err);
         instance.println("ERROR", errorMessage);
       } else if (errMsg.includes("no space left") || errMsg.includes("disk full")) {
-        errorMessage = $t("TXT_CODE_docker_pull_disk_space_error", { imageName });
+        errorMessage = $t("TXT_CODE_DOCKER_PULL_DISK_SPACE_ERROR", { imageName });
         logger.error(`Docker pull failed - disk space: ${imageName}`);
         instance.println("ERROR", errorMessage);
       } else if (
@@ -265,12 +265,12 @@ export default class DockerPullCommand extends InstanceCommand {
         const platformMatch = errMsg.match(/linux\/(\w+)/);
         const platform = platformMatch
           ? platformMatch[0]
-          : $t("TXT_CODE_docker_pull_requested_platform");
-        errorMessage = $t("TXT_CODE_docker_pull_platform_mismatch", { platform, imageName });
+          : $t("TXT_CODE_DOCKER_PULL_REQUESTED_PLATFORM");
+        errorMessage = $t("TXT_CODE_DOCKER_PULL_PLATFORM_MISMATCH", { platform, imageName });
         logger.error(`Docker pull failed - platform mismatch: ${imageName}`, errMsg);
         instance.println("ERROR", errorMessage);
       } else {
-        errorMessage = $t("TXT_CODE_docker_pull_generic_error_fallback", { errMsg });
+        errorMessage = $t("TXT_CODE_DOCKER_PULL_GENERIC_ERROR_FALLBACK", { errMsg });
         logger.error(`Docker pull failed for ${imageName}:`, err);
         instance.println("ERROR", errorMessage);
       }

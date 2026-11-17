@@ -32,11 +32,11 @@ const currentPage = ref(1);
 const pageSize = 20;
 
 const userHeaders = [
-    { title: t("TXT_CODE_eb9fcdad"), key: "userName" },
-    { title: t("TXT_CODE_511aea70"), key: "permission" },
-    { title: t("TXT_CODE_c5c56801"), key: "registerTime" },
-    { title: t("TXT_CODE_d7ee9ba"), key: "loginTime" },
-    { title: t("TXT_CODE_e21473bc"), key: "instances" },
+    { title: t("TXT_CODE_USER_USERNAME"), key: "userName" },
+    { title: t("TXT_CODE_FILE_PERMISSIONS"), key: "permission" },
+    { title: t("TXT_CODE_COMMON_REGISTRATION_TIME"), key: "registerTime" },
+    { title: t("TXT_CODE_COMMON_LAST_LOGIN"), key: "loginTime" },
+    { title: t("TXT_CODE_COMMON_INSTANCES"), key: "instances" },
     { title: "2FA", key: "twoFactor", sortable: false },
     { title: "SSO", key: "sso", sortable: false },
     { title: t("TXT_CODE_OPERATE"), key: "actions", sortable: false }
@@ -376,8 +376,8 @@ const saveAssignedInstances = async () => {
 };
 
 const permissionLabel = (perm: number): string => {
-    if (perm >= 10) return t("TXT_CODE_cd978243");
-    if (perm >= 1) return t("TXT_CODE_eb880db2");
+    if (perm >= 10) return t("TXT_CODE_COMMON_ADMIN");
+    if (perm >= 1) return t("TXT_CODE_COMMON_USER");
     return "--";
 };
 
@@ -418,7 +418,7 @@ const getInstanceStatusLabel = (status: number): string => {
             <template #item.instances="{ item }">{{ item.instances?.length ?? 0 }}</template>
             <template #item.twoFactor="{ item }"><VIcon :icon="item.open2FA ? 'mdi-check-circle-outline' : 'mdi-close-circle-outline'" :class="item.open2FA ? 'du-badge-icon--yes' : 'du-badge-icon--no'" /></template>
             <template #item.sso="{ item }"><VIcon :icon="item.ssoBound ? 'mdi-check-circle-outline' : 'mdi-close-circle-outline'" :class="item.ssoBound ? 'du-badge-icon--yes' : 'du-badge-icon--no'" /></template>
-            <template #item.actions="{ item }"><div class="du-action-btns"><VBtn v-if="canAssignInstances" icon variant="text" class="du-action-btn" :title="t('TXT_CODE_9393b484')" @click="openAssignDialog(item)"><VIcon icon="mdi-link-variant" /></VBtn><VBtn icon variant="text" class="du-action-btn" :title="t('TXT_CODE_79f9a172')" @click="openEditDialog(item)"><VIcon icon="mdi-pencil-outline" /></VBtn><VBtn icon variant="text" color="error" class="du-action-btn" :title="t('TXT_CODE_DESKTOP_USERS_DELETE')" @click="confirmDelete(item)"><VIcon icon="mdi-delete-outline" /></VBtn></div></template>
+            <template #item.actions="{ item }"><div class="du-action-btns"><VBtn v-if="canAssignInstances" icon variant="text" class="du-action-btn" :title="t('TXT_CODE_COMMON_ASSIGN')" @click="openAssignDialog(item)"><VIcon icon="mdi-link-variant" /></VBtn><VBtn icon variant="text" class="du-action-btn" :title="t('TXT_CODE_COMMON_EDIT_USER')" @click="openEditDialog(item)"><VIcon icon="mdi-pencil-outline" /></VBtn><VBtn icon variant="text" color="error" class="du-action-btn" :title="t('TXT_CODE_DESKTOP_USERS_DELETE')" @click="confirmDelete(item)"><VIcon icon="mdi-delete-outline" /></VBtn></div></template>
             <template #no-data>
               <Empty
                 icon="mdi-account-search-outline"
@@ -433,13 +433,13 @@ const getInstanceStatusLabel = (status: number): string => {
             </VBtn>
             <span class="du-page-info">{{ currentPage }} / {{ maxPage }}</span>
             <VBtn class="du-page-btn" variant="text" :disabled="currentPage >= maxPage" @click="nextPage">
-                {{ t("TXT_CODE_5e9022f8") }}
+                {{ t("TXT_CODE_COMMON_NEXT") }}
             </VBtn>
         </div>
 
         <DesktopDialog
           id="user-edit-dialog"
-          :title="dialogMode === 'add' ? t('TXT_CODE_DESKTOP_USERS_ADD') : t('TXT_CODE_79f9a172')"
+          :title="dialogMode === 'add' ? t('TXT_CODE_DESKTOP_USERS_ADD') : t('TXT_CODE_COMMON_EDIT_USER')"
           :icon="dialogMode === 'add' ? PlusOutlined : EditOutlined"
           :model-value="showDialog"
           :width="420"
@@ -449,15 +449,15 @@ const getInstanceStatusLabel = (status: number): string => {
         >
           <div class="du-form-group">
               <label class="du-form-label">
-                  <VIcon icon="mdi-account-outline"  /> {{ t("TXT_CODE_eb9fcdad") }}
+                  <VIcon icon="mdi-account-outline"  /> {{ t("TXT_CODE_USER_USERNAME") }}
               </label>
               <VTextField v-model="form.username" class="du-form-input" variant="solo" density="compact" hide-details autocomplete="new-password"
-                  :placeholder="t('TXT_CODE_eb9fcdad')"
+                  :placeholder="t('TXT_CODE_USER_USERNAME')"
                   :disabled="dialogMode === 'edit'" />
           </div>
           <div class="du-form-group">
               <label class="du-form-label">
-                  <VIcon icon="mdi-key-outline"  /> {{ t("TXT_CODE_551b0348") }}
+                  <VIcon icon="mdi-key-outline"  /> {{ t("TXT_CODE_COMMON_PASSWORD") }}
               </label>
               <VTextField v-model="form.password" type="password" class="du-form-input" variant="solo" density="compact" hide-details
                   autocomplete="new-password"
@@ -468,20 +468,20 @@ const getInstanceStatusLabel = (status: number): string => {
           </div>
           <div class="du-form-group">
               <label class="du-form-label">
-                  <VIcon icon="mdi-shield-check-outline"  /> {{ t("TXT_CODE_511aea70") }}
+                  <VIcon icon="mdi-shield-check-outline"  /> {{ t("TXT_CODE_FILE_PERMISSIONS") }}
               </label>
               <VRadioGroup v-model="form.permission" inline hide-details class="du-radio-group">
-                  <VRadio :value="10" :label="t('TXT_CODE_cd978243')" />
-                  <VRadio :value="1" :label="t('TXT_CODE_eb880db2')" />
+                  <VRadio :value="10" :label="t('TXT_CODE_COMMON_ADMIN')" />
+                  <VRadio :value="1" :label="t('TXT_CODE_COMMON_USER')" />
               </VRadioGroup>
           </div>
           <div v-if="formError" class="du-form-error">{{ formError }}</div>
           <template #footer>
             <VBtn class="du-btn du-btn--default" variant="text" @click="closeDialog">
-                {{ t("TXT_CODE_a0451c97") }}
+                {{ t("TXT_CODE_COMMON_CANCEL") }}
             </VBtn>
             <VBtn class="du-btn du-btn--primary" variant="text" :disabled="saving" @click="saveUser">
-                {{ t("TXT_CODE_abfe9512") }}
+                {{ t("TXT_CODE_COMMON_SAVE") }}
             </VBtn>
           </template>
         </DesktopDialog>
@@ -494,7 +494,7 @@ const getInstanceStatusLabel = (status: number): string => {
 
         <DesktopDialog
           id="user-assign-dialog"
-          :title="t('TXT_CODE_9393b484')"
+          :title="t('TXT_CODE_COMMON_ASSIGN')"
           :icon="LinkOutlined"
           :model-value="showAssignDialog"
           :width="780"
@@ -553,7 +553,7 @@ const getInstanceStatusLabel = (status: number): string => {
                   </div>
                   <div class="du-assign-panel__body">
                       <div v-if="instancesLoading" class="du-assign-loading">
-                          {{ t("TXT_CODE_b197be11") }}
+                          {{ t("TXT_CODE_COMMON_LOADING_DATA") }}
                       </div>
                       <Empty
                         v-else-if="!instances?.data?.length"
@@ -596,18 +596,18 @@ const getInstanceStatusLabel = (status: number): string => {
                       }}</span>
                       <VBtn class="du-page-btn" variant="text" :disabled="assignForm.currentPage >= instances.maxPage"
                           @click="assignForm.currentPage++; loadRemoteInstances()">
-                          {{ t("TXT_CODE_5e9022f8") }}
+                          {{ t("TXT_CODE_COMMON_NEXT") }}
                       </VBtn>
                   </div>
               </div>
           </div>
           <template #footer>
             <VBtn class="du-btn du-btn--default" variant="text" @click="closeAssignDialog">
-                {{ t("TXT_CODE_a0451c97") }}
+                {{ t("TXT_CODE_COMMON_CANCEL") }}
             </VBtn>
             <VBtn class="du-btn du-btn--primary" variant="text" :disabled="assignSaving"
                 @click="saveAssignedInstances">
-                {{ t("TXT_CODE_abfe9512") }}
+                {{ t("TXT_CODE_COMMON_SAVE") }}
             </VBtn>
           </template>
         </DesktopDialog>

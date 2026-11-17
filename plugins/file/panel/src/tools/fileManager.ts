@@ -5,10 +5,10 @@ export const filterFileName = (fileName: string, onlyExtname = false) => {
   return i === -1
     ? onlyExtname
       ? "UNKNOWN"
-      : t("TXT_CODE_d4cf1cb8")
+      : t("TXT_CODE_COMMON_FILE")
     : onlyExtname
     ? suffix
-    : `${suffix} ${t("TXT_CODE_d4cf1cb8")}`;
+    : `${suffix} ${t("TXT_CODE_COMMON_FILE")}`;
 };
 
 export const getFileExtName = (fileName: string) => {

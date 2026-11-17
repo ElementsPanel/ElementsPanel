@@ -45,7 +45,7 @@ const render = async () => {
         files: files
       }
     });
-    if (!realFiles.value) return reportErrorMsg(t("TXT_CODE_83e553fc"));
+    if (!realFiles.value) return reportErrorMsg(t("TXT_CODE_COMMON_FAILED_TO_RETRIEVE_CONFIGURATION_FILE_LIST"));
     realFiles.value.forEach((v) => {
       configFiles.forEach((z) => {
         if (z.path === v.file) {
@@ -83,13 +83,13 @@ onMounted(async () => {
 <template>
   <main class="server-config-page">
     <VContainer fluid class="server-config-page-container">
-      <PageToolbar :title="t('TXT_CODE_d07742fe')" icon="mdi-file-cog-outline">
+      <PageToolbar :title="t('TXT_CODE_COMMON_CONFIGURATION_FILES')" icon="mdi-file-cog-outline">
         <template #actions>
           <VBtn variant="tonal" @click="toConsole">
-            {{ t("TXT_CODE_95b9833f") }}
+            {{ t("TXT_CODE_COMMON_RETURN_TO_CONSOLE") }}
           </VBtn>
           <VBtn :loading="isLoading" variant="tonal" @click="render">
-            {{ t("TXT_CODE_b76d94e0") }}
+            {{ t("TXT_CODE_COMMON_REFRESH") }}
           </VBtn>
         </template>
       </PageToolbar>
@@ -104,7 +104,7 @@ onMounted(async () => {
                 <template #prepend><VIcon icon="mdi-file-document-outline" /></template>
                 <VListItemTitle>
                       <VChip v-if="item.conflict" color="warning" size="small" variant="tonal">
-                        {{ t("TXT_CODE_1af148fe") }}
+                        {{ t("TXT_CODE_COMMON_DUPLICATE_FILE_CLEAN_UP_DUPLICATES_FIRST") }}
                       </VChip>
                       <span class="ml-2">{{ item.fileName }}</span>
                 </VListItemTitle>
@@ -112,12 +112,12 @@ onMounted(async () => {
                       {{ item.info }}
                       <br />
                       <span v-if="item.conflict" class="text-error">
-                        {{ t("TXT_CODE_91b3fa98") }}
+                        {{ t("TXT_CODE_GAME_CONFIG_COMPATIBILITY_UNKNOWN_HINT") }}
                       </span>
                 </VListItemSubtitle>
                 <template #append>
                     <VBtn variant="tonal" @click="toEdit(item.redirect, item.path, item.type)">
-                      {{ t("TXT_CODE_ad207008") }}
+                      {{ t("TXT_CODE_COMMON_EDIT") }}
                     </VBtn>
                 </template>
               </VListItem>
@@ -125,8 +125,8 @@ onMounted(async () => {
             <Empty
               v-else
               icon="mdi-file-alert-outline"
-              :title="t('TXT_CODE_37a4c14a')"
-              :description="t('TXT_CODE_4c0fda9')"
+              :title="t('TXT_CODE_COMMON_NO_AVAILABLE_CONFIGURATION_FILE_FOUND')"
+              :description="t('TXT_CODE_GAME_CONFIG_GENERATION_HINT')"
             />
           </template>
         </CardPanel>

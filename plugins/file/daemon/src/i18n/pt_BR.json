@@ -1,15 +1,15 @@
 {
-  "TXT_CODE_file_router.instanceNotExist": "A instância {{instanceUuid}} não existe",
-  "TXT_CODE_file_router.unzipLimit": "Excedido o número máximo de tarefas de descompressão simultâneas. O máximo permitido é {{maxFileTask}}, e atualmente, {{fileLock}} tarefas estão em andamento. Por favor, seja paciente.",
-  "TXT_CODE_file_router_service.instanceNotExit": "A instância {{uuid}} não existe",
-  "TXT_CODE_system_file.execLimit": "Limite máximo de edição de arquivos excedido",
-  "TXT_CODE_system_file.illegalAccess": "Caminho de acesso ilegal",
-  "TXT_CODE_system_file.unzipLimit": "A descompactação de arquivos suporta apenas arquivos de até {{max}}GB. Para alterar esse limite, vá até o arquivo data/Config/global.json.",
-  "TXT_CODE_e3a77a77": "Ilimitado",
-  "TXT_CODE_fde31068": "Taxa de upload de arquivos do usuário",
-  "TXT_CODE_d8d19932": "Limite por solicitação HTTP, velocidade máxima de upload do arquivo",
-  "TXT_CODE_785a0fcf": "Taxa de download de arquivos do usuário",
-  "TXT_CODE_b9fc604c": "Limite por solicitação HTTP, velocidade máxima de download de arquivo",
-  "TXT_CODE_a15fca22": "Máximo de downloads por URL",
-  "TXT_CODE_ecaf78a2": "Defina 0 para ilimitado"
+  "TXT_CODE_FILE_ROUTER_INSTANCE_NOT_EXIST": "A instância {{instanceUuid}} não existe",
+  "TXT_CODE_FILE_ROUTER_UNZIP_LIMIT": "Excedido o número máximo de tarefas de descompressão simultâneas. O máximo permitido é {{maxFileTask}}, e atualmente, {{fileLock}} tarefas estão em andamento. Por favor, seja paciente.",
+  "TXT_CODE_FILE_SERVICE_INSTANCE_NOT_FOUND": "A instância {{uuid}} não existe",
+  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "Limite máximo de edição de arquivos excedido",
+  "TXT_CODE_SYSTEM_FILE_ILLEGAL_ACCESS": "Caminho de acesso ilegal",
+  "TXT_CODE_SYSTEM_FILE_UNZIP_LIMIT": "A descompactação de arquivos suporta apenas arquivos de até {{max}}GB. Para alterar esse limite, vá até o arquivo data/Config/global.json.",
+  "TXT_CODE_COMMON_UNLIMITED": "Ilimitado",
+  "TXT_CODE_COMMON_USER_FILE_UPLOAD_RATE": "Taxa de upload de arquivos do usuário",
+  "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_UPLOAD_SPEED": "Limite por solicitação HTTP, velocidade máxima de upload do arquivo",
+  "TXT_CODE_COMMON_USER_FILE_DOWNLOAD_RATE": "Taxa de download de arquivos do usuário",
+  "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED": "Limite por solicitação HTTP, velocidade máxima de download de arquivo",
+  "TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL": "Máximo de downloads por URL",
+  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "Defina 0 para ilimitado"
 }

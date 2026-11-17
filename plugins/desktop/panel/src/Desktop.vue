@@ -182,7 +182,7 @@ const availableDesktopApps = computed<DesktopApp[]>(() => {
     if (desktopUsersWindow.value) {
         apps.push({
             id: "users",
-            label: t("TXT_CODE_1deaa2dd"),
+            label: t("TXT_CODE_COMMON_USERS"),
             icon: TeamOutlined,
             color: "#722ed1",
             route: "/users",
@@ -808,7 +808,7 @@ const openUserInfoWindow = () => {
 
     windows.set(windowId, {
         id: windowId,
-        title: t("TXT_CODE_9bb2f08b"),
+        title: t("TXT_CODE_COMMON_USER_PROFILE"),
         icon: UserOutlined,
         visible: true,
         minimized: false,
@@ -985,7 +985,7 @@ const ctxMenuItems = computed<ContextMenuItem[]>(() => {
         }
 
         items.push({
-            label: t("TXT_CODE_a7e9d4e"),
+            label: t("TXT_CODE_COMMON_CLOSE"),
             icon: CloseOutlined,
             action: () => {
                 if (ctxMenu.targetWindowId) {
@@ -1080,8 +1080,8 @@ const onDesktopClick = () => {
 
 const exitDesktop = () => {
     Modal.confirm({
-        title: t("TXT_CODE_2c69ab15"),
-        content: t("TXT_CODE_9654b91c"),
+        title: t("TXT_CODE_COMMON_LOGOUT"),
+        content: t("TXT_CODE_COMMON_ARE_YOU_SURE_YOU_WANT_TO_LOG_OUT_THIS_USER"),
         async onOk() {
             if (authEnabled.value) await logoutUser().execute();
             window.location.reload();

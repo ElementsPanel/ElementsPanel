@@ -116,8 +116,8 @@ export function apply(ctx: PanelPluginContext) {
       {
         key: "pageTitle",
         type: "string",
-        title: $t("TXT_CODE_395f147d"),
-        description: $t("TXT_CODE_b305236a")
+        title: $t("TXT_CODE_COMMON_PAGE_TITLE"),
+        description: $t("TXT_CODE_COMMON_THIS_CHANGES_THE_PAGE_TITLE_OF_THE_BROWSER_TAB_LEAVE_BLANK_TO_RESET_TO_DEFAULT")
       },
       {
         key: "logoImageLight",
@@ -136,8 +136,8 @@ export function apply(ctx: PanelPluginContext) {
       {
         key: "backgroundImage",
         type: "string",
-        title: $t("TXT_CODE_8ae0dc90"),
-        description: `${$t("TXT_CODE_434786c9")} ${$t("TXT_CODE_cf95364f")}`,
+        title: $t("TXT_CODE_COMMON_UI_BACKGROUND_IMAGE"),
+        description: `${$t("TXT_CODE_CONSOLE_BACKGROUND_IMAGE_EFFECT_HINT")} ${$t("TXT_CODE_COMMON_THIS_FEATURE_MAY_BE_UNSTABLE_CANNOT_GUARANTEE_BEST_USER_EXPERIENCE")}`,
         fileUpload: true
       }
     ],
@@ -156,9 +156,9 @@ export function apply(ctx: PanelPluginContext) {
     const files = requestCtx.request.files?.file;
     const tmpFile = Array.isArray(files) ? files[0] : files;
     try {
-      if (!tmpFile) throw new Error($t("TXT_CODE_e4d6cc20"));
+      if (!tmpFile) throw new Error($t("TXT_CODE_COMMON_REQUEST_BODY_ERROR"));
       if (!tmpFile.filepath || !fs.existsSync(tmpFile.filepath)) {
-        throw new Error($t("TXT_CODE_1a499109"));
+        throw new Error($t("TXT_CODE_COMMON_FILE_DOES_NOT_EXIST"));
       }
       const newFileName = v4() + path.extname(tmpFile.originalFilename || "");
       if (!isSafeFileName(newFileName)) throw new Error("Access denied: Malformed file name");

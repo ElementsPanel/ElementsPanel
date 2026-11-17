@@ -14,8 +14,8 @@ export function setupProcessLifecycle(ctx: PanelPluginContext) {
     try {
       await ctx.stop();
       await plugins?.waitForDisposal();
-      logger.warn(translate?.("TXT_CODE_cea5dba1") ?? "Panel has been stopped.");
-      logger.warn(translate?.("TXT_CODE_b0aa2db9") ?? "Goodbye.");
+      logger.warn(translate?.("TXT_CODE_COMMON_PROGRAM_HAS_RECEIVED_THE_SHUTDOWN_SIGNAL_PREPARING_TO_STOP") ?? "Panel has been stopped.");
+      logger.warn(translate?.("TXT_CODE_INSTANCE_STOP_SUCCESS") ?? "Goodbye.");
       process.exit(0);
     } catch (error) {
       logger.error(error);

@@ -29,10 +29,10 @@ const emit = defineEmits<{
 }>();
 
 const headers = [
-    { title: t("TXT_CODE_151d2bb7"), key: "fullname", align: "center" as const },
-    { title: t("TXT_CODE_a2e79565"), key: "installTime", align: "center" as const },
-    { title: t("TXT_CODE_759fb403"), key: "status", align: "center" as const },
-    { title: t("TXT_CODE_fe731dfc"), key: "actions", align: "center" as const, sortable: false }
+    { title: t("TXT_CODE_COMMON_ENVIRONMENT_NAME"), key: "fullname", align: "center" as const },
+    { title: t("TXT_CODE_COMMON_INSTALLATION_TIME"), key: "installTime", align: "center" as const },
+    { title: t("TXT_CODE_COMMON_STATUS"), key: "status", align: "center" as const },
+    { title: t("TXT_CODE_COMMON_ACTIONS"), key: "actions", align: "center" as const, sortable: false }
 ] as const;
 
 const { javaList, loading: listLoading, error: listError, refresh } = useJavaList({
@@ -43,7 +43,7 @@ const { javaList, loading: listLoading, error: listError, refresh } = useJavaLis
 const refreshJavaList = async (out: boolean = false) => {
     try {
         await refresh(true);
-        if (out) notifyDesktop(t("TXT_CODE_fbde647e"), "success");
+        if (out) notifyDesktop(t("TXT_CODE_COMMON_REFRESHED"), "success");
     } catch (err: any) {
         notifyDesktop(err.message, "error");
     }
@@ -76,7 +76,7 @@ const handleAddJava = async () => {
         } catch (err: any) {
             notifyDesktop(err.message, "error");
         }
-        notifyDesktop(t("TXT_CODE_10f0f8d"), "success");
+        notifyDesktop(t("TXT_CODE_JAVA_RUNTIME_ADD_SUCCESS"), "success");
         await refreshJavaList();
     });
 };
@@ -84,7 +84,7 @@ const handleAddJava = async () => {
 const confirmAddJava = () => {
     const { data, resolve } = addJavaDialog.value;
     if (!data.name || !data.path) {
-        notifyDesktop(t("TXT_CODE_b5095a15"), "warning");
+        notifyDesktop(t("TXT_CODE_COMMON_URL_REQUIRED"), "warning");
         return;
     }
     addJavaDialog.value.show = false;
@@ -126,7 +126,7 @@ const startDownload = async (version: string) => {
             params: { daemonId: props.daemonId, instanceId: resolvedInstanceId.value },
             data: { name: "msl", version }
         });
-        notifyDesktop(t("TXT_CODE_5e7a4c02"), "success");
+        notifyDesktop(t("TXT_CODE_JAVA_DOWNLOAD_STARTED"), "success");
         await refreshJavaList();
     } catch (err: any) {
         notifyDesktop(err.message, "error");
@@ -137,7 +137,7 @@ const confirmDownloadJava = () => {
     const { resolve } = downloadJavaDialog.value;
     const version = downloadJavaDialog.value.version;
     if (!version) {
-        notifyDesktop(t("TXT_CODE_javaMsl.selectJava"), "warning");
+        notifyDesktop(t("TXT_CODE_JAVA_MSL_SELECT_JAVA"), "warning");
         return;
     }
     downloadJavaDialog.value.show = false;
@@ -180,7 +180,7 @@ const handleUsingJava = async (info: JavaInfo) => {
                 id: info.fullname
             }
         });
-        notifyDesktop(t("TXT_CODE_d3de39b4"), "success");
+        notifyDesktop(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"), "success");
     } catch (err: any) {
         notifyDesktop(err.message, "error");
     }
@@ -198,29 +198,29 @@ onUnmounted(() => {
     <div class="djava-config">
         <div class="djava-config__body">
             <p class="djava-config__hint">
-                {{ t("TXT_CODE_ebf01bcc") }}<br />
-                {{ t("TXT_CODE_e1c637bb").replace("<mcsm_java>", "{mcsm_java}") }}
+                {{ t("TXT_CODE_COMMON_SELECT_JAVA_FOR_THE_INSTANCE_DOCKER_INSTANCES_USE_THE_IMAGE_S_RUNTIME") }}<br />
+                {{ t("TXT_CODE_COMMON_AFTER_COMPLETING_THE_CONFIGURATION_THE_JAVA_COMMAND_WILL_BE_REPLACED_WITH").replace("<mcsm_java>", "{mcsm_java}") }}
             </p>
 
             <div class="djava-config__toolbar">
                 <VBtn variant="text" @click="handleAddJava()">
                     <VIcon icon="mdi-plus" />
-                    {{ t("TXT_CODE_8900e7ee") }}
+                    {{ t("TXT_CODE_COMMON_ADD_INSTALLED_JAVA") }}
                 </VBtn>
                 <VBtn variant="text" @click="handleDownloadJava()">
                     <VIcon :icon="DownloadOutlined" />
-                    {{ t("TXT_CODE_9c48100e") }}
+                    {{ t("TXT_CODE_COMMON_DOWNLOAD_OTHER_JAVA") }}
                 </VBtn>
                 <VBtn variant="text" @click="refreshJavaList(true)">
                     <VIcon icon="mdi-refresh" />
-                    {{ t("TXT_CODE_b76d94e0") }}
+                    {{ t("TXT_CODE_COMMON_REFRESH") }}
                 </VBtn>
             </div>
 
             <Empty
                 v-if="listError"
                 icon="mdi-alert-circle-outline"
-                :title="t('TXT_CODE_ef8f8e29')"
+                :title="t('TXT_CODE_COMMON_PAGE_FAILED_TO_LOAD_PLEASE_TRY_AGAIN_LATER')"
                 :description="listError"
                 :compact="!!javaList.length"
             >
@@ -230,32 +230,32 @@ onUnmounted(() => {
                         prepend-icon="mdi-refresh"
                         :loading="listLoading"
                         @click="refreshJavaList()"
-                    >{{ t("TXT_CODE_9277af78") }}</VBtn>
+                    >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
                 </template>
             </Empty>
             <VDataTable v-if="!listError || javaList.length" :loading="listLoading" class="djava-table mt-3" :headers="headers" :items="javaList || []" :items-per-page="15">
               <template #no-data><Empty icon="mdi-language-java" /></template>
                 <template #item.fullname="{ item }">{{ item.info.fullname || "-" }}</template>
-                <template #item.installTime="{ item }">{{ item.info.installTime ? t(parseTimestamp(item.info.installTime)) : "-" }}</template>
+                <template #item.installTime="{ item }">{{ item.info.installTime ? parseTimestamp(item.info.installTime) : "-" }}</template>
                 <template #item.status="{ item }">
                     <JavaRuntimeStatus :runtime="item" />
                 </template>
                 <template #item.actions="{ item }">
                     <div class="djava-config__actions">
                         <VBtn v-if="item.info.error && /^msl_[0-9]+$/.test(item.info.fullname)"
-                            variant="text" size="small" @click="startDownload(item.info.fullname.slice(4))">{{ t("TXT_CODE_9277af78") }}</VBtn>
+                            variant="text" size="small" @click="startDownload(item.info.fullname.slice(4))">{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
                         <VBtn v-if="item.info.fullname == ''" variant="text" size="small" disabled>
-                            {{ t("TXT_CODE_979520ef") }}
+                            {{ t("TXT_CODE_COMMON_IN_USE") }}
                         </VBtn>
                         <VBtn v-else variant="text" size="small" :disabled="item.info.downloading || !!item.info.error"
                             @click="handleUsingJava(item.info as JavaInfo)">
                             <VIcon icon="mdi-check-circle-outline" />
-                            {{ t("TXT_CODE_f0dcc8bf") }}
+                            {{ t("TXT_CODE_COMMON_USE") }}
                         </VBtn>
                         <VBtn color="error" variant="text" size="small" :disabled="item.info.downloading"
                             @click="handleDeleteJava(item.info as JavaInfo)">
                             <VIcon icon="mdi-delete-outline" />
-                            {{ t("TXT_CODE_ecbd7449") }}
+                            {{ t("TXT_CODE_COMMON_DELETE") }}
                         </VBtn>
                     </div>
                 </template>
@@ -264,13 +264,13 @@ onUnmounted(() => {
         <div class="djava-config__footer">
             <VBtn class="djava-btn djava-btn--primary" variant="text" @click="emit('close')">
                 <VIcon icon="mdi-close" />
-                {{ t("TXT_CODE_31e92ef3") }}
+                {{ t("TXT_CODE_JAVA_RUNTIME_SETUP_DONE") }}
             </VBtn>
         </div>
 
         <DesktopDialog
           id="java-manager-add-dialog"
-          :title="t('TXT_CODE_8900e7ee')"
+          :title="t('TXT_CODE_COMMON_ADD_INSTALLED_JAVA')"
           :icon="BuildOutlined"
           :model-value="addJavaDialog.show"
           :width="420"
@@ -278,24 +278,24 @@ onUnmounted(() => {
           :z-index="10002"
           @close="cancelAddJava"
         >
-          <VTextField v-model="addJavaDialog.data.name" :label="t('TXT_CODE_3f36206f')"
-              :placeholder="t('TXT_CODE_4ea93630')" variant="solo" density="compact" hide-details class="mb-4" />
-          <VTextField v-model="addJavaDialog.data.path" :label="t('TXT_CODE_43422ed3')"
-              :placeholder="t('TXT_CODE_4ea93630')" variant="solo" density="compact" hide-details />
+          <VTextField v-model="addJavaDialog.data.name" :label="t('TXT_CODE_COMMON_JAVA_NAME')"
+              :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')" variant="solo" density="compact" hide-details class="mb-4" />
+          <VTextField v-model="addJavaDialog.data.path" :label="t('TXT_CODE_COMMON_JAVA_PATH')"
+              :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')" variant="solo" density="compact" hide-details />
           <template #footer>
             <VBtn class="djava-btn djava-btn--default" variant="text" @click="cancelAddJava">
-                {{ t("TXT_CODE_a0451c97") }}
+                {{ t("TXT_CODE_COMMON_CANCEL") }}
             </VBtn>
             <VBtn class="djava-btn djava-btn--primary" variant="text" @click="confirmAddJava">
                 <VIcon icon="mdi-check" />
-                {{ t("TXT_CODE_d507abff") }}
+                {{ t("TXT_CODE_COMMON_CONFIRM") }}
             </VBtn>
           </template>
         </DesktopDialog>
 
         <DesktopDialog
           id="java-manager-download-dialog"
-          :title="t('TXT_CODE_84588601')"
+          :title="t('TXT_CODE_COMMON_DOWNLOAD_JAVA')"
           :icon="DownloadOutlined"
           :model-value="downloadJavaDialog.show"
           :width="700"
@@ -307,12 +307,12 @@ onUnmounted(() => {
               :installed-java-list="downloadJavaDialog.installedList" />
           <template #footer>
             <VBtn class="djava-btn djava-btn--default" variant="text" @click="cancelDownloadJava">
-                {{ t("TXT_CODE_a0451c97") }}
+                {{ t("TXT_CODE_COMMON_CANCEL") }}
             </VBtn>
             <VBtn class="djava-btn djava-btn--primary" variant="text"
                 :disabled="!downloadJavaDialog.version" @click="confirmDownloadJava">
                 <VIcon icon="mdi-check" />
-                {{ t("TXT_CODE_d507abff") }}
+                {{ t("TXT_CODE_COMMON_CONFIRM") }}
             </VBtn>
           </template>
         </DesktopDialog>

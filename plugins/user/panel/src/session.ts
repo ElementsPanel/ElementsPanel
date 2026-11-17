@@ -7,8 +7,8 @@ export async function restoreSession() {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     const expectedAuthErrors = [
-      t("TXT_CODE_permission.forbidden"),
-      t("TXT_CODE_permission.forbiddenTokenError")
+      t("TXT_CODE_PERMISSION_FORBIDDEN"),
+      t("TXT_CODE_PERMISSION_FORBIDDEN_TOKEN_ERROR")
     ];
     if (!expectedAuthErrors.includes(message)) {
       console.error("Init user info Error:", error);

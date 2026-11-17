@@ -72,13 +72,13 @@ export function createMinecraftRouter() {
           (selection.javaPath != null &&
             (typeof selection.javaPath !== "string" || /["\r\n\0]/.test(selection.javaPath)))
         ) {
-          throw new Error($t("TXT_CODE_minecraft.invalidSelection"));
+          throw new Error($t("TXT_CODE_MINECRAFT_INVALID_SELECTION"));
         }
         const daemonId = String(ctx.query.daemonId);
         const service = remote().services.getInstance(daemonId);
         const request = new (remote().Request)(service);
         if (!(await capability(request)).supported)
-          throw new Error($t("TXT_CODE_minecraft.nodeUnsupported"));
+          throw new Error($t("TXT_CODE_MINECRAFT_NODE_UNSUPPORTED"));
         const download = await mirrors.resolve(selection, config.type);
         const minecraft: MinecraftInstallOptions = {
           server: selection.server,
@@ -98,7 +98,7 @@ export function createMinecraftRouter() {
             minecraft
           }
         });
-        if (!result?.instanceUuid) throw new Error($t("TXT_CODE_minecraft.nodeUnsupported"));
+        if (!result?.instanceUuid) throw new Error($t("TXT_CODE_MINECRAFT_NODE_UNSUPPORTED"));
         operations().log("instance_create", {
           daemon_id: daemonId,
           instance_id: result.instanceUuid,

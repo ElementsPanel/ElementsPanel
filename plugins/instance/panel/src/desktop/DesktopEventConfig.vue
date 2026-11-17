@@ -40,7 +40,7 @@ const submit = async () => {
                 eventTask: options.value.config.eventTask
             }
         });
-        notifyDesktop(t("TXT_CODE_d3de39b4"), "success");
+        notifyDesktop(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"), "success");
     } catch (err: any) {
         notifyDesktopError(err);
     } finally {
@@ -60,40 +60,40 @@ watch(instanceInfo, (val) => {
         <div class="devent-config__body">
             <div v-if="options" class="devent-form">
                 <section class="devent-form__section">
-                    <h3>{{ t("TXT_CODE_a64da7c4") }}</h3>
+                    <h3>{{ t("TXT_CODE_COMMON_AUTO_RESTART") }}</h3>
                     <p class="devent-form__hint">
-                            {{ t("TXT_CODE_619faab6") }}
+                            {{ t("TXT_CODE_COMMON_AUTOMATICALLY_RESTARTS_THE_INSTANCE_AFTER_AN_UNEXPECTED_STOP_OR_CRASH") }}
                     </p>
                     <VSwitch v-model="options.config.eventTask.autoRestart" color="primary" hide-details density="compact" />
                 </section>
 
                 <template v-if="options.config.eventTask.autoRestart">
                     <section class="devent-form__section">
-                        <h3>{{ t("TXT_CODE_f4b52ed4") }}</h3>
+                        <h3>{{ t("TXT_CODE_COMMON_MAXIMUM_AUTO_RESTART_COUNT") }}</h3>
                         <p class="devent-form__hint">
-                            {{ t("TXT_CODE_9d2fca76") }}
+                            {{ t("TXT_CODE_COMMON_DO_NOT_AUTOMATICALLY_RESTART_IF_THE_AUTO_RESTART_COUNT_IS_REACHED_SET_TO_1_TO_DISABLE") }}
                         </p>
                         <VTextField v-model="options.config.eventTask.autoRestartMaxTimes" type="number" width="220" variant="solo" density="compact" hide-details />
                     </section>
                 </template>
 
                 <section class="devent-form__section">
-                    <h3>{{ t("TXT_CODE_273d24e0") }}</h3>
+                    <h3>{{ t("TXT_CODE_COMMON_AUTO_START") }}</h3>
                     <p class="devent-form__hint">
-                            {{ t("TXT_CODE_8d9f5a4e") }}
+                            {{ t("TXT_CODE_COMMON_AUTOMATICALLY_STARTS_THE_INSTANCE_WHEN_THE_NODE_STARTS") }}
                             <br />
-                            {{ t("TXT_CODE_64bf4386") }}
+                            {{ t("TXT_CODE_COMMON_THIS_COULD_BE_USED_FOR_INSTANCE_TO_START_AS_THE_REMOTE_DAEMON_BOOTS") }}
                     </p>
                     <VSwitch v-model="options.config.eventTask.autoStart" color="primary" hide-details density="compact" />
                 </section>
             </div>
             <div v-else class="devent-config__loading">
-                {{ t("TXT_CODE_b197be11") }}
+                {{ t("TXT_CODE_COMMON_LOADING_DATA") }}
             </div>
         </div>
         <div class="devent-config__footer">
             <VBtn class="devent-btn devent-btn--primary" variant="text" :disabled="isLoading" @click="submit">
-                {{ t("TXT_CODE_abfe9512") }}
+                {{ t("TXT_CODE_COMMON_SAVE") }}
             </VBtn>
         </div>
     </div>

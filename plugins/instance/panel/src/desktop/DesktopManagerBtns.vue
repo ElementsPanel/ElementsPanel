@@ -80,7 +80,7 @@ const btns = computed(() => {
   }));
   return arrayFilter([
     {
-      title: t("TXT_CODE_d07742fe"),
+      title: t("TXT_CODE_COMMON_CONFIGURATION_FILES"),
       icon: ControlOutlined,
       condition: () => {
         return (
@@ -94,7 +94,7 @@ const btns = computed(() => {
       }
     },
     {
-      title: t("TXT_CODE_656a85d8"),
+      title: t("TXT_CODE_COMMON_STEAM_RCON_PROTOCOL"),
       icon: BuildOutlined,
       click: () => {
         rconSettingsDialog.value?.openDialog();
@@ -103,7 +103,7 @@ const btns = computed(() => {
         instanceInfo.value?.config.type.includes(TYPE_STEAM_SERVER_UNIVERSAL) ?? false
     },
     {
-      title: t("TXT_CODE_b7d026f8"),
+      title: t("TXT_CODE_COMMON_SCHEDULED_TASKS"),
       icon: FieldTimeOutlined,
       condition: () => !isGlobalTerminal.value,
       click: () => {
@@ -111,14 +111,14 @@ const btns = computed(() => {
       }
     },
     {
-      title: t("TXT_CODE_d341127b"),
+      title: t("TXT_CODE_COMMON_EVENT_TASKS"),
       icon: DashboardOutlined,
       click: () => {
         emit("open-event-config");
       }
     },
     {
-      title: t("TXT_CODE_4f34fc28"),
+      title: t("TXT_CODE_DESKTOP_INSTANCE_SETTINGS_TITLE"),
       icon: AppstoreAddOutlined,
       condition: () => isAdmin.value,
       click: () => {
@@ -126,7 +126,7 @@ const btns = computed(() => {
       }
     },
     {
-      title: t("TXT_CODE_4f34fc28"),
+      title: t("TXT_CODE_DESKTOP_INSTANCE_SETTINGS_TITLE"),
       icon: AppstoreAddOutlined,
       condition: () =>
         !isAdmin.value &&
@@ -154,7 +154,7 @@ watch(instanceInfo, (cfg, oldCfg) => {
 
 <template>
   <div class="dim-mgr-btns">
-    <div class="dim-mgr-btns__title">{{ t("TXT_CODE_efd37c48") }}</div>
+    <div class="dim-mgr-btns__title">{{ t("TXT_CODE_COMMON_MANAGE_INSTANCE") }}</div>
     <div class="dim-mgr-btns__row">
       <div
         v-for="btn in btns"

@@ -48,7 +48,7 @@ onMounted(async () => {
 
 <template>
   <VDialog v-model="isOpen" class="app-dialog" max-width="960" persistent scrollable>
-    <VCard rounded="xl" :title="t('TXT_CODE_eee2a47f')">
+    <VCard rounded="xl" :title="t('TXT_CODE_COMMON_IMAGE_PREVIEW')">
       <VCardText>
         <div class="image-view">
           <VProgressCircular v-if="!imgLink" indeterminate />
@@ -58,8 +58,8 @@ onMounted(async () => {
       </VCardText>
       <VCardActions>
         <VSpacer />
-        <VBtn variant="text" @click="onClose">{{ t("TXT_CODE_a0451c97") }}</VBtn>
-        <VBtn color="primary" :loading="downloadBtnLoading" @click="onDownload">{{ t("TXT_CODE_65b21404") }}</VBtn>
+        <VBtn variant="text" @click="onClose">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
+        <VBtn color="primary" :loading="downloadBtnLoading" @click="onDownload">{{ t("TXT_CODE_COMMON_DOWNLOAD") }}</VBtn>
       </VCardActions>
     </VCard>
   </VDialog>

@@ -46,10 +46,10 @@ function getCompressErrorMsg() {
   // Resolve these lazily: the daemon's i18n foundation is a plugin, so module
   // evaluation can happen before that plugin has initialized i18next.
   return {
-    invalidName: $t("TXT_CODE_3aa9f36"),
-    exitErr: $t("TXT_CODE_2be83d36"),
-    startErr: $t("TXT_CODE_37d839a4"),
-    timeoutErr: $t("TXT_CODE_15c07350")
+    invalidName: $t("TXT_CODE_ARCHIVE_FILE_NAME_INVALID"),
+    exitErr: $t("TXT_CODE_ARCHIVE_PROCESSING_FAILED"),
+    startErr: $t("TXT_CODE_ARCHIVE_TOOL_START_FAILED"),
+    timeoutErr: $t("TXT_CODE_COMMON_COMPRESSION_DECOMPRESSION_TASK_TIMED_OUT_TERMINATED")
   };
 }
 
@@ -85,19 +85,19 @@ export async function decompress(
   if (!checkFileName(zipPath) || !checkFileName(dest))
     throw new Error(getCompressErrorMsg().invalidName);
   if (!isSupportedArchiveFile(zipPath)) {
-    throw new Error($t("TXT_CODE_69c42450", { fileExt: getFileExtension(zipPath) }));
+    throw new Error($t("TXT_CODE_COMMON_MISSING_7ZIP_DEPENDENCY_SUPPORT_UNABLE_TO_DECOMPRESS_FORMAT_FILES", { fileExt: getFileExtension(zipPath) }));
   }
 
   const tryUnzip = async () => {
     if (isMultiVolume(zipPath)) {
-      throw new Error($t("TXT_CODE_91d066aa"));
+      throw new Error($t("TXT_CODE_ARCHIVE_MULTIVOLUME_REQUIRES_SEVEN_ZIP"));
     }
     try {
       return await useUnzip(zipPath, dest, fileCode || "utf-8");
     } catch (error: any) {
-      logger.error($t("TXT_CODE_842929d0", { message: error.message }));
+      logger.error($t("TXT_CODE_COMMON_ZIP_DECOMPRESSION_FAILED", { message: error.message }));
       throw new Error(
-        $t("TXT_CODE_f0512848", {
+        $t("TXT_CODE_COMMON_UNZIP_ERROR", {
           message: error?.message
         })
       );
@@ -109,7 +109,7 @@ export async function decompress(
   }
 
   if (!(await check7zipStatus())) {
-    throw new Error($t("TXT_CODE_a0ede210"));
+    throw new Error($t("TXT_CODE_COMMON_7ZIP_PROGRAM_NOT_FOUND"));
   }
   return await use7zip(zipPath, dest);
 }
@@ -124,7 +124,7 @@ export async function listArchiveEntries(
 ): Promise<ArchiveEntryInfo[]> {
   if (!checkFileName(archivePath)) throw new Error(getCompressErrorMsg().invalidName);
   if (!isSupportedArchiveFile(archivePath)) {
-    throw new Error($t("TXT_CODE_69c42450", { fileExt: getFileExtension(archivePath) }));
+    throw new Error($t("TXT_CODE_COMMON_MISSING_7ZIP_DEPENDENCY_SUPPORT_UNABLE_TO_DECOMPRESS_FORMAT_FILES", { fileExt: getFileExtension(archivePath) }));
   }
 
   const lowerPath = archivePath.toLowerCase();
@@ -195,7 +195,7 @@ export async function listArchiveEntries(
   }
 
   throw new Error(
-    $t("TXT_CODE_69c42450", { fileExt: path.extname(archivePath).slice(1) || "unknown" })
+    $t("TXT_CODE_COMMON_MISSING_7ZIP_DEPENDENCY_SUPPORT_UNABLE_TO_DECOMPRESS_FORMAT_FILES", { fileExt: path.extname(archivePath).slice(1) || "unknown" })
   );
 }
 
@@ -251,13 +251,13 @@ export async function decompressWithProgress(
 
   if (lowerArchivePath.endsWith(".7z")) {
     if (!(await check7zipStatus())) {
-      throw new Error($t("TXT_CODE_a0ede210"));
+      throw new Error($t("TXT_CODE_COMMON_7ZIP_PROGRAM_NOT_FOUND"));
     }
     return await use7zip(archivePath, dest, onProgress);
   }
 
   if (!lowerArchivePath.endsWith(".zip")) {
-    throw new Error($t("TXT_CODE_69c42450", { fileExt: getFileExtension(archivePath) }));
+    throw new Error($t("TXT_CODE_COMMON_MISSING_7ZIP_DEPENDENCY_SUPPORT_UNABLE_TO_DECOMPRESS_FORMAT_FILES", { fileExt: getFileExtension(archivePath) }));
   }
 
   const zip = new StreamZip.async({ file: archivePath });
@@ -324,9 +324,9 @@ export async function decompressWithProgress(
 
     return true;
   } catch (error: any) {
-    logger.error($t("TXT_CODE_842929d0", { message: error.message }));
+    logger.error($t("TXT_CODE_COMMON_ZIP_DECOMPRESSION_FAILED", { message: error.message }));
     throw new Error(
-      $t("TXT_CODE_f0512848", {
+      $t("TXT_CODE_COMMON_UNZIP_ERROR", {
         message: error?.message
       })
     );
@@ -350,7 +350,7 @@ async function use7zip(
 
     await fs.ensureDir(absoluteDestDir);
     const command = `"${SEVEN_ZIP_PATH}" x "${absoluteSourceZip}" "-o${absoluteDestDir}" -aoa -bsp1`;
-    logger.info($t("TXT_CODE_35d2ee7a", { command }));
+    logger.info($t("TXT_CODE_COMMON_USING_7ZIP_TO_DECOMPRESS_TO_SPECIFIED_DIRECTORY", { command }));
 
     onProgress?.(0);
     const { stdout, stderr } = await new Promise<{ stdout: string; stderr: string }>(
@@ -372,7 +372,7 @@ async function use7zip(
           child.kill();
           if (!settled) {
             settled = true;
-            reject(new Error($t("TXT_CODE_1d1ec400")));
+            reject(new Error($t("TXT_CODE_COMMON_DECOMPRESSION_TIMED_OUT")));
           }
         }, ZIP_TIMEOUT_SECONDS * 1000);
         const consume = (chunk: Buffer, isStderr: boolean) => {
@@ -447,37 +447,37 @@ async function use7zip(
       if (output.includes("Missing volume")) {
         const volumeMatch = output.match(/Missing volume\s*:\s*([^\s\n]+)/);
         if (volumeMatch) {
-          cleanErrorMsg = $t("TXT_CODE_c0401ba7", { file: volumeMatch[1] });
+          cleanErrorMsg = $t("TXT_CODE_ARCHIVE_MISSING_VOLUME_FILE", { file: volumeMatch[1] });
         } else {
-          cleanErrorMsg = $t("TXT_CODE_908a4ace");
+          cleanErrorMsg = $t("TXT_CODE_ARCHIVE_MISSING_VOLUME");
         }
       } else if (output.includes("Data Error")) {
-        cleanErrorMsg = $t("TXT_CODE_b1ef1d4a");
+        cleanErrorMsg = $t("TXT_CODE_COMMON_ARCHIVE_DATA_CORRUPTED");
       } else if (output.includes("Open Errors")) {
-        cleanErrorMsg = $t("TXT_CODE_5778848e");
+        cleanErrorMsg = $t("TXT_CODE_COMMON_ARCHIVE_CANNOT_BE_OPENED");
       } else {
-        const firstError = errorLines[0]?.trim() || $t("TXT_CODE_11ecd5a9");
+        const firstError = errorLines[0]?.trim() || $t("TXT_CODE_COMMON_UNKNOWN_ERROR");
         cleanErrorMsg = firstError.length > 100 ? firstError.substring(0, 100) + "..." : firstError;
       }
 
-      logger.error($t("TXT_CODE_cacd8840", { message: cleanErrorMsg }));
-      throw new Error($t("TXT_CODE_ec7fc405", { message: cleanErrorMsg }));
+      logger.error($t("TXT_CODE_COMMON_7ZIP_DECOMPRESSION_ERROR", { message: cleanErrorMsg }));
+      throw new Error($t("TXT_CODE_ARCHIVE_DECOMPRESSION_ERROR_DETAIL", { message: cleanErrorMsg }));
     }
 
     onProgress?.(100);
 
     if (stderr && stderr.trim()) {
-      logger.warn($t("TXT_CODE_8a9c6364", { warning: stderr }));
+      logger.warn($t("TXT_CODE_COMMON_7ZIP_DECOMPRESSION_WARNING", { warning: stderr }));
     }
 
     if (output.includes("Everything is Ok")) {
-      logger.info($t("TXT_CODE_e96a91cd"));
+      logger.info($t("TXT_CODE_COMMON_7ZIP_DECOMPRESSION_COMPLETED_EVERYTHING_IS_OK"));
     } else {
       const resultLines = output
         .split("\n")
         .filter((line) => line.trim())
         .slice(-3);
-      logger.info($t("TXT_CODE_143db7d9", { result: resultLines.join("; ") }));
+      logger.info($t("TXT_CODE_COMMON_7ZIP_DECOMPRESSION_COMPLETED", { result: resultLines.join("; ") }));
     }
     return true;
   } catch (error: any) {
@@ -485,25 +485,25 @@ async function use7zip(
     if (error.message.includes("Missing volume")) {
       const volumeMatch = error.message.match(/Missing volume\s*:\s*([^\s\n]+)/);
       simpleErrorMsg = volumeMatch
-        ? $t("TXT_CODE_c0401ba7", { file: volumeMatch[1] })
-        : $t("TXT_CODE_908a4ace");
+        ? $t("TXT_CODE_ARCHIVE_MISSING_VOLUME_FILE", { file: volumeMatch[1] })
+        : $t("TXT_CODE_ARCHIVE_MISSING_VOLUME");
     } else if (error.message.includes("timeout")) {
-      simpleErrorMsg = $t("TXT_CODE_1d1ec400");
+      simpleErrorMsg = $t("TXT_CODE_COMMON_DECOMPRESSION_TIMED_OUT");
     } else if (error.message.includes("ENOENT")) {
-      simpleErrorMsg = $t("TXT_CODE_a0ede210");
+      simpleErrorMsg = $t("TXT_CODE_COMMON_7ZIP_PROGRAM_NOT_FOUND");
     } else if (error.message.includes("Command failed")) {
-      simpleErrorMsg = $t("TXT_CODE_4fb3fad1");
+      simpleErrorMsg = $t("TXT_CODE_COMMON_ERROR_OCCURRED_DURING_DECOMPRESSION");
     } else {
-      simpleErrorMsg = $t("TXT_CODE_f460677f");
+      simpleErrorMsg = $t("TXT_CODE_ARCHIVE_DECOMPRESSION_FAILED");
     }
 
     logger.error(
-      $t("TXT_CODE_1b688710", {
+      $t("TXT_CODE_COMMON_7ZIP_DECOMPRESSION_FAILED_DETAILS", {
         message: simpleErrorMsg,
         details: error.message.substring(0, 200)
       })
     );
-    throw new Error($t("TXT_CODE_ec7fc405", { message: simpleErrorMsg }));
+    throw new Error($t("TXT_CODE_ARCHIVE_DECOMPRESSION_ERROR_DETAIL", { message: simpleErrorMsg }));
   }
 }
 
@@ -534,7 +534,7 @@ async function useZip(
   code = "utf-8",
   cwd?: string
 ): Promise<boolean> {
-  if (!files || files.length == 0) throw new Error($t("TXT_CODE_2038ec2c"));
+  if (!files || files.length == 0) throw new Error($t("TXT_CODE_COMMON_PLEASE_SELECT_AT_LEAST_ONE_FILE"));
   const workingDir = cwd || path.dirname(distZip);
   const params = ["--mode=1", `--code=${code}`, `--zipPath=${path.resolve(distZip)}`];
   files.forEach((v) => {

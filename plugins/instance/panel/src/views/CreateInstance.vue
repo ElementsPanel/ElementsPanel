@@ -68,30 +68,30 @@ watchEffect(() => {
 const methodOptions = computed(() => [
   {
     value: QUICKSTART_METHOD.IMPORT,
-    title: isMinecraft.value ? t("TXT_CODE_minecraft.upload") : t("TXT_CODE_a3efb1cc"),
-    description: isMinecraft.value ? t("TXT_CODE_minecraft.uploadHint") : t("TXT_CODE_f09da050"),
+    title: isMinecraft.value ? t("TXT_CODE_MINECRAFT_UPLOAD") : t("TXT_CODE_COMMON_IMPORT_COMPRESSED_PACKAGE"),
+    description: isMinecraft.value ? t("TXT_CODE_MINECRAFT_UPLOAD_HINT") : t("TXT_CODE_INSTANCE_UPLOAD_ARCHIVE_SETUP_HINT"),
     icon: "mdi-folder-zip-outline"
   },
   ...(isMinecraft.value
     ? [
         {
           value: QUICKSTART_METHOD.DOWNLOAD,
-          title: t("TXT_CODE_minecraft.download"),
-          description: t("TXT_CODE_minecraft.downloadHint"),
+          title: t("TXT_CODE_MINECRAFT_DOWNLOAD"),
+          description: t("TXT_CODE_MINECRAFT_DOWNLOAD_HINT"),
           icon: "mdi-cloud-download-outline"
         }
       ]
     : []),
   {
     value: QUICKSTART_METHOD.DOCKER,
-    title: t("TXT_CODE_bae487e4"),
-    description: t("TXT_CODE_256e5825"),
+    title: t("TXT_CODE_COMMON_CREATE_WITH_DOCKER_IMAGE"),
+    description: t("TXT_CODE_COMMON_DOCKER_NEEDS_TO_BE_INSTALLED_IN_ADVANCE_THEN_USE_ANY_IMAGE_YOU_FOUND_ON_DOCKER_HUB"),
     icon: "mdi-docker"
   },
   {
     value: QUICKSTART_METHOD.EXIST,
-    title: t("TXT_CODE_e0fca76"),
-    description: t("TXT_CODE_b3844cf8"),
+    title: t("TXT_CODE_COMMON_CREATE_DIRECTLY"),
+    description: t("TXT_CODE_INSTANCE_EMPTY_SETUP_HINT"),
     icon: "mdi-folder-open-outline"
   }
 ]);
@@ -150,25 +150,25 @@ const handleCreated = (instanceUuid: string) => {
         <VCardText class="pa-0">
           <VStepper v-model="step" class="create-instance-stepper" flat>
             <VStepperHeader>
-              <VStepperItem :value="1" :title="t('TXT_CODE_2f291d8b')" icon="mdi-shape-outline" />
+              <VStepperItem :value="1" :title="t('TXT_CODE_COMMON_INSTANCE_TYPE')" icon="mdi-shape-outline" />
               <VDivider />
               <VStepperItem
                 :value="2"
-                :title="t('TXT_CODE_5a74975b')"
+                :title="t('TXT_CODE_COMMON_CREATE_INSTANCE')"
                 icon="mdi-format-list-bulleted"
                 :disabled="!instanceType"
               />
               <VDivider />
               <VStepperItem
                 :value="3"
-                :title="t('TXT_CODE_7e267ba')"
+                :title="t('TXT_CODE_COMMON_SELECT_NODE')"
                 icon="mdi-server-network-outline"
                 :disabled="!createMethod"
               />
               <VDivider />
               <VStepperItem
                 :value="4"
-                :title="t('TXT_CODE_645bc545')"
+                :title="t('TXT_CODE_COMMON_CREATE_A_NEW_INSTANCE')"
                 icon="mdi-tune-variant"
                 :disabled="!canContinue"
               />
@@ -178,14 +178,14 @@ const handleCreated = (instanceUuid: string) => {
               <VStepperWindowItem :value="1">
                 <div class="step-content step-content--form">
                   <div class="step-heading">
-                    <h2>{{ t("TXT_CODE_2f291d8b") }}</h2>
-                    <p>{{ t("TXT_CODE_be608c82") }}</p>
+                    <h2>{{ t("TXT_CODE_COMMON_INSTANCE_TYPE") }}</h2>
+                    <p>{{ t("TXT_CODE_COMMON_DIFFERENT_TYPES_MAY_HAVE_SLIGHTLY_DIFFERENCES_IN_SOME_FUNCTIONS") }}</p>
                   </div>
                   <VAutocomplete
                     v-model="instanceType"
                     :items="instanceTypeOptions"
-                    :label="t('TXT_CODE_2f291d8b')"
-                    :placeholder="t('TXT_CODE_3bb646e4')"
+                    :label="t('TXT_CODE_COMMON_INSTANCE_TYPE')"
+                    :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT')"
                     variant="solo"
                     hide-details
                     @update:model-value="changeInstanceType"
@@ -194,7 +194,7 @@ const handleCreated = (instanceUuid: string) => {
                   </VAutocomplete>
                   <div class="step-actions">
                     <VBtn color="primary" :disabled="!instanceType" @click="goNext"
-                      >{{ t("TXT_CODE_5e9022f8") }}<VIcon icon="mdi-arrow-right" end
+                      >{{ t("TXT_CODE_COMMON_NEXT") }}<VIcon icon="mdi-arrow-right" end
                     /></VBtn>
                   </div>
                 </div>
@@ -203,8 +203,8 @@ const handleCreated = (instanceUuid: string) => {
               <VStepperWindowItem :value="2">
                 <div class="step-content">
                   <div class="step-heading">
-                    <h2>{{ t("TXT_CODE_5a74975b") }}</h2>
-                    <p>{{ t("TXT_CODE_81ad9e80") }}</p>
+                    <h2>{{ t("TXT_CODE_COMMON_CREATE_INSTANCE") }}</h2>
+                    <p>{{ t("TXT_CODE_COMMON_A_MORE_FLEXIBLE_WAY_TO_CREATE_INSTANCES_WITHOUT_INSTALLING_THROUGH_THE_APP_MARKETPLACE") }}</p>
                   </div>
                   <VRow>
                     <VCol
@@ -230,7 +230,7 @@ const handleCreated = (instanceUuid: string) => {
                             class="method-card-action"
                             @click.stop="chooseMethod(option.value)"
                           >
-                            {{ t("TXT_CODE_5e9022f8") }}<VIcon icon="mdi-arrow-right" end />
+                            {{ t("TXT_CODE_COMMON_NEXT") }}<VIcon icon="mdi-arrow-right" end />
                           </VBtn>
                         </VCardText>
                       </VCard>
@@ -238,7 +238,7 @@ const handleCreated = (instanceUuid: string) => {
                   </VRow>
                   <div class="step-actions">
                     <VBtn variant="text" @click="goBack"
-                      ><VIcon icon="mdi-arrow-left" />{{ t("TXT_CODE_c14b2ea3") }}</VBtn
+                      ><VIcon icon="mdi-arrow-left" />{{ t("TXT_CODE_COMMON_GO_BACK") }}</VBtn
                     >
                   </div>
                 </div>
@@ -247,18 +247,18 @@ const handleCreated = (instanceUuid: string) => {
               <VStepperWindowItem :value="3">
                 <div class="step-content">
                   <div class="step-heading">
-                    <h2>{{ t("TXT_CODE_7e267ba") }}</h2>
+                    <h2>{{ t("TXT_CODE_COMMON_SELECT_NODE") }}</h2>
                   </div>
                   <VProgressLinear v-if="nodesLoading" indeterminate color="primary" rounded="xl" />
                   <Empty
                     v-else-if="availableNodes.length === 0"
                     icon="mdi-server-network-outline"
-                    :title="t('TXT_CODE_f4110b65')"
+                    :title="t('TXT_CODE_INSTANCE_NO_AVAILABLE_NODES_HINT')"
                     compact
                   >
                     <template #actions>
                       <VBtn color="primary" variant="text" @click="goToNodePage">{{
-                        t("TXT_CODE_4fe5dce5")
+                        t("TXT_CODE_COMMON_GO_TO_THE_NODE_PAGE")
                       }}</VBtn>
                     </template>
                   </Empty>
@@ -281,7 +281,7 @@ const handleCreated = (instanceUuid: string) => {
                               }}
                             </div>
                             <VChip color="success" size="small" variant="tonal">{{
-                              t("TXT_CODE_b078a763")
+                              t("TXT_CODE_COMMON_AVAILABLE")
                             }}</VChip>
                           </div>
                           <div class="node-card-details">
@@ -293,7 +293,7 @@ const handleCreated = (instanceUuid: string) => {
                             type="warning"
                             variant="tonal"
                             class="mt-3"
-                            >{{ t("TXT_CODE_minecraft.nodeUnsupported") }}</VAlert
+                            >{{ t("TXT_CODE_MINECRAFT_NODE_UNSUPPORTED") }}</VAlert
                           >
                         </VCardText>
                       </VCard>
@@ -301,10 +301,10 @@ const handleCreated = (instanceUuid: string) => {
                   </VRow>
                   <div class="step-actions">
                     <VBtn variant="text" @click="goBack"
-                      ><VIcon icon="mdi-arrow-left" />{{ t("TXT_CODE_c14b2ea3") }}</VBtn
+                      ><VIcon icon="mdi-arrow-left" />{{ t("TXT_CODE_COMMON_GO_BACK") }}</VBtn
                     >
                     <VBtn color="primary" :disabled="!canContinue" @click="goNext"
-                      >{{ t("TXT_CODE_5e9022f8") }}<VIcon icon="mdi-arrow-right" end
+                      >{{ t("TXT_CODE_COMMON_NEXT") }}<VIcon icon="mdi-arrow-right" end
                     /></VBtn>
                   </div>
                 </div>
@@ -313,7 +313,7 @@ const handleCreated = (instanceUuid: string) => {
               <VStepperWindowItem :value="4">
                 <div class="step-content step-content--form">
                   <div class="step-heading">
-                    <h2>{{ t("TXT_CODE_645bc545") }}</h2>
+                    <h2>{{ t("TXT_CODE_COMMON_CREATE_A_NEW_INSTANCE") }}</h2>
                     <p v-if="selectedNode">
                       {{ selectedNode.remarks || `${selectedNode.ip}:${selectedNode.port}` }}
                     </p>
@@ -330,7 +330,7 @@ const handleCreated = (instanceUuid: string) => {
                   >
                     <template #back-action>
                       <VBtn variant="text" :disabled="formBusy" @click="goBack"
-                        ><VIcon icon="mdi-arrow-left" />{{ t("TXT_CODE_c14b2ea3") }}</VBtn
+                        ><VIcon icon="mdi-arrow-left" />{{ t("TXT_CODE_COMMON_GO_BACK") }}</VBtn
                       >
                     </template>
                   </CreateInstanceForm>

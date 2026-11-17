@@ -110,7 +110,7 @@ export async function apply(ctx: PanelPluginContext) {
           {
             key: "language",
             type: "select",
-            title: settingsCtx.i18n.$t("TXT_CODE_a1a59b08"),
+            title: settingsCtx.i18n.$t("TXT_CODE_COMMON_PANEL_LANGUAGE"),
             options: SUPPORTED_LANGUAGES.map((item) => ({ ...item }))
           }
         ],

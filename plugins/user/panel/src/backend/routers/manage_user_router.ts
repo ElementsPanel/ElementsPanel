@@ -18,9 +18,9 @@ export default function createManageUserRouter() {
       const passWord = String(ctx.request.body.password);
       const userPermission = Number(ctx.request.body.permission);
       if (!userSystem.validatePassword(passWord))
-        throw new Error($t("TXT_CODE_router.user.invalidPassword"));
+        throw new Error($t("TXT_CODE_ROUTER_USER_INVALID_PASSWORD"));
       if (userSystem.existUserName(userName))
-        throw new Error($t("TXT_CODE_router.user.existsUserName"));
+        throw new Error($t("TXT_CODE_ROUTER_USER_EXISTS_USER_NAME"));
       operationLogger().log("user_create", {
         operator_ip: ctx.ip,
         operator_name: ctx.session?.["userName"],
@@ -48,7 +48,7 @@ export default function createManageUserRouter() {
       }
       ctx.body = true;
     } catch (error: any) {
-      ctx.throw(500, $t("TXT_CODE_router.user.deleteFailure") as string);
+      ctx.throw(500, $t("TXT_CODE_ROUTER_USER_DELETE_FAILURE") as string);
     }
   });
 

@@ -81,7 +81,7 @@ export function useDeferredTasks(
         });
       }
       removeDeferredTask(task.id);
-      message.success(`${t("TXT_CODE_7f0c746d")}: ${task.name}`);
+      message.success(`${t("TXT_CODE_COMMON_OPERATION_SUCCESSFUL")}: ${task.name}`);
       if (reload && reloadFn) await reloadFn();
     } catch (err: any) {
       message.error(`${task.name}: ${err.message}`);

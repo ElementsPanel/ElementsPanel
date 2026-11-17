@@ -40,7 +40,7 @@ export function useModSearch(
     {
       label: t("TXT_CODE_LOADER"),
       options: [
-        { label: t("TXT_CODE_c564f5bf"), value: "all" },
+        { label: t("TXT_CODE_COMMON_ALL_LOADERS"), value: "all" },
         { label: "Forge", value: "forge" },
         { label: "Fabric", value: "fabric" },
         { label: "Quilt", value: "quilt" },
@@ -238,7 +238,7 @@ export function useModSearch(
                     reject(new Error("Cancelled"));
                   }
                 },
-                { default: () => t("TXT_CODE_a0451c97") }
+                { default: () => t("TXT_CODE_COMMON_CANCEL") }
               ),
               createVNode(
                 VBtn,
@@ -332,7 +332,7 @@ export function useModSearch(
 
         const targetTab =
           currentProjectType === "plugin" ? t("TXT_CODE_PLUGIN_LIST") : t("TXT_CODE_MOD_LIST");
-        message.success(`${t("TXT_CODE_38fb23a8")} -> ${targetTab}`);
+        message.success(`${t("TXT_CODE_MOD_DOWNLOAD_STARTED")} -> ${targetTab}`);
         showVersionModal.value = false;
         await loadMods();
       } catch (err: any) {

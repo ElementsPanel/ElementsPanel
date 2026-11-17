@@ -34,21 +34,21 @@ const handleGenerateApiKey = async (enable: boolean) => {
         errorAlert: true
     });
     updateUserInfo();
-    return notifyDesktop(t("TXT_CODE_d3de39b4"), "success");
+    return notifyDesktop(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"), "success");
 };
 
 const handleChangePassword = async () => {
-    if (!formState.password1 || !formState.password2) return notifyDesktop(t("TXT_CODE_c846074d"), "error");
-    if (formState.password1 !== formState.password2) return notifyDesktopError(t("TXT_CODE_d51f5d6"));
+    if (!formState.password1 || !formState.password2) return notifyDesktop(t("TXT_CODE_COMMON_PLEASE_COMPLETE_YOUR_ACCOUNT_PROFILE"), "error");
+    if (formState.password1 !== formState.password2) return notifyDesktopError(t("TXT_CODE_COMMON_PASSWORD_LENGTH_DOES_NOT_MATCH"));
     if (formState.password1.length < 9 || formState.password1.length > 36)
-        return notifyDesktopError(t("TXT_CODE_cc5a3aea"));
+        return notifyDesktopError(t("TXT_CODE_COMMON_PASSWORD_LENGTH_CANNOT_BE_LESS_THAN_9_CHARACTERS"));
     try {
         await executeUpdatePassword({
             data: {
                 passWord: formState.password1
             }
         });
-        notifyDesktop(t("TXT_CODE_d3de39b4"), "success");
+        notifyDesktop(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"), "success");
         setTimeout(() => {
             window.location.reload();
         }, 600);
@@ -77,9 +77,9 @@ const confirm2FACode = async () => {
             }
         });
     } catch {
-        return notifyDesktop(t("TXT_CODE_3d68e43b"), "error");
+        return notifyDesktop(t("TXT_CODE_COMMON_TWO_FACTOR_AUTHENTICATION_CODE_IS_INCORRECT"), "error");
     }
-    notifyDesktop(t("TXT_CODE_d3de39b4"), "success");
+    notifyDesktop(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"), "success");
     await updateUserInfo();
     formState.TOTPCode = "";
     formState.qrcode = "";
@@ -92,7 +92,7 @@ const disable2FACode = async () => {
             TOTPCode: "000000"
         }
     });
-    notifyDesktop(t("TXT_CODE_d3de39b4"), "success");
+    notifyDesktop(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"), "success");
     await updateUserInfo();
     formState.qrcode = "";
 };
@@ -104,100 +104,100 @@ const disable2FACode = async () => {
             <h3 class="section-title">{{ t('TXT_CODE_UI_ACCOUNT') }}</h3>
             <div class="info-grid">
                 <div class="info-item">
-                    <span class="info-label">{{ t('TXT_CODE_eb9fcdad') }}</span>
+                    <span class="info-label">{{ t('TXT_CODE_USER_USERNAME') }}</span>
                     <span class="info-value">{{ state.userInfo?.userName }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">{{ t('TXT_CODE_63ccbf90') }}</span>
+                    <span class="info-label">{{ t('TXT_CODE_USER_PERMISSION_LEVEL') }}</span>
                     <span class="info-value">{{ PERMISSION_MAP[String(state.userInfo?.permission)] }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">{{ t('TXT_CODE_c5c56801') }}</span>
+                    <span class="info-label">{{ t('TXT_CODE_COMMON_REGISTRATION_TIME') }}</span>
                     <span class="info-value">{{ state.userInfo?.registerTime }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">{{ t('TXT_CODE_d7ee9ba') }}</span>
+                    <span class="info-label">{{ t('TXT_CODE_COMMON_LAST_LOGIN') }}</span>
                     <span class="info-value">{{ state.userInfo?.loginTime }}</span>
                 </div>
                 <div class="info-item full-width">
-                    <span class="info-label">{{ t('TXT_CODE_1d9d0746') }}</span>
+                    <span class="info-label">{{ t('TXT_CODE_COMMON_UUID') }}</span>
                     <span class="info-value">{{ state.userInfo?.uuid }}</span>
                 </div>
             </div>
         </div>
 
         <div class="info-section">
-            <h3 class="section-title">{{ t('TXT_CODE_551b0348') }}</h3>
+            <h3 class="section-title">{{ t('TXT_CODE_COMMON_PASSWORD') }}</h3>
             <div v-if="!formState.resetPassword">
                 <VBtn color="error" variant="text" @click="formState.resetPassword = true">
-                    {{ t("TXT_CODE_50d471b2") }}
+                    {{ t("TXT_CODE_COMMON_CHANGE") }}
                 </VBtn>
             </div>
             <div v-else class="password-form">
-                <VTextField v-model="formState.password1" type="password" variant="solo" hide-details :placeholder="t('TXT_CODE_4f6c39d3')" />
-                <VTextField v-model="formState.password2" type="password" variant="solo" hide-details :placeholder="t('TXT_CODE_37924654')" />
+                <VTextField v-model="formState.password1" type="password" variant="solo" hide-details :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_NEW_PASSWORD')" />
+                <VTextField v-model="formState.password2" type="password" variant="solo" hide-details :placeholder="t('TXT_CODE_COMMON_PLEASE_RE_ENTER_THE_NEW_PASSWORD')" />
                 <div class="form-actions">
-                    <VBtn variant="text" @click="formState.resetPassword = false">{{ t("TXT_CODE_3b1cc020") }}</VBtn>
+                    <VBtn variant="text" @click="formState.resetPassword = false">{{ t("TXT_CODE_COMMON_DISCARD") }}</VBtn>
                     <VBtn color="primary" variant="text" :loading="updatePasswordLoading" @click="handleChangePassword">
-                        {{ t("TXT_CODE_d507abff") }}
+                        {{ t("TXT_CODE_COMMON_CONFIRM") }}
                     </VBtn>
                 </div>
             </div>
         </div>
 
         <div class="info-section">
-            <h3 class="section-title">{{ t('TXT_CODE_61eae8a6') }}</h3>
+            <h3 class="section-title">{{ t('TXT_CODE_COMMON_TWO_FACTOR_AUTHENTICATION') }}</h3>
             <div v-if="!formState?.qrcode">
                 <VBtn class="mr-8" variant="text" @click="handleBind2FA">
-                    {{ state.userInfo?.open2FA ? t("TXT_CODE_85a33a84") : t("TXT_CODE_a492ae63") }}
+                    {{ state.userInfo?.open2FA ? t("TXT_CODE_COMMON_REBIND") : t("TXT_CODE_COMMON_START_BINDING") }}
                 </VBtn>
                 <VBtn v-if="state.userInfo?.open2FA" color="error" variant="text" @click="disable2FACode">
-                    {{ t("TXT_CODE_edd64e4d") }}
+                    {{ t("TXT_CODE_USER_ACCOUNT_DISABLE") }}
                 </VBtn>
             </div>
             <div v-if="formState?.qrcode" class="two-fa-setup">
                 <p class="two-fa-instructions">
-                    1. {{ t("TXT_CODE_cc561947") }}<br />
-                    2. {{ t("TXT_CODE_fffce4a8") }}<br />
-                    3. {{ t("TXT_CODE_af2a6972") }}<br />
+                    1. {{ t("TXT_CODE_COMMON_SCAN_THE_QR_CODE_USING_GOOGLE_AUTHENTICATION_OR_OTHER_UNIVERSAL_2_FA_TOOLS") }}<br />
+                    2. {{ t("TXT_CODE_COMMON_ENTER_THE_TOTP_VERIFICATION_CODE_IN_THE_BOX_BELOW") }}<br />
+                    3. {{ t("TXT_CODE_COMMON_CLICK_THE_I_HAVE_SCANNED_BUTTON") }}<br />
                 </p>
                 <div class="qrcode-container">
-                    <img :src="formState.qrcode" :alt="t('TXT_CODE_UI_2FA_QR_CODE')" />
+                    <img :src="formState.qrcode" :alt="t('TXT_CODE_UI_2_FA_QR_CODE')" />
                 </div>
                 <div class="two-fa-form">
-                    <VTextField v-model="formState.TOTPCode" variant="solo" hide-details :placeholder="t('TXT_CODE_7ac8b1d3')" />
+                    <VTextField v-model="formState.TOTPCode" variant="solo" hide-details :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_THE_TWO_FACTOR_AUTHENTICATION_CODE')" />
                     <VBtn color="primary" variant="text" :loading="setUserApiKeyLoading" @click="confirm2FACode">
-                        {{ t("TXT_CODE_b0a18c20") }}
+                        {{ t("TXT_CODE_COMMON_I_HAVE_SCANNED") }}
                     </VBtn>
-                    <VBtn variant="text" @click="formState.qrcode = ''">{{ t("TXT_CODE_3b1cc020") }}</VBtn>
+                    <VBtn variant="text" @click="formState.qrcode = ''">{{ t("TXT_CODE_COMMON_DISCARD") }}</VBtn>
                 </div>
             </div>
         </div>
 
         <div class="info-section">
             <h3 class="section-title">{{ t("TXT_CODE_UI_API_KEY") }}</h3>
-            <p class="api-key-desc">{{ t("TXT_CODE_b2dbf778") }}</p>
+            <p class="api-key-desc">{{ t("TXT_CODE_COMMON_REQUESTS_USING_THIS_KEY_HAVE_THE_SAME_PERMISSIONS_AS_THIS_ACCOUNT") }}</p>
 
             <div v-if="state.userInfo?.apiKey" class="api-key-display">
                 <span class="api-key-text">{{ state.userInfo.apiKey }}</span>
                 <CopyButton size="small" type="text" :value="state.userInfo.apiKey" />
             </div>
             <div v-else class="api-key-display empty">
-                <span class="api-key-text">{{ t("TXT_CODE_d7dbc7c2") }}</span>
+                <span class="api-key-text">{{ t("TXT_CODE_COMMON_DISABLED") }}</span>
             </div>
 
             <div class="api-key-actions">
                 <VBtn color="primary" variant="text" :loading="setUserApiKeyLoading" @click="handleGenerateApiKey(true)">
-                    {{ t("TXT_CODE_d51cd7ae") }}
+                    {{ t("TXT_CODE_COMMON_GENERATE_NEW_KEY") }}
                 </VBtn>
                 <VBtn v-if="state.userInfo?.apiKey" color="error" variant="text" @click="revokeApiKeyDialog = true">
-                    {{ t("TXT_CODE_718c9310") }}
+                    {{ t("TXT_CODE_COMMON_DISABLE") }}
                 </VBtn>
             </div>
         </div>
 
         <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="revokeApiKeyDialog" :title="t('TXT_CODE_USER_DISABLE_API_KEY')"
-            :message="t('TXT_CODE_6819de18')" danger :ok-text="t('TXT_CODE_718c9310')" :cancel-text="t('TXT_CODE_3b1cc020')"
+            :message="t('TXT_CODE_COMMON_DISABLING_THIS_KEY_PREVENTS_IT_FROM_AUTHENTICATING_REQUESTS')" danger :ok-text="t('TXT_CODE_COMMON_DISABLE')" :cancel-text="t('TXT_CODE_COMMON_DISCARD')"
             @confirm="revokeApiKeyDialog = false; handleGenerateApiKey(false)" />
     </div>
 </template>

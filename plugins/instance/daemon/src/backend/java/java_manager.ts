@@ -56,7 +56,7 @@ export class JavaManager {
           await fs.remove(path.join(javaPath, ".install"));
           await fs.remove(path.join(javaPath, "runtime"));
           info.path = undefined;
-          info.error = this.dependencies.translate("TXT_CODE_javaMsl.interrupted");
+          info.error = this.dependencies.translate("TXT_CODE_JAVA_MSL_INTERRUPTED");
           info.progress = undefined;
         }
         this.javaList.set(info.fullname, { info, path: javaPath, usingInstances: [] });
@@ -109,10 +109,10 @@ export class JavaManager {
       [".", ".."].includes(info.fullname) ||
       /[\\/:*?"<>|\0]/.test(info.fullname)
     ) {
-      throw new Error(this.dependencies.translate("TXT_CODE_b623b66f"));
+      throw new Error(this.dependencies.translate("TXT_CODE_COMMON_THE_NAME_CONTAINS_INVALID_CHARACTERS_PLEASE_MODIFY_THE_NAME"));
     }
     if (this.exists(info.fullname))
-      throw new Error(this.dependencies.translate("TXT_CODE_79cf0302"));
+      throw new Error(this.dependencies.translate("TXT_CODE_COMMON_JAVA_ALREADY_EXISTS"));
     this.save(info);
     this.javaList.set(info.fullname, {
       info,
@@ -128,20 +128,20 @@ export class JavaManager {
   /** One shared installation per node/version; callers can poll the persisted runtime state. */
   async startInstall(version: string): Promise<IJavaRuntime> {
     await this.ready;
-    if (this.disposed) throw new Error(this.dependencies.translate("TXT_CODE_javaMsl.interrupted"));
+    if (this.disposed) throw new Error(this.dependencies.translate("TXT_CODE_JAVA_MSL_INTERRUPTED"));
     if (typeof version !== "string" || !/^[1-9][0-9]{0,2}$/.test(version))
-      throw new Error(this.dependencies.translate("TXT_CODE_javaMsl.invalidVersion"));
+      throw new Error(this.dependencies.translate("TXT_CODE_JAVA_MSL_INVALID_VERSION"));
     const id = `msl_${version}`;
     const existing = this.javaList.get(id);
     if (existing && !existing.info.error) return existing;
     if (!(await this.source.versions()).versions.includes(version))
-      throw new Error(this.dependencies.translate("TXT_CODE_javaMsl.invalidVersion"));
-    if (this.disposed) throw new Error(this.dependencies.translate("TXT_CODE_javaMsl.interrupted"));
+      throw new Error(this.dependencies.translate("TXT_CODE_JAVA_MSL_INVALID_VERSION"));
+    if (this.disposed) throw new Error(this.dependencies.translate("TXT_CODE_JAVA_MSL_INTERRUPTED"));
     // Another request may have started this version while the catalogue loaded.
     const current = this.javaList.get(id);
     if (current && (!current.info.error || this.jobs.has(id))) return current;
     if (current?.usingInstances.length)
-      throw new Error(this.dependencies.translate("TXT_CODE_ea8ea5d1"));
+      throw new Error(this.dependencies.translate("TXT_CODE_COMMON_JAVA_IS_CURRENTLY_RUNNING"));
     const info = new JavaInfo("msl", Date.now(), version);
     info.downloading = true;
     const runtime = { info, path: path.join(this.javaDataDir, id), usingInstances: [] };
@@ -161,7 +161,7 @@ export class JavaManager {
     try {
       const download = await this.source.download(info.version!);
       if (signal.aborted)
-        throw new Error(this.dependencies.translate("TXT_CODE_javaMsl.interrupted"));
+        throw new Error(this.dependencies.translate("TXT_CODE_JAVA_MSL_INTERRUPTED"));
       await fs.remove(path.join(directory, "runtime"));
       this.dependencies.logger?.info(`Installing Java from MSL: ${info.fullname}`);
       info.path = await installJavaArchive({
@@ -176,13 +176,13 @@ export class JavaManager {
         }
       });
       if (signal.aborted)
-        throw new Error(this.dependencies.translate("TXT_CODE_javaMsl.interrupted"));
+        throw new Error(this.dependencies.translate("TXT_CODE_JAVA_MSL_INTERRUPTED"));
       info.error = undefined;
       info.progress = 100;
       this.dependencies.logger?.info(`Java installation completed: ${info.fullname}`);
     } catch (error: any) {
       info.error = signal.aborted
-        ? this.dependencies.translate("TXT_CODE_javaMsl.interrupted")
+        ? this.dependencies.translate("TXT_CODE_JAVA_MSL_INTERRUPTED")
         : error.message;
       info.path = undefined;
       info.progress = undefined;
@@ -193,7 +193,7 @@ export class JavaManager {
       try {
         this.updateJavaInfo(info);
       } catch (error: any) {
-        info.error = `${this.dependencies.translate("TXT_CODE_javaMsl.persistFailed")} ${
+        info.error = `${this.dependencies.translate("TXT_CODE_JAVA_MSL_PERSIST_FAILED")} ${
           error.message
         }`;
         this.dependencies.logger?.warn(`Cannot save Java installation: ${info.fullname}`, error);
@@ -203,21 +203,21 @@ export class JavaManager {
 
   async getJavaRuntimeCommand(id: string) {
     const java = this.getJava(id);
-    if (!java) throw new Error(this.dependencies.translate("TXT_CODE_77ce8542"));
-    if (java.info.downloading) throw new Error(this.dependencies.translate("TXT_CODE_45d02bb7"));
+    if (!java) throw new Error(this.dependencies.translate("TXT_CODE_COMMON_JAVA_NOT_FOUND"));
+    if (java.info.downloading) throw new Error(this.dependencies.translate("TXT_CODE_COMMON_JAVA_IS_DOWNLOADING"));
     if (java.info.error) throw new Error(java.info.error);
     const executable = await findJavaExecutable(java.info.path || java.path);
-    if (!executable) throw new Error(this.dependencies.translate("TXT_CODE_82c8bca3"));
+    if (!executable) throw new Error(this.dependencies.translate("TXT_CODE_COMMON_JAVA_PATH_NOT_FOUND"));
     return javaExecutableCommand(executable);
   }
 
   async removeJava(id: string) {
     const java = this.getJava(id);
-    if (!java) throw new Error(this.dependencies.translate("TXT_CODE_77ce8542"));
+    if (!java) throw new Error(this.dependencies.translate("TXT_CODE_COMMON_JAVA_NOT_FOUND"));
     if (java.info.downloading || this.jobs.has(id))
-      throw new Error(this.dependencies.translate("TXT_CODE_887fee99"));
+      throw new Error(this.dependencies.translate("TXT_CODE_COMMON_THIS_JAVA_IS_STILL_BEING_DOWNLOADED"));
     if (java.usingInstances.length)
-      throw new Error(this.dependencies.translate("TXT_CODE_ea8ea5d1"));
+      throw new Error(this.dependencies.translate("TXT_CODE_COMMON_JAVA_IS_CURRENTLY_RUNNING"));
     await fs.remove(java.path);
     this.javaList.delete(id);
     return true;

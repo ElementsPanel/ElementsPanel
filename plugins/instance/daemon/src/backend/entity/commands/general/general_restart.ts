@@ -10,7 +10,7 @@ export default class GeneralRestartCommand extends InstanceCommand {
   async exec(instance: Instance) {
     try {
       instance.ignoreEventTaskOnce();
-      instance.println("INFO", $t("TXT_CODE_restart.start"));
+      instance.println("INFO", $t("TXT_CODE_RESTART_START"));
       instance.setLock(true);
       try {
         await instance.execPreset("stop");
@@ -22,16 +22,16 @@ export default class GeneralRestartCommand extends InstanceCommand {
       const task = setInterval(async () => {
         try {
           if (startCount !== instance.startCount) {
-            throw new Error($t("TXT_CODE_restart.error1"));
+            throw new Error($t("TXT_CODE_RESTART_ERROR1"));
           }
           if (
             instance.status() !== Instance.STATUS_STOPPING &&
             instance.status() !== Instance.STATUS_STOP
           ) {
-            throw new Error($t("TXT_CODE_restart.error2"));
+            throw new Error($t("TXT_CODE_RESTART_ERROR2"));
           }
           if (instance.status() === Instance.STATUS_STOP) {
-            instance.println("INFO", $t("TXT_CODE_restart.restarting"));
+            instance.println("INFO", $t("TXT_CODE_RESTART_RESTARTING"));
             instance.setLock(false);
             clearInterval(task);
             await instance.execPreset("start");

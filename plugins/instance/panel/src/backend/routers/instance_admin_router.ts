@@ -23,7 +23,7 @@ export function createInstanceAdminRouter() {
         const daemonId = String(ctx.query.daemonId);
         const instanceUuid = String(ctx.query.uuid);
         if (!guard().canAccessInstance(ctx, daemonId, instanceUuid))
-          throw new Error($t("TXT_CODE_permission.forbidden"));
+          throw new Error($t("TXT_CODE_PERMISSION_FORBIDDEN"));
         const remoteService = remoteSubsystem().getInstance(daemonId);
         const result = await remoteRequest(remoteService).request("instance/detail", {
           instanceUuid
@@ -69,10 +69,10 @@ export function createInstanceAdminRouter() {
         const daemonId = String(ctx.query.daemonId);
         const config = ctx.request.body;
         const remoteService = remoteSubsystem().getInstance(daemonId);
-        if (!remoteService) throw new Error($t("TXT_CODE_dd559000") + ` Daemon ID: ${daemonId}`);
+        if (!remoteService) throw new Error($t("TXT_CODE_COMMON_COULD_NOT_FIND_REMOTE_WITH_GIVEN_DAEMON_ID") + ` Daemon ID: ${daemonId}`);
         const result = await remoteRequest(remoteService).request("instance/new", config);
         const newInstanceUuid = result.instanceUuid;
-        if (!newInstanceUuid) throw new Error($t("TXT_CODE_router.instance.createError"));
+        if (!newInstanceUuid) throw new Error($t("TXT_CODE_ROUTER_INSTANCE_CREATE_ERROR"));
         operationLogger.log("instance_create", {
           daemon_id: daemonId,
           instance_id: newInstanceUuid,

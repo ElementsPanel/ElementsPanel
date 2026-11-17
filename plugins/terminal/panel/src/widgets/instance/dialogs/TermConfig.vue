@@ -52,7 +52,7 @@ const submit = async () => {
     });
     emit("update");
     open.value = false;
-    return message.success(t("TXT_CODE_d3de39b4"));
+    return message.success(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"));
   } catch (err: any) {
     return reportErrorMsg(err.message);
   }
@@ -68,42 +68,42 @@ defineExpose({
   <AppDialog
     v-model:open="open"
     max-width="760px"
-    :title="t('TXT_CODE_d23631cb')"
+    :title="t('TXT_CODE_COMMON_TERMINAL_SETTINGS')"
     :confirm-loading="isLoading"
-    :ok-text="t('TXT_CODE_abfe9512')"
+    :ok-text="t('TXT_CODE_COMMON_SAVE')"
     @ok="submit"
   >
     <VForm v-if="options" class="term-config-form" @submit.prevent="submit">
       <VRow density="compact">
         <VCol cols="12" md="6">
           <div class="term-config-section">
-            <div class="term-config-title">{{ t("TXT_CODE_ef650d57") }}</div>
+            <div class="term-config-title">{{ t("TXT_CODE_COMMON_EMULATED_TERMINAL") }}</div>
             <div class="term-config-description">
-              {{ t("TXT_CODE_feeea328") }}
+              {{ t("TXT_CODE_COMMON_SUPPORTS_TAB_AND_CTRL_SHORTCUTS_DISABLE_IF_COMPATIBILITY_ISSUES_OCCUR") }}
             </div>
             <VSwitch v-model="options.config.terminalOption.pty" color="primary" hide-details />
           </div>
 
           <div class="term-config-section">
-            <div class="term-config-title">{{ t("TXT_CODE_e1a3b150") }}</div>
+            <div class="term-config-title">{{ t("TXT_CODE_COMMON_COLOR_RENDERING") }}</div>
             <div class="term-config-description">
-              {{ t("TXT_CODE_6a515e35") }}
+              {{ t("TXT_CODE_COMMON_AUTOMATICALLY_COLORS_OUTPUT_DISABLE_IF_IT_CONFLICTS_WITH_THE_APPLICATION_S_COLORS") }}
             </div>
             <VSwitch v-model="options.config.terminalOption.haveColor" color="primary" hide-details />
           </div>
 
           <div class="term-config-section">
-            <div class="term-config-title">{{ t("TXT_CODE_b91a94f9") }}</div>
+            <div class="term-config-title">{{ t("TXT_CODE_COMMON_COMMAND_LINE_ENDING") }}</div>
             <div class="term-config-description">
-              {{ t("TXT_CODE_b94f13ce") }}
+              {{ t("TXT_CODE_TERMINAL_LINE_ENDING_PLATFORM_HINT") }}
             </div>
             <VSelect
               v-model="options.config.crlf"
               :items="[
-                { title: t('TXT_CODE_365aabd4'), value: 1 },
-                { title: t('TXT_CODE_20cec54'), value: 2 }
+                { title: t('TXT_CODE_COMMON_LINE_FEED'), value: 1 },
+                { title: t('TXT_CODE_COMMON_CARRIAGE_RETURN_AND_LINE_FEED'), value: 2 }
               ]"
-              :placeholder="t('TXT_CODE_3bb646e4')"
+              :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT')"
               class="term-config-control"
               hide-details
             >
@@ -114,8 +114,8 @@ defineExpose({
 
         <VCol cols="12" md="6">
           <div class="term-config-section">
-            <div class="term-config-title">{{ t("TXT_CODE_11cfe3a1") }}</div>
-            <div class="term-config-description">{{ t("TXT_CODE_7ec7ccb8") }}</div>
+            <div class="term-config-title">{{ t("TXT_CODE_COMMON_INSTANCE_SHUTDOWN_COMMAND") }}</div>
+            <div class="term-config-description">{{ t("TXT_CODE_COMMON_RUNS_WHEN_STOPPING_THE_INSTANCE_C_SENDS_CTRL_C") }}</div>
             <VTextField
               v-model="options.config.stopCommand"
               class="term-config-control"
@@ -124,13 +124,13 @@ defineExpose({
           </div>
 
           <div class="term-config-section">
-            <div class="term-config-title">{{ t("TXT_CODE_449d1581") }}</div>
-            <div class="term-config-description">{{ t("TXT_CODE_d16d82ab") }}</div>
+            <div class="term-config-title">{{ t("TXT_CODE_COMMON_INPUT_AND_OUTPUT_ENCODING") }}</div>
+            <div class="term-config-description">{{ t("TXT_CODE_COMMON_CHANGE_THE_ENCODING_IF_TERMINAL_OUTPUT_IS_GARBLED") }}</div>
             <div class="term-config-encoding">
               <VSelect
                 v-model="options.config.ie"
                 :items="TERMINAL_CODE"
-                :placeholder="t('TXT_CODE_bd2559f3')"
+                :placeholder="t('TXT_CODE_COMMON_TERMINAL_INPUT_ENCODING')"
                 hide-details
               >
                 <template #no-data><Empty :icon="false" compact /></template>
@@ -138,7 +138,7 @@ defineExpose({
               <VSelect
                 v-model="options.config.oe"
                 :items="TERMINAL_CODE"
-                :placeholder="t('TXT_CODE_6e96b2a9')"
+                :placeholder="t('TXT_CODE_COMMON_TERMINAL_OUTPUT_ENCODING')"
                 hide-details
               >
                 <template #no-data><Empty :icon="false" compact /></template>

@@ -40,12 +40,12 @@ const loadImages = async () => {
   loading.value = true;
   dockerImages.value = arrayFilter([
     {
-      label: props.isAllowText ?? t("TXT_CODE_79d4205"),
+      label: props.isAllowText ?? t("TXT_CODE_COMMON_EMPTY"),
       value: "",
       condition: () => props.isAllowEmpty
     },
     {
-      label: t("TXT_CODE_435f4975"),
+      label: t("TXT_CODE_COMMON_USING_AN_IMAGE_FROM_DOCKER_HUB"),
       value: IMAGE_DEFINE.EDIT
     }
   ]);
@@ -91,12 +91,12 @@ const selectImage = (image: unknown) => {
 
 <template>
   <template v-if="imageSelectMethod === 'SELECT'">
-    <VSelect :model-value="modelValue" :id="id" :rules="rules" :items="dockerImages" item-title="label" item-value="value" :placeholder="t('TXT_CODE_3bb646e4')" :loading="loading" hide-details="auto" @focus="loadImages" @update:model-value="(v) => { emit('update:modelValue', v); selectImage(v); }">
+    <VSelect :model-value="modelValue" :id="id" :rules="rules" :items="dockerImages" item-title="label" item-value="value" :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT')" :loading="loading" hide-details="auto" @focus="loadImages" @update:model-value="(v) => { emit('update:modelValue', v); selectImage(v); }">
       <template #no-data><Empty :icon="false" compact /></template>
     </VSelect>
   </template>
 
   <template v-else>
-    <VTextField :model-value="modelValue" :id="id" :rules="rules" :placeholder="t('TXT_CODE_d7638d7b')" variant="solo-filled" hide-details="auto" @update:model-value="(v) => emit('update:modelValue', v)" />
+    <VTextField :model-value="modelValue" :id="id" :rules="rules" :placeholder="t('TXT_CODE_COMMON_REQUIRED_E_G_ECLIPSE_TEMURIN_24')" variant="solo-filled" hide-details="auto" @update:model-value="(v) => emit('update:modelValue', v)" />
   </template>
 </template>

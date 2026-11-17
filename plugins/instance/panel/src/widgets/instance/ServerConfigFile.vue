@@ -75,7 +75,7 @@ const save = async () => {
       data: config_
     });
     if (isOK.value) {
-      message.success(t("TXT_CODE_a7907771"));
+      message.success(t("TXT_CODE_COMMON_SAVED"));
     }
   } catch (err: any) {
     console.error(err);
@@ -111,7 +111,7 @@ const toEditRawFile = async () => {
 
 const refresh = async () => {
   await render();
-  message.success(t("TXT_CODE_7863f28d"));
+  message.success(t("TXT_CODE_SERVER_CONFIG_REFRESHED"));
 };
 
 onMounted(async () => {
@@ -122,19 +122,19 @@ onMounted(async () => {
 <template>
   <main class="server-config-page">
     <VContainer fluid class="server-config-page-container">
-      <PageToolbar :title="t('TXT_CODE_1c45f7fe')" icon="mdi-file-document-edit-outline">
+      <PageToolbar :title="t('TXT_CODE_COMMON_EDIT_SERVER_CONFIGURATION_FILE')" icon="mdi-file-document-edit-outline">
         <template #actions>
           <VBtn variant="tonal" @click="toConfigOverview">
-            {{ t("TXT_CODE_c14b2ea3") }}
+            {{ t("TXT_CODE_COMMON_GO_BACK") }}
           </VBtn>
           <VBtn color="primary" :loading="updateConfigFileLoading" @click="save">
-            {{ t("TXT_CODE_abfe9512") }}
+            {{ t("TXT_CODE_COMMON_SAVE") }}
           </VBtn>
           <VBtn variant="tonal" :loading="getConfigFileLoading" @click="refresh()">
-            {{ t("TXT_CODE_b76d94e0") }}
+            {{ t("TXT_CODE_COMMON_REFRESH") }}
           </VBtn>
           <VBtn variant="outlined" @click="toEditRawFile">
-            {{ t("TXT_CODE_1f61e5a3") }}
+            {{ t("TXT_CODE_COMMON_EDIT_SOURCE_FILE") }}
           </VBtn>
         </template>
       </PageToolbar>
@@ -143,8 +143,8 @@ onMounted(async () => {
         <VCol v-if="isFailure" cols="12">
           <Empty
             icon="mdi-file-alert-outline"
-            :title="t('TXT_CODE_f859eac')"
-            :description="t('TXT_CODE_b8814f15')"
+            :title="t('TXT_CODE_COMMON_UNABLE_TO_EDIT_THIS_FILE')"
+            :description="t('TXT_CODE_COMMON_THIS_MIGHT_BE_DUE_TO_LACK_OF_ACCESS_TO_THIS_FILE_TRY_EDITING_IT_VIA_FILE')"
           >
             <template #actions>
               <VBtn
@@ -152,8 +152,8 @@ onMounted(async () => {
                 prepend-icon="mdi-refresh"
                 :loading="getConfigFileLoading"
                 @click="render"
-              >{{ t("TXT_CODE_9277af78") }}</VBtn>
-              <VBtn variant="text" @click="toConfigOverview">{{ t("TXT_CODE_537cd5ad") }}</VBtn>
+              >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
+              <VBtn variant="text" @click="toConfigOverview">{{ t("TXT_CODE_COMMON_BACK_TO_CONFIGURATION_FILE_LIST") }}</VBtn>
             </template>
           </Empty>
         </VCol>

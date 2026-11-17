@@ -17,7 +17,7 @@ router.use(async (ctx, next) => {
     await next();
   } else {
     ctx.status = 403;
-    ctx.body = $t("TXT_CODE_permission.forbiddenInstance");
+    ctx.body = $t("TXT_CODE_PERMISSION_FORBIDDEN_INSTANCE");
   }
 });
 
@@ -57,7 +57,7 @@ router.post(
 
       const name = String(task.name);
       FILENAME_BLACKLIST.forEach((ch) => {
-        if (name.includes(ch)) throw new Error($t("TXT_CODE_router.schedule.invalidName"));
+        if (name.includes(ch)) throw new Error($t("TXT_CODE_ROUTER_SCHEDULE_INVALID_NAME"));
       });
 
       operationLogger.log("instance_task_create", {

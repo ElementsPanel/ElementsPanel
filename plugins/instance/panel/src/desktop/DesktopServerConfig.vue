@@ -108,7 +108,7 @@ const saveFile = async () => {
             },
             data: config
         });
-        notifyDesktop(t("TXT_CODE_a7907771"), "success");
+        notifyDesktop(t("TXT_CODE_COMMON_SAVED"), "success");
     } catch (err: any) {
         notifyDesktopError(err);
     } finally {
@@ -124,24 +124,24 @@ onMounted(async () => {
 <template>
     <div class="dsc">
         <div class="dsc__header">
-            <VBtn v-if="selectedFile" icon variant="text" class="dsc-btn dsc-btn--icon" @click="goBack" :title="t('TXT_CODE_c14b2ea3')">
+            <VBtn v-if="selectedFile" icon variant="text" class="dsc-btn dsc-btn--icon" @click="goBack" :title="t('TXT_CODE_COMMON_GO_BACK')">
                 <VIcon icon="mdi-arrow-left"  />
             </VBtn>
             <span class="dsc__title">
-                {{ selectedFile ? selectedFile.fileName : t("TXT_CODE_d07742fe") }}
+                {{ selectedFile ? selectedFile.fileName : t("TXT_CODE_COMMON_CONFIGURATION_FILES") }}
             </span>
             <div class="dsc__actions">
                 <VBtn v-if="!selectedFile" class="dsc-btn dsc-btn--sm" variant="text" @click="loadConfigFiles" :disabled="isLoading">
-                    <VIcon icon="mdi-refresh"  /> {{ t("TXT_CODE_b76d94e0") }}
+                    <VIcon icon="mdi-refresh"  /> {{ t("TXT_CODE_COMMON_REFRESH") }}
                 </VBtn>
                 <template v-if="selectedFile">
                     <VBtn class="dsc-btn dsc-btn--sm dsc-btn--primary" variant="text" @click="saveFile" :disabled="isSaving">
-                        <VIcon icon="mdi-content-save-outline"  /> {{ t("TXT_CODE_abfe9512") }}
+                        <VIcon icon="mdi-content-save-outline"  /> {{ t("TXT_CODE_COMMON_SAVE") }}
                     </VBtn>
                     <VBtn class="dsc-btn dsc-btn--sm" variant="text"
-                        @click="async () => { if (selectedFile) { await selectFile(selectedFile); notifyDesktop(t('TXT_CODE_7863f28d'), 'success'); } }"
+                        @click="async () => { if (selectedFile) { await selectFile(selectedFile); notifyDesktop(t('TXT_CODE_SERVER_CONFIG_REFRESHED'), 'success'); } }"
                         :disabled="isFileLoading">
-                        <VIcon icon="mdi-refresh"  /> {{ t("TXT_CODE_b76d94e0") }}
+                        <VIcon icon="mdi-refresh"  /> {{ t("TXT_CODE_COMMON_REFRESH") }}
                     </VBtn>
                 </template>
             </div>
@@ -152,8 +152,8 @@ onMounted(async () => {
                 <Empty
                   v-if="configFiles.length === 0 && !isLoading"
                   icon="mdi-file-alert-outline"
-                  :title="t('TXT_CODE_37a4c14a')"
-                  :description="t('TXT_CODE_4c0fda9')"
+                  :title="t('TXT_CODE_COMMON_NO_AVAILABLE_CONFIGURATION_FILE_FOUND')"
+                  :description="t('TXT_CODE_GAME_CONFIG_GENERATION_HINT')"
                 />
                 <div v-else class="dsc-list__items">
                     <div v-for="file in configFiles" :key="file.path" class="dsc-file-item" @click="selectFile(file)">
@@ -174,7 +174,7 @@ onMounted(async () => {
                         :config-name="selectedFile.redirect" is-desktop />
                 </div>
                 <div v-else class="dsc-loading">
-                    <p>{{ t("TXT_CODE_b197be11") }}</p>
+                    <p>{{ t("TXT_CODE_COMMON_LOADING_DATA") }}</p>
                 </div>
             </div>
         </div>

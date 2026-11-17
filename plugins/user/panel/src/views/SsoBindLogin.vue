@@ -58,7 +58,7 @@ const handleBindCurrent = async () => {
 
 const handleBind = async () => {
   if (!formData.username.trim() || !formData.password.trim()) {
-    return message.error(t("TXT_CODE_c846074d"));
+    return message.error(t("TXT_CODE_COMMON_PLEASE_COMPLETE_YOUR_ACCOUNT_PROFILE"));
   }
   try {
     step.value = 1;
@@ -136,14 +136,14 @@ const handleBind = async () => {
                   v-model="formData.username"
                   class="account"
                   size="large"
-                  :placeholder="t('TXT_CODE_80a560a1')"
+                  :placeholder="t('TXT_CODE_LOGIN_ACCOUNT_NAME')"
                   prepend-inner-icon="mdi-account-outline"
                 />
                 <VTextField
                   v-model="formData.password"
                   class="mt-20 account"
                   type="password"
-                  :placeholder="t('TXT_CODE_551b0348')"
+                  :placeholder="t('TXT_CODE_COMMON_PASSWORD')"
                   size="large"
                   @keyup.enter="handleBind"
                   prepend-inner-icon="mdi-lock-outline"
@@ -154,7 +154,7 @@ const handleBind = async () => {
                   v-model="formData.code"
                   class="mt-20 mb-20 account"
                   type="text"
-                  :placeholder="t('TXT_CODE_7ac8b1d3')"
+                  :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_THE_TWO_FACTOR_AUTHENTICATION_CODE')"
                   size="large"
                   autocomplete="off"
                   @keyup.enter="handleBind"

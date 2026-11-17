@@ -29,47 +29,47 @@ const levelColors: Record<string, string> = {
 
 const renderMap: OperationRenderer = {
   instance_start: (item) => ({
-    text: t("TXT_CODE_e4605c4"),
+    text: t("TXT_CODE_COMMON_USER_STARTED_THE_INSTANCE"),
     data: [item.operator_name || item.operation_id, item.instance_name || item.instance_id]
   }),
   instance_stop: (item) => ({
-    text: t("TXT_CODE_48c286cc"),
+    text: t("TXT_CODE_COMMON_USER_STOPPED_THE_INSTANCE"),
     data: [item.operator_name || item.operation_id, item.instance_name || item.instance_id]
   }),
   instance_restart: (item) => ({
-    text: t("TXT_CODE_fa7002ef"),
+    text: t("TXT_CODE_COMMON_USER_RESTARTED_THE_INSTANCE"),
     data: [item.operator_name || item.operation_id, item.instance_name || item.instance_id]
   }),
   instance_auto_restart: (item) => ({
-    text: t("TXT_CODE_c29e18f4"),
+    text: t("TXT_CODE_COMMON_INSTANCE_CRASHED_AND_AUTOMATICALLY_RESTARTED"),
     data: [item.instance_name || item.instance_id]
   }),
   instance_update: (item) => ({
-    text: t("TXT_CODE_e1454ba7"),
+    text: t("TXT_CODE_COMMON_USER_UPDATED_THE_INSTANCE"),
     data: [item.operator_name || item.operation_id, item.instance_name || item.instance_id]
   }),
   instance_kill: (item) => ({
-    text: t("TXT_CODE_ee54440"),
+    text: t("TXT_CODE_COMMON_USER_FORCE_TERMINATED_THE_INSTANCE"),
     data: [item.operator_name || item.operation_id, item.instance_name || item.instance_id]
   }),
   instance_crash: (item) => ({
-    text: t("TXT_CODE_86c4b2f5"),
+    text: t("TXT_CODE_COMMON_INSTANCE_CRASHED_UNEXPECTEDLY_EXIT_CODE"),
     data: [item.instance_name || item.instance_id, String(item.exit_code)]
   }),
   instance_config_change: (item) => ({
-    text: t("TXT_CODE_30fcc19a"),
+    text: t("TXT_CODE_COMMON_USER_MODIFIED_THE_CONFIGURATION_OF_THE_INSTANCE"),
     data: [item.operator_name || item.operation_id, item.instance_name || item.instance_id]
   }),
   instance_create: (item) => ({
-    text: t("TXT_CODE_9ab6fd"),
+    text: t("TXT_CODE_COMMON_USER_CREATED_THE_INSTANCE"),
     data: [item.operator_name || item.operation_id, item.instance_name || item.instance_id]
   }),
   instance_delete: (item) => ({
-    text: t("TXT_CODE_61b6facb"),
+    text: t("TXT_CODE_COMMON_USER_DELETED_THE_INSTANCE"),
     data: [item.operator_name || item.operation_id, item.instance_name || item.instance_id]
   }),
   instance_file_upload: (item) => ({
-    text: t("TXT_CODE_58e4a9bd"),
+    text: t("TXT_CODE_COMMON_USER_UPLOADED_THE_FILE_TO_THE_INSTANCE"),
     data: [
       item.operator_name || item.operation_id,
       item.instance_name || item.instance_id,
@@ -77,7 +77,7 @@ const renderMap: OperationRenderer = {
     ]
   }),
   instance_file_update: (item) => ({
-    text: t("TXT_CODE_c5687e56"),
+    text: t("TXT_CODE_COMMON_USER_UPDATED_THE_FILE_OF_THE_INSTANCE"),
     data: [
       item.operator_name || item.operation_id,
       item.instance_name || item.instance_id,
@@ -85,7 +85,7 @@ const renderMap: OperationRenderer = {
     ]
   }),
   instance_file_download: (item) => ({
-    text: t("TXT_CODE_6f43f95f"),
+    text: t("TXT_CODE_COMMON_USER_DOWNLOADED_THE_FILE_OF_THE_INSTANCE"),
     data: [
       item.operator_name || item.operation_id,
       item.instance_name || item.instance_id,
@@ -93,7 +93,7 @@ const renderMap: OperationRenderer = {
     ]
   }),
   instance_file_delete: (item) => ({
-    text: t("TXT_CODE_de567e84"),
+    text: t("TXT_CODE_COMMON_USER_DELETED_THE_FILE_OF_THE_INSTANCE"),
     data: [
       item.operator_name || item.operation_id,
       item.instance_name || item.instance_id,
@@ -101,7 +101,7 @@ const renderMap: OperationRenderer = {
     ]
   }),
   instance_task_create: (item) => ({
-    text: t("TXT_CODE_5ddb00f2"),
+    text: t("TXT_CODE_COMMON_USER_CREATED_THE_TASK_FOR_THE_INSTANCE"),
     data: [
       item.operator_name || item.operation_id,
       item.instance_name || item.instance_id,
@@ -109,7 +109,7 @@ const renderMap: OperationRenderer = {
     ]
   }),
   instance_task_delete: (item) => ({
-    text: t("TXT_CODE_41f86ac"),
+    text: t("TXT_CODE_COMMON_USER_DELETED_THE_TASK_OF_THE_INSTANCE"),
     data: [
       item.operator_name || item.operation_id,
       item.instance_name || item.instance_id,
@@ -117,38 +117,38 @@ const renderMap: OperationRenderer = {
     ]
   }),
   daemon_create: (item) => ({
-    text: t("TXT_CODE_f7969e5a"),
+    text: t("TXT_CODE_COMMON_USER_CREATED_THE_DAEMON_PROCESS"),
     data: [item.operator_name || item.operation_id, item.daemon_id]
   }),
   daemon_remove: (item) => ({
-    text: t("TXT_CODE_384d278f"),
+    text: t("TXT_CODE_COMMON_USER_DELETED_THE_DAEMON_PROCESS"),
     data: [item.operator_name || item.operation_id, item.daemon_id]
   }),
   daemon_config_change: (item) => ({
-    text: t("TXT_CODE_b6ac7af4"),
+    text: t("TXT_CODE_COMMON_USER_MODIFIED_THE_CONFIGURATION_OF_THE_DAEMON_PROCESS"),
     data: [item.operator_name || item.operation_id, item.daemon_id]
   }),
   user_create: (item) => ({
-    text: t("TXT_CODE_faa1962b"),
+    text: t("TXT_CODE_COMMON_USER_CREATED_THE_USER"),
     data: [item.operator_name || item.operation_id, item.target_user_name]
   }),
   user_delete: (item) => ({
-    text: t("TXT_CODE_cd76bc9"),
+    text: t("TXT_CODE_COMMON_USER_DELETED_THE_USER"),
     data: [item.operator_name || item.operation_id, item.target_user_name]
   }),
   user_config_change: (item) => ({
-    text: t("TXT_CODE_5564bc4c"),
+    text: t("TXT_CODE_COMMON_USER_MODIFIED_THE_USER_CONFIGURATION"),
     data: [item.operator_name || item.operation_id]
   }),
   user_login: (item) => ({
-    text: t("TXT_CODE_31a48870") + ` (${item.operator_ip})`,
+    text: t("TXT_CODE_COMMON_USER_ATTEMPTED_LOGIN_RESULT") + ` (${item.operator_ip})`,
     data: [
       item.operator_name || item.operation_id,
-      item.login_result ? t("TXT_CODE_43fcaf94") : t("TXT_CODE_56c686f8")
+      item.login_result ? t("TXT_CODE_COMMON_SUCCESS") : t("TXT_CODE_COMMON_FAILED")
     ]
   }),
   system_config_change: (item) => ({
-    text: t("TXT_CODE_d6312bd5"),
+    text: t("TXT_CODE_COMMON_USER_MODIFIED_THE_SYSTEM_CONFIGURATION"),
     data: [item.operator_name || item.operation_id]
   })
 };
@@ -175,7 +175,7 @@ export const useOperationLog = () => {
 
 export const formatOperationLogText = (item: OperationLoggerItem) => {
   const handler = renderMap[item.type];
-  if (!handler) return t("TXT_CODE_43df9305");
+  if (!handler) return t("TXT_CODE_COMMON_UNKNOWN_OPERATION");
   const { text } = handler(item as any);
   const values: Record<string, string> = {
     operator_name: item.operator_name || item.operation_id,
@@ -188,8 +188,8 @@ export const formatOperationLogText = (item: OperationLoggerItem) => {
     login_result:
       "login_result" in item
         ? item.login_result
-          ? t("TXT_CODE_43fcaf94")
-          : t("TXT_CODE_56c686f8")
+          ? t("TXT_CODE_COMMON_SUCCESS")
+          : t("TXT_CODE_COMMON_FAILED")
         : ""
   };
   return text.replace(/\<\<\s*([\w_]+)\s*\>\>/g, (_match, name: string) => {

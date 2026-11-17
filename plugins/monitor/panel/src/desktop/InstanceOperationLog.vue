@@ -27,7 +27,7 @@ const fetchLogs = async () => {
     });
     logs.value = (data.value || []).reverse().map(formatOperationLogItem);
   } catch (error: any) {
-    notifyDesktop(error?.message || t("TXT_CODE_4a689666"), "error");
+    notifyDesktop(error?.message || t("TXT_CODE_COMMON_FAILED_TO_FETCH_INSTANCE_LOGS"), "error");
     logs.value = [];
   } finally {
     loading.value = false;

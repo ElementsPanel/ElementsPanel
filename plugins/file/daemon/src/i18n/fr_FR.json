@@ -1,15 +1,15 @@
 {
-  "TXT_CODE_file_router.instanceNotExist": "L'instance {{instanceUuid}} n'existe pas",
-  "TXT_CODE_file_router.unzipLimit": "Le nombre maximum de tâches de décompression simultanées a été dépassé. Le maximum autorisé est de {{maxFileTask}}. Il y a actuellement {{fileLock}} tâches en cours.",
-  "TXT_CODE_file_router_service.instanceNotExit": "L'instance {{uuid}} n'existe pas",
-  "TXT_CODE_system_file.execLimit": "Limite maximale de modification de fichier dépassée",
-  "TXT_CODE_system_file.illegalAccess": "Mauvais chemin d'accès",
-  "TXT_CODE_system_file.unzipLimit": "La décompression de fichiers ne prend en charge que la décompression de fichiers jusqu'à {{max}} Go. Si vous devez modifier la limite supérieure, veuillez accéder au fichier data/Config/global.json.",
-  "TXT_CODE_e3a77a77": "Illimité",
-  "TXT_CODE_fde31068": "Taux de téléchargement de fichiers utilisateur",
-  "TXT_CODE_d8d19932": "Limite par demande HTTP, vitesse maximale de téléchargement de fichiers",
-  "TXT_CODE_785a0fcf": "Taux de téléchargement des fichiers utilisateur",
-  "TXT_CODE_b9fc604c": "Limite par demande HTTP, vitesse de téléchargement de fichiers maximum",
-  "TXT_CODE_a15fca22": "Maximum de téléchargements depuis l'URL",
-  "TXT_CODE_ecaf78a2": "Mettre 0 pour illimité"
+  "TXT_CODE_FILE_ROUTER_INSTANCE_NOT_EXIST": "L'instance {{instanceUuid}} n'existe pas",
+  "TXT_CODE_FILE_ROUTER_UNZIP_LIMIT": "Le nombre maximum de tâches de décompression simultanées a été dépassé. Le maximum autorisé est de {{maxFileTask}}. Il y a actuellement {{fileLock}} tâches en cours.",
+  "TXT_CODE_FILE_SERVICE_INSTANCE_NOT_FOUND": "L'instance {{uuid}} n'existe pas",
+  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "Limite maximale de modification de fichier dépassée",
+  "TXT_CODE_SYSTEM_FILE_ILLEGAL_ACCESS": "Mauvais chemin d'accès",
+  "TXT_CODE_SYSTEM_FILE_UNZIP_LIMIT": "La décompression de fichiers ne prend en charge que la décompression de fichiers jusqu'à {{max}} Go. Si vous devez modifier la limite supérieure, veuillez accéder au fichier data/Config/global.json.",
+  "TXT_CODE_COMMON_UNLIMITED": "Illimité",
+  "TXT_CODE_COMMON_USER_FILE_UPLOAD_RATE": "Taux de téléchargement de fichiers utilisateur",
+  "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_UPLOAD_SPEED": "Limite par demande HTTP, vitesse maximale de téléchargement de fichiers",
+  "TXT_CODE_COMMON_USER_FILE_DOWNLOAD_RATE": "Taux de téléchargement des fichiers utilisateur",
+  "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED": "Limite par demande HTTP, vitesse de téléchargement de fichiers maximum",
+  "TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL": "Maximum de téléchargements depuis l'URL",
+  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "Mettre 0 pour illimité"
 }

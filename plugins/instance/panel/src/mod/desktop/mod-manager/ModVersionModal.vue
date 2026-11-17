@@ -154,7 +154,7 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
       :z-index="10001"
       @close="emit('update:visible', false)"
     >
-      <p class="mb-8 desktop-modal-hint"><VIcon icon="mdi-alert-outline" /> {{ $t("TXT_CODE_6111bc9e") }}</p>
+      <p class="mb-8 desktop-modal-hint"><VIcon icon="mdi-alert-outline" /> {{ $t("TXT_CODE_COMMON_IF_DOWNLOADING_FAILS_SWITCH_SOURCES_OR_DOWNLOAD_FROM_THE_ORIGINAL_SITE") }}</p>
       <VDataTable class="mod-version-table" :headers="desktopHeaders" :items="sortedVersions" item-value="id"
         :loading="versionsLoading" density="comfortable">
         <template #no-data><Empty icon="mdi-puzzle-outline" compact /></template>
@@ -178,7 +178,7 @@ const desktopHeaders = computed(() => columns.value.map((column: any) => ({
   </template>
   <AppDialog v-else :visible="visible" :title="t('TXT_CODE_VERSION_SELECT')" :footer="null"
     :width="isPhone ? '100%' : '900px'" @update:visible="(val) => emit('update:visible', val)">
-    <p class="mb-8 desktop-modal-hint"><VIcon icon="mdi-alert-outline" /> {{ $t("TXT_CODE_6111bc9e") }}</p>
+    <p class="mb-8 desktop-modal-hint"><VIcon icon="mdi-alert-outline" /> {{ $t("TXT_CODE_COMMON_IF_DOWNLOADING_FAILS_SWITCH_SOURCES_OR_DOWNLOAD_FROM_THE_ORIGINAL_SITE") }}</p>
     <VDataTable :headers="desktopHeaders" :items="sortedVersions" item-value="id" :loading="versionsLoading"
       :items-per-page="isPhone ? 5 : 10" density="comfortable">
       <template #no-data><Empty icon="mdi-puzzle-outline" compact /></template>

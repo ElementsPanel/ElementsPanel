@@ -55,19 +55,19 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.routes.add({
     path: "/instances/terminal/files",
-    name: t("TXT_CODE_ae533703"),
+    name: t("TXT_CODE_COMMON_FILE_MANAGEMENT"),
     component: FileManager,
     meta: {
       permission: ROLE_USER,
       breadcrumbs: [
         {
-          name: t("TXT_CODE_e21473bc"),
+          name: t("TXT_CODE_COMMON_INSTANCES"),
           path: "/instances",
           mainMenu: true,
           permission: ROLE_ADMIN
         },
         {
-          name: t("TXT_CODE_524e3036"),
+          name: t("TXT_CODE_COMMON_TERMINAL"),
           path: "/instances/terminal",
           permission: ROLE_USER
         }
@@ -77,7 +77,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.actions.instance({
     id: "file-manager",
-    title: () => t("TXT_CODE_ae533703"),
+    title: () => t("TXT_CODE_COMMON_FILE_MANAGEMENT"),
     icon: "mdi-folder-open-outline",
     mdiIcon: "mdi-folder-open-outline",
     normalComponent: FileManagerAction,

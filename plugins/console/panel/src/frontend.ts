@@ -98,7 +98,7 @@ export async function apply(parent: PanelFrontendPluginContext) {
 
   ctx.routes.add({
     path: "/404",
-    name: t("TXT_CODE_393c816c"),
+    name: t("TXT_CODE_COMMON_PAGE_NOT_FOUND"),
     component: Page404,
     meta: { permission: ROLE.GUEST, mainMenu: false }
   });

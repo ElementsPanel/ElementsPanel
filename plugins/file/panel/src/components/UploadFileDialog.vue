@@ -57,7 +57,7 @@ const uploadSelectedFile = async (value: unknown) => {
 
     if (uploadControl.signal.aborted) return;
     if (res.value) {
-      message.success(t("TXT_CODE_773f36a0"));
+      message.success(t("TXT_CODE_COMMON_UPLOAD_SUCCESSFUL"));
       submit(`/upload_files/${res.value}`);
     } else {
       submit("");
@@ -77,11 +77,11 @@ const cancel = () => {
 
 <template>
   <VDialog v-model="open" class="app-dialog" max-width="440" persistent scrollable>
-    <VCard :title="t('TXT_CODE_e00c858c')" rounded="xl">
+    <VCard :title="t('TXT_CODE_FILE_UPLOAD')" rounded="xl">
       <VCardText class="upload-container">
         <VFileInput
           :disabled="uploading"
-          :label="t('TXT_CODE_335ba209')"
+          :label="t('TXT_CODE_COMMON_CHOOSE_FILE')"
           accept="*/*"
           prepend-icon="mdi-folder-open-outline"
           hide-details="auto"
@@ -91,7 +91,7 @@ const cancel = () => {
       </VCardText>
       <VCardActions>
         <VSpacer />
-        <VBtn variant="text" @click="cancel">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+        <VBtn variant="text" @click="cancel">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
       </VCardActions>
     </VCard>
   </VDialog>

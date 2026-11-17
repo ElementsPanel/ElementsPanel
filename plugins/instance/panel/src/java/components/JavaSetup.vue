@@ -25,11 +25,11 @@ const installed = computed(() =>
   javaList.value.filter((item) => !item.info.downloading && !item.info.error)
 );
 const modes = computed(() => [
-  { value: "system", title: t("TXT_CODE_javaMsl.system") },
-  { value: "installed", title: t("TXT_CODE_javaMsl.installed") },
-  { value: "download", title: t("TXT_CODE_javaMsl.online") }
+  { value: "system", title: t("TXT_CODE_JAVA_MSL_SYSTEM") },
+  { value: "installed", title: t("TXT_CODE_JAVA_MSL_INSTALLED") },
+  { value: "download", title: t("TXT_CODE_JAVA_MSL_ONLINE") }
 ]);
-const pathRule = (value: string) => !/["\r\n\0]/.test(value) || t("TXT_CODE_javaMsl.invalidPath");
+const pathRule = (value: string) => !/["\r\n\0]/.test(value) || t("TXT_CODE_JAVA_MSL_INVALID_PATH");
 const valid = computed(() => {
   if (mode.value === "system") return pathRule(customPath.value) === true;
   if (mode.value === "download") return !!version.value;
@@ -63,7 +63,7 @@ onUnmounted(() => {
 
 function prepare(): Promise<PreparedJava> {
   if (pending) return pending;
-  if (!valid.value || disposed) return Promise.reject(new Error(t("TXT_CODE_javaMsl.selectJava")));
+  if (!valid.value || disposed) return Promise.reject(new Error(t("TXT_CODE_JAVA_MSL_SELECT_JAVA")));
   if (mode.value === "system")
     return Promise.resolve({ id: "", path: customPath.value.trim() || "java" });
   const selectedMode = mode.value;
@@ -72,7 +72,7 @@ function prepare(): Promise<PreparedJava> {
   const daemonId = props.daemonId;
   const signal = controller.signal;
   const checkCancelled = () => {
-    if (signal.aborted) throw new Error(t("TXT_CODE_javaMsl.interrupted"));
+    if (signal.aborted) throw new Error(t("TXT_CODE_JAVA_MSL_INTERRUPTED"));
   };
   preparing.value = true;
   progress.value = undefined;
@@ -89,7 +89,7 @@ function prepare(): Promise<PreparedJava> {
         checkCancelled();
         id = result.value?.info.fullname || "";
       }
-      if (!id) throw new Error(t("TXT_CODE_77ce8542"));
+      if (!id) throw new Error(t("TXT_CODE_COMMON_JAVA_NOT_FOUND"));
       while (true) {
         checkCancelled();
         const result = await getJavaList().execute({
@@ -99,7 +99,7 @@ function prepare(): Promise<PreparedJava> {
         });
         checkCancelled();
         const runtime = result.value?.find((item) => item.info.fullname === id);
-        if (!runtime) throw new Error(t("TXT_CODE_77ce8542"));
+        if (!runtime) throw new Error(t("TXT_CODE_COMMON_JAVA_NOT_FOUND"));
         if (runtime.info.error) throw new Error(runtime.info.error);
         progress.value = runtime.info.progress;
         if (!runtime.info.downloading) return { id, path: "{mcsm_java}" };
@@ -133,7 +133,7 @@ defineExpose({ prepare });
     <VSelect
       v-model="mode"
       :items="modes"
-      :label="t('TXT_CODE_javaMsl.environment')"
+      :label="t('TXT_CODE_JAVA_MSL_ENVIRONMENT')"
       :disabled="disabled || preparing"
       variant="solo"
       density="compact"
@@ -145,8 +145,8 @@ defineExpose({ prepare });
     <VTextField
       v-if="mode === 'system'"
       v-model="customPath"
-      :label="t('TXT_CODE_43422ed3')"
-      :hint="t('TXT_CODE_javaMsl.pathHint')"
+      :label="t('TXT_CODE_COMMON_JAVA_PATH')"
+      :hint="t('TXT_CODE_JAVA_MSL_PATH_HINT')"
       persistent-hint
       placeholder="java"
       :rules="[pathRule]"
@@ -161,7 +161,7 @@ defineExpose({ prepare });
         :items="installed"
         item-title="info.fullname"
         item-value="info.fullname"
-        :label="t('TXT_CODE_javaMsl.installed')"
+        :label="t('TXT_CODE_JAVA_MSL_INSTALLED')"
         :loading="loading"
         :disabled="disabled || preparing"
         variant="solo"
@@ -169,7 +169,7 @@ defineExpose({ prepare });
         hide-details="auto"
       >
         <template #no-data>
-          <Empty :icon="false" :title="t('TXT_CODE_javaMsl.noInstalled')" compact />
+          <Empty :icon="false" :title="t('TXT_CODE_JAVA_MSL_NO_INSTALLED')" compact />
         </template>
       </VSelect>
       <VAlert v-if="error" type="error" variant="tonal" class="mt-3">{{
@@ -179,7 +179,7 @@ defineExpose({ prepare });
         variant="text"
         :disabled="disabled || preparing || loading"
         @click="refresh().catch(() => {})"
-        >{{ t("TXT_CODE_b76d94e0") }}</VBtn
+        >{{ t("TXT_CODE_COMMON_REFRESH") }}</VBtn
       >
     </template>
     <JavaVersionSelect
@@ -190,7 +190,7 @@ defineExpose({ prepare });
     />
     <div v-if="preparing" class="mt-3" role="status" aria-live="polite">
       <p class="mb-2">
-        {{ t("TXT_CODE_javaMsl.preparing") }}<span v-if="progress != null"> {{ progress }}%</span>
+        {{ t("TXT_CODE_JAVA_MSL_PREPARING") }}<span v-if="progress != null"> {{ progress }}%</span>
       </p>
       <VProgressLinear
         :model-value="progress"

@@ -8,7 +8,7 @@ export function registerSettings(ctx: DaemonPluginContext) {
       value,
       label:
         value === 0
-          ? $t("TXT_CODE_e3a77a77")
+          ? $t("TXT_CODE_COMMON_UNLIMITED")
           : value < 16
           ? `${value * 64}KB/s`
           : `${value / 16}MB/s`
@@ -20,22 +20,22 @@ export function registerSettings(ctx: DaemonPluginContext) {
         {
           key: "uploadSpeedRate",
           type: "select",
-          title: $t("TXT_CODE_fde31068"),
-          description: $t("TXT_CODE_d8d19932"),
+          title: $t("TXT_CODE_COMMON_USER_FILE_UPLOAD_RATE"),
+          description: $t("TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_UPLOAD_SPEED"),
           options: speedOptions(config.uploadSpeedRate)
         },
         {
           key: "downloadSpeedRate",
           type: "select",
-          title: $t("TXT_CODE_785a0fcf"),
-          description: $t("TXT_CODE_b9fc604c"),
+          title: $t("TXT_CODE_COMMON_USER_FILE_DOWNLOAD_RATE"),
+          description: $t("TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED"),
           options: speedOptions(config.downloadSpeedRate)
         },
         {
           key: "maxDownloadFromUrlFileCount",
           type: "number",
-          title: $t("TXT_CODE_a15fca22"),
-          description: $t("TXT_CODE_ecaf78a2"),
+          title: $t("TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL"),
+          description: $t("TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED"),
           min: 0
         }
       ],
@@ -47,7 +47,7 @@ export function registerSettings(ctx: DaemonPluginContext) {
       write: (values) => {
         const count = values.maxDownloadFromUrlFileCount;
         if (count != null && (!Number.isInteger(count) || Number(count) < 0)) {
-          throw new Error($t("TXT_CODE_ecaf78a2"));
+          throw new Error($t("TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED"));
         }
         if (values.uploadSpeedRate != null) config.uploadSpeedRate = Number(values.uploadSpeedRate);
         if (values.downloadSpeedRate != null)

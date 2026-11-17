@@ -23,6 +23,6 @@ export function apply(ctx: DaemonPluginContext) {
       ` CPU: ${toInt(info.cpuUsage * 100)}%`;
     const selfInfo = `Heap: ${toInt(self.heapUsed / MB_SIZE)}MB/${toInt(self.heapTotal / MB_SIZE)}MB`;
     const rss = `RSS: ${toInt(self.rss / MB_SIZE)}MB`;
-    systemLogger.info(`[${ctx.i18n.$t("TXT_CODE_app.sysinfo")}] ${summary} ${selfInfo} ${rss}`);
+    systemLogger.info(`[${ctx.i18n.$t("TXT_CODE_APP_SYSINFO")}] ${summary} ${selfInfo} ${rss}`);
   }, 1000 * 5);
 }

@@ -51,7 +51,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.slots.register(
     "shell.header.actions",
     {
-      title: () => t("TXT_CODE_8c3164c9"),
+      title: () => t("TXT_CODE_COMMON_PROFILE"),
       mdiIcon: "mdi-account-outline",
       taskbar: false,
       click: () => {
@@ -63,17 +63,17 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.slots.register(
     "shell.header.actions",
     {
-      title: () => t("TXT_CODE_2c69ab15"),
+      title: () => t("TXT_CODE_COMMON_LOGOUT"),
       mdiIcon: "mdi-logout",
       customClass: "nav-button-danger",
       taskbar: false,
       click: async () => {
         Modal.confirm({
-          title: t("TXT_CODE_2c69ab15"),
-          content: t("TXT_CODE_9654b91c"),
+          title: t("TXT_CODE_COMMON_LOGOUT"),
+          content: t("TXT_CODE_COMMON_ARE_YOU_SURE_YOU_WANT_TO_LOG_OUT_THIS_USER"),
           async onOk() {
             await userApi.logoutUser().execute();
-            message.success(t("TXT_CODE_11673d8c"));
+            message.success(t("TXT_CODE_COMMON_SUCCESSFULLY_LOGGED_OUT"));
             setTimeout(() => (window.location.href = "/"), 400);
           }
         });
@@ -84,7 +84,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.routes.add({
     path: "/login",
-    name: t("TXT_CODE_24873a8a"),
+    name: t("TXT_CODE_COMMON_LOGIN_PAGE"),
     component: LoginPage,
     meta: {
       permission: ROLE_GUEST,
@@ -104,7 +104,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.routes.add({
     path: "/customer",
-    name: t("TXT_CODE_ec299306"),
+    name: t("TXT_CODE_COMMON_MY_APPLICATION"),
     component: CustomerPage,
     meta: {
       permission: ROLE_USER,
@@ -117,7 +117,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.routes.add({
     path: "/users",
-    name: t("TXT_CODE_1deaa2dd"),
+    name: t("TXT_CODE_COMMON_USERS"),
     component: UserList,
     meta: {
       mainMenu: true,
@@ -129,13 +129,13 @@ export function apply(ctx: PanelFrontendPluginContext) {
   ctx.inject(["instance", "node"], (scope) =>
     scope.routes.add({
       path: "/users/resources",
-      name: t("TXT_CODE_236f70aa"),
+      name: t("TXT_CODE_COMMON_CONFIGURATION"),
       component: UserAccessSettings,
       meta: {
         permission: ROLE_ADMIN,
         breadcrumbs: [
           {
-            name: t("TXT_CODE_1deaa2dd"),
+            name: t("TXT_CODE_COMMON_USERS"),
             path: "/users",
             mainMenu: true,
             permission: ROLE_ADMIN

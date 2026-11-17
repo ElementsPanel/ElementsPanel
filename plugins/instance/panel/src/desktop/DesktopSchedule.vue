@@ -82,7 +82,7 @@ const timeRender = (text: string, schedule: Schedule) => {
         },
         [ScheduleCreateType.CYCLE]: (time: string) => {
             const [s, m, h, , , w] = time.split(" ");
-            return `${t("TXT_CODE_76750199")} ${w} / ${padZero(h)}:${padZero(m)}:${padZero(s)}`;
+            return `${t("TXT_CODE_COMMON_EVERY_WEEK")} ${w} / ${padZero(h)}:${padZero(m)}:${padZero(s)}`;
         },
         [ScheduleCreateType.SPECIFY]: (time: string) => {
             const [s, m, h, dd, mm] = time.split(" ");
@@ -99,13 +99,13 @@ const isEditing = ref(false);
 const isLoading = ref(false);
 
 const weeks = [
-    { label: t("TXT_CODE_fcbdcb34"), value: 1 },
-    { label: t("TXT_CODE_c73de59d"), value: 2 },
-    { label: t("TXT_CODE_85617390"), value: 3 },
-    { label: t("TXT_CODE_c9b31f8e"), value: 4 },
-    { label: t("TXT_CODE_d4517dcb"), value: 5 },
-    { label: t("TXT_CODE_d248b5c8"), value: 6 },
-    { label: t("TXT_CODE_a621f370"), value: 7 }
+    { label: t("TXT_CODE_COMMON_MONDAY"), value: 1 },
+    { label: t("TXT_CODE_COMMON_TUESDAY"), value: 2 },
+    { label: t("TXT_CODE_COMMON_WEDNESDAY"), value: 3 },
+    { label: t("TXT_CODE_COMMON_THURSDAY"), value: 4 },
+    { label: t("TXT_CODE_COMMON_FRIDAY"), value: 5 },
+    { label: t("TXT_CODE_COMMON_SATURDAY"), value: 6 },
+    { label: t("TXT_CODE_COMMON_SUNDAY"), value: 7 }
 ];
 
 const defaultAction: ScheduleAction = {
@@ -158,10 +158,10 @@ const openEditDialog = (task: Schedule) => {
 
 const getInputPlaceholder = (action: ScheduleAction) => {
     if (action.type === "delay") {
-        return t("TXT_CODE_bb760145");
+        return t("TXT_CODE_COMMON_PLEASE_ENTER_A_TIME_IN_MILLISECONDS_FYI_1000MS_1S");
     }
     if (action.type === "command") {
-        return t("TXT_CODE_8ff89011");
+        return t("TXT_CODE_COMMON_PLEASE_ENTER_THE_COMMAND_TO_SEND_TO_THE_INSTANCE_TO_SHUT_IT_DOWN_EXAMPLE_MESSAGES_INCLUDE");
     }
     const pluginAction = ctx.actions.schedules.find((item) => item.type === action.type);
     if (!pluginAction?.inputPlaceholder) return;
@@ -194,7 +194,7 @@ const submitForm = async () => {
 
         if (createState.value) {
             notifyDesktop(
-                isEditing.value ? t("TXT_CODE_d3de39b4") : t("TXT_CODE_d28c05df"),
+                isEditing.value ? t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL") : t("TXT_CODE_COMMON_CREATE_SUCCESS"),
                 "success"
             );
             dialogOpen.value = false;
@@ -218,10 +218,10 @@ onMounted(async () => {
             <div class="dschedule-header__right">
                 <VBtn class="ds-btn ds-btn--primary" variant="text" @click="openNewDialog">
                     <VIcon icon="mdi-plus-circle-outline"  />
-                    {{ t("TXT_CODE_1644b775") }}
+                    {{ t("TXT_CODE_COMMON_NEW_TASK") }}
                 </VBtn>
                 <VBtn class="ds-btn" variant="text" @click="loadSchedules">
-                    {{ t("TXT_CODE_b76d94e0") }}
+                    {{ t("TXT_CODE_COMMON_REFRESH") }}
                 </VBtn>
             </div>
         </div>
@@ -249,7 +249,7 @@ onMounted(async () => {
                                 x{{ item.count }}
                             </span>
                             <span v-else class="dschedule-item__count ds-count--unlimited">
-                                {{ t("TXT_CODE_a92df201") }}
+                                {{ t("TXT_CODE_SCHEDULE_REPEAT_FOREVER") }}
                             </span>
                         </div>
                         <div v-if="item.actions && item.actions[0]?.payload" class="dschedule-item__payload">
@@ -257,10 +257,10 @@ onMounted(async () => {
                         </div>
                     </div>
                     <div class="dschedule-item__actions">
-                        <VBtn icon variant="text" class="ds-btn-icon" :title="t('TXT_CODE_ad207008')" @click="openEditDialog(item)">
+                        <VBtn icon variant="text" class="ds-btn-icon" :title="t('TXT_CODE_COMMON_EDIT')" @click="openEditDialog(item)">
                             <VIcon icon="mdi-pencil-outline"  />
                         </VBtn>
-                        <VBtn icon variant="text" class="ds-btn-icon ds-btn-icon--danger" :title="t('TXT_CODE_ecbd7449')"
+                        <VBtn icon variant="text" class="ds-btn-icon ds-btn-icon--danger" :title="t('TXT_CODE_COMMON_DELETE')"
                             @click="handleDelete(item.name)">
                             <VIcon icon="mdi-delete-outline"  />
                         </VBtn>
@@ -272,7 +272,7 @@ onMounted(async () => {
 
     <DesktopDialog
       id="schedule-task-dialog"
-      :title="isEditing ? t('TXT_CODE_1548649e') : t('TXT_CODE_3502273d')"
+      :title="isEditing ? t('TXT_CODE_COMMON_EDIT_SCHEDULED_TASKS') : t('TXT_CODE_COMMON_ADD_SCHEDULED_TASK')"
       :icon="ClockCircleOutlined"
       :model-value="dialogOpen"
       :width="700"
@@ -280,44 +280,44 @@ onMounted(async () => {
       :z-index="10004"
       @close="dialogOpen = false"
     >
-        <label class="ds-form-label">{{ t('TXT_CODE_b290a4b0') }}</label>
+        <label class="ds-form-label">{{ t('TXT_CODE_SCHEDULE_NEW_TASK_NAME') }}</label>
         <VTextField v-model="formTask.name" :disabled="isEditing" variant="solo" density="compact" hide-details
-            :placeholder="t('TXT_CODE_b72d638d')" />
+            :placeholder="t('TXT_CODE_COMMON_REQUIRED_AND_MUST_BE_UNIQUE')" />
 
-        <label class="ds-form-label">{{ t('TXT_CODE_a62c99d1') }}</label>
+        <label class="ds-form-label">{{ t('TXT_CODE_COMMON_TASK_TYPE') }}</label>
         <VSelect v-model="formTask.type" :items="scheduleTypeItems" variant="solo" density="compact" hide-details
-            :placeholder="t('TXT_CODE_3bb646e4')">
+            :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT')">
           <template #no-data><Empty :icon="false" compact /></template>
         </VSelect>
 
         <template v-if="formTask.type === ScheduleCreateType.INTERVAL">
-            <label class="ds-form-label">{{ t('TXT_CODE_3554dac0') }}</label>
+            <label class="ds-form-label">{{ t('TXT_CODE_COMMON_TRIGGER_TIME') }}</label>
             <div class="ds-cycle-grid">
-                <VTextField v-model="formTask.cycle[2]" :label="t('TXT_CODE_4e2c7f64')" variant="solo" density="compact" hide-details />
-                <VTextField v-model="formTask.cycle[1]" :label="t('TXT_CODE_a7e9ff0f')" variant="solo" density="compact" hide-details />
-                <VTextField v-model="formTask.cycle[0]" :label="t('TXT_CODE_acabc771')" variant="solo" density="compact" hide-details />
+                <VTextField v-model="formTask.cycle[2]" :label="t('TXT_CODE_TIME_HOUR_UNIT')" variant="solo" density="compact" hide-details />
+                <VTextField v-model="formTask.cycle[1]" :label="t('TXT_CODE_TIME_MINUTE_UNIT')" variant="solo" density="compact" hide-details />
+                <VTextField v-model="formTask.cycle[0]" :label="t('TXT_CODE_COMMON_SEC')" variant="solo" density="compact" hide-details />
             </div>
-            <label class="ds-form-label">{{ t('TXT_CODE_d9cfab1b') }}</label>
+            <label class="ds-form-label">{{ t('TXT_CODE_COMMON_EXECUTION_COUNT') }}</label>
             <VTextField v-model.number="formTask.count" type="number" variant="solo" density="compact" hide-details
-                :placeholder="t('TXT_CODE_a59981f4')" />
+                :placeholder="t('TXT_CODE_COMMON_LEAVE_BLANK_FOR_UNLIMITED')" />
         </template>
 
         <template v-if="formTask.type === ScheduleCreateType.CYCLE">
             <div class="ds-form-group">
-                <label class="ds-form-label">{{ t('TXT_CODE_3554dac0') }}</label>
+                <label class="ds-form-label">{{ t('TXT_CODE_COMMON_TRIGGER_TIME') }}</label>
                 <VTextField :model-value="formTask.objTime?.format('HH:mm:ss')" type="time" variant="solo" density="compact" hide-details
                     @update:model-value="value => formTask.objTime = dayjs(value, 'HH:mm:ss')" />
             </div>
-            <label class="ds-form-label">{{ t('TXT_CODE_76750199') }}</label>
+            <label class="ds-form-label">{{ t('TXT_CODE_COMMON_EVERY_WEEK') }}</label>
             <div class="ds-week-grid"><VCheckbox v-for="week in weeks" :key="week.value" v-model="formTask.weekend" :value="week.value" :label="week.label" hide-details density="compact" /></div>
-            <label class="ds-form-label">{{ t('TXT_CODE_d9cfab1b') }}</label>
+            <label class="ds-form-label">{{ t('TXT_CODE_COMMON_EXECUTION_COUNT') }}</label>
             <VTextField v-model.number="formTask.count" type="number" variant="solo" density="compact" hide-details
-                :placeholder="t('TXT_CODE_a59981f4')" />
+                :placeholder="t('TXT_CODE_COMMON_LEAVE_BLANK_FOR_UNLIMITED')" />
         </template>
 
         <template v-if="formTask.type === ScheduleCreateType.SPECIFY">
             <div class="ds-form-group">
-                <label class="ds-form-label">{{ t('TXT_CODE_f3fe5c8e') }}</label>
+                <label class="ds-form-label">{{ t('TXT_CODE_COMMON_PLEASE_SELECT_A_DATE_AND_TIME') }}</label>
                 <VTextField :model-value="formTask.objTime?.format('YYYY-MM-DDTHH:mm')" type="datetime-local" variant="solo" density="compact" hide-details
                     @update:model-value="value => formTask.objTime = dayjs(value)" />
             </div>
@@ -325,10 +325,10 @@ onMounted(async () => {
 
         <div class="ds-form-group">
             <div class="ds-actions-header">
-                <span>{{ t("TXT_CODE_61811ac") }}</span>
+                <span>{{ t("TXT_CODE_COMMON_TASK_PAYLOAD") }}</span>
                 <VBtn size="small" variant="text" @click="addEmptyAction">
                     <VIcon icon="mdi-plus-circle-outline" />
-                    {{ t("TXT_CODE_dfc17a0c") }}
+                    {{ t("TXT_CODE_COMMON_ADD_CONFIGURATION") }}
                 </VBtn>
             </div>
             <div v-for="(action, index) in formTask.actions" :key="index" class="ds-action-row">
@@ -337,7 +337,7 @@ onMounted(async () => {
                       <template #no-data><Empty :icon="false" compact /></template>
                     </VSelect>
                     <VTextField v-model="action.payload" variant="solo" density="compact" hide-details
-                        :placeholder="getInputPlaceholder(action) || t('TXT_CODE_6cbb84a9')"
+                        :placeholder="getInputPlaceholder(action) || t('TXT_CODE_COMMON_UNAVAILABLE')"
                         :disabled="!getInputPlaceholder(action)" />
                     <VBtn icon variant="text" color="error" @click="delAction(index)">
                         <VIcon :icon="MinusCircleOutlined" />
@@ -346,11 +346,11 @@ onMounted(async () => {
         </div>
       <template #footer>
         <VBtn class="ds-dialog-btn ds-dialog-btn--default" variant="text" @click="dialogOpen = false">
-            {{ t("TXT_CODE_a0451c97") }}
+            {{ t("TXT_CODE_COMMON_CANCEL") }}
         </VBtn>
         <VBtn class="ds-dialog-btn ds-dialog-btn--primary" variant="text" :disabled="isLoading" @click="submitForm">
             <VIcon icon="mdi-loading" v-if="isLoading"  />
-            {{ t("TXT_CODE_abfe9512") }}
+            {{ t("TXT_CODE_COMMON_SAVE") }}
         </VBtn>
       </template>
     </DesktopDialog>

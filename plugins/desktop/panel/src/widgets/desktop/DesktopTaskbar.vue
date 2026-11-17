@@ -265,7 +265,7 @@ const handleContextMenu = (event: MouseEvent, win: TaskbarWindow) => {
                             {{ t("TXT_CODE_DESKTOP_EXIT") }}
                         </VListItem>
                         <VListItem @click="handleAccountMenuClick({ key: 'logout' })">
-                            {{ t("TXT_CODE_2c69ab15") }}
+                            {{ t("TXT_CODE_COMMON_LOGOUT") }}
                         </VListItem>
                     </VList>
                 </VMenu>

@@ -41,7 +41,7 @@ export function apply(ctx: DaemonPluginContext) {
     const start = Date.now();
     const end = start + ONE_HOUR_TIME;
     if (!data?.name || !data?.password) {
-      throw new Error($t("TXT_CODE_passport_router.registerErr"));
+      throw new Error($t("TXT_CODE_PASSPORT_ROUTER_REGISTER_ERR"));
     }
     ctx.transfer.passports.registerMission(data.password, {
       name: data.name,
@@ -77,7 +77,7 @@ export function apply(ctx: DaemonPluginContext) {
     if (isAuthenticated(routerCtx)) return await next();
 
     ctx.logger.warn(
-      $t("TXT_CODE_auth_router.notAccess", {
+      $t("TXT_CODE_AUTH_ROUTER_NOT_ACCESS", {
         id: socket.id,
         address: socket.handshake.address,
         event: routePath
@@ -105,7 +105,7 @@ export function apply(ctx: DaemonPluginContext) {
         // The authentication is passed, and the registered session is a trusted
         // session.
         ctx.logger.info(
-          $t("TXT_CODE_auth_router.access", {
+          $t("TXT_CODE_AUTH_ROUTER_ACCESS", {
             id: routerCtx.socket.id,
             address: routerCtx.socket.handshake.address
           })
@@ -134,7 +134,7 @@ export function apply(ctx: DaemonPluginContext) {
       if (!session.login) {
         routerCtx.socket.disconnect();
         ctx.logger.info(
-          $t("TXT_CODE_auth_router.disconnect", {
+          $t("TXT_CODE_AUTH_ROUTER_DISCONNECT", {
             id: routerCtx.socket.id,
             address: routerCtx.socket.handshake.address
           })

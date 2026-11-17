@@ -91,7 +91,7 @@ const cards = computed<PerfCardItem[]>(() => {
     cpuUsage != null
       ? {
         key: "cpu",
-        label: t("TXT_CODE_b862a158"),
+        label: t("TXT_CODE_COMMON_CPU_USAGE"),
         value: `${parseInt(String(cpuUsage))}%`,
         icon: "mdi-cube-outline",
         theme: `perf-card--cpu-${cpuStatus}`,
@@ -102,7 +102,7 @@ const cards = computed<PerfCardItem[]>(() => {
     memoryUsage != null
       ? {
         key: "memory",
-        label: t("TXT_CODE_593ee330"),
+        label: t("TXT_CODE_COMMON_MEMORY"),
         value: formatMemoryUsage(memoryUsage, memoryLimit),
         icon: "mdi-view-dashboard-outline",
         theme: "perf-card--memory",
@@ -124,7 +124,7 @@ const cards = computed<PerfCardItem[]>(() => {
     rxRate != null || txRate != null
       ? {
         key: "network-bandwidth",
-        label: `${t("TXT_CODE_50daec4")} · 带宽`,
+        label: `${t("TXT_CODE_COMMON_NETWORK")} · 带宽`,
         value: `↓${formatNetworkSpeed(rxRate)} ↑${formatNetworkSpeed(txRate)}`,
         icon: "mdi-lan-connect",
         theme: "perf-card--network",
@@ -138,7 +138,7 @@ const cards = computed<PerfCardItem[]>(() => {
     rxBytes != null || txBytes != null
       ? {
         key: "network-traffic",
-        label: `${t("TXT_CODE_50daec4")} · 流量`,
+        label: `${t("TXT_CODE_COMMON_NETWORK")} · 流量`,
         value: `↓${formatTrafficUsage(rxBytes)} ↑${formatTrafficUsage(txBytes)}`,
         icon: "mdi-lan-connect",
         theme: "perf-card--network",

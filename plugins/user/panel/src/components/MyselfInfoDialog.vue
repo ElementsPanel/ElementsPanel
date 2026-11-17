@@ -46,17 +46,17 @@ const handleGenerateApiKey = async (enable: boolean) => {
   await execute({ data: { enable }, forceRequest: true, errorAlert: true });
   disableApiKeyDialog.value = false;
   await updateUserInfo();
-  return message.success(t("TXT_CODE_d3de39b4"));
+  return message.success(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"));
 };
 
 const handleChangePassword = async () => {
-  if (!formState.password1 || !formState.password2) return message.error(t("TXT_CODE_c846074d"));
-  if (formState.password1 !== formState.password2) return reportErrorMsg(t("TXT_CODE_d51f5d6"));
+  if (!formState.password1 || !formState.password2) return message.error(t("TXT_CODE_COMMON_PLEASE_COMPLETE_YOUR_ACCOUNT_PROFILE"));
+  if (formState.password1 !== formState.password2) return reportErrorMsg(t("TXT_CODE_COMMON_PASSWORD_LENGTH_DOES_NOT_MATCH"));
   if (formState.password1.length < 9 || formState.password1.length > 36)
-    return reportErrorMsg(t("TXT_CODE_cc5a3aea"));
+    return reportErrorMsg(t("TXT_CODE_COMMON_PASSWORD_LENGTH_CANNOT_BE_LESS_THAN_9_CHARACTERS"));
   try {
     await executeUpdatePassword({ data: { passWord: formState.password1 } });
-    message.success(t("TXT_CODE_d3de39b4"));
+    message.success(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"));
     setTimeout(() => window.location.reload(), 600);
   } catch (error: any) {
     return reportErrorMsg(error.message);
@@ -75,9 +75,9 @@ const confirm2FACode = async () => {
   try {
     await confirm2FA().execute({ data: { enable: true, TOTPCode: formState.TOTPCode } });
   } catch {
-    return message.error(t("TXT_CODE_3d68e43b"));
+    return message.error(t("TXT_CODE_COMMON_TWO_FACTOR_AUTHENTICATION_CODE_IS_INCORRECT"));
   }
-  message.success(t("TXT_CODE_d3de39b4"));
+  message.success(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"));
   await updateUserInfo();
   formState.TOTPCode = "";
   formState.qrcode = "";
@@ -85,7 +85,7 @@ const confirm2FACode = async () => {
 
 const disable2FACode = async () => {
   await confirm2FA().execute({ data: { enable: false, TOTPCode: "000000" } });
-  message.success(t("TXT_CODE_d3de39b4"));
+  message.success(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"));
   await updateUserInfo();
   formState.qrcode = "";
 };
@@ -93,98 +93,98 @@ const disable2FACode = async () => {
 
 <template>
   <VDialog v-model="tools.showUserInfoDialog" class="app-dialog myself-info-dialog" max-width="720" scrollable>
-    <VCard :title="t('TXT_CODE_9bb2f08b')">
+    <VCard :title="t('TXT_CODE_COMMON_USER_PROFILE')">
       <VCardText>
         <VForm>
           <VRow>
             <VCol cols="12" sm="6">
-              <VTextField :label="t('TXT_CODE_eb9fcdad')" :model-value="state.userInfo?.userName" readonly />
+              <VTextField :label="t('TXT_CODE_USER_USERNAME')" :model-value="state.userInfo?.userName" readonly />
             </VCol>
             <VCol cols="12" sm="6">
-              <VTextField :label="t('TXT_CODE_63ccbf90')"
+              <VTextField :label="t('TXT_CODE_USER_PERMISSION_LEVEL')"
                 :model-value="PERMISSION_MAP[String(state.userInfo?.permission)]" readonly />
             </VCol>
             <VCol cols="12" sm="6">
-              <VTextField :label="t('TXT_CODE_c5c56801')" :model-value="state.userInfo?.registerTime" readonly />
+              <VTextField :label="t('TXT_CODE_COMMON_REGISTRATION_TIME')" :model-value="state.userInfo?.registerTime" readonly />
             </VCol>
             <VCol cols="12" sm="6">
-              <VTextField :label="t('TXT_CODE_d7ee9ba')" :model-value="state.userInfo?.loginTime" readonly />
+              <VTextField :label="t('TXT_CODE_COMMON_LAST_LOGIN')" :model-value="state.userInfo?.loginTime" readonly />
             </VCol>
             <VCol cols="12">
-              <VTextField :label="t('TXT_CODE_1d9d0746')" :model-value="state.userInfo?.uuid" readonly />
+              <VTextField :label="t('TXT_CODE_COMMON_UUID')" :model-value="state.userInfo?.uuid" readonly />
             </VCol>
           </VRow>
 
           <section class="profile-section">
-            <h3>{{ t("TXT_CODE_551b0348") }}</h3>
+            <h3>{{ t("TXT_CODE_COMMON_PASSWORD") }}</h3>
             <VBtn v-if="!formState.resetPassword" color="error" variant="tonal" @click="formState.resetPassword = true">
-              {{ t("TXT_CODE_50d471b2") }}</VBtn>
+              {{ t("TXT_CODE_COMMON_CHANGE") }}</VBtn>
             <div v-else class="profile-form-stack">
-              <VTextField v-model="formState.password1" type="password" :placeholder="t('TXT_CODE_4f6c39d3')" />
-              <VTextField v-model="formState.password2" type="password" :placeholder="t('TXT_CODE_37924654')" />
+              <VTextField v-model="formState.password1" type="password" :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_NEW_PASSWORD')" />
+              <VTextField v-model="formState.password2" type="password" :placeholder="t('TXT_CODE_COMMON_PLEASE_RE_ENTER_THE_NEW_PASSWORD')" />
               <div class="profile-actions">
-                <VBtn variant="text" @click="formState.resetPassword = false">{{ t("TXT_CODE_3b1cc020") }}</VBtn>
+                <VBtn variant="text" @click="formState.resetPassword = false">{{ t("TXT_CODE_COMMON_DISCARD") }}</VBtn>
                 <VBtn color="primary" :loading="updatePasswordLoading" @click="handleChangePassword">{{
-                  t("TXT_CODE_d507abff") }}</VBtn>
+                  t("TXT_CODE_COMMON_CONFIRM") }}</VBtn>
               </div>
             </div>
           </section>
 
           <section class="profile-section">
-            <h3>{{ t("TXT_CODE_61eae8a6") }}</h3>
+            <h3>{{ t("TXT_CODE_COMMON_TWO_FACTOR_AUTHENTICATION") }}</h3>
             <div v-if="!formState.qrcode" class="profile-actions">
-              <VBtn @click="handleBind2FA">{{ state.userInfo?.open2FA ? t("TXT_CODE_85a33a84") : t("TXT_CODE_a492ae63")
+              <VBtn @click="handleBind2FA">{{ state.userInfo?.open2FA ? t("TXT_CODE_COMMON_REBIND") : t("TXT_CODE_COMMON_START_BINDING")
                 }}</VBtn>
               <VBtn v-if="state.userInfo?.open2FA" color="error" variant="tonal" @click="disable2FACode">{{
-                t("TXT_CODE_edd64e4d") }}</VBtn>
+                t("TXT_CODE_USER_ACCOUNT_DISABLE") }}</VBtn>
             </div>
             <div v-else class="two-fa-setup">
-              <p>1. {{ t("TXT_CODE_cc561947") }}<br />2. {{ t("TXT_CODE_fffce4a8") }}<br />3. {{ t("TXT_CODE_af2a6972")
+              <p>1. {{ t("TXT_CODE_COMMON_SCAN_THE_QR_CODE_USING_GOOGLE_AUTHENTICATION_OR_OTHER_UNIVERSAL_2_FA_TOOLS") }}<br />2. {{ t("TXT_CODE_COMMON_ENTER_THE_TOTP_VERIFICATION_CODE_IN_THE_BOX_BELOW") }}<br />3. {{ t("TXT_CODE_COMMON_CLICK_THE_I_HAVE_SCANNED_BUTTON")
                 }}</p>
-              <VImg :src="formState.qrcode" :alt="t('TXT_CODE_UI_2FA_QR_CODE')" width="180" height="180" class="qrcode" />
-              <VTextField v-model="formState.TOTPCode" :placeholder="t('TXT_CODE_7ac8b1d3')" />
+              <VImg :src="formState.qrcode" :alt="t('TXT_CODE_UI_2_FA_QR_CODE')" width="180" height="180" class="qrcode" />
+              <VTextField v-model="formState.TOTPCode" :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_THE_TWO_FACTOR_AUTHENTICATION_CODE')" />
               <div class="profile-actions">
-                <VBtn color="primary" :loading="setUserApiKeyLoading" @click="confirm2FACode">{{ t("TXT_CODE_b0a18c20")
+                <VBtn color="primary" :loading="setUserApiKeyLoading" @click="confirm2FACode">{{ t("TXT_CODE_COMMON_I_HAVE_SCANNED")
                   }}</VBtn>
-                <VBtn variant="text" @click="formState.qrcode = ''">{{ t("TXT_CODE_3b1cc020") }}</VBtn>
+                <VBtn variant="text" @click="formState.qrcode = ''">{{ t("TXT_CODE_COMMON_DISCARD") }}</VBtn>
               </div>
             </div>
           </section>
 
           <section class="profile-section">
             <h3>{{ t("TXT_CODE_UI_API_KEY") }}</h3>
-            <p class="text-medium-emphasis">{{ t("TXT_CODE_b2dbf778") }}</p>
+            <p class="text-medium-emphasis">{{ t("TXT_CODE_COMMON_REQUESTS_USING_THIS_KEY_HAVE_THE_SAME_PERMISSIONS_AS_THIS_ACCOUNT") }}</p>
             <div class="api-key-display">
               <VChip v-if="state.userInfo?.apiKey" class="api-key-chip" variant="tonal">{{ state.userInfo.apiKey }}
               </VChip>
-              <span v-else class="text-medium-emphasis">{{ t("TXT_CODE_d7dbc7c2") }}</span>
+              <span v-else class="text-medium-emphasis">{{ t("TXT_CODE_COMMON_DISABLED") }}</span>
               <VBtn v-if="state.userInfo?.apiKey" icon="mdi-content-copy" size="small" variant="text"
-                :aria-label="t('TXT_CODE_13ae6a93')" @click="toCopy(String(state.userInfo?.apiKey ?? ''))" />
+                :aria-label="t('TXT_CODE_COMMON_COPY')" @click="toCopy(String(state.userInfo?.apiKey ?? ''))" />
             </div>
             <div class="profile-actions">
               <VBtn color="primary" :loading="setUserApiKeyLoading" @click="handleGenerateApiKey(true)">{{
-                t("TXT_CODE_d51cd7ae") }}</VBtn>
+                t("TXT_CODE_COMMON_GENERATE_NEW_KEY") }}</VBtn>
               <VBtn v-if="state.userInfo?.apiKey" color="error" variant="tonal" @click="disableApiKeyDialog = true">{{
-                t("TXT_CODE_718c9310") }}</VBtn>
+                t("TXT_CODE_COMMON_DISABLE") }}</VBtn>
             </div>
           </section>
         </VForm>
       </VCardText>
       <VCardActions>
         <VSpacer />
-        <VBtn variant="text" @click="close">{{ t("TXT_CODE_b1dedda3") }}</VBtn>
+        <VBtn variant="text" @click="close">{{ t("TXT_CODE_COMMON_STOP") }}</VBtn>
       </VCardActions>
     </VCard>
   </VDialog>
 
   <VDialog v-model="disableApiKeyDialog" class="app-dialog" max-width="460" scrollable>
     <VCard :title="t('TXT_CODE_USER_DISABLE_API_KEY')" rounded="xl">
-      <VCardText>{{ t("TXT_CODE_6819de18") }}</VCardText>
+      <VCardText>{{ t("TXT_CODE_COMMON_DISABLING_THIS_KEY_PREVENTS_IT_FROM_AUTHENTICATING_REQUESTS") }}</VCardText>
       <VCardActions>
         <VSpacer />
-        <VBtn variant="text" @click="disableApiKeyDialog = false">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+        <VBtn variant="text" @click="disableApiKeyDialog = false">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
         <VBtn color="error" :loading="setUserApiKeyLoading" @click="handleGenerateApiKey(false)">{{
-          t("TXT_CODE_718c9310") }}</VBtn>
+          t("TXT_CODE_COMMON_DISABLE") }}</VBtn>
       </VCardActions>
     </VCard>
   </VDialog>

@@ -82,7 +82,7 @@ export function apply(ctx: PanelPluginContext) {
   settingsRouter.put("/setting", requireAdmin, async (requestCtx) => {
     const config = (requestCtx.request.body ?? {}) as Partial<SystemConfig>;
     const current = ctx.settings.config;
-    if (!config || !current) throw new Error(ctx.i18n.$t("TXT_CODE_e4d6cc20"));
+    if (!config || !current) throw new Error(ctx.i18n.$t("TXT_CODE_COMMON_REQUEST_BODY_ERROR"));
     if (config.gzip != null) current.gzip = config.gzip;
     if (config.maxCompress != null) current.maxCompress = config.maxCompress;
     if (config.maxDownload != null) current.maxDownload = config.maxDownload;

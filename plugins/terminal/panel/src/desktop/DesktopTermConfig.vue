@@ -47,7 +47,7 @@ const submit = async () => {
         stopCommand: options.value.config.stopCommand
       }
     });
-    notifyDesktop(t("TXT_CODE_d3de39b4"), "success");
+    notifyDesktop(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"), "success");
   } catch (err: any) {
     notifyDesktopError(err);
   } finally {
@@ -66,45 +66,45 @@ watch(instanceInfo, (val) => {
       <VRow v-if="options" :density="isPhone ? 'compact' : 'default'">
         <VCol cols="12" md="6">
           <div class="dterm-field dterm-field--switch">
-            <div><div class="dterm-field__title">{{ t("TXT_CODE_ef650d57") }}</div><div class="dterm-field__hint">{{ t("TXT_CODE_feeea328") }}</div></div>
+            <div><div class="dterm-field__title">{{ t("TXT_CODE_COMMON_EMULATED_TERMINAL") }}</div><div class="dterm-field__hint">{{ t("TXT_CODE_COMMON_SUPPORTS_TAB_AND_CTRL_SHORTCUTS_DISABLE_IF_COMPATIBILITY_ISSUES_OCCUR") }}</div></div>
             <VSwitch v-model="options.config.terminalOption.pty" color="primary" hide-details />
           </div>
           <div class="dterm-field dterm-field--switch">
-            <div><div class="dterm-field__title">{{ t("TXT_CODE_e1a3b150") }}</div><div class="dterm-field__hint">{{ t("TXT_CODE_6a515e35") }}</div></div>
+            <div><div class="dterm-field__title">{{ t("TXT_CODE_COMMON_COLOR_RENDERING") }}</div><div class="dterm-field__hint">{{ t("TXT_CODE_COMMON_AUTOMATICALLY_COLORS_OUTPUT_DISABLE_IF_IT_CONFLICTS_WITH_THE_APPLICATION_S_COLORS") }}</div></div>
             <VSwitch v-model="options.config.terminalOption.haveColor" color="primary" hide-details />
           </div>
           <div class="dterm-field">
-            <div class="dterm-field__title">{{ t("TXT_CODE_b91a94f9") }}</div>
-            <div class="dterm-field__hint">{{ t("TXT_CODE_b94f13ce") }}</div>
-            <VSelect v-model="options.config.crlf" :items="[{ title: t('TXT_CODE_365aabd4'), value: 1 }, { title: t('TXT_CODE_20cec54'), value: 2 }]" :placeholder="t('TXT_CODE_3bb646e4')" variant="solo" density="compact" hide-details>
+            <div class="dterm-field__title">{{ t("TXT_CODE_COMMON_COMMAND_LINE_ENDING") }}</div>
+            <div class="dterm-field__hint">{{ t("TXT_CODE_TERMINAL_LINE_ENDING_PLATFORM_HINT") }}</div>
+            <VSelect v-model="options.config.crlf" :items="[{ title: t('TXT_CODE_COMMON_LINE_FEED'), value: 1 }, { title: t('TXT_CODE_COMMON_CARRIAGE_RETURN_AND_LINE_FEED'), value: 2 }]" :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT')" variant="solo" density="compact" hide-details>
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect>
           </div>
         </VCol>
         <VCol cols="12" md="6">
           <div class="dterm-field">
-            <div class="dterm-field__title">{{ t("TXT_CODE_11cfe3a1") }}</div>
-            <div class="dterm-field__hint">{{ t("TXT_CODE_7ec7ccb8") }}</div>
+            <div class="dterm-field__title">{{ t("TXT_CODE_COMMON_INSTANCE_SHUTDOWN_COMMAND") }}</div>
+            <div class="dterm-field__hint">{{ t("TXT_CODE_COMMON_RUNS_WHEN_STOPPING_THE_INSTANCE_C_SENDS_CTRL_C") }}</div>
             <VTextField v-model="options.config.stopCommand" variant="solo" density="compact" hide-details />
           </div>
           <div class="dterm-field">
-            <div class="dterm-field__title">{{ t("TXT_CODE_449d1581") }}</div>
-            <div class="dterm-field__hint">{{ t("TXT_CODE_d16d82ab") }}</div>
-            <VSelect v-model="options.config.ie" :items="TERMINAL_CODE" :placeholder="t('TXT_CODE_bd2559f3')" variant="solo" density="compact" hide-details class="mb-3">
+            <div class="dterm-field__title">{{ t("TXT_CODE_COMMON_INPUT_AND_OUTPUT_ENCODING") }}</div>
+            <div class="dterm-field__hint">{{ t("TXT_CODE_COMMON_CHANGE_THE_ENCODING_IF_TERMINAL_OUTPUT_IS_GARBLED") }}</div>
+            <VSelect v-model="options.config.ie" :items="TERMINAL_CODE" :placeholder="t('TXT_CODE_COMMON_TERMINAL_INPUT_ENCODING')" variant="solo" density="compact" hide-details class="mb-3">
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect>
-            <VSelect v-model="options.config.oe" :items="TERMINAL_CODE" :placeholder="t('TXT_CODE_6e96b2a9')" variant="solo" density="compact" hide-details>
+            <VSelect v-model="options.config.oe" :items="TERMINAL_CODE" :placeholder="t('TXT_CODE_COMMON_TERMINAL_OUTPUT_ENCODING')" variant="solo" density="compact" hide-details>
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect>
           </div>
         </VCol>
       </VRow>
-      <div v-else class="dterm-config__loading"><VProgressCircular indeterminate />{{ t("TXT_CODE_b197be11") }}</div>
+      <div v-else class="dterm-config__loading"><VProgressCircular indeterminate />{{ t("TXT_CODE_COMMON_LOADING_DATA") }}</div>
     </div>
     <div class="dterm-config__footer">
       <VBtn class="dterm-btn dterm-btn--primary" variant="text" :loading="isLoading" @click="submit">
         <VIcon icon="mdi-content-save-outline" />
-        {{ t("TXT_CODE_abfe9512") }}
+        {{ t("TXT_CODE_COMMON_SAVE") }}
       </VBtn>
     </div>
   </div>

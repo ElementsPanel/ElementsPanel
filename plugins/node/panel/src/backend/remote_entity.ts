@@ -40,27 +40,27 @@ export default class RemoteService {
     const daemonInfo = this.getDaemonInfo();
 
     if (this.available) {
-      logger().info(`${$t("TXT_CODE_daemonInfo.resetConnect")}:${daemonInfo}`);
+      logger().info(`${$t("TXT_CODE_DAEMON_INFO_RESET_CONNECT")}:${daemonInfo}`);
       this.disconnect();
     }
 
     if (this.socket && this.socket.hasListeners("connect")) {
-      logger().info(`${$t("TXT_CODE_daemonInfo.replaceConnect")}:${daemonInfo}`);
+      logger().info(`${$t("TXT_CODE_DAEMON_INFO_REPLACE_CONNECT")}:${daemonInfo}`);
       return this.refreshReconnect();
     }
 
-    logger().info(`${$t("TXT_CODE_daemonInfo.tryConnect")}:${daemonInfo}`);
+    logger().info(`${$t("TXT_CODE_DAEMON_INFO_TRY_CONNECT")}:${daemonInfo}`);
     this.socket = io(this.realUrl, {
       ...this.config.connectOpts,
       path: removeTrail(this.config.prefix, "/") + "/socket.io"
     });
 
     this.socket.on("connect", async () => {
-      logger().info($t("TXT_CODE_daemonInfo.connect", { v: daemonInfo }));
+      logger().info($t("TXT_CODE_DAEMON_INFO_CONNECT", { v: daemonInfo }));
       await this.onConnect();
     });
     this.socket.on("disconnect", async () => {
-      logger().info($t("TXT_CODE_daemonInfo.disconnect", { v: daemonInfo }));
+      logger().info($t("TXT_CODE_DAEMON_INFO_DISCONNECT", { v: daemonInfo }));
       await this.onDisconnect();
     });
     this.socket.on("connect_error", async (error: Error) => {
@@ -77,7 +77,7 @@ export default class RemoteService {
   public async setLanguage(language?: string) {
     if (!language) language = i18next().language;
     logger().info(
-      `${$t("TXT_CODE_daemonInfo.setLanguage")} (${this.config.ip}:${this.config.port}/${this.config.remarks
+      `${$t("TXT_CODE_DAEMON_INFO_SET_LANGUAGE")} (${this.config.ip}:${this.config.port}/${this.config.remarks
       }) language: ${language}`
     );
     return await new RemoteRequest(this).request("info/setting", {
@@ -113,19 +113,19 @@ export default class RemoteService {
         }
 
         if (this.socket !== socket || !socket.connected) return false;
-        logger().info($t("TXT_CODE_daemonInfo.authSuccess", { v: daemonInfo }));
+        logger().info($t("TXT_CODE_DAEMON_INFO_AUTH_SUCCESS", { v: daemonInfo }));
         publishAvailability();
         return true;
       }
       this.available = false;
       publishAvailability();
-      logger().warn($t("TXT_CODE_daemonInfo.authFailure", { v: daemonInfo }));
+      logger().warn($t("TXT_CODE_DAEMON_INFO_AUTH_FAILURE", { v: daemonInfo }));
       return false;
     } catch (error: any) {
       if (this.socket !== socket) return false;
       this.available = false;
       publishAvailability();
-      logger().warn($t("TXT_CODE_daemonInfo.authError", { v: daemonInfo }));
+      logger().warn($t("TXT_CODE_DAEMON_INFO_AUTH_ERROR", { v: daemonInfo }));
       logger().warn(error);
       return false;
     }
@@ -161,7 +161,7 @@ export default class RemoteService {
 
   disconnect() {
     if (this.socket) {
-      logger().info($t("TXT_CODE_daemonInfo.closed", { v: this.getDaemonInfo() }));
+      logger().info($t("TXT_CODE_DAEMON_INFO_CLOSED", { v: this.getDaemonInfo() }));
     }
     this.close();
   }

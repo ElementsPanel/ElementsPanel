@@ -56,9 +56,9 @@ const instanceTypeOptions = computed(() =>
   }))
 );
 const requiredRule = (value: unknown) =>
-  (typeof value === "string" ? !!value.trim() : !!value) || t("TXT_CODE_47e21c80");
+  (typeof value === "string" ? !!value.trim() : !!value) || t("TXT_CODE_COMMON_PLEASE_COMPLETE_THE_PARAMETERS");
 const javaPathRule = (value: string) =>
-  !/["\r\n\0]/.test(value) || t("TXT_CODE_minecraft.invalidSelection");
+  !/["\r\n\0]/.test(value) || t("TXT_CODE_MINECRAFT_INVALID_SELECTION");
 const formRef = ref<InstanceType<typeof VForm>>();
 const formData = reactive<IGlobalInstanceConfig>(cloneDeep(defaultInstanceInfo));
 const isImportMode = computed(() => props.createMethod === QUICKSTART_METHOD.IMPORT);
@@ -147,20 +147,20 @@ const percentComplete = computed(() => {
   return uploadStarted.value && progress?.[1] ? (progress[0] / progress[1]) * 100 : 0;
 });
 const percentText = computed(() => {
-  if (!uploadFileInstance.value) return t("TXT_CODE_c17f6488");
-  if (uploadStarted.value) return t("TXT_CODE_b625dbf0") + percentComplete.value.toFixed(0) + "%";
-  return t("TXT_CODE_f63c4be2", {
+  if (!uploadFileInstance.value) return t("TXT_CODE_COMMON_SELECT_ZIP_FILE");
+  if (uploadStarted.value) return t("TXT_CODE_COMMON_UPLOADING") + percentComplete.value.toFixed(0) + "%";
+  return t("TXT_CODE_COMMON_WAITING_TO_UPLOAD_IN_QUEUE_REMAINING", {
     n: fileManager?.uploadService.getFileNth(uploadFileInstance.value.id || "")
   });
 });
 const startCommandHint = computed(() =>
   isDownloadMode.value
-    ? t("TXT_CODE_minecraft.commandHint")
+    ? t("TXT_CODE_MINECRAFT_COMMAND_HINT")
     : isImportMode.value
-    ? t("TXT_CODE_17544b7b")
+    ? t("TXT_CODE_COMMON_UNABLE_FIND_THE_SERVER_CORE_PLEASE_PROVIDE_THE_STARTUP_COMMAND_MANUALLY")
     : props.createMethod === QUICKSTART_METHOD.DOCKER
-    ? t("TXT_CODE_26495d02")
-    : t("TXT_CODE_8c0db3f4")
+    ? t("TXT_CODE_COMMON_YOU_CAN_ENTER_A_STARTUP_COMMAND_SUCH_AS_JAVA_JAR_DEMO_JAR_IF_NO_STARTUP_COMMAND")
+    : t("TXT_CODE_COMMON_PLEASE_PROVIDE_THE_STARTUP_COMMAND")
 );
 
 async function validate() {
@@ -172,16 +172,16 @@ async function validate() {
       !uFile.value?.size ||
       !(isFileMode.value ? ["jar"] : ["zip", "jar"]).includes(extension || "")
     ) {
-      reportErrorMsg(t("TXT_CODE_minecraft.invalidFile"));
+      reportErrorMsg(t("TXT_CODE_MINECRAFT_INVALID_FILE"));
       return false;
     }
     if (!fileManager) {
-      reportErrorMsg(t("TXT_CODE_e8ce38c2"));
+      reportErrorMsg(t("TXT_CODE_COMMON_FAILED_TO_GET_UPLOAD_ADDRESS"));
       return false;
     }
   }
   if (isDownloadMode.value && !downloadSelection.value) {
-    reportErrorMsg(t("TXT_CODE_minecraft.invalidSelection"));
+    reportErrorMsg(t("TXT_CODE_MINECRAFT_INVALID_SELECTION"));
     return false;
   }
   if (needsJava.value && javaService.value && !javaValid.value) return false;
@@ -192,7 +192,7 @@ async function prepareJava() {
   formData.java.id = "";
   if (!needsJava.value) return;
   if (javaService.value) {
-    if (!javaSetup.value) throw new Error(t("TXT_CODE_e8ce38c2"));
+    if (!javaSetup.value) throw new Error(t("TXT_CODE_COMMON_FAILED_TO_GET_UPLOAD_ADDRESS"));
     const java = await javaSetup.value.prepare();
     formData.java.id = java.id;
     javaPath.value = java.path;
@@ -214,13 +214,13 @@ async function showConfirmation() {
   if (busy.value || !(await validate()) || busy.value || disposed) return;
   confirming.value = true;
   confirmation = Modal.confirm({
-    title: t("TXT_CODE_2a3b0c17"),
+    title: t("TXT_CODE_COMMON_FINAL_CONFIRMATION"),
     content: isDownloadMode.value
-      ? t("TXT_CODE_minecraft.confirmDownload")
+      ? t("TXT_CODE_MINECRAFT_CONFIRM_DOWNLOAD")
       : needUpload.value
-      ? t("TXT_CODE_e06841b5")
-      : t("TXT_CODE_5deeefb5"),
-    okText: t("TXT_CODE_d507abff"),
+      ? t("TXT_CODE_COMMON_THE_INSTANCE_WILL_BE_CREATED_AS_YOU_UPLOAD_THE_FILES_THIS_IS_AN_IRREVERSIBLE_PROCESS_DO")
+      : t("TXT_CODE_COMMON_INSTANCE_WILL_BE_CREATED_PROCEED"),
+    okText: t("TXT_CODE_COMMON_CONFIRM"),
     async onOk() {
       if (disposed || submitting.value || createdInstanceUuid.value) return;
       submitting.value = true;
@@ -233,7 +233,7 @@ async function showConfirmation() {
           // Recheck after confirmation, before Java preparation can download a runtime.
           const capability = await checkInstallCapability({ params: { daemonId: props.daemonId } });
           if (capability.value?.supported !== true)
-            throw new Error(t("TXT_CODE_minecraft.nodeUnsupported"));
+            throw new Error(t("TXT_CODE_MINECRAFT_NODE_UNSUPPORTED"));
         }
         if (disposed || daemonId !== props.daemonId || createMethod !== props.createMethod) return;
         await prepareJava();
@@ -268,7 +268,7 @@ function instanceConfig() {
 }
 
 async function selectedFile() {
-  if (!uFile.value || !fileManager) throw new Error(t("TXT_CODE_minecraft.invalidFile"));
+  if (!uFile.value || !fileManager) throw new Error(t("TXT_CODE_MINECRAFT_INVALID_FILE"));
   const config = instanceConfig();
   if (isFileMode.value)
     config.startCommand = config.startCommand.replace("${ProgramName}", uFile.value.name);
@@ -285,7 +285,7 @@ async function selectedFile() {
     )} -jar "${uFile.value.name.replace(/"/g, "{quotes}")}"${nogui ? " nogui" : ""}`;
   }
   await getCfg({ params: { upload_dir: ".", daemonId: props.daemonId }, data: config });
-  if (!cfg.value?.instanceUuid) throw new Error(t("TXT_CODE_e8ce38c2"));
+  if (!cfg.value?.instanceUuid) throw new Error(t("TXT_CODE_COMMON_FAILED_TO_GET_UPLOAD_ADDRESS"));
   createdInstanceUuid.value = cfg.value.instanceUuid;
   const addr = parseForwardAddress(fileManager.getFileConfigAddr(cfg.value), "http");
   uploadStartCallback = () => {
@@ -294,10 +294,10 @@ async function selectedFile() {
   uploadEndCallback = () => {
     const task = uploadFileInstance.value;
     if (!task || task.canceled || task.removing || task.uploadedSize < task.file.size) {
-      reportErrorMsg(t("TXT_CODE_62051fcc"));
+      reportErrorMsg(t("TXT_CODE_COMMON_UPLOAD_FAILED"));
       return;
     }
-    message.success(t("TXT_CODE_d28c05df"));
+    message.success(t("TXT_CODE_COMMON_CREATE_SUCCESS"));
     emit("nextStep", createdInstanceUuid.value);
   };
   uploadFileInstance.value = fileManager.uploadService.append(
@@ -315,19 +315,19 @@ async function selectedFile() {
 async function createInstance() {
   const config = instanceConfig();
   if (isDownloadMode.value) {
-    if (!downloadSelection.value) throw new Error(t("TXT_CODE_minecraft.invalidSelection"));
+    if (!downloadSelection.value) throw new Error(t("TXT_CODE_MINECRAFT_INVALID_SELECTION"));
     const result = await executeDownload({
       params: { daemonId: props.daemonId },
       data: { config, selection: { ...downloadSelection.value, javaPath: javaPath.value.trim() } }
     });
-    if (!result.value?.instanceUuid) throw new Error(t("TXT_CODE_e8ce38c2"));
+    if (!result.value?.instanceUuid) throw new Error(t("TXT_CODE_COMMON_FAILED_TO_GET_UPLOAD_ADDRESS"));
     createdInstanceUuid.value = result.value.instanceUuid;
   } else {
     await executeCreateInstance({ params: { daemonId: props.daemonId }, data: config });
-    if (!newInstanceInfo.value?.instanceUuid) throw new Error(t("TXT_CODE_e8ce38c2"));
+    if (!newInstanceInfo.value?.instanceUuid) throw new Error(t("TXT_CODE_COMMON_FAILED_TO_GET_UPLOAD_ADDRESS"));
     createdInstanceUuid.value = newInstanceInfo.value.instanceUuid;
   }
-  message.success(t("TXT_CODE_d28c05df"));
+  message.success(t("TXT_CODE_COMMON_CREATE_SUCCESS"));
   emit("nextStep", createdInstanceUuid.value);
 }
 </script>
@@ -340,16 +340,16 @@ async function createInstance() {
     @submit.prevent="finalConfirm"
   >
     <p v-if="createMethod === QUICKSTART_METHOD.DOCKER" class="desktop-create-hint">
-      <VIcon icon="mdi-information-outline" /> {{ t("TXT_CODE_b51bac6f") }}
+      <VIcon icon="mdi-information-outline" /> {{ t("TXT_CODE_INSTANCE_DOCKER_INSTALLATION_REQUIRED_HINT") }}
     </p>
     <VRow density="compact">
       <VCol cols="12" :md="instanceType ? 12 : 6">
         <VTextField
           v-model="formData.nickname"
-          :label="t('TXT_CODE_f70badb9')"
-          :hint="t('TXT_CODE_818928ba')"
+          :label="t('TXT_CODE_COMMON_INSTANCE_NAME')"
+          :hint="t('TXT_CODE_COMMON_SUPPORTS_ANY_LANGUAGE_USE_A_UNIQUE_NAME_WHEN_POSSIBLE')"
           persistent-hint
-          :placeholder="t('TXT_CODE_475c5890')"
+          :placeholder="t('TXT_CODE_COMMON_FOR_EXAMPLE_MY_FIRST_SERVER')"
           :rules="[requiredRule]"
           variant="solo"
           density="compact"
@@ -360,8 +360,8 @@ async function createInstance() {
         <VSelect
           v-model="formData.type"
           :items="instanceTypeOptions"
-          :label="t('TXT_CODE_2f291d8b')"
-          :hint="t('TXT_CODE_be608c82')"
+          :label="t('TXT_CODE_COMMON_INSTANCE_TYPE')"
+          :hint="t('TXT_CODE_COMMON_DIFFERENT_TYPES_MAY_HAVE_SLIGHTLY_DIFFERENCES_IN_SOME_FUNCTIONS')"
           persistent-hint
           variant="solo"
           density="compact"
@@ -391,8 +391,8 @@ async function createInstance() {
     <VTextField
       v-else-if="needsJava"
       v-model="javaPath"
-      :label="t('TXT_CODE_43422ed3')"
-      :hint="t('TXT_CODE_7f9b6758')"
+      :label="t('TXT_CODE_COMMON_JAVA_PATH')"
+      :hint="t('TXT_CODE_COMMAND_JAVA_EXECUTABLE_PATH_HINT')"
       persistent-hint
       placeholder="java"
       :rules="[javaPathRule]"
@@ -409,14 +409,14 @@ async function createInstance() {
           @update:model-value="(v: string) => (formData.docker.image = v)"
       /></VCol>
       <VCol cols="12" md="6" class="desktop-create-switch"
-        ><span>{{ t("TXT_CODE_5484094a") }}</span
+        ><span>{{ t("TXT_CODE_COMMON_CHANGE_CONTAINER_WORKING_DIRECTORY") }}</span
         ><VSwitch v-model="formData.docker.changeWorkdir" color="primary" hide-details
       /></VCol>
       <VCol cols="12" md="6"
         ><VTextField
           v-model="formData.cwd"
-          :label="t('TXT_CODE_20d110b3')"
-          :hint="t('TXT_CODE_877eea45')"
+          :label="t('TXT_CODE_COMMON_HOST_WORKING_DIRECTORY')"
+          :hint="t('TXT_CODE_COMMON_OPTIONAL_MANAGED_BY_PANEL_BY_DEFAULT_IF_PROVIDED_REQUIRE_ABSOLUTE_PATH_E_G_C_SERVERS_MY')"
           persistent-hint
           variant="solo"
           density="compact"
@@ -425,8 +425,8 @@ async function createInstance() {
       <VCol cols="12" md="6"
         ><VTextField
           v-model="formData.docker.workingDir"
-          :label="t('TXT_CODE_81979d0f')"
-          :hint="t('TXT_CODE_3407250a')"
+          :label="t('TXT_CODE_COMMON_WORKING_DIRECTORY_IN_CONTAINER')"
+          :hint="t('TXT_CODE_COMMON_MOUNT_HOST_INSTANCE_DIRECTORY_TO_CONTAINER_FOR_DATA_PERSISTENCE')"
           persistent-hint
           variant="solo"
           density="compact"
@@ -436,8 +436,8 @@ async function createInstance() {
     <VTextField
       v-if="createMethod === QUICKSTART_METHOD.EXIST"
       v-model="formData.cwd"
-      :label="t('TXT_CODE_20d110b3')"
-      :hint="t('TXT_CODE_877eea45')"
+      :label="t('TXT_CODE_COMMON_HOST_WORKING_DIRECTORY')"
+      :hint="t('TXT_CODE_COMMON_OPTIONAL_MANAGED_BY_PANEL_BY_DEFAULT_IF_PROVIDED_REQUIRE_ABSOLUTE_PATH_E_G_C_SERVERS_MY')"
       persistent-hint
       variant="solo"
       density="compact"
@@ -446,7 +446,7 @@ async function createInstance() {
     />
     <VTextarea
       v-model="formData.startCommand"
-      :label="t('TXT_CODE_d12fa808')"
+      :label="t('TXT_CODE_COMMON_STARTUP_COMMAND')"
       :hint="startCommandHint"
       persistent-hint
       rows="2"
@@ -457,8 +457,8 @@ async function createInstance() {
     />
     <VTextarea
       v-model="formData.updateCommand"
-      :label="t('TXT_CODE_2e2c6b7b')"
-      :hint="t('TXT_CODE_4f387c5a')"
+      :label="t('TXT_CODE_COMMON_INSTALL_SERVER_COMMAND')"
+      :hint="t('TXT_CODE_INSTANCE_UPDATE_COMMAND_HINT')"
       persistent-hint
       rows="2"
       variant="solo"
@@ -468,8 +468,8 @@ async function createInstance() {
     />
     <VTextField
       v-model="formData.stopCommand"
-      :label="t('TXT_CODE_11cfe3a1')"
-      :hint="t('TXT_CODE_7ec7ccb8')"
+      :label="t('TXT_CODE_COMMON_INSTANCE_SHUTDOWN_COMMAND')"
+      :hint="t('TXT_CODE_COMMON_RUNS_WHEN_STOPPING_THE_INSTANCE_C_SENDS_CTRL_C')"
       persistent-hint
       :rules="[requiredRule]"
       variant="solo"
@@ -480,7 +480,7 @@ async function createInstance() {
     <VFileInput
       v-if="needUpload"
       :model-value="uFile"
-      :label="isImportMode ? t('TXT_CODE_minecraft.upload') : t('TXT_CODE_444db70f')"
+      :label="isImportMode ? t('TXT_CODE_MINECRAFT_UPLOAD') : t('TXT_CODE_COMMON_UPLOAD_A_SERVER_CORE')"
       :accept="isImportMode ? '.zip,.jar' : '.jar'"
       prepend-icon="mdi-upload-outline"
       variant="solo"
@@ -490,7 +490,7 @@ async function createInstance() {
       @update:model-value="onFileChange"
     />
     <div v-else-if="!isDownloadMode" class="desktop-create-hint mt-3">
-      {{ t("TXT_CODE_7da6e84") }}
+      {{ t("TXT_CODE_COMMON_COMPLETE_THE_REQUIRED_FIELDS_TO_CREATE_OTHER_OPTIONS_CAN_BE_CHANGED_IN_INSTANCE_SETTINGS") }}
     </div>
     <div :class="{ 'create-form-actions': $slots['back-action'] }">
       <slot name="back-action" />
@@ -522,8 +522,8 @@ async function createInstance() {
           $slots["back-action"]
             ? t("TXT_CODE_INSTANCE_CONFIRM_CREATE")
             : isDownloadMode
-            ? t("TXT_CODE_minecraft.create")
-            : t("TXT_CODE_5a74975b")
+            ? t("TXT_CODE_MINECRAFT_CREATE")
+            : t("TXT_CODE_COMMON_CREATE_INSTANCE")
         }}</VBtn
       >
     </div>
@@ -533,7 +533,7 @@ async function createInstance() {
     variant="text"
     class="mt-3"
     @click="emit('nextStep', createdInstanceUuid)"
-    >{{ t("TXT_CODE_minecraft.openConsole") }}</VBtn
+    >{{ t("TXT_CODE_MINECRAFT_OPEN_CONSOLE") }}</VBtn
   >
   <SelectUnzipCode ref="selectUnzipCodeDialog" @select-code="setUnzipCode" />
 </template>

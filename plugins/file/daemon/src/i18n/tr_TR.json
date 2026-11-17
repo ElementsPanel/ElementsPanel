@@ -1,15 +1,15 @@
 {
-  "TXT_CODE_file_router.instanceNotExist": "Örnek {{instanceUuid}} mevcut değil",
-  "TXT_CODE_file_router.unzipLimit": "Eşzamanlı dekompresyon görevlerinin maksimum sayısı aşıldı. İzin verilen maksimum sayı {{maxFileTask}} ve şu anda {{fileLock}} görevleri devam ediyor. Lütfen sabırlı olun.",
-  "TXT_CODE_file_router_service.instanceNotExit": "Örnek {{uuid}} mevcut değil",
-  "TXT_CODE_system_file.execLimit": "Maksimum dosya düzenleme sınırı aşıldı",
-  "TXT_CODE_system_file.illegalAccess": "Yasadışı erişim yolu",
-  "TXT_CODE_system_file.unzipLimit": "Dosya açma yalnızca {{max}}GB'a kadar olan dosyaları destekler. Bu sınırı değiştirmek için lütfen data/Config/global.json dosyasına gidin.",
-  "TXT_CODE_e3a77a77": "Sınırsız",
-  "TXT_CODE_fde31068": "Kullanıcı Dosyası Yükleme Oranı",
-  "TXT_CODE_d8d19932": "HTTP isteği başına sınır, maksimum dosya yükleme hızı",
-  "TXT_CODE_785a0fcf": "Kullanıcı Dosyası İndirme Oranı",
-  "TXT_CODE_b9fc604c": "HTTP İsteği Başına Limit, Maksimum Dosya İndirme Hızı",
-  "TXT_CODE_a15fca22": "URL'den maksimum indirme",
-  "TXT_CODE_ecaf78a2": "Sınırsız için 0'a ayarla"
+  "TXT_CODE_FILE_ROUTER_INSTANCE_NOT_EXIST": "Örnek {{instanceUuid}} mevcut değil",
+  "TXT_CODE_FILE_ROUTER_UNZIP_LIMIT": "Eşzamanlı dekompresyon görevlerinin maksimum sayısı aşıldı. İzin verilen maksimum sayı {{maxFileTask}} ve şu anda {{fileLock}} görevleri devam ediyor. Lütfen sabırlı olun.",
+  "TXT_CODE_FILE_SERVICE_INSTANCE_NOT_FOUND": "Örnek {{uuid}} mevcut değil",
+  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "Maksimum dosya düzenleme sınırı aşıldı",
+  "TXT_CODE_SYSTEM_FILE_ILLEGAL_ACCESS": "Yasadışı erişim yolu",
+  "TXT_CODE_SYSTEM_FILE_UNZIP_LIMIT": "Dosya açma yalnızca {{max}}GB'a kadar olan dosyaları destekler. Bu sınırı değiştirmek için lütfen data/Config/global.json dosyasına gidin.",
+  "TXT_CODE_COMMON_UNLIMITED": "Sınırsız",
+  "TXT_CODE_COMMON_USER_FILE_UPLOAD_RATE": "Kullanıcı Dosyası Yükleme Oranı",
+  "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_UPLOAD_SPEED": "HTTP isteği başına sınır, maksimum dosya yükleme hızı",
+  "TXT_CODE_COMMON_USER_FILE_DOWNLOAD_RATE": "Kullanıcı Dosyası İndirme Oranı",
+  "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED": "HTTP İsteği Başına Limit, Maksimum Dosya İndirme Hızı",
+  "TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL": "URL'den maksimum indirme",
+  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "Sınırsız için 0'a ayarla"
 }

@@ -15,7 +15,7 @@ function parsePort(value, side, language) {
   const t = createTranslator(language);
   const port = /^\d+$/.test(String(value)) ? Number(value) : NaN;
   if (!Number.isInteger(port) || port < 1 || port > 65535)
-    throw new Error(t("portInvalid", { side }));
+    throw new Error(t("TXT_CODE_INIT_PORT_INVALID", { side }));
   return port;
 }
 
@@ -23,7 +23,7 @@ function parseArgs(argv) {
   const languageIndex = argv.lastIndexOf("--language");
   const language = languageIndex < 0 ? undefined : normalizeLanguage(argv[languageIndex + 1]);
   const t = createTranslator(language);
-  if (languageIndex >= 0 && !language) throw new Error(t("languageInvalid"));
+  if (languageIndex >= 0 && !language) throw new Error(t("TXT_CODE_INIT_LANGUAGE_INVALID"));
   const options = {
     language,
     mode: undefined,
@@ -42,7 +42,7 @@ function parseArgs(argv) {
     else if (argument === "--update-plugins") options.updatePlugins = true;
     else if (argument === "--language") {
       options.language = normalizeLanguage(argv[++index]);
-      if (!options.language) throw new Error(t("languageInvalid"));
+      if (!options.language) throw new Error(t("TXT_CODE_INIT_LANGUAGE_INVALID"));
     } else if (argument === "--install") options.install = true;
     else if (argument === "--no-install") options.install = false;
     else if (["--panel-port", "--daemon-port"].includes(argument)) {
@@ -50,9 +50,10 @@ function parseArgs(argv) {
       options[`${side}Port`] = parsePort(argv[++index], side, language);
     } else if (argument === "--template") {
       options.mode = argv[++index];
-      if (!modes.includes(options.mode)) throw new Error(t("templateInvalid"));
-    } else if (argument.startsWith("-")) throw new Error(t("optionUnknown", { argument }));
-    else if (options.directory !== undefined) throw new Error(t("singleDirectory"));
+      if (!modes.includes(options.mode)) throw new Error(t("TXT_CODE_INIT_TEMPLATE_INVALID"));
+    } else if (argument.startsWith("-"))
+      throw new Error(t("TXT_CODE_INIT_OPTION_UNKNOWN", { argument }));
+    else if (options.directory !== undefined) throw new Error(t("TXT_CODE_INIT_SINGLE_DIRECTORY"));
     else options.directory = argument;
   }
   return options;
@@ -101,14 +102,15 @@ async function validateDestination(directory, language) {
   let entries;
   try {
     const stat = await fs.lstat(destination);
-    if (!stat.isDirectory() || stat.isSymbolicLink()) throw new Error(t("directoryInvalid"));
+    if (!stat.isDirectory() || stat.isSymbolicLink())
+      throw new Error(t("TXT_CODE_INIT_DIRECTORY_INVALID"));
     entries = await fs.readdir(destination);
   } catch (error) {
     if (error.code !== "ENOENT") throw error;
     entries = [];
   }
   if (entries.some((entry) => entry !== ".git"))
-    throw new Error(t("directoryNotEmpty", { directory: destination }));
+    throw new Error(t("TXT_CODE_INIT_DIRECTORY_NOT_EMPTY", { directory: destination }));
   return destination;
 }
 
@@ -118,15 +120,16 @@ function validatePorts(mode, panelPort, daemonPort, language) {
     panel: parsePort(panelPort ?? defaultPorts.panel, "panel", language),
     daemon: parsePort(daemonPort ?? defaultPorts.daemon, "daemon", language)
   };
-  if (mode === "full" && ports.panel === ports.daemon) throw new Error(t("portsConflict"));
+  if (mode === "full" && ports.panel === ports.daemon)
+    throw new Error(t("TXT_CODE_INIT_PORTS_CONFLICT"));
   return ports;
 }
 
 function modeChoices(t) {
   return [
-    { value: "full", label: t("modeFull") },
-    { value: "panel", label: t("modePanel") },
-    { value: "daemon", label: t("modeDaemon") }
+    { value: "full", label: t("TXT_CODE_INIT_MODE_FULL") },
+    { value: "panel", label: t("TXT_CODE_INIT_MODE_PANEL") },
+    { value: "daemon", label: t("TXT_CODE_INIT_MODE_DAEMON") }
   ];
 }
 
@@ -138,9 +141,11 @@ async function promptOptions(options, prompt) {
     await validateDestination(options.directory, options.language);
   while (options.directory === undefined) {
     const input = useMenu
-      ? await prompt.text({ title: t("directoryTitle"), placeholder: "my-panel" })
+      ? await prompt.text({ title: t("TXT_CODE_INIT_DIRECTORY_TITLE"), placeholder: "my-panel" })
       : undefined;
-    const answer = (input ? input.value : await prompt.question(t("directoryPrompt"))).trim();
+    const answer = (
+      input ? input.value : await prompt.question(t("TXT_CODE_INIT_DIRECTORY_PROMPT"))
+    ).trim();
     try {
       options.directory = await validateDestination(answer || "my-panel", options.language);
       input?.mark("done", options.directory);
@@ -160,16 +165,17 @@ async function promptOptions(options, prompt) {
   if (useMenu && !options.mode) {
     const t = createTranslator(options.language);
     options.mode = await prompt.select({
-      title: t("modeTitle"),
+      title: t("TXT_CODE_INIT_MODE_TITLE"),
       options: modeChoices(t),
-      hint: t("selectHint"),
+      hint: t("TXT_CODE_INIT_SELECT_HINT"),
       defaultIndex: 0
     });
   }
   while (!options.mode) {
-    const answer = (await prompt.question(t("modePrompt"))).trim().toLowerCase() || "1";
+    const answer =
+      (await prompt.question(t("TXT_CODE_INIT_MODE_PROMPT"))).trim().toLowerCase() || "1";
     options.mode = Object.hasOwn(choices, answer) ? choices[answer] : undefined;
-    if (!options.mode) console.error(t("modeInvalid"));
+    if (!options.mode) console.error(t("TXT_CODE_INIT_MODE_INVALID"));
   }
   for (const side of ["panel", "daemon"]) {
     if (options.mode !== "full" && options.mode !== side) continue;
@@ -177,20 +183,22 @@ async function promptOptions(options, prompt) {
     while (options[key] === undefined) {
       const input = useMenu
         ? await prompt.text({
-            title: t("portTitle", { side, port: defaultPorts[side] }),
+            title: t("TXT_CODE_INIT_PORT_TITLE", { side, port: defaultPorts[side] }),
             placeholder: String(defaultPorts[side])
           })
         : undefined;
       const answer = (
         input
           ? input.value
-          : await prompt.question(t("portPrompt", { side, port: defaultPorts[side] }))
+          : await prompt.question(
+              t("TXT_CODE_INIT_PORT_PROMPT", { side, port: defaultPorts[side] })
+            )
       ).trim();
       try {
         const port = parsePort(answer || defaultPorts[side], side, options.language);
         const otherSide = side === "panel" ? "daemon" : "panel";
         if (options.mode === "full" && port === options[`${otherSide}Port`])
-          throw new Error(t("portsConflict"));
+          throw new Error(t("TXT_CODE_INIT_PORTS_CONFLICT"));
         options[key] = port;
         input?.mark("done", String(port));
       } catch (error) {
@@ -203,20 +211,20 @@ async function promptOptions(options, prompt) {
   if (useMenu && options.install === undefined) {
     const t = createTranslator(options.language);
     options.install = await prompt.select({
-      title: t("installTitle"),
+      title: t("TXT_CODE_INIT_INSTALL_TITLE"),
       options: [
-        { value: true, label: t("installYes") },
-        { value: false, label: t("installNo") }
+        { value: true, label: t("TXT_CODE_INIT_INSTALL_YES") },
+        { value: false, label: t("TXT_CODE_INIT_INSTALL_NO") }
       ],
-      hint: t("selectHint"),
+      hint: t("TXT_CODE_INIT_SELECT_HINT"),
       defaultIndex: 0
     });
   }
   while (options.install === undefined) {
-    const answer = (await prompt.question(t("installPrompt"))).trim().toLowerCase();
+    const answer = (await prompt.question(t("TXT_CODE_INIT_INSTALL_PROMPT"))).trim().toLowerCase();
     if (["", "y", "yes", "是"].includes(answer)) options.install = true;
     else if (["n", "no", "否"].includes(answer)) options.install = false;
-    else console.error(t("confirmInvalid"));
+    else console.error(t("TXT_CODE_INIT_CONFIRM_INVALID"));
   }
   return options;
 }
@@ -235,7 +243,7 @@ function developmentScripts(mode) {
 
 function projectManifest(directory, mode, versions, language) {
   const t = createTranslator(language);
-  if (!modes.includes(mode)) throw new Error(t("modeUnknown", { mode }));
+  if (!modes.includes(mode)) throw new Error(t("TXT_CODE_INIT_MODE_UNKNOWN", { mode }));
   const dependencies = {};
   if (mode !== "daemon") dependencies["@elementspanel/panel"] = versions.panel;
   if (mode !== "panel") dependencies["@elementspanel/daemon"] = versions.daemon;
@@ -301,7 +309,9 @@ async function packageMetadata(name, version, language) {
       throw new Error("npm returned an invalid version.");
     return result;
   } catch (cause) {
-    throw new Error(createTranslator(language)("versionLookupFailed", { name }), { cause });
+    throw new Error(createTranslator(language)("TXT_CODE_INIT_VERSION_LOOKUP_FAILED", { name }), {
+      cause
+    });
   }
 }
 
@@ -345,11 +355,15 @@ async function resolveBuiltinPlugins(mode, versions, language) {
         throw new Error(`Invalid ${side} metadata in ${name}.`);
       if (side === "panel") {
         const { frontendCompatibilityError } = require("./frontend-modules.cjs");
-        if (frontendCompatibilityError(runtime, plugin, {
-          requireMetadata: true,
-          resolvePlugin: (name) => packages.get(name)
-        }))
-          throw new Error(createTranslator(language)("pluginAssetsMismatch", { name }));
+        if (
+          frontendCompatibilityError(runtime, plugin, {
+            requireMetadata: true,
+            resolvePlugin: (name) => packages.get(name)
+          })
+        )
+          throw new Error(
+            createTranslator(language)("TXT_CODE_INIT_PLUGIN_ASSETS_MISMATCH", { name })
+          );
       }
       builtinPlugins[side][id] = { name, version: plugin.version };
     }
@@ -389,7 +403,9 @@ function installDependencies(directory, language) {
     child.once("exit", (code, signal) =>
       code === 0
         ? resolve()
-        : reject(new Error(t("installFailed", { status: signal || code, directory })))
+        : reject(
+            new Error(t("TXT_CODE_INIT_INSTALL_FAILED", { status: signal || code, directory }))
+          )
     );
   });
 }
@@ -407,9 +423,9 @@ async function initialize({
 }) {
   const selectedLanguage = language === undefined ? undefined : normalizeLanguage(language);
   if (language !== undefined && !selectedLanguage)
-    throw new Error(createTranslator()("languageInvalid"));
+    throw new Error(createTranslator()("TXT_CODE_INIT_LANGUAGE_INVALID"));
   if (!modes.includes(mode))
-    throw new Error(createTranslator(selectedLanguage)("modeUnknown", { mode }));
+    throw new Error(createTranslator(selectedLanguage)("TXT_CODE_INIT_MODE_UNKNOWN", { mode }));
   const serviceLanguage =
     selectedLanguage === undefined ? undefined : selectedLanguage === "zh" ? "zh_cn" : "en_us";
   const ports = validatePorts(mode, panelPort, daemonPort, selectedLanguage);
@@ -466,7 +482,7 @@ async function updateBuiltinPlugins({
   installer = installDependencies
 }) {
   if (mode !== undefined && !modes.includes(mode))
-    throw new Error(createTranslator(language)("modeUnknown", { mode }));
+    throw new Error(createTranslator(language)("TXT_CODE_INIT_MODE_UNKNOWN", { mode }));
   const destination = path.resolve(directory);
   const manifest = JSON.parse(await fs.readFile(path.join(destination, "package.json"), "utf8"));
   const sides = ["panel", "daemon"].filter(
@@ -514,8 +530,12 @@ function quoteDirectory(directory) {
 
 function printNextSteps(result, installed, language) {
   const t = createTranslator(language);
-  console.log(`\n${t(result.updated ? "updated" : "created", { directory: result.directory })}`);
-  console.log(`\n${t("nextSteps")}`);
+  console.log(
+    `\n${t(result.updated ? "TXT_CODE_INIT_UPDATED" : "TXT_CODE_INIT_CREATED", {
+      directory: result.directory
+    })}`
+  );
+  console.log(`\n${t("TXT_CODE_INIT_NEXT_STEPS")}`);
   if (result.directory !== path.resolve(process.cwd()))
     console.log(`  cd ${quoteDirectory(result.directory)}`);
   if (!installed) console.log("  npm install");
@@ -536,10 +556,12 @@ async function run(argv = process.argv.slice(2)) {
     const options = parseArgs(argv);
     const t = createTranslator(options.language);
     if (options.help) {
-      console.log(t("help", { panelPort: defaultPorts.panel, daemonPort: defaultPorts.daemon }));
+      console.log(
+        t("TXT_CODE_INIT_HELP", { panelPort: defaultPorts.panel, daemonPort: defaultPorts.daemon })
+      );
       return;
     }
-    if (typeof registerHooks !== "function") throw new Error(t("nodeVersion"));
+    if (typeof registerHooks !== "function") throw new Error(t("TXT_CODE_INIT_NODE_VERSION"));
     const interactive = process.stdin.isTTY && process.stdout.isTTY && !options.yes;
     if (interactive && !options.updatePlugins) {
       prompt = createInteractivePrompt();

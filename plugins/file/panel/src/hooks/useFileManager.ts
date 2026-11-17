@@ -191,7 +191,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
   const onEditTabs = (targetKey: MouseEvent | Key | KeyboardEvent, action: "remove" | "add") => {
     if (action === "add") {
       if (currentTabs.value.length >= 10) {
-        message.warning(t("TXT_CODE_22042570"));
+        message.warning(t("TXT_CODE_COMMON_YOU_CAN_OPEN_A_MAXIMUM_OF_10_TABS_AT_THE_SAME_TIME_PLEASE_CLOSE_OTHER_TABS"));
         return;
       }
       const path = "/";
@@ -205,7 +205,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
         pushedTime: Date.now()
       });
       activeTab.value = key;
-      currentDisk.value = t("TXT_CODE_28124988");
+      currentDisk.value = t("TXT_CODE_COMMON_PROGRAM_ROOT");
       handleChangeTab(key);
     } else {
       handleRemoveTab(targetKey as string);
@@ -227,7 +227,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
         });
       });
     } else {
-      currentDisk.value = t("TXT_CODE_28124988");
+      currentDisk.value = t("TXT_CODE_COMMON_PROGRAM_ROOT");
       breadcrumbPaths.forEach((p) => {
         breadcrumbs.push({
           path: p,
@@ -380,7 +380,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
           dialog.value.mode != "unzip" &&
           dialog.value.mode != "permission"
         ) {
-          return reportErrorMsg(t("TXT_CODE_4ea93630"));
+          return reportErrorMsg(t("TXT_CODE_COMMON_PLEASE_ENTER_CONTENT"));
         }
         resolve(dialog.value.value);
         resolveDialog = undefined;
@@ -443,14 +443,14 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
   };
 
   const reloadList = async () => {
-    if (await getFileList()) message.success(t("TXT_CODE_8ccb5428"));
+    if (await getFileList()) message.success(t("TXT_CODE_COMMON_FILE_LIST_REFRESHED"));
   };
 
   const touchFile = async (dir?: boolean) => {
     clearSelected();
     const dirname = dir
-      ? await openDialog(t("TXT_CODE_6215388a"), t("TXT_CODE_1b450b79"))
-      : await openDialog(t("TXT_CODE_791c73e9"), t("TXT_CODE_59cb16ff"));
+      ? await openDialog(t("TXT_CODE_COMMON_NEW_DIR"), t("TXT_CODE_COMMON_PLEASE_PROVIDE_DIRECTORY_NAME"))
+      : await openDialog(t("TXT_CODE_COMMON_NEW_FILE"), t("TXT_CODE_COMMON_PLEASE_PROVIDE_FILE_NAME"));
     if (dirname === undefined) return;
     const execute = dir ? addFolderApi().execute : touchFileApi().execute;
 
@@ -465,7 +465,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
         }
       });
       await getFileList();
-      message.success(t("TXT_CODE_d28c05df"));
+      message.success(t("TXT_CODE_COMMON_CREATE_SUCCESS"));
     } catch (error: any) {
       return reportErrorMsg(error.message);
     }
@@ -479,19 +479,19 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
       };
     } else {
       if (!selectionData.value || selectionData.value.length === 0)
-        return reportErrorMsg(t("TXT_CODE_b152cd75"));
+        return reportErrorMsg(t("TXT_CODE_COMMON_PLEASE_SELECT_A_FILE_FIRST"));
       clipboard.value = {
         type,
         value: selectionData.value?.map((e) => currentPath.value + e.name)
       };
     }
-    message.success(t("TXT_CODE_25cb04bb"));
+    message.success(t("TXT_CODE_COMMON_SAVED_TO_CLIPBOARD"));
     clearSelected();
   };
 
   const paste = async () => {
     if (!clipboard?.value?.type || !clipboard.value.value)
-      return reportErrorMsg(t("TXT_CODE_b152cd75"));
+      return reportErrorMsg(t("TXT_CODE_COMMON_PLEASE_SELECT_A_FILE_FIRST"));
     const execute = clipboard.value.type == "copy" ? copyFileApi().execute : moveFileApi().execute;
     try {
       await execute({
@@ -507,7 +507,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
         }
       });
       await getFileList();
-      message.success(t("TXT_CODE_93d4b66a"));
+      message.success(t("TXT_CODE_COMMON_FILE_OPERATION_STARTED_IT_MAY_TAKE_SOME_TIME"));
       clearSelected();
       clipboard.value.value = [];
     } catch (error: any) {
@@ -516,7 +516,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
   };
 
   const resetName = async (file: string) => {
-    const newname = await openDialog(t("TXT_CODE_c83551f5"), t("TXT_CODE_a5830778"), file);
+    const newname = await openDialog(t("TXT_CODE_COMMON_RENAME"), t("TXT_CODE_COMMON_PLEASE_ENTER_A_NEW_NAME"), file);
     if (newname === undefined) return;
     try {
       const { execute } = moveFileApi();
@@ -529,7 +529,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
           targets: [[currentPath.value + file, currentPath.value + newname]]
         }
       });
-      message.success(t("TXT_CODE_5b990e2e"));
+      message.success(t("TXT_CODE_COMMON_RENAME_SUCCESSFUL"));
       await getFileList();
     } catch (error: any) {
       reportErrorMsg(error.message);
@@ -547,7 +547,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     } else {
       files = selectionData.value?.map((item) => currentPath.value + item.name) ?? [];
     }
-    if (files.length === 0) return reportErrorMsg(t("TXT_CODE_b152cd75"));
+    if (files.length === 0) return reportErrorMsg(t("TXT_CODE_COMMON_PLEASE_SELECT_A_FILE_FIRST"));
 
     deleteDialog.value.file = file;
     deleteDialog.value.show = true;
@@ -575,7 +575,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
         }
       });
       await getFileList();
-      message.success(t("TXT_CODE_cae10a08"));
+      message.success(t("TXT_CODE_COMMON_FILE_DELETION_STARTED_IT_MAY_TAKE_SOME_TIME"));
       if (dataSource?.value?.length === 0 && operationForm.value.current > 1) {
         operationForm.value.current -= 1;
         await getFileList();
@@ -596,8 +596,8 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
 
   const zipFile = async (_showLoadingDialog = true) => {
     if (!selectionData.value || selectionData.value.length === 0)
-      return reportErrorMsg(t("TXT_CODE_b152cd75"));
-    const filename = await openDialog(t("TXT_CODE_f8a15a94"), t("TXT_CODE_366bad15"), "", "zip");
+      return reportErrorMsg(t("TXT_CODE_COMMON_PLEASE_SELECT_A_FILE_FIRST"));
+    const filename = await openDialog(t("TXT_CODE_COMMON_COMPRESS_FILES"), t("TXT_CODE_COMMON_PLEASE_ENTER_THE_NAME_FOR_THE_ARCHIVE"), "", "zip");
     if (filename === undefined) return;
     const { execute } = compressFileApi();
     message.info(t("TXT_CODE_TASKS_SUBMITTED"));
@@ -614,16 +614,16 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
           targets: selectionData.value.map((e) => currentPath.value + e.name)
         }
       });
-      message.success(t("TXT_CODE_c3a933d3"));
+      message.success(t("TXT_CODE_COMMON_TASK_COMPLETED"));
       await getFileList();
     } catch (error: any) {
-      message.error(t("TXT_CODE_dba9bf61"));
+      message.error(t("TXT_CODE_COMMON_COMPRESSION_FAILED"));
       reportErrorMsg(error.message);
     }
   };
 
   const unzipFile = async (name: string, _showLoadingDialog = true) => {
-    const dirname = await openDialog(t("TXT_CODE_7669fd3f"), "", "", "unzip");
+    const dirname = await openDialog(t("TXT_CODE_COMMON_UNZIP_FILES"), "", "", "unzip");
     if (dirname === undefined) return;
     const { execute } = compressFileApi();
     message.info(t("TXT_CODE_TASKS_SUBMITTED"));
@@ -640,10 +640,10 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
           targets: dialog.value.unzipmode == "0" ? currentPath.value : currentPath.value + dirname
         }
       });
-      message.success(t("TXT_CODE_c3a933d3"));
+      message.success(t("TXT_CODE_COMMON_TASK_COMPLETED"));
       await getFileList();
     } catch (error: any) {
-      message.error(t("TXT_CODE_26d7316f"));
+      message.error(t("TXT_CODE_FILE_DECOMPRESSION_TASK_FAILED"));
       reportErrorMsg(error.message);
     }
   };
@@ -690,7 +690,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
           const allRef = ref(false);
           const overwriteRef = ref(false);
           Modal.confirm({
-            title: t("TXT_CODE_99ca8563"),
+            title: t("TXT_CODE_COMMON_OVERWRITING_FILE"),
             content: createVNode(
               OverwriteFilesPopUpContent,
               {
@@ -703,8 +703,8 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
               },
               null
             ),
-            okText: t("TXT_CODE_ae09d79d"),
-            cancelText: t("TXT_CODE_518528d0"),
+            okText: t("TXT_CODE_COMMON_UPLOAD"),
+            cancelText: t("TXT_CODE_COMMON_SKIP"),
             onOk() {
               resolve({
                 confirmed: true,
@@ -757,7 +757,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
           }
         });
         if (disposed) return;
-        if (!missionCfg.value) throw new Error(t("TXT_CODE_e8ce38c2"));
+        if (!missionCfg.value) throw new Error(t("TXT_CODE_COMMON_FAILED_TO_GET_UPLOAD_ADDRESS"));
 
         const addr = parseForwardAddress(getFileConfigAddr(missionCfg.value), "http");
         uploadService.append(
@@ -854,8 +854,8 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
   };
 
   const downloadFromUrl = async (downloadConfig: DownloadFileConfigItem, _showLoadingDialog = true) => {
-    if (!downloadConfig.url) throw new Error(t("TXT_CODE_f3031262"));
-    if (!downloadConfig.fileName) throw new Error(t("TXT_CODE_7b605ad8"));
+    if (!downloadConfig.url) throw new Error(t("TXT_CODE_FILE_DOWNLOAD_URL_REQUIRED"));
+    if (!downloadConfig.fileName) throw new Error(t("TXT_CODE_FILE_DOWNLOAD_NAME_REQUIRED"));
 
     const { execute } = downloadFromUrlAPI();
     message.info(t("TXT_CODE_TASKS_SUBMITTED"));
@@ -870,23 +870,23 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
           file_name: currentPath.value + downloadConfig.fileName
         }
       });
-      message.success(t("TXT_CODE_c3a933d3"));
+      message.success(t("TXT_CODE_COMMON_TASK_COMPLETED"));
       await getFileList();
     } catch (error: any) {
-      message.error(t("TXT_CODE_9ea5696b"));
+      message.error(t("TXT_CODE_COMMON_DOWNLOAD_FAILED"));
       reportErrorMsg(error.message);
     }
   };
 
   const downloadFile = async (fileName: string) => {
     const link = await getFileLink(fileName);
-    if (!link) throw new Error(t("TXT_CODE_6d772765"));
+    if (!link) throw new Error(t("TXT_CODE_COMMON_FAILED_TO_GET_DOWNLOAD_ADDRESS"));
     window.open(link);
   };
 
   const handleChangeDir = async (dir: string) => {
     if (breadcrumbs.findIndex((e) => e.path === dir) === -1)
-      return reportErrorMsg(t("TXT_CODE_96281410"));
+      return reportErrorMsg(t("TXT_CODE_COMMON_PATH_NOT_FOUND"));
     breadcrumbs.splice(breadcrumbs.findIndex((e) => e.path === dir) + 1);
     operationForm.value.name = "";
     operationForm.value.current = 1;
@@ -943,15 +943,15 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     loading: false,
     item: [
       {
-        key: t("TXT_CODE_2e5d3d0f"),
+        key: t("TXT_CODE_COMMON_OWNER"),
         role: "owner"
       },
       {
-        key: t("TXT_CODE_e7b75c0e"),
+        key: t("TXT_CODE_COMMON_USER_GROUP"),
         role: "usergroup"
       },
       {
-        key: t("TXT_CODE_5c54f599"),
+        key: t("TXT_CODE_COMMON_ANYONE"),
         role: "everyone"
       }
     ]
@@ -961,7 +961,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     permission.loading = true;
     permission.data = number2permission(mode);
     permission.loading = false;
-    const result = await openDialog(t("TXT_CODE_16853efe"), "", "", "permission", {
+    const result = await openDialog(t("TXT_CODE_COMMON_CHANGE_PERMISSIONS"), "", "", "permission", {
       maxWidth: "400px"
     });
     if (result === undefined) return;
@@ -973,7 +973,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
       );
       if (isMultiple.value) {
         if (!selectionData.value || selectionData.value.length === 0)
-          return reportErrorMsg(t("TXT_CODE_b152cd75"));
+          return reportErrorMsg(t("TXT_CODE_COMMON_PLEASE_SELECT_A_FILE_FIRST"));
         const { state, execute } = changePermissionBatchApi();
         await execute({
           params: {
@@ -988,12 +988,12 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
         });
         const summary = state.value;
         if (!summary || summary.failed === 0) {
-          message.success(t("TXT_CODE_b05948d1"));
+          message.success(t("TXT_CODE_COMMON_PERMISSION_CHANGED"));
         } else if (summary.success === 0) {
-          message.error(t("TXT_CODE_6f8ce7f1", { total: summary.total }));
+          message.error(t("TXT_CODE_COMMON_FAILED_TO_CHANGE_PERMISSIONS_FOR_ITEMS", { total: summary.total }));
         } else {
           message.warning(
-            t("TXT_CODE_31b8fbd5", {
+            t("TXT_CODE_COMMON_PERMISSIONS_UPDATED_SUCCEEDED_FAILED", {
               success: summary.success,
               failed: summary.failed
             })
@@ -1012,7 +1012,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
             target: currentPath.value + name
           }
         });
-        message.success(t("TXT_CODE_b05948d1"));
+        message.success(t("TXT_CODE_COMMON_PERMISSION_CHANGED"));
       }
       await getFileList();
     } catch (err: any) {
@@ -1021,7 +1021,7 @@ export const useFileManager = (instanceId: string = "", daemonId: string = "", s
     permission.deep = false;
   };
 
-  const currentDisk = ref(t("TXT_CODE_28124988"));
+  const currentDisk = ref(t("TXT_CODE_COMMON_PROGRAM_ROOT"));
 
   const toDisk = async (disk: string) => {
     const diskName = disk === "/" ? disk : disk + ":\\";

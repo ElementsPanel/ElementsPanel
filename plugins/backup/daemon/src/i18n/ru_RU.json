@@ -18,5 +18,5 @@
   "TXT_CODE_INSTANCE_BACKUP_STOPPING": "Остановка экземпляра...",
   "TXT_CODE_INSTANCE_BACKUP_STOP_TIMEOUT": "Превышено время остановки экземпляра, резервное копирование отменено.",
   "TXT_CODE_INSTANCE_BACKUP_SUCCESS": "Резервная копия экземпляра создана! Файл: {{name}}",
-  "TXT_CODE_instanceConf.instanceBusy": "Текущий экземпляр занят и не может выполнять операции."
+  "TXT_CODE_INSTANCE_CONF_INSTANCE_BUSY": "Текущий экземпляр занят и не может выполнять операции."
 }

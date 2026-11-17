@@ -23,7 +23,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.actions.instance({
     id: "operation-log",
-    title: () => t("TXT_CODE_f6a33629"),
+    title: () => t("TXT_CODE_COMMON_OPERATION_LOG"),
     icon: "mdi-file-document-outline",
     mdiIcon: "mdi-file-document-outline",
     normalComponent: InstanceOperationLogAction,
@@ -35,7 +35,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.routes.add({
     path: "/overview",
-    name: t("TXT_CODE_84fbe277"),
+    name: t("TXT_CODE_COMMON_OVERVIEW"),
     component: OverviewPage,
     meta: {
       mainMenu: true,
@@ -46,7 +46,7 @@ export function apply(ctx: PanelFrontendPluginContext) {
 
   ctx.desktop.app({
     id: "overview",
-    label: () => t("TXT_CODE_84fbe277"),
+    label: () => t("TXT_CODE_COMMON_OVERVIEW"),
     icon: "mdi-view-dashboard-outline",
     color: "#52c41a",
     route: "/overview",

@@ -18,5 +18,5 @@
   "TXT_CODE_INSTANCE_BACKUP_STOPPING": "正在停止實例...",
   "TXT_CODE_INSTANCE_BACKUP_STOP_TIMEOUT": "停止實例超時，備份已取消。",
   "TXT_CODE_INSTANCE_BACKUP_SUCCESS": "實例備份成功：{{name}}",
-  "TXT_CODE_instanceConf.instanceBusy": "目前實例正處於忙碌狀態，無法執行任何動作."
+  "TXT_CODE_INSTANCE_CONF_INSTANCE_BUSY": "目前實例正處於忙碌狀態，無法執行任何動作."
 }

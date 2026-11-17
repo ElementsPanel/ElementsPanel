@@ -40,7 +40,7 @@ watch(selection, (value) => emit("update:modelValue", value), { immediate: true,
         <VAutocomplete
           :model-value="server"
           :items="serverItems"
-          :label="t('TXT_CODE_minecraft.server')"
+          :label="t('TXT_CODE_MINECRAFT_SERVER')"
           :loading="loading === 'servers'"
           :disabled="disabled || loading === 'servers'"
           variant="solo"
@@ -55,7 +55,7 @@ watch(selection, (value) => emit("update:modelValue", value), { immediate: true,
         <VAutocomplete
           :model-value="version"
           :items="versions"
-          :label="t('TXT_CODE_minecraft.version')"
+          :label="t('TXT_CODE_MINECRAFT_VERSION')"
           :loading="loading === 'versions'"
           :disabled="
             disabled || !versions.length || loading === 'servers' || loading === 'versions'
@@ -72,7 +72,7 @@ watch(selection, (value) => emit("update:modelValue", value), { immediate: true,
         <VAutocomplete
           v-model="build"
           :items="builds"
-          :label="t('TXT_CODE_minecraft.build')"
+          :label="t('TXT_CODE_MINECRAFT_BUILD')"
           :loading="loading === 'builds'"
           :disabled="disabled || !!loading || !builds.length"
           variant="solo"
@@ -88,12 +88,12 @@ watch(selection, (value) => emit("update:modelValue", value), { immediate: true,
       {{ error }}
       <template #append
         ><VBtn variant="text" :disabled="disabled" @click="retry">{{
-          t("TXT_CODE_9277af78")
+          t("TXT_CODE_COMMON_RETRY")
         }}</VBtn></template
       >
     </VAlert>
     <p v-if="server === 'bedrock-server'" class="text-medium-emphasis mt-2">
-      {{ t("TXT_CODE_minecraft.bedrockHint") }}
+      {{ t("TXT_CODE_MINECRAFT_BEDROCK_HINT") }}
     </p>
     <a
       class="msl-attribution"
@@ -102,7 +102,7 @@ watch(selection, (value) => emit("update:modelValue", value), { immediate: true,
       rel="noopener noreferrer"
     >
       <img :src="mslLogo" alt="MSL" width="24" height="24" />
-      <span>{{ t("TXT_CODE_minecraft.attribution") }}</span>
+      <span>{{ t("TXT_CODE_MINECRAFT_ATTRIBUTION") }}</span>
     </a>
   </div>
 </template>

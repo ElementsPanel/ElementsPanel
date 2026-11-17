@@ -157,7 +157,7 @@ onBeforeUnmount(() => requestId++);
       <Empty
         v-if="error"
         icon="mdi-alert-circle-outline"
-        :title="t('TXT_CODE_ef8f8e29')"
+        :title="t('TXT_CODE_COMMON_PAGE_FAILED_TO_LOAD_PLEASE_TRY_AGAIN_LATER')"
         :description="error"
         :compact="!!plugin"
       >
@@ -168,7 +168,7 @@ onBeforeUnmount(() => requestId++);
             :loading="loading"
             :disabled="busy"
             @click="refresh"
-          >{{ t("TXT_CODE_9277af78") }}</VBtn>
+          >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
         </template>
       </Empty>
 

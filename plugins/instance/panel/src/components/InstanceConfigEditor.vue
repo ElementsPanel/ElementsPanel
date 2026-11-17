@@ -29,7 +29,7 @@ const parsedConfig = computed(() => jsonToMap(props.config));
   <template v-if="isDesktop">
     <VCol cols="12">
       <div class="config-editor-section">
-        <p class="config-editor-description">{{ data ? data.desc : t("TXT_CODE_75e5af9b") }}</p>
+        <p class="config-editor-description">{{ data ? data.desc : t("TXT_CODE_COMMON_THIS_FILE_DOES_NOT_SUPPORT_DIRECT_CONFIGURATION_PLEASE_EDIT_IT_THROUGH_FILE_MANAGEMENT") }}</p>
       </div>
     </VCol>
     <VCol v-if="data" cols="12">
@@ -42,7 +42,7 @@ const parsedConfig = computed(() => jsonToMap(props.config));
             </LineOption>
           </div>
         </div>
-        <div v-else>{{ t("TXT_CODE_1a730d48") }}</div>
+        <div v-else>{{ t("TXT_CODE_COMMON_THE_CONFIGURATION_FILE_IS_EMPTY_PLEASE_CHECK_IF_THE_FILE_IS_CORRECT_OR_CLICK_THE_EDIT") }}</div>
       </div>
     </VCol>
   </template>
@@ -54,7 +54,7 @@ const parsedConfig = computed(() => jsonToMap(props.config));
             {{ data?.desc }}
           </p>
           <p v-else>
-            {{ t("TXT_CODE_75e5af9b") }}
+            {{ t("TXT_CODE_COMMON_THIS_FILE_DOES_NOT_SUPPORT_DIRECT_CONFIGURATION_PLEASE_EDIT_IT_THROUGH_FILE_MANAGEMENT") }}
           </p>
       </template>
     </CardPanel>
@@ -71,7 +71,7 @@ const parsedConfig = computed(() => jsonToMap(props.config));
           </VCol>
         </VRow>
         <div v-else>
-          {{ t("TXT_CODE_1a730d48") }}
+          {{ t("TXT_CODE_COMMON_THE_CONFIGURATION_FILE_IS_EMPTY_PLEASE_CHECK_IF_THE_FILE_IS_CORRECT_OR_CLICK_THE_EDIT") }}
         </div>
       </template>
     </CardPanel>

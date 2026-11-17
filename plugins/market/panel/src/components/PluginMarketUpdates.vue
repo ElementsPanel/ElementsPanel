@@ -208,7 +208,7 @@ defineExpose({ refresh, updateAll, canUpdate, preparingTargets });
           :loading="loading"
           :disabled="blocked || updatingPlugins"
           @click="refresh"
-        >{{ t("TXT_CODE_9277af78") }}</VBtn>
+        >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
       </template>
     </Empty>
     <VAlert

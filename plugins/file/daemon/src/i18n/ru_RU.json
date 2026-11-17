@@ -1,15 +1,15 @@
 {
-  "TXT_CODE_file_router.instanceNotExist": "Экземпляр {{instanceUuid}} не существует",
-  "TXT_CODE_file_router.unzipLimit": "Превышено максимальное количество одновременных задач разархивирования. Максимально допустимое количество — {{maxFileTask}}, в настоящее время выполняется {{fileLock}} задач. Пожалуйста, будьте терпеливы.",
-  "TXT_CODE_file_router_service.instanceNotExit": "Экземпляр {{uuid}} не существует",
-  "TXT_CODE_system_file.execLimit": "Превышен лимит редактирования файлов",
-  "TXT_CODE_system_file.illegalAccess": "Незаконный путь доступа",
-  "TXT_CODE_system_file.unzipLimit": "Распаковка файлов поддерживается только для файлов до {{max}}GB. Чтобы изменить этот лимит, пожалуйста, перейдите в файл data/Config/global.json.",
-  "TXT_CODE_e3a77a77": "Неограничено",
-  "TXT_CODE_fde31068": "Пользовательская скорость загрузки файлов",
-  "TXT_CODE_d8d19932": "Ограничение на HTTP -запрос, максимальная скорость загрузки файлов",
-  "TXT_CODE_785a0fcf": "Пользовательская скорость загрузки файлов",
-  "TXT_CODE_b9fc604c": "Ограничение на HTTP -запрос, максимальная скорость загрузки файлов",
-  "TXT_CODE_a15fca22": "Максимум загрузок по URL",
-  "TXT_CODE_ecaf78a2": "0 - без ограничений"
+  "TXT_CODE_FILE_ROUTER_INSTANCE_NOT_EXIST": "Экземпляр {{instanceUuid}} не существует",
+  "TXT_CODE_FILE_ROUTER_UNZIP_LIMIT": "Превышено максимальное количество одновременных задач разархивирования. Максимально допустимое количество — {{maxFileTask}}, в настоящее время выполняется {{fileLock}} задач. Пожалуйста, будьте терпеливы.",
+  "TXT_CODE_FILE_SERVICE_INSTANCE_NOT_FOUND": "Экземпляр {{uuid}} не существует",
+  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "Превышен лимит редактирования файлов",
+  "TXT_CODE_SYSTEM_FILE_ILLEGAL_ACCESS": "Незаконный путь доступа",
+  "TXT_CODE_SYSTEM_FILE_UNZIP_LIMIT": "Распаковка файлов поддерживается только для файлов до {{max}}GB. Чтобы изменить этот лимит, пожалуйста, перейдите в файл data/Config/global.json.",
+  "TXT_CODE_COMMON_UNLIMITED": "Неограничено",
+  "TXT_CODE_COMMON_USER_FILE_UPLOAD_RATE": "Пользовательская скорость загрузки файлов",
+  "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_UPLOAD_SPEED": "Ограничение на HTTP -запрос, максимальная скорость загрузки файлов",
+  "TXT_CODE_COMMON_USER_FILE_DOWNLOAD_RATE": "Пользовательская скорость загрузки файлов",
+  "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED": "Ограничение на HTTP -запрос, максимальная скорость загрузки файлов",
+  "TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL": "Максимум загрузок по URL",
+  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "0 - без ограничений"
 }

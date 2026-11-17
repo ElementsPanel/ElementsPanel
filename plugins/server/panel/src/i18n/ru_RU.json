@@ -1,12 +1,12 @@
 {
-  "TXT_CODE_233624ad": "Укажите целочисленный номер порта. По умолчанию: 23333.",
-  "TXT_CODE_2b85af6d": "Включите при использовании обратного прокси для получения реального IP клиента.",
-  "TXT_CODE_328191e": "Для привязки к определённому сетевому интерфейсу укажите его IP-адрес.",
-  "TXT_CODE_405cd346": "API интерфейс запросов с другого источника",
-  "TXT_CODE_514e064a": "Привязка IP панели",
-  "TXT_CODE_6655c905": "Разрешает запросы из любых источников (Access-Control-Allow-Origin: *). Это может снизить безопасность.",
-  "TXT_CODE_66aeac82": "Заголовок запроса обратного прокси",
-  "TXT_CODE_7f0017d2": "Порт панели",
+  "TXT_CODE_COMMON_ENTER_AN_INTEGER_PORT_NUMBER_DEFAULT_23333": "Укажите целочисленный номер порта. По умолчанию: 23333.",
+  "TXT_CODE_COMMON_ENABLE_WHEN_USING_A_REVERSE_PROXY_TO_READ_THE_CLIENTS_REAL_IP": "Включите при использовании обратного прокси для получения реального IP клиента.",
+  "TXT_CODE_COMMON_ENTER_ITS_IP_ADDRESS_TO_BIND_TO_A_SPECIFIC_NETWORK_INTERFACE": "Для привязки к определённому сетевому интерфейсу укажите его IP-адрес.",
+  "TXT_CODE_COMMON_CROSS_ORIGIN_REQUEST_API_INTERFACE": "API интерфейс запросов с другого источника",
+  "TXT_CODE_COMMON_PANEL_BINDING_IP": "Привязка IP панели",
+  "TXT_CODE_SERVER_CROSS_ORIGIN_SECURITY_HINT": "Разрешает запросы из любых источников (Access-Control-Allow-Origin: *). Это может снизить безопасность.",
+  "TXT_CODE_COMMON_REVERSE_PROXY_REQUEST_HEADER": "Заголовок запроса обратного прокси",
+  "TXT_CODE_COMMON_PANEL_PORT": "Порт панели",
   "TXT_CODE_SERVER_PREFIX": "Префикс пути",
   "TXT_CODE_SERVER_PREFIX_TIP": "Обслуживать панель по вложенному пути, например /panel. Оставьте пустым, чтобы обслуживать из корня.",
   "TXT_CODE_SERVER_RESTART_TIP": "Эти настройки применяются при запуске веб-сервера. Перезапустите панель, чтобы изменение вступило в силу.",
@@ -16,6 +16,6 @@
   "TXT_CODE_SERVER_SSL_PEM": "Файл сертификата (.pem)",
   "TXT_CODE_SERVER_SSL_PEM_TIP": "Путь к файлу сертификата: абсолютный или относительно каталога панели.",
   "TXT_CODE_SERVER_SSL_TIP": "Обслуживать панель по HTTPS с указанным ниже сертификатом. Оба файла обязательны.",
-  "TXT_CODE_f0789d81": "Режим обратного прокси",
-  "TXT_CODE_fd8bc51f": "Имя заголовка запроса с реальным IP клиента."
+  "TXT_CODE_COMMON_REVERSE_PROXY_MODE": "Режим обратного прокси",
+  "TXT_CODE_COMMON_NAME_OF_THE_REQUEST_HEADER_CONTAINING_THE_CLIENTS_REAL_IP": "Имя заголовка запроса с реальным IP клиента."
 }

@@ -25,7 +25,7 @@ const submit = () => {
 <template>
   <AppDialog
     v-model:open="open"
-    :title="t('TXT_CODE_8900e7ee')"
+    :title="t('TXT_CODE_COMMON_ADD_INSTALLED_JAVA')"
     compact
     :closable="false"
     @ok="submit"
@@ -34,14 +34,14 @@ const submit = () => {
     <VForm @submit.prevent="submit">
       <VTextField
         v-model="form.name"
-        :label="t('TXT_CODE_3f36206f')"
-        :placeholder="t('TXT_CODE_4ea93630')"
+        :label="t('TXT_CODE_COMMON_JAVA_NAME')"
+        :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
         class="mb-4"
       />
       <VTextField
         v-model="form.path"
-        :label="t('TXT_CODE_43422ed3')"
-        :placeholder="t('TXT_CODE_4ea93630')"
+        :label="t('TXT_CODE_COMMON_JAVA_PATH')"
+        :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
       />
     </VForm>
   </AppDialog>

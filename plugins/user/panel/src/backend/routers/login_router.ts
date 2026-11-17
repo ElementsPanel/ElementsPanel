@@ -23,7 +23,7 @@ export default function createLoginRouter() {
       const userName = String(ctx.request.body.username);
       const passWord = String(ctx.request.body.password);
       const code = String(ctx.request.body.code || "");
-      if (!checkBanIp(ctx)) throw new Error($t("TXT_CODE_router.login.ban"));
+      if (!checkBanIp(ctx)) throw new Error($t("TXT_CODE_ROUTER_LOGIN_BAN"));
       if (check(ctx)) return (ctx.body = "Logined");
       try {
         ctx.body = login(ctx, userName, passWord, code);

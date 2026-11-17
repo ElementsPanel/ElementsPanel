@@ -4,9 +4,9 @@ import { AppTheme } from "@/types/const";
 import { computed } from "vue";
 
 const themeModes = [
-  { value: AppTheme.AUTO, label: "TXT_CODE_dc8de4ff", icon: "mdi-theme-light-dark" },
-  { value: AppTheme.LIGHT, label: "TXT_CODE_673eac8e", icon: "mdi-weather-sunny" },
-  { value: AppTheme.DARK, label: "TXT_CODE_5e4a370d", icon: "mdi-weather-night" }
+  { value: AppTheme.AUTO, label: "TXT_CODE_THEME_AUTOMATIC", icon: "mdi-theme-light-dark" },
+  { value: AppTheme.LIGHT, label: "TXT_CODE_COMMON_LIGHT_THEME", icon: "mdi-weather-sunny" },
+  { value: AppTheme.DARK, label: "TXT_CODE_COMMON_DARK_THEME", icon: "mdi-weather-night" }
 ];
 
 export function useThemeSwitch() {

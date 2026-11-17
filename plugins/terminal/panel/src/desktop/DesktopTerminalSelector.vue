@@ -55,19 +55,19 @@ const openConsole = (node: NodeStatus) => {
                 <div class="dts-search-input-wrap">
                     <VTextField v-model="searchQuery" class="dts-search-input" variant="solo" density="compact"
                         hide-details clearable prepend-inner-icon="mdi-magnify"
-                        :placeholder="t('TXT_CODE_461d1a01') || 'Search nodes...'" />
+                        :placeholder="t('TXT_CODE_COMMON_SEARCH_BY_DAEMON_NAME') || 'Search nodes...'" />
                 </div>
             </div>
         </div>
 
         <div class="dts-list-wrap">
             <div v-if="isLoading" class="dts-loading">
-                {{ t("TXT_CODE_b197be11") }}
+                {{ t("TXT_CODE_COMMON_LOADING_DATA") }}
             </div>
             <Empty
               v-else-if="!filteredNodes.length"
               icon="mdi-server-network-outline"
-              :title="t('TXT_CODE_5415f009')"
+              :title="t('TXT_CODE_COMMON_NO_CONTENT_PLEASE_TRY_CHANGING_THE_NODE_OR_SEARCH_CRITERIA')"
               :description="t('TXT_CODE_NO_DATA')"
             />
             <div v-else class="dts-grid">
@@ -81,8 +81,8 @@ const openConsole = (node: NodeStatus) => {
                         <div class="dts-card__status">
                             <VIcon icon="mdi-check-circle-outline" v-if="node.available" class="status-icon status-icon--yes"  />
                             <VIcon icon="mdi-close-circle-outline" v-else class="status-icon status-icon--no"  />
-                            {{ node.available ? t("TXT_CODE_823bfe63") :
-                                t("TXT_CODE_66ce073e") }}
+                            {{ node.available ? t("TXT_CODE_COMMON_ONLINE") :
+                                t("TXT_CODE_COMMON_OFFLINE") }}
                         </div>
                     </div>
                 </div>

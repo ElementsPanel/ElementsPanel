@@ -82,15 +82,29 @@ function mirrorFixture(override) {
 test("server downloads are grouped by edition and proxy category while keeping installer kinds", () => {
   const servers = Object.keys(catalog.MINECRAFT_SERVERS);
   const java = catalog.minecraftServersForType(servers, "minecraft/java");
-  assert.ok(["paper", "forge", "neoforge", "fabric", "spongevanilla"].every((id) => java.includes(id)));
+  assert.ok(
+    ["paper", "forge", "neoforge", "fabric", "spongevanilla"].every((id) => java.includes(id))
+  );
   assert.ok(!java.includes("velocity") && !java.includes("bungeecord"));
-  assert.deepEqual(catalog.minecraftServersForType(servers, "minecraft/java/bungeecord"), ["lightfall", "travertine", "bungeecord", "velocity"]);
-  assert.deepEqual(catalog.minecraftServersForType(servers, "minecraft/bedrock"), ["bedrock-server", "nukkitx"]);
+  assert.deepEqual(catalog.minecraftServersForType(servers, "minecraft/java/bungeecord"), [
+    "lightfall",
+    "travertine",
+    "bungeecord",
+    "velocity"
+  ]);
+  assert.deepEqual(catalog.minecraftServersForType(servers, "minecraft/bedrock"), [
+    "bedrock-server",
+    "nukkitx"
+  ]);
   assert.equal(catalog.MINECRAFT_SERVERS.forge.kind, "forge");
   assert.equal(catalog.MINECRAFT_SERVERS.neoforge.kind, "neoforge");
   assert.equal(catalog.MINECRAFT_SERVERS.nukkitx.kind, "jar");
   assert.equal(catalog.defaultMinecraftServer(servers, "minecraft/java/bungeecord"), "bungeecord");
-  assert.ok(Object.values(catalog.MINECRAFT_SERVERS).every((entry) => instanceContract.INSTANCE_TYPES.includes(entry.type)));
+  assert.ok(
+    Object.values(catalog.MINECRAFT_SERVERS).every((entry) =>
+      instanceContract.INSTANCE_TYPES.includes(entry.type)
+    )
+  );
 });
 
 test("category menus expose seven categories and configuration editors retain subtype files", () => {
@@ -106,16 +120,35 @@ test("category menus expose seven categories and configuration editors retain su
     vue
   });
   assert.deepEqual(instanceContract.INSTANCE_TYPES, [
-    "universal", "minecraft/java", "minecraft/bedrock", "minecraft/java/bungeecord",
-    "steam/universal", "hytale", "steam/terraria"
+    "universal",
+    "minecraft/java",
+    "minecraft/bedrock",
+    "minecraft/java/bungeecord",
+    "steam/universal",
+    "hytale",
+    "steam/terraria"
   ]);
   assert.deepEqual(Object.keys(hooks.INSTANCE_TYPE_TRANSLATION), instanceContract.INSTANCE_TYPES);
   const files = (type) => hooks.getInstanceConfigByType(type).map((file) => file.redirect);
-  assert.ok(["paper/paper-global.yml", "forge/fml.toml", "neoforge/neoforge-server.toml", "mcdr/config.yml"].every((file) => files("minecraft/java").includes(file)));
-  assert.deepEqual(files("minecraft/java/bungeecord"), ["bungeecord/config.yml", "velocity/velocity.toml", "geyser/config.yml"]);
+  assert.ok(
+    [
+      "paper/paper-global.yml",
+      "forge/fml.toml",
+      "neoforge/neoforge-server.toml",
+      "mcdr/config.yml"
+    ].every((file) => files("minecraft/java").includes(file))
+  );
+  assert.deepEqual(files("minecraft/java/bungeecord"), [
+    "bungeecord/config.yml",
+    "velocity/velocity.toml",
+    "geyser/config.yml"
+  ]);
   assert.deepEqual(files("minecraft/bedrock"), ["bds/server.properties"]);
   const info = vue.ref({ config: { type: "minecraft/java/bungeecord" } });
-  assert.equal(hooks.useInstanceInfo({ instanceInfo: info }).instanceTypeText.value, hooks.INSTANCE_TYPE_TRANSLATION["minecraft/java/bungeecord"]);
+  assert.equal(
+    hooks.useInstanceInfo({ instanceInfo: info }).instanceTypeText.value,
+    hooks.INSTANCE_TYPE_TRANSLATION["minecraft/java/bungeecord"]
+  );
 });
 
 test("merged Bedrock instances retain Java management for Nukkit and managed Java commands", () => {
@@ -128,14 +161,38 @@ test("merged Bedrock instances retain Java management for Nukkit and managed Jav
     "@/hooks/useInstance": instanceContract,
     "@/hooks/useInstanceActionAvailability": availability,
     "../../../../../core/common/src/java": javaCommands,
-    "@/stores/useAppStateStore": { useAppStateStore: () => ({ state: { settings: { allowJavaManager: true } }, isAdmin: vue.ref(false) }) },
+    "@/stores/useAppStateStore": {
+      useAppStateStore: () => ({
+        state: { settings: { allowJavaManager: true } },
+        isAdmin: vue.ref(false)
+      })
+    },
     "./desktop/DesktopJavaManager.vue": {},
     "./normal/JavaManager.vue": {},
     "./components/JavaSetup.vue": {}
   });
-  plugin.registerJavaManager({ set() {}, actions: { instance: (value) => { action = value; } } });
-  const available = (config) => action.condition({ instanceId: "instance", daemonId: "node", daemon: { features: { javaManager: true } }, instanceInfo: { config: { processType: "general", ...config } } });
-  assert.equal(available({ type: "minecraft/bedrock", startCommand: '"/opt/Java 21/bin/java" -jar nukkit.jar' }), true);
+  plugin.registerJavaManager({
+    set() {},
+    actions: {
+      instance: (value) => {
+        action = value;
+      }
+    }
+  });
+  const available = (config) =>
+    action.condition({
+      instanceId: "instance",
+      daemonId: "node",
+      daemon: { features: { javaManager: true } },
+      instanceInfo: { config: { processType: "general", ...config } }
+    });
+  assert.equal(
+    available({
+      type: "minecraft/bedrock",
+      startCommand: '"/opt/Java 21/bin/java" -jar nukkit.jar'
+    }),
+    true
+  );
   assert.equal(available({ type: "minecraft/bedrock", java: { id: "java21" } }), true);
   assert.equal(available({ type: "minecraft/bedrock", startCommand: "./bedrock_server" }), false);
   assert.equal(available({ type: "minecraft/java/bungeecord" }), true);
@@ -160,19 +217,19 @@ test("MSL metadata is cached, download links are refreshed, and the app identifi
 
 test("MSL rejects invalid paths, wrong editions and unavailable versions/builds", async () => {
   const { mirrors, requests } = mirrorFixture();
-  await assert.rejects(mirrors.versions("../private"), /invalidSelection/);
+  await assert.rejects(mirrors.versions("../private"), /TXT_CODE_MINECRAFT_INVALID_SELECTION/);
   assert.equal(requests.length, 0);
   await assert.rejects(
     mirrors.resolve({ server: "paper", version: "1.21.4", build: "latest" }, "minecraft/bedrock"),
-    /invalidSelection/
+    /TXT_CODE_MINECRAFT_INVALID_SELECTION/
   );
   await assert.rejects(
     mirrors.resolve({ server: "paper", version: "0.0", build: "latest" }, "minecraft/java"),
-    /invalidSelection/
+    /TXT_CODE_MINECRAFT_INVALID_SELECTION/
   );
   await assert.rejects(
     mirrors.resolve({ server: "paper", version: "1.21.4", build: "missing" }, "minecraft/java"),
-    /invalidSelection/
+    /TXT_CODE_MINECRAFT_INVALID_SELECTION/
   );
   assert.ok(requests.every((entry) => !entry.endpoint.startsWith("/download/")));
   assert.deepEqual(
@@ -188,7 +245,7 @@ test("malformed MSL data is not cached and retry can recover", async () => {
   const { mirrors } = mirrorFixture((_endpoint, count) =>
     count === 1 ? { wrong: "shape" } : ["paper"]
   );
-  await assert.rejects(mirrors.servers(), /sourceError/);
+  await assert.rejects(mirrors.servers(), /TXT_CODE_MINECRAFT_SOURCE_ERROR/);
   assert.deepEqual(await mirrors.servers(), ["paper"]);
 });
 
@@ -289,7 +346,7 @@ test("Minecraft API requires an administrator and resolves downloads on the pane
   ]) {
     overview = unsupported;
     const before = requests.length;
-    assert.match((await request(10, body)).body.message, /nodeUnsupported/);
+    assert.match((await request(10, body)).body.message, /TXT_CODE_MINECRAFT_NODE_UNSUPPORTED/);
     assert.equal(requests.length, before + 1);
     assert.equal(requests.at(-1).event, "info/overview");
     assert.equal(resolutions.length, 1);
@@ -298,7 +355,7 @@ test("Minecraft API requires an administrator and resolves downloads on the pane
   // A provider may disappear after the preflight request.
   overview = { features: { minecraftInstall: true } };
   result = true;
-  assert.match((await request(10, body)).body.message, /nodeUnsupported/);
+  assert.match((await request(10, body)).body.message, /TXT_CODE_MINECRAFT_NODE_UNSUPPORTED/);
   assert.equal(logs.length, 1);
 
   const probe = async (role = 10) => {
@@ -578,11 +635,17 @@ test("checksum failure stops installation before extraction or executing command
   const task = f.create({ ...paper, sha256: "0".repeat(64) });
   await task.start();
   assert.equal(task.status(), AsyncTask.STATUS_ERROR);
-  assert.match(task.toObject().error, /hashMismatch/);
+  assert.match(task.toObject().error, /TXT_CODE_MINECRAFT_HASH_MISMATCH/);
   assert.equal(fs.existsSync(task.filePath), false);
   assert.equal(f.unzips.length, 0);
   assert.equal(f.updates.length, 0);
-  assert.ok(!f.output.some((line) => line.includes("TXT_CODE_1562f6cf")));
+  assert.ok(
+    !f.output.some((line) =>
+      line.includes(
+        "TXT_CODE_COMMON_ALL_INSTALLATION_OPERATIONS_HAVE_BEEN_COMPLETED_PLEASE_TRY_TO_START_THE_INSTANCE"
+      )
+    )
+  );
 });
 
 test("file-open failures become task errors while waiting for a download response", async (t) => {
@@ -671,7 +734,7 @@ test("early NeoForge and Windows installations use the argument file actually in
       translate,
       "linux"
     ),
-    /missingFiles/
+    /TXT_CODE_MINECRAFT_MISSING_FILES/
   );
 });
 
@@ -706,7 +769,7 @@ test("instance registers Minecraft as a separate admin task and validates before
         targetLink: "file:///private",
         minecraft: paper
       }),
-    /invalidDownload/
+    /TXT_CODE_MINECRAFT_INVALID_DOWNLOAD/
   );
   assert.equal(created.length, 0);
   registration.create(undefined, {
@@ -735,7 +798,9 @@ test("instance owns Java before restoration, leaves status to external plugins a
     config: { type: "minecraft/java", java: { id: "msl_21" }, pingConfig: { port: 25565 } },
     info: {},
     resets: 0,
-    resetPingInfo() { this.resets++; },
+    resetPingInfo() {
+      this.resets++;
+    },
     isStoppedOrBusy: () => true
   };
   const subsystem = Object.assign(new EventEmitter(), f.ctx.instances.subsystem, {
@@ -747,21 +812,27 @@ test("instance owns Java before restoration, leaves status to external plugins a
       assert.equal(ctx.instanceLifecycle.entries().length, 0);
       restored = true;
     },
-    getInstance: (id) => id === statusInstance.instanceUuid ? statusInstance : undefined,
-    getInstances: () => restored ? [statusInstance] : [],
+    getInstance: (id) => (id === statusInstance.instanceUuid ? statusInstance : undefined),
+    getInstances: () => (restored ? [statusInstance] : []),
     exit: async () => {}
   });
   const handlers = new Map();
-  ctx.plugin(class extends Service {
-    constructor(scope) { super(scope, "protocol", true); }
-    on(name, handler) {
-      return this.ctx.effect(() => {
-        handlers.set(name, handler);
-        return () => handlers.delete(name);
-      });
+  ctx.plugin(
+    class extends Service {
+      constructor(scope) {
+        super(scope, "protocol", true);
+      }
+      on(name, handler) {
+        return this.ctx.effect(() => {
+          handlers.set(name, handler);
+          return () => handlers.delete(name);
+        });
+      }
+      response(request, data) {
+        request.body = data;
+      }
     }
-    response(request, data) { request.body = data; }
-  });
+  );
   class Translations extends Service {
     messages = [];
     constructor(ctx) {
@@ -806,13 +877,23 @@ test("instance owns Java before restoration, leaves status to external plugins a
       "./mod_service": load("plugins/instance/daemon/src/backend/mod/mod_service.ts")
     }),
     "./java": load("plugins/instance/daemon/src/backend/java/index.ts", {
-      "./java_manager": { JavaManager: class {
-        ready = javaReady.promise;
-        constructor() { javaManager = this; }
-        list() { return [runtime]; }
-        getJava(id) { return id === "msl_21" ? runtime : undefined; }
-        dispose() { this.disposed = true; }
-      } },
+      "./java_manager": {
+        JavaManager: class {
+          ready = javaReady.promise;
+          constructor() {
+            javaManager = this;
+          }
+          list() {
+            return [runtime];
+          }
+          getJava(id) {
+            return id === "msl_21" ? runtime : undefined;
+          }
+          dispose() {
+            this.disposed = true;
+          }
+        }
+      },
       "./java_router": load("plugins/instance/daemon/src/backend/java/java_router.ts", {
         "../../../../../../core/common/src/java": javaCommands,
         "./java_info": load("plugins/instance/daemon/src/backend/java/java_info.ts")
@@ -878,13 +959,15 @@ test("instance owns Java before restoration, leaves status to external plugins a
   const examplePlugin = {
     inject: ["i18n", "tasks", "presets"],
     apply(pluginCtx) {
-      pluginCtx.i18n.define({ en_us: { "TXT_CODE_test.plugin": "Test plugin message" } });
+      pluginCtx.i18n.define({ en_us: { TXT_CODE_TEST_PLUGIN: "Test plugin message" } });
       pluginCtx.presets.register("test-preset", () => ({}));
       pluginCtx.tasks.register("test_install", {
         type: "TestInstallTask",
         requiresInstance: false,
         requiredRole: 10,
-        create() { throw new Error("This fixture task is not meant to run"); }
+        create() {
+          throw new Error("This fixture task is not meant to run");
+        }
       });
     }
   };
@@ -904,11 +987,14 @@ test("instance owns Java before restoration, leaves status to external plugins a
   assert.equal(ctx.features.has("minecraftInstall"), true);
   assert.equal(active.status(), AsyncTask.STATUS_RUNNING);
   assert.notEqual(
-    ctx.i18n.$t("TXT_CODE_minecraft.hashMismatch"),
-    "TXT_CODE_minecraft.hashMismatch"
+    ctx.i18n.$t("TXT_CODE_MINECRAFT_HASH_MISMATCH"),
+    "TXT_CODE_MINECRAFT_HASH_MISMATCH"
   );
-  assert.notEqual(ctx.i18n.$t("TXT_CODE_e166bc2f"), "TXT_CODE_e166bc2f");
-  assert.equal(ctx.i18n.$t("TXT_CODE_test.plugin"), "TXT_CODE_test.plugin");
+  assert.notEqual(
+    ctx.i18n.$t("TXT_CODE_COMMON_THE_INSTALLATION_TASK_IS_STARTING"),
+    "TXT_CODE_COMMON_THE_INSTALLATION_TASK_IS_STARTING"
+  );
+  assert.equal(ctx.i18n.$t("TXT_CODE_TEST_PLUGIN"), "TXT_CODE_TEST_PLUGIN");
   downloadGate.resolve();
   await active.wait();
   await until(() => !f.instance.asynchronousTask);
@@ -919,7 +1005,13 @@ test("instance owns Java before restoration, leaves status to external plugins a
 
   await instanceScope.dispose();
   assert.equal(ctx.features.has("minecraftInstall"), false);
-  for (const feature of ["javaManager", "javaManagerMsl", "modManager", "modInstallTasks", "mcstats"]) {
+  for (const feature of [
+    "javaManager",
+    "javaManagerMsl",
+    "modManager",
+    "modInstallTasks",
+    "mcstats"
+  ]) {
     assert.equal(ctx.features.has(feature), false);
   }
   assert.equal(ctx.javaManager, undefined);
@@ -931,7 +1023,7 @@ test("instance owns Java before restoration, leaves status to external plugins a
   assert.equal(statusInstance.resets, 0);
   assert.equal(ctx.instances, undefined);
   assert.equal(ctx.tasks, undefined);
-  assert.equal(ctx.i18n.$t("TXT_CODE_minecraft.hashMismatch"), "TXT_CODE_minecraft.hashMismatch");
+  assert.equal(ctx.i18n.$t("TXT_CODE_MINECRAFT_HASH_MISMATCH"), "TXT_CODE_MINECRAFT_HASH_MISMATCH");
   assert.deepEqual(warnings, []);
 });
 
@@ -950,7 +1042,13 @@ test("installer failure restores the update command and is reported as a failed 
   assert.match(task.toObject().error, /installer failed/);
   assert.equal(f.instance.config.updateCommand, "user update command");
   assert.equal(f.updates.length, 1);
-  assert.ok(!f.output.some((line) => line.includes("TXT_CODE_1562f6cf")));
+  assert.ok(
+    !f.output.some((line) =>
+      line.includes(
+        "TXT_CODE_COMMON_ALL_INSTALLATION_OPERATIONS_HAVE_BEEN_COMPLETED_PLEASE_TRY_TO_START_THE_INSTANCE"
+      )
+    )
+  );
 });
 
 test("Bedrock enforces OS/architecture before creation and sets Linux executable permissions", async (t) => {
@@ -964,7 +1062,7 @@ test("Bedrock enforces OS/architecture before creation and sets Linux executable
         "win32",
         "x64"
       ),
-    /platformMismatch/
+    /TXT_CODE_MINECRAFT_PLATFORM_MISMATCH/
   );
   assert.throws(
     () =>
@@ -975,7 +1073,7 @@ test("Bedrock enforces OS/architecture before creation and sets Linux executable
         "linux",
         "arm64"
       ),
-    /platformMismatch/
+    /TXT_CODE_MINECRAFT_PLATFORM_MISMATCH/
   );
   assert.throws(
     () =>
@@ -984,7 +1082,7 @@ test("Bedrock enforces OS/architecture before creation and sets Linux executable
         "https://cdn.example/server.jar",
         translate
       ),
-    /invalidDownload/
+    /TXT_CODE_MINECRAFT_INVALID_DOWNLOAD/
   );
   const f = taskFixture(t, {
     unzip: async (cwd) => {
@@ -1017,7 +1115,13 @@ test("cancelling a download prevents installation from continuing", async (t) =>
   assert.equal(task.toObject().cancelled, true);
   assert.equal(f.instance.config.startCommand, "");
   assert.equal(f.updates.length, 0);
-  assert.ok(!f.output.some((line) => line.includes("TXT_CODE_1562f6cf")));
+  assert.ok(
+    !f.output.some((line) =>
+      line.includes(
+        "TXT_CODE_COMMON_ALL_INSTALLATION_OPERATIONS_HAVE_BEEN_COMPLETED_PLEASE_TRY_TO_START_THE_INSTANCE"
+      )
+    )
+  );
 });
 
 test("a missing Java executable fails the update task without an unhandled process error", async () => {
@@ -1255,7 +1359,10 @@ function formFixture(t, createMethod = "DOWNLOAD", javaSetup) {
 test("merged creation categories retain per-server stop commands and detect Bedrock Java uploads", async (t) => {
   const download = formFixture(t);
   download.state.formData.type = "minecraft/java/bungeecord";
-  for (const [server, command] of [["bungeecord", "end"], ["velocity", "shutdown"]]) {
+  for (const [server, command] of [
+    ["bungeecord", "end"],
+    ["velocity", "shutdown"]
+  ]) {
     download.state.downloadSelection = { server, version: "latest", build: "latest" };
     await vue.nextTick();
     assert.equal(download.state.formData.stopCommand, command);
@@ -1309,7 +1416,7 @@ test("download confirmation rechecks capability before preparing Java and suppor
   assert.equal(prepared, 0);
   assert.equal(f.creates.length, 0);
   assert.equal(f.state.busy, false);
-  assert.match(f.errors.at(-1).message, /nodeUnsupported/);
+  assert.match(f.errors.at(-1).message, /TXT_CODE_MINECRAFT_NODE_UNSUPPORTED/);
 
   f.capability.supported = true;
   f.capability.error = new Error("Node disconnected");

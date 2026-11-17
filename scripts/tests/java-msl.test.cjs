@@ -97,12 +97,12 @@ test("unsupported targets and malformed versions fail without requesting a downl
     ["linux", "ia32"]
   ]) {
     const f = sourceFixture(...target);
-    await assert.rejects(f.source.versions(), /unsupportedPlatform/);
+    await assert.rejects(f.source.versions(), /TXT_CODE_JAVA_MSL_UNSUPPORTED_PLATFORM/);
     assert.equal(f.requests.length, 0);
   }
   const f = sourceFixture();
   for (const version of ["../21", "21/x", "", 21, "99"]) {
-    await assert.rejects(f.source.download(version), /invalidVersion/);
+    await assert.rejects(f.source.download(version), /TXT_CODE_JAVA_MSL_INVALID_VERSION/);
   }
   assert.ok(f.requests.every(({ url }) => !url.includes("/download/")));
 });
@@ -125,12 +125,12 @@ test("MSL downloads refresh URLs, reject bad metadata and infer signed archive f
       { url: download.url, sha256: "wrong" }
     ]) {
       download = bad;
-      await assert.rejects(f.source.download("21"), /sourceError/);
+      await assert.rejects(f.source.download("21"), /TXT_CODE_JAVA_MSL_SOURCE_ERROR/);
     }
   }
   let catalog = [21];
   const f = sourceFixture("linux", "x64", () => catalog);
-  await assert.rejects(f.source.versions(), /sourceError/);
+  await assert.rejects(f.source.versions(), /TXT_CODE_JAVA_MSL_SOURCE_ERROR/);
   catalog = ["21"];
   assert.deepEqual((await f.source.versions()).versions, ["21"]);
 });
@@ -243,21 +243,30 @@ test("Windows ZIP installation locates Java even when its folder differs from th
 test("checksum and extraction failures never leave an installed runtime", async (t) => {
   const f = installerFixture(t, Buffer.from("broken package"));
   f.options.download = { ...f.options.download, archive: "zip", sha256: "0".repeat(64) };
-  await assert.rejects(f.installJavaArchive(f.options), /checksumFailed/);
+  await assert.rejects(f.installJavaArchive(f.options), /TXT_CODE_JAVA_MSL_CHECKSUM_FAILED/);
   assert.equal(f.unzips.length, 0);
   assert.equal(fs.existsSync(path.join(f.cwd, "runtime")), false);
   assert.equal(fs.existsSync(path.join(f.cwd, ".install")), false);
   const extract = installerFixture(t, Buffer.from("zip fixture"));
   extract.options.download.archive = "zip";
-  await assert.rejects(extract.installJavaArchive(extract.options), /extractFailed/);
+  await assert.rejects(
+    extract.installJavaArchive(extract.options),
+    /TXT_CODE_JAVA_MSL_EXTRACT_FAILED/
+  );
   assert.equal(fs.existsSync(path.join(extract.cwd, "runtime")), false);
   const missing = installerFixture(t, await tarFixture(t, "jdk-21/LICENSE"));
-  await assert.rejects(missing.installJavaArchive(missing.options), /82c8bca3/);
+  await assert.rejects(
+    missing.installJavaArchive(missing.options),
+    /TXT_CODE_COMMON_JAVA_PATH_NOT_FOUND/
+  );
 });
 
 test("escaping tar symlinks are rejected, and interrupted downloads clean up their streams", async (t) => {
   const unsafe = installerFixture(t, await tarFixture(t, "jdk/bin/java", "../../../outside"));
-  await assert.rejects(unsafe.installJavaArchive(unsafe.options), /extractFailed/);
+  await assert.rejects(
+    unsafe.installJavaArchive(unsafe.options),
+    /TXT_CODE_JAVA_MSL_EXTRACT_FAILED/
+  );
   assert.equal(fs.existsSync(path.join(unsafe.cwd, "runtime")), false);
   const f = installerFixture(t, Buffer.alloc(1), { stream: new PassThrough() });
   const promise = f.installJavaArchive(f.options);
@@ -334,8 +343,14 @@ test("concurrent Java downloads share one installation and persist in the config
   assert.equal(a.info.progress, 42);
   const infoPath = path.join(f.cwd, "msl_21/java_info.json");
   assert.equal(fse.readJsonSync(infoPath).downloading, true);
-  await assert.rejects(f.manager.getJavaRuntimeCommand("msl_21"), /45d02bb7/);
-  await assert.rejects(f.manager.removeJava("msl_21"), /887fee99/);
+  await assert.rejects(
+    f.manager.getJavaRuntimeCommand("msl_21"),
+    /TXT_CODE_COMMON_JAVA_IS_DOWNLOADING/
+  );
+  await assert.rejects(
+    f.manager.removeJava("msl_21"),
+    /TXT_CODE_COMMON_THIS_JAVA_IS_STILL_BEING_DOWNLOADED/
+  );
   gate.resolve();
   await until(() => !a.info.downloading);
   assert.equal(a.info.error, undefined);
@@ -382,10 +397,10 @@ test("unloading Java aborts its installation and interrupted metadata remains re
   await until(() => f.installs.length === 1);
   await f.manager.dispose();
   assert.equal(runtime.info.downloading, false);
-  assert.match(runtime.info.error, /interrupted/);
+  assert.match(runtime.info.error, /TXT_CODE_JAVA_MSL_INTERRUPTED/);
   assert.equal(f.sources[0].disposed, true);
   assert.equal(f.installs[0].signal.aborted, true);
-  await assert.rejects(f.manager.startInstall("21"), /interrupted/);
+  await assert.rejects(f.manager.startInstall("21"), /TXT_CODE_JAVA_MSL_INTERRUPTED/);
   const brokenPath = path.join(f.cwd, "msl_8");
   await fse.outputJson(path.join(brokenPath, "java_info.json"), {
     name: "msl",
@@ -395,7 +410,7 @@ test("unloading Java aborts its installation and interrupted metadata remains re
   await fse.outputFile(path.join(brokenPath, ".install/archive.zip"), "partial");
   const reloaded = new f.JavaManager(f.dependencies);
   await reloaded.ready;
-  assert.match(reloaded.getJava("msl_8").info.error, /interrupted/);
+  assert.match(reloaded.getJava("msl_8").info.error, /TXT_CODE_JAVA_MSL_INTERRUPTED/);
   assert.equal(fs.existsSync(path.join(brokenPath, ".install")), false);
   await reloaded.dispose();
 });
@@ -419,7 +434,10 @@ test("legacy Zulu and external Java remain usable, and deleting metadata keeps e
   f.manager.addJava(info);
   assert.equal(await f.manager.getJavaRuntimeCommand("External"), `"${nativeJava(external)}"`);
   f.manager.getJava("External").usingInstances.push("running-instance");
-  await assert.rejects(f.manager.removeJava("External"), /ea8ea5d1/);
+  await assert.rejects(
+    f.manager.removeJava("External"),
+    /TXT_CODE_COMMON_JAVA_IS_CURRENTLY_RUNNING/
+  );
   f.manager.getJava("External").usingInstances = [];
   await f.manager.removeJava("External");
   assert.equal(fs.existsSync(nativeJava(external)), true);
@@ -456,7 +474,9 @@ test("Java HTTP routes allow admin setup before instance creation and retain ins
       (name, ...handlers) => routes.set(`${method}:${name}`, handlers)
     ])
   );
-  const { registerJavaManagerRoutes } = load("plugins/instance/panel/src/backend/routers/java_router.ts");
+  const { registerJavaManagerRoutes } = load(
+    "plugins/instance/panel/src/backend/routers/java_router.ts"
+  );
   registerJavaManagerRoutes({
     koa: { router: () => router },
     roles: { USER: 1, ADMIN: 10 },
@@ -509,10 +529,13 @@ test("Java HTTP routes allow admin setup before instance creation and retain ins
     ["java_manager/list", "java_manager/catalog", "java_manager/download"]
   );
   assert.equal(requests[1][3], 20000);
-  await assert.rejects(dispatch("get:/list", 1), /eb401a37/);
+  await assert.rejects(
+    dispatch("get:/list", 1),
+    /TXT_CODE_COMMON_CANNOT_PERFORM_OPERATIONS_ON_INSTANCES_THAT_DO_NOT_BELONG_TO_YOU/
+  );
   await assert.rejects(
     dispatch("get:/list", 1, { daemonId: "node", instanceId: "someone-else" }),
-    /eb401a37/
+    /TXT_CODE_COMMON_CANNOT_PERFORM_OPERATIONS_ON_INSTANCES_THAT_DO_NOT_BELONG_TO_YOU/
   );
   await dispatch("get:/list", 1, { daemonId: "node", instanceId: "owned" });
   await assert.rejects(dispatch("get:/catalog", 1), /forbidden/);
@@ -520,7 +543,7 @@ test("Java HTTP routes allow admin setup before instance creation and retain ins
   await dispatch("post:/using", 1, { daemonId: "node", instanceId: "owned" }, { id: "msl_21" });
   await assert.rejects(
     dispatch("post:/using", 1, { daemonId: "node", instanceId: "someone-else" }, { id: "msl_21" }),
-    /eb401a37/
+    /TXT_CODE_COMMON_CANNOT_PERFORM_OPERATIONS_ON_INSTANCES_THAT_DO_NOT_BELONG_TO_YOU/
   );
 });
 
@@ -537,10 +560,13 @@ test("Java protocol replies once to downloads and preserves quotes when binding 
       return '"/java/bin/java"';
     }
   };
-  const { registerJavaManagerRoutes } = load("plugins/instance/daemon/src/backend/java/java_router.ts", {
-    "../../../../../../core/common/src/java": javaCommands,
-    "./java_info": { JavaInfo }
-  });
+  const { registerJavaManagerRoutes } = load(
+    "plugins/instance/daemon/src/backend/java/java_router.ts",
+    {
+      "../../../../../../core/common/src/java": javaCommands,
+      "./java_info": { JavaInfo }
+    }
+  );
   registerJavaManagerRoutes(
     {
       i18n: { $t: translate },
@@ -638,7 +664,7 @@ test("creating with Java defaults to system paths and validates existing environ
   f.state.customPath = "/java with spaces/bin/java";
   assert.deepEqual(await f.state.prepare(), { id: "", path: "/java with spaces/bin/java" });
   f.state.customPath = 'invalid"path';
-  await assert.rejects(f.state.prepare(), /selectJava/);
+  await assert.rejects(f.state.prepare(), /TXT_CODE_JAVA_MSL_SELECT_JAVA/);
   f.state.mode = "installed";
   assert.equal(f.state.valid, false);
   f.state.runtimeId = "external";
@@ -683,7 +709,7 @@ test("Java preparation exposes failures for retry and stops polling after unmoun
   disposed.state.version = "21";
   const pending = disposed.state.prepare();
   await until(() => disposed.polls.length === 1);
-  const rejection = assert.rejects(pending, /interrupted/);
+  const rejection = assert.rejects(pending, /TXT_CODE_JAVA_MSL_INTERRUPTED/);
   disposed.app.unmount();
   await rejection;
   assert.equal(disposed.polls.length, 1);
@@ -777,8 +803,11 @@ test("Java persistence errors are reported instead of rejecting an unobserved ba
   });
   const runtime = await f.manager.startInstall("21");
   await until(() => !runtime.info.downloading);
-  assert.match(runtime.info.error, /persistFailed.*disk is full/);
-  await assert.rejects(f.manager.getJavaRuntimeCommand("msl_21"), /persistFailed/);
+  assert.match(runtime.info.error, /TXT_CODE_JAVA_MSL_PERSIST_FAILED.*disk is full/);
+  await assert.rejects(
+    f.manager.getJavaRuntimeCommand("msl_21"),
+    /TXT_CODE_JAVA_MSL_PERSIST_FAILED/
+  );
   await f.manager.dispose();
 });
 
@@ -787,12 +816,20 @@ test("unloading instance during Java initialization prevents late service and ro
   const disposers = [];
   let manager;
   const { registerJavaManager } = load("plugins/instance/daemon/src/backend/java/index.ts", {
-    "./java_manager": { JavaManager: class {
-      ready = ready.promise;
-      constructor() { manager = this; }
-      dispose() { this.disposed = true; }
-    } },
-    "./java_router": { registerJavaManagerRoutes: () => assert.fail("disposed instance registered routes") }
+    "./java_manager": {
+      JavaManager: class {
+        ready = ready.promise;
+        constructor() {
+          manager = this;
+        }
+        dispose() {
+          this.disposed = true;
+        }
+      }
+    },
+    "./java_router": {
+      registerJavaManagerRoutes: () => assert.fail("disposed instance registered routes")
+    }
   });
   const initializing = registerJavaManager({
     settings: { config: {} },

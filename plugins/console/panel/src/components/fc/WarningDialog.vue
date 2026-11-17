@@ -26,7 +26,7 @@ const openDialog = () => {
 
 const cancel = () => {
   open.value = false;
-  reject(new Error(t("TXT_CODE_1b7a8832")));
+  reject(new Error(t("TXT_CODE_COMMON_OPERATION_CANCELED")));
   if (props.destroyComponent) props.destroyComponent();
 };
 
@@ -59,10 +59,10 @@ defineExpose({
       <VCardActions class="warning-dialog__actions">
         <VSpacer />
         <VBtn color="error" variant="text" rounded="xl" :disabled="!checkbox" @click="confirm">
-          {{ t("TXT_CODE_d507abff") }}
+          {{ t("TXT_CODE_COMMON_CONFIRM") }}
         </VBtn>
         <VBtn variant="text" rounded="xl" @click="cancel">
-          {{ t("TXT_CODE_a0451c97") }}
+          {{ t("TXT_CODE_COMMON_CANCEL") }}
         </VBtn>
       </VCardActions>
     </VCard>

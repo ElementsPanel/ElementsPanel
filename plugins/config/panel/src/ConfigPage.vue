@@ -437,7 +437,7 @@ const notify = (text: string, color: "success" | "error") => {
 
 const notifyError = (error: unknown) => {
   console.error("Plugin configuration error:", error);
-  notify(getValidatorErrorMsg(error, t("TXT_CODE_6a365d01")), "error");
+  notify(getValidatorErrorMsg(error, t("TXT_CODE_COMMON_OPERATION_FAILED")), "error");
 };
 
 const loadSchema = async () => {
@@ -514,7 +514,7 @@ const saveSettings = async () => {
       }));
     }
     if (!lastResult.value || lastResult.value.application === "applied")
-      notify(t("TXT_CODE_d3de39b4"), "success");
+      notify(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"), "success");
     const editedDuringSave = JSON.stringify(targetSchema.values) !== submittedSettings;
     if (schema.value === targetSchema) savedSettings.value = submittedSettings;
     if (reloadPanel && !editedDuringSave) {
@@ -846,7 +846,7 @@ const syncNodePlugins = async (candidate: PluginActionCandidate) => {
       // successful removals against plugins that no longer exist on that node.
       candidate.selectedNodeIds = candidate.selectedNodeIds.filter((id) => id !== node.uuid);
     } catch (error) {
-      failures.push(`${nodeLabel(node)}: ${getValidatorErrorMsg(error, t("TXT_CODE_6a365d01"))}`);
+      failures.push(`${nodeLabel(node)}: ${getValidatorErrorMsg(error, t("TXT_CODE_COMMON_OPERATION_FAILED"))}`);
     }
   }
   if (failures.length)
@@ -1004,7 +1004,7 @@ const confirmAction = async () => {
               icon="mdi-close"
               size="small"
               variant="text"
-              :aria-label="t('TXT_CODE_b1dedda3')"
+              :aria-label="t('TXT_CODE_COMMON_STOP')"
               @click="sidebarOpen = false"
             />
           </div>
@@ -1227,7 +1227,7 @@ const confirmAction = async () => {
               :loading="loading"
               :disabled="actionBusy"
               @click="selectedNodeId ? loadNodePlugins() : loadNodes()"
-            >{{ t("TXT_CODE_9277af78") }}</VBtn>
+            >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
           </template>
         </Empty>
         <template v-if="selectedPlugin">
@@ -1278,7 +1278,7 @@ const confirmAction = async () => {
           />
 
           <VBtn v-if="frontendPlugin?.error" class="mb-4" variant="text" @click="retryFrontend">{{
-            t("TXT_CODE_9277af78")
+            t("TXT_CODE_COMMON_RETRY")
           }}</VBtn>
           <div v-if="schemaLoading" class="plugin-config-schema-loading">
             <VProgressCircular indeterminate />
@@ -1381,7 +1381,7 @@ const confirmAction = async () => {
             {{ t("TXT_CODE_PLUGIN_CANCEL") }}
           </VBtn>
           <VBtn color="primary" :loading="actionSubmitting" @click="confirmAction">
-            {{ t("TXT_CODE_d507abff") }}
+            {{ t("TXT_CODE_COMMON_CONFIRM") }}
           </VBtn>
         </VCardActions>
       </VCard>

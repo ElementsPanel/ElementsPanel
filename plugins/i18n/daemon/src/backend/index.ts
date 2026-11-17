@@ -109,13 +109,13 @@ export async function apply(ctx: DaemonPluginContext) {
           {
             key: "language",
             type: "select",
-            title: settingsCtx.i18n.$t("TXT_CODE_I18N_LANGUAGE"),
+            title: settingsCtx.i18n.$t("TXT_CODE_I18_N_LANGUAGE"),
             options: SUPPORTED_LANGUAGES.map((item) => ({ ...item }))
           },
           {
             key: "followPanelLanguage",
             type: "boolean",
-            title: settingsCtx.i18n.$t("TXT_CODE_I18N_FOLLOW_PANEL")
+            title: settingsCtx.i18n.$t("TXT_CODE_I18_N_FOLLOW_PANEL")
           }
         ],
         read: () => ({

@@ -81,7 +81,7 @@ const instanceTypeText = computed(
 );
 const instanceName = computed(() =>
   instanceInfo.value?.config.nickname === GLOBAL_INSTANCE_NAME
-    ? t("TXT_CODE_5bdaf23d")
+    ? t("TXT_CODE_COMMON_DAEMON_TERMINAL")
     : instanceInfo.value?.config.nickname || "--"
 );
 const instanceGameServerInfo = computed(() => {
@@ -178,25 +178,25 @@ const instanceFunctionItems = computed(() => {
   }));
   const items = [
     {
-      title: t("TXT_CODE_d07742fe"),
+      title: t("TXT_CODE_COMMON_CONFIGURATION_FILES"),
       icon: "mdi-cog-outline",
       condition: () => !isGlobalTerminal.value && serverConfigFiles.value.length > 0,
       click: goConfig
     },
     {
-      title: t("TXT_CODE_656a85d8"),
+      title: t("TXT_CODE_COMMON_STEAM_RCON_PROTOCOL"),
       icon: "mdi-hammer-wrench",
       condition: () => String(instanceInfo.value?.config.type || "").includes(TYPE_STEAM_SERVER_UNIVERSAL),
       click: () => rconSettingsDialog.value?.openDialog()
     },
     {
-      title: t("TXT_CODE_b7d026f8"),
+      title: t("TXT_CODE_COMMON_SCHEDULED_TASKS"),
       icon: "mdi-calendar-clock-outline",
       condition: () => !isGlobalTerminal.value,
       click: goSchedule
     },
     {
-      title: t("TXT_CODE_d341127b"),
+      title: t("TXT_CODE_COMMON_EVENT_TASKS"),
       icon: "mdi-view-dashboard-outline",
       condition: () => true,
       click: () => {
@@ -204,7 +204,7 @@ const instanceFunctionItems = computed(() => {
       }
     },
     {
-      title: t("TXT_CODE_4f34fc28"),
+      title: t("TXT_CODE_DESKTOP_INSTANCE_SETTINGS_TITLE"),
       icon: "mdi-application-cog-outline",
       condition: () =>
         isAdmin.value ||
@@ -239,7 +239,7 @@ const open = async () => {
     await requestOpenInstance({ params: { uuid: instanceId.value, daemonId: daemonId.value } });
     crashTimer.value = setTimeout(() => {
       if (terminalHook.isStopped.value) {
-        Modal.error({ title: t("TXT_CODE_ac405b50"), content: t("TXT_CODE_3409258a") });
+        Modal.error({ title: t("TXT_CODE_COMMON_ERROR"), content: t("TXT_CODE_COMMON_PROCESS_STARTUP_FAILED_PLEASE_CHECK_THE_INSTANCE_LOG_FOR_MORE_INFORMATION") });
       }
     }, INSTANCE_CRASH_TIMEOUT);
   } catch (error: any) {
@@ -250,20 +250,20 @@ const withInstance = (fn: ReturnType<typeof stopInstance>["execute"], data?: any
   fn({ params: { uuid: instanceId.value, daemonId: daemonId.value }, ...(data || {}) });
 const stop = () =>
   Modal.confirm({
-    title: t("TXT_CODE_893567ac"),
-    content: t("TXT_CODE_6da85509"),
+    title: t("TXT_CODE_INSTANCE_SECONDARY_CONFIRMATION"),
+    content: t("TXT_CODE_COMMON_ARE_YOU_SURE_YOU_WANT_TO_SEND_A_SHUTDOWN_COMMAND_TO_THE_INSTANCE"),
     onOk: () => withInstance(stopInstance().execute)
   });
 const restart = () =>
   Modal.confirm({
-    title: t("TXT_CODE_893567ac"),
-    content: t("TXT_CODE_f6bd907d"),
+    title: t("TXT_CODE_INSTANCE_SECONDARY_CONFIRMATION"),
+    content: t("TXT_CODE_COMMON_ARE_YOU_SURE_YOU_WANT_TO_RESTART_THE_INSTANCE"),
     onOk: () => withInstance(restartInstance().execute)
   });
 const kill = () =>
   Modal.confirm({
-    title: t("TXT_CODE_893567ac"),
-    content: t("TXT_CODE_ec08484"),
+    title: t("TXT_CODE_INSTANCE_SECONDARY_CONFIRMATION"),
+    content: t("TXT_CODE_INSTANCE_FORCE_STOP_DATA_LOSS_WARNING"),
     onOk: () => withInstance(killInstance().execute)
   });
 const update = async () => {
@@ -324,23 +324,23 @@ onUnmounted(() => {
             prepend-icon="mdi-play"
             :loading="openLoading"
             @click="open"
-            >{{ t("TXT_CODE_57245e94") }}</VBtn
+            >{{ t("TXT_CODE_COMMON_START") }}</VBtn
           >
           <VBtn v-if="isRunning" color="warning" prepend-icon="mdi-stop" @click="stop">{{
-            t("TXT_CODE_b1dedda3")
+            t("TXT_CODE_COMMON_STOP")
           }}</VBtn>
           <VBtn v-if="isRunning" prepend-icon="mdi-restart" @click="restart">{{
-            t("TXT_CODE_47dcfa5")
+            t("TXT_CODE_COMMON_RESTART")
           }}</VBtn>
           <VBtn
             v-if="!isStopped"
             color="error"
             prepend-icon="mdi-close-circle-outline"
             @click="kill"
-            >{{ t("TXT_CODE_7b67813a") }}</VBtn
+            >{{ t("TXT_CODE_COMMON_TERMINATE") }}</VBtn
           >
           <VBtn v-if="canUpdate" prepend-icon="mdi-cloud-download-outline" @click="update">{{
-            t("TXT_CODE_40ca4f2")
+            t("TXT_CODE_COMMON_UPDATE")
           }}</VBtn>
           <VBtn
             v-for="action in pluginActions"
@@ -365,7 +365,7 @@ onUnmounted(() => {
         /></VCardText>
       </VCard>
       <VAlert v-else type="warning" variant="tonal" class="mt-4">{{
-        t("TXT_CODE_181f2f08")
+        t("TXT_CODE_COMMON_UNABLE_TO_RETRIEVE_REMOTE_DAEMON_INFORMATION")
       }}</VAlert>
 
       <VRow v-if="instanceInfo" class="console-state-row" density="comfortable">
@@ -373,7 +373,7 @@ onUnmounted(() => {
           <VCard class="console-state-card" rounded="xl" flat>
             <VCardTitle class="console-state-title">
               <VIcon icon="mdi-chart-line" color="info" class="mr-4" />
-              {{ t("TXT_CODE_5476e012") }}
+              {{ t("TXT_CODE_COMMON_STATE") }}
             </VCardTitle>
             <VCardText class="console-state-content">
               <div v-if="displayInfo && !isDisplayStopped" class="console-state-metrics">
@@ -419,7 +419,7 @@ onUnmounted(() => {
           <VCard v-if="instanceFunctionItems.length" class="console-function-card" rounded="xl" flat>
             <VCardTitle class="console-function-title">
               <VIcon icon="mdi-view-grid-outline" color="info" class="mr-4" />
-              {{ t("TXT_CODE_efd37c48") }}
+              {{ t("TXT_CODE_COMMON_MANAGE_INSTANCE") }}
             </VCardTitle>
             <VCardText>
               <VRow class="console-function-grid" density="comfortable">
@@ -447,12 +447,12 @@ onUnmounted(() => {
           <VCard class="summary-card" rounded="xl" flat>
             <VCardTitle
               ><VIcon icon="mdi-information-outline" color="info" class="mr-4" />{{
-                t("TXT_CODE_eadb4f60")
+                t("TXT_CODE_COMMON_BASIC_INFORMATION")
               }}</VCardTitle
             >
             <VCardText class="info-list">
               <div>
-                <span>{{ t("TXT_CODE_7ec9c59c") }}</span>
+                <span>{{ t("TXT_CODE_COMMON_INSTANCE") }}</span>
                 <strong class="info-list-value">
                   <span>{{ instanceName }}</span>
                   <VChip
@@ -464,75 +464,75 @@ onUnmounted(() => {
                 </strong>
               </div>
               <div>
-                <span>{{ t("TXT_CODE_68831be6") }}</span>
+                <span>{{ t("TXT_CODE_INSTANCE_TYPE_LABEL") }}</span>
                 <strong>{{ instanceTypeText }}</strong>
               </div>
               <div>
-                <span>{{ t("TXT_CODE_ad30f3c5") }}</span>
+                <span>{{ t("TXT_CODE_COMMON_NUMBER_OF_STARTS") }}</span>
                 <strong>{{ instanceInfo.started }}</strong>
               </div>
               <div>
-                <span>{{ t("TXT_CODE_6420023d") }}</span>
+                <span>{{ t("TXT_CODE_COMMON_NUMBER_OF_AUTO_RESTARTS") }}</span>
                 <strong>{{ instanceInfo.autoRestarted }}</strong>
               </div>
               <div v-if="instanceGameServerInfo">
-                <span>{{ t("TXT_CODE_855c4a1c") }}</span>
+                <span>{{ t("TXT_CODE_COMMON_PLAYERS") }}</span>
                 <strong>{{ instanceGameServerInfo.players }}</strong>
               </div>
               <div v-if="instanceGameServerInfo">
-                <span>{{ t("TXT_CODE_e260a220") }}</span>
+                <span>{{ t("TXT_CODE_INSTANCE_GAME_VERSION_LABEL") }}</span>
                 <strong>{{ instanceGameServerInfo.version }}</strong>
               </div>
               <div v-if="instanceInfo.config.processType === 'docker'">
-                <span>{{ t("TXT_CODE_4f917a65") }}</span>
+                <span>{{ t("TXT_CODE_COMMON_RESOURCE_LIMITS") }}</span>
                 <VBtn
                   variant="text"
                   size="small"
                   class="info-list-link"
                   @click="dockerInfoDialog?.openDialog()"
-                  >{{ t("TXT_CODE_530f5951") }}</VBtn
+                  >{{ t("TXT_CODE_COMMON_CHECK") }}</VBtn
                 >
               </div>
               <div v-if="Number(instanceInfo.info?.allocatedPorts?.length) > 0" class="info-list-block">
-                <span>{{ t("TXT_CODE_2e4469f6") }}</span>
+                <span>{{ t("TXT_CODE_INSTANCE_AVAILABLE_PORTS_LABEL") }}</span>
                 <div class="port-list">
                   <div v-for="(item, index) in instanceInfo.info.allocatedPorts" :key="index" class="port-item">
                     <VChip size="x-small" color="success" variant="tonal">
                       {{ item.protocol.toUpperCase() }}
                     </VChip>
                     <VChip size="x-small" variant="tonal">
-                      {{ t("TXT_CODE_8dfc41ef") }}: {{ item.host }}
-                      {{ t("TXT_CODE_8f8103b7") }}: {{ item.container }}
+                      {{ t("TXT_CODE_COMMON_HOST") }}: {{ item.host }}
+                      {{ t("TXT_CODE_COMMON_CONTAINER") }}: {{ item.container }}
                     </VChip>
                   </div>
                 </div>
               </div>
               <div>
-                <span>{{ t("TXT_CODE_ae747cc0") }}</span>
-                <strong>{{ parseTimestamp(instanceInfo.config.endTime) || t("TXT_CODE_e3a77a77") }}</strong>
+                <span>{{ t("TXT_CODE_COMMON_EXPIRATION_TIME") }}</span>
+                <strong>{{ parseTimestamp(instanceInfo.config.endTime) || t("TXT_CODE_COMMON_UNLIMITED") }}</strong>
               </div>
               <div v-if="!instanceGameServerInfo">
-                <span>{{ t("TXT_CODE_8b8e08a6") }}</span>
+                <span>{{ t("TXT_CODE_COMMON_CREATION_TIME") }}</span>
                 <strong>{{ parseTimestamp(instanceInfo.config.createDatetime) }}</strong>
               </div>
               <div>
-                <span>{{ t("TXT_CODE_46f575ae") }}</span>
+                <span>{{ t("TXT_CODE_INSTANCE_LAST_START_LABEL") }}</span>
                 <strong>{{ parseTimestamp(instanceInfo.config.lastDatetime) }}</strong>
               </div>
               <div v-if="!instanceGameServerInfo" class="info-list-block">
                 <div class="encoding-list">
                   <div>
-                    <span>{{ t("TXT_CODE_cec321b4") }}</span>
+                    <span>{{ t("TXT_CODE_COMMON_OUTPUT_ENCODING") }}</span>
                     <strong>{{ instanceInfo.config.oe?.toUpperCase() || "--" }}</strong>
                   </div>
                   <div>
-                    <span>{{ t("TXT_CODE_400a4210") }}</span>
+                    <span>{{ t("TXT_CODE_COMMON_INPUT_ENCODING") }}</span>
                     <strong>{{ instanceInfo.config.ie?.toUpperCase() || "--" }}</strong>
                   </div>
                 </div>
               </div>
               <div class="info-list-identifiers">
-                <span>{{ t("TXT_CODE_30051f9b") }}</span>
+                <span>{{ t("TXT_CODE_COMMON_INSTANCE_ID") }}</span>
                 <VBtn
                   class="identifier-copy"
                   variant="text"
@@ -542,7 +542,7 @@ onUnmounted(() => {
                   <span class="mono">{{ instanceInfo.instanceUuid }}</span>
                   <VIcon icon="mdi-content-copy" size="14" />
                 </VBtn>
-                <span>{{ t("TXT_CODE_5f2d2e30") }}</span>
+                <span>{{ t("TXT_CODE_COMMON_NODE_ID") }}</span>
                 <VBtn
                   class="identifier-copy"
                   variant="text"
@@ -554,7 +554,7 @@ onUnmounted(() => {
                 </VBtn>
               </div>
               <div v-if="instanceInfo.config.tag?.length" class="info-list-block">
-                <span>{{ t("TXT_CODE_eaabd222") }}</span>
+                <span>{{ t("TXT_CODE_COMMON_TAG") }}</span>
                 <div class="tag-list">
                 <VChip
                   v-for="tag in instanceInfo.config.tag || []"

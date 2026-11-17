@@ -1,4 +1,4 @@
 {
-  "TXT_CODE_daemon_outputBufferSize": "Log-Puffergröße",
-  "TXT_CODE_daemon_outputBufferSizeInfo": "Ein größerer Puffer gewährleistet eine bessere Vollständigkeit der Terminalausgabe, erhöht jedoch den Speicher- und Leistungsdruck und kann sogar zu Speicherlecks führen."
+  "TXT_CODE_DAEMON_OUTPUT_BUFFER_SIZE": "Log-Puffergröße",
+  "TXT_CODE_DAEMON_OUTPUT_BUFFER_SIZE_INFO": "Ein größerer Puffer gewährleistet eine bessere Vollständigkeit der Terminalausgabe, erhöht jedoch den Speicher- und Leistungsdruck und kann sogar zu Speicherlecks führen."
 }

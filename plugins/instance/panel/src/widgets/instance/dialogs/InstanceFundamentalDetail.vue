@@ -25,11 +25,11 @@ const isPhone = computed(() => screen.isPhone.value);
 const open = ref(false);
 const formRef = ref<InstanceType<typeof VForm>>();
 const commandRules = [
-  (value: unknown) => !String(value ?? "").includes("\n") || t("TXT_CODE_bbbda29")
+  (value: unknown) => !String(value ?? "").includes("\n") || t("TXT_CODE_COMMON_YOU_CANNOT_INCLUDE_MULTIPLE_LINES_IN_YOUR_STARTUP_PROGRAM_THIS_HAS_TO_BE_A_ONE_LINER")
 ];
 const { execute, isLoading } = updateInstanceConfig();
-const updateCommandDesc = t("TXT_CODE_fa487a47");
-const UPDATE_CMD_TEMPLATE = t("TXT_CODE_61ca492b") + `"C:/SteamCMD/steamcmd.exe" +login anonymous +force_install_dir "{mcsm_workspace}" "+app_update 380870 validate" +quit`;
+const updateCommandDesc = t("TXT_CODE_COMMON_PROVIDE_THE_FOLLOWING_VARIABLE_STRINGS_INSTANCE_ID_INSTANCE_INSTALLATION_DIRECTORY");
+const UPDATE_CMD_TEMPLATE = t("TXT_CODE_COMMON_FOR_EXAMPLE") + `"C:/SteamCMD/steamcmd.exe" +login anonymous +force_install_dir "{mcsm_workspace}" "+app_update 380870 validate" +quit`;
 const initFormDetail = () => { if (props.instanceInfo) options.value = { ...props.instanceInfo, dayjsEndTime: timestampToDayjs(props.instanceInfo.config?.endTime) }; };
 const isDockerMode = computed(() => options.value?.config.processType === "docker");
 const openDialog = async () => {
@@ -44,8 +44,8 @@ const submit = async () => {
     if (!options.value?.config) throw new Error("");
     if (!(await formRef.value?.validate())?.valid) return;
     await execute({ params: { uuid: props.instanceId ?? "", daemonId: props.daemonId ?? "" }, data: encodeFormData().config });
-    emit("update"); open.value = false; message.success(t("TXT_CODE_d3de39b4"));
-  } catch (error: any) { reportErrorMsg(error.message ?? t("TXT_CODE_9911ac11")); }
+    emit("update"); open.value = false; message.success(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"));
+  } catch (error: any) { reportErrorMsg(error.message ?? t("TXT_CODE_COMMON_FAILED_TO_SAVE_PLEASE_CHECK_THE_CONFIGURATION")); }
 };
 const handleEditDockerEnv = async () => {
   const docker = options.value?.config.docker;
@@ -61,19 +61,19 @@ defineExpose({ openDialog });
 </script>
 
 <template>
-  <AppDialog v-model:open="open" :max-width="isPhone ? '100%' : '1200px'" :title="t('TXT_CODE_aac98b2a')" :confirm-loading="isLoading" :ok-text="t('TXT_CODE_abfe9512')" :mask-closable="false" @ok="submit">
+  <AppDialog v-model:open="open" :max-width="isPhone ? '100%' : '1200px'" :title="t('TXT_CODE_INSTANCE_SETTINGS_TITLE')" :confirm-loading="isLoading" :ok-text="t('TXT_CODE_COMMON_SAVE')" :mask-closable="false" @ok="submit">
     <VForm v-if="options" ref="formRef" validate-on="input lazy" class="dialog-overflow-container" @submit.prevent="submit">
-      <p class="text-medium-emphasis">{{ t("TXT_CODE_66f38b2e") }}</p>
+      <p class="text-medium-emphasis">{{ t("TXT_CODE_COMMON_NORMAL_USERS_CAN_ONLY_MODIFY_PART_OF_THE_SETTINGS") }}</p>
       <VRow>
-        <VCol cols="12" lg="6"><VTextField v-model="options.config.nickname" :label="t('TXT_CODE_f70badb9')" disabled variant="solo-filled" hide-details /></VCol>
-        <VCol cols="12" lg="6"><VTextField :model-value="INSTANCE_TYPE_TRANSLATION[options.config.type]" :label="t('TXT_CODE_2f291d8b')" disabled variant="solo-filled" hide-details /></VCol>
-        <VCol cols="12" lg="6"><VTextField :model-value="options.dayjsEndTime ? dayjs(options.dayjsEndTime).format('YYYY-MM-DD HH:mm:ss') : ''" :label="t('TXT_CODE_fa920c0')" disabled variant="solo-filled" hide-details /></VCol>
-        <VCol cols="12" lg="6"><VSelect v-model="options.config.fileCode" :items="TERMINAL_CODE" :label="t('TXT_CODE_f041de90')" hide-details>
+        <VCol cols="12" lg="6"><VTextField v-model="options.config.nickname" :label="t('TXT_CODE_COMMON_INSTANCE_NAME')" disabled variant="solo-filled" hide-details /></VCol>
+        <VCol cols="12" lg="6"><VTextField :model-value="INSTANCE_TYPE_TRANSLATION[options.config.type]" :label="t('TXT_CODE_COMMON_INSTANCE_TYPE')" disabled variant="solo-filled" hide-details /></VCol>
+        <VCol cols="12" lg="6"><VTextField :model-value="options.dayjsEndTime ? dayjs(options.dayjsEndTime).format('YYYY-MM-DD HH:mm:ss') : ''" :label="t('TXT_CODE_COMMON_EXPIRE')" disabled variant="solo-filled" hide-details /></VCol>
+        <VCol cols="12" lg="6"><VSelect v-model="options.config.fileCode" :items="TERMINAL_CODE" :label="t('TXT_CODE_COMMON_FILE_ENCODING')" hide-details>
           <template #no-data><Empty :icon="false" compact /></template>
         </VSelect></VCol>
-        <VCol cols="12"><VTextarea v-model="options.config.startCommand" :rules="isDockerMode ? commandRules : []" :label="t('TXT_CODE_d12fa808')" :placeholder="isDockerMode ? t('TXT_CODE_98e7c829') : t('TXT_CODE_f50cfe2')" :disabled="!isDockerMode" rows="5" variant="solo-filled" hide-details="auto" /></VCol>
-        <VCol cols="12" lg="9"><VTextField v-model="options.config.updateCommand" :label="t('TXT_CODE_bb0b9711')" :hint="updateCommandDesc" persistent-hint :placeholder="UPDATE_CMD_TEMPLATE" :disabled="!isDockerMode" variant="solo-filled" hide-details="auto" /></VCol>
-        <VCol cols="12" lg="3" class="d-flex align-center"><VBtn variant="tonal" @click="handleEditDockerEnv">{{ t('TXT_CODE_ad207008') }}</VBtn></VCol>
+        <VCol cols="12"><VTextarea v-model="options.config.startCommand" :rules="isDockerMode ? commandRules : []" :label="t('TXT_CODE_COMMON_STARTUP_COMMAND')" :placeholder="isDockerMode ? t('TXT_CODE_COMMON_LEAVE_EMPTY_TO_USE_DEFAULT_DOCKER_IMAGE_COMMAND') : t('TXT_CODE_COMMON_ENTER_STARTUP_COMMAND')" :disabled="!isDockerMode" rows="5" variant="solo-filled" hide-details="auto" /></VCol>
+        <VCol cols="12" lg="9"><VTextField v-model="options.config.updateCommand" :label="t('TXT_CODE_COMMON_UPDATE_OR_INSTALL_COMMAND')" :hint="updateCommandDesc" persistent-hint :placeholder="UPDATE_CMD_TEMPLATE" :disabled="!isDockerMode" variant="solo-filled" hide-details="auto" /></VCol>
+        <VCol cols="12" lg="3" class="d-flex align-center"><VBtn variant="tonal" @click="handleEditDockerEnv">{{ t('TXT_CODE_COMMON_EDIT') }}</VBtn></VCol>
       </VRow>
     </VForm>
   </AppDialog>

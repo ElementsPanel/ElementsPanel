@@ -34,7 +34,7 @@ a plugin never writes cleanup code. Read `docs/npm-packages.md` for the unified 
 
 ## i18n parameterized strings
 
-> Frontend and backend use different placeholder syntax. Keys must use the `TXT_CODE` prefix.
+> Frontend and backend use different placeholder syntax. Keys must begin with `TXT_CODE_` and use meaningful English words in uppercase snake case. Do not use hashes or random identifiers.
 
 ```json
 {

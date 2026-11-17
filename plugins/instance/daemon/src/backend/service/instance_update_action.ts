@@ -21,19 +21,19 @@ export class InstanceUpdateAction extends AsyncTask {
   public async onStart() {
     const updateCommand = await this.instance.parseTextParams(this.instance.config.updateCommand);
     logger.info(
-      $t("TXT_CODE_general_update.readyUpdate", { instanceUuid: this.instance.instanceUuid })
+      $t("TXT_CODE_GENERAL_UPDATE_READY_UPDATE", { instanceUuid: this.instance.instanceUuid })
     );
     logger.info(
-      $t("TXT_CODE_general_update.updateCmd", { instanceUuid: this.instance.instanceUuid })
+      $t("TXT_CODE_GENERAL_UPDATE_UPDATE_CMD", { instanceUuid: this.instance.instanceUuid })
     );
     logger.info(updateCommand);
 
     this.instance.print("\n");
     this.instance.println(
-      $t("TXT_CODE_general_update.update"),
-      $t("TXT_CODE_general_update.readyUpdate", { instanceUuid: this.instance.instanceUuid })
+      $t("TXT_CODE_GENERAL_UPDATE_UPDATE"),
+      $t("TXT_CODE_GENERAL_UPDATE_READY_UPDATE", { instanceUuid: this.instance.instanceUuid })
     );
-    this.instance.println($t("TXT_CODE_general_update.update"), `${updateCommand}`);
+    this.instance.println($t("TXT_CODE_GENERAL_UPDATE_UPDATE"), `${updateCommand}`);
 
     // Docker Update Command Mode: Prefer using docker.updateCommandImage,
     // otherwise, if the instance is in Docker mode, use docker.image
@@ -56,7 +56,7 @@ export class InstanceUpdateAction extends AsyncTask {
     const commandExeFile = commandList[0];
     const commandParameters = commandList.slice(1);
     if (commandList.length === 0) {
-      throw new Error($t("TXT_CODE_general_update.cmdFormatErr"));
+      throw new Error($t("TXT_CODE_GENERAL_UPDATE_CMD_FORMAT_ERR"));
     }
 
     const process = spawn(commandExeFile, commandParameters, {
@@ -81,7 +81,7 @@ export class InstanceUpdateAction extends AsyncTask {
       if (code === 0) {
         this.stop();
       } else {
-        this.error(new Error($t("TXT_CODE_general_update.updateErr")));
+        this.error(new Error($t("TXT_CODE_GENERAL_UPDATE_UPDATE_ERR")));
       }
     });
   }

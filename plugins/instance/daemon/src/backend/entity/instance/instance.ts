@@ -63,7 +63,7 @@ function getIgnoreText() {
     "[MCSMANAGER] ",
     TERM_RESET,
     TERM_TEXT_YELLOW,
-    $t("TXT_CODE_c5ed896f"),
+    $t("TXT_CODE_COMMON_THE_INSTANTANEOUS_OUTPUT_CONTENT_IS_TOO_LONG_AND_HAS_BEEN_REJECTED"),
     TERM_RESET,
     "\n\n"
   ].join("");
@@ -129,7 +129,7 @@ export default class Instance extends EventEmitter {
   constructor(instanceUuid: string, config: InstanceConfig) {
     super();
 
-    if (!instanceUuid || !config) throw new Error($t("TXT_CODE_instanceConf.initInstanceErr"));
+    if (!instanceUuid || !config) throw new Error($t("TXT_CODE_INSTANCE_CONF_INIT_INSTANCE_ERR"));
 
     this.instanceStatus = Instance.STATUS_STOP;
     this.instanceUuid = instanceUuid;
@@ -154,20 +154,20 @@ export default class Instance extends EventEmitter {
     // If the instance type changes, default commands and lifecycle events must be reset
     if (cfg?.type && cfg?.type != this.config.type) {
       if (!this.isStoppedOrBusy())
-        throw new Error($t("TXT_CODE_instanceConf.cantModifyInstanceType"));
+        throw new Error($t("TXT_CODE_INSTANCE_CONF_CANT_MODIFY_INSTANCE_TYPE"));
       configureEntityParams(this.config, cfg, "type", String);
       this.forceExec(this.dispatcher ?? new FunctionDispatcher());
     }
 
     if (cfg?.enableRcon != null && cfg?.enableRcon !== this.config.enableRcon) {
-      if (!this.isStoppedOrBusy()) throw new Error($t("TXT_CODE_bdfa3457"));
+      if (!this.isStoppedOrBusy()) throw new Error($t("TXT_CODE_COMMON_RCON_PROTOCOL_CANNOT_BE_ENABLED_OR_DISABLED_WHILE_RUNNING"));
       configureEntityParams(this.config, cfg, "enableRcon", Boolean);
       this.forceExec(this.dispatcher ?? new FunctionDispatcher());
     }
 
     if (cfg?.processType && cfg?.processType !== this.config.processType) {
       if (!this.isStoppedOrBusy())
-        throw new Error($t("TXT_CODE_instanceConf.cantModifyProcessType"));
+        throw new Error($t("TXT_CODE_INSTANCE_CONF_CANT_MODIFY_PROCESS_TYPE"));
       configureEntityParams(this.config, cfg, "processType", String);
       this.forceExec(this.dispatcher ?? new FunctionDispatcher());
     }
@@ -177,7 +177,7 @@ export default class Instance extends EventEmitter {
       cfg?.terminalOption?.pty != null &&
       cfg?.terminalOption?.pty !== this.config.terminalOption.pty
     ) {
-      if (!this.isStoppedOrBusy()) throw new Error($t("TXT_CODE_instanceConf.cantModifyPtyModel"));
+      if (!this.isStoppedOrBusy()) throw new Error($t("TXT_CODE_INSTANCE_CONF_CANT_MODIFY_PTY_MODEL"));
       configureEntityParams(this.config.terminalOption, cfg.terminalOption, "pty", Boolean);
       this.forceExec(this.dispatcher ?? new FunctionDispatcher());
     }
@@ -339,7 +339,7 @@ export default class Instance extends EventEmitter {
 
   setLock(bool: boolean) {
     if (this.lock === true && bool === true) {
-      throw new Error($t("TXT_CODE_ca030197"));
+      throw new Error($t("TXT_CODE_COMMON_THE_INSTANCE_HAS_OTHER_TASKS_IN_PROGRESS_AND_THIS_OPERATION_CANNOT_BE_PERFORMED"));
     }
     this.lock = bool;
   }
@@ -433,7 +433,7 @@ export default class Instance extends EventEmitter {
 
     const operation = Promise.resolve().then(async () => {
       this.stopOutputLoop();
-      this.println("INFO", $t("TXT_CODE_70ce6fbb"));
+      this.println("INFO", $t("TXT_CODE_COMMON_THE_INSTANCE_HAS_BEEN_STOPPED"));
       await this.releaseResources();
       await this.lifeCycleTaskManager.execLifeCycleTask(0);
       this.instanceStatus = Instance.STATUS_STOP;
@@ -444,7 +444,7 @@ export default class Instance extends EventEmitter {
       } catch (error) {
         logger.error(`Instance ${this.instanceUuid} failed to save its stopped state:`, error);
       }
-      if (isCrash && stoppedQuickly) this.println("ERROR", $t("TXT_CODE_aae2918f"));
+      if (isCrash && stoppedQuickly) this.println("ERROR", $t("TXT_CODE_INSTANCE_PROCESS_START_FAILED"));
 
       // Release this stop before a restarted process can emit its own exit.
       this.stopping = undefined;
@@ -463,20 +463,20 @@ export default class Instance extends EventEmitter {
     if (this.shuttingDown) return;
     const maxAutoRestartCount = this.config.eventTask.autoRestartMaxTimes;
     if (maxAutoRestartCount !== -1 && this.autoRestartCount >= maxAutoRestartCount) {
-      this.println($t("TXT_CODE_instanceConf.error"), $t("TXT_CODE_894b8e52"));
+      this.println($t("TXT_CODE_INSTANCE_CONF_ERROR"), $t("TXT_CODE_COMMON_REACHED_THE_MAXIMUM_AUTO_RESTART_LIMIT"));
       return;
     }
     void this.execPreset("start")
       .then(() => {
         this.autoRestartCount++;
         this.process?.snapshot?.({ autoRestartCount: this.autoRestartCount });
-        this.println($t("TXT_CODE_instanceConf.info"), $t("TXT_CODE_instanceConf.autoRestart"));
+        this.println($t("TXT_CODE_INSTANCE_CONF_INFO"), $t("TXT_CODE_INSTANCE_CONF_AUTO_RESTART"));
         this.emit("autoRestarted", { count: this.autoRestartCount });
       })
       .catch((err) => {
         this.println(
-          $t("TXT_CODE_instanceConf.error"),
-          $t("TXT_CODE_instanceConf.autoRestartErr", { err })
+          $t("TXT_CODE_INSTANCE_CONF_ERROR"),
+          $t("TXT_CODE_INSTANCE_CONF_AUTO_RESTART_ERR", { err })
         );
       });
   }

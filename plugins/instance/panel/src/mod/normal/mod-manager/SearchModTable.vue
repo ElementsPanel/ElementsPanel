@@ -40,7 +40,7 @@ const emitPageChange = (page: number, itemsPerPage: number) => emit("change", { 
     <template #item.version="{ item }"><div class="search-mod-version"><code>{{ item.version_number || t("TXT_CODE_UNKNOWN_VERSION") }}</code><small>{{ formatDate(item.updated) }}</small></div></template>
     <template #item.type="{ item }"><VChip color="primary" size="small" variant="tonal">{{ item.project_type }}</VChip></template>
     <template #item.source="{ item }"><VChip :color="item.source === 'CurseForge' ? 'orange' : item.source === 'SpigotMC' ? 'amber' : 'success'" size="small" variant="tonal">{{ item.source }}</VChip></template>
-    <template #item.action="{ item }"><div class="search-mod-actions"><VBtn variant="text" size="small" :disabled="isInstalled(item)" @click="emit('show-versions', item)"><VIcon :icon="isInstalled(item) ? 'mdi-check-circle-outline' : 'mdi-cloud-download-outline'" />{{ isInstalled(item) ? t("TXT_CODE_INSTALLED") : t("TXT_CODE_65b21404") }}</VBtn><VBtn variant="text" size="small" @click="emit('open-external', item)"><VIcon icon="mdi-open-in-new" />{{ t("TXT_CODE_47fea88e") }}</VBtn></div></template>
+    <template #item.action="{ item }"><div class="search-mod-actions"><VBtn variant="text" size="small" :disabled="isInstalled(item)" @click="emit('show-versions', item)"><VIcon :icon="isInstalled(item) ? 'mdi-check-circle-outline' : 'mdi-cloud-download-outline'" />{{ isInstalled(item) ? t("TXT_CODE_INSTALLED") : t("TXT_CODE_COMMON_DOWNLOAD") }}</VBtn><VBtn variant="text" size="small" @click="emit('open-external', item)"><VIcon icon="mdi-open-in-new" />{{ t("TXT_CODE_COMMON_WEBSITE") }}</VBtn></div></template>
   </VDataTable>
 </template>
 

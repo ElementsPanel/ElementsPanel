@@ -1,12 +1,12 @@
 {
-  "TXT_CODE_233624ad": "Informe um número inteiro de porta. Padrão: 23333.",
-  "TXT_CODE_2b85af6d": "Ative ao usar um proxy reverso para ler o IP real do cliente.",
-  "TXT_CODE_328191e": "Informe seu endereço IP para vincular uma interface de rede específica.",
-  "TXT_CODE_405cd346": "Interface de API de Solicitação de Origem Cruzada",
-  "TXT_CODE_514e064a": "IP de Vinculação do Painel",
-  "TXT_CODE_6655c905": "Permite requisições de qualquer origem (Access-Control-Allow-Origin: *). Isso pode reduzir a segurança.",
-  "TXT_CODE_66aeac82": "Cabeçalho de solicitação do proxy reverso",
-  "TXT_CODE_7f0017d2": "Porta do Painel",
+  "TXT_CODE_COMMON_ENTER_AN_INTEGER_PORT_NUMBER_DEFAULT_23333": "Informe um número inteiro de porta. Padrão: 23333.",
+  "TXT_CODE_COMMON_ENABLE_WHEN_USING_A_REVERSE_PROXY_TO_READ_THE_CLIENTS_REAL_IP": "Ative ao usar um proxy reverso para ler o IP real do cliente.",
+  "TXT_CODE_COMMON_ENTER_ITS_IP_ADDRESS_TO_BIND_TO_A_SPECIFIC_NETWORK_INTERFACE": "Informe seu endereço IP para vincular uma interface de rede específica.",
+  "TXT_CODE_COMMON_CROSS_ORIGIN_REQUEST_API_INTERFACE": "Interface de API de Solicitação de Origem Cruzada",
+  "TXT_CODE_COMMON_PANEL_BINDING_IP": "IP de Vinculação do Painel",
+  "TXT_CODE_SERVER_CROSS_ORIGIN_SECURITY_HINT": "Permite requisições de qualquer origem (Access-Control-Allow-Origin: *). Isso pode reduzir a segurança.",
+  "TXT_CODE_COMMON_REVERSE_PROXY_REQUEST_HEADER": "Cabeçalho de solicitação do proxy reverso",
+  "TXT_CODE_COMMON_PANEL_PORT": "Porta do Painel",
   "TXT_CODE_SERVER_PREFIX": "Prefixo de Caminho",
   "TXT_CODE_SERVER_PREFIX_TIP": "Serve o painel em um subcaminho, por exemplo /panel. Deixe vazio para servir a partir da raiz.",
   "TXT_CODE_SERVER_RESTART_TIP": "Estas configurações são aplicadas quando o servidor web inicia. Reinicie o painel para que uma alteração tenha efeito.",
@@ -16,6 +16,6 @@
   "TXT_CODE_SERVER_SSL_PEM": "Arquivo de certificado (.pem)",
   "TXT_CODE_SERVER_SSL_PEM_TIP": "Caminho do arquivo de certificado, absoluto ou relativo ao diretório do painel.",
   "TXT_CODE_SERVER_SSL_TIP": "Serve o painel via HTTPS usando o certificado abaixo. Ambos os arquivos são obrigatórios.",
-  "TXT_CODE_f0789d81": "Modo de Proxy Reverso",
-  "TXT_CODE_fd8bc51f": "Nome do cabeçalho que contém o IP real do cliente."
+  "TXT_CODE_COMMON_REVERSE_PROXY_MODE": "Modo de Proxy Reverso",
+  "TXT_CODE_COMMON_NAME_OF_THE_REQUEST_HEADER_CONTAINING_THE_CLIENTS_REAL_IP": "Nome do cabeçalho que contém o IP real do cliente."
 }

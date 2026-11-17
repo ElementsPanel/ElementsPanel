@@ -125,9 +125,9 @@ const toOpenInstance = async () => {
                 errorDialog.value = {
                     show: true,
                     lines: [
-                        t("TXT_CODE_3409258a"),
-                        `${t("TXT_CODE_973414e1")}: ${instanceInfo.value?.config.startCommand || ""}`,
-                        ...(isDockerMode.value ? [`${t("TXT_CODE_44b585c7")}: ${instanceInfo.value?.config.docker.image || ""}`] : [])
+                        t("TXT_CODE_COMMON_PROCESS_STARTUP_FAILED_PLEASE_CHECK_THE_INSTANCE_LOG_FOR_MORE_INFORMATION"),
+                        `${t("TXT_CODE_COMMON_CURRENT_START_COMMAND")}: ${instanceInfo.value?.config.startCommand || ""}`,
+                        ...(isDockerMode.value ? [`${t("TXT_CODE_COMMON_CURRENT_IMAGE_IN_USE")}: ${instanceInfo.value?.config.docker.image || ""}`] : [])
                     ]
                 };
             }
@@ -146,7 +146,7 @@ const instanceStatusText = computed(() => {
 const quickOperations = computed(() =>
     arrayFilter([
         {
-            title: t("TXT_CODE_57245e94"),
+            title: t("TXT_CODE_COMMON_START"),
             icon: PlayCircleOutlined,
             noConfirm: false,
             type: "default",
@@ -156,7 +156,7 @@ const quickOperations = computed(() =>
             condition: () => isStopped.value
         },
         {
-            title: t("TXT_CODE_b1dedda3"),
+            title: t("TXT_CODE_COMMON_STOP"),
             icon: PauseCircleOutlined,
             type: "default",
             click: async (): Promise<void> => {
@@ -182,7 +182,7 @@ const quickOperations = computed(() =>
 const instanceOperations = computed(() =>
     arrayFilter([
         {
-            title: t("TXT_CODE_47dcfa5"),
+            title: t("TXT_CODE_COMMON_RESTART"),
             icon: RedoOutlined,
             type: "default",
             noConfirm: false,
@@ -201,7 +201,7 @@ const instanceOperations = computed(() =>
             condition: () => isRunning.value
         },
         {
-            title: t("TXT_CODE_7b67813a"),
+            title: t("TXT_CODE_COMMON_TERMINATE"),
             icon: CloseOutlined,
             type: "danger",
             class: "color-warning",
@@ -220,7 +220,7 @@ const instanceOperations = computed(() =>
             condition: () => !isStopped.value
         },
         {
-            title: t("TXT_CODE_40ca4f2"),
+            title: t("TXT_CODE_COMMON_UPDATE"),
             type: "default",
             icon: CloudDownloadOutlined,
             click: async (): Promise<void> => {
@@ -259,7 +259,7 @@ const instanceOperations = computed(() =>
 
 const getInstanceName = computed(() => {
     if (instanceInfo.value?.config.nickname === GLOBAL_INSTANCE_NAME) {
-        return t("TXT_CODE_5bdaf23d");
+        return t("TXT_CODE_COMMON_DAEMON_TERMINAL");
     } else {
         return instanceInfo.value?.config.nickname;
     }
@@ -357,15 +357,15 @@ onUnmounted(() => {
                 <div v-if="perfInfo" class="dim-perf">
                     <span v-if="perfInfo.cpu != null" class="dim-perf__item"
                         :class="`dim-perf__cpu--${perfInfo.cpu > 80 ? 'high' : perfInfo.cpu > 50 ? 'mid' : 'low'}`"
-                        :title="t('TXT_CODE_b862a158')">
+                        :title="t('TXT_CODE_COMMON_CPU_USAGE')">
                         <VIcon icon="mdi-cube-outline" size="1em" /> {{ perfInfo.cpu }}%
                     </span>
                     <span v-if="perfInfo.mem != null && perfInfo.memUsed && perfInfo.memTotal" class="dim-perf__item"
                         :class="`dim-perf__mem--${perfInfo.mem > 80 ? 'high' : perfInfo.mem > 50 ? 'mid' : 'low'}`"
-                        :title="t('TXT_CODE_593ee330')">
+                        :title="t('TXT_CODE_COMMON_MEMORY')">
                         <VIcon icon="mdi-view-dashboard-outline" size="1em" /> {{ perfInfo.memUsed }}/{{ perfInfo.memTotal }}
                     </span>
-                    <span v-if="perfInfo.net" class="dim-perf__item dim-perf__net" :title="t('TXT_CODE_50daec4')">
+                    <span v-if="perfInfo.net" class="dim-perf__item dim-perf__net" :title="t('TXT_CODE_COMMON_NETWORK')">
                         <VIcon icon="mdi-lan" size="1em" /> ↓{{ perfInfo.net.rx }}/s ↑{{ perfInfo.net.tx }}/s
                     </span>
                 </div>
@@ -396,54 +396,54 @@ onUnmounted(() => {
 
             <div v-else-if="activeDialog === 'file-manager'" class="dim-dialog">
                 <div class="dim-dialog__header">
-                    <VBtn icon variant="text" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
+                    <VBtn icon variant="text" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_COMMON_GO')">
                         <VIcon icon="mdi-arrow-left"  />
                     </VBtn>
                     <span class="dim-dialog__title">
-                        <VIcon icon="mdi-folder-open-outline"  /> {{ t("TXT_CODE_ae533703") }}
+                        <VIcon icon="mdi-folder-open-outline"  /> {{ t("TXT_CODE_COMMON_FILE_MANAGEMENT") }}
                     </span>
                 </div>
                 <div class="dim-dialog__body">
                     <div class="dim-placeholder">
                         <VIcon icon="mdi-folder-open-outline" class="dim-placeholder__icon"  />
-                        <p class="dim-placeholder__text">{{ t("TXT_CODE_ae533703") }}</p>
-                        <p class="dim-placeholder__hint">{{ t("TXT_CODE_6c5985ca") }}</p>
+                        <p class="dim-placeholder__text">{{ t("TXT_CODE_COMMON_FILE_MANAGEMENT") }}</p>
+                        <p class="dim-placeholder__hint">{{ t("TXT_CODE_COMMON_GO") }}</p>
                     </div>
                 </div>
             </div>
 
             <div v-else-if="activeDialog === 'schedule'" class="dim-dialog">
                 <div class="dim-dialog__header">
-                    <VBtn icon variant="text" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
+                    <VBtn icon variant="text" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_COMMON_GO')">
                         <VIcon icon="mdi-arrow-left"  />
                     </VBtn>
                     <span class="dim-dialog__title">
-                        <VIcon icon="mdi-clock-outline"  /> {{ t("TXT_CODE_b7d026f8") }}
+                        <VIcon icon="mdi-clock-outline"  /> {{ t("TXT_CODE_COMMON_SCHEDULED_TASKS") }}
                     </span>
                 </div>
                 <div class="dim-dialog__body">
                     <div class="dim-placeholder">
                         <VIcon icon="mdi-clock-outline" class="dim-placeholder__icon"  />
-                        <p class="dim-placeholder__text">{{ t("TXT_CODE_b7d026f8") }}</p>
-                        <p class="dim-placeholder__hint">{{ t("TXT_CODE_6c5985ca") }}</p>
+                        <p class="dim-placeholder__text">{{ t("TXT_CODE_COMMON_SCHEDULED_TASKS") }}</p>
+                        <p class="dim-placeholder__hint">{{ t("TXT_CODE_COMMON_GO") }}</p>
                     </div>
                 </div>
             </div>
 
             <div v-else-if="activeDialog === 'server-config'" class="dim-dialog">
                 <div class="dim-dialog__header">
-                    <VBtn icon variant="text" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_6c5985ca')">
+                    <VBtn icon variant="text" class="dim-btn dim-btn--icon" @click="closeDialog" :title="t('TXT_CODE_COMMON_GO')">
                         <VIcon icon="mdi-arrow-left"  />
                     </VBtn>
                     <span class="dim-dialog__title">
-                        <VIcon icon="mdi-tune-variant"  /> {{ t("TXT_CODE_d07742fe") }}
+                        <VIcon icon="mdi-tune-variant"  /> {{ t("TXT_CODE_COMMON_CONFIGURATION_FILES") }}
                     </span>
                 </div>
                 <div class="dim-dialog__body">
                     <div class="dim-placeholder">
                         <VIcon icon="mdi-tune-variant" class="dim-placeholder__icon"  />
-                        <p class="dim-placeholder__text">{{ t("TXT_CODE_d07742fe") }}</p>
-                        <p class="dim-placeholder__hint">{{ t("TXT_CODE_6c5985ca") }}</p>
+                        <p class="dim-placeholder__text">{{ t("TXT_CODE_COMMON_CONFIGURATION_FILES") }}</p>
+                        <p class="dim-placeholder__hint">{{ t("TXT_CODE_COMMON_GO") }}</p>
                     </div>
                 </div>
             </div>
@@ -457,12 +457,12 @@ onUnmounted(() => {
             @open-instance-action="(actionId: string) => emit('open-instance-action', actionId, instanceId, daemonId)" />
 
         <VDialog v-model="errorDialog.show" class="desktop-dialog" max-width="460" scrollable>
-            <VCard :title="t('TXT_CODE_ac405b50')" rounded="xl">
+            <VCard :title="t('TXT_CODE_COMMON_ERROR')" rounded="xl">
                 <VCardText>
                     <p v-for="line in errorDialog.lines" :key="line" class="dim-error-line">{{ line }}</p>
                 </VCardText>
                 <VCardActions class="justify-end">
-                    <VBtn variant="text" @click="errorDialog.show = false">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+                    <VBtn variant="text" @click="errorDialog.show = false">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
                 </VCardActions>
             </VCard>
         </VDialog>

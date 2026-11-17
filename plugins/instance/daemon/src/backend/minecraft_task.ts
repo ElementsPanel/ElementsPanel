@@ -23,7 +23,7 @@ export function createMinecraftInstallTaskClass(ctx: DaemonPluginContext) {
       super(name, targetLink, config, undefined, {
         fileName: minecraftFileName(minecraft),
         sha256: minecraft.sha256,
-        hashMismatchMessage: $t("TXT_CODE_minecraft.hashMismatch"),
+        hashMismatchMessage: $t("TXT_CODE_MINECRAFT_HASH_MISMATCH"),
         headers: { "User-Agent": "ElementsPanel" },
         timeout: 30000,
         sourceLabel: `${minecraft.server}/${minecraft.version}`

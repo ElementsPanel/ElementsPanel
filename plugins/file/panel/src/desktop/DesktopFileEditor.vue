@@ -34,7 +34,7 @@ const initKeydownListener = () => {
             }
             try {
                 await submitRequest();
-                notifyDesktop(t("TXT_CODE_8f47d95"), "success");
+                notifyDesktop(t("TXT_CODE_COMMON_SAVED_VIA_SHORTCUT_KEYS"), "success");
                 emit("save");
             } catch (err: any) {
                 return notifyDesktopError(err);
@@ -86,7 +86,7 @@ const submitRequest = async () => {
 const submit = async () => {
     try {
         await submitRequest();
-        notifyDesktop(t("TXT_CODE_a7907771"), "success");
+        notifyDesktop(t("TXT_CODE_COMMON_SAVED"), "success");
         emit("save");
     } catch (err: any) {
         console.error(err.message);
@@ -114,11 +114,11 @@ onMounted(() => {
             <div class="dfe-toolbar__right">
                 <VBtn class="dfe-btn dfe-btn--primary" variant="text" size="small" :disabled="isLoading" @click="submit">
                     <VIcon icon="mdi-content-save-outline" />
-                    {{ t("TXT_CODE_abfe9512") }}
+                    {{ t("TXT_CODE_COMMON_SAVE") }}
                 </VBtn>
                 <VBtn class="dfe-btn" variant="text" size="small" @click="close">
                     <VIcon icon="mdi-close" />
-                    {{ t("TXT_CODE_3b1cc020") }}
+                    {{ t("TXT_CODE_COMMON_DISCARD") }}
                 </VBtn>
             </div>
         </div>

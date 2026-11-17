@@ -35,26 +35,26 @@ const columns = computed<TableColumn[]>(() => [
   {
     align: "center",
     dataIndex: "host",
-    title: t("TXT_CODE_534db0b2"),
+    title: t("TXT_CODE_COMMON_HOST_PORT"),
     placeholder: "eg: 8080 or {mcsm_port1}"
   },
   {
     align: "center",
     dataIndex: "container",
-    title: t("TXT_CODE_b729d2e"),
+    title: t("TXT_CODE_COMMON_CONTAINER_PORT"),
     placeholder: "eg: 25565 or {mcsm_port1}"
   },
   {
     align: "center",
     dataIndex: "protocol",
-    title: t("TXT_CODE_ad1c674c"),
+    title: t("TXT_CODE_COMMON_PROTOCOL"),
     placeholder: "tcp/udp"
   },
   {
     align: "center",
     key: "operation",
     dataIndex: "operation",
-    title: t("TXT_CODE_fe731dfc")
+    title: t("TXT_CODE_COMMON_ACTIONS")
   }
 ]);
 
@@ -158,7 +158,7 @@ const cancel = async () => {
 };
 
 const submit = async () => {
-  if (dataSource.value.some((item) => !String(item.host || "").trim() || !String(item.container || "").trim() || !String(item.protocol || "").trim())) return reportValidatorError(new Error(t("TXT_CODE_cb08d342")));
+  if (dataSource.value.some((item) => !String(item.host || "").trim() || !String(item.container || "").trim() || !String(item.protocol || "").trim())) return reportValidatorError(new Error(t("TXT_CODE_COMMON_FIELD_CANNOT_BE_EMPTY")));
 
   const result: DockerPortMapping[] = dataSource.value.map((item) => ({
     protocol: item.protocol,
@@ -197,11 +197,11 @@ onMounted(() => {
 
 <template>
   <VDialog v-model="open" max-width="1300" persistent>
-    <VCard :title="t('TXT_CODE_c4435af9')">
+    <VCard :title="t('TXT_CODE_COMMON_CONTAINER_PORT_MAPPING_CONFIGURATION')">
       <VCardText class="dialog-overflow-container">
       <div class="text-body-medium text-medium-emphasis mb-4">
         {{
-          t("TXT_CODE_56b9e6af", {
+          t("TXT_CODE_INSTANCE_AUTOMATIC_PORT_ALLOCATION_HINT", {
             mcsm_port1: "{mcsm_port1}",
             mcsm_port5: "{mcsm_port5}"
           })
@@ -209,13 +209,13 @@ onMounted(() => {
       </div>
       <div class="d-flex justify-end mb-5">
         <VBtn variant="tonal" @click="operation('add')"><VIcon start icon="mdi-plus-circle-outline" />
-          {{ t("TXT_CODE_dfc17a0c") }}
+          {{ t("TXT_CODE_COMMON_ADD_CONFIGURATION") }}
         </VBtn>
       </div>
       <VDataTable :headers="columns.map((column) => ({ title: column.title, key: String(column.dataIndex), align: 'center' as const, sortable: false }))" :items="dataSource" :items-per-page="-1" hide-default-footer density="comfortable">
         <template #no-data><Empty icon="mdi-format-list-bulleted" compact /></template>
         <template #item="{ item, index }"><tr><td v-for="column in columns" :key="String(column.dataIndex)">
-          <template v-if="column.dataIndex === 'host' || column.dataIndex === 'container'"><div class="d-flex align-center ga-2"><VTextField :model-value="getRecord(item)[String(column.dataIndex)]" type="number" min="1" max="65535" :placeholder="(column as any).placeholder" :disabled="getRecord(item)[column.dataIndex === 'host' ? 'autoAssignHostPort' : 'autoAssignContainerPort']" hide-details="auto" @update:model-value="(value) => (getRecord(item)[String(column.dataIndex)] = value)" /><VCheckbox :model-value="getRecord(item)[column.dataIndex === 'host' ? 'autoAssignHostPort' : 'autoAssignContainerPort']" :label="t('TXT_CODE_6f1129fb')" hide-details @update:model-value="() => handleAutoAssignChange(getRecord(item), column.dataIndex as 'host' | 'container')" /></div></template>
+          <template v-if="column.dataIndex === 'host' || column.dataIndex === 'container'"><div class="d-flex align-center ga-2"><VTextField :model-value="getRecord(item)[String(column.dataIndex)]" type="number" min="1" max="65535" :placeholder="(column as any).placeholder" :disabled="getRecord(item)[column.dataIndex === 'host' ? 'autoAssignHostPort' : 'autoAssignContainerPort']" hide-details="auto" @update:model-value="(value) => (getRecord(item)[String(column.dataIndex)] = value)" /><VCheckbox :model-value="getRecord(item)[column.dataIndex === 'host' ? 'autoAssignHostPort' : 'autoAssignContainerPort']" :label="t('TXT_CODE_COMMON_AUTOMATIC')" hide-details @update:model-value="() => handleAutoAssignChange(getRecord(item), column.dataIndex as 'host' | 'container')" /></div></template>
           <VSelect v-else-if="column.dataIndex === 'protocol'" :model-value="getRecord(item).protocol" :items="[{ title: 'TCP', value: 'tcp' }, { title: 'UDP', value: 'udp' }]" hide-details @update:model-value="(value) => (getRecord(item).protocol = value)">
             <template #no-data><Empty :icon="false" compact /></template>
           </VSelect>
@@ -223,7 +223,7 @@ onMounted(() => {
         </td></tr></template>
       </VDataTable>
       </VCardText>
-      <VCardActions><VSpacer /><VBtn variant="text" @click="cancel">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="primary" @click="submit">{{ t("TXT_CODE_d507abff") }}</VBtn></VCardActions>
+      <VCardActions><VSpacer /><VBtn variant="text" @click="cancel">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn><VBtn color="primary" @click="submit">{{ t("TXT_CODE_COMMON_CONFIRM") }}</VBtn></VCardActions>
     </VCard>
   </VDialog>
 </template>

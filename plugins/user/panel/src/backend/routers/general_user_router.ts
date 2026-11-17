@@ -62,7 +62,7 @@ export default function createGeneralUserRouter() {
         const config = ctx.request.body;
         const { passWord, isInit } = config;
         if (!userSystem.validatePassword(passWord))
-          throw new Error($t("TXT_CODE_router.user.passwordCheck"));
+          throw new Error($t("TXT_CODE_ROUTER_USER_PASSWORD_CHECK"));
         await userSystem.edit(userUuid, { passWord, isInit });
         ctx.body = logout(ctx);
       }
@@ -98,7 +98,7 @@ export default function createGeneralUserRouter() {
       const MFAResult = userSystem.check2FA(TOTPCode, getUserFromCtx(ctx) ?? {}, 0);
       const enable = Boolean(ctx.request.body.enable);
       if (!MFAResult) {
-        ctx.throw(400, $t("TXT_CODE_3d68e43b"));
+        ctx.throw(400, $t("TXT_CODE_COMMON_TWO_FACTOR_AUTHENTICATION_CODE_IS_INCORRECT"));
       }
       const userUuid = getUserUuid(ctx);
       await confirm2FaQRCode(userUuid, enable);

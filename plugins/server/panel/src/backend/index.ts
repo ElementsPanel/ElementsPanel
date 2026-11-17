@@ -169,16 +169,16 @@ export function apply(ctx: PanelPluginContext) {
         {
           key: "httpPort",
           type: "number",
-          title: $t("TXT_CODE_7f0017d2"),
-          description: `${$t("TXT_CODE_233624ad")} ${$t("TXT_CODE_SERVER_RESTART_TIP")}`,
+          title: $t("TXT_CODE_COMMON_PANEL_PORT"),
+          description: `${$t("TXT_CODE_COMMON_ENTER_AN_INTEGER_PORT_NUMBER_DEFAULT_23333")} ${$t("TXT_CODE_SERVER_RESTART_TIP")}`,
           min: 1,
           max: 65535
         },
         {
           key: "httpIp",
           type: "string",
-          title: $t("TXT_CODE_514e064a"),
-          description: $t("TXT_CODE_328191e")
+          title: $t("TXT_CODE_COMMON_PANEL_BINDING_IP"),
+          description: $t("TXT_CODE_COMMON_ENTER_ITS_IP_ADDRESS_TO_BIND_TO_A_SPECIFIC_NETWORK_INTERFACE")
         },
         {
           key: "prefix",
@@ -209,20 +209,20 @@ export function apply(ctx: PanelPluginContext) {
         {
           key: "crossDomain",
           type: "boolean",
-          title: $t("TXT_CODE_405cd346"),
-          description: $t("TXT_CODE_6655c905")
+          title: $t("TXT_CODE_COMMON_CROSS_ORIGIN_REQUEST_API_INTERFACE"),
+          description: $t("TXT_CODE_SERVER_CROSS_ORIGIN_SECURITY_HINT")
         },
         {
           key: "reverseProxyMode",
           type: "boolean",
-          title: $t("TXT_CODE_f0789d81"),
-          description: $t("TXT_CODE_2b85af6d")
+          title: $t("TXT_CODE_COMMON_REVERSE_PROXY_MODE"),
+          description: $t("TXT_CODE_COMMON_ENABLE_WHEN_USING_A_REVERSE_PROXY_TO_READ_THE_CLIENTS_REAL_IP")
         },
         {
           key: "reverseProxyHeader",
           type: "string",
-          title: $t("TXT_CODE_66aeac82"),
-          description: $t("TXT_CODE_fd8bc51f"),
+          title: $t("TXT_CODE_COMMON_REVERSE_PROXY_REQUEST_HEADER"),
+          description: $t("TXT_CODE_COMMON_NAME_OF_THE_REQUEST_HEADER_CONTAINING_THE_CLIENTS_REAL_IP"),
           visibleWhen: "reverseProxyMode"
         }
       ],
@@ -235,7 +235,7 @@ export function apply(ctx: PanelPluginContext) {
         // Validate before changing live configuration.
         const port = values.httpPort == null ? config.httpPort : Number(values.httpPort);
         if (!Number.isInteger(port) || port <= 0 || port > 65535) {
-          throw new Error($t("TXT_CODE_e4d6cc20"));
+          throw new Error($t("TXT_CODE_COMMON_REQUEST_BODY_ERROR"));
         }
 
         // Accept explicit empty strings to clear addresses, prefixes and certificates.
@@ -273,7 +273,7 @@ export function apply(ctx: PanelPluginContext) {
     }
   } catch (error) {
     // Fail startup if the listener cannot be created.
-    ctx.logger.error($t("TXT_CODE_app.httpSetupError"));
+    ctx.logger.error($t("TXT_CODE_APP_HTTP_SETUP_ERROR"));
     ctx.logger.error(error);
     return process.exit(1);
   }
@@ -305,7 +305,7 @@ export function apply(ctx: PanelPluginContext) {
   });
 
   httpServer.on("error", (err) => {
-    ctx.logger.error($t("TXT_CODE_app.httpSetupError"));
+    ctx.logger.error($t("TXT_CODE_APP_HTTP_SETUP_ERROR"));
     ctx.logger.error(err);
     process.exit(1);
   });
@@ -320,12 +320,12 @@ export function apply(ctx: PanelPluginContext) {
       if (process.connected) process.send?.({ type: "elementspanel:ready" }, () => {});
     });
     ctx.logger.info("==================================");
-    ctx.logger.info($t("TXT_CODE_app.panelStarted"));
-    let appHost = $t("TXT_CODE_app.host", { port });
+    ctx.logger.info($t("TXT_CODE_APP_PANEL_STARTED"));
+    let appHost = $t("TXT_CODE_DAEMON_ACCESS_URL", { port });
     if (config.ssl) appHost = appHost.replace("http", "https");
     ctx.logger.info(appHost);
-    ctx.logger.info($t("TXT_CODE_app.portTip", { port }));
-    ctx.logger.info($t("TXT_CODE_app.exitTip", { port }));
+    ctx.logger.info($t("TXT_CODE_APP_PORT_TIP", { port }));
+    ctx.logger.info($t("TXT_CODE_APP_EXIT_TIP", { port }));
     ctx.logger.info("==================================");
 
     if (os.platform() === "win32" && process.argv.includes("--open")) {

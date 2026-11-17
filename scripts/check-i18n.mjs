@@ -5,5 +5,5 @@ import { validateCatalogues } from "./i18n-catalogues.cjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const result = validateCatalogues(root);
 console.log(
-  `Validated ${result.files} language files in ${result.catalogues} independent catalogues.`
+  `Validated ${result.files} language files in ${result.catalogues} independent catalogues and ${result.initializerFiles} initializer dictionaries.`
 );

@@ -8,7 +8,7 @@ import { checkFileName, normalizedJoin } from "./filepath";
 import { $t, archive, settings } from "./runtime";
 
 /** Resolved per use: the module is required before `apply()` runs. */
-const ERROR_MSG_01 = () => $t("TXT_CODE_system_file.illegalAccess");
+const ERROR_MSG_01 = () => $t("TXT_CODE_SYSTEM_FILE_ILLEGAL_ACCESS");
 const MAX_EDIT_SIZE = 1024 * 1024 * 5;
 
 interface IFile {
@@ -278,7 +278,7 @@ export default class FileManager {
     const fileInfo = fs.statSync(path);
     const MAX_ZIP_GB = settings().config.maxZipFileSize;
     if (fileInfo.size > 1024 * 1024 * 1024 * MAX_ZIP_GB)
-      throw new Error($t("TXT_CODE_system_file.unzipLimit", { max: MAX_ZIP_GB }));
+      throw new Error($t("TXT_CODE_SYSTEM_FILE_UNZIP_LIMIT", { max: MAX_ZIP_GB }));
   }
 
   async unzip(sourceZip: string, destDir: string, code?: string) {
@@ -318,7 +318,7 @@ export default class FileManager {
       }
     }
     if (totalSize > MAX_TOTAL_FIELS_SIZE)
-      throw new Error($t("TXT_CODE_system_file.unzipLimit", { max: MAX_ZIP_GB }));
+      throw new Error($t("TXT_CODE_SYSTEM_FILE_UNZIP_LIMIT", { max: MAX_ZIP_GB }));
     return await archive().compress(sourceZipPath, filesPath, code);
   }
 
@@ -330,7 +330,7 @@ export default class FileManager {
       const absPath = this.toAbsolutePath(target);
       const info = fs.statSync(absPath);
       if (info.size > MAX_EDIT_SIZE) {
-        throw new Error($t("TXT_CODE_system_file.execLimit"));
+        throw new Error($t("TXT_CODE_SYSTEM_FILE_EXEC_LIMIT"));
       }
       return await this.readFile(target);
     }

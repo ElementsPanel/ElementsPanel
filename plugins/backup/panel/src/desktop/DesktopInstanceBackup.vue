@@ -192,7 +192,7 @@ const handleDelete = (backupName: string) => {
                             backupName
                         }
                     });
-                    notifyDesktop(t("TXT_CODE_28190dbc"), "success");
+                    notifyDesktop(t("TXT_CODE_COMMON_DELETE_SUCCESS"), "success");
                     fetchBackupList();
                 } catch (error: any) {
                     notifyDesktop(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_DELETE"), "error");
@@ -351,7 +351,7 @@ onUnmounted(() => {
         </div>
 
         <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="deleteDialog.show" id="backup-delete-dialog"
-            :title="t('TXT_CODE_71155575')" :message="t('TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM', { name: deleteDialog.name })"
+            :title="t('TXT_CODE_COMMON_CONFIRM_DELETION')" :message="t('TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM', { name: deleteDialog.name })"
             danger @cancel="deleteDialog.resolve?.(false)" @confirm="deleteDialog.resolve?.(true)" />
 
         <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="restoreDialog.show" id="backup-restore-dialog" :height="250"

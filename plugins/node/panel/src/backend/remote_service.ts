@@ -23,7 +23,7 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
       await this.initConnectLocalhost("");
     }
 
-    logger().info($t("TXT_CODE_systemRemoteService.nodeCount", { n: this.services.size }));
+    logger().info($t("TXT_CODE_SYSTEM_REMOTE_SERVICE_NODE_COUNT", { n: this.services.size }));
 
     // Register for periodic connection status checks. `ctx.setInterval` is
     // cancelled when the plugin unloads, so the check leaves with it.
@@ -32,7 +32,7 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
 
   async registerRemoteService(config: IRemoteService) {
     const instance = await this.newInstance(config);
-    if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+    if (!instance) throw new Error($t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
     instance.connect();
     return instance;
   }
@@ -90,9 +90,9 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
     const localKeyFilePath = path.normalize(
       process.env.EPANEL_LOCAL_DAEMON_CONFIG || path.join(process.cwd(), "../daemon/data/Config/global.json")
     );
-    logger().info($t("TXT_CODE_systemRemoteService.loadDaemonTitle", { localKeyFilePath }));
+    logger().info($t("TXT_CODE_SYSTEM_REMOTE_SERVICE_LOAD_DAEMON_TITLE", { localKeyFilePath }));
     if (fs.existsSync(localKeyFilePath)) {
-      logger().info($t("TXT_CODE_systemRemoteService.autoCheckDaemon"));
+      logger().info($t("TXT_CODE_SYSTEM_REMOTE_SERVICE_AUTO_CHECK_DAEMON"));
       const localDaemonConfig = JSON.parse(
         fs.readFileSync(localKeyFilePath, { encoding: "utf-8" })
       );
@@ -103,7 +103,7 @@ class RemoteServiceSubsystem extends UniversalRemoteSubsystem<RemoteService> {
       const port = 24444;
       return await this.registerRemoteService({ apiKey: key, port, ip });
     }
-    logger().warn($t("TXT_CODE_systemRemoteService.error"));
+    logger().warn($t("TXT_CODE_SYSTEM_REMOTE_SERVICE_ERROR"));
 
     // Retry localhost discovery every five seconds until connected. The scoped timer stops on unload.
     core().setTimeout(() => {

@@ -181,13 +181,13 @@ export function apply(ctx: DaemonPluginContext) {
     }
   } catch (error) {
     // Fail startup if the listener cannot be created.
-    ctx.logger.error($t("TXT_CODE_app.httpSetupError"));
+    ctx.logger.error($t("TXT_CODE_APP_HTTP_SETUP_ERROR"));
     ctx.logger.error(error);
     return process.exit(1);
   }
 
   httpServer.on("error", (err) => {
-    ctx.logger.error($t("TXT_CODE_app.httpSetupError"));
+    ctx.logger.error($t("TXT_CODE_APP_HTTP_SETUP_ERROR"));
     ctx.logger.error(err);
     process.exit(1);
   });
@@ -239,14 +239,14 @@ export function apply(ctx: DaemonPluginContext) {
     });
 
     ctx.logger.info("----------------------------");
-    ctx.logger.info($t("TXT_CODE_app.started"));
-    let appHost = $t("TXT_CODE_app.host", { port: config.port });
+    ctx.logger.info($t("TXT_CODE_APP_STARTED"));
+    let appHost = $t("TXT_CODE_DAEMON_ACCESS_URL", { port: config.port });
     if (config.ssl) appHost = appHost.replace("http", "https");
     ctx.logger.info(appHost);
-    ctx.logger.info($t("TXT_CODE_app.configPathTip", { path: "" }));
-    ctx.logger.info($t("TXT_CODE_app.password", { key: config.key }));
-    ctx.logger.info($t("TXT_CODE_app.passwordTip"));
-    ctx.logger.info($t("TXT_CODE_app.exitTip"));
+    ctx.logger.info($t("TXT_CODE_APP_CONFIG_PATH_TIP", { path: "" }));
+    ctx.logger.info($t("TXT_CODE_DAEMON_ACCESS_KEY", { key: config.key }));
+    ctx.logger.info($t("TXT_CODE_DAEMON_ACCESS_KEY_HINT"));
+    ctx.logger.info($t("TXT_CODE_APP_EXIT_TIP"));
     ctx.logger.info("----------------------------");
     console.log("");
   });

@@ -374,7 +374,7 @@ onScopeDispose(() => {
           t(
             plugin.installedState === "failed"
               ? "TXT_CODE_PLUGIN_MARKET_REPAIR"
-              : "TXT_CODE_40ca4f2"
+              : "TXT_CODE_COMMON_UPDATE"
           )
         }}
       </VBtn>

@@ -21,33 +21,33 @@ export function useQuickStartFlow() {
 
   const step1: ActionButtons[] = [
     {
-      title: t("TXT_CODE_9e3f25e0"),
+      title: t("TXT_CODE_QUICK_START_MINECRAFT_JAVA"),
       key: QUICKSTART_ACTION_TYPE.Minecraft,
       icon: "mdi-apps"
     },
     {
-      title: t("TXT_CODE_c8261c85"),
+      title: t("TXT_CODE_QUICK_START_MINECRAFT_BEDROCK"),
       key: QUICKSTART_ACTION_TYPE.Bedrock,
       icon: "mdi-apps"
     },
     {
-      title: t("TXT_CODE_2025658e"),
+      title: t("TXT_CODE_COMMON_HYTALE_SERVER"),
       key: QUICKSTART_ACTION_TYPE.Hytale,
       icon: "mdi-apps"
     },
     {
-      title: t("TXT_CODE_dbefcc6c"),
+      title: t("TXT_CODE_QUICK_START_TERRARIA_SERVER"),
       key: QUICKSTART_ACTION_TYPE.Terraria,
       icon: "mdi-apps"
     },
 
     {
-      title: t("TXT_CODE_dd8d27ce"),
+      title: t("TXT_CODE_COMMAND_ASSISTANT_STEAM_GAME_SERVER"),
       key: QUICKSTART_ACTION_TYPE.SteamGameServer,
       icon: "mdi-cart-outline"
     },
     {
-      title: t("TXT_CODE_e08e63b5"),
+      title: t("TXT_CODE_COMMON_CONSOLE_PROGRAM"),
       key: QUICKSTART_ACTION_TYPE.AnyApp,
       icon: "mdi-swap-horizontal"
     }
@@ -63,7 +63,7 @@ export function useQuickStartFlow() {
     emptyActionsText?: string;
     emptyActionsLink?: string;
   }>({
-    title: t("TXT_CODE_724ce74d"),
+    title: t("TXT_CODE_COMMON_WHICH_TYPE_OF_INSTANCE_WOULD_YOU_LIKE_TO_DEPLOY"),
     step: 1,
     actions: step1
   });
@@ -72,7 +72,7 @@ export function useQuickStartFlow() {
     formData.appType = appType;
 
     formData.step = 2;
-    formData.emptyActionsText = t("TXT_CODE_9337bed1");
+    formData.emptyActionsText = t("TXT_CODE_OVERVIEW_NO_AVAILABLE_NODES_HINT");
     currentIcon.value = "mdi-database-outline";
     await execute();
     formData.actions = remoteNodes.value
@@ -85,17 +85,17 @@ export function useQuickStartFlow() {
         };
       });
 
-    formData.title = t("TXT_CODE_d182c422");
+    formData.title = t("TXT_CODE_COMMON_ON_WHICH_MACHINE_IS_THE_NEW_INSTANCE_DEPLOYED");
   };
 
   const toStep3 = (daemonId: string) => {
     formData.step = 3;
-    formData.title = t("TXT_CODE_49981cb9");
+    formData.title = t("TXT_CODE_COMMON_HOW_WOULD_YOU_LIKE_TO_DEPLOY_THIS_INSTANCE");
     formData.daemonId = daemonId;
     currentIcon.value = "mdi-calculator-variant";
     formData.actions = arrayFilter<ActionButtons>([
       {
-        title: t("TXT_CODE_266b7246"),
+        title: t("TXT_CODE_COMMON_QUICK_DEPLOYMENT_FOR_MINECRAFT"),
         key: QUICKSTART_METHOD.FAST,
         icon: "mdi-apps",
         condition: () =>
@@ -112,27 +112,27 @@ export function useQuickStartFlow() {
         }
       },
       {
-        title: t("TXT_CODE_acd4abda"),
+        title: t("TXT_CODE_COMMON_QUICK_DEPLOYMENT_USING_DOCKER_IMAGE"),
         key: QUICKSTART_METHOD.DOCKER,
         icon: "mdi-code-tags"
       },
       {
-        title: t("TXT_CODE_444db70f"),
+        title: t("TXT_CODE_COMMON_UPLOAD_A_SERVER_CORE"),
         key: QUICKSTART_METHOD.FILE,
         icon: "mdi-cloud-upload-outline"
       },
       {
-        title: t("TXT_CODE_f2a58270"),
+        title: t("TXT_CODE_COMMON_UPLOAD_A_COMPRESSED_SERVER_PACKAGE"),
         key: QUICKSTART_METHOD.IMPORT,
         icon: "mdi-folder-zip-outline"
       },
       {
-        title: t("TXT_CODE_1baf656e"),
+        title: t("TXT_CODE_COMMON_SELECT_AN_EXISTING_SERVER_DIRECTORY"),
         key: QUICKSTART_METHOD.SELECT,
         icon: "mdi-folder-open-outline"
       },
       {
-        title: t("TXT_CODE_c14caab"),
+        title: t("TXT_CODE_COMMON_NO_ADDITIONAL_FILES_REQUIRED"),
         key: QUICKSTART_METHOD.EXIST,
         icon: "mdi-file-document-outline"
       }
@@ -147,12 +147,12 @@ export function useQuickStartFlow() {
 
   const toStep5 = (instanceId?: string) => {
     formData.step = 5;
-    formData.title = t("TXT_CODE_2958a0f8");
+    formData.title = t("TXT_CODE_COMMON_CONGRATULATIONS_THE_INSTANCE_HAS_BEEN_CREATED_SUCCESSFULLY");
     currentIcon.value = "mdi-emoticon-outline";
 
     formData.actions = arrayFilter<ActionButtons>([
       {
-        title: t("TXT_CODE_36417656"),
+        title: t("TXT_CODE_COMMON_TO_TERMINAL_PAGE"),
         key: "console",
         icon: "mdi-code-tags",
         click: () => {
@@ -167,7 +167,7 @@ export function useQuickStartFlow() {
         }
       },
       {
-        title: t("TXT_CODE_2864bfbc"),
+        title: t("TXT_CODE_COMMON_INSTANCE_FILE_MANAGEMENT"),
         key: "files",
         icon: "mdi-folder-open-outline",
         click: () => {
@@ -182,7 +182,7 @@ export function useQuickStartFlow() {
         }
       },
       {
-        title: t("TXT_CODE_d4146944"),
+        title: t("TXT_CODE_COMMON_RETURN_TO_DASHBOARD"),
         key: "main",
         icon: "mdi-home-outline",
         click: () => {

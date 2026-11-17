@@ -31,7 +31,7 @@ export function useMinecraftDownload(instanceType: Readonly<Ref<string>>) {
     try {
       await action(controller.signal, current);
     } catch (reason: any) {
-      if (current()) error.value = reason?.message || t("TXT_CODE_minecraft.sourceError");
+      if (current()) error.value = reason?.message || t("TXT_CODE_MINECRAFT_SOURCE_ERROR");
     } finally {
       if (current()) loading.value = "";
     }
@@ -48,7 +48,7 @@ export function useMinecraftDownload(instanceType: Readonly<Ref<string>>) {
       const result = await minecraftServers().execute({ signal });
       if (!current()) return;
       servers.value = minecraftServersForType(result.value || [], instanceType.value);
-      if (!servers.value.length) throw new Error(t("TXT_CODE_minecraft.noServers"));
+      if (!servers.value.length) throw new Error(t("TXT_CODE_MINECRAFT_NO_SERVERS"));
       await selectServer(defaultMinecraftServer(servers.value, instanceType.value));
     });
   }
@@ -69,7 +69,7 @@ export function useMinecraftDownload(instanceType: Readonly<Ref<string>>) {
       if (!current()) return;
       versions.value = result.value?.versions || [];
       description.value = result.value?.description || "";
-      if (!versions.value.length) throw new Error(t("TXT_CODE_minecraft.noVersions"));
+      if (!versions.value.length) throw new Error(t("TXT_CODE_MINECRAFT_NO_VERSIONS"));
       await selectVersion(versions.value[0]);
     });
   }
@@ -88,7 +88,7 @@ export function useMinecraftDownload(instanceType: Readonly<Ref<string>>) {
       });
       if (!current()) return;
       builds.value = result.value || [];
-      if (!builds.value.length) throw new Error(t("TXT_CODE_minecraft.noVersions"));
+      if (!builds.value.length) throw new Error(t("TXT_CODE_MINECRAFT_NO_VERSIONS"));
       build.value = builds.value.includes("latest") ? "latest" : builds.value[0];
     });
   }

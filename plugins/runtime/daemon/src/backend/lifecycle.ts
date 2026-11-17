@@ -8,16 +8,16 @@ export function setupProcessLifecycle(ctx: DaemonPluginContext) {
   const stop = async (signal: string) => {
     const translate = ctx.get("i18n")?.$t;
     if (stopping) {
-      logger.warn(translate?.("TXT_CODE_6f862823") ?? "Shutdown already in progress.");
+      logger.warn(translate?.("TXT_CODE_COMMON_THE_ELEMENTS_PANEL_IS_EXITING_PLEASE_WAIT") ?? "Shutdown already in progress.");
       return;
     }
     stopping = true;
-    logger.warn(translate?.("TXT_CODE_4ffdc91d", { signal }) ?? signal);
+    logger.warn(translate?.("TXT_CODE_COMMON_RECEIVED_SIGNAL_FROM_THE_SYSTEM_ATTEMPTING_TO_SHUT_DOWN_ALL_INSTANCES", { signal }) ?? signal);
     const plugins = ctx.get("plugins");
     try {
       await ctx.stop();
       await plugins?.waitForDisposal();
-      logger.info(translate?.("TXT_CODE_dff680b7") ?? "Shutdown complete.");
+      logger.info(translate?.("TXT_CODE_COMMON_PROGRAM_HAS_EXITED") ?? "Shutdown complete.");
       process.exit(0);
     } catch (error) {
       logger.error(error);

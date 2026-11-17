@@ -36,26 +36,26 @@ const columns = computed(() => [
   {
     align: "center" as const,
     dataIndex: "PathOnHost",
-    title: t("TXT_CODE_e4a82ac7"),
-    placeholder: t("TXT_CODE_1d8ece48")
+    title: t("TXT_CODE_COMMON_HOST_PATH"),
+    placeholder: t("TXT_CODE_COMMON_EXAMPLE_DEV_TTY_USB0")
   },
   {
     align: "center" as const,
     dataIndex: "PathInContainer",
-    title: t("TXT_CODE_ef6115b7"),
-    placeholder: t("TXT_CODE_1d8ece49")
+    title: t("TXT_CODE_COMMON_CONTAINER_PATH"),
+    placeholder: t("TXT_CODE_COMMON_EXAMPLE_DEV_TTY_USB0_CAN_BE_EMPTY")
   },
   {
     align: "center" as const,
     dataIndex: "CgroupPermissions",
-    title: t("TXT_CODE_511aea70"),
-    placeholder: t("TXT_CODE_7595d100")
+    title: t("TXT_CODE_FILE_PERMISSIONS"),
+    placeholder: t("TXT_CODE_COMMON_EXAMPLE_RWM_CAN_BE_EMPTY")
   },
   {
     align: "center" as const,
     key: "operation",
     dataIndex: "operation",
-    title: t("TXT_CODE_fe731dfc")
+    title: t("TXT_CODE_COMMON_ACTIONS")
   }
 ]);
 
@@ -75,7 +75,7 @@ const cancel = async () => {
 };
 
 const submit = async () => {
-  if (dataSource.value.some((item) => !String(item.PathOnHost || "").trim())) return reportValidatorError(new Error(t("TXT_CODE_1d8ece48")));
+  if (dataSource.value.some((item) => !String(item.PathOnHost || "").trim())) return reportValidatorError(new Error(t("TXT_CODE_COMMON_EXAMPLE_DEV_TTY_USB0")));
 
   const result: DockerDeviceItem[] = dataSource.value.map((item) => ({
     PathOnHost: item.PathOnHost,
@@ -101,7 +101,7 @@ onMounted(() => {
 
 <template>
   <VDialog v-model="open" max-width="1300" persistent>
-    <VCard :title="props.title || t('TXT_CODE_b3a60c78')">
+    <VCard :title="props.title || t('TXT_CODE_COMMON_DEVICES')">
       <VCardText class="dialog-overflow-container">
       <div v-if="props.subTitle" class="text-body-medium text-medium-emphasis mb-4">
         <!-- eslint-disable-next-line vue/no-v-html -->
@@ -110,7 +110,7 @@ onMounted(() => {
 
       <div class="d-flex justify-end mb-5">
         <VBtn variant="tonal" @click="operation('add')"><VIcon start icon="mdi-plus-circle-outline" />
-          {{ t("TXT_CODE_dfc17a0c") }}
+          {{ t("TXT_CODE_COMMON_ADD_CONFIGURATION") }}
         </VBtn>
       </div>
       <VDataTable :headers="columns.map((column) => ({ title: column.title, key: String(column.dataIndex), align: 'center' as const, sortable: false }))" :items="dataSource" :items-per-page="-1" hide-default-footer density="comfortable">
@@ -121,7 +121,7 @@ onMounted(() => {
         </td></tr></template>
       </VDataTable>
       </VCardText>
-      <VCardActions><VSpacer /><VBtn variant="text" @click="cancel">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="primary" @click="submit">{{ t("TXT_CODE_d507abff") }}</VBtn></VCardActions>
+      <VCardActions><VSpacer /><VBtn variant="text" @click="cancel">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn><VBtn color="primary" @click="submit">{{ t("TXT_CODE_COMMON_CONFIRM") }}</VBtn></VCardActions>
     </VCard>
   </VDialog>
 </template>

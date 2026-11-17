@@ -7,3048 +7,3048 @@ export const configData: {
   };
 } = {
   "common/server.properties": {
-    desc: t("TXT_CODE_c3022e22"),
+    desc: t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_DESCRIPTION"),
     config: {
-      "require-resource-pack": t("TXT_CODE_bdd4fe65"),
-      "enable-jmx-monitoring": t("TXT_CODE_68a15ebb"),
-      "sync-chunk-writes": t("TXT_CODE_4b20289c"),
-      "generator-settings": t("TXT_CODE_88427611"),
-      "allow-nether": t("TXT_CODE_b12787d7"),
-      "level-name": t("TXT_CODE_c2a8378b"),
-      "enable-query": t("TXT_CODE_1155db3a"),
-      "allow-flight": t("TXT_CODE_97f5701e"),
-      "server-port": t("TXT_CODE_4cef8979"),
-      "level-type": t("TXT_CODE_9f28d67b"),
-      "enable-rcon": t("TXT_CODE_83914d85"),
-      "force-gamemode": t("TXT_CODE_7284c68e"),
-      "level-seed": t("TXT_CODE_d7a7a095"),
-      "server-ip": t("TXT_CODE_692957"),
-      "max-build-height": t("TXT_CODE_2054155a"),
-      "spawn-npcs": t("TXT_CODE_a6a04fa3"),
-      "white-list": t("TXT_CODE_dd002fae"),
-      "spawn-animals": t("TXT_CODE_58939ea7"),
-      "snooper-enabled": t("TXT_CODE_e5b0feda"),
-      hardcore: t("TXT_CODE_2debc7ae"),
-      "texture-pack": t("TXT_CODE_c62a8fa1"),
-      "online-mode": t("TXT_CODE_4306a0d0"),
-      pvp: t("TXT_CODE_b214a52d"),
-      "enforce-secure-profile": t("TXT_CODE_cbb958f2"),
-      difficulty: t("TXT_CODE_da234f4f"),
-      "player-idle-timeout": t("TXT_CODE_cafe41ab"),
-      gamemode: t("TXT_CODE_deaf423c"),
-      "max-players": t("TXT_CODE_b642de88"),
-      "spawn-monsters": t("TXT_CODE_5bb8f14"),
-      "view-distance": t("TXT_CODE_711d4763"),
-      "generate-structures": t("TXT_CODE_2c4d586f"),
-      motd: t("TXT_CODE_56ff18c1"),
-      "op-permission-level": t("TXT_CODE_52eff9c3"),
-      "announce-player-achievements": t("TXT_CODE_68a6aec5"),
-      "network-compression-threshold": t("TXT_CODE_7cc196b9"),
-      "resource-pack-sha1": t("TXT_CODE_6353e235"),
-      "enable-command-block": t("TXT_CODE_97ff044f"),
-      "resource-pack": t("TXT_CODE_95bdc950"),
-      "max-world-size": t("TXT_CODE_738bc836"),
-      "function-permission-level": t("TXT_CODE_791a4c9b"),
-      "max-tick-time": t("TXT_CODE_61dd421d"),
-      "prevent-proxy-connections": t("TXT_CODE_b16fc7a6"),
-      "rcon.port": t("TXT_CODE_2a1fc6cc"),
-      "rcon.password": t("TXT_CODE_1a0ab98b"),
-      "query.port": t("TXT_CODE_e60567a8"),
-      "use-native-transport": t("TXT_CODE_3df4beaf"),
-      debug: t("TXT_CODE_c745cf56"),
-      "broadcast-rcon-to-ops": t("TXT_CODE_ffebf0bf"),
-      "broadcast-console-to-ops": t("TXT_CODE_ed0e3963"),
-      "enforce-whitelist": t("TXT_CODE_1fc10e3b"),
-      "spawn-protection": t("TXT_CODE_a8b0dfab"),
-      "max-chained-neighbor-updates": t("TXT_CODE_a6878a01"),
-      "enable-status": t("TXT_CODE_ffca72ed"),
-      "resource-pack-prompt": t("TXT_CODE_b37e6938"),
-      "hide-online-players": t("TXT_CODE_82c331f"),
-      "entity-broadcast-range-percentage": t("TXT_CODE_dec6550e"),
-      "simulation-distance": t("TXT_CODE_c871d8c8"),
-      "rate-limit": t("TXT_CODE_b6697d36"),
-      "previews-chat": t("TXT_CODE_ece2dd18"),
-      "text-filtering-config": t("TXT_CODE_db815f4a")
+      "require-resource-pack": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_REQUIRE_RESOURCE_PACK"),
+      "enable-jmx-monitoring": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ENABLE_JMX_MONITORING"),
+      "sync-chunk-writes": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_SYNC_CHUNK_WRITES"),
+      "generator-settings": t("TXT_CODE_GAME_CONFIG_GENERATOR_SETTINGS"),
+      "allow-nether": t("TXT_CODE_GAME_CONFIG_ALLOW_NETHER"),
+      "level-name": t("TXT_CODE_GAME_CONFIG_LEVEL_NAME"),
+      "enable-query": t("TXT_CODE_GAME_CONFIG_ENABLE_QUERY"),
+      "allow-flight": t("TXT_CODE_GAME_CONFIG_ALLOW_FLIGHT"),
+      "server-port": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_SERVER_PORT"),
+      "level-type": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_LEVEL_TYPE"),
+      "enable-rcon": t("TXT_CODE_GAME_CONFIG_ENABLE_RCON"),
+      "force-gamemode": t("TXT_CODE_GAME_CONFIG_FORCE_GAMEMODE"),
+      "level-seed": t("TXT_CODE_GAME_CONFIG_LEVEL_SEED"),
+      "server-ip": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_SERVER_IP"),
+      "max-build-height": t("TXT_CODE_GAME_CONFIG_MAX_BUILD_HEIGHT"),
+      "spawn-npcs": t("TXT_CODE_GAME_CONFIG_SPAWN_NPCS"),
+      "white-list": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_WHITE_LIST"),
+      "spawn-animals": t("TXT_CODE_GAME_CONFIG_SPAWN_ANIMALS"),
+      "snooper-enabled": t("TXT_CODE_GAME_CONFIG_SNOOPER_ENABLED"),
+      hardcore: t("TXT_CODE_GAME_CONFIG_HARDCORE"),
+      "texture-pack": t("TXT_CODE_GAME_CONFIG_TEXTURE_PACK"),
+      "online-mode": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ONLINE_MODE"),
+      pvp: t("TXT_CODE_GAME_CONFIG_PVP"),
+      "enforce-secure-profile": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ENFORCE_SECURE_PROFILE"),
+      difficulty: t("TXT_CODE_GAME_CONFIG_DIFFICULTY"),
+      "player-idle-timeout": t("TXT_CODE_GAME_CONFIG_PLAYER_IDLE_TIMEOUT"),
+      gamemode: t("TXT_CODE_GAME_CONFIG_GAMEMODE"),
+      "max-players": t("TXT_CODE_GAME_CONFIG_MAX_PLAYERS"),
+      "spawn-monsters": t("TXT_CODE_GAME_CONFIG_SPAWN_MONSTERS"),
+      "view-distance": t("TXT_CODE_GAME_CONFIG_VIEW_DISTANCE"),
+      "generate-structures": t("TXT_CODE_GAME_CONFIG_GENERATE_STRUCTURES"),
+      motd: t("TXT_CODE_GAME_CONFIG_MOTD"),
+      "op-permission-level": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_OP_PERMISSION_LEVEL"),
+      "announce-player-achievements": t("TXT_CODE_GAME_CONFIG_ANNOUNCE_PLAYER_ACHIEVEMENTS"),
+      "network-compression-threshold": t("TXT_CODE_GAME_CONFIG_NETWORK_COMPRESSION_THRESHOLD"),
+      "resource-pack-sha1": t("TXT_CODE_GAME_CONFIG_RESOURCE_PACK_SHA1"),
+      "enable-command-block": t("TXT_CODE_GAME_CONFIG_ENABLE_COMMAND_BLOCK"),
+      "resource-pack": t("TXT_CODE_GAME_CONFIG_RESOURCE_PACK"),
+      "max-world-size": t("TXT_CODE_GAME_CONFIG_MAX_WORLD_SIZE"),
+      "function-permission-level": t("TXT_CODE_GAME_CONFIG_FUNCTION_PERMISSION_LEVEL"),
+      "max-tick-time": t("TXT_CODE_GAME_CONFIG_MAX_TICK_TIME"),
+      "prevent-proxy-connections": t("TXT_CODE_GAME_CONFIG_PREVENT_PROXY_CONNECTIONS"),
+      "rcon.port": t("TXT_CODE_GAME_CONFIG_RCON_PORT"),
+      "rcon.password": t("TXT_CODE_GAME_CONFIG_RCON_PASSWORD"),
+      "query.port": t("TXT_CODE_GAME_CONFIG_QUERY_PORT"),
+      "use-native-transport": t("TXT_CODE_GAME_CONFIG_USE_NATIVE_TRANSPORT"),
+      debug: t("TXT_CODE_GAME_CONFIG_DEBUG"),
+      "broadcast-rcon-to-ops": t("TXT_CODE_GAME_CONFIG_BROADCAST_RCON_TO_OPS"),
+      "broadcast-console-to-ops": t("TXT_CODE_GAME_CONFIG_BROADCAST_CONSOLE_TO_OPS"),
+      "enforce-whitelist": t("TXT_CODE_GAME_CONFIG_ENFORCE_WHITELIST"),
+      "spawn-protection": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_SPAWN_PROTECTION"),
+      "max-chained-neighbor-updates": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_MAX_CHAINED_NEIGHBOR_UPDATES"),
+      "enable-status": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ENABLE_STATUS"),
+      "resource-pack-prompt": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_RESOURCE_PACK_PROMPT"),
+      "hide-online-players": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_HIDE_ONLINE_PLAYERS"),
+      "entity-broadcast-range-percentage": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_ENTITY_BROADCAST_RANGE_PERCENTAGE"),
+      "simulation-distance": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_SIMULATION_DISTANCE"),
+      "rate-limit": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_RATE_LIMIT"),
+      "previews-chat": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_PREVIEWS_CHAT"),
+      "text-filtering-config": t("TXT_CODE_GAME_CONFIG_MINECRAFT_JAVA_SERVER_TEXT_FILTERING_CONFIG")
     }
   },
   "common/eula.txt": {
-    desc: t("TXT_CODE_bf8ae6c8"),
+    desc: t("TXT_CODE_GAME_CONFIG_MINECRAFT_EULA_DESCRIPTION"),
     config: {
-      eula: t("TXT_CODE_ee01df88")
+      eula: t("TXT_CODE_GAME_CONFIG_MINECRAFT_EULA_EULA")
     }
   },
   "bukkit/bukkit.yml": {
-    desc: t("TXT_CODE_fb23339d"),
+    desc: t("TXT_CODE_GAME_CONFIG_BUKKIT_DESCRIPTION"),
     config: {
       settings: {
-        "allow-end": t("TXT_CODE_bd7152f7"),
-        "warn-on-overload": t("TXT_CODE_354409b6"),
-        "permissions-file": t("TXT_CODE_2908dac"),
-        "update-folder": t("TXT_CODE_da8bb476"),
-        "plugin-profiling": t("TXT_CODE_50aa56a1"),
-        "connection-throttle": t("TXT_CODE_2f07d608"),
-        "query-plugins": t("TXT_CODE_caf10268"),
-        "deprecated-verbose": t("TXT_CODE_9867da6b"),
-        "shutdown-message": t("TXT_CODE_6071bd0b"),
-        "minimum-api": t("TXT_CODE_9df68e04"),
-        "use-map-color-cache": t("TXT_CODE_59a76359")
+        "allow-end": t("TXT_CODE_GAME_CONFIG_BUKKIT_SETTINGS_ALLOW_END"),
+        "warn-on-overload": t("TXT_CODE_GAME_CONFIG_BUKKIT_SETTINGS_WARN_ON_OVERLOAD"),
+        "permissions-file": t("TXT_CODE_GAME_CONFIG_BUKKIT_SETTINGS_PERMISSIONS_FILE"),
+        "update-folder": t("TXT_CODE_GAME_CONFIG_BUKKIT_SETTINGS_UPDATE_FOLDER"),
+        "plugin-profiling": t("TXT_CODE_GAME_CONFIG_BUKKIT_SETTINGS_PLUGIN_PROFILING"),
+        "connection-throttle": t("TXT_CODE_GAME_CONFIG_BUKKIT_SETTINGS_CONNECTION_THROTTLE"),
+        "query-plugins": t("TXT_CODE_GAME_CONFIG_BUKKIT_SETTINGS_QUERY_PLUGINS"),
+        "deprecated-verbose": t("TXT_CODE_GAME_CONFIG_BUKKIT_SETTINGS_DEPRECATED_VERBOSE"),
+        "shutdown-message": t("TXT_CODE_GAME_CONFIG_BUKKIT_SETTINGS_SHUTDOWN_MESSAGE"),
+        "minimum-api": t("TXT_CODE_GAME_CONFIG_BUKKIT_SETTINGS_MINIMUM_API"),
+        "use-map-color-cache": t("TXT_CODE_GAME_CONFIG_BUKKIT_SETTINGS_USE_MAP_COLOR_CACHE")
       },
       "spawn-limits": {
-        monsters: t("TXT_CODE_12413b31"),
-        animals: t("TXT_CODE_83856178"),
-        "water-animals": t("TXT_CODE_b08f61c5"),
+        monsters: t("TXT_CODE_GAME_CONFIG_BUKKIT_SPAWN_LIMITS_MONSTERS"),
+        animals: t("TXT_CODE_GAME_CONFIG_BUKKIT_SPAWN_LIMITS_ANIMALS"),
+        "water-animals": t("TXT_CODE_GAME_CONFIG_BUKKIT_SPAWN_LIMITS_WATER_ANIMALS"),
         "water-ambient": "",
-        ambient: t("TXT_CODE_10eeb359")
+        ambient: t("TXT_CODE_GAME_CONFIG_BUKKIT_SPAWN_LIMITS_AMBIENT")
       },
       "chunk-gc": {
-        "period-in-ticks": t("TXT_CODE_53aec8c6")
+        "period-in-ticks": t("TXT_CODE_GAME_CONFIG_BUKKIT_CHUNK_GC_PERIOD_IN_TICKS")
       },
       "ticks-per": {
-        "animal-spawns": t("TXT_CODE_4c55b6c7"),
-        "monster-spawns": t("TXT_CODE_62dbf117"),
-        autosave: t("TXT_CODE_7a830c68"),
+        "animal-spawns": t("TXT_CODE_GAME_CONFIG_BUKKIT_TICKS_PER_ANIMAL_SPAWNS"),
+        "monster-spawns": t("TXT_CODE_GAME_CONFIG_BUKKIT_TICKS_PER_MONSTER_SPAWNS"),
+        autosave: t("TXT_CODE_GAME_CONFIG_BUKKIT_TICKS_PER_AUTOSAVE"),
         "water-spawns": "",
         "water-ambient-spawns": "",
         "ambient-spawns": ""
       },
-      aliases: t("TXT_CODE_80766ddc")
+      aliases: t("TXT_CODE_GAME_CONFIG_BUKKIT_ALIASES")
     }
   },
   "bds/server.properties": {
-    desc: t("TXT_CODE_ad14bcf3"),
+    desc: t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_DESCRIPTION"),
     config: {
-      "server-name": t("TXT_CODE_e81c77bc"),
-      "allow-cheats": t("TXT_CODE_69ad6852"),
-      "server-portv6": t("TXT_CODE_e057798f"),
-      "tick-distance": t("TXT_CODE_a2c8c88a"),
-      "max-threads": t("TXT_CODE_fc7ac5ea"),
-      "default-player-permission-level": t("TXT_CODE_50511e8f"),
-      "texturepack-required": t("TXT_CODE_c671927e"),
-      "content-log-file-enabled": t("TXT_CODE_281c9d37"),
-      "compression-threshold": t("TXT_CODE_ec6341cb"),
-      "server-authoritative-movement": t("TXT_CODE_91734638"),
-      "player-movement-score-threshold": t("TXT_CODE_a674a475"),
-      "enable-lan-visibility": t("TXT_CODE_e65d2d1a"),
-      "compression-algorithm": t("TXT_CODE_9b8f02fd"),
-      "player-movement-action-direction-threshold": t("TXT_CODE_d4b35741"),
-      "chat-restriction": t("TXT_CODE_d0fd83bf"),
-      "disable-player-interaction": t("TXT_CODE_9a6e35e4"),
-      "client-side-chunk-generation-enabled": t("TXT_CODE_4b610194"),
-      "player-movement-distance-threshold": t("TXT_CODE_bca67837"),
-      "player-movement-duration-threshold-in-ms": t("TXT_CODE_483d379"),
-      "correct-player-movement": t("TXT_CODE_3036d123"),
-      "server-authoritative-block-breaking": t("TXT_CODE_fe95b79a"),
-      "generator-settings": t("TXT_CODE_88427611"),
-      "allow-nether": t("TXT_CODE_b12787d7"),
-      "level-name": t("TXT_CODE_c2a8378b"),
-      "enable-query": t("TXT_CODE_1155db3a"),
-      "allow-flight": t("TXT_CODE_97f5701e"),
-      "server-port": t("TXT_CODE_a379038f"),
-      "level-type": t("TXT_CODE_d00c21bb"),
-      "enable-rcon": t("TXT_CODE_83914d85"),
-      "force-gamemode": t("TXT_CODE_7284c68e"),
-      "level-seed": t("TXT_CODE_d7a7a095"),
-      "server-ip": t("TXT_CODE_87e448ae"),
-      "max-build-height": t("TXT_CODE_2054155a"),
-      "spawn-npcs": t("TXT_CODE_a6a04fa3"),
-      "white-list": t("TXT_CODE_8fe9c7f7"),
-      "allow-list": t("TXT_CODE_e13a6529"),
-      "spawn-animals": t("TXT_CODE_58939ea7"),
-      "snooper-enabled": t("TXT_CODE_e5b0feda"),
-      hardcore: t("TXT_CODE_2debc7ae"),
-      "texture-pack": t("TXT_CODE_c62a8fa1"),
-      "online-mode": t("TXT_CODE_e96a055e"),
-      pvp: t("TXT_CODE_b214a52d"),
-      difficulty: t("TXT_CODE_da234f4f"),
-      "player-idle-timeout": t("TXT_CODE_cafe41ab"),
-      gamemode: t("TXT_CODE_deaf423c"),
-      "max-players": t("TXT_CODE_b642de88"),
-      "spawn-monsters": t("TXT_CODE_5bb8f14"),
-      "view-distance": t("TXT_CODE_711d4763"),
-      "generate-structures": t("TXT_CODE_2c4d586f"),
-      motd: t("TXT_CODE_56ff18c1"),
-      "op-permission-level": t("TXT_CODE_405d1f28"),
-      "announce-player-achievements": t("TXT_CODE_68a6aec5"),
-      "network-compression-threshold": t("TXT_CODE_7cc196b9"),
-      "resource-pack-sha1": t("TXT_CODE_6353e235"),
-      "enable-command-block": t("TXT_CODE_97ff044f"),
-      "resource-pack": t("TXT_CODE_95bdc950"),
-      "max-world-size": t("TXT_CODE_738bc836"),
-      "function-permission-level": t("TXT_CODE_791a4c9b"),
-      "max-tick-time": t("TXT_CODE_61dd421d"),
-      "prevent-proxy-connections": t("TXT_CODE_b16fc7a6"),
-      "rcon.port": t("TXT_CODE_2a1fc6cc"),
-      "rcon.password": t("TXT_CODE_1a0ab98b"),
-      "query.port": t("TXT_CODE_e60567a8"),
-      "use-native-transport": t("TXT_CODE_3df4beaf"),
-      debug: t("TXT_CODE_c745cf56"),
-      "broadcast-rcon-to-ops": t("TXT_CODE_ffebf0bf"),
-      "broadcast-console-to-ops": t("TXT_CODE_ed0e3963"),
-      "enforce-whitelist": t("TXT_CODE_1fc10e3b"),
-      "spawn-protection": t("TXT_CODE_1d7a8617"),
-      "block-network-ids-are-hashes": t("TXT_CODE_faa6656a"),
-      "disable-custom-skins": t("TXT_CODE_979b9aaf"),
-      "server-build-radius-ratio": t("TXT_CODE_f174dee0")
+      "server-name": t("TXT_CODE_GAME_CONFIG_SERVER_NAME"),
+      "allow-cheats": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_ALLOW_CHEATS"),
+      "server-portv6": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_SERVER_PORTV6"),
+      "tick-distance": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_TICK_DISTANCE"),
+      "max-threads": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_MAX_THREADS"),
+      "default-player-permission-level": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_DEFAULT_PLAYER_PERMISSION_LEVEL"),
+      "texturepack-required": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_TEXTUREPACK_REQUIRED"),
+      "content-log-file-enabled": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_CONTENT_LOG_FILE_ENABLED"),
+      "compression-threshold": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_COMPRESSION_THRESHOLD"),
+      "server-authoritative-movement": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_SERVER_AUTHORITATIVE_MOVEMENT"),
+      "player-movement-score-threshold": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_PLAYER_MOVEMENT_SCORE_THRESHOLD"),
+      "enable-lan-visibility": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_ENABLE_LAN_VISIBILITY"),
+      "compression-algorithm": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_COMPRESSION_ALGORITHM"),
+      "player-movement-action-direction-threshold": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_PLAYER_MOVEMENT_ACTION_DIRECTION_THRESHOLD"),
+      "chat-restriction": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_CHAT_RESTRICTION"),
+      "disable-player-interaction": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_DISABLE_PLAYER_INTERACTION"),
+      "client-side-chunk-generation-enabled": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_CLIENT_SIDE_CHUNK_GENERATION_ENABLED"),
+      "player-movement-distance-threshold": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_PLAYER_MOVEMENT_DISTANCE_THRESHOLD"),
+      "player-movement-duration-threshold-in-ms": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_PLAYER_MOVEMENT_DURATION_THRESHOLD_IN_MS"),
+      "correct-player-movement": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_CORRECT_PLAYER_MOVEMENT"),
+      "server-authoritative-block-breaking": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_SERVER_AUTHORITATIVE_BLOCK_BREAKING"),
+      "generator-settings": t("TXT_CODE_GAME_CONFIG_GENERATOR_SETTINGS"),
+      "allow-nether": t("TXT_CODE_GAME_CONFIG_ALLOW_NETHER"),
+      "level-name": t("TXT_CODE_GAME_CONFIG_LEVEL_NAME"),
+      "enable-query": t("TXT_CODE_GAME_CONFIG_ENABLE_QUERY"),
+      "allow-flight": t("TXT_CODE_GAME_CONFIG_ALLOW_FLIGHT"),
+      "server-port": t("TXT_CODE_COMMON_SERVER_PORT"),
+      "level-type": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_LEVEL_TYPE"),
+      "enable-rcon": t("TXT_CODE_GAME_CONFIG_ENABLE_RCON"),
+      "force-gamemode": t("TXT_CODE_GAME_CONFIG_FORCE_GAMEMODE"),
+      "level-seed": t("TXT_CODE_GAME_CONFIG_LEVEL_SEED"),
+      "server-ip": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_SERVER_IP"),
+      "max-build-height": t("TXT_CODE_GAME_CONFIG_MAX_BUILD_HEIGHT"),
+      "spawn-npcs": t("TXT_CODE_GAME_CONFIG_SPAWN_NPCS"),
+      "white-list": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_WHITE_LIST"),
+      "allow-list": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_ALLOW_LIST"),
+      "spawn-animals": t("TXT_CODE_GAME_CONFIG_SPAWN_ANIMALS"),
+      "snooper-enabled": t("TXT_CODE_GAME_CONFIG_SNOOPER_ENABLED"),
+      hardcore: t("TXT_CODE_GAME_CONFIG_HARDCORE"),
+      "texture-pack": t("TXT_CODE_GAME_CONFIG_TEXTURE_PACK"),
+      "online-mode": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_ONLINE_MODE"),
+      pvp: t("TXT_CODE_GAME_CONFIG_PVP"),
+      difficulty: t("TXT_CODE_GAME_CONFIG_DIFFICULTY"),
+      "player-idle-timeout": t("TXT_CODE_GAME_CONFIG_PLAYER_IDLE_TIMEOUT"),
+      gamemode: t("TXT_CODE_GAME_CONFIG_GAMEMODE"),
+      "max-players": t("TXT_CODE_GAME_CONFIG_MAX_PLAYERS"),
+      "spawn-monsters": t("TXT_CODE_GAME_CONFIG_SPAWN_MONSTERS"),
+      "view-distance": t("TXT_CODE_GAME_CONFIG_VIEW_DISTANCE"),
+      "generate-structures": t("TXT_CODE_GAME_CONFIG_GENERATE_STRUCTURES"),
+      motd: t("TXT_CODE_GAME_CONFIG_MOTD"),
+      "op-permission-level": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_OP_PERMISSION_LEVEL"),
+      "announce-player-achievements": t("TXT_CODE_GAME_CONFIG_ANNOUNCE_PLAYER_ACHIEVEMENTS"),
+      "network-compression-threshold": t("TXT_CODE_GAME_CONFIG_NETWORK_COMPRESSION_THRESHOLD"),
+      "resource-pack-sha1": t("TXT_CODE_GAME_CONFIG_RESOURCE_PACK_SHA1"),
+      "enable-command-block": t("TXT_CODE_GAME_CONFIG_ENABLE_COMMAND_BLOCK"),
+      "resource-pack": t("TXT_CODE_GAME_CONFIG_RESOURCE_PACK"),
+      "max-world-size": t("TXT_CODE_GAME_CONFIG_MAX_WORLD_SIZE"),
+      "function-permission-level": t("TXT_CODE_GAME_CONFIG_FUNCTION_PERMISSION_LEVEL"),
+      "max-tick-time": t("TXT_CODE_GAME_CONFIG_MAX_TICK_TIME"),
+      "prevent-proxy-connections": t("TXT_CODE_GAME_CONFIG_PREVENT_PROXY_CONNECTIONS"),
+      "rcon.port": t("TXT_CODE_GAME_CONFIG_RCON_PORT"),
+      "rcon.password": t("TXT_CODE_GAME_CONFIG_RCON_PASSWORD"),
+      "query.port": t("TXT_CODE_GAME_CONFIG_QUERY_PORT"),
+      "use-native-transport": t("TXT_CODE_GAME_CONFIG_USE_NATIVE_TRANSPORT"),
+      debug: t("TXT_CODE_GAME_CONFIG_DEBUG"),
+      "broadcast-rcon-to-ops": t("TXT_CODE_GAME_CONFIG_BROADCAST_RCON_TO_OPS"),
+      "broadcast-console-to-ops": t("TXT_CODE_GAME_CONFIG_BROADCAST_CONSOLE_TO_OPS"),
+      "enforce-whitelist": t("TXT_CODE_GAME_CONFIG_ENFORCE_WHITELIST"),
+      "spawn-protection": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_SPAWN_PROTECTION"),
+      "block-network-ids-are-hashes": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_BLOCK_NETWORK_IDS_ARE_HASHES"),
+      "disable-custom-skins": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_DISABLE_CUSTOM_SKINS"),
+      "server-build-radius-ratio": t("TXT_CODE_GAME_CONFIG_MINECRAFT_BEDROCK_SERVER_SERVER_BUILD_RADIUS_RATIO")
     }
   },
   "bukkit/spigot.yml": {
-    desc: t("TXT_CODE_6514e191"),
+    desc: t("TXT_CODE_GAME_CONFIG_SPIGOT_DESCRIPTION"),
     config: {
       settings: {
-        debug: t("TXT_CODE_bac2d713"),
-        "user-cache-size": t("TXT_CODE_962f4288"),
-        "player-shuffle": t("TXT_CODE_1ceefd70"),
-        "netty-threads": t("TXT_CODE_ff8431c1"),
-        "log-villager-deaths": t("TXT_CODE_397667ff"),
-        "log-named-deaths": t("TXT_CODE_c6ecc182"),
+        debug: t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_DEBUG"),
+        "user-cache-size": t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_USER_CACHE_SIZE"),
+        "player-shuffle": t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_PLAYER_SHUFFLE"),
+        "netty-threads": t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_NETTY_THREADS"),
+        "log-villager-deaths": t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_LOG_VILLAGER_DEATHS"),
+        "log-named-deaths": t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_LOG_NAMED_DEATHS"),
         attribute: {
           maxHealth: {
-            max: t("TXT_CODE_b34f9eee")
+            max: t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_ATTRIBUTE_MAX_HEALTH_MAX")
           },
           movementSpeed: {
-            max: t("TXT_CODE_fd665d32")
+            max: t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_ATTRIBUTE_MOVEMENT_SPEED_MAX")
           },
           attackDamage: {
-            max: t("TXT_CODE_a66ea585")
+            max: t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_ATTRIBUTE_ATTACK_DAMAGE_MAX")
           }
         },
-        "save-user-cache-on-stop-only": t("TXT_CODE_cad62df3"),
-        "moved-too-quickly-multiplier": t("TXT_CODE_eccd1c6c"),
-        "moved-wrongly-threshold": t("TXT_CODE_c0a49b60"),
-        "sample-count": t("TXT_CODE_9b5dcfdd"),
-        bungeecord: t("TXT_CODE_72d36de"),
-        "timeout-time": t("TXT_CODE_628f6851"),
-        "restart-on-crash": t("TXT_CODE_741fdde4"),
-        "restart-script": t("TXT_CODE_6be8dbe7")
+        "save-user-cache-on-stop-only": t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_SAVE_USER_CACHE_ON_STOP_ONLY"),
+        "moved-too-quickly-multiplier": t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_MOVED_TOO_QUICKLY_MULTIPLIER"),
+        "moved-wrongly-threshold": t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_MOVED_WRONGLY_THRESHOLD"),
+        "sample-count": t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_SAMPLE_COUNT"),
+        bungeecord: t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_BUNGEECORD"),
+        "timeout-time": t("TXT_CODE_COMMON_TIMEOUT_TIME"),
+        "restart-on-crash": t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_RESTART_ON_CRASH"),
+        "restart-script": t("TXT_CODE_GAME_CONFIG_SPIGOT_SETTINGS_RESTART_SCRIPT")
       },
       messages: {
-        whitelist: t("TXT_CODE_8b8c52f"),
-        "unknown-command": t("TXT_CODE_51bb7e9f"),
-        "server-full": t("TXT_CODE_1c7a8f47"),
-        "outdated-client": t("TXT_CODE_912ec943"),
-        "outdated-server": t("TXT_CODE_4c714a4f"),
-        restart: t("TXT_CODE_192b48f0")
+        whitelist: t("TXT_CODE_GAME_CONFIG_SPIGOT_MESSAGES_WHITELIST"),
+        "unknown-command": t("TXT_CODE_GAME_CONFIG_SPIGOT_MESSAGES_UNKNOWN_COMMAND"),
+        "server-full": t("TXT_CODE_GAME_CONFIG_SPIGOT_MESSAGES_SERVER_FULL"),
+        "outdated-client": t("TXT_CODE_GAME_CONFIG_SPIGOT_MESSAGES_OUTDATED_CLIENT"),
+        "outdated-server": t("TXT_CODE_GAME_CONFIG_SPIGOT_MESSAGES_OUTDATED_SERVER"),
+        restart: t("TXT_CODE_GAME_CONFIG_SPIGOT_MESSAGES_RESTART")
       },
       advancements: {
-        "disable-saving": t("TXT_CODE_188c7493")
+        "disable-saving": t("TXT_CODE_GAME_CONFIG_SPIGOT_ADVANCEMENTS_DISABLE_SAVING")
       },
       commands: {
-        log: t("TXT_CODE_62c62825"),
-        "tab-complete": t("TXT_CODE_47d09eea"),
-        "send-namespaced": t("TXT_CODE_3790ec90"),
-        "silent-commandblock-console": t("TXT_CODE_16b4f026")
+        log: t("TXT_CODE_GAME_CONFIG_SPIGOT_COMMANDS_LOG"),
+        "tab-complete": t("TXT_CODE_GAME_CONFIG_SPIGOT_COMMANDS_TAB_COMPLETE"),
+        "send-namespaced": t("TXT_CODE_GAME_CONFIG_SPIGOT_COMMANDS_SEND_NAMESPACED"),
+        "silent-commandblock-console": t("TXT_CODE_GAME_CONFIG_SPIGOT_COMMANDS_SILENT_COMMANDBLOCK_CONSOLE")
       },
       players: {
-        "disable-saving": t("TXT_CODE_458df26d")
+        "disable-saving": t("TXT_CODE_GAME_CONFIG_SPIGOT_PLAYERS_DISABLE_SAVING")
       },
       "world-settings": {
         default: {
-          "below-zero-generation-in-existing-chunks": t("TXT_CODE_e89c5ccb"),
-          "end-portal-sound-radius": t("TXT_CODE_96e6bf5d"),
-          "wither-spawn-sound-radius": t("TXT_CODE_193f5347"),
-          "zombie-aggressive-towards-villager": t("TXT_CODE_38091a03"),
-          "hanging-tick-frequency": t("TXT_CODE_94bcd51b"),
-          "enable-zombie-pigmen-portal-spawns": t("TXT_CODE_a08f261e"),
-          "dragon-death-sound-radius": t("TXT_CODE_5f0eafe5"),
+          "below-zero-generation-in-existing-chunks": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_BELOW_ZERO_GENERATION_IN_EXISTING_CHUNKS"),
+          "end-portal-sound-radius": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_END_PORTAL_SOUND_RADIUS"),
+          "wither-spawn-sound-radius": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_WITHER_SPAWN_SOUND_RADIUS"),
+          "zombie-aggressive-towards-villager": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ZOMBIE_AGGRESSIVE_TOWARDS_VILLAGER"),
+          "hanging-tick-frequency": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HANGING_TICK_FREQUENCY"),
+          "enable-zombie-pigmen-portal-spawns": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENABLE_ZOMBIE_PIGMEN_PORTAL_SPAWNS"),
+          "dragon-death-sound-radius": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_DRAGON_DEATH_SOUND_RADIUS"),
           "merge-radius": {
-            item: t("TXT_CODE_ed9bfc6c"),
-            exp: t("TXT_CODE_34071701")
+            item: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_MERGE_RADIUS_ITEM"),
+            exp: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_MERGE_RADIUS_EXP")
           },
-          "nerf-spawner-mobs": t("TXT_CODE_311b2d6b"),
-          "simulation-distance": t("TXT_CODE_903dfe61"),
-          "mob-spawn-range": t("TXT_CODE_c848a459"),
-          "view-distance": t("TXT_CODE_c32bc4b3"),
-          "item-despawn-rate": t("TXT_CODE_8fac56fb"),
-          "arrow-despawn-rate": t("TXT_CODE_47071ef6"),
-          "trident-despawn-rate": t("TXT_CODE_615be555"),
-          "thunder-chance": t("TXT_CODE_3183c301"),
+          "nerf-spawner-mobs": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_NERF_SPAWNER_MOBS"),
+          "simulation-distance": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SIMULATION_DISTANCE"),
+          "mob-spawn-range": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_MOB_SPAWN_RANGE"),
+          "view-distance": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_VIEW_DISTANCE"),
+          "item-despawn-rate": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ITEM_DESPAWN_RATE"),
+          "arrow-despawn-rate": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ARROW_DESPAWN_RATE"),
+          "trident-despawn-rate": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_TRIDENT_DESPAWN_RATE"),
+          "thunder-chance": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_THUNDER_CHANCE"),
           growth: {
-            "cactus-modifier": t("TXT_CODE_a92a298e"),
-            "cane-modifier": t("TXT_CODE_2759226f"),
-            "melon-modifier": t("TXT_CODE_5338b335"),
-            "mushroom-modifier": t("TXT_CODE_4c841d3"),
-            "pumpkin-modifier": t("TXT_CODE_c0ce588"),
-            "sapling-modifier": t("TXT_CODE_6fac9e82"),
-            "beetroot-modifier": t("TXT_CODE_37f5901"),
-            "carrot-modifier": t("TXT_CODE_f60ca79d"),
-            "potato-modifier": t("TXT_CODE_193297ed"),
-            "torchflower-modifier": t("TXT_CODE_47dd244a"),
-            "wheat-modifier": t("TXT_CODE_1135828"),
-            "netherwart-modifier": t("TXT_CODE_43984628"),
-            "vine-modifier": t("TXT_CODE_143f213e"),
-            "cocoa-modifier": t("TXT_CODE_be236019"),
-            "bamboo-modifier": t("TXT_CODE_e5839f71"),
-            "sweetberry-modifier": t("TXT_CODE_cd045236"),
-            "kelp-modifier": t("TXT_CODE_39abde23"),
-            "twistingvines-modifier": t("TXT_CODE_950c0d7a"),
-            "weepingvines-modifier": t("TXT_CODE_62c88f3a"),
-            "cavevines-modifier": t("TXT_CODE_27efff22"),
-            "glowberry-modifier": t("TXT_CODE_925af648"),
-            "pitcherplant-modifier": t("TXT_CODE_768c6fa9")
+            "cactus-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_CACTUS_MODIFIER"),
+            "cane-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_CANE_MODIFIER"),
+            "melon-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_MELON_MODIFIER"),
+            "mushroom-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_MUSHROOM_MODIFIER"),
+            "pumpkin-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_PUMPKIN_MODIFIER"),
+            "sapling-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_SAPLING_MODIFIER"),
+            "beetroot-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_BEETROOT_MODIFIER"),
+            "carrot-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_CARROT_MODIFIER"),
+            "potato-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_POTATO_MODIFIER"),
+            "torchflower-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_TORCHFLOWER_MODIFIER"),
+            "wheat-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_WHEAT_MODIFIER"),
+            "netherwart-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_NETHERWART_MODIFIER"),
+            "vine-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_VINE_MODIFIER"),
+            "cocoa-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_COCOA_MODIFIER"),
+            "bamboo-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_BAMBOO_MODIFIER"),
+            "sweetberry-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_SWEETBERRY_MODIFIER"),
+            "kelp-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_KELP_MODIFIER"),
+            "twistingvines-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_TWISTINGVINES_MODIFIER"),
+            "weepingvines-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_WEEPINGVINES_MODIFIER"),
+            "cavevines-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_CAVEVINES_MODIFIER"),
+            "glowberry-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_GLOWBERRY_MODIFIER"),
+            "pitcherplant-modifier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_GROWTH_PITCHERPLANT_MODIFIER")
           },
           "ticks-per": {
-            "hopper-transfer": t("TXT_CODE_16da1c76"),
-            "hopper-check": t("TXT_CODE_be1f9806")
+            "hopper-transfer": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_TICKS_PER_HOPPER_TRANSFER"),
+            "hopper-check": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_TICKS_PER_HOPPER_CHECK")
           },
-          "hopper-amount": t("TXT_CODE_7f31b67d"),
-          "hopper-can-load-chunks": t("TXT_CODE_8cfa8c1e"),
+          "hopper-amount": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HOPPER_AMOUNT"),
+          "hopper-can-load-chunks": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HOPPER_CAN_LOAD_CHUNKS"),
           "entity-tracking-range": {
-            players: t("TXT_CODE_179e8e0"),
-            animals: t("TXT_CODE_4a95255b"),
-            monsters: t("TXT_CODE_159f0203"),
-            misc: t("TXT_CODE_ea46baee"),
-            display: t("TXT_CODE_b0f5847f"),
-            other: t("TXT_CODE_317e0cc1")
+            players: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_PLAYERS"),
+            animals: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_ANIMALS"),
+            monsters: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_MONSTERS"),
+            misc: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_MISC"),
+            display: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_DISPLAY"),
+            other: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_TRACKING_RANGE_OTHER")
           },
           "entity-activation-range": {
-            animals: t("TXT_CODE_606da66a"),
-            monsters: t("TXT_CODE_3f678132"),
-            raiders: t("TXT_CODE_c2cef2d"),
-            misc: t("TXT_CODE_c0be39df"),
-            water: t("TXT_CODE_1ed0031c"),
-            villagers: t("TXT_CODE_704a8b5d"),
-            "flying-monsters": t("TXT_CODE_75c04302"),
+            animals: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_ANIMALS"),
+            monsters: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_MONSTERS"),
+            raiders: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_RAIDERS"),
+            misc: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_MISC"),
+            water: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WATER"),
+            villagers: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_VILLAGERS"),
+            "flying-monsters": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_FLYING_MONSTERS"),
             "wake-up-inactive": {
-              "animals-max-per-tick": t("TXT_CODE_9364ec40"),
-              "animals-every": t("TXT_CODE_1adaa4f4"),
-              "animals-for": t("TXT_CODE_8f809a5"),
-              "monsters-max-per-tick": t("TXT_CODE_cc6ecb18"),
-              "monsters-every": t("TXT_CODE_7cf70670"),
-              "monsters-for": t("TXT_CODE_df903498"),
-              "villagers-max-per-tick": t("TXT_CODE_8343c177"),
-              "villagers-every": t("TXT_CODE_e4e975f0"),
-              "villagers-for": t("TXT_CODE_dd20e5c3"),
-              "flying-monsters-max-per-tick": t("TXT_CODE_814a3c64"),
-              "flying-monsters-every": t("TXT_CODE_ad6c5d03"),
-              "flying-monsters-for": t("TXT_CODE_d9829f9c")
+              "animals-max-per-tick": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_ANIMALS_MAX_PER_TICK"),
+              "animals-every": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_ANIMALS_EVERY"),
+              "animals-for": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_ANIMALS_FOR"),
+              "monsters-max-per-tick": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_MONSTERS_MAX_PER_TICK"),
+              "monsters-every": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_MONSTERS_EVERY"),
+              "monsters-for": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_MONSTERS_FOR"),
+              "villagers-max-per-tick": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_VILLAGERS_MAX_PER_TICK"),
+              "villagers-every": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_VILLAGERS_EVERY"),
+              "villagers-for": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_VILLAGERS_FOR"),
+              "flying-monsters-max-per-tick": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_FLYING_MONSTERS_MAX_PER_TICK"),
+              "flying-monsters-every": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_FLYING_MONSTERS_EVERY"),
+              "flying-monsters-for": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_WAKE_UP_INACTIVE_FLYING_MONSTERS_FOR")
             },
-            "villagers-work-immunity-after": t("TXT_CODE_fabc6a75"),
-            "villagers-work-immunity-for": t("TXT_CODE_e98816c2"),
-            "villagers-active-for-panic": t("TXT_CODE_ecf93b03"),
-            "tick-inactive-villagers": t("TXT_CODE_b3190a77"),
-            "ignore-spectators": t("TXT_CODE_29b7eca5")
+            "villagers-work-immunity-after": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_VILLAGERS_WORK_IMMUNITY_AFTER"),
+            "villagers-work-immunity-for": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_VILLAGERS_WORK_IMMUNITY_FOR"),
+            "villagers-active-for-panic": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_VILLAGERS_ACTIVE_FOR_PANIC"),
+            "tick-inactive-villagers": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_TICK_INACTIVE_VILLAGERS"),
+            "ignore-spectators": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_ENTITY_ACTIVATION_RANGE_IGNORE_SPECTATORS")
           },
-          "seed-village": t("TXT_CODE_39a3ba38"),
-          "seed-desert": t("TXT_CODE_fb00a910"),
-          "seed-igloo": t("TXT_CODE_c8572f16"),
-          "seed-jungle": t("TXT_CODE_27f641c1"),
-          "seed-swamp": t("TXT_CODE_8d5d8e26"),
-          "seed-monument": t("TXT_CODE_1a8cf808"),
-          "seed-shipwreck": t("TXT_CODE_e7ad77f0"),
-          "seed-ocean": t("TXT_CODE_9df0f923"),
-          "seed-outpost": t("TXT_CODE_10430e01"),
-          "seed-endcity": t("TXT_CODE_8366db5a"),
-          "seed-slime": t("TXT_CODE_f28ded80"),
-          "seed-nether": t("TXT_CODE_2f900008"),
-          "seed-mansion": t("TXT_CODE_555b3625"),
-          "seed-fossil": t("TXT_CODE_313db7d2"),
-          "seed-portal": t("TXT_CODE_be26bb3c"),
-          "seed-ancientcity": t("TXT_CODE_fcee1fa0"),
-          "seed-trailruins": t("TXT_CODE_51df891f"),
-          "seed-buriedtreasure": t("TXT_CODE_6c7970df"),
-          "seed-mineshaft": t("TXT_CODE_a6f5af58"),
-          "seed-stronghold": t("TXT_CODE_1e08ca6b"),
-          "max-tnt-per-tick": t("TXT_CODE_37d67b69"),
+          "seed-village": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_VILLAGE"),
+          "seed-desert": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_DESERT"),
+          "seed-igloo": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_IGLOO"),
+          "seed-jungle": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_JUNGLE"),
+          "seed-swamp": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_SWAMP"),
+          "seed-monument": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_MONUMENT"),
+          "seed-shipwreck": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_SHIPWRECK"),
+          "seed-ocean": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_OCEAN"),
+          "seed-outpost": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_OUTPOST"),
+          "seed-endcity": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_ENDCITY"),
+          "seed-slime": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_SLIME"),
+          "seed-nether": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_NETHER"),
+          "seed-mansion": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_MANSION"),
+          "seed-fossil": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_FOSSIL"),
+          "seed-portal": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_PORTAL"),
+          "seed-ancientcity": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_ANCIENTCITY"),
+          "seed-trailruins": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_TRAILRUINS"),
+          "seed-buriedtreasure": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_BURIEDTREASURE"),
+          "seed-mineshaft": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_MINESHAFT"),
+          "seed-stronghold": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_SEED_STRONGHOLD"),
+          "max-tnt-per-tick": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_MAX_TNT_PER_TICK"),
           hunger: {
-            "jump-walk-exhaustion": t("TXT_CODE_5d563196"),
-            "jump-sprint-exhaustion": t("TXT_CODE_4c38bb42"),
-            "combat-exhaustion": t("TXT_CODE_c3ec4dc8"),
-            "regen-exhaustion": t("TXT_CODE_cbe0fc07"),
-            "swim-multiplier": t("TXT_CODE_e66f4ae"),
-            "sprint-multiplier": t("TXT_CODE_937b42e6"),
-            "other-multiplier": t("TXT_CODE_27fd08b9")
+            "jump-walk-exhaustion": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_JUMP_WALK_EXHAUSTION"),
+            "jump-sprint-exhaustion": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_JUMP_SPRINT_EXHAUSTION"),
+            "combat-exhaustion": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_COMBAT_EXHAUSTION"),
+            "regen-exhaustion": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_REGEN_EXHAUSTION"),
+            "swim-multiplier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_SWIM_MULTIPLIER"),
+            "sprint-multiplier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_SPRINT_MULTIPLIER"),
+            "other-multiplier": t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_HUNGER_OTHER_MULTIPLIER")
           },
           "max-tick-time": {
-            tile: t("TXT_CODE_dd2cef06"),
-            entity: t("TXT_CODE_25924d5a")
+            tile: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_MAX_TICK_TIME_TILE"),
+            entity: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_MAX_TICK_TIME_ENTITY")
           },
-          verbose: t("TXT_CODE_ba4f41ba")
+          verbose: t("TXT_CODE_GAME_CONFIG_SPIGOT_WORLD_SETTINGS_DEFAULT_VERBOSE")
         }
       },
-      "config-version": t("TXT_CODE_8f3582d7"),
+      "config-version": t("TXT_CODE_GAME_CONFIG_SPIGOT_CONFIG_VERSION"),
       stats: {
-        "disable-saving": t("TXT_CODE_1f224bef"),
-        "forced-stats": t("TXT_CODE_74c46351")
+        "disable-saving": t("TXT_CODE_GAME_CONFIG_SPIGOT_STATS_DISABLE_SAVING"),
+        "forced-stats": t("TXT_CODE_GAME_CONFIG_SPIGOT_STATS_FORCED_STATS")
       }
     }
   },
   "bungeecord/config.yml": {
-    desc: t("TXT_CODE_4fd13f18"),
+    desc: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_DESCRIPTION"),
     config: {
-      prevent_proxy_connections: t("TXT_CODE_f435b042"),
+      prevent_proxy_connections: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_PREVENT_PROXY_CONNECTIONS"),
       listeners: [
         {
-          query_port: t("TXT_CODE_fe80882d"),
-          motd: t("TXT_CODE_db04e635"),
-          tab_list: t("TXT_CODE_afb7259b"),
-          query_enabled: t("TXT_CODE_4d124f78"),
-          proxy_protocol: t("TXT_CODE_d11cc3e1"),
-          forced_hosts: t("TXT_CODE_b1fd3eb1"),
-          ping_passthrough: t("TXT_CODE_7166a969"),
-          priorities: t("TXT_CODE_a112cff4"),
-          bind_local_address: t("TXT_CODE_b1d709bc"),
-          host: t("TXT_CODE_c03297d4"),
-          max_players: t("TXT_CODE_b5afc7e"),
-          tab_size: t("TXT_CODE_157e06a9"),
-          force_default_server: t("TXT_CODE_1fbf74d9")
+          query_port: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_QUERY_PORT"),
+          motd: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_MOTD"),
+          tab_list: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_TAB_LIST"),
+          query_enabled: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_QUERY_ENABLED"),
+          proxy_protocol: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_PROXY_PROTOCOL"),
+          forced_hosts: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_FORCED_HOSTS"),
+          ping_passthrough: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_PING_PASSTHROUGH"),
+          priorities: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_PRIORITIES"),
+          bind_local_address: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_BIND_LOCAL_ADDRESS"),
+          host: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_HOST"),
+          max_players: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_MAX_PLAYERS"),
+          tab_size: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_TAB_SIZE"),
+          force_default_server: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_FORCE_DEFAULT_SERVER")
         }
       ],
-      remote_ping_cache: t("TXT_CODE_8a5274c1"),
+      remote_ping_cache: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_REMOTE_PING_CACHE"),
       network_compression_threshold: "",
       permissions: {
-        default: t("TXT_CODE_f0dc2530"),
-        admin: t("TXT_CODE_a4757fec")
+        default: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_PERMISSIONS_DEFAULT"),
+        admin: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_PERMISSIONS_ADMIN")
       },
-      log_pings: t("TXT_CODE_1a6bacc6"),
-      connection_throttle: t("TXT_CODE_78aa511"),
-      connection_throttle_limit: t("TXT_CODE_22b2a206"),
-      server_connect_timeout: t("TXT_CODE_978491ec"),
-      timeout: t("TXT_CODE_628f6851"),
-      player_limit: t("TXT_CODE_5b323a2"),
-      ip_forward: t("TXT_CODE_9d982f06"),
-      groups: t("TXT_CODE_ad5107bc"),
-      remote_ping_timeout: t("TXT_CODE_4f0b822b"),
-      log_commands: t("TXT_CODE_3354b56e"),
-      stats: t("TXT_CODE_2418225f"),
-      online_mode: t("TXT_CODE_b5a3a6ca"),
-      forge_support: t("TXT_CODE_91507ef3"),
-      disabled_commands: t("TXT_CODE_44a472a5"),
-      servers: t("TXT_CODE_661c66fa")
+      log_pings: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_LOG_PINGS"),
+      connection_throttle: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_CONNECTION_THROTTLE"),
+      connection_throttle_limit: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_CONNECTION_THROTTLE_LIMIT"),
+      server_connect_timeout: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_SERVER_CONNECT_TIMEOUT"),
+      timeout: t("TXT_CODE_COMMON_TIMEOUT_TIME"),
+      player_limit: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_PLAYER_LIMIT"),
+      ip_forward: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_IP_FORWARD"),
+      groups: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_GROUPS"),
+      remote_ping_timeout: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_REMOTE_PING_TIMEOUT"),
+      log_commands: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_LOG_COMMANDS"),
+      stats: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_STATS"),
+      online_mode: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_ONLINE_MODE"),
+      forge_support: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_FORGE_SUPPORT"),
+      disabled_commands: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_DISABLED_COMMANDS"),
+      servers: t("TXT_CODE_GAME_CONFIG_BUNGEECORD_SERVERS")
     }
   },
   "paper/paper.yml": {
-    desc: t("TXT_CODE_f8ef0c45"),
+    desc: t("TXT_CODE_GAME_CONFIG_PAPER_DESCRIPTION"),
     config: {
-      _version: t("TXT_CODE_d7ad19af"),
+      _version: t("TXT_CODE_GAME_CONFIG_VERSION"),
       "block-updates": {
-        "disable-chorus-plant-updates": t("TXT_CODE_64282335"),
-        "disable-mushroom-block-updates": t("TXT_CODE_86ab6e1e"),
-        "disable-noteblock-updates": t("TXT_CODE_de61c48c"),
-        "disable-tripwire-updates": t("TXT_CODE_e7cb14e2")
+        "disable-chorus-plant-updates": t("TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_CHORUS_PLANT_UPDATES"),
+        "disable-mushroom-block-updates": t("TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_MUSHROOM_BLOCK_UPDATES"),
+        "disable-noteblock-updates": t("TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_NOTEBLOCK_UPDATES"),
+        "disable-tripwire-updates": t("TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_TRIPWIRE_UPDATES")
       },
       "chunk-loading-advanced": {
-        "auto-config-send-distance": t("TXT_CODE_3969cb6b"),
-        "player-max-concurrent-chunk-generates": t("TXT_CODE_179eb7ce"),
-        "player-max-concurrent-chunk-loads": t("TXT_CODE_3897eb89")
+        "auto-config-send-distance": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_AUTO_CONFIG_SEND_DISTANCE"),
+        "player-max-concurrent-chunk-generates": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_PLAYER_MAX_CONCURRENT_CHUNK_GENERATES"),
+        "player-max-concurrent-chunk-loads": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_PLAYER_MAX_CONCURRENT_CHUNK_LOADS")
       },
       "chunk-loading-basic": {
-        "player-max-chunk-generate-rate": t("TXT_CODE_af11ca2a"),
-        "player-max-chunk-load-rate": t("TXT_CODE_8dd7bc1a"),
-        "player-max-chunk-send-rate": t("TXT_CODE_1dc16497")
+        "player-max-chunk-generate-rate": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_GENERATE_RATE"),
+        "player-max-chunk-load-rate": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_LOAD_RATE"),
+        "player-max-chunk-send-rate": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_SEND_RATE")
       },
       "chunk-system": {
-        "gen-parallelism": t("TXT_CODE_40ee4eaf"),
-        "io-threads": t("TXT_CODE_7d197c39"),
-        "worker-threads": t("TXT_CODE_7b8f01b5")
+        "gen-parallelism": t("TXT_CODE_GAME_CONFIG_CHUNK_SYSTEM_GEN_PARALLELISM"),
+        "io-threads": t("TXT_CODE_GAME_CONFIG_CHUNK_SYSTEM_IO_THREADS"),
+        "worker-threads": t("TXT_CODE_GAME_CONFIG_CHUNK_SYSTEM_WORKER_THREADS")
       },
       collisions: {
-        "enable-player-collisions": t("TXT_CODE_a519b5ff"),
-        "send-full-pos-for-hard-colliding-entities": t("TXT_CODE_84d56d69")
+        "enable-player-collisions": t("TXT_CODE_GAME_CONFIG_COLLISIONS_ENABLE_PLAYER_COLLISIONS"),
+        "send-full-pos-for-hard-colliding-entities": t("TXT_CODE_GAME_CONFIG_COLLISIONS_SEND_FULL_POS_FOR_HARD_COLLIDING_ENTITIES")
       },
       commands: {
-        "fix-target-selector-tag-completion": t("TXT_CODE_c059faee"),
-        "suggest-player-names-when-null-tab-completions": t("TXT_CODE_859b2d24"),
-        "time-command-affects-all-worlds": t("TXT_CODE_e01e51f3")
+        "fix-target-selector-tag-completion": t("TXT_CODE_GAME_CONFIG_COMMANDS_FIX_TARGET_SELECTOR_TAG_COMPLETION"),
+        "suggest-player-names-when-null-tab-completions": t("TXT_CODE_GAME_CONFIG_COMMANDS_SUGGEST_PLAYER_NAMES_WHEN_NULL_TAB_COMPLETIONS"),
+        "time-command-affects-all-worlds": t("TXT_CODE_GAME_CONFIG_COMMANDS_TIME_COMMAND_AFFECTS_ALL_WORLDS")
       },
       console: {
-        "enable-brigadier-completions": t("TXT_CODE_bb98d45"),
-        "enable-brigadier-highlighting": t("TXT_CODE_871feca"),
-        "has-all-permissions": t("TXT_CODE_dfa27a93")
+        "enable-brigadier-completions": t("TXT_CODE_GAME_CONFIG_CONSOLE_ENABLE_BRIGADIER_COMPLETIONS"),
+        "enable-brigadier-highlighting": t("TXT_CODE_GAME_CONFIG_CONSOLE_ENABLE_BRIGADIER_HIGHLIGHTING"),
+        "has-all-permissions": t("TXT_CODE_GAME_CONFIG_CONSOLE_HAS_ALL_PERMISSIONS")
       },
       "item-validation": {
         book: {
-          author: t("TXT_CODE_e641b54c"),
-          page: t("TXT_CODE_7ce3c6e"),
-          title: t("TXT_CODE_e8d9c341")
+          author: t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_BOOK_AUTHOR"),
+          page: t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_BOOK_PAGE"),
+          title: t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_BOOK_TITLE")
         },
         "book-size": {
-          "page-max": t("TXT_CODE_684eb7e3"),
-          "total-multiplier": t("TXT_CODE_66b01c4e")
+          "page-max": t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_BOOK_SIZE_PAGE_MAX"),
+          "total-multiplier": t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_BOOK_SIZE_TOTAL_MULTIPLIER")
         },
-        "display-name": t("TXT_CODE_b251fa6d"),
-        "lore-line": t("TXT_CODE_143e55cb"),
-        "resolve-selectors-in-books": t("TXT_CODE_bb9657ff")
+        "display-name": t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_DISPLAY_NAME"),
+        "lore-line": t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_LORE_LINE"),
+        "resolve-selectors-in-books": t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_RESOLVE_SELECTORS_IN_BOOKS")
       },
       logging: {
-        "deobfuscate-stacktraces": t("TXT_CODE_f5feed4e")
+        "deobfuscate-stacktraces": t("TXT_CODE_GAME_CONFIG_LOGGING_DEOBFUSCATE_STACKTRACES")
       },
       messages: {
         kick: {
-          "authentication-servers-down": t("TXT_CODE_d0c78699"),
-          "connection-throttle": t("TXT_CODE_e7a42e0e"),
-          "flying-player": t("TXT_CODE_fdd8effa"),
-          "flying-vehicle": t("TXT_CODE_c135338")
+          "authentication-servers-down": t("TXT_CODE_GAME_CONFIG_MESSAGES_KICK_AUTHENTICATION_SERVERS_DOWN"),
+          "connection-throttle": t("TXT_CODE_GAME_CONFIG_MESSAGES_KICK_CONNECTION_THROTTLE"),
+          "flying-player": t("TXT_CODE_GAME_CONFIG_MESSAGES_KICK_FLYING_PLAYER"),
+          "flying-vehicle": t("TXT_CODE_GAME_CONFIG_MESSAGES_KICK_FLYING_VEHICLE")
         },
-        "no-permission": t("TXT_CODE_27b7102a"),
-        "use-display-name-in-quit-message": t("TXT_CODE_15022f3e")
+        "no-permission": t("TXT_CODE_GAME_CONFIG_MESSAGES_NO_PERMISSION"),
+        "use-display-name-in-quit-message": t("TXT_CODE_GAME_CONFIG_MESSAGES_USE_DISPLAY_NAME_IN_QUIT_MESSAGE")
       },
       misc: {
         "chat-threads": {
-          "chat-executor-core-size": t("TXT_CODE_cd40249d"),
-          "chat-executor-max-size": t("TXT_CODE_da782f63")
+          "chat-executor-core-size": t("TXT_CODE_GAME_CONFIG_MISC_CHAT_THREADS_CHAT_EXECUTOR_CORE_SIZE"),
+          "chat-executor-max-size": t("TXT_CODE_GAME_CONFIG_MISC_CHAT_THREADS_CHAT_EXECUTOR_MAX_SIZE")
         },
-        "compression-level": t("TXT_CODE_743ed87f"),
-        "fix-entity-position-desync": t("TXT_CODE_7f0daff7"),
-        "load-permissions-yml-before-plugins": t("TXT_CODE_5a280280"),
-        "max-joins-per-tick": t("TXT_CODE_90edf4ad"),
-        "region-file-cache-size": t("TXT_CODE_ff2c2f20"),
-        "strict-advancement-dimension-check": t("TXT_CODE_8d6e5b1f"),
-        "use-alternative-luck-formula": t("TXT_CODE_ef676a8f"),
-        "use-dimension-type-for-custom-spawners": t("TXT_CODE_3f5a2028")
+        "compression-level": t("TXT_CODE_GAME_CONFIG_MISC_COMPRESSION_LEVEL"),
+        "fix-entity-position-desync": t("TXT_CODE_GAME_CONFIG_MISC_FIX_ENTITY_POSITION_DESYNC"),
+        "load-permissions-yml-before-plugins": t("TXT_CODE_GAME_CONFIG_MISC_LOAD_PERMISSIONS_YML_BEFORE_PLUGINS"),
+        "max-joins-per-tick": t("TXT_CODE_GAME_CONFIG_MISC_MAX_JOINS_PER_TICK"),
+        "region-file-cache-size": t("TXT_CODE_GAME_CONFIG_MISC_REGION_FILE_CACHE_SIZE"),
+        "strict-advancement-dimension-check": t("TXT_CODE_GAME_CONFIG_MISC_STRICT_ADVANCEMENT_DIMENSION_CHECK"),
+        "use-alternative-luck-formula": t("TXT_CODE_GAME_CONFIG_MISC_USE_ALTERNATIVE_LUCK_FORMULA"),
+        "use-dimension-type-for-custom-spawners": t("TXT_CODE_GAME_CONFIG_MISC_USE_DIMENSION_TYPE_FOR_CUSTOM_SPAWNERS")
       },
       "packet-limiter": {
         "all-packets": {
-          action: t("TXT_CODE_2203d4ff"),
-          interval: t("TXT_CODE_36b878dc"),
-          "max-packet-rate": t("TXT_CODE_2645196f")
+          action: t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_ALL_PACKETS_ACTION"),
+          interval: t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_ALL_PACKETS_INTERVAL"),
+          "max-packet-rate": t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_ALL_PACKETS_MAX_PACKET_RATE")
         },
-        "kick-message": t("TXT_CODE_b355c681"),
+        "kick-message": t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_KICK_MESSAGE"),
         overrides: {
           ServerboundPlaceRecipePacket: {
-            action: t("TXT_CODE_312cd9f0"),
-            interval: t("TXT_CODE_2db37427"),
-            "max-packet-rate": t("TXT_CODE_3d4e1594")
+            action: t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_ACTION"),
+            interval: t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_INTERVAL"),
+            "max-packet-rate": t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_MAX_PACKET_RATE")
           }
         }
       },
       "player-auto-save": {
-        "max-per-tick": t("TXT_CODE_2a84466d"),
-        rate: t("TXT_CODE_63a4602e")
+        "max-per-tick": t("TXT_CODE_GAME_CONFIG_PLAYER_AUTO_SAVE_MAX_PER_TICK"),
+        rate: t("TXT_CODE_GAME_CONFIG_PLAYER_AUTO_SAVE_RATE")
       },
       proxies: {
         "bungee-cord": {
-          "online-mode": t("TXT_CODE_2fb7e284")
+          "online-mode": t("TXT_CODE_GAME_CONFIG_PROXIES_BUNGEE_CORD_ONLINE_MODE")
         },
-        "proxy-protocol": t("TXT_CODE_f5cbef5c"),
+        "proxy-protocol": t("TXT_CODE_GAME_CONFIG_PROXIES_PROXY_PROTOCOL"),
         velocity: {
-          enabled: t("TXT_CODE_ab839970"),
-          "online-mode": t("TXT_CODE_f2d5dd5"),
-          secret: t("TXT_CODE_7f8f267f")
+          enabled: t("TXT_CODE_GAME_CONFIG_PROXIES_VELOCITY_ENABLED"),
+          "online-mode": t("TXT_CODE_GAME_CONFIG_PROXIES_VELOCITY_ONLINE_MODE"),
+          secret: t("TXT_CODE_GAME_CONFIG_PROXIES_VELOCITY_SECRET")
         }
       },
       scoreboards: {
-        "save-empty-scoreboard-teams": t("TXT_CODE_d649b01e"),
-        "track-plugin-scoreboards": t("TXT_CODE_13aa13dd")
+        "save-empty-scoreboard-teams": t("TXT_CODE_GAME_CONFIG_SCOREBOARDS_SAVE_EMPTY_SCOREBOARD_TEAMS"),
+        "track-plugin-scoreboards": t("TXT_CODE_GAME_CONFIG_SCOREBOARDS_TRACK_PLUGIN_SCOREBOARDS")
       },
       "spam-limiter": {
-        "incoming-packet-threshold": t("TXT_CODE_f59bbcef"),
-        "recipe-spam-increment": t("TXT_CODE_d6321094"),
-        "recipe-spam-limit": t("TXT_CODE_b10cbef0"),
-        "tab-spam-increment": t("TXT_CODE_76c66252"),
-        "tab-spam-limit": t("TXT_CODE_11f8cc36")
+        "incoming-packet-threshold": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_INCOMING_PACKET_THRESHOLD"),
+        "recipe-spam-increment": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_RECIPE_SPAM_INCREMENT"),
+        "recipe-spam-limit": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_RECIPE_SPAM_LIMIT"),
+        "tab-spam-increment": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_TAB_SPAM_INCREMENT"),
+        "tab-spam-limit": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_TAB_SPAM_LIMIT")
       },
       timings: {
-        enabled: t("TXT_CODE_28bf8a1b"),
-        "hidden-config-entries": t("TXT_CODE_56516e92"),
-        "history-interval": t("TXT_CODE_ea579dec"),
-        "history-length": t("TXT_CODE_13dfc5cb"),
-        "server-name": t("TXT_CODE_e81c77bc"),
-        "server-name-privacy": t("TXT_CODE_9ac035d0"),
-        url: t("TXT_CODE_f8f3218a"),
-        verbose: t("TXT_CODE_afd43f2")
+        enabled: t("TXT_CODE_GAME_CONFIG_TIMINGS_ENABLED"),
+        "hidden-config-entries": t("TXT_CODE_GAME_CONFIG_TIMINGS_HIDDEN_CONFIG_ENTRIES"),
+        "history-interval": t("TXT_CODE_GAME_CONFIG_TIMINGS_HISTORY_INTERVAL"),
+        "history-length": t("TXT_CODE_GAME_CONFIG_TIMINGS_HISTORY_LENGTH"),
+        "server-name": t("TXT_CODE_GAME_CONFIG_SERVER_NAME"),
+        "server-name-privacy": t("TXT_CODE_GAME_CONFIG_TIMINGS_SERVER_NAME_PRIVACY"),
+        url: t("TXT_CODE_GAME_CONFIG_TIMINGS_URL"),
+        verbose: t("TXT_CODE_GAME_CONFIG_TIMINGS_VERBOSE")
       },
       "unsupported-settings": {
-        "allow-grindstone-overstacking": t("TXT_CODE_39e7fa63"),
-        "allow-headless-pistons": t("TXT_CODE_59b1cb55"),
-        "allow-permanent-block-break-exploits": t("TXT_CODE_bc3e529c"),
-        "allow-piston-duplication": t("TXT_CODE_f86b456a"),
-        "compression-format": t("TXT_CODE_e06c1cea"),
-        "perform-username-validation": t("TXT_CODE_1fe2257b")
+        "allow-grindstone-overstacking": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_GRINDSTONE_OVERSTACKING"),
+        "allow-headless-pistons": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_HEADLESS_PISTONS"),
+        "allow-permanent-block-break-exploits": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_PERMANENT_BLOCK_BREAK_EXPLOITS"),
+        "allow-piston-duplication": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_PISTON_DUPLICATION"),
+        "compression-format": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_COMPRESSION_FORMAT"),
+        "perform-username-validation": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_PERFORM_USERNAME_VALIDATION")
       },
       watchdog: {
-        "early-warning-delay": t("TXT_CODE_c1507dd6"),
-        "early-warning-every": t("TXT_CODE_ea8aaf1b")
+        "early-warning-delay": t("TXT_CODE_GAME_CONFIG_WATCHDOG_EARLY_WARNING_DELAY"),
+        "early-warning-every": t("TXT_CODE_GAME_CONFIG_WATCHDOG_EARLY_WARNING_EVERY")
       }
     }
   },
   "purpur/purpur.yml": {
-    desc: t("TXT_CODE_da76ea07"),
+    desc: t("TXT_CODE_GAME_CONFIG_PURPUR_DESCRIPTION"),
     config: {
-      verbose: t("TXT_CODE_81cabec"),
-      "config-version": t("TXT_CODE_c32eb04a"),
+      verbose: t("TXT_CODE_GAME_CONFIG_PURPUR_VERBOSE"),
+      "config-version": t("TXT_CODE_GAME_CONFIG_PURPUR_CONFIG_VERSION"),
       settings: {
         "block-fall-multipliers": {
           "minecraft:brown_bed": {
-            distance: t("TXT_CODE_e40ddc99")
+            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_BROWN_BED_DISTANCE")
           },
           "minecraft:lime_bed": {
-            distance: t("TXT_CODE_1b518dd0")
+            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_LIME_BED_DISTANCE")
           },
           "minecraft:yellow_bed": {
-            distance: t("TXT_CODE_8175818c")
+            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_YELLOW_BED_DISTANCE")
           },
           "minecraft:black_bed": {
-            distance: t("TXT_CODE_8da44b20")
+            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_BLACK_BED_DISTANCE")
           },
           "minecraft:orange_bed": {
-            distance: t("TXT_CODE_998d1dec")
+            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_ORANGE_BED_DISTANCE")
           },
           "minecraft:green_bed": {
-            distance: t("TXT_CODE_44f46508")
+            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_GREEN_BED_DISTANCE")
           },
           "minecraft:blue_bed": {
-            distance: t("TXT_CODE_b36630b3")
+            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_BLUE_BED_DISTANCE")
           },
           "minecraft:cyan_bed": {
-            distance: t("TXT_CODE_a5bdf2d8")
+            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_CYAN_BED_DISTANCE")
           },
           "minecraft:gray_bed": {
-            distance: t("TXT_CODE_f130e34a")
+            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_GRAY_BED_DISTANCE")
           },
           "minecraft:white_bed": {
-            distance: t("TXT_CODE_7db580c1")
+            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_WHITE_BED_DISTANCE")
           },
           "minecraft:hay_block": {
-            distance: t("TXT_CODE_4c9dd2b4")
+            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_HAY_BLOCK_DISTANCE")
           },
           "minecraft:red_bed": {
-            distance: t("TXT_CODE_f5e3c97e")
+            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_RED_BED_DISTANCE")
           },
           "minecraft:pink_bed": {
-            distance: t("TXT_CODE_9e1657b")
+            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_PINK_BED_DISTANCE")
           },
           "minecraft:light_blue_bed": {
-            distance: t("TXT_CODE_6253ecce")
+            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_LIGHT_BLUE_BED_DISTANCE")
           },
           "minecraft:purple_bed": {
-            distance: t("TXT_CODE_845b8bd8")
+            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_PURPLE_BED_DISTANCE")
           },
           "minecraft:magenta_bed": {
-            distance: t("TXT_CODE_9eb5dd12")
+            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_MAGENTA_BED_DISTANCE")
           },
           "minecraft:light_gray_bed": {
-            distance: t("TXT_CODE_20053f37")
+            distance: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCK_FALL_MULTIPLIERS_MINECRAFT_LIGHT_GRAY_BED_DISTANCE")
           }
         },
         command: {
           uptime: {
-            format: t("TXT_CODE_b75e6388"),
-            day: t("TXT_CODE_2de4c590"),
-            days: t("TXT_CODE_816ae222"),
-            hour: t("TXT_CODE_3752d436"),
-            hours: t("TXT_CODE_bec552ee"),
-            minute: t("TXT_CODE_80747f11"),
-            minutes: t("TXT_CODE_1b78c12e"),
-            second: t("TXT_CODE_b3796a8"),
-            seconds: t("TXT_CODE_a94e89ef")
+            format: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_UPTIME_FORMAT"),
+            day: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_UPTIME_DAY"),
+            days: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_UPTIME_DAYS"),
+            hour: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_UPTIME_HOUR"),
+            hours: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_UPTIME_HOURS"),
+            minute: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_UPTIME_MINUTE"),
+            minutes: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_UPTIME_MINUTES"),
+            second: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_UPTIME_SECOND"),
+            seconds: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_UPTIME_SECONDS")
           },
           gamemode: {
-            "requires-specific-permission": t("TXT_CODE_2b524bbf")
+            "requires-specific-permission": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_GAMEMODE_REQUIRES_SPECIFIC_PERMISSION")
           },
           tpsbar: {
-            title: t("TXT_CODE_e4cf9ca3"),
-            overlay: t("TXT_CODE_dc370276"),
-            "fill-mode": t("TXT_CODE_f021f43a"),
+            title: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_TPSBAR_TITLE"),
+            overlay: t("TXT_CODE_GAME_CONFIG_PURPUR_OVERLAY"),
+            "fill-mode": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_TPSBAR_FILL_MODE"),
             "progress-color": {
-              good: t("TXT_CODE_7d3d97ec"),
-              medium: t("TXT_CODE_47491a7e"),
-              low: t("TXT_CODE_8fac22fc")
+              good: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_TPSBAR_PROGRESS_COLOR_GOOD"),
+              medium: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_TPSBAR_PROGRESS_COLOR_MEDIUM"),
+              low: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_TPSBAR_PROGRESS_COLOR_LOW")
             },
             "text-color": {
-              good: t("TXT_CODE_52f96ff0"),
-              medium: t("TXT_CODE_125812c9"),
-              low: t("TXT_CODE_2428b9c0")
+              good: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_TPSBAR_TEXT_COLOR_GOOD"),
+              medium: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_TPSBAR_TEXT_COLOR_MEDIUM"),
+              low: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_TPSBAR_TEXT_COLOR_LOW")
             },
-            "tick-interval": t("TXT_CODE_fe592df1")
+            "tick-interval": t("TXT_CODE_GAME_CONFIG_PURPUR_TICK_INTERVAL")
           },
           rambar: {
-            title: t("TXT_CODE_90b596a8"),
-            overlay: t("TXT_CODE_dc370276"),
+            title: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_RAMBAR_TITLE"),
+            overlay: t("TXT_CODE_GAME_CONFIG_PURPUR_OVERLAY"),
             "progress-color": {
-              good: t("TXT_CODE_82b18ea4"),
-              medium: t("TXT_CODE_1b82883f"),
-              low: t("TXT_CODE_cdf1a25")
+              good: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_RAMBAR_PROGRESS_COLOR_GOOD"),
+              medium: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_RAMBAR_PROGRESS_COLOR_MEDIUM"),
+              low: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_RAMBAR_PROGRESS_COLOR_LOW")
             },
             "text-color": {
-              good: t("TXT_CODE_27ee6bf8"),
-              medium: t("TXT_CODE_ddec29cf"),
-              low: t("TXT_CODE_598f2d02")
+              good: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_RAMBAR_TEXT_COLOR_GOOD"),
+              medium: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_RAMBAR_TEXT_COLOR_MEDIUM"),
+              low: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_RAMBAR_TEXT_COLOR_LOW")
             },
-            "tick-interval": t("TXT_CODE_fe592df1")
+            "tick-interval": t("TXT_CODE_GAME_CONFIG_PURPUR_TICK_INTERVAL")
           },
           compass: {
-            title: t("TXT_CODE_a463be37"),
-            overlay: t("TXT_CODE_dc370276"),
-            "progress-color": t("TXT_CODE_98742e5f"),
-            percent: t("TXT_CODE_e8293f96"),
-            "tick-interval": t("TXT_CODE_fe592df1")
+            title: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_COMPASS_TITLE"),
+            overlay: t("TXT_CODE_GAME_CONFIG_PURPUR_OVERLAY"),
+            "progress-color": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_COMPASS_PROGRESS_COLOR"),
+            percent: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_COMPASS_PERCENT"),
+            "tick-interval": t("TXT_CODE_GAME_CONFIG_PURPUR_TICK_INTERVAL")
           },
-          "hide-hidden-players-from-entity-selector": t("TXT_CODE_7eb0f9fd"),
-          "allow-water-placement-in-the-end": t("TXT_CODE_55a62de"),
-          "use-alternate-keepalive": t("TXT_CODE_c42a1b9b")
+          "hide-hidden-players-from-entity-selector": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_HIDE_HIDDEN_PLAYERS_FROM_ENTITY_SELECTOR"),
+          "allow-water-placement-in-the-end": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_ALLOW_WATER_PLACEMENT_IN_THE_END"),
+          "use-alternate-keepalive": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_COMMAND_USE_ALTERNATE_KEEPALIVE")
         },
-        "tps-catchup": t("TXT_CODE_b8c40ce0"),
-        "server-mod-name": t("TXT_CODE_b89285d3"),
-        "fix-projectile-looting-transfer": t("TXT_CODE_93afb039"),
-        "blast-resistance-overrides": t("TXT_CODE_7a318185"),
-        "clamp-attributes": t("TXT_CODE_fd9d9eeb"),
-        "limit-armor": t("TXT_CODE_8631c629"),
-        "username-valid-characters": t("TXT_CODE_f0de6bb8"),
-        "lagging-threshold": t("TXT_CODE_fe463ea3"),
-        "fix-network-serialized-items-in-creative": t("TXT_CODE_9c2250b7"),
-        "disable-give-dropping": t("TXT_CODE_51ff8e5b"),
-        "player-deaths-always-show-item": t("TXT_CODE_b36320e1"),
-        "register-minecraft-debug-commands": t("TXT_CODE_3ef08433"),
-        "startup-commands": t("TXT_CODE_4d8e959e"),
-        "bee-count-payload": t("TXT_CODE_5f1ae9ca"),
+        "tps-catchup": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_TPS_CATCHUP"),
+        "server-mod-name": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_SERVER_MOD_NAME"),
+        "fix-projectile-looting-transfer": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_FIX_PROJECTILE_LOOTING_TRANSFER"),
+        "blast-resistance-overrides": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLAST_RESISTANCE_OVERRIDES"),
+        "clamp-attributes": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_CLAMP_ATTRIBUTES"),
+        "limit-armor": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LIMIT_ARMOR"),
+        "username-valid-characters": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_USERNAME_VALID_CHARACTERS"),
+        "lagging-threshold": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LAGGING_THRESHOLD"),
+        "fix-network-serialized-items-in-creative": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_FIX_NETWORK_SERIALIZED_ITEMS_IN_CREATIVE"),
+        "disable-give-dropping": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_DISABLE_GIVE_DROPPING"),
+        "player-deaths-always-show-item": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_PLAYER_DEATHS_ALWAYS_SHOW_ITEM"),
+        "register-minecraft-debug-commands": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_REGISTER_MINECRAFT_DEBUG_COMMANDS"),
+        "startup-commands": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_STARTUP_COMMANDS"),
+        "bee-count-payload": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BEE_COUNT_PAYLOAD"),
         messages: {
-          "afk-broadcast-away": t("TXT_CODE_478717e2"),
-          "afk-broadcast-back": t("TXT_CODE_7dd469fa"),
-          "afk-broadcast-use-display-name": t("TXT_CODE_6546b287"),
-          "afk-tab-list-prefix": t("TXT_CODE_56c42793"),
-          "afk-tab-list-suffix": t("TXT_CODE_42a7759b"),
-          "cannot-ride-mob": t("TXT_CODE_4f21b52"),
-          "dont-run-with-scissors": t("TXT_CODE_f5689a76"),
-          "ping-command-output": t("TXT_CODE_669eb0ff"),
-          "uptime-command-output": t("TXT_CODE_57a3aae"),
-          "demo-command-output": t("TXT_CODE_53761955"),
-          "credits-command-output": t("TXT_CODE_c20e5d16"),
-          "tpsbar-command-output": t("TXT_CODE_a725a5b1"),
-          "ram-command-output": t("TXT_CODE_d42566ff"),
-          "rambar-command-output": t("TXT_CODE_fabfaadc"),
-          "unverified-username": t("TXT_CODE_39bb14c1"),
-          "sleep-skipping-night": t("TXT_CODE_87c5dcb4"),
-          "sleeping-players-percent": t("TXT_CODE_49c48e0a"),
-          "sleep-not-possible": t("TXT_CODE_1dc0000f"),
+          "afk-broadcast-away": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_AFK_BROADCAST_AWAY"),
+          "afk-broadcast-back": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_AFK_BROADCAST_BACK"),
+          "afk-broadcast-use-display-name": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_AFK_BROADCAST_USE_DISPLAY_NAME"),
+          "afk-tab-list-prefix": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_AFK_TAB_LIST_PREFIX"),
+          "afk-tab-list-suffix": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_AFK_TAB_LIST_SUFFIX"),
+          "cannot-ride-mob": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_CANNOT_RIDE_MOB"),
+          "dont-run-with-scissors": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_DONT_RUN_WITH_SCISSORS"),
+          "ping-command-output": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_PING_COMMAND_OUTPUT"),
+          "uptime-command-output": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_UPTIME_COMMAND_OUTPUT"),
+          "demo-command-output": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_DEMO_COMMAND_OUTPUT"),
+          "credits-command-output": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_CREDITS_COMMAND_OUTPUT"),
+          "tpsbar-command-output": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_TPSBAR_COMMAND_OUTPUT"),
+          "ram-command-output": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_RAM_COMMAND_OUTPUT"),
+          "rambar-command-output": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_RAMBAR_COMMAND_OUTPUT"),
+          "unverified-username": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_UNVERIFIED_USERNAME"),
+          "sleep-skipping-night": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_SLEEP_SKIPPING_NIGHT"),
+          "sleeping-players-percent": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_SLEEPING_PLAYERS_PERCENT"),
+          "sleep-not-possible": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_SLEEP_NOT_POSSIBLE"),
           "death-message": {
-            stonecutter: t("TXT_CODE_16e2615"),
-            "run-with-scissors": t("TXT_CODE_53e8e5af")
+            stonecutter: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_DEATH_MESSAGE_STONECUTTER"),
+            "run-with-scissors": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_MESSAGES_DEATH_MESSAGE_RUN_WITH_SCISSORS")
           }
         },
         network: {
-          "kick-for-out-of-order-chat": t("TXT_CODE_d33e975f"),
-          "upnp-port-forwarding": t("TXT_CODE_d372d72"),
-          "max-joins-per-second": t("TXT_CODE_20d107f1")
+          "kick-for-out-of-order-chat": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_NETWORK_KICK_FOR_OUT_OF_ORDER_CHAT"),
+          "upnp-port-forwarding": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_NETWORK_UPNP_PORT_FORWARDING"),
+          "max-joins-per-second": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_NETWORK_MAX_JOINS_PER_SECOND")
         },
         blocks: {
           barrel: {
-            rows: t("TXT_CODE_8cb5a1e6")
+            rows: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_BARREL_ROWS")
           },
           beehive: {
-            "max-bees-inside": t("TXT_CODE_249df6f2")
+            "max-bees-inside": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_BEEHIVE_MAX_BEES_INSIDE")
           },
           grindstone: {
-            "ignored-enchants": t("TXT_CODE_7a2b969f"),
-            "remove-attributes": t("TXT_CODE_c15dcfec"),
-            "remove-name-and-lore": t("TXT_CODE_f085ce38")
+            "ignored-enchants": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_GRINDSTONE_IGNORED_ENCHANTS"),
+            "remove-attributes": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_GRINDSTONE_REMOVE_ATTRIBUTES"),
+            "remove-name-and-lore": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_GRINDSTONE_REMOVE_NAME_AND_LORE")
           },
           ender_chest: {
-            "six-rows": t("TXT_CODE_c97dd046"),
-            "use-permissions-for-rows": t("TXT_CODE_3489786b")
+            "six-rows": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_ENDER_CHEST_SIX_ROWS"),
+            "use-permissions-for-rows": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_ENDER_CHEST_USE_PERMISSIONS_FOR_ROWS")
           },
           crying_obsidian: {
-            "valid-for-portal-frame": t("TXT_CODE_41ae3d88")
+            "valid-for-portal-frame": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_CRYING_OBSIDIAN_VALID_FOR_PORTAL_FRAME")
           },
           twisting_vines: {
-            "max-growth-age": t("TXT_CODE_442c0649")
+            "max-growth-age": t("TXT_CODE_GAME_CONFIG_PURPUR_MAX_GROWTH_AGE")
           },
           weeping_vines: {
-            "max-growth-age": t("TXT_CODE_442c0649")
+            "max-growth-age": t("TXT_CODE_GAME_CONFIG_PURPUR_MAX_GROWTH_AGE")
           },
           cave_vines: {
-            "max-growth-age": t("TXT_CODE_442c0649")
+            "max-growth-age": t("TXT_CODE_GAME_CONFIG_PURPUR_MAX_GROWTH_AGE")
           },
           kelp: {
-            "max-growth-age": t("TXT_CODE_442c0649")
+            "max-growth-age": t("TXT_CODE_GAME_CONFIG_PURPUR_MAX_GROWTH_AGE")
           },
           anvil: {
-            "cumulative-cost": t("TXT_CODE_4a70853b")
+            "cumulative-cost": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_ANVIL_CUMULATIVE_COST")
           },
           lightning_rod: {
-            range: t("TXT_CODE_b7f19227")
+            range: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_LIGHTNING_ROD_RANGE")
           },
           "magma-block": {
-            "reverse-bubble-column-flow": t("TXT_CODE_19140a89")
+            "reverse-bubble-column-flow": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_MAGMA_BLOCK_REVERSE_BUBBLE_COLUMN_FLOW")
           },
           "soul-sand": {
-            "reverse-bubble-column-flow": t("TXT_CODE_76d59e8")
+            "reverse-bubble-column-flow": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BLOCKS_SOUL_SAND_REVERSE_BUBBLE_COLUMN_FLOW")
           }
         },
         broadcasts: {
           advancement: {
-            "only-broadcast-to-affected-player": t("TXT_CODE_5af5838a")
+            "only-broadcast-to-affected-player": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BROADCASTS_ADVANCEMENT_ONLY_BROADCAST_TO_AFFECTED_PLAYER")
           },
           death: {
-            "only-broadcast-to-affected-player": t("TXT_CODE_93191a82")
+            "only-broadcast-to-affected-player": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_BROADCASTS_DEATH_ONLY_BROADCAST_TO_AFFECTED_PLAYER")
           }
         },
         logger: {
-          "suppress-init-legacy-material-errors": t("TXT_CODE_559f4b1d"),
-          "suppress-ignored-advancement-warnings": t("TXT_CODE_68928779"),
-          "supress-unrecognized-recipe-errors": t("TXT_CODE_4c82f760"),
-          "suppress-setblock-in-far-chunk-errors": t("TXT_CODE_4140aa4b"),
-          "supress-library-loader": t("TXT_CODE_6623dde0")
+          "suppress-init-legacy-material-errors": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LOGGER_SUPPRESS_INIT_LEGACY_MATERIAL_ERRORS"),
+          "suppress-ignored-advancement-warnings": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LOGGER_SUPPRESS_IGNORED_ADVANCEMENT_WARNINGS"),
+          "supress-unrecognized-recipe-errors": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LOGGER_SUPRESS_UNRECOGNIZED_RECIPE_ERRORS"),
+          "suppress-setblock-in-far-chunk-errors": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LOGGER_SUPPRESS_SETBLOCK_IN_FAR_CHUNK_ERRORS"),
+          "supress-library-loader": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_LOGGER_SUPRESS_LIBRARY_LOADER")
         },
         "food-properties": {
-          default: t("TXT_CODE_b1d19033")
+          default: t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_FOOD_PROPERTIES_DEFAULT")
         },
         entity: {
           enderman: {
-            "short-height": t("TXT_CODE_7898c2b4")
+            "short-height": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENTITY_ENDERMAN_SHORT_HEIGHT")
           }
         },
         enchantment: {
-          "allow-looting-on-shears": t("TXT_CODE_18de069c"),
-          "allow-unsafe-enchant-command": t("TXT_CODE_a1e4c720"),
-          "clamp-levels": t("TXT_CODE_9066472a"),
+          "allow-looting-on-shears": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ALLOW_LOOTING_ON_SHEARS"),
+          "allow-unsafe-enchant-command": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ALLOW_UNSAFE_ENCHANT_COMMAND"),
+          "clamp-levels": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_CLAMP_LEVELS"),
           anvil: {
-            "allow-inapplicable-enchants": t("TXT_CODE_3579ab7d"),
-            "allow-incompatible-enchants": t("TXT_CODE_1cafa176"),
-            "allow-higher-enchants-levels": t("TXT_CODE_172c745e"),
-            "replace-incompatible-enchants": t("TXT_CODE_2415440f")
+            "allow-inapplicable-enchants": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ANVIL_ALLOW_INAPPLICABLE_ENCHANTS"),
+            "allow-incompatible-enchants": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ANVIL_ALLOW_INCOMPATIBLE_ENCHANTS"),
+            "allow-higher-enchants-levels": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ANVIL_ALLOW_HIGHER_ENCHANTS_LEVELS"),
+            "replace-incompatible-enchants": t("TXT_CODE_GAME_CONFIG_PURPUR_SETTINGS_ENCHANTMENT_ANVIL_REPLACE_INCOMPATIBLE_ENCHANTS")
           }
         }
       },
       "world-settings": {
         default: {
           hunger: {
-            "starvation-damage": t("TXT_CODE_65a780a2")
+            "starvation-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_HUNGER_STARVATION_DAMAGE")
           },
           settings: {
             entity: {
-              "shared-random": t("TXT_CODE_42e25bc2")
+              "shared-random": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_SETTINGS_ENTITY_SHARED_RANDOM")
             }
           },
           blocks: {
             anvil: {
-              "use-mini-message": t("TXT_CODE_4c566219"),
-              "allow-colors": t("TXT_CODE_69dbb08"),
-              "iron-ingots-used-for-repair": t("TXT_CODE_b329418"),
-              "obsidian-used-for-damage": t("TXT_CODE_1770c716")
+              "use-mini-message": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_ANVIL_USE_MINI_MESSAGE"),
+              "allow-colors": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_ANVIL_ALLOW_COLORS"),
+              "iron-ingots-used-for-repair": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_ANVIL_IRON_INGOTS_USED_FOR_REPAIR"),
+              "obsidian-used-for-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_ANVIL_OBSIDIAN_USED_FOR_DAMAGE")
             },
             azalea: {
-              "growth-chance": t("TXT_CODE_fe46ac12")
+              "growth-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_AZALEA_GROWTH_CHANCE")
             },
             beacon: {
-              "allow-effects-with-tinted-glass": t("TXT_CODE_3da5e4e"),
+              "allow-effects-with-tinted-glass": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_BEACON_ALLOW_EFFECTS_WITH_TINTED_GLASS"),
               "effect-range": {
-                "level-1": t("TXT_CODE_a48bdb09"),
-                "level-2": t("TXT_CODE_a48bdb09"),
-                "level-3": t("TXT_CODE_a48bdb09"),
-                "level-4": t("TXT_CODE_a48bdb09")
+                "level-1": t("TXT_CODE_COMMON_AMOUNT_OF_BLOCKS_THE_EFFECT_RANGE_REACHES_FOR_THIS_LEVEL"),
+                "level-2": t("TXT_CODE_COMMON_AMOUNT_OF_BLOCKS_THE_EFFECT_RANGE_REACHES_FOR_THIS_LEVEL"),
+                "level-3": t("TXT_CODE_COMMON_AMOUNT_OF_BLOCKS_THE_EFFECT_RANGE_REACHES_FOR_THIS_LEVEL"),
+                "level-4": t("TXT_CODE_COMMON_AMOUNT_OF_BLOCKS_THE_EFFECT_RANGE_REACHES_FOR_THIS_LEVEL")
               }
             },
             bed: {
-              explode: t("TXT_CODE_786e2280"),
-              "explode-on-villager-sleep": t("TXT_CODE_18b3d541"),
-              "explosion-power": t("TXT_CODE_d1509da0"),
-              "explosion-fire": t("TXT_CODE_3be23278"),
-              "explosion-effect": t("TXT_CODE_7e0b9953")
+              explode: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_BED_EXPLODE"),
+              "explode-on-villager-sleep": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_BED_EXPLODE_ON_VILLAGER_SLEEP"),
+              "explosion-power": t("TXT_CODE_GAME_CONFIG_PURPUR_EXPLOSION_RADIUS"),
+              "explosion-fire": t("TXT_CODE_GAME_CONFIG_PURPUR_EXPLOSION_FIRE"),
+              "explosion-effect": t("TXT_CODE_GAME_CONFIG_PURPUR_EXPLOSION_EFFECT")
             },
             big_dripleaf: {
               "tilt-delay": {
-                FULL: t("TXT_CODE_2541ce4d"),
-                UNSTABLE: t("TXT_CODE_9e9c0179"),
-                PARTIAL: t("TXT_CODE_9e9c0179")
+                FULL: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_BIG_DRIPLEAF_TILT_DELAY_FULL"),
+                UNSTABLE: t("TXT_CODE_COMMON_HOW_LONG_THE_DELAY_OF_A_BIG_DRIPLEAF_SHOULD_UNTIL_IT_GOES_INTO_THE_NEXT_ANIMATION"),
+                PARTIAL: t("TXT_CODE_COMMON_HOW_LONG_THE_DELAY_OF_A_BIG_DRIPLEAF_SHOULD_UNTIL_IT_GOES_INTO_THE_NEXT_ANIMATION")
               }
             },
             blue_ice: {
-              "allow-mob-spawns": t("TXT_CODE_e3116bba"),
-              "allow-snow-formation": t("TXT_CODE_66ac4611")
+              "allow-mob-spawns": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_BLUE_ICE_ALLOW_MOB_SPAWNS"),
+              "allow-snow-formation": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_BLUE_ICE_ALLOW_SNOW_FORMATION")
             },
             cactus: {
-              "breaks-from-solid-neighbors": t("TXT_CODE_1396f33c"),
-              "affected-by-bonemeal": t("TXT_CODE_bb35dc39")
+              "breaks-from-solid-neighbors": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CACTUS_BREAKS_FROM_SOLID_NEIGHBORS"),
+              "affected-by-bonemeal": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CACTUS_AFFECTED_BY_BONEMEAL")
             },
             campfire: {
-              "lit-when-placed": t("TXT_CODE_a9c9d05e")
+              "lit-when-placed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CAMPFIRE_LIT_WHEN_PLACED")
             },
             cauldron: {
               "fill-chances": {
-                rain: t("TXT_CODE_931e4c8"),
-                "powder-snow": t("TXT_CODE_beacbdc"),
-                "dripstone-water": t("TXT_CODE_5e56a7a5"),
-                "dripstone-lava": t("TXT_CODE_edd8458c")
+                rain: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CAULDRON_FILL_CHANCES_RAIN"),
+                "powder-snow": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CAULDRON_FILL_CHANCES_POWDER_SNOW"),
+                "dripstone-water": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CAULDRON_FILL_CHANCES_DRIPSTONE_WATER"),
+                "dripstone-lava": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CAULDRON_FILL_CHANCES_DRIPSTONE_LAVA")
               }
             },
             chest: {
-              "open-with-solid-block-on-top": t("TXT_CODE_5d589988")
+              "open-with-solid-block-on-top": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CHEST_OPEN_WITH_SOLID_BLOCK_ON_TOP")
             },
             composter: {
-              "sneak-to-bulk-process": t("TXT_CODE_6ac327b4")
+              "sneak-to-bulk-process": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_COMPOSTER_SNEAK_TO_BULK_PROCESS")
             },
             conduit: {
-              "valid-ring-blocks": t("TXT_CODE_6f9d4bb7"),
-              "effect-distance": t("TXT_CODE_3a24c7a3"),
+              "valid-ring-blocks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CONDUIT_VALID_RING_BLOCKS"),
+              "effect-distance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CONDUIT_EFFECT_DISTANCE"),
               "mob-damage": {
-                distance: t("TXT_CODE_dbc9b3e3"),
-                "damage-amount": t("TXT_CODE_abadb770")
+                distance: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CONDUIT_MOB_DAMAGE_DISTANCE"),
+                "damage-amount": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CONDUIT_MOB_DAMAGE_DAMAGE_AMOUNT")
               }
             },
             coral: {
-              "die-outside-water": t("TXT_CODE_10efed7c")
+              "die-outside-water": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_CORAL_DIE_OUTSIDE_WATER")
             },
             dispenser: {
-              "apply-cursed-to-armor-slots": t("TXT_CODE_7b0b38e6"),
-              "place-anvils": t("TXT_CODE_d149e3e6")
+              "apply-cursed-to-armor-slots": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_DISPENSER_APPLY_CURSED_TO_ARMOR_SLOTS"),
+              "place-anvils": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_DISPENSER_PLACE_ANVILS")
             },
             door: {
-              "requires-redstone": t("TXT_CODE_8a7c57b9")
+              "requires-redstone": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_DOOR_REQUIRES_REDSTONE")
             },
             dragon_egg: {
-              teleport: t("TXT_CODE_1348332a")
+              teleport: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_DRAGON_EGG_TELEPORT")
             },
             "enchantment-table": {
-              "lapis-persists": t("TXT_CODE_3a5c9779")
+              "lapis-persists": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_ENCHANTMENT_TABLE_LAPIS_PERSISTS")
             },
             "end-crystal": {
-              "cramming-amount": t("TXT_CODE_7d28d924"),
+              "cramming-amount": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_END_CRYSTAL_CRAMMING_AMOUNT"),
               baseless: {
-                explode: t("TXT_CODE_d8d6dca8"),
-                "explosion-power": t("TXT_CODE_f2168ca9"),
-                "explosion-fire": t("TXT_CODE_377a62dc"),
-                "explosion-effect": t("TXT_CODE_7e0b9953")
+                explode: t("TXT_CODE_GAME_CONFIG_PURPUR_EXPLODE"),
+                "explosion-power": t("TXT_CODE_GAME_CONFIG_PURPUR_END_CRYSTAL_EXPLOSION_POWER"),
+                "explosion-fire": t("TXT_CODE_GAME_CONFIG_PURPUR_END_CRYSTAL_EXPLOSION_FIRE"),
+                "explosion-effect": t("TXT_CODE_GAME_CONFIG_PURPUR_EXPLOSION_EFFECT")
               },
               base: {
-                explode: t("TXT_CODE_d8d6dca8"),
-                "explosion-power": t("TXT_CODE_f2168ca9"),
-                "explosion-fire": t("TXT_CODE_377a62dc"),
-                "explosion-effect": t("TXT_CODE_7e0b9953")
+                explode: t("TXT_CODE_GAME_CONFIG_PURPUR_EXPLODE"),
+                "explosion-power": t("TXT_CODE_GAME_CONFIG_PURPUR_END_CRYSTAL_EXPLOSION_POWER"),
+                "explosion-fire": t("TXT_CODE_GAME_CONFIG_PURPUR_END_CRYSTAL_EXPLOSION_FIRE"),
+                "explosion-effect": t("TXT_CODE_GAME_CONFIG_PURPUR_EXPLOSION_EFFECT")
               }
             },
             farmland: {
-              "gets-moist-from-below": t("TXT_CODE_ab483b69"),
-              "use-alpha-farmland:": t("TXT_CODE_3a8fdbf1"),
-              "bypass-mob-griefing": t("TXT_CODE_e948602a"),
-              "only-players-trample": t("TXT_CODE_f309e464"),
-              "disable-trampling": t("TXT_CODE_ab90dc44"),
-              "trample-height": t("TXT_CODE_f287f6dd"),
-              "feather-fall-distance-affects-trampling": t("TXT_CODE_6526494a")
+              "gets-moist-from-below": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_GETS_MOIST_FROM_BELOW"),
+              "use-alpha-farmland:": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_USE_ALPHA_FARMLAND"),
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_BYPASS_MOB_GRIEFING"),
+              "only-players-trample": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_ONLY_PLAYERS_TRAMPLE"),
+              "disable-trampling": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_DISABLE_TRAMPLING"),
+              "trample-height": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FARMLAND_TRAMPLE_HEIGHT"),
+              "feather-fall-distance-affects-trampling": t("TXT_CODE_GAME_CONFIG_PURPUR_FEATHER_FALL_DISTANCE_AFFECTS_TRAMPLING")
             },
             flowering_azalea: {
-              "growth-chance": t("TXT_CODE_35d52619")
+              "growth-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FLOWERING_AZALEA_GROWTH_CHANCE")
             },
             furnace: {
-              "use-lava-from-underneath": t("TXT_CODE_72c8d0bf")
+              "use-lava-from-underneath": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_FURNACE_USE_LAVA_FROM_UNDERNEATH")
             },
             lava: {
-              "infinite-required-sources": t("TXT_CODE_22b5f37d"),
+              "infinite-required-sources": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_LAVA_INFINITE_REQUIRED_SOURCES"),
               speed: {
-                nether: t("TXT_CODE_15c747a6"),
-                "not-nether": t("TXT_CODE_15c747a6")
+                nether: t("TXT_CODE_COMMON_DELAY_IN_TICKS_BETWEEN_PHYSICS_FLOWING_LOWER_IS_FASTER"),
+                "not-nether": t("TXT_CODE_COMMON_DELAY_IN_TICKS_BETWEEN_PHYSICS_FLOWING_LOWER_IS_FASTER")
               }
             },
             "magma-block": {
-              "damage-when-sneaking": t("TXT_CODE_55c91a9b"),
-              "damage-with-frost-walker": t("TXT_CODE_5635dd6b")
+              "damage-when-sneaking": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_MAGMA_BLOCK_DAMAGE_WHEN_SNEAKING"),
+              "damage-with-frost-walker": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_MAGMA_BLOCK_DAMAGE_WITH_FROST_WALKER")
             },
             nether_wart: {
-              "affected-by-bonemeal": t("TXT_CODE_553c6ed2")
+              "affected-by-bonemeal": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_NETHER_WART_AFFECTED_BY_BONEMEAL")
             },
             observer: {
-              "disable-clock": t("TXT_CODE_5ddf3123")
+              "disable-clock": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_OBSERVER_DISABLE_CLOCK")
             },
             packed_ice: {
-              "allow-mob-spawns": t("TXT_CODE_e9da0615")
+              "allow-mob-spawns": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_PACKED_ICE_ALLOW_MOB_SPAWNS")
             },
             piston: {
-              "block-push-limit": t("TXT_CODE_d15dc89c")
+              "block-push-limit": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_PISTON_BLOCK_PUSH_LIMIT")
             },
             powder_snow: {
-              "bypass-mob-griefing": t("TXT_CODE_9dc4ee75")
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_POWDER_SNOW_BYPASS_MOB_GRIEFING")
             },
             "powered-rail": {
-              "activation-range": t("TXT_CODE_b3581555")
+              "activation-range": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_POWERED_RAIL_ACTIVATION_RANGE")
             },
             respawn_anchor: {
-              explode: t("TXT_CODE_99fab05d"),
-              "explosion-power": t("TXT_CODE_d1509da0"),
-              "explosion-fire": t("TXT_CODE_3be23278"),
-              "explosion-effect": t("TXT_CODE_7e0b9953")
+              explode: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_RESPAWN_ANCHOR_EXPLODE"),
+              "explosion-power": t("TXT_CODE_GAME_CONFIG_PURPUR_EXPLOSION_RADIUS"),
+              "explosion-fire": t("TXT_CODE_GAME_CONFIG_PURPUR_EXPLOSION_FIRE"),
+              "explosion-effect": t("TXT_CODE_GAME_CONFIG_PURPUR_EXPLOSION_EFFECT")
             },
             sculk_shrieker: {
-              "can-summon-default": t("TXT_CODE_99f8edf0")
+              "can-summon-default": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SCULK_SHRIEKER_CAN_SUMMON_DEFAULT")
             },
             shulker_box: {
-              "allow-oversized-stacks": t("TXT_CODE_a8a375ae")
+              "allow-oversized-stacks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SHULKER_BOX_ALLOW_OVERSIZED_STACKS")
             },
             sign: {
-              "allow-colors": t("TXT_CODE_479389a")
+              "allow-colors": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SIGN_ALLOW_COLORS")
             },
             slab: {
-              "break-individual-slabs-when-sneaking": t("TXT_CODE_2a370f1c")
+              "break-individual-slabs-when-sneaking": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SLAB_BREAK_INDIVIDUAL_SLABS_WHEN_SNEAKING")
             },
             spawner: {
-              "deactivate-by-redstone": t("TXT_CODE_a4efbd21"),
-              "fix-mc-238526": t("TXT_CODE_144caddf")
+              "deactivate-by-redstone": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPAWNER_DEACTIVATE_BY_REDSTONE"),
+              "fix-mc-238526": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPAWNER_FIX_MC_238526")
             },
             sponge: {
-              "absorbs-lava": t("TXT_CODE_b2e9a60"),
-              "absorbs-water-from-mud": t("TXT_CODE_d29be029"),
+              "absorbs-lava": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPONGE_ABSORBS_LAVA"),
+              "absorbs-water-from-mud": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPONGE_ABSORBS_WATER_FROM_MUD"),
               absorption: {
-                area: t("TXT_CODE_a3f8313f"),
-                radius: t("TXT_CODE_79ccdee0")
+                area: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPONGE_ABSORPTION_AREA"),
+                radius: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SPONGE_ABSORPTION_RADIUS")
               }
             },
             stonecutter: {
-              damage: t("TXT_CODE_e4895a21")
+              damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_STONECUTTER_DAMAGE")
             },
             sugar_cane: {
-              "affected-by-bonemeal": t("TXT_CODE_fe402f41")
+              "affected-by-bonemeal": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_SUGAR_CANE_AFFECTED_BY_BONEMEAL")
             },
             turtle_egg: {
-              "break-from-exp-orbs": t("TXT_CODE_a132c796"),
-              "break-from-items": t("TXT_CODE_b5253fae"),
-              "break-from-minecarts": t("TXT_CODE_a0a00fc0"),
-              "bypass-mob-griefing": t("TXT_CODE_3dee9250"),
-              "random-tick-crack-chance": t("TXT_CODE_849c3911"),
-              "feather-fall-distance-affects-trampling": t("TXT_CODE_6526494a")
+              "break-from-exp-orbs": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_TURTLE_EGG_BREAK_FROM_EXP_ORBS"),
+              "break-from-items": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_TURTLE_EGG_BREAK_FROM_ITEMS"),
+              "break-from-minecarts": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_TURTLE_EGG_BREAK_FROM_MINECARTS"),
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_TURTLE_EGG_BYPASS_MOB_GRIEFING"),
+              "random-tick-crack-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_TURTLE_EGG_RANDOM_TICK_CRACK_CHANCE"),
+              "feather-fall-distance-affects-trampling": t("TXT_CODE_GAME_CONFIG_PURPUR_FEATHER_FALL_DISTANCE_AFFECTS_TRAMPLING")
             },
             water: {
-              "infinite-required-sources": t("TXT_CODE_3247f016")
+              "infinite-required-sources": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_BLOCKS_WATER_INFINITE_REQUIRED_SOURCES")
             }
           },
           mobs: {
             allay: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_facd4d3c"),
-              "respect-nbt": t("TXT_CODE_5d488270"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ALLAY_RIDABLE_IN_WATER"),
+              "respect-nbt": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ALLAY_RESPECT_NBT"),
               attributes: {
-                max_health: t("TXT_CODE_ce4a3230"),
-                scale: t("TXT_CODE_2f87036a")
+                max_health: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MAX_HEALTH"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SIZE_SCALE")
               }
             },
             armadillo: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
-                max_health: t("TXT_CODE_ce4a3230"),
-                scale: t("TXT_CODE_2f87036a")
+                max_health: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MAX_HEALTH"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SIZE_SCALE")
               }
             },
             axolotl: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
-                max_health: t("TXT_CODE_ce4a3230"),
-                scale: t("TXT_CODE_2f87036a")
+                max_health: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MAX_HEALTH"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SIZE_SCALE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             bat: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "ridable-max-y": t("TXT_CODE_3dbf8890"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "ridable-max-y": t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE_MAX_Y"),
               attributes: {
-                follow_range: t("TXT_CODE_6f0a5984"),
-                knockback_resistance: t("TXT_CODE_dd0a8173"),
-                movement_speed: t("TXT_CODE_66b7b26e"),
-                flying_speed: t("TXT_CODE_91ebfa75"),
-                armor: t("TXT_CODE_49ab8e74"),
-                armor_toughness: t("TXT_CODE_37931fa9"),
-                attack_knockback: t("TXT_CODE_ed510830"),
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                follow_range: t("TXT_CODE_COMMON_FOLLOW_RANGE_ATTRIBUTE"),
+                knockback_resistance: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BAT_ATTRIBUTES_KNOCKBACK_RESISTANCE"),
+                movement_speed: t("TXT_CODE_COMMON_MOVEMENT_SPEED_ATTRIBUTE"),
+                flying_speed: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BAT_ATTRIBUTES_FLYING_SPEED"),
+                armor: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BAT_ATTRIBUTES_ARMOR"),
+                armor_toughness: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BAT_ATTRIBUTES_ARMOR_TOUGHNESS"),
+                attack_knockback: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BAT_ATTRIBUTES_ATTACK_KNOCKBACK"),
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             bee: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "ridable-max-y": t("TXT_CODE_3dbf8890"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
-              "can-work-at-night": t("TXT_CODE_67509ff2"),
-              "can-work-in-rain": t("TXT_CODE_ac0754f7"),
-              "dies-after-sting": t("TXT_CODE_9fd05002"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "ridable-max-y": t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE_MAX_Y"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "can-work-at-night": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BEE_CAN_WORK_AT_NIGHT"),
+              "can-work-in-rain": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BEE_CAN_WORK_IN_RAIN"),
+              "dies-after-sting": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_BEE_DIES_AFTER_STING"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             blaze: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "ridable-max-y": t("TXT_CODE_3dbf8890"),
-              "takes-damage-from-water": t("TXT_CODE_6cfeb776"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "ridable-max-y": t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE_MAX_Y"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_DISABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             bogged: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               }
             },
             camel: {
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
                 max_health: {
-                  min: t("TXT_CODE_c9f303dd"),
-                  max: t("TXT_CODE_e08dfec5")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_HEALTH_MIN"),
+                  max: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE")
                 },
                 jump_strength: {
-                  min: t("TXT_CODE_e1276b33"),
-                  max: t("TXT_CODE_87c20d47")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_JUMP_STRENGTH_MIN"),
+                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_JUMP_STRENGTH_MAX")
                 },
                 movement_speed: {
-                  min: t("TXT_CODE_fff00e2b"),
-                  max: t("TXT_CODE_a8fe5e68")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MOVEMENT_SPEED_MIN"),
+                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MOVEMENT_SPEED_MAX")
                 }
               }
             },
             cat: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "default-collar-color": t("TXT_CODE_dad61ed8"),
-              "spawn-delay": t("TXT_CODE_e14b32b"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "default-collar-color": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CAT_DEFAULT_COLLAR_COLOR"),
+              "spawn-delay": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CAT_SPAWN_DELAY"),
               "scan-range-for-other-cats": {
-                "swamp-hut": t("TXT_CODE_fbe67333"),
-                village: t("TXT_CODE_fbe67333")
+                "swamp-hut": t("TXT_CODE_COMMON_DO_NOT_SPAWN_A_CAT_IF_ANOTHER_CAT_IS_FOUND_WITHIN_THIS_RANGE_SET_TO_0"),
+                village: t("TXT_CODE_COMMON_DO_NOT_SPAWN_A_CAT_IF_ANOTHER_CAT_IS_FOUND_WITHIN_THIS_RANGE_SET_TO_0")
               },
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             cave_spider: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             chicken: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              retaliate: t("TXT_CODE_11cba563"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              retaliate: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CHICKEN_RETALIATE"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             cod: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             cow: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "feed-mushrooms-for-mooshroom": t("TXT_CODE_1c6e2cd"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "feed-mushrooms-for-mooshroom": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_COW_FEED_MUSHROOMS_FOR_MOOSHROOM"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               "naturally-aggressive-to-players": {
-                chance: t("TXT_CODE_96c02044"),
-                damage: t("TXT_CODE_7bcf35c1")
+                chance: t("TXT_CODE_COMMON_PERCENT_CHANCE_0_0_1_0_THIS_MOB_WILL_SPAWN_AGGRESSIVE_TOWARDS_PLAYERS"),
+                damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_COW_NATURALLY_AGGRESSIVE_TO_PLAYERS_DAMAGE")
               },
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             creaking: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               }
             },
             creeper: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "encircle-target": t("TXT_CODE_deb2d85d"),
-              "allow-griefing": t("TXT_CODE_9535104c"),
-              "bypass-mob-griefing": t("TXT_CODE_57c09778"),
-              "naturally-charged-chance": t("TXT_CODE_6b1984c0"),
-              "explode-when-killed": t("TXT_CODE_95b08ec3"),
-              "health-impacts-explosion": t("TXT_CODE_f1ed28e6"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "encircle-target": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_ENCIRCLE_TARGET"),
+              "allow-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_ALLOW_GRIEFING"),
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_BYPASS_MOB_GRIEFING"),
+              "naturally-charged-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_NATURALLY_CHARGED_CHANCE"),
+              "explode-when-killed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_EXPLODE_WHEN_KILLED"),
+              "health-impacts-explosion": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_CREEPER_HEALTH_IMPACTS_EXPLOSION"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "head-visibility-percent": t("TXT_CODE_952c2697"),
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "head-visibility-percent": t("TXT_CODE_GAME_CONFIG_PURPUR_HEAD_VISIBILITY_PERCENT"),
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             dolphin: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "naturally-aggressive-to-players-chance": t("TXT_CODE_96c02044"),
-              "disable-treasure-searching": t("TXT_CODE_846683e4"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "naturally-aggressive-to-players-chance": t("TXT_CODE_COMMON_PERCENT_CHANCE_0_0_1_0_THIS_MOB_WILL_SPAWN_AGGRESSIVE_TOWARDS_PLAYERS"),
+              "disable-treasure-searching": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_DOLPHIN_DISABLE_TREASURE_SEARCHING"),
               spit: {
-                cooldown: t("TXT_CODE_154cd636"),
-                speed: t("TXT_CODE_7a464bb4"),
-                damage: t("TXT_CODE_342d5959")
+                cooldown: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_DOLPHIN_SPIT_COOLDOWN"),
+                speed: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_DOLPHIN_SPIT_SPEED"),
+                damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_DOLPHIN_SPIT_DAMAGE")
               },
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             donkey: {
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
                 max_health: {
-                  min: t("TXT_CODE_c9f303dd"),
-                  max: t("TXT_CODE_e08dfec5")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_HEALTH_MIN"),
+                  max: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE")
                 },
                 jump_strength: {
-                  min: t("TXT_CODE_e1276b33"),
-                  max: t("TXT_CODE_87c20d47")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_JUMP_STRENGTH_MIN"),
+                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_JUMP_STRENGTH_MAX")
                 },
                 movement_speed: {
-                  min: t("TXT_CODE_fff00e2b"),
-                  max: t("TXT_CODE_a8fe5e68")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MOVEMENT_SPEED_MIN"),
+                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MOVEMENT_SPEED_MAX")
                 }
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             drowned: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "can-break-doors": t("TXT_CODE_eb5fe3b6"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "can-break-doors": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_DROWNED_CAN_BREAK_DOORS"),
               jockey: {
-                "only-babies": t("TXT_CODE_eefcc58b"),
-                chance: t("TXT_CODE_e29be84c"),
-                "try-existing-chickens": t("TXT_CODE_9e5eb2a")
+                "only-babies": t("TXT_CODE_GAME_CONFIG_PURPUR_ONLY_BABIES"),
+                chance: t("TXT_CODE_GAME_CONFIG_PURPUR_CHANCE"),
+                "try-existing-chickens": t("TXT_CODE_GAME_CONFIG_PURPUR_TRY_EXISTING_CHICKENS")
               },
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3"),
-                spawn_reinforcements: t("TXT_CODE_b18c34fd")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE"),
+                spawn_reinforcements: t("TXT_CODE_GAME_CONFIG_PURPUR_SPAWN_REINFORCEMENTS")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             elder_guardian: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             ender_dragon: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "ridable-max-y": t("TXT_CODE_3dbf8890"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "always-drop-full-exp": t("TXT_CODE_77816ef3"),
-              "bypass-mob-griefing": t("TXT_CODE_a7813c72"),
-              "can-ride-vehicles": t("TXT_CODE_1b858414"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "ridable-max-y": t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE_MAX_Y"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "always-drop-full-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDER_DRAGON_ALWAYS_DROP_FULL_EXP"),
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDER_DRAGON_BYPASS_MOB_GRIEFING"),
+              "can-ride-vehicles": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDER_DRAGON_CAN_RIDE_VEHICLES"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               }
             },
             enderman: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "allow-griefing": t("TXT_CODE_3816e0d9"),
-              "can-despawn-with-held-block": t("TXT_CODE_4b971ef4"),
-              "ignore-projectiles": t("TXT_CODE_3d07fa74"),
-              "bypass-mob-griefing": t("TXT_CODE_662ae77"),
-              "takes-damage-from-water": t("TXT_CODE_6cfeb776"),
-              "aggressive-towards-endermites": t("TXT_CODE_f8501690"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "allow-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_ALLOW_GRIEFING"),
+              "can-despawn-with-held-block": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_CAN_DESPAWN_WITH_HELD_BLOCK"),
+              "ignore-projectiles": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_IGNORE_PROJECTILES"),
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_BYPASS_MOB_GRIEFING"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_DISABLED"),
+              "aggressive-towards-endermites": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_AGGRESSIVE_TOWARDS_ENDERMITES"),
               "aggressive-towards-endermites-only-spawned-by-player-thrown-ender-pearls":
-                t("TXT_CODE_7bdd0634"),
-              "ignore-players-wearing-dragon-head": t("TXT_CODE_193605ab"),
-              "disable-player-stare-aggression": t("TXT_CODE_fcb08d61"),
+                t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_AGGRESSIVE_TOWARDS_ENDERMITES_ONLY_SPAWNED_BY_PLAYER_THROWN_ENDER_PEARLS"),
+              "ignore-players-wearing-dragon-head": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_IGNORE_PLAYERS_WEARING_DRAGON_HEAD"),
+              "disable-player-stare-aggression": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ENDERMAN_DISABLE_PLAYER_STARE_AGGRESSION"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             endermite: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             evoker: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "bypass-mob-griefing": t("TXT_CODE_88f7082"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_EVOKER_BYPASS_MOB_GRIEFING"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             fox: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "tulip-change-type": t("TXT_CODE_f728ba8"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
-              "bypass-mob-griefing": t("TXT_CODE_1471ac98"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "tulip-change-type": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_FOX_TULIP_CHANGE_TYPE"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_FOX_BYPASS_MOB_GRIEFING"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             frog: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "ridable-jump-height": t("TXT_CODE_c30a5f37"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843")
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "ridable-jump-height": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_FROG_RIDABLE_JUMP_HEIGHT"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN")
             },
             ghast: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "ridable-max-y": t("TXT_CODE_3dbf8890"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "ridable-max-y": t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE_MAX_Y"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             giant: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "step-height": t("TXT_CODE_66968dc0"),
-              "jump-height": t("TXT_CODE_a8f82885"),
-              "movement-speed": t("TXT_CODE_66b7b26e"),
-              "attack-damage": t("TXT_CODE_7f52e10d"),
-              "have-ai": t("TXT_CODE_e35de72b"),
-              "have-hostile-ai": t("TXT_CODE_7d81030f"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "step-height": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_GIANT_STEP_HEIGHT"),
+              "jump-height": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_GIANT_JUMP_HEIGHT"),
+              "movement-speed": t("TXT_CODE_COMMON_MOVEMENT_SPEED_ATTRIBUTE"),
+              "attack-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_GIANT_ATTACK_DAMAGE"),
+              "have-ai": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_GIANT_HAVE_AI"),
+              "have-hostile-ai": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_GIANT_HAVE_HOSTILE_AI"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             glow_squid: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "can-fly": t("TXT_CODE_e95f3a9f"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "can-fly": t("TXT_CODE_GAME_CONFIG_PURPUR_CAN_FLY"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             goat: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             guardian: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             hoglin: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             horse: {
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
                 max_health: {
-                  min: t("TXT_CODE_c9f303dd"),
-                  max: t("TXT_CODE_e08dfec5")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_HEALTH_MIN"),
+                  max: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE")
                 },
                 jump_strength: {
-                  min: t("TXT_CODE_e1276b33"),
-                  max: t("TXT_CODE_87c20d47")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_JUMP_STRENGTH_MIN"),
+                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_JUMP_STRENGTH_MAX")
                 },
                 movement_speed: {
-                  min: t("TXT_CODE_fff00e2b"),
-                  max: t("TXT_CODE_a8fe5e68")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MOVEMENT_SPEED_MIN"),
+                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MOVEMENT_SPEED_MAX")
                 }
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             husk: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               jokey: {
-                "only-babies": t("TXT_CODE_eefcc58b"),
-                chance: t("TXT_CODE_e29be84c"),
-                "try-existing-chickens": t("TXT_CODE_9e5eb2a")
+                "only-babies": t("TXT_CODE_GAME_CONFIG_PURPUR_ONLY_BABIES"),
+                chance: t("TXT_CODE_GAME_CONFIG_PURPUR_CHANCE"),
+                "try-existing-chickens": t("TXT_CODE_GAME_CONFIG_PURPUR_TRY_EXISTING_CHICKENS")
               },
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3"),
-                spawn_reinforcements: t("TXT_CODE_b18c34fd")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE"),
+                spawn_reinforcements: t("TXT_CODE_GAME_CONFIG_PURPUR_SPAWN_REINFORCEMENTS")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             illusioner: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_fc5c0e2e"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "naturally-spawn": t("TXT_CODE_ab4504ca"),
-              "movement-speed": t("TXT_CODE_66b7b26e"),
-              "follow-range": t("TXT_CODE_6f0a5984"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_RIDABLE_IN_WATER"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "naturally-spawn": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ILLUSIONER_NATURALLY_SPAWN"),
+              "movement-speed": t("TXT_CODE_COMMON_MOVEMENT_SPEED_ATTRIBUTE"),
+              "follow-range": t("TXT_CODE_COMMON_FOLLOW_RANGE_ATTRIBUTE"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             iron_golem: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "healing-calms-anger": t("TXT_CODE_de1ece3c"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "can-spawn-in-air": t("TXT_CODE_8cba8d40"),
-              "can-swim": t("TXT_CODE_860e2ce"),
-              "poppy-calms-anger": t("TXT_CODE_8deb2054"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "healing-calms-anger": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_IRON_GOLEM_HEALING_CALMS_ANGER"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "can-spawn-in-air": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_IRON_GOLEM_CAN_SPAWN_IN_AIR"),
+              "can-swim": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_IRON_GOLEM_CAN_SWIM"),
+              "poppy-calms-anger": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_IRON_GOLEM_POPPY_CALMS_ANGER"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             llama: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
-              "join-caravans": t("TXT_CODE_ccc0fec7"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "join-caravans": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_LLAMA_JOIN_CARAVANS"),
               attributes: {
                 max_health: {
-                  min: t("TXT_CODE_c9f303dd"),
-                  max: t("TXT_CODE_e08dfec5")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_HEALTH_MIN"),
+                  max: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE")
                 },
                 jump_strength: {
-                  min: t("TXT_CODE_e1276b33"),
-                  max: t("TXT_CODE_87c20d47")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_JUMP_STRENGTH_MIN"),
+                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_JUMP_STRENGTH_MAX")
                 },
                 movement_speed: {
-                  min: t("TXT_CODE_fff00e2b"),
-                  max: t("TXT_CODE_a8fe5e68")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MOVEMENT_SPEED_MIN"),
+                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MOVEMENT_SPEED_MAX")
                 }
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             magma_cube: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_20bf7fdd"),
-                attack_damage: t("TXT_CODE_a1833a27")
+                max_health: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MAX_HEALTH_EQUATION"),
+                attack_damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_MAGMA_CUBE_ATTRIBUTES_ATTACK_DAMAGE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             mooshroom: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             mule: {
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
                 max_health: {
-                  min: t("TXT_CODE_c9f303dd"),
-                  max: t("TXT_CODE_e08dfec5")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_HEALTH_MIN"),
+                  max: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE")
                 },
                 jump_strength: {
-                  min: t("TXT_CODE_e1276b33"),
-                  max: t("TXT_CODE_87c20d47")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_JUMP_STRENGTH_MIN"),
+                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_JUMP_STRENGTH_MAX")
                 },
                 movement_speed: {
-                  min: t("TXT_CODE_fff00e2b"),
-                  max: t("TXT_CODE_a8fe5e68")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MOVEMENT_SPEED_MIN"),
+                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MOVEMENT_SPEED_MAX")
                 }
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             ocelot: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "spawn-below-sea-level": t("TXT_CODE_f8bb9f10"),
-              "breeeding-delay-ticks": t("TXT_CODE_f0127843"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "spawn-below-sea-level": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_OCELOT_SPAWN_BELOW_SEA_LEVEL"),
+              "breeeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             panda: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             parrot: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "ridable-max-y": t("TXT_CODE_3dbf8890"),
-              "can-breed": t("TXT_CODE_a0a99beb"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "ridable-max-y": t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE_MAX_Y"),
+              "can-breed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PARROT_CAN_BREED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             phantom: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "ridable-max-y": t("TXT_CODE_3dbf8890"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "attacked-by-crystal-range": t("TXT_CODE_ab9f8bfb"),
-              "attacked-by-crystal-damage": t("TXT_CODE_772c4961"),
-              "orbit-crystal-radius": t("TXT_CODE_cc446b0c"),
-              "burn-in-light": t("TXT_CODE_43eedf83"),
-              "burn-in-daylight": t("TXT_CODE_ef1f63d2"),
-              "flames-on-swoop": t("TXT_CODE_3e4e61b3"),
-              "ignore-players-with-torch": t("TXT_CODE_46410888"),
-              "allow-griefing": t("TXT_CODE_c536b7c7"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "ridable-max-y": t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE_MAX_Y"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "attacked-by-crystal-range": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_ATTACKED_BY_CRYSTAL_RANGE"),
+              "attacked-by-crystal-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_ATTACKED_BY_CRYSTAL_DAMAGE"),
+              "orbit-crystal-radius": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_ORBIT_CRYSTAL_RADIUS"),
+              "burn-in-light": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_BURN_IN_LIGHT"),
+              "burn-in-daylight": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_BURN_IN_DAYLIGHT"),
+              "flames-on-swoop": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_FLAMES_ON_SWOOP"),
+              "ignore-players-with-torch": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_IGNORE_PLAYERS_WITH_TORCH"),
+              "allow-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_ALLOW_GRIEFING"),
               flames: {
-                damage: t("TXT_CODE_c91c29cd"),
-                "fire-time": t("TXT_CODE_cdbd12d2")
+                damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_FLAMES_DAMAGE"),
+                "fire-time": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_FLAMES_FIRE_TIME")
               },
               size: {
-                min: t("TXT_CODE_7b477c3"),
-                max: t("TXT_CODE_e9839f54")
+                min: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SIZE_MIN"),
+                max: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SIZE_MAX")
               },
               spawn: {
-                "min-sky-darkness": t("TXT_CODE_3a51d817"),
-                "only-above-sea-level": t("TXT_CODE_67b57086"),
-                "only-with-visible-sky": t("TXT_CODE_e5d3b1a"),
-                "local-difficulty-chance": t("TXT_CODE_afde4995"),
+                "min-sky-darkness": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_MIN_SKY_DARKNESS"),
+                "only-above-sea-level": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_ONLY_ABOVE_SEA_LEVEL"),
+                "only-with-visible-sky": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_ONLY_WITH_VISIBLE_SKY"),
+                "local-difficulty-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_LOCAL_DIFFICULTY_CHANCE"),
                 "per-attempt": {
-                  min: t("TXT_CODE_dfaa82f3"),
-                  max: t("TXT_CODE_870b392e")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_PER_ATTEMPT_MIN"),
+                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_SPAWN_PER_ATTEMPT_MAX")
                 }
               },
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3"),
-                attack_damage: t("TXT_CODE_b0794aeb")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE"),
+                attack_damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_ATTRIBUTES_ATTACK_DAMAGE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             pig: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "give-saddle-back": t("TXT_CODE_806441b5"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "give-saddle-back": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PIG_GIVE_SADDLE_BACK"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             piglin: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "bypass-mob-griefing": t("TXT_CODE_20e4ab72"),
-              "portal-spawn-modifier": t("TXT_CODE_5020d183"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PIGLIN_BYPASS_MOB_GRIEFING"),
+              "portal-spawn-modifier": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PIGLIN_PORTAL_SPAWN_MODIFIER"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "head-visibility-percent": t("TXT_CODE_952c2697"),
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "head-visibility-percent": t("TXT_CODE_GAME_CONFIG_PURPUR_HEAD_VISIBILITY_PERCENT"),
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             piglin_brute: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             pillager: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "bypass-mob-griefing": t("TXT_CODE_aae43e39"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PILLAGER_BYPASS_MOB_GRIEFING"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             polar_bear: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "breedable-item": t("TXT_CODE_c7952636"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "breedable-item": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_POLAR_BEAR_BREEDABLE_ITEM"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_22c68314")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_POLAR_BEAR_ALWAYS_DROP_EXP")
             },
             pufferfish: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             rabbit: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "spawn-killer-rabbit-chance": t("TXT_CODE_91a8d35c"),
-              "spawn-toast-chance": t("TXT_CODE_cff4286"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
-              "bypass-mob-griefing": t("TXT_CODE_b5e19c1"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "spawn-killer-rabbit-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RABBIT_SPAWN_KILLER_RABBIT_CHANCE"),
+              "spawn-toast-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RABBIT_SPAWN_TOAST_CHANCE"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RABBIT_BYPASS_MOB_GRIEFING"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             ravager: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "bypass-mob-griefing": t("TXT_CODE_e2be1e70"),
-              "griefable-blocks": t("TXT_CODE_c840ab37"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RAVAGER_BYPASS_MOB_GRIEFING"),
+              "griefable-blocks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RAVAGER_GRIEFABLE_BLOCKS"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8"),
-              "avoid-rabbits": t("TXT_CODE_65e33205")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP"),
+              "avoid-rabbits": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_RAVAGER_AVOID_RABBITS")
             },
             salmon: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             sheep: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
-              "bypass-mob-griefing": t("TXT_CODE_95c65dc1"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHEEP_BYPASS_MOB_GRIEFING"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             shulker: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "change-color-with-dye": t("TXT_CODE_1f62022c"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "change-color-with-dye": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_CHANGE_COLOR_WITH_DYE"),
               "spawn-from-bullet": {
-                "base-cahnce": t("TXT_CODE_d0e78c58"),
-                "require-open-lid": t("TXT_CODE_58aa8491"),
-                "nearby-range": t("TXT_CODE_8259b3db"),
-                "nearby-equation": t("TXT_CODE_196d6257"),
-                "random-color": t("TXT_CODE_c51b86ff")
+                "base-cahnce": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_SPAWN_FROM_BULLET_BASE_CAHNCE"),
+                "require-open-lid": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_SPAWN_FROM_BULLET_REQUIRE_OPEN_LID"),
+                "nearby-range": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_SPAWN_FROM_BULLET_NEARBY_RANGE"),
+                "nearby-equation": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_SPAWN_FROM_BULLET_NEARBY_EQUATION"),
+                "random-color": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SHULKER_SPAWN_FROM_BULLET_RANDOM_COLOR")
               },
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             silverfish: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "bypass-mob-griefing": t("TXT_CODE_1c38439b"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SILVERFISH_BYPASS_MOB_GRIEFING"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3"),
-                movement_speed: t("TXT_CODE_66b7b26e"),
-                attack_damage: t("TXT_CODE_73c7b4b")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE"),
+                movement_speed: t("TXT_CODE_COMMON_MOVEMENT_SPEED_ATTRIBUTE"),
+                attack_damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SILVERFISH_ATTRIBUTES_ATTACK_DAMAGE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             skeleton: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "head-visibility-percent": t("TXT_CODE_952c2697"),
-              "always-drop-exp": t("TXT_CODE_c535fb8"),
-              "feed-wither-roses": t("TXT_CODE_9e33445e"),
-              "bow-accuracy": t("TXT_CODE_a3991784")
+              "head-visibility-percent": t("TXT_CODE_GAME_CONFIG_PURPUR_HEAD_VISIBILITY_PERCENT"),
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP"),
+              "feed-wither-roses": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SKELETON_FEED_WITHER_ROSES"),
+              "bow-accuracy": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SKELETON_BOW_ACCURACY")
             },
             skeleton_horse: {
-              ridable: t("TXT_CODE_6c94f562"),
-              "can-swim": t("TXT_CODE_8aa7f7a0"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              "can-swim": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SKELETON_HORSE_CAN_SWIM"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
                 max_health: {
-                  min: t("TXT_CODE_c9f303dd"),
-                  max: t("TXT_CODE_e08dfec5")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_HEALTH_MIN"),
+                  max: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE")
                 },
                 jump_strength: {
-                  min: t("TXT_CODE_e1276b33"),
-                  max: t("TXT_CODE_87c20d47")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_JUMP_STRENGTH_MIN"),
+                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_JUMP_STRENGTH_MAX")
                 },
                 movement_speed: {
-                  min: t("TXT_CODE_fff00e2b"),
-                  max: t("TXT_CODE_a8fe5e68")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MOVEMENT_SPEED_MIN"),
+                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MOVEMENT_SPEED_MAX")
                 }
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             slime: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
               attributes: {
-                max_health: t("TXT_CODE_20bf7fdd"),
-                attack_damage: t("TXT_CODE_8cc8e9e2")
+                max_health: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MAX_HEALTH_EQUATION"),
+                attack_damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SLIME_ATTRIBUTES_ATTACK_DAMAGE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             sniffer: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "breeeding-delay-ticks": t("TXT_CODE_f0127843"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "breeeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE")
               }
             },
             snow_golem: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "leave-trail-when-ridden": t("TXT_CODE_2266908"),
-              "pumpkin-can-be-added-back": t("TXT_CODE_d9a5c0c2"),
-              "min-shoot-interval-ticks": t("TXT_CODE_b9af1460"),
-              "max-shoot-interval-ticks": t("TXT_CODE_3549ea82"),
-              "snow-ball-modifier": t("TXT_CODE_37658aab"),
-              "attack-distance": t("TXT_CODE_1732276b"),
-              "bypass-mob-griefing": t("TXT_CODE_238c4c01"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "leave-trail-when-ridden": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_LEAVE_TRAIL_WHEN_RIDDEN"),
+              "pumpkin-can-be-added-back": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_PUMPKIN_CAN_BE_ADDED_BACK"),
+              "min-shoot-interval-ticks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_MIN_SHOOT_INTERVAL_TICKS"),
+              "max-shoot-interval-ticks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_MAX_SHOOT_INTERVAL_TICKS"),
+              "snow-ball-modifier": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_SNOW_BALL_MODIFIER"),
+              "attack-distance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_ATTACK_DISTANCE"),
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SNOW_GOLEM_BYPASS_MOB_GRIEFING"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             spider: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             squid: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "immune-to-EAR": t("TXT_CODE_24c2172c"),
-              "water-offset-check": t("TXT_CODE_56197d09"),
-              "can-fly": t("TXT_CODE_e95f3a9f"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "immune-to-EAR": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SQUID_IMMUNE_TO_EAR"),
+              "water-offset-check": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_SQUID_WATER_OFFSET_CHECK"),
+              "can-fly": t("TXT_CODE_GAME_CONFIG_PURPUR_CAN_FLY"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             stray: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             strider: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "give-saddle-back": t("TXT_CODE_7702d818"),
-              "breeeding-delay-ticks": t("TXT_CODE_f0127843"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "give-saddle-back": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_STRIDER_GIVE_SADDLE_BACK"),
+              "breeeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             tadpole: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08")
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT")
             },
             trader_llama: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_71f715e2"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_TRADER_LLAMA_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
                 max_health: {
-                  min: t("TXT_CODE_c9f303dd"),
-                  max: t("TXT_CODE_e08dfec5")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_HEALTH_MIN"),
+                  max: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE")
                 },
                 jump_strength: {
-                  min: t("TXT_CODE_e1276b33"),
-                  max: t("TXT_CODE_87c20d47")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_JUMP_STRENGTH_MIN"),
+                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_JUMP_STRENGTH_MAX")
                 },
                 movement_speed: {
-                  min: t("TXT_CODE_fff00e2b"),
-                  max: t("TXT_CODE_a8fe5e68")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MOVEMENT_SPEED_MIN"),
+                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MOVEMENT_SPEED_MAX")
                 }
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             tropical_fish: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             turtle: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             vex: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "ridable-max-y": t("TXT_CODE_3dbf8890"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "ridable-max-y": t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE_MAX_Y"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             villager: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "bypass-mob-griefing": t("TXT_CODE_d572c313"),
-              "can-be-leashed": t("TXT_CODE_9d8e6107"),
-              "follow-emerald-blocks": t("TXT_CODE_4745436a"),
-              "allow-trading": t("TXT_CODE_e612a8a2"),
-              "display-trade-item": t("TXT_CODE_34100777"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_BYPASS_MOB_GRIEFING"),
+              "can-be-leashed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_CAN_BE_LEASHED"),
+              "follow-emerald-blocks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_FOLLOW_EMERALD_BLOCKS"),
+              "allow-trading": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_ALLOW_TRADING"),
+              "display-trade-item": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_DISPLAY_TRADE_ITEM"),
               lobotomize: {
-                enabled: t("TXT_CODE_e679197e"),
-                "check-interval": t("TXT_CODE_34999278"),
-                "wait-until-trade-locked": t("TXT_CODE_adcce2c7")
+                enabled: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_LOBOTOMIZE_ENABLED"),
+                "check-interval": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_LOBOTOMIZE_CHECK_INTERVAL"),
+                "wait-until-trade-locked": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_LOBOTOMIZE_WAIT_UNTIL_TRADE_LOCKED")
               },
-              "minimum-demand": t("TXT_CODE_2f09a53c"),
-              "can-breed": t("TXT_CODE_e812e21d"),
-              "breeding-delay-ticks": t("TXT_CODE_f0127843"),
-              "clerics-farm-warts": t("TXT_CODE_743c6bf3"),
-              "cleric-wart-farmers-thow-warts-at-villagers": t("TXT_CODE_247f6613"),
+              "minimum-demand": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_MINIMUM_DEMAND"),
+              "can-breed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_CAN_BREED"),
+              "breeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
+              "clerics-farm-warts": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_CLERICS_FARM_WARTS"),
+              "cleric-wart-farmers-thow-warts-at-villagers": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_CLERIC_WART_FARMERS_THOW_WARTS_AT_VILLAGERS"),
               "spawn-iron-golem": {
-                radius: t("TXT_CODE_2cfbaa90"),
-                limit: t("TXT_CODE_ed38c8ae")
+                radius: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_SPAWN_IRON_GOLEM_RADIUS"),
+                limit: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_SPAWN_IRON_GOLEM_LIMIT")
               },
               "search-radius": {
-                "aquire-poi": t("TXT_CODE_5bba3e38"),
-                "nearest-bed-sensor": t("TXT_CODE_6ac61ca1")
+                "aquire-poi": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_SEARCH_RADIUS_AQUIRE_POI"),
+                "nearest-bed-sensor": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_SEARCH_RADIUS_NEAREST_BED_SENSOR")
               },
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_f6dacecc")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VILLAGER_ALWAYS_DROP_EXP")
             },
             vindicator: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               johnny: {
-                "spawn-chance": t("TXT_CODE_877ef60c")
+                "spawn-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_VINDICATOR_JOHNNY_SPAWN_CHANCE")
               },
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             wandering_trader: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "can-be-leashed": t("TXT_CODE_347ff81c"),
-              "allow-trading": t("TXT_CODE_c0fcee47"),
-              "follow-emerald-blocks": t("TXT_CODE_7d25f076"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "can-be-leashed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WANDERING_TRADER_CAN_BE_LEASHED"),
+              "allow-trading": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WANDERING_TRADER_ALLOW_TRADING"),
+              "follow-emerald-blocks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WANDERING_TRADER_FOLLOW_EMERALD_BLOCKS"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             warden: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08")
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT")
             },
             witch: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             wither: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "ridable-max-y": t("TXT_CODE_3dbf8890"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "can-ride-vehicles": t("TXT_CODE_b0e39fd"),
-              "play-spawn-sound": t("TXT_CODE_6c945cf8"),
-              "explosion-radius": t("TXT_CODE_7f5ee413"),
-              "health-regen-amount": t("TXT_CODE_d3d88894"),
-              "health-regen-delay": t("TXT_CODE_233dd4f8"),
-              "bypass-mob-griefing": t("TXT_CODE_f6468fe8"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "ridable-max-y": t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE_MAX_Y"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "can-ride-vehicles": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_CAN_RIDE_VEHICLES"),
+              "play-spawn-sound": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_PLAY_SPAWN_SOUND"),
+              "explosion-radius": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_EXPLOSION_RADIUS"),
+              "health-regen-amount": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_HEALTH_REGEN_AMOUNT"),
+              "health-regen-delay": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_HEALTH_REGEN_DELAY"),
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WITHER_BYPASS_MOB_GRIEFING"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             wither_skeleton: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             wolf: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "milk-cures-rabid-wolves": t("TXT_CODE_7818efd1"),
-              "spawn-rabid-chancs": t("TXT_CODE_1c84154f"),
-              "default-collar-color": t("TXT_CODE_feaa97d4"),
-              "breeeding-delay-ticks": t("TXT_CODE_f0127843"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "milk-cures-rabid-wolves": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WOLF_MILK_CURES_RABID_WOLVES"),
+              "spawn-rabid-chancs": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WOLF_SPAWN_RABID_CHANCS"),
+              "default-collar-color": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_WOLF_DEFAULT_COLLAR_COLOR"),
+              "breeeding-delay-ticks": t("TXT_CODE_COMMON_THE_AMOUNT_OF_TICKS_TO_WAIT_BEFORE_BEING_ABLE_TO_BREED_AGAIN"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             zoglin: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             zombie: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
               jockey: {
-                "only-babies": t("TXT_CODE_eefcc58b"),
-                chance: t("TXT_CODE_e29be84c"),
-                "try-existing-chickens": t("TXT_CODE_9e5eb2a")
+                "only-babies": t("TXT_CODE_GAME_CONFIG_PURPUR_ONLY_BABIES"),
+                chance: t("TXT_CODE_GAME_CONFIG_PURPUR_CHANCE"),
+                "try-existing-chickens": t("TXT_CODE_GAME_CONFIG_PURPUR_TRY_EXISTING_CHICKENS")
               },
-              "aggressive-towards-villager-when-lagging": t("TXT_CODE_e95ee23f"),
-              "bypass-mob-griefing": t("TXT_CODE_c709edac"),
+              "aggressive-towards-villager-when-lagging": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_AGGRESSIVE_TOWARDS_VILLAGER_WHEN_LAGGING"),
+              "bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_BYPASS_MOB_GRIEFING"),
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3"),
-                spawn_reinforcements: t("TXT_CODE_b18c34fd")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE"),
+                spawn_reinforcements: t("TXT_CODE_GAME_CONFIG_PURPUR_SPAWN_REINFORCEMENTS")
               },
-              "head-visibility-percent": t("TXT_CODE_952c2697"),
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "head-visibility-percent": t("TXT_CODE_GAME_CONFIG_PURPUR_HEAD_VISIBILITY_PERCENT"),
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             zombie_horse: {
-              ridable: t("TXT_CODE_6c94f562"),
-              "can-swim": t("TXT_CODE_a1cc8b68"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "spawn-chance": t("TXT_CODE_4d5432bd"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              "can-swim": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_HORSE_CAN_SWIM"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "spawn-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_HORSE_SPAWN_CHANCE"),
               attributes: {
                 max_health: {
-                  min: t("TXT_CODE_c9f303dd"),
-                  max: t("TXT_CODE_e08dfec5")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_HEALTH_MIN"),
+                  max: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE")
                 },
                 jump_strength: {
-                  min: t("TXT_CODE_e1276b33"),
-                  max: t("TXT_CODE_87c20d47")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_JUMP_STRENGTH_MIN"),
+                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_JUMP_STRENGTH_MAX")
                 },
                 movement_speed: {
-                  min: t("TXT_CODE_fff00e2b"),
-                  max: t("TXT_CODE_a8fe5e68")
+                  min: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MOVEMENT_SPEED_MIN"),
+                  max: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_MOVEMENT_SPEED_MAX")
                 }
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             zombie_villager: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              cure: t("TXT_CODE_83d5cbbe"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              cure: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_VILLAGER_CURE"),
               curing_time: {
-                min: t("TXT_CODE_382ec256"),
-                max: t("TXT_CODE_1a77954")
+                min: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_VILLAGER_CURING_TIME_MIN"),
+                max: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIE_VILLAGER_CURING_TIME_MAX")
               },
               jockey: {
-                "only-babies": t("TXT_CODE_eefcc58b"),
-                chance: t("TXT_CODE_e29be84c"),
-                "try-existing-chickens": t("TXT_CODE_9e5eb2a")
+                "only-babies": t("TXT_CODE_GAME_CONFIG_PURPUR_ONLY_BABIES"),
+                chance: t("TXT_CODE_GAME_CONFIG_PURPUR_CHANCE"),
+                "try-existing-chickens": t("TXT_CODE_GAME_CONFIG_PURPUR_TRY_EXISTING_CHICKENS")
               },
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3"),
-                spawn_reinforcements: t("TXT_CODE_b18c34fd")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE"),
+                spawn_reinforcements: t("TXT_CODE_GAME_CONFIG_PURPUR_SPAWN_REINFORCEMENTS")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             },
             zombified_piglin: {
-              ridable: t("TXT_CODE_6c94f562"),
-              controllable: t("TXT_CODE_4f64db47"),
-              "ridable-in-water": t("TXT_CODE_93610b08"),
-              "takes-damage-from-water": t("TXT_CODE_61700077"),
-              "count-as-player-kill-when-angry": t("TXT_CODE_31edf78"),
+              ridable: t("TXT_CODE_GAME_CONFIG_PURPUR_RIDABLE"),
+              controllable: t("TXT_CODE_GAME_CONFIG_PURPUR_CONTROLLABLE"),
+              "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_RIDING_HINT"),
+              "takes-damage-from-water": t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_WATER_DAMAGE_ENABLED"),
+              "count-as-player-kill-when-angry": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_ZOMBIFIED_PIGLIN_COUNT_AS_PLAYER_KILL_WHEN_ANGRY"),
               jockey: {
-                "only-babies": t("TXT_CODE_eefcc58b"),
-                chance: t("TXT_CODE_e29be84c"),
-                "try-existing-chickens": t("TXT_CODE_9e5eb2a")
+                "only-babies": t("TXT_CODE_GAME_CONFIG_PURPUR_ONLY_BABIES"),
+                chance: t("TXT_CODE_GAME_CONFIG_PURPUR_CHANCE"),
+                "try-existing-chickens": t("TXT_CODE_GAME_CONFIG_PURPUR_TRY_EXISTING_CHICKENS")
               },
               attributes: {
-                max_health: t("TXT_CODE_e08dfec5"),
-                scale: t("TXT_CODE_341bc7f3"),
-                spawn_reinforcements: t("TXT_CODE_b18c34fd")
+                max_health: t("TXT_CODE_COMMON_MAXIMUM_HEALTH_ATTRIBUTE"),
+                scale: t("TXT_CODE_GAME_CONFIG_PURPUR_MOB_SCALE_ATTRIBUTE"),
+                spawn_reinforcements: t("TXT_CODE_GAME_CONFIG_PURPUR_SPAWN_REINFORCEMENTS")
               },
-              "always-drop-exp": t("TXT_CODE_c535fb8")
+              "always-drop-exp": t("TXT_CODE_GAME_CONFIG_PURPUR_ALWAYS_DROP_EXP")
             }
           }
         },
         "gameplay-mechanics": {
-          "always-tame-in-creative": t("TXT_CODE_5d41afbf"),
-          "animal-breeding-cooldown-seconds": t("TXT_CODE_8504218"),
+          "always-tame-in-creative": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ALWAYS_TAME_IN_CREATIVE"),
+          "animal-breeding-cooldown-seconds": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ANIMAL_BREEDING_COOLDOWN_SECONDS"),
           armorstand: {
-            "step-height": t("TXT_CODE_aa47f5ed"),
-            "set-name-visible-when-placing-with-custom-name": t("TXT_CODE_b1b30b86"),
-            "fix-nametags": t("TXT_CODE_4f2f381b"),
-            "place-with-arms-visible": t("TXT_CODE_1eea2726"),
-            "can-movement-tick": t("TXT_CODE_46ba576a"),
-            "can-move-in-water": t("TXT_CODE_81c2f4ae"),
-            "can-move-in-water-over-fence": t("TXT_CODE_bf6bec1a")
+            "step-height": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_STEP_HEIGHT"),
+            "set-name-visible-when-placing-with-custom-name": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_SET_NAME_VISIBLE_WHEN_PLACING_WITH_CUSTOM_NAME"),
+            "fix-nametags": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_FIX_NAMETAGS"),
+            "place-with-arms-visible": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_PLACE_WITH_ARMS_VISIBLE"),
+            "can-movement-tick": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_CAN_MOVEMENT_TICK"),
+            "can-move-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_CAN_MOVE_IN_WATER"),
+            "can-move-in-water-over-fence": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_CAN_MOVE_IN_WATER_OVER_FENCE")
           },
           arrow: {
-            "movement-resets-despawn-counter": t("TXT_CODE_1a124d6")
+            "movement-resets-despawn-counter": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARROW_MOVEMENT_RESETS_DESPAWN_COUNTER")
           },
           boat: {
-            "eject-players-on-land": t("TXT_CODE_57358a8b"),
-            "do-fall-damage": t("TXT_CODE_c9d34339")
+            "eject-players-on-land": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_BOAT_EJECT_PLAYERS_ON_LAND"),
+            "do-fall-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_BOAT_DO_FALL_DAMAGE")
           },
-          "clamp-explosion-radius": t("TXT_CODE_c59f077d"),
+          "clamp-explosion-radius": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_CLAMP_EXPLOSION_RADIUS"),
           "daylight-cycle-ticks": {
-            daytime: t("TXT_CODE_3beb6e5c"),
-            nighttime: t("TXT_CODE_d928da57")
+            daytime: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DAYLIGHT_CYCLE_TICKS_DAYTIME"),
+            nighttime: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DAYLIGHT_CYCLE_TICKS_NIGHTTIME")
           },
-          "disable-drops-on-cramming-death": t("TXT_CODE_f9c65693"),
-          "disable-oxidation-proximity-penalty": t("TXT_CODE_d245f00d"),
+          "disable-drops-on-cramming-death": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DISABLE_DROPS_ON_CRAMMING_DEATH"),
+          "disable-oxidation-proximity-penalty": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DISABLE_OXIDATION_PROXIMITY_PENALTY"),
           drowning: {
-            "air-ticks": t("TXT_CODE_6a826e8b"),
-            "ticks-per-damage": t("TXT_CODE_8be0e39b"),
-            "damage-from-drowning": t("TXT_CODE_d01532d")
+            "air-ticks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DROWNING_AIR_TICKS"),
+            "ticks-per-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DROWNING_TICKS_PER_DAMAGE"),
+            "damage-from-drowning": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_DROWNING_DAMAGE_FROM_DROWNING")
           },
           elytra: {
-            "damage-per-second": t("TXT_CODE_ebc235d5"),
-            "damage-multiplied-by-speed": t("TXT_CODE_9651d0b3"),
-            "kinetic-damage": t("TXT_CODE_e5a52cee"),
-            "ignore-unbreaking": t("TXT_CODE_70fe20dd"),
+            "damage-per-second": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_DAMAGE_PER_SECOND"),
+            "damage-multiplied-by-speed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_DAMAGE_MULTIPLIED_BY_SPEED"),
+            "kinetic-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_KINETIC_DAMAGE"),
+            "ignore-unbreaking": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_IGNORE_UNBREAKING"),
             "damage-per-boost": {
-              firework: t("TXT_CODE_eb9584d"),
-              trident: t("TXT_CODE_6ed13fd")
+              firework: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_DAMAGE_PER_BOOST_FIREWORK"),
+              trident: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ELYTRA_DAMAGE_PER_BOOST_TRIDENT")
             }
           },
-          "entities-can-use-portals": t("TXT_CODE_e88884ba"),
-          "entities-pick-up-loot-bypass-mob-griefing": t("TXT_CODE_c132a726"),
-          "entity-blindness-multiplier": t("TXT_CODE_86076132"),
-          "entity-left-handed-chance": t("TXT_CODE_2a82b720"),
-          "entity-lifespan": t("TXT_CODE_3f810f66"),
-          "fireballs-bypass-mob-griefing": t("TXT_CODE_8a71a4d7"),
+          "entities-can-use-portals": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ENTITIES_CAN_USE_PORTALS"),
+          "entities-pick-up-loot-bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ENTITIES_PICK_UP_LOOT_BYPASS_MOB_GRIEFING"),
+          "entity-blindness-multiplier": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ENTITY_BLINDNESS_MULTIPLIER"),
+          "entity-left-handed-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ENTITY_LEFT_HANDED_CHANCE"),
+          "entity-lifespan": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ENTITY_LIFESPAN"),
+          "fireballs-bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_FIREBALLS_BYPASS_MOB_GRIEFING"),
           halloween: {
-            force: t("TXT_CODE_f0e6cbc"),
-            "head-chance": t("TXT_CODE_59f7c3a2")
+            force: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_HALLOWEEN_FORCE"),
+            "head-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_HALLOWEEN_HEAD_CHANCE")
           },
-          "impose-teleport-restrictions-on-end-portals": t("TXT_CODE_448d08eb"),
-          "impose-teleport-restrictions-on-gateways": t("TXT_CODE_59976e2c"),
-          "impose-teleport-restrictions-on-nether-portals": t("TXT_CODE_8eb1ae3e"),
+          "impose-teleport-restrictions-on-end-portals": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_IMPOSE_TELEPORT_RESTRICTIONS_ON_END_PORTALS"),
+          "impose-teleport-restrictions-on-gateways": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_IMPOSE_TELEPORT_RESTRICTIONS_ON_GATEWAYS"),
+          "impose-teleport-restrictions-on-nether-portals": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_IMPOSE_TELEPORT_RESTRICTIONS_ON_NETHER_PORTALS"),
           "infinity-bow": {
-            "works-without-arrows": t("TXT_CODE_f02ff9cc")
+            "works-without-arrows": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_INFINITY_BOW_WORKS_WITHOUT_ARROWS")
           },
           item: {
             "end-crystal": {
-              "place-anywhere": t("TXT_CODE_74788d9e")
+              "place-anywhere": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_END_CRYSTAL_PLACE_ANYWHERE")
             },
             shears: {
-              "damage-if-sprinting": t("TXT_CODE_ef61e06a"),
-              "ignore-in-water": t("TXT_CODE_f9d92e18"),
-              "ignore-in-lava": t("TXT_CODE_1f600912"),
-              "sprinting-damage": t("TXT_CODE_1f991d"),
-              "defuse-tnt-chance": t("TXT_CODE_d47ff7e5")
+              "damage-if-sprinting": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHEARS_DAMAGE_IF_SPRINTING"),
+              "ignore-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHEARS_IGNORE_IN_WATER"),
+              "ignore-in-lava": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHEARS_IGNORE_IN_LAVA"),
+              "sprinting-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHEARS_SPRINTING_DAMAGE"),
+              "defuse-tnt-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHEARS_DEFUSE_TNT_CHANCE")
             },
             snowball: {
               extinguish: {
-                fire: t("TXT_CODE_53d04392"),
-                candles: t("TXT_CODE_88405298"),
-                campfires: t("TXT_CODE_4a9822f")
+                fire: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SNOWBALL_EXTINGUISH_FIRE"),
+                candles: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SNOWBALL_EXTINGUISH_CANDLES"),
+                campfires: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SNOWBALL_EXTINGUISH_CAMPFIRES")
               }
             },
             shulker_box: {
-              "drop-contents-when-destroyed": t("TXT_CODE_d4dafc41")
+              "drop-contents-when-destroyed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_SHULKER_BOX_DROP_CONTENTS_WHEN_DESTROYED")
             },
             compass: {
-              "holding-shows-bossbar": t("TXT_CODE_4126fc53")
+              "holding-shows-bossbar": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_COMPASS_HOLDING_SHOWS_BOSSBAR")
             },
             glow_berries: {
-              "eat-glow-duration": t("TXT_CODE_bea85b64")
+              "eat-glow-duration": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_GLOW_BERRIES_EAT_GLOW_DURATION")
             },
             "ender-pearl": {
-              damage: t("TXT_CODE_a7e1976"),
-              cooldown: t("TXT_CODE_f255aee0"),
-              "creative-cooldown": t("TXT_CODE_ebf479f2"),
-              "endermite-spawn-chance": t("TXT_CODE_4d3b4548")
+              damage: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_ENDER_PEARL_DAMAGE"),
+              cooldown: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_ENDER_PEARL_COOLDOWN"),
+              "creative-cooldown": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_ENDER_PEARL_CREATIVE_COOLDOWN"),
+              "endermite-spawn-chance": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_ENDER_PEARL_ENDERMITE_SPAWN_CHANCE")
             },
             immune: {
-              explosion: t("TXT_CODE_cdb213a3"),
-              fire: t("TXT_CODE_e3efef30"),
-              lightning: t("TXT_CODE_9aa1872c"),
-              cactus: t("TXT_CODE_a092b6f0")
+              explosion: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_IMMUNE_EXPLOSION"),
+              fire: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_IMMUNE_FIRE"),
+              lightning: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_IMMUNE_LIGHTNING"),
+              cactus: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ITEM_IMMUNE_CACTUS")
             }
           },
-          "mending-multiplier": t("TXT_CODE_9c7f8eb8"),
-          "milk-clears-beneficial-effects": t("TXT_CODE_3f65b1f2"),
-          "milk-cures-bad-omen": t("TXT_CODE_e9cee11e"),
+          "mending-multiplier": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MENDING_MULTIPLIER"),
+          "milk-clears-beneficial-effects": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MILK_CLEARS_BENEFICIAL_EFFECTS"),
+          "milk-cures-bad-omen": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MILK_CURES_BAD_OMEN"),
           minecart: {
-            "max-speed": t("TXT_CODE_8638bb65"),
-            "place-anywhere": t("TXT_CODE_97b80a79"),
+            "max-speed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_MAX_SPEED"),
+            "place-anywhere": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_PLACE_ANYWHERE"),
             "powered-rail": {
-              "boost-modifier": t("TXT_CODE_da521b59")
+              "boost-modifier": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_POWERED_RAIL_BOOST_MODIFIER")
             },
             controllable: {
-              enabled: t("TXT_CODE_99167cda"),
-              "fall-damage": t("TXT_CODE_79b77e31"),
-              "step-height": t("TXT_CODE_15e80e9d"),
-              "hop-boost": t("TXT_CODE_d2e3b565"),
-              "base-speed": t("TXT_CODE_837501b0"),
-              "block-speed": t("TXT_CODE_aaecb7ff")
+              enabled: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_ENABLED"),
+              "fall-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_FALL_DAMAGE"),
+              "step-height": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_STEP_HEIGHT"),
+              "hop-boost": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_HOP_BOOST"),
+              "base-speed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_BASE_SPEED"),
+              "block-speed": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MINECART_CONTROLLABLE_BLOCK_SPEED")
             }
           },
           "mob-effects": {
-            "health-regen-amount": t("TXT_CODE_2c19f3b2"),
-            "minimal-health-poison-amount": t("TXT_CODE_2c19f3b2"),
-            "poison-degeneration-amount": t("TXT_CODE_2c19f3b2"),
-            "wither-degeneration-amount": t("TXT_CODE_2c19f3b2"),
-            "hunger-exhaustion-amount": t("TXT_CODE_2c19f3b2"),
-            "saturation-regen-amount": t("TXT_CODE_2c19f3b2")
+            "health-regen-amount": t("TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES"),
+            "minimal-health-poison-amount": t("TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES"),
+            "poison-degeneration-amount": t("TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES"),
+            "wither-degeneration-amount": t("TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES"),
+            "hunger-exhaustion-amount": t("TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES"),
+            "saturation-regen-amount": t("TXT_CODE_COMMON_THE_AMOUNT_AT_WHICH_THIS_EFFECT_AFFECTS_ENTITIES")
           },
-          "mob-last-hurt-by-player-time": t("TXT_CODE_be769e64"),
+          "mob-last-hurt-by-player-time": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MOB_LAST_HURT_BY_PLAYER_TIME"),
           "mob-spawning": {
-            "village-cats": t("TXT_CODE_6b313c"),
-            "raid-patrols:": t("TXT_CODE_6b313c"),
-            phantoms: t("TXT_CODE_6b313c"),
-            "wandering-traders": t("TXT_CODE_6b313c"),
-            "village-sieges": t("TXT_CODE_6b313c"),
-            "ignore-creative-players": t("TXT_CODE_1bc41425")
+            "village-cats": t("TXT_CODE_COMMON_SET_TO_TRUE_TO_SPAWN_IN_THE_WORLD_THAT_THIS_OPTION_IS_A_PART_OF"),
+            "raid-patrols:": t("TXT_CODE_COMMON_SET_TO_TRUE_TO_SPAWN_IN_THE_WORLD_THAT_THIS_OPTION_IS_A_PART_OF"),
+            phantoms: t("TXT_CODE_COMMON_SET_TO_TRUE_TO_SPAWN_IN_THE_WORLD_THAT_THIS_OPTION_IS_A_PART_OF"),
+            "wandering-traders": t("TXT_CODE_COMMON_SET_TO_TRUE_TO_SPAWN_IN_THE_WORLD_THAT_THIS_OPTION_IS_A_PART_OF"),
+            "village-sieges": t("TXT_CODE_COMMON_SET_TO_TRUE_TO_SPAWN_IN_THE_WORLD_THAT_THIS_OPTION_IS_A_PART_OF"),
+            "ignore-creative-players": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MOB_SPAWNING_IGNORE_CREATIVE_PLAYERS")
           },
-          "mobs-ignore-rails": t("TXT_CODE_bd84e700"),
-          "note-block-ignore-above": t("TXT_CODE_b6ba38a4"),
-          "persistent-droppable-entity-display-names": t("TXT_CODE_bd0aa3c7"),
-          "persistent-tileentity-display-name": t("TXT_CODE_8bf86cbc"),
-          "persistent-tileentity-lore": t("TXT_CODE_5eb49cd"),
+          "mobs-ignore-rails": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_MOBS_IGNORE_RAILS"),
+          "note-block-ignore-above": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_NOTE_BLOCK_IGNORE_ABOVE"),
+          "persistent-droppable-entity-display-names": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PERSISTENT_DROPPABLE_ENTITY_DISPLAY_NAMES"),
+          "persistent-tileentity-display-name": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PERSISTENT_TILEENTITY_DISPLAY_NAME"),
+          "persistent-tileentity-lore": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PERSISTENT_TILEENTITY_LORE"),
           player: {
-            "exp-pickup-delay-ticks": t("TXT_CODE_bb729416"),
-            "shift-right-click-repairs-mending-points": t("TXT_CODE_d3ddefb5"),
-            "spawn-invulnerable-ticks": t("TXT_CODE_14688b70"),
-            "invulnerable-while-accepting-resource-pack": t("TXT_CODE_f0be5e98"),
-            "teleport-if-outside-border": t("TXT_CODE_db07cf9e"),
-            "teleport-on-nether-ceiling-damage": t("TXT_CODE_d6e124c1"),
-            "allow-void-trading": t("TXT_CODE_d73c037b"),
-            "totem-of-undying-works-in-inventory": t("TXT_CODE_b6d926ab"),
-            "ridable-in-water": t("TXT_CODE_aaba7ab8"),
-            "fix-stuck-in-portal": t("TXT_CODE_2fe6e00e"),
-            "one-punch-in-creative": t("TXT_CODE_fa301a5"),
-            "sleep-ignore-nearby-mobs": t("TXT_CODE_5b719d7b"),
-            "can-skip-night": t("TXT_CODE_11dd341b"),
-            "critical-damage-multiplier": t("TXT_CODE_3f59b48"),
-            "burp-when-full": t("TXT_CODE_116db655"),
-            "burp-delay": t("TXT_CODE_5e4c9793"),
+            "exp-pickup-delay-ticks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_EXP_PICKUP_DELAY_TICKS"),
+            "shift-right-click-repairs-mending-points": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_SHIFT_RIGHT_CLICK_REPAIRS_MENDING_POINTS"),
+            "spawn-invulnerable-ticks": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_SPAWN_INVULNERABLE_TICKS"),
+            "invulnerable-while-accepting-resource-pack": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_INVULNERABLE_WHILE_ACCEPTING_RESOURCE_PACK"),
+            "teleport-if-outside-border": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_TELEPORT_IF_OUTSIDE_BORDER"),
+            "teleport-on-nether-ceiling-damage": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_TELEPORT_ON_NETHER_CEILING_DAMAGE"),
+            "allow-void-trading": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_ALLOW_VOID_TRADING"),
+            "totem-of-undying-works-in-inventory": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_TOTEM_OF_UNDYING_WORKS_IN_INVENTORY"),
+            "ridable-in-water": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_RIDABLE_IN_WATER"),
+            "fix-stuck-in-portal": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_FIX_STUCK_IN_PORTAL"),
+            "one-punch-in-creative": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_ONE_PUNCH_IN_CREATIVE"),
+            "sleep-ignore-nearby-mobs": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_SLEEP_IGNORE_NEARBY_MOBS"),
+            "can-skip-night": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_CAN_SKIP_NIGHT"),
+            "critical-damage-multiplier": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_CRITICAL_DAMAGE_MULTIPLIER"),
+            "burp-when-full": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_BURP_WHEN_FULL"),
+            "burp-delay": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_BURP_DELAY"),
             "curse-of-binding": {
-              "remove-with-weakness": t("TXT_CODE_25023ad0")
+              "remove-with-weakness": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_CURSE_OF_BINDING_REMOVE_WITH_WEAKNESS")
             },
             "idle-timeout": {
-              "kick-if-idle": t("TXT_CODE_67b4d0ba"),
-              "tick-nearby-entities": t("TXT_CODE_7546cc5"),
-              "mobs-target": t("TXT_CODE_ec9dec9d"),
-              "count-as-sleeping": t("TXT_CODE_6d32ea04"),
-              "update-tab-list": t("TXT_CODE_b0ae5b42")
+              "kick-if-idle": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_IDLE_TIMEOUT_KICK_IF_IDLE"),
+              "tick-nearby-entities": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_IDLE_TIMEOUT_TICK_NEARBY_ENTITIES"),
+              "mobs-target": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_IDLE_TIMEOUT_MOBS_TARGET"),
+              "count-as-sleeping": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_IDLE_TIMEOUT_COUNT_AS_SLEEPING"),
+              "update-tab-list": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_IDLE_TIMEOUT_UPDATE_TAB_LIST")
             },
             "exp-dropped-on-death": {
-              equation: t("TXT_CODE_9e090ff6"),
-              maximum: t("TXT_CODE_9095d186")
+              equation: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_EXP_DROPPED_ON_DEATH_EQUATION"),
+              maximum: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_EXP_DROPPED_ON_DEATH_MAXIMUM")
             },
             "netherite-fire-resistance": {
-              duration: t("TXT_CODE_f73a2ad2"),
-              amplifier: t("TXT_CODE_ac7a5f17"),
-              ambient: t("TXT_CODE_34148d2b"),
-              "show-particles": t("TXT_CODE_31c10b14"),
-              "show-icon": t("TXT_CODE_5aa330f0")
+              duration: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_NETHERITE_FIRE_RESISTANCE_DURATION"),
+              amplifier: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_NETHERITE_FIRE_RESISTANCE_AMPLIFIER"),
+              ambient: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_NETHERITE_FIRE_RESISTANCE_AMBIENT"),
+              "show-particles": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_NETHERITE_FIRE_RESISTANCE_SHOW_PARTICLES"),
+              "show-icon": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_NETHERITE_FIRE_RESISTANCE_SHOW_ICON")
             },
             "projectile-damage": {
-              snowball: t("TXT_CODE_21077dc4")
+              snowball: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_PROJECTILE_DAMAGE_SNOWBALL")
             }
           },
           "projectile-offset": {
-            bow: t("TXT_CODE_8c18a6ac"),
-            crossbow: t("TXT_CODE_1b7f826e"),
-            egg: t("TXT_CODE_4fb30d0a"),
-            "ender-pearl": t("TXT_CODE_abac12f6"),
-            "throwable-potion": t("TXT_CODE_195215f7"),
-            trident: t("TXT_CODE_afc104e0"),
-            snowball: t("TXT_CODE_7991f7b3")
+            bow: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_BOW"),
+            crossbow: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_CROSSBOW"),
+            egg: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_EGG"),
+            "ender-pearl": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_ENDER_PEARL"),
+            "throwable-potion": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_THROWABLE_POTION"),
+            trident: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_TRIDENT"),
+            snowball: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILE_OFFSET_SNOWBALL")
           },
-          "projectiles-bypass-mob-griefing": t("TXT_CODE_5936d79"),
-          "raid-cooldown-seconds": t("TXT_CODE_f801a9d2"),
-          "rain-stops-after-sleep": t("TXT_CODE_e576a340"),
-          "shovel-turns-block-to-grass-path": t("TXT_CODE_543356c1"),
+          "projectiles-bypass-mob-griefing": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PROJECTILES_BYPASS_MOB_GRIEFING"),
+          "raid-cooldown-seconds": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_RAID_COOLDOWN_SECONDS"),
+          "rain-stops-after-sleep": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_RAIN_STOPS_AFTER_SLEEP"),
+          "shovel-turns-block-to-grass-path": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SHOVEL_TURNS_BLOCK_TO_GRASS_PATH"),
           "silk-touch": {
-            enabled: t("TXT_CODE_e9712ce1"),
-            "minimal-level": t("TXT_CODE_95d43994"),
-            tools: t("TXT_CODE_710a2e6c"),
-            "spawner-name": t("TXT_CODE_4b39143b"),
-            "spawner-lore": t("TXT_CODE_f773aaeb")
+            enabled: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SILK_TOUCH_ENABLED"),
+            "minimal-level": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SILK_TOUCH_MINIMAL_LEVEL"),
+            tools: t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SILK_TOUCH_TOOLS"),
+            "spawner-name": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SILK_TOUCH_SPAWNER_NAME"),
+            "spawner-lore": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_SILK_TOUCH_SPAWNER_LORE")
           },
-          "thunder-stops-after-sleep": t("TXT_CODE_8677ef57"),
-          "tick-fluids": t("TXT_CODE_28013340"),
-          "trident-loyalty-void-return-height": t("TXT_CODE_f1f9ff1c"),
-          "use-better-mending": t("TXT_CODE_1d8746ed")
+          "thunder-stops-after-sleep": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_THUNDER_STOPS_AFTER_SLEEP"),
+          "tick-fluids": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_TICK_FLUIDS"),
+          "trident-loyalty-void-return-height": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_TRIDENT_LOYALTY_VOID_RETURN_HEIGHT"),
+          "use-better-mending": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_USE_BETTER_MENDING")
         },
         "ridable-settings": {
-          "babies-are-ridable": t("TXT_CODE_9fb9e6a8"),
-          "untamed-tamables-are-ridable": t("TXT_CODE_ae0e0126"),
-          "use-dismounts-underwater-tag": t("TXT_CODE_1f2d95eb"),
-          "use-night-vision": t("TXT_CODE_36622cee")
+          "babies-are-ridable": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_RIDABLE_SETTINGS_BABIES_ARE_RIDABLE"),
+          "untamed-tamables-are-ridable": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_RIDABLE_SETTINGS_UNTAMED_TAMABLES_ARE_RIDABLE"),
+          "use-dismounts-underwater-tag": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_RIDABLE_SETTINGS_USE_DISMOUNTS_UNDERWATER_TAG"),
+          "use-night-vision": t("TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_RIDABLE_SETTINGS_USE_NIGHT_VISION")
         }
       }
     }
   },
   "paper/paper-global.yml": {
-    desc: t("TXT_CODE_ca500df8"),
+    desc: t("TXT_CODE_GAME_CONFIG_PAPER_GLOBAL_DESCRIPTION"),
     config: {
-      _version: t("TXT_CODE_d7ad19af"),
+      _version: t("TXT_CODE_GAME_CONFIG_VERSION"),
       "block-updates": {
-        "disable-chorus-plant-updates": t("TXT_CODE_64282335"),
-        "disable-mushroom-block-updates": t("TXT_CODE_86ab6e1e"),
-        "disable-noteblock-updates": t("TXT_CODE_de61c48c"),
-        "disable-tripwire-updates": t("TXT_CODE_e7cb14e2")
+        "disable-chorus-plant-updates": t("TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_CHORUS_PLANT_UPDATES"),
+        "disable-mushroom-block-updates": t("TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_MUSHROOM_BLOCK_UPDATES"),
+        "disable-noteblock-updates": t("TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_NOTEBLOCK_UPDATES"),
+        "disable-tripwire-updates": t("TXT_CODE_GAME_CONFIG_BLOCK_UPDATES_DISABLE_TRIPWIRE_UPDATES")
       },
       "chunk-loading-advanced": {
-        "auto-config-send-distance": t("TXT_CODE_3969cb6b"),
-        "player-max-concurrent-chunk-generates": t("TXT_CODE_179eb7ce"),
-        "player-max-concurrent-chunk-loads": t("TXT_CODE_3897eb89")
+        "auto-config-send-distance": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_AUTO_CONFIG_SEND_DISTANCE"),
+        "player-max-concurrent-chunk-generates": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_PLAYER_MAX_CONCURRENT_CHUNK_GENERATES"),
+        "player-max-concurrent-chunk-loads": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_ADVANCED_PLAYER_MAX_CONCURRENT_CHUNK_LOADS")
       },
       "chunk-loading-basic": {
-        "player-max-chunk-generate-rate": t("TXT_CODE_af11ca2a"),
-        "player-max-chunk-load-rate": t("TXT_CODE_8dd7bc1a"),
-        "player-max-chunk-send-rate": t("TXT_CODE_1dc16497")
+        "player-max-chunk-generate-rate": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_GENERATE_RATE"),
+        "player-max-chunk-load-rate": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_LOAD_RATE"),
+        "player-max-chunk-send-rate": t("TXT_CODE_GAME_CONFIG_CHUNK_LOADING_BASIC_PLAYER_MAX_CHUNK_SEND_RATE")
       },
       "chunk-system": {
-        "gen-parallelism": t("TXT_CODE_40ee4eaf"),
-        "io-threads": t("TXT_CODE_7d197c39"),
-        "worker-threads": t("TXT_CODE_7b8f01b5")
+        "gen-parallelism": t("TXT_CODE_GAME_CONFIG_CHUNK_SYSTEM_GEN_PARALLELISM"),
+        "io-threads": t("TXT_CODE_GAME_CONFIG_CHUNK_SYSTEM_IO_THREADS"),
+        "worker-threads": t("TXT_CODE_GAME_CONFIG_CHUNK_SYSTEM_WORKER_THREADS")
       },
       collisions: {
-        "enable-player-collisions": t("TXT_CODE_a519b5ff"),
-        "send-full-pos-for-hard-colliding-entities": t("TXT_CODE_84d56d69")
+        "enable-player-collisions": t("TXT_CODE_GAME_CONFIG_COLLISIONS_ENABLE_PLAYER_COLLISIONS"),
+        "send-full-pos-for-hard-colliding-entities": t("TXT_CODE_GAME_CONFIG_COLLISIONS_SEND_FULL_POS_FOR_HARD_COLLIDING_ENTITIES")
       },
       commands: {
-        "fix-target-selector-tag-completion": t("TXT_CODE_c059faee"),
-        "suggest-player-names-when-null-tab-completions": t("TXT_CODE_859b2d24"),
-        "time-command-affects-all-worlds": t("TXT_CODE_e01e51f3")
+        "fix-target-selector-tag-completion": t("TXT_CODE_GAME_CONFIG_COMMANDS_FIX_TARGET_SELECTOR_TAG_COMPLETION"),
+        "suggest-player-names-when-null-tab-completions": t("TXT_CODE_GAME_CONFIG_COMMANDS_SUGGEST_PLAYER_NAMES_WHEN_NULL_TAB_COMPLETIONS"),
+        "time-command-affects-all-worlds": t("TXT_CODE_GAME_CONFIG_COMMANDS_TIME_COMMAND_AFFECTS_ALL_WORLDS")
       },
       console: {
-        "enable-brigadier-completions": t("TXT_CODE_bb98d45"),
-        "enable-brigadier-highlighting": t("TXT_CODE_871feca"),
-        "has-all-permissions": t("TXT_CODE_dfa27a93")
+        "enable-brigadier-completions": t("TXT_CODE_GAME_CONFIG_CONSOLE_ENABLE_BRIGADIER_COMPLETIONS"),
+        "enable-brigadier-highlighting": t("TXT_CODE_GAME_CONFIG_CONSOLE_ENABLE_BRIGADIER_HIGHLIGHTING"),
+        "has-all-permissions": t("TXT_CODE_GAME_CONFIG_CONSOLE_HAS_ALL_PERMISSIONS")
       },
       "item-validation": {
         book: {
-          author: t("TXT_CODE_e641b54c"),
-          page: t("TXT_CODE_7ce3c6e"),
-          title: t("TXT_CODE_e8d9c341")
+          author: t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_BOOK_AUTHOR"),
+          page: t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_BOOK_PAGE"),
+          title: t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_BOOK_TITLE")
         },
         "book-size": {
-          "page-max": t("TXT_CODE_684eb7e3"),
-          "total-multiplier": t("TXT_CODE_66b01c4e")
+          "page-max": t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_BOOK_SIZE_PAGE_MAX"),
+          "total-multiplier": t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_BOOK_SIZE_TOTAL_MULTIPLIER")
         },
-        "display-name": t("TXT_CODE_b251fa6d"),
-        "lore-line": t("TXT_CODE_143e55cb"),
-        "resolve-selectors-in-books": t("TXT_CODE_bb9657ff")
+        "display-name": t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_DISPLAY_NAME"),
+        "lore-line": t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_LORE_LINE"),
+        "resolve-selectors-in-books": t("TXT_CODE_GAME_CONFIG_ITEM_VALIDATION_RESOLVE_SELECTORS_IN_BOOKS")
       },
       logging: {
-        "deobfuscate-stacktraces": t("TXT_CODE_f5feed4e")
+        "deobfuscate-stacktraces": t("TXT_CODE_GAME_CONFIG_LOGGING_DEOBFUSCATE_STACKTRACES")
       },
       messages: {
         kick: {
-          "authentication-servers-down": t("TXT_CODE_d0c78699"),
-          "connection-throttle": t("TXT_CODE_e7a42e0e"),
-          "flying-player": t("TXT_CODE_fdd8effa"),
-          "flying-vehicle": t("TXT_CODE_c135338")
+          "authentication-servers-down": t("TXT_CODE_GAME_CONFIG_MESSAGES_KICK_AUTHENTICATION_SERVERS_DOWN"),
+          "connection-throttle": t("TXT_CODE_GAME_CONFIG_MESSAGES_KICK_CONNECTION_THROTTLE"),
+          "flying-player": t("TXT_CODE_GAME_CONFIG_MESSAGES_KICK_FLYING_PLAYER"),
+          "flying-vehicle": t("TXT_CODE_GAME_CONFIG_MESSAGES_KICK_FLYING_VEHICLE")
         },
-        "no-permission": t("TXT_CODE_27b7102a"),
-        "use-display-name-in-quit-message": t("TXT_CODE_15022f3e")
+        "no-permission": t("TXT_CODE_GAME_CONFIG_MESSAGES_NO_PERMISSION"),
+        "use-display-name-in-quit-message": t("TXT_CODE_GAME_CONFIG_MESSAGES_USE_DISPLAY_NAME_IN_QUIT_MESSAGE")
       },
       misc: {
         "chat-threads": {
-          "chat-executor-core-size": t("TXT_CODE_cd40249d"),
-          "chat-executor-max-size": t("TXT_CODE_da782f63")
+          "chat-executor-core-size": t("TXT_CODE_GAME_CONFIG_MISC_CHAT_THREADS_CHAT_EXECUTOR_CORE_SIZE"),
+          "chat-executor-max-size": t("TXT_CODE_GAME_CONFIG_MISC_CHAT_THREADS_CHAT_EXECUTOR_MAX_SIZE")
         },
-        "compression-level": t("TXT_CODE_743ed87f"),
-        "fix-entity-position-desync": t("TXT_CODE_7f0daff7"),
-        "load-permissions-yml-before-plugins": t("TXT_CODE_5a280280"),
-        "max-joins-per-tick": t("TXT_CODE_90edf4ad"),
-        "region-file-cache-size": t("TXT_CODE_ff2c2f20"),
-        "strict-advancement-dimension-check": t("TXT_CODE_8d6e5b1f"),
-        "use-alternative-luck-formula": t("TXT_CODE_ef676a8f"),
-        "use-dimension-type-for-custom-spawners": t("TXT_CODE_3f5a2028")
+        "compression-level": t("TXT_CODE_GAME_CONFIG_MISC_COMPRESSION_LEVEL"),
+        "fix-entity-position-desync": t("TXT_CODE_GAME_CONFIG_MISC_FIX_ENTITY_POSITION_DESYNC"),
+        "load-permissions-yml-before-plugins": t("TXT_CODE_GAME_CONFIG_MISC_LOAD_PERMISSIONS_YML_BEFORE_PLUGINS"),
+        "max-joins-per-tick": t("TXT_CODE_GAME_CONFIG_MISC_MAX_JOINS_PER_TICK"),
+        "region-file-cache-size": t("TXT_CODE_GAME_CONFIG_MISC_REGION_FILE_CACHE_SIZE"),
+        "strict-advancement-dimension-check": t("TXT_CODE_GAME_CONFIG_MISC_STRICT_ADVANCEMENT_DIMENSION_CHECK"),
+        "use-alternative-luck-formula": t("TXT_CODE_GAME_CONFIG_MISC_USE_ALTERNATIVE_LUCK_FORMULA"),
+        "use-dimension-type-for-custom-spawners": t("TXT_CODE_GAME_CONFIG_MISC_USE_DIMENSION_TYPE_FOR_CUSTOM_SPAWNERS")
       },
       "packet-limiter": {
         "all-packets": {
-          action: t("TXT_CODE_2203d4ff"),
-          interval: t("TXT_CODE_36b878dc"),
-          "max-packet-rate": t("TXT_CODE_2645196f")
+          action: t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_ALL_PACKETS_ACTION"),
+          interval: t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_ALL_PACKETS_INTERVAL"),
+          "max-packet-rate": t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_ALL_PACKETS_MAX_PACKET_RATE")
         },
-        "kick-message": t("TXT_CODE_b355c681"),
+        "kick-message": t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_KICK_MESSAGE"),
         overrides: {
           ServerboundPlaceRecipePacket: {
-            action: t("TXT_CODE_312cd9f0"),
-            interval: t("TXT_CODE_2db37427"),
-            "max-packet-rate": t("TXT_CODE_3d4e1594")
+            action: t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_ACTION"),
+            interval: t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_INTERVAL"),
+            "max-packet-rate": t("TXT_CODE_GAME_CONFIG_PACKET_LIMITER_OVERRIDES_SERVERBOUND_PLACE_RECIPE_PACKET_MAX_PACKET_RATE")
           }
         }
       },
       "player-auto-save": {
-        "max-per-tick": t("TXT_CODE_2a84466d"),
-        rate: t("TXT_CODE_63a4602e")
+        "max-per-tick": t("TXT_CODE_GAME_CONFIG_PLAYER_AUTO_SAVE_MAX_PER_TICK"),
+        rate: t("TXT_CODE_GAME_CONFIG_PLAYER_AUTO_SAVE_RATE")
       },
       proxies: {
         "bungee-cord": {
-          "online-mode": t("TXT_CODE_2fb7e284")
+          "online-mode": t("TXT_CODE_GAME_CONFIG_PROXIES_BUNGEE_CORD_ONLINE_MODE")
         },
-        "proxy-protocol": t("TXT_CODE_f5cbef5c"),
+        "proxy-protocol": t("TXT_CODE_GAME_CONFIG_PROXIES_PROXY_PROTOCOL"),
         velocity: {
-          enabled: t("TXT_CODE_ab839970"),
-          "online-mode": t("TXT_CODE_f2d5dd5"),
-          secret: t("TXT_CODE_7f8f267f")
+          enabled: t("TXT_CODE_GAME_CONFIG_PROXIES_VELOCITY_ENABLED"),
+          "online-mode": t("TXT_CODE_GAME_CONFIG_PROXIES_VELOCITY_ONLINE_MODE"),
+          secret: t("TXT_CODE_GAME_CONFIG_PROXIES_VELOCITY_SECRET")
         }
       },
       scoreboards: {
-        "save-empty-scoreboard-teams": t("TXT_CODE_d649b01e"),
-        "track-plugin-scoreboards": t("TXT_CODE_13aa13dd")
+        "save-empty-scoreboard-teams": t("TXT_CODE_GAME_CONFIG_SCOREBOARDS_SAVE_EMPTY_SCOREBOARD_TEAMS"),
+        "track-plugin-scoreboards": t("TXT_CODE_GAME_CONFIG_SCOREBOARDS_TRACK_PLUGIN_SCOREBOARDS")
       },
       "spam-limiter": {
-        "incoming-packet-threshold": t("TXT_CODE_f59bbcef"),
-        "recipe-spam-increment": t("TXT_CODE_d6321094"),
-        "recipe-spam-limit": t("TXT_CODE_b10cbef0"),
-        "tab-spam-increment": t("TXT_CODE_76c66252"),
-        "tab-spam-limit": t("TXT_CODE_11f8cc36")
+        "incoming-packet-threshold": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_INCOMING_PACKET_THRESHOLD"),
+        "recipe-spam-increment": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_RECIPE_SPAM_INCREMENT"),
+        "recipe-spam-limit": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_RECIPE_SPAM_LIMIT"),
+        "tab-spam-increment": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_TAB_SPAM_INCREMENT"),
+        "tab-spam-limit": t("TXT_CODE_GAME_CONFIG_SPAM_LIMITER_TAB_SPAM_LIMIT")
       },
       timings: {
-        enabled: t("TXT_CODE_28bf8a1b"),
-        "hidden-config-entries": t("TXT_CODE_56516e92"),
-        "history-interval": t("TXT_CODE_ea579dec"),
-        "history-length": t("TXT_CODE_13dfc5cb"),
-        "server-name": t("TXT_CODE_e81c77bc"),
-        "server-name-privacy": t("TXT_CODE_9ac035d0"),
-        url: t("TXT_CODE_f8f3218a"),
-        verbose: t("TXT_CODE_afd43f2")
+        enabled: t("TXT_CODE_GAME_CONFIG_TIMINGS_ENABLED"),
+        "hidden-config-entries": t("TXT_CODE_GAME_CONFIG_TIMINGS_HIDDEN_CONFIG_ENTRIES"),
+        "history-interval": t("TXT_CODE_GAME_CONFIG_TIMINGS_HISTORY_INTERVAL"),
+        "history-length": t("TXT_CODE_GAME_CONFIG_TIMINGS_HISTORY_LENGTH"),
+        "server-name": t("TXT_CODE_GAME_CONFIG_SERVER_NAME"),
+        "server-name-privacy": t("TXT_CODE_GAME_CONFIG_TIMINGS_SERVER_NAME_PRIVACY"),
+        url: t("TXT_CODE_GAME_CONFIG_TIMINGS_URL"),
+        verbose: t("TXT_CODE_GAME_CONFIG_TIMINGS_VERBOSE")
       },
       "unsupported-settings": {
-        "allow-grindstone-overstacking": t("TXT_CODE_39e7fa63"),
-        "allow-headless-pistons": t("TXT_CODE_59b1cb55"),
-        "allow-permanent-block-break-exploits": t("TXT_CODE_bc3e529c"),
-        "allow-piston-duplication": t("TXT_CODE_f86b456a"),
-        "compression-format": t("TXT_CODE_e06c1cea"),
-        "perform-username-validation": t("TXT_CODE_1fe2257b")
+        "allow-grindstone-overstacking": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_GRINDSTONE_OVERSTACKING"),
+        "allow-headless-pistons": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_HEADLESS_PISTONS"),
+        "allow-permanent-block-break-exploits": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_PERMANENT_BLOCK_BREAK_EXPLOITS"),
+        "allow-piston-duplication": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_ALLOW_PISTON_DUPLICATION"),
+        "compression-format": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_COMPRESSION_FORMAT"),
+        "perform-username-validation": t("TXT_CODE_GAME_CONFIG_UNSUPPORTED_SETTINGS_PERFORM_USERNAME_VALIDATION")
       },
       watchdog: {
-        "early-warning-delay": t("TXT_CODE_c1507dd6"),
-        "early-warning-every": t("TXT_CODE_ea8aaf1b")
+        "early-warning-delay": t("TXT_CODE_GAME_CONFIG_WATCHDOG_EARLY_WARNING_DELAY"),
+        "early-warning-every": t("TXT_CODE_GAME_CONFIG_WATCHDOG_EARLY_WARNING_EVERY")
       }
     }
   },
   "paper/paper-world-defaults.yml": {
-    desc: t("TXT_CODE_2931127f"),
+    desc: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_DESCRIPTION"),
     config: {
-      _version: t("TXT_CODE_d7ad19af"),
+      _version: t("TXT_CODE_GAME_CONFIG_VERSION"),
       anticheat: {
         "anti-xray": {
-          enabled: t("TXT_CODE_8f9533b5"),
-          "engine-mode": t("TXT_CODE_6b583898"),
-          "hidden-blocks": t("TXT_CODE_5d033431"),
-          "lava-obscures": t("TXT_CODE_e8adf231"),
-          "max-block-height": t("TXT_CODE_88419e99"),
-          "replacement-blocks": t("TXT_CODE_57d76ece"),
-          "update-radius": t("TXT_CODE_9341498a"),
-          "use-permission": t("TXT_CODE_2493e6fc")
+          enabled: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_ENABLED"),
+          "engine-mode": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_ENGINE_MODE"),
+          "hidden-blocks": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_HIDDEN_BLOCKS"),
+          "lava-obscures": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_LAVA_OBSCURES"),
+          "max-block-height": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_MAX_BLOCK_HEIGHT"),
+          "replacement-blocks": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_REPLACEMENT_BLOCKS"),
+          "update-radius": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_UPDATE_RADIUS"),
+          "use-permission": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_ANTI_XRAY_USE_PERMISSION")
         },
         obfuscation: {
           items: {
-            "hide-durability": t("TXT_CODE_de161f0c"),
-            "hide-itemmeta": t("TXT_CODE_4d571cda"),
-            "hide-itemmeta-with-visual-effects": t("TXT_CODE_ad40abfb")
+            "hide-durability": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_OBFUSCATION_ITEMS_HIDE_DURABILITY"),
+            "hide-itemmeta": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_OBFUSCATION_ITEMS_HIDE_ITEMMETA"),
+            "hide-itemmeta-with-visual-effects": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ANTICHEAT_OBFUSCATION_ITEMS_HIDE_ITEMMETA_WITH_VISUAL_EFFECTS")
           }
         }
       },
       chunks: {
-        "auto-save-interval": t("TXT_CODE_f115eff"),
-        "delay-chunk-unloads-by": t("TXT_CODE_83c9cb05"),
-        "entity-per-chunk-save-limit": t("TXT_CODE_23178d7d"),
-        "fixed-chunk-inhabited-time": t("TXT_CODE_1181762b"),
-        "flush-regions-on-save": t("TXT_CODE_9268932c"),
-        "max-auto-save-chunks-per-tick": t("TXT_CODE_2930907c"),
-        "prevent-moving-into-unloaded-chunks": t("TXT_CODE_c7d340bc")
+        "auto-save-interval": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_AUTO_SAVE_INTERVAL"),
+        "delay-chunk-unloads-by": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_DELAY_CHUNK_UNLOADS_BY"),
+        "entity-per-chunk-save-limit": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_ENTITY_PER_CHUNK_SAVE_LIMIT"),
+        "fixed-chunk-inhabited-time": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_FIXED_CHUNK_INHABITED_TIME"),
+        "flush-regions-on-save": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_FLUSH_REGIONS_ON_SAVE"),
+        "max-auto-save-chunks-per-tick": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_MAX_AUTO_SAVE_CHUNKS_PER_TICK"),
+        "prevent-moving-into-unloaded-chunks": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_CHUNKS_PREVENT_MOVING_INTO_UNLOADED_CHUNKS")
       },
       collisions: {
-        "allow-player-cramming-damage": t("TXT_CODE_c174fbb4"),
-        "allow-vehicle-collisions": t("TXT_CODE_70750fa"),
-        "fix-climbing-bypassing-cramming-rule": t("TXT_CODE_60a11735"),
-        "max-entity-collisions": t("TXT_CODE_b3ea8245"),
-        "only-players-collide": t("TXT_CODE_aea11899")
+        "allow-player-cramming-damage": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_COLLISIONS_ALLOW_PLAYER_CRAMMING_DAMAGE"),
+        "allow-vehicle-collisions": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_COLLISIONS_ALLOW_VEHICLE_COLLISIONS"),
+        "fix-climbing-bypassing-cramming-rule": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_COLLISIONS_FIX_CLIMBING_BYPASSING_CRAMMING_RULE"),
+        "max-entity-collisions": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_COLLISIONS_MAX_ENTITY_COLLISIONS"),
+        "only-players-collide": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_COLLISIONS_ONLY_PLAYERS_COLLIDE")
       },
       entities: {
         "armor-stands": {
-          "do-collision-entity-lookups": t("TXT_CODE_ab5d758e"),
-          tick: t("TXT_CODE_5a6463fb")
+          "do-collision-entity-lookups": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_ARMOR_STANDS_DO_COLLISION_ENTITY_LOOKUPS"),
+          tick: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_ARMOR_STANDS_TICK")
         },
         behavior: {
-          "allow-spider-world-border-climbing": t("TXT_CODE_b05c6947"),
-          "baby-zombie-movement-modifier": t("TXT_CODE_b32f926d"),
-          "disable-chest-cat-detection": t("TXT_CODE_6f7c50c2"),
-          "disable-creeper-lingering-effect": t("TXT_CODE_b815f6f6"),
-          "disable-player-crits": t("TXT_CODE_a22e749a"),
+          "allow-spider-world-border-climbing": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_ALLOW_SPIDER_WORLD_BORDER_CLIMBING"),
+          "baby-zombie-movement-modifier": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BABY_ZOMBIE_MOVEMENT_MODIFIER"),
+          "disable-chest-cat-detection": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_DISABLE_CHEST_CAT_DETECTION"),
+          "disable-creeper-lingering-effect": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_DISABLE_CREEPER_LINGERING_EFFECT"),
+          "disable-player-crits": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_DISABLE_PLAYER_CRITS"),
           behavior: {
             "door-breaking-difficulty": {
-              husk: t("TXT_CODE_597c11cc"),
-              vindicator: t("TXT_CODE_5f282a51"),
-              zombie: t("TXT_CODE_d97eaef3"),
-              zombie_villager: t("TXT_CODE_875e804b"),
-              zombified_piglin: t("TXT_CODE_9d902725")
+              husk: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_DOOR_BREAKING_DIFFICULTY_HUSK"),
+              vindicator: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_DOOR_BREAKING_DIFFICULTY_VINDICATOR"),
+              zombie: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_DOOR_BREAKING_DIFFICULTY_ZOMBIE"),
+              zombie_villager: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_DOOR_BREAKING_DIFFICULTY_ZOMBIE_VILLAGER"),
+              zombified_piglin: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_DOOR_BREAKING_DIFFICULTY_ZOMBIFIED_PIGLIN")
             },
-            "ender-dragons-death-always-places-dragon-egg": t("TXT_CODE_af28bbfd"),
-            "experience-merge-max-value": t("TXT_CODE_44454300"),
+            "ender-dragons-death-always-places-dragon-egg": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENDER_DRAGONS_DEATH_ALWAYS_PLACES_DRAGON_EGG"),
+            "experience-merge-max-value": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_EXPERIENCE_MERGE_MAX_VALUE"),
             "mobs-can-always-pick-up-loot": {
-              skeletons: t("TXT_CODE_4ca9e35f"),
-              zombies: t("TXT_CODE_a5f7d835")
+              skeletons: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_MOBS_CAN_ALWAYS_PICK_UP_LOOT_SKELETONS"),
+              zombies: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_MOBS_CAN_ALWAYS_PICK_UP_LOOT_ZOMBIES")
             },
-            "nerf-pigmen-from-nether-portals": t("TXT_CODE_451f9968"),
-            "parrots-are-unaffected-by-player-movement": t("TXT_CODE_981c59e6"),
-            "phantoms-do-not-spawn-on-creative-players": t("TXT_CODE_2a2dfc09"),
-            "phantoms-only-attack-insomniacs": t("TXT_CODE_8a9fd2b4"),
-            "phantoms-spawn-attempt-max-seconds": t("TXT_CODE_de854aa6"),
-            "phantoms-spawn-attempt-min-seconds": t("TXT_CODE_da26028c"),
-            "piglins-guard-chests": t("TXT_CODE_3243b4f8"),
+            "nerf-pigmen-from-nether-portals": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_NERF_PIGMEN_FROM_NETHER_PORTALS"),
+            "parrots-are-unaffected-by-player-movement": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PARROTS_ARE_UNAFFECTED_BY_PLAYER_MOVEMENT"),
+            "phantoms-do-not-spawn-on-creative-players": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PHANTOMS_DO_NOT_SPAWN_ON_CREATIVE_PLAYERS"),
+            "phantoms-only-attack-insomniacs": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PHANTOMS_ONLY_ATTACK_INSOMNIACS"),
+            "phantoms-spawn-attempt-max-seconds": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PHANTOMS_SPAWN_ATTEMPT_MAX_SECONDS"),
+            "phantoms-spawn-attempt-min-seconds": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PHANTOMS_SPAWN_ATTEMPT_MIN_SECONDS"),
+            "piglins-guard-chests": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PIGLINS_GUARD_CHESTS"),
             "pillager-patrols": {
-              disable: t("TXT_CODE_5c3ba572"),
-              "spawn-chance": t("TXT_CODE_4ad9f75d"),
+              disable: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_DISABLE"),
+              "spawn-chance": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_SPAWN_CHANCE"),
               "spawn-delay": {
-                "per-player": t("TXT_CODE_79d2800b"),
-                ticks: t("TXT_CODE_27ecd5c9")
+                "per-player": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_SPAWN_DELAY_PER_PLAYER"),
+                ticks: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_SPAWN_DELAY_TICKS")
               },
               start: {
-                day: t("TXT_CODE_337da349"),
-                "per-player": t("TXT_CODE_2a07bba3")
+                day: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_START_DAY"),
+                "per-player": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PILLAGER_PATROLS_START_PER_PLAYER")
               }
             },
-            "player-insomnia-start-ticks": t("TXT_CODE_5275cb62"),
-            "should-remove-dragon": t("TXT_CODE_16e58cc1"),
-            "spawner-nerfed-mobs-should-jump": t("TXT_CODE_85d134f2"),
-            "zombie-villager-infection-chance": t("TXT_CODE_df1ceee"),
-            "zombies-target-turtle-eggs": t("TXT_CODE_b6eb8851"),
+            "player-insomnia-start-ticks": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_PLAYER_INSOMNIA_START_TICKS"),
+            "should-remove-dragon": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_SHOULD_REMOVE_DRAGON"),
+            "spawner-nerfed-mobs-should-jump": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_SPAWNER_NERFED_MOBS_SHOULD_JUMP"),
+            "zombie-villager-infection-chance": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ZOMBIE_VILLAGER_INFECTION_CHANCE"),
+            "zombies-target-turtle-eggs": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ZOMBIES_TARGET_TURTLE_EGGS"),
             entities: {
               "armor-stands": {
-                "do-collision-entity-lookups": t("TXT_CODE_eb7966f6"),
-                tick: t("TXT_CODE_ff81b31e")
+                "do-collision-entity-lookups": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_ARMOR_STANDS_DO_COLLISION_ENTITY_LOOKUPS"),
+                tick: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_TICK")
               },
               behavior: {
-                "allow-spider-world-border-climbing": t("TXT_CODE_fa6d3490"),
-                "baby-zombie-movement-modifier": t("TXT_CODE_3e724e40"),
-                "disable-chest-cat-detection": t("TXT_CODE_87f0a517"),
-                "disable-creeper-lingering-effect": t("TXT_CODE_c117a10c"),
-                "disable-player-crits": t("TXT_CODE_a22e749a")
+                "allow-spider-world-border-climbing": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_BEHAVIOR_ALLOW_SPIDER_WORLD_BORDER_CLIMBING"),
+                "baby-zombie-movement-modifier": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_BEHAVIOR_BABY_ZOMBIE_MOVEMENT_MODIFIER"),
+                "disable-chest-cat-detection": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_BEHAVIOR_DISABLE_CHEST_CAT_DETECTION"),
+                "disable-creeper-lingering-effect": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_BEHAVIOR_DISABLE_CREEPER_LINGERING_EFFECT"),
+                "disable-player-crits": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_DISABLE_PLAYER_CRITS")
               },
-              "entities-target-with-follow-range": t("TXT_CODE_ca06ec2a"),
+              "entities-target-with-follow-range": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_ENTITIES_TARGET_WITH_FOLLOW_RANGE"),
               markers: {
-                tick: t("TXT_CODE_ff81b31e")
+                tick: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_TICK")
               },
               "mob-effects": {
                 "immune-to-wither-effect": {
-                  wither: t("TXT_CODE_d851d86d"),
-                  "wither-skeleton": t("TXT_CODE_b16dc70c")
+                  wither: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_MOB_EFFECTS_IMMUNE_TO_WITHER_EFFECT_WITHER"),
+                  "wither-skeleton": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_MOB_EFFECTS_IMMUNE_TO_WITHER_EFFECT_WITHER_SKELETON")
                 },
-                "spiders-immune-to-poison-effect": t("TXT_CODE_6d6ceab5"),
-                "undead-immune-to-certain-effects": t("TXT_CODE_c698246c")
+                "spiders-immune-to-poison-effect": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_MOB_EFFECTS_SPIDERS_IMMUNE_TO_POISON_EFFECT"),
+                "undead-immune-to-certain-effects": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_MOB_EFFECTS_UNDEAD_IMMUNE_TO_CERTAIN_EFFECTS")
               },
               sniffer: {
-                "boosted-hatch-time": t("TXT_CODE_858d8728"),
-                "hatch-time": t("TXT_CODE_cee5802c")
+                "boosted-hatch-time": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SNIFFER_BOOSTED_HATCH_TIME"),
+                "hatch-time": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SNIFFER_HATCH_TIME")
               },
               spawning: {
-                "all-chunks-are-slime-chunks": t("TXT_CODE_fd838916"),
+                "all-chunks-are-slime-chunks": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SPAWNING_ALL_CHUNKS_ARE_SLIME_CHUNKS"),
                 "alt-item-despawn-rate": {
-                  enabled: t("TXT_CODE_52c8a730"),
+                  enabled: t("TXT_CODE_COMMON_ENABLE"),
                   items: {
-                    cobblestone: t("TXT_CODE_2393baa2")
+                    cobblestone: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SPAWNING_ALT_ITEM_DESPAWN_RATE_ITEMS_COBBLESTONE")
                   }
                 },
-                "count-all-mobs-for-spawning": t("TXT_CODE_99e98174"),
-                "creative-arrow-despawn-rate": t("TXT_CODE_1ac19459"),
+                "count-all-mobs-for-spawning": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SPAWNING_COUNT_ALL_MOBS_FOR_SPAWNING"),
+                "creative-arrow-despawn-rate": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_SPAWNING_CREATIVE_ARROW_DESPAWN_RATE"),
                 "despawn-ranges": {
                   ambient: {
-                    hard: t("TXT_CODE_4dab643d"),
-                    soft: t("TXT_CODE_39ac8ed3")
+                    hard: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_HARD"),
+                    soft: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_SOFT")
                   },
                   axolotls: {
-                    hard: t("TXT_CODE_4dab643d"),
-                    soft: t("TXT_CODE_39ac8ed3")
+                    hard: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_HARD"),
+                    soft: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_SOFT")
                   },
                   creature: {
-                    hard: t("TXT_CODE_4dab643d"),
-                    soft: t("TXT_CODE_39ac8ed3")
+                    hard: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_HARD"),
+                    soft: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_SOFT")
                   }
                 }
               },
               "tracking-range-y": {
-                animal: t("TXT_CODE_6d244c20"),
-                display: t("TXT_CODE_2076e91e"),
-                enabled: t("TXT_CODE_52c8a730"),
-                misc: t("TXT_CODE_6e23c48"),
-                monster: t("TXT_CODE_b09eea4"),
-                other: t("TXT_CODE_6e23c48"),
-                player: t("TXT_CODE_39994770")
+                animal: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_TRACKING_RANGE_Y_ANIMAL"),
+                display: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_TRACKING_RANGE_Y_DISPLAY"),
+                enabled: t("TXT_CODE_COMMON_ENABLE"),
+                misc: t("TXT_CODE_COMMON_GENERAL"),
+                monster: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_TRACKING_RANGE_Y_MONSTER"),
+                other: t("TXT_CODE_COMMON_GENERAL"),
+                player: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_BEHAVIOR_BEHAVIOR_ENTITIES_TRACKING_RANGE_Y_PLAYER")
               }
             }
           }
         },
-        "entities-target-with-follow-range": t("TXT_CODE_928653c6")
+        "entities-target-with-follow-range": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENTITIES_ENTITIES_TARGET_WITH_FOLLOW_RANGE")
       },
       environment: {
-        "disable-explosion-knockback": t("TXT_CODE_f61bf5f3"),
-        "disable-ice-and-snow": t("TXT_CODE_a0eb8b37"),
-        "disable-teleportation-suffocation-check": t("TXT_CODE_2793b84")
+        "disable-explosion-knockback": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENVIRONMENT_DISABLE_EXPLOSION_KNOCKBACK"),
+        "disable-ice-and-snow": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENVIRONMENT_DISABLE_ICE_AND_SNOW"),
+        "disable-teleportation-suffocation-check": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_ENVIRONMENT_DISABLE_TELEPORTATION_SUFFOCATION_CHECK")
       },
       scoreboards: {
-        "allow-non-player-entities-on-scoreboards": t("TXT_CODE_de150623"),
-        "use-vanilla-world-scoreboard-name-coloring": t("TXT_CODE_72f69b34")
+        "allow-non-player-entities-on-scoreboards": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_SCOREBOARDS_ALLOW_NON_PLAYER_ENTITIES_ON_SCOREBOARDS"),
+        "use-vanilla-world-scoreboard-name-coloring": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_SCOREBOARDS_USE_VANILLA_WORLD_SCOREBOARD_NAME_COLORING")
       },
       spawn: {
-        "allow-using-signs-inside-spawn-protection": t("TXT_CODE_3e83082b"),
-        "keep-spawn-loaded": t("TXT_CODE_9c9c19f0"),
-        "keep-spawn-loaded-range": t("TXT_CODE_fb93942a")
+        "allow-using-signs-inside-spawn-protection": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_SPAWN_ALLOW_USING_SIGNS_INSIDE_SPAWN_PROTECTION"),
+        "keep-spawn-loaded": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_SPAWN_KEEP_SPAWN_LOADED"),
+        "keep-spawn-loaded-range": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_SPAWN_KEEP_SPAWN_LOADED_RANGE")
       },
       "tick-rates": {
         behavior: {
           villager: {
-            validatenearbypoi: t("TXT_CODE_a41a4820")
+            validatenearbypoi: t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_TICK_RATES_BEHAVIOR_VILLAGER_VALIDATENEARBYPOI")
           }
         }
       },
       "unsupported-settings": {
-        "fix-invulnerable-end-crystal-exploit": t("TXT_CODE_1301e748")
+        "fix-invulnerable-end-crystal-exploit": t("TXT_CODE_GAME_CONFIG_PAPER_WORLD_DEFAULTS_UNSUPPORTED_SETTINGS_FIX_INVULNERABLE_END_CRYSTAL_EXPLOIT")
       }
     }
   },
   "pufferfish/pufferfish.yml": {
-    desc: t("TXT_CODE_9213f8e3"),
+    desc: t("TXT_CODE_COMMON_CONFIGURATION_FILE_FOR_PUFFERFISH_IT_ALLOWS_FOR_FURTHER_CONFIGURATION_OF_A_PAPER_SERVER"),
     config: {
       info: {
-        version: t("TXT_CODE_7214ead7")
+        version: t("TXT_CODE_GAME_CONFIG_PUFFERFISH_INFO_VERSION")
       },
-      "sentry-dsn": t("TXT_CODE_2e0e1dfa"),
+      "sentry-dsn": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_SENTRY_DSN"),
       projectile: {
-        "max-loads-per-tick": t("TXT_CODE_e66bfef9"),
-        "max-loads-per-projectile": t("TXT_CODE_b47dbe7d")
+        "max-loads-per-tick": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_PROJECTILE_MAX_LOADS_PER_TICK"),
+        "max-loads-per-projectile": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_PROJECTILE_MAX_LOADS_PER_PROJECTILE")
       },
       misc: {
-        "disable-method-profiler": t("TXT_CODE_90865a4")
+        "disable-method-profiler": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_MISC_DISABLE_METHOD_PROFILER")
       },
       flare: {
-        url: t("TXT_CODE_a7aa53a3")
+        url: t("TXT_CODE_GAME_CONFIG_PUFFERFISH_FLARE_URL")
       },
-      "enable-async-mob-spawning": t("TXT_CODE_41813325"),
-      "tps-catchup": t("TXT_CODE_32eb350b"),
-      "inactive-goal-selector-throttle": t("TXT_CODE_b5022f5d"),
-      "enable-books": t("TXT_CODE_33d91ef6"),
-      "allow-end-crystal-respawn": t("TXT_CODE_e707d042"),
+      "enable-async-mob-spawning": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_ENABLE_ASYNC_MOB_SPAWNING"),
+      "tps-catchup": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_TPS_CATCHUP"),
+      "inactive-goal-selector-throttle": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_INACTIVE_GOAL_SELECTOR_THROTTLE"),
+      "enable-books": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_ENABLE_BOOKS"),
+      "allow-end-crystal-respawn": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_ALLOW_END_CRYSTAL_RESPAWN"),
       dab: {
-        enabled: t("TXT_CODE_f738c45c"),
-        "start-distance": t("TXT_CODE_bd2534da"),
-        "max-tick-freq": t("TXT_CODE_a02a0849"),
-        "activation-dist-mod": t("TXT_CODE_cfe187b0"),
-        "blacklisted-entities": t("TXT_CODE_2e660675")
+        enabled: t("TXT_CODE_GAME_CONFIG_PUFFERFISH_DAB_ENABLED"),
+        "start-distance": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_DAB_START_DISTANCE"),
+        "max-tick-freq": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_DAB_MAX_TICK_FREQ"),
+        "activation-dist-mod": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_DAB_ACTIVATION_DIST_MOD"),
+        "blacklisted-entities": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_DAB_BLACKLISTED_ENTITIES")
       },
       "web-services": {
-        token: t("TXT_CODE_779553fb")
+        token: t("TXT_CODE_GAME_CONFIG_PUFFERFISH_WEB_SERVICES_TOKEN")
       },
-      "enable-suffocation-optimization": t("TXT_CODE_ae566b56")
+      "enable-suffocation-optimization": t("TXT_CODE_GAME_CONFIG_PUFFERFISH_ENABLE_SUFFOCATION_OPTIMIZATION")
     }
   },
   "mohist/mohist.yml": {
-    desc: t("TXT_CODE_6eead111"),
+    desc: t("TXT_CODE_COMMON_MOHIST_YML_SERVER_CONFIGURATION_FILE"),
     config: {
       mohist: {
-        lang: t("TXT_CODE_2a34c50a"),
-        check_update: t("TXT_CODE_4d36128b"),
+        lang: t("TXT_CODE_COMMON_LANGUAGE"),
+        check_update: t("TXT_CODE_GAME_CONFIG_MOHIST_MOHIST_CHECK_UPDATE"),
         libraries: {
-          check: t("TXT_CODE_8d4e6058"),
-          downloadsource: t("TXT_CODE_69ecec1")
+          check: t("TXT_CODE_GAME_CONFIG_MOHIST_MOHIST_LIBRARIES_CHECK"),
+          downloadsource: t("TXT_CODE_GAME_CONFIG_MOHIST_MOHIST_LIBRARIES_DOWNLOADSOURCE")
         },
-        "installation-finished": t("TXT_CODE_51289627")
+        "installation-finished": t("TXT_CODE_GAME_CONFIG_MOHIST_MOHIST_INSTALLATION_FINISHED")
       }
     }
   },
   "velocity/velocity.toml": {
-    desc: t("TXT_CODE_751f9bc1"),
+    desc: t("TXT_CODE_GAME_CONFIG_VELOCITY_DESCRIPTION"),
     config: {
-      "config-version": t("TXT_CODE_139ef152"),
-      bind: t("TXT_CODE_e6044db2"),
-      motd: t("TXT_CODE_881213df"),
-      "show-max-players": t("TXT_CODE_3378e8a5"),
-      "online-mode": t("TXT_CODE_196253a2"),
-      "force-key-authentication": t("TXT_CODE_4bf93cf1"),
-      "prevent-client-proxy-connections": t("TXT_CODE_28bfb02"),
-      "player-info-forwarding-mode": t("TXT_CODE_8956123b"),
-      "forwarding-secret-file": t("TXT_CODE_75696661"),
-      "announce-forge": t("TXT_CODE_eed84e8d"),
-      "kick-existing-players": t("TXT_CODE_91381d5c"),
-      "ping-passthrough": t("TXT_CODE_d29c8730"),
-      "enable-player-address-logging": t("TXT_CODE_c52c93f7"),
-      servers: t("TXT_CODE_c62e2f11"),
-      try: t("TXT_CODE_7010d780"),
-      "forced-hosts": t("TXT_CODE_94b6cd6e"),
-      advanced: t("TXT_CODE_86caaf6c"),
-      "compression-threshold": t("TXT_CODE_2ad9f3a0"),
-      "compression-level": t("TXT_CODE_604d3041"),
-      "login-ratelimit": t("TXT_CODE_97f5d91f"),
-      "connection-timeout": t("TXT_CODE_6b69f1d"),
-      "read-timeout": t("TXT_CODE_22cf9c9d"),
-      "haproxy-protocol": t("TXT_CODE_90e959d2"),
-      "tcp-fast-open": t("TXT_CODE_40c4894a"),
-      "bungee-plugin-message-channel": t("TXT_CODE_4d00c085"),
-      "show-ping-requests": t("TXT_CODE_ab4d93"),
-      "failover-on-unexpected-server-disconnect": t("TXT_CODE_9878c2bc"),
-      "announce-proxy-commands": t("TXT_CODE_70c3b6e"),
-      "log-command-executions": t("TXT_CODE_7680e37f"),
-      "log-player-connections": t("TXT_CODE_504b84d9"),
-      query: t("TXT_CODE_ee8ae330"),
-      enabled: t("TXT_CODE_2313aab2"),
-      port: t("TXT_CODE_7e426b47"),
-      map: t("TXT_CODE_e1ddd156"),
-      "show-plugins": t("TXT_CODE_ac696f4d")
+      "config-version": t("TXT_CODE_GAME_CONFIG_VELOCITY_CONFIG_VERSION"),
+      bind: t("TXT_CODE_GAME_CONFIG_VELOCITY_BIND"),
+      motd: t("TXT_CODE_GAME_CONFIG_VELOCITY_MOTD"),
+      "show-max-players": t("TXT_CODE_GAME_CONFIG_VELOCITY_SHOW_MAX_PLAYERS"),
+      "online-mode": t("TXT_CODE_GAME_CONFIG_VELOCITY_ONLINE_MODE"),
+      "force-key-authentication": t("TXT_CODE_GAME_CONFIG_VELOCITY_FORCE_KEY_AUTHENTICATION"),
+      "prevent-client-proxy-connections": t("TXT_CODE_GAME_CONFIG_VELOCITY_PREVENT_CLIENT_PROXY_CONNECTIONS"),
+      "player-info-forwarding-mode": t("TXT_CODE_GAME_CONFIG_VELOCITY_PLAYER_INFO_FORWARDING_MODE"),
+      "forwarding-secret-file": t("TXT_CODE_GAME_CONFIG_VELOCITY_FORWARDING_SECRET_FILE"),
+      "announce-forge": t("TXT_CODE_GAME_CONFIG_VELOCITY_ANNOUNCE_FORGE"),
+      "kick-existing-players": t("TXT_CODE_GAME_CONFIG_VELOCITY_KICK_EXISTING_PLAYERS"),
+      "ping-passthrough": t("TXT_CODE_GAME_CONFIG_VELOCITY_PING_PASSTHROUGH"),
+      "enable-player-address-logging": t("TXT_CODE_GAME_CONFIG_VELOCITY_ENABLE_PLAYER_ADDRESS_LOGGING"),
+      servers: t("TXT_CODE_GAME_CONFIG_VELOCITY_SERVERS"),
+      try: t("TXT_CODE_GAME_CONFIG_VELOCITY_TRY"),
+      "forced-hosts": t("TXT_CODE_GAME_CONFIG_VELOCITY_FORCED_HOSTS"),
+      advanced: t("TXT_CODE_GAME_CONFIG_VELOCITY_ADVANCED"),
+      "compression-threshold": t("TXT_CODE_GAME_CONFIG_VELOCITY_COMPRESSION_THRESHOLD"),
+      "compression-level": t("TXT_CODE_GAME_CONFIG_VELOCITY_COMPRESSION_LEVEL"),
+      "login-ratelimit": t("TXT_CODE_GAME_CONFIG_VELOCITY_LOGIN_RATELIMIT"),
+      "connection-timeout": t("TXT_CODE_GAME_CONFIG_VELOCITY_CONNECTION_TIMEOUT"),
+      "read-timeout": t("TXT_CODE_GAME_CONFIG_VELOCITY_READ_TIMEOUT"),
+      "haproxy-protocol": t("TXT_CODE_GAME_CONFIG_VELOCITY_HAPROXY_PROTOCOL"),
+      "tcp-fast-open": t("TXT_CODE_GAME_CONFIG_VELOCITY_TCP_FAST_OPEN"),
+      "bungee-plugin-message-channel": t("TXT_CODE_GAME_CONFIG_VELOCITY_BUNGEE_PLUGIN_MESSAGE_CHANNEL"),
+      "show-ping-requests": t("TXT_CODE_GAME_CONFIG_VELOCITY_SHOW_PING_REQUESTS"),
+      "failover-on-unexpected-server-disconnect": t("TXT_CODE_GAME_CONFIG_VELOCITY_FAILOVER_ON_UNEXPECTED_SERVER_DISCONNECT"),
+      "announce-proxy-commands": t("TXT_CODE_GAME_CONFIG_VELOCITY_ANNOUNCE_PROXY_COMMANDS"),
+      "log-command-executions": t("TXT_CODE_GAME_CONFIG_VELOCITY_LOG_COMMAND_EXECUTIONS"),
+      "log-player-connections": t("TXT_CODE_GAME_CONFIG_VELOCITY_LOG_PLAYER_CONNECTIONS"),
+      query: t("TXT_CODE_GAME_CONFIG_VELOCITY_QUERY"),
+      enabled: t("TXT_CODE_GAME_CONFIG_VELOCITY_ENABLED"),
+      port: t("TXT_CODE_GAME_CONFIG_VELOCITY_PORT"),
+      map: t("TXT_CODE_GAME_CONFIG_VELOCITY_MAP"),
+      "show-plugins": t("TXT_CODE_GAME_CONFIG_VELOCITY_SHOW_PLUGINS")
     }
   },
   "geyser/config.yml": {
-    desc: t("TXT_CODE_1d39feca"),
+    desc: t("TXT_CODE_GAME_CONFIG_GEYSER_DESCRIPTION"),
     config: {
       bedrock: {
-        port: t("TXT_CODE_9fe98f3"),
-        "clone-remote-port": t("TXT_CODE_aeb10fea"),
-        motd1: t("TXT_CODE_7b763c56"),
-        motd2: t("TXT_CODE_6557efaf"),
-        "server-name": t("TXT_CODE_8965b2cf"),
-        "compression-level": t("TXT_CODE_92bedafa"),
-        "enable-proxy-protocol": t("TXT_CODE_ce8f3dc1")
+        port: t("TXT_CODE_GAME_CONFIG_GEYSER_BEDROCK_PORT"),
+        "clone-remote-port": t("TXT_CODE_GAME_CONFIG_GEYSER_BEDROCK_CLONE_REMOTE_PORT"),
+        motd1: t("TXT_CODE_GAME_CONFIG_GEYSER_BEDROCK_MOTD1"),
+        motd2: t("TXT_CODE_GAME_CONFIG_GEYSER_BEDROCK_MOTD2"),
+        "server-name": t("TXT_CODE_GAME_CONFIG_GEYSER_BEDROCK_SERVER_NAME"),
+        "compression-level": t("TXT_CODE_GAME_CONFIG_GEYSER_BEDROCK_COMPRESSION_LEVEL"),
+        "enable-proxy-protocol": t("TXT_CODE_GAME_CONFIG_GEYSER_BEDROCK_ENABLE_PROXY_PROTOCOL")
       },
 
       remote: {
-        address: t("TXT_CODE_30aa5133"),
-        port: t("TXT_CODE_65a057ec"),
-        "auth-type": t("TXT_CODE_5f42b528"),
-        "allow-password-authentication": t("TXT_CODE_5a56ccca"),
-        "use-proxy-protocol": t("TXT_CODE_b0ad88c4"),
-        "forward-hostname": t("TXT_CODE_314aa817")
+        address: t("TXT_CODE_GAME_CONFIG_GEYSER_REMOTE_ADDRESS"),
+        port: t("TXT_CODE_GAME_CONFIG_GEYSER_REMOTE_PORT"),
+        "auth-type": t("TXT_CODE_GAME_CONFIG_GEYSER_REMOTE_AUTH_TYPE"),
+        "allow-password-authentication": t("TXT_CODE_GAME_CONFIG_GEYSER_REMOTE_ALLOW_PASSWORD_AUTHENTICATION"),
+        "use-proxy-protocol": t("TXT_CODE_GAME_CONFIG_GEYSER_REMOTE_USE_PROXY_PROTOCOL"),
+        "forward-hostname": t("TXT_CODE_GAME_CONFIG_GEYSER_REMOTE_FORWARD_HOSTNAME")
       },
 
-      "floodgate-key-file": t("TXT_CODE_28357e8b"),
-      "saved-user-logins": t("TXT_CODE_4f225afd"),
-      "pending-authentication-timeout": t("TXT_CODE_c24c2569"),
-      "command-suggestions": t("TXT_CODE_7fc92d9"),
-      "passthrough-motd": t("TXT_CODE_4ed501a1"),
-      "passthrough-protocol-name": t("TXT_CODE_2bfc02ef"),
-      "passthrough-player-counts": t("TXT_CODE_240252a"),
-      "legacy-ping-passthrough": t("TXT_CODE_5fed0011"),
-      "ping-passthrough-interval": t("TXT_CODE_19cada2a"),
-      "forward-player-ping": t("TXT_CODE_6cd13a66"),
-      "max-players": t("TXT_CODE_a89ab67c"),
-      "debug-mode": t("TXT_CODE_85d8d0a3"),
-      "allow-third-party-capes": t("TXT_CODE_59917c84"),
-      "allow-third-party-ears": t("TXT_CODE_47667d86"),
-      "show-cooldown": t("TXT_CODE_221bf389"),
-      "show-coordinates": t("TXT_CODE_3d046b93"),
-      "disable-bedrock-scaffolding": t("TXT_CODE_94d4c80c"),
-      "emote-offhand-workaround": t("TXT_CODE_49c040e1"),
-      "default-locale": t("TXT_CODE_1594de63"),
-      "cache-images": t("TXT_CODE_cf1cb995"),
-      "allow-custom-skulls": t("TXT_CODE_a6f8f61a"),
-      "max-visible-custom-skulls": t("TXT_CODE_96520bce"),
-      "custom-skull-render-distance": t("TXT_CODE_2a4f13d4"),
-      "add-non-bedrock-items": t("TXT_CODE_ffe9366a"),
-      "above-bedrock-nether-building": t("TXT_CODE_e093012e"),
-      "force-resource-packs": t("TXT_CODE_4908e15b"),
-      "xbox-achievements-enabled": t("TXT_CODE_fec66aca"),
-      "log-player-ip-addresses": t("TXT_CODE_a1587e9d"),
-      "notify-on-new-bedrock-update": t("TXT_CODE_aadfb5c0"),
-      "unusable-space-block": t("TXT_CODE_9ac051fb"),
+      "floodgate-key-file": t("TXT_CODE_GAME_CONFIG_GEYSER_FLOODGATE_KEY_FILE"),
+      "saved-user-logins": t("TXT_CODE_GAME_CONFIG_GEYSER_SAVED_USER_LOGINS"),
+      "pending-authentication-timeout": t("TXT_CODE_GAME_CONFIG_GEYSER_PENDING_AUTHENTICATION_TIMEOUT"),
+      "command-suggestions": t("TXT_CODE_GAME_CONFIG_GEYSER_COMMAND_SUGGESTIONS"),
+      "passthrough-motd": t("TXT_CODE_GAME_CONFIG_GEYSER_PASSTHROUGH_MOTD"),
+      "passthrough-protocol-name": t("TXT_CODE_GAME_CONFIG_GEYSER_PASSTHROUGH_PROTOCOL_NAME"),
+      "passthrough-player-counts": t("TXT_CODE_GAME_CONFIG_GEYSER_PASSTHROUGH_PLAYER_COUNTS"),
+      "legacy-ping-passthrough": t("TXT_CODE_GAME_CONFIG_GEYSER_LEGACY_PING_PASSTHROUGH"),
+      "ping-passthrough-interval": t("TXT_CODE_GAME_CONFIG_GEYSER_PING_PASSTHROUGH_INTERVAL"),
+      "forward-player-ping": t("TXT_CODE_GAME_CONFIG_GEYSER_FORWARD_PLAYER_PING"),
+      "max-players": t("TXT_CODE_GAME_CONFIG_GEYSER_MAX_PLAYERS"),
+      "debug-mode": t("TXT_CODE_GAME_CONFIG_GEYSER_DEBUG_MODE"),
+      "allow-third-party-capes": t("TXT_CODE_GAME_CONFIG_GEYSER_ALLOW_THIRD_PARTY_CAPES"),
+      "allow-third-party-ears": t("TXT_CODE_GAME_CONFIG_GEYSER_ALLOW_THIRD_PARTY_EARS"),
+      "show-cooldown": t("TXT_CODE_GAME_CONFIG_GEYSER_SHOW_COOLDOWN"),
+      "show-coordinates": t("TXT_CODE_GAME_CONFIG_GEYSER_SHOW_COORDINATES"),
+      "disable-bedrock-scaffolding": t("TXT_CODE_GAME_CONFIG_GEYSER_DISABLE_BEDROCK_SCAFFOLDING"),
+      "emote-offhand-workaround": t("TXT_CODE_GAME_CONFIG_GEYSER_EMOTE_OFFHAND_WORKAROUND"),
+      "default-locale": t("TXT_CODE_GAME_CONFIG_GEYSER_DEFAULT_LOCALE"),
+      "cache-images": t("TXT_CODE_GAME_CONFIG_GEYSER_CACHE_IMAGES"),
+      "allow-custom-skulls": t("TXT_CODE_GAME_CONFIG_GEYSER_ALLOW_CUSTOM_SKULLS"),
+      "max-visible-custom-skulls": t("TXT_CODE_GAME_CONFIG_GEYSER_MAX_VISIBLE_CUSTOM_SKULLS"),
+      "custom-skull-render-distance": t("TXT_CODE_GAME_CONFIG_GEYSER_CUSTOM_SKULL_RENDER_DISTANCE"),
+      "add-non-bedrock-items": t("TXT_CODE_GAME_CONFIG_GEYSER_ADD_NON_BEDROCK_ITEMS"),
+      "above-bedrock-nether-building": t("TXT_CODE_GAME_CONFIG_GEYSER_ABOVE_BEDROCK_NETHER_BUILDING"),
+      "force-resource-packs": t("TXT_CODE_GAME_CONFIG_GEYSER_FORCE_RESOURCE_PACKS"),
+      "xbox-achievements-enabled": t("TXT_CODE_GAME_CONFIG_GEYSER_XBOX_ACHIEVEMENTS_ENABLED"),
+      "log-player-ip-addresses": t("TXT_CODE_GAME_CONFIG_GEYSER_LOG_PLAYER_IP_ADDRESSES"),
+      "notify-on-new-bedrock-update": t("TXT_CODE_GAME_CONFIG_GEYSER_NOTIFY_ON_NEW_BEDROCK_UPDATE"),
+      "unusable-space-block": t("TXT_CODE_GAME_CONFIG_GEYSER_UNUSABLE_SPACE_BLOCK"),
 
       metrics: {
-        enabled: t("TXT_CODE_e2a11a62"),
-        uuid: t("TXT_CODE_462ba96")
+        enabled: t("TXT_CODE_GAME_CONFIG_GEYSER_METRICS_ENABLED"),
+        uuid: t("TXT_CODE_GAME_CONFIG_GEYSER_METRICS_UUID")
       },
-      "scoreboard-packet-threshold": t("TXT_CODE_70ff09a8"),
-      "enable-proxy-connections": t("TXT_CODE_bea356aa"),
-      mtu: t("TXT_CODE_2c41a36d"),
-      "use-direct-connection": t("TXT_CODE_92c21a08"),
-      "disable-compression": t("TXT_CODE_c7362d3d"),
-      "config-version": t("TXT_CODE_c8cdeeee")
+      "scoreboard-packet-threshold": t("TXT_CODE_GAME_CONFIG_GEYSER_SCOREBOARD_PACKET_THRESHOLD"),
+      "enable-proxy-connections": t("TXT_CODE_GAME_CONFIG_GEYSER_ENABLE_PROXY_CONNECTIONS"),
+      mtu: t("TXT_CODE_GAME_CONFIG_GEYSER_MTU"),
+      "use-direct-connection": t("TXT_CODE_GAME_CONFIG_GEYSER_USE_DIRECT_CONNECTION"),
+      "disable-compression": t("TXT_CODE_GAME_CONFIG_GEYSER_DISABLE_COMPRESSION"),
+      "config-version": t("TXT_CODE_GAME_CONFIG_GEYSER_CONFIG_VERSION")
     }
   },
   "forge/fml.toml": {
-    desc: t("TXT_CODE_7e6a82d8"),
+    desc: t("TXT_CODE_COMMON_CONFIGURATION_FILE_OF_A_FORGE_SERVER"),
     config: {
-      earlyWindowHeight: t("TXT_CODE_341dfd11"),
-      versionCheck: t("TXT_CODE_ea04fb32"),
-      earlyWindowControl: t("TXT_CODE_703cdd68"),
-      earlyWindowFBScale: t("TXT_CODE_ecc99fb6"),
-      earlyWindowProvider: t("TXT_CODE_55e91545"),
-      earlyWindowWidth: t("TXT_CODE_bd1ff011"),
-      earlyWindowMaximized: t("TXT_CODE_2ce63943"),
-      defaultConfigPath: t("TXT_CODE_b02f295d"),
-      disableOptimizedDFU: t("TXT_CODE_1f3aac40"),
-      earlyWindowSkipGLVersions: t("TXT_CODE_44c67809"),
-      maxThreads: t("TXT_CODE_e75ed0b5"),
-      earlyWindowSquir: t("TXT_CODE_4fe284cd"),
-      disableConfigWatcher: t("TXT_CODE_7c25c81a")
+      earlyWindowHeight: t("TXT_CODE_GAME_CONFIG_FORGE_FML_EARLY_WINDOW_HEIGHT"),
+      versionCheck: t("TXT_CODE_GAME_CONFIG_FORGE_FML_VERSION_CHECK"),
+      earlyWindowControl: t("TXT_CODE_GAME_CONFIG_FORGE_FML_EARLY_WINDOW_CONTROL"),
+      earlyWindowFBScale: t("TXT_CODE_GAME_CONFIG_FORGE_FML_EARLY_WINDOW_FB_SCALE"),
+      earlyWindowProvider: t("TXT_CODE_GAME_CONFIG_FORGE_FML_EARLY_WINDOW_PROVIDER"),
+      earlyWindowWidth: t("TXT_CODE_GAME_CONFIG_FORGE_FML_EARLY_WINDOW_WIDTH"),
+      earlyWindowMaximized: t("TXT_CODE_GAME_CONFIG_FORGE_FML_EARLY_WINDOW_MAXIMIZED"),
+      defaultConfigPath: t("TXT_CODE_GAME_CONFIG_FORGE_FML_DEFAULT_CONFIG_PATH"),
+      disableOptimizedDFU: t("TXT_CODE_GAME_CONFIG_FORGE_FML_DISABLE_OPTIMIZED_DFU"),
+      earlyWindowSkipGLVersions: t("TXT_CODE_GAME_CONFIG_FORGE_FML_EARLY_WINDOW_SKIP_GL_VERSIONS"),
+      maxThreads: t("TXT_CODE_GAME_CONFIG_FORGE_FML_MAX_THREADS"),
+      earlyWindowSquir: t("TXT_CODE_GAME_CONFIG_FORGE_FML_EARLY_WINDOW_SQUIR"),
+      disableConfigWatcher: t("TXT_CODE_GAME_CONFIG_FORGE_FML_DISABLE_CONFIG_WATCHER")
     }
   },
   "neoforge/neoforge-server.toml": {
-    desc: t("TXT_CODE_5b6f3691"),
+    desc: t("TXT_CODE_COMMON_SERVER_CONFIGURATION_FILE_OF_A_NEO_FORGE_SERVER"),
     config: {
-      removeErroringBlockEntities: t("TXT_CODE_f4c15e78"),
-      removeErroringEntities: t("TXT_CODE_c53c342e"),
-      fullBoundingBoxLadders: t("TXT_CODE_1fec78cc"),
-      permissionHandler: t("TXT_CODE_dd65f101"),
-      advertiseDedicatedServerToLan: t("TXT_CODE_176b2151")
+      removeErroringBlockEntities: t("TXT_CODE_GAME_CONFIG_NEOFORGE_SERVER_REMOVE_ERRORING_BLOCK_ENTITIES"),
+      removeErroringEntities: t("TXT_CODE_GAME_CONFIG_NEOFORGE_SERVER_REMOVE_ERRORING_ENTITIES"),
+      fullBoundingBoxLadders: t("TXT_CODE_GAME_CONFIG_NEOFORGE_SERVER_FULL_BOUNDING_BOX_LADDERS"),
+      permissionHandler: t("TXT_CODE_GAME_CONFIG_NEOFORGE_SERVER_PERMISSION_HANDLER"),
+      advertiseDedicatedServerToLan: t("TXT_CODE_GAME_CONFIG_NEOFORGE_SERVER_ADVERTISE_DEDICATED_SERVER_TO_LAN")
     }
   },
   "neoforge/neoforge-common.toml": {
-    desc: t("TXT_CODE_1efc7c5f"),
+    desc: t("TXT_CODE_COMMON_COMMON_CONFIGURATION_FILE_OF_A_NEO_FORGE_SERVER"),
     config: {
-      logUntranslatedItemTagWarnings: t("TXT_CODE_cf393058"),
-      logLegacyTagWarnings: t("TXT_CODE_b2f1310e"),
-      attributeAdvancedTooltipDebugInfo: t("TXT_CODE_94d885d1")
+      logUntranslatedItemTagWarnings: t("TXT_CODE_GAME_CONFIG_NEOFORGE_COMMON_LOG_UNTRANSLATED_ITEM_TAG_WARNINGS"),
+      logLegacyTagWarnings: t("TXT_CODE_GAME_CONFIG_NEOFORGE_COMMON_LOG_LEGACY_TAG_WARNINGS"),
+      attributeAdvancedTooltipDebugInfo: t("TXT_CODE_GAME_CONFIG_NEOFORGE_COMMON_ATTRIBUTE_ADVANCED_TOOLTIP_DEBUG_INFO")
     }
   },
   "tshock/config.json": {
-    desc: t("TXT_CODE_68821d80"),
+    desc: t("TXT_CODE_GAME_CONFIG_TSHOCK_DESCRIPTION"),
     config: {
       Settings: {
-        ServerPassword: t("TXT_CODE_448df2bd"),
-        ServerPort: t("TXT_CODE_a379038f"),
-        MaxSlots: t("TXT_CODE_e304faa"),
-        ReservedSlots: t("TXT_CODE_369a4a22"),
-        ServerName: t("TXT_CODE_60e3c342"),
-        UseServerName: t("TXT_CODE_8a924345"),
-        LogPath: t("TXT_CODE_447a9fc4"),
-        DebugLogs: t("TXT_CODE_a8b402a9"),
-        DisableLoginBeforeJoin: t("TXT_CODE_c4430fa6"),
-        IgnoreChestStacksOnLoad: t("TXT_CODE_d9b7a6a3"),
+        ServerPassword: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SERVER_PASSWORD"),
+        ServerPort: t("TXT_CODE_COMMON_SERVER_PORT"),
+        MaxSlots: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MAX_SLOTS"),
+        ReservedSlots: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_RESERVED_SLOTS"),
+        ServerName: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SERVER_NAME"),
+        UseServerName: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_USE_SERVER_NAME"),
+        LogPath: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_LOG_PATH"),
+        DebugLogs: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DEBUG_LOGS"),
+        DisableLoginBeforeJoin: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_LOGIN_BEFORE_JOIN"),
+        IgnoreChestStacksOnLoad: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_IGNORE_CHEST_STACKS_ON_LOAD"),
         WorldTileProvider: "",
-        AutoSave: t("TXT_CODE_9cefd73"),
-        AnnounceSave: t("TXT_CODE_2c194599"),
-        ShowBackupAutosaveMessages: t("TXT_CODE_cd3ae89e"),
-        BackupInterval: t("TXT_CODE_40c2c2ee"),
-        BackupKeepFor: t("TXT_CODE_255606fb"),
-        SaveWorldOnCrash: t("TXT_CODE_bec3d0ea"),
-        SaveWorldOnLastPlayerExit: t("TXT_CODE_f7f57aec"),
-        InvasionMultiplier: t("TXT_CODE_3e252bc9"),
-        DefaultMaximumSpawns: t("TXT_CODE_7d874fad"),
-        DefaultSpawnRate: t("TXT_CODE_2033383b"),
-        InfiniteInvasion: t("TXT_CODE_226b6c9e"),
-        PvPMode: t("TXT_CODE_85b01e01"),
-        SpawnProtection: t("TXT_CODE_7b759c13"),
-        SpawnProtectionRadius: t("TXT_CODE_965360cd"),
-        RangeChecks: t("TXT_CODE_443ac54f"),
-        HardcoreOnly: t("TXT_CODE_d092c3b"),
-        MediumcoreOnly: t("TXT_CODE_1a6d30de"),
-        SoftcoreOnly: t("TXT_CODE_b5ce1069"),
-        DisableBuild: t("TXT_CODE_c8c91afc"),
-        DisableHardmode: t("TXT_CODE_3f739f9c"),
-        DisableDungeonGuardian: t("TXT_CODE_c9e4d5c1"),
-        DisableClownBombs: t("TXT_CODE_f51ce97e"),
-        DisableSnowBalls: t("TXT_CODE_115e891f"),
-        DisableTombstones: t("TXT_CODE_90912e04"),
-        DisablePrimeBombs: t("TXT_CODE_ce953a4"),
-        ForceTime: t("TXT_CODE_b0b67785"),
-        DisableInvisPvP: t("TXT_CODE_584af0ab"),
-        MaxRangeForDisabled: t("TXT_CODE_d764908b"),
-        RegionProtectChests: t("TXT_CODE_3b346a65"),
-        RegionProtectGemLocks: t("TXT_CODE_603cbc35"),
-        IgnoreProjUpdate: t("TXT_CODE_33c223c"),
-        IgnoreProjKill: t("TXT_CODE_da65ecbd"),
-        AllowCutTilesAndBreakables: t("TXT_CODE_8c2ad2cb"),
-        AllowIce: t("TXT_CODE_ba1a222b"),
-        AllowCrimsonCreep: t("TXT_CODE_b30daa03"),
-        AllowCorruptionCreep: t("TXT_CODE_372e97f4"),
+        AutoSave: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_AUTO_SAVE"),
+        AnnounceSave: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ANNOUNCE_SAVE"),
+        ShowBackupAutosaveMessages: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SHOW_BACKUP_AUTOSAVE_MESSAGES"),
+        BackupInterval: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_BACKUP_INTERVAL"),
+        BackupKeepFor: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_BACKUP_KEEP_FOR"),
+        SaveWorldOnCrash: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SAVE_WORLD_ON_CRASH"),
+        SaveWorldOnLastPlayerExit: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SAVE_WORLD_ON_LAST_PLAYER_EXIT"),
+        InvasionMultiplier: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_INVASION_MULTIPLIER"),
+        DefaultMaximumSpawns: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DEFAULT_MAXIMUM_SPAWNS"),
+        DefaultSpawnRate: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DEFAULT_SPAWN_RATE"),
+        InfiniteInvasion: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_INFINITE_INVASION"),
+        PvPMode: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_PV_P_MODE"),
+        SpawnProtection: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SPAWN_PROTECTION"),
+        SpawnProtectionRadius: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SPAWN_PROTECTION_RADIUS"),
+        RangeChecks: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_RANGE_CHECKS"),
+        HardcoreOnly: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_HARDCORE_ONLY"),
+        MediumcoreOnly: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MEDIUMCORE_ONLY"),
+        SoftcoreOnly: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SOFTCORE_ONLY"),
+        DisableBuild: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_BUILD"),
+        DisableHardmode: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_HARDMODE"),
+        DisableDungeonGuardian: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_DUNGEON_GUARDIAN"),
+        DisableClownBombs: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_CLOWN_BOMBS"),
+        DisableSnowBalls: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_SNOW_BALLS"),
+        DisableTombstones: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_TOMBSTONES"),
+        DisablePrimeBombs: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_PRIME_BOMBS"),
+        ForceTime: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_FORCE_TIME"),
+        DisableInvisPvP: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_INVIS_PV_P"),
+        MaxRangeForDisabled: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MAX_RANGE_FOR_DISABLED"),
+        RegionProtectChests: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REGION_PROTECT_CHESTS"),
+        RegionProtectGemLocks: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REGION_PROTECT_GEM_LOCKS"),
+        IgnoreProjUpdate: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_IGNORE_PROJ_UPDATE"),
+        IgnoreProjKill: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_IGNORE_PROJ_KILL"),
+        AllowCutTilesAndBreakables: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ALLOW_CUT_TILES_AND_BREAKABLES"),
+        AllowIce: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ALLOW_ICE"),
+        AllowCrimsonCreep: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ALLOW_CRIMSON_CREEP"),
+        AllowCorruptionCreep: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ALLOW_CORRUPTION_CREEP"),
         AllowHallowCreep: "",
-        StatueSpawn200: t("TXT_CODE_66820e23"),
-        StatueSpawn600: t("TXT_CODE_32bf92a1"),
-        StatueSpawnWorld: t("TXT_CODE_3b4260f8"),
-        PreventBannedItemSpawn: t("TXT_CODE_cd62c9d4"),
-        PreventDeadModification: t("TXT_CODE_ed9bab79"),
-        PreventInvalidPlaceStyle: t("TXT_CODE_fe82609a"),
-        ForceXmas: t("TXT_CODE_b649a71a"),
-        ForceHalloween: t("TXT_CODE_ac52ad06"),
-        AllowAllowedGroupsToSpawnBannedItems: t("TXT_CODE_3f3e734b"),
-        RespawnSeconds: t("TXT_CODE_288830f4"),
-        RespawnBossSeconds: t("TXT_CODE_b45e73fb"),
-        AnonymousBossInvasions: t("TXT_CODE_87e18bb5"),
-        MaxHP: t("TXT_CODE_3f470950"),
-        MaxMP: t("TXT_CODE_95dfd5bd"),
-        BombExplosionRadius: t("TXT_CODE_f71475e2"),
-        GiveItemsDirectly: t("TXT_CODE_260d96a0"),
-        DefaultRegistrationGroupName: t("TXT_CODE_cfd64e73"),
-        DefaultGuestGroupName: t("TXT_CODE_90896d08"),
-        RememberLeavePos: t("TXT_CODE_52b31aef"),
-        MaximumLoginAttempts: t("TXT_CODE_3e98e22f"),
+        StatueSpawn200: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_STATUE_SPAWN200"),
+        StatueSpawn600: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_STATUE_SPAWN600"),
+        StatueSpawnWorld: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_STATUE_SPAWN_WORLD"),
+        PreventBannedItemSpawn: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_PREVENT_BANNED_ITEM_SPAWN"),
+        PreventDeadModification: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_PREVENT_DEAD_MODIFICATION"),
+        PreventInvalidPlaceStyle: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_PREVENT_INVALID_PLACE_STYLE"),
+        ForceXmas: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_FORCE_XMAS"),
+        ForceHalloween: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_FORCE_HALLOWEEN"),
+        AllowAllowedGroupsToSpawnBannedItems: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ALLOW_ALLOWED_GROUPS_TO_SPAWN_BANNED_ITEMS"),
+        RespawnSeconds: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_RESPAWN_SECONDS"),
+        RespawnBossSeconds: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_RESPAWN_BOSS_SECONDS"),
+        AnonymousBossInvasions: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ANONYMOUS_BOSS_INVASIONS"),
+        MaxHP: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MAX_HP"),
+        MaxMP: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MAX_MP"),
+        BombExplosionRadius: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_BOMB_EXPLOSION_RADIUS"),
+        GiveItemsDirectly: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_GIVE_ITEMS_DIRECTLY"),
+        DefaultRegistrationGroupName: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DEFAULT_REGISTRATION_GROUP_NAME"),
+        DefaultGuestGroupName: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DEFAULT_GUEST_GROUP_NAME"),
+        RememberLeavePos: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REMEMBER_LEAVE_POS"),
+        MaximumLoginAttempts: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MAXIMUM_LOGIN_ATTEMPTS"),
         KickOnMediumcoreDeath: "",
         MediumcoreKickReason: "",
         BanOnMediumcoreDeath: "",
         MediumcoreBanReason: "",
-        DisableDefaultIPBan: t("TXT_CODE_3855e22f"),
-        EnableWhitelist: t("TXT_CODE_d0e37f20"),
-        WhitelistKickReason: t("TXT_CODE_f160d877"),
-        ServerFullReason: t("TXT_CODE_4ff6a125"),
-        ServerFullNoReservedReason: t("TXT_CODE_5f23008"),
-        KickOnHardcoreDeath: t("TXT_CODE_95340802"),
-        HardcoreKickReason: t("TXT_CODE_129475a7"),
-        BanOnHardcoreDeath: t("TXT_CODE_8ab0cc1a"),
-        HardcoreBanReason: t("TXT_CODE_b7c8eb9f"),
-        KickProxyUsers: t("TXT_CODE_78223e62"),
-        RequireLogin: t("TXT_CODE_cb1fef78"),
-        AllowLoginAnyUsername: t("TXT_CODE_f2577f17"),
-        AllowRegisterAnyUsername: t("TXT_CODE_206f0c11"),
-        MinimumPasswordLength: t("TXT_CODE_ab7672dd"),
+        DisableDefaultIPBan: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_DEFAULT_IP_BAN"),
+        EnableWhitelist: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ENABLE_WHITELIST"),
+        WhitelistKickReason: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_WHITELIST_KICK_REASON"),
+        ServerFullReason: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SERVER_FULL_REASON"),
+        ServerFullNoReservedReason: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SERVER_FULL_NO_RESERVED_REASON"),
+        KickOnHardcoreDeath: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_HARDCORE_DEATH"),
+        HardcoreKickReason: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_HARDCORE_KICK_REASON"),
+        BanOnHardcoreDeath: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_BAN_ON_HARDCORE_DEATH"),
+        HardcoreBanReason: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_HARDCORE_BAN_REASON"),
+        KickProxyUsers: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_PROXY_USERS"),
+        RequireLogin: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REQUIRE_LOGIN"),
+        AllowLoginAnyUsername: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ALLOW_LOGIN_ANY_USERNAME"),
+        AllowRegisterAnyUsername: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ALLOW_REGISTER_ANY_USERNAME"),
+        MinimumPasswordLength: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MINIMUM_PASSWORD_LENGTH"),
         BCryptWorkFactor: "",
-        DisableUUIDLogin: t("TXT_CODE_94002354"),
-        KickEmptyUUID: t("TXT_CODE_7141866a"),
-        TilePaintThreshold: t("TXT_CODE_6d912e27"),
-        KickOnTilePaintThresholdBroken: t("TXT_CODE_192078c6"),
-        MaxDamage: t("TXT_CODE_5e6e46bb"),
-        MaxProjDamage: t("TXT_CODE_e1af7c8b"),
-        KickOnDamageThresholdBroken: t("TXT_CODE_57417f60"),
-        TileKillThreshold: t("TXT_CODE_4fb66c81"),
-        KickOnTileKillThresholdBroken: t("TXT_CODE_4aba9745"),
-        TilePlaceThreshold: t("TXT_CODE_17cbacf6"),
-        KickOnTilePlaceThresholdBroken: t("TXT_CODE_617701dc"),
+        DisableUUIDLogin: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_UUID_LOGIN"),
+        KickEmptyUUID: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_EMPTY_UUID"),
+        TilePaintThreshold: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_TILE_PAINT_THRESHOLD"),
+        KickOnTilePaintThresholdBroken: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_TILE_PAINT_THRESHOLD_BROKEN"),
+        MaxDamage: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MAX_DAMAGE"),
+        MaxProjDamage: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MAX_PROJ_DAMAGE"),
+        KickOnDamageThresholdBroken: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_DAMAGE_THRESHOLD_BROKEN"),
+        TileKillThreshold: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_TILE_KILL_THRESHOLD"),
+        KickOnTileKillThresholdBroken: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_TILE_KILL_THRESHOLD_BROKEN"),
+        TilePlaceThreshold: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_TILE_PLACE_THRESHOLD"),
+        KickOnTilePlaceThresholdBroken: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_TILE_PLACE_THRESHOLD_BROKEN"),
         TileLiquidThreshold: "",
-        KickOnTileLiquidThresholdBroken: t("TXT_CODE_9394aadf"),
-        ProjIgnoreShrapnel: t("TXT_CODE_c9c27711"),
-        ProjectileThreshold: t("TXT_CODE_6d6c7e9a"),
-        KickOnProjectileThresholdBroken: t("TXT_CODE_946d4401"),
-        HealOtherThreshold: t("TXT_CODE_449efd26"),
-        KickOnHealOtherThresholdBroken: t("TXT_CODE_e0643e6f"),
-        SuppressPermissionFailureNotices: t("TXT_CODE_decf21ee"),
-        DisableModifiedZenith: t("TXT_CODE_d4b058a9"),
-        DisableCustomDeathMessages: t("TXT_CODE_5143c584"),
-        CommandSpecifier: t("TXT_CODE_235cd293"),
-        CommandSilentSpecifier: t("TXT_CODE_1049cbd1"),
-        DisableSpewLogs: t("TXT_CODE_f29d5d2"),
-        DisableSecondUpdateLogs: t("TXT_CODE_ef97db20"),
-        SuperAdminChatRGB: t("TXT_CODE_b3127cba"),
-        SuperAdminChatPrefix: t("TXT_CODE_24843187"),
-        SuperAdminChatSuffix: t("TXT_CODE_5bc16b9a"),
-        EnableGeoIP: t("TXT_CODE_6bf4665b"),
-        DisplayIPToAdmins: t("TXT_CODE_1b763e24"),
-        ChatFormat: t("TXT_CODE_2374966e"),
-        ChatAboveHeadsFormat: t("TXT_CODE_97535446"),
-        EnableChatAboveHeads: t("TXT_CODE_9c39c7ae"),
-        BroadcastRGB: t("TXT_CODE_11d2ab6b"),
-        StorageType: t("TXT_CODE_8e5f865e"),
-        SqliteDBPath: t("TXT_CODE_90f00679"),
-        MySqlHost: t("TXT_CODE_17f1f440"),
-        MySqlDbName: t("TXT_CODE_d0b40386"),
-        MySqlUsername: t("TXT_CODE_929a9ee4"),
-        MySqlPassword: t("TXT_CODE_3a5b3d2d"),
-        UseSqlLogs: t("TXT_CODE_ce99026b"),
-        RevertToTextLogsOnSqlFailures: t("TXT_CODE_2ba4bf6f"),
-        RestApiEnabled: t("TXT_CODE_6683b887"),
-        RestApiPort: t("TXT_CODE_daca92c1"),
-        LogRest: t("TXT_CODE_fdd1a61"),
-        EnableTokenEndpointAuthentication: t("TXT_CODE_b9d7fe43"),
-        RESTMaximumRequestsPerInterval: t("TXT_CODE_8298bfde"),
-        RESTRequestBucketDecreaseIntervalMinutes: t("TXT_CODE_5b190bc4"),
-        ApplicationRestTokens: t("TXT_CODE_f0ca2761")
+        KickOnTileLiquidThresholdBroken: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_TILE_LIQUID_THRESHOLD_BROKEN"),
+        ProjIgnoreShrapnel: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_PROJ_IGNORE_SHRAPNEL"),
+        ProjectileThreshold: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_PROJECTILE_THRESHOLD"),
+        KickOnProjectileThresholdBroken: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_PROJECTILE_THRESHOLD_BROKEN"),
+        HealOtherThreshold: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_HEAL_OTHER_THRESHOLD"),
+        KickOnHealOtherThresholdBroken: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_KICK_ON_HEAL_OTHER_THRESHOLD_BROKEN"),
+        SuppressPermissionFailureNotices: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SUPPRESS_PERMISSION_FAILURE_NOTICES"),
+        DisableModifiedZenith: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_MODIFIED_ZENITH"),
+        DisableCustomDeathMessages: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_CUSTOM_DEATH_MESSAGES"),
+        CommandSpecifier: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_COMMAND_SPECIFIER"),
+        CommandSilentSpecifier: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_COMMAND_SILENT_SPECIFIER"),
+        DisableSpewLogs: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_SPEW_LOGS"),
+        DisableSecondUpdateLogs: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISABLE_SECOND_UPDATE_LOGS"),
+        SuperAdminChatRGB: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SUPER_ADMIN_CHAT_RGB"),
+        SuperAdminChatPrefix: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SUPER_ADMIN_CHAT_PREFIX"),
+        SuperAdminChatSuffix: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SUPER_ADMIN_CHAT_SUFFIX"),
+        EnableGeoIP: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ENABLE_GEO_IP"),
+        DisplayIPToAdmins: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_DISPLAY_IP_TO_ADMINS"),
+        ChatFormat: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_CHAT_FORMAT"),
+        ChatAboveHeadsFormat: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_CHAT_ABOVE_HEADS_FORMAT"),
+        EnableChatAboveHeads: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ENABLE_CHAT_ABOVE_HEADS"),
+        BroadcastRGB: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_BROADCAST_RGB"),
+        StorageType: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_STORAGE_TYPE"),
+        SqliteDBPath: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_SQLITE_DB_PATH"),
+        MySqlHost: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MY_SQL_HOST"),
+        MySqlDbName: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MY_SQL_DB_NAME"),
+        MySqlUsername: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MY_SQL_USERNAME"),
+        MySqlPassword: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_MY_SQL_PASSWORD"),
+        UseSqlLogs: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_USE_SQL_LOGS"),
+        RevertToTextLogsOnSqlFailures: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REVERT_TO_TEXT_LOGS_ON_SQL_FAILURES"),
+        RestApiEnabled: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REST_API_ENABLED"),
+        RestApiPort: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REST_API_PORT"),
+        LogRest: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_LOG_REST"),
+        EnableTokenEndpointAuthentication: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_ENABLE_TOKEN_ENDPOINT_AUTHENTICATION"),
+        RESTMaximumRequestsPerInterval: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REST_MAXIMUM_REQUESTS_PER_INTERVAL"),
+        RESTRequestBucketDecreaseIntervalMinutes: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_REST_REQUEST_BUCKET_DECREASE_INTERVAL_MINUTES"),
+        ApplicationRestTokens: t("TXT_CODE_GAME_CONFIG_TSHOCK_SETTINGS_APPLICATION_REST_TOKENS")
       }
     }
   },
@@ -3274,18 +3274,18 @@ export const configData: {
   "hytale/config.json": {
     desc: t("TXT_CODE_HYTALE_CONFIG_DESC"),
     config: {
-      ServerName: t("TXT_CODE_e59f909f"),
-      MOTD: t("TXT_CODE_b5ebbc0b"),
-      Password: t("TXT_CODE_d417058f"),
-      MaxPlayers: t("TXT_CODE_6702c53e"),
-      MaxViewRadius: t("TXT_CODE_d99ffe16"),
+      ServerName: t("TXT_CODE_GAME_CONFIG_HYTALE_SERVER_NAME"),
+      MOTD: t("TXT_CODE_GAME_CONFIG_HYTALE_MOTD"),
+      Password: t("TXT_CODE_GAME_CONFIG_HYTALE_PASSWORD"),
+      MaxPlayers: t("TXT_CODE_GAME_CONFIG_HYTALE_MAX_PLAYERS"),
+      MaxViewRadius: t("TXT_CODE_GAME_CONFIG_HYTALE_MAX_VIEW_RADIUS"),
       Defaults: {
-        World: t("TXT_CODE_2b58a46"),
-        GameMode: t("TXT_CODE_783807df")
+        World: t("TXT_CODE_GAME_CONFIG_HYTALE_DEFAULTS_WORLD"),
+        GameMode: t("TXT_CODE_GAME_CONFIG_HYTALE_DEFAULTS_GAME_MODE")
       },
-      DisplayTmpTagsInStrings: t("TXT_CODE_938b5975"),
+      DisplayTmpTagsInStrings: t("TXT_CODE_GAME_CONFIG_HYTALE_DISPLAY_TMP_TAGS_IN_STRINGS"),
       PlayerStorage: {
-        Type: t("TXT_CODE_78d240bf")
+        Type: t("TXT_CODE_GAME_CONFIG_HYTALE_PLAYER_STORAGE_TYPE")
       }
     }
   }

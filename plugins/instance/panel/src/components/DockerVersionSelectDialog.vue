@@ -26,29 +26,29 @@ defineExpose({
 
 <template>
   <VDialog v-model="isVisible" max-width="860" persistent>
-    <VCard :title="t('TXT_CODE_docker_version_select_title')">
+    <VCard :title="t('TXT_CODE_DOCKER_VERSION_SELECT_TITLE')">
       <VCardText>
     <div class="cards">
-      <VCard :title="t('TXT_CODE_docker_version_select_docker_title')" prepend-icon="mdi-docker"
+      <VCard :title="t('TXT_CODE_DOCKER_VERSION_SELECT_DOCKER_TITLE')" prepend-icon="mdi-docker"
         class="choose-card docker-card" hoverable @click="selectDockerVersion">
         <VCardText class="text-medium-emphasis">
-          {{ t("TXT_CODE_docker_version_select_docker_subtitle") }}
+          {{ t("TXT_CODE_DOCKER_VERSION_SELECT_DOCKER_SUBTITLE") }}
         </VCardText>
         <div class="card-action">
           <VBtn color="primary">
-            {{ t("TXT_CODE_docker_version_select_docker_btn") }}
+            {{ t("TXT_CODE_DOCKER_VERSION_SELECT_DOCKER_BTN") }}
           </VBtn>
         </div>
       </VCard>
 
-      <VCard :title="t('TXT_CODE_docker_version_select_normal_title')" prepend-icon="mdi-apps"
+      <VCard :title="t('TXT_CODE_DOCKER_VERSION_SELECT_NORMAL_TITLE')" prepend-icon="mdi-apps"
         class="choose-card normal-card" hoverable @click="selectNormalVersion">
         <VCardText class="text-medium-emphasis">
-          {{ t("TXT_CODE_docker_version_select_normal_subtitle") }}
+          {{ t("TXT_CODE_DOCKER_VERSION_SELECT_NORMAL_SUBTITLE") }}
         </VCardText>
         <div class="card-action">
           <VBtn variant="tonal">
-            {{ t("TXT_CODE_docker_version_select_normal_btn") }}
+            {{ t("TXT_CODE_DOCKER_VERSION_SELECT_NORMAL_BTN") }}
           </VBtn>
         </div>
       </VCard>

@@ -71,7 +71,7 @@ const handleDialogUpdate = (value: boolean) => {
 const submit = async () => {
   try {
     await saveTags();
-    message.success(t("TXT_CODE_a7907771"));
+    message.success(t("TXT_CODE_COMMON_SAVED"));
     await cancel();
   } catch (error) {
     reportErrorMsg(error);
@@ -91,12 +91,12 @@ defineExpose({ openDialog });
 <template>
   <VDialog :model-value="open" class="app-dialog tags-dialog" max-width="620" scrollable
     @update:model-value="handleDialogUpdate">
-    <VCard :title="t('TXT_CODE_a2544278')" rounded="xl">
+    <VCard :title="t('TXT_CODE_COMMON_INSTANCE_TAG')" rounded="xl">
       <VCardText class="tags-dialog__content">
-        <p class="tags-dialog__hint">{{ t("TXT_CODE_f84ae54f") }}</p>
+        <p class="tags-dialog__hint">{{ t("TXT_CODE_COMMON_TAGS_GROUP_INSTANCES_FOR_FILTERING") }}</p>
 
         <section class="tags-dialog__section">
-          <p class="tags-dialog__label">{{ t("TXT_CODE_2c1337d") }}</p>
+          <p class="tags-dialog__label">{{ t("TXT_CODE_COMMON_TAG_LIST_OF_THIS_INSTANCE") }}</p>
           <div class="tag-container">
             <VChip
               v-for="tag in instanceTags"
@@ -130,14 +130,14 @@ defineExpose({ openDialog });
               prepend-icon="mdi-plus"
               @click="showInput"
             >
-              {{ t("TXT_CODE_3dd66d98") }}
+              {{ t("TXT_CODE_COMMON_NEW_TAG") }}
             </VBtn>
           </div>
         </section>
 
         <section v-if="instanceTagsTips?.length > 0" class="tags-dialog__section tags-dialog__suggestions">
-          <p class="tags-dialog__label">{{ t("TXT_CODE_67d1ea21") }}</p>
-          <p class="tags-dialog__hint">{{ t("TXT_CODE_3ecee271") }}</p>
+          <p class="tags-dialog__label">{{ t("TXT_CODE_COMMON_SOME_OPTIONAL_TAGS") }}</p>
+          <p class="tags-dialog__hint">{{ t("TXT_CODE_COMMON_SUGGESTIONS_COME_FROM_THE_CURRENT_INSTANCE_LIST_UP_TO_30_ARE_SHOWN") }}</p>
           <div class="tag-container">
             <VChip
               v-for="tag in instanceTagsTips"
@@ -154,9 +154,9 @@ defineExpose({ openDialog });
       </VCardText>
       <VCardActions class="tags-dialog__actions">
         <VSpacer />
-        <VBtn variant="text" rounded="xl" @click="cancel">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+        <VBtn variant="text" rounded="xl" @click="cancel">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
         <VBtn color="primary" variant="text" rounded="xl" :loading="saveLoading" @click="submit">
-          {{ t("TXT_CODE_d507abff") }}
+          {{ t("TXT_CODE_COMMON_CONFIRM") }}
         </VBtn>
       </VCardActions>
     </VCard>

@@ -55,7 +55,7 @@ const columns = computed<KvColumn[]>(() => {
         align: "center",
         key: "operation",
         dataIndex: "operation",
-        title: t("TXT_CODE_fe731dfc")
+        title: t("TXT_CODE_COMMON_ACTIONS")
       }
     ];
   }
@@ -76,7 +76,7 @@ const columns = computed<KvColumn[]>(() => {
       align: "center",
       key: "operation",
       dataIndex: "operation",
-      title: t("TXT_CODE_fe731dfc")
+      title: t("TXT_CODE_COMMON_ACTIONS")
     }
   ];
 });
@@ -119,7 +119,7 @@ const operation = (type: "add" | "del", index = 0) => {
       <div class="d-flex justify-end mb-5">
         <VBtn variant="tonal" @click="operation('add')">
           <VIcon start icon="mdi-plus-circle-outline" />
-          {{ t("TXT_CODE_dfc17a0c") }}
+          {{ t("TXT_CODE_COMMON_ADD_CONFIGURATION") }}
         </VBtn>
       </div>
       <VForm ref="formInstance">
@@ -157,8 +157,8 @@ const operation = (type: "add" | "del", index = 0) => {
       </VCardText>
       <VCardActions>
         <VSpacer />
-        <VBtn variant="text" @click="cancel">{{ t("TXT_CODE_a0451c97") }}</VBtn>
-        <VBtn color="primary" @click="submit">{{ t("TXT_CODE_d507abff") }}</VBtn>
+        <VBtn variant="text" @click="cancel">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
+        <VBtn color="primary" @click="submit">{{ t("TXT_CODE_COMMON_CONFIRM") }}</VBtn>
       </VCardActions>
     </VCard>
   </VDialog>

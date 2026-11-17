@@ -11,7 +11,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <VTooltip :text="t('TXT_CODE_13ae6a93')">
+  <VTooltip :text="t('TXT_CODE_COMMON_COPY')">
     <template #activator="{ props: tooltipProps }">
       <VBtn v-bind="tooltipProps" icon variant="text" rounded="xl" :size="size || 'small'" :color="type === 'danger' ? 'error' : undefined"
         @click="toCopy(props.value)">

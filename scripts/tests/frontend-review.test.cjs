@@ -1199,7 +1199,7 @@ test("desktop node refresh ignores stale results, validates ports and reports fa
   Object.assign(state.form, { ip: "example.com", port: 70000, apiKey: "key" });
   await state.saveNode();
   assert.equal(writes.length, 0);
-  assert.equal(state.formError.value, "TXT_CODE_12040bf0");
+  assert.equal(state.formError.value, "TXT_CODE_COMMON_THE_PORT_NUMBER_MUST_BE_WITHIN_THE_RANGE_OF_0_65535");
   state.confirmDelete(node);
   await state.executeDelete();
   assert.equal(state.showDeleteConfirm.value, true);

@@ -207,8 +207,8 @@ const open = (field: SettingField) => {
                   icon="mdi-pencil-outline"
                   variant="text"
                   size="small"
-                  :title="field.editLabel || t('TXT_CODE_ad207008')"
-                  :aria-label="field.editLabel || t('TXT_CODE_ad207008')"
+                  :title="field.editLabel || t('TXT_CODE_COMMON_EDIT')"
+                  :aria-label="field.editLabel || t('TXT_CODE_COMMON_EDIT')"
                   @click="editItem(field, item)"
                 />
                 <VBtn
@@ -216,8 +216,8 @@ const open = (field: SettingField) => {
                   icon="mdi-delete-outline"
                   variant="text"
                   size="small"
-                  :title="field.removeLabel || t('TXT_CODE_6f2c1806')"
-                  :aria-label="field.removeLabel || t('TXT_CODE_6f2c1806')"
+                  :title="field.removeLabel || t('TXT_CODE_COMMON_REMOVE')"
+                  :aria-label="field.removeLabel || t('TXT_CODE_COMMON_REMOVE')"
                   @click="removeItem(field, itemIndex)"
                 />
               </div>
@@ -237,14 +237,14 @@ const open = (field: SettingField) => {
             :disabled="items(field).length >= (field.maxItems ?? 100)"
             @click="addItem(field)"
           >
-            {{ field.addLabel || t("TXT_CODE_a1d885c1") }}
+            {{ field.addLabel || t("TXT_CODE_COMMON_ADD") }}
           </VBtn>
         </div>
         <VTextarea
           v-else-if="field.type === 'text'"
           :model-value="String(values[field.key!] ?? '')"
           :rows="4"
-          :placeholder="field.placeholder || t('TXT_CODE_4ea93630')"
+          :placeholder="field.placeholder || t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
           variant="solo-filled"
           density="comfortable"
           hide-details
@@ -256,7 +256,7 @@ const open = (field: SettingField) => {
         >
           <VTextField
             :model-value="String(values[field.key!] ?? '')"
-            :placeholder="field.placeholder || t('TXT_CODE_4ea93630')"
+            :placeholder="field.placeholder || t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
             variant="solo-filled"
             density="comfortable"
             hide-details
@@ -270,7 +270,7 @@ const open = (field: SettingField) => {
             :loading="field.key ? uploading.has(field.key) : false"
             @click="upload(field)"
           >
-            {{ t("TXT_CODE_ae09d79d") }}
+            {{ t("TXT_CODE_COMMON_UPLOAD") }}
           </VBtn>
         </div>
         <VMenu
@@ -307,7 +307,7 @@ const open = (field: SettingField) => {
           v-else-if="field.type === 'string' && !field.secret"
           :model-value="String(values[field.key!] ?? '')"
           class="setting-control setting-control-medium"
-          :placeholder="field.placeholder || t('TXT_CODE_4ea93630')"
+          :placeholder="field.placeholder || t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
           variant="solo-filled"
           density="comfortable"
           hide-details
@@ -319,7 +319,7 @@ const open = (field: SettingField) => {
           class="setting-control setting-control-medium"
           type="password"
           autocomplete="new-password"
-          :placeholder="field.placeholder || t('TXT_CODE_4ea93630')"
+          :placeholder="field.placeholder || t('TXT_CODE_COMMON_PLEASE_ENTER_CONTENT')"
           variant="solo-filled"
           density="comfortable"
           hide-details
@@ -362,7 +362,7 @@ const open = (field: SettingField) => {
   </component>
   <VDialog v-if="editor" v-model="editorOpen" max-width="640" scrollable @after-leave="clearEditor">
     <VCard
-      :title="t(editor.original ? 'TXT_CODE_ad207008' : 'TXT_CODE_a1d885c1')"
+      :title="t(editor.original ? 'TXT_CODE_COMMON_EDIT' : 'TXT_CODE_COMMON_ADD')"
       class="setting-list-editor"
     >
       <VForm @submit.stop.prevent="confirmEditor">
@@ -370,9 +370,9 @@ const open = (field: SettingField) => {
           <SchemaForm :fields="editor.field.fields || []" :values="editor.draft" nested />
         </VCardText>
         <VCardActions class="justify-end">
-          <VBtn type="button" @click="cancelEditor">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+          <VBtn type="button" @click="cancelEditor">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
           <VBtn type="submit" color="primary" variant="flat" :disabled="!canConfirm">{{
-            t("TXT_CODE_d507abff")
+            t("TXT_CODE_COMMON_CONFIRM")
           }}</VBtn>
         </VCardActions>
       </VForm>

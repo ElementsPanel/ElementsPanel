@@ -1,8 +1,9 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const { crc32 } = require("crc");
 const {
   LANGUAGES,
+  assertSemanticKey,
+  keyFromEnglishText,
   findCatalogues,
   readCatalogue,
   validateCatalogues
@@ -60,10 +61,21 @@ function createConfig(root = __dirname) {
         const transformed = content.replace(calls, (call, prefix, literal) => {
           let replacement = literal;
           this.parser.parseFuncFromString(`t(${literal})`, { list: ["t"] }, (key) => {
-            if (key.startsWith(FN_KEY)) return;
-            const hashKey = `${FN_KEY}${crc32(key).toString(16)}`;
-            this.parser.set(hashKey, { ns: namespace, defaultValue: key });
-            replacement = `${literal[0]}${hashKey}${literal[0]}`;
+            if (key.startsWith(FN_KEY)) {
+              assertSemanticKey(key, file.path);
+              return;
+            }
+            const semanticKey = keyFromEnglishText(key);
+            const resources = this.parser.get();
+            for (const messages of Object.values(resources.en_US || {})) {
+              if (Object.hasOwn(messages, semanticKey) && messages[semanticKey] !== key) {
+                throw new Error(
+                  `${file.path}: generated key ${semanticKey} already has a different translation; provide an explicit meaningful TXT_CODE_ key.`
+                );
+              }
+            }
+            this.parser.set(semanticKey, { ns: namespace, defaultValue: key });
+            replacement = `${literal[0]}${semanticKey}${literal[0]}`;
           });
           return prefix + replacement;
         });

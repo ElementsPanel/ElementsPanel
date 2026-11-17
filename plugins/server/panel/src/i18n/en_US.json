@@ -1,12 +1,12 @@
 {
-  "TXT_CODE_233624ad": "Enter an integer port number. Default: 23333.",
-  "TXT_CODE_2b85af6d": "Enable when using a reverse proxy to read the client’s real IP.",
-  "TXT_CODE_328191e": "Enter its IP address to bind to a specific network interface.",
-  "TXT_CODE_405cd346": "Cross-Origin Request API Interface",
-  "TXT_CODE_514e064a": "Panel Binding IP",
-  "TXT_CODE_6655c905": "Allows cross-origin requests from any origin (Access-Control-Allow-Origin: *). This may reduce security.",
-  "TXT_CODE_66aeac82": "Reverse Proxy Request Header",
-  "TXT_CODE_7f0017d2": "Panel Port",
+  "TXT_CODE_COMMON_ENTER_AN_INTEGER_PORT_NUMBER_DEFAULT_23333": "Enter an integer port number. Default: 23333.",
+  "TXT_CODE_COMMON_ENABLE_WHEN_USING_A_REVERSE_PROXY_TO_READ_THE_CLIENTS_REAL_IP": "Enable when using a reverse proxy to read the client’s real IP.",
+  "TXT_CODE_COMMON_ENTER_ITS_IP_ADDRESS_TO_BIND_TO_A_SPECIFIC_NETWORK_INTERFACE": "Enter its IP address to bind to a specific network interface.",
+  "TXT_CODE_COMMON_CROSS_ORIGIN_REQUEST_API_INTERFACE": "Cross-Origin Request API Interface",
+  "TXT_CODE_COMMON_PANEL_BINDING_IP": "Panel Binding IP",
+  "TXT_CODE_SERVER_CROSS_ORIGIN_SECURITY_HINT": "Allows cross-origin requests from any origin (Access-Control-Allow-Origin: *). This may reduce security.",
+  "TXT_CODE_COMMON_REVERSE_PROXY_REQUEST_HEADER": "Reverse Proxy Request Header",
+  "TXT_CODE_COMMON_PANEL_PORT": "Panel Port",
   "TXT_CODE_SERVER_PREFIX": "Path Prefix",
   "TXT_CODE_SERVER_PREFIX_TIP": "Serve the panel under a sub-path, for example /panel. Leave it empty to serve from the root.",
   "TXT_CODE_SERVER_RESTART_TIP": "These settings are applied when the web server starts. Restart the panel for a change to take effect.",
@@ -16,6 +16,6 @@
   "TXT_CODE_SERVER_SSL_PEM": "Certificate File (.pem)",
   "TXT_CODE_SERVER_SSL_PEM_TIP": "Path to the certificate file, absolute or relative to the panel directory.",
   "TXT_CODE_SERVER_SSL_TIP": "Serve the panel over HTTPS using the certificate below. Both files are required.",
-  "TXT_CODE_f0789d81": "Reverse Proxy Mode",
-  "TXT_CODE_fd8bc51f": "Name of the request header containing the client’s real IP."
+  "TXT_CODE_COMMON_REVERSE_PROXY_MODE": "Reverse Proxy Mode",
+  "TXT_CODE_COMMON_NAME_OF_THE_REQUEST_HEADER_CONTAINING_THE_CLIENTS_REAL_IP": "Name of the request header containing the client’s real IP."
 }

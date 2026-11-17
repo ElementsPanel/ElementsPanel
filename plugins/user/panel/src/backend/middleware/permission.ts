@@ -32,27 +32,27 @@ function requestSpeedLimit(ctx: Koa.ParameterizedContext) {
 
 function verificationFailed(ctx: Koa.ParameterizedContext) {
   ctx.status = 403;
-  ctx.body = `${$t("TXT_CODE_permission.forbidden")}`;
+  ctx.body = `${$t("TXT_CODE_PERMISSION_FORBIDDEN")}`;
 }
 
 function tokenError(ctx: Koa.ParameterizedContext) {
   ctx.status = 403;
-  ctx.body = `${$t("TXT_CODE_permission.forbiddenTokenError")}`;
+  ctx.body = `${$t("TXT_CODE_PERMISSION_FORBIDDEN_TOKEN_ERROR")}`;
 }
 
 function ajaxError(ctx: Koa.ParameterizedContext) {
   ctx.status = 403;
-  ctx.body = `${$t("TXT_CODE_permission.xmlhttprequestError")}`;
+  ctx.body = `${$t("TXT_CODE_PERMISSION_XMLHTTPREQUEST_ERROR")}`;
 }
 
 function apiError(ctx: Koa.ParameterizedContext) {
   ctx.status = 403;
-  ctx.body = `${$t("TXT_CODE_permission.apiError")}`;
+  ctx.body = `${$t("TXT_CODE_PERMISSION_API_ERROR")}`;
 }
 
 function tooFast(ctx: Koa.ParameterizedContext) {
   ctx.status = 429;
-  ctx.body = `${$t("TXT_CODE_permission.tooFast")}`;
+  ctx.body = `${$t("TXT_CODE_PERMISSION_TOO_FAST")}`;
 }
 
 function getRequestToken(ctx: Koa.ParameterizedContext): string | undefined {

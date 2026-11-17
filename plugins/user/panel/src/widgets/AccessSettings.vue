@@ -40,7 +40,7 @@ const refreshTableData = async () => {
 const saveData = async () => {
   try {
     await updateUserInstance().execute({ data: { config: { instances: dataSource.value }, uuid: String(userUuid) } });
-    message.success(t("TXT_CODE_d3de39b4"));
+    message.success(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"));
     await refreshTableData();
   } catch (err: any) {
     reportErrorMsg(err.message);
@@ -60,7 +60,7 @@ const assignApp = async () => {
     const selectedInstances = await useSelectInstances(dataSource.value);
     const warningInstances = (selectedInstances || []).filter((instance) => typeof instance.config?.docker?.image === "string" && !instance.config.docker.image).map((instance) => instance.nickname);
     if (warningInstances.length > 0) {
-      const component = (await useMountComponent({ title: t("TXT_CODE_dd78943e"), subTitle: t("TXT_CODE_57e86edb") + warningInstances.join(", "), checkText: t("TXT_CODE_19f697f3") })).load<InstanceType<typeof WarningDialog>>(WarningDialog);
+      const component = (await useMountComponent({ title: t("TXT_CODE_COMMON_SAFETY_WARNING"), subTitle: t("TXT_CODE_USER_UNPROTECTED_INSTANCES_WARNING") + warningInstances.join(", "), checkText: t("TXT_CODE_COMMON_I_M_AWARE_THAT_MALICIOUS_PROGRAMS_AND_OR_PERSONELL_CAN_GAIN_ACCESS_TO_MY_MACHINE_AS") })).load<InstanceType<typeof WarningDialog>>(WarningDialog);
       await component.openDialog();
     }
     if (selectedInstances) {
@@ -73,11 +73,11 @@ const assignApp = async () => {
 };
 
 const headers = computed(() => [
-  ...(!isPhone.value ? [{ title: t("TXT_CODE_b26a0528"), key: "remarks" }] : []),
-  { title: t("TXT_CODE_f70badb9"), key: "nickname" },
-  ...(!isPhone.value ? [{ title: t("TXT_CODE_fa920c0"), key: "endTime" }] : []),
-  ...(!isPhone.value ? [{ title: t("TXT_CODE_3d602459"), key: "status" }] : []),
-  { title: t("TXT_CODE_fe731dfc"), key: "operation", sortable: false, align: "end" as const }
+  ...(!isPhone.value ? [{ title: t("TXT_CODE_COMMON_HOST_DAEMON"), key: "remarks" }] : []),
+  { title: t("TXT_CODE_COMMON_INSTANCE_NAME"), key: "nickname" },
+  ...(!isPhone.value ? [{ title: t("TXT_CODE_COMMON_EXPIRE"), key: "endTime" }] : []),
+  ...(!isPhone.value ? [{ title: t("TXT_CODE_COMMON_INSTANCES_STATUS"), key: "status" }] : []),
+  { title: t("TXT_CODE_COMMON_ACTIONS"), key: "operation", sortable: false, align: "end" as const }
 ]);
 
 onMounted(refreshTableData);
@@ -85,17 +85,17 @@ onMounted(refreshTableData);
 
 <template>
   <main class="user-access-page">
-    <PageToolbar :title="t('TXT_CODE_76d20724')" icon="mdi-account-key-outline">
+    <PageToolbar :title="t('TXT_CODE_COMMON_ASSIGNED_INSTANCES')" icon="mdi-account-key-outline">
       <template #actions>
-        <VBtn variant="text" prepend-icon="mdi-refresh" @click="refreshTableData">{{ t("TXT_CODE_b76d94e0") }}</VBtn>
-        <VBtn color="primary" prepend-icon="mdi-plus" @click="assignApp">{{ t("TXT_CODE_9393b484") }}</VBtn>
+        <VBtn variant="text" prepend-icon="mdi-refresh" @click="refreshTableData">{{ t("TXT_CODE_COMMON_REFRESH") }}</VBtn>
+        <VBtn color="primary" prepend-icon="mdi-plus" @click="assignApp">{{ t("TXT_CODE_COMMON_ASSIGN") }}</VBtn>
       </template>
     </PageToolbar>
     <VCard rounded="xl" flat class="user-access-card">
       <VDataTable :headers="headers" :items="dataSource" item-value="instanceUuid" :items-per-page="-1">
         <template #no-data><Empty icon="mdi-view-grid-outline" compact /></template>
         <template #item.remarks="{ item }">{{ item.hostIp }}<template v-if="item.remarks"> ({{ item.remarks }})</template></template>
-        <template #item.endTime="{ item }">{{ Number(item.endTime) === 0 ? t("TXT_CODE_8dfd8b17") : !isNaN(Number(item.endTime)) ? dayjs(Number(item.endTime)).format("YYYY-MM-DD HH:mm:ss") : item.endTime }}</template>
+        <template #item.endTime="{ item }">{{ Number(item.endTime) === 0 ? t("TXT_CODE_USER_ACCESS_INDEFINITE") : !isNaN(Number(item.endTime)) ? dayjs(Number(item.endTime)).format("YYYY-MM-DD HH:mm:ss") : item.endTime }}</template>
         <template #item.status="{ item }">{{ INSTANCE_STATUS[item.status as keyof typeof INSTANCE_STATUS] || item.status }}</template>
         <template #item.operation="{ item }"><VBtn color="error" variant="tonal" size="small" @click="deleteDialog = { open: true, item }">{{ t("TXT_CODE_USER_UNASSIGN_INSTANCE") }}</VBtn></template>
       </VDataTable>
@@ -103,7 +103,7 @@ onMounted(refreshTableData);
     <VDialog v-model="deleteDialog.open" class="app-dialog" max-width="460" scrollable>
       <VCard :title="t('TXT_CODE_USER_UNASSIGN_INSTANCE')" rounded="xl">
         <VCardText>{{ t("TXT_CODE_USER_UNASSIGN_INSTANCE_DESC", { name: deleteDialog.item?.nickname || deleteDialog.item?.instanceUuid || "" }) }}</VCardText>
-        <VCardActions><VSpacer /><VBtn variant="text" @click="deleteDialog.open = false">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="error" @click="handleDelete">{{ t("TXT_CODE_USER_UNASSIGN_INSTANCE") }}</VBtn></VCardActions>
+        <VCardActions><VSpacer /><VBtn variant="text" @click="deleteDialog.open = false">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn><VBtn color="error" @click="handleDelete">{{ t("TXT_CODE_USER_UNASSIGN_INSTANCE") }}</VBtn></VCardActions>
       </VCard>
     </VDialog>
   </main>

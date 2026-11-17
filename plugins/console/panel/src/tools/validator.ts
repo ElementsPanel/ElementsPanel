@@ -2,11 +2,11 @@ import { t } from "@elementspanel/epanel-plugin-i18n";
 import { message } from "@/tools/vuetifyToast";
 
 export async function emptyValueValidator(value: string | number | null | undefined) {
-  if (value == null || String(value).trim() === "") throw new Error(t("TXT_CODE_cb08d342"));
+  if (value == null || String(value).trim() === "") throw new Error(t("TXT_CODE_COMMON_FIELD_CANNOT_BE_EMPTY"));
 }
 
 export function isNumberValidator(value: any) {
-  if (!value || isNaN(Number(value))) throw new Error(t("TXT_CODE_a9bcbde9"));
+  if (!value || isNaN(Number(value))) throw new Error(t("TXT_CODE_COMMON_FIELD_MUST_BE_A_NUMBER"));
   return Promise.resolve();
 }
 
@@ -23,12 +23,12 @@ export function getValidatorErrorMsg(error: any, def: string = "") {
 
 export function reportValidatorError(error: any) {
   console.error("Function reportValidatorError():", error);
-  message.error(getValidatorErrorMsg(error, t("TXT_CODE_6a365d01")));
+  message.error(getValidatorErrorMsg(error, t("TXT_CODE_COMMON_OPERATION_FAILED")));
 }
 
 export function reportErrorMsg(error: any = {}) {
   console.error("Function reportErrorMsg():", error);
-  message.error(getValidatorErrorMsg(error, t("TXT_CODE_6a365d01")));
+  message.error(getValidatorErrorMsg(error, t("TXT_CODE_COMMON_OPERATION_FAILED")));
 }
 
 export const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[\x00-\x7F]{9,36}$/;

@@ -28,7 +28,7 @@ export class MslJavaSource {
         ? "linux"
         : undefined;
     if (!platform || (this.arch !== "x64" && this.arch !== "arm64")) {
-      throw new Error(this.t("TXT_CODE_javaMsl.unsupportedPlatform"));
+      throw new Error(this.t("TXT_CODE_JAVA_MSL_UNSUPPORTED_PLATFORM"));
     }
     return { platform, arch: this.arch };
   }
@@ -48,7 +48,7 @@ export class MslJavaSource {
       return data.data;
     } catch (error: any) {
       throw new Error(
-        `${this.t("TXT_CODE_javaMsl.sourceError")} ${
+        `${this.t("TXT_CODE_JAVA_MSL_SOURCE_ERROR")} ${
           error.response?.data?.message || error.message
         }`
       );
@@ -63,7 +63,7 @@ export class MslJavaSource {
       !Array.isArray(data) ||
       data.some((version) => typeof version !== "string" || !/^[1-9][0-9]{0,2}$/.test(version))
     ) {
-      throw new Error(this.t("TXT_CODE_javaMsl.sourceError"));
+      throw new Error(this.t("TXT_CODE_JAVA_MSL_SOURCE_ERROR"));
     }
     const result = {
       ...target,
@@ -79,10 +79,10 @@ export class MslJavaSource {
       !/^[1-9][0-9]{0,2}$/.test(version) ||
       !(await this.versions()).versions.includes(version)
     ) {
-      throw new Error(this.t("TXT_CODE_javaMsl.invalidVersion"));
+      throw new Error(this.t("TXT_CODE_JAVA_MSL_INVALID_VERSION"));
     }
     const data = await this.request(`/download/jdk/${encodeURIComponent(version)}`);
-    if (typeof data?.url !== "string") throw new Error(this.t("TXT_CODE_javaMsl.sourceError"));
+    if (typeof data?.url !== "string") throw new Error(this.t("TXT_CODE_JAVA_MSL_SOURCE_ERROR"));
     const url = new URL(data.url);
     if (
       url.protocol !== "https:" ||
@@ -91,7 +91,7 @@ export class MslJavaSource {
       (data.sha256 != null &&
         (typeof data.sha256 !== "string" || !/^[a-f0-9]{64}$/i.test(data.sha256)))
     ) {
-      throw new Error(this.t("TXT_CODE_javaMsl.sourceError"));
+      throw new Error(this.t("TXT_CODE_JAVA_MSL_SOURCE_ERROR"));
     }
     const archive = url.pathname.endsWith(".zip")
       ? "zip"

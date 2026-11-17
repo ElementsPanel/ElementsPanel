@@ -26,7 +26,7 @@ const { execute } = imageList();
 const submit = async () => {
   try {
     if (!options.dockerFile || !options.name || !options.version)
-      return reportErrorMsg(t("TXT_CODE_2764f197"));
+      return reportErrorMsg(t("TXT_CODE_COMMON_PLEASE_FILL_OUT_THE_FORM_COMPLETELY"));
     await execute({
       params: {
         daemonId: props.daemonId
@@ -39,8 +39,8 @@ const submit = async () => {
       method: "POST"
     });
     notification["info"]({
-      message: t("TXT_CODE_55edf44d"),
-      description: t("TXT_CODE_b340c04a")
+      message: t("TXT_CODE_COMMON_IMAGE_CREATION_STARTED"),
+      description: t("TXT_CODE_COMMON_PLEASE_BE_PATIENT")
     });
     emit("close");
   } catch (err: any) {
@@ -49,7 +49,7 @@ const submit = async () => {
   }
 };
 
-const confirmSubmit = () => Modal.confirm({ title: t("TXT_CODE_4e4b52a0"), async onOk() { await submit(); } });
+const confirmSubmit = () => Modal.confirm({ title: t("TXT_CODE_DOCKER_IMAGE_BUILD_CONFIRM_HINT"), async onOk() { await submit(); } });
 
 onMounted(() => {
   options.dockerFile = props.dockerFile;
@@ -60,13 +60,13 @@ onMounted(() => {
 
 <template>
   <div>
-    <h5 class="text-title-large mb-2">{{ t("TXT_CODE_868df02c") }}</h5>
+    <h5 class="text-title-large mb-2">{{ t("TXT_CODE_COMMON_ABOUT_DOCKER_FILES") }}</h5>
     <p class="text-body-medium text-medium-emphasis">
-        {{ t("TXT_CODE_77d93d7d") }}
+        {{ t("TXT_CODE_COMMON_OFFICIAL_DOCUMENTATION_HTTPS_DOCS_DOCKER_COM_ENGINE_REFERENCE_BUILDER") }}
     </p>
-    <h5 class="text-title-large mb-2">{{ t("TXT_CODE_ef0ce2e") }}</h5>
+    <h5 class="text-title-large mb-2">{{ t("TXT_CODE_COMMON_IMPORTANT_NOTES") }}</h5>
     <p class="text-body-medium text-medium-emphasis">
-        {{ t("TXT_CODE_5024d817") }}
+        {{ t("TXT_CODE_DOCKER_WORKSPACE_DIRECTORY_REQUIRED") }}
     </p>
   </div>
 
@@ -74,10 +74,10 @@ onMounted(() => {
 
   <div class="mb-4">
     <div class="text-body-medium text-medium-emphasis mb-1">
-      {{ t("TXT_CODE_7cf078e8") }}
+      {{ t("TXT_CODE_COMMON_IMAGE_NAME_AND_VERSION_AFTER_CREATION") }}
     </div>
     <div class="d-flex ga-2"><VTextField v-model="options.name" /><VTextField v-model="options.version" /></div>
   </div>
 
-  <VBtn color="primary" @click="confirmSubmit">{{ t("TXT_CODE_3d09f0ac") }}</VBtn>
+  <VBtn color="primary" @click="confirmSubmit">{{ t("TXT_CODE_COMMON_CREATE_IMAGE") }}</VBtn>
 </template>

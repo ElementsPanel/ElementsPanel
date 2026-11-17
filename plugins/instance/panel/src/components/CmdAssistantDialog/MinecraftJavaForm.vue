@@ -29,13 +29,13 @@ defineExpose({ validate });
 
 <template>
   <VForm ref="formRef">
-    <VTextField v-model="form.jarName" :label="t('TXT_CODE_58508fb7')" :placeholder="t('TXT_CODE_84f760fa')" :rules="[(value) => String(value || '').trim() ? true : t('TXT_CODE_58508fb7')]" />
+    <VTextField v-model="form.jarName" :label="t('TXT_CODE_COMMON_SERVER_SOFTWARE_FILENAME')" :placeholder="t('TXT_CODE_COMMON_USUALLY_A_JAR_FILE_LIKE_PAPER_JAR_ETC')" :rules="[(value) => String(value || '').trim() ? true : t('TXT_CODE_COMMON_SERVER_SOFTWARE_FILENAME')]" />
     <VRow>
-      <VCol cols="12" sm="6"><VTextField v-model="form.maxMemory" :label="t('TXT_CODE_dd238854')" :placeholder="t('TXT_CODE_d7fa3be3')" /></VCol>
-      <VCol cols="12" sm="6"><VTextField v-model="form.minMemory" :label="t('TXT_CODE_e050b3be')" :placeholder="t('TXT_CODE_57c1b0a3')" /></VCol>
-      <VCol cols="12"><VTextField v-model="form.javaPath" :label="t('TXT_CODE_43422ed3')" :placeholder="t('TXT_CODE_7f9b6758')" /></VCol>
-      <VCol cols="12"><VTextField v-model="form.additional" :label="t('TXT_CODE_4efba567')" :placeholder="t('TXT_CODE_f79563ef')" /></VCol>
-      <VCol cols="12"><VTextField v-model="form.suffix" :label="t('TXT_CODE_85770d4a')" :placeholder="t('TXT_CODE_6e3da823')" /></VCol>
+      <VCol cols="12" sm="6"><VTextField v-model="form.maxMemory" :label="t('TXT_CODE_COMMON_MAXIMUM_MEMORY')" :placeholder="t('TXT_CODE_COMMON_OPTIONAL_XMX_PARAMETER_LIKE_1024_M')" /></VCol>
+      <VCol cols="12" sm="6"><VTextField v-model="form.minMemory" :label="t('TXT_CODE_COMMON_INITIAL_MEMORY')" :placeholder="t('TXT_CODE_COMMON_OPTIONAL_XMS_PARAMETER_LIKE_1024_M')" /></VCol>
+      <VCol cols="12"><VTextField v-model="form.javaPath" :label="t('TXT_CODE_COMMON_JAVA_PATH')" :placeholder="t('TXT_CODE_COMMAND_JAVA_EXECUTABLE_PATH_HINT')" /></VCol>
+      <VCol cols="12"><VTextField v-model="form.additional" :label="t('TXT_CODE_COMMAND_JAVA_EXTRA_ARGS')" :placeholder="t('TXT_CODE_COMMON_OPTIONAL_PARAMETERS_BEFORE_JAR')" /></VCol>
+      <VCol cols="12"><VTextField v-model="form.suffix" :label="t('TXT_CODE_COMMON_SUFFIX_PARAMETERS')" :placeholder="t('TXT_CODE_COMMAND_JAVA_EXTRA_ARGS_HINT')" /></VCol>
     </VRow>
   </VForm>
 </template>

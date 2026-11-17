@@ -20,7 +20,7 @@ const { state: appState } = useAppStateStore();
 const items = computed<BreadcrumbItem[]>(() => {
   const arr: BreadcrumbItem[] = [
     {
-      title: t("TXT_CODE_f5b9d58f"),
+      title: t("TXT_CODE_COMMON_CONTROL_PANEL"),
       disabled: false,
       href: "."
     }

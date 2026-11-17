@@ -40,7 +40,7 @@ const fetchLogs = async () => {
     });
     logs.value = (data.value || []).reverse().map(formatOperationLogItem);
   } catch (error: any) {
-    message.error(error?.message || t("TXT_CODE_4a689666"));
+    message.error(error?.message || t("TXT_CODE_COMMON_FAILED_TO_FETCH_INSTANCE_LOGS"));
     logs.value = [];
   } finally {
     loading.value = false;
@@ -60,7 +60,7 @@ onMounted(fetchLogs);
 
 <template>
   <DesktopDialog v-if="useDesktopWindow" :model-value="dialogOpen"
-    id="instance-operation-log" :title="t('TXT_CODE_f6a33629')" icon="mdi-file-document-outline"
+    id="instance-operation-log" :title="t('TXT_CODE_COMMON_OPERATION_LOG')" icon="mdi-file-document-outline"
     :width="680" :height="500" :z-index="10004" :padded="false" :scrollable="false"
     @close="close" @after-leave="emitClose">
     <InstanceOperationLogContent :loading="loading" :logs="logs" desktop />
@@ -70,13 +70,13 @@ onMounted(fetchLogs);
       v-else
       v-model:open="dialogOpen"
       :max-width="680"
-      :title="t('TXT_CODE_f6a33629')"
+      :title="t('TXT_CODE_COMMON_OPERATION_LOG')"
       @after-close="emitClose"
     >
       <InstanceOperationLogContent :loading="loading" :logs="logs" />
       <template #footer>
         <VBtn variant="text" @click="close">
-          {{ t("TXT_CODE_b1dedda3") }}
+          {{ t("TXT_CODE_COMMON_STOP") }}
         </VBtn>
       </template>
     </AppDialog>

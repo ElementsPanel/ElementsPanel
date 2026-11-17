@@ -18,8 +18,8 @@ export function useSchedule(instanceId: string, daemonId: string) {
 
   const createTaskTypeCycle = async (newTask: ScheduleTaskForm, replaceName?: string) => {
     const weekend = newTask.weekend;
-    if (!newTask.objTime) throw new Error(t("TXT_CODE_349edc57"));
-    if (weekend.length === 0) throw new Error(t("TXT_CODE_2fe0cc84"));
+    if (!newTask.objTime) throw new Error(t("TXT_CODE_COMMON_PLEASE_SELECT_A_TIME"));
+    if (weekend.length === 0) throw new Error(t("TXT_CODE_COMMON_PLEASE_SELECT_A_DAY_OF_THE_WEEK"));
     const time = newTask.objTime;
     const h = time.hour();
     const m = time.minute();
@@ -29,7 +29,7 @@ export function useSchedule(instanceId: string, daemonId: string) {
   };
 
   const createTaskTypeSpecify = async (newTask: ScheduleTaskForm, replaceName?: string) => {
-    if (!newTask.objTime) throw new Error(t("TXT_CODE_349edc57"));
+    if (!newTask.objTime) throw new Error(t("TXT_CODE_COMMON_PLEASE_SELECT_A_TIME"));
     const time = newTask.objTime;
     const mm = time.month() + 1;
     const dd = time.date();
@@ -66,7 +66,7 @@ export function useSchedule(instanceId: string, daemonId: string) {
       objTime = dayjs(now);
       weekend = w;
     } else {
-      notification.error({ message: t("TXT_CODE_afabf3ca") });
+      notification.error({ message: t("TXT_CODE_COMMON_PARSING_TIME_FAILED") });
     }
 
     return {
@@ -93,7 +93,7 @@ export function useSchedule(instanceId: string, daemonId: string) {
       now.setHours(h, m, s, 0);
       objTime = dayjs(now);
     } else {
-      notification.error({ message: t("TXT_CODE_afabf3ca") });
+      notification.error({ message: t("TXT_CODE_COMMON_PARSING_TIME_FAILED") });
     }
 
     return objTime;
@@ -133,7 +133,7 @@ export function useSchedule(instanceId: string, daemonId: string) {
         }
       });
       if (state.value) {
-        showMsg && message.success(t("TXT_CODE_28190dbc"));
+        showMsg && message.success(t("TXT_CODE_COMMON_DELETE_SUCCESS"));
         getScheduleList();
       }
     } catch (err: any) {

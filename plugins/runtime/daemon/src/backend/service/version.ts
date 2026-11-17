@@ -15,7 +15,7 @@ export function initVersionManager() {
       }
     }
   } catch (error: any) {
-    logger.error($t("TXT_CODE_version.versionDetectErr"), error);
+    logger.error($t("TXT_CODE_VERSION_VERSION_DETECT_ERR"), error);
   }
 }
 

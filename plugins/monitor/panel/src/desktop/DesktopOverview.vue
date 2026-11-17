@@ -89,7 +89,7 @@ const memColor = computed(() => {
                 </div>
                 <div class="ov-stat-card__body">
                     <div class="ov-stat-card__value">{{ remoteCount.available }} / {{ remoteCount.total }}</div>
-                    <div class="ov-stat-card__label">{{ t("TXT_CODE_e076d90b") }}</div>
+                    <div class="ov-stat-card__label">{{ t("TXT_CODE_COMMON_DAEMONS") }}</div>
                 </div>
                 <div class="ov-stat-card__extra">
                     <span class="ov-stat-card__online">
@@ -120,7 +120,7 @@ const memColor = computed(() => {
                 </div>
                 <div class="ov-stat-card__body">
                     <div class="ov-stat-card__value">{{ panelMem }}%</div>
-                    <div class="ov-stat-card__label">{{ t("TXT_CODE_593ee330") }}</div>
+                    <div class="ov-stat-card__label">{{ t("TXT_CODE_COMMON_MEMORY") }}</div>
                 </div>
                 <div class="ov-stat-card__bar">
                     <div class="ov-stat-card__bar-fill" :style="{ width: panelMem + '%', background: memColor }"></div>
@@ -131,28 +131,28 @@ const memColor = computed(() => {
         <div class="ov-grid">
             <div class="ov-panel ov-panel--system">
                 <div class="ov-panel__header">
-                    <span class="ov-panel__title">{{ t("TXT_CODE_66056676") }}</span>
+                    <span class="ov-panel__title">{{ t("TXT_CODE_COMMON_SYSTEM_RESOURCES") }}</span>
                 </div>
                 <div class="ov-panel__body">
                     <div class="ov-info-row">
-                        <span class="ov-info-row__label">{{ t("TXT_CODE_81634069") }}</span>
+                        <span class="ov-info-row__label">{{ t("TXT_CODE_COMMON_VERSION") }}</span>
                         <span class="ov-info-row__value">{{ systemInfo?.version ?? "--" }}</span>
                     </div>
                     <div class="ov-info-row">
-                        <span class="ov-info-row__label">{{ t("TXT_CODE_3d0885c0") }}</span>
+                        <span class="ov-info-row__label">{{ t("TXT_CODE_COMMON_PLATFORM") }}</span>
                         <span class="ov-info-row__value">{{ systemInfo?.platform ?? "--" }}</span>
                     </div>
                     <div class="ov-info-row">
-                        <span class="ov-info-row__label">{{ t("TXT_CODE_4df7e9bd") }}</span>
+                        <span class="ov-info-row__label">{{ t("TXT_CODE_COMMON_HOSTNAME") }}</span>
                         <span class="ov-info-row__value">{{ systemInfo?.hostname ?? "--" }}</span>
                     </div>
                     <div class="ov-info-row">
-                        <span class="ov-info-row__label">{{ t("TXT_CODE_190ecd56") }}</span>
+                        <span class="ov-info-row__label">{{ t("TXT_CODE_COMMON_UNIX_LOAD_AVERAGE") }}</span>
                         <span class="ov-info-row__value">{{ systemInfo?.loadavg ? formatLoadAvg(systemInfo.loadavg) :
                             "--" }}</span>
                     </div>
                     <div class="ov-info-row">
-                        <span class="ov-info-row__label">{{ t("TXT_CODE_4ab6a0b5") }}</span>
+                        <span class="ov-info-row__label">{{ t("TXT_CODE_COMMON_BROWSER_TIME") }}</span>
                         <span class="ov-info-row__value">{{ systemInfo?.time ? new
                             Date(systemInfo.time).toLocaleString() : "--" }}</span>
                     </div>
@@ -161,23 +161,23 @@ const memColor = computed(() => {
 
             <div class="ov-panel ov-panel--panel">
                 <div class="ov-panel__header">
-                    <span class="ov-panel__title">{{ t("TXT_CODE_f5b9d58f") }}</span>
+                    <span class="ov-panel__title">{{ t("TXT_CODE_COMMON_CONTROL_PANEL") }}</span>
                 </div>
                 <div class="ov-panel__body">
                     <div class="ov-info-row">
-                        <span class="ov-info-row__label">{{ t("TXT_CODE_413b9c01") }}</span>
+                        <span class="ov-info-row__label">{{ t("TXT_CODE_COMMON_NODE_JS_VERSION") }}</span>
                         <span class="ov-info-row__value">{{ systemInfo?.node }}</span>
                     </div>
                     <div class="ov-info-row">
-                        <span class="ov-info-row__label">{{ t("TXT_CODE_af21e6b") }}</span>
+                        <span class="ov-info-row__label">{{ t("TXT_CODE_COMMON_PANEL_VERSION") }}</span>
                         <span class="ov-info-row__value">{{ panelVersion }}</span>
                     </div>
                     <div class="ov-info-row">
-                        <span class="ov-info-row__label">{{ t("TXT_CODE_a0e70887") }}</span>
+                        <span class="ov-info-row__label">{{ t("TXT_CODE_COMMON_MATCHED_DAEMON_VERSION") }}</span>
                         <span class="ov-info-row__value">{{ daemonVersion }}</span>
                     </div>
                     <div class="ov-info-row">
-                        <span class="ov-info-row__label">{{ t("TXT_CODE_77d038f7") }}</span>
+                        <span class="ov-info-row__label">{{ t("TXT_CODE_COMMON_PANEL_MEMORY_USAGE") }}</span>
                         <span class="ov-info-row__value">{{ panelProcess?.memory ? formatBytes(panelProcess.memory) :
                             "--" }}</span>
                     </div>
@@ -186,16 +186,16 @@ const memColor = computed(() => {
 
             <div class="ov-panel ov-panel--security">
                 <div class="ov-panel__header">
-                    <span class="ov-panel__title">{{ t("TXT_CODE_9c3ca8f") }}</span>
+                    <span class="ov-panel__title">{{ t("TXT_CODE_COMMON_SECURITY") }}</span>
                 </div>
                 <div class="ov-panel__body">
                     <div class="ov-info-row">
-                        <span class="ov-info-row__label">{{ t("TXT_CODE_871fb0d6") }}</span>
+                        <span class="ov-info-row__label">{{ t("TXT_CODE_COMMON_FAILED_SUCCESSFUL") }}</span>
                         <span class="ov-info-row__value">{{ record?.loginFailed ?? 0 }} / {{ record?.illegalAccess ?? 0
                         }}</span>
                     </div>
                     <div class="ov-info-row">
-                        <span class="ov-info-row__label">{{ t("TXT_CODE_856bd2f3") }}</span>
+                        <span class="ov-info-row__label">{{ t("TXT_CODE_COMMON_TEMPORARY_BANNED_I_PS") }}</span>
                         <span class="ov-info-row__value">{{ record?.banips ?? 0 }}</span>
                     </div>
                 </div>
@@ -203,20 +203,20 @@ const memColor = computed(() => {
 
             <div class="ov-panel ov-panel--nodes">
                 <div class="ov-panel__header">
-                    <span class="ov-panel__title">{{ t("TXT_CODE_b4a9d04a") }} ({{ remoteNodes.length }})</span>
+                    <span class="ov-panel__title">{{ t("TXT_CODE_OVERVIEW_ONLINE_NODE_COUNT") }} ({{ remoteNodes.length }})</span>
                 </div>
                 <div class="ov-panel__body ov-panel__body--nodes">
                     <Empty
                       v-if="remoteNodes.length === 0"
                       icon="mdi-server-network-outline"
-                      :title="t('TXT_CODE_9337bed1')"
+                      :title="t('TXT_CODE_OVERVIEW_NO_AVAILABLE_NODES_HINT')"
                       compact
                     />
                     <div v-for="node in remoteNodes" :key="node.uuid" class="ov-node-item">
                         <div class="ov-node-item__status">
                             <span v-if="node.available" class="ov-node-status-dot ov-node-status-dot--online"
-                                :title="t('TXT_CODE_823bfe63')"></span>
-                            <span v-else class="ov-node-status-dot ov-node-status-dot--offline" :title="t('TXT_CODE_66ce073e')"></span>
+                                :title="t('TXT_CODE_COMMON_ONLINE')"></span>
+                            <span v-else class="ov-node-status-dot ov-node-status-dot--offline" :title="t('TXT_CODE_COMMON_OFFLINE')"></span>
                         </div>
                         <div class="ov-node-item__info">
                             <div class="ov-node-item__name">{{ node.remarks || node.ip }}</div>
@@ -231,7 +231,7 @@ const memColor = computed(() => {
                             <span class="ov-node-item__stat" :title="'CPU'">
                                 <VIcon icon="mdi-arrow-up" /> {{ (node.system.cpuUsage * 100).toFixed(0) }}%
                             </span>
-                            <span class="ov-node-item__stat" :title="t('TXT_CODE_593ee330')">
+                            <span class="ov-node-item__stat" :title="t('TXT_CODE_COMMON_MEMORY')">
                                 <VIcon icon="mdi-arrow-down" /> {{ (node.system.memUsage * 100).toFixed(0) }}%
                             </span>
                         </div>

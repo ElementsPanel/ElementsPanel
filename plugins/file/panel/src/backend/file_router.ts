@@ -26,7 +26,7 @@ export function registerFileRoutes() {
   router.use(async (ctx, next) => {
     if (!identity().accessPolicy.canFileManager && !identity().of(ctx).elevated) {
       ctx.status = 403;
-      ctx.body = new Error($t("TXT_CODE_router.file.off"));
+      ctx.body = new Error($t("TXT_CODE_ROUTER_FILE_OFF"));
       return;
     }
     await next();
@@ -278,7 +278,7 @@ export function registerFileRoutes() {
         const fileName = String(ctx.request.body.file_name);
 
         const remoteService = remote().services.getInstance(daemonId);
-        if (!remoteService) throw new Error($t("TXT_CODE_dd559000") + ` Daemon ID: ${daemonId}`);
+        if (!remoteService) throw new Error($t("TXT_CODE_COMMON_COULD_NOT_FIND_REMOTE_WITH_GIVEN_DAEMON_ID") + ` Daemon ID: ${daemonId}`);
 
         const downloadId = timeUuid();
         ctx.body = downloadId;
@@ -400,7 +400,7 @@ export function registerFileRoutes() {
         const instanceUuid = String(ctx.query.uuid);
         const fileName = String(ctx.query.file_name);
         const remoteService = remote().services.getInstance(daemonId);
-        if (!remoteService) throw new Error($t("TXT_CODE_dd559000") + ` Daemon ID: ${daemonId}`);
+        if (!remoteService) throw new Error($t("TXT_CODE_COMMON_COULD_NOT_FIND_REMOTE_WITH_GIVEN_DAEMON_ID") + ` Daemon ID: ${daemonId}`);
         const addr = remoteService.config.fullAddr;
         const remoteMappings = remoteService.config.getConvertedRemoteMappings();
         const password = timeUuid();
@@ -440,7 +440,7 @@ export function registerFileRoutes() {
         const instanceUuid = String(ctx.query.uuid);
         const uploadDir = String(ctx.query.upload_dir);
         const remoteService = remote().services.getInstance(daemonId);
-        if (!remoteService) throw new Error($t("TXT_CODE_dd559000") + ` Daemon ID: ${daemonId}`);
+        if (!remoteService) throw new Error($t("TXT_CODE_COMMON_COULD_NOT_FIND_REMOTE_WITH_GIVEN_DAEMON_ID") + ` Daemon ID: ${daemonId}`);
         const addr = remoteService.config.fullAddr;
         const remoteMappings = remoteService.config.getConvertedRemoteMappings();
         const password = timeUuid();

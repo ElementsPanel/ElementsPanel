@@ -17,10 +17,10 @@ const zipCode = ref<string>();
 
 const submit = async () => {
   try {
-    if (!zipCode.value) throw new Error(t("TXT_CODE_97ceb743"));
+    if (!zipCode.value) throw new Error(t("TXT_CODE_COMMON_PLEASE_SELECT_DECOMPRESSION_ENCODING"));
     emit("selectCode", zipCode.value);
     open.value = false;
-    return message.success(t("TXT_CODE_f07610ed"));
+    return message.success(t("TXT_CODE_COMMON_CONFIGURATION_SUCCESSFUL"));
   } catch (err: any) {
     return reportErrorMsg(err.message);
   }
@@ -32,15 +32,15 @@ defineExpose({
 </script>
 
 <template>
-  <AppDialog v-model:open="open" :title="t('TXT_CODE_2dc23f7a')" :mask-closable="false" :ok-text="t('TXT_CODE_abfe9512')" compact @ok="submit">
+  <AppDialog v-model:open="open" :title="t('TXT_CODE_COMMON_SELECT_DECOMPRESSION_ENCODING')" :mask-closable="false" :ok-text="t('TXT_CODE_COMMON_SAVE')" compact @ok="submit">
     <p class="text-medium-emphasis">
-      {{ t("TXT_CODE_b278707d") }}
+      {{ t("TXT_CODE_COMMON_FOR_GARBLED_FILENAMES_TRY_GBK_FOR_MAINLAND_CHINA_BIG5_FOR_TAIWAN_OR_HONG_KONG_AND_UTF") }}
     </p>
     <VSelect v-model="zipCode" :items="[
-      { title: t('TXT_CODE_91bb6101'), value: 'utf-8' },
-      { title: t('TXT_CODE_4d6b06f0'), value: 'gbk' },
-      { title: t('TXT_CODE_c4dfdb26'), value: 'big5' }
-    ]" :placeholder="t('TXT_CODE_3bb646e4')" hide-details>
+      { title: t('TXT_CODE_COMMON_PANEL_LINUX_UTF8'), value: 'utf-8' },
+      { title: t('TXT_CODE_COMMON_SIMPLIFIED_CHINESE_GBK'), value: 'gbk' },
+      { title: t('TXT_CODE_COMMON_TRADITIONAL_CHINESE_BIG5'), value: 'big5' }
+    ]" :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT')" hide-details>
       <template #no-data><Empty :icon="false" compact /></template>
     </VSelect>
   </AppDialog>

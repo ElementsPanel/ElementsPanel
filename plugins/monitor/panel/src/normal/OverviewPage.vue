@@ -77,43 +77,43 @@ const overviewItems = computed(() => {
   const freeMemory = Number((current.system.freemem / 1024 ** 3).toFixed(1));
   const usedMemory = Number(Math.max(0, totalMemory - freeMemory).toFixed(1));
   const items = [
-    { title: t("TXT_CODE_413b9c01"), value: current.system.node, icon: "mdi-code-tags" },
-    { title: t("TXT_CODE_af21e6b"), value: current.version, icon: "mdi-view-grid-outline" },
-    { title: t("TXT_CODE_a0e70887"), value: current.specifiedDaemonVersion, icon: "mdi-api" },
-    { title: t("TXT_CODE_fdb6c369"), value: current.system.user.username, icon: "mdi-account-outline" },
+    { title: t("TXT_CODE_COMMON_NODE_JS_VERSION"), value: current.system.node, icon: "mdi-code-tags" },
+    { title: t("TXT_CODE_COMMON_PANEL_VERSION"), value: current.version, icon: "mdi-view-grid-outline" },
+    { title: t("TXT_CODE_COMMON_MATCHED_DAEMON_VERSION"), value: current.specifiedDaemonVersion, icon: "mdi-api" },
+    { title: t("TXT_CODE_COMMON_USER_TO_RUN_THE_PROCESS_WITH"), value: current.system.user.username, icon: "mdi-account-outline" },
     {
-      title: t("TXT_CODE_f54e6d1f"),
+      title: t("TXT_CODE_COMMON_PANEL_TIME"),
       value: new Date(current.system.time).toLocaleString(),
       icon: "mdi-clock-outline"
     },
-    { title: t("TXT_CODE_4ab6a0b5"), value: new Date().toLocaleString(), icon: "mdi-earth" },
-    { title: t("TXT_CODE_856bd2f3"), value: String(current.record.banips), icon: "mdi-shield-check-outline" },
-    { title: t("TXT_CODE_da8f97a7"), value: String(current.record.illegalAccess), icon: "mdi-lock-outline" },
+    { title: t("TXT_CODE_COMMON_BROWSER_TIME"), value: new Date().toLocaleString(), icon: "mdi-earth" },
+    { title: t("TXT_CODE_COMMON_TEMPORARY_BANNED_I_PS"), value: String(current.record.banips), icon: "mdi-shield-check-outline" },
+    { title: t("TXT_CODE_COMMON_BLOCKED_ACCESSES"), value: String(current.record.illegalAccess), icon: "mdi-lock-outline" },
     {
-      title: t("TXT_CODE_77d038f7"),
+      title: t("TXT_CODE_COMMON_PANEL_MEMORY_USAGE"),
       value: formatBytes(current.process.memory),
       icon: "mdi-memory"
     },
-    { title: t("TXT_CODE_4df7e9bd"), value: current.system.hostname, icon: "mdi-server-outline" },
+    { title: t("TXT_CODE_COMMON_HOSTNAME"), value: current.system.hostname, icon: "mdi-server-outline" },
     {
-      title: t("TXT_CODE_b4d8588"),
+      title: t("TXT_CODE_COMMON_OS_VERSION"),
       value: `${current.system.version.slice(0, 16)}${current.system.version.length > 16 ? "..." : ""} ${current.system.release}`,
       icon: "mdi-console-line"
     },
     {
-      title: t("TXT_CODE_edf84830"),
+      title: t("TXT_CODE_COMMON_OS_TYPE"),
       value: `${current.system.type} ${current.system.platform}`,
       icon: "mdi-laptop"
     },
     {
-      title: t("TXT_CODE_593ee330"),
+      title: t("TXT_CODE_COMMON_MEMORY"),
       value: `${usedMemory.toFixed(1)} GB / ${totalMemory.toFixed(1)} GB`,
       icon: "mdi-memory",
       progress: totalMemory ? Math.round((usedMemory / totalMemory) * 100) : 0
     },
     { title: "CPU", value: `${panelCpu.value}%`, icon: "mdi-chip", progress: panelCpu.value },
     {
-      title: t("TXT_CODE_190ecd56"),
+      title: t("TXT_CODE_COMMON_UNIX_LOAD_AVERAGE"),
       value: formatLoadAvg(current.system.loadavg),
       icon: "mdi-pulse",
       hidden: current.system.type.toLowerCase().includes("windows")
@@ -132,7 +132,7 @@ onMounted(fetchData);
   <main class="monitor-overview-page">
     <VContainer fluid class="monitor-overview-container">
       <VAlert v-if="!state" type="info" variant="tonal" class="monitor-loading" density="comfortable">
-        {{ t("TXT_CODE_b197be11") }}
+        {{ t("TXT_CODE_COMMON_LOADING_DATA") }}
       </VAlert>
 
       <VRow class="monitor-stat-row" density="comfortable">
@@ -141,7 +141,7 @@ onMounted(fetchData);
             <VCardText>
               <VIcon icon="mdi-server-outline" color="primary" size="28" />
               <div class="monitor-stat-value">{{ totalInstances }}</div>
-              <div class="monitor-stat-label">{{ t("TXT_CODE_8201d2c6") }}</div>
+              <div class="monitor-stat-label">{{ t("TXT_CODE_COMMON_RUNNING_TOTAL") }}</div>
               <div class="monitor-stat-meta">
                 <VChip size="small" color="success" variant="tonal" prepend-icon="mdi-play-circle-outline">
                   {{ runningInstances }}
@@ -159,7 +159,7 @@ onMounted(fetchData);
             <VCardText>
               <VIcon icon="mdi-lan-connect" color="primary" size="28" />
               <div class="monitor-stat-value">{{ remoteCount.available }} / {{ remoteCount.total }}</div>
-              <div class="monitor-stat-label">{{ t("TXT_CODE_4b7eba50") }}</div>
+              <div class="monitor-stat-label">{{ t("TXT_CODE_COMMON_ONLINE_TOTAL") }}</div>
               <div class="monitor-stat-meta">
                 <VChip size="small" color="success" variant="tonal" prepend-icon="mdi-check-circle-outline">
                   {{ remoteCount.available }}
@@ -188,7 +188,7 @@ onMounted(fetchData);
             <VCardText>
               <VIcon icon="mdi-memory" color="primary" size="28" />
               <div class="monitor-stat-value">{{ panelMemory }}%</div>
-              <div class="monitor-stat-label">{{ t("TXT_CODE_593ee330") }}</div>
+              <div class="monitor-stat-label">{{ t("TXT_CODE_COMMON_MEMORY") }}</div>
               <VProgressLinear :model-value="panelMemory" :color="progressColor(panelMemory)" height="6" rounded="xl" />
             </VCardText>
           </VCard>
@@ -200,7 +200,7 @@ onMounted(fetchData);
           <VCard class="monitor-card monitor-overview-card" flat>
             <VCardTitle class="monitor-card-title">
               <VIcon icon="mdi-information-outline" class="mr-2" />
-              {{ t("TXT_CODE_721157a3") }}
+              {{ t("TXT_CODE_COMMON_DATA_OVERVIEW") }}
             </VCardTitle>
             <VCardText>
               <VRow class="overview-grid" density="comfortable">
@@ -232,11 +232,11 @@ onMounted(fetchData);
           <VCard class="monitor-card chart-card" flat>
             <VCardTitle class="monitor-card-title">
               <VIcon icon="mdi-chart-line" class="mr-2" />
-              {{ t("TXT_CODE_a4037a98") }}
+              {{ t("TXT_CODE_COMMON_INTERFACE_REQUESTS") }}
             </VCardTitle>
             <VCardText>
               <div class="monitor-chart">
-                <canvas ref="requestChartCanvas" role="img" :aria-label="t('TXT_CODE_a4037a98')" />
+                <canvas ref="requestChartCanvas" role="img" :aria-label="t('TXT_CODE_COMMON_INTERFACE_REQUESTS')" />
               </div>
             </VCardText>
           </VCard>
@@ -245,11 +245,11 @@ onMounted(fetchData);
           <VCard class="monitor-card chart-card" flat>
             <VCardTitle class="monitor-card-title">
               <VIcon icon="mdi-chart-areaspline" class="mr-2" />
-              {{ t("TXT_CODE_d6d9c42c") }}
+              {{ t("TXT_CODE_COMMON_RUNNING_INSTANCES") }}
             </VCardTitle>
             <VCardText>
               <div class="monitor-chart">
-                <canvas ref="instanceChartCanvas" role="img" :aria-label="t('TXT_CODE_d6d9c42c')" />
+                <canvas ref="instanceChartCanvas" role="img" :aria-label="t('TXT_CODE_COMMON_RUNNING_INSTANCES')" />
               </div>
             </VCardText>
           </VCard>
@@ -261,13 +261,13 @@ onMounted(fetchData);
           <VCard class="monitor-card" flat>
             <VCardTitle class="monitor-card-title">
               <VIcon icon="mdi-format-list-bulleted" class="mr-2" />
-              {{ t("TXT_CODE_f6a33629") }}
+              {{ t("TXT_CODE_COMMON_OPERATION_LOG") }}
             </VCardTitle>
             <VCardText class="log-card-body">
               <Empty
                 v-if="formattedLogs.length === 0"
                 icon="mdi-file-document-outline"
-                :title="t('TXT_CODE_54469e02')"
+                :title="t('TXT_CODE_COMMON_NO_OPERATION_LOGS_AVAILABLE_YET')"
                 compact
               />
               <VTimeline v-else density="compact" side="end" truncate-line="both" class="monitor-timeline">
@@ -289,13 +289,13 @@ onMounted(fetchData);
           <VCard class="monitor-card node-card" flat>
             <VCardTitle class="monitor-card-title">
               <VIcon icon="mdi-lan" class="mr-2" />
-              {{ t("TXT_CODE_b4a9d04a") }} ({{ remoteNodes.length }})
+              {{ t("TXT_CODE_OVERVIEW_ONLINE_NODE_COUNT") }} ({{ remoteNodes.length }})
             </VCardTitle>
             <VCardText class="pa-0">
               <Empty
                 v-if="remoteNodes.length === 0"
                 icon="mdi-server-network-outline"
-                :title="t('TXT_CODE_9337bed1')"
+                :title="t('TXT_CODE_OVERVIEW_NO_AVAILABLE_NODES_HINT')"
                 compact
               />
               <VList v-else lines="two" density="comfortable" class="app-responsive-list">

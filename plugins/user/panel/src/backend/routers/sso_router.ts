@@ -43,7 +43,7 @@ export default function createSsoRouter() {
 
       if (!checkBanIp(ctx)) {
         ctx.status = 403;
-        ctx.body = $t("TXT_CODE_router.login.ban");
+        ctx.body = $t("TXT_CODE_ROUTER_LOGIN_BAN");
         return;
       }
 
@@ -199,7 +199,7 @@ export default function createSsoRouter() {
         return;
       }
 
-      if (!checkBanIp(ctx)) throw new Error($t("TXT_CODE_router.login.ban"));
+      if (!checkBanIp(ctx)) throw new Error($t("TXT_CODE_ROUTER_LOGIN_BAN"));
 
       if (!ctx.session) throw new Error("Session is null");
 

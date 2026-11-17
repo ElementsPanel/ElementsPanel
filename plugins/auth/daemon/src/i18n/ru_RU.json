@@ -1,5 +1,5 @@
 {
-  "TXT_CODE_auth_router.access": "Сеанс {{id}} ({{address}}) успешно аутентифицирован",
-  "TXT_CODE_auth_router.disconnect": "Сеанс {{id}} ({{address}}) отключен из-за длительной неаутентификации",
-  "TXT_CODE_auth_router.notAccess": "Сеанс {{id}} ({{address}}) попытался совершить несанкционированный доступ к {{event}}, и был заблокирован."
+  "TXT_CODE_AUTH_ROUTER_ACCESS": "Сеанс {{id}} ({{address}}) успешно аутентифицирован",
+  "TXT_CODE_AUTH_ROUTER_DISCONNECT": "Сеанс {{id}} ({{address}}) отключен из-за длительной неаутентификации",
+  "TXT_CODE_AUTH_ROUTER_NOT_ACCESS": "Сеанс {{id}} ({{address}}) попытался совершить несанкционированный доступ к {{event}}, и был заблокирован."
 }

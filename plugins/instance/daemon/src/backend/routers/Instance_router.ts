@@ -135,7 +135,7 @@ routerApp.on("instance/detail", async (ctx, data) => {
   try {
     const instanceUuid = data.instanceUuid;
     const instance = InstanceSubsystem.getInstance(instanceUuid);
-    if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+    if (!instance) throw new Error($t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
     let processInfo = null;
     let space = 0;
     try {
@@ -188,7 +188,7 @@ routerApp.on("instance/forward", (ctx, data) => {
   try {
     if (isforward) {
       logger.info(
-        $t("TXT_CODE_Instance_router.requestIO", {
+        $t("TXT_CODE_INSTANCE_ROUTER_REQUEST_IO", {
           id: ctx.socket.id,
           targetInstanceUuid: targetInstanceUuid
         })
@@ -196,7 +196,7 @@ routerApp.on("instance/forward", (ctx, data) => {
       InstanceSubsystem.forward(targetInstanceUuid, ctx.socket);
     } else {
       logger.info(
-        $t("TXT_CODE_Instance_router.cancelIO", {
+        $t("TXT_CODE_INSTANCE_ROUTER_CANCEL_IO", {
           id: ctx.socket.id,
           targetInstanceUuid: targetInstanceUuid
         })
@@ -231,7 +231,7 @@ for (const [operation, command] of [
       for (const instanceUuid of new Set<string>(data.instanceUuids)) {
         try {
           const instance = InstanceSubsystem.getInstance(instanceUuid);
-          if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+          if (!instance) throw new Error($t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
           await instance.execPreset(command);
           if (command === "start") instance.autoRestartCount = 0;
           instances.push({ instanceUuid, nickname: instance.config.nickname });
@@ -268,7 +268,7 @@ routerApp.on("instance/command", async (ctx, data) => {
   const command = data.command || "";
   const instance = InstanceSubsystem.getInstance(instanceUuid);
   try {
-    if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+    if (!instance) throw new Error($t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
     await instance.execPreset("command", command);
     if (!disableResponse) protocol.msg(ctx, "instance/command", { instanceUuid });
   } catch (err: any) {
@@ -285,7 +285,7 @@ routerApp.on("instance/delete", async (ctx, data) => {
   for (const instanceUuid of instanceUuids) {
     try {
       const instance = InstanceSubsystem.getInstance(instanceUuid);
-      if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+      if (!instance) throw new Error($t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
       await InstanceSubsystem.removeInstance(instanceUuid, deleteFile);
       instances.push({
         instanceUuid: instance.instanceUuid,
@@ -307,13 +307,13 @@ routerApp.on("instance/delete-directory", async (ctx, data) => {
   const instanceUuid = data.instanceUuid;
   try {
     const instance = InstanceSubsystem.getInstance(instanceUuid);
-    if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+    if (!instance) throw new Error($t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
     if (instanceUuid === InstanceSubsystem.GLOBAL_INSTANCE_UUID)
       throw new Error("Cannot delete the global terminal instance");
-    if (instance.status() !== Instance.STATUS_STOP) throw new Error($t("TXT_CODE_fb547313"));
+    if (instance.status() !== Instance.STATUS_STOP) throw new Error($t("TXT_CODE_COMMON_PLEASE_MAKE_SURE_THE_INSTANCE_IS_STOPPED_BEFORE_DELETING_IT"));
     const directory = path.resolve(instance.absoluteCwdPath());
     if (directory === path.parse(directory).root)
-      throw new Error($t("TXT_CODE_Instance_router.accessFileErr"));
+      throw new Error($t("TXT_CODE_INSTANCE_FILE_ACCESS_DENIED"));
     instance.status(Instance.STATUS_BUSY);
     try {
       await fs.remove(directory);
@@ -339,7 +339,7 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
   const role = data.role as ROLE;
 
   logger.info(
-    $t("TXT_CODE_Instance_router.performTasks", {
+    $t("TXT_CODE_INSTANCE_ROUTER_PERFORM_TASKS", {
       id: ctx.socket.id,
       uuid: instanceUuid,
       taskName: taskName
@@ -353,7 +353,7 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
       .then(() => {})
       .catch((err) => {
         logger.error(
-          $t("TXT_CODE_Instance_router.performTasksErr", {
+          $t("TXT_CODE_INSTANCE_ROUTER_PERFORM_TASKS_ERR", {
             uuid: instance.instanceUuid,
             taskName: taskName,
             nickname: instance.config.nickname,
@@ -370,7 +370,7 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
       .then(() => {})
       .catch((err) => {
         logger.error(
-          $t("TXT_CODE_Instance_router.performTasksErr", {
+          $t("TXT_CODE_INSTANCE_ROUTER_PERFORM_TASKS_ERR", {
             uuid: instance.instanceUuid,
             taskName: taskName,
             nickname: instance.config.nickname,
@@ -384,7 +384,7 @@ routerApp.on("instance/asynchronous", (ctx, data) => {
   const registeredTask = daemon.tasks.get(taskName);
   if (registeredTask) {
     if (registeredTask.requiredRole != null && role < registeredTask.requiredRole) {
-      return protocol.error(ctx, "instance/asynchronous", $t("TXT_CODE_permission.forbidden"));
+      return protocol.error(ctx, "instance/asynchronous", $t("TXT_CODE_PERMISSION_FORBIDDEN"));
     }
     // A task that builds its own instance, such as creating one from a market
     // package, declares `requiresInstance: false` and is handed no instance.
@@ -433,7 +433,7 @@ routerApp.on("instance/stop_asynchronous", (ctx, data) => {
     return protocol.error(
       ctx,
       "instance/stop_asynchronous",
-      $t("TXT_CODE_Instance_router.taskEmpty")
+      $t("TXT_CODE_INSTANCE_ROUTER_TASK_EMPTY")
     );
   }
 
@@ -472,7 +472,7 @@ routerApp.on("instance/process_config/list", (ctx, data) => {
   const result: any[] = [];
   try {
     const instance = InstanceSubsystem.getInstance(instanceUuid);
-    if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+    if (!instance) throw new Error($t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
     const fileManager = new (fileSubsystem().FileManager)(instance.absoluteCwdPath());
     for (const filePath of files) {
       if (fileManager.check(filePath)) {
@@ -495,9 +495,9 @@ routerApp.on("instance/process_config/file", (ctx, data) => {
   const fileType = data.type;
   try {
     const instance = InstanceSubsystem.getInstance(instanceUuid);
-    if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+    if (!instance) throw new Error($t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
     const fileManager = new (fileSubsystem().FileManager)(instance.absoluteCwdPath());
-    if (!fileManager.check(fileName)) throw new Error($t("TXT_CODE_Instance_router.accessFileErr"));
+    if (!fileManager.check(fileName)) throw new Error($t("TXT_CODE_INSTANCE_FILE_ACCESS_DENIED"));
     const filePath = path.normalize(path.join(instance.absoluteCwdPath(), fileName));
     const processConfig = new ProcessConfig({
       fileName: fileName,

@@ -13,13 +13,13 @@
     <div v-if="error !== null" class="iframe-error">
       <Empty
         icon="mdi-alert-circle-outline"
-        :title="t('TXT_CODE_ef8f8e29')"
+        :title="t('TXT_CODE_COMMON_PAGE_FAILED_TO_LOAD_PLEASE_TRY_AGAIN_LATER')"
         :description="error || undefined"
         compact
       >
         <template #actions>
           <VBtn variant="tonal" prepend-icon="mdi-refresh" @click="reload">{{
-            t("TXT_CODE_9277af78")
+            t("TXT_CODE_COMMON_RETRY")
           }}</VBtn>
         </template>
       </Empty>

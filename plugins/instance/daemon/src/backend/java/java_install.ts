@@ -47,7 +47,7 @@ export async function installJavaArchive(options: {
   const archive = `archive.${download.archive}`;
   const file = path.join(staging, archive);
   const checkCancelled = () => {
-    if (signal.aborted) throw new Error(t("TXT_CODE_javaMsl.interrupted"));
+    if (signal.aborted) throw new Error(t("TXT_CODE_JAVA_MSL_INTERRUPTED"));
   };
   try {
     await fs.remove(staging);
@@ -71,11 +71,11 @@ export async function installJavaArchive(options: {
     await pipeline(response.data, fs.createWriteStream(file), { signal });
     checkCancelled();
     if (hash && hash.digest("hex").toLowerCase() !== download.sha256!.toLowerCase()) {
-      throw new Error(t("TXT_CODE_javaMsl.checksumFailed"));
+      throw new Error(t("TXT_CODE_JAVA_MSL_CHECKSUM_FAILED"));
     }
     if (download.archive === "zip") {
       if (!(await options.unzip(staging, archive, "runtime")))
-        throw new Error(t("TXT_CODE_javaMsl.extractFailed"));
+        throw new Error(t("TXT_CODE_JAVA_MSL_EXTRACT_FAILED"));
     } else {
       let invalidEntry = false;
       const unpack = extract({
@@ -107,15 +107,15 @@ export async function installJavaArchive(options: {
         }
       });
       await pipeline(fs.createReadStream(file), unpack, { signal });
-      if (invalidEntry) throw new Error(t("TXT_CODE_javaMsl.extractFailed"));
+      if (invalidEntry) throw new Error(t("TXT_CODE_JAVA_MSL_EXTRACT_FAILED"));
     }
     checkCancelled();
     const executable = await findJavaExecutable(extracted, platform);
-    if (!executable) throw new Error(t("TXT_CODE_82c8bca3"));
+    if (!executable) throw new Error(t("TXT_CODE_COMMON_JAVA_PATH_NOT_FOUND"));
     const real = await fs.realpath(executable);
     const relative = path.relative(await fs.realpath(extracted), real);
     if (relative.startsWith(`..${path.sep}`) || relative === ".." || path.isAbsolute(relative))
-      throw new Error(t("TXT_CODE_javaMsl.extractFailed"));
+      throw new Error(t("TXT_CODE_JAVA_MSL_EXTRACT_FAILED"));
     if (platform !== "win32") await fs.chmod(real, 0o755);
     const home = path.relative(extracted, path.dirname(path.dirname(executable)));
     checkCancelled();

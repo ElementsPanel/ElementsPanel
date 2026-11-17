@@ -38,22 +38,22 @@ const formRef = ref();
 const tabFormComponent: Record<string, { component: Component; title: string; form: any }> = {
   [TYPE_MINECRAFT_JAVA]: {
     component: MinecraftJavaForm,
-    title: t("TXT_CODE_95583336"),
+    title: t("TXT_CODE_COMMAND_ASSISTANT_MINECRAFT_JAVA"),
     form: minecraftJava
   },
   [TYPE_MINECRAFT_BEDROCK]: {
     component: AnyAppFormComponent,
-    title: t("TXT_CODE_28116f29"),
+    title: t("TXT_CODE_COMMAND_ASSISTANT_MINECRAFT_BEDROCK"),
     form: anyAppForm
   },
   [TYPE_STEAM_SERVER_UNIVERSAL]: {
     component: AnyAppFormComponent,
-    title: t("TXT_CODE_dd8d27ce"),
+    title: t("TXT_CODE_COMMAND_ASSISTANT_STEAM_GAME_SERVER"),
     form: anyAppForm
   },
   [TYPE_UNIVERSAL]: {
     component: AnyAppFormComponent,
-    title: t("TXT_CODE_10693964"),
+    title: t("TXT_CODE_COMMON_ANY_PROGRAM"),
     form: anyAppForm
   }
 };
@@ -66,9 +66,9 @@ const cancel = async () => {
 const submit = async () => {
   try {
     const result = await formRef.value?.validate();
-    if (!result?.valid) return reportErrorMsg(t("TXT_CODE_d6c5a7f8"));
+    if (!result?.valid) return reportErrorMsg(t("TXT_CODE_COMMON_PLEASE_COMPLETE_ALL_REQUIRED_FIELDS_IN_THE_FORM"));
   } catch (error: any) {
-    return reportErrorMsg(t("TXT_CODE_d6c5a7f8"));
+    return reportErrorMsg(t("TXT_CODE_COMMON_PLEASE_COMPLETE_ALL_REQUIRED_FIELDS_IN_THE_FORM"));
   }
   const command = buildCmd();
 
@@ -85,7 +85,7 @@ const handleNext = () => {
 const actions = [
   {
     icon: "mdi-hammer-wrench",
-    title: t("TXT_CODE_f2deb1d0"),
+    title: t("TXT_CODE_COMMON_MINECRAFT_GAME_SERVER"),
     click: () => {
       setGameType(QUICKSTART_ACTION_TYPE.Minecraft);
       handleNext();
@@ -93,7 +93,7 @@ const actions = [
   },
   {
     icon: "mdi-swap-horizontal",
-    title: t("TXT_CODE_dd8d27ce"),
+    title: t("TXT_CODE_COMMAND_ASSISTANT_STEAM_GAME_SERVER"),
     click: () => {
       setGameType(QUICKSTART_ACTION_TYPE.SteamGameServer);
       handleNext();
@@ -101,7 +101,7 @@ const actions = [
   },
   {
     icon: "mdi-dropbox",
-    title: t("TXT_CODE_4600deb7"),
+    title: t("TXT_CODE_COMMON_ANY_CONSOLE_PROGRAM"),
     click: () => {
       setGameType(QUICKSTART_ACTION_TYPE.AnyApp);
       handleNext();
@@ -112,12 +112,12 @@ const actions = [
 
 <template>
   <VDialog v-model="open" max-width="800" persistent>
-    <VCard :title="t('TXT_CODE_2728d0d4')">
+    <VCard :title="t('TXT_CODE_COMMON_COMMAND_HELPER')">
       <VCardText>
       <div v-if="step === STEP.SELECT_TYPE">
         <VRow>
           <p class="text-body-medium text-medium-emphasis">
-            {{ t("TXT_CODE_18df7f10") }}
+            {{ t("TXT_CODE_COMMON_PLEASE_SELECT_YOUR_SERVER_PROGRAM_TYPE") }}
           </p>
           <fade-up-animation>
             <action-button
@@ -139,10 +139,10 @@ const actions = [
         </VTabs>
       </div>
       <div v-else-if="gameType === QUICKSTART_ACTION_TYPE.SteamGameServer">
-        <VTabs v-model="appType" color="primary"><VTab :value="TYPE_STEAM_SERVER_UNIVERSAL">{{ t("TXT_CODE_dd8d27ce") }}</VTab></VTabs>
+        <VTabs v-model="appType" color="primary"><VTab :value="TYPE_STEAM_SERVER_UNIVERSAL">{{ t("TXT_CODE_COMMAND_ASSISTANT_STEAM_GAME_SERVER") }}</VTab></VTabs>
       </div>
       <div v-else-if="gameType != null">
-        <VTabs v-model="appType" color="primary"><VTab :value="TYPE_UNIVERSAL">{{ t("TXT_CODE_feab659d") }}</VTab></VTabs>
+        <VTabs v-model="appType" color="primary"><VTab :value="TYPE_UNIVERSAL">{{ t("TXT_CODE_COMMAND_ASSISTANT_ALL_TYPES") }}</VTab></VTabs>
       </div>
       <component
         :is="tabFormComponent[appType].component"
@@ -151,7 +151,7 @@ const actions = [
         v-model:data="tabFormComponent[appType].form"
       />
       </VCardText>
-      <VCardActions><VSpacer /><VBtn variant="text" @click="cancel">{{ t("TXT_CODE_a0451c97") }}</VBtn><VBtn color="primary" :disabled="step !== STEP.SELECT_SOFTWARE" @click="submit">{{ t("TXT_CODE_d507abff") }}</VBtn></VCardActions>
+      <VCardActions><VSpacer /><VBtn variant="text" @click="cancel">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn><VBtn color="primary" :disabled="step !== STEP.SELECT_SOFTWARE" @click="submit">{{ t("TXT_CODE_COMMON_CONFIRM") }}</VBtn></VCardActions>
     </VCard>
   </VDialog>
 </template>

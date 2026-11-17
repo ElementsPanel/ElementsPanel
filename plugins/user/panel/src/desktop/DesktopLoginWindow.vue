@@ -95,7 +95,7 @@ onBeforeUnmount(() => {
 
 const handleLogin = async () => {
     if (!formData.username.trim() || !formData.password.trim()) {
-        return notifyDesktop(t("TXT_CODE_c846074d"), "error");
+        return notifyDesktop(t("TXT_CODE_COMMON_PLEASE_COMPLETE_YOUR_ACCOUNT_PROFILE"), "error");
     }
     try {
         loginStep.value = 1;
@@ -122,7 +122,7 @@ const handleNext = async () => {
     } catch (error: any) {
         console.error(error);
         loginStep.value = 0;
-        notifyDesktop({ message: t("TXT_CODE_da2fb99a"), description: t("TXT_CODE_6e718abe") }, "error");
+        notifyDesktop({ message: t("TXT_CODE_COMMON_PAGE_NOT_FUNCTIONING_CORRECTLY"), description: t("TXT_CODE_COMMON_UNABLE_TO_LOAD_LOGIN_INFORMATION_REFRESH_THE_PAGE_IF_IT_STILL_FAILS_CHECK_YOUR_NETWORK_OR") }, "error");
     }
 };
 </script>
@@ -150,25 +150,25 @@ const handleNext = async () => {
             </div>
 
             <div v-show="loginStep <= 1" class="desktop-login-body">
-                <p class="desktop-login-subtitle">{{ t("TXT_CODE_5b60ad00") }}</p>
+                <p class="desktop-login-subtitle">{{ t("TXT_CODE_COMMON_LOGIN_TO_ELEMENTS_PANEL_CONTROL_PANEL") }}</p>
                 <form class="desktop-login-form" @submit.prevent="handleLogin">
                     <div v-if="!is2Fa" class="desktop-login-fields-group">
-                        <VTextField v-model="formData.username" type="text" :placeholder="t('TXT_CODE_80a560a1')"
+                        <VTextField v-model="formData.username" type="text" :placeholder="t('TXT_CODE_LOGIN_ACCOUNT_NAME')"
                             prepend-inner-icon="mdi-account-outline" autocomplete="username" variant="solo"
                             hide-details :disabled="loginStep === 1" />
-                        <VTextField v-model="formData.password" type="password" :placeholder="t('TXT_CODE_551b0348')"
+                        <VTextField v-model="formData.password" type="password" :placeholder="t('TXT_CODE_COMMON_PASSWORD')"
                             prepend-inner-icon="mdi-lock-outline" autocomplete="current-password" variant="solo"
                             hide-details @keydown.enter="handleLogin" :disabled="loginStep === 1" />
                     </div>
                     <div v-else>
-                        <VTextField v-model="formData.code" type="text" :placeholder="t('TXT_CODE_7ac8b1d3')"
+                        <VTextField v-model="formData.code" type="text" :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_THE_TWO_FACTOR_AUTHENTICATION_CODE')"
                             prepend-inner-icon="mdi-lock-outline" autocomplete="off" variant="solo"
                             hide-details @keydown.enter="handleLogin" :disabled="loginStep === 1" />
                     </div>
                     <VBtn type="submit" class="desktop-login-btn" block variant="flat"
                         :loading="loginStep === 1" :disabled="loginStep === 1">
                         <VIcon v-if="loginStep === 1" icon="mdi-loading" class="mr-2" />
-                        {{ loginStep === 1 ? t("TXT_CODE_DESKTOP_LOGGING_IN") : t("TXT_CODE_d2c1a316") }}
+                        {{ loginStep === 1 ? t("TXT_CODE_DESKTOP_LOGGING_IN") : t("TXT_CODE_LOGIN_SUBMIT") }}
                     </VBtn>
                 </form>
                 <div class="desktop-login-footer">

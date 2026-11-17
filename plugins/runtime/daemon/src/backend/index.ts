@@ -105,7 +105,7 @@ export async function apply(ctx: DaemonPluginContext) {
     save: () => globalConfiguration.store(),
     setLanguage: (language: string) => {
       if (!language) return;
-      ctx.logger.warn(ctx.i18n.$t("TXT_CODE_66e32091"), language);
+      ctx.logger.warn(ctx.i18n.$t("TXT_CODE_COMMON_NODE_LANGUAGE_HAS_BEEN_CHANGED"), language);
       void i18next.changeLanguage(language);
       fs.remove(LOCAL_PRESET_LANG_PATH, () => {});
       config.language = language;
@@ -156,7 +156,7 @@ export async function apply(ctx: DaemonPluginContext) {
     ensureExecutable(PTY_PATH);
   } catch (error: any) {
     ctx.logger.error(error?.message);
-    ctx.logger.error(ctx.i18n.$t("TXT_CODE_a8b245fa"));
+    ctx.logger.error(ctx.i18n.$t("TXT_CODE_DAEMON_MODULE_INITIALIZATION_FAILED"));
   }
 
   const version = getVersion();
@@ -171,6 +171,6 @@ export async function apply(ctx: DaemonPluginContext) {
  + Version ${version}
 `);
 
-  ctx.logger.info(ctx.i18n.$t("TXT_CODE_app.welcome"));
+  ctx.logger.info(ctx.i18n.$t("TXT_CODE_APP_WELCOME"));
   ctx.on("ready", () => globalConfiguration.store());
 }

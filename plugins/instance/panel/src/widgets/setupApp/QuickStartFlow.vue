@@ -63,7 +63,7 @@ const handleNext = (key: string) => {
 <template>
   <main class="quickstart-page">
     <VContainer fluid class="quickstart-page-container">
-      <PageToolbar :title="t('TXT_CODE_9b99b72e')" icon="mdi-rocket-launch-outline" />
+      <PageToolbar :title="t('TXT_CODE_COMMON_QUICKLY_DEPLOY_APPLICATION_INSTANCES')" icon="mdi-rocket-launch-outline" />
       <CardPanel class="card-wrapper">
         <template #body>
       <div v-if="!isLoading" class="pd-24 h-100">

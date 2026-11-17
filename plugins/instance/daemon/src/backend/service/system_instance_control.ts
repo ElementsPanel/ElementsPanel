@@ -117,15 +117,15 @@ class InstanceControlSubsystem {
         ? undefined
         : registeredTasks.find((entry) => entry.config.name === replaceName);
     if (replaceName != null && !previous) {
-      throw new Error($t("TXT_CODE_system_instance_control.crateTaskErr", { name: replaceName }));
+      throw new Error($t("TXT_CODE_SYSTEM_INSTANCE_CONTROL_CREATE_TASK_ERROR", { name: replaceName }));
     }
     const maxTasks = instanceSetting("instanceScheduleMaxTasks");
     if (needStore && !previous && registeredTasks.length >= maxTasks)
       throw new Error($t("TXT_CODE_INSTANCE_SCHEDULE_TASK_LIMIT", { limit: maxTasks }));
     if (registeredTasks.some((entry) => entry !== previous && entry.config.name === task.name))
-      throw new Error($t("TXT_CODE_system_instance_control.existRepeatTask"));
+      throw new Error($t("TXT_CODE_SYSTEM_INSTANCE_CONTROL_EXIST_REPEAT_TASK"));
     if (!fileSubsystem().FileManager.checkFileName(task.name))
-      throw new Error($t("TXT_CODE_system_instance_control.illegalName"));
+      throw new Error($t("TXT_CODE_SYSTEM_INSTANCE_CONTROL_ILLEGAL_NAME"));
     if (
       needStore &&
       Array.isArray(task.actions) &&
@@ -157,10 +157,10 @@ class InstanceControlSubsystem {
               Number(action.payload) > 2147483647))
       )
     )
-      throw new Error($t("TXT_CODE_system_instance_control.crateTaskErr", { name: task.name }));
+      throw new Error($t("TXT_CODE_SYSTEM_INSTANCE_CONTROL_CREATE_TASK_ERROR", { name: task.name }));
     if (needStore)
       logger.info(
-        $t("TXT_CODE_system_instance_control.crateTask", {
+        $t("TXT_CODE_SYSTEM_INSTANCE_CONTROL_CREATE_TASK", {
           name: task.name,
           task: JSON.stringify(task)
         })
@@ -188,23 +188,23 @@ class InstanceControlSubsystem {
     if (task.type === ScheduleTypeEnum.Interval) {
       const internalTime = Number(task.time);
       if (!Number.isFinite(internalTime) || internalTime < 3 || internalTime * 1000 > 2147483647) {
-        throw new Error($t("TXT_CODE_ec96e2bf"));
+        throw new Error($t("TXT_CODE_COMMON_THE_INTERVAL_FOR_INTERVAL_TYPE_SCHEDULED_TASKS_CANNOT_BE_LESS_THAN_3_SECONDS"));
       }
 
       newTask.job = new IntervalJob(() => void run(), internalTime);
     } else {
       const timeArray = task.time.trim().split(/\s+/);
       if (timeArray[0] === "*") {
-        throw new Error($t("TXT_CODE_6b77cd52"));
+        throw new Error($t("TXT_CODE_SCHEDULE_INTERVAL_TOO_SHORT"));
       }
 
       // The editor always emits a six-field expression with a fixed second.
       if (timeArray.length !== 6 || !/^\d+$/.test(timeArray[0]) || Number(timeArray[0]) > 59) {
-        throw new Error($t("TXT_CODE_system_instance_control.crateTaskErr", { name: task.name }));
+        throw new Error($t("TXT_CODE_SYSTEM_INSTANCE_CONTROL_CREATE_TASK_ERROR", { name: task.name }));
       }
       const job = schedule.scheduleJob(task.time, () => void run());
       if (!job)
-        throw new Error($t("TXT_CODE_system_instance_control.crateTaskErr", { name: task.name }));
+        throw new Error($t("TXT_CODE_SYSTEM_INSTANCE_CONTROL_CREATE_TASK_ERROR", { name: task.name }));
       newTask.job = job;
     }
     let stored = false;
@@ -237,7 +237,7 @@ class InstanceControlSubsystem {
     }
     this.taskMap.set(key, registeredTasks);
     if (needStore)
-      logger.info($t("TXT_CODE_system_instance_control.crateSuccess", { name: task.name }));
+      logger.info($t("TXT_CODE_SYSTEM_INSTANCE_CONTROL_CREATE_TASK_SUCCESS", { name: task.name }));
   }
 
   public listScheduleJob(instanceUuid: string) {

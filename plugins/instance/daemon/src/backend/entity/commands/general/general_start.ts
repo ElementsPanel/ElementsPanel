@@ -24,7 +24,7 @@ export default class GeneralStartCommand extends AbsStartCommand {
       (!instance.config.startCommand && instance.config.processType === "general") ||
       !instance.hasCwdPath()
     )
-      throw new StartupError($t("TXT_CODE_general_start.instanceConfigErr"));
+      throw new StartupError($t("TXT_CODE_GENERAL_START_INSTANCE_CONFIG_ERR"));
     if (!fs.existsSync(instance.absoluteCwdPath())) fs.mkdirpSync(instance.absoluteCwdPath());
 
     const tmpStartCmd = await instance.parseTextParams(instance.config.startCommand);
@@ -32,21 +32,21 @@ export default class GeneralStartCommand extends AbsStartCommand {
     const commandExeFile = commandList[0];
     const commandParameters = commandList.slice(1);
     if (commandList.length === 0) {
-      throw new StartupError($t("TXT_CODE_general_start.cmdEmpty"));
+      throw new StartupError($t("TXT_CODE_GENERAL_START_CMD_EMPTY"));
     }
 
     const runAsConfig = await getRunAsUserParams(instance);
 
     logger.info("----------------");
-    logger.info($t("TXT_CODE_general_start.startInstance", { source: source }));
-    logger.info($t("TXT_CODE_general_start.instanceUuid", { uuid: instance.instanceUuid }));
-    logger.info($t("TXT_CODE_general_start.startCmd", { cmdList: JSON.stringify(commandList) }));
-    logger.info($t("TXT_CODE_general_start.cwd", { cwd: instance.absoluteCwdPath() }));
-    logger.info($t("TXT_CODE_general_start.runAs", { user: runAsConfig.runAsName }));
+    logger.info($t("TXT_CODE_GENERAL_START_START_INSTANCE", { source: source }));
+    logger.info($t("TXT_CODE_GENERAL_START_INSTANCE_UUID", { uuid: instance.instanceUuid }));
+    logger.info($t("TXT_CODE_GENERAL_START_START_CMD", { cmdList: JSON.stringify(commandList) }));
+    logger.info($t("TXT_CODE_GENERAL_START_CWD", { cwd: instance.absoluteCwdPath() }));
+    logger.info($t("TXT_CODE_GENERAL_START_RUN_AS", { user: runAsConfig.runAsName }));
     logger.info("----------------");
 
     if (runAsConfig.isEnableRunAs) {
-      instance.println("INFO", $t("TXT_CODE_ba09da46", { name: runAsConfig.runAsName }));
+      instance.println("INFO", $t("TXT_CODE_COMMON_TRYING_TO_START_CHILD_PROCESS_AS_LINUX_USER", { name: runAsConfig.runAsName }));
     }
 
     const subProcess = spawnInstanceProcess(instance, spawn, commandExeFile, commandParameters, {
@@ -68,7 +68,7 @@ export default class GeneralStartCommand extends AbsStartCommand {
       await processAdapter.destroy();
       instance.println(
         "ERROR",
-        $t("TXT_CODE_general_start.pidErr", {
+        $t("TXT_CODE_GENERAL_START_PID_ERR", {
           startCommand: instance.config.startCommand,
           commandExeFile: commandExeFile,
           commandParameters: JSON.stringify(commandParameters)
@@ -77,12 +77,12 @@ export default class GeneralStartCommand extends AbsStartCommand {
       throw error;
     }
     logger.info(
-      $t("TXT_CODE_general_start.startSuccess", {
+      $t("TXT_CODE_GENERAL_START_START_SUCCESS", {
         instanceUuid: instance.instanceUuid,
         pid: subProcess.pid
       })
     );
-    instance.println("INFO", $t("TXT_CODE_general_start.startOrdinaryTerminal"));
-    instance.println("INFO", $t("TXT_CODE_b50ffba8"));
+    instance.println("INFO", $t("TXT_CODE_GENERAL_START_START_ORDINARY_TERMINAL"));
+    instance.println("INFO", $t("TXT_CODE_COMMON_THE_INSTANCE_HAS_BEEN_STARTED"));
   }
 }

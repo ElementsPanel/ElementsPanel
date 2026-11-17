@@ -212,7 +212,7 @@ if (props.desktop) {
               prepend-icon="mdi-refresh"
               :loading="loading"
               @click="refresh()"
-            >{{ t("TXT_CODE_9277af78") }}</VBtn>
+            >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
           </template>
         </Empty>
         <Empty

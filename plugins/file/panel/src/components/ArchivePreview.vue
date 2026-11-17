@@ -90,11 +90,11 @@ const flatEntries = computed(() => {
   return result;
 });
 const archiveHeaders = [
-  { title: t("TXT_CODE_94c193de"), key: "name", width: 360, sortable: false },
-  { title: t("TXT_CODE_67d68dd1"), key: "type", width: 100, sortable: false },
-  { title: t("TXT_CODE_94bb113a"), key: "size", width: 120, sortable: false },
+  { title: t("TXT_CODE_FILE_NAME"), key: "name", width: 360, sortable: false },
+  { title: t("TXT_CODE_FILE_TYPE"), key: "type", width: 100, sortable: false },
+  { title: t("TXT_CODE_COMMON_SIZE"), key: "size", width: 120, sortable: false },
   { title: t("TXT_CODE_ARCHIVE_COMPRESSED_SIZE"), key: "compressedSize", width: 130, sortable: false },
-  { title: t("TXT_CODE_d3b29478"), key: "time", width: 180, sortable: false }
+  { title: t("TXT_CODE_COMMON_LAST_MODIFY"), key: "time", width: 180, sortable: false }
 ];
 const getMdiIconName = (entry: ArchiveTreeEntry) => {
   if (entry.type === 0) return "mdi-folder-outline";
@@ -122,7 +122,7 @@ const rawEntry = (item: unknown) =>
       >
         <template #no-data><Empty icon="mdi-archive-outline" compact /></template>
         <template #item.name="{ item }"><div class="archive-preview__name" :style="{ paddingLeft: `${rawEntry(item).depth * 18}px` }"><VIcon :icon="getMdiIconName(rawEntry(item))" size="16" /><span :title="rawEntry(item).name">{{ rawEntry(item).name }}</span></div></template>
-        <template #item.type="{ item }">{{ rawEntry(item).type === 0 ? t("TXT_CODE_e5f949c") : t("TXT_CODE_d4cf1cb8") }}</template>
+        <template #item.type="{ item }">{{ rawEntry(item).type === 0 ? t("TXT_CODE_FILE_FOLDER") : t("TXT_CODE_COMMON_FILE") }}</template>
         <template #item.size="{ item }">{{ rawEntry(item).type === 0 ? "--" : convertFileSize(String(rawEntry(item).size)) }}</template>
         <template #item.compressedSize="{ item }">{{ rawEntry(item).type === 0 || !rawEntry(item).compressedSize ? "--" : convertFileSize(String(rawEntry(item).compressedSize)) }}</template>
         <template #item.time="{ item }">{{ rawEntry(item).type === 0 || !rawEntry(item).time ? "--" : dayjs(rawEntry(item).time).format("YYYY-MM-DD HH:mm:ss") }}</template>

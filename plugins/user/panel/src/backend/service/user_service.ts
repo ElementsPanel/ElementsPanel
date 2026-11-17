@@ -55,18 +55,18 @@ class UserSubsystem {
       });
       this.isFirstStartup = true;
       logger().info(
-        $t("TXT_CODE_systemUser.defaultAccount", {
+        $t("TXT_CODE_SYSTEM_USER_DEFAULT_ACCOUNT", {
           userName: "epanel",
           password: passWord
         })
       );
     }
-    logger().info($t("TXT_CODE_systemUser.userCount", { n: this.objects.size }));
+    logger().info($t("TXT_CODE_SYSTEM_USER_USER_COUNT", { n: this.objects.size }));
   }
 
   async create(config: IUserInfo): Promise<User> {
     if (!config.userName || this.existUserName(config.userName))
-      throw new Error($t("TXT_CODE_router.user.existsUserName"));
+      throw new Error($t("TXT_CODE_ROUTER_USER_EXISTS_USER_NAME"));
     const newUuid = v4().replace(/-/gim, "");
     const instance = new User();
     instance.uuid = newUuid;
@@ -95,12 +95,12 @@ class UserSubsystem {
         throw new Error("Invalid username");
       const existing = this.getUserByUserName(config.userName);
       if (existing && existing.uuid !== uuid)
-        throw new Error($t("TXT_CODE_router.user.existsUserName"));
+        throw new Error($t("TXT_CODE_ROUTER_USER_EXISTS_USER_NAME"));
     }
     if (config.permission != null && ![-1, 0, 1, 10].includes(config.permission))
       throw new Error("Invalid user permission");
     if (config.passWord != null && typeof config.passWord !== "string")
-      throw new Error($t("TXT_CODE_router.user.passwordCheck"));
+      throw new Error($t("TXT_CODE_ROUTER_USER_PASSWORD_CHECK"));
     if (config.instances != null) instance.instances = this.normalizeInstances(config.instances);
     if (config.userName != null) instance.userName = config.userName;
     if (config.isInit != null) instance.isInit = Boolean(config.isInit);
@@ -139,13 +139,13 @@ class UserSubsystem {
     const inputPassword = info.passWord || "";
     const user = this.getUserByUserName(info.userName || "");
     if (!user || user.permission < ROLE().USER || typeof inputPassword !== "string")
-      throw new Error($t("TXT_CODE_fefbb457"));
+      throw new Error($t("TXT_CODE_COMMON_INCORRECT_ACCOUNT_OR_PASSWORD"));
     const passwordMatches = user.passWordType === UserPassWordType.bcrypt
       ? bcrypt.compareSync(inputPassword, user.passWord)
       : md5(inputPassword) === user.passWord;
-    if (!passwordMatches) throw new Error($t("TXT_CODE_fefbb457"));
+    if (!passwordMatches) throw new Error($t("TXT_CODE_COMMON_INCORRECT_ACCOUNT_OR_PASSWORD"));
     if (user.open2FA && (!user.secret || !this.check2FA(code2FA || "", user, totpDriftToleranceSteps)))
-      throw new TwoFactorError($t("TXT_CODE_3d68e43b"));
+      throw new TwoFactorError($t("TXT_CODE_COMMON_TWO_FACTOR_AUTHENTICATION_CODE_IS_INCORRECT"));
   }
 
   existUserName(userName: string): boolean {

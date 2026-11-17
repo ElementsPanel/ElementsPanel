@@ -43,7 +43,7 @@ async function refresh() {
     });
     if (current !== request) return;
     versions.value = result.value?.versions ?? [];
-    if (!versions.value.length) error.value = t("TXT_CODE_javaMsl.noVersions");
+    if (!versions.value.length) error.value = t("TXT_CODE_JAVA_MSL_NO_VERSIONS");
   } catch (cause: any) {
     if (current === request) error.value = cause.message;
   } finally {
@@ -62,7 +62,7 @@ onUnmounted(() => {
     <VAutocomplete
       :model-value="modelValue"
       :items="items"
-      :label="t('TXT_CODE_javaMsl.version')"
+      :label="t('TXT_CODE_JAVA_MSL_VERSION')"
       :loading="loading"
       :disabled="disabled || loading || !!error"
       variant="solo"
@@ -76,7 +76,7 @@ onUnmounted(() => {
       {{ error }}
       <template #append>
         <VBtn variant="text" :disabled="disabled || loading" @click="refresh">{{
-          t("TXT_CODE_9277af78")
+          t("TXT_CODE_COMMON_RETRY")
         }}</VBtn>
       </template>
     </VAlert>
@@ -87,7 +87,7 @@ onUnmounted(() => {
       rel="noopener noreferrer"
     >
       <img :src="mslLogo" alt="MSL" width="24" height="24" />
-      <span>{{ t("TXT_CODE_javaMsl.attribution") }}</span>
+      <span>{{ t("TXT_CODE_JAVA_MSL_ATTRIBUTION") }}</span>
     </a>
   </div>
 </template>

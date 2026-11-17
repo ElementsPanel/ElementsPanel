@@ -57,7 +57,7 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "雙端外掛",
   "TXT_CODE_PLUGIN_MARKET_UPDATES": "更新",
   "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "外掛與目前面板版本不相容，請更新 ElementsPanel。",
-  "TXT_CODE_2de92a5d": "安裝前請選擇一個節點！",
+  "TXT_CODE_COMMON_PLEASE_SELECT_A_NODE_BEFORE_INSTALLING": "安裝前請選擇一個節點！",
   "TXT_CODE_PLUGIN_MARKET_BUNDLED": "該插件是面板內建依賴，不能在此解除安裝",
   "TXT_CODE_PLUGIN_MARKET_NPM_FAILED": "npm 安裝失敗，請檢查網路、registry 或套件名稱後重試",
   "TXT_CODE_PLUGIN_MARKET_ADD": "新增",

@@ -22,7 +22,7 @@ export function registerModManagerRoutes(
 
     if (!ctx.identity.accessPolicy.canFileManager && !ctx.identity.of(requestCtx).elevated) {
       requestCtx.status = 403;
-      requestCtx.body = new Error($t("TXT_CODE_router.file.off"));
+      requestCtx.body = new Error($t("TXT_CODE_ROUTER_FILE_OFF"));
       return;
     }
 
@@ -31,7 +31,7 @@ export function registerModManagerRoutes(
         await next();
       } else {
         requestCtx.status = 403;
-        requestCtx.body = $t("TXT_CODE_permission.forbiddenInstance");
+        requestCtx.body = $t("TXT_CODE_PERMISSION_FORBIDDEN_INSTANCE");
       }
     } else {
       await next();

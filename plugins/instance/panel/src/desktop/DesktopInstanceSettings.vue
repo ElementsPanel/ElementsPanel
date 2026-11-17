@@ -51,26 +51,26 @@ const canEdit = computed(() => isAdmin.value ||
   (original.value?.processType === "docker" && state.settings.allowChangeCmd));
 const typeItems = computed(() => Object.entries(INSTANCE_TYPE_TRANSLATION).map(([value, title]) => ({ value, title })));
 const tabs = computed<Array<{ id: Tab; title: string }>>(() => {
-  const items: Array<{ id: Tab; title: string }> = [{ id: "basic", title: t("TXT_CODE_cc7b54b9") }];
+  const items: Array<{ id: Tab; title: string }> = [{ id: "basic", title: t("TXT_CODE_COMMON_BASIC_SETTINGS") }];
   if (!isAdmin.value) return items;
-  if (!isGlobalTerminal.value) items.push({ id: "docker", title: t("TXT_CODE_afb12200") });
-  items.push({ id: "advanced", title: t("TXT_CODE_31a1d824") });
-  if (!isGlobalTerminal.value) items.push({ id: "resources", title: t("TXT_CODE_604d8d63") });
+  if (!isGlobalTerminal.value) items.push({ id: "docker", title: t("TXT_CODE_COMMON_CONTAINERIZATION") });
+  items.push({ id: "advanced", title: t("TXT_CODE_COMMON_ADVANCED_SETTINGS") });
+  if (!isGlobalTerminal.value) items.push({ id: "resources", title: t("TXT_CODE_COMMON_CONTAINER_LIMITS") });
   return items;
 });
-const updateCommandHint = t("TXT_CODE_fa487a47");
-const updateCommandPlaceholder = t("TXT_CODE_61ca492b") +
+const updateCommandHint = t("TXT_CODE_COMMON_PROVIDE_THE_FOLLOWING_VARIABLE_STRINGS_INSTANCE_ID_INSTANCE_INSTALLATION_DIRECTORY");
+const updateCommandPlaceholder = t("TXT_CODE_COMMON_FOR_EXAMPLE") +
   '"C:/SteamCMD/steamcmd.exe" +login anonymous +force_install_dir "{mcsm_workspace}" "+app_update 380870 validate" +quit';
 const requiredRule = (message: string) => (value: unknown) =>
   !!String(value ?? "").trim() || t(message);
 const commandRules = [
-  (value: unknown) => isDockerMode.value || requiredRule("TXT_CODE_f50cfe2")(value),
-  (value: unknown) => !String(value ?? "").includes("\n") || t("TXT_CODE_bbbda29")
+  (value: unknown) => isDockerMode.value || requiredRule("TXT_CODE_COMMON_ENTER_STARTUP_COMMAND")(value),
+  (value: unknown) => !String(value ?? "").includes("\n") || t("TXT_CODE_COMMON_YOU_CANNOT_INCLUDE_MULTIPLE_LINES_IN_YOUR_STARTUP_PROGRAM_THIS_HAS_TO_BE_A_ONE_LINER")
 ];
 const endTimeRule = (value: unknown) =>
-  !String(value ?? "").trim() || dayjs(String(value)).isValid() || t("TXT_CODE_9911ac11");
+  !String(value ?? "").trim() || dayjs(String(value)).isValid() || t("TXT_CODE_COMMON_FAILED_TO_SAVE_PLEASE_CHECK_THE_CONFIGURATION");
 const gpuCountRule = (value: unknown) =>
-  (Number.isInteger(Number(value)) && Number(value) >= 1) || t("TXT_CODE_gpu_count");
+  (Number.isInteger(Number(value)) && Number(value) >= 1) || t("TXT_CODE_GPU_COUNT");
 const fieldTabs: Record<string, Tab> = {
   nickname: "basic", startCommand: "basic", endTime: "basic",
   image: "docker", networkMode: "docker", cwd: "advanced", gpuCount: "resources"
@@ -104,7 +104,7 @@ const load = async () => {
   try {
     const result = await fetchInstance({ params, forceRequest: true });
     if (version !== generation) return;
-    if (!result.value?.config) throw new Error(t("TXT_CODE_2dae1294"));
+    if (!result.value?.config) throw new Error(t("TXT_CODE_INSTANCE_CONFIG_INVALID_HINT"));
     applyConfig(result.value.config);
   } catch (error) {
     if (version !== generation) return;
@@ -142,7 +142,7 @@ const save = async () => {
     else await updateLimited(request);
     if (version !== generation) return;
     applyConfig(config);
-    notifyDesktop(t("TXT_CODE_d3de39b4"), "success");
+    notifyDesktop(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"), "success");
   } catch (error) {
     if (version === generation) notifyDesktopError(error);
   } finally {
@@ -195,19 +195,19 @@ const listRows = ref<ListRow[]>([]);
 const listError = ref("");
 let rowSequence = 0;
 const listDefinitions: Record<ListKind, { title: string; columns: string[] }> = {
-  ports: { title: "TXT_CODE_cf88c936", columns: ["TXT_CODE_534db0b2", "TXT_CODE_b729d2e", "TXT_CODE_ad1c674c"] },
-  volumes: { title: "TXT_CODE_d9c73520", columns: ["TXT_CODE_681aaeb9", "TXT_CODE_30258325"] },
-  env: { title: "TXT_CODE_b916a8dc", columns: ["TXT_CODE_a42984e", "TXT_CODE_115e8a25"] },
-  labels: { title: "TXT_CODE_g1c43s2h", columns: ["TXT_CODE_a42984e", "TXT_CODE_115e8a25"] },
-  capabilities: { title: "TXT_CODE_bbbd4133", columns: ["TXT_CODE_d51db65a", "TXT_CODE_adea33ce"] },
-  devices: { title: "TXT_CODE_b3a60c78", columns: ["TXT_CODE_e4a82ac7", "TXT_CODE_ef6115b7", "TXT_CODE_511aea70"] }
+  ports: { title: "TXT_CODE_COMMON_OPEN_PORTS", columns: ["TXT_CODE_COMMON_HOST_PORT", "TXT_CODE_COMMON_CONTAINER_PORT", "TXT_CODE_COMMON_PROTOCOL"] },
+  volumes: { title: "TXT_CODE_COMMON_MOUNT_ADDITIONAL_DIRECTORIES", columns: ["TXT_CODE_COMMON_HOST_DIRECTORY", "TXT_CODE_COMMON_CONTAINER_DIRECTORY"] },
+  env: { title: "TXT_CODE_COMMON_ENVIRONMENT_VARIABLES", columns: ["TXT_CODE_COMMON_VARIABLE_NAME", "TXT_CODE_COMMON_VARIABLE_VALUE"] },
+  labels: { title: "TXT_CODE_DOCKER_CONTAINER_LABELS", columns: ["TXT_CODE_COMMON_VARIABLE_NAME", "TXT_CODE_COMMON_VARIABLE_VALUE"] },
+  capabilities: { title: "TXT_CODE_COMMON_CAPABILITIES", columns: ["TXT_CODE_COMMON_CAPABILITY_NAME", "TXT_CODE_COMMON_OPERATION_TYPE"] },
+  devices: { title: "TXT_CODE_COMMON_DEVICES", columns: ["TXT_CODE_COMMON_HOST_PATH", "TXT_CODE_COMMON_CONTAINER_PATH", "TXT_CODE_FILE_PERMISSIONS"] }
 };
 const listFields = computed<ListField[]>(() => listDefinitions[listKind.value].columns.map((label, index) => {
   const field: ListField = { key: (["first", "second", "third"] as const)[index], label };
   if (listKind.value === "ports" && index === 2)
     field.options = [{ title: "TCP", value: "tcp" }, { title: "UDP", value: "udp" }];
   if (listKind.value === "capabilities" && index === 1)
-    field.options = [{ title: t("TXT_CODE_a1d885c1"), value: "add" }, { title: t("TXT_CODE_fac5dc49"), value: "drop" }];
+    field.options = [{ title: t("TXT_CODE_COMMON_ADD"), value: "add" }, { title: t("TXT_CODE_COMMON_DROP"), value: "drop" }];
   return field;
 }));
 const row = (first = "", second = "", third = ""): ListRow => ({ id: ++rowSequence, first, second, third });
@@ -252,7 +252,7 @@ const applyList = () => {
   if (!docker || !canEdit.value || (!isAdmin.value && kind !== "env")) return;
   if (listRows.value.some((item) => !item.first.trim() ||
     ((kind === "ports" || kind === "volumes") && !item.second.trim()))) {
-    listError.value = t("TXT_CODE_9911ac11");
+    listError.value = t("TXT_CODE_COMMON_FAILED_TO_SAVE_PLEASE_CHECK_THE_CONFIGURATION");
     return;
   }
   const rows = listRows.value;
@@ -283,19 +283,19 @@ onBeforeUnmount(() => { generation++; });
 <template>
   <div class="dis">
     <header class="dis__header">
-      <span class="dis__name">{{ original?.nickname || t("TXT_CODE_4f34fc28") }}</span>
+      <span class="dis__name">{{ original?.nickname || t("TXT_CODE_DESKTOP_INSTANCE_SETTINGS_TITLE") }}</span>
       <div class="dis__actions">
         <VBtn class="dis-btn dis-btn--primary" variant="text" size="small" :loading="isSaving"
           :disabled="!draft || !canEdit || isLoading || listOpen" @click="save">
-          <VIcon icon="mdi-content-save-outline" start />{{ t("TXT_CODE_abfe9512") }}
+          <VIcon icon="mdi-content-save-outline" start />{{ t("TXT_CODE_COMMON_SAVE") }}
         </VBtn>
         <VBtn class="dis-btn" variant="text" size="small" :loading="isLoading"
           :disabled="isSaving" @click="load">
-          <VIcon icon="mdi-refresh" start />{{ t("TXT_CODE_b76d94e0") }}
+          <VIcon icon="mdi-refresh" start />{{ t("TXT_CODE_COMMON_REFRESH") }}
         </VBtn>
       </div>
     </header>
-    <nav v-if="draft && canEdit" class="dis__tabs" :aria-label="t('TXT_CODE_4f34fc28')">
+    <nav v-if="draft && canEdit" class="dis__tabs" :aria-label="t('TXT_CODE_DESKTOP_INSTANCE_SETTINGS_TITLE')">
       <VBtn v-for="tab in tabs" :key="tab.id" variant="text" class="dis-tab"
         :class="{ 'dis-tab--active': activeTab === tab.id }" :aria-pressed="activeTab === tab.id"
         @click="activeTab = tab.id">{{ tab.title }}</VBtn>
@@ -304,7 +304,7 @@ onBeforeUnmount(() => { generation++; });
       <Empty
         v-if="loadError"
         icon="mdi-alert-circle-outline"
-        :title="t('TXT_CODE_ef8f8e29')"
+        :title="t('TXT_CODE_COMMON_PAGE_FAILED_TO_LOAD_PLEASE_TRY_AGAIN_LATER')"
         :description="loadError"
         :compact="!!draft"
       >
@@ -315,91 +315,91 @@ onBeforeUnmount(() => { generation++; });
             :loading="isLoading"
             :disabled="isSaving"
             @click="load"
-          >{{ t("TXT_CODE_9277af78") }}</VBtn>
+          >{{ t("TXT_CODE_COMMON_RETRY") }}</VBtn>
         </template>
       </Empty>
       <div v-if="isLoading && !draft" class="dis__empty"><VProgressCircular indeterminate /></div>
-      <VAlert v-else-if="draft && !canEdit" type="warning" variant="tonal" :text="t('TXT_CODE_permission.forbidden')" />
+      <VAlert v-else-if="draft && !canEdit" type="warning" variant="tonal" :text="t('TXT_CODE_PERMISSION_FORBIDDEN')" />
       <VForm v-else-if="draft" ref="formRef" :disabled="isSaving || isLoading" validate-on="input lazy" class="dis__form" @submit.prevent="save">
         <section v-show="activeTab === 'basic'" class="dis__grid">
-          <VTextField v-model="draft.nickname" name="nickname" :rules="isAdmin && !isGlobalTerminal ? [requiredRule('TXT_CODE_68a504b3')] : []"
-            :label="t('TXT_CODE_f70badb9')" :disabled="!isAdmin || isGlobalTerminal || isSaving" />
-          <VSelect v-model="draft.type" :items="typeItems" :label="t('TXT_CODE_2f291d8b')" :disabled="!isAdmin || isGlobalTerminal || isSaving">
+          <VTextField v-model="draft.nickname" name="nickname" :rules="isAdmin && !isGlobalTerminal ? [requiredRule('TXT_CODE_COMMON_PLEASE_ENTER_THE_INSTANCE_NAME')] : []"
+            :label="t('TXT_CODE_COMMON_INSTANCE_NAME')" :disabled="!isAdmin || isGlobalTerminal || isSaving" />
+          <VSelect v-model="draft.type" :items="typeItems" :label="t('TXT_CODE_COMMON_INSTANCE_TYPE')" :disabled="!isAdmin || isGlobalTerminal || isSaving">
             <template #no-data><Empty :icon="false" compact /></template>
           </VSelect>
-          <VTextField v-model="endTimeText" name="endTime" :rules="isAdmin && !isGlobalTerminal ? [endTimeRule] : []" :label="t('TXT_CODE_fa920c0')" placeholder="YYYY-MM-DD HH:mm:ss"
+          <VTextField v-model="endTimeText" name="endTime" :rules="isAdmin && !isGlobalTerminal ? [endTimeRule] : []" :label="t('TXT_CODE_COMMON_EXPIRE')" placeholder="YYYY-MM-DD HH:mm:ss"
             :disabled="!isAdmin || isGlobalTerminal || isSaving" />
-          <VSelect v-model="draft.fileCode" :items="TERMINAL_CODE" :label="t('TXT_CODE_f041de90')">
+          <VSelect v-model="draft.fileCode" :items="TERMINAL_CODE" :label="t('TXT_CODE_COMMON_FILE_ENCODING')">
             <template #no-data><Empty :icon="false" compact /></template>
           </VSelect>
-          <p v-if="!isAdmin" class="dis__hint dis__wide">{{ t("TXT_CODE_66f38b2e") }}</p>
-          <VTextarea v-model="draft.startCommand" name="startCommand" :rules="commandRules" class="dis__wide" :label="t('TXT_CODE_d12fa808')" rows="4"
-            :placeholder="isDockerMode ? t('TXT_CODE_98e7c829') : t('TXT_CODE_f50cfe2')" />
-          <VTextField v-if="isAdmin" v-model="draft.stopCommand" class="dis__wide" :label="t('TXT_CODE_11cfe3a1')" :placeholder="t('TXT_CODE_83053cd5')" />
+          <p v-if="!isAdmin" class="dis__hint dis__wide">{{ t("TXT_CODE_COMMON_NORMAL_USERS_CAN_ONLY_MODIFY_PART_OF_THE_SETTINGS") }}</p>
+          <VTextarea v-model="draft.startCommand" name="startCommand" :rules="commandRules" class="dis__wide" :label="t('TXT_CODE_COMMON_STARTUP_COMMAND')" rows="4"
+            :placeholder="isDockerMode ? t('TXT_CODE_COMMON_LEAVE_EMPTY_TO_USE_DEFAULT_DOCKER_IMAGE_COMMAND') : t('TXT_CODE_COMMON_ENTER_STARTUP_COMMAND')" />
+          <VTextField v-if="isAdmin" v-model="draft.stopCommand" class="dis__wide" :label="t('TXT_CODE_COMMON_INSTANCE_SHUTDOWN_COMMAND')" :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_AN_INSTANCE_SHUTDOWN_COMMAND_SUCH_AS_STOP_EXIT_C_ETC')" />
           <template v-else>
-            <VTextField v-model="draft.updateCommand" class="dis__wide" :label="t('TXT_CODE_bb0b9711')"
+            <VTextField v-model="draft.updateCommand" class="dis__wide" :label="t('TXT_CODE_COMMON_UPDATE_OR_INSTALL_COMMAND')"
               :hint="updateCommandHint" :placeholder="updateCommandPlaceholder" persistent-hint />
             <VBtn class="dis-btn" variant="text" :disabled="isSaving" @click="openList('env')">
-              {{ t("TXT_CODE_b916a8dc") }}: {{ t("TXT_CODE_ad207008") }}
+              {{ t("TXT_CODE_COMMON_ENVIRONMENT_VARIABLES") }}: {{ t("TXT_CODE_COMMON_EDIT") }}
             </VBtn>
           </template>
         </section>
         <section v-if="isAdmin && !isGlobalTerminal" v-show="activeTab === 'docker'" class="dis__grid">
           <VSwitch v-model="draft.processType" class="dis__wide" true-value="docker" false-value="general"
-            color="primary" :label="t('TXT_CODE_61a8296e')" />
+            color="primary" :label="t('TXT_CODE_COMMON_ENABLE_DOCKER_CONTAINER')" />
           <template v-if="isDockerMode">
-            <VCombobox v-model="draft.docker.image" name="image" :rules="[requiredRule('TXT_CODE_be6484f7')]" :items="images" :return-object="false" :loading="imagesLoading"
-              class="dis__wide" :label="t('TXT_CODE_44b585c7')" @focus="loadImages">
+            <VCombobox v-model="draft.docker.image" name="image" :rules="[requiredRule('TXT_CODE_COMMON_PLEASE_SELECT_AN_INSTANCE_IMAGE')]" :items="images" :return-object="false" :loading="imagesLoading"
+              class="dis__wide" :label="t('TXT_CODE_COMMON_CURRENT_IMAGE_IN_USE')" @focus="loadImages">
               <template #no-data><Empty :icon="false" compact /></template>
             </VCombobox>
-            <VSwitch v-model="draft.docker.changeWorkdir" color="primary" :label="t('TXT_CODE_5484094a')" />
-            <VTextField v-model="draft.docker.workingDir" :label="t('TXT_CODE_81979d0f')" :placeholder="t('TXT_CODE_2082f659')" />
+            <VSwitch v-model="draft.docker.changeWorkdir" color="primary" :label="t('TXT_CODE_COMMON_CHANGE_CONTAINER_WORKING_DIRECTORY')" />
+            <VTextField v-model="draft.docker.workingDir" :label="t('TXT_CODE_COMMON_WORKING_DIRECTORY_IN_CONTAINER')" :placeholder="t('TXT_CODE_COMMON_NOTE_IF_THIS_IS_EMPTY_THE_FILES_IN_THE_FILE_MANAGEMENT_WILL_NOT_BE_BOUND_TO')" />
             <div class="dis__list-buttons dis__wide">
               <VBtn v-for="(definition, kind) in listDefinitions" :key="kind" class="dis-btn" variant="text"
                 :disabled="isSaving" @click="openList(kind)">
-                {{ t(definition.title) }}: {{ t("TXT_CODE_ad207008") }}
+                {{ t(definition.title) }}: {{ t("TXT_CODE_COMMON_EDIT") }}
               </VBtn>
             </div>
-            <VTextField v-model.number="draft.basePort" type="number" min="0" max="65535" :label="t('TXT_CODE_15f5fb07')" />
-            <VCombobox v-model="draft.docker.networkMode" name="networkMode" :rules="[requiredRule('TXT_CODE_b52cb76c')]" :items="networkModes.map((mode) => mode.Name)"
-              :return-object="false" :loading="networkLoading" :label="t('TXT_CODE_efcef926')" @focus="loadNetworks">
+            <VTextField v-model.number="draft.basePort" type="number" min="0" max="65535" :label="t('TXT_CODE_COMMON_ASSIGNED_STARTING_PORT')" />
+            <VCombobox v-model="draft.docker.networkMode" name="networkMode" :rules="[requiredRule('TXT_CODE_COMMON_PLEASE_SELECT_NETWORK_MODE')]" :items="networkModes.map((mode) => mode.Name)"
+              :return-object="false" :loading="networkLoading" :label="t('TXT_CODE_COMMON_NETWORK_MODE')" @focus="loadNetworks">
               <template #no-data><Empty :icon="false" compact /></template>
             </VCombobox>
-            <VTextField v-model="aliasesText" :label="t('TXT_CODE_10194e6a')" />
-            <VTextField v-model="draft.docker.containerName" :label="t('TXT_CODE_c3a3b6b1')" />
-            <VSwitch v-model="draft.docker.privileged" color="primary" :label="t('TXT_CODE_dc47d2aa')" />
+            <VTextField v-model="aliasesText" :label="t('TXT_CODE_COMMON_NETWORK_ALIASES')" />
+            <VTextField v-model="draft.docker.containerName" :label="t('TXT_CODE_COMMON_CONTAINER_NAME')" />
+            <VSwitch v-model="draft.docker.privileged" color="primary" :label="t('TXT_CODE_COMMON_PRIVILEGED_MODE')" />
           </template>
         </section>
         <section v-if="isAdmin" v-show="activeTab === 'advanced'" class="dis__grid">
-          <VTextField v-model="draft.cwd" name="cwd" :rules="[requiredRule('TXT_CODE_71c948a9')]" class="dis__wide" :label="t('TXT_CODE_ee67e1a3')" />
-          <VTextField v-model="draft.updateCommand" class="dis__wide" :label="t('TXT_CODE_bb0b9711')"
+          <VTextField v-model="draft.cwd" name="cwd" :rules="[requiredRule('TXT_CODE_COMMON_PLEASE_ENTER_WORKING_DIRECTORY')]" class="dis__wide" :label="t('TXT_CODE_COMMON_WORKING_DIRECTORY')" />
+          <VTextField v-model="draft.updateCommand" class="dis__wide" :label="t('TXT_CODE_COMMON_UPDATE_OR_INSTALL_COMMAND')"
             :hint="updateCommandHint" :placeholder="updateCommandPlaceholder" persistent-hint :disabled="isGlobalTerminal || isSaving" />
           <VCombobox v-model="draft.docker.updateCommandImage" :items="images" :return-object="false"
-            :loading="imagesLoading" :label="t('TXT_CODE_8aca7994')" @focus="loadImages">
+            :loading="imagesLoading" :label="t('TXT_CODE_COMMON_INHERIT_RUNTIME_IMAGE')" @focus="loadImages">
             <template #no-data><Empty :icon="false" compact /></template>
           </VCombobox>
-          <VTextField v-model="draft.runAs" :label="t('TXT_CODE_fffaeb17')" :disabled="isGlobalTerminal || isSaving" />
+          <VTextField v-model="draft.runAs" :label="t('TXT_CODE_COMMON_RUN_START_COMMAND_AS_USER')" :disabled="isGlobalTerminal || isSaving" />
         </section>
         <section v-if="isAdmin && !isGlobalTerminal" v-show="activeTab === 'resources'" class="dis__grid">
-          <VTextField v-model.number="draft.docker.cpuUsage" type="number" suffix="%" :label="t('TXT_CODE_53046822')" />
-          <VTextField v-model="draft.docker.cpusetCpus" :label="t('TXT_CODE_b0c4e4ae')" />
-          <VTextField v-model.number="draft.docker.memory" type="number" suffix="MB" :label="t('TXT_CODE_6fe24924')" />
-          <VTextField v-model.number="draft.docker.memorySwap" type="number" :label="t('TXT_CODE_a68b3a9c')" />
-          <VTextField v-model.number="draft.docker.maxSpace" type="number" suffix="GB" :label="t('TXT_CODE_ca61b504')" />
-          <VTextField v-model.number="draft.docker.memorySwappiness" type="number" :label="t('TXT_CODE_5c43374f')" />
-          <VTextField v-model.number="draft.docker.uploadSpeedLimit" type="number" suffix="KB/s" :label="t('TXT_CODE_network_upload_limit')" />
-          <VTextField v-model.number="draft.docker.downloadSpeedLimit" type="number" suffix="KB/s" :label="t('TXT_CODE_network_download_limit')" />
-          <h3 class="dis__section-title dis__wide">{{ t("TXT_CODE_gpu_section_title") }}</h3>
-          <VSwitch v-model="draft.docker.gpuEnabled" color="primary" :label="t('TXT_CODE_gpu_enable')" />
+          <VTextField v-model.number="draft.docker.cpuUsage" type="number" suffix="%" :label="t('TXT_CODE_COMMON_LIMIT_CPU_USAGE_PERCENTAGE')" />
+          <VTextField v-model="draft.docker.cpusetCpus" :label="t('TXT_CODE_COMMON_CPU_CORE_ASSIGNMENT')" />
+          <VTextField v-model.number="draft.docker.memory" type="number" suffix="MB" :label="t('TXT_CODE_COMMON_MAXIMUM_MEMORY_IN_MB')" />
+          <VTextField v-model.number="draft.docker.memorySwap" type="number" :label="t('TXT_CODE_COMMON_MAXIMUM_SPAWN_MEMORY')" />
+          <VTextField v-model.number="draft.docker.maxSpace" type="number" suffix="GB" :label="t('TXT_CODE_COMMON_MAXIMUM_STORAGE_SPACE')" />
+          <VTextField v-model.number="draft.docker.memorySwappiness" type="number" :label="t('TXT_CODE_COMMON_VIRTUAL_MEMORY_USAGE_PREFERENCE')" />
+          <VTextField v-model.number="draft.docker.uploadSpeedLimit" type="number" suffix="KB/s" :label="t('TXT_CODE_NETWORK_UPLOAD_LIMIT')" />
+          <VTextField v-model.number="draft.docker.downloadSpeedLimit" type="number" suffix="KB/s" :label="t('TXT_CODE_NETWORK_DOWNLOAD_LIMIT')" />
+          <h3 class="dis__section-title dis__wide">{{ t("TXT_CODE_GPU_SECTION_TITLE") }}</h3>
+          <VSwitch v-model="draft.docker.gpuEnabled" color="primary" :label="t('TXT_CODE_GPU_ENABLE')" />
           <template v-if="draft.docker.gpuEnabled">
-            <VTextField v-model="draft.docker.gpuDriver" :label="t('TXT_CODE_gpu_driver')" />
-            <VRadioGroup v-model="gpuMode" inline class="dis__wide" :label="t('TXT_CODE_gpu_alloc_mode')" @update:model-value="changeGpuMode">
-              <VRadio value="all" :label="t('TXT_CODE_gpu_alloc_all')" />
-              <VRadio value="count" :label="t('TXT_CODE_gpu_alloc_count')" />
-              <VRadio value="devices" :label="t('TXT_CODE_gpu_alloc_device_ids')" />
+            <VTextField v-model="draft.docker.gpuDriver" :label="t('TXT_CODE_GPU_DRIVER')" />
+            <VRadioGroup v-model="gpuMode" inline class="dis__wide" :label="t('TXT_CODE_GPU_ALLOC_MODE')" @update:model-value="changeGpuMode">
+              <VRadio value="all" :label="t('TXT_CODE_GPU_ALLOC_ALL')" />
+              <VRadio value="count" :label="t('TXT_CODE_GPU_ALLOC_COUNT')" />
+              <VRadio value="devices" :label="t('TXT_CODE_GPU_ALLOC_DEVICE_IDS')" />
             </VRadioGroup>
-            <VTextField v-if="gpuMode === 'count'" v-model.number="draft.docker.gpuCount" name="gpuCount" :rules="[gpuCountRule]" type="number" min="1" max="128" :label="t('TXT_CODE_gpu_count')" />
-            <VTextField v-if="gpuMode === 'devices'" v-model="gpuDevicesText" class="dis__wide" :label="t('TXT_CODE_gpu_device_ids')" />
+            <VTextField v-if="gpuMode === 'count'" v-model.number="draft.docker.gpuCount" name="gpuCount" :rules="[gpuCountRule]" type="number" min="1" max="128" :label="t('TXT_CODE_GPU_COUNT')" />
+            <VTextField v-if="gpuMode === 'devices'" v-model="gpuDevicesText" class="dis__wide" :label="t('TXT_CODE_GPU_DEVICE_IDS')" />
           </template>
         </section>
       </VForm>
@@ -409,7 +409,7 @@ onBeforeUnmount(() => { generation++; });
       class="dis-list-editor" :title="t(listDefinitions[listKind].title)" icon="mdi-format-list-bulleted" :width="900" :height="520">
       <div class="dis-list-editor__toolbar">
         <VBtn class="dis-btn" variant="text" @click="addRow">
-          <VIcon icon="mdi-plus-circle-outline" start />{{ t("TXT_CODE_dfc17a0c") }}
+          <VIcon icon="mdi-plus-circle-outline" start />{{ t("TXT_CODE_COMMON_ADD_CONFIGURATION") }}
         </VBtn>
       </div>
       <VAlert v-if="listError" type="error" variant="tonal" class="mb-4" :text="listError" />
@@ -425,15 +425,15 @@ onBeforeUnmount(() => { generation++; });
           <VTextField v-else v-model="item[field.key]" :label="t(field.label)" hide-details
             :disabled="listKind === 'ports' && assignedPort(item[field.key])" />
           <VCheckbox v-if="listKind === 'ports' && field.key !== 'third'" density="compact" hide-details
-            :model-value="assignedPort(item[field.key])" :label="t('TXT_CODE_6f1129fb')"
+            :model-value="assignedPort(item[field.key])" :label="t('TXT_CODE_COMMON_AUTOMATIC')"
             @update:model-value="toggleAssignedPort(item, field.key)" />
         </div>
         <VBtn icon="mdi-minus-circle-outline" variant="text" color="error" size="small"
-          :aria-label="t('TXT_CODE_fe731dfc')" @click="listRows.splice(index, 1)" />
+          :aria-label="t('TXT_CODE_COMMON_ACTIONS')" @click="listRows.splice(index, 1)" />
       </div>
       <template #footer>
-        <VBtn class="dis-btn" variant="text" @click="listOpen = false">{{ t("TXT_CODE_a0451c97") }}</VBtn>
-        <VBtn class="dis-btn dis-btn--primary" variant="text" @click="applyList">{{ t("TXT_CODE_d507abff") }}</VBtn>
+        <VBtn class="dis-btn" variant="text" @click="listOpen = false">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
+        <VBtn class="dis-btn dis-btn--primary" variant="text" @click="applyList">{{ t("TXT_CODE_COMMON_CONFIRM") }}</VBtn>
       </template>
     </DesktopDialog>
   </div>

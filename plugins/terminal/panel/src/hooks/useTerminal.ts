@@ -112,7 +112,7 @@ export function useTerminal() {
     });
     if (disposed) throw new Error("Terminal has been disposed");
     const remoteInfo = unref(res.value);
-    if (!remoteInfo) throw new Error(t("TXT_CODE_181f2f08"));
+    if (!remoteInfo) throw new Error(t("TXT_CODE_COMMON_UNABLE_TO_RETRIEVE_REMOTE_DAEMON_INFORMATION"));
     settings = normalizeTerminalSettings(remoteInfo.terminalSettings);
 
     let addr = remoteInfo.addr,
@@ -358,12 +358,12 @@ export function useTerminal() {
       }
       const now = Date.now();
       if (lastCtrlCTime !== undefined && now - lastCtrlCTime <= settings.ctrlCIntervalMs) {
-        term.write("\r\n" + t("TXT_CODE_3725b37b") + "\r\n");
+        term.write("\r\n" + t("TXT_CODE_COMMON_CTRL_C_HAS_BEEN_SENT") + "\r\n");
         sendInput(data);
         lastCtrlCTime = undefined;
       } else {
         lastCtrlCTime = now;
-        term.write("\r\n" + t("TXT_CODE_3fd222b0"));
+        term.write("\r\n" + t("TXT_CODE_COMMON_PLEASE_QUICKLY_PRESS_CTRL_C_AGAIN_TO_TAKE_EFFECT"));
       }
     });
 
@@ -402,7 +402,7 @@ export function useTerminal() {
 
   const sendCommand = (command: string) => {
     setHistory(command);
-    if (!socket?.connected) throw new Error(t("TXT_CODE_74443c8f"));
+    if (!socket?.connected) throw new Error(t("TXT_CODE_COMMON_INSTANCE_IS_NOT_RUNNING"));
     socket.emit("stream/input", {
       data: {
         command

@@ -94,7 +94,7 @@ function responseError(
   }
   if (!config?.disablePrint) {
     logger.warn(
-      translate("TXT_CODE_protocol.socketErr", {
+      translate("TXT_CODE_PROTOCOL_SOCKET_ERR", {
         id: ctx.socket.id,
         address: ctx.socket.handshake.address,
         event: ctx.event
@@ -120,7 +120,7 @@ function error(
   }
   if (!config?.disablePrint) {
     logger.warn(
-      translate("TXT_CODE_protocol.socketErr", {
+      translate("TXT_CODE_PROTOCOL_SOCKET_ERR", {
         id: ctx.socket.id,
         address: ctx.socket.handshake.address,
         event: ctx.event

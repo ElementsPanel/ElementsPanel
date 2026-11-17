@@ -27,13 +27,13 @@ const allRef = computed({
 
 <template>
   <div class="flex-col">
-    {{ t("TXT_CODE_58a55f17", { name: props.fileName }) }}
+    {{ t("TXT_CODE_COMMON_THE_FILE_ALREADY_EXISTS_IN_THIS_FOLDER", { name: props.fileName }) }}
     <div style="margin-top: 16px; margin-bottom: -8px">
-      <VCheckbox v-model="overwriteRef" :label="t('TXT_CODE_5bf41818')" density="compact" hide-details />
+      <VCheckbox v-model="overwriteRef" :label="t('TXT_CODE_COMMON_OVERWRITE')" density="compact" hide-details />
       <VCheckbox
         v-if="props.count && props.count > 1"
         v-model="allRef"
-        :label="t('TXT_CODE_5445f34b', { num: props.count - 1 })"
+        :label="t('TXT_CODE_COMMON_AND_MORE', { num: props.count - 1 })"
         density="compact"
         hide-details
       />

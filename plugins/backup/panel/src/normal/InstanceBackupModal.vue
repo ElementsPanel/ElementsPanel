@@ -185,7 +185,7 @@ const startQuery = () => {
 
 const handleDelete = (backupName: string) => {
     Modal.confirm({
-        title: t("TXT_CODE_71155575"),
+        title: t("TXT_CODE_COMMON_CONFIRM_DELETION"),
         content: t("TXT_CODE_INSTANCE_BACKUP_DELETE_CONFIRM", { name: backupName }),
         okButtonProps: { danger: true },
         onOk: async () => {
@@ -198,7 +198,7 @@ const handleDelete = (backupName: string) => {
                         backupName
                     }
                 });
-                message.success(t("TXT_CODE_28190dbc"));
+                message.success(t("TXT_CODE_COMMON_DELETE_SUCCESS"));
                 fetchBackupList();
             } catch (error: any) {
                 message.error(error.message || t("TXT_CODE_INSTANCE_BACKUP_FAILED_DELETE"));
@@ -373,7 +373,7 @@ defineExpose({ open });
             </div>
             <div class="backup-footer">
                 <VBtn variant="text" @click="close">
-                    {{ t("TXT_CODE_b1dedda3") }}
+                    {{ t("TXT_CODE_COMMON_STOP") }}
                 </VBtn>
                 <VBtn variant="text" @click="handleEditEpbaklst">
                     {{ t("TXT_CODE_INSTANCE_BACKUP_EDIT_EPBAKLST") }}

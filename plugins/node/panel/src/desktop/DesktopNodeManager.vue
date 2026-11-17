@@ -33,13 +33,13 @@ const PlusOutlined = "mdi-plus";
 const EditOutlined = "mdi-pencil-outline";
 
 const nodeHeaders = [
-  { title: t("TXT_CODE_759fb403"), key: "status", sortable: false },
+  { title: t("TXT_CODE_COMMON_STATUS"), key: "status", sortable: false },
   { title: t("TXT_CODE_DESKTOP_NODES_SOCKET"), key: "socket", sortable: false },
   { title: t("TXT_CODE_NODE_COMPAT"), key: "compatibility", sortable: false },
-  { title: t("TXT_CODE_b8e8e6f5"), key: "name", sortable: false },
+  { title: t("TXT_CODE_COMMON_REMARKS"), key: "name", sortable: false },
   { title: t("TXT_CODE_DESKTOP_NODES_IP"), key: "ip" },
-  { title: t("TXT_CODE_f49149d0"), key: "port" },
-  { title: t("TXT_CODE_693f31d6"), key: "prefix" },
+  { title: t("TXT_CODE_COMMON_PORT"), key: "port" },
+  { title: t("TXT_CODE_NODE_CONNECTION_PATH_PREFIX"), key: "prefix" },
   { title: t("TXT_CODE_OPERATE"), key: "actions", sortable: false }
 ];
 
@@ -200,7 +200,7 @@ const saveNode = async () => {
   }
 
   if (!Number.isInteger(Number(form.port)) || Number(form.port) < 1 || Number(form.port) > 65535) {
-    formError.value = t("TXT_CODE_12040bf0");
+    formError.value = t("TXT_CODE_COMMON_THE_PORT_NUMBER_MUST_BE_WITHIN_THE_RANGE_OF_0_65535");
     return;
   }
 
@@ -255,7 +255,7 @@ const saveNode = async () => {
     showDialog.value = false;
     await fetchNodes();
   } catch (error) {
-    formError.value = getValidatorErrorMsg(error, t("TXT_CODE_6a365d01"));
+    formError.value = getValidatorErrorMsg(error, t("TXT_CODE_COMMON_OPERATION_FAILED"));
   } finally {
     saving.value = false;
   }
@@ -351,7 +351,7 @@ const reconnectNode = async (node: NodeStatus) => {
           class="dn-badge-icon--yes"
         /><VTooltip
           v-else-if="socketStatusMap[item.uuid] === SocketStatus.Error"
-          :text="t('TXT_CODE_6b4a27dd')"
+          :text="t('TXT_CODE_COMMON_THE_WEB_FRONT_END_CANNOT_ESTABLISH_A_WEB_SOCKET_CONNECTION_WITH_THE_NODE_PLEASE_CHECK_THE')"
           ><template #activator="{ props: tooltipProps }"
             ><span v-bind="tooltipProps" class="dn-badge-icon--no"
               ><VIcon icon="mdi-information-outline" /></span></template></VTooltip
@@ -370,7 +370,7 @@ const reconnectNode = async (node: NodeStatus) => {
           class="dn-badge-icon--yes"
         /><VTooltip
           v-else-if="item.available && nodeCompatMap[item.uuid]"
-          :text="t('TXT_CODE_e520908a')"
+          :text="t('TXT_CODE_COMMON_THE_NODE_S_PLUGINS_OR_VERSION_DO_NOT_MATCH_THE_PANEL_WHICH_MAY_CAUSE_FUNCTIONAL_ISSUES')"
           ><template #activator="{ props: tooltipProps }"
             ><span v-bind="tooltipProps" class="dn-badge-icon--warn"
               ><VIcon icon="mdi-alert-circle-outline" /></span></template></VTooltip
@@ -389,7 +389,7 @@ const reconnectNode = async (node: NodeStatus) => {
             icon
             variant="text"
             class="dn-action-btn"
-            :title="t('TXT_CODE_f8b28901')"
+            :title="t('TXT_CODE_COMMON_RECONNECT')"
             @click="reconnectNode(item)"
             ><VIcon icon="mdi-refresh" /></VBtn
           ><VBtn
@@ -412,7 +412,7 @@ const reconnectNode = async (node: NodeStatus) => {
             variant="text"
             color="error"
             class="dn-action-btn"
-            :title="t('TXT_CODE_8b937b23')"
+            :title="t('TXT_CODE_COMMON_REMOVE_DAEMON')"
             @click="confirmDelete(item)"
             ><VIcon icon="mdi-delete-outline"
           /></VBtn></div
@@ -438,7 +438,7 @@ const reconnectNode = async (node: NodeStatus) => {
     >
       <div class="dn-form-group">
         <label class="dn-form-label">
-          {{ t("TXT_CODE_b8e8e6f5") }}
+          {{ t("TXT_CODE_COMMON_REMARKS") }}
         </label>
         <VTextField
           v-model="form.remarks"
@@ -446,7 +446,7 @@ const reconnectNode = async (node: NodeStatus) => {
           variant="solo"
           density="compact"
           hide-details
-          :placeholder="t('TXT_CODE_b8e8e6f5')"
+          :placeholder="t('TXT_CODE_COMMON_REMARKS')"
         />
       </div>
       <div class="dn-form-group">
@@ -464,7 +464,7 @@ const reconnectNode = async (node: NodeStatus) => {
       </div>
       <div class="dn-form-group">
         <label class="dn-form-label">
-          {{ t("TXT_CODE_f49149d0") }}
+          {{ t("TXT_CODE_COMMON_PORT") }}
         </label>
         <VTextField
           v-model="form.port"
@@ -473,7 +473,7 @@ const reconnectNode = async (node: NodeStatus) => {
           variant="solo"
           density="compact"
           hide-details
-          :placeholder="t('TXT_CODE_f49149d0')"
+          :placeholder="t('TXT_CODE_COMMON_PORT')"
         />
       </div>
       <div class="dn-form-group">
@@ -498,7 +498,7 @@ const reconnectNode = async (node: NodeStatus) => {
       </div>
       <div class="dn-form-group">
         <label class="dn-form-label">
-          {{ t("TXT_CODE_693f31d6") }}
+          {{ t("TXT_CODE_NODE_CONNECTION_PATH_PREFIX") }}
         </label>
         <VTextField
           v-model="form.prefix"
@@ -506,16 +506,16 @@ const reconnectNode = async (node: NodeStatus) => {
           variant="solo"
           density="compact"
           hide-details
-          :placeholder="t('TXT_CODE_693f31d6')"
+          :placeholder="t('TXT_CODE_NODE_CONNECTION_PATH_PREFIX')"
         />
         <span class="dn-form-hint">
-          {{ t("TXT_CODE_3e93e31e") }}
+          {{ t("TXT_CODE_COMMON_USED_WHEN_REUSING_PORTS_IN_MOST_CASES_NO_CONFIGURATION_IS_REQUIRED_HERE") }}
         </span>
       </div>
       <div v-if="formError" class="dn-form-error">{{ formError }}</div>
       <template #footer>
         <VBtn class="dn-btn dn-btn--default" variant="text" @click="closeDialog">
-          {{ t("TXT_CODE_a0451c97") }}
+          {{ t("TXT_CODE_COMMON_CANCEL") }}
         </VBtn>
         <VBtn
           class="dn-btn dn-btn--primary"
@@ -523,15 +523,15 @@ const reconnectNode = async (node: NodeStatus) => {
           :disabled="saving"
           @click="saveNode"
         >
-          {{ t("TXT_CODE_abfe9512") }}
+          {{ t("TXT_CODE_COMMON_SAVE") }}
         </VBtn>
       </template>
     </DesktopDialog>
 
     <component :is="ConfirmDialog" v-if="ConfirmDialog" v-model="showDeleteConfirm" id="node-delete-dialog"
-      :title="t('TXT_CODE_8b937b23')"
+      :title="t('TXT_CODE_COMMON_REMOVE_DAEMON')"
       :message="t('TXT_CODE_DESKTOP_NODES_DELETE_CONFIRM', { name: deletingNode?.remarks || deletingNode?.ip })"
-      danger :loading="saving" :ok-text="t('TXT_CODE_8b937b23')"
+      danger :loading="saving" :ok-text="t('TXT_CODE_COMMON_REMOVE_DAEMON')"
       @cancel="cancelDelete" @confirm="executeDelete" />
   </div>
 </template>

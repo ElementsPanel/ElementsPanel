@@ -38,7 +38,7 @@ const dialog = reactive({
 
 const ipNeedsMapping = (ip: string) =>
   Boolean(ip && ip.trim() !== "localhost" && isLocalNetworkIP(ip));
-const requiredRule = (value: unknown) => !!String(value ?? "").trim() || t("TXT_CODE_cb08d342");
+const requiredRule = (value: unknown) => !!String(value ?? "").trim() || t("TXT_CODE_COMMON_FIELD_CANNOT_BE_EMPTY");
 const apiKeyRule = (value: unknown) => editMode.value || requiredRule(value);
 
 const openDialog = (data?: ComputedNodeInfo, uuid?: string) => {
@@ -71,28 +71,28 @@ const submit = async () => {
     if (editMode.value)
       await updateNode(dialog.uuid, { ...dialog.data, apiKey: dialog.data.apiKey || undefined });
     else await addNode(dialog.data);
-    message.success(t("TXT_CODE_e74d658c"));
+    message.success(t("TXT_CODE_NODE_SETTINGS_SAVED"));
     const wasEdit = editMode.value;
     closeDialog();
     if (wasEdit) setTimeout(() => window.location.reload(), 150);
   } catch (error: any) {
     if (error?.errorFields instanceof Array) {
-      message.warning(getValidatorErrorMsg(error, t("TXT_CODE_5245bd11")));
+      message.warning(getValidatorErrorMsg(error, t("TXT_CODE_COMMON_PLEASE_COMPLETE_THE_FORM")));
       return;
     }
-    reportErrorMsg(error?.message ?? t("TXT_CODE_5245bd11"));
+    reportErrorMsg(error?.message ?? t("TXT_CODE_COMMON_PLEASE_COMPLETE_THE_FORM"));
   } finally {
     dialog.loading = false;
   }
 };
 const remove = async () => {
   Modal.confirm({
-    title: t("TXT_CODE_fb267b0b"),
+    title: t("TXT_CODE_COMMON_PERMANENTLY_DELETE_THIS_DAEMON"),
     onOk: async () => {
       try {
         await deleteNode(dialog.uuid);
         closeDialog();
-        message.success(t("TXT_CODE_a00e84d7"));
+        message.success(t("TXT_CODE_COMMON_DELETED"));
       } catch (error: any) {
         message.error(error?.message ?? String(error));
       }
@@ -105,49 +105,49 @@ defineExpose({ openDialog });
 
 <template>
   <VDialog v-model="dialog.status" class="app-dialog node-detail-dialog" max-width="900px">
-    <VCard :title="t(editMode ? 'TXT_CODE_39c5229e' : 'TXT_CODE_15a381d5')" rounded="xl">
+    <VCard :title="t(editMode ? 'TXT_CODE_COMMON_EDIT_DAEMON_INFORMATION' : 'TXT_CODE_COMMON_NEW_DAEMON')" rounded="xl">
       <VCardText class="node-dialog-content">
         <VForm ref="formRef" @submit.prevent="submit">
           <VTextField
             v-model="dialog.data.remarks"
-            :label="t('TXT_CODE_a884de59')"
-            :placeholder="t('TXT_CODE_4b1d5199')"
-            :rules="[(v) => !!String(v ?? '').trim() || t('TXT_CODE_cb08d342')]"
+            :label="t('TXT_CODE_COMMON_DISPLAY_NAME')"
+            :placeholder="t('TXT_CODE_COMMON_SUPPORT_ANY_LANGUAGE')"
+            :rules="[(v) => !!String(v ?? '').trim() || t('TXT_CODE_COMMON_FIELD_CANNOT_BE_EMPTY')]"
             required
           />
           <VTextField
             v-model="dialog.data.ip"
-            :label="t('TXT_CODE_93f9b02a')"
-            :hint="t('TXT_CODE_be7a689a')"
+            :label="t('TXT_CODE_COMMON_DAEMON_IP')"
+            :hint="t('TXT_CODE_COMMON_USE_AN_ADDRESS_REACHABLE_FROM_THE_PANEL_SERVER')"
             :rules="[requiredRule]"
             persistent-hint
             required
           />
           <div v-if="ipNeedsMapping(dialog.data.ip)" class="form-hint">
-            {{ t("TXT_CODE_93c3cb78") }}
+            {{ t("TXT_CODE_COMMON_FOR_THIS_ADDRESS_TO_WORK_YOU_MAY_NEED_TO_CONFIGURE_NODE_DIRECT_CONNECTION_MAPPINGS") }}
           </div>
           <VTextField
             v-model.number="dialog.data.port"
             type="number"
-            :label="t('TXT_CODE_4a6bf8c6')"
-            :hint="t('TXT_CODE_df455795')"
+            :label="t('TXT_CODE_COMMON_DAEMON_PORT')"
+            :hint="t('TXT_CODE_COMMON_BY_DEFAULT_24444')"
             :rules="[requiredRule]"
             persistent-hint
             required
           />
           <VTextField
             v-model="dialog.data.apiKey"
-            :label="t('TXT_CODE_300c2ff4')"
-            :placeholder="editMode ? t('TXT_CODE_dc570cf2') : t('TXT_CODE_fe25087f')"
-            :hint="t('TXT_CODE_5ef2cf20')"
+            :label="t('TXT_CODE_COMMON_DAEMON_KEY')"
+            :placeholder="editMode ? t('TXT_CODE_COMMON_LEAVE_IT_BLANK_TO_MAKE_NO_CHANGES') : t('TXT_CODE_COMMON_PLEASE_ENTER_THE_KEY')"
+            :hint="t('TXT_CODE_COMMON_ENTER_THE_KEY_GENERATED_BY_THE_NODE')"
             :rules="[apiKeyRule]"
             persistent-hint
             :required="!editMode"
           />
           <VTextField
             v-model="dialog.data.prefix"
-            :label="t('TXT_CODE_693f31d6')"
-            :hint="t('TXT_CODE_3e93e31e')"
+            :label="t('TXT_CODE_NODE_CONNECTION_PATH_PREFIX')"
+            :hint="t('TXT_CODE_COMMON_USED_WHEN_REUSING_PORTS_IN_MOST_CASES_NO_CONFIGURATION_IS_REQUIRED_HERE')"
             persistent-hint
           />
         </VForm>
@@ -159,12 +159,12 @@ defineExpose({ openDialog });
           variant="text"
           prepend-icon="mdi-delete-outline"
           @click="remove"
-          >{{ t("TXT_CODE_8b937b23") }}</VBtn
+          >{{ t("TXT_CODE_COMMON_REMOVE_DAEMON") }}</VBtn
         >
         <div class="actions-spacer" />
-        <VBtn variant="text" @click="closeDialog">{{ t("TXT_CODE_a0451c97") }}</VBtn>
+        <VBtn variant="text" @click="closeDialog">{{ t("TXT_CODE_COMMON_CANCEL") }}</VBtn>
         <VBtn color="primary" :loading="dialog.loading" @click="submit">{{
-          t("TXT_CODE_d507abff")
+          t("TXT_CODE_COMMON_CONFIRM")
         }}</VBtn>
       </VCardActions>
     </VCard>

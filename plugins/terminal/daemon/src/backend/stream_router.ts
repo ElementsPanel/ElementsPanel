@@ -32,9 +32,9 @@ export function registerTerminalEvents(ctx: DaemonPluginContext) {
     try {
       const password = data.password;
       const mission = ctx.transfer.passports.getMission(password, "stream_channel");
-      if (!mission) throw new Error($t("TXT_CODE_stream_router.taskNotExist"));
+      if (!mission) throw new Error($t("TXT_CODE_STREAM_ROUTER_TASK_NOT_EXIST"));
       const instance = instances.getInstance(mission.parameter.instanceUuid);
-      if (!instance) throw new Error($t("TXT_CODE_stream_router.instanceNotExist"));
+      if (!instance) throw new Error($t("TXT_CODE_STREAM_ROUTER_INSTANCE_NOT_EXIST"));
       routerCtx.session.id = routerCtx.socket.id;
       routerCtx.session.login = true;
       routerCtx.session.type = LOGIN_FROM_STREAM;
@@ -52,7 +52,7 @@ export function registerTerminalEvents(ctx: DaemonPluginContext) {
   protocol.on("stream/detail", async (routerCtx) => {
     try {
       const instance = instances.getInstance(routerCtx.session?.stream?.instanceUuid);
-      if (!instance) throw new Error($t("TXT_CODE_3bfb9e04"));
+      if (!instance) throw new Error($t("TXT_CODE_COMMON_THE_TARGET_INSTANCE_DOES_NOT_EXIST"));
       protocol.response(routerCtx, {
         instanceUuid: instance.instanceUuid,
         started: instance.startCount,
@@ -105,7 +105,7 @@ export function registerTerminalEvents(ctx: DaemonPluginContext) {
         const text = await readOutputLogTail(filePath, data.size);
         return protocol.response(routerCtx, text);
       }
-      protocol.responseError(routerCtx, new Error($t("TXT_CODE_Instance_router.terminalLogNotExist")), {
+      protocol.responseError(routerCtx, new Error($t("TXT_CODE_INSTANCE_ROUTER_TERMINAL_LOG_NOT_EXIST")), {
         disablePrint: true
       });
     } catch (error: any) {

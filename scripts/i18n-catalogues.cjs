@@ -16,6 +16,48 @@ const LANGUAGES = [
   "zh_TW"
 ];
 
+function assertSemanticKey(key, location) {
+  if (
+    !/^TXT_CODE_[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/.test(key) ||
+    !key
+      .slice(9)
+      .split("_")
+      .some((word) => /^[A-Z]{2,}$/.test(word)) ||
+    /^TXT_CODE_[A-F0-9]{8}$/.test(key)
+  ) {
+    throw new Error(
+      `${location}: ${key} must be a meaningful TXT_CODE_ key in uppercase snake case.`
+    );
+  }
+}
+
+function keyFromEnglishText(text) {
+  if (/[^\x00-\x7f]/.test(text)) {
+    throw new Error("Provide an explicit meaningful TXT_CODE_ key for non-English text.");
+  }
+  const name = text
+    .replace(/\{\{[^{}]*\}\}|\{[^{}]*\}/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+    .replace(/[^a-zA-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .toUpperCase();
+  const key = `TXT_CODE_${name}`;
+  assertSemanticKey(key, "Translation text");
+  return key;
+}
+
+function validateMessages(messages, filename) {
+  if (!messages || typeof messages !== "object" || Array.isArray(messages)) {
+    throw new Error(`${filename}: expected an object of translation strings.`);
+  }
+  for (const [key, value] of Object.entries(messages)) {
+    assertSemanticKey(key, filename);
+    if (typeof value !== "string" || !value.trim()) {
+      throw new Error(`${filename}: ${key} must contain a non-empty translation string.`);
+    }
+  }
+}
+
 function findCatalogues(root) {
   const catalogues = [];
   const pluginsDir = path.join(root, "plugins");
@@ -48,11 +90,7 @@ function readCatalogue(filename) {
     if (keys.has(key)) throw new Error(`${filename}: duplicate translation key ${key}.`);
     keys.add(key);
   }
-  for (const [key, value] of Object.entries(messages)) {
-    if (typeof value !== "string" || !value.trim()) {
-      throw new Error(`${filename}: ${key} must contain a non-empty translation string.`);
-    }
-  }
+  validateMessages(messages, filename);
   return messages;
 }
 
@@ -76,7 +114,7 @@ function sourceFiles(root, directory) {
     if (["node_modules", "production", "dist", ".git"].includes(entry.name)) continue;
     const filename = path.join(directory, entry.name);
     if (entry.isDirectory()) files.push(...sourceFiles(root, filename));
-    else if (/\.(?:ts|tsx|vue|js|jsx)$/.test(entry.name)) files.push(filename);
+    else if (/\.(?:[cm]?ts|tsx|vue|[cm]?js|jsx)$/.test(entry.name)) files.push(filename);
   }
   return files;
 }
@@ -84,6 +122,8 @@ function sourceFiles(root, directory) {
 function validateCatalogues(root, { checkReferences = true } = {}) {
   const catalogues = findCatalogues(root);
   const available = { panel: new Set(), daemon: new Set() };
+  const initializerKeys = new Set();
+  let initializerFiles = 0;
   for (const directory of catalogues) {
     const actualLanguages = fs
       .readdirSync(path.join(root, directory))
@@ -115,24 +155,87 @@ function validateCatalogues(root, { checkReferences = true } = {}) {
       }
     }
   }
+  const initializer = path.join(root, "packages/init-elementspanel/i18n.cjs");
+  if (fs.existsSync(initializer)) {
+    delete require.cache[require.resolve(initializer)];
+    const { localeMessages } = require(initializer);
+    if (!localeMessages || Object.keys(localeMessages).sort().join() !== "en,zh") {
+      throw new Error(`${initializer}: expected English and Chinese initializer dictionaries.`);
+    }
+    const english = localeMessages.en;
+    validateMessages(english, `${initializer}:en`);
+    for (const key of Object.keys(english)) initializerKeys.add(key);
+    for (const [language, messages] of Object.entries(localeMessages)) {
+      validateMessages(messages, `${initializer}:${language}`);
+      if (Object.keys(messages).sort().join() !== Object.keys(english).sort().join()) {
+        throw new Error(`${initializer}:${language}: initializer translation keys differ.`);
+      }
+      for (const key of Object.keys(english)) {
+        if (placeholders(messages[key]) !== placeholders(english[key])) {
+          throw new Error(
+            `${initializer}:${language}: interpolation placeholders differ for ${key}.`
+          );
+        }
+      }
+      initializerFiles++;
+    }
+  }
   if (checkReferences) {
-    for (const directory of ["core/panel/src", "core/daemon/src", "core/frontend/src", "plugins"]) {
+    for (const directory of [
+      "core/common/src",
+      "core/panel/src",
+      "core/daemon/src",
+      "core/frontend/src",
+      "plugins",
+      "packages"
+    ]) {
       for (const filename of sourceFiles(root, directory)) {
+        if (
+          filename.startsWith("plugins/") &&
+          !/^plugins\/[^/]+\/(panel|daemon)\/src\//.test(filename)
+        ) {
+          continue;
+        }
         const side = /^(?:core\/daemon\/|plugins\/[^/]+\/daemon\/)/.test(filename)
           ? "daemon"
           : "panel";
         const content = fs.readFileSync(path.join(root, filename), "utf8");
-        const calls = /(?:\bt|\$t|\btranslate)\s*\(\s*["'](TXT_CODE_[^"']+)["']/g;
-        for (const match of content.matchAll(calls)) {
-          if (!available[side].has(match[1])) {
-            const line = content.slice(0, match.index).split("\n").length;
-            throw new Error(`${filename}:${line}: missing translation ${match[1]}.`);
+        const keys = filename.startsWith("packages/init-elementspanel/")
+          ? initializerKeys
+          : available[side];
+        const checkKey = (key, index) => {
+          const line = content.slice(0, index).split("\n").length;
+          assertSemanticKey(key, `${filename}:${line}`);
+          if (!keys.has(key)) {
+            throw new Error(`${filename}:${line}: missing translation ${key}.`);
           }
+        };
+        const calls =
+          /(?<![\w$])(?:t|\$t|translate|createTranslator\s*\([^()\r\n]*\))\s*\(\s*(["'`])([^"'`\r\n]+)\1\s*[,)]/g;
+        for (const match of content.matchAll(calls)) {
+          if (match[1] === "`" && match[2].includes("${")) continue;
+          checkKey(match[2], match.index);
+        }
+        // Include keys held in lookup tables, arrays and conditional expressions.
+        for (const match of content.matchAll(/(["'`])(TXT_CODE_[^"'`\r\n]+)\1/g)) {
+          if (match[1] === "`" && match[2].includes("${")) continue;
+          checkKey(match[2], match.index);
         }
       }
     }
   }
-  return { catalogues: catalogues.length, files: catalogues.length * LANGUAGES.length };
+  return {
+    catalogues: catalogues.length,
+    files: catalogues.length * LANGUAGES.length,
+    initializerFiles
+  };
 }
 
-module.exports = { LANGUAGES, findCatalogues, readCatalogue, validateCatalogues };
+module.exports = {
+  LANGUAGES,
+  assertSemanticKey,
+  keyFromEnglishText,
+  findCatalogues,
+  readCatalogue,
+  validateCatalogues
+};

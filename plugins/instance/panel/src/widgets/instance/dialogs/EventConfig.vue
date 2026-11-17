@@ -52,7 +52,7 @@ const submit = async () => {
     });
     emit("update");
     dialogOpen.value = false;
-    return message.success(t("TXT_CODE_d3de39b4"));
+    return message.success(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"));
   } catch (err: any) {
     return reportErrorMsg(err.message);
   }
@@ -67,17 +67,17 @@ defineExpose({
   <AppDialog
     v-model:open="dialogOpen"
     class="event-config-dialog"
-    :title="t('TXT_CODE_10150756')"
+    :title="t('TXT_CODE_COMMON_AUTOMATIC_STARTUP_AND_RESTART')"
     :confirm-loading="isLoading"
-    :ok-text="t('TXT_CODE_abfe9512')"
+    :ok-text="t('TXT_CODE_COMMON_SAVE')"
     compact
     @ok="submit"
   >
     <VForm v-if="options" class="event-config-form" @submit.prevent="submit">
       <div class="event-config-section">
-        <div class="event-config-title">{{ t("TXT_CODE_a64da7c4") }}</div>
+        <div class="event-config-title">{{ t("TXT_CODE_COMMON_AUTO_RESTART") }}</div>
         <div class="event-config-description">
-          {{ t("TXT_CODE_619faab6") }}
+          {{ t("TXT_CODE_COMMON_AUTOMATICALLY_RESTARTS_THE_INSTANCE_AFTER_AN_UNEXPECTED_STOP_OR_CRASH") }}
         </div>
         <VSwitch
           v-model="options.config.eventTask.autoRestart"
@@ -87,8 +87,8 @@ defineExpose({
       </div>
 
       <div v-if="options.config.eventTask.autoRestart" class="event-config-section">
-        <div class="event-config-title">{{ t("TXT_CODE_f4b52ed4") }}</div>
-        <div class="event-config-description">{{ t("TXT_CODE_9d2fca76") }}</div>
+        <div class="event-config-title">{{ t("TXT_CODE_COMMON_MAXIMUM_AUTO_RESTART_COUNT") }}</div>
+        <div class="event-config-description">{{ t("TXT_CODE_COMMON_DO_NOT_AUTOMATICALLY_RESTART_IF_THE_AUTO_RESTART_COUNT_IS_REACHED_SET_TO_1_TO_DISABLE") }}</div>
         <VTextField
           v-model.number="options.config.eventTask.autoRestartMaxTimes"
           type="number"
@@ -99,11 +99,11 @@ defineExpose({
       </div>
 
       <div class="event-config-section">
-        <div class="event-config-title">{{ t("TXT_CODE_273d24e0") }}</div>
+        <div class="event-config-title">{{ t("TXT_CODE_COMMON_AUTO_START") }}</div>
         <div class="event-config-description">
-          {{ t("TXT_CODE_8d9f5a4e") }}
+          {{ t("TXT_CODE_COMMON_AUTOMATICALLY_STARTS_THE_INSTANCE_WHEN_THE_NODE_STARTS") }}
           <br />
-          {{ t("TXT_CODE_64bf4386") }}
+          {{ t("TXT_CODE_COMMON_THIS_COULD_BE_USED_FOR_INSTANCE_TO_START_AS_THE_REMOTE_DAEMON_BOOTS") }}
         </div>
         <VSwitch v-model="options.config.eventTask.autoStart" color="primary" hide-details />
       </div>

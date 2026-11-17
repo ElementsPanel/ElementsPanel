@@ -18,5 +18,5 @@
   "TXT_CODE_INSTANCE_BACKUP_STOPPING": "인스턴스 중지 중...",
   "TXT_CODE_INSTANCE_BACKUP_STOP_TIMEOUT": "인스턴스 중지 시간이 초과되어 백업이 취소되었습니다.",
   "TXT_CODE_INSTANCE_BACKUP_SUCCESS": "인스턴스 백업 성공! 파일: {{name}}",
-  "TXT_CODE_instanceConf.instanceBusy": "인스턴스가 현재 사용 중 상태이므로 어떤 작업도 수행할 수 없습니다."
+  "TXT_CODE_INSTANCE_CONF_INSTANCE_BUSY": "인스턴스가 현재 사용 중 상태이므로 어떤 작업도 수행할 수 없습니다."
 }

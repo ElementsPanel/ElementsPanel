@@ -13,7 +13,7 @@ export default class GeneralStopCommand extends InstanceCommand {
     instance.setUserRequestedStop(true);
     const stopCommand = instance.config.stopCommand;
     if (instance.status() === Instance.STATUS_STOP || !instance.process)
-      return instance.failure(new Error($t("TXT_CODE_general_stop.notRunning")));
+      return instance.failure(new Error($t("TXT_CODE_GENERAL_STOP_NOT_RUNNING")));
     const process = instance.process;
     const cacheStartCount = instance.startCount;
 
@@ -26,7 +26,7 @@ export default class GeneralStopCommand extends InstanceCommand {
     }
 
     instance.print("\n");
-    instance.println("INFO", $t("TXT_CODE_pty_stop.execCmd", { stopCommand: `\n${stopCommand}` }));
+    instance.println("INFO", $t("TXT_CODE_PTY_STOP_EXEC_CMD", { stopCommand: `\n${stopCommand}` }));
 
     if (instance.status() !== Instance.STATUS_STOPPING || instance.process !== process)
       return instance;
@@ -38,7 +38,7 @@ export default class GeneralStopCommand extends InstanceCommand {
         instance.startCount === cacheStartCount &&
         instance.process === process
       ) {
-        instance.println("ERROR", $t("TXT_CODE_general_stop.stopErr"));
+        instance.println("ERROR", $t("TXT_CODE_GENERAL_STOP_STOP_ERR"));
         if (forceKill) {
           instance.println("WARNING", $t("TXT_CODE_INSTANCE_STOP_FORCE_KILL"));
           void Promise.resolve()

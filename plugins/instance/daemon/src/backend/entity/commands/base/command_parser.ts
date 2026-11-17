@@ -40,7 +40,7 @@ export function commandStringToArray(cmd: string) {
       const ch = cmd[index];
       if (ch === '"') return index;
     }
-    throw new Error($t("TXT_CODE_command.quotes"));
+    throw new Error($t("TXT_CODE_COMMAND_QUOTES"));
   }
 
   _analyze();

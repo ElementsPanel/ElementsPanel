@@ -57,7 +57,7 @@
   "TXT_CODE_PLUGIN_MARKET_SIDE_BOTH": "Panel + Daemon 플러그인",
   "TXT_CODE_PLUGIN_MARKET_UPDATES": "업데이트",
   "TXT_CODE_PLUGIN_MARKET_INCOMPATIBLE": "현재 패널 버전과 호환되지 않습니다. ElementsPanel을 업데이트하세요.",
-  "TXT_CODE_2de92a5d": "설치하기 전에 노드를 선택하십시오!",
+  "TXT_CODE_COMMON_PLEASE_SELECT_A_NODE_BEFORE_INSTALLING": "설치하기 전에 노드를 선택하십시오!",
   "TXT_CODE_PLUGIN_MARKET_BUNDLED": "This plugin is bundled with the panel and cannot be uninstalled here.",
   "TXT_CODE_PLUGIN_MARKET_NPM_FAILED": "npm install failed. Check the network, registry and package name, then retry.",
   "TXT_CODE_PLUGIN_MARKET_ADD": "추가",

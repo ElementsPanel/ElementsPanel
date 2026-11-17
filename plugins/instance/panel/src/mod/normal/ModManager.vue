@@ -92,7 +92,7 @@ const checkAndConfirm = async (
                 Modal.destroyAll();
               }
             },
-            { default: () => t("TXT_CODE_a0451c97") }
+            { default: () => t("TXT_CODE_COMMON_CANCEL") }
           ),
           createVNode(
             VBtn,
@@ -192,7 +192,7 @@ const openExternal = (mod: any) => {
   };
   const url = baseUrlMap[source];
   if (!url) {
-    message.error(t("TXT_CODE_8d2a42a2"));
+    message.error(t("TXT_CODE_COMMON_THIS_MODULE_OR_PLUGIN_DOES_NOT_CURRENTLY_SUPPORT_EXPANDING_DETAILS"));
   } else {
     window.open(url, "_blank");
   }
@@ -403,7 +403,7 @@ onMounted(async () => {
       <template #actions>
         <VBtn v-if="activeKey === TAB_KEY_MODS || activeKey === TAB_KEY_PLUGINS" variant="tonal" @click="onUploadClick">
           <VIcon start icon="mdi-upload" />
-          {{ t("TXT_CODE_ae09d79d") }}
+          {{ t("TXT_CODE_COMMON_UPLOAD") }}
         </VBtn>
         <VBtn v-if="activeKey !== TAB_KEY_DOWNLOAD" color="primary" :loading="loading" @click="() => loadMods()">
           <VIcon start icon="mdi-refresh" />
@@ -458,7 +458,7 @@ onMounted(async () => {
               <VTabs v-model="activeKey" class="mod-manager-tabs" @update:model-value="handleTabChange">
                 <VTab v-if="hasModsFolder" :value="TAB_KEY_MODS">{{ t("TXT_CODE_MOD_LIST") }} <VBadge v-if="!loading" inline :content="filteredMods.length" color="secondary" /><VIcon v-if="loading || loadingExtra" icon="mdi-loading" size="14" class="loading-icon" /></VTab>
                 <VTab v-if="hasPluginsFolder" :value="TAB_KEY_PLUGINS">{{ t("TXT_CODE_PLUGIN_LIST") }} <VBadge v-if="!loading" inline :content="filteredPlugins.length" color="secondary" /><VIcon v-if="loading || loadingExtra" icon="mdi-loading" size="14" class="loading-icon" /></VTab>
-                <VTab :value="TAB_KEY_DOWNLOAD">{{ t("TXT_CODE_25bf0004") }}</VTab>
+                <VTab :value="TAB_KEY_DOWNLOAD">{{ t("TXT_CODE_COMMON_DOWNLOAD_MODULES_PLUGINS") }}</VTab>
               </VTabs>
               <VWindow v-model="activeKey" :touch="false">
                 <VWindowItem v-if="hasModsFolder" :value="TAB_KEY_MODS">
@@ -482,16 +482,16 @@ onMounted(async () => {
                     <div>
                       <VRow density="compact" class="search-form mt-2">
                         <VCol cols="12" :md="4"><VTextField v-model="searchFilters.query" :placeholder="t('TXT_CODE_SEARCH_PLACEHOLDER')" prepend-inner-icon="mdi-magnify" density="compact" hide-details @keyup.enter="onSearch" /></VCol>
-                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.source" :items="[{ title: t('TXT_CODE_9693b0e1'), value: 'all' }, { title: 'Modrinth', value: 'modrinth' }, { title: 'CurseForge', value: 'curseforge' }, { title: 'SpigotMC', value: 'spigotmc' }]" density="compact" hide-details>
+                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.source" :items="[{ title: t('TXT_CODE_COMMON_ALL_PLATFORMS'), value: 'all' }, { title: 'Modrinth', value: 'modrinth' }, { title: 'CurseForge', value: 'curseforge' }, { title: 'SpigotMC', value: 'spigotmc' }]" density="compact" hide-details>
                           <template #no-data><Empty :icon="false" compact /></template>
                         </VSelect></VCol>
-                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.version" :items="[{ title: t('TXT_CODE_2af87548'), value: '' }, ...mcVersions.map((v) => ({ title: v, value: v }))]" :placeholder="t('TXT_CODE_743b4fe7')" clearable density="compact" hide-details>
+                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.version" :items="[{ title: t('TXT_CODE_COMMON_ALL_VERSIONS'), value: '' }, ...mcVersions.map((v) => ({ title: v, value: v }))]" :placeholder="t('TXT_CODE_COMMON_PLEASE_SELECT_CONTENT')" clearable density="compact" hide-details>
                           <template #no-data><Empty :icon="false" compact /></template>
                         </VSelect></VCol>
-                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.type" :items="[{ title: t('TXT_CODE_cc4db8f0'), value: 'all' }, { title: t('TXT_CODE_MOD'), value: 'mod' }, { title: t('TXT_CODE_PLUGIN'), value: 'plugin' }]" density="compact" hide-details>
+                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.type" :items="[{ title: t('TXT_CODE_MOD_ALL_TYPES'), value: 'all' }, { title: t('TXT_CODE_MOD'), value: 'mod' }, { title: t('TXT_CODE_PLUGIN'), value: 'plugin' }]" density="compact" hide-details>
                           <template #no-data><Empty :icon="false" compact /></template>
                         </VSelect></VCol>
-                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.environment" :items="[{ title: t('TXT_CODE_74e77b4c'), value: 'all' }, { title: t('TXT_CODE_SERVER'), value: 'server' }, { title: t('TXT_CODE_CLIENT'), value: 'client' }]" density="compact" hide-details>
+                        <VCol cols="6" :md="2"><VSelect v-model="searchFilters.environment" :items="[{ title: t('TXT_CODE_COMMON_CLIENT_SERVER'), value: 'all' }, { title: t('TXT_CODE_SERVER'), value: 'server' }, { title: t('TXT_CODE_CLIENT'), value: 'client' }]" density="compact" hide-details>
                           <template #no-data><Empty :icon="false" compact /></template>
                         </VSelect></VCol>
                         <VCol cols="6" :md="2"><VSelect v-model="searchFilters.loader" :items="loaderOptions.flatMap((group) => group.options)" item-title="label" item-value="value" :placeholder="t('TXT_CODE_SELECT_LOADER')" clearable density="compact" hide-details>
@@ -500,7 +500,7 @@ onMounted(async () => {
                       </VRow>
                       <div class="d-flex ga-2 justify-end mt-2">
                         <VBtn color="primary" :loading="searchLoading" @click="onSearch"><VIcon start icon="mdi-magnify" />{{ t("TXT_CODE_SEARCH") }}</VBtn>
-                        <VBtn variant="tonal" @click="resetSearch">{{ t("TXT_CODE_880fedf7") }}</VBtn>
+                        <VBtn variant="tonal" @click="resetSearch">{{ t("TXT_CODE_COMMON_RESET_FILTER_CONDITIONS") }}</VBtn>
                       </div>
                     </div>
                     <SearchModTable :loading="searchLoading" :data-source="searchResults" :columns="searchColumns"

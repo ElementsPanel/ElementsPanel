@@ -18,5 +18,5 @@
   "TXT_CODE_INSTANCE_BACKUP_STOPPING": "Parando a instância...",
   "TXT_CODE_INSTANCE_BACKUP_STOP_TIMEOUT": "O tempo limite para parar a instância foi atingido; o backup foi cancelado.",
   "TXT_CODE_INSTANCE_BACKUP_SUCCESS": "Backup da instância concluído! Arquivo: {{name}}",
-  "TXT_CODE_instanceConf.instanceBusy": "A instância atual está ocupada e não pode realizar nenhuma operação."
+  "TXT_CODE_INSTANCE_CONF_INSTANCE_BUSY": "A instância atual está ocupada e não pode realizar nenhuma operação."
 }

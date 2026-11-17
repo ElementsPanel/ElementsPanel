@@ -105,7 +105,7 @@ export function loginSuccess(ctx: Koa.ParameterizedContext, userName: string) {
   const ip = getLoginIp(ctx);
   const user = userSystem.getUserByUserName(userName);
   if (!user || user.permission < ROLE().USER)
-    throw new Error($t("TXT_CODE_router.login.nameOrPassError"));
+    throw new Error($t("TXT_CODE_ROUTER_LOGIN_NAME_OR_PASS_ERROR"));
   if (!ctx.session) throw new Error("Session is Null!");
 
   user.loginTime = new Date().toLocaleString();
@@ -117,9 +117,9 @@ export function loginSuccess(ctx: Koa.ParameterizedContext, userName: string) {
   ctx.session.save();
   userSystem.isFirstStartup = false;
 
-  logger().info($t("TXT_CODE_42036f92"));
+  logger().info($t("TXT_CODE_COMMON_USER_LOGIN_EVENT"));
   logger().info(`[LOGIN] IP: ${ip} Login ${userName} successful!`);
-  logger().info($t("TXT_CODE_42036f92"));
+  logger().info($t("TXT_CODE_COMMON_USER_LOGIN_EVENT"));
 
   return String(ctx.session["token"]);
 }
@@ -128,7 +128,7 @@ export async function bind2FA(ctx: Koa.ParameterizedContext) {
   if (!ctx.session) throw new Error("Session is Null!");
   const user = getUserFromCtx(ctx);
   if (!user) throw new Error("User is Null!");
-  if (user.open2FA) throw new Error($t("TXT_CODE_3d68e43b"));
+  if (user.open2FA) throw new Error($t("TXT_CODE_COMMON_TWO_FACTOR_AUTHENTICATION_CODE_IS_INCORRECT"));
   const secret = authenticator.generateSecret();
   const qrCode = await QRCode.toDataURL(authenticator.keyuri(user.userName, "ElementsPanel", secret));
   await userSystem.edit(user.uuid, { secret, open2FA: false });

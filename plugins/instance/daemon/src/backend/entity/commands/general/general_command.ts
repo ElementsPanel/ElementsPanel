@@ -36,7 +36,7 @@ export default class GeneralSendCommand extends InstanceCommand {
       instance.process.write(encode(buf, instance.config.ie));
       instance.process.write(instance.getCrlfValue());
     } else {
-      instance.failure(new Error($t("TXT_CODE_command.instanceNotOpen")));
+      instance.failure(new Error($t("TXT_CODE_COMMAND_INSTANCE_NOT_OPEN")));
     }
   }
 }

@@ -59,18 +59,18 @@ export async function usePortEditDialog(data: PortConfigItem[] = []) {
 export async function useVolumeEditDialog(data: DockerConfigItem[] = []) {
   return useMountComponent({
     data,
-    subTitle: t("TXT_CODE_6c232c9c"),
-    title: t("TXT_CODE_820ebc92"),
+    subTitle: t("TXT_CODE_DOCKER_EXTRA_VOLUMES_VARIABLE_HINT"),
+    title: t("TXT_CODE_COMMON_MOUNT_DIRECTORY_INTO_CONTAINER"),
     columns: [
       {
         align: "center",
         dataIndex: "host",
-        title: t("TXT_CODE_681aaeb9")
+        title: t("TXT_CODE_COMMON_HOST_DIRECTORY")
       },
       {
         align: "center",
         dataIndex: "container",
-        title: t("TXT_CODE_30258325")
+        title: t("TXT_CODE_COMMON_CONTAINER_DIRECTORY")
       }
     ],
     textarea: true
@@ -80,17 +80,17 @@ export async function useVolumeEditDialog(data: DockerConfigItem[] = []) {
 export async function useDockerEnvEditDialog(data: DockerEnvItem[] = []) {
   return useMountComponent({
     data,
-    title: t("TXT_CODE_90a9d317"),
+    title: t("TXT_CODE_COMMON_CONTAINER_ENVIRONMENT_VARIABLES"),
     columns: [
       {
         align: "center",
         dataIndex: "label",
-        title: t("TXT_CODE_a42984e")
+        title: t("TXT_CODE_COMMON_VARIABLE_NAME")
       },
       {
         align: "center",
         dataIndex: "value",
-        title: t("TXT_CODE_115e8a25")
+        title: t("TXT_CODE_COMMON_VARIABLE_VALUE")
       }
     ],
     textarea: true
@@ -100,18 +100,18 @@ export async function useDockerEnvEditDialog(data: DockerEnvItem[] = []) {
 export async function useDockerLabelEditDialog(data: DockerLabelItem[] = []) {
   return useMountComponent({
     data,
-    title: t("TXT_CODE_g1c43s2h"),
-    subTitle: t("TXT_CODE_MimBB1Ea"),
+    title: t("TXT_CODE_DOCKER_CONTAINER_LABELS"),
+    subTitle: t("TXT_CODE_MIM_BB1_EA"),
     columns: [
       {
         align: "center",
         dataIndex: "label",
-        title: t("TXT_CODE_a42984e")
+        title: t("TXT_CODE_COMMON_VARIABLE_NAME")
       },
       {
         align: "center",
         dataIndex: "value",
-        title: t("TXT_CODE_115e8a25")
+        title: t("TXT_CODE_COMMON_VARIABLE_VALUE")
       }
     ],
     textarea: true
@@ -121,8 +121,8 @@ export async function useDockerLabelEditDialog(data: DockerLabelItem[] = []) {
 export async function useDockerCapabilityEditDialog(data: DockerCapabilityItem[] = []) {
   return useMountComponent({
     data,
-    title: t("TXT_CODE_bbbd4133"),
-    subTitle: t("TXT_CODE_377319df"),
+    title: t("TXT_CODE_COMMON_CAPABILITIES"),
+    subTitle: t("TXT_CODE_COMMON_MANAGE_CONTAINER_CAPABILITIES"),
     textarea: false
   }).mount<DockerCapabilityItem[]>(instanceComponents().DockerCapabilityDialog);
 }
@@ -130,8 +130,8 @@ export async function useDockerCapabilityEditDialog(data: DockerCapabilityItem[]
 export async function useDockerDeviceEditDialog(data: DockerDeviceItem[] = []) {
   return useMountComponent({
     data,
-    title: t("TXT_CODE_b3a60c78"),
-    subTitle: t("TXT_CODE_b6e18b87"),
+    title: t("TXT_CODE_COMMON_DEVICES"),
+    subTitle: t("TXT_CODE_COMMON_ALLOWS_A_CONTAINER_TO_ACCESS_SPECIFIC_HOST_HARDWARE_DEVICES"),
     textarea: false
   }).mount<DockerDeviceItem[]>(instanceComponents().DockerDeviceDialog);
 }

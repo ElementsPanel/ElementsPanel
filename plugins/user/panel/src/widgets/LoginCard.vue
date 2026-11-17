@@ -48,7 +48,7 @@ const is2Fa = ref(false);
 
 const handleLogin = async () => {
   if (!formData.username.trim() || !formData.password.trim()) {
-    return message.error(t("TXT_CODE_c846074d"));
+    return message.error(t("TXT_CODE_COMMON_PLEASE_COMPLETE_YOUR_ACCOUNT_PROFILE"));
   }
   if (loading.value) return;
   loading.value = true;
@@ -76,8 +76,8 @@ const handleNext = async () => {
   } catch (error: any) {
     console.error(error);
     Modal.error({
-      title: t("TXT_CODE_da2fb99a"),
-      content: t("TXT_CODE_6e718abe")
+      title: t("TXT_CODE_COMMON_PAGE_NOT_FUNCTIONING_CORRECTLY"),
+      content: t("TXT_CODE_COMMON_UNABLE_TO_LOAD_LOGIN_INFORMATION_REFRESH_THE_PAGE_IF_IT_STILL_FAILS_CHECK_YOUR_NETWORK_OR")
     });
   }
 };
@@ -158,12 +158,12 @@ onMounted(async () => {
           </template>
         </div>
         <h2 class="login-title glitch-wrapper">
-          <div class="glitch" :data-text="t('TXT_CODE_3ba5ad')">
-            {{ t("TXT_CODE_3ba5ad") }}
+          <div class="glitch" :data-text="t('TXT_CODE_LOGIN_AUTHENTICATION_TITLE')">
+            {{ t("TXT_CODE_LOGIN_AUTHENTICATION_TITLE") }}
           </div>
         </h2>
         <p class="login-subtitle">
-          {{ t("TXT_CODE_5b60ad00") }}
+          {{ t("TXT_CODE_COMMON_LOGIN_TO_ELEMENTS_PANEL_CONTROL_PANEL") }}
         </p>
         <div class="account-input-container">
           <div v-if="ssoInfo?.enabled && ssoInfo?.onlyMode" class="sso-only-container">
@@ -191,7 +191,7 @@ onMounted(async () => {
                   class="account"
                   name="mcsm-name-input"
                   autocomplete="username"
-                  :placeholder="t('TXT_CODE_80a560a1')"
+                  :placeholder="t('TXT_CODE_LOGIN_ACCOUNT_NAME')"
                   prepend-inner-icon="mdi-account"
                   variant="solo-filled"
                   density="comfortable"
@@ -203,7 +203,7 @@ onMounted(async () => {
                   type="password"
                   name="mcsm-pw-input"
                   autocomplete="current-password"
-                  :placeholder="t('TXT_CODE_551b0348')"
+                  :placeholder="t('TXT_CODE_COMMON_PASSWORD')"
                   prepend-inner-icon="mdi-lock"
                   variant="solo-filled"
                   density="comfortable"
@@ -217,7 +217,7 @@ onMounted(async () => {
                 type="text"
                 name="mcsm-pw-2fa"
                 autocomplete="one-time-code"
-                :placeholder="t('TXT_CODE_7ac8b1d3')"
+                :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_THE_TWO_FACTOR_AUTHENTICATION_CODE')"
                 prepend-inner-icon="mdi-lock-check"
                 variant="solo-filled"
                 density="comfortable"
@@ -240,7 +240,7 @@ onMounted(async () => {
                   </a>
                 </div>
                 <VBtn size="large" color="primary" type="submit" :loading="loading" min-width="95">
-                  {{ t("TXT_CODE_d2c1a316") }}
+                  {{ t("TXT_CODE_LOGIN_SUBMIT") }}
                 </VBtn>
               </div>
             </VForm>

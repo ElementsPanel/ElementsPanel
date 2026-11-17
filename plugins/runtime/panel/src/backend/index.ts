@@ -105,7 +105,7 @@ export async function apply(ctx: PanelPluginContext) {
       return;
     }
     requestCtx.status = 403;
-    requestCtx.body = String(ctx.i18n.$t("TXT_CODE_permission.forbiddenInstance"));
+    requestCtx.body = String(ctx.i18n.$t("TXT_CODE_PERMISSION_FORBIDDEN_INSTANCE"));
   };
 
   const speedLimit = (seconds: number, errMsg?: string): Koa.Middleware => {
@@ -120,7 +120,7 @@ export async function apply(ctx: PanelPluginContext) {
         requestCtx.body =
           errMsg ||
           String(
-            ctx.i18n.$t("TXT_CODE_c093bec9", {
+            ctx.i18n.$t("TXT_CODE_COMMON_THIS_OPERATION_IS_ON_COOLDOWN_YOU_CAN_TRY_AGAIN_IN_AROUND_SECONDS", {
               seconds: singletonMemoryRedis.ttl(speedCheckKey)
             })
           );

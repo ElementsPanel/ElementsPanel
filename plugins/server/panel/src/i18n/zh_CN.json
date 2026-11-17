@@ -1,12 +1,12 @@
 {
-  "TXT_CODE_233624ad": "填写整数端口号，默认为 23333。",
-  "TXT_CODE_2b85af6d": "通过反向代理访问时启用，以读取客户端真实 IP。",
-  "TXT_CODE_328191e": "需要绑定指定网卡时填写其 IP 地址。",
-  "TXT_CODE_405cd346": "跨域请求 API 接口",
-  "TXT_CODE_514e064a": "面板绑定 IP",
-  "TXT_CODE_6655c905": "允许任意来源的跨域请求（Access-Control-Allow-Origin: *），可能降低安全性。",
-  "TXT_CODE_66aeac82": "反向代理请求头",
-  "TXT_CODE_7f0017d2": "面板端口",
+  "TXT_CODE_COMMON_ENTER_AN_INTEGER_PORT_NUMBER_DEFAULT_23333": "填写整数端口号，默认为 23333。",
+  "TXT_CODE_COMMON_ENABLE_WHEN_USING_A_REVERSE_PROXY_TO_READ_THE_CLIENTS_REAL_IP": "通过反向代理访问时启用，以读取客户端真实 IP。",
+  "TXT_CODE_COMMON_ENTER_ITS_IP_ADDRESS_TO_BIND_TO_A_SPECIFIC_NETWORK_INTERFACE": "需要绑定指定网卡时填写其 IP 地址。",
+  "TXT_CODE_COMMON_CROSS_ORIGIN_REQUEST_API_INTERFACE": "跨域请求 API 接口",
+  "TXT_CODE_COMMON_PANEL_BINDING_IP": "面板绑定 IP",
+  "TXT_CODE_SERVER_CROSS_ORIGIN_SECURITY_HINT": "允许任意来源的跨域请求（Access-Control-Allow-Origin: *），可能降低安全性。",
+  "TXT_CODE_COMMON_REVERSE_PROXY_REQUEST_HEADER": "反向代理请求头",
+  "TXT_CODE_COMMON_PANEL_PORT": "面板端口",
   "TXT_CODE_SERVER_PREFIX": "路径前缀",
   "TXT_CODE_SERVER_PREFIX_TIP": "让面板运行在子路径下，例如 /panel。留空则从根路径提供服务。",
   "TXT_CODE_SERVER_RESTART_TIP": "这些设置在 Web 服务器启动时生效，修改后需要重启面板。",
@@ -16,6 +16,6 @@
   "TXT_CODE_SERVER_SSL_PEM": "证书文件 (.pem)",
   "TXT_CODE_SERVER_SSL_PEM_TIP": "证书文件路径，可以是绝对路径或相对于面板目录的路径。",
   "TXT_CODE_SERVER_SSL_TIP": "使用下方的证书通过 HTTPS 提供服务，两个文件都必须填写。",
-  "TXT_CODE_f0789d81": "反向代理模式",
-  "TXT_CODE_fd8bc51f": "用于获取客户端真实 IP 的请求头名称。"
+  "TXT_CODE_COMMON_REVERSE_PROXY_MODE": "反向代理模式",
+  "TXT_CODE_COMMON_NAME_OF_THE_REQUEST_HEADER_CONTAINING_THE_CLIENTS_REAL_IP": "用于获取客户端真实 IP 的请求头名称。"
 }

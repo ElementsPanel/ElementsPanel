@@ -79,9 +79,9 @@ enum TabSettings {
   ResLimit
 }
 const activeKey = ref<TabSettings>(TabSettings.Basic);
-const UPDATE_CMD_DESCRIPTION = t("TXT_CODE_fa487a47");
+const UPDATE_CMD_DESCRIPTION = t("TXT_CODE_COMMON_PROVIDE_THE_FOLLOWING_VARIABLE_STRINGS_INSTANCE_ID_INSTANCE_INSTALLATION_DIRECTORY");
 const UPDATE_CMD_TEMPLATE =
-  t("TXT_CODE_61ca492b") +
+  t("TXT_CODE_COMMON_FOR_EXAMPLE") +
   '"C:/SteamCMD/steamcmd.exe" +login anonymous +force_install_dir "{mcsm_workspace}" "+app_update 380870 validate" +quit';
 
 const formType = ref<"template" | "normal">("normal");
@@ -90,9 +90,9 @@ const isTemplateMode = computed(() => formType.value === "template");
 const title = computed(() =>
   isTemplateMode.value
     ? isEditMode.value
-      ? t("TXT_CODE_921206fc")
-      : t("TXT_CODE_3d45d8d")
-    : t("TXT_CODE_aac98b2a")
+      ? t("TXT_CODE_COMMON_EDIT_TEMPLATE")
+      : t("TXT_CODE_COMMON_ADD_TEMPLATE")
+    : t("TXT_CODE_INSTANCE_SETTINGS_TITLE")
 );
 const { isPhone } = useScreen();
 
@@ -101,8 +101,8 @@ const formId = useId();
 const requiredRule = (message: string) => (value: unknown) =>
   !!String(value ?? "").trim() || t(message);
 const commandRules = [
-  (value: unknown) => isDockerMode.value || requiredRule("TXT_CODE_f50cfe2")(value),
-  (value: unknown) => !String(value ?? "").includes("\n") || t("TXT_CODE_bbbda29")
+  (value: unknown) => isDockerMode.value || requiredRule("TXT_CODE_COMMON_ENTER_STARTUP_COMMAND")(value),
+  (value: unknown) => !String(value ?? "").includes("\n") || t("TXT_CODE_COMMON_YOU_CANNOT_INCLUDE_MULTIPLE_LINES_IN_YOUR_STARTUP_PROGRAM_THIS_HAS_TO_BE_A_ONE_LINER")
 ];
 const fieldTabs: Record<string, TabSettings> = {
   nickname: TabSettings.Basic, startCommand: TabSettings.Basic,
@@ -240,17 +240,17 @@ const validateForm = async () => {
   }
   if (isTemplateMode.value) {
     const template = formData.value.template;
-    if (!template.title?.trim()) throw new Error(t("TXT_CODE_6b5509c7"));
-    if (!template.description?.trim()) throw new Error(t("TXT_CODE_8d6c8ae7"));
-    if (!template.language) throw new Error(t("TXT_CODE_60752a40"));
-    if (!template.platform) throw new Error(t("TXT_CODE_46039f9b"));
-    if (!template.gameType) throw new Error(t("TXT_CODE_f0694685"));
-    if (!template.category) throw new Error(t("TXT_CODE_b2391fca"));
-    if (!template.image) throw new Error(t("TXT_CODE_c11ac499"));
-    if (!template.author?.trim()) throw new Error(t("TXT_CODE_f6d73056"));
-    if (!template.runtime?.trim()) throw new Error(t("TXT_CODE_8717ed9d"));
-    if (!template.hardware?.trim()) throw new Error(t("TXT_CODE_f7909939"));
-    if (!template.setupInfo?.type) throw new Error(t("TXT_CODE_9f4eaa41"));
+    if (!template.title?.trim()) throw new Error(t("TXT_CODE_COMMON_PLEASE_ENTER_A_TEMPLATE_NAME"));
+    if (!template.description?.trim()) throw new Error(t("TXT_CODE_COMMON_PLEASE_ENTER_A_TEMPLATE_DESCRIPTION"));
+    if (!template.language) throw new Error(t("TXT_CODE_COMMON_PLEASE_SELECT_A_LANGUAGE"));
+    if (!template.platform) throw new Error(t("TXT_CODE_COMMON_PLEASE_SELECT_A_RUNTIME_PLATFORM"));
+    if (!template.gameType) throw new Error(t("TXT_CODE_COMMON_PLEASE_SELECT_A_PRIMARY_CATEGORY"));
+    if (!template.category) throw new Error(t("TXT_CODE_COMMON_PLEASE_SELECT_A_SECONDARY_CATEGORY"));
+    if (!template.image) throw new Error(t("TXT_CODE_COMMON_PLEASE_ENTER_A_COVER_IMAGE_URL"));
+    if (!template.author?.trim()) throw new Error(t("TXT_CODE_COMMON_PLEASE_ENTER_THE_TEMPLATE_AUTHOR"));
+    if (!template.runtime?.trim()) throw new Error(t("TXT_CODE_COMMON_PLEASE_ENTER_ENVIRONMENT_REQUIREMENTS"));
+    if (!template.hardware?.trim()) throw new Error(t("TXT_CODE_COMMON_PLEASE_ENTER_HARDWARE_REQUIREMENTS"));
+    if (!template.setupInfo?.type) throw new Error(t("TXT_CODE_COMMON_PLEASE_SELECT_A_GAME_TYPE"));
   }
   return true;
 };
@@ -283,7 +283,7 @@ const submit = async () => {
     if (isTemplateMode.value) {
       emit("save-template", _.cloneDeep(formData.value.template), templateIndex.value);
       open.value = false;
-      message.success(isEditMode.value ? t("TXT_CODE_a7907771") : t("TXT_CODE_d28c05df"));
+      message.success(isEditMode.value ? t("TXT_CODE_COMMON_SAVED") : t("TXT_CODE_COMMON_CREATE_SUCCESS"));
       formData.value.template = _.cloneDeep(defaultQuickStartPackages);
       return;
     }
@@ -291,10 +291,10 @@ const submit = async () => {
     await execute({ params: { uuid: props.instanceId ?? "", daemonId: props.daemonId ?? "" }, data: postData.config! });
     emit("update");
     open.value = false;
-    message.success(t("TXT_CODE_d3de39b4"));
+    message.success(t("TXT_CODE_COMMON_UPDATE_SUCCESSFUL"));
   } catch (error: any) {
     console.error(error);
-    reportErrorMsg(error?.message ?? t("TXT_CODE_9911ac11"));
+    reportErrorMsg(error?.message ?? t("TXT_CODE_COMMON_FAILED_TO_SAVE_PLEASE_CHECK_THE_CONFIGURATION"));
   }
 };
 
@@ -347,54 +347,54 @@ defineExpose({ openDialog });
 </script>
 
 <template>
-  <AppDialog v-model:open="open" :title="title" :max-width="isPhone ? '100%' : '1200px'" :mask-closable="false" :confirm-loading="isLoading" :ok-text="t('TXT_CODE_abfe9512')" @ok="submit">
-    <div v-if="!formData.instance.config" class="text-medium-emphasis">{{ t("TXT_CODE_2dae1294") }}</div>
+  <AppDialog v-model:open="open" :title="title" :max-width="isPhone ? '100%' : '1200px'" :mask-closable="false" :confirm-loading="isLoading" :ok-text="t('TXT_CODE_COMMON_SAVE')" @ok="submit">
+    <div v-if="!formData.instance.config" class="text-medium-emphasis">{{ t("TXT_CODE_INSTANCE_CONFIG_INVALID_HINT") }}</div>
     <VForm v-else ref="formRef" validate-on="input lazy" @submit.prevent="submit">
       <VTabs v-model="activeKey" color="primary" show-arrows>
-        <VTab v-if="isTemplateMode" :value="TabSettings.Template">{{ t("TXT_CODE_d9c63fdd") }}</VTab>
-        <VTab :value="TabSettings.Basic">{{ t("TXT_CODE_cc7b54b9") }}</VTab>
-        <VTab v-if="!isGlobalTerminal" :value="TabSettings.Docker">{{ t("TXT_CODE_afb12200") }}</VTab>
-        <VTab :value="TabSettings.Advanced">{{ t("TXT_CODE_31a1d824") }}</VTab>
-        <VTab v-if="!isGlobalTerminal" :value="TabSettings.ResLimit">{{ t("TXT_CODE_604d8d63") }}</VTab>
+        <VTab v-if="isTemplateMode" :value="TabSettings.Template">{{ t("TXT_CODE_COMMON_TEMPLATE_INFORMATION") }}</VTab>
+        <VTab :value="TabSettings.Basic">{{ t("TXT_CODE_COMMON_BASIC_SETTINGS") }}</VTab>
+        <VTab v-if="!isGlobalTerminal" :value="TabSettings.Docker">{{ t("TXT_CODE_COMMON_CONTAINERIZATION") }}</VTab>
+        <VTab :value="TabSettings.Advanced">{{ t("TXT_CODE_COMMON_ADVANCED_SETTINGS") }}</VTab>
+        <VTab v-if="!isGlobalTerminal" :value="TabSettings.ResLimit">{{ t("TXT_CODE_COMMON_CONTAINER_LIMITS") }}</VTab>
       </VTabs>
       <VTabsWindow v-model="activeKey" class="pt-4">
         <VTabsWindowItem v-if="isTemplateMode" :value="TabSettings.Template">
           <VRow>
             <VCol cols="12" md="6">
-              <div class="field-title">{{ t("TXT_CODE_80c5409f") }}</div>
+              <div class="field-title">{{ t("TXT_CODE_COMMON_COVER_IMAGE") }}</div>
               <div class="template-cover cursor-pointer" @click="handleUploadImg">
                 <VImg v-if="formData.template.image" :src="formData.template.image" height="180" cover class="rounded-lg" />
                 <div v-else class="template-cover-placeholder"><VIcon icon="mdi-image-plus-outline" size="42" /></div>
               </div>
-              <VTextField v-model="formData.template.image" class="mt-3" :placeholder="t('TXT_CODE_99a42341')" variant="solo-filled" hide-details />
+              <VTextField v-model="formData.template.image" class="mt-3" :placeholder="t('TXT_CODE_COMMON_IE_HTTPS_EXAMPLE_COM_IMAGE_PNG')" variant="solo-filled" hide-details />
             </VCol>
             <VCol cols="12" md="6">
-              <VTextField v-model="formData.template.title" :label="t('TXT_CODE_f4fba0cd')" variant="solo-filled" />
-              <VTextarea v-model="formData.template.description" :label="t('TXT_CODE_59cdbec3')" variant="solo-filled" rows="2" />
+              <VTextField v-model="formData.template.title" :label="t('TXT_CODE_COMMON_TEMPLATE_NAME')" variant="solo-filled" />
+              <VTextarea v-model="formData.template.description" :label="t('TXT_CODE_COMMON_DESCRIPTION')" variant="solo-filled" rows="2" />
               <VRow>
-                <VCol cols="12" sm="6"><VSelect v-model="formData.template.language" :items="languageOptions" item-title="label" item-value="value" :label="t('TXT_CODE_2a34c50a')">
+                <VCol cols="12" sm="6"><VSelect v-model="formData.template.language" :items="languageOptions" item-title="label" item-value="value" :label="t('TXT_CODE_COMMON_LANGUAGE')">
                   <template #no-data><Empty :icon="false" compact /></template>
                 </VSelect></VCol>
-                <VCol cols="12" sm="6"><VTextField v-model="formData.template.author" :label="t('TXT_CODE_3d56da34')" variant="solo-filled" /></VCol>
+                <VCol cols="12" sm="6"><VTextField v-model="formData.template.author" :label="t('TXT_CODE_COMMON_TEMPLATE_AUTHOR_PROVIDER')" variant="solo-filled" /></VCol>
               </VRow>
             </VCol>
-            <VCol cols="12" sm="6" lg="3"><VSelect v-if="formData.template.setupInfo" v-model="formData.template.setupInfo.type" :items="Object.entries(INSTANCE_TYPE_TRANSLATION).map(([value, title]) => ({ value, title }))" :label="t('TXT_CODE_c5ace40b')">
+            <VCol cols="12" sm="6" lg="3"><VSelect v-if="formData.template.setupInfo" v-model="formData.template.setupInfo.type" :items="Object.entries(INSTANCE_TYPE_TRANSLATION).map(([value, title]) => ({ value, title }))" :label="t('TXT_CODE_COMMON_GAME_TYPE')">
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect></VCol>
-            <VCol cols="12" sm="6" lg="3"><VCombobox v-model="formData.template.gameType" :items="selectOptions.appGameTypeList?.filter((item) => item.value !== SEARCH_ALL_KEY)" item-title="label" item-value="value" :label="t('TXT_CODE_ebfb4831')">
+            <VCol cols="12" sm="6" lg="3"><VCombobox v-model="formData.template.gameType" :items="selectOptions.appGameTypeList?.filter((item) => item.value !== SEARCH_ALL_KEY)" item-title="label" item-value="value" :label="t('TXT_CODE_COMMON_PRIMARY_CATEGORY_GAME_NAME')">
               <template #no-data><Empty :icon="false" compact /></template>
             </VCombobox></VCol>
-            <VCol cols="12" sm="6" lg="3"><VCombobox v-model="formData.template.platform" :items="selectOptions.appPlatformList?.filter((item) => item.value !== SEARCH_ALL_KEY)" item-title="label" item-value="value" :label="t('TXT_CODE_1ce1d1d1')">
+            <VCol cols="12" sm="6" lg="3"><VCombobox v-model="formData.template.platform" :items="selectOptions.appPlatformList?.filter((item) => item.value !== SEARCH_ALL_KEY)" item-title="label" item-value="value" :label="t('TXT_CODE_COMMON_RUNTIME_PLATFORM')">
               <template #no-data><Empty :icon="false" compact /></template>
             </VCombobox></VCol>
-            <VCol cols="12" sm="6" lg="3"><VCombobox v-model="formData.template.category" :items="selectOptions.appCategoryList?.filter((item) => item.value !== SEARCH_ALL_KEY)" item-title="label" item-value="value" :label="t('TXT_CODE_2d8a400')">
+            <VCol cols="12" sm="6" lg="3"><VCombobox v-model="formData.template.category" :items="selectOptions.appCategoryList?.filter((item) => item.value !== SEARCH_ALL_KEY)" item-title="label" item-value="value" :label="t('TXT_CODE_COMMON_SECONDARY_CATEGORY_VERSION_TYPE')">
               <template #no-data><Empty :icon="false" compact /></template>
             </VCombobox></VCol>
-            <VCol cols="12" sm="4"><VTextField v-model="formData.template.runtime" :label="t('TXT_CODE_80c85070')" variant="solo-filled" /></VCol>
-            <VCol cols="12" sm="4"><VTextField v-model="formData.template.hardware" :label="t('TXT_CODE_683e3033')" variant="solo-filled" /></VCol>
-            <VCol cols="12" sm="4"><VTextField v-model="formData.template.size" :label="t('TXT_CODE_8dbcf565')" variant="solo-filled" /></VCol>
-            <VCol cols="12"><VTextField v-model="formData.template.targetLink" :label="t('TXT_CODE_13eac7e1')" variant="solo-filled" /></VCol>
-            <VCol cols="12"><VCombobox v-model="formData.template.tags" :label="t('TXT_CODE_9901af98')" :placeholder="t('TXT_CODE_7d839745')" multiple chips closable-chips>
+            <VCol cols="12" sm="4"><VTextField v-model="formData.template.runtime" :label="t('TXT_CODE_COMMON_ENVIRONMENT_REQUIREMENTS')" variant="solo-filled" /></VCol>
+            <VCol cols="12" sm="4"><VTextField v-model="formData.template.hardware" :label="t('TXT_CODE_COMMON_HARDWARE_REQUIREMENTS')" variant="solo-filled" /></VCol>
+            <VCol cols="12" sm="4"><VTextField v-model="formData.template.size" :label="t('TXT_CODE_COMMON_PACKAGE_SIZE_OPTIONAL')" variant="solo-filled" /></VCol>
+            <VCol cols="12"><VTextField v-model="formData.template.targetLink" :label="t('TXT_CODE_COMMON_PACKAGE_DOWNLOAD_URL_OPTIONAL')" variant="solo-filled" /></VCol>
+            <VCol cols="12"><VCombobox v-model="formData.template.tags" :label="t('TXT_CODE_COMMON_TAGS_OPTIONAL')" :placeholder="t('TXT_CODE_COMMON_EG_APPLE_BANANA_CHERRY')" multiple chips closable-chips>
               <template #no-data><Empty :icon="false" compact /></template>
             </VCombobox></VCol>
           </VRow>
@@ -402,67 +402,67 @@ defineExpose({ openDialog });
 
         <VTabsWindowItem :value="TabSettings.Basic" eager>
           <VRow>
-            <VCol v-if="!isTemplateMode" cols="12" lg="4"><VTextField v-model="formData.instance.config.nickname" name="nickname" :rules="isGlobalTerminal ? [] : [requiredRule('TXT_CODE_68a504b3')]" :label="t('TXT_CODE_f70badb9')" :disabled="isGlobalTerminal" variant="solo-filled" /></VCol>
-            <VCol v-if="!isTemplateMode" cols="12" lg="4"><VSelect v-model="formData.instance.config.type" :items="Object.entries(INSTANCE_TYPE_TRANSLATION).map(([value, title]) => ({ value, title }))" :label="t('TXT_CODE_2f291d8b')" :disabled="isGlobalTerminal">
+            <VCol v-if="!isTemplateMode" cols="12" lg="4"><VTextField v-model="formData.instance.config.nickname" name="nickname" :rules="isGlobalTerminal ? [] : [requiredRule('TXT_CODE_COMMON_PLEASE_ENTER_THE_INSTANCE_NAME')]" :label="t('TXT_CODE_COMMON_INSTANCE_NAME')" :disabled="isGlobalTerminal" variant="solo-filled" /></VCol>
+            <VCol v-if="!isTemplateMode" cols="12" lg="4"><VSelect v-model="formData.instance.config.type" :items="Object.entries(INSTANCE_TYPE_TRANSLATION).map(([value, title]) => ({ value, title }))" :label="t('TXT_CODE_COMMON_INSTANCE_TYPE')" :disabled="isGlobalTerminal">
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect></VCol>
-            <VCol v-if="!isTemplateMode" cols="12" lg="4"><VTextField v-model="endTimeText" :label="t('TXT_CODE_fa920c0')" placeholder="YYYY-MM-DD HH:mm:ss" :disabled="isGlobalTerminal" variant="solo-filled" /></VCol>
-            <VCol cols="12"><VTextarea v-model="formData.instance.config.startCommand" name="startCommand" :rules="isTemplateMode ? [] : commandRules" :label="t('TXT_CODE_d12fa808')" :placeholder="isDockerMode ? t('TXT_CODE_98e7c829') : t('TXT_CODE_f50cfe2')" rows="4" variant="solo-filled" /></VCol>
-            <VCol cols="12"><VTextField v-model="formData.instance.config.stopCommand" :label="t('TXT_CODE_11cfe3a1')" :placeholder="t('TXT_CODE_83053cd5')" variant="solo-filled" /></VCol>
+            <VCol v-if="!isTemplateMode" cols="12" lg="4"><VTextField v-model="endTimeText" :label="t('TXT_CODE_COMMON_EXPIRE')" placeholder="YYYY-MM-DD HH:mm:ss" :disabled="isGlobalTerminal" variant="solo-filled" /></VCol>
+            <VCol cols="12"><VTextarea v-model="formData.instance.config.startCommand" name="startCommand" :rules="isTemplateMode ? [] : commandRules" :label="t('TXT_CODE_COMMON_STARTUP_COMMAND')" :placeholder="isDockerMode ? t('TXT_CODE_COMMON_LEAVE_EMPTY_TO_USE_DEFAULT_DOCKER_IMAGE_COMMAND') : t('TXT_CODE_COMMON_ENTER_STARTUP_COMMAND')" rows="4" variant="solo-filled" /></VCol>
+            <VCol cols="12"><VTextField v-model="formData.instance.config.stopCommand" :label="t('TXT_CODE_COMMON_INSTANCE_SHUTDOWN_COMMAND')" :placeholder="t('TXT_CODE_COMMON_PLEASE_ENTER_AN_INSTANCE_SHUTDOWN_COMMAND_SUCH_AS_STOP_EXIT_C_ETC')" variant="solo-filled" /></VCol>
           </VRow>
         </VTabsWindowItem>
 
         <VTabsWindowItem v-if="!isGlobalTerminal" :value="TabSettings.Docker" eager>
           <VRow>
-            <VCol cols="12" lg="4"><VSwitch v-model="formData.instance.config.processType" :true-value="'docker'" :false-value="'general'" :label="t('TXT_CODE_61a8296e')" :disabled="isGlobalTerminal" color="primary" /></VCol>
-            <VCol v-if="isDockerMode" cols="12" lg="8"><DockerImageSelect :id="`${formId}-image`" :rules="isTemplateMode ? [] : [requiredRule('TXT_CODE_be6484f7')]" :model-value="formData.instance.config?.docker?.image ?? ''" :image-select-method="formData.instance.imageSelectMethod ?? 'SELECT'" :daemon-id="daemonId ?? ''" @update:model-value="setDockerImage" @update:image-select-method="(v) => (formData.instance.imageSelectMethod = v)" /></VCol>
+            <VCol cols="12" lg="4"><VSwitch v-model="formData.instance.config.processType" :true-value="'docker'" :false-value="'general'" :label="t('TXT_CODE_COMMON_ENABLE_DOCKER_CONTAINER')" :disabled="isGlobalTerminal" color="primary" /></VCol>
+            <VCol v-if="isDockerMode" cols="12" lg="8"><DockerImageSelect :id="`${formId}-image`" :rules="isTemplateMode ? [] : [requiredRule('TXT_CODE_COMMON_PLEASE_SELECT_AN_INSTANCE_IMAGE')]" :model-value="formData.instance.config?.docker?.image ?? ''" :image-select-method="formData.instance.imageSelectMethod ?? 'SELECT'" :daemon-id="daemonId ?? ''" @update:model-value="setDockerImage" @update:image-select-method="(v) => (formData.instance.imageSelectMethod = v)" /></VCol>
             <template v-if="isDockerMode">
-              <VCol cols="12" lg="4"><VSwitch v-model="formData.instance.config.docker.changeWorkdir" :label="t('TXT_CODE_5484094a')" color="primary" /></VCol>
-              <VCol cols="12" lg="8"><VTextField v-model="formData.instance.config.docker.workingDir" :label="t('TXT_CODE_81979d0f')" :placeholder="t('TXT_CODE_2082f659')" variant="solo-filled" /></VCol>
+              <VCol cols="12" lg="4"><VSwitch v-model="formData.instance.config.docker.changeWorkdir" :label="t('TXT_CODE_COMMON_CHANGE_CONTAINER_WORKING_DIRECTORY')" color="primary" /></VCol>
+              <VCol cols="12" lg="8"><VTextField v-model="formData.instance.config.docker.workingDir" :label="t('TXT_CODE_COMMON_WORKING_DIRECTORY_IN_CONTAINER')" :placeholder="t('TXT_CODE_COMMON_NOTE_IF_THIS_IS_EMPTY_THE_FILES_IN_THE_FILE_MANAGEMENT_WILL_NOT_BE_BOUND_TO')" variant="solo-filled" /></VCol>
               <VCol v-for="item in [
-                { key: 'volume', label: 'TXT_CODE_d9c73520' }, { key: 'port', label: 'TXT_CODE_cf88c936' }, { key: 'env', label: 'TXT_CODE_b916a8dc' },
-                { key: 'label', label: 'TXT_CODE_g1c43s2h' }, { key: 'capability', label: 'TXT_CODE_bbbd4133' }, { key: 'device', label: 'TXT_CODE_b3a60c78' }
-              ]" :key="item.key" cols="12" sm="6" lg="4"><VBtn variant="tonal" block @click="handleEditDockerConfig(item.key as any)">{{ t(item.label) }}: {{ t('TXT_CODE_ad207008') }}</VBtn></VCol>
-              <VCol v-if="!isTemplateMode" cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.basePort" type="number" min="0" max="65535" :label="t('TXT_CODE_15f5fb07')" variant="solo-filled" /></VCol>
-              <VCol cols="12" sm="6" lg="4"><VSelect v-model="formData.instance.config.docker.networkMode" :id="`${formId}-networkMode`" :rules="isTemplateMode ? [] : [requiredRule('TXT_CODE_b52cb76c')]" :items="networkModes" item-title="Name" item-value="Name" :label="t('TXT_CODE_efcef926')" @focus="loadNetworkModes">
+                { key: 'volume', label: 'TXT_CODE_COMMON_MOUNT_ADDITIONAL_DIRECTORIES' }, { key: 'port', label: 'TXT_CODE_COMMON_OPEN_PORTS' }, { key: 'env', label: 'TXT_CODE_COMMON_ENVIRONMENT_VARIABLES' },
+                { key: 'label', label: 'TXT_CODE_DOCKER_CONTAINER_LABELS' }, { key: 'capability', label: 'TXT_CODE_COMMON_CAPABILITIES' }, { key: 'device', label: 'TXT_CODE_COMMON_DEVICES' }
+              ]" :key="item.key" cols="12" sm="6" lg="4"><VBtn variant="tonal" block @click="handleEditDockerConfig(item.key as any)">{{ t(item.label) }}: {{ t('TXT_CODE_COMMON_EDIT') }}</VBtn></VCol>
+              <VCol v-if="!isTemplateMode" cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.basePort" type="number" min="0" max="65535" :label="t('TXT_CODE_COMMON_ASSIGNED_STARTING_PORT')" variant="solo-filled" /></VCol>
+              <VCol cols="12" sm="6" lg="4"><VSelect v-model="formData.instance.config.docker.networkMode" :id="`${formId}-networkMode`" :rules="isTemplateMode ? [] : [requiredRule('TXT_CODE_COMMON_PLEASE_SELECT_NETWORK_MODE')]" :items="networkModes" item-title="Name" item-value="Name" :label="t('TXT_CODE_COMMON_NETWORK_MODE')" @focus="loadNetworkModes">
                 <template #no-data><Empty :icon="false" compact /></template>
               </VSelect></VCol>
-              <VCol cols="12" sm="6" lg="4"><VTextField v-model="formData.instance.networkAliasesText" :label="t('TXT_CODE_10194e6a')" variant="solo-filled" /></VCol>
-              <VCol cols="12" sm="6" lg="4"><VTextField v-model="formData.instance.config.docker.containerName" :label="t('TXT_CODE_c3a3b6b1')" variant="solo-filled" /></VCol>
-              <VCol cols="12" sm="6" lg="4"><VSwitch v-model="formData.instance.config.docker.privileged" :label="t('TXT_CODE_dc47d2aa')" color="primary" /></VCol>
+              <VCol cols="12" sm="6" lg="4"><VTextField v-model="formData.instance.networkAliasesText" :label="t('TXT_CODE_COMMON_NETWORK_ALIASES')" variant="solo-filled" /></VCol>
+              <VCol cols="12" sm="6" lg="4"><VTextField v-model="formData.instance.config.docker.containerName" :label="t('TXT_CODE_COMMON_CONTAINER_NAME')" variant="solo-filled" /></VCol>
+              <VCol cols="12" sm="6" lg="4"><VSwitch v-model="formData.instance.config.docker.privileged" :label="t('TXT_CODE_COMMON_PRIVILEGED_MODE')" color="primary" /></VCol>
             </template>
           </VRow>
         </VTabsWindowItem>
 
         <VTabsWindowItem :value="TabSettings.Advanced" eager>
           <VRow>
-            <VCol v-if="!isTemplateMode" cols="12"><VTextField v-model="formData.instance.config.cwd" name="cwd" :rules="[requiredRule('TXT_CODE_71c948a9')]" :label="t('TXT_CODE_ee67e1a3')" variant="solo-filled" /></VCol>
-            <VCol cols="12"><VTextField v-model="formData.instance.config.updateCommand" :label="t('TXT_CODE_bb0b9711')" :placeholder="UPDATE_CMD_TEMPLATE" :hint="UPDATE_CMD_DESCRIPTION" persistent-hint :disabled="isGlobalTerminal" variant="solo-filled" /></VCol>
-            <VCol cols="12" lg="6"><DockerImageSelect :is-allow-empty="true" :is-allow-text="t('TXT_CODE_8aca7994')" :model-value="formData.instance.config?.docker?.updateCommandImage ?? ''" :image-select-method="formData.instance.imageSelectMethod ?? 'SELECT'" :daemon-id="daemonId ?? ''" @update:model-value="setUpdateDockerImage" @update:image-select-method="(v) => (formData.instance.imageSelectMethod = v)" /></VCol>
-            <VCol cols="12" lg="3"><VSelect v-model="formData.instance.config.fileCode" :items="TERMINAL_CODE" :label="t('TXT_CODE_f041de90')">
+            <VCol v-if="!isTemplateMode" cols="12"><VTextField v-model="formData.instance.config.cwd" name="cwd" :rules="[requiredRule('TXT_CODE_COMMON_PLEASE_ENTER_WORKING_DIRECTORY')]" :label="t('TXT_CODE_COMMON_WORKING_DIRECTORY')" variant="solo-filled" /></VCol>
+            <VCol cols="12"><VTextField v-model="formData.instance.config.updateCommand" :label="t('TXT_CODE_COMMON_UPDATE_OR_INSTALL_COMMAND')" :placeholder="UPDATE_CMD_TEMPLATE" :hint="UPDATE_CMD_DESCRIPTION" persistent-hint :disabled="isGlobalTerminal" variant="solo-filled" /></VCol>
+            <VCol cols="12" lg="6"><DockerImageSelect :is-allow-empty="true" :is-allow-text="t('TXT_CODE_COMMON_INHERIT_RUNTIME_IMAGE')" :model-value="formData.instance.config?.docker?.updateCommandImage ?? ''" :image-select-method="formData.instance.imageSelectMethod ?? 'SELECT'" :daemon-id="daemonId ?? ''" @update:model-value="setUpdateDockerImage" @update:image-select-method="(v) => (formData.instance.imageSelectMethod = v)" /></VCol>
+            <VCol cols="12" lg="3"><VSelect v-model="formData.instance.config.fileCode" :items="TERMINAL_CODE" :label="t('TXT_CODE_COMMON_FILE_ENCODING')">
               <template #no-data><Empty :icon="false" compact /></template>
             </VSelect></VCol>
-            <VCol cols="12" lg="3"><VTextField v-model="formData.instance.config.runAs" :label="t('TXT_CODE_fffaeb17')" :disabled="isGlobalTerminal" variant="solo-filled" /></VCol>
+            <VCol cols="12" lg="3"><VTextField v-model="formData.instance.config.runAs" :label="t('TXT_CODE_COMMON_RUN_START_COMMAND_AS_USER')" :disabled="isGlobalTerminal" variant="solo-filled" /></VCol>
           </VRow>
         </VTabsWindowItem>
 
         <VTabsWindowItem v-if="!isGlobalTerminal" :value="TabSettings.ResLimit">
           <VRow>
-            <VCol cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.docker.cpuUsage" type="number" suffix="%" :label="t('TXT_CODE_53046822')" variant="solo-filled" /></VCol>
-            <VCol cols="12" sm="6" lg="4"><VTextField v-model="formData.instance.config.docker.cpusetCpus" :label="t('TXT_CODE_b0c4e4ae')" variant="solo-filled" /></VCol>
-            <VCol cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.docker.memory" type="number" suffix="MB" :label="t('TXT_CODE_6fe24924')" variant="solo-filled" /></VCol>
-            <VCol cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.docker.memorySwap" type="number" :label="t('TXT_CODE_a68b3a9c')" variant="solo-filled" /></VCol>
-            <VCol cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.docker.maxSpace" type="number" suffix="GB" :label="t('TXT_CODE_ca61b504')" variant="solo-filled" /></VCol>
-            <VCol cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.docker.memorySwappiness" type="number" :label="t('TXT_CODE_5c43374f')" variant="solo-filled" /></VCol>
-            <VCol cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.docker.uploadSpeedLimit" type="number" suffix="KB/s" :label="t('TXT_CODE_network_upload_limit')" variant="solo-filled" /></VCol>
-            <VCol cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.docker.downloadSpeedLimit" type="number" suffix="KB/s" :label="t('TXT_CODE_network_download_limit')" variant="solo-filled" /></VCol>
-            <VCol cols="12"><VDivider class="my-2" /><div class="section-title">{{ t('TXT_CODE_gpu_section_title') }}</div></VCol>
-            <VCol cols="12" lg="4"><VSwitch v-model="formData.instance.config.docker.gpuEnabled" :label="t('TXT_CODE_gpu_enable')" color="primary" /></VCol>
+            <VCol cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.docker.cpuUsage" type="number" suffix="%" :label="t('TXT_CODE_COMMON_LIMIT_CPU_USAGE_PERCENTAGE')" variant="solo-filled" /></VCol>
+            <VCol cols="12" sm="6" lg="4"><VTextField v-model="formData.instance.config.docker.cpusetCpus" :label="t('TXT_CODE_COMMON_CPU_CORE_ASSIGNMENT')" variant="solo-filled" /></VCol>
+            <VCol cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.docker.memory" type="number" suffix="MB" :label="t('TXT_CODE_COMMON_MAXIMUM_MEMORY_IN_MB')" variant="solo-filled" /></VCol>
+            <VCol cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.docker.memorySwap" type="number" :label="t('TXT_CODE_COMMON_MAXIMUM_SPAWN_MEMORY')" variant="solo-filled" /></VCol>
+            <VCol cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.docker.maxSpace" type="number" suffix="GB" :label="t('TXT_CODE_COMMON_MAXIMUM_STORAGE_SPACE')" variant="solo-filled" /></VCol>
+            <VCol cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.docker.memorySwappiness" type="number" :label="t('TXT_CODE_COMMON_VIRTUAL_MEMORY_USAGE_PREFERENCE')" variant="solo-filled" /></VCol>
+            <VCol cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.docker.uploadSpeedLimit" type="number" suffix="KB/s" :label="t('TXT_CODE_NETWORK_UPLOAD_LIMIT')" variant="solo-filled" /></VCol>
+            <VCol cols="12" sm="6" lg="4"><VTextField v-model.number="formData.instance.config.docker.downloadSpeedLimit" type="number" suffix="KB/s" :label="t('TXT_CODE_NETWORK_DOWNLOAD_LIMIT')" variant="solo-filled" /></VCol>
+            <VCol cols="12"><VDivider class="my-2" /><div class="section-title">{{ t('TXT_CODE_GPU_SECTION_TITLE') }}</div></VCol>
+            <VCol cols="12" lg="4"><VSwitch v-model="formData.instance.config.docker.gpuEnabled" :label="t('TXT_CODE_GPU_ENABLE')" color="primary" /></VCol>
             <template v-if="formData.instance.config.docker.gpuEnabled">
-              <VCol cols="12" lg="4"><VTextField v-model="formData.instance.config.docker.gpuDriver" :label="t('TXT_CODE_gpu_driver')" variant="solo-filled" /></VCol>
-              <VCol cols="12" lg="4"><VRadioGroup v-model="gpuAllocMode" inline :label="t('TXT_CODE_gpu_alloc_mode')" @update:model-value="onGpuAllocModeChange"><VRadio value="all" :label="t('TXT_CODE_gpu_alloc_all')" /><VRadio value="count" :label="t('TXT_CODE_gpu_alloc_count')" /><VRadio value="deviceIds" :label="t('TXT_CODE_gpu_alloc_device_ids')" /></VRadioGroup></VCol>
-              <VCol v-if="gpuAllocMode === 'count'" cols="12" lg="4"><VTextField v-model.number="formData.instance.config.docker.gpuCount" type="number" min="1" max="128" :label="t('TXT_CODE_gpu_count')" variant="solo-filled" /></VCol>
-              <VCol v-if="gpuAllocMode === 'deviceIds'" cols="12" lg="8"><VTextField v-model="gpuDeviceIdsText" :label="t('TXT_CODE_gpu_device_ids')" variant="solo-filled" /></VCol>
+              <VCol cols="12" lg="4"><VTextField v-model="formData.instance.config.docker.gpuDriver" :label="t('TXT_CODE_GPU_DRIVER')" variant="solo-filled" /></VCol>
+              <VCol cols="12" lg="4"><VRadioGroup v-model="gpuAllocMode" inline :label="t('TXT_CODE_GPU_ALLOC_MODE')" @update:model-value="onGpuAllocModeChange"><VRadio value="all" :label="t('TXT_CODE_GPU_ALLOC_ALL')" /><VRadio value="count" :label="t('TXT_CODE_GPU_ALLOC_COUNT')" /><VRadio value="deviceIds" :label="t('TXT_CODE_GPU_ALLOC_DEVICE_IDS')" /></VRadioGroup></VCol>
+              <VCol v-if="gpuAllocMode === 'count'" cols="12" lg="4"><VTextField v-model.number="formData.instance.config.docker.gpuCount" type="number" min="1" max="128" :label="t('TXT_CODE_GPU_COUNT')" variant="solo-filled" /></VCol>
+              <VCol v-if="gpuAllocMode === 'deviceIds'" cols="12" lg="8"><VTextField v-model="gpuDeviceIdsText" :label="t('TXT_CODE_GPU_DEVICE_IDS')" variant="solo-filled" /></VCol>
             </template>
           </VRow>
         </VTabsWindowItem>

@@ -10,19 +10,19 @@ export enum INSTANCE_STATUS {
 }
 export const INSTANCE_STATUS_TEXT: Record<number, string> = {
   get [INSTANCE_STATUS.BUSY]() {
-    return $t("TXT_CODE_342a04a9");
+    return $t("TXT_CODE_COMMON_UNDER_MAINTENANCE");
   },
   get [INSTANCE_STATUS.STOP]() {
-    return $t("TXT_CODE_15f2e564");
+    return $t("TXT_CODE_INSTANCE_NOT_RUNNING");
   },
   get [INSTANCE_STATUS.STOPPING]() {
-    return $t("TXT_CODE_a409b8a9");
+    return $t("TXT_CODE_COMMON_STOPPING");
   },
   get [INSTANCE_STATUS.STARTING]() {
-    return $t("TXT_CODE_175b570d");
+    return $t("TXT_CODE_COMMON_STARTING");
   },
   get [INSTANCE_STATUS.RUNNING]() {
-    return $t("TXT_CODE_bdb620b9");
+    return $t("TXT_CODE_COMMON_RUNNING");
   }
 };
 

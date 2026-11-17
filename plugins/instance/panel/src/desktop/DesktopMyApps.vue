@@ -34,10 +34,10 @@ const operatingIds = ref<Set<string>>(new Set());
 
 const statusSelectItems = computed(() => [
     { title: t("TXT_CODE_DESKTOP_IM_ALL_STATUS"), value: "all" },
-    { title: t("TXT_CODE_bdb620b9"), value: String(INSTANCE_STATUS_CODE.RUNNING) },
-    { title: t("TXT_CODE_4ef6b040"), value: String(INSTANCE_STATUS_CODE.STOPPED) },
-    { title: t("TXT_CODE_175b570d"), value: String(INSTANCE_STATUS_CODE.STARTING) },
-    { title: t("TXT_CODE_a409b8a9"), value: String(INSTANCE_STATUS_CODE.STOPPING) }
+    { title: t("TXT_CODE_COMMON_RUNNING"), value: String(INSTANCE_STATUS_CODE.RUNNING) },
+    { title: t("TXT_CODE_COMMON_STOPPED"), value: String(INSTANCE_STATUS_CODE.STOPPED) },
+    { title: t("TXT_CODE_COMMON_STARTING"), value: String(INSTANCE_STATUS_CODE.STARTING) },
+    { title: t("TXT_CODE_COMMON_STOPPING"), value: String(INSTANCE_STATUS_CODE.STOPPING) }
 ]);
 
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
@@ -74,11 +74,11 @@ const instanceCounts = computed(() => {
 
 const getStatusText = (status: INSTANCE_STATUS_CODE): string => {
     const map: Record<INSTANCE_STATUS_CODE, string> = {
-        [INSTANCE_STATUS_CODE.BUSY]: t("TXT_CODE_342a04a9"),
-        [INSTANCE_STATUS_CODE.STOPPED]: t("TXT_CODE_4ef6b040"),
-        [INSTANCE_STATUS_CODE.STOPPING]: t("TXT_CODE_a409b8a9"),
-        [INSTANCE_STATUS_CODE.STARTING]: t("TXT_CODE_175b570d"),
-        [INSTANCE_STATUS_CODE.RUNNING]: t("TXT_CODE_bdb620b9")
+        [INSTANCE_STATUS_CODE.BUSY]: t("TXT_CODE_COMMON_UNDER_MAINTENANCE"),
+        [INSTANCE_STATUS_CODE.STOPPED]: t("TXT_CODE_COMMON_STOPPED"),
+        [INSTANCE_STATUS_CODE.STOPPING]: t("TXT_CODE_COMMON_STOPPING"),
+        [INSTANCE_STATUS_CODE.STARTING]: t("TXT_CODE_COMMON_STARTING"),
+        [INSTANCE_STATUS_CODE.RUNNING]: t("TXT_CODE_COMMON_RUNNING")
     };
     return map[status] || t("TXT_CODE_DESKTOP_IM_UNKNOWN");
 };
@@ -237,7 +237,7 @@ onUnmounted(() => {
                     prepend-inner-icon="mdi-magnify" />
 
                 <VBtn class="ma-btn ma-btn--icon" icon variant="text" :loading="loading"
-                    :aria-label="t('TXT_CODE_b76d94e0')" @click="fetchInstances()">
+                    :aria-label="t('TXT_CODE_COMMON_REFRESH')" @click="fetchInstances()">
                     <VIcon icon="mdi-refresh" />
                 </VBtn>
             </div>
@@ -250,11 +250,11 @@ onUnmounted(() => {
             </div>
             <div class="ma-stats__item">
                 <span class="ma-stats__dot ma-stats__dot--running"></span>
-                <span>{{ t("TXT_CODE_bdb620b9") }}: {{ instanceCounts.running }}</span>
+                <span>{{ t("TXT_CODE_COMMON_RUNNING") }}: {{ instanceCounts.running }}</span>
             </div>
             <div class="ma-stats__item">
                 <span class="ma-stats__dot ma-stats__dot--stopped"></span>
-                <span>{{ t("TXT_CODE_4ef6b040") }}: {{ instanceCounts.stopped }}</span>
+                <span>{{ t("TXT_CODE_COMMON_STOPPED") }}: {{ instanceCounts.stopped }}</span>
             </div>
         </div>
 
@@ -288,9 +288,9 @@ onUnmounted(() => {
                     </div>
                     <div class="ma-instance__meta">
                         <span class="ma-instance__expire"
-                            :title="instance.endTime ? new Date(instance.endTime).toLocaleString() : t('TXT_CODE_abc080d')">
+                            :title="instance.endTime ? new Date(instance.endTime).toLocaleString() : t('TXT_CODE_INSTANCE_EXPIRY_INDEFINITE')">
                             {{ instance.endTime ? new Date(instance.endTime).toLocaleString() :
-                                t('TXT_CODE_abc080d') }}
+                                t('TXT_CODE_INSTANCE_EXPIRY_INDEFINITE') }}
                         </span>
                         <span v-if="instance.config?.type" class="ma-instance__type">
                             {{ INSTANCE_TYPE_TRANSLATION[instance.config.type] }}
@@ -308,17 +308,17 @@ onUnmounted(() => {
 
                 <div class="ma-instance__actions">
                     <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.STOPPED" icon variant="text" class="ma-action ma-action--start"
-                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_57245e94')"
+                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_COMMON_START')"
                         @click.stop="handleStart(instance.instanceUuid, instance.daemonId)">
                         <VIcon icon="mdi-play"  />
                     </VBtn>
                     <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" icon variant="text" class="ma-action ma-action--restart"
-                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_47dcfa5')"
+                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_COMMON_RESTART')"
                         @click.stop="handleRestart(instance.instanceUuid, instance.daemonId)">
                         <VIcon icon="mdi-refresh"  />
                     </VBtn>
                     <VBtn v-if="instance.status === INSTANCE_STATUS_CODE.RUNNING" icon variant="text" class="ma-action ma-action--stop"
-                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_b1dedda3')"
+                        :disabled="isOperating(instance.instanceUuid)" :title="t('TXT_CODE_COMMON_STOP')"
                         @click.stop="handleStop(instance.instanceUuid, instance.daemonId)">
                         <VIcon icon="mdi-stop"  />
                     </VBtn>
@@ -326,7 +326,7 @@ onUnmounted(() => {
                         instance.status === INSTANCE_STATUS_CODE.RUNNING ||
                         instance.status === INSTANCE_STATUS_CODE.STOPPING
                     " icon variant="text" class="ma-action ma-action--kill" :disabled="isOperating(instance.instanceUuid)"
-                        :title="t('TXT_CODE_7b67813a')"
+                        :title="t('TXT_CODE_COMMON_TERMINATE')"
                         @click.stop="handleKill(instance.instanceUuid, instance.daemonId)">
                         <VIcon icon="mdi-close-circle-outline"  />
                     </VBtn>

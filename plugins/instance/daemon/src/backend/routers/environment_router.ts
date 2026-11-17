@@ -14,7 +14,7 @@ routerApp.on("environment/images", async (ctx, data) => {
     const result = await docker.listImages();
     protocol.response(ctx, result);
   } catch (error: any) {
-    protocol.responseError(ctx, $t("TXT_CODE_environment_router.dockerInfoErr"));
+    protocol.responseError(ctx, $t("TXT_CODE_ENVIRONMENT_ROUTER_DOCKER_INFO_ERR"));
   }
 });
 
@@ -51,7 +51,7 @@ routerApp.on("environment/new_image", async (ctx, data) => {
     await fs.writeFile(dockerFilepath, dockerFileText, { encoding: "utf-8" });
 
     logger.info(
-      $t("TXT_CODE_environment_router.crateImage", {
+      $t("TXT_CODE_DOCKER_IMAGE_CREATE_STARTED", {
         name: name,
         tag: tag,
         dockerFileText: dockerFileText
@@ -63,11 +63,11 @@ routerApp.on("environment/new_image", async (ctx, data) => {
     const dockerImageName = `${name}:${tag}`;
     try {
       await new DockerManager().startBuildImage(dockerFileDir, dockerImageName);
-      logger.info($t("TXT_CODE_environment_router.crateSuccess", { name: name, tag: tag }));
+      logger.info($t("TXT_CODE_DOCKER_IMAGE_CREATE_SUCCESS", { name: name, tag: tag }));
     } catch (error: any) {
       daemon.backgroundTasks?.fail(error);
       logger.info(
-        $t("TXT_CODE_environment_router.crateErr", { name: name, tag: tag, error: error })
+        $t("TXT_CODE_DOCKER_IMAGE_CREATE_FAILED", { name: name, tag: tag, error: error })
       );
     }
   } catch (error: any) {
@@ -81,7 +81,7 @@ routerApp.on("environment/del_image", async (ctx, data) => {
     const docker = new DockerManager().getDocker();
     const image = docker.getImage(imageId);
     if (image) {
-      logger.info($t("TXT_CODE_environment_router.delImage", { imageId: imageId }));
+      logger.info($t("TXT_CODE_DOCKER_IMAGE_DELETE_STARTED", { imageId: imageId }));
       await image.remove();
     } else {
       throw new Error("Image does not exist");

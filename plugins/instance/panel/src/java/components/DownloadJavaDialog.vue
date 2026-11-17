@@ -27,7 +27,7 @@ const submit = () => {
 <template>
   <AppDialog
     v-model:open="open"
-    :title="t('TXT_CODE_84588601')"
+    :title="t('TXT_CODE_COMMON_DOWNLOAD_JAVA')"
     :max-width="620"
     :closable="false"
     :ok-button-props="{ disabled: !version }"

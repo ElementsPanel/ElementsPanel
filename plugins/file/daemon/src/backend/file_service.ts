@@ -6,7 +6,7 @@ import os from "os";
 export function getFileManager(instanceUuid: string) {
   const instance = instances().subsystem.getInstance(instanceUuid);
   if (!instance)
-    throw new Error($t("TXT_CODE_file_router_service.instanceNotExit", { uuid: instanceUuid }));
+    throw new Error($t("TXT_CODE_FILE_SERVICE_INSTANCE_NOT_FOUND", { uuid: instanceUuid }));
   const fileCode = instance.config?.fileCode;
   return new FileManager(instance.absoluteCwdPath(), fileCode);
 }

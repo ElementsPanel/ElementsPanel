@@ -668,15 +668,15 @@ test("file manager operations, archive preview and deletion use desktop subwindo
 
   f.manager.deleteDialog.value.show = true;
   await flush();
-  f.findWindow("TXT_CODE_71155575").querySelector(".window__control--close").click();
+  f.findWindow("TXT_CODE_COMMON_CONFIRM_DELETION").querySelector(".window__control--close").click();
   await flush();
   assert.deepEqual(f.events.deleted, [false]);
   assert.equal(f.manager.deleteDialog.value.show, false);
   await transitionFrame();
   f.manager.deleteDialog.value.show = true;
   await flush();
-  const deletion = f.findWindow("TXT_CODE_71155575");
-  [...deletion.querySelectorAll(".desktop-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_d507abff")).click();
+  const deletion = f.findWindow("TXT_CODE_COMMON_CONFIRM_DELETION");
+  [...deletion.querySelectorAll(".desktop-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_COMMON_CONFIRM")).click();
   await flush();
   assert.deepEqual(f.events.deleted, [false, true]);
   await transitionFrame();
@@ -685,15 +685,15 @@ test("file manager operations, archive preview and deletion use desktop subwindo
 test("file manager URL downloads and upload overwrite confirmations run in desktop subwindows", async (t) => {
   const f = fileManagerDialogFixture(t);
   await flush();
-  [...f.target.querySelectorAll(".dfm-toolbar .v-btn")].find(button => button.textContent.includes("TXT_CODE_5b364aef")).click();
+  [...f.target.querySelectorAll(".dfm-toolbar .v-btn")].find(button => button.textContent.includes("TXT_CODE_COMMON_REMOTE_DOWNLOAD")).click();
   await flush();
-  const download = f.findWindow("TXT_CODE_f27b68b3");
+  const download = f.findWindow("TXT_CODE_COMMON_REMOTE_DOWNLOAD_RESOURCES");
   const urlInput = download.querySelector("input");
   urlInput.value = "https://example.com/files/server.jar";
   urlInput.dispatchEvent(new window.Event("input", { bubbles: true }));
   await flush();
   assert.equal(download.querySelectorAll("input")[1].value, "server.jar");
-  [...download.querySelectorAll(".desktop-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_d507abff")).click();
+  [...download.querySelectorAll(".desktop-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_COMMON_CONFIRM")).click();
   await flush();
   assert.deepEqual(f.events.downloads, [{ url: "https://example.com/files/server.jar", fileName: "server.jar" }]);
   await transitionFrame();
@@ -703,12 +703,12 @@ test("file manager URL downloads and upload overwrite confirmations run in deskt
   Object.defineProperty(uploadInput, "files", { value: files });
   uploadInput.dispatchEvent(new window.Event("change", { bubbles: true }));
   await flush();
-  const upload = f.findWindow("TXT_CODE_52bc24ec");
+  const upload = f.findWindow("TXT_CODE_COMMON_CONFIRM_UPLOAD");
   assert.ok(upload.textContent.includes("existing.txt"));
-  [...upload.querySelectorAll(".desktop-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_ae09d79d")).click();
+  [...upload.querySelectorAll(".desktop-dialog__footer .v-btn")].find(button => button.textContent.includes("TXT_CODE_COMMON_UPLOAD")).click();
   await flush();
   assert.equal(f.events.uploads.length, 1);
-  const overwrite = f.findWindow("TXT_CODE_99ca8563");
+  const overwrite = f.findWindow("TXT_CODE_COMMON_OVERWRITING_FILE");
   assert.ok(overwrite);
   assert.equal(overwrite.querySelectorAll('input[type="checkbox"]').length, 2);
   overwrite.querySelector(".window__control--close").click();
@@ -891,7 +891,7 @@ function instanceSettingsFixture(t, { admin = true, allowChangeCmd = true, proce
       target.querySelector(".dis__header .dis-btn--primary").click();
       await settle();
     },
-    reload: () => [...target.querySelectorAll(".dis__header button")].find((button) => button.textContent.includes("TXT_CODE_b76d94e0")).click(),
+    reload: () => [...target.querySelectorAll(".dis__header button")].find((button) => button.textContent.includes("TXT_CODE_COMMON_REFRESH")).click(),
     setFailSave: (value) => { failSave = value; },
     setFailLoad: (value) => { failLoad = value; }
   };
@@ -912,29 +912,29 @@ for (const admin of [true, false]) {
     assert.equal(page.querySelectorAll(".dis__tabs button").length, admin ? 4 : 1);
     assert.deepEqual(f.reads[0].params, { uuid: "instance-one", daemonId: "node-one" });
     assert.equal(page.querySelector(".v-input--error"), null);
-    f.setField("TXT_CODE_d12fa808", "  ");
+    f.setField("TXT_CODE_COMMON_STARTUP_COMMAND", "  ");
     await f.save();
-    assert.equal(f.field("TXT_CODE_d12fa808").closest(".v-input--error"), null);
+    assert.equal(f.field("TXT_CODE_COMMON_STARTUP_COMMAND").closest(".v-input--error"), null);
     assert.equal(f.writes[0].data.startCommand, "  ", "Docker can use the image's default command");
     f.writes.length = 0;
     if (admin) {
-      f.field("TXT_CODE_61a8296e").click();
+      f.field("TXT_CODE_COMMON_ENABLE_DOCKER_CONTAINER").click();
       await flush();
       await f.save();
-      assert.ok(f.field("TXT_CODE_d12fa808").closest(".v-input--error"));
+      assert.ok(f.field("TXT_CODE_COMMON_STARTUP_COMMAND").closest(".v-input--error"));
       assert.deepEqual(f.writes, [], "disabling Docker requires a start command");
-      f.field("TXT_CODE_61a8296e").click();
+      f.field("TXT_CODE_COMMON_ENABLE_DOCKER_CONTAINER").click();
       await flush();
     }
-    f.setField("TXT_CODE_d12fa808", "java -jar server.jar\necho ready");
+    f.setField("TXT_CODE_COMMON_STARTUP_COMMAND", "java -jar server.jar\necho ready");
     await f.save();
-    assert.ok(f.field("TXT_CODE_d12fa808").closest(".v-input--error"));
-    assert.ok(page.textContent.includes("TXT_CODE_bbbda29"));
+    assert.ok(f.field("TXT_CODE_COMMON_STARTUP_COMMAND").closest(".v-input--error"));
+    assert.ok(page.textContent.includes("TXT_CODE_COMMON_YOU_CANNOT_INCLUDE_MULTIPLE_LINES_IN_YOUR_STARTUP_PROGRAM_THIS_HAS_TO_BE_A_ONE_LINER"));
     assert.deepEqual(f.errors, [], "missing fields use inline errors instead of a toast");
     assert.deepEqual(f.writes, []);
-    f.setField("TXT_CODE_d12fa808", "java -Xmx2G -jar server.jar");
+    f.setField("TXT_CODE_COMMON_STARTUP_COMMAND", "java -Xmx2G -jar server.jar");
     await flush();
-    assert.equal(f.field("TXT_CODE_d12fa808").closest(".v-input--error"), null);
+    assert.equal(f.field("TXT_CODE_COMMON_STARTUP_COMMAND").closest(".v-input--error"), null);
     assert.equal(f.info.value.config.startCommand, "java -jar server.jar");
     f.setFailSave(true);
     await f.save();
@@ -942,7 +942,7 @@ for (const admin of [true, false]) {
     assert.equal(f.closed.value, false);
     assert.equal(f.writes.length, 0);
     assert.ok(f.errors.includes("Save failed"));
-    assert.equal(f.field("TXT_CODE_d12fa808").value, "java -Xmx2G -jar server.jar");
+    assert.equal(f.field("TXT_CODE_COMMON_STARTUP_COMMAND").value, "java -Xmx2G -jar server.jar");
     f.setFailSave(false);
     await f.save();
     await flush();
@@ -951,14 +951,14 @@ for (const admin of [true, false]) {
     assert.deepEqual(f.writes[0].params, { uuid: "instance-one", daemonId: "node-one" });
     assert.equal(f.writes[0].data.startCommand, "java -Xmx2G -jar server.jar");
     assert.deepEqual(f.writes[0].data.unknownSetting, { preserve: true });
-    assert.deepEqual(f.notices.at(-1), ["TXT_CODE_d3de39b4", "success"]);
+    assert.deepEqual(f.notices.at(-1), ["TXT_CODE_COMMON_UPDATE_SUCCESSFUL", "success"]);
   });
 }
 
 test("independent instance settings mark missing fields across unvisited tabs and select the first invalid tab", async (t) => {
   const f = instanceSettingsFixture(t);
   await flush();
-  const missing = ["TXT_CODE_f70badb9", "TXT_CODE_44b585c7", "TXT_CODE_efcef926", "TXT_CODE_ee67e1a3"];
+  const missing = ["TXT_CODE_COMMON_INSTANCE_NAME", "TXT_CODE_COMMON_CURRENT_IMAGE_IN_USE", "TXT_CODE_COMMON_NETWORK_MODE", "TXT_CODE_COMMON_WORKING_DIRECTORY"];
   for (const key of missing) f.setField(key, "");
   await flush();
   await f.save();
@@ -966,17 +966,17 @@ test("independent instance settings mark missing fields across unvisited tabs an
   assert.deepEqual(f.errors, []);
   assert.deepEqual(f.writes, []);
   const activeTab = () => f.target.querySelector(".dis-tab--active").textContent;
-  assert.ok(activeTab().includes("TXT_CODE_cc7b54b9"));
-  f.setField("TXT_CODE_f70badb9", "Example");
+  assert.ok(activeTab().includes("TXT_CODE_COMMON_BASIC_SETTINGS"));
+  f.setField("TXT_CODE_COMMON_INSTANCE_NAME", "Example");
   await flush();
   await f.save();
-  assert.ok(activeTab().includes("TXT_CODE_afb12200"));
-  f.setField("TXT_CODE_44b585c7", "java:21");
-  f.setField("TXT_CODE_efcef926", "bridge");
+  assert.ok(activeTab().includes("TXT_CODE_COMMON_CONTAINERIZATION"));
+  f.setField("TXT_CODE_COMMON_CURRENT_IMAGE_IN_USE", "java:21");
+  f.setField("TXT_CODE_COMMON_NETWORK_MODE", "bridge");
   await flush();
   await f.save();
-  assert.ok(activeTab().includes("TXT_CODE_31a1d824"));
-  f.setField("TXT_CODE_ee67e1a3", "/srv/server");
+  assert.ok(activeTab().includes("TXT_CODE_COMMON_ADVANCED_SETTINGS"));
+  f.setField("TXT_CODE_COMMON_WORKING_DIRECTORY", "/srv/server");
   await flush();
   await f.save();
   assert.equal(f.writes.length, 1);
@@ -986,12 +986,12 @@ test("independent instance settings mark missing fields across unvisited tabs an
 test("independent instance settings discard edits on close and enforce limited-user permissions", async (t) => {
   const f = instanceSettingsFixture(t, { admin: false });
   await flush();
-  assert.equal(f.field("TXT_CODE_f70badb9").disabled, true);
-  f.setField("TXT_CODE_d12fa808", "unsaved command");
+  assert.equal(f.field("TXT_CODE_COMMON_INSTANCE_NAME").disabled, true);
+  f.setField("TXT_CODE_COMMON_STARTUP_COMMAND", "unsaved command");
   f.account.state.settings.allowChangeCmd = false;
   await flush();
   assert.equal(f.target.querySelector(".dis__form"), null);
-  assert.ok(f.target.textContent.includes("TXT_CODE_permission.forbidden"));
+  assert.ok(f.target.textContent.includes("TXT_CODE_PERMISSION_FORBIDDEN"));
   assert.equal(f.target.querySelector(".dis__header .dis-btn--primary").disabled, true);
   f.account.state.settings.allowChangeCmd = true;
   await flush();
@@ -1007,28 +1007,28 @@ test("independent instance settings retain global-terminal restrictions and bloc
   const ordinary = instanceSettingsFixture(t, { admin: false, processType: "general" });
   await flush();
   assert.equal(globalTerminal.target.querySelectorAll(".dis__tabs button").length, 2);
-  assert.equal(globalTerminal.field("TXT_CODE_f70badb9").disabled, true);
-  assert.equal(globalTerminal.field("TXT_CODE_fa920c0").disabled, true);
+  assert.equal(globalTerminal.field("TXT_CODE_COMMON_INSTANCE_NAME").disabled, true);
+  assert.equal(globalTerminal.field("TXT_CODE_COMMON_EXPIRE").disabled, true);
   assert.equal(ordinary.target.querySelector(".dis__form"), null);
-  assert.ok(ordinary.target.textContent.includes("TXT_CODE_permission.forbidden"));
+  assert.ok(ordinary.target.textContent.includes("TXT_CODE_PERMISSION_FORBIDDEN"));
   assert.equal(ordinary.target.querySelector(".dis__header .dis-btn--primary").disabled, true);
 });
 
 test("independent instance settings serialize expiration, aliases, resource limits and GPU devices", async (t) => {
   const f = instanceSettingsFixture(t);
   await flush();
-  f.setField("TXT_CODE_fa920c0", "2030-01-02 03:04:05");
-  settingsButton(f.target.querySelector(".dis__tabs"), "TXT_CODE_afb12200").click();
+  f.setField("TXT_CODE_COMMON_EXPIRE", "2030-01-02 03:04:05");
+  settingsButton(f.target.querySelector(".dis__tabs"), "TXT_CODE_COMMON_CONTAINERIZATION").click();
   await flush();
-  f.setField("TXT_CODE_10194e6a", " alpha, beta , ");
-  settingsButton(f.target.querySelector(".dis__tabs"), "TXT_CODE_604d8d63").click();
+  f.setField("TXT_CODE_COMMON_NETWORK_ALIASES", " alpha, beta , ");
+  settingsButton(f.target.querySelector(".dis__tabs"), "TXT_CODE_COMMON_CONTAINER_LIMITS").click();
   await flush();
-  f.setField("TXT_CODE_6fe24924", "2048");
-  f.field("TXT_CODE_gpu_enable").click();
+  f.setField("TXT_CODE_COMMON_MAXIMUM_MEMORY_IN_MB", "2048");
+  f.field("TXT_CODE_GPU_ENABLE").click();
   await flush();
   f.target.querySelector('input[type="radio"][value="devices"]').click();
   await flush();
-  f.setField("TXT_CODE_gpu_device_ids", "GPU-one, GPU-two , ");
+  f.setField("TXT_CODE_GPU_DEVICE_IDS", "GPU-one, GPU-two , ");
   await f.save();
   await flush();
   const data = f.writes[0].data;
@@ -1044,13 +1044,13 @@ test("independent instance settings serialize expiration, aliases, resource limi
 test("independent Docker desktop editors round-trip lists and cancel without changing the settings draft", async (t) => {
   const f = instanceSettingsFixture(t);
   await flush();
-  settingsButton(f.target.querySelector(".dis__tabs"), "TXT_CODE_afb12200").click();
+  settingsButton(f.target.querySelector(".dis__tabs"), "TXT_CODE_COMMON_CONTAINERIZATION").click();
   await flush();
   const before = JSON.parse(JSON.stringify(f.info.value.config.docker));
   const kinds = [
-    ["TXT_CODE_cf88c936", "ports"], ["TXT_CODE_d9c73520", "extraVolumes"],
-    ["TXT_CODE_b916a8dc", "env"], ["TXT_CODE_g1c43s2h", "labels"],
-    ["TXT_CODE_bbbd4133", "capAdd"], ["TXT_CODE_b3a60c78", "devices"]
+    ["TXT_CODE_COMMON_OPEN_PORTS", "ports"], ["TXT_CODE_COMMON_MOUNT_ADDITIONAL_DIRECTORIES", "extraVolumes"],
+    ["TXT_CODE_COMMON_ENVIRONMENT_VARIABLES", "env"], ["TXT_CODE_DOCKER_CONTAINER_LABELS", "labels"],
+    ["TXT_CODE_COMMON_CAPABILITIES", "capAdd"], ["TXT_CODE_COMMON_DEVICES", "devices"]
   ];
   for (const [title] of kinds) {
     settingsButton(f.target.querySelector(".dis__list-buttons"), title).click();
@@ -1059,23 +1059,23 @@ test("independent Docker desktop editors round-trip lists and cancel without cha
     assert.ok(editor, title + " opens a desktop child window");
     assert.equal(document.querySelector(".v-overlay--active.v-dialog"), null);
     assert.equal(f.target.querySelector(".dis__header .dis-btn--primary").disabled, true);
-    settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_d507abff").click();
+    settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_COMMON_CONFIRM").click();
     await flush();
   }
-  settingsButton(f.target.querySelector(".dis__list-buttons"), "TXT_CODE_b916a8dc").click();
+  settingsButton(f.target.querySelector(".dis__list-buttons"), "TXT_CODE_COMMON_ENVIRONMENT_VARIABLES").click();
   await flush();
   let editor = settingsListEditor();
   const value = editor.querySelector("textarea");
   assert.equal(value.value, "a=b");
   value.value = "discard=this";
   value.dispatchEvent(new window.Event("input", { bubbles: true }));
-  settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_a0451c97").click();
+  settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_COMMON_CANCEL").click();
   await flush();
-  settingsButton(f.target.querySelector(".dis__list-buttons"), "TXT_CODE_b916a8dc").click();
+  settingsButton(f.target.querySelector(".dis__list-buttons"), "TXT_CODE_COMMON_ENVIRONMENT_VARIABLES").click();
   await flush();
   editor = settingsListEditor();
   assert.equal(editor.querySelector("textarea").value, "a=b");
-  settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_a0451c97").click();
+  settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_COMMON_CANCEL").click();
   await flush();
   await f.save();
   await flush();
@@ -1086,12 +1086,12 @@ test("independent Docker desktop editors round-trip lists and cancel without cha
 test("independent Docker port allocation pairs tokens and confirming an empty environment clears it", async (t) => {
   const f = instanceSettingsFixture(t);
   await flush();
-  settingsButton(f.target.querySelector(".dis__tabs"), "TXT_CODE_afb12200").click();
+  settingsButton(f.target.querySelector(".dis__tabs"), "TXT_CODE_COMMON_CONTAINERIZATION").click();
   await flush();
-  settingsButton(f.target.querySelector(".dis__list-buttons"), "TXT_CODE_cf88c936").click();
+  settingsButton(f.target.querySelector(".dis__list-buttons"), "TXT_CODE_COMMON_OPEN_PORTS").click();
   await flush();
   let editor = settingsListEditor();
-  settingsButton(editor.querySelector(".dis-list-editor__toolbar"), "TXT_CODE_dfc17a0c").click();
+  settingsButton(editor.querySelector(".dis-list-editor__toolbar"), "TXT_CODE_COMMON_ADD_CONFIGURATION").click();
   await flush();
   const newRow = [...editor.querySelectorAll(".dis-list-editor__row")].at(-1);
   const automatic = newRow.querySelectorAll('input[type="checkbox"]');
@@ -1101,14 +1101,14 @@ test("independent Docker port allocation pairs tokens and confirming an empty en
   await flush();
   assert.deepEqual([...newRow.querySelectorAll('input[type="text"]')].slice(0, 2).map((input) => input.value),
     ["{mcsm_port2}", "{mcsm_port2}"]);
-  settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_d507abff").click();
+  settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_COMMON_CONFIRM").click();
   await flush();
-  settingsButton(f.target.querySelector(".dis__list-buttons"), "TXT_CODE_b916a8dc").click();
+  settingsButton(f.target.querySelector(".dis__list-buttons"), "TXT_CODE_COMMON_ENVIRONMENT_VARIABLES").click();
   await flush();
   editor = settingsListEditor();
-  editor.querySelector('button[aria-label="TXT_CODE_fe731dfc"]').click();
+  editor.querySelector('button[aria-label="TXT_CODE_COMMON_ACTIONS"]').click();
   await flush();
-  settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_d507abff").click();
+  settingsButton(editor.querySelector(".desktop-dialog__footer"), "TXT_CODE_COMMON_CONFIRM").click();
   await flush();
   await f.save();
   await flush();
@@ -1129,11 +1129,11 @@ test("independent instance settings recover from reload failure and scope image/
   f.reload();
   await flush();
   assert.ok(f.target.querySelector(".dis__form"));
-  settingsButton(f.target.querySelector(".dis__tabs"), "TXT_CODE_afb12200").click();
+  settingsButton(f.target.querySelector(".dis__tabs"), "TXT_CODE_COMMON_CONTAINERIZATION").click();
   await flush();
-  f.field("TXT_CODE_44b585c7").focus();
+  f.field("TXT_CODE_COMMON_CURRENT_IMAGE_IN_USE").focus();
   await flush();
-  f.field("TXT_CODE_efcef926").focus();
+  f.field("TXT_CODE_COMMON_NETWORK_MODE").focus();
   await flush();
   assert.deepEqual(f.metadata.map((request) => [request.kind, request.params.daemonId]),
     [["images", "node-one"], ["networks", "node-one"]]);

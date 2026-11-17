@@ -35,12 +35,12 @@ export default class DockerTakeoverCommand extends AbsStartCommand {
       logger.error(e);
       logger.error("uuid:", instance.instanceUuid);
       logger.error("container:", this.containerInfo.Id);
-      throw new StartupDockerProcessError($t("TXT_CODE_786c22bd"));
+      throw new StartupDockerProcessError($t("TXT_CODE_CONTAINER_TAKEOVER_FAILED"));
     }
 
     instance.started(processAdapter);
     logger.info(
-      $t("TXT_CODE_instance.successful", {
+      $t("TXT_CODE_INSTANCE_SUCCESSFUL", {
         v: `${instance.config.nickname} ${instance.instanceUuid}`
       })
     );

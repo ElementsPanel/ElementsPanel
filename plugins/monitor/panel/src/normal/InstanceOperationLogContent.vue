@@ -23,12 +23,12 @@ withDefaults(
   <div class="instance-log" :class="{ 'instance-log--desktop': desktop }">
     <div v-if="loading" class="log-loading">
       <VProgressCircular indeterminate />
-      <span>{{ t("TXT_CODE_73102f2b") }}</span>
+      <span>{{ t("TXT_CODE_COMMON_SYSTEM_OPERATION_LOGS_WILL_BE_DISPLAYED_HERE") }}</span>
     </div>
     <Empty
       v-else-if="logs.length === 0"
       icon="mdi-file-document-outline"
-      :title="t('TXT_CODE_54469e02')"
+      :title="t('TXT_CODE_COMMON_NO_OPERATION_LOGS_AVAILABLE_YET')"
       compact
     />
     <div v-else class="log-timeline">
