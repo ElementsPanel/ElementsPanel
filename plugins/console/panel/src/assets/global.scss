@@ -732,6 +732,17 @@ body::-webkit-scrollbar-track {
 :is(.v-select__content, .v-autocomplete__content, .v-combobox__content) {
   max-width: min(420px, calc(100vw - 32px));
 
+  // Keep scrollbar gutters from shortening selection highlights.
+  .v-list {
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+  }
+
   :is(.v-list-item, .v-list-item-title, .v-list-item-subtitle, .v-icon) {
     color: var(--text-color) !important;
   }
