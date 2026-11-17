@@ -2,9 +2,8 @@
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
 import { useOverviewInfo } from "@elementspanel/epanel-plugin-console/hooks/useOverviewInfo";
 import { t } from "@elementspanel/epanel-plugin-i18n";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import {
-  VAlert,
   VCard,
   VCardText,
   VCardTitle,
@@ -17,6 +16,7 @@ import {
   VListItem,
   VListItemSubtitle,
   VListItemTitle,
+  VProgressCircular,
   VProgressLinear,
   VRow,
   VTimeline,
@@ -50,8 +50,14 @@ const instanceChartData = computed(() => {
   const values = chartHistory.value.map((item) => Number(item.runningInstance) || 0);
   return { labels: chartLabels.value, values, max: Math.max(1, totalInstances.value, ...values) };
 });
-useOverviewChart(requestChartCanvas, () => requestChartData.value);
-useOverviewChart(instanceChartCanvas, () => instanceChartData.value);
+const requestChart = useOverviewChart(requestChartCanvas, () => requestChartData.value);
+const instanceChart = useOverviewChart(instanceChartCanvas, () => instanceChartData.value);
+
+watch(() => Boolean(state.value), (ready) => {
+  if (!ready) return;
+  requestChart.instance.value?.resize();
+  instanceChart.instance.value?.resize();
+}, { flush: "post" });
 
 const formatBytes = (bytes: number): string => {
   if (!bytes) return "0 B";
@@ -130,11 +136,11 @@ onMounted(fetchData);
 
 <template>
   <main class="monitor-overview-page">
-    <VContainer fluid class="monitor-overview-container">
-      <VAlert v-if="!state" type="info" variant="tonal" class="monitor-loading" density="comfortable">
-        {{ t("TXT_CODE_COMMON_LOADING_DATA") }}
-      </VAlert>
+    <div v-if="!state" class="monitor-loading">
+      <VProgressCircular indeterminate :aria-label="t('TXT_CODE_COMMON_LOADING_DATA')" />
+    </div>
 
+    <VContainer v-show="state" fluid class="monitor-overview-container">
       <VRow class="monitor-stat-row" density="comfortable">
         <VCol cols="12" sm="6" lg="3">
           <VCard class="monitor-card monitor-stat-card" flat>
@@ -346,7 +352,10 @@ onMounted(fetchData);
 }
 
 .monitor-loading {
-  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
 }
 
 .monitor-overview-container > .v-row {
