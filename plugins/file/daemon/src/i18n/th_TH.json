@@ -2,7 +2,7 @@
   "TXT_CODE_FILE_ROUTER_INSTANCE_NOT_EXIST": "ไม่พบอินสแตนซ์ {{instanceUuid}}",
   "TXT_CODE_FILE_ROUTER_UNZIP_LIMIT": "เกินจำนวนงานคลายการบีบอัดพร้อมกันสูงสุด อนุญาตสูงสุด {{maxFileTask}} งาน และขณะนี้มี {{fileLock}} งานกำลังดำเนินการ กรุณารอสักครู่",
   "TXT_CODE_FILE_SERVICE_INSTANCE_NOT_FOUND": "ไม่พบอินสแตนซ์ {{uuid}}",
-  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "เกินขีดจำกัดการแก้ไขไฟล์สูงสุด",
+  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "ไฟล์มีขนาดเกินขีดจำกัดสำหรับการแก้ไขออนไลน์ที่ {{max}} MiB",
   "TXT_CODE_SYSTEM_FILE_ILLEGAL_ACCESS": "เส้นทางการเข้าถึงไม่ถูกต้อง",
   "TXT_CODE_SYSTEM_FILE_UNZIP_LIMIT": "การแตกไฟล์รองรับไฟล์ขนาดไม่เกิน {{max}}GB หากต้องการเปลี่ยนขีดจำกัดนี้ กรุณาไปที่ไฟล์ data/Config/global.json",
   "TXT_CODE_COMMON_UNLIMITED": "ไม่จำกัด",
@@ -11,5 +11,7 @@
   "TXT_CODE_COMMON_USER_FILE_DOWNLOAD_RATE": "อัตราการดาวน์โหลดไฟล์ผู้ใช้",
   "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED": "ขีด จำกัด ต่อคำขอ HTTP ความเร็วในการดาวน์โหลดไฟล์สูงสุด",
   "TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL": "จำนวนสูงสุดของการดาวน์โหลดจาก URL",
-  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "ตั้งเป็น 0 สำหรับไม่จำกัด"
+  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "ตั้งเป็น 0 สำหรับไม่จำกัด",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "ขนาดไฟล์สูงสุดสำหรับการแก้ไขออนไลน์ (MiB)",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC": "จำกัดขนาดไฟล์ที่เปิดและบันทึกในตัวแก้ไขออนไลน์ กรุณาป้อนจำนวนเต็มบวก"
 }

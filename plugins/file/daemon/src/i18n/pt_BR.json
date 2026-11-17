@@ -2,7 +2,7 @@
   "TXT_CODE_FILE_ROUTER_INSTANCE_NOT_EXIST": "A instância {{instanceUuid}} não existe",
   "TXT_CODE_FILE_ROUTER_UNZIP_LIMIT": "Excedido o número máximo de tarefas de descompressão simultâneas. O máximo permitido é {{maxFileTask}}, e atualmente, {{fileLock}} tarefas estão em andamento. Por favor, seja paciente.",
   "TXT_CODE_FILE_SERVICE_INSTANCE_NOT_FOUND": "A instância {{uuid}} não existe",
-  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "Limite máximo de edição de arquivos excedido",
+  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "O arquivo excede o limite de tamanho para edição online de {{max}} MiB.",
   "TXT_CODE_SYSTEM_FILE_ILLEGAL_ACCESS": "Caminho de acesso ilegal",
   "TXT_CODE_SYSTEM_FILE_UNZIP_LIMIT": "A descompactação de arquivos suporta apenas arquivos de até {{max}}GB. Para alterar esse limite, vá até o arquivo data/Config/global.json.",
   "TXT_CODE_COMMON_UNLIMITED": "Ilimitado",
@@ -11,5 +11,7 @@
   "TXT_CODE_COMMON_USER_FILE_DOWNLOAD_RATE": "Taxa de download de arquivos do usuário",
   "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED": "Limite por solicitação HTTP, velocidade máxima de download de arquivo",
   "TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL": "Máximo de downloads por URL",
-  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "Defina 0 para ilimitado"
+  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "Defina 0 para ilimitado",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "Tamanho máximo de arquivo para edição online (MiB)",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC": "Limita o tamanho dos arquivos abertos e salvos no editor online. Insira um número inteiro positivo."
 }

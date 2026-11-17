@@ -9,7 +9,6 @@ import { $t, archive, settings } from "./runtime";
 
 /** Resolved per use: the module is required before `apply()` runs. */
 const ERROR_MSG_01 = () => $t("TXT_CODE_SYSTEM_FILE_ILLEGAL_ACCESS");
-const MAX_EDIT_SIZE = 1024 * 1024 * 5;
 
 interface IFile {
   name: string;
@@ -128,8 +127,8 @@ export default class FileManager {
     this.cwd = normalizedJoin(this.cwd, dirName);
   }
 
-  async list(page: 0, pageSize = 40, searchFileName?: string) {
-    if (pageSize > 100 || pageSize <= 0 || page < 0) throw new Error("Beyond the value limit");
+  async list(page: number, pageSize = 40, searchFileName?: string) {
+    if (pageSize > 200 || pageSize <= 0 || page < 0) throw new Error("Beyond the value limit");
 
     const dirents = await fs.readdir(this.toAbsolutePath(), { withFileTypes: true });
 
@@ -322,16 +321,15 @@ export default class FileManager {
 
   async edit(target: string, data?: string) {
     if (!this.check(target)) throw new Error(ERROR_MSG_01());
-    if (data || typeof data === "string") {
-      return await this.writeFile(target, data);
-    } else {
-      const absPath = this.toAbsolutePath(target);
-      const info = fs.statSync(absPath);
-      if (info.size > MAX_EDIT_SIZE) {
-        throw new Error($t("TXT_CODE_SYSTEM_FILE_EXEC_LIMIT"));
-      }
-      return await this.readFile(target);
+    const absPath = this.toAbsolutePath(target);
+    const content = typeof data === "string" ? iconv.encode(data, this.fileCode || "utf-8") : undefined;
+    const size = content?.length ?? fs.statSync(absPath).size;
+    const maxEditSizeMiB = settings().config.maxFileEditSizeMiB ?? 5;
+    if (size > maxEditSizeMiB * 1024 * 1024) {
+      throw new Error($t("TXT_CODE_SYSTEM_FILE_EXEC_LIMIT", { max: maxEditSizeMiB }));
     }
+    if (content) return await fs.writeFile(absPath, content);
+    return await this.readFile(target);
   }
 
   rename(target: string, newName: string) {

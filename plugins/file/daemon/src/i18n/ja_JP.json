@@ -2,7 +2,7 @@
   "TXT_CODE_FILE_ROUTER_INSTANCE_NOT_EXIST": "インスタンス {{instanceUuid}} は存在しません",
   "TXT_CODE_FILE_ROUTER_UNZIP_LIMIT": "同時解凍タスクの最大数は {{maxFileTask}} を超えています。現在進行中のタスクは {{fileLock}} です。しばらくお待ちください。",
   "TXT_CODE_FILE_SERVICE_INSTANCE_NOT_FOUND": "インスタンス {{uuid}} は存在しません",
-  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "ファイル編集の最大制限を超えました",
+  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "ファイルがオンライン編集のサイズ上限 {{max}} MiB を超えています。",
   "TXT_CODE_SYSTEM_FILE_ILLEGAL_ACCESS": "間違ったアクセスパス",
   "TXT_CODE_SYSTEM_FILE_UNZIP_LIMIT": "ファイルの解凍では、最大 {{max}} GB のファイルの解凍のみがサポートされます。上限を変更する必要がある場合は、data/Config/global.json ファイルに移動してください。",
   "TXT_CODE_COMMON_UNLIMITED": "無制限",
@@ -11,5 +11,7 @@
   "TXT_CODE_COMMON_USER_FILE_DOWNLOAD_RATE": "ユーザーファイルのダウンロードレート",
   "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED": "HTTP要求ごとに制限、最大ファイルのダウンロード速度",
   "TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL": "URLからの最大ダウンロード数",
-  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "0で無制限に設定"
+  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "0で無制限に設定",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "オンライン編集のファイルサイズ上限（MiB）",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC": "オンラインエディターで開く・保存するファイルのサイズを制限します。正の整数を入力してください。"
 }

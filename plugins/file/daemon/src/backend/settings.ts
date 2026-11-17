@@ -37,22 +37,35 @@ export function registerSettings(ctx: DaemonPluginContext) {
           title: $t("TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL"),
           description: $t("TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED"),
           min: 0
+        },
+        {
+          key: "maxFileEditSizeMiB",
+          type: "number",
+          title: $t("TXT_CODE_FILE_MAX_EDIT_SIZE_MIB"),
+          description: $t("TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC"),
+          min: 1
         }
       ],
       read: () => ({
         uploadSpeedRate: config.uploadSpeedRate,
         downloadSpeedRate: config.downloadSpeedRate,
-        maxDownloadFromUrlFileCount: config.maxDownloadFromUrlFileCount
+        maxDownloadFromUrlFileCount: config.maxDownloadFromUrlFileCount,
+        maxFileEditSizeMiB: config.maxFileEditSizeMiB ?? 5
       }),
       write: (values) => {
         const count = values.maxDownloadFromUrlFileCount;
         if (count != null && (!Number.isInteger(count) || Number(count) < 0)) {
           throw new Error($t("TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED"));
         }
+        const editSize = values.maxFileEditSizeMiB;
+        if (editSize !== undefined && (!Number.isSafeInteger(editSize) || Number(editSize) < 1)) {
+          throw new Error($t("TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC"));
+        }
         if (values.uploadSpeedRate != null) config.uploadSpeedRate = Number(values.uploadSpeedRate);
         if (values.downloadSpeedRate != null)
           config.downloadSpeedRate = Number(values.downloadSpeedRate);
         if (count != null) config.maxDownloadFromUrlFileCount = Number(count);
+        if (editSize !== undefined) config.maxFileEditSizeMiB = Number(editSize);
         ctx.settings.save();
       }
     })

@@ -2,7 +2,7 @@
   "TXT_CODE_FILE_ROUTER_INSTANCE_NOT_EXIST": "Экземпляр {{instanceUuid}} не существует",
   "TXT_CODE_FILE_ROUTER_UNZIP_LIMIT": "Превышено максимальное количество одновременных задач разархивирования. Максимально допустимое количество — {{maxFileTask}}, в настоящее время выполняется {{fileLock}} задач. Пожалуйста, будьте терпеливы.",
   "TXT_CODE_FILE_SERVICE_INSTANCE_NOT_FOUND": "Экземпляр {{uuid}} не существует",
-  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "Превышен лимит редактирования файлов",
+  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "Размер файла превышает предел для онлайн-редактирования {{max}} MiB.",
   "TXT_CODE_SYSTEM_FILE_ILLEGAL_ACCESS": "Незаконный путь доступа",
   "TXT_CODE_SYSTEM_FILE_UNZIP_LIMIT": "Распаковка файлов поддерживается только для файлов до {{max}}GB. Чтобы изменить этот лимит, пожалуйста, перейдите в файл data/Config/global.json.",
   "TXT_CODE_COMMON_UNLIMITED": "Неограничено",
@@ -11,5 +11,7 @@
   "TXT_CODE_COMMON_USER_FILE_DOWNLOAD_RATE": "Пользовательская скорость загрузки файлов",
   "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED": "Ограничение на HTTP -запрос, максимальная скорость загрузки файлов",
   "TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL": "Максимум загрузок по URL",
-  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "0 - без ограничений"
+  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "0 - без ограничений",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "Максимальный размер файла для онлайн-редактирования (MiB)",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC": "Ограничивает размер файлов при открытии и сохранении в онлайн-редакторе. Введите положительное целое число."
 }

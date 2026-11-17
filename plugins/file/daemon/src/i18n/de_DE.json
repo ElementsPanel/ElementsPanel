@@ -2,7 +2,7 @@
   "TXT_CODE_FILE_ROUTER_INSTANCE_NOT_EXIST": "Instanz {{instanceUuid}} existiert nicht",
   "TXT_CODE_FILE_ROUTER_UNZIP_LIMIT": "Die maximale Anzahl gleichzeitiger Dekomprimierungsaufgaben wurde überschritten. Maximal sind {{maxFileTask}} zulässig; derzeit werden {{fileLock}} Aufgaben ausgeführt.",
   "TXT_CODE_FILE_SERVICE_INSTANCE_NOT_FOUND": "Instanz {{uuid}} existiert nicht",
-  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "Maximale Dateibearbeitungsgrenze überschritten",
+  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "Die Datei überschreitet die Größenbegrenzung für die Online-Bearbeitung von {{max}} MiB.",
   "TXT_CODE_SYSTEM_FILE_ILLEGAL_ACCESS": "Falscher Zugriffspfad",
   "TXT_CODE_SYSTEM_FILE_UNZIP_LIMIT": "Die Dateidekomprimierung unterstützt nur die Dekomprimierung von Dateien bis zu {{max}} GB. Wenn Sie die Obergrenze ändern müssen, gehen Sie bitte zur Datei data/Config/global.json.",
   "TXT_CODE_COMMON_UNLIMITED": "Unbegrenzt",
@@ -11,5 +11,7 @@
   "TXT_CODE_COMMON_USER_FILE_DOWNLOAD_RATE": "Benutzerdatei -Download -Rate",
   "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED": "Limit pro HTTP -Anforderung, Maximale Datei -Download -Geschwindigkeit",
   "TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL": "Maximale Downloads von URL",
-  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "0 für unbegrenzt"
+  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "0 für unbegrenzt",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "Maximale Dateigröße für die Online-Bearbeitung (MiB)",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC": "Begrenzt die Größe von Dateien beim Öffnen und Speichern im Online-Editor. Geben Sie eine positive ganze Zahl ein."
 }

@@ -2,7 +2,7 @@
   "TXT_CODE_FILE_ROUTER_INSTANCE_NOT_EXIST": "{{instanceUuid}} 인스턴스가 존재하지 않습니다.",
   "TXT_CODE_FILE_ROUTER_UNZIP_LIMIT": "동시 압축 해제 작업의 최대 개수는 {{maxFileTask}}개를 초과했습니다. 현재 진행 중인 작업은 {{fileLock}}개입니다.",
   "TXT_CODE_FILE_SERVICE_INSTANCE_NOT_FOUND": "{{uuid}} 인스턴스가 존재하지 않습니다.",
-  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "최대 파일 편집 제한을 초과했습니다.",
+  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "파일이 온라인 편집 크기 제한인 {{max}} MiB를 초과합니다.",
   "TXT_CODE_SYSTEM_FILE_ILLEGAL_ACCESS": "잘못된 액세스 경로",
   "TXT_CODE_SYSTEM_FILE_UNZIP_LIMIT": "파일 압축 해제는 최대 {{max}}GB까지의 파일 압축 해제만 지원합니다. 상한을 변경해야 하는 경우 data/Config/global.json 파일로 이동하세요.",
   "TXT_CODE_COMMON_UNLIMITED": "제한 없는",
@@ -11,5 +11,7 @@
   "TXT_CODE_COMMON_USER_FILE_DOWNLOAD_RATE": "사용자 파일 다운로드 속도",
   "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED": "HTTP 요청 당 제한, 최대 파일 다운로드 속도",
   "TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL": "URL 최대 다운로드 수",
-  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "0으로 설정 시 무제한"
+  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "0으로 설정 시 무제한",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "온라인 편집 파일 크기 제한 (MiB)",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC": "온라인 편집기에서 열고 저장하는 파일의 크기를 제한합니다. 양의 정수를 입력하세요."
 }

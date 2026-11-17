@@ -21,6 +21,7 @@ class Config {
   public key = builderPassword();
   public maxFileTask = 2;
   public maxZipFileSize = 200;
+  public maxFileEditSizeMiB = 5;
   public language = "en_us";
   public followPanelLanguage = true;
   public defaultInstancePath = "";

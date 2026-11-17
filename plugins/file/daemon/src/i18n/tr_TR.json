@@ -2,7 +2,7 @@
   "TXT_CODE_FILE_ROUTER_INSTANCE_NOT_EXIST": "Örnek {{instanceUuid}} mevcut değil",
   "TXT_CODE_FILE_ROUTER_UNZIP_LIMIT": "Eşzamanlı dekompresyon görevlerinin maksimum sayısı aşıldı. İzin verilen maksimum sayı {{maxFileTask}} ve şu anda {{fileLock}} görevleri devam ediyor. Lütfen sabırlı olun.",
   "TXT_CODE_FILE_SERVICE_INSTANCE_NOT_FOUND": "Örnek {{uuid}} mevcut değil",
-  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "Maksimum dosya düzenleme sınırı aşıldı",
+  "TXT_CODE_SYSTEM_FILE_EXEC_LIMIT": "Dosya, çevrimiçi düzenleme için {{max}} MiB boyut sınırını aşıyor.",
   "TXT_CODE_SYSTEM_FILE_ILLEGAL_ACCESS": "Yasadışı erişim yolu",
   "TXT_CODE_SYSTEM_FILE_UNZIP_LIMIT": "Dosya açma yalnızca {{max}}GB'a kadar olan dosyaları destekler. Bu sınırı değiştirmek için lütfen data/Config/global.json dosyasına gidin.",
   "TXT_CODE_COMMON_UNLIMITED": "Sınırsız",
@@ -11,5 +11,7 @@
   "TXT_CODE_COMMON_USER_FILE_DOWNLOAD_RATE": "Kullanıcı Dosyası İndirme Oranı",
   "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED": "HTTP İsteği Başına Limit, Maksimum Dosya İndirme Hızı",
   "TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL": "URL'den maksimum indirme",
-  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "Sınırsız için 0'a ayarla"
+  "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "Sınırsız için 0'a ayarla",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "Çevrimiçi düzenleme için en büyük dosya boyutu (MiB)",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC": "Çevrimiçi düzenleyicide açılan ve kaydedilen dosyaların boyutunu sınırlar. Pozitif bir tam sayı girin."
 }

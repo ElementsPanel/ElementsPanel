@@ -64,7 +64,7 @@ export function registerFileRoutes() {
         const daemonId = String(ctx.query.daemonId);
         const instanceUuid = String(ctx.query.uuid);
         const page = Math.max(0, Number(ctx.query.page) || 0);
-        const pageSize = Math.min(100, Math.max(1, Number(ctx.query.page_size) || 10));
+        const pageSize = Math.min(200, Math.max(1, Number(ctx.query.page_size) || 10));
         const fileName = String(ctx.query.file_name || "");
         const remoteService = remote().services.getInstance(daemonId);
         const result = await new (remote().Request)(remoteService).request("file/list", {
