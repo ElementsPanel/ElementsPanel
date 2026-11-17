@@ -125,7 +125,7 @@
   "TXT_CODE_YESTERDAY": "Ontem",
   "TXT_CODE_COMMON_ALL_LOADERS": "Todos os Loaders",
   "TXT_CODE_MOD_ALL_TYPES": "Todos os Tipos",
-  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "Tempo limite de solicitações Mod (ms)",
+  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "Tempo limite de solicitações Mod",
   "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS_DESC": "Tempo limite por solicitação de metadados Mod em milissegundos.",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES": "Tentativas adicionais de solicitações Mod",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES_DESC": "Novas tentativas após falhas temporárias de rede. 0 desativa novas tentativas.",

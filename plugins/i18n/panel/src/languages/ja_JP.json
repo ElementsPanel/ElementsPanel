@@ -1877,7 +1877,7 @@
   "TXT_CODE_DAEMON_OUTPUT_BUFFER_SIZE_INFO": "バッファを増やすことでターミナル出力の内容の完全性をより確保できますが、メモリとパフォーマンスへの負荷が大きくなり、メモリリークが発生する可能性もあります。",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_SKIP_DOCKER": "ソフトシャットダウン時にDockerをスキップ",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_SKIP_DOCKER_INFO": "有効の場合、ソフトシャットダウン時にDockerインスタンスは無視されます。",
-  "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS": "ソフトシャットダウンの待機秒数",
+  "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS": "ソフトシャットダウンの待機時間",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS_INFO": "残存ターゲットインスタンスを強制終了するまでのタイムアウト（1〜600秒）。",
   "TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_MOTD": "デフォルトサーバーが 1 つだけの場合、そのサーバーがプレーヤーの Motd に表示されます。 \nping_passthrough がオンになっている場合、この項目は効果がありません。",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_TELEPORT_IF_OUTSIDE_BORDER": "どういうわけか世界の国境の外に出るなら、あなたをテレポートしてスポーンします",

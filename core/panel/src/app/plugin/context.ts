@@ -56,6 +56,7 @@ export interface PanelSettingField {
   title: string;
   description?: string;
   placeholder?: string;
+  unit?: string;
   /** `number`: inclusive bounds, enforced by the form and by `write()`. */
   min?: number;
   max?: number;

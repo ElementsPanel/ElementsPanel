@@ -1877,7 +1877,7 @@
   "TXT_CODE_DAEMON_OUTPUT_BUFFER_SIZE_INFO": "การเพิ่มขนาดบัฟเฟอร์สามารถรับประกันความสมบูรณ์ของเนื้อหาเอาต์พุตเทอร์มินัลได้ดีขึ้น แต่จะเพิ่มแรงกดดันต่อหน่วยความจำและประสิทธิภาพมากขึ้น และอาจทำให้หน่วยความจำรั่วไหลได้",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_SKIP_DOCKER": "ข้าม Docker ในการปิดแบบนุ่มนวล",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_SKIP_DOCKER_INFO": "หากเปิดใช้งาน อินสแตนซ์ Docker จะถูกละเว้นระหว่างการปิดแบบนุ่มนวล",
-  "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS": "เวลารอปิดแบบนุ่มนวล (วินาที)",
+  "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS": "เวลารอปิดแบบนุ่มนวล",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS_INFO": "เวลาจำกัดก่อนบังคับปิดอินสแตนซ์เป้าหมายที่เหลือ (1-600 วินาที)",
   "TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_MOTD": "MOTD จะแสดงให้ผู้เล่นเห็นเมื่อมีเซิร์ฟเวอร์เริ่มต้นเพียงเซิร์ฟเวอร์เดียวเท่านั้น จะถูกเขียนทับเมื่อเปิดใช้งาน 'ping_passthrough'",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_TELEPORT_IF_OUTSIDE_BORDER": "เทเลพอร์ตคุณไปยังจุดเกิดหากคุณหลุดออกจากขอบเขตโลกได้",

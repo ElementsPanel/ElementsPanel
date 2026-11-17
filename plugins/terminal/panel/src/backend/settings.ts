@@ -21,6 +21,7 @@ export async function registerTerminalSettings(ctx: PanelPluginContext) {
           type: "number",
           title: $t("TXT_CODE_TERMINAL_HISTORY_LIMIT"),
           description: $t("TXT_CODE_TERMINAL_HISTORY_LIMIT_DESC"),
+          unit: "KB",
           ...TERMINAL_SETTINGS_LIMITS.historyLimitKB
         },
         {
@@ -41,6 +42,7 @@ export async function registerTerminalSettings(ctx: PanelPluginContext) {
           type: "number",
           title: $t("TXT_CODE_TERMINAL_FONT_SIZE"),
           description: $t("TXT_CODE_TERMINAL_FONT_SIZE_DESC"),
+          unit: "px",
           ...TERMINAL_SETTINGS_LIMITS.fontSize
         },
         {
@@ -54,6 +56,7 @@ export async function registerTerminalSettings(ctx: PanelPluginContext) {
           type: "number",
           title: $t("TXT_CODE_TERMINAL_CTRL_C_INTERVAL"),
           description: $t("TXT_CODE_TERMINAL_CTRL_C_INTERVAL_DESC"),
+          unit: "ms",
           visibleWhen: "ctrlCProtection",
           ...TERMINAL_SETTINGS_LIMITS.ctrlCIntervalMs
         }

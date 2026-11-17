@@ -1877,7 +1877,7 @@
   "TXT_CODE_DAEMON_OUTPUT_BUFFER_SIZE_INFO": "Aumentar el búfer puede garantizar mejor la integridad del contenido de salida del terminal, pero ejercerá mayor presión sobre la memoria y el rendimiento, e incluso puede causar fugas de memoria.",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_SKIP_DOCKER": "Omitir Docker en Apagado Suave",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_SKIP_DOCKER_INFO": "Si se habilita, las instancias Docker se ignoran durante el apagado suave.",
-  "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS": "Segundos de Espera para Apagado Suave",
+  "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS": "Tiempo de espera para apagado suave",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS_INFO": "Tiempo de espera antes de forzar la terminación de instancias objetivo restantes (1-600 segundos).",
   "TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_MOTD": "Cuando solo hay un servidor predeterminado, el servidor se mostrará en el Motd del jugador. \nEste elemento no tiene ningún efecto cuando ping_passthrough está activado",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_TELEPORT_IF_OUTSIDE_BORDER": "Te teletransporta a desovar si de alguna manera sales de la frontera mundial",

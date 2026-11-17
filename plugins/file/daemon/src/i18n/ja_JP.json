@@ -12,6 +12,6 @@
   "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED": "HTTP要求ごとに制限、最大ファイルのダウンロード速度",
   "TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL": "URLからの最大ダウンロード数",
   "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "0で無制限に設定",
-  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "オンライン編集のファイルサイズ上限（MiB）",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "オンライン編集のファイルサイズ上限",
   "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC": "オンラインエディターで開く・保存するファイルのサイズを制限します。正の整数を入力してください。"
 }

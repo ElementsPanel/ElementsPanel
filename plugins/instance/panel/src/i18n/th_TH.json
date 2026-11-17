@@ -125,7 +125,7 @@
   "TXT_CODE_YESTERDAY": "เมื่อวาน",
   "TXT_CODE_COMMON_ALL_LOADERS": "ตัวโหลดทั้งหมด",
   "TXT_CODE_MOD_ALL_TYPES": "ทุกประเภท",
-  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "เวลารอคำขอ Mod (มิลลิวินาที)",
+  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "เวลารอคำขอ Mod",
   "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS_DESC": "เวลารอสูงสุดต่อคำขอข้อมูล Mod หน่วยมิลลิวินาที",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES": "จำนวนลองคำขอ Mod ใหม่",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES_DESC": "จำนวนลองใหม่หลังเครือข่ายขัดข้องชั่วคราว 0 คือไม่ลองใหม่",

@@ -10,11 +10,12 @@ import {
 
 const MOD_SETTING_MESSAGES: Record<
   keyof typeof MOD_REQUEST_LIMITS,
-  { title: string; description: string }
+  { title: string; description: string; unit?: string }
 > = {
   requestTimeoutMs: {
     title: "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS",
-    description: "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS_DESC"
+    description: "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS_DESC",
+    unit: "ms"
   },
   requestRetries: {
     title: "TXT_CODE_MOD_SETTING_REQUEST_RETRIES",
@@ -54,6 +55,7 @@ export function registerModManager(ctx: PanelPluginContext) {
             description: $t(
               MOD_SETTING_MESSAGES[key as keyof typeof MOD_REQUEST_LIMITS].description
             ),
+            unit: MOD_SETTING_MESSAGES[key as keyof typeof MOD_REQUEST_LIMITS].unit,
             min: range.min,
             max: range.max
           }))

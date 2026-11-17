@@ -12,6 +12,6 @@
   "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED": "Ограничение на HTTP -запрос, максимальная скорость загрузки файлов",
   "TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL": "Максимум загрузок по URL",
   "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "0 - без ограничений",
-  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "Максимальный размер файла для онлайн-редактирования (MiB)",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "Максимальный размер файла для онлайн-редактирования",
   "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC": "Ограничивает размер файлов при открытии и сохранении в онлайн-редакторе. Введите положительное целое число."
 }

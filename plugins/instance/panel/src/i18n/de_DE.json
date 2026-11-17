@@ -125,7 +125,7 @@
   "TXT_CODE_YESTERDAY": "Gestern",
   "TXT_CODE_COMMON_ALL_LOADERS": "Alle Lader",
   "TXT_CODE_MOD_ALL_TYPES": "Alle Typen",
-  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "Mod-Anfragezeitlimit (ms)",
+  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "Mod-Anfragezeitlimit",
   "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS_DESC": "Zeitlimit pro Mod-Metadatenanfrage in Millisekunden.",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES": "Wiederholungen von Mod-Anfragen",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES_DESC": "Wiederholungen bei vorübergehenden Netzwerkfehlern. 0 deaktiviert Wiederholungen.",

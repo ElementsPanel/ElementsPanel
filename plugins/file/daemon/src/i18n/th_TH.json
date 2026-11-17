@@ -12,6 +12,6 @@
   "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED": "ขีด จำกัด ต่อคำขอ HTTP ความเร็วในการดาวน์โหลดไฟล์สูงสุด",
   "TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL": "จำนวนสูงสุดของการดาวน์โหลดจาก URL",
   "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "ตั้งเป็น 0 สำหรับไม่จำกัด",
-  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "ขนาดไฟล์สูงสุดสำหรับการแก้ไขออนไลน์ (MiB)",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "ขนาดไฟล์สูงสุดสำหรับการแก้ไขออนไลน์",
   "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC": "จำกัดขนาดไฟล์ที่เปิดและบันทึกในตัวแก้ไขออนไลน์ กรุณาป้อนจำนวนเต็มบวก"
 }

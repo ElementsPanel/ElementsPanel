@@ -125,7 +125,7 @@
   "TXT_CODE_YESTERDAY": "Ayer",
   "TXT_CODE_COMMON_ALL_LOADERS": "Todos los cargadores",
   "TXT_CODE_MOD_ALL_TYPES": "Todos los tipos",
-  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "Tiempo de espera de solicitudes Mod (ms)",
+  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "Tiempo de espera de solicitudes Mod",
   "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS_DESC": "Tiempo máximo por solicitud de metadatos Mod en milisegundos.",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES": "Reintentos de solicitudes Mod",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES_DESC": "Reintentos tras fallos temporales de red. 0 desactiva los reintentos.",

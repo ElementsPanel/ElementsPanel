@@ -2,7 +2,7 @@
   "TXT_CODE_DBACKUP_FORMAT": "Formato do arquivo",
   "TXT_CODE_DBACKUP_LEVEL": "Nível de compressão",
   "TXT_CODE_DBACKUP_LEVEL_TIP": "0 armazena sem compactar, 9 compacta ao máximo. Ignorado por tar.gz e 7z que definem o seu.",
-  "TXT_CODE_DBACKUP_MAX_SIZE": "Tamanho máximo de backup por instância (GB)",
+  "TXT_CODE_DBACKUP_MAX_SIZE": "Tamanho máximo de backup por instância",
   "TXT_CODE_DBACKUP_MAX_SIZE_TIP": "Espaço total que os backups de uma instância podem ocupar. 0 significa ilimitado. Quando o espaço restante é menor que o tamanho médio de um backup, backups manuais são recusados e backups agendados excluem o arquivo mais antigo.",
   "TXT_CODE_DBACKUP_PATH": "Diretório de backups",
   "TXT_CODE_DBACKUP_PATH_TIP": "Onde os backups de instâncias são gravados. Caminhos relativos partem do diretório do daemon; vazio significa data/backups.",

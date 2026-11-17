@@ -125,7 +125,7 @@
   "TXT_CODE_YESTERDAY": "昨日",
   "TXT_CODE_COMMON_ALL_LOADERS": "全ローダー",
   "TXT_CODE_MOD_ALL_TYPES": "全タイプ",
-  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "Mod リクエストのタイムアウト（ミリ秒）",
+  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "Mod リクエストのタイムアウト",
   "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS_DESC": "Mod メタデータの各リクエストの制限時間。",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES": "Mod リクエストの再試行回数",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES_DESC": "一時的なネットワーク障害後の再試行回数。0 は再試行なしです。",

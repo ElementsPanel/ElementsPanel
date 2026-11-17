@@ -1877,7 +1877,7 @@
   "TXT_CODE_DAEMON_OUTPUT_BUFFER_SIZE_INFO": "Arabelleği büyütmek terminal çıktı içeriğinin bütünlüğünü daha iyi sağlayabilir, ancak bellek ve performans üzerindeki baskıyı artırır, hatta bellek sızıntısına neden olabilir.",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_SKIP_DOCKER": "Yumuşak Kapatmada Docker'ı Atla",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_SKIP_DOCKER_INFO": "Etkinleştirilirse, yumuşak kapatma sırasında Docker örnekleri göz ardı edilir.",
-  "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS": "Yumuşak Kapatma Bekleme Süresi (Saniye)",
+  "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS": "Yumuşak Kapatma Bekleme Süresi",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS_INFO": "Kalan hedef örnekleri zorla sonlandırmadan önceki zaman aşımı (1-600 saniye).",
   "TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_MOTD": "Yalnızca Bir Varsayılan Sunucu Varken Oyunculara MOTD Görüntülenir. 'ping_passthrough' etkinleştirildiğinde bu geçersiz kılınır.",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_TELEPORT_IF_OUTSIDE_BORDER": "Bir şekilde dünya sınırının dışına çıkarsanız sizi ortaya çıkarman için sizi ışınlar",

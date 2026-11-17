@@ -12,6 +12,6 @@
   "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED": "HTTP 요청 당 제한, 최대 파일 다운로드 속도",
   "TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL": "URL 최대 다운로드 수",
   "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "0으로 설정 시 무제한",
-  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "온라인 편집 파일 크기 제한 (MiB)",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "온라인 편집 파일 크기 제한",
   "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC": "온라인 편집기에서 열고 저장하는 파일의 크기를 제한합니다. 양의 정수를 입력하세요."
 }

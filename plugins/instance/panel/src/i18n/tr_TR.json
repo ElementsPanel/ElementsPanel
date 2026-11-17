@@ -125,7 +125,7 @@
   "TXT_CODE_YESTERDAY": "Dün",
   "TXT_CODE_COMMON_ALL_LOADERS": "Tüm Yükleyiciler",
   "TXT_CODE_MOD_ALL_TYPES": "Tüm Türler",
-  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "Mod isteği zaman aşımı (ms)",
+  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "Mod isteği zaman aşımı",
   "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS_DESC": "Mod meta veri isteği başına milisaniye cinsinden zaman aşımı.",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES": "Mod isteği yeniden deneme sayısı",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES_DESC": "Geçici ağ hatalarından sonra yeniden deneme sayısı. 0 yeniden denemeyi kapatır.",

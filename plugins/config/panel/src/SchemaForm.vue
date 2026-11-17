@@ -328,6 +328,7 @@ const open = (field: SettingField) => {
           type="number"
           :min="field.min"
           :max="field.max"
+          :suffix="field.unit"
           variant="solo-filled"
           density="comfortable"
           hide-details

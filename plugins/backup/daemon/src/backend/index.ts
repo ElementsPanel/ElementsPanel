@@ -53,6 +53,7 @@ export function apply(ctx: DaemonPluginContext) {
         type: "number",
         title: ctx.i18n.$t("TXT_CODE_DBACKUP_MAX_SIZE"),
         description: ctx.i18n.$t("TXT_CODE_DBACKUP_MAX_SIZE_TIP"),
+        unit: "GB",
         min: 0
       }
     ],

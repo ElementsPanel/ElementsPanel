@@ -125,7 +125,7 @@
   "TXT_CODE_YESTERDAY": "Yesterday",
   "TXT_CODE_COMMON_ALL_LOADERS": "All Loaders",
   "TXT_CODE_MOD_ALL_TYPES": "All Types",
-  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "Mod request timeout (ms)",
+  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "Mod request timeout",
   "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS_DESC": "Timeout per Mod metadata request, in milliseconds.",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES": "Mod request retries",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES_DESC": "Retries after transient network failures. 0 disables retries.",

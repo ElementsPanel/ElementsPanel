@@ -2,7 +2,7 @@
   "TXT_CODE_DBACKUP_FORMAT": "Format d archive",
   "TXT_CODE_DBACKUP_LEVEL": "Niveau de compression",
   "TXT_CODE_DBACKUP_LEVEL_TIP": "0 stocke sans compresser, 9 compresse au maximum. Ignoré par tar.gz et 7z qui fixent le leur.",
-  "TXT_CODE_DBACKUP_MAX_SIZE": "Taille maximale des sauvegardes par instance (GB)",
+  "TXT_CODE_DBACKUP_MAX_SIZE": "Taille maximale des sauvegardes par instance",
   "TXT_CODE_DBACKUP_MAX_SIZE_TIP": "Espace total que les sauvegardes d’une instance peuvent occuper. 0 signifie illimité. Lorsque l’espace restant est inférieur à la taille moyenne d’une sauvegarde, les sauvegardes manuelles sont refusées et les sauvegardes planifiées suppriment l’archive la plus ancienne.",
   "TXT_CODE_DBACKUP_PATH": "Répertoire de sauvegarde",
   "TXT_CODE_DBACKUP_PATH_TIP": "Où les sauvegardes d instances sont écrites. Les chemins relatifs partent du répertoire du démon ; vide signifie data/backups.",

@@ -1877,7 +1877,7 @@
   "TXT_CODE_DAEMON_OUTPUT_BUFFER_SIZE_INFO": "Augmenter le tampon permet de mieux garantir l'intégrité du contenu de sortie du terminal, mais augmente la pression sur la mémoire et les performances, pouvant même provoquer des fuites de mémoire.",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_SKIP_DOCKER": "Ignorer Docker lors de l'arrêt progressif",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_SKIP_DOCKER_INFO": "Si activé, les instances Docker sont ignorées pendant l'arrêt progressif.",
-  "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS": "Secondes d'attente pour l'arrêt progressif",
+  "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS": "Temps d'attente pour l'arrêt progressif",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS_INFO": "Délai avant de forcer l'arrêt des instances cibles restantes (1 à 600 secondes).",
   "TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_MOTD": "Lorsqu'il n'y a qu'un seul serveur par défaut, le serveur sera affiché sur le Motd du joueur. \nCet élément n'a aucun effet lorsque ping_passthrough est activé",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_TELEPORT_IF_OUTSIDE_BORDER": "Vous téléporte pour engendrer si vous sortez d'une manière ou d'une autre de la frontière mondiale",

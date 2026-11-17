@@ -12,6 +12,6 @@
   "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED": "Limite por solicitação HTTP, velocidade máxima de download de arquivo",
   "TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL": "Máximo de downloads por URL",
   "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "Defina 0 para ilimitado",
-  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "Tamanho máximo de arquivo para edição online (MiB)",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "Tamanho máximo de arquivo para edição online",
   "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC": "Limita o tamanho dos arquivos abertos e salvos no editor online. Insira um número inteiro positivo."
 }

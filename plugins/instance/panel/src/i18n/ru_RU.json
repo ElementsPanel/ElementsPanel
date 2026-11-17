@@ -125,7 +125,7 @@
   "TXT_CODE_YESTERDAY": "Вчера",
   "TXT_CODE_COMMON_ALL_LOADERS": "Все загрузчики",
   "TXT_CODE_MOD_ALL_TYPES": "Все типы",
-  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "Тайм-аут запросов Mod (мс)",
+  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "Тайм-аут запросов Mod",
   "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS_DESC": "Тайм-аут каждого запроса метаданных Mod в миллисекундах.",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES": "Повторные попытки запросов Mod",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES_DESC": "Повторные попытки при временных сетевых ошибках. 0 отключает повторы.",

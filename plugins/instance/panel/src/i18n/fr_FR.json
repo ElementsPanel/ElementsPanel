@@ -125,7 +125,7 @@
   "TXT_CODE_YESTERDAY": "Hier",
   "TXT_CODE_COMMON_ALL_LOADERS": "Tous les chargeurs",
   "TXT_CODE_MOD_ALL_TYPES": "Tous les types",
-  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "Délai des requêtes Mod (ms)",
+  "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS": "Délai des requêtes Mod",
   "TXT_CODE_MOD_SETTING_REQUEST_TIMEOUT_MS_DESC": "Délai par requête de métadonnées Mod en millisecondes.",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES": "Nouvelles tentatives des requêtes Mod",
   "TXT_CODE_MOD_SETTING_REQUEST_RETRIES_DESC": "Tentatives après des erreurs réseau temporaires. 0 désactive les nouvelles tentatives.",

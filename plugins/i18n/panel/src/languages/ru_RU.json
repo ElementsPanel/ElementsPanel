@@ -1877,7 +1877,7 @@
   "TXT_CODE_DAEMON_OUTPUT_BUFFER_SIZE_INFO": "Увеличение буфера лучше обеспечивает полноту вывода терминала, но увеличивает нагрузку на память и производительность, вплоть до утечки памяти.",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_SKIP_DOCKER": "Пропускать Docker при плавном завершении",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_SKIP_DOCKER_INFO": "Если включено, экземпляры Docker игнорируются при плавном завершении.",
-  "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS": "Время ожидания плавного завершения (сек.)",
+  "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS": "Время ожидания плавного завершения",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS_INFO": "Таймаут перед принудительным завершением оставшихся целевых экземпляров (1-600 секунд).",
   "TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_MOTD": "MOTD, отображаемое игрокам, когда существует только один сервер по умолчанию. Перекрывается, когда включен 'ping_passthrough'.",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_TELEPORT_IF_OUTSIDE_BORDER": "Телепортирует вас на начальную точку, если вы каким-то образом оказались за границей мира",

@@ -43,6 +43,7 @@ export function registerSettings(ctx: DaemonPluginContext) {
           type: "number",
           title: $t("TXT_CODE_FILE_MAX_EDIT_SIZE_MIB"),
           description: $t("TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC"),
+          unit: "MiB",
           min: 1
         }
       ],

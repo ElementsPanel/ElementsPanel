@@ -12,6 +12,6 @@
   "TXT_CODE_COMMON_LIMIT_PER_HTTP_REQUEST_MAXIMUM_FILE_DOWNLOAD_SPEED": "HTTP İsteği Başına Limit, Maksimum Dosya İndirme Hızı",
   "TXT_CODE_COMMON_MAXIMUM_OF_DOWNLOAD_FROM_URL": "URL'den maksimum indirme",
   "TXT_CODE_COMMON_SET_TO_0_TO_UNLIMITED": "Sınırsız için 0'a ayarla",
-  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "Çevrimiçi düzenleme için en büyük dosya boyutu (MiB)",
+  "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB": "Çevrimiçi düzenleme için en büyük dosya boyutu",
   "TXT_CODE_FILE_MAX_EDIT_SIZE_MIB_DESC": "Çevrimiçi düzenleyicide açılan ve kaydedilen dosyaların boyutunu sınırlar. Pozitif bir tam sayı girin."
 }

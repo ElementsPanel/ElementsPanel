@@ -44,6 +44,7 @@ export interface SettingField {
   title: string;
   description?: string;
   placeholder?: string;
+  unit?: string;
   min?: number;
   max?: number;
   options?: SettingOption[];

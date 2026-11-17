@@ -7,23 +7,27 @@ import {
 
 const INSTANCE_SETTING_MESSAGES: Record<
   InstanceNumberSetting,
-  { title: string; description: string }
+  { title: string; description: string; unit?: string }
 > = {
   instanceAutoRestartResetSeconds: {
     title: "TXT_CODE_INSTANCE_SETTING_INSTANCE_AUTO_RESTART_RESET_SECONDS",
-    description: "TXT_CODE_INSTANCE_SETTING_INSTANCE_AUTO_RESTART_RESET_SECONDS_DESC"
+    description: "TXT_CODE_INSTANCE_SETTING_INSTANCE_AUTO_RESTART_RESET_SECONDS_DESC",
+    unit: "s"
   },
   instanceLogMaxSizeKB: {
     title: "TXT_CODE_INSTANCE_SETTING_INSTANCE_LOG_MAX_SIZE_KB",
-    description: "TXT_CODE_INSTANCE_SETTING_INSTANCE_LOG_MAX_SIZE_KB_DESC"
+    description: "TXT_CODE_INSTANCE_SETTING_INSTANCE_LOG_MAX_SIZE_KB_DESC",
+    unit: "KB"
   },
   instanceDiskCheckIntervalSeconds: {
     title: "TXT_CODE_INSTANCE_SETTING_INSTANCE_DISK_CHECK_INTERVAL_SECONDS",
-    description: "TXT_CODE_INSTANCE_SETTING_INSTANCE_DISK_CHECK_INTERVAL_SECONDS_DESC"
+    description: "TXT_CODE_INSTANCE_SETTING_INSTANCE_DISK_CHECK_INTERVAL_SECONDS_DESC",
+    unit: "s"
   },
   instanceStopTimeoutSeconds: {
     title: "TXT_CODE_INSTANCE_SETTING_INSTANCE_STOP_TIMEOUT_SECONDS",
-    description: "TXT_CODE_INSTANCE_SETTING_INSTANCE_STOP_TIMEOUT_SECONDS_DESC"
+    description: "TXT_CODE_INSTANCE_SETTING_INSTANCE_STOP_TIMEOUT_SECONDS_DESC",
+    unit: "s"
   },
   instanceScheduleMaxTasks: {
     title: "TXT_CODE_INSTANCE_SETTING_INSTANCE_SCHEDULE_MAX_TASKS",
@@ -45,6 +49,7 @@ export function registerSettings(ctx: DaemonPluginContext) {
           type: "number" as const,
           title: $t(INSTANCE_SETTING_MESSAGES[key as InstanceNumberSetting].title),
           description: $t(INSTANCE_SETTING_MESSAGES[key as InstanceNumberSetting].description),
+          unit: INSTANCE_SETTING_MESSAGES[key as InstanceNumberSetting].unit,
           min: range.min,
           max: range.max
         })),
@@ -72,6 +77,7 @@ export function registerSettings(ctx: DaemonPluginContext) {
           type: "number",
           title: $t("TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS"),
           description: $t("TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS_INFO"),
+          unit: "s",
           min: 1,
           max: 600,
           visibleWhen: "enableSoftShutdown"

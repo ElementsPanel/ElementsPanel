@@ -1877,7 +1877,7 @@
   "TXT_CODE_DAEMON_OUTPUT_BUFFER_SIZE_INFO": "Increasing the buffer can better ensure the completeness of terminal output content, but will put greater pressure on memory and performance, and may even cause memory leaks.",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_SKIP_DOCKER": "Skip Docker On Soft Shutdown",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_SKIP_DOCKER_INFO": "If enabled, Docker instances are ignored during soft shutdown.",
-  "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS": "Soft Shutdown Wait Seconds",
+  "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS": "Soft Shutdown Wait Time",
   "TXT_CODE_DAEMON_SOFT_SHUTDOWN_WAIT_SECONDS_INFO": "Timeout before force-killing remaining target instances (1-600 seconds).",
   "TXT_CODE_GAME_CONFIG_BUNGEECORD_LISTENERS_MOTD": "MOTD Displayed to Players When Only One Default Server Exists. This is overridden when 'ping_passthrough' is enabled.",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_PLAYER_TELEPORT_IF_OUTSIDE_BORDER": "Teleports you to spawn if you somehow get outside the world border",
