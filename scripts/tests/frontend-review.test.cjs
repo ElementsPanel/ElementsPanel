@@ -19,6 +19,7 @@ function setupSfc(filename, overrides = {}, props = {}) {
       vue: { ...vue, onMounted() {}, onUnmounted() {}, watch() {} },
       "@/lang/i18n": i18n,
       "@/components/Empty.vue": {},
+      "@/components/TargetSelectionList.vue": {},
       "@/components/DesktopDialog.vue": {},
       "@/hooks/useScreen": { useScreen: () => ({ isPhone: vue.ref(false) }) },
       "vuetify/components": {},
@@ -733,6 +734,8 @@ test("node removal reports unavailable and failed nodes, respects removability, 
   assert.match(f.state.actionCandidate.value.nodeCheckError, /offline.*broken/);
   assert.deepEqual(f.state.actionCandidate.value.selectedNodeIds, ["good", "failed", "disabled"],
     "protected source plugins cannot be selected by default");
+  assert.deepEqual(f.state.nodeTargetItems.value.filter((item) => item.disabled).map((item) => item.value),
+    ["source"], "the selection list must keep protected nodes disabled during select all");
   assert.equal(f.calls.some(({ name, config }) => name === "nodePluginList" && config.params.daemonId === "offline"), false);
   f.state.actionCandidate.value.selectedNodeIds = ["good", "failed", "disabled", "source"];
   await f.state.confirmAction();

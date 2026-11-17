@@ -468,6 +468,7 @@
   "TXT_CODE_COMMON_ANY_CONSOLE_PROGRAM": "Herhangi Bir Konsol Programı",
   "TXT_CODE_COMMON_PLEASE_SELECT_A_RUNTIME_PLATFORM": "Lütfen bir çalışma platformu seçin",
   "TXT_CODE_COMMON_SEARCH_BY_DAEMON_NAME": "Daemon adına göre ara",
+  "TXT_CODE_COMMON_SEARCH_BY_NAME_OR_ADDRESS": "Ada veya adrese göre ara",
   "TXT_CODE_GAME_CONFIG_GEYSER_METRICS_UUID": "Bu sunucu için UUID. Değiştirmeyin.",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_IGNORE_PLAYERS_WITH_TORCH": "Hayaletler ellerinde bir meşale olan oyunculardan kaçınıp kaçınmadığı",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_CAN_MOVEMENT_TICK": "Armorstands'in hareket etmesini sağlamak için false olarak ayarlayın",

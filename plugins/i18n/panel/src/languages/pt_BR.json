@@ -468,6 +468,7 @@
   "TXT_CODE_COMMON_ANY_CONSOLE_PROGRAM": "Qualquer Programa de Console",
   "TXT_CODE_COMMON_PLEASE_SELECT_A_RUNTIME_PLATFORM": "Selecione uma plataforma de execução",
   "TXT_CODE_COMMON_SEARCH_BY_DAEMON_NAME": "Buscar por nome do daemon",
+  "TXT_CODE_COMMON_SEARCH_BY_NAME_OR_ADDRESS": "Pesquisar por nome ou endereço",
   "TXT_CODE_GAME_CONFIG_GEYSER_METRICS_UUID": "UUID para este servidor. Não modifique.",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_IGNORE_PLAYERS_WITH_TORCH": "Se os fantasmas evitam jogadores com uma tocha na mão",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_CAN_MOVEMENT_TICK": "Defina como false para proibir as armadilhas de se mover",

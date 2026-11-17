@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Empty from "@elementspanel/epanel-plugin-console/components/Empty";
+import TargetSelectionList from "@elementspanel/epanel-plugin-console/components/TargetSelectionList";
 import { t } from "@elementspanel/epanel-plugin-i18n";
 import { useScreen } from "@elementspanel/epanel-plugin-console/hooks/useScreen";
 import { ctx, usePluginService, type FrontendPluginMarketService } from "@elements-panel/sdk";
@@ -427,6 +428,18 @@ const nodePickerOpen = computed({
       actionCandidate.value = null;
   }
 });
+const nodeTargetItems = computed(() =>
+  (actionCandidate.value?.nodeTargets ?? []).map((target) => ({
+    value: target.node.uuid,
+    title: nodeLabel(target.node),
+    subtitle: target.node.remarks ? `${target.node.ip}:${target.node.port}` : undefined,
+    disabled: actionCandidate.value?.action === "remove" && !target.plugin.removable,
+    hint:
+      actionCandidate.value?.action === "remove" && !target.plugin.removable
+        ? t("TXT_CODE_PLUGIN_DELETE_UNAVAILABLE")
+        : undefined
+  }))
+);
 const notify = (text: string, color: "success" | "error") => {
   if (color === "error") message.error(text);
   else message.success(text);
@@ -1354,10 +1367,10 @@ const confirmAction = async () => {
       </VCard>
     </VDialog>
 
-    <VDialog v-model="nodePickerOpen" :persistent="actionSubmitting" max-width="480">
+    <VDialog v-model="nodePickerOpen" :persistent="actionSubmitting" max-width="640" scrollable>
       <VCard :title="t('TXT_CODE_PLUGIN_NODE_SELECT')">
         <VCardText v-if="actionCandidate">
-          <div v-if="actionCandidate.nodeTargets.length" class="mb-2">
+          <div v-if="actionCandidate.nodeTargets.length" class="mb-6">
             {{
               t(
                 actionCandidate.action === "remove"
@@ -1368,27 +1381,15 @@ const confirmAction = async () => {
           </div>
           <VAlert
             v-if="actionCandidate.nodeCheckError"
-            class="mb-2"
+            class="mb-6"
             type="warning"
             variant="tonal"
             :text="actionCandidate.nodeCheckError"
           />
-          <VCheckbox
-            v-for="target in actionCandidate.nodeTargets"
-            :key="target.node.uuid"
+          <TargetSelectionList
             v-model="actionCandidate.selectedNodeIds"
-            :value="target.node.uuid"
-            :label="nodeLabel(target.node)"
-            :disabled="
-              actionSubmitting || (actionCandidate.action === 'remove' && !target.plugin.removable)
-            "
-            :messages="
-              actionCandidate.action === 'remove' && !target.plugin.removable
-                ? t('TXT_CODE_PLUGIN_DELETE_UNAVAILABLE')
-                : undefined
-            "
-            :hide-details="actionCandidate.action !== 'remove' || target.plugin.removable"
-            density="compact"
+            :items="nodeTargetItems"
+            :disabled="actionSubmitting"
           />
         </VCardText>
         <VCardActions>

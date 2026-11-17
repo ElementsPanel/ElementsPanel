@@ -468,6 +468,7 @@
   "TXT_CODE_COMMON_ANY_CONSOLE_PROGRAM": "n'importe quel programme de console",
   "TXT_CODE_COMMON_PLEASE_SELECT_A_RUNTIME_PLATFORM": "Veuillez sélectionner une plateforme d'exécution",
   "TXT_CODE_COMMON_SEARCH_BY_DAEMON_NAME": "Rechercher par nom de nœud",
+  "TXT_CODE_COMMON_SEARCH_BY_NAME_OR_ADDRESS": "Rechercher par nom ou adresse",
   "TXT_CODE_GAME_CONFIG_GEYSER_METRICS_UUID": "UUID de ce serveur, ne le modifiez pas",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_IGNORE_PLAYERS_WITH_TORCH": "Si les fantômes évitent les joueurs avec une torche dans leur main",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_CAN_MOVEMENT_TICK": "Réglé sur False pour interdire les armure",

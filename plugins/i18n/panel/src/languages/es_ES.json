@@ -468,6 +468,7 @@
   "TXT_CODE_COMMON_ANY_CONSOLE_PROGRAM": "cualquier programa de consola",
   "TXT_CODE_COMMON_PLEASE_SELECT_A_RUNTIME_PLATFORM": "Seleccione una plataforma de ejecución",
   "TXT_CODE_COMMON_SEARCH_BY_DAEMON_NAME": "Buscar por nombre de nodo",
+  "TXT_CODE_COMMON_SEARCH_BY_NAME_OR_ADDRESS": "Buscar por nombre o dirección",
   "TXT_CODE_GAME_CONFIG_GEYSER_METRICS_UUID": "UUID de este servidor, no lo modifiques",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_IGNORE_PLAYERS_WITH_TORCH": "Si los fantasmas evitan a los jugadores con una antorcha en la mano",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_CAN_MOVEMENT_TICK": "Establecer en falso para no permitir que los estandos armados se muevan",

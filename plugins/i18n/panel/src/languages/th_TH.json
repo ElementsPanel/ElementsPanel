@@ -468,6 +468,7 @@
   "TXT_CODE_COMMON_ANY_CONSOLE_PROGRAM": "โปรแกรมคอนโซลใดๆ",
   "TXT_CODE_COMMON_PLEASE_SELECT_A_RUNTIME_PLATFORM": "โปรดเลือกแพลตฟอร์มรันไทม์",
   "TXT_CODE_COMMON_SEARCH_BY_DAEMON_NAME": "ค้นหาตามชื่อ Daemon",
+  "TXT_CODE_COMMON_SEARCH_BY_NAME_OR_ADDRESS": "ค้นหาตามชื่อหรือที่อยู่",
   "TXT_CODE_GAME_CONFIG_GEYSER_METRICS_UUID": "UUID สำหรับเซิร์ฟเวอร์นี้ ห้ามแก้ไข",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_IGNORE_PLAYERS_WITH_TORCH": "แฟนทอมจะหลีกเลี่ยงผู้เล่นที่ถือคบเพลิงหรือไม่",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_CAN_MOVEMENT_TICK": "ตั้งค่าเป็น false เพื่อป้องกันไม่ให้แท่นวางเกราะเคลื่อนที่",

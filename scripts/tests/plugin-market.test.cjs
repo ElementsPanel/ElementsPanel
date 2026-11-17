@@ -530,6 +530,7 @@ function setupFixture(component, props) {
 const sharedViewOverrides = {
   vue,
   "vuetify/components": {},
+  "@/components/TargetSelectionList.vue": { render: () => null },
   "@/components/Empty.vue": load("plugins/console/panel/src/components/Empty.vue", {
     vue,
     "@/lang/i18n": { t: (key) => key },

@@ -468,6 +468,7 @@
   "TXT_CODE_COMMON_ANY_CONSOLE_PROGRAM": "Any Console Program",
   "TXT_CODE_COMMON_PLEASE_SELECT_A_RUNTIME_PLATFORM": "Please select a runtime platform",
   "TXT_CODE_COMMON_SEARCH_BY_DAEMON_NAME": "Search by daemon name",
+  "TXT_CODE_COMMON_SEARCH_BY_NAME_OR_ADDRESS": "Search by name or address",
   "TXT_CODE_GAME_CONFIG_GEYSER_METRICS_UUID": "UUID for this server. Do not modify.",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_IGNORE_PLAYERS_WITH_TORCH": "Whether phantoms avoid players with a torch in their hand",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_CAN_MOVEMENT_TICK": "Set to false to disallow armorstands from moving",

@@ -29,6 +29,7 @@
         "components/LineOption": "src/public/components/LineOption.ts",
         "components/Loading": "src/public/components/Loading.ts",
         "components/PageToolbar": "src/public/components/PageToolbar.ts",
+        "components/TargetSelectionList": "src/public/components/TargetSelectionList.ts",
         "components/fc": "src/public/components/fc.ts",
         "components/fc/WarningDialog": "src/public/components/fc/WarningDialog.ts",
         "components/interface": "src/public/components/interface.ts",

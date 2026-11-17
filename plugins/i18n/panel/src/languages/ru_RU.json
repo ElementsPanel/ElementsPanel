@@ -468,6 +468,7 @@
   "TXT_CODE_COMMON_ANY_CONSOLE_PROGRAM": "Любая консольная программа",
   "TXT_CODE_COMMON_PLEASE_SELECT_A_RUNTIME_PLATFORM": "Выберите платформу выполнения",
   "TXT_CODE_COMMON_SEARCH_BY_DAEMON_NAME": "Поиск по названию демона",
+  "TXT_CODE_COMMON_SEARCH_BY_NAME_OR_ADDRESS": "Поиск по имени или адресу",
   "TXT_CODE_GAME_CONFIG_GEYSER_METRICS_UUID": "UUID этого сервера. Не изменяйте.",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_DEFAULT_MOBS_PHANTOM_IGNORE_PLAYERS_WITH_TORCH": "Избегают ли фантомы игроков с факелом в руке",
   "TXT_CODE_GAME_CONFIG_PURPUR_WORLD_SETTINGS_GAMEPLAY_MECHANICS_ARMORSTAND_CAN_MOVEMENT_TICK": "Установите значение 'false', чтобы запретить перемещение стоек для брони",
