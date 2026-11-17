@@ -90,7 +90,7 @@ export const useAppConfigStore = createGlobalState(() => {
         body.classList.remove("app-light-extend-theme");
         body.classList.add("app-dark-extend-theme");
       } else {
-        body.style.backgroundImage = `linear-gradient(135deg, rgba(220,220,220,0.3), rgba(53,53,53,0.3) 100%), url(${url})`;
+        body.style.backgroundImage = `linear-gradient(135deg, rgba(255,255,255,0.65), rgba(255,255,255,0.65) 100%), url(${url})`;
         body.classList.remove("app-dark-extend-theme");
         body.classList.add("app-light-extend-theme");
       }
